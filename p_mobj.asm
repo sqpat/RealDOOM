@@ -27,7 +27,8 @@ EXTRN P_AproxDistance_:NEAR
 EXTRN P_AimLineAttack_:NEAR
 EXTRN P_CheckPosition_:NEAR
 EXTRN R_PointInSubsector_:NEAR
-EXTRN P_SetMobjState_:NEAR         ; except this is really near
+EXTRN P_SetMobjState_:NEAR    
+EXTRN P_BringUpWeapon_:NEAR
 
 
 .DATA
@@ -175,8 +176,7 @@ mov       word ptr ds:[_psprites + (0 * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_state
 mov       word ptr ds:[_psprites + (1 * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_statenum], STATENUM_NULL
 mov       al, byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 mov       byte ptr ds:[_player + PLAYER_T.player_pendingweapon], al
-db        09Ah
-dw        P_BRINGUPWEAPONFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+call      P_BringUpWeapon_
 ret       
 
 ENDP
@@ -286,9 +286,7 @@ mov       al, byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 mov       byte ptr ds:[_player + PLAYER_T.player_pendingweapon], al
 
 
-;call      P_BringUpWeapon_
-db        09Ah
-dw        P_BRINGUPWEAPONFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+call      P_BringUpWeapon_
 
 
 
@@ -1683,7 +1681,6 @@ sbb   dx, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
 
 pop   bx    ; get y diff lo
 
-push   cs
 call  P_AproxDistance_
 
 pop   bx  ; recover offset
@@ -2621,7 +2618,6 @@ push  ss
 pop   ds
 
 
-push   cs
 call  P_AproxDistance_
 
 
@@ -2749,7 +2745,6 @@ mov    ax, word ptr ds:[_playerMobj]
 mov    bx, HALFMISSILERANGE
 mov    dx, si
 
-push   cs
 call   P_AimLineAttack_
 
 mov    di, ax
@@ -2766,7 +2761,6 @@ mov    ax, word ptr ds:[_playerMobj]
 mov    bx, HALFMISSILERANGE
 mov    dx, si
 
-push   cs
 call   P_AimLineAttack_
 
 mov    di, ax
@@ -2781,7 +2775,6 @@ mov    ax, word ptr ds:[_playerMobj]
 mov    bx, HALFMISSILERANGE
 mov    dx, si
 
-push   cs
 call   P_AimLineAttack_
 
 mov    di, ax

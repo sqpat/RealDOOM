@@ -26,6 +26,13 @@ EXTRN P_Random_MapLocal_:NEAR
 EXTRN P_SpawnPuff_:NEAR
 EXTRN P_SpawnMobj_:NEAR
 EXTRN P_RemoveMobj_:NEAR
+EXTRN P_CheckSight_:NEAR
+EXTRN P_RadiusAttack_:NEAR
+EXTRN A_BFGSpray_:NEAR
+EXTRN P_AimLineAttack_:NEAR
+EXTRN P_LineAttack_:NEAR
+EXTRN P_AproxDistance_:NEAR
+
 
 .DATA
 
@@ -357,10 +364,7 @@ pop   ds
 
 ;call  dword ptr ds:[_P_AproxDistance]
 
-db    09Ah
-dw    P_APROXDISTANCEOFFSET, PHYSICS_HIGHCODE_SEGMENT
-
-;physics_highcode_segment, 		 P_AproxDistanceOffset
+call   P_AproxDistance_
 
 pop   ax  ; bp - 6
 cmp   dx, ax
@@ -369,8 +373,8 @@ pop   ax  ; bp - 2
 jnl   exit_check_meleerange_return_0
 mov   bx,  di
 lea   cx, [si - 8] ; because of lodsw increment above..
-db    09Ah
-dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_CheckSight_
+
 jc    exit_check_meleerange_return_1
 exit_check_meleerange_return_0:
 clc  
@@ -422,8 +426,8 @@ lea   dx, ds:[bx + (_thinkerlist + THINKER_T.t_data)]
 mov   ax, di
 mov   bx, si
 
-db    09Ah
-dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_CheckSight_
+
 jnc   exit_checkmissilerange_return_0_and_pop
 mov   ax, MOBJPOSLIST_6800_SEGMENT
 mov   es, ax
@@ -469,8 +473,7 @@ xchg  ax, cx            ; cx gets y hi. and ax gets x lo back
 push  ss
 pop   ds
 
-db    09Ah
-dw    P_APROXDISTANCEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call   P_AproxDistance_
 
 mov   ax, bp
 sub   dx, 64
@@ -1152,9 +1155,7 @@ mov   cx, word ptr ds:[_playerMobj_pos]
 mov   dx, word ptr ds:[_playerMobj]
 mov   bx, si
 mov   ax, di
-;call  dword ptr ds:[_P_CheckSightTemp]
-db    09Ah
-dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_CheckSight_
 jnc   exit_look_for_players_return_0
 cmp   bp, 0
 je    check_angle_for_player
@@ -1227,8 +1228,7 @@ sbb   cx, word ptr ds:[si + MOBJ_POS_T.mp_y + 2]
 push  ss
 pop   ds
 
-db    09Ah
-dw    P_APROXDISTANCEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call   P_AproxDistance_
 cmp   dx, MELEERANGE
 jnle  exit_look_for_players_return_0
 jne   look_set_target_player
@@ -1341,9 +1341,9 @@ test  byte ptr es:[bx + MOBJ_POS_T.mp_flags1], MF_AMBUSH
 je    see_you
 mov   cx, di
 mov   ax, si
-;call  dword ptr ds:[_P_CheckSightTemp]
-db    09Ah
-dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+call  P_CheckSight_
+
 jc    see_you
 
 no_target:
@@ -1799,9 +1799,8 @@ mov   ax, si
 SHIFT_MACRO shr   cx, 3
 mov   bx, MISSILERANGE
 mov   dx, cx
-;call  dword ptr ds:[_P_AimLineAttack]
-db    09Ah
-dw    P_AIMLINEATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+call  P_AimLineAttack_
 
 mov   bx, ax
 mov   di, dx
@@ -1843,9 +1842,8 @@ push  bx ; slope lo
 
 xchg  ax, si
 mov   bx, MISSILERANGE
-;call  dword ptr ds:[_P_LineAttack]
-db    09Ah
-dw    P_LINEATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+call  P_LineAttack_
 
 exit_a_posattack:
 ret   
@@ -1900,9 +1898,8 @@ SHIFT_MACRO shr   dx 3
 mov   bx, MISSILERANGE
 mov   si, dx ; store bangle
 mov   ax, di
-;call  dword ptr ds:[_P_AimLineAttack]
-db    09Ah
-dw    P_AIMLINEATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+call  P_AimLineAttack_
 
 push  ax ; bp - 2
 push  dx ; bp - 4
@@ -1941,9 +1938,7 @@ push  ax
 push  word ptr [bp - 4]
 push  word ptr [bp - 2]
 mov   ax, di
-;call  dword ptr ds:[_P_LineAttack]
-db    09Ah
-dw    P_LINEATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_LineAttack_
 
 loop  do_next_shotgun_pellet
 
@@ -1993,9 +1988,7 @@ mov   ax, si
 SHIFT_MACRO shr   cx 3
 mov   bx, MISSILERANGE
 mov   dx, cx
-;call  dword ptr ds:[_P_AimLineAttack]
-db    09Ah
-dw    P_AIMLINEATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_AimLineAttack_
 
 mov   di, ax
 mov   bx, dx
@@ -2027,9 +2020,7 @@ push  di
 
 mov   ax, si
 mov   bx, MISSILERANGE
-;call  dword ptr ds:[_P_LineAttack]
-db    09Ah
-dw    P_LINEATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_LineAttack_
 
 exit_a_cposattack:
 
@@ -2077,9 +2068,7 @@ ENDIF
 
 mov   dx, di
 mov   ax, si
-;call  dword ptr ds:[_P_CheckSightTemp]
-db    09Ah
-dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_CheckSight_
 
 jc    exit_a_cposrefire
 
@@ -2142,9 +2131,7 @@ ENDIF
 
 mov   dx, di
 mov   ax, si
-;call  dword ptr ds:[_P_CheckSightTemp]
-db    09Ah
-dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_CheckSight_
 
 jc   exit_a_spidrefire
 
@@ -2797,8 +2784,7 @@ sbb   cx, word ptr ds:[di + MOBJ_POS_T.mp_y + 2]
 push  ss
 pop   ds
 
-db    09Ah
-dw    P_APROXDISTANCEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call   P_AproxDistance_
 
 ;	dist16 =  dist.h.intbits / (mobjinfo[actor->type].speed - 0x80);
 
@@ -3526,9 +3512,7 @@ mov   si, cx
 add   dx, (_thinkerlist + THINKER_T.t_data)
 add   ax, (_thinkerlist + THINKER_T.t_data)
 
-;call  dword ptr ds:[_P_CheckSightTemp]
-db    09Ah
-dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_CheckSight_
 
 jnc   exit_a_fire
 mov   es, word ptr [bp - 2]
@@ -3787,9 +3771,7 @@ mov   ax, si
 mov   dx, di
 
 
-;call  dword ptr ds:[_P_CheckSightTemp]
-db    09Ah
-dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_CheckSight_
 
 jnc   exit_vile_attack
 mov   dx, SFX_BAREXP
@@ -3884,9 +3866,7 @@ mov   cx, 70
 mov   dx, di
 pop   ax ; bp - 0Ah fire mobj
 
-;call  dword ptr ds:[_P_RadiusAttack]
-db    09Ah
-dw    P_RADIUSATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_RadiusAttack_
 
 LEAVE_MACRO 
 ret   
@@ -4176,8 +4156,7 @@ sbb   cx, word ptr ds:[di + MOBJ_POS_T.mp_y + 2]
 push  ss
 pop   ds
 
-db    09Ah
-dw    P_APROXDISTANCEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call   P_AproxDistance_
 
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   es, cx
@@ -4575,9 +4554,7 @@ ENDIF
 
 mov   cx, 128
 add   bx, (_thinkerlist + THINKER_T.t_data)
-;call  dword ptr ds:[_P_RadiusAttack]
-db    09Ah
-dw    P_RADIUSATTACKOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_RadiusAttack_
 
 ret   
 
@@ -5490,7 +5467,7 @@ ENDP
 
 
 setmobjstate_jump_table:
-dw A_DoBFGSpray_
+dw A_BFGSpray_
 dw A_Explode_
 dw A_Pain_
 dw A_PlayerScream_
@@ -5606,7 +5583,7 @@ mov       al, byte ptr es:[di + STATE_T.state_tics]
 mov       byte ptr ds:[si + MOBJ_T.m_tics], al
 mov       al, byte ptr es:[di + state_action]
 sub       al, ETF_A_BFGSpray                        ; minimum action number
-je        do_bfg_spray_far        ; todo fix
+
 ;cmp       al, ETF_A_BRAINEXPLODE ; max range
 cmp       al, (ETF_A_BRAINEXPLODE - ETF_A_BFGSPRAY) ; max range
 ja        done_with_mobj_state_action
@@ -5687,13 +5664,7 @@ jmp       exit_p_setmobjstate
 
 ENDP
 
-do_bfg_spray_far:
 
-;call      dword ptr ds:[_A_BFGSprayFar]
-db        09Ah
-dw        A_BFGSPRAYFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
-
-jmp       done_with_mobj_state_action
 
 
 
@@ -5707,12 +5678,7 @@ ret
 ENDP
 
 
-PROC      A_DoBFGSpray_ NEAR
-;call      dword ptr ds:[_A_BFGSprayFar]
-db        09Ah
-dw        A_BFGSPRAYFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
-ret
-ENDP
+
 
 
 PROC    P_ENEMY_ENDMARKER_ 

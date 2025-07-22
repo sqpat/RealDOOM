@@ -40,7 +40,7 @@ ENDP
 ; bx = t1_pos (far offset)
 ; cx = t2_pos (far offset)
 ; return in carry
-PROC    P_CheckSight_ FAR
+PROC    P_CheckSight_ NEAR
 PUBLIC  P_CheckSight_
 
 push  si
@@ -95,7 +95,7 @@ clc
 pop   dx	; clean out the push earlier...
 pop   di
 pop   si
-retf 
+ret 
 
 not_in_reject_table:
 inc   word ptr ds:[_validcount_global]
@@ -218,7 +218,7 @@ call  P_CrossBSPNode_ ; seems good?
 
 pop   di
 pop   si
-retf 
+ret 
 
 ENDP
 

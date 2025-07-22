@@ -22,6 +22,7 @@ EXTRN P_SetMobjState_:NEAR
 EXTRN P_SpawnPuff_:NEAR            ; except this is really near
 EXTRN P_SpawnMobj_:NEAR            
 EXTRN P_RemoveMobj_:NEAR
+EXTRN P_CheckSight_:NEAR
 
 ; hack but oh well
 P_SIGHT_STARTMARKER_ = 0 
@@ -261,7 +262,7 @@ ENDP
 
 ; fixed_t __near P_AproxDistance ( fixed_t	dx, fixed_t	dy ) {
 
-PROC P_AproxDistance_ FAR
+PROC P_AproxDistance_ NEAR
 PUBLIC P_AproxDistance_ 
 
 or   dx, dx
@@ -294,7 +295,7 @@ rcr  bx, 1		; dy >> 1
 sub  ax, bx
 sbb  dx, cx
 
-retf  
+ret
 
 dx_less_than_dy:
 
@@ -310,7 +311,7 @@ sbb  cx, dx
 
 mov  dx, cx
 xchg ax, bx		; swap to return register.
-retf
+ret
 
 ENDP
 
@@ -6775,7 +6776,7 @@ ENDP
 
 ;fixed_t __near P_AimLineAttack(mobj_t __near*	t1,fineangle_t	angle,int16_t	distance);
 
-PROC P_AimLineAttack_ FAR
+PROC P_AimLineAttack_ NEAR
 PUBLIC P_AimLineAttack_
 
 
@@ -7045,7 +7046,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   cx
-retf   
+ret 
 
 exit_aim_lineattack_return_0:
 cwd
@@ -7053,7 +7054,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   cx
-retf   
+ret
 
 
 
@@ -7062,7 +7063,7 @@ ENDP
 
 
 
-PROC P_LineAttack_ FAR
+PROC P_LineAttack_ NEAR
 PUBLIC P_LineAttack_
 
 ; void __near P_LineAttack (mobj_t __near* t1, fineangle_t	angle, int16_t	distance16, fixed_t	slope, int16_t	damage ) {
@@ -7108,7 +7109,7 @@ mov   es, ax
 push  ax				; bp - 0Ch
 push  bx				; bp - 0Eh
 
-mov   ax, word ptr [bp + 010h]
+mov   ax, word ptr [bp + 0Eh]
 mov   word ptr ds:[_la_damage], ax
 
 mov   ax, word ptr es:[bx]
@@ -7266,7 +7267,7 @@ add   ax, dx
 mov   word ptr ds:[_shootz+2], ax
 
 
-les   ax, dword ptr [bp + 0Ch]
+les   ax, dword ptr [bp + 0Ah]
 mov   word ptr ds:[_aimslope+0], ax
 mov   word ptr ds:[_aimslope+2], es
 
@@ -7281,7 +7282,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   cx
-retf   6
+ret    6
 
 
 
@@ -7404,7 +7405,7 @@ push  di
 call  P_PathTraverse_
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
-retf   
+ret   
 
 ENDP
 
@@ -7516,10 +7517,7 @@ mov   cx, word ptr ds:[_bombspot_pos + 0]
 mov   ax, si
 mov   di, dx  ; backup dist intbits
 mov   dx, word ptr ds:[_bombspot]
-;call  dword ptr ds:[_P_CheckSight]
-
-db    09Ah
-dw    P_CHECKSIGHTOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_CheckSight_
 
 jnc   exit_radiusattack_return_1
 xchg  ax, si
@@ -7542,7 +7540,7 @@ ENDP
 
 
 
-PROC P_RadiusAttack_ FAR
+PROC P_RadiusAttack_ NEAR
 PUBLIC P_RadiusAttack_
 
 ;void __far P_RadiusAttack (mobj_t __near* spot, uint16_t spot_pos, mobj_t __near* source, int16_t		damage) ;
@@ -7646,7 +7644,7 @@ call  DoBlockmapLoop_
 
 pop   di
 pop   si
-retf
+ret
 
 ENDP
 

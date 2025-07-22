@@ -381,7 +381,6 @@ uint8_t quality_port_lookup[12] = {
 
 
 
-// boolean (__far* P_CheckSightTemp)() = 		  ((boolean (__far *)(mobj_t __near* m1, mobj_t __near* m2, uint16_t m3, uint16_t m4))     	(MK_FP(physics_highcode_segment, 		 P_CheckSightOffset)));
 
 
 
@@ -416,8 +415,6 @@ boolean (__far* P_ChangeSector)() =           ((boolean (__far *)(sector_t __far
 
 void (__far* P_MovePsprites)() =              ((void (__far *)())     	                                                                                                   (MK_FP(physics_highcode_segment, 		 P_MovePspritesOffset)));
 void (__far* P_DropWeaponFar)() =             ((void (__far *)())     	                                                                                                   (MK_FP(physics_highcode_segment, 		 P_DropWeaponFarOffset)));
-// void (__far* P_BringUpWeaponFar)() =          ((void (__far *)())     	                                                                                                   (MK_FP(physics_highcode_segment, 		 P_BringUpWeaponFarOffset)));
-// void (__far* A_BFGSprayFar)() =               ((void (__far *)())     	                                                                                                   (MK_FP(physics_highcode_segment, 		 A_BFGSprayFarOffset)));
 
 void (__far* P_RemoveMobj)() =                ((void (__far *)(mobj_t __near*	mobj))                                                                               	   (MK_FP(physics_highcode_segment, 		 P_RemoveMobjOffset)));
 void (__far* P_MobjThinker)() =                ((void (__far *)(mobj_t __near*	mobj, mobj_pos_t __far* thing_pos, THINKERREF mobjRef))                                    (MK_FP(physics_highcode_segment, 		 P_MobjThinkerOffset)));

@@ -103,8 +103,6 @@ void __far P_TryMove();
 void __far P_CheckPosition();
 void __far P_SlideMove();
 void __far P_TeleportMove();
-void __far P_AimLineAttack();
-void __far P_LineAttack();
 void __far P_UseLines();
 void __far P_RadiusAttack();
 void __far P_ChangeSector();
@@ -122,8 +120,6 @@ void __far P_SpawnPlayerMissile();
 
 void __far P_MovePsprites();
 void __far P_DropWeaponFar();
-void __far P_BringUpWeaponFar();
-void __far A_BFGSprayFar();
 
 void __far P_MobjThinker();
 void __far P_RemoveMobj();
@@ -368,7 +364,6 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 
     // physics high code offsets
     fprintf(fp, "#define P_CheckSightOffset                    0x%X\n", FP_OFF(P_CheckSight)                   - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_AproxDistanceOffset                 0x%X\n", FP_OFF(P_AproxDistance)                - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "#define P_LineOpeningOffset                   0x%X\n", FP_OFF(P_LineOpening)                  - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "#define P_UnsetThingPositionOffset            0x%X\n", FP_OFF(P_UnsetThingPosition)           - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "#define P_SetThingPositionOffset              0x%X\n", FP_OFF(P_SetThingPosition)             - FP_OFF(P_SIGHT_STARTMARKER));
@@ -378,8 +373,6 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "#define P_CheckPositionOffset                 0x%X\n", FP_OFF(P_CheckPosition)                - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "#define P_SlideMoveOffset                     0x%X\n", FP_OFF(P_SlideMove)                    - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "#define P_TeleportMoveOffset                  0x%X\n", FP_OFF(P_TeleportMove)                 - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_AimLineAttackOffset                 0x%X\n", FP_OFF(P_AimLineAttack)                - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_LineAttackOffset                    0x%X\n", FP_OFF(P_LineAttack)                   - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "#define P_UseLinesOffset                      0x%X\n", FP_OFF(P_UseLines)                     - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "#define P_RadiusAttackOffset                  0x%X\n", FP_OFF(P_RadiusAttack)                 - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "#define P_ChangeSectorOffset                  0x%X\n", FP_OFF(P_ChangeSector)                 - FP_OFF(P_SIGHT_STARTMARKER));
@@ -395,8 +388,6 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 
     fprintf(fp, "#define P_MovePspritesOffset                  0x%X\n", FP_OFF(P_MovePsprites)                 - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "#define P_DropWeaponFarOffset                 0x%X\n", FP_OFF(P_DropWeaponFar)                - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_BringUpWeaponFarOffset              0x%X\n", FP_OFF(P_BringUpWeaponFar)             - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define A_BFGSprayFarOffset                   0x%X\n", FP_OFF(A_BFGSprayFar)                  - FP_OFF(P_SIGHT_STARTMARKER));
 
     fprintf(fp, "#define P_MobjThinkerOffset                   0x%X\n", FP_OFF(P_MobjThinker)                  - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "#define P_RemoveMobjOffset                    0x%X\n", FP_OFF(P_RemoveMobj)                   - FP_OFF(P_SIGHT_STARTMARKER));
@@ -434,12 +425,10 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "R_GETPATCHTEXTUREOFFSET = 0%Xh\n",                 FP_OFF(R_GetPatchTexture_Far)           - FP_OFF(R_BSP_STARTMARKER));
 	fprintf(fp, "R_DRAWMASKEDOFFSET = 0%Xh\n",                      FP_OFF(R_DrawMasked)                    - FP_OFF(R_MASKED_STARTMARKER));
     fprintf(fp, "R_WRITEBACKMASKEDFRAMECONSTANTSOFFSET = 0%Xh\n",   FP_OFF(R_WriteBackMaskedFrameConstants) - FP_OFF(R_WriteBackViewConstantsMasked));
-    fprintf(fp, "P_APROXDISTANCEOFFSET = 0%Xh\n",                   FP_OFF(P_AproxDistance)                 - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_CHECKPOSITIONOFFSET = 0%Xh\n",                   FP_OFF(P_CheckPosition)                 - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "R_POINTINSUBSECTOROFFSET = 0%Xh\n",                FP_OFF(R_PointInSubsector)              - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_TRYMOVEOFFSET = 0%Xh\n",                         FP_OFF(P_TryMove)                       - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_SLIDEMOVEOFFSET = 0%Xh\n",                       FP_OFF(P_SlideMove)                     - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "P_AIMLINEATTACKOFFSET = 0%Xh\n",                   FP_OFF(P_AimLineAttack)                 - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_CHECKMISSILESPAWNOFFSET = 0%Xh\n",               FP_OFF(P_CheckMissileSpawn)             - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "F_RESPONDEROFFSET = 0%Xh\n",                       FP_OFF(F_Responder)                     - FP_OFF(F_START));
     fprintf(fp, "P_BLOCKTHINGSITERATOROFFSET = 0%Xh\n",             FP_OFF(P_BlockThingsIterator)           - FP_OFF(P_SIGHT_STARTMARKER));
@@ -449,12 +438,9 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "P_SETTHINGPOSITIONOFFSET = 0%Xh\n",                FP_OFF(P_SetThingPosition)              - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_RADIUSATTACKOFFSET = 0%Xh\n",                    FP_OFF(P_RadiusAttack)                  - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_TELEPORTMOVEOFFSET = 0%Xh\n",                    FP_OFF(P_TeleportMove)                  - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "P_LINEATTACKOFFSET = 0%Xh\n",                      FP_OFF(P_LineAttack)                    - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_XYMOVEMENTOFFSET = 0%Xh\n",                      FP_OFF(P_XYMovement)                    - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_ZMOVEMENTOFFSET = 0%Xh\n",                       FP_OFF(P_ZMovement)                     - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_NIGHTMARERESPAWNOFFSET = 0%Xh\n",                FP_OFF(P_NightmareRespawn)              - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "P_BRINGUPWEAPONFAROFFSET = 0%Xh\n",                FP_OFF(P_BringUpWeaponFar)              - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "A_BFGSPRAYFAROFFSET = 0%Xh\n",                     FP_OFF(A_BFGSprayFar)                   - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_MOBJTHINKEROFFSET = 0%Xh\n",                     FP_OFF(P_MobjThinker)                   - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_REMOVEMOBJOFFSET = 0%Xh\n",                      FP_OFF(P_RemoveMobj)                    - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_SPAWNMOBJOFFSET = 0%Xh\n",                       FP_OFF(P_SpawnMobj)                     - FP_OFF(P_SIGHT_STARTMARKER));

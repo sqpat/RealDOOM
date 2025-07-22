@@ -24,12 +24,12 @@ P_SIGHT_STARTMARKER_ = 0
 
 
 ; these can be called near but must have push cs prefix
-EXTRN P_Random_MapLocal_:NEAR   ; except this is really near
+EXTRN P_Random_MapLocal_:NEAR  
 EXTRN P_LineAttack_:NEAR
 EXTRN P_SpawnPlayerMissile_:NEAR
-EXTRN P_AimLineAttack_:NEAR   ; except this is really near
-EXTRN P_SetMobjState_:NEAR         ; except this is really near
-EXTRN P_NoiseAlert_:NEAR         ; except this is really near
+EXTRN P_AimLineAttack_:NEAR  
+EXTRN P_SetMobjState_:NEAR         ; except this is really far
+EXTRN P_NoiseAlert_:NEAR         ; except this is really far
 EXTRN P_SpawnMobj_:NEAR          
 
 
@@ -532,7 +532,7 @@ and   ch, (FINEMASK SHR 8)
 mov   dx, cx
 mov   ax, word ptr ds:[_playerMobj]
 mov   bx, MELEERANGE
-push  cs
+
 call  P_AimLineAttack_
 
 ;    P_LineAttack (playerMobj, angle, MELEERANGE , slope, damage);
@@ -545,7 +545,7 @@ push  ax ; push slope lo
 mov   dx, cx
 mov   ax, word ptr ds:[_playerMobj]
 mov   bx, MELEERANGE
-push  cs
+
 call  P_LineAttack_
 
 cmp   word ptr ds:[_linetarget], 0
@@ -628,7 +628,7 @@ and   ch, (FINEMASK SHR 8)
 mov   ax, word ptr ds:[_playerMobj]
 mov   bx, CHAINSAWRANGE
 mov   dx, cx
-push  cs
+
 call  P_AimLineAttack_
 
 ; already pushed damage above
@@ -639,7 +639,7 @@ push  ax
 mov   dx, cx
 mov   ax, word ptr ds:[_playerMobj]
 mov   bx, CHAINSAWRANGE
-push  cs
+
 call  P_LineAttack_
 
 cmp   word ptr ds:[_linetarget], 0
@@ -801,7 +801,7 @@ mov   ax, word ptr ds:[_playerMobj]
 
 mov   bx, HALFMISSILERANGE
 mov   dx, cx
-push  cs
+
 call  P_AimLineAttack_
 
 mov   word ptr ds:[_bulletslope+0], ax
@@ -821,7 +821,6 @@ mov   ax, word ptr ds:[_playerMobj]
 mov   bx, HALFMISSILERANGE
 mov   dx, cx
 
-push  cs
 call  P_AimLineAttack_
 
 mov   word ptr ds:[_bulletslope+0], ax
@@ -835,7 +834,6 @@ mov   ax, word ptr ds:[_playerMobj]
 mov   bx, HALFMISSILERANGE
 mov   dx, cx
 
-push  cs
 call  P_AimLineAttack_
 mov   word ptr ds:[_bulletslope+0], ax
 mov   word ptr ds:[_bulletslope+2], dx
@@ -894,7 +892,7 @@ push  word ptr ds:[_bulletslope+2]
 push  word ptr ds:[_bulletslope+0]
 mov   ax, word ptr ds:[_playerMobj]
 mov   bx, MISSILERANGE
-push  cs
+
 call  P_LineAttack_
 pop   dx
 pop   bx
@@ -1058,7 +1056,7 @@ mov   dx, bx
 mov   ax, word ptr ds:[_playerMobj]
 mov   bx, MISSILERANGE
 
-push  cs
+
 call  P_LineAttack_
 
 loop  loop_next_super_pellet
@@ -1217,7 +1215,7 @@ and   dh, (FINEMASK SHR 8)
 
 mov   ax, si
 mov   bx, HALFMISSILERANGE
-push  cs
+
 call  P_AimLineAttack_
 
 mov   bx, word ptr ds:[_linetarget]
@@ -1502,21 +1500,8 @@ retf
 ENDP
 
 
-PROC P_BringUpWeaponFar_ FAR
-PUBLIC P_BringUpWeaponFar_
 
-call   P_BringUpWeapon_
-retf
 
-ENDP
-
-PROC A_BFGSprayFar_ FAR
-PUBLIC A_BFGSprayFar_
-
-call   A_BFGSpray_
-retf
-
-ENDP
 
 
 PROC    P_PSPR_ENDMARKER_ 

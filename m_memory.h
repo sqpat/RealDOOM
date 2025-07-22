@@ -314,7 +314,6 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define getPainStateAddr      ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x0586))
 #define getSpawnHealthAddr    ((int16_t    (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x063C))
 
-//#define P_CheckSightAddr      ((boolean (__far *)(mobj_t __near* ,mobj_t __near* ,uint16_t, uint16_t))  (PSightFuncLoadAddr))
 
 #define InfoFuncLoadSegment              ((segment_t) ((int32_t)InfoFuncLoadAddr >> 16))
 
