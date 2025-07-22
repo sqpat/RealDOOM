@@ -216,7 +216,7 @@ push  di
 
 xchg  ax, cx	; cx holds onto dc_texturemid lo. TODO move this out of function along with push/pop cx
 
-mov   ax, (COLORMAPS_MASKEDMAPPING_SEG_DIFF + COLFUNC_JUMP_LOOKUP_SEGMENT) ; shut up assembler warning, this is fine
+mov   ax, ((COLORMAPS_MASKEDMAPPING_SEG_DIFF + COLFUNC_JUMP_LOOKUP_SEGMENT) AND 0FFFFh); shut up assembler warning, this is fine
 mov   es, ax                                 ; store this segment for now, with offset pre-added
 
 ; todo optimize this read
@@ -424,7 +424,7 @@ jg    exit_function_single
 ; inlined R_DrawColumnPrepMaskedSingle_
 
 
-mov   ax, (COLORMAPS_MASKEDMAPPING_SEG_DIFF + COLFUNC_JUMP_LOOKUP_SEGMENT) ; shut up assembler warning, this is fine
+mov   ax, ((COLORMAPS_MASKEDMAPPING_SEG_DIFF + COLFUNC_JUMP_LOOKUP_SEGMENT) AND 0FFFFh); shut up assembler warning, this is fine
 mov   es, ax                                 ; store this segment for now, with offset pre-added
 
 ;dx is dc_yh
