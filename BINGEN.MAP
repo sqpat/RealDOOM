@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/22 07:56:58
+Created on:       25/07/22 08:59:49
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -91,7 +91,7 @@ P_SIGHT_TEXT           CODE           AUTO           21d4:0000       000005ed
 P_MAP_TEXT             CODE           AUTO           21d4:05ee       000023c3
 P_MOBJ_TEXT            CODE           AUTO           21d4:29b2       00000f9d
 P_PSPR_TEXT            CODE           AUTO           21d4:3950       00000834
-P_ENEMY_TEXT           CODE           AUTO           21d4:4184       00001a6b
+P_ENEMY_TEXT           CODE           AUTO           21d4:4184       00001a65
 _TEXT                  CODE           AUTO           21d4:5bf0       000033dc
 FAR_DATA               FAR_DATA       AUTO           2ad0:000c       00000000
 _NULL                  BEGDATA        DGROUP         2ad1:0000       00000020
@@ -1252,68 +1252,68 @@ Module: p_pspr.obj(p_pspr.ASM)
 21d4:3fef*     A_CloseShotgun2_
 21d4:3950      P_BringUpWeapon_
 Module: p_enemy.obj(p_enemy.ASM)
-21d4:5683*     A_Explode_
-21d4:5380*     A_FatRaise_
+21d4:567d*     A_Explode_
+21d4:537a*     A_FatRaise_
 21d4:4243      P_NoiseAlert_
-21d4:59d2*     A_SpawnFly_
-21d4:567b*     A_Fall_
+21d4:59cc*     A_SpawnFly_
+21d4:5675*     A_Fall_
 21d4:49c6*     A_PosAttack_
 21d4:47e8*     A_Chase_
 21d4:4ba4*     A_BspiAttack_
 21d4:42b3*     P_CheckMissileRange_
-21d4:581b*     A_BrainPain_
+21d4:5815*     A_BrainPain_
 21d4:4958*     A_FaceTarget_
 21d4:4c04*     A_SargAttack_
-21d4:528c*     GetVileMomz_
-21d4:54ee*     A_PainDie_
-21d4:5927*     A_BrainSpit_
+21d4:5286*     GetVileMomz_
+21d4:54e8*     A_PainDie_
+21d4:5921*     A_BrainSpit_
 21d4:4e95*     A_SkelWhoosh_
-21d4:58af*     A_BrainExplode_
-21d4:5206*     A_VileTarget_
+21d4:58a9*     A_BrainExplode_
+21d4:5200*     A_VileTarget_
 21d4:4383*     P_Move_
 21d4:4654*     P_LookForPlayers_
-21d4:515d*     A_VileStart_
-21d4:516e*     A_FireCrackle_
+21d4:5157*     A_VileStart_
+21d4:5168*     A_FireCrackle_
 21d4:4ea8*     A_SkelFist_
-21d4:551a*     A_PainShootSkull_
-21d4:4fc8*     A_VileChase_
-21d4:5610*     A_Scream_
-21d4:57ac*     A_Hoof_
+21d4:5514*     A_PainShootSkull_
+21d4:4fc6*     A_VileChase_
+21d4:560a*     A_Scream_
+21d4:57a6*     A_Hoof_
 21d4:4254*     P_CheckMeleeRange_
-21d4:540b*     A_FatAttack2_
+21d4:5405*     A_FatAttack2_
 21d4:4cd0*     A_SkelMissile_
 21d4:4191*     P_RecursiveSound_
-21d4:538c*     A_FatAttack3_
-21d4:53f0*     A_FatAttack1_
-21d4:59cb*     A_SpawnSound_
+21d4:5386*     A_FatAttack3_
+21d4:53ea*     A_FatAttack1_
+21d4:59c5*     A_SpawnSound_
 21d4:474d*     A_Look_
-21d4:57c2*     A_BabyMetal_
+21d4:57bc*     A_BabyMetal_
 21d4:4c90*     A_BruisAttack_
-21d4:565e*     A_XScream_
-21d4:57b7*     A_Metal_
-21d4:5b47      P_SetMobjState_
+21d4:5658*     A_XScream_
+21d4:57b1*     A_Metal_
+21d4:5b41      P_SetMobjState_
 21d4:44d2*     P_TryWalk_
-21d4:5825*     A_BrainScream_
+21d4:581f*     A_BrainScream_
 21d4:4c36*     A_HeadAttack_
-21d4:5666*     A_Pain_
+21d4:5660*     A_Pain_
 21d4:4ee3*     PIT_VileCheck_
-21d4:52b8*     A_VileAttack_
-21d4:56df*     A_BossDeath_
-21d4:5bef      P_ENEMY_ENDMARKER_
-21d4:5175*     A_Fire_
+21d4:52b2*     A_VileAttack_
+21d4:56d9*     A_BossDeath_
+21d4:5be9      P_ENEMY_ENDMARKER_
+21d4:516f*     A_Fire_
 21d4:4a30*     A_SPosAttack_
 21d4:4aa9*     A_CPosAttack_
 21d4:4b5c*     A_SpidRefire_
 21d4:44e1*     P_NewChaseDir_
-21d4:5165*     A_StartFire_
+21d4:515f*     A_StartFire_
 21d4:4d1c*     A_Tracer_
-21d4:5426*     A_SkullAttack_
+21d4:5420*     A_SkullAttack_
 21d4:4191*     P_ENEMY_STARTMARKER_
 21d4:4b14*     A_CPosRefire_
 21d4:4bbd*     A_TroopAttack_
-21d4:55f9*     A_PainAttack_
-21d4:5ac3*     A_PlayerScream_
-21d4:57cd*     A_BrainAwake_
+21d4:55f3*     A_PainAttack_
+21d4:5abd*     A_PlayerScream_
+21d4:57c7*     A_BrainAwake_
 21d4:46f7*     A_KeenDie_
 21d4:4c77*     A_CyberAttack_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fopen.c)
@@ -1615,4 +1615,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0002e8d0 (190672.)
 Entry point address: 21d4:686e
-Link time: 00:00.29
+Link time: 00:00.30

@@ -1431,8 +1431,7 @@ jmp   do_seesound
 
 ENDP
 
-;todo make something call into chase.
-;todo make stuff jump into chase not call it. one less return on stack.
+;todo make something fall into chase.
 
 PROC    A_Chase_ NEAR
 PUBLIC  A_Chase_
@@ -1531,6 +1530,7 @@ pop   di
 pop   si
 pop   dx
 ret   
+
 look_for_new_target:
 mov   dx, 1
 mov   ax, si
@@ -3066,8 +3066,8 @@ mov   ax, si
 call  P_CheckPosition_
 
 
-mov   al, 0
-rcl   al, 1  ; todo hack for now... get carry result into al.
+;mov   al, 0
+rcl   al, 1  ; todo hack for now... get carry result into al bit 0
 ;	thing->height.w >>= 2;
 
 
@@ -3077,6 +3077,7 @@ sar   word ptr ds:[si + MOBJ_T.m_height + 2], 1
 rcr   word ptr ds:[si + MOBJ_T.m_height + 0], 1
 ; al 1 if carry 0 if false
 ; return revers3
+
 sar   al, 1
 cmc
 ;test  al, al
@@ -3277,14 +3278,15 @@ done_with_vile_y_loop:
 inc   si
 cmp   si, word ptr [bp - 8]
 jle   loop_next_x_vile
+
 do_chase_and_exit:
+
 mov   bx, word ptr [bp - 4]
-mov   cx, MOBJPOSLIST_6800_SEGMENT
-mov   ax, word ptr [bp - 2]
-call  A_Chase_
+mov   si, word ptr [bp - 2]
+;call  A_Chase_
 
 LEAVE_MACRO 
-ret   
+jmp   A_Chase_
 
 
 got_vile_target:
@@ -3433,7 +3435,7 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-jmp   A_Fire_
+jmp   A_Fire_ 
 
 ENDP
 

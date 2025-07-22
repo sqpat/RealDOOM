@@ -61,7 +61,7 @@
 #define P_RemoveMobjOffset                    0x2EA1
 #define P_SpawnMobjOffset                     0x2D5A
 #define P_SpawnMapThingOffset                 0x2B3C
-#define P_SetMobjStateOffset                  0x5B47
+#define P_SetMobjStateOffset                  0x5B41
 
 #define R_DrawColumnCodeSize           0xE46
 #define R_DrawSpanCodeSize             0xEE5
@@ -70,7 +70,7 @@
 #define R_DrawSkyColumnCodeSize        0x6C0
 #define R_BSPCodeSize                  0x370E
 #define WI_StuffCodeSize               0x1011
-#define PSightCodeSize                 0x5BEF
+#define PSightCodeSize                 0x5BE9
 #define WipeCodeSize                   0x4B6
 #define FinaleCodeSize                 0xBCB
 #define SaveLoadCodeSize               0xB2B
