@@ -312,11 +312,17 @@ dw _HU_Start_addr
 
 
 ;call      Z_QuickMapPhysics_
-Z_QUICKMAPAI16 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
-mov   byte ptr ds:[_currenttask], TASK_PHYSICS
-;call     Z_QuickMapScratch_8000_   ; // gross, due to p_setup.... perhaps externalize.
-;Z_QUICKMAPAI4 pageswapargs_scratch8000_offset_size INDEXED_PAGE_8000_OFFSET
 
+; ST_Start internally ran I_SetPalette_ which clobbers 8000 to 9400.
+
+
+Z_QUICKMAPAI16 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
+Z_QUICKMAPAI1  (pageswapargs_phys_offset_size+20) INDEXED_PAGE_9000_OFFSET
+
+mov   byte ptr ds:[_currenttask], TASK_PHYSICS
+;call     Z_QuickMapScratch_8000_   ; // gross, needed due to p_setup.... perhaps externalize.
+Z_QUICKMAPAI4 pageswapargs_scratch8000_offset_size INDEXED_PAGE_8000_OFFSET
+;Z_QUICKMAPAI2 pageswapargs_physics_code_offset_size INDEXED_PAGE_9400_OFFSET
 
 pop       si
 pop       dx
@@ -407,12 +413,14 @@ mov       es, ax
 xor       bx, bx
 loop_try_next_thingtype:
 
+; todo use scan?
 cmp       si, word ptr es:[bx]
 je        break_thing_loop
 inc       bx
 inc       bx
 cmp       bx, (NUMMOBJTYPES * 2)
 jge       break_thing_loop   ; in theory should error, whatever, assume good data.
+
 jmp       loop_try_next_thingtype
 
 
