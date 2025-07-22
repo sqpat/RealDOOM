@@ -710,7 +710,7 @@ extern mline_t              thintriangle_guy[3];
 // extern fixed_t 				(__far* P_AproxDistance)(fixed_t dx, fixed_t dy);
 // extern void 				(__far* P_LineOpening)(int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
 // extern void 				(__far* P_UnsetThingPosition)(mobj_t __near* thing, uint16_t mobj_pos_offset);             
-extern void 				(__far* P_SetThingPosition)(mobj_t __near* thing, uint16_t mobj_pos_offset, int16_t knownsecnum);
+// extern void 				(__far* P_SetThingPosition)(mobj_t __near* thing, uint16_t mobj_pos_offset, int16_t knownsecnum);
 // extern boolean 				(__far* P_BlockThingsIterator)(int16_t x, int16_t y, boolean __near ( *  func )(THINKERREF, mobj_t __near*, mobj_pos_t __far*));
 // extern boolean 				(__far* P_TryMove)(mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y);
 // extern boolean 				(__far* P_CheckPosition)(mobj_t __near* thing, int16_t oldsecnum, fixed_t_union x, fixed_t_union y);
