@@ -564,11 +564,11 @@ mov   dx, REGISTER_VOLUME
 mov   ax, 8
 call  OPLwriteReg_
 mov   ax, 0BDh         ; set vibrato/tremolo depth to low, set melodic mode
-xor   dx, dx
+cwd
 call  OPLwriteReg_
 
 call  OPLshutup_
-xor       al, al
+xor   ax, ax
 retf
 
 ENDP
@@ -734,10 +734,10 @@ mov   dx, 020h       ; enable Waveform Select
 mov   ax, 1
 call  OPLwriteReg_
 mov   ax, 8          ; turn off CSW mode
-xor   dx, dx
+cwd
 call  OPLwriteReg_
 mov   ax, 0BDh       ; set vibrato/tremolo depth to low, set melodic mode
-xor   dx, dx
+cwd
 call  OPLwriteReg_
 pop   dx
 xor   ax, ax
@@ -1994,7 +1994,7 @@ mov       al, byte ptr cs:[si + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 and       ax, 0Fh
 mov       bx, ax
 mov       al, byte ptr cs:[bx + OFFSET _OPL2driverdata + 010h - OFFSET SM_OPL3_STARTMARKER_]
-xor       dx, dx
+cwd    ; ah is known 0..
 mov       dl, ch
 mov       bl, byte ptr cs:[si + 6 + _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_]
 ; dx = system volume
@@ -2049,8 +2049,7 @@ mov       ax, 0FFFFh
 mov       di, OFFSET _AdLibChannels - OFFSET SM_OPL3_STARTMARKER_
 rep       stosw 
 
-xor       dx, dx
-mov       cx, dx
+mov       dx, cx ; 0
 mov       bx, 4     ; pitchbend field offset in channel
 
 mov       cl, OPL3CHANNELS

@@ -163,8 +163,6 @@ ret
 
 ENDP
 
-; todo put this somewhere real sigh
-PLAYINGDRIVER_LOCATION = 0DC00h
 
 
 do_change_music_call_1:
@@ -326,7 +324,7 @@ ja        set_percussion_instrument_id
 record_instrument_lookup:
 cmp       ax, 174
 ja        skip_instrument_invalid_genmidi_instrument
-mov       si, PLAYINGDRIVER_LOCATION
+mov       si, MUSIC_DRIVER_CODE_SEGMENT
 mov       es, si
 mov       si, DRIVERBLOCK_DRIVERDATA_OFFSET + (MAX_INSTRUMENTS_PER_TRACK * SIZEOF_OP2INSTRENTRY)
 add       si, ax
@@ -356,7 +354,7 @@ call      dword ptr ds:[_W_CacheLumpNameDirect_addr]
 cmp       dh, MAX_INSTRUMENTS
 jae       done_with_loading_instruments
 
-mov       ax, PLAYINGDRIVER_LOCATION
+mov       ax, MUSIC_DRIVER_CODE_SEGMENT
 mov       es, ax
 mov       bx, DRIVERBLOCK_DRIVERDATA_OFFSET + (MAX_INSTRUMENTS_PER_TRACK * SIZEOF_OP2INSTRENTRY)
 mov       ds, word ptr ds:[_EMS_PAGE]

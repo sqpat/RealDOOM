@@ -90,7 +90,7 @@ byte __far *__near Z_InitEMS() {
 	;outp(0xE8, 6);	 
 	;outpw(0xEA, 0x4E); // set default EMS pages for global stuff...
 	outp(0xE8, 7);	 
-	outpw(0xEA, EMS_MEMORY_PAGE_OFFSET + MUS_DRIVER_PAGE); // set default EMS page for music data driver?
+	outpw(0xEA, EMS_MEMORY_PAGE_OFFSET + BSP_CODE_PAGE); // set default EMS page for bsp code?
 
 
 
@@ -316,11 +316,11 @@ byte __far *__near Z_InitEMS() {
 	locallib_int86_67(0x4402, emshandle, FIRST_LUMPINFO_LOGICAL_PAGE);
 	// intx86(EMS_INT, &regs, &regs);
 
-	// DC00 mus driver setup
+	// DC00 bsp code setup
 	// regs.w.ax = 0x4403;  
-	// regs.w.bx = MUS_DRIVER_PAGE;
+	// regs.w.bx = BSP_CODE_PAGE;
 	// regs.w.dx = emshandle; // handle
-	locallib_int86_67(0x4403, emshandle, MUS_DRIVER_PAGE);
+	locallib_int86_67(0x4403, emshandle, BSP_CODE_PAGE);
 
 	currentpageframes[0] = 0;
 	currentpageframes[1] = NUM_MUSIC_PAGES;

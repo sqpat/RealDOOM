@@ -339,7 +339,7 @@ inc   dx
 mov   al, bl
 out   dx, al
 dec   dx
-mov   cx, 36     ; delay amount
+mov   cl, 36     ; delay amount
 loop_delay_2:
 in    al, dx
 loop  loop_delay_2
@@ -384,7 +384,7 @@ push  ax
 call  OPLwriteReg_
 mov   dx, bx  ; retrieve data2
 pop   ax
-add   ax, 3
+add   al, 3
 call  OPLwriteReg_
 ret
 
@@ -527,17 +527,17 @@ PUBLIC  OPL2initHardware_OPL2_
 
 
 mov   dx, REGISTER_MODULATOR
-mov   ax, 1
+mov   al, 1
 call  OPLwriteReg_
 mov   dx, REGISTER_VOLUME
-mov   ax, 8
+mov   al, 8
 call  OPLwriteReg_
 mov   ax, 0BDh         ; set vibrato/tremolo depth to low, set melodic mode
-xor   dx, dx
+cwd
 call  OPLwriteReg_
 
 call  OPLshutup_
-xor       al, al
+xor   ax, ax
 retf
 
 ENDP
@@ -600,21 +600,21 @@ push  cx
 push  dx
 mov   cx, ax
 mov   dx, 060h
-mov   ax, 4
+mov   al, 4
 call  OPLwriteReg_
 mov   dx, 080h
-mov   ax, 4
+mov   al, 4
 call  OPLwriteReg_
 mov   dx, cx
 in    al, dx
 sub   ah, ah
 mov   dx, 0FFh
 mov   bh, al
-mov   ax, 2
+mov   al, 2
 and   bh, 0E0h
 call  OPLwriteReg_
 mov   dx, 021h
-mov   ax, 4
+mov   al, 4
 mov   bl, 0FFh
 call  OPLwriteReg_
 mov   dx, cx
@@ -631,10 +631,10 @@ in    al, dx
 sub   ah, ah
 mov   dx, 060h
 mov   bl, al
-mov   ax, 4
+mov   al, 4
 call  OPLwriteReg_
 mov   dx, 080h
-mov   ax, 4
+mov   al, 4
 and   bl, 0E0h
 call  OPLwriteReg_
 test  bh, bh
@@ -665,10 +665,10 @@ mov   dx, 020h       ; enable Waveform Select
 mov   ax, 1
 call  OPLwriteReg_
 mov   ax, 8          ; turn off CSW mode
-xor   dx, dx
+cwd
 call  OPLwriteReg_
 mov   ax, 0BDh       ; set vibrato/tremolo depth to low, set melodic mode
-xor   dx, dx
+cwd
 call  OPLwriteReg_
 pop   dx
 xor   ax, ax

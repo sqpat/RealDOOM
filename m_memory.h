@@ -50,11 +50,15 @@
 #define bsp_code_segment  EMS_PAGE_SEGMENT + 0x0C00
 #define bsp_code_area     ((byte __far*)(((uint32_t)bsp_code_segment) << 16))
 
-// 0xE000 Block
-
 
 #define baselowermemoryaddress    (0x21900000)
+// MaximumMusDriverSize
+
 #define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
+
+#define music_driver_code_segment_size   ((int32_t)(MaximumMusDriverSize + 0xF) >> 4)
+//208E
+#define music_driver_code_segment        (base_lower_memory_segment - music_driver_code_segment_size)
 
 
 
@@ -242,7 +246,6 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 
 // todo long term we move this somewhere in lower memory
-#define tempmusdataloc 0xDC000000
 #define size_AdLibInstrumentList (sizeof(OP2instrEntry) * MAX_INSTRUMENTS_PER_TRACK)
 
 

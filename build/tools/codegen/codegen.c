@@ -7,7 +7,7 @@
 #include "p_saveg.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2407		
+#define CONSTANTS_COUNT 2408		
 #define LOCALS_COUNT 22
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -193,6 +193,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "MAXLIGHTSCALE",
     "DC_YL_LOOKUP_MASKEDMAPPING_SEGMENT",
     "FLOORCLIP_PARAGRAPH_ALIGNED_SEGMENT",
+	"MUSIC_DRIVER_CODE_SEGMENT",
     "R_DRAWMASKEDCOLUMNOFFSET",
     "R_DRAWSINGLEMASKEDCOLUMNOFFSET",
     "R_DRAWFUZZCOLUMNOFFSET",
@@ -2669,7 +2670,9 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     MAXLIGHTSCALE,
     dc_yl_lookup_maskedmapping_segment,
     floorclip_paragraph_aligned_segment,
-    R_DrawMaskedColumnOffset,
+	music_driver_code_segment,
+    
+	R_DrawMaskedColumnOffset,
     R_DrawSingleMaskedColumnOffset,
     R_DrawFuzzColumnOffset,
     offset_negonearray,
@@ -5143,7 +5146,7 @@ char* EMS_PAGE_STRINGS[EMS_PAGE_STUFF_COUNT] = {
 	"FLAT_DATA_PAGES",
 	"MUS_DATA_PAGES",
 	"SFX_DATA_PAGES",
-	"MUS_DRIVER_PAGE",
+	"BSP_CODE_PAGE",
 	"NUM_EMS4_SWAP_PAGES",
 
 	"PAGE_9000_OFFSET",
@@ -5283,7 +5286,7 @@ void __near* EMS_PAGE_VALUES[EMS_PAGE_STUFF_COUNT] = {
 	FLAT_DATA_PAGES,
 	MUS_DATA_PAGES,
 	SFX_DATA_PAGES,
-	MUS_DRIVER_PAGE,
+	BSP_CODE_PAGE,
 	NUM_EMS4_SWAP_PAGES,
 
 	PAGE_9000_OFFSET,

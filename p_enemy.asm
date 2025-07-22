@@ -38,7 +38,8 @@ EXTRN P_SetThingPosition_:NEAR
 EXTRN P_TryMove_:NEAR
 EXTRN P_CheckPosition_:NEAR
 EXTRN P_SpawnMissile_:NEAR
-
+EXTRN P_TeleportMove_:NEAR
+EXTRN P_BlockThingsIterator_:NEAR
 
 .DATA
 
