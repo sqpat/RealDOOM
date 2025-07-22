@@ -1763,7 +1763,7 @@ ENDP
 
 ; todo di as func?
 ; return in carry
-PROC P_BlockThingsIterator_ FAR
+PROC P_BlockThingsIterator_ NEAR
 PUBLIC P_BlockThingsIterator_
 
 push cx

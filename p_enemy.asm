@@ -3264,10 +3264,8 @@ loop_next_y_vile:
 mov   bx, OFFSET PIT_VileCheck_ - OFFSET P_SIGHT_STARTMARKER_
 mov   dx, cx   ; by
 mov   ax, si   ; bx
-;call  dword ptr [bp - 012h]
 
-db    09Ah
-dw    P_BLOCKTHINGSITERATOROFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_BlockThingsIterator_
 
 jnc   got_vile_target
 inc   cx
@@ -5412,9 +5410,8 @@ xchg  ax, di
 push  ss
 pop   ds
 
-;call  dword ptr ds:[_P_TeleportMove]
-db    09Ah
-dw    P_TELEPORTMOVEOFFSET, PHYSICS_HIGHCODE_SEGMENT
+push  cs
+call  P_TeleportMove_
 
 xchg   ax, si
 push   cs

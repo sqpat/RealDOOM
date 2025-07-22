@@ -595,8 +595,7 @@ do_xy_movement:
 mov       bx, di
 mov       ax, si
 
-db 09Ah
-dw P_XYMOVEMENTOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  P_XYMovement_
 
 
 
@@ -647,9 +646,7 @@ do_z_movement:
 mov       bx, di
 mov       ax, si
 
-db 09Ah
-dw P_ZMOVEMENTOFFSET, PHYSICS_HIGHCODE_SEGMENT
-
+call      P_ZMovement_
 
 
 
@@ -726,8 +723,8 @@ mov       bx, di
 mov       ax, si
 
 
-db 09Ah
-dw P_NIGHTMARERESPAWNOFFSET, PHYSICS_HIGHCODE_SEGMENT
+call      P_NightmareRespawn_
+
 pop       di
 pop       si
 retf       
@@ -1013,7 +1010,7 @@ ENDP
 ;void __far P_XYMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos);
 
 
-PROC P_XYMovement_ FAR
+PROC P_XYMovement_ NEAR
 PUBLIC P_XYMovement_
 ; bp - 2    mobj/ax
 ; bp - 4    mobjpos offset/bx
@@ -1059,7 +1056,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
-retf   
+ret   
 skull_slammed_into_something:
 
 ;			// the skull slammed into something
@@ -1423,7 +1420,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
-retf   
+ret
 
 continue_stopspeed_checks_1:
 cmp   bx, -STOPSPEED
@@ -1482,7 +1479,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
-retf   
+ret   
 
 
 
@@ -1526,7 +1523,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
-retf   
+ret   
 not_missile_dont_explode:
 
 ;				mo->momx.w = mo->momy.w = 0;
@@ -1546,7 +1543,7 @@ ENDP
 FLOATSPEED_HIGHBITS = 4
 VIEWHEIGHT_HIGH = 41
 
-PROC P_ZMovement_ FAR
+PROC P_ZMovement_ NEAR
 PUBLIC P_ZMovement_
 
 ; bp - 2  segment for mobjpos (MOBJPOSLIST_6800_SEGMENT)
@@ -1865,7 +1862,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
-retf   
+ret   
 dont_explode_missile:
 done_with_floor_z_collision:
 
@@ -1932,7 +1929,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
-retf   
+ret   
 
 continue_squat_check:
 ;	if (motype == MT_PLAYER && mo->momz.w < -GRAVITY*8)	 {
@@ -2082,7 +2079,7 @@ ret
 
 ENDP
 
-PROC P_NightmareRespawn_ FAR
+PROC P_NightmareRespawn_ NEAR
 PUBLIC P_NightmareRespawn_
 
 ; bp - 2       ax arg (mobj)
@@ -2160,7 +2157,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
-retf   
+ret   
 do_respawn:
 mov   si, word ptr [bp - 2]
 mov   ax, word ptr ds:[si + MOBJ_T.m_secnum]     ; mobjsecnum
