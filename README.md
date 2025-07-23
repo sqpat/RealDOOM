@@ -124,6 +124,12 @@ There are also a lot of hard caps on things like texture size and count, node co
   - Exported a ton more code to reduce binary size ~30k
   - Moved E000 data into low memory area
   - Moved pagination code from C to asm
+
+(Jul 22, 2025)      
+~~**v0.29** : Physics code to ASM~~
+  - Exported more code to reduce binary size ~18k
+  - Fixed many enemy behavior bugs
+  - Restored music driver support which had been removed in 0.28
   
 ### Future Roadmap:
 
