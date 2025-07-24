@@ -28,16 +28,14 @@ ENDP
 
 
 _spanfunc_jump_target:
-; full quality
-
-dw 00768h, 00750h, 00738h, 00720h, 00708h, 006F0h, 006D8h, 006C0h, 006A8h, 00690h
-dw 00678h, 00660h, 00648h, 00630h, 00618h, 00600h, 005E8h, 005D0h, 005B8h, 005A0h
-dw 00588h, 00570h, 00558h, 00540h, 00528h, 00510h, 004F8h, 004E0h, 004C8h, 004B0h
-dw 00498h, 00480h, 00468h, 00450h, 00438h, 00420h, 00408h, 003F0h, 003D8h, 003C0h
-dw 003A8h, 00390h, 00378h, 00360h, 00348h, 00330h, 00318h, 00300h, 002E8h, 002D0h
-dw 002B8h, 002A0h, 00288h, 00270h, 00258h, 00240h, 00228h, 00210h, 001F8h, 001E0h
-dw 001C8h, 001B0h, 00198h, 00180h, 00168h, 00150h, 00138h, 00120h, 00108h, 000F0h
-dw 000D8h, 000C0h, 000A8h, 00090h, 00078h, 00060h, 00048h, 00030h, 00018h, 00000h
+dw 0058Eh, 0057Ch, 0056Ah, 00558h, 00546h, 00534h, 00522h, 00510h, 004FEh, 004ECh
+dw 004DAh, 004C8h, 004B6h, 004A4h, 00492h, 00480h, 0046Eh, 0045Ch, 0044Ah, 00438h
+dw 00426h, 00414h, 00402h, 003F0h, 003DEh, 003CCh, 003BAh, 003A8h, 00396h, 00384h
+dw 00372h, 00360h, 0034Eh, 0033Ch, 0032Ah, 00318h, 00306h, 002F4h, 002E2h, 002D0h
+dw 002BEh, 002ACh, 0029Ah, 00288h, 00276h, 00264h, 00252h, 00240h, 0022Eh, 0021Ch
+dw 0020Ah, 001F8h, 001E6h, 001D4h, 001C2h, 001B0h, 0019Eh, 0018Ch, 0017Ah, 00168h
+dw 00156h, 00144h, 00132h, 00120h, 0010Eh, 000FCh, 000EAh, 000D8h, 000C6h, 000B4h
+dw 000A2h, 00090h, 0007Eh, 0006Ch, 0005Ah, 00048h, 00036h, 00024h, 00012h, 00000h
 
 MAXLIGHTZ                      = 0080h
 MAXLIGHTZ_UNSHIFTED            = 0800h
@@ -49,32 +47,16 @@ MAXLIGHTZ_UNSHIFTED            = 0800h
 
 
 
+
+
+
+FIRST_FLAT_CACHE_LOGICAL_PAGE = 026h
+
+
 ; NOTE: cs:offset stuff for self modifying code must be zero-normalized
 ;  (subtract offset of R_DrawSpan) because this code is being moved to
 ; segment:0000 at runtime and the cs offset stuff is absolute, not relative.
 
-
-
-; core calculation:
-;spot = ((yfrac>>(16-6))&(63*64)) + ((xfrac>>16)&63);
-;   top stuff ANDED OFF is never needed.
-;    bottom stuff is used in adds.
-;    so we use in general 22 bits of precision per dimension.
-;     must preshift left by two so we have 8 bits high and 14 lo?
-
-;yfrac
-; ANDED OFF    KEPT  ANDED OFF     SHIFTED OFF
-;01234567 
-;        01   234567 
-;                      012345      67 
-;                                    01234567
-;xfrac
-; ANDED OFF      KEPT	  SHIFTED OFF
-;01234567 
-;	     01     234567 
-;	
-;			              01234567 
-;           			     	01234567
 
 
 ;
@@ -95,6 +77,13 @@ PUBLIC  R_DrawSpanActual_
 
 ; stack vars
  
+; _ss_variable_space
+;
+; 00h i (outer loop counter)
+; 04h ds_xfrac
+; 08h ds_yfrac
+; 0Ch ds_xstep
+; 10h ds_ystep
 
 
 
@@ -105,26 +94,26 @@ cli 									; disable interrupts because we use bp/sp here. (sigh)
 
 ; todo move this logic out into prep function? could use cs instead of generating
 ; todo LES something useful?
-MOV   es, ds:[_spanfunc_jump_segment_storage]  ; ES is segment indexed to relevant data...
+MOV   es, ds:[_spanfunc_jump_segment_storage]
+
 
 ; store sp/bp
 ; todo push bp but store sp this way.
 
-mov   word ptr es:[((SELFMODIFY_SPAN_bp_storage+1) - R_SPAN_STARTMARKER_   )], bp
 mov   word ptr es:[((SELFMODIFY_SPAN_sp_storage+1) - R_SPAN_STARTMARKER_   )], sp
+mov   word ptr es:[((SELFMODIFY_SPAN_bp_storage+1) - R_SPAN_STARTMARKER_   )], bp
 
 
 ; setup x_adder/y_adder now
 ;	xadder = ds_xstep >> 6; 
 ;preshifted by 6
-;TODONEW use this
 SELFMODIFY_SPAN_ds_xstep_lo_2:
 mov   sp, 01000h	; store x_adder
 
 
 ;	yadder = ds_ystep >> 8; // lopping off bottom 16 , but multing by 4.
 
-;TODONEW use this
+
 SELFMODIFY_SPAN_ds_ystep_mid:
 mov   bp, 01000h	; y_adder
 ;preshifted outside.
@@ -138,7 +127,7 @@ mov   byte ptr es:[((SELFMODIFY_SPAN_set_span_counter+1) - OFFSET R_SPAN_STARTMA
 
 ; main loop start (i = 0, 1, 2, 3)
 
-xor   bx, bx						; zero out bx as loopcount
+xor   bx, bx						; zero out cx as loopcount
 
 span_i_loop_repeat:
 
@@ -153,11 +142,11 @@ test  al, al
 ; is count < 0? if so skip this loop iter
 
 jl   no_pixels			; todo this so it doesnt loop in both cases
-cbw  ; clear ah. safe considering sal below
+xor   ah, ah
 
 ;       modify the jump for this iteration (self-modifying code)
-sal   al, 1					; convert index to  a word lookup index
-xchg  ax, si
+sal   AL, 1					; convert index to  a word lookup index
+xchg  ax, SI
 
 ; outp to plane only if there was a pixel to draw
 mov   al, byte ptr ds:[_spanfunc_outp + bx]
@@ -165,24 +154,28 @@ mov   dx, SC_DATA						; outp 1 << i
 out   dx, al
 
 
-lods  word ptr es:[si]	    ; get unrolled jump count.
+lods  WORD PTR ES:[SI]	    ; get unrolled jump count.
 ; write to the unrolled loop jump instruction.
 mov   WORD PTR es:[((SPANFUNC_JUMP_OFFSET+1)- OFFSET R_SPAN_STARTMARKER_   )], ax;
 
 ; 		dest = destview + ds_y * 80 + dsp_x1;
 sal   bx, 1
-
+;    todo use si instead of bx and lodsw.
 mov   ax, word ptr ds:[_spanfunc_prt + bx]
-mov   di, word ptr ds:[_spanfunc_destview_offset + bx]  ; destview offset precalculated..
+; BX is preserved for a while here. this allows us to calculate DI (big instruction) after a mul
+; finally load di using bx
+mov   DI, word ptr ds:[_spanfunc_destview_offset + bx]  ; destview offset precalculated..
 
 ;		xfrac.w = basex = ds_xfrac + ds_xstep * prt;
 
 
-
+;  DX:AX contains sign extended prt. 
+;  probably dont really need this. can test ax and jge
+; bx free here...
+; es too... 
 mov   si, ax						; temporarily store dx:ax into es:si
 SELFMODIFY_SPAN_ds_xstep_hi_1:
 mov   dx, 01000h
-
 
 ; inline i4m
 ; note these registers have all been shuffled around from the original version  which was wasteful but as a result it got hard to read.
@@ -192,10 +185,10 @@ mov   dx, 01000h
         mov     cx, ax           ; save that in cx
 SELFMODIFY_SPAN_ds_xstep_lo_1:
         mov     dx, 01000h        ; pre xchged bx ax
-        mov     ss, dx
+
         mov     ax, si
         mul     dx              ; low(M2) * low(M1)
-        add     cx,dx           ; add previously computed high part
+        add     dx,cx           ; add previously computed high part
 
 ;	continuing	xfrac.w = basex = ds_xfrac + ds_xstep * prt;
 ;	DX:AX contains ds_xstep * prt
@@ -203,30 +196,30 @@ SELFMODIFY_SPAN_ds_xstep_lo_1:
 
 SELFMODIFY_SPAN_ds_xfrac_lo:
 add   ax, 01000h	; load _ds_xfrac
-
+; dh is choped off anyway so just add to dl.
 SELFMODIFY_SPAN_ds_xfrac_hi:
-adc   cl, 010h  ; ; ds_xfrac + ds_xstep * prt high bits
+adc   dl, 010h  ; ; ds_xfrac + ds_xstep * prt high bits
 
-; XFRAC was calculated above. must be stored somewhere.
-
-xchg  ax, bp   ; store xfrac lo 16.
+mov   dh, dl
+mov   dl, ah
+mov   es, dx  ; store mid 16 bits of x_frac.w
 mov   ax, si
 
 SELFMODIFY_SPAN_ds_ystep_hi:
 mov   dx, 01000h
 
+
 ;		yfrac.w = basey = ds_yfrac + ds_ystep * prt;
-
-
 
 ; inline i4m
         mul     dx              ; - low(M2) * high(M1)
-        xchg    ax, si          ; save that in si
+        mov     cx, ax           ; save that in cx
         SELFMODIFY_SPAN_ds_ystep_lo:
-        mov     sp, 01000h
+        mov     dx, 01000h
 
-        mul     sp              ; low(M2) * low(M1)
-        add     dx, si           ; add previously computed high part
+        mov     ax, si
+        mul     dx              ; low(M2) * low(M1)
+        add     dx,cx           ; add previously computed high part
 
 ;	continuing:	yfrac.w = basey = ds_yfrac + ds_ystep * prt;
 ; dx:ax contains ds_ystep * prt
@@ -236,62 +229,46 @@ mov   dx, 01000h
 ; add 32 bits of ds_yfrac
 SELFMODIFY_SPAN_ds_yfrac_lo:
 add   ax, 01000h
-xchg  ax, dx       
-
+mov   cx, ax
 SELFMODIFY_SPAN_ds_yfrac_hi:
-adc   al, 010h
+adc   dl, 010h
+
+; cant preshift cause its the sum
+
+;	xfrac16.hu = xfrac.wu >> 8;
 
 
-; YFRAC calculated above
+;	yfrac16.hu = yfrac.wu >> 10;
+
+mov cl, ch
+mov ch, dl   ; shift 8
+
+sar dh, 1    ; shift two more
+rcr cx, 1
+sar dh, 1
+rcr cx, 1    ; yfrac16 in cx
 
 
-;dx:ax is yfrac24  (needs to be ch:dx)
-;cl:bp is xfrac24 
-mov  ch, al       ;  (ch:dx now yfrac24)
+; shift 8, yadder in dh?
 
-;bl:ss needs to be xstep24 (ss already set)
-;bh:sp needs to be ystep24 (sp already set)
-
-SELFMODIFY_SPAN_ds_xstepystep_his:
-mov bx, 01000h      ; set xstep24 hi 8 and ystep 24 hi 8 at once
+mov dx, es   ;  get back mid 16 bits of x_frac.w
 
 
-; todo LES something here dunno? maybe a selfmodify thing instead.
+
+
+
+; todo LES something here dunno?
 mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
 
-lds   ax, dword ptr ds:[_ds_source_segment] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
-; ah gets 3F
+
+
+; yfrac16 already in cx
+
+lds   bx, dword ptr ds:[_ds_source_segment] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
 
 
 
-
-;  ch:dx is yfrac24 (running total)
-;  cl:bp is xfrac24 (running total)
-
-; todo... prebake this in the selfmodifies?
-
-mov si, ss
-sal si, 1
-rcl bl, 1
-sal si, 1
-rcl bl, 1
-sal si, 1
-rcl bl, 1
-sal si, 1
-rcl bl, 1
-mov ss, si
-
-shl bp, 1
-rcl cl, 1
-shl bp, 1
-rcl cl, 1
-
-sal sp, 1
-rcl bh, 1
-sal sp, 1
-rcl bh, 1
-
-
+xor   ah, ah
 
  
 SPANFUNC_JUMP_OFFSET:
@@ -300,21 +277,26 @@ jmp span_i_loop_done         ; relative jump to be modified before function is c
 
 
 
+; 89 C8       mov   ax, cx
+; 21 D8       and   ax, bx
+; 80 E6 3F    and   dh, 0x3f
+; 00 F0       add   al, dh
+; 97          xchg  ax, di
+
+; alternate idea. one cycle slower and same byte count.
+; cant we somehow make use of xchg and al, 3fh at the same time?
 
 DRAW_SINGLE_SPAN_PIXEL MACRO 
-and   ch, ah
+mov   al, dh
+and   al, 3fh
 mov   si, cx
-sar   si, 1
-sar   si, 1
-lodsb 
-mov   si, ax
-lods  byte ptr cs:[si]
-stosb 
-mov   si, ss
-add   bp, si
-adc   cl, bl
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
 add   dx, sp
-adc   ch, bh
+add   cx, bp
 
 ENDM
 
@@ -324,21 +306,21 @@ endm
 
 ; final pixel
 
-and   ch, ah
+mov   al, dh
+and   al, 3fh
 mov   si, cx
-sar   si, 1
-sar   si, 1
-lodsb 
-mov   si, ax
-lods  byte ptr cs:[si]
-stosb 
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
 
 
  
  
 
-; restore ds. leave ss bad.
-mov   ax, FIXED_DS_SEGMENT
+; restore ds
+mov   ax, ss					;   SS is DS in this watcom memory model so we use that to restore DS
 mov   ds, ax
 
 
@@ -350,9 +332,9 @@ mov   bx, 0
 ; loop if i < loopcount. note we can overwrite this with self modifying coe
 SELFMODIFY_SPAN_compare_span_counter:
 cmp   bl, 4
-jge   span_i_loop_done
+jge    span_i_loop_done
 
-MOV   es, ds:[_spanfunc_jump_segment_storage]
+MOV   ES, ds:[_spanfunc_jump_segment_storage]
 
 jmp   span_i_loop_repeat
 span_i_loop_done:
@@ -362,9 +344,6 @@ SELFMODIFY_SPAN_sp_storage:
 mov sp, 01000h
 SELFMODIFY_SPAN_bp_storage:
 mov bp, 01000h
-
-mov ax, ds
-mov ss, ax
 
 
 sti								; reenable interrupts
@@ -481,7 +460,6 @@ SELFMODIFY_SPAN_ds_x2:
 
  ; use jump table with desired cs:ip for far jump
 
-; addr was 9864:93A3 which is bad
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -752,32 +730,28 @@ mov   dx, es
 push  ax
 ; CACHEDXSTEP lookup. move these into temporary variable space
 
-;todo should these be cached pre-shifted?
-; here is where we get xstep/ystep.
-; ax:cx
-
-
 mov   es, ds:[_cachedxstep_segment_storage]
 lods  word ptr es:[si]
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_1+1 - OFFSET R_SPAN_STARTMARKER_], ax
 xchg  ax, cx
 lods  word ptr es:[si]
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_hi_1+1 - OFFSET R_SPAN_STARTMARKER_], ax
-mov   byte ptr cs:[SELFMODIFY_SPAN_ds_xstepystep_his+1 - OFFSET R_SPAN_STARTMARKER_], al
 
 ; shift 6 and juggle. (take mid 16 into ax after shifting ax:cl left 6.)
+shl   cx, 1
+rcl   al, 1
+shl   cx, 1
+rcl   al, 1
 
+mov   ah, al
+mov   al, ch
 
+; do loop setup here?
 
-
-;TODONEW implement 16 bit shifting.
-
-; may get shifted right...
 SELFMODIFY_SPAN_detailshift_3:
 mov ax, ax
 mov ax, ax
 
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2+1 - OFFSET R_SPAN_STARTMARKER_], ax
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2+1 - OFFSET R_SPAN_STARTMARKER_], ax
 
 
@@ -790,8 +764,6 @@ mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_lo+1 - OFFSET R_SPAN_STARTMARKER_], 
 mov   bl, ah
 lods  word ptr es:[si]
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_hi+1 - OFFSET R_SPAN_STARTMARKER_], ax
-mov   byte ptr cs:[SELFMODIFY_SPAN_ds_xstepystep_his+2 - OFFSET R_SPAN_STARTMARKER_], al
-
 mov   bh, al
 SELFMODIFY_SPAN_detailshift_4:
 mov ax, ax
@@ -879,7 +851,7 @@ neg   ax
 sbb   dx, 0
 
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_yfrac_lo+1 - OFFSET R_SPAN_STARTMARKER_], ax
-mov   byte ptr cs:[SELFMODIFY_SPAN_ds_yfrac_hi+1 - OFFSET R_SPAN_STARTMARKER_], dl
+mov   byte ptr cs:[SELFMODIFY_SPAN_ds_yfrac_hi+2 - OFFSET R_SPAN_STARTMARKER_], dl
 
 pop   ax  ; for stack consistency across branches, this pop is done here.
 
@@ -982,7 +954,6 @@ mov   word ptr es:[si + 2], dx
 
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_1+1 - OFFSET R_SPAN_STARTMARKER_], ax
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_hi_1+1 - OFFSET R_SPAN_STARTMARKER_], dx
-mov   byte ptr cs:[SELFMODIFY_SPAN_ds_xstepystep_his+1 - OFFSET R_SPAN_STARTMARKER_], dl
 
 
 ; shift 6 and juggle
@@ -1022,7 +993,6 @@ mov   word ptr es:[si + 2], dx
 
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_lo+1 - OFFSET R_SPAN_STARTMARKER_], ax
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_hi+1 - OFFSET R_SPAN_STARTMARKER_], dx
-mov   byte ptr cs:[SELFMODIFY_SPAN_ds_xstepystep_his+2 - OFFSET R_SPAN_STARTMARKER_], dl
 mov   al, ah
 mov   ah, dl
 SELFMODIFY_SPAN_detailshift_2:
