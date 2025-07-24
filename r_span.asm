@@ -114,13 +114,6 @@ mov   word ptr es:[((SELFMODIFY_SPAN_bp_storage+1) - R_SPAN_STARTMARKER_   )], b
 mov   word ptr es:[((SELFMODIFY_SPAN_sp_storage+1) - R_SPAN_STARTMARKER_   )], sp
 
 
-; setup x_adder/y_adder now
-;	xadder = ds_xstep >> 6; 
-;preshifted by 6
-;TODONEW use this
-SELFMODIFY_SPAN_ds_xstep_lo_2:
-mov   sp, 01000h	; store x_adder
-
 
 ;	yadder = ds_ystep >> 8; // lopping off bottom 16 , but multing by 4.
 
@@ -192,7 +185,6 @@ mov   dx, 01000h
         mov     cx, ax           ; save that in cx
 SELFMODIFY_SPAN_ds_xstep_lo_1:
         mov     dx, 01000h        ; pre xchged bx ax
-        mov     ss, dx
         mov     ax, si
         mul     dx              ; low(M2) * low(M1)
         add     cx,dx           ; add previously computed high part
@@ -255,6 +247,15 @@ mov  ch, al       ;  (ch:dx now yfrac24)
 SELFMODIFY_SPAN_ds_xstepystep_his:
 mov bx, 01000h      ; set xstep24 hi 8 and ystep 24 hi 8 at once
 
+SELFMODIFY_SPAN_ds_xstep_lo_2:
+; preshifted left 4
+mov     ax, 01000h
+mov     ss, ax
+
+SELFMODIFY_SPAN_ds_ystep_lo_2:
+mov     sp, 01000h
+
+
 
 ; todo LES something here dunno? maybe a selfmodify thing instead.
 mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
@@ -270,26 +271,17 @@ lds   ax, dword ptr ds:[_ds_source_segment] 		; ds:si is ds_source. BX is pulled
 
 ; todo... prebake this in the selfmodifies?
 
-mov si, ss
-sal si, 1
-rcl bl, 1
-sal si, 1
-rcl bl, 1
-sal si, 1
-rcl bl, 1
-sal si, 1
-rcl bl, 1
-mov ss, si
+
+
+; xfrac24 must be shifted after calculation.
 
 shl bp, 1
 rcl cl, 1
 shl bp, 1
 rcl cl, 1
 
-sal sp, 1
-rcl bh, 1
-sal sp, 1
-rcl bh, 1
+
+
 
 
 
@@ -763,7 +755,6 @@ mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_1+1 - OFFSET R_SPAN_STARTMARKER_]
 xchg  ax, cx
 lods  word ptr es:[si]
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_hi_1+1 - OFFSET R_SPAN_STARTMARKER_], ax
-mov   byte ptr cs:[SELFMODIFY_SPAN_ds_xstepystep_his+1 - OFFSET R_SPAN_STARTMARKER_], al
 
 ; shift 6 and juggle. (take mid 16 into ax after shifting ax:cl left 6.)
 
@@ -777,8 +768,17 @@ SELFMODIFY_SPAN_detailshift_3:
 mov ax, ax
 mov ax, ax
 
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2+1 - OFFSET R_SPAN_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2+1 - OFFSET R_SPAN_STARTMARKER_], ax
+sal   cx, 1
+rcl   ax, 1
+sal   cx, 1
+rcl   ax, 1
+sal   cx, 1
+rcl   ax, 1
+sal   cx, 1
+rcl   ax, 1
+
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2+1 - OFFSET R_SPAN_STARTMARKER_], cx
+mov   byte ptr cs:[SELFMODIFY_SPAN_ds_xstepystep_his+1 - OFFSET R_SPAN_STARTMARKER_], al
 
 
 
@@ -787,12 +787,28 @@ sub   si, 4
 mov   es, ss:[_cachedystep_segment_storage]
 lods  word ptr es:[si]
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_lo+1 - OFFSET R_SPAN_STARTMARKER_], ax
-mov   bl, ah
+xchg  ax, bx
+
 lods  word ptr es:[si]
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_hi+1 - OFFSET R_SPAN_STARTMARKER_], ax
-mov   byte ptr cs:[SELFMODIFY_SPAN_ds_xstepystep_his+2 - OFFSET R_SPAN_STARTMARKER_], al
+mov   si, bx ; si gets low 16
+mov   bl, bh
+mov   bh, al  ; bx has mid 16. now
 
-mov   bh, al
+
+sal   si, 1
+rcl   bh, 1
+sal   si, 1
+rcl   bh, 1
+
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_lo_2 + 1 - OFFSET R_SPAN_STARTMARKER_], si
+mov   byte ptr cs:[SELFMODIFY_SPAN_ds_xstepystep_his+2 - OFFSET R_SPAN_STARTMARKER_], bh
+
+mov   bh, al  ; restore mid16.
+
+
+
+
 SELFMODIFY_SPAN_detailshift_4:
 mov ax, ax
 mov ax, ax
@@ -982,7 +998,22 @@ mov   word ptr es:[si + 2], dx
 
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_1+1 - OFFSET R_SPAN_STARTMARKER_], ax
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_hi_1+1 - OFFSET R_SPAN_STARTMARKER_], dx
-mov   byte ptr cs:[SELFMODIFY_SPAN_ds_xstepystep_his+1 - OFFSET R_SPAN_STARTMARKER_], dl
+
+; TODONEW move down after detailshift... include 16 bits
+; preshift left 4 bits.
+mov   cx, ax
+mov   dh, dl
+sal   cx, 1
+rcl   dh, 1
+sal   cx, 1
+rcl   dh, 1
+sal   cx, 1
+rcl   dh, 1
+sal   cx, 1
+rcl   dh, 1
+
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2 + 1 - OFFSET R_SPAN_STARTMARKER_], cx
+mov   byte ptr cs:[SELFMODIFY_SPAN_ds_xstepystep_his+1 - OFFSET R_SPAN_STARTMARKER_], dh
 
 
 ; shift 6 and juggle
@@ -1000,7 +1031,7 @@ SELFMODIFY_SPAN_detailshift_1:
 mov ax, ax			; shift x_step by pixel shift
 mov ax, ax			; shift x_step by pixel shift
 
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2+1 - OFFSET R_SPAN_STARTMARKER_], ax
+;mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2+1 - OFFSET R_SPAN_STARTMARKER_], ax
 
 
 mov   dx, di
@@ -1022,7 +1053,16 @@ mov   word ptr es:[si + 2], dx
 
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_lo+1 - OFFSET R_SPAN_STARTMARKER_], ax
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_hi+1 - OFFSET R_SPAN_STARTMARKER_], dx
-mov   byte ptr cs:[SELFMODIFY_SPAN_ds_xstepystep_his+2 - OFFSET R_SPAN_STARTMARKER_], dl
+
+mov   si, ax
+mov   dh, dl
+sal   si, 1
+rcl   dh, 1
+sal   si, 1
+rcl   dh, 1
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_lo_2 + 1 - OFFSET R_SPAN_STARTMARKER_], si
+mov   byte ptr cs:[SELFMODIFY_SPAN_ds_xstepystep_his+2 - OFFSET R_SPAN_STARTMARKER_], dh
+
 mov   al, ah
 mov   ah, dl
 SELFMODIFY_SPAN_detailshift_2:
@@ -2059,7 +2099,6 @@ mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+0 - OFFSET R_SPAN_STARTMARKE
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+2 - OFFSET R_SPAN_STARTMARKER_], ax
 
 ; 2 minus
-
 
 mov ax, 0e0d1h ; shl   ax, 1
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_2+0 - OFFSET R_SPAN_STARTMARKER_], ax  
