@@ -28,8 +28,6 @@ void __far R_SPAN24_STARTMARKER();
 void __far R_SPAN24_ENDMARKER();
 void __far R_DrawPlanes16 (void);
 void __far R_DrawPlanes24 (void);
-void __far R_DrawSpan16 (void);
-void __far R_DrawSpan24 (void);
 void __far R_WriteBackViewConstantsSpan16 (void);
 void __far R_WriteBackViewConstantsSpan24 (void);
 void __far R_COLUMN_STARTMARKER();
@@ -198,7 +196,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     
     codesize[13] = FP_OFF(R_SPAN16_ENDMARKER) - FP_OFF(R_SPAN16_STARTMARKER);    
     fwrite(&codesize[13], 2, 1, fp); // write filesize..
-    FAR_fwrite((byte __far *)R_SPAN24_STARTMARKER, codesize[13], 1, fp); // write data
+    FAR_fwrite((byte __far *)R_SPAN16_STARTMARKER, codesize[13], 1, fp); // write data
 
 
     codesize[2] = FP_OFF(R_WriteBackViewConstantsMasked) - FP_OFF(R_MASKED_STARTMARKER);
@@ -293,11 +291,9 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "#define R_WriteBackMaskedFrameConstantsOffset 0x%X\n", FP_OFF(R_WriteBackMaskedFrameConstants) - FP_OFF(R_WriteBackViewConstantsMasked));
 
     // span offsets
-	fprintf(fp, "#define R_DrawSpan24Offset                    0x%X\n", FP_OFF(R_DrawSpan24)                    - FP_OFF(R_SPAN24_STARTMARKER));
 	fprintf(fp, "#define R_DrawPlanes24Offset                  0x%X\n", FP_OFF(R_DrawPlanes24)                  - FP_OFF(R_SPAN24_STARTMARKER));
 	fprintf(fp, "#define R_WriteBackViewConstantsSpan24Offset  0x%X\n", FP_OFF(R_WriteBackViewConstantsSpan24)  - FP_OFF(R_SPAN24_STARTMARKER));
 
-	fprintf(fp, "#define R_DrawSpan16Offset                    0x%X\n", FP_OFF(R_DrawSpan16)                    - FP_OFF(R_SPAN16_STARTMARKER));
 	fprintf(fp, "#define R_DrawPlanes16Offset                  0x%X\n", FP_OFF(R_DrawPlanes16)                  - FP_OFF(R_SPAN16_STARTMARKER));
 	fprintf(fp, "#define R_WriteBackViewConstantsSpan16Offset  0x%X\n", FP_OFF(R_WriteBackViewConstantsSpan16)  - FP_OFF(R_SPAN16_STARTMARKER));
 

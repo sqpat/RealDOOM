@@ -27,6 +27,8 @@ PUBLIC R_SPAN24_STARTMARKER_
 ENDP 
 
 R_DRAWSPANACTUAL_DIFF = (OFFSET R_DrawSpanActual24_ - OFFSET R_SPAN24_STARTMARKER_)
+DRAWSPAN_AH_OFFSET             = 03F00h
+DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_JUMP_LOOKUP_SEGMENT - COLORMAPS_SEGMENT)) + DRAWSPAN_AH_OFFSET
 
 ; lcall cs:[00xx] here to call R_DrawSpan with the right CS:IP for colormaps to be at cs:3F00
 _spanfunc_call_table:

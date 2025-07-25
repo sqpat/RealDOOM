@@ -172,6 +172,7 @@
 #define skipdirectdraws                 (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00D6))
 #define snd_SfxDevice                   (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00D7))
 #define ds_source_segment               (*((byte __far* __near*)             (_NULL_OFFSET + 0x00D8)))
+#define ds_source_offset                (*((int16_t __near*)                 (_NULL_OFFSET + 0x00D8)))
 
 #define currentscreen                   (*(byte __far * __near *)            (_NULL_OFFSET + 0x00DC))
 #define destview                        (*(byte __far * __near *)            (_NULL_OFFSET + 0x00E0))
@@ -369,6 +370,8 @@
 #define movedirangles                   (((uint16_t  __near*)                (_NULL_OFFSET + 0x0470)))
 #define braintargets                    (((THINKERREF __near*)               (_NULL_OFFSET + 0x0480)))
 #define tmbbox                          (((fixed_t_union __near*)            (_NULL_OFFSET + 0x04C0)))
+
+// unused!
 #define spanfunc_call_table             (((uint32_t  __near*)                (_NULL_OFFSET + 0x04D0)))
 #define V_DrawPatch_addr                  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0554)))
 #define locallib_toupper_addr             (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0558)))
@@ -510,6 +513,7 @@
 #define viewwindowx 		 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x0804)))
 #define viewwindowy 		 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x0806)))
 #define R_DrawPlanesCall 		 		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0808)))
+#define R_DrawPlanesCallOffset 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x0808)))
 #define R_DrawMaskedCall 		 		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x080C)))
 #define R_WriteBackMaskedFrameConstantsCall  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0810)))
 #define NetUpdate_addr					  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0814)))
@@ -703,6 +707,7 @@ extern mline_t              thintriangle_guy[3];
 
 
 
+extern void 				(__far* R_WriteBackViewConstantsSpanCall)();
 extern boolean 				(__far* P_TeleportMove)(mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
 extern boolean 				(__far* P_ChangeSector)(sector_t __far* sector, boolean crunch);
 extern void 				(__far* P_MovePsprites)();

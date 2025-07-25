@@ -417,6 +417,7 @@ void (__far* P_MobjThinker)() =                ((void (__far *)(mobj_t __near*	m
 THINKERREF (__far* P_SpawnMobj)() =          ((THINKERREF (__far *)(fixed_t_union x, fixed_t_union y, fixed_t_union z, mobjtype_t type, int16_t knownsecnum))     	       (MK_FP(physics_highcode_segment, 		 P_SpawnMobjOffset)));
 void (__far* P_SpawnMapThing)() =            ((void (__far *)(mapthing_t mthing, int16_t key))                                        	                                   (MK_FP(physics_highcode_segment, 		 P_SpawnMapThingOffset)));
 void (__far* P_SetMobjState)() =            ((void (__far *)(mobj_t __near* mobj, statenum_t state))                                        	                           (MK_FP(physics_highcode_segment, 		 P_SetMobjStateOffset)));
+void (__far* R_WriteBackViewConstantsSpanCall)()  =   				      	  ((void    (__far *)())  								(MK_FP(spanfunc_jump_lookup_segment, 	 R_WriteBackViewConstantsSpan24Offset)));
 
 
 

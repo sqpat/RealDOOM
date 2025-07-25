@@ -330,7 +330,7 @@ _ems_backfill_page_order =           _NULL_OFFSET + 00454h
 _movedirangles =                     _NULL_OFFSET + 00470h
 _braintargets =                      _NULL_OFFSET + 00480h
 _tmbbox =                            _NULL_OFFSET + 004C0h
-_spanfunc_call_lookup =              _NULL_OFFSET + 004D0h
+; unused 4d0 to 554
 
 _V_DrawPatch_addr =              	 _NULL_OFFSET + 00554h
 _locallib_toupper_addr =             _NULL_OFFSET + 00558h
@@ -544,10 +544,8 @@ STATENUM_NULL = -1
 
 
 ; todo what is this magic number again? (??) r_draw.c alludes to it as desired bx offset
-;DRAWSPAN_BX_OFFSET             = 0FC0h
-;DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_JUMP_LOOKUP_SEGMENT - COLORMAPS_SEGMENT)) + DRAWSPAN_BX_OFFSET
+DRAWSPAN_BX_OFFSET             = 0FC0h
 DRAWSPAN_AH_OFFSET             = 03F00h
-DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_JUMP_LOOKUP_SEGMENT - COLORMAPS_SEGMENT)) + DRAWSPAN_AH_OFFSET
 
 DRAWCOL_OFFSET                 = (COLFUNC_FUNCTION_AREA_SEGMENT - COLORMAPS_SEGMENT) * 16
 
