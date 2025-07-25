@@ -117,11 +117,6 @@ mov   word ptr es:[((SELFMODIFY_SPAN_sp_storage+1) - R_SPAN_STARTMARKER_   )], s
 
 ;	yadder = ds_ystep >> 8; // lopping off bottom 16 , but multing by 4.
 
-;TODONEW use this
-SELFMODIFY_SPAN_ds_ystep_mid:
-mov   bp, 01000h	; y_adder
-;preshifted outside.
-
 
 mov   byte ptr es:[((SELFMODIFY_SPAN_set_span_counter+1) - OFFSET R_SPAN_STARTMARKER_   )], 0      ; set loop increment value
 
@@ -752,33 +747,32 @@ push  ax
 mov   es, ds:[_cachedxstep_segment_storage]
 lods  word ptr es:[si]
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_1+1 - OFFSET R_SPAN_STARTMARKER_], ax
-xchg  ax, cx
+xchg  ax, bx
 lods  word ptr es:[si]
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_hi_1+1 - OFFSET R_SPAN_STARTMARKER_], ax
 
-; shift 6 and juggle. (take mid 16 into ax after shifting ax:cl left 6.)
 
+sal   bx, 1
+rcl   ax, 1
+sal   bx, 1
+rcl   ax, 1
+sal   bx, 1
+rcl   ax, 1
+sal   bx, 1
+rcl   ax, 1
 
-
-
-;TODONEW implement 16 bit shifting.
 
 ; may get shifted right...
 SELFMODIFY_SPAN_detailshift_3:
 mov ax, ax
 mov ax, ax
+mov ax, ax
+mov ax, ax
 
-sal   cx, 1
-rcl   ax, 1
-sal   cx, 1
-rcl   ax, 1
-sal   cx, 1
-rcl   ax, 1
-sal   cx, 1
-rcl   ax, 1
 
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2+1 - OFFSET R_SPAN_STARTMARKER_], cx
-mov   byte ptr cs:[SELFMODIFY_SPAN_ds_xstepystep_his+1 - OFFSET R_SPAN_STARTMARKER_], al
+
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2+1 - OFFSET R_SPAN_STARTMARKER_], bx
+xchg  ax, cx
 
 
 
@@ -791,28 +785,25 @@ xchg  ax, bx
 
 lods  word ptr es:[si]
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_hi+1 - OFFSET R_SPAN_STARTMARKER_], ax
-mov   si, bx ; si gets low 16
-mov   bl, bh
-mov   bh, al  ; bx has mid 16. now
 
 
-sal   si, 1
-rcl   bh, 1
-sal   si, 1
-rcl   bh, 1
 
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_lo_2 + 1 - OFFSET R_SPAN_STARTMARKER_], si
-mov   byte ptr cs:[SELFMODIFY_SPAN_ds_xstepystep_his+2 - OFFSET R_SPAN_STARTMARKER_], bh
-
-mov   bh, al  ; restore mid16.
-
+sal   bx, 1
+rcl   ax, 1
+sal   bx, 1
+rcl   ax, 1
 
 
 
 SELFMODIFY_SPAN_detailshift_4:
 mov ax, ax
 mov ax, ax
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_mid+1 - OFFSET R_SPAN_STARTMARKER_], bx
+mov ax, ax
+mov ax, ax
+
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_lo_2 + 1 - OFFSET R_SPAN_STARTMARKER_], bx
+mov   ch, al
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstepystep_his+1 - OFFSET R_SPAN_STARTMARKER_], cx
 
 
 
@@ -999,39 +990,28 @@ mov   word ptr es:[si + 2], dx
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_1+1 - OFFSET R_SPAN_STARTMARKER_], ax
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_hi_1+1 - OFFSET R_SPAN_STARTMARKER_], dx
 
-; TODONEW move down after detailshift... include 16 bits
 ; preshift left 4 bits.
-mov   cx, ax
-mov   dh, dl
-sal   cx, 1
-rcl   dh, 1
-sal   cx, 1
-rcl   dh, 1
-sal   cx, 1
-rcl   dh, 1
-sal   cx, 1
-rcl   dh, 1
-
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2 + 1 - OFFSET R_SPAN_STARTMARKER_], cx
-mov   byte ptr cs:[SELFMODIFY_SPAN_ds_xstepystep_his+1 - OFFSET R_SPAN_STARTMARKER_], dh
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
 
 
-; shift 6 and juggle
-shl   ax, 1
-rcl   dl, 1
-shl   ax, 1
-rcl   dl, 1
 
-mov   al, ah
-mov   ah, dl
 
-; do loop setup here?
 
 SELFMODIFY_SPAN_detailshift_1:
-mov ax, ax			; shift x_step by pixel shift
-mov ax, ax			; shift x_step by pixel shift
+mov ax, ax
+mov ax, ax
+mov ax, ax
+mov ax, ax
 
-;mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2+1 - OFFSET R_SPAN_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_2+1 - OFFSET R_SPAN_STARTMARKER_], ax
+mov   byte ptr cs:[SELFMODIFY_SPAN_ds_xstepystep_his+1 - OFFSET R_SPAN_STARTMARKER_], dl
 
 
 mov   dx, di
@@ -1054,21 +1034,19 @@ mov   word ptr es:[si + 2], dx
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_lo+1 - OFFSET R_SPAN_STARTMARKER_], ax
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_hi+1 - OFFSET R_SPAN_STARTMARKER_], dx
 
-mov   si, ax
-mov   dh, dl
-sal   si, 1
-rcl   dh, 1
-sal   si, 1
-rcl   dh, 1
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_lo_2 + 1 - OFFSET R_SPAN_STARTMARKER_], si
-mov   byte ptr cs:[SELFMODIFY_SPAN_ds_xstepystep_his+2 - OFFSET R_SPAN_STARTMARKER_], dh
+sal   ax, 1
+rcl   dx, 1
+sal   ax, 1
+rcl   dx, 1
 
-mov   al, ah
-mov   ah, dl
 SELFMODIFY_SPAN_detailshift_2:
 mov ax, ax
 mov ax, ax
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_mid+1 - OFFSET R_SPAN_STARTMARKER_], ax
+mov ax, ax
+mov ax, ax
+
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep_lo_2 + 1 - OFFSET R_SPAN_STARTMARKER_], ax
+mov   byte ptr cs:[SELFMODIFY_SPAN_ds_xstepystep_his+2 - OFFSET R_SPAN_STARTMARKER_], dl
 
 
 pop   ax
@@ -2089,14 +2067,24 @@ mov      byte ptr ds:[SELFMODIFY_SPAN_detailshift_mainloopcount_2+2 - OFFSET R_S
 
 
 mov      ax, 0c089h  ; nop
+
+
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+0 - OFFSET R_SPAN_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+2 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+4 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+6 - OFFSET R_SPAN_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+0 - OFFSET R_SPAN_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+2 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+4 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+6 - OFFSET R_SPAN_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+0 - OFFSET R_SPAN_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+2 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+4 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+6 - OFFSET R_SPAN_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+0 - OFFSET R_SPAN_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+2 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+4 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+6 - OFFSET R_SPAN_STARTMARKER_], ax
 
 ; 2 minus
 
@@ -2120,11 +2108,36 @@ do_detail_shift_one:
 mov      byte ptr ds:[SELFMODIFY_SPAN_compare_span_counter+2        - OFFSET R_SPAN_STARTMARKER_], 2
 mov      byte ptr ds:[SELFMODIFY_SPAN_detailshift_mainloopcount_2+2 - OFFSET R_SPAN_STARTMARKER_], 2
 
-mov      ax, 0e8d1h  ; shr ax, 1
+
+;sar   dx, 1 ; 0FAD1h
+;rcr   ax, 1 ; 0D8D1h
+
+mov      ax, 0FAD1h
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+0 - OFFSET R_SPAN_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+0 - OFFSET R_SPAN_STARTMARKER_], ax
+
+mov      ax, 0D8D1h
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+2 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+2 - OFFSET R_SPAN_STARTMARKER_], ax
+
+;shr   ax, 1  ;E8D1h
+;rcr   bx, 1  ;DBD1h
+
+mov      ax, 0e8d1h  ; shr ax, 1
+
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+0 - OFFSET R_SPAN_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+0 - OFFSET R_SPAN_STARTMARKER_], 0EBD1h ; shr bx, 1
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+0 - OFFSET R_SPAN_STARTMARKER_], ax
+
+mov      ax, 0DBD1h ; rcr bx, 1
+
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+2 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+2 - OFFSET R_SPAN_STARTMARKER_], ax
+
+
+
+
+
+
 
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_1+0 - OFFSET R_SPAN_STARTMARKER_], 0FAD1h  ; sar   dx, 1
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_3+0 - OFFSET R_SPAN_STARTMARKER_], 0F9D1h  ; sar   cx, 1
@@ -2133,10 +2146,14 @@ mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_2+0 - OFFSET R_SPAN_STAR
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_4+0 - OFFSET R_SPAN_STARTMARKER_], ax  ; shl   ax, 1
 
 mov   ax, 0c089h  ; nop
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+2 - OFFSET R_SPAN_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+2 - OFFSET R_SPAN_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+2 - OFFSET R_SPAN_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+2 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+4 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+6 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+4 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+6 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+4 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+6 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+4 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+6 - OFFSET R_SPAN_STARTMARKER_], ax
 
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_1+2 - OFFSET R_SPAN_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_2+2 - OFFSET R_SPAN_STARTMARKER_], ax
@@ -2151,17 +2168,35 @@ do_detail_shift_two:
 mov      byte ptr ds:[SELFMODIFY_SPAN_compare_span_counter+2        - OFFSET R_SPAN_STARTMARKER_], 1
 mov      byte ptr ds:[SELFMODIFY_SPAN_detailshift_mainloopcount_2+2 - OFFSET R_SPAN_STARTMARKER_], 1
 
-mov      ax, 0e8d1h  ; shr ax, 1
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+0 - OFFSET R_SPAN_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+2 - OFFSET R_SPAN_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+0 - OFFSET R_SPAN_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+2 - OFFSET R_SPAN_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+0 - OFFSET R_SPAN_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+2 - OFFSET R_SPAN_STARTMARKER_], ax
-mov      ax, 0EBD1h   ; shr bx, 1
 
+mov      ax, 0FAD1h  ; sar dx, 1
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+0 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+4 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+0 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+4 - OFFSET R_SPAN_STARTMARKER_], ax
+
+mov      ax, 0D8D1h  ; rcr ax, 1
+
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+2 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+6 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+2 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_2+6 - OFFSET R_SPAN_STARTMARKER_], ax
+
+mov      ax, 0e8d1h  ; shr ax, 1
+
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+0 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+4 - OFFSET R_SPAN_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+0 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+4 - OFFSET R_SPAN_STARTMARKER_], ax
+
+mov      ax, 0DBD1h   ; rcr bx, 1
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+2 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+6 - OFFSET R_SPAN_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+2 - OFFSET R_SPAN_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+6 - OFFSET R_SPAN_STARTMARKER_], ax
+
+
+
 
 ; two minus
 mov   ax, 0c089h  ; nop
