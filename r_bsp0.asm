@@ -22,11 +22,11 @@ INSTRUCTION_SET_MACRO_NO_MEDIUM
 
 
 
-SEGMENT R_BSP_TEXT USE16 PARA PUBLIC 'CODE'
-ASSUME cs:R_BSP_TEXT
+SEGMENT R_BSP0_TEXT USE16 PARA PUBLIC 'CODE'
+ASSUME cs:R_BSP0_TEXT
 
-PROC R_BSP_STARTMARKER_
-PUBLIC R_BSP_STARTMARKER_
+PROC R_BSP0_STARTMARKER_
+PUBLIC R_BSP0_STARTMARKER_
 ENDP
 
 ANG90_HIGHBITS =		04000h
@@ -2355,6 +2355,7 @@ ENDP
 PROC R_ClearPlanes_ NEAR
 
 
+
 push  bx
 push  cx
 push  dx
@@ -2900,9 +2901,9 @@ push  word ptr ds:[bx + 6]  ; bp - 6
 
 les   si, dword ptr ds:[bx]       ;v1
 mov   di, es                   ;v2
-mov   word ptr cs:[SELFMODIFY_get_curseg_2 + 1 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_get_curseg_2 + 1 - OFFSET R_BSP0_STARTMARKER_], ax
 sal   ax, 1
-mov   word ptr cs:[SELFMODIFY_get_curseg_1 + 1 - OFFSET R_BSP_STARTMARKER_], ax ; preshift
+mov   word ptr cs:[SELFMODIFY_get_curseg_1 + 1 - OFFSET R_BSP0_STARTMARKER_], ax ; preshift
 mov   ax, VERTEXES_SEGMENT
 mov   es, ax
 SHIFT_MACRO shl si 2
@@ -2912,9 +2913,9 @@ mov   cx, es
 mov   es, ax
 les   si, dword ptr es:[di]       ; v2.x
 mov   di, es   ; v2.y
-mov   word ptr cs:[SELFMODIFY_get_curseg_render_1 + 1 - OFFSET R_BSP_STARTMARKER_], bx
+mov   word ptr cs:[SELFMODIFY_get_curseg_render_1 + 1 - OFFSET R_BSP0_STARTMARKER_], bx
 add   bx, 4
-mov   word ptr cs:[SELFMODIFY_get_curseg_render_2 + 2 - OFFSET R_BSP_STARTMARKER_], bx ; todo can we store ahead the lookup instead of the ptr
+mov   word ptr cs:[SELFMODIFY_get_curseg_render_2 + 2 - OFFSET R_BSP0_STARTMARKER_], bx ; todo can we store ahead the lookup instead of the ptr
 
 call  R_PointToAngle16_    ; todo debug why this doesnt work with the other one. stack corruption?
 
@@ -3149,7 +3150,7 @@ mov   es, ax
 xor   ax, ax
 xlat  byte ptr es:[bx]
 
-mov   word ptr cs:[SELFMODIFY_countvalue+1 - OFFSET R_BSP_STARTMARKER_], ax    ; di stores count for later
+mov   word ptr cs:[SELFMODIFY_countvalue+1 - OFFSET R_BSP0_STARTMARKER_], ax    ; di stores count for later
 
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
@@ -3166,7 +3167,7 @@ mov   word ptr ds:[_frontsector], ax
 ;mov   word ptr ds:[_frontsector+2], es   ; es holds sectors_segment..
 mov   bx, word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS + 2]   ; get subsec firstline
 xchg  bx, ax
-mov   word ptr cs:[SELFMODIFY_firstlinevalue+1 - OFFSET R_BSP_STARTMARKER_], ax    ; di stores count for later
+mov   word ptr cs:[SELFMODIFY_firstlinevalue+1 - OFFSET R_BSP0_STARTMARKER_], ax    ; di stores count for later
 
 
 cmp   byte ptr ds:[_visplanedirty], 0
@@ -3210,7 +3211,7 @@ jl    find_floor_plane_index
 je    check_viewz_lowbits_floor
 
 set_floor_plane_minus_one:
-mov   word ptr cs:[SELFMODIFY_set_floorplaneindex+1 - OFFSET R_BSP_STARTMARKER_], 0FFFFh
+mov   word ptr cs:[SELFMODIFY_set_floorplaneindex+1 - OFFSET R_BSP0_STARTMARKER_], 0FFFFh
 
 jmp   floor_plane_set
 revert_visplane:
@@ -3224,7 +3225,7 @@ set_ceiling_plane_minus_one:
 mov   cl, byte ptr es:[bx + 5]
 cmp   cl, byte ptr ds:[_skyflatnum]
 je    find_ceiling_plane_index
-mov   word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1 - OFFSET R_BSP_STARTMARKER_], 0FFFFh
+mov   word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1 - OFFSET R_BSP0_STARTMARKER_], 0FFFFh
 jmp   do_addsprites
 
 check_viewz_lowbits_floor:
@@ -3239,7 +3240,7 @@ mov   ch, byte ptr es:[bx + 0Eh]
 mov   cl, byte ptr es:[bx + 4]
 xor   bx, bx ; isceil = 0
 call  R_FindPlane_
-mov   word ptr cs:[SELFMODIFY_set_floorplaneindex+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_set_floorplaneindex+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 floor_plane_set:
 les   bx, dword ptr ds:[_frontsector]
@@ -3271,7 +3272,7 @@ mov   cl, byte ptr es:[bx + 5]
 mov   bx, 1
 
 call  R_FindPlane_
-mov   word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1 - OFFSET R_BSP0_STARTMARKER_], ax
 do_addsprites:
 mov   ax, word ptr ds:[_frontsector]
 mov   dx, SECTORS_SEGMENT
@@ -3320,7 +3321,7 @@ PROC R_CheckPlane_ NEAR
 push      si
 push      di
 
-mov       word ptr cs:[SELFMODIFY_setindex+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr cs:[SELFMODIFY_setindex+1 - OFFSET R_BSP0_STARTMARKER_], ax
 mov       si, dx    ; si holds start
 
 
@@ -3337,7 +3338,7 @@ SHIFT_MACRO shl di 3
 
 
 add       di, _visplaneheaders  ; _di is plheader
-mov       byte ptr cs:[SELFMODIFY_setisceil + 1 - OFFSET R_BSP_STARTMARKER_], cl  ; write cl value
+mov       byte ptr cs:[SELFMODIFY_setisceil + 1 - OFFSET R_BSP0_STARTMARKER_], cl  ; write cl value
 test      cl, cl
 
 mov       cx, bx    ; cx holds stop
@@ -3352,14 +3353,14 @@ loaded_floor_or_ceiling:
 mov       ax, si  ; fetch start
 cmp       ax, word ptr ds:[di + 4]    ; compare to minx
 jge       start_greater_than_min
-mov       word ptr cs:[SELFMODIFY_setminx+3 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr cs:[SELFMODIFY_setminx+3 - OFFSET R_BSP0_STARTMARKER_], ax
 mov       dx, word ptr ds:[di + 4]    ; fetch minx into intrl
 checked_start:
 ; now checkmax
 mov       ax, word ptr ds:[di + 6]   ; fetch maxx, ax = intrh = plheader->max
 cmp       cx, ax                  ; compare stop to maxx
 jle       stop_smaller_than_max
-mov       word ptr cs:[SELFMODIFY_setmax+3 - OFFSET R_BSP_STARTMARKER_], cx
+mov       word ptr cs:[SELFMODIFY_setmax+3 - OFFSET R_BSP0_STARTMARKER_], cx
 done_checking_max:
 
 ; begin loop checks
@@ -3415,10 +3416,10 @@ start_greater_than_min:
 mov       ax, word ptr ds:[di + 4]
 
 ;mov       dx, si                ; put start into intrl (dx was already si)
-mov       word ptr cs:[SELFMODIFY_setminx+3 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr cs:[SELFMODIFY_setminx+3 - OFFSET R_BSP0_STARTMARKER_], ax
 jmp       checked_start
 stop_smaller_than_max:
-mov       word ptr cs:[SELFMODIFY_setmax+3 - OFFSET R_BSP_STARTMARKER_], ax     ; unionh = plheader->max
+mov       word ptr cs:[SELFMODIFY_setmax+3 - OFFSET R_BSP0_STARTMARKER_], ax     ; unionh = plheader->max
 mov       ax, cx                                    ; intrh = stop
 jmp       done_checking_max
 
@@ -3520,7 +3521,7 @@ add   bx, bx
 ; todo clean all this up. do we need local copy?
 ; otherwise use ds and rep movsw
 mov   al, byte ptr es:[bx]		   ; states_render[thing->stateNum].sprite
-mov   byte ptr cs:[SELFMODIFY_set_ax_to_spriteframe+1 - OFFSET R_BSP_STARTMARKER_], al		   
+mov   byte ptr cs:[SELFMODIFY_set_ax_to_spriteframe+1 - OFFSET R_BSP0_STARTMARKER_], al		   
 mov   al, byte ptr es:[bx + 1]	; states_render[thing->stateNum].frame
 mov   ah, SIZEOF_SPRITEFRAME_T
 push   ax    ; bp - 2
@@ -3533,9 +3534,9 @@ mov   bx, ss
 mov   es, bx					; es is SS i.e. destination segment
 mov   ds, dx					; ds is movsw source segment
 mov   ax, word ptr ds:[si+010h]		; 010h
-mov   word ptr cs:[SELFMODIFY_set_ax_to_angle_highword+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_set_ax_to_angle_highword+1 - OFFSET R_BSP0_STARTMARKER_], ax
 mov   al, byte ptr ds:[si+016h]	; 016h  flags2
-mov   byte ptr cs:[SELFMODIFY_set_al_to_flags2+1 - OFFSET R_BSP_STARTMARKER_], al
+mov   byte ptr cs:[SELFMODIFY_set_al_to_flags2+1 - OFFSET R_BSP0_STARTMARKER_], al
 
 lea   di, [bp - 01Ah]			; di is the stack area to copy to..
 
@@ -3613,8 +3614,8 @@ sub   bx, ax
 sbb   cx, dx
 
 
-mov   word ptr cs:[SELFMODIFY_get_tz_lobits+1 - OFFSET R_BSP_STARTMARKER_], bx
-mov   word ptr cs:[SELFMODIFY_get_tz_hibits+1 - OFFSET R_BSP_STARTMARKER_], cx
+mov   word ptr cs:[SELFMODIFY_get_tz_lobits+1 - OFFSET R_BSP0_STARTMARKER_], bx
+mov   word ptr cs:[SELFMODIFY_get_tz_hibits+1 - OFFSET R_BSP0_STARTMARKER_], cx
 
 cmp   cx, MINZ_HIGHBITS
 
@@ -3673,7 +3674,7 @@ adc   dx, di
 neg   dx
 neg   ax
 sbb   dx, 0
-mov   word ptr cs:[SELFMODIFY_get_temp_lowbits+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_get_temp_lowbits+1 - OFFSET R_BSP0_STARTMARKER_], ax
 mov   si, dx						; si stores temp highbits
 or    dx, dx
 
@@ -3773,7 +3774,7 @@ mov   word ptr [bp - 020h], bx
 xchg  bx, di
 
 mov   al, byte ptr es:[bx + 010h]
-mov   byte ptr cs:[SELFMODIFY_set_flip+1 - OFFSET R_BSP_STARTMARKER_], al
+mov   byte ptr cs:[SELFMODIFY_set_flip+1 - OFFSET R_BSP0_STARTMARKER_], al
 mov   ax, SPRITEOFFSETS_SEGMENT
 
 mov   es, ax
@@ -3799,8 +3800,8 @@ add   ax, 01000h
 ;    }
     
 
-mov   word ptr cs:[SELFMODIFY_set_vis_x1+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_sub_x1+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_set_vis_x1+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_sub_x1+1 - OFFSET R_BSP0_STARTMARKER_], ax
 SELFMODIFY_BSP_viewwidth_2:
 cmp   ax, 01000h
 jle   not_too_far_off_right_side_highbits
@@ -3830,7 +3831,7 @@ usedwidth_not_1:
 ;	temp.h.intbits = centerx;
 ;	temp.w += FixedMul (tx.w,xscale.w);
 
-mov   word ptr cs:[SELFMODIFY_set_ax_to_usedwidth+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_set_ax_to_usedwidth+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 les   bx, dword ptr [bp - 01Eh]
@@ -3847,7 +3848,7 @@ call FixedMulBSPLocal_
 SELFMODIFY_BSP_centerx_6:
 add   dx, 01000h
 dec   dx
-mov   word ptr cs:[SELFMODIFY_set_ax_to_x2+1 - OFFSET R_BSP_STARTMARKER_], dx
+mov   word ptr cs:[SELFMODIFY_set_ax_to_x2+1 - OFFSET R_BSP0_STARTMARKER_], dx
 
 ;    // off the left side
 ;    if (x2 < 0)
@@ -4151,7 +4152,7 @@ jge   set_spritelights_to_max
 mov   ah, 48
 mul   ah
 spritelights_set:
-mov   word ptr cs:[SELFMODIFY_set_spritelights_1 + 1 - OFFSET R_BSP_STARTMARKER_], ax 
+mov   word ptr cs:[SELFMODIFY_set_spritelights_1 + 1 - OFFSET R_BSP0_STARTMARKER_], ax 
 mov   ax, word ptr es:[bx + 8]
 test  ax, ax
 je    exit_add_sprites
@@ -4324,12 +4325,12 @@ lodsw     ; textureoffset todo can be 8 bit
 les        si, dword ptr ss:[bx]   ; vertexes
 
 
-mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 ; todo pull this out into outer func?
 mov       ax, word ptr ss:[di+_sides_render]
-mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_1+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_2+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_2+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 mov       ax, VERTEXES_SEGMENT 
 mov       ds, ax	; if put into ds we could lodsw a bit... worth?
@@ -4344,9 +4345,9 @@ mov       si, es ; les earlier
 SHIFT_MACRO shl si 2
 
 lodsw
-mov       word ptr cs:[SELFMODIFY_BSP_v2x+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr cs:[SELFMODIFY_BSP_v2x+1 - OFFSET R_BSP0_STARTMARKER_], ax
 lodsw
-mov       word ptr cs:[SELFMODIFY_BSP_v2y+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr cs:[SELFMODIFY_BSP_v2y+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 mov       ds, cx  ; restore ds..
 
@@ -4385,7 +4386,7 @@ or        byte ptr es:[si], al
 
 mov       ax, word ptr ds:[bx+_seg_normalangles]
 
-mov       word ptr cs:[SELFMODIFY_sub_rw_normal_angle_1+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr cs:[SELFMODIFY_sub_rw_normal_angle_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
 xchg      ax, si
 
 
@@ -4396,7 +4397,7 @@ sub       ax, si
 and       ah, FINE_ANGLE_HIGH_BYTE
 
 ; set centerangle in rendersegloop
-mov       word ptr cs:[SELFMODIFY_set_rw_center_angle+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr cs:[SELFMODIFY_set_rw_center_angle+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 xchg      ax, si
@@ -4406,7 +4407,7 @@ SHIFT_MACRO shl ax SHORTTOFINESHIFT
 
 
 
-mov       word ptr cs:[SELFMODIFY_set_rw_normal_angle_shift3+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr cs:[SELFMODIFY_set_rw_normal_angle_shift3+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 ;	offsetangle = (abs((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> 1) & 0xFFFC;
@@ -4445,10 +4446,10 @@ mov       dx, ax
 do_set_rw_distance:
 
 ; self modifying code for rw_distance
-mov   word ptr cs:[SELFMODIFY_set_bx_rw_distance_lo+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_set_cx_rw_distance_hi+1 - OFFSET R_BSP_STARTMARKER_], dx
-mov   word ptr cs:[SELFMODIFY_get_rw_distance_lo_1+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_get_rw_distance_hi_1+1 - OFFSET R_BSP_STARTMARKER_], dx
+mov   word ptr cs:[SELFMODIFY_set_bx_rw_distance_lo+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_set_cx_rw_distance_hi+1 - OFFSET R_BSP0_STARTMARKER_], dx
+mov   word ptr cs:[SELFMODIFY_get_rw_distance_lo_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_get_rw_distance_hi_1+1 - OFFSET R_BSP0_STARTMARKER_], dx
 
 done_setting_rw_distance:
 les       di, dword ptr ds:[_ds_p]
@@ -4595,25 +4596,25 @@ xchg      ax, dx
 
 mov       si, cs
 mov       ds, si
-ASSUME DS:R_BSP_TEXT
+ASSUME DS:R_BSP0_TEXT
 ; rw_scalestep is ready. write it forward as selfmodifying code here
 
-mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_1+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_2+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_3+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_4+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_rwscale_lo+4 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_sub_rwscale_lo+3 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_2+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_3+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_4+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_rwscale_lo+4 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_sub_rwscale_lo+3 - OFFSET R_BSP0_STARTMARKER_], ax
 
 xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_1+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_2+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_3+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_4+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_2+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_3+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_4+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
-mov       word ptr ds:[SELFMODIFY_add_rwscale_hi+4 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_sub_rwscale_hi+3 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_rwscale_hi+4 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_sub_rwscale_hi+3 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 
@@ -4626,11 +4627,11 @@ shl   dx, 1
 rcl   ax, 1
 finished_shifting_rw_scale:
 
-mov       word ptr ds:[SELFMODIFY_add_to_rwscale_hi_1+3 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_to_rwscale_hi_2+3 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_rwscale_hi_1+3 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_rwscale_hi_2+3 - OFFSET R_BSP0_STARTMARKER_], ax
 xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_add_to_rwscale_lo_1+3 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_to_rwscale_lo_2+3 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_rwscale_lo_1+3 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_rwscale_lo_2+3 - OFFSET R_BSP0_STARTMARKER_], ax
 
 mov       si, ss   ; restore DS
 mov       ds, si
@@ -4707,7 +4708,7 @@ xor       ax, ax
 ; zero out maskedtexture 
 mov       byte ptr ds:[_maskedtexture], al
 ; default to 0
-mov       byte ptr cs:[SELFMODIFY_check_for_any_tex+1 - OFFSET R_BSP_STARTMARKER_], al
+mov       byte ptr cs:[SELFMODIFY_check_for_any_tex+1 - OFFSET R_BSP0_STARTMARKER_], al
 
 les       bx, dword ptr ds:[_ds_p]
 mov       word ptr es:[bx + 01ah], NULL_TEX_COL
@@ -4722,34 +4723,34 @@ jmp       handle_two_sided_line
 
 handle_single_sided_line:
 
-ASSUME DS:R_BSP_TEXT
+ASSUME DS:R_BSP0_TEXT
 
 SELFMODIFY_BSP_drawtype_1:
 SELFMODIFY_BSP_drawtype_1_AFTER = SELFMODIFY_BSP_drawtype_1 + 2
 
 
 mov       ax, ((SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_AFTER) SHL 8) + 0EBh
-mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1 - OFFSET R_BSP0_STARTMARKER_], ax
 mov       ah, SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_AFTER
-mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2 - OFFSET R_BSP0_STARTMARKER_], ax
 mov       ah, SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_AFTER
-mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3 - OFFSET R_BSP0_STARTMARKER_], ax
 mov       ah, SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_AFTER
-mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5 - OFFSET R_BSP0_STARTMARKER_], ax
 
 ;mov       ax, ((SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4_AFTER) SHL 8) + 0E2h  ; LOOP instruction
-;mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4 - OFFSET R_BSP_STARTMARKER_], ax
+;mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
  
-mov       word ptr ds:[SELFMODIFY_BSP_drawtype_2 - OFFSET R_BSP_STARTMARKER_], 089B8h   ; mov ax, xx89
-mov       word ptr ds:[SELFMODIFY_BSP_drawtype_1 - OFFSET R_BSP_STARTMARKER_], ((SELFMODIFY_BSP_drawtype_1_TARGET - SELFMODIFY_BSP_drawtype_1_AFTER) SHL 8) + 0EBh
+mov       word ptr ds:[SELFMODIFY_BSP_drawtype_2 - OFFSET R_BSP0_STARTMARKER_], 089B8h   ; mov ax, xx89
+mov       word ptr ds:[SELFMODIFY_BSP_drawtype_1 - OFFSET R_BSP0_STARTMARKER_], ((SELFMODIFY_BSP_drawtype_1_TARGET - SELFMODIFY_BSP_drawtype_1_AFTER) SHL 8) + 0EBh
 
-mov       byte ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+0 - OFFSET R_BSP_STARTMARKER_], 026h    ; es:
-mov       word ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+1 - OFFSET R_BSP_STARTMARKER_], 087C7h  ; next 2 bytes of following instr (mov   word ptr es:[bx + OFFSET_CEILINGCLIP], 01000h)
+mov       byte ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+0 - OFFSET R_BSP0_STARTMARKER_], 026h    ; es:
+mov       word ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+1 - OFFSET R_BSP0_STARTMARKER_], 087C7h  ; next 2 bytes of following instr (mov   word ptr es:[bx + OFFSET_CEILINGCLIP], 01000h)
 
-mov       byte ptr ds:[SELFMODIFY_BSP_midtexture - OFFSET R_BSP_STARTMARKER_], 039h     ; cmp di,
-mov       word ptr ds:[SELFMODIFY_BSP_midtexture+1 - OFFSET R_BSP_STARTMARKER_], 07CF7h   ; (cmp di,) si, jl
+mov       byte ptr ds:[SELFMODIFY_BSP_midtexture - OFFSET R_BSP0_STARTMARKER_], 039h     ; cmp di,
+mov       word ptr ds:[SELFMODIFY_BSP_midtexture+1 - OFFSET R_BSP0_STARTMARKER_], 07CF7h   ; (cmp di,) si, jl
 
 
 SELFMODIFY_BSP_drawtype_1_TARGET:
@@ -4766,10 +4767,10 @@ mov       ax, word ptr es:[bx]
 
 
 
-mov       word ptr ds:[SELFMODIFY_BSP_set_midtexture+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_BSP_set_midtexture+1 - OFFSET R_BSP0_STARTMARKER_], ax
 ; are any bits set?
 or        al, ah
-or        byte ptr ds:[SELFMODIFY_check_for_any_tex+1 - OFFSET R_BSP_STARTMARKER_], al
+or        byte ptr ds:[SELFMODIFY_check_for_any_tex+1 - OFFSET R_BSP0_STARTMARKER_], al
 
 
 
@@ -4779,7 +4780,7 @@ test      byte ptr [bp - 014h], ML_DONTPEGBOTTOM
 jne       do_peg_bottom
 dont_peg_bottom:
 mov       ax, word ptr [bp - 040h]
-mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1 - OFFSET R_BSP0_STARTMARKER_], ax
 mov       ax, word ptr [bp - 03Eh]
 ; ax has rw_midtexturemid+2
 jmp       done_with_bottom_peg
@@ -4797,7 +4798,7 @@ sar       ax, 1
 rcr       cx, 1
 sar       ax, 1
 rcr       cx, 1
-mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1 - OFFSET R_BSP_STARTMARKER_], cx
+mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1 - OFFSET R_BSP0_STARTMARKER_], cx
 
 
 mov       bx, word ptr [bp - 0Eh]
@@ -4815,7 +4816,7 @@ done_with_bottom_peg:
 SELFMODIFY_BSP_siderenderrowoffset_1:
 add       ax, 01000h
 
-mov       word ptr ds:[SELFMODIFY_set_midtexturemid_hi+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_set_midtexturemid_hi+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 mov       bx, ss   ; restore DS
 mov       ds, bx
@@ -4840,8 +4841,8 @@ done_with_sector_sided_check:
 ; NOTE: Dont selfmodify these branches into nop/jump. tested to be slower?
 ; though thats with [nop to a long jmp]. could try straight long jmp. 
 ; modify the word addr but not the long jmp instruction for a single word.
-mov       byte ptr cs:[SELFMODIFY_get_maskedtexture_1+1 - OFFSET R_BSP_STARTMARKER_], al
-mov       byte ptr cs:[SELFMODIFY_get_maskedtexture_2+1 - OFFSET R_BSP_STARTMARKER_], al
+mov       byte ptr cs:[SELFMODIFY_get_maskedtexture_1+1 - OFFSET R_BSP0_STARTMARKER_], al
+mov       byte ptr cs:[SELFMODIFY_get_maskedtexture_2+1 - OFFSET R_BSP0_STARTMARKER_], al
 
 ; create segtextured value
 SELFMODIFY_check_for_any_tex:
@@ -4852,11 +4853,11 @@ or   	  al, 0
 
 
 jne       do_seg_textured_stuff
-mov       word ptr cs:[SELFMODIFY_BSP_get_segtextured - OFFSET R_BSP_STARTMARKER_], ((SELFMODIFY_BSP_get_segtextured_TARGET - SELFMODIFY_BSP_get_segtextured_AFTER) SHL 8) + 0EBh
+mov       word ptr cs:[SELFMODIFY_BSP_get_segtextured - OFFSET R_BSP0_STARTMARKER_], ((SELFMODIFY_BSP_get_segtextured_TARGET - SELFMODIFY_BSP_get_segtextured_AFTER) SHL 8) + 0EBh
 
 jmp       seg_textured_check_done
 do_seg_textured_stuff:
-mov       word ptr cs:[SELFMODIFY_BSP_get_segtextured - OFFSET R_BSP_STARTMARKER_], 0C089h ; nop
+mov       word ptr cs:[SELFMODIFY_BSP_get_segtextured - OFFSET R_BSP0_STARTMARKER_], 0C089h ; nop
 mov       ax, word ptr [bp - 016h]
 cmp       ax, FINE_ANG180_NOSHIFT
 jbe       offsetangle_greater_than_fineang180
@@ -4917,8 +4918,8 @@ add       ax, 01000h
 SELFMODIFY_get_curseg_render_2:
 add       ax, word ptr ds:[01000h]
 ; rw_offset ready to be written to rendersegloop:
-mov   word ptr cs:[SELFMODIFY_set_cx_rw_offset_lo+1 - OFFSET R_BSP_STARTMARKER_], dx
-mov   word ptr cs:[SELFMODIFY_set_ax_rw_offset_hi+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_set_cx_rw_offset_lo+1 - OFFSET R_BSP0_STARTMARKER_], dx
+mov   word ptr cs:[SELFMODIFY_set_ax_rw_offset_hi+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 
@@ -4983,7 +4984,7 @@ done_setting_ax_to_wallights:
 
 
 ; write walllights to rendersegloop
-mov   word ptr cs:[SELFMODIFY_add_wallights+2 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_add_wallights+2 - OFFSET R_BSP0_STARTMARKER_], ax
 ; ? do math here and write this ahead to drawcolumn colormapsindex?
 
 SELFMODIFY_BSP_fixedcolormap_3_TARGET:
@@ -5197,7 +5198,7 @@ les       bx, dword ptr [bp - 01Ah]
 mov       dx, es
 dec       bx
 call      R_CheckPlane_
-mov       word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1 - OFFSET R_BSP0_STARTMARKER_], ax
 dont_mark_ceiling:
 
 cmp       byte ptr [bp - 01Ch], 0 ; markfloor
@@ -5209,7 +5210,7 @@ les       bx, dword ptr [bp - 01Ah]
 mov       dx, es
 dec       bx
 call      R_CheckPlane_
-mov       word ptr cs:[SELFMODIFY_set_floorplaneindex+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr cs:[SELFMODIFY_set_floorplaneindex+1 - OFFSET R_BSP0_STARTMARKER_], ax
 dont_mark_floor:
 mov       ax, word ptr [bp - 4]
 cmp       ax, word ptr [bp - 2]
@@ -5219,7 +5220,7 @@ at_least_one_column_to_draw:
 
 ; todo better use DS as a scratch var for mults etc ahead.
 
-ASSUME DS:R_BSP_TEXT
+ASSUME DS:R_BSP0_TEXT
 ; make ds equal to cs for self modifying codes
 mov       ax, cs
 mov       ds, ax
@@ -5299,11 +5300,11 @@ sbb       dx, 0
 
 ; dx:ax are topstep
 
-mov       word ptr ds:[SELFMODIFY_sub_topstep_lo+3 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_topstep_lo+4 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_sub_topstep_lo+3 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_topstep_lo+4 - OFFSET R_BSP0_STARTMARKER_], ax
 xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_sub_topstep_hi+3 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_topstep_hi+4 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_sub_topstep_hi+3 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_topstep_hi+4 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 SELFMODIFY_BSP_detailshift_2:
@@ -5315,11 +5316,11 @@ rcl       ax, 1
 
 finished_shifting_topstep:
 
-mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_1+3 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_2+3 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_1+3 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_2+3 - OFFSET R_BSP0_STARTMARKER_], ax
 xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_1+3 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_2+3 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_1+3 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_2+3 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 les       bx, dword ptr [bp - 044h]
@@ -5396,11 +5397,11 @@ sbb       dx, 0
 
 ; dx:ax are bottomstep
 
-mov       word ptr ds:[SELFMODIFY_sub_botstep_lo+3 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_botstep_lo+4 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_sub_botstep_lo+3 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_botstep_lo+4 - OFFSET R_BSP0_STARTMARKER_], ax
 xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_sub_botstep_hi+3 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_botstep_hi+4 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_sub_botstep_hi+3 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_botstep_hi+4 - OFFSET R_BSP0_STARTMARKER_], ax
 
 SELFMODIFY_BSP_detailshift_3:
 shl       dx, 1
@@ -5411,11 +5412,11 @@ rcl       ax, 1
 
 finished_shifting_botstep:
 
-mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_1+3 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_2+3 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_1+3 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_2+3 - OFFSET R_BSP0_STARTMARKER_], ax
 xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_1+3 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_2+3 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_1+3 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_2+3 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 
@@ -5642,11 +5643,11 @@ sbb       dx, 0
 ; self modifying code to write to pixlowstep usages.
 
 
-mov       word ptr ds:[SELFMODIFY_sub_pixhigh_lo+3 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_pixhighstep_lo+4 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_sub_pixhigh_lo+3 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_pixhighstep_lo+4 - OFFSET R_BSP0_STARTMARKER_], ax
 xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_sub_pixhigh_hi+3 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_pixhighstep_hi+4 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_sub_pixhigh_hi+3 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_pixhighstep_hi+4 - OFFSET R_BSP0_STARTMARKER_], ax
 
 SELFMODIFY_BSP_detailshift_4:
 shl       dx, 1
@@ -5655,11 +5656,11 @@ shift_pixhighstep_once:
 shl       dx, 1
 rcl       ax, 1
 done_shifting_pixhighstep:
-mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_hi_1+3 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_hi_2+3 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_hi_1+3 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_hi_2+3 - OFFSET R_BSP0_STARTMARKER_], ax
 xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_lo_1+3 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_lo_2+3 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_lo_1+3 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_lo_2+3 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 ; put these back where they need to be.
@@ -5841,11 +5842,11 @@ sbb       dx, 0
 ; self modifying code to write to pixlowstep usages.
 
 
-mov       word ptr ds:[SELFMODIFY_sub_pixlow_lo+3 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_pixlowstep_lo+4 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_sub_pixlow_lo+3 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_pixlowstep_lo+4 - OFFSET R_BSP0_STARTMARKER_], ax
 xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_sub_pixlow_hi+3 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_pixlowstep_hi+4 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_sub_pixlow_hi+3 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_pixlowstep_hi+4 - OFFSET R_BSP0_STARTMARKER_], ax
 
 SELFMODIFY_BSP_detailshift_5:
 shl       dx, 1
@@ -5854,11 +5855,11 @@ shift_pixlowstep_once:
 shl       dx, 1
 rcl       ax, 1
 done_shifting_pixlowstep:
-mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_1+3 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_2+3 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_1+3 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_2+3 - OFFSET R_BSP0_STARTMARKER_], ax
 xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_add_to_pixlow_lo_1+3 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_to_pixlow_lo_2+3 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_pixlow_lo_1+3 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_pixlow_lo_2+3 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 
@@ -5878,20 +5879,20 @@ mov   di, bx
 SELFMODIFY_detailshift_and_1:
 
 and   bx, 01000h
-mov   word ptr ds:[SELFMODIFY_add_rw_x_base4_to_ax+1 - OFFSET R_BSP_STARTMARKER_], bx
-mov   word ptr ds:[SELFMODIFY_compare_ax_to_start_rw_x+1 - OFFSET R_BSP_STARTMARKER_], di
+mov   word ptr ds:[SELFMODIFY_add_rw_x_base4_to_ax+1 - OFFSET R_BSP0_STARTMARKER_], bx
+mov   word ptr ds:[SELFMODIFY_compare_ax_to_start_rw_x+1 - OFFSET R_BSP0_STARTMARKER_], di
 
 ; self modify code in the function to set constants rather than
 ; repeatedly reading loop-constant or function-constant variables.
 
-mov   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1 - OFFSET R_BSP_STARTMARKER_], 0
+mov   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1 - OFFSET R_BSP0_STARTMARKER_], 0
 
 
 
 mov   ax, word ptr [bp - 01Ah]
-mov   word ptr ds:[SELFMODIFY_cmp_di_to_rw_stopx_1+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov   word ptr ds:[SELFMODIFY_cmp_di_to_rw_stopx_2+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov   word ptr ds:[SELFMODIFY_cmp_di_to_rw_stopx_3+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_cmp_di_to_rw_stopx_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_cmp_di_to_rw_stopx_2+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_cmp_di_to_rw_stopx_3+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 cmp   byte ptr [bp - 01Ch], 0 ;markfloor
@@ -5905,8 +5906,8 @@ mov   ax, ((SELFMODIFY_BSP_markfloor_1_TARGET - SELFMODIFY_BSP_markfloor_1_AFTER
 mov   si, ((SELFMODIFY_BSP_markfloor_2_TARGET - SELFMODIFY_BSP_markfloor_2_AFTER) SHL 8) + 0EBh
 do_markfloor_selfmodify:
 
-mov   word ptr ds:[SELFMODIFY_BSP_markfloor_1 - OFFSET R_BSP_STARTMARKER_], ax
-mov   word ptr ds:[SELFMODIFY_BSP_markfloor_2 - OFFSET R_BSP_STARTMARKER_], si
+mov   word ptr ds:[SELFMODIFY_BSP_markfloor_1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_BSP_markfloor_2 - OFFSET R_BSP0_STARTMARKER_], si
 
 mov   ah, byte ptr [bp - 01Bh] ;markceiling
 cmp   ah, 0   
@@ -5922,8 +5923,8 @@ mov   ax, ((SELFMODIFY_BSP_markceiling_1_TARGET - SELFMODIFY_BSP_markceiling_1_A
 mov   si, ((SELFMODIFY_BSP_markceiling_2_TARGET - SELFMODIFY_BSP_markceiling_2_AFTER) SHL 8) + 0EBh
 do_markceiling_selfmodify:
 
-mov   word ptr ds:[SELFMODIFY_BSP_markceiling_1 - OFFSET R_BSP_STARTMARKER_], ax
-mov   word ptr ds:[SELFMODIFY_BSP_markceiling_2 - OFFSET R_BSP_STARTMARKER_], si
+mov   word ptr ds:[SELFMODIFY_BSP_markceiling_1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_BSP_markceiling_2 - OFFSET R_BSP0_STARTMARKER_], si
 
 xchg  ax, cx
 
@@ -5990,28 +5991,28 @@ lea   si, [bp - 032h]
 
 
 lods  word ptr ss:[si]
-mov   word ptr ds:[SELFMODIFY_set_rw_scale_lo+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_set_rw_scale_lo+1 - OFFSET R_BSP0_STARTMARKER_], ax
 lods  word ptr ss:[si]
-mov   word ptr ds:[SELFMODIFY_set_rw_scale_hi+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_set_rw_scale_hi+1 - OFFSET R_BSP0_STARTMARKER_], ax
 lods  word ptr ss:[si] ; topfrac lo
-mov   word ptr ds:[SELFMODIFY_set_topfrac_lo+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_set_topfrac_lo+1 - OFFSET R_BSP0_STARTMARKER_], ax
 lods  word ptr ss:[si] ; topfrac hi
-mov   word ptr ds:[SELFMODIFY_set_topfrac_hi+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_set_topfrac_hi+1 - OFFSET R_BSP0_STARTMARKER_], ax
 lods  word ptr ss:[si] ; bottomfrac lo
-mov   word ptr ds:[SELFMODIFY_set_botfrac_lo+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_set_botfrac_lo+1 - OFFSET R_BSP0_STARTMARKER_], ax
 lods  word ptr ss:[si] ; bottomfrac hi
-mov   word ptr ds:[SELFMODIFY_set_botfrac_hi+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_set_botfrac_hi+1 - OFFSET R_BSP0_STARTMARKER_], ax
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3:
 jmp SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3 + 2
 lods  word ptr ss:[si] ; pixlow lo
-mov   word ptr ds:[SELFMODIFY_set_pixlow_lo+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_set_pixlow_lo+1 - OFFSET R_BSP0_STARTMARKER_], ax
 lods  word ptr ss:[si] ; pixlow hi
-mov   word ptr ds:[SELFMODIFY_set_pixlow_hi+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_set_pixlow_hi+1 - OFFSET R_BSP0_STARTMARKER_], ax
 lods  word ptr ss:[si] ; pixhigh lo
-mov   word ptr ds:[SELFMODIFY_set_pixhigh_lo+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_set_pixhigh_lo+1 - OFFSET R_BSP0_STARTMARKER_], ax
 lods  word ptr ss:[si] ; pixhigh hi
-mov   word ptr ds:[SELFMODIFY_set_pixhigh_hi+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_set_pixhigh_hi+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET:
 mov   al, 0 ; xoffset is 0
@@ -6024,7 +6025,7 @@ SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_TARGET:
 cbw  
 xchg  ax, bx	; xoffset to bx
 
-inc   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1 - OFFSET R_BSP_STARTMARKER_]
+inc   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1 - OFFSET R_BSP0_STARTMARKER_]
 
 SELFMODIFY_detailshift_plus1_1:
 mov   al, byte ptr ss:[bx + OFFSET _quality_port_lookup]	
@@ -6114,33 +6115,33 @@ cmp   al, 0
 
 jge   exit_rendersegloop ; exit before adding the other loop vars.
 SELFMODIFY_add_topstep_lo:
-add   word ptr ds:[SELFMODIFY_set_topfrac_lo+1 - OFFSET R_BSP_STARTMARKER_], 01000h
+add   word ptr ds:[SELFMODIFY_set_topfrac_lo+1 - OFFSET R_BSP0_STARTMARKER_], 01000h
 SELFMODIFY_add_topstep_hi:
-adc   word ptr ds:[SELFMODIFY_set_topfrac_hi+1 - OFFSET R_BSP_STARTMARKER_], 01000h
+adc   word ptr ds:[SELFMODIFY_set_topfrac_hi+1 - OFFSET R_BSP0_STARTMARKER_], 01000h
 
 SELFMODIFY_add_botstep_lo:
-add   word ptr ds:[SELFMODIFY_set_botfrac_lo+1 - OFFSET R_BSP_STARTMARKER_], 01000h
+add   word ptr ds:[SELFMODIFY_set_botfrac_lo+1 - OFFSET R_BSP0_STARTMARKER_], 01000h
 SELFMODIFY_add_botstep_hi:
-adc   word ptr ds:[SELFMODIFY_set_botfrac_hi+1 - OFFSET R_BSP_STARTMARKER_], 01000h
+adc   word ptr ds:[SELFMODIFY_set_botfrac_hi+1 - OFFSET R_BSP0_STARTMARKER_], 01000h
 
 SELFMODIFY_add_rwscale_lo:
-add   word ptr ds:[SELFMODIFY_set_rw_scale_lo+1 - OFFSET R_BSP_STARTMARKER_], 01000h
+add   word ptr ds:[SELFMODIFY_set_rw_scale_lo+1 - OFFSET R_BSP0_STARTMARKER_], 01000h
 SELFMODIFY_add_rwscale_hi:
-adc   word ptr ds:[SELFMODIFY_set_rw_scale_hi+1 - OFFSET R_BSP_STARTMARKER_], 01000h
+adc   word ptr ds:[SELFMODIFY_set_rw_scale_hi+1 - OFFSET R_BSP0_STARTMARKER_], 01000h
 
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2:
 jmp SHORT   SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_TARGET
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2 + 2
 
 SELFMODIFY_add_pixlowstep_lo:
-add   word ptr ds:[SELFMODIFY_set_pixlow_lo+1 - OFFSET R_BSP_STARTMARKER_], 01000h
+add   word ptr ds:[SELFMODIFY_set_pixlow_lo+1 - OFFSET R_BSP0_STARTMARKER_], 01000h
 SELFMODIFY_add_pixlowstep_hi:
-adc   word ptr ds:[SELFMODIFY_set_pixlow_hi+1 - OFFSET R_BSP_STARTMARKER_], 01000h
+adc   word ptr ds:[SELFMODIFY_set_pixlow_hi+1 - OFFSET R_BSP0_STARTMARKER_], 01000h
 
 SELFMODIFY_add_pixhighstep_lo:
-add   word ptr ds:[SELFMODIFY_set_pixhigh_lo+1 - OFFSET R_BSP_STARTMARKER_], 01000h
+add   word ptr ds:[SELFMODIFY_set_pixhigh_lo+1 - OFFSET R_BSP0_STARTMARKER_], 01000h
 SELFMODIFY_add_pixhighstep_hi:
-adc   word ptr ds:[SELFMODIFY_set_pixhigh_hi+1 - OFFSET R_BSP_STARTMARKER_], 01000h
+adc   word ptr ds:[SELFMODIFY_set_pixhigh_hi+1 - OFFSET R_BSP0_STARTMARKER_], 01000h
 
 
 jmp   continue_outer_rendersegloop
@@ -6491,7 +6492,7 @@ SELFMODIFY_add_wallights:
 ; scalelight is pre-shifted 4 to save on the double sal every column.
 mov   al, byte ptr ds:[si+01000h]         ; 8a 84 00 10 
 ;        set drawcolumn colormap function address
-mov   byte ptr cs:[SELFMODIFY_COLFUNC_set_colormap_index_jump - OFFSET R_BSP_STARTMARKER_], al
+mov   byte ptr cs:[SELFMODIFY_COLFUNC_set_colormap_index_jump - OFFSET R_BSP0_STARTMARKER_], al
 
 
 jmp   light_set
@@ -6720,7 +6721,7 @@ ENDIF
 ; do jmp. highest priority, overwrite previously written thing.
 seglooptexrepeat0_is_jmp:
 ; NOTE1 next CS here
-mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0 - OFFSET R_BSP_STARTMARKER_], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
+mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0 - OFFSET R_BSP0_STARTMARKER_], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
 jmp   just_do_draw0
 in_texture_bounds0:
 xchg  ax, dx
@@ -6744,21 +6745,21 @@ call  R_GetColumnSegment_
 pop   bx
 
 mov   dx, word ptr ds:[_segloopcachedsegment]
-mov   word ptr cs:[SELFMODIFY_add_cached_segment0+1 - OFFSET R_BSP_STARTMARKER_], dx
+mov   word ptr cs:[SELFMODIFY_add_cached_segment0+1 - OFFSET R_BSP0_STARTMARKER_], dx
 
          COMMENT @ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
          ; see above, but all textures in vanilla are po2 so this is not necessary for now.
          mov   dh, byte ptr ds:[_seglooptexmodulo]
-         mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexmodulo0+1 - OFFSET R_BSP_STARTMARKER_], dh
+         mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexmodulo0+1 - OFFSET R_BSP0_STARTMARKER_], dh
 
          cmp   dh, 0
          je    seglooptexmodulo0_is_jmp
 
          mov   dl, 0B2h   ;  (mov dl, xx)
-         mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0 - OFFSET R_BSP_STARTMARKER_], dx
+         mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0 - OFFSET R_BSP0_STARTMARKER_], dx
          jmp   check_seglooptexrepeat0
          seglooptexmodulo0_is_jmp:
-         mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0 - OFFSET R_BSP_STARTMARKER_], ((SELFMODIFY_BSP_check_seglooptexmodulo0_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER) SHL 8) + 0EBh
+         mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0 - OFFSET R_BSP0_STARTMARKER_], ((SELFMODIFY_BSP_check_seglooptexmodulo0_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER) SHL 8) + 0EBh
          check_seglooptexrepeat0:
          @
 
@@ -6768,8 +6769,8 @@ cmp   dh, 0
 je    seglooptexrepeat0_is_jmp
 ; modulo is seglooptexrepeat - 1
 mov   dl, byte ptr ds:[_segloopheightvalcache]
-mov   byte ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0 - OFFSET R_BSP_STARTMARKER_],   0B8h   ; mov ax, xxxx
-mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0+1 - OFFSET R_BSP_STARTMARKER_], dx
+mov   byte ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0 - OFFSET R_BSP0_STARTMARKER_],   0B8h   ; mov ax, xxxx
+mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0+1 - OFFSET R_BSP0_STARTMARKER_], dx
 
 jmp   just_do_draw0
 
@@ -6796,12 +6797,12 @@ FastDiv3232FFFF_done:
 
 mov   dh, dl
 mov   dl, ah
-mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_lo+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1 - OFFSET R_BSP_STARTMARKER_], dx  
+mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_lo+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1 - OFFSET R_BSP0_STARTMARKER_], dx  
 
 
 ; store dc_x directly in code
-mov   word ptr cs:[SELFMODIFY_COLFUNC_get_dc_x+1 - OFFSET R_BSP_STARTMARKER_], di
+mov   word ptr cs:[SELFMODIFY_COLFUNC_get_dc_x+1 - OFFSET R_BSP0_STARTMARKER_], di
 
 ; get texturecolumn     in dx
 pop   dx
@@ -7134,12 +7135,12 @@ mov   bp, 01000h
 
 ; small idea: make these each three NOPs if its gonna be a bot only draw?
 SELFMODIFY_bottomtexonly_1:
-mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret - OFFSET R_BSP_STARTMARKER_], 0C3h  ; ret
+mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret - OFFSET R_BSP0_STARTMARKER_], 0C3h  ; ret
 call  R_DrawColumnPrep_
 
 pop bp
 SELFMODIFY_bottomtexonly_2:
-mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret - OFFSET R_BSP_STARTMARKER_], 05Dh  ; pop bp
+mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret - OFFSET R_BSP0_STARTMARKER_], 05Dh  ; pop bp
 
 pop   dx
 pop   es
@@ -7234,23 +7235,23 @@ call  R_GetColumnSegment_
 pop   bx
 
 mov   dx, word ptr ds:[2 + _segloopcachedsegment]
-mov   word ptr cs:[SELFMODIFY_add_cached_segment1+1 - OFFSET R_BSP_STARTMARKER_], dx
+mov   word ptr cs:[SELFMODIFY_add_cached_segment1+1 - OFFSET R_BSP0_STARTMARKER_], dx
 
 
 
 
          COMMENT @ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
          mov   dh, byte ptr ds:[1 + _seglooptexmodulo]
-         mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexmodulo1+1 - OFFSET R_BSP_STARTMARKER_], dh
+         mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexmodulo1+1 - OFFSET R_BSP0_STARTMARKER_], dh
 
          cmp   dh, 0
          je    seglooptexmodulo1_is_jmp
 
          mov   dl, 0B2h   ;  (mov dl, xx)
-         mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1 - OFFSET R_BSP_STARTMARKER_], dx
+         mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1 - OFFSET R_BSP0_STARTMARKER_], dx
          jmp   check_seglooptexrepeat1
          seglooptexmodulo1_is_jmp:
-         mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1 - OFFSET R_BSP_STARTMARKER_], ((SELFMODIFY_BSP_check_seglooptexmodulo1_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo1_AFTER) SHL 8) + 0EBh
+         mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1 - OFFSET R_BSP0_STARTMARKER_], ((SELFMODIFY_BSP_check_seglooptexmodulo1_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo1_AFTER) SHL 8) + 0EBh
          check_seglooptexrepeat1:
          @
 
@@ -7261,13 +7262,13 @@ cmp   dh, 0
 je    seglooptexrepeat1_is_jmp
 ; modulo is seglooptexrepeat - 1
 mov   dl, byte ptr ds:[1 + _segloopheightvalcache]
-mov   byte ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1 - OFFSET R_BSP_STARTMARKER_],   0B8h   ; mov ax, xxxx
-mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1+1 - OFFSET R_BSP_STARTMARKER_], dx
+mov   byte ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1 - OFFSET R_BSP0_STARTMARKER_],   0B8h   ; mov ax, xxxx
+mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1+1 - OFFSET R_BSP0_STARTMARKER_], dx
 
 jmp   just_do_draw1
 ; do jmp. highest priority, overwrite previously written thing.
 seglooptexrepeat1_is_jmp:
-mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1 - OFFSET R_BSP_STARTMARKER_], ((SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER) SHL 8) + 0EBh
+mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1 - OFFSET R_BSP0_STARTMARKER_], ((SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER) SHL 8) + 0EBh
 jmp   just_do_draw1
 in_texture_bounds1:
 xchg  ax, dx  ; put texturecol in ax
@@ -7301,8 +7302,8 @@ R_RenderSegLoop_exit:
 
 
 ; clean up the self modified code of renderseg loop. 
-mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0 - OFFSET R_BSP_STARTMARKER_], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
-mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1 - OFFSET R_BSP_STARTMARKER_], ((SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER) SHL 8) + 0EBh
+mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0 - OFFSET R_BSP0_STARTMARKER_], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
+mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1 - OFFSET R_BSP0_STARTMARKER_], ((SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER) SHL 8) + 0EBh
 
 
 check_spr_top_clip:
@@ -7410,22 +7411,22 @@ SELFMODIFY_BSP_drawtype_2_AFTER = SELFMODIFY_BSP_drawtype_2+2
 
 mov       ax, 0c089h 
 
-ASSUME DS:R_BSP_TEXT
-mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3 - OFFSET R_BSP_STARTMARKER_], ax
-;mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4 - OFFSET R_BSP_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5 - OFFSET R_BSP_STARTMARKER_], ax
+ASSUME DS:R_BSP0_TEXT
+mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3 - OFFSET R_BSP0_STARTMARKER_], ax
+;mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4 - OFFSET R_BSP0_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
-mov       word ptr ds:[SELFMODIFY_BSP_drawtype_1 - OFFSET R_BSP_STARTMARKER_], 0EBB8h   ; mov ax, xxeB
-mov       word ptr ds:[SELFMODIFY_BSP_drawtype_2 - OFFSET R_BSP_STARTMARKER_], ((SELFMODIFY_BSP_drawtype_2_TARGET - SELFMODIFY_BSP_drawtype_2_AFTER) SHL 8) + 0EBh
+mov       word ptr ds:[SELFMODIFY_BSP_drawtype_1 - OFFSET R_BSP0_STARTMARKER_], 0EBB8h   ; mov ax, xxeB
+mov       word ptr ds:[SELFMODIFY_BSP_drawtype_2 - OFFSET R_BSP0_STARTMARKER_], ((SELFMODIFY_BSP_drawtype_2_TARGET - SELFMODIFY_BSP_drawtype_2_AFTER) SHL 8) + 0EBh
 
-mov       word ptr ds:[SELFMODIFY_BSP_midtexture - OFFSET R_BSP_STARTMARKER_], 0E9h
-mov       word ptr ds:[SELFMODIFY_BSP_midtexture+1 - OFFSET R_BSP_STARTMARKER_], (SELFMODIFY_BSP_midtexture_TARGET - SELFMODIFY_BSP_midtexture_AFTER) 
+mov       word ptr ds:[SELFMODIFY_BSP_midtexture - OFFSET R_BSP0_STARTMARKER_], 0E9h
+mov       word ptr ds:[SELFMODIFY_BSP_midtexture+1 - OFFSET R_BSP0_STARTMARKER_], (SELFMODIFY_BSP_midtexture_TARGET - SELFMODIFY_BSP_midtexture_AFTER) 
 
-mov       byte ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+0 - OFFSET R_BSP_STARTMARKER_], 0E9h ; jmp short rel16
-mov       word ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+1 - OFFSET R_BSP_STARTMARKER_], SELFMODIFY_BSP_midtexture_return_jmp_TARGET - SELFMODIFY_BSP_midtexture_return_jmp_AFTER
+mov       byte ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+0 - OFFSET R_BSP0_STARTMARKER_], 0E9h ; jmp short rel16
+mov       word ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+1 - OFFSET R_BSP0_STARTMARKER_], SELFMODIFY_BSP_midtexture_return_jmp_TARGET - SELFMODIFY_BSP_midtexture_return_jmp_AFTER
 
 
 
@@ -7680,12 +7681,12 @@ mov       ax, word ptr es:[bx]
 ; prev two bytes will be a jump or mov cx with the low byte
 ; todo midtexture some stuff set here
 
-mov       word ptr cs:[SELFMODIFY_BSP_set_toptexture+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr cs:[SELFMODIFY_BSP_set_toptexture+1 - OFFSET R_BSP0_STARTMARKER_], ax
 mov       bx, ax     ; backup
 test      ax, ax
 jne       toptexture_not_zero
 toptexture_zero:
-mov       word ptr cs:[SELFMODIFY_BSP_toptexture - OFFSET R_BSP_STARTMARKER_], ((SELFMODIFY_BSP_toptexture_TARGET - SELFMODIFY_BSP_toptexture_AFTER) SHL 8) + 0EBh
+mov       word ptr cs:[SELFMODIFY_BSP_toptexture - OFFSET R_BSP0_STARTMARKER_], ((SELFMODIFY_BSP_toptexture_TARGET - SELFMODIFY_BSP_toptexture_AFTER) SHL 8) + 0EBh
 jmp       toptexture_stuff_done
 set_toptexture_to_worldtop:
 les       ax, dword ptr [bp - 040h]
@@ -7693,10 +7694,10 @@ mov       dx, es
 jmp       do_selfmodify_toptexture
 
 toptexture_not_zero:
-mov       word ptr cs:[SELFMODIFY_BSP_toptexture - OFFSET R_BSP_STARTMARKER_], 0468Bh ; mov   ax, word ptr [bp - 02Dh] first two bytes
+mov       word ptr cs:[SELFMODIFY_BSP_toptexture - OFFSET R_BSP0_STARTMARKER_], 0468Bh ; mov   ax, word ptr [bp - 02Dh] first two bytes
 ; are any bits set?
 or        bl, bh
-or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1 - OFFSET R_BSP_STARTMARKER_], bl
+or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1 - OFFSET R_BSP0_STARTMARKER_], bl
 
 
 test      byte ptr [bp - 014h], ML_DONTPEGTOP
@@ -7734,8 +7735,8 @@ sbb       dx, 01000h
 do_selfmodify_toptexture:
 ; set _rw_toptexturemid in rendersegloop
 
-mov   word ptr cs:[SELFMODIFY_set_toptexturemid_lo+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_set_toptexturemid_hi+1 - OFFSET R_BSP_STARTMARKER_], dx
+mov   word ptr cs:[SELFMODIFY_set_toptexturemid_lo+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_set_toptexturemid_hi+1 - OFFSET R_BSP0_STARTMARKER_], dx
 
 
 toptexture_stuff_done:
@@ -7756,20 +7757,20 @@ mov       ax, word ptr es:[bx]
 
 ; write the high byte of the word.
 ; prev two bytes will be a jump or mov cx with the low byte
-mov       word ptr cs:[SELFMODIFY_BSP_set_bottomtexture+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr cs:[SELFMODIFY_BSP_set_bottomtexture+1 - OFFSET R_BSP0_STARTMARKER_], ax
 mov       bx, ax     ; backup
 test      ax, ax
 
 jne       bottexture_not_zero
 
 bottexture_zero:
-mov       word ptr cs:[SELFMODIFY_BSP_bottexture - OFFSET R_BSP_STARTMARKER_], ((SELFMODIFY_BSP_bottexture_TARGET - SELFMODIFY_BSP_bottexture_AFTER) SHL 8) + 0EBh
+mov       word ptr cs:[SELFMODIFY_BSP_bottexture - OFFSET R_BSP0_STARTMARKER_], ((SELFMODIFY_BSP_bottexture_TARGET - SELFMODIFY_BSP_bottexture_AFTER) SHL 8) + 0EBh
 jmp       bottexture_stuff_done
 bottexture_not_zero:
-mov       word ptr cs:[SELFMODIFY_BSP_bottexture - OFFSET R_BSP_STARTMARKER_], 0468Bh   ; mov   ax, word ptr [bp - 02Dh] first two bytes
+mov       word ptr cs:[SELFMODIFY_BSP_bottexture - OFFSET R_BSP0_STARTMARKER_], 0468Bh   ; mov   ax, word ptr [bp - 02Dh] first two bytes
 ; are any bits set?
 or        bl, bh
-or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1 - OFFSET R_BSP_STARTMARKER_], bl
+or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1 - OFFSET R_BSP0_STARTMARKER_], bl
 
 
 
@@ -7782,8 +7783,8 @@ do_selfmodify_bottexture:
 
 ; set _rw_toptexturemid in rendersegloop
 
-mov   word ptr cs:[SELFMODIFY_set_bottexturemid_lo+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_set_bottexturemid_hi+1 - OFFSET R_BSP_STARTMARKER_], dx
+mov   word ptr cs:[SELFMODIFY_set_bottexturemid_lo+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_set_bottexturemid_hi+1 - OFFSET R_BSP0_STARTMARKER_], dx
 
 
 bottexture_stuff_done:
@@ -7795,8 +7796,8 @@ mov       ax, 01000h
 ;	rw_bottomtexturemid.h.intbits += side_render->rowoffset;
 
 
-add       word ptr cs:[SELFMODIFY_set_toptexturemid_hi+1 - OFFSET R_BSP_STARTMARKER_], ax
-add       word ptr cs:[SELFMODIFY_set_bottexturemid_hi+1 - OFFSET R_BSP_STARTMARKER_], ax
+add       word ptr cs:[SELFMODIFY_set_toptexturemid_hi+1 - OFFSET R_BSP0_STARTMARKER_], ax
+add       word ptr cs:[SELFMODIFY_set_bottexturemid_hi+1 - OFFSET R_BSP0_STARTMARKER_], ax
 cmp       word ptr [bp - 0Eh], 0
 
 ; // allocate space for masked texture tables
@@ -7843,6 +7844,7 @@ ENDP
 ;R_ClipSolidWallSegment_
 
 PROC R_ClipSolidWallSegment_ NEAR
+ 
 
 
 
@@ -7970,6 +7972,7 @@ ENDP
 ;R_ClipPassWallSegment_
 
 PROC R_ClipPassWallSegment_ NEAR
+
 
 ; input: ax = first (transferred to si)
 ;        dx = last (transferred to cx)
@@ -8899,7 +8902,7 @@ jb    calculate_spritelights
 ; use max spritelight
 mov    ax, 720   ; hardcoded (lightmult48lookup[LIGHTLEVELS - 1])
 player_spritelights_set:
-mov   word ptr cs:[SELFMODIFY_set_spritelights_2 + 1 - OFFSET R_BSP_STARTMARKER_], ax 
+mov   word ptr cs:[SELFMODIFY_set_spritelights_2 + 1 - OFFSET R_BSP0_STARTMARKER_], ax 
 
 
 
@@ -8946,7 +8949,7 @@ jmp   player_spritelights_set
 calculate_spritelights:
 mov   ah, 48
 mul   ah
-mov   word ptr cs:[SELFMODIFY_set_spritelights_2 + 1 - OFFSET R_BSP_STARTMARKER_], ax 
+mov   word ptr cs:[SELFMODIFY_set_spritelights_2 + 1 - OFFSET R_BSP0_STARTMARKER_], ax 
 jmp   first_iter
 
 
@@ -8980,9 +8983,9 @@ ENDP
 
 R_CHECKBBOX_SWITCH_JMP_TABLE:
 
-dw R_CBB_SWITCH_CASE_00 - OFFSET R_BSP_STARTMARKER_, R_CBB_SWITCH_CASE_01 - OFFSET R_BSP_STARTMARKER_, R_CBB_SWITCH_CASE_02 - OFFSET R_BSP_STARTMARKER_, R_CBB_SWITCH_CASE_03 - OFFSET R_BSP_STARTMARKER_
-dw R_CBB_SWITCH_CASE_04 - OFFSET R_BSP_STARTMARKER_, R_CBB_SWITCH_CASE_05 - OFFSET R_BSP_STARTMARKER_, R_CBB_SWITCH_CASE_06 - OFFSET R_BSP_STARTMARKER_, R_CBB_SWITCH_CASE_07 - OFFSET R_BSP_STARTMARKER_
-dw R_CBB_SWITCH_CASE_08 - OFFSET R_BSP_STARTMARKER_, R_CBB_SWITCH_CASE_09 - OFFSET R_BSP_STARTMARKER_, R_CBB_SWITCH_CASE_10 - OFFSET R_BSP_STARTMARKER_
+dw R_CBB_SWITCH_CASE_00 - OFFSET R_BSP0_STARTMARKER_, R_CBB_SWITCH_CASE_01 - OFFSET R_BSP0_STARTMARKER_, R_CBB_SWITCH_CASE_02 - OFFSET R_BSP0_STARTMARKER_, R_CBB_SWITCH_CASE_03 - OFFSET R_BSP0_STARTMARKER_
+dw R_CBB_SWITCH_CASE_04 - OFFSET R_BSP0_STARTMARKER_, R_CBB_SWITCH_CASE_05 - OFFSET R_BSP0_STARTMARKER_, R_CBB_SWITCH_CASE_06 - OFFSET R_BSP0_STARTMARKER_, R_CBB_SWITCH_CASE_07 - OFFSET R_BSP0_STARTMARKER_
+dw R_CBB_SWITCH_CASE_08 - OFFSET R_BSP0_STARTMARKER_, R_CBB_SWITCH_CASE_09 - OFFSET R_BSP0_STARTMARKER_, R_CBB_SWITCH_CASE_10 - OFFSET R_BSP0_STARTMARKER_
 
 ;R_CheckBBox_
 
@@ -9030,7 +9033,7 @@ xor   ah, ah
 mov   di, ax
 add   di, ax
 ; switch block jump
-jmp   word ptr cs:[di + R_CHECKBBOX_SWITCH_JMP_TABLE - OFFSET R_BSP_STARTMARKER_]
+jmp   word ptr cs:[di + R_CHECKBBOX_SWITCH_JMP_TABLE - OFFSET R_BSP0_STARTMARKER_]
 SELFMODIFY_BSP_viewx_lo_4_TARGET_2:
 ; jmp here if viewx lobits are 0.
 viewx_greater_than_left:
@@ -9123,7 +9126,7 @@ sub   ax, 01000h
 SELFMODIFY_BSP_viewangle_hi_4:
 sbb   cx, 01000h
 
-mov   word ptr cs:[SELFMODIFY_BSP_forward_angle2_lobits+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_BSP_forward_angle2_lobits+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 
@@ -10981,8 +10984,9 @@ PATCH_TEXTURE_SEGMENT = 05000h
 COMPOSITE_TEXTURE_SEGMENT = 05000h
 
 
-PROC R_GetPatchTexture_Far_ FAR
-PUBLIC R_GetPatchTexture_Far_
+PROC R_GetPatchTexture_Far0_ FAR
+PUBLIC R_GetPatchTexture_Far0_ 
+
 
 call R_GetPatchTexture_
 retf
@@ -11020,7 +11024,7 @@ SHIFT_MACRO shl   si 4  ; shift texpage 4.
 cbw
 xchg  ax, si
 sal   si, 1
-add   ax, word ptr cs:[si + _pagesegments - OFFSET R_BSP_STARTMARKER_]
+add   ax, word ptr cs:[si + _pagesegments - OFFSET R_BSP0_STARTMARKER_]
 add   ah, (PATCH_TEXTURE_SEGMENT SHR 8)
 pop   si
 ret   
@@ -11054,7 +11058,7 @@ call  R_GetTexturePage_
 cbw
 mov   si, ax
 sal   si, 1
-mov   si, word ptr cs:[si + _pagesegments - OFFSET R_BSP_STARTMARKER_]
+mov   si, word ptr cs:[si + _pagesegments - OFFSET R_BSP0_STARTMARKER_]
 pop   ax     ; bp - 6
 SHIFT_MACRO   shl ax 4
 add   si, PATCH_TEXTURE_SEGMENT
@@ -11081,8 +11085,8 @@ jmp   done_doing_lookup
 
 ENDP
 
-PROC R_GetCompositeTexture_Far_ FAR
-PUBLIC R_GetCompositeTexture_Far_ 
+PROC R_GetCompositeTexture_Far0_ FAR
+PUBLIC R_GetCompositeTexture_Far0_ 
 
 call R_GetCompositeTexture_
 retf
@@ -11116,7 +11120,7 @@ xor   ah, ah
 xchg  ax, si
 sal   si, 1
 
-add   ax, word ptr cs:[si + _pagesegments - OFFSET R_BSP_STARTMARKER_]
+add   ax, word ptr cs:[si + _pagesegments - OFFSET R_BSP0_STARTMARKER_]
 add   ah, (COMPOSITE_TEXTURE_SEGMENT SHR 8)
 
 pop   si
@@ -11143,7 +11147,7 @@ xchg  ax, bx   ; bx stores page. ax gets offset
 xor   ah, ah
 SHIFT_MACRO shl   ax 4
 sal   bx, 1
-mov   bx, word ptr cs:[bx + _pagesegments - OFFSET R_BSP_STARTMARKER_]
+mov   bx, word ptr cs:[bx + _pagesegments - OFFSET R_BSP0_STARTMARKER_]
 
 add   bh, (COMPOSITE_TEXTURE_SEGMENT SHR 8)
 add   bx, ax
@@ -11306,7 +11310,7 @@ mov       bx, word ptr es:[0] ;wadpatch7000->width
 add       bx, ax            ;		x2 = x1 + (wadpatch7000->width);
 xchg      ax, dx            ;       x1
 cbw
-mov       word ptr cs:[SELFMODIFY_add_patchoriginy + 1 - OFFSET R_BSP_STARTMARKER_], ax
+mov       word ptr cs:[SELFMODIFY_add_patchoriginy + 1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 
@@ -11343,7 +11347,7 @@ cmp       bx, word ptr [bp - 0Ah]
 jle       x2_smaller_than_texture_width
 mov       bx, word ptr [bp - 0Ah]
 x2_smaller_than_texture_width:
-mov       word ptr cs:[SELFMODIFY_x2_check+2 - OFFSET R_BSP_STARTMARKER_], bx
+mov       word ptr cs:[SELFMODIFY_x2_check+2 - OFFSET R_BSP0_STARTMARKER_], bx
 
 mov       bx, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
 mov       es, bx
@@ -11676,8 +11680,8 @@ mov       ax, ((SELFMODIFY_loadpatchcolumn_masked_check1_TARGET - SELFMODIFY_loa
 mov       di, 0c089h   ; 2 byte nop
 ready_selfmodify_loadpatch:
 
-mov       word ptr cs:[SELFMODIFY_loadpatchcolumn_masked_check1 - OFFSET R_BSP_STARTMARKER_], ax;
-mov       word ptr cs:[SELFMODIFY_loadpatchcolumn_masked_check2 - OFFSET R_BSP_STARTMARKER_], di;
+mov       word ptr cs:[SELFMODIFY_loadpatchcolumn_masked_check1 - OFFSET R_BSP0_STARTMARKER_], ax;
+mov       word ptr cs:[SELFMODIFY_loadpatchcolumn_masked_check2 - OFFSET R_BSP0_STARTMARKER_], di;
 
 push      dx       ; store future es
 
@@ -11785,7 +11789,6 @@ ret
 
 ENDP
 
-; todo inline
 PROC Z_QuickMapRenderTexture_BSPLocal_ NEAR
 
 
@@ -11805,8 +11808,8 @@ ENDP
 
 ;R_RenderPlayerView_
 
-PROC R_RenderPlayerView_ FAR
-PUBLIC R_RenderPlayerView_ 
+PROC R_RenderPlayerView0_ FAR
+PUBLIC R_RenderPlayerView0_
 
 
 
@@ -12003,8 +12006,8 @@ ENDP
 
 ;R_WriteBackViewConstants_
 
-PROC R_WriteBackViewConstants_ FAR
-PUBLIC R_WriteBackViewConstants_ 
+PROC R_WriteBackViewConstants0_ FAR
+PUBLIC R_WriteBackViewConstants0_ 
 
 
 ; set ds to cs to make code smaller?
@@ -12012,12 +12015,12 @@ mov      ax, cs
 mov      ds, ax
 
 
-ASSUME DS:R_BSP_TEXT
+ASSUME DS:R_BSP0_TEXT
 
 
 mov      ax,  word ptr ss:[_detailshift]
 add      ah, OFFSET _quality_port_lookup
-mov      byte ptr ds:[SELFMODIFY_detailshift_plus1_1+3 - OFFSET R_BSP_STARTMARKER_], ah
+mov      byte ptr ds:[SELFMODIFY_detailshift_plus1_1+3 - OFFSET R_BSP0_STARTMARKER_], ah
 
 ; for 16 bit shifts, modify jump to jump 4 for 0 shifts, 2 for 1 shifts, 0 for 0 shifts.
 
@@ -12033,12 +12036,12 @@ set_to_two:
 ; nop 
 mov      ax, 0c089h 
 
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+0 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+2 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+0 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+2 - OFFSET R_BSP0_STARTMARKER_], ax
 
 ; write to colfunc segment
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+2 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+2 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 
@@ -12047,18 +12050,18 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+2 - OFFSET R_BSP_STARTMAR
 ; 0EBh, 006h = jmp 6
 
 mov      ax, 006EBh
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 mov      al,  0
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+0 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+0 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+2 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+0 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+0 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+2 - OFFSET R_BSP0_STARTMARKER_], ax
 
 ; inverse. do shifts
 ; d1 e0 d1 d2  = shl ax, 1; rcl dx, 1
@@ -12066,14 +12069,14 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+2 - OFFSET R_BSP_STARTM
 ; d1 e2 d1 d0  = shl dx, 1; rcl ax, 1
 
 mov      ax, 0e0d1h 
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+0 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+0 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_6+0 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+0 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+0 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_6+0 - OFFSET R_BSP0_STARTMARKER_], ax
 mov      ax, 0d2d1h 
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_6+2 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_6+2 - OFFSET R_BSP0_STARTMARKER_], ax
 mov      ax, 0d7d1h 
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+2 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+2 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 
@@ -12088,16 +12091,16 @@ set_to_one:
 
 ; d1 f8  = sar ax, 1
 mov      ax, 0f8d1h 
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+0 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+0 - OFFSET R_BSP0_STARTMARKER_], ax
 
 ; write to colfunc segment
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0 - OFFSET R_BSP0_STARTMARKER_], ax
 
 ; nop 
 mov      ax, 0c089h 
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+2 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+2 - OFFSET R_BSP0_STARTMARKER_], ax
 ; write to colfunc segment
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+2 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+2 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 
@@ -12106,23 +12109,23 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+2 - OFFSET R_BSP_STARTMAR
 
 mov      ax, 0c089h
 
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+0 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+0 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+0 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+0 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5+0 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5+2 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+0 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+0 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+0 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+0 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5+0 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5+2 - OFFSET R_BSP0_STARTMARKER_], ax
 
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+0 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+0 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_6+0 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_6+2 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+0 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+0 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_6+0 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_6+2 - OFFSET R_BSP0_STARTMARKER_], ax
 
 jmp      done_modding_shift_detail_code
 set_to_zero:
@@ -12132,12 +12135,12 @@ set_to_zero:
 
 ; d1 f8  = sar ax, 1
 mov      ax, 0f8d1h 
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+0 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+2 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+0 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+2 - OFFSET R_BSP0_STARTMARKER_], ax
 
 ; write to colfunc segment
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+2 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+2 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 ; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
@@ -12146,23 +12149,23 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+2 - OFFSET R_BSP_STARTMAR
 ; d1 e2 d1 d0   = shl dx, 1; rcl ax, 1
 
 mov      ax, 0E2D1h
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+0 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+0 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+0 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+0 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5+0 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+0 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+0 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+0 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+0 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5+0 - OFFSET R_BSP0_STARTMARKER_], ax
 mov      ax, 0D0D1h
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5+2 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5+2 - OFFSET R_BSP0_STARTMARKER_], ax
 
 ; 0EBh, 006h = jmp 6
 mov      ax, 006EBh
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+0 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+0 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_6+0 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+0 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+0 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_6+0 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 ; fall thru
@@ -12174,34 +12177,34 @@ done_modding_shift_detail_code:
 
 
 mov      al, byte ptr ss:[_detailshiftitercount]
-mov      byte ptr ds:[SELFMODIFY_cmp_al_to_detailshiftitercount+1 - OFFSET R_BSP_STARTMARKER_], al
-mov      byte ptr ds:[SELFMODIFY_add_iter_to_rw_x+1 - OFFSET R_BSP_STARTMARKER_], al
-mov      byte ptr ds:[SELFMODIFY_add_detailshiftitercount+3 - OFFSET R_BSP_STARTMARKER_], al
+mov      byte ptr ds:[SELFMODIFY_cmp_al_to_detailshiftitercount+1 - OFFSET R_BSP0_STARTMARKER_], al
+mov      byte ptr ds:[SELFMODIFY_add_iter_to_rw_x+1 - OFFSET R_BSP0_STARTMARKER_], al
+mov      byte ptr ds:[SELFMODIFY_add_detailshiftitercount+3 - OFFSET R_BSP0_STARTMARKER_], al
 
 mov      ax, word ptr ss:[_detailshiftandval]
-mov      word ptr ds:[SELFMODIFY_detailshift_and_1+2 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_and_1+2 - OFFSET R_BSP0_STARTMARKER_], ax
 
 mov      ax, word ptr ss:[_centeryfrac_shiftright4]
-mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_1+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_2+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_3+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_4+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_2+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_3+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_4+1 - OFFSET R_BSP0_STARTMARKER_], ax
 mov      ax, word ptr ss:[_centeryfrac_shiftright4+2]
-mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_1+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_2+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_3+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_4+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_2+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_3+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_4+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 ; ah is definitely 0... optimizable?
 mov      ax, word ptr ss:[_centerx]
-mov      word ptr ds:[SELFMODIFY_BSP_centerx_1+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_centerx_2+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_centerx_3+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_centerx_4+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_centerx_5+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_centerx_6+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_centerx_7+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_centerx_8+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_centerx_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_centerx_2+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_centerx_3+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_centerx_4+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_centerx_5+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_centerx_6+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_centerx_7+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_centerx_8+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 
@@ -12214,36 +12217,36 @@ mov      ax, word ptr ss:[_centery]
 mov      word ptr es:[SELFMODIFY_COLFUNC_subtract_centery+1], ax
  
 mov      ax, word ptr ss:[_viewwidth]
-mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_1+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_2+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_3+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_4+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_2+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_3+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_4+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 mov      ax, word ptr ss:[_viewheight]
-mov      word ptr ds:[SELFMODIFY_BSP_setviewheight_1+5 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_setviewheight_2+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_setviewheight_1+5 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_setviewheight_2+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 mov      ax,  word ptr ss:[_pspritescale]
 test     ax, ax
 je       pspritescale_zero_selfmodifies
 
-mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_1+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_2+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_3+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_2+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_3+1 - OFFSET R_BSP0_STARTMARKER_], ax
 mov      al, 0BBh  ; mov bx, imm16
-mov      byte ptr ds:[SELFMODIFY_BSP_pspritescale_1 - OFFSET R_BSP_STARTMARKER_], al
-mov      byte ptr ds:[SELFMODIFY_BSP_pspritescale_2 - OFFSET R_BSP_STARTMARKER_], al
-mov      byte ptr ds:[SELFMODIFY_BSP_pspritescale_3 - OFFSET R_BSP_STARTMARKER_], 0B8h
+mov      byte ptr ds:[SELFMODIFY_BSP_pspritescale_1 - OFFSET R_BSP0_STARTMARKER_], al
+mov      byte ptr ds:[SELFMODIFY_BSP_pspritescale_2 - OFFSET R_BSP0_STARTMARKER_], al
+mov      byte ptr ds:[SELFMODIFY_BSP_pspritescale_3 - OFFSET R_BSP0_STARTMARKER_], 0B8h
 jmp      done_with_pspritescale_zero_selfmodifies
 pspritescale_zero_selfmodifies:
 
 mov      al, 0EBh
 mov      ah, (SELFMODIFY_BSP_pspritescale_1_TARGET - SELFMODIFY_BSP_pspritescale_1_AFTER)
-mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_1 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_1 - OFFSET R_BSP0_STARTMARKER_], ax
 mov      ah, (SELFMODIFY_BSP_pspritescale_2_TARGET - SELFMODIFY_BSP_pspritescale_2_AFTER)
-mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_2 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_2 - OFFSET R_BSP0_STARTMARKER_], ax
 mov      ah, (SELFMODIFY_BSP_pspritescale_3_TARGET - SELFMODIFY_BSP_pspritescale_3_AFTER)
-mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_3 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_3 - OFFSET R_BSP0_STARTMARKER_], ax
 
 done_with_pspritescale_zero_selfmodifies:
 
@@ -12253,9 +12256,9 @@ done_with_pspritescale_zero_selfmodifies:
 
 
 mov      ax,  word ptr ss:[_pspriteiscale]
-mov      word ptr ds:[SELFMODIFY_BSP_pspriteiscale_lo_1+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_pspriteiscale_lo_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
 mov      ax,  word ptr ss:[_pspriteiscale+2]
-mov      word ptr ds:[SELFMODIFY_BSP_pspriteiscale_hi_1+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_pspriteiscale_hi_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 
@@ -12287,44 +12290,44 @@ mov      ds, ax
 mov      ax, DRAWFUZZCOL_AREA_SEGMENT
 mov      es, ax
 
-ASSUME DS:R_BSP_TEXT
+ASSUME DS:R_BSP0_TEXT
 
 
 
 
 
 mov      ax, word ptr ss:[_viewz]
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_1+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_2+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_3+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_4+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_5+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_6+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_7+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_8+2 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_2+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_3+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_4+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_5+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_6+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_7+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_8+2 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 mov      ax, word ptr ss:[_viewz+2]
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_1+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_2+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_3+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_4+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_5+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_6+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_7+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_8+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_1+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_2+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_3+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_4+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_5+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_6+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_7+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_8+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 mov      ax, word ptr ss:[_viewz_shortheight]
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_1+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_2+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_3+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_4+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_5+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_2+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_3+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_4+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_5+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 mov      al, byte ptr ss:[_extralight]
-mov      byte ptr ds:[SELFMODIFY_BSP_extralight1+1 - OFFSET R_BSP_STARTMARKER_], al
-mov      byte ptr ds:[SELFMODIFY_BSP_extralight2+1 - OFFSET R_BSP_STARTMARKER_], al
-mov      byte ptr ds:[SELFMODIFY_BSP_extralight3+1 - OFFSET R_BSP_STARTMARKER_], al
+mov      byte ptr ds:[SELFMODIFY_BSP_extralight1+1 - OFFSET R_BSP0_STARTMARKER_], al
+mov      byte ptr ds:[SELFMODIFY_BSP_extralight2+1 - OFFSET R_BSP0_STARTMARKER_], al
+mov      byte ptr ds:[SELFMODIFY_BSP_extralight3+1 - OFFSET R_BSP0_STARTMARKER_], al
 
 mov      al, byte ptr ss:[_fixedcolormap]
 cmp      al, 0
@@ -12333,32 +12336,32 @@ do_no_bsp_fixedcolormap_selfmodify:
 
 
 mov      ax, 0c089h 
-mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_3 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_4 - OFFSET R_BSP_STARTMARKER_], ax
-;mov      word ptr cs:[SELFMODIFY_add_wallights - OFFSET R_BSP_STARTMARKER_], 0848ah       ; mov al, byte ptr... 
+mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_3 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_4 - OFFSET R_BSP0_STARTMARKER_], ax
+;mov      word ptr cs:[SELFMODIFY_add_wallights - OFFSET R_BSP0_STARTMARKER_], 0848ah       ; mov al, byte ptr... 
 
 jmp      done_with_bsp_fixedcolormap_selfmodify
 do_bsp_fixedcolormap_selfmodify:
 
-mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_1+3 - OFFSET R_BSP_STARTMARKER_], al
-mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_5+3 - OFFSET R_BSP_STARTMARKER_], al
+mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_1+3 - OFFSET R_BSP0_STARTMARKER_], al
+mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_5+3 - OFFSET R_BSP0_STARTMARKER_], al
 
 ;mov   ah, al
 ;mov   al, 0b0h
-;mov   word ptr cs:[SELFMODIFY_add_wallights - OFFSET R_BSP_STARTMARKER_], ax       ; mov al, FIXEDCOLORMAP
-;mov   word ptr cs:[SELFMODIFY_add_wallights+2 - OFFSET R_BSP_STARTMARKER_], 0c089h ; nop
+;mov   word ptr cs:[SELFMODIFY_add_wallights - OFFSET R_BSP0_STARTMARKER_], ax       ; mov al, FIXEDCOLORMAP
+;mov   word ptr cs:[SELFMODIFY_add_wallights+2 - OFFSET R_BSP0_STARTMARKER_], 0c089h ; nop
 
 ; zero out the value in the walllights read which wont be updated again.
 ; It'll get a fixedcolormap value by default. We could alternately get rid of the loop that sets scalelightfixed to fixedcolormap and modify the instructions like above.
-mov   word ptr cs:[SELFMODIFY_add_wallights+2 - OFFSET R_BSP_STARTMARKER_], OFFSET _scalelightfixed 
+mov   word ptr cs:[SELFMODIFY_add_wallights+2 - OFFSET R_BSP0_STARTMARKER_], OFFSET _scalelightfixed 
 
 mov   ax, ((SELFMODIFY_BSP_fixedcolormap_2_TARGET - SELFMODIFY_BSP_fixedcolormap_2_AFTER) SHL 8) + 0EBh
-mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_2 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_2 - OFFSET R_BSP0_STARTMARKER_], ax
 mov   ah, (SELFMODIFY_BSP_fixedcolormap_3_TARGET - SELFMODIFY_BSP_fixedcolormap_3_AFTER)
-mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_3 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_3 - OFFSET R_BSP0_STARTMARKER_], ax
 mov   ah, (SELFMODIFY_BSP_fixedcolormap_4_TARGET - SELFMODIFY_BSP_fixedcolormap_4_AFTER)
-mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_4 - OFFSET R_BSP_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_4 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 ; fall thru
@@ -12368,10 +12371,10 @@ done_with_bsp_fixedcolormap_selfmodify:
 
 
 mov      ax, word ptr ss:[_viewx]
-mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_1+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_2+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_3+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_5+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_2+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_3+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_5+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 test     ax, ax
 jne      selfmodify_viewx_lo_nonzero
@@ -12381,21 +12384,21 @@ jmp      selfmodify_viewx_done
 selfmodify_viewx_lo_nonzero:
 mov      ax, ((SELFMODIFY_BSP_viewx_lo_4_TARGET_1 - SELFMODIFY_BSP_viewx_lo_4_AFTER) SHL 8) + 07Dh
 selfmodify_viewx_done:
-mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_4 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_4 - OFFSET R_BSP0_STARTMARKER_], ax
 
 mov      ax, word ptr ss:[_viewx+2]
-mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_1+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_2+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_3+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_4+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_5+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_6+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_2+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_3+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_4+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_5+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_6+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 mov      ax, word ptr ss:[_viewy]
-mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_1+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_2+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_3+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_5+2 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_2+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_3+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_5+2 - OFFSET R_BSP0_STARTMARKER_], ax
 
 cmp      ax, 0
 jle      selfmodify_viewy_lo_lessthanequaltozero
@@ -12405,71 +12408,71 @@ jmp      selfmodify_viewy_done
 selfmodify_viewy_lo_lessthanequaltozero:
 mov      ax, ((SELFMODIFY_BSP_viewy_lo_4_TARGET_1 - SELFMODIFY_BSP_viewy_lo_4_AFTER) SHL 8) + 07Eh ;jle
 selfmodify_viewy_done:
-mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_4 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_4 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 
 mov      ax, word ptr ss:[_viewy+2]
-mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_1+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_2+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_3+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_4+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_5+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_6+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_2+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_3+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_4+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_5+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_6+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 mov      ax, word ptr ss:[_viewangle_shiftright3]
-mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_2+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_3+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_4+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_5+2 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_2+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_3+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_4+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_5+2 - OFFSET R_BSP0_STARTMARKER_], ax
 
 add      ah, 8
-mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_1+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 mov      ax, word ptr ss:[_viewangle_shiftright1]
-mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_1+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_2+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_3+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_2+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_3+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 mov      ax, word ptr ss:[_viewangle]
-mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_1+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_2+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_3+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_4+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_1+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_2+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_3+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_4+1 - OFFSET R_BSP0_STARTMARKER_], ax
 mov      ax, word ptr ss:[_viewangle+2]
-mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_1+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_2+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_3+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_4+2 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_1+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_2+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_3+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_4+2 - OFFSET R_BSP0_STARTMARKER_], ax
 
 mov      ax, word ptr ss:[_fieldofview]
-mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_1+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_2+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_3+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_4+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_5+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_6+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_7+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_8+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_2+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_3+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_4+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_5+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_6+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_7+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_8+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 mov      ax, word ptr ss:[_clipangle]
-mov      word ptr ds:[SELFMODIFY_BSP_clipangle_1+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_clipangle_2+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_clipangle_3+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_clipangle_4+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_clipangle_5+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_clipangle_6+1 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_clipangle_7+2 - OFFSET R_BSP_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_clipangle_8+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_1+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_2+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_3+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_4+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_5+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_6+1 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_7+2 - OFFSET R_BSP0_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_8+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 
 
 
 ; get whole dword at the end here.
 mov      ax, word ptr ss:[_destview]
-mov      word ptr ds:[SELFMODIFY_BSP_add_destview_offset+1 - OFFSET R_BSP_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_add_destview_offset+1 - OFFSET R_BSP0_STARTMARKER_], ax
 
 mov      ax, ss
 mov      ds, ax
@@ -12487,8 +12490,8 @@ ret
 ENDP
 
 
-PROC R_BSP_ENDMARKER_
-PUBLIC R_BSP_ENDMARKER_
+PROC R_BSP0_ENDMARKER_
+PUBLIC R_BSP0_ENDMARKER_
 ENDP
 
 ENDS

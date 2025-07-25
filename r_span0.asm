@@ -307,6 +307,7 @@ mov   dx, es
 
 ; technically we dont need to calculate distance if its fixed colormap.
 ; could we skip all this other crap...
+; todo technically we only use the high word anyway.
 distance_steps_ready:
 
 ; dx:ax is distance
@@ -372,7 +373,7 @@ pop   si
 pop   cx
 ret  
 
-   generate_distance_steps:
+generate_distance_steps:
 
 mov   word ptr es:[si], ax
 mov   word ptr es:[si + 2], dx   ; cachedheight into dx

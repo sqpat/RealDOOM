@@ -1,10 +1,5 @@
-#define R_DrawColumnOffset                    0x0
-#define R_DrawColumnPrepMaskedMultiOffset     0x217
-#define R_DrawFuzzColumnOffset                0x118
-#define R_DrawSingleMaskedColumnOffset        0x261
-#define R_DrawMaskedColumnOffset              0x153B
-#define R_SortVisSpritesOffset                0x181E
 #define R_DrawMaskedOffset                    0x14DF
+#define R_DrawMasked0Offset                   0x14DF
 #define R_WriteBackViewConstantsMaskedOffset  0x0
 #define R_WriteBackMaskedFrameConstantsOffset 0x8D
 #define R_DrawPlanes24Offset                  0xBD5
@@ -20,6 +15,10 @@
 #define R_RenderPlayerViewOffset              0x32CD
 #define R_GetCompositeTextureOffset           0x2FB7
 #define R_GetPatchTextureOffset               0x2F1C
+#define R_WriteBackViewConstants0Offset       0x3458
+#define R_RenderPlayerView0Offset             0x32CD
+#define R_GetCompositeTexture0Offset          0x2FB7
+#define R_GetPatchTexture0Offset              0x2F1C
 #define WI_StartOffset                        0xFF9
 #define WI_TickerOffset                       0xE03
 #define WI_DrawerOffset                       0xE8A
@@ -67,13 +66,17 @@
 #define P_SetMobjStateOffset                  0x5B41
 
 #define R_DrawColumnCodeSize           0xE46
+#define R_DrawColumn0CodeSize          0xE46
 #define R_DrawSpan24CodeSize           0x11A7
 #define R_DrawSpan16CodeSize           0xF6B
 #define R_DrawSpan0CodeSize            0x649
 #define R_DrawFuzzColumnCodeSize       0x190B
 #define R_MaskedConstantsCodeSize      0xEB
+#define R_DrawFuzzColumn0CodeSize      0x190B
+#define R_MaskedConstants0CodeSize     0xEB
 #define R_DrawSkyColumnCodeSize        0x6C0
 #define R_BSPCodeSize                  0x3792
+#define R_BSP0CodeSize                 0x3792
 #define WI_StuffCodeSize               0x1011
 #define PSightCodeSize                 0x5BE9
 #define WipeCodeSize                   0x4B6

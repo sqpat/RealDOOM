@@ -7,7 +7,7 @@
 #include "p_saveg.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2410		
+#define CONSTANTS_COUNT 2406
 #define LOCALS_COUNT 22
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -172,7 +172,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "SPANFUNC_JUMP_LOOKUP_SEGMENT",
     "COLFUNC_MASKEDMAPPING_SEGMENT",
     "COLFUNC_SEGMENT",
-    "R_DRAWCOLUMNPREPMASKEDMULTIOFFSET",
     "MASKEDCONSTANTS_FUNCAREA_SEGMENT",
     "STATES_RENDER_SEGMENT",
     "BASE_LOWER_MEMORY_SEGMENT",
@@ -196,9 +195,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "DC_YL_LOOKUP_MASKEDMAPPING_SEGMENT",
     "FLOORCLIP_PARAGRAPH_ALIGNED_SEGMENT",
 	"MUSIC_DRIVER_CODE_SEGMENT",
-    "R_DRAWMASKEDCOLUMNOFFSET",
-    "R_DRAWSINGLEMASKEDCOLUMNOFFSET",
-    "R_DRAWFUZZCOLUMNOFFSET",
     "OFFSET_NEGONEARRAY",
     "OFFSET_SCREENHEIGHTARRAY",
     "OFFSET_FLOORCLIP",
@@ -2652,7 +2648,6 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     spanfunc_jump_lookup_segment,
     colfunc_segment_maskedmapping,
     colfunc_segment,
-    R_DrawColumnPrepMaskedMultiOffset,
     maskedconstants_funcarea_segment,
     states_render_segment,
     base_lower_memory_segment,
@@ -2676,9 +2671,6 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     floorclip_paragraph_aligned_segment,
 	music_driver_code_segment,
     
-	R_DrawMaskedColumnOffset,
-    R_DrawSingleMaskedColumnOffset,
-    R_DrawFuzzColumnOffset,
     offset_negonearray,
     offset_screenheightarray,
     offset_floorclip,

@@ -468,11 +468,47 @@ void __far G_PlayerReborn ();
 
 void __far G_ExitLevel (void);
 
-void __near Z_DoSpanLoad(FILE* fp){
+ 
+
+
+void __near Z_DoRenderCodeLoad(FILE* fp){
+	// column stuff
+	uint16_t codesize;
+	switch (columnquality){
+		case 2:
+
+			// skip r_column
+			fread(&codesize, 2, 1, fp);
+			fseek(fp, codesize, SEEK_CUR);
+			fread(&codesize, 2, 1, fp);
+			FAR_fread(colfunc_jump_lookup_6800, codesize, 1, fp);
+
+		// remap... todo
+
+			break;
+		case 0:
+		case 1:
+		default:
+
+			fread(&codesize, 2, 1, fp);
+			FAR_fread(colfunc_jump_lookup_6800, codesize, 1, fp);
+
+			// skip r_col0
+			fread(&codesize, 2, 1, fp);
+			fseek(fp, codesize, SEEK_CUR);
+
+		// remap... todo
+
+	}
+
+
+
+	// span stuff
+	Z_QuickMapPalette();
+	
 		// dont love this defined here, but this will all be ASM soon enough anyway...
 	#define  DRAWSPAN_AH_OFFSET  0x3F00
 	#define  DRAWSPAN_BX_OFFSET  0x0FC0
-	uint16_t codesize;
 	switch (spanquality){
 		case 1:
 
@@ -526,6 +562,78 @@ void __near Z_DoSpanLoad(FILE* fp){
 			R_DrawPlanesCallOffset = R_DrawPlanes24Offset;
 			R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_jump_lookup_segment, R_WriteBackViewConstantsSpan24Offset);
 			ds_source_offset = DRAWSPAN_AH_OFFSET;
+	}
+
+
+	// masked stuff
+	Z_QuickMapMaskedExtraData();
+	switch (columnquality){
+		case 2:
+
+			fread(&codesize, 2, 1, fp);
+			fseek(fp, codesize, SEEK_CUR);
+			fread(&codesize, 2, 1, fp);
+			fseek(fp, codesize, SEEK_CUR);
+
+			fread(&codesize, 2, 1, fp);
+			FAR_fread(drawfuzzcol_area, codesize, 1, fp);
+			// load R_WriteBackViewConstantsMasked into another empty code space - they do not fit into the above area.
+			fread(&codesize, 2, 1, fp);
+			FAR_fread(maskedconstants_funcarea, codesize, 1, fp);
+
+				// remap... todo
+
+
+			break;
+		case 0:
+		case 1:
+		default:
+
+			fread(&codesize, 2, 1, fp);
+			FAR_fread(drawfuzzcol_area, codesize, 1, fp);
+			// load R_WriteBackViewConstantsMasked into another empty code space - they do not fit into the above area.
+			fread(&codesize, 2, 1, fp);
+			FAR_fread(maskedconstants_funcarea, codesize, 1, fp);
+
+			fread(&codesize, 2, 1, fp);
+			fseek(fp, codesize, SEEK_CUR);
+			fread(&codesize, 2, 1, fp);
+			fseek(fp, codesize, SEEK_CUR);
+
+
+			// remap... todo
+	}
+
+
+
+	Z_QuickMapRenderPlanes();
+
+	fread(&codesize, 2, 1, fp);
+	FAR_fread(drawskyplane_area, codesize, 1, fp);
+
+
+
+	switch (spanquality){
+		case 2:
+
+			// skip r_column
+			fread(&codesize, 2, 1, fp);
+			fseek(fp, codesize, SEEK_CUR);
+			fread(&codesize, 2, 1, fp);
+			FAR_fread(bsp_code_area, codesize, 1, fp);
+
+			// remap...
+
+			break;
+		case 0:
+		case 1:
+		default:
+
+			fread(&codesize, 2, 1, fp);
+			FAR_fread(bsp_code_area, codesize, 1, fp);
+			fread(&codesize, 2, 1, fp);
+			fseek(fp, codesize, SEEK_CUR);
+
 	}
 
 
@@ -605,37 +713,11 @@ void __near Z_LoadBinaries() {
 
 
 	fp = fopen("DOOMCODE.BIN", "rb"); 
-	fread(&codesize, 2, 1, fp);
-	FAR_fread(colfunc_jump_lookup_6800, codesize, 1, fp);
 
-
-
-	// FOD3
-	Z_QuickMapPalette();
-	
-	Z_DoSpanLoad(fp);
-
-
-
-
-	Z_QuickMapMaskedExtraData();
-		// load R_DrawFuzzColumn into high memory near colormaps_high...
-
-	fread(&codesize, 2, 1, fp);
-	FAR_fread(drawfuzzcol_area, codesize, 1, fp);
+	Z_DoRenderCodeLoad(fp);
 	
 
-	// load R_WriteBackViewConstantsMasked into another empty code space - they do not fit into the above area.
-	fread(&codesize, 2, 1, fp);
-	FAR_fread(maskedconstants_funcarea, codesize, 1, fp);
 
-	Z_QuickMapRenderPlanes();
-
-	fread(&codesize, 2, 1, fp);
-	FAR_fread(drawskyplane_area, codesize, 1, fp);
-
-	fread(&codesize, 2, 1, fp);
-	FAR_fread(bsp_code_area, codesize, 1, fp);
 
 
 	Z_QuickMapIntermission();
