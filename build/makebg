@@ -144,6 +144,7 @@ GLOBOBJS = $(GLOBOBJS) &
  r_column.obj &
  r_sky.obj &
  r_span.obj &
+ r_span16.obj &
  v_video.obj 
  
 bingen.exe : $(GLOBOBJS) 

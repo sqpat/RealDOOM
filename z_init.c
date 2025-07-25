@@ -553,6 +553,9 @@ void __near Z_LoadBinaries() {
 	fread(&codesize, 2, 1, fp);
 	FAR_fread(spanfunc_jump_lookup_9000, codesize, 1, fp);
 
+	// for now skip rspan16 contents...
+	fread(&codesize, 2, 1, fp);
+	fseek(fp, codesize, SEEK_CUR);
 
 
 

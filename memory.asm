@@ -395,7 +395,7 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 800
 dw  00, 00, 00, 00
 ; 808 R_DrawPlanesCall
-dw R_DrawPlanesOffset, spanfunc_jump_lookup_segment
+dw R_DrawPlanes24Offset, spanfunc_jump_lookup_segment
 ; 80C R_DrawMaskedCall
 dw R_DrawMaskedOffset, drawfuzzcol_area_segment
 
