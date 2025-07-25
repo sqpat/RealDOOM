@@ -26,53 +26,18 @@ PROC R_SPAN0_STARTMARKER_
 PUBLIC R_SPAN0_STARTMARKER_
 ENDP 
 
-R_DRAWSPANACTUAL_DIFF = (OFFSET R_DrawSpanActual0_ - OFFSET R_SPAN0_STARTMARKER_)
-DRAWSPAN_AH_OFFSET             = 03F00h
-DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_JUMP_LOOKUP_SEGMENT - COLORMAPS_SEGMENT)) + DRAWSPAN_AH_OFFSET
+R_DRAWSPANACTUAL_DIFF = (OFFSET R_DrawSpan0_ - OFFSET R_SPAN0_STARTMARKER_)
 
-; lcall cs:[00xx] here to call R_DrawSpan with the right CS:IP for colormaps to be at cs:3F00
-_spanfunc_call_table:
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00000h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0000h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00100h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0010h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00200h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0020h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00300h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0030h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00400h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0040h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00500h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0050h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00600h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0060h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00700h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0070h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00800h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0080h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00900h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0090h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00A00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 00A0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00B00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 00B0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00C00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 00C0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00D00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 00D0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00E00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 00E0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00F00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 00F0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01000h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0100h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01100h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0110h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01200h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0120h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01300h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0130h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01400h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0140h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01500h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0150h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01600h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0160h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01700h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0170h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01800h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0180h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01900h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0190h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01A00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 01A0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01B00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 01B0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01C00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 01C0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01D00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 01D0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01E00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 01E0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01F00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 01F0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 02000h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0200h
+DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_JUMP_LOOKUP_SEGMENT - COLORMAPS_SEGMENT)) 
+
+
+;SPANFUNC_JUMP_LOOKUP_SEGMENT and COLORMAPS_SEGMENT difference is  006A0h
+
 
 MAXLIGHTZ                      = 0080h
 MAXLIGHTZ_UNSHIFTED            = 0800h
 
 
-
-; todo: eventually call these directly... 
-;EXTRN W_CacheLumpNumDirect_:PROC
 
 
 
@@ -82,26 +47,6 @@ MAXLIGHTZ_UNSHIFTED            = 0800h
 
 
 
-; core calculation:
-;spot = ((yfrac>>(16-6))&(63*64)) + ((xfrac>>16)&63);
-;   top stuff ANDED OFF is never needed.
-;    bottom stuff is used in adds.
-;    so we use in general 22 bits of precision per dimension.
-;     must preshift left by two so we have 8 bits high and 14 lo?
-
-;yfrac
-; ANDED OFF    KEPT  ANDED OFF     SHIFTED OFF
-;01234567 
-;        01   234567 
-;                      012345      67 
-;                                    01234567
-;xfrac
-; ANDED OFF      KEPT	  SHIFTED OFF
-;01234567 
-;	     01     234567 
-;	
-;			              01234567 
-;           			     	01234567
 
 
 ;
@@ -109,54 +54,45 @@ MAXLIGHTZ_UNSHIFTED            = 0800h
 ;
 PROC  R_DrawSpan0_
 PUBLIC  R_DrawSpan0_ 
-ENDP 
-PROC  R_DrawSpanActual0_
+; bx is colormaps offset within cs.
+; cs is colormaps segment.
 
-
-; stack vars
- 
 xor   cx, cx
 mov   dx, SC_DATA						; outp 1 << i
 
-MOV   es, ds:[_spanfunc_jump_segment_storage]  ; ES is segment indexed to relevant data...
-mov   byte ptr es:[((SELFMODIFY_SPAN_set_span_counter+1) - OFFSET R_SPAN0_STARTMARKER_   )], 0      ; set loop increment value
+
 
 ; main loop start (i = 0, 1, 2, 3)
-xor   bx, bx						; zero out bx as loopcount
+xor   si, si						; zero out si as loopcount
 
 span_i_loop_repeat:
+mov   es, ds:[_spanfunc_jump_segment_storage]  ; ES is segment indexed to relevant data...
 
-mov   cl, byte ptr ds:[_spanfunc_inner_loop_count + bx]
+mov   cl, byte ptr ds:[_spanfunc_inner_loop_count + si]
 ; es is already pre-set..
-inc   byte ptr es:[((SELFMODIFY_SPAN_set_span_counter+1) -  OFFSET R_SPAN0_STARTMARKER_   )]					; increment loop counter
- 
-
-inc   cl  ; these are stored such that 0 = 1 draw...
-
-; is count < 0? if so skip this loop iter
+inc   cl  ; these are stored such that 0 = 1 draw... todo can be improved and stored properly to begin with? then jcxz instead..
 
 jle   do_span_loop			; todo this so it doesnt loop in both cases
 
 
 ; outp to plane only if there was a pixel to draw
-mov   al, byte ptr ds:[_spanfunc_outp + bx]
+mov   al, byte ptr ds:[_spanfunc_outp + si]
 out   dx, al
 
 
 
 ; 		dest = destview + ds_y * 80 + dsp_x1;
-sal   bx, 1
+sal   si, 1
 
-mov   di, word ptr ds:[_spanfunc_destview_offset + bx]  ; destview offset precalculated..
+mov   di, word ptr ds:[_spanfunc_destview_offset + si]  ; destview offset precalculated..
 ; todo move this out of the loop
-les   bx, dword ptr ds:[_ds_source_segment] ; bx loaded as colormaps 3F00 here
+mov   es, word ptr ds:[_ds_source_segment+2]
 
 mov   al, byte ptr es:[0] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
-xlat  byte ptr cs:[bx]
+xlat  byte ptr cs:[bx]          ; bx is colormaps ptr. cs:0 is colormaps 0
+
 mov   ah, al
 
-
-; todo LES something here dunno? maybe a selfmodify thing instead.
 mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment 
 
 sar   cx, 1
@@ -164,22 +100,16 @@ rep   stosw
 rcl   cx, 1
 rep   stosb
 
-
- 
-
+sar   si, 1
 do_span_loop:
 
-SELFMODIFY_SPAN_set_span_counter:
-mov   bx, 0
+inc   si
 
 ; loop if i < loopcount.
 SELFMODIFY_SPAN_compare_span_counter:
-cmp   bl, 4
-jge   span_i_loop_done
+cmp   si, 4
+jnge  span_i_loop_repeat
 
-MOV   es, ds:[_spanfunc_jump_segment_storage]
-
-jmp   span_i_loop_repeat
 span_i_loop_done:
 
 
@@ -294,14 +224,18 @@ SELFMODIFY_SPAN_ds_x2:
  
  spanfunc_arg_setup_complete:
 
- ; use jump table with desired cs:ip for far jump
 
-db 02Eh  ; cs segment override
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-SELFMODIFY_SPAN_set_colormap_index_jump:
-dw 0000h
-; addr 0000 + first byte (4x colormap.)
+; bx stores colormap.
+SELFMODIFY_SPAN_set_colormap_index_jump:  ; todo these are shifted 2 due to previous implementation, fix
+mov  bx, 01000h
+sar  bx, 1
+sar  bx, 1
+
+; call R_DrawSpan0_
+db 09Ah
+dw ((SPANFUNC_JUMP_LOOKUP_SEGMENT - COLORMAPS_SEGMENT) SHL 4) + (OFFSET R_DrawSpan0_ - OFFSET R_SPAN0_STARTMARKER_)
+dw COLORMAPS_SEGMENT
+
 
 
 
@@ -315,152 +249,55 @@ ENDP
 
 
 
-PROC R_FixedMulTrigLocal0_
 
-
-; DX:AX  *  CX:BX
-;  0  1   2  3
-
-; AX * CX:BX
-; The difference between FixedMulTrig and FixedMul1632:
-; fine sine/cosine lookup tables are -65535 to 65535, so 17 bits. 
-; technically, this resembles 16 * 32 with sign extend, except we cannot use CWD to generate the high 16 bits.
-; So those sign bits which contain bit 17, sign extended must be stored somewhere cannot be regenerated via CWD
-; we basically take the above function and shove sign bits in DS for storage and regenerate DS from SS upon return
 ;
-; 
-;BYTE
-; RETURN VALUE
-;                3       2       1		0
-;                DONTUSE USE     USE    DONTUSE
+; R_MapPlane0_
+; void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 )
+; bp - 02h   distance low
+; bp - 04h   distance high
 
-
-;                               AXBXhi	 AXBXlo
-;                       DXBXhi  DXBXlo          
-;               S0BXhi  S0BXlo                          
-;
-;                       AXCXhi  AXCXlo
-;               DXCXhi  DXCXlo  
-;                       
-;               AXS1hi  AXS1lo
-;                               
-;                       
-;       
-
-; AX is param 1 (segment)
-; DX is param 2 (fineangle or lookup)
-; CX:BX is value 2
+;cachedheight   9000:0000
+;yslope         9032:0000
+;distscale      9064:0000
+;cacheddistance 90B4:0000
+;cachedxstep    90E6:0000
+;cachedystep    9118:0000
+; 	rather than changing ES a ton we will just modify offsets by segment distance
+;   confirmed to be faster even on 8088 with it's baby prefetch queue - i think on 16 bit busses it is only faster.
 
 
 
+PROC  R_MapPlane0_ NEAR
 
+
+push  cx
 push  si
+push  di
+push  es
+push  dx
 
-; lookup the fine angle
+; dont cache all the data. we really only need distance. 
+; calculate it each time for now. investigate caching speed later.
 
-; DWORD lookup index
-SHIFT_MACRO sal dx 2
-
-mov si, dx
-
-mov ds, ax  ; cosine/sine segment in ds
-lodsw
-mov  es, ax
-lodsw
-mov  dx, ax ; store sign bits in DX
-
-AND AX, BX  ; S0*BX
-NEG AX
-MOV SI, AX  ; SI stores hi word return
-
-mov AX, DX  ; restore sign bits from dx
-
-AND  AX, CX    ; DX*CX
-NEG  AX
-add  SI, AX    ; low word result into high word return
-; use DX copy of sign bits later..
-
-; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
-; UNLESS BX is 0. then its also 0!
-
-; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
-MOV  AX, BX    ; create BX copy
-SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
-ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
-
-AND  AX, DX    ; 0 or BX - 1
-ADD  SI, AX    ; add DX * BX high word. 
+mov  si, di
+; si is x * 4
 
 
-AND  DX, BX    ; DX * BX low bits
-NEG  DX
-XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
+les   ax, dword ptr [bp - 010h]
+mov   dx, es
 
-mov  AX, ES    ; grab AX from ES
-mul  DX        ; BX*AX  
-add  BX, DX    ; high word result into low word return
-ADC  SI, 0
+mov   es, ds:[_cachedheight_segment_storage]
+shl   si, 1
 
-mov  AX, CX   ; AX holds CX
+generate_distance_steps:
 
-CWD           ; S1 in DX
+les   bx, dword ptr es:[si + 0 (( YSLOPE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
+mov   cx, es
 
-mov  CX, ES   ; AX from ES
-AND  DX, CX   ; S1*AX
-NEG  DX
-ADD  SI, DX   ; result into high word return
-
-MUL  CX       ; AX*CX
-
-ADD  AX, BX	  ; set up final return value
-ADC  DX, SI
- 
-MOV CX, SS
-MOV DS, CX    ; put DS back from SS
-
-pop   si
-ret
+; INLINED
+;call R_FixedMulLocal0_
 
 
-
-ENDP
-
-PROC R_FixedMulLocal0_
-
-
-; DX:AX  *  CX:BX
-;  0  1      2  3
-
-; with sign extend for byte 3:
-; S0:DX:AX    *   S1:CX:BX
-; S0 = DX sign extend
-; S1 = CX sign extend
-
-;
-; 
-;BYTE
-; RETURN VALUE
-;                3       2       1		0
-;                DONTUSE USE     USE    DONTUSE
-
-
-;                               AXBXhi	 AXBXlo
-;                       DXBXhi  DXBXlo          
-;               S0BXhi  S0BXlo                          
-;
-;                       AXCXhi  AXCXlo
-;               DXCXhi  DXCXlo  
-;                       
-;               AXS1hi  AXS1lo
-;                               
-;                       
-;       
-
-
-
-; need to get the sign-extends for DX and CX
-
-push  si
 
 mov   es, ax	; store ax in es
 mov   ds, dx    ; store dx in ds
@@ -501,49 +338,10 @@ ADC  DX, SI
 mov  CX, SS   ; restore DS
 mov  DS, CX
 
-pop   si
-ret
 
+distance_steps_ready:
 
-
-ENDP
-
-
-;
-; R_MapPlane0_
-; void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 )
-; bp - 02h   distance low
-; bp - 04h   distance high
-
-;cachedheight   9000:0000
-;yslope         9032:0000
-;distscale      9064:0000
-;cacheddistance 90B4:0000
-;cachedxstep    90E6:0000
-;cachedystep    9118:0000
-; 	rather than changing ES a ton we will just modify offsets by segment distance
-;   confirmed to be faster even on 8088 with it's baby prefetch queue - i think on 16 bit busses it is only faster.
-
-
-
-PROC  R_MapPlane0_ NEAR
-
-
-push  cx
-push  si
-push  di
-push  es
-push  dx
-
-
-
-
-
-
-
-
-
-
+; dx:ax is distance
 
 ; 	if (fixedcolormap) {
 
@@ -552,7 +350,7 @@ mov   ax, ax
 SELFMODIFY_SPAN_fixedcolormap_1_AFTER:
 ; 		index = distance >> LIGHTZSHIFT;
 
-
+xchg        ax, dx   ; ax gets high word
 SHIFT_MACRO sar ax 4
 
 
@@ -575,7 +373,7 @@ xlat  byte ptr es:[bx]
 ; mov  al, byte ptr cs:[bx + _cs_zlight_offset]
 colormap_ready:
 
-mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump - OFFSET R_SPAN0_STARTMARKER_], al
+mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump+2 - OFFSET R_SPAN0_STARTMARKER_], al
 
 ; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
 
@@ -592,7 +390,7 @@ ret
 SELFMODIFY_SPAN_fixedcolormap_1_TARGET:
 SELFMODIFY_SPAN_fixedcolormap_2:
 use_fixed_colormap:
-mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump - OFFSET R_SPAN0_STARTMARKER_], 00
+mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump+2 - OFFSET R_SPAN0_STARTMARKER_], 00
 
 ; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
 
