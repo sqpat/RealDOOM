@@ -1144,11 +1144,11 @@ R_PointToAngle(y, x);
 	DEBUG_PRINT("\nZ_GetEMSPageMap: Init EMS 4.0 features.");
 	Z_GetEMSPageMap();
 
-	DEBUG_PRINT("\nZ_LoadBinaries: Load game code into memory");
-	Z_LoadBinaries();
-
 	DEBUG_PRINT("\nM_LoadDefaults	: Load system defaults.");
 	M_LoadDefaults();              // load before initing other systems
+
+	DEBUG_PRINT("\nZ_LoadBinaries: Load game code into memory");
+	Z_LoadBinaries();
 
 	// init subsystems
 	DEBUG_PRINT("\nD_InitStrings: loading text.");

@@ -475,18 +475,38 @@ void __near Z_DoSpanLoad(FILE* fp){
 	uint16_t codesize;
 	switch (spanquality){
 		case 1:
+
+			// skip rspan24
+			fread(&codesize, 2, 1, fp);
+			fseek(fp, codesize, SEEK_CUR);
+			fread(&codesize, 2, 1, fp);
+			FAR_fread(spanfunc_jump_lookup_9000, codesize, 1, fp);
+			// skip rspan0
+			fread(&codesize, 2, 1, fp);
+			fseek(fp, codesize, SEEK_CUR);
+
+			// remap this to the 16 bit version.
+			R_DrawPlanesCallOffset = R_DrawPlanes16Offset;
+			R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_jump_lookup_segment, R_WriteBackViewConstantsSpan16Offset);
+			ds_source_offset = DRAWSPAN_BX_OFFSET;
+
+			break;
+
 		case 2:
 
-			// for now skip rspan24 contents...
+			// skip rspan24
+			fread(&codesize, 2, 1, fp);
+			fseek(fp, codesize, SEEK_CUR);
+			// skip rspan16
 			fread(&codesize, 2, 1, fp);
 			fseek(fp, codesize, SEEK_CUR);
 			fread(&codesize, 2, 1, fp);
 			FAR_fread(spanfunc_jump_lookup_9000, codesize, 1, fp);
 
 			// remap this to the 16 bit version.
-			R_DrawPlanesCallOffset = R_DrawPlanes16Offset;
-			R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_jump_lookup_segment, R_WriteBackViewConstantsSpan16Offset);
-			ds_source_offset = DRAWSPAN_BX_OFFSET;
+			R_DrawPlanesCallOffset = R_DrawPlanes0Offset;
+			R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_jump_lookup_segment, R_WriteBackViewConstantsSpan0Offset);
+			ds_source_offset = DRAWSPAN_AH_OFFSET;
 
 			break;
 		case 0:
@@ -495,7 +515,10 @@ void __near Z_DoSpanLoad(FILE* fp){
 			fread(&codesize, 2, 1, fp);
 			FAR_fread(spanfunc_jump_lookup_9000, codesize, 1, fp);
 
-			// for now skip rspan16 contents...
+			// skip rspan16
+			fread(&codesize, 2, 1, fp);
+			fseek(fp, codesize, SEEK_CUR);
+			// skip rspan0
 			fread(&codesize, 2, 1, fp);
 			fseek(fp, codesize, SEEK_CUR);
 

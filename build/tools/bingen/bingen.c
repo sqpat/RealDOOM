@@ -24,12 +24,16 @@
 
 void __far R_SPAN16_STARTMARKER();
 void __far R_SPAN16_ENDMARKER();
+void __far R_DrawPlanes16 (void);
+void __far R_WriteBackViewConstantsSpan16 (void);
 void __far R_SPAN24_STARTMARKER();
 void __far R_SPAN24_ENDMARKER();
-void __far R_DrawPlanes16 (void);
 void __far R_DrawPlanes24 (void);
-void __far R_WriteBackViewConstantsSpan16 (void);
 void __far R_WriteBackViewConstantsSpan24 (void);
+void __far R_SPAN0_STARTMARKER();
+void __far R_SPAN0_ENDMARKER();
+void __far R_DrawPlanes0 (void);
+void __far R_WriteBackViewConstantsSpan0 (void);
 void __far R_COLUMN_STARTMARKER();
 void __far R_COLUMN_ENDMARKER();
 void __far R_BSP_STARTMARKER();
@@ -177,7 +181,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     // Export .inc file with segment values, etc from the c coe
     FILE*  fp = fopen("doomcode.bin", "wb");
     //FILE*  fp2 = fopen("doomcod2.bin", "wb");
-	uint16_t codesize[14];
+	uint16_t codesize[15];
 	uint16_t muscodesize[4];
 	uint16_t maxmuscodesize = 0;
     int8_t i;
@@ -197,6 +201,10 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     codesize[13] = FP_OFF(R_SPAN16_ENDMARKER) - FP_OFF(R_SPAN16_STARTMARKER);    
     fwrite(&codesize[13], 2, 1, fp); // write filesize..
     FAR_fwrite((byte __far *)R_SPAN16_STARTMARKER, codesize[13], 1, fp); // write data
+    
+    codesize[14] = FP_OFF(R_SPAN0_ENDMARKER) - FP_OFF(R_SPAN0_STARTMARKER);    
+    fwrite(&codesize[14], 2, 1, fp); // write filesize..
+    FAR_fwrite((byte __far *)R_SPAN0_STARTMARKER, codesize[14], 1, fp); // write data
 
 
     codesize[2] = FP_OFF(R_WriteBackViewConstantsMasked) - FP_OFF(R_MASKED_STARTMARKER);
@@ -297,6 +305,9 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "#define R_DrawPlanes16Offset                  0x%X\n", FP_OFF(R_DrawPlanes16)                  - FP_OFF(R_SPAN16_STARTMARKER));
 	fprintf(fp, "#define R_WriteBackViewConstantsSpan16Offset  0x%X\n", FP_OFF(R_WriteBackViewConstantsSpan16)  - FP_OFF(R_SPAN16_STARTMARKER));
 
+	fprintf(fp, "#define R_DrawPlanes0Offset                   0x%X\n", FP_OFF(R_DrawPlanes0)                   - FP_OFF(R_SPAN0_STARTMARKER));
+	fprintf(fp, "#define R_WriteBackViewConstantsSpan0Offset   0x%X\n", FP_OFF(R_WriteBackViewConstantsSpan0)   - FP_OFF(R_SPAN0_STARTMARKER));
+
     // sky offsets
 	fprintf(fp, "#define R_DrawSkyColumnOffset                 0x%X\n", FP_OFF(R_DrawSkyColumn)                - FP_OFF(R_DrawSkyColumn));
 	fprintf(fp, "#define R_DrawSkyPlaneOffset                  0x%X\n", FP_OFF(R_DrawSkyPlane)                 - FP_OFF(R_DrawSkyColumn));
@@ -380,6 +391,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "#define R_DrawColumnCodeSize           0x%X\n", codesize[0]);
     fprintf(fp, "#define R_DrawSpan24CodeSize           0x%X\n", codesize[1]);
     fprintf(fp, "#define R_DrawSpan16CodeSize           0x%X\n", codesize[13]);
+    fprintf(fp, "#define R_DrawSpan0CodeSize            0x%X\n", codesize[14]);
 	fprintf(fp, "#define R_DrawFuzzColumnCodeSize       0x%X\n", codesize[2]);
 	fprintf(fp, "#define R_MaskedConstantsCodeSize      0x%X\n", codesize[3]);
 	fprintf(fp, "#define R_DrawSkyColumnCodeSize        0x%X\n", codesize[4]);
@@ -400,6 +412,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fp = fopen("m_offset.inc", "wb");
 	fprintf(fp, "R_DRAWPLANES24OFFSET = 0%Xh\n",                    FP_OFF(R_DrawPlanes24)                  - FP_OFF(R_SPAN24_STARTMARKER));
 	fprintf(fp, "R_DRAWPLANES16OFFSET = 0%Xh\n",                    FP_OFF(R_DrawPlanes16)                  - FP_OFF(R_SPAN16_STARTMARKER));
+	fprintf(fp, "R_DRAWPLANES0OFFSET = 0%Xh\n",                     FP_OFF(R_DrawPlanes0)                   - FP_OFF(R_SPAN0_STARTMARKER));
 	fprintf(fp, "R_GETCOMPOSITETEXTUREOFFSET = 0%Xh\n",             FP_OFF(R_GetCompositeTexture_Far)       - FP_OFF(R_BSP_STARTMARKER));
 	fprintf(fp, "R_GETPATCHTEXTUREOFFSET = 0%Xh\n",                 FP_OFF(R_GetPatchTexture_Far)           - FP_OFF(R_BSP_STARTMARKER));
 	fprintf(fp, "R_DRAWMASKEDOFFSET = 0%Xh\n",                      FP_OFF(R_DrawMasked)                    - FP_OFF(R_MASKED_STARTMARKER));
