@@ -14,10 +14,10 @@
 #define R_DrawSkyColumnOffset                 0x0
 #define R_DrawSkyPlaneOffset                  0x64F
 #define R_DrawSkyPlaneDynamicOffset           0x5DE
-#define R_WriteBackViewConstantsOffset        0x33D4
-#define R_RenderPlayerViewOffset              0x3249
-#define R_GetCompositeTextureOffset           0x2F33
-#define R_GetPatchTextureOffset               0x2E98
+#define R_WriteBackViewConstantsOffset        0x3458
+#define R_RenderPlayerViewOffset              0x32CD
+#define R_GetCompositeTextureOffset           0x2FB7
+#define R_GetPatchTextureOffset               0x2F1C
 #define WI_StartOffset                        0xFF9
 #define WI_TickerOffset                       0xE03
 #define WI_DrawerOffset                       0xE8A
@@ -70,7 +70,7 @@
 #define R_DrawFuzzColumnCodeSize       0x1882
 #define R_MaskedConstantsCodeSize      0xEB
 #define R_DrawSkyColumnCodeSize        0x6C0
-#define R_BSPCodeSize                  0x370E
+#define R_BSPCodeSize                  0x3792
 #define WI_StuffCodeSize               0x1011
 #define PSightCodeSize                 0x5BE9
 #define WipeCodeSize                   0x4B6
