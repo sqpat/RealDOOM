@@ -249,14 +249,32 @@ mov   dx, 01000h
 ; inline i4m
         mul     dx              ; - low(M2) * high(M1)
         xchg    ax, si          ; save that in si
-        SELFMODIFY_SPAN_ds_ystep_lo:
-        mov     sp, 01000h
 
-        mul     sp              ; low(M2) * low(M1)
+; shove this in the mul post prefetch.
+
+SELFMODIFY_SPAN_ds_xstep_lo_2:
+; preshifted left 4
+mov     dx, 01000h
+mov     ss, dx
+
+SELFMODIFY_SPAN_ds_ystep_lo_2:
+mov     sp, 01000h
+
+
+        SELFMODIFY_SPAN_ds_ystep_lo:
+        mov     dx, 01000h
+
+
+
+
+
+        mul     dx              ; low(M2) * low(M1)
         add     dx, si           ; add previously computed high part
 
 ;	continuing:	yfrac.w = basey = ds_yfrac + ds_ystep * prt;
 ; dx:ax contains ds_ystep * prt
+
+
 
 
 
@@ -279,16 +297,10 @@ mov  ch, al       ;  (ch:dx now yfrac24)
 ;bl:ss needs to be xstep24 (ss already set)
 ;bh:sp needs to be ystep24 (sp already set)
 
+;todo this could be part of the ES grabber below in an LES bx if we wrote that to a var instead of to code. Probably not destview but a diff var spot?
 SELFMODIFY_SPAN_ds_xstepystep_his:
 mov bx, 01000h      ; set xstep24 hi 8 and ystep 24 hi 8 at once
 
-SELFMODIFY_SPAN_ds_xstep_lo_2:
-; preshifted left 4
-mov     ax, 01000h
-mov     ss, ax
-
-SELFMODIFY_SPAN_ds_ystep_lo_2:
-mov     sp, 01000h
 
 
 
@@ -374,7 +386,7 @@ do_span_loop:
 SELFMODIFY_SPAN_set_span_counter:
 mov   bx, 0
 
-; loop if i < loopcount. note we can overwrite this with self modifying coe
+; loop if i < loopcount.
 SELFMODIFY_SPAN_compare_span_counter:
 cmp   bl, 4
 jge   span_i_loop_done
@@ -907,10 +919,6 @@ adc   dx, 01000h
 
 neg   dx
 neg   ax
-; - sqpat 12/30/24  read below, i used to be so dumb.
-
-; i dont understand why this is here but the compiler did this. it works with or without, 
-; probably too tiny an error to be visibly noticable?
 sbb   dx, 0
 
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_yfrac_lo+1 - OFFSET R_SPAN24_STARTMARKER_], ax
@@ -1043,15 +1051,16 @@ SELFMODIFY_SPAN_baseyscale_lo_1:
 mov   bx, 01000h
 SELFMODIFY_SPAN_baseyscale_hi_1:
 mov   cx, 01000h
-; cant pop - used once more later
-mov   ax, word ptr [bp - 02h]	; retrieve distance low word
+
+pop ax  ; retrieve low distance word
+push ax
 
 ;		ds_ystep = cachedystep[y] = (R_FixedMulLocal (distance,baseyscale));
 
 call R_FixedMulLocal24_
 
 mov   es, ds:[_cachedystep_segment_storage]
-; todo turn into stosw here and above?
+
 mov   word ptr es:[si], ax
 mov   word ptr es:[si + 2], dx
 

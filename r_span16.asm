@@ -16,7 +16,7 @@
 ; DESCRIPTION:
 ;
 INCLUDE defs.inc
-INSTRUCTION_SET_MACRO
+INSTRUCTION_SET_MACRO 
 
 ;=================================
 
@@ -1017,8 +1017,9 @@ SELFMODIFY_SPAN_baseyscale_lo_1:
 mov   bx, 01000h
 SELFMODIFY_SPAN_baseyscale_hi_1:
 mov   cx, 01000h
-; cant pop - used once more later
-mov   ax, word ptr [bp - 02h]	; retrieve distance low word
+
+pop ax  ; retrieve low distance word
+push ax
 
 ;		ds_ystep = cachedystep[y] = (R_FixedMulLocal (distance,baseyscale));
 

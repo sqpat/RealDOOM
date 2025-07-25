@@ -7,10 +7,10 @@
 #define R_DrawMaskedOffset                    0x14DF
 #define R_WriteBackViewConstantsMaskedOffset  0x0
 #define R_WriteBackMaskedFrameConstantsOffset 0x8D
-#define R_DrawPlanes24Offset                  0xBD6
-#define R_WriteBackViewConstantsSpan24Offset  0x105C
-#define R_DrawPlanes16Offset                  0x9EE
-#define R_WriteBackViewConstantsSpan16Offset  0xE74
+#define R_DrawPlanes24Offset                  0xBD5
+#define R_WriteBackViewConstantsSpan24Offset  0x105B
+#define R_DrawPlanes16Offset                  0x9ED
+#define R_WriteBackViewConstantsSpan16Offset  0xE73
 #define R_DrawSkyColumnOffset                 0x0
 #define R_DrawSkyPlaneOffset                  0x64F
 #define R_DrawSkyPlaneDynamicOffset           0x5DE
@@ -65,8 +65,8 @@
 #define P_SetMobjStateOffset                  0x5B41
 
 #define R_DrawColumnCodeSize           0xE46
-#define R_DrawSpan24CodeSize           0x11A8
-#define R_DrawSpan16CodeSize           0xF6C
+#define R_DrawSpan24CodeSize           0x11A7
+#define R_DrawSpan16CodeSize           0xF6B
 #define R_DrawFuzzColumnCodeSize       0x190B
 #define R_MaskedConstantsCodeSize      0xEB
 #define R_DrawSkyColumnCodeSize        0x6C0

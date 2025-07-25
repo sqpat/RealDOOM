@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/24 07:53:08
+Created on:       25/07/24 18:38:25
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -80,8 +80,8 @@ s_sbsfx_TEXT           CODE           AUTO           13fa:2e60       000017f3
 R_BSP_TEXT             CODE           AUTO           1860:0000       00003792
 R_MAIN_TEXT            CODE           AUTO           1bd9:0002       000003dc
 R_COLUMN_TEXT          CODE           AUTO           1bd9:03de       00000e46
-R_SPAN_TEXT            CODE           AUTO           1bd9:1224       000011a8
-R_SPAN16_TEXT          CODE           AUTO           1bd9:23cc       00000f6c
+R_SPAN_TEXT            CODE           AUTO           1bd9:1224       000011a7
+R_SPAN16_TEXT          CODE           AUTO           1bd9:23cc       00000f6b
 R_SKY_TEXT             CODE           AUTO           1bd9:3338       000006c0
 R_MASKED_TEXT          CODE           AUTO           1bd9:39f8       000019f6
 w_wad_TEXT             CODE           AUTO           1bd9:53f0       0000030c
@@ -1064,16 +1064,16 @@ Module: r_column.obj(r_column.ASM)
 1bd9:1224      R_COLUMN_ENDMARKER_
 Module: r_span.obj(r_span.ASM)
 1bd9:1348*     R_DrawSpan24_
-1bd9:2280      R_WriteBackViewConstantsSpan24_
+1bd9:227f      R_WriteBackViewConstantsSpan24_
 1bd9:1224      R_SPAN24_STARTMARKER_
-1bd9:1dfa      R_DrawPlanes24_
-1bd9:23cc      R_SPAN24_ENDMARKER_
+1bd9:1df9      R_DrawPlanes24_
+1bd9:23cb      R_SPAN24_ENDMARKER_
 Module: r_span16.obj(r_span16.ASM)
-1bd9:3240      R_WriteBackViewConstantsSpan16_
+1bd9:323f      R_WriteBackViewConstantsSpan16_
 1bd9:24f0*     R_DrawSpan16_
-1bd9:3338      R_SPAN16_ENDMARKER_
+1bd9:3337      R_SPAN16_ENDMARKER_
 1bd9:23cc      R_SPAN16_STARTMARKER_
-1bd9:2dba      R_DrawPlanes16_
+1bd9:2db9      R_DrawPlanes16_
 Module: r_sky.obj(r_sky.ASM)
 1bd9:3338      R_DrawSkyColumn_
 1bd9:3505*     R_DrawSkyColumnDynamic_
@@ -1618,4 +1618,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0002fdd0 (196048.)
 Entry point address: 231c:686e
-Link time: 00:00.30
+Link time: 00:00.29
