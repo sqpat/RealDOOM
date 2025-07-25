@@ -7,7 +7,7 @@
 #include "p_saveg.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2408		
+#define CONSTANTS_COUNT 2410		
 #define LOCALS_COUNT 22
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -181,8 +181,10 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "PHYSICS_7000_END_SEGMENT",
     "RENDER_8800_END_SEGMENT",
     "RENDER_9000_END_SEGMENT",
-    "RENDER_9C00_END_SEGMENT",
-    "R_DRAWPLANES_OFFSET",
+    "RENDER_9C00_END_SEGMENT_16",
+    "RENDER_9C00_END_SEGMENT_24",
+    "R_DRAWPLANES_24_OFFSET",
+    "R_DRAWPLANES_16_OFFSET",
     "DRAWSKYPLANE_AREA_SEGMENT",
     "R_DRAWSKYPLANE_OFFSET",
     "R_DRAWSKYPLANE_DYNAMIC_OFFSET",
@@ -2659,8 +2661,10 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     physics_7000_end_segment,
     render_8800_end_segment,
     render_9000_end_segment,
-    render_9C00_end_segment,
-    R_DrawPlanesOffset,
+    render_9C00_end_segment_16,
+    render_9C00_end_segment_24,
+    R_DrawPlanes24Offset,
+    R_DrawPlanes16Offset,
     drawskyplane_area_segment,
     R_DrawSkyPlaneOffset,
     R_DrawSkyPlaneDynamicOffset,
