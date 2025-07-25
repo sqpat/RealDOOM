@@ -289,56 +289,24 @@ mov   dx, es
 mov   es, ds:[_cachedheight_segment_storage]
 shl   si, 1
 
-generate_distance_steps:
 
-les   bx, dword ptr es:[si + 0 (( YSLOPE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
-mov   cx, es
+; CACHEDHEIGHT LOOKUP
 
-; INLINED
-;call R_FixedMulLocal0_
+cmp   ax, word ptr es:[si] ; compare low word
+jne   generate_distance_steps
 
+cmp   dx, word ptr es:[si+2]
+jne   generate_distance_steps	; comparing high word
 
+; CACHED DISTANCE lookup
+use_cached_values:
 
-mov   es, ax	; store ax in es
-mov   ds, dx    ; store dx in ds
-mov   ax, dx	; ax holds dx
-CWD				; S0 in DX
-
-AND   DX, BX	; S0*BX
-NEG   DX
-mov   SI, DX	; DI stores hi word return
-
-; AX still stores DX
-MUL  CX         ; DX*CX
-add  SI, AX    ; low word result into high word return
-
-mov  AX, DS    ; restore DX from ds
-MUL  BX         ; DX*BX
-XCHG BX, AX    ; BX will hold low word return. store bx in ax
-add  SI, DX    ; add high word to result
-
-mov  DX, ES    ; restore AX from ES
-mul  DX        ; BX*AX  
-add  BX, DX    ; high word result into low word return
-ADC  SI, 0
-
-mov  AX, CX   ; AX holds CX
-CWD           ; S1 in DX
-
-mov  CX, ES   ; AX from ES
-AND  DX, CX   ; S1*AX
-NEG  DX
-ADD  SI, DX   ; result into high word return
-
-MUL  CX       ; AX*CX
-
-ADD  AX, BX	  ; set up final return value
-ADC  DX, SI
-
-mov  CX, SS   ; restore DS
-mov  DS, CX
+les   ax, dword ptr es:[si + 0 + (( CACHEDDISTANCE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
+mov   dx, es
 
 
+; technically we dont need to calculate distance if its fixed colormap.
+; could we skip all this other crap...
 distance_steps_ready:
 
 ; dx:ax is distance
@@ -404,7 +372,65 @@ pop   si
 pop   cx
 ret  
 
-   
+   generate_distance_steps:
+
+mov   word ptr es:[si], ax
+mov   word ptr es:[si + 2], dx   ; cachedheight into dx
+
+les   bx, dword ptr es:[si + 0 (( YSLOPE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
+mov   cx, es
+
+; INLINED
+;call R_FixedMulLocal0_
+
+
+
+mov   es, ax	; store ax in es
+mov   ds, dx    ; store dx in ds
+mov   ax, dx	; ax holds dx
+CWD				; S0 in DX
+
+AND   DX, BX	; S0*BX
+NEG   DX
+mov   SI, DX	; DI stores hi word return
+
+; AX still stores DX
+MUL  CX         ; DX*CX
+add  SI, AX    ; low word result into high word return
+
+mov  AX, DS    ; restore DX from ds
+MUL  BX         ; DX*BX
+XCHG BX, AX    ; BX will hold low word return. store bx in ax
+add  SI, DX    ; add high word to result
+
+mov  DX, ES    ; restore AX from ES
+mul  DX        ; BX*AX  
+add  BX, DX    ; high word result into low word return
+ADC  SI, 0
+
+mov  AX, CX   ; AX holds CX
+CWD           ; S1 in DX
+
+mov  CX, ES   ; AX from ES
+AND  DX, CX   ; S1*AX
+NEG  DX
+ADD  SI, DX   ; result into high word return
+
+MUL  CX       ; AX*CX
+
+ADD  AX, BX	  ; set up final return value
+ADC  DX, SI
+
+mov  CX, SS   ; restore DS
+mov  DS, CX
+
+
+mov   es, ds:[_cacheddistance_segment_storage]
+mov   word ptr es:[si], ax			; store distance
+mov   word ptr es:[si + 2], dx		; store distance
+
+jmp   distance_steps_ready
+
 
 ENDP
 
