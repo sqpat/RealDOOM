@@ -279,7 +279,6 @@ push  dx
 ; dont cache all the data. we really only need distance. 
 ; calculate it each time for now. investigate caching speed later.
 
-mov  si, di
 ; si is x * 4
 
 
@@ -287,22 +286,21 @@ les   ax, dword ptr [bp - 010h]
 mov   dx, es
 
 mov   es, ds:[_cachedheight_segment_storage]
-shl   si, 1
+shl   di, 1
 
 
 ; CACHEDHEIGHT LOOKUP
 
-cmp   ax, word ptr es:[si] ; compare low word
-jne   generate_distance_steps
-
-cmp   dx, word ptr es:[si+2]
+cmp   dx, word ptr es:[di+2]
 jne   generate_distance_steps	; comparing high word
+
+cmp   ax, word ptr es:[di] ; compare low word
+jne   generate_distance_steps
 
 ; CACHED DISTANCE lookup
 use_cached_values:
 
-les   ax, dword ptr es:[si + 0 + (( CACHEDDISTANCE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
-mov   dx, es
+mov   ax, word ptr es:[di + 0 + (( CACHEDDISTANCE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
 
 
 ; technically we dont need to calculate distance if its fixed colormap.
@@ -310,7 +308,7 @@ mov   dx, es
 ; todo technically we only use the high word anyway.
 distance_steps_ready:
 
-; dx:ax is distance
+; ax is distance high word
 
 ; 	if (fixedcolormap) {
 
@@ -319,8 +317,6 @@ mov   ax, ax
 SELFMODIFY_SPAN_fixedcolormap_1_AFTER:
 ; 		index = distance >> LIGHTZSHIFT;
 
-xchg        ax, dx   ; ax gets high word
-SHIFT_MACRO sar ax 4
 
 
 ;		if (index >= MAXLIGHTZ) {
@@ -375,15 +371,14 @@ ret
 
 generate_distance_steps:
 
-mov   word ptr es:[si], ax
-mov   word ptr es:[si + 2], dx   ; cachedheight into dx
+mov   word ptr es:[di], ax
+mov   word ptr es:[di + 2], dx   ; cachedheight into dx
 
-les   bx, dword ptr es:[si + 0 (( YSLOPE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
+les   bx, dword ptr es:[di + 0 (( YSLOPE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
 mov   cx, es
 
 ; INLINED
 ;call R_FixedMulLocal0_
-
 
 
 mov   es, ax	; store ax in es
@@ -427,8 +422,10 @@ mov  DS, CX
 
 
 mov   es, ds:[_cacheddistance_segment_storage]
-mov   word ptr es:[si], ax			; store distance
-mov   word ptr es:[si + 2], dx		; store distance
+xchg  ax, dx  ; we really only use the high word shifted right 4.
+SHIFT_MACRO sar ax 4
+
+stosw;   word ptr es:[si], ax			; store distance high word
 
 jmp   distance_steps_ready
 
