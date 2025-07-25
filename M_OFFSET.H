@@ -1,10 +1,10 @@
 #define R_DrawColumnOffset                    0x0
-#define R_DrawColumnPrepMaskedMultiOffset     0x190
-#define R_DrawFuzzColumnOffset                0x94
-#define R_DrawSingleMaskedColumnOffset        0x1D9
-#define R_DrawMaskedColumnOffset              0x14B2
-#define R_SortVisSpritesOffset                0x1795
-#define R_DrawMaskedOffset                    0x1456
+#define R_DrawColumnPrepMaskedMultiOffset     0x217
+#define R_DrawFuzzColumnOffset                0x118
+#define R_DrawSingleMaskedColumnOffset        0x261
+#define R_DrawMaskedColumnOffset              0x153B
+#define R_SortVisSpritesOffset                0x181E
+#define R_DrawMaskedOffset                    0x14DF
 #define R_WriteBackViewConstantsMaskedOffset  0x0
 #define R_WriteBackMaskedFrameConstantsOffset 0x8D
 #define R_DrawPlanes24Offset                  0xBD6
@@ -67,7 +67,7 @@
 #define R_DrawColumnCodeSize           0xE46
 #define R_DrawSpan24CodeSize           0x11A8
 #define R_DrawSpan16CodeSize           0xF6C
-#define R_DrawFuzzColumnCodeSize       0x1882
+#define R_DrawFuzzColumnCodeSize       0x190B
 #define R_MaskedConstantsCodeSize      0xEB
 #define R_DrawSkyColumnCodeSize        0x6C0
 #define R_BSPCodeSize                  0x3792

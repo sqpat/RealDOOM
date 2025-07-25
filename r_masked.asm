@@ -43,7 +43,42 @@ PUBLIC  R_MASKED_STARTMARKER_
 
 ENDP
 
-FUZZTABLE = 50
+dw DRAWCOL_OFFSET - 00000h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0000h
+dw DRAWCOL_OFFSET - 00100h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0010h
+dw DRAWCOL_OFFSET - 00200h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0020h
+dw DRAWCOL_OFFSET - 00300h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0030h
+dw DRAWCOL_OFFSET - 00400h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0040h
+dw DRAWCOL_OFFSET - 00500h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0050h
+dw DRAWCOL_OFFSET - 00600h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0060h
+dw DRAWCOL_OFFSET - 00700h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0070h
+dw DRAWCOL_OFFSET - 00800h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0080h
+dw DRAWCOL_OFFSET - 00900h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0090h
+dw DRAWCOL_OFFSET - 00A00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 00A0h
+dw DRAWCOL_OFFSET - 00B00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 00B0h
+dw DRAWCOL_OFFSET - 00C00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 00C0h
+dw DRAWCOL_OFFSET - 00D00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 00D0h
+dw DRAWCOL_OFFSET - 00E00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 00E0h
+dw DRAWCOL_OFFSET - 00F00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 00F0h
+dw DRAWCOL_OFFSET - 01000h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0100h
+dw DRAWCOL_OFFSET - 01100h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0110h
+dw DRAWCOL_OFFSET - 01200h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0120h
+dw DRAWCOL_OFFSET - 01300h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0130h
+dw DRAWCOL_OFFSET - 01400h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0140h
+dw DRAWCOL_OFFSET - 01500h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0150h
+dw DRAWCOL_OFFSET - 01600h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0160h
+dw DRAWCOL_OFFSET - 01700h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0170h
+dw DRAWCOL_OFFSET - 01800h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0180h
+dw DRAWCOL_OFFSET - 01900h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0190h
+dw DRAWCOL_OFFSET - 01A00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 01A0h
+dw DRAWCOL_OFFSET - 01B00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 01B0h
+dw DRAWCOL_OFFSET - 01C00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 01C0h
+dw DRAWCOL_OFFSET - 01D00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 01D0h
+dw DRAWCOL_OFFSET - 01E00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 01E0h
+dw DRAWCOL_OFFSET - 01F00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 01F0h
+dw DRAWCOL_OFFSET - 02000h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0200h
+
+
+SIZE_FUZZTABLE = 50
 
 ; extended length of a max run...
 _fuzzoffset:
@@ -56,7 +91,7 @@ dw  00050h, 0FFB0h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB
 dw  00050h, 00050h, 00050h, 0FFB0h, 00050h
 
 _fuzzpos:
-dw 0
+dw  (OFFSET _fuzzoffset) - (OFFSET R_MASKED_STARTMARKER_)
 
 
 _pagesegments:
@@ -131,10 +166,11 @@ REPT 16
 endm
 
 
-cmp  si, FUZZTABLE * 2 ; word size
+
+cmp  si, ((OFFSET _fuzzoffset) - (OFFSET R_MASKED_STARTMARKER_)) +  (SIZE_FUZZTABLE * 2) ; word size
 jl   fuzzpos_ok
 ; subtract 50 from fuzzpos
-sub  si, FUZZTABLE * 2 ; word size
+sub  si, SIZE_FUZZTABLE * 2 ; word size
 fuzzpos_ok:
 sub  cl, ch
 cmp  cl, ch
@@ -154,7 +190,7 @@ xlat byte ptr cs:[bx]		    ; lookup colormaps + al byte
 stosb							; write to screen
 add  di, dx						; dx contains constant (0x4F) to add to di to get next screen dest.
 
-cmp  si, FUZZTABLE * 2
+cmp  si, ((OFFSET _fuzzoffset) - (OFFSET R_MASKED_STARTMARKER_)) +  (SIZE_FUZZTABLE * 2) ; word size
 je   zero_out_fuzzpos
 finish_one_fuzzpixel_iteration:
 loop  draw_one_fuzzpixel
@@ -178,7 +214,7 @@ pop  si
 retf 
 
 zero_out_fuzzpos:
-xor  si, si
+mov   si, (OFFSET _fuzzoffset) - (OFFSET R_MASKED_STARTMARKER_)
 loop  draw_one_fuzzpixel
 jmp finished_drawing_fuzzpixels
 
@@ -267,11 +303,12 @@ SELFMODIFY_MASKED_set_dc_iscale_hi:
 mov   cx, 01000h ; dc_iscale +1
 
 
+db 02Eh  ; cs segment override
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 SELFMODIFY_MASKED_multi_set_colormap_index_jump:
-dw 0400h
-; addr 0400 + first byte (4x colormap.)
+dw 0000h
+; addr 0000 + first byte (4x colormap.)
 
 pop   bp
 sti             ; re-enable interrupts
@@ -476,11 +513,12 @@ mov   bp, word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1+1 - OFFSET R_MASKED_
 
 ; dynamic call lookuptable based on used colormaps address being CS:00
 
+db 02Eh  ; cs segment override
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 SELFMODIFY_MASKED_set_colormap_index_jump:
-dw 0400h
-; addr 0400 + first byte (4x colormap.)
+dw 0000h
+; addr 0000 + first byte (4x colormap.)
 
 pop   bp
 sti             ; re-enable interrupts
