@@ -1222,6 +1222,10 @@ str_defaultname_26:
 db "snd_mport", 0
 str_defaultname_27:
 db "usegamma", 0
+str_defaultname_28:
+db "span_quality", 0
+str_defaultname_29:
+db "column_quality", 0
 
 ; 7 bytes per.
 _defaults:
@@ -1280,6 +1284,10 @@ db  1, 0, 0
 dw OFFSET str_defaultname_26, OFFSET _snd_Mport
 db  033h, 0, 0  ; must be shifted one nibble
 dw OFFSET str_defaultname_27, OFFSET _usegamma
+db  0, 0, 0    
+dw OFFSET str_defaultname_28, OFFSET _spanquality
+db  0, 0, 0    
+dw OFFSET str_defaultname_29, OFFSET _columnquality
 db  0, 0, 0    
 
 

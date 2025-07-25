@@ -348,7 +348,8 @@
 // #define FastDiv3232_addr                (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C8)))
 #define R_GetCompositeTexture_addr 	    (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02CC)))
 
-#define colfunc_call_lookup             (((uint32_t  __near*)                (_NULL_OFFSET + 0x02D0)))
+// unused! 2D0-354
+
 // #define R_GetSpriteTexture_addr           (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0354)))
 // 12 bytes each. two for 24.
 #define psprites                        (((pspdef_t __near*)                 (_NULL_OFFSET + 0x0358))) 
@@ -371,8 +372,11 @@
 #define braintargets                    (((THINKERREF __near*)               (_NULL_OFFSET + 0x0480)))
 #define tmbbox                          (((fixed_t_union __near*)            (_NULL_OFFSET + 0x04C0)))
 
-// unused!
-#define spanfunc_call_table             (((uint32_t  __near*)                (_NULL_OFFSET + 0x04D0)))
+// unused! 4D0-554
+
+#define columnquality                   (*((int8_t __near*)                  (_NULL_OFFSET + 0x0552)))
+#define spanquality                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x0553)))
+
 #define V_DrawPatch_addr                  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0554)))
 #define locallib_toupper_addr             (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0558)))
 #define S_ChangeMusic_addr                (*((uint32_t  __near*)             (_NULL_OFFSET + 0x055C)))

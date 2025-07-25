@@ -473,34 +473,38 @@ void __near Z_DoSpanLoad(FILE* fp){
 	#define  DRAWSPAN_AH_OFFSET  0x3F00
 	#define  DRAWSPAN_BX_OFFSET  0x0FC0
 	uint16_t codesize;
-	if (true){
-		fread(&codesize, 2, 1, fp);
-		FAR_fread(spanfunc_jump_lookup_9000, codesize, 1, fp);
+	switch (spanquality){
+		case 1:
+		case 2:
 
-		// for now skip rspan16 contents...
-		fread(&codesize, 2, 1, fp);
-		fseek(fp, codesize, SEEK_CUR);
+			// for now skip rspan24 contents...
+			fread(&codesize, 2, 1, fp);
+			fseek(fp, codesize, SEEK_CUR);
+			fread(&codesize, 2, 1, fp);
+			FAR_fread(spanfunc_jump_lookup_9000, codesize, 1, fp);
 
-		// remap this to the 24 bit version.
-		R_DrawPlanesCallOffset = R_DrawPlanes24Offset;
-		R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_jump_lookup_segment, R_WriteBackViewConstantsSpan24Offset);
-		ds_source_offset = DRAWSPAN_AH_OFFSET;
+			// remap this to the 16 bit version.
+			R_DrawPlanesCallOffset = R_DrawPlanes16Offset;
+			R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_jump_lookup_segment, R_WriteBackViewConstantsSpan16Offset);
+			ds_source_offset = DRAWSPAN_BX_OFFSET;
 
+			break;
+		case 0:
+		default:
 
-	} else {
+			fread(&codesize, 2, 1, fp);
+			FAR_fread(spanfunc_jump_lookup_9000, codesize, 1, fp);
 
-		// for now skip rspan24 contents...
-		fread(&codesize, 2, 1, fp);
-		fseek(fp, codesize, SEEK_CUR);
-		fread(&codesize, 2, 1, fp);
-		FAR_fread(spanfunc_jump_lookup_9000, codesize, 1, fp);
+			// for now skip rspan16 contents...
+			fread(&codesize, 2, 1, fp);
+			fseek(fp, codesize, SEEK_CUR);
 
-		// remap this to the 16 bit version.
-		R_DrawPlanesCallOffset = R_DrawPlanes16Offset;
-		R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_jump_lookup_segment, R_WriteBackViewConstantsSpan16Offset);
-		ds_source_offset = DRAWSPAN_BX_OFFSET;
-
+			// remap this to the 24 bit version.
+			R_DrawPlanesCallOffset = R_DrawPlanes24Offset;
+			R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_jump_lookup_segment, R_WriteBackViewConstantsSpan24Offset);
+			ds_source_offset = DRAWSPAN_AH_OFFSET;
 	}
+
 
 }
  

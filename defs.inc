@@ -307,7 +307,8 @@ _FastDiv3232_addr =                  _NULL_OFFSET + 002C8h
 _R_GetCompositeTexture_addr =        _NULL_OFFSET + 002CCh
 
  
-_colfunc_call_lookup =               _NULL_OFFSET + 002D0h
+; unused! 2D0-354
+
 
 ; 354
 ;_R_GetSpriteTexture_addr =          _NULL_OFFSET + 00354h
@@ -324,13 +325,18 @@ _gamemap = 							 _NULL_OFFSET + 0038Fh
 _savedescription =                   _NULL_OFFSET + 00390h
 _demoname =                          _NULL_OFFSET + 003B0h
 
-_colfunc_masked_call_lookup =        _NULL_OFFSET + 003D0h
+; unused! 3D0-454
+
 
 _ems_backfill_page_order =           _NULL_OFFSET + 00454h
 _movedirangles =                     _NULL_OFFSET + 00470h
 _braintargets =                      _NULL_OFFSET + 00480h
 _tmbbox =                            _NULL_OFFSET + 004C0h
-; unused 4d0 to 554
+
+; unused 4d0 to 552
+
+_columnquality =              	     _NULL_OFFSET + 00552h
+_spanquality =              	     _NULL_OFFSET + 00553h
 
 _V_DrawPatch_addr =              	 _NULL_OFFSET + 00554h
 _locallib_toupper_addr =             _NULL_OFFSET + 00558h
