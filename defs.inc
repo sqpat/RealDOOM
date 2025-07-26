@@ -529,9 +529,14 @@ CURRENT_POSITION_7 =   			   	  (_pageswapargs + (2 * TOTAL_PAGES))
 ; offsets in here. Oh well - it's pretty minimal.
 
 ; todo this sucks.
-SELFMODIFY_COLFUNC_subtract_centery =                   0
-SELFMODIFY_COLFUNC_set_destview_segment =               0+3+2+2+1+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2
-SELFMODIFY_COLFUNC_jump_offset =                        SELFMODIFY_COLFUNC_set_destview_segment+3+2+2+5+2
+SELFMODIFY_COLFUNC_subtract_centery24 =                   0
+SELFMODIFY_COLFUNC_set_destview_segment24 =               0+3+2+2+1+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2
+SELFMODIFY_COLFUNC_jump_offset24 =                        SELFMODIFY_COLFUNC_set_destview_segment24+3+2+2+5+2
+
+SELFMODIFY_COLFUNC_subtract_centery16 =                 0
+SELFMODIFY_COLFUNC_set_destview_segment16 =             0+3+2+2+1+2+2+2+2+2+2+2+2+2+2+2+2+2
+SELFMODIFY_COLFUNC_jump_offset16 =                      SELFMODIFY_COLFUNC_set_destview_segment16+3+2+2+5+2
+
 
 SELFMODIFY_COLFUNC_set_destview_segment0 = 0Fh
 SELFMODIFY_COLFUNC_jump_offset0          = SELFMODIFY_COLFUNC_set_destview_segment0 + 5

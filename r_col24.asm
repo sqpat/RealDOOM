@@ -109,7 +109,7 @@ PUBLIC  R_DrawColumn24_
     ; cx contains dc_iscale+1 (we never use byte 4)
 
     ; todo just move this above to prevenet the need for the mov ax
-    ;SELFMODIFY_COLFUNC_subtract_centery
+    ;SELFMODIFY_COLFUNC_subtract_centery24
     sub   ax, 01000h
     mov   ds, ax              ; save low(M1)
 
@@ -171,7 +171,7 @@ PUBLIC  R_DrawColumn24_
 
    ;  prep our loop variables
 
-;SELFMODIFY_COLFUNC_set_destview_segment:
+;SELFMODIFY_COLFUNC_set_destview_segment24:
    mov     ax, 01000h   
    mov     es, ax; ready the viewscreen segment
    xor     bx, bx       ; common bx offset of zero in the xlats ahead

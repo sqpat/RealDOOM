@@ -75,7 +75,7 @@
 #define P_SetMobjStateOffset                    0x5B41
 
 #define R_DrawColumn24CodeSize         0xE46
-#define R_DrawColumn16CodeSize         0xE46
+#define R_DrawColumn16CodeSize         0xCB4
 #define R_DrawColumn0CodeSize          0x58E
 #define R_DrawSpan24CodeSize           0x11A7
 #define R_DrawSpan16CodeSize           0xF6B

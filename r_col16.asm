@@ -38,31 +38,33 @@ PUBLIC R_COLUMN16_STARTMARKER_
 ENDP 
 
 _colfunc_jump_target:
-dw 00AE2h, 00AD4h, 00AC6h, 00AB8h, 00AAAh, 00A9Ch, 00A8Eh, 00A80h
-dw 00A72h, 00A64h, 00A56h, 00A48h, 00A3Ah, 00A2Ch, 00A1Eh, 00A10h
-dw 00A02h, 009F4h, 009E6h, 009D8h, 009CAh, 009BCh, 009AEh, 009A0h
-dw 00992h, 00984h, 00976h, 00968h, 0095Ah, 0094Ch, 0093Eh, 00930h
-dw 00922h, 00914h, 00906h, 008F8h, 008EAh, 008DCh, 008CEh, 008C0h
-dw 008B2h, 008A4h, 00896h, 00888h, 0087Ah, 0086Ch, 0085Eh, 00850h
-dw 00842h, 00834h, 00826h, 00818h, 0080Ah, 007FCh, 007EEh, 007E0h
-dw 007D2h, 007C4h, 007B6h, 007A8h, 0079Ah, 0078Ch, 0077Eh, 00770h
-dw 00762h, 00754h, 00746h, 00738h, 0072Ah, 0071Ch, 0070Eh, 00700h
-dw 006F2h, 006E4h, 006D6h, 006C8h, 006BAh, 006ACh, 0069Eh, 00690h
-dw 00682h, 00674h, 00666h, 00658h, 0064Ah, 0063Ch, 0062Eh, 00620h
-dw 00612h, 00604h, 005F6h, 005E8h, 005DAh, 005CCh, 005BEh, 005B0h
-dw 005A2h, 00594h, 00586h, 00578h, 0056Ah, 0055Ch, 0054Eh, 00540h
-dw 00532h, 00524h, 00516h, 00508h, 004FAh, 004ECh, 004DEh, 004D0h
-dw 004C2h, 004B4h, 004A6h, 00498h, 0048Ah, 0047Ch, 0046Eh, 00460h
-dw 00452h, 00444h, 00436h, 00428h, 0041Ah, 0040Ch, 003FEh, 003F0h
-dw 003E2h, 003D4h, 003C6h, 003B8h, 003AAh, 0039Ch, 0038Eh, 00380h
-dw 00372h, 00364h, 00356h, 00348h, 0033Ah, 0032Ch, 0031Eh, 00310h
-dw 00302h, 002F4h, 002E6h, 002D8h, 002CAh, 002BCh, 002AEh, 002A0h
-dw 00292h, 00284h, 00276h, 00268h, 0025Ah, 0024Ch, 0023Eh, 00230h
-dw 00222h, 00214h, 00206h, 001F8h, 001EAh, 001DCh, 001CEh, 001C0h
-dw 001B2h, 001A4h, 00196h, 00188h, 0017Ah, 0016Ch, 0015Eh, 00150h
-dw 00142h, 00134h, 00126h, 00118h, 0010Ah, 000FCh, 000EEh, 000E0h
-dw 000D2h, 000C4h, 000B6h, 000A8h, 0009Ah, 0008Ch, 0007Eh, 00070h
-dw 00062h, 00054h, 00046h, 00038h, 0002Ah, 0001Ch, 0000Eh, 00000h
+dw 00954h, 00948h, 0093Ch, 00930h, 00924h, 00918h, 0090Ch, 00900h
+dw 008F4h, 008E8h, 008DCh, 008D0h, 008C4h, 008B8h, 008ACh, 008A0h
+dw 00894h, 00888h, 0087Ch, 00870h, 00864h, 00858h, 0084Ch, 00840h
+dw 00834h, 00828h, 0081Ch, 00810h, 00804h, 007F8h, 007ECh, 007E0h
+dw 007D4h, 007C8h, 007BCh, 007B0h, 007A4h, 00798h, 0078Ch, 00780h
+dw 00774h, 00768h, 0075Ch, 00750h, 00744h, 00738h, 0072Ch, 00720h
+dw 00714h, 00708h, 006FCh, 006F0h, 006E4h, 006D8h, 006CCh, 006C0h
+dw 006B4h, 006A8h, 0069Ch, 00690h, 00684h, 00678h, 0066Ch, 00660h
+dw 00654h, 00648h, 0063Ch, 00630h, 00624h, 00618h, 0060Ch, 00600h
+dw 005F4h, 005E8h, 005DCh, 005D0h, 005C4h, 005B8h, 005ACh, 005A0h
+dw 00594h, 00588h, 0057Ch, 00570h, 00564h, 00558h, 0054Ch, 00540h
+dw 00534h, 00528h, 0051Ch, 00510h, 00504h, 004F8h, 004ECh, 004E0h
+dw 004D4h, 004C8h, 004BCh, 004B0h, 004A4h, 00498h, 0048Ch, 00480h
+dw 00474h, 00468h, 0045Ch, 00450h, 00444h, 00438h, 0042Ch, 00420h
+dw 00414h, 00408h, 003FCh, 003F0h, 003E4h, 003D8h, 003CCh, 003C0h
+dw 003B4h, 003A8h, 0039Ch, 00390h, 00384h, 00378h, 0036Ch, 00360h
+dw 00354h, 00348h, 0033Ch, 00330h, 00324h, 00318h, 0030Ch, 00300h
+dw 002F4h, 002E8h, 002DCh, 002D0h, 002C4h, 002B8h, 002ACh, 002A0h
+dw 00294h, 00288h, 0027Ch, 00270h, 00264h, 00258h, 0024Ch, 00240h
+dw 00234h, 00228h, 0021Ch, 00210h, 00204h, 001F8h, 001ECh, 001E0h
+dw 001D4h, 001C8h, 001BCh, 001B0h, 001A4h, 00198h, 0018Ch, 00180h
+dw 00174h, 00168h, 0015Ch, 00150h, 00144h, 00138h, 0012Ch, 00120h
+dw 00114h, 00108h, 000FCh, 000F0h, 000E4h, 000D8h, 000CCh, 000C0h
+dw 000B4h, 000A8h, 0009Ch, 00090h, 00084h, 00078h, 0006Ch, 00060h
+dw 00054h, 00048h, 0003Ch, 00030h, 00024h, 00018h, 0000Ch, 00000h
+
+
 
 ; mul 80 table.
 _dc_yl_lookup_table:
@@ -104,12 +106,12 @@ PUBLIC  R_DrawColumn16_
 
     ; di contains shifted dc_x relative to detailshift
     ; ax contains dc_yl
-    ; bp:si is dc_texturemid
+    ; si:bp is dc_texturemid
     ; bx contains dc_iscale+0
     ; cx contains dc_iscale+1 (we never use byte 4)
 
     ; todo just move this above to prevenet the need for the mov ax
-    ;SELFMODIFY_COLFUNC_subtract_centery
+    ;SELFMODIFY_COLFUNC_subtract_centery16
     sub   ax, 01000h
     mov   ds, ax              ; save low(M1)
 
@@ -148,18 +150,11 @@ PUBLIC  R_DrawColumn16_
     add   ax, bp
     adc   dx, si ; si was holding onto _dc_texturemid+2
 
-    mov   bp, es        ; bp gets dc_iscale + 1
+    mov   cx, es        ; cx gets dc_iscale + 1
 
-    ; note: top 8 bits cut off! can we restructure? make it faster?
-    ; adc dl, [8 bit reg] instead of si?
 
     mov   dh, dl
     mov   dl, ah        ; mid 16 bits of the 32 bit dx:ax into dx
-    
-
-    ; bx still has dc_iscale low word from above. prepare low bits of precision
-    mov   cl, bl        ; cl has 8 bits of precision (dc_iscale+0)
-    mov   ch, al        ; ch gets the low 8 bits     (starting texel)
 
     
     
@@ -171,7 +166,7 @@ PUBLIC  R_DrawColumn16_
 
    ;  prep our loop variables
 
-;SELFMODIFY_COLFUNC_set_destview_segment:
+;SELFMODIFY_COLFUNC_set_destview_segment16:
    mov     ax, 01000h   
    mov     es, ax; ready the viewscreen segment
    xor     bx, bx       ; common bx offset of zero in the xlats ahead
@@ -184,23 +179,27 @@ COLFUNC_JUMP_OFFSET:
    jmp loop_done         ; relative jump to be modified before function is called
 
 
+; 24 case:
+; step is  bp:cl
+; total is dx:ch
+; we want to use
+; step is cx
+; total is dx
+; which means get rid of whats happening in ch.
+
 pixel_loop_fast:
 
-   ;; 14 bytes loop iter
+   ;; 12 bytes loop iter
 
 ; 0xE size
 DRAW_SINGLE_PIXEL MACRO 
-   ; tried to reorder adds in between xlats and stos, but it didn't make anything faster.
-   ; todo retry on real 286
-
     mov    al,dh
-	and    al,ah                  ; ah is 7F
-	xlat   BYTE PTR ds:[bx]       ;
-	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
-	stos   BYTE PTR es:[di]       ;
-	add    ch,cl                  ; add 8 low bits of precision
-    adc    dx,bp                  ; carry result into this add
-	add    di,si                  ; si has 79 (0x4F) and stos added one
+    and    al,ah                  ; ah has 0x7F (127 for al)
+    xlat   BYTE PTR ds:[bx]       ;
+    xlat   BYTE PTR cs:[bx]       ; cs points to colormap
+    stos   BYTE PTR es:[di]       ;
+    add    dx,cx
+    add    di,si                  ; si has 79 (0x4F) and stos added one
 ENDM
 
 
@@ -209,15 +208,12 @@ REPT 199
 ENDM
 
 ; draw last pixel, cut off the add
-
     mov    al,dh
-	and    al,ah                  ; ah is 7F
-	xlat   BYTE PTR ds:[bx]       ;
-	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
-	stos   BYTE PTR es:[di]       ;
-	; dont need these in last loop
-    ;add    di,si                  ; si has 79 (0x4F) and stos added one
-	;add    dx,cx
+    and    al,ah                  ; ah has 0x7F (127 for al)
+    xlat   BYTE PTR ds:[bx]       ;
+    xlat   BYTE PTR cs:[bx]       ; cs points to colormap
+    stos   BYTE PTR es:[di]       ;
+
 
 loop_done:
 ; clean up
