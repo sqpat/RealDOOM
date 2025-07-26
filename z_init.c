@@ -499,19 +499,15 @@ void  __near ReadFileRegionWithIndex(FILE* fp, int16_t index, uint32_t target_ad
 
 }
 
-void __near Z_DoRenderCodeLoad(FILE* fp){
+void __near Z_RemapRenderFunctions(){
 
-	// todo reorder so only two or three switches?
 
-// todo R_GetCompositeTextureOffset
-
-	// column stuff
-	uint16_t codesize;
+	#define  DRAWSPAN_AH_OFFSET  0x3F00
+	#define  DRAWSPAN_BX_OFFSET  0x0FC0
 	switch (columnquality){
 
 		case 3:
 			// skip r_column
-			ReadFileRegionWithIndex(fp, 0x403, (uint32_t)colfunc_jump_lookup_6800);
 
 
 			R_GetPatchTexture_addr =  			 (uint32_t) MK_FP(bsp_code_segment, R_GetPatchTextureFLOffset);
@@ -527,7 +523,6 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 		case 2:
 
 			// skip r_column
-			ReadFileRegionWithIndex(fp, 0x402, (uint32_t)colfunc_jump_lookup_6800);
 
 
 			R_GetPatchTexture_addr =  			 (uint32_t) MK_FP(bsp_code_segment, R_GetPatchTexture0Offset);
@@ -543,7 +538,6 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 		case 1:
 
 			// skip r_column
-			ReadFileRegionWithIndex(fp, 0x401, (uint32_t)colfunc_jump_lookup_6800);
 
 			R_GetPatchTexture_addr =  			 (uint32_t) MK_FP(bsp_code_segment, R_GetPatchTexture16Offset);
 			R_GetCompositeTexture_addr =  		 (uint32_t) MK_FP(bsp_code_segment, R_GetCompositeTexture16Offset);
@@ -555,27 +549,13 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 			break;
 
 
-		case 0:
-		default:
-			ReadFileRegionWithIndex(fp, 0x400, (uint32_t)colfunc_jump_lookup_6800);
-
 
 		// remap... todo
 
 	}
 
-
-
-	// span stuff
-	Z_QuickMapPalette();
-	
-		// dont love this defined here, but this will all be ASM soon enough anyway...
-	#define  DRAWSPAN_AH_OFFSET  0x3F00
-	#define  DRAWSPAN_BX_OFFSET  0x0FC0
 	switch (spanquality){
 		case 3:
-
-			ReadFileRegionWithIndex(fp, 0x403, (uint32_t)spanfunc_jump_lookup_9000);
 
 			// remap this to the 16 bit version.
 			R_DrawPlanesCallOffset = R_DrawPlanesFLOffset;
@@ -585,7 +565,6 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 			break;
 		case 2:
 
-			ReadFileRegionWithIndex(fp, 0x402, (uint32_t)spanfunc_jump_lookup_9000);
 
 			// remap this to the 16 bit version.
 			R_DrawPlanesCallOffset = R_DrawPlanes0Offset;
@@ -597,7 +576,6 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 		case 1:
 
 
-			ReadFileRegionWithIndex(fp, 0x401, (uint32_t)spanfunc_jump_lookup_9000);
 
 
 			// remap this to the 16 bit version.
@@ -607,67 +585,59 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 
 			break;
 
-		case 0:
-		default:
-
-			ReadFileRegionWithIndex(fp, 0x400, (uint32_t)spanfunc_jump_lookup_9000);
-
-
+		// default
 			// remap this to the 24 bit version.
-			R_DrawPlanesCallOffset = R_DrawPlanes24Offset;
-			R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_jump_lookup_segment, R_WriteBackViewConstantsSpan24Offset);
-			ds_source_offset = DRAWSPAN_AH_OFFSET;
+			// R_DrawPlanesCallOffset = R_DrawPlanes24Offset;
+			// R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_jump_lookup_segment, R_WriteBackViewConstantsSpan24Offset);
+			// ds_source_offset = DRAWSPAN_AH_OFFSET;
 	}
+
+
+}
+
+void __near Z_DoRenderCodeLoad(FILE* fp){
+
+	// todo reorder so only two or three switches?
+
+// todo R_GetCompositeTextureOffset
+
+	// column stuff
+	uint16_t codesize;
+	int16_t usedcolumnvalue = 0x400;
+	int16_t usedspanvalue = 0x400;
+	if (columnquality <= 3){
+		usedcolumnvalue += columnquality;		
+	}
+	if (spanquality <= 3){
+		usedspanvalue += spanquality;
+	}
+
+	Z_RemapRenderFunctions();
+
+	ReadFileRegionWithIndex(fp, usedcolumnvalue, (uint32_t)colfunc_jump_lookup_6800);
+
+
+
+
+	// span stuff
+	Z_QuickMapPalette();
+	
+		// dont love this defined here, but this will all be ASM soon enough anyway...
+	ReadFileRegionWithIndex(fp, usedspanvalue, (uint32_t)spanfunc_jump_lookup_9000);
 
 
 	// masked stuff
 	Z_QuickMapMaskedExtraData();
-	switch (columnquality){
-		case 3:
-			ReadFileRegionWithIndex(fp, 0x403, (uint32_t)drawfuzzcol_area);
-			ReadFileRegionWithIndex(fp, 0x403, (uint32_t)maskedconstants_funcarea);
-			break;
-		case 2:
-			ReadFileRegionWithIndex(fp, 0x402, (uint32_t)drawfuzzcol_area);
-			ReadFileRegionWithIndex(fp, 0x402, (uint32_t)maskedconstants_funcarea);
-			break;
-		case 1:
-			ReadFileRegionWithIndex(fp, 0x401, (uint32_t)drawfuzzcol_area);
-			ReadFileRegionWithIndex(fp, 0x401, (uint32_t)maskedconstants_funcarea);
-			break;
-		case 0:
-		default:
-			ReadFileRegionWithIndex(fp, 0x400, (uint32_t)drawfuzzcol_area);
-			ReadFileRegionWithIndex(fp, 0x400, (uint32_t)maskedconstants_funcarea);
 
-
-
-	}
-
-
+	ReadFileRegionWithIndex(fp, usedcolumnvalue, (uint32_t)drawfuzzcol_area);
+	ReadFileRegionWithIndex(fp, usedcolumnvalue, (uint32_t)maskedconstants_funcarea);
 
 	Z_QuickMapRenderPlanes();
 
 	fread(&codesize, 2, 1, fp);
 	FAR_fread(drawskyplane_area, codesize, 1, fp);
 
-
-
-	switch (columnquality){
-		case 3:
-			ReadFileRegionWithIndex(fp, 0x403, (uint32_t)bsp_code_area);
-			break;
-		case 2:
-			ReadFileRegionWithIndex(fp, 0x402, (uint32_t)bsp_code_area);
-			break;
-		case 1:
-			ReadFileRegionWithIndex(fp, 0x401, (uint32_t)bsp_code_area);
-			break;
-		case 0:
-		default:
-			ReadFileRegionWithIndex(fp, 0x400, (uint32_t)bsp_code_area);
-	}
-
+	ReadFileRegionWithIndex(fp, usedcolumnvalue, (uint32_t)bsp_code_area);
 
 }
  
