@@ -207,9 +207,6 @@ void __near R_InitTextureMapping(void) {
 //
 void __near  R_ExecuteSetViewSize(void) {
 
-	void (__far* R_WriteBackViewConstantsMaskedCall)() = 						  ((void    (__far *)())     							(MK_FP(maskedconstants_funcarea_segment, R_WriteBackViewConstantsMaskedOffset)));
-	void (__far* R_WriteBackViewConstants)() =    ((void (__far *)())     	                                                                                                   (MK_FP(bsp_code_segment,          		 R_WriteBackViewConstantsOffset)));
-
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 	setsizeneeded = false;
