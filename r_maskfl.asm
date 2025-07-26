@@ -911,10 +911,14 @@ mov   bx, dx
 
 SHIFT_MACRO shl bx 2
 
-mov   ax, word ptr es:[bx + 8]
+; mov   ax, word ptr es:[bx + 8]
+;add   ax, cx
 mov   bx, word ptr es:[bx + 10]
 
-add   ax, cx
+;mov   ax, cx
+; this i think s the correct first column segment 
+mov   ax, es:[8]  ; bx = 0 case.
+
 
 ; ax pixelsegment
 ; cx:bx column
@@ -1826,7 +1830,7 @@ SELFMODIFY_MASKED_lookup_2_AFTER:
 les   cx, dword ptr ds:[_maskedheaderpixeolfs]
 cmp   cx, -1
 
-je   calculate_pixelsegment_mul
+je   go_draw_masked_column_repeat
 
 calculate_maskedheader_pixel_ofs_repeat:
 
@@ -1844,7 +1848,7 @@ go_draw_masked_column_repeat:
 
 ; pixelsegment += _maskedcachedsegment
 
-add   ax, word ptr ds:[_maskedcachedsegment]
+mov   ax, word ptr ds:[_maskedcachedsegment]
 
 ;    ax is pixelsegment.
 ;    bx still has usetexturecolumn!
@@ -1923,20 +1927,14 @@ lookup_FF_repeat:
 ;	if (texturecolumn >= maskednextlookup ||
 ; 		texturecolumn < maskedprevlookup
 
-mul   byte ptr ds:[_maskedheightvalcache]
-add   ax, word ptr ds:[_maskedcachedsegment]
+;TODOREMOVE
 
+mov   ax, word ptr ds:[_maskedcachedsegment]
 mov   dx, word ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
 
 call R_DrawSingleMaskedColumn_
 
 jmp   update_maskedtexturecol_finish_loop_iter
-
-; pixelsegment = FastMul8u8u((uint8_t) usetexturecolumn, maskedheightvalcache);
-calculate_pixelsegment_mul:
-
-mul   byte ptr ds:[_maskedheightvalcache]
-jmp   go_draw_masked_column_repeat
 
 do_non_repeat:
 
@@ -1968,9 +1966,9 @@ les   ax, dword ptr ds:[_maskedheaderpixeolfs]
 
 cmp   ax, -1
 jne   calculate_maskedheader_pixel_ofs
-mul   byte ptr ds:[_maskedheightvalcache]
+
 go_draw_masked_column:
-add   ax, word ptr ds:[_maskedcachedsegment]
+mov   ax, word ptr ds:[_maskedcachedsegment]
 
 ;	uint16_t __far * postoffsets  =  MK_FP(maskedpostdataofs_segment, maskedpostsofs);
 ;	uint16_t 		 postoffset = postoffsets[texturecolumn-maskedcachedbasecol];
@@ -2023,8 +2021,8 @@ cmp   si, word ptr ds:[_maskednextlookup] ; may be negative
 jge   load_masked_column_segment
 cmp   si, word ptr ds:[_maskedprevlookup] ; may be negative
 jl    load_masked_column_segment
-mul   byte ptr ds:[_maskedheightvalcache]
-add   ax, word ptr ds:[_maskedcachedsegment]
+
+mov   ax, word ptr ds:[_maskedcachedsegment]
 
 mov   dx, word ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
 ;call  dword ptr ds:[_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this
@@ -4648,6 +4646,7 @@ push  cx            ; bp - 2
 mov   si, bx        ; si now holds column address.
 mov   es, cx
 push  ax            ; bp - 4
+mov   word ptr ds:[_dc_source_segment], ax
 
 ; dc_texturemid already set pre call.
 xor   di, di        ; di used as currentoffset.
@@ -4768,15 +4767,10 @@ skip_ceil_clip_set:
 
 cmp   ax, word ptr ds:[_dc_yh]
 jg    increment_column_and_continue_loop
-mov   bx, di
 
-SHIFT_MACRO shr bx 4
 
 
 ; set texture here. could be set constant if we wished..
-les   ax, dword ptr [bp - 4]
-add   ax, bx
-mov   word ptr ds:[_dc_source_segment], ax
 
 call  R_DrawColumnPrepMaskedMulti_
 
@@ -5139,11 +5133,10 @@ jne       is_masked
 
 ;    maskedheightvalcache  = heightval;
 
-mov       al, ah
-mov       byte ptr ds:[_maskedheightvalcache], al
-;    return maskedcachedsegment + (FastMul8u8u(col , heightval) );
-mul       cl
-add       ax, word ptr ds:[_maskedcachedsegment]
+
+;TODOREMOVE _maskedheightvalcache
+
+mov       ax, word ptr ds:[_maskedcachedsegment]
 LEAVE_MACRO     
 pop       di
 pop       si
@@ -5162,16 +5155,8 @@ mov       es, ax
 mov       bx, word ptr ds:[bx + _masked_headers]    ;    maskedheader->pixelofsoffset;
 mov       word ptr ds:[_maskedheaderpixeolfs], bx   ;    maskedheaderpixeolfs = maskedheader->pixelofsoffset;
 
-;    uint16_t __far* pixelofs   =  MK_FP(maskedpixeldataofs_segment, maskedheader->pixelofsoffset);
-; es:bx is paixelofs
-
-;    uint16_t ofs  = pixelofs[col]; // precached as segment value.
-sal       cx, 1  ; col word lookup
-add       bx, cx
-
-;    return maskedcachedsegment + ofs;
 mov       ax, word ptr ds:[_maskedcachedsegment]
-add       ax, word ptr es:[bx]
+
 LEAVE_MACRO     
 pop       di
 pop       si
@@ -5261,15 +5246,11 @@ done_setting_cached_tex_masked:
 
 ; todo none of these close to bx, si, etc. worth moving them for smaller addressing?
 mov       byte ptr ds:[_cachedbyteheight], cl
-mov       byte ptr ds:[_maskedheightvalcache], cl
+
 mov       word ptr ds:[_maskedcachedsegment], ax
 
-; return maskedcachedsegment + (FastMul8u8u(cachedcollength[0] , texcol));
 
-xchg      ax, dx
-mov       al, byte ptr ds:[_cachedcollength] ; cachedcollength
-mul       byte ptr [bp - 4]
-add       ax, dx
+
 LEAVE_MACRO     
 pop       di
 pop       si
