@@ -507,8 +507,6 @@ void __near Z_RemapRenderFunctions(){
 	switch (columnquality){
 
 		case 3:
-			// skip r_column
-
 
 			R_GetPatchTexture_addr =  			 (uint32_t) MK_FP(bsp_code_segment, R_GetPatchTextureFLOffset);
 			R_GetCompositeTexture_addr =  		 (uint32_t) MK_FP(bsp_code_segment, R_GetCompositeTextureFLOffset);
@@ -522,9 +520,6 @@ void __near Z_RemapRenderFunctions(){
 
 		case 2:
 
-			// skip r_column
-
-
 			R_GetPatchTexture_addr =  			 (uint32_t) MK_FP(bsp_code_segment, R_GetPatchTexture0Offset);
 			R_GetCompositeTexture_addr =  		 (uint32_t) MK_FP(bsp_code_segment, R_GetCompositeTexture0Offset);
 			R_WriteBackMaskedFrameConstantsCallOffset  = R_WriteBackMaskedFrameConstants0Offset;
@@ -536,8 +531,6 @@ void __near Z_RemapRenderFunctions(){
 			break;
 
 		case 1:
-
-			// skip r_column
 
 			R_GetPatchTexture_addr =  			 (uint32_t) MK_FP(bsp_code_segment, R_GetPatchTexture16Offset);
 			R_GetCompositeTexture_addr =  		 (uint32_t) MK_FP(bsp_code_segment, R_GetCompositeTexture16Offset);

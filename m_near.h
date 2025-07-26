@@ -265,7 +265,7 @@
 #endif
 
 #define prndindex                       (*((uint8_t    __near*)              (_NULL_OFFSET + 0x0188)))
-#define spanquality                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x0189)))
+#define spanquality                     (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0189)))
 #define setStateReturn                  (*((mobj_t __near*  __near*)         (_NULL_OFFSET + 0x018A)))
 #define R_GetPatchTexture_addr   		(*((uint32_t  __near*)               (_NULL_OFFSET + 0x018C)))
 #define W_CacheLumpNumDirect_addr       (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0190)))
@@ -353,7 +353,7 @@
 // 361 bytes? 0x169?
 #define w_message 						(*((hu_stext_t __near*)               (_NULL_OFFSET + 0x02D0)))
 
-#define columnquality                   (*((int8_t __near*)                  (_NULL_OFFSET + 0x0439)))
+#define columnquality                   (*((uint8_t __near*)                  (_NULL_OFFSET + 0x0439)))
 
 // up to 439?
 // 43A to 440 free?
