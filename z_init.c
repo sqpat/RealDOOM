@@ -469,33 +469,64 @@ void __far G_PlayerReborn ();
 void __far G_ExitLevel (void);
 
  
+void  __near SkipNextFileRegion(FILE* fp){
+	uint16_t codesize;
+	fread(&codesize, 2, 1, fp);
+	fseek(fp, codesize, SEEK_CUR);
+}
 
+void  __near ReadFileRegionWithIndex(FILE* fp, int16_t index, uint32_t target_addr){
+	uint16_t codesize;
+
+	// low 8 bits of index is 
+	// high 8 bits is total number
+	//. i.e. 0x202 = 2nd of 2
+	// function is kinda gross but serves to keep file size down for now.
+
+	while (index >= 0)	{
+		if ((index & 0xFF) == 0){
+			fread(&codesize, 2, 1, fp);
+			FAR_fread((byte __far*) target_addr, codesize, 1, fp);
+		} else {
+			fread(&codesize, 2, 1, fp);
+			fseek(fp, codesize, SEEK_CUR);
+		}
+
+		index -= 0x101;
+	}
+
+
+
+}
 
 void __near Z_DoRenderCodeLoad(FILE* fp){
+
+	// todo reorder so only two or three switches?
+
+// todo R_GetCompositeTextureOffset
+
 	// column stuff
 	uint16_t codesize;
 	switch (columnquality){
 		case 2:
 
 			// skip r_column
-			fread(&codesize, 2, 1, fp);
-			fseek(fp, codesize, SEEK_CUR);
-			fread(&codesize, 2, 1, fp);
-			FAR_fread(colfunc_jump_lookup_6800, codesize, 1, fp);
+			ReadFileRegionWithIndex(fp, 0x201, (uint32_t)colfunc_jump_lookup_6800);
 
-		// remap... todo
 
+			R_GetPatchTexture_addr =  			 (uint32_t) MK_FP(bsp_code_segment, R_GetPatchTexture0Offset);
+			R_GetCompositeTexture_addr =  		 (uint32_t) MK_FP(bsp_code_segment, R_GetCompositeTexture0Offset);
+			R_WriteBackMaskedFrameConstantsCallOffset  = R_WriteBackMaskedFrameConstants0Offset;
+			R_DrawMaskedCallOffset =			 R_DrawMasked0Offset;
+			R_RenderPlayerView = 				 MK_FP(bsp_code_segment,          		 R_RenderPlayerView0Offset);
+			R_WriteBackViewConstantsMaskedCall = MK_FP(maskedconstants_funcarea_segment, R_WriteBackViewConstantsMasked0Offset);
+			R_WriteBackViewConstants = 			 MK_FP(bsp_code_segment,          		 R_WriteBackViewConstants0Offset);
 			break;
 		case 0:
 		case 1:
 		default:
+			ReadFileRegionWithIndex(fp, 0x200, (uint32_t)colfunc_jump_lookup_6800);
 
-			fread(&codesize, 2, 1, fp);
-			FAR_fread(colfunc_jump_lookup_6800, codesize, 1, fp);
-
-			// skip r_col0
-			fread(&codesize, 2, 1, fp);
-			fseek(fp, codesize, SEEK_CUR);
 
 		// remap... todo
 
@@ -512,14 +543,9 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 	switch (spanquality){
 		case 1:
 
-			// skip rspan24
-			fread(&codesize, 2, 1, fp);
-			fseek(fp, codesize, SEEK_CUR);
-			fread(&codesize, 2, 1, fp);
-			FAR_fread(spanfunc_jump_lookup_9000, codesize, 1, fp);
-			// skip rspan0
-			fread(&codesize, 2, 1, fp);
-			fseek(fp, codesize, SEEK_CUR);
+
+			ReadFileRegionWithIndex(fp, 0x301, (uint32_t)spanfunc_jump_lookup_9000);
+
 
 			// remap this to the 16 bit version.
 			R_DrawPlanesCallOffset = R_DrawPlanes16Offset;
@@ -530,14 +556,7 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 
 		case 2:
 
-			// skip rspan24
-			fread(&codesize, 2, 1, fp);
-			fseek(fp, codesize, SEEK_CUR);
-			// skip rspan16
-			fread(&codesize, 2, 1, fp);
-			fseek(fp, codesize, SEEK_CUR);
-			fread(&codesize, 2, 1, fp);
-			FAR_fread(spanfunc_jump_lookup_9000, codesize, 1, fp);
+			ReadFileRegionWithIndex(fp, 0x302, (uint32_t)spanfunc_jump_lookup_9000);
 
 			// remap this to the 16 bit version.
 			R_DrawPlanesCallOffset = R_DrawPlanes0Offset;
@@ -548,15 +567,8 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 		case 0:
 		default:
 
-			fread(&codesize, 2, 1, fp);
-			FAR_fread(spanfunc_jump_lookup_9000, codesize, 1, fp);
+			ReadFileRegionWithIndex(fp, 0x300, (uint32_t)spanfunc_jump_lookup_9000);
 
-			// skip rspan16
-			fread(&codesize, 2, 1, fp);
-			fseek(fp, codesize, SEEK_CUR);
-			// skip rspan0
-			fread(&codesize, 2, 1, fp);
-			fseek(fp, codesize, SEEK_CUR);
 
 			// remap this to the 24 bit version.
 			R_DrawPlanesCallOffset = R_DrawPlanes24Offset;
@@ -570,10 +582,8 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 	switch (columnquality){
 		case 2:
 
-			fread(&codesize, 2, 1, fp);
-			fseek(fp, codesize, SEEK_CUR);
-			fread(&codesize, 2, 1, fp);
-			fseek(fp, codesize, SEEK_CUR);
+			SkipNextFileRegion(fp);
+			SkipNextFileRegion(fp);
 
 			fread(&codesize, 2, 1, fp);
 			FAR_fread(drawfuzzcol_area, codesize, 1, fp);
@@ -595,10 +605,8 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 			fread(&codesize, 2, 1, fp);
 			FAR_fread(maskedconstants_funcarea, codesize, 1, fp);
 
-			fread(&codesize, 2, 1, fp);
-			fseek(fp, codesize, SEEK_CUR);
-			fread(&codesize, 2, 1, fp);
-			fseek(fp, codesize, SEEK_CUR);
+			SkipNextFileRegion(fp);
+			SkipNextFileRegion(fp);
 
 
 			// remap... todo
@@ -616,11 +624,7 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 	switch (columnquality){
 		case 2:
 
-			// skip r_column
-			fread(&codesize, 2, 1, fp);
-			fseek(fp, codesize, SEEK_CUR);
-			fread(&codesize, 2, 1, fp);
-			FAR_fread(bsp_code_area, codesize, 1, fp);
+			ReadFileRegionWithIndex(fp, 0x201, (uint32_t)bsp_code_area);
 
 			// remap...
 
@@ -629,10 +633,7 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 		case 1:
 		default:
 
-			fread(&codesize, 2, 1, fp);
-			FAR_fread(bsp_code_area, codesize, 1, fp);
-			fread(&codesize, 2, 1, fp);
-			fseek(fp, codesize, SEEK_CUR);
+			ReadFileRegionWithIndex(fp, 0x200, (uint32_t)bsp_code_area);
 
 	}
 

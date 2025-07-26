@@ -419,7 +419,9 @@ void (__far* P_SpawnMapThing)() =            ((void (__far *)(mapthing_t mthing,
 void (__far* P_SetMobjState)() =            ((void (__far *)(mobj_t __near* mobj, statenum_t state))                                        	                           (MK_FP(physics_highcode_segment, 		 P_SetMobjStateOffset)));
 void (__far* R_WriteBackViewConstantsSpanCall)()  =   				      	  ((void    (__far *)())  								(MK_FP(spanfunc_jump_lookup_segment, 	 R_WriteBackViewConstantsSpan24Offset)));
 
-
+void (__far* R_WriteBackViewConstantsMaskedCall)() = 						  ((void    (__far *)())     							(MK_FP(maskedconstants_funcarea_segment, R_WriteBackViewConstantsMaskedOffset)));
+void (__far* R_WriteBackViewConstants)() =    ((void (__far *)())     	                                                                                                   (MK_FP(bsp_code_segment,          		 R_WriteBackViewConstantsOffset)));
+void (__far* R_RenderPlayerView)() =          ((void (__far *)())     	                                                                                                   (MK_FP(bsp_code_segment,          		 R_RenderPlayerViewOffset)));
 
 
 

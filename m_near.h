@@ -519,7 +519,9 @@
 #define R_DrawPlanesCall 		 		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0808)))
 #define R_DrawPlanesCallOffset 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x0808)))
 #define R_DrawMaskedCall 		 		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x080C)))
+#define R_DrawMaskedCallOffset 		      (*((int16_t __near*)              (_NULL_OFFSET + 0x080C)))
 #define R_WriteBackMaskedFrameConstantsCall  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0810)))
+#define R_WriteBackMaskedFrameConstantsCallOffset (*((int16_t __near*)              (_NULL_OFFSET + 0x0810)))
 #define NetUpdate_addr					  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0814)))
 
 #define FixedMul16u32_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0818)))
@@ -710,7 +712,9 @@ extern mline_t              thintriangle_guy[3];
 
 
 
-
+extern void (__far* R_RenderPlayerView)();
+extern void (__far* R_WriteBackViewConstantsMaskedCall)();
+extern void (__far* R_WriteBackViewConstants)();
 extern void 				(__far* R_WriteBackViewConstantsSpanCall)();
 extern boolean 				(__far* P_TeleportMove)(mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
 extern boolean 				(__far* P_ChangeSector)(sector_t __far* sector, boolean crunch);

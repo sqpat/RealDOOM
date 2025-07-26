@@ -2,6 +2,8 @@
 #define R_DrawMasked0Offset                   0x14DF
 #define R_WriteBackViewConstantsMaskedOffset  0x0
 #define R_WriteBackMaskedFrameConstantsOffset 0x8D
+#define R_WriteBackViewConstantsMasked0Offset  0x0
+#define R_WriteBackMaskedFrameConstants0Offset 0x8D
 #define R_DrawPlanes24Offset                  0xBD5
 #define R_WriteBackViewConstantsSpan24Offset  0x105B
 #define R_DrawPlanes16Offset                  0x9ED
@@ -76,7 +78,7 @@
 #define R_MaskedConstants0CodeSize     0xEB
 #define R_DrawSkyColumnCodeSize        0x6C0
 #define R_BSPCodeSize                  0x3792
-#define R_BSP0CodeSize                 0x3792
+#define R_BSP0CodeSize                 0x378A
 #define WI_StuffCodeSize               0x1011
 #define PSightCodeSize                 0x5BE9
 #define WipeCodeSize                   0x4B6

@@ -12213,11 +12213,7 @@ mov      es, ax
 
 ; ah is definitely 0... optimizable?
 
-; todo remove and link properly
-mov     ax, ax
-mov     ax, ax
-mov     ax, ax
-mov     ax, ax
+
 
  
 mov      ax, word ptr ss:[_viewwidth]

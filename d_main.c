@@ -698,7 +698,6 @@ void __near D_Display (void) {
 	void (__far* F_Drawer)() = 											  		  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 F_DrawerOffset)));
 	void (__far* wipe_WipeLoopCall)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 wipe_WipeLoopOffset)));
 	void (__far* wipe_StartScreenCall)() = 										  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 wipe_StartScreenOffset)));
-	void (__far* R_RenderPlayerView)() =          ((void (__far *)())     	                                                                                                   (MK_FP(bsp_code_segment,          		 R_RenderPlayerViewOffset)));
 	if (novideo){
         return;                    // for comparative timing / profiling
 	}

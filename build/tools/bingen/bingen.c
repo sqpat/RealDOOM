@@ -319,6 +319,8 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     // masked selfmodifying code offsets
     fprintf(fp, "#define R_WriteBackViewConstantsMaskedOffset  0x%X\n", FP_OFF(R_WriteBackViewConstantsMasked)  - FP_OFF(R_WriteBackViewConstantsMasked));
     fprintf(fp, "#define R_WriteBackMaskedFrameConstantsOffset 0x%X\n", FP_OFF(R_WriteBackMaskedFrameConstants) - FP_OFF(R_WriteBackViewConstantsMasked));
+    fprintf(fp, "#define R_WriteBackViewConstantsMasked0Offset  0x%X\n", FP_OFF(R_WriteBackViewConstantsMasked0) - FP_OFF(R_WriteBackViewConstantsMasked0));
+    fprintf(fp, "#define R_WriteBackMaskedFrameConstants0Offset 0x%X\n", FP_OFF(R_WriteBackMaskedFrameConstants0)- FP_OFF(R_WriteBackViewConstantsMasked0));
 
     // span offsets
 	fprintf(fp, "#define R_DrawPlanes24Offset                  0x%X\n", FP_OFF(R_DrawPlanes24)                  - FP_OFF(R_SPAN24_STARTMARKER));
