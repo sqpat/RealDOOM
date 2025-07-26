@@ -242,13 +242,9 @@ PROC  R_DrawColumnPrepMaskedMulti_
 
 ; argument AX is diff for various segment lookups
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
 
-xchg  ax, cx	; cx holds onto dc_texturemid lo. TODO move this out of function along with push/pop cx
+
 
 mov   ax, ((COLORMAPS_MASKEDMAPPING_SEG_DIFF + COLFUNC_JUMP_LOOKUP_SEGMENT) AND 0FFFFh); shut up assembler warning, this is fine
 mov   es, ax                                 ; store this segment for now, with offset pre-added
@@ -294,11 +290,8 @@ dw 0000h
 ; addr 0000 + first byte (4x colormap.)
 
 
-pop   di 
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
+
 ret
 
 ENDP
@@ -733,12 +726,6 @@ mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_MA
 
 
 
-
-
-
-
-
-
 lea   di, ds:[_sprtopscreen]
 mov   word ptr ds:[di], 0		; di is _sprtopscreen
 SELFMODIFY_MASKED_centery_1:
@@ -752,13 +739,12 @@ mov   word ptr ds:[_spryscale + 2], dx
 
 les   bx, dword ptr [si + 022h] ; vis->texturemid
 mov   cx, es
-; write this ahead
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1 + 1 - OFFSET R_MASK0_STARTMARKER_], bx
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1 + 1 - OFFSET R_MASK0_STARTMARKER_], cx
+
+; TODOREMOVE is this necessary?
 
 
 test  dx, dx
-jnz    do_32_bit_mul_vissprite
+jnz   do_32_bit_mul_vissprite
 
 test ax, 08000h  ; high bit
 do_16_bit_mul_after_all_vissprite:
@@ -1355,11 +1341,10 @@ SELFMODIFY_MASKED_siderender_00:
 add   ax, 01000h
 
 
-; dc_texturemid is a function contant. we selfmodify ahead:
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1 + 1 - OFFSET R_MASK0_STARTMARKER_], dx
+; dc_texturemid is a function constant. we selfmodify ahead:
 mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_2 + 1 - OFFSET R_MASK0_STARTMARKER_], dx
 mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_3 + 1 - OFFSET R_MASK0_STARTMARKER_], dx
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1 + 1 - OFFSET R_MASK0_STARTMARKER_], ax
+
 mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_2 + 1 - OFFSET R_MASK0_STARTMARKER_], ax
 mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_3 + 1 - OFFSET R_MASK0_STARTMARKER_], ax
 
@@ -4788,19 +4773,10 @@ mov   bx, di
 SHIFT_MACRO shr bx 4
 
 
-SELFMODIFY_MASKED_dc_texturemid_hi_1:
-mov   dx, 01000h;  dc_texturemid intbits
+; set texture here. could be set constant if we wished..
 les   ax, dword ptr [bp - 4]
 add   ax, bx
 mov   word ptr ds:[_dc_source_segment], ax
-mov   al, byte ptr es:[si]
-xor   ah, ah
-; dx = dc_texturemid hi. carry this into the call
-sub   dx, ax
-; cx = dc_texturemid lo. carry this into the call
-
-SELFMODIFY_MASKED_dc_texturemid_lo_1:
-mov   ax, 01000h
 
 call  R_DrawColumnPrepMaskedMulti_
 
