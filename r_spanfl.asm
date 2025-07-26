@@ -129,6 +129,12 @@ ENDP
 PROC  R_DrawSpanPrep0_ NEAR
 
 
+push  cx
+push  si
+push  di
+push  es
+push  dx
+
  
  ;  	uint16_t baseoffset = FP_OFF(destview) + dc_yl_lookup[ds_y];
 
@@ -149,7 +155,7 @@ SELFMODIFY_SPAN_destview_lo_1:
  spanfunc_arg_setup_loop_start:
  mov   al, bl							; al holds loop counter
  mov   dx, es							; get ds_x1
- CBW  									; zero out ah
+ cbw  									; zero out ah
  
 ;		int16_t dsp_x1 = (ds_x1 - i) >> shiftamount;
  sub   dx, ax							; subtract i 
@@ -186,7 +192,7 @@ SELFMODIFY_SPAN_ds_x2:
  inc   dx
  dont_increment_ds_x1:
  mov   al, bl							; al holds loop counter
- CBW  
+ cbw  
  mov   si, ax							; store loop counter in si
 
  ; 		countp = dsp_x2 - dsp_x1;
@@ -225,17 +231,19 @@ SELFMODIFY_SPAN_ds_x2:
  spanfunc_arg_setup_complete:
 
 
-; bx stores colormap.
-SELFMODIFY_SPAN_set_colormap_index_jump:  ; todo these are shifted 2 due to previous implementation, fix
-mov  bx, 01000h
-sar  bx, 1
-sar  bx, 1
+
+xor     bx, bx
 
 ; call R_DrawSpanFL_
 db 09Ah
 dw ((SPANFUNC_JUMP_LOOKUP_SEGMENT - COLORMAPS_SEGMENT) SHL 4) + (OFFSET R_DrawSpanFL_ - OFFSET R_SPANFL_STARTMARKER_)
 dw COLORMAPS_SEGMENT
 
+pop   dx
+pop   es
+pop   di
+pop   si
+pop   cx
 
 
 
@@ -249,188 +257,6 @@ ENDP
 
 
 
-
-;
-; R_MapPlane0_
-; void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 )
-; bp - 02h   distance low
-; bp - 04h   distance high
-
-;cachedheight   9000:0000
-;yslope         9032:0000
-;distscale      9064:0000
-;cacheddistance 90B4:0000
-;cachedxstep    90E6:0000
-;cachedystep    9118:0000
-; 	rather than changing ES a ton we will just modify offsets by segment distance
-;   confirmed to be faster even on 8088 with it's baby prefetch queue - i think on 16 bit busses it is only faster.
-
-
-
-PROC  R_MapPlane0_ NEAR
-
-
-push  cx
-push  si
-push  di
-push  es
-push  dx
-
-; dont cache all the data. we really only need distance. 
-; calculate it each time for now. investigate caching speed later.
-
-; si is x * 4
-
-
-les   ax, dword ptr [bp - 010h]
-mov   dx, es
-
-mov   es, ds:[_cachedheight_segment_storage]
-shl   di, 1
-
-
-; CACHEDHEIGHT LOOKUP
-
-cmp   dx, word ptr es:[di+2]
-jne   generate_distance_steps	; comparing high word
-
-cmp   ax, word ptr es:[di] ; compare low word
-jne   generate_distance_steps
-
-; CACHED DISTANCE lookup
-use_cached_values:
-
-mov   ax, word ptr es:[di + 0 + (( CACHEDDISTANCE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
-
-
-; technically we dont need to calculate distance if its fixed colormap.
-; could we skip all this other crap...
-; todo technically we only use the high word anyway.
-distance_steps_ready:
-
-; ax is distance high word
-
-; 	if (fixedcolormap) {
-
-SELFMODIFY_SPAN_fixedcolormap_1:
-mov   ax, ax
-SELFMODIFY_SPAN_fixedcolormap_1_AFTER:
-; 		index = distance >> LIGHTZSHIFT;
-
-
-
-;		if (index >= MAXLIGHTZ) {
-;			index = MAXLIGHTZ - 1;
-;		}
-
-
-
-cmp   al, MAXLIGHTZ
-jb    index_set
-mov   al, MAXLIGHTZ - 1
-index_set:
-
-;		ds_colormap_segment = colormaps_segment;
-;		ds_colormap_index = planezlight[index];
-
-les    bx, dword ptr ds:[_planezlight]
-xlat  byte ptr es:[bx]
-; mov  al, byte ptr cs:[bx + _cs_zlight_offset]
-colormap_ready:
-
-mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump+2 - OFFSET R_SPANFL_STARTMARKER_], al
-
-; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
-
-call  R_DrawSpanPrep0_
-
-
-pop   dx
-pop   es
-pop   di
-pop   si
-pop   cx
-ret
-
-SELFMODIFY_SPAN_fixedcolormap_1_TARGET:
-SELFMODIFY_SPAN_fixedcolormap_2:
-use_fixed_colormap:
-mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump+2 - OFFSET R_SPANFL_STARTMARKER_], 00
-
-; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
-
-call  R_DrawSpanPrep0_
-
-
-pop   dx
-pop   es
-pop   di
-pop   si
-pop   cx
-ret  
-
-generate_distance_steps:
-
-mov   word ptr es:[di], ax
-mov   word ptr es:[di + 2], dx   ; cachedheight into dx
-
-les   bx, dword ptr es:[di + 0 (( YSLOPE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
-mov   cx, es
-
-; INLINED
-;call R_FixedMulLocal0_
-
-
-mov   es, ax	; store ax in es
-mov   ds, dx    ; store dx in ds
-mov   ax, dx	; ax holds dx
-CWD				; S0 in DX
-
-AND   DX, BX	; S0*BX
-NEG   DX
-mov   SI, DX	; DI stores hi word return
-
-; AX still stores DX
-MUL  CX         ; DX*CX
-add  SI, AX    ; low word result into high word return
-
-mov  AX, DS    ; restore DX from ds
-MUL  BX         ; DX*BX
-XCHG BX, AX    ; BX will hold low word return. store bx in ax
-add  SI, DX    ; add high word to result
-
-mov  DX, ES    ; restore AX from ES
-mul  DX        ; BX*AX  
-add  BX, DX    ; high word result into low word return
-ADC  SI, 0
-
-mov  AX, CX   ; AX holds CX
-CWD           ; S1 in DX
-
-mov  CX, ES   ; AX from ES
-AND  DX, CX   ; S1*AX
-NEG  DX
-ADD  SI, DX   ; result into high word return
-
-MUL  CX       ; AX*CX
-
-ADD  AX, BX	  ; set up final return value
-ADC  DX, SI
-
-mov  CX, SS   ; restore DS
-mov  DS, CX
-
-
-mov   es, ds:[_cacheddistance_segment_storage]
-xchg  ax, dx  ; we really only use the high word shifted right 4.
-SHIFT_MACRO sar ax 4
-
-stosw;   word ptr es:[si], ax			; store distance high word
-
-jmp   distance_steps_ready
-
-
-ENDP
 
 
 ;R_DrawPlanes_
@@ -485,10 +311,6 @@ mov   al, byte ptr ds:[_extralight]
 mov   byte ptr cs:[SELFMODIFY_SPAN_extralight_1+1 - OFFSET R_SPANFL_STARTMARKER_], al
 
 
-mov   al, byte ptr ds:[_fixedcolormap]
-test  al, al 
-jne   do_span_fixedcolormap_selfmodify
-mov   ax, 0c089h  ; nop
 jmp   done_with_span_fixedcolormap_selfmodify
 
 do_next_drawplanes_loop:	
@@ -521,13 +343,7 @@ pop   bx
 mov   byte ptr cs:[(SELFMODIFY_SPAN_drawplaneiter+1) - OFFSET R_SPANFL_STARTMARKER_], 0
 retf   
 do_span_fixedcolormap_selfmodify:
-mov   byte ptr cs:[SELFMODIFY_SPAN_fixedcolormap_2 + 5 - OFFSET R_SPANFL_STARTMARKER_], al
-mov   ax, ((SELFMODIFY_SPAN_fixedcolormap_1_TARGET - SELFMODIFY_SPAN_fixedcolormap_1_AFTER) SHL 8) + 0EBh
-; fall thru
 done_with_span_fixedcolormap_selfmodify:
-; modify instruction
-mov   word ptr cs:[SELFMODIFY_SPAN_fixedcolormap_1 - OFFSET R_SPANFL_STARTMARKER_], ax
-
 
 
 
@@ -924,7 +740,7 @@ mov   word ptr ds:[_ds_y], di   ; predoubled for lookup
 mov   word ptr [bp - 0Ah], ax   ; store ds_x1
 inc   cl
 
-call  R_MapPlane0_
+call  R_DrawSpanPrep0_
 
 cmp   cl, ch
 jae   done_with_first_mapplane_loop
@@ -966,7 +782,7 @@ mov   word ptr ds:[_ds_y], di
 mov   word ptr [bp - 0Ah], ax
 dec   dl
 
-call  R_MapPlane0_
+call  R_DrawSpanPrep0_
 
 cmp   dl, dh
 jbe   done_with_second_mapplane_loop
