@@ -485,7 +485,8 @@ _bulletslope = 			 			 _NULL_OFFSET + 00824h
 _weaponinfo = 			 			 _NULL_OFFSET + 00828h
 _G_ExitLevel_addr = 			 	 _NULL_OFFSET + 0088Ch
 _w_title =							 _NULL_OFFSET + 00890h
-_flatcache_nodes =				     _NULL_OFFSET + 008E0h
+; up to 8E9
+_flatcache_nodes =				     _NULL_OFFSET + 008F0h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

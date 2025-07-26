@@ -550,11 +550,11 @@
 #define G_ExitLevel_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x088C)))
 
 // 89 bytes
-#define w_title 						(*((hu_textline_t __near*)           (_NULL_OFFSET + 0x0890)))
-// up to 8DB.
+#define w_title 						  (*((hu_textline_t __near*)         (_NULL_OFFSET + 0x0890)))
+// up to 8E8.
+// 8e9 free
 
-
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x08E0)))
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x08F0)))
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
