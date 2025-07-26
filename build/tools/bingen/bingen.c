@@ -32,6 +32,11 @@ void __far R_DrawPlanes24 (void);
 void __far R_WriteBackViewConstantsSpan24 (void);
 void __far R_SPAN0_STARTMARKER();
 void __far R_SPAN0_ENDMARKER();
+void __far R_SPANFL_STARTMARKER();
+void __far R_SPANFL_ENDMARKER();
+void __far R_DrawPlanesFL (void);
+void __far R_WriteBackViewConstantsSpanFL (void);
+
 void __far R_DrawPlanes0 (void);
 void __far R_WriteBackViewConstantsSpan0 (void);
 void __far R_COLUMN24_STARTMARKER();
@@ -209,7 +214,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     // Export .inc file with segment values, etc from the c coe
     FILE*  fp = fopen("doomcode.bin", "wb");
     //FILE*  fp2 = fopen("doomcod2.bin", "wb");
-	uint16_t codesize[23];
+	uint16_t codesize[24];
 	uint16_t muscodesize[4];
 	uint16_t maxmuscodesize = 0;
     int8_t i;
@@ -242,6 +247,10 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     codesize[14] = FP_OFF(R_SPAN0_ENDMARKER) - FP_OFF(R_SPAN0_STARTMARKER);    
     fwrite(&codesize[14], 2, 1, fp); // write filesize..
     FAR_fwrite((byte __far *)R_SPAN0_STARTMARKER, codesize[14], 1, fp); // write data
+
+    codesize[23] = FP_OFF(R_SPANFL_ENDMARKER) - FP_OFF(R_SPANFL_STARTMARKER);
+    fwrite(&codesize[23], 2, 1, fp); // write filesize..
+    FAR_fwrite((byte __far *)R_SPANFL_STARTMARKER, codesize[23], 1, fp); // write data
 
 
     codesize[2] = FP_OFF(R_WriteBackViewConstantsMasked24) - FP_OFF(R_MASK24_STARTMARKER);
@@ -371,6 +380,9 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "#define R_DrawPlanes0Offset                     0x%X\n", FP_OFF(R_DrawPlanes0)                     - FP_OFF(R_SPAN0_STARTMARKER));
 	fprintf(fp, "#define R_WriteBackViewConstantsSpan0Offset     0x%X\n", FP_OFF(R_WriteBackViewConstantsSpan0)     - FP_OFF(R_SPAN0_STARTMARKER));
 
+	fprintf(fp, "#define R_DrawPlanesFLOffset                    0x%X\n", FP_OFF(R_DrawPlanesFL)                    - FP_OFF(R_SPANFL_STARTMARKER));
+	fprintf(fp, "#define R_WriteBackViewConstantsSpanFLOffset    0x%X\n", FP_OFF(R_WriteBackViewConstantsSpanFL)    - FP_OFF(R_SPANFL_STARTMARKER));
+
     // sky offsets
 	fprintf(fp, "#define R_DrawSkyColumnOffset                   0x%X\n", FP_OFF(R_DrawSkyColumn)                   - FP_OFF(R_DrawSkyColumn));
 	fprintf(fp, "#define R_DrawSkyPlaneOffset                    0x%X\n", FP_OFF(R_DrawSkyPlane)                    - FP_OFF(R_DrawSkyColumn));
@@ -469,6 +481,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "#define R_DrawSpan24CodeSize           0x%X\n", codesize[1]);
     fprintf(fp, "#define R_DrawSpan16CodeSize           0x%X\n", codesize[13]);
     fprintf(fp, "#define R_DrawSpan0CodeSize            0x%X\n", codesize[14]);
+    fprintf(fp, "#define R_DrawSpanFLCodeSize           0x%X\n", codesize[23]);
 	fprintf(fp, "#define R_DrawFuzzColumn24CodeSize     0x%X\n", codesize[2]);
 	fprintf(fp, "#define R_DrawFuzzColumn16CodeSize     0x%X\n", codesize[20]);
 	fprintf(fp, "#define R_DrawFuzzColumn0CodeSize      0x%X\n", codesize[17]);
@@ -497,6 +510,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "R_DRAWPLANES24OFFSET = 0%Xh\n",                    FP_OFF(R_DrawPlanes24)                    - FP_OFF(R_SPAN24_STARTMARKER));
 	fprintf(fp, "R_DRAWPLANES16OFFSET = 0%Xh\n",                    FP_OFF(R_DrawPlanes16)                    - FP_OFF(R_SPAN16_STARTMARKER));
 	fprintf(fp, "R_DRAWPLANES0OFFSET = 0%Xh\n",                     FP_OFF(R_DrawPlanes0)                     - FP_OFF(R_SPAN0_STARTMARKER));
+	fprintf(fp, "R_DRAWPLANESFLOFFSET = 0%Xh\n",                    FP_OFF(R_DrawPlanesFL)                    - FP_OFF(R_SPANFL_STARTMARKER));
 	fprintf(fp, "R_GETCOMPOSITETEXTURE24OFFSET = 0%Xh\n",           FP_OFF(R_GetCompositeTexture_Far24)       - FP_OFF(R_BSP24_STARTMARKER));
 	fprintf(fp, "R_GETPATCHTEXTURE24OFFSET = 0%Xh\n",               FP_OFF(R_GetPatchTexture_Far24)           - FP_OFF(R_BSP24_STARTMARKER));
 	fprintf(fp, "R_DRAWMASKED24OFFSET = 0%Xh\n",                    FP_OFF(R_DrawMasked24)                    - FP_OFF(R_MASK24_STARTMARKER));

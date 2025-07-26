@@ -557,9 +557,19 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 	#define  DRAWSPAN_AH_OFFSET  0x3F00
 	#define  DRAWSPAN_BX_OFFSET  0x0FC0
 	switch (spanquality){
+		case 3:
+
+			ReadFileRegionWithIndex(fp, 0x403, (uint32_t)spanfunc_jump_lookup_9000);
+
+			// remap this to the 16 bit version.
+			R_DrawPlanesCallOffset = R_DrawPlanesFLOffset;
+			R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_jump_lookup_segment, R_WriteBackViewConstantsSpanFLOffset);
+			ds_source_offset = DRAWSPAN_AH_OFFSET;
+
+			break;
 		case 2:
 
-			ReadFileRegionWithIndex(fp, 0x302, (uint32_t)spanfunc_jump_lookup_9000);
+			ReadFileRegionWithIndex(fp, 0x402, (uint32_t)spanfunc_jump_lookup_9000);
 
 			// remap this to the 16 bit version.
 			R_DrawPlanesCallOffset = R_DrawPlanes0Offset;
@@ -571,7 +581,7 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 		case 1:
 
 
-			ReadFileRegionWithIndex(fp, 0x301, (uint32_t)spanfunc_jump_lookup_9000);
+			ReadFileRegionWithIndex(fp, 0x401, (uint32_t)spanfunc_jump_lookup_9000);
 
 
 			// remap this to the 16 bit version.
@@ -584,7 +594,7 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 		case 0:
 		default:
 
-			ReadFileRegionWithIndex(fp, 0x300, (uint32_t)spanfunc_jump_lookup_9000);
+			ReadFileRegionWithIndex(fp, 0x400, (uint32_t)spanfunc_jump_lookup_9000);
 
 
 			// remap this to the 24 bit version.

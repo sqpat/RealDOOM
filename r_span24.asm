@@ -2076,7 +2076,7 @@ mov      ax, SPANFUNC_JUMP_LOOKUP_SEGMENT
 mov      ds, ax
 
 
-ASSUME DS:R_SPAN_TEXT
+ASSUME DS:R_SPAN24_TEXT
 
 
 mov      al, byte ptr ss:[_skyflatnum]

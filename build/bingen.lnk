@@ -98,9 +98,10 @@ file r_main.obj
 file r_col24.obj
 file r_col16.obj
 file r_col0.obj
-file r_span.obj
+file r_span24.obj
 file r_span16.obj
 file r_span0.obj
+file r_spanfl.obj
 file r_sky.obj
 file r_mask24.obj
 file r_mask16.obj
