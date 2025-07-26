@@ -145,104 +145,95 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 2C0
 dw  00, 00, 00, 00, 00, 00, R_GetCompositeTextureOffset, bsp_code_segment
 
-
-; UNUSED
-; 2D0
+; 2D0 w_message struct to 439
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 2E0
+; 2E0 w_message
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 2F0
+; 2F0 w_message
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 300
+; 300 w_message
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 310
+; 310 w_message
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 320
+; 320 w_message
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 330
+; 330 w_message
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 340
+; 340 w_message
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 350
-dw  00, 00
-; UNUSED
-
-
-; 354
-dw         00, 00, 00, 00, 00, 00
-; 360
+; 350 w_message
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 370 _vga_read_port_lookup
-dw   4, 260, 516, 772,  4, 516, 4, 516
-dw 	 4, 4, 4, 4, 		0, 0, 0, 0
-
-
-
-
-; 390  _savedescription
+; 360 w_message
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 3A0  _savedescription
+; 370 w_message
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 3B0  demoname
+; 380 w_message
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 3C0  demoname
+; 390 w_message
 dw  00, 00, 00, 00, 00, 00, 00, 00
-
-; UNUSED NOW
-; 3D0
+; 3A0 w_message
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 3E0
+; 3B0 w_message
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 3F0
+; 3C0 w_message
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 400
+; 3D0 w_message
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 410
+; 3E0 w_message
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 420
+; 3F0 w_message
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 400 w_message
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 410 w_message
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 420 w_message
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 430
-dw  00, 00, 00, 00, 00, 00, 00, 00
+dw  00, 00, 00, 00
+db  00
+; 439
+db 0
+; unused
+dw 0, 0, 0
 ; 440
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 450
-dw  00, 00
-; UNUSED
+dw  00, 00, 00, 00
+; 458 _vga_read_port_lookup
+dw   4, 260, 516, 772,  4, 516, 4, 516
+dw 	 4, 4, 4, 4
+; 470
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 480
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 490
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 4A0
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 4B0
+dw  00, 00, 00, 00
 
-; 454 ems_backfill_page_order[24] 
+
+; 4B8 ems_backfill_page_order[24] 
 db         0, 1, 2, 3, -4, -3, -2, -1, -8, -7, -6, -5 
-; 460
+; 4C8
 db -12, -11, -10, -9, -16, -15, -14, -13, -20, -19, -18, -17
-; 46C
-dw  00, 00
 
-; 470 ; movedirangles[8]
+; 4D0 ; movedirangles[8]
 dw  00000h, 02000h, 04000h, 06000h, 08000h, 0A000h, 0C000h, 0E000h
 
-; 480 braintargets[32]
+; 4E0 braintargets[32]
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 490 braintargets
+; 4F0 braintargets
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 4A0 braintargets
+; 500 braintargets
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 4B0 braintargets
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; 4C0
-dw  00, 00, 00, 00, 00, 00, 00, 00
-
-; UNUSED NOW
-; 4D0
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; 4E0
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; 4F0
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; 500
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; 510
+; 510 braintargets
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 520
 dw  00, 00, 00, 00, 00, 00, 00, 00
+
 ; 530
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 540
@@ -359,11 +350,9 @@ dw R_WriteBackMaskedFrameConstantsOffset, maskedconstants_funcarea_segment
 dw  00, 00, 00, 00, 00, 00
 
 ; 820
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; 830
 dw  00, 00, 00, 00
 
-; 838 _weaponinfo
+; 828 _weaponinfo
 ; fist
 db AM_NOAMMO
 dw S_PUNCHUP, S_PUNCHDOWN, S_PUNCH, S_PUNCH1, S_NULL
@@ -392,14 +381,21 @@ dw S_SAWUP, S_SAWDOWN, S_SAW, S_SAW1, S_NULL
 db AM_SHELL
 dw S_DSGUNUP, S_DSGUNDOWN, S_DSGUN, S_DSGUN1, S_DSGUNFLASH1
 
-; 89B
+; 88B
 
 db 0, 0, 0, 0, 0
 
+; 890 w_title 89 bytes...
+dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 8A0
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 8B0
-
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 8C0
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 8D0  ; unused at 8D9
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; 8E0
 
 REPT NUM_FLAT_CACHE_PAGES
 	dw  00

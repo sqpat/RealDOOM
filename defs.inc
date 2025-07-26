@@ -225,6 +225,8 @@ _emshandle =     					_NULL_OFFSET + 00184h
 _pagenum9000 =     					_NULL_OFFSET + 00186h
 ENDIF
 _prndindex =     					_NULL_OFFSET + 00188h
+_spanquality =              	    _NULL_OFFSET + 00189h
+
 _setStateReturn =     				_NULL_OFFSET + 0018Ah
 
 _R_GetPatchTexture_addr =           _NULL_OFFSET + 0018Ch
@@ -307,36 +309,35 @@ _FastDiv3232_addr =                  _NULL_OFFSET + 002C8h
 _R_GetCompositeTexture_addr =        _NULL_OFFSET + 002CCh
 
  
-; unused! 2D0-354
+_w_message =					     _NULL_OFFSET + 002D0h
+_columnquality =              	     _NULL_OFFSET + 00439h
 
 
-; 354
-;_R_GetSpriteTexture_addr =          _NULL_OFFSET + 00354h
-_psprites =              			 _NULL_OFFSET + 00358h
-; this is full... _psprites is two 0Ch sized structs... 
-_vga_read_port_lookup =              _NULL_OFFSET + 00370h
-_vissprite_p =                       _NULL_OFFSET + 00388h
+_psprites =              			 _NULL_OFFSET + 00440h
+_vga_read_port_lookup =              _NULL_OFFSET + 00458h
+_vissprite_p =                       _NULL_OFFSET + 00470h
 ; high byte always 0
-_cachedbyteheight =                  _NULL_OFFSET + 0038Ah
-_currentMusPage = 					 _NULL_OFFSET + 0038Ch
-_snd_MusicVolume =                   _NULL_OFFSET + 0038Dh
-_gameepisode = 						 _NULL_OFFSET + 0038Eh
-_gamemap = 							 _NULL_OFFSET + 0038Fh
-_savedescription =                   _NULL_OFFSET + 00390h
-_demoname =                          _NULL_OFFSET + 003B0h
+_cachedbyteheight =                  _NULL_OFFSET + 00472h
+_currentMusPage = 					 _NULL_OFFSET + 00474h
+_snd_MusicVolume =                   _NULL_OFFSET + 00475h
+_gameepisode = 						 _NULL_OFFSET + 00476h
+_gamemap = 							 _NULL_OFFSET + 00477h
+_savedescription =                   _NULL_OFFSET + 00478h
+_demoname =                          _NULL_OFFSET + 00498h
+_ems_backfill_page_order =           _NULL_OFFSET + 004B8h
+_movedirangles =                     _NULL_OFFSET + 004D0h
+_braintargets =                      _NULL_OFFSET + 004E0h
+_tmbbox =                            _NULL_OFFSET + 00520h
+; 530 unused
+_HU_Start_addr = 			 	 	 _NULL_OFFSET + 00534h
+_ST_Start_addr = 			 	 	 _NULL_OFFSET + 00538h
+_P_RemoveThinker_addr = 			 _NULL_OFFSET + 0053Ch
+_G_PlayerReborn_addr =	 	 		 _NULL_OFFSET + 00540h
+_FixedMulTrigSpeedNoShift_addr =	 _NULL_OFFSET + 00544h
+_FixedMulTrigSpeed_addr =			 _NULL_OFFSET + 00548h
+_FixedMulTrig_addr = 			 	 _NULL_OFFSET + 0054Ch
+_EV_DoFloor_addr = 			 	 	 _NULL_OFFSET + 00550h
 
-; unused! 3D0-454
-
-
-_ems_backfill_page_order =           _NULL_OFFSET + 00454h
-_movedirangles =                     _NULL_OFFSET + 00470h
-_braintargets =                      _NULL_OFFSET + 00480h
-_tmbbox =                            _NULL_OFFSET + 004C0h
-
-; unused 4d0 to 552
-
-_columnquality =              	     _NULL_OFFSET + 00552h
-_spanquality =              	     _NULL_OFFSET + 00553h
 
 _V_DrawPatch_addr =              	 _NULL_OFFSET + 00554h
 _locallib_toupper_addr =             _NULL_OFFSET + 00558h
@@ -480,22 +481,11 @@ _NetUpdate_addr =					 _NULL_OFFSET + 00814h
 _FixedMul16u32_addr =				 _NULL_OFFSET + 00818h
 _FastMul16u32u_addr =				 _NULL_OFFSET + 0081Ch
 _FastDiv3216u_addr =				 _NULL_OFFSET + 00820h
-_FixedMulTrigSpeedNoShift_addr =	 _NULL_OFFSET + 00824h
-_FixedMulTrigSpeed_addr =			 _NULL_OFFSET + 00828h
-_FixedMulTrig_addr = 			 	 _NULL_OFFSET + 0082Ch
-_EV_DoFloor_addr = 			 	 	 _NULL_OFFSET + 00830h
-_bulletslope = 			 			 _NULL_OFFSET + 00834h
-_weaponinfo = 			 			 _NULL_OFFSET + 00838h
-
-;89b
-
-_G_ExitLevel_addr = 			 	 _NULL_OFFSET + 0089Ch
-_HU_Start_addr = 			 	 	 _NULL_OFFSET + 008A0h
-_ST_Start_addr = 			 	 	 _NULL_OFFSET + 008A4h
-_P_RemoveThinker_addr = 			 _NULL_OFFSET + 008A8h
-_G_PlayerReborn_addr =	 	 		 _NULL_OFFSET + 008ACh
-;8b8
-_flatcache_nodes =				     _NULL_OFFSET + 008B0h
+_bulletslope = 			 			 _NULL_OFFSET + 00824h
+_weaponinfo = 			 			 _NULL_OFFSET + 00828h
+_G_ExitLevel_addr = 			 	 _NULL_OFFSET + 0088Ch
+_w_title =							 _NULL_OFFSET + 00890h
+_flatcache_nodes =				     _NULL_OFFSET + 008E0h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

@@ -697,13 +697,11 @@ int8_t     st_stuff_buf[ST_MSGWIDTH];
 
 
 
-hu_textline_t	w_title;
 
 boolean		message_on;
 boolean			message_dontfuckwithme;
 boolean		message_nottobefuckedwith;
 
-hu_stext_t	w_message;
 uint8_t		message_counter;
 
 

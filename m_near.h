@@ -265,7 +265,7 @@
 #endif
 
 #define prndindex                       (*((uint8_t    __near*)              (_NULL_OFFSET + 0x0188)))
-// 189 free
+#define spanquality                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x0189)))
 #define setStateReturn                  (*((mobj_t __near*  __near*)         (_NULL_OFFSET + 0x018A)))
 #define R_GetPatchTexture_addr   		(*((uint32_t  __near*)               (_NULL_OFFSET + 0x018C)))
 #define W_CacheLumpNumDirect_addr       (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0190)))
@@ -350,32 +350,46 @@
 
 // unused! 2D0-354
 
-// #define R_GetSpriteTexture_addr           (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0354)))
+// 361 bytes? 0x169?
+#define w_message 						(*((hu_stext_t __near*)               (_NULL_OFFSET + 0x02D0)))
+
+#define columnquality                   (*((int8_t __near*)                  (_NULL_OFFSET + 0x0439)))
+
+// up to 439?
+// 43A to 440 free?
+
+// add E8 to each..
+
 // 12 bytes each. two for 24.
-#define psprites                        (((pspdef_t __near*)                 (_NULL_OFFSET + 0x0358))) 
-#define vga_read_port_lookup            (((uint16_t __near*)                 (_NULL_OFFSET + 0x0370)))
+#define psprites                        (((pspdef_t __near*)                 (_NULL_OFFSET + 0x0440))) 
+#define vga_read_port_lookup            (((uint16_t __near*)                 (_NULL_OFFSET + 0x0458)))
 
-#define vissprite_p                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x0388)))
-#define cachedbyteheight                (*((uint8_t __near*)                 (_NULL_OFFSET + 0x038A)))
+#define vissprite_p                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x0470)))
+#define cachedbyteheight                (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0472)))
 // dont use this byte!!! its always 0 on purpose.
-#define currentMusPage					(*((uint8_t __near*)                 (_NULL_OFFSET + 0x038C)))
-#define snd_MusicVolume                 (*((uint8_t __near*)                 (_NULL_OFFSET + 0x038D)))
-#define gameepisode                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x038E)))
-#define gamemap                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x038F)))
-#define savedescription                 (((int8_t    __near*)                (_NULL_OFFSET + 0x0390)))
-#define demoname                        (((int8_t    __near*)                (_NULL_OFFSET + 0x03B0)))
+#define currentMusPage					(*((uint8_t __near*)                 (_NULL_OFFSET + 0x0474)))
+#define snd_MusicVolume                 (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0475)))
+#define gameepisode                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x0476)))
+#define gamemap                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x0477)))
+#define savedescription                 (((int8_t    __near*)                (_NULL_OFFSET + 0x0478)))
+#define demoname                        (((int8_t    __near*)                (_NULL_OFFSET + 0x0498)))
 
-// todo is this really 32 bytes above..
-#define colfunc_masked_call_lookup      (((uint32_t  __near*)                (_NULL_OFFSET + 0x03D0)))
-#define ems_backfill_page_order         (((int8_t    __near*)                (_NULL_OFFSET + 0x0454)))
-#define movedirangles                   (((uint16_t  __near*)                (_NULL_OFFSET + 0x0470)))
-#define braintargets                    (((THINKERREF __near*)               (_NULL_OFFSET + 0x0480)))
-#define tmbbox                          (((fixed_t_union __near*)            (_NULL_OFFSET + 0x04C0)))
+#define ems_backfill_page_order         (((int8_t    __near*)                (_NULL_OFFSET + 0x04B8)))
+//4d0 unused i think
+#define movedirangles                   (((uint16_t  __near*)                (_NULL_OFFSET + 0x04D0)))
+#define braintargets                    (((THINKERREF __near*)               (_NULL_OFFSET + 0x04E0)))
+#define tmbbox                          (((fixed_t_union __near*)            (_NULL_OFFSET + 0x0520)))
+// 530 unused
+#define HU_Start_addr 					  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0534)))
+#define ST_Start_addr 				      (*((uint32_t __near*)              (_NULL_OFFSET + 0x0538)))
+#define P_RemoveThinker_addr 			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x053C)))
+#define G_PlayerReborn_addr     		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0540)))
 
-// unused! 4D0-554
+#define FixedMulTrigSpeedNoShift_addr	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0544)))
+#define FixedMulTrigSpeed_addr			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0548)))
+#define FixedMulTrig_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x054C)))
+#define EV_DoFloor_addr		     		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0550)))
 
-#define columnquality                   (*((int8_t __near*)                  (_NULL_OFFSET + 0x0552)))
-#define spanquality                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x0553)))
 
 #define V_DrawPatch_addr                  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0554)))
 #define locallib_toupper_addr             (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0558)))
@@ -519,7 +533,7 @@
 #define R_DrawPlanesCall 		 		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0808)))
 #define R_DrawPlanesCallOffset 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x0808)))
 #define R_DrawMaskedCall 		 		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x080C)))
-#define R_DrawMaskedCallOffset 		      (*((int16_t __near*)              (_NULL_OFFSET + 0x080C)))
+#define R_DrawMaskedCallOffset 		      (*((int16_t __near*)               (_NULL_OFFSET + 0x080C)))
 #define R_WriteBackMaskedFrameConstantsCall  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0810)))
 #define R_WriteBackMaskedFrameConstantsCallOffset (*((int16_t __near*)              (_NULL_OFFSET + 0x0810)))
 #define NetUpdate_addr					  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0814)))
@@ -527,23 +541,20 @@
 #define FixedMul16u32_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0818)))
 #define FastMul16u32u_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x081C)))
 #define FastDiv3216u_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0820)))
-#define FixedMulTrigSpeedNoShift_addr	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0824)))
-#define FixedMulTrigSpeed_addr			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0828)))
-#define FixedMulTrig_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x082C)))
-#define EV_DoFloor_addr		     		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0830)))
-#define bulletslope     				  (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x0834)))
-#define weaponinfo 						  ((weaponinfo_t __near *)           (_NULL_OFFSET + 0x0838))
+#define bulletslope     				  (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x0824)))
+#define weaponinfo 						  ((weaponinfo_t __near *)           (_NULL_OFFSET + 0x0828))
 
 // 89b
 
 
-#define G_ExitLevel_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x089C)))
-#define HU_Start_addr 					  (*((uint32_t __near*)              (_NULL_OFFSET + 0x08A0)))
-#define ST_Start_addr 				      (*((uint32_t __near*)              (_NULL_OFFSET + 0x08A4)))
-#define P_RemoveThinker_addr 			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x08A8)))
-#define G_PlayerReborn_addr     		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x08AC)))
+#define G_ExitLevel_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x088C)))
 
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x08B0)))
+// 89 bytes
+#define w_title 						(*((hu_textline_t __near*)           (_NULL_OFFSET + 0x0890)))
+// up to 8DB.
+
+
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x08E0)))
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
@@ -953,11 +964,9 @@ extern int8_t     st_stuff_buf[ST_MSGWIDTH];
 
 
 
-extern hu_textline_t	w_title;
 extern boolean		message_on;
 extern boolean			message_dontfuckwithme;
 extern boolean		message_nottobefuckedwith;
-extern hu_stext_t	w_message;
 extern uint8_t		message_counter;
 
 
