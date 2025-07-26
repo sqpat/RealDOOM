@@ -38,31 +38,31 @@ PUBLIC R_COLUMN0_STARTMARKER_
 ENDP 
 
 _colfunc_jump_target:
-dw 00AE2h, 00AD4h, 00AC6h, 00AB8h, 00AAAh, 00A9Ch, 00A8Eh, 00A80h
-dw 00A72h, 00A64h, 00A56h, 00A48h, 00A3Ah, 00A2Ch, 00A1Eh, 00A10h
-dw 00A02h, 009F4h, 009E6h, 009D8h, 009CAh, 009BCh, 009AEh, 009A0h
-dw 00992h, 00984h, 00976h, 00968h, 0095Ah, 0094Ch, 0093Eh, 00930h
-dw 00922h, 00914h, 00906h, 008F8h, 008EAh, 008DCh, 008CEh, 008C0h
-dw 008B2h, 008A4h, 00896h, 00888h, 0087Ah, 0086Ch, 0085Eh, 00850h
-dw 00842h, 00834h, 00826h, 00818h, 0080Ah, 007FCh, 007EEh, 007E0h
-dw 007D2h, 007C4h, 007B6h, 007A8h, 0079Ah, 0078Ch, 0077Eh, 00770h
-dw 00762h, 00754h, 00746h, 00738h, 0072Ah, 0071Ch, 0070Eh, 00700h
-dw 006F2h, 006E4h, 006D6h, 006C8h, 006BAh, 006ACh, 0069Eh, 00690h
-dw 00682h, 00674h, 00666h, 00658h, 0064Ah, 0063Ch, 0062Eh, 00620h
-dw 00612h, 00604h, 005F6h, 005E8h, 005DAh, 005CCh, 005BEh, 005B0h
-dw 005A2h, 00594h, 00586h, 00578h, 0056Ah, 0055Ch, 0054Eh, 00540h
-dw 00532h, 00524h, 00516h, 00508h, 004FAh, 004ECh, 004DEh, 004D0h
-dw 004C2h, 004B4h, 004A6h, 00498h, 0048Ah, 0047Ch, 0046Eh, 00460h
-dw 00452h, 00444h, 00436h, 00428h, 0041Ah, 0040Ch, 003FEh, 003F0h
-dw 003E2h, 003D4h, 003C6h, 003B8h, 003AAh, 0039Ch, 0038Eh, 00380h
-dw 00372h, 00364h, 00356h, 00348h, 0033Ah, 0032Ch, 0031Eh, 00310h
-dw 00302h, 002F4h, 002E6h, 002D8h, 002CAh, 002BCh, 002AEh, 002A0h
-dw 00292h, 00284h, 00276h, 00268h, 0025Ah, 0024Ch, 0023Eh, 00230h
-dw 00222h, 00214h, 00206h, 001F8h, 001EAh, 001DCh, 001CEh, 001C0h
-dw 001B2h, 001A4h, 00196h, 00188h, 0017Ah, 0016Ch, 0015Eh, 00150h
-dw 00142h, 00134h, 00126h, 00118h, 0010Ah, 000FCh, 000EEh, 000E0h
-dw 000D2h, 000C4h, 000B6h, 000A8h, 0009Ah, 0008Ch, 0007Eh, 00070h
-dw 00062h, 00054h, 00046h, 00038h, 0002Ah, 0001Ch, 0000Eh, 00000h
+dw 00255h, 00252h, 0024Fh, 0024Ch, 00249h, 00246h, 00243h, 00240h
+dw 0023Dh, 0023Ah, 00237h, 00234h, 00231h, 0022Eh, 0022Bh, 00228h
+dw 00225h, 00222h, 0021Fh, 0021Ch, 00219h, 00216h, 00213h, 00210h
+dw 0020Dh, 0020Ah, 00207h, 00204h, 00201h, 001FEh, 001FBh, 001F8h
+dw 001F5h, 001F2h, 001EFh, 001ECh, 001E9h, 001E6h, 001E3h, 001E0h
+dw 001DDh, 001DAh, 001D7h, 001D4h, 001D1h, 001CEh, 001CBh, 001C8h
+dw 001C5h, 001C2h, 001BFh, 001BCh, 001B9h, 001B6h, 001B3h, 001B0h
+dw 001ADh, 001AAh, 001A7h, 001A4h, 001A1h, 0019Eh, 0019Bh, 00198h
+dw 00195h, 00192h, 0018Fh, 0018Ch, 00189h, 00186h, 00183h, 00180h
+dw 0017Dh, 0017Ah, 00177h, 00174h, 00171h, 0016Eh, 0016Bh, 00168h
+dw 00165h, 00162h, 0015Fh, 0015Ch, 00159h, 00156h, 00153h, 00150h
+dw 0014Dh, 0014Ah, 00147h, 00144h, 00141h, 0013Eh, 0013Bh, 00138h
+dw 00135h, 00132h, 0012Fh, 0012Ch, 00129h, 00126h, 00123h, 00120h
+dw 0011Dh, 0011Ah, 00117h, 00114h, 00111h, 0010Eh, 0010Bh, 00108h
+dw 00105h, 00102h, 000FFh, 000FCh, 000F9h, 000F6h, 000F3h, 000F0h
+dw 000EDh, 000EAh, 000E7h, 000E4h, 000E1h, 000DEh, 000DBh, 000D8h
+dw 000D5h, 000D2h, 000CFh, 000CCh, 000C9h, 000C6h, 000C3h, 000C0h
+dw 000BDh, 000BAh, 000B7h, 000B4h, 000B1h, 000AEh, 000ABh, 000A8h
+dw 000A5h, 000A2h, 0009Fh, 0009Ch, 00099h, 00096h, 00093h, 00090h
+dw 0008Dh, 0008Ah, 00087h, 00084h, 00081h, 0007Eh, 0007Bh, 00078h
+dw 00075h, 00072h, 0006Fh, 0006Ch, 00069h, 00066h, 00063h, 00060h
+dw 0005Dh, 0005Ah, 00057h, 00054h, 00051h, 0004Eh, 0004Bh, 00048h
+dw 00045h, 00042h, 0003Fh, 0003Ch, 00039h, 00036h, 00033h, 00030h
+dw 0002Dh, 0002Ah, 00027h, 00024h, 00021h, 0001Eh, 0001Bh, 00018h
+dw 00015h, 00012h, 0000Fh, 0000Ch, 00009h, 00006h, 00003h, 00000h
 
 ; mul 80 table.
 _dc_yl_lookup_table:
@@ -103,82 +103,18 @@ PUBLIC  R_DrawColumn0_
 ; no need to push anything. outer function just returns and pops
 
     ; di contains shifted dc_x relative to detailshift
-    ; ax contains dc_yl
-    ; bp:si is dc_texturemid
-    ; bx contains dc_iscale+0
-    ; cx contains dc_iscale+1 (we never use byte 4)
-
-    ; todo just move this above to prevenet the need for the mov ax
-    ;SELFMODIFY_COLFUNC_subtract_centery
-    sub   ax, 01000h
-    mov   ds, ax              ; save low(M1)
-
-;    this is now done outside the call, including the register swap    
-;    mov   bx, word ptr ds:[_dc_iscale + 0]   
-;    mov   ch, byte ptr ds:[_dc_iscale + 2]      ; 2nd byte of high word not used up ahead...
-;    mov   cl, bh                             ; construct dc_iscale + 1 word
-     mov   es, cx                             ; cache for later to avoid going to memory
+    ;  prep our loop variables
+   mov     ax, ss
+   mov     ds, ax
+   xor     bx, bx
+   les     si, dword ptr ds:[_dc_source_segment-2]  ; si to 004Fh (hardcoded)
+   mov     al, byte ptr es:[bx]                     ; get first pixel in column.
+   xlat    byte ptr cs:[bx]                          ; before calling this function we already set CS to the correct segment..
+;SELFMODIFY_COLFUNC_set_destview_segment0:
+   mov     dx, 01000h   
+   mov     es, dx; ready the viewscreen segment
 
 
-
-;  DX:AX * CX:BX
-
-; note this is 8 bit times 32 bit and we want the mid 16
-
-; begin multiply
-	CWD
-	AND DX, BX
-	NEG DX
-
-    mul     ch;             ; only the bottom 16 bits are necessary.
-    add     dx,ax           ; - add to total
-    mov     cx,dx           ; - hold total in cx
-    mov     ax,ds           ; restore low(M1)
-    mul     bx              ; low(M2) * low(M1)
-    add     dx,cx           ; add previously computed high part
-; end multiply    
-
-; multiply completed. 
-; dx:ax is the 32 bits of the mul. we want dx to have the mid 16.
-
-;    finishing  dc_texturemid.w + (dc_yl-centery)*fracstep.w
-
-
-    
-    add   ax, bp
-    adc   dx, si ; si was holding onto _dc_texturemid+2
-
-    mov   bp, es        ; bp gets dc_iscale + 1
-
-    ; note: top 8 bits cut off! can we restructure? make it faster?
-    ; adc dl, [8 bit reg] instead of si?
-
-    mov   dh, dl
-    mov   dl, ah        ; mid 16 bits of the 32 bit dx:ax into dx
-    
-
-    ; bx still has dc_iscale low word from above. prepare low bits of precision
-    mov   cl, bl        ; cl has 8 bits of precision (dc_iscale+0)
-    mov   ch, al        ; ch gets the low 8 bits     (starting texel)
-
-    
-    
-
-    
-
-    ; for fixing jaggies... need extra precision from time to time
-
-
-   ;  prep our loop variables
-
-;SELFMODIFY_COLFUNC_set_destview_segment:
-   mov     ax, 01000h   
-   mov     es, ax; ready the viewscreen segment
-   xor     bx, bx       ; common bx offset of zero in the xlats ahead
-
-   lds     si, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and si to 004Fh (hardcoded)
-
-   mov     ah,  7Fh   ; for ANDing to AX to mod al by 128 and preserve AH
 
 COLFUNC_JUMP_OFFSET:
    jmp loop_done         ; relative jump to be modified before function is called
@@ -186,20 +122,12 @@ COLFUNC_JUMP_OFFSET:
 
 pixel_loop_fast:
 
-   ;; 14 bytes loop iter
 
-; 0xE size
 DRAW_SINGLE_PIXEL MACRO 
-   ; tried to reorder adds in between xlats and stos, but it didn't make anything faster.
+   ; tried to reorder adds in between xlats and stos, but it didnt make anything faster.
    ; todo retry on real 286
 
-    mov    al,dh
-	and    al,ah                  ; ah is 7F
-	xlat   BYTE PTR ds:[bx]       ;
-	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
-	stos   BYTE PTR es:[di]       ;
-	add    ch,cl                  ; add 8 low bits of precision
-    adc    dx,bp                  ; carry result into this add
+	stosb
 	add    di,si                  ; si has 79 (0x4F) and stos added one
 ENDM
 
@@ -210,22 +138,13 @@ ENDM
 
 ; draw last pixel, cut off the add
 
-    mov    al,dh
-	and    al,ah                  ; ah is 7F
-	xlat   BYTE PTR ds:[bx]       ;
-	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
-	stos   BYTE PTR es:[di]       ;
-	; dont need these in last loop
-    ;add    di,si                  ; si has 79 (0x4F) and stos added one
-	;add    dx,cx
+	stosb
 
 loop_done:
 ; clean up
 
 ; restore ds without going to memory.
 
-    mov ax, ss
-    mov ds, ax
 
     retf
 

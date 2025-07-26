@@ -542,7 +542,8 @@ SELFMODIFY_COLFUNC_subtract_centery =                   0
 SELFMODIFY_COLFUNC_set_destview_segment =               0+3+2+2+1+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2
 SELFMODIFY_COLFUNC_jump_offset =                        SELFMODIFY_COLFUNC_set_destview_segment+3+2+2+5+2
 
-
+SELFMODIFY_COLFUNC_set_destview_segment0 = 0Fh
+SELFMODIFY_COLFUNC_jump_offset0          = SELFMODIFY_COLFUNC_set_destview_segment0 + 5
 
 STATENUM_NULL = -1
 

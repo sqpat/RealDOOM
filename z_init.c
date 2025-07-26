@@ -613,7 +613,7 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 
 
 
-	switch (spanquality){
+	switch (columnquality){
 		case 2:
 
 			// skip r_column
