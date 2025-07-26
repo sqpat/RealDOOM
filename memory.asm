@@ -96,7 +96,7 @@ dw  00, 00, 00, 00
 ; 0x170 
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 0x180
-dw  00, 00, 00, 00, 00, 00, R_GetPatchTextureOffset, bsp_code_segment
+dw  00, 00, 00, 00, 00, 00, R_GetPatchTexture24Offset, bsp_code_segment
 ; 0x190
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 0x1A0  _frontsector backsector 1a4 1a8, set their segments
@@ -143,7 +143,7 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 2B0
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 2C0
-dw  00, 00, 00, 00, 00, 00, R_GetCompositeTextureOffset, bsp_code_segment
+dw  00, 00, 00, 00, 00, 00, R_GetCompositeTexture24Offset, bsp_code_segment
 
 ; 2D0 w_message struct to 439
 dw  00, 00, 00, 00, 00, 00, 00, 00
@@ -339,12 +339,12 @@ dw  00, 00, 00, 00
 ; 808 R_DrawPlanesCall
 dw R_DrawPlanes24Offset, spanfunc_jump_lookup_segment
 ; 80C R_DrawMaskedCall
-dw R_DrawMaskedOffset, drawfuzzcol_area_segment
+dw R_DrawMasked24Offset, drawfuzzcol_area_segment
 
 ; 810 R_WriteBackMaskedFrameConstants
-dw R_WriteBackMaskedFrameConstantsOffset, maskedconstants_funcarea_segment
+dw R_WriteBackMaskedFrameConstants24Offset, maskedconstants_funcarea_segment
 ; 814 R_WriteBackViewConstantsSpan
-;dw R_WriteBackViewConstantsSpanOffset, spanfunc_jump_lookup_segment
+;dw R_WriteBackViewConstantsSpan24Offset, spanfunc_jump_lookup_segment
 
 ; 814
 dw  00, 00, 00, 00, 00, 00

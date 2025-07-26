@@ -33,8 +33,8 @@ INSTRUCTION_SET_MACRO
 .CODE
 
 
-PROC R_COLUMN_STARTMARKER_
-PUBLIC R_COLUMN_STARTMARKER_
+PROC R_COLUMN24_STARTMARKER_
+PUBLIC R_COLUMN24_STARTMARKER_
 ENDP 
 
 _colfunc_jump_target:
@@ -97,8 +97,8 @@ dw 03C00h, 03C50h, 03CA0h, 03CF0h, 03D40h, 03D90h, 03DE0h, 03E30h
 ; R_DrawColumn
 ;
 	
-PROC  R_DrawColumn_
-PUBLIC  R_DrawColumn_
+PROC  R_DrawColumn24_
+PUBLIC  R_DrawColumn24_
 
 ; no need to push anything. outer function just returns and pops
 
@@ -238,8 +238,8 @@ ENDP
 
 
 ; end marker for this asm file
-PROC R_COLUMN_ENDMARKER_ 
-PUBLIC R_COLUMN_ENDMARKER_ 
+PROC R_COLUMN24_ENDMARKER_ 
+PUBLIC R_COLUMN24_ENDMARKER_ 
 ENDP
 
 

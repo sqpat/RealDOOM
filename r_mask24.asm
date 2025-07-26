@@ -38,8 +38,8 @@ SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT = 030h
 .CODE
 
 
-PROC  R_MASKED_STARTMARKER_
-PUBLIC  R_MASKED_STARTMARKER_
+PROC  R_MASK24_STARTMARKER_
+PUBLIC  R_MASK24_STARTMARKER_
 
 ENDP
 
@@ -91,7 +91,7 @@ dw  00050h, 0FFB0h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB
 dw  00050h, 00050h, 00050h, 0FFB0h, 00050h
 
 _fuzzpos:
-dw  (OFFSET _fuzzoffset) - (OFFSET R_MASKED_STARTMARKER_)
+dw  (OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)
 
 
 _pagesegments:
@@ -118,7 +118,7 @@ push si
 push di
 push es
 mov  es, bx
-mov  si, word ptr cs:[_fuzzpos - OFFSET R_MASKED_STARTMARKER_]	; note this is always the byte offset - no shift conversion necessary
+mov  si, word ptr cs:[_fuzzpos - OFFSET R_MASK24_STARTMARKER_]	; note this is always the byte offset - no shift conversion necessary
 
 ;  need to put di in cx
 xchg cx, di   ; cx gets count , di gets screen offset
@@ -166,7 +166,7 @@ endm
 
 
 
-cmp  si, ((OFFSET _fuzzoffset) - (OFFSET R_MASKED_STARTMARKER_)) +  (SIZE_FUZZTABLE * 2) ; word size
+cmp  si, ((OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)) +  (SIZE_FUZZTABLE * 2) ; word size
 jl   fuzzpos_ok
 ; subtract 50 from fuzzpos
 sub  si, SIZE_FUZZTABLE * 2 ; word size
@@ -189,7 +189,7 @@ xlat byte ptr cs:[bx]		    ; lookup colormaps + al byte
 stosb							; write to screen
 add  di, dx						; dx contains constant (0x4F) to add to di to get next screen dest.
 
-cmp  si, ((OFFSET _fuzzoffset) - (OFFSET R_MASKED_STARTMARKER_)) +  (SIZE_FUZZTABLE * 2) ; word size
+cmp  si, ((OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)) +  (SIZE_FUZZTABLE * 2) ; word size
 je   zero_out_fuzzpos
 finish_one_fuzzpixel_iteration:
 loop  draw_one_fuzzpixel
@@ -205,7 +205,7 @@ mov  ds, di
 
 ; write back fuzzpos
 
-mov  word ptr word ptr cs:[_fuzzpos - OFFSET R_MASKED_STARTMARKER_], si
+mov  word ptr word ptr cs:[_fuzzpos - OFFSET R_MASK24_STARTMARKER_], si
 
 pop  es
 pop  di
@@ -213,7 +213,7 @@ pop  si
 retf 
 
 zero_out_fuzzpos:
-mov   si, (OFFSET _fuzzoffset) - (OFFSET R_MASKED_STARTMARKER_)
+mov   si, (OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)
 loop  draw_one_fuzzpixel
 jmp finished_drawing_fuzzpixels
 
@@ -345,8 +345,8 @@ push  bp
 mov   word ptr ds:[_dc_source_segment], ax	; set this early. 
 
 ; slow and ugly - infer it anohter way later if possible.
-mov   al, byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_MASKED_STARTMARKER_]
-mov   byte ptr cs:[SELFMODIFY_MASKED_set_colormap_index_jump - OFFSET R_MASKED_STARTMARKER_], al
+mov   al, byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_MASK24_STARTMARKER_]
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_colormap_index_jump - OFFSET R_MASK24_STARTMARKER_], al
 
 
 mov   cl, dl
@@ -498,13 +498,13 @@ mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset+1))+COLFUNC_JUMP_AND_FUNCTIO
 
 xchg  ax, bx    ; dc_yl in ax
 ; gross lol. but again - rare function. in exchange the common function is faster.
-mov   si, word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1+1 - OFFSET R_MASKED_STARTMARKER_]
-mov   bx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASKED_STARTMARKER_]
-mov   cx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASKED_STARTMARKER_]
+mov   si, word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1+1 - OFFSET R_MASK24_STARTMARKER_]
+mov   bx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_]
+mov   cx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_]
 
 
 push  bp
-mov   bp, word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1+1 - OFFSET R_MASKED_STARTMARKER_]
+mov   bp, word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1+1 - OFFSET R_MASK24_STARTMARKER_]
 
 
 
@@ -670,7 +670,7 @@ mov   dx, ax
 and   al, 3
 SELFMODIFY_MASKED_detailshiftplus1_1:
 add   al, 0
-mov   byte ptr cs:[SELFMODIFY_MASKED_set_bx_to_lookup+1 - OFFSET R_MASKED_STARTMARKER_], al
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_bx_to_lookup+1 - OFFSET R_MASK24_STARTMARKER_], al
 mov   cx, DC_YL_LOOKUP_MASKEDMAPPING_SEGMENT
 
 add   bx, bx
@@ -753,7 +753,7 @@ mov   al, byte ptr ds:[si + 1]
 
 ; al is colormap. 
 
-mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_MASKED_STARTMARKER_], al
+mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_MASK24_STARTMARKER_], al
 
 ; todo move this out to a higher level! possibly when executesetviewsize happens.
 
@@ -786,8 +786,8 @@ xiscale_shift_done:
 
 mov   dh, dl
 mov   dl, ah
-mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASKED_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASKED_STARTMARKER_], dx
+mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], dx
 
 
 
@@ -806,8 +806,8 @@ mov   word ptr ds:[_spryscale + 2], dx
 les   bx, dword ptr [si + 022h] ; vis->texturemid
 mov   cx, es
 ; write this ahead
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1 + 1 - OFFSET R_MASKED_STARTMARKER_], bx
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1 + 1 - OFFSET R_MASKED_STARTMARKER_], cx
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1 + 1 - OFFSET R_MASK24_STARTMARKER_], bx
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1 + 1 - OFFSET R_MASK24_STARTMARKER_], cx
 
 
 test  dx, dx
@@ -844,8 +844,8 @@ mov   dx, ax
 SELFMODIFY_MASKED_detailshiftandval_1:
 and   ax, 01000h
 
-mov   word ptr cs:[SELFMODIFY_MASKED_set_ax_to_dc_x_base4+1 - OFFSET R_MASKED_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_set_ax_to_dc_x_base4_shadow+1 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_set_ax_to_dc_x_base4+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_set_ax_to_dc_x_base4_shadow+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 sub   dx, ax
 xchg  ax, dx
@@ -894,8 +894,8 @@ jne   decrementbase4loop
 base4diff_is_zero:
 
 ; zero xoffset loop iter
-mov   byte ptr cs:[SELFMODIFY_MASKED_set_bx_to_xoffset+1 - OFFSET R_MASKED_STARTMARKER_], 0
-mov   byte ptr cs:[SELFMODIFY_MASKED_set_bx_to_xoffset_shadow+1 - OFFSET R_MASKED_STARTMARKER_], 0
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_bx_to_xoffset+1 - OFFSET R_MASK24_STARTMARKER_], 0
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_bx_to_xoffset_shadow+1 - OFFSET R_MASK24_STARTMARKER_], 0
 
 mov   cx, es
 
@@ -1011,8 +1011,8 @@ adc   dx, word ptr [bp - 6]
 jmp   draw_sprite_normal_innerloop
 
 end_draw_sprite_normal_innerloop:
-inc   word ptr cs:[SELFMODIFY_MASKED_set_ax_to_dc_x_base4+1 - OFFSET R_MASKED_STARTMARKER_]
-inc   byte ptr cs:[SELFMODIFY_MASKED_set_bx_to_xoffset+1 - OFFSET R_MASKED_STARTMARKER_]
+inc   word ptr cs:[SELFMODIFY_MASKED_set_ax_to_dc_x_base4+1 - OFFSET R_MASK24_STARTMARKER_]
+inc   byte ptr cs:[SELFMODIFY_MASKED_set_bx_to_xoffset+1 - OFFSET R_MASK24_STARTMARKER_]
 mov   ax, word ptr ds:[si + 01Eh]
 add   word ptr [bp - 4], ax
 mov   ax, word ptr ds:[si + 020h]
@@ -1066,8 +1066,8 @@ adc   dx, word ptr [bp - 6]
 jmp   draw_sprite_shadow_innerloop
 
 end_draw_sprite_shadow_innerloop:
-inc   word ptr cs:[SELFMODIFY_MASKED_set_ax_to_dc_x_base4_shadow+1 - OFFSET R_MASKED_STARTMARKER_]
-inc   byte ptr cs:[SELFMODIFY_MASKED_set_bx_to_xoffset_shadow+1 - OFFSET R_MASKED_STARTMARKER_]
+inc   word ptr cs:[SELFMODIFY_MASKED_set_ax_to_dc_x_base4_shadow+1 - OFFSET R_MASK24_STARTMARKER_]
+inc   byte ptr cs:[SELFMODIFY_MASKED_set_bx_to_xoffset_shadow+1 - OFFSET R_MASK24_STARTMARKER_]
 mov   ax, word ptr ds:[si + 01Eh]
 add   word ptr [bp - 4], ax
 mov   ax, word ptr ds:[si + 020h]
@@ -1126,10 +1126,10 @@ push  di
 ; todo selfmodify all this up ahead too.
 
 
-mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_1+1 - OFFSET R_MASKED_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_2+1 - OFFSET R_MASKED_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_3+1 - OFFSET R_MASKED_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_cmp_to_x2+1 - OFFSET R_MASKED_STARTMARKER_], cx
+mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_2+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_3+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_cmp_to_x2+1 - OFFSET R_MASK24_STARTMARKER_], cx
 
 ; grab a bunch of drawseg values early in the function and write them forward.
 mov   si, di
@@ -1147,25 +1147,25 @@ mov   bx, ax
 mov   ax, es
 mov   ds, ax
 lods  word ptr ds:[si]  ; si 4 after
-mov   word ptr cs:[SELFMODIFY_MASKED_dsp_02+1 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dsp_02+1 - OFFSET R_MASK24_STARTMARKER_], ax
 inc   si
 inc   si
 lods  word ptr ds:[si]  ; si 8 after
-mov   word ptr cs:[SELFMODIFY_MASKED_dsp_06+1 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dsp_06+1 - OFFSET R_MASK24_STARTMARKER_], ax
 lods  word ptr ds:[si]  ; si A after
 add   si, 4
-mov   word ptr cs:[SELFMODIFY_MASKED_dsp_08+2 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dsp_08+2 - OFFSET R_MASK24_STARTMARKER_], ax
 lods  word ptr ds:[si]  ; si 0x10 after
-mov   word ptr cs:[SELFMODIFY_MASKED_dsp_0E+1 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dsp_0E+1 - OFFSET R_MASK24_STARTMARKER_], ax
 lods  word ptr ds:[si]  ; si 0x12 after
-mov   word ptr cs:[SELFMODIFY_MASKED_dsp_10+1 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dsp_10+1 - OFFSET R_MASK24_STARTMARKER_], ax
 add   si, 4
 lods  word ptr ds:[si]  ; si 0x18 after
-mov   word ptr cs:[SELFMODIFY_MASKED_dsp_16+4 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dsp_16+4 - OFFSET R_MASK24_STARTMARKER_], ax
 lods  word ptr ds:[si]  ; si 0x1A after
-mov   word ptr cs:[SELFMODIFY_MASKED_dsp_18+4 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dsp_18+4 - OFFSET R_MASK24_STARTMARKER_], ax
 lods  word ptr ds:[si]  ; si 0x1C after
-mov   word ptr cs:[SELFMODIFY_MASKED_dsp_1A+1 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dsp_1A+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 mov   ax, ss
 mov   ds, ax
@@ -1179,9 +1179,9 @@ shl   si, 1							; side_t is 8 bytes each
 add   bh, (_sides_render SHR 8 )		; sides render near addr is ds:[0xAE00]
 mov   si, word ptr es:[si + 4]		; lookup side->midtexture
 mov   ax, word ptr ds:[bx] 
-mov   word ptr cs:[SELFMODIFY_MASKED_siderender_00+1 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_siderender_00+1 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   ax, word ptr ds:[bx+2] 
-mov   word ptr cs:[SELFMODIFY_MASKED_siderender_02+1 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_siderender_02+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 mov   ax, TEXTURETRANSLATION_SEGMENT
 add   si, si
@@ -1192,9 +1192,9 @@ mov   es, ax
 mov   al, byte ptr es:[si]			; translate texnum to lookup
 
 ; put texnum where it needs to be
-mov   word ptr cs:[SELFMODIFY_MASKED_texnum_1+1 - OFFSET R_MASKED_STARTMARKER_], si
-mov   word ptr cs:[SELFMODIFY_MASKED_texnum_2+1 - OFFSET R_MASKED_STARTMARKER_], si
-mov   word ptr cs:[SELFMODIFY_MASKED_texnum_3+3 - OFFSET R_MASKED_STARTMARKER_], si
+mov   word ptr cs:[SELFMODIFY_MASKED_texnum_1+1 - OFFSET R_MASK24_STARTMARKER_], si
+mov   word ptr cs:[SELFMODIFY_MASKED_texnum_2+1 - OFFSET R_MASK24_STARTMARKER_], si
+mov   word ptr cs:[SELFMODIFY_MASKED_texnum_3+3 - OFFSET R_MASK24_STARTMARKER_], si
 
 cmp   al, 0FFh
 jne   lookup_is_ff
@@ -1217,8 +1217,8 @@ SHIFT_MACRO shl ax 3
 
 mov   bx, ax
 mov   ax, word ptr ds:[bx + _masked_headers + 2]
-mov   word ptr cs:[SELFMODIFY_MASKED_maskedpostofs_1  +3 - OFFSET R_MASKED_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_maskedpostofs_2+3 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_maskedpostofs_1  +3 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_maskedpostofs_2+3 - OFFSET R_MASK24_STARTMARKER_], ax
 
 ; nops
 mov   ax, 0c089h 
@@ -1226,8 +1226,8 @@ mov   bx, ax
 
 do_lookup_selfmodifies:
 ; write instructions forward
-mov   word ptr cs:[SELFMODIFY_MASKED_lookup_1 - OFFSET R_MASKED_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_lookup_2 - OFFSET R_MASKED_STARTMARKER_], bx
+mov   word ptr cs:[SELFMODIFY_MASKED_lookup_1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_lookup_2 - OFFSET R_MASK24_STARTMARKER_], bx
 
 
 
@@ -1255,7 +1255,7 @@ je    peg_bottom
 mov   ax, ((SELFMODIFY_MASKED_lineflags_ml_dontpegbottom_TARGET - SELFMODIFY_MASKED_lineflags_ml_dontpegbottom_AFTER) SHL 8) + 0EBh
 peg_bottom:
 ; write instruction forward
-mov   word ptr cs:[SELFMODIFY_MASKED_lineflags_ml_dontpegbottom - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_lineflags_ml_dontpegbottom - OFFSET R_MASK24_STARTMARKER_], ax
 
 mov   cx, word ptr ds:[bx+2]			; get v2 offset
 mov   bx, word ptr ds:[bx]				; get v1 offset
@@ -1280,7 +1280,7 @@ cmp   ax, word ptr es:[bx]		; compare v1.x == v2.x
 je    xs_equal
 mov   al, 090h				    ; nop instruction
 done_comparing_vertexes:
-mov   byte ptr cs:[SELFMODIFY_MASKED_add_vertex_field - OFFSET R_MASKED_STARTMARKER_], al
+mov   byte ptr cs:[SELFMODIFY_MASKED_add_vertex_field - OFFSET R_MASK24_STARTMARKER_], al
 
 
 SELFMODIFY_MASKED_siderender_02:
@@ -1409,12 +1409,12 @@ add   ax, 01000h
 
 
 ; dc_texturemid is a function contant. we selfmodify ahead:
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1 + 1 - OFFSET R_MASKED_STARTMARKER_], dx
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_2 + 1 - OFFSET R_MASKED_STARTMARKER_], dx
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_3 + 1 - OFFSET R_MASKED_STARTMARKER_], dx
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1 + 1 - OFFSET R_MASKED_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_2 + 1 - OFFSET R_MASKED_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_3 + 1 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1 + 1 - OFFSET R_MASK24_STARTMARKER_], dx
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_2 + 1 - OFFSET R_MASK24_STARTMARKER_], dx
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_3 + 1 - OFFSET R_MASK24_STARTMARKER_], dx
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1 + 1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_2 + 1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_3 + 1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
@@ -1455,7 +1455,7 @@ jmp   lights_set
 SELFMODIFY_MASKED_fixedcolormap_2_TARGET:
 fixed_colormap:
 SELFMODIFY_MASKED_fixedcolormap_3:
-mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_MASKED_STARTMARKER_], 0
+mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_MASK24_STARTMARKER_], 0
 jmp   colormap_set
 
 
@@ -1464,7 +1464,7 @@ mov    ax, 720   ; hardcoded (lightmult48lookup[LIGHTLEVELS - 1])
 
 lights_set:
 add   ax, (SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT + _scalelightfixed)
-mov   word ptr cs:[SELFMODIFY_MASKED_set_walllights+2 - OFFSET R_MASKED_STARTMARKER_], ax      ; store lights
+mov   word ptr cs:[SELFMODIFY_MASKED_set_walllights+2 - OFFSET R_MASK24_STARTMARKER_], ax      ; store lights
 
 
 ;    maskedtexturecol = &openings[ds->maskedtexturecol_val];
@@ -1482,12 +1482,12 @@ mov   bx, 01000h
 SELFMODIFY_MASKED_dsp_10:
 mov   cx, 01000h
 
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_1+1 - OFFSET R_MASKED_STARTMARKER_], bx		; rw_scalestep
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_2+5 - OFFSET R_MASKED_STARTMARKER_], bx		; rw_scalestep
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_3+5 - OFFSET R_MASKED_STARTMARKER_], bx		; rw_scalestep
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_1+1 - OFFSET R_MASKED_STARTMARKER_], cx		; rw_scalestep
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_2+5 - OFFSET R_MASKED_STARTMARKER_], cx		; rw_scalestep
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_3+5 - OFFSET R_MASKED_STARTMARKER_], cx		; rw_scalestep
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_1+1 - OFFSET R_MASK24_STARTMARKER_], bx		; rw_scalestep
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_2+5 - OFFSET R_MASK24_STARTMARKER_], bx		; rw_scalestep
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_3+5 - OFFSET R_MASK24_STARTMARKER_], bx		; rw_scalestep
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_1+1 - OFFSET R_MASK24_STARTMARKER_], cx		; rw_scalestep
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_2+5 - OFFSET R_MASK24_STARTMARKER_], cx		; rw_scalestep
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_3+5 - OFFSET R_MASK24_STARTMARKER_], cx		; rw_scalestep
 
 
 
@@ -1551,7 +1551,7 @@ mov   ax, 08000h
 mov   di, ax						; di = x1
 SELFMODIFY_MASKED_detailshiftandval_2:
 and   ax, 01000h
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_x_base4+1 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_x_base4+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 ;		int16_t base4diff = x1 - dc_x_base4;
 
@@ -1560,9 +1560,9 @@ sub   di, ax						; di = base4diff = x1 - dc_x_base4
 ;		fixed_t basespryscale = spryscale.w;
 
 mov   ax, word ptr ds:[_spryscale]
-mov   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_lo+1 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   ax, word ptr ds:[_spryscale + 2]
-mov   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_hi+1 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 ;		fixed_t rw_scalestep_shift = rw_scalestep.w << detailshift2minus;
 
@@ -1589,10 +1589,10 @@ rcl   dx, 1
 done_shifting_spryscale:
 
 
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_lo_1+2 - OFFSET R_MASKED_STARTMARKER_], ax		; rw_scalestep_shift
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_lo_2+4 - OFFSET R_MASKED_STARTMARKER_], ax		; rw_scalestep_shift
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_hi_1+2 - OFFSET R_MASKED_STARTMARKER_], dx		; rw_scalestep_shift
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_hi_2+4 - OFFSET R_MASKED_STARTMARKER_], dx		; rw_scalestep_shift
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_lo_1+2 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep_shift
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_lo_2+4 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep_shift
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_hi_1+2 - OFFSET R_MASK24_STARTMARKER_], dx		; rw_scalestep_shift
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_hi_2+4 - OFFSET R_MASK24_STARTMARKER_], dx		; rw_scalestep_shift
 
 ;		fixed_t sprtopscreen_step = FixedMul(dc_texturemid.w, rw_scalestep_shift);
 
@@ -1605,8 +1605,8 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FixedMul_addr
 
-mov   word ptr cs:[SELFMODIFY_MASKED_sprtopscreen_lo+4 - OFFSET R_MASKED_STARTMARKER_], ax	  ; sprtopscreen_step
-mov   word ptr cs:[SELFMODIFY_MASKED_sprtopscreen_hi+4 - OFFSET R_MASKED_STARTMARKER_], dx	  ; sprtopscreen_step
+mov   word ptr cs:[SELFMODIFY_MASKED_sprtopscreen_lo+4 - OFFSET R_MASK24_STARTMARKER_], ax	  ; sprtopscreen_step
+mov   word ptr cs:[SELFMODIFY_MASKED_sprtopscreen_hi+4 - OFFSET R_MASK24_STARTMARKER_], dx	  ; sprtopscreen_step
 
 
 ;	while (base4diff){
@@ -1621,9 +1621,9 @@ loop_dec_base4diff:
 ;			basespryscale -= rw_scalestep.w;
 
 SELFMODIFY_MASKED_rw_scalestep_lo_2:
-sub   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_lo+1 - OFFSET R_MASKED_STARTMARKER_], 01000h
+sub   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], 01000h
 SELFMODIFY_MASKED_rw_scalestep_hi_2:
-sbb   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_hi+1 - OFFSET R_MASKED_STARTMARKER_], 01000h
+sbb   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], 01000h
 
 
 dec   di
@@ -1727,7 +1727,7 @@ mov   ax, 01000h
 sbb   ax, dx
 mov   word ptr ds:[_sprtopscreen + 2], ax
 
-mov   word ptr cs:[SELF_MODIFY_MASKED_xoffset+1 - OFFSET R_MASKED_STARTMARKER_], di
+mov   word ptr cs:[SELF_MODIFY_MASKED_xoffset+1 - OFFSET R_MASK24_STARTMARKER_], di
 
 inner_loop_draw_columns:
 
@@ -1750,9 +1750,9 @@ inc   di			; xoffset++
 
 
 SELFMODIFY_MASKED_rw_scalestep_lo_3:
-add   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_lo+1 - OFFSET R_MASKED_STARTMARKER_], 01000h
+add   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], 01000h
 SELFMODIFY_MASKED_rw_scalestep_hi_3:
-adc   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_hi+1 - OFFSET R_MASKED_STARTMARKER_], 01000h
+adc   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], 01000h
 
 
 ; xoffset < detailshiftitercount
@@ -1852,7 +1852,7 @@ xor   ah, ah
 mov   bx, ax
 SELFMODIFY_MASKED_set_walllights:
 mov   al, byte ptr ds:[bx + 01000h]
-mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_MASKED_STARTMARKER_], al
+mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_MASK24_STARTMARKER_], al
 
 SELFMODIFY_MASKED_fixedcolormap_1_TARGET:
 got_colormap:
@@ -1863,8 +1863,8 @@ call  FastDiv3232FFFF_
 
 mov   dh, dl
 mov   dl, ah
-mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASKED_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASKED_STARTMARKER_], dx
+mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], dx
 
 
 mov   bx, si  ; bx gets a copy of texture column?
@@ -2151,7 +2151,7 @@ mov   si, ax
 mov   al, dl
 SHIFT_MACRO shl   ax 4
 sal   si, 1
-mov   dx, word ptr cs:[si + _pagesegments - OFFSET R_MASKED_STARTMARKER_]
+mov   dx, word ptr cs:[si + _pagesegments - OFFSET R_MASK24_STARTMARKER_]
 add   dh, (SPRITE_COLUMN_SEGMENT SHR 8)
 add   ax, dx
 pop   si
@@ -2177,7 +2177,7 @@ mov   si, ax
 mov   al, dl
 SHIFT_MACRO shl   ax 4
 sal   si, 1
-mov   dx, word ptr cs:[si + _pagesegments - OFFSET R_MASKED_STARTMARKER_]
+mov   dx, word ptr cs:[si + _pagesegments - OFFSET R_MASK24_STARTMARKER_]
 add   dh, (SPRITE_COLUMN_SEGMENT SHR 8) 
 add   dx, ax
 mov   si, dx ; back this up
@@ -3499,7 +3499,7 @@ mov       si, di
 
 mov       es, dx
 lodsw
-mov       word ptr cs:[SELFMODIFY_loadspritecolumn_width_check+1 - OFFSET R_MASKED_STARTMARKER_],  ax  ; patchwidth
+mov       word ptr cs:[SELFMODIFY_loadspritecolumn_width_check+1 - OFFSET R_MASK24_STARTMARKER_],  ax  ; patchwidth
 stosw
 movsw
 movsw
@@ -3536,7 +3536,7 @@ and       di, 0FFF0h
 start_sprite_column_loop:
 xor       cx, cx
 do_next_sprite_column:
-dec       word ptr cs:[SELFMODIFY_loadspritecolumn_width_check+1 - OFFSET R_MASKED_STARTMARKER_]
+dec       word ptr cs:[SELFMODIFY_loadspritecolumn_width_check+1 - OFFSET R_MASK24_STARTMARKER_]
 
 mov       ax, di
 
@@ -4471,7 +4471,7 @@ inc   cx
 ;    	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, ds->bsilheight);
 
 mov   al, byte ptr es:[di + 01Ch]
-mov   byte ptr cs:[SELFMODIFY_MASKED_set_al_to_silhouette+1 - OFFSET R_MASKED_STARTMARKER_],  al
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_al_to_silhouette+1 - OFFSET R_MASK24_STARTMARKER_],  al
 
 mov   ax, word ptr es:[di + 012h]
 xor   dx, dx
@@ -4494,7 +4494,7 @@ jg   do_not_remove_bot_silhouette
 cmp   dx, word ptr ds:[bx + 0Eh]
 ja    do_not_remove_bot_silhouette
 remove_bot_silhouette:
-and   byte ptr cs:[SELFMODIFY_MASKED_set_al_to_silhouette+1 - OFFSET R_MASKED_STARTMARKER_], 0FEh  
+and   byte ptr cs:[SELFMODIFY_MASKED_set_al_to_silhouette+1 - OFFSET R_MASK24_STARTMARKER_], 0FEh  
 do_not_remove_bot_silhouette:
 
 mov   ax, word ptr es:[di + 014h]
@@ -4623,8 +4623,8 @@ ENDP
 
 VISSPRITE_SORTED_HEAD_INDEX = 0FEh
 
-PROC R_DrawMasked_ FAR
-PUBLIC R_DrawMasked_
+PROC R_DrawMasked24_ FAR
+PUBLIC R_DrawMasked24_
 
 push bx
 push cx
@@ -5445,7 +5445,7 @@ push      bp
 mov       bp, sp
 sub       sp, 034h				; let's set things up finally isnce we're not quick-exiting out
 
-mov       byte ptr cs:[SELFMODIFY_MASKED_loop_compare_instruction+1 - OFFSET R_MASKED_STARTMARKER_], al ; store count
+mov       byte ptr cs:[SELFMODIFY_MASKED_loop_compare_instruction+1 - OFFSET R_MASK24_STARTMARKER_], al ; store count
 mov       dx, ax
 mov       cx, 014h
 lea       di, [bp - 034h]
@@ -5470,7 +5470,7 @@ jl        loop_set_vissprite_next
 done_setting_vissprite_next:
 
 sub        bx, SIZEOF_VISSPRITE_T
-mov       byte ptr cs:[SELFMODIFY_MASKED_set_al_to_loop_counter+1 - OFFSET R_MASKED_STARTMARKER_], 0  ; zero loop counter
+mov       byte ptr cs:[SELFMODIFY_MASKED_set_al_to_loop_counter+1 - OFFSET R_MASK24_STARTMARKER_], 0  ; zero loop counter
 
 mov       al, VISSPRITE_SORTED_HEAD_INDEX
 
@@ -5482,7 +5482,7 @@ jle       exit_sort_vissprites
 
 loop_visplane_sort:
 
-inc       byte ptr cs:[SELFMODIFY_MASKED_set_al_to_loop_counter+1 - OFFSET R_MASKED_STARTMARKER_] ; update loop counter
+inc       byte ptr cs:[SELFMODIFY_MASKED_set_al_to_loop_counter+1 - OFFSET R_MASK24_STARTMARKER_] ; update loop counter
 
 ;DI:CX is bestscale
 ;        bestscale = MAXLONG;
@@ -5613,8 +5613,8 @@ ENDP
 
 ;R_WriteBackViewConstantsMasked
 
-PROC R_WriteBackViewConstantsMasked_ FAR
-PUBLIC R_WriteBackViewConstantsMasked_ 
+PROC R_WriteBackViewConstantsMasked24_ FAR
+PUBLIC R_WriteBackViewConstantsMasked24_ 
 
 
 
@@ -5622,7 +5622,7 @@ mov      ax, DRAWFUZZCOL_AREA_SEGMENT
 mov      ds, ax
 
 
-ASSUME DS:R_MASKED_TEXT
+ASSUME DS:R_MASK24_TEXT
 
 mov      ax,  word ptr ss:[_detailshift]
 
@@ -5643,10 +5643,10 @@ je       set_to_one_masked
 mov      ax, 0c089h 
 
 ; write to colfunc segment
-mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASKED_STARTMARKER_+0], ax
-mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASKED_STARTMARKER_+2], ax
-mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASKED_STARTMARKER_+0], ax
-mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASKED_STARTMARKER_+2], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+0], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+2], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+0], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+2], ax
 
 
 
@@ -5668,13 +5668,13 @@ set_to_one_masked:
 mov      ax, 0f8d1h 
 
 ; write to colfunc segment
-mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASKED_STARTMARKER_+0], ax
-mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASKED_STARTMARKER_+0], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+0], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+0], ax
 
 ; nop 
 mov      ax, 0c089h 
-mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASKED_STARTMARKER_+2], ax
-mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASKED_STARTMARKER_+2], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+2], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+2], ax
 
 
 
@@ -5691,10 +5691,10 @@ set_to_zero_masked:
 mov      ax, 0f8d1h 
 
 ; write to colfunc segment
-mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASKED_STARTMARKER_+0], ax
-mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASKED_STARTMARKER_+2], ax
-mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASKED_STARTMARKER_+0], ax
-mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASKED_STARTMARKER_+2], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+0], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+2], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+0], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+2], ax
 
 
 ; fall thru
@@ -5704,32 +5704,32 @@ done_modding_shift_detail_code_masked:
 ; note: examples 3/6/9 overwrite "add ax, 0" which compiles to the opcode where
 ; you get 16 bit immediate starting at base + 1 instead of a 8 bit immediate starting at base + 2.
 mov   al, byte ptr ss:[_detailshiftitercount]
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_1+2 - OFFSET R_MASKED_STARTMARKER_], al
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_2+4 - OFFSET R_MASKED_STARTMARKER_], al
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_3+1 - OFFSET R_MASKED_STARTMARKER_], al
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_4+2 - OFFSET R_MASKED_STARTMARKER_], al
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_5+4 - OFFSET R_MASKED_STARTMARKER_], al
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_6+1 - OFFSET R_MASKED_STARTMARKER_], al
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_7+4 - OFFSET R_MASKED_STARTMARKER_], al
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_8+2 - OFFSET R_MASKED_STARTMARKER_], al
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_9+1 - OFFSET R_MASKED_STARTMARKER_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_1+2 - OFFSET R_MASK24_STARTMARKER_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_2+4 - OFFSET R_MASK24_STARTMARKER_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_3+1 - OFFSET R_MASK24_STARTMARKER_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_4+2 - OFFSET R_MASK24_STARTMARKER_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_5+4 - OFFSET R_MASK24_STARTMARKER_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_6+1 - OFFSET R_MASK24_STARTMARKER_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_7+4 - OFFSET R_MASK24_STARTMARKER_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_8+2 - OFFSET R_MASK24_STARTMARKER_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_9+1 - OFFSET R_MASK24_STARTMARKER_], al
 
 
 mov   ax, word ptr ss:[_detailshiftandval]
-mov   word ptr ds:[SELFMODIFY_MASKED_detailshiftandval_1+1 - OFFSET R_MASKED_STARTMARKER_], ax
-mov   word ptr ds:[SELFMODIFY_MASKED_detailshiftandval_2+1 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_detailshiftandval_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_detailshiftandval_2+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 
 mov   al, byte ptr ss:[_detailshift+1]
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_1+1 - OFFSET R_MASKED_STARTMARKER_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_1+1 - OFFSET R_MASK24_STARTMARKER_], al
 add   al, _quality_port_lookup
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_2+2 - OFFSET R_MASKED_STARTMARKER_], al
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_3+2 - OFFSET R_MASKED_STARTMARKER_], al
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_4+2 - OFFSET R_MASKED_STARTMARKER_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_2+2 - OFFSET R_MASK24_STARTMARKER_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_3+2 - OFFSET R_MASK24_STARTMARKER_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_4+2 - OFFSET R_MASK24_STARTMARKER_], al
 
 mov   ax, word ptr ss:[_viewheight]
-mov   word ptr ds:[SELFMODIFY_MASKED_viewheight_1+1 - OFFSET R_MASKED_STARTMARKER_], ax
-mov   word ptr ds:[SELFMODIFY_MASKED_viewheight_2+1 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_viewheight_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_viewheight_2+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 
 
@@ -5744,8 +5744,8 @@ endp
 
 ;R_WriteBackMaskedFrameConstants
 
-PROC R_WriteBackMaskedFrameConstants_ FAR
-PUBLIC R_WriteBackMaskedFrameConstants_ 
+PROC R_WriteBackMaskedFrameConstants24_ FAR
+PUBLIC R_WriteBackMaskedFrameConstants24_ 
 
 ; todo: merge this with some other code. maybe R_DrawMasked and use CS
 
@@ -5753,29 +5753,29 @@ mov      ax, DRAWFUZZCOL_AREA_SEGMENT
 mov      ds, ax
 
 
-ASSUME DS:R_MASKED_TEXT
+ASSUME DS:R_MASK24_TEXT
 
 ; get whole dword at the end here.
 
 mov   ax, word ptr ss:[_centery]
-mov   word ptr ds:[SELFMODIFY_MASKED_centery_1+3 - OFFSET R_MASKED_STARTMARKER_], ax
-mov   word ptr ds:[SELFMODIFY_MASKED_centery_2+1 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_centery_1+3 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_centery_2+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 mov   ax, word ptr ss:[_viewz+0]
-mov   word ptr ds:[SELFMODIFY_MASKED_viewz_lo_1+2 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_viewz_lo_1+2 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   ax, word ptr ss:[_viewz+2]
-mov   word ptr ds:[SELFMODIFY_MASKED_viewz_hi_1+1 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_viewz_hi_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 mov   ax, word ptr ss:[_destview+0]
-mov   word ptr ds:[SELFMODIFY_MASKED_destview_lo_1+2 - OFFSET R_MASKED_STARTMARKER_], ax
-mov   word ptr ds:[SELFMODIFY_MASKED_destview_lo_2+1 - OFFSET R_MASKED_STARTMARKER_], ax
-mov   word ptr ds:[SELFMODIFY_MASKED_destview_lo_3+1 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_destview_lo_1+2 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_destview_lo_2+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_destview_lo_3+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 mov   ax, word ptr ss:[_destview+2]
-mov   word ptr ds:[SELFMODIFY_MASKED_destview_hi_1+1 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_destview_hi_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 mov   al, byte ptr ss:[_extralight]
-mov   byte ptr ds:[SELFMODIFY_MASKED_extralight_1+1 - OFFSET R_MASKED_STARTMARKER_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_extralight_1+1 - OFFSET R_MASK24_STARTMARKER_], al
 
 mov   al, byte ptr ss:[_fixedcolormap]
 cmp   al, 0
@@ -5785,21 +5785,21 @@ do_no_fixedcolormap_selfmodify:
 ; replace with nop.
 ; nop 
 mov      ax, 0c089h 
-mov      word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_1 - OFFSET R_MASKED_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_2 - OFFSET R_MASKED_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_2 - OFFSET R_MASK24_STARTMARKER_], ax
 
 
 
 jmp done_with_fixedcolormap_selfmodify
 
 do_fixedcolormap_selfmodify:
-mov   byte ptr ds:[SELFMODIFY_MASKED_fixedcolormap_3+5 - OFFSET R_MASKED_STARTMARKER_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_fixedcolormap_3+5 - OFFSET R_MASK24_STARTMARKER_], al
 
 ; modify jmp in place.
 mov   ax, ((SELFMODIFY_MASKED_fixedcolormap_1_TARGET - SELFMODIFY_MASKED_fixedcolormap_1_AFTER) SHL 8) + 0EBh
-mov   word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_1 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_1 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   ah, (SELFMODIFY_MASKED_fixedcolormap_2_TARGET - SELFMODIFY_MASKED_fixedcolormap_2_AFTER)
-mov   word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_2 - OFFSET R_MASKED_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_2 - OFFSET R_MASK24_STARTMARKER_], ax
 
 
 
@@ -5821,8 +5821,8 @@ retf
 ENDP
 
 ; end marker for this asm file
-PROC R_MASKED_ENDMARKER_ FAR
-PUBLIC R_MASKED_ENDMARKER_ 
+PROC R_MASK24_ENDMARKER_ FAR
+PUBLIC R_MASK24_ENDMARKER_ 
 ENDP
 
 END

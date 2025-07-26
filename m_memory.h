@@ -554,7 +554,7 @@ FREEBYTES           7EE0:0000
 #define size_mobjposlist           (MAX_THINKERS * sizeof(mobj_pos_t))
 #define size_colfunc_jump_lookup   (sizeof(uint16_t) * SCREENHEIGHT)
 #define size_dc_yl_lookup          (sizeof(uint16_t) * SCREENHEIGHT)
-#define size_colfunc_function_area R_DrawColumnCodeSize - size_colfunc_jump_lookup - size_dc_yl_lookup
+#define size_colfunc_function_area R_DrawColumn24CodeSize - size_colfunc_jump_lookup - size_dc_yl_lookup
 
 // currently using:  2962
 // can stick lookup tables (800 bytes) in
@@ -636,13 +636,13 @@ FREEBYTES           7EE0:0000
 // EXTRA SPRITE/RENDER_MASKED DATA
 
 #define size_maskedpostdata             12238u
-#define size_drawfuzzcol_area           R_DrawFuzzColumnCodeSize
+#define size_drawfuzzcol_area           R_DrawFuzzColumn24CodeSize
 
 #define size_spritepostdatasizes        (MAX_SPRITE_LUMPS * sizeof(uint16_t))
 #define size_spritetotaldatasizes       (MAX_SPRITE_LUMPS * sizeof(uint16_t))
 #define size_maskedpostdataofs          size_maskedpixeldataofs
 #define size_maskedpixeldataofs         3456u
-#define size_maskedconstants_funcarea   R_MaskedConstantsCodeSize
+#define size_maskedconstants_funcarea   R_MaskedConstants24CodeSize
 
 #define maskedpostdata             ((byte __far*)              (0x84000000 ))
 #define drawfuzzcol_area           ((byte __far*)              MAKE_FULL_SEGMENT(maskedpostdata,             size_maskedpostdata))

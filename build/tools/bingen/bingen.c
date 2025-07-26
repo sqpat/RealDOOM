@@ -34,16 +34,18 @@ void __far R_SPAN0_STARTMARKER();
 void __far R_SPAN0_ENDMARKER();
 void __far R_DrawPlanes0 (void);
 void __far R_WriteBackViewConstantsSpan0 (void);
-void __far R_COLUMN_STARTMARKER();
-void __far R_COLUMN_ENDMARKER();
+void __far R_COLUMN24_STARTMARKER();
+void __far R_COLUMN24_ENDMARKER();
+void __far R_DrawColumn24 (void);
 void __far R_COLUMN0_STARTMARKER();
 void __far R_COLUMN0_ENDMARKER();
-void __far R_BSP_STARTMARKER();
-void __far R_BSP_ENDMARKER();
-void __far R_WriteBackViewConstants();
-void __far R_RenderPlayerView();
-void __far R_GetCompositeTexture_Far();
-void __far R_GetPatchTexture_Far();
+void __far R_DrawColumn0 (void);
+void __far R_BSP24_STARTMARKER();
+void __far R_BSP24_ENDMARKER();
+void __far R_WriteBackViewConstants24();
+void __far R_RenderPlayerView24();
+void __far R_GetCompositeTexture_Far24();
+void __far R_GetPatchTexture_Far24();
 void __far R_BSP0_STARTMARKER();
 void __far R_BSP0_ENDMARKER();
 void __far R_WriteBackViewConstants0();
@@ -51,16 +53,15 @@ void __far R_RenderPlayerView0();
 void __far R_GetCompositeTexture_Far0();
 void __far R_GetPatchTexture_Far0();
 
-void __far R_DrawColumn (void);
-void __far R_DrawColumn0 (void);
 void __far R_DrawSkyColumn(int16_t arg_dc_yh, int16_t arg_dc_yl);
-void __far R_MASKED_STARTMARKER();
-void __far R_MASKED_ENDMARKER();
+
+void __far R_MASK24_STARTMARKER();
+void __far R_MASK24_ENDMARKER();
 void __far R_DrawSkyPlane(int16_t minx, int16_t maxx, visplane_t __far*		pl);
 void __far R_DrawSkyPlaneDynamic(int16_t minx, int16_t maxx, visplane_t __far*		pl);
-void __near R_WriteBackMaskedFrameConstants();
-void __near R_WriteBackViewConstantsMasked();
-void __far R_DrawMasked();
+void __near R_WriteBackMaskedFrameConstants24();
+void __near R_WriteBackViewConstantsMasked24();
+void __far R_DrawMasked24();
 void __far R_MASK0_STARTMARKER();
 void __far R_MASK0_ENDMARKER();
 void __near R_WriteBackMaskedFrameConstants0();
@@ -198,11 +199,11 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	uint16_t maxmuscodesize = 0;
     int8_t i;
     
-    codesize[0] = FP_OFF(R_COLUMN_ENDMARKER) - FP_OFF(R_COLUMN_STARTMARKER);
+    codesize[0] = FP_OFF(R_COLUMN24_ENDMARKER) - FP_OFF(R_COLUMN24_STARTMARKER);
     // write filesize..
     fwrite(&codesize[0], 2, 1, fp);
     // write data
-    FAR_fwrite((byte __far *)R_COLUMN_STARTMARKER, codesize[0], 1, fp);
+    FAR_fwrite((byte __far *)R_COLUMN24_STARTMARKER, codesize[0], 1, fp);
 
     codesize[15] = FP_OFF(R_COLUMN0_ENDMARKER) - FP_OFF(R_COLUMN0_STARTMARKER);
     fwrite(&codesize[15], 2, 1, fp);
@@ -222,13 +223,13 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     FAR_fwrite((byte __far *)R_SPAN0_STARTMARKER, codesize[14], 1, fp); // write data
 
 
-    codesize[2] = FP_OFF(R_WriteBackViewConstantsMasked) - FP_OFF(R_MASKED_STARTMARKER);
+    codesize[2] = FP_OFF(R_WriteBackViewConstantsMasked24) - FP_OFF(R_MASK24_STARTMARKER);
     fwrite(&codesize[2], 2, 1, fp);
-    FAR_fwrite((byte __far *)R_MASKED_STARTMARKER, codesize[2], 1, fp);
+    FAR_fwrite((byte __far *)R_MASK24_STARTMARKER, codesize[2], 1, fp);
 
-    codesize[3] = FP_OFF(R_MASKED_ENDMARKER) - FP_OFF(R_WriteBackViewConstantsMasked);
+    codesize[3] = FP_OFF(R_MASK24_ENDMARKER) - FP_OFF(R_WriteBackViewConstantsMasked24);
     fwrite(&codesize[3], 2, 1, fp);
-    FAR_fwrite((byte __far *)R_WriteBackViewConstantsMasked, codesize[3], 1, fp); 
+    FAR_fwrite((byte __far *)R_WriteBackViewConstantsMasked24, codesize[3], 1, fp); 
 
     codesize[17] = FP_OFF(R_WriteBackViewConstantsMasked0) - FP_OFF(R_MASK0_STARTMARKER);
     fwrite(&codesize[17], 2, 1, fp);
@@ -243,9 +244,9 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fwrite(&codesize[4], 2, 1, fp);
     FAR_fwrite((byte __far *)R_DrawSkyColumn, codesize[4], 1, fp);
 
-    codesize[12] = FP_OFF(R_BSP_ENDMARKER) - FP_OFF(R_BSP_STARTMARKER);
+    codesize[12] = FP_OFF(R_BSP24_ENDMARKER) - FP_OFF(R_BSP24_STARTMARKER);
     fwrite(&codesize[12], 2, 1, fp);
-    FAR_fwrite((byte __far *)R_BSP_STARTMARKER, codesize[12], 1, fp);
+    FAR_fwrite((byte __far *)R_BSP24_STARTMARKER, codesize[12], 1, fp);
 
     codesize[16] = FP_OFF(R_BSP0_ENDMARKER) - FP_OFF(R_BSP0_STARTMARKER);
     fwrite(&codesize[16], 2, 1, fp);
@@ -313,123 +314,124 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	// bsp offsets
 
     // masked offsets
-	fprintf(fp, "#define R_DrawMaskedOffset                    0x%X\n", FP_OFF(R_DrawMasked)                    - FP_OFF(R_MASKED_STARTMARKER));
-	fprintf(fp, "#define R_DrawMasked0Offset                   0x%X\n", FP_OFF(R_DrawMasked0)                   - FP_OFF(R_MASK0_STARTMARKER));
+	fprintf(fp, "#define R_DrawMasked24Offset                    0x%X\n", FP_OFF(R_DrawMasked24)                    - FP_OFF(R_MASK24_STARTMARKER));
+	fprintf(fp, "#define R_DrawMasked0Offset                     0x%X\n", FP_OFF(R_DrawMasked0)                     - FP_OFF(R_MASK0_STARTMARKER));
 
     // masked selfmodifying code offsets
-    fprintf(fp, "#define R_WriteBackViewConstantsMaskedOffset  0x%X\n", FP_OFF(R_WriteBackViewConstantsMasked)  - FP_OFF(R_WriteBackViewConstantsMasked));
-    fprintf(fp, "#define R_WriteBackMaskedFrameConstantsOffset 0x%X\n", FP_OFF(R_WriteBackMaskedFrameConstants) - FP_OFF(R_WriteBackViewConstantsMasked));
-    fprintf(fp, "#define R_WriteBackViewConstantsMasked0Offset  0x%X\n", FP_OFF(R_WriteBackViewConstantsMasked0) - FP_OFF(R_WriteBackViewConstantsMasked0));
-    fprintf(fp, "#define R_WriteBackMaskedFrameConstants0Offset 0x%X\n", FP_OFF(R_WriteBackMaskedFrameConstants0)- FP_OFF(R_WriteBackViewConstantsMasked0));
+    fprintf(fp, "#define R_WriteBackViewConstantsMasked24Offset  0x%X\n", FP_OFF(R_WriteBackViewConstantsMasked24)  - FP_OFF(R_WriteBackViewConstantsMasked24));
+    fprintf(fp, "#define R_WriteBackMaskedFrameConstants24Offset 0x%X\n", FP_OFF(R_WriteBackMaskedFrameConstants24) - FP_OFF(R_WriteBackViewConstantsMasked24));
+    fprintf(fp, "#define R_WriteBackViewConstantsMasked0Offset   0x%X\n", FP_OFF(R_WriteBackViewConstantsMasked0)   - FP_OFF(R_WriteBackViewConstantsMasked0));
+    fprintf(fp, "#define R_WriteBackMaskedFrameConstants0Offset  0x%X\n", FP_OFF(R_WriteBackMaskedFrameConstants0)  - FP_OFF(R_WriteBackViewConstantsMasked0));
 
     // span offsets
-	fprintf(fp, "#define R_DrawPlanes24Offset                  0x%X\n", FP_OFF(R_DrawPlanes24)                  - FP_OFF(R_SPAN24_STARTMARKER));
-	fprintf(fp, "#define R_WriteBackViewConstantsSpan24Offset  0x%X\n", FP_OFF(R_WriteBackViewConstantsSpan24)  - FP_OFF(R_SPAN24_STARTMARKER));
+	fprintf(fp, "#define R_DrawPlanes24Offset                    0x%X\n", FP_OFF(R_DrawPlanes24)                    - FP_OFF(R_SPAN24_STARTMARKER));
+	fprintf(fp, "#define R_WriteBackViewConstantsSpan24Offset    0x%X\n", FP_OFF(R_WriteBackViewConstantsSpan24)    - FP_OFF(R_SPAN24_STARTMARKER));
 
-	fprintf(fp, "#define R_DrawPlanes16Offset                  0x%X\n", FP_OFF(R_DrawPlanes16)                  - FP_OFF(R_SPAN16_STARTMARKER));
-	fprintf(fp, "#define R_WriteBackViewConstantsSpan16Offset  0x%X\n", FP_OFF(R_WriteBackViewConstantsSpan16)  - FP_OFF(R_SPAN16_STARTMARKER));
+	fprintf(fp, "#define R_DrawPlanes16Offset                    0x%X\n", FP_OFF(R_DrawPlanes16)                    - FP_OFF(R_SPAN16_STARTMARKER));
+	fprintf(fp, "#define R_WriteBackViewConstantsSpan16Offset    0x%X\n", FP_OFF(R_WriteBackViewConstantsSpan16)    - FP_OFF(R_SPAN16_STARTMARKER));
 
-	fprintf(fp, "#define R_DrawPlanes0Offset                   0x%X\n", FP_OFF(R_DrawPlanes0)                   - FP_OFF(R_SPAN0_STARTMARKER));
-	fprintf(fp, "#define R_WriteBackViewConstantsSpan0Offset   0x%X\n", FP_OFF(R_WriteBackViewConstantsSpan0)   - FP_OFF(R_SPAN0_STARTMARKER));
+	fprintf(fp, "#define R_DrawPlanes0Offset                     0x%X\n", FP_OFF(R_DrawPlanes0)                     - FP_OFF(R_SPAN0_STARTMARKER));
+	fprintf(fp, "#define R_WriteBackViewConstantsSpan0Offset     0x%X\n", FP_OFF(R_WriteBackViewConstantsSpan0)     - FP_OFF(R_SPAN0_STARTMARKER));
 
     // sky offsets
-	fprintf(fp, "#define R_DrawSkyColumnOffset                 0x%X\n", FP_OFF(R_DrawSkyColumn)                - FP_OFF(R_DrawSkyColumn));
-	fprintf(fp, "#define R_DrawSkyPlaneOffset                  0x%X\n", FP_OFF(R_DrawSkyPlane)                 - FP_OFF(R_DrawSkyColumn));
-	fprintf(fp, "#define R_DrawSkyPlaneDynamicOffset           0x%X\n", FP_OFF(R_DrawSkyPlaneDynamic)          - FP_OFF(R_DrawSkyColumn));
+	fprintf(fp, "#define R_DrawSkyColumnOffset                   0x%X\n", FP_OFF(R_DrawSkyColumn)                   - FP_OFF(R_DrawSkyColumn));
+	fprintf(fp, "#define R_DrawSkyPlaneOffset                    0x%X\n", FP_OFF(R_DrawSkyPlane)                    - FP_OFF(R_DrawSkyColumn));
+	fprintf(fp, "#define R_DrawSkyPlaneDynamicOffset             0x%X\n", FP_OFF(R_DrawSkyPlaneDynamic)             - FP_OFF(R_DrawSkyColumn));
 
     // BSP offsets
-	fprintf(fp, "#define R_WriteBackViewConstantsOffset        0x%X\n", FP_OFF(R_WriteBackViewConstants)       - FP_OFF(R_BSP_STARTMARKER));
-	fprintf(fp, "#define R_RenderPlayerViewOffset              0x%X\n", FP_OFF(R_RenderPlayerView)             - FP_OFF(R_BSP_STARTMARKER));
-	fprintf(fp, "#define R_GetCompositeTextureOffset           0x%X\n", FP_OFF(R_GetCompositeTexture_Far)      - FP_OFF(R_BSP_STARTMARKER));
-	fprintf(fp, "#define R_GetPatchTextureOffset               0x%X\n", FP_OFF(R_GetPatchTexture_Far)          - FP_OFF(R_BSP_STARTMARKER));
+	fprintf(fp, "#define R_WriteBackViewConstants24Offset        0x%X\n", FP_OFF(R_WriteBackViewConstants24)        - FP_OFF(R_BSP24_STARTMARKER));
+	fprintf(fp, "#define R_RenderPlayerView24Offset              0x%X\n", FP_OFF(R_RenderPlayerView24)              - FP_OFF(R_BSP24_STARTMARKER));
+	fprintf(fp, "#define R_GetCompositeTexture24Offset           0x%X\n", FP_OFF(R_GetCompositeTexture_Far24)       - FP_OFF(R_BSP24_STARTMARKER));
+	fprintf(fp, "#define R_GetPatchTexture24Offset               0x%X\n", FP_OFF(R_GetPatchTexture_Far24)           - FP_OFF(R_BSP24_STARTMARKER));
 
-	fprintf(fp, "#define R_WriteBackViewConstants0Offset       0x%X\n", FP_OFF(R_WriteBackViewConstants0)      - FP_OFF(R_BSP0_STARTMARKER));
-	fprintf(fp, "#define R_RenderPlayerView0Offset             0x%X\n", FP_OFF(R_RenderPlayerView0)            - FP_OFF(R_BSP0_STARTMARKER));
-	fprintf(fp, "#define R_GetCompositeTexture0Offset          0x%X\n", FP_OFF(R_GetCompositeTexture_Far0)     - FP_OFF(R_BSP0_STARTMARKER));
-	fprintf(fp, "#define R_GetPatchTexture0Offset              0x%X\n", FP_OFF(R_GetPatchTexture_Far0)         - FP_OFF(R_BSP0_STARTMARKER));
+	fprintf(fp, "#define R_WriteBackViewConstants0Offset         0x%X\n", FP_OFF(R_WriteBackViewConstants0)         - FP_OFF(R_BSP0_STARTMARKER));
+	fprintf(fp, "#define R_RenderPlayerView0Offset               0x%X\n", FP_OFF(R_RenderPlayerView0)               - FP_OFF(R_BSP0_STARTMARKER));
+	fprintf(fp, "#define R_GetCompositeTexture0Offset            0x%X\n", FP_OFF(R_GetCompositeTexture_Far0)        - FP_OFF(R_BSP0_STARTMARKER));
+	fprintf(fp, "#define R_GetPatchTexture0Offset                0x%X\n", FP_OFF(R_GetPatchTexture_Far0)            - FP_OFF(R_BSP0_STARTMARKER));
 
 
     // intermission/ wi stuff offsets
-    fprintf(fp, "#define WI_StartOffset                        0x%X\n", FP_OFF(WI_Start)                       - FP_OFF(WI_STARTMARKER));
-    fprintf(fp, "#define WI_TickerOffset                       0x%X\n", FP_OFF(WI_Ticker)                      - FP_OFF(WI_STARTMARKER));
-    fprintf(fp, "#define WI_DrawerOffset                       0x%X\n", FP_OFF(WI_Drawer)                      - FP_OFF(WI_STARTMARKER));
+    fprintf(fp, "#define WI_StartOffset                          0x%X\n", FP_OFF(WI_Start)                          - FP_OFF(WI_STARTMARKER));
+    fprintf(fp, "#define WI_TickerOffset                         0x%X\n", FP_OFF(WI_Ticker)                         - FP_OFF(WI_STARTMARKER));
+    fprintf(fp, "#define WI_DrawerOffset                         0x%X\n", FP_OFF(WI_Drawer)                         - FP_OFF(WI_STARTMARKER));
 
 
     // wipe offsets
-    fprintf(fp, "#define wipe_StartScreenOffset                0x%X\n", FP_OFF(wipe_StartScreen)               - FP_OFF(I_ReadScreen));
-	fprintf(fp, "#define wipe_WipeLoopOffset                   0x%X\n", FP_OFF(wipe_WipeLoop)                  - FP_OFF(I_ReadScreen));
+    fprintf(fp, "#define wipe_StartScreenOffset                  0x%X\n", FP_OFF(wipe_StartScreen)                  - FP_OFF(I_ReadScreen));
+	fprintf(fp, "#define wipe_WipeLoopOffset                     0x%X\n", FP_OFF(wipe_WipeLoop)                     - FP_OFF(I_ReadScreen));
 
     // finale offsets
-    fprintf(fp, "#define F_StartFinaleOffset                   0x%X\n", FP_OFF(F_StartFinale)                  - FP_OFF(F_START));
-    fprintf(fp, "#define F_ResponderOffset                     0x%X\n", FP_OFF(F_Responder)                    - FP_OFF(F_START));
-    fprintf(fp, "#define F_TickerOffset                        0x%X\n", FP_OFF(F_Ticker)                       - FP_OFF(F_START));
-    fprintf(fp, "#define F_DrawerOffset                        0x%X\n", FP_OFF(F_Drawer)                       - FP_OFF(F_START));
+    fprintf(fp, "#define F_StartFinaleOffset                     0x%X\n", FP_OFF(F_StartFinale)                     - FP_OFF(F_START));
+    fprintf(fp, "#define F_ResponderOffset                       0x%X\n", FP_OFF(F_Responder)                       - FP_OFF(F_START));
+    fprintf(fp, "#define F_TickerOffset                          0x%X\n", FP_OFF(F_Ticker)                          - FP_OFF(F_START));
+    fprintf(fp, "#define F_DrawerOffset                          0x%X\n", FP_OFF(F_Drawer)                          - FP_OFF(F_START));
 
     // load offsets
-    fprintf(fp, "#define P_UnArchivePlayersOffset              0x%X\n", FP_OFF(P_UnArchivePlayers)             - FP_OFF(P_LOADSTART));
-    fprintf(fp, "#define P_UnArchiveWorldOffset                0x%X\n", FP_OFF(P_UnArchiveWorld)               - FP_OFF(P_LOADSTART));
-    fprintf(fp, "#define P_UnArchiveThinkersOffset             0x%X\n", FP_OFF(P_UnArchiveThinkers)            - FP_OFF(P_LOADSTART));
-    fprintf(fp, "#define P_UnArchiveSpecialsOffset             0x%X\n", FP_OFF(P_UnArchiveSpecials)            - FP_OFF(P_LOADSTART));
-    fprintf(fp, "#define P_ArchivePlayersOffset                0x%X\n", FP_OFF(P_ArchivePlayers)               - FP_OFF(P_LOADSTART));
-    fprintf(fp, "#define P_ArchiveWorldOffset                  0x%X\n", FP_OFF(P_ArchiveWorld)                 - FP_OFF(P_LOADSTART));
-    fprintf(fp, "#define P_ArchiveThinkersOffset               0x%X\n", FP_OFF(P_ArchiveThinkers)              - FP_OFF(P_LOADSTART));
-    fprintf(fp, "#define P_ArchiveSpecialsOffset               0x%X\n", FP_OFF(P_ArchiveSpecials)              - FP_OFF(P_LOADSTART));
+    fprintf(fp, "#define P_UnArchivePlayersOffset                0x%X\n", FP_OFF(P_UnArchivePlayers)                - FP_OFF(P_LOADSTART));
+    fprintf(fp, "#define P_UnArchiveWorldOffset                  0x%X\n", FP_OFF(P_UnArchiveWorld)                  - FP_OFF(P_LOADSTART));
+    fprintf(fp, "#define P_UnArchiveThinkersOffset               0x%X\n", FP_OFF(P_UnArchiveThinkers)               - FP_OFF(P_LOADSTART));
+    fprintf(fp, "#define P_UnArchiveSpecialsOffset               0x%X\n", FP_OFF(P_UnArchiveSpecials)               - FP_OFF(P_LOADSTART));
+    fprintf(fp, "#define P_ArchivePlayersOffset                  0x%X\n", FP_OFF(P_ArchivePlayers)                  - FP_OFF(P_LOADSTART));
+    fprintf(fp, "#define P_ArchiveWorldOffset                    0x%X\n", FP_OFF(P_ArchiveWorld)                    - FP_OFF(P_LOADSTART));
+    fprintf(fp, "#define P_ArchiveThinkersOffset                 0x%X\n", FP_OFF(P_ArchiveThinkers)                 - FP_OFF(P_LOADSTART));
+    fprintf(fp, "#define P_ArchiveSpecialsOffset                 0x%X\n", FP_OFF(P_ArchiveSpecials)                 - FP_OFF(P_LOADSTART));
 
     // s_init offsets
-    fprintf(fp, "#define LoadSFXWadLumpsOffset                 0x%X\n", FP_OFF(LoadSFXWadLumps)                - FP_OFF(S_INIT_STARTMARKER));
+    fprintf(fp, "#define LoadSFXWadLumpsOffset                   0x%X\n", FP_OFF(LoadSFXWadLumps)                   - FP_OFF(S_INIT_STARTMARKER));
 
     // musload offset
-    fprintf(fp, "#define S_ActuallyChangeMusicOffset           0x%X\n", FP_OFF(S_ActuallyChangeMusic)          - FP_OFF(SM_LOAD_STARTMARKER));
+    fprintf(fp, "#define S_ActuallyChangeMusicOffset             0x%X\n", FP_OFF(S_ActuallyChangeMusic)             - FP_OFF(SM_LOAD_STARTMARKER));
 
     // physics high code offsets
-    fprintf(fp, "#define P_CheckSightOffset                    0x%X\n", FP_OFF(P_CheckSight)                   - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_UnsetThingPositionOffset            0x%X\n", FP_OFF(P_UnsetThingPosition)           - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_SetThingPositionFarOffset           0x%X\n", FP_OFF(P_SetThingPositionFar)          - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define R_PointInSubsectorOffset              0x%X\n", FP_OFF(R_PointInSubsector)             - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_BlockThingsIteratorOffset           0x%X\n", FP_OFF(P_BlockThingsIterator)          - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_TryMoveOffset                       0x%X\n", FP_OFF(P_TryMove)                      - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_CheckPositionOffset                 0x%X\n", FP_OFF(P_CheckPosition)                - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_SlideMoveOffset                     0x%X\n", FP_OFF(P_SlideMove)                    - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_TeleportMoveOffset                  0x%X\n", FP_OFF(P_TeleportMove)                 - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_UseLinesOffset                      0x%X\n", FP_OFF(P_UseLines)                     - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_RadiusAttackOffset                  0x%X\n", FP_OFF(P_RadiusAttack)                 - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_ChangeSectorOffset                  0x%X\n", FP_OFF(P_ChangeSector)                 - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_CheckSightOffset                      0x%X\n", FP_OFF(P_CheckSight)                      - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_UnsetThingPositionOffset              0x%X\n", FP_OFF(P_UnsetThingPosition)              - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_SetThingPositionFarOffset             0x%X\n", FP_OFF(P_SetThingPositionFar)             - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define R_PointInSubsectorOffset                0x%X\n", FP_OFF(R_PointInSubsector)                - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_BlockThingsIteratorOffset             0x%X\n", FP_OFF(P_BlockThingsIterator)             - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_TryMoveOffset                         0x%X\n", FP_OFF(P_TryMove)                         - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_CheckPositionOffset                   0x%X\n", FP_OFF(P_CheckPosition)                   - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_SlideMoveOffset                       0x%X\n", FP_OFF(P_SlideMove)                       - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_TeleportMoveOffset                    0x%X\n", FP_OFF(P_TeleportMove)                    - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_UseLinesOffset                        0x%X\n", FP_OFF(P_UseLines)                        - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_RadiusAttackOffset                    0x%X\n", FP_OFF(P_RadiusAttack)                    - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_ChangeSectorOffset                    0x%X\n", FP_OFF(P_ChangeSector)                    - FP_OFF(P_SIGHT_STARTMARKER));
     
     // fprintf(fp, "#define P_SpawnPuffOffset                     0x%X\n", FP_OFF(P_SpawnPuff)                    - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_XYMovementOffset                    0x%X\n", FP_OFF(P_XYMovement)                   - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_ZMovementOffset                     0x%X\n", FP_OFF(P_ZMovement)                    - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_ExplodeMissileOffset                0x%X\n", FP_OFF(P_ExplodeMissile)               - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_NightmareRespawnOffset              0x%X\n", FP_OFF(P_NightmareRespawn)             - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_CheckMissileSpawnOffset             0x%X\n", FP_OFF(P_CheckMissileSpawn)            - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_SpawnMissileOffset                  0x%X\n", FP_OFF(P_SpawnMissile)                 - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_SpawnPlayerMissileOffset            0x%X\n", FP_OFF(P_SpawnPlayerMissile)           - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_XYMovementOffset                      0x%X\n", FP_OFF(P_XYMovement)                      - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_ZMovementOffset                       0x%X\n", FP_OFF(P_ZMovement)                       - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_ExplodeMissileOffset                  0x%X\n", FP_OFF(P_ExplodeMissile)                  - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_NightmareRespawnOffset                0x%X\n", FP_OFF(P_NightmareRespawn)                - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_CheckMissileSpawnOffset               0x%X\n", FP_OFF(P_CheckMissileSpawn)               - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_SpawnMissileOffset                    0x%X\n", FP_OFF(P_SpawnMissile)                    - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_SpawnPlayerMissileOffset              0x%X\n", FP_OFF(P_SpawnPlayerMissile)              - FP_OFF(P_SIGHT_STARTMARKER));
 
-    fprintf(fp, "#define P_MovePspritesOffset                  0x%X\n", FP_OFF(P_MovePsprites)                 - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_DropWeaponFarOffset                 0x%X\n", FP_OFF(P_DropWeaponFar)                - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_MovePspritesOffset                    0x%X\n", FP_OFF(P_MovePsprites)                    - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_DropWeaponFarOffset                   0x%X\n", FP_OFF(P_DropWeaponFar)                   - FP_OFF(P_SIGHT_STARTMARKER));
 
-    fprintf(fp, "#define P_MobjThinkerOffset                   0x%X\n", FP_OFF(P_MobjThinker)                  - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_RemoveMobjOffset                    0x%X\n", FP_OFF(P_RemoveMobj)                   - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_SpawnMobjOffset                     0x%X\n", FP_OFF(P_SpawnMobj)                    - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_SpawnMapThingOffset                 0x%X\n", FP_OFF(P_SpawnMapThing)                - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_SetMobjStateOffset                  0x%X\n", FP_OFF(P_SetMobjState)                 - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_MobjThinkerOffset                     0x%X\n", FP_OFF(P_MobjThinker)                     - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_RemoveMobjOffset                      0x%X\n", FP_OFF(P_RemoveMobj)                      - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_SpawnMobjOffset                       0x%X\n", FP_OFF(P_SpawnMobj)                       - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_SpawnMapThingOffset                   0x%X\n", FP_OFF(P_SpawnMapThing)                   - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_SetMobjStateOffset                    0x%X\n", FP_OFF(P_SetMobjState)                    - FP_OFF(P_SIGHT_STARTMARKER));
     
     
 
 
 	fprintf(fp, "\n");
  
-	fprintf(fp, "#define R_DrawColumnCodeSize           0x%X\n", codesize[0]);
+	fprintf(fp, "#define R_DrawColumn24CodeSize         0x%X\n", codesize[0]);
 	fprintf(fp, "#define R_DrawColumn0CodeSize          0x%X\n", codesize[15]);
     fprintf(fp, "#define R_DrawSpan24CodeSize           0x%X\n", codesize[1]);
     fprintf(fp, "#define R_DrawSpan16CodeSize           0x%X\n", codesize[13]);
     fprintf(fp, "#define R_DrawSpan0CodeSize            0x%X\n", codesize[14]);
-	fprintf(fp, "#define R_DrawFuzzColumnCodeSize       0x%X\n", codesize[2]);
-	fprintf(fp, "#define R_MaskedConstantsCodeSize      0x%X\n", codesize[3]);
+	fprintf(fp, "#define R_DrawFuzzColumn24CodeSize     0x%X\n", codesize[2]);
+	fprintf(fp, "#define R_MaskedConstants24CodeSize    0x%X\n", codesize[3]);
 	fprintf(fp, "#define R_DrawFuzzColumn0CodeSize      0x%X\n", codesize[17]);
 	fprintf(fp, "#define R_MaskedConstants0CodeSize     0x%X\n", codesize[18]);
 	fprintf(fp, "#define R_DrawSkyColumnCodeSize        0x%X\n", codesize[4]);
-	fprintf(fp, "#define R_BSPCodeSize                  0x%X\n", codesize[12]);
+	fprintf(fp, "#define R_BSP24CodeSize                0x%X\n", codesize[12]);
 	fprintf(fp, "#define R_BSP0CodeSize                 0x%X\n", codesize[16]);
+
 	fprintf(fp, "#define WI_StuffCodeSize               0x%X\n", codesize[5]);
 	fprintf(fp, "#define PSightCodeSize                 0x%X\n", codesize[6]);
 	fprintf(fp, "#define WipeCodeSize                   0x%X\n", codesize[7]);
@@ -444,34 +446,34 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     printf("Generated m_offset.h file\n");
 
     fp = fopen("m_offset.inc", "wb");
-	fprintf(fp, "R_DRAWPLANES24OFFSET = 0%Xh\n",                    FP_OFF(R_DrawPlanes24)                  - FP_OFF(R_SPAN24_STARTMARKER));
-	fprintf(fp, "R_DRAWPLANES16OFFSET = 0%Xh\n",                    FP_OFF(R_DrawPlanes16)                  - FP_OFF(R_SPAN16_STARTMARKER));
-	fprintf(fp, "R_DRAWPLANES0OFFSET = 0%Xh\n",                     FP_OFF(R_DrawPlanes0)                   - FP_OFF(R_SPAN0_STARTMARKER));
-	fprintf(fp, "R_GETCOMPOSITETEXTUREOFFSET = 0%Xh\n",             FP_OFF(R_GetCompositeTexture_Far)       - FP_OFF(R_BSP_STARTMARKER));
-	fprintf(fp, "R_GETPATCHTEXTUREOFFSET = 0%Xh\n",                 FP_OFF(R_GetPatchTexture_Far)           - FP_OFF(R_BSP_STARTMARKER));
-	fprintf(fp, "R_DRAWMASKEDOFFSET = 0%Xh\n",                      FP_OFF(R_DrawMasked)                    - FP_OFF(R_MASKED_STARTMARKER));
-	fprintf(fp, "R_DRAWMASKED0OFFSET = 0%Xh\n",                     FP_OFF(R_DrawMasked0)                   - FP_OFF(R_MASK0_STARTMARKER));
-    fprintf(fp, "R_WRITEBACKMASKEDFRAMECONSTANTSOFFSET = 0%Xh\n",   FP_OFF(R_WriteBackMaskedFrameConstants) - FP_OFF(R_WriteBackViewConstantsMasked));
-    fprintf(fp, "P_CHECKPOSITIONOFFSET = 0%Xh\n",                   FP_OFF(P_CheckPosition)                 - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "R_POINTINSUBSECTOROFFSET = 0%Xh\n",                FP_OFF(R_PointInSubsector)              - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "P_TRYMOVEOFFSET = 0%Xh\n",                         FP_OFF(P_TryMove)                       - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "P_SLIDEMOVEOFFSET = 0%Xh\n",                       FP_OFF(P_SlideMove)                     - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "P_CHECKMISSILESPAWNOFFSET = 0%Xh\n",               FP_OFF(P_CheckMissileSpawn)             - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "F_RESPONDEROFFSET = 0%Xh\n",                       FP_OFF(F_Responder)                     - FP_OFF(F_START));
-    fprintf(fp, "P_BLOCKTHINGSITERATOROFFSET = 0%Xh\n",             FP_OFF(P_BlockThingsIterator)           - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "P_SPAWNMISSILEOFFSET = 0%Xh\n",                    FP_OFF(P_SpawnMissile)                  - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "P_UNSETTHINGPOSITIONOFFSET = 0%Xh\n",              FP_OFF(P_UnsetThingPosition)            - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "P_SETTHINGPOSITIONFAROFFSET = 0%Xh\n",             FP_OFF(P_SetThingPositionFar)           - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "P_RADIUSATTACKOFFSET = 0%Xh\n",                    FP_OFF(P_RadiusAttack)                  - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "P_TELEPORTMOVEOFFSET = 0%Xh\n",                    FP_OFF(P_TeleportMove)                  - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "P_XYMOVEMENTOFFSET = 0%Xh\n",                      FP_OFF(P_XYMovement)                    - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "P_ZMOVEMENTOFFSET = 0%Xh\n",                       FP_OFF(P_ZMovement)                     - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "P_NIGHTMARERESPAWNOFFSET = 0%Xh\n",                FP_OFF(P_NightmareRespawn)              - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "P_MOBJTHINKEROFFSET = 0%Xh\n",                     FP_OFF(P_MobjThinker)                   - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "P_REMOVEMOBJOFFSET = 0%Xh\n",                      FP_OFF(P_RemoveMobj)                    - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "P_SPAWNMOBJOFFSET = 0%Xh\n",                       FP_OFF(P_SpawnMobj)                     - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "P_SPAWNMAPTHINGOFFSET = 0%Xh\n",                   FP_OFF(P_SpawnMapThing)                 - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "P_SETMOBJSTATEOFFSET = 0%Xh\n",                    FP_OFF(P_SetMobjState)                  - FP_OFF(P_SIGHT_STARTMARKER));
+	fprintf(fp, "R_DRAWPLANES24OFFSET = 0%Xh\n",                    FP_OFF(R_DrawPlanes24)                    - FP_OFF(R_SPAN24_STARTMARKER));
+	fprintf(fp, "R_DRAWPLANES16OFFSET = 0%Xh\n",                    FP_OFF(R_DrawPlanes16)                    - FP_OFF(R_SPAN16_STARTMARKER));
+	fprintf(fp, "R_DRAWPLANES0OFFSET = 0%Xh\n",                     FP_OFF(R_DrawPlanes0)                     - FP_OFF(R_SPAN0_STARTMARKER));
+	fprintf(fp, "R_GETCOMPOSITETEXTURE24OFFSET = 0%Xh\n",           FP_OFF(R_GetCompositeTexture_Far24)       - FP_OFF(R_BSP24_STARTMARKER));
+	fprintf(fp, "R_GETPATCHTEXTURE24OFFSET = 0%Xh\n",               FP_OFF(R_GetPatchTexture_Far24)           - FP_OFF(R_BSP24_STARTMARKER));
+	fprintf(fp, "R_DRAWMASKED24OFFSET = 0%Xh\n",                    FP_OFF(R_DrawMasked24)                    - FP_OFF(R_MASK24_STARTMARKER));
+	fprintf(fp, "R_DRAWMASKED0OFFSET = 0%Xh\n",                     FP_OFF(R_DrawMasked0)                     - FP_OFF(R_MASK0_STARTMARKER));
+    fprintf(fp, "R_WRITEBACKMASKEDFRAMECONSTANTS24OFFSET = 0%Xh\n", FP_OFF(R_WriteBackMaskedFrameConstants24) - FP_OFF(R_WriteBackViewConstantsMasked24));
+    fprintf(fp, "P_CHECKPOSITIONOFFSET = 0%Xh\n",                   FP_OFF(P_CheckPosition)                   - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "R_POINTINSUBSECTOROFFSET = 0%Xh\n",                FP_OFF(R_PointInSubsector)                - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_TRYMOVEOFFSET = 0%Xh\n",                         FP_OFF(P_TryMove)                         - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_SLIDEMOVEOFFSET = 0%Xh\n",                       FP_OFF(P_SlideMove)                       - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_CHECKMISSILESPAWNOFFSET = 0%Xh\n",               FP_OFF(P_CheckMissileSpawn)               - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "F_RESPONDEROFFSET = 0%Xh\n",                       FP_OFF(F_Responder)                       - FP_OFF(F_START));
+    fprintf(fp, "P_BLOCKTHINGSITERATOROFFSET = 0%Xh\n",             FP_OFF(P_BlockThingsIterator)             - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_SPAWNMISSILEOFFSET = 0%Xh\n",                    FP_OFF(P_SpawnMissile)                    - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_UNSETTHINGPOSITIONOFFSET = 0%Xh\n",              FP_OFF(P_UnsetThingPosition)              - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_SETTHINGPOSITIONFAROFFSET = 0%Xh\n",             FP_OFF(P_SetThingPositionFar)             - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_RADIUSATTACKOFFSET = 0%Xh\n",                    FP_OFF(P_RadiusAttack)                    - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_TELEPORTMOVEOFFSET = 0%Xh\n",                    FP_OFF(P_TeleportMove)                    - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_XYMOVEMENTOFFSET = 0%Xh\n",                      FP_OFF(P_XYMovement)                      - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_ZMOVEMENTOFFSET = 0%Xh\n",                       FP_OFF(P_ZMovement)                       - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_NIGHTMARERESPAWNOFFSET = 0%Xh\n",                FP_OFF(P_NightmareRespawn)                - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_MOBJTHINKEROFFSET = 0%Xh\n",                     FP_OFF(P_MobjThinker)                     - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_REMOVEMOBJOFFSET = 0%Xh\n",                      FP_OFF(P_RemoveMobj)                      - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_SPAWNMOBJOFFSET = 0%Xh\n",                       FP_OFF(P_SpawnMobj)                       - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_SPAWNMAPTHINGOFFSET = 0%Xh\n",                   FP_OFF(P_SpawnMapThing)                   - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_SETMOBJSTATEOFFSET = 0%Xh\n",                    FP_OFF(P_SetMobjState)                    - FP_OFF(P_SIGHT_STARTMARKER));
     
 
     fclose(fp);
