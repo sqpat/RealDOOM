@@ -284,21 +284,6 @@ mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset0+1))+COLFUNC_JUMP_AND_FUNCTI
 ; or can we do this in an outer func without this instrction?
 
 
-; if we make a separate drawcol masked we can use a constant here.
-
-xchg  ax, bx    ; dc_yl in ax
-mov   si, dx    ; dc_texturemid+2 in si
-
-cli 	        ; disable interrupts
-push  bp
-mov   bp, cx    ; dc_textutremid in cx
-
-; dynamic call lookuptable based on used colormaps address being CS:00
-
-SELFMODIFY_MASKED_set_dc_iscale_lo:
-mov   bx, 01000h ; dc_iscale +0
-SELFMODIFY_MASKED_set_dc_iscale_hi:
-mov   cx, 01000h ; dc_iscale +1
 
 
 db 02Eh  ; cs segment override
@@ -308,8 +293,7 @@ SELFMODIFY_MASKED_multi_set_colormap_index_jump:
 dw 0000h
 ; addr 0000 + first byte (4x colormap.)
 
-pop   bp
-sti             ; re-enable interrupts
+
 pop   di 
 pop   si
 pop   dx
@@ -494,17 +478,7 @@ mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset0+1))+COLFUNC_JUMP_AND_FUNCTI
 ; or can we do this in an outer func without this instrction?
  
 
-; if we make a separate drawcol masked we can use a constant here.
 
-xchg  ax, bx    ; dc_yl in ax
-; gross lol. but again - rare function. in exchange the common function is faster.
-mov   si, word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1+1 - OFFSET R_MASK0_STARTMARKER_]
-mov   bx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK0_STARTMARKER_]
-mov   cx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK0_STARTMARKER_]
-
-cli 	        ; disable interrupts
-push  bp
-mov   bp, word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1+1 - OFFSET R_MASK0_STARTMARKER_]
 
 
 
@@ -517,8 +491,6 @@ SELFMODIFY_MASKED_set_colormap_index_jump:
 dw 0000h
 ; addr 0000 + first byte (4x colormap.)
 
-pop   bp
-sti             ; re-enable interrupts
 
 
 
@@ -760,34 +732,9 @@ mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_MA
 
 
 
-les   ax, dword ptr ds:[si + 01Eh]   ; vis->xiscale
-mov   dx, es
-
-; labs
-or    dx, dx
-jge   xiscale_already_positive
-neg   ax
-adc   dx, 0
-neg   dx
-xiscale_already_positive:
-
-;; todo proper jump thing
-cmp byte ptr ds:[_detailshift], 1
-jb xiscale_shift_done
-je do_xiscale_shift_once
-; fall thru do twice
-sar   dx, 1
-rcr   ax, 1
-do_xiscale_shift_once:
-sar   dx, 1
-rcr   ax, 1
-xiscale_shift_done:
 
 
-mov   dh, dl
-mov   dl, ah
-mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK0_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK0_STARTMARKER_], dx
+
 
 
 
@@ -1798,6 +1745,7 @@ cmp   si, MAXSHORT			; dont render nonmasked columns here.
 je   increment_inner_loop
 SELFMODIFY_MASKED_fixedcolormap_1:
 jne   got_colormap ; cmp [_fixedcolormap], 0 -> jne gotcolormap
+
 SELFMODIFY_MASKED_fixedcolormap_1_AFTER:
 ; calculate colormap
 cmp   word ptr ds:[_spryscale + 2], 3
@@ -1857,14 +1805,7 @@ mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_MA
 SELFMODIFY_MASKED_fixedcolormap_1_TARGET:
 got_colormap:
 
-mov   bx, word ptr ds:[_spryscale]
-mov   cx, word ptr ds:[_spryscale + 2]
-call  FastDiv3232FFFF_
 
-mov   dh, dl
-mov   dl, ah
-mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK0_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK0_STARTMARKER_], dx
 
 
 mov   bx, si  ; bx gets a copy of texture column?

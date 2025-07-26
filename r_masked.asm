@@ -289,7 +289,7 @@ mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset+1))+COLFUNC_JUMP_AND_FUNCTIO
 xchg  ax, bx    ; dc_yl in ax
 mov   si, dx    ; dc_texturemid+2 in si
 
-cli 	        ; disable interrupts
+
 push  bp
 mov   bp, cx    ; dc_textutremid in cx
 
@@ -309,7 +309,7 @@ dw 0000h
 ; addr 0000 + first byte (4x colormap.)
 
 pop   bp
-sti             ; re-enable interrupts
+
 pop   di 
 pop   si
 pop   dx
@@ -502,7 +502,7 @@ mov   si, word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1+1 - OFFSET R_MASKED_
 mov   bx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASKED_STARTMARKER_]
 mov   cx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASKED_STARTMARKER_]
 
-cli 	        ; disable interrupts
+
 push  bp
 mov   bp, word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1+1 - OFFSET R_MASKED_STARTMARKER_]
 
@@ -518,7 +518,7 @@ dw 0000h
 ; addr 0000 + first byte (4x colormap.)
 
 pop   bp
-sti             ; re-enable interrupts
+
 
 
 
