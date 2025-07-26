@@ -110,7 +110,7 @@ PUBLIC  R_DrawColumnFL_
    les     si, dword ptr ds:[_dc_source_segment-2]  ; si to 004Fh (hardcoded)
    mov     al, byte ptr es:[bx]                     ; get first pixel in column.
    xlat    byte ptr cs:[bx]                          ; before calling this function we already set CS to the correct segment..
-;SELFMODIFY_COLFUNC_set_destview_segment0:
+;SELFMODIFY_COLFUNC_set_destview_segmentFL:
    mov     dx, 01000h   
    mov     es, dx; ready the viewscreen segment
 

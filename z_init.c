@@ -508,10 +508,26 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 	// column stuff
 	uint16_t codesize;
 	switch (columnquality){
+
+		case 3:
+			// skip r_column
+			ReadFileRegionWithIndex(fp, 0x403, (uint32_t)colfunc_jump_lookup_6800);
+
+
+			R_GetPatchTexture_addr =  			 (uint32_t) MK_FP(bsp_code_segment, R_GetPatchTextureFLOffset);
+			R_GetCompositeTexture_addr =  		 (uint32_t) MK_FP(bsp_code_segment, R_GetCompositeTextureFLOffset);
+			R_WriteBackMaskedFrameConstantsCallOffset  = R_WriteBackMaskedFrameConstantsFLOffset;
+			R_DrawMaskedCallOffset =			 R_DrawMaskedFLOffset;
+			R_RenderPlayerView = 				 MK_FP(bsp_code_segment,          		 R_RenderPlayerViewFLOffset);
+			R_WriteBackViewConstantsMaskedCall = MK_FP(maskedconstants_funcarea_segment, R_WriteBackViewConstantsMaskedFLOffset);
+			R_WriteBackViewConstants = 			 MK_FP(bsp_code_segment,          		 R_WriteBackViewConstantsFLOffset);
+
+			break;
+
 		case 2:
 
 			// skip r_column
-			ReadFileRegionWithIndex(fp, 0x302, (uint32_t)colfunc_jump_lookup_6800);
+			ReadFileRegionWithIndex(fp, 0x402, (uint32_t)colfunc_jump_lookup_6800);
 
 
 			R_GetPatchTexture_addr =  			 (uint32_t) MK_FP(bsp_code_segment, R_GetPatchTexture0Offset);
@@ -527,7 +543,7 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 		case 1:
 
 			// skip r_column
-			ReadFileRegionWithIndex(fp, 0x301, (uint32_t)colfunc_jump_lookup_6800);
+			ReadFileRegionWithIndex(fp, 0x401, (uint32_t)colfunc_jump_lookup_6800);
 
 			R_GetPatchTexture_addr =  			 (uint32_t) MK_FP(bsp_code_segment, R_GetPatchTexture16Offset);
 			R_GetCompositeTexture_addr =  		 (uint32_t) MK_FP(bsp_code_segment, R_GetCompositeTexture16Offset);
@@ -541,7 +557,7 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 
 		case 0:
 		default:
-			ReadFileRegionWithIndex(fp, 0x300, (uint32_t)colfunc_jump_lookup_6800);
+			ReadFileRegionWithIndex(fp, 0x400, (uint32_t)colfunc_jump_lookup_6800);
 
 
 		// remap... todo
@@ -607,23 +623,22 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 	// masked stuff
 	Z_QuickMapMaskedExtraData();
 	switch (columnquality){
+		case 3:
+			ReadFileRegionWithIndex(fp, 0x403, (uint32_t)drawfuzzcol_area);
+			ReadFileRegionWithIndex(fp, 0x403, (uint32_t)maskedconstants_funcarea);
+			break;
 		case 2:
-
-			ReadFileRegionWithIndex(fp, 0x302, (uint32_t)drawfuzzcol_area);
-			ReadFileRegionWithIndex(fp, 0x302, (uint32_t)maskedconstants_funcarea);
-
+			ReadFileRegionWithIndex(fp, 0x402, (uint32_t)drawfuzzcol_area);
+			ReadFileRegionWithIndex(fp, 0x402, (uint32_t)maskedconstants_funcarea);
 			break;
-
 		case 1:
-			ReadFileRegionWithIndex(fp, 0x301, (uint32_t)drawfuzzcol_area);
-			ReadFileRegionWithIndex(fp, 0x301, (uint32_t)maskedconstants_funcarea);
+			ReadFileRegionWithIndex(fp, 0x401, (uint32_t)drawfuzzcol_area);
+			ReadFileRegionWithIndex(fp, 0x401, (uint32_t)maskedconstants_funcarea);
 			break;
-		
 		case 0:
 		default:
-
-			ReadFileRegionWithIndex(fp, 0x300, (uint32_t)drawfuzzcol_area);
-			ReadFileRegionWithIndex(fp, 0x300, (uint32_t)maskedconstants_funcarea);
+			ReadFileRegionWithIndex(fp, 0x400, (uint32_t)drawfuzzcol_area);
+			ReadFileRegionWithIndex(fp, 0x400, (uint32_t)maskedconstants_funcarea);
 
 
 
@@ -639,15 +654,18 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 
 
 	switch (columnquality){
+		case 3:
+			ReadFileRegionWithIndex(fp, 0x403, (uint32_t)bsp_code_area);
+			break;
 		case 2:
-			ReadFileRegionWithIndex(fp, 0x302, (uint32_t)bsp_code_area);
+			ReadFileRegionWithIndex(fp, 0x402, (uint32_t)bsp_code_area);
 			break;
 		case 1:
-			ReadFileRegionWithIndex(fp, 0x301, (uint32_t)bsp_code_area);
+			ReadFileRegionWithIndex(fp, 0x401, (uint32_t)bsp_code_area);
 			break;
 		case 0:
 		default:
-			ReadFileRegionWithIndex(fp, 0x300, (uint32_t)bsp_code_area);
+			ReadFileRegionWithIndex(fp, 0x400, (uint32_t)bsp_code_area);
 	}
 
 

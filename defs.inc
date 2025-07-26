@@ -541,6 +541,9 @@ SELFMODIFY_COLFUNC_jump_offset16 =                      SELFMODIFY_COLFUNC_set_d
 SELFMODIFY_COLFUNC_set_destview_segment0 = 0Fh
 SELFMODIFY_COLFUNC_jump_offset0          = SELFMODIFY_COLFUNC_set_destview_segment0 + 5
 
+SELFMODIFY_COLFUNC_set_destview_segmentFL = 0Fh
+SELFMODIFY_COLFUNC_jump_offsetFL          = SELFMODIFY_COLFUNC_set_destview_segmentFL + 5
+
 STATENUM_NULL = -1
 
 

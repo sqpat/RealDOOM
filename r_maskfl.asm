@@ -274,7 +274,7 @@ sub   si, bx                                 ;
 add   si, si                                 ; double diff (dc_yh - dc_yl) to get a word offset
 xchg  ax, di
 mov   ax, word ptr es:[si]                   ; get the jump value
-mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset0+1))+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
+mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offsetFL+1))+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
 ; or can we do this in an outer func without this instrction?
@@ -465,7 +465,7 @@ sub   si, bx                                 ;
 add   si, si                                 ; double diff (dc_yh - dc_yl) to get a word offset
 xchg  ax, di
 mov   ax, word ptr es:[si]                   ; get the jump value
-mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offset0+1))+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
+mov   word ptr es:[((SELFMODIFY_COLFUNC_jump_offsetFL+1))+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
 ; or can we do this in an outer func without this instrction?
@@ -5539,7 +5539,7 @@ mov      ax, DRAWFUZZCOL_AREA_SEGMENT
 mov      ds, ax
 
 
-ASSUME DS:R_MASK0_TEXT
+ASSUME DS:R_MASKFL_TEXT
 
 mov      ax,  word ptr ss:[_detailshift]
 
@@ -5670,7 +5670,7 @@ mov      ax, DRAWFUZZCOL_AREA_SEGMENT
 mov      ds, ax
 
 
-ASSUME DS:R_MASK0_TEXT
+ASSUME DS:R_MASKFL_TEXT
 
 ; get whole dword at the end here.
 

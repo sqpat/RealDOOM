@@ -92,12 +92,15 @@ NEWSEGMENT
 file r_bsp16.obj
 NEWSEGMENT
 file r_bsp0.obj
+NEWSEGMENT
+file r_bspfl.obj
 
 NEWSEGMENT
 file r_main.obj
 file r_col24.obj
 file r_col16.obj
 file r_col0.obj
+file r_colfl.obj
 file r_span24.obj
 file r_span16.obj
 file r_span0.obj
@@ -106,6 +109,7 @@ file r_sky.obj
 file r_mask24.obj
 file r_mask16.obj
 file r_mask0.obj
+file r_maskfl.obj
 file w_wad.obj
 file v_video.obj
 file z_zone.obj
