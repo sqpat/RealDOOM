@@ -140,10 +140,13 @@ GLOBOBJS = $(GLOBOBJS) &
  p_saveg.obj &
  d_algo.obj &
  r_bsp24.obj &
+ r_bsp16.obj &
  r_bsp0.obj &
  r_mask24.obj &
+ r_mask16.obj &
  r_mask0.obj &
  r_col24.obj &
+ r_col16.obj &
  r_col0.obj &
  r_sky.obj &
  r_span.obj &

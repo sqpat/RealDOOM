@@ -1,7 +1,10 @@
 #define R_DrawMasked24Offset                    0x14DB
+#define R_DrawMasked16Offset                    0x14DB
 #define R_DrawMasked0Offset                     0x1454
 #define R_WriteBackViewConstantsMasked24Offset  0x0
 #define R_WriteBackMaskedFrameConstants24Offset 0x8D
+#define R_WriteBackViewConstantsMasked16Offset  0x0
+#define R_WriteBackMaskedFrameConstants16Offset 0x8D
 #define R_WriteBackViewConstantsMasked0Offset   0x0
 #define R_WriteBackMaskedFrameConstants0Offset  0x8D
 #define R_DrawPlanes24Offset                    0xBD5
@@ -17,6 +20,10 @@
 #define R_RenderPlayerView24Offset              0x32CD
 #define R_GetCompositeTexture24Offset           0x2FB7
 #define R_GetPatchTexture24Offset               0x2F1C
+#define R_WriteBackViewConstants16Offset        0x3458
+#define R_RenderPlayerView16Offset              0x32CD
+#define R_GetCompositeTexture16Offset           0x2FB7
+#define R_GetPatchTexture16Offset               0x2F1C
 #define R_WriteBackViewConstants0Offset         0x3392
 #define R_RenderPlayerView0Offset               0x3207
 #define R_GetCompositeTexture0Offset            0x2EF1
@@ -68,16 +75,20 @@
 #define P_SetMobjStateOffset                    0x5B41
 
 #define R_DrawColumn24CodeSize         0xE46
+#define R_DrawColumn16CodeSize         0xE46
 #define R_DrawColumn0CodeSize          0x58E
 #define R_DrawSpan24CodeSize           0x11A7
 #define R_DrawSpan16CodeSize           0xF6B
 #define R_DrawSpan0CodeSize            0x63F
 #define R_DrawFuzzColumn24CodeSize     0x1907
-#define R_MaskedConstants24CodeSize    0xEB
+#define R_DrawFuzzColumn16CodeSize     0x1907
 #define R_DrawFuzzColumn0CodeSize      0x1873
+#define R_MaskedConstants24CodeSize    0xEB
+#define R_MaskedConstants16CodeSize    0xEB
 #define R_MaskedConstants0CodeSize     0xEB
 #define R_DrawSkyColumnCodeSize        0x6C0
 #define R_BSP24CodeSize                0x3792
+#define R_BSP16CodeSize                0x3792
 #define R_BSP0CodeSize                 0x36C4
 #define WI_StuffCodeSize               0x1011
 #define PSightCodeSize                 0x5BE9

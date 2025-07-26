@@ -511,7 +511,7 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 		case 2:
 
 			// skip r_column
-			ReadFileRegionWithIndex(fp, 0x201, (uint32_t)colfunc_jump_lookup_6800);
+			ReadFileRegionWithIndex(fp, 0x302, (uint32_t)colfunc_jump_lookup_6800);
 
 
 			R_GetPatchTexture_addr =  			 (uint32_t) MK_FP(bsp_code_segment, R_GetPatchTexture0Offset);
@@ -521,11 +521,27 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 			R_RenderPlayerView = 				 MK_FP(bsp_code_segment,          		 R_RenderPlayerView0Offset);
 			R_WriteBackViewConstantsMaskedCall = MK_FP(maskedconstants_funcarea_segment, R_WriteBackViewConstantsMasked0Offset);
 			R_WriteBackViewConstants = 			 MK_FP(bsp_code_segment,          		 R_WriteBackViewConstants0Offset);
+
 			break;
-		case 0:
+
 		case 1:
+
+			// skip r_column
+			ReadFileRegionWithIndex(fp, 0x301, (uint32_t)colfunc_jump_lookup_6800);
+
+			R_GetPatchTexture_addr =  			 (uint32_t) MK_FP(bsp_code_segment, R_GetPatchTexture16Offset);
+			R_GetCompositeTexture_addr =  		 (uint32_t) MK_FP(bsp_code_segment, R_GetCompositeTexture16Offset);
+			R_WriteBackMaskedFrameConstantsCallOffset  = R_WriteBackMaskedFrameConstants16Offset;
+			R_DrawMaskedCallOffset =			 R_DrawMasked16Offset;
+			R_RenderPlayerView = 				 MK_FP(bsp_code_segment,          		 R_RenderPlayerView16Offset);
+			R_WriteBackViewConstantsMaskedCall = MK_FP(maskedconstants_funcarea_segment, R_WriteBackViewConstantsMasked16Offset);
+			R_WriteBackViewConstants = 			 MK_FP(bsp_code_segment,          		 R_WriteBackViewConstants16Offset);
+			break;
+
+
+		case 0:
 		default:
-			ReadFileRegionWithIndex(fp, 0x200, (uint32_t)colfunc_jump_lookup_6800);
+			ReadFileRegionWithIndex(fp, 0x300, (uint32_t)colfunc_jump_lookup_6800);
 
 
 		// remap... todo
@@ -541,6 +557,17 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 	#define  DRAWSPAN_AH_OFFSET  0x3F00
 	#define  DRAWSPAN_BX_OFFSET  0x0FC0
 	switch (spanquality){
+		case 2:
+
+			ReadFileRegionWithIndex(fp, 0x302, (uint32_t)spanfunc_jump_lookup_9000);
+
+			// remap this to the 16 bit version.
+			R_DrawPlanesCallOffset = R_DrawPlanes0Offset;
+			R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_jump_lookup_segment, R_WriteBackViewConstantsSpan0Offset);
+			ds_source_offset = DRAWSPAN_AH_OFFSET;
+
+			break;
+
 		case 1:
 
 
@@ -554,16 +581,6 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 
 			break;
 
-		case 2:
-
-			ReadFileRegionWithIndex(fp, 0x302, (uint32_t)spanfunc_jump_lookup_9000);
-
-			// remap this to the 16 bit version.
-			R_DrawPlanesCallOffset = R_DrawPlanes0Offset;
-			R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_jump_lookup_segment, R_WriteBackViewConstantsSpan0Offset);
-			ds_source_offset = DRAWSPAN_AH_OFFSET;
-
-			break;
 		case 0:
 		default:
 
@@ -582,34 +599,24 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 	switch (columnquality){
 		case 2:
 
-			SkipNextFileRegion(fp);
-			SkipNextFileRegion(fp);
-
-			fread(&codesize, 2, 1, fp);
-			FAR_fread(drawfuzzcol_area, codesize, 1, fp);
-			// load R_WriteBackViewConstantsMasked into another empty code space - they do not fit into the above area.
-			fread(&codesize, 2, 1, fp);
-			FAR_fread(maskedconstants_funcarea, codesize, 1, fp);
-
-				// remap... todo
-
+			ReadFileRegionWithIndex(fp, 0x302, (uint32_t)drawfuzzcol_area);
+			ReadFileRegionWithIndex(fp, 0x302, (uint32_t)maskedconstants_funcarea);
 
 			break;
-		case 0:
+
 		case 1:
+			ReadFileRegionWithIndex(fp, 0x301, (uint32_t)drawfuzzcol_area);
+			ReadFileRegionWithIndex(fp, 0x301, (uint32_t)maskedconstants_funcarea);
+			break;
+		
+		case 0:
 		default:
 
-			fread(&codesize, 2, 1, fp);
-			FAR_fread(drawfuzzcol_area, codesize, 1, fp);
-			// load R_WriteBackViewConstantsMasked into another empty code space - they do not fit into the above area.
-			fread(&codesize, 2, 1, fp);
-			FAR_fread(maskedconstants_funcarea, codesize, 1, fp);
-
-			SkipNextFileRegion(fp);
-			SkipNextFileRegion(fp);
+			ReadFileRegionWithIndex(fp, 0x300, (uint32_t)drawfuzzcol_area);
+			ReadFileRegionWithIndex(fp, 0x300, (uint32_t)maskedconstants_funcarea);
 
 
-			// remap... todo
+
 	}
 
 
@@ -623,18 +630,14 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 
 	switch (columnquality){
 		case 2:
-
-			ReadFileRegionWithIndex(fp, 0x201, (uint32_t)bsp_code_area);
-
-			// remap...
-
+			ReadFileRegionWithIndex(fp, 0x302, (uint32_t)bsp_code_area);
+			break;
+		case 1:
+			ReadFileRegionWithIndex(fp, 0x301, (uint32_t)bsp_code_area);
 			break;
 		case 0:
-		case 1:
 		default:
-
-			ReadFileRegionWithIndex(fp, 0x200, (uint32_t)bsp_code_area);
-
+			ReadFileRegionWithIndex(fp, 0x300, (uint32_t)bsp_code_area);
 	}
 
 
