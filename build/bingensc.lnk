@@ -103,6 +103,7 @@ file r_span16.obj
 file r_span0.obj
 file r_spanfl.obj
 file r_sky.obj
+file r_skyfl.obj
 file r_mask24.obj
 file r_mask16.obj
 file r_mask0.obj

@@ -598,11 +598,15 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 	uint16_t codesize;
 	int16_t usedcolumnvalue = 0x400;
 	int16_t usedspanvalue = 0x400;
+	int16_t usedskyvalue = 0x200;
 	if (columnquality <= 3){
 		usedcolumnvalue += columnquality;		
 	}
 	if (spanquality <= 3){
 		usedspanvalue += spanquality;
+	}
+	if (skyquality <= 1){
+		usedskyvalue += skyquality;
 	}
 
 	Z_RemapRenderFunctions();
@@ -627,8 +631,8 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 
 	Z_QuickMapRenderPlanes();
 
-	fread(&codesize, 2, 1, fp);
-	FAR_fread(drawskyplane_area, codesize, 1, fp);
+	ReadFileRegionWithIndex(fp, usedskyvalue, (uint32_t)drawskyplane_area);
+
 
 	ReadFileRegionWithIndex(fp, usedcolumnvalue, (uint32_t)bsp_code_area);
 

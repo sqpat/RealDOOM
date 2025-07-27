@@ -152,6 +152,7 @@ GLOBOBJS = $(GLOBOBJS) &
  r_col0.obj &
  r_colfl.obj &
  r_sky.obj &
+ r_skyfl.obj &
  r_span24.obj &
  r_span16.obj &
  r_span0.obj &

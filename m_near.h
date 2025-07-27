@@ -527,7 +527,8 @@
 #define setblocks                   	  (*((uint8_t    __near*)            (_NULL_OFFSET + 0x079F)))
 //99 bytes
 #define player 		 					  (*((player_t __near*)              (_NULL_OFFSET + 0x07A0)))
-//803 free
+
+#define skyquality  					  (*(int8_t __near *)                (_NULL_OFFSET + 0x0803))
 #define viewwindowx 		 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x0804)))
 #define viewwindowy 		 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x0806)))
 #define R_DrawPlanesCall 		 		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0808)))

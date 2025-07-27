@@ -470,7 +470,7 @@ _pendingdetail = 				 	 _NULL_OFFSET + 0079Ch
 _setsizeneeded = 				 	 _NULL_OFFSET + 0079Eh
 _setblocks = 					 	 _NULL_OFFSET + 0079Fh
 _player = 						 	 _NULL_OFFSET + 007A0h
-;803 free
+_skyquality =  					 	 _NULL_OFFSET + 00803h
 _viewwindowx = 					 	 _NULL_OFFSET + 00804h
 _viewwindowy = 					 	 _NULL_OFFSET + 00806h
 _R_DrawPlanesCall = 	    	 	 _NULL_OFFSET + 00808h

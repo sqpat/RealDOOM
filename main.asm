@@ -1226,6 +1226,8 @@ str_defaultname_28:
 db "span_quality", 0
 str_defaultname_29:
 db "column_quality", 0
+str_defaultname_30:
+db "sky_quality", 0
 
 ; 7 bytes per.
 _defaults:
@@ -1288,6 +1290,8 @@ db  0, 0, 0
 dw OFFSET str_defaultname_28, OFFSET _spanquality
 db  0, 0, 0    
 dw OFFSET str_defaultname_29, OFFSET _columnquality
+db  0, 0, 0    
+dw OFFSET str_defaultname_30, OFFSET _skyquality
 db  0, 0, 0    
 
 

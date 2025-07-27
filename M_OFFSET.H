@@ -21,6 +21,9 @@
 #define R_DrawSkyColumnOffset                   0x0
 #define R_DrawSkyPlaneOffset                    0xD15
 #define R_DrawSkyPlaneDynamicOffset             0xCA4
+#define R_DrawSkyColumnFLOffset                 0x0
+#define R_DrawSkyPlaneFLOffset                  0xD15
+#define R_DrawSkyPlaneDynamicFLOffset           0xCA4
 #define R_WriteBackViewConstants24Offset        0x3458
 #define R_RenderPlayerView24Offset              0x32CD
 #define R_GetCompositeTexture24Offset           0x2FB7
@@ -100,6 +103,7 @@
 #define R_MaskedConstants0CodeSize     0xEB
 #define R_MaskedConstantsFLCodeSize    0xEB
 #define R_DrawSkyColumnCodeSize        0xD86
+#define R_DrawSkyColumnFLCodeSize      0xD86
 #define R_BSP24CodeSize                0x3792
 #define R_BSP16CodeSize                0x3792
 #define R_BSP0CodeSize                 0x36C4
