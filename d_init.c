@@ -437,7 +437,7 @@ void __near W_AddFile(int8_t *filename);
 
 
 
-
+void 		M_ScanTranslateDefaults();
 fixed_t32	FixedMulBig1632(int16_t a, fixed_t b);
 fixed_t32	FixedMulBig16322(int16_t a, fixed_t b);
 
@@ -1149,6 +1149,8 @@ R_PointToAngle(y, x);
 
 	DEBUG_PRINT("\nZ_LoadBinaries: Load game code into memory");
 	Z_LoadBinaries();
+
+	M_ScanTranslateDefaults();
 
 	// init subsystems
 	DEBUG_PRINT("\nD_InitStrings: loading text.");

@@ -440,3 +440,15 @@ MAPTHING_T STRUC
     mapthing_options      dw ?  ; 8
 
 MAPTHING_T ENDS
+
+
+DEFAULT_T STRUC
+
+    default_name_ptr      dw ?  ; 0
+    default_loc_ptr       dw ?  ; 2
+    default_defaultvalue  db ?  ; 4
+    default_scantranslate db ?  ; 5
+    default_untranslated  db ?  ; 6
+
+DEFAULT_T ENDS
+

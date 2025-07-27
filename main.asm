@@ -1301,12 +1301,9 @@ db  0, 0, 0
 PROC M_LoadDefaults_  FAR
 PUBLIC M_LoadDefaults_
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
+PUSHA_NO_AX_MACRO
 push  bp
+
 mov   bp, sp
 sub   sp, 0AAh
 sub   bp, 080h
@@ -1315,14 +1312,14 @@ xor   bx, bx
 mov   cx, NUM_DEFAULTS
 loop_set_default_values:
 xor   ax, ax
-mov   si, word ptr cs:[bx + _defaults + 2]
-mov   al, byte ptr cs:[bx + _defaults + 4] ; default...
+mov   si, word ptr cs:[bx + _defaults + DEFAULT_T.default_loc_ptr]
+mov   al, byte ptr cs:[bx + _defaults + DEFAULT_T.default_defaultvalue] ; default...
 add   bx, 7               ; 
 cmp   si, OFFSET _snd_SBport    ; 16 bit value special case
 je    shift4_write_word
 cmp   si, OFFSET _snd_Mport    ; 16 bit value special case
 je    shift4_write_word
-mov   byte ptr [si], al
+mov   byte ptr [si], al         ; written here 1
 jmp   wrote_byte
 shift4_write_word:
 SHIFT_MACRO shl ax 4
@@ -1389,36 +1386,14 @@ mov   bx, ax
 mov   word ptr [bp + 076h], ax          ; store fopen fp file handle
 test  ax, ax
 jne   defaults_file_loaded
-; bad file
+; fall thru to bad file
 defaults_file_closed:
-mov   dx, SCANTOKEY_SEGMENT
-mov   es, dx
-xor   bx, bx
-
-loop_defaults_to_set_initial_values:
-cmp   byte ptr cs:[bx + _defaults + 5], 0
-je    no_pointer_load_next_defaults_value
-mov   si, word ptr cs:[bx + _defaults + 2]
-mov   al, byte ptr [si]
-mov   byte ptr cs:[bx + _defaults + 6], al
-xor   ah, ah
-mov   si, ax
-mov   di, word ptr cs:[bx + _defaults + 2]
-mov   al, byte ptr es:[si]
-mov   byte ptr [di], al
-no_pointer_load_next_defaults_value:
-add   bx, SIZEOF_DEFAULT_T
-cmp   bx, NUM_DEFAULTS * SIZEOF_DEFAULT_T
-jne   loop_defaults_to_set_initial_values
 
 exit_mloaddefaults:
 lea   sp, [bp + 080h]
 pop   bp
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_MACRO
+
 retf  
 
 
@@ -1548,12 +1523,12 @@ scan_next_default_name_for_match:
 lea   ax, [bp - 02Ah]
 mov   cx, cs
 mov   dx, ds
-mov   bx, word ptr cs:[si + _defaults]
+mov   bx, word ptr cs:[si + _defaults + DEFAULT_T.default_name_ptr]
 
 call  locallib_strcmp_
 test  ax, ax
 jne   no_match_increment_default
-mov   bx, word ptr cs:[si + _defaults + 2]
+mov   bx, word ptr cs:[si + _defaults + DEFAULT_T.default_loc_ptr]
 mov   ax, word ptr [bp + 078h]
 ; if one of the 16 bit ones then write word..
 cmp   bx, OFFSET _snd_SBport
@@ -1561,8 +1536,8 @@ je    do_word_write
 cmp   bx, OFFSET _snd_Mport
 je    do_word_write
 do_byte_write:
-mov   byte ptr [bx], al
-jmp   character_finished_handling
+mov   byte ptr [bx], al                             ; written here 2 
+jmp   character_finished_handling      
 do_word_write:
 mov   word ptr [bx], ax
 jmp   character_finished_handling
@@ -1572,6 +1547,46 @@ add   si, SIZEOF_DEFAULT_T
 cmp   di, NUM_DEFAULTS
 jl    scan_next_default_name_for_match
 jmp   character_finished_handling
+
+
+ENDP
+
+PROC M_ScanTranslateDefaults_ FAR
+PUBLIC M_ScanTranslateDefaults_
+
+PUSHA_NO_AX_MACRO
+
+mov   dx, SCANTOKEY_SEGMENT
+mov   es, dx
+xor   bx, bx
+
+;	for (i = 0; i < NUM_DEFAULTS; i++) {
+;		if (defaults[i].scantranslate) {
+;			parm = *defaults[i].location;
+;			defaults[i].untranslated = parm;
+;			*defaults[i].location = scantokey[parm];
+;		}
+;	}
+
+loop_defaults_to_set_initial_values:
+cmp   byte ptr cs:[bx + _defaults + DEFAULT_T.default_scantranslate], 0
+je    no_pointer_load_next_defaults_value
+mov   si, word ptr cs:[bx + _defaults + DEFAULT_T.default_loc_ptr]
+mov   al, byte ptr [si]
+mov   byte ptr cs:[bx + _defaults + DEFAULT_T.default_untranslated], al  ; written here 3
+xor   ah, ah
+mov   si, ax
+mov   di, word ptr cs:[bx + _defaults + DEFAULT_T.default_loc_ptr]
+mov   al, byte ptr es:[si]
+mov   byte ptr [di], al                     ; written here 4
+no_pointer_load_next_defaults_value:
+add   bx, SIZEOF_DEFAULT_T
+cmp   bx, NUM_DEFAULTS * SIZEOF_DEFAULT_T
+jne   loop_defaults_to_set_initial_values
+
+POPA_NO_AX_MACRO
+retf
+
 
 
 ENDP
@@ -1605,9 +1620,9 @@ loop_next_default:
 mov   al, SIZEOF_DEFAULT_T
 mul   bh
 mov   si, ax
-cmp   byte ptr cs:[si + _defaults + 5], 0
+cmp   byte ptr cs:[si + _defaults + DEFAULT_T.default_scantranslate], 0
 jne   get_untranslated_value
-mov   di, word ptr cs:[si + _defaults + 2]
+mov   di, word ptr cs:[si + _defaults + DEFAULT_T.default_loc_ptr]
 cmp   di, OFFSET _snd_Mport
 je    get_16_bit
 cmp   di, OFFSET _snd_SBport
@@ -1621,7 +1636,7 @@ mov   ax, word ptr [di]
 got_value_to_write:         ; if we got untranslated value we skip here with value in al.
 
 mov   di, ax             ; store the value.
-mov   si, word ptr cs:[si + _defaults]  ; string ptr
+mov   si, word ptr cs:[si + _defaults + DEFAULT_T.default_name_ptr]  ; string ptr
 
 write_next_default_name_character:
 
@@ -1654,7 +1669,7 @@ pop   cx
 pop   bx
 ret   
 get_untranslated_value:        ; this is pointing pointer to cs value instead of ds value. BAD
-mov   al, byte ptr cs:[si + _defaults + 6]  ; get the untranslated value
+mov   al, byte ptr cs:[si + _defaults + DEFAULT_T.default_untranslated]  ; get the untranslated value
 jmp   got_value_to_write
 done_writing_default_name:
 mov   dx, cx    ; fp
