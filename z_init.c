@@ -547,6 +547,17 @@ void __near Z_RemapRenderFunctions(){
 
 	}
 
+	
+	switch (skyquality){
+		case 1:
+			R_DrawSkyPlane_addr_Offset        = R_DrawSkyPlaneFLOffset;
+			R_DrawSkyPlaneDynamic_addr_Offset = R_DrawSkyPlaneDynamicFLOffset;
+			break;
+		// case 0:
+		// default:
+
+	}
+
 	switch (spanquality){
 		case 3:
 

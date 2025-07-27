@@ -426,7 +426,9 @@
 #define P_CreateThinker_addr              (*((uint32_t __near*)              (_NULL_OFFSET + 0x05BC)))
 #define S_StopSoundMobjRef_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C0)))
 
-// #define P_RemoveMobj_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C4)))
+#define R_DrawSkyPlaneDynamic_addr_Offset (*((int16_t __near*)               (_NULL_OFFSET + 0x05C4)))
+#define R_DrawSkyPlaneDynamic_addr    	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C4)))
+
 #define P_AddActiveCeiling_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C8)))
 #define P_AddActivePlat_addr              (*((uint32_t __near*)              (_NULL_OFFSET + 0x05CC)))
 #define activeceilings                    ((THINKERREF __near *)             (_NULL_OFFSET + 0x05D0))
@@ -505,7 +507,8 @@
 #define fopen_rb_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x06F0))
 #define currenttask                       (*(int8_t __near *)                (_NULL_OFFSET + 0x06F3))
 
-// #define P_SpawnMobj_addr     			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06F4)))
+#define R_DrawSkyPlane_addr_Offset        (*((int16_t __near*)               (_NULL_OFFSET + 0x06F4)))
+#define R_DrawSkyPlane_addr    			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06F4)))
 #define EV_DoDoor_addr     				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06F8)))
 #define P_TouchSpecialThing_addr     	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06FC)))
 

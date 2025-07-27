@@ -379,7 +379,8 @@ _I_Error_addr =                      _NULL_OFFSET + 005B4h
 _P_InitThinkers_addr =               _NULL_OFFSET + 005B8h
 _P_CreateThinker_addr =              _NULL_OFFSET + 005BCh
 _S_StopSoundMobjRef_addr =           _NULL_OFFSET + 005C0h
-_P_RemoveMobj_addr =                 _NULL_OFFSET + 005C4h
+_R_DrawSkyPlaneDynamic_addr =  	     _NULL_OFFSET + 005C4h
+
 _P_AddActiveCeiling_addr =           _NULL_OFFSET + 005C8h
 _P_AddActivePlat_addr =              _NULL_OFFSET + 005CCh
 _activeceilings =                    _NULL_OFFSET + 005D0h
@@ -449,7 +450,7 @@ _leveltime =     		   			 _NULL_OFFSET + 006ECh
 _fopen_rb_argument =                 _NULL_OFFSET + 006F0h
 _currenttask =            		     _NULL_OFFSET + 006F3h
 
-;_P_SpawnMobj_addr =            		 _NULL_OFFSET + 006F4h
+_R_DrawSkyPlane_addr =               _NULL_OFFSET + 006F4h
 _EV_DoDoor_addr = 			 	 	 _NULL_OFFSET + 006F8h
 _P_TouchSpecialThing_addr =          _NULL_OFFSET + 006FCh
 

@@ -326,9 +326,9 @@ les   ax, dword ptr ds:[si + 4]
 mov   dx, es
 ;call  [_R_DrawSkyPlaneCallHigh]
 SELFMODIFY_SPAN_draw_skyplane_call:
-db    09Ah
-dw    R_DRAWSKYPLANE_OFFSET
-dw    DRAWSKYPLANE_AREA_SEGMENT
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _R_DrawSkyPlane_addr
 inc   byte ptr cs:[SELFMODIFY_SPAN_drawplaneiter+1 - OFFSET R_SPANFL_STARTMARKER_]
 add   word ptr [bp - 8], VISPLANE_BYTE_SIZE
 jmp   SHORT drawplanes_loop
@@ -351,12 +351,12 @@ done_with_span_fixedcolormap_selfmodify:
 
 
 
-mov       ax, R_DRAWSKYPLANE_OFFSET
+mov       ax, OFFSET _R_DrawSkyPlane_addr
 cmp       byte ptr ds:[_screenblocks], 10
 jge       setup_dynamic_skyplane
-mov       ax, R_DRAWSKYPLANE_DYNAMIC_OFFSET
+mov       ax, OFFSET _R_DrawSkyPlaneDynamic_addr
 setup_dynamic_skyplane:
-mov       word ptr cs:[SELFMODIFY_SPAN_draw_skyplane_call + 1 - OFFSET R_SPANFL_STARTMARKER_], ax
+mov       word ptr cs:[SELFMODIFY_SPAN_draw_skyplane_call + 2 - OFFSET R_SPANFL_STARTMARKER_], ax
 
 
 
