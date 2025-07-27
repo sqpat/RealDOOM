@@ -577,12 +577,12 @@ void __near Z_RemapRenderFunctions(){
 			ds_source_offset = DRAWSPAN_BX_OFFSET;
 
 			break;
-
-		// default
+		case 0:
+		default:
 			// remap this to the 24 bit version.
-			// R_DrawPlanesCallOffset = R_DrawPlanes24Offset;
-			// R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_jump_lookup_segment, R_WriteBackViewConstantsSpan24Offset);
-			// ds_source_offset = DRAWSPAN_AH_OFFSET;
+			R_DrawPlanesCallOffset = R_DrawPlanes24Offset;
+			R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_jump_lookup_segment, R_WriteBackViewConstantsSpan24Offset);
+			ds_source_offset = DRAWSPAN_AH_OFFSET;
 	}
 
 
