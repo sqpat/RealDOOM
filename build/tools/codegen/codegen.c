@@ -7,7 +7,7 @@
 #include "p_saveg.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2406
+#define CONSTANTS_COUNT 2407
 #define LOCALS_COUNT 22
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -195,6 +195,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "DC_YL_LOOKUP_MASKEDMAPPING_SEGMENT",
     "FLOORCLIP_PARAGRAPH_ALIGNED_SEGMENT",
 	"MUSIC_DRIVER_CODE_SEGMENT",
+	"END_SKY_PLANE_SEGMENT",
     "OFFSET_NEGONEARRAY",
     "OFFSET_SCREENHEIGHTARRAY",
     "OFFSET_FLOORCLIP",
@@ -2670,7 +2671,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     dc_yl_lookup_maskedmapping_segment,
     floorclip_paragraph_aligned_segment,
 	music_driver_code_segment,
-    
+    END_SKY_PLANE_SEGMENT,
     offset_negonearray,
     offset_screenheightarray,
     offset_floorclip,

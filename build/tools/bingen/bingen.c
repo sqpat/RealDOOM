@@ -76,7 +76,6 @@ void __far R_RenderPlayerViewFL();
 void __far R_GetCompositeTexture_FarFL();
 void __far R_GetPatchTexture_FarFL();
 
-void __far R_DrawSkyColumn(int16_t arg_dc_yh, int16_t arg_dc_yl);
 
 void __far R_MASK24_STARTMARKER();
 void __far R_MASK24_ENDMARKER();
@@ -111,7 +110,11 @@ void __far wipe_WipeLoop();
 void __far wipe_StartScreen();
 void __far I_ReadScreen(); //todo this gets made the first function...
 void __far D_ALGO_END();
-void __far R_SKY_END();
+
+void __far R_SKY_STARTMARKER();
+void __far R_SKY_ENDMARKER();
+void __far R_DrawSkyColumn(int16_t arg_dc_yh, int16_t arg_dc_yl);
+
 void __far R_WriteBackViewConstantsSpan();
 void __far V_DrawPatchFlipped();
 void __far F_StartFinale();
@@ -307,9 +310,9 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     FAR_fwrite((byte __far *)R_WriteBackViewConstantsMaskedFL, codesize[26], 1, fp); 
 
 
-    codesize[4] = FP_OFF(R_SKY_END) - FP_OFF(R_DrawSkyColumn);
+    codesize[4] = FP_OFF(R_SKY_ENDMARKER) - FP_OFF(R_SKY_STARTMARKER);
     fwrite(&codesize[4], 2, 1, fp);
-    FAR_fwrite((byte __far *)R_DrawSkyColumn, codesize[4], 1, fp);
+    FAR_fwrite((byte __far *)R_SKY_STARTMARKER, codesize[4], 1, fp);
 
     codesize[12] = FP_OFF(R_BSP24_ENDMARKER) - FP_OFF(R_BSP24_STARTMARKER);
     fwrite(&codesize[12], 2, 1, fp);
@@ -419,9 +422,9 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "#define R_WriteBackViewConstantsSpanFLOffset    0x%X\n", FP_OFF(R_WriteBackViewConstantsSpanFL)    - FP_OFF(R_SPANFL_STARTMARKER));
 
     // sky offsets
-	fprintf(fp, "#define R_DrawSkyColumnOffset                   0x%X\n", FP_OFF(R_DrawSkyColumn)                   - FP_OFF(R_DrawSkyColumn));
-	fprintf(fp, "#define R_DrawSkyPlaneOffset                    0x%X\n", FP_OFF(R_DrawSkyPlane)                    - FP_OFF(R_DrawSkyColumn));
-	fprintf(fp, "#define R_DrawSkyPlaneDynamicOffset             0x%X\n", FP_OFF(R_DrawSkyPlaneDynamic)             - FP_OFF(R_DrawSkyColumn));
+	fprintf(fp, "#define R_DrawSkyColumnOffset                   0x%X\n", FP_OFF(R_DrawSkyColumn)                   - FP_OFF(R_SKY_STARTMARKER));
+	fprintf(fp, "#define R_DrawSkyPlaneOffset                    0x%X\n", FP_OFF(R_DrawSkyPlane)                    - FP_OFF(R_SKY_STARTMARKER));
+	fprintf(fp, "#define R_DrawSkyPlaneDynamicOffset             0x%X\n", FP_OFF(R_DrawSkyPlaneDynamic)             - FP_OFF(R_SKY_STARTMARKER));
 
     // BSP offsets
 	fprintf(fp, "#define R_WriteBackViewConstants24Offset        0x%X\n", FP_OFF(R_WriteBackViewConstants24)        - FP_OFF(R_BSP24_STARTMARKER));
@@ -530,7 +533,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "#define R_MaskedConstants24CodeSize    0x%X\n", codesize[3]);
 	fprintf(fp, "#define R_MaskedConstants16CodeSize    0x%X\n", codesize[21]);
 	fprintf(fp, "#define R_MaskedConstants0CodeSize     0x%X\n", codesize[18]);
-	fprintf(fp, "#define R_MaskedConstantsFLCodeSize     0x%X\n", codesize[26]);
+	fprintf(fp, "#define R_MaskedConstantsFLCodeSize    0x%X\n", codesize[26]);
 	fprintf(fp, "#define R_DrawSkyColumnCodeSize        0x%X\n", codesize[4]);
 	fprintf(fp, "#define R_BSP24CodeSize                0x%X\n", codesize[12]);
 	fprintf(fp, "#define R_BSP16CodeSize                0x%X\n", codesize[22]);

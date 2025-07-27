@@ -27,6 +27,11 @@ SKY_TEXTURE_MID = 100
 
 .CODE
 
+PROC R_SKY_STARTMARKER_ FAR
+PUBLIC R_SKY_STARTMARKER_
+ENDP
+
+
 ; standard skycolumn call - this happens on larger screensizes where texel coord v is 
 ; added to by 1 per pixel . I.e. screenblocks >= 10 (full screen in x-coord)
 
@@ -46,23 +51,24 @@ PUBLIC  R_DrawSkyColumn_
     sub   al, dl     ; al now has count. 
     
     ; GENERATE UNROLLED JUMP CALL
-    ; ax is 0 to 127. we want 128 - ax...
+    ; ax is 0 to 200. we want 200 - ax...
 
  ; NOTE! just doing a xor of 127 leads to a crash when we do draw over 127 (which i think is only possible with idclip?)
  ; regardless, i really want to avoid using a branch to cap the value to 127, so we take this sort of half measure 
 
-    xor   al, 0FFh          
-    and   al, 07Fh           
+    
+    mov   dx, 200
+    sub   dl, al          
     
 
     ; get instruction count for ax..
     ; 3 instructions per loop
-    cbw   ; zero out ah because we anded it to 127 anyway.
 
-    mov   dx, ax    ; dh zero maintained 
-    add   ax, dx   
-    add   ax, dx   ; ax is tripled..
-    mov   word ptr cs:[((OFFSET jump_location + 1) - R_DrawSkyColumn_)], ax   ; modify the jump
+    mov   ax, dx    ; dh zero maintained 
+    add   ax, dx   ; ax 2x
+    add   ax, ax   ; ax 4x
+    add   ax, dx   ; ax 5x
+    mov   word ptr cs:[((OFFSET SELFMODIFY_SKY_unrolled_jump_location + 1) - R_SKY_STARTMARKER_)], ax   ; modify the jump
 
     ; dest = destview + dc_yl*80 + (dc_x>>2); 
 
@@ -101,27 +107,31 @@ PUBLIC  R_DrawSkyColumn_
 
    ;  prep our loop variables
 
-   ; bugfix starting point for sky texture is 100 + (dc_yl - centery), basically.
+   ; starting point for sky texture is 100 + (dc_yl - centery), basically.
    add     si, SKY_TEXTURE_MID
    sub     si, word ptr ds:[_centery]
    
+    ; OKAY this is a little sad but, we must AND si to 127 each pixel.
+    ; because the starting point is not totally static we wouldnt otherwise know where to subtract 128 once.
+
+
    mov     ds, dx                          ; dx contained dc_source_segment
    mov     ax, 004Fh
-   cwd     ; zero out dx 
+   mov     dx, 127
    ; should be able to easily do a lookup into here with available registers (ax, dx, bx)
 
-   jump_location:
+   SELFMODIFY_SKY_unrolled_jump_location:
    jmp sky_loop_done
 
 
 DRAW_SINGLE_SKY_PIXEL MACRO 
 ; main loop: no colormaps, add by one texel at a time... skip dx, just do lodsb
     movsb
-	add    di,ax                  ; dx holds 79, need to add by screenwidth / 4 to get the next dest pixel
-
+	add    di, ax                  ; ax holds 79, need to add by screenwidth / 4 to get the next dest pixel
+    and    si, dx
 ENDM
 
-REPT 127
+REPT 200
     DRAW_SINGLE_SKY_PIXEL
 endm
 
@@ -169,26 +179,26 @@ PUBLIC  R_DrawSkyColumnDynamic_
     sub   al, dl     ; al now has count. 
     
     ; GENERATE UNROLLED JUMP CALL
-    ; ax is 0 to 127. we want 128 - ax...
+    ; ax is 0 to 200. we want 256 - ax...
 
  ; NOTE! just doing a xor of 127 leads to a crash when we do draw over 127 (which i think is only possible with idclip?)
  ; regardless, i really want to avoid using a branch to cap the value to 127, so we take this sort of half measure 
 
-    xor   al, 0FFh          
-    and   al, 07Fh           
-    
+    mov   dx, 200
+    sub   dl, al      
 
     ; get instruction count for ax..
     ; 3 instructions per loop
-    cbw   ; zero out ah because we anded it to 127 anyway.
 
-    mov   dx, ax   ; dh zero maintained 
-    add   ax, ax   ; ax is 2xed..
-    add   ax, dx   ; ax is 3xed..
-    add   ax, ax   ; ax is 6xed..
-    add   ax, dx   ; ax is 7xed..
+    mov   ax, dx   ; dh zero maintained 
+    add   ax, dx   ; ax is 2xed..
+    sal   ax, 1    ; ax is 4xed..
+    add   ax, dx   ; ax is 5xed..
+    sal   ax, 1    ; ax is 10xed..
     
-    mov   word ptr cs:[((OFFSET jump_location_dynamic + 1) - R_DrawSkyColumn_)], ax   ; modify the jump
+
+    
+    mov   word ptr cs:[((OFFSET SELFMODIFY_SKY_unrolled_dynamic_jump_location + 1) - R_SKY_STARTMARKER_)], ax   ; modify the jump
 
     ; dest = destview + dc_yl*80 + (dc_x>>2); 
 
@@ -316,7 +326,7 @@ PUBLIC  R_DrawSkyColumnDynamic_
 
    ; should be able to easily do a lookup into here with available registers (ax, dx, bx)
 
-   jump_location_dynamic:
+   SELFMODIFY_SKY_unrolled_dynamic_jump_location:
    jmp sky_loop_done_dynamic
 
 
@@ -327,12 +337,12 @@ DRAW_SINGLE_SKY_PIXEL_DYNAMIC MACRO
     add    di, dx     ; draw in next column 
     add    ax, cx     ; ax is 8:8 fixed point that holds current sky texel (frac), ax holds fracstep 
     adc    si, bx     ; bh is 0, add bl (with carry) to si...
-
+    and    si, 127     ; and to 127
 
 
 ENDM
 
-REPT 127
+REPT 200
     DRAW_SINGLE_SKY_PIXEL_DYNAMIC
 endm
 
@@ -345,12 +355,8 @@ sky_loop_done_dynamic:
 ; clean up
 
     mov    ax, ss
-;    mov    ax, FIXED_DS_SEGMENT
-
     mov    ds, ax    ; restore ds...
 
-
-    ; restore ds without going to memory.
     pop cx
     pop bx
     ret
@@ -626,8 +632,8 @@ retf
 ENDP
 
 ; end marker for this asm file
-PROC R_SKY_END_ FAR
-PUBLIC R_SKY_END_ 
+PROC R_SKY_ENDMARKER_ FAR
+PUBLIC R_SKY_ENDMARKER_
 ENDP
 
 

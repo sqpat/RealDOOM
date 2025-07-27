@@ -883,6 +883,8 @@ rejectmatrix       5C00:0000
 
 #define drawskyplane_area             ((byte __far*) MAKE_FULL_SEGMENT(distscale, size_distscale))
 #define drawskyplane_area_segment     ((segment_t) ((int32_t)drawskyplane_area >> 16))
+#define endskyplanearea               ((byte __far*) MAKE_FULL_SEGMENT(drawskyplane_area, size_drawskyplane_area))
+#define END_SKY_PLANE_SEGMENT         ((segment_t) ((int32_t)endskyplanearea >> 16))
 
 
 //FREE AREA
