@@ -47,7 +47,8 @@ PUBLIC  R_DrawSkyColumnFL_
     ; bx contains dc_x (don't modify)
     ; NOTE ah may be garbage but dh is 0
 
-    mov   si, dx     ; copy dc_yl for later
+    mov   di, bx    ; dc_x (restore before return)
+    mov   bx, dx    ; dc_yl
     sub   al, dl     ; al now has count. 
     
     ; GENERATE UNROLLED JUMP CALL
@@ -66,8 +67,8 @@ PUBLIC  R_DrawSkyColumnFL_
 
     mov   ax, dx    ; dh zero maintained 
     add   ax, dx   ; ax 2x
-    add   ax, ax   ; ax 4x
-    add   ax, dx   ; ax 5x
+    add   ax, dx   ; ax 3x
+
     mov   word ptr cs:[((OFFSET SELFMODIFY_SKY_unrolled_jump_location + 1) - R_SKYFL_STARTMARKER_)], ax   ; modify the jump
 
     ; dest = destview + dc_yl*80 + (dc_x>>2); 
@@ -77,47 +78,38 @@ PUBLIC  R_DrawSkyColumnFL_
     
     mov   ax, DC_YL_LOOKUP_SEGMENT             ; get segment for mul 80
     mov   es, ax                                 ; 
-    mov   di, bx    ; grab dc_x
-    mov   bx, si    ; for double lookup..
-    mov   ax, word ptr es:[si+bx]                  ; quick mul 80
+
+    sal   bx, 1
 
 
-    ; draw this sky column. let's generate the sky column segment.
-    ;  				segment_t texture_x  = ((viewangle_shiftright3 + xtoviewangle[x])) & 0x7F8;
-    les   dx, dword ptr ds:[_viewangle_shiftright3]
-    mov   bx, di    ; for double lookup
-    add   dx, word ptr es:[bx+di]
 
     ; 	dc_source_segment = skytexture_texture_segment + texture_x;
 
-    ; cl is unchanged throughout looped calls to this func, already contains detailshift2minus
-    shr di, cl  ; preshift dc_x by detailshift. Plus one for the earlier word offset shift.
 
     ; move operations beyond the shr to keep prefetch busy...
 
-    and   dx, 07F8h
-    add   dx, SKYTEXTURE_TEXTURE_SEGMENT
+    mov dx, word ptr es:[bx]                  ; quick mul 80
+    mov bx, di
+
+    ; cl is unchanged throughout looped calls to this func, already contains detailshift2minus
+    shr di, cl  ; preshift dc_x by detailshift. Plus one for the earlier word offset shift.
+    add di, dx
+
     ; dx contains dc source segment for the function
 
-    add di, ax
-    les ax, dword ptr ds:[_destview]
-    add di, ax
+    mov ax, SKYTEXTURE_TEXTURE_SEGMENT
+    mov es, ax                          ; dx contained dc_source_segment
+    mov al, byte ptr es:[0]
 
+    les dx, dword ptr ds:[_destview]
+    add di, dx
 
-
-   ;  prep our loop variables
-
-   ; starting point for sky texture is 100 + (dc_yl - centery), basically.
-   add     si, SKY_TEXTURE_MID
-   sub     si, word ptr ds:[_centery]
    
     ; OKAY this is a little sad but, we must AND si to 127 each pixel.
     ; because the starting point is not totally static we wouldnt otherwise know where to subtract 128 once.
 
 
-   mov     ds, dx                          ; dx contained dc_source_segment
-   mov     ax, 004Fh
-   mov     dx, 127
+   mov     dx, 004Fh
    ; should be able to easily do a lookup into here with available registers (ax, dx, bx)
 
    SELFMODIFY_SKY_unrolled_jump_location:
@@ -126,9 +118,9 @@ PUBLIC  R_DrawSkyColumnFL_
 
 DRAW_SINGLE_SKY_PIXEL MACRO 
 ; main loop: no colormaps, add by one texel at a time... skip dx, just do lodsb
-    movsb
-	add    di, ax                  ; ax holds 79, need to add by screenwidth / 4 to get the next dest pixel
-    and    si, dx
+    stosb
+	add    di, dx                  ; ax holds 79, need to add by screenwidth / 4 to get the next dest pixel
+
 ENDM
 
 REPT 200
@@ -137,15 +129,12 @@ endm
 
 
 ; draw last pixel, cut off the add
-    movsb
+    stosb
 
 
 sky_loop_done:
 ; clean up
 
-; restore ds without going to memory.
-    mov ax, ss
-    mov ds, ax  ; restore ds
     
 
     ret
@@ -254,7 +243,6 @@ cmp   dl, al
 ; dc_yh > dc_yl. unsigned compare because these values are smaller than 255 but high bytes may be garbage.
 ja    skip_column_draw              
 
-push si     ; we need scratch space here. push this now instead of in r_drawskycolumn
 
 
 ; function expects 
@@ -263,7 +251,6 @@ push si     ; we need scratch space here. push this now instead of in r_drawskyc
   ; bx = dc_x (don't modify)
 call  R_DrawSkyColumnFL_
 
-pop si  ; retrieve si
 
 
 ; note: the above functions zeroes out DH
