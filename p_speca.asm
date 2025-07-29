@@ -1046,102 +1046,86 @@ ENDP
 PROC    P_ShootSpecialLine_  FAR
 PUBLIC  P_ShootSpecialLine_
 
-push      bx
-push      cx
-push      si
-push      di
-push      bp
-mov       bp, sp
-sub       sp, 4
-push      ax
-mov       di, dx
-mov       ax, dx
-add       ax, dx
-mov       bx, ax
-mov       bx, word ptr ds:[_linebuffer]
+PUSHA_NO_AX_OR_BP_MACRO
+
+xchg      ax, si  ; si gets thing
+mov       di, dx  ; di gets linenum
+mov       bx, dx
+mov       dl, byte ptr ds:[si + MOBJ_T.m_mobjtype]  ; cl holds thing type.
+
+mov       bx, word ptr ds:[bx + di + _linebuffer]
 mov       ax, LINES_PHYSICS_SEGMENT
 mov       es, ax
-mov       cx, bx
-SHIFT_MACRO shl       cx 2
-SHIFT_MACRO shl       bx 4
-mov       al, byte ptr es:[bx + LINE_PHYSICS_T.lp_special]
-mov       dl, byte ptr es:[bx + LINE_PHYSICS_T.lp_tag]
-mov       bx, LINES_SEGMENT
-mov       es, bx
-xor       ah, ah
-mov       bx, cx
-mov       word ptr [bp - 4], ax
-mov       cx, word ptr es:[bx]
-mov       bx, word ptr [bp - 6]
-mov       word ptr [bp - 2], cx
-cmp       byte ptr ds:[bx + MOBJ_T.m_mobjtype], 0
-je        label_1
-cmp       ax, 46
-jne       exit_shootspecialline
-label_1:
-mov       ax, word ptr [bp - 4]
-cmp       ax, 47
-je        label_2
-cmp       ax, 46
-je        label_3
-cmp       ax, 24
-je        label_4
-exit_shootspecialline:
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       cx
-pop       bx
-retf      
-label_4:
-mov       bx, 3
-mov       al, dl
-mov       dx, si
-xor       ah, ah
-mov       cx, si
+SHIFT_MACRO shl       bx 2
+mov       si, bx
 
-call      EV_DoFloor_
-push      0
-mov       bl, byte ptr [bp - 4]
-mov       dx, word ptr [bp - 2]
-mov       ax, di
-xor       bh, bh
-call      P_ChangeSwitchTexture_
-jmp       exit_shootspecialline
-label_3:
-mov       bl, byte ptr [bp - 4]
-mov       al, dl
-mov       dx, 3
+mov       al, byte ptr es:[bx + si + LINE_PHYSICS_T.lp_tag]
+mov       cx, word ptr es:[bx + si + LINE_PHYSICS_T.lp_frontsecnum]
+mov       bl, byte ptr es:[bx + si + LINE_PHYSICS_T.lp_special]
 xor       ah, ah
-mov       cx, si
+xor       bh, bh
+
+cmp       dl, 0                 ; PENDING COMPARE
+mov       dx, LINES_SEGMENT
+mov       es, dx
+mov       si, word ptr es:[si + LINE_T.l_sidenum] ; lineside0
+
+
+; ax linetag
+; dx garbage
+; bx linespeical
+; cl frontsecnum
+; si lineside0
+; di linenum
+
+je        shoot_thing_is_player
+cmp       bl, 46
+jne       exit_shootspecialline
+
+; 
+
+shoot_thing_is_player:
+cmp       bl, 47
+je        case_47
+cmp       bl, 46
+je        case_46
+cmp       bl, 24
+jne       exit_shootspecialline
+case_24:
+push      bx
+mov       bx, FLOOR_RAISEFLOOR
+mov       dx, cx ; linefrontsecnum
+call      EV_DoFloor_
+pop       bx
+
+do_change_switch_texture_call:
+xor       ax, ax
+push      ax
+mov       dx, si
+xchg      ax, di
+call      P_ChangeSwitchTexture_
+
+exit_shootspecialline:
+POPA_NO_AX_OR_BP_MACRO
+retf      
+
+case_46:
+
+mov       dx, DOOR_OPEN
+
 
 call      EV_DoDoor_
-xor       bh, bh
-push      1
-mov       dx, word ptr [bp - 2]
-mov       ax, di
-call      P_ChangeSwitchTexture_
-jmp       exit_shootspecialline
-label_2:
-mov       bx, 3
-mov       al, dl
+jmp       do_change_switch_texture_call
+
+case_47:
+mov       dx, cx
+mov       bx, PLATFORM_RAISETONEARESTANDCHANGE
+push      cx
 xor       cx, cx
-mov       dx, si
-xor       ah, ah
 call      EV_DoPlat_
-push      0
-mov       bl, byte ptr [bp - 4]
-mov       dx, word ptr [bp - 2]
-mov       cx, si
-mov       ax, di
-xor       bh, bh
-call      P_ChangeSwitchTexture_
-LEAVE_MACRO     
-pop       di
-pop       si
 pop       cx
-pop       bx
-retf      
+jmp       do_change_switch_texture_call
+
 
 ENDP
 
