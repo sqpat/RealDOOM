@@ -57,6 +57,7 @@
 //
 
  
+int16_t __near getNextSectorList(int16_t __near * linenums,int16_t	sec,int16_t __near* secnums,int16_t linecount,boolean onlybacksecnums);
  
 
 //
@@ -70,7 +71,6 @@ int16_t __near twoSided( int16_t	sector,int16_t	line ){
 	line = linebuffer[line];
     return lineflagslist[line] & ML_TWOSIDED;
 }
-*/
 
 int16_t __near getNextSectorList(int16_t __near * linenums,int16_t	sec,int16_t __near* secnums,int16_t linecount,boolean onlybacksecnums){
 	
@@ -97,6 +97,7 @@ int16_t __near getNextSectorList(int16_t __near * linenums,int16_t	sec,int16_t _
 	}
 	return linecount - skipped;
 }
+*/
 
 
 
