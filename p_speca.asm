@@ -503,79 +503,100 @@ PUBLIC  P_FindSectorsFromLineTag_
 0x000000000000492c:  59                pop       cx
 0x000000000000492d:  C3                ret       
 ENDP
+@
+
+
 
 PROC    P_FindMinSurroundingLight_  NEAR
 PUBLIC  P_FindMinSurroundingLight_
 
-0x000000000000492e:  53                push      bx
-0x000000000000492f:  51                push      cx
-0x0000000000004930:  56                push      si
-0x0000000000004931:  57                push      di
-0x0000000000004932:  55                push      bp
-0x0000000000004933:  89 E5             mov       bp, sp
-0x0000000000004935:  81 EC 04 04       sub       sp, 0404h
-0x0000000000004939:  50                push      ax
-0x000000000000493a:  88 56 FE          mov       byte ptr [bp - 2], dl
-0x000000000000493d:  BA 90 21          mov       dx, SECTORS_SEGMENT
-0x0000000000004940:  C1 E0 04          shl       ax, 4
-0x0000000000004943:  8D BE FC FD       lea       di, [bp - 0204h]
-0x0000000000004947:  89 C3             mov       bx, ax
-0x0000000000004949:  8E C2             mov       es, dx
-0x000000000000494b:  83 C3 0C          add       bx, 0xc
-0x000000000000494e:  8B 96 FA FB       mov       dx, word ptr [bp - 0x406]
-0x0000000000004952:  26 8B 37          mov       si, word ptr es:[bx]
-0x0000000000004955:  89 C3             mov       bx, ax
-0x0000000000004957:  01 F6             add       si, si
-0x0000000000004959:  26 8B 47 0A       mov       ax, word ptr es:[bx + 0xa]
-0x000000000000495d:  83 C3 0A          add       bx, 0xa
-0x0000000000004960:  81 C6 50 CA       add       si, OFFSET _linebuffer
-0x0000000000004964:  89 C1             mov       cx, ax
-0x0000000000004966:  8D 9E FC FB       lea       bx, [bp - 0404h]
-0x000000000000496a:  01 C1             add       cx, ax
-0x000000000000496c:  89 46 FC          mov       word ptr [bp - 4], ax
-0x000000000000496f:  57                push      di
-0x0000000000004970:  8C D8             mov       ax, ds
-0x0000000000004972:  8E C0             mov       es, ax
-0x0000000000004974:  D1 E9             shr       cx, 1
-0x0000000000004976:  F3 A5             rep movsw 
-0x0000000000004978:  13 C9             adc       cx, cx
-0x000000000000497a:  F3 A4             rep movsb 
-0x000000000000497c:  5F                pop       di
-0x000000000000497d:  6A 00             push      0
-0x000000000000497f:  8B 4E FC          mov       cx, word ptr [bp - 4]
-0x0000000000004982:  8D 86 FC FD       lea       ax, [bp - 0204h]
-0x0000000000004986:  E8 83 FC          call      getNextSectorList_
-0x0000000000004989:  8A 76 FE          mov       dh, byte ptr [bp - 2]
-0x000000000000498c:  89 46 FC          mov       word ptr [bp - 4], ax
-0x000000000000498f:  30 D2             xor       dl, dl
-0x0000000000004991:  88 D0             mov       al, dl
-0x0000000000004993:  30 E4             xor       ah, ah
-0x0000000000004995:  3B 46 FC          cmp       ax, word ptr [bp - 4]
-0x0000000000004998:  7D 25             jge       0x49bf
-0x000000000000499a:  89 C6             mov       si, ax
-0x000000000000499c:  01 C6             add       si, ax
-0x000000000000499e:  8B 82 FC FB       mov       ax, word ptr [bp + si - 0404h]
-0x00000000000049a2:  BB 90 21          mov       bx, SECTORS_SEGMENT
-0x00000000000049a5:  C1 E0 04          shl       ax, 4
-0x00000000000049a8:  8E C3             mov       es, bx
-0x00000000000049aa:  89 C3             mov       bx, ax
-0x00000000000049ac:  26 8A 47 0E       mov       al, byte ptr es:[bx + 0xe]
-0x00000000000049b0:  83 C3 0E          add       bx, 0xe
-0x00000000000049b3:  38 C6             cmp       dh, al
-0x00000000000049b5:  77 04             ja        0x49bb
-0x00000000000049b7:  FE C2             inc       dl
-0x00000000000049b9:  EB D6             jmp       0x4991
-0x00000000000049bb:  88 C6             mov       dh, al
-0x00000000000049bd:  EB F8             jmp       0x49b7
-0x00000000000049bf:  88 F0             mov       al, dh
-0x00000000000049c1:  C9                LEAVE_MACRO     
-0x00000000000049c2:  5F                pop       di
-0x00000000000049c3:  5E                pop       si
-0x00000000000049c4:  59                pop       cx
-0x00000000000049c5:  5B                pop       bx
-0x00000000000049c6:  C3                ret       
+; bp - 0200h secnumlist
+; bp - 0400h linebufferlines
+
+push      bx
+push      cx
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 4 * MAX_ADJOINING_SECTORS  ; 400
+
+mov       cx, ax
+xchg      ax, bx
+SHIFT_MACRO shl       bx 4
+mov       ax, SECTORS_SEGMENT
+mov       es, ax
+xchg      ax, dx ; ax stores max
+
+lea       di, [bp - 0400h]
+mov       si, word ptr es:[bx + SECTOR_T.sec_linesoffset]
+
+
+mov       bx, word ptr es:[bx + SECTOR_T.sec_linecount]
+mov       dx, cx  ; dx gets secnum for func call.
+sal       si, 1
+mov       cx, bx
+add       si, OFFSET _linebuffer
+
+
+;	memcpy(linebufferlines, &linebuffer[offset], linecount << 1);
+push      ds
+pop       es
+rep movsw 
+
+xchg      ax, di   ; di stores max
+
+
+push      cx  ; should be 0. false parameter. todo move to si...?
+; dx already has secnum...
+mov       cx, bx
+lea       bx, [bp - 0200h]
+lea       ax, [bp - 0400h]
+
+;	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
+
+call      getNextSectorList_
+
+
+xchg      ax, cx
+mov       dx, di  ; dx stores max again
+xor       dh, dh
+
+jcxz      skip_loop_light
+lea       si, [bp - 0200h]
+
+mov       di, SECTORS_SEGMENT
+mov       es, di
+
+
+loop_next_sector_light:
+lodsw   ; inc si 2
+
+xchg      ax, bx
+SHIFT_MACRO shl       bx 4
+
+mov       al, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
+cmp       al, dl
+jge       dont_update_light
+mov       dl, al
+
+dont_update_light:
+loop      loop_next_sector_light
+
+skip_loop_light:
+xchg      ax, dx
+
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       cx
+pop       bx
+ret       
+
 
 ENDP
+
+COMMENT @
 
 dw 04B46h, 04BABh, 04BB2h, 04BB8h, 04BD1h, 04D71h, 04BE3h, 04D71h, 04BF4h, 04D71h, 04C0Eh 
 dw 04C26h, 04D71h, 04D71h, 04C3Fh, 04C47h, 04D71h, 04C56h, 04D71h, 04D71h, 04C6Fh, 04D71h 
