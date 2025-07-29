@@ -185,6 +185,7 @@ short_height_t __near P_FindNextHighestFloor( int16_t	secnum,short_height_t		cur
 //
 // FIND LOWEST CEILING IN THE SURROUNDING SECTORS
 //
+/*
 short_height_t __near P_FindLowestOrHighestCeilingSurrounding(int16_t	secnum, int8_t isHigh){
     uint8_t		i;
 	short_height_t		height = isHigh ? 0 : MAXSHORT ;
@@ -212,7 +213,7 @@ short_height_t __near P_FindLowestOrHighestCeilingSurrounding(int16_t	secnum, in
 	}
 	return height;
 }
-
+*/
  
 //
 // RETURN NEXT SECTOR # THAT LINE TAG REFERS TO
