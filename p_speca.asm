@@ -252,108 +252,115 @@ ret
 
 ENDP
 
-COMMENT @
 
 
 PROC    P_FindNextHighestFloor_  NEAR
 PUBLIC  P_FindNextHighestFloor_
 
-0x0000000000004728:  53                push      bx
-0x0000000000004729:  51                push      cx
-0x000000000000472a:  56                push      si
-0x000000000000472b:  57                push      di
-0x000000000000472c:  55                push      bp
-0x000000000000472d:  89 E5             mov       bp, sp
-0x000000000000472f:  81 EC 04 06       sub       sp, 0x604
-0x0000000000004733:  50                push      ax
-0x0000000000004734:  52                push      dx
-0x0000000000004735:  BA 90 21          mov       dx, SECTORS_SEGMENT
-0x0000000000004738:  8D BE FC FD       lea       di, [bp - 0204h]
-0x000000000000473c:  C1 E0 04          shl       ax, 4
-0x000000000000473f:  8E C2             mov       es, dx
-0x0000000000004741:  89 C3             mov       bx, ax
-0x0000000000004743:  8B 96 F8 F9       mov       dx, word ptr [bp - 0x608]
-0x0000000000004747:  26 8B 77 0C       mov       si, word ptr es:[bx + 0xc]
-0x000000000000474b:  83 C3 0C          add       bx, 0xc
-0x000000000000474e:  89 56 FC          mov       word ptr [bp - 4], dx
-0x0000000000004751:  89 C3             mov       bx, ax
-0x0000000000004753:  01 F6             add       si, si
-0x0000000000004755:  8B 96 FA F9       mov       dx, word ptr [bp - 0x606]
-0x0000000000004759:  26 8B 47 0A       mov       ax, word ptr es:[bx + 0xa]
-0x000000000000475d:  83 C3 0A          add       bx, 0xa
-0x0000000000004760:  81 C6 50 CA       add       si, OFFSET _linebuffer
-0x0000000000004764:  89 C1             mov       cx, ax
-0x0000000000004766:  8D 9E FC F9       lea       bx, [bp - 0x604]
-0x000000000000476a:  01 C1             add       cx, ax
-0x000000000000476c:  89 46 FE          mov       word ptr [bp - 2], ax
-0x000000000000476f:  57                push      di
-0x0000000000004770:  8C D8             mov       ax, ds
-0x0000000000004772:  8E C0             mov       es, ax
-0x0000000000004774:  D1 E9             shr       cx, 1
-0x0000000000004776:  F3 A5             rep movsw 
-0x0000000000004778:  13 C9             adc       cx, cx
-0x000000000000477a:  F3 A4             rep movsb 
-0x000000000000477c:  5F                pop       di
-0x000000000000477d:  6A 00             push      0
-0x000000000000477f:  8B 4E FE          mov       cx, word ptr [bp - 2]
-0x0000000000004782:  8D 86 FC FD       lea       ax, [bp - 0204h]
-0x0000000000004786:  E8 83 FE          call      getNextSectorList_
-0x0000000000004789:  31 F6             xor       si, si
-0x000000000000478b:  89 46 FE          mov       word ptr [bp - 2], ax
-0x000000000000478e:  30 C9             xor       cl, cl
-0x0000000000004790:  31 D2             xor       dx, dx
-0x0000000000004792:  88 C8             mov       al, cl
-0x0000000000004794:  30 E4             xor       ah, ah
-0x0000000000004796:  3B 46 FE          cmp       ax, word ptr [bp - 2]
-0x0000000000004799:  7D 26             jge       0x47c1
-0x000000000000479b:  89 C7             mov       di, ax
-0x000000000000479d:  01 C7             add       di, ax
-0x000000000000479f:  8B 9B FC F9       mov       bx, word ptr [bp + di - 0x604]
-0x00000000000047a3:  B8 90 21          mov       ax, SECTORS_SEGMENT
-0x00000000000047a6:  C1 E3 04          shl       bx, 4
-0x00000000000047a9:  8E C0             mov       es, ax
-0x00000000000047ab:  26 8B 07          mov       ax, word ptr es:[bx]
-0x00000000000047ae:  3B 46 FC          cmp       ax, word ptr [bp - 4]
-0x00000000000047b1:  7F 04             jg        0x47b7
-0x00000000000047b3:  FE C1             inc       cl
-0x00000000000047b5:  EB DB             jmp       0x4792
-0x00000000000047b7:  83 C6 02          add       si, 2
-0x00000000000047ba:  42                inc       dx
-0x00000000000047bb:  89 82 FA FB       mov       word ptr [bp + si - 0x406], ax
-0x00000000000047bf:  EB F2             jmp       0x47b3
-0x00000000000047c1:  85 D2             test      dx, dx
-0x00000000000047c3:  74 1E             je        0x47e3
-0x00000000000047c5:  8B BE FC FB       mov       di, word ptr [bp - 0404h]
-0x00000000000047c9:  B3 01             mov       bl, 1
-0x00000000000047cb:  88 D8             mov       al, bl
-0x00000000000047cd:  30 E4             xor       ah, ah
-0x00000000000047cf:  39 D0             cmp       ax, dx
-0x00000000000047d1:  7D 1E             jge       0x47f1
-0x00000000000047d3:  89 C6             mov       si, ax
-0x00000000000047d5:  01 C6             add       si, ax
-0x00000000000047d7:  8B 82 FC FB       mov       ax, word ptr [bp + si - 0404h]
-0x00000000000047db:  39 C7             cmp       di, ax
-0x00000000000047dd:  7F 0E             jg        0x47ed
-0x00000000000047df:  FE C3             inc       bl
-0x00000000000047e1:  EB E8             jmp       0x47cb
-0x00000000000047e3:  8B 86 F8 F9       mov       ax, word ptr [bp - 0x608]
-0x00000000000047e7:  C9                LEAVE_MACRO     
-0x00000000000047e8:  5F                pop       di
-0x00000000000047e9:  5E                pop       si
-0x00000000000047ea:  59                pop       cx
-0x00000000000047eb:  5B                pop       bx
-0x00000000000047ec:  C3                ret       
-0x00000000000047ed:  89 C7             mov       di, ax
-0x00000000000047ef:  EB EE             jmp       0x47df
-0x00000000000047f1:  89 F8             mov       ax, di
-0x00000000000047f3:  C9                LEAVE_MACRO     
-0x00000000000047f4:  5F                pop       di
-0x00000000000047f5:  5E                pop       si
-0x00000000000047f6:  59                pop       cx
-0x00000000000047f7:  5B                pop       bx
-0x00000000000047f8:  C3                ret       
+push      bx
+push      cx
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 0604h
+push      ax
+push      dx
+mov       dx, SECTORS_SEGMENT
+lea       di, [bp - 0204h]
+shl       ax, 4
+mov       es, dx
+mov       bx, ax
+mov       dx, word ptr [bp - 0608h]
+mov       si, word ptr es:[bx + SECTOR_T.sec_linesoffset]
+add       bx, 0Ch
+mov       word ptr [bp - 4], dx
+mov       bx, ax
+add       si, si
+mov       dx, word ptr [bp - 0606h]
+mov       ax, word ptr es:[bx + SECTOR_T.sec_linecount]
+add       bx, 0Ah
+add       si, OFFSET _linebuffer
+mov       cx, ax
+lea       bx, [bp - 0604h]
+add       cx, ax
+mov       word ptr [bp - 2], ax
+push      di
+mov       ax, ds
+mov       es, ax
+shr       cx, 1
+rep movsw 
+adc       cx, cx
+rep movsb 
+pop       di
+push      0
+mov       cx, word ptr [bp - 2]
+lea       ax, [bp - 0204h]
+call      getNextSectorList_
+xor       si, si
+mov       word ptr [bp - 2], ax
+xor       cl, cl
+xor       dx, dx
+label_3:
+mov       al, cl
+xor       ah, ah
+cmp       ax, word ptr [bp - 2]
+jge       label_1
+mov       di, ax
+add       di, ax
+mov       bx, word ptr [bp + di - 0604h]
+mov       ax, SECTORS_SEGMENT
+shl       bx, 4
+mov       es, ax
+mov       ax, word ptr es:[bx]
+cmp       ax, word ptr [bp - 4]
+jg        label_2
+label_4:
+inc       cl
+jmp       label_3
+label_2:
+add       si, 2
+inc       dx
+mov       word ptr [bp + si - 0406h], ax
+jmp       label_4
+label_1:
+test      dx, dx
+je        label_5
+mov       di, word ptr [bp - 0404h]
+mov       bl, 1
+label_8:
+mov       al, bl
+xor       ah, ah
+cmp       ax, dx
+jge       label_6
+mov       si, ax
+add       si, ax
+mov       ax, word ptr [bp + si - 0404h]
+cmp       di, ax
+jg        label_7
+label_9:
+inc       bl
+jmp       label_8
+label_5:
+mov       ax, word ptr [bp - 0608h]
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       cx
+pop       bx
+ret       
+label_7:
+mov       di, ax
+jmp       label_9
+label_6:
+mov       ax, di
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       cx
+pop       bx
+ret       
 ENDP
-@
 
 PROC    P_FindLowestOrHighestCeilingSurrounding_  NEAR
 PUBLIC  P_FindLowestOrHighestCeilingSurrounding_

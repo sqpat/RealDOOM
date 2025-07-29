@@ -97,7 +97,6 @@ int16_t __near getNextSectorList(int16_t __near * linenums,int16_t	sec,int16_t _
 	}
 	return linecount - skipped;
 }
-*/
 
 
 
@@ -105,7 +104,6 @@ int16_t __near getNextSectorList(int16_t __near * linenums,int16_t	sec,int16_t _
 // P_FindHighestOrLowestFloorSurrounding()
 // FIND LOWEST FLOOR HEIGHT IN SURROUNDING SECTORS
 //
-/*
 short_height_t __near P_FindHighestOrLowestFloorSurrounding(int16_t secnum, int8_t isHigh){
     int16_t			i;
 	int16_t offset = sectors[secnum].linesoffset;
@@ -132,14 +130,12 @@ short_height_t __near P_FindHighestOrLowestFloorSurrounding(int16_t secnum, int8
     }
 	return floor; 
 }
-*/
  
 
 //
 // P_FindNextHighestFloor
 // FIND NEXT HIGHEST FLOOR IN SURROUNDING SECTORS
 // Note: this should be doable w/o a fixed array.
-
 
 short_height_t __near P_FindNextHighestFloor( int16_t	secnum,short_height_t		currentheight ){
     uint8_t		i;
@@ -232,7 +228,6 @@ void __near P_FindSectorsFromLineTag ( int8_t		linetag,int16_t*		foundsectors,bo
 
 
 
-
 //
 // Find minimum light from an adjacent sector
 //
@@ -261,6 +256,7 @@ uint8_t __near P_FindMinSurroundingLight( int16_t secnum,uint8_t		max ){
 
 }
 
+*/
 
 
 //
