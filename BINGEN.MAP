@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/28 22:55:50
+Created on:       25/07/28 23:16:19
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -68,7 +68,7 @@ p_inter_TEXT           CODE           AUTO           0f03:18d0       00000cf7
 p_lights_TEXT          CODE           AUTO           0f03:25d0       000003ed
 p_plats_TEXT           CODE           AUTO           0f03:29c0       0000041d
 p_spec_TEXT            CODE           AUTO           0f03:2de0       00000375
-P_SPECA_TEXT           CODE           AUTO           0f03:3156       00000876
+P_SPECA_TEXT           CODE           AUTO           0f03:3156       0000086c
 p_switch_TEXT          CODE           AUTO           0f03:39d0       00000afa
 p_telept_TEXT          CODE           AUTO           0f03:44d0       0000022a
 P_TICK_TEXT            CODE           AUTO           0f03:46fa       000001e0
@@ -896,7 +896,7 @@ Module: p_speca.obj(p_speca.ASM)
 0f03:3254      P_FindNextHighestFloor_
 0f03:31dd      P_FindHighestOrLowestFloorSurrounding_
 0f03:37a1      P_PlayerInSpecialSector_
-0f03:39cc*     P_SPEC_ENDMARKER_
+0f03:39c2*     P_SPEC_ENDMARKER_
 0f03:3156*     P_SPEC_STARTMARKER_
 0f03:32c6      P_FindLowestOrHighestCeilingSurrounding_
 0f03:3374      P_FindMinSurroundingLight_

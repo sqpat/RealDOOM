@@ -1280,76 +1280,87 @@ mov       di, OFFSET _anims
 cmp       di, word ptr ds:[_lastanim]
 jae       done_with_anims_loop
 loop_next_anim_outer:
-mov       cx, word ptr ds:[di + 3]
-mov       ax, cx
-add       ax, cx
-mov       word ptr [bp - 2], ax
+mov       cx, word ptr ds:[di + P_SPEC_ANIM_T.pspecanim_basepic] ; cx is i
+mov       si, cx
+mov       dl, byte ptr ds:[di + P_SPEC_ANIM_T.pspecanim_numpics]
+xor       dh, dh
+add       si, dx  ; end condition in si.
 loop_next_anim_inner:
-mov       bl, byte ptr ds:[di + 5]
-mov       ax, word ptr ds:[di + 3]
-xor       bh, bh
-add       ax, bx
-cmp       cx, ax
+
+;		for (i = anim->basepic; i < anim->basepic + anim->numpics; i++) {
+cmp       cx, si
 jae       iter_next_anim_outer
+
+;			pic = anim->basepic + (((leveltime.hu.fracbits >> 3)  + i) % anim->numpics);
+
 mov       ax, word ptr ds:[_leveltime]
-shr       ax, 3
-xor       dx, dx
+SHIFT_MACRO shr       ax 3
+
 add       ax, cx
-div       bx
-add       dx, word ptr ds:[di + 3]
-cmp       byte ptr ds:[di], 0
+div       dl
+mov       al, ah
+cbw
+add       ax, word ptr ds:[di + P_SPEC_ANIM_T.pspecanim_basepic]
+cmp       byte ptr ds:[di + P_SPEC_ANIM_T.pspecanim_istexture], 0
 je        do_flat_translation_lookup
-mov       bx, word ptr [bp - 2]
-mov       ax, TEXTURETRANSLATION_SEGMENT
-mov       es, ax
-mov       word ptr es:[bx], dx
+
+mov       bx, TEXTURETRANSLATION_SEGMENT
+mov       es, bx
+mov       bx, cx
+sal       bx, 1
+mov       word ptr es:[bx], ax
+
 iter_next_anim_inner:
-add       word ptr [bp - 2], 2
 inc       cx
 jmp       loop_next_anim_inner
 do_flat_translation_lookup:
-mov       ax, FLATTRANSLATION_SEGMENT
+mov       bx, FLATTRANSLATION_SEGMENT
+mov       es, bx
 mov       bx, cx
-mov       es, ax
-mov       byte ptr es:[bx], dl
+mov       byte ptr es:[bx], al
 jmp       iter_next_anim_inner
+
 iter_next_anim_outer:
 add       di, SIZEOF_P_SPEC_ANIM_T
 cmp       di, word ptr ds:[_lastanim]
 jb        loop_next_anim_outer
+
 done_with_anims_loop:
 xor       cx, cx
-cmp       word ptr ds:[_numlinespecials], 0
-jle       label_12
+cmp       word ptr ds:[_numlinespecials], cx
+jle       done_with_line_specials
 mov       dx, LINESPECIALLIST_SEGMENT
-xor       si, si
-label_13:
-mov       bx, si
+
+loop_next_line_special:
+mov       bx, cx
+sal       bx, 1
 mov       es, dx
 mov       di, word ptr es:[bx]
+SHIFT_MACRO shl       di 4
 mov       ax, LINES_PHYSICS_SEGMENT
-shl       di, 4
 mov       es, ax
-mov       al, byte ptr es:[di + LINE_PHYSICS_T.lp_special]
-cmp       al, 48
-jne       label_14
+cmp       byte ptr es:[di + LINE_PHYSICS_T.lp_special], 48
+jne       not_line_special_48
+;    // EFFECT FIRSTCOL SCROLL +
+;    sides[lines[linespeciallist_far[i]].sidenum[0]].textureoffset += 1; // todo mod by tex width?
+
 mov       es, dx
 mov       bx, word ptr es:[bx]
+SHIFT_MACRO shl       bx 2
 mov       ax, LINES_SEGMENT
-shl       bx, 2
 mov       es, ax
-mov       bx, word ptr es:[bx]
+mov       bx, word ptr es:[bx + LINE_T.l_sidenum]
+SHIFT_MACRO shl       bx 3
 mov       ax, SIDES_SEGMENT
-shl       bx, 3
 mov       es, ax
-add       bx, 6
-inc       word ptr es:[bx]
-label_14:
+inc       word ptr es:[bx + SIDE_T.s_textureoffset]
+not_line_special_48:
 inc       cx
-add       si, 2
+
 cmp       cx, word ptr ds:[_numlinespecials]
-jl        label_13
-label_12:
+jl        loop_next_line_special
+
+done_with_line_specials:
 mov       word ptr [bp - 4], OFFSET _buttonlist
 xor       si, si
 label_17:

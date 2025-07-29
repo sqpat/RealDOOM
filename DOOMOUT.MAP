@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/28 22:55:51
+Created on:       25/07/28 23:16:53
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -65,7 +65,7 @@ p_inter_TEXT           CODE           AUTO           0bc2:30d0       00000cf7
 p_lights_TEXT          CODE           AUTO           0bc2:3dd0       000003ed
 p_plats_TEXT           CODE           AUTO           0bc2:41c0       0000041d
 p_spec_TEXT            CODE           AUTO           0bc2:45e0       00000375
-P_SPECA_TEXT           CODE           AUTO           0bc2:4956       00000875
+P_SPECA_TEXT           CODE           AUTO           0bc2:4956       0000086b
 p_switch_TEXT          CODE           AUTO           0bc2:51d0       00000afa
 p_telept_TEXT          CODE           AUTO           0bc2:5cd0       0000022a
 P_TICK_TEXT            CODE           AUTO           0bc2:5efa       000001e0
@@ -871,7 +871,7 @@ Module: p_speca.obj(p_speca.ASM)
 0bc2:4a54      P_FindNextHighestFloor_
 0bc2:49dd      P_FindHighestOrLowestFloorSurrounding_
 0bc2:4fa0      P_PlayerInSpecialSector_
-0bc2:51cb*     P_SPEC_ENDMARKER_
+0bc2:51c1*     P_SPEC_ENDMARKER_
 0bc2:4956*     P_SPEC_STARTMARKER_
 0bc2:4ac6      P_FindLowestOrHighestCeilingSurrounding_
 0bc2:4b74      P_FindMinSurroundingLight_
