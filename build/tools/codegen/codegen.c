@@ -7,7 +7,7 @@
 #include "p_saveg.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2411
+#define CONSTANTS_COUNT 2446
 #define LOCALS_COUNT 22
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -2486,7 +2486,46 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"ETF_A_BRAINSPIT",
 	"ETF_A_SPAWNSOUND",
 	"ETF_A_SPAWNFLY",
-	"ETF_A_BRAINEXPLODE"
+	"ETF_A_BRAINEXPLODE",
+
+	"TAG_1323",
+	"TAG_1044",
+	"TAG_86",
+	"TAG_77",
+	"TAG_99",
+	"TAG_666",
+	"TAG_667",
+	"TAG_999",
+
+	"DOOR_NORMAL",
+	"DOOR_CLOSE30THENOPEN",
+	"DOOR_CLOSE",
+	"DOOR_OPEN",
+	"DOOR_RAISEIN5MINS",
+	"DOOR_BLAZERAISE",
+	"DOOR_BLAZEOPEN",
+	"DOOR_BLAZECLOSE",
+
+	"FLOOR_LOWERFLOOR",
+	"FLOOR_LOWERFLOORTOLOWEST",
+	"FLOOR_TURBOLOWER",
+	"FLOOR_RAISEFLOOR",
+	"FLOOR_RAISEFLOORTONEAREST",
+	"FLOOR_RAISETOTEXTURE",
+	"FLOOR_LOWERANDCHANGE",
+	"FLOOR_RAISEFLOOR24",
+	"FLOOR_RAISEFLOOR24ANDCHANGE",
+	"FLOOR_RAISEFLOORCRUSH",
+	"FLOOR_RAISEFLOORTURBO",
+	"FLOOR_DONUTRAISE",
+	"FLOOR_RAISEFLOOR512",
+
+	"CEILING_LOWERTOFLOOR", 
+	"CEILING_RAISETOHIGHEST", 
+	"CEILING_LOWERANDCRUSH",
+	"CEILING_CRUSHANDRAISE", 
+	"CEILING_FASTCRUSHANDRAISE", 
+	"CEILING_SILENTCRUSHANDRAISE"
 
 
 
@@ -4972,9 +5011,46 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	ETF_A_BrainSpit,
 	ETF_A_SpawnSound,
 	ETF_A_SpawnFly,
-	ETF_A_BrainExplode
+	ETF_A_BrainExplode,
 
+	TAG_1323,
+	TAG_1044,
+	TAG_86,
+	TAG_77,
+	TAG_99,
+	TAG_666,
+	TAG_667,
+	TAG_999,
 
+	normal,
+	close30ThenOpen,
+	close,
+	open,
+	raiseIn5Mins,
+	blazeRaise,
+	blazeOpen,
+	blazeClose,
+
+	lowerFloor,
+	lowerFloorToLowest,
+	turboLower,
+	raiseFloor,
+	raiseFloorToNearest,
+	raiseToTexture,
+	lowerAndChange,
+	raiseFloor24,
+	raiseFloor24AndChange,
+	raiseFloorCrush,
+	raiseFloorTurbo,
+	donutRaise,
+	raiseFloor512,
+
+	lowerToFloor, 
+	raiseToHighest, 
+	lowerAndCrush,
+	crushAndRaise, 
+	fastCrushAndRaise, 
+	silentCrushAndRaise
 
 
 	

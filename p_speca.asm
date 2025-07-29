@@ -19,6 +19,19 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
+EXTRN EV_DoFloor_:FAR
+EXTRN EV_DoDoor_:FAR
+EXTRN EV_DoPlat_:NEAR
+EXTRN EV_DoCeiling_:NEAR
+EXTRN EV_BuildStairs_:NEAR
+EXTRN EV_StartLightStrobing_:NEAR
+EXTRN EV_Teleport_:NEAR
+EXTRN EV_PlatFunc_:NEAR
+EXTRN EV_LightChange_:NEAR
+EXTRN EV_CeilingCrushStop_:NEAR
+EXTRN G_SecretExitLevel_:FAR
+EXTRN G_ExitLevel_:FAR
+
 
 .DATA
 
@@ -26,6 +39,7 @@ INSTRUCTION_SET_MACRO
 
 
 .CODE
+
 
 MAX_ADJOINING_SECTORS = 256
 
@@ -590,654 +604,750 @@ ret
 
 ENDP
 
-COMMENT @
 
-dw 04B46h, 04BABh, 04BB2h, 04BB8h, 04BD1h, 04D71h, 04BE3h, 04D71h, 04BF4h, 04D71h, 04C0Eh 
-dw 04C26h, 04D71h, 04D71h, 04C3Fh, 04C47h, 04D71h, 04C56h, 04D71h, 04D71h, 04C6Fh, 04D71h 
-dw 04D71h, 04C87h, 04D71h, 04D71h, 04D71h, 04D71h, 04C99h, 04D71h, 04D71h, 04D71h, 04D71h 
-dw 04CB3h, 04CCCh, 04CE6h, 04D00h, 04D1Ah, 04D33h, 04D71h, 04D71h, 04D71h, 04D5Ah, 04D71h
-dw 04D71h, 04D71h, 04D71h, 04D71h, 04D71h, 04D71h, 04D6Ch, 04D81h, 04D96h, 04D71h, 04DA8h
-dw 04DC2h, 04DD1h, 04DEBh, 04D71h, 04D71h, 04D71h, 04D71h, 04D71h, 04D71h, 04D71h, 04D71h
-dw 04D71h, 04D71h, 04D71h, 04D71h, 04ECEh, 04EDBh, 04EE8h, 04EF2h, 04F01h, 04F10h, 04D71h
-dw 04F1Dh, 04F2Fh, 04F40h, 04F52h, 04F67h, 04F7Bh, 04D71h, 04F90h, 04F9Fh, 04FB1h, 04FC6h
-dw 04FD3h, 04FE1h, 04FF4h, 05007h, 0501Ah, 0502Dh, 05044h, 05057h, 0506Bh, 04D71h, 04E2Ch
-dw 04D71h, 04D71h, 04D71h, 04E05h, 0507Eh, 0508Dh, 0509Ch, 04E18h, 04E22h, 04E3Eh, 04D71h
-dw 04D71h, 04D71h, 04D71h, 04D71h, 04D71h, 04D71h, 04D71h, 04E48h, 050ABh, 04E60h, 04D71h
-dw 04D71h, 04E7Ch, 04E84h, 050C2h, 04D71h, 050DDh, 050F0h, 04EA4h, 04D71h, 04D71h, 04D71h
-dw 04D71h, 04D71h, 04D71h, 04D71h, 04D71h, 04D71h, 04D71h, 04EBCh
+cross_special_line_jump_table:
+dw switch_case_2, switch_case_3, switch_case_4, switch_case_5, switch_case_6, switch_case_default, switch_case_8, switch_case_default, switch_case_10, switch_case_default, switch_case_12 
+dw switch_case_13, switch_case_default, switch_case_default, switch_case_16, switch_case_17, switch_case_default, switch_case_19, switch_case_default, switch_case_default, switch_case_22, switch_case_default 
+dw switch_case_default, switch_case_25, switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_30, switch_case_default, switch_case_default, switch_case_default, switch_case_default 
+dw switch_case_35, switch_case_36, switch_case_37, switch_case_38, switch_case_39, switch_case_40, switch_case_default, switch_case_default, switch_case_default, switch_case_44, switch_case_default
+dw switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_52, switch_case_53, switch_case_54, switch_case_default, switch_case_56
+dw switch_case_57, switch_case_58, switch_case_59, switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_default
+dw switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_72, switch_case_73, switch_case_74, switch_case_75, switch_case_76, switch_case_77, switch_case_default
+dw switch_case_79, switch_case_80, switch_case_81, switch_case_82, switch_case_83, switch_case_84, switch_case_default, switch_case_86, switch_case_87, switch_case_88, switch_case_89
+dw switch_case_90, switch_case_91, switch_case_92, switch_case_93, switch_case_94, switch_case_95, switch_case_96, switch_case_97, switch_case_98, switch_case_default, switch_case_100
+dw switch_case_default, switch_case_default, switch_case_default, switch_case_104, switch_case_105, switch_case_106, switch_case_107, switch_case_108, switch_case_109, switch_case_110, switch_case_default
+dw switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_119, switch_case_120, switch_case_121, switch_case_default
+dw switch_case_default, switch_case_124, switch_case_125, switch_case_126, switch_case_default, switch_case_128, switch_case_129, switch_case_130, switch_case_default, switch_case_default, switch_case_default
+dw switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_141
 
 PROC    P_CrossSpecialLine_  NEAR
 PUBLIC  P_CrossSpecialLine_
 
-0x0000000000004ae0:  51                   push      cx
-0x0000000000004ae1:  56                   push      si
-0x0000000000004ae2:  57                   push      di
-0x0000000000004ae3:  55                   push      bp
-0x0000000000004ae4:  89 E5                mov       bp, sp
-0x0000000000004ae6:  83 EC 08             sub       sp, 8
-0x0000000000004ae9:  50                   push      ax
-0x0000000000004aea:  89 D1                mov       cx, dx
-0x0000000000004aec:  89 DE                mov       si, bx
-0x0000000000004aee:  BF 0A 00             mov       di, 0xa
-0x0000000000004af1:  C7 46 FC FF FF       mov       word ptr [bp - 4], 0xffff
-0x0000000000004af6:  89 C2                mov       dx, ax
-0x0000000000004af8:  B8 00 70             mov       ax, 0x7000
-0x0000000000004afb:  C1 E2 04             shl       dx, 4
-0x0000000000004afe:  89 46 FA             mov       word ptr [bp - 6], ax
-0x0000000000004b01:  89 56 F8             mov       word ptr [bp - 8], dx
-0x0000000000004b04:  8E C0                mov       es, ax
-0x0000000000004b06:  89 D3                mov       bx, dx
-0x0000000000004b08:  26 8B 05             mov       ax, word ptr es:[di]
-0x0000000000004b0b:  89 D7                mov       di, dx
-0x0000000000004b0d:  26 8A 5F 0E          mov       bl, byte ptr es:[bx + 0xe]
-0x0000000000004b11:  26 8A 55 0F          mov       dl, byte ptr es:[di + 0xf]
-0x0000000000004b15:  8A 7C 1A             mov       bh, byte ptr ds:[si + 0x1a]
-0x0000000000004b18:  30 F6                xor       dh, dh
-0x0000000000004b1a:  84 FF                test      bh, bh
-0x0000000000004b1c:  74 16                je        0x4b34
-0x0000000000004b1e:  80 FF 1F             cmp       bh, 0x1f
-0x0000000000004b21:  73 4E                jae       0x4b71
-0x0000000000004b23:  80 FF 10             cmp       bh, 0x10
-0x0000000000004b26:  74 42                je        0x4b6a
-0x0000000000004b28:  31 FF                xor       di, di
-0x0000000000004b2a:  83 FA 27             cmp       dx, 0x27
-0x0000000000004b2d:  73 4E                jae       0x4b7d
-0x0000000000004b2f:  83 FA 0A             cmp       dx, 0xa
-0x0000000000004b32:  75 5B                jne       0x4b8f
-0x0000000000004b34:  83 EA 02             sub       dx, 2
-0x0000000000004b37:  81 FA 8B 00          cmp       dx, 0x8b
-0x0000000000004b3b:  77 54                ja        0x4b91
-0x0000000000004b3d:  89 D7                mov       di, dx
-0x0000000000004b3f:  01 D7                add       di, dx
-0x0000000000004b41:  2E FF A5 C8 49       jmp       word ptr cs:[di + 0x49c8]
-0x0000000000004b46:  30 FF                xor       bh, bh
-0x0000000000004b48:  BA 03 00             mov       dx, 3
-0x0000000000004b4b:  89 D8                mov       ax, bx
-0x0000000000004b4d:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004b52:  0E                   push      cs
-0x0000000000004b53:  E8 48 D9             call      0x249e
-0x0000000000004b56:  90                   nop       
-0x0000000000004b57:  8B 5E F6             mov       bx, word ptr [bp - 0xa]
-0x0000000000004b5a:  C1 E3 04             shl       bx, 4
-0x0000000000004b5d:  8E 46 FA             mov       es, word ptr [bp - 6]
-0x0000000000004b60:  03 5E F8             add       bx, word ptr [bp - 8]
-0x0000000000004b63:  8A 46 FC             mov       al, byte ptr [bp - 4]
-0x0000000000004b66:  26 88 47 0F          mov       byte ptr es:[bx + 0xf], al
-0x0000000000004b6a:  C9                   LEAVE_MACRO     
-0x0000000000004b6b:  5F                   pop       di
-0x0000000000004b6c:  5E                   pop       si
-0x0000000000004b6d:  59                   pop       cx
-0x0000000000004b6e:  CA 04 00             retf      4
-0x0000000000004b71:  80 FF 20             cmp       bh, 0x20
-0x0000000000004b74:  76 F4                jbe       0x4b6a
-0x0000000000004b76:  80 FF 23             cmp       bh, 0x23
-0x0000000000004b79:  76 EF                jbe       0x4b6a
-0x0000000000004b7b:  EB AB                jmp       0x4b28
-0x0000000000004b7d:  76 B5                jbe       0x4b34
-0x0000000000004b7f:  83 FA 61             cmp       dx, 0x61
-0x0000000000004b82:  73 10                jae       0x4b94
-0x0000000000004b84:  83 FA 58             cmp       dx, 0x58
-0x0000000000004b87:  74 AB                je        0x4b34
-0x0000000000004b89:  85 FF                test      di, di
-0x0000000000004b8b:  74 DD                je        0x4b6a
-0x0000000000004b8d:  EB A5                jmp       0x4b34
-0x0000000000004b8f:  EB 15                jmp       0x4ba6
-0x0000000000004b91:  E9 DD 01             jmp       0x4d71
-0x0000000000004b94:  76 9E                jbe       0x4b34
-0x0000000000004b96:  83 FA 7D             cmp       dx, 0x7d
-0x0000000000004b99:  72 EE                jb        0x4b89
-0x0000000000004b9b:  83 FA 7E             cmp       dx, 0x7e
-0x0000000000004b9e:  76 94                jbe       0x4b34
-0x0000000000004ba0:  85 FF                test      di, di
-0x0000000000004ba2:  74 C6                je        0x4b6a
-0x0000000000004ba4:  EB 8E                jmp       0x4b34
-0x0000000000004ba6:  83 FA 04             cmp       dx, 4
-0x0000000000004ba9:  EB DC                jmp       0x4b87
-0x0000000000004bab:  30 FF                xor       bh, bh
-0x0000000000004bad:  BA 02 00             mov       dx, 2
-0x0000000000004bb0:  EB 99                jmp       0x4b4b
-0x0000000000004bb2:  30 FF                xor       bh, bh
-0x0000000000004bb4:  31 D2                xor       dx, dx
-0x0000000000004bb6:  EB 93                jmp       0x4b4b
-0x0000000000004bb8:  BA 03 00             mov       dx, 3
-0x0000000000004bbb:  30 FF                xor       bh, bh
-0x0000000000004bbd:  89 C1                mov       cx, ax
-0x0000000000004bbf:  89 D8                mov       ax, bx
-0x0000000000004bc1:  89 D3                mov       bx, dx
-0x0000000000004bc3:  89 CA                mov       dx, cx
-0x0000000000004bc5:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004bca:  0E                   push      cs
-0x0000000000004bcb:  E8 D6 DF             call      0x2ba4
-0x0000000000004bce:  90                   nop       
-0x0000000000004bcf:  EB 86                jmp       0x4b57
-0x0000000000004bd1:  30 FF                xor       bh, bh
-0x0000000000004bd3:  BA 04 00             mov       dx, 4
-0x0000000000004bd6:  89 D8                mov       ax, bx
-0x0000000000004bd8:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004bdd:  E8 DC D3             call      0x1fbc
-0x0000000000004be0:  E9 74 FF             jmp       0x4b57
-0x0000000000004be3:  30 FF                xor       bh, bh
-0x0000000000004be5:  31 D2                xor       dx, dx
-0x0000000000004be7:  89 D8                mov       ax, bx
-0x0000000000004be9:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004bee:  E8 43 E3             call      0x2f34
-0x0000000000004bf1:  E9 63 FF             jmp       0x4b57
-0x0000000000004bf4:  BA 01 00             mov       dx, 1
-0x0000000000004bf7:  30 FF                xor       bh, bh
-0x0000000000004bf9:  31 C9                xor       cx, cx
-0x0000000000004bfb:  89 DE                mov       si, bx
-0x0000000000004bfd:  89 D3                mov       bx, dx
-0x0000000000004bff:  89 C2                mov       dx, ax
-0x0000000000004c01:  89 F0                mov       ax, si
-0x0000000000004c03:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004c08:  E8 E3 F6             call      0x42ee
-0x0000000000004c0b:  E9 49 FF             jmp       0x4b57
-0x0000000000004c0e:  BA 01 00             mov       dx, 1
-0x0000000000004c11:  30 FF                xor       bh, bh
-0x0000000000004c13:  31 C0                xor       ax, ax
-0x0000000000004c15:  89 D9                mov       cx, bx
-0x0000000000004c17:  89 C3                mov       bx, ax
-0x0000000000004c19:  89 C8                mov       ax, cx
-0x0000000000004c1b:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004c20:  E8 0D F4             call      0x4030
-0x0000000000004c23:  E9 31 FF             jmp       0x4b57
-0x0000000000004c26:  B8 FF 00             mov       ax, 0xff
-0x0000000000004c29:  30 FF                xor       bh, bh
-0x0000000000004c2b:  BA 01 00             mov       dx, 1
-0x0000000000004c2e:  89 D9                mov       cx, bx
-0x0000000000004c30:  89 C3                mov       bx, ax
-0x0000000000004c32:  89 C8                mov       ax, cx
-0x0000000000004c34:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004c39:  E8 F4 F3             call      0x4030
-0x0000000000004c3c:  E9 18 FF             jmp       0x4b57
-0x0000000000004c3f:  30 FF                xor       bh, bh
-0x0000000000004c41:  BA 01 00             mov       dx, 1
-0x0000000000004c44:  E9 04 FF             jmp       0x4b4b
-0x0000000000004c47:  30 FF                xor       bh, bh
-0x0000000000004c49:  89 D8                mov       ax, bx
-0x0000000000004c4b:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004c50:  E8 A5 F3             call      0x3ff8
-0x0000000000004c53:  E9 01 FF             jmp       0x4b57
-0x0000000000004c56:  89 C1                mov       cx, ax
-0x0000000000004c58:  30 FF                xor       bh, bh
-0x0000000000004c5a:  31 D2                xor       dx, dx
-0x0000000000004c5c:  89 D8                mov       ax, bx
-0x0000000000004c5e:  89 D3                mov       bx, dx
-0x0000000000004c60:  89 CA                mov       dx, cx
-0x0000000000004c62:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004c67:  0E                   push      cs
-0x0000000000004c68:  3E E8 38 DF          call      0x2ba4
-0x0000000000004c6c:  E9 E8 FE             jmp       0x4b57
-0x0000000000004c6f:  BE 03 00             mov       si, 3
-0x0000000000004c72:  89 C2                mov       dx, ax
-0x0000000000004c74:  30 FF                xor       bh, bh
-0x0000000000004c76:  31 C9                xor       cx, cx
-0x0000000000004c78:  89 D8                mov       ax, bx
-0x0000000000004c7a:  89 F3                mov       bx, si
-0x0000000000004c7c:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004c81:  E8 6A F6             call      0x42ee
-0x0000000000004c84:  E9 D0 FE             jmp       0x4b57
-0x0000000000004c87:  30 FF                xor       bh, bh
-0x0000000000004c89:  BA 03 00             mov       dx, 3
-0x0000000000004c8c:  89 D8                mov       ax, bx
-0x0000000000004c8e:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004c93:  E8 26 D3             call      0x1fbc
-0x0000000000004c96:  E9 BE FE             jmp       0x4b57
-0x0000000000004c99:  BA 05 00             mov       dx, 5
-0x0000000000004c9c:  30 FF                xor       bh, bh
-0x0000000000004c9e:  89 C1                mov       cx, ax
-0x0000000000004ca0:  89 D8                mov       ax, bx
-0x0000000000004ca2:  89 D3                mov       bx, dx
-0x0000000000004ca4:  89 CA                mov       dx, cx
-0x0000000000004ca6:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004cab:  0E                   push      cs
-0x0000000000004cac:  3E E8 F4 DE          call      0x2ba4
-0x0000000000004cb0:  E9 A4 FE             jmp       0x4b57
-0x0000000000004cb3:  B8 23 00             mov       ax, 0x23
-0x0000000000004cb6:  30 FF                xor       bh, bh
-0x0000000000004cb8:  BA 01 00             mov       dx, 1
-0x0000000000004cbb:  89 D9                mov       cx, bx
-0x0000000000004cbd:  89 C3                mov       bx, ax
-0x0000000000004cbf:  89 C8                mov       ax, cx
-0x0000000000004cc1:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004cc6:  E8 67 F3             call      0x4030
-0x0000000000004cc9:  E9 8B FE             jmp       0x4b57
-0x0000000000004ccc:  30 FF                xor       bh, bh
-0x0000000000004cce:  BA 02 00             mov       dx, 2
-0x0000000000004cd1:  89 D9                mov       cx, bx
-0x0000000000004cd3:  89 D3                mov       bx, dx
-0x0000000000004cd5:  89 C2                mov       dx, ax
-0x0000000000004cd7:  89 C8                mov       ax, cx
-0x0000000000004cd9:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004cde:  0E                   push      cs
-0x0000000000004cdf:  E8 C2 DE             call      0x2ba4
-0x0000000000004ce2:  90                   nop       
-0x0000000000004ce3:  E9 71 FE             jmp       0x4b57
-0x0000000000004ce6:  30 FF                xor       bh, bh
-0x0000000000004ce8:  BA 06 00             mov       dx, 6
-0x0000000000004ceb:  89 D9                mov       cx, bx
-0x0000000000004ced:  89 D3                mov       bx, dx
-0x0000000000004cef:  89 C2                mov       dx, ax
-0x0000000000004cf1:  89 C8                mov       ax, cx
-0x0000000000004cf3:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004cf8:  0E                   push      cs
-0x0000000000004cf9:  E8 A8 DE             call      0x2ba4
-0x0000000000004cfc:  90                   nop       
-0x0000000000004cfd:  E9 57 FE             jmp       0x4b57
-0x0000000000004d00:  30 FF                xor       bh, bh
-0x0000000000004d02:  BA 01 00             mov       dx, 1
-0x0000000000004d05:  89 D9                mov       cx, bx
-0x0000000000004d07:  89 D3                mov       bx, dx
-0x0000000000004d09:  89 C2                mov       dx, ax
-0x0000000000004d0b:  89 C8                mov       ax, cx
-0x0000000000004d0d:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004d12:  0E                   push      cs
-0x0000000000004d13:  E8 8E DE             call      0x2ba4
-0x0000000000004d16:  90                   nop       
-0x0000000000004d17:  E9 3D FE             jmp       0x4b57
-0x0000000000004d1a:  FF 76 0E             push      word ptr [bp + 0xe]
-0x0000000000004d1d:  89 CA                mov       dx, cx
-0x0000000000004d1f:  30 FF                xor       bh, bh
-0x0000000000004d21:  FF 76 0C             push      word ptr [bp + 0xc]
-0x0000000000004d24:  89 D8                mov       ax, bx
-0x0000000000004d26:  89 F3                mov       bx, si
-0x0000000000004d28:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004d2d:  E8 D0 15             call      0x6300
-0x0000000000004d30:  E9 24 FE             jmp       0x4b57
-0x0000000000004d33:  88 D8                mov       al, bl
-0x0000000000004d35:  BA 01 00             mov       dx, 1
-0x0000000000004d38:  30 E4                xor       ah, ah
-0x0000000000004d3a:  E8 7F D2             call      0x1fbc
-0x0000000000004d3d:  30 FF                xor       bh, bh
-0x0000000000004d3f:  BA 01 00             mov       dx, 1
-0x0000000000004d42:  8A 46 F6             mov       al, byte ptr [bp - 0xa]
-0x0000000000004d45:  89 D9                mov       cx, bx
-0x0000000000004d47:  89 D3                mov       bx, dx
-0x0000000000004d49:  30 E4                xor       ah, ah
-0x0000000000004d4b:  89 CA                mov       dx, cx
-0x0000000000004d4d:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004d52:  0E                   push      cs
-0x0000000000004d53:  E8 4E DE             call      0x2ba4
-0x0000000000004d56:  90                   nop       
-0x0000000000004d57:  E9 FD FD             jmp       0x4b57
-0x0000000000004d5a:  30 FF                xor       bh, bh
-0x0000000000004d5c:  BA 02 00             mov       dx, 2
-0x0000000000004d5f:  89 D8                mov       ax, bx
-0x0000000000004d61:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004d66:  E8 53 D2             call      0x1fbc
-0x0000000000004d69:  E9 EB FD             jmp       0x4b57
-0x0000000000004d6c:  9A 34 19 A7 0A       lcall     0xaa7:0x1934
-0x0000000000004d71:  83 7E FC FF          cmp       word ptr [bp - 4], -1
-0x0000000000004d75:  74 03                je        0x4d7a
-0x0000000000004d77:  E9 DD FD             jmp       0x4b57
-0x0000000000004d7a:  C9                   LEAVE_MACRO     
-0x0000000000004d7b:  5F                   pop       di
-0x0000000000004d7c:  5E                   pop       si
-0x0000000000004d7d:  59                   pop       cx
-0x0000000000004d7e:  CA 04 00             retf      4
-0x0000000000004d81:  89 C2                mov       dx, ax
-0x0000000000004d83:  30 FF                xor       bh, bh
-0x0000000000004d85:  31 C9                xor       cx, cx
-0x0000000000004d87:  89 D8                mov       ax, bx
-0x0000000000004d89:  89 CB                mov       bx, cx
-0x0000000000004d8b:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004d90:  E8 5B F5             call      0x42ee
-0x0000000000004d93:  E9 C1 FD             jmp       0x4b57
-0x0000000000004d96:  30 FF                xor       bh, bh
-0x0000000000004d98:  BA 01 00             mov       dx, 1
-0x0000000000004d9b:  89 D8                mov       ax, bx
-0x0000000000004d9d:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004da2:  E8 4B F7             call      0x44f0
-0x0000000000004da5:  E9 AF FD             jmp       0x4b57
-0x0000000000004da8:  BA 09 00             mov       dx, 9
-0x0000000000004dab:  30 FF                xor       bh, bh
-0x0000000000004dad:  89 C1                mov       cx, ax
-0x0000000000004daf:  89 D8                mov       ax, bx
-0x0000000000004db1:  89 D3                mov       bx, dx
-0x0000000000004db3:  89 CA                mov       dx, cx
-0x0000000000004db5:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004dba:  0E                   push      cs
-0x0000000000004dbb:  E8 E6 DD             call      0x2ba4
-0x0000000000004dbe:  90                   nop       
-0x0000000000004dbf:  E9 95 FD             jmp       0x4b57
-0x0000000000004dc2:  30 FF                xor       bh, bh
-0x0000000000004dc4:  89 D8                mov       ax, bx
-0x0000000000004dc6:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004dcb:  E8 EA D3             call      0x21b8
-0x0000000000004dce:  E9 86 FD             jmp       0x4b57
-0x0000000000004dd1:  BA 07 00             mov       dx, 7
-0x0000000000004dd4:  30 FF                xor       bh, bh
-0x0000000000004dd6:  89 C1                mov       cx, ax
-0x0000000000004dd8:  89 D8                mov       ax, bx
-0x0000000000004dda:  89 D3                mov       bx, dx
-0x0000000000004ddc:  89 CA                mov       dx, cx
-0x0000000000004dde:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004de3:  0E                   push      cs
-0x0000000000004de4:  3E E8 BC DD          call      0x2ba4
-0x0000000000004de8:  E9 6C FD             jmp       0x4b57
-0x0000000000004deb:  30 FF                xor       bh, bh
-0x0000000000004ded:  BA 08 00             mov       dx, 8
-0x0000000000004df0:  89 D9                mov       cx, bx
-0x0000000000004df2:  89 D3                mov       bx, dx
-0x0000000000004df4:  89 C2                mov       dx, ax
-0x0000000000004df6:  89 C8                mov       ax, cx
-0x0000000000004df8:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004dfd:  0E                   push      cs
-0x0000000000004dfe:  3E E8 A2 DD          call      0x2ba4
-0x0000000000004e02:  E9 52 FD             jmp       0x4b57
-0x0000000000004e05:  88 D8                mov       al, bl
-0x0000000000004e07:  31 D2                xor       dx, dx
-0x0000000000004e09:  30 E4                xor       ah, ah
-0x0000000000004e0b:  31 DB                xor       bx, bx
-0x0000000000004e0d:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004e12:  E8 1B F2             call      0x4030
-0x0000000000004e15:  E9 3F FD             jmp       0x4b57
-0x0000000000004e18:  88 D8                mov       al, bl
-0x0000000000004e1a:  BA 05 00             mov       dx, 5
-0x0000000000004e1d:  30 E4                xor       ah, ah
-0x0000000000004e1f:  E9 2B FD             jmp       0x4b4d
-0x0000000000004e22:  88 D8                mov       al, bl
-0x0000000000004e24:  BA 06 00             mov       dx, 6
-0x0000000000004e27:  30 E4                xor       ah, ah
-0x0000000000004e29:  E9 21 FD             jmp       0x4b4d
-0x0000000000004e2c:  88 D8                mov       al, bl
-0x0000000000004e2e:  BA 01 00             mov       dx, 1
-0x0000000000004e31:  30 E4                xor       ah, ah
-0x0000000000004e33:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004e38:  E8 F9 E0             call      0x2f34
-0x0000000000004e3b:  E9 19 FD             jmp       0x4b57
-0x0000000000004e3e:  88 D8                mov       al, bl
-0x0000000000004e40:  BA 07 00             mov       dx, 7
-0x0000000000004e43:  30 E4                xor       ah, ah
-0x0000000000004e45:  E9 05 FD             jmp       0x4b4d
-0x0000000000004e48:  88 D9                mov       cl, bl
-0x0000000000004e4a:  89 C2                mov       dx, ax
-0x0000000000004e4c:  30 ED                xor       ch, ch
-0x0000000000004e4e:  BB 04 00             mov       bx, 4
-0x0000000000004e51:  89 C8                mov       ax, cx
-0x0000000000004e53:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004e58:  0E                   push      cs
-0x0000000000004e59:  E8 48 DD             call      0x2ba4
-0x0000000000004e5c:  90                   nop       
-0x0000000000004e5d:  E9 F7 FC             jmp       0x4b57
-0x0000000000004e60:  C6 46 FF 00          mov       byte ptr [bp - 1], 0
-0x0000000000004e64:  88 5E FE             mov       byte ptr [bp - 2], bl
-0x0000000000004e67:  89 C2                mov       dx, ax
-0x0000000000004e69:  31 C9                xor       cx, cx
-0x0000000000004e6b:  BB 04 00             mov       bx, 4
-0x0000000000004e6e:  8B 46 FE             mov       ax, word ptr [bp - 2]
-0x0000000000004e71:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004e76:  E8 75 F4             call      0x42ee
-0x0000000000004e79:  E9 DB FC             jmp       0x4b57
-0x0000000000004e7c:  9A 42 19 A7 0A       lcall     0xaa7:0x1942
-0x0000000000004e81:  E9 ED FE             jmp       0x4d71
-0x0000000000004e84:  84 FF                test      bh, bh
-0x0000000000004e86:  75 03                jne       0x4e8b
-0x0000000000004e88:  E9 E6 FE             jmp       0x4d71
-0x0000000000004e8b:  FF 76 0E             push      word ptr [bp + 0xe]
-0x0000000000004e8e:  88 D8                mov       al, bl
-0x0000000000004e90:  89 CA                mov       dx, cx
-0x0000000000004e92:  FF 76 0C             push      word ptr [bp + 0xc]
-0x0000000000004e95:  89 F3                mov       bx, si
-0x0000000000004e97:  30 E4                xor       ah, ah
-0x0000000000004e99:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004e9e:  E8 5F 14             call      0x6300
-0x0000000000004ea1:  E9 B3 FC             jmp       0x4b57
-0x0000000000004ea4:  88 D9                mov       cl, bl
-0x0000000000004ea6:  89 C2                mov       dx, ax
-0x0000000000004ea8:  30 ED                xor       ch, ch
-0x0000000000004eaa:  BB 0A 00             mov       bx, 0xa
-0x0000000000004ead:  89 C8                mov       ax, cx
-0x0000000000004eaf:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004eb4:  0E                   push      cs
-0x0000000000004eb5:  E8 EC DC             call      0x2ba4
-0x0000000000004eb8:  90                   nop       
-0x0000000000004eb9:  E9 9B FC             jmp       0x4b57
-0x0000000000004ebc:  88 D8                mov       al, bl
-0x0000000000004ebe:  BA 05 00             mov       dx, 5
-0x0000000000004ec1:  30 E4                xor       ah, ah
-0x0000000000004ec3:  C7 46 FC 00 00       mov       word ptr [bp - 4], 0
-0x0000000000004ec8:  E8 F1 D0             call      0x1fbc
-0x0000000000004ecb:  E9 89 FC             jmp       0x4b57
-0x0000000000004ece:  30 FF                xor       bh, bh
-0x0000000000004ed0:  BA 02 00             mov       dx, 2
-0x0000000000004ed3:  89 D8                mov       ax, bx
-0x0000000000004ed5:  E8 E4 D0             call      0x1fbc
-0x0000000000004ed8:  E9 96 FE             jmp       0x4d71
-0x0000000000004edb:  30 FF                xor       bh, bh
-0x0000000000004edd:  BA 03 00             mov       dx, 3
-0x0000000000004ee0:  89 D8                mov       ax, bx
-0x0000000000004ee2:  E8 D7 D0             call      0x1fbc
-0x0000000000004ee5:  E9 89 FE             jmp       0x4d71
-0x0000000000004ee8:  30 FF                xor       bh, bh
-0x0000000000004eea:  89 D8                mov       ax, bx
-0x0000000000004eec:  E8 C9 D2             call      0x21b8
-0x0000000000004eef:  E9 7F FE             jmp       0x4d71
-0x0000000000004ef2:  30 FF                xor       bh, bh
-0x0000000000004ef4:  BA 02 00             mov       dx, 2
-0x0000000000004ef7:  89 D8                mov       ax, bx
-0x0000000000004ef9:  0E                   push      cs
-0x0000000000004efa:  3E E8 A0 D5          call      0x249e
-0x0000000000004efe:  E9 70 FE             jmp       0x4d71
-0x0000000000004f01:  30 FF                xor       bh, bh
-0x0000000000004f03:  BA 01 00             mov       dx, 1
-0x0000000000004f06:  89 D8                mov       ax, bx
-0x0000000000004f08:  0E                   push      cs
-0x0000000000004f09:  E8 92 D5             call      0x249e
-0x0000000000004f0c:  90                   nop       
-0x0000000000004f0d:  E9 61 FE             jmp       0x4d71
-0x0000000000004f10:  30 FF                xor       bh, bh
-0x0000000000004f12:  BA 04 00             mov       dx, 4
-0x0000000000004f15:  89 D8                mov       ax, bx
-0x0000000000004f17:  E8 A2 D0             call      0x1fbc
-0x0000000000004f1a:  E9 54 FE             jmp       0x4d71
-0x0000000000004f1d:  B9 23 00             mov       cx, 0x23
-0x0000000000004f20:  30 FF                xor       bh, bh
-0x0000000000004f22:  BA 01 00             mov       dx, 1
-0x0000000000004f25:  89 D8                mov       ax, bx
-0x0000000000004f27:  89 CB                mov       bx, cx
-0x0000000000004f29:  E8 04 F1             call      0x4030
-0x0000000000004f2c:  E9 42 FE             jmp       0x4d71
-0x0000000000004f2f:  BA 01 00             mov       dx, 1
-0x0000000000004f32:  30 FF                xor       bh, bh
-0x0000000000004f34:  31 C9                xor       cx, cx
-0x0000000000004f36:  89 D8                mov       ax, bx
-0x0000000000004f38:  89 CB                mov       bx, cx
-0x0000000000004f3a:  E8 F3 F0             call      0x4030
-0x0000000000004f3d:  E9 31 FE             jmp       0x4d71
-0x0000000000004f40:  B9 FF 00             mov       cx, 0xff
-0x0000000000004f43:  30 FF                xor       bh, bh
-0x0000000000004f45:  BA 01 00             mov       dx, 1
-0x0000000000004f48:  89 D8                mov       ax, bx
-0x0000000000004f4a:  89 CB                mov       bx, cx
-0x0000000000004f4c:  E8 E1 F0             call      0x4030
-0x0000000000004f4f:  E9 1F FE             jmp       0x4d71
-0x0000000000004f52:  30 FF                xor       bh, bh
-0x0000000000004f54:  BA 01 00             mov       dx, 1
-0x0000000000004f57:  89 D9                mov       cx, bx
-0x0000000000004f59:  89 D3                mov       bx, dx
-0x0000000000004f5b:  89 C2                mov       dx, ax
-0x0000000000004f5d:  89 C8                mov       ax, cx
-0x0000000000004f5f:  0E                   push      cs
-0x0000000000004f60:  3E E8 40 DC          call      0x2ba4
-0x0000000000004f64:  E9 0A FE             jmp       0x4d71
-0x0000000000004f67:  30 FF                xor       bh, bh
-0x0000000000004f69:  31 D2                xor       dx, dx
-0x0000000000004f6b:  89 D9                mov       cx, bx
-0x0000000000004f6d:  89 D3                mov       bx, dx
-0x0000000000004f6f:  89 C2                mov       dx, ax
-0x0000000000004f71:  89 C8                mov       ax, cx
-0x0000000000004f73:  0E                   push      cs
-0x0000000000004f74:  3E E8 2C DC          call      0x2ba4
-0x0000000000004f78:  E9 F6 FD             jmp       0x4d71
-0x0000000000004f7b:  30 FF                xor       bh, bh
-0x0000000000004f7d:  BA 06 00             mov       dx, 6
-0x0000000000004f80:  89 D9                mov       cx, bx
-0x0000000000004f82:  89 D3                mov       bx, dx
-0x0000000000004f84:  89 C2                mov       dx, ax
-0x0000000000004f86:  89 C8                mov       ax, cx
-0x0000000000004f88:  0E                   push      cs
-0x0000000000004f89:  E8 18 DC             call      0x2ba4
-0x0000000000004f8c:  90                   nop       
-0x0000000000004f8d:  E9 E1 FD             jmp       0x4d71
-0x0000000000004f90:  30 FF                xor       bh, bh
-0x0000000000004f92:  BA 03 00             mov       dx, 3
-0x0000000000004f95:  89 D8                mov       ax, bx
-0x0000000000004f97:  0E                   push      cs
-0x0000000000004f98:  3E E8 02 D5          call      0x249e
-0x0000000000004f9c:  E9 D2 FD             jmp       0x4d71
-0x0000000000004f9f:  89 C2                mov       dx, ax
-0x0000000000004fa1:  30 FF                xor       bh, bh
-0x0000000000004fa3:  31 C9                xor       cx, cx
-0x0000000000004fa5:  89 DE                mov       si, bx
-0x0000000000004fa7:  89 CB                mov       bx, cx
-0x0000000000004fa9:  89 F0                mov       ax, si
-0x0000000000004fab:  E8 40 F3             call      0x42ee
-0x0000000000004fae:  E9 C0 FD             jmp       0x4d71
-0x0000000000004fb1:  BA 01 00             mov       dx, 1
-0x0000000000004fb4:  30 FF                xor       bh, bh
-0x0000000000004fb6:  31 C9                xor       cx, cx
-0x0000000000004fb8:  89 DE                mov       si, bx
-0x0000000000004fba:  89 D3                mov       bx, dx
-0x0000000000004fbc:  89 C2                mov       dx, ax
-0x0000000000004fbe:  89 F0                mov       ax, si
-0x0000000000004fc0:  E8 2B F3             call      0x42ee
-0x0000000000004fc3:  E9 AB FD             jmp       0x4d71
-0x0000000000004fc6:  88 D8                mov       al, bl
-0x0000000000004fc8:  BA 01 00             mov       dx, 1
-0x0000000000004fcb:  30 E4                xor       ah, ah
-0x0000000000004fcd:  E8 20 F5             call      0x44f0
-0x0000000000004fd0:  E9 9E FD             jmp       0x4d71
-0x0000000000004fd3:  88 D8                mov       al, bl
-0x0000000000004fd5:  31 D2                xor       dx, dx
-0x0000000000004fd7:  30 E4                xor       ah, ah
-0x0000000000004fd9:  0E                   push      cs
-0x0000000000004fda:  3E E8 C0 D4          call      0x249e
-0x0000000000004fde:  E9 90 FD             jmp       0x4d71
-0x0000000000004fe1:  88 D9                mov       cl, bl
-0x0000000000004fe3:  89 C2                mov       dx, ax
-0x0000000000004fe5:  30 ED                xor       ch, ch
-0x0000000000004fe7:  BB 03 00             mov       bx, 3
-0x0000000000004fea:  89 C8                mov       ax, cx
-0x0000000000004fec:  0E                   push      cs
-0x0000000000004fed:  E8 B4 DB             call      0x2ba4
-0x0000000000004ff0:  90                   nop       
-0x0000000000004ff1:  E9 7D FD             jmp       0x4d71
-0x0000000000004ff4:  88 D9                mov       cl, bl
-0x0000000000004ff6:  89 C2                mov       dx, ax
-0x0000000000004ff8:  30 ED                xor       ch, ch
-0x0000000000004ffa:  BB 07 00             mov       bx, 7
-0x0000000000004ffd:  89 C8                mov       ax, cx
-0x0000000000004fff:  0E                   push      cs
-0x0000000000005000:  3E E8 A0 DB          call      0x2ba4
-0x0000000000005004:  E9 6A FD             jmp       0x4d71
-0x0000000000005007:  88 D9                mov       cl, bl
-0x0000000000005009:  89 C2                mov       dx, ax
-0x000000000000500b:  30 ED                xor       ch, ch
-0x000000000000500d:  BB 08 00             mov       bx, 8
-0x0000000000005010:  89 C8                mov       ax, cx
-0x0000000000005012:  0E                   push      cs
-0x0000000000005013:  E8 8E DB             call      0x2ba4
-0x0000000000005016:  90                   nop       
-0x0000000000005017:  E9 57 FD             jmp       0x4d71
-0x000000000000501a:  88 D9                mov       cl, bl
-0x000000000000501c:  89 C2                mov       dx, ax
-0x000000000000501e:  30 ED                xor       ch, ch
-0x0000000000005020:  BB 09 00             mov       bx, 9
-0x0000000000005023:  89 C8                mov       ax, cx
-0x0000000000005025:  0E                   push      cs
-0x0000000000005026:  3E E8 7A DB          call      0x2ba4
-0x000000000000502a:  E9 44 FD             jmp       0x4d71
-0x000000000000502d:  C6 46 FF 00          mov       byte ptr [bp - 1], 0
-0x0000000000005031:  88 5E FE             mov       byte ptr [bp - 2], bl
-0x0000000000005034:  89 C2                mov       dx, ax
-0x0000000000005036:  31 C9                xor       cx, cx
-0x0000000000005038:  BB 03 00             mov       bx, 3
-0x000000000000503b:  8B 46 FE             mov       ax, word ptr [bp - 2]
-0x000000000000503e:  E8 AD F2             call      0x42ee
-0x0000000000005041:  E9 2D FD             jmp       0x4d71
-0x0000000000005044:  88 D9                mov       cl, bl
-0x0000000000005046:  89 C2                mov       dx, ax
-0x0000000000005048:  30 ED                xor       ch, ch
-0x000000000000504a:  BB 05 00             mov       bx, 5
-0x000000000000504d:  89 C8                mov       ax, cx
-0x000000000000504f:  0E                   push      cs
-0x0000000000005050:  3E E8 50 DB          call      0x2ba4
-0x0000000000005054:  E9 1A FD             jmp       0x4d71
-0x0000000000005057:  FF 76 0E             push      word ptr [bp + 0xe]
-0x000000000000505a:  88 D8                mov       al, bl
-0x000000000000505c:  89 CA                mov       dx, cx
-0x000000000000505e:  FF 76 0C             push      word ptr [bp + 0xc]
-0x0000000000005061:  89 F3                mov       bx, si
-0x0000000000005063:  30 E4                xor       ah, ah
-0x0000000000005065:  E8 98 12             call      0x6300
-0x0000000000005068:  E9 06 FD             jmp       0x4d71
-0x000000000000506b:  88 D9                mov       cl, bl
-0x000000000000506d:  89 C2                mov       dx, ax
-0x000000000000506f:  30 ED                xor       ch, ch
-0x0000000000005071:  BB 02 00             mov       bx, 2
-0x0000000000005074:  89 C8                mov       ax, cx
-0x0000000000005076:  0E                   push      cs
-0x0000000000005077:  E8 2A DB             call      0x2ba4
-0x000000000000507a:  90                   nop       
-0x000000000000507b:  E9 F3 FC             jmp       0x4d71
-0x000000000000507e:  88 D8                mov       al, bl
-0x0000000000005080:  BA 05 00             mov       dx, 5
-0x0000000000005083:  30 E4                xor       ah, ah
-0x0000000000005085:  0E                   push      cs
-0x0000000000005086:  3E E8 14 D4          call      0x249e
-0x000000000000508a:  E9 E4 FC             jmp       0x4d71
-0x000000000000508d:  88 D8                mov       al, bl
-0x000000000000508f:  BA 06 00             mov       dx, 6
-0x0000000000005092:  30 E4                xor       ah, ah
-0x0000000000005094:  0E                   push      cs
-0x0000000000005095:  E8 06 D4             call      0x249e
-0x0000000000005098:  90                   nop       
-0x0000000000005099:  E9 D5 FC             jmp       0x4d71
-0x000000000000509c:  88 D8                mov       al, bl
-0x000000000000509e:  BA 07 00             mov       dx, 7
-0x00000000000050a1:  30 E4                xor       ah, ah
-0x00000000000050a3:  0E                   push      cs
-0x00000000000050a4:  3E E8 F6 D3          call      0x249e
-0x00000000000050a8:  E9 C6 FC             jmp       0x4d71
-0x00000000000050ab:  C6 46 FF 00          mov       byte ptr [bp - 1], 0
-0x00000000000050af:  88 5E FE             mov       byte ptr [bp - 2], bl
-0x00000000000050b2:  89 C2                mov       dx, ax
-0x00000000000050b4:  31 C9                xor       cx, cx
-0x00000000000050b6:  BB 04 00             mov       bx, 4
-0x00000000000050b9:  8B 46 FE             mov       ax, word ptr [bp - 2]
-0x00000000000050bc:  E8 2F F2             call      0x42ee
-0x00000000000050bf:  E9 AF FC             jmp       0x4d71
-0x00000000000050c2:  84 FF                test      bh, bh
-0x00000000000050c4:  75 03                jne       0x50c9
-0x00000000000050c6:  E9 A8 FC             jmp       0x4d71
-0x00000000000050c9:  FF 76 0E             push      word ptr [bp + 0xe]
-0x00000000000050cc:  88 D8                mov       al, bl
-0x00000000000050ce:  89 CA                mov       dx, cx
-0x00000000000050d0:  FF 76 0C             push      word ptr [bp + 0xc]
-0x00000000000050d3:  89 F3                mov       bx, si
-0x00000000000050d5:  30 E4                xor       ah, ah
-0x00000000000050d7:  E8 26 12             call      0x6300
-0x00000000000050da:  E9 94 FC             jmp       0x4d71
-0x00000000000050dd:  88 D9                mov       cl, bl
-0x00000000000050df:  89 C2                mov       dx, ax
-0x00000000000050e1:  30 ED                xor       ch, ch
-0x00000000000050e3:  BB 04 00             mov       bx, 4
-0x00000000000050e6:  89 C8                mov       ax, cx
-0x00000000000050e8:  0E                   push      cs
-0x00000000000050e9:  E8 B8 DA             call      0x2ba4
-0x00000000000050ec:  90                   nop       
-0x00000000000050ed:  E9 81 FC             jmp       0x4d71
-0x00000000000050f0:  88 D9                mov       cl, bl
-0x00000000000050f2:  89 C2                mov       dx, ax
-0x00000000000050f4:  30 ED                xor       ch, ch
-0x00000000000050f6:  BB 0A 00             mov       bx, 0xa
-0x00000000000050f9:  89 C8                mov       ax, cx
-0x00000000000050fb:  0E                   push      cs
-0x00000000000050fc:  3E E8 A4 DA          call      0x2ba4
-0x0000000000005100:  E9 6E FC             jmp       0x4d71
+;void __far P_CrossSpecialLine( int16_t		linenum,int16_t		side,mobj_t __near*	thing,mobj_pos_t __far* thing_pos){
+
+
+push      cx
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 8
+push      ax
+mov       cx, dx
+mov       si, bx
+mov       di, 0Ah
+mov       word ptr [bp - 4], -1
+mov       dx, ax
+mov       ax, LINES_PHYSICS_SEGMENT
+shl       dx, 4
+mov       word ptr [bp - 6], ax
+mov       word ptr [bp - 8], dx
+mov       es, ax
+mov       bx, dx
+mov       ax, word ptr es:[di]
+mov       di, dx
+mov       bl, byte ptr es:[bx + LINE_PHYSICS_T.lp_tag]
+mov       dl, byte ptr es:[di + LINE_PHYSICS_T.lp_special]
+mov       bh, byte ptr ds:[si + MOBJ_T.m_mobjtype]
+xor       dh, dh
+test      bh, bh
+je        label_1
+cmp       bh, MT_TROOPSHOT
+jae       label_2
+cmp       bh, MT_BRUISERSHOT
+je        exit_p_crossspecialline
+label_4:
+xor       di, di
+cmp       dx, 39  ; TELEPORT TRIGGER
+jae       label_3
+cmp       dx, 10  ; PLAT DOWN-WAIT-UP-STAY TRIGGER
+jne       jump_to_label_5
+label_1:
+sub       dx, 2
+cmp       dx, 139
+ja        jump_to_done_with_switch_block
+mov       di, dx
+add       di, dx
+jmp       word ptr cs:[di + OFFSET cross_special_line_jump_table]
+switch_case_2:
+xor       bh, bh
+mov       dx, 3
+call_do_door:
+mov       ax, bx
+call_do_door_dont_swap_ax:
+mov       word ptr [bp - 4], 0
+push      cs
+call      EV_DoDoor_
+nop       
+end_switch_block_with_setlinespecial:
+mov       bx, word ptr [bp - 0Ah]
+shl       bx, 4
+mov       es, word ptr [bp - 6]
+add       bx, word ptr [bp - 8]
+mov       al, byte ptr [bp - 4]
+mov       byte ptr es:[bx + LINE_PHYSICS_T.lp_special], al
+exit_p_crossspecialline:
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       cx
+retf      4
+label_2:
+cmp       bh, MT_HEADSHOT
+jbe       exit_p_crossspecialline
+cmp       bh, MT_BFG
+jbe       exit_p_crossspecialline
+jmp       label_4
+label_3:
+jbe       label_1  
+cmp       dx, 97  ; TELEPORT RETRIGGER 
+jae       label_8
+cmp       dx, 88  ; PLAT DOWN-WAIT-UP-STAY RETRIGGER
+label_6:
+je        label_1
+label_11:
+test      di, di
+je        exit_p_crossspecialline
+jmp       label_1
+jump_to_label_5:
+jmp       label_5
+jump_to_done_with_switch_block:
+jmp       done_with_switch_block
+label_8:
+jbe       label_1
+cmp       dx, 125  ; TELEPORT MONSTERONLY TRIGGER
+jb        label_11
+cmp       dx, 126  ; TELEPORT MONSTERONLY RETRIGGER
+jbe       label_1
+test      di, di
+je        exit_p_crossspecialline
+jmp       label_1
+label_5:
+cmp       dx, 4   ; RAISE DOOR
+jmp       label_6
+switch_case_3:
+xor       bh, bh
+mov       dx, 2
+jmp       call_do_door
+switch_case_4:
+xor       bh, bh
+xor       dx, dx
+jmp       call_do_door
+switch_case_5:
+mov       dx, 3
+xor       bh, bh
+mov       cx, ax
+mov       ax, bx
+mov       bx, dx
+mov       dx, cx
+mov       word ptr [bp - 4], 0
+push      cs
+call      EV_DoFloor_
+nop       
+jmp       end_switch_block_with_setlinespecial
+switch_case_6:
+xor       bh, bh
+mov       dx, 4
+mov       ax, bx
+mov       word ptr [bp - 4], 0
+call      EV_DoCeiling_
+jmp       end_switch_block_with_setlinespecial
+switch_case_8:
+xor       bh, bh
+xor       dx, dx
+mov       ax, bx
+mov       word ptr [bp - 4], 0
+call      EV_BuildStairs_
+jmp       end_switch_block_with_setlinespecial
+switch_case_10:
+mov       dx, 1
+xor       bh, bh
+xor       cx, cx
+mov       si, bx
+mov       bx, dx
+mov       dx, ax
+mov       ax, si
+mov       word ptr [bp - 4], 0
+call      EV_DoPlat_
+jmp       end_switch_block_with_setlinespecial
+switch_case_12:
+mov       dx, 1
+xor       bh, bh
+xor       ax, ax
+mov       cx, bx
+mov       bx, ax
+mov       ax, cx
+mov       word ptr [bp - 4], 0
+call      EV_LightChange_
+jmp       end_switch_block_with_setlinespecial
+switch_case_13:
+mov       ax, 255
+xor       bh, bh
+mov       dx, 1
+mov       cx, bx
+mov       bx, ax
+mov       ax, cx
+mov       word ptr [bp - 4], 0
+call      EV_LightChange_
+jmp       end_switch_block_with_setlinespecial
+switch_case_16:
+xor       bh, bh
+mov       dx, 1
+jmp       call_do_door
+switch_case_17:
+xor       bh, bh
+mov       ax, bx
+mov       word ptr [bp - 4], 0
+call      EV_StartLightStrobing_
+jmp       end_switch_block_with_setlinespecial
+switch_case_19:
+mov       cx, ax
+xor       bh, bh
+xor       dx, dx
+mov       ax, bx
+mov       bx, dx
+mov       dx, cx
+mov       word ptr [bp - 4], 0
+push      cs
+call      EV_DoFloor_
+jmp       end_switch_block_with_setlinespecial
+switch_case_22:
+mov       si, 3
+mov       dx, ax
+xor       bh, bh
+xor       cx, cx
+mov       ax, bx
+mov       bx, si
+mov       word ptr [bp - 4], 0
+call      EV_DoPlat_
+jmp       end_switch_block_with_setlinespecial
+switch_case_25:
+xor       bh, bh
+mov       dx, 3
+mov       ax, bx
+mov       word ptr [bp - 4], 0
+call      EV_DoCeiling_
+jmp       end_switch_block_with_setlinespecial
+switch_case_30:
+mov       dx, 5
+xor       bh, bh
+mov       cx, ax
+mov       ax, bx
+mov       bx, dx
+mov       dx, cx
+mov       word ptr [bp - 4], 0
+push      cs
+call      EV_DoFloor_
+jmp       end_switch_block_with_setlinespecial
+switch_case_35:
+mov       ax, 35
+xor       bh, bh
+mov       dx, 1
+mov       cx, bx
+mov       bx, ax
+mov       ax, cx
+mov       word ptr [bp - 4], 0
+call      EV_LightChange_
+jmp       end_switch_block_with_setlinespecial
+switch_case_36:
+xor       bh, bh
+mov       dx, 2
+mov       cx, bx
+mov       bx, dx
+mov       dx, ax
+mov       ax, cx
+mov       word ptr [bp - 4], 0
+push      cs
+call      EV_DoFloor_
+nop       
+jmp       end_switch_block_with_setlinespecial
+switch_case_37:
+xor       bh, bh
+mov       dx, 6
+mov       cx, bx
+mov       bx, dx
+mov       dx, ax
+mov       ax, cx
+mov       word ptr [bp - 4], 0
+push      cs
+call      EV_DoFloor_
+nop       
+jmp       end_switch_block_with_setlinespecial
+switch_case_38:
+xor       bh, bh
+mov       dx, 1
+mov       cx, bx
+mov       bx, dx
+mov       dx, ax
+mov       ax, cx
+mov       word ptr [bp - 4], 0
+push      cs
+call      EV_DoFloor_
+nop       
+jmp       end_switch_block_with_setlinespecial
+switch_case_39:
+push      word ptr [bp + 0Eh]
+mov       dx, cx
+xor       bh, bh
+push      word ptr [bp + 0Ch]
+mov       ax, bx
+mov       bx, si
+mov       word ptr [bp - 4], 0
+call      EV_Teleport_
+jmp       end_switch_block_with_setlinespecial
+switch_case_40:
+mov       al, bl
+mov       dx, 1
+xor       ah, ah
+call      EV_DoCeiling_
+xor       bh, bh
+mov       dx, 1
+mov       al, byte ptr [bp - 0Ah]
+mov       cx, bx
+mov       bx, dx
+xor       ah, ah
+mov       dx, cx
+mov       word ptr [bp - 4], 0
+push      cs
+call      EV_DoFloor_
+nop       
+jmp       end_switch_block_with_setlinespecial
+switch_case_44:
+xor       bh, bh
+mov       dx, 2
+mov       ax, bx
+mov       word ptr [bp - 4], 0
+call      EV_DoCeiling_
+jmp       end_switch_block_with_setlinespecial
+switch_case_52:
+call      G_ExitLevel_
+switch_case_default:
+done_with_switch_block:
+cmp       word ptr [bp - 4], -1
+je        dont_set_line_special
+jmp       end_switch_block_with_setlinespecial
+dont_set_line_special:
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       cx
+retf      4
+switch_case_53:
+mov       dx, ax
+xor       bh, bh
+xor       cx, cx
+mov       ax, bx
+mov       bx, cx
+mov       word ptr [bp - 4], 0
+call      EV_DoPlat_
+jmp       end_switch_block_with_setlinespecial
+switch_case_54:
+xor       bh, bh
+mov       dx, 1
+mov       ax, bx
+mov       word ptr [bp - 4], 0
+call      EV_PlatFunc_
+jmp       end_switch_block_with_setlinespecial
+switch_case_56:
+mov       dx, 9
+xor       bh, bh
+mov       cx, ax
+mov       ax, bx
+mov       bx, dx
+mov       dx, cx
+mov       word ptr [bp - 4], 0
+push      cs
+call      EV_DoFloor_
+nop       
+jmp       end_switch_block_with_setlinespecial
+switch_case_57:
+xor       bh, bh
+mov       ax, bx
+mov       word ptr [bp - 4], 0
+call      EV_CeilingCrushStop_
+jmp       end_switch_block_with_setlinespecial
+switch_case_58:
+mov       dx, 7
+xor       bh, bh
+mov       cx, ax
+mov       ax, bx
+mov       bx, dx
+mov       dx, cx
+mov       word ptr [bp - 4], 0
+push      cs
+call      EV_DoFloor_
+jmp       end_switch_block_with_setlinespecial
+switch_case_59:
+xor       bh, bh
+mov       dx, 8
+mov       cx, bx
+mov       bx, dx
+mov       dx, ax
+mov       ax, cx
+mov       word ptr [bp - 4], 0
+push      cs
+call      EV_DoFloor_
+jmp       end_switch_block_with_setlinespecial
+switch_case_104:
+mov       al, bl
+xor       dx, dx
+xor       ah, ah
+xor       bx, bx
+mov       word ptr [bp - 4], 0
+call      EV_LightChange_
+jmp       end_switch_block_with_setlinespecial
+switch_case_108:
+mov       al, bl
+mov       dx, 5
+xor       ah, ah
+jmp       call_do_door_dont_swap_ax
+switch_case_109:
+mov       al, bl
+mov       dx, 6
+xor       ah, ah
+jmp       call_do_door_dont_swap_ax
+switch_case_100:
+mov       al, bl
+mov       dx, 1
+xor       ah, ah
+mov       word ptr [bp - 4], 0
+call      EV_BuildStairs_
+jmp       end_switch_block_with_setlinespecial
+switch_case_110:
+mov       al, bl
+mov       dx, 7
+xor       ah, ah
+jmp       call_do_door_dont_swap_ax
+switch_case_119:
+mov       cl, bl
+mov       dx, ax
+xor       ch, ch
+mov       bx, 4
+mov       ax, cx
+mov       word ptr [bp - 4], 0
+push      cs
+call      EV_DoFloor_
+nop       
+jmp       end_switch_block_with_setlinespecial
+switch_case_121:
+mov       byte ptr [bp - 1], 0
+mov       byte ptr [bp - 2], bl
+mov       dx, ax
+xor       cx, cx
+mov       bx, 4
+mov       ax, word ptr [bp - 2]
+mov       word ptr [bp - 4], 0
+call      EV_DoPlat_
+jmp       end_switch_block_with_setlinespecial
+switch_case_124:
+call      G_SecretExitLevel_
+jmp       done_with_switch_block
+switch_case_125:
+test      bh, bh
+jne       label_9
+jmp       done_with_switch_block
+label_9:
+push      word ptr [bp + 0Eh]
+mov       al, bl
+mov       dx, cx
+push      word ptr [bp + 0Ch]
+mov       bx, si
+xor       ah, ah
+mov       word ptr [bp - 4], 0
+call      EV_Teleport_
+jmp       end_switch_block_with_setlinespecial
+switch_case_130:
+mov       cl, bl
+mov       dx, ax
+xor       ch, ch
+mov       bx, FLOOR_RAISEFLOORTURBO
+mov       ax, cx
+mov       word ptr [bp - 4], 0
+push      cs
+call      EV_DoFloor_
+nop       
+jmp       end_switch_block_with_setlinespecial
+switch_case_141:
+mov       al, bl
+mov       dx, 5
+xor       ah, ah
+mov       word ptr [bp - 4], 0
+call      EV_DoCeiling_
+jmp       end_switch_block_with_setlinespecial
+switch_case_72:
+xor       bh, bh
+mov       dx, 2
+mov       ax, bx
+call      EV_DoCeiling_
+jmp       done_with_switch_block
+switch_case_73:
+xor       bh, bh
+mov       dx, 3
+mov       ax, bx
+call      EV_DoCeiling_
+jmp       done_with_switch_block
+switch_case_74:
+xor       bh, bh
+mov       ax, bx
+call      EV_CeilingCrushStop_
+jmp       done_with_switch_block
+switch_case_75:
+xor       bh, bh
+mov       dx, 2
+mov       ax, bx
+push      cs
+call      EV_DoDoor_
+jmp       done_with_switch_block
+switch_case_76:
+xor       bh, bh
+mov       dx, 1
+mov       ax, bx
+push      cs
+call      EV_DoDoor_
+nop       
+jmp       done_with_switch_block
+switch_case_77:
+xor       bh, bh
+mov       dx, 4
+mov       ax, bx
+call      EV_DoCeiling_
+jmp       done_with_switch_block
+switch_case_79:
+mov       cx, 35
+xor       bh, bh
+mov       dx, 1
+mov       ax, bx
+mov       bx, cx
+call      EV_LightChange_
+jmp       done_with_switch_block
+switch_case_80:
+mov       dx, 1
+xor       bh, bh
+xor       cx, cx
+mov       ax, bx
+mov       bx, cx
+call      EV_LightChange_
+jmp       done_with_switch_block
+switch_case_81:
+mov       cx, 255
+xor       bh, bh
+mov       dx, 1
+mov       ax, bx
+mov       bx, cx
+call      EV_LightChange_
+jmp       done_with_switch_block
+switch_case_82:
+xor       bh, bh
+mov       dx, 1
+mov       cx, bx
+mov       bx, dx
+mov       dx, ax
+mov       ax, cx
+push      cs
+call      EV_DoFloor_
+jmp       done_with_switch_block
+switch_case_83:
+xor       bh, bh
+xor       dx, dx
+mov       cx, bx
+mov       bx, dx
+mov       dx, ax
+mov       ax, cx
+push      cs
+call      EV_DoFloor_
+jmp       done_with_switch_block
+switch_case_84:
+xor       bh, bh
+mov       dx, 6
+mov       cx, bx
+mov       bx, dx
+mov       dx, ax
+mov       ax, cx
+push      cs
+call      EV_DoFloor_
+nop       
+jmp       done_with_switch_block
+switch_case_86:
+xor       bh, bh
+mov       dx, 3
+mov       ax, bx
+push      cs
+call      EV_DoDoor_
+jmp       done_with_switch_block
+switch_case_87:
+mov       dx, ax
+xor       bh, bh
+xor       cx, cx
+mov       si, bx
+mov       bx, cx
+mov       ax, si
+call      EV_DoPlat_
+jmp       done_with_switch_block
+switch_case_88:
+mov       dx, 1
+xor       bh, bh
+xor       cx, cx
+mov       si, bx
+mov       bx, dx
+mov       dx, ax
+mov       ax, si
+call      EV_DoPlat_
+jmp       done_with_switch_block
+switch_case_89:
+mov       al, bl
+mov       dx, 1
+xor       ah, ah
+call      EV_PlatFunc_
+jmp       done_with_switch_block
+switch_case_90:
+mov       al, bl
+xor       dx, dx
+xor       ah, ah
+push      cs
+call      EV_DoDoor_
+jmp       done_with_switch_block
+switch_case_91:
+mov       cl, bl
+mov       dx, ax
+xor       ch, ch
+mov       bx, 3
+mov       ax, cx
+push      cs
+call      EV_DoFloor_
+nop       
+jmp       done_with_switch_block
+switch_case_92:
+mov       cl, bl
+mov       dx, ax
+xor       ch, ch
+mov       bx, 7
+mov       ax, cx
+push      cs
+call      EV_DoFloor_
+jmp       done_with_switch_block
+switch_case_93:
+mov       cl, bl
+mov       dx, ax
+xor       ch, ch
+mov       bx, 8
+mov       ax, cx
+push      cs
+call      EV_DoFloor_
+nop       
+jmp       done_with_switch_block
+switch_case_94:
+mov       cl, bl
+mov       dx, ax
+xor       ch, ch
+mov       bx, 9
+mov       ax, cx
+push      cs
+call      EV_DoFloor_
+jmp       done_with_switch_block
+switch_case_95:
+mov       byte ptr [bp - 1], 0
+mov       byte ptr [bp - 2], bl
+mov       dx, ax
+xor       cx, cx
+mov       bx, 3
+mov       ax, word ptr [bp - 2]
+call      EV_DoPlat_
+jmp       done_with_switch_block
+switch_case_96:
+mov       cl, bl
+mov       dx, ax
+xor       ch, ch
+mov       bx, 5
+mov       ax, cx
+push      cs
+call      EV_DoFloor_
+jmp       done_with_switch_block
+switch_case_97:
+push      word ptr [bp + 0Eh]
+mov       al, bl
+mov       dx, cx
+push      word ptr [bp + 0Ch]
+mov       bx, si
+xor       ah, ah
+call      EV_Teleport_
+jmp       done_with_switch_block
+switch_case_98:
+mov       cl, bl
+mov       dx, ax
+xor       ch, ch
+mov       bx, 2
+mov       ax, cx
+push      cs
+call      EV_DoFloor_
+nop       
+jmp       done_with_switch_block
+switch_case_105:
+mov       al, bl
+mov       dx, 5
+xor       ah, ah
+push      cs
+call      EV_DoDoor_
+jmp       done_with_switch_block
+switch_case_106:
+mov       al, bl
+mov       dx, 6
+xor       ah, ah
+push      cs
+call      EV_DoDoor_
+nop       
+jmp       done_with_switch_block
+switch_case_107:
+mov       al, bl
+mov       dx, 7
+xor       ah, ah
+push      cs
+call      EV_DoDoor_
+jmp       done_with_switch_block
+switch_case_120:
+mov       byte ptr [bp - 1], 0
+mov       byte ptr [bp - 2], bl
+mov       dx, ax
+xor       cx, cx
+mov       bx, 4
+mov       ax, word ptr [bp - 2]
+call      EV_DoPlat_
+jmp       done_with_switch_block
+switch_case_126:
+test      bh, bh
+jne       label_10
+jmp       done_with_switch_block
+label_10:
+push      word ptr [bp + 0Eh]
+mov       al, bl
+mov       dx, cx
+push      word ptr [bp + 0Ch]
+mov       bx, si
+xor       ah, ah
+call      EV_Teleport_
+jmp       done_with_switch_block
+switch_case_128:
+mov       cl, bl
+mov       dx, ax
+xor       ch, ch
+mov       bx, 4
+mov       ax, cx
+push      cs
+call      EV_DoFloor_
+nop       
+jmp       done_with_switch_block
+switch_case_129:
+mov       cl, bl
+mov       dx, ax
+xor       ch, ch
+mov       bx, FLOOR_RAISEFLOORTURBO
+mov       ax, cx
+push      cs
+call      EV_DoFloor_
+jmp       done_with_switch_block
 
 ENDP
+
+COMMENT @
 
 PROC    P_ShootSpecialLine_  NEAR
 PUBLIC  P_ShootSpecialLine_
@@ -1258,14 +1368,14 @@ PUBLIC  P_ShootSpecialLine_
 0x000000000000511c:  BE 0A 00             mov       si, 0xa
 0x000000000000511f:  81 C3 50 CA          add       bx, OFFSET _linebuffer
 0x0000000000005123:  8B 1F                mov       bx, word ptr ds:[bx]
-0x0000000000005125:  B8 00 70             mov       ax, 0x7000
+0x0000000000005125:  B8 00 70             mov       ax, LINES_PHYSICS_SEGMENT
 0x0000000000005128:  89 D9                mov       cx, bx
 0x000000000000512a:  8E C0                mov       es, ax
 0x000000000000512c:  C1 E1 02             shl       cx, 2
 0x000000000000512f:  C1 E3 04             shl       bx, 4
 0x0000000000005132:  26 8B 34             mov       si, word ptr es:[si]
-0x0000000000005135:  26 8A 47 0F          mov       al, byte ptr es:[bx + 0xf]
-0x0000000000005139:  26 8A 57 0E          mov       dl, byte ptr es:[bx + 0xe]
+0x0000000000005135:  26 8A 47 0F          mov       al, byte ptr es:[bx + LINE_PHYSICS_T.lp_special]
+0x0000000000005139:  26 8A 57 0E          mov       dl, byte ptr es:[bx + LINE_PHYSICS_T.lp_tag]
 0x000000000000513d:  8E 46 FA             mov       es, word ptr [bp - 6]
 0x0000000000005140:  30 E4                xor       ah, ah
 0x0000000000005142:  89 CB                mov       bx, cx
@@ -1296,7 +1406,7 @@ PUBLIC  P_ShootSpecialLine_
 0x000000000000517a:  30 E4                xor       ah, ah
 0x000000000000517c:  89 F1                mov       cx, si
 0x000000000000517e:  0E                   push      cs
-0x000000000000517f:  E8 22 DA             call      0x2ba4
+0x000000000000517f:  E8 22 DA             call      EV_DoFloor_
 0x0000000000005182:  90                   nop       
 0x0000000000005183:  6A 00                push      0
 0x0000000000005185:  8A 5E FC             mov       bl, byte ptr [bp - 4]
@@ -1311,7 +1421,7 @@ PUBLIC  P_ShootSpecialLine_
 0x000000000000519c:  30 E4                xor       ah, ah
 0x000000000000519e:  89 F1                mov       cx, si
 0x00000000000051a0:  0E                   push      cs
-0x00000000000051a1:  E8 FA D2             call      0x249e
+0x00000000000051a1:  E8 FA D2             call      EV_DoDoor_
 0x00000000000051a4:  90                   nop       
 0x00000000000051a5:  30 FF                xor       bh, bh
 0x00000000000051a7:  6A 01                push      1
@@ -1324,7 +1434,7 @@ PUBLIC  P_ShootSpecialLine_
 0x00000000000051b8:  31 C9                xor       cx, cx
 0x00000000000051ba:  89 F2                mov       dx, si
 0x00000000000051bc:  30 E4                xor       ah, ah
-0x00000000000051be:  E8 2D F1             call      0x42ee
+0x00000000000051be:  E8 2D F1             call      EV_DoPlat_
 0x00000000000051c1:  6A 00                push      0
 0x00000000000051c3:  8A 5E FC             mov       bl, byte ptr [bp - 4]
 0x00000000000051c6:  8B 56 FE             mov       dx, word ptr [bp - 2]
@@ -1338,6 +1448,8 @@ PUBLIC  P_ShootSpecialLine_
 0x00000000000051d5:  59                   pop       cx
 0x00000000000051d6:  5B                   pop       bx
 0x00000000000051d7:  CB                   retf      
+
+
 
 
 
@@ -1465,7 +1577,7 @@ PUBLIC  P_PlayerInSpecialSector_
 0x00000000000052ee:  83 3F 0A             cmp       word ptr ds:[bx], 0xa
 0x00000000000052f1:  7E 03                jle       0x52f6
 0x00000000000052f3:  E9 6E FF             jmp       0x5264
-0x00000000000052f6:  9A 34 19 A7 0A       lcall     0xaa7:0x1934
+0x00000000000052f6:  9A 34 19 A7 0A       call      G_ExitLevel_
 0x00000000000052fb:  C9                   LEAVE_MACRO     
 0x00000000000052fc:  5E                   pop       si
 0x00000000000052fd:  5A                   pop       dx
@@ -1531,7 +1643,7 @@ PUBLIC  P_UpdateSpecials_
 0x0000000000005379:  A1 3E 1D             mov       ax, word ptr [0x1d3e]
 0x000000000000537c:  0B 06 3C 1D          or        ax, word ptr [0x1d3c]
 0x0000000000005380:  75 A4                jne       0x5326
-0x0000000000005382:  9A 34 19 A7 0A       lcall     0xaa7:0x1934
+0x0000000000005382:  9A 34 19 A7 0A       call      G_ExitLevel_
 0x0000000000005387:  EB 9D                jmp       0x5326
 0x0000000000005389:  B8 0A 3C             mov       ax, 0x3c0a
 0x000000000000538c:  89 CB                mov       bx, cx
@@ -1903,27 +2015,27 @@ PUBLIC  P_SpawnSpecials_
 0x0000000000005712:  01 C3                add       bx, ax
 0x0000000000005714:  2E FF A7 82 56       jmp       word ptr cs:[bx + 0x5682]
 0x0000000000005719:  89 C8                mov       ax, cx
-0x000000000000571b:  E8 A6 E7             call      0x3ec4
+0x000000000000571b:  E8 A6 E7             call      P_SpawnLightFlash_
 0x000000000000571e:  EB E2                jmp       0x5702
 0x0000000000005720:  BA 0F 00             mov       dx, 0xf
 0x0000000000005723:  89 C8                mov       ax, cx
 0x0000000000005725:  31 DB                xor       bx, bx
-0x0000000000005727:  E8 48 E8             call      0x3f72
+0x0000000000005727:  E8 48 E8             call      P_SpawnStrobeFlash_
 0x000000000000572a:  EB D6                jmp       0x5702
 0x000000000000572c:  BA 23 00             mov       dx, 0x23
 0x000000000000572f:  89 C8                mov       ax, cx
 0x0000000000005731:  31 DB                xor       bx, bx
-0x0000000000005733:  E8 3C E8             call      0x3f72
+0x0000000000005733:  E8 3C E8             call      P_SpawnStrobeFlash_
 0x0000000000005736:  EB CA                jmp       0x5702
 0x0000000000005738:  E9 7D 00             jmp       0x57b8
 0x000000000000573b:  BA 0F 00             mov       dx, 0xf
 0x000000000000573e:  89 C8                mov       ax, cx
 0x0000000000005740:  31 DB                xor       bx, bx
-0x0000000000005742:  E8 2D E8             call      0x3f72
+0x0000000000005742:  E8 2D E8             call      P_SpawnStrobeFlash_
 0x0000000000005745:  C6 04 04             mov       byte ptr ds:[si], 4
 0x0000000000005748:  EB B8                jmp       0x5702
 0x000000000000574a:  89 C8                mov       ax, cx
-0x000000000000574c:  E8 11 EA             call      0x4160
+0x000000000000574c:  E8 11 EA             call      P_SpawnGlowingLight_
 0x000000000000574f:  EB B1                jmp       0x5702
 0x0000000000005751:  BB 20 01             mov       bx, 0x120
 0x0000000000005754:  FF 07                inc       word ptr ds:[bx]
@@ -1938,31 +2050,31 @@ PUBLIC  P_SpawnSpecials_
 0x000000000000576c:  40                   inc       ax
 0x000000000000576d:  E9 60 FF             jmp       0x56d0
 0x0000000000005770:  89 C8                mov       ax, cx
-0x0000000000005772:  E8 9D D0             call      0x2812
+0x0000000000005772:  E8 9D D0             call      P_SpawnDoorCloseIn30_
 0x0000000000005775:  83 C7 10             add       di, 0x10
 0x0000000000005778:  41                   inc       cx
 0x0000000000005779:  E9 44 FF             jmp       0x56c0
 0x000000000000577c:  BB 01 00             mov       bx, 1
 0x000000000000577f:  BA 23 00             mov       dx, 0x23
 0x0000000000005782:  89 C8                mov       ax, cx
-0x0000000000005784:  E8 EB E7             call      0x3f72
+0x0000000000005784:  E8 EB E7             call      P_SpawnStrobeFlash_
 0x0000000000005787:  83 C7 10             add       di, 0x10
 0x000000000000578a:  41                   inc       cx
 0x000000000000578b:  E9 32 FF             jmp       0x56c0
 0x000000000000578e:  BB 01 00             mov       bx, 1
 0x0000000000005791:  BA 0F 00             mov       dx, 0xf
 0x0000000000005794:  89 C8                mov       ax, cx
-0x0000000000005796:  E8 D9 E7             call      0x3f72
+0x0000000000005796:  E8 D9 E7             call      P_SpawnStrobeFlash_
 0x0000000000005799:  83 C7 10             add       di, 0x10
 0x000000000000579c:  41                   inc       cx
 0x000000000000579d:  E9 20 FF             jmp       0x56c0
 0x00000000000057a0:  89 C8                mov       ax, cx
-0x00000000000057a2:  E8 B5 D0             call      0x285a
+0x00000000000057a2:  E8 B5 D0             call      P_SpawnDoorRaiseIn5Mins_
 0x00000000000057a5:  83 C7 10             add       di, 0x10
 0x00000000000057a8:  41                   inc       cx
 0x00000000000057a9:  E9 14 FF             jmp       0x56c0
 0x00000000000057ac:  89 C8                mov       ax, cx
-0x00000000000057ae:  E8 7F E6             call      0x3e30
+0x00000000000057ae:  E8 7F E6             call      P_SpawnFireFlicker_
 0x00000000000057b1:  83 C7 10             add       di, 0x10
 0x00000000000057b4:  41                   inc       cx
 0x00000000000057b5:  E9 08 FF             jmp       0x56c0

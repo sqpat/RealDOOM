@@ -256,7 +256,6 @@ uint8_t __near P_FindMinSurroundingLight( int16_t secnum,uint8_t		max ){
 
 }
 
-*/
 
 
 //
@@ -270,6 +269,7 @@ uint8_t __near P_FindMinSurroundingLight( int16_t secnum,uint8_t		max ){
 // Called every time a thing origin is about
 //  to cross a line with a non 0 special.
 //
+
 void __far P_CrossSpecialLine( int16_t		linenum,int16_t		side,mobj_t __near*	thing,mobj_pos_t __far* thing_pos){
     int16_t		ok;
 	line_physics_t __far*	line_physics = &lines_physics[linenum];
@@ -734,6 +734,7 @@ void __far P_CrossSpecialLine( int16_t		linenum,int16_t		side,mobj_t __near*	thi
 
 }
 
+*/
 
 
 //
