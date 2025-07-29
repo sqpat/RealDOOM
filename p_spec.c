@@ -445,7 +445,7 @@ void __far P_CrossSpecialLine( int16_t		linenum,int16_t		side,mobj_t __near*	thi
       case 40:
 		// RaiseCeilingLowerFloor
 		EV_DoCeiling(linetag, raiseToHighest );
-		EV_DoFloor( linenum, linetag, lowerFloorToLowest );
+		EV_DoFloor( linetag, linefrontsecnum, lowerFloorToLowest );
 		setlinespecial = 0;
 		break;
 	

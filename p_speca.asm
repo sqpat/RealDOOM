@@ -604,6 +604,33 @@ ret
 
 ENDP
 
+skip_special_mobj_types:
+db MT_ROCKET, MT_PLASMA, MT_BFG, MT_TROOPSHOT, MT_HEADSHOT, MT_BRUISERSHOT
+COMMENT @
+	  case MT_ROCKET:
+	  case MT_PLASMA:
+	  case MT_BFG:
+	  case MT_TROOPSHOT:
+	  case MT_HEADSHOT:
+	  case MT_BRUISERSHOT:
+	    return;
+	    break;
+@
+
+
+skip_special_tags:
+db 39, 97, 125, 126, 4, 10, 88
+
+COMMENT @
+	  case 39:	// TELEPORT TRIGGER
+	  case 97:	// TELEPORT RETRIGGER
+	  case 125:	// TELEPORT MONSTERONLY TRIGGER
+	  case 126:	// TELEPORT MONSTERONLY RETRIGGER
+	  case 4:	// RAISE DOOR
+	  case 10:	// PLAT DOWN-WAIT-UP-STAY TRIGGER
+	  case 88:	// PLAT DOWN-WAIT-UP-STAY RETRIGGER
+@
+
 
 cross_special_line_jump_table:
 dw switch_case_2, switch_case_3, switch_case_4, switch_case_5, switch_case_6, switch_case_default, switch_case_8, switch_case_default, switch_case_10, switch_case_default, switch_case_12 
@@ -623,51 +650,82 @@ dw switch_case_default, switch_case_default, switch_case_default, switch_case_de
 PROC    P_CrossSpecialLine_  NEAR
 PUBLIC  P_CrossSpecialLine_
 
+; todo consider thingpos not on stack. pass in cx.
+
 ;void __far P_CrossSpecialLine( int16_t		linenum,int16_t		side,mobj_t __near*	thing,mobj_pos_t __far* thing_pos){
 
+; bp - 2:  linenum
+; bp - 4:  setlinespecial
+; bp - 6:  LP segment
+; bp - 8:  LP offset
 
 push      cx
 push      si
 push      di
 push      bp
 mov       bp, sp
-sub       sp, 8
-push      ax
-mov       cx, dx
-mov       si, bx
-mov       di, 0Ah
-mov       word ptr [bp - 4], -1
-mov       dx, ax
+xchg      ax, si  ; si gets linenum.
+SHIFT_MACRO shl       si 4
+
+push       0  ; bp - 2  ; unused tdo
+push      -1  ; bp - 4  ; todo
 mov       ax, LINES_PHYSICS_SEGMENT
-shl       dx, 4
-mov       word ptr [bp - 6], ax
-mov       word ptr [bp - 8], dx
 mov       es, ax
-mov       bx, dx
-mov       ax, word ptr es:[di]
-mov       di, dx
-mov       bl, byte ptr es:[bx + LINE_PHYSICS_T.lp_tag]
-mov       dl, byte ptr es:[di + LINE_PHYSICS_T.lp_special]
-mov       bh, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor       dh, dh
-test      bh, bh
-je        label_1
-cmp       bh, MT_TROOPSHOT
-jae       label_2
-cmp       bh, MT_BRUISERSHOT
-je        exit_p_crossspecialline
-label_4:
-xor       di, di
-cmp       dx, 39  ; TELEPORT TRIGGER
-jae       label_3
-cmp       dx, 10  ; PLAT DOWN-WAIT-UP-STAY TRIGGER
-jne       jump_to_label_5
-label_1:
+push      es ; bp - 6 in case needed
+push      si ; bp - 8 in case needed
+
+push      dx ; bp - 0Ah need to juggle this (side argument) for a second
+
+xor       ax, ax
+cwd
+
+mov       al, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
+mov       dl, byte ptr es:[si + LINE_PHYSICS_T.lp_special]
+mov       bl, byte ptr es:[si + LINE_PHYSICS_T.lp_tag]
+mov       si, word ptr es:[si + LINE_PHYSICS_T.lp_frontsecnum]
+
+xor       bh, bh
+
+
+test      al, al
+je        thing_is_player
+mov       di, OFFSET skip_special_mobj_types
+push      cs
+pop       es
+mov       cx, 6 
+repne     scasb
+jz        exit_p_crossspecialline
+
+mov       cx, 7
+xchg      ax, dx
+repne     scasb
+jz        monser_only_special_ok
+jmp       exit_p_crossspecialline
+
+monser_only_special_ok:
+xchg      ax, dx
+thing_is_player:
+
 sub       dx, 2
 cmp       dx, 139
 ja        jump_to_done_with_switch_block
+sal       dx, 1
 mov       di, dx
-add       di, dx
+xchg      ax, bx
+
+pop       cx  ; retrieve side parameter
+
+; ax is linetag
+; bx is mobjtype
+; cx is side
+; dx is linespecial (unused)
+; almost everything uses tag in ax.
+
+
+mov   bh, bl
+mov   bl, al
+
+
 jmp       word ptr cs:[di + OFFSET cross_special_line_jump_table]
 switch_case_2:
 xor       bh, bh
@@ -680,51 +738,27 @@ push      cs
 call      EV_DoDoor_
 nop       
 end_switch_block_with_setlinespecial:
-mov       bx, word ptr [bp - 0Ah]
-shl       bx, 4
-mov       es, word ptr [bp - 6]
-add       bx, word ptr [bp - 8]
-mov       al, byte ptr [bp - 4]
-mov       byte ptr es:[bx + LINE_PHYSICS_T.lp_special], al
+
+;		line_physics[linenum].special = setlinespecial;
+
+pop       di  ;  bp - 8
+pop       es  ;  bp - 6
+pop       ax  ;  bp - 4
+
+mov       byte ptr es:[di + LINE_PHYSICS_T.lp_special], al
+
 exit_p_crossspecialline:
 LEAVE_MACRO     
 pop       di
 pop       si
 pop       cx
 retf      4
-label_2:
-cmp       bh, MT_HEADSHOT
-jbe       exit_p_crossspecialline
-cmp       bh, MT_BFG
-jbe       exit_p_crossspecialline
-jmp       label_4
-label_3:
-jbe       label_1  
-cmp       dx, 97  ; TELEPORT RETRIGGER 
-jae       label_8
-cmp       dx, 88  ; PLAT DOWN-WAIT-UP-STAY RETRIGGER
-label_6:
-je        label_1
-label_11:
-test      di, di
-je        exit_p_crossspecialline
-jmp       label_1
-jump_to_label_5:
-jmp       label_5
+
+
+
 jump_to_done_with_switch_block:
 jmp       done_with_switch_block
-label_8:
-jbe       label_1
-cmp       dx, 125  ; TELEPORT MONSTERONLY TRIGGER
-jb        label_11
-cmp       dx, 126  ; TELEPORT MONSTERONLY RETRIGGER
-jbe       label_1
-test      di, di
-je        exit_p_crossspecialline
-jmp       label_1
-label_5:
-cmp       dx, 4   ; RAISE DOOR
-jmp       label_6
+
 switch_case_3:
 xor       bh, bh
 mov       dx, 2
@@ -896,17 +930,17 @@ mov       word ptr [bp - 4], 0
 call      EV_Teleport_
 jmp       end_switch_block_with_setlinespecial
 switch_case_40:
+; TODO re-examine.
+
 mov       al, bl
 mov       dx, 1
 xor       ah, ah
 call      EV_DoCeiling_
 xor       bh, bh
-mov       dx, 1
-mov       al, byte ptr [bp - 0Ah]
+mov       dx, ax
+mov       ax, cx
 mov       cx, bx
-mov       bx, dx
-xor       ah, ah
-mov       dx, cx
+mov       bx, 1
 mov       word ptr [bp - 4], 0
 push      cs
 call      EV_DoFloor_
@@ -1030,13 +1064,12 @@ call      EV_DoFloor_
 nop       
 jmp       end_switch_block_with_setlinespecial
 switch_case_121:
-mov       byte ptr [bp - 1], 0
-mov       byte ptr [bp - 2], bl
 mov       dx, ax
 xor       cx, cx
-mov       bx, 4
-mov       ax, word ptr [bp - 2]
+xor       bh, bh
+mov       ax, bx
 mov       word ptr [bp - 4], 0
+mov       bl, 4
 call      EV_DoPlat_
 jmp       end_switch_block_with_setlinespecial
 switch_case_124:
@@ -1245,12 +1278,11 @@ push      cs
 call      EV_DoFloor_
 jmp       done_with_switch_block
 switch_case_95:
-mov       byte ptr [bp - 1], 0
-mov       byte ptr [bp - 2], bl
 mov       dx, ax
 xor       cx, cx
-mov       bx, 3
-mov       ax, word ptr [bp - 2]
+xor       bh, bh
+mov       ax, bx
+mov       bl, 3
 call      EV_DoPlat_
 jmp       done_with_switch_block
 switch_case_96:
@@ -1304,12 +1336,12 @@ push      cs
 call      EV_DoDoor_
 jmp       done_with_switch_block
 switch_case_120:
-mov       byte ptr [bp - 1], 0
-mov       byte ptr [bp - 2], bl
+
 mov       dx, ax
 xor       cx, cx
-mov       bx, 4
-mov       ax, word ptr [bp - 2]
+xor       bh, bh
+mov       ax, bx
+mov       bl, 4
 call      EV_DoPlat_
 jmp       done_with_switch_block
 switch_case_126:
