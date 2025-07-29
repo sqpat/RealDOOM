@@ -7,7 +7,7 @@
 #include "p_saveg.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2407
+#define CONSTANTS_COUNT 2411
 #define LOCALS_COUNT 22
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -220,6 +220,11 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"SIZEOF_CACHE_NODE_PAGE_COUNT_T",
 	"SIZEOF_WEAPONINFO_T",
 	"SIZEOF_MAPTHING_T",
+
+	"SIZEOF_SECTOR_T",
+	"SIZEOF_SECTOR_PHYSICS_T",
+	"SIZEOF_LINE_PHYSICS_T",
+	"SIZEOF_LINE_T",
 	
     "SPRITES_SEGMENT",
     "MAXVISSPRITES",
@@ -2696,6 +2701,11 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	sizeof(cache_node_page_count_t),
 	sizeof(weaponinfo_t),
 	sizeof(mapthing_t),
+	sizeof(sector_t),
+	sizeof(sector_physics_t),
+	sizeof(line_physics_t),
+	sizeof(line_t),
+
 	sprites_segment,
     MAXVISSPRITES,
     code_overlay_segment,

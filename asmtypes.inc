@@ -132,7 +132,7 @@ MOBJ_POS_T STRUC
 MOBJ_POS_T ENDS
 
 
-
+ 
 
 LINE_PHYSICS_T STRUC 
     lp_v1Offset    dw ?     ; 0
@@ -173,12 +173,12 @@ SECTOR_T ENDS
 
 
 SECTOR_PHYSICS_T STRUC 
-    secp_blockbox             dw 4
-    secp_specialdataRef       dw ?
-    secp_linecount            dw ?
-    secp_linesoffset          dw ?
-    secp_special              db ?
-    secp_tag                  db ?
+    secp_blockbox             dw 4 DUP(?)  ; 0
+    secp_specialdataRef       dw ?   ; 8
+    secp_linecount            dw ?   ; A 
+    secp_linesoffset          dw ?   ; C
+    secp_special              db ?   ; E
+    secp_tag                  db ?   ; F
 SECTOR_PHYSICS_T ENDS
 
 

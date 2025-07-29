@@ -448,62 +448,60 @@ ret
 
 ENDP
 
-COMMENT @
+
+;void __near P_FindSectorsFromLineTag ( int8_t		linetag,int16_t*		foundsectors,boolean		includespecials){
 
 PROC    P_FindSectorsFromLineTag_  NEAR
 PUBLIC  P_FindSectorsFromLineTag_
 
-0x00000000000048c0:  51                push      cx
-0x00000000000048c1:  56                push      si
-0x00000000000048c2:  57                push      di
-0x00000000000048c3:  55                push      bp
-0x00000000000048c4:  89 E5             mov       bp, sp
-0x00000000000048c6:  83 EC 0A          sub       sp, 0xa
-0x00000000000048c9:  88 46 FC          mov       byte ptr [bp - 4], al
-0x00000000000048cc:  89 56 FA          mov       word ptr [bp - 6], dx
-0x00000000000048cf:  88 5E FE          mov       byte ptr [bp - 2], bl
-0x00000000000048d2:  8B 76 FA          mov       si, word ptr [bp - 6]
-0x00000000000048d5:  31 FF             xor       di, di
-0x00000000000048d7:  31 D2             xor       dx, dx
-0x00000000000048d9:  31 C9             xor       cx, cx
-0x00000000000048db:  BB CE 05          mov       bx, 0x5ce
-0x00000000000048de:  3B 17             cmp       dx, word ptr ds:[bx]
-0x00000000000048e0:  7D 3C             jge       0x491e
-0x00000000000048e2:  89 CB             mov       bx, cx
-0x00000000000048e4:  C7 46 F8 00 00    mov       word ptr [bp - 8], 0
-0x00000000000048e9:  81 C3 3F DE       add       bx, 0xde3f
-0x00000000000048ed:  8A 46 FC          mov       al, byte ptr [bp - 4]
-0x00000000000048f0:  8A 1F             mov       bl, byte ptr [bx]
-0x00000000000048f2:  98                cwde      
-0x00000000000048f3:  30 FF             xor       bh, bh
-0x00000000000048f5:  89 4E F6          mov       word ptr [bp - 0xa], cx
-0x00000000000048f8:  39 C3             cmp       bx, ax
-0x00000000000048fa:  74 06             je        0x4902
-0x00000000000048fc:  83 C1 10          add       cx, 0x10
-0x00000000000048ff:  42                inc       dx
-0x0000000000004900:  EB D9             jmp       0x48db
-0x0000000000004902:  80 7E FE 00       cmp       byte ptr [bp - 2], 0
-0x0000000000004906:  74 09             je        0x4911
-0x0000000000004908:  83 C6 02          add       si, 2
-0x000000000000490b:  47                inc       di
-0x000000000000490c:  89 54 FE          mov       word ptr ds:[si - 2], dx
-0x000000000000490f:  EB EB             jmp       0x48fc
-0x0000000000004911:  89 CB             mov       bx, cx
-0x0000000000004913:  81 C3 38 DE       add       bx, 0xde38
-0x0000000000004917:  83 3F 00          cmp       word ptr ds:[bx], 0
-0x000000000000491a:  74 EC             je        0x4908
-0x000000000000491c:  EB DE             jmp       0x48fc
-0x000000000000491e:  89 FB             mov       bx, di
-0x0000000000004920:  01 FB             add       bx, di
-0x0000000000004922:  03 5E FA          add       bx, word ptr [bp - 6]
-0x0000000000004925:  C7 07 FF FF       mov       word ptr ds:[bx], 0xffff
-0x0000000000004929:  C9                LEAVE_MACRO     
-0x000000000000492a:  5F                pop       di
-0x000000000000492b:  5E                pop       si
-0x000000000000492c:  59                pop       cx
-0x000000000000492d:  C3                ret       
+push      di
+test      bl, bl
+mov       bl, OFFSET check_special - OFFSET SELFMODIFY_checkspecial_AFTER
+je        dont_include_special
+mov       bl, OFFSET linetags_equal_skip_special_check - OFFSET SELFMODIFY_checkspecial_AFTER
+dont_include_special:
+mov       byte ptr cs:[OFFSET SELFMODIFY_checkspecial + 1], bl
+
+xchg      ax, dx ; linetag to dl. foundsectors to ax.
+xchg      ax, di ; foundsectors to di
+
+xor       ax, ax
+mov       bx, OFFSET _sectors_physics
+push      ds
+pop       es  ; for stosw.
+
+loop_next_sector_linetag:
+cmp       ax, word ptr ds:[_numsectors]
+jge       done_iterating_linetag_sectors
+
+cmp       dl, byte ptr ds:[bx + SECTOR_PHYSICS_T.secp_tag]
+SELFMODIFY_checkspecial:
+je        check_special
+SELFMODIFY_checkspecial_AFTER:
+
+iter_next_sector:
+add       bx, SIZEOF_SECTOR_PHYSICS_T
+inc       ax
+jmp       loop_next_sector_linetag
+
+check_special:
+
+cmp       word ptr ds:[bx + SECTOR_PHYSICS_T.secp_specialdataRef], 0
+jne       iter_next_sector
+
+linetags_equal_skip_special_check:
+linetags_equal:
+
+stosw     ; store ax in es:di
+jmp       iter_next_sector
+
+done_iterating_linetag_sectors:
+
+mov       word ptr ds:[di], -1
+
+pop       di
+ret       
 ENDP
-@
 
 
 
@@ -637,7 +635,7 @@ PUBLIC  P_CrossSpecialLine_
 0x0000000000004b0b:  89 D7                mov       di, dx
 0x0000000000004b0d:  26 8A 5F 0E          mov       bl, byte ptr es:[bx + 0xe]
 0x0000000000004b11:  26 8A 55 0F          mov       dl, byte ptr es:[di + 0xf]
-0x0000000000004b15:  8A 7C 1A             mov       bh, byte ptr [si + 0x1a]
+0x0000000000004b15:  8A 7C 1A             mov       bh, byte ptr ds:[si + 0x1a]
 0x0000000000004b18:  30 F6                xor       dh, dh
 0x0000000000004b1a:  84 FF                test      bh, bh
 0x0000000000004b1c:  74 16                je        0x4b34
@@ -1279,7 +1277,7 @@ PUBLIC  P_ShootSpecialLine_
 0x0000000000005147:  26 8B 0F             mov       cx, word ptr es:[bx]
 0x000000000000514a:  8B 5E F8             mov       bx, word ptr [bp - 8]
 0x000000000000514d:  89 4E FE             mov       word ptr [bp - 2], cx
-0x0000000000005150:  80 7F 1A 00          cmp       byte ptr [bx + 0x1a], 0
+0x0000000000005150:  80 7F 1A 00          cmp       byte ptr ds:[bx + 0x1a], 0
 0x0000000000005154:  74 05                je        0x515b
 0x0000000000005156:  3D 2E 00             cmp       ax, 0x2e
 0x0000000000005159:  75 12                jne       0x516d
@@ -1386,7 +1384,7 @@ PUBLIC  P_PlayerInSpecialSector_
 0x0000000000005232:  26 3B 47 08          cmp       ax, word ptr es:[bx + 8]
 0x0000000000005236:  75 2C                jne       0x5264
 0x0000000000005238:  8B 5E FC             mov       bx, word ptr [bp - 4]
-0x000000000000523b:  8A 87 3E DE          mov       al, byte ptr [bx - 0x21c2]
+0x000000000000523b:  8A 87 3E DE          mov       al, byte ptr ds:[bx - 0x21c2]
 0x000000000000523f:  2C 04                sub       al, 4
 0x0000000000005241:  81 C3 3E DE          add       bx, 0xde3e
 0x0000000000005245:  3C 0C                cmp       al, 0xc
@@ -1399,7 +1397,7 @@ PUBLIC  P_PlayerInSpecialSector_
 0x0000000000005257:  83 3F 00             cmp       word ptr ds:[bx], 0
 0x000000000000525a:  75 54                jne       0x52b0
 0x000000000000525c:  BB 1C 07             mov       bx, 0x71c
-0x000000000000525f:  F6 07 1F             test      byte ptr [bx], 0x1f
+0x000000000000525f:  F6 07 1F             test      byte ptr ds:[bx], 0x1f
 0x0000000000005262:  74 55                je        0x52b9
 0x0000000000005264:  C9                   LEAVE_MACRO     
 0x0000000000005265:  5E                   pop       si
@@ -1411,7 +1409,7 @@ PUBLIC  P_PlayerInSpecialSector_
 0x000000000000526d:  83 3F 00             cmp       word ptr ds:[bx], 0
 0x0000000000005270:  75 F2                jne       0x5264
 0x0000000000005272:  BB 1C 07             mov       bx, 0x71c
-0x0000000000005275:  F6 07 1F             test      byte ptr [bx], 0x1f
+0x0000000000005275:  F6 07 1F             test      byte ptr ds:[bx], 0x1f
 0x0000000000005278:  75 EA                jne       0x5264
 0x000000000000527a:  BB EC 06             mov       bx, 0x6ec
 0x000000000000527d:  B9 0A 00             mov       cx, 0xa
@@ -1426,7 +1424,7 @@ PUBLIC  P_PlayerInSpecialSector_
 0x0000000000005290:  83 3F 00             cmp       word ptr ds:[bx], 0
 0x0000000000005293:  75 CF                jne       0x5264
 0x0000000000005295:  BB 1C 07             mov       bx, 0x71c
-0x0000000000005298:  F6 07 1F             test      byte ptr [bx], 0x1f
+0x0000000000005298:  F6 07 1F             test      byte ptr ds:[bx], 0x1f
 0x000000000000529b:  75 C7                jne       0x5264
 0x000000000000529d:  BB EC 06             mov       bx, 0x6ec
 0x00000000000052a0:  B9 05 00             mov       cx, 5
@@ -1455,7 +1453,7 @@ PUBLIC  P_PlayerInSpecialSector_
 0x00000000000052cf:  C3                   ret       
 0x00000000000052d0:  BE 22 08             mov       si, 0x822
 0x00000000000052d3:  FF 04                inc       word ptr ds:[si]
-0x00000000000052d5:  88 27                mov       byte ptr [bx], ah
+0x00000000000052d5:  88 27                mov       byte ptr ds:[bx], ah
 0x00000000000052d7:  C9                   LEAVE_MACRO     
 0x00000000000052d8:  5E                   pop       si
 0x00000000000052d9:  5A                   pop       dx
@@ -1463,9 +1461,9 @@ PUBLIC  P_PlayerInSpecialSector_
 0x00000000000052db:  5B                   pop       bx
 0x00000000000052dc:  C3                   ret       
 0x00000000000052dd:  BB 0B 08             mov       bx, 0x80b
-0x00000000000052e0:  80 27 FD             and       byte ptr [bx], 0xfd
+0x00000000000052e0:  80 27 FD             and       byte ptr ds:[bx], 0xfd
 0x00000000000052e3:  BB 1C 07             mov       bx, 0x71c
-0x00000000000052e6:  F6 07 1F             test      byte ptr [bx], 0x1f
+0x00000000000052e6:  F6 07 1F             test      byte ptr ds:[bx], 0x1f
 0x00000000000052e9:  74 16                je        0x5301
 0x00000000000052eb:  BB E8 07             mov       bx, 0x7e8
 0x00000000000052ee:  83 3F 0A             cmp       word ptr ds:[bx], 0xa
@@ -1511,7 +1509,7 @@ PUBLIC  P_UpdateSpecials_
 0x0000000000005335:  89 C8                mov       ax, cx
 0x0000000000005337:  01 C8                add       ax, cx
 0x0000000000005339:  89 46 FE             mov       word ptr [bp - 2], ax
-0x000000000000533c:  8A 5D 05             mov       bl, byte ptr [di + 5]
+0x000000000000533c:  8A 5D 05             mov       bl, byte ptr ds:[di + 5]
 0x000000000000533f:  8B 45 03             mov       ax, word ptr ds:[di + 3]
 0x0000000000005342:  30 FF                xor       bh, bh
 0x0000000000005344:  01 D8                add       ax, bx
@@ -1523,7 +1521,7 @@ PUBLIC  P_UpdateSpecials_
 0x0000000000005351:  01 C8                add       ax, cx
 0x0000000000005353:  F7 F3                div       bx
 0x0000000000005355:  03 55 03             add       dx, word ptr ds:[di + 3]
-0x0000000000005358:  80 3D 00             cmp       byte ptr [di], 0
+0x0000000000005358:  80 3D 00             cmp       byte ptr ds:[di], 0
 0x000000000000535b:  74 2C                je        0x5389
 0x000000000000535d:  B8 14 3C             mov       ax, 0x3c14
 0x0000000000005360:  8B 5E FE             mov       bx, word ptr [bp - 2]
@@ -1590,7 +1588,7 @@ PUBLIC  P_UpdateSpecials_
 0x000000000000540e:  C1 E7 02             shl       di, 2
 0x0000000000005411:  8E C0                mov       es, ax
 0x0000000000005413:  26 8B 05             mov       ax, word ptr es:[di]
-0x0000000000005416:  8A 97 42 1D          mov       dl, byte ptr [bx + 0x1d42]
+0x0000000000005416:  8A 97 42 1D          mov       dl, byte ptr ds:[bx + 0x1d42]
 0x000000000000541a:  C1 E0 03             shl       ax, 3
 0x000000000000541d:  80 FA 02             cmp       dl, 2
 0x0000000000005420:  75 47                jne       0x5469
@@ -1657,7 +1655,7 @@ PUBLIC  EV_DoDonut_
 0x000000000000548e:  89 E5                mov       bp, sp
 0x0000000000005490:  81 EC 0A 08          sub       sp, 0x80a
 0x0000000000005494:  8D 96 F6 FD          lea       dx, [bp - 0x20a]
-0x0000000000005498:  98                   cwde      
+0x0000000000005498:  98                   cbw      
 0x0000000000005499:  31 DB                xor       bx, bx
 0x000000000000549b:  C7 46 F8 FF FF       mov       word ptr [bp - 8], 0xffff
 0x00000000000054a0:  E8 1D F4             call      0x48c0
@@ -1799,12 +1797,12 @@ PUBLIC  EV_DoDonut_
 0x0000000000005601:  C1 E2 04             shl       dx, 4
 0x0000000000005604:  89 D7                mov       di, dx
 0x0000000000005606:  89 85 38 DE          mov       word ptr ds:[di - 0x21c8], ax
-0x000000000000560a:  C6 04 0B             mov       byte ptr [si], 0xb
-0x000000000000560d:  C6 44 04 01          mov       byte ptr [si + 4], 1
+0x000000000000560a:  C6 04 0B             mov       byte ptr ds:[si], 0xb
+0x000000000000560d:  C6 44 04 01          mov       byte ptr ds:[si + 4], 1
 0x0000000000005611:  C7 44 09 04 00       mov       word ptr ds:[si + 9], 4
-0x0000000000005616:  88 6C 01             mov       byte ptr [si + 1], ch
-0x0000000000005619:  88 4C 06             mov       byte ptr [si + 6], cl
-0x000000000000561c:  88 6C 05             mov       byte ptr [si + 5], ch
+0x0000000000005616:  88 6C 01             mov       byte ptr ds:[si + 1], ch
+0x0000000000005619:  88 4C 06             mov       byte ptr ds:[si + 6], cl
+0x000000000000561c:  88 6C 05             mov       byte ptr ds:[si + 5], ch
 0x000000000000561f:  8B 46 F6             mov       ax, word ptr [bp - 0xa]
 0x0000000000005622:  89 5C 07             mov       word ptr ds:[si + 7], bx
 0x0000000000005625:  31 D2                xor       dx, dx
@@ -1821,9 +1819,9 @@ PUBLIC  EV_DoDonut_
 0x0000000000005640:  8B 56 FA             mov       dx, word ptr [bp - 6]
 0x0000000000005643:  89 D7                mov       di, dx
 0x0000000000005645:  89 85 38 DE          mov       word ptr ds:[di - 0x21c8], ax
-0x0000000000005649:  C6 04 00             mov       byte ptr [si], 0
-0x000000000000564c:  C6 44 01 00          mov       byte ptr [si + 1], 0
-0x0000000000005650:  C6 44 04 FF          mov       byte ptr [si + 4], 0xff
+0x0000000000005649:  C6 04 00             mov       byte ptr ds:[si], 0
+0x000000000000564c:  C6 44 01 00          mov       byte ptr ds:[si + 1], 0
+0x0000000000005650:  C6 44 04 FF          mov       byte ptr ds:[si + 4], 0xff
 0x0000000000005654:  C7 44 09 04 00       mov       word ptr ds:[si + 9], 4
 0x0000000000005659:  8B 46 FE             mov       ax, word ptr [bp - 2]
 0x000000000000565c:  89 5C 07             mov       word ptr ds:[si + 7], bx
@@ -1894,7 +1892,7 @@ PUBLIC  P_SpawnSpecials_
 0x00000000000056ee:  EB E0                jmp       0x56d0
 0x00000000000056f0:  89 7E FC             mov       word ptr [bp - 4], di
 0x00000000000056f3:  8D B5 3E DE          lea       si, [di - 0x21c2]
-0x00000000000056f7:  8A 04                mov       al, byte ptr [si]
+0x00000000000056f7:  8A 04                mov       al, byte ptr ds:[si]
 0x00000000000056f9:  C7 46 FE 00 00       mov       word ptr [bp - 2], 0
 0x00000000000056fe:  84 C0                test      al, al
 0x0000000000005700:  75 06                jne       0x5708
@@ -1926,7 +1924,7 @@ PUBLIC  P_SpawnSpecials_
 0x000000000000573e:  89 C8                mov       ax, cx
 0x0000000000005740:  31 DB                xor       bx, bx
 0x0000000000005742:  E8 2D E8             call      0x3f72
-0x0000000000005745:  C6 04 04             mov       byte ptr [si], 4
+0x0000000000005745:  C6 04 04             mov       byte ptr ds:[si], 4
 0x0000000000005748:  EB B8                jmp       0x5702
 0x000000000000574a:  89 C8                mov       ax, cx
 0x000000000000574c:  E8 11 EA             call      0x4160

@@ -213,7 +213,6 @@ short_height_t __near P_FindLowestOrHighestCeilingSurrounding(int16_t	secnum, in
 	}
 	return height;
 }
-*/
  
 //
 // RETURN NEXT SECTOR # THAT LINE TAG REFERS TO
@@ -237,7 +236,6 @@ void __near P_FindSectorsFromLineTag ( int8_t		linetag,int16_t*		foundsectors,bo
 //
 // Find minimum light from an adjacent sector
 //
-/*
 uint8_t __near P_FindMinSurroundingLight( int16_t secnum,uint8_t		max ){
     uint8_t		i;
     uint8_t		min;
@@ -262,7 +260,7 @@ uint8_t __near P_FindMinSurroundingLight( int16_t secnum,uint8_t		max ){
 	return min;
 
 }
-*/
+
 
 
 //
