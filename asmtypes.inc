@@ -451,4 +451,25 @@ DEFAULT_T STRUC
     default_untranslated  db ?  ; 6
 
 DEFAULT_T ENDS
+    
+BUTTON_T STRUC
+    
+    button_linenum        dw ?  ; 0
+    button_where          db ?  ; 2
+    button_btexture       dw ?  ; 3
+    button_btimer         dw ?  ; 5
+    button_soundorg       dw ?  ; 7
+
+
+BUTTON_T ENDS
+
+P_SPEC_ANIM_T STRUC
+
+    pspecanim_linenum     db ?  ; 0
+    pspecanim_picnum      dw ?  ; 1
+    pspecanim_basepic     dw ?  ; 3
+    pspecanim_numpics     db ?  ; 5
+
+P_SPEC_ANIM_T ENDS
+
 

@@ -7,7 +7,7 @@
 #include "p_saveg.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2455
+#define CONSTANTS_COUNT 2457
 #define LOCALS_COUNT 22
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -225,6 +225,8 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"SIZEOF_SECTOR_PHYSICS_T",
 	"SIZEOF_LINE_PHYSICS_T",
 	"SIZEOF_LINE_T",
+	"SIZEOF_P_SPEC_ANIM_T",
+	"SIZEOF_BUTTON_T",
 	
     "SPRITES_SEGMENT",
     "MAXVISSPRITES",
@@ -2756,7 +2758,9 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	sizeof(sector_physics_t),
 	sizeof(line_physics_t),
 	sizeof(line_t),
-
+	sizeof(p_spec_anim_t),
+	sizeof(button_t),
+	
 	sprites_segment,
     MAXVISSPRITES,
     code_overlay_segment,

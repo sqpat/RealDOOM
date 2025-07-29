@@ -858,7 +858,6 @@ void __near P_PlayerInSpecialSector () {
 
 }
 
-*/
 
 
 
@@ -939,6 +938,7 @@ void __near P_UpdateSpecials(void) {
 	
 }
 
+*/
 
 
 //
