@@ -732,14 +732,58 @@ mov       si, -1
 
 
 jmp       word ptr cs:[di + OFFSET cross_special_line_jump_table]
-switch_case_2:
-
+jump_to_done_with_switch_block:
+jmp       done_with_switch_block
+switch_case_75:
+mov       dx, DOOR_CLOSE
+jmp       call_do_door_no_si_inc
+switch_case_76:
+mov       dx, DOOR_CLOSE30THENOPEN
+jmp       call_do_door_no_si_inc
+switch_case_86:
 mov       dx, DOOR_OPEN
-call_do_door:
+jmp       call_do_door_no_si_inc
+switch_case_90:
+xor       dx, dx ; DOOR_NORMAL
+jmp       call_do_door_no_si_inc
+switch_case_105:
+mov       dx, DOOR_BLAZERAISE
+jmp       call_do_door_no_si_inc
+switch_case_106:
+mov       dx, DOOR_BLAZEOPEN
+jmp       call_do_door_no_si_inc
+switch_case_107:
+mov       dx, DOOR_BLAZECLOSE
+jmp       call_do_door_no_si_inc
+switch_case_3:
+mov       dx, DOOR_CLOSE
+jmp       call_do_door_with_si_inc
+switch_case_4:
+xor       dx, dx
+jmp       call_do_door_with_si_inc
+switch_case_16:
+mov       dx, DOOR_CLOSE30THENOPEN
+jmp       call_do_door_with_si_inc
+switch_case_108:
+mov       dx, DOOR_BLAZERAISE
+jmp       call_do_door_with_si_inc
+switch_case_109:
+mov       dx, DOOR_BLAZEOPEN
+jmp       call_do_door_with_si_inc
+switch_case_110:
+mov       dx, DOOR_BLAZECLOSE
+jmp       call_do_door_with_si_inc
+switch_case_2:
+mov       dx, DOOR_OPEN
+call_do_door_with_si_inc:
 inc       si ; si becomes 0
-call_do_door_dont_set_linespecial:
+call_do_door_no_si_inc:
 call      EV_DoDoor_
-end_switch_block_with_setlinespecial:
+
+switch_case_default:
+done_with_switch_block:
+cmp       si, -1
+je        exit_p_crossspecialline
 
 ;		line_physics[linenum].special = setlinespecial;
 
@@ -756,112 +800,184 @@ pop       di
 pop       si
 pop       cx
 retf      4
-
-
-
-jump_to_done_with_switch_block:
+switch_case_124:
+call      G_SecretExitLevel_
 jmp       done_with_switch_block
 
-switch_case_3:
-mov       dx, DOOR_CLOSE
-jmp       call_do_door
-switch_case_4:
-xor       dx, dx
-jmp       call_do_door
-switch_case_5:
-inc       si ; si becomes 0
+switch_case_52:
+call      G_ExitLevel_
+jmp       done_with_switch_block
+
+
+switch_case_91:
 mov       bx, FLOOR_RAISEFLOOR
-call      EV_DoFloor_
-jmp       end_switch_block_with_setlinespecial
-switch_case_6:
+jmp       call_do_floor_no_si_inc
+switch_case_5:
+mov       bx, FLOOR_RAISEFLOOR
+call_do_floor_with_si_inc:
 inc       si ; si becomes 0
+call_do_floor_no_si_inc:
+call      EV_DoFloor_
+jmp       done_with_switch_block
+
+switch_case_19:
+xor       bx, bx ; FLOOR_LOWERFLOOR
+jmp       call_do_floor_with_si_inc
+switch_case_83:
+xor       bx, bx ; FLOOR_LOWERFLOOR
+jmp       call_do_floor_no_si_inc
+switch_case_30:
+mov       bx, FLOOR_RAISETOTEXTURE
+jmp       call_do_floor_with_si_inc
+switch_case_96:
+mov       bx, FLOOR_RAISETOTEXTURE
+jmp       call_do_floor_no_si_inc
+switch_case_36:
+mov       bx, FLOOR_TURBOLOWER
+jmp       call_do_floor_with_si_inc
+switch_case_98:
+mov       bx, FLOOR_TURBOLOWER
+jmp       call_do_floor_no_si_inc
+switch_case_37:
+mov       bx, FLOOR_LOWERANDCHANGE
+jmp       call_do_floor_with_si_inc
+switch_case_84:
+mov       bx, FLOOR_LOWERANDCHANGE
+jmp       call_do_floor_no_si_inc
+switch_case_38:
+mov       bx, FLOOR_LOWERFLOORTOLOWEST
+jmp       call_do_floor_with_si_inc
+switch_case_82:
+mov       bx, FLOOR_LOWERFLOORTOLOWEST
+jmp       call_do_floor_no_si_inc
+switch_case_56:
+mov       bx, FLOOR_RAISEFLOORCRUSH
+jmp       call_do_floor_with_si_inc
+switch_case_94:
+mov       bx, FLOOR_RAISEFLOORCRUSH
+jmp       call_do_floor_no_si_inc
+switch_case_58:
+mov       bx, FLOOR_RAISEFLOOR24
+jmp       call_do_floor_with_si_inc
+switch_case_92:
+mov       bx, FLOOR_RAISEFLOOR24
+jmp       call_do_floor_no_si_inc
+switch_case_59:
+mov       bx, FLOOR_RAISEFLOOR24ANDCHANGE
+jmp       call_do_floor_with_si_inc
+switch_case_93:
+mov       bx, FLOOR_RAISEFLOOR24ANDCHANGE
+jmp       call_do_floor_no_si_inc
+switch_case_119:
+mov       bx, FLOOR_RAISEFLOORTONEAREST
+jmp       call_do_floor_with_si_inc
+switch_case_128:
+mov       bx, FLOOR_RAISEFLOORTONEAREST
+jmp       call_do_floor_no_si_inc
+switch_case_130:
+mov       bx, FLOOR_RAISEFLOORTURBO
+jmp       call_do_floor_with_si_inc
+switch_case_129:
+mov       bx, FLOOR_RAISEFLOORTURBO
+jmp       call_do_floor_no_si_inc
+
+switch_case_88:
+mov       bx, PLATFORM_DOWNWAITUPSTAY
+jmp       call_do_plat_no_si_inc
+switch_case_10:
+mov       bx, PLATFORM_DOWNWAITUPSTAY
+call_do_plat_with_si_inc:
+inc       si ; si becomes 0
+call_do_plat_no_si_inc:
+xor       cx, cx
+call      EV_DoPlat_
+jmp       done_with_switch_block
+switch_case_22:
+mov       bx, PLATFORM_RAISETONEARESTANDCHANGE
+jmp       call_do_plat_with_si_inc
+switch_case_95:
+mov       bx, PLATFORM_RAISETONEARESTANDCHANGE
+jmp       call_do_plat_no_si_inc
+switch_case_53:
+mov       bx, PLATFORM_PERPETUALRAISE
+jmp       call_do_plat_with_si_inc
+switch_case_87:
+xor       bx, bx ; PLATFORM_PERPETUALRAISE
+jmp       call_do_plat_no_si_inc
+switch_case_121:
+mov       bx, PLATFORM_BLAZEDWUS
+jmp       call_do_plat_with_si_inc
+switch_case_120:
+mov       bx, PLATFORM_BLAZEDWUS
+jmp       call_do_plat_no_si_inc
+
+switch_case_77:
 mov       dx, CEILING_FASTCRUSHANDRAISE
+jmp       call_do_ceiling_no_si_inc
+switch_case_6:
+mov       dx, CEILING_FASTCRUSHANDRAISE
+call_do_ceiling_with_si_inc:
+inc       si ; si becomes 0
+call_do_ceiling_no_si_inc:
 call      EV_DoCeiling_
-jmp       end_switch_block_with_setlinespecial
+jmp       done_with_switch_block
+switch_case_25:
+mov       dx, CEILING_CRUSHANDRAISE
+jmp       call_do_ceiling_with_si_inc
+switch_case_73:
+mov       dx, CEILING_CRUSHANDRAISE
+jmp       call_do_ceiling_no_si_inc
+switch_case_44:
+mov       dx, CEILING_LOWERANDCRUSH
+jmp       call_do_ceiling_with_si_inc
+switch_case_72:
+mov       dx, CEILING_LOWERANDCRUSH
+jmp       call_do_ceiling_no_si_inc
+switch_case_141:
+mov       dx, CEILING_SILENTCRUSHANDRAISE
+jmp       call_do_ceiling_with_si_inc
+
+
+
 switch_case_8:
 inc       si ; si becomes 0
 xor       dx, dx ; STAIRS_BUILD8
+call_buildstairs:
 call      EV_BuildStairs_
-jmp       end_switch_block_with_setlinespecial
-switch_case_10:
-inc       si ; si becomes 0
-mov       bx, PLATFORM_DOWNWAITUPSTAY
-xor       cx, cx
-call      EV_DoPlat_
-jmp       end_switch_block_with_setlinespecial
+jmp       done_with_switch_block
+switch_case_100:
+mov       dx, STAIRS_TURBO16
+jmp       call_buildstairs
+
+
 switch_case_12:
 inc       si ; si becomes 0
 switch_case_80:
 mov       dx, 1
 xor       bx, bx
 call      EV_LightChange_
-jmp       end_switch_block_with_setlinespecial
+jmp       done_with_switch_block
 switch_case_13:
 inc       si ; si becomes 0
 switch_case_81:
-
 mov       bx, 255
 mov       dx, 1
 call      EV_LightChange_
-jmp       end_switch_block_with_setlinespecial
-
-switch_case_16:
-mov       dx, DOOR_CLOSE30THENOPEN
-jmp       call_do_door
-
-switch_case_17:
-inc       si ; si becomes 0
-call      EV_StartLightStrobing_
-jmp       end_switch_block_with_setlinespecial
-
-switch_case_19:
-inc       si ; si becomes 0
-xor       bx, bx ; FLOOR_LOWERFLOOR
-call      EV_DoFloor_
-jmp       end_switch_block_with_setlinespecial
-switch_case_22:
-inc       si ; si becomes 0
-switch_case_95:
-mov       bx, PLATFORM_RAISETONEARESTANDCHANGE
-xor       cx, cx
-call      EV_DoPlat_
-jmp       end_switch_block_with_setlinespecial
-switch_case_25:
-inc       si ; si becomes 0
-mov       dx, CEILING_CRUSHANDRAISE
-call      EV_DoCeiling_
-jmp       end_switch_block_with_setlinespecial
-switch_case_30:
-inc       si ; si becomes 0
-switch_case_96:
-mov       bx, FLOOR_RAISETOTEXTURE
-call      EV_DoFloor_
-jmp       end_switch_block_with_setlinespecial
+jmp       done_with_switch_block
 switch_case_35:
 inc       si ; si becomes 0
 switch_case_79:
 mov       bx, 35
 mov       dx, 1
 call      EV_LightChange_
-jmp       end_switch_block_with_setlinespecial
-switch_case_36:
+jmp       done_with_switch_block
+
+
+switch_case_17:
 inc       si ; si becomes 0
-switch_case_98:
-mov       bx, FLOOR_TURBOLOWER
-call      EV_DoFloor_
-jmp       end_switch_block_with_setlinespecial
-switch_case_37:
-inc       si ; si becomes 0
-switch_case_84:
-mov       bx, FLOOR_LOWERANDCHANGE
-call      EV_DoFloor_
-jmp       end_switch_block_with_setlinespecial
-switch_case_38:
-inc       si ; si becomes 0
-switch_case_82:
-mov       bx, FLOOR_LOWERFLOORTOLOWEST
-call      EV_DoFloor_
-jmp       end_switch_block_with_setlinespecial
+call      EV_StartLightStrobing_
+jmp       done_with_switch_block
+
 switch_case_39:
 ;		EV_Teleport( linetag, side, thing, thing_pos );
 do_monster_only_teleport:
@@ -874,7 +990,7 @@ push      word ptr [bp + 0Eh]
 push      word ptr [bp + 0Ch]
 mov       bx, es
 call      EV_Teleport_
-jmp       end_switch_block_with_setlinespecial
+jmp       done_with_switch_block
 switch_case_125:
 test      bl, bl
 jne       do_monster_only_teleport
@@ -894,208 +1010,39 @@ xchg      ax, bx ; retrieve
 mov       dx, cx
 mov       bx, FLOOR_LOWERFLOORTOLOWEST
 call      EV_DoFloor_
-jmp       end_switch_block_with_setlinespecial
-switch_case_44:
-inc       si ; si becomes 0
-mov       dx, CEILING_LOWERANDCRUSH
+jmp       done_with_switch_block
 
 
-call      EV_DoCeiling_
-jmp       end_switch_block_with_setlinespecial
-switch_case_52:
-call      G_ExitLevel_
-switch_case_default:
-done_with_switch_block:
-cmp       si, -1
-je        dont_set_line_special
-jmp       end_switch_block_with_setlinespecial
-dont_set_line_special:
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       cx
-retf      4
-switch_case_53:
-inc       si ; si becomes 0
-xor       bx, bx ; PLATFORM_PERPETUALRAISE
-xor       cx, cx
-call      EV_DoPlat_
-jmp       end_switch_block_with_setlinespecial
 switch_case_54:
 inc       si ; si becomes 0
 switch_case_89:
-mov       dx, PLATFORM_DOWNWAITUPSTAY
+mov       dx, PLAT_FUNC_STOP_PLAT
 call      EV_PlatFunc_
-jmp       end_switch_block_with_setlinespecial
-switch_case_56:
-inc       si ; si becomes 0
-mov       bx, FLOOR_RAISEFLOORCRUSH
+jmp       done_with_switch_block
 
-call      EV_DoFloor_
-jmp       end_switch_block_with_setlinespecial
 switch_case_57:
 inc       si ; si becomes 0
-
+switch_case_74:
 call      EV_CeilingCrushStop_
-jmp       end_switch_block_with_setlinespecial
-switch_case_58:
-inc       si ; si becomes 0
-mov       bx, FLOOR_RAISEFLOOR24
-call      EV_DoFloor_
-jmp       end_switch_block_with_setlinespecial
-switch_case_59:
-inc       si ; si becomes 0
-mov       bx, FLOOR_RAISEFLOOR24ANDCHANGE
+jmp       done_with_switch_block
 
-call      EV_DoFloor_
-jmp       end_switch_block_with_setlinespecial
 switch_case_104:
 inc       si ; si becomes 0
 xor       dx, dx
 xor       bx, bx
 call      EV_LightChange_
-jmp       end_switch_block_with_setlinespecial
-switch_case_108:
-mov       dx, DOOR_BLAZERAISE
-jmp       call_do_door
-switch_case_109:
-inc       si ; si becomes 0
-mov       dx, DOOR_BLAZEOPEN
-jmp       call_do_door
-switch_case_100:
-mov       dx, STAIRS_TURBO16
-call      EV_BuildStairs_
-jmp       end_switch_block_with_setlinespecial
-switch_case_110:
-mov       dx, DOOR_BLAZECLOSE
-jmp       call_do_door
-switch_case_119:
-inc       si ; si becomes 0
-mov       bx, FLOOR_RAISEFLOORTONEAREST
-mov       dx, cx
-
-
-call      EV_DoFloor_
-jmp       end_switch_block_with_setlinespecial
-switch_case_121:
-inc       si ; si becomes 0
-mov       bx, PLATFORM_BLAZEDWUS
-xor       cx, cx
-call      EV_DoPlat_
-jmp       end_switch_block_with_setlinespecial
-switch_case_124:
-call      G_SecretExitLevel_
-jmp       done_with_switch_block
-
-switch_case_130:
-inc       si ; si becomes 0
-mov       bx, FLOOR_RAISEFLOORTURBO
-mov       dx, cx
-call      EV_DoFloor_
-jmp       end_switch_block_with_setlinespecial
-switch_case_141:
-inc       si ; si becomes 0
-mov       al, bl
-mov       dx, 5
-xor       ah, ah
-
-call      EV_DoCeiling_
-jmp       end_switch_block_with_setlinespecial
-switch_case_72:
-
-mov       dx, 2
-
-call      EV_DoCeiling_
-jmp       done_with_switch_block
-switch_case_73:
-mov       dx, 3
-call      EV_DoCeiling_
-jmp       done_with_switch_block
-switch_case_74:
-call      EV_CeilingCrushStop_
-jmp       done_with_switch_block
-switch_case_75:
-mov       dx, DOOR_CLOSE
-call      EV_DoDoor_
-jmp       done_with_switch_block
-switch_case_76:
-mov       dx, DOOR_CLOSE30THENOPEN
-call      EV_DoDoor_
-jmp       done_with_switch_block
-switch_case_77:
-mov       dx, CEILING_FASTCRUSHANDRAISE
-call      EV_DoCeiling_
-jmp       done_with_switch_block
-switch_case_83:
-xor       bx, bx  ; FLOOR_LOWERFLOOR
-call      EV_DoFloor_
-jmp       done_with_switch_block
-
-switch_case_86:
-mov       dx, DOOR_OPEN
-call      EV_DoDoor_
-jmp       done_with_switch_block
-switch_case_87:
-xor       bx, bx ; PLATFORM_PERPETUALRAISE
-xor       cx, cx
-call      EV_DoPlat_
-jmp       done_with_switch_block
-switch_case_88:
-mov       bx, PLATFORM_DOWNWAITUPSTAY
-xor       cx, cx
-call      EV_DoPlat_
-jmp       done_with_switch_block
-switch_case_90:
-xor       dx, dx ; DOOR_NORMAL
-call      EV_DoDoor_
-jmp       done_with_switch_block
-switch_case_91:
-mov       bx, FLOOR_RAISEFLOOR
-
-call      EV_DoFloor_
-jmp       done_with_switch_block
-switch_case_92:
-mov       bx, FLOOR_RAISEFLOOR24
-
-
-call      EV_DoFloor_
-jmp       done_with_switch_block
-switch_case_93:
-mov       bx, FLOOR_RAISEFLOOR24ANDCHANGE
-call      EV_DoFloor_
-jmp       done_with_switch_block
-switch_case_94:
-mov       bx, FLOOR_RAISEFLOORCRUSH
-call      EV_DoFloor_
 jmp       done_with_switch_block
 
 
-switch_case_105:
-mov       dx, DOOR_BLAZERAISE
-call      EV_DoDoor_
-jmp       done_with_switch_block
-switch_case_106:
-mov       dx, DOOR_BLAZEOPEN
-call      EV_DoDoor_
-jmp       done_with_switch_block
-switch_case_107:
-mov       dx, DOOR_BLAZECLOSE
-call      EV_DoDoor_
-jmp       done_with_switch_block
-switch_case_120:
-mov       bx, PLATFORM_BLAZEDWUS
-xor       cx, cx
-call      EV_DoPlat_
+
+
 jmp       done_with_switch_block
 
-switch_case_128:
-mov       bx, FLOOR_RAISEFLOORTONEAREST
-call      EV_DoFloor_
-jmp       done_with_switch_block
-switch_case_129:
-mov       bx, FLOOR_RAISEFLOORTURBO
-call      EV_DoFloor_
-jmp       done_with_switch_block
+
+
+
+
+
 
 ENDP
 
