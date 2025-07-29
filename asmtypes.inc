@@ -191,10 +191,10 @@ SECTOR_SOUNDORG_T ENDS
 
 
 SIDE_T STRUC 
-    s_toptexture       dw ?
-    s_bottomtexture    dw ?
-    s_midtexture       dw ?
-    s_textureoffset    dw ?
+    s_toptexture       dw ? ; 0
+    s_bottomtexture    dw ? ; 2
+    s_midtexture       dw ? ; 4
+    s_textureoffset    dw ? ; 6
 SIDE_T ENDS
 
 

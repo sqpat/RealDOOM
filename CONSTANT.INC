@@ -2456,6 +2456,9 @@ PLAT_FUNC_IN_STASIS = 00h
 PLAT_FUNC_STOP_PLAT = 01h
 STAIRS_BUILD8 = 00h
 STAIRS_TURBO16 = 01h
+BUTTONTOP = 00h
+BUTTONMIDDLE = 01h
+BUTTONBOTTOM = 02h
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 03400h

@@ -1149,6 +1149,8 @@ dw  specialsector_switch_block_16
 
 ENDP
 
+
+
 PROC    P_PlayerInSpecialSector_  NEAR
 PUBLIC  P_PlayerInSpecialSector_
 
@@ -1261,9 +1263,7 @@ PUBLIC  P_UpdateSpecials_
 
 
 PUSHA_NO_AX_OR_BP_MACRO
-push      bp
-mov       bp, sp
-sub       sp, 4
+
 cmp       byte ptr ds:[_levelTimer], 1
 jne       level_timer_check_ok
 
@@ -1361,71 +1361,62 @@ cmp       cx, word ptr ds:[_numlinespecials]
 jl        loop_next_line_special
 
 done_with_line_specials:
-mov       word ptr [bp - 4], OFFSET _buttonlist
-xor       si, si
-label_17:
-imul      bx, si, 9
-cmp       word ptr ds:[bx + OFFSET _buttonlist + BUTTON_T.button_btimer], 0
-je        label_15
-dec       word ptr ds:[bx + OFFSET _buttonlist + BUTTON_T.button_btimer]
-jne       label_15
-mov       di, word ptr ds:[bx + _buttonlist]
+
+mov       si, OFFSET _buttonlist
+
+loop_anim_next_button:
+
+cmp       word ptr ds:[si + BUTTON_T.button_btimer], 0
+je        iter_next_button
+dec       word ptr ds:[si + BUTTON_T.button_btimer]
+jne       iter_next_button
+mov       di, word ptr ds:[si + BUTTON_T.button_linenum]
+SHIFT_MACRO shl       di, 2
 mov       ax, LINES_SEGMENT
-shl       di, 2
 mov       es, ax
-mov       ax, word ptr es:[di]
-mov       dl, byte ptr ds:[bx + OFFSET _buttonlist + BUTTON_T.button_where]
-shl       ax, 3
-cmp       dl, 2
-jne       label_16
-mov       dx, SIDES_SEGMENT
-mov       di, ax
-mov       es, dx
-add       di, 2
-label_1:
-mov       ax, word ptr ds:[bx + OFFSET _buttonlist + BUTTON_T.button_btexture]
-mov       word ptr es:[di], ax
-label_2:
-imul      bx, si, SIZEOF_BUTTON_T
+mov       di, word ptr es:[di + LINE_T.l_sidenum] ; side 0
+mov       dl, byte ptr ds:[si + BUTTON_T.button_where]
+SHIFT_MACRO shl       di, 3
+mov       cx, SIDES_SEGMENT
+mov       es, cx
+
+cmp       dl, BUTTONBOTTOM
+je        do_button_bottom
+cmp       dl, BUTTONMIDDLE
+;jne       do_button_top
+jne       set_di_to_texture   ; add 0, just skip that.
+do_button_middle:
+add       di, SIDE_T.s_midtexture
+jmp       set_di_to_texture
+;do_button_top:
+;add       di, SIDE_T.s_toptexture
+;jmp       set_di_to_texture
+do_button_bottom:
+add       di, SIDE_T.s_bottomtexture
+set_di_to_texture:
+mov       ax, word ptr ds:[si + BUTTON_T.button_btexture]
+stosw      ; mov       word ptr es:[di], ax
+
+
 mov       dx, SFX_SWTCHN
-mov       cx, 9
-mov       ax, word ptr ds:[bx + OFFSET _buttonlist + BUTTON_T.button_soundorg]
-mov       di, word ptr [bp - 4]
+mov       ax, word ptr ds:[si + BUTTON_T.button_soundorg]
 
 call      S_StartSoundWithParams_
+
+mov       di, si
 xor       al, al
-push      di
+mov       cx, SIZEOF_BUTTON_T
 push      ds
 pop       es
-mov       ah, al
-shr       cx, 1
-rep stosw 
-adc       cx, cx
 rep stosb 
-pop       di
-label_15:
-inc       si
-add       word ptr [bp - 4], SIZEOF_BUTTON_T
-cmp       si, 4
-jl        label_17
-LEAVE_MACRO     
+iter_next_button:
+add       si, SIZEOF_BUTTON_T
+
+cmp       si, OFFSET _buttonlist (4 * SIZEOF_BUTTON_T)
+jl        loop_anim_next_button
 POPA_NO_AX_OR_BP_MACRO
 ret       
-label_16:
-cmp       dl, 1
-jne       label_4
-mov       dx, SIDES_SEGMENT
-mov       di, ax
-mov       es, dx
-add       di, 4
-jmp       label_1
-label_4:
-test      dl, dl
-jne       label_2
-mov       dx, SIDES_SEGMENT
-mov       di, ax
-mov       es, dx
-jmp       label_1
+
 
 ENDP
 
