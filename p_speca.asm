@@ -256,104 +256,93 @@ ENDP
 
 PROC    P_FindNextHighestFloor_  NEAR
 PUBLIC  P_FindNextHighestFloor_
+;short_height_t __near P_FindNextHighestFloor( int16_t	secnum,short_height_t		currentheight ){
+
+; bp - 0200h linebufferlines
+; bp - 0400h
 
 push      bx
 push      cx
 push      si
 push      di
+
 push      bp
 mov       bp, sp
-sub       sp, 0604h
-push      ax
-push      dx
-mov       dx, SECTORS_SEGMENT
-lea       di, [bp - 0204h]
-shl       ax, 4
-mov       es, dx
+sub       sp, 0400h
+mov       cx, SECTORS_SEGMENT
+mov       es, cx
+
 mov       bx, ax
-mov       dx, word ptr [bp - 0608h]
+SHIFT_MACRO shl       bx 4
+
 mov       si, word ptr es:[bx + SECTOR_T.sec_linesoffset]
-add       bx, 0Ch
-mov       word ptr [bp - 4], dx
-mov       bx, ax
-add       si, si
-mov       dx, word ptr [bp - 0606h]
-mov       ax, word ptr es:[bx + SECTOR_T.sec_linecount]
-add       bx, 0Ah
+sal       si, 1
 add       si, OFFSET _linebuffer
-mov       cx, ax
-lea       bx, [bp - 0604h]
-add       cx, ax
-mov       word ptr [bp - 2], ax
-push      di
-mov       ax, ds
-mov       es, ax
-shr       cx, 1
+lea       di, [bp - 0200h]
+
+mov       bx, word ptr es:[bx + SECTOR_T.sec_linecount]
+mov       cx, bx
+
+
+;	memcpy(linebufferlines, &linebuffer[offset], linecount << 1);
+push      ds
+pop       es
 rep movsw 
-adc       cx, cx
-rep movsb 
-pop       di
-push      0
-mov       cx, word ptr [bp - 2]
-lea       ax, [bp - 0204h]
+
+push      cx  ; cx is 0. push as func arg
+
+xchg      ax, dx ; dx gets secnum
+xchg      ax, di ; di gets currentheight
+mov       cx, bx ; cx gets linecount
+
+lea       bx, [bp - 0400h]
+lea       ax, [bp - 0200h]
+;	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
 call      getNextSectorList_
-xor       si, si
-mov       word ptr [bp - 2], ax
-xor       cl, cl
-xor       dx, dx
-label_3:
-mov       al, cl
-xor       ah, ah
-cmp       ax, word ptr [bp - 2]
-jge       label_1
-mov       di, ax
-add       di, ax
-mov       bx, word ptr [bp + di - 0604h]
+
+
+; di keeps highest.
+; dx keeps next highest (starts as MINSHORT) 
+mov       dx, 08000h
+
+xchg      ax, cx ; cx gets linecount
+
+
 mov       ax, SECTORS_SEGMENT
-shl       bx, 4
 mov       es, ax
-mov       ax, word ptr es:[bx]
-cmp       ax, word ptr [bp - 4]
-jg        label_2
-label_4:
-inc       cl
-jmp       label_3
-label_2:
-add       si, 2
-inc       dx
-mov       word ptr [bp + si - 0406h], ax
-jmp       label_4
-label_1:
-test      dx, dx
-je        label_5
-mov       di, word ptr [bp - 0404h]
-mov       bl, 1
-label_8:
-mov       al, bl
-xor       ah, ah
+; for this loop ds is sectors for lodsw and es is ds for stosw to stack.    
+
+lea       si, [bp - 0400h]
+xor       ch, ch
+
+
+loop_next_sector_floor:
+
+lodsw
+SHIFT_MACRO shl       ax 4
+xchg      ax, bx
+mov       ax, word ptr es:[bx + SECTOR_T.sec_floorheight]
+cmp       ax, di ; compare to height..
+jle       iter_next_sector_floor  ; NOTE: dont keep ties!
+cmp       dx, 08000h
+je        force_first_height
 cmp       ax, dx
-jge       label_6
-mov       si, ax
-add       si, ax
-mov       ax, word ptr [bp + si - 0404h]
-cmp       di, ax
-jg        label_7
-label_9:
-inc       bl
-jmp       label_8
-label_5:
-mov       ax, word ptr [bp - 0608h]
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       cx
-pop       bx
-ret       
-label_7:
-mov       di, ax
-jmp       label_9
-label_6:
-mov       ax, di
+jg        iter_next_sector_floor
+force_first_height:
+xchg      dx, ax ; this is next highest.
+iter_next_sector_floor:
+
+loop      loop_next_sector_floor
+
+
+finished_floor_height_loop:
+
+xchg      ax, dx
+cmp       ax, 08000h
+jne       use_recorded_height
+xchg      ax, di
+use_recorded_height:
+
 LEAVE_MACRO     
 pop       di
 pop       si
