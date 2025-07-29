@@ -716,7 +716,7 @@ xchg      ax, bx
 pop       es  ; es holds mobj if necessary
 pop       cx  ; retrieve side parameter
 
-mov       cx, si
+mov       dx, si
 mov       si, -1
 
 ; ax is linetag
@@ -953,24 +953,27 @@ jmp       call_buildstairs
 switch_case_12:
 inc       si ; si becomes 0
 switch_case_80:
-mov       dx, 1
 xor       bx, bx
+call_lightchange_dx_1:
+mov       dx, 1
+call_lightchange:
 call      EV_LightChange_
 jmp       done_with_switch_block
 switch_case_13:
 inc       si ; si becomes 0
 switch_case_81:
 mov       bx, 255
-mov       dx, 1
-call      EV_LightChange_
-jmp       done_with_switch_block
+jmp       call_lightchange_dx_1
 switch_case_35:
 inc       si ; si becomes 0
 switch_case_79:
 mov       bx, 35
-mov       dx, 1
-call      EV_LightChange_
-jmp       done_with_switch_block
+jmp       call_lightchange_dx_1
+switch_case_104:
+inc       si ; si becomes 0
+xor       dx, dx
+xor       bx, bx
+jmp       call_lightchange
 
 
 switch_case_17:
@@ -999,13 +1002,13 @@ switch_case_126:
 test      bl, bl
 jne       do_monster_only_teleport_no_si_inc
 jmp       done_with_switch_block
+
 switch_case_40:
 inc       si ; si becomes 0
 mov       bx, ax ; store linetag
 mov       cx, dx ; store linefrontsecnum
 mov       dx, CEILING_RAISETOHIGHEST
 call      EV_DoCeiling_
-
 xchg      ax, bx ; retrieve
 mov       dx, cx
 mov       bx, FLOOR_LOWERFLOORTOLOWEST
@@ -1026,17 +1029,9 @@ switch_case_74:
 call      EV_CeilingCrushStop_
 jmp       done_with_switch_block
 
-switch_case_104:
-inc       si ; si becomes 0
-xor       dx, dx
-xor       bx, bx
-call      EV_LightChange_
-jmp       done_with_switch_block
 
 
 
-
-jmp       done_with_switch_block
 
 
 
