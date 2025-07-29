@@ -7,7 +7,7 @@
 #include "p_saveg.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2446
+#define CONSTANTS_COUNT 2455
 #define LOCALS_COUNT 22
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -2525,7 +2525,19 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"CEILING_LOWERANDCRUSH",
 	"CEILING_CRUSHANDRAISE", 
 	"CEILING_FASTCRUSHANDRAISE", 
-	"CEILING_SILENTCRUSHANDRAISE"
+	"CEILING_SILENTCRUSHANDRAISE",
+
+
+	"PLATFORM_PERPETUALRAISE",
+	"PLATFORM_DOWNWAITUPSTAY",
+	"PLATFORM_RAISEANDCHANGE",
+	"PLATFORM_RAISETONEARESTANDCHANGE",
+	"PLATFORM_BLAZEDWUS",
+	"PLAT_FUNC_IN_STASIS",
+	"PLAT_FUNC_STOP_PLAT",
+	"STAIRS_BUILD8",
+	"STAIRS_TURBO16"
+
 
 
 
@@ -5050,7 +5062,19 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	lowerAndCrush,
 	crushAndRaise, 
 	fastCrushAndRaise, 
-	silentCrushAndRaise
+	silentCrushAndRaise,
+
+
+	perpetualRaise,
+	downWaitUpStay,
+	raiseAndChange,
+	raiseToNearestAndChange,
+	blazeDWUS,
+	PLAT_FUNC_IN_STASIS,
+	PLAT_FUNC_STOP_PLAT,
+	build8,
+	turbo16
+
 
 
 	
