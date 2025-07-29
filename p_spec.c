@@ -788,7 +788,6 @@ void __far P_ShootSpecialLine( mobj_t __near* thing,int16_t linenum ){
 
 }
 
-*/
 
 
 //
@@ -859,6 +858,7 @@ void __near P_PlayerInSpecialSector () {
 
 }
 
+*/
 
 
 
