@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/28 21:45:28
+Created on:       25/07/28 21:48:12
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -65,7 +65,7 @@ p_inter_TEXT           CODE           AUTO           0bc2:30d0       00000cf7
 p_lights_TEXT          CODE           AUTO           0bc2:3dd0       000003ed
 p_plats_TEXT           CODE           AUTO           0bc2:41c0       0000041d
 p_spec_TEXT            CODE           AUTO           0bc2:45e0       00000625
-P_SPECA_TEXT           CODE           AUTO           0bc2:4c06       00000633
+P_SPECA_TEXT           CODE           AUTO           0bc2:4c06       00000630
 p_switch_TEXT          CODE           AUTO           0bc2:5240       00000afa
 p_telept_TEXT          CODE           AUTO           0bc2:5d40       0000022a
 P_TICK_TEXT            CODE           AUTO           0bc2:5f6a       000001e0
@@ -871,14 +871,14 @@ Module: p_speca.obj(p_speca.ASM)
 0bc2:4c06      twoSided_
 0bc2:4d04      P_FindNextHighestFloor_
 0bc2:4c8d      P_FindHighestOrLowestFloorSurrounding_
-0bc2:5239*     P_SPEC_ENDMARKER_
+0bc2:5236*     P_SPEC_ENDMARKER_
 0bc2:4c06*     P_SPEC_STARTMARKER_
 0bc2:4d76      P_FindLowestOrHighestCeilingSurrounding_
 0bc2:4e24      P_FindMinSurroundingLight_
 0bc2:4c29      getNextSectorList_
 0bc2:4ded      P_FindSectorsFromLineTag_
 0bc2:4fb1      P_CrossSpecialLine_
-0bc2:51c1      P_ShootSpecialLine_
+0bc2:51bd      P_ShootSpecialLine_
 Module: p_switch.obj(C:\REALDOOM\p_switch.c)
 0bc2:5240+     P_StartButton_
 0bc2:52a0      P_ChangeSwitchTexture_
@@ -1213,4 +1213,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  00018560 (99680.)
 Entry point address: 0bc2:83d6
-Link time: 00:00.75
+Link time: 00:00.20

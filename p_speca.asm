@@ -668,15 +668,14 @@ mov       bp, sp
 xchg      ax, si  ; si gets linenum.
 SHIFT_MACRO shl       si 4
 
-push       0  ; bp - 2  ; unused tdo
-push      -1  ; bp - 4  ; unused todo
+
 mov       ax, LINES_PHYSICS_SEGMENT
 mov       es, ax
-push      es ; bp - 6 in case needed
-push      si ; bp - 8 in case needed
+push      es ; bp - 2 in case needed
+push      si ; bp - 4 in case needed
 
-push      dx ; bp - 0Ah need to juggle this (side argument) for a second
-push      bx ; bp - 0Ch need to juggle this (mobj argument) for a second
+push      dx ; bp - 6 need to juggle this (side argument) for a second
+push      bx ; bp - 8 need to juggle this (mobj argument) for a second
 xor       ax, ax
 cwd
 
@@ -788,8 +787,8 @@ je        exit_p_crossspecialline
 
 ;		line_physics[linenum].special = setlinespecial;
 
-pop       bx  ;  bp - 8
-pop       es  ;  bp - 6
+pop       bx  ;  bp - 4
+pop       es  ;  bp - 2
 
 xchg      ax, si ; linespecial into ax.
 
@@ -1096,6 +1095,7 @@ push      bx
 mov       bx, FLOOR_RAISEFLOOR
 mov       dx, cx ; linefrontsecnum
 call      EV_DoFloor_
+do_change_switch_texture_call_pop_bx:
 pop       bx
 
 do_change_switch_texture_call:
@@ -1110,21 +1110,19 @@ POPA_NO_AX_OR_BP_MACRO
 retf      
 
 case_46:
-
 mov       dx, DOOR_OPEN
-
-
 call      EV_DoDoor_
 jmp       do_change_switch_texture_call
 
 case_47:
+push      bx
 mov       dx, cx
 mov       bx, PLATFORM_RAISETONEARESTANDCHANGE
 push      cx
 xor       cx, cx
 call      EV_DoPlat_
 pop       cx
-jmp       do_change_switch_texture_call
+jmp       do_change_switch_texture_call_pop_bx
 
 
 ENDP
