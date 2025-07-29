@@ -31,6 +31,7 @@ EXTRN EV_LightChange_:NEAR
 EXTRN EV_CeilingCrushStop_:NEAR
 EXTRN G_SecretExitLevel_:FAR
 EXTRN G_ExitLevel_:FAR
+EXTRN P_ChangeSwitchTexture_:NEAR
 
 
 .DATA
@@ -647,7 +648,7 @@ dw switch_case_default, switch_case_default, switch_case_default, switch_case_de
 dw switch_case_default, switch_case_124, switch_case_125, switch_case_126, switch_case_default, switch_case_128, switch_case_129, switch_case_130, switch_case_default, switch_case_default, switch_case_default
 dw switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_141
 
-PROC    P_CrossSpecialLine_  NEAR
+PROC    P_CrossSpecialLine_  FAR
 PUBLIC  P_CrossSpecialLine_
 
 ; todo consider thingpos not on stack. pass in cx.
@@ -1041,107 +1042,110 @@ jmp       done_with_switch_block
 
 ENDP
 
-COMMENT @
 
-PROC    P_ShootSpecialLine_  NEAR
+PROC    P_ShootSpecialLine_  FAR
 PUBLIC  P_ShootSpecialLine_
 
-0x0000000000005104:  53                   push      bx
-0x0000000000005105:  51                   push      cx
-0x0000000000005106:  56                   push      si
-0x0000000000005107:  57                   push      di
-0x0000000000005108:  55                   push      bp
-0x0000000000005109:  89 E5                mov       bp, sp
-0x000000000000510b:  83 EC 06             sub       sp, 6
-0x000000000000510e:  50                   push      ax
-0x000000000000510f:  89 D7                mov       di, dx
-0x0000000000005111:  89 D0                mov       ax, dx
-0x0000000000005113:  01 D0                add       ax, dx
-0x0000000000005115:  C7 46 FA 91 29       mov       word ptr [bp - 6], 0x2991
-0x000000000000511a:  89 C3                mov       bx, ax
-0x000000000000511c:  BE 0A 00             mov       si, 0xa
-0x000000000000511f:  81 C3 50 CA          add       bx, OFFSET _linebuffer
-0x0000000000005123:  8B 1F                mov       bx, word ptr ds:[bx]
-0x0000000000005125:  B8 00 70             mov       ax, LINES_PHYSICS_SEGMENT
-0x0000000000005128:  89 D9                mov       cx, bx
-0x000000000000512a:  8E C0                mov       es, ax
-0x000000000000512c:  C1 E1 02             shl       cx, 2
-0x000000000000512f:  C1 E3 04             shl       bx, 4
-0x0000000000005132:  26 8B 34             mov       si, word ptr es:[si]
-0x0000000000005135:  26 8A 47 0F          mov       al, byte ptr es:[bx + LINE_PHYSICS_T.lp_special]
-0x0000000000005139:  26 8A 57 0E          mov       dl, byte ptr es:[bx + LINE_PHYSICS_T.lp_tag]
-0x000000000000513d:  8E 46 FA             mov       es, word ptr [bp - 6]
-0x0000000000005140:  30 E4                xor       ah, ah
-0x0000000000005142:  89 CB                mov       bx, cx
-0x0000000000005144:  89 46 FC             mov       word ptr [bp - 4], ax
-0x0000000000005147:  26 8B 0F             mov       cx, word ptr es:[bx]
-0x000000000000514a:  8B 5E F8             mov       bx, word ptr [bp - 8]
-0x000000000000514d:  89 4E FE             mov       word ptr [bp - 2], cx
-0x0000000000005150:  80 7F 1A 00          cmp       byte ptr ds:[bx + 0x1a], 0
-0x0000000000005154:  74 05                je        0x515b
-0x0000000000005156:  3D 2E 00             cmp       ax, 0x2e
-0x0000000000005159:  75 12                jne       0x516d
-0x000000000000515b:  8B 46 FC             mov       ax, word ptr [bp - 4]
-0x000000000000515e:  3D 2F 00             cmp       ax, 0x2f
-0x0000000000005161:  74 50                je        0x51b3
-0x0000000000005163:  3D 2E 00             cmp       ax, 0x2e
-0x0000000000005166:  74 2C                je        0x5194
-0x0000000000005168:  3D 18 00             cmp       ax, 0x18
-0x000000000000516b:  74 06                je        0x5173
-0x000000000000516d:  C9                   LEAVE_MACRO     
-0x000000000000516e:  5F                   pop       di
-0x000000000000516f:  5E                   pop       si
-0x0000000000005170:  59                   pop       cx
-0x0000000000005171:  5B                   pop       bx
-0x0000000000005172:  CB                   retf      
-0x0000000000005173:  BB 03 00             mov       bx, 3
-0x0000000000005176:  88 D0                mov       al, dl
-0x0000000000005178:  89 F2                mov       dx, si
-0x000000000000517a:  30 E4                xor       ah, ah
-0x000000000000517c:  89 F1                mov       cx, si
-0x000000000000517e:  0E                   
-0x000000000000517f:  E8 22 DA             call      EV_DoFloor_
-0x0000000000005183:  6A 00                push      0
-0x0000000000005185:  8A 5E FC             mov       bl, byte ptr [bp - 4]
-0x0000000000005188:  8B 56 FE             mov       dx, word ptr [bp - 2]
-0x000000000000518b:  89 F8                mov       ax, di
-0x000000000000518d:  30 FF                xor       bh, bh
-0x000000000000518f:  E8 CE 06             call      0x5860
-0x0000000000005192:  EB D9                jmp       0x516d
-0x0000000000005194:  8A 5E FC             mov       bl, byte ptr [bp - 4]
-0x0000000000005197:  88 D0                mov       al, dl
-0x0000000000005199:  BA 03 00             mov       dx, 3
-0x000000000000519c:  30 E4                xor       ah, ah
-0x000000000000519e:  89 F1                mov       cx, si
-0x00000000000051a0:  0E                   
-0x00000000000051a1:  E8 FA D2             call      EV_DoDoor_
-0x00000000000051a5:  30 FF                xor       bh, bh
-0x00000000000051a7:  6A 01                push      1
-0x00000000000051a9:  8B 56 FE             mov       dx, word ptr [bp - 2]
-0x00000000000051ac:  89 F8                mov       ax, di
-0x00000000000051ae:  E8 AF 06             call      0x5860
-0x00000000000051b1:  EB BA                jmp       0x516d
-0x00000000000051b3:  BB 03 00             mov       bx, 3
-0x00000000000051b6:  88 D0                mov       al, dl
-0x00000000000051b8:  31 C9                xor       cx, cx
-0x00000000000051ba:  89 F2                mov       dx, si
-0x00000000000051bc:  30 E4                xor       ah, ah
-0x00000000000051be:  E8 2D F1             call      EV_DoPlat_
-0x00000000000051c1:  6A 00                push      0
-0x00000000000051c3:  8A 5E FC             mov       bl, byte ptr [bp - 4]
-0x00000000000051c6:  8B 56 FE             mov       dx, word ptr [bp - 2]
-0x00000000000051c9:  89 F1                mov       cx, si
-0x00000000000051cb:  89 F8                mov       ax, di
-0x00000000000051cd:  30 FF                xor       bh, bh
-0x00000000000051cf:  E8 8E 06             call      0x5860
-0x00000000000051d2:  C9                   LEAVE_MACRO     
-0x00000000000051d3:  5F                   pop       di
-0x00000000000051d4:  5E                   pop       si
-0x00000000000051d5:  59                   pop       cx
-0x00000000000051d6:  5B                   pop       bx
-0x00000000000051d7:  CB                   retf      
+push      bx
+push      cx
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 4
+push      ax
+mov       di, dx
+mov       ax, dx
+add       ax, dx
+mov       bx, ax
+mov       bx, word ptr ds:[_linebuffer]
+mov       ax, LINES_PHYSICS_SEGMENT
+mov       es, ax
+mov       cx, bx
+SHIFT_MACRO shl       cx 2
+SHIFT_MACRO shl       bx 4
+mov       al, byte ptr es:[bx + LINE_PHYSICS_T.lp_special]
+mov       dl, byte ptr es:[bx + LINE_PHYSICS_T.lp_tag]
+mov       bx, LINES_SEGMENT
+mov       es, bx
+xor       ah, ah
+mov       bx, cx
+mov       word ptr [bp - 4], ax
+mov       cx, word ptr es:[bx]
+mov       bx, word ptr [bp - 6]
+mov       word ptr [bp - 2], cx
+cmp       byte ptr ds:[bx + MOBJ_T.m_mobjtype], 0
+je        label_1
+cmp       ax, 46
+jne       exit_shootspecialline
+label_1:
+mov       ax, word ptr [bp - 4]
+cmp       ax, 47
+je        label_2
+cmp       ax, 46
+je        label_3
+cmp       ax, 24
+je        label_4
+exit_shootspecialline:
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       cx
+pop       bx
+retf      
+label_4:
+mov       bx, 3
+mov       al, dl
+mov       dx, si
+xor       ah, ah
+mov       cx, si
 
+call      EV_DoFloor_
+push      0
+mov       bl, byte ptr [bp - 4]
+mov       dx, word ptr [bp - 2]
+mov       ax, di
+xor       bh, bh
+call      P_ChangeSwitchTexture_
+jmp       exit_shootspecialline
+label_3:
+mov       bl, byte ptr [bp - 4]
+mov       al, dl
+mov       dx, 3
+xor       ah, ah
+mov       cx, si
 
+call      EV_DoDoor_
+xor       bh, bh
+push      1
+mov       dx, word ptr [bp - 2]
+mov       ax, di
+call      P_ChangeSwitchTexture_
+jmp       exit_shootspecialline
+label_2:
+mov       bx, 3
+mov       al, dl
+xor       cx, cx
+mov       dx, si
+xor       ah, ah
+call      EV_DoPlat_
+push      0
+mov       bl, byte ptr [bp - 4]
+mov       dx, word ptr [bp - 2]
+mov       cx, si
+mov       ax, di
+xor       bh, bh
+call      P_ChangeSwitchTexture_
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       cx
+pop       bx
+retf      
+
+ENDP
+
+COMMENT @
 
 
 

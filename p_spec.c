@@ -274,7 +274,7 @@ void __far P_CrossSpecialLine( int16_t		linenum,int16_t		side,mobj_t __near*	thi
     int16_t		ok;
 	line_physics_t __far*	line_physics = &lines_physics[linenum];
 	uint8_t linetag = line_physics->tag;
-	int16_t linefrontsecnum = lines_physics->frontsecnum;
+	int16_t linefrontsecnum = line_physics->frontsecnum;
 	int16_t linespecial = line_physics->special;
 	int16_t setlinespecial = -1;
 	mobjtype_t thingtype = thing->type;
@@ -734,7 +734,6 @@ void __far P_CrossSpecialLine( int16_t		linenum,int16_t		side,mobj_t __near*	thi
 
 }
 
-*/
 
 
 //
@@ -748,7 +747,7 @@ void __far P_ShootSpecialLine( mobj_t __near* thing,int16_t linenum ){
 	line_physics_t __far* line_physics = &lines_physics[innerlinenum];
 	int16_t linespecial = line_physics->special;
 	uint8_t linetag = line_physics->tag;
-	int16_t linefrontsecnum = lines_physics->frontsecnum;
+	int16_t linefrontsecnum = line_physics->frontsecnum;
 	int16_t lineside0 = line->sidenum[0];
 
 	
@@ -789,6 +788,7 @@ void __far P_ShootSpecialLine( mobj_t __near* thing,int16_t linenum ){
 
 }
 
+*/
 
 
 //
@@ -825,7 +825,7 @@ void __near P_PlayerInSpecialSector () {
 	
 		case 16:
 			// SUPER HELLSLIME DAMAGE
-			case 4:
+		case 4:
 				// STROBE HURT
 				if (!player.powers[pw_ironfeet] || (P_Random()<5) ) {
 					if (!(leveltime.h.fracbits &0x1f))
