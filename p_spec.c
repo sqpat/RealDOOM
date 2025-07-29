@@ -105,6 +105,7 @@ int16_t __near getNextSectorList(int16_t __near * linenums,int16_t	sec,int16_t _
 // P_FindHighestOrLowestFloorSurrounding()
 // FIND LOWEST FLOOR HEIGHT IN SURROUNDING SECTORS
 //
+/*
 short_height_t __near P_FindHighestOrLowestFloorSurrounding(int16_t secnum, int8_t isHigh){
     int16_t			i;
 	int16_t offset = sectors[secnum].linesoffset;
@@ -131,7 +132,7 @@ short_height_t __near P_FindHighestOrLowestFloorSurrounding(int16_t secnum, int8
     }
 	return floor; 
 }
-
+*/
  
 
 //
