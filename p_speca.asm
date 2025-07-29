@@ -14,9 +14,20 @@
 ;
 ; DESCRIPTION:
 ;
-INCLUDE CONSTANT.INC
+.MODEL  medium
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
+
+
+
+.DATA
+
+
+
+
+.CODE
+
+
 
 
 
@@ -24,36 +35,40 @@ PROC    P_SPEC_STARTMARKER_
 PUBLIC  P_SPEC_STARTMARKER_
 ENDP
 
-COMMENT @
 
-PROC    twoSided_ 
+PROC    twoSided_ NEAR
 PUBLIC  twoSided_
 
-0x00000000000045e0:  53                push      bx
-0x00000000000045e1:  56                push      si
-0x00000000000045e2:  89 D3             mov       bx, dx
-0x00000000000045e4:  BE 90 21          mov       si, 0x2190
-0x00000000000045e7:  C1 E0 04          shl       ax, 4
-0x00000000000045ea:  8E C6             mov       es, si
-0x00000000000045ec:  89 C6             mov       si, ax
-0x00000000000045ee:  26 03 5C 0C       add       bx, word ptr es:[si + 0xc]
-0x00000000000045f2:  01 DB             add       bx, bx
-0x00000000000045f4:  81 C3 50 CA       add       bx, 0xca50
-0x00000000000045f8:  B8 4A 2B          mov       ax, 0x2b4a
-0x00000000000045fb:  8B 1F             mov       bx, word ptr [bx]
-0x00000000000045fd:  8E C0             mov       es, ax
-0x00000000000045ff:  26 8A 07          mov       al, byte ptr es:[bx]
-0x0000000000004602:  24 04             and       al, 4
-0x0000000000004604:  83 C6 0C          add       si, 0xc
-0x0000000000004607:  30 E4             xor       ah, ah
-0x0000000000004609:  5E                pop       si
-0x000000000000460a:  5B                pop       bx
-0x000000000000460b:  C3                ret       
+;int16_t __near twoSided( int16_t	sector,int16_t	line ){
+
+;	line = sectors[sector].linesoffset + line;
+;	line = linebuffer[line];
+;   return lineflagslist[line] & ML_TWOSIDED;
+
+
+
+push      bx
+SHIFT_MACRO shl       ax 4
+xchg      ax, bx
+mov       ax, SECTORS_SEGMENT
+mov       es, ax
+mov       bx, word ptr es:[bx + SECTOR_T.sec_linesoffset]
+add       bx, dx
+sal       bx, 1
+mov       bx, word ptr ds:[bx + _linebuffer]
+mov       ax, LINEFLAGSLIST_SEGMENT
+mov       es, ax
+mov       al, byte ptr es:[bx]
+and       ax, ML_TWOSIDED
+pop       bx
+ret       
+
 ENDP
 
+COMMENT @
 
 
-PROC    getNextSectorList_ 
+PROC    getNextSectorList_  NEAR
 PUBLIC  getNextSectorList_
 
 
@@ -107,7 +122,7 @@ PUBLIC  getNextSectorList_
 0x0000000000004677:  FC                cld       
 ENDP
 
-PROC    P_FindHighestOrLowestFloorSurrounding_ 
+PROC    P_FindHighestOrLowestFloorSurrounding_  NEAR
 PUBLIC  P_FindHighestOrLowestFloorSurrounding_
 
 0x0000000000004678:  53                push      bx
@@ -120,7 +135,7 @@ PUBLIC  P_FindHighestOrLowestFloorSurrounding_
 0x0000000000004683:  50                push      ax
 0x0000000000004684:  88 56 FE          mov       byte ptr [bp - 2], dl
 0x0000000000004687:  89 C3             mov       bx, ax
-0x0000000000004689:  B8 90 21          mov       ax, 0x2190
+0x0000000000004689:  B8 90 21          mov       ax, SECTORS_SEGMENT
 0x000000000000468c:  C1 E3 04          shl       bx, 4
 0x000000000000468f:  8E C0             mov       es, ax
 0x0000000000004691:  8D 77 0C          lea       si, [bx + 0xc]
@@ -131,7 +146,7 @@ PUBLIC  P_FindHighestOrLowestFloorSurrounding_
 0x00000000000046a2:  83 C3 0A          add       bx, 0xa
 0x00000000000046a5:  01 F6             add       si, si
 0x00000000000046a7:  89 D1             mov       cx, dx
-0x00000000000046a9:  81 C6 50 CA       add       si, 0xca50
+0x00000000000046a9:  81 C6 50 CA       add       si, OFFSET _linebuffer
 0x00000000000046ad:  01 D1             add       cx, dx
 0x00000000000046af:  89 46 FC          mov       word ptr [bp - 4], ax
 0x00000000000046b2:  57                push      di
@@ -161,7 +176,7 @@ PUBLIC  P_FindHighestOrLowestFloorSurrounding_
 0x00000000000046ee:  C1 E3 04          shl       bx, 4
 0x00000000000046f1:  80 7E FE 00       cmp       byte ptr [bp - 2], 0
 0x00000000000046f5:  74 21             je        0x4718
-0x00000000000046f7:  B9 90 21          mov       cx, 0x2190
+0x00000000000046f7:  B9 90 21          mov       cx, SECTORS_SEGMENT
 0x00000000000046fa:  8E C1             mov       es, cx
 0x00000000000046fc:  26 8B 0F          mov       cx, word ptr es:[bx]
 0x00000000000046ff:  3B 4E FC          cmp       cx, word ptr [bp - 4]
@@ -178,7 +193,7 @@ PUBLIC  P_FindHighestOrLowestFloorSurrounding_
 0x0000000000004715:  59                pop       cx
 0x0000000000004716:  5B                pop       bx
 0x0000000000004717:  C3                ret       
-0x0000000000004718:  B9 90 21          mov       cx, 0x2190
+0x0000000000004718:  B9 90 21          mov       cx, SECTORS_SEGMENT
 0x000000000000471b:  8E C1             mov       es, cx
 0x000000000000471d:  26 8B 0F          mov       cx, word ptr es:[bx]
 0x0000000000004720:  3B 4E FC          cmp       cx, word ptr [bp - 4]
@@ -187,7 +202,7 @@ PUBLIC  P_FindHighestOrLowestFloorSurrounding_
 
 ENDP
 
-PROC    P_FindNextHighestFloor_ 
+PROC    P_FindNextHighestFloor_  NEAR
 PUBLIC  P_FindNextHighestFloor_
 
 0x0000000000004728:  53                push      bx
@@ -199,7 +214,7 @@ PUBLIC  P_FindNextHighestFloor_
 0x000000000000472f:  81 EC 04 06       sub       sp, 0x604
 0x0000000000004733:  50                push      ax
 0x0000000000004734:  52                push      dx
-0x0000000000004735:  BA 90 21          mov       dx, 0x2190
+0x0000000000004735:  BA 90 21          mov       dx, SECTORS_SEGMENT
 0x0000000000004738:  8D BE FC FD       lea       di, [bp - 0x204]
 0x000000000000473c:  C1 E0 04          shl       ax, 4
 0x000000000000473f:  8E C2             mov       es, dx
@@ -213,7 +228,7 @@ PUBLIC  P_FindNextHighestFloor_
 0x0000000000004755:  8B 96 FA F9       mov       dx, word ptr [bp - 0x606]
 0x0000000000004759:  26 8B 47 0A       mov       ax, word ptr es:[bx + 0xa]
 0x000000000000475d:  83 C3 0A          add       bx, 0xa
-0x0000000000004760:  81 C6 50 CA       add       si, 0xca50
+0x0000000000004760:  81 C6 50 CA       add       si, OFFSET _linebuffer
 0x0000000000004764:  89 C1             mov       cx, ax
 0x0000000000004766:  8D 9E FC F9       lea       bx, [bp - 0x604]
 0x000000000000476a:  01 C1             add       cx, ax
@@ -241,7 +256,7 @@ PUBLIC  P_FindNextHighestFloor_
 0x000000000000479b:  89 C7             mov       di, ax
 0x000000000000479d:  01 C7             add       di, ax
 0x000000000000479f:  8B 9B FC F9       mov       bx, word ptr [bp + di - 0x604]
-0x00000000000047a3:  B8 90 21          mov       ax, 0x2190
+0x00000000000047a3:  B8 90 21          mov       ax, SECTORS_SEGMENT
 0x00000000000047a6:  C1 E3 04          shl       bx, 4
 0x00000000000047a9:  8E C0             mov       es, ax
 0x00000000000047ab:  26 8B 07          mov       ax, word ptr es:[bx]
@@ -286,8 +301,9 @@ PUBLIC  P_FindNextHighestFloor_
 0x00000000000047f8:  C3                ret       
 ENDP
 
-PROC    P_FindLowestOrHighestCeilingSurrounding_ 
+PROC    P_FindLowestOrHighestCeilingSurrounding_  NEAR
 PUBLIC  P_FindLowestOrHighestCeilingSurrounding_
+
 0x00000000000047fa:  53                push      bx
 0x00000000000047fb:  51                push      cx
 0x00000000000047fc:  56                push      si
@@ -303,7 +319,7 @@ PUBLIC  P_FindLowestOrHighestCeilingSurrounding_
 0x0000000000004810:  31 C0             xor       ax, ax
 0x0000000000004812:  89 46 FC          mov       word ptr [bp - 4], ax
 0x0000000000004815:  8B 86 F8 FB       mov       ax, word ptr [bp - 0x408]
-0x0000000000004819:  BB 90 21          mov       bx, 0x2190
+0x0000000000004819:  BB 90 21          mov       bx, SECTORS_SEGMENT
 0x000000000000481c:  C1 E0 04          shl       ax, 4
 0x000000000000481f:  8E C3             mov       es, bx
 0x0000000000004821:  89 C3             mov       bx, ax
@@ -315,7 +331,7 @@ PUBLIC  P_FindLowestOrHighestCeilingSurrounding_
 0x0000000000004833:  01 F6             add       si, si
 0x0000000000004835:  26 8B 47 0A       mov       ax, word ptr es:[bx + 0xa]
 0x0000000000004839:  83 C3 0A          add       bx, 0xa
-0x000000000000483c:  81 C6 50 CA       add       si, 0xca50
+0x000000000000483c:  81 C6 50 CA       add       si, OFFSET _linebuffer
 0x0000000000004840:  89 C1             mov       cx, ax
 0x0000000000004842:  8D 9E FA FB       lea       bx, [bp - 0x406]
 0x0000000000004846:  01 C1             add       cx, ax
@@ -345,7 +361,7 @@ PUBLIC  P_FindLowestOrHighestCeilingSurrounding_
 0x000000000000487e:  C1 E3 04          shl       bx, 4
 0x0000000000004881:  80 7E FE 00       cmp       byte ptr [bp - 2], 0
 0x0000000000004885:  74 20             je        0x48a7
-0x0000000000004887:  B8 90 21          mov       ax, 0x2190
+0x0000000000004887:  B8 90 21          mov       ax, SECTORS_SEGMENT
 0x000000000000488a:  8E C0             mov       es, ax
 0x000000000000488c:  26 8B 47 02       mov       ax, word ptr es:[bx + 2]
 0x0000000000004890:  83 C3 02          add       bx, 2
@@ -357,7 +373,7 @@ PUBLIC  P_FindLowestOrHighestCeilingSurrounding_
 0x000000000000489f:  E9 70 FF          jmp       0x4812
 0x00000000000048a2:  89 46 FC          mov       word ptr [bp - 4], ax
 0x00000000000048a5:  EB F1             jmp       0x4898
-0x00000000000048a7:  B8 90 21          mov       ax, 0x2190
+0x00000000000048a7:  B8 90 21          mov       ax, SECTORS_SEGMENT
 0x00000000000048aa:  8E C0             mov       es, ax
 0x00000000000048ac:  26 8B 47 02       mov       ax, word ptr es:[bx + 2]
 0x00000000000048b0:  83 C3 02          add       bx, 2
@@ -368,7 +384,7 @@ PUBLIC  P_FindLowestOrHighestCeilingSurrounding_
 0x00000000000048bd:  EB AB             jmp       0x486a
 ENDP
 
-PROC    P_FindSectorsFromLineTag_ 
+PROC    P_FindSectorsFromLineTag_  NEAR
 PUBLIC  P_FindSectorsFromLineTag_
 
 0x00000000000048c0:  51                push      cx
@@ -422,7 +438,7 @@ PUBLIC  P_FindSectorsFromLineTag_
 0x000000000000492d:  C3                ret       
 ENDP
 
-PROC    P_FindMinSurroundingLight_ 
+PROC    P_FindMinSurroundingLight_  NEAR
 PUBLIC  P_FindMinSurroundingLight_
 
 0x000000000000492e:  53                push      bx
@@ -434,7 +450,7 @@ PUBLIC  P_FindMinSurroundingLight_
 0x0000000000004935:  81 EC 04 04       sub       sp, 0x404
 0x0000000000004939:  50                push      ax
 0x000000000000493a:  88 56 FE          mov       byte ptr [bp - 2], dl
-0x000000000000493d:  BA 90 21          mov       dx, 0x2190
+0x000000000000493d:  BA 90 21          mov       dx, SECTORS_SEGMENT
 0x0000000000004940:  C1 E0 04          shl       ax, 4
 0x0000000000004943:  8D BE FC FD       lea       di, [bp - 0x204]
 0x0000000000004947:  89 C3             mov       bx, ax
@@ -446,7 +462,7 @@ PUBLIC  P_FindMinSurroundingLight_
 0x0000000000004957:  01 F6             add       si, si
 0x0000000000004959:  26 8B 47 0A       mov       ax, word ptr es:[bx + 0xa]
 0x000000000000495d:  83 C3 0A          add       bx, 0xa
-0x0000000000004960:  81 C6 50 CA       add       si, 0xca50
+0x0000000000004960:  81 C6 50 CA       add       si, OFFSET _linebuffer
 0x0000000000004964:  89 C1             mov       cx, ax
 0x0000000000004966:  8D 9E FC FB       lea       bx, [bp - 0x404]
 0x000000000000496a:  01 C1             add       cx, ax
@@ -473,7 +489,7 @@ PUBLIC  P_FindMinSurroundingLight_
 0x000000000000499a:  89 C6             mov       si, ax
 0x000000000000499c:  01 C6             add       si, ax
 0x000000000000499e:  8B 82 FC FB       mov       ax, word ptr [bp + si - 0x404]
-0x00000000000049a2:  BB 90 21          mov       bx, 0x2190
+0x00000000000049a2:  BB 90 21          mov       bx, SECTORS_SEGMENT
 0x00000000000049a5:  C1 E0 04          shl       ax, 4
 0x00000000000049a8:  8E C3             mov       es, bx
 0x00000000000049aa:  89 C3             mov       bx, ax
@@ -509,7 +525,7 @@ dw 04D71h, 04D71h, 04D71h, 04D71h, 04D71h, 04D71h, 04D71h, 04E48h, 050ABh, 04E60
 dw 04D71h, 04E7Ch, 04E84h, 050C2h, 04D71h, 050DDh, 050F0h, 04EA4h, 04D71h, 04D71h, 04D71h
 dw 04D71h, 04D71h, 04D71h, 04D71h, 04D71h, 04D71h, 04D71h, 04EBCh
 
-PROC    P_CrossSpecialLine_ 
+PROC    P_CrossSpecialLine_  NEAR
 PUBLIC  P_CrossSpecialLine_
 
 0x0000000000004ae0:  51                   push      cx
@@ -1142,7 +1158,7 @@ PUBLIC  P_CrossSpecialLine_
 
 ENDP
 
-PROC    P_ShootSpecialLine_ 
+PROC    P_ShootSpecialLine_  NEAR
 PUBLIC  P_ShootSpecialLine_
 
 0x0000000000005104:  53                   push      bx
@@ -1159,7 +1175,7 @@ PUBLIC  P_ShootSpecialLine_
 0x0000000000005115:  C7 46 FA 91 29       mov       word ptr [bp - 6], 0x2991
 0x000000000000511a:  89 C3                mov       bx, ax
 0x000000000000511c:  BE 0A 00             mov       si, 0xa
-0x000000000000511f:  81 C3 50 CA          add       bx, 0xca50
+0x000000000000511f:  81 C3 50 CA          add       bx, OFFSET _linebuffer
 0x0000000000005123:  8B 1F                mov       bx, word ptr [bx]
 0x0000000000005125:  B8 00 70             mov       ax, 0x7000
 0x0000000000005128:  89 D9                mov       cx, bx
@@ -1250,7 +1266,7 @@ dw 05254h, 0526Ah, 05264h, 0528Dh, 05264h, 052D0h, 05264h, 052DDh, 05264h, 05264
 
 ENDP
 
-PROC    P_PlayerInSpecialSector_ 
+PROC    P_PlayerInSpecialSector_  NEAR
 PUBLIC  P_PlayerInSpecialSector_
 
 
@@ -1264,7 +1280,7 @@ PUBLIC  P_PlayerInSpecialSector_
 0x00000000000051fc:  BB EC 06             mov       bx, 0x6ec
 0x00000000000051ff:  C7 46 FE 00 00       mov       word ptr [bp - 2], 0
 0x0000000000005204:  8B 1F                mov       bx, word ptr [bx]
-0x0000000000005206:  B8 90 21             mov       ax, 0x2190
+0x0000000000005206:  B8 90 21             mov       ax, SECTORS_SEGMENT
 0x0000000000005209:  8B 5F 04             mov       bx, word ptr [bx + 4]
 0x000000000000520c:  BE 30 07             mov       si, 0x730
 0x000000000000520f:  C1 E3 04             shl       bx, 4
@@ -1386,7 +1402,7 @@ PUBLIC  P_PlayerInSpecialSector_
 
 ENDP
 
-PROC    P_UpdateSpecials_ 
+PROC    P_UpdateSpecials_  NEAR
 PUBLIC  P_UpdateSpecials_
 
 
@@ -1541,7 +1557,7 @@ PUBLIC  P_UpdateSpecials_
 
 ENDP
 
-PROC    EV_DoDonut_ 
+PROC    EV_DoDonut_  NEAR
 PUBLIC  EV_DoDonut_
 
 
@@ -1567,7 +1583,7 @@ PUBLIC  EV_DoDonut_
 0x00000000000054b4:  7C 26                jl        0x54dc
 0x00000000000054b6:  89 46 FE             mov       word ptr [bp - 2], ax
 0x00000000000054b9:  89 C3                mov       bx, ax
-0x00000000000054bb:  B8 90 21             mov       ax, 0x2190
+0x00000000000054bb:  B8 90 21             mov       ax, SECTORS_SEGMENT
 0x00000000000054be:  C1 E3 04             shl       bx, 4
 0x00000000000054c1:  8E C0                mov       es, ax
 0x00000000000054c3:  83 C6 02             add       si, 2
@@ -1594,7 +1610,7 @@ PUBLIC  EV_DoDonut_
 0x00000000000054f7:  89 C3                mov       bx, ax
 0x00000000000054f9:  8B 87 50 CA          mov       ax, word ptr [bx - 0x35b0]
 0x00000000000054fd:  89 82 F4 F9          mov       word ptr [bp + si - 0x60c], ax
-0x0000000000005501:  81 C3 50 CA          add       bx, 0xca50
+0x0000000000005501:  81 C3 50 CA          add       bx, OFFSET _linebuffer
 0x0000000000005505:  83 BA F6 F9 00       cmp       word ptr [bp + si - 0x60a], 0
 0x000000000000550a:  7D DF                jge       0x54eb
 0x000000000000550c:  BF 00 70             mov       di, 0x7000
@@ -1635,7 +1651,7 @@ PUBLIC  EV_DoDonut_
 0x0000000000005569:  E9 0B 01             jmp       0x5677
 0x000000000000556c:  89 46 F6             mov       word ptr [bp - 0xa], ax
 0x000000000000556f:  C1 E0 04             shl       ax, 4
-0x0000000000005572:  BA 90 21             mov       dx, 0x2190
+0x0000000000005572:  BA 90 21             mov       dx, SECTORS_SEGMENT
 0x0000000000005575:  89 C3                mov       bx, ax
 0x0000000000005577:  8E C2                mov       es, dx
 0x0000000000005579:  83 C3 0A             add       bx, 0xa
@@ -1647,7 +1663,7 @@ PUBLIC  EV_DoDonut_
 0x000000000000558b:  83 C3 0C             add       bx, 0xc
 0x000000000000558e:  01 F6                add       si, si
 0x0000000000005590:  01 D1                add       cx, dx
-0x0000000000005592:  81 C6 50 CA          add       si, 0xca50
+0x0000000000005592:  81 C6 50 CA          add       si, OFFSET _linebuffer
 0x0000000000005596:  8D 9E F6 FB          lea       bx, [bp - 0x40a]
 0x000000000000559a:  57                   push      di
 0x000000000000559b:  8C D8                mov       ax, ds
@@ -1673,7 +1689,7 @@ PUBLIC  EV_DoDonut_
 0x00000000000055c9:  75 03                jne       0x55ce
 0x00000000000055cb:  E9 9B 00             jmp       0x5669
 0x00000000000055ce:  89 DA                mov       dx, bx
-0x00000000000055d0:  B8 90 21             mov       ax, 0x2190
+0x00000000000055d0:  B8 90 21             mov       ax, SECTORS_SEGMENT
 0x00000000000055d3:  C1 E2 04             shl       dx, 4
 0x00000000000055d6:  8E C0                mov       es, ax
 0x00000000000055d8:  89 D3                mov       bx, dx
@@ -1749,7 +1765,7 @@ ENDP
 
 dw 05719h, 05720h, 0572Ch, 0573Bh, 05702h, 05702h, 05702h, 0574Ah, 05751h, 05770h, 05702h, 0577Ch, 0578Eh, 057A0h, 05702h, 05702h, 057ACh
 
-PROC    P_SpawnSpecials_ 
+PROC    P_SpawnSpecials_  NEAR
 PUBLIC  P_SpawnSpecials_
 
 

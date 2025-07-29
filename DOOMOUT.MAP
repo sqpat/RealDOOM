@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/26 23:04:11
+Created on:       25/07/28 02:34:54
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -64,7 +64,8 @@ p_floor_TEXT           CODE           AUTO           0bc2:28c0       00000808
 p_inter_TEXT           CODE           AUTO           0bc2:30d0       00000cf7
 p_lights_TEXT          CODE           AUTO           0bc2:3dd0       000003ed
 p_plats_TEXT           CODE           AUTO           0bc2:41c0       0000041d
-p_spec_TEXT            CODE           AUTO           0bc2:45e0       0000121d
+p_spec_TEXT            CODE           AUTO           0bc2:45e0       000011f1
+P_SPECA_TEXT           CODE           AUTO           0bc2:57d2       00000023
 p_switch_TEXT          CODE           AUTO           0bc2:5800       00000afa
 p_telept_TEXT          CODE           AUTO           0bc2:6300       0000022a
 P_TICK_TEXT            CODE           AUTO           0bc2:652a       000001e0
@@ -862,19 +863,22 @@ Module: p_plats.obj(C:\REALDOOM\p_plats.c)
 0bc2:456e      P_AddActivePlat_
 0bc2:4596+     P_RemoveActivePlat_
 Module: p_spec.obj(C:\REALDOOM\p_spec.c)
-0bc2:45e0      twoSided_
-0bc2:460c+     getNextSectorList_
-0bc2:4678      P_FindHighestOrLowestFloorSurrounding_
-0bc2:4728      P_FindNextHighestFloor_
-0bc2:47fa      P_FindLowestOrHighestCeilingSurrounding_
-0bc2:48c0      P_FindSectorsFromLineTag_
-0bc2:492e      P_FindMinSurroundingLight_
-0bc2:4ae0      P_CrossSpecialLine_
-0bc2:5104      P_ShootSpecialLine_
-0bc2:51f2      P_PlayerInSpecialSector_
-0bc2:5314      P_UpdateSpecials_
-0bc2:5488      EV_DoDonut_
-0bc2:56a4      P_SpawnSpecials_
+0bc2:45e0+     getNextSectorList_
+0bc2:464c      P_FindHighestOrLowestFloorSurrounding_
+0bc2:46fc      P_FindNextHighestFloor_
+0bc2:47ce      P_FindLowestOrHighestCeilingSurrounding_
+0bc2:4894      P_FindSectorsFromLineTag_
+0bc2:4902      P_FindMinSurroundingLight_
+0bc2:4ab4      P_CrossSpecialLine_
+0bc2:50d8      P_ShootSpecialLine_
+0bc2:51c6      P_PlayerInSpecialSector_
+0bc2:52e8      P_UpdateSpecials_
+0bc2:545c      EV_DoDonut_
+0bc2:5678      P_SpawnSpecials_
+Module: p_speca.obj(p_speca.ASM)
+0bc2:57d2      twoSided_
+0bc2:57f5*     P_SPEC_ENDMARKER_
+0bc2:57d2*     P_SPEC_STARTMARKER_
 Module: p_switch.obj(C:\REALDOOM\p_switch.c)
 0bc2:5800+     P_StartButton_
 0bc2:5860      P_ChangeSwitchTexture_
@@ -1209,4 +1213,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  00018b20 (101152.)
 Entry point address: 0bc2:8996
-Link time: 00:00.19
+Link time: 00:00.20
