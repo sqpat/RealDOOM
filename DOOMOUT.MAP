@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/29 18:43:53
+Created on:       25/07/29 18:52:27
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -13,7 +13,7 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          1584:0000            00002b30
+DGROUP                          1584:0000            00002af0
 
 
 
@@ -36,7 +36,7 @@ i_main_TEXT            CODE           AUTO           02ec:0000       0000001e
 i_quit_TEXT            CODE           AUTO           02ec:0020       000001f4
 i_ibm_TEXT             CODE           AUTO           02ec:0220       00000190
 i_sound_TEXT           CODE           AUTO           02ec:03b0       00000246
-d_main_TEXT            CODE           AUTO           02ec:0600       00000f1c
+d_main_TEXT            CODE           AUTO           02ec:0600       00000f20
 d_net_TEXT             CODE           AUTO           02ec:1520       00000113
 g_game_TEXT            CODE           AUTO           02ec:1640       00000a13
 m_misc_TEXT            CODE           AUTO           02ec:2060       000000d5
@@ -89,8 +89,8 @@ YIB                    DATA           DGROUP         1728:0002       00000000
 YI                     DATA           DGROUP         1728:0002       00000012
 YIE                    DATA           DGROUP         1729:0004       00000000
 DATA                   DATA           DGROUP         1729:0004       00000000
-_BSS                   BSS            DGROUP         172a:0000       000006ce
-STACK                  STACK          DGROUP         1797:0000       00000a00
+_BSS                   BSS            DGROUP         172a:0000       0000068e
+STACK                  STACK          DGROUP         1793:0000       00000a00
 
 
                         +----------------+
@@ -107,19 +107,19 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 1584:1a60      _sb_voicelist
 1584:1aa0      _musdriverstartposition
 1584:1ab0      _codestartposition
-1584:1ac8      _savename
-1584:1ad8      _channels
-1584:1b08      _anims
+1584:1ac8      _channels
+1584:1af8      _anims
+1584:1bb8      _savename
 1584:1bc8      _wadfiles
 1584:1bd0      _switchlist
 1584:1c98      _saveOldString
-1584:1cb0      _w_ammo
-1584:1cd8      _w_maxammo
-1584:1d00      _w_faces
-1584:1d08      _w_arms
-1584:1d38      _w_keyboxes
-1584:1d50      _arms
-1584:1d68      _w_armsbg
+1584:1cb0      _w_faces
+1584:1cb8      _w_ammo
+1584:1ce0      _w_arms
+1584:1d10      _w_keyboxes
+1584:1d28      _arms
+1584:1d40      _w_armsbg
+1584:1d48      _w_maxammo
 1584:1d70      _am_l
 1584:1d78      _am_fl
 1584:1d80      _am_lc
@@ -131,163 +131,163 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 1584:1dc4      _filetolumpsize
 1584:1dd0      _TaskServiceCount
 1584:1dd4      _OldInt8
-1584:1dd8      _w_armor
-1584:1de4      _st_stuff_buf
-1584:1e18      _w_health
-1584:1e24      _keys
-1584:1e30      _shortnum
-1584:1e44      _tallnum
-1584:1e58      _faces
-1584:1eac+     _mousearray
-1584:1eb0      _starttime
-1584:1eb4      _maketic
-1584:1eb8      _gametime
-1584:1ebc      _p_init_sprtemp
-1584:1ec0      _am_scale_mtof
-1584:1ec4      _am_scale_ftom
-1584:1ec8      _screen_oldloc
-1584:1ecc      _am_buffer
-1584:1ee0      _am_max_scale_mtof
-1584:1ee4      _m_paninc
-1584:1ee8      _hu_font
-1584:1f66      _keyboxes
-1584:1f6c      _w_ready
-1584:1f76      _pcspeaker_endoffset
-1584:1f78      _pcspeaker_currentoffset
-1584:1f7a      _numlinespecials
-1584:1f7c      _lastanim
-1584:1f7e      _oldentertics
-1584:1f80      _numlumps
-1584:1f82      _currentThinkerListHead
-1584:1f84      _armsbgarray
-1584:1f86      _numswitches
-1584:1f88      _currentMenu
-1584:1f8a      _messageLastMenuActive
-1584:1f8c      _whichSkull
-1584:1f8e      _skullAnimCounter
-1584:1f90      _saveStringEnter
-1584:1f92      _itemOn
-1584:1f94      _saveCharIndex
-1584:1f96      _messageRoutine
-1584:1f98      _saveSlot
-1584:1f9a      _st_calc_lastcalc
-1584:1f9c      _armsbg
-1584:1f9e      _faceback
-1584:1fa0      _sbar
-1584:1fa2      _tallpercent
-1584:1fa4      _dclicks
-1584:1fa6      _dclicktime
-1584:1fa8      _dclickstate
-1584:1faa      _dclicktime2
-1584:1fac      _defdemoname
-1584:1fae      _myargc
-1584:1fb0      _myargv
-1584:1fb2      _dclickstate2
-1584:1fb4      _dclicks2
-1584:1fb6      _mousex
-1584:1fb8      _demo_p
-1584:1fba      _p_init_maxframe
-1584:1fbc      _am_min_level_x
-1584:1fbe      _am_min_level_y
-1584:1fc0      _screen_viewport_height
-1584:1fc2      _screen_topright_y
-1584:1fc4      _screen_topright_x
-1584:1fc6      _screen_viewport_width
-1584:1fc8      _am_min_scale_mtof
-1584:1fca      _old_screen_viewport_width
-1584:1fcc      _old_screen_botleft_x
-1584:1fce      _old_screen_botleft_y
-1584:1fd0      _screen_botleft_x
-1584:1fd2      _screen_botleft_y
-1584:1fd4      _ftom_zoommul
-1584:1fd6      _am_max_level_y
-1584:1fd8      _am_max_level_x
-1584:1fda      _old_screen_viewport_height
-1584:1fdc      _skytexture
-1584:1fde      _numpatches
-1584:1fe0      _numtextures
-1584:1fe2      _numspritelumps
-1584:1fe4      _mtof_zoommul
-1584:1fe6      _numflats
-1584:1fe8      _snd_SBport
-1584:1fea      _snd_Mport
-1584:1fec      _pagename
-1584:1fee      _pagetic
-1584:1ff0      _menu_messageString
-1584:2059      _oldweaponsowned
-1584:2062      _wminfo
-1584:2077      _useDeadAttackerRef
-1584:2078      _mus_paused
-1584:2079      _levelTimer
-1584:207a      _onground
-1584:207b      _TS_TimesInInterrupt
-1584:207c      _menu_epi
-1584:207d      _messageNeedsInput
-1584:207e      _message_dontfuckwithme
-1584:207f      _message_counter
-1584:2080      _message_nottobefuckedwith
-1584:2081      _messageToPrint
-1584:2082      _st_randomnumber
-1584:2083      _message_on
-1584:2084      _do_st_refresh
-1584:2085      _st_statusbaron
-1584:2086      _st_gamestate
-1584:2087      _d_episode
-1584:2088      _secretexit
-1584:2089      _d_skill
-1584:208a      _d_map
-1584:208b      _updatedthisframe
-1584:208c      _st_firsttime
-1584:208d      _savegameslot
-1584:208e      _usemouse
-1584:208f      _mousebforward
-1584:2090      _key_speed
-1584:2091      _mousebfire
-1584:2092      _key_fire
-1584:2093      _key_strafe
-1584:2094      _turnheld
-1584:2095      _key_straferight
-1584:2096      _key_up
-1584:2097      _mousebstrafe
-1584:2098      _key_down
-1584:2099      _key_use
-1584:209a      _key_strafeleft
-1584:209b      _paused
-1584:209c      _key_left
-1584:209d      _timingdemo
-1584:209e      _sendsave
-1584:209f      _noblit
-1584:20a0      _demoplayback
-1584:20a1      _demorecording
-1584:20a2      _singledemo
-1584:20a3      _netdemo
-1584:20a4      _key_right
-1584:20a5      _usegamma
-1584:20a6      _sendpause
-1584:20a7      _usergame
-1584:20a8      _borderdrawcount
-1584:20a9      _numChannels
-1584:20aa      _mousepresent
-1584:20ab      _novideo
-1584:20ac      _sfxVolume
-1584:20ad      _menuactive
-1584:20ae      _screenSize
-1584:20af      _inhelpscreens
-1584:20b0      _quickSaveSlot
-1584:20b1      _detailLevel
-1584:20b2      _musicVolume
-1584:20b3      _eventtail
-1584:20b4      _startmap
-1584:20b5      _modifiedgame
-1584:20b6      _autostart
-1584:20b7      _showMessages
-1584:20b8      _advancedemo
-1584:20b9      _mouseSensitivity
-1584:20ba      _startskill
-1584:20bb      _eventhead
-1584:20bc      _respawnparm
-1584:20bd      _startepisode
-1584:20be      _demosequence
+1584:1dd8      _st_stuff_buf
+1584:1e0c      _w_health
+1584:1e18      _keys
+1584:1e24      _w_armor
+1584:1e30      _faces
+1584:1e84+     _mousearray
+1584:1e88      _starttime
+1584:1e8c      _maketic
+1584:1e90      _gametime
+1584:1e94      _p_init_sprtemp
+1584:1e98      _am_scale_mtof
+1584:1e9c      _am_scale_ftom
+1584:1ea0      _screen_oldloc
+1584:1ea4      _am_max_scale_mtof
+1584:1ea8      _m_paninc
+1584:1eac      _hu_font
+1584:1f2a      _keyboxes
+1584:1f30      _w_ready
+1584:1f3a      _pcspeaker_endoffset
+1584:1f3c      _pcspeaker_currentoffset
+1584:1f3e      _numlinespecials
+1584:1f40      _lastanim
+1584:1f42      _oldentertics
+1584:1f44      _numlumps
+1584:1f46      _armsbgarray
+1584:1f48      _numswitches
+1584:1f4a      _currentThinkerListHead
+1584:1f4c      _messageLastMenuActive
+1584:1f4e      _whichSkull
+1584:1f50      _currentMenu
+1584:1f52      _skullAnimCounter
+1584:1f54      _saveStringEnter
+1584:1f56      _itemOn
+1584:1f58      _saveCharIndex
+1584:1f5a      _messageRoutine
+1584:1f5c      _saveSlot
+1584:1f5e      _st_calc_lastcalc
+1584:1f60      _armsbg
+1584:1f62      _faceback
+1584:1f64      _sbar
+1584:1f66      _tallpercent
+1584:1f68      _dclicks
+1584:1f6a      _dclickstate
+1584:1f6c      _dclicktime2
+1584:1f6e      _defdemoname
+1584:1f70      _myargc
+1584:1f72      _myargv
+1584:1f74      _dclickstate2
+1584:1f76      _dclicks2
+1584:1f78      _dclicktime
+1584:1f7a      _mousex
+1584:1f7c      _demo_p
+1584:1f7e      _p_init_maxframe
+1584:1f80      _am_min_level_x
+1584:1f82      _am_min_level_y
+1584:1f84      _screen_viewport_height
+1584:1f86      _screen_topright_y
+1584:1f88      _screen_topright_x
+1584:1f8a      _screen_viewport_width
+1584:1f8c      _am_min_scale_mtof
+1584:1f8e      _old_screen_viewport_width
+1584:1f90      _old_screen_botleft_x
+1584:1f92      _old_screen_botleft_y
+1584:1f94      _screen_botleft_x
+1584:1f96      _screen_botleft_y
+1584:1f98      _ftom_zoommul
+1584:1f9a      _am_max_level_y
+1584:1f9c      _am_max_level_x
+1584:1f9e      _old_screen_viewport_height
+1584:1fa0      _skytexture
+1584:1fa2      _numpatches
+1584:1fa4      _numtextures
+1584:1fa6      _numspritelumps
+1584:1fa8      _mtof_zoommul
+1584:1faa      _numflats
+1584:1fac      _snd_SBport
+1584:1fae      _snd_Mport
+1584:1fb0      _pagename
+1584:1fb2      _pagetic
+1584:1fb4      _menu_messageString
+1584:201d      _oldweaponsowned
+1584:2026      _wminfo
+1584:203b      _useDeadAttackerRef
+1584:203c      _mus_paused
+1584:203d      _levelTimer
+1584:203e      _onground
+1584:203f      _TS_TimesInInterrupt
+1584:2040      _menu_epi
+1584:2041      _messageNeedsInput
+1584:2042      _messageToPrint
+1584:2043      _st_randomnumber
+1584:2044      _message_on
+1584:2045      _message_dontfuckwithme
+1584:2046      _do_st_refresh
+1584:2047      _message_counter
+1584:2048      _message_nottobefuckedwith
+1584:2049      _st_statusbaron
+1584:204a      _d_episode
+1584:204b      _secretexit
+1584:204c      _d_skill
+1584:204d      _d_map
+1584:204e      _updatedthisframe
+1584:204f      _st_firsttime
+1584:2050      _savegameslot
+1584:2051      _st_gamestate
+1584:2052      _usemouse
+1584:2053      _mousebforward
+1584:2054      _key_speed
+1584:2055      _mousebfire
+1584:2056      _key_fire
+1584:2057      _key_strafe
+1584:2058      _turnheld
+1584:2059      _key_straferight
+1584:205a      _mousebstrafe
+1584:205b      _key_down
+1584:205c      _key_use
+1584:205d      _key_strafeleft
+1584:205e      _paused
+1584:205f      _key_left
+1584:2060      _timingdemo
+1584:2061      _sendsave
+1584:2062      _noblit
+1584:2063      _demoplayback
+1584:2064      _key_up
+1584:2065      _demorecording
+1584:2066      _singledemo
+1584:2067      _netdemo
+1584:2068      _key_right
+1584:2069      _sendpause
+1584:206a      _usergame
+1584:206b      _borderdrawcount
+1584:206c      _numChannels
+1584:206d      _mousepresent
+1584:206e      _novideo
+1584:206f      _usegamma
+1584:2070      _sfxVolume
+1584:2071      _menuactive
+1584:2072      _screenSize
+1584:2073      _inhelpscreens
+1584:2074      _quickSaveSlot
+1584:2075      _detailLevel
+1584:2076      _musicVolume
+1584:2077      _eventtail
+1584:2078      _startmap
+1584:2079      _modifiedgame
+1584:207a      _autostart
+1584:207b      _showMessages
+1584:207c      _advancedemo
+1584:207d      _mouseSensitivity
+1584:207e      _startskill
+1584:207f      _eventhead
+1584:2080      _respawnparm
+1584:2081      _startepisode
+1584:2082      _demosequence
+1584:2083      _snd_SBirq
+1584:2084      _snd_SfxVolume
+1584:2085      _snd_DesiredSfxDevice
 1584:0cf0      _singletics
 1584:0cf1      _skytextureloaded
 1584:0cf2      _am_cheating
@@ -372,11 +372,8 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 1584:0f9e      _sfx_priority
 1584:100b      _FORCE_5000_LUMP_LOAD
 1584:100c      _lastpcspeakernotevalue
-1584:20bf      _snd_SBirq
-1584:20c0      _snd_SfxVolume
-1584:20c1      _snd_DesiredSfxDevice
-1584:20c2      _snd_SBdma
-1584:20c3      _snd_DesiredMusicDevice
+1584:2086      _snd_SBdma
+1584:2087      _snd_DesiredMusicDevice
 Module: d_init.obj(C:\REALDOOM\d_init.c)
 0000:0000      D_InitStrings_
 0000:00aa+     D_GetCursorColumnRow_
@@ -483,13 +480,13 @@ Module: d_main.obj(C:\REALDOOM\d_main.c)
 02ec:0f46      makesavegamename_
 02ec:0f82      D_StartTitle_
 02ec:0f9e+     D_Display_
-02ec:1262+     G_BeginRecording_
-02ec:12fa      D_PageTicker_
-02ec:130c+     D_PageDrawer_
-02ec:1330      D_DoAdvanceDemo_
-02ec:144c+     Z_ClearDeadCode_
-02ec:1492      D_DoomMain_
-02ec:149a*     D_DoomLoop_
+02ec:1266+     G_BeginRecording_
+02ec:12fe      D_PageTicker_
+02ec:1310+     D_PageDrawer_
+02ec:1334      D_DoAdvanceDemo_
+02ec:1450+     Z_ClearDeadCode_
+02ec:1496      D_DoomMain_
+02ec:149e*     D_DoomLoop_
 Module: d_net.obj(C:\REALDOOM\d_net.c)
 02ec:1520      NetUpdate_
 02ec:1586      TryRunTics_
@@ -747,15 +744,15 @@ Module: s_sound.obj(C:\REALDOOM\s_sound.c)
 0bc2:0562      S_StartSoundWithParams_
 0bc2:0576      S_UpdateSounds_
 Module: s_sbsfx.obj(C:\REALDOOM\s_sbsfx.c)
-1584:20d0+     _sfxcache_nodes
-1584:20f0*     _sfx_page_multipage_count
-1584:20f8+     _sfx_page_reference_count
-1584:2100+     _SB_OldInt
-1584:2104+     _SB_IntController1Mask
-1584:2106+     _SB_IntController2Mask
-1584:2108+     _SB_DSP_Version
-1584:210a+     _SB_Mixer_Status
-1584:210b+     _sfxcache_tail
+1584:2090+     _sfxcache_nodes
+1584:20b0*     _sfx_page_multipage_count
+1584:20b8+     _sfx_page_reference_count
+1584:20c0+     _SB_OldInt
+1584:20c4+     _SB_IntController1Mask
+1584:20c6+     _SB_IntController2Mask
+1584:20c8+     _SB_DSP_Version
+1584:20ca+     _sfxcache_tail
+1584:20cb+     _sfxcache_head
 1584:108e+     _sb_port
 1584:1090+     _sb_dma
 1584:1092+     _sb_irq
@@ -812,7 +809,7 @@ Module: s_sbsfx.obj(C:\REALDOOM\s_sbsfx.c)
 1584:109e+     _in_sound
 1584:109f+     _IRQ_TO_INTERRUPT_MAP
 1584:10af+     _DMA_PortInfo
-1584:210c+     _sfxcache_head
+1584:20cc+     _SB_Mixer_Status
 Module: p_ceilng.obj(C:\REALDOOM\p_ceilng.c)
 0bc2:1e8c      T_MoveCeiling_
 0bc2:1fbc      EV_DoCeiling_
@@ -963,7 +960,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(fclose.c)
 0bc2:7b9d      __doclose_
 0bc2:7c33      __shutdown_stream_
 0bc2:7c47      fclose_
-1584:210e+     ___RmTmpFileFn
+1584:20ce+     ___RmTmpFileFn
 Module: C:\WATCOM2\lib286\dos\clibm.lib(atoi.c)
 0bc2:7c6a      atoi_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fseek.c)
@@ -974,8 +971,8 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(accss.c)
 0bc2:7fd4      access_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(iob.c)
 1584:10c8      ___iob
-1584:2112      ___OpenStreams
-1584:2114      ___ClosedStreams
+1584:20d2      ___OpenStreams
+1584:20d4      ___ClosedStreams
 Module: C:\WATCOM2\lib286\dos\clibm.lib(setbuf.c)
 0bc2:800a      setbuf_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(i4m.asm)
@@ -1009,10 +1006,10 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(cstart)
 0bc2:8374      __do_exit_with_msg_
 0bc2:8453      __GETDS
 Module: C:\WATCOM2\lib286\dos\clibm.lib(argcv.c)
-1584:2116      __argc
-1584:2118      __argv
-1584:211a      ___argc
-1584:211c      ___argv
+1584:20d6      __argc
+1584:20d8      __argv
+1584:20da      ___argc
+1584:20dc      ___argv
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fputc.c)
 0bc2:845d      fputc_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(chainint)
@@ -1024,7 +1021,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(comtflag.c)
 1584:11ee      __commode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(errno.c)
 0bc2:86ee      __get_errno_ptr_
-1584:211e+     _errno
+1584:20de+     _errno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(textmode.c)
 1584:11f0      __fmode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(tolower.c)
@@ -1055,7 +1052,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(_clse.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nfree.c)
 0bc2:8b3f      _nfree_
 0bc2:8b3f      free_
-1584:2120+     ___MiniHeapFreeRover
+1584:20e0+     ___MiniHeapFreeRover
 Module: C:\WATCOM2\lib286\dos\clibm.lib(flush.c)
 0bc2:8c04      __flush_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(istable.c)
@@ -1127,7 +1124,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(isatt.c)
 0bc2:928e      isatty_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(doserrno.c)
 0bc2:92aa      __get_doserrno_ptr_
-1584:2124+     __doserrno
+1584:20e4+     __doserrno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(umaskval.c)
 1584:125e      ___umaskval
 Module: C:\WATCOM2\lib286\dos\clibm.lib(creatdos.c)
@@ -1160,10 +1157,10 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(enterdb.c)
 0bc2:9702      __EnterWVIDEO_
 1584:1266+     __WD_Present
 Module: C:\WATCOM2\lib286\dos\clibm.lib(___argc.c)
-1584:2128      ____Argv
-1584:212a      ____Argc
+1584:20e8      ____Argv
+1584:20ea      ____Argc
 Module: C:\WATCOM2\lib286\dos\clibm.lib(histsplt.c)
-1584:212c      ___historical_splitparms
+1584:20ec      ___historical_splitparms
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nrealloc.c)
 0bc2:971e*     _nrealloc_
 0bc2:971e      realloc_
@@ -1208,6 +1205,6 @@ C:\WATCOM2\lib286\dos\clibm.lib
                         +-----------------------+
 
 Stack size:  0a00 (2560.)
-Memory size:  00018370 (99184.)
+Memory size:  00018330 (99120.)
 Entry point address: 0bc2:81a6
 Link time: 00:00.20

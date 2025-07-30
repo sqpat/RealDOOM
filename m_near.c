@@ -269,7 +269,7 @@ int8_t followplayer = 1; // specifies whether to follow the player around
 
 boolean am_stopped = true;
 boolean am_bigstate=0;
-int8_t  am_buffer[20];
+
 fline_t am_fl;
 mline_t am_ml;
 mline_t am_l;
@@ -593,13 +593,6 @@ boolean          st_statusbaron;
 
 // main bar left
 //uint16_t         sbar;
-
-// 0-9, tall numbers
-uint16_t         tallnum[10];// = { 65216u, 64972u, 64636u, 64300u, 63984u, 63636u, 63296u, 63020u, 62672u, 62336u };
-
-
-// 0-9, short, yellow (,different!) numbers
-uint16_t         shortnum[10];// = { 62268u, 62204u, 62128u, 62056u, 61996u, 61924u, 61852u, 61780u, 61704u, 61632u};
 
 uint16_t 		tallpercent;
 uint16_t		faceback;

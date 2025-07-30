@@ -431,8 +431,13 @@
 
 #define P_AddActiveCeiling_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C8)))
 #define P_AddActivePlat_addr              (*((uint32_t __near*)              (_NULL_OFFSET + 0x05CC)))
-// #define activeceilings                    ((THINKERREF __near *)             (_NULL_OFFSET + 0x05D0))
-//0x60C
+// 10 ints
+#define tallnum                           ((uint16_t __near *)               (_NULL_OFFSET + 0x05D0))
+// 10 ints
+#define shortnum                          ((uint16_t __near *)               (_NULL_OFFSET + 0x05E4))
+// 20 bytes
+#define am_buffer                         ((int8_t __near *)                 (_NULL_OFFSET + 0x05F8))
+
 #define Z_SetOverlay_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x060C)))
 #define W_LumpLength_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x0610)))
 #define playingdriver                     (*((driverBlock __far* __near *)   (_NULL_OFFSET + 0x0614)))
@@ -712,7 +717,7 @@ extern int8_t               markpointnum;
 extern int8_t               followplayer;
 extern boolean              am_stopped;
 extern boolean              am_bigstate;
-extern int8_t               am_buffer[20];
+
 extern fline_t              am_fl;
 extern mline_t              am_ml;
 extern mline_t              am_l;
@@ -915,8 +920,7 @@ extern boolean          st_firsttime;
 extern boolean          updatedthisframe;
 extern st_stateenum_t   st_gamestate;
 extern boolean          st_statusbaron;
-extern uint16_t         tallnum[10];
-extern uint16_t         shortnum[10];
+
 extern uint16_t 		tallpercent;
 extern uint16_t			faceback;
 extern uint16_t			sbar;

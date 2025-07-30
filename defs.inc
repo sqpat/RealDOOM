@@ -383,7 +383,9 @@ _R_DrawSkyPlaneDynamic_addr =  	     _NULL_OFFSET + 005C4h
 
 _P_AddActiveCeiling_addr =           _NULL_OFFSET + 005C8h
 _P_AddActivePlat_addr =              _NULL_OFFSET + 005CCh
-; todo 5d0 to 60c free
+_tallnum =              			 _NULL_OFFSET + 005D0h
+_shortnum =              			 _NULL_OFFSET + 005E4h
+_am_buffer =             			 _NULL_OFFSET + 005F8h
 
 _Z_SetOverlay_addr =                 _NULL_OFFSET + 0060Ch
 _W_LumpLength_addr =                 _NULL_OFFSET + 00610h
