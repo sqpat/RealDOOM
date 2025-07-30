@@ -466,9 +466,9 @@ BUTTON_T ENDS
 P_SPEC_ANIM_T STRUC
 
     pspecanim_istexture   db ?  ; 0
-    pspecanim_picnum      dw ?  ; 1
-    pspecanim_basepic     dw ?  ; 3
-    pspecanim_numpics     db ?  ; 5
+    pspecanim_numpics     db ?  ; 1
+    pspecanim_picnum      dw ?  ; 2
+    pspecanim_basepic     dw ?  ; 4
 
 P_SPEC_ANIM_T ENDS
 

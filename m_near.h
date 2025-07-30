@@ -1139,9 +1139,9 @@ typedef int8_t dirtype_t;
 typedef struct {
 
     boolean	istexture;
+    uint8_t		numpics;
 	uint16_t		picnum;
 	uint16_t		basepic;
-    uint8_t		numpics;
     
 } p_spec_anim_t;
 
