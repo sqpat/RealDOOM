@@ -101,20 +101,16 @@ ENDP
 
 
 
-; todo make arg 5 this si argument.
 
 
-;int16_t __near getNextSectorList(int16_t __near * linenums,int16_t	sec,int16_t __near* secnums,int16_t linecount,boolean onlybacksecnums){
+;int16_t __near getNextSectorList(int16_t __near * linenums,int16_t	sec,int16_t __near* secnums,int16_t linecount){
 
 PROC    getNextSectorList_  NEAR
 PUBLIC  getNextSectorList_
 
+; dont push si because callers dont need it preserved..
 
-
-push      si
 push      di
-push      bp
-mov       bp, sp  ; need stack frame due to bp + 8 arg. can be removed later with selfmodify and si param.
 
 mov       di, ax
 
@@ -160,10 +156,9 @@ sar       ax, 1       ; undo word ptr shift
 
 mov       dx, ss
 mov       ds, dx  ; restore ds
-LEAVE_MACRO     
+
 pop       di
-pop       si
-ret       2
+ret
 
 found_sector_opening:
 
@@ -181,8 +176,6 @@ pop       word ptr ss:[bx]
 jmp       do_next_line
 
 not_frontsecnum:
-cmp       byte ptr [bp + 8], 0  ;only_backsecnums check
-jne       do_next_line
 mov       word ptr ss:[bx], dx
 jmp       do_next_line
 
@@ -240,7 +233,6 @@ rep movsw
 xchg      ax, di   ; di stores floorheight
 
 
-push      cx  ; should be 0. false parameter. todo move to si...?
 ; dx already has secnum...
 mov       cx, bx
 lea       bx, [bp - 0200h]
@@ -323,7 +315,6 @@ push      ds
 pop       es
 rep movsw 
 
-push      cx  ; cx is 0. push as func arg
 
 xchg      ax, dx ; dx gets secnum
 xchg      ax, di ; di gets currentheight
@@ -432,7 +423,6 @@ rep movsw
 xchg      ax, di   ; di stores floorheight
 
 
-push      cx  ; should be 0. false parameter. todo move to si...?
 ; dx already has secnum...
 mov       cx, bx
 lea       bx, [bp - 0200h]
@@ -575,7 +565,6 @@ rep movsw
 xchg      ax, di   ; di stores max
 
 
-push      cx  ; should be 0. false parameter. todo move to si...?
 ; dx already has secnum...
 mov       cx, bx
 lea       bx, [bp - 0200h]
