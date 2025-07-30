@@ -106,7 +106,6 @@ GLOBOBJS = $(GLOBOBJS) &
  p_setup.obj &
  p_sight.obj &
  p_spec.obj &
- p_speca.obj &
  p_switch.obj &
  p_mobj.obj &
  p_telept.obj &
