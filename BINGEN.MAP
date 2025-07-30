@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/29 15:13:37
+Created on:       25/07/29 15:19:30
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -96,7 +96,7 @@ R_MASK16_TEXT          CODE           AUTO           2613:8158       000019f2
 R_MASK0_TEXT           CODE           AUTO           2613:9b4a       0000195e
 R_MASKFL_TEXT          CODE           AUTO           2613:b4a8       00001920
 w_wad_TEXT             CODE           AUTO           2613:cdd0       0000030c
-V_VIDEO_TEXT           CODE           AUTO           2613:d0dc       00000616
+V_VIDEO_TEXT           CODE           AUTO           2613:d0dc       00000615
 Z_ZONE_TEXT            CODE           AUTO           2613:d6f2       0000049d
 p_setup_TEXT           CODE           AUTO           33cc:0000       0000127a
 P_SIGHT_TEXT           CODE           AUTO           34f4:0000       000005ed
@@ -1151,11 +1151,11 @@ Module: w_wad.obj(C:\REALDOOM\w_wad.c)
 2613:d0c6      W_CacheLumpNumDirectFragment_
 Module: v_video.obj(v_video.ASM)
 2613:d394      CopyString9_
-2613:d61f      V_DrawFullscreenPatch_
-2613:d40b      R_FillBackScreen_
-2613:d5e4      V_CopyRect_
+2613:d61e      V_DrawFullscreenPatch_
+2613:d40a      R_FillBackScreen_
+2613:d5e3      V_CopyRect_
 2613:d29c      V_DrawPatchDirect_
-2613:d5c2      V_MarkRect_
+2613:d5c1      V_MarkRect_
 2613:d0dc      V_DrawPatch_
 2613:d1cf*     V_DrawPatch5000Screen0_
 Module: z_zone.obj(z_zone.ASM)
@@ -1649,4 +1649,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00042200 (270848.)
 Entry point address: 34f4:686e
-Link time: 00:00.40
+Link time: 00:00.39

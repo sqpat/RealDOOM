@@ -1756,7 +1756,7 @@ mov       di, OFFSET _activeplats
 rep stosw 
 
 mov       cx, (MAXBUTTONS * SIZEOF_BUTTON_T) / 2   ; 0x24
-mov       di, _buttonlist
+mov       di, OFFSET _buttonlist
 rep stosw 
 
 POPA_NO_AX_OR_BP_MACRO

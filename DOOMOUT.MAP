@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/29 15:15:32
+Created on:       25/07/29 15:38:33
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -65,7 +65,7 @@ p_inter_TEXT           CODE           AUTO           0bc2:30d0       00000cf7
 p_lights_TEXT          CODE           AUTO           0bc2:3dd0       000003ed
 p_plats_TEXT           CODE           AUTO           0bc2:41c0       0000041d
 p_spec_TEXT            CODE           AUTO           0bc2:45e0       00000000
-P_SPECA_TEXT           CODE           AUTO           0bc2:45e0       00000a49
+P_SPECA_TEXT           CODE           AUTO           0bc2:45e0       00000a48
 p_switch_TEXT          CODE           AUTO           0bc2:5030       00000afa
 p_telept_TEXT          CODE           AUTO           0bc2:5b30       0000022a
 P_TICK_TEXT            CODE           AUTO           0bc2:5d5a       000001e0
@@ -868,7 +868,7 @@ Module: p_speca.obj(p_speca.ASM)
 0bc2:46de      P_FindNextHighestFloor_
 0bc2:4667      P_FindHighestOrLowestFloorSurrounding_
 0bc2:4c2a      P_PlayerInSpecialSector_
-0bc2:5029*     P_SPEC_ENDMARKER_
+0bc2:5028*     P_SPEC_ENDMARKER_
 0bc2:45e0*     P_SPEC_STARTMARKER_
 0bc2:4e1e      EV_DoDonut_
 0bc2:4750      P_FindLowestOrHighestCeilingSurrounding_
@@ -1212,4 +1212,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  00018350 (99152.)
 Entry point address: 0bc2:81c6
-Link time: 00:00.20
+Link time: 00:00.19
