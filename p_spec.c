@@ -1007,11 +1007,11 @@ int16_t __near EV_DoDonut(uint8_t linetag) {
 
 	while (secnumlist[j] >= 0){
 		s2Offset = secnumlist[j];
-		
+
 		linecount = sectors[s2Offset].linecount;
 		offset = sectors[s2Offset].linesoffset;
 		memcpy(linebufferlines, &linebuffer[offset], linecount << 1);
-		linecount = getNextSectorList(linebufferlines, secnum, innersecnumlist, linecount, true);
+		linecount = getNextSectorList(linebufferlines, s2Offset, innersecnumlist, linecount, true);
 
 		for (i = 0;i < linecount;i++) {
 			if (innersecnumlist[i] == s1Offset) {

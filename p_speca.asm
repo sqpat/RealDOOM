@@ -1422,210 +1422,171 @@ ret
 ENDP
 
 
-FLOORSPEED = 8
 
-
-PROC    EV_DoDonut_  NEAR
-PUBLIC  EV_DoDonut_
-
-
-PUSHA_NO_AX_OR_BP_MACRO
-push      bp
-mov       bp, sp
-sub       sp, 080ah
-lea       dx, [bp - 020ah]
-cbw      
-xor       bx, bx
-mov       word ptr [bp - 8], -1
-call      P_FindSectorsFromLineTag_
-xor       cx, cx
-cmp       word ptr [bp - 020Ah], -1
-je        exit_evdodonut_return_0
-xor       si, si
-label_9:
-mov       ax, word ptr [bp + si - 020Ah]
-test      ax, ax
-jl        label_1
-mov       word ptr [bp - 2], ax
-mov       bx, ax
-mov       ax, SECTORS_SEGMENT
-shl       bx, 4
-mov       es, ax
-add       si, 2
-mov       ax, word ptr es:[bx + SECTOR_T.sec_linesoffset]
-
-mov       word ptr [bp + si - 060Ch], ax
-jmp       label_9
 exit_evdodonut_return_0:
 LEAVE_MACRO     
 POPA_NO_AX_OR_BP_MACRO
 
 xor       ax, ax
 ret       
-label_1:
-mov       word ptr [bp + si - 060Ah], -1
-xor       si, si
-cmp       word ptr [bp - 060Ah], 0
-jl        label_3
-label_2:
-mov       ax, word ptr [bp + si - 060Ah]
-mov       word ptr [bp - 2], ax
-add       ax, ax
-add       si, 2
-mov       bx, ax
-mov       ax, word ptr ds:[bx + _linebuffer]
-mov       word ptr [bp + si - 060Ch], ax
-add       bx, OFFSET _linebuffer
-cmp       word ptr [bp + si - 060Ah], 0
-jge       label_2
-label_3:
-mov       di, LINES_PHYSICS_SEGMENT
-xor       ax, ax
-label_5:
-mov       si, ax
-add       si, ax
-cmp       word ptr [bp + si - 060Ah], 0
-jl        label_4
-mov       dx, LINEFLAGSLIST_SEGMENT
-mov       bx, word ptr [bp + si - 060Ah]
-mov       si, word ptr [bp + si - 060Ah]
-mov       es, dx
-shl       bx, 4
-test      byte ptr es:[si], 4
-jne       label_6
-inc       cx
-inc       ax
-jmp       label_5
-label_6:
-mov       si, ax
-mov       es, di
-sub       si, cx
-mov       dx, word ptr es:[bx + LINE_PHYSICS_T.lp_frontsecnum]
-add       si, si
-cmp       dx, word ptr [bp - 2]
-jne       label_7
-mov       dx, word ptr es:[bx + LINE_PHYSICS_T.lp_backsecnum]
-label_7:
-mov       word ptr [bp + si - 020Ah], dx
-inc       ax
-jmp       label_5
-label_4:
-mov       ax, word ptr [bp - 2]
-shl       ax, 4
-mov       word ptr [bp - 4], si
-mov       word ptr [bp - 6], ax
-label_10:
-mov       si, word ptr [bp - 4]
-mov       ax, word ptr [bp + si - 020Ah]
-test      ax, ax
-jge       label_8
-jmp       exit_evdodonut_return_1
-label_8:
-mov       word ptr [bp - 0Ah], ax
-shl       ax, 4
-mov       dx, SECTORS_SEGMENT
-mov       es, dx
-mov       bx, ax
-lea       di, [bp - 080Ah]
-mov       dx, word ptr es:[bx + SECTOR_T.sec_linecount]
-mov       cx, dx
-mov       si, word ptr es:[bx + SECTOR_T.sec_linesoffset]
-
-add       si, si
-add       cx, dx
-add       si, OFFSET _linebuffer
-lea       bx, [bp - 040Ah]
-push      di
-mov       ax, ds
-mov       es, ax
-shr       cx, 1
-rep movsw 
-adc       cx, cx
-rep movsb 
-pop       di
-push      1
-lea       ax, [bp - 080Ah]
-mov       cx, dx
-mov       dx, word ptr [bp - 8]
-call      getNextSectorList_
-mov       bx, ax
-mov       dx, ax
-xor       ax, ax
-test      bx, bx
-jle       label_10
-xor       si, si
-label_11:
-mov       bx, word ptr [bp + si - 040Ah]
-cmp       bx, word ptr [bp - 2]
-jne       label_12
-jmp       label_13
-label_12:
-mov       dx, bx
-mov       ax, SECTORS_SEGMENT
-shl       dx, 4
-mov       es, ax
-mov       bx, dx
-mov       di, SIZEOF_THINKER_T
-mov       al, byte ptr es:[bx + 4]
-add       bx, 4
-xor       ah, ah
-mov       bx, dx
-mov       cx, ax
-mov       bx, word ptr es:[bx]
-mov       ax, TF_MOVEFLOOR_HIGHBITS
-xor       dx, dx
-
-call      P_CreateThinker_
-mov       si, ax
-sub       ax, (_thinkerlist + THINKER_T.t_data)
-div       di
-mov       dx, word ptr [bp - 0Ah]
-shl       dx, 4
-mov       di, dx
-mov       word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
-mov       byte ptr ds:[si + FLOORMOVE_T.floormove_type], FLOOR_DONUTRAISE
-mov       byte ptr ds:[si + FLOORMOVE_T.floormove_direction], 1
-mov       word ptr ds:[si + FLOORMOVE_T.floormove_speed], FLOORSPEED / 2
-mov       byte ptr ds:[si + FLOORMOVE_T.floormove_crush], ch
-mov       byte ptr ds:[si + FLOORMOVE_T.floormove_texture], cl
-mov       byte ptr ds:[si + FLOORMOVE_T.floormove_newspecial], ch
-mov       ax, word ptr [bp - 0Ah]
-mov       word ptr ds:[si + FLOORMOVE_T.floormove_floordestheight], bx
-xor       dx, dx
-mov       word ptr ds:[si + FLOORMOVE_T.floormove_secnum], ax
-mov       ax, TF_MOVEFLOOR_HIGHBITS
-mov       cx, SIZEOF_THINKER_T
-
-call      P_CreateThinker_
-mov       si, ax
-sub       ax, (_thinkerlist + THINKER_T.t_data)
-div       cx
-add       di, _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef
-mov       dx, word ptr [bp - 6]
-mov       di, dx
-mov       word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
-mov       byte ptr ds:[si + FLOORMOVE_T.floormove_type], FLOOR_LOWERFLOOR
-mov       byte ptr ds:[si + FLOORMOVE_T.floormove_crush], 0
-mov       byte ptr ds:[si + FLOORMOVE_T.floormove_direction], -1
-mov       word ptr ds:[si + FLOORMOVE_T.floormove_speed], FLOORSPEED / 2
-mov       ax, word ptr [bp - 2]
-mov       word ptr ds:[si + FLOORMOVE_T.floormove_floordestheight], bx
-add       di, _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef
-mov       word ptr ds:[si + FLOORMOVE_T.floormove_secnum], ax
-jmp       label_10
-label_13:
-inc       ax
-add       si, 2
-cmp       ax, dx
-jge       jump_to_label_10
-jmp       label_11
-jump_to_label_10:
-jmp       label_10
 exit_evdodonut_return_1:
 LEAVE_MACRO     
 POPA_NO_AX_OR_BP_MACRO
 mov       ax, 1
 ret    
+
+
+PROC    EV_DoDonut_  NEAR
+PUBLIC  EV_DoDonut_
+
+
+
+
+
+PUSHA_NO_AX_OR_BP_MACRO
+push      bp
+mov       bp, sp
+sub       sp, 020Ah
+lea       dx, [bp - 020Ah]
+cbw      
+xor       bx, bx
+mov       word ptr [bp - 8], -1
+call      P_FindSectorsFromLineTag_
+xor       cx, cx
+mov       ax, SECTORS_SEGMENT
+mov       [bp - 0Ah], ax
+mov       ax, SECTORS_PHYSICS_SEGMENT
+mov       [bp - 6], ax
+lea       si, [bp - 20Ah]
+cmp       word ptr ds:[si], -1
+je        exit_evdodonut_return_0
+
+; OUTER LOOP
+
+; bp - 2 is s1 loop ptr
+; bp - 4 is s1
+; bp - 6 is unused
+; bp - 8 is s2
+; bp -0Ah is SECTORS_SEGMENT
+
+mov       [bp - 2], sp  ; loop precondition.
+
+loop_next_s1:
+mov       si, [bp - 2]
+lodsw     ;  ax, word ptr ds:[si]
+mov       [bp - 2], si
+test      ax, ax
+jl        exit_evdodonut_return_1
+mov       word ptr [bp - 4], ax ; s1
+mov       dx, ax  ; dx gets secnum for func call.
+mov       bx, ax
+SHIFT_MACRO shl       bx, 4
+; bx is s1.
+mov       word ptr [bp - 6], bx ; s1 << 4
+
+
+mov       es, word ptr [bp - 6]
+cmp       es:[bx + SECTOR_PHYSICS_T.secp_specialdataRef], 0
+jne       loop_next_s1
+
+mov       es, word ptr [bp - 0Ah]
+mov       si, word ptr es:[bx + SECTOR_T.sec_linesoffset]
+mov       bx, word ptr ds:[si + _linebuffer]
+
+mov       [bp - 8], bx
+SHIFT_MACRO shl       bx, 4
+; ax   is s2. s2 is s1's line[0] opposing side. nothing more..
+
+
+mov       si, word ptr es:[bx + SECTOR_T.sec_linesoffset] 
+add       si, _linebuffer
+mov       cx, word ptr es:[bx + SECTOR_T.sec_linecount]
+
+
+loop_next_s2:
+; start inner loop...
+lodsw 
+;	    if ((!s2->lines[i]->flags & ML_TWOSIDED) ||
+;		(s2->lines[i]->backsector == s1))
+;		continue;
+mov     di, ax
+mov     dx, LINEFLAGSLIST_SEGMENT
+mov     es, dx
+test    byte ptr es:[di], ML_TWOSIDED
+jz      iter_inner_loop
+mov     dx, LINES_PHYSICS_SEGMENT
+mov     es, dx
+SHIFT_MACRO shl       di, 4
+mov     dx, es:[di + LINE_PHYSICS_T.lp_backsecnum]  ; dx is s3.
+cmp     dx, [bp - 4]  ; s3 != s1 check
+jne     make_thinkers
+
+
+
+iter_inner_loop:
+loop      loop_next_s2
+jmp       loop_next_s1
+
+make_thinkers:
+push      dx  ; stores3
+
+mov       ax, TF_MOVEFLOOR_HIGHBITS
+call      P_CreateThinker_
+
+;			floorRef = GETTHINKERREF(floor);
+xor       dx, dx
+push      ax ; store thinker
+sub       ax, (_thinkerlist + THINKER_T.t_data)
+mov       di, SIZEOF_THINKER_T
+div       di
+pop       di  ; restore thinker
+
+mov       es, word ptr [bp - 6]
+;			sectors_physics[s2Offset].specialdataRef = floorRef;
+mov       word ptr es:[bx + SECTOR_PHYSICS_T.secp_specialdataRef], ax 
+
+pop       bx  ; restore s3.
+
+SHIFT_MACRO shl       bx, 4  ; bx is s3.
+
+mov       es, word ptr [bp - 0Ah]
+push      word ptr es:[bx + SECTOR_T.sec_floorheight]
+mov       al, byte ptr es:[bx + SECTOR_T.sec_floorpic]
+pop       word ptr ds:[di + FLOORMOVE_T.floormove_floordestheight]
+mov       byte ptr ds:[di + FLOORMOVE_T.floormove_texture], al
+mov       byte ptr ds:[di + FLOORMOVE_T.floormove_type], FLOOR_DONUTRAISE
+mov       byte ptr ds:[di + FLOORMOVE_T.floormove_direction], 1
+mov       word ptr ds:[di + FLOORMOVE_T.floormove_speed], FLOORSPEED / 2
+mov       byte ptr ds:[di + FLOORMOVE_T.floormove_crush], ch      ; 0
+mov       byte ptr ds:[di + FLOORMOVE_T.floormove_newspecial], ch ; 0
+push      [bp - 8]
+pop       word ptr ds:[di + FLOORMOVE_T.floormove_secnum]
+
+;			//	Spawn lowering donut-hole
+
+mov       ax, TF_MOVEFLOOR_HIGHBITS
+call      P_CreateThinker_
+
+;			floorRef = GETTHINKERREF(floor);
+xor       dx, dx
+push      ax ; store thinker
+sub       ax, (_thinkerlist + THINKER_T.t_data)
+mov       di, SIZEOF_THINKER_T
+div       di
+pop       di  ; restore thinker
+
+mov       es, word ptr [bp - 0Ah]
+
+push      word ptr es:[bx + SECTOR_T.sec_floorheight]
+pop       word ptr ds:[di + FLOORMOVE_T.floormove_floordestheight]
+push      [bp - 4]
+pop       word ptr ds:[di + FLOORMOVE_T.floormove_secnum]
+mov       byte ptr ds:[di + FLOORMOVE_T.floormove_direction], -1
+mov       word ptr ds:[di + FLOORMOVE_T.floormove_speed], FLOORSPEED / 2
+mov       byte ptr ds:[di + FLOORMOVE_T.floormove_type], ch  ; FLOOR_LOWERFLOOR
+mov       byte ptr ds:[di + FLOORMOVE_T.floormove_crush], ch      ; 0
+jmp       iter_inner_loop
+
 
 ENDP
 
