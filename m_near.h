@@ -431,7 +431,7 @@
 
 #define P_AddActiveCeiling_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C8)))
 #define P_AddActivePlat_addr              (*((uint32_t __near*)              (_NULL_OFFSET + 0x05CC)))
-#define activeceilings                    ((THINKERREF __near *)             (_NULL_OFFSET + 0x05D0))
+// #define activeceilings                    ((THINKERREF __near *)             (_NULL_OFFSET + 0x05D0))
 //0x60C
 #define Z_SetOverlay_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x060C)))
 #define W_LumpLength_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x0610)))
@@ -553,12 +553,20 @@
 
 #define G_ExitLevel_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x088C)))
 
+
+
+
 // 89 bytes
 #define w_title 						  (*((hu_textline_t __near*)         (_NULL_OFFSET + 0x0890)))
 // up to 8E8.
-// 8e9 free
+// 8e9 , 8ea, 8ebfree
+#define activeceilings                    ((THINKERREF __near *)             (_NULL_OFFSET + 0x08EC))
+#define activeplats                       ((THINKERREF __near *)             (_NULL_OFFSET + 0x0928))
+#define buttonlist                        ((button_t __near *)               (_NULL_OFFSET + 0x0964))
 
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x08F0)))
+
+
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0990)))
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
@@ -1093,10 +1101,8 @@ extern uint16_t armsbgarray[1];
 
 
 
-extern THINKERREF	activeplats[MAXPLATS];
 extern uint16_t		switchlist[MAXSWITCHES * 2];
 extern int16_t		numswitches;
-extern button_t        buttonlist[MAXBUTTONS];
 extern int16_t	maxammo[NUMAMMO];
 extern int8_t	clipammo[NUMAMMO];
 extern boolean		onground;

@@ -47,14 +47,11 @@ EXTRN W_CheckNumForName_:FAR
 
 .DATA
 
-EXTRN _buttonlist:WORD
 EXTRN _numlinespecials:WORD
 EXTRN _levelTimer:BYTE
 EXTRN _levelTimeCount:DWORD
 EXTRN _anims:WORD
 EXTRN _lastanim:WORD
-EXTRN _buttonlist:WORD
-EXTRN _activeplats:WORD
 
 
 
@@ -1741,20 +1738,13 @@ jge       loop_next_line_physics
 done_with_lines:
 ; todo put these in fixeddata and make them all adajcent?
 
-mov       cx, MAXCEILINGS ; *2, 0x3C
+mov       cx, MAXCEILINGS + MAXPLATS +  (MAXBUTTONS * SIZEOF_BUTTON_T) / 2   ; *2, 0x3C + 0x3c + 0x24
 mov       di, OFFSET _activeceilings
 xor       ax, ax
 push      ds
 pop       es
 rep stosw 
 
-mov       cx, MAXPLATS   ; *2, 0x3C
-mov       di, OFFSET _activeplats
-rep stosw 
-
-mov       cx, (MAXBUTTONS * SIZEOF_BUTTON_T) / 2   ; 0x24
-mov       di, OFFSET _buttonlist
-rep stosw 
 
 POPA_NO_AX_OR_BP_MACRO
 retf      

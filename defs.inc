@@ -383,7 +383,7 @@ _R_DrawSkyPlaneDynamic_addr =  	     _NULL_OFFSET + 005C4h
 
 _P_AddActiveCeiling_addr =           _NULL_OFFSET + 005C8h
 _P_AddActivePlat_addr =              _NULL_OFFSET + 005CCh
-_activeceilings =                    _NULL_OFFSET + 005D0h
+; todo 5d0 to 60c free
 
 _Z_SetOverlay_addr =                 _NULL_OFFSET + 0060Ch
 _W_LumpLength_addr =                 _NULL_OFFSET + 00610h
@@ -487,7 +487,16 @@ _weaponinfo = 			 			 _NULL_OFFSET + 00828h
 _G_ExitLevel_addr = 			 	 _NULL_OFFSET + 0088Ch
 _w_title =							 _NULL_OFFSET + 00890h
 ; up to 8E9
-_flatcache_nodes =				     _NULL_OFFSET + 008F0h
+; 8EA, 8EB free
+;3c or 60 bytes
+_activeceilings =                    _NULL_OFFSET + 008ECh
+;3c or 60 bytes
+_activeplats =                       _NULL_OFFSET + 00928h
+;24 or 36 bytes
+_buttonlist =                        _NULL_OFFSET + 00964h
+
+; 988 
+_flatcache_nodes =				     _NULL_OFFSET + 00990h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

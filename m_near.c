@@ -1054,13 +1054,11 @@ volatile int8_t TS_InInterrupt = false;
 
 boolean  st_stopped = true;
 uint16_t armsbgarray[1];
-THINKERREF		activeplats[MAXPLATS];
-
 
 
 uint16_t		switchlist[MAXSWITCHES * 2];
 int16_t		numswitches;
-button_t        buttonlist[MAXBUTTONS];
+
 int16_t	maxammo[NUMAMMO] = {200, 50, 300, 50};
 int8_t	clipammo[NUMAMMO] = {10, 4, 20, 1};
 boolean		onground;
