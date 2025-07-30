@@ -568,8 +568,15 @@
 #define numswitches     			      (*((int16_t __near*)               (_NULL_OFFSET + 0x098E)))
 #define anims                             ((p_spec_anim_t __near *)          (_NULL_OFFSET + 0x0990))
 
+#define switchlist				          (((uint16_t __near*)           	 (_NULL_OFFSET + 0x0A50)))
 
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0A50)))
+#define skullAnimCounter   			      (*((int16_t __near*)               (_NULL_OFFSET + 0x0B18)))
+#define whichSkull       			      (*((int16_t __near*)               (_NULL_OFFSET + 0x0B1A)))
+#define skullName				          (((int16_t __near*)           	 (_NULL_OFFSET + 0x0B1C)))
+
+
+
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0B20)))
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
@@ -1021,9 +1028,7 @@ extern int16_t  saveSlot;       // which slot to save in
 extern int16_t  saveCharIndex;  // which char we're editing
 extern int8_t   saveOldString[SAVESTRINGSIZE];
 extern int16_t  itemOn;                 // menu item skull is on
-extern int16_t  skullAnimCounter;       // skull animation counter
-extern int16_t  whichSkull;             // which skull to draw
-extern int16_t  skullName[2];
+
 extern menu_t   __near* currentMenu;      
 
 
@@ -1103,7 +1108,7 @@ extern uint16_t armsbgarray[1];
 
 
 
-extern uint16_t		switchlist[MAXSWITCHES * 2];
+
 extern int16_t	maxammo[NUMAMMO];
 extern int8_t	clipammo[NUMAMMO];
 extern boolean		onground;

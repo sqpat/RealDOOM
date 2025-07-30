@@ -514,7 +514,6 @@ wbstartstruct_t wminfo;                 // parms for world map / intermission
 // 
 uint8_t             key_right;
 uint8_t             key_left;
-
 uint8_t             key_up;
 uint8_t             key_down;
 uint8_t             key_strafeleft;
@@ -776,12 +775,6 @@ int8_t                    saveOldString[SAVESTRINGSIZE];
 
 int16_t           itemOn;                 // menu item skull is on
 
-// 
-int16_t           skullAnimCounter;       // skull animation counter
-int16_t           whichSkull;             // which skull to draw
-
-// graphic name of skulls
-int16_t    skullName[2] = {5, 6};
 
 // current menudef
 menu_t __near* currentMenu;      
@@ -1049,7 +1042,6 @@ boolean  st_stopped = true;
 uint16_t armsbgarray[1];
 
 
-uint16_t		switchlist[MAXSWITCHES * 2];
 
 int16_t	maxammo[NUMAMMO] = {200, 50, 300, 50};
 int8_t	clipammo[NUMAMMO] = {10, 4, 20, 1};

@@ -501,7 +501,13 @@ _lastanim =				             _NULL_OFFSET + 0098Ch
 _numswitches =						 _NULL_OFFSET + 0098Eh
 _anims =				     		 _NULL_OFFSET + 00990h
 
-_flatcache_nodes =				     _NULL_OFFSET + 00A50h
+_switchlist =				         _NULL_OFFSET + 00A50h
+_skullAnimCounter =				     _NULL_OFFSET + 00B18h
+_whichSkull =				         _NULL_OFFSET + 00B1Ah
+_skullName =				         _NULL_OFFSET + 00B1Ch
+
+
+_flatcache_nodes =				     _NULL_OFFSET + 00B20h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1
