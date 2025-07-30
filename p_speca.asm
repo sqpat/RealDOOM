@@ -1445,8 +1445,8 @@ PUBLIC  EV_DoDonut_
 PUSHA_NO_AX_OR_BP_MACRO
 push      bp
 mov       bp, sp
-sub       sp, 020Ch
-lea       dx, [bp - 020Ch]
+sub       sp, 020Ah
+lea       dx, [bp - 020Ah]
 cbw      
 xor       bx, bx
 
@@ -1455,7 +1455,7 @@ xor       cx, cx
 mov       ax, SECTORS_SEGMENT
 mov       [bp - 0Ah], ax
 
-lea       si, [bp - 20Ch]
+lea       si, [bp - 20Ah]
 cmp       word ptr ds:[si], -1
 je        exit_evdodonut_return_0
 
@@ -1463,10 +1463,9 @@ je        exit_evdodonut_return_0
 
 ; bp - 2 is s1 loop ptr
 ; bp - 4 is s1
-; bp - 6 is unused
+; bp - 6 is s1 << 4 (ptr)
 ; bp - 8 is s2
 ; bp  -0Ah is SECTORS_SEGMENT
-; bp  -0Ch is s1 << 4 (ptr)
 
 mov       [bp - 2], sp  ; loop precondition.
 
@@ -1480,9 +1479,14 @@ mov       word ptr [bp - 4], ax ; s1
 
 xchg      ax, bx
 SHIFT_MACRO shl       bx, 4
-mov       [bp - 0Ch], bx  ; s1 << 4
+mov       [bp - 6], bx  ; s1 << 4
 
 ; bx is s1.
+
+;	// ALREADY MOVING?  IF SO, KEEP GOING...
+;	if (s1->specialdata)
+;	    continue;
+
 
 cmp       ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], 0
 jne       loop_next_s1
@@ -1592,9 +1596,9 @@ pop       di  ; restore thinker
 
 mov       word ptr ds:[di + FLOORMOVE_T.floormove_floordestheight], bx
 
-mov       es, word ptr [bp - 6]
-mov       bx, [bp - 0Ch]
-mov       word ptr es:[bx + SECTOR_PHYSICS_T.secp_specialdataRef], ax  ; div result.
+;	    s1->specialdata = floor;
+mov       bx, [bp - 6]
+mov       word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax  ; div result.
 
 push      [bp - 4]
 pop       word ptr ds:[di + FLOORMOVE_T.floormove_secnum]
@@ -1602,7 +1606,8 @@ mov       byte ptr ds:[di + FLOORMOVE_T.floormove_direction], -1
 mov       word ptr ds:[di + FLOORMOVE_T.floormove_speed], FLOORSPEED / 2
 mov       byte ptr ds:[di + FLOORMOVE_T.floormove_type], ch  ; FLOOR_LOWERFLOOR
 mov       byte ptr ds:[di + FLOORMOVE_T.floormove_crush], ch      ; 0
-jmp       iter_inner_loop
+; break
+jmp       loop_next_s1
 
 
 ENDP
