@@ -552,26 +552,24 @@
 #define FastDiv3216u_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0820)))
 #define bulletslope     				  (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x0824)))
 #define weaponinfo 						  ((weaponinfo_t __near *)           (_NULL_OFFSET + 0x0828))
-
-// 89b
-
-
 #define G_ExitLevel_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x088C)))
-
-
 
 
 // 89 bytes
 #define w_title 						  (*((hu_textline_t __near*)         (_NULL_OFFSET + 0x0890)))
-// up to 8E8.
-// 8e9 , 8ea, 8ebfree
+#define levelTimer                   	  (*((boolean    __near*)            (_NULL_OFFSET + 0x08E9)))
+#define numlinespecials     			  (*((int16_t __near*)               (_NULL_OFFSET + 0x08EA)))
+
 #define activeceilings                    ((THINKERREF __near *)             (_NULL_OFFSET + 0x08EC))
 #define activeplats                       ((THINKERREF __near *)             (_NULL_OFFSET + 0x0928))
 #define buttonlist                        ((button_t __near *)               (_NULL_OFFSET + 0x0964))
+#define levelTimeCount                    (*((ticcount_t __near *)           (_NULL_OFFSET + 0x0988)))
+#define lastanim                          (*((p_spec_anim_t __near* __near*) (_NULL_OFFSET + 0x098C)))
+#define numswitches     			      (*((int16_t __near*)               (_NULL_OFFSET + 0x098E)))
+#define anims                             ((p_spec_anim_t __near *)          (_NULL_OFFSET + 0x0990))
 
 
-
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0990)))
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0A50)))
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
@@ -1106,7 +1104,6 @@ extern uint16_t armsbgarray[1];
 
 
 extern uint16_t		switchlist[MAXSWITCHES * 2];
-extern int16_t		numswitches;
 extern int16_t	maxammo[NUMAMMO];
 extern int8_t	clipammo[NUMAMMO];
 extern boolean		onground;
@@ -1148,14 +1145,7 @@ typedef struct {
 
 
 
-#define MAXANIMS                32
 
-
-extern p_spec_anim_t	anims[MAXANIMS];
-extern p_spec_anim_t __near*		lastanim;
-extern boolean		levelTimer;
-extern ticcount_t		levelTimeCount;
-extern int16_t		numlinespecials;
 
 
 

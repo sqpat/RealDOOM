@@ -1050,7 +1050,6 @@ uint16_t armsbgarray[1];
 
 
 uint16_t		switchlist[MAXSWITCHES * 2];
-int16_t		numswitches;
 
 int16_t	maxammo[NUMAMMO] = {200, 50, 300, 50};
 int8_t	clipammo[NUMAMMO] = {10, 4, 20, 1};
@@ -1084,12 +1083,7 @@ uint16_t oldentertics;
 //      source animation definition
 //
 
-// 6 bytes each. 32 * 6 overall.
-p_spec_anim_t	anims[MAXANIMS];
-p_spec_anim_t __near*		lastanim;
-boolean		levelTimer;
-ticcount_t	levelTimeCount;
-int16_t		numlinespecials;
+
 
 
 

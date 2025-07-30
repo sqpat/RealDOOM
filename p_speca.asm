@@ -47,11 +47,6 @@ EXTRN W_CheckNumForName_:FAR
 
 .DATA
 
-EXTRN _numlinespecials:WORD
-EXTRN _levelTimer:BYTE
-EXTRN _levelTimeCount:DWORD
-EXTRN _anims:WORD
-EXTRN _lastanim:WORD
 
 
 

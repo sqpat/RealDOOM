@@ -488,17 +488,20 @@ _bulletslope = 			 			 _NULL_OFFSET + 00824h
 _weaponinfo = 			 			 _NULL_OFFSET + 00828h
 _G_ExitLevel_addr = 			 	 _NULL_OFFSET + 0088Ch
 _w_title =							 _NULL_OFFSET + 00890h
-; up to 8E9
-; 8EA, 8EB free
+_levelTimer =						 _NULL_OFFSET + 008E9h
+_numlinespecials =					 _NULL_OFFSET + 008EAh
 ;3c or 60 bytes
 _activeceilings =                    _NULL_OFFSET + 008ECh
 ;3c or 60 bytes
 _activeplats =                       _NULL_OFFSET + 00928h
 ;24 or 36 bytes
 _buttonlist =                        _NULL_OFFSET + 00964h
+_levelTimeCount =				     _NULL_OFFSET + 00988h
+_lastanim =				             _NULL_OFFSET + 0098Ch
+_numswitches =						 _NULL_OFFSET + 0098Eh
+_anims =				     		 _NULL_OFFSET + 00990h
 
-; 988 
-_flatcache_nodes =				     _NULL_OFFSET + 00990h
+_flatcache_nodes =				     _NULL_OFFSET + 00A50h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1
