@@ -35,6 +35,7 @@ EXTRN P_ChangeSwitchTexture_:NEAR
 EXTRN P_DamageMobj_:FAR
 EXTRN P_Random_:NEAR
 EXTRN S_StartSoundWithParams_:FAR
+EXTRN P_CreateThinker_:FAR
 
 .DATA
 
@@ -1420,212 +1421,217 @@ ret
 
 ENDP
 
-COMMENT @
+
+FLOORSPEED = 8
 
 
 PROC    EV_DoDonut_  NEAR
 PUBLIC  EV_DoDonut_
 
 
-0x0000000000005488:  53                   push      bx
-0x0000000000005489:  51                   push      cx
-0x000000000000548a:  52                   push      dx
-0x000000000000548b:  56                   push      si
-0x000000000000548c:  57                   push      di
-0x000000000000548d:  55                   push      bp
-0x000000000000548e:  89 E5                mov       bp, sp
-0x0000000000005490:  81 EC 0A 08          sub       sp, 0x80a
-0x0000000000005494:  8D 96 F6 FD          lea       dx, [bp - 0x20a]
-0x0000000000005498:  98                   cbw      
-0x0000000000005499:  31 DB                xor       bx, bx
-0x000000000000549b:  C7 46 F8 FF FF       mov       word ptr [bp - 8], 0xffff
-0x00000000000054a0:  E8 1D F4             call      0x48c0
-0x00000000000054a3:  31 C9                xor       cx, cx
-0x00000000000054a5:  83 BE F6 FD FF       cmp       word ptr [bp - 0x20a], -1
-0x00000000000054aa:  74 27                je        0x54d3
-0x00000000000054ac:  31 F6                xor       si, si
-0x00000000000054ae:  8B 82 F6 FD          mov       ax, word ptr [bp + si - 0x20a]
-0x00000000000054b2:  85 C0                test      ax, ax
-0x00000000000054b4:  7C 26                jl        0x54dc
-0x00000000000054b6:  89 46 FE             mov       word ptr [bp - 2], ax
-0x00000000000054b9:  89 C3                mov       bx, ax
-0x00000000000054bb:  B8 90 21             mov       ax, SECTORS_SEGMENT
-0x00000000000054be:  C1 E3 04             shl       bx, 4
-0x00000000000054c1:  8E C0                mov       es, ax
-0x00000000000054c3:  83 C6 02             add       si, 2
-0x00000000000054c6:  26 8B 47 0C          mov       ax, word ptr es:[bx + 0xc]
-0x00000000000054ca:  83 C3 0C             add       bx, 0xc
-0x00000000000054cd:  89 82 F4 F9          mov       word ptr [bp + si - 0x60c], ax
-0x00000000000054d1:  EB DB                jmp       0x54ae
-0x00000000000054d3:  31 C0                xor       ax, ax
-0x00000000000054d5:  C9                   LEAVE_MACRO     
-0x00000000000054d6:  5F                   pop       di
-0x00000000000054d7:  5E                   pop       si
-0x00000000000054d8:  5A                   pop       dx
-0x00000000000054d9:  59                   pop       cx
-0x00000000000054da:  5B                   pop       bx
-0x00000000000054db:  C3                   ret       
-0x00000000000054dc:  C7 82 F6 F9 FF FF    mov       word ptr [bp + si - 0x60a], 0xffff
-0x00000000000054e2:  31 F6                xor       si, si
-0x00000000000054e4:  83 BE F6 F9 00       cmp       word ptr [bp - 0x60a], 0
-0x00000000000054e9:  7C 21                jl        0x550c
-0x00000000000054eb:  8B 82 F6 F9          mov       ax, word ptr [bp + si - 0x60a]
-0x00000000000054ef:  89 46 FE             mov       word ptr [bp - 2], ax
-0x00000000000054f2:  01 C0                add       ax, ax
-0x00000000000054f4:  83 C6 02             add       si, 2
-0x00000000000054f7:  89 C3                mov       bx, ax
-0x00000000000054f9:  8B 87 50 CA          mov       ax, word ptr ds:[bx - 0x35b0]
-0x00000000000054fd:  89 82 F4 F9          mov       word ptr [bp + si - 0x60c], ax
-0x0000000000005501:  81 C3 50 CA          add       bx, OFFSET _linebuffer
-0x0000000000005505:  83 BA F6 F9 00       cmp       word ptr [bp + si - 0x60a], 0
-0x000000000000550a:  7D DF                jge       0x54eb
-0x000000000000550c:  BF 00 70             mov       di, LINES_PHYSICS_SEGMENT
-0x000000000000550f:  31 C0                xor       ax, ax
-0x0000000000005511:  89 C6                mov       si, ax
-0x0000000000005513:  01 C6                add       si, ax
-0x0000000000005515:  83 BA F6 F9 00       cmp       word ptr [bp + si - 0x60a], 0
-0x000000000000551a:  7C 36                jl        0x5552
-0x000000000000551c:  BA 4A 2B             mov       dx, 0x2b4a
-0x000000000000551f:  8B 9A F6 F9          mov       bx, word ptr [bp + si - 0x60a]
-0x0000000000005523:  8B B2 F6 F9          mov       si, word ptr [bp + si - 0x60a]
-0x0000000000005527:  8E C2                mov       es, dx
-0x0000000000005529:  C1 E3 04             shl       bx, 4
-0x000000000000552c:  26 F6 04 04          test      byte ptr es:[si], 4
-0x0000000000005530:  75 04                jne       0x5536
-0x0000000000005532:  41                   inc       cx
-0x0000000000005533:  40                   inc       ax
-0x0000000000005534:  EB DB                jmp       0x5511
-0x0000000000005536:  89 C6                mov       si, ax
-0x0000000000005538:  8E C7                mov       es, di
-0x000000000000553a:  29 CE                sub       si, cx
-0x000000000000553c:  26 8B 57 0A          mov       dx, word ptr es:[bx + 0xa]
-0x0000000000005540:  01 F6                add       si, si
-0x0000000000005542:  3B 56 FE             cmp       dx, word ptr [bp - 2]
-0x0000000000005545:  75 04                jne       0x554b
-0x0000000000005547:  26 8B 57 0C          mov       dx, word ptr es:[bx + 0xc]
-0x000000000000554b:  89 92 F6 FD          mov       word ptr [bp + si - 0x20a], dx
-0x000000000000554f:  40                   inc       ax
-0x0000000000005550:  EB BF                jmp       0x5511
-0x0000000000005552:  8B 46 FE             mov       ax, word ptr [bp - 2]
-0x0000000000005555:  C1 E0 04             shl       ax, 4
-0x0000000000005558:  89 76 FC             mov       word ptr [bp - 4], si
-0x000000000000555b:  89 46 FA             mov       word ptr [bp - 6], ax
-0x000000000000555e:  8B 76 FC             mov       si, word ptr [bp - 4]
-0x0000000000005561:  8B 82 F6 FD          mov       ax, word ptr [bp + si - 0x20a]
-0x0000000000005565:  85 C0                test      ax, ax
-0x0000000000005567:  7D 03                jge       0x556c
-0x0000000000005569:  E9 0B 01             jmp       0x5677
-0x000000000000556c:  89 46 F6             mov       word ptr [bp - 0xa], ax
-0x000000000000556f:  C1 E0 04             shl       ax, 4
-0x0000000000005572:  BA 90 21             mov       dx, SECTORS_SEGMENT
-0x0000000000005575:  89 C3                mov       bx, ax
-0x0000000000005577:  8E C2                mov       es, dx
-0x0000000000005579:  83 C3 0A             add       bx, 0xa
-0x000000000000557c:  8D BE F6 F7          lea       di, [bp - 0x80a]
-0x0000000000005580:  26 8B 17             mov       dx, word ptr es:[bx]
-0x0000000000005583:  89 C3                mov       bx, ax
-0x0000000000005585:  89 D1                mov       cx, dx
-0x0000000000005587:  26 8B 77 0C          mov       si, word ptr es:[bx + 0xc]
-0x000000000000558b:  83 C3 0C             add       bx, 0xc
-0x000000000000558e:  01 F6                add       si, si
-0x0000000000005590:  01 D1                add       cx, dx
-0x0000000000005592:  81 C6 50 CA          add       si, OFFSET _linebuffer
-0x0000000000005596:  8D 9E F6 FB          lea       bx, [bp - 0x40a]
-0x000000000000559a:  57                   push      di
-0x000000000000559b:  8C D8                mov       ax, ds
-0x000000000000559d:  8E C0                mov       es, ax
-0x000000000000559f:  D1 E9                shr       cx, 1
-0x00000000000055a1:  F3 A5                rep movsw 
-0x00000000000055a3:  13 C9                adc       cx, cx
-0x00000000000055a5:  F3 A4                rep movsb 
-0x00000000000055a7:  5F                   pop       di
-0x00000000000055a8:  6A 01                push      1
-0x00000000000055aa:  8D 86 F6 F7          lea       ax, [bp - 0x80a]
-0x00000000000055ae:  89 D1                mov       cx, dx
-0x00000000000055b0:  8B 56 F8             mov       dx, word ptr [bp - 8]
-0x00000000000055b3:  E8 56 F0             call      getNextSectorList_
-0x00000000000055b6:  89 C3                mov       bx, ax
-0x00000000000055b8:  89 C2                mov       dx, ax
-0x00000000000055ba:  31 C0                xor       ax, ax
-0x00000000000055bc:  85 DB                test      bx, bx
-0x00000000000055be:  7E 9E                jle       0x555e
-0x00000000000055c0:  31 F6                xor       si, si
-0x00000000000055c2:  8B 9A F6 FB          mov       bx, word ptr [bp + si - 0x40a]
-0x00000000000055c6:  3B 5E FE             cmp       bx, word ptr [bp - 2]
-0x00000000000055c9:  75 03                jne       0x55ce
-0x00000000000055cb:  E9 9B 00             jmp       0x5669
-0x00000000000055ce:  89 DA                mov       dx, bx
-0x00000000000055d0:  B8 90 21             mov       ax, SECTORS_SEGMENT
-0x00000000000055d3:  C1 E2 04             shl       dx, 4
-0x00000000000055d6:  8E C0                mov       es, ax
-0x00000000000055d8:  89 D3                mov       bx, dx
-0x00000000000055da:  BF 2C 00             mov       di, 0x2c
-0x00000000000055dd:  26 8A 47 04          mov       al, byte ptr es:[bx + 4]
-0x00000000000055e1:  83 C3 04             add       bx, 4
-0x00000000000055e4:  30 E4                xor       ah, ah
-0x00000000000055e6:  89 D3                mov       bx, dx
-0x00000000000055e8:  89 C1                mov       cx, ax
-0x00000000000055ea:  26 8B 1F             mov       bx, word ptr es:[bx]
-0x00000000000055ed:  B8 00 28             mov       ax, 0x2800
-0x00000000000055f0:  31 D2                xor       dx, dx
-0x00000000000055f2:  0E                   
-0x00000000000055f3:  E8 34 0F             call      0x652a
-0x00000000000055f7:  89 C6                mov       si, ax
-0x00000000000055f9:  2D 04 34             sub       ax, 0x3404
-0x00000000000055fc:  F7 F7                div       di
-0x00000000000055fe:  8B 56 F6             mov       dx, word ptr [bp - 0xa]
-0x0000000000005601:  C1 E2 04             shl       dx, 4
-0x0000000000005604:  89 D7                mov       di, dx
-0x0000000000005606:  89 85 38 DE          mov       word ptr ds:[di - 0x21c8], ax
-0x000000000000560a:  C6 04 0B             mov       byte ptr ds:[si], 0xb
-0x000000000000560d:  C6 44 04 01          mov       byte ptr ds:[si + 4], 1
-0x0000000000005611:  C7 44 09 04 00       mov       word ptr ds:[si + 9], 4
-0x0000000000005616:  88 6C 01             mov       byte ptr ds:[si + 1], ch
-0x0000000000005619:  88 4C 06             mov       byte ptr ds:[si + 6], cl
-0x000000000000561c:  88 6C 05             mov       byte ptr ds:[si + 5], ch
-0x000000000000561f:  8B 46 F6             mov       ax, word ptr [bp - 0xa]
-0x0000000000005622:  89 5C 07             mov       word ptr ds:[si + 7], bx
-0x0000000000005625:  31 D2                xor       dx, dx
-0x0000000000005627:  89 44 02             mov       word ptr ds:[si + 2], ax
-0x000000000000562a:  B8 00 28             mov       ax, 0x2800
-0x000000000000562d:  B9 2C 00             mov       cx, 0x2c
-0x0000000000005630:  0E                   
-0x0000000000005631:  E8 F6 0E             call      0x652a
-0x0000000000005635:  89 C6                mov       si, ax
-0x0000000000005637:  2D 04 34             sub       ax, 0x3404
-0x000000000000563a:  F7 F1                div       cx
-0x000000000000563c:  81 C7 38 DE          add       di, _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef
-0x0000000000005640:  8B 56 FA             mov       dx, word ptr [bp - 6]
-0x0000000000005643:  89 D7                mov       di, dx
-0x0000000000005645:  89 85 38 DE          mov       word ptr ds:[di - 0x21c8], ax
-0x0000000000005649:  C6 04 00             mov       byte ptr ds:[si], 0
-0x000000000000564c:  C6 44 01 00          mov       byte ptr ds:[si + 1], 0
-0x0000000000005650:  C6 44 04 FF          mov       byte ptr ds:[si + 4], 0xff
-0x0000000000005654:  C7 44 09 04 00       mov       word ptr ds:[si + 9], 4
-0x0000000000005659:  8B 46 FE             mov       ax, word ptr [bp - 2]
-0x000000000000565c:  89 5C 07             mov       word ptr ds:[si + 7], bx
-0x000000000000565f:  81 C7 38 DE          add       di, _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef
-0x0000000000005663:  89 44 02             mov       word ptr ds:[si + 2], ax
-0x0000000000005666:  E9 F5 FE             jmp       0x555e
-0x0000000000005669:  40                   inc       ax
-0x000000000000566a:  83 C6 02             add       si, 2
-0x000000000000566d:  39 D0                cmp       ax, dx
-0x000000000000566f:  7D 03                jge       0x5674
-0x0000000000005671:  E9 4E FF             jmp       0x55c2
-0x0000000000005674:  E9 E7 FE             jmp       0x555e
-0x0000000000005677:  B8 01 00             mov       ax, 1
-0x000000000000567a:  C9                   LEAVE_MACRO     
-0x000000000000567b:  5F                   pop       di
-0x000000000000567c:  5E                   pop       si
-0x000000000000567d:  5A                   pop       dx
-0x000000000000567e:  59                   pop       cx
-0x000000000000567f:  5B                   pop       bx
-0x0000000000005680:  C3                   ret    
+PUSHA_NO_AX_OR_BP_MACRO
+push      bp
+mov       bp, sp
+sub       sp, 080ah
+lea       dx, [bp - 020ah]
+cbw      
+xor       bx, bx
+mov       word ptr [bp - 8], -1
+call      P_FindSectorsFromLineTag_
+xor       cx, cx
+cmp       word ptr [bp - 020Ah], -1
+je        exit_evdodonut_return_0
+xor       si, si
+label_9:
+mov       ax, word ptr [bp + si - 020Ah]
+test      ax, ax
+jl        label_1
+mov       word ptr [bp - 2], ax
+mov       bx, ax
+mov       ax, SECTORS_SEGMENT
+shl       bx, 4
+mov       es, ax
+add       si, 2
+mov       ax, word ptr es:[bx + SECTOR_T.sec_linesoffset]
 
+mov       word ptr [bp + si - 060Ch], ax
+jmp       label_9
+exit_evdodonut_return_0:
+LEAVE_MACRO     
+POPA_NO_AX_OR_BP_MACRO
 
+xor       ax, ax
+ret       
+label_1:
+mov       word ptr [bp + si - 060Ah], -1
+xor       si, si
+cmp       word ptr [bp - 060Ah], 0
+jl        label_3
+label_2:
+mov       ax, word ptr [bp + si - 060Ah]
+mov       word ptr [bp - 2], ax
+add       ax, ax
+add       si, 2
+mov       bx, ax
+mov       ax, word ptr ds:[bx + _linebuffer]
+mov       word ptr [bp + si - 060Ch], ax
+add       bx, OFFSET _linebuffer
+cmp       word ptr [bp + si - 060Ah], 0
+jge       label_2
+label_3:
+mov       di, LINES_PHYSICS_SEGMENT
+xor       ax, ax
+label_5:
+mov       si, ax
+add       si, ax
+cmp       word ptr [bp + si - 060Ah], 0
+jl        label_4
+mov       dx, LINEFLAGSLIST_SEGMENT
+mov       bx, word ptr [bp + si - 060Ah]
+mov       si, word ptr [bp + si - 060Ah]
+mov       es, dx
+shl       bx, 4
+test      byte ptr es:[si], 4
+jne       label_6
+inc       cx
+inc       ax
+jmp       label_5
+label_6:
+mov       si, ax
+mov       es, di
+sub       si, cx
+mov       dx, word ptr es:[bx + LINE_PHYSICS_T.lp_frontsecnum]
+add       si, si
+cmp       dx, word ptr [bp - 2]
+jne       label_7
+mov       dx, word ptr es:[bx + LINE_PHYSICS_T.lp_backsecnum]
+label_7:
+mov       word ptr [bp + si - 020Ah], dx
+inc       ax
+jmp       label_5
+label_4:
+mov       ax, word ptr [bp - 2]
+shl       ax, 4
+mov       word ptr [bp - 4], si
+mov       word ptr [bp - 6], ax
+label_10:
+mov       si, word ptr [bp - 4]
+mov       ax, word ptr [bp + si - 020Ah]
+test      ax, ax
+jge       label_8
+jmp       exit_evdodonut_return_1
+label_8:
+mov       word ptr [bp - 0Ah], ax
+shl       ax, 4
+mov       dx, SECTORS_SEGMENT
+mov       es, dx
+mov       bx, ax
+lea       di, [bp - 080Ah]
+mov       dx, word ptr es:[bx + SECTOR_T.sec_linecount]
+mov       cx, dx
+mov       si, word ptr es:[bx + SECTOR_T.sec_linesoffset]
 
+add       si, si
+add       cx, dx
+add       si, OFFSET _linebuffer
+lea       bx, [bp - 040Ah]
+push      di
+mov       ax, ds
+mov       es, ax
+shr       cx, 1
+rep movsw 
+adc       cx, cx
+rep movsb 
+pop       di
+push      1
+lea       ax, [bp - 080Ah]
+mov       cx, dx
+mov       dx, word ptr [bp - 8]
+call      getNextSectorList_
+mov       bx, ax
+mov       dx, ax
+xor       ax, ax
+test      bx, bx
+jle       label_10
+xor       si, si
+label_11:
+mov       bx, word ptr [bp + si - 040Ah]
+cmp       bx, word ptr [bp - 2]
+jne       label_12
+jmp       label_13
+label_12:
+mov       dx, bx
+mov       ax, SECTORS_SEGMENT
+shl       dx, 4
+mov       es, ax
+mov       bx, dx
+mov       di, SIZEOF_THINKER_T
+mov       al, byte ptr es:[bx + 4]
+add       bx, 4
+xor       ah, ah
+mov       bx, dx
+mov       cx, ax
+mov       bx, word ptr es:[bx]
+mov       ax, TF_MOVEFLOOR_HIGHBITS
+xor       dx, dx
+
+call      P_CreateThinker_
+mov       si, ax
+sub       ax, (_thinkerlist + THINKER_T.t_data)
+div       di
+mov       dx, word ptr [bp - 0Ah]
+shl       dx, 4
+mov       di, dx
+mov       word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
+mov       byte ptr ds:[si + FLOORMOVE_T.floormove_type], FLOOR_DONUTRAISE
+mov       byte ptr ds:[si + FLOORMOVE_T.floormove_direction], 1
+mov       word ptr ds:[si + FLOORMOVE_T.floormove_speed], FLOORSPEED / 2
+mov       byte ptr ds:[si + FLOORMOVE_T.floormove_crush], ch
+mov       byte ptr ds:[si + FLOORMOVE_T.floormove_texture], cl
+mov       byte ptr ds:[si + FLOORMOVE_T.floormove_newspecial], ch
+mov       ax, word ptr [bp - 0Ah]
+mov       word ptr ds:[si + FLOORMOVE_T.floormove_floordestheight], bx
+xor       dx, dx
+mov       word ptr ds:[si + FLOORMOVE_T.floormove_secnum], ax
+mov       ax, TF_MOVEFLOOR_HIGHBITS
+mov       cx, SIZEOF_THINKER_T
+
+call      P_CreateThinker_
+mov       si, ax
+sub       ax, (_thinkerlist + THINKER_T.t_data)
+div       cx
+add       di, _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef
+mov       dx, word ptr [bp - 6]
+mov       di, dx
+mov       word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
+mov       byte ptr ds:[si + FLOORMOVE_T.floormove_type], FLOOR_LOWERFLOOR
+mov       byte ptr ds:[si + FLOORMOVE_T.floormove_crush], 0
+mov       byte ptr ds:[si + FLOORMOVE_T.floormove_direction], -1
+mov       word ptr ds:[si + FLOORMOVE_T.floormove_speed], FLOORSPEED / 2
+mov       ax, word ptr [bp - 2]
+mov       word ptr ds:[si + FLOORMOVE_T.floormove_floordestheight], bx
+add       di, _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef
+mov       word ptr ds:[si + FLOORMOVE_T.floormove_secnum], ax
+jmp       label_10
+label_13:
+inc       ax
+add       si, 2
+cmp       ax, dx
+jge       jump_to_label_10
+jmp       label_11
+jump_to_label_10:
+jmp       label_10
+exit_evdodonut_return_1:
+LEAVE_MACRO     
+POPA_NO_AX_OR_BP_MACRO
+mov       ax, 1
+ret    
 
 ENDP
+
+COMMENT @
+
+
 
 dw 05719h, 05720h, 0572Ch, 0573Bh, 05702h, 05702h, 05702h, 0574Ah, 05751h, 05770h, 05702h, 0577Ch, 0578Eh, 057A0h, 05702h, 05702h, 057ACh
 

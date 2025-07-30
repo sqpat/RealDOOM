@@ -473,3 +473,17 @@ P_SPEC_ANIM_T STRUC
 P_SPEC_ANIM_T ENDS
 
 
+FLOORMOVE_T STRUC
+
+    floormove_type                db ?  ; 0
+    floormove_crush               db ?  ; 1
+    floormove_secnum              dw ?  ; 2
+    floormove_direction           db ?  ; 4
+    floormove_newspecial          db ?  ; 5
+    floormove_texture             db ?  ; 6
+    floormove_floordestheight     dw ?  ; 7
+    floormove_speed               dw ?  ; 9
+
+
+FLOORMOVE_T ENDS
+

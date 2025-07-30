@@ -2459,6 +2459,7 @@ STAIRS_TURBO16 = 01h
 BUTTONTOP = 00h
 BUTTONMIDDLE = 01h
 BUTTONBOTTOM = 02h
+FLOORSPEED = 08h
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 03400h

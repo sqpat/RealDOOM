@@ -938,7 +938,6 @@ void __near P_UpdateSpecials(void) {
 	
 }
 
-*/
 
 
 //
@@ -1058,6 +1057,7 @@ int16_t __near EV_DoDonut(uint8_t linetag) {
 
 
  
+*/
 
 // Parses command line parameters.
 void __far P_SpawnSpecials(void) {
