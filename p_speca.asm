@@ -1262,6 +1262,7 @@ PUBLIC  P_UpdateSpecials_
 
 
 PUSHA_NO_AX_OR_BP_MACRO
+push      bp
 
 cmp       byte ptr ds:[_levelTimer], 1
 jne       level_timer_check_ok
@@ -1283,6 +1284,7 @@ mov       cx, word ptr ds:[di + P_SPEC_ANIM_T.pspecanim_basepic] ; cx is i
 mov       si, cx
 mov       dl, byte ptr ds:[di + P_SPEC_ANIM_T.pspecanim_numpics]
 xor       dh, dh
+mov       bp, dx
 add       si, dx  ; end condition in si.
 loop_next_anim_inner:
 
@@ -1295,10 +1297,10 @@ jae       iter_next_anim_outer
 mov       ax, word ptr ds:[_leveltime]
 SHIFT_MACRO shr       ax 3
 
+xor       dx, dx
 add       ax, cx
-div       dl
-mov       al, ah
-cbw
+div       bp
+xchg      ax, dx
 add       ax, word ptr ds:[di + P_SPEC_ANIM_T.pspecanim_basepic]
 cmp       byte ptr ds:[di + P_SPEC_ANIM_T.pspecanim_istexture], 0
 je        do_flat_translation_lookup
@@ -1413,6 +1415,7 @@ add       si, SIZEOF_BUTTON_T
 
 cmp       si, OFFSET _buttonlist (4 * SIZEOF_BUTTON_T)
 jl        loop_anim_next_button
+pop       bp
 POPA_NO_AX_OR_BP_MACRO
 ret       
 

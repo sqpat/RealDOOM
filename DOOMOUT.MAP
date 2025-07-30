@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/29 15:44:12
+Created on:       25/07/29 17:31:13
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -65,7 +65,7 @@ p_inter_TEXT           CODE           AUTO           0bc2:30d0       00000cf7
 p_lights_TEXT          CODE           AUTO           0bc2:3dd0       000003ed
 p_plats_TEXT           CODE           AUTO           0bc2:41c0       0000041d
 p_spec_TEXT            CODE           AUTO           0bc2:45e0       00000000
-P_SPECA_TEXT           CODE           AUTO           0bc2:45e0       00000a36
+P_SPECA_TEXT           CODE           AUTO           0bc2:45e0       00000a3a
 p_switch_TEXT          CODE           AUTO           0bc2:5020       00000afa
 p_telept_TEXT          CODE           AUTO           0bc2:5b20       0000022a
 P_TICK_TEXT            CODE           AUTO           0bc2:5d4a       000001e0
@@ -868,16 +868,16 @@ Module: p_speca.obj(p_speca.ASM)
 0bc2:46cf      P_FindNextHighestFloor_
 0bc2:4659      P_FindHighestOrLowestFloorSurrounding_
 0bc2:4c18      P_PlayerInSpecialSector_
-0bc2:5016*     P_SPEC_ENDMARKER_
+0bc2:501a*     P_SPEC_ENDMARKER_
 0bc2:45e0*     P_SPEC_STARTMARKER_
-0bc2:4e0c      EV_DoDonut_
+0bc2:4e10      EV_DoDonut_
 0bc2:4740      P_FindLowestOrHighestCeilingSurrounding_
 0bc2:47ed      P_FindMinSurroundingLight_
 0bc2:4603*     getNextSectorList_
 0bc2:47b6      P_FindSectorsFromLineTag_
 0bc2:4979      P_CrossSpecialLine_
 0bc2:4b85      P_ShootSpecialLine_
-0bc2:4f7a      P_SpawnSpecials_
+0bc2:4f7e      P_SpawnSpecials_
 Module: p_switch.obj(C:\REALDOOM\p_switch.c)
 0bc2:5020+     P_StartButton_
 0bc2:5080      P_ChangeSwitchTexture_
@@ -1212,4 +1212,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  00018340 (99136.)
 Entry point address: 0bc2:81b6
-Link time: 00:00.74
+Link time: 00:00.20
