@@ -36,6 +36,14 @@ EXTRN P_DamageMobj_:FAR
 EXTRN P_Random_:NEAR
 EXTRN S_StartSoundWithParams_:FAR
 EXTRN P_CreateThinker_:FAR
+EXTRN P_SpawnFireFlicker_:NEAR
+EXTRN P_SpawnStrobeFlash_:NEAR
+EXTRN P_SpawnLightFlash_:NEAR
+EXTRN P_SpawnGlowingLight_:NEAR
+EXTRN P_SpawnDoorCloseIn30_:NEAR
+EXTRN P_SpawnDoorRaiseIn5Mins_:NEAR
+EXTRN CopyString9_:NEAR
+EXTRN W_CheckNumForName_:FAR
 
 .DATA
 
@@ -46,6 +54,7 @@ EXTRN _levelTimeCount:DWORD
 EXTRN _anims:WORD
 EXTRN _lastanim:WORD
 EXTRN _buttonlist:WORD
+EXTRN _activeplats:WORD
 
 
 
@@ -1453,8 +1462,7 @@ call      P_FindSectorsFromLineTag_
 xor       cx, cx
 mov       ax, SECTORS_SEGMENT
 mov       [bp - 0Ah], ax
-mov       ax, SECTORS_PHYSICS_SEGMENT
-mov       [bp - 6], ax
+
 lea       si, [bp - 20Ch]
 cmp       word ptr ds:[si], -1
 je        exit_evdodonut_return_0
@@ -1463,7 +1471,7 @@ je        exit_evdodonut_return_0
 
 ; bp - 2 is s1 loop ptr
 ; bp - 4 is s1
-; bp - 6 is SECTORS_PHYSICS_SEGMENT
+; bp - 6 is unused
 ; bp - 8 is s2
 ; bp  -0Ah is SECTORS_SEGMENT
 ; bp  -0Ch is s1 << 4 (ptr)
@@ -1484,8 +1492,7 @@ mov       [bp - 0Ch], bx  ; s1 << 4
 
 ; bx is s1.
 
-mov       es, word ptr [bp - 6]
-cmp       es:[bx + SECTOR_PHYSICS_T.secp_specialdataRef], 0
+cmp       ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], 0
 jne       loop_next_s1
 
 ;	s2 = getNextSector(s1->lines[0],s1);
@@ -1557,9 +1564,8 @@ xor       dx, dx
 div       di
 pop       di  ; restore thinker
 
-mov       es, word ptr [bp - 6]
 ;			sectors_physics[s2Offset].specialdataRef = floorRef;
-mov       word ptr es:[bx + SECTOR_PHYSICS_T.secp_specialdataRef], ax 
+mov       word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax 
 
 pop       bx  ; restore s3.
 
@@ -1609,176 +1615,155 @@ jmp       iter_inner_loop
 
 ENDP
 
-COMMENT @
 
 
+spawnspecial_jump_table:
 
-dw 05719h, 05720h, 0572Ch, 0573Bh, 05702h, 05702h, 05702h, 0574Ah, 05751h, 05770h, 05702h, 0577Ch, 0578Eh, 057A0h, 05702h, 05702h, 057ACh
+dw spawnspecial_switch_case_1, spawnspecial_switch_case_2, spawnspecial_switch_case_3, spawnspecial_switch_case_4
+dw spawnspecial_switch_case_default, spawnspecial_switch_case_default, spawnspecial_switch_case_default, spawnspecial_switch_case_8
+dw spawnspecial_switch_case_9, spawnspecial_switch_case_10, spawnspecial_switch_case_default, spawnspecial_switch_case_12
+dw spawnspecial_switch_case_13, spawnspecial_switch_case_14, spawnspecial_switch_case_default, spawnspecial_switch_case_default, spawnspecial_switch_case_17
 
-PROC    P_SpawnSpecials_  NEAR
+spawnspecial_switch_case_4:
+mov       dx, FASTDARK
+xor       bx, bx
+call      P_SpawnStrobeFlash_
+;			sectors_physics[i].special = 4;
+mov       byte ptr ds:[si], 4       ; update special. si is special addr.
+
+jmp       done_with_spawnspecial_switch_block
+spawnspecial_switch_case_13:
+mov       bx, 1
+mov       dx, FASTDARK
+call      P_SpawnStrobeFlash_
+jmp       done_with_spawnspecial_switch_block
+spawnspecial_switch_case_14:
+call      P_SpawnDoorRaiseIn5Mins_
+jmp       done_with_spawnspecial_switch_block
+spawnspecial_switch_case_17:
+call      P_SpawnFireFlicker_
+jmp       done_with_spawnspecial_switch_block
+spawnspecial_switch_case_10:
+call      P_SpawnDoorCloseIn30_
+jmp       done_with_spawnspecial_switch_block
+spawnspecial_switch_case_12:
+mov       bx, 1
+mov       dx, SLOWDARK
+call      P_SpawnStrobeFlash_
+jmp       done_with_spawnspecial_switch_block
+
+
+PROC    P_SpawnSpecials_  FAR
 PUBLIC  P_SpawnSpecials_
 
 
+PUSHA_NO_AX_OR_BP_MACRO
 
-0x00000000000056a4:  53                   push      bx
-0x00000000000056a5:  51                   push      cx
-0x00000000000056a6:  52                   push      dx
-0x00000000000056a7:  56                   push      si
-0x00000000000056a8:  57                   push      di
-0x00000000000056a9:  55                   push      bp
-0x00000000000056aa:  89 E5                mov       bp, sp
-0x00000000000056ac:  83 EC 04             sub       sp, 4
-0x00000000000056af:  B8 64 18             mov       ax, 0x1864
-0x00000000000056b2:  0E                   
-0x00000000000056b3:  E8 4E 1C             call      OFFSET _playerMobj_pos4
-0x00000000000056b7:  31 C9                xor       cx, cx
-0x00000000000056b9:  31 FF                xor       di, di
-0x00000000000056bb:  C6 06 49 20 00       mov       byte ptr ds:[_levelTimer], 0
-0x00000000000056c0:  BB CE 05             mov       bx, 0x5ce
-0x00000000000056c3:  3B 0F                cmp       cx, word ptr ds:[bx]
-0x00000000000056c5:  7C 29                jl        0x56f0
-0x00000000000056c7:  31 C0                xor       ax, ax
-0x00000000000056c9:  31 C9                xor       cx, cx
-0x00000000000056cb:  31 D2                xor       dx, dx
-0x00000000000056cd:  A3 4A 1F             mov       word ptr ds:[_numlinespecials], ax
-0x00000000000056d0:  BB D0 05             mov       bx, 0x5d0
-0x00000000000056d3:  3B 07                cmp       ax, word ptr ds:[bx]
-0x00000000000056d5:  7D 61                jge       0x5738
-0x00000000000056d7:  BB 00 70             mov       bx, LINES_PHYSICS_SEGMENT
-0x00000000000056da:  89 CE                mov       si, cx
-0x00000000000056dc:  8E C3                mov       es, bx
-0x00000000000056de:  26 8A 5C 0F          mov       bl, byte ptr es:[si + 0xf]
-0x00000000000056e2:  83 C6 0F             add       si, 0xf
-0x00000000000056e5:  80 FB 30             cmp       bl, 0x30
-0x00000000000056e8:  74 6E                je        0x5758
-0x00000000000056ea:  83 C1 10             add       cx, 0x10
-0x00000000000056ed:  40                   inc       ax
-0x00000000000056ee:  EB E0                jmp       0x56d0
-0x00000000000056f0:  89 7E FC             mov       word ptr [bp - 4], di
-0x00000000000056f3:  8D B5 3E DE          lea       si, [di - 0x21c2]
-0x00000000000056f7:  8A 04                mov       al, byte ptr ds:[si]
-0x00000000000056f9:  C7 46 FE 00 00       mov       word ptr [bp - 2], 0
-0x00000000000056fe:  84 C0                test      al, al
-0x0000000000005700:  75 06                jne       0x5708
-0x0000000000005702:  83 C7 10             add       di, 0x10
-0x0000000000005705:  41                   inc       cx
-0x0000000000005706:  EB B8                jmp       0x56c0
-0x0000000000005708:  FE C8                dec       al
-0x000000000000570a:  3C 10                cmp       al, 0x10
-0x000000000000570c:  77 F4                ja        0x5702
-0x000000000000570e:  30 E4                xor       ah, ah
-0x0000000000005710:  89 C3                mov       bx, ax
-0x0000000000005712:  01 C3                add       bx, ax
-0x0000000000005714:  2E FF A7 82 56       jmp       word ptr cs:[bx + 0x5682]
-0x0000000000005719:  89 C8                mov       ax, cx
-0x000000000000571b:  E8 A6 E7             call      P_SpawnLightFlash_
-0x000000000000571e:  EB E2                jmp       0x5702
-0x0000000000005720:  BA 0F 00             mov       dx, 0xf
-0x0000000000005723:  89 C8                mov       ax, cx
-0x0000000000005725:  31 DB                xor       bx, bx
-0x0000000000005727:  E8 48 E8             call      P_SpawnStrobeFlash_
-0x000000000000572a:  EB D6                jmp       0x5702
-0x000000000000572c:  BA 23 00             mov       dx, 0x23
-0x000000000000572f:  89 C8                mov       ax, cx
-0x0000000000005731:  31 DB                xor       bx, bx
-0x0000000000005733:  E8 3C E8             call      P_SpawnStrobeFlash_
-0x0000000000005736:  EB CA                jmp       0x5702
-0x0000000000005738:  E9 7D 00             jmp       0x57b8
-0x000000000000573b:  BA 0F 00             mov       dx, 0xf
-0x000000000000573e:  89 C8                mov       ax, cx
-0x0000000000005740:  31 DB                xor       bx, bx
-0x0000000000005742:  E8 2D E8             call      P_SpawnStrobeFlash_
-0x0000000000005745:  C6 04 04             mov       byte ptr ds:[si], 4
-0x0000000000005748:  EB B8                jmp       0x5702
-0x000000000000574a:  89 C8                mov       ax, cx
-0x000000000000574c:  E8 11 EA             call      P_SpawnGlowingLight_
-0x000000000000574f:  EB B1                jmp       0x5702
-0x0000000000005751:  BB 20 01             mov       bx, 0x120
-0x0000000000005754:  FF 07                inc       word ptr ds:[bx]
-0x0000000000005756:  EB AA                jmp       0x5702
-0x0000000000005758:  BB D8 4C             mov       bx, LINESPECIALLIST_SEGMENT
-0x000000000000575b:  89 D6                mov       si, dx
-0x000000000000575d:  8E C3                mov       es, bx
-0x000000000000575f:  83 C2 02             add       dx, 2
-0x0000000000005762:  FF 06 4A 1F          inc       word ptr ds:[_numlinespecials]
-0x0000000000005766:  26 89 04             mov       word ptr es:[si], ax
-0x0000000000005769:  83 C1 10             add       cx, 0x10
-0x000000000000576c:  40                   inc       ax
-0x000000000000576d:  E9 60 FF             jmp       0x56d0
-0x0000000000005770:  89 C8                mov       ax, cx
-0x0000000000005772:  E8 9D D0             call      P_SpawnDoorCloseIn30_
-0x0000000000005775:  83 C7 10             add       di, 0x10
-0x0000000000005778:  41                   inc       cx
-0x0000000000005779:  E9 44 FF             jmp       0x56c0
-0x000000000000577c:  BB 01 00             mov       bx, 1
-0x000000000000577f:  BA 23 00             mov       dx, 0x23
-0x0000000000005782:  89 C8                mov       ax, cx
-0x0000000000005784:  E8 EB E7             call      P_SpawnStrobeFlash_
-0x0000000000005787:  83 C7 10             add       di, 0x10
-0x000000000000578a:  41                   inc       cx
-0x000000000000578b:  E9 32 FF             jmp       0x56c0
-0x000000000000578e:  BB 01 00             mov       bx, 1
-0x0000000000005791:  BA 0F 00             mov       dx, 0xf
-0x0000000000005794:  89 C8                mov       ax, cx
-0x0000000000005796:  E8 D9 E7             call      P_SpawnStrobeFlash_
-0x0000000000005799:  83 C7 10             add       di, 0x10
-0x000000000000579c:  41                   inc       cx
-0x000000000000579d:  E9 20 FF             jmp       0x56c0
-0x00000000000057a0:  89 C8                mov       ax, cx
-0x00000000000057a2:  E8 B5 D0             call      P_SpawnDoorRaiseIn5Mins_
-0x00000000000057a5:  83 C7 10             add       di, 0x10
-0x00000000000057a8:  41                   inc       cx
-0x00000000000057a9:  E9 14 FF             jmp       0x56c0
-0x00000000000057ac:  89 C8                mov       ax, cx
-0x00000000000057ae:  E8 7F E6             call      P_SpawnFireFlicker_
-0x00000000000057b1:  83 C7 10             add       di, 0x10
-0x00000000000057b4:  41                   inc       cx
-0x00000000000057b5:  E9 08 FF             jmp       0x56c0
-0x00000000000057b8:  B9 3C 00             mov       cx, 0x3c
-0x00000000000057bb:  BF 00 06             mov       di, 0x600
-0x00000000000057be:  30 C0                xor       al, al
-0x00000000000057c0:  57                   push      di
-0x00000000000057c1:  1E                   push      ds
-0x00000000000057c2:  07                   pop       es
-0x00000000000057c3:  8A E0                mov       ah, al
-0x00000000000057c5:  D1 E9                shr       cx, 1
-0x00000000000057c7:  F3 AB                rep stosw 
-0x00000000000057c9:  13 C9                adc       cx, cx
-0x00000000000057cb:  F3 AA                rep stosb 
-0x00000000000057cd:  5F                   pop       di
-0x00000000000057ce:  B9 3C 00             mov       cx, 0x3c
-0x00000000000057d1:  BF 6C 1D             mov       di, 0x1d6c
-0x00000000000057d4:  57                   push      di
-0x00000000000057d5:  1E                   push      ds
-0x00000000000057d6:  07                   pop       es
-0x00000000000057d7:  8A E0                mov       ah, al
-0x00000000000057d9:  D1 E9                shr       cx, 1
-0x00000000000057db:  F3 AB                rep stosw 
-0x00000000000057dd:  13 C9                adc       cx, cx
-0x00000000000057df:  F3 AA                rep stosb 
-0x00000000000057e1:  5F                   pop       di
-0x00000000000057e2:  B9 24 00             mov       cx, 0x24
-0x00000000000057e5:  BF 40 1D             mov       di, _buttonlist
-0x00000000000057e8:  57                   push      di
-0x00000000000057e9:  1E                   push      ds
-0x00000000000057ea:  07                   pop       es
-0x00000000000057eb:  8A E0                mov       ah, al
-0x00000000000057ed:  D1 E9                shr       cx, 1
-0x00000000000057ef:  F3 AB                rep stosw 
-0x00000000000057f1:  13 C9                adc       cx, cx
-0x00000000000057f3:  F3 AA                rep stosb 
-0x00000000000057f5:  5F                   pop       di
-0x00000000000057f6:  C9                   LEAVE_MACRO     
-0x00000000000057f7:  5F                   pop       di
-0x00000000000057f8:  5E                   pop       si
-0x00000000000057f9:  5A                   pop       dx
-0x00000000000057fa:  59                   pop       cx
-0x00000000000057fb:  5B                   pop       bx
-0x00000000000057fc:  CB                   retf      
+xor       cx, cx
+xor       di, di
+mov       byte ptr ds:[_levelTimer], 0
+loop_next_sector_special:
+cmp       cx, word ptr ds:[_numsectors]
+jge       done_with_sectors
+
+
+lea       si, [di + _sectors_physics + SECTOR_PHYSICS_T.secp_special] ; ok this is used later, dont refactor si...
+mov       al, byte ptr ds:[si]  ; get special
+
+test      al, al
+je        spawnspecial_switch_case_default
+
+dec       ax
+cmp       al, 16
+ja        done_with_spawnspecial_switch_block
+cbw
+mov       bx, ax
+add       bx, ax
+mov       ax, cx
+jmp       word ptr cs:[bx + OFFSET spawnspecial_jump_table]
+
+
+spawnspecial_switch_case_1:
+call      P_SpawnLightFlash_
+jmp       done_with_spawnspecial_switch_block
+spawnspecial_switch_case_2:
+mov       dx, FASTDARK
+xor       bx, bx
+call      P_SpawnStrobeFlash_
+jmp       done_with_spawnspecial_switch_block
+spawnspecial_switch_case_3:
+mov       dx, SLOWDARK
+xor       bx, bx
+call      P_SpawnStrobeFlash_
+jmp       done_with_spawnspecial_switch_block
+
+spawnspecial_switch_case_8:
+call      P_SpawnGlowingLight_
+jmp       done_with_spawnspecial_switch_block
+spawnspecial_switch_case_9:
+inc       word ptr ds:[_totalsecret]
+;jmp       done_with_spawnspecial_switch_block
+
+spawnspecial_switch_case_default:
+done_with_spawnspecial_switch_block:
+add       di, SIZEOF_SECTOR_PHYSICS_T
+inc       cx
+jmp       loop_next_sector_special
+
+done_with_sectors:
+xor       ax, ax
+mov       si, OFFSET LINE_PHYSICS_T.lp_special
+mov       di, ax
+mov       word ptr ds:[_numlinespecials], ax
+mov       cx, LINES_PHYSICS_SEGMENT
+mov       dx, LINESPECIALLIST_SEGMENT  ; todo get rid of this once DS 3D00
+
+loop_next_line_physics:
+mov       es, cx
+mov       bl, byte ptr es:[si]
+
+cmp       bl, 48
+jne       not_line_special_48_spawn
+
+do_line_special_48:
+mov       es, dx
+stosw     ; mov word ptr es:[di], ax
+inc       word ptr ds:[_numlinespecials]
+
+not_line_special_48_spawn:
+
+add       si, SIZEOF_LINE_PHYSICS_T
+inc       ax
+cmp       ax, word ptr ds:[_numlines]
+jge       loop_next_line_physics
+
+
+
+
+
+done_with_lines:
+; todo put these in fixeddata and make them all adajcent?
+
+mov       cx, MAXCEILINGS ; *2, 0x3C
+mov       di, OFFSET _activeceilings
+xor       ax, ax
+push      ds
+pop       es
+rep stosw 
+
+mov       cx, MAXPLATS   ; *2, 0x3C
+mov       di, OFFSET _activeplats
+rep stosw 
+
+mov       cx, (MAXBUTTONS * SIZEOF_BUTTON_T) / 2   ; 0x24
+mov       di, _buttonlist
+rep stosw 
+
+POPA_NO_AX_OR_BP_MACRO
+retf      
 
 ENDP
 
-@
 
 
 

@@ -740,9 +740,9 @@ pop   es    ; es = ds
 push  cs
 pop   ds    ; ds = cs
 
-mov   si, ax
+xchg  ax, si ; si gets ax...
 
-mov   ax, 0
+xor   ax, 0
 stosw       ; zero out
 stosw
 stosw
