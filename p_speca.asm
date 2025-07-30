@@ -1441,23 +1441,21 @@ PUBLIC  EV_DoDonut_
 
 
 
-
-
 PUSHA_NO_AX_OR_BP_MACRO
 push      bp
 mov       bp, sp
-sub       sp, 020Ah
-lea       dx, [bp - 020Ah]
+sub       sp, 020Ch
+lea       dx, [bp - 020Ch]
 cbw      
 xor       bx, bx
-mov       word ptr [bp - 8], -1
+
 call      P_FindSectorsFromLineTag_
 xor       cx, cx
 mov       ax, SECTORS_SEGMENT
 mov       [bp - 0Ah], ax
 mov       ax, SECTORS_PHYSICS_SEGMENT
 mov       [bp - 6], ax
-lea       si, [bp - 20Ah]
+lea       si, [bp - 20Ch]
 cmp       word ptr ds:[si], -1
 je        exit_evdodonut_return_0
 
@@ -1465,9 +1463,10 @@ je        exit_evdodonut_return_0
 
 ; bp - 2 is s1 loop ptr
 ; bp - 4 is s1
-; bp - 6 is unused
+; bp - 6 is SECTORS_PHYSICS_SEGMENT
 ; bp - 8 is s2
-; bp -0Ah is SECTORS_SEGMENT
+; bp  -0Ah is SECTORS_SEGMENT
+; bp  -0Ch is s1 << 4 (ptr)
 
 mov       [bp - 2], sp  ; loop precondition.
 
@@ -1478,27 +1477,44 @@ mov       [bp - 2], si
 test      ax, ax
 jl        exit_evdodonut_return_1
 mov       word ptr [bp - 4], ax ; s1
-mov       dx, ax  ; dx gets secnum for func call.
-mov       bx, ax
-SHIFT_MACRO shl       bx, 4
-; bx is s1.
-mov       word ptr [bp - 6], bx ; s1 << 4
 
+xchg      ax, bx
+SHIFT_MACRO shl       bx, 4
+mov       [bp - 0Ch], bx  ; s1 << 4
+
+; bx is s1.
 
 mov       es, word ptr [bp - 6]
 cmp       es:[bx + SECTOR_PHYSICS_T.secp_specialdataRef], 0
 jne       loop_next_s1
 
+;	s2 = getNextSector(s1->lines[0],s1);
+; get sector that isnt s1 from s1->line[0]
+
 mov       es, word ptr [bp - 0Ah]
 mov       si, word ptr es:[bx + SECTOR_T.sec_linesoffset]
+sal       si, 1
 mov       bx, word ptr ds:[si + _linebuffer]
-
-mov       [bp - 8], bx
+; bx is s1->line[0]
 SHIFT_MACRO shl       bx, 4
-; ax   is s2. s2 is s1's line[0] opposing side. nothing more..
+mov       ax, LINES_PHYSICS_SEGMENT
+mov       es, ax
+mov       ax, es:[bx + LINE_PHYSICS_T.lp_backsecnum]
+cmp       ax, word ptr [bp - 4] 
+jne       use_backsecnum
+mov       ax, es:[bx + LINE_PHYSICS_T.lp_frontsecnum]
+use_backsecnum:
+mov       [bp - 8], ax
+xchg      ax, bx
+SHIFT_MACRO shl       bx, 4
+
+
+; bx   is s2. s2 is s1's line[0] opposing side. nothing more..
+mov       es, word ptr [bp - 0Ah]
 
 
 mov       si, word ptr es:[bx + SECTOR_T.sec_linesoffset] 
+sal       si, 1
 add       si, _linebuffer
 mov       cx, word ptr es:[bx + SECTOR_T.sec_linecount]
 
@@ -1509,14 +1525,14 @@ lodsw
 ;	    if ((!s2->lines[i]->flags & ML_TWOSIDED) ||
 ;		(s2->lines[i]->backsector == s1))
 ;		continue;
-mov     di, ax
-mov     dx, LINEFLAGSLIST_SEGMENT
-mov     es, dx
+xchg    ax, di
+mov     ax, LINEFLAGSLIST_SEGMENT
+mov     es, ax
 test    byte ptr es:[di], ML_TWOSIDED
 jz      iter_inner_loop
-mov     dx, LINES_PHYSICS_SEGMENT
-mov     es, dx
 SHIFT_MACRO shl       di, 4
+mov     ax, LINES_PHYSICS_SEGMENT
+mov     es, ax
 mov     dx, es:[di + LINE_PHYSICS_T.lp_backsecnum]  ; dx is s3.
 cmp     dx, [bp - 4]  ; s3 != s1 check
 jne     make_thinkers
@@ -1534,10 +1550,10 @@ mov       ax, TF_MOVEFLOOR_HIGHBITS
 call      P_CreateThinker_
 
 ;			floorRef = GETTHINKERREF(floor);
-xor       dx, dx
 push      ax ; store thinker
 sub       ax, (_thinkerlist + THINKER_T.t_data)
 mov       di, SIZEOF_THINKER_T
+xor       dx, dx
 div       di
 pop       di  ; restore thinker
 
@@ -1550,9 +1566,9 @@ pop       bx  ; restore s3.
 SHIFT_MACRO shl       bx, 4  ; bx is s3.
 
 mov       es, word ptr [bp - 0Ah]
-push      word ptr es:[bx + SECTOR_T.sec_floorheight]
 mov       al, byte ptr es:[bx + SECTOR_T.sec_floorpic]
-pop       word ptr ds:[di + FLOORMOVE_T.floormove_floordestheight]
+mov       bx, word ptr es:[bx + SECTOR_T.sec_floorheight]
+mov       word ptr ds:[di + FLOORMOVE_T.floormove_floordestheight], bx
 mov       byte ptr ds:[di + FLOORMOVE_T.floormove_texture], al
 mov       byte ptr ds:[di + FLOORMOVE_T.floormove_type], FLOOR_DONUTRAISE
 mov       byte ptr ds:[di + FLOORMOVE_T.floormove_direction], 1
@@ -1568,17 +1584,20 @@ mov       ax, TF_MOVEFLOOR_HIGHBITS
 call      P_CreateThinker_
 
 ;			floorRef = GETTHINKERREF(floor);
-xor       dx, dx
 push      ax ; store thinker
 sub       ax, (_thinkerlist + THINKER_T.t_data)
 mov       di, SIZEOF_THINKER_T
+xor       dx, dx
 div       di
 pop       di  ; restore thinker
 
-mov       es, word ptr [bp - 0Ah]
 
-push      word ptr es:[bx + SECTOR_T.sec_floorheight]
-pop       word ptr ds:[di + FLOORMOVE_T.floormove_floordestheight]
+mov       word ptr ds:[di + FLOORMOVE_T.floormove_floordestheight], bx
+
+mov       es, word ptr [bp - 6]
+mov       bx, [bp - 0Ch]
+mov       word ptr es:[bx + SECTOR_PHYSICS_T.secp_specialdataRef], ax  ; div result.
+
 push      [bp - 4]
 pop       word ptr ds:[di + FLOORMOVE_T.floormove_secnum]
 mov       byte ptr ds:[di + FLOORMOVE_T.floormove_direction], -1
