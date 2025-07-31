@@ -2467,6 +2467,7 @@ GLOWSPEED = 08h
 STROBEBRIGHT = 05h
 FASTDARK = 0Fh
 SLOWDARK = 023h
+MAXHEALTH = 064h
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 03400h

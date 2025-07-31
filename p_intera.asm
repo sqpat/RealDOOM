@@ -240,15 +240,15 @@ PUBLIC  P_GiveBody_
 
 push   bx
 mov    bx, _player + PLAYER_T.player_health
-cmp    word ptr ds:[bx], 100
+cmp    word ptr ds:[bx], MAXHEALTH
 jge    exit_pgivebody_return_0
-add    word ptr ds:[bx], ax
-cmp    word ptr ds:[bx], 100
+add    ax, word ptr ds:[bx]
+cmp    ax, MAXHEALTH
 jle    dont_cap_health
-mov    ax, 100
+mov    ax, MAXHEALTH
+dont_cap_health:
 mov    word ptr ds:[bx], ax
 
-dont_cap_health:
 mov    bx, word ptr ds:[_playerMobj]
 mov    word ptr ds:[bx + MOBJ_T.m_health], ax
 mov    al, 1
