@@ -471,13 +471,15 @@ sal    bx, 1  ; size 6..
 ;	spritenum_t specialsprite = states[special_pos->stateNum].sprite;
 mov    dx, STATES_SEGMENT
 mov    es, dx
-mov    bl, byte ptr es:[bx + STATE_T.state_sprite]
-sub    bl, SPR_ARM1   ; minimum switch block case
-cmp    bl, (SPR_SGN2 - SPR_ARM1)  ; 0x26.. diff between low and high case
+xchg   ax, dx  ; dx gets dropped flag.
+mov    al, byte ptr es:[bx + STATE_T.state_sprite]
+sub    al, SPR_ARM1   ; minimum switch block case
+cmp    al, (SPR_SGN2 - SPR_ARM1)  ; 0x26.. diff between low and high case
 
 ja     touchspecial_case_default
-xor    bh, bh
+cbw
 
+mov    bx, ax
 sal    bx, 1
 mov    cx, SFX_ITEMUP 
 
@@ -559,8 +561,15 @@ jmp    done_with_touchspecial_switch_block
 touchspecial_case_87:
 mov    word ptr ds:[di], GOTBFG9000
 mov    ax, WP_BFG
+
+do_giveweapon_touchspecial_with_cwd:
 cwd
 do_giveweapon_touchspecial:
+
+shr    bx, 1
+add    bx, (GOTCHAINGUN - SPR_MGUN + SPR_ARM1) ; renormalize 
+mov    word ptr ds:[di], bx
+
 
 call   P_GiveWeapon_
 test   al, al
@@ -568,10 +577,6 @@ je     exit_ptouchspecialthing
 
 mov    cx, SFX_WPNUP
 jmp    done_with_touchspecial_switch_block
-
-
-
-
 
 
 ; bh is known zero..
@@ -588,6 +593,17 @@ skip_key_message:
 ; use ax from above. 
 call   P_GiveCard_
 jmp    done_with_touchspecial_switch_block
+
+touchspecial_case_68:
+mov    ax, 10
+mov    word ptr ds:[di], GOTSTIM
+do_givebody:
+call   P_GiveBody_
+test   al, al
+jne    done_with_touchspecial_switch_block
+exitptouchspecialthing_2:
+pop    di
+retf
 
 
 ;71 025h 0
@@ -610,11 +626,10 @@ touchspecial_case_73:
 touchspecial_case_71:
 do_givepower:
 
-shr    bx, 1  ; undo word lookup
-add    bx, (GOTINVUL - SPR_PINV + SPR_ARM1) ; renormalize 
-lea    ax, [bx - GOTINVUL]  ; set ax parameter to correct powerup.
+add    ax, (GOTINVUL - SPR_PINV + SPR_ARM1) ; renormalize 
+mov    word ptr ds:[di], ax
+sub    ax, GOTINVUL    ; set ax parameter to correct powerup.
 
-mov    word ptr ds:[di], bx
 
 
 call   P_GivePower_
@@ -622,58 +637,48 @@ test   al, al
 je     exit_ptouchspecialthing
 
 mov    cx, SFX_GETPOW
+jmp    done_with_touchspecial_switch_block
 
 touchspecial_case_88:
-mov    word ptr ds:[di], GOTCHAINGUN
-xchg   ax, dx
+; dx carries dropped flag
 mov    ax, WP_CHAINGUN
 jmp    do_giveweapon_touchspecial
 
+
+
+
 touchspecial_case_89:
 mov    ax, WP_CHAINSAW
-cwd
-mov    word ptr ds:[di], GOTCHAINSAW
-jmp    do_giveweapon_touchspecial
+jmp    do_giveweapon_touchspecial_with_cwd
 
 touchspecial_case_90:
 mov    ax, WP_MISSILE
-mov    word ptr ds:[di], GOTLAUNCHER
-cwd
-jmp    do_giveweapon_touchspecial
+jmp    do_giveweapon_touchspecial_with_cwd
 
 touchspecial_case_91:
 mov    ax, WP_PLASMA
-cwd
-mov    word ptr ds:[di], GOTPLASMA
-jmp    do_giveweapon_touchspecial
+jmp    do_giveweapon_touchspecial_with_cwd
 touchspecial_case_92:
-xchg   ax, dx
+; dx carries dropped flag
 mov    ax, WP_SHOTGUN
-mov    word ptr ds:[di], GOTSHOTGUN
 jmp    do_giveweapon_touchspecial
 
 touchspecial_case_93:
-xchg   ax, dx
 mov    ax, WP_SUPERSHOTGUN
-mov    word ptr ds:[di], GOTSHOTGUN2
+; dx carries dropped flag
 jmp    do_giveweapon_touchspecial
 
 
-jmp    done_with_touchspecial_switch_block
 
 touchspecial_case_64:
 mov    bl, IT_YELLOWCARD
-
 jmp    handle_give_card
-
 touchspecial_case_63:
 mov    bl, IT_REDCARD
 jmp    handle_give_card
-
 touchspecial_case_65:
 mov    bl, IT_BLUESKULL
 jmp    handle_give_card
-
 touchspecial_case_67:
 mov    bl, IT_YELLOWSKULL
 jmp    handle_give_card
@@ -690,21 +695,6 @@ jmp    do_givepower
 
 
 
-touchspecial_case_68:
-mov    ax, 10
-mov    word ptr ds:[di], GOTSTIM
-do_givebody:
-call   P_GiveBody_
-test   al, al
-jne    label_31
-exitptouchspecialthing_2:
-pop    di
-retf
-
-label_31:
-
-jmp    done_with_touchspecial_switch_block
-
 touchspecial_case_69:
 mov    ax, 25
 mov    word ptr ds:[di], GOTMEDIKIT
@@ -712,13 +702,11 @@ jmp    do_givebody
 
 
 
-
-
 touchspecial_case_78:
 ; special flags?
-xor    dx, dx
-test   al, al
+test   dl, dl
 mov    al, 0   ; AM_CLIP
+cwd    ; clear dx
 jne    do_giveammo_touchspecial ; dropped clip
 
 inc    dx
