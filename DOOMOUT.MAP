@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/30 00:36:04
+Created on:       25/07/30 01:57:00
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -61,8 +61,8 @@ s_sbsfx_TEXT           CODE           AUTO           0bc4:0680       000017f3
 p_ceilng_TEXT          CODE           AUTO           0bc4:1e80       00000392
 p_doors_TEXT           CODE           AUTO           0bc4:2220       00000696
 p_floor_TEXT           CODE           AUTO           0bc4:28c0       00000808
-p_inter_TEXT           CODE           AUTO           0bc4:30d0       00000aa7
-P_INTERA_TEXT          CODE           AUTO           0bc4:3b78       000001b6
+p_inter_TEXT           CODE           AUTO           0bc4:30d0       000005a9
+P_INTERA_TEXT          CODE           AUTO           0bc4:367a       000006ad
 p_lights_TEXT          CODE           AUTO           0bc4:3d30       000003ed
 p_plats_TEXT           CODE           AUTO           0bc4:4120       0000041d
 P_SPEC_TEXT            CODE           AUTO           0bc4:453e       00000a28
@@ -653,9 +653,9 @@ Module: math.obj(math.ASM)
 02ee:5cd0*     FixedMul16u32u_
 02ee:5ecb      FastDiv3216u_
 02ee:5f0b      FixedDivWholeA_
+02ee:5bff      FixedMulTrig_
 02ee:5b7e      FixedMul2432_
 02ee:5b75*     FixedMulBig16u32_
-02ee:5bff      FixedMulTrig_
 02ee:5bbf      FixedMul1632_
 02ee:5b3c      FixedMul_
 02ee:5ca7*     FixedMulBig1632_
@@ -819,19 +819,19 @@ Module: p_floor.obj(C:\REALDOOM\p_floor.c)
 0bc4:2ba4      EV_DoFloor_
 0bc4:2f34      EV_BuildStairs_
 Module: p_inter.obj(C:\REALDOOM\p_inter.c)
-0bc4:311e      P_TouchSpecialThing_
-0bc4:35ce+     P_KillMobj_
-0bc4:3784+     getMassThrust_
-0bc4:37f2      P_DamageMobj_
+0bc4:30d0+     P_KillMobj_
+0bc4:3286+     getMassThrust_
+0bc4:32f4      P_DamageMobj_
 Module: p_intera.obj(p_intera.ASM)
-0bc4:3c41      P_GiveWeapon_
-0bc4:3cc5      P_GiveCard_
-0bc4:3c82      P_GiveBody_
-0bc4:3ca6      P_GiveArmor_
-0bc4:3b78*     P_INTER_STARTMARKER_
-0bc4:3b88      P_GiveAmmo_
-0bc4:3cdf      P_GivePower_
-0bc4:3d2e*     P_INTER_ENDMARKER_
+0bc4:387e      P_TouchSpecialThing_
+0bc4:3743*     P_GiveWeapon_
+0bc4:37c7*     P_GiveCard_
+0bc4:3784*     P_GiveBody_
+0bc4:37a8*     P_GiveArmor_
+0bc4:367a*     P_INTER_STARTMARKER_
+0bc4:368a*     P_GiveAmmo_
+0bc4:37e1      P_GivePower_
+0bc4:3d27*     P_INTER_ENDMARKER_
 Module: p_lights.obj(C:\REALDOOM\p_lights.c)
 0bc4:3d30      T_FireFlicker_
 0bc4:3d90      P_SpawnFireFlicker_
@@ -1199,4 +1199,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  000182a0 (98976.)
 Entry point address: 0bc4:8106
-Link time: 00:00.74
+Link time: 00:00.20

@@ -277,7 +277,6 @@ boolean __far P_GivePower (  int16_t 	power ) {
 	return true;
 }
 
-*/
 
 
 //
@@ -631,6 +630,7 @@ void __far P_TouchSpecialThing ( mobj_t __near*	special, mobj_t __near*	toucher,
     player.bonuscount += BONUSADD;
 	S_StartSound (NULL, sound);
 }
+*/
 
 
 //
