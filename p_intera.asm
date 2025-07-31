@@ -461,16 +461,16 @@ done_with_touchspecial_switch_block:
 ; todo selfmodify this flag
 cmp    byte ptr [bp - 4], 0
 je     label_6
-mov    bx, _player + PLAYER_T.player_itemcount
-inc    word ptr ds:[bx]
+
+inc    word ptr ds:[_player + PLAYER_T.player_itemcount]
 label_6:
 mov    ax, word ptr [bp - 8]
-mov    bx, _player + PLAYER_T.player_bonuscount
+
 mov    dl, cl
 call   dword ptr [_P_RemoveMobj]
 xor    dh, dh
 xor    ax, ax
-add    byte ptr ds:[bx], BONUSADD
+add    byte ptr ds:[_player + PLAYER_T.player_bonuscount], BONUSADD
 
 call   S_StartSound_
 exit_ptouchspecialthing:
@@ -502,7 +502,7 @@ mov    bx, word ptr ds:[_playerMobj]
 mov    ax, word ptr ds:[_player + PLAYER_T.player_health]
 mov    word ptr ds:[bx + MOBJ_T.m_health], ax
 
-mov    word ptr ds:[di], GOTHTHBONUS
+mov    word ptr ds:[si], GOTHTHBONUS
 jmp    done_with_touchspecial_switch_block
 label_7:
 mov    word ptr ds:[bx], 200
@@ -519,7 +519,7 @@ jne    label_10
 mov    byte ptr ds:[bx], 1
 label_10:
 
-mov    word ptr ds:[di], GOTARMBONUS
+mov    word ptr ds:[si], GOTARMBONUS
 jmp    done_with_touchspecial_switch_block
 label_9:
 mov    word ptr ds:[bx], 200
@@ -541,8 +541,8 @@ label_12:
 mov    word ptr ds:[bx], 200
 jmp    label_13
 touchspecial_case_74:
-mov    bx, _commercial
-cmp    byte ptr ds:[bx], 0
+
+cmp    byte ptr ds:[_commercial], 0
 jne    label_14
 jmp    exit_ptouchspecialthing
 label_14:
@@ -556,68 +556,46 @@ mov    ax, 2
 mov    cx, SFX_GETPOW
 call   P_GiveArmor_
 jmp    done_with_touchspecial_switch_block
+
+; bh is known zero..
 touchspecial_case_62:
-mov    bx, _player + PLAYER_T.player_cards + IT_BLUECARD
-cmp    byte ptr ds:[bx], 0
-jne    label_15
+mov    bl, 0
 
-mov    word ptr ds:[si], GOTBLUECARD
-label_15:
-xor    ax, ax
+handle_give_card:
+mov    ax, bx
+cmp    byte ptr ds:[_player + PLAYER_T.player_cards + bx], bh
+jne    skip_key_message
+lea    bx, [bx + GOTBLUECARD]
+mov    word ptr ds:[si], bx
+skip_key_message:
+; use ax from above. 
 call   P_GiveCard_
 jmp    done_with_touchspecial_switch_block
+
 touchspecial_case_64:
-mov    bx, _player + PLAYER_T.player_cards + IT_YELLOWCARD
-cmp    byte ptr ds:[bx], 0
-jne    label_16
+mov    bl, IT_YELLOWCARD
 
-mov    word ptr ds:[si], cx
-label_16:
-mov    ax, 1
-call   P_GiveCard_
-jmp    done_with_touchspecial_switch_block
+jmp    handle_give_card
+
 touchspecial_case_63:
-mov    bx, PLAYER_T.player_cards + IT_REDCARD
-cmp    byte ptr ds:[bx], 0
-jne    label_17
+mov    bl, IT_REDCARD
+jmp    handle_give_card
 
-mov    word ptr ds:[si], SFX_WPNUP
-label_17:
-mov    ax, 2
-call   P_GiveCard_
-jmp    done_with_touchspecial_switch_block
 touchspecial_case_65:
-mov    bx, _player + PLAYER_T.player_cards + IT_BLUESKULL
-cmp    byte ptr ds:[bx], 0
-jne    label_18
+mov    bl, IT_BLUESKULL
+jmp    handle_give_card
 
-mov    word ptr ds:[si], GOTBLUESKUL
-label_18:
-mov    ax, 3
-call   P_GiveCard_
-jmp    done_with_touchspecial_switch_block
 touchspecial_case_67:
-mov    bx, _player + PLAYER_T.player_cards + IT_YELLOWSKULL
-cmp    byte ptr ds:[bx], 0
-jne    label_19
-
-mov    word ptr ds:[si], GOTYELWSKUL
-label_19:
-mov    ax, 4
-call   P_GiveCard_
-jmp    done_with_touchspecial_switch_block
+mov    bl, IT_YELLOWSKULL
+jmp    handle_give_card
 touchspecial_case_66:
-mov    bx, _player + PLAYER_T.player_cards + IT_REDSKULL
-cmp    byte ptr ds:[bx], 0
-jne    label_20
+mov    bl, IT_REDSKULL
+jmp    handle_give_card
 
-mov    word ptr ds:[si], GOTREDSKULL
-label_20:
-mov    ax, 5
-call   P_GiveCard_
-jmp    done_with_touchspecial_switch_block
 touchspecial_case_68:
 mov    ax, 10
+mov    word ptr ds:[si], GOTSTIM
+do_givebody:
 call   P_GiveBody_
 test   al, al
 jne    label_31
@@ -625,19 +603,16 @@ jump_to_exitptouchspecialthing:
 jmp    exit_ptouchspecialthing
 label_31:
 
-mov    word ptr ds:[si], GOTSTIM
 jmp    done_with_touchspecial_switch_block
+
 touchspecial_case_69:
 mov    ax, 25
-call   P_GiveBody_
-test   al, al
-je     jump_to_exitptouchspecialthing
-
 mov    word ptr ds:[si], GOTMEDIKIT
-jmp    done_with_touchspecial_switch_block
+jmp    do_givebody
+
+
 touchspecial_case_71:
 xor    ax, ax
-
 call   P_GivePower_
 test   al, al
 je     jump_to_exitptouchspecialthing
@@ -819,7 +794,7 @@ mov    word ptr ds:[si], GOTBACKPACK
 jmp    done_with_touchspecial_switch_block
 touchspecial_case_87:
 mov    ax, 6
-xor    dl, dl
+cwd
 call   P_GiveWeapon_
 test   al, al
 jne    label_28
@@ -831,9 +806,10 @@ mov    cx, SFX_WPNUP
 mov    word ptr ds:[si], GOTBFG9000
 jmp    done_with_touchspecial_switch_block
 touchspecial_case_88:
-cbw   
-mov    dx, ax
+   
+xchg   ax, dx
 mov    ax, 3
+
 call   P_GiveWeapon_
 test   al, al
 je     jump_to_exitptouchspecialthing_4
@@ -843,7 +819,8 @@ mov    word ptr ds:[si], GOTCHAINGUN
 jmp    done_with_touchspecial_switch_block
 touchspecial_case_89:
 mov    ax, 7
-xor    dl, dl
+cwd
+
 call   P_GiveWeapon_
 test   al, al
 je     jump_to_exitptouchspecialthing_4
@@ -853,7 +830,8 @@ mov    word ptr ds:[si], GOTCHAINSAW
 jmp    done_with_touchspecial_switch_block
 touchspecial_case_90:
 mov    ax, 4
-xor    dl, dl
+cwd
+
 call   P_GiveWeapon_
 test   al, al
 je     jump_to_exitptouchspecialthing_4
@@ -863,7 +841,7 @@ mov    word ptr ds:[si], GOTLAUNCHER
 jmp    done_with_touchspecial_switch_block
 touchspecial_case_91:
 mov    ax, 5
-xor    dl, dl
+cwd
 call   P_GiveWeapon_
 test   al, al
 je     jump_to_exitptouchspecialthing_4
@@ -872,9 +850,10 @@ mov    cx, SFX_WPNUP
 mov    word ptr ds:[si], GOTPLASMA
 jmp    done_with_touchspecial_switch_block
 touchspecial_case_92:
-cbw   
-mov    dx, ax
+xchg   ax, dx
 mov    ax, 2
+
+
 call   P_GiveWeapon_
 test   al, al
 jne    label_29
@@ -886,9 +865,9 @@ mov    cx, SFX_WPNUP
 mov    word ptr ds:[si], GOTSHOTGUN
 jmp    done_with_touchspecial_switch_block
 touchspecial_case_93:
-cbw   
-mov    dx, ax
+xchg   ax, dx
 mov    ax, 8
+
 call   P_GiveWeapon_
 test   al, al
 je     jump_to_exitptouchspecialthing_5
