@@ -847,44 +847,47 @@ mov    di, ax
 mov    si, dx
 
 mov    es, cx
-and    word ptr es:[bx + MOBJ_POS_T.mp_flags1], (NOT (MF_SHOOTABLE OR MF_FLOAT))
 
+and    word ptr es:[bx + MOBJ_POS_T.mp_flags1], (NOT (MF_SHOOTABLE OR MF_FLOAT))
 and    byte ptr es:[bx + MOBJ_POS_T.mp_flags2 + 1],  ((NOT MF_SKULLFLY) SHR 8)
-cmp    byte ptr ds:[si + MOBJ_T.m_mobjtype], MT_SKULL
-je     label_1
+mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
+cmp    al, MT_SKULL
+je     not_skull
 and    byte ptr es:[bx + MOBJ_POS_T.mp_flags1 + 1],  ((NOT MF_NOGRAVITY) SHR 8)
-label_1:
+not_skull:
 
 or     byte ptr es:[bx + MOBJ_POS_T.mp_flags1 + 1], (MF_DROPOFF SHR 8)
 or     byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_CORPSE
+
 sar    word ptr ds:[si + MOBJ_T.m_height + 2], 1
 rcr    word ptr ds:[si + MOBJ_T.m_height + 0], 1
 sar    word ptr ds:[si + MOBJ_T.m_height + 2], 1
 rcr    word ptr ds:[si + MOBJ_T.m_height + 0], 1
-test   di, di
-je     label_3
-cmp    byte ptr ds:[di + MOBJ_T.m_mobjtype], 0
-jne    label_4
-label_3:
+
 test   byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_COUNTKILL
-je     label_4
+je     dont_count_kill
 mov    di, _player + PLAYER_T.player_killcount
 inc    word ptr ds:[di]
-label_4:
-mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
+dont_count_kill:
+
+
+
 cmp    al, MT_SKULL
-je     label_5
-label_6:
+je     no_corpse
 cmp    al, MT_PAIN
-je     label_7
-label_5:
+jne    skip_nocorpse
+no_corpse:
+; this hack has to do with fixing a timedemo bug by keeping track of the thing to kill the player if dies and it has no corpse
+; not sure if i care about keeping long term.
+xchg   ax, di
 mov    cx, SIZEOF_THINKER_T
 lea    ax, [si - (_thinkerlist + THINKER_T.t_data)]
 xor    dx, dx
 div    cx
-mov    di, _player + PLAYER_T.player_attackerRef
-cmp    ax, word ptr ds:[di]
-jne    label_7
+
+cmp    ax, word ptr ds:[_player + PLAYER_T.player_attackerRef]
+xchg   ax, di
+jne    skip_nocorpse
 
 ;			useDeadAttackerRef = true;
 ;			deadAttackerX = target_pos->x;
@@ -892,33 +895,33 @@ jne    label_7
 
 
 mov    byte ptr ds:[_useDeadAttackerRef], 1
-mov    ax, MOBJPOSLIST_6800_SEGMENT
-mov    es, ax
-mov    ax, word ptr es:[bx]
-mov    dx, word ptr es:[bx + 2]
-mov    word ptr ds:[_deadAttackerX + 0], ax
-mov    word ptr ds:[_deadAttackerX + 2], dx
-mov    dx, word ptr es:[bx + 4]
-mov    ax, word ptr es:[bx + 6]
-mov    word ptr ds:[_deadAttackerY + 0], dx
-mov    word ptr ds:[_deadAttackerY + 0], ax
-label_7:
-cmp    byte ptr ds:[si + MOBJ_T.m_mobjtype], 0
-jne    label_8
-mov    di, MOBJPOSLIST_6800_SEGMENT
-mov    es, di
+push   word ptr es:[bx]
+push   word ptr es:[bx + 2]
+push   word ptr es:[bx + 4]
+push   word ptr es:[bx + 6]
+pop    word ptr ds:[_deadAttackerY + 2]
+pop    word ptr ds:[_deadAttackerY + 0]
+pop    word ptr ds:[_deadAttackerX + 2]
+pop    word ptr ds:[_deadAttackerX + 0]
 
-mov    di, _player + PLAYER_T.player_playerstate
+skip_nocorpse:
+
+cmp    al, MT_PLAYER
+jne    target_not_player
+
+
 and    byte ptr es:[bx + MOBJ_POS_T.mp_flags1], (NOT MF_SOLID)
-mov    byte ptr ds:[di], 1
-mov    di, _automapactive
+mov    byte ptr ds:[_player + PLAYER_T.player_playerstate], 1
+
 call   dword ptr ds:[_P_DropWeaponFar]
-cmp    byte ptr ds:[di], 0
-je     label_8
+cmp    byte ptr ds:[_automapactive], 0
+je     target_not_player
 call   AM_Stop_
-label_8:
+target_not_player:
+
 mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor    ah, ah
+
 db     09Ah
 dw     GETSPAWNHEALTHADDR, INFOFUNCLOADSEGMENT
 neg    ax
