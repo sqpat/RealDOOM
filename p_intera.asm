@@ -539,13 +539,15 @@ jmp    do_givearmor_touchspecial
 
 touchspecial_case_60:
 mov    bx, _player + PLAYER_T.player_health
-inc    word ptr ds:[bx]
-cmp    word ptr ds:[bx], 200
-jng    label_8
-mov    word ptr ds:[bx], 200
-label_8:
+mov    ax, word ptr ds:[bx]
+inc    ax
+cmp    ax, 200
+jng    dont_cap_health_4
+mov    ax, 200
+dont_cap_health_4:
+mov    word ptr ds:[bx], ax
+
 mov    bx, word ptr ds:[_playerMobj]
-mov    ax, word ptr ds:[_player + PLAYER_T.player_health]
 mov    word ptr ds:[bx + MOBJ_T.m_health], ax
 
 mov    word ptr ds:[di], GOTHTHBONUS
@@ -691,8 +693,10 @@ do_givebody:
 call   P_GiveBody_
 test   al, al
 jne    label_31
-jump_to_exitptouchspecialthing:
-jmp    exit_ptouchspecialthing
+exitptouchspecialthing_2:
+pop    di
+retf
+
 label_31:
 
 jmp    done_with_touchspecial_switch_block
@@ -708,72 +712,61 @@ jmp    do_givebody
 
 touchspecial_case_78:
 ; special flags?
+xor    dx, dx
 test   al, al
-jne    label_30
-mov    dx, 1
-xor    ah, ah
-jmp    label_23
-label_30:
-xor    dl, dl
-xor    ax, ax
-label_23:
-call   P_GiveAmmo_
-test   al, al
-jne    label_22
-jump_to_exitptouchspecialthing_2:
-jmp    exit_ptouchspecialthing
+mov    al, 0   ; AM_CLIP
+jne    do_giveammo_touchspecial ; dropped clip
+
+inc    dx
+jmp    do_giveammo_touchspecial ; nondropped clip
 
 
-label_22:
-mov    word ptr ds:[di], GOTCLIP
-jmp    done_with_touchspecial_switch_block
+
+
+
 
 touchspecial_case_79:
 mov    dx, 5
 xor    ax, ax  ; AM_CLIP
-mov    word ptr ds:[di], GOTCLIPBOX
 
 do_giveammo_touchspecial:
+sar    bx, 1
+add    bx, (GOTCLIP - SPR_CLIP + SPR_ARM1)
+mov    word ptr ds:[di], bx
 call   P_GiveAmmo_
 test   al, al
-je     jump_to_exitptouchspecialthing_2
+je     exitptouchspecialthing_2
 
 jmp    done_with_touchspecial_switch_block
 
 touchspecial_case_80:
 mov    dx, 1
 mov    ax, AM_MISL
-mov    word ptr ds:[di], GOTROCKET
 jmp    do_giveammo_touchspecial
 
 touchspecial_case_81:
 mov    dx, 5
 mov    ax, AM_MISL
-mov    word ptr ds:[di], GOTROCKBOX
 jmp    do_giveammo_touchspecial
 
 
 touchspecial_case_82:
 mov    dx, 1
 mov    ax, AM_CELL
-mov    word ptr ds:[di], GOTCELL
 jmp    do_giveammo_touchspecial
 
 touchspecial_case_83:
 mov    dx, 5
 mov    ax, AM_CELL
-mov    word ptr ds:[di], GOTCELLBOX
 jmp    do_giveammo_touchspecial
 
 touchspecial_case_84:
 mov    dx, 1
 mov    ax, dx ; AM_SHELL
-mov    word ptr ds:[di], GOTSHELLS
 jmp    do_giveammo_touchspecial
 touchspecial_case_85:
 mov    dx, 5
 mov    ax, AM_SHELL
-mov    word ptr ds:[di], GOTSHELLBOX
 jmp    do_giveammo_touchspecial
 
 
@@ -811,29 +804,29 @@ jmp    done_with_touchspecial_switch_block
 
 touchspecial_case_61:
 mov    bx, _player + PLAYER_T.player_armorpoints
-inc    word ptr ds:[bx]
-cmp    word ptr ds:[bx], 200
-jng    dont_cap_health_2
-mov    word ptr ds:[bx], 200
-dont_cap_health_2:
-mov    bx, _player + PLAYER_T.player_armortype
-cmp    byte ptr ds:[bx], 0
-jne    label_10
-mov    byte ptr ds:[bx], 1
-label_10:
+mov    ax, word ptr ds:[bx]
+inc    ax
+cmp    ax, 200
+jng    dont_cap_armor_2
+mov    ax, 200
+dont_cap_armor_2:
+mov    word ptr ds:[bx], ax
+mov    byte ptr ds:[_player + PLAYER_T.player_armortype], 1
+
 
 mov    word ptr ds:[di], GOTARMBONUS
 jmp    done_with_touchspecial_switch_block
 
 touchspecial_case_70:
 mov    bx, _player + PLAYER_T.player_health
-add    word ptr ds:[bx], 100
-cmp    word ptr ds:[bx], 200
+mov    ax, word ptr ds:[bx]
+add    ax, 100
+cmp    ax, 200
 jng    dont_cap_health_3
-mov    word ptr ds:[bx], 200
+mov    ax, 200
 dont_cap_health_3:
+mov    word ptr ds:[bx], ax
 mov    bx, word ptr ds:[_playerMobj]
-mov    ax, word ptr ds:[_player + PLAYER_T.player_health]
 mov    word ptr ds:[bx + MOBJ_T.m_health], ax
 
 mov    cx, SFX_GETPOW
