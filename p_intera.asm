@@ -306,62 +306,72 @@ pop    bx
 ret    
 ENDP
 
-COMMENT @
-
 
 PROC    P_GivePower_  NEAR
 PUBLIC  P_GivePower_
 
-0x00000000000032b4:  53                      push   bx
-0x00000000000032b5:  56                      push   si
-0x00000000000032b6:  89 C3                   mov    bx, ax
-0x00000000000032b8:  01 C3                   add    bx, ax
-0x00000000000032ba:  85 C0                   test   ax, ax
-0x00000000000032bc:  74 20                   je     0x32de
-0x00000000000032be:  3D 02 00                cmp    ax, 2
-0x00000000000032c1:  74 26                   je     0x32e9
-0x00000000000032c3:  3D 05 00                cmp    ax, 5
-0x00000000000032c6:  74 36                   je     0x32fe
-0x00000000000032c8:  3D 03 00                cmp    ax, 3
-0x00000000000032cb:  74 3C                   je     0x3309
-0x00000000000032cd:  3D 01 00                cmp    ax, 1
-0x00000000000032d0:  74 42                   je     0x3314
-0x00000000000032d2:  83 BF EE 07 00          cmp    word ptr ds:[bx + 0x7ee], 0
-0x00000000000032d7:  74 41                   je     0x331a
-0x00000000000032d9:  30 C0                   xor    al, al
-0x00000000000032db:  5E                      pop    si
-0x00000000000032dc:  5B                      pop    bx
-0x00000000000032dd:  CB                      retf   
-0x00000000000032de:  B0 01                   mov    al, 1
-0x00000000000032e0:  C7 87 EE 07 1A 04       mov    word ptr ds:[bx + 0x7ee], 0x41a
-0x00000000000032e6:  5E                      pop    si
-0x00000000000032e7:  5B                      pop    bx
-0x00000000000032e8:  CB                      retf   
-0x00000000000032e9:  C7 87 EE 07 34 08       mov    word ptr ds:[bx + 0x7ee], 0x834
-0x00000000000032ef:  BB 30 07                mov    bx, 0x730
-0x00000000000032f2:  C4 37                   les    si, ptr ds:[bx]
-0x00000000000032f4:  B0 01                   mov    al, 1
-0x00000000000032f6:  26 80 4C 16 04          or     byte ptr es:[si + 0x16], 4
-0x00000000000032fb:  5E                      pop    si
-0x00000000000032fc:  5B                      pop    bx
-0x00000000000032fd:  CB                      retf   
-0x00000000000032fe:  B0 01                   mov    al, 1
-0x0000000000003300:  C7 87 EE 07 68 10       mov    word ptr ds:[bx + 0x7ee], 0x1068
-0x0000000000003306:  5E                      pop    si
-0x0000000000003307:  5B                      pop    bx
-0x0000000000003308:  CB                      retf   
-0x0000000000003309:  B0 01                   mov    al, 1
-0x000000000000330b:  C7 87 EE 07 34 08       mov    word ptr ds:[bx + 0x7ee], 0x834
-0x0000000000003311:  5E                      pop    si
-0x0000000000003312:  5B                      pop    bx
-0x0000000000003313:  CB                      retf   
-0x0000000000003314:  B8 64 00                mov    ax, 0x64
-0x0000000000003317:  E8 30 FF                call   P_GiveBody_
-0x000000000000331a:  B0 01                   mov    al, 1
-0x000000000000331c:  C7 87 EE 07 01 00       mov    word ptr ds:[bx + 0x7ee], 1
-0x0000000000003322:  5E                      pop    si
-0x0000000000003323:  5B                      pop    bx
-0x0000000000003324:  CB                      retf   
+push   bx
+mov    bx, ax
+sal    bx, 1
+test   ax, ax
+je     give_invulnerability
+cmp    ax, PW_INVISIBILITY
+je     give_invisibility
+cmp    ax, PW_INFRARED
+je     give_infrared
+cmp    ax, PW_IRONFEET
+je     give_radsuit
+cmp    ax, PW_STRENGTH
+je     give_berserk
+cmp    word ptr ds:[bx + _player + PLAYER_T.player_powers], 0
+je     set_power_on_and_return
+xor    al, al
+
+pop    bx
+retf   
+give_invulnerability:
+mov    al, 1
+mov    word ptr ds:[bx + _player + PLAYER_T.player_powers], INVULNTICS
+
+pop    bx
+retf   
+give_invisibility:
+mov    word ptr ds:[bx + _player + PLAYER_T.player_powers], INVISTICS
+
+les    bx, dword ptr ds:[_playerMobj_pos]
+mov    al, 1
+
+or     byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_SHADOW
+
+pop    bx
+retf   
+give_infrared:
+mov    al, 1
+mov    word ptr ds:[bx + _player + PLAYER_T.player_powers], INFRATICS
+
+pop    bx
+retf   
+give_radsuit:
+mov    al, 1
+mov    word ptr ds:[bx + _player + PLAYER_T.player_powers], IRONTICS
+
+pop    bx
+retf   
+give_berserk:
+mov    ax, MAXHEALTH
+call   P_GiveBody_
+set_power_on_and_return:
+mov    al, 1
+mov    word ptr ds:[bx + _player + PLAYER_T.player_powers], 1
+
+pop    bx
+retf   
+
+ENDP
+
+COMMENT @
+
+
 ; table
 
 0x0000000000003326:  08 34                   or     byte ptr ds:[si], dh
@@ -1227,7 +1237,7 @@ PUBLIC  P_DamageMobj_
 0x0000000000003bfe:  F6 07 02                test   byte ptr ds:[bx], 2
 0x0000000000003c01:  74 03                   je     0x3c06
 0x0000000000003c03:  E9 FC 00                jmp    0x3d02
-0x0000000000003c06:  BB EE 07                mov    bx, 0x7ee
+0x0000000000003c06:  BB EE 07                mov    bx, _player + PLAYER_T.player_powers
 0x0000000000003c09:  83 3F 00                cmp    word ptr ds:[bx], 0
 0x0000000000003c0c:  75 F5                   jne    0x3c03
 0x0000000000003c0e:  BB EC 07                mov    bx, _player + PLAYER_T.player_armortype

@@ -62,6 +62,7 @@ boolean __near P_GiveWeapon (  weapontype_t	weapon, boolean	dropped ) ;
 boolean __near P_GiveBody (  int16_t num ) ;
 boolean __near P_GiveArmor(  int16_t		armortype );
 void __near P_GiveCard (  card_t	card );
+boolean __far P_GivePower (  int16_t /*powertype_t*/	power );
 
 /*
 
@@ -234,14 +235,13 @@ void __near P_GiveCard (  card_t	card ) {
 	player.cards[card] = 1;
 }
 
-*/
 
 
 
 //
 // P_GivePower
 //
-boolean __far P_GivePower (  int16_t /*powertype_t*/	power ) {
+boolean __far P_GivePower (  int16_t 	power ) {
     if (power == pw_invulnerability){
 		player.powers[power] = INVULNTICS;
 		return true;
@@ -277,6 +277,7 @@ boolean __far P_GivePower (  int16_t /*powertype_t*/	power ) {
 	return true;
 }
 
+*/
 
 
 //

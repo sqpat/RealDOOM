@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/30 00:06:48
+Created on:       25/07/30 00:16:17
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -723,9 +723,9 @@ Module: math.obj(math.ASM)
 0343:8252*     FixedMul16u32u_
 0343:844d      FastDiv3216u_
 0343:848d      FixedDivWholeA_
-0343:8181      FixedMulTrig_
 0343:8100      FixedMul2432_
 0343:80f7*     FixedMulBig16u32_
+0343:8181      FixedMulTrig_
 0343:8141      FixedMul1632_
 0343:80be      FixedMul_
 0343:8229*     FixedMulBig1632_
