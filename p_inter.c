@@ -57,6 +57,7 @@
 // not the individual count (0= 1/2 clip).
 // Returns false if the ammo can't be picked up at all
 //
+/*
 
 boolean __near P_GiveAmmo (  ammotype_t	ammo, int16_t		num ) {
     int16_t		oldammo;
@@ -139,7 +140,7 @@ boolean __near P_GiveAmmo (  ammotype_t	ammo, int16_t		num ) {
 	
     return true;
 }
-
+*/
 
 //
 // P_GiveWeapon
