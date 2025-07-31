@@ -62,7 +62,7 @@ mov    ax, word ptr ds:[bx + _player + PLAYER_T.player_ammo]
 cmp    ax, word ptr ds:[bx + _player + PLAYER_T.player_maxammo]
 je     exit_giveammo_ret_0 ; have max ammo
 mov    ax, word ptr cs:[bx + OFFSET _clipammo]
-test   dx, dx
+test   dl, dl
 jne    multiply_ammo_by_clipsize
 
 mov    dx, ax
@@ -151,8 +151,6 @@ give_ammo_case_2:
 
 test   al, al
 je    check_for_switch_to_plasma
-
-label_15:
 cmp    al, 1
 jne    exit_giveammo_ret_1
 check_for_switch_to_plasma:
@@ -176,57 +174,71 @@ ret
 
 ENDP
 
-COMMENT @
 
 PROC    P_GiveWeapon_ NEAR
 PUBLIC  P_GiveWeapon_
 
-0x00000000000031f2:  53                      push   bx
-0x00000000000031f3:  56                      push   si
-0x00000000000031f4:  88 C3                   mov    bl, al
-0x00000000000031f6:  88 D0                   mov    al, dl
-0x00000000000031f8:  88 DA                   mov    dl, bl
-0x00000000000031fa:  30 F6                   xor    dh, dh
-0x00000000000031fc:  6B F2 0B                imul   si, dx, 0xb
-0x00000000000031ff:  80 BC 58 08 05          cmp    byte ptr ds:[si + 0x858], 5
-0x0000000000003204:  74 31                   je     0x3237
-0x0000000000003206:  84 C0                   test   al, al
-0x0000000000003208:  74 22                   je     0x322c
-0x000000000000320a:  8A 94 58 08             mov    dl, byte ptr ds:[si + 0x858]
-0x000000000000320e:  89 D0                   mov    ax, dx
-0x0000000000003210:  BA 01 00                mov    dx, 1
-0x0000000000003213:  E8 C2 FE                call   0x30d8
-0x0000000000003216:  88 DA                   mov    dl, bl
-0x0000000000003218:  30 F6                   xor    dh, dh
-0x000000000000321a:  89 D6                   mov    si, dx
-0x000000000000321c:  80 BC 02 08 00          cmp    byte ptr ds:[si + _player + PLAYER_T.player_weaponowned], 0
-0x0000000000003221:  74 18                   je     0x323b
-0x0000000000003223:  84 C0                   test   al, al
-0x0000000000003225:  74 02                   je     0x3229
-0x0000000000003227:  B0 01                   mov    al, 1
-0x0000000000003229:  5E                      pop    si
-0x000000000000322a:  5B                      pop    bx
-0x000000000000322b:  C3                      ret    
-0x000000000000322c:  8A 94 58 08             mov    dl, byte ptr ds:[si + 0x858]
-0x0000000000003230:  89 D0                   mov    ax, dx
-0x0000000000003232:  BA 02 00                mov    dx, 2
-0x0000000000003235:  EB DC                   jmp    0x3213
-0x0000000000003237:  30 C0                   xor    al, al
-0x0000000000003239:  EB DB                   jmp    0x3216
-0x000000000000323b:  C6 84 02 08 01          mov    byte ptr ds:[si + _player + PLAYER_T.player_weaponowned], 1
-0x0000000000003240:  BE 01 08                mov    si, _player + PLAYER_T.player_pendingweapon
-0x0000000000003243:  88 1C                   mov    byte ptr ds:[si], bl
-0x0000000000003245:  B0 01                   mov    al, 1
-0x0000000000003247:  5E                      pop    si
-0x0000000000003248:  5B                      pop    bx
-0x0000000000003249:  C3                      ret    
+;boolean __near P_GiveWeapon (  weapontype_t	weapon, boolean	dropped ) {
+
+
+push   bx
+cbw   ; clear ah for later.
+xchg   ax, bx
+mov    al, SIZEOF_WEAPONINFO_T
+mul    bl
+xchg   ax, bx
+; al has weapontype again
+mov    dh, byte ptr ds:[bx + _weaponinfo + WEAPONINFO_T.weaponinfo_ammo]
+cmp    dh, AM_NOAMMO
+jne    do_give_ammo
+xchg   ax, bx  ; bx has weapontype.
+; fall thru with implied giveammo = false.
+no_ammo_actually_given:
+cmp    byte ptr ds:[bx + _player + PLAYER_T.player_weaponowned], 0
+je     add_weapon
+xor    ax, ax
+pop    bx
+ret    
+
+
+do_give_ammo:
+
+xchg   ax, bx  ; bx has weapontype.
+mov    al, dh
+test   dl, dl   
+jne    weapon_is_drop
+mov    dl, 2
+
+weapon_is_drop:   ; dl should have been 1.
+call_giveammo:
+call   P_GiveAmmo_
+; al = given ammo
+
+test   al, al
+jz     no_ammo_actually_given
+
+dont_give_ammo:
+; bx has weapontype.
+cmp    byte ptr ds:[bx + _player + PLAYER_T.player_weaponowned], 0
+jne    dont_add_weapon
+
+add_weapon:
+mov    byte ptr ds:[bx + _player + PLAYER_T.player_weaponowned], 1
+mov    byte ptr ds:[_player + PLAYER_T.player_pendingweapon], bl
+
+dont_add_weapon:
+mov    al, 1
+pop    bx
+ret    
 
 ENDP
 
+COMMENT @
 
 
 PROC    P_GiveBody_  NEAR
 PUBLIC  P_GiveBody_
+
 0x000000000000324a:  53                      push   bx
 0x000000000000324b:  56                      push   si
 0x000000000000324c:  BB E8 07                mov    bx, 0x7e8
@@ -255,6 +267,7 @@ ENDP
 
 PROC    P_GiveArmor_  NEAR
 PUBLIC  P_GiveArmor_
+
 0x0000000000003276:  53                      push   bx
 0x0000000000003277:  52                      push   dx
 0x0000000000003278:  6B D0 64                imul   dx, ax, 0x64
@@ -279,6 +292,7 @@ ENDP
 
 PROC    P_GiveCard_  NEAR
 PUBLIC  P_GiveCard_
+
 0x0000000000003296:  53                      push   bx
 0x0000000000003297:  56                      push   si
 0x0000000000003298:  88 C3                   mov    bl, al
@@ -300,6 +314,7 @@ ENDP
 
 PROC    P_GivePower_  NEAR
 PUBLIC  P_GivePower_
+
 0x00000000000032b4:  53                      push   bx
 0x00000000000032b5:  56                      push   si
 0x00000000000032b6:  89 C3                   mov    bx, ax
@@ -344,7 +359,7 @@ PUBLIC  P_GivePower_
 0x0000000000003312:  5B                      pop    bx
 0x0000000000003313:  CB                      retf   
 0x0000000000003314:  B8 64 00                mov    ax, 0x64
-0x0000000000003317:  E8 30 FF                call   0x324a
+0x0000000000003317:  E8 30 FF                call   P_GiveBody_
 0x000000000000331a:  B0 01                   mov    al, 1
 0x000000000000331c:  C7 87 EE 07 01 00       mov    word ptr ds:[bx + 0x7ee], 1
 0x0000000000003322:  5E                      pop    si
@@ -449,7 +464,7 @@ PUBLIC  P_TouchSpecialThing_
 0x0000000000003404:  EB 3C                   jmp    0x3442
 0x0000000000003406:  EB 3F                   jmp    0x3447
 0x0000000000003408:  B8 01 00                mov    ax, 1
-0x000000000000340b:  E8 68 FE                call   0x3276
+0x000000000000340b:  E8 68 FE                call   P_GiveArmor_
 0x000000000000340e:  84 C0                   test   al, al
 0x0000000000003410:  74 2A                   je     0x343c
 0x0000000000003412:  BB 24 08                mov    bx, 0x824
@@ -476,7 +491,7 @@ PUBLIC  P_TouchSpecialThing_
 0x0000000000003447:  31 D2                   xor    dx, dx
 0x0000000000003449:  E9 72 FF                jmp    0x33be
 0x000000000000344c:  B8 02 00                mov    ax, 2
-0x000000000000344f:  E8 24 FE                call   0x3276
+0x000000000000344f:  E8 24 FE                call   P_GiveArmor_
 0x0000000000003452:  84 C0                   test   al, al
 0x0000000000003454:  74 E6                   je     0x343c
 0x0000000000003456:  BB 24 08                mov    bx, 0x824
@@ -537,7 +552,7 @@ PUBLIC  P_TouchSpecialThing_
 0x00000000000034f4:  89 44 1C                mov    word ptr ds:[si + 0x1c], ax
 0x00000000000034f7:  B8 02 00                mov    ax, 2
 0x00000000000034fa:  B9 5D 00                mov    cx, 0x5d
-0x00000000000034fd:  E8 76 FD                call   0x3276
+0x00000000000034fd:  E8 76 FD                call   P_GiveArmor_
 0x0000000000003500:  C7 07 2B 00             mov    word ptr ds:[bx], 0x2b
 0x0000000000003504:  E9 12 FF                jmp    0x3419
 0x0000000000003507:  BB FA 07                mov    bx, 0x7fa
@@ -546,7 +561,7 @@ PUBLIC  P_TouchSpecialThing_
 0x000000000000350f:  BB 24 08                mov    bx, 0x824
 0x0000000000003512:  C7 07 1F 00             mov    word ptr ds:[bx], 0x1f
 0x0000000000003516:  31 C0                   xor    ax, ax
-0x0000000000003518:  E8 7B FD                call   0x3296
+0x0000000000003518:  E8 7B FD                call   P_GiveCard_
 0x000000000000351b:  E9 FB FE                jmp    0x3419
 0x000000000000351e:  BB FB 07                mov    bx, 0x7fb
 0x0000000000003521:  80 3F 00                cmp    byte ptr ds:[bx], 0
@@ -554,7 +569,7 @@ PUBLIC  P_TouchSpecialThing_
 0x0000000000003526:  BB 24 08                mov    bx, 0x824
 0x0000000000003529:  89 0F                   mov    word ptr ds:[bx], cx
 0x000000000000352b:  B8 01 00                mov    ax, 1
-0x000000000000352e:  E8 65 FD                call   0x3296
+0x000000000000352e:  E8 65 FD                call   P_GiveCard_
 0x0000000000003531:  E9 E5 FE                jmp    0x3419
 0x0000000000003534:  BB FC 07                mov    bx, 0x7fc
 0x0000000000003537:  80 3F 00                cmp    byte ptr ds:[bx], 0
@@ -562,7 +577,7 @@ PUBLIC  P_TouchSpecialThing_
 0x000000000000353c:  BB 24 08                mov    bx, 0x824
 0x000000000000353f:  C7 07 21 00             mov    word ptr ds:[bx], 0x21
 0x0000000000003543:  B8 02 00                mov    ax, 2
-0x0000000000003546:  E8 4D FD                call   0x3296
+0x0000000000003546:  E8 4D FD                call   P_GiveCard_
 0x0000000000003549:  E9 CD FE                jmp    0x3419
 0x000000000000354c:  BB FD 07                mov    bx, 0x7fd
 0x000000000000354f:  80 3F 00                cmp    byte ptr ds:[bx], 0
@@ -570,7 +585,7 @@ PUBLIC  P_TouchSpecialThing_
 0x0000000000003554:  BB 24 08                mov    bx, 0x824
 0x0000000000003557:  C7 07 22 00             mov    word ptr ds:[bx], 0x22
 0x000000000000355b:  B8 03 00                mov    ax, 3
-0x000000000000355e:  E8 35 FD                call   0x3296
+0x000000000000355e:  E8 35 FD                call   P_GiveCard_
 0x0000000000003561:  E9 B5 FE                jmp    0x3419
 0x0000000000003564:  BB FE 07                mov    bx, 0x7fe
 0x0000000000003567:  80 3F 00                cmp    byte ptr ds:[bx], 0
@@ -578,7 +593,7 @@ PUBLIC  P_TouchSpecialThing_
 0x000000000000356c:  BB 24 08                mov    bx, 0x824
 0x000000000000356f:  C7 07 23 00             mov    word ptr ds:[bx], 0x23
 0x0000000000003573:  B8 04 00                mov    ax, 4
-0x0000000000003576:  E8 1D FD                call   0x3296
+0x0000000000003576:  E8 1D FD                call   P_GiveCard_
 0x0000000000003579:  E9 9D FE                jmp    0x3419
 0x000000000000357c:  BB FF 07                mov    bx, 0x7ff
 0x000000000000357f:  80 3F 00                cmp    byte ptr ds:[bx], 0
@@ -586,10 +601,10 @@ PUBLIC  P_TouchSpecialThing_
 0x0000000000003584:  BB 24 08                mov    bx, 0x824
 0x0000000000003587:  C7 07 24 00             mov    word ptr ds:[bx], 0x24
 0x000000000000358b:  B8 05 00                mov    ax, 5
-0x000000000000358e:  E8 05 FD                call   0x3296
+0x000000000000358e:  E8 05 FD                call   P_GiveCard_
 0x0000000000003591:  E9 85 FE                jmp    0x3419
 0x0000000000003594:  B8 0A 00                mov    ax, 0xa
-0x0000000000003597:  E8 B0 FC                call   0x324a
+0x0000000000003597:  E8 B0 FC                call   P_GiveBody_
 0x000000000000359a:  84 C0                   test   al, al
 0x000000000000359c:  75 03                   jne    0x35a1
 0x000000000000359e:  E9 9B FE                jmp    0x343c
@@ -597,7 +612,7 @@ PUBLIC  P_TouchSpecialThing_
 0x00000000000035a4:  C7 07 1C 00             mov    word ptr ds:[bx], 0x1c
 0x00000000000035a8:  E9 6E FE                jmp    0x3419
 0x00000000000035ab:  B8 19 00                mov    ax, 0x19
-0x00000000000035ae:  E8 99 FC                call   0x324a
+0x00000000000035ae:  E8 99 FC                call   P_GiveBody_
 0x00000000000035b1:  84 C0                   test   al, al
 0x00000000000035b3:  74 E9                   je     0x359e
 0x00000000000035b5:  BB 24 08                mov    bx, 0x824
@@ -605,7 +620,7 @@ PUBLIC  P_TouchSpecialThing_
 0x00000000000035bc:  E9 5A FE                jmp    0x3419
 0x00000000000035bf:  31 C0                   xor    ax, ax
 0x00000000000035c1:  0E                      push   cs
-0x00000000000035c2:  E8 EF FC                call   0x32b4
+0x00000000000035c2:  E8 EF FC                call   P_GivePower_
 0x00000000000035c5:  84 C0                   test   al, al
 0x00000000000035c7:  74 D5                   je     0x359e
 0x00000000000035c9:  BB 24 08                mov    bx, 0x824
@@ -614,7 +629,7 @@ PUBLIC  P_TouchSpecialThing_
 0x00000000000035d3:  E9 43 FE                jmp    0x3419
 0x00000000000035d6:  B8 01 00                mov    ax, 1
 0x00000000000035d9:  0E                      push   cs
-0x00000000000035da:  E8 D7 FC                call   0x32b4
+0x00000000000035da:  E8 D7 FC                call   P_GivePower_
 0x00000000000035dd:  84 C0                   test   al, al
 0x00000000000035df:  74 BD                   je     0x359e
 0x00000000000035e1:  BB 24 08                mov    bx, 0x824
@@ -630,7 +645,7 @@ PUBLIC  P_TouchSpecialThing_
 0x00000000000035fe:  E9 18 FE                jmp    0x3419
 0x0000000000003601:  B8 02 00                mov    ax, 2
 0x0000000000003604:  0E                      push   cs
-0x0000000000003605:  E8 AC FC                call   0x32b4
+0x0000000000003605:  E8 AC FC                call   P_GivePower_
 0x0000000000003608:  84 C0                   test   al, al
 0x000000000000360a:  74 92                   je     0x359e
 0x000000000000360c:  BB 24 08                mov    bx, 0x824
@@ -639,7 +654,7 @@ PUBLIC  P_TouchSpecialThing_
 0x0000000000003616:  E9 00 FE                jmp    0x3419
 0x0000000000003619:  B8 03 00                mov    ax, 3
 0x000000000000361c:  0E                      push   cs
-0x000000000000361d:  E8 94 FC                call   0x32b4
+0x000000000000361d:  E8 94 FC                call   P_GivePower_
 0x0000000000003620:  84 C0                   test   al, al
 0x0000000000003622:  75 03                   jne    0x3627
 0x0000000000003624:  E9 15 FE                jmp    0x343c
@@ -649,7 +664,7 @@ PUBLIC  P_TouchSpecialThing_
 0x0000000000003631:  E9 E5 FD                jmp    0x3419
 0x0000000000003634:  B8 04 00                mov    ax, 4
 0x0000000000003637:  0E                      push   cs
-0x0000000000003638:  E8 79 FC                call   0x32b4
+0x0000000000003638:  E8 79 FC                call   P_GivePower_
 0x000000000000363b:  84 C0                   test   al, al
 0x000000000000363d:  74 E5                   je     0x3624
 0x000000000000363f:  BB 24 08                mov    bx, 0x824
@@ -658,7 +673,7 @@ PUBLIC  P_TouchSpecialThing_
 0x0000000000003649:  E9 CD FD                jmp    0x3419
 0x000000000000364c:  B8 05 00                mov    ax, 5
 0x000000000000364f:  0E                      push   cs
-0x0000000000003650:  E8 61 FC                call   0x32b4
+0x0000000000003650:  E8 61 FC                call   P_GivePower_
 0x0000000000003653:  84 C0                   test   al, al
 0x0000000000003655:  74 CD                   je     0x3624
 0x0000000000003657:  BB 24 08                mov    bx, 0x824
@@ -669,7 +684,7 @@ PUBLIC  P_TouchSpecialThing_
 0x0000000000003666:  74 15                   je     0x367d
 0x0000000000003668:  30 D2                   xor    dl, dl
 0x000000000000366a:  31 C0                   xor    ax, ax
-0x000000000000366c:  E8 69 FA                call   0x30d8
+0x000000000000366c:  E8 69 FA                call   P_GiveAmmo_
 0x000000000000366f:  84 C0                   test   al, al
 0x0000000000003671:  74 B1                   je     0x3624
 0x0000000000003673:  BB 24 08                mov    bx, 0x824
@@ -680,7 +695,7 @@ PUBLIC  P_TouchSpecialThing_
 0x0000000000003682:  EB E8                   jmp    0x366c
 0x0000000000003684:  BA 05 00                mov    dx, 5
 0x0000000000003687:  31 C0                   xor    ax, ax
-0x0000000000003689:  E8 4C FA                call   0x30d8
+0x0000000000003689:  E8 4C FA                call   P_GiveAmmo_
 0x000000000000368c:  84 C0                   test   al, al
 0x000000000000368e:  74 94                   je     0x3624
 0x0000000000003690:  BB 24 08                mov    bx, 0x824
@@ -688,7 +703,7 @@ PUBLIC  P_TouchSpecialThing_
 0x0000000000003697:  E9 7F FD                jmp    0x3419
 0x000000000000369a:  BA 01 00                mov    dx, 1
 0x000000000000369d:  B8 03 00                mov    ax, 3
-0x00000000000036a0:  E8 35 FA                call   0x30d8
+0x00000000000036a0:  E8 35 FA                call   P_GiveAmmo_
 0x00000000000036a3:  84 C0                   test   al, al
 0x00000000000036a5:  75 03                   jne    0x36aa
 0x00000000000036a7:  E9 92 FD                jmp    0x343c
@@ -697,7 +712,7 @@ PUBLIC  P_TouchSpecialThing_
 0x00000000000036b1:  E9 65 FD                jmp    0x3419
 0x00000000000036b4:  BA 05 00                mov    dx, 5
 0x00000000000036b7:  B8 03 00                mov    ax, 3
-0x00000000000036ba:  E8 1B FA                call   0x30d8
+0x00000000000036ba:  E8 1B FA                call   P_GiveAmmo_
 0x00000000000036bd:  84 C0                   test   al, al
 0x00000000000036bf:  74 E6                   je     0x36a7
 0x00000000000036c1:  BB 24 08                mov    bx, 0x824
@@ -705,7 +720,7 @@ PUBLIC  P_TouchSpecialThing_
 0x00000000000036c8:  E9 4E FD                jmp    0x3419
 0x00000000000036cb:  BA 01 00                mov    dx, 1
 0x00000000000036ce:  B8 02 00                mov    ax, 2
-0x00000000000036d1:  E8 04 FA                call   0x30d8
+0x00000000000036d1:  E8 04 FA                call   P_GiveAmmo_
 0x00000000000036d4:  84 C0                   test   al, al
 0x00000000000036d6:  74 CF                   je     0x36a7
 0x00000000000036d8:  BB 24 08                mov    bx, 0x824
@@ -713,7 +728,7 @@ PUBLIC  P_TouchSpecialThing_
 0x00000000000036df:  E9 37 FD                jmp    0x3419
 0x00000000000036e2:  BA 05 00                mov    dx, 5
 0x00000000000036e5:  B8 02 00                mov    ax, 2
-0x00000000000036e8:  E8 ED F9                call   0x30d8
+0x00000000000036e8:  E8 ED F9                call   P_GiveAmmo_
 0x00000000000036eb:  84 C0                   test   al, al
 0x00000000000036ed:  74 B8                   je     0x36a7
 0x00000000000036ef:  BB 24 08                mov    bx, 0x824
@@ -721,7 +736,7 @@ PUBLIC  P_TouchSpecialThing_
 0x00000000000036f6:  E9 20 FD                jmp    0x3419
 0x00000000000036f9:  BA 01 00                mov    dx, 1
 0x00000000000036fc:  89 D0                   mov    ax, dx
-0x00000000000036fe:  E8 D7 F9                call   0x30d8
+0x00000000000036fe:  E8 D7 F9                call   P_GiveAmmo_
 0x0000000000003701:  84 C0                   test   al, al
 0x0000000000003703:  74 A2                   je     0x36a7
 0x0000000000003705:  BB 24 08                mov    bx, 0x824
@@ -729,7 +744,7 @@ PUBLIC  P_TouchSpecialThing_
 0x000000000000370c:  E9 0A FD                jmp    0x3419
 0x000000000000370f:  BA 05 00                mov    dx, 5
 0x0000000000003712:  B8 01 00                mov    ax, 1
-0x0000000000003715:  E8 C0 F9                call   0x30d8
+0x0000000000003715:  E8 C0 F9                call   P_GiveAmmo_
 0x0000000000003718:  84 C0                   test   al, al
 0x000000000000371a:  74 8B                   je     0x36a7
 0x000000000000371c:  BB 24 08                mov    bx, 0x824
@@ -754,7 +769,7 @@ PUBLIC  P_TouchSpecialThing_
 0x000000000000374c:  BA 01 00                mov    dx, 1
 0x000000000000374f:  30 E4                   xor    ah, ah
 0x0000000000003751:  FE C3                   inc    bl
-0x0000000000003753:  E8 82 F9                call   0x30d8
+0x0000000000003753:  E8 82 F9                call   P_GiveAmmo_
 0x0000000000003756:  80 FB 04                cmp    bl, 4
 0x0000000000003759:  7C EF                   jl     0x374a
 0x000000000000375b:  BB 24 08                mov    bx, 0x824
@@ -762,7 +777,7 @@ PUBLIC  P_TouchSpecialThing_
 0x0000000000003762:  E9 B4 FC                jmp    0x3419
 0x0000000000003765:  B8 06 00                mov    ax, 6
 0x0000000000003768:  30 D2                   xor    dl, dl
-0x000000000000376a:  E8 85 FA                call   0x31f2
+0x000000000000376a:  E8 85 FA                call   P_GiveWeapon_
 0x000000000000376d:  84 C0                   test   al, al
 0x000000000000376f:  75 03                   jne    0x3774
 0x0000000000003771:  E9 C8 FC                jmp    0x343c
@@ -773,7 +788,7 @@ PUBLIC  P_TouchSpecialThing_
 0x0000000000003781:  98                      cbw   
 0x0000000000003782:  89 C2                   mov    dx, ax
 0x0000000000003784:  B8 03 00                mov    ax, 3
-0x0000000000003787:  E8 68 FA                call   0x31f2
+0x0000000000003787:  E8 68 FA                call   P_GiveWeapon_
 0x000000000000378a:  84 C0                   test   al, al
 0x000000000000378c:  74 E3                   je     0x3771
 0x000000000000378e:  BB 24 08                mov    bx, 0x824
@@ -782,7 +797,7 @@ PUBLIC  P_TouchSpecialThing_
 0x0000000000003798:  E9 7E FC                jmp    0x3419
 0x000000000000379b:  B8 07 00                mov    ax, 7
 0x000000000000379e:  30 D2                   xor    dl, dl
-0x00000000000037a0:  E8 4F FA                call   0x31f2
+0x00000000000037a0:  E8 4F FA                call   P_GiveWeapon_
 0x00000000000037a3:  84 C0                   test   al, al
 0x00000000000037a5:  74 CA                   je     0x3771
 0x00000000000037a7:  BB 24 08                mov    bx, 0x824
@@ -791,7 +806,7 @@ PUBLIC  P_TouchSpecialThing_
 0x00000000000037b1:  E9 65 FC                jmp    0x3419
 0x00000000000037b4:  B8 04 00                mov    ax, 4
 0x00000000000037b7:  30 D2                   xor    dl, dl
-0x00000000000037b9:  E8 36 FA                call   0x31f2
+0x00000000000037b9:  E8 36 FA                call   P_GiveWeapon_
 0x00000000000037bc:  84 C0                   test   al, al
 0x00000000000037be:  74 B1                   je     0x3771
 0x00000000000037c0:  BB 24 08                mov    bx, 0x824
@@ -800,7 +815,7 @@ PUBLIC  P_TouchSpecialThing_
 0x00000000000037ca:  E9 4C FC                jmp    0x3419
 0x00000000000037cd:  B8 05 00                mov    ax, 5
 0x00000000000037d0:  30 D2                   xor    dl, dl
-0x00000000000037d2:  E8 1D FA                call   0x31f2
+0x00000000000037d2:  E8 1D FA                call   P_GiveWeapon_
 0x00000000000037d5:  84 C0                   test   al, al
 0x00000000000037d7:  74 98                   je     0x3771
 0x00000000000037d9:  BB 24 08                mov    bx, 0x824
@@ -810,7 +825,7 @@ PUBLIC  P_TouchSpecialThing_
 0x00000000000037e6:  98                      cbw   
 0x00000000000037e7:  89 C2                   mov    dx, ax
 0x00000000000037e9:  B8 02 00                mov    ax, 2
-0x00000000000037ec:  E8 03 FA                call   0x31f2
+0x00000000000037ec:  E8 03 FA                call   P_GiveWeapon_
 0x00000000000037ef:  84 C0                   test   al, al
 0x00000000000037f1:  75 03                   jne    0x37f6
 0x00000000000037f3:  E9 46 FC                jmp    0x343c
@@ -821,7 +836,7 @@ PUBLIC  P_TouchSpecialThing_
 0x0000000000003803:  98                      cbw   
 0x0000000000003804:  89 C2                   mov    dx, ax
 0x0000000000003806:  B8 08 00                mov    ax, 8
-0x0000000000003809:  E8 E6 F9                call   0x31f2
+0x0000000000003809:  E8 E6 F9                call   P_GiveWeapon_
 0x000000000000380c:  84 C0                   test   al, al
 0x000000000000380e:  74 E3                   je     0x37f3
 0x0000000000003810:  BB 24 08                mov    bx, 0x824

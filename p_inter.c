@@ -141,7 +141,6 @@ boolean __near P_GiveAmmo (  ammotype_t	ammo, int16_t		num ) {
 	
     return true;
 }
-*/
 
 //
 // P_GiveWeapon
@@ -174,6 +173,8 @@ boolean __near P_GiveWeapon (  weapontype_t	weapon, boolean	dropped ) {
     return (gaveweapon || gaveammo);
 }
 
+*/
+boolean __near P_GiveWeapon (  weapontype_t	weapon, boolean	dropped ) ;
  
 
 //
