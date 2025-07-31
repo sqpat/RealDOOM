@@ -291,8 +291,8 @@ PROC    P_GiveCard_  NEAR
 PUBLIC  P_GiveCard_
 
 push   bx
-mov    bl, al
-xor    bh, bh
+cbw
+mov    bx, ax
 cmp    byte ptr ds:[bx + _player + PLAYER_T.player_cards], 0
 je     add_card
 pop    si
@@ -307,6 +307,8 @@ ret
 ENDP
 
 
+
+
 PROC    P_GivePower_  NEAR
 PUBLIC  P_GivePower_
 
@@ -314,59 +316,51 @@ push   bx
 mov    bx, ax
 sal    bx, 1
 test   ax, ax
-je     give_invulnerability
-cmp    ax, PW_INVISIBILITY
-je     give_invisibility
-cmp    ax, PW_INFRARED
-je     give_infrared
-cmp    ax, PW_IRONFEET
-je     give_radsuit
-cmp    ax, PW_STRENGTH
-je     give_berserk
+jne    not_invulnerability
+mov    ax, INVULNTICS
+jmp    finish_giving_power
+
+not_invulnerability:
+cmp    al, PW_INVISIBILITY
+je     give_invisibility   ; 2
+jb     give_berserk        ; 1
+cmp    al, PW_ALLMAP
+;je     give_generic_power   ;4
+jb     give_radsuit        ; 3
+ja     give_infrared       ; 5
+give_generic_power:
 cmp    word ptr ds:[bx + _player + PLAYER_T.player_powers], 0
 je     set_power_on_and_return
-xor    al, al
-
+xor    ax, ax
 pop    bx
-retf   
-give_invulnerability:
-mov    al, 1
-mov    word ptr ds:[bx + _player + PLAYER_T.player_powers], INVULNTICS
+ret   
 
-pop    bx
-retf   
 give_invisibility:
-mov    word ptr ds:[bx + _player + PLAYER_T.player_powers], INVISTICS
-
+xchg   ax, bx
 les    bx, dword ptr ds:[_playerMobj_pos]
-mov    al, 1
-
 or     byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_SHADOW
+xchg   ax, bx
+give_radsuit:   ; IRONTICS == INVISTICS
+mov    ax, INVISTICS
 
+finish_giving_power:
+mov    word ptr ds:[bx + _player + PLAYER_T.player_powers], ax
+mov    al, 1
 pop    bx
-retf   
+ret
+
+
 give_infrared:
-mov    al, 1
-mov    word ptr ds:[bx + _player + PLAYER_T.player_powers], INFRATICS
-
-pop    bx
-retf   
-give_radsuit:
-mov    al, 1
-mov    word ptr ds:[bx + _player + PLAYER_T.player_powers], IRONTICS
-
-pop    bx
-retf   
+mov    ax, INFRATICS
+jmp    finish_giving_power
 give_berserk:
 mov    ax, MAXHEALTH
 call   P_GiveBody_
 set_power_on_and_return:
-mov    al, 1
-mov    word ptr ds:[bx + _player + PLAYER_T.player_powers], 1
-
+mov    ax, 1
+mov    word ptr ds:[bx + _player + PLAYER_T.player_powers], ax
 pop    bx
-retf   
-
+ret
 ENDP
 
 COMMENT @
