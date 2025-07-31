@@ -379,7 +379,12 @@ dw touchspecial_case_76, touchspecial_case_77, touchspecial_case_78, touchspecia
 dw touchspecial_case_82, touchspecial_case_83, touchspecial_case_84, touchspecial_case_85, touchspecial_case_86, touchspecial_case_87
 dw touchspecial_case_88, touchspecial_case_89, touchspecial_case_90, touchspecial_case_91, touchspecial_case_92, touchspecial_case_93
 
+;void __far P_TouchSpecialThing ( mobj_t __near*	special, mobj_t __near*	toucher, mobj_pos_t  __far*special_pos, mobj_pos_t  __far*toucher_pos ) {
 
+; ax special
+; dx toucher
+; bx specialpos offset
+; cx toucherpos offset
 
 PROC    P_TouchSpecialThing_  FAR
 PUBLIC  P_TouchSpecialThing_
