@@ -906,6 +906,7 @@ pop    word ptr ds:[_deadAttackerX + 0]
 
 skip_nocorpse:
 
+mov    di, ax  ; store type
 cmp    al, MT_PLAYER
 jne    target_not_player
 
@@ -919,68 +920,29 @@ je     target_not_player
 call   AM_Stop_
 target_not_player:
 
-mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor    ah, ah
 
+;    if (target->health < (-getSpawnHealth(target->type))  && getXDeathState(target->type)) {
+;		P_SetMobjState (target, getXDeathState(target->type)) ;
+;    } else {
+;		P_SetMobjState (target, getDeathState(target->type));
+;	 }
+mov   ax, di  ; retrieve type
 db     09Ah
 dw     GETSPAWNHEALTHADDR, INFOFUNCLOADSEGMENT
+
 neg    ax
 cmp    ax, word ptr ds:[si + MOBJ_T.m_health]
-jle    label_9
-mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor    ah, ah
+
+jle    do_death_state
+mov    ax, di
+
 db     09Ah
 dw     GETXDEATHSTATEADDR, INFOFUNCLOADSEGMENT
 
 test   ax, ax
-je     label_9
-mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor    ah, ah
-db     09Ah
-dw     GETXDEATHSTATEADDR, INFOFUNCLOADSEGMENT
-label_17:
-mov    dx, ax
-mov    ax, si
-call   dword ptr  ds:[_P_SetMobjState]
-call   P_Random_
-and    al, 3
-sub    byte ptr ds:[si + MOBJ_T.m_tics], al
-mov    al, byte ptr ds:[si + MOBJ_T.m_tics]
-cmp    al, 1
-jae    label_10
-label_16:
-mov    byte ptr ds:[si + MOBJ_T.m_tics], 1
-label_15:
-mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-cmp    al, 2
-jae    label_11
-cmp    al, 1
-jne    exit_p_killmobj
-label_13:
-mov    al, MT_CLIP
-label_12:
-push   word ptr ds:[si + 4]
-xor    ah, ah
-push   ax
-mov    ax, MOBJPOSLIST_6800_SEGMENT
-mov    es, ax
-push   ONFLOORZ_HIGHBITS  ; todo 8086
-mov    si, word ptr es:[bx + 4]
-mov    cx, word ptr es:[bx + 6]
-mov    ax, word ptr es:[bx]
-mov    dx, word ptr es:[bx + 2]
-push   ONFLOORZ_LOWBITS  ; todo 8086
-mov    bx, si
-mov    si, _setStateReturn_pos
-call   dword ptr [_P_SpawnMobj]
-les    bx, dword ptr ds:[si]
-or     byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_DROPPED
-exit_p_killmobj:
-LEAVE_MACRO  
-pop    di
-pop    si
-ret    
-label_9:
+jne    got_death_or_xdeath_state_in_ax
+
+do_death_state:
 mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor    ah, ah
 
@@ -988,22 +950,75 @@ db    09Ah
 dw    GETDEATHSTATEADDR, INFOFUNCLOADSEGMENT
 
 
-jmp    label_17
-label_10:
+got_death_or_xdeath_state_in_ax:
+xchg   ax, dx
+mov    ax, si
+call   dword ptr  ds:[_P_SetMobjState]
+call   P_Random_
+and    al, 3
+sub    byte ptr ds:[si + MOBJ_T.m_tics], al
+mov    al, byte ptr ds:[si + MOBJ_T.m_tics]
+cmp    al, 1
+jnae   cap_tics
 cmp    al, 240
-ja     label_16
-jmp    label_15
-label_11:
-ja     label_14
+jna    dont_cap_tics
+
+cap_tics:
+mov    byte ptr ds:[si + MOBJ_T.m_tics], 1
+dont_cap_tics:
+mov    ax, di
+cmp    al, MT_SHOTGUY
+jnae   type_not_above_equal_2
+
+ja     type_not_2
 mov    al, MT_SHOTGUN
-jmp    label_12
-label_14:
+jmp    do_spawn_drop
+
+type_not_2:
 cmp    al, MT_WOLFSS
-je     label_13
+je     drop_clip
 cmp    al, MT_CHAINGUY
 jne    exit_p_killmobj
 mov    al, MT_CHAINGUN
-jmp    label_12
+jmp    do_spawn_drop
+
+type_not_above_equal_2:
+
+cmp    al, MT_POSSESSED
+jne    exit_p_killmobj
+drop_clip:
+mov    al, MT_CLIP
+do_spawn_drop:
+
+xor    ah, ah
+push   word ptr ds:[si + MOBJ_T.m_secnum]
+push   ax  ; type
+
+mov    ax, ONFLOORZ_HIGHBITS
+push   ax
+xor    ax, ax
+push   ax
+
+mov    ax, MOBJPOSLIST_6800_SEGMENT
+mov    es, ax
+mov    ax, word ptr es:[bx]
+mov    dx, word ptr es:[bx + 2]
+
+les    bx, dword ptr es:[bx + 4]
+mov    cx, es
+
+call   dword ptr [_P_SpawnMobj]
+
+les    bx, dword ptr ds:[_setStateReturn_pos]
+or     byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_DROPPED
+exit_p_killmobj:
+LEAVE_MACRO  
+pop    di
+pop    si
+ret    
+
+
+
 
 ENDP 
 
