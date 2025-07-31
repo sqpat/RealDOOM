@@ -8,7 +8,7 @@
 #include "p_inter.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2480
+#define CONSTANTS_COUNT 2481
 #define LOCALS_COUNT 22
 
 
@@ -180,6 +180,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "BASE_LOWER_END_SEGMENT",
     "EMPTY_RENDER_9800_SEGMENT",
     "PHYSICS_7000_END_SEGMENT",
+    "PHYSICS_9000_END_SEGMENT",
     "RENDER_8800_END_SEGMENT",
     "RENDER_9000_END_SEGMENT",
     "RENDER_9C00_END_SEGMENT_16",
@@ -2740,6 +2741,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     base_lower_end_segment,
     empty_render_9800_segment,
     physics_7000_end_segment,
+    physics_9000_end_segment,
     render_8800_end_segment,
     render_9000_end_segment,
     render_9C00_end_segment_16,

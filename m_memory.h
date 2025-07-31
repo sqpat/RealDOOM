@@ -294,8 +294,6 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define diskgraphicbytes_segment          ((segment_t) ((int32_t)diskgraphicbytes >> 16))
 
 
-#define physics_highcode_segment 0x9400
-#define psight_codespace  ((byte __far*)      0x94000000)
 
 
 
@@ -323,6 +321,11 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 //#define SIZE_D_INFO          0x0698
 #define SIZE_D_INFO            0x069C
 // 0x93E9
+#define physics_9000_end            ((byte __far*)             MAKE_FULL_SEGMENT(InfoFuncLoadAddr,     SIZE_D_INFO))
+#define physics_9000_end_segment    ((segment_t) ((int32_t)physics_9000_end >> 16))
+
+#define physics_highcode_segment 0x9400
+#define psight_codespace  ((byte __far*)      0x94000000)
 
 
 

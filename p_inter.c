@@ -775,7 +775,6 @@ fixed_t __near getMassThrust(int16_t damage, int8_t id){
 				return FastMul16u16u(damage, 0x2000);
 	}
 }
-*/
 
 
 //
@@ -951,3 +950,4 @@ void __far P_DamageMobj (mobj_t __near*	target, mobj_t __near*	inflictor, mobj_t
 
 }
 
+*/
