@@ -843,16 +843,9 @@ push   si
 push   di
 push   bp
 mov    bp, sp
-sub    sp, 0Eh
 mov    di, ax
 mov    si, dx
-mov    word ptr [bp - 2], cx
-mov    word ptr [bp - 0Ah], GETSPAWNHEALTHADDR
-mov    word ptr [bp - 8], INFOFUNCLOADSEGMENT
-mov    word ptr [bp - 6], GETXDEATHSTATEADDR
-mov    word ptr [bp - 4], INFOFUNCLOADSEGMENT
-mov    word ptr [bp - 0Eh], GETDEATHSTATEADDR
-mov    word ptr [bp - 0Ch], INFOFUNCLOADSEGMENT
+
 mov    es, cx
 and    word ptr es:[bx + MOBJ_POS_T.mp_flags1], (NOT (MF_SHOOTABLE OR MF_FLOAT))
 
@@ -861,7 +854,7 @@ cmp    byte ptr ds:[si + MOBJ_T.m_mobjtype], MT_SKULL
 je     label_1
 and    byte ptr es:[bx + MOBJ_POS_T.mp_flags1 + 1],  ((NOT MF_NOGRAVITY) SHR 8)
 label_1:
-mov    es, word ptr [bp - 2]
+
 or     byte ptr es:[bx + MOBJ_POS_T.mp_flags1 + 1], (MF_DROPOFF SHR 8)
 or     byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_CORPSE
 sar    word ptr ds:[si + MOBJ_T.m_height + 2], 1
@@ -899,7 +892,8 @@ jne    label_7
 
 
 mov    byte ptr ds:[_useDeadAttackerRef], 1
-mov    es, word ptr [bp - 2]
+mov    ax, MOBJPOSLIST_6800_SEGMENT
+mov    es, ax
 mov    ax, word ptr es:[bx]
 mov    dx, word ptr es:[bx + 2]
 mov    word ptr ds:[_deadAttackerX + 0], ax
@@ -911,7 +905,9 @@ mov    word ptr ds:[_deadAttackerY + 0], ax
 label_7:
 cmp    byte ptr ds:[si + MOBJ_T.m_mobjtype], 0
 jne    label_8
-mov    es, word ptr [bp - 2]
+mov    di, MOBJPOSLIST_6800_SEGMENT
+mov    es, di
+
 mov    di, _player + PLAYER_T.player_playerstate
 and    byte ptr es:[bx + MOBJ_POS_T.mp_flags1], (NOT MF_SOLID)
 mov    byte ptr ds:[di], 1
@@ -923,18 +919,22 @@ call   AM_Stop_
 label_8:
 mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor    ah, ah
-call   dword ptr [bp - 0Ah]
+db     09Ah
+dw     GETSPAWNHEALTHADDR, INFOFUNCLOADSEGMENT
 neg    ax
 cmp    ax, word ptr ds:[si + MOBJ_T.m_health]
 jle    label_9
 mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor    ah, ah
-call   dword ptr [bp - 6]
+db     09Ah
+dw     GETXDEATHSTATEADDR, INFOFUNCLOADSEGMENT
+
 test   ax, ax
 je     label_9
 mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor    ah, ah
-call   dword ptr [bp - 6]
+db     09Ah
+dw     GETXDEATHSTATEADDR, INFOFUNCLOADSEGMENT
 label_17:
 mov    dx, ax
 mov    ax, si
@@ -959,7 +959,8 @@ label_12:
 push   word ptr ds:[si + 4]
 xor    ah, ah
 push   ax
-mov    es, word ptr [bp - 2]
+mov    ax, MOBJPOSLIST_6800_SEGMENT
+mov    es, ax
 push   ONFLOORZ_HIGHBITS  ; todo 8086
 mov    si, word ptr es:[bx + 4]
 mov    cx, word ptr es:[bx + 6]
@@ -979,7 +980,11 @@ ret
 label_9:
 mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor    ah, ah
-call   dword ptr [bp - 0Eh]
+
+db    09Ah
+dw    GETDEATHSTATEADDR, INFOFUNCLOADSEGMENT
+
+
 jmp    label_17
 label_10:
 cmp    al, 240
