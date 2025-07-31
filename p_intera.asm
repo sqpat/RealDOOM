@@ -809,8 +809,11 @@ jng    dont_cap_armor_2
 mov    ax, 200
 dont_cap_armor_2:
 mov    word ptr ds:[bx], ax
-mov    byte ptr ds:[_player + PLAYER_T.player_armortype], 1
-
+mov    bx, _player + PLAYER_T.player_armortype
+cmp    byte ptr ds:[bx], 0
+jne    dont_set_armortype
+inc    byte ptr ds:[bx]
+dont_set_armortype:
 
 mov    word ptr ds:[di], GOTARMBONUS
 jmp    done_with_touchspecial_switch_block
@@ -1029,9 +1032,29 @@ ENDP
 
 
 mass_thrust_switch_block:
-dw mass_thrust_type_1, mass_thrust_default, mass_thrust_type_1, mass_thrust_default, mass_thrust_default, mass_thrust_type_4, mass_thrust_default, mass_thrust_default, mass_thrust_default, mass_thrust_type_2
-dw mass_thrust_type_2, mass_thrust_type_2, mass_thrust_type_4, mass_thrust_default, mass_thrust_type_4, mass_thrust_type_6, mass_thrust_type_4, mass_thrust_type_5, mass_thrust_type_4, mass_thrust_type_2
-dw mass_thrust_default, mass_thrust_type_3, mass_thrust_type_3
+dw mass_thrust_type_1   ; MT_VILE
+dw mass_thrust_default  ; MT_FIRE
+dw mass_thrust_type_1   ; MT_UNDEAD
+dw mass_thrust_default  ; MT_TRACER
+dw mass_thrust_default  ; MT_SMOKE
+dw mass_thrust_type_4   ; MT_FATSO
+dw mass_thrust_default  ; MT_FATSHOT
+dw mass_thrust_default  ; MT_CHAINGUY
+dw mass_thrust_default  ; MT_TROOP
+dw mass_thrust_type_2   ; MT_SERGEANT
+dw mass_thrust_type_2   ; MT_SHADOWS
+dw mass_thrust_type_2   ; MT_HEAD
+dw mass_thrust_type_4   ; MT_BRUISER
+dw mass_thrust_default  ; MT_BRUISERSHOT
+dw mass_thrust_type_4   ; MT_KNIGHT
+dw mass_thrust_type_6   ; MT_SKULL
+dw mass_thrust_type_4   ; MT_SPIDER
+dw mass_thrust_type_5   ; MT_BABY
+dw mass_thrust_type_4   ; MT_CYBORG
+dw mass_thrust_type_2   ; MT_PAIN
+dw mass_thrust_default  ; MT_WOLFSS
+dw mass_thrust_type_3   ; MT_KEEN
+dw mass_thrust_type_3   ; MT_BOSSBRAIN
 
 
 
