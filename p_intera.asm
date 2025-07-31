@@ -20,7 +20,6 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN _P_RemoveMobj:DWORD
-EXTRN S_StartSound_:FAR
 
 
 .DATA
@@ -530,7 +529,11 @@ mov    dx, cx
 xor    ax, ax
 add    byte ptr ds:[_player + PLAYER_T.player_bonuscount], BONUSADD
 
-call   S_StartSound_
+;call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
+
 exit_ptouchspecialthing:
 pop    di
 retf
@@ -645,8 +648,6 @@ mov    ax, WP_CHAINGUN
 jmp    do_giveweapon_touchspecial
 
 
-
-
 touchspecial_case_89:
 mov    ax, WP_CHAINSAW
 jmp    do_giveweapon_touchspecial_with_cwd
@@ -705,11 +706,10 @@ jmp    do_givebody
 touchspecial_case_78:
 ; special flags?
 test   dl, dl
-mov    al, 0   ; AM_CLIP
-cwd    ; clear dx
+mov    ax, 0   ; AM_CLIP
 jne    do_giveammo_touchspecial ; dropped clip
 
-inc    dx
+inc    ah
 jmp    do_giveammo_touchspecial ; nondropped clip
 
 
@@ -718,13 +718,12 @@ jmp    do_giveammo_touchspecial ; nondropped clip
 
 
 touchspecial_case_79:
-mov    dx, 5
-xor    ax, ax  ; AM_CLIP
-
+mov    ax, AM_CLIP + (5 SHL 8)
 do_giveammo_touchspecial:
 sar    bx, 1
 add    bx, (GOTCLIP - SPR_CLIP + SPR_ARM1)
 mov    word ptr ds:[di], bx
+mov    dl ,ah
 call   P_GiveAmmo_
 test   al, al
 je     exitptouchspecialthing_2
@@ -732,33 +731,28 @@ je     exitptouchspecialthing_2
 jmp    done_with_touchspecial_switch_block
 
 touchspecial_case_80:
-mov    dx, 1
-mov    ax, AM_MISL
+mov    ax, AM_MISL + (1 SHL 8)
 jmp    do_giveammo_touchspecial
 
 touchspecial_case_81:
-mov    dx, 5
-mov    ax, AM_MISL
+mov    ax, AM_MISL + (5 SHL 8)
+
 jmp    do_giveammo_touchspecial
 
 
 touchspecial_case_82:
-mov    dx, 1
-mov    ax, AM_CELL
+mov    ax, AM_CELL + (1 SHL 8)
 jmp    do_giveammo_touchspecial
 
 touchspecial_case_83:
-mov    dx, 5
-mov    ax, AM_CELL
+mov    ax, AM_CELL + (5 SHL 8)
 jmp    do_giveammo_touchspecial
 
 touchspecial_case_84:
-mov    dx, 1
-mov    ax, dx ; AM_SHELL
+mov    ax, AM_SHELL + (1 SHL 8)
 jmp    do_giveammo_touchspecial
 touchspecial_case_85:
-mov    dx, 5
-mov    ax, AM_SHELL
+mov    ax, AM_SHELL + (5 SHL 8)
 jmp    do_giveammo_touchspecial
 
 
