@@ -612,75 +612,45 @@ jmp    do_givebody
 
 
 touchspecial_case_71:
+mov    word ptr ds:[si], GOTINVUL
 xor    ax, ax
+do_givepower:
 call   P_GivePower_
 test   al, al
 je     jump_to_exitptouchspecialthing
 
 mov    cx, SFX_GETPOW
-mov    word ptr ds:[si], GOTINVUL
 jmp    done_with_touchspecial_switch_block
 touchspecial_case_72:
-mov    ax, 1
-
-call   P_GivePower_
-test   al, al
-je     jump_to_exitptouchspecialthing
-
+mov    ax, PW_STRENGTH
 mov    word ptr ds:[si], GOTBERSERK
-mov    bx, _player + PLAYER_T.player_readyweapon
-cmp    byte ptr ds:[bx], 0
-jne    label_21
-mov    cx, SFX_GETPOW
-jmp    done_with_touchspecial_switch_block
-label_21:
-mov    bx, _player + PLAYER_T.player_pendingweapon
-mov    byte ptr ds:[bx], dh
-mov    cx, SFX_GETPOW
-jmp    done_with_touchspecial_switch_block
+cmp    byte ptr ds:[_player + PLAYER_T.player_readyweapon], bh
+je     do_givepower
+mov    byte ptr ds:[_player + PLAYER_T.player_pendingweapon], bh
+jmp    do_givepower
+
+
 touchspecial_case_73:
-mov    ax, 2
-
-call   P_GivePower_
-test   al, al
-je     jump_to_exitptouchspecialthing
-
-mov    cx, SFX_GETPOW
+mov    ax, PW_INVISIBILITY
 mov    word ptr ds:[si], GOTINVIS
-jmp    done_with_touchspecial_switch_block
+jmp    do_givepower
+
 touchspecial_case_75:
-mov    ax, 3
-
-call   P_GivePower_
-test   al, al
-jne    label_22
-jump_to_exitptouchspecialthing_2:
-jmp    exit_ptouchspecialthing
-label_22:
-
-mov    cx, SFX_GETPOW
+mov    ax, PW_IRONFEET
 mov    word ptr ds:[si], GOTSUIT
-jmp    done_with_touchspecial_switch_block
+jmp    do_givepower
+
 touchspecial_case_76:
-mov    ax, 4
-
-call   P_GivePower_
-test   al, al
-je     jump_to_exitptouchspecialthing_2
-
-mov    cx, SFX_GETPOW
+mov    ax, PW_ALLMAP
 mov    word ptr ds:[si], GOTMAP
-jmp    done_with_touchspecial_switch_block
+jmp    do_givepower
+
 touchspecial_case_77:
-mov    ax, 5
-
-call   P_GivePower_
-test   al, al
-je     jump_to_exitptouchspecialthing_2
-
-mov    cx, SFX_GETPOW
+mov    ax, PW_INFRARED
 mov    word ptr ds:[si], GOTVISOR
-jmp    done_with_touchspecial_switch_block
+
+jmp    do_givepower
+
 touchspecial_case_78:
 test   al, al
 je     label_30
@@ -689,8 +659,12 @@ xor    ax, ax
 label_23:
 call   P_GiveAmmo_
 test   al, al
-je     jump_to_exitptouchspecialthing_2
+jne    label_22
+jump_to_exitptouchspecialthing_2:
+jmp    exit_ptouchspecialthing
 
+
+label_22:
 mov    word ptr ds:[si], GOTCLIP
 jmp    done_with_touchspecial_switch_block
 label_30:
