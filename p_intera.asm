@@ -260,32 +260,32 @@ pop    bx
 ret    
 ENDP
 
-COMMENT @
 
 
 PROC    P_GiveArmor_  NEAR
 PUBLIC  P_GiveArmor_
 
-0x0000000000003276:  53                      push   bx
-0x0000000000003277:  52                      push   dx
-0x0000000000003278:  6B D0 64                imul   dx, ax, 0x64
-0x000000000000327b:  BB EA 07                mov    bx, _player + PLAYER_T.player_armorpoints
-0x000000000000327e:  3B 17                   cmp    dx, word ptr ds:[bx]
-0x0000000000003280:  7F 05                   jg     0x3287
-0x0000000000003282:  30 C0                   xor    al, al
-0x0000000000003284:  5A                      pop    dx
-0x0000000000003285:  5B                      pop    bx
-0x0000000000003286:  C3                      ret    
-0x0000000000003287:  BB EC 07                mov    bx, _player + PLAYER_T.player_armortype
-0x000000000000328a:  88 07                   mov    byte ptr ds:[bx], al
-0x000000000000328c:  BB EA 07                mov    bx, _player + PLAYER_T.player_armorpoints
-0x000000000000328f:  B0 01                   mov    al, 1
-0x0000000000003291:  89 17                   mov    word ptr ds:[bx], dx
-0x0000000000003293:  5A                      pop    dx
-0x0000000000003294:  5B                      pop    bx
-0x0000000000003295:  C3                      ret    
+push   dx
+mov    dx, 100
+cmp    al, 1
+je     dont_give_l2_armor
+sal    dx, 1 ; dx is 200
+dont_give_l2_armor:
+cmp    dx, word ptr ds:[_player + PLAYER_T.player_armorpoints]
+jg     do_give_armor
+xor    ax, ax
+pop    dx
+ret    
+
+do_give_armor:
+mov    byte ptr ds:[_player + PLAYER_T.player_armortype], al
+mov    word ptr ds:[_player + PLAYER_T.player_armorpoints], dx
+mov    al, 1
+pop    dx
+ret    
 ENDP
 
+COMMENT @
 
 
 PROC    P_GiveCard_  NEAR

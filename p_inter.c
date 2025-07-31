@@ -60,6 +60,8 @@
 boolean __near P_GiveAmmo (  ammotype_t	ammo, int16_t		num ) ;
 boolean __near P_GiveWeapon (  weapontype_t	weapon, boolean	dropped ) ;
 boolean __near P_GiveBody (  int16_t num ) ;
+boolean __near P_GiveArmor(  int16_t		armortype );
+
 /*
 
 boolean __near P_GiveAmmo (  ammotype_t	ammo, int16_t		num ) {
@@ -197,7 +199,6 @@ boolean __near P_GiveBody (  int16_t num ) {
     return true;
 }
 
-*/
 
 
 //
@@ -218,6 +219,7 @@ boolean __near P_GiveArmor(  int16_t		armortype ) {
     return true;
 }
 
+*/
 
 
 //
