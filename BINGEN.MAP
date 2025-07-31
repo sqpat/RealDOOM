@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/29 23:37:19
+Created on:       25/07/30 00:06:48
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -64,8 +64,8 @@ s_sound_TEXT           CODE           AUTO           0f04:0000       0000067a
 p_ceilng_TEXT          CODE           AUTO           0f04:0680       00000392
 p_doors_TEXT           CODE           AUTO           0f04:0a20       00000696
 p_floor_TEXT           CODE           AUTO           0f04:10c0       00000808
-p_inter_TEXT           CODE           AUTO           0f04:18d0       00000b31
-P_INTERA_TEXT          CODE           AUTO           0f04:2402       0000014d
+p_inter_TEXT           CODE           AUTO           0f04:18d0       00000b13
+P_INTERA_TEXT          CODE           AUTO           0f04:23e4       00000168
 p_lights_TEXT          CODE           AUTO           0f04:2550       000003ed
 p_plats_TEXT           CODE           AUTO           0f04:2940       0000041d
 P_SPEC_TEXT            CODE           AUTO           0f04:2d5e       00000a29
@@ -844,19 +844,19 @@ Module: p_floor.obj(C:\REALDOOM\p_floor.c)
 0f04:13a4      EV_DoFloor_
 0f04:1734      EV_BuildStairs_
 Module: p_inter.obj(C:\REALDOOM\p_inter.c)
-0f04:18d0+     P_GiveCard_
-0f04:18ee      P_GivePower_
-0f04:19ae      P_TouchSpecialThing_
-0f04:1e58+     P_KillMobj_
-0f04:200e+     getMassThrust_
-0f04:207c      P_DamageMobj_
+0f04:18d0      P_GivePower_
+0f04:1990      P_TouchSpecialThing_
+0f04:1e3a+     P_KillMobj_
+0f04:1ff0+     getMassThrust_
+0f04:205e      P_DamageMobj_
 Module: p_intera.obj(p_intera.ASM)
-0f04:24cb      P_GiveWeapon_
-0f04:250c      P_GiveBody_
-0f04:2530      P_GiveArmor_
-0f04:2402*     P_INTER_STARTMARKER_
-0f04:2412      P_GiveAmmo_
-0f04:254f*     P_INTER_ENDMARKER_
+0f04:24ad      P_GiveWeapon_
+0f04:2531      P_GiveCard_
+0f04:24ee      P_GiveBody_
+0f04:2512      P_GiveArmor_
+0f04:23e4*     P_INTER_STARTMARKER_
+0f04:23f4      P_GiveAmmo_
+0f04:254c*     P_INTER_ENDMARKER_
 Module: p_lights.obj(C:\REALDOOM\p_lights.c)
 0f04:2550      T_FireFlicker_
 0f04:25b0      P_SpawnFireFlicker_
@@ -1078,9 +1078,9 @@ Module: r_span16.obj(r_span16.ASM)
 260a:458b      R_DrawPlanes16_
 Module: r_span0.obj(r_span0.ASM)
 260a:4b08*     R_DrawSpan0_
-260a:50aa      R_WriteBackViewConstantsSpan0_
 260a:5146      R_SPAN0_ENDMARKER_
 260a:4c4d      R_DrawPlanes0_
+260a:50aa      R_WriteBackViewConstantsSpan0_
 260a:4b08      R_SPAN0_STARTMARKER_
 Module: r_spanfl.obj(r_spanfl.ASM)
 260a:56db      R_SPANFL_ENDMARKER_
@@ -1293,9 +1293,9 @@ Module: p_enemy.obj(p_enemy.ASM)
 34eb:5200*     A_VileTarget_
 34eb:4383*     P_Move_
 34eb:4654*     P_LookForPlayers_
-34eb:4ea8*     A_SkelFist_
 34eb:5157*     A_VileStart_
 34eb:5168*     A_FireCrackle_
+34eb:4ea8*     A_SkelFist_
 34eb:5514*     A_PainShootSkull_
 34eb:4fc6*     A_VileChase_
 34eb:560a*     A_Scream_

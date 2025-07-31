@@ -61,6 +61,7 @@ boolean __near P_GiveAmmo (  ammotype_t	ammo, int16_t		num ) ;
 boolean __near P_GiveWeapon (  weapontype_t	weapon, boolean	dropped ) ;
 boolean __near P_GiveBody (  int16_t num ) ;
 boolean __near P_GiveArmor(  int16_t		armortype );
+void __near P_GiveCard (  card_t	card );
 
 /*
 
@@ -219,7 +220,6 @@ boolean __near P_GiveArmor(  int16_t		armortype ) {
     return true;
 }
 
-*/
 
 
 //
@@ -233,6 +233,9 @@ void __near P_GiveCard (  card_t	card ) {
 	player.bonuscount = BONUSADD;
 	player.cards[card] = 1;
 }
+
+*/
+
 
 
 //

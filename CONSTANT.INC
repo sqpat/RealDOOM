@@ -2468,6 +2468,11 @@ STROBEBRIGHT = 05h
 FASTDARK = 0Fh
 SLOWDARK = 023h
 MAXHEALTH = 064h
+BONUSADD = 06h
+INVULNTICS = 041Ah
+INVISTICS = 0834h
+INFRATICS = 01068h
+IRONTICS = 0834h
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 03400h

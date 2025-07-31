@@ -285,29 +285,28 @@ pop    dx
 ret    
 ENDP
 
-COMMENT @
 
-
+BONUSADD = 6
 PROC    P_GiveCard_  NEAR
 PUBLIC  P_GiveCard_
 
-0x0000000000003296:  53                      push   bx
-0x0000000000003297:  56                      push   si
-0x0000000000003298:  88 C3                   mov    bl, al
-0x000000000000329a:  30 FF                   xor    bh, bh
-0x000000000000329c:  80 BF FA 07 00          cmp    byte ptr ds:[bx + 0x7fa], 0
-0x00000000000032a1:  74 03                   je     0x32a6
-0x00000000000032a3:  5E                      pop    si
-0x00000000000032a4:  5B                      pop    bx
-0x00000000000032a5:  C3                      ret    
-0x00000000000032a6:  BE 2A 08                mov    si, 0x82a
-0x00000000000032a9:  C6 04 06                mov    byte ptr ds:[si], 6
-0x00000000000032ac:  C6 87 FA 07 01          mov    byte ptr ds:[bx + 0x7fa], 1
-0x00000000000032b1:  5E                      pop    si
-0x00000000000032b2:  5B                      pop    bx
-0x00000000000032b3:  C3                      ret    
+push   bx
+mov    bl, al
+xor    bh, bh
+cmp    byte ptr ds:[bx + _player + PLAYER_T.player_cards], 0
+je     add_card
+pop    si
+pop    bx
+ret    
+add_card:
+
+mov    byte ptr ds:[_player + PLAYER_T.player_bonuscount], BONUSADD
+mov    byte ptr ds:[bx + _player + PLAYER_T.player_cards], 1
+pop    bx
+ret    
 ENDP
 
+COMMENT @
 
 
 PROC    P_GivePower_  NEAR
@@ -553,7 +552,7 @@ PUBLIC  P_TouchSpecialThing_
 0x00000000000034fd:  E8 76 FD                call   P_GiveArmor_
 0x0000000000003500:  C7 07 2B 00             mov    word ptr ds:[bx], 0x2b
 0x0000000000003504:  E9 12 FF                jmp    0x3419
-0x0000000000003507:  BB FA 07                mov    bx, 0x7fa
+0x0000000000003507:  BB FA 07                mov    bx, _player + PLAYER_T.player_cards
 0x000000000000350a:  80 3F 00                cmp    byte ptr ds:[bx], 0
 0x000000000000350d:  75 07                   jne    0x3516
 0x000000000000350f:  BB 24 08                mov    bx, 0x824

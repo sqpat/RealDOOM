@@ -5,9 +5,10 @@
 #include "i_sound.h"
 #include "g_game.h"
 #include "p_saveg.h"
+#include "p_inter.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2469
+#define CONSTANTS_COUNT 2474
 #define LOCALS_COUNT 22
 
 
@@ -2553,7 +2554,12 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"STROBEBRIGHT",
 	"FASTDARK",
 	"SLOWDARK",
-	"MAXHEALTH"
+	"MAXHEALTH",
+	"BONUSADD",
+	"INVULNTICS",
+	"INVISTICS",
+	"INFRATICS",
+	"IRONTICS"
 
 
 
@@ -5105,9 +5111,13 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	STROBEBRIGHT,
 	FASTDARK,
 	SLOWDARK,
-	MAXHEALTH
-
-
+	MAXHEALTH,
+	BONUSADD,
+	INVULNTICS,
+	INVISTICS,
+	INFRATICS,
+	IRONTICS
+    
 	
     
 
