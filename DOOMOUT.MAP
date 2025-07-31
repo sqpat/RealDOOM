@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/30 17:14:25
+Created on:       25/07/30 18:20:02
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -65,7 +65,7 @@ p_inter_TEXT           CODE           AUTO           0bc4:30d0       00000000
 P_INTERA_TEXT          CODE           AUTO           0bc4:30d0       00000971
 p_lights_TEXT          CODE           AUTO           0bc4:3a50       000003ed
 p_plats_TEXT           CODE           AUTO           0bc4:3e40       0000041d
-P_SPEC_TEXT            CODE           AUTO           0bc4:425e       00000a29
+P_SPEC_TEXT            CODE           AUTO           0bc4:425e       00000a28
 p_switch_TEXT          CODE           AUTO           0bc4:4c90       00000afc
 p_telept_TEXT          CODE           AUTO           0bc4:5790       0000022a
 P_TICK_TEXT            CODE           AUTO           0bc4:59ba       000001e0
@@ -849,21 +849,21 @@ Module: p_plats.obj(C:\REALDOOM\p_plats.c)
 0bc4:41ee      P_AddActivePlat_
 0bc4:4216+     P_RemoveActivePlat_
 Module: p_spec.obj(p_spec.ASM)
-0bc4:495e      P_UpdateSpecials_
+0bc4:495d      P_UpdateSpecials_
 0bc4:425e      twoSided_
 0bc4:434d      P_FindNextHighestFloor_
 0bc4:42d7      P_FindHighestOrLowestFloorSurrounding_
-0bc4:4897      P_PlayerInSpecialSector_
-0bc4:4c87*     P_SPEC_ENDMARKER_
+0bc4:4896      P_PlayerInSpecialSector_
+0bc4:4c86*     P_SPEC_ENDMARKER_
 0bc4:425e*     P_SPEC_STARTMARKER_
-0bc4:4a8f      EV_DoDonut_
+0bc4:4a8e      EV_DoDonut_
 0bc4:43be      P_FindLowestOrHighestCeilingSurrounding_
 0bc4:446b      P_FindMinSurroundingLight_
 0bc4:4281*     getNextSectorList_
 0bc4:4434      P_FindSectorsFromLineTag_
 0bc4:45f7      P_CrossSpecialLine_
-0bc4:4804      P_ShootSpecialLine_
-0bc4:4bfb      P_SpawnSpecials_
+0bc4:4803      P_ShootSpecialLine_
+0bc4:4bfa      P_SpawnSpecials_
 Module: p_switch.obj(C:\REALDOOM\p_switch.c)
 0bc4:4c90+     P_StartButton_
 0bc4:4cf0      P_ChangeSwitchTexture_

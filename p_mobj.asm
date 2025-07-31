@@ -2579,6 +2579,7 @@ inc   bl
 mov   al, byte ptr es:[bx]
 inc   bl
 sub   al, byte ptr es:[bx]
+sbb   ah, 0
 mov   byte ptr ds:[_prndindex], bl
 
 ;		temp  <<= 4;

@@ -77,14 +77,14 @@
 #define P_NightmareRespawnOffset                0x34B8
 #define P_CheckMissileSpawnOffset               0x360C
 #define P_SpawnMissileOffset                    0x3694
-#define P_SpawnPlayerMissileOffset              0x380F
-#define P_MovePspritesOffset                    0x409C
-#define P_DropWeaponFarOffset                   0x417C
+#define P_SpawnPlayerMissileOffset              0x3812
+#define P_MovePspritesOffset                    0x409E
+#define P_DropWeaponFarOffset                   0x417E
 #define P_MobjThinkerOffset                     0x2C76
 #define P_RemoveMobjOffset                      0x2E9D
 #define P_SpawnMobjOffset                       0x2D56
 #define P_SpawnMapThingOffset                   0x2B38
-#define P_SetMobjStateOffset                    0x5B3D
+#define P_SetMobjStateOffset                    0x5B3F
 
 #define R_DrawColumn24CodeSize         0xE46
 #define R_DrawColumn16CodeSize         0xCB4
@@ -109,7 +109,7 @@
 #define R_BSP0CodeSize                 0x36C4
 #define R_BSPFLCodeSize                0x3666
 #define WI_StuffCodeSize               0x1011
-#define PSightCodeSize                 0x5BE5
+#define PSightCodeSize                 0x5BE7
 #define WipeCodeSize                   0x4B6
 #define FinaleCodeSize                 0xBCB
 #define SaveLoadCodeSize               0xB2B
