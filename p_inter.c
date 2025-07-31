@@ -64,6 +64,7 @@ boolean __near P_GiveArmor(  int16_t		armortype );
 void __near P_GiveCard (  card_t	card );
 boolean __far P_GivePower (  int16_t /*powertype_t*/	power );
 
+void __near P_KillMobj (	mobj_t __near* source, mobj_t __near*	target, mobj_pos_t __far*	target_pos);
 /*
 
 boolean __near P_GiveAmmo (  ammotype_t	ammo, int16_t		num ) {
@@ -630,7 +631,6 @@ void __far P_TouchSpecialThing ( mobj_t __near*	special, mobj_t __near*	toucher,
     player.bonuscount += BONUSADD;
 	S_StartSound (NULL, sound);
 }
-*/
 
 
 //
@@ -735,6 +735,7 @@ void __near P_KillMobj (	mobj_t __near* source, mobj_t __near*	target, mobj_pos_
 	setStateReturn_pos->flags2 |= MF_DROPPED;	// special versions of items
 }
 
+*/
 
 fixed_t __near getMassThrust(int16_t damage, int8_t id){
 	
