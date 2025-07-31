@@ -386,6 +386,12 @@ dw touchspecial_case_88, touchspecial_case_89, touchspecial_case_90, touchspecia
 ; bx specialpos offset
 ; cx toucherpos offset
 
+; bp - 2    state
+; bp - 4    countitem
+; bp - 6    z high
+; bp - 8    ax/special backup
+; bp - 0Ah  
+
 PROC    P_TouchSpecialThing_  FAR
 PUBLIC  P_TouchSpecialThing_
 
@@ -395,9 +401,10 @@ push   bp
 mov    bp, sp
 sub    sp, 6
 push   ax
+push   cx   
 mov    di, dx
-mov    dx, cx
-mov    es, cx
+mov    dx, MOBJPOSLIST_6800_SEGMENT
+mov    es, dx
 mov    ax, word ptr es:[bx + MOBJ_POS_T.mp_z + 2]
 mov    word ptr [bp - 6], ax
 mov    ax, word ptr es:[bx + MOBJ_POS_T.mp_statenum]
@@ -408,7 +415,7 @@ sub    si, ax
 mov    ax, STATES_SEGMENT
 add    si, si
 mov    es, ax
-mov    al, byte ptr es:[si]
+mov    al, byte ptr es:[si + STATE_T.state_sprite]
 mov    es, dx
 mov    byte ptr [bp - 2], al
 test   byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_DROPPED
@@ -427,11 +434,10 @@ label_2:
 mov    dx, 1
 
 label_4:
-les    bx, dword ptr [bp + 0Ah]
+mov    si, word ptr [bp - 0Ah]
 mov    byte ptr [bp - 4], dl
 mov    dx, cx
-mov    si, word ptr [bp + 0Ah]
-sub    dx, word ptr es:[bx + MOBJ_POS_T.mp_z + 0]
+sub    dx, word ptr es:[si + MOBJ_POS_T.mp_z + 0]
 mov    bx, word ptr [bp - 6]
 sbb    bx, word ptr es:[si + MOBJ_POS_T.mp_z + 2]
 cmp    bx, word ptr ds:[di + MOBJ_T.m_height + 2]
@@ -499,7 +505,7 @@ exit_ptouchspecialthing:
 LEAVE_MACRO  
 pop    di
 pop    si
-retf   4
+retf
 touchspecial_case_56:
 mov    ax, 2
 mov    word ptr ds:[si], GOTMEGA

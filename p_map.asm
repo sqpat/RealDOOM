@@ -4259,10 +4259,9 @@ je    dont_touch_anything
 
 ;			P_TouchSpecialThing (thing, tmthing, thing_pos, tmthing_pos);
 
-push  es
-push  bx
+
+mov   cx, bx
 mov   bx, word ptr [bp - 2]
-mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   dx, word ptr ds:[_tmthing]
 xchg  ax, si   ; get si in ax
 

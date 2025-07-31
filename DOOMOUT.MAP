@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/30 03:14:16
+Created on:       25/07/30 03:20:44
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -62,7 +62,7 @@ p_ceilng_TEXT          CODE           AUTO           0bc4:1e80       00000392
 p_doors_TEXT           CODE           AUTO           0bc4:2220       00000696
 p_floor_TEXT           CODE           AUTO           0bc4:28c0       00000808
 p_inter_TEXT           CODE           AUTO           0bc4:30d0       000005a9
-P_INTERA_TEXT          CODE           AUTO           0bc4:367a       000004f2
+P_INTERA_TEXT          CODE           AUTO           0bc4:367a       000004ef
 p_lights_TEXT          CODE           AUTO           0bc4:3b70       000003ed
 p_plats_TEXT           CODE           AUTO           0bc4:3f60       0000041d
 P_SPEC_TEXT            CODE           AUTO           0bc4:437e       00000a28
@@ -831,7 +831,7 @@ Module: p_intera.obj(p_intera.ASM)
 0bc4:367a*     P_INTER_STARTMARKER_
 0bc4:368a*     P_GiveAmmo_
 0bc4:37e1      P_GivePower_
-0bc4:3b6c*     P_INTER_ENDMARKER_
+0bc4:3b69*     P_INTER_ENDMARKER_
 Module: p_lights.obj(C:\REALDOOM\p_lights.c)
 0bc4:3b70      T_FireFlicker_
 0bc4:3bd0      P_SpawnFireFlicker_
@@ -1199,4 +1199,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  000180e0 (98528.)
 Entry point address: 0bc4:7f46
-Link time: 00:00.20
+Link time: 00:00.19
