@@ -392,82 +392,106 @@ dw touchspecial_case_88, touchspecial_case_89, touchspecial_case_90, touchspecia
 ; bp - 8    ax/special backup
 ; bp - 0Ah  
 
+out_of_range:
+dead_toucher_cant_pickup:
+
+pop    di
+retf
+
 PROC    P_TouchSpecialThing_  FAR
 PUBLIC  P_TouchSpecialThing_
 
-push   si
 push   di
-push   bp
-mov    bp, sp
-sub    sp, 6
-push   ax
-push   cx   
 mov    di, dx
+
+; check toucher health 
+cmp    word ptr ds:[di + MOBJ_T.m_health], 0
+jle    dead_toucher_cant_pickup
+
+mov    word ptr cs:[OFFSET SELFMODIFY_touchspecial_removemobj_ptr+1], ax
+; ax free
+
+; todo this might be guaranteed ES already.
 mov    dx, MOBJPOSLIST_6800_SEGMENT
 mov    es, dx
-mov    ax, word ptr es:[bx + MOBJ_POS_T.mp_z + 2]
-mov    word ptr [bp - 6], ax
-mov    ax, word ptr es:[bx + MOBJ_POS_T.mp_statenum]
-mov    si, ax
-shl    si, 2
-mov    cx, word ptr es:[bx + MOBJ_POS_T.mp_z + 0]
-sub    si, ax
-mov    ax, STATES_SEGMENT
-add    si, si
-mov    es, ax
-mov    al, byte ptr es:[si + STATE_T.state_sprite]
-mov    es, dx
-mov    byte ptr [bp - 2], al
-test   byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_DROPPED
-jne    label_1
-xor    ax, ax
-jmp    label_3
-label_1:
-mov    ax, 1
-label_3:
-mov    es, dx
-test   byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_COUNTITEM
-jne     label_2
-xor    dx, dx
-jmp    label_4
-label_2:
-mov    dx, 1
 
-label_4:
-mov    si, word ptr [bp - 0Ah]
-mov    byte ptr [bp - 4], dl
-mov    dx, cx
-sub    dx, word ptr es:[si + MOBJ_POS_T.mp_z + 0]
-mov    bx, word ptr [bp - 6]
-sbb    bx, word ptr es:[si + MOBJ_POS_T.mp_z + 2]
-cmp    bx, word ptr ds:[di + MOBJ_T.m_height + 2]
-jg     exit_ptouchspecialthing
-jne    label_5
-cmp    dx, word ptr ds:[di + + MOBJ_T.m_height + 0]
-ja     exit_ptouchspecialthing
-label_5:
-cmp    bx, -8
-jl     exit_ptouchspecialthing
-mov    cx, SFX_ITEMUP 
-cmp    word ptr ds:[di + MOBJ_T.m_health], 0
-jle    exit_ptouchspecialthing
-mov    bl, byte ptr [bp - 2]
+;	fixed_t specialz = special_pos->z.w;
+mov    ax, word ptr es:[bx + MOBJ_POS_T.mp_z + 0]
+mov    dx, word ptr es:[bx + MOBJ_POS_T.mp_z + 2]
+
+; dx:ax is  is specialz
+
+;dx:ax is delta 
+;    delta = specialz - toucher_pos->z.w;
+
+xchg   bx, cx
+sub    ax, word ptr es:[bx + MOBJ_POS_T.mp_z + 0]
+sbb    dx, word ptr es:[bx + MOBJ_POS_T.mp_z + 2]
+
+;    if (delta > toucher->height.w || delta < -8*FRACUNIT) {
+;		// out of reach
+;		return;
+;    }
+
+cmp    dx, -8
+jl     out_of_range
+cmp    dx, word ptr ds:[di + MOBJ_T.m_height + 2]
+jg     out_of_range
+jne    done_with_height_check
+cmp    ax, word ptr ds:[di + MOBJ_T.m_height + 0]
+ja     out_of_range
+
+done_with_height_check:
+
+mov    bx, cx  ; restore special_pos. cx free for use.
+
+;ax, dx, cx, di free.
+
+;	boolean specialflagscountitem =  special_pos->flags2&MF_COUNTITEM ? 1 : 0;
+mov    al, byte ptr es:[bx + MOBJ_POS_T.mp_flags2]
+mov    dx, 0C089h  ; two byte nop
+test   al, MF_COUNTITEM
+jne    do_set_nop_count_item
+mov    dx, ((OFFSET dont_increment_itemcount - OFFSET SELFMODIFY_touchspecial_itemcount_AFTER) SHL 8) + 0EBh 
+do_set_nop_count_item:
+mov    word ptr cs:[OFFSET SELFMODIFY_touchspecial_itemcount], dx
+
+and    al, MF_DROPPED
+cbw
+shr    ax, 1  ; todo this is to get 1 out of MF_DROPPED... gross?
+
+; al equals dropped.
+
+mov    bx, word ptr es:[bx + MOBJ_POS_T.mp_statenum]
+mov    dx, bx
+sal    bx, 1
+add    bx, dx
+sal    bx, 1  ; size 6..
+
+;	spritenum_t specialsprite = states[special_pos->stateNum].sprite;
+mov    dx, STATES_SEGMENT
+mov    es, dx
+mov    bl, byte ptr es:[bx + STATE_T.state_sprite]
 sub    bl, SPR_ARM1   ; minimum switch block case
 cmp    bl, (SPR_SGN2 - SPR_ARM1)  ; 0x26.. diff between low and high case
 
 ja     touchspecial_case_default
 xor    bh, bh
+
 sal    bx, 1
-mov    si, _player + PLAYER_T.player_message
-;mov    di, _player + PLAYER_T.player_message
+mov    cx, SFX_ITEMUP 
+
+mov    di, _player + PLAYER_T.player_message
+
 jmp    word ptr cs:[bx + OFFSET _touchspecial_jump_table]
+
 
 
 touchspecial_case_74:
 cmp    byte ptr ds:[_commercial], 0
 je     exit_ptouchspecialthing
 mov    word ptr ds:[_player + PLAYER_T.player_health], 200
-mov    word ptr ds:[si], GOTMSPHERE
+mov    word ptr ds:[di], GOTMSPHERE
 mov    bx, word ptr ds:[_playerMobj]
 mov    word ptr ds:[bx + MOBJ_T.m_health], 200
 mov    ax, 2
@@ -477,22 +501,26 @@ jmp    done_with_touchspecial_switch_block
 
 
 touchspecial_case_55:
-mov    word ptr ds:[si], GOTARMOR
+mov    word ptr ds:[di], GOTARMOR
 mov    ax, 1
 do_givearmor_touchspecial:
 call   P_GiveArmor_
 test   al, al
 je     exit_ptouchspecialthing
+
+
 touchspecial_case_default:
 done_with_touchspecial_switch_block:
-; todo selfmodify this flag
-cmp    byte ptr [bp - 4], 0
-je     dont_increment_itemcount
 
+SELFMODIFY_touchspecial_itemcount:
+jmp    dont_increment_itemcount  ; may become a nop
+SELFMODIFY_touchspecial_itemcount_AFTER:
 inc    word ptr ds:[_player + PLAYER_T.player_itemcount]
 dont_increment_itemcount:
-mov    ax, word ptr [bp - 8]
 
+
+SELFMODIFY_touchspecial_removemobj_ptr:
+mov    ax, 01000h
 
 call   dword ptr [_P_RemoveMobj]
 
@@ -502,13 +530,11 @@ add    byte ptr ds:[_player + PLAYER_T.player_bonuscount], BONUSADD
 
 call   S_StartSound_
 exit_ptouchspecialthing:
-LEAVE_MACRO  
 pop    di
-pop    si
 retf
 touchspecial_case_56:
 mov    ax, 2
-mov    word ptr ds:[si], GOTMEGA
+mov    word ptr ds:[di], GOTMEGA
 jmp    do_givearmor_touchspecial
 
 touchspecial_case_60:
@@ -522,14 +548,14 @@ mov    bx, word ptr ds:[_playerMobj]
 mov    ax, word ptr ds:[_player + PLAYER_T.player_health]
 mov    word ptr ds:[bx + MOBJ_T.m_health], ax
 
-mov    word ptr ds:[si], GOTHTHBONUS
+mov    word ptr ds:[di], GOTHTHBONUS
 jmp    done_with_touchspecial_switch_block
 
 
 
 
 touchspecial_case_87:
-mov    word ptr ds:[si], GOTBFG9000
+mov    word ptr ds:[di], GOTBFG9000
 mov    ax, WP_BFG
 cwd
 do_giveweapon_touchspecial:
@@ -555,14 +581,14 @@ mov    ax, bx
 cmp    byte ptr ds:[_player + PLAYER_T.player_cards + bx], bh
 jne    skip_key_message
 lea    bx, [bx + GOTBLUECARD]
-mov    word ptr ds:[si], bx
+mov    word ptr ds:[di], bx
 skip_key_message:
 ; use ax from above. 
 call   P_GiveCard_
 jmp    done_with_touchspecial_switch_block
 
 touchspecial_case_71:
-mov    word ptr ds:[si], GOTINVUL
+mov    word ptr ds:[di], GOTINVUL
 xor    ax, ax
 do_givepower:
 call   P_GivePower_
@@ -572,7 +598,7 @@ je     exit_ptouchspecialthing
 mov    cx, SFX_GETPOW
 
 touchspecial_case_88:
-mov    word ptr ds:[si], GOTCHAINGUN
+mov    word ptr ds:[di], GOTCHAINGUN
 xchg   ax, dx
 mov    ax, WP_CHAINGUN
 jmp    do_giveweapon_touchspecial
@@ -580,30 +606,30 @@ jmp    do_giveweapon_touchspecial
 touchspecial_case_89:
 mov    ax, WP_CHAINSAW
 cwd
-mov    word ptr ds:[si], GOTCHAINSAW
+mov    word ptr ds:[di], GOTCHAINSAW
 jmp    do_giveweapon_touchspecial
 
 touchspecial_case_90:
 mov    ax, WP_MISSILE
-mov    word ptr ds:[si], GOTLAUNCHER
+mov    word ptr ds:[di], GOTLAUNCHER
 cwd
 jmp    do_giveweapon_touchspecial
 
 touchspecial_case_91:
 mov    ax, WP_PLASMA
 cwd
-mov    word ptr ds:[si], GOTPLASMA
+mov    word ptr ds:[di], GOTPLASMA
 jmp    do_giveweapon_touchspecial
 touchspecial_case_92:
 xchg   ax, dx
 mov    ax, WP_SHOTGUN
-mov    word ptr ds:[si], GOTSHOTGUN
+mov    word ptr ds:[di], GOTSHOTGUN
 jmp    do_giveweapon_touchspecial
 
 touchspecial_case_93:
 xchg   ax, dx
 mov    ax, WP_SUPERSHOTGUN
-mov    word ptr ds:[si], GOTSHOTGUN2
+mov    word ptr ds:[di], GOTSHOTGUN2
 jmp    do_giveweapon_touchspecial
 
 
@@ -631,7 +657,7 @@ jmp    handle_give_card
 
 touchspecial_case_72:
 mov    ax, PW_STRENGTH
-mov    word ptr ds:[si], GOTBERSERK
+mov    word ptr ds:[di], GOTBERSERK
 cmp    byte ptr ds:[_player + PLAYER_T.player_readyweapon], bh
 je     do_givepower
 mov    byte ptr ds:[_player + PLAYER_T.player_pendingweapon], bh
@@ -640,27 +666,27 @@ jmp    do_givepower
 
 touchspecial_case_73:
 mov    ax, PW_INVISIBILITY
-mov    word ptr ds:[si], GOTINVIS
+mov    word ptr ds:[di], GOTINVIS
 jmp    do_givepower
 
 touchspecial_case_75:
 mov    ax, PW_IRONFEET
-mov    word ptr ds:[si], GOTSUIT
+mov    word ptr ds:[di], GOTSUIT
 jmp    do_givepower
 
 touchspecial_case_76:
 mov    ax, PW_ALLMAP
-mov    word ptr ds:[si], GOTMAP
+mov    word ptr ds:[di], GOTMAP
 jmp    do_givepower
 
 touchspecial_case_77:
 mov    ax, PW_INFRARED
-mov    word ptr ds:[si], GOTVISOR
+mov    word ptr ds:[di], GOTVISOR
 jmp    do_givepower
 
 touchspecial_case_68:
 mov    ax, 10
-mov    word ptr ds:[si], GOTSTIM
+mov    word ptr ds:[di], GOTSTIM
 do_givebody:
 call   P_GiveBody_
 test   al, al
@@ -673,7 +699,7 @@ jmp    done_with_touchspecial_switch_block
 
 touchspecial_case_69:
 mov    ax, 25
-mov    word ptr ds:[si], GOTMEDIKIT
+mov    word ptr ds:[di], GOTMEDIKIT
 jmp    do_givebody
 
 
@@ -699,13 +725,13 @@ jmp    exit_ptouchspecialthing
 
 
 label_22:
-mov    word ptr ds:[si], GOTCLIP
+mov    word ptr ds:[di], GOTCLIP
 jmp    done_with_touchspecial_switch_block
 
 touchspecial_case_79:
 mov    dx, 5
 xor    ax, ax  ; AM_CLIP
-mov    word ptr ds:[si], GOTCLIPBOX
+mov    word ptr ds:[di], GOTCLIPBOX
 
 do_giveammo_touchspecial:
 call   P_GiveAmmo_
@@ -717,37 +743,37 @@ jmp    done_with_touchspecial_switch_block
 touchspecial_case_80:
 mov    dx, 1
 mov    ax, AM_MISL
-mov    word ptr ds:[si], GOTROCKET
+mov    word ptr ds:[di], GOTROCKET
 jmp    do_giveammo_touchspecial
 
 touchspecial_case_81:
 mov    dx, 5
 mov    ax, AM_MISL
-mov    word ptr ds:[si], GOTROCKBOX
+mov    word ptr ds:[di], GOTROCKBOX
 jmp    do_giveammo_touchspecial
 
 
 touchspecial_case_82:
 mov    dx, 1
 mov    ax, AM_CELL
-mov    word ptr ds:[si], GOTCELL
+mov    word ptr ds:[di], GOTCELL
 jmp    do_giveammo_touchspecial
 
 touchspecial_case_83:
 mov    dx, 5
 mov    ax, AM_CELL
-mov    word ptr ds:[si], GOTCELLBOX
+mov    word ptr ds:[di], GOTCELLBOX
 jmp    do_giveammo_touchspecial
 
 touchspecial_case_84:
 mov    dx, 1
 mov    ax, dx ; AM_SHELL
-mov    word ptr ds:[si], GOTSHELLS
+mov    word ptr ds:[di], GOTSHELLS
 jmp    do_giveammo_touchspecial
 touchspecial_case_85:
 mov    dx, 5
 mov    ax, AM_SHELL
-mov    word ptr ds:[si], GOTSHELLBOX
+mov    word ptr ds:[di], GOTSHELLBOX
 jmp    do_giveammo_touchspecial
 
 
@@ -778,7 +804,7 @@ call   P_GiveAmmo_
 cmp    bl, 4
 jl     loop_backpack_giveammo
 
-mov    word ptr ds:[si], GOTBACKPACK
+mov    word ptr ds:[di], GOTBACKPACK
 
 jmp    done_with_touchspecial_switch_block
 
@@ -796,7 +822,7 @@ jne    label_10
 mov    byte ptr ds:[bx], 1
 label_10:
 
-mov    word ptr ds:[si], GOTARMBONUS
+mov    word ptr ds:[di], GOTARMBONUS
 jmp    done_with_touchspecial_switch_block
 
 touchspecial_case_70:
@@ -811,7 +837,7 @@ mov    ax, word ptr ds:[_player + PLAYER_T.player_health]
 mov    word ptr ds:[bx + MOBJ_T.m_health], ax
 
 mov    cx, SFX_GETPOW
-mov    word ptr ds:[si], GOTSUPER
+mov    word ptr ds:[di], GOTSUPER
 jmp    done_with_touchspecial_switch_block
 
 
