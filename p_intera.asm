@@ -38,158 +38,139 @@ ENDP
 ;int16_t	maxammo[NUMAMMO] = {200, 50, 300, 50};
 ;int8_t	clipammo[NUMAMMO] = {10, 4, 20, 1};
 _clipammo:
-db 10, 4, 20, 1
+dw 10, 4, 20, 1
 
 _ammo_jump_table:
 
 dw OFFSET give_ammo_case_0, OFFSET give_ammo_case_1, OFFSET give_ammo_case_2, OFFSET give_ammo_case_3
 
+
 PROC    P_GiveAmmo_  NEAR
 PUBLIC  P_GiveAmmo_
 
+;boolean __near P_GiveAmmo (  ammotype_t	ammo, int16_t		num ) ;
 
 push   bx
-push   cx
-push   si
-mov    cl, al
+cbw
 cmp    al, AM_NOAMMO
 je     exit_giveammo_ret_0
-mov    bl, al
-xor    bh, bh
-mov    si, bx
-add    si, bx
-mov    ax, word ptr ds:[si + _player + PLAYER_T.player_ammo]
-cmp    ax, word ptr ds:[si + _player + PLAYER_T.player_maxammo]
-je     exit_giveammo_ret_0
-test   dx, dx
-je     label_2
-mov    al, byte ptr cs:[bx + OFFSET _clipammo]
-cbw   
-mov    bx, ax
-mov    ax, dx
-imul   bx
-mov    dx, ax
-label_11:
-mov    al, byte ptr ds:[_gameskill]
-test   al, al
-jne    label_5
-label_6:
-add    dx, dx
-label_12:
-mov    bl, cl
-xor    bh, bh
-add    bx, bx
+
+xchg   ax, bx           ; bx holds ammo types
+sal    bx, 1  ; hold ammo type * 2  for various lookups
+
 mov    ax, word ptr ds:[bx + _player + PLAYER_T.player_ammo]
-mov    si, ax
-add    si, dx
-mov    word ptr ds:[bx + _player + PLAYER_T.player_ammo], si
-cmp    si, word ptr ds:[bx + _player + PLAYER_T.player_maxammo]
-jle    label_7
+cmp    ax, word ptr ds:[bx + _player + PLAYER_T.player_maxammo]
+je     exit_giveammo_ret_0 ; have max ammo
+mov    ax, word ptr cs:[bx + OFFSET _clipammo]
+test   dx, dx
+jne    multiply_ammo_by_clipsize
+
+mov    dx, ax
+sar    dx, 1
+jmp    got_ammo_size
+
+multiply_ammo_by_clipsize:
+mul    dl
+xchg   ax, dx
+got_ammo_size:
+mov    al, byte ptr ds:[_gameskill]
+test   al, al  ; SK_BABY
+je     give_double_ammo
+
+cmp    al, SK_NIGHTMARE
+jne    give_normal_ammo
+
+give_double_ammo:
+sal    dx, 1
+give_normal_ammo:
+
+; ax is old ammo.
+
+mov    ax, word ptr ds:[bx + _player + PLAYER_T.player_ammo]
+add    dx, ax
+mov    word ptr ds:[bx + _player + PLAYER_T.player_ammo], dx
+cmp    dx, word ptr ds:[bx + _player + PLAYER_T.player_maxammo]
+jle    dont_cap_ammo
 mov    dx, word ptr ds:[bx + _player + PLAYER_T.player_maxammo]
 mov    word ptr ds:[bx + _player + PLAYER_T.player_ammo], dx
-label_7:
+dont_cap_ammo:
+
+;    // If non zero ammo, 
+;    // don't change up weapons,
+;    // player was lower on purpose.
+
 test   ax, ax
 jne    exit_giveammo_ret_1
-cmp    cl, 3
-ja     exit_giveammo_ret_1
-xor    ch, ch
-mov    bx, cx
-add    bx, cx
+; check for adding weapons, changing weapons...
+mov    al, byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 jmp    word ptr cs:[bx + OFFSET _ammo_jump_table]
+
 exit_giveammo_ret_0:
 xor    ax, ax
-jmp    exit_giveammo
+pop    bx
+ret    
+
+
 give_ammo_case_0:
-cmp    byte ptr ds:[_player + PLAYER_T.player_readyweapon], 0
+cmp    al, 0
 jne    exit_giveammo_ret_1
 cmp    byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_CHAINGUN], 0
-je     label_13
+je     switch_to_pistol
 mov    byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_CHAINGUN
 exit_giveammo_ret_1:
 mov    al, 1
 exit_giveammo:
-pop    si
-pop    cx
 pop    bx
 ret    
-label_2:
-jmp    label_3
 
-label_3:
-mov    al, byte ptr cs:[bx + OFFSET _clipammo]
-cbw   
-mov    dx, ax
-sar    dx, 1
-jmp    label_11
-label_5:
-cmp    al, 4
-je     label_6
-jmp    label_12
-label_13:
 
-mov    byte ptr ds:[_player + PLAYER_T.player_readyweapon], 1
-mov    al, 1
-pop    si
-pop    cx
+switch_to_pistol:
+
+mov    al, WP_PISTOL ; 1
+mov    byte ptr ds:[_player + PLAYER_T.player_readyweapon], al
 pop    bx
 ret    
+
 give_ammo_case_1:
 
-mov    al, byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 test   al, al
-jne    label_10
-label_9:
+je     check_for_switch_to_shotgun
+
+cmp    al, 1
+jne    exit_giveammo_ret_1
+
+check_for_switch_to_shotgun:
 
 cmp    byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_SHOTGUN], 0
 je     exit_giveammo_ret_1
 mov    byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_SHOTGUN
 mov    al, 1
-pop    si
-pop    cx
-pop    bx
-ret    
-label_10:
-cmp    al, 1
-je     label_9
-mov    al, 1
-pop    si
-pop    cx
 pop    bx
 ret    
 give_ammo_case_2:
 
-mov    al, byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 test   al, al
-jne    label_15
-label_14:
+je    check_for_switch_to_plasma
+
+label_15:
+cmp    al, 1
+jne    exit_giveammo_ret_1
+check_for_switch_to_plasma:
 cmp    byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_PLASMA], 0
 je     exit_giveammo_ret_1
 mov    byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_PLASMA
 mov    al, 1
-pop    si
-pop    cx
-pop    bx
-ret    
-label_15:
-cmp    al, 1
-je     label_14
-mov    al, 1
-pop    si
-pop    cx
 pop    bx
 ret    
 give_ammo_case_3:
-cmp    byte ptr ds:[_player + PLAYER_T.player_readyweapon], 0
+cmp    al, 0
 jne    exit_giveammo_ret_1
 
 cmp    byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_MISSILE], 0
-jne    label_8
-jmp    exit_giveammo_ret_1
-label_8:
+je     exit_giveammo_ret_1
+
 mov    byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_MISSILE
 mov    al, 1
-pop    si
-pop    cx
 pop    bx
 ret    
 
@@ -197,7 +178,7 @@ ENDP
 
 COMMENT @
 
-PROC    P_GiveWeapon_ 
+PROC    P_GiveWeapon_ NEAR
 PUBLIC  P_GiveWeapon_
 
 0x00000000000031f2:  53                      push   bx
@@ -244,7 +225,7 @@ ENDP
 
 
 
-PROC    P_GiveBody_ 
+PROC    P_GiveBody_  NEAR
 PUBLIC  P_GiveBody_
 0x000000000000324a:  53                      push   bx
 0x000000000000324b:  56                      push   si
@@ -272,7 +253,7 @@ ENDP
 
 
 
-PROC    P_GiveArmor_ 
+PROC    P_GiveArmor_  NEAR
 PUBLIC  P_GiveArmor_
 0x0000000000003276:  53                      push   bx
 0x0000000000003277:  52                      push   dx
@@ -296,7 +277,7 @@ ENDP
 
 
 
-PROC    P_GiveCard_ 
+PROC    P_GiveCard_  NEAR
 PUBLIC  P_GiveCard_
 0x0000000000003296:  53                      push   bx
 0x0000000000003297:  56                      push   si
@@ -317,7 +298,7 @@ ENDP
 
 
 
-PROC    P_GivePower_ 
+PROC    P_GivePower_  NEAR
 PUBLIC  P_GivePower_
 0x00000000000032b4:  53                      push   bx
 0x00000000000032b5:  56                      push   si
@@ -408,8 +389,10 @@ ENDP
 
 
 
-PROC    P_TouchSpecialThing_ 
-PUBLIC  P_TouchSpecialThing_0x0000000000003374:  56                      push   si
+PROC    P_TouchSpecialThing_  NEAR
+PUBLIC  P_TouchSpecialThing_
+
+0x0000000000003374:  56                      push   si
 0x0000000000003375:  57                      push   di
 0x0000000000003376:  55                      push   bp
 0x0000000000003377:  89 E5                   mov    bp, sp
@@ -850,8 +833,10 @@ ENDP
 
 
 
-PROC    P_KillMobj_ 
-PUBLIC  P_KillMobj_0x000000000000381e:  56                      push   si
+PROC    P_KillMobj_  NEAR
+PUBLIC  P_KillMobj_
+
+0x000000000000381e:  56                      push   si
 0x000000000000381f:  57                      push   di
 0x0000000000003820:  55                      push   bp
 0x0000000000003821:  89 E5                   mov    bp, sp
@@ -1014,7 +999,7 @@ PUBLIC  P_KillMobj_0x000000000000381e:  56                      push   si
 0x00000000000039d3:  3A
 
 
-PROC    getMassThrust_ 
+PROC    getMassThrust_  NEAR
 PUBLIC  getMassThrust_
 
 0x00000000000039d4:  53                      push   bx
@@ -1070,8 +1055,9 @@ ENDP
 
 
 
-PROC    P_DamageMobj_ 
+PROC    P_DamageMobj_  FAR
 PUBLIC  P_DamageMobj_
+
 0x0000000000003a42:  56                      push   si
 0x0000000000003a43:  57                      push   di
 0x0000000000003a44:  55                      push   bp
