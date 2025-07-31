@@ -582,17 +582,41 @@ handle_give_card:
 mov    ax, bx
 cmp    byte ptr ds:[_player + PLAYER_T.player_cards + bx], bh
 jne    skip_key_message
-lea    bx, [bx + GOTBLUECARD]
+add    bx, GOTBLUECARD
 mov    word ptr ds:[di], bx
 skip_key_message:
 ; use ax from above. 
 call   P_GiveCard_
 jmp    done_with_touchspecial_switch_block
 
+
+;71 025h 0
+;72 026h 1
+;73 027h 2
+; 74 na
+;75 028h 3
+;76 029h 4
+;77 02Ah 5
+
+touchspecial_case_75:
+touchspecial_case_76:
+touchspecial_case_77:
+
+do_givepower_subtract_1_extra:
+dec    bx ; undo the extra one for the 74 offset being a nonpowerup... dec once enough for shr 
+
+
+touchspecial_case_73:
 touchspecial_case_71:
-mov    word ptr ds:[di], GOTINVUL
-xor    ax, ax
 do_givepower:
+
+shr    bx, 1  ; undo word lookup
+add    bx, (GOTINVUL - SPR_PINV + SPR_ARM1) ; renormalize 
+lea    ax, [bx - GOTINVUL]  ; set ax parameter to correct powerup.
+
+mov    word ptr ds:[di], bx
+
+
 call   P_GivePower_
 test   al, al
 je     exit_ptouchspecialthing
@@ -658,33 +682,13 @@ mov    bl, IT_REDSKULL
 jmp    handle_give_card
 
 touchspecial_case_72:
-mov    ax, PW_STRENGTH
-mov    word ptr ds:[di], GOTBERSERK
+; bh known zero
 cmp    byte ptr ds:[_player + PLAYER_T.player_readyweapon], bh
 je     do_givepower
 mov    byte ptr ds:[_player + PLAYER_T.player_pendingweapon], bh
 jmp    do_givepower
 
 
-touchspecial_case_73:
-mov    ax, PW_INVISIBILITY
-mov    word ptr ds:[di], GOTINVIS
-jmp    do_givepower
-
-touchspecial_case_75:
-mov    ax, PW_IRONFEET
-mov    word ptr ds:[di], GOTSUIT
-jmp    do_givepower
-
-touchspecial_case_76:
-mov    ax, PW_ALLMAP
-mov    word ptr ds:[di], GOTMAP
-jmp    do_givepower
-
-touchspecial_case_77:
-mov    ax, PW_INFRARED
-mov    word ptr ds:[di], GOTVISOR
-jmp    do_givepower
 
 touchspecial_case_68:
 mov    ax, 10
