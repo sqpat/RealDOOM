@@ -1044,7 +1044,6 @@ uint16_t armsbgarray[1];
 
 
 int16_t	maxammo[NUMAMMO] = {200, 50, 300, 50};
-int8_t	clipammo[NUMAMMO] = {10, 4, 20, 1};
 boolean		onground;
 
 int16_t currentThinkerListHead;

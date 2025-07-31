@@ -1110,7 +1110,6 @@ extern uint16_t armsbgarray[1];
 
 
 extern int16_t	maxammo[NUMAMMO];
-extern int8_t	clipammo[NUMAMMO];
 extern boolean		onground;
 
 
