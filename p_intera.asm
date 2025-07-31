@@ -28,6 +28,8 @@ EXTRN _P_SetMobjState:DWORD
 EXTRN _useDeadAttackerRef:BYTE
 EXTRN _deadAttackerX:DWORD
 EXTRN _deadAttackerY:DWORD
+EXTRN FastDiv32u16u_:PROC
+EXTRN FastMul16u32u_:PROC
 
 
 .DATA
@@ -1022,68 +1024,76 @@ ret
 
 ENDP 
 
-COMMENT @
 
-dw 039E9h, 03A39h, 039E9h, 03A39h, 03A39h, 03A1Fh, 03A39h, 03A39h, 03A39h, 03A07h
-dw 03A07h, 03A07h, 03A1Fh, 03A39h, 03A1Fh, 039FFh, 03A1Fh, 03A0Fh, 03A1Fh, 03A07h
-dw 03A39h, 03A2Fh, 03A2Fh
+
+mass_thrust_switch_block:
+dw mass_thrust_type_1, mass_thrust_default, mass_thrust_type_1, mass_thrust_default, mass_thrust_default, mass_thrust_type_4, mass_thrust_default, mass_thrust_default, mass_thrust_default, mass_thrust_type_2
+dw mass_thrust_type_2, mass_thrust_type_2, mass_thrust_type_4, mass_thrust_default, mass_thrust_type_4, mass_thrust_type_6, mass_thrust_type_4, mass_thrust_type_5, mass_thrust_type_4, mass_thrust_type_2
+dw mass_thrust_default, mass_thrust_type_3, mass_thrust_type_3
 
 
 
 PROC    getMassThrust_  NEAR
 PUBLIC  getMassThrust_
+;fixed_t __near getMassThrust(int16_t damage, int8_t id){
 
-0x00000000000039d4:  53                      push   bx
-0x00000000000039d5:  51                      push   cx
-0x00000000000039d6:  80 EA 03                sub    dl, 3
-0x00000000000039d9:  80 FA 16                cmp    dl, 0x16
-0x00000000000039dc:  77 5B                   ja     0x3a39
-0x00000000000039de:  30 F6                   xor    dh, dh
-0x00000000000039e0:  89 D3                   mov    bx, dx
-0x00000000000039e2:  01 D3                   add    bx, dx
-0x00000000000039e4:  2E FF A7 A6 39          jmp    word ptr cs:[bx + 0x39a6]
-0x00000000000039e9:  BB 00 80                mov    bx, 0x8000
-0x00000000000039ec:  B9 0C 00                mov    cx, 0xc
-0x00000000000039ef:  9A DF 5C A8 0A          lcall  0xaa8:0x5cdf
-0x00000000000039f4:  BB F4 01                mov    bx, 0x1f4
-0x00000000000039f7:  9A AD 5E A8 0A          lcall  0xaa8:0x5ead
-0x00000000000039fc:  59                      pop    cx
-0x00000000000039fd:  5B                      pop    bx
-0x00000000000039fe:  C3                      ret    
-0x00000000000039ff:  BA 00 40                mov    dx, 0x4000
-0x0000000000003a02:  F7 E2                   mul    dx
-0x0000000000003a04:  59                      pop    cx
-0x0000000000003a05:  5B                      pop    bx
-0x0000000000003a06:  C3                      ret    
-0x0000000000003a07:  BA 00 08                mov    dx, 0x800
-0x0000000000003a0a:  F7 E2                   mul    dx
-0x0000000000003a0c:  59                      pop    cx
-0x0000000000003a0d:  5B                      pop    bx
-0x0000000000003a0e:  C3                      ret    
-0x0000000000003a0f:  BB 00 80                mov    bx, 0x8000
-0x0000000000003a12:  B9 0C 00                mov    cx, 0xc
-0x0000000000003a15:  9A DF 5C A8 0A          lcall  0xaa8:0x5cdf
-0x0000000000003a1a:  BB 58 02                mov    bx, 0x258
-0x0000000000003a1d:  EB D8                   jmp    0x39f7
-0x0000000000003a1f:  BB 00 80                mov    bx, 0x8000
-0x0000000000003a22:  B9 0C 00                mov    cx, 0xc
-0x0000000000003a25:  9A DF 5C A8 0A          lcall  0xaa8:0x5cdf
-0x0000000000003a2a:  BB E8 03                mov    bx, 0x3e8
-0x0000000000003a2d:  EB C8                   jmp    0x39f7
-0x0000000000003a2f:  BB 50 00                mov    bx, 0x50
-0x0000000000003a32:  99                      cwd    
-0x0000000000003a33:  F7 FB                   idiv   bx
-0x0000000000003a35:  99                      cwd    
-0x0000000000003a36:  59                      pop    cx
-0x0000000000003a37:  5B                      pop    bx
-0x0000000000003a38:  C3                      ret    
-0x0000000000003a39:  BA 00 20                mov    dx, 0x2000
-0x0000000000003a3c:  F7 E2                   mul    dx
-0x0000000000003a3e:  59                      pop    cx
-0x0000000000003a3f:  5B                      pop    bx
-0x0000000000003a40:  C3                      ret    
+push   bx
+push   cx
+sub    dl, MT_VILE ; (lowest)
+cmp    dl, (MT_BOSSBRAIN - MT_VILE)  ; highest
+ja     mass_thrust_default
+xor    dh, dh
+mov    bx, dx
+add    bx, dx
+jmp    word ptr cs:[bx + OFFSET mass_thrust_switch_block]
+mass_thrust_type_1:
+mov    bx, 08000h
+mov    cx, 0Ch
+call   FastMul16u32u_
+mov    bx, 500
+do_mass_thrust_div:
+call   FastDiv32u16u_
+pop    cx
+pop    bx
+ret    
+mass_thrust_type_5:
+mov    bx, 08000h
+mov    cx, 0Ch
+call   FastMul16u32u_
+mov    bx, 600
+jmp    do_mass_thrust_div
+mass_thrust_type_4:
+mov    bx, 08000h
+mov    cx, 0Ch
+call   FastMul16u32u_
+mov    bx, 1000
+jmp    do_mass_thrust_div
+mass_thrust_type_3:
+mov    bx, 80
+cwd    
+idiv   bx
+cwd    
+pop    cx
+pop    bx
+ret    
+
+mass_thrust_type_6:
+mov    dx, 04000h
+jmp    do_mass_thrust_mul
+mass_thrust_type_2:
+mov    dx, 0800h
+jmp    do_mass_thrust_mul
+
+mass_thrust_default:
+mov    dx, 02000h
+do_mass_thrust_mul:
+mul    dx
+pop    cx
+pop    bx
+ret    
 ENDP
 
+COMMENT @
 
 
 PROC    P_DamageMobj_  FAR

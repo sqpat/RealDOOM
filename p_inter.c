@@ -65,6 +65,7 @@ void __near P_GiveCard (  card_t	card );
 boolean __far P_GivePower (  int16_t /*powertype_t*/	power );
 
 void __near P_KillMobj (	mobj_t __near* source, mobj_t __near*	target, mobj_pos_t __far*	target_pos);
+fixed_t __near getMassThrust(int16_t damage, int8_t id);
 /*
 
 boolean __near P_GiveAmmo (  ammotype_t	ammo, int16_t		num ) {
@@ -735,7 +736,6 @@ void __near P_KillMobj (	mobj_t __near* source, mobj_t __near*	target, mobj_pos_
 	setStateReturn_pos->flags2 |= MF_DROPPED;	// special versions of items
 }
 
-*/
 
 fixed_t __near getMassThrust(int16_t damage, int8_t id){
 	
@@ -775,6 +775,8 @@ fixed_t __near getMassThrust(int16_t damage, int8_t id){
 				return FastMul16u16u(damage, 0x2000);
 	}
 }
+*/
+
 
 //
 // P_DamageMobj
