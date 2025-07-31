@@ -58,6 +58,8 @@
 // Returns false if the ammo can't be picked up at all
 //
 boolean __near P_GiveAmmo (  ammotype_t	ammo, int16_t		num ) ;
+boolean __near P_GiveWeapon (  weapontype_t	weapon, boolean	dropped ) ;
+boolean __near P_GiveBody (  int16_t num ) ;
 /*
 
 boolean __near P_GiveAmmo (  ammotype_t	ammo, int16_t		num ) {
@@ -173,8 +175,6 @@ boolean __near P_GiveWeapon (  weapontype_t	weapon, boolean	dropped ) {
     return (gaveweapon || gaveammo);
 }
 
-*/
-boolean __near P_GiveWeapon (  weapontype_t	weapon, boolean	dropped ) ;
  
 
 //
@@ -197,6 +197,7 @@ boolean __near P_GiveBody (  int16_t num ) {
     return true;
 }
 
+*/
 
 
 //

@@ -233,36 +233,34 @@ ret
 
 ENDP
 
-COMMENT @
 
 
 PROC    P_GiveBody_  NEAR
 PUBLIC  P_GiveBody_
 
-0x000000000000324a:  53                      push   bx
-0x000000000000324b:  56                      push   si
-0x000000000000324c:  BB E8 07                mov    bx, 0x7e8
-0x000000000000324f:  83 3F 64                cmp    word ptr ds:[bx], 0x64
-0x0000000000003252:  7D 1D                   jge    0x3271
-0x0000000000003254:  01 07                   add    word ptr ds:[bx], ax
-0x0000000000003256:  83 3F 64                cmp    word ptr ds:[bx], 0x64
-0x0000000000003259:  7E 04                   jle    0x325f
-0x000000000000325b:  C7 07 64 00             mov    word ptr ds:[bx], 0x64
-0x000000000000325f:  BE EC 06                mov    si, 0x6ec
-0x0000000000003262:  BB E8 07                mov    bx, 0x7e8
-0x0000000000003265:  8B 34                   mov    si, word ptr ds:[si]
-0x0000000000003267:  8B 07                   mov    ax, word ptr ds:[bx]
-0x0000000000003269:  89 44 1C                mov    word ptr ds:[si + 0x1c], ax
-0x000000000000326c:  B0 01                   mov    al, 1
-0x000000000000326e:  5E                      pop    si
-0x000000000000326f:  5B                      pop    bx
-0x0000000000003270:  C3                      ret    
-0x0000000000003271:  30 C0                   xor    al, al
-0x0000000000003273:  5E                      pop    si
-0x0000000000003274:  5B                      pop    bx
-0x0000000000003275:  C3                      ret    
+push   bx
+mov    bx, _player + PLAYER_T.player_health
+cmp    word ptr ds:[bx], 100
+jge    exit_pgivebody_return_0
+add    word ptr ds:[bx], ax
+cmp    word ptr ds:[bx], 100
+jle    dont_cap_health
+mov    ax, 100
+mov    word ptr ds:[bx], ax
+
+dont_cap_health:
+mov    bx, word ptr ds:[_playerMobj]
+mov    word ptr ds:[bx + MOBJ_T.m_health], ax
+mov    al, 1
+pop    bx
+ret    
+exit_pgivebody_return_0:
+xor    al, al
+pop    bx
+ret    
 ENDP
 
+COMMENT @
 
 
 PROC    P_GiveArmor_  NEAR
@@ -271,16 +269,16 @@ PUBLIC  P_GiveArmor_
 0x0000000000003276:  53                      push   bx
 0x0000000000003277:  52                      push   dx
 0x0000000000003278:  6B D0 64                imul   dx, ax, 0x64
-0x000000000000327b:  BB EA 07                mov    bx, 0x7ea
+0x000000000000327b:  BB EA 07                mov    bx, _player + PLAYER_T.player_armorpoints
 0x000000000000327e:  3B 17                   cmp    dx, word ptr ds:[bx]
 0x0000000000003280:  7F 05                   jg     0x3287
 0x0000000000003282:  30 C0                   xor    al, al
 0x0000000000003284:  5A                      pop    dx
 0x0000000000003285:  5B                      pop    bx
 0x0000000000003286:  C3                      ret    
-0x0000000000003287:  BB EC 07                mov    bx, 0x7ec
+0x0000000000003287:  BB EC 07                mov    bx, _player + PLAYER_T.player_armortype
 0x000000000000328a:  88 07                   mov    byte ptr ds:[bx], al
-0x000000000000328c:  BB EA 07                mov    bx, 0x7ea
+0x000000000000328c:  BB EA 07                mov    bx, _player + PLAYER_T.player_armorpoints
 0x000000000000328f:  B0 01                   mov    al, 1
 0x0000000000003291:  89 17                   mov    word ptr ds:[bx], dx
 0x0000000000003293:  5A                      pop    dx
@@ -451,7 +449,7 @@ PUBLIC  P_TouchSpecialThing_
 0x00000000000033e0:  83 FB F8                cmp    bx, -8
 0x00000000000033e3:  7C 57                   jl     0x343c
 0x00000000000033e5:  B9 20 00                mov    cx, 0x20
-0x00000000000033e8:  83 7D 1C 00             cmp    word ptr ds:[di + 0x1c], 0
+0x00000000000033e8:  83 7D 1C 00             cmp    word ptr ds:[di + MOBJ_T.m_health], 0
 0x00000000000033ec:  7E 4E                   jle    0x343c
 0x00000000000033ee:  8A 56 FE                mov    dl, byte ptr [bp - 2]
 0x00000000000033f1:  80 EA 37                sub    dl, 0x37
@@ -497,25 +495,25 @@ PUBLIC  P_TouchSpecialThing_
 0x0000000000003456:  BB 24 08                mov    bx, 0x824
 0x0000000000003459:  C7 07 19 00             mov    word ptr ds:[bx], 0x19
 0x000000000000345d:  EB BA                   jmp    0x3419
-0x000000000000345f:  BB E8 07                mov    bx, 0x7e8
+0x000000000000345f:  BB E8 07                mov    bx, _player + PLAYER_T.player_health
 0x0000000000003462:  FF 07                   inc    word ptr ds:[bx]
 0x0000000000003464:  81 3F C8 00             cmp    word ptr ds:[bx], 0xc8
 0x0000000000003468:  7F 16                   jg     0x3480
 0x000000000000346a:  BB EC 06                mov    bx, 0x6ec
-0x000000000000346d:  BE E8 07                mov    si, 0x7e8
+0x000000000000346d:  BE E8 07                mov    si, _player + PLAYER_T.player_health
 0x0000000000003470:  8B 1F                   mov    bx, word ptr ds:[bx]
 0x0000000000003472:  8B 04                   mov    ax, word ptr ds:[si]
-0x0000000000003474:  89 47 1C                mov    word ptr ds:[bx + 0x1c], ax
+0x0000000000003474:  89 47 1C                mov    word ptr ds:[bx + MOBJ_T.m_health], ax
 0x0000000000003477:  BB 24 08                mov    bx, 0x824
 0x000000000000347a:  C7 07 1A 00             mov    word ptr ds:[bx], 0x1a
 0x000000000000347e:  EB 99                   jmp    0x3419
 0x0000000000003480:  C7 07 C8 00             mov    word ptr ds:[bx], 0xc8
 0x0000000000003484:  EB E4                   jmp    0x346a
-0x0000000000003486:  BB EA 07                mov    bx, 0x7ea
+0x0000000000003486:  BB EA 07                mov    bx, _player + PLAYER_T.player_armorpoints
 0x0000000000003489:  FF 07                   inc    word ptr ds:[bx]
 0x000000000000348b:  81 3F C8 00             cmp    word ptr ds:[bx], 0xc8
 0x000000000000348f:  7F 15                   jg     0x34a6
-0x0000000000003491:  BB EC 07                mov    bx, 0x7ec
+0x0000000000003491:  BB EC 07                mov    bx, _player + PLAYER_T.player_armortype
 0x0000000000003494:  80 3F 00                cmp    byte ptr ds:[bx], 0
 0x0000000000003497:  75 03                   jne    0x349c
 0x0000000000003499:  C6 07 01                mov    byte ptr ds:[bx], 1
@@ -524,15 +522,15 @@ PUBLIC  P_TouchSpecialThing_
 0x00000000000034a3:  E9 73 FF                jmp    0x3419
 0x00000000000034a6:  C7 07 C8 00             mov    word ptr ds:[bx], 0xc8
 0x00000000000034aa:  EB E5                   jmp    0x3491
-0x00000000000034ac:  BB E8 07                mov    bx, 0x7e8
+0x00000000000034ac:  BB E8 07                mov    bx, _player + PLAYER_T.player_health
 0x00000000000034af:  83 07 64                add    word ptr ds:[bx], 0x64
 0x00000000000034b2:  81 3F C8 00             cmp    word ptr ds:[bx], 0xc8
 0x00000000000034b6:  7F 1A                   jg     0x34d2
 0x00000000000034b8:  BB EC 06                mov    bx, 0x6ec
-0x00000000000034bb:  BE E8 07                mov    si, 0x7e8
+0x00000000000034bb:  BE E8 07                mov    si, _player + PLAYER_T.player_health
 0x00000000000034be:  8B 1F                   mov    bx, word ptr ds:[bx]
 0x00000000000034c0:  8B 04                   mov    ax, word ptr ds:[si]
-0x00000000000034c2:  89 47 1C                mov    word ptr ds:[bx + 0x1c], ax
+0x00000000000034c2:  89 47 1C                mov    word ptr ds:[bx + MOBJ_T.m_health], ax
 0x00000000000034c5:  BB 24 08                mov    bx, 0x824
 0x00000000000034c8:  B9 5D 00                mov    cx, 0x5d
 0x00000000000034cb:  C7 07 1E 00             mov    word ptr ds:[bx], 0x1e
@@ -543,13 +541,13 @@ PUBLIC  P_TouchSpecialThing_
 0x00000000000034db:  80 3F 00                cmp    byte ptr ds:[bx], 0
 0x00000000000034de:  75 03                   jne    0x34e3
 0x00000000000034e0:  E9 59 FF                jmp    0x343c
-0x00000000000034e3:  BB E8 07                mov    bx, 0x7e8
+0x00000000000034e3:  BB E8 07                mov    bx, _player + PLAYER_T.player_health
 0x00000000000034e6:  BE EC 06                mov    si, 0x6ec
 0x00000000000034e9:  C7 07 C8 00             mov    word ptr ds:[bx], 0xc8
 0x00000000000034ed:  8B 34                   mov    si, word ptr ds:[si]
 0x00000000000034ef:  8B 07                   mov    ax, word ptr ds:[bx]
 0x00000000000034f1:  BB 24 08                mov    bx, 0x824
-0x00000000000034f4:  89 44 1C                mov    word ptr ds:[si + 0x1c], ax
+0x00000000000034f4:  89 44 1C                mov    word ptr ds:[si + MOBJ_T.m_health], ax
 0x00000000000034f7:  B8 02 00                mov    ax, 2
 0x00000000000034fa:  B9 5D 00                mov    cx, 0x5d
 0x00000000000034fd:  E8 76 FD                call   P_GiveArmor_
@@ -922,7 +920,7 @@ PUBLIC  P_KillMobj_
 0x00000000000038f9:  30 E4                   xor    ah, ah
 0x00000000000038fb:  FF 5E F6                lcall  [bp - 0xa]
 0x00000000000038fe:  F7 D8                   neg    ax
-0x0000000000003900:  3B 44 1C                cmp    ax, word ptr ds:[si + 0x1c]
+0x0000000000003900:  3B 44 1C                cmp    ax, word ptr ds:[si + MOBJ_T.m_health]
 0x0000000000003903:  7E 6D                   jle    0x3972
 0x0000000000003905:  8A 44 1A                mov    al, byte ptr ds:[si + 0x1a]
 0x0000000000003908:  30 E4                   xor    ah, ah
@@ -1099,7 +1097,7 @@ PUBLIC  P_DamageMobj_
 0x0000000000003a8a:  26 F6 47 14 04          test   byte ptr es:[bx + 0x14], 4
 0x0000000000003a8f:  75 03                   jne    0x3a94
 0x0000000000003a91:  E9 6E 02                jmp    0x3d02
-0x0000000000003a94:  83 7C 1C 00             cmp    word ptr ds:[si + 0x1c], 0
+0x0000000000003a94:  83 7C 1C 00             cmp    word ptr ds:[si + MOBJ_T.m_health], 0
 0x0000000000003a98:  7E F7                   jle    0x3a91
 0x0000000000003a9a:  26 F6 47 17 01          test   byte ptr es:[bx + 0x17], 1
 0x0000000000003a9f:  74 03                   je     0x3aa4
@@ -1164,7 +1162,7 @@ PUBLIC  P_DamageMobj_
 0x0000000000003b46:  89 56 F6                mov    word ptr [bp - 0xa], dx
 0x0000000000003b49:  83 FF 28                cmp    di, 0x28
 0x0000000000003b4c:  7D 4C                   jge    0x3b9a
-0x0000000000003b4e:  3B 7C 1C                cmp    di, word ptr ds:[si + 0x1c]
+0x0000000000003b4e:  3B 7C 1C                cmp    di, word ptr ds:[si + MOBJ_T.m_health]
 0x0000000000003b51:  7E 47                   jle    0x3b9a
 0x0000000000003b53:  C4 5E FC                les    bx, ptr [bp - 4]
 0x0000000000003b56:  26 8B 47 08             mov    ax, word ptr es:[bx + 8]
@@ -1219,7 +1217,7 @@ PUBLIC  P_DamageMobj_
 0x0000000000003be2:  81 C3 3E DE             add    bx, 0xde3e
 0x0000000000003be6:  80 3F 0B                cmp    byte ptr ds:[bx], 0xb
 0x0000000000003be9:  75 0A                   jne    0x3bf5
-0x0000000000003beb:  8B 44 1C                mov    ax, word ptr ds:[si + 0x1c]
+0x0000000000003beb:  8B 44 1C                mov    ax, word ptr ds:[si + MOBJ_T.m_health]
 0x0000000000003bee:  39 C7                   cmp    di, ax
 0x0000000000003bf0:  7C 03                   jl     0x3bf5
 0x0000000000003bf2:  89 C7                   mov    di, ax
@@ -1233,7 +1231,7 @@ PUBLIC  P_DamageMobj_
 0x0000000000003c06:  BB EE 07                mov    bx, 0x7ee
 0x0000000000003c09:  83 3F 00                cmp    word ptr ds:[bx], 0
 0x0000000000003c0c:  75 F5                   jne    0x3c03
-0x0000000000003c0e:  BB EC 07                mov    bx, 0x7ec
+0x0000000000003c0e:  BB EC 07                mov    bx, _player + PLAYER_T.player_armortype
 0x0000000000003c11:  8A 07                   mov    al, byte ptr ds:[bx]
 0x0000000000003c13:  84 C0                   test   al, al
 0x0000000000003c15:  74 25                   je     0x3c3c
@@ -1244,16 +1242,16 @@ PUBLIC  P_DamageMobj_
 0x0000000000003c20:  BB 03 00                mov    bx, 3
 0x0000000000003c23:  99                      cwd    
 0x0000000000003c24:  F7 FB                   idiv   bx
-0x0000000000003c26:  BB EA 07                mov    bx, 0x7ea
+0x0000000000003c26:  BB EA 07                mov    bx, _player + PLAYER_T.player_armorpoints
 0x0000000000003c29:  3B 07                   cmp    ax, word ptr ds:[bx]
 0x0000000000003c2b:  7C 08                   jl     0x3c35
 0x0000000000003c2d:  8B 07                   mov    ax, word ptr ds:[bx]
-0x0000000000003c2f:  BB EC 07                mov    bx, 0x7ec
+0x0000000000003c2f:  BB EC 07                mov    bx, _player + PLAYER_T.player_armortype
 0x0000000000003c32:  C6 07 00                mov    byte ptr ds:[bx], 0
-0x0000000000003c35:  BB EA 07                mov    bx, 0x7ea
+0x0000000000003c35:  BB EA 07                mov    bx, _player + PLAYER_T.player_armorpoints
 0x0000000000003c38:  29 C7                   sub    di, ax
 0x0000000000003c3a:  29 07                   sub    word ptr ds:[bx], ax
-0x0000000000003c3c:  BB E8 07                mov    bx, 0x7e8
+0x0000000000003c3c:  BB E8 07                mov    bx, _player + PLAYER_T.player_health
 0x0000000000003c3f:  29 3F                   sub    word ptr ds:[bx], di
 0x0000000000003c41:  83 3F 00                cmp    word ptr ds:[bx], 0
 0x0000000000003c44:  7D 03                   jge    0x3c49
@@ -1266,7 +1264,7 @@ PUBLIC  P_DamageMobj_
 0x0000000000003c56:  BB 2C 08                mov    bx, 0x82c
 0x0000000000003c59:  89 07                   mov    word ptr ds:[bx], ax
 0x0000000000003c5b:  8B 5E FA                mov    bx, word ptr [bp - 6]
-0x0000000000003c5e:  83 7F 1C 00             cmp    word ptr ds:[bx + 0x1c], 0
+0x0000000000003c5e:  83 7F 1C 00             cmp    word ptr ds:[bx + MOBJ_T.m_health], 0
 0x0000000000003c62:  7F 03                   jg     0x3c67
 0x0000000000003c64:  E9 EC 00                jmp    0x3d53
 0x0000000000003c67:  C6 06 35 20 00          mov    byte ptr ds:[0x2035], 0
@@ -1275,8 +1273,8 @@ PUBLIC  P_DamageMobj_
 0x0000000000003c71:  83 3F 64                cmp    word ptr ds:[bx], 0x64
 0x0000000000003c74:  7E 04                   jle    0x3c7a
 0x0000000000003c76:  C7 07 64 00             mov    word ptr ds:[bx], 0x64
-0x0000000000003c7a:  29 7C 1C                sub    word ptr ds:[si + 0x1c], di
-0x0000000000003c7d:  83 7C 1C 00             cmp    word ptr ds:[si + 0x1c], 0
+0x0000000000003c7a:  29 7C 1C                sub    word ptr ds:[si + MOBJ_T.m_health], di
+0x0000000000003c7d:  83 7C 1C 00             cmp    word ptr ds:[si + MOBJ_T.m_health], 0
 0x0000000000003c81:  7F 03                   jg     0x3c86
 0x0000000000003c83:  E9 04 01                jmp    0x3d8a
 0x0000000000003c86:  E8 7C 22                call   0x5f05
