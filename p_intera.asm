@@ -30,9 +30,6 @@ EXTRN _P_RemoveMobj:DWORD
 EXTRN _P_DropWeaponFar:DWORD
 EXTRN _P_SpawnMobj:DWORD
 EXTRN _P_SetMobjState:DWORD
-EXTRN _useDeadAttackerRef:BYTE
-EXTRN _deadAttackerX:DWORD
-EXTRN _deadAttackerY:DWORD
 
 .DATA
 
@@ -1131,10 +1128,10 @@ PUBLIC  P_DamageMobj_
 ; bp - 2 damage
 ; bp - 4 targetpos offset
 ; bp - 6 source
-; bp - 8 ang hi (unused)
-; bp - 0Ah  thrust (unused)
-; bp - 0Ch  thrust (unused)
-; bp - 0Eh  inflictor
+; bp - 8 inflictor
+
+
+
 
 
 push   si
@@ -1142,13 +1139,14 @@ push   di
 push   bp
 mov    bp, sp
 push   cx
-sub    sp, 0Ah
+sub    sp, 4
 mov    si, ax
-push   dx   ; bp - 0Eh 
+push   dx   ; bp - 8
 mov    word ptr [bp - 6], bx
 mov    bx, SIZEOF_THINKER_T
 sub    ax, (_thinkerlist + THINKER_T.t_data)
 xor    dx, dx
+
 div    bx
 mov    dx, SIZEOF_MOBJ_POS_T
 mul    dx
@@ -1192,7 +1190,7 @@ sar    word ptr [bp - 2], 1
 damagemobj_dont_halve_damage:
 damagemobj_not_player:
 
-cmp    word ptr [bp - 0Eh], 0 ; check if inflictor is not null..
+cmp    word ptr [bp - 8], 0 ; check if inflictor is not null..
 jne    continue_inflictor_check
 jump_to_done_with_inflictor_block:
 jmp    done_with_inflictor_block
@@ -1231,7 +1229,7 @@ push   word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
 push   word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
 
 
-mov    ax, word ptr [bp - 0Eh]
+mov    ax, word ptr [bp - 8]
 xor    dx, dx
 mov    bx, SIZEOF_THINKER_T
 sub    ax, (_thinkerlist + THINKER_T.t_data)
@@ -1334,224 +1332,218 @@ adc    word ptr ds:[si + MOBJ_T.m_momy + 2], dx
 
 done_with_inflictor_block:
 
-mov    di, word ptr [bp - 2] ; damage in di again
+mov    cx, word ptr [bp - 2] ; damage in cx now
 
-cmp    byte ptr ds:[si + MOBJ_T.m_mobjtype], 0
-je     label_17
-jmp    label_18
-label_17:
-mov    ax, word ptr ds:[si + 4]
-shl    ax, 4
-mov    bx, ax
-add    bx, _sectors_physics + SECTOR_PHYSICS_T.secp_special
+cmp    byte ptr ds:[si + MOBJ_T.m_mobjtype], MT_PLAYER  ; target is player?
+je     do_player_damage_stuff
+jmp    skip_player_damage_stuff
+do_player_damage_stuff:
+;		// end of game hell hack
+;		if (sectors_physics[target->secnum].special == 11 && damage >= target->health) {
+;			damage = target->health - 1;
+;		}
+
+
+mov    di, word ptr ds:[si + MOBJ_T.m_secnum]
+SHIFT_MACRO shl    di 4
+
 ;		// end of game hell hack
  
-cmp    byte ptr ds:[bx], 11
-jne    label_19
+cmp    byte ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_special], 11
+jne    skip_hell_hack
 mov    ax, word ptr ds:[si + MOBJ_T.m_health]
-cmp    di, ax
-jl     label_19
-mov    di, ax
-dec    di
-label_19:
-cmp    di, 1000
-jge    label_20
-mov    bx, _player + PLAYER_T.player_cheats
-test   byte ptr ds:[bx], CF_GODMODE
-je     label_21
-jump_to_exit_p_damagemobj_2:
+cmp    cx, ax
+jl     skip_hell_hack
+mov    cx, ax
+dec    cx
+
+skip_hell_hack:
+cmp    cx, 1000
+jge    dont_skip_damage
+test   byte ptr ds:[_player + PLAYER_T.player_cheats], CF_GODMODE
+je     dont_ignore_damage
+ignore_damage:
 jmp    exit_p_damagemobj
-label_21:
-mov    bx, _player + PLAYER_T.player_powers
-cmp    word ptr ds:[bx], 0
-jne    jump_to_exit_p_damagemobj_2
-label_20:
-mov    bx, _player + PLAYER_T.player_armortype
-mov    al, byte ptr ds:[bx]
+dont_ignore_damage:
+cmp    word ptr ds:[_player + PLAYER_T.player_powers + PW_INVULNERABILITY], 0
+jne    ignore_damage
+dont_skip_damage:
+mov    al, byte ptr ds:[_player + PLAYER_T.player_armortype]
 test   al, al
-je     label_22
+je     done_applying_armor
 cmp    al, 1
-je     label_23
-jmp    label_24
-label_23:
-mov    ax, di
-mov    bx, 3
+mov    ax, cx  ; cx has damage backup. ax does divide.
+je     remove_one_third_damage
+; halve damage..
+sar    ax, 1
+jmp    done_with_armor_calculation
+
+remove_one_third_damage:
 cwd    
-idiv   bx
-label_28:
+mov    bx, 3
+div    bx
+done_with_armor_calculation:
+; ax has saved. cx has damage.
 mov    bx, _player + PLAYER_T.player_armorpoints
 cmp    ax, word ptr ds:[bx]
-jl     label_25
+jl     armor_not_exhausted
 mov    ax, word ptr ds:[bx]
-mov    bx, _player + PLAYER_T.player_armortype
-mov    byte ptr ds:[bx], 0
-label_25:
-mov    bx, _player + PLAYER_T.player_armorpoints
-sub    di, ax
-sub    word ptr ds:[bx], ax
-label_22:
+mov    byte ptr ds:[_player + PLAYER_T.player_armortype], 0
+armor_not_exhausted:
+sub    cx, ax ; subtract damage by saved.
+sub    word ptr ds:[bx], ax ; subtract armor by used armor
+
+done_applying_armor:
 mov    bx, _player + PLAYER_T.player_health
-sub    word ptr ds:[bx], di
+sub    word ptr ds:[bx], cx
 cmp    word ptr ds:[bx], 0
-jge    label_26
-jmp    label_27
-label_26:
-mov    ax, word ptr [bp - 6]
+jge    dont_cap_health_to_zero
+mov    word ptr ds:[bx], 0
+dont_cap_health_to_zero:
+
+; cx has damage
+
+mov    ax, word ptr [bp - 6] ; get source
+mov    di, ax
 mov    bx, SIZEOF_THINKER_T
 xor    dx, dx
 sub    ax, (_thinkerlist + THINKER_T.t_data)
 div    bx
-mov    bx, _player + PLAYER_T.player_attackerRef
-mov    word ptr ds:[bx], ax
-mov    bx, word ptr [bp - 6]
-cmp    word ptr ds:[bx + MOBJ_T.m_health], 0
-jg     label_31
-jmp    label_32
-label_31:
-mov    byte ptr ds:[_useDeadAttackerRef], 0
-label_14:
+
+; got sourceref
+xor    dx, dx
+mov    word ptr ds:[_player + PLAYER_T.player_attackerRef], ax
+
+cmp    word ptr ds:[di + MOBJ_T.m_health], dx ; zero
+jg     dont_do_dead_attackerref_stuff
+
+
+cmp    byte ptr ds:[_useDeadAttackerRef], dl ; zero
+jne    do_dead_attackerref_stuff
+
+dont_do_dead_attackerref_stuff:
+
+mov    byte ptr ds:[_useDeadAttackerRef], dl ; zero
+done_with_deadattackerref_stuff:
 mov    bx, _player + PLAYER_T.player_damagecount
-add    word ptr ds:[bx], di
+add    word ptr ds:[bx], cx
 cmp    word ptr ds:[bx], 100
-jle    label_18
+jle    skip_player_damage_stuff
 mov    word ptr ds:[bx], 100
-label_18:
-sub    word ptr ds:[si + MOBJ_T.m_health], di
+skip_player_damage_stuff:
+sub    word ptr ds:[si + MOBJ_T.m_health], cx
 cmp    word ptr ds:[si + MOBJ_T.m_health], 0
-jg     label_33
-jmp    label_34
-label_33:
+jng    do_kill_mobj
+
+
 call   P_Random_
-mov    dl, al
+xchg   ax, dx
 mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor    ah, ah
-xor    dh, dh
+
 
 db     09Ah
 dw     GETPAINCHANCEADDR, INFOFUNCLOADSEGMENT
 
 cmp    dx, ax
-jge    label_35
+jge    dont_do_pain_state
 mov    bx, MOBJPOSLIST_6800_SEGMENT
 mov    es, bx  ; necessary?
 mov    bx, word ptr [bp - 4]
 test   byte ptr es:[bx + MOBJ_POS_T.mp_flags2 + 1], (MF_SKULLFLY SHR 8)
-jne    label_35
+jne    dont_do_pain_state
 or     byte ptr es:[bx + MOBJ_POS_T.mp_flags1], MF_JUSTHIT
 mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor    ah, ah
+
 db     09Ah
 dw     GETPAINSTATEADDR, INFOFUNCLOADSEGMENT
-mov    dx, ax
+xchg   ax, dx
 mov    ax, si
 call   dword ptr [_P_SetMobjState]
-label_35:
-mov    byte ptr ds:[si + MOBJ_T.m_reactiontime], 0
-cmp    byte ptr ds:[si + MOBJ_T.m_threshold], 0
-jne    jump_to_label_8
-label_10:
-mov    ax, word ptr [bp - 6]
-test   ax, ax
-je     exit_p_damagemobj
-cmp    si, ax
-je     exit_p_damagemobj
-mov    bx, ax
-cmp    byte ptr ds:[bx + MOBJ_T.m_mobjtype], 3
-je     exit_p_damagemobj
-mov    bx, SIZEOF_THINKER_T
-sub    ax, (_thinkerlist + THINKER_T.t_data)
-xor    dx, dx
-div    bx
-mov    word ptr ds:[si + MOBJ_T.m_targetRef], ax
-mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor    ah, ah
-imul   dx, ax, SIZEOF_MOBJINFO_T
-mov    di, word ptr [bp - 4]
-mov    byte ptr ds:[si + MOBJ_T.m_threshold], BASETHRESHOLD
 
-mov    bx, MOBJPOSLIST_6800_SEGMENT
-mov    es, bx
+dont_do_pain_state:
+xor    ax, ax
+mov    byte ptr ds:[si + MOBJ_T.m_reactiontime], al
+cmp    byte ptr ds:[si + MOBJ_T.m_threshold], al
+je     chase_source
 
-mov    bx, dx
-add    bx, _mobjinfo
-mov    dx, word ptr es:[di + MOBJ_POS_T.mp_statenum]
-cmp    dx, word ptr ds:[bx]
-je     jump_to_label_12
-exit_p_damagemobj:
-LEAVE_MACRO  
-pop    di
-pop    si
-retf   
-jump_to_label_8:
-jmp    label_8
-label_24:
-mov    ax, di
-sar    ax, 1
-jmp    label_28
-label_27:
-mov    word ptr ds:[bx], 0
-jmp    label_26
-jump_to_label_12:
-jmp    label_12
-label_32:
-cmp    byte ptr ds:[_useDeadAttackerRef], 0
-je     label_13
-jmp    label_14
-label_13:
-imul   bx, ax, SIZEOF_MOBJ_POS_T
-mov    ax, MOBJPOSLIST_6800_SEGMENT
-mov    es, ax
-mov    byte ptr ds:[_useDeadAttackerRef], 1
-mov    dx, word ptr es:[bx]
-mov    ax, word ptr es:[bx + 2]
-mov    word ptr ds:[_deadAttackerX+0], dx
-mov    word ptr ds:[_deadAttackerX+2], ax
-mov    ax, word ptr es:[bx + 4]
-mov    dx, word ptr es:[bx + 6]
-mov    word ptr ds:[_deadAttackerY+0], ax
-mov    word ptr ds:[_deadAttackerY+2], dx
-jmp    label_14
-label_34:
+cmp    byte ptr ds:[si + MOBJ_T.m_mobjtype], MT_VILE
+je     chase_source
+jmp    exit_p_damagemobj
+do_kill_mobj:
 mov    bx, word ptr [bp - 4]
 mov    cx, MOBJPOSLIST_6800_SEGMENT
 
 mov    ax, word ptr [bp - 6]
 mov    dx, si
 call   P_KillMobj_
-LEAVE_MACRO  
-pop    di
-pop    si
-retf   
-label_8:
-cmp    byte ptr ds:[si + MOBJ_T.m_mobjtype], MT_VILE
-jne    label_9
-jmp    label_10
-label_9:
-LEAVE_MACRO  
-pop    di
-pop    si
-retf   
+jmp    exit_p_damagemobj
 
-label_12:
+do_dead_attackerref_stuff:
+; ax has attackerref..
+mov    bx, SIZEOF_MOBJ_POS_T
+mul    bx
+xchg   ax, si
+push   ds
+pop    es
+mov    dx, MOBJPOSLIST_6800_SEGMENT
+mov    ds, dx
+mov    di, _deadAttackerX
+; copy four words.
+movsw
+movsw
+movsw
+movsw
+xchg   ax, si ; put this back.
+push   ss
+pop    ds
+jmp    done_with_deadattackerref_stuff
+
+chase_source:
+mov    ax, word ptr [bp - 6]
+test   ax, ax
+je     exit_p_damagemobj
+cmp    si, ax
+je     exit_p_damagemobj
+mov    bx, ax
+cmp    byte ptr ds:[bx + MOBJ_T.m_mobjtype], MT_VILE
+je     exit_p_damagemobj
+mov    bx, SIZEOF_THINKER_T
+sub    ax, (_thinkerlist + THINKER_T.t_data)
+xor    dx, dx
+div    bx
+mov    word ptr ds:[si + MOBJ_T.m_targetRef], ax
+
+mov    al, SIZEOF_MOBJINFO_T
+mul    byte ptr ds:[si + MOBJ_T.m_mobjtype]
+mov    di, word ptr [bp - 4]
+mov    byte ptr ds:[si + MOBJ_T.m_threshold], BASETHRESHOLD
+
+mov    bx, MOBJPOSLIST_6800_SEGMENT
+mov    es, bx
+
+xchg   ax, bx
+mov    dx, word ptr es:[di + MOBJ_POS_T.mp_statenum]
+cmp    dx, word ptr ds:[_mobjinfo + bx]
+jne    exit_p_damagemobj
+
 db     09Ah
 dw     GETSEESTATEADDR, INFOFUNCLOADSEGMENT
 
 test   ax, ax
-jne    label_29
-jmp    exit_p_damagemobj
-label_29:
-mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-xor    ah, ah
-db     09Ah
-dw     GETSEESTATEADDR, INFOFUNCLOADSEGMENT
-
-mov    dx, ax
-mov    ax, si
+je     exit_p_damagemobj ; no seestate.
+xchg   ax, dx
+xchg   ax, si
 call   dword ptr [_P_SetMobjState]
+exit_p_damagemobj:
 LEAVE_MACRO  
 pop    di
 pop    si
 retf   
+
+
+
+
+
 
 ENDP
 

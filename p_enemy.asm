@@ -81,15 +81,6 @@ FLOATSPEED_HIGHBITS = 4
 
 ; P_NewChaseDir related LUT.
 
-_opposite:
-db  DI_WEST, DI_SOUTHWEST, DI_SOUTH, DI_SOUTHEAST
-db  DI_EAST, DI_NORTHEAST, DI_NORTH, DI_NORTHWEST, DI_NODIR
-
-
-_diags:
-db  DI_NORTHWEST, DI_NORTHEAST, DI_SOUTHWEST, DI_SOUTHEAST
-
-
 
 
 
@@ -99,6 +90,19 @@ SKULLSPEED_SMALL = 20
 PROC    P_ENEMY_STARTMARKER_ 
 PUBLIC  P_ENEMY_STARTMARKER_
 ENDP
+
+_opposite:
+db  DI_WEST, DI_SOUTHWEST, DI_SOUTH, DI_SOUTHEAST
+db  DI_EAST, DI_NORTHEAST, DI_NORTH, DI_NORTHWEST, DI_NODIR
+
+
+_diags:
+db  DI_NORTHWEST, DI_NORTHEAST, DI_SOUTHWEST, DI_SOUTHEAST
+
+_movedirangles:
+dw  00000h, 02000h, 04000h, 06000h, 08000h, 0A000h, 0C000h, 0E000h
+
+
 
 
 PROC    P_RecursiveSound_ NEAR
@@ -1467,7 +1471,7 @@ mov   al, byte ptr ds:[si + MOBJ_T.m_movedir]
 sal   ax, 1
 xchg  ax, bx
 mov   ax, word ptr es:[di + MOBJ_POS_T.mp_angle+2]
-sub   ax, word ptr ds:[bx + _movedirangles]
+sub   ax, word ptr cs:[bx + OFFSET _movedirangles]
 test  ax, ax
 jnle  sub_dirchange
 

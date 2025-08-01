@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/31 16:04:04
+Created on:       25/07/31 20:48:19
 Executable Image: codegen.exe
 creating a DOS executable
 
@@ -13,7 +13,7 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          02d1:0000            0000c650
+DGROUP                          02d1:0000            0000c640
 
 
 
@@ -40,8 +40,8 @@ YIB                    DATA           DGROUP         0e18:0008       00000000
 YI                     DATA           DGROUP         0e18:0008       00000012
 YIE                    DATA           DGROUP         0e19:000a       00000000
 DATA                   DATA           DGROUP         0e19:000a       00000000
-_BSS                   BSS            DGROUP         0e1a:0000       000005b3
-STACK                  STACK          DGROUP         0e76:0000       00000c00
+_BSS                   BSS            DGROUP         0e1a:0000       000005a9
+STACK                  STACK          DGROUP         0e75:0000       00000c00
 
 
                         +----------------+
@@ -74,154 +74,158 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:b628*     _am_lc
 02d1:b630*     _am_ml
 02d1:b638*     _markpoints
-02d1:b660*     _deadAttackerY
-02d1:b664*     _deadAttackerX
-02d1:b668*     _filetolumpsize
-02d1:b674*     _TaskServiceCount
-02d1:b678*     _OldInt8
-02d1:b67c*     _st_stuff_buf
-02d1:b6b0*     _w_health
-02d1:b6bc*     _keys
-02d1:b6c8*     _w_armor
-02d1:b6d4*     _faces
-02d1:b728+     _mousearray
-02d1:b72c*     _starttime
-02d1:b730*     _maketic
-02d1:b734*     _gametime
-02d1:b738*     _p_init_sprtemp
-02d1:b73c*     _am_scale_mtof
-02d1:b740*     _am_scale_ftom
-02d1:b744*     _screen_oldloc
-02d1:b748*     _am_max_scale_mtof
-02d1:b74c*     _m_paninc
-02d1:b750*     _hu_font
-02d1:b7ce*     _keyboxes
-02d1:b7d4*     _w_ready
-02d1:b7de*     _pcspeaker_endoffset
-02d1:b7e0*     _pcspeaker_currentoffset
-02d1:b7e2*     _armsbgarray
-02d1:b7e4*     _oldentertics
-02d1:b7e6*     _numlumps
-02d1:b7e8*     _currentThinkerListHead
-02d1:b7ea*     _messageLastMenuActive
-02d1:b7ec*     _currentMenu
-02d1:b7ee*     _saveStringEnter
-02d1:b7f0*     _itemOn
-02d1:b7f2*     _saveCharIndex
-02d1:b7f4*     _messageRoutine
-02d1:b7f6*     _saveSlot
-02d1:b7f8*     _st_calc_lastcalc
-02d1:b7fa*     _armsbg
-02d1:b7fc*     _faceback
-02d1:b7fe*     _sbar
-02d1:b800*     _tallpercent
-02d1:b802*     _dclicks
-02d1:b804*     _dclickstate
-02d1:b806*     _dclicktime2
-02d1:b808*     _defdemoname
-02d1:b80a*     _myargc
-02d1:b80c*     _myargv
-02d1:b80e*     _dclickstate2
-02d1:b810*     _dclicks2
-02d1:b812*     _dclicktime
-02d1:b814*     _mousex
-02d1:b816*     _demo_p
-02d1:b818*     _p_init_maxframe
-02d1:b81a*     _am_min_level_x
-02d1:b81c*     _am_min_level_y
-02d1:b81e*     _screen_viewport_height
-02d1:b820*     _screen_topright_y
-02d1:b822*     _screen_topright_x
-02d1:b824*     _screen_viewport_width
-02d1:b826*     _am_min_scale_mtof
-02d1:b828*     _old_screen_viewport_width
-02d1:b82a*     _old_screen_botleft_x
-02d1:b82c*     _old_screen_botleft_y
-02d1:b82e*     _screen_botleft_x
-02d1:b830*     _screen_botleft_y
-02d1:b832*     _ftom_zoommul
-02d1:b834*     _am_max_level_y
-02d1:b836*     _am_max_level_x
-02d1:b838*     _old_screen_viewport_height
-02d1:b83a*     _skytexture
-02d1:b83c*     _numpatches
-02d1:b83e*     _numtextures
-02d1:b840*     _numspritelumps
-02d1:b842*     _mtof_zoommul
-02d1:b844*     _numflats
-02d1:b846*     _snd_SBport
-02d1:b848*     _snd_Mport
-02d1:b84a*     _pagename
-02d1:b84c*     _pagetic
-02d1:b84e*     _menu_messageString
-02d1:b8b7*     _oldweaponsowned
-02d1:b8c0*     _wminfo
-02d1:b8d5*     _useDeadAttackerRef
-02d1:b8d6*     _mus_paused
-02d1:b8d7*     _onground
-02d1:b8d8*     _TS_TimesInInterrupt
-02d1:b8d9*     _menu_epi
-02d1:b8da*     _messageNeedsInput
-02d1:b8db*     _messageToPrint
-02d1:b8dc*     _st_randomnumber
-02d1:b8dd*     _message_on
-02d1:b8de*     _message_dontfuckwithme
-02d1:b8df*     _do_st_refresh
-02d1:b8e0*     _message_counter
-02d1:b8e1*     _message_nottobefuckedwith
-02d1:b8e2*     _st_statusbaron
-02d1:b8e3*     _d_episode
-02d1:b8e4*     _secretexit
-02d1:b8e5*     _d_skill
-02d1:b8e6*     _d_map
-02d1:b8e7*     _updatedthisframe
-02d1:b8e8*     _st_firsttime
-02d1:b8e9*     _savegameslot
-02d1:b8ea*     _st_gamestate
-02d1:b8eb*     _usemouse
-02d1:b8ec*     _mousebforward
-02d1:b8ed*     _key_speed
-02d1:b8ee*     _mousebfire
-02d1:b8ef*     _key_fire
-02d1:b8f0*     _key_strafe
-02d1:b8f1*     _turnheld
-02d1:b8f2*     _key_straferight
-02d1:b8f3*     _mousebstrafe
-02d1:b8f4*     _key_down
-02d1:b8f5*     _key_use
-02d1:b8f6*     _key_strafeleft
-02d1:b8f7*     _paused
-02d1:b8f8*     _key_left
-02d1:b8f9*     _timingdemo
-02d1:b8fa*     _sendsave
-02d1:b8fb*     _noblit
-02d1:b8fc*     _demoplayback
-02d1:b8fd*     _key_up
-02d1:b8fe*     _demorecording
-02d1:b8ff*     _singledemo
-02d1:b900*     _netdemo
-02d1:b901*     _key_right
-02d1:b902*     _sendpause
-02d1:b903*     _usergame
-02d1:b904*     _borderdrawcount
-02d1:b905*     _numChannels
-02d1:b906*     _mousepresent
-02d1:b907*     _novideo
-02d1:b908*     _usegamma
-02d1:b909*     _sfxVolume
-02d1:b90a*     _menuactive
-02d1:b90b*     _screenSize
-02d1:b90c*     _inhelpscreens
-02d1:b90d*     _quickSaveSlot
-02d1:b90e*     _detailLevel
-02d1:b90f*     _musicVolume
-02d1:b910*     _eventtail
-02d1:b911*     _startmap
-02d1:b912*     _modifiedgame
-02d1:b913*     _autostart
-02d1:b914*     _showMessages
-02d1:b915*     _advancedemo
-02d1:b916*     _mouseSensitivity
+02d1:b660*     _filetolumpsize
+02d1:b66c*     _TaskServiceCount
+02d1:b670*     _OldInt8
+02d1:b674*     _st_stuff_buf
+02d1:b6a8*     _w_health
+02d1:b6b4*     _keys
+02d1:b6c0*     _w_armor
+02d1:b6cc*     _faces
+02d1:b720+     _mousearray
+02d1:b724*     _starttime
+02d1:b728*     _maketic
+02d1:b72c*     _gametime
+02d1:b730*     _p_init_sprtemp
+02d1:b734*     _am_scale_mtof
+02d1:b738*     _am_scale_ftom
+02d1:b73c*     _screen_oldloc
+02d1:b740*     _am_max_scale_mtof
+02d1:b744*     _m_paninc
+02d1:b748*     _hu_font
+02d1:b7c6*     _keyboxes
+02d1:b7cc*     _w_ready
+02d1:b7d6*     _pcspeaker_endoffset
+02d1:b7d8*     _pcspeaker_currentoffset
+02d1:b7da*     _armsbgarray
+02d1:b7dc*     _oldentertics
+02d1:b7de*     _numlumps
+02d1:b7e0*     _currentThinkerListHead
+02d1:b7e2*     _messageLastMenuActive
+02d1:b7e4*     _currentMenu
+02d1:b7e6*     _saveStringEnter
+02d1:b7e8*     _itemOn
+02d1:b7ea*     _saveCharIndex
+02d1:b7ec*     _messageRoutine
+02d1:b7ee*     _saveSlot
+02d1:b7f0*     _st_calc_lastcalc
+02d1:b7f2*     _armsbg
+02d1:b7f4*     _faceback
+02d1:b7f6*     _sbar
+02d1:b7f8*     _tallpercent
+02d1:b7fa*     _dclicks
+02d1:b7fc*     _dclickstate
+02d1:b7fe*     _dclicktime2
+02d1:b800*     _defdemoname
+02d1:b802*     _myargc
+02d1:b804*     _myargv
+02d1:b806*     _dclickstate2
+02d1:b808*     _dclicks2
+02d1:b80a*     _dclicktime
+02d1:b80c*     _mousex
+02d1:b80e*     _demo_p
+02d1:b810*     _p_init_maxframe
+02d1:b812*     _am_min_level_x
+02d1:b814*     _am_min_level_y
+02d1:b816*     _screen_viewport_height
+02d1:b818*     _screen_topright_y
+02d1:b81a*     _screen_topright_x
+02d1:b81c*     _screen_viewport_width
+02d1:b81e*     _am_min_scale_mtof
+02d1:b820*     _old_screen_viewport_width
+02d1:b822*     _old_screen_botleft_x
+02d1:b824*     _old_screen_botleft_y
+02d1:b826*     _screen_botleft_x
+02d1:b828*     _screen_botleft_y
+02d1:b82a*     _ftom_zoommul
+02d1:b82c*     _am_max_level_y
+02d1:b82e*     _am_max_level_x
+02d1:b830*     _old_screen_viewport_height
+02d1:b832*     _skytexture
+02d1:b834*     _numpatches
+02d1:b836*     _numtextures
+02d1:b838*     _numspritelumps
+02d1:b83a*     _mtof_zoommul
+02d1:b83c*     _numflats
+02d1:b83e*     _snd_SBport
+02d1:b840*     _snd_Mport
+02d1:b842*     _pagename
+02d1:b844*     _pagetic
+02d1:b846*     _menu_messageString
+02d1:b8af*     _oldweaponsowned
+02d1:b8b8*     _wminfo
+02d1:b8cd*     _mus_paused
+02d1:b8ce*     _onground
+02d1:b8cf*     _TS_TimesInInterrupt
+02d1:b8d0*     _menu_epi
+02d1:b8d1*     _messageNeedsInput
+02d1:b8d2*     _messageToPrint
+02d1:b8d3*     _st_randomnumber
+02d1:b8d4*     _message_on
+02d1:b8d5*     _message_dontfuckwithme
+02d1:b8d6*     _do_st_refresh
+02d1:b8d7*     _message_counter
+02d1:b8d8*     _message_nottobefuckedwith
+02d1:b8d9*     _st_statusbaron
+02d1:b8da*     _d_episode
+02d1:b8db*     _secretexit
+02d1:b8dc*     _d_skill
+02d1:b8dd*     _d_map
+02d1:b8de*     _updatedthisframe
+02d1:b8df*     _st_firsttime
+02d1:b8e0*     _savegameslot
+02d1:b8e1*     _st_gamestate
+02d1:b8e2*     _usemouse
+02d1:b8e3*     _mousebforward
+02d1:b8e4*     _key_speed
+02d1:b8e5*     _mousebfire
+02d1:b8e6*     _key_fire
+02d1:b8e7*     _key_strafe
+02d1:b8e8*     _turnheld
+02d1:b8e9*     _key_straferight
+02d1:b8ea*     _mousebstrafe
+02d1:b8eb*     _key_down
+02d1:b8ec*     _key_use
+02d1:b8ed*     _key_strafeleft
+02d1:b8ee*     _paused
+02d1:b8ef*     _key_left
+02d1:b8f0*     _timingdemo
+02d1:b8f1*     _sendsave
+02d1:b8f2*     _noblit
+02d1:b8f3*     _demoplayback
+02d1:b8f4*     _key_up
+02d1:b8f5*     _demorecording
+02d1:b8f6*     _singledemo
+02d1:b8f7*     _netdemo
+02d1:b8f8*     _key_right
+02d1:b8f9*     _sendpause
+02d1:b8fa*     _usergame
+02d1:b8fb*     _borderdrawcount
+02d1:b8fc*     _numChannels
+02d1:b8fd*     _mousepresent
+02d1:b8fe*     _novideo
+02d1:b8ff*     _usegamma
+02d1:b900*     _sfxVolume
+02d1:b901*     _menuactive
+02d1:b902*     _screenSize
+02d1:b903*     _inhelpscreens
+02d1:b904*     _quickSaveSlot
+02d1:b905*     _detailLevel
+02d1:b906*     _musicVolume
+02d1:b907*     _eventtail
+02d1:b908*     _startmap
+02d1:b909*     _modifiedgame
+02d1:b90a*     _autostart
+02d1:b90b*     _showMessages
+02d1:b90c*     _advancedemo
+02d1:b90d*     _mouseSensitivity
+02d1:b90e*     _startskill
+02d1:b90f*     _eventhead
+02d1:b910*     _respawnparm
+02d1:b911*     _startepisode
+02d1:b912*     _demosequence
+02d1:b913*     _snd_SBirq
+02d1:b914*     _snd_SfxVolume
 02d1:87d0*     _singletics
 02d1:87d1*     _skytextureloaded
 02d1:87d2*     _am_cheating
@@ -286,16 +290,9 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:893e*     _sfx_priority
 02d1:89ab*     _FORCE_5000_LUMP_LOAD
 02d1:89ac*     _lastpcspeakernotevalue
-02d1:b917*     _startskill
-02d1:b918*     _eventhead
-02d1:b919*     _respawnparm
-02d1:b91a*     _startepisode
-02d1:b91b*     _demosequence
-02d1:b91c*     _snd_SBirq
-02d1:b91d*     _snd_SfxVolume
-02d1:b91e*     _snd_DesiredSfxDevice
-02d1:b91f*     _snd_SBdma
-02d1:b920*     _snd_DesiredMusicDevice
+02d1:b915*     _snd_DesiredSfxDevice
+02d1:b916*     _snd_SBdma
+02d1:b917*     _snd_DesiredMusicDevice
 Module: codegen.obj(C:\REALDOOM\build\tools\codegen\codegen.c)
 0000:0000      main_
 02d1:89ae+     _CONSTANTS
@@ -315,7 +312,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(fclose.c)
 0000:0362      __doclose_
 0000:03f8      __shutdown_stream_
 0000:040c      fclose_
-02d1:b922+     ___RmTmpFileFn
+02d1:b918+     ___RmTmpFileFn
 Module: C:\WATCOM2\lib286\dos\clibm.lib(printf.c)
 0000:042f      printf_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(cstart)
@@ -331,16 +328,16 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(cmodel.asm)
 0000:06fe      _big_code_
 0000:06fe*     CodeModelMismatch
 Module: C:\WATCOM2\lib286\dos\clibm.lib(argcv.c)
-02d1:b926      __argc
-02d1:b928      __argv
-02d1:b92a      ___argc
-02d1:b92c      ___argv
+02d1:b91c      __argc
+02d1:b91e      __argv
+02d1:b920      ___argc
+02d1:b922      ___argv
 Module: C:\WATCOM2\lib286\dos\clibm.lib(comtflag.c)
 0000:06fe*     __set_commode_
 02d1:b2bc      __commode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(errno.c)
 0000:0705      __get_errno_ptr_
-02d1:b92e+     _errno
+02d1:b924+     _errno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(textmode.c)
 02d1:b2be      __fmode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(tolower.c)
@@ -359,8 +356,8 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(allocfp.c)
 0000:0af1      __allocfp_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(iob.c)
 02d1:b2c0      ___iob
-02d1:b930      ___OpenStreams
-02d1:b932      ___ClosedStreams
+02d1:b926      ___OpenStreams
+02d1:b928      ___ClosedStreams
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fprtf.c)
 0000:0b96      __fprtf_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(__lseek.c)
@@ -370,7 +367,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(_clse.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nfree.c)
 0000:0ca1      _nfree_
 0000:0ca1      free_
-02d1:b934+     ___MiniHeapFreeRover
+02d1:b92a+     ___MiniHeapFreeRover
 Module: C:\WATCOM2\lib286\dos\clibm.lib(flush.c)
 0000:0d66      __flush_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(xmsg.c)
@@ -423,7 +420,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(dosret.c)
 0000:11ed*     __set_errno_dos_reterr_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(doserrno.c)
 0000:11f8      __get_doserrno_ptr_
-02d1:b938+     __doserrno
+02d1:b92e+     __doserrno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(umaskval.c)
 02d1:b444      ___umaskval
 Module: C:\WATCOM2\lib286\dos\clibm.lib(creatdos.c)
@@ -465,8 +462,8 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(enterdb.c)
 0000:2436      __EnterWVIDEO_
 02d1:b44c+     __WD_Present
 Module: C:\WATCOM2\lib286\dos\clibm.lib(___argc.c)
-02d1:b93c      ____Argv
-02d1:b93e      ____Argc
+02d1:b932      ____Argv
+02d1:b934      ____Argc
 Module: C:\WATCOM2\lib286\dos\clibm.lib(exit.c)
 0000:2452+     __null_int23_exit_
 0000:2453      exit_
@@ -479,7 +476,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(sgdef086)
 02d1:b478      __Start_YI
 02d1:b48a      __End_YI
 Module: C:\WATCOM2\lib286\dos\clibm.lib(histsplt.c)
-02d1:b940      ___historical_splitparms
+02d1:b936      ___historical_splitparms
 Module: C:\WATCOM2\lib286\dos\clibm.lib(error086.asm)
 0000:2482      __doserror_
 0000:2490*     __doserror1_
@@ -517,7 +514,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(mbisdbcs.c)
 02d1:b45e      ___IsDBCS
 Module: C:\WATCOM2\lib286\dos\clibm.lib(mbislead.c)
 0000:2955*     _ismbblead_
-02d1:b942      ___MBCSIsTable
+02d1:b938      ___MBCSIsTable
 Module: C:\WATCOM2\lib286\dos\clibm.lib(filedos.c)
 0000:296c*     _dos_close_
 0000:297a      _dos_commit_
@@ -562,6 +559,6 @@ C:\WATCOM2\lib286\dos\clibm.lib
                         +-----------------------+
 
 Stack size:  0c00 (3072.)
-Memory size:  f360 (62304.)
+Memory size:  f350 (62288.)
 Entry point address: 0000:0446
-Link time: 00:00.10
+Link time: 00:00.65

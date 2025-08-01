@@ -256,8 +256,9 @@ _ticcount =			              	_NULL_OFFSET + 001F0h
 
 
 _P_UseSpecialLine_addr =             _NULL_OFFSET + 001F4h
-_P_DamageMobj_addr =                 _NULL_OFFSET + 001F8h
-;_P_SetMobjState_addr =       		 _NULL_OFFSET + 001FCh
+
+_deadAttackerX =                     _NULL_OFFSET + 001F8h
+_deadAttackerY =                     _NULL_OFFSET + 001FCh
 _M_Random_addr =                     _NULL_OFFSET + 00200h
 _P_CrossSpecialLine_addr =           _NULL_OFFSET + 00204h
 _P_ShootSpecialLine_addr =           _NULL_OFFSET + 00208h
@@ -305,13 +306,14 @@ _fixedcolormap = 					_NULL_OFFSET + 002BFh
 
 _FixedMul_addr =               		 _NULL_OFFSET + 002C0h
 _FixedDiv_addr =                     _NULL_OFFSET + 002C4h
-_FastDiv3232_addr =                  _NULL_OFFSET + 002C8h
+_P_DamageMobj_addr =                 _NULL_OFFSET + 002C8h
 _R_GetCompositeTexture_addr =        _NULL_OFFSET + 002CCh
 
  
 _w_message =					     _NULL_OFFSET + 002D0h
 _columnquality =              	     _NULL_OFFSET + 00439h
-
+_useDeadAttackerRef =              	 _NULL_OFFSET + 0043Ah
+; 43B to 43F free
 
 _psprites =              			 _NULL_OFFSET + 00440h
 _vga_read_port_lookup =              _NULL_OFFSET + 00458h
@@ -325,7 +327,7 @@ _gamemap = 							 _NULL_OFFSET + 00477h
 _savedescription =                   _NULL_OFFSET + 00478h
 _demoname =                          _NULL_OFFSET + 00498h
 _ems_backfill_page_order =           _NULL_OFFSET + 004B8h
-_movedirangles =                     _NULL_OFFSET + 004D0h
+; 4D0 to 4DF free
 _braintargets =                      _NULL_OFFSET + 004E0h
 _tmbbox =                            _NULL_OFFSET + 00520h
 ; 530 unused

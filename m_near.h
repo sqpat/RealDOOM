@@ -291,8 +291,9 @@
 
 
 #define P_UseSpecialLine_addr          	(*((uint32_t  __near*)               (_NULL_OFFSET + 0x01F4)))
-#define P_DamageMobj_addr             	(*((uint32_t  __near*)               (_NULL_OFFSET + 0x01F8)))
-//#define P_SetMobjState_addr     		(*((uint32_t  __near*)               (_NULL_OFFSET + 0x01FC)))
+#define deadAttackerX     		  	    (*((fixed_t_union  __near*)   	     (_NULL_OFFSET + 0x01F8)))
+#define deadAttackerY     				(*((fixed_t_union  __near*)   	     (_NULL_OFFSET + 0x01FC)))
+
 #define M_Random_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0200)))
 #define P_CrossSpecialLine_addr         (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0204)))
 #define P_ShootSpecialLine_addr         (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0208)))
@@ -345,10 +346,9 @@
 // more far pointers to functions... once they are in ASM-fixed locations, they should be callable normally
 #define FixedMul_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C0)))
 #define FixedDiv_addr	                (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C4)))
-// #define FastDiv3232_addr                (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C8)))
+#define P_DamageMobj_addr             	(*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C8)))
 #define R_GetCompositeTexture_addr 	    (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02CC)))
 
-// unused! 2D0-354
 
 // 361 bytes? 0x169?
 #define w_message 						(*((hu_stext_t __near*)               (_NULL_OFFSET + 0x02D0)))
@@ -357,8 +357,7 @@
 
 // up to 439?
 // 43A to 440 free?
-
-// add E8 to each..
+#define useDeadAttackerRef				(*((boolean __near*)                 (_NULL_OFFSET + 0x043A)))
 
 // 12 bytes each. two for 24.
 #define psprites                        (((pspdef_t __near*)                 (_NULL_OFFSET + 0x0440))) 
@@ -375,8 +374,11 @@
 #define demoname                        (((int8_t    __near*)                (_NULL_OFFSET + 0x0498)))
 
 #define ems_backfill_page_order         (((int8_t    __near*)                (_NULL_OFFSET + 0x04B8)))
-//4d0 unused i think
-#define movedirangles                   (((uint16_t  __near*)                (_NULL_OFFSET + 0x04D0)))
+
+
+// 4d0-4df unused by bytes
+
+
 #define braintargets                    (((THINKERREF __near*)               (_NULL_OFFSET + 0x04E0)))
 #define tmbbox                          (((fixed_t_union __near*)            (_NULL_OFFSET + 0x0520)))
 // 530 unused
@@ -1429,9 +1431,6 @@ extern int32_t musdriverstartposition[MUS_DRIVER_COUNT-1];
 extern uint16_t pcspeaker_currentoffset;
 extern uint16_t pcspeaker_endoffset;
 
-extern boolean useDeadAttackerRef;
-extern fixed_t_union deadAttackerX;
-extern fixed_t_union deadAttackerY;
 
 
 extern boolean FORCE_5000_LUMP_LOAD;
