@@ -64,7 +64,6 @@ GLOBOBJS = &
  p_doors.obj &
  p_floor.obj &
  p_inter.obj &
- p_intera.obj &
  p_lights.obj &
  p_plats.obj &
  p_setup.obj &
