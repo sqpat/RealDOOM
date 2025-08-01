@@ -1118,153 +1118,224 @@ pop    bx
 ret    
 ENDP
 
-
+exit_p_damagemobj_2:
+LEAVE_MACRO  
+pop    di
+pop    si
+retf
 
 PROC    P_DamageMobj_  FAR
 PUBLIC  P_DamageMobj_
+;void __far P_DamageMobj (mobj_t __near*	target, mobj_t __near*	inflictor, mobj_t __near*	source, int16_t 		damage ) {
+
+; bp - 2 damage
+; bp - 4 targetpos offset
+; bp - 6 source
+; bp - 8 ang hi (unused)
+; bp - 0Ah  thrust (unused)
+; bp - 0Ch  thrust (unused)
+; bp - 0Eh  inflictor
+
 
 push   si
 push   di
 push   bp
 mov    bp, sp
-sub    sp, 01Ch
+push   cx
+sub    sp, 0Ah
 mov    si, ax
-mov    word ptr [bp - 0Eh], dx
+push   dx   ; bp - 0Eh 
 mov    word ptr [bp - 6], bx
-mov    di, cx
 mov    bx, SIZEOF_THINKER_T
 sub    ax, (_thinkerlist + THINKER_T.t_data)
 xor    dx, dx
 div    bx
-imul   bx, ax, SIZEOF_MOBJ_POS_T
-mov    word ptr [bp - 2], MOBJPOSLIST_6800_SEGMENT
+mov    dx, SIZEOF_MOBJ_POS_T
+mul    dx
+xchg   ax, bx
 
-mov    es, word ptr [bp - 2]
+; es:bx 
+mov    dx, MOBJPOSLIST_6800_SEGMENT
+mov    es, dx
+
 mov    word ptr [bp - 4], bx
 test   byte ptr es:[bx + MOBJ_POS_T.mp_flags1], MF_SHOOTABLE
-jne    label_1
-jump_to_exit_p_damagemobj:
-jmp    exit_p_damagemobj
-label_1:
+je     exit_p_damagemobj_2
 cmp    word ptr ds:[si + MOBJ_T.m_health], 0
-jle    jump_to_exit_p_damagemobj
-test   byte ptr es:[bx + MOBJ_POS_T.mp_flags2 + 1], 1
-je     label_2
-jmp    label_3
-label_2:
-cmp    byte ptr ds:[si + MOBJ_T.m_mobjtype], 0
-jne    label_4
-mov    bx, OFFSET _gameskill
-cmp    byte ptr ds:[bx], 0
-jne    label_4
-sar    di, 1
-label_4:
-cmp    word ptr [bp - 0Eh], 0
-jne    label_5
-jump_to_label_6:
-jmp    label_6
-label_5:
-les    bx, dword ptr [bp - 4]
-test   byte ptr es:[bx + MOBJ_POS_T.mp_flags1 + 1], (MF_NOCLIP SHR 8)
-jne    jump_to_label_6
-mov    ax, word ptr [bp - 6]
-test   ax, ax
-je     label_7
-jmp    label_30
-label_7:
-mov    ax, word ptr [bp - 0Eh]
-mov    bx, SIZEOF_THINKER_T
+jle    exit_p_damagemobj_2
+test   byte ptr es:[bx + MOBJ_POS_T.mp_flags2 + 1], (MF_SKULLFLY SHR 8)
+je     dont_stop_momentum
+
+; zero momentum - momx, momy, momz dwords. 
+xor    ax, ax
+lea    di, [si + MOBJ_T.m_momx+0];
+push   ds
+pop    es
+stosw
+stosw
+stosw
+stosw
+stosw
+stosw
+
+mov    es, dx
+dont_stop_momentum:
+
 xor    dx, dx
-sub    ax, (_thinkerlist + THINKER_T.t_data)
-div    bx
-imul   bx, ax, SIZEOF_MOBJ_POS_T
+mov    dl, byte ptr ds:[si + MOBJ_T.m_mobjtype]
+cmp    dl, MT_PLAYER
+; dx is mobjtype...
+jne    damagemobj_not_player
+cmp    byte ptr ds:[_gameskill], SK_BABY
+jne    damagemobj_dont_halve_damage
+sar    word ptr [bp - 2], 1
+damagemobj_dont_halve_damage:
+damagemobj_not_player:
+
+cmp    word ptr [bp - 0Eh], 0 ; check if inflictor is not null..
+jne    continue_inflictor_check
+jump_to_done_with_inflictor_block:
+jmp    done_with_inflictor_block
+continue_inflictor_check:
+
+test   byte ptr es:[bx + MOBJ_POS_T.mp_flags1 + 1], (MF_NOCLIP SHR 8)
+jne    jump_to_done_with_inflictor_block
+mov    di, word ptr [bp - 6] ; get source
+test   di, di
+je     apply_knockback
+cmp    byte ptr ds:[di + MOBJ_T.m_mobjtype], MT_PLAYER
+je     apply_knockback
+cmp    byte ptr ds:[_player + PLAYER_T.player_readyweapon], WP_CHAINSAW
+je     jump_to_done_with_inflictor_block   ; skip chainsaw knockback
+
+
+apply_knockback:
+
+;		thrust = getMassThrust(damage, target->type);
+mov    ax, word ptr [bp - 2]
+; dx already has mobjtype.
+call   getMassThrust_
+; dx:ax has thrust.. will be popped later
+push   dx  ; hi first
+push   ax  ; lo second
+
+
+
+; let's push arguments for the upcoming call to R_PointToAngle2
 mov    ax, MOBJPOSLIST_6800_SEGMENT
 mov    es, ax
-mov    dx, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
-mov    ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
-mov    cx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-mov    word ptr [bp - 01Ch], ax
-mov    word ptr [bp - 018h], cx
-mov    ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-mov    cx, word ptr es:[bx + MOBJ_POS_T.mp_z + 0]
-mov    bx, word ptr es:[bx + MOBJ_POS_T.mp_z + 2]
-mov    es, word ptr [bp - 2]
-mov    word ptr [bp - 014h], bx
 mov    bx, word ptr [bp - 4]
 push   word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
 push   word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-mov    word ptr [bp - 016h], cx
 push   word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
-mov    cx, word ptr [bp - 018h]
 push   word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
-mov    bx, ax
-mov    ax, dx
-mov    dx, word ptr [bp - 01Ch]
+
+
+mov    ax, word ptr [bp - 0Eh]
+xor    dx, dx
+mov    bx, SIZEOF_THINKER_T
+sub    ax, (_thinkerlist + THINKER_T.t_data)
+div    bx
+
+mov    dx, SIZEOF_MOBJ_POS_T
+mul    dx
+xchg   ax, di
+
+
+mov    ax, word ptr es:[di + MOBJ_POS_T.mp_x + 0]
+mov    dx, word ptr es:[di + MOBJ_POS_T.mp_x + 2]
+les    bx, dword ptr es:[di + MOBJ_POS_T.mp_y + 0]
+mov    cx, es
 
 call   R_PointToAngle2_
 
-mov    word ptr [bp - 012h], ax
-mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-mov    word ptr [bp - 010h], dx
-cbw   
-mov    word ptr [bp - 8], dx
-mov    dx, ax
-mov    ax, di
-call   getMassThrust_
-mov    cx, ax
-mov    word ptr [bp - 0Ch], ax
-mov    word ptr [bp - 0Ah], dx
-cmp    di, 40
-jge    label_15
-cmp    di, word ptr ds:[si + MOBJ_T.m_health]
-jle    label_15
-les    bx, dword ptr [bp - 4]
-mov    ax, word ptr es:[bx + MOBJ_POS_T.mp_z + 0]
-sub    ax, word ptr [bp - 016h]
-mov    word ptr [bp - 01Ah], ax
+; only intbits are used, currently in dx.
+
+;		// make fall forwards sometimes
+;		if (damage < 40
+;			&& damage > target->health
+;			&& (target_pos->z.w - inflictorz.w) > 64 * FRACUNIT
+;			&& (P_Random() & 1)) {
+;				ang.wu += ANG180;
+;				thrust *= 4;
+;		}
+
+mov    ax, MOBJPOSLIST_6800_SEGMENT
+mov    es, ax 
+
+
+mov    ax, word ptr [bp - 2]  ; damage.
+
+cmp    ax, 40
+jge    skip_fallforwards
+cmp    ax, word ptr ds:[si + MOBJ_T.m_health]
+jle    skip_fallforwards
+mov    bx, word ptr [bp - 4]
+
+; need inflictor z now!
+
+mov    cx, word ptr es:[bx + MOBJ_POS_T.mp_z + 0]
 mov    ax, word ptr es:[bx + MOBJ_POS_T.mp_z + 2]
-sbb    ax, word ptr [bp - 014h]
+sub    cx, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
+sbb    ax, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
+; ax:cx is (target_pos->z.w - inflictorz.w)
 cmp    ax, 64
-jg     label_16
-jne    label_15
-cmp    word ptr [bp - 01Ah], 0
-jbe    label_15
-label_16:
+jg     continue_fallforward_check
+jne    skip_fallforwards
+jcxz   skip_fallforwards
+continue_fallforward_check:
 call   P_Random_
 test   al, 1
-je     label_15
-mov    ax, cx
-add    ax, ax
-adc    dx, dx
-add    ax, ax
-mov    word ptr [bp - 0Ch], ax
-mov    ax, word ptr [bp - 012h]
-adc    dx, dx
-add    ax, 0
-mov    ax, word ptr [bp - 010h]
-adc    ax, ANG180_HIGHBITS
-mov    word ptr [bp - 0Ah], dx
-mov    word ptr [bp - 8], ax
-label_15:
-mov    ax, word ptr [bp - 8]
-shr    ax, 1
-mov    bx, word ptr [bp - 0Ch]
-and    al, 0FCh
-mov    cx, word ptr [bp - 0Ah]
-mov    word ptr [bp - 8], ax
-mov    dx, ax
+je     skip_fallforwards
+
+pop    bx
+pop    cx
+shl    bx, 1
+rcl    cx, 1
+shl    bx, 1
+rcl    cx, 1  ; thrust *= 4
+;cx:bx is thrust.
+add    dx, ANG180_HIGHBITS  ; dx is angle...
+jmp    already_have_thrust
+
+
+
+skip_fallforwards:
+pop    bx
+pop    cx ; recover thrust in cx:ax
+already_have_thrust:
+;		ang.hu.intbits = (ang.hu.intbits >> 1) & 0xFFFC;
+;		target->momx.w += FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, ang.hu.intbits, thrust);
+;		target->momy.w += FixedMulTrigNoShift(FINE_SINE_ARGUMENT, ang.hu.intbits, thrust);
+
+shr    dx, 1
+and    dx, 0FFFCh
+
+
+push   dx
+push   cx
+push   bx
 mov    ax, FINECOSINE_SEGMENT
 call   FixedMulTrigNoShift_
-mov    bx, word ptr [bp - 0Ch]
-mov    cx, word ptr [bp - 0Ah]
+
 add    word ptr ds:[si + MOBJ_T.m_momx + 0], ax
-mov    ax, FINESINE_SEGMENT
 adc    word ptr ds:[si + MOBJ_T.m_momx + 2], dx
-mov    dx, word ptr [bp - 8]
+
+
+mov    ax, FINESINE_SEGMENT
+pop    bx
+pop    cx
+pop    dx
+
 call   FixedMulTrigNoShift_
 add    word ptr ds:[si + MOBJ_T.m_momy + 0], ax
 adc    word ptr ds:[si + MOBJ_T.m_momy + 2], dx
-label_6:
+
+
+done_with_inflictor_block:
+
+mov    di, word ptr [bp - 2] ; damage in di again
+
 cmp    byte ptr ds:[si + MOBJ_T.m_mobjtype], 0
 je     label_17
 jmp    label_18
@@ -1361,7 +1432,9 @@ dw     GETPAINCHANCEADDR, INFOFUNCLOADSEGMENT
 
 cmp    dx, ax
 jge    label_35
-les    bx, dword ptr [bp - 4]
+mov    bx, MOBJPOSLIST_6800_SEGMENT
+mov    es, bx  ; necessary?
+mov    bx, word ptr [bp - 4]
 test   byte ptr es:[bx + MOBJ_POS_T.mp_flags2 + 1], (MF_SKULLFLY SHR 8)
 jne    label_35
 or     byte ptr es:[bx + MOBJ_POS_T.mp_flags1], MF_JUSTHIT
@@ -1395,7 +1468,10 @@ xor    ah, ah
 imul   dx, ax, SIZEOF_MOBJINFO_T
 mov    di, word ptr [bp - 4]
 mov    byte ptr ds:[si + MOBJ_T.m_threshold], BASETHRESHOLD
-mov    es, word ptr [bp - 2]
+
+mov    bx, MOBJPOSLIST_6800_SEGMENT
+mov    es, bx
+
 mov    bx, dx
 add    bx, _mobjinfo
 mov    dx, word ptr es:[di + MOBJ_POS_T.mp_statenum]
@@ -1406,30 +1482,8 @@ LEAVE_MACRO
 pop    di
 pop    si
 retf   
-label_3:
-; big todo cleanup
-xor ax, ax
-cwd
-mov    word ptr ds:[si + MOBJ_T.m_momz+0], ax
-mov    word ptr ds:[si + MOBJ_T.m_momz+2], ax
-mov    word ptr ds:[si + MOBJ_T.m_momy+0], ax
-mov    word ptr ds:[si + MOBJ_T.m_momy+2], ax
-mov    word ptr ds:[si + MOBJ_T.m_momx+0], ax
-mov    word ptr ds:[si + MOBJ_T.m_momx+2], ax
-jmp    label_2
 jump_to_label_8:
 jmp    label_8
-label_30:
-mov    bx, ax
-cmp    byte ptr ds:[bx + MOBJ_T.m_mobjtype], 0
-jne    label_11
-jump_to_label_7:
-jmp    label_7
-label_11:
-mov    bx, _player + PLAYER_T.player_readyweapon
-cmp    byte ptr ds:[bx], 7
-jne    jump_to_label_7
-jmp    label_6
 label_24:
 mov    ax, di
 sar    ax, 1
@@ -1459,7 +1513,8 @@ mov    word ptr ds:[_deadAttackerY+2], dx
 jmp    label_14
 label_34:
 mov    bx, word ptr [bp - 4]
-mov    cx, word ptr [bp - 2]
+mov    cx, MOBJPOSLIST_6800_SEGMENT
+
 mov    ax, word ptr [bp - 6]
 mov    dx, si
 call   P_KillMobj_
