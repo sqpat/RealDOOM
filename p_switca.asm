@@ -42,14 +42,14 @@ ENDP
 
 ;void __near P_StartButton ( int16_t linenum,int16_t linefrontsecnum,bwhere_e	w,int16_t		texture,int16_t		time ){
 
-; TODO: change to pass time in si.
+
+; no need to push/pop. outer frame calls before return.
+
 
 PROC    P_StartButton_
 PUBLIC  P_StartButton_
 
-push  si
-push  bp
-mov   bp, sp
+
 xchg  ax, si ; si holds ax
 mov   ax, bx ; al holds w
 
@@ -77,11 +77,10 @@ mov   word ptr ds:[bx + _buttonlist + BUTTON_T.button_linenum], si
 mov   byte ptr ds:[bx + _buttonlist + BUTTON_T.button_where], al
 mov   word ptr ds:[bx + _buttonlist + BUTTON_T.button_btexture], cx
 mov   word ptr ds:[bx + _buttonlist + BUTTON_T.button_soundorg], dx
-mov   ax, word ptr [bp + 8]
+mov   ax, BUTTONTIME
 mov   word ptr ds:[bx + _buttonlist + BUTTON_T.button_btimer], ax
-pop   bp
-pop   si
-ret   2
+
+ret   
 
 button_already_active:
 add   bx, SIZEOF_BUTTON_T
@@ -89,10 +88,7 @@ cmp   bx, (_buttonlist + BUTTON_T.button_btimer + MAXBUTTONS * SIZEOF_BUTTON_T)
 jl    loop_check_next_bitton
 
 button_already_exists:
-pop   bp
-pop   di
-pop   si
-ret   2
+ret   
 
 
 ENDP
@@ -101,7 +97,15 @@ ENDP
 PROC    P_ChangeSwitchTexture_ NEAR
 PUBLIC  P_ChangeSwitchTexture_
 
+;void __near P_ChangeSwitchTexture ( int16_t linenum, int16_t lineside0, uint8_t linespecial, int16_t linefrontsecnum,int16_t 		useAgain ){
 
+; bp - 2    midtexture
+; bp - 4    sound
+; bp - 6    lineside 0 shifted 3 for side_t lookup
+; bp - 8    linenum
+; bp - 0Ah  linefrontsecnum
+
+; todo: linespecial and useagain in same word (b?x)
 
 push  si
 push  di
@@ -110,153 +114,120 @@ mov   bp, sp
 sub   sp, 6
 push  ax
 push  cx
-mov   ax, dx
-mov   dl, bl
+xchg  bx, dx
+
 mov   cx, SIDES_SEGMENT
-mov   bx, ax
-mov   word ptr [bp - 4], SFX_SWTCHN
-shl   bx, 3
 mov   es, cx
-lea   si, [bx + 4]
-mov   di, word ptr es:[bx]
-mov   cx, word ptr es:[si]
-add   bx, 2
-mov   word ptr [bp - 2], cx
-mov   si, word ptr es:[bx]
-cmp   word ptr [bp + 8], 0
-je    label_2
-label_8:
+
+mov   word ptr [bp - 4], SFX_SWTCHN
+
+SHIFT_MACRO shl   bx 3
+mov   word ptr [bp - 6], bx
 cmp   dl, 11  ; exit switch
-je    label_1
-label_9:
-shl   ax, 3
-xor   dl, dl
-mov   word ptr [bp - 6], ax
-label_7:
-mov   bx, _numswitches
-mov   al, dl
-mov   bx, word ptr ds:[bx]
-cbw  
-add   bx, bx
+jne   not_exit_switch
+mov   word ptr [bp - 4], SFX_SWTCHX
+not_exit_switch:
+
+
+mov   di, word ptr es:[bx + SIDE_T.s_toptexture]
+mov   dx, word ptr es:[bx + SIDE_T.s_midtexture]
+mov   si, word ptr es:[bx + SIDE_T.s_bottomtexture]
+
+
+cmp   word ptr [bp + 8], 0
+jne   dont_mark_unusable
+
+mov   bx, LINES_PHYSICS_SEGMENT
+mov   es, bx
+mov   bx, word ptr [bp - 8]
+SHIFT_MACRO shl   bx 4
+mov   byte ptr es:[bx + LINE_PHYSICS_T.lp_special], 0
+
+dont_mark_unusable:
+
+xor   ax, ax
+check_next_switch:
+
+mov   bx, word ptr ds:[_numswitches]
+
+sal   bx, 1
 cmp   ax, bx
 jge   exit_p_changeswithctexture
 mov   bx, ax
-add   bx, ax
-mov   cl, dl
-mov   ax, word ptr ds:[bx + _switchlist]
+sal   bx, 1
+mov   cx, ax
+mov   bx, word ptr ds:[bx + _switchlist]
 xor   cl, 1
-cmp   di, ax
-je    label_4
-cmp   ax, word ptr [bp - 2]
-je    label_5
-cmp   si, ax
-je    jump_to_label_6
-inc   dl
-jmp   label_7
-label_2:
-mov   bx, word ptr [bp - 8]
-mov   cx, LINES_PHYSICS_SEGMENT
-shl   bx, 4
-mov   es, cx
-add   bx, LINE_PHYSICS_T.lp_special
-mov   byte ptr es:[bx], 0
-jmp   label_8
-label_1:
-mov   word ptr [bp - 4], SFX_SWTCHX
-jmp   label_9
-label_4:
-mov   si, _buttonlist + BUTTON_T.button_soundorg
+
+cmp   bx, di
+je    is_top_texture
+
+cmp   bx, dx
+je    is_mid_texture
+cmp   bx, si
+je    is_bottom_texture
+inc   ax
+jmp   check_next_switch
+
+is_top_texture:
+mov   bx, BUTTONTOP
+mov   di, SIDE_T.s_toptexture
+
+
+do_button_texture_stuff:
+
+xor   dx, dx
 mov   dl, byte ptr [bp - 4]
-mov   ax, word ptr ds:[si]
-xor   dh, dh
-push  cs
+mov   ax, word ptr ds:[_buttonlist + BUTTON_T.button_soundorg] ; jank. bug in original source?
+
 call  S_StartSoundWithParams_
-mov   al, cl
-cbw  
-mov   si, ax
-add   si, ax
+
+
+mov   si, cx
+sal   si, 1
 mov   ax, SIDES_SEGMENT
 mov   es, ax
-mov   ax, word ptr ds:[si + _switchlist]
-mov   si, word ptr [bp - 6]
-mov   word ptr es:[si], ax
+
+;			sides[lineside0].toptexture = switchlist[i^1];
+
+mov   ax, word ptr ds:[si + _switchlist] ; ax is switchlist[i^1];
+add   di, word ptr [bp - 6]  
+stosw
+;mov   word ptr es:[di], ax
+
 cmp   word ptr [bp + 8], 0
-jne   label_10
+je    exit_p_changeswithctexture
+do_startbutton_call:
+
+pop   dx ;mov   dx, word ptr [bp - 0Ah]
+pop   ax ;mov   ax, word ptr [bp - 8]
+mov   cx, word ptr ds:[bx + _switchlist]
+call  P_StartButton_
 exit_p_changeswithctexture:
 LEAVE_MACRO 
 pop   di
 pop   si
 ret   2
-label_10:
-push  BUTTONTIME
-mov   dx, word ptr [bp - 0Ah]
-mov   ax, word ptr [bp - 8]
-mov   cx, word ptr ds:[bx + _switchlist]
-xor   bx, bx
-call  P_StartButton_
-jmp   exit_p_changeswithctexture
-jump_to_label_6:
-jmp   label_6
-label_5:
-mov   si, _buttonlist + BUTTON_T.button_soundorg
-mov   dl, byte ptr [bp - 4]
-mov   ax, word ptr ds:[si]
-xor   dh, dh
-push  cs
-call  S_StartSoundWithParams_
-mov   al, cl
-cbw  
-mov   di, ax
-mov   si, word ptr [bp - 6]
-add   di, ax
-mov   ax, SIDES_SEGMENT
-add   si, 4
-mov   es, ax
-mov   ax, word ptr ds:[di + _switchlist]
-mov   word ptr es:[si], ax
-cmp   word ptr [bp + 8], 0
-je    exit_p_changeswithctexture
-push  BUTTONTIME
-mov   dx, word ptr [bp - 0Ah]
-mov   ax, word ptr [bp - 8]
-mov   cx, word ptr ds:[bx + _switchlist]
-mov   bx, 1
-call  P_StartButton_
-LEAVE_MACRO 
-pop   di
-pop   si
-ret   2
-label_6:
-mov   si, _buttonlist + BUTTON_T.button_soundorg
-mov   dl, byte ptr [bp - 4]
-mov   ax, word ptr ds:[si]
-xor   dh, dh
-push  cs
-call  S_StartSoundWithParams_
-mov   al, cl
-cbw  
-mov   si, ax
-mov   di, word ptr [bp - 6]
-add   si, ax
-mov   ax, SIDES_SEGMENT
-add   di, 2
-mov   es, ax
-mov   ax, word ptr ds:[si + _switchlist]
-mov   word ptr es:[di], ax
-cmp   word ptr [bp + 8], 0
-jne   label_3
-jmp   exit_p_changeswithctexture
-label_3:
-push  BUTTONTIME
-mov   dx, word ptr [bp - 0Ah]
-mov   ax, word ptr [bp - 8]
-mov   cx, word ptr ds:[bx + _switchlist]
-mov   bx, 2
-call  P_StartButton_
-LEAVE_MACRO 
-pop   di
-pop   si
-ret   2
+
+
+
+is_mid_texture:
+mov   bx, BUTTONMIDDLE
+mov   di, SIDE_T.s_midtexture
+
+jmp    do_button_texture_stuff
+
+
+
+
+
+is_bottom_texture:
+mov   bx, BUTTONBOTTOM
+mov   di, SIDE_T.s_bottomtexture
+
+jmp   do_button_texture_stuff
+
+
 
 ENDP
 COMMENT @
