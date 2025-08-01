@@ -433,26 +433,7 @@ mov   cx, 24
 mov   bx, 2
 jmp   do_plat
 
-special_line_type_7:
-mov   bx, 4
-mov   dx, si
-xor   ah, ah
-call  EV_DoFloor_
-test  ax, ax
-je    jump_to_exit_usespecialline_return_1
-push  0
-mov   al, byte ptr [bp - 2]
-mov   dx, word ptr [bp - 6]
-xor   ah, ah
-mov   cx, si
-mov   bx, ax
-mov   ax, di
-call  P_ChangeSwitchTexture_
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-retf  
+
 special_line_type_8:
 mov   bx, 3
 
@@ -490,6 +471,10 @@ LEAVE_MACRO
 pop   di
 pop   si
 retf  
+special_line_type_7:
+mov   bx, 4
+jmp   do_floor
+
 special_line_type_45:
 mov   bx, FLOOR_RAISEFLOORTURBO
 jmp   do_floor
@@ -620,6 +605,7 @@ retf
 
 special_line_type_13:
 mov   dx, 2
+do_door_1:
 xor   ah, ah
 call  EV_DoDoor_
 test  ax, ax
@@ -637,6 +623,23 @@ LEAVE_MACRO
 pop   di
 pop   si
 retf  
+special_line_type_21:
+mov   dx, 3
+jmp   do_door_1
+special_line_type_39:
+mov   dx, 5
+jmp   do_door_1
+special_line_type_40:
+mov   dx, 6
+jmp   do_door_1
+special_line_type_41:
+mov   dx, 7
+jmp   do_door_1
+special_line_type_23:
+xor   dx, dx
+jmp   do_door_1
+
+
 special_line_type_14:
 xor   dx, dx
 xor   ah, ah
@@ -657,8 +660,9 @@ pop   di
 pop   si
 retf  
 special_line_type_15:
-mov   dx, si
 xor   bx, bx
+do_floor_1:
+mov   dx, si
 xor   ah, ah
 call  EV_DoFloor_
 test  ax, ax
@@ -671,6 +675,7 @@ mov   cx, si
 mov   bx, ax
 mov   ax, di
 call  P_ChangeSwitchTexture_
+jump_to_exit_usespecialline_return_1_10:
 mov   al, 1
 LEAVE_MACRO 
 pop   di
@@ -678,46 +683,23 @@ pop   si
 retf  
 special_line_type_20:
 mov   bx, 1
-mov   dx, si
-xor   ah, ah
-call  EV_DoFloor_
-test  ax, ax
-jne   label_7
-jump_to_exit_usespecialline_return_1_10:
-jmp   exit_usespecialline_return_1
-label_7:
-push  1
-mov   al, byte ptr [bp - 2]
-mov   dx, word ptr [bp - 6]
-xor   ah, ah
-mov   cx, si
-mov   bx, ax
-mov   ax, di
-call  P_ChangeSwitchTexture_
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-retf  
-special_line_type_21:
-mov   dx, 3
-xor   ah, ah
-call  EV_DoDoor_
-test  ax, ax
-je    jump_to_exit_usespecialline_return_1_10
-push  1
-mov   al, byte ptr [bp - 2]
-mov   dx, word ptr [bp - 6]
-xor   ah, ah
-mov   cx, si
-mov   bx, ax
-mov   ax, di
-call  P_ChangeSwitchTexture_
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-retf  
+jmp   do_floor_1
+special_line_type_24:
+mov   bx, 3
+jmp   do_floor_1
+special_line_type_25:
+mov   bx, 9
+jmp   do_floor_1
+special_line_type_29:
+mov   bx, 4
+jmp   do_floor_1
+special_line_type_30:
+mov   bx, 2
+jmp   do_floor_1
+special_line_type_46:
+mov   bx, FLOOR_RAISEFLOORTURBO
+jmp   do_floor_1
+
 special_line_type_22:
 mov   cx, 1
 mov   dx, si
@@ -739,51 +721,10 @@ LEAVE_MACRO
 pop   di
 pop   si
 retf  
-special_line_type_23:
-xor   dx, dx
-xor   ah, ah
-call  EV_DoDoor_
-test  ax, ax
-je    jump_to_exit_usespecialline_return_1_10
-push  1
-mov   al, byte ptr [bp - 2]
-mov   dx, word ptr [bp - 6]
-xor   ah, ah
-mov   cx, si
-mov   bx, ax
-mov   ax, di
-call  P_ChangeSwitchTexture_
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-retf  
-special_line_type_24:
-mov   bx, 3
-mov   dx, si
-xor   ah, ah
-call  EV_DoFloor_
-test  ax, ax
-jne   label_8
-jump_to_exit_usespecialline_return_1_9:
-jmp   exit_usespecialline_return_1
-label_8:
-push  1
-mov   al, byte ptr [bp - 2]
-mov   dx, word ptr [bp - 6]
-xor   ah, ah
-mov   cx, si
-mov   bx, ax
-mov   ax, di
-call  P_ChangeSwitchTexture_
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-retf  
 special_line_type_26:
 mov   cx, 24
 mov   bx, 2
+do_plat_1:
 mov   dx, si
 xor   ah, ah
 call  EV_DoPlat_
@@ -797,6 +738,7 @@ mov   cx, si
 mov   bx, ax
 mov   ax, di
 call  P_ChangeSwitchTexture_
+jump_to_exit_usespecialline_return_1_9:
 mov   al, 1
 LEAVE_MACRO 
 pop   di
@@ -805,204 +747,16 @@ retf
 special_line_type_27:
 mov   cx, 32
 mov   bx, 2
-mov   dx, si
-xor   ah, ah
-call  EV_DoPlat_
-test  ax, ax
-je    jump_to_exit_usespecialline_return_1_9
-push  1
-mov   al, byte ptr [bp - 2]
-mov   dx, word ptr [bp - 6]
-xor   ah, ah
-mov   cx, si
-mov   bx, ax
-mov   ax, di
-call  P_ChangeSwitchTexture_
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-retf  
-special_line_type_25:
-mov   bx, 9
-mov   dx, si
-xor   ah, ah
-call  EV_DoFloor_
-test  ax, ax
-je    jump_to_exit_usespecialline_return_1_9
-push  1
-mov   al, byte ptr [bp - 2]
-mov   dx, word ptr [bp - 6]
-xor   ah, ah
-mov   cx, si
-mov   bx, ax
-mov   ax, di
-call  P_ChangeSwitchTexture_
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-retf  
-special_line_type_28:
-mov   bx, 3
-mov   dx, si
-xor   cx, cx
-xor   ah, ah
-call  EV_DoPlat_
-test  ax, ax
-jne   label_9
-jump_to_exit_usespecialline_return_1_8:
-jmp   exit_usespecialline_return_1
-label_9:
-push  1
-mov   al, byte ptr [bp - 2]
-mov   dx, word ptr [bp - 6]
-xor   ah, ah
-mov   cx, si
-mov   bx, ax
-mov   ax, di
-call  P_ChangeSwitchTexture_
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-retf  
-special_line_type_29:
-mov   bx, 4
-mov   dx, si
-xor   ah, ah
-call  EV_DoFloor_
-test  ax, ax
-je    jump_to_exit_usespecialline_return_1_8
-push  1
-mov   al, byte ptr [bp - 2]
-mov   dx, word ptr [bp - 6]
-xor   ah, ah
-mov   cx, si
-mov   bx, ax
-mov   ax, di
-call  P_ChangeSwitchTexture_
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-retf  
-special_line_type_30:
-mov   bx, 2
-mov   dx, si
-xor   ah, ah
-call  EV_DoFloor_
-test  ax, ax
-je    jump_to_exit_usespecialline_return_1_8
-push  1
-mov   al, byte ptr [bp - 2]
-mov   dx, word ptr [bp - 6]
-xor   ah, ah
-mov   cx, si
-mov   bx, ax
-mov   ax, di
-call  P_ChangeSwitchTexture_
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-retf  
-special_line_type_39:
-mov   dx, 5
-xor   ah, ah
-call  EV_DoDoor_
-test  ax, ax
-je    jump_to_exit_usespecialline_return_1_8
-push  1
-mov   bl, byte ptr [bp - 2]
-mov   dx, word ptr [bp - 6]
-mov   cx, si
-mov   ax, di
-xor   bh, bh
-call  P_ChangeSwitchTexture_
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-retf  
-special_line_type_40:
-mov   dx, 6
-xor   ah, ah
-call  EV_DoDoor_
-test  ax, ax
-jne   label_10
-jump_to_exit_usespecialline_return_1_7:
-jmp   exit_usespecialline_return_1
-label_10:
-push  1
-mov   bl, byte ptr [bp - 2]
-mov   dx, word ptr [bp - 6]
-mov   cx, si
-mov   ax, di
-xor   bh, bh
-call  P_ChangeSwitchTexture_
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-retf  
-special_line_type_41:
-mov   dx, 7
-xor   ah, ah
-call  EV_DoDoor_
-test  ax, ax
-je    jump_to_exit_usespecialline_return_1_7
-push  1
-mov   bl, byte ptr [bp - 2]
-mov   dx, word ptr [bp - 6]
-mov   cx, si
-mov   ax, di
-xor   bh, bh
-call  P_ChangeSwitchTexture_
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-retf  
+jmp   do_plat_1
 special_line_type_43:
 mov   bx, PLATFORM_BLAZEDWUS
-mov   dx, si
-xor   ah, ah
 xor   cx, cx
-call  EV_DoPlat_
-test  ax, ax
-je    jump_to_exit_usespecialline_return_1_7
-push  1
-mov   bl, byte ptr [bp - 2]
-mov   dx, word ptr [bp - 6]
-mov   cx, si
-mov   ax, di
-xor   bh, bh
-call  P_ChangeSwitchTexture_
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-retf  
-special_line_type_46:
-mov   bx, FLOOR_RAISEFLOORTURBO
-mov   dx, si
-xor   ah, ah
-call  EV_DoFloor_
-test  ax, ax
-je    jump_to_exit_usespecialline_return_1_7
-push  1
-mov   bl, byte ptr [bp - 2]
-mov   dx, word ptr [bp - 6]
-mov   cx, si
-mov   ax, di
-xor   bh, bh
-call  P_ChangeSwitchTexture_
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-retf  
+jmp   do_plat_1
+special_line_type_28:
+mov   bx, 3
+xor   cx, cx
+jmp   do_plat_1
+
 special_line_type_32:
 mov   ah, byte ptr [bp - 2]
 mov   byte ptr [bp - 3], 0
@@ -1029,6 +783,7 @@ pop   si
 retf  
 special_line_type_48:
 mov   bx, 255
+do_lightchange_1:
 mov   dx, 1
 xor   ah, ah
 call  EV_LightChange_
@@ -1047,20 +802,7 @@ retf
 special_line_type_49:
 mov   bx, 35
 mov   dx, 1
-xor   ah, ah
-call  EV_LightChange_
-mov   cx, si
-push  1
-mov   bl, byte ptr [bp - 2]
-mov   dx, word ptr [bp - 6]
-mov   ax, di
-xor   bh, bh
-call  P_ChangeSwitchTexture_
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-retf  
+jmp   do_lightchange_1
 
 
 
