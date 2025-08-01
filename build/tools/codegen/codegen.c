@@ -8,7 +8,7 @@
 #include "p_inter.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2481
+#define CONSTANTS_COUNT 2482
 #define LOCALS_COUNT 22
 
 
@@ -2566,7 +2566,8 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"IT_REDCARD",
 	"IT_BLUESKULL",
 	"IT_YELLOWSKULL",
-	"IT_REDSKULL"
+	"IT_REDSKULL",
+	"BUTTONTIME"
 
 
 
@@ -5131,7 +5132,8 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	it_redcard,
 	it_blueskull,
 	it_yellowskull,
-	it_redskull
+	it_redskull,
+	BUTTONTIME
 
 	
     

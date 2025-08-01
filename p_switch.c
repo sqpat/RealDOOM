@@ -39,6 +39,7 @@
 // Start a button counting down till it turns off.
 //
 void __near P_StartButton ( int16_t linenum,int16_t linefrontsecnum,bwhere_e	w,int16_t		texture,int16_t		time );
+void __near P_ChangeSwitchTexture ( int16_t linenum, int16_t lineside0, uint8_t linespecial, int16_t linefrontsecnum,int16_t 		useAgain );
 /*
 void __near P_StartButton ( int16_t linenum,int16_t linefrontsecnum,bwhere_e	w,int16_t		texture,int16_t		time ){
     int8_t		i;
@@ -72,7 +73,6 @@ void __near P_StartButton ( int16_t linenum,int16_t linefrontsecnum,bwhere_e	w,i
 #endif
 }
 
-*/
 
 
 
@@ -134,6 +134,7 @@ void __near P_ChangeSwitchTexture ( int16_t linenum, int16_t lineside0, uint8_t 
 }
 
 
+*/
 
 
 

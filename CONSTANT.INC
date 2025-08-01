@@ -2480,6 +2480,7 @@ IT_REDCARD = 02h
 IT_BLUESKULL = 03h
 IT_YELLOWSKULL = 04h
 IT_REDSKULL = 05h
+BUTTONTIME = 023h
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 03400h
