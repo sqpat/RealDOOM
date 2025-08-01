@@ -355,9 +355,8 @@
 
 #define columnquality                   (*((uint8_t __near*)                  (_NULL_OFFSET + 0x0439)))
 
-// up to 439?
-// 43A to 440 free?
 #define useDeadAttackerRef				(*((boolean __near*)                 (_NULL_OFFSET + 0x043A)))
+// 43B to 440 free?
 
 // 12 bytes each. two for 24.
 #define psprites                        (((pspdef_t __near*)                 (_NULL_OFFSET + 0x0440))) 
