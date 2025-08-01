@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/07/31 23:12:30
+Created on:       25/08/01 11:43:17
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -65,8 +65,8 @@ P_INTER_TEXT           CODE           AUTO           0bc4:30c8       0000089e
 p_lights_TEXT          CODE           AUTO           0bc4:3970       000003ed
 p_plats_TEXT           CODE           AUTO           0bc4:3d60       0000041d
 P_SPEC_TEXT            CODE           AUTO           0bc4:417e       00000a29
-p_switch_TEXT          CODE           AUTO           0bc4:4bb0       0000093e
-P_SWITCA_TEXT          CODE           AUTO           0bc4:54ee       000000ff
+p_switch_TEXT          CODE           AUTO           0bc4:4bb0       00000000
+P_SWITCA_TEXT          CODE           AUTO           0bc4:4bb0       00000a39
 p_telept_TEXT          CODE           AUTO           0bc4:55f0       0000022a
 P_TICK_TEXT            CODE           AUTO           0bc4:581a       000001e0
 p_user_TEXT            CODE           AUTO           0bc4:5a00       000006e7
@@ -861,13 +861,12 @@ Module: p_spec.obj(p_spec.ASM)
 0bc4:4517      P_CrossSpecialLine_
 0bc4:4724      P_ShootSpecialLine_
 0bc4:4b1b      P_SpawnSpecials_
-Module: p_switch.obj(C:\REALDOOM\p_switch.c)
-0bc4:4cc8      P_UseSpecialLine_
 Module: p_switca.obj(p_switca.ASM)
-0bc4:54ee*     P_SWITCH_STARTMARKER_
-0bc4:55ed*     P_SWITCH_ENDMARKER_
-0bc4:5531      P_ChangeSwitchTexture_
-0bc4:54ee*     P_StartButton_
+0bc4:4bb0*     P_SWITCH_STARTMARKER_
+0bc4:55e9*     P_SWITCH_ENDMARKER_
+0bc4:4bf3      P_ChangeSwitchTexture_
+0bc4:4bb0*     P_StartButton_
+0bc4:4dc7      P_UseSpecialLine_
 Module: p_telept.obj(C:\REALDOOM\p_telept.c)
 0bc4:55f0      EV_Teleport_
 Module: p_tick.obj(p_tick.ASM)

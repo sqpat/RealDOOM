@@ -21,7 +21,7 @@
 PLAYER_T STRUC 
 
     ; cmd struct 8 bytes
-    player_cmd_forwardmove    db ?                      ; 0
+    player_cmd_forwardmove    db ?                      ; 0     
     player_cmd_sidemove       db ?                      ; 1
     player_cmd_angleturn      dw ?                      ; 2
     player_cmd_consistancy    dw ?                      ; 4
@@ -37,11 +37,11 @@ PLAYER_T STRUC
     player_playerstate        db ?                      ; 1D
     player_powers             dw NUMPOWERS   DUP(?)     ; 1E
     player_cards              db NUMCARDS    DUP(?)     ; 2A
-    player_readyweapon        db ?                      ; 30
-    player_pendingweapon      db ?                      ; 31
-    player_weaponowned        db NUMWEAPONS  DUP(?)     ; 32
+    player_readyweapon        db ?                      ; 30    ;800
+    player_pendingweapon      db ?                      ; 31    ;801
+    player_weaponowned        db NUMWEAPONS  DUP(?)     ; 32    ;802
     player_cheats		      db ?                      ; 3B
-    player_ammo               dw NUMAMMO     DUP(?)     ; 3C
+    player_ammo               dw NUMAMMO     DUP(?)     ; 3C    ;80C
     player_maxammo            dw NUMAMMO     DUP(?)     ; 44
     player_attackdown         db ?                      ; 4C
     player_usedown            db ?                      ; 4D
