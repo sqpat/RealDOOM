@@ -53,51 +53,52 @@ PROC    P_StartButton_
 PUBLIC  P_StartButton_
 
 push  si
-push  di
 push  bp
 mov   bp, sp
-mov   si, ax
-mov   di, dx
-mov   dh, bl
-xor   dl, dl
-label_3:
-mov   al, dl
-cbw  
-imul  bx, ax, 9
-cmp   word ptr [bx + _buttonlist + BUTTON_T.button_btimer], 0
-je    label_1
-cmp   si, word ptr [bx + _buttonlist + BUTTON_T.button_linenum]
-je    label_2
-label_1:
-inc   dl
-cmp   dl, 4
-jl    label_3
-xor   dl, dl
-label_4:
-mov   al, dl
-cbw  
-imul  bx, ax, 9
-cmp   word ptr [bx + _buttonlist + BUTTON_T.button_btimer], 0
-je    label_5
-inc   dl
-cmp   dl, 4
-jl    label_4
-label_2:
-pop   bp
-pop   di
-pop   si
-ret   2
-label_5:
-mov   word ptr [bx + _buttonlist + BUTTON_T.button_linenum], si
-mov   byte ptr [bx + _buttonlist + BUTTON_T.button_where], dh
-mov   word ptr [bx + _buttonlist + BUTTON_T.button_btexture], cx
+xchg  ax, si ; si holds ax
+mov   ax, bx ; al holds w
+
+mov   bx, _buttonlist
+
+do_next_button_check:
+cmp   word ptr ds:[bx + BUTTON_T.button_btimer], 0
+je    timer_0_skip
+cmp   si, word ptr ds:[bx + BUTTON_T.button_linenum]
+je    button_already_exists
+timer_0_skip:
+add   bx, SIZEOF_BUTTON_T
+cmp   bx, (_buttonlist + MAXBUTTONS * SIZEOF_BUTTON_T)
+jl    do_next_button_check
+
+mov   bx, _buttonlist + BUTTON_T.button_btimer
+
+loop_check_next_bitton:
+
+
+cmp   word ptr ds:[bx], 0
+jne   button_already_active
+
+mov   word ptr ds:[bx + _buttonlist + BUTTON_T.button_linenum], si
+mov   byte ptr ds:[bx + _buttonlist + BUTTON_T.button_where], al
+mov   word ptr ds:[bx + _buttonlist + BUTTON_T.button_btexture], cx
+mov   word ptr ds:[bx + _buttonlist + BUTTON_T.button_soundorg], dx
 mov   ax, word ptr [bp + 8]
-mov   word ptr [bx + _buttonlist + BUTTON_T.button_soundorg], di
-mov   word ptr [bx + _buttonlist + BUTTON_T.button_btimer], ax
+mov   word ptr ds:[bx + _buttonlist + BUTTON_T.button_btimer], ax
+pop   bp
+pop   si
+ret   2
+
+button_already_active:
+add   bx, SIZEOF_BUTTON_T
+cmp   bx, (_buttonlist + BUTTON_T.button_btimer + MAXBUTTONS * SIZEOF_BUTTON_T)
+jl    loop_check_next_bitton
+
+button_already_exists:
 pop   bp
 pop   di
 pop   si
 ret   2
+
 
 ENDP
 
@@ -137,7 +138,7 @@ PUBLIC  P_ChangeSwitchTexture_
 0x0000000000004c4f:  89 46 FA          mov   word ptr [bp - 6], ax
 0x0000000000004c52:  BB BE 09          mov   bx, 0x9be
 0x0000000000004c55:  88 D0             mov   al, dl
-0x0000000000004c57:  8B 1F             mov   bx, word ptr [bx]
+0x0000000000004c57:  8B 1F             mov   bx, word ptr ds:[bx]
 0x0000000000004c59:  98                cbw  
 0x0000000000004c5a:  01 DB             add   bx, bx
 0x0000000000004c5c:  39 D8             cmp   ax, bx
@@ -145,7 +146,7 @@ PUBLIC  P_ChangeSwitchTexture_
 0x0000000000004c60:  89 C3             mov   bx, ax
 0x0000000000004c62:  01 C3             add   bx, ax
 0x0000000000004c64:  88 D1             mov   cl, dl
-0x0000000000004c66:  8B 87 80 0A       mov   ax, word ptr [bx + 0xa80]
+0x0000000000004c66:  8B 87 80 0A       mov   ax, word ptr ds:[bx + 0xa80]
 0x0000000000004c6a:  80 F1 01          xor   cl, 1
 0x0000000000004c6d:  39 C7             cmp   di, ax
 0x0000000000004c6f:  74 28             je    0x4c99
@@ -166,7 +167,7 @@ PUBLIC  P_ChangeSwitchTexture_
 0x0000000000004c97:  EB B1             jmp   0x4c4a
 0x0000000000004c99:  BE 9B 09          mov   si, 0x99b
 0x0000000000004c9c:  8A 56 FC          mov   dl, byte ptr [bp - 4]
-0x0000000000004c9f:  8B 04             mov   ax, word ptr [si]
+0x0000000000004c9f:  8B 04             mov   ax, word ptr ds:[si]
 0x0000000000004ca1:  30 F6             xor   dh, dh
 0x0000000000004ca3:  0E                push  cs
 0x0000000000004ca4:  3E E8 BA B8       call  0x562
@@ -176,7 +177,7 @@ PUBLIC  P_ChangeSwitchTexture_
 0x0000000000004cad:  01 C6             add   si, ax
 0x0000000000004caf:  B8 83 24          mov   ax, 0x2483
 0x0000000000004cb2:  8E C0             mov   es, ax
-0x0000000000004cb4:  8B 84 80 0A       mov   ax, word ptr [si + 0xa80]
+0x0000000000004cb4:  8B 84 80 0A       mov   ax, word ptr ds:[si + 0xa80]
 0x0000000000004cb8:  8B 76 FA          mov   si, word ptr [bp - 6]
 0x0000000000004cbb:  26 89 04          mov   word ptr es:[si], ax
 0x0000000000004cbe:  83 7E 08 00       cmp   word ptr [bp + 8], 0
@@ -188,14 +189,14 @@ PUBLIC  P_ChangeSwitchTexture_
 0x0000000000004cca:  6A 23             push  0x23
 0x0000000000004ccc:  8B 56 F6          mov   dx, word ptr [bp - 0xa]
 0x0000000000004ccf:  8B 46 F8          mov   ax, word ptr [bp - 8]
-0x0000000000004cd2:  8B 8F 80 0A       mov   cx, word ptr [bx + 0xa80]
+0x0000000000004cd2:  8B 8F 80 0A       mov   cx, word ptr ds:[bx + 0xa80]
 0x0000000000004cd6:  31 DB             xor   bx, bx
 0x0000000000004cd8:  E8 D5 FE          call  0x4bb0
 0x0000000000004cdb:  EB E7             jmp   0x4cc4
 0x0000000000004cdd:  EB 46             jmp   0x4d25
 0x0000000000004cdf:  BE 9B 09          mov   si, 0x99b
 0x0000000000004ce2:  8A 56 FC          mov   dl, byte ptr [bp - 4]
-0x0000000000004ce5:  8B 04             mov   ax, word ptr [si]
+0x0000000000004ce5:  8B 04             mov   ax, word ptr ds:[si]
 0x0000000000004ce7:  30 F6             xor   dh, dh
 0x0000000000004ce9:  0E                push  cs
 0x0000000000004cea:  3E E8 74 B8       call  0x562
@@ -207,14 +208,14 @@ PUBLIC  P_ChangeSwitchTexture_
 0x0000000000004cf8:  B8 83 24          mov   ax, 0x2483
 0x0000000000004cfb:  83 C6 04          add   si, 4
 0x0000000000004cfe:  8E C0             mov   es, ax
-0x0000000000004d00:  8B 85 80 0A       mov   ax, word ptr [di + 0xa80]
+0x0000000000004d00:  8B 85 80 0A       mov   ax, word ptr ds:[di + 0xa80]
 0x0000000000004d04:  26 89 04          mov   word ptr es:[si], ax
 0x0000000000004d07:  83 7E 08 00       cmp   word ptr [bp + 8], 0
 0x0000000000004d0b:  74 B7             je    0x4cc4
 0x0000000000004d0d:  6A 23             push  0x23
 0x0000000000004d0f:  8B 56 F6          mov   dx, word ptr [bp - 0xa]
 0x0000000000004d12:  8B 46 F8          mov   ax, word ptr [bp - 8]
-0x0000000000004d15:  8B 8F 80 0A       mov   cx, word ptr [bx + 0xa80]
+0x0000000000004d15:  8B 8F 80 0A       mov   cx, word ptr ds:[bx + 0xa80]
 0x0000000000004d19:  BB 01 00          mov   bx, 1
 0x0000000000004d1c:  E8 91 FE          call  0x4bb0
 0x0000000000004d1f:  C9                LEAVE_MACRO 
@@ -223,7 +224,7 @@ PUBLIC  P_ChangeSwitchTexture_
 0x0000000000004d22:  C2 02 00          ret   2
 0x0000000000004d25:  BE 9B 09          mov   si, 0x99b
 0x0000000000004d28:  8A 56 FC          mov   dl, byte ptr [bp - 4]
-0x0000000000004d2b:  8B 04             mov   ax, word ptr [si]
+0x0000000000004d2b:  8B 04             mov   ax, word ptr ds:[si]
 0x0000000000004d2d:  30 F6             xor   dh, dh
 0x0000000000004d2f:  0E                push  cs
 0x0000000000004d30:  3E E8 2E B8       call  0x562
@@ -235,7 +236,7 @@ PUBLIC  P_ChangeSwitchTexture_
 0x0000000000004d3e:  B8 83 24          mov   ax, 0x2483
 0x0000000000004d41:  83 C7 02          add   di, 2
 0x0000000000004d44:  8E C0             mov   es, ax
-0x0000000000004d46:  8B 84 80 0A       mov   ax, word ptr [si + 0xa80]
+0x0000000000004d46:  8B 84 80 0A       mov   ax, word ptr ds:[si + 0xa80]
 0x0000000000004d4a:  26 89 05          mov   word ptr es:[di], ax
 0x0000000000004d4d:  83 7E 08 00       cmp   word ptr [bp + 8], 0
 0x0000000000004d51:  75 03             jne   0x4d56
@@ -243,7 +244,7 @@ PUBLIC  P_ChangeSwitchTexture_
 0x0000000000004d56:  6A 23             push  0x23
 0x0000000000004d58:  8B 56 F6          mov   dx, word ptr [bp - 0xa]
 0x0000000000004d5b:  8B 46 F8          mov   ax, word ptr [bp - 8]
-0x0000000000004d5e:  8B 8F 80 0A       mov   cx, word ptr [bx + 0xa80]
+0x0000000000004d5e:  8B 8F 80 0A       mov   cx, word ptr ds:[bx + 0xa80]
 0x0000000000004d62:  BB 02 00          mov   bx, 2
 0x0000000000004d65:  E8 48 FE          call  0x4bb0
 0x0000000000004d68:  C9                LEAVE_MACRO 
@@ -271,7 +272,7 @@ _special_line_switch_block:
 0x0000000000004d7b:  4F                dec   di
 0x0000000000004d7c:  FD                std   
 0x0000000000004d7d:  4E                dec   si
-0x0000000000004d7e:  3B 4F FD          cmp   cx, word ptr [bx - 3]
+0x0000000000004d7e:  3B 4F FD          cmp   cx, word ptr ds:[bx - 3]
 0x0000000000004d81:  4E                dec   si
 0x0000000000004d82:  5D                pop   bp
 0x0000000000004d83:  4F                dec   di
@@ -285,7 +286,7 @@ _special_line_switch_block:
 0x0000000000004d8d:  4E                dec   si
 0x0000000000004d8e:  FD                std   
 0x0000000000004d8f:  4E                dec   si
-0x0000000000004d90:  D2 4F FD          ror   byte ptr [bx - 3], cl
+0x0000000000004d90:  D2 4F FD          ror   byte ptr ds:[bx - 3], cl
 0x0000000000004d93:  4E                dec   si
 0x0000000000004d94:  FB                sti   
 0x0000000000004d95:  4F                dec   di
@@ -342,7 +343,7 @@ _special_line_switch_block:
 0x0000000000004dce:  EF                out   dx, ax
 0x0000000000004dcf:  50                push  ax
 0x0000000000004dd0:  14 51             adc   al, 0x51
-0x0000000000004dd2:  3B 51 FD          cmp   dx, word ptr [bx + di - 3]
+0x0000000000004dd2:  3B 51 FD          cmp   dx, word ptr ds:[bx + di - 3]
 0x0000000000004dd5:  4E                dec   si
 0x0000000000004dd6:  FD                std   
 0x0000000000004dd7:  4E                dec   si
@@ -358,18 +359,18 @@ _special_line_switch_block:
 0x0000000000004de1:  4E                dec   si
 0x0000000000004de2:  FD                std   
 0x0000000000004de3:  4E                dec   si
-0x0000000000004de4:  AC                lodsb al, byte ptr [si]
+0x0000000000004de4:  AC                lodsb al, byte ptr ds:[si]
 0x0000000000004de5:  53                push  bx
 0x0000000000004de6:  D8 53 FF          fcom  dword ptr [bp + di - 1]
 0x0000000000004de9:  53                push  bx
-0x0000000000004dea:  28 54 4E          sub   byte ptr [si + 0x4e], dl
+0x0000000000004dea:  28 54 4E          sub   byte ptr ds:[si + 0x4e], dl
 0x0000000000004ded:  54                push  sp
 0x0000000000004dee:  CE                into  
 0x0000000000004def:  54                push  sp
 0x0000000000004df0:  7A 54             jp    0x4e46
-0x0000000000004df2:  A4                movsb byte ptr es:[di], byte ptr [si]
+0x0000000000004df2:  A4                movsb byte ptr es:[di], byte ptr ds:[si]
 0x0000000000004df3:  54                push  sp
-0x0000000000004df4:  F7 54 23          not   word ptr [si + 0x23]
+0x0000000000004df4:  F7 54 23          not   word ptr ds:[si + 0x23]
 0x0000000000004df7:  55                push  bp
 0x0000000000004df8:  4C                dec   sp
 0x0000000000004df9:  55                push  bp
@@ -431,7 +432,7 @@ _special_line_switch_block:
 0x0000000000004e31:  4E                dec   si
 0x0000000000004e32:  35 56 FD          xor   ax, 0xfd56
 0x0000000000004e35:  4E                dec   si
-0x0000000000004e36:  85 51 AE          test  word ptr [bx + di - 0x52], dx
+0x0000000000004e36:  85 51 AE          test  word ptr ds:[bx + di - 0x52], dx
 0x0000000000004e39:  51                push  cx
 0x0000000000004e3a:  D4 51             aam   0x51
 0x0000000000004e3c:  FD                std   
@@ -523,7 +524,7 @@ PUBLIC  P_UseSpecialLine_
 0x0000000000004ecc:  83 7E F6 00       cmp   word ptr [bp - 0xa], 0
 0x0000000000004ed0:  75 31             jne   0x4f03
 0x0000000000004ed2:  BB F6 06          mov   bx, 0x6f6
-0x0000000000004ed5:  3B 17             cmp   dx, word ptr [bx]
+0x0000000000004ed5:  3B 17             cmp   dx, word ptr ds:[bx]
 0x0000000000004ed7:  74 0C             je    0x4ee5
 0x0000000000004ed9:  F6 C4 20          test  ah, 0x20
 0x0000000000004edc:  75 25             jne   0x4f03
