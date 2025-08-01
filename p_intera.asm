@@ -403,13 +403,14 @@ dw touchspecial_case_88, touchspecial_case_89, touchspecial_case_90, touchspecia
 out_of_range:
 dead_toucher_cant_pickup:
 
-pop    di
+;pop    di
 retf
 
 PROC    P_TouchSpecialThing_  FAR
 PUBLIC  P_TouchSpecialThing_
 
-push   di
+; outer scope doesnt require preserved di
+;push   di
 mov    di, dx
 
 ; check toucher health 
@@ -419,9 +420,9 @@ jle    dead_toucher_cant_pickup
 mov    word ptr cs:[OFFSET SELFMODIFY_touchspecial_removemobj_ptr+1], ax
 ; ax free
 
-; todo this might be guaranteed ES already.
-mov    dx, MOBJPOSLIST_6800_SEGMENT
-mov    es, dx
+; es is actually already guaranteed MOBJPOSLIST_6800_SEGMENT in caller scope?
+;mov    dx, MOBJPOSLIST_6800_SEGMENT
+;mov    es, dx
 
 ;	fixed_t specialz = special_pos->z.w;
 mov    ax, word ptr es:[bx + MOBJ_POS_T.mp_z + 0]
@@ -544,7 +545,7 @@ db 01Eh  ;
 dw _S_StartSound_addr
 
 exit_ptouchspecialthing:
-pop    di
+;pop    di
 retf
 touchspecial_case_56:
 mov    ax, 2
@@ -614,7 +615,7 @@ call   P_GiveBody_
 test   al, al
 jne    done_with_touchspecial_switch_block
 exitptouchspecialthing_2:
-pop    di
+;pop    di
 retf
 
 
@@ -1139,10 +1140,9 @@ push   di
 push   bp
 mov    bp, sp
 push   cx
-sub    sp, 4
+push   bx   ; bp - 4
+push   dx   ; bp - 6
 mov    si, ax
-push   dx   ; bp - 8
-mov    word ptr [bp - 6], bx
 mov    bx, SIZEOF_THINKER_T
 sub    ax, (_thinkerlist + THINKER_T.t_data)
 xor    dx, dx
@@ -1156,7 +1156,7 @@ xchg   ax, bx
 mov    dx, MOBJPOSLIST_6800_SEGMENT
 mov    es, dx
 
-mov    word ptr [bp - 4], bx
+push   bx ; bp - 8
 test   byte ptr es:[bx + MOBJ_POS_T.mp_flags1], MF_SHOOTABLE
 je     exit_p_damagemobj_2
 cmp    word ptr ds:[si + MOBJ_T.m_health], 0
@@ -1190,7 +1190,7 @@ sar    word ptr [bp - 2], 1
 damagemobj_dont_halve_damage:
 damagemobj_not_player:
 
-cmp    word ptr [bp - 8], 0 ; check if inflictor is not null..
+cmp    word ptr [bp - 6], 0 ; check if inflictor is not null..
 jne    continue_inflictor_check
 jump_to_done_with_inflictor_block:
 jmp    done_with_inflictor_block
@@ -1198,7 +1198,7 @@ continue_inflictor_check:
 
 test   byte ptr es:[bx + MOBJ_POS_T.mp_flags1 + 1], (MF_NOCLIP SHR 8)
 jne    jump_to_done_with_inflictor_block
-mov    di, word ptr [bp - 6] ; get source
+mov    di, word ptr [bp - 4] ; get source
 test   di, di
 je     apply_knockback
 cmp    byte ptr ds:[di + MOBJ_T.m_mobjtype], MT_PLAYER
@@ -1222,14 +1222,14 @@ push   ax  ; lo second
 ; let's push arguments for the upcoming call to R_PointToAngle2
 mov    ax, MOBJPOSLIST_6800_SEGMENT
 mov    es, ax
-mov    bx, word ptr [bp - 4]
+mov    bx, word ptr [bp - 8]
 push   word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
 push   word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
 push   word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
 push   word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
 
 
-mov    ax, word ptr [bp - 8]
+mov    ax, word ptr [bp - 6]
 xor    dx, dx
 mov    bx, SIZEOF_THINKER_T
 sub    ax, (_thinkerlist + THINKER_T.t_data)
@@ -1268,7 +1268,7 @@ cmp    ax, 40
 jge    skip_fallforwards
 cmp    ax, word ptr ds:[si + MOBJ_T.m_health]
 jle    skip_fallforwards
-mov    bx, word ptr [bp - 4]
+mov    bx, word ptr [bp - 8]
 
 ; need inflictor z now!
 
@@ -1403,7 +1403,7 @@ dont_cap_health_to_zero:
 
 ; cx has damage
 
-mov    ax, word ptr [bp - 6] ; get source
+mov    ax, word ptr [bp - 4] ; get source
 mov    di, ax
 mov    bx, SIZEOF_THINKER_T
 xor    dx, dx
@@ -1448,7 +1448,7 @@ cmp    dx, ax
 jge    dont_do_pain_state
 mov    bx, MOBJPOSLIST_6800_SEGMENT
 mov    es, bx  ; necessary?
-mov    bx, word ptr [bp - 4]
+mov    bx, word ptr [bp - 8]
 test   byte ptr es:[bx + MOBJ_POS_T.mp_flags2 + 1], (MF_SKULLFLY SHR 8)
 jne    dont_do_pain_state
 or     byte ptr es:[bx + MOBJ_POS_T.mp_flags1], MF_JUSTHIT
@@ -1470,10 +1470,10 @@ cmp    byte ptr ds:[si + MOBJ_T.m_mobjtype], MT_VILE
 je     chase_source
 jmp    exit_p_damagemobj
 do_kill_mobj:
-mov    bx, word ptr [bp - 4]
+mov    bx, word ptr [bp - 8]
 mov    cx, MOBJPOSLIST_6800_SEGMENT
 
-mov    ax, word ptr [bp - 6]
+mov    ax, word ptr [bp - 4]
 mov    dx, si
 call   P_KillMobj_
 jmp    exit_p_damagemobj
@@ -1499,7 +1499,7 @@ pop    ds
 jmp    done_with_deadattackerref_stuff
 
 chase_source:
-mov    ax, word ptr [bp - 6]
+mov    ax, word ptr [bp - 4]
 test   ax, ax
 je     exit_p_damagemobj
 cmp    si, ax
@@ -1515,7 +1515,8 @@ mov    word ptr ds:[si + MOBJ_T.m_targetRef], ax
 
 mov    al, SIZEOF_MOBJINFO_T
 mul    byte ptr ds:[si + MOBJ_T.m_mobjtype]
-mov    di, word ptr [bp - 4]
+;mov    di, word ptr [bp - 8]
+pop    di
 mov    byte ptr ds:[si + MOBJ_T.m_threshold], BASETHRESHOLD
 
 mov    bx, MOBJPOSLIST_6800_SEGMENT
