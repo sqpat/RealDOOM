@@ -221,8 +221,7 @@ mov   ax, di   ; ax gets thing ptr for first call
 
 mov   si, dx ; not needed, already equal after lodsw...
 call  dword ptr [_P_TeleportMove]
-test  al, al
-je    exit_ev_teleport_return_0
+jnc   exit_ev_teleport_return_0; return false
 
 les   bx, dword ptr [bp + 0Ah]
 

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/01 23:09:53
+Created on:       25/08/02 08:01:17
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -99,7 +99,7 @@ V_VIDEO_TEXT           CODE           AUTO           254d:d0dc       00000615
 Z_ZONE_TEXT            CODE           AUTO           254d:d6f2       0000049d
 p_setup_TEXT           CODE           AUTO           3306:0000       0000127a
 P_SIGHT_TEXT           CODE           AUTO           342e:0000       000005ed
-P_MAP_TEXT             CODE           AUTO           342e:05ee       000023c0
+P_MAP_TEXT             CODE           AUTO           342e:05ee       000023bf
 P_MOBJ_TEXT            CODE           AUTO           342e:29ae       00000fa0
 P_PSPR_TEXT            CODE           AUTO           342e:394e       00000834
 P_ENEMY_TEXT           CODE           AUTO           342e:4182       00001a76
@@ -1204,21 +1204,21 @@ Module: p_map.obj(p_map.ASM)
 342e:0b34      R_PointInSubsector_
 342e:05ee*     P_MAP_STARTMARKER_
 342e:17d0      P_CheckPosition_
-342e:233f      P_AimLineAttack_
-342e:2494      P_LineAttack_
-342e:26d0      P_RadiusAttack_
+342e:233e      P_AimLineAttack_
+342e:2493      P_LineAttack_
+342e:26cf      P_RadiusAttack_
 342e:0956      P_LineOpening_
-342e:29aa      P_SetThingPositionFar_
+342e:29a9      P_SetThingPositionFar_
 342e:098a      P_UnsetThingPosition_
 342e:0689      P_AproxDistance_
-342e:2995      P_Random_MapLocal_
-342e:25c9      P_UseLines_
+342e:2994      P_Random_MapLocal_
+342e:25c8      P_UseLines_
 342e:222e      P_TeleportMove_
 342e:198b      P_SlideMove_
 342e:0bde      P_BlockThingsIterator_
-342e:29ae*     P_MAP_ENDMARKER_
+342e:29ad*     P_MAP_ENDMARKER_
 342e:11c9      P_TryMove_
-342e:28cd      P_ChangeSector_
+342e:28cc      P_ChangeSector_
 Module: p_mobj.obj(p_mobj.ASM)
 342e:2d56      P_SpawnMobj_
 342e:3812      P_SpawnPlayerMissile_
@@ -1634,4 +1634,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00041360 (267104.)
 Entry point address: 342e:687e
-Link time: 00:00.39
+Link time: 00:00.40

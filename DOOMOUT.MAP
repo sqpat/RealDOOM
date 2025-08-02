@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/01 23:43:39
+Created on:       25/08/02 08:01:18
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -66,8 +66,8 @@ p_lights_TEXT          CODE           AUTO           0bc4:3970       000003ed
 p_plats_TEXT           CODE           AUTO           0bc4:3d60       0000041d
 P_SPEC_TEXT            CODE           AUTO           0bc4:417e       00000a29
 P_SWITCH_TEXT          CODE           AUTO           0bc4:4ba8       000003c6
-P_TELEPT_TEXT          CODE           AUTO           0bc4:4f6e       00000187
-P_TICK_TEXT            CODE           AUTO           0bc4:50f6       000001e0
+P_TELEPT_TEXT          CODE           AUTO           0bc4:4f6e       00000185
+P_TICK_TEXT            CODE           AUTO           0bc4:50f4       000001e0
 p_user_TEXT            CODE           AUTO           0bc4:52e0       000006e7
 R_MAIN_TEXT            CODE           AUTO           0bc4:59c8       000003dc
 w_wad_TEXT             CODE           AUTO           0bc4:5db0       0000030c
@@ -866,15 +866,15 @@ Module: p_switch.obj(p_switch.ASM)
 0bc4:4ba8      P_ChangeSwitchTexture_
 0bc4:4db1      P_UseSpecialLine_
 Module: p_telept.obj(p_telept.ASM)
-0bc4:50f5*     P_TELEPT_ENDMARKER_
+0bc4:50f3*     P_TELEPT_ENDMARKER_
 0bc4:4f6e*     P_TELEPT_STARTMARKER_
 0bc4:4f6e      EV_Teleport_
 Module: p_tick.obj(p_tick.ASM)
-0bc4:516a      P_UpdateThinkerFunc_
-0bc4:52c1      P_Random_
-0bc4:518c      P_RemoveThinker_
-0bc4:51bf      P_Ticker_
-0bc4:50f6      P_CreateThinker_
+0bc4:5168      P_UpdateThinkerFunc_
+0bc4:52bf      P_Random_
+0bc4:518a      P_RemoveThinker_
+0bc4:51bd      P_Ticker_
+0bc4:50f4      P_CreateThinker_
 Module: p_user.obj(C:\REALDOOM\p_user.c)
 0bc4:52e0+     P_Thrust_
 0bc4:5340+     P_CalcHeight_

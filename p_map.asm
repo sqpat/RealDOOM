@@ -6541,7 +6541,7 @@ ret
 
 ENDP
 
-
+; return in carry
 ;boolean __near P_TeleportMove (mobj_t __near* thing,mobj_pos_t __far* thing_pos,fixed_t_union	x,fixed_t_union	y, int16_t oldsecnum){
 
 PROC P_TeleportMove_ FAR
@@ -6762,7 +6762,7 @@ mov   bx, word ptr ds:[si]  ; bp + 014h
 mov   ax, word ptr [bp - 2]
 
 call  P_SetThingPosition_
-mov   al, 1
+stc
 exit_teleport_move_return_0:
 LEAVE_MACRO 
 pop   di
