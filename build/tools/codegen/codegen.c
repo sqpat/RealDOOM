@@ -8,7 +8,7 @@
 #include "p_inter.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2484
+#define CONSTANTS_COUNT 2487
 #define LOCALS_COUNT 22
 
 
@@ -2569,7 +2569,12 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"IT_REDSKULL",
 	"BUTTONTIME",
 	"CEILSPEED",
-	"SHORTFLOORBITS"
+	"SHORTFLOORBITS",
+	"FLOOR_OK",
+ 	"FLOOR_CRUSHED", 
+ 	"FLOOR_PASTDEST" 
+    
+
 
 
 
@@ -5138,7 +5143,12 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	it_redskull,
 	BUTTONTIME,
 	CEILSPEED,
-	SHORTFLOORBITS
+	SHORTFLOORBITS,
+
+	floor_ok,
+ 	floor_crushed, 
+ 	floor_pastdest,
+    
 
 
 	

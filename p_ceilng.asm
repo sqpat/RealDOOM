@@ -51,179 +51,177 @@ ENDP
 
 
 
-_move_ceiling_jump_table:
-dw switch_moveceiling_type_1, switch_moveceiling_default_case, switch_moveceiling_type_1, switch_moveceiling_type_2, switch_moveceiling_type_3, switch_moveceiling_type_4
-
 ;void __near T_MoveCeiling(ceiling_t __near* ceiling, THINKERREF ceilingRef) {
+
 
 
 PROC    T_MoveCeiling_ NEAR
 PUBLIC  T_MoveCeiling_
 
-
+push  si
+xchg  ax, si ; si gets ceiling
+mov   al, byte ptr ds:[si + CEILING_T.ceiling_direction]
+cmp   al, 0
+je    ceiling_in_stasis
 
 push  bx
 push  cx
-push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 4
-mov   si, ax
-mov   word ptr [bp - 4], dx
-mov   di, word ptr ds:[si + CEILING_T.ceiling_secnum]
-mov   dx, di
-shl   dx, 4
-mov   ax, dx
-add   ax, _sectors_physics
-mov   word ptr [bp - 2], ax
-mov   al, byte ptr ds:[si + CEILING_T.ceiling_direction]
-cmp   al, -1
-je    do_ceiling_down
-cmp   al, 1
-je    do_process_ceiling
+
+
+push  dx ; bp - 2
+mov   dx, word ptr ds:[si + CEILING_T.ceiling_secnum]
+mov   di, dx
+SHIFT_MACRO shl di 4
+
+cbw
+cmp   al, 0  ; wish we could pend this from above but shl di knocks it out
+jl    do_ceiling_down
+jg    do_ceiling_up
+done_with_moveceiling_switch_block:
 switch_moveceiling_default_case:
 exit_t_moveceiling:
 LEAVE_MACRO 
 pop   di
-pop   si
-pop   cx
 pop   bx
+pop   cx
+ceiling_in_stasis:
+pop   si
 ret   
-do_process_ceiling:
-cbw  
-mov   cx, word ptr ds:[si + CEILING_T.ceiling_topheight]
+do_ceiling_up:
 push  ax
+mov   al, 1
+push  ax ; 1
+dec   ax
+push  ax ; false
 mov   bx, word ptr ds:[si + CEILING_T.ceiling_speed]
-push  1
-mov   ax, dx
-push  0
-mov   dx, SECTORS_SEGMENT
-call  T_MovePlane_
-mov   bx, _leveltime
-mov   cl, al
-test  byte ptr ds:[bx], 7
-jne   label_2
-mov   al, byte ptr ds:[si]
-cmp   al, 5
-jne   label_3
-label_2:
-cmp   cl, 2
-jne   switch_moveceiling_default_case
-mov   al, byte ptr ds:[si]
-cmp   al, 5
-je    label_4
-cmp   al, 1
-jb    switch_moveceiling_default_case
-jbe   do_remove_ceiling
-cmp   al, 3
-jb    switch_moveceiling_default_case
-cmp   al, 4
-ja    switch_moveceiling_default_case
-mov   byte ptr ds:[si + CEILING_T.ceiling_direction], -1
-jmp   switch_moveceiling_default_case
-label_3:
-mov   dx, SFX_STNMOV
+mov   cx, word ptr ds:[si + CEILING_T.ceiling_topheight]
 mov   ax, di
 
+mov   dx, SECTORS_SEGMENT
+call  T_MovePlane_
+mov   cl, al
+test  byte ptr ds:[_leveltime], 7
+jne   dont_play_ceiling_sound
+mov   al, byte ptr ds:[si + CEILING_T.ceiling_type]
+cmp   al, CEILING_SILENTCRUSHANDRAISE
+je    dont_play_ceiling_sound
+mov   dx, SFX_STNMOV
+mov   ax, di
 call  S_StartSoundWithParams_
-jmp   label_2
-do_ceiling_down:
-jmp   continue_do_ceiling_down
+dont_play_ceiling_sound:
+cmp   cl, FLOOR_PASTDEST
+jne   done_with_moveceiling_switch_block
+mov   al, byte ptr ds:[si + CEILING_T.ceiling_type]
+cmp   al, CEILING_RAISETOHIGHEST
+je    do_remove_ceiling ; 1
+
+
+cmp   al, CEILING_CRUSHANDRAISE
+jb    done_with_moveceiling_switch_block ; 0, 2
+cmp   al, CEILING_FASTCRUSHANDRAISE
+jbe   just_set_dir_negative ; 3, 4
+
+; 5 fall thru
+mov   dx, SFX_PSTOP
+mov   ax, di
+call  S_StartSoundWithParams_
+
+just_set_dir_negative:
+mov   byte ptr ds:[si + CEILING_T.ceiling_direction], -1
+jmp   done_with_moveceiling_switch_block
+
 switch_moveceiling_type_1:
 do_remove_ceiling:
-mov   dx, word ptr [bp - 4]
-mov   ax, word ptr [bp - 2]
+
+xchg  ax, di
+pop   dx ; bp - 2
+add   ax, _sectors_physics
 call  P_RemoveActiveCeiling_
 LEAVE_MACRO 
 pop   di
-pop   si
 pop   cx
 pop   bx
+pop   si
 ret   
-label_4:
-mov   dx, SFX_PSTOP
+do_ceiling_down:
+SHIFT_MACRO shl   di 4
+push  di ; bp - 4
+
+push  ax
+mov   al, 1
+push  ax ; 1
+mov   al, byte ptr ds:[si + CEILING_T.ceiling_crush]
+push  ax ; crush
+mov   bx, word ptr ds:[si + CEILING_T.ceiling_speed]
+mov   cx, word ptr ds:[si + CEILING_T.ceiling_bottomheight]
 mov   ax, di
 
-call  S_StartSoundWithParams_
-
-mov   byte ptr ds:[si + CEILING_T.ceiling_direction], -1
-jmp   exit_t_moveceiling
-continue_do_ceiling_down:
-cbw  
-mov   cx, word ptr ds:[si + CEILING_T.ceiling_bottomheight]
-push  ax
-mov   al, byte ptr ds:[si + CEILING_T.ceiling_crush]
-push  1
-cbw  
-mov   bx, word ptr ds:[si + CEILING_T.ceiling_speed]
-push  ax
-mov   ax, dx
 mov   dx, SECTORS_SEGMENT
 call  T_MovePlane_
-mov   bx, _leveltime
+
 mov   cl, al
-test  byte ptr ds:[bx], 7
-jne   label_1
-mov   al, byte ptr ds:[si]
-cmp   al, 5
-jne   label_5
-label_1:
-cmp   cl, 2
-jne   label_6
-mov   dl, byte ptr ds:[si]
-cmp   dl, 5
-jbe   label_7
-jump_to_exit_t_moveceiling:
-jmp   exit_t_moveceiling
-label_7:
-xor   dh, dh
-mov   bx, dx
-add   bx, dx
-jmp   word ptr cs:[bx + OFFSET _move_ceiling_jump_table]
-label_5:
+mov   al, byte ptr ds:[si + CEILING_T.ceiling_type]
+test  byte ptr ds:[_leveltime], 7
+jne   dont_play_ceiling_sound_2
+cmp   al, CEILING_SILENTCRUSHANDRAISE
+je    dont_play_ceiling_sound_2
+
 mov   dx, SFX_STNMOV
+mov   ch, al ; store type
 mov   ax, di
 
 call  S_StartSoundWithParams_
+mov   al, ch  ; restore..
+dont_play_ceiling_sound_2:
 
-nop   
-jmp   label_1
+cmp   cl, FLOOR_PASTDEST
+jne   other_moveplane_result_type
+cmp   al, CEILING_RAISETOHIGHEST ; 1
+je    exit_t_moveceiling_2 ; 1
+cmp   al, CEILING_CRUSHANDRAISE ; 3
+jb    switch_moveceiling_type_1 ; 0, 2
+je    switch_moveceiling_type_2 ; 1
+
+cmp   al, CEILING_SILENTCRUSHANDRAISE ; 5
+jb    switch_moveceiling_type_3 ; 4
+;jne   exit_t_moveceiling_2 ; oob check? necessary?
+
+; 5 fall thru
+
+
 switch_moveceiling_type_4:
 mov   dx, SFX_PSTOP
-mov   ax, di
+xchg  ax, di
 
 call  S_StartSoundWithParams_
-
-nop   
+; fall thru
 switch_moveceiling_type_2:
 mov   word ptr ds:[si + CEILING_T.ceiling_speed], CEILSPEED
+; fall thru
+
 switch_moveceiling_type_3:
 mov   byte ptr ds:[si + CEILING_T.ceiling_direction], 1
+exit_t_moveceiling_2:
 LEAVE_MACRO 
 pop   di
-pop   si
 pop   cx
 pop   bx
+pop   si
 ret   
-label_6:
-cmp   cl, 1
-jne   jump_to_exit_t_moveceiling
-mov   al, byte ptr ds:[si]
-cmp   al, 5
-je    label_8
-cmp   al, 3
-je    label_8
-cmp   al, 2
-jne   jump_to_exit_t_moveceiling
-label_8:
+other_moveplane_result_type:
+cmp   cl, FLOOR_CRUSHED
+jne   exit_t_moveceiling_2
+; 2 3 or 5. so not 4 and lower than 2
+cmp   al, CEILING_FASTCRUSHANDRAISE ; 4
+je    exit_t_moveceiling_2
+cmp   al, CEILING_LOWERANDCRUSH ; 2
+jb    exit_t_moveceiling_2
+
 mov   word ptr ds:[si + CEILING_T.ceiling_speed], 1
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret   
+jmp   exit_t_moveceiling_2
 ENDP
 
 

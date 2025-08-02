@@ -2483,6 +2483,9 @@ IT_REDSKULL = 05h
 BUTTONTIME = 023h
 CEILSPEED = 08h
 SHORTFLOORBITS = 03h
+FLOOR_OK = 00h
+FLOOR_CRUSHED = 01h
+FLOOR_PASTDEST = 02h
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 03400h
