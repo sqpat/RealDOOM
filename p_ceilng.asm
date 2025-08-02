@@ -373,30 +373,23 @@ PROC    P_AddActiveCeiling_ NEAR
 PUBLIC  P_AddActiveCeiling_
 
 push  bx
-push  cx
-push  dx
-mov   cx, ax
-xor   dl, dl
-label_19:
-mov   al, dl
-cbw  
-mov   bx, ax
-add   bx, ax
-cmp   word ptr ds:[bx + _activeceilings], 0
-je    label_18
-inc   dl
-cmp   dl, MAXCEILINGS
-jl    label_19
-pop   dx
-pop   cx
+mov   bx, _activeceilings
+loop_next_add_active_ceiling:
+
+cmp   word ptr ds:[bx], NULL_THINKERREF
+je    found_ceiling_slot_to_add
+inc   bx
+inc   bx
+cmp   bx, (MAXCEILINGS * 2) + _activeceilings
+jl    loop_next_add_active_ceiling
 pop   bx
 ret   
-label_18:
-mov   word ptr ds:[bx + _activeceilings], cx
-pop   dx
-pop   cx
+found_ceiling_slot_to_add:
+mov   ds:[bx], ax
 pop   bx
 ret   
+
+
 
 
 ENDP
@@ -410,14 +403,14 @@ PUBLIC  P_RemoveActiveCeiling_
 
 push  bx
 mov   bx, _activeceilings
-loop_next_active_ceiling:
+loop_next_remove_active_ceiling:
 
 cmp   dx, word ptr ds:[bx]
 je    found_ceiling_to_remove
 inc   bx
 inc   bx
 cmp   bx, (MAXCEILINGS * 2) + _activeceilings
-jl    loop_next_active_ceiling
+jl    loop_next_remove_active_ceiling
 pop   bx
 ret   
 
