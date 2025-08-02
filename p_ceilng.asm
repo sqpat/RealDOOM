@@ -490,6 +490,7 @@ ret
 ENDP
 
 
+
 PROC    EV_CeilingCrushStop_ NEAR
 PUBLIC  EV_CeilingCrushStop_
 
@@ -497,35 +498,35 @@ PUBLIC  EV_CeilingCrushStop_
 push  bx
 push  cx
 push  dx
-push  si
 push  di
-mov   ch, al
-xor   di, di
-xor   cl, cl
+
+mov   ch, al ; ch gets tag
+xor   di, di ; di is retn
+xor   cl, cl ; cl is loop counter
+
+
 
 loop_next_ceiling_crush_stop:
-mov   al, cl
-cbw  
-mov   si, ax
-add   si, ax
-mov   ax, word ptr ds:[si + _activeceilings]
-test  ax, ax
+xor   bx, bx
+mov   bl, cl
+sal   bx, 1
+mov   bx, word ptr ds:[bx + _activeceilings]
+test  bx, bx
 je    continue_ceiling_crush_stop_loop
-imul  bx, ax, SIZEOF_THINKER_T
-mov   al, byte ptr ds:[bx + (_thinkerlist + THINKER_T.t_data + CEILING_T.ceiling_tag)]
-cbw  
-mov   dx, ax
-mov   al, ch
-xor   ah, ah
-add   bx, (_thinkerlist + THINKER_T.t_data)
-cmp   dx, ax
+mov   ax, SIZEOF_THINKER_T
+mul   bx
+xchg  ax, bx ; ax gets activeceiling
+xchg  ax, dx ; now dx gets activeceiling.
+
+add   bx, _thinkerlist + THINKER_T.t_data
+cmp   ch, byte ptr ds:[bx  + CEILING_T.ceiling_tag]
 jne   continue_ceiling_crush_stop_loop
 mov   al, byte ptr ds:[bx + CEILING_T.ceiling_direction]
 test  al, al
 je    continue_ceiling_crush_stop_loop
 mov   byte ptr ds:[bx + CEILING_T.ceiling_olddirection], al
-xor   dl, ch
-mov   ax, word ptr ds:[si + _activeceilings]
+xchg  ax, dx  ; recover _activeceilings into ax
+cwd   ; dx gets 0
 mov   di, 1
 call  P_UpdateThinkerFunc_
 mov   byte ptr ds:[bx + CEILING_T.ceiling_direction], 0
@@ -533,17 +534,15 @@ continue_ceiling_crush_stop_loop:
 inc   cl
 cmp   cl, MAXCEILINGS
 jl    loop_next_ceiling_crush_stop
-mov   ax, di
+xchg  ax, di
 pop   di
-pop   si
 pop   dx
 pop   cx
 pop   bx
 ret   
 
-
-
 ENDP
+
 
 PROC    P_CEILNG_ENDMARKER_ NEAR
 PUBLIC  P_CEILNG_ENDMARKER_

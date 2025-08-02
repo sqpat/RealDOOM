@@ -34,7 +34,6 @@
 //
 // CEILINGS
 //
-/*
 
 
 
@@ -306,4 +305,3 @@ int16_t	__near EV_CeilingCrushStop(uint8_t linetag) {
 
     return rtn;
 }
-*/
