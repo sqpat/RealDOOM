@@ -121,8 +121,7 @@ int16_t __near EV_Teleport (uint8_t linetag, int16_t		side,mobj_t __near*	thing,
 				fogRef = P_SpawnMobj (oldx.w, oldy.w, oldz.w, MT_TFOG, oldsecnum);
 				S_StartSound (setStateReturn, sfx_telept);
 				an = m_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-				fogRef = P_SpawnMobj (m_pos->x.w + FastMul16u32(20, finecosine[an]), m_pos->y.w + FastMul16u32(20,finesine[an])
-						   , thing_pos->z.w, MT_TFOG, -1);
+				fogRef = P_SpawnMobj (m_pos->x.w + FastMul16u32(20, finecosine[an]), m_pos->y.w + FastMul16u32(20,finesine[an]) , thing_pos->z.w, MT_TFOG, -1);
 
 				// emit sound, where?
 				S_StartSound(setStateReturn, sfx_telept);

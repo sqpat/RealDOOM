@@ -47,41 +47,51 @@ PUBLIC  EV_Teleport_
 
 ;int16_t __near EV_Teleport (uint8_t linetag, int16_t		side,mobj_t __near*	thing,mobj_pos_t __far* thing_pos){
 
+; bp - 2  thing
+; bp - 4  unused
+
+; bp + 0Ah thing_pos offset
+; bp + 0Ch thing_pos segment
+
+
 push  cx
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 018h
-mov   byte ptr [bp - 2], al
-mov   word ptr [bp - 018h], bx
+mov   byte ptr cs:[OFFSET SELFMODIFY_telept_linetag + 4], al
+push  bx  ; bp - 2
+mov   di, bx
+
+
+
 les   bx, dword ptr [bp + 0Ah]
+
 
 test  byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_MISSILE
 jne   exit_ev_teleport_return_0
 cmp   dx, 1
 je    exit_ev_teleport_return_0
-xor   cx, cx
-xor   si, si
-xor   di, di
-label_3:
-mov   bx, _numsectors
-cmp   cx, word ptr ds:[bx]
-jge   exit_ev_teleport_return_0
-lea   bx, [si + _sectors_physics + SECTOR_PHYSICS_T.secp_tag]
-mov   al, byte ptr ds:[bx]
-cmp   al, byte ptr [bp - 2]
-jne   label_1
-mov   ax, di
-label_4:
-imul  bx, ax, SIZEOF_THINKER_T
-mov   ax, word ptr ds:[bx + _thinkerlist + THINKER_T.t_next]
-test  ax, ax
-jne   label_2
-label_1:
+push  word ptr ds:[_numsectors]
+pop   word ptr cs:[OFFSET SELFMODIFY_telept_numsectors + 2]
+xor   cx, cx   ; i 
+xor   si, si   ; sector physics for inner loop
+
+;    for (i = 0; i < numsectors; i++) {
+
+loop_next_sector:
+
+SELFMODIFY_telept_linetag:
+cmp   byte ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_tag], 010h
+je    line_tag_match
+
+continue_sector_loop:
 add   si, SIZEOF_SECTOR_PHYSICS_T
 inc   cx
-jmp   label_3
+SELFMODIFY_telept_numsectors:
+cmp   cx, 01000h
+jl    loop_next_sector
+
 exit_ev_teleport_return_0:
 xor   ax, ax
 LEAVE_MACRO 
@@ -89,174 +99,278 @@ pop   di
 pop   si
 pop   cx
 ret   4
-label_2:
-imul  bx, ax, SIZEOF_THINKER_T
+
+line_tag_match:
+
+xor   ax, ax
+
+
+loop_next_thinker:
+mov   bx, SIZEOF_THINKER_T
+mul   bx
+xchg  ax, bx
+mov   ax, word ptr ds:[bx + _thinkerlist + THINKER_T.t_next]
+test  ax, ax
+je    continue_sector_loop
+
+
+
+
+mov   bx, SIZEOF_THINKER_T
+xchg  ax, bx
+mul   bx
+xchg  ax, bx ; preserve ax/counter.
 mov   dx, word ptr ds:[bx + _thinkerlist]
-xor   dl, dl
-and   dh, (TF_FUNCBITS SHR 8)
+and   dx, TF_FUNCBITS
 cmp   dx, TF_MOBJTHINKER_HIGHBITS
-jne   label_4
-add   bx, _thinkerlist + THINKER_T.t_data
-cmp   byte ptr ds:[bx + MOBJ_T.m_mobjtype], MT_TELEPORTMAN
-jne   label_4
-mov   bx, word ptr ds:[bx + 4]
-cmp   bx, cx
-jne   label_4
-imul  dx, ax, SIZEOF_MOBJ_POS_T
-les   di, dword ptr [bp + 0Ah]
-mov   ax, word ptr es:[di + MOBJ_POS_T.mp_x + 0]
-mov   word ptr [bp - 0Ah], ax
-mov   ax, word ptr es:[di + MOBJ_POS_T.mp_x + 2]
-mov   word ptr [bp - 8], ax
-mov   ax, word ptr es:[di + MOBJ_POS_T.mp_y + 0]
-mov   word ptr [bp - 4], MOBJPOSLIST_6800_SEGMENT
-mov   word ptr [bp - 010h], ax
-mov   ax, word ptr es:[di + MOBJ_POS_T.mp_y + 2]
-push  cx
-mov   word ptr [bp - 6], ax
-mov   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
-mov   bx, dx
-mov   word ptr [bp - 0Ch], ax
-mov   ax, word ptr es:[di  + MOBJ_POS_T.mp_z + 2]
-mov   di, word ptr [bp - 018h]
-mov   word ptr [bp - 016h], ax
-mov   ax, word ptr ds:[di + 4]
-mov   es, word ptr [bp - 4]
-push  word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-mov   cx, word ptr [bp + 0Ch]
-push  word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-mov   word ptr [bp - 0Eh], ax
-push  word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
-mov   ax, di
-push  word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
-mov   bx, word ptr [bp + 0Ah]
+jne   loop_next_thinker
+cmp   byte ptr ds:[bx + _thinkerlist + THINKER_T.t_data + MOBJ_T.m_mobjtype], MT_TELEPORTMAN
+jne   loop_next_thinker
+cmp   cx, word ptr ds:[bx + _thinkerlist + THINKER_T.t_data + MOBJ_T.m_secnum]
+jne   loop_next_thinker
+
+; point of no return... si free to use again
+
+; bx free now
+mov   dx, SIZEOF_MOBJ_POS_T
+mul   dx
+xchg  ax, dx
+
+; push things for three functions down the road.
+; third call will be
+;				fogRef = P_SpawnMobj (m_pos->x.w + FastMul16u32(20, finecosine[an]), m_pos->y.w + FastMul16u32(20,finesine[an]) , thing_pos->z.w, MT_TFOG, -1);
+
+; ax known zero after xchg
+dec   ax
+;mov   ax, -1
+push  ax
+mov   ax, MT_TFOG
+push  ax
+; still need to calculate two z pushes later.
+
+; push things for two functions down the road.
+; second call will be
+;				fogRef = P_SpawnMobj (oldx.w, oldy.w, oldz.w, MT_TFOG, oldsecnum);
+
+;mov   di, word ptr [bp - 2]
+; already bp - 2
+
+push  word ptr ds:[di + MOBJ_T.m_secnum]
+;mov   ax, MT_TFOG
+push  ax
+lds   bx, dword ptr [bp + 0Ah]
+lea   si, [bx  + MOBJ_POS_T.mp_z + 2]
+std
+lodsw    ; z hi
+push  ax 
+lodsw    ; z lo
+push  ax
+lodsw    ; y hi   ; NOT STACK PARAMS! x and y will be popped into registers before their call.
+push  ax
+lodsw    ; y lo
+push  ax
+lodsw    ; x hi
+push  ax
+lodsw    ; x lo
+push  ax
+
+
+push  cx ; for first call
+mov   cx, ds ; cx:bx for mobjpos
+
 mov   si, dx
+lea   si, [si + MOBJ_POS_T.mp_y + 2]
+lodsw    ; y hi   ; NOT STACK PARAMS! x and y will be popped into registers before their call.
+push  ax
+lodsw    ; y lo
+push  ax
+lodsw    ; x hi
+push  ax
+lodsw    ; x lo
+push  ax
+; si now offset + 0 again.
+
+push  ss
+pop   ds  ; restore ds
+cld
+
+
+
+
+; -1          func 3
+; fog         func 3
+     ; NOT ON STACK YET  func 3 z hi
+     ; NOT ON STACK YET  func 3 z lo  P_SpawnMobj_
+; oldsecnum   func 2
+; fog         func 2
+; oldz hi     func 2
+; oldz lo     func 2
+; oldy hi     func 2 not param, to be popped off into cx
+; oldy lo     func 2 not param, to be popped off into bx
+; oldx hi     func 2 not param, to be popped off into dx
+; oldx lo     func 2 not param, to be popped off into ax P_SpawnMobj_
+; m->secnum   func 1 
+; mpos->y hi  func 1 
+; mpos->y lo  func 1 
+; mpos->x hi  func 1 
+; mpos->x lo  func 1  P_TeleportMove_
+
+mov   ax, di   ; ax gets thing ptr for first call
+
+
+
+mov   si, dx ; not needed, already equal after lodsw...
 call  dword ptr [_P_TeleportMove]
 test  al, al
-jne   label_5
-jmp   label_6
-label_5:
-mov   bx, word ptr [bp + 0Ah]
-mov   dx, word ptr ds:[di + 6]
-mov   ax, word ptr ds:[di + 6]
-mov   es, word ptr [bp + 0Ch]
-xor   ah, ah
-sar   dx, 3
-and   al, 7
-mov   word ptr es:[bx + MOBJ_POS_T.mp_z + 2], dx
-shl   ax, 0Dh   ; todo no
+je    exit_ev_teleport_return_0
+
+les   bx, dword ptr [bp + 0Ah]
+
+; TODO
+;		#if (EXE_VERSION != EXE_VERSION_FINAL)
+
+
+
+mov   dx, word ptr ds:[di + MOBJ_T.m_floorz]
+xor   ax, ax
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+
 mov   word ptr es:[bx + MOBJ_POS_T.mp_z + 0], ax
-cmp   byte ptr ds:[di + MOBJ_T.m_mobjtype], 0
-jne   label_7
-mov   di, word ptr [bp + 0Ah]
-mov   bx, _player + PLAYER_T.player_viewheightvalue
-mov   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
-mov   dx, word ptr es:[di  + MOBJ_POS_T.mp_z + 2]
-add   ax, word ptr ds:[bx]
-adc   dx, word ptr ds:[bx + 2]
-mov   bx, _player + PLAYER_T.player_viewzvalue
-mov   word ptr ds:[bx], ax
-mov   word ptr ds:[bx + 2], dx
-label_7:
-push  word ptr [bp - 0Eh]
-mov   bx, word ptr [bp - 010h]
-push  MT_TFOG
-mov   cx, word ptr [bp - 6]
-push  word ptr [bp - 016h]
-mov   ax, word ptr [bp - 0Ah]
-push  word ptr [bp - 0Ch]
-mov   dx, word ptr [bp - 8]
+mov   word ptr es:[bx + MOBJ_POS_T.mp_z + 2], dx
+
+; TODO
+;		#endif
+
+
+cmp   byte ptr ds:[di + MOBJ_T.m_mobjtype], MT_PLAYER
+jne   skip_player_view_height_adjusted
+
+;	player.viewzvalue.w = thing_pos->z.w + player.viewheightvalue.w;
+
+les   ax, dword ptr es:[bx + MOBJ_POS_T.mp_z + 0]
+mov   dx, es
+add   ax, word ptr ds:[_player + PLAYER_T.player_viewheightvalue + 0]
+adc   dx, word ptr ds:[_player + PLAYER_T.player_viewheightvalue + 2]
+mov   word ptr ds:[_player + PLAYER_T.player_viewzvalue + 0], ax
+mov   word ptr ds:[_player + PLAYER_T.player_viewzvalue + 2], dx
+skip_player_view_height_adjusted:
+
+pop   ax
+pop   dx
+pop   bx
+pop   cx
+
 call  dword ptr ds:[_P_SpawnMobj]
-mov   bx, _setStateReturn
-mov   dx, sfx_telept
-mov   ax, word ptr ds:[bx]
+mov   dx, SFX_TELEPT
+mov   ax, word ptr ds:[_setStateReturn]
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
-nop   
-mov   es, word ptr [bp - 4]
-push  -1
-mov   bx, word ptr [bp + 0Ah]
+
+
+lds   bx, dword ptr [bp + 0Ah]
+push  word ptr ds:[bx + MOBJ_POS_T.mp_z + 2]
+push  word ptr ds:[bx + MOBJ_POS_T.mp_z + 0]  ; push call 1 z
+
+mov   di, word ptr ds:[si + MOBJ_POS_T.mp_angle + 2]
+
+;				an = m_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
+
+shr   di, 1
+and   di, 0FFFCh  ; clear bottom 3 bits. same as shr 3 shl 2
+
+; time to calculate ax dx bx cx.
+; z, mt_tfog, -1 all pushed on stack already.
+;	fogRef = P_SpawnMobj (m_pos->x.w + FastMul16u32(20, finecosine[an]), m_pos->y.w + FastMul16u32(20,finesine[an]) , thing_pos->z.w, MT_TFOG, -1);
+
+
 mov   ax, FINESINE_SEGMENT
-push  MT_TFOG
-mov   di, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
-mov   es, word ptr [bp + 0Ch]
-shr   di, 3
-push  word ptr es:[bx  + MOBJ_POS_T.mp_z + 2]
-shl   di, 2
-push  word ptr es:[bx + MOBJ_POS_T.mp_z + 0]
 mov   es, ax
-mov   ax, 20
-mov   bx, word ptr es:[di + MOBJ_POS_T.mp_x + 0]
-mov   cx, word ptr es:[di + MOBJ_POS_T.mp_x + 2]
-; call  FastMul16u32u_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FastMul16u32u_addr
-mov   es, word ptr [bp - 4]
-mov   bx, word ptr es:[si + MOBJ_POS_T.mp_y + 0]
-add   bx, ax
-mov   ax, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
-adc   ax, dx
-mov   word ptr [bp - 012h], ax
-mov   ax, FINESINE_SEGMENT
-mov   word ptr [bp - 014h], bx
+mov   cx, 20
+les   bx, dword ptr es:[di + 0]
+mov   ax, es
+
+; FastMul16u32u
+MUL  CX        ; AX * CX
+XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+MUL  BX        ; AX * BX
+ADD  DX, CX    ; add 
+
+add   ax, word ptr ds:[si + MOBJ_POS_T.mp_y + 0]
+adc   dx, word ptr ds:[si + MOBJ_POS_T.mp_y + 2]
+push  dx
+push  ax   ; get these after next mul call
+
+mov   ax, FINECOSINE_SEGMENT
 mov   es, ax
-mov   ax, 20
-mov   bx, word ptr es:[di + COSINE_OFFSET_IN_SINE + 0]
-mov   cx, word ptr es:[di + COSINE_OFFSET_IN_SINE + 2]
-add   di, COSINE_OFFSET_IN_SINE  ; dont need
-; call  FastMul16u32u_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FastMul16u32u_addr
-mov   es, word ptr [bp - 4]
-mov   bx, word ptr [bp - 014h]
-mov   cx, word ptr [bp - 012h]
-add   ax, word ptr es:[si + MOBJ_POS_T.mp_x + 0]
-adc   dx, word ptr es:[si + MOBJ_POS_T.mp_x + 2]
+mov   cx, 20
+les   bx, dword ptr es:[di + 0]
+mov   ax, es
+
+; FastMul16u32u
+MUL  CX        ; AX * CX
+XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+MUL  BX        ; AX * BX
+ADD  DX, CX    ; add 
+
+add   ax, word ptr ds:[si + MOBJ_POS_T.mp_x + 0]
+adc   dx, word ptr ds:[si + MOBJ_POS_T.mp_x + 2] ;ax/dx ready
+
+push  ss
+pop   ds ; restore ds
+
+pop   bx
+pop   cx ; cx/bx ready
 call  dword ptr ds:[_P_SpawnMobj]
-mov   bx, _setStateReturn
-mov   dx, sfx_telept
-mov   ax, word ptr ds:[bx]
-mov   bx, word ptr [bp - 018h]
+mov   dx, SFX_TELEPT
+mov   ax, word ptr ds:[_setStateReturn]
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
+
+pop   bx  ;mov   bx, word ptr [bp - 2]  ; last use.
 cmp   byte ptr ds:[bx + MOBJ_T.m_mobjtype], MT_PLAYER
-jne   label_8
-mov   bx, _playerMobj
-mov   bx, word ptr ds:[bx]
+jne   skip_player_reaction_time_set
 mov   byte ptr ds:[bx + MOBJ_T.m_reactiontime], 18
-label_8:
-mov   es, word ptr [bp - 4]
-mov   bx, word ptr [bp + 0Ah]
-mov   ax, word ptr es:[si + MOBJ_POS_T.mp_angle + 0]
-mov   dx, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
-mov   es, word ptr [bp + 0Ch]
-mov   word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], ax
-mov   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], dx
-mov   bx, word ptr [bp - 018h]
+skip_player_reaction_time_set:
+
+lds   di, dword ptr [bp + 0Ah]
+add   si, MOBJ_POS_T.mp_angle
+add   di, MOBJ_POS_T.mp_angle
+push  ds  ; lds above
+pop   es
+movsw
+movsw
+;				thing_pos->angle = m_pos->angle;
+;				thing->momx.w = thing->momy.w = thing->momz.w = 0;
+;				return 1;
+
+
+
+
 xor    ax, ax
 lea    di, [bx + MOBJ_T.m_momx + 0]
-push   ds
+push   ss
 pop    es
+
 stosw
 stosw
 stosw
 stosw
 stosw
 stosw
+
+push   ss
+pop    ds
+
 inc ax ; return 1
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-ret   4
-label_6:
-xor   ah, ah
 LEAVE_MACRO 
 pop   di
 pop   si
