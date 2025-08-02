@@ -523,3 +523,15 @@ boolean __far P_UseSpecialLine ( mobj_t __near*	thing, int16_t linenum,int16_t		
 }
 
 */
+
+/*
+void __near dofilelog (uint16_t ax){
+
+	FILE* fp = fopen ("blah.txt", "ab");
+	// fprintf(fp, "channel %i %i %i\n", sfx_id, cnum);
+	
+	fprintf(fp, "%li, %i\n", gametic, ax);
+	fclose(fp);
+
+
+}*/
