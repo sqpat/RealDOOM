@@ -38,8 +38,6 @@ EXTRN EV_BuildStairs_:NEAR
 EXTRN EV_DoCeiling_:NEAR
 EXTRN EV_LightChange_:NEAR
 
-;EXTRN dofilelog_:NEAR
-
 
 .DATA
 
@@ -285,7 +283,6 @@ cmp   bx, 0
 jne   side_1_return_false
 ; bx free, side not used again. TODO move this check out of the function.
 
-;call  logcase_
 
 
 push  si
@@ -363,9 +360,6 @@ jmp   do_specialline_exit_1
 
 
 
-special_line_type_44:
-mov   dx, STAIRS_TURBO16
-jmp   do_buildstairs
 
 
 
@@ -380,57 +374,57 @@ call  G_ExitLevel_
 jmp   do_specialline_exit_1
 
 special_line_type_5:
-mov   cx, 32
-mov   bx, PLATFORM_RAISEANDCHANGE
+mov   cl, 32
+mov   bl, PLATFORM_RAISEANDCHANGE
 
 jmp   do_plat
 
+special_line_type_44:
+mov   dl, STAIRS_TURBO16
+jmp   do_buildstairs
 
 
 special_line_type_10:
-mov   bx, FLOOR_LOWERFLOORTOLOWEST
+mov   bl, FLOOR_LOWERFLOORTOLOWEST
 do_floor:
 mov   dx, si
 call  EV_DoFloor_
-test  ax, ax
-je    do_specialline_exit_1
-jmp   do_change_switch_texture_0
+jmp   check_change_switch_texture_0
 
 special_line_type_6:
-mov   cx, 24
-mov   bx, PLATFORM_RAISEANDCHANGE
+mov   cl, 24
+mov   bl, PLATFORM_RAISEANDCHANGE
 jmp   do_plat
 
 
 special_line_type_8:
-mov   bx, PLATFORM_RAISETONEARESTANDCHANGE
+mov   bl, PLATFORM_RAISETONEARESTANDCHANGE
 
 jmp   do_plat_zero_cx
 
 special_line_type_9:
-mov   bx, PLATFORM_DOWNWAITUPSTAY
+mov   bl, PLATFORM_DOWNWAITUPSTAY
 do_plat_zero_cx:
 xor   cx, cx
 do_plat:
 
 mov   dx, si
 call  EV_DoPlat_
-test  ax, ax
-jne   do_change_switch_texture_0
-jmp   do_specialline_exit_1
+jmp   check_change_switch_texture_0
 
 
 special_line_type_42:
-mov   bx, PLATFORM_BLAZEDWUS
+mov   bl, PLATFORM_BLAZEDWUS
 jmp   do_plat_zero_cx
 
 
 
 special_line_type_3:
 call  EV_DoDonut_
+
+check_change_switch_texture_0:
 test  ax, ax
 je    do_specialline_exit_1
-
 do_change_switch_texture_0:
 pop   dx   ; bp - 4
 xchg  ax, di
@@ -444,13 +438,10 @@ xor   dx, dx
 
 do_door:
 call  EV_DoDoor_
-test  ax, ax
-je    do_specialline_exit_1
-
-jmp   do_change_switch_texture_0
+jmp   check_change_switch_texture_0
 
 special_line_type_16:
-mov   dx, 3
+mov   dl, 3
 jmp   do_ceiling
 
 
@@ -458,39 +449,30 @@ special_line_type_12:
 xor   dx, dx
 do_ceiling:
 call  EV_DoCeiling_
-test  ax, ax
-jne   do_change_switch_texture_0
-exit_usespecialline_return_1_2:
-jmp   do_specialline_exit_1
+jmp   check_change_switch_texture_0
 
 special_line_type_7:
-mov   bx, FLOOR_RAISEFLOORTONEAREST
+mov   bl, FLOOR_RAISEFLOORTONEAREST
 jmp   do_floor
 
 special_line_type_45:
-mov   bx, FLOOR_RAISEFLOORTURBO
+mov   bl, FLOOR_RAISEFLOORTURBO
 jmp   do_floor
 special_line_type_50:
-mov   bx, 0Ch  ;todo
+mov   bl, 0Ch  ;todo
 jmp   do_floor
 special_line_type_31:
-mov   bx, DOOR_CLOSE
+mov   bl, DOOR_CLOSE
 jmp   do_floor
 
 special_line_type_2:
 xor   dx, dx  ; STAIRS_BUILD8
 do_buildstairs:
 call  EV_BuildStairs_
-test  ax, ax
-je    do_specialline_exit_1
-pop   dx   ; bp - 4
-xchg  ax, di
-mov   cx, si
-pop   bx   ; bp - 2
-xor   di, di
-call  P_ChangeSwitchTexture_
-special_line_case_default:
 
+jmp   check_change_switch_texture_0
+
+special_line_case_default:
 do_specialline_exit_1:
 mov   al, 1
 exit_usespecialline:
@@ -499,31 +481,32 @@ pop   di
 pop   si
 retf  
 
+
 special_line_type_19:
-mov   bx, FLOOR_RAISEFLOORCRUSH
+mov   bl, FLOOR_RAISEFLOORCRUSH
 jmp   do_floor
 special_line_type_33:
-mov   bx, 3
+mov   bl, 3
 jmp   do_floor
 special_line_type_34:
 xor   bx, bx
 jmp   do_floor
 
 special_line_type_17:
-mov   dx, 2
+mov   dl, 2
 jmp   do_door
 
 special_line_type_35:
-mov   dx, 3
+mov   dl, 3
 jmp   do_door
 special_line_type_36:
-mov   dx, 5
+mov   dl, 5
 jmp   do_door
 special_line_type_37:
-mov   dx, 6
+mov   dl, 6
 jmp   do_door
 special_line_type_38:
-mov   dx, 7
+mov   dl, 7
 jmp   do_door
 
 
@@ -536,7 +519,6 @@ pop   bx   ; bp - 2
 xor   di, di
 call  P_ChangeSwitchTexture_
 call  G_SecretExitLevel_
-jump_to_exit_usespecialline_return_1_2:
 jmp   do_specialline_exit_1
 
 
@@ -548,50 +530,32 @@ special_line_type_47:
 shr   bx, 1
 mov   dx, bx ; linespecial
 ; cx already thingref
-mov   bx, DOOR_BLAZEOPEN
+mov   bl, DOOR_BLAZEOPEN
 call  EV_DoLockedDoor_
-
-test  ax, ax
-jne   do_specialline_exit_1
-jmp   do_change_switch_texture_0
+jmp   check_change_switch_texture_0
 
 special_line_type_21:
-mov   dx, 3
+mov   dl, 3
 jmp   do_door_1
 special_line_type_39:
-mov   dx, 5
+mov   dl, 5
 jmp   do_door_1
 special_line_type_40:
-mov   dx, 6
+mov   dl, 6
 jmp   do_door_1
 special_line_type_41:
-mov   dx, 7
+mov   dl, 7
 jmp   do_door_1
 special_line_type_23:
 xor   dx, dx
 jmp   do_door_1
-
-special_line_type_15:
-xor   bx, bx
-do_floor_1:
-mov   dx, si
-call  EV_DoFloor_
-test  ax, ax
-jne   do_change_switch_texture_1
-jmp   do_specialline_exit_1
-
-
-
-
-
-
-
 special_line_type_13:
-mov   dx, 2
+mov   dl, 2
 do_door_1:
 call  EV_DoDoor_
+check_change_switch_texture_1:
 test  ax, ax
-je    jump_to_exit_usespecialline_return_1_2
+je    do_specialline_exit_1
 do_change_switch_texture_1:
 pop   dx   ; bp - 4
 xchg  ax, di
@@ -601,53 +565,63 @@ mov   di, 1
 call  P_ChangeSwitchTexture_
 jmp   do_specialline_exit_1
 
+special_line_type_15:
+xor   bx, bx
+do_floor_1:
+mov   dx, si
+call  EV_DoFloor_
+jmp   check_change_switch_texture_1
+
+
+
+
+
+
+
+
 
 
 
 special_line_type_14:
 xor   dx, dx
 call  EV_DoCeiling_
-test  ax, ax
-jne   do_change_switch_texture_1
-jmp   do_specialline_exit_1
+jmp   check_change_switch_texture_1
 
 
 
 special_line_type_20:
-mov   bx, FLOOR_LOWERFLOORTOLOWEST
+mov   bl, FLOOR_LOWERFLOORTOLOWEST
 jmp   do_floor_1
 special_line_type_24:
-mov   bx, 3
+mov   bl, 3
 jmp   do_floor_1
 special_line_type_25:
-mov   bx, FLOOR_RAISEFLOORCRUSH
+mov   bl, FLOOR_RAISEFLOORCRUSH
 jmp   do_floor_1
 special_line_type_29:
-mov   bx, FLOOR_RAISEFLOORTONEAREST
+mov   bl, FLOOR_RAISEFLOORTONEAREST
 jmp   do_floor_1
 special_line_type_30:
-mov   bx, DOOR_CLOSE
+mov   bl, DOOR_CLOSE
 jmp   do_floor_1
 special_line_type_46:
-mov   bx, FLOOR_RAISEFLOORTURBO
+mov   bl, FLOOR_RAISEFLOORTURBO
 jmp   do_floor_1
 special_line_type_27:
-mov   cx, 32
-mov   bx, PLATFORM_RAISEANDCHANGE
+mov   cl, 32
+mov   bl, PLATFORM_RAISEANDCHANGE
 jmp   do_plat_1
 special_line_type_43:
-mov   bx, PLATFORM_BLAZEDWUS
+mov   bl, PLATFORM_BLAZEDWUS
 do_plat_1_zero_cx:
 xor   cx, cx
 do_plat_1:
 mov   dx, si
 call  EV_DoPlat_
-test  ax, ax
-jne   do_change_switch_texture_1
-jmp   do_specialline_exit_1
+jmp   check_change_switch_texture_1
 
 special_line_type_28:
-mov   bx, PLATFORM_RAISETONEARESTANDCHANGE
+mov   bl, PLATFORM_RAISETONEARESTANDCHANGE
 jmp   do_plat_1_zero_cx
 
 special_line_type_32:
@@ -655,35 +629,31 @@ special_line_type_32:
 shr   bx, 1
 mov   dx, bx ; linespecial
 ; cx already thingref
-mov   bx, DOOR_BLAZEOPEN
+mov   bl, DOOR_BLAZEOPEN
 call  EV_DoLockedDoor_
-
-test  ax, ax
-jne   do_change_switch_texture_1
-jmp   do_specialline_exit_1
+jmp   check_change_switch_texture_1
 
 special_line_type_22:
 
-mov   bx, PLATFORM_DOWNWAITUPSTAY
+mov   bl, PLATFORM_DOWNWAITUPSTAY
 mov   cx, bx ; 1
 jmp   do_plat_1
 
 special_line_type_26:
-mov   cx, 24
-mov   bx, PLATFORM_RAISEANDCHANGE
+mov   cl, 24
+mov   bl, PLATFORM_RAISEANDCHANGE
 jmp   do_plat_1
 
 special_line_type_48:
-mov   bx, 255
+mov   bl, 255
 do_lightchange_1:
-mov   dx, 1
+mov   dl, 1
 call  EV_LightChange_
 mov   cx, si
 jmp   do_change_switch_texture_1
 
 special_line_type_49:
-mov   bx, 35
-mov   dx, 1
+mov   bl, 35
 jmp   do_lightchange_1
 
 
@@ -691,16 +661,6 @@ jmp   do_lightchange_1
 
 
 ENDP
-COMMENT @
-PROC   logcase_
-pusha
-
-mov    ax, dx
-call   dofilelog_
-popa
-
-ret
-@
 
 
 ENDP
