@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/01 16:56:55
+Created on:       25/08/01 17:12:56
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -66,7 +66,7 @@ p_lights_TEXT          CODE           AUTO           0bc4:3970       000003ed
 p_plats_TEXT           CODE           AUTO           0bc4:3d60       0000041d
 P_SPEC_TEXT            CODE           AUTO           0bc4:417e       00000a29
 p_switch_TEXT          CODE           AUTO           0bc4:4bb0       00000000
-P_SWITCA_TEXT          CODE           AUTO           0bc4:4bb0       000003cf
+P_SWITCA_TEXT          CODE           AUTO           0bc4:4bb0       000003c5
 p_telept_TEXT          CODE           AUTO           0bc4:4f80       0000022a
 P_TICK_TEXT            CODE           AUTO           0bc4:51aa       000001e0
 p_user_TEXT            CODE           AUTO           0bc4:5390       000006e7
@@ -863,9 +863,9 @@ Module: p_spec.obj(p_spec.ASM)
 0bc4:4b1b      P_SpawnSpecials_
 Module: p_switca.obj(p_switca.ASM)
 0bc4:4bb0*     P_SWITCH_STARTMARKER_
-0bc4:4f7f*     P_SWITCH_ENDMARKER_
+0bc4:4f75*     P_SWITCH_ENDMARKER_
 0bc4:4bb0      P_ChangeSwitchTexture_
-0bc4:4dc3      P_UseSpecialLine_
+0bc4:4db9      P_UseSpecialLine_
 Module: p_telept.obj(C:\REALDOOM\p_telept.c)
 0bc4:4f80      EV_Teleport_
 Module: p_tick.obj(p_tick.ASM)
@@ -1196,4 +1196,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  00017790 (96144.)
 Entry point address: 0bc4:7606
-Link time: 00:00.19
+Link time: 00:00.20

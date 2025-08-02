@@ -68,33 +68,32 @@ PUBLIC  P_ChangeSwitchTexture_
 
 ;void __near P_ChangeSwitchTexture ( int16_t linenum, int16_t lineside0, uint8_t linespecial, int16_t linefrontsecnum,int16_t 		useAgain ){
 
-; bp - 2    (UNUSED) midtexture
-; bp - 4    sound
-; bp - 6    lineside 0 shifted 3 for side_t lookup
-; bp - 8    linenum
-; bp - 0Ah  linefrontsecnum
+; bp - 2    sound
+; bp - 4    lineside 0 shifted 3 for side_t lookup
+; bp - 6    linenum
+; bp - 8    linefrontsecnum
 
 ; useagain in di
 
 
 push  bp
 mov   bp, sp
-sub   sp, 6
-push  ax
-push  cx
 xchg  bx, dx
 
-mov   cx, SIDES_SEGMENT
-mov   es, cx
-
-mov   word ptr [bp - 4], SFX_SWTCHN
+mov   si, SIDES_SEGMENT
+mov   es, si
+mov   si, SFX_SWTCHN
 
 SHIFT_MACRO shl   bx 3
-mov   word ptr [bp - 6], bx
 cmp   dl, 11  ; exit switch
 jne   not_exit_switch
-mov   word ptr [bp - 4], SFX_SWTCHX
+;mov   si, SFX_SWTCHX
+inc    si
 not_exit_switch:
+push  si  ; bp - 2 sfx
+push  bx  ; bp - 4 lineside 0 shifted 3
+push  ax  ; bp - 6 linenum
+push  cx  ; bp - 8 linefrontsecnum
 
 
 test  di, di ; pending branch
@@ -107,7 +106,7 @@ jne   dont_mark_unusable
 
 mov   bx, LINES_PHYSICS_SEGMENT
 mov   es, bx
-mov   bx, word ptr [bp - 8]
+mov   bx, word ptr [bp - 6]
 SHIFT_MACRO shl   bx 4
 mov   byte ptr es:[bx + LINE_PHYSICS_T.lp_special], 0
 mov   ax, ((OFFSET exit_p_changeswitchtexture - OFFSET SELFMODIFY_changeswitchtexture_useagain_AFTER) SHL 8) + 0EBh ; jump
@@ -150,7 +149,7 @@ mov   di, SIDE_T.s_toptexture
 do_button_texture_stuff:
 
 xor   dx, dx
-mov   dl, byte ptr [bp - 4]
+mov   dl, byte ptr [bp - 2]
 mov   ax, word ptr ds:[_buttonlist + BUTTON_T.button_soundorg] ; jank. bug in original source?
 
 call  S_StartSoundWithParams_
@@ -164,7 +163,7 @@ mov   es, ax
 ;			sides[lineside0].toptexture = switchlist[i^1];
 
 mov   ax, word ptr ds:[si + _switchlist] ; ax is switchlist[i^1];
-add   di, word ptr [bp - 6]  
+add   di, word ptr [bp - 4]  
 stosw   ;mov   word ptr es:[di], ax
 
 SELFMODIFY_changeswitchtexture_useagain:
@@ -172,8 +171,8 @@ jmp   exit_p_changeswitchtexture  ; jmp if 0. nop otherwise
 SELFMODIFY_changeswitchtexture_useagain_AFTER:
 do_startbutton_call:
 
-pop   dx ;mov   dx, word ptr [bp - 0Ah]
-pop   ax ;mov   ax, word ptr [bp - 8]
+pop   dx ;mov   dx, word ptr [bp - 8]
+pop   ax ;mov   ax, word ptr [bp - 6]
 mov   cx, word ptr ds:[bx + _switchlist]
 
 
