@@ -440,12 +440,12 @@ call  EV_DoDoor_
 jmp   check_change_switch_texture_0
 
 special_line_type_16:
-mov   dl, 3
+mov   dl, CEILING_CRUSHANDRAISE
 jmp   do_ceiling
 
 
 special_line_type_12:
-xor   dx, dx
+xor   dx, dx ; CEILING_LOWERTOFLOOR
 do_ceiling:
 call  EV_DoCeiling_
 jmp   check_change_switch_texture_0
@@ -458,7 +458,7 @@ special_line_type_45:
 mov   bl, FLOOR_RAISEFLOORTURBO
 jmp   do_floor
 special_line_type_50:
-mov   bl, 0Ch  ;todo
+mov   bl, FLOOR_RAISEFLOOR512
 jmp   do_floor
 special_line_type_31:
 mov   bl, DOOR_CLOSE
@@ -485,27 +485,27 @@ special_line_type_19:
 mov   bl, FLOOR_RAISEFLOORCRUSH
 jmp   do_floor
 special_line_type_33:
-mov   bl, 3
+mov   bl, FLOOR_RAISEFLOOR
 jmp   do_floor
 special_line_type_34:
 xor   bx, bx
 jmp   do_floor
 
 special_line_type_17:
-mov   dl, 2
+mov   dl, DOOR_CLOSE
 jmp   do_door
 
 special_line_type_35:
-mov   dl, 3
+mov   dl, DOOR_OPEN
 jmp   do_door
 special_line_type_36:
-mov   dl, 5
+mov   dl, DOOR_BLAZERAISE
 jmp   do_door
 special_line_type_37:
-mov   dl, 6
+mov   dl, DOOR_BLAZEOPEN
 jmp   do_door
 special_line_type_38:
-mov   dl, 7
+mov   dl, DOOR_BLAZECLOSE
 jmp   do_door
 
 
@@ -534,22 +534,22 @@ call  EV_DoLockedDoor_
 jmp   check_change_switch_texture_0
 
 special_line_type_21:
-mov   dl, 3
+mov   dl, DOOR_OPEN
 jmp   do_door_1
 special_line_type_39:
-mov   dl, 5
+mov   dl, DOOR_BLAZERAISE
 jmp   do_door_1
 special_line_type_40:
-mov   dl, 6
+mov   dl, DOOR_BLAZEOPEN
 jmp   do_door_1
 special_line_type_41:
-mov   dl, 7
+mov   dl, DOOR_BLAZECLOSE
 jmp   do_door_1
 special_line_type_23:
-xor   dx, dx
+xor   dx, dx  ; DOOR_NORMAL
 jmp   do_door_1
 special_line_type_13:
-mov   dl, 2
+mov   dl, DOOR_CLOSE
 do_door_1:
 call  EV_DoDoor_
 check_change_switch_texture_1:
@@ -565,7 +565,7 @@ call  P_ChangeSwitchTexture_
 jmp   do_specialline_exit_1
 
 special_line_type_15:
-xor   bx, bx
+xor   bx, bx ; FLOOR_LOWERFLOOR
 do_floor_1:
 mov   dx, si
 call  EV_DoFloor_
@@ -592,7 +592,7 @@ special_line_type_20:
 mov   bl, FLOOR_LOWERFLOORTOLOWEST
 jmp   do_floor_1
 special_line_type_24:
-mov   bl, 3
+mov   bl, FLOOR_RAISEFLOOR
 jmp   do_floor_1
 special_line_type_25:
 mov   bl, FLOOR_RAISEFLOORCRUSH
