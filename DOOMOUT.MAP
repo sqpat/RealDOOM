@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/02 12:07:39
+Created on:       25/08/02 12:20:24
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -58,7 +58,7 @@ hu_setup_TEXT          CODE           AUTO           02ee:7a00       000000d6
 p_setup_TEXT           CODE           AUTO           02ee:7ae0       0000127a
 s_sound_TEXT           CODE           AUTO           0bc4:0000       0000067a
 s_sbsfx_TEXT           CODE           AUTO           0bc4:0680       000017f3
-P_CEILNG_TEXT          CODE           AUTO           0bc4:1e74       000002f1
+P_CEILNG_TEXT          CODE           AUTO           0bc4:1e74       000002ef
 p_doors_TEXT           CODE           AUTO           0bc4:2170       00000696
 p_floor_TEXT           CODE           AUTO           0bc4:2810       00000808
 P_INTER_TEXT           CODE           AUTO           0bc4:3018       0000089e
@@ -796,13 +796,13 @@ Module: s_sbsfx.obj(C:\REALDOOM\s_sbsfx.c)
 14b6:1237+     _DMA_PortInfo
 14b6:20ac+     _sfxcache_head
 Module: p_ceilng.obj(p_ceilng.ASM)
-0bc4:209f      P_AddActiveCeiling_
-0bc4:20b6*     P_RemoveActiveCeiling_
+0bc4:209d      P_AddActiveCeiling_
+0bc4:20b4*     P_RemoveActiveCeiling_
 0bc4:1e74*     P_CEILNG_STARTMARKER_
-0bc4:2165*     P_CEILNG_ENDMARKER_
-0bc4:211b      EV_CeilingCrushStop_
+0bc4:2163*     P_CEILNG_ENDMARKER_
+0bc4:2119      EV_CeilingCrushStop_
 0bc4:1fa6      EV_DoCeiling_
-0bc4:20db*     P_ActivateInStasisCeiling_
+0bc4:20d9*     P_ActivateInStasisCeiling_
 0bc4:1e80      T_MoveCeiling_
 Module: p_doors.obj(C:\REALDOOM\p_doors.c)
 0bc4:2196      T_VerticalDoor_
