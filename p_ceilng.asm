@@ -402,39 +402,35 @@ ret
 ENDP
 
 
+;void __near P_RemoveActiveCeiling(sector_physics_t __near* ceilingsector_physics, THINKERREF ceilingRef) {
+
 PROC    P_RemoveActiveCeiling_ NEAR
 PUBLIC  P_RemoveActiveCeiling_
 
 
 push  bx
-push  cx
-push  si
-mov   si, ax
-mov   cx, dx
-xor   dl, dl
+mov   bx, _activeceilings
 loop_next_active_ceiling:
-mov   al, dl
-cbw  
-mov   bx, ax
-add   bx, ax
-mov   ax, word ptr ds:[bx + _activeceilings]
-cmp   cx, ax
+
+cmp   dx, word ptr ds:[bx]
 je    found_ceiling_to_remove
-inc   dl
-cmp   dl, MAXCEILINGS
+inc   bx
+inc   bx
+cmp   bx, (MAXCEILINGS * 2) + _activeceilings
 jl    loop_next_active_ceiling
-pop   si
-pop   cx
 pop   bx
 ret   
+
 found_ceiling_to_remove:
-mov   word ptr ds:[si + 8], 0
+xchg  ax, bx  ; bx gets sectorphysics
+mov   word ptr ds:[bx + SECTOR_PHYSICS_T.secp_specialdataRef], 0
+xchg  ax, bx  ; bx gets acrtiveceiling ptr back again
+xchg  ax, dx  ; param for P_RemoveThinker_
 
 call  P_RemoveThinker_
-nop   
-mov   word ptr ds:[bx + _activeceilings], 0
-pop   si
-pop   cx
+
+mov   word ptr ds:[bx], NULL_THINKERREF
+
 pop   bx
 ret   
 
@@ -480,7 +476,7 @@ mov   dx, TF_MOVECEILING_HIGHBITS
 call  P_UpdateThinkerFunc_
 
 continue_statis_ceiling_loop:
-inc   cl
+inc   cx
 cmp   cl, MAXCEILINGS
 jl    loop_next_stasis_ceiling
 pop   dx
@@ -532,7 +528,7 @@ mov   di, 1
 call  P_UpdateThinkerFunc_
 mov   byte ptr ds:[bx + CEILING_T.ceiling_direction], 0
 continue_ceiling_crush_stop_loop:
-inc   cl
+inc   cx
 cmp   cl, MAXCEILINGS
 jl    loop_next_ceiling_crush_stop
 xchg  ax, di
