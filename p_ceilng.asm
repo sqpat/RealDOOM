@@ -229,10 +229,23 @@ ENDP
 _ev_doceiling_jump_table:
 dw switch_doceiling_type_1, switch_doceiling_type_2, switch_doceiling_type_1, switch_doceiling_type_3, switch_doceiling_type_4, switch_doceiling_type_3
 
-
+; todo change to carry return
 PROC    EV_DoCeiling_ NEAR
 PUBLIC  EV_DoCeiling_
 
+;int16_t __near EV_DoCeiling ( uint8_t linetag, ceiling_e	type ) {
+
+
+; bp - 2 type
+; bp - 4 unused 
+; bp - 6 sector/sector_physics_t ptr (secnum * 16)
+; bp - 8 ceilingRef
+; bp - 0Ah unused (j)
+; bp - 0Ch unused (rtn)
+; bp - 0Eh ; unused
+; bp - 010h   ; ?? 0Ah * 2?  TODO store in si.
+; bp - 012h   ; sector physics
+; bp - 0212h  ; secnumlist
 
 push  bx
 push  cx
@@ -241,104 +254,111 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 0212h
-mov   bl, al
+xchg  ax, bx ; bx gets linetag
 mov   byte ptr [bp - 2], dl
 xor   ax, ax
-mov   word ptr [bp - 0Ch], ax
-mov   word ptr [bp - 0Ah], ax
-cmp   dl, 3
-jb    label_9
-jbe   label_10
-jmp   label_11
-label_10:
+mov   word ptr cs:[OFFSET SELFMODIFY_doceiling_return+1], ax
 
-mov   al, bl
-xor   ah, ah
+mov   word ptr [bp - 010h], ax
+cmp   dl, CEILING_CRUSHANDRAISE
+jb    not_stasis_ceiling
+je    do_activate_stasis
+cmp   dl, CEILING_SILENTCRUSHANDRAISE
+ja    not_stasis_ceiling
+do_activate_stasis:
+
+mov   ax, bx
 call  P_ActivateInStasisCeiling_
-label_9:
+not_stasis_ceiling:
+
 lea   dx, [bp - 0212h]
-mov   al, bl
-mov   si, word ptr [bp - 0Ah]
-cbw  
-xor   bx, bx
-add   si, si
+
+xchg  ax, bx    ; last use of linetag
+
+xor   bx, bx    ; false
 call  P_FindSectorsFromLineTag_
-mov   word ptr [bp - 010h], si
+
 cmp   word ptr [bp + si - 0212h], 0
-jl    jump_to_label_12
-label_14:
+jl    exit_doceiling
+
+loop_next_secnum:
 mov   si, word ptr [bp - 010h]
-mov   ax, TF_MOVECEILING_HIGHBITS
-mov   cx, word ptr [bp + si - 0212h]
-mov   word ptr [bp - 0Eh], SIZEOF_THINKER_T
+mov   cx, word ptr [bp + si - 0212h]        ; secnum
+
 mov   di, cx
 xor   dx, dx
-shl   di, 4
-
-call  P_CreateThinker_
-nop   
+SHIFT_MACRO shl   di, 4
 mov   word ptr [bp - 6], di
-lea   bx, [di + _sectors_physics]
-mov   si, ax
-mov   word ptr [bp - 012h], bx
-mov   bx, ax
+
+;		ceiling = (ceiling_t __near*) P_CreateThinker (TF_MOVECEILING_HIGHBITS);
+mov   ax, TF_MOVECEILING_HIGHBITS
+call  P_CreateThinker_
+
+
+
+mov   si, ax  ; si gets thinker
 sub   ax, (_thinkerlist + THINKER_T.t_data)
-div   word ptr [bp - 0Eh]
-inc   word ptr [bp - 0Ah]
-mov   word ptr [bp - 4], SECTORS_SEGMENT
-mov   word ptr [bp - 0Ch], 1
-add   word ptr [bp - 010h], 2
-mov   byte ptr ds:[bx + CEILING_T.ceiling_crush], 0
-mov   word ptr ds:[bx + CEILING_T.ceiling_secnum], cx
-mov   word ptr [bp - 8], ax
+mov   bx, SIZEOF_THINKER_T
+div   bx
+mov   bx, si ; bx gets si copy..
+
+
 mov   word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
+mov   word ptr [bp - 8], ax
+xor   ax, ax
+mov   byte ptr ds:[bx + CEILING_T.ceiling_crush], al
+inc   ax
+mov   word ptr cs:[OFFSET SELFMODIFY_doceiling_return + 1], ax ; 1
+inc   ax
+add   word ptr [bp - 010h], ax ; 2
+mov   word ptr ds:[bx + CEILING_T.ceiling_secnum], cx
 mov   al, byte ptr [bp - 2]
 
 cmp   al, 5
-ja    label_13
-xor   ah, ah
+ja    switch_doceiling_default
+
 mov   di, ax
 add   di, ax
 jmp   word ptr cs:[di + OFFSET _ev_doceiling_jump_table]
-jump_to_label_12:
-jmp   label_12
-label_16:
-switch_doceiling_type_1:
-les   bx, dword ptr [bp - 6]
-mov   ax, word ptr es:[bx]
-mov   word ptr ds:[si + CEILING_T.ceiling_bottomheight], ax
-cmp   byte ptr [bp - 2], 0
-je    label_17
-add   word ptr ds:[si + CEILING_T.ceiling_bottomheight], (8 SHL SHORTFLOORBITS)
-label_17:
-mov   byte ptr ds:[si + CEILING_T.ceiling_direction], -1
-mov   word ptr ds:[si + 7], CEILSPEED
-label_13:
-mov   bx, word ptr [bp - 012h]
-mov   al, byte ptr ds:[bx + SECTOR_PHYSICS_T.secp_tag]
+
+switch_doceiling_type_2:
+mov   dx, 1
+mov   ax, cx
+call  P_FindLowestOrHighestCeilingSurrounding_
+mov   byte ptr ds:[bx + CEILING_T.ceiling_direction], 1
+mov   word ptr ds:[bx + CEILING_T.ceiling_speed], CEILSPEED
+mov   word ptr ds:[bx + CEILING_T.ceiling_topheight], ax
+;jmp   done_with_doceiling_switch_block
+; fall thru
+
+done_with_doceiling_switch_block:
+switch_doceiling_default:
+
+;		ceiling->tag = sector_physics->tag;
+;		ceiling->type = type;
+;		P_AddActiveCeiling(ceilingRef);
+
+mov   bx, word ptr [bp - 6]
+mov   al, byte ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_tag]
 mov   byte ptr ds:[si + CEILING_T.ceiling_tag], al
 mov   al, byte ptr [bp - 2]
-mov   byte ptr ds:[si], al
+;mov   byte ptr ds:[si], al
+stosb
 mov   ax, word ptr [bp - 8]
 mov   si, word ptr [bp - 010h]
 call  P_AddActiveCeiling_
 cmp   word ptr [bp + si - 0212h], 0
-jl    label_12
-jmp   label_14
-label_12:
-mov   ax, word ptr [bp - 0Ch]
+jnl   loop_next_secnum
+
+exit_doceiling:
+SELFMODIFY_doceiling_return:
+mov   ax, 01000h
 LEAVE_MACRO 
 pop   di
 pop   si
 pop   cx
 pop   bx
 ret   
-label_11:
-cmp   dl, 5
-ja    label_15
-jmp   label_10
-label_15:
-jmp   label_9
 switch_doceiling_type_4:
 mov   di, word ptr [bp - 6]
 mov   byte ptr ds:[bx + CEILING_T.ceiling_crush], 1
@@ -350,22 +370,31 @@ mov   byte ptr ds:[bx + CEILING_T.ceiling_direction], -1
 add   cx, (8 SHL SHORTFLOORBITS)
 mov   word ptr ds:[bx + CEILING_T.ceiling_speed], CEILSPEED * 2
 mov   word ptr ds:[bx + CEILING_T.ceiling_bottomheight], cx
-jmp   label_13
+jmp   done_with_doceiling_switch_block
+
+
 switch_doceiling_type_3:
 mov   bx, word ptr [bp - 6]
 mov   byte ptr ds:[si + CEILING_T.ceiling_crush], 1
 mov   es, word ptr [bp - 4]
 mov   ax, word ptr es:[bx + 2]
 mov   word ptr ds:[si + CEILING_T.ceiling_topheight], ax
-jmp   label_16
-switch_doceiling_type_2:
-mov   dx, 1
-mov   ax, cx
-call  P_FindLowestOrHighestCeilingSurrounding_
-mov   byte ptr ds:[bx + CEILING_T.ceiling_direction], 1
-mov   word ptr ds:[bx + CEILING_T.ceiling_speed], CEILSPEED
-mov   word ptr ds:[bx + CEILING_T.ceiling_topheight], ax
-jmp   label_13
+;jmp   switch_doceiling_type_1 ; fall thru
+
+switch_doceiling_type_1:
+mov   bx, SECTORS_SEGMENT
+mov   es, bx
+mov   bx, word ptr [bp - 6]
+mov   ax, word ptr es:[bx]
+mov   word ptr ds:[si + CEILING_T.ceiling_bottomheight], ax
+cmp   byte ptr [bp - 2], 0
+je    label_17
+add   word ptr ds:[si + CEILING_T.ceiling_bottomheight], (8 SHL SHORTFLOORBITS)
+label_17:
+mov   byte ptr ds:[si + CEILING_T.ceiling_direction], -1
+mov   word ptr ds:[si + 7], CEILSPEED
+jmp   done_with_doceiling_switch_block
+
 ENDP
 
 
