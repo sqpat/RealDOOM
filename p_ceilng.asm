@@ -20,18 +20,14 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN S_StartSoundWithParams_:PROC
-
-EXTRN _P_TeleportMove:DWORD
-EXTRN _P_SpawnMobj:DWORD
-
-EXTRN FastMul16u32u_:NEAR
 EXTRN T_MovePlane_:NEAR
 EXTRN P_FindSectorsFromLineTag_:NEAR
 EXTRN P_FindLowestOrHighestCeilingSurrounding_:NEAR
+EXTRN P_UpdateThinkerFunc_:NEAR
+
+EXTRN S_StartSoundWithParams_:PROC
 EXTRN P_CreateThinker_:PROC
 EXTRN P_RemoveThinker_:PROC
-EXTRN P_UpdateThinkerFunc_:NEAR
 
 SHORTFLOORBITS = 3
 
@@ -62,7 +58,7 @@ push  si
 xchg  ax, si ; si gets ceiling
 mov   al, byte ptr ds:[si + CEILING_T.ceiling_direction]
 cmp   al, 0
-je    ceiling_in_stasis
+je    ceiling_in_stasis_return
 
 push  bx
 push  cx
@@ -71,62 +67,63 @@ push  bp
 mov   bp, sp
 
 
-push  dx ; bp - 2
-mov   dx, word ptr ds:[si + CEILING_T.ceiling_secnum]
-mov   di, dx
+mov   di, word ptr ds:[si + CEILING_T.ceiling_secnum]
+
+push  di ; bp - 2
+push  dx ; bp - 4
+
 SHIFT_MACRO shl di 4
 
-cbw
-cmp   al, 0  ; wish we could pend this from above but shl di knocks it out
-jl    do_ceiling_down
-jg    do_ceiling_up
-done_with_moveceiling_switch_block:
-switch_moveceiling_default_case:
-exit_t_moveceiling:
-LEAVE_MACRO 
-pop   di
-pop   bx
-pop   cx
-ceiling_in_stasis:
-pop   si
-ret   
-do_ceiling_up:
-push  ax
-mov   al, 1
-push  ax ; 1
-dec   ax
-push  ax ; false
+; do a few thing used in both T_MovePlane call cases
+
 mov   bx, word ptr ds:[si + CEILING_T.ceiling_speed]
+cbw
+cmp   al, 0  ; pend to below
+
+push  word ptr ds:[si + CEILING_T.ceiling_type]  ; put this on stack to easily retrieve later into ax in either case.
+
+push  ax        ; T_MovePlane_ ceiling dir
+mov   al, 1
+cbw
+push  ax ; 1    ; T_MovePlane_  1 for ceiling. todo make separate call where this is implied .
+
+jl    do_ceiling_down
+
+do_ceiling_up:
+
+dec   ax ; ax now 0
+push  ax ; false
 mov   cx, word ptr ds:[si + CEILING_T.ceiling_topheight]
 mov   ax, di
 
 mov   dx, SECTORS_SEGMENT
 call  T_MovePlane_
-mov   cl, al
+xchg  ax,  cx
+pop   ax ; type
 test  byte ptr ds:[_leveltime], 7
 jne   dont_play_ceiling_sound
-mov   al, byte ptr ds:[si + CEILING_T.ceiling_type]
 cmp   al, CEILING_SILENTCRUSHANDRAISE
 je    dont_play_ceiling_sound
 mov   dx, SFX_STNMOV
-mov   ax, di
+push  ax
+mov   ax, word ptr [bp - 2]
 call  S_StartSoundWithParams_
+pop   ax
+
 dont_play_ceiling_sound:
 cmp   cl, FLOOR_PASTDEST
 jne   done_with_moveceiling_switch_block
-mov   al, byte ptr ds:[si + CEILING_T.ceiling_type]
 cmp   al, CEILING_RAISETOHIGHEST
 je    do_remove_ceiling ; 1
 
-
-cmp   al, CEILING_CRUSHANDRAISE
+cmp   al, CEILING_CRUSHANDRAISE ; 3
 jb    done_with_moveceiling_switch_block ; 0, 2
 cmp   al, CEILING_FASTCRUSHANDRAISE
 jbe   just_set_dir_negative ; 3, 4
 
 ; 5 fall thru
 mov   dx, SFX_PSTOP
-mov   ax, di
+mov   ax, word ptr [bp - 2]
 call  S_StartSoundWithParams_
 
 just_set_dir_negative:
@@ -136,66 +133,65 @@ jmp   done_with_moveceiling_switch_block
 switch_moveceiling_type_1:
 do_remove_ceiling:
 
+pop   dx ; bp - 4
 xchg  ax, di
-pop   dx ; bp - 2
 add   ax, _sectors_physics
 call  P_RemoveActiveCeiling_
+done_with_moveceiling_switch_block:
+switch_moveceiling_default_case:
+exit_t_moveceiling:
 LEAVE_MACRO 
 pop   di
 pop   cx
 pop   bx
+ceiling_in_stasis_return:
 pop   si
 ret   
-do_ceiling_down:
-SHIFT_MACRO shl   di 4
-push  di ; bp - 4
 
-push  ax
-mov   al, 1
-push  ax ; 1
+do_ceiling_down:
+
 mov   al, byte ptr ds:[si + CEILING_T.ceiling_crush]
 push  ax ; crush
-mov   bx, word ptr ds:[si + CEILING_T.ceiling_speed]
+
 mov   cx, word ptr ds:[si + CEILING_T.ceiling_bottomheight]
 mov   ax, di
 
 mov   dx, SECTORS_SEGMENT
 call  T_MovePlane_
 
-mov   cl, al
-mov   al, byte ptr ds:[si + CEILING_T.ceiling_type]
+xchg  ax,  cx
+pop   ax ; type
 test  byte ptr ds:[_leveltime], 7
 jne   dont_play_ceiling_sound_2
 cmp   al, CEILING_SILENTCRUSHANDRAISE
 je    dont_play_ceiling_sound_2
 
 mov   dx, SFX_STNMOV
-mov   ch, al ; store type
-mov   ax, di
-
+push  ax ; backup
+mov   ax, word ptr [bp - 2]
 call  S_StartSoundWithParams_
-mov   al, ch  ; restore..
+pop   ax ; restore
+
 dont_play_ceiling_sound_2:
 
 cmp   cl, FLOOR_PASTDEST
 jne   other_moveplane_result_type
 cmp   al, CEILING_RAISETOHIGHEST ; 1
-je    exit_t_moveceiling_2 ; 1
+je    exit_t_moveceiling ; 1
 cmp   al, CEILING_CRUSHANDRAISE ; 3
 jb    switch_moveceiling_type_1 ; 0, 2
 je    switch_moveceiling_type_2 ; 1
 
 cmp   al, CEILING_SILENTCRUSHANDRAISE ; 5
 jb    switch_moveceiling_type_3 ; 4
-;jne   exit_t_moveceiling_2 ; oob check? necessary?
+;jne   exit_t_moveceiling ; oob check? necessary?
 
 ; 5 fall thru
 
 
 switch_moveceiling_type_4:
 mov   dx, SFX_PSTOP
-xchg  ax, di
-
+mov   ax, word ptr [bp - 2]
 call  S_StartSoundWithParams_
 ; fall thru
 switch_moveceiling_type_2:
@@ -204,24 +200,18 @@ mov   word ptr ds:[si + CEILING_T.ceiling_speed], CEILSPEED
 
 switch_moveceiling_type_3:
 mov   byte ptr ds:[si + CEILING_T.ceiling_direction], 1
-exit_t_moveceiling_2:
-LEAVE_MACRO 
-pop   di
-pop   cx
-pop   bx
-pop   si
-ret   
+jmp   exit_t_moveceiling
 other_moveplane_result_type:
 cmp   cl, FLOOR_CRUSHED
-jne   exit_t_moveceiling_2
+jne   exit_t_moveceiling
 ; 2 3 or 5. so not 4 and lower than 2
 cmp   al, CEILING_FASTCRUSHANDRAISE ; 4
-je    exit_t_moveceiling_2
+je    exit_t_moveceiling
 cmp   al, CEILING_LOWERANDCRUSH ; 2
-jb    exit_t_moveceiling_2
+jb    exit_t_moveceiling
 
 mov   word ptr ds:[si + CEILING_T.ceiling_speed], 1
-jmp   exit_t_moveceiling_2
+jmp   exit_t_moveceiling
 ENDP
 
 
@@ -529,14 +519,14 @@ xor   cl, cl ; cl is loop counter
 loop_next_ceiling_crush_stop:
 xor   bx, bx
 mov   bl, cl
-sal   bx, 1
+
 mov   bx, word ptr ds:[bx + _activeceilings]
 test  bx, bx
 je    continue_ceiling_crush_stop_loop
 mov   ax, SIZEOF_THINKER_T
 mul   bx
-xchg  ax, bx ; ax gets activeceiling
-xchg  ax, dx ; now dx gets activeceiling.
+xchg  ax, bx ; ax gets activeceiling. bx gets thinkerlist offset.
+xchg  ax, dx ; now dx gets activeceiling. ax has nothing.
 
 add   bx, _thinkerlist + THINKER_T.t_data
 cmp   ch, byte ptr ds:[bx  + CEILING_T.ceiling_tag]
@@ -546,15 +536,17 @@ test  al, al
 je    continue_ceiling_crush_stop_loop
 mov   byte ptr ds:[bx + CEILING_T.ceiling_olddirection], al
 xchg  ax, dx  ; recover _activeceilings into ax
-cwd   ; dx gets 0
+cwd   ; dx gets 0  (TF_NULL)
 mov   di, 1
 call  P_UpdateThinkerFunc_
 mov   byte ptr ds:[bx + CEILING_T.ceiling_direction], 0
 continue_ceiling_crush_stop_loop:
 inc   cx
-cmp   cl, MAXCEILINGS
+inc   cx
+cmp   cl, (MAXCEILINGS * 2)
 jl    loop_next_ceiling_crush_stop
 xchg  ax, di
+
 pop   di
 pop   dx
 pop   cx
