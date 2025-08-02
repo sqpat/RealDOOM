@@ -445,43 +445,44 @@ PROC    P_ActivateInStasisCeiling_ NEAR
 PUBLIC  P_ActivateInStasisCeiling_
 
 
+
 push  bx
 push  cx
 push  dx
-push  si
-mov   ch, al
-xor   cl, cl
+
+
+mov   ch, al ; ch gets tag
+xor   cl, cl ; cl is loop counter
+
 loop_next_stasis_ceiling:
-mov   al, cl
-cbw  
-mov   si, ax
-add   si, ax
-mov   ax, word ptr ds:[si + _activeceilings]
-test  ax, ax
+xor   bx, bx
+mov   bl, cl
+sal   bx, 1
+mov   bx, word ptr ds:[bx + _activeceilings]
+test  bx, bx
 je    continue_statis_ceiling_loop
-imul  bx, ax, SIZEOF_THINKER_T
+mov   ax, SIZEOF_THINKER_T
+mul   bx
+xchg  ax, bx ; ax gets activeceiling
+xchg  ax, dx ; now dx gets activeceiling.
 
-
-mov   al, byte ptr ds:[bx + (_thinkerlist + THINKER_T.t_data + CEILING_T.ceiling_tag)]
-cbw  
-mov   dx, ax
-mov   al, ch
-xor   ah, ah
-add   bx, (_thinkerlist + THINKER_T.t_data)
-cmp   dx, ax
+add   bx, _thinkerlist + THINKER_T.t_data
+cmp   ch, byte ptr ds:[bx  + CEILING_T.ceiling_tag]
 jne   continue_statis_ceiling_loop
-cmp   byte ptr ds:[bx + CEILING_T.ceiling_direction], 0
-jne   continue_statis_ceiling_loop
-mov   al, byte ptr ds:[bx + CEILING_T.ceiling_olddirection]
-mov   byte ptr ds:[bx + CEILING_T.ceiling_direction], al
+mov   al, byte ptr ds:[bx + CEILING_T.ceiling_direction]
+test  al, al
+je    continue_statis_ceiling_loop
+mov   byte ptr ds:[bx + CEILING_T.ceiling_olddirection], al
+xchg  ax, dx  ; recover _activeceilings into ax
 mov   dx, TF_MOVECEILING_HIGHBITS
-mov   ax, word ptr ds:[si + _activeceilings]
+
+
 call  P_UpdateThinkerFunc_
+
 continue_statis_ceiling_loop:
 inc   cl
 cmp   cl, MAXCEILINGS
 jl    loop_next_stasis_ceiling
-pop   si
 pop   dx
 pop   cx
 pop   bx
