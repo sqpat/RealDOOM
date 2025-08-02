@@ -130,16 +130,20 @@ There are also a lot of hard caps on things like texture size and count, node co
   - Exported more code to reduce binary size ~18k
   - Fixed many enemy behavior bugs
   - Restored music driver support which had been removed in 0.28
+
+(Aug 2, 2025)      
+~~**v0.30** : Physics code to ASM~~
+  - ASM optimization of some physics code saving ~6k
+  - Improved span drawing fidelity to 24 bit (same as vanilla)
+  - Added span/column/sky rendering fidelity options
   
 ### Future Roadmap:
 
-**Alpha Goals:**
+**Remaining Alpha Goals:**
  - reduce memory footprint
- - improved span drawing fidelity
  - improved sfx code
  - All known bugs fixed
  
-
 **Beta Goals:**
  - Focus on improved compatibility with more machines
  - "More" feature complete
@@ -150,7 +154,7 @@ There are also a lot of hard caps on things like texture size and count, node co
 **"1.0" Goals:**
  - Remove clib dependencies
  - Entirely ASM application
- - 386 Render path optimization (for 386SX)
+ - 386 Render path optimization (mainly for 386SX)
 **Post 1.0 Goals:**
  - EMS 3.2 compatible version
  - Remove MS-DOS dependencies, self boot version?
@@ -161,4 +165,4 @@ There are also a lot of hard caps on things like texture size and count, node co
 Various performance benchmarks can be found in this spreadsheet:
 [https://docs.google.com/spreadsheets/d/1gt8gqvKrvJh5GH_xDKoZ98G4jY873s6zx_Y5EaFbb7M/](url)
 
-For the most part, a 386SX currently runs RealDOOM ~20% faster than (vanilla) DOOM 1.9. 32 bit bus cpus all generally run it 5-10% worse than vanilla. A very fast 286 achieves around 6-7 FPS in high quality, 9-10 in low, and 13-14 in potato quality.
+For the most part, a 386SX currently runs RealDOOM ~20% faster than (vanilla) DOOM 1.9. 32 bit bus cpus all generally run it 5-10% worse than vanilla. A very fast 286 achieves around 6-7 FPS in high quality, 9-10 in low, and 13-14 in potato quality. 5150/5160 class machines are sub 1 FPS.
