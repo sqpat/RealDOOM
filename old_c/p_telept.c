@@ -35,6 +35,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
+/*
 
 //
 // TELEPORTATION
@@ -139,3 +140,4 @@ int16_t __near EV_Teleport (uint8_t linetag, int16_t		side,mobj_t __near*	thing,
     return 0;
 }
 
+*/
