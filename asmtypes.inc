@@ -487,3 +487,18 @@ FLOORMOVE_T STRUC
 
 FLOORMOVE_T ENDS
 
+; align to 14 bytes candidate? currently 13.
+CEILING_T STRUC
+
+    ceiling_type               db ?  ; 0
+    ceiling_secnum             dw ?  ; 1
+    ceiling_bottomheight       dw ?  ; 3
+    ceiling_topheight          dw ?  ; 5
+    ceiling_speed              dw ?  ; 7
+    ceiling_crush              db ?  ; 9
+    ceiling_direction          db ?  ; 0A
+    ceiling_tag                db ?  ; 0B
+    ceiling_olddirection       db ?  ; 0C
+    
+
+CEILING_T ENDS

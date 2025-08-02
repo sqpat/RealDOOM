@@ -14,7 +14,7 @@
 //
 // DESCRIPTION:  Ceiling aninmation (lowering, crushing, raising)
 //
-
+ 
 
 #include "doomdef.h"
 #include "z_zone.h"
@@ -34,7 +34,7 @@
 //
 // CEILINGS
 //
-
+/*
 
 
 
@@ -306,3 +306,4 @@ int16_t	__near EV_CeilingCrushStop(uint8_t linetag) {
 
     return rtn;
 }
+*/

@@ -2481,6 +2481,8 @@ IT_BLUESKULL = 03h
 IT_YELLOWSKULL = 04h
 IT_REDSKULL = 05h
 BUTTONTIME = 023h
+CEILSPEED = 08h
+SHORTFLOORBITS = 03h
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 03400h
