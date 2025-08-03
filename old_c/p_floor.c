@@ -40,7 +40,7 @@
 //
 // Move a plane (floor or ceiling) and check for crushing
 //
-/*
+
 result_e __near T_MovePlaneCeilingDown ( uint16_t sector_offset, short_height_t	speed, short_height_t	dest, boolean	crush ) {
     boolean	somethingcrushed; // plane will possibly move less
     short_height_t	lastpos;
@@ -577,4 +577,4 @@ int16_t __near EV_BuildStairs ( uint8_t	linetag,stair_e	type ) {
     return rtn;
 }
 
-*/
+
