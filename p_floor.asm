@@ -339,9 +339,9 @@ ENDP
 
 
 _do_floor_jump_table:
-dw do_floor_switch_case_type_1, do_floor_switch_case_type_2, do_floor_switch_case_type_3, do_floor_switch_case_type_4
-dw do_floor_switch_case_type_5, do_floor_switch_case_type_6, do_floor_switch_case_type_7, do_floor_switch_case_type_8
-dw do_floor_switch_case_type_9, do_floor_switch_case_type_10, do_floor_switch_case_type_11, do_floor_switch_case_type_12, do_floor_switch_case_type_13 
+dw do_floor_switch_case_type_lowerfloor, do_floor_switch_case_type_lowerFloorToLowest, do_floor_switch_case_type_turboLower, do_floor_switch_case_type_raiseFloor
+dw do_floor_switch_case_type_raiseFloorToNearest, do_floor_switch_case_type_6, do_floor_switch_case_type_7, do_floor_switch_case_type_raiseFloor24
+dw do_floor_switch_case_type_9, do_floor_switch_case_type_raiseFloorCrush, do_floor_switch_case_type_raiseFloorTurbo, do_floor_switch_case_type_12, do_floor_switch_case_type_13 
 
 
 
@@ -354,12 +354,12 @@ PUBLIC  EV_DoFloor_
 ;int16_t __far EV_DoFloor ( uint8_t linetag,int16_t linefrontsecnum,floor_e	floortype ){
 
 ; bp - 2    floortype
-; bp - 4    unused (sectors segment)
-; bp - 6    
+; bp - 4     (sectors segment)
+; bp - 6    sector offset
 ; bp - 8    
 ; bp - 0Ah  current loop ptr
 ; bp - 0Ch  
-; bp - 0Eh  
+; bp - 0Eh  sector physics
 ; bp - 010h 
 ; bp - 012h 
 ; bp - 014h unused (lines segment)
@@ -378,7 +378,8 @@ push  bp
 mov   bp, sp
 sub   sp, 0220h
 mov   cx, dx
-mov   byte ptr [bp - 2], bl
+xor   bh, bh
+mov   word ptr cs:[SELFMODIFY_set_dofloor_type + 1], bx
 mov   byte ptr cs:[SELFMODIFY_set_dofloor_return+1], 0
 lea   dx, [bp - 0220h]
 mov   word ptr [bp - 0Ah], 0
@@ -397,55 +398,82 @@ jl    no_sectors_in_list_exit
 loop_next_secnum_dofloor:
 mov   si, word ptr [bp - 0Ah]
 mov   cx, word ptr [bp + si - 0220h]
-mov   ax, SECTORS_SEGMENT
-mov   es, ax
-mov   ax, cx
-SHIFT_MACRO shl   ax 4
-mov   word ptr [bp - 6], ax
-add   ax, _sectors_physics
-mov   bx, word ptr [bp - 6]
-mov   word ptr [bp - 0Eh], ax
-mov   ax, word ptr es:[bx + SECTOR_PHYSICS_T.secp_linesoffset]
-mov   word ptr [bp - 01Ah], ax
-mov   ax, word ptr es:[bx + 2]
-mov   word ptr [bp - 016h], ax
-mov   ax, word ptr es:[bx]
-mov   di, SIZEOF_THINKER_T
-mov   word ptr [bp - 0Ch], ax
-mov   ax, TF_MOVEFLOOR_HIGHBITS
-xor   dx, dx
 
+
+mov   ax, TF_MOVEFLOOR_HIGHBITS
+cwd   ; zero dx
 call  P_CreateThinker_
 
-mov   bx, ax
-mov   si, ax
+mov   si, ax  ;  si is floor
+
 sub   ax, (_thinkerlist + THINKER_T.t_data)
+mov   di, SIZEOF_THINKER_T
 div   di
-mov   di, word ptr [bp - 0Eh]
+
+mov   di, cx
 mov   byte ptr cs:[SELFMODIFY_set_dofloor_return+1], 1
-mov   word ptr ds:[di + 8], ax
-mov   al, byte ptr [bp - 2]
-mov   byte ptr ds:[bx + 1], 0
-add   word ptr [bp - 0Ah], 2
-mov   byte ptr ds:[bx], al
-cmp   al, FLOOR_RAISEFLOOR512
+SHIFT_MACRO shl  di 4  
+
+; di is sectors offset
+; si is floor
+
+
+mov   word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
+
+
+mov   ax, SECTORS_SEGMENT
+mov   es, ax
+mov   word ptr [bp - 4], ax
+
+
+mov  ax, cx  ; ax gets secnum too
+; set type 
+SELFMODIFY_set_dofloor_type:
+mov   bx, 01000h
+
+mov   byte ptr ds:[si + FLOORMOVE_T.floormove_type], bl
+mov   byte ptr ds:[si + FLOORMOVE_T.floormove_crush], bh ; known 0
+
+
+; ds:si is floor
+; ds:di + _sectors_physics is sector_physics
+; es:di  is sector
+; ax is secnum
+; bx is floor type (soon to be shifted for jmp)
+
+cmp   bl, FLOOR_RAISEFLOOR512
 ja    done_with_dofloor_switch_block
-xor   ah, ah
-mov   di, ax
-add   di, ax
-jmp   word ptr cs:[di + _do_floor_jump_table]
+sal   bx, 1
+mov   dl, 1 ; "true" used for many calls.
+jmp   word ptr cs:[bx + _do_floor_jump_table]
 no_sectors_in_list_exit:
 jmp   exit_ev_dofloor_and_return_rtn
-do_floor_switch_case_type_1:
-mov   byte ptr ds:[bx + 4], -1
-mov   dx, 1
-mov   word ptr ds:[bx + 9], 8
-mov   ax, cx
-label_19:
-mov   word ptr ds:[bx + 2], cx
+
+do_floor_switch_case_type_lowerFloorToLowest:
+xor   dx, dx
+do_floor_switch_case_type_lowerfloor:
+xor   bx, bx
+mov   word ptr ds:[si + FLOORMOVE_T.floormove_speed], FLOORSPEED
+find_highestlowest_dont_set_bx:
 call  P_FindHighestOrLowestFloorSurrounding_
-label_28:
-mov   word ptr ds:[bx + 7], ax
+mov   dl, -1 ; dir negative.
+
+test  bh, bh
+je    write_floordestheight_secnum_dir
+;turbo case
+mov   bx, SECTORS_SEGMENT
+mov   es, bx
+cmp   ax, word ptr es:[di + SECTOR_T.sec_floorheight]
+je    write_floordestheight_secnum_dir
+
+add   word ptr ds:[si + FLOORMOVE_T.floormove_floordestheight], (8 SHL SHORTFLOORBITS)
+
+write_floordestheight_secnum_dir:
+mov   byte ptr ds:[si + FLOORMOVE_T.floormove_direction], dl
+mov   word ptr ds:[si + FLOORMOVE_T.floormove_floordestheight], ax
+mov   word ptr ds:[si + FLOORMOVE_T.floormove_secnum], cx
+
+
 done_with_dofloor_switch_block:
 
 do_floor_switch_case_type_12:
@@ -461,90 +489,61 @@ pop   di
 pop   si
 pop   cx
 retf  
-do_floor_switch_case_type_2:
-mov   byte ptr ds:[bx + 4], -1
-mov   ax, cx
-mov   word ptr ds:[bx + 9], 8
+
+
+do_floor_switch_case_type_turboLower:
+mov   bh, 1
+mov   word ptr ds:[si + FLOORMOVE_T.floormove_speed], FLOORSPEED * 2
+jmp   find_highestlowest_dont_set_bx
+
+do_floor_switch_case_type_raiseFloorCrush:
+mov   byte ptr ds:[si + FLOORMOVE_T.floormove_crush], dl ; 1
+xor   bx, bx  ; use as flag for raisefloorcrush check
+do_floor_switch_case_type_raiseFloor:
+mov   word ptr ds:[si + FLOORMOVE_T.floormove_secnum], ax
+mov   word ptr ds:[si + FLOORMOVE_T.floormove_speed], FLOORSPEED
+mov   byte ptr ds:[si + FLOORMOVE_T.floormove_direction], dl ; 1
 xor   dx, dx
-jmp   label_19
-do_floor_switch_case_type_3:
-mov   byte ptr ds:[bx + 4], -1
-mov   dx, 1
-mov   word ptr ds:[bx + 9], (FLOORSPEED*4)
-mov   ax, cx
-mov   word ptr ds:[bx + 2], cx
-call  P_FindHighestOrLowestFloorSurrounding_
-mov   word ptr ds:[bx + 7], ax
-cmp   ax, word ptr [bp - 0Ch]
-je    done_with_dofloor_switch_block
-add   word ptr ds:[bx + 7], (8 SHL SHORTFLOORBITS)
-jmp   done_with_dofloor_switch_block
-do_floor_switch_case_type_10:
-mov   byte ptr ds:[bx + 1], 1
-do_floor_switch_case_type_4:
-mov   byte ptr ds:[si + 4], 1
-mov   ax, cx
-mov   word ptr ds:[si + 9], 8
-xor   dx, dx
-mov   word ptr ds:[si + 2], cx
 call  P_FindLowestOrHighestCeilingSurrounding_
-mov   word ptr ds:[si + 7], ax
-cmp   ax, word ptr [bp - 016h]
-jle   label_20
-mov   ax, word ptr [bp - 016h]
-mov   word ptr ds:[si + 7], ax
-label_20:
-add   si, 7
-cmp   byte ptr [bp - 2], 9
-jne   label_27
-mov   bx, 1
-shl   bx, 6
-sub   word ptr ds:[si], bx
+
+mov   dx, word ptr es:[di + SECTOR_T.sec_floorheight]
+cmp   ax, dx
+jng   dont_adjust_to_ceil_height
+mov   ax, dx
+dont_adjust_to_ceil_height:
+
+test  bx, bx
+jne   finally_set_destheight
+sub   ax, (8 SHL SHORTFLOORBITS)
+
+finally_set_destheight:
+
+mov   word ptr ds:[si + FLOORMOVE_T.floormove_floordestheight], ax
 jmp   done_with_dofloor_switch_block
-label_27:
-xor   bx, bx
-shl   bx, 6
-sub   word ptr ds:[si], bx
-jmp   done_with_dofloor_switch_block
-do_floor_switch_case_type_11:
-mov   byte ptr ds:[bx + 4], 1
-mov   dx, word ptr [bp - 0Ch]
+
+
+
+do_floor_switch_case_type_raiseFloorTurbo:
 mov   word ptr ds:[bx + 9], (FLOORSPEED*4)
-mov   ax, cx
-mov   word ptr ds:[bx + 2], cx
+do_raisefloor:
 call  P_FindNextHighestFloor_
-jmp   label_28
-do_floor_switch_case_type_5:
-mov   byte ptr ds:[bx + 4], 1
-mov   dx, word ptr [bp - 0Ch]
+mov   dl, 1
+jmp   write_floordestheight_secnum_dir
+
+do_floor_switch_case_type_raiseFloorToNearest:
 mov   word ptr ds:[bx + 9], 8
-mov   ax, cx
-mov   word ptr ds:[bx + 2], cx
-call  P_FindNextHighestFloor_
-jmp   label_28
-do_floor_switch_case_type_8:
-mov   byte ptr ds:[bx + 4], 1
-mov   word ptr ds:[bx + 2], cx
-mov   ax, SECTORS_SEGMENT
-mov   si, word ptr ds:[bx + 2]
-mov   word ptr ds:[bx + 9], 8
-shl   si, 4
-mov   es, ax
-mov   cx, word ptr es:[si]
-add   cx,  (24 SHL SHORTFLOORBITS)
-mov   word ptr ds:[bx + 7], cx
-jmp   done_with_dofloor_switch_block
+jmp   do_raisefloor
+
+do_floor_switch_case_type_raiseFloor24:
+mov   ax, (24 SHL SHORTFLOORBITS)
+do_raisefloor_fixed:
+add   ax, word ptr es:[di+ SECTOR_T.sec_floorheight] 
+mov   dl, 1
+jmp   write_floordestheight_secnum_dir
 do_floor_switch_case_type_13:
-mov   byte ptr ds:[bx + 4], 1
-mov   word ptr ds:[bx + 2], cx
-mov   ax, SECTORS_SEGMENT
-mov   si, word ptr ds:[bx + 2]
-mov   word ptr ds:[bx + 9], 8
-shl   si, 4
-mov   es, ax
-mov   cx, word ptr es:[si]
-add   cx, (512 SHL SHORTFLOORBITS)
-mov   word ptr ds:[bx + 7], cx
+mov   ax, (512 SHL SHORTFLOORBITS)
+hmp   do_raisefloor_fixed
+
 jmp   done_with_dofloor_switch_block
 do_floor_switch_case_type_9:
 mov   byte ptr ds:[bx + 4], 1
