@@ -49,7 +49,6 @@ PUBLIC  T_MovePlaneCeilingDown_
 
 ;result_e __near T_MovePlaneCeilingDown ( uint16_t sector_offset, short_height_t	speed, short_height_t	dest, boolean	crush ) {
 
-
 push  si
 push  di
 
@@ -121,8 +120,6 @@ ENDP
 PROC    T_MovePlaneCeilingUp_ NEAR
 PUBLIC  T_MovePlaneCeilingUp_
 
-
-
 push  si
 push  di
 
@@ -141,16 +138,15 @@ mov   dx, es
 
 mov   word ptr es:[si + SECTOR_T.sec_ceilingheight], bx ;dest
 mov   bx, cx
-
 mov   ax, si
 call  dword ptr ds:[_P_ChangeSector]
 test  al, al
 je    exit_moveplaneceilingup_return_floorpastdest
 mov   dx, SECTORS_SEGMENT
 mov   es, dx
+mov   word ptr es:[si + SECTOR_T.sec_ceilingheight], di
 mov   bx, cx
 xchg  ax, si
-mov   word ptr es:[si + SECTOR_T.sec_ceilingheight], di
 call  dword ptr ds:[_P_ChangeSector]
 exit_moveplaneceilingup_return_floorpastdest:
 mov   al, FLOOR_PASTDEST
@@ -161,9 +157,8 @@ ret
 ceil_up_not_past_dest:
 
 
-add   di, dx
-mov   dx, SECTORS_SEGMENT
-mov   word ptr es:[si + SECTOR_T.sec_ceilingheight], di
+add   word ptr es:[si + SECTOR_T.sec_ceilingheight], dx
+mov   dx, es
 mov   bx, cx
 xchg  ax, si
 call  dword ptr ds:[_P_ChangeSector]
@@ -179,8 +174,6 @@ ENDP
 
 PROC    T_MovePlaneFloorDown_ NEAR
 PUBLIC  T_MovePlaneFloorDown_
-
-
 
 push  si
 push  di
@@ -198,23 +191,25 @@ sub   ax, dx
 
 cmp   ax, bx
 jge   floor_down_not_past_dest
+floor_up_past_dest:
 mov   word ptr es:[si + SECTOR_T.sec_floorheight], bx
 
 mov   dx, es
-mov   ax, si
 mov   bx, cx
+mov   ax, si
 call  dword ptr ds:[_P_ChangeSector]
 test  al, al
 je    exit_moveplanefloordown_return_floorpastdest
 ; something crushed
+
 mov   dx, SECTORS_SEGMENT
 mov   es, dx
+mov   word ptr es:[si + SECTOR_T.sec_floorheight], di
 mov   bx, cx
 xchg  ax, si
-
-mov   word ptr es:[si + SECTOR_T.sec_floorheight], di
 call  dword ptr ds:[_P_ChangeSector]
 exit_moveplanefloordown_return_floorpastdest:
+exit_moveplanefloorup_return_floorpastdest:
 mov   al, FLOOR_PASTDEST
 exit_moveplanefloordown:
 
@@ -231,15 +226,18 @@ mov   ax, si
 call  dword ptr ds:[_P_ChangeSector]
 test  al, al
 je    exit_moveplanefloordown_return_floorok
+do_second_floor_changesector_call:
 mov   dx, SECTORS_SEGMENT
 mov   es, dx
-mov   bx, cx ; crush
 mov   word ptr es:[si + SECTOR_T.sec_floorheight], di
+mov   bx, cx ; crush
 xchg  ax, si
 call  dword ptr ds:[_P_ChangeSector]
 exit_moveplanefloordown_return_floorcrushed:
+exit_moveplanefloorup_return_floorcrushed:
 mov   al, FLOOR_CRUSHED
 exit_moveplanefloordown_return_floorok:
+exit_moveplanefloorup_return_floorok:
 pop   di
 pop   si
 ret   
@@ -253,75 +251,32 @@ PUBLIC  T_MovePlaneFloorUp_
 
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 4
-mov   si, ax
-mov   ax, bx
-mov   word ptr [bp - 2], SECTORS_SEGMENT
-mov   es, word ptr [bp - 2]
-mov   di, word ptr es:[si]
-add   di, dx
-cmp   di, bx
-jle   label_5
-mov   dx, SECTORS_SEGMENT
-mov   al, cl
-mov   di, word ptr es:[si]
-cbw  
-mov   word ptr es:[si], bx
-mov   cx, ax
-mov   bx, ax
-mov   ax, si
-call  dword ptr ds:[_P_ChangeSector]
-test  al, al
-je    exit_moveplanefloorup_return_floorpastdest
-mov   es, word ptr [bp - 2]
-mov   dx, SECTORS_SEGMENT
+
+xchg  ax, si
+
+;	if (sector->floorheight + speed > dest) {
+
+
+mov   ax, SECTORS_SEGMENT
+mov   es, ax
+mov   di, word ptr es:[si + SECTOR_T.sec_floorheight]
+mov   ax, di
+add   ax, dx
+cmp   ax, bx
+jg    floor_up_past_dest
+
+floor_up_not_past_dest:
+
+add   word ptr es:[si + SECTOR_T.sec_floorheight], dx
+mov   dx, es
 mov   bx, cx
 mov   ax, si
-mov   word ptr es:[si], di
-call  dword ptr ds:[_P_ChangeSector]
-exit_moveplanefloorup_return_floorpastdest:
-mov   al, FLOOR_PASTDEST
-exit_moveplanefloorup:
-
-LEAVE_MACRO 
-pop   di
-pop   si
-ret   
-label_5:
-mov   ax, word ptr es:[si]
-mov   word ptr [bp - 4], ax
-add   ax, dx
-mov   word ptr es:[si], ax
-mov   al, cl
-cbw  
-mov   dx, SECTORS_SEGMENT
-mov   di, ax
-mov   bx, ax
-mov   ax, si
 call  dword ptr ds:[_P_ChangeSector]
 test  al, al
-je    exit_moveplanefloorup
-cmp   cl, 1
-jne   label_6
-mov   al, cl
-LEAVE_MACRO 
-pop   di
-pop   si
-ret   
-label_6:
-les   ax, dword ptr [bp - 4]
-mov   dx, SECTORS_SEGMENT
-mov   bx, di
-mov   word ptr es:[si], ax
-mov   ax, si
-call  dword ptr ds:[_P_ChangeSector]
-mov   al, 1
-LEAVE_MACRO 
-pop   di
-pop   si
-ret   
+je    exit_moveplanefloorup_return_floorok
+test  cl, cl
+jne   exit_moveplanefloorup_return_floorcrushed
+jmp   do_second_floor_changesector_call
 
 
 
