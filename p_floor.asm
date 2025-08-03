@@ -51,7 +51,8 @@ PUBLIC  T_MovePlaneCeilingDown_
 
 push  si
 push  di
-
+push  bp
+xor   bp, bp
 add   al, SECTOR_T.sec_ceilingheight  ; this is safe because they are 16 byte structs that are paragraph aligned. will never overflow.
 xchg  ax, si
 
@@ -67,32 +68,8 @@ sub   ax, dx
 
 cmp   ax, bx
 jl    ceiling_down_past_dest
+jmp   ceil_down_not_past_dest
 
-ceil_down_not_past_dest:
-sub   word ptr es:[si], dx
-
-mov   dx, es
-mov   bx, cx ; crush
-mov   ax, si
-and   al, 0F0h ; undo the ptr
-call  dword ptr ds:[_P_ChangeSector]
-test  al, al
-je    exit_moveplaneceilingdown
-test  cl, cl
-jne   exit_moveplaneceilingdown_return_floorcrushed
-mov   dx, SECTORS_SEGMENT
-mov   es, dx
-mov   bx, cx ; crush
-mov   word ptr es:[si], di
-xchg  ax, si
-and   al, 0F0h ; undo the ptr
-call  dword ptr ds:[_P_ChangeSector]
-exit_moveplaneceilingdown_return_floorcrushed:
-mov   al, FLOOR_CRUSHED
-exit_moveplaneceilingdown:
-pop   di
-pop   si
-ret   
 
 ENDP
 
@@ -103,7 +80,8 @@ PUBLIC  T_MovePlaneCeilingUp_
 
 push  si
 push  di
-
+push  bp
+mov   bp, 1 ; do check 
 add   al, SECTOR_T.sec_ceilingheight  ; this is safe because they are 16 byte structs that are paragraph aligned. will never overflow.
 xchg  ax, si
 
@@ -118,20 +96,8 @@ cmp   ax, bx
 jg    ceiling_up_past_dest
 
 
-ceil_up_not_past_dest:
+jmp   floor_up_not_past_dest
 
-
-add   word ptr es:[si], dx
-mov   dx, es
-mov   bx, cx
-xchg  ax, si
-and   al, 0F0h ; undo the ptr
-call  dword ptr ds:[_P_ChangeSector]
-xor   al, al ; floorok
-
-pop   di
-pop   si
-ret   
 
 ENDP
 
@@ -142,7 +108,8 @@ PUBLIC  T_MovePlaneFloorDown_
 
 push  si
 push  di
-
+push  bp
+mov   bp, 1
 add   al, SECTOR_T.sec_floorheight  ; this is safe because they are 16 byte structs that are paragraph aligned. will never overflow.
 xchg  ax, si
 mov   ax, SECTORS_SEGMENT
@@ -184,10 +151,12 @@ exit_moveplanefloorup_return_floorpastdest:
 mov   al, FLOOR_PASTDEST
 exit_moveplanefloordown:
 
+pop   bp
 pop   di
 pop   si
 ret   
 
+ceil_down_not_past_dest:
 floor_down_not_past_dest:
 sub   word ptr es:[si], dx
 
@@ -198,6 +167,13 @@ and   al, 0F0h ; undo the ptr
 call  dword ptr ds:[_P_ChangeSector]
 test  al, al
 je    exit_moveplanefloordown_return_floorok
+
+test  bp, bp
+jne   do_second_floor_changesector_call   ; skip second check...
+test  cl, cl
+jne   exit_moveplaneceilingdown_return_floorcrushed
+
+
 do_second_floor_changesector_call:
 mov   dx, SECTORS_SEGMENT
 mov   es, dx
@@ -208,9 +184,11 @@ and   al, 0F0h ; undo the ptr
 call  dword ptr ds:[_P_ChangeSector]
 exit_moveplanefloordown_return_floorcrushed:
 exit_moveplanefloorup_return_floorcrushed:
+exit_moveplaneceilingdown_return_floorcrushed:
 mov   al, FLOOR_CRUSHED
 exit_moveplanefloordown_return_floorok:
 exit_moveplanefloorup_return_floorok:
+pop   bp
 pop   di
 pop   si
 ret   
@@ -221,10 +199,10 @@ ENDP
 PROC    T_MovePlaneFloorUp_ NEAR
 PUBLIC  T_MovePlaneFloorUp_
 
-
 push  si
 push  di
-
+push  bp
+xor   bp, bp
 add   al, SECTOR_T.sec_floorheight  ; this is safe because they are 16 byte structs that are paragraph aligned. will never overflow.
 xchg  ax, si
 
@@ -241,6 +219,7 @@ jg    floor_up_past_dest
 
 floor_up_not_past_dest:
 
+
 add   word ptr es:[si], dx
 mov   dx, es
 mov   bx, cx
@@ -249,6 +228,9 @@ and   al, 0F0h ; undo the ptr
 call  dword ptr ds:[_P_ChangeSector]
 test  al, al
 je    exit_moveplanefloorup_return_floorok
+mov   al, 0 ; to force a ret 0 below...
+test  bp, bp  ; skip 2nd call if 1
+jne   exit_moveplanefloorup_return_floorok
 test  cl, cl
 jne   exit_moveplanefloorup_return_floorcrushed
 jmp   do_second_floor_changesector_call
