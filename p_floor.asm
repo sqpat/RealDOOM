@@ -54,31 +54,36 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 4
-mov   si, ax
-mov   ax, bx
-mov   word ptr [bp - 2], SECTORS_SEGMENT
-mov   es, word ptr [bp - 2]
-mov   di, word ptr es:[si + 2]
-sub   di, dx
-cmp   di, bx
-jge   label_1
-mov   dx, SECTORS_SEGMENT
-mov   al, cl
-mov   di, word ptr es:[si + 2]
-cbw  
-mov   word ptr es:[si + 2], bx
-mov   cx, ax
-mov   bx, ax
+xchg  ax, si
+mov   ax, SECTORS_SEGMENT
+mov   es, ax
+
+;	if (sector->ceilingheight - speed < dest) {
+
+
+
+
+mov   di, word ptr es:[si + SECTOR_T.sec_ceilingheight]
+mov   ax, di
+sub   ax, dx 
+
+cmp   ax, bx
+jge   check_for_crush
+mov   word ptr es:[si + SECTOR_T.sec_ceilingheight], bx
+
+mov   dx, es
 mov   ax, si
+mov   bx, cx
 call  dword ptr ds:[_P_ChangeSector]
 test  al, al
 je    exit_moveplaneceilingdown_return_floorpastdest
-mov   es, word ptr [bp - 2]
+; something crushed
 mov   dx, SECTORS_SEGMENT
+mov   es, dx
 mov   bx, cx
-mov   ax, si
-mov   word ptr es:[si + 2], di
+xchg  ax, si
+
+mov   word ptr es:[si + SECTOR_T.sec_ceilingheight], di
 call  dword ptr ds:[_P_ChangeSector]
 exit_moveplaneceilingdown_return_floorpastdest:
 mov   al, FLOOR_PASTDEST
@@ -87,34 +92,25 @@ LEAVE_MACRO
 pop   di
 pop   si
 ret   
-label_1:
-mov   ax, word ptr es:[si + 2]
-mov   word ptr [bp - 4], ax
-sub   ax, dx
-mov   word ptr es:[si + 2], ax
-mov   al, cl
-cbw  
-mov   dx, SECTORS_SEGMENT
-mov   di, ax
-mov   bx, ax
+
+check_for_crush:
+sub   word ptr es:[si + SECTOR_T.sec_ceilingheight], dx
+
+mov   dx, es
+mov   bx, cx ; crush
 mov   ax, si
 call  dword ptr ds:[_P_ChangeSector]
 test  al, al
 je    exit_moveplaneceilingdown
 cmp   cl, 1
-jne   label_2
-mov   al, cl
-LEAVE_MACRO 
-pop   di
-pop   si
-ret   
-label_2:
-les   ax, dword ptr [bp - 4]
+je    exit_moveplaneceilingdown_return_floorcrushed
 mov   dx, SECTORS_SEGMENT
-mov   bx, di
-mov   word ptr es:[si + 2], ax
-mov   ax, si
+mov   es, dx
+mov   bx, cx ; crush
+mov   word ptr es:[si + SECTOR_T.sec_ceilingheight], ax
+xchg  ax, si
 call  dword ptr ds:[_P_ChangeSector]
+exit_moveplaneceilingdown_return_floorcrushed:
 mov   al, FLOOR_CRUSHED
 LEAVE_MACRO 
 pop   di
