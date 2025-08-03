@@ -244,6 +244,8 @@ ENDP
 PROC    T_MoveFloor_ NEAR
 PUBLIC  T_MoveFloor_
 
+;void __near T_MoveFloor(floormove_t __near* floor, THINKERREF floorRef) {
+
 
 push  bx
 push  cx
@@ -251,10 +253,10 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 8
-mov   si, ax
-mov   word ptr [bp - 4], dx
-mov   di, word ptr ds:[si + 2]
+
+xchg  ax, si
+push  dx  ; bp - 2
+mov   di, word ptr ds:[si + FLOORMOVE_T.floormove_secnum]
 
 
 test  byte ptr ds:[_leveltime], 7
@@ -265,17 +267,15 @@ call  S_StartSoundWithParams_
 dont_play_floor_sound:
 
 mov   ax, di
-shl   ax, 4
-mov   word ptr [bp - 2], ax
+SHIFT_MACRO shl   ax 4
+push  ax  ; bp - 4
 cmp   byte ptr ds:[si + FLOORMOVE_T.floormove_direction], 0
 je    exit_move_floor
 
-mov   al, byte ptr ds:[si + 1]
-mov   bx, word ptr ds:[si + 7]
-cbw  
-mov   dx, word ptr ds:[si + 9]
-mov   cx, ax
-mov   ax, word ptr [bp - 2]
+mov   bx, word ptr ds:[si + FLOORMOVE_T.floormove_floordestheight]
+mov   dx, word ptr ds:[si + FLOORMOVE_T.floormove_speed]
+mov   cl, byte ptr ds:[si + FLOORMOVE_T.floormove_crush]
+; ax already offset
 jl    floor_direction_down
 
 floor_direction_up:
@@ -285,42 +285,45 @@ jmp   done_with_TMovePlanecall
 floor_direction_down:
 call  T_MovePlaneFloorDown_
 done_with_TMovePlanecall:
-mov   cl, al
 
 
 
-
-cmp   cl, 2
+cmp   al, FLOOR_PASTDEST
 jne   exit_move_floor
-mov   dh, byte ptr ds:[si + 5]
-mov   al, byte ptr ds:[si + 4]
-mov   cl, byte ptr ds:[si + 6]
-mov   dl, byte ptr ds:[si]
-mov   si, di
-shl   si, 4
-mov   word ptr [bp - 8], si
-lea   bx, [si + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef]
-mov   word ptr [bp - 6], 0
-mov   word ptr ds:[bx], 0
-mov   bx, SECTORS_SEGMENT
-cbw  
-mov   es, bx
-mov   bx, word ptr [bp - 8]
-add   si, 4
-add   bx, _sectors_physics + SECTOR_PHYSICS_T.secp_special
-cmp   ax, 1
-jne   label_16
-cmp   dl, FLOOR_DONUTRAISE
-label_15:
-jne   label_14
-mov   byte ptr ds:[bx], dh
-mov   byte ptr es:[si], cl
-label_14:
-mov   ax, word ptr [bp - 4]
+
+xor   ax, ax
+mov   word ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax ; NULL_THINKERREF
+
+pop   bx ; bp - 4
+
+cmp  byte ptr ds:[si + FLOORMOVE_T.floormove_direction], al
+je   dont_change_specials
+jg   check_for_raising_donut
+;jl   label_14
+cmp   al, FLOOR_LOWERANDCHANGE
+jmp   do_type_compare
+
+
+check_for_raising_donut:
+cmp   al, FLOOR_DONUTRAISE
+do_type_compare:
+jne   dont_change_specials
+
+mov   dx, SECTORS_SEGMENT
+mov   es, dx
+
+
+mov   al, byte ptr ds:[si + FLOORMOVE_T.floormove_texture]
+mov   byte ptr es:[bx + SECTOR_T.sec_floorpic], cl
+mov   al, byte ptr ds:[si + FLOORMOVE_T.floormove_newspecial]
+mov   byte ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], al
+
+dont_change_specials:
+pop   ax  ; bp - 2 retrieve floorRef
 mov   dx, SFX_PSTOP
 
 call  P_RemoveThinker_
-mov   ax, di
+xchg  ax, di
 
 call  S_StartSoundWithParams_
    
@@ -332,11 +335,6 @@ pop   cx
 pop   bx
 ret   
 
-label_16:
-cmp   ax, -1
-jne   label_14
-cmp   dl, 6
-jmp   label_15
 ENDP
 
 
