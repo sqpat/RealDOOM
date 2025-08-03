@@ -404,7 +404,8 @@ typedef uint8_t result_e;
 
 
 result_e __near T_MovePlaneFloor ( sector_t __far* sector, short_height_t	speed,short_height_t	dest,boolean	crush,int16_t		direction );
-result_e __near T_MovePlaneCeiling ( sector_t __far* sector, short_height_t	speed,short_height_t	dest,boolean	crush,int16_t		direction );
+result_e __near T_MovePlaneCeilingUp ( sector_t __far* sector, short_height_t	speed,short_height_t	dest,boolean	crush);
+result_e __near T_MovePlaneCeilingDown ( sector_t __far* sector, short_height_t	speed,short_height_t	dest,boolean	crush);
 int16_t __near EV_BuildStairs (uint8_t linetag, stair_e	type );
 int16_t __far EV_DoFloor (uint8_t linetag,   int16_t linefrontsecnum, floor_e	floortype );
 void __near T_MoveFloor(floormove_t __near* floor, THINKERREF floorRef);

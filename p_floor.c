@@ -39,65 +39,72 @@
 //
 // Move a plane (floor or ceiling) and check for crushing
 //
-result_e __near T_MovePlaneCeiling ( sector_t __far*	sector, short_height_t	speed, short_height_t	dest, boolean	crush, int16_t		direction ) {
+result_e __near T_MovePlaneCeilingDown ( sector_t __far*	sector, short_height_t	speed, short_height_t	dest, boolean	crush ) {
     boolean	somethingcrushed; // plane will possibly move less
     short_height_t	lastpos;
 
 
 
 // CEILING
-	switch(direction) {
-		case -1:
-			// DOWN
-			if (sector->ceilingheight - speed < dest) {
-				lastpos = sector->ceilingheight;
-				sector->ceilingheight = dest;
-				somethingcrushed = P_ChangeSector(sector,crush);
+	// DOWN
+	if (sector->ceilingheight - speed < dest) {
+		lastpos = sector->ceilingheight;
+		sector->ceilingheight = dest;
+		somethingcrushed = P_ChangeSector(sector,crush);
 
-				if (somethingcrushed) {
-					sector->ceilingheight = lastpos;
-					P_ChangeSector(sector,crush);
-					//return floor_crushed;
-				}
-				return floor_pastdest;
-			} else {
-				// COULD GET CRUSHED
-				lastpos = sector->ceilingheight;
-				sector->ceilingheight -= speed;
-				somethingcrushed = P_ChangeSector(sector,crush);
-
-				if (somethingcrushed) {
-					if (crush == true) {
-						return floor_crushed;
-					}
-					sector->ceilingheight = lastpos;
-					P_ChangeSector(sector,crush);
-					return floor_crushed;
-				}
-			}
-			break;
-			
-			case 1:
-			// UP
-			if (sector->ceilingheight + speed > dest) {
-				lastpos = sector->ceilingheight;
-				sector->ceilingheight = dest;
-				somethingcrushed = P_ChangeSector(sector,crush);
-				if (somethingcrushed) {
-					sector->ceilingheight = lastpos;
-					P_ChangeSector(sector,crush);
-					//return crushed;
-				}
-				return floor_pastdest;
-			} else {
-				lastpos = sector->ceilingheight;
-				sector->ceilingheight += speed;
-				somethingcrushed = P_ChangeSector(sector,crush);
-			}
-			break;
+		if (somethingcrushed) {
+			sector->ceilingheight = lastpos;
+			P_ChangeSector(sector,crush);
+			//return floor_crushed;
 		}
+		return floor_pastdest;
+	} else {
+		// COULD GET CRUSHED
+		lastpos = sector->ceilingheight;
+		sector->ceilingheight -= speed;
+		somethingcrushed = P_ChangeSector(sector,crush);
+
+		if (somethingcrushed) {
+			if (crush == true) {
+				return floor_crushed;
+			}
+			sector->ceilingheight = lastpos;
+			P_ChangeSector(sector,crush);
+			return floor_crushed;
+		}
+	}
+
+
     return floor_ok;
 }
+
+result_e __near T_MovePlaneCeilingUp ( sector_t __far*	sector, short_height_t	speed, short_height_t	dest, boolean	crush ) {
+    boolean	somethingcrushed; // plane will possibly move less
+    short_height_t	lastpos;
+
+
+
+// CEILING
+
+	// UP
+	if (sector->ceilingheight + speed > dest) {
+		lastpos = sector->ceilingheight;
+		sector->ceilingheight = dest;
+		somethingcrushed = P_ChangeSector(sector,crush);
+		if (somethingcrushed) {
+			sector->ceilingheight = lastpos;
+			P_ChangeSector(sector,crush);
+			//return crushed;
+		}
+		return floor_pastdest;
+	} else {
+		lastpos = sector->ceilingheight;
+		sector->ceilingheight += speed;
+		somethingcrushed = P_ChangeSector(sector,crush);
+	}
+    return floor_ok;
+}
+
 
 
 

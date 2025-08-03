@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/02 21:34:40
+Created on:       25/08/02 21:39:01
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -58,10 +58,10 @@ hu_setup_TEXT          CODE           AUTO           02ee:7a00       000000d6
 p_setup_TEXT           CODE           AUTO           02ee:7ae0       0000127a
 s_sound_TEXT           CODE           AUTO           0bc4:0000       0000067a
 s_sbsfx_TEXT           CODE           AUTO           0bc4:0680       000017f3
-P_CEILNG_TEXT          CODE           AUTO           0bc4:1e74       0000029f
-p_doors_TEXT           CODE           AUTO           0bc4:2120       00000692
-p_floor_TEXT           CODE           AUTO           0bc4:27c0       00000800
-P_INTER_TEXT           CODE           AUTO           0bc4:2fc0       0000089e
+P_CEILNG_TEXT          CODE           AUTO           0bc4:1e74       0000029e
+p_doors_TEXT           CODE           AUTO           0bc4:2120       00000690
+p_floor_TEXT           CODE           AUTO           0bc4:27b0       00000806
+P_INTER_TEXT           CODE           AUTO           0bc4:2fb6       0000089e
 p_lights_TEXT          CODE           AUTO           0bc4:3860       000003ed
 p_plats_TEXT           CODE           AUTO           0bc4:3c50       00000419
 P_SPEC_TEXT            CODE           AUTO           0bc4:406a       00000a29
@@ -796,40 +796,41 @@ Module: s_sbsfx.obj(C:\REALDOOM\s_sbsfx.c)
 14b0:1237+     _DMA_PortInfo
 14b0:20ac+     _sfxcache_head
 Module: p_ceilng.obj(p_ceilng.ASM)
-0bc4:204c      P_AddActiveCeiling_
-0bc4:2063*     P_RemoveActiveCeiling_
+0bc4:204b      P_AddActiveCeiling_
+0bc4:2062*     P_RemoveActiveCeiling_
 0bc4:1e74*     P_CEILNG_STARTMARKER_
-0bc4:2113*     P_CEILNG_ENDMARKER_
-0bc4:20ca      EV_CeilingCrushStop_
-0bc4:1f55      EV_DoCeiling_
-0bc4:2088*     P_ActivateInStasisCeiling_
+0bc4:2112*     P_CEILNG_ENDMARKER_
+0bc4:20c9      EV_CeilingCrushStop_
+0bc4:1f54      EV_DoCeiling_
+0bc4:2087*     P_ActivateInStasisCeiling_
 0bc4:1e74      T_MoveCeiling_
 Module: p_doors.obj(C:\REALDOOM\p_doors.c)
 0bc4:2146      T_VerticalDoor_
-0bc4:22d4      EV_DoLockedDoor_
-0bc4:239a      EV_DoDoor_
-0bc4:24f2      EV_VerticalDoor_
-0bc4:270e      P_SpawnDoorCloseIn30_
-0bc4:2756      P_SpawnDoorRaiseIn5Mins_
+0bc4:22d2      EV_DoLockedDoor_
+0bc4:2398      EV_DoDoor_
+0bc4:24f0      EV_VerticalDoor_
+0bc4:270c      P_SpawnDoorCloseIn30_
+0bc4:2754      P_SpawnDoorRaiseIn5Mins_
 Module: p_floor.obj(C:\REALDOOM\p_floor.c)
-0bc4:27c0      T_MovePlaneCeiling_
-0bc4:28b4      T_MovePlaneFloor_
-0bc4:29d6      T_MoveFloor_
-0bc4:2a9c      EV_DoFloor_
-0bc4:2e2c      EV_BuildStairs_
+0bc4:27b0      T_MovePlaneCeilingDown_
+0bc4:283c      T_MovePlaneCeilingUp_
+0bc4:28aa      T_MovePlaneFloor_
+0bc4:29cc      T_MoveFloor_
+0bc4:2a92      EV_DoFloor_
+0bc4:2e22      EV_BuildStairs_
 Module: p_inter.obj(p_inter.ASM)
-0bc4:31c5      P_TouchSpecialThing_
-0bc4:3089*     P_GiveWeapon_
-0bc4:310d*     P_GiveCard_
-0bc4:35ca      P_DamageMobj_
-0bc4:30ca*     P_GiveBody_
-0bc4:30ee*     P_GiveArmor_
-0bc4:2fc0*     P_INTER_STARTMARKER_
-0bc4:33ff*     P_KillMobj_
-0bc4:2fd0*     P_GiveAmmo_
-0bc4:3127      P_GivePower_
-0bc4:355f*     getMassThrust_
-0bc4:385e*     P_INTER_ENDMARKER_
+0bc4:31bb      P_TouchSpecialThing_
+0bc4:307f*     P_GiveWeapon_
+0bc4:3103*     P_GiveCard_
+0bc4:35c0      P_DamageMobj_
+0bc4:30c0*     P_GiveBody_
+0bc4:30e4*     P_GiveArmor_
+0bc4:2fb6*     P_INTER_STARTMARKER_
+0bc4:33f5*     P_KillMobj_
+0bc4:2fc6*     P_GiveAmmo_
+0bc4:311d      P_GivePower_
+0bc4:3555*     getMassThrust_
+0bc4:3854*     P_INTER_ENDMARKER_
 Module: p_lights.obj(C:\REALDOOM\p_lights.c)
 0bc4:3860      T_FireFlicker_
 0bc4:38c0      P_SpawnFireFlicker_
@@ -1200,4 +1201,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  000175d0 (95696.)
 Entry point address: 0bc4:7446
-Link time: 00:00.20
+Link time: 00:00.19
