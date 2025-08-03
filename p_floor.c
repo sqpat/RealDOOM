@@ -31,6 +31,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
+#include <i86.h>
 
 //
 // FLOORS
@@ -39,10 +40,10 @@
 //
 // Move a plane (floor or ceiling) and check for crushing
 //
-result_e __near T_MovePlaneCeilingDown ( sector_t __far*	sector, short_height_t	speed, short_height_t	dest, boolean	crush ) {
+result_e __near T_MovePlaneCeilingDown ( uint16_t sector_offset, short_height_t	speed, short_height_t	dest, boolean	crush ) {
     boolean	somethingcrushed; // plane will possibly move less
     short_height_t	lastpos;
-
+	sector_t __far*	sector = MK_FP(sectors_segment, sector_offset);
 
 
 // CEILING
@@ -78,9 +79,10 @@ result_e __near T_MovePlaneCeilingDown ( sector_t __far*	sector, short_height_t	
     return floor_ok;
 }
 
-result_e __near T_MovePlaneCeilingUp ( sector_t __far*	sector, short_height_t	speed, short_height_t	dest, boolean	crush ) {
+result_e __near T_MovePlaneCeilingUp ( uint16_t sector_offset, short_height_t	speed, short_height_t	dest, boolean	crush ) {
     boolean	somethingcrushed; // plane will possibly move less
     short_height_t	lastpos;
+	sector_t __far*	sector = MK_FP(sectors_segment, sector_offset);
 
 
 
@@ -108,9 +110,10 @@ result_e __near T_MovePlaneCeilingUp ( sector_t __far*	sector, short_height_t	sp
 
 
 
-result_e __near T_MovePlaneFloorDown ( sector_t __far*	sector, short_height_t	speed, short_height_t	dest, boolean	crush) {
+result_e __near T_MovePlaneFloorDown ( uint16_t sector_offset, short_height_t	speed, short_height_t	dest, boolean	crush) {
     boolean	somethingcrushed; // plane will possibly move less
     short_height_t	lastpos;
+	sector_t __far*	sector = MK_FP(sectors_segment, sector_offset);
 
 	// DOWN
 
@@ -149,9 +152,10 @@ result_e __near T_MovePlaneFloorDown ( sector_t __far*	sector, short_height_t	sp
     return floor_ok;
 }
 
-result_e __near T_MovePlaneFloorUp ( sector_t __far*	sector, short_height_t	speed, short_height_t	dest, boolean	crush) {
+result_e __near T_MovePlaneFloorUp ( uint16_t sector_offset, short_height_t	speed, short_height_t	dest, boolean	crush) {
     boolean	somethingcrushed; // plane will possibly move less
     short_height_t	lastpos;
+	sector_t __far*	sector = MK_FP(sectors_segment, sector_offset);
 
 
 
@@ -203,9 +207,9 @@ void __near T_MoveFloor(floormove_t __near* floor, THINKERREF floorRef) {
 	int16_t floordirection;
 	uint8_t floortexture;
 	if (floor->direction == 1){
-	    res = T_MovePlaneFloorUp(floorsector, floor->speed, floor->floordestheight, floor->crush);
+	    res = T_MovePlaneFloorUp(FP_OFF(floorsector), floor->speed, floor->floordestheight, floor->crush);
 	} else if (floor->direction == -1){ 
-	    res = T_MovePlaneFloorDown(floorsector, floor->speed, floor->floordestheight, floor->crush);
+	    res = T_MovePlaneFloorDown(FP_OFF(floorsector), floor->speed, floor->floordestheight, floor->crush);
 	} else {
 		res = floor_ok;
 	}

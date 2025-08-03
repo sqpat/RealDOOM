@@ -35,6 +35,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
+#include <i86.h>
 
 
 
@@ -55,7 +56,7 @@ void __near T_PlatRaise(plat_t __near* plat, THINKERREF platRef) {
 
 	switch(plat->status) {
 		  case plat_up:
-				res = T_MovePlaneFloorUp(platsector,  plat->speed, plat->high, plat->crush);
+				res = T_MovePlaneFloorUp(FP_OFF(platsector),  plat->speed, plat->high, plat->crush);
 				if (plat->type == raiseAndChange || plat->type == raiseToNearestAndChange) {
 					if (!(leveltime.w & 7)) {
 						S_StartSoundWithParams(platsecnum, sfx_stnmov);
@@ -92,7 +93,7 @@ void __near T_PlatRaise(plat_t __near* plat, THINKERREF platRef) {
 				break;
 	
 		  case	plat_down:
-				res = T_MovePlaneFloorDown(platsector,plat->speed,plat->low,false);
+				res = T_MovePlaneFloorDown(FP_OFF(platsector),plat->speed,plat->low,false);
 				if (res == floor_pastdest) {
 					plat->count = plat->wait;
 					plat->status = plat_waiting;

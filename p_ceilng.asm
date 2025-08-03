@@ -51,12 +51,6 @@ ENDP
 
 
 
-PROC    P_CEILNG_STARTMARKER_ NEAR
-PUBLIC  P_CEILNG_STARTMARKER_
-ENDP
-
-
-
 
 ;void __near T_MoveCeiling(ceiling_t __near* ceiling, THINKERREF ceilingRef) {
 
@@ -87,7 +81,7 @@ SHIFT_MACRO shl di 4
 
 ; do a few thing used in both T_MovePlane call cases
 
-mov   bx, word ptr ds:[si + CEILING_T.ceiling_speed]
+mov   dx, word ptr ds:[si + CEILING_T.ceiling_speed]
 cbw
 cmp   al, 0  ; pend to below
 
@@ -101,11 +95,11 @@ jl    do_ceiling_down
 
 do_ceiling_up:
 
-push  ax ; false for crush
-mov   cx, word ptr ds:[si + CEILING_T.ceiling_topheight]
+mov   cx, ax ; false crush
+mov   bx, word ptr ds:[si + CEILING_T.ceiling_topheight]
 mov   ax, di
 
-mov   dx, SECTORS_SEGMENT
+
 call  T_MovePlaneCeilingUp_
 xchg  ax,  cx
 pop   ax ; type
@@ -159,13 +153,11 @@ ret
 
 do_ceiling_down:
 
-mov   al, byte ptr ds:[si + CEILING_T.ceiling_crush]
-push  ax ; crush
 
-mov   cx, word ptr ds:[si + CEILING_T.ceiling_bottomheight]
+mov   cl, byte ptr ds:[si + CEILING_T.ceiling_crush] 
+mov   bx, word ptr ds:[si + CEILING_T.ceiling_bottomheight]
 mov   ax, di
 
-mov   dx, SECTORS_SEGMENT
 call  T_MovePlaneCeilingDown_
 
 xchg  ax,  cx
