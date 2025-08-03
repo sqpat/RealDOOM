@@ -20,14 +20,18 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
+EXTRN S_StartSoundWithParams_:PROC
+
+EXTRN _P_TeleportMove:DWORD
+EXTRN _P_SpawnMobj:DWORD
+
+EXTRN FastMul16u32u_:NEAR
 EXTRN T_MovePlane_:NEAR
 EXTRN P_FindSectorsFromLineTag_:NEAR
 EXTRN P_FindLowestOrHighestCeilingSurrounding_:NEAR
-EXTRN P_UpdateThinkerFunc_:NEAR
-
-EXTRN S_StartSoundWithParams_:PROC
 EXTRN P_CreateThinker_:PROC
 EXTRN P_RemoveThinker_:PROC
+EXTRN P_UpdateThinkerFunc_:NEAR
 
 SHORTFLOORBITS = 3
 
@@ -37,6 +41,12 @@ SHORTFLOORBITS = 3
 
 
 .CODE
+
+
+
+PROC    P_CEILNG_STARTMARKER_ NEAR
+PUBLIC  P_CEILNG_STARTMARKER_
+ENDP
 
 
 
@@ -389,6 +399,8 @@ jmp   done_with_doceiling_switch_block
 ENDP
 
 
+
+
 PROC    P_AddActiveCeiling_ NEAR
 PUBLIC  P_AddActiveCeiling_
 
@@ -466,7 +478,7 @@ xor   cl, cl ; cl is loop counter
 loop_next_stasis_ceiling:
 xor   bx, bx
 mov   bl, cl
-sal   bx, 1
+
 mov   bx, word ptr ds:[bx + _activeceilings]
 test  bx, bx
 je    continue_statis_ceiling_loop
@@ -480,17 +492,18 @@ cmp   ch, byte ptr ds:[bx  + CEILING_T.ceiling_tag]
 jne   continue_statis_ceiling_loop
 mov   al, byte ptr ds:[bx + CEILING_T.ceiling_direction]
 test  al, al
-je    continue_statis_ceiling_loop
-mov   byte ptr ds:[bx + CEILING_T.ceiling_olddirection], al
+jne   continue_statis_ceiling_loop
+mov   al, byte ptr ds:[bx + CEILING_T.ceiling_olddirection]
+mov   byte ptr ds:[bx + CEILING_T.ceiling_direction], al
+
 xchg  ax, dx  ; recover _activeceilings into ax
 mov   dx, TF_MOVECEILING_HIGHBITS
-
-
 call  P_UpdateThinkerFunc_
 
 continue_statis_ceiling_loop:
 inc   cx
-cmp   cl, MAXCEILINGS
+inc   cx
+cmp   cl, (MAXCEILINGS * 2)
 jl    loop_next_stasis_ceiling
 pop   dx
 pop   cx
@@ -498,7 +511,6 @@ pop   bx
 ret   
 
 ENDP
-
 
 
 PROC    EV_CeilingCrushStop_ NEAR

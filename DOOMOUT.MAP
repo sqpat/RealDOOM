@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/02 16:54:14
+Created on:       25/08/02 21:26:28
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -58,7 +58,7 @@ hu_setup_TEXT          CODE           AUTO           02ee:7a00       000000d6
 p_setup_TEXT           CODE           AUTO           02ee:7ae0       0000127a
 s_sound_TEXT           CODE           AUTO           0bc4:0000       0000067a
 s_sbsfx_TEXT           CODE           AUTO           0bc4:0680       000017f3
-P_CEILNG_TEXT          CODE           AUTO           0bc4:1e74       0000029f
+P_CEILNG_TEXT          CODE           AUTO           0bc4:1e74       000002a1
 p_doors_TEXT           CODE           AUTO           0bc4:2120       00000696
 p_floor_TEXT           CODE           AUTO           0bc4:27c0       00000808
 P_INTER_TEXT           CODE           AUTO           0bc4:2fc8       0000089e
@@ -67,7 +67,7 @@ p_plats_TEXT           CODE           AUTO           0bc4:3c60       0000041d
 P_SPEC_TEXT            CODE           AUTO           0bc4:407e       00000a29
 P_SWITCH_TEXT          CODE           AUTO           0bc4:4aa8       000003c6
 P_TELEPT_TEXT          CODE           AUTO           0bc4:4e6e       00000185
-P_TICK_TEXT            CODE           AUTO           0bc4:4ff4       000001e0
+P_TICK_TEXT            CODE           AUTO           0bc4:4ff4       000001e4
 p_user_TEXT            CODE           AUTO           0bc4:51e0       000006e7
 R_MAIN_TEXT            CODE           AUTO           0bc4:58c8       000003dc
 w_wad_TEXT             CODE           AUTO           0bc4:5cb0       0000030c
@@ -799,8 +799,8 @@ Module: p_ceilng.obj(p_ceilng.ASM)
 0bc4:204e      P_AddActiveCeiling_
 0bc4:2065*     P_RemoveActiveCeiling_
 0bc4:1e74*     P_CEILNG_STARTMARKER_
-0bc4:2113*     P_CEILNG_ENDMARKER_
-0bc4:20ca      EV_CeilingCrushStop_
+0bc4:2115*     P_CEILNG_ENDMARKER_
+0bc4:20cc      EV_CeilingCrushStop_
 0bc4:1f57      EV_DoCeiling_
 0bc4:208a*     P_ActivateInStasisCeiling_
 0bc4:1e74      T_MoveCeiling_
@@ -873,7 +873,7 @@ Module: p_telept.obj(p_telept.ASM)
 0bc4:4e6e      EV_Teleport_
 Module: p_tick.obj(p_tick.ASM)
 0bc4:5068      P_UpdateThinkerFunc_
-0bc4:51bf      P_Random_
+0bc4:51c3      P_Random_
 0bc4:508a      P_RemoveThinker_
 0bc4:50bd      P_Ticker_
 0bc4:4ff4      P_CreateThinker_
@@ -1199,4 +1199,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  000175e0 (95712.)
 Entry point address: 0bc4:7456
-Link time: 00:00.19
+Link time: 00:00.20

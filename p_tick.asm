@@ -128,13 +128,13 @@ PUBLIC P_UpdateThinkerFunc_
 push      bx
 
 MUL_SIZEOF_THINKER_T bx ax
-add       bx, _thinkerlist
 
 
-mov       ax, word ptr ds:[bx]
-and       ah, (TF_PREVBITS SHR 8)
-add       dx, ax
-mov       word ptr ds:[bx], dx
+
+mov       ax, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
+and       ax, TF_PREVBITS
+add       ax, dx
+mov       word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype], ax
 pop       bx
 ret       
 
@@ -270,6 +270,8 @@ continue_checking_tf_types:
 
 cmp       al, (TF_DELETEME_HIGHBITS SHR 8)
 je        do_delete_me
+test      al, al
+je        done_processing_thinker
 
 ; all other thinkers use call table and same interface.
 cbw
