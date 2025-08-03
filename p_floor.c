@@ -459,7 +459,6 @@ int16_t __far EV_DoFloor ( uint8_t linetag,int16_t linefrontsecnum,floor_e	floor
     return rtn;
 }
 
-*/
 
 
 //
@@ -578,3 +577,4 @@ int16_t __near EV_BuildStairs ( uint8_t	linetag,stair_e	type ) {
     return rtn;
 }
 
+*/
