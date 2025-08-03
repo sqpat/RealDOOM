@@ -255,37 +255,41 @@ sub   sp, 8
 mov   si, ax
 mov   word ptr [bp - 4], dx
 mov   di, word ptr ds:[si + 2]
+
+
+test  byte ptr ds:[_leveltime], 7
+jne   dont_play_floor_sound
+mov   dx, SFX_STNMOV
+mov   ax, di
+call  S_StartSoundWithParams_   
+dont_play_floor_sound:
+
 mov   ax, di
 shl   ax, 4
 mov   word ptr [bp - 2], ax
-mov   al, byte ptr ds:[si + 4]
-cmp   al, 1
-jne   label_7
-jmp   label_8
-label_7:
-cmp   al, -1
-je    label_9
-jmp   label_10
-label_9:
+cmp   byte ptr ds:[si + FLOORMOVE_T.floormove_direction], 0
+je    exit_move_floor
+
 mov   al, byte ptr ds:[si + 1]
 mov   bx, word ptr ds:[si + 7]
 cbw  
 mov   dx, word ptr ds:[si + 9]
 mov   cx, ax
 mov   ax, word ptr [bp - 2]
-call  T_MovePlaneFloorDown_
-label_12:
-mov   cl, al
-label_13:
-mov   bx, _leveltime
-test  byte ptr ds:[bx], 7
-jne   label_11
-mov   dx, SFX_STNMOV
-mov   ax, di
+jl    floor_direction_down
 
-call  S_StartSoundWithParams_
-   
-label_11:
+floor_direction_up:
+call  T_MovePlaneFloorUp_
+jmp   done_with_TMovePlanecall
+
+floor_direction_down:
+call  T_MovePlaneFloorDown_
+done_with_TMovePlanecall:
+mov   cl, al
+
+
+
+
 cmp   cl, 2
 jne   exit_move_floor
 mov   dh, byte ptr ds:[si + 5]
@@ -327,18 +331,7 @@ pop   si
 pop   cx
 pop   bx
 ret   
-label_8:
-mov   al, byte ptr ds:[si + 1]
-mov   bx, word ptr ds:[si + 7]
-cbw  
-mov   dx, word ptr ds:[si + 9]
-mov   cx, ax
-mov   ax, word ptr [bp - 2]
-call  T_MovePlaneFloorUp_
-jmp   label_12
-label_10:
-xor   cl, cl
-jmp   label_13
+
 label_16:
 cmp   ax, -1
 jne   label_14
