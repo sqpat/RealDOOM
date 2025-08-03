@@ -26,7 +26,7 @@ EXTRN _P_TeleportMove:DWORD
 EXTRN _P_SpawnMobj:DWORD
 
 EXTRN FastMul16u32u_:NEAR
-EXTRN T_MovePlane_:NEAR
+EXTRN T_MovePlaneCeiling_:NEAR
 EXTRN P_FindSectorsFromLineTag_:NEAR
 EXTRN P_FindLowestOrHighestCeilingSurrounding_:NEAR
 EXTRN P_CreateThinker_:PROC
@@ -93,21 +93,19 @@ cmp   al, 0  ; pend to below
 push  word ptr ds:[si + CEILING_T.ceiling_type]  ; put this on stack to easily retrieve later into ax in either case.
 
 push  ax        ; T_MovePlane_ ceiling dir
-mov   al, 1
-cbw
-push  ax ; 1    ; T_MovePlane_  1 for ceiling. todo make separate call where this is implied .
+
+mov   ax, 0
 
 jl    do_ceiling_down
 
 do_ceiling_up:
 
-dec   ax ; ax now 0
-push  ax ; false
+push  ax ; false for crush
 mov   cx, word ptr ds:[si + CEILING_T.ceiling_topheight]
 mov   ax, di
 
 mov   dx, SECTORS_SEGMENT
-call  T_MovePlane_
+call  T_MovePlaneCeiling_
 xchg  ax,  cx
 pop   ax ; type
 test  byte ptr ds:[_leveltime], 7
@@ -167,7 +165,7 @@ mov   cx, word ptr ds:[si + CEILING_T.ceiling_bottomheight]
 mov   ax, di
 
 mov   dx, SECTORS_SEGMENT
-call  T_MovePlane_
+call  T_MovePlaneCeiling_
 
 xchg  ax,  cx
 pop   ax ; type

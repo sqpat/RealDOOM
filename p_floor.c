@@ -39,137 +39,141 @@
 //
 // Move a plane (floor or ceiling) and check for crushing
 //
-result_e __near T_MovePlane ( sector_t __far*	sector, short_height_t	speed, short_height_t	dest, boolean	crush, int16_t		floorOrCeiling, int16_t		direction ) {
+result_e __near T_MovePlaneCeiling ( sector_t __far*	sector, short_height_t	speed, short_height_t	dest, boolean	crush, int16_t		direction ) {
     boolean	somethingcrushed; // plane will possibly move less
     short_height_t	lastpos;
 
-		switch(floorOrCeiling) {
-			case 0:
-				// FLOOR
-				switch(direction) {
-					case -1:
-						// DOWN
 
 
-						if (sector->floorheight - speed < dest) {
-							lastpos = sector->floorheight;
-							sector->floorheight = dest;
+// CEILING
+	switch(direction) {
+		case -1:
+			// DOWN
+			if (sector->ceilingheight - speed < dest) {
+				lastpos = sector->ceilingheight;
+				sector->ceilingheight = dest;
+				somethingcrushed = P_ChangeSector(sector,crush);
 
-							somethingcrushed = P_ChangeSector(sector,crush);
-
-
-							if (somethingcrushed) {
-								sector->floorheight = lastpos;
-
-								P_ChangeSector(sector,crush);
-								//return floor_crushed;
-							}
-
-							return floor_pastdest;
-						} else {
-							lastpos = sector->floorheight;
-							sector->floorheight -= speed;
-
-							somethingcrushed = P_ChangeSector(sector,crush);
-
-							if (somethingcrushed) {
-								sector->floorheight = lastpos;
-
-								P_ChangeSector(sector,crush);
-								return floor_crushed;
-							}
-						}
-						break;
-						
-					case 1:
-						// UP
-		
-
-						if (sector->floorheight + speed > dest) {
-							lastpos = sector->floorheight;
-							sector->floorheight = dest;
-							somethingcrushed = P_ChangeSector(sector,crush);
-							if (somethingcrushed) {
-								sector->floorheight = lastpos;
-
-								P_ChangeSector(sector,crush);
-								//return floor_crushed;
-							}
-							return floor_pastdest;
-						} else {
-							// COULD GET CRUSHED
-							lastpos = sector->floorheight;
-							sector->floorheight += speed;
-							somethingcrushed = P_ChangeSector(sector,crush);
-							if (somethingcrushed) {
-								if (crush == true) {
-									return floor_crushed;
-								}
-								sector->floorheight = lastpos;
-								P_ChangeSector(sector,crush);
-								return floor_crushed;
-							}
-
-						}
-						break;
+				if (somethingcrushed) {
+					sector->ceilingheight = lastpos;
+					P_ChangeSector(sector,crush);
+					//return floor_crushed;
 				}
-				break;
-									
-			case 1:
-			// CEILING
-				switch(direction) {
-					case -1:
-						// DOWN
-						if (sector->ceilingheight - speed < dest) {
-							lastpos = sector->ceilingheight;
-							sector->ceilingheight = dest;
-							somethingcrushed = P_ChangeSector(sector,crush);
+				return floor_pastdest;
+			} else {
+				// COULD GET CRUSHED
+				lastpos = sector->ceilingheight;
+				sector->ceilingheight -= speed;
+				somethingcrushed = P_ChangeSector(sector,crush);
 
-							if (somethingcrushed) {
-								sector->ceilingheight = lastpos;
-								P_ChangeSector(sector,crush);
-								//return floor_crushed;
-							}
-							return floor_pastdest;
-						} else {
-							// COULD GET CRUSHED
-							lastpos = sector->ceilingheight;
-							sector->ceilingheight -= speed;
-							somethingcrushed = P_ChangeSector(sector,crush);
-
-							if (somethingcrushed) {
-								if (crush == true) {
-									return floor_crushed;
-								}
-								sector->ceilingheight = lastpos;
-								P_ChangeSector(sector,crush);
-								return floor_crushed;
-							}
-						}
-						break;
-						
-					  case 1:
-						// UP
-						if (sector->ceilingheight + speed > dest) {
-							lastpos = sector->ceilingheight;
-							sector->ceilingheight = dest;
-							somethingcrushed = P_ChangeSector(sector,crush);
-							if (somethingcrushed) {
-								sector->ceilingheight = lastpos;
-								P_ChangeSector(sector,crush);
-								//return crushed;
-							}
-							return floor_pastdest;
-						} else {
-							lastpos = sector->ceilingheight;
-							sector->ceilingheight += speed;
-							somethingcrushed = P_ChangeSector(sector,crush);
-						}
-						break;
+				if (somethingcrushed) {
+					if (crush == true) {
+						return floor_crushed;
 					}
-				break;
-		
-    }
+					sector->ceilingheight = lastpos;
+					P_ChangeSector(sector,crush);
+					return floor_crushed;
+				}
+			}
+			break;
+			
+			case 1:
+			// UP
+			if (sector->ceilingheight + speed > dest) {
+				lastpos = sector->ceilingheight;
+				sector->ceilingheight = dest;
+				somethingcrushed = P_ChangeSector(sector,crush);
+				if (somethingcrushed) {
+					sector->ceilingheight = lastpos;
+					P_ChangeSector(sector,crush);
+					//return crushed;
+				}
+				return floor_pastdest;
+			} else {
+				lastpos = sector->ceilingheight;
+				sector->ceilingheight += speed;
+				somethingcrushed = P_ChangeSector(sector,crush);
+			}
+			break;
+		}
+    return floor_ok;
+}
+
+
+
+result_e __near T_MovePlaneFloor ( sector_t __far*	sector, short_height_t	speed, short_height_t	dest, boolean	crush, int16_t		direction ) {
+    boolean	somethingcrushed; // plane will possibly move less
+    short_height_t	lastpos;
+
+	switch(direction) {
+		case -1:
+			// DOWN
+
+
+			if (sector->floorheight - speed < dest) {
+				lastpos = sector->floorheight;
+				sector->floorheight = dest;
+
+				somethingcrushed = P_ChangeSector(sector,crush);
+
+
+				if (somethingcrushed) {
+					sector->floorheight = lastpos;
+
+					P_ChangeSector(sector,crush);
+					//return floor_crushed;
+				}
+
+				return floor_pastdest;
+			} else {
+				lastpos = sector->floorheight;
+				sector->floorheight -= speed;
+
+				somethingcrushed = P_ChangeSector(sector,crush);
+
+				if (somethingcrushed) {
+					sector->floorheight = lastpos;
+
+					P_ChangeSector(sector,crush);
+					return floor_crushed;
+				}
+			}
+			break;
+			
+		case 1:
+			// UP
+
+
+			if (sector->floorheight + speed > dest) {
+				lastpos = sector->floorheight;
+				sector->floorheight = dest;
+				somethingcrushed = P_ChangeSector(sector,crush);
+				if (somethingcrushed) {
+					sector->floorheight = lastpos;
+
+					P_ChangeSector(sector,crush);
+					//return floor_crushed;
+				}
+				return floor_pastdest;
+			} else {
+				// COULD GET CRUSHED
+				lastpos = sector->floorheight;
+				sector->floorheight += speed;
+				somethingcrushed = P_ChangeSector(sector,crush);
+				if (somethingcrushed) {
+					if (crush == true) {
+						return floor_crushed;
+					}
+					sector->floorheight = lastpos;
+					P_ChangeSector(sector,crush);
+					return floor_crushed;
+				}
+
+			}
+			break;
+	}
+
+
     return floor_ok;
 }
 
@@ -186,7 +190,7 @@ void __near T_MoveFloor(floormove_t __near* floor, THINKERREF floorRef) {
 	floor_e floortype;
 	int16_t floordirection;
 	uint8_t floortexture;
-    res = T_MovePlane(floorsector, floor->speed, floor->floordestheight, floor->crush,0,floor->direction);
+    res = T_MovePlaneFloor(floorsector, floor->speed, floor->floordestheight, floor->crush,floor->direction);
 	if (!(leveltime.h.fracbits & 7)) {
 		S_StartSoundWithParams(floorsecnum, sfx_stnmov);
 	}

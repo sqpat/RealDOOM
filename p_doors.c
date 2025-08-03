@@ -90,7 +90,7 @@ void __near T_VerticalDoor (vldoor_t __near* door, THINKERREF doorRef) {
 		  case -1:
 		// DOWN
 
-			res = T_MovePlane(doorsector, door->speed, doorsector->floorheight, false,1,door->direction);
+			res = T_MovePlaneCeiling(doorsector, door->speed, doorsector->floorheight, false,door->direction);
 			if (res == floor_pastdest) {
 				switch(door->type) {
 					case blazeRaise:
@@ -130,7 +130,7 @@ void __near T_VerticalDoor (vldoor_t __near* door, THINKERREF doorRef) {
 	
 			case 1:
 				// UP
-				res = T_MovePlane(doorsector,   door->speed, door->topheight, false,1,door->direction);
+				res = T_MovePlaneCeiling(doorsector,   door->speed, door->topheight, false,door->direction);
 
 
 

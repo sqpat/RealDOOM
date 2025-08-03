@@ -55,7 +55,7 @@ void __near T_PlatRaise(plat_t __near* plat, THINKERREF platRef) {
 
 	switch(plat->status) {
 		  case plat_up:
-				res = T_MovePlane(platsector,  plat->speed, plat->high, plat->crush,0,1);
+				res = T_MovePlaneFloor(platsector,  plat->speed, plat->high, plat->crush,1);
 				if (plat->type == raiseAndChange || plat->type == raiseToNearestAndChange) {
 					if (!(leveltime.w & 7)) {
 						S_StartSoundWithParams(platsecnum, sfx_stnmov);
@@ -92,7 +92,7 @@ void __near T_PlatRaise(plat_t __near* plat, THINKERREF platRef) {
 				break;
 	
 		  case	plat_down:
-				res = T_MovePlane(platsector,plat->speed,plat->low,false,0,-1);
+				res = T_MovePlaneFloor(platsector,plat->speed,plat->low,false,-1);
 				if (res == floor_pastdest) {
 					plat->count = plat->wait;
 					plat->status = plat_waiting;
