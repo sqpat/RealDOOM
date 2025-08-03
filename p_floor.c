@@ -108,76 +108,81 @@ result_e __near T_MovePlaneCeilingUp ( sector_t __far*	sector, short_height_t	sp
 
 
 
-result_e __near T_MovePlaneFloor ( sector_t __far*	sector, short_height_t	speed, short_height_t	dest, boolean	crush, int16_t		direction ) {
+result_e __near T_MovePlaneFloorDown ( sector_t __far*	sector, short_height_t	speed, short_height_t	dest, boolean	crush) {
     boolean	somethingcrushed; // plane will possibly move less
     short_height_t	lastpos;
 
-	switch(direction) {
-		case -1:
-			// DOWN
+	// DOWN
 
 
-			if (sector->floorheight - speed < dest) {
-				lastpos = sector->floorheight;
-				sector->floorheight = dest;
+	if (sector->floorheight - speed < dest) {
+		lastpos = sector->floorheight;
+		sector->floorheight = dest;
 
-				somethingcrushed = P_ChangeSector(sector,crush);
+		somethingcrushed = P_ChangeSector(sector,crush);
 
 
-				if (somethingcrushed) {
-					sector->floorheight = lastpos;
+		if (somethingcrushed) {
+			sector->floorheight = lastpos;
 
-					P_ChangeSector(sector,crush);
-					//return floor_crushed;
-				}
+			P_ChangeSector(sector,crush);
+			//return floor_crushed;
+		}
 
-				return floor_pastdest;
-			} else {
-				lastpos = sector->floorheight;
-				sector->floorheight -= speed;
+		return floor_pastdest;
+	} else {
+		lastpos = sector->floorheight;
+		sector->floorheight -= speed;
 
-				somethingcrushed = P_ChangeSector(sector,crush);
+		somethingcrushed = P_ChangeSector(sector,crush);
 
-				if (somethingcrushed) {
-					sector->floorheight = lastpos;
+		if (somethingcrushed) {
+			sector->floorheight = lastpos;
 
-					P_ChangeSector(sector,crush);
-					return floor_crushed;
-				}
+			P_ChangeSector(sector,crush);
+			return floor_crushed;
+		}
+	}
+
+
+
+    return floor_ok;
+}
+
+result_e __near T_MovePlaneFloorUp ( sector_t __far*	sector, short_height_t	speed, short_height_t	dest, boolean	crush) {
+    boolean	somethingcrushed; // plane will possibly move less
+    short_height_t	lastpos;
+
+
+
+	// UP
+
+
+	if (sector->floorheight + speed > dest) {
+		lastpos = sector->floorheight;
+		sector->floorheight = dest;
+		somethingcrushed = P_ChangeSector(sector,crush);
+		if (somethingcrushed) {
+			sector->floorheight = lastpos;
+
+			P_ChangeSector(sector,crush);
+			//return floor_crushed;
+		}
+		return floor_pastdest;
+	} else {
+		// COULD GET CRUSHED
+		lastpos = sector->floorheight;
+		sector->floorheight += speed;
+		somethingcrushed = P_ChangeSector(sector,crush);
+		if (somethingcrushed) {
+			if (crush == true) {
+				return floor_crushed;
 			}
-			break;
-			
-		case 1:
-			// UP
+			sector->floorheight = lastpos;
+			P_ChangeSector(sector,crush);
+			return floor_crushed;
+		}
 
-
-			if (sector->floorheight + speed > dest) {
-				lastpos = sector->floorheight;
-				sector->floorheight = dest;
-				somethingcrushed = P_ChangeSector(sector,crush);
-				if (somethingcrushed) {
-					sector->floorheight = lastpos;
-
-					P_ChangeSector(sector,crush);
-					//return floor_crushed;
-				}
-				return floor_pastdest;
-			} else {
-				// COULD GET CRUSHED
-				lastpos = sector->floorheight;
-				sector->floorheight += speed;
-				somethingcrushed = P_ChangeSector(sector,crush);
-				if (somethingcrushed) {
-					if (crush == true) {
-						return floor_crushed;
-					}
-					sector->floorheight = lastpos;
-					P_ChangeSector(sector,crush);
-					return floor_crushed;
-				}
-
-			}
-			break;
 	}
 
 
@@ -197,7 +202,14 @@ void __near T_MoveFloor(floormove_t __near* floor, THINKERREF floorRef) {
 	floor_e floortype;
 	int16_t floordirection;
 	uint8_t floortexture;
-    res = T_MovePlaneFloor(floorsector, floor->speed, floor->floordestheight, floor->crush,floor->direction);
+	if (floor->direction == 1){
+	    res = T_MovePlaneFloorUp(floorsector, floor->speed, floor->floordestheight, floor->crush);
+	} else if (floor->direction == -1){ 
+	    res = T_MovePlaneFloorDown(floorsector, floor->speed, floor->floordestheight, floor->crush);
+	} else {
+		res = floor_ok;
+	}
+
 	if (!(leveltime.h.fracbits & 7)) {
 		S_StartSoundWithParams(floorsecnum, sfx_stnmov);
 	}
@@ -231,7 +243,6 @@ void __near T_MoveFloor(floormove_t __near* floor, THINKERREF floorRef) {
 
 		S_StartSoundWithParams(floorsecnum, sfx_pstop);
     }
-
 }
 
 //
