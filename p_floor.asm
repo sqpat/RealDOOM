@@ -183,61 +183,62 @@ PUBLIC  T_MovePlaneFloorDown_
 
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
-mov   si, ax
-mov   al, cl
-mov   word ptr [bp - 2], SECTORS_SEGMENT
-mov   es, word ptr [bp - 2]
-mov   cx, word ptr es:[si]
-sub   cx, dx
-cmp   cx, bx
-jge   label_4
-mov   dx, SECTORS_SEGMENT
-cbw  
-mov   di, word ptr es:[si]
-mov   cx, ax
-mov   word ptr es:[si], bx
-mov   bx, ax
+
+xchg  ax, si
+mov   ax, SECTORS_SEGMENT
+mov   es, ax
+
+;	if (sector->floorheight - speed < dest) {
+
+
+mov   di, word ptr es:[si + SECTOR_T.sec_floorheight]
+mov   ax, di
+sub   ax, dx 
+
+cmp   ax, bx
+jge   floor_down_not_past_dest
+mov   word ptr es:[si + SECTOR_T.sec_floorheight], bx
+
+mov   dx, es
 mov   ax, si
+mov   bx, cx
 call  dword ptr ds:[_P_ChangeSector]
 test  al, al
 je    exit_moveplanefloordown_return_floorpastdest
-mov   es, word ptr [bp - 2]
+; something crushed
 mov   dx, SECTORS_SEGMENT
+mov   es, dx
 mov   bx, cx
-mov   ax, si
-mov   word ptr es:[si], di
+xchg  ax, si
+
+mov   word ptr es:[si + SECTOR_T.sec_floorheight], di
 call  dword ptr ds:[_P_ChangeSector]
 exit_moveplanefloordown_return_floorpastdest:
 mov   al, FLOOR_PASTDEST
 exit_moveplanefloordown:
-LEAVE_MACRO 
+
 pop   di
 pop   si
 ret   
-label_4:
-mov   di, word ptr es:[si]
-cbw  
-mov   bx, di
-mov   cx, ax
-sub   bx, dx
-mov   dx, SECTORS_SEGMENT
-mov   word ptr es:[si], bx
-mov   bx, ax
+
+floor_down_not_past_dest:
+sub   word ptr es:[si + SECTOR_T.sec_floorheight], dx
+
+mov   dx, es
+mov   bx, cx ; crush
 mov   ax, si
 call  dword ptr ds:[_P_ChangeSector]
 test  al, al
 je    exit_moveplanefloordown
-mov   es, word ptr [bp - 2]
 mov   dx, SECTORS_SEGMENT
-mov   bx, cx
-mov   ax, si
-mov   word ptr es:[si], di
+mov   es, dx
+mov   bx, cx ; crush
+mov   word ptr es:[si + SECTOR_T.sec_floorheight], ax
+xchg  ax, si
 call  dword ptr ds:[_P_ChangeSector]
-mov   al, 1
-LEAVE_MACRO 
+exit_moveplanefloordown_return_floorcrushed:
+mov   al, FLOOR_CRUSHED
+
 pop   di
 pop   si
 ret   
