@@ -351,6 +351,25 @@ dw do_floor_switch_case_type_9, do_floor_switch_case_type_10, do_floor_switch_ca
 PROC    EV_DoFloor_ NEAR
 PUBLIC  EV_DoFloor_
 
+;int16_t __far EV_DoFloor ( uint8_t linetag,int16_t linefrontsecnum,floor_e	floortype ){
+
+; bp - 2    floortype
+; bp - 4    unused (sectors segment)
+; bp - 6    
+; bp - 8    
+; bp - 0Ah  current loop ptr
+; bp - 0Ch  
+; bp - 0Eh  
+; bp - 010h 
+; bp - 012h 
+; bp - 014h unused (lines segment)
+; bp - 016h 
+; bp - 018h frontsector offset
+; bp - 01Ah 
+; bp - 01Ch unused (rtn)
+; bp - 01Eh 
+; bp - 020h 
+
 
 push  cx
 push  si
@@ -360,23 +379,28 @@ mov   bp, sp
 sub   sp, 0220h
 mov   cx, dx
 mov   byte ptr [bp - 2], bl
-mov   word ptr [bp - 01Ch], 0
+mov   byte ptr cs:[SELFMODIFY_set_dofloor_return+1], 0
 lea   dx, [bp - 0220h]
 mov   word ptr [bp - 0Ah], 0
+
+;	P_FindSectorsFromLineTag(linetag, secnumlist, false);
+
+
 cbw  
 xor   bx, bx
-shl   cx, 4
+SHIFT_MACRO shl   cx 4
 call  P_FindSectorsFromLineTag_
 mov   word ptr [bp - 018h], cx
 cmp   word ptr [bp - 0220h], 0
-jl    label_21
-label_22:
+
+jl    no_sectors_in_list_exit
+loop_next_secnum_dofloor:
 mov   si, word ptr [bp - 0Ah]
 mov   cx, word ptr [bp + si - 0220h]
+mov   ax, SECTORS_SEGMENT
+mov   es, ax
 mov   ax, cx
-mov   word ptr [bp - 4], SECTORS_SEGMENT
-shl   ax, 4
-mov   es, word ptr [bp - 4]
+SHIFT_MACRO shl   ax 4
 mov   word ptr [bp - 6], ax
 add   ax, _sectors_physics
 mov   bx, word ptr [bp - 6]
@@ -398,20 +422,20 @@ mov   si, ax
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 div   di
 mov   di, word ptr [bp - 0Eh]
-mov   word ptr [bp - 01Ch], 1
+mov   byte ptr cs:[SELFMODIFY_set_dofloor_return+1], 1
 mov   word ptr ds:[di + 8], ax
 mov   al, byte ptr [bp - 2]
 mov   byte ptr ds:[bx + 1], 0
 add   word ptr [bp - 0Ah], 2
 mov   byte ptr ds:[bx], al
 cmp   al, FLOOR_RAISEFLOOR512
-ja    label_18
+ja    done_with_dofloor_switch_block
 xor   ah, ah
 mov   di, ax
 add   di, ax
 jmp   word ptr cs:[di + _do_floor_jump_table]
-label_21:
-jmp   label_17
+no_sectors_in_list_exit:
+jmp   exit_ev_dofloor_and_return_rtn
 do_floor_switch_case_type_1:
 mov   byte ptr ds:[bx + 4], -1
 mov   dx, 1
@@ -422,14 +446,16 @@ mov   word ptr ds:[bx + 2], cx
 call  P_FindHighestOrLowestFloorSurrounding_
 label_28:
 mov   word ptr ds:[bx + 7], ax
-label_18:
+done_with_dofloor_switch_block:
+
 do_floor_switch_case_type_12:
 mov   si, word ptr [bp - 0Ah]
 cmp   word ptr [bp + si - 0220h], 0
-jl    label_17
-jmp   label_22
-label_17:
-mov   ax, word ptr [bp - 01Ch]
+jl    exit_ev_dofloor_and_return_rtn
+jmp   loop_next_secnum_dofloor
+exit_ev_dofloor_and_return_rtn:
+SELFMODIFY_set_dofloor_return:
+mov   al, 010h
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -450,9 +476,9 @@ mov   word ptr ds:[bx + 2], cx
 call  P_FindHighestOrLowestFloorSurrounding_
 mov   word ptr ds:[bx + 7], ax
 cmp   ax, word ptr [bp - 0Ch]
-je    label_18
+je    done_with_dofloor_switch_block
 add   word ptr ds:[bx + 7], (8 SHL SHORTFLOORBITS)
-jmp   label_18
+jmp   done_with_dofloor_switch_block
 do_floor_switch_case_type_10:
 mov   byte ptr ds:[bx + 1], 1
 do_floor_switch_case_type_4:
@@ -474,12 +500,12 @@ jne   label_27
 mov   bx, 1
 shl   bx, 6
 sub   word ptr ds:[si], bx
-jmp   label_18
+jmp   done_with_dofloor_switch_block
 label_27:
 xor   bx, bx
 shl   bx, 6
 sub   word ptr ds:[si], bx
-jmp   label_18
+jmp   done_with_dofloor_switch_block
 do_floor_switch_case_type_11:
 mov   byte ptr ds:[bx + 4], 1
 mov   dx, word ptr [bp - 0Ch]
@@ -507,7 +533,7 @@ mov   es, ax
 mov   cx, word ptr es:[si]
 add   cx,  (24 SHL SHORTFLOORBITS)
 mov   word ptr ds:[bx + 7], cx
-jmp   label_18
+jmp   done_with_dofloor_switch_block
 do_floor_switch_case_type_13:
 mov   byte ptr ds:[bx + 4], 1
 mov   word ptr ds:[bx + 2], cx
@@ -519,7 +545,7 @@ mov   es, ax
 mov   cx, word ptr es:[si]
 add   cx, (512 SHL SHORTFLOORBITS)
 mov   word ptr ds:[bx + 7], cx
-jmp   label_18
+jmp   done_with_dofloor_switch_block
 do_floor_switch_case_type_9:
 mov   byte ptr ds:[bx + 4], 1
 mov   word ptr ds:[bx + 2], cx
@@ -544,14 +570,15 @@ add   bx, _sectors_physics + SECTOR_PHYSICS_T.secp_special
 mov   al, byte ptr ds:[bx]
 mov   bx, word ptr [bp - 0Eh]
 mov   byte ptr ds:[bx + SECTOR_PHYSICS_T.secp_special], al
-jmp   label_18
+jmp   done_with_dofloor_switch_block
 do_floor_switch_case_type_6:
 mov   byte ptr ds:[bx + 4], 1
 mov   word ptr [bp - 8], MAXSHORT
 mov   word ptr ds:[bx + 9], 8
 mov   di, word ptr [bp - 6]
 mov   word ptr ds:[bx + 2], cx
-mov   es, word ptr [bp - 4]
+mov   bx, SECTORS_SEGMENT
+mov   es, bx
 xor   bx, bx
 cmp   word ptr es:[di + SECTOR_T.sec_linecount], 0
 jg    label_23
@@ -620,7 +647,7 @@ shl   dx, 3
 mov   ax, word ptr es:[bx]
 add   ax, dx
 mov   word ptr ds:[si + 7], ax
-jmp   label_18
+jmp   done_with_dofloor_switch_block
 do_floor_switch_case_type_7:
 mov   di, word ptr [bp - 6]
 mov   byte ptr ds:[bx + 4], -1
@@ -630,13 +657,14 @@ xor   dx, dx
 mov   word ptr ds:[bx + 2], cx
 call  P_FindHighestOrLowestFloorSurrounding_
 mov   word ptr ds:[bx + 7], ax
-mov   es, word ptr [bp - 4]
+mov   ax, SECTORS_SEGMENT
+mov   es, bx
 mov   al, byte ptr es:[di + 4]
 mov   byte ptr ds:[bx + 6], al
 xor   bx, bx
 cmp   word ptr es:[di + SECTOR_T.sec_linecount], 0
 jg    label_50
-jmp   label_18
+jmp   done_with_dofloor_switch_block
 label_50:
 mov   ax, word ptr [bp - 01Ah]
 add   ax, ax
@@ -649,7 +677,7 @@ test  ax, ax
 je    label_31
 mov   ax, word ptr [bp - 010h]
 mov   di, ax
-mov   word ptr [bp - 014h], LINES_SEGMENT
+
 add   di, _linebuffer
 mov   ax, word ptr ds:[di]
 mov   di, word ptr ds:[di]
@@ -659,7 +687,8 @@ mov   es, dx
 shl   ax, 2
 cmp   cx, word ptr es:[di + LINE_PHYSICS_T.lp_frontsecnum]
 jne   label_32
-mov   es, word ptr [bp - 014h]
+mov   di, LINES_SEGMENT
+mov   es, di
 mov   di, ax
 mov   cx, word ptr es:[di + 2]
 les   di, dword ptr [bp - 6]
@@ -672,9 +701,10 @@ mov   bx, word ptr [bp - 0Eh]
 mov   byte ptr ds:[si + 6], al
 mov   al, byte ptr ds:[bx + SECTOR_PHYSICS_T.secp_special]
 mov   byte ptr ds:[si + 5], al
-jmp   label_18
+jmp   done_with_dofloor_switch_block
 label_32:
-mov   es, word ptr [bp - 014h]
+mov   di, LINES_SEGMENT
+mov   es, di
 mov   di, ax
 mov   cx, word ptr es:[di]
 les   di, dword ptr [bp - 6]
@@ -687,7 +717,7 @@ mov   bx, word ptr [bp - 0Eh]
 mov   byte ptr ds:[si + 6], al
 mov   al, byte ptr ds:[bx + SECTOR_PHYSICS_T.secp_special]
 mov   byte ptr ds:[si + 5], al
-jmp   label_18
+jmp   done_with_dofloor_switch_block
 label_31:
 les   di, dword ptr [bp - 6]
 inc   bx
@@ -696,7 +726,7 @@ cmp   bx, word ptr es:[di + SECTOR_PHYSICS_T.secp_linecount]
 jge   label_33
 jmp   label_34
 label_33:
-jmp   label_18
+jmp   done_with_dofloor_switch_block
 
 
 ENDP
