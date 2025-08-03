@@ -133,8 +133,9 @@ xchg  ax, si
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
 mov   di, word ptr es:[si + SECTOR_T.sec_ceilingheight]
-add   di, dx
-cmp   di, bx
+mov   ax, di
+add   ax, dx
+cmp   ax, bx
 jle   ceil_up_not_past_dest
 mov   dx, es
 
