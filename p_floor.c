@@ -192,7 +192,6 @@ result_e __near T_MovePlaneFloorUp ( uint16_t sector_offset, short_height_t	spee
 
     return floor_ok;
 }
-*/
 
 
 //
@@ -249,6 +248,7 @@ void __near T_MoveFloor(floormove_t __near* floor, THINKERREF floorRef) {
 		S_StartSoundWithParams(floorsecnum, sfx_pstop);
     }
 }
+*/
 
 //
 // HANDLE FLOOR TYPES

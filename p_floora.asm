@@ -20,6 +20,7 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN S_StartSoundWithParams_:PROC
+EXTRN P_RemoveThinker_:PROC
 EXTRN _P_ChangeSector:DWORD
 
 SHORTFLOORBITS = 3
@@ -273,7 +274,7 @@ mov   bx, ax
 mov   ax, si
 call  dword ptr ds:[_P_ChangeSector]
 test  al, al
-je    0x297a
+je    exit_moveplanefloorup_return_floorpastdest
 mov   es, word ptr [bp - 2]
 mov   dx, SECTORS_SEGMENT
 mov   bx, cx
@@ -326,7 +327,6 @@ ret
 
 ENDP
 
-COMMENT @
 
 
 PROC    T_MoveFloor_ NEAR
@@ -348,29 +348,34 @@ shl   ax, 4
 mov   word ptr [bp - 2], ax
 mov   al, byte ptr ds:[si + 4]
 cmp   al, 1
-jne   0x29e6
-jmp   0x2a6f
-cmp   al, 0xff
-je    0x29ed
-jmp   0x2a84
+jne   label_7
+jmp   label_8
+label_7:
+cmp   al, -1
+je    label_9
+jmp   label_10
+label_9:
 mov   al, byte ptr ds:[si + 1]
 mov   bx, word ptr ds:[si + 7]
 cbw  
 mov   dx, word ptr ds:[si + 9]
 mov   cx, ax
 mov   ax, word ptr [bp - 2]
-call  0x28b2
+call  T_MovePlaneFloorDown_
+label_12:
 mov   cl, al
-mov   bx, 0x71c
+label_13:
+mov   bx, _leveltime
 test  byte ptr ds:[bx], 7
-jne   0x2a13
-mov   dx, 0x16
+jne   label_11
+mov   dx, SFX_STNMOV
 mov   ax, di
-push  cs
-call  0x562
-nop   
+
+call  S_StartSoundWithParams_
+   
+label_11:
 cmp   cl, 2
-jne   0x2a69
+jne   exit_move_floor
 mov   dh, byte ptr ds:[si + 5]
 mov   al, byte ptr ds:[si + 4]
 mov   cl, byte ptr ds:[si + 6]
@@ -378,7 +383,7 @@ mov   dl, byte ptr ds:[si]
 mov   si, di
 shl   si, 4
 mov   word ptr [bp - 8], si
-lea   bx, [si - 0x21c8]
+lea   bx, [si + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef]
 mov   word ptr [bp - 6], 0
 mov   word ptr ds:[bx], 0
 mov   bx, SECTORS_SEGMENT
@@ -386,65 +391,57 @@ cbw
 mov   es, bx
 mov   bx, word ptr [bp - 8]
 add   si, 4
-add   bx, 0xde3e
+add   bx, _sectors_physics + SECTOR_PHYSICS_T.secp_special
 cmp   ax, 1
-jne   0x2a89
-cmp   dl, 0xb
-jne   0x2a57
+jne   label_16
+cmp   dl, FLOOR_DONUTRAISE
+label_15:
+jne   label_14
 mov   byte ptr ds:[bx], dh
 mov   byte ptr es:[si], cl
+label_14:
 mov   ax, word ptr [bp - 4]
-mov   dx, 0x13
-push  cs
-call  0x5082
+mov   dx, SFX_PSTOP
+
+call  P_RemoveThinker_
 mov   ax, di
-push  cs
-call  0x562
-nop   
+
+call  S_StartSoundWithParams_
+   
+exit_move_floor:
 LEAVE_MACRO 
 pop   di
 pop   si
 pop   cx
 pop   bx
 ret   
+label_8:
 mov   al, byte ptr ds:[si + 1]
 mov   bx, word ptr ds:[si + 7]
 cbw  
 mov   dx, word ptr ds:[si + 9]
 mov   cx, ax
 mov   ax, word ptr [bp - 2]
-call  0x2932
-jmp   0x29ff
+call  T_MovePlaneFloorUp_
+jmp   label_12
+label_10:
 xor   cl, cl
-jmp   0x2a01
-cmp   ax, 0xffff
-jne   0x2a57
+jmp   label_13
+label_16:
+cmp   ax, -1
+jne   label_14
 cmp   dl, 6
-jmp   0x2a50
-
-
-2B51 2B7D 2B8C 2bB2 2C07 2CB3 2D73 2C1E 2C65 2BAE 2BF0 2B68 2C42 
-push  cx
-sub   di, word ptr ds:[di + 0x2b]
-mov   word ptr [bp + di], gs
-mov   dl, 0x2b
-pop   es
-sub   al, 0xb3
-sub   al, 0x73
-sub   ax, 0x2c1e
-sub   al, 0xae
-sub   si, ax
-sub   bp, word ptr ds:[bx + si + 0x2b]
-inc   dx
-0x0000000000002aad:  2C 
-
-
-
-
+jmp   label_15
 ENDP
 
-PROC    EV_DoFloor_ NEAR
-PUBLIC  EV_DoFloor_
+COMMENT @
+
+
+dw 2B51 2B7D 2B8C 2bB2 2C07 2CB3 2D73 2C1E 2C65 2BAE 2BF0 2B68 2C42 
+
+
+
+
 
 
 push  cx
