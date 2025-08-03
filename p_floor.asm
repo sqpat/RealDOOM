@@ -99,12 +99,12 @@ mov   ax, si
 call  dword ptr ds:[_P_ChangeSector]
 test  al, al
 je    exit_moveplaneceilingdown
-cmp   cl, 1
-je    exit_moveplaneceilingdown_return_floorcrushed
+test  cl, cl
+jne   exit_moveplaneceilingdown_return_floorcrushed
 mov   dx, SECTORS_SEGMENT
 mov   es, dx
 mov   bx, cx ; crush
-mov   word ptr es:[si + SECTOR_T.sec_ceilingheight], ax
+mov   word ptr es:[si + SECTOR_T.sec_ceilingheight], di
 xchg  ax, si
 call  dword ptr ds:[_P_ChangeSector]
 exit_moveplaneceilingdown_return_floorcrushed:
@@ -230,16 +230,16 @@ mov   bx, cx ; crush
 mov   ax, si
 call  dword ptr ds:[_P_ChangeSector]
 test  al, al
-je    exit_moveplanefloordown
+je    exit_moveplanefloordown_return_floorok
 mov   dx, SECTORS_SEGMENT
 mov   es, dx
 mov   bx, cx ; crush
-mov   word ptr es:[si + SECTOR_T.sec_floorheight], ax
+mov   word ptr es:[si + SECTOR_T.sec_floorheight], di
 xchg  ax, si
 call  dword ptr ds:[_P_ChangeSector]
 exit_moveplanefloordown_return_floorcrushed:
 mov   al, FLOOR_CRUSHED
-
+exit_moveplanefloordown_return_floorok:
 pop   di
 pop   si
 ret   
