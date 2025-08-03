@@ -52,8 +52,7 @@ PUBLIC  T_MovePlaneCeilingDown_
 
 push  si
 push  di
-push  bp
-mov   bp, sp
+
 xchg  ax, si
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
@@ -61,14 +60,12 @@ mov   es, ax
 ;	if (sector->ceilingheight - speed < dest) {
 
 
-
-
 mov   di, word ptr es:[si + SECTOR_T.sec_ceilingheight]
 mov   ax, di
 sub   ax, dx 
 
 cmp   ax, bx
-jge   check_for_crush
+jge   ceil_down_not_past_dest
 mov   word ptr es:[si + SECTOR_T.sec_ceilingheight], bx
 
 mov   dx, es
@@ -88,12 +85,12 @@ call  dword ptr ds:[_P_ChangeSector]
 exit_moveplaneceilingdown_return_floorpastdest:
 mov   al, FLOOR_PASTDEST
 exit_moveplaneceilingdown:
-LEAVE_MACRO 
+
 pop   di
 pop   si
 ret   
 
-check_for_crush:
+ceil_down_not_past_dest:
 sub   word ptr es:[si + SECTOR_T.sec_ceilingheight], dx
 
 mov   dx, es
@@ -112,7 +109,7 @@ xchg  ax, si
 call  dword ptr ds:[_P_ChangeSector]
 exit_moveplaneceilingdown_return_floorcrushed:
 mov   al, FLOOR_CRUSHED
-LEAVE_MACRO 
+
 pop   di
 pop   si
 ret   
@@ -128,50 +125,49 @@ PUBLIC  T_MovePlaneCeilingUp_
 
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
-mov   si, ax
-mov   al, cl
-mov   word ptr [bp - 2], SECTORS_SEGMENT
-mov   es, word ptr [bp - 2]
-mov   cx, word ptr es:[si + 2]
-add   cx, dx
-cmp   cx, bx
-jle   label_3
-mov   dx, SECTORS_SEGMENT
-cbw  
-mov   di, word ptr es:[si + 2]
-mov   cx, ax
-mov   word ptr es:[si + 2], bx
-mov   bx, ax
+
+xchg  ax, si
+
+;	if (sector->ceilingheight + speed > dest) {
+
+mov   ax, SECTORS_SEGMENT
+mov   es, ax
+mov   di, word ptr es:[si + SECTOR_T.sec_ceilingheight]
+add   di, dx
+cmp   di, bx
+jle   ceil_up_not_past_dest
+mov   dx, es
+
+mov   word ptr es:[si + SECTOR_T.sec_ceilingheight], bx ;dest
+mov   bx, cx
+
 mov   ax, si
 call  dword ptr ds:[_P_ChangeSector]
 test  al, al
 je    exit_moveplaneceilingup_return_floorpastdest
-mov   es, word ptr [bp - 2]
 mov   dx, SECTORS_SEGMENT
+mov   es, dx
 mov   bx, cx
-mov   ax, si
-mov   word ptr es:[si + 2], di
+xchg  ax, si
+mov   word ptr es:[si + SECTOR_T.sec_ceilingheight], di
 call  dword ptr ds:[_P_ChangeSector]
 exit_moveplaneceilingup_return_floorpastdest:
 mov   al, FLOOR_PASTDEST
-LEAVE_MACRO 
+
 pop   di
 pop   si
 ret   
-label_3:
-mov   bx, word ptr es:[si + 2]
-cbw  
-add   bx, dx
+ceil_up_not_past_dest:
+
+
+add   di, dx
 mov   dx, SECTORS_SEGMENT
-mov   word ptr es:[si + 2], bx
-mov   bx, ax
-mov   ax, si
+mov   word ptr es:[si + SECTOR_T.sec_ceilingheight], di
+mov   bx, cx
+xchg  ax, si
 call  dword ptr ds:[_P_ChangeSector]
 xor   al, al ; floorok
-LEAVE_MACRO 
+
 pop   di
 pop   si
 ret   
