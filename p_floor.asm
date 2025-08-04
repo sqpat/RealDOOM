@@ -247,10 +247,7 @@ PUBLIC  T_MoveFloor_
 ;void __near T_MoveFloor(floormove_t __near* floor, THINKERREF floorRef) {
 
 
-push  bx
-push  cx
-push  si
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
 
@@ -292,14 +289,15 @@ cmp   al, FLOOR_PASTDEST
 jne   exit_move_floor
 
 xor   ax, ax
-mov   word ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax ; NULL_THINKERREF
-
 pop   bx ; bp - 4
+mov   word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax ; NULL_THINKERREF
+
 
 cmp  byte ptr ds:[si + FLOORMOVE_T.floormove_direction], al
+mov  al, byte ptr ds:[si + FLOORMOVE_T.floormove_type]
 je   dont_change_specials
 jg   check_for_raising_donut
-; fall thru jl
+
 cmp   al, FLOOR_LOWERANDCHANGE
 jmp   do_type_compare
 
@@ -309,30 +307,27 @@ cmp   al, FLOOR_DONUTRAISE
 do_type_compare:
 jne   dont_change_specials
 
-mov   dx, SECTORS_SEGMENT
-mov   es, dx
+mov   ax, SECTORS_SEGMENT
+mov   es, ax
 
 
 mov   al, byte ptr ds:[si + FLOORMOVE_T.floormove_texture]
-mov   byte ptr es:[bx + SECTOR_T.sec_floorpic], cl
+mov   byte ptr es:[bx + SECTOR_T.sec_floorpic], al
 mov   al, byte ptr ds:[si + FLOORMOVE_T.floormove_newspecial]
 mov   byte ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], al
 
 dont_change_specials:
 pop   ax  ; bp - 2 retrieve floorRef
+mov   dx, SFX_PSTOP
 
 call  P_RemoveThinker_
 xchg  ax, di
-mov   dx, SFX_PSTOP
 
 call  S_StartSoundWithParams_
    
 exit_move_floor:
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 ret   
 
 ENDP
