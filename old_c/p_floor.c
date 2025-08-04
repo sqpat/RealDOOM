@@ -432,8 +432,7 @@ int16_t __far EV_DoFloor ( uint8_t linetag,int16_t linefrontsecnum,floor_e	floor
 					sideline = &lines[linebuffer[seclinesoffset + i]];
 					sideline_physics = &lines_physics[linebuffer[seclinesoffset + i]];
 					if (sideline_physics->frontsecnum == secnum) {
-						secnum = sideline->sidenum[1];
-						sector = sectors[secnum];
+						sector = sectors[sideline_physics->backsecnum];
 
 						if (sector->floorheight == floor->floordestheight) {
 							floor->texture = sector->floorpic;
@@ -442,8 +441,8 @@ int16_t __far EV_DoFloor ( uint8_t linetag,int16_t linefrontsecnum,floor_e	floor
 						}
 					}
 					else {
-						secnum = sideline->sidenum[0];
-						sector = sectors[secnum];
+						sector = sectors[sideline_physics->frontsecnum];
+
 						if (sector->floorheight == floor->floordestheight) {
 							floor->texture = sector->floorpic;
 							floor->newspecial = sector_physics->special;

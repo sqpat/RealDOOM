@@ -353,27 +353,15 @@ dw do_floor_switch_case_type_raiseFloor512
 
 
 
-PROC    EV_DoFloor_ NEAR
+PROC    EV_DoFloor_ FAR
 PUBLIC  EV_DoFloor_
 
 ;int16_t __far EV_DoFloor ( uint8_t linetag,int16_t linefrontsecnum,floor_e	floortype ){
 
 ; bp - 2    floortype
-; bp - 4     (sectors segment)
-; bp - 6    sector offset
-; bp - 8    
-; bp - 0Ah  current loop ptr
-; bp - 0Ch  
-; bp - 0Eh  sector physics
-; bp - 010h 
-; bp - 012h 
-; bp - 014h unused (lines segment)
-; bp - 016h 
-; bp - 018h frontsector offset
-; bp - 01Ah 
-; bp - 01Ch unused (rtn)
-; bp - 01Eh 
-; bp - 020h 
+; bp - 0202h secnumlist
+; bp - 0204h secnumlist iter
+
 
 
 push  cx
@@ -381,17 +369,18 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 0220h
 
-SHIFT_MACRO shl   dx 4
 mov   word ptr cs:[SELFMODIFY_set_frontsector+1], dx
 
 xor   bh, bh
 mov   byte ptr cs:[SELFMODIFY_set_dofloor_return + 1], bh ; zero
 mov   word ptr cs:[SELFMODIFY_set_dofloor_type + 1], bx
-lea   dx, [bp - 0220h]
+lea   dx, [bp - 0202h]
+sub   sp, 0200h
+push  dx
+
 mov   si, dx
-mov   word ptr [bp - 0Ah], si
+
 
 ;	P_FindSectorsFromLineTag(linetag, secnumlist, false);
 
@@ -405,7 +394,7 @@ jl    no_sectors_in_list_exit
 loop_next_secnum_dofloor:
 
 mov   cx, word ptr [si]
-
+push  si ; bp - 204h. pop at end of loop...
 
 mov   ax, TF_MOVEFLOOR_HIGHBITS
 cwd   ; zero dx
@@ -429,10 +418,6 @@ SHIFT_MACRO shl  di 4
 ; di is sectors offset
 ; si is floor
 ; cx is secnum
-
-
-
-
 
 
 mov  ax, cx  ; ax gets secnum too
@@ -486,9 +471,11 @@ mov   word ptr ds:[si + FLOORMOVE_T.floormove_secnum], cx
 done_with_dofloor_switch_block:
 
 do_floor_switch_case_type_default:
-add   word ptr [bp - 0Ah], 2
 
-mov   si, word ptr [bp - 0Ah]
+pop   si ; pop and inc word ptr
+inc   si
+inc   si
+
 cmp   word ptr [si], 0
 jnl   loop_next_secnum_dofloor
 exit_ev_dofloor_and_return_rtn:
@@ -509,28 +496,27 @@ jmp   find_highestlowest_dont_set_bx
 
 do_floor_switch_case_type_raiseFloorCrush:
 mov   byte ptr ds:[si + FLOORMOVE_T.floormove_crush], dl ; 1
-xor   bx, bx  ; use as flag for raisefloorcrush check
+
 do_floor_switch_case_type_raiseFloor:
-mov   word ptr ds:[si + FLOORMOVE_T.floormove_secnum], ax
 mov   word ptr ds:[si + FLOORMOVE_T.floormove_speed], FLOORSPEED
-mov   byte ptr ds:[si + FLOORMOVE_T.floormove_direction], dl ; 1
+
 xor   dx, dx
 call  P_FindLowestOrHighestCeilingSurrounding_
 
 mov   dx, word ptr es:[di + SECTOR_T.sec_floorheight]
 cmp   ax, dx
-jng   dont_adjust_to_ceil_height
+jge   dont_adjust_to_ceil_height
 mov   ax, dx
 dont_adjust_to_ceil_height:
 
-test  bx, bx
+cmp  bx, (FLOOR_RAISEFLOORCRUSH * 2)
 jne   finally_set_destheight
 sub   ax, (8 SHL SHORTFLOORBITS)
 
 finally_set_destheight:
+mov   dl, 1
 
-mov   word ptr ds:[si + FLOORMOVE_T.floormove_floordestheight], ax
-jmp   done_with_dofloor_switch_block
+jmp   write_floordestheight_secnum_dir
 
 
 
@@ -551,6 +537,7 @@ jmp   do_raisefloor
 do_floor_switch_case_type_raiseFloor24AndChange:
 SELFMODIFY_set_frontsector:
 mov   ax, 01000h
+SHIFT_MACRO shl   ax 4
 xchg  ax, di
 mov   dh, byte ptr es:[di + SECTOR_T.sec_floorpic]
 mov   di, word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_special] ; high byte garbage.
@@ -613,7 +600,7 @@ mov   dx, LINES_SEGMENT
 mov   es, dx
 
 
-SHIFT_MACRO shl       bx 4
+SHIFT_MACRO shl       bx 2
 
 
 ; cx has old loop iter
@@ -729,16 +716,23 @@ mov   es, dx
 SHIFT_MACRO shl       bx 4
 
 
+mov   di, word ptr es:[bx + LINE_PHYSICS_T.lp_frontsecnum]
 selfmodify_check_secnum:
 cmp   word ptr es:[bx + LINE_PHYSICS_T.lp_frontsecnum], 01000h 
-mov   dx, LINES_SEGMENT
-mov   es, dx
-mov   di, bx
-les   bx, dword ptr es:[bx + di + LINE_T.l_sidenum + (0 * 2)] ; side 0 in bx, 1 in di
-
 jne   set_sector_values_and_break_loop
-mov   bx, es
-jmp   set_sector_values_and_break_loop
+mov   di, word ptr es:[bx + LINE_PHYSICS_T.lp_backsecnum]
+set_sector_values_and_break_loop:
+
+
+SHIFT_MACRO shl di 4
+mov   ax, SECTORS_SEGMENT
+mov   es, ax
+mov   al, byte ptr es:[di + SECTOR_T.sec_floorpic]
+mov   byte ptr ds:[si + FLOORMOVE_T.floormove_texture], al
+mov   al, byte ptr es:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_special]
+mov   byte ptr ds:[si + FLOORMOVE_T.floormove_newspecial], al
+
+jmp   done_with_dofloor_switch_block
 
 
 
@@ -755,18 +749,7 @@ jl    loop_next_secnum_lowerandchange
 
 
 jmp   done_with_dofloor_switch_block
-set_sector_values_and_break_loop:
 
-
-SHIFT_MACRO shl bx 4
-mov   ax, SECTORS_SEGMENT
-mov   es, ax
-mov   al, byte ptr es:[bx + SECTOR_T.sec_floorpic]
-mov   byte ptr ds:[si + FLOORMOVE_T.floormove_texture], al
-mov   al, byte ptr es:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special]
-mov   byte ptr ds:[si + FLOORMOVE_T.floormove_newspecial], al
-
-jmp   done_with_dofloor_switch_block
 
 
 ENDP
