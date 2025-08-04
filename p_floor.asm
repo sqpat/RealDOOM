@@ -334,9 +334,19 @@ ENDP
 
 
 _do_floor_jump_table:
-dw do_floor_switch_case_type_lowerfloor, do_floor_switch_case_type_lowerFloorToLowest, do_floor_switch_case_type_turboLower, do_floor_switch_case_type_raiseFloor
-dw do_floor_switch_case_type_raiseFloorToNearest, do_floor_switch_case_type_raiseToTexture, do_floor_switch_case_type_lowerAndChange, do_floor_switch_case_type_raiseFloor24
-dw do_floor_switch_case_type_raiseFloor24AndChange, do_floor_switch_case_type_raiseFloorCrush, do_floor_switch_case_type_raiseFloorTurbo, do_floor_switch_case_type_12, do_floor_switch_case_type_raiseFloor512 
+dw do_floor_switch_case_type_lowerfloor
+dw do_floor_switch_case_type_lowerFloorToLowest
+dw do_floor_switch_case_type_turboLower
+dw do_floor_switch_case_type_raiseFloor
+dw do_floor_switch_case_type_raiseFloorToNearest
+dw do_floor_switch_case_type_raiseToTexture
+dw do_floor_switch_case_type_lowerAndChange
+dw do_floor_switch_case_type_raiseFloor24
+dw do_floor_switch_case_type_raiseFloor24AndChange
+dw do_floor_switch_case_type_raiseFloorCrush
+dw do_floor_switch_case_type_raiseFloorTurbo
+dw do_floor_switch_case_type_default
+dw do_floor_switch_case_type_raiseFloor512 
 
 
 
@@ -377,24 +387,24 @@ SHIFT_MACRO shl   dx 4
 mov   word ptr cs:[SELFMODIFY_set_frontsector+1], dx
 
 xor   bh, bh
+mov   byte ptr cs:[SELFMODIFY_set_dofloor_return + 1], bh ; zero
 mov   word ptr cs:[SELFMODIFY_set_dofloor_type + 1], bx
-mov   byte ptr cs:[SELFMODIFY_set_dofloor_return+1], 0
 lea   dx, [bp - 0220h]
-mov   word ptr [bp - 0Ah], 0
+mov   si, dx
+mov   word ptr [bp - 0Ah], si
 
 ;	P_FindSectorsFromLineTag(linetag, secnumlist, false);
 
 
-cbw  
 xor   bx, bx
 call  P_FindSectorsFromLineTag_
-cmp   word ptr [bp - 0220h], 0
+cmp   word ptr [si], 0
 
 jl    no_sectors_in_list_exit
 
 loop_next_secnum_dofloor:
-mov   si, word ptr [bp - 0Ah]
-mov   cx, word ptr [bp + si - 0220h]
+
+mov   cx, word ptr [si]
 
 
 mov   ax, TF_MOVEFLOOR_HIGHBITS
@@ -407,19 +417,21 @@ sub   ax, (_thinkerlist + THINKER_T.t_data)
 mov   di, SIZEOF_THINKER_T
 div   di
 
+mov   di, SECTORS_SEGMENT
+mov   es, di
+
 mov   di, cx
 mov   byte ptr cs:[SELFMODIFY_set_dofloor_return+1], 1
+; ax is floor ref
+mov   word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax ;floor ref
 SHIFT_MACRO shl  di 4  
 
 ; di is sectors offset
 ; si is floor
+; cx is secnum
 
 
-mov   word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
 
-
-mov   ax, SECTORS_SEGMENT
-mov   es, ax
 
 
 
@@ -435,16 +447,16 @@ mov   byte ptr ds:[si + FLOORMOVE_T.floormove_crush], bh ; known 0
 ; ds:si is floor
 ; ds:di + _sectors_physics is sector_physics
 ; es:di  is sector
-; ax is secnum
+; ax/cx is secnum
 ; bx is floor type (soon to be shifted for jmp)
+; dl is 1 
 
 cmp   bl, FLOOR_RAISEFLOOR512
 ja    done_with_dofloor_switch_block
 sal   bx, 1
 mov   dl, 1 ; "true" used for many calls.
 jmp   word ptr cs:[bx + _do_floor_jump_table]
-no_sectors_in_list_exit:
-jmp   exit_ev_dofloor_and_return_rtn
+
 
 do_floor_switch_case_type_lowerFloorToLowest:
 xor   dx, dx
@@ -473,12 +485,14 @@ mov   word ptr ds:[si + FLOORMOVE_T.floormove_secnum], cx
 
 done_with_dofloor_switch_block:
 
-do_floor_switch_case_type_12:
+do_floor_switch_case_type_default:
+add   word ptr [bp - 0Ah], 2
+
 mov   si, word ptr [bp - 0Ah]
-cmp   word ptr [bp + si - 0220h], 0
-jl    exit_ev_dofloor_and_return_rtn
-jmp   loop_next_secnum_dofloor
+cmp   word ptr [si], 0
+jnl   loop_next_secnum_dofloor
 exit_ev_dofloor_and_return_rtn:
+no_sectors_in_list_exit:
 SELFMODIFY_set_dofloor_return:
 mov   al, 010h
 LEAVE_MACRO 
@@ -524,6 +538,7 @@ do_floor_switch_case_type_raiseFloorTurbo:
 mov   word ptr ds:[si + FLOORMOVE_T.floormove_speed], (FLOORSPEED * 4)
 
 do_raisefloor:
+mov   dx, word ptr es:[di + SECTOR_T.sec_floorheight]
 call  P_FindNextHighestFloor_
 mov   dl, 1
 jmp   write_floordestheight_secnum_dir
@@ -670,7 +685,7 @@ mov   byte ptr ds:[si + FLOORMOVE_T.floormove_direction], dl ; 1
 
 
 mov   word ptr cs:[selfmodify_check_secnum+4], ax
-
+xor   dx, dx
 call  P_FindHighestOrLowestFloorSurrounding_
 
 mov   word ptr ds:[si + FLOORMOVE_T.floormove_floordestheight], ax  ; STORE FLOORDESTHEIGHT FOR LATER
