@@ -8,7 +8,7 @@
 #include "p_inter.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2487
+#define CONSTANTS_COUNT 2491
 #define LOCALS_COUNT 22
 
 
@@ -230,6 +230,8 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"SIZEOF_LINE_T",
 	"SIZEOF_P_SPEC_ANIM_T",
 	"SIZEOF_BUTTON_T",
+	"SIZEOF_FLOORMOVE_T",
+	"SIZEOF_VLDOOR_T",
 	
     "SPRITES_SEGMENT",
     "MAXVISSPRITES",
@@ -2547,7 +2549,8 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"BUTTONMIDDLE",
 	"BUTTONBOTTOM",
 	"FLOORSPEED",
-
+	"VDOORSPEED",
+	"VDOORWAIT",
 	"MAXCEILINGS",
 	"MAXPLATS",
 	"MAXBUTTONS",
@@ -2798,6 +2801,8 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	sizeof(line_t),
 	sizeof(p_spec_anim_t),
 	sizeof(button_t),
+	sizeof(floormove_t),
+	sizeof(vldoor_t),
 	
 	sprites_segment,
     MAXVISSPRITES,
@@ -5120,7 +5125,8 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	BUTTONMIDDLE,
 	BUTTONBOTTOM,
 	FLOORSPEED,
-
+	VDOORSPEED,
+	VDOORWAIT,
 	MAXCEILINGS,
 	MAXPLATS,
 	MAXBUTTONS,

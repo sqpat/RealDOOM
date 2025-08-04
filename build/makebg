@@ -96,6 +96,7 @@ GLOBOBJS = $(GLOBOBJS) &
  p_init.obj &
  p_ceilng.obj &
  p_doors.obj &
+ p_doorsa.obj &
  p_enemy.obj &
  p_floor.obj &
  p_inter.obj &

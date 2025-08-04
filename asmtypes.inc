@@ -169,7 +169,7 @@ SECTOR_T STRUC
 
 SECTOR_T ENDS
 
-
+ 
 
 
 SECTOR_PHYSICS_T STRUC 
@@ -502,3 +502,15 @@ CEILING_T STRUC
     
 
 CEILING_T ENDS
+
+VLDOOR_T STRUC
+
+    vldoor_type               db ?  ; 0
+    vldoor_secnum             dw ?  ; 1
+    vldoor_topheight          dw ?  ; 3
+    vldoor_speed              dw ?  ; 5
+    vldoor_direction          dw ?  ; 7
+    vldoor_topwait            dw ?  ; 9
+    vldoor_topcountdown       dw ?  ; 0A
+
+VLDOOR_T ENDS

@@ -56,6 +56,7 @@ file s_sound.obj
 file s_sbsfx.obj
 file p_ceilng.obj
 file p_doors.obj
+file p_doorsa.obj
 file p_floor.obj
 file p_inter.obj
 file p_lights.obj

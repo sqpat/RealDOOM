@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/04 13:13:56
+Created on:       25/08/04 03:24:10
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -60,6 +60,7 @@ s_sound_TEXT           CODE           AUTO           0bc4:0000       0000067a
 s_sbsfx_TEXT           CODE           AUTO           0bc4:0680       000017f3
 P_CEILNG_TEXT          CODE           AUTO           0bc4:1e74       00000298
 p_doors_TEXT           CODE           AUTO           0bc4:2110       00000692
+P_DOORSA_TEXT          CODE           AUTO           0bc4:27a2       00000000
 P_FLOOR_TEXT           CODE           AUTO           0bc4:27a2       000004cb
 P_INTER_TEXT           CODE           AUTO           0bc4:2c6e       0000089e
 p_lights_TEXT          CODE           AUTO           0bc4:3510       000003ed
@@ -811,6 +812,9 @@ Module: p_doors.obj(C:\REALDOOM\p_doors.c)
 0bc4:24e2      EV_VerticalDoor_
 0bc4:26fe      P_SpawnDoorCloseIn30_
 0bc4:2746      P_SpawnDoorRaiseIn5Mins_
+Module: p_doorsa.obj(p_doorsa.ASM)
+0bc4:27a2*     P_DOORS_ENDMARKER_
+0bc4:27a2*     P_DOORS_STARTMARKER_
 Module: p_floor.obj(p_floor.ASM)
 0bc4:2b35      EV_BuildStairs_
 0bc4:2918      EV_DoFloor_
