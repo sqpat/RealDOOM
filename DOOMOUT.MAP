@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/03 23:34:35
+Created on:       25/08/04 08:54:03
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -60,8 +60,8 @@ s_sound_TEXT           CODE           AUTO           0bc4:0000       0000067a
 s_sbsfx_TEXT           CODE           AUTO           0bc4:0680       000017f3
 P_CEILNG_TEXT          CODE           AUTO           0bc4:1e74       00000298
 p_doors_TEXT           CODE           AUTO           0bc4:2110       00000692
-P_FLOOR_TEXT           CODE           AUTO           0bc4:27a2       0000052d
-P_INTER_TEXT           CODE           AUTO           0bc4:2cd0       0000089e
+P_FLOOR_TEXT           CODE           AUTO           0bc4:27a2       00000527
+P_INTER_TEXT           CODE           AUTO           0bc4:2cca       0000089e
 p_lights_TEXT          CODE           AUTO           0bc4:3570       000003ed
 p_plats_TEXT           CODE           AUTO           0bc4:3960       00000415
 P_SPEC_TEXT            CODE           AUTO           0bc4:3d76       00000a29
@@ -812,9 +812,9 @@ Module: p_doors.obj(C:\REALDOOM\p_doors.c)
 0bc4:26fe      P_SpawnDoorCloseIn30_
 0bc4:2746      P_SpawnDoorRaiseIn5Mins_
 Module: p_floor.obj(p_floor.ASM)
-0bc4:2b3e      EV_BuildStairs_
+0bc4:2b38      EV_BuildStairs_
 0bc4:2918      EV_DoFloor_
-0bc4:2ccf*     P_FLOOR_ENDMARKER_
+0bc4:2cc9*     P_FLOOR_ENDMARKER_
 0bc4:27d8      T_MovePlaneFloorDown_
 0bc4:27a2*     P_FLOOR_STARTMARKER_
 0bc4:284d      T_MovePlaneFloorUp_
@@ -822,18 +822,18 @@ Module: p_floor.obj(p_floor.ASM)
 0bc4:27a2      T_MovePlaneCeilingDown_
 0bc4:27bc      T_MovePlaneCeilingUp_
 Module: p_inter.obj(p_inter.ASM)
-0bc4:2ed5      P_TouchSpecialThing_
-0bc4:2d99*     P_GiveWeapon_
-0bc4:2e1d*     P_GiveCard_
-0bc4:32da      P_DamageMobj_
-0bc4:2dda*     P_GiveBody_
-0bc4:2dfe*     P_GiveArmor_
-0bc4:2cd0*     P_INTER_STARTMARKER_
-0bc4:310f*     P_KillMobj_
-0bc4:2ce0*     P_GiveAmmo_
-0bc4:2e37      P_GivePower_
-0bc4:326f*     getMassThrust_
-0bc4:356e*     P_INTER_ENDMARKER_
+0bc4:2ecf      P_TouchSpecialThing_
+0bc4:2d93*     P_GiveWeapon_
+0bc4:2e17*     P_GiveCard_
+0bc4:32d4      P_DamageMobj_
+0bc4:2dd4*     P_GiveBody_
+0bc4:2df8*     P_GiveArmor_
+0bc4:2cca*     P_INTER_STARTMARKER_
+0bc4:3109*     P_KillMobj_
+0bc4:2cda*     P_GiveAmmo_
+0bc4:2e31      P_GivePower_
+0bc4:3269*     getMassThrust_
+0bc4:3568*     P_INTER_ENDMARKER_
 Module: p_lights.obj(C:\REALDOOM\p_lights.c)
 0bc4:3570      T_FireFlicker_
 0bc4:35d0      P_SpawnFireFlicker_

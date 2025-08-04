@@ -394,7 +394,7 @@ jl    no_sectors_in_list_exit
 loop_next_secnum_dofloor:
 
 mov   cx, word ptr [si]
-push  si ; bp - 204h. pop at end of loop...
+push  si ; bp - 0202h. pop at end of loop...
 
 mov   ax, TF_MOVEFLOOR_HIGHBITS
 cwd   ; zero dx
@@ -412,8 +412,8 @@ mov   es, di
 mov   di, cx
 mov   byte ptr cs:[SELFMODIFY_set_dofloor_return+1], 1
 ; ax is floor ref
-mov   word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax ;floor ref
 SHIFT_MACRO shl  di 4  
+mov   word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax ;floor ref
 
 ; di is sectors offset
 ; si is floor
@@ -437,23 +437,25 @@ mov   byte ptr ds:[si + FLOORMOVE_T.floormove_crush], bh ; known 0
 ; dl is 1 
 
 cmp   bl, FLOOR_RAISEFLOOR512
-ja    done_with_dofloor_switch_block
+ja    do_floor_switch_case_type_default
 sal   bx, 1
 mov   dl, 1 ; "true" used for many calls.
 jmp   word ptr cs:[bx + _do_floor_jump_table]
 
+; BEGIN SWITCH BLOCK
+; BEGIN SWITCH BLOCK
 
 do_floor_switch_case_type_lowerFloorToLowest:
-xor   dx, dx
+cwd   ; secnum should be below 0x8000...
 do_floor_switch_case_type_lowerfloor:
-xor   bx, bx
+
 mov   word ptr ds:[si + FLOORMOVE_T.floormove_speed], FLOORSPEED
-find_highestlowest_dont_set_bx:
+find_highestlowest:
 call  P_FindHighestOrLowestFloorSurrounding_
 mov   dl, -1 ; dir negative.
 
-test  bh, bh
-je    write_floordestheight_secnum_dir
+cmp   bx, (FLOOR_TURBOLOWER * 2)
+jne   write_floordestheight_secnum_dir
 ;turbo case
 mov   bx, SECTORS_SEGMENT
 mov   es, bx
@@ -490,9 +492,9 @@ retf
 
 
 do_floor_switch_case_type_turboLower:
-mov   bh, 1
+
 mov   word ptr ds:[si + FLOORMOVE_T.floormove_speed], FLOORSPEED * 4
-jmp   find_highestlowest_dont_set_bx
+jmp   find_highestlowest
 
 do_floor_switch_case_type_raiseFloorCrush:
 mov   byte ptr ds:[si + FLOORMOVE_T.floormove_crush], dl ; 1
@@ -500,7 +502,7 @@ mov   byte ptr ds:[si + FLOORMOVE_T.floormove_crush], dl ; 1
 do_floor_switch_case_type_raiseFloor:
 mov   word ptr ds:[si + FLOORMOVE_T.floormove_speed], FLOORSPEED
 
-xor   dx, dx
+cwd   ; secnum should be below 0x8000...
 call  P_FindLowestOrHighestCeilingSurrounding_
 
 mov   dx, word ptr es:[di + SECTOR_T.sec_floorheight]
@@ -582,14 +584,14 @@ add   ax, bx
 
 mov   word ptr cs:[SELFMODIFY_set_raisetotexture_linecount + 2], ax ; set end case.
 
-mov   ax, 07FFFh ; maxshort
+mov   ax, MAXSHORT ; 07FFFh
 
 ; loop from bx to dx
 loop_next_secnum_raisetotexture:
 
 ; if twosided?
 mov   cx, word ptr ds:[bx]
-xchg  cx, bx
+xchg  cx, bx  ; cx gets old loop iter
 mov   dx, LINEFLAGSLIST_SEGMENT
 mov   es, dx
 test  byte ptr es:[bx], ML_TWOSIDED
@@ -627,13 +629,14 @@ mov   es, dx
 ;        minsize = textureheights[sidebottomtexture]+1;
 ;    }
 
-xor   dx, dx
+cwd   ; maxshort was 7fff... high bit always off, zero dx.
 mov   dl, byte ptr es:[bx]
 cmp   dx, ax
 jg    dont_set_new_min_a
 xchg  ax, dx
 dont_set_new_min_a:
 
+cwd   ; maxshort was 7fff... high bit always off, zero dx.
 mov   dl, byte ptr es:[di]
 cmp   dx, ax
 jg    dont_set_new_min_b
@@ -651,7 +654,7 @@ SELFMODIFY_set_raisetotexture_linecount:
 cmp   bx, 01000h
 jl    loop_next_secnum_raisetotexture
 
-;			  floor->floordestheight = sectors[floor->secnum].floorheight + (minsize << SHORTFLOORBITS);
+;	floor->floordestheight = sectors[floor->secnum].floorheight + (minsize << SHORTFLOORBITS);
 
 ; al was a byte, minsize - 1
 
@@ -660,10 +663,9 @@ SHIFT_MACRO shl ax SHORTFLOORBITS
 SELFMODIFY_add_floorheight:
 add   ax, 01000h ;   word ptr es:[di+ SECTOR_T.sec_floorheight] 
 mov   word ptr ds:[si + FLOORMOVE_T.floormove_floordestheight], ax
-
-
-
 jmp   done_with_dofloor_switch_block
+
+
 do_floor_switch_case_type_lowerAndChange:
 
 mov   word ptr ds:[si + FLOORMOVE_T.floormove_secnum], ax
@@ -672,7 +674,7 @@ mov   byte ptr ds:[si + FLOORMOVE_T.floormove_direction], dl ; 1
 
 
 mov   word ptr cs:[selfmodify_check_secnum+4], ax
-xor   dx, dx
+cwd   ; secnum should be below 0x8000...
 call  P_FindHighestOrLowestFloorSurrounding_
 
 mov   word ptr ds:[si + FLOORMOVE_T.floormove_floordestheight], ax  ; STORE FLOORDESTHEIGHT FOR LATER
