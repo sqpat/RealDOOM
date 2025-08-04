@@ -567,7 +567,6 @@ int16_t __near EV_BuildStairs ( uint8_t	linetag,stair_e	type ) {
 				floor->direction = 1;
 				floor->secnum = tsecOffset;
 				floor->speed = speed;
-				floor->floordestheight = height;
 				sectors_physics[tsecOffset].specialdataRef = floorRef;
 				ok = 1;
 				break;
