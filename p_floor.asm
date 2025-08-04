@@ -299,7 +299,7 @@ pop   bx ; bp - 4
 cmp  byte ptr ds:[si + FLOORMOVE_T.floormove_direction], al
 je   dont_change_specials
 jg   check_for_raising_donut
-;jl   label_14
+; fall thru jl
 cmp   al, FLOOR_LOWERANDCHANGE
 jmp   do_type_compare
 
@@ -320,10 +320,10 @@ mov   byte ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], al
 
 dont_change_specials:
 pop   ax  ; bp - 2 retrieve floorRef
-mov   dx, SFX_PSTOP
 
 call  P_RemoveThinker_
 xchg  ax, di
+mov   dx, SFX_PSTOP
 
 call  S_StartSoundWithParams_
    
@@ -340,8 +340,8 @@ ENDP
 
 _do_floor_jump_table:
 dw do_floor_switch_case_type_lowerfloor, do_floor_switch_case_type_lowerFloorToLowest, do_floor_switch_case_type_turboLower, do_floor_switch_case_type_raiseFloor
-dw do_floor_switch_case_type_raiseFloorToNearest, do_floor_switch_case_type_6, do_floor_switch_case_type_7, do_floor_switch_case_type_raiseFloor24
-dw do_floor_switch_case_type_9, do_floor_switch_case_type_raiseFloorCrush, do_floor_switch_case_type_raiseFloorTurbo, do_floor_switch_case_type_12, do_floor_switch_case_type_13 
+dw do_floor_switch_case_type_raiseFloorToNearest, do_floor_switch_case_type_raiseToTexture, do_floor_switch_case_type_lowerAndChange, do_floor_switch_case_type_raiseFloor24
+dw do_floor_switch_case_type_raiseFloor24AndChange, do_floor_switch_case_type_raiseFloorCrush, do_floor_switch_case_type_raiseFloorTurbo, do_floor_switch_case_type_12, do_floor_switch_case_type_raiseFloor512 
 
 
 
@@ -377,7 +377,10 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 0220h
-mov   cx, dx
+
+SHIFT_MACRO shl   dx 4
+mov   word ptr cs:[SELFMODIFY_set_frontsector+1], dx
+
 xor   bh, bh
 mov   word ptr cs:[SELFMODIFY_set_dofloor_type + 1], bx
 mov   byte ptr cs:[SELFMODIFY_set_dofloor_return+1], 0
@@ -389,12 +392,11 @@ mov   word ptr [bp - 0Ah], 0
 
 cbw  
 xor   bx, bx
-SHIFT_MACRO shl   cx 4
 call  P_FindSectorsFromLineTag_
-mov   word ptr [bp - 018h], cx
 cmp   word ptr [bp - 0220h], 0
 
 jl    no_sectors_in_list_exit
+
 loop_next_secnum_dofloor:
 mov   si, word ptr [bp - 0Ah]
 mov   cx, word ptr [bp + si - 0220h]
@@ -423,7 +425,7 @@ mov   word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef]
 
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
-mov   word ptr [bp - 4], ax
+
 
 
 mov  ax, cx  ; ax gets secnum too
@@ -466,7 +468,7 @@ mov   es, bx
 cmp   ax, word ptr es:[di + SECTOR_T.sec_floorheight]
 je    write_floordestheight_secnum_dir
 
-add   word ptr ds:[si + FLOORMOVE_T.floormove_floordestheight], (8 SHL SHORTFLOORBITS)
+add   ax, (8 SHL SHORTFLOORBITS)
 
 write_floordestheight_secnum_dir:
 mov   byte ptr ds:[si + FLOORMOVE_T.floormove_direction], dl
@@ -493,7 +495,7 @@ retf
 
 do_floor_switch_case_type_turboLower:
 mov   bh, 1
-mov   word ptr ds:[si + FLOORMOVE_T.floormove_speed], FLOORSPEED * 2
+mov   word ptr ds:[si + FLOORMOVE_T.floormove_speed], FLOORSPEED * 4
 jmp   find_highestlowest_dont_set_bx
 
 do_floor_switch_case_type_raiseFloorCrush:
@@ -524,207 +526,236 @@ jmp   done_with_dofloor_switch_block
 
 
 do_floor_switch_case_type_raiseFloorTurbo:
-mov   word ptr ds:[bx + 9], (FLOORSPEED*4)
+mov   word ptr ds:[si + FLOORMOVE_T.floormove_speed], (FLOORSPEED * 4)
+
 do_raisefloor:
 call  P_FindNextHighestFloor_
 mov   dl, 1
 jmp   write_floordestheight_secnum_dir
 
 do_floor_switch_case_type_raiseFloorToNearest:
-mov   word ptr ds:[bx + 9], 8
+mov   word ptr ds:[si + FLOORMOVE_T.floormove_speed], FLOORSPEED
+
 jmp   do_raisefloor
+
+do_floor_switch_case_type_raiseFloor24AndChange:
+SELFMODIFY_set_frontsector:
+mov   ax, 01000h
+xchg  ax, di
+mov   dh, byte ptr es:[di + SECTOR_T.sec_floorpic]
+mov   di, word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_special] ; high byte garbage.
+xchg  ax, di
+mov   byte ptr es:[di + SECTOR_T.sec_floorpic], dh
+mov   byte ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_special], al
+
+; fall thru
 
 do_floor_switch_case_type_raiseFloor24:
 mov   ax, (24 SHL SHORTFLOORBITS)
 do_raisefloor_fixed:
 add   ax, word ptr es:[di+ SECTOR_T.sec_floorheight] 
-mov   dl, 1
+mov   word ptr ds:[si + FLOORMOVE_T.floormove_speed], FLOORSPEED
+;mov   dl, 1 ; dl already 1.
 jmp   write_floordestheight_secnum_dir
-do_floor_switch_case_type_13:
+do_floor_switch_case_type_raiseFloor512:
 mov   ax, (512 SHL SHORTFLOORBITS)
-hmp   do_raisefloor_fixed
+jmp   do_raisefloor_fixed
 
-jmp   done_with_dofloor_switch_block
-do_floor_switch_case_type_9:
-mov   byte ptr ds:[bx + 4], 1
-mov   word ptr ds:[bx + 2], cx
-mov   ax, SECTORS_SEGMENT
-mov   si, word ptr ds:[bx + 2]
-mov   word ptr ds:[bx + 9], 8
-shl   si, 4
-mov   es, ax
-mov   cx, word ptr es:[si]
-add   cx,  (24 SHL SHORTFLOORBITS)
-mov   ax, word ptr [bp - 018h]
-mov   word ptr ds:[bx + 7], cx
-mov   bx, ax
-mov   word ptr [bp - 020h], ax
-mov   al, byte ptr es:[bx + 4]
-add   bx, 4
-les   bx, dword ptr [bp - 6]
-mov   word ptr [bp - 01Eh], 0
-mov   byte ptr es:[bx + 4], al
-mov   bx, word ptr [bp - 020h]
-add   bx, _sectors_physics + SECTOR_PHYSICS_T.secp_special
-mov   al, byte ptr ds:[bx]
-mov   bx, word ptr [bp - 0Eh]
-mov   byte ptr ds:[bx + SECTOR_PHYSICS_T.secp_special], al
-jmp   done_with_dofloor_switch_block
-do_floor_switch_case_type_6:
-mov   byte ptr ds:[bx + 4], 1
-mov   word ptr [bp - 8], MAXSHORT
-mov   word ptr ds:[bx + 9], 8
-mov   di, word ptr [bp - 6]
-mov   word ptr ds:[bx + 2], cx
-mov   bx, SECTORS_SEGMENT
-mov   es, bx
-xor   bx, bx
-cmp   word ptr es:[di + SECTOR_T.sec_linecount], 0
-jg    label_23
-jmp   label_24
-label_23:
-mov   ax, word ptr [bp - 01Ah]
-add   ax, ax
-mov   word ptr [bp - 012h], ax
-label_29:
-mov   dx, bx
-mov   ax, cx
-call  twoSided_
-test  ax, ax
-je    label_25
-mov   ax, word ptr [bp - 012h]
-mov   di, ax
-add   di, _linebuffer
-mov   di, word ptr ds:[di]
-mov   ax, LINES_SEGMENT
-shl   di, 2
-mov   es, ax
-mov   ax, word ptr es:[di]
-mov   dx, word ptr es:[di + 2]
-mov   di, SIDES_SEGMENT
-shl   ax, 3
-mov   es, di
-mov   di, ax
-add   di, 2
-mov   ax, TEXTUREHEIGHTS_SEGMENT
-mov   di, word ptr es:[di]
-mov   es, ax
-mov   al, byte ptr es:[di]
-xor   ah, ah
-inc   ax
-cmp   ax, word ptr [bp - 8]
-jge   label_26
-mov   word ptr [bp - 8], ax
-label_26:
-mov   di, dx
-mov   ax, SIDES_SEGMENT
-shl   di, 3
-mov   es, ax
-add   di, 2
-mov   ax, TEXTUREHEIGHTS_SEGMENT
-mov   di, word ptr es:[di]
-mov   es, ax
-mov   al, byte ptr es:[di]
-xor   ah, ah
-inc   ax
-cmp   ax, word ptr [bp - 8]
-jge   label_25
-mov   word ptr [bp - 8], ax
-label_25:
-les   di, dword ptr [bp - 6]
-inc   bx
-add   word ptr [bp - 012h], 2
-cmp   bx, word ptr es:[di + SECTOR_T.sec_linecount]
-jl    label_29
-label_24:
-mov   ax, SECTORS_SEGMENT
-mov   bx, word ptr ds:[si + 2]
-mov   dx, word ptr [bp - 8]
-shl   bx, 4
-mov   es, ax
-shl   dx, 3
-mov   ax, word ptr es:[bx]
-add   ax, dx
-mov   word ptr ds:[si + 7], ax
-jmp   done_with_dofloor_switch_block
-do_floor_switch_case_type_7:
-mov   di, word ptr [bp - 6]
-mov   byte ptr ds:[bx + 4], -1
-mov   ax, cx
-mov   word ptr ds:[bx + 9], 8
-xor   dx, dx
-mov   word ptr ds:[bx + 2], cx
-call  P_FindHighestOrLowestFloorSurrounding_
-mov   word ptr ds:[bx + 7], ax
-mov   ax, SECTORS_SEGMENT
-mov   es, bx
-mov   al, byte ptr es:[di + 4]
-mov   byte ptr ds:[bx + 6], al
-xor   bx, bx
-cmp   word ptr es:[di + SECTOR_T.sec_linecount], 0
-jg    label_50
-jmp   done_with_dofloor_switch_block
-label_50:
-mov   ax, word ptr [bp - 01Ah]
-add   ax, ax
-mov   word ptr [bp - 010h], ax
-label_34:
-mov   dx, bx
-mov   ax, cx
-call  twoSided_
-test  ax, ax
-je    label_31
-mov   ax, word ptr [bp - 010h]
-mov   di, ax
 
-add   di, _linebuffer
-mov   ax, word ptr ds:[di]
-mov   di, word ptr ds:[di]
-mov   dx, LINES_PHYSICS_SEGMENT
-shl   di, 4
+
+do_floor_switch_case_type_raiseToTexture:
+
+mov   word ptr ds:[si + FLOORMOVE_T.floormove_secnum], ax
+mov   word ptr ds:[si + FLOORMOVE_T.floormove_speed], FLOORSPEED
+mov   byte ptr ds:[si + FLOORMOVE_T.floormove_direction], dl ; 1
+
+
+
+push  word ptr es:[di + SECTOR_T.sec_floorheight]
+pop   word ptr cs:[SELFMODIFY_add_floorheight+1]
+
+mov   bx, word ptr es:[di + SECTOR_T.sec_linesoffset]
+mov   ax, word ptr es:[di + SECTOR_T.sec_linecount]
+
+sal   bx, 1
+add   bx, _linebuffer
+
+sal   ax, 1
+add   ax, bx
+
+mov   word ptr cs:[SELFMODIFY_set_raisetotexture_linecount + 2], ax ; set end case.
+
+mov   ax, 07FFFh ; maxshort
+
+; loop from bx to dx
+loop_next_secnum_raisetotexture:
+
+; if twosided?
+mov   cx, word ptr ds:[bx]
+xchg  cx, bx
+mov   dx, LINEFLAGSLIST_SEGMENT
 mov   es, dx
-shl   ax, 2
-cmp   cx, word ptr es:[di + LINE_PHYSICS_T.lp_frontsecnum]
-jne   label_32
-mov   di, LINES_SEGMENT
-mov   es, di
-mov   di, ax
-mov   cx, word ptr es:[di + 2]
-les   di, dword ptr [bp - 6]
-mov   ax, word ptr es:[di]
-cmp   ax, word ptr ds:[si + 7]
-jne   label_31
-mov   bx, di
-mov   al, byte ptr es:[bx + 4]
-mov   bx, word ptr [bp - 0Eh]
-mov   byte ptr ds:[si + 6], al
-mov   al, byte ptr ds:[bx + SECTOR_PHYSICS_T.secp_special]
-mov   byte ptr ds:[si + 5], al
-jmp   done_with_dofloor_switch_block
-label_32:
-mov   di, LINES_SEGMENT
-mov   es, di
-mov   di, ax
-mov   cx, word ptr es:[di]
-les   di, dword ptr [bp - 6]
-mov   ax, word ptr es:[di]
-cmp   ax, word ptr ds:[si + 7]
-jne   label_31
-mov   bx, di
-mov   al, byte ptr es:[bx + 4]
-mov   bx, word ptr [bp - 0Eh]
-mov   byte ptr ds:[si + 6], al
-mov   al, byte ptr ds:[bx + SECTOR_PHYSICS_T.secp_special]
-mov   byte ptr ds:[si + 5], al
-jmp   done_with_dofloor_switch_block
-label_31:
-les   di, dword ptr [bp - 6]
+test  byte ptr es:[bx], ML_TWOSIDED
+je    continue_secnum_raisetotextureloop
+
+
+mov   dx, LINES_SEGMENT
+mov   es, dx
+
+
+SHIFT_MACRO shl       bx 4
+
+
+; cx has old loop iter
+; bx has lines ptr.
+
+les   bx, dword ptr es:[bx + LINE_T.l_sidenum + (0 * 2)] ; side 0
+mov   di, es ; side 1
+mov   dx, SIDES_SEGMENT
+mov   es, dx
+
+SHIFT_MACRO sal bx 3
+mov   bx, word ptr es:[bx + SIDE_T.s_bottomtexture] ; side0bottomtexture
+
+SHIFT_MACRO sal di 3
+mov   di, word ptr es:[di + SIDE_T.s_bottomtexture] ; side1bottomtexture
+
+; bx has side 0 bottom tex
+; di has side 1 bottom tex
+
+mov   dx, TEXTUREHEIGHTS_SEGMENT
+mov   es, dx
+
+;    if ((textureheights[sidebottomtexture]+1) < minsize) {
+;        minsize = textureheights[sidebottomtexture]+1;
+;    }
+
+xor   dx, dx
+mov   dl, byte ptr es:[bx]
+cmp   dx, ax
+jg    dont_set_new_min_a
+xchg  ax, dx
+dont_set_new_min_a:
+
+mov   dl, byte ptr es:[di]
+cmp   dx, ax
+jg    dont_set_new_min_b
+xchg  ax, dx
+dont_set_new_min_b:
+
+
+
+
+continue_secnum_raisetotextureloop:
+mov   bx, cx ; restore bx loop counter
 inc   bx
-add   word ptr [bp - 010h], 2
-cmp   bx, word ptr es:[di + SECTOR_PHYSICS_T.secp_linecount]
-jge   label_33
-jmp   label_34
-label_33:
+inc   bx
+SELFMODIFY_set_raisetotexture_linecount:
+cmp   bx, 01000h
+jl    loop_next_secnum_raisetotexture
+
+;			  floor->floordestheight = sectors[floor->secnum].floorheight + (minsize << SHORTFLOORBITS);
+
+; al was a byte, minsize - 1
+
+inc   ax
+SHIFT_MACRO shl ax SHORTFLOORBITS
+SELFMODIFY_add_floorheight:
+add   ax, 01000h ;   word ptr es:[di+ SECTOR_T.sec_floorheight] 
+mov   word ptr ds:[si + FLOORMOVE_T.floormove_floordestheight], ax
+
+
+
+jmp   done_with_dofloor_switch_block
+do_floor_switch_case_type_lowerAndChange:
+
+mov   word ptr ds:[si + FLOORMOVE_T.floormove_secnum], ax
+mov   word ptr ds:[si + FLOORMOVE_T.floormove_speed], FLOORSPEED
+mov   byte ptr ds:[si + FLOORMOVE_T.floormove_direction], dl ; 1
+
+
+mov   word ptr cs:[selfmodify_check_secnum+4], ax
+
+call  P_FindHighestOrLowestFloorSurrounding_
+
+mov   word ptr ds:[si + FLOORMOVE_T.floormove_floordestheight], ax  ; STORE FLOORDESTHEIGHT FOR LATER
+mov   dl, byte ptr es:[di + SECTOR_T.sec_floorpic]
+mov   byte ptr ds:[si + FLOORMOVE_T.floormove_texture], dl  
+
+
+; ax is floordestheight for loop
+
+; cx and di and bx are free
+; bx will be loop counter.
+
+mov   bx, word ptr es:[di + SECTOR_T.sec_linesoffset]
+mov   cx, word ptr es:[di + SECTOR_T.sec_linecount]
+
+sal   bx, 1
+add   bx, _linebuffer
+
+sal   cx, 1
+add   cx, bx
+
+mov   word ptr cs:[SELFMODIFY_set_lowerandchange_linecount + 2], cx ; set end case.
+
+loop_next_secnum_lowerandchange:
+
+
+; if twosided?
+mov   cx, word ptr ds:[bx]
+xchg  cx, bx
+mov   dx, LINEFLAGSLIST_SEGMENT
+mov   es, dx
+test  byte ptr es:[bx], ML_TWOSIDED
+je    continue_secnum_lowerandchangeloop
+
+
+;	if (sideline_physics->frontsecnum == secnum) {
+
+mov   dx, LINES_PHYSICS_SEGMENT
+mov   es, dx
+
+SHIFT_MACRO shl       bx 4
+
+
+selfmodify_check_secnum:
+cmp   word ptr es:[bx + LINE_PHYSICS_T.lp_frontsecnum], 01000h 
+mov   dx, LINES_SEGMENT
+mov   es, dx
+mov   di, bx
+les   bx, dword ptr es:[bx + di + LINE_T.l_sidenum + (0 * 2)] ; side 0 in bx, 1 in di
+
+jne   set_sector_values_and_break_loop
+mov   bx, es
+jmp   set_sector_values_and_break_loop
+
+
+
+
+continue_secnum_lowerandchangeloop:
+mov   bx, cx ; restore bx loop countr
+
+inc   bx
+inc   bx
+SELFMODIFY_set_lowerandchange_linecount:
+cmp   bx, 01000h
+jl    loop_next_secnum_lowerandchange
+
+
+
+jmp   done_with_dofloor_switch_block
+set_sector_values_and_break_loop:
+
+
+SHIFT_MACRO shl bx 4
+mov   ax, SECTORS_SEGMENT
+mov   es, ax
+mov   al, byte ptr es:[bx + SECTOR_T.sec_floorpic]
+mov   byte ptr ds:[si + FLOORMOVE_T.floormove_texture], al
+mov   al, byte ptr es:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special]
+mov   byte ptr ds:[si + FLOORMOVE_T.floormove_newspecial], al
+
 jmp   done_with_dofloor_switch_block
 
 
