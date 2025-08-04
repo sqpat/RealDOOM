@@ -511,6 +511,7 @@ VLDOOR_T STRUC
     vldoor_speed              dw ?  ; 5
     vldoor_direction          dw ?  ; 7
     vldoor_topwait            dw ?  ; 9
-    vldoor_topcountdown       dw ?  ; 0A
+    vldoor_topcountdown       dw ?  ; 0B
 
 VLDOOR_T ENDS
+    

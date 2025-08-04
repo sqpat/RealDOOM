@@ -23,7 +23,6 @@ EXTRN S_StartSoundWithParams_:PROC
 EXTRN P_RemoveThinker_:PROC
 EXTRN _P_ChangeSector:DWORD
 EXTRN P_FindHighestOrLowestFloorSurrounding_:NEAR
-EXTRN twoSided_:NEAR
 EXTRN P_FindLowestOrHighestCeilingSurrounding_:NEAR
 EXTRN P_FindSectorsFromLineTag_:NEAR
 EXTRN P_FindNextHighestFloor_:NEAR

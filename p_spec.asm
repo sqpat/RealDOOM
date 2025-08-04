@@ -62,35 +62,6 @@ PUBLIC  P_SPEC_STARTMARKER_
 ENDP
 
 
-PROC    twoSided_ NEAR
-PUBLIC  twoSided_
-
-;int16_t __near twoSided( int16_t	sector,int16_t	line ){
-
-;	line = sectors[sector].linesoffset + line;
-;	line = linebuffer[line];
-;   return lineflagslist[line] & ML_TWOSIDED;
-
-
-
-push      bx
-SHIFT_MACRO shl       ax 4
-xchg      ax, bx
-mov       ax, SECTORS_SEGMENT
-mov       es, ax
-mov       bx, word ptr es:[bx + SECTOR_T.sec_linesoffset]
-add       bx, dx
-sal       bx, 1
-mov       bx, word ptr ds:[bx + _linebuffer]
-mov       ax, LINEFLAGSLIST_SEGMENT
-mov       es, ax
-mov       al, byte ptr es:[bx]
-and       ax, ML_TWOSIDED
-pop       bx
-ret       
-
-ENDP
-
 
 
 
