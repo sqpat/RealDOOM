@@ -47,7 +47,7 @@ SHORTFLOORBITS = 3
 PROC    P_DOORS_STARTMARKER_ NEAR
 PUBLIC  P_DOORS_STARTMARKER_
 ENDP
-COMMENT @
+
 _jump_table_vertical_door:
 dw switch_case_verticaldoor_1_case_0, switch_case_verticaldoor_1_case_1, switch_case_verticaldoor_1_case_2, switch_case_verticaldoor_1_case_3
 _jump_table_vertical_door_2:
@@ -137,7 +137,8 @@ pop   si
 pop   cx
 pop   bx
 ret   
-switch_case_verticaldoor_1_case_3:
+switch_case_verticaldoor_1_case_1:
+
 dec   word ptr ds:[si + VLDOOR_T.vldoor_topcountdown]
 jne   exit_t_verticaldoor
 mov   al, byte ptr ds:[si]
@@ -180,7 +181,7 @@ pop   si
 pop   cx
 pop   bx
 ret   
-switch_case_verticaldoor_1_case_1:
+switch_case_verticaldoor_1_case_3:
 dec   word ptr ds:[si + VLDOOR_T.vldoor_topcountdown]
 jne   exit_t_verticaldoor
 mov   al, byte ptr ds:[si]
@@ -194,7 +195,7 @@ mov   byte ptr ds:[si], 0
 call  S_StartSoundWithParams_
 LEAVE_MACRO 
 pop   di
-pop   si
+pop   si    
 pop   cx
 pop   bx
 ret   
@@ -524,6 +525,7 @@ jmp   label_18
 _jump_table_locked_door:
 dw switch_block_verticaldoor_case_26, switch_block_verticaldoor_case_27, switch_block_verticaldoor_case_28, switch_block_verticaldoor_case_default
 dw switch_block_verticaldoor_case_default, switch_block_verticaldoor_case_default, switch_block_verticaldoor_case_32, switch_block_verticaldoor_case_33
+dw switch_block_verticaldoor_case_34
 
 
 
@@ -882,7 +884,7 @@ ret
 
 ENDP
 
-@
+
 PROC    P_DOORS_ENDMARKER_ NEAR
 PUBLIC  P_DOORS_ENDMARKER_
 ENDP

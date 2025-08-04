@@ -41,6 +41,7 @@
 //
 // T_VerticalDoor
 //
+/*
 void __near T_VerticalDoor (vldoor_t __near* door, THINKERREF doorRef) {
     result_e	res;
 	int16_t secnum = door->secnum;
@@ -510,3 +511,4 @@ void __near P_SpawnDoorRaiseIn5Mins ( int16_t secnum) {
 
 }
 
+*/
