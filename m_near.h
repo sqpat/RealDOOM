@@ -214,8 +214,6 @@
 #define cachedystep_segment_storage     (*((segment_t __near*)               (_NULL_OFFSET + 0x011A)))
 #define pspriteiscale                   (*((fixed_t   __near*)               (_NULL_OFFSET + 0x011C)))
 
-//#define MULT_256                        (((uint16_t   __near*)               (_NULL_OFFSET + 0x0120)))
-
 #define tmflags1                        (*((int16_t __near*)                 (_NULL_OFFSET + 0x0120)))
 #define tmfloorz                        (*((short_height_t __near*)          (_NULL_OFFSET + 0x0122)))
 #define tmceilingz                      (*((short_height_t __near*)          (_NULL_OFFSET + 0x0124)))
@@ -373,6 +371,7 @@
 #define demoname                        (((int8_t    __near*)                (_NULL_OFFSET + 0x0498)))
 
 #define ems_backfill_page_order         (((int8_t    __near*)                (_NULL_OFFSET + 0x04B8)))
+#define LINEFLAGSLIST_SEGMENT_PTR		(*((segment_t __near*)               (_NULL_OFFSET + 0x04D0)))
 
 
 // 4d0-4df unused by bytes
@@ -381,6 +380,8 @@
 #define braintargets                    (((THINKERREF __near*)               (_NULL_OFFSET + 0x04E0)))
 #define tmbbox                          (((fixed_t_union __near*)            (_NULL_OFFSET + 0x0520)))
 // 530 unused
+#define SECTOR_SEGMENT_PTR				  (*((segment_t __near*)             (_NULL_OFFSET + 0x0530)))
+#define LINES_PHYSICS_SEGMENT_PTR	      (*((segment_t __near*)             (_NULL_OFFSET + 0x0532)))
 #define HU_Start_addr 					  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0534)))
 #define ST_Start_addr 				      (*((uint32_t __near*)              (_NULL_OFFSET + 0x0538)))
 #define P_RemoveThinker_addr 			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x053C)))

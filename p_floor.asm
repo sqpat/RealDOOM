@@ -704,16 +704,15 @@ loop_next_secnum_lowerandchange:
 ; if twosided?
 mov   cx, word ptr ds:[bx]
 xchg  cx, bx
-mov   dx, LINEFLAGSLIST_SEGMENT
-mov   es, dx
+mov   es, ds:[_LINEFLAGSLIST_SEGMENT_PTR]
 test  byte ptr es:[bx], ML_TWOSIDED
 je    continue_secnum_lowerandchangeloop
 
 
 ;	if (sideline_physics->frontsecnum == secnum) {
 
-mov   dx, LINES_PHYSICS_SEGMENT
-mov   es, dx
+mov   es, ds:[_LINES_PHYSICS_SEGMENT_PTR]
+
 
 SHIFT_MACRO shl       bx 4
 
@@ -727,8 +726,7 @@ set_sector_values_and_break_loop:
 
 
 SHIFT_MACRO shl di 4
-mov   ax, SECTORS_SEGMENT
-mov   es, ax
+mov   es, ds:[_SECTOR_SEGMENT_PTR]
 mov   al, byte ptr es:[di + SECTOR_T.sec_floorpic]
 mov   byte ptr ds:[si + FLOORMOVE_T.floormove_texture], al
 mov   al, byte ptr es:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_special]
@@ -775,7 +773,7 @@ sub   sp, 0200h
 
 cmp   dl, STAIRS_TURBO16
 mov   dx, 0C089h ; two byte nop  ; nop if turbo16
-jne   do_type_selfmodify
+je    do_type_selfmodify
 mov   dx, ((SELFMODIFY_check_stairtype_TARGET - SELFMODIFY_check_stairtype_AFTER) SHL 8) + 0EBh
 do_type_selfmodify:
 
@@ -809,8 +807,8 @@ sub   ax, (_thinkerlist + THINKER_T.t_data)
 mov   di, SIZEOF_THINKER_T
 div   di
 
-mov   di, SECTORS_SEGMENT
-mov   es, di
+mov   es, ds:[_SECTOR_SEGMENT_PTR]
+
 
 mov   word ptr cs:[SELFMODIFY_buildstairs_set_secnum_inner + 1], cx
 
@@ -826,7 +824,7 @@ mov   word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef]
 ; ds:si is floor
 ; cx is secnum
 ; ax is floorref
-mov   ax, 1
+mov   ax, 1 ; zero ah
 cwd   ; zero dx
 mov   byte ptr ds:[si + FLOORMOVE_T.floormove_direction], al ; 1
 mov   byte ptr cs:[SELFMODIFY_set_buildstairs_return+1], al ; 1
@@ -853,8 +851,8 @@ add   ax, word ptr es:[di + SECTOR_T.sec_floorheight]
 mov   word ptr ds:[si + FLOORMOVE_T.floormove_speed], dx
 mov   word ptr ds:[si + FLOORMOVE_T.floormove_floordestheight], ax
 xchg  ax, dx ; dx gets height.
+mov   word ptr cs:[SELFMODIFY_set_buildstairs_speed+3], ax  ; write speed
 
-mov   word ptr cs:[SELFMODIFY_set_buildstairs_speed+3], dx
 
 
 ;; BEGIN 2ND LOOP
@@ -863,21 +861,29 @@ mov   word ptr cs:[SELFMODIFY_set_buildstairs_speed+3], dx
 
 loop_next_buildstair_middleloop:
 
+; loop constants
+; secnum self modified ahead
+; si free...
+;  di is sector
+;  dx is height
+;  speed, stairstep selfmodify set ahead
+
 ; we are in the middle (2nd) loop of three. secnum is set either by precondition (pre-2nd loop) or last iteration + break of 3rd loop in DI.
 
-; is there a register 0?
-mov   byte ptr cs:[SELFMODIFY_set_buildstairs_middleloop_ok+1], 0
-
-mov   ax, SECTORS_SEGMENT
-mov   es, ax
 
 
-; LOOP CONSTANT: 
-;			sectorfloorpic = sector->floorpic;
+
+mov   word ptr cs:[SELFMODIFY_set_buildstairs_middleloop_ok], ((SELFMODIFY_set_buildstairs_middleloop_TARGET - SELFMODIFY_set_buildstairs_middleloop_AFTER) SHL 8) + 0EBh
+
+
+
+mov   es, ds:[_SECTOR_SEGMENT_PTR]
+
+
+;	sectorfloorpic = sector->floorpic;
 mov   al, byte ptr es:[di + SECTOR_T.sec_floorpic]
 mov   byte ptr cs:[SELFMODIFY_cmp_buildstairs_floorpic + 4], al
 
-; todo CONFIRM ES IS SECTOR_T
 ; find next sector to raise. iterate over linecount
 mov   bx, word ptr es:[di + SECTOR_T.sec_linesoffset]
 mov   cx, word ptr es:[di + SECTOR_T.sec_linecount]
@@ -897,20 +903,20 @@ loop_next_inner_secnum_buildstairs:
 
 ; 3rd loop values:
 ; es:di is sector
-; ds:si is floor
+; si is unused until end
 ; ds:di + _sectors_physics is sector_physics
 ; bx is current line ptr. gets stored in cx mid loop and restored during iter step.
-; dx is height 
-; some selfmodified constants (floorpic, stairstep, speed)
+; dx continues to be height 
+; some selfmodified constants (floorpic)
 
 mov   cx, word ptr ds:[bx]
-xchg  cx, bx
-mov   ax, LINEFLAGSLIST_SEGMENT
-mov   es, ax
+xchg  cx, bx  ; cx holds on to bx/lineptr.
+
+mov   es, ds:[_LINEFLAGSLIST_SEGMENT_PTR]
 test  byte ptr es:[bx], ML_TWOSIDED
 je    continue_inner_secnum_buildstairs_loop
-mov   ax, LINES_PHYSICS_SEGMENT
-mov   es, ax
+mov   es, ds:[_LINES_PHYSICS_SEGMENT_PTR]
+
 SHIFT_MACRO  sal bx 4
 
 SELFMODIFY_buildstairs_set_secnum_inner:
@@ -923,7 +929,10 @@ jne   continue_inner_secnum_buildstairs_loop
 mov   ax, es:[bx + LINE_PHYSICS_T.lp_backsecnum]
 ; dont need this bx anymore
 
-mov   bx, ax
+mov   es, ds:[_SECTOR_SEGMENT_PTR]
+
+
+mov   bx, ax ; ax hold onto unshifted secnum for a bit...
 SHIFT_MACRO shl bx 4  ;bx is new sec
 
 
@@ -942,11 +951,11 @@ add   dx, 01000h
 ;        continue;
 
 cmp   word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], 0
-jne   continue_inner_secnum_buildstairs_loop
+jnz   continue_inner_secnum_buildstairs_loop
 
 ; in the clear. record next secnum.
 mov   word ptr cs:[SELFMODIFY_buildstairs_set_secnum_inner + 1], ax
-mov   byte ptr cs:[SELFMODIFY_set_buildstairs_middleloop_ok+1], 1
+mov   word ptr cs:[SELFMODIFY_set_buildstairs_middleloop_ok], 0C089h ; two byte nop
 mov   di, bx  ; update sector variable.
 
 xchg  ax, bx   ; bx hold secnum
@@ -984,6 +993,7 @@ mov   word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef]
 
 continue_inner_secnum_buildstairs_loop:
 mov   bx, cx ; restore ptr
+
 inc   bx
 inc   bx
 SELFMODIFY_set_buildstairs_linecount:
@@ -995,13 +1005,14 @@ jl    loop_next_inner_secnum_buildstairs
 ;; END 3RD LOOP
 
 SELFMODIFY_set_buildstairs_middleloop_ok:
-mov   al, 010h
-test  al, al
-jz    end_middle_loop
+jmp   end_middle_loop  ; or NOP if ok = 1
+SELFMODIFY_set_buildstairs_middleloop_AFTER:
+
 jmp   loop_next_buildstair_middleloop
 ;; END 2ND LOOP
 ;; END 2ND LOOP
 ;; END 2ND LOOP
+SELFMODIFY_set_buildstairs_middleloop_TARGET:
 end_middle_loop:
 
 

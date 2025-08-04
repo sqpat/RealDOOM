@@ -327,10 +327,15 @@ _gamemap = 							 _NULL_OFFSET + 00477h
 _savedescription =                   _NULL_OFFSET + 00478h
 _demoname =                          _NULL_OFFSET + 00498h
 _ems_backfill_page_order =           _NULL_OFFSET + 004B8h
-; 4D0 to 4DF free
+_LINEFLAGSLIST_SEGMENT_PTR =         _NULL_OFFSET + 004D0h
+; 4D2 to 4DF free
+
 _braintargets =                      _NULL_OFFSET + 004E0h
 _tmbbox =                            _NULL_OFFSET + 00520h
-; 530 unused
+
+_SECTOR_SEGMENT_PTR =                _NULL_OFFSET + 00530h
+_LINES_PHYSICS_SEGMENT_PTR =         _NULL_OFFSET + 00532h
+
 _HU_Start_addr = 			 	 	 _NULL_OFFSET + 00534h
 _ST_Start_addr = 			 	 	 _NULL_OFFSET + 00538h
 _P_RemoveThinker_addr = 			 _NULL_OFFSET + 0053Ch
