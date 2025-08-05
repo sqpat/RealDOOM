@@ -725,7 +725,7 @@ set_sector_values_and_break_loop:
 
 
 SHIFT_MACRO shl di 4
-mov   es, ds:[_SECTOR_SEGMENT_PTR]
+mov   es, ds:[_SECTORS_SEGMENT_PTR]
 mov   al, byte ptr es:[di + SECTOR_T.sec_floorpic]
 mov   byte ptr ds:[si + FLOORMOVE_T.floormove_texture], al
 mov   al, byte ptr es:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_special]
@@ -809,7 +809,7 @@ sub   ax, (_thinkerlist + THINKER_T.t_data)
 mov   di, SIZEOF_THINKER_T
 div   di
 
-mov   es, ds:[_SECTOR_SEGMENT_PTR]
+mov   es, ds:[_SECTORS_SEGMENT_PTR]
 
 
 mov   word ptr [bp - 2], cx
@@ -881,7 +881,7 @@ mov   word ptr cs:[SELFMODIFY_set_buildstairs_middleloop_ok], ((SELFMODIFY_set_b
 
 
 
-mov   es, ds:[_SECTOR_SEGMENT_PTR]
+mov   es, ds:[_SECTORS_SEGMENT_PTR]
 
 
 ;	sectorfloorpic = sector->floorpic;
@@ -933,7 +933,7 @@ jne   continue_inner_secnum_buildstairs_loop
 mov   ax, es:[bx + LINE_PHYSICS_T.lp_backsecnum]
 ; dont need this bx anymore
 
-mov   es, ds:[_SECTOR_SEGMENT_PTR]
+mov   es, ds:[_SECTORS_SEGMENT_PTR]
 
 
 mov   bx, ax ; ax hold onto unshifted secnum for a bit...

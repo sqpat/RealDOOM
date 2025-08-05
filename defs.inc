@@ -333,7 +333,7 @@ _LINEFLAGSLIST_SEGMENT_PTR =         _NULL_OFFSET + 004D0h
 _braintargets =                      _NULL_OFFSET + 004E0h
 _tmbbox =                            _NULL_OFFSET + 00520h
 
-_SECTOR_SEGMENT_PTR =                _NULL_OFFSET + 00530h
+_SECTORS_SEGMENT_PTR =                _NULL_OFFSET + 00530h
 _LINES_PHYSICS_SEGMENT_PTR =         _NULL_OFFSET + 00532h
 
 _HU_Start_addr = 			 	 	 _NULL_OFFSET + 00534h

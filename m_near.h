@@ -380,7 +380,7 @@
 #define braintargets                    (((THINKERREF __near*)               (_NULL_OFFSET + 0x04E0)))
 #define tmbbox                          (((fixed_t_union __near*)            (_NULL_OFFSET + 0x0520)))
 // 530 unused
-#define SECTOR_SEGMENT_PTR				  (*((segment_t __near*)             (_NULL_OFFSET + 0x0530)))
+#define SECTORS_SEGMENT_PTR				  (*((segment_t __near*)             (_NULL_OFFSET + 0x0530)))
 #define LINES_PHYSICS_SEGMENT_PTR	      (*((segment_t __near*)             (_NULL_OFFSET + 0x0532)))
 #define HU_Start_addr 					  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0534)))
 #define ST_Start_addr 				      (*((uint32_t __near*)              (_NULL_OFFSET + 0x0538)))
