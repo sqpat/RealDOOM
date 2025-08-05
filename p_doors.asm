@@ -250,88 +250,81 @@ jmp   exit_t_verticaldoor
 ENDP
 
 
+;int16_t __near EV_DoLockedDoor ( uint8_t linetag, int16_t linespecial, vldoor_e	type, THINKERREF thingRef ) {
+
 
 PROC    EV_DoLockedDoor_ NEAR
 PUBLIC  EV_DoLockedDoor_
 
-push  si
-push  bp
-mov   bp, sp
-sub   sp, 2
-mov   byte ptr [bp - 2], al
+; bp - 2 linetag
+cmp   cx, word ptr ds:[_playerMobjRef]
+jne   exit_non_player_locked_door
+
+
+xchg  ax, cx  ; cx gets linetag.
 mov   ax, dx
-mov   si, _playerMobjRef
-cmp   cx, word ptr ds:[si]
-jne   label_5
 cmp   dx, 133
 jae   label_6
 cmp   dx, 99
 jne   label_7
 label_9:
-mov   si, _player + PLAYER_T.player_cards + IT_BLUECARD
-cmp   byte ptr ds:[si], 0
+cmp   byte ptr ds:[_player + PLAYER_T.player_cards + IT_BLUECARD], 0
 jne   label_7
-mov   si, _player + PLAYER_T.player_cards + IT_BLUESKULL
-mov   al, byte ptr ds:[si]
+mov   al, byte ptr ds:[_player + PLAYER_T.player_cards + IT_BLUESKULL]
 test  al, al
 jne   label_7
-mov   bx, _player + PLAYER_T.player_message
 mov   dx, SFX_OOF
 xor   ah, ah
-mov   word ptr ds:[bx], PD_BLUEO
-label_11:
+mov   word ptr ds:[_player + PLAYER_T.player_message], PD_BLUEO
+
+play_sound_and_exit_lockedoor:
 
 call  S_StartSound_
+exit_non_player_locked_door:
 xor   ax, ax
-LEAVE_MACRO 
-pop   si
+ret
+
+xor   ax, ax
 ret   
-label_5:
-xor   ax, dx
-LEAVE_MACRO 
-pop   si
-ret   
+
+
 label_6:
 jbe   label_9
 cmp   dx, 135
 ja    label_10
-mov   si, _player + PLAYER_T.player_cards + IT_REDCARD
-cmp   byte ptr ds:[si], 0
+
+cmp   byte ptr ds:[_player + PLAYER_T.player_cards + IT_REDCARD], 0
 jne   label_8
-mov   si, _player + PLAYER_T.player_cards + IT_REDSKULL
-mov   al, byte ptr ds:[si]
+
+mov   al, byte ptr ds:[_player + PLAYER_T.player_cards + IT_REDSKULL]
 test  al, al
 jne   label_8
-mov   bx, _player + PLAYER_T.player_message
 mov   dx, SFX_OOF
 xor   ah, ah
-mov   word ptr ds:[bx], PD_REDO
-jmp   label_11
+mov   word ptr ds:[_player + PLAYER_T.player_message], PD_REDO
+jmp   play_sound_and_exit_lockedoor
 label_7:
 jmp   label_8
 label_10:
 cmp   dx, 137
 ja    label_8
-mov   si, _player + PLAYER_T.player_cards + IT_YELLOWCARD
-cmp   byte ptr ds:[si], 0
+cmp   byte ptr ds:[_player + PLAYER_T.player_cards + IT_YELLOWCARD], 0
 jne   label_8
-mov   si, _player + PLAYER_T.player_cards + IT_YELLOWSKULL
-mov   al, byte ptr ds:[si]
+mov   al, byte ptr ds:[_player + PLAYER_T.player_cards + IT_YELLOWSKULL]
 test  al, al
 jne   label_8
-mov   bx, _player + PLAYER_T.player_message
 mov   dx, SFX_OOF
 xor   ah, ah
-mov   word ptr ds:[bx], PD_YELLOWO
+mov   word ptr ds:[_player + PLAYER_T.player_message], PD_YELLOWO
 
 call  S_StartSound_
    
 xor   ax, ax
-LEAVE_MACRO 
-pop   si
+
+
 ret   
 label_8:
-mov   dl, byte ptr [bp - 2]
+mov   dx, cx
 mov   al, bl
 xor   dh, dh
 cbw  
@@ -339,9 +332,8 @@ mov   bx, dx
 mov   dx, ax
 mov   ax, bx
 
+; todo fall thru. (move jump table)
 call  EV_DoDoor_
-LEAVE_MACRO 
-pop   si
 ret   
 
 
