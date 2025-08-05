@@ -49,7 +49,7 @@ PUBLIC  P_DOORS_STARTMARKER_
 ENDP
 
 _jump_table_vertical_door:
-dw switch_case_verticaldoor_1_case_0, switch_case_verticaldoor_1_case_1, switch_case_verticaldoor_1_case_2, switch_case_verticaldoor_1_case_3
+dw switch_case_verticaldoor_dir_minus_1,switch_case_verticaldoor_1_case_0, switch_case_verticaldoor_1_case_1, switch_case_verticaldoor_1_case_2
 _jump_table_vertical_door_2:
 
 
@@ -107,18 +107,20 @@ xor   cx, cx
 
 jmp   word ptr cs:[bx + _jump_table_vertical_door]
 
-switch_case_verticaldoor_1_case_0:
+switch_case_verticaldoor_dir_minus_1:
 
 mov   bx, ax
 mov   dx, word ptr ds:[si + VLDOOR_T.vldoor_speed]
-mov   bx, word ptr es:[bx]
-call  T_MovePlaneCeilingDown_
-cmp   al, 2
-je    label_2
-cmp   al, 1
-jne   exit_t_verticaldoor
+mov   bx, word ptr es:[bx + SECTOR_T.sec_floorheight]
 
-mov   al, byte ptr ds:[si]
+call  T_MovePlaneCeilingDown_
+
+cmp   al, FLOOR_CRUSHED
+mov   al, byte ptr ds:[si + VLDOOR_T.vldoor_type]
+ja    vert_door_floor_past_dest ; pastdest
+jne   exit_t_verticaldoor
+;crushed
+
 cmp   al, 7
 je    exit_t_verticaldoor
 cmp   al, 2
@@ -127,14 +129,18 @@ mov   dx, SFX_DOROPN
 
 
 jmp   set_dir_to_1_and_call_sound_and_exit
-label_2:
-mov   al, byte ptr ds:[si]
+vert_door_floor_past_dest:
 cmp   al, 7
 ja    exit_t_verticaldoor
-xor   ah, ah
-mov   bx, ax
-add   bx, ax
-jmp   word ptr cs:[bx + _jump_table_vertical_door_2]
+je    switch_case_verticaldoor_2_blazeclose
+cmp   al, 5
+je    switch_case_verticaldoor_2_blazeraise
+cmp   al, 1
+je    switch_case_verticaldoor_2_doorclose30thenopen
+cmp   al, 2
+ja    exit_t_verticaldoor
+; fall thru to 0 and 2 case
+
 switch_case_verticaldoor_2_doornormal:
 switch_case_verticaldoor_2_doorclose:
 switch_case_verticaldoor_3_doorclose30thenopen:
@@ -146,7 +152,7 @@ xor   ax, ax
 
 
 mov   word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
-mov   ax, word ptr [bp - 2]
+pop   ax ; bp - 2
 
 call  P_RemoveThinker_
 exit_t_verticaldoor:
@@ -154,11 +160,11 @@ LEAVE_MACRO
 POPA_NO_AX_OR_BP_MACRO
 ret   
 
-switch_case_verticaldoor_1_case_1:
+switch_case_verticaldoor_1_case_0:
 
 dec   word ptr ds:[si + VLDOOR_T.vldoor_topcountdown]
 jne   exit_t_verticaldoor_2
-mov   al, byte ptr ds:[si]
+mov   al, byte ptr ds:[si + VLDOOR_T.vldoor_type]
 cmp   al, DOOR_BLAZERAISE
 je    label_3
 cmp   al, DOOR_CLOSE30THENOPEN
@@ -182,10 +188,10 @@ mov   dx, SFX_DOROPN
 
 
 jmp   set_dir_to_1_and_call_sound_and_exit
-switch_case_verticaldoor_1_case_3:
+switch_case_verticaldoor_1_case_2:
 dec   word ptr ds:[si + VLDOOR_T.vldoor_topcountdown]
 jne   exit_t_verticaldoor_2
-mov   al, byte ptr ds:[si]
+mov   al, byte ptr ds:[si + VLDOOR_T.vldoor_type]
 cmp   al, 4
 jne   exit_t_verticaldoor_2
 mov   dx, SFX_DOROPN
@@ -219,14 +225,14 @@ shl   bx, 4
 xor   ax, ax
 
 mov   word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
-mov   ax, word ptr [bp - 2]
+pop   ax  ; bp - 2
 mov   dx, SFX_BDCLS
 
 call  P_RemoveThinker_
 jmp   call_sound_and_exit
 
 
-switch_case_verticaldoor_1_case_2:
+switch_case_verticaldoor_1_case_1:
 
 
 mov   bx, word ptr ds:[si + VLDOOR_T.vldoor_topheight]
@@ -235,7 +241,7 @@ mov   dx, word ptr ds:[si + VLDOOR_T.vldoor_speed]
 call  T_MovePlaneCeilingUp_
 cmp   al, 2
 jne   exit_t_verticaldoor_2
-mov   al, byte ptr ds:[si]
+mov   al, byte ptr ds:[si + VLDOOR_T.vldoor_type]
 cmp   al, 6
 ja    exit_t_verticaldoor_2
 xor   ah, ah
