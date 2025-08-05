@@ -464,17 +464,18 @@ mov   dx, SFX_BDOPN
 jmp   do_ceilingheight_compare
 
 
-_jump_table_locked_door:
-dw switch_block_verticaldoor_case_26, switch_block_verticaldoor_case_27, switch_block_verticaldoor_case_28, switch_block_verticaldoor_case_default
-dw switch_block_verticaldoor_case_default, switch_block_verticaldoor_case_default, switch_block_verticaldoor_case_32, switch_block_verticaldoor_case_33
-dw switch_block_verticaldoor_case_34
-
 
 
 ENDP
 
 PROC    EV_VerticalDoor_ NEAR
 PUBLIC  EV_VerticalDoor_
+
+;void __near EV_VerticalDoor ( int16_t linenum, THINKERREF thingRef ) {
+
+; bp - 2 door
+; bp - 4 linenum
+
 
 push  bx
 push  cx
@@ -484,57 +485,80 @@ push  bp
 mov   bp, sp
 sub   sp, 2
 push  ax
-mov   ax, dx
-mov   bx, word ptr [bp - 4]
-mov   cx, LINES_PHYSICS_SEGMENT
-shl   bx, 4
-mov   es, cx
-mov   cl, byte ptr es:[bx + LINE_PHYSICS_T.lp_special]
-add   bx, LINE_PHYSICS_T.lp_special
-xor   ch, ch
-mov   bx, cx
-sub   cx, 26
-cmp   cx, 8
-ja    switch_block_verticaldoor_case_default
-mov   si, cx
-add   si, cx
-jmp   word ptr cs:[si + _jump_table_locked_door]
-switch_block_verticaldoor_case_26:
-switch_block_verticaldoor_case_32:
-mov   si, _playerMobjRef
-cmp   ax, word ptr ds:[si]
+xchg  ax, bx  
+SHIFT_MACRO shl   bx 4
+
+push  bx  ; store till after loop.
+
+;mov   ax, dx
+
+mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
+mov   al, byte ptr es:[bx + LINE_PHYSICS_T.lp_special]
+sub   al, 26
+js    switch_block_verticaldoor_case_default ; catch 0-25
+cmp   al, 3
+jb    switch_block_verticaldoor_case_key ; catch 26-28
+sub   al, 6
+js    switch_block_verticaldoor_case_default ; catch 29-31
+cmp   al, 3
+jb    switch_block_verticaldoor_case_key ; catch 32-34
+jmp   switch_block_verticaldoor_case_default ; catch35+
+
+
+
+
+switch_block_verticaldoor_case_key:
+
+cbw
+xchg  ax, bx ; bx in ax
+
+cmp   dx, word ptr ds:[_playerMobjRef]
 jne   exit_ev_verticaldoor
-mov   si, _player + PLAYER_T.player_cards + IT_BLUECARD
-cmp   byte ptr ds:[si], 0
+cmp   byte ptr ds:[_player + PLAYER_T.player_cards + bx], bh  
 jne   done_with_verticaldoor_switch_block
-mov   si, _player + PLAYER_T.player_cards + IT_BLUESKULL
-cmp   byte ptr ds:[si], 0
-je    label_40
+cmp   byte ptr ds:[_player + PLAYER_T.player_cards + bx], bh 
+jne   done_with_verticaldoor_switch_block
+
+mov   dx, SFX_OOF
+add   bl, PD_BLUEK
+mov   word ptr ds:[_player + PLAYER_T.player_message], bx
+
+
+xor   ax, ax
+
+call  S_StartSound_
+   
+jmp   exit_ev_verticaldoor
+
 done_with_verticaldoor_switch_block:
 switch_block_verticaldoor_case_default:
 
-mov   si, word ptr [bp - 4]
-mov   cx, LINES_PHYSICS_SEGMENT
-shl   si, 4
-mov   es, cx
-mov   cx, word ptr es:[si + LINE_PHYSICS_T.lp_backsecnum]
-add   si, LINE_PHYSICS_T.lp_backsecnum
+pop   bx ; restore line ptr
+
+; already set above..
+;mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
+
+mov   cx, word ptr es:[bx + LINE_PHYSICS_T.lp_backsecnum]
+mov   bl, byte ptr es:[bx + LINE_PHYSICS_T.lp_special] ; todo remove but code up ahead expects bl special still
+xor   bh, bh
 mov   si, cx
-shl   si, 4
-add   si, _sectors_physics
-cmp   word ptr ds:[si + 8], 0
-je    jump_to_label_25
-mov   si, word ptr ds:[si + 8]
-imul  si, si, SIZEOF_THINKER_T
-add   si, (_thinkerlist + THINKER_T.t_data)
+SHIFT_MACRO shl   si 4
+cmp   word ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], 0
+
+je    door_special_data_ref_block_done
+
+mov   ax, word ptr ds:[si + _sectors_physics+ SECTOR_PHYSICS_T.secp_specialdataRef]
+mov   dx, SIZEOF_THINKER_T
+mul   dx
+xchg  ax, si
+add   si, (_thinkerlist + THINKER_T.t_data) ; si is door ptr.
 cmp   bx, 117
-jne   jump_to_label_36
+jne   label_36
 label_24:
 cmp   word ptr ds:[si + VLDOOR_T.vldoor_direction], -1
-je    jump_to_label_37
-mov   bx, _playerMobjRef
-cmp   ax, word ptr ds:[bx]
-je    jump_to_label_41
+je    label_37
+cmp   ax, word ptr ds:[_playerMobjRef]
+je    label_41
 exit_ev_verticaldoor:
 LEAVE_MACRO 
 pop   di
@@ -542,74 +566,32 @@ pop   si
 pop   cx
 pop   bx
 ret   
-label_40:
-mov   bx, _player + PLAYER_T.player_message
-mov   dx, SFX_OOF
-xor   ax, ax
-mov   word ptr ds:[bx], PD_BLUEK
 
-call  S_StartSound_
-   
+label_37:
+mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], 1
 jmp   exit_ev_verticaldoor
-switch_block_verticaldoor_case_27:
-switch_block_verticaldoor_case_34:
-mov   si, _playerMobjRef
-cmp   ax, word ptr ds:[si]
-jne   exit_ev_verticaldoor
-mov   si, _player + PLAYER_T.player_cards + IT_YELLOWCARD
-cmp   byte ptr ds:[si], 0
-jne   done_with_verticaldoor_switch_block
-mov   si, _player + PLAYER_T.player_cards + IT_YELLOWSKULL
-cmp   byte ptr ds:[si], 0
-jne   done_with_verticaldoor_switch_block
-mov   bx, _player + PLAYER_T.player_message
-mov   dx, SFX_OOF
-xor   ax, ax
-mov   word ptr ds:[bx], PD_YELLOWK
 
-call  S_StartSound_
-   
+label_41:
+mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], -1
 jmp   exit_ev_verticaldoor
-jump_to_label_25:
-jmp   label_25
-jump_to_label_36:
-jmp   label_36
-jump_to_label_37:
-jmp   label_37
-jump_to_label_41:
-jmp   label_41
-switch_block_verticaldoor_case_28:
-switch_block_verticaldoor_case_33:
-mov   si, _playerMobjRef
-cmp   ax, word ptr ds:[si]
-jne   exit_ev_verticaldoor
-mov   si, _player + PLAYER_T.player_cards + IT_REDCARD
-cmp   byte ptr ds:[si], 0
-je    label_38
-jump_to_done_with_verticaldoor_switch_block:
-jmp   done_with_verticaldoor_switch_block
-label_38:
-mov   si, _player + PLAYER_T.player_cards + IT_REDSKULL
-cmp   byte ptr ds:[si], 0
-jne   jump_to_done_with_verticaldoor_switch_block
-mov   bx, _player + PLAYER_T.player_message
-mov   dx, SFX_OOF
-xor   ax, ax
-mov   word ptr ds:[bx], VDOORSPEED*4
 
-call  S_StartSound_
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret   
+
 label_36:
 cmp   bx, 1
-jae   label_26
-label_25:
+jnae   door_special_data_ref_block_done
+
+jna    label_24
+label_23:
+cmp   bx, 26
+jb    door_special_data_ref_block_done
+cmp   bx, 28
+jbe   label_24
+
+
+
+door_special_data_ref_block_done:
 cmp   bx, 31
-jae   label_21
+jae   label_22
 cmp   bx, 1
 label_20:
 mov   dx, SFX_DOROPN
@@ -656,34 +638,7 @@ pop   si
 pop   cx
 pop   bx
 ret   
-label_21:
-jmp   label_22
-label_26:
-ja    label_23
-jump_to_label_24:
-jmp   label_24
-label_23:
-cmp   bx, 26
-jb    label_25
-cmp   bx, 28
-jbe   jump_to_label_24
-jmp   label_25
-label_37:
-mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], 1
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret   
-label_41:
-mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], -1
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret   
+
 label_22:
 ja    label_19
 label_27:
