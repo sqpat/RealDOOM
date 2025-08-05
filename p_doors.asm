@@ -804,34 +804,35 @@ PUBLIC  P_SpawnDoorCloseIn30_
 
 
 push  bx
-push  cx
 push  dx
 push  si
-mov   cx, ax
+xchg  si, ax
 mov   ax, TF_VERTICALDOOR_HIGHBITS
-mov   si, SIZEOF_THINKER_T
 
 call  P_CreateThinker_
    
 xor   dx, dx
 mov   bx, ax
-sub   ax, (_thinkerlist + THINKER_T.t_data)
-div   si
-mov   word ptr ds:[bx + VLDOOR_T.vldoor_direction], 0
-mov   byte ptr ds:[bx], 0
+
+mov   word ptr ds:[bx + VLDOOR_T.vldoor_secnum], si
+mov   word ptr ds:[bx + VLDOOR_T.vldoor_direction], dx ; 0
+mov   word ptr ds:[bx + VLDOOR_T.vldoor_type], dx ; DOOR_NORMAL
 mov   word ptr ds:[bx + VLDOOR_T.vldoor_speed], VDOORSPEED
-mov   word ptr ds:[bx + VLDOOR_T.vldoor_secnum], cx
-shl   cx, 4
-mov   word ptr ds:[bx + VLDOOR_T.vldoor_topcountdown], 35 * 30
-mov   bx, cx
-add   bx, _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef
-mov   word ptr ds:[bx], ax
-mov   bx, cx
-add   bx, _sectors_physics + SECTOR_PHYSICS_T.secp_special
-mov   byte ptr ds:[bx], 0
+mov   word ptr ds:[bx + VLDOOR_T.vldoor_topcountdown],  30 * 35
+
+
+SHIFT_MACRO SHL si 4
+mov   word ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_special], dx
+
+
+sub   ax, (_thinkerlist + THINKER_T.t_data)
+mov   bx, SIZEOF_THINKER_T
+div   bx
+mov   word ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
+
+
 pop   si
 pop   dx
-pop   cx
 pop   bx
 ret   
 
@@ -843,41 +844,45 @@ PUBLIC  P_SpawnDoorRaiseIn5Mins_
 
 
 push  bx
-push  cx
 push  dx
 push  si
-mov   cx, ax
+xchg  ax, si
 mov   ax, TF_VERTICALDOOR_HIGHBITS
-mov   si, SIZEOF_THINKER_T
 
 call  P_CreateThinker_
-   
+
+xchg  ax, bx    
+mov   ax, si
 xor   dx, dx
-mov   bx, ax
-sub   ax, (_thinkerlist + THINKER_T.t_data)
-div   si
-mov   word ptr ds:[bx + VLDOOR_T.vldoor_direction], 2
-mov   byte ptr ds:[bx], DOOR_RAISEIN5MINS
-mov   word ptr ds:[bx + VLDOOR_T.vldoor_speed], VDOORSPEED
-mov   si, ax
-xor   dx, dx
-mov   ax, cx
-mov   word ptr ds:[bx + VLDOOR_T.vldoor_secnum], cx
+
 call  P_FindLowestOrHighestCeilingSurrounding_
-mov   word ptr ds:[bx + VLDOOR_T.vldoor_topwait], VDOORWAIT
+
 sub   ax, (4 SHL SHORTFLOORBITS)
-mov   word ptr ds:[bx + VLDOOR_T.vldoor_topcountdown], 5 * 60 * 3
-shl   cx, 4
-mov   word ptr ds:[bx + VLDOOR_T.vldoor_topheight], ax
-mov   bx, cx
-add   bx, _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef
-mov   word ptr ds:[bx], si
-mov   bx, cx
-add   bx, _sectors_physics + SECTOR_PHYSICS_T.secp_special
-mov   byte ptr ds:[bx], 0
+; ax has doortopheight
+; si has secnum
+; bx has door
+
+mov   word ptr ds:[bx + VLDOOR_T.vldoor_secnum], si
+mov   word ptr ds:[bx + VLDOOR_T.vldoor_direction], 2
+mov   word ptr ds:[bx + VLDOOR_T.vldoor_type], DOOR_RAISEIN5MINS
+mov   word ptr ds:[bx + VLDOOR_T.vldoor_speed], VDOORSPEED
+mov   word ptr ds:[bx + VLDOOR_T.vldoor_topwait], VDOORWAIT
+mov   word ptr ds:[bx + VLDOOR_T.vldoor_topcountdown],  5 * 60 * 35;
+mov   word ptr ds:[bx + VLDOOR_T.vldoor_topheight],  ax
+
+SHIFT_MACRO SHL si 4
+
+xor   dx, dx
+mov   word ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_special], dx
+sub   ax, (_thinkerlist + THINKER_T.t_data)
+mov   bx, SIZEOF_THINKER_T
+div   bx
+mov   word ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
+
+
+
 pop   si
 pop   dx
-pop   cx
 pop   bx
 ret  
 

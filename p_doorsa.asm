@@ -73,11 +73,9 @@ DOOR_BLAZECLOSE = 07h
 PROC    T_VerticalDoor_ NEAR
 PUBLIC  T_VerticalDoor_
 
+;void __near T_VerticalDoor (vldoor_t __near* door, THINKERREF doorRef) {
 
-push  bx
-push  cx
-push  si
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
 sub   sp, 8
@@ -132,10 +130,7 @@ exit_t_verticaldoor:
 switch_case_verticaldoor_2_default:
 switch_case_verticaldoor_3_default:
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 ret   
 switch_case_verticaldoor_1_case_1:
 
@@ -152,8 +147,7 @@ mov   dx, SFX_DORCLS
 mov   ax, di
 mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], -1
 
-call  S_StartSoundWithParams_
-jmp   exit_t_verticaldoor
+jmp   call_sound_and_exit
 jump_to_label_2:
 jmp   label_2
 label_3:
@@ -161,26 +155,14 @@ mov   dx, SFX_BDCLS
 mov   ax, di
 mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], -1
 
-call  S_StartSoundWithParams_
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
+jmp   call_sound_and_exit
 ret   
 label_4:
 mov   dx, SFX_DOROPN
 mov   ax, di
 mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], 1
 
-call  S_StartSoundWithParams_
-   
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret   
+jmp   call_sound_and_exit
 switch_case_verticaldoor_1_case_3:
 dec   word ptr ds:[si + VLDOOR_T.vldoor_topcountdown]
 jne   exit_t_verticaldoor
@@ -191,13 +173,7 @@ mov   dx, SFX_DOROPN
 mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], 1
 mov   ax, di
 mov   byte ptr ds:[si], 0
-
-call  S_StartSoundWithParams_
-LEAVE_MACRO 
-pop   di
-pop   si    
-pop   cx
-pop   bx
+jmp   call_sound_and_exit
 ret   
 switch_case_verticaldoor_2_blazeraise:
 switch_case_verticaldoor_2_blazeclose:
@@ -215,13 +191,11 @@ call  P_RemoveThinker_
 mov   ax, di
 add   bx, _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef
 
+call_sound_and_exit:
 call  S_StartSoundWithParams_
    
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 ret   
 switch_case_verticaldoor_2_doorclose30thenopen:
 mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], 0
@@ -247,14 +221,7 @@ mov   dx, SFX_DOROPN
 mov   ax, di
 mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], 1
 
-call  S_StartSoundWithParams_
-   
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret   
+jmp   call_sound_and_exit
 switch_case_verticaldoor_1_case_2:
 
 mov   ax, word ptr [bp - 4]
@@ -277,10 +244,7 @@ mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], 0
 mov   ax, word ptr ds:[si + VLDOOR_T.vldoor_topwait]
 mov   word ptr ds:[si + VLDOOR_T.vldoor_topcountdown], ax
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 ret   
 
 ENDP
