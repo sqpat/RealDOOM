@@ -249,8 +249,14 @@ jmp   exit_t_verticaldoor
 ENDP
 
 _jump_table_do_door:
-dw switch_block_ev_dodoor_case_doornormal, switch_block_ev_dodoor_case_doorclose30thenopen, switch_block_ev_dodoor_case_doorclose, switch_block_ev_dodoor_case_dooropen
-dw switch_block_ev_dodoor_case_doorraisein5mins, switch_block_ev_dodoor_case_doorblazeraise, switch_block_ev_dodoor_case_doorblazeopen, switch_block_ev_dodoor_case_doorblazeclose
+dw OFFSET switch_block_ev_dodoor_case_doornormal             - OFFSET SELFMODIFY_evdoordoor_do_jmp_AFTER
+dw OFFSET switch_block_ev_dodoor_case_doorclose30thenopen    - OFFSET SELFMODIFY_evdoordoor_do_jmp_AFTER
+dw OFFSET switch_block_ev_dodoor_case_doorclose              - OFFSET SELFMODIFY_evdoordoor_do_jmp_AFTER
+dw OFFSET switch_block_ev_dodoor_case_dooropen               - OFFSET SELFMODIFY_evdoordoor_do_jmp_AFTER
+dw OFFSET switch_block_ev_dodoor_case_doorraisein5mins       - OFFSET SELFMODIFY_evdoordoor_do_jmp_AFTER
+dw OFFSET switch_block_ev_dodoor_case_doorblazeraise         - OFFSET SELFMODIFY_evdoordoor_do_jmp_AFTER
+dw OFFSET switch_block_ev_dodoor_case_doorblazeopen          - OFFSET SELFMODIFY_evdoordoor_do_jmp_AFTER
+dw OFFSET switch_block_ev_dodoor_case_doorblazeclose         - OFFSET SELFMODIFY_evdoordoor_do_jmp_AFTER
 
 
 
@@ -320,140 +326,143 @@ xchg  ax, cx  ; linetag restored
 ENDP
 
 
-PROC    EV_DoDoor_ NEAR
+PROC    EV_DoDoor_ FAR
 PUBLIC  EV_DoDoor_
 
+;int16_t __far EV_DoDoor ( uint8_t linetag, vldoor_e	type ) {
 
-push  bx
-push  cx
-push  si
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
-sub   sp, 020Ch
-mov   byte ptr [bp - 2], dl
-mov   word ptr [bp - 0Ch], 0
-lea   dx, [bp - 020Ch]
-cbw  
-xor   bx, bx
-mov   word ptr [bp - 6], 0
+sub   sp, 0200h
+xor   dh, dh
+mov   byte ptr cs:[SELFMODIFY_evdoordoor_settype+2], dl  ; + 2 because offset is 0
+
+sal   dx, 1
+mov   si, dx
+push  word ptr cs:[_jump_table_do_door+si]
+pop   word ptr cs:[SELFMODIFY_evdoordoor_do_jmp+1]
+
+mov   byte ptr cs:[SELFMODIFY_evdoordoor_rtn+1], 0
+lea   dx, [bp - 0200h]
+mov   si, dx
+
+xor   bx, bx ; false
+
 call  P_FindSectorsFromLineTag_
-cmp   word ptr [bp - 020Ch], 0
-jl    label_12
-label_14:
-mov   si, word ptr [bp - 6]
+
+lodsw  ;get first secnum
+test  ax, ax
+js    exit_evdoodoor_return_rtn
+
+mov   byte ptr cs:[SELFMODIFY_evdoordoor_rtn+1], 1  ; only need to do once
+
+loop_next_secnum_evdodoor:
+
+xchg  ax, cx ; cx has secnum
+
 mov   ax, TF_VERTICALDOOR_HIGHBITS
-mov   di, SIZEOF_THINKER_T
-xor   dx, dx
-mov   bx, word ptr [bp + si - 020Ch]
+cwd   ; zero dx
 
 call  P_CreateThinker_
-   
-mov   si, ax
-mov   word ptr [bp - 4], ax
+
+mov   bx, ax   ; bx gets door ptr
+mov   di, SIZEOF_THINKER_T
+
 sub   ax, (_thinkerlist + THINKER_T.t_data)
-div   di
-mov   word ptr [bp - 0Ch], 1
-mov   cx, bx
-mov   word ptr [bp - 8], SECTORS_SEGMENT
-shl   cx, 4
+div   di  ; get doorref in ax
+
 mov   di, cx
-add   word ptr [bp - 6], 2
+SHIFT_MACRO shl   di 4  ; di has sector offset
+
+
 mov   word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
-mov   word ptr [bp - 0Ah], cx
-mov   word ptr ds:[si + VLDOOR_T.vldoor_topwait], VDOORWAIT
-mov   word ptr ds:[si + VLDOOR_T.vldoor_speed], VDOORSPEED
-mov   al, byte ptr [bp - 2]
-mov   word ptr ds:[si + VLDOOR_T.vldoor_secnum], bx
-add   di, _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef
-mov   byte ptr ds:[si], al
-cmp   al, 7
-ja    label_15
-xor   ah, ah
-mov   di, ax
-add   di, ax
-jmp   word ptr cs:[di + _jump_table_do_door]
-label_12:
-jmp   label_13
+mov   word ptr ds:[bx + VLDOOR_T.vldoor_topwait], VDOORWAIT
+mov   word ptr ds:[bx + VLDOOR_T.vldoor_speed], VDOORSPEED
+mov   ax, cx  ; ax gets secnum copy
+cwd   ; dx 0. secnum should be < 08000h
+mov   word ptr ds:[bx + VLDOOR_T.vldoor_secnum], ax
+
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+mov   di, word ptr es:[di + SECTOR_T.sec_ceilingheight]; last use of sector ptr
+
+SELFMODIFY_evdoordoor_settype:
+mov   byte ptr ds:[bx + VLDOOR_T.vldoor_type], 010h 
+
+
+; ax is secnum
+; dx is 0
+; di is ceiling height
+; cx is secnum
+; bx is vldoor ptr
+; di is ceiling height
+
+SELFMODIFY_evdoordoor_do_jmp:
+jmp   P_DOORS_ENDMARKER_  ; force a word-sized jump immediate
+SELFMODIFY_evdoordoor_do_jmp_AFTER:
+
+switch_block_ev_dodoor_case_doorblazeclose:
+
+mov   word ptr ds:[bx + VLDOOR_T.vldoor_speed], VDOORSPEED*4
+call  P_FindLowestOrHighestCeilingSurrounding_
+mov   dx, SFX_BDCLS
+
+do_rest_of_close_case:
+
+sub   ax, (4 SHL SHORTFLOORBITS)
+mov   word ptr ds:[bx + VLDOOR_T.vldoor_topheight], ax
+
+set_direction_secnum_and_play_sound_and_exit:
+mov   word ptr ds:[bx + VLDOOR_T.vldoor_direction], -1
+set_secnum_and_play_sound_and_exit:
+xchg  ax, cx
+
+call  S_StartSoundWithParams_
+switch_block_ev_dodoor_case_doorraisein5mins:
+done_with_evdodoor_switch_block:
+
+lodsw ; get next secnum
+test  ax, ax
+jns   loop_next_secnum_evdodoor
+exit_evdoodoor_return_rtn:
+LEAVE_MACRO 
+POPA_NO_AX_OR_BP_MACRO
+SELFMODIFY_evdoordoor_rtn:
+mov   al, 010h
+retf  
+
+switch_block_ev_dodoor_case_doorclose:
+call  P_FindLowestOrHighestCeilingSurrounding_
+mov   dx, SFX_DORCLS
+jmp   do_rest_of_close_case
+
+switch_block_ev_dodoor_case_doorclose30thenopen:
+mov   word ptr ds:[bx + VLDOOR_T.vldoor_topheight], di
+mov   dx, SFX_DORCLS
+
+jmp   set_direction_secnum_and_play_sound_and_exit
 switch_block_ev_dodoor_case_doornormal:
 switch_block_ev_dodoor_case_dooropen:
-mov   si, word ptr [bp - 4]
-mov   ax, bx
-xor   dx, dx
-mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], 1
+
+
 call  P_FindLowestOrHighestCeilingSurrounding_
-sub   ax, (4 SHL SHORTFLOORBITS)
-mov   word ptr ds:[si + VLDOOR_T.vldoor_topheight], ax
-les   si, dword ptr [bp - 0Ah]
-cmp   ax, word ptr es:[si + 2]
-je    label_15
 mov   dx, SFX_DOROPN
-label_18:
-mov   ax, bx
-label_16:
-call  S_StartSoundWithParams_
-label_15:
-switch_block_ev_dodoor_case_doorraisein5mins:
-mov   si, word ptr [bp - 6]
-cmp   word ptr [bp + si - 020Ch], 0
-jl    label_13
-jmp   label_14
-label_13:
-mov   ax, word ptr [bp - 0Ch]
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
-retf  
-switch_block_ev_dodoor_case_doorblazeclose:
-mov   ax, bx
-xor   dx, dx
-call  P_FindLowestOrHighestCeilingSurrounding_
+do_ceilingheight_compare:
 sub   ax, (4 SHL SHORTFLOORBITS)
-mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], -1
-mov   dx, SFX_BDCLS
-mov   word ptr ds:[si + VLDOOR_T.vldoor_topheight], ax
-mov   ax, bx
-mov   word ptr ds:[si + VLDOOR_T.vldoor_speed], VDOORSPEED*4
-jmp   label_16
-switch_block_ev_dodoor_case_doorclose:
-mov   ax, bx
-xor   dx, dx
-call  P_FindLowestOrHighestCeilingSurrounding_
-sub   ax, (4 SHL SHORTFLOORBITS)
-mov   dx, SFX_DORCLS
-mov   word ptr ds:[si + VLDOOR_T.vldoor_topheight], ax
-mov   ax, bx
-mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], -1
-jmp   label_16
-switch_block_ev_dodoor_case_doorclose30thenopen:
-mov   es, word ptr [bp - 8]
-mov   di, cx
-mov   ax, word ptr es:[di + 2]
-mov   dx, SFX_DORCLS
-mov   word ptr ds:[si + VLDOOR_T.vldoor_topheight], ax
-mov   ax, bx
-mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], -1
-jmp   label_16
+mov   word ptr ds:[bx + VLDOOR_T.vldoor_topheight], ax
+mov   word ptr ds:[bx + VLDOOR_T.vldoor_direction], 1
+cmp   ax, di
+je    done_with_evdodoor_switch_block
+
+jmp   set_secnum_and_play_sound_and_exit
 switch_block_ev_dodoor_case_doorblazeraise:
 switch_block_ev_dodoor_case_doorblazeopen:
-mov   si, word ptr [bp - 4]
-mov   ax, bx
-xor   dx, dx
-mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], 1
+mov   word ptr ds:[bx + VLDOOR_T.vldoor_speed], VDOORSPEED*4
 call  P_FindLowestOrHighestCeilingSurrounding_
-sub   ax, (4 SHL SHORTFLOORBITS)
-mov   word ptr ds:[si + VLDOOR_T.vldoor_speed], VDOORSPEED*4
-mov   word ptr ds:[si + VLDOOR_T.vldoor_topheight], ax
-mov   ax, word ptr ds:[si + VLDOOR_T.vldoor_topheight]
-les   si, dword ptr [bp - 0Ah]
-cmp   ax, word ptr es:[si + 2]
-jne   label_17
-jmp   label_15
-label_17:
 mov   dx, SFX_BDOPN
-jmp   label_18
+
+jmp   do_ceilingheight_compare
+
 
 _jump_table_locked_door:
 dw switch_block_verticaldoor_case_26, switch_block_verticaldoor_case_27, switch_block_verticaldoor_case_28, switch_block_verticaldoor_case_default
