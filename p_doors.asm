@@ -476,24 +476,24 @@ PUBLIC  EV_VerticalDoor_
 ; bp - 2 door
 ; bp - 4 linenum
 
+; si stays door for the whole function generally
+; di stays linephysics for the whole function generally
 
-push  bx
-push  cx
-push  si
-push  di
+
+PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
-sub   sp, 2
-push  ax
+
 xchg  ax, di  
 SHIFT_MACRO shl   di 4
 
 
-;mov   ax, dx
+push  dx
 
 mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
 mov   al, byte ptr es:[di + LINE_PHYSICS_T.lp_special]
-mov   cl, al ; backup..
+xor   ah, ah
+mov   cx, ax ; backup..
 sub   al, 26
 js    switch_block_verticaldoor_case_default ; catch 0-25
 cmp   al, 3
@@ -551,30 +551,28 @@ jz    door_special_data_ref_block_done
 mov   dx, SIZEOF_THINKER_T
 mul   dx
 xchg  ax, si
-
 add   si, (_thinkerlist + THINKER_T.t_data) ; si is door ptr.
-cmp   cl, 117
+mov   ax, cx
+cmp   al, 117
 je    handle_raise_door
-cmp   cl, 1
+cmp   al, 1
 jb    door_special_data_ref_block_done
 je    handle_raise_door
-cmp   cl, 26
+cmp   al, 26
 jb    door_special_data_ref_block_done
-cmp   cl, 28
+cmp   al, 28
 ja    door_special_data_ref_block_done
 
 handle_raise_door:
 cmp   word ptr ds:[si + VLDOOR_T.vldoor_direction], -1
 je    set_door_up_and_exit
+pop   ax ; bp - 2, thingref
 cmp   ax, word ptr ds:[_playerMobjRef]
 jne   exit_ev_verticaldoor
 mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], -1
 exit_ev_verticaldoor:
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 ret   
 
 set_door_up_and_exit:
@@ -583,16 +581,12 @@ jmp   exit_ev_verticaldoor
 
 
 
-
-
-
-
-
 door_special_data_ref_block_done:
+mov   ax, cx
 mov   dx, SFX_DOROPN
-cmp   cl, 117
+cmp   al, 117
 jb    do_play_door_sound
-cmp   cl, 118
+cmp   al, 118
 ja    do_play_door_sound
 mov   dx, SFX_BDOPN
 do_play_door_sound:
@@ -601,86 +595,78 @@ mov   ax, bx
 call  S_StartSoundWithParams_
    
 mov   ax, TF_VERTICALDOOR_HIGHBITS
-mov   di, SIZEOF_THINKER_T
 
 call  P_CreateThinker_
 xor   dx, dx
 mov   si, ax
-mov   word ptr [bp - 2], ax
+
 sub   ax, (_thinkerlist + THINKER_T.t_data)
+mov   es, di
+mov   di, SIZEOF_THINKER_T
 div   di
+mov   di, es  ; todo any other register to use? 
+
 mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], 1
 mov   word ptr ds:[si + VLDOOR_T.vldoor_speed], VDOORSPEED
-mov   di, bx
-mov   word ptr ds:[si + VLDOOR_T.vldoor_topwait], VDOORWAIT
-shl   di, 4
 mov   word ptr ds:[si + VLDOOR_T.vldoor_secnum], bx
-mov   word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
-add   di, _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef
+mov   word ptr ds:[si + VLDOOR_T.vldoor_topwait], VDOORWAIT
+mov   es, bx
+SHIFT_MACRO shl   bx 4
+mov   word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
+mov   bx, es ; recover old bx.
 
 mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
 
+xchg  ax, cx ; last one
 
-cmp   cl, 31
-jae   label_33
-cmp   cl, 1
-jb    label_31
-jna   label_32
-cmp   cl, 26
-jb    label_31
-cmp   cl, 28
-ja    label_31
-jmp   label_32
-jump_to_label_31:
-jmp   label_31
+cmp   al, 31
+jae   check_for_linespecial_34_and_above
+cmp   al, 1
+jb    done_with_final_linespecial_block
+jna   do_linespecial_1
+cmp   al, 26
+jb    done_with_final_linespecial_block
+cmp   al, 28
+ja    done_with_final_linespecial_block
 
+; fall thru 26-28
 
-label_32:
-mov   si, word ptr [bp - 2]
-mov   byte ptr ds:[si], 0
-label_31:
-mov   ax, bx
-xor   dx, dx
-mov   si, word ptr [bp - 2]
+do_linespecial_1:
+
+mov   byte ptr ds:[si + VLDOOR_T.vldoor_type], ah ; 0 DOOR_NORMAL
+
+done_with_final_linespecial_block:
+xchg  ax, bx ; last use of bx.
+cwd  ; secnum should be under 08000h
+
 call  P_FindLowestOrHighestCeilingSurrounding_
 sub   ax, (4 SHL SHORTFLOORBITS)
 mov   word ptr ds:[si + VLDOOR_T.vldoor_topheight], ax
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 ret   
 
-label_33:
-mov   ax, word ptr [bp - 4]
-shl   ax, 4
-cmp   cl, 34
-ja    label_30
+check_for_linespecial_34_and_above:
+cmp   al, 34
+ja    check_for_line_special_118
 
-mov   byte ptr ds:[si], 3
+mov   byte ptr ds:[si + VLDOOR_T.vldoor_type], DOOR_OPEN
 
-mov   si, ax
-
-mov   byte ptr es:[si + LINE_PHYSICS_T.lp_special], 0
-jmp   label_31
-label_30:
-cmp   cl, 118
-jne   label_35
-mov   byte ptr ds:[si], 6
-
+set_special_zero:
+mov   byte ptr es:[di + LINE_PHYSICS_T.lp_special], ah ; 0
+jmp   done_with_final_linespecial_block
+check_for_line_special_118:
+cmp   al, 118
+ja    done_with_final_linespecial_block
+cmp   al, 117
+jb    done_with_final_linespecial_block
 mov   word ptr ds:[si + VLDOOR_T.vldoor_speed], VDOORSPEED*4
-
-mov   si, ax
-
-mov   byte ptr es:[si + LINE_PHYSICS_T.lp_special], 0
-jmp   label_31
-label_35:
-cmp   cl, 117
-jne   label_31
-mov   byte ptr ds:[si], 5
-mov   word ptr ds:[si + VLDOOR_T.vldoor_speed], VDOORSPEED*4
-jmp   label_31
+; al is 118 or 117.
+sub   al, (118 - DOOR_BLAZEOPEN) ; normalize to type: from 117 or 118 to 5 or 6.
+mov   byte ptr ds:[si + VLDOOR_T.vldoor_type], al  ; 5 or 6.
+sub   al, 5
+jz    done_with_final_linespecial_block ; if 117 dont set special
+jmp   set_special_zero
 
 
 ENDP
