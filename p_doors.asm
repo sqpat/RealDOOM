@@ -605,7 +605,7 @@ sub   ax, (_thinkerlist + THINKER_T.t_data)
 push  di
 mov   di, SIZEOF_THINKER_T
 div   di
-pop   di
+pop   di ; no other registers free now..?
 
 mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], 1
 mov   word ptr ds:[si + VLDOOR_T.vldoor_speed], VDOORSPEED
