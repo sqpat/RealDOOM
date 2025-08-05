@@ -249,6 +249,11 @@ jmp   exit_t_verticaldoor
 
 ENDP
 
+_jump_table_do_door:
+dw switch_block_ev_dodoor_case_doornormal, switch_block_ev_dodoor_case_doorclose30thenopen, switch_block_ev_dodoor_case_doorclose, switch_block_ev_dodoor_case_dooropen
+dw switch_block_ev_dodoor_case_doorraisein5mins, switch_block_ev_dodoor_case_doorblazeraise, switch_block_ev_dodoor_case_doorblazeopen, switch_block_ev_dodoor_case_doorblazeclose
+
+
 
 ;int16_t __near EV_DoLockedDoor ( uint8_t linetag, int16_t linespecial, vldoor_e	type, THINKERREF thingRef ) {
 
@@ -259,23 +264,30 @@ PUBLIC  EV_DoLockedDoor_
 ; bp - 2 linetag
 cmp   cx, word ptr ds:[_playerMobjRef]
 jne   exit_non_player_locked_door
+xchg  ax, cx  ; cx gets linetag for now
+xchg  ax, bx  ; ax holds bx. 
+xor   bx, bx ; bx 0
 
 
-xchg  ax, cx  ; cx gets linetag.
-mov   ax, dx
 cmp   dx, 133
-jae   label_6
+ja    check_for_red_key
 cmp   dx, 99
-jne   label_7
-label_9:
-cmp   byte ptr ds:[_player + PLAYER_T.player_cards + IT_BLUECARD], 0
-jne   label_7
-mov   al, byte ptr ds:[_player + PLAYER_T.player_cards + IT_BLUESKULL]
-test  al, al
-jne   label_7
+jne   switch_block_fall_thru
+; case blue
+case_blue:
+
+do_key_stuff:
+
+; bh is 0..
+
+cmp   byte ptr ds:[_player + PLAYER_T.player_cards + bx], bh ; card
+jne   switch_block_fall_thru
+cmp   byte ptr ds:[_player + PLAYER_T.player_cards + bx + 3], bh  ; skull
+jne   switch_block_fall_thru
+xchg  ax, dx  ; ax gets dx
 mov   dx, SFX_OOF
-xor   ah, ah
-mov   word ptr ds:[_player + PLAYER_T.player_message], PD_BLUEO
+add   bl, PD_BLUEO
+mov   word ptr ds:[_player + PLAYER_T.player_message], bx
 
 play_sound_and_exit_lockedoor:
 
@@ -284,62 +296,26 @@ exit_non_player_locked_door:
 xor   ax, ax
 ret
 
-xor   ax, ax
-ret   
 
 
-label_6:
-jbe   label_9
+check_for_red_key:
+inc   bx
 cmp   dx, 135
-ja    label_10
-
-cmp   byte ptr ds:[_player + PLAYER_T.player_cards + IT_REDCARD], 0
-jne   label_8
-
-mov   al, byte ptr ds:[_player + PLAYER_T.player_cards + IT_REDSKULL]
-test  al, al
-jne   label_8
-mov   dx, SFX_OOF
-xor   ah, ah
-mov   word ptr ds:[_player + PLAYER_T.player_message], PD_REDO
-jmp   play_sound_and_exit_lockedoor
-label_7:
-jmp   label_8
-label_10:
+jna   do_key_stuff
+check_for_yellow_key:
+inc   bx
 cmp   dx, 137
-ja    label_8
-cmp   byte ptr ds:[_player + PLAYER_T.player_cards + IT_YELLOWCARD], 0
-jne   label_8
-mov   al, byte ptr ds:[_player + PLAYER_T.player_cards + IT_YELLOWSKULL]
-test  al, al
-jne   label_8
-mov   dx, SFX_OOF
-xor   ah, ah
-mov   word ptr ds:[_player + PLAYER_T.player_message], PD_YELLOWO
+jna   do_key_stuff
 
-call  S_StartSound_
-   
-xor   ax, ax
+switch_block_fall_thru:
+; restore bx
+xchg  ax, dx  ; type to dx
+xchg  ax, cx  ; linetag restored
 
+; fall thru
+;call  EV_DoDoor_
+;ret   
 
-ret   
-label_8:
-mov   dx, cx
-mov   al, bl
-xor   dh, dh
-cbw  
-mov   bx, dx
-mov   dx, ax
-mov   ax, bx
-
-; todo fall thru. (move jump table)
-call  EV_DoDoor_
-ret   
-
-
-_jump_table_do_door:
-dw switch_block_ev_dodoor_case_doornormal, switch_block_ev_dodoor_case_doorclose30thenopen, switch_block_ev_dodoor_case_doorclose, switch_block_ev_dodoor_case_dooropen
-dw switch_block_ev_dodoor_case_doorraisein5mins, switch_block_ev_dodoor_case_doorblazeraise, switch_block_ev_dodoor_case_doorblazeopen, switch_block_ev_dodoor_case_doorblazeclose
 
 
 ENDP
