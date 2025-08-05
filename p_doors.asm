@@ -542,6 +542,7 @@ mov   bx, word ptr es:[di + LINE_PHYSICS_T.lp_backsecnum]
 
 mov   si, bx
 SHIFT_MACRO shl   si 4
+push  si  ; store sector offset for later
 mov   ax, word ptr ds:[si + _sectors_physics+ SECTOR_PHYSICS_T.secp_specialdataRef]
 test  ax, ax
 
@@ -601,19 +602,20 @@ xor   dx, dx
 mov   si, ax
 
 sub   ax, (_thinkerlist + THINKER_T.t_data)
-mov   es, di
+push  di
 mov   di, SIZEOF_THINKER_T
 div   di
-mov   di, es  ; todo any other register to use? 
+pop   di
 
 mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], 1
 mov   word ptr ds:[si + VLDOOR_T.vldoor_speed], VDOORSPEED
 mov   word ptr ds:[si + VLDOOR_T.vldoor_secnum], bx
 mov   word ptr ds:[si + VLDOOR_T.vldoor_topwait], VDOORWAIT
-mov   es, bx
-SHIFT_MACRO shl   bx 4
-mov   word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
-mov   bx, es ; recover old bx.
+pop   dx  ; shl 4 from earlier
+xchg  ax, dx
+xchg  ax, bx  ; ptr into bx
+mov   word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], dx
+xchg  ax, bx  ; restore bx
 
 mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
 
