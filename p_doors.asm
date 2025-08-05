@@ -48,26 +48,7 @@ PROC    P_DOORS_STARTMARKER_ NEAR
 PUBLIC  P_DOORS_STARTMARKER_
 ENDP
 
-_jump_table_vertical_door:
-dw switch_case_verticaldoor_dir_minus_1,switch_case_verticaldoor_1_case_0, switch_case_verticaldoor_1_case_1, switch_case_verticaldoor_1_case_2
-_jump_table_vertical_door_2:
 
-
-dw switch_case_verticaldoor_2_doornormal, switch_case_verticaldoor_2_doorclose30thenopen, switch_case_verticaldoor_2_doorclose, switch_case_verticaldoor_2_default
-dw switch_case_verticaldoor_2_default, switch_case_verticaldoor_2_blazeraise, switch_case_verticaldoor_2_default, switch_case_verticaldoor_2_blazeclose
-
-_jump_table_vertical_door_3:
-dw switch_case_verticaldoor_3_doornormal, switch_case_verticaldoor_3_doorclose30thenopen, switch_case_verticaldoor_3_default, switch_case_verticaldoor_3_dooropen
-dw switch_case_verticaldoor_3_default, switch_case_verticaldoor_3_doorraisein5mins, switch_case_verticaldoor_3_doorblazeopen
-
-DOOR_NORMAL = 00h
-DOOR_CLOSE30THENOPEN = 01h
-DOOR_CLOSE = 02h
-DOOR_OPEN = 03h
-DOOR_RAISEIN5MINS = 04h
-DOOR_BLAZERAISE = 05h
-DOOR_BLAZEOPEN = 06h
-DOOR_BLAZECLOSE = 07h
 
 
 PROC    T_VerticalDoor_ NEAR
@@ -83,119 +64,64 @@ PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
 push  dx ; bp - 2
-mov   si, ax
-mov   di, word ptr ds:[si + VLDOOR_T.vldoor_secnum]
-mov   ax, SECTORS_SEGMENT
+xchg  ax, si
+mov   ax, word ptr ds:[si + VLDOOR_T.vldoor_secnum]
+
 mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
-mov   bx, word ptr ds:[si + VLDOOR_T.vldoor_direction]
-inc   bx
-cmp   bx, 3
-ja    exit_t_verticaldoor
 
-sal   bx, 1
+mov   di, ax
 
-mov   ax, di
 SHIFT_MACRO shl   ax 4
 
 xor   cx, cx
+mov   bx, cx
+mov   bl, byte ptr ds:[si + VLDOOR_T.vldoor_direction]
+mov   dx, word ptr ds:[si + VLDOOR_T.vldoor_speed]
 
+; dx is speed (sometimes used)
 ; ax is vldoor secnum offset
 ; di is vldoor secnum
 ; si is vldoor ptr
 ; cx is zero (used in two calls)
 
-jmp   word ptr cs:[bx + _jump_table_vertical_door]
+test  bl, bl
+je    switch_case_verticaldoor_dir_case_0
+js    switch_case_verticaldoor_dir_minus_1
+cmp   bl, 2
+je    switch_case_verticaldoor_dir_case_2
+jmp   switch_case_verticaldoor_dir_case_1
+
+switch_case_verticaldoor_dir_case_2:
+dec   word ptr ds:[si + VLDOOR_T.vldoor_topcountdown]
+jne   exit_t_verticaldoor
+
+mov   al, byte ptr ds:[si + VLDOOR_T.vldoor_type]
+cmp   al, DOOR_RAISEIN5MINS
+jne   exit_t_verticaldoor
+
+mov   dx, SFX_DOROPN
+mov   byte ptr ds:[si + VLDOOR_T.vldoor_type], cl; 0, DOOR_NORMAL
+jmp   set_dir_to_1_and_call_sound_and_exit
 
 switch_case_verticaldoor_dir_minus_1:
 
 mov   bx, ax
-mov   dx, word ptr ds:[si + VLDOOR_T.vldoor_speed]
 mov   bx, word ptr es:[bx + SECTOR_T.sec_floorheight]
-
+push  ax  ; store sector offset
 call  T_MovePlaneCeilingDown_
-
+pop   bx  ; sector offset in bx in case necessary
 cmp   al, FLOOR_CRUSHED
 mov   al, byte ptr ds:[si + VLDOOR_T.vldoor_type]
 ja    vert_door_floor_past_dest ; pastdest
 jne   exit_t_verticaldoor
 ;crushed
 
-cmp   al, 7
+cmp   al, DOOR_BLAZECLOSE
 je    exit_t_verticaldoor
-cmp   al, 2
+cmp   al, DOOR_CLOSE
 je    exit_t_verticaldoor
 mov   dx, SFX_DOROPN
-
-
-jmp   set_dir_to_1_and_call_sound_and_exit
-vert_door_floor_past_dest:
-cmp   al, 7
-ja    exit_t_verticaldoor
-je    switch_case_verticaldoor_2_blazeclose
-cmp   al, 5
-je    switch_case_verticaldoor_2_blazeraise
-cmp   al, 1
-je    switch_case_verticaldoor_2_doorclose30thenopen
-cmp   al, 2
-ja    exit_t_verticaldoor
-; fall thru to 0 and 2 case
-
-switch_case_verticaldoor_2_doornormal:
-switch_case_verticaldoor_2_doorclose:
-switch_case_verticaldoor_3_doorclose30thenopen:
-switch_case_verticaldoor_3_dooropen:
-switch_case_verticaldoor_3_doorblazeopen:
-mov   bx, word ptr ds:[si + VLDOOR_T.vldoor_secnum]
-shl   bx, 4
-xor   ax, ax
-
-
-mov   word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
-pop   ax ; bp - 2
-
-call  P_RemoveThinker_
-exit_t_verticaldoor:
-LEAVE_MACRO 
-POPA_NO_AX_OR_BP_MACRO
-ret   
-
-switch_case_verticaldoor_1_case_0:
-
-dec   word ptr ds:[si + VLDOOR_T.vldoor_topcountdown]
-jne   exit_t_verticaldoor_2
-mov   al, byte ptr ds:[si + VLDOOR_T.vldoor_type]
-cmp   al, DOOR_BLAZERAISE
-je    label_3
-cmp   al, DOOR_CLOSE30THENOPEN
-je    label_4
-test  al, al ; DOOR_NORMAL
-jne   exit_t_verticaldoor_2
-; DOOR_NORMAL
-mov   dx, SFX_DORCLS
-mov   bx, -1
-
-jmp   set_dir_to_bx_and_call_sound_and_exit
-
-label_3:
-mov   dx, SFX_BDCLS
-mov   bx, -1
-
-jmp   set_dir_to_bx_and_call_sound_and_exit
-ret   
-label_4:
-mov   dx, SFX_DOROPN
-
-
-jmp   set_dir_to_1_and_call_sound_and_exit
-switch_case_verticaldoor_1_case_2:
-dec   word ptr ds:[si + VLDOOR_T.vldoor_topcountdown]
-jne   exit_t_verticaldoor_2
-mov   al, byte ptr ds:[si + VLDOOR_T.vldoor_type]
-cmp   al, 4
-jne   exit_t_verticaldoor_2
-mov   dx, SFX_DOROPN
-mov   byte ptr ds:[si + VLDOOR_T.vldoor_type], DOOR_NORMAL ; 0
 
 set_dir_to_1_and_call_sound_and_exit:
 mov   bx, 1
@@ -211,12 +137,65 @@ exit_t_verticaldoor_2:
 LEAVE_MACRO 
 POPA_NO_AX_OR_BP_MACRO
 ret   
-switch_case_verticaldoor_2_doorclose30thenopen:
-mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], 0
-mov   word ptr ds:[si + VLDOOR_T.vldoor_topcountdown], 35 * 30
-jmp   exit_t_verticaldoor
 
+vert_door_floor_past_dest:
+cmp   al, DOOR_BLAZECLOSE
+ja    exit_t_verticaldoor
+je    switch_case_verticaldoor_2_blazeclose
+cmp   al, DOOR_BLAZERAISE
+je    switch_case_verticaldoor_2_blazeraise
+cmp   al, DOOR_CLOSE30THENOPEN
+je    switch_case_verticaldoor_2_doorclose30thenopen
+cmp   al, DOOR_CLOSE
+ja    exit_t_verticaldoor
+; fall thru to 0 and 2 case
+
+switch_case_verticaldoor_2_doornormal:
+switch_case_verticaldoor_2_doorclose:
+switch_case_verticaldoor_3_doorclose30thenopen:
+switch_case_verticaldoor_3_dooropen:
+switch_case_verticaldoor_3_doorblazeopen:
+; bx pre-set to sec offset
+
+xor   ax, ax
+
+
+mov   word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
+pop   ax ; bp - 2
+
+call  P_RemoveThinker_
+exit_t_verticaldoor:
+LEAVE_MACRO 
+POPA_NO_AX_OR_BP_MACRO
 ret   
+switch_case_verticaldoor_dir_case_0:
+
+dec   word ptr ds:[si + VLDOOR_T.vldoor_topcountdown]
+jne   exit_t_verticaldoor_2
+mov   al, byte ptr ds:[si + VLDOOR_T.vldoor_type]
+cmp   al, DOOR_BLAZERAISE
+je    play_blaze_close
+cmp   al, DOOR_CLOSE30THENOPEN
+je    play_open
+test  al, al ; DOOR_NORMAL
+jne   exit_t_verticaldoor_2
+; DOOR_NORMAL
+mov   dx, SFX_DORCLS
+mov   bx, -1
+
+jmp   set_dir_to_bx_and_call_sound_and_exit
+
+play_blaze_close:
+mov   dx, SFX_BDCLS
+mov   bx, -1
+jmp   set_dir_to_bx_and_call_sound_and_exit
+
+play_open:
+mov   dx, SFX_DOROPN
+jmp   set_dir_to_1_and_call_sound_and_exit
+
+
+
 switch_case_verticaldoor_2_blazeraise:
 switch_case_verticaldoor_2_blazeclose:
 mov   bx, word ptr ds:[si + VLDOOR_T.vldoor_secnum]
@@ -231,29 +210,42 @@ mov   dx, SFX_BDCLS
 call  P_RemoveThinker_
 jmp   call_sound_and_exit
 
-
-switch_case_verticaldoor_1_case_1:
+switch_case_verticaldoor_2_doorclose30thenopen:
+mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], 0
+mov   word ptr ds:[si + VLDOOR_T.vldoor_topcountdown], 35 * 30
+jmp   exit_t_verticaldoor
+switch_case_verticaldoor_dir_case_1:
 
 
 mov   bx, word ptr ds:[si + VLDOOR_T.vldoor_topheight]
-mov   dx, word ptr ds:[si + VLDOOR_T.vldoor_speed]
-
+push  ax ; store sec offset in case needed
 call  T_MovePlaneCeilingUp_
-cmp   al, 2
-jne   exit_t_verticaldoor_2
+pop   bx  ; bx has sec offset
+
+cmp   al, DOOR_CLOSE
+jne   exit_t_verticaldoor
 mov   al, byte ptr ds:[si + VLDOOR_T.vldoor_type]
-cmp   al, 6
-ja    exit_t_verticaldoor_2
-xor   ah, ah
-mov   bx, ax
-add   bx, ax
-jmp   word ptr cs:[bx + _jump_table_vertical_door_3]
+cmp   al, DOOR_BLAZEOPEN
+ja    exit_t_verticaldoor
+je    switch_case_verticaldoor_3_doorblazeopen
+cmp   al, DOOR_RAISEIN5MINS
+je    exit_t_verticaldoor
+ja    switch_case_verticaldoor_3_doorraisein5mins
+cmp   al, DOOR_CLOSE
+je    exit_t_verticaldoor
+ja    switch_case_verticaldoor_3_dooropen
+cmp   al, DOOR_CLOSE30THENOPEN
+je    switch_case_verticaldoor_3_doorclose30thenopen
+; fall thru 0
+
 switch_case_verticaldoor_3_doornormal:
 switch_case_verticaldoor_3_doorraisein5mins:
 mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], 0
 mov   ax, word ptr ds:[si + VLDOOR_T.vldoor_topwait]
 mov   word ptr ds:[si + VLDOOR_T.vldoor_topcountdown], ax
 jmp   exit_t_verticaldoor
+
+
 
 ENDP
 
