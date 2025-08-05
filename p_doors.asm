@@ -85,12 +85,11 @@ mov   dx, word ptr ds:[si + VLDOOR_T.vldoor_speed]
 ; si is vldoor ptr
 ; cx is zero (used in two calls)
 
-test  bl, bl
-je    switch_case_verticaldoor_dir_case_0
-js    switch_case_verticaldoor_dir_minus_1
-cmp   bl, 2
-je    switch_case_verticaldoor_dir_case_2
-jmp   switch_case_verticaldoor_dir_case_1
+cmp   bl, 1
+jg    switch_case_verticaldoor_dir_case_2  ; 2 > 1
+jpo   switch_case_verticaldoor_dir_minus_1 ; 0xFE parity odd. 0xFF, 0x00 not.
+jl    switch_case_verticaldoor_dir_case_0  ; 0 < 1
+jmp   switch_case_verticaldoor_dir_case_1  
 
 switch_case_verticaldoor_dir_case_2:
 dec   word ptr ds:[si + VLDOOR_T.vldoor_topcountdown]

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/04 22:35:03
+Created on:       25/08/04 23:33:08
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -59,9 +59,9 @@ p_setup_TEXT           CODE           AUTO           02ee:7ae0       0000127a
 s_sound_TEXT           CODE           AUTO           0bc4:0000       0000067a
 s_sbsfx_TEXT           CODE           AUTO           0bc4:0680       000017f3
 P_CEILNG_TEXT          CODE           AUTO           0bc4:1e74       00000298
-P_DOORS_TEXT           CODE           AUTO           0bc4:210c       00000554
-P_FLOOR_TEXT           CODE           AUTO           0bc4:2660       000004cb
-P_INTER_TEXT           CODE           AUTO           0bc4:2b2c       0000089e
+P_DOORS_TEXT           CODE           AUTO           0bc4:210c       00000552
+P_FLOOR_TEXT           CODE           AUTO           0bc4:265e       000004cb
+P_INTER_TEXT           CODE           AUTO           0bc4:2b2a       0000089e
 p_lights_TEXT          CODE           AUTO           0bc4:33d0       000003ed
 p_plats_TEXT           CODE           AUTO           0bc4:37c0       00000415
 P_SPEC_TEXT            CODE           AUTO           0bc4:3bd6       00000a06
@@ -805,37 +805,37 @@ Module: p_ceilng.obj(p_ceilng.ASM)
 0bc4:2081*     P_ActivateInStasisCeiling_
 0bc4:1e74      T_MoveCeiling_
 Module: p_doors.obj(p_doors.ASM)
-0bc4:2222      EV_DoLockedDoor_
-0bc4:2660*     P_DOORS_ENDMARKER_
-0bc4:2612      P_SpawnDoorRaiseIn5Mins_
+0bc4:2220      EV_DoLockedDoor_
+0bc4:265e*     P_DOORS_ENDMARKER_
+0bc4:2610      P_SpawnDoorRaiseIn5Mins_
 0bc4:210c*     P_DOORS_STARTMARKER_
-0bc4:25d9      P_SpawnDoorCloseIn30_
+0bc4:25d7      P_SpawnDoorCloseIn30_
 0bc4:210c      T_VerticalDoor_
-0bc4:2266      EV_DoDoor_
-0bc4:23be      EV_VerticalDoor_
+0bc4:2264      EV_DoDoor_
+0bc4:23bc      EV_VerticalDoor_
 Module: p_floor.obj(p_floor.ASM)
-0bc4:29f3      EV_BuildStairs_
-0bc4:27d6      EV_DoFloor_
-0bc4:2b2b*     P_FLOOR_ENDMARKER_
-0bc4:2696      T_MovePlaneFloorDown_
-0bc4:2660*     P_FLOOR_STARTMARKER_
-0bc4:270b      T_MovePlaneFloorUp_
-0bc4:2742      T_MoveFloor_
-0bc4:2660      T_MovePlaneCeilingDown_
-0bc4:267a      T_MovePlaneCeilingUp_
+0bc4:29f1      EV_BuildStairs_
+0bc4:27d4      EV_DoFloor_
+0bc4:2b29*     P_FLOOR_ENDMARKER_
+0bc4:2694      T_MovePlaneFloorDown_
+0bc4:265e*     P_FLOOR_STARTMARKER_
+0bc4:2709      T_MovePlaneFloorUp_
+0bc4:2740      T_MoveFloor_
+0bc4:265e      T_MovePlaneCeilingDown_
+0bc4:2678      T_MovePlaneCeilingUp_
 Module: p_inter.obj(p_inter.ASM)
-0bc4:2d31      P_TouchSpecialThing_
-0bc4:2bf5*     P_GiveWeapon_
-0bc4:2c79*     P_GiveCard_
-0bc4:3136      P_DamageMobj_
-0bc4:2c36*     P_GiveBody_
-0bc4:2c5a*     P_GiveArmor_
-0bc4:2b2c*     P_INTER_STARTMARKER_
-0bc4:2f6b*     P_KillMobj_
-0bc4:2b3c*     P_GiveAmmo_
-0bc4:2c93      P_GivePower_
-0bc4:30cb*     getMassThrust_
-0bc4:33ca*     P_INTER_ENDMARKER_
+0bc4:2d2f      P_TouchSpecialThing_
+0bc4:2bf3*     P_GiveWeapon_
+0bc4:2c77*     P_GiveCard_
+0bc4:3134      P_DamageMobj_
+0bc4:2c34*     P_GiveBody_
+0bc4:2c58*     P_GiveArmor_
+0bc4:2b2a*     P_INTER_STARTMARKER_
+0bc4:2f69*     P_KillMobj_
+0bc4:2b3a*     P_GiveAmmo_
+0bc4:2c91      P_GivePower_
+0bc4:30c9*     getMassThrust_
+0bc4:33c8*     P_INTER_ENDMARKER_
 Module: p_lights.obj(C:\REALDOOM\p_lights.c)
 0bc4:33d0      T_FireFlicker_
 0bc4:3430      P_SpawnFireFlicker_
@@ -1205,4 +1205,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  00017110 (94480.)
 Entry point address: 0bc4:6f86
-Link time: 00:00.74
+Link time: 00:00.75
