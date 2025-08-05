@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/05 01:19:24
+Created on:       25/08/05 01:20:46
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -58,10 +58,10 @@ hu_setup_TEXT          CODE           AUTO           02ee:7a00       000000d6
 p_setup_TEXT           CODE           AUTO           02ee:7ae0       0000127a
 s_sound_TEXT           CODE           AUTO           0bc4:0000       0000067a
 s_sbsfx_TEXT           CODE           AUTO           0bc4:0680       000017f3
-P_CEILNG_TEXT          CODE           AUTO           0bc4:1e74       00000298
-P_DOORS_TEXT           CODE           AUTO           0bc4:210c       000004da
-P_FLOOR_TEXT           CODE           AUTO           0bc4:25e6       000004cb
-P_INTER_TEXT           CODE           AUTO           0bc4:2ab2       0000089e
+P_CEILNG_TEXT          CODE           AUTO           0bc4:1e74       00000295
+P_DOORS_TEXT           CODE           AUTO           0bc4:210a       000004da
+P_FLOOR_TEXT           CODE           AUTO           0bc4:25e4       000004c7
+P_INTER_TEXT           CODE           AUTO           0bc4:2aac       0000089e
 p_lights_TEXT          CODE           AUTO           0bc4:3350       000003ed
 p_plats_TEXT           CODE           AUTO           0bc4:3740       00000415
 P_SPEC_TEXT            CODE           AUTO           0bc4:3b56       00000a06
@@ -796,46 +796,46 @@ Module: s_sbsfx.obj(C:\REALDOOM\s_sbsfx.c)
 145c:1237+     _DMA_PortInfo
 145c:20ac+     _sfxcache_head
 Module: p_ceilng.obj(p_ceilng.ASM)
-0bc4:2045      P_AddActiveCeiling_
-0bc4:205c*     P_RemoveActiveCeiling_
+0bc4:2042      P_AddActiveCeiling_
+0bc4:2059*     P_RemoveActiveCeiling_
 0bc4:1e74*     P_CEILNG_STARTMARKER_
-0bc4:210c*     P_CEILNG_ENDMARKER_
-0bc4:20c3      EV_CeilingCrushStop_
+0bc4:2109*     P_CEILNG_ENDMARKER_
+0bc4:20c0      EV_CeilingCrushStop_
 0bc4:1f4e      EV_DoCeiling_
-0bc4:2081*     P_ActivateInStasisCeiling_
+0bc4:207e*     P_ActivateInStasisCeiling_
 0bc4:1e74      T_MoveCeiling_
 Module: p_doors.obj(p_doors.ASM)
-0bc4:2220      EV_DoLockedDoor_
-0bc4:25e6*     P_DOORS_ENDMARKER_
-0bc4:2598      P_SpawnDoorRaiseIn5Mins_
-0bc4:210c*     P_DOORS_STARTMARKER_
-0bc4:255f      P_SpawnDoorCloseIn30_
-0bc4:210c      T_VerticalDoor_
-0bc4:2264      EV_DoDoor_
-0bc4:2344      EV_VerticalDoor_
+0bc4:221e      EV_DoLockedDoor_
+0bc4:25e4*     P_DOORS_ENDMARKER_
+0bc4:2596      P_SpawnDoorRaiseIn5Mins_
+0bc4:210a*     P_DOORS_STARTMARKER_
+0bc4:255d      P_SpawnDoorCloseIn30_
+0bc4:210a      T_VerticalDoor_
+0bc4:2262      EV_DoDoor_
+0bc4:2342      EV_VerticalDoor_
 Module: p_floor.obj(p_floor.ASM)
-0bc4:2979      EV_BuildStairs_
-0bc4:275c      EV_DoFloor_
-0bc4:2ab1*     P_FLOOR_ENDMARKER_
-0bc4:261c      T_MovePlaneFloorDown_
-0bc4:25e6*     P_FLOOR_STARTMARKER_
-0bc4:2691      T_MovePlaneFloorUp_
-0bc4:26c8      T_MoveFloor_
-0bc4:25e6      T_MovePlaneCeilingDown_
-0bc4:2600      T_MovePlaneCeilingUp_
+0bc4:2975      EV_BuildStairs_
+0bc4:275a      EV_DoFloor_
+0bc4:2aab*     P_FLOOR_ENDMARKER_
+0bc4:261a      T_MovePlaneFloorDown_
+0bc4:25e4*     P_FLOOR_STARTMARKER_
+0bc4:268f      T_MovePlaneFloorUp_
+0bc4:26c6      T_MoveFloor_
+0bc4:25e4      T_MovePlaneCeilingDown_
+0bc4:25fe      T_MovePlaneCeilingUp_
 Module: p_inter.obj(p_inter.ASM)
-0bc4:2cb7      P_TouchSpecialThing_
-0bc4:2b7b*     P_GiveWeapon_
-0bc4:2bff*     P_GiveCard_
-0bc4:30bc      P_DamageMobj_
-0bc4:2bbc*     P_GiveBody_
-0bc4:2be0*     P_GiveArmor_
-0bc4:2ab2*     P_INTER_STARTMARKER_
-0bc4:2ef1*     P_KillMobj_
-0bc4:2ac2*     P_GiveAmmo_
-0bc4:2c19      P_GivePower_
-0bc4:3051*     getMassThrust_
-0bc4:3350*     P_INTER_ENDMARKER_
+0bc4:2cb1      P_TouchSpecialThing_
+0bc4:2b75*     P_GiveWeapon_
+0bc4:2bf9*     P_GiveCard_
+0bc4:30b6      P_DamageMobj_
+0bc4:2bb6*     P_GiveBody_
+0bc4:2bda*     P_GiveArmor_
+0bc4:2aac*     P_INTER_STARTMARKER_
+0bc4:2eeb*     P_KillMobj_
+0bc4:2abc*     P_GiveAmmo_
+0bc4:2c13      P_GivePower_
+0bc4:304b*     getMassThrust_
+0bc4:334a*     P_INTER_ENDMARKER_
 Module: p_lights.obj(C:\REALDOOM\p_lights.c)
 0bc4:3350      T_FireFlicker_
 0bc4:33b0      P_SpawnFireFlicker_
@@ -1205,4 +1205,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  00017090 (94352.)
 Entry point address: 0bc4:6f06
-Link time: 00:00.19
+Link time: 00:00.20

@@ -264,19 +264,20 @@ jl    exit_doceiling
 
 loop_next_secnum:
 
-mov   cx, word ptr [si]        ; secnum
+lodsw        ; secnum
+xchg  ax, cx
 
 
 
 ;		ceiling = (ceiling_t __near*) P_CreateThinker (TF_MOVECEILING_HIGHBITS);
 mov   ax, TF_MOVECEILING_HIGHBITS
+cwd  ; zero dx.
 call  P_CreateThinker_
 
 
 mov   bx, ax ; bx gets thinker
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 mov   di, SIZEOF_THINKER_T
-xor   dx, dx
 div   di    ; calculate ceilingref
 
 
@@ -291,8 +292,6 @@ mov   byte ptr ds:[bx + CEILING_T.ceiling_crush], al
 inc   ax
 mov   word ptr cs:[OFFSET SELFMODIFY_doceiling_return + 1], ax ; 1
 
-inc   si
-inc   si
 
 mov   word ptr ds:[bx + CEILING_T.ceiling_secnum], cx
 

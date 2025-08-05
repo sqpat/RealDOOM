@@ -392,7 +392,9 @@ jl    no_sectors_in_list_exit
 
 loop_next_secnum_dofloor:
 
-mov   cx, word ptr [si]
+lodsw 
+xchg  ax, cx
+
 push  si ; bp - 0202h. pop at end of loop...
 
 mov   ax, TF_MOVEFLOOR_HIGHBITS
@@ -474,8 +476,6 @@ done_with_dofloor_switch_block:
 do_floor_switch_case_type_default:
 
 pop   si ; pop and inc word ptr
-inc   si
-inc   si
 
 cmp   word ptr [si], 0
 jnl   loop_next_secnum_dofloor
@@ -795,7 +795,8 @@ jmp   exit_ev_buildstairs
 
 loop_next_secnum_buildstairs:
 
-mov   cx, word ptr [si] ; cx has secnum
+lodsw
+xchg  ax, cx
 push  si
 
 mov   ax, TF_MOVEFLOOR_HIGHBITS
@@ -1022,8 +1023,7 @@ end_middle_loop:
 
 continue_buildstairs_middle_loop:
 pop   si
-inc   si
-inc   si
+
 cmp   word ptr [si], 0
 jl    exit_ev_buildstairs
 jmp   loop_next_secnum_buildstairs
