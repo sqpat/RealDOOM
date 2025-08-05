@@ -485,15 +485,15 @@ push  bp
 mov   bp, sp
 sub   sp, 2
 push  ax
-xchg  ax, bx  
-SHIFT_MACRO shl   bx 4
+xchg  ax, di  
+SHIFT_MACRO shl   di 4
 
-push  bx  ; store till after loop.
 
 ;mov   ax, dx
 
 mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
-mov   al, byte ptr es:[bx + LINE_PHYSICS_T.lp_special]
+mov   al, byte ptr es:[di + LINE_PHYSICS_T.lp_special]
+mov   cl, al ; backup..
 sub   al, 26
 js    switch_block_verticaldoor_case_default ; catch 0-25
 cmp   al, 3
@@ -533,32 +533,42 @@ jmp   exit_ev_verticaldoor
 done_with_verticaldoor_switch_block:
 switch_block_verticaldoor_case_default:
 
-pop   bx ; restore line ptr
+
 
 ; already set above..
 ;mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
 
-mov   cx, word ptr es:[bx + LINE_PHYSICS_T.lp_backsecnum]
-mov   bl, byte ptr es:[bx + LINE_PHYSICS_T.lp_special] ; todo remove but code up ahead expects bl special still
-xor   bh, bh
-mov   si, cx
+mov   bx, word ptr es:[di + LINE_PHYSICS_T.lp_backsecnum]
+
+mov   si, bx
 SHIFT_MACRO shl   si 4
-cmp   word ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], 0
-
-je    door_special_data_ref_block_done
-
 mov   ax, word ptr ds:[si + _sectors_physics+ SECTOR_PHYSICS_T.secp_specialdataRef]
+test  ax, ax
+
+jz    door_special_data_ref_block_done
+
+
 mov   dx, SIZEOF_THINKER_T
 mul   dx
 xchg  ax, si
+
 add   si, (_thinkerlist + THINKER_T.t_data) ; si is door ptr.
-cmp   bx, 117
-jne   label_36
-label_24:
+cmp   cl, 117
+je    handle_raise_door
+cmp   cl, 1
+jb    door_special_data_ref_block_done
+je    handle_raise_door
+cmp   cl, 26
+jb    door_special_data_ref_block_done
+cmp   cl, 28
+ja    door_special_data_ref_block_done
+
+handle_raise_door:
 cmp   word ptr ds:[si + VLDOOR_T.vldoor_direction], -1
-je    label_37
+je    set_door_up_and_exit
 cmp   ax, word ptr ds:[_playerMobjRef]
-je    label_41
+jne   exit_ev_verticaldoor
+mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], -1
 exit_ev_verticaldoor:
 LEAVE_MACRO 
 pop   di
@@ -567,37 +577,27 @@ pop   cx
 pop   bx
 ret   
 
-label_37:
+set_door_up_and_exit:
 mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], 1
 jmp   exit_ev_verticaldoor
 
-label_41:
-mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], -1
-jmp   exit_ev_verticaldoor
 
 
-label_36:
-cmp   bx, 1
-jnae   door_special_data_ref_block_done
 
-jna    label_24
-label_23:
-cmp   bx, 26
-jb    door_special_data_ref_block_done
-cmp   bx, 28
-jbe   label_24
+
 
 
 
 door_special_data_ref_block_done:
-cmp   bx, 31
-jae   label_22
-cmp   bx, 1
-label_20:
 mov   dx, SFX_DOROPN
-label_28:
-mov   ax, cx
+cmp   cl, 117
+jb    do_play_door_sound
+cmp   cl, 118
+ja    do_play_door_sound
+mov   dx, SFX_BDOPN
+do_play_door_sound:
 
+mov   ax, bx
 call  S_StartSoundWithParams_
    
 mov   ax, TF_VERTICALDOOR_HIGHBITS
@@ -611,27 +611,40 @@ sub   ax, (_thinkerlist + THINKER_T.t_data)
 div   di
 mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], 1
 mov   word ptr ds:[si + VLDOOR_T.vldoor_speed], VDOORSPEED
-mov   di, cx
+mov   di, bx
 mov   word ptr ds:[si + VLDOOR_T.vldoor_topwait], VDOORWAIT
 shl   di, 4
-mov   word ptr ds:[si + VLDOOR_T.vldoor_secnum], cx
+mov   word ptr ds:[si + VLDOOR_T.vldoor_secnum], bx
 mov   word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
 add   di, _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef
-cmp   bx, 31
+
+mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
+
+
+cmp   cl, 31
 jae   label_33
-cmp   bx, 1
+cmp   cl, 1
 jb    label_31
-ja    jump_to_label_29
+jna   label_32
+cmp   cl, 26
+jb    label_31
+cmp   cl, 28
+ja    label_31
+jmp   label_32
+jump_to_label_31:
+jmp   label_31
+
+
 label_32:
-mov   bx, word ptr [bp - 2]
-mov   byte ptr ds:[bx], 0
+mov   si, word ptr [bp - 2]
+mov   byte ptr ds:[si], 0
 label_31:
-mov   ax, cx
+mov   ax, bx
 xor   dx, dx
-mov   bx, word ptr [bp - 2]
+mov   si, word ptr [bp - 2]
 call  P_FindLowestOrHighestCeilingSurrounding_
 sub   ax, (4 SHL SHORTFLOORBITS)
-mov   word ptr ds:[bx + VLDOOR_T.vldoor_topheight], ax
+mov   word ptr ds:[si + VLDOOR_T.vldoor_topheight], ax
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -639,58 +652,34 @@ pop   cx
 pop   bx
 ret   
 
-label_22:
-ja    label_19
-label_27:
-jmp   label_20
-label_19:
-cmp   bx, 117
-jb    label_27
-cmp   bx, 118
-ja    label_27
-mov   dx, SFX_BDOPN
-jmp   label_28
-jump_to_label_29:
-jmp   label_29
 label_33:
 mov   ax, word ptr [bp - 4]
 shl   ax, 4
-cmp   bx, 34
+cmp   cl, 34
 ja    label_30
-mov   bx, LINES_PHYSICS_SEGMENT
+
 mov   byte ptr ds:[si], 3
-mov   es, bx
-mov   bx, ax
-add   bx, LINE_PHYSICS_T.lp_special
-mov   byte ptr es:[bx], 0
+
+mov   si, ax
+
+mov   byte ptr es:[si + LINE_PHYSICS_T.lp_special], 0
 jmp   label_31
 label_30:
-cmp   bx, 118
+cmp   cl, 118
 jne   label_35
 mov   byte ptr ds:[si], 6
-mov   bx, LINES_PHYSICS_SEGMENT
+
 mov   word ptr ds:[si + VLDOOR_T.vldoor_speed], VDOORSPEED*4
-mov   es, bx
-mov   bx, ax
-add   bx, LINE_PHYSICS_T.lp_special
-mov   byte ptr es:[bx], 0
+
+mov   si, ax
+
+mov   byte ptr es:[si + LINE_PHYSICS_T.lp_special], 0
 jmp   label_31
 label_35:
-cmp   bx, 117
-je    label_42
-label_34:
-jmp   label_31
-label_42:
+cmp   cl, 117
+jne   label_31
 mov   byte ptr ds:[si], 5
 mov   word ptr ds:[si + VLDOOR_T.vldoor_speed], VDOORSPEED*4
-jmp   label_31
-label_29:
-cmp   bx, 26
-jb    label_34
-cmp   bx, 28
-ja    jump_to_label_31
-jmp   label_32
-jump_to_label_31:
 jmp   label_31
 
 
