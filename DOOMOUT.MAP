@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/06 00:46:11
+Created on:       25/08/06 00:54:07
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -63,11 +63,11 @@ P_DOORS_TEXT           CODE           AUTO           0bc4:210a       000003d9
 P_FLOOR_TEXT           CODE           AUTO           0bc4:24e4       000004c7
 P_INTER_TEXT           CODE           AUTO           0bc4:29ac       0000089e
 p_lights_TEXT          CODE           AUTO           0bc4:3250       000003ed
-P_PLATS_TEXT           CODE           AUTO           0bc4:363e       00000288
-P_SPEC_TEXT            CODE           AUTO           0bc4:38c6       00000a06
-P_SWITCH_TEXT          CODE           AUTO           0bc4:42cc       000003c6
-P_TELEPT_TEXT          CODE           AUTO           0bc4:4692       00000185
-P_TICK_TEXT            CODE           AUTO           0bc4:4818       000001e4
+P_PLATS_TEXT           CODE           AUTO           0bc4:363e       00000289
+P_SPEC_TEXT            CODE           AUTO           0bc4:38c8       00000a06
+P_SWITCH_TEXT          CODE           AUTO           0bc4:42ce       000003c6
+P_TELEPT_TEXT          CODE           AUTO           0bc4:4694       00000185
+P_TICK_TEXT            CODE           AUTO           0bc4:481a       000001e4
 p_user_TEXT            CODE           AUTO           0bc4:4a00       000006e7
 R_MAIN_TEXT            CODE           AUTO           0bc4:50e8       000003dc
 w_wad_TEXT             CODE           AUTO           0bc4:54d0       0000030c
@@ -852,39 +852,39 @@ Module: p_plats.obj(p_plats.ASM)
 0bc4:363e      T_PlatRaise_
 0bc4:387d      P_AddActivePlat_
 0bc4:3895*     P_RemoveActivePlat_
-0bc4:38c6*     P_PLATS_ENDMARKER_
+0bc4:38c7*     P_PLATS_ENDMARKER_
 0bc4:3833      EV_PlatFunc_
 0bc4:363e*     P_PLATS_STARTMARKER_
 Module: p_spec.obj(p_spec.ASM)
-0bc4:3fa3      P_UpdateSpecials_
-0bc4:3992      P_FindNextHighestFloor_
-0bc4:391c      P_FindHighestOrLowestFloorSurrounding_
-0bc4:3edc      P_PlayerInSpecialSector_
-0bc4:38c6*     P_SPEC_STARTMARKER_
-0bc4:42cc*     P_SPEC_ENDMARKER_
-0bc4:40d4      EV_DoDonut_
-0bc4:3a03      P_FindLowestOrHighestCeilingSurrounding_
-0bc4:3ab0      P_FindMinSurroundingLight_
-0bc4:38c6*     getNextSectorList_
-0bc4:3a79      P_FindSectorsFromLineTag_
-0bc4:3c3c      P_CrossSpecialLine_
-0bc4:3e49      P_ShootSpecialLine_
-0bc4:4240      P_SpawnSpecials_
+0bc4:3fa5      P_UpdateSpecials_
+0bc4:3994      P_FindNextHighestFloor_
+0bc4:391e      P_FindHighestOrLowestFloorSurrounding_
+0bc4:3ede      P_PlayerInSpecialSector_
+0bc4:38c8*     P_SPEC_STARTMARKER_
+0bc4:42ce*     P_SPEC_ENDMARKER_
+0bc4:40d6      EV_DoDonut_
+0bc4:3a05      P_FindLowestOrHighestCeilingSurrounding_
+0bc4:3ab2      P_FindMinSurroundingLight_
+0bc4:38c8*     getNextSectorList_
+0bc4:3a7b      P_FindSectorsFromLineTag_
+0bc4:3c3e      P_CrossSpecialLine_
+0bc4:3e4b      P_ShootSpecialLine_
+0bc4:4242      P_SpawnSpecials_
 Module: p_switch.obj(p_switch.ASM)
-0bc4:42cc*     P_SWITCH_STARTMARKER_
-0bc4:4692*     P_SWITCH_ENDMARKER_
-0bc4:42cc      P_ChangeSwitchTexture_
-0bc4:44d5      P_UseSpecialLine_
+0bc4:42ce*     P_SWITCH_STARTMARKER_
+0bc4:4694*     P_SWITCH_ENDMARKER_
+0bc4:42ce      P_ChangeSwitchTexture_
+0bc4:44d7      P_UseSpecialLine_
 Module: p_telept.obj(p_telept.ASM)
-0bc4:4817*     P_TELEPT_ENDMARKER_
-0bc4:4692*     P_TELEPT_STARTMARKER_
-0bc4:4692      EV_Teleport_
+0bc4:4819*     P_TELEPT_ENDMARKER_
+0bc4:4694*     P_TELEPT_STARTMARKER_
+0bc4:4694      EV_Teleport_
 Module: p_tick.obj(p_tick.ASM)
-0bc4:488c      P_UpdateThinkerFunc_
-0bc4:49e7      P_Random_
-0bc4:48ae      P_RemoveThinker_
-0bc4:48e1      P_Ticker_
-0bc4:4818      P_CreateThinker_
+0bc4:488e      P_UpdateThinkerFunc_
+0bc4:49e9      P_Random_
+0bc4:48b0      P_RemoveThinker_
+0bc4:48e3      P_Ticker_
+0bc4:481a      P_CreateThinker_
 Module: p_user.obj(C:\REALDOOM\p_user.c)
 0bc4:4a00+     P_Thrust_
 0bc4:4a60+     P_CalcHeight_
@@ -1207,4 +1207,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  00016e00 (93696.)
 Entry point address: 0bc4:6c76
-Link time: 00:00.19
+Link time: 00:00.30

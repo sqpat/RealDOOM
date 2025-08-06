@@ -481,7 +481,8 @@ call        P_RemoveThinker_
 
 mov         word ptr [si + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], dx ; 0
 pop         si
-mov         word ptr [si], dx ; 0
+
+mov         word ptr [si-2], dx ; 0
 
 exit_removeactiveplat:
 pop         dx
