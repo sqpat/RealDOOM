@@ -514,40 +514,35 @@ PUBLIC  P_RemoveActivePlat_
 
 
 push        bx
-push        cx
 push        dx
-push        si
-mov         cx, ax
-xor         dl, dl
-label_26:
-mov         al, dl
-cbw        
-mov         bx, ax
-add         bx, ax
-mov         ax, word ptr ds:[bx + _activeplats]
-cmp         cx, ax
-je          label_25
-inc         dl
-cmp         dl, MAXPLATS
-jl          label_26
-pop         si
-pop         dx
-pop         cx
-pop         bx
-ret         
-label_25:
-imul        si, ax, SIZEOF_THINKER_T
-add         si, (_thinkerlist + THINKER_T.t_data)
-mov         si, word ptr [si]
+mov         bx, _activeplats
+loop_look_for_empty_platslot_removeactiveplat:
+cmp         ax, word ptr ds:[bx]
+je          found_plat_to_remove
+inc         bx
+inc         bx
+cmp         bx, (_activeplats + MAXPLATS * 2)
+jl          loop_look_for_empty_platslot_removeactiveplat
+jmp         exit_removeactiveplat
+found_plat_to_remove:
+
+push        bx  ; store activeplats[bx] ptr
+xchg        ax, bx  ; bx gets platref
+mov         ax, SIZEOF_THINKER_T
+mul         bx ; dx zeroed.
+xchg        ax, bx  ; bx gets ptr. ax gets platref back. dx is zeroed from mul
+
+mov         bx, word ptr [bx + _thinkerlist + THINKER_T.t_data + PLAT_T.plat_secnum]
+SHIFT_MACRO shl         bx 4
+
 call        P_RemoveThinker_
-shl         si, 4
-xor         ax, ax
-mov         word ptr [si + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
-add         si, _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef
-mov         word ptr [bx + _activeplats], ax
-pop         si
+
+mov         word ptr [bx + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], dx ; 0
+pop         bx
+mov         word ptr [bx], dx ; 0
+
+exit_removeactiveplat:
 pop         dx
-pop         cx
 pop         bx
 ret  
 
