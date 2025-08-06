@@ -436,8 +436,11 @@ mov         cx, MAXPLATS
 
 repne scasw
 pop         ax ; retrieve...
-jcxz        didnt_find_slot
+jnz         didnt_find_slot
+
 found_slot_for_platadd:
+dec         di
+dec         di
 stosw
 didnt_find_slot:
 pop         cx
@@ -449,39 +452,40 @@ ENDP
 
 PROC    P_RemoveActivePlat_ NEAR
 PUBLIC  P_RemoveActivePlat_ 
+;void __near P_RemoveActivePlat(THINKERREF platRef) {
 
 
-push        bx
+push        si
 push        dx
-mov         bx, _activeplats
+mov         si, _activeplats
+xchg        ax, dx
 loop_look_for_empty_platslot_removeactiveplat:
-cmp         ax, word ptr ds:[bx]
+lodsw
+cmp         ax, dx
 je          found_plat_to_remove
-inc         bx
-inc         bx
-cmp         bx, (_activeplats + MAXPLATS * 2)
+cmp         si, (_activeplats + MAXPLATS * 2)
 jl          loop_look_for_empty_platslot_removeactiveplat
 jmp         exit_removeactiveplat
 found_plat_to_remove:
 
-push        bx  ; store activeplats[bx] ptr
-xchg        ax, bx  ; bx gets platref
+push        si  ; store activeplats[si] ptr
+xchg        ax, si  ; si gets platref
 mov         ax, SIZEOF_THINKER_T
-mul         bx ; dx zeroed.
-xchg        ax, bx  ; bx gets ptr. ax gets platref back. dx is zeroed from mul
+mul         si ; dx zeroed.
+xchg        ax, si  ; si gets ptr. ax gets platref back. dx is zeroed from mul
 
-mov         bx, word ptr [bx + _thinkerlist + THINKER_T.t_data + PLAT_T.plat_secnum]
-SHIFT_MACRO shl         bx 4
+mov         si, word ptr [si + _thinkerlist + THINKER_T.t_data + PLAT_T.plat_secnum]
+SHIFT_MACRO shl         si 4
 
 call        P_RemoveThinker_
 
-mov         word ptr [bx + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], dx ; 0
-pop         bx
-mov         word ptr [bx], dx ; 0
+mov         word ptr [si + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], dx ; 0
+pop         si
+mov         word ptr [si], dx ; 0
 
 exit_removeactiveplat:
 pop         dx
-pop         bx
+pop         si
 ret  
 
 ENDP
