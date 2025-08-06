@@ -62,9 +62,10 @@ SHIFT_MACRO shl         bx 4
 xor         cx, cx
 mov         al, byte ptr ds:[si + PLAT_T.plat_status]
 cmp         al, PLAT_WAITING
+mov         ax, word ptr es:[bx + SECTOR_T.sec_floorheight]
 xchg        ax, bx
 ; ax sector offset (FP_OFF(platsector))
-; bl type
+; bx floorheight
 ; dx plat speed
 ; cx 0
 ; di secnum
@@ -92,57 +93,53 @@ mov         dx, SFX_STNMOV
 mov         ax, di
 call        S_StartSoundWithParams_
 done_checking_level_time:
-xor         bx, bx ; clear flag
-xchg        ax, cx
+mov         dx, SFX_PSTART  ; in case we play this platform sound
+xor         bx, bx ; clear bx flag. use bx flag to determine if its the branch that does a 2nd switch block later
+xchg        ax, cx ; restore res field
 cmp         al, FLOOR_CRUSHED
 jne         floor_not_crush
 cmp         byte ptr ds:[si + PLAT_T.plat_crush], 0
 je          start_platform_sound
 floor_not_crush:
+mov         dx, SFX_PSTOP ; in case played
 cmp         al, FLOOR_PASTDEST
-je          play_sound_and_remove_plat
-platraise_switch_case_default:
-platraise_switch_case_3:
-done_with_platraise_switch_block:
-LEAVE_MACRO       
-POPA_NO_AX_OR_BP_MACRO
-ret         
-play_sound_and_remove_plat:
-mov         bx, -1 ; set flag
+jne         done_with_platraise_switch_block    
+
+mov         bl, 1 ; set bx flag
 start_platform_sound:
-mov         dx, SFX_PSTART
 
 jmp         set_stuff_play_sound_and_exit_t_platraise
-      
+
+
 platraise_switch_case_1:
 mov         bx, word ptr ds:[si + PLAT_T.plat_low]
 call        T_MovePlaneFloorDown_
 cmp         al, FLOOR_PASTDEST ; 2
 jne         done_with_platraise_switch_block
 mov         dx, SFX_PSTOP
-xor         bx, bx ; clear flag
+xor         bx, bx ; clear bx flag
 set_stuff_play_sound_and_exit_t_platraise:
-mov         cl, al  ; 2. al is 2 in the  2 case (plat_waiting == floor_pastdest) or 1 in the 1 case (floor_crushed == plat_down)
+mov         byte ptr ds:[si + PLAT_T.plat_status], al ; al is 2 in the  2 case (plat_waiting == floor_pastdest) or 1 in the 1 case (floor_crushed == plat_down)
 mov         al, byte ptr ds:[si + PLAT_T.plat_wait]
 mov         byte ptr ds:[si + PLAT_T.plat_count], al
-cmp         bl, 0 ; look for flag
-js          do_second_switch_block
+test        bx, bx ; look for flag
+jnz         do_second_switch_block
 jmp         set_status_play_sound_and_exit_t_platraise
-
 platraise_switch_case_2:
 dec         byte ptr ds:[si + PLAT_T.plat_count]
 jne         done_with_platraise_switch_block
-xchg        ax, bx
-mov         dx, word ptr es:[bx + SECTOR_T.sec_floorheight]
-cmp         dx, word ptr ds:[si + PLAT_T.plat_low]
+cmp         bx, word ptr ds:[si + PLAT_T.plat_low]   ; bx has sec floorheight
 je          write_plat_up
-inc         cx  ; plat_down = 1
+inc         cx  ; plat_down = 1. plat_up = 0. cx was 0 to start.
 write_plat_up:
 mov         dx, SFX_PSTART
-set_status_play_sound_and_exit_t_platraise:
 mov         byte ptr ds:[si + PLAT_T.plat_status], cl
+set_status_play_sound_and_exit_t_platraise:
 xchg        ax, di
 call        S_StartSoundWithParams_
+platraise_switch_case_3:
+platraise_switch_case_default:
+done_with_platraise_switch_block:
 LEAVE_MACRO       
 POPA_NO_AX_OR_BP_MACRO
 ret      
