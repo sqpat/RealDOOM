@@ -515,3 +515,22 @@ VLDOOR_T STRUC
 
 VLDOOR_T ENDS
     
+
+PLAT_T STRUC
+
+    plat_secnum             dw ?  ; 0
+    plat_speed              dw ?  ; 2
+    plat_low                dw ?  ; 4
+    plat_high               dw ?  ; 6
+    plat_wait               db ?  ; 8
+    plat_count              db ?  ; 9
+    plat_status             db ?  ; 0A
+    plat_oldstatus          db ?  ; 0B
+    plat_crush              db ?  ; 0C
+    plat_tag                db ?  ; 0D
+    plat_type               db ?  ; 0E
+
+PLAT_T ENDS
+
+
+

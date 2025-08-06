@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/05 04:02:19
+Created on:       25/08/05 05:02:33
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -858,8 +858,8 @@ Module: p_spec.obj(p_spec.ASM)
 0b52:3b22      P_FindNextHighestFloor_
 0b52:3aac      P_FindHighestOrLowestFloorSurrounding_
 0b52:406c      P_PlayerInSpecialSector_
-0b52:445c*     P_SPEC_ENDMARKER_
 0b52:3a56*     P_SPEC_STARTMARKER_
+0b52:445c*     P_SPEC_ENDMARKER_
 0b52:4264      EV_DoDonut_
 0b52:3b93      P_FindLowestOrHighestCeilingSurrounding_
 0b52:3c40      P_FindMinSurroundingLight_
@@ -1191,4 +1191,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  000166d0 (91856.)
 Entry point address: 0b52:6cce
-Link time: 00:00.20
+Link time: 00:00.19
