@@ -374,61 +374,52 @@ ENDP
 PROC    EV_PlatFunc_ NEAR
 PUBLIC  EV_PlatFunc_ 
 
+;void __near EV_PlatFunc(uint8_t linetag, int8_t type) {
+
 push        bx
 push        cx
 push        si
-push        bp
-mov         bp, sp
-sub         sp, 2
-mov         byte ptr [bp - 2], al
-mov         ch, dl
-xor         cl, cl
-label_22:
-mov         al, cl
-cbw        
-mov         si, ax
-add         si, ax
-mov         ax, word ptr ds:[si + _activeplats]
+mov         byte ptr cs:[OFFSET SELFMODIFY_platfunc_linetag + 4], al
+
+mov         cx, dx ; type in dl. dx gets clobbered by mul, func calls
+
+mov         si, _activeplats
+
+loop_next_active_plat:
+lodsw
 test        ax, ax
-je          label_20
-imul        bx, ax, SIZEOF_THINKER_T
-mov         al, byte ptr ds:[bx + _thinkerlist + t_data + PLAT_T.plat_tag]
-cbw        
-mov         dx, ax
-mov         al, byte ptr [bp - 2]
-xor         ah, ah
-add         bx, (_thinkerlist + THINKER_T.t_data)
-cmp         dx, ax
-jne         label_20
-test        ch, ch
-jne         label_21
-mov         al, byte ptr ds:[bx + PLAT_T.plat_status]
-cmp         al, 3
-jne         label_21
-mov         byte ptr ds:[bx + PLAT_T.plat_oldstatus], al
+je          iter_next_active_plat
+xchg        bx, ax ; store ref
+mov         ax, SIZEOF_THINKER_T
+mul         bx
+xchg        ax, bx ; bx gets ptr, ax gets ref. dx is 0 
+SELFMODIFY_platfunc_linetag:
+cmp         byte ptr ds:[bx + _thinkerlist + t_data + PLAT_T.plat_tag], 010h
+jne         iter_next_active_plat
+mov         ch, byte ptr ds:[bx + PLAT_T.plat_status]
+test        cl, cl
+jne         check_stop_plat_status    ; 1 = PLAT_FUNC_STOP_PLAT
+; check in stasis status
+cmp         ch, PLAT_FUNC_IN_STASIS
+jne         iter_next_active_plat
 mov         dx, TF_PLATRAISE_HIGHBITS
-mov         ax, word ptr ds:[si + _activeplats]
+jmp         do_update_thinker_call
+
+check_stop_plat_status:
+cmp         ch, PLAT_FUNC_IN_STASIS
+je          iter_next_active_plat
+mov         byte ptr ds:[bx + PLAT_T.plat_status], PLAT_FUNC_IN_STASIS
+cwd         ; ax has ref which is < maxthinkers
+;mov         dx, TF_NULL_HIGHBITS  ; 0
+do_update_thinker_call:
+mov         byte ptr ds:[bx + PLAT_T.plat_oldstatus], ch
+; ax already this.
+;mov         ax, word ptr ds:[bx + _activeplats]
 call        P_UpdateThinkerFunc_
-label_21:
-cmp         ch, 1
-jne         label_20
-mov         al, byte ptr ds:[bx + PLAT_T.plat_status]
-cmp         al, 3
-je          label_20
-mov         byte ptr ds:[bx + PLAT_T.plat_oldstatus], al
-mov         al, cl
-cbw        
-mov         byte ptr ds:[bx + PLAT_T.plat_status], 3
-mov         bx, ax
-add         bx, ax
-xor         dx, dx
-mov         ax, word ptr ds:[bx + _activeplats]
-call        P_UpdateThinkerFunc_
-label_20:
-inc         cl
-cmp         cl, MAXPLATS
-jl          label_22
-LEAVE_MACRO       
+iter_next_active_plat:
+cmp         si, _activeplats + (2 * MAXPLATS)
+jl          loop_next_active_plat
+
 pop         si
 pop         cx
 pop         bx
