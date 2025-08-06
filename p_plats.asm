@@ -161,215 +161,208 @@ POPA_NO_AX_OR_BP_MACRO
 ret      
 ENDP
 
-_doplat_jump_table:
-dw switch_block_ev_doplat_case_0
-dw switch_block_ev_doplat_case_1
-dw switch_block_ev_doplat_case_2
-dw switch_block_ev_doplat_case_3
-dw switch_block_ev_doplat_case_4
 
-
+jump_to_exit:
+jmp         return_rtn_and_exit
 PROC    EV_DoPlat_ NEAR
 PUBLIC  EV_DoPlat_ 
+
+;int16_t __near EV_DoPlat (  uint8_t linetag, int16_t linefrontsecnum,plattype_e	type,int16_t		amount ){
+
+; bp - 1    linetag
+; bp - 2    type
 
 
 push        si
 push        di
 push        bp
 mov         bp, sp
-sub         sp, 0218h
-mov         byte ptr [bp - 4], al
+mov         bh, al   ; linetag in bh
+push        bx ; bp - 2
 mov         si, dx
-mov         byte ptr [bp - 2], bl
-mov         word ptr [bp - 014h], cx
+SHIFT_MACRO shl         si 4
+add         si, SECTOR_T.sec_floorpic
+mov         word ptr cs:[SELFMODIFY_read_floorpic_hardcoded_offset+2], si
+sub         sp, 0200h
+SHIFT_MACRO shl         cx SHORTFLOORBITS
+mov         word ptr cs:[OFFSET SELFMODIFY_set_amount + 1], cx
 xor         ax, ax
-mov         word ptr [bp - 012h], ax
-mov         word ptr [bp - 0Eh], ax
-test        bl, bl
-jne         label_11
-mov         al, byte ptr [bp - 4]
+
+mov         byte ptr cs:[SELFMODIFY_ev_doplatset_rtn+1], al
+test        bl, bl  ; perpetualRaise
+jne         not_perpetualRaise
+mov         al, bh  ; linetag
 xor         dx, dx
 xor         ah, ah
 call        EV_PlatFunc_
-label_11:
-mov         al, byte ptr [bp - 4]
-lea         dx, [bp - 0218h]
-shl         si, 4
+not_perpetualRaise:
+
+mov         al, bh  ; linetag
+lea         dx, [bp - 0202h]
+mov         si, dx
 xor         bx, bx
-mov         word ptr [bp - 0Ch], si
-mov         si, word ptr [bp - 012h]
-cbw        
-add         si, si
 call        P_FindSectorsFromLineTag_
-mov         word ptr [bp - 0Ah], si
-cmp         word ptr [bp + si - 0218h], 0
-jl          label_12
-label_27:
-mov         si, word ptr [bp - 0Ah]
-mov         cx, word ptr [bp + si - 0218h]
-mov         ax, cx
-shl         ax, 4
-mov         word ptr [bp - 8], ax
-mov         word ptr [bp - 018h], ax
-mov         ax, SECTORS_SEGMENT
-mov         bx, word ptr [bp - 8]
-mov         es, ax
-mov         ax, word ptr es:[bx]
-mov         di, SIZEOF_THINKER_T
-mov         word ptr [bp - 6], ax
+
+cmp         word ptr [si], 0
+jl          jump_to_exit
+
+loop_next_secnum_doplat:
+lodsw
+mov         cx, ax 
+push        si
+SHIFT_MACRO shl         ax 4
+xchg        ax, si  ; si is sectors[secnum]
 mov         ax, TF_PLATRAISE_HIGHBITS
-xor         dx, dx
+cwd
 
 call        P_CreateThinker_
-         
-mov         bx, ax
-mov         si, ax
+
+mov         bx, ax ; bx gets plat. todo swap bx/si used for consistency with other funcs like this?
+
 sub         ax, (_thinkerlist + THINKER_T.t_data)
+mov         di, SIZEOF_THINKER_T
 div         di
-mov         word ptr [bp - 0Eh], 1
-mov         word ptr [bp - 016h], 0
-inc         word ptr [bp - 012h]
-mov         di, word ptr [bp - 018h]
-mov         word ptr [bp - 010h], ax
-mov         word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
-mov         al, byte ptr [bp - 2]
-mov         byte ptr ds:[bx + PLAT_T.plat_crush], 0
-add         word ptr [bp - 0Ah], 2
+
+mov         es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+mov         di, word ptr es:[si + SECTOR_T.sec_floorheight]
+
+mov         byte ptr cs:[SELFMODIFY_ev_doplatset_rtn+1], 1
+
+
+mov         word ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
+mov         word ptr cs:[SELFMODIFY_setplatref+1], ax
+xor         ax, ax
+cwd
+mov         byte ptr ds:[bx + PLAT_T.plat_crush], al
+mov         ax, word ptr [bp - 2]
+mov         byte ptr ds:[bx + PLAT_T.plat_tag], ah
 mov         byte ptr ds:[bx + PLAT_T.plat_type], al
-mov         al, byte ptr [bp - 4]
-add         di, _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef
-mov         byte ptr ds:[bx + PLAT_T.plat_tag], al
-mov         al, byte ptr [bp - 2]
-mov         word ptr ds:[bx], cx
-cmp         al, 4
-ja          label_13
-xor         ah, ah
-mov         di, ax
-add         di, ax
-jmp         word ptr cs:[di + _doplat_jump_table]
-label_12:
-jmp         label_14
-switch_block_ev_doplat_case_0:
+mov         word ptr ds:[bx + PLAT_T.plat_secnum], cx
+
+
+
+
+; ax is type
+; cx is secnum
+; bx is plat.
+; dx is 0
+; si is sectors[secnum]
+; di is floorheight
+
+
+
+; cases 0-4.
+
+cmp         al, PLATFORM_RAISETONEARESTANDCHANGE ; 3
+ja          switch_block_ev_doplat_case_blazeDWUS ; 4
+je          switch_block_ev_doplat_case_raiseToNearestAndChange ; 3
+cmp         al, PLATFORM_DOWNWAITUPSTAY ; 1
+ja          switch_block_ev_doplat_case_raiseAndChange ; 2
+je          switch_block_ev_doplat_case_downWaitUpStay ; 1
+
+jb          switch_block_ev_doplat_case_perpetualRaise ; 0
+jmp         done_with_ev_doplat_switchblock
+
+
+switch_block_ev_doplat_case_perpetualRaise:
 mov         ax, cx
-xor         dx, dx
-mov         word ptr ds:[bx + 2], 8
+mov         word ptr ds:[bx + PLAT_T.plat_speed], PLATSPEED
 call        P_FindHighestOrLowestFloorSurrounding_
-mov         bx, ax
-cmp         ax, word ptr [bp - 6]
-jle         label_17
-mov         bx, word ptr [bp - 6]
-label_17:
+cmp         ax, di
+jl          dont_cap_specialheight_1
+mov         ax, di
+dont_cap_specialheight_1:
+mov         word ptr ds:[bx + PLAT_T.plat_low], ax
 mov         dx, 1
 mov         ax, cx
-mov         word ptr ds:[si + PLAT_T.plat_low], bx
 call        P_FindHighestOrLowestFloorSurrounding_
-mov         word ptr ds:[si + PLAT_T.plat_high], ax
-cmp         ax, word ptr [bp - 6]
-jge         label_18
-mov         ax, word ptr [bp - 6]
-mov         word ptr ds:[si + PLAT_T.plat_high], ax
-label_18:
-mov         byte ptr ds:[si + 8], PLATWAIT * 35
+
+cmp         ax, di
+jg          dont_cap_specialheight_2
+xchg        ax, di
+dont_cap_specialheight_2:
+mov         word ptr ds:[bx + PLAT_T.plat_high], ax
 call        P_Random_
 and         al, 1
-mov         dx, SFX_PSTART
-mov         byte ptr ds:[si + PLAT_T.plat_status], al
-mov         ax, cx
-label_15:
+mov         byte ptr ds:[bx + PLAT_T.plat_status], al
+jmp         done_with_ev_doplat_switchblock_play_pstart
+ 
+switch_block_ev_doplat_case_raiseToNearestAndChange:
 
+mov         byte ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_special], dl
+mov         dx, di
+mov         ax, cx
+call        P_FindNextHighestFloor_
+mov         word ptr ds:[bx + PLAT_T.plat_high], ax
+
+set_raise_and_change_stuff:
+
+mov         es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+SELFMODIFY_read_floorpic_hardcoded_offset:
+mov         al, byte ptr es:[01000h]  ; func local sector's floorpic 
+;mov         al, byte ptr es:[di + SECTOR_T.sec_floorpic]
+
+mov         byte ptr es:[si + SECTOR_T.sec_floorpic], al
+
+mov         ax, (PLATSPEED / 2) ; 4
+mov         word ptr ds:[bx + PLAT_T.plat_speed], ax
+
+mov         byte ptr ds:[bx + PLAT_T.plat_status], ah ; PLAT_UP ; 0
+mov         byte ptr ds:[bx + PLAT_T.plat_wait], ah ; 0
+
+mov         dx, SFX_STNMOV
+jmp         done_with_ev_doplat_switchblock_play_sound
+switch_block_ev_doplat_case_raiseAndChange:
+
+xchg        ax, di
+SELFMODIFY_set_amount:
+add         ax, 01000h
+mov         word ptr ds:[bx + PLAT_T.plat_high], ax
+jmp         set_raise_and_change_stuff
+
+
+switch_block_ev_doplat_case_blazeDWUS:
+mov         word ptr ds:[bx + PLAT_T.plat_speed], PLATSPEED * 8
+jmp         do_plat_down
+switch_block_ev_doplat_case_downWaitUpStay:
+mov         word ptr ds:[bx + PLAT_T.plat_speed], PLATSPEED * 4
+do_plat_down:
+mov         ax, cx
+call        P_FindHighestOrLowestFloorSurrounding_
+mov         word ptr ds:[bx + PLAT_T.plat_high], di
+cmp         ax, di
+jl          dont_cap_specialheight_3
+xchg        ax, di
+dont_cap_specialheight_3:
+mov         word ptr ds:[bx + PLAT_T.plat_low], ax
+mov         byte ptr ds:[bx + PLAT_T.plat_status], PLAT_DOWN
+done_with_ev_doplat_switchblock_play_pstart:
+mov         byte ptr ds:[bx + PLAT_T.plat_wait], PLATWAIT * 35
+mov         dx, SFX_PSTART
+done_with_ev_doplat_switchblock_play_sound:
+xchg        ax, cx
 call        S_StartSoundWithParams_
-label_13:
-mov         ax, word ptr [bp - 010h]
-mov         si, word ptr [bp - 0Ah]
+
+done_with_ev_doplat_switchblock:
+SELFMODIFY_setplatref:
+mov         ax, 01000h
+
 call        P_AddActivePlat_
-cmp         word ptr [bp + si - 0218h], 0
-jl          label_14
-jmp         label_27
-label_14:
-mov         ax, word ptr [bp - 0Eh]
+pop         si
+cmp         word ptr [si], 0
+jl          return_rtn_and_exit
+jmp         loop_next_secnum_doplat
+return_rtn_and_exit:
+SELFMODIFY_ev_doplatset_rtn:
+mov         al, 010h
 LEAVE_MACRO       
 pop         di
 pop         si
-ret         
-switch_block_ev_doplat_case_3:
-mov         ax, SECTORS_SEGMENT
-mov         si, word ptr [bp - 0Ch]
-mov         word ptr ds:[bx + 2], 4
-mov         es, ax
-mov         di, word ptr [bp - 8]
-mov         al, byte ptr es:[si + 4]
-mov         dx, word ptr [bp - 6]
-mov         byte ptr es:[di + 4], al
-mov         ax, cx
-call        P_FindNextHighestFloor_
-mov         byte ptr ds:[bx + 8], 0
-add         si, 4
-mov         byte ptr ds:[bx + PLAT_T.plat_status], 0
-add         di, 4
-mov         word ptr ds:[bx + 6], ax
-mov         bx, word ptr [bp - 018h]
-mov         dx, SFX_STNMOV
-add         bx, _sectors_physics + SECTOR_PHYSICS_T.secp_linecount
-mov         ax, cx
-mov         byte ptr ds:[bx], 0
-jmp         label_15
-switch_block_ev_doplat_case_2:
-mov         ax, SECTORS_SEGMENT
-mov         di, word ptr [bp - 0Ch]
-mov         si, word ptr [bp - 8]
-mov         es, ax
-mov         dx, SFX_STNMOV
-mov         al, byte ptr es:[di + 4]
-add         di, 4
-mov         byte ptr es:[si + 4], al
-mov         ax, word ptr [bp - 6]
-mov         word ptr ds:[bx + 2], 4
-add         ax, word ptr [bp - 014h]
-mov         byte ptr ds:[bx + 8], 0
-shl         ax, 3
-add         si, 4
-mov         word ptr ds:[bx + 6], ax
-mov         ax, cx
-mov         byte ptr ds:[bx + PLAT_T.plat_status], 0
-jmp         label_15
-switch_block_ev_doplat_case_1:
-mov         ax, cx
-xor         dx, dx
-mov         word ptr ds:[bx + 2], PLATSPEED * 4
-call        P_FindHighestOrLowestFloorSurrounding_
-mov         word ptr ds:[bx + 4], ax
-cmp         ax, word ptr [bp - 6]
-jle         label_16
-mov         ax, word ptr [bp - 6]
-mov         word ptr ds:[bx + 4], ax
-label_16:
-mov         ax, word ptr [bp - 6]
-mov         byte ptr ds:[si + 8], PLATWAIT * 35
-mov         dx, SFX_PSTART
-mov         word ptr ds:[si + 6], ax
-mov         ax, cx
-mov         byte ptr ds:[si + PLAT_T.plat_status], 1
-jmp         label_15
-switch_block_ev_doplat_case_4:
-mov         ax, cx
-xor         dx, dx
-mov         word ptr ds:[bx + 2], PLATSPEED * 8
-call        P_FindHighestOrLowestFloorSurrounding_
-mov         word ptr ds:[bx + 4], ax
-cmp         ax, word ptr [bp - 6]
-jle         label_19
-mov         ax, word ptr [bp - 6]
-mov         word ptr ds:[bx + 4], ax
-label_19:
-mov         ax, word ptr [bp - 6]
-mov         byte ptr ds:[si + 8], PLATWAIT * 35
-mov         dx, SFX_PSTART
-mov         word ptr ds:[si + 6], ax
-mov         ax, cx
-mov         byte ptr ds:[si + PLAT_T.plat_status], 1
-jmp         label_15
-
+ret        
 ENDP
+
+
+
 
 PROC    EV_PlatFunc_ NEAR
 PUBLIC  EV_PlatFunc_ 
