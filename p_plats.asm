@@ -43,12 +43,6 @@ PROC    P_PLATS_STARTMARKER_ NEAR
 PUBLIC  P_PLATS_STARTMARKER_
 ENDP
 
-_plat_raise_jump_table:
-dw platraise_switch_case_0
-dw platraise_switch_case_1
-dw platraise_switch_case_2
-dw platraise_switch_case_default
-
 
 PROC    T_PlatRaise_ NEAR
 PUBLIC  T_PlatRaise_ 
@@ -56,149 +50,116 @@ PUBLIC  T_PlatRaise_
 ;void __near T_PlatRaise(plat_t __near* plat, THINKERREF platRef) {
 
 
-push        bx
-push        cx
-push        si
-push        di
+PUSHA_NO_AX_OR_BP_MACRO
 push        bp
 mov         bp, sp
-sub         sp, 4
-mov         si, ax
-mov         word ptr [bp - 4], dx
-mov         di, word ptr ds:[si]
-mov         ax, SECTORS_SEGMENT
+xchg        ax, si
+push        dx ; bp - 2
+mov         di, word ptr ds:[si + PLAT_T.plat_secnum]
 mov         bx, di
-mov         es, ax
-shl         bx, 4
+mov         es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+SHIFT_MACRO shl         bx 4
+xor         cx, cx
 mov         al, byte ptr ds:[si + PLAT_T.plat_status]
-mov         word ptr [bp - 2], bx
-mov         dx, word ptr es:[bx]
-cmp         al, 3
-ja          platraise_switch_case_default
-xor         ah, ah
-mov         bx, ax
-add         bx, ax
-jmp         word ptr cs:[bx + _plat_raise_jump_table]
-platraise_switch_case_0:
-mov         al, byte ptr ds:[si + PLAT_T.plat_crush]
-mov         bx, word ptr ds:[si + 6]
-cbw        
-mov         dx, word ptr ds:[si + 2]
-mov         cx, ax
-mov         ax, word ptr [bp - 2]
+cmp         al, PLAT_WAITING
+xchg        ax, bx
+; ax sector offset (FP_OFF(platsector))
+; bl type
+; dx plat speed
+; cx 0
+; di secnum
+; si plat
+mov         dx, word ptr ds:[si + PLAT_T.plat_speed]
+ja          platraise_switch_case_default ; 3
+je          platraise_switch_case_2       ; 2
+jpo         platraise_switch_case_1       ; 1
+; fall thru
+platraise_switch_case_0: ; 0
+mov         cl, byte ptr ds:[si + PLAT_T.plat_crush]
+mov         bx, word ptr ds:[si + PLAT_T.plat_high]
 call        T_MovePlaneFloorUp_
-mov         cl, al
+xchg        ax, cx ; cx gets that result for now
 mov         al, byte ptr ds:[si + PLAT_T.plat_type]
-cmp         al, 2
-jne         label_1
-label_10:
-mov         bx, _leveltime
-test        byte ptr ds:[bx], 7
-jne         label_2
+cmp         al, PLATFORM_RAISEANDCHANGE
+je          check_level_time
+cmp         al, PLATFORM_RAISETONEARESTANDCHANGE
+jne         done_checking_level_time
+
+check_level_time:
+test        byte ptr ds:[_leveltime], 7
+jne         done_checking_level_time
 mov         dx, SFX_STNMOV
 mov         ax, di
-
 call        S_StartSoundWithParams_
-label_2:
-cmp         cl, 1
-jne         label_3
+done_checking_level_time:
+xor         bx, bx ; clear flag
+xchg        ax, cx
+cmp         al, FLOOR_CRUSHED
+jne         floor_not_crush
 cmp         byte ptr ds:[si + PLAT_T.plat_crush], 0
-je          label_4
-label_3:
-cmp         cl, 2
-je          label_5
+je          start_platform_sound
+floor_not_crush:
+cmp         al, FLOOR_PASTDEST
+je          play_sound_and_remove_plat
 platraise_switch_case_default:
 platraise_switch_case_3:
 done_with_platraise_switch_block:
 LEAVE_MACRO       
-pop         di
-pop         si
-pop         cx
-pop         bx
+POPA_NO_AX_OR_BP_MACRO
 ret         
-label_1:
-cmp         al, 3
-je          label_10
-jmp         label_2
-label_4:
-mov         al, byte ptr ds:[si + 8]
+play_sound_and_remove_plat:
+mov         bx, -1 ; set flag
+start_platform_sound:
 mov         dx, SFX_PSTART
-mov         byte ptr ds:[si + 9], al
-mov         ax, di
-mov         byte ptr ds:[si + PLAT_T.plat_status], cl
 
-call        S_StartSoundWithParams_
-         
-jmp         done_with_platraise_switch_block
-label_5:
-mov         al, byte ptr ds:[si + 8]
-mov         dx, SFX_PSTOP
-mov         byte ptr ds:[si + 9], al
-mov         ax, di
-mov         byte ptr ds:[si + PLAT_T.plat_status], cl
-
-call        S_StartSoundWithParams_
-mov         al, byte ptr ds:[si + PLAT_T.plat_type]
-cmp         al, 4
-je          label_9
-cmp         al, 1
-jb          done_with_platraise_switch_block
-jbe         label_9
-cmp         al, 3
-ja          done_with_platraise_switch_block
-label_9:
-mov         ax, word ptr [bp - 4]
-call        P_RemoveActivePlat_
-LEAVE_MACRO       
-pop         di
-pop         si
-pop         cx
-pop         bx
-ret         
+jmp         set_stuff_play_sound_and_exit_t_platraise
+      
 platraise_switch_case_1:
-mov         ax, word ptr [bp - 2]
-mov         bx, word ptr ds:[si + 4]
-mov         dx, word ptr ds:[si + 2]
-xor         cx, cx
+mov         bx, word ptr ds:[si + PLAT_T.plat_low]
 call        T_MovePlaneFloorDown_
-cmp         al, 2
+cmp         al, FLOOR_PASTDEST ; 2
 jne         done_with_platraise_switch_block
-mov         al, byte ptr ds:[si + 8]
 mov         dx, SFX_PSTOP
-mov         byte ptr ds:[si + 9], al
-mov         ax, di
-mov         byte ptr ds:[si + PLAT_T.plat_status], 2
+xor         bx, bx ; clear flag
+set_stuff_play_sound_and_exit_t_platraise:
+mov         cl, al  ; 2. al is 2 in the  2 case (plat_waiting == floor_pastdest) or 1 in the 1 case (floor_crushed == plat_down)
+mov         al, byte ptr ds:[si + PLAT_T.plat_wait]
+mov         byte ptr ds:[si + PLAT_T.plat_count], al
+cmp         bl, 0 ; look for flag
+js          do_second_switch_block
+jmp         set_status_play_sound_and_exit_t_platraise
 
-call        S_StartSoundWithParams_
-         
-LEAVE_MACRO       
-pop         di
-pop         si
-pop         cx
-pop         bx
-ret         
 platraise_switch_case_2:
-dec         byte ptr ds:[si + 9]
-je          label_8
-jmp         done_with_platraise_switch_block
-label_8:
-cmp         dx, word ptr ds:[si + 4]
-je          label_6
-mov         byte ptr ds:[si + PLAT_T.plat_status], 1
-label_7:
+dec         byte ptr ds:[si + PLAT_T.plat_count]
+jne         done_with_platraise_switch_block
+xchg        ax, bx
+mov         dx, word ptr es:[bx + SECTOR_T.sec_floorheight]
+cmp         dx, word ptr ds:[si + PLAT_T.plat_low]
+je          write_plat_up
+inc         cx  ; plat_down = 1
+write_plat_up:
 mov         dx, SFX_PSTART
-mov         ax, di
-
+set_status_play_sound_and_exit_t_platraise:
+mov         byte ptr ds:[si + PLAT_T.plat_status], cl
+xchg        ax, di
 call        S_StartSoundWithParams_
 LEAVE_MACRO       
-pop         di
-pop         si
-pop         cx
-pop         bx
-ret         
-label_6:
-mov         byte ptr ds:[si + PLAT_T.plat_status], ah
-jmp         label_7
+POPA_NO_AX_OR_BP_MACRO
+ret      
+do_second_switch_block:
+
+mov         al, byte ptr ds:[si + PLAT_T.plat_type]
+cmp         al, PLATFORM_BLAZEDWUS
+ja          done_with_platraise_switch_block
+cmp         al, PLATFORM_DOWNWAITUPSTAY
+jb          done_with_platraise_switch_block
+
+remove_plat_and_exit:
+pop         ax  ; bp - 2
+call        P_RemoveActivePlat_  ; todo inline?
+LEAVE_MACRO       
+POPA_NO_AX_OR_BP_MACRO
+ret      
 ENDP
 
 _doplat_jump_table:
@@ -301,13 +262,13 @@ mov         bx, word ptr [bp - 6]
 label_17:
 mov         dx, 1
 mov         ax, cx
-mov         word ptr ds:[si + 4], bx
+mov         word ptr ds:[si + PLAT_T.plat_low], bx
 call        P_FindHighestOrLowestFloorSurrounding_
-mov         word ptr ds:[si + 6], ax
+mov         word ptr ds:[si + PLAT_T.plat_high], ax
 cmp         ax, word ptr [bp - 6]
 jge         label_18
 mov         ax, word ptr [bp - 6]
-mov         word ptr ds:[si + 6], ax
+mov         word ptr ds:[si + PLAT_T.plat_high], ax
 label_18:
 mov         byte ptr ds:[si + 8], PLATWAIT * 35
 call        P_Random_

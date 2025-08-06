@@ -8,7 +8,7 @@
 #include "p_inter.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2493
+#define CONSTANTS_COUNT 2497
 #define LOCALS_COUNT 22
 
 
@@ -2540,6 +2540,11 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"PLATFORM_RAISEANDCHANGE",
 	"PLATFORM_RAISETONEARESTANDCHANGE",
 	"PLATFORM_BLAZEDWUS",
+	"PLAT_UP",
+	"PLAT_DOWN",
+	"PLAT_WAITING",
+	"PLAT_IN_STASIS",
+
 	"PLAT_FUNC_IN_STASIS",
 	"PLAT_FUNC_STOP_PLAT",
 	"STAIRS_BUILD8",
@@ -5119,6 +5124,10 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	raiseAndChange,
 	raiseToNearestAndChange,
 	blazeDWUS,
+	plat_up,
+	plat_down,
+	plat_waiting,
+	plat_in_stasis,
 	PLAT_FUNC_IN_STASIS,
 	PLAT_FUNC_STOP_PLAT,
 	build8,
