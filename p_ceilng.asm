@@ -391,30 +391,29 @@ ENDP
 
 
 
-PROC    P_AddActiveCeiling_ NEAR
-PUBLIC  P_AddActiveCeiling_
+PROC    P_AddActiveCeiling_ FAR
+PUBLIC  P_AddActiveCeiling_ 
 
-push  bx
-mov   bx, _activeceilings
-loop_next_add_active_ceiling:
+;void __near P_AddActivePlat(THINKERREF thinkerref) {
 
-cmp   word ptr ds:[bx], NULL_THINKERREF
-je    found_ceiling_slot_to_add
-inc   bx
-inc   bx
-cmp   bx, (MAXCEILINGS * 2) + _activeceilings
-jl    loop_next_add_active_ceiling
-pop   bx
-ret   
-found_ceiling_slot_to_add:
-mov   ds:[bx], ax
-pop   bx
-ret   
+push        di
+push        cx
+push        ax  ; store value..
+mov         di, _activeceilings
+push        ds
+pop         es
+xor         ax, ax ; look for 0 or NULL_THINKERREF
+mov         cx, MAXCEILINGS
 
-
-
-
-ENDP
+repne scasw
+pop         ax ; retrieve...
+jcxz        didnt_find_slot
+found_slot_for_platadd:
+stosw
+didnt_find_slot:
+pop         cx
+pop         di
+retf
 
 
 ;void __near P_RemoveActiveCeiling(sector_physics_t __near* ceilingsector_physics, THINKERREF ceilingRef) {

@@ -476,35 +476,29 @@ ret
 
 ENDP
 
-PROC    P_AddActivePlat_ NEAR
+PROC    P_AddActivePlat_ FAR
 PUBLIC  P_AddActivePlat_ 
 
+;void __near P_AddActivePlat(THINKERREF thinkerref) {
 
-push        bx
+push        di
 push        cx
-push        dx
-mov         cx, ax
-xor         dl, dl
-label_24:
-mov         al, dl
-cbw        
-mov         bx, ax
-add         bx, ax
-cmp         word ptr ds:[bx + _activeplats], 0
-je          label_23
-inc         dl
-cmp         dl, MAXPLATS
-jl          label_24
-pop         dx
+push        ax  ; store value..
+mov         di, _activeplats
+push        ds
+pop         es
+xor         ax, ax ; look for 0 or NULL_THINKERREF
+mov         cx, MAXPLATS
+
+repne scasw
+pop         ax ; retrieve...
+jcxz        didnt_find_slot
+found_slot_for_platadd:
+stosw
+didnt_find_slot:
 pop         cx
-pop         bx
-ret         
-label_23:
-mov         word ptr ds:[bx + _activeplats], cx
-pop         dx
-pop         cx
-pop         bx
-ret         
+pop         di
+retf         
 
 
 ENDP
