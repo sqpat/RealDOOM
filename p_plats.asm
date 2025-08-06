@@ -21,17 +21,17 @@ INSTRUCTION_SET_MACRO
 
 EXTRN S_StartSoundWithParams_:PROC
 EXTRN P_RemoveThinker_:PROC
-EXTRN _P_ChangeSector:DWORD
 EXTRN P_FindHighestOrLowestFloorSurrounding_:NEAR
-EXTRN P_FindLowestOrHighestCeilingSurrounding_:NEAR
 EXTRN P_FindSectorsFromLineTag_:NEAR
 EXTRN P_FindNextHighestFloor_:NEAR
 EXTRN P_CreateThinker_:FAR
+EXTRN T_MovePlaneFloorUp_:NEAR
+EXTRN T_MovePlaneFloorDown_:NEAR
+EXTRN P_Random_:NEAR
+EXTRN P_UpdateThinkerFunc_:NEAR
 
-SHORTFLOORBITS = 3
 
 .DATA
-
 
 
 
@@ -42,8 +42,6 @@ SHORTFLOORBITS = 3
 PROC    P_PLATS_STARTMARKER_ NEAR
 PUBLIC  P_PLATS_STARTMARKER_
 ENDP
-
-COMMENT @
 
 _plat_raise_jump_table:
 dw platraise_switch_case_0
@@ -273,13 +271,13 @@ mov         word ptr [bp - 016h], 0
 inc         word ptr [bp - 012h]
 mov         di, word ptr [bp - 018h]
 mov         word ptr [bp - 010h], ax
-mov         word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_special], ax
+mov         word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
 mov         al, byte ptr [bp - 2]
 mov         byte ptr ds:[bx + PLAT_T.plat_crush], 0
 add         word ptr [bp - 0Ah], 2
 mov         byte ptr ds:[bx + PLAT_T.plat_type], al
 mov         al, byte ptr [bp - 4]
-add         di, _sectors_physics + SECTOR_PHYSICS_T.secp_special
+add         di, _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef
 mov         byte ptr ds:[bx + PLAT_T.plat_tag], al
 mov         al, byte ptr [bp - 2]
 mov         word ptr ds:[bx], cx
@@ -544,8 +542,8 @@ mov         si, word ptr [si]
 call        P_RemoveThinker_
 shl         si, 4
 xor         ax, ax
-mov         word ptr [si + _sectors_physics + SECTOR_PHYSICS_T.secp_special], ax
-add         si, _sectors_physics + SECTOR_PHYSICS_T.secp_special
+mov         word ptr [si + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
+add         si, _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef
 mov         word ptr [bx + _activeplats], ax
 pop         si
 pop         dx

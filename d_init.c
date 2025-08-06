@@ -751,9 +751,9 @@ void __far D_DoomMain2(void) {
 	int8_t            wadfile[20];
 	#define DGROUP_SIZE 0x2CA0
 
-	
+	/*
 
-	FILE *fp = fopen("output9.bin", "wb");
+	FILE *fp = fopen("output8.bin", "wb");
 	FAR_fwrite(P_SpawnGlowingLight, (byte __far *)P_UpdateSpecials - (byte __far *)P_SpawnGlowingLight, 1, fp);
 	fclose(fp);
 	exit(0);
