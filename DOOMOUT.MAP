@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/05 20:54:57
+Created on:       25/08/05 21:34:07
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -63,11 +63,11 @@ P_DOORS_TEXT           CODE           AUTO           0bc4:210a       000003d9
 P_FLOOR_TEXT           CODE           AUTO           0bc4:24e4       000004c7
 P_INTER_TEXT           CODE           AUTO           0bc4:29ac       0000089e
 p_lights_TEXT          CODE           AUTO           0bc4:3250       000003ed
-P_PLATS_TEXT           CODE           AUTO           0bc4:363e       00000381
-P_SPEC_TEXT            CODE           AUTO           0bc4:39c0       00000a06
-P_SWITCH_TEXT          CODE           AUTO           0bc4:43c6       000003c6
-P_TELEPT_TEXT          CODE           AUTO           0bc4:478c       00000185
-P_TICK_TEXT            CODE           AUTO           0bc4:4912       000001e4
+P_PLATS_TEXT           CODE           AUTO           0bc4:363e       00000384
+P_SPEC_TEXT            CODE           AUTO           0bc4:39c2       00000a06
+P_SWITCH_TEXT          CODE           AUTO           0bc4:43c8       000003c6
+P_TELEPT_TEXT          CODE           AUTO           0bc4:478e       00000185
+P_TICK_TEXT            CODE           AUTO           0bc4:4914       000001e4
 p_user_TEXT            CODE           AUTO           0bc4:4b00       000006e7
 R_MAIN_TEXT            CODE           AUTO           0bc4:51e8       000003dc
 w_wad_TEXT             CODE           AUTO           0bc4:55d0       0000030c
@@ -848,43 +848,43 @@ Module: p_lights.obj(C:\REALDOOM\p_lights.c)
 0bc4:3582      T_Glow_
 0bc4:35e0      P_SpawnGlowingLight_
 Module: p_plats.obj(p_plats.ASM)
-0bc4:36f8      EV_DoPlat_
+0bc4:36fb      EV_DoPlat_
 0bc4:363e      T_PlatRaise_
-0bc4:3978      P_AddActivePlat_
-0bc4:398e*     P_RemoveActivePlat_
-0bc4:39bf*     P_PLATS_ENDMARKER_
-0bc4:38fb      EV_PlatFunc_
+0bc4:397b      P_AddActivePlat_
+0bc4:3991*     P_RemoveActivePlat_
+0bc4:39c2*     P_PLATS_ENDMARKER_
+0bc4:38fe      EV_PlatFunc_
 0bc4:363e*     P_PLATS_STARTMARKER_
 Module: p_spec.obj(p_spec.ASM)
-0bc4:409d      P_UpdateSpecials_
-0bc4:3a8c      P_FindNextHighestFloor_
-0bc4:3a16      P_FindHighestOrLowestFloorSurrounding_
-0bc4:3fd6      P_PlayerInSpecialSector_
-0bc4:39c0*     P_SPEC_STARTMARKER_
-0bc4:43c6*     P_SPEC_ENDMARKER_
-0bc4:41ce      EV_DoDonut_
-0bc4:3afd      P_FindLowestOrHighestCeilingSurrounding_
-0bc4:3baa      P_FindMinSurroundingLight_
-0bc4:39c0*     getNextSectorList_
-0bc4:3b73      P_FindSectorsFromLineTag_
-0bc4:3d36      P_CrossSpecialLine_
-0bc4:3f43      P_ShootSpecialLine_
-0bc4:433a      P_SpawnSpecials_
+0bc4:409f      P_UpdateSpecials_
+0bc4:3a8e      P_FindNextHighestFloor_
+0bc4:3a18      P_FindHighestOrLowestFloorSurrounding_
+0bc4:3fd8      P_PlayerInSpecialSector_
+0bc4:39c2*     P_SPEC_STARTMARKER_
+0bc4:43c8*     P_SPEC_ENDMARKER_
+0bc4:41d0      EV_DoDonut_
+0bc4:3aff      P_FindLowestOrHighestCeilingSurrounding_
+0bc4:3bac      P_FindMinSurroundingLight_
+0bc4:39c2*     getNextSectorList_
+0bc4:3b75      P_FindSectorsFromLineTag_
+0bc4:3d38      P_CrossSpecialLine_
+0bc4:3f45      P_ShootSpecialLine_
+0bc4:433c      P_SpawnSpecials_
 Module: p_switch.obj(p_switch.ASM)
-0bc4:43c6*     P_SWITCH_STARTMARKER_
-0bc4:478c*     P_SWITCH_ENDMARKER_
-0bc4:43c6      P_ChangeSwitchTexture_
-0bc4:45cf      P_UseSpecialLine_
+0bc4:43c8*     P_SWITCH_STARTMARKER_
+0bc4:478e*     P_SWITCH_ENDMARKER_
+0bc4:43c8      P_ChangeSwitchTexture_
+0bc4:45d1      P_UseSpecialLine_
 Module: p_telept.obj(p_telept.ASM)
-0bc4:4911*     P_TELEPT_ENDMARKER_
-0bc4:478c*     P_TELEPT_STARTMARKER_
-0bc4:478c      EV_Teleport_
+0bc4:4913*     P_TELEPT_ENDMARKER_
+0bc4:478e*     P_TELEPT_STARTMARKER_
+0bc4:478e      EV_Teleport_
 Module: p_tick.obj(p_tick.ASM)
-0bc4:4986      P_UpdateThinkerFunc_
-0bc4:4ae1      P_Random_
-0bc4:49a8      P_RemoveThinker_
-0bc4:49db      P_Ticker_
-0bc4:4912      P_CreateThinker_
+0bc4:4988      P_UpdateThinkerFunc_
+0bc4:4ae3      P_Random_
+0bc4:49aa      P_RemoveThinker_
+0bc4:49dd      P_Ticker_
+0bc4:4914      P_CreateThinker_
 Module: p_user.obj(C:\REALDOOM\p_user.c)
 0bc4:4b00+     P_Thrust_
 0bc4:4b60+     P_CalcHeight_

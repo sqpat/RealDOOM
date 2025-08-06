@@ -60,20 +60,22 @@ mov         bx, di
 mov         es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 SHIFT_MACRO shl         bx 4
 xor         cx, cx
+mov         ax, cx
+mov         dx, word ptr ds:[si + PLAT_T.plat_speed]
 mov         al, byte ptr ds:[si + PLAT_T.plat_status]
-cmp         al, PLAT_WAITING
+cmp         al, PLAT_IN_STASIS ; 3
+je          platraise_switch_case_default ; 3
+dec         ax  ; -1 0 or 1... easy test
 mov         ax, word ptr es:[bx + SECTOR_T.sec_floorheight]
-xchg        ax, bx
+xchg        ax, bx ; bx gets floorheight. ax gets sector offset.
 ; ax sector offset (FP_OFF(platsector))
 ; bx floorheight
 ; dx plat speed
 ; cx 0
 ; di secnum
 ; si plat
-mov         dx, word ptr ds:[si + PLAT_T.plat_speed]
-ja          platraise_switch_case_default ; 3
-je          platraise_switch_case_2       ; 2
-jpo         platraise_switch_case_1       ; 1
+jz          platraise_switch_case_1       ; 1
+jns         platraise_switch_case_2       ; 2
 ; fall thru
 platraise_switch_case_0: ; 0
 mov         cl, byte ptr ds:[si + PLAT_T.plat_crush]

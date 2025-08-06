@@ -15,7 +15,7 @@
 // DESCRIPTION:
 //	Plats (i.e. elevator platforms) code, raising/lowering.
 //
-
+ 
 
 #include "i_system.h"
 #include "z_zone.h"
