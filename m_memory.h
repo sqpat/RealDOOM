@@ -286,19 +286,22 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define size_segs_physics     (MAX_SEGS_PHYSICS_SIZE)
 #define size_diskgraphicbytes (392)
 
-#define segs_physics          ((seg_physics_t __far*)    (0x90000000))
-#define diskgraphicbytes      ((byte __far*)             MAKE_FULL_SEGMENT(segs_physics,     size_segs_physics))
-
-
-#define segs_physics_segment              ((segment_t) ((int32_t)segs_physics >> 16))
-#define diskgraphicbytes_segment          ((segment_t) ((int32_t)diskgraphicbytes >> 16))
 
 
 
+
+
+//#define SIZE_D_INFO          0x0698
+#define SIZE_D_INFO            0x069C
 
 
  // 0x92FA
-#define InfoFuncLoadAddr      ((byte __far *) MAKE_FULL_SEGMENT(diskgraphicbytes, size_diskgraphicbytes))
+#define segs_physics          ((seg_physics_t __far*)    (0x90000000))
+#define diskgraphicbytes      ((byte __far*)             MAKE_FULL_SEGMENT(segs_physics,     size_segs_physics))
+#define InfoFuncLoadAddr      ((byte __far *)            MAKE_FULL_SEGMENT(diskgraphicbytes, size_diskgraphicbytes))
+#define psight_codespace      ((byte __far*)             MAKE_FULL_SEGMENT(InfoFuncLoadAddr, SIZE_D_INFO))
+#define physics_9000_end      ((byte __far*)             MAKE_FULL_SEGMENT(psight_codespace, PSightCodeSize))
+
 // note: entry point to the function is not necessarily the first byte of the compiled binary. (jump tables and stuff for switch cases)
 #define getPainChanceAddr     ((int16_t    (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x0034))
 #define getRaiseStateAddr     ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x00B2))
@@ -316,20 +319,18 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define getSpawnHealthAddr    ((int16_t    (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x063C))
 
 
-#define InfoFuncLoadSegment              ((segment_t) ((int32_t)InfoFuncLoadAddr >> 16))
 
-//#define SIZE_D_INFO          0x0698
-#define SIZE_D_INFO            0x069C
 // 0x93E9
-#define physics_9000_end            ((byte __far*)             MAKE_FULL_SEGMENT(InfoFuncLoadAddr,     SIZE_D_INFO))
+
+#define segs_physics_segment        ((segment_t) ((int32_t)segs_physics >> 16))
+#define diskgraphicbytes_segment    ((segment_t) ((int32_t)diskgraphicbytes >> 16))
+#define InfoFuncLoadSegment         ((segment_t) ((int32_t)InfoFuncLoadAddr >> 16))
+#define physics_highcode_segment    ((segment_t) ((int32_t)psight_codespace >> 16))
 #define physics_9000_end_segment    ((segment_t) ((int32_t)physics_9000_end >> 16))
 
-#define physics_highcode_segment 0x9400
-#define psight_codespace  ((byte __far*)      0x94000000)
 
 
-
-
+// 11264
 // segs_physics     9000:0000
 // diskgraphicbytes 92C0:0000
 // D_INFO           92D9:0000
