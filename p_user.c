@@ -49,7 +49,7 @@
 // P_Thrust
 // Moves the given origin along a given angle.
 //
-void P_Thrust (fineangle_t angle, fixed_t move )  {
+void __near P_Thrust (fineangle_t angle, fixed_t move )  {
 
 	// todo
 	move <<= 11;
@@ -65,7 +65,7 @@ void P_Thrust (fineangle_t angle, fixed_t move )  {
 // P_CalcHeight
 // Calculate the walking / running height adjustment
 //
-void P_CalcHeight ()  {
+void __near P_CalcHeight ()  {
     fineangle_t		angle;
     fixed_t	bob;
 	fixed_t_union temp;
@@ -141,7 +141,7 @@ void P_CalcHeight ()  {
 //
 // P_MovePlayer
 //
-void P_MovePlayer () {
+void __near P_MovePlayer () {
     ticcmd_t __near*		cmd = &player.cmd;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
@@ -176,7 +176,7 @@ void P_MovePlayer () {
 //
 #define ANG5   	(ANG90/18)
 
-void P_DeathThink () {
+void __near P_DeathThink () {
     angle_t		angle;
     angle_t		delta;
 	fixed_t_union temp;

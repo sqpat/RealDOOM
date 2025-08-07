@@ -43,6 +43,9 @@ EXTRN _demoplayback:BYTE
 .CODE
 
 
+PROC    P_TICK_STARTMARKER_ NEAR
+PUBLIC  P_TICK_STARTMARKER_
+ENDP
 
 ; THINKERREF __near P_GetNextThinkerRef(void) 
 
@@ -359,5 +362,11 @@ pop     bx
 ret
 
 ENDP
+
+
+PROC    P_TICK_ENDMARKER_ NEAR
+PUBLIC  P_TICK_ENDMARKER_
+ENDP
+
 
 END
