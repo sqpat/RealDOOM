@@ -56,6 +56,7 @@ dec   word ptr ds:[bx + FIREFLICKER_T.fireflicker_count]
 jnz   exit_t_fireflicker_early
 call  P_Random_
 and   al, 3
+SHIFT_MACRO sal ax 4
 mov   word ptr ds:[bx + FIREFLICKER_T.fireflicker_count], 4
 mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 mov   dx, word ptr ds:[bx + FIREFLICKER_T.fireflicker_secnum]
@@ -81,16 +82,17 @@ cmp   dh, dl
 jnl   set_max_minus_amount
 mov   ah, dl
 jmp   set_lightlevel_and_exit
-set_max_minus_amount
+set_max_minus_amount:
 sub   ah, al
 
 
-set_lightlevel_and_exit
+set_lightlevel_and_exit:
 mov   byte ptr es:[bx + SECTOR_T.sec_lightlevel], ah
 exit_t_fireflicker_early:
 pop   bx
 ret   
 
+ENDP
 
 PROC    P_SpawnFireFlicker_ NEAR
 PUBLIC  P_SpawnFireFlicker_
