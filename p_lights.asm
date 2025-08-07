@@ -55,11 +55,11 @@ push  bp
 mov   bp, sp
 sub   sp, 2
 mov   bx, ax
-mov   dx, word ptr [bx]
-mov   al, byte ptr [bx + 4]
-mov   cl, byte ptr [bx + 5]
+mov   dx, word ptr ds:[bx + FIREFLICKER_T.fireflicker_secnum]
+mov   al, byte ptr ds:[bx + FIREFLICKER_T.fireflicker_maxlight]
+mov   cl, byte ptr ds:[bx + FIREFLICKER_T.fireflicker_minlight]
 mov   byte ptr [bp - 2], al
-dec   word ptr [bx + 2]
+dec   word ptr ds:[bx + 2]
 je    label_1
 LEAVE_MACRO 
 pop   cx
@@ -68,7 +68,7 @@ ret
 label_1:
 call  P_Random_
 mov   ch, al
-mov   word ptr [bx + 2], 4
+mov   word ptr ds:[bx + FIREFLICKER_T.fireflicker_count], 4
 mov   ax, SECTORS_SEGMENT
 mov   bx, dx
 and   ch, 3
@@ -81,7 +81,6 @@ xor   dh, dh
 xor   ah, ah
 sub   dx, ax
 mov   al, cl
-add   bx, 0Eh
 cmp   dx, ax
 jge   label_2
 mov   byte ptr es:[bx], cl
@@ -93,7 +92,7 @@ ENDP
 label_2:
 mov   al, byte ptr [bp - 2]
 sub   al, ch
-mov   byte ptr es:[bx], al
+mov   byte ptr es:[bx + SECTOR_T.sec_floorheight], al
 LEAVE_MACRO
 pop   cx
 pop   bx
@@ -123,17 +122,17 @@ mov   dl, byte ptr es:[bx]
 mov   bx, word ptr [bp - 4]
 add   bx, _sectors_physics + SECTOR_PHYSICS_T.secp_special
 mov   ax, TF_FIREFLICKER_HIGHBITS
-mov   byte ptr [bx], 0
+mov   byte ptr ds:[bx + FIREFLICKER_T.fireflicker_secnum], 0
 call  P_CreateThinker_
 mov   bx, ax
 mov   ax, cx
-mov   byte ptr [bx + 4], dl
+mov   byte ptr ds:[bx + FIREFLICKER_T.fireflicker_maxlight], dl
 xor   dh, dh
-mov   word ptr [bx], cx
+mov   word ptr ds:[bx + FIREFLICKER_T.fireflicker_secnum], cx
 call  P_FindMinSurroundingLight_
 add   al, 16
-mov   word ptr [bx + 2], 4
-mov   byte ptr [bx + 5], al
+mov   word ptr ds:[bx + FIREFLICKER_T.fireflicker_count], 4
+mov   byte ptr ds:[bx + FIREFLICKER_T.fireflicker_minlight], al
 LEAVE_MACRO 
 pop   dx
 pop   cx
@@ -149,10 +148,10 @@ PUBLIC  T_LightFlash_
 push  bx
 push  si
 mov   bx, ax
-mov   ah, byte ptr [bx + 5]
-mov   si, word ptr [bx]
-mov   al, byte ptr [bx + 4]
-dec   word ptr [bx + 2]
+mov   ah, byte ptr ds:[bx + LIGHTFLASH_T.lightflash_minlight]
+mov   si, word ptr ds:[bx + LIGHTFLASH_T.lightflash_secnum]
+mov   al, byte ptr ds:[bx + LIGHTFLASH_T.lightflash_maxlight]
+dec   word ptr ds:[bx + LIGHTFLASH_T.lightflash_count]
 jne   label_3
 mov   dx, SECTORS_SEGMENT
 shl   si, 4
@@ -161,7 +160,7 @@ add   si, SECTOR_T.sec_lightlevel
 cmp   al, byte ptr es:[si]
 jne   label_4
 mov   byte ptr es:[si], ah
-mov   al, byte ptr [bx + 7]
+mov   al, byte ptr ds:[bx + LIGHTFLASH_T.lightflash_mintime]
 label_5:
 cbw  
 mov   si, ax
@@ -169,14 +168,14 @@ call  P_Random_
 xor   ah, ah
 and   ax, si
 inc   ax
-mov   word ptr [bx + 2], ax
+mov   word ptr ds:[bx + LIGHTFLASH_T.lightflash_count], ax
 label_3:
 pop   si
 pop   bx
 ret   
 label_4:
 mov   byte ptr es:[si], al
-mov   al, byte ptr [bx + 6]
+mov   al, byte ptr ds:[bx + LIGHTFLASH_T.lightflash_maxtime]
 jmp   label_5
 
 ENDP
@@ -204,7 +203,7 @@ add   bx, SECTOR_T.sec_lightlevel
 xor   dh, dh
 mov   bx, word ptr [bp - 6]
 mov   word ptr [bp - 2], dx
-mov   byte ptr [bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], dh
+mov   byte ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], dh
 mov   dl, byte ptr [bp - 2]
 call  P_FindMinSurroundingLight_
 mov   dl, al
@@ -213,21 +212,21 @@ add   bx, _sectors_physics + SECTOR_PHYSICS_T.secp_special
 
 call  P_CreateThinker_
 mov   bx, ax
-mov   byte ptr [bx + 6], 64
-mov   byte ptr [bx + 7], 7  ; todo double check
-mov   word ptr [bx], cx
+mov   byte ptr ds:[bx + LIGHTFLASH_T.lightflash_maxtime], 64
+mov   byte ptr ds:[bx + LIGHTFLASH_T.lightflash_mintime], 7  ; todo double check
+mov   word ptr ds:[bx + LIGHTFLASH_T.lightflash_secnum], cx
 mov   dh, byte ptr [bp - 2]
-mov   al, byte ptr [bx + 6]
-mov   byte ptr [bx + 4], dh
+mov   al, byte ptr ds:[bx + LIGHTFLASH_T.lightflash_maxtime]
+mov   byte ptr ds:[bx + LIGHTFLASH_T.lightflash_maxlight], dh
 cbw  
-mov   byte ptr [bx + 5], dl
+mov   byte ptr ds:[bx + LIGHTFLASH_T.lightflash_minlight], dl
 mov   cx, ax
 call  P_Random_
 mov   dl, al
 xor   dh, dh
 and   dl, cl
 inc   dx
-mov   word ptr [bx + 2], dx
+mov   word ptr ds:[bx + LIGHTFLASH_T.lightflash_count], dx
 LEAVE_MACRO 
 pop   dx
 pop   cx
@@ -244,29 +243,29 @@ PUBLIC  T_StrobeFlash_
 push  bx
 push  si
 mov   bx, ax
-dec   word ptr [bx + 2]
+dec   word ptr ds:[bx + STROBE_T.strobe_count]
 jne   label_6
-mov   si, word ptr [bx]
+mov   si, word ptr ds:[bx + STROBE_T.strobe_secnum]
 mov   ax, SECTORS_SEGMENT
 shl   si, 4
 mov   es, ax
 mov   al, byte ptr es:[si + SECTOR_T.sec_lightlevel]
 add   si, SECTOR_T.sec_lightlevel
-cmp   al, byte ptr [bx + 4]
+cmp   al, byte ptr ds:[bx + STROBE_T.strobe_maxlight]
 jne   label_7
-mov   al, byte ptr [bx + 5]
+mov   al, byte ptr ds:[bx + STROBE_T.strobe_minlight]
 mov   byte ptr es:[si], al
-mov   si, word ptr [bx + 8]
-mov   word ptr [bx + 2], si
+mov   si, word ptr ds:[bx + STROBE_T.strobe_brighttime]
+mov   word ptr ds:[bx + 2], si
 label_6:
 pop   si
 pop   bx
 ret   
 label_7:
-mov   al, byte ptr [bx + 4]
+mov   al, byte ptr ds:[bx + STROBE_T.strobe_maxlight]
 mov   byte ptr es:[si], al
-mov   si, word ptr [bx + 6]
-mov   word ptr [bx + 2], si
+mov   si, word ptr ds:[bx + STROBE_T.strobe_darktime]
+mov   word ptr ds:[bx + STROBE_T.strobe_count], si
 pop   si
 pop   bx
 ret   
@@ -298,33 +297,33 @@ mov   dl, byte ptr es:[bx]
 mov   bx, word ptr [bp - 6]
 add   bx, _sectors_physics + SECTOR_PHYSICS_T.secp_special
 mov   ax, TF_STROBEFLASH_HIGHBITS
-mov   byte ptr [bx], 0
+mov   byte ptr ds:[bx + STROBE_T.strobe_secnum], 0
 
 call  P_CreateThinker_
 mov   bx, ax
 mov   si, ax
-mov   word ptr [bx + 8], 5
+mov   word ptr ds:[bx + STROBE_T.strobe_brighttime], 5
 mov   ax, word ptr [bp - 2]
-mov   byte ptr [bx + 5], dl
+mov   byte ptr ds:[bx + STROBE_T.strobe_minlight], dl
 xor   dh, dh
-mov   word ptr [bx + 6], ax
+mov   word ptr ds:[bx + STROBE_T.strobe_darktime], ax
 mov   ax, cx
-mov   word ptr [bx], cx
+mov   word ptr ds:[bx + STROBE_T.strobe_secnum], cx
 call  P_FindMinSurroundingLight_
-mov   byte ptr [bx + 4], al
-cmp   al, byte ptr [bx + 5]
+mov   byte ptr ds:[bx + STROBE_T.strobe_maxlight], al
+cmp   al, byte ptr ds:[bx + STROBE_T.strobe_minlight]
 je    label_8
 label_10:
 test  di, di
 je    label_9
-mov   word ptr [si + 2], 1
+mov   word ptr ds:[si + STROBE_T.strobe_count], 1
 LEAVE_MACRO 
 pop   di
 pop   si
 pop   cx
 ret   
 label_8:
-mov   byte ptr [bx + 4], 0
+mov   byte ptr ds:[bx + STROBE_T.strobe_maxlight], 0
 jmp   label_10
 label_9:
 call  P_Random_
@@ -332,7 +331,7 @@ mov   dl, al
 and   dl, 7
 xor   dh, dh
 inc   dx
-mov   word ptr [si + 2], dx
+mov   word ptr ds:[si + STROBE_T.strobe_count], dx
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -482,11 +481,11 @@ PUBLIC  T_Glow_
 push  bx
 push  si
 mov   bx, ax
-mov   ax, word ptr [bx]
-mov   dl, byte ptr [bx + 2]
-mov   si, word ptr [bx + 4]
+mov   ax, word ptr ds:[bx + GLOW_T.glow_secnum]
+mov   dl, byte ptr ds:[bx + GLOW_T.glow_maxlight]
+mov   si, word ptr ds:[bx + GLOW_T.glow_direction]
 shl   ax, 4
-mov   dh, byte ptr [bx + 3]
+mov   dh, byte ptr ds:[bx + GLOW_T.glow_minlight]
 cmp   si, -1
 je    label_21
 cmp   si, 1
@@ -511,13 +510,13 @@ sub   byte ptr es:[si], 8
 cmp   dl, byte ptr es:[si]
 jb    exit_tglow
 add   byte ptr es:[si], 8
-mov   word ptr [bx + 4], 1
+mov   word ptr ds:[bx + GLOW_T.glow_direction], 1
 pop   si
 pop   bx
 ret   
 label_22:
 sub   byte ptr es:[si], 8
-mov   word ptr [bx + 4], -1
+mov   word ptr ds:[bx + GLOW_T.glow_direction], -1
 pop   si
 pop   bx
 ret   
@@ -549,18 +548,18 @@ add   bx, SECTOR_PHYSICS_T.secp_special
 xor   dh, dh
 mov   bx, word ptr [bp - 6]
 mov   word ptr [bp - 2], dx
-mov   byte ptr [bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], dh
+mov   byte ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], dh
 add   bx, _sectors_physics + SECTOR_PHYSICS_T.secp_special
 call  P_CreateThinker_
 mov   dl, byte ptr [bp - 2]
 mov   bx, ax
 mov   ax, cx
-mov   word ptr [bx], cx
+mov   word ptr ds:[bx + GLOW_T.glow_secnum], cx
 call  P_FindMinSurroundingLight_
-mov   word ptr [bx + 4], -1
-mov   byte ptr [bx + 2], al
+mov   word ptr ds:[bx + GLOW_T.glow_direction], -1
+mov   byte ptr ds:[bx + GLOW_T.glow_maxlight], al
 mov   al, byte ptr [bp - 2]
-mov   byte ptr [bx + 3], al
+mov   byte ptr ds:[bx + GLOW_T.glow_minlight], al
 LEAVE_MACRO 
 pop   dx
 pop   cx
