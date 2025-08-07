@@ -116,7 +116,7 @@ PUBLIC  P_CalcHeight_
 
 ;void __near P_CalcHeight ()  {
 
-PUSHA_NO_AX_MACRO
+PUSHA_NO_AX_OR_BP_MACRO
 
 mov   si, word ptr ds:[_playerMobj]
 mov   ax, word ptr ds:[si + MOBJ_T.m_ceilingz]
@@ -345,7 +345,7 @@ ENDP
 PROC    P_MovePlayer_ NEAR
 PUBLIC  P_MovePlayer_
 
-PUSHA_NO_AX_MACRO
+PUSHA_NO_AX_OR_BP_MACRO
 
 mov   ax, word ptr ds:[_player + PLAYER_T.player_cmd_angleturn]
 les   di, dword ptr ds:[_playerMobj_pos]
@@ -363,7 +363,7 @@ rcr   dx, 1
 ;    onground = (playerMobj_pos->z.w <= temp.w);
 
 cmp   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
-mov   ax, 0
+mov   al, 0
 jl    not_on_floor
 jg    on_floor
 cmp   dx, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
@@ -400,7 +400,7 @@ xchg  ax, si ; get ang intbits
 sub   ax, FINE_ANG90
 and   ax, FINEMASK
 mov   bh, dh
-xchg  ax, bx
+xchg  ax, bx ; bx gets ang
 
 
 call  P_Thrust_
@@ -440,57 +440,49 @@ NEG_ANG5_LOW  = 0C71Dh
 PROC    P_DeathThink_ NEAR
 PUBLIC  P_DeathThink_
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
-mov   bx, _player + PLAYER_T.player_viewheightvalue
+PUSHA_NO_AX_OR_BP_MACRO
 call  dword ptr ds:[_P_MovePsprites]
-mov   ax, word ptr ds:[bx + 2]
-cmp   ax, 6
-jg    label_25
-jne   label_26
-cmp   word ptr ds:[bx], 0
-jbe   label_26
-label_25:
-mov   bx, _player + PLAYER_T.player_viewheightvalue + 2
-dec   word ptr ds:[bx]
-label_26:
-mov   bx, _player + PLAYER_T.player_viewheightvalue + 0
-mov   ax, word ptr ds:[bx + 2]
-cmp   ax, 6
-jge   label_27
-jmp   label_28
-label_27:
-mov   bx, _player + PLAYER_T.player_deltaviewheight
-mov   word ptr ds:[bx], 0
-mov   word ptr ds:[bx + 2], 0
-mov   bx, _playerMobj
-mov   bx, word ptr ds:[bx]
-mov   ax, word ptr ds:[bx + 6]
-mov   bx, _playerMobj
-mov   bx, word ptr ds:[bx]
-mov   si, _playerMobj_pos
-mov   dx, word ptr ds:[bx + 6]
-sar   ax, 3
-xor   dh, dh
-mov   bx, word ptr ds:[si]
-and   dl, 7
-mov   es, word ptr ds:[si + 2]
-shl   dx, 13
-cmp   ax, word ptr es:[bx + MOBJ_POS_T.mp_z + 2]
-jg    label_29
-je    label_30
-jump_to_label_31:
-jmp   label_31
-label_30:
-cmp   dx, word ptr es:[bx + MOBJ_POS_T.mp_z + 0]
-jb    jump_to_label_31
-label_29:
-mov   al, 1
-label_39:
-mov   bx, _player + PLAYER_T.player_attackerRef
+
+xor   ax, ax
+cmp   word ptr ds:[_player + PLAYER_T.player_viewheightvalue + 2], 6
+jl    dont_dec_viewheight
+jg    dec_viewheight
+; equal. leave as 6, set fracbits to 0
+mov   word ptr ds:[_player + PLAYER_T.player_viewheightvalue + 0], ax ; 0
+jmp   done_with_viewheight
+
+dec_viewheight:
+dec   word ptr ds:[_player + PLAYER_T.player_viewheightvalue + 2]
+
+dont_dec_viewheight:
+done_with_viewheight:
+mov   word ptr ds:[_player + PLAYER_T.player_deltaviewheight + 0], ax ; 0
+mov   word ptr ds:[_player + PLAYER_T.player_deltaviewheight + 2], ax ; 0
+
+les   di, dword ptr ds:[_playerMobj_pos]
+mov   bx, word ptr ds:[_playerMobj]
+
+mov   ax, word ptr ds:[bx + MOBJ_T.m_floorz]
+xor   dx, dx
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+
+;    onground = (playerMobj_pos->z.w <= temp.w);
+
+cmp   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
+mov   al, 0
+jl    not_on_floor_2
+jg    on_floor_2
+cmp   dx, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
+jb    not_on_floor_2
+on_floor_2:
+inc   ax ; al is 1
+not_on_floor_2: ; al already 0
+
 mov   byte ptr ds:[_onground], al
 
 call  P_CalcHeight_
@@ -505,7 +497,7 @@ cmp   ax, word ptr ds:[si]
 je    jump_to_label_33
 mov   bx, _useDeadAttackerRef
 cmp   byte ptr ds:[bx], 0
-je    jump_to_label_34
+je    label_34
 mov   bx, _deadAttackerY
 push  word ptr ds:[bx + 2]
 push  word ptr ds:[bx]
@@ -529,9 +521,9 @@ mov   ax, dx
 sbb   ax, word ptr es:[di + MOBJ_POS_T.mp_angle + 2]
 cmp   ax, ANG5_HIGH
 jb    label_35
-jne   jump_to_label_36
+jne   label_36
 cmp   cx, ANG5_LOW
-jae   jump_to_label_36
+jae   label_36
 label_35:
 mov   di, _playerMobj_pos
 les   si, dword ptr ds:[di]
@@ -545,24 +537,11 @@ dec   word ptr ds:[bx]
 label_37:
 mov   bx, _player + PLAYER_T.player_cmd_buttons
 test  byte ptr ds:[bx], 2
-jne   jump_to_label_38
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+jne   label_38
+POPA_NO_AX_MACRO
 ret  
-jump_to_label_34:
-jmp   label_34
-label_28:
-mov   word ptr ds:[bx], 0
-mov   word ptr ds:[bx + 2], 6
-jmp   label_27
-label_31:
-xor   al, al
-jmp   label_39
-jump_to_label_36:
-jmp   label_36
+
+
 label_34:
 mov   bx, _player + PLAYER_T.player_attackerRef
 imul  bx, word ptr ds:[bx], SIZEOF_MOBJ_POS_T
@@ -584,8 +563,6 @@ mov   dx, word ptr es:[bx + 2]
 mov   bx, ax
 mov   ax, si
 jmp   label_40
-jump_to_label_38:
-jmp   label_38
 label_36:
 cmp   ax, NEG_ANG5_HIGH
 ja    label_35
@@ -611,11 +588,7 @@ jmp   label_43
 label_38:
 mov   bx, _player + PLAYER_T.player_playerstate
 mov   byte ptr ds:[bx], 2
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_MACRO
 ret  
 
 
