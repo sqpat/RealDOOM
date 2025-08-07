@@ -456,48 +456,46 @@ PROC    T_Glow_ NEAR
 PUBLIC  T_Glow_
 
 push  bx
-push  si
-mov   bx, ax
-mov   ax, word ptr ds:[bx + GLOW_T.glow_secnum]
-mov   dl, byte ptr ds:[bx + GLOW_T.glow_minlight]
-mov   si, word ptr ds:[bx + GLOW_T.glow_direction]
-shl   ax, 4
-mov   dh, byte ptr ds:[bx + GLOW_T.glow_maxlight]
-cmp   si, -1
-je    label_21
-cmp   si, 1
-jne   exit_tglow
-mov   si, SECTORS_SEGMENT
-mov   es, si
-mov   si, ax
-add   si, SECTOR_T.sec_lightlevel
-add   byte ptr es:[si], 8
-cmp   dh, byte ptr es:[si]
-jbe   label_22
-exit_tglow:
-pop   si
-pop   bx
-ret   
-label_21:
-mov   si, SECTORS_SEGMENT
-mov   es, si
-mov   si, ax
-add   si, SECTOR_T.sec_lightlevel
-sub   byte ptr es:[si], 8
-cmp   dl, byte ptr es:[si]
-jb    exit_tglow
-add   byte ptr es:[si], 8
-mov   word ptr ds:[bx + GLOW_T.glow_direction], 1
-pop   si
-pop   bx
-ret   
-label_22:
-sub   byte ptr es:[si], 8
-mov   word ptr ds:[bx + GLOW_T.glow_direction], -1
-pop   si
-pop   bx
-ret   
 
+xchg  ax, bx
+
+mov   ax, word ptr ds:[bx + GLOW_T.glow_secnum]
+SHIFT_MACRO shl   ax 4
+;mov   dl, byte ptr ds:[bx + GLOW_T.glow_minlight]
+;mov   dh, byte ptr ds:[bx + GLOW_T.glow_maxlight]
+mov   dx, word ptr ds:[bx + GLOW_T.glow_minlight]
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+cmp   word ptr ds:[bx + GLOW_T.glow_direction], 0
+xchg  ax, bx
+
+; dl minlight
+; dh maxlight
+; bx sector ptr
+; bx thing ptr
+
+; todo test add -8 to dh and 8 to dl in same word add? fine with no overflows..
+
+jg    do_glow_1_case
+do_glow_minus_1_case:
+add   dl, GLOWSPEED
+cmp   dl, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
+jge   do_change_glow_dir
+sub   byte ptr es:[bx + SECTOR_T.sec_lightlevel], GLOWSPEED
+jmp   exit_t_glow
+
+do_glow_1_case:
+sub   dh, GLOWSPEED
+cmp   dh, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
+jle   do_change_glow_dir
+sub   byte ptr es:[bx + SECTOR_T.sec_lightlevel], GLOWSPEED
+jmp   exit_t_glow
+
+do_change_glow_dir:
+xchg  ax, bx
+neg   word ptr ds:[bx + GLOW_T.glow_direction]
+exit_t_glow:
+pop   bx
+ret
 
 ENDP
 
@@ -509,10 +507,10 @@ PUBLIC  P_SpawnGlowingLight_
 push  bx
 mov   bx, ax
 SHIFT_MACRO  shl bx 4
-xchg  ax, dx
+xchg  ax, dx ; preserve secnum in dx.
 mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 mov   word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
-mov   bl, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
+mov   bl, byte ptr es:[bx + SECTOR_T.sec_lightlevel]  ; bl gets lightlevel.
 ; dx has secnum
 ; bl has lightlevel
 mov   ax, TF_GLOW_HIGHBITS
@@ -521,7 +519,7 @@ call  P_CreateThinker_
 xchg  ax, bx
 ; al has lightlevel, bx has thing ptr
 mov   byte ptr ds:[bx + GLOW_T.glow_maxlight], al
-xchg  ax, dx
+xchg  ax, dx ; secnum ax, seclightlevel dl
 mov   word ptr ds:[bx + GLOW_T.glow_secnum], ax 
 
 call  P_FindMinSurroundingLight_
