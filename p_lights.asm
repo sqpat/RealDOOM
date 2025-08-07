@@ -223,33 +223,36 @@ PROC    T_StrobeFlash_ NEAR
 PUBLIC  T_StrobeFlash_
 
 
+
 push  bx
-push  si
-mov   bx, ax
+
+xchg  ax, bx
 dec   word ptr ds:[bx + STROBE_T.strobe_count]
-jne   label_6
-mov   si, word ptr ds:[bx + STROBE_T.strobe_secnum]
-mov   ax, SECTORS_SEGMENT
-shl   si, 4
-mov   es, ax
-mov   al, byte ptr es:[si + SECTOR_T.sec_lightlevel]
-add   si, SECTOR_T.sec_lightlevel
-cmp   al, byte ptr ds:[bx + STROBE_T.strobe_maxlight]
-jne   label_7
-mov   al, byte ptr ds:[bx + STROBE_T.strobe_minlight]
-mov   byte ptr es:[si], al
-mov   si, word ptr ds:[bx + STROBE_T.strobe_brighttime]
-mov   word ptr ds:[bx + 2], si
-label_6:
-pop   si
-pop   bx
-ret   
-label_7:
-mov   al, byte ptr ds:[bx + STROBE_T.strobe_maxlight]
-mov   byte ptr es:[si], al
-mov   si, word ptr ds:[bx + STROBE_T.strobe_darktime]
-mov   word ptr ds:[bx + STROBE_T.strobe_count], si
-pop   si
+jnz   exit_t_strobeflash_early
+
+mov   dx, word ptr ds:[bx + STROBE_T.strobe_secnum]
+SHIFT_MACRO shl dx 4
+mov   ax, word ptr ds:[bx + STROBE_T.strobe_maxlight]
+; maxlight al
+; minlight ah
+xchg  bx, dx
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+
+cmp   ah, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
+jne   strobe_not_equal_to_minlight
+mov   byte ptr es:[bx + SECTOR_T.sec_lightlevel], al
+mov   bx, dx
+push  word ptr ds:[bx + STROBE_T.strobe_brighttime]
+jmp   set_count_and_exit_strobe
+
+strobe_not_equal_to_minlight:
+mov   byte ptr es:[bx + SECTOR_T.sec_lightlevel], ah
+mov   bx, dx
+push  word ptr ds:[bx + STROBE_T.strobe_darktime]
+set_count_and_exit_strobe:
+pop   word ptr ds:[bx + STROBE_T.strobe_count]
+
+exit_t_strobeflash_early:
 pop   bx
 ret   
 
