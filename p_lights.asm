@@ -258,70 +258,58 @@ ret
 
 ENDP
 
+;void __near P_SpawnStrobeFlash( int16_t secnum,int16_t		fastOrSlow,int16_t		inSync ){
+
 
 PROC    P_SpawnStrobeFlash_ NEAR
 PUBLIC  P_SpawnStrobeFlash_
 
-push  cx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 6
-mov   cx, ax
-mov   word ptr [bp - 2], dx
-mov   di, bx
-mov   dx, ax
-mov   bx, SECTORS_SEGMENT
-shl   dx, 4
-mov   es, bx
-mov   bx, dx
-mov   word ptr [bp - 4], 0
-add   bx, SECTOR_T.sec_lightlevel
-mov   word ptr [bp - 6], dx
-mov   dl, byte ptr es:[bx]
-mov   bx, word ptr [bp - 6]
-add   bx, _sectors_physics + SECTOR_PHYSICS_T.secp_special
-mov   ax, TF_STROBEFLASH_HIGHBITS
-mov   byte ptr ds:[bx + STROBE_T.strobe_secnum], 0
+push    si
+xchg    ax, si
 
+
+mov   ax, TF_STROBEFLASH_HIGHBITS
 call  P_CreateThinker_
-mov   bx, ax
-mov   si, ax
-mov   word ptr ds:[bx + STROBE_T.strobe_brighttime], 5
-mov   ax, word ptr [bp - 2]
-mov   byte ptr ds:[bx + STROBE_T.strobe_minlight], dl
-xor   dh, dh
-mov   word ptr ds:[bx + STROBE_T.strobe_darktime], ax
-mov   ax, cx
-mov   word ptr ds:[bx + STROBE_T.strobe_secnum], cx
-call  P_FindMinSurroundingLight_
-mov   byte ptr ds:[bx + STROBE_T.strobe_maxlight], al
-cmp   al, byte ptr ds:[bx + STROBE_T.strobe_minlight]
-je    label_8
-label_10:
-test  di, di
-je    label_9
-mov   word ptr ds:[si + STROBE_T.strobe_count], 1
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-ret   
-label_8:
-mov   byte ptr ds:[bx + STROBE_T.strobe_maxlight], 0
-jmp   label_10
-label_9:
+
+xchg  ax, bx
+
+; ax has inSync
+; bx has strobe ptr
+; si has secnum
+; dx has fastorslow
+
+
+mov   word ptr ds:[bx + STROBE_T.strobe_darktime], dx   ; dx free.
+mov   word ptr ds:[bx + STROBE_T.strobe_brighttime], STROBEBRIGHT
+
+test  ax, ax
+jne   in_sync
 call  P_Random_
-mov   dl, al
-and   dl, 7
-xor   dh, dh
-inc   dx
-mov   word ptr ds:[si + STROBE_T.strobe_count], dx
-LEAVE_MACRO 
-pop   di
+and   al, 7
+jmp   done_with_sync
+in_sync:
+xor   ax, ax
+done_with_sync:
+inc   ax
+mov   word ptr ds:[bx + STROBE_T.strobe_count], ax
+
+mov   ax, si ; secnum
+mov   word ptr ds:[bx + STROBE_T.strobe_secnum], ax
+SHIFT_MACRO   sal si 4
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+
+mov   word ptr ds:[_sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
+mov   dl, byte ptr es:[si + SECTOR_T.sec_lightlevel]
+mov   byte ptr ds:[bx + STROBE_T.strobe_maxlight], dl
+
+call  P_FindMinSurroundingLight_
+cmp   al, byte ptr ds:[bx + STROBE_T.strobe_maxlight]
+jne   just_set_minlight
+xor   ax, ax
+just_set_minlight:
+mov   byte ptr ds:[bx + STROBE_T.strobe_minlight], al
+
 pop   si
-pop   cx
 ret   
 
 ENDP
