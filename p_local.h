@@ -31,6 +31,8 @@
 #define MAXHEALTH		100
 #define VIEWHEIGHT		(41*FRACUNIT)
 #define VIEWHEIGHT_HIGHBITS	41
+#define MAXBOB_HIGHBITS	0x10
+
 
 // mapblocks are used to check movement
 // against lines and things

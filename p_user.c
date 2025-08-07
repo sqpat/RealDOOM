@@ -42,6 +42,7 @@
 
 // 16 pixels of bob
 #define MAXBOB	0x100000	
+#define MAXBOBHIGHBITS	0x10
 
 
 
