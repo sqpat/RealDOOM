@@ -486,110 +486,119 @@ not_on_floor_2: ; al already 0
 mov   byte ptr ds:[_onground], al
 
 call  P_CalcHeight_
-mov   ax, word ptr ds:[bx]
+
+
+mov   ax, word ptr ds:[_player + PLAYER_T.player_attackerRef]
 test  ax, ax
-jne   label_32
-jump_to_label_33:
-jmp   label_33
-label_32:
-mov   si, _playerMobjRef
-cmp   ax, word ptr ds:[si]
-je    jump_to_label_33
-mov   bx, _useDeadAttackerRef
-cmp   byte ptr ds:[bx], 0
-je    label_34
-mov   bx, _deadAttackerY
-push  word ptr ds:[bx + 2]
-push  word ptr ds:[bx]
-mov   bx, _deadAttackerX
-push  word ptr ds:[bx + 2]
-push  word ptr ds:[bx]
-mov   bx, _playerMobj_pos
-les   si, dword ptr ds:[bx]
-mov   bx, word ptr es:[si + 4]
-mov   cx, word ptr es:[si + 6]
-mov   ax, word ptr es:[si]
-mov   dx, word ptr es:[si + 2]
-label_40:
+je    dec_damage_count
+
+cmp   ax, word ptr ds:[_playerMobjRef]
+je    dec_damage_count
+
+
+cmp   byte ptr ds:[_useDeadAttackerRef], 0
+jne   use_dead_attackerref
+
+dont_use_dead_attackerref:
+
+mov   bx, SIZEOF_MOBJ_POS_T
+mul   bx  ; ax has attacker ref.
+xchg  ax, si
+mov   ds, word ptr ds:[_playerMobj_pos+2]
+
+
+set_values_call_point_to_angle:
+
+push  word ptr ds:[si + 6] ; MOBJ_POS_T.mp_y + 2 or _deadAttackerY + 2
+push  word ptr ds:[si + 4] ; MOBJ_POS_T.mp_y + 0 or _deadAttackerY + 0
+push  word ptr ds:[si + 2] ; MOBJ_POS_T.mp_x + 2 or _deadAttackerX + 2
+push  word ptr ds:[si]     ; MOBJ_POS_T.mp_x + 0 or _deadAttackerX + 0
+
+lds   di, dword ptr ss:[_playerMobj_pos]
+
+les   bx, dword ptr ds:[di + MOBJ_POS_T.mp_y + 0]
+mov   cx, es
+les   ax, dword ptr ds:[di + MOBJ_POS_T.mp_x + 0]
+mov   dx, es
+
+push  ss
+pop   ds
+
+call_point_to_angle:
 call  R_PointToAngle2_
+
+;		delta.wu = angle.wu - playerMobj_pos->angle.wu;
+les   di, dword ptr ds:[_playerMobj_pos]
+
 mov   bx, ax
-mov   si, _playerMobj_pos
-les   di, dword ptr ds:[si]
-mov   cx, bx
-sub   cx, word ptr es:[di + MOBJ_POS_T.mp_angle + 0]
-mov   ax, dx
-sbb   ax, word ptr es:[di + MOBJ_POS_T.mp_angle + 2]
-cmp   ax, ANG5_HIGH
-jb    label_35
-jne   label_36
-cmp   cx, ANG5_LOW
-jae   label_36
-label_35:
-mov   di, _playerMobj_pos
-les   si, dword ptr ds:[di]
+mov   cx, dx ; store angle in cx:bx back up in case setting later.
+sub   ax, word ptr es:[di + MOBJ_POS_T.mp_angle + 0]
+sbb   dx, word ptr es:[di + MOBJ_POS_T.mp_angle + 2]
+
+
+; if (delta.wu < ANG5 || delta.wu > (uint32_t)-ANG5) {
+mov   si, ANG5_HIGH
+mov   di, ANG5_LOW
+
+cmp   dx, si
+jb    face_killer
+ja    check_neg_ang_5
+cmp   ax, di
+jb    face_killer
+check_neg_ang_5:
+cmp   dx, NEG_ANG5_HIGH
+ja    face_killer
+jb    check_ang_180
+cmp   ax, NEG_ANG5_LOW
+jbe   check_ang_180
+
+face_killer:
+
+les   si, dword ptr ds:[_playerMobj_pos]
+; set stored cx:bx angle
 mov   word ptr es:[si + MOBJ_POS_T.mp_angle + 0], bx
-mov   bx, _player + PLAYER_T.player_damagecount
-mov   word ptr es:[si + MOBJ_POS_T.mp_angle + 2], dx
-label_43:
-cmp   word ptr ds:[bx], 0
-je    label_37
-dec   word ptr ds:[bx]
-label_37:
-mov   bx, _player + PLAYER_T.player_cmd_buttons
-test  byte ptr ds:[bx], 2
-jne   label_38
+mov   word ptr es:[si + MOBJ_POS_T.mp_angle + 2], cx
+
+
+
+
+dec_damage_count:
+
+cmp   word ptr ds:[_player + PLAYER_T.player_damagecount], 0
+je    dont_dec_damagecount
+dec   word ptr ds:[_player + PLAYER_T.player_damagecount]
+dont_dec_damagecount:
+
+test  byte ptr ds:[_player + PLAYER_T.player_cmd_buttons], BT_USE
+je    no_reborn
+
+mov   byte ptr ds:[_player + PLAYER_T.player_playerstate], PST_REBORN
+no_reborn:
+
+
 POPA_NO_AX_MACRO
 ret  
 
+use_dead_attackerref:
+mov   si, _deadAttackerX
+jmp   set_values_call_point_to_angle
 
-label_34:
-mov   bx, _player + PLAYER_T.player_attackerRef
-imul  bx, word ptr ds:[bx], SIZEOF_MOBJ_POS_T
-mov   ax, MOBJPOSLIST_6800_SEGMENT
-mov   es, ax
-push  word ptr es:[bx + 6]
-push  word ptr es:[bx + 4]
-push  word ptr es:[bx + 2]
-push  word ptr es:[bx]
-mov   bx, _playerMobj_pos
-les   si, dword ptr ds:[bx]
-mov   ax, word ptr es:[si + 4]
-mov   cx, word ptr es:[si + 6]
-mov   si, bx
-mov   bx, word ptr ds:[bx]
-mov   es, word ptr ds:[si + 2]
-mov   si, word ptr es:[bx]
-mov   dx, word ptr es:[bx + 2]
-mov   bx, ax
-mov   ax, si
-jmp   label_40
-label_36:
-cmp   ax, NEG_ANG5_HIGH
-ja    label_35
-jne   label_41
-cmp   cx, NEG_ANG5_LOW
-jbe   label_41
-jmp   label_35
-label_41:
-cmp   ax, ANG180_HIGHBITS
-jae   label_42
-mov   bx, di
-add   word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], ANG5_LOW
-adc   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], ANG5_HIGH
-jmp   label_37
-label_42:
-mov   bx, di
-add   word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], NEG_ANG5_LOW
-adc   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], NEG_ANG5_HIGH
-jmp   label_37
-label_33:
-mov   bx, _player + PLAYER_T.player_damagecount
-jmp   label_43
-label_38:
-mov   bx, _player + PLAYER_T.player_playerstate
-mov   byte ptr ds:[bx], 2
-POPA_NO_AX_MACRO
-ret  
+
+
+
+check_ang_180:
+les   bx, dword ptr ds:[_playerMobj_pos]
+
+test  dx, dx   ; cmp ANG180_HIGHBITS
+jns   add_ang_5 ; < 0x8000
+neg   si
+neg   di
+sbb   si, 0
+add_ang_5:
+add   word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], di
+adc   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], si
+jmp   dont_dec_damagecount
+
 
 
 ENDP
