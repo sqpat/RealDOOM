@@ -621,7 +621,7 @@ and   byte ptr es:[di + MOBJ_POS_T.mp_flags1 + 1], (NOT (MF_NOCLIP SHR 8))
 done_with_clip:
 mov   bx, _player
 mov   ax, 100
-cwd
+cwd  ; dx 0 for the function
 test  byte ptr es:[di + MOBJ_POS_T.mp_flags1], MF_JUSTATTACKED
 je    skip_chainsaw_run_forward
 mov   word ptr ds:[bx + PLAYER_T.player_cmd_angleturn], dx  ; two two byte writes of 0... ok?
@@ -734,52 +734,96 @@ mov   byte ptr ds:[bx + PLAYER_T.player_usedown], dl ; 0
 done_with_buttons:
 
 call  dword ptr ds:[_P_MovePsprites]
-cmp   word ptr ds:[_player + PLAYER_T.player_powers + (PW_STRENGTH * 2)], dx ; 0
-je    dont_inc_berserk
-inc   word ptr ds:[_player + PLAYER_T.player_powers + (PW_STRENGTH * 2)]
-dont_inc_berserk:
 
-cmp   word ptr ds:[_player + PLAYER_T.player_powers + (PW_INVULNERABILITY * 2)], dx ; 0
-je    dont_dec_invuln
-dec   word ptr ds:[_player + PLAYER_T.player_powers + (PW_INVULNERABILITY * 2)]
-dont_dec_invuln:
-cmp   word ptr ds:[_player + PLAYER_T.player_powers + (PW_INVISIBILITY * 2)], dx ; 0
+push  ds
+pop   es
 
-je    dont_dec_invis
-dec   word ptr ds:[_player + PLAYER_T.player_powers + (PW_INVISIBILITY * 2)]
-jne   dont_dec_invis
-and   byte ptr es:[di + MOBJ_POS_T.mp_flags2], (NOT MF_SHADOW)
-dont_dec_invis:
+lea   si, [bx + PLAYER_T.player_damagecount]
+mov   di, si
 
-cmp   word ptr ds:[_player + PLAYER_T.player_powers + (PW_INFRARED * 2)], dx ; 0
-je    dont_dev_infrared
-dec   word ptr ds:[_player + PLAYER_T.player_powers + (PW_INFRARED * 2)]
-dont_dev_infrared:
-cmp   word ptr ds:[_player + PLAYER_T.player_powers + (PW_IRONFEET * 2)], dx ; 0
-je    dont_dec_radsuit
-dec   word ptr ds:[_player + PLAYER_T.player_powers + (PW_IRONFEET * 2)]
-dont_dec_radsuit:
-cmp   word ptr ds:[_player + PLAYER_T.player_damagecount], dx ; 0
-je    dont_dec_damagecount_2
-dec   word ptr ds:[_player + PLAYER_T.player_damagecount]
-dont_dec_damagecount_2:
+; damage count
+lodsw
+dec   ax
+jns   write_damagecount
+inc   ax ; undo
+write_damagecount:
+stosw
 
-cmp   byte ptr ds:[_player + PLAYER_T.player_bonuscount], dl ; 0
-je    dont_dec_bonuscount
-dec   byte ptr ds:[_player + PLAYER_T.player_bonuscount]
-dont_dec_bonuscount:
+; bonus count
+lodsb
+dec   al
+jns   write_bonuscount
+inc   al ; undo
+write_bonuscount:
+stosb
 
-mov   byte ptr ds:[_player + PLAYER_T.player_fixedcolormapvalue], dl ; 0
+lea   si, [bx + PLAYER_T.player_powers + (PW_INVULNERABILITY * 2)]
+mov   di, si
 
-mov   ax, word ptr ds:[_player + PLAYER_T.player_powers + (PW_INVULNERABILITY * 2)]
+
+; invuln
+lodsw
+dec   ax
+jns   write_invuln
+inc   ax ; undo
+write_invuln:
+stosw
+
+xchg  ax, cx ; cx store invuln
+
+; berserk
+lodsw
+inc   ax
+js    write_berserk
+dec   ax ; undo
+write_berserk:
+stosw
+
+
+; invis
+lodsw
+dec   ax
+jns   write_invis
+inc   ax ; undo
+write_invis:
+stosw
+
+
+; radsuit
+lodsw
+dec   ax
+jns   write_radsuit
+inc   ax ; undo
+write_radsuit:
+stosw
+
+movsw ; skip allmap
+
+
+; infrared
+lodsw
+dec   ax
+jns   write_infrared
+inc   ax ; undo
+write_infrared:
+stosw
+
+xchg  ax, si ; si has infrared
+
+
+
+
+mov   byte ptr ds:[bx + PLAYER_T.player_fixedcolormapvalue], dl ; 0
+
+xchg  ax, cx ; invuln
 test  ax, ax
 jne   invul_wearing_off_colormap
-mov   ax, word ptr ds:[bx + PLAYER_T.player_powers + (PW_INFRARED * 2)]
+xchg  ax, si ; infra
 test  ax, ax
 je    exit_player_think
 cmp   ax, (4 * 32)
 jg    set_colormap_1
-test  byte ptr ds:[bx + PLAYER_T.player_powers + (PW_INFRARED * 2)], 8
+test  al, 8
 je    exit_player_think
 
 set_colormap_1:
@@ -789,11 +833,11 @@ jmp   exit_player_think
 invul_wearing_off_colormap:
 cmp   ax, (4 * 32)
 jg    set_inverse_colormap
-test  byte ptr ds:[_player + PLAYER_T.player_powers + (PW_INVULNERABILITY * 2)], 8
+test  al, 8
 je    exit_player_think
 
 set_inverse_colormap:
-mov   byte ptr ds:[_player + PLAYER_T.player_fixedcolormapvalue], INVERSECOLORMAP
+mov   byte ptr ds:[bx + PLAYER_T.player_fixedcolormapvalue], INVERSECOLORMAP
 
 exit_player_think:
 POPA_NO_AX_MACRO
