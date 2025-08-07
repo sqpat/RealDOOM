@@ -66,10 +66,16 @@ PUBLIC  P_Thrust_
 
 push  dx
 
+; note: move is actually a single byte.. we shift by 11, but implication is ch, cl, bl are 0 coming in.
+; UPDATE: we pass vars in backwards. angle is in bx. move is in ah so we can cwd for sign.
+
+cwd
+mov   cx, dx
+xchg  ax, bx  ; cx:bx is sign adjusted angle. pre shifted left 8
+
 xchg  ax, dx  ; dx gets angle...
-mov   ch, cl
-mov   cl, bh
-mov   bh, bl ; shift 8
+;mov   bh, bl ; shift 8
+; pre-shifted by 8. we pass in the value in bh.
 sal   bx, 1
 rcl   cx, 1
 sal   bx, 1
@@ -339,109 +345,84 @@ ENDP
 PROC    P_MovePlayer_ NEAR
 PUBLIC  P_MovePlayer_
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
-mov   si, _player
-mov   di, _playerMobj_pos
-mov   ax, word ptr ds:[si + PLAYER_T.player_cmd_angleturn]
-les   bx, dword ptr ds:[di]
-add   word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], 0
-adc   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], ax
-mov   bx, _playerMobj
-mov   bx, word ptr ds:[bx]
-mov   ax, word ptr ds:[bx + 6]
-mov   bx, _playerMobj
-mov   bx, word ptr ds:[bx]
-mov   dx, word ptr ds:[bx + 6]
-sar   ax, 3
-xor   dh, dh
-mov   bx, word ptr ds:[di]
-and   dl, 7
-mov   es, word ptr ds:[di + 2]
-shl   dx, 13
-cmp   ax, word ptr es:[bx + MOBJ_POS_T.mp_z + 2]
-jg    label_17
-je    label_18
-jump_to_label_19:
-jmp   label_19
-label_18:
-cmp   dx, word ptr es:[bx + MOBJ_POS_T.mp_z + 0]
-jb    jump_to_label_19
-label_17:
-mov   al, 1
-label_22:
+PUSHA_NO_AX_MACRO
+
+mov   ax, word ptr ds:[_player + PLAYER_T.player_cmd_angleturn]
+les   di, dword ptr ds:[_playerMobj_pos]
+add   word ptr es:[di + MOBJ_POS_T.mp_angle + 2], ax
+mov   bx, word ptr ds:[_playerMobj]
+mov   ax, word ptr ds:[bx + MOBJ_T.m_floorz]
+xor   dx, dx
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+
+;    onground = (playerMobj_pos->z.w <= temp.w);
+
+cmp   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
+mov   ax, 0
+jl    not_on_floor
+jg    on_floor
+cmp   dx, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
+jb    not_on_floor
+on_floor:
+inc   ax ; al is 1
+not_on_floor: ; al already 0
+set_onground:
 mov   byte ptr ds:[_onground], al
-cmp   byte ptr ds:[si + PLAYER_T.player_cmd_forwardmove], 0
-je    label_20
 test  al, al
-je    label_20
-mov   al, byte ptr ds:[si + PLAYER_T.player_cmd_forwardmove]
-mov   bx, _playerMobj_pos
-cbw  
-les   di, dword ptr ds:[bx]
-cwd   
-mov   di, word ptr es:[di + MOBJ_POS_T.mp_angle+2]
-mov   bx, ax
-shr   di, 3
-mov   cx, dx
-mov   ax, di
+je    not_on_ground_cant_move
+
+; onground known true.
+
+mov   si, word ptr es:[di + MOBJ_POS_T.mp_angle+2]
+SHIFT_MACRO shr si SHORTTOFINESHIFT
+
+mov   dx, word ptr ds:[_player + PLAYER_T.player_cmd_forwardmove] ; sidemove in dh
+
+test  dl, dl
+je    not_moving_forward
+mov   ah, dl  ; ah gets forward move
+mov   bx, si  ; bx gets ang intbits >> 3
+
 
 call  P_Thrust_
-label_20:
-cmp   byte ptr ds:[si + PLAYER_T.player_cmd_sidemove], 0
-je    label_21
-cmp   byte ptr ds:[_onground], 0
-je    label_21
-mov   bx, _playerMobj_pos
-mov   al, byte ptr ds:[si + PLAYER_T.player_cmd_sidemove]
-les   di, dword ptr ds:[bx]
-mov   di, word ptr es:[di + MOBJ_POS_T.mp_angle+2]
-cbw  
-shr   di, SHORTTOFINESHIFT
-cwd   
-sub   di, FINE_ANG90
-mov   bx, ax
-and   di, FINEMASK
-mov   cx, dx
-mov   ax, di
+
+not_moving_forward:
+
+test  dh, dh
+je    not_side_moving
+
+xchg  ax, si ; get ang intbits
+sub   ax, FINE_ANG90
+and   ax, FINEMASK
+mov   bh, dh
+xchg  ax, bx
+
 
 call  P_Thrust_
-label_21:
-cmp   byte ptr ds:[si + PLAYER_T.player_cmd_forwardmove], 0
-je    label_77
-label_23:
-mov   bx, _playerMobj_pos
-les   si, dword ptr ds:[bx]
-cmp   word ptr es:[si + MOBJ_POS_T.mp_statenum], S_PLAY
-je    label_78
-label_24:
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret  
-label_19:
-xor   al, al
-jmp   label_22
-label_77:
-cmp   byte ptr ds:[si + 1], 0
-jne   label_23
-jmp   label_24
-label_78:
-mov   bx, _playerMobj
+
+not_side_moving:
+
+not_on_ground_cant_move:
+
+test  dx, dx ; test move sidemove, forwardmove.
+je    exit_p_moveplayer
+
+les   di, dword ptr ds:[_playerMobj_pos]
+cmp   word ptr es:[di + MOBJ_POS_T.mp_statenum], S_PLAY
+jne   exit_p_moveplayer
+
+mov   ax, word ptr ds:[_playerMobj]
 mov   dx, S_PLAY_RUN1
-mov   ax, word ptr ds:[bx]
 call  dword ptr ds:[_P_SetMobjState]
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+exit_p_moveplayer:
+POPA_NO_AX_MACRO
 ret  
+
 
 
 ENDP
