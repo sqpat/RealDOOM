@@ -104,7 +104,7 @@ mov   bx, ax
 SHIFT_MACRO  shl bx 4
 xchg  ax, dx
 mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
-mov   word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
+mov   byte ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
 mov   bl, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
 ; dx has secnum
 ; bl has lightlevel
@@ -192,7 +192,7 @@ mov   bx, ax
 SHIFT_MACRO  shl bx 4
 xchg  ax, dx
 mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
-mov   word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
+mov   byte ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
 mov   bl, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
 ; dx has secnum
 ; bl has lightlevel
@@ -299,7 +299,7 @@ mov   word ptr ds:[bx + STROBE_T.strobe_secnum], ax
 SHIFT_MACRO   sal si 4
 mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
-mov   word ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
+mov   byte ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
 mov   dl, byte ptr es:[si + SECTOR_T.sec_lightlevel]
 mov   byte ptr ds:[bx + STROBE_T.strobe_maxlight], dl
 
@@ -509,7 +509,7 @@ mov   bx, ax
 SHIFT_MACRO  shl bx 4
 xchg  ax, dx ; preserve secnum in dx.
 mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
-mov   word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
+mov   byte ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
 mov   bl, byte ptr es:[bx + SECTOR_T.sec_lightlevel]  ; bl gets lightlevel.
 ; dx has secnum
 ; bl has lightlevel

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/06 08:34:18
+Created on:       25/08/06 08:43:23
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -62,12 +62,12 @@ P_CEILNG_TEXT          CODE           AUTO           0bc4:1e74       00000295
 P_DOORS_TEXT           CODE           AUTO           0bc4:210a       000003d9
 P_FLOOR_TEXT           CODE           AUTO           0bc4:24e4       000004c7
 P_INTER_TEXT           CODE           AUTO           0bc4:29ac       0000089e
-P_LIGHTS_TEXT          CODE           AUTO           0bc4:324a       000002cf
-P_PLATS_TEXT           CODE           AUTO           0bc4:351a       00000289
-P_SPEC_TEXT            CODE           AUTO           0bc4:37a4       00000a06
-P_SWITCH_TEXT          CODE           AUTO           0bc4:41aa       000003c6
-P_TELEPT_TEXT          CODE           AUTO           0bc4:4570       00000185
-P_TICK_TEXT            CODE           AUTO           0bc4:46f6       000001e4
+P_LIGHTS_TEXT          CODE           AUTO           0bc4:324a       000002cb
+P_PLATS_TEXT           CODE           AUTO           0bc4:3516       00000289
+P_SPEC_TEXT            CODE           AUTO           0bc4:37a0       00000a06
+P_SWITCH_TEXT          CODE           AUTO           0bc4:41a6       000003c6
+P_TELEPT_TEXT          CODE           AUTO           0bc4:456c       00000185
+P_TICK_TEXT            CODE           AUTO           0bc4:46f2       000001e4
 p_user_TEXT            CODE           AUTO           0bc4:48e0       000006e7
 R_MAIN_TEXT            CODE           AUTO           0bc4:4fc8       000003dc
 w_wad_TEXT             CODE           AUTO           0bc4:53b0       0000030c
@@ -837,56 +837,56 @@ Module: p_inter.obj(p_inter.ASM)
 0bc4:2f4b*     getMassThrust_
 0bc4:324a*     P_INTER_ENDMARKER_
 Module: p_lights.obj(p_lights.ASM)
-0bc4:34e8      P_SpawnGlowingLight_
-0bc4:33ad      EV_StartLightStrobing_
-0bc4:32b8      T_LightFlash_
-0bc4:33dc      EV_LightChange_
-0bc4:34ad      T_Glow_
-0bc4:3519*     P_LIGHTS_ENDMARKER_
-0bc4:3362      P_SpawnStrobeFlash_
+0bc4:34e5      P_SpawnGlowingLight_
+0bc4:33aa      EV_StartLightStrobing_
+0bc4:32b7      T_LightFlash_
+0bc4:33d9      EV_LightChange_
+0bc4:34aa      T_Glow_
+0bc4:3515*     P_LIGHTS_ENDMARKER_
+0bc4:3360      P_SpawnStrobeFlash_
 0bc4:3285      P_SpawnFireFlicker_
-0bc4:32f4      P_SpawnLightFlash_
+0bc4:32f3      P_SpawnLightFlash_
 0bc4:324a*     P_LIGHTS_STARTMARKER_
-0bc4:332e      T_StrobeFlash_
+0bc4:332c      T_StrobeFlash_
 0bc4:324a      T_FireFlicker_
 Module: p_plats.obj(p_plats.ASM)
-0bc4:35d0      EV_DoPlat_
-0bc4:351a      T_PlatRaise_
-0bc4:3759      P_AddActivePlat_
-0bc4:3771*     P_RemoveActivePlat_
-0bc4:37a3*     P_PLATS_ENDMARKER_
-0bc4:370f      EV_PlatFunc_
-0bc4:351a*     P_PLATS_STARTMARKER_
+0bc4:35cc      EV_DoPlat_
+0bc4:3516      T_PlatRaise_
+0bc4:3755      P_AddActivePlat_
+0bc4:376d*     P_RemoveActivePlat_
+0bc4:379f*     P_PLATS_ENDMARKER_
+0bc4:370b      EV_PlatFunc_
+0bc4:3516*     P_PLATS_STARTMARKER_
 Module: p_spec.obj(p_spec.ASM)
-0bc4:3e81      P_UpdateSpecials_
-0bc4:3870      P_FindNextHighestFloor_
-0bc4:37fa      P_FindHighestOrLowestFloorSurrounding_
-0bc4:3dba      P_PlayerInSpecialSector_
-0bc4:37a4*     P_SPEC_STARTMARKER_
-0bc4:41aa*     P_SPEC_ENDMARKER_
-0bc4:3fb2      EV_DoDonut_
-0bc4:38e1      P_FindLowestOrHighestCeilingSurrounding_
-0bc4:398e      P_FindMinSurroundingLight_
-0bc4:37a4*     getNextSectorList_
-0bc4:3957      P_FindSectorsFromLineTag_
-0bc4:3b1a      P_CrossSpecialLine_
-0bc4:3d27      P_ShootSpecialLine_
-0bc4:411e      P_SpawnSpecials_
+0bc4:3e7d      P_UpdateSpecials_
+0bc4:386c      P_FindNextHighestFloor_
+0bc4:37f6      P_FindHighestOrLowestFloorSurrounding_
+0bc4:3db6      P_PlayerInSpecialSector_
+0bc4:37a0*     P_SPEC_STARTMARKER_
+0bc4:41a6*     P_SPEC_ENDMARKER_
+0bc4:3fae      EV_DoDonut_
+0bc4:38dd      P_FindLowestOrHighestCeilingSurrounding_
+0bc4:398a      P_FindMinSurroundingLight_
+0bc4:37a0*     getNextSectorList_
+0bc4:3953      P_FindSectorsFromLineTag_
+0bc4:3b16      P_CrossSpecialLine_
+0bc4:3d23      P_ShootSpecialLine_
+0bc4:411a      P_SpawnSpecials_
 Module: p_switch.obj(p_switch.ASM)
-0bc4:41aa*     P_SWITCH_STARTMARKER_
-0bc4:4570*     P_SWITCH_ENDMARKER_
-0bc4:41aa      P_ChangeSwitchTexture_
-0bc4:43b3      P_UseSpecialLine_
+0bc4:41a6*     P_SWITCH_STARTMARKER_
+0bc4:456c*     P_SWITCH_ENDMARKER_
+0bc4:41a6      P_ChangeSwitchTexture_
+0bc4:43af      P_UseSpecialLine_
 Module: p_telept.obj(p_telept.ASM)
-0bc4:46f5*     P_TELEPT_ENDMARKER_
-0bc4:4570*     P_TELEPT_STARTMARKER_
-0bc4:4570      EV_Teleport_
+0bc4:46f1*     P_TELEPT_ENDMARKER_
+0bc4:456c*     P_TELEPT_STARTMARKER_
+0bc4:456c      EV_Teleport_
 Module: p_tick.obj(p_tick.ASM)
-0bc4:476a      P_UpdateThinkerFunc_
-0bc4:48c5      P_Random_
-0bc4:478c      P_RemoveThinker_
-0bc4:47bf      P_Ticker_
-0bc4:46f6      P_CreateThinker_
+0bc4:4766      P_UpdateThinkerFunc_
+0bc4:48c1      P_Random_
+0bc4:4788      P_RemoveThinker_
+0bc4:47bb      P_Ticker_
+0bc4:46f2      P_CreateThinker_
 Module: p_user.obj(C:\REALDOOM\p_user.c)
 0bc4:48e0+     P_Thrust_
 0bc4:4940+     P_CalcHeight_
@@ -1209,4 +1209,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  00016ce0 (93408.)
 Entry point address: 0bc4:6b56
-Link time: 00:00.75
+Link time: 00:00.20
