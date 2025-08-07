@@ -94,9 +94,9 @@ ret
 
 ENDP
 
+; i believe dx is ok to wreck.
 PROC    P_SpawnFireFlicker_ NEAR
 PUBLIC  P_SpawnFireFlicker_
-
 
 push  bx
 
@@ -107,7 +107,7 @@ mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 mov   word ptr ds:[_sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
 mov   bl, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
 ; dx has secnum
-; bx has lightlevel
+; bl has lightlevel
 mov   ax, TF_FIREFLICKER_HIGHBITS
 call  P_CreateThinker_
 
@@ -127,8 +127,8 @@ mov   word ptr ds:[bx + FIREFLICKER_T.fireflicker_count], 4
 
 call  P_FindMinSurroundingLight_
 
-add   ax, 16
-mov   word ptr ds:[bx + FIREFLICKER_T.fireflicker_minlight], ax
+add   al, 16
+mov   byte ptr ds:[bx + FIREFLICKER_T.fireflicker_minlight], al
 
 pop   bx
 ret   
@@ -138,7 +138,6 @@ ENDP
 
 PROC    T_LightFlash_ NEAR
 PUBLIC  T_LightFlash_
-
 push  bx
 
 xchg  ax, bx
@@ -182,55 +181,38 @@ ret
 ENDP
 
 
+; i believe dx is ok to wreck..
 PROC    P_SpawnLightFlash_ NEAR
 PUBLIC  P_SpawnLightFlash_
 
-push  bx
-push  cx
-push  dx
-push  bp
-mov   bp, sp
-sub   sp, 6
-mov   cx, ax
-mov   word ptr [bp - 4], 0
-mov   dx, ax
-mov   bx, SECTORS_SEGMENT
-shl   dx, 4
-mov   es, bx
-mov   bx, dx
-mov   word ptr [bp - 6], dx
-mov   dl, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
-add   bx, SECTOR_T.sec_lightlevel
-xor   dh, dh
-mov   bx, word ptr [bp - 6]
-mov   word ptr [bp - 2], dx
-mov   byte ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], dh
-mov   dl, byte ptr [bp - 2]
-call  P_FindMinSurroundingLight_
-mov   dl, al
-mov   ax, TF_LIGHTFLASH_HIGHBITS
-add   bx, _sectors_physics + SECTOR_PHYSICS_T.secp_special
 
-call  P_CreateThinker_
+push  bx
+
 mov   bx, ax
-mov   byte ptr ds:[bx + LIGHTFLASH_T.lightflash_maxtime], 64
-mov   byte ptr ds:[bx + LIGHTFLASH_T.lightflash_mintime], 7  ; todo double check
-mov   word ptr ds:[bx + LIGHTFLASH_T.lightflash_secnum], cx
-mov   dh, byte ptr [bp - 2]
-mov   al, byte ptr ds:[bx + LIGHTFLASH_T.lightflash_maxtime]
-mov   byte ptr ds:[bx + LIGHTFLASH_T.lightflash_maxlight], dh
-cbw  
-mov   byte ptr ds:[bx + LIGHTFLASH_T.lightflash_minlight], dl
-mov   cx, ax
+SHIFT_MACRO  shl bx 4
+xchg  ax, dx
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+mov   word ptr ds:[_sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
+mov   bl, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
+; dx has secnum
+; bl has lightlevel
+mov   ax, TF_LIGHTFLASH_HIGHBITS
+call  P_CreateThinker_
+
+xchg  ax, bx
+
+mov   byte ptr ds:[bx + LIGHTFLASH_T.lightflash_maxlight], al ; seclightlevel
+xchg  ax, dx
+mov   word ptr ds:[bx + LIGHTFLASH_T.lightflash_secnum], ax ; secnum
+call  P_FindMinSurroundingLight_
+mov   byte ptr ds:[bx + LIGHTFLASH_T.lightflash_minlight], al ; seclightlevel
+
 call  P_Random_
-mov   dl, al
-xor   dh, dh
-and   dl, cl
-inc   dx
-mov   word ptr ds:[bx + LIGHTFLASH_T.lightflash_count], dx
-LEAVE_MACRO 
-pop   dx
-pop   cx
+and   al, 64
+inc   ax
+mov   word ptr ds:[bx + LIGHTFLASH_T.lightflash_count], ax
+mov   word ptr ds:[bx + LIGHTFLASH_T.lightflash_maxtime], 0740h ; 7 to mintime. 64 to maxtime.
+
 pop   bx
 ret   
 
