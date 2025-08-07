@@ -50,51 +50,44 @@ PUBLIC  T_FireFlicker_
 
 
 push  bx
-push  cx
-push  bp
-mov   bp, sp
-sub   sp, 2
-mov   bx, ax
-mov   dx, word ptr ds:[bx + FIREFLICKER_T.fireflicker_secnum]
-mov   al, byte ptr ds:[bx + FIREFLICKER_T.fireflicker_maxlight]
-mov   cl, byte ptr ds:[bx + FIREFLICKER_T.fireflicker_minlight]
-mov   byte ptr [bp - 2], al
-dec   word ptr ds:[bx + 2]
-je    label_1
-LEAVE_MACRO 
-pop   cx
-pop   bx
-ret   
-label_1:
+
+xchg  ax, bx
+dec   word ptr ds:[bx + FIREFLICKER_T.fireflicker_count]
+jnz   exit_t_fireflicker_early
 call  P_Random_
-mov   ch, al
+and   al, 3
 mov   word ptr ds:[bx + FIREFLICKER_T.fireflicker_count], 4
-mov   ax, SECTORS_SEGMENT
-mov   bx, dx
-and   ch, 3
-shl   bx, 4
-mov   es, ax
-shl   ch, 4
-mov   dl, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
-mov   al, ch
-xor   dh, dh
-xor   ah, ah
-sub   dx, ax
-mov   al, cl
-cmp   dx, ax
-jge   label_2
-mov   byte ptr es:[bx], cl
-LEAVE_MACRO 
-pop   cx
-pop   bx
-ret   
-ENDP
-label_2:
-mov   al, byte ptr [bp - 2]
-sub   al, ch
-mov   byte ptr es:[bx + SECTOR_T.sec_floorheight], al
-LEAVE_MACRO
-pop   cx
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+mov   dx, word ptr ds:[bx + FIREFLICKER_T.fireflicker_secnum]
+SHIFT_MACRO sal dx 4
+mov   ah, byte ptr ds:[bx + FIREFLICKER_T.fireflicker_maxlight]
+mov   bl, byte ptr ds:[bx + FIREFLICKER_T.fireflicker_minlight]
+xchg  dx, bx
+
+;	if (sectors[flicksecnum].lightlevel - amount < flickminlight)
+;		sectors[flicksecnum].lightlevel = flickminlight;
+;	else
+;		sectors[flicksecnum].lightlevel = flickmaxlight - amount;
+
+mov   dh, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
+
+; al = amount
+; ah = maxlight
+; dl = minlight
+; dh = lightlevel
+
+sub   dh, al
+cmp   dh, dl
+jnl   set_max_minus_amount
+mov   ah, dl
+jmp   set_lightlevel_and_exit
+set_max_minus_amount
+sub   ah, al
+
+
+set_lightlevel_and_exit
+mov   byte ptr es:[bx + SECTOR_T.sec_lightlevel], ah
+exit_t_fireflicker_early:
 pop   bx
 ret   
 
