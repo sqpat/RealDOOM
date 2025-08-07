@@ -325,21 +325,23 @@ push  bp
 mov   bp, sp
 sub   sp, 0200h
 lea   dx, [bp - 0200h]
-cbw  
+mov   si, dx
 xor   bx, bx
 call  P_CreateThinker_
-xor   si, si
-cmp   word ptr [bp - 0200h], 0
+
+cmp   word ptr [si], 0
 jl    exit_evstartlightstrobing
-label_11:
+
+loop_next_secnum_lightstrobe:
+lodsw
 mov   dx, SLOWDARK
-mov   ax, word ptr [bp + si - 0200h]
 xor   bx, bx
-add   si, 2
+
 call  P_SpawnStrobeFlash_
-cmp   word ptr [bp + si - 0200h], 0
-jge   label_11
+cmp   word ptr [si], 0
+jge   loop_next_secnum_lightstrobe
 exit_evstartlightstrobing:
+
 LEAVE_MACRO 
 pop   si
 pop   dx
