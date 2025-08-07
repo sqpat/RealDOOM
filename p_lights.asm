@@ -140,38 +140,45 @@ PROC    T_LightFlash_ NEAR
 PUBLIC  T_LightFlash_
 
 push  bx
-push  si
-mov   bx, ax
-mov   ah, byte ptr ds:[bx + LIGHTFLASH_T.lightflash_minlight]
-mov   si, word ptr ds:[bx + LIGHTFLASH_T.lightflash_secnum]
-mov   al, byte ptr ds:[bx + LIGHTFLASH_T.lightflash_maxlight]
+
+xchg  ax, bx
 dec   word ptr ds:[bx + LIGHTFLASH_T.lightflash_count]
-jne   label_3
-mov   dx, SECTORS_SEGMENT
-shl   si, 4
-mov   es, dx
-add   si, SECTOR_T.sec_lightlevel
-cmp   al, byte ptr es:[si]
-jne   label_4
-mov   byte ptr es:[si], ah
-mov   al, byte ptr ds:[bx + LIGHTFLASH_T.lightflash_mintime]
-label_5:
-cbw  
-mov   si, ax
+jnz   exit_t_lightflash_early
 call  P_Random_
-xor   ah, ah
-and   ax, si
+
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+mov   dx, word ptr ds:[bx + LIGHTFLASH_T.lightflash_secnum]
+SHIFT_MACRO sal dx 4
+push  bx ; same lightflash...
+mov   ah, byte ptr ds:[bx + LIGHTFLASH_T.lightflash_maxlight]
+mov   bl, byte ptr ds:[bx + LIGHTFLASH_T.lightflash_minlight]
+xchg  dx, bx
+mov   dh, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
+
+; ah = maxlight
+; al = random
+; dl = minlight
+; dh = lightlevel
+
+cmp   dh, ah
+jne   lights_not_equal
+mov   byte ptr es:[bx + SECTOR_T.sec_lightlevel], dl
+pop   bx
+and   al, ds:[bx + LIGHTFLASH_T.lightflash_mintime]
+jmp   set_count_and_exit
+
+lights_not_equal:
+mov   byte ptr es:[bx + SECTOR_T.sec_lightlevel], ah
+pop   bx
+and   al, ds:[bx + LIGHTFLASH_T.lightflash_maxtime]
+set_count_and_exit:
+
 inc   ax
-mov   word ptr ds:[bx + LIGHTFLASH_T.lightflash_count], ax
-label_3:
-pop   si
+mov   byte ptr ds:[bx + LIGHTFLASH_T.lightflash_count], al
+
+exit_t_lightflash_early:
 pop   bx
 ret   
-label_4:
-mov   byte ptr es:[si], al
-mov   al, byte ptr ds:[bx + LIGHTFLASH_T.lightflash_maxtime]
-jmp   label_5
-
 ENDP
 
 
