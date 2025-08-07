@@ -261,7 +261,15 @@ void __near EV_LightChange(uint8_t linetag, int8_t on, uint8_t		bright) {
 		if (!on || !bright){
 
 			for (i = 0; i < linecount; i++) {
-				offset = secnumlist[i];
+				int16_t linebufferOffset = linecount + i;
+				// todo this section is untested... discovered while converrting to asm that the previous implementation was not functional... whoops
+				linenum = linebuffer[linebufferOffset];
+
+				offset = lines_physics[linenum].frontsecnum;
+		
+				if (secnum == offset)
+					offset = lines_physics[linenum].backsecnum;  
+
 
 				if (on){
 					if (sectors[offset].lightlevel > bright){

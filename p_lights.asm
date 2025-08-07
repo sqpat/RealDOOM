@@ -351,6 +351,7 @@ ret
 
 ENDP
 
+;void __near EV_LightChange(uint8_t linetag, int8_t on, uint8_t		bright) {
 
 PROC    EV_LightChange_ NEAR
 PUBLIC  EV_LightChange_
@@ -360,94 +361,130 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 0406h
+
+mov   dh, bl
+mov   word ptr cs:[SELFMODIFY_set_on_bright+1], dx 
+test  dl, dl
+mov   dl, 07Dh   ; jnl opcode
+je    use_off_smc
+mov   dl, 07Eh   ; jng opcode
+use_off_smc:
+mov   byte ptr cs:[SELFMODIFY_set_on_off_branch], dl
+
+sub   sp, 0206h
 mov   ch, dl
 mov   cl, bl
 mov   bx, 1
-lea   dx, [bp - 0406h]
-cbw  
-mov   word ptr [bp - 4], 0
+lea   dx, [bp - 0206h]
+mov   si, dx
+
+
 call  P_FindSectorsFromLineTag_
-cmp   word ptr [bp - 0406h], 0
-jge   label_12
-jmp   exit_ev_lightchange
-label_12:
-mov   si, word ptr [bp - 4]
-mov   ax, word ptr [bp + si - 0406h]
-mov   word ptr [bp - 6], ax
-shl   ax, 4
-mov   dx, SECTORS_SEGMENT
-mov   bx, ax
-mov   es, dx
-add   bx, SECTOR_T.sec_linecount
-add   word ptr [bp - 4], 2
-mov   dx, word ptr es:[bx]
-mov   bx, ax
-mov   word ptr [bp - 2], dx
-mov   dl, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
-add   bx, SECTOR_T.sec_lightlevel
-test  ch, ch
-jne   label_13
-label_19:
-xor   ax, ax
-cmp   word ptr [bp - 2], 0
-jle   label_14
-xor   si, si
-label_17:
-mov   bx, word ptr [bp + si - 0206h]
-shl   bx, 4
-test  ch, ch
-je    label_15
-mov   di, SECTORS_SEGMENT
-add   bx, SECTOR_T.sec_lightlevel
-mov   es, di
-cmp   cl, byte ptr es:[bx]
-jae   label_16
-mov   cl, byte ptr es:[bx]
-label_16:
-inc   ax
-add   si, 2
-cmp   ax, word ptr [bp - 2]
-jl    label_17
-label_14:
-mov   ax, word ptr [bp - 6]
-shl   ax, 4
-test  ch, ch
-je    label_18
-mov   dx, SECTORS_SEGMENT
-mov   bx, ax
-mov   es, dx
-add   bx, SECTOR_T.sec_lightlevel
-mov   byte ptr es:[bx], cl
-label_20:
-mov   si, word ptr [bp - 4]
-cmp   word ptr [bp + si - 0406h], 0
-jge   label_12
+
+cmp   word ptr [si], 0
+jnge  exit_ev_lightchange
+
+loop_next_secnm_lightchange:
+lodsw
+push  si
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+
+mov   di, ax
+SHIFT_MACRO shl di 4
+; di holds sector offset
+
+SELFMODIFY_set_on_bright:
+mov   dx, 01000h
+
+test  dl, dl
+je    use_off
+mov   cl, dh  ; bright
+jmp   got_light
+use_off:
+mov   cl, byte ptr es:[di + SECTOR_T.sec_lightlevel]
+got_light:
+
+; could selfmodify this into a single jmp or nop from the outside if we had to make these loops smaller.
+test  dl, dl
+jne   find_surrounding_light
+test  dh, dh
+je    skip_finding_surrounding_light
+
+
+find_surrounding_light:
+
+; find lights to modify... iterate over linecount
+mov   si, word ptr es:[di + SECTOR_T.sec_linesoffset]
+mov   di, word ptr es:[di + SECTOR_T.sec_linecount]
+
+sal   si, 1
+add   si, _linebuffer
+
+sal   di, 1
+add   di, si
+
+mov   bx, di ; set end case in bx?
+xchg  ax, dx ; dx gets unshifted secnum 
+
+; if off case, use min
+; if on case, use bright
+
+
+; cl is comparator over the sector.
+
+loop_next_secnum_find_surrounding_light:
+lodsw
+mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
+SHIFT_MACRO shl ax 4
+xchg  ax, di
+; ax has old sector offset. di has line ptr...
+
+cmp   dx, word ptr es:[di + LINE_PHYSICS_T.lp_frontsecnum]
+je    use_front
+mov   di, word ptr es:[di + LINE_PHYSICS_T.lp_backsecnum]
+jmp   got_sec_ptr
+use_front:
+mov   di, word ptr es:[di + LINE_PHYSICS_T.lp_frontsecnum]
+got_sec_ptr:
+SHIFT_MACRO shl di 4
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+
+mov   ch, byte ptr es:[di + SECTOR_T.sec_lightlevel]
+xchg  ax, di ; restore di's sector offset
+
+cmp   ch, cl
+; ON case
+;if (sectors[offset].lightlevel > bright){
+; OFF case
+;if (sectors[offset].lightlevel < min) {
+; on: jng. 0x7E   off: jnl  0x7D
+
+SELFMODIFY_set_on_off_branch:
+jng  done_updating_this_sector_light
+mov  cl, ch
+done_updating_this_sector_light:
+
+
+cmp   si, bx
+jl    loop_next_secnum_find_surrounding_light
+
+skip_finding_surrounding_light:
+
+mov   byte ptr es:[di + SECTOR_T.sec_lightlevel], cl   ; cl holds bright/min
+
+pop   si
+cmp   word ptr ds:[si], 0
+jge   loop_next_secnm_lightchange
+
+
 exit_ev_lightchange:
 LEAVE_MACRO 
 pop   di
 pop   si
 pop   cx
 ret   
-label_13:
-test  cl, cl
-je    label_19
-jmp   label_14
-label_15:
-mov   di, SECTORS_SEGMENT
-add   bx, SECTOR_T.sec_lightlevel
-mov   es, di
-cmp   dl, byte ptr es:[bx]
-jbe   label_16
-mov   dl, byte ptr es:[bx]
-jmp   label_16
-label_18:
-mov   bx, SECTORS_SEGMENT
-mov   es, bx
-mov   bx, ax
-mov   byte ptr es:[bx + SECTOR_T.sec_lightlevel], dl
-add   bx, SECTOR_T.sec_lightlevel
-jmp   label_20
+
+
 
 ENDP
 
