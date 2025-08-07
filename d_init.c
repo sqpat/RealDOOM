@@ -751,6 +751,7 @@ void __far D_DoomMain2(void) {
 	int8_t            wadfile[20];
 	#define DGROUP_SIZE 0x2CA0
 
+/*
 	
 
 	FILE *fp = fopen("output9.bin", "wb");
@@ -758,7 +759,6 @@ void __far D_DoomMain2(void) {
 	fclose(fp);
 	exit(0);
 	
-/*
 
 
 	fixed_t_union x, y;

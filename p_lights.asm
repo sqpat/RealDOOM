@@ -22,6 +22,7 @@ INSTRUCTION_SET_MACRO
 EXTRN S_StartSoundWithParams_:PROC
 EXTRN P_RemoveThinker_:PROC
 EXTRN P_FindHighestOrLowestFloorSurrounding_:NEAR
+EXTRN P_FindMinSurroundingLight_:NEAR
 EXTRN P_FindSectorsFromLineTag_:NEAR
 EXTRN P_FindNextHighestFloor_:NEAR
 EXTRN P_CreateThinker_:FAR
@@ -80,7 +81,7 @@ xor   dh, dh
 xor   ah, ah
 sub   dx, ax
 mov   al, cl
-
+add   bx, 0Eh
 cmp   dx, ax
 jge   label_2
 mov   byte ptr es:[bx], cl
@@ -123,9 +124,7 @@ mov   bx, word ptr [bp - 4]
 add   bx, _sectors_physics + SECTOR_PHYSICS_T.secp_special
 mov   ax, TF_FIREFLICKER_HIGHBITS
 mov   byte ptr [bx], 0
-push
 call  P_CreateThinker_
-nop   
 mov   bx, ax
 mov   ax, cx
 mov   byte ptr [bx + 4], dl
@@ -214,8 +213,8 @@ add   bx, _sectors_physics + SECTOR_PHYSICS_T.secp_special
 
 call  P_CreateThinker_
 mov   bx, ax
-mov   byte ptr [bx + 5], 64
-mov   byte ptr [bx + 6], 7  ; todo double check
+mov   byte ptr [bx + 6], 64
+mov   byte ptr [bx + 7], 7  ; todo double check
 mov   word ptr [bx], cx
 mov   dh, byte ptr [bp - 2]
 mov   al, byte ptr [bx + 6]
@@ -395,7 +394,7 @@ mov   word ptr [bp - 4], 0
 call  P_FindSectorsFromLineTag_
 cmp   word ptr [bp - 0406h], 0
 jge   label_12
-jmp   exit_ev_lightchange:
+jmp   exit_ev_lightchange
 label_12:
 mov   si, word ptr [bp - 4]
 mov   ax, word ptr [bp + si - 0406h]
@@ -404,7 +403,7 @@ shl   ax, 4
 mov   dx, SECTORS_SEGMENT
 mov   bx, ax
 mov   es, dx
-add   bx, 0xa
+add   bx, SECTOR_T.sec_linecount
 add   word ptr [bp - 4], 2
 mov   dx, word ptr es:[bx]
 mov   bx, ax
@@ -552,7 +551,6 @@ mov   bx, word ptr [bp - 6]
 mov   word ptr [bp - 2], dx
 mov   byte ptr [bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], dh
 add   bx, _sectors_physics + SECTOR_PHYSICS_T.secp_special
-push  cs
 call  P_CreateThinker_
 mov   dl, byte ptr [bp - 2]
 mov   bx, ax
