@@ -318,55 +318,55 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define EMS_VISPLANE_EXTRA_PAGE                     FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 5
 #define FIRST_VISPLANE_PAGE							5
 
-#define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE         15
+#define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE         14
 
 //#define EMS_VISPLANE_EXTRA_PAGE                     NUM_EMS4_SWAP_PAGES + 1
+// 14
+#define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE         14
 // 15
-#define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE         15
-// 16
 #define FIRST_STATUS_LOGICAL_PAGE                   LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE + 1
-// 20
+// 19
 #define PALETTE_LOGICAL_PAGE                        FIRST_STATUS_LOGICAL_PAGE + 4
 // todo almost 6k free here..
-// 21
+// 20
 #define FIRST_MENU_GRAPHICS_LOGICAL_PAGE            PALETTE_LOGICAL_PAGE + 1
-// 23
+// 22
 #define FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE    FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 2
-// 31
+// 30
 #define FIRST_SCRATCH_LOGICAL_PAGE                  FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 8
-// 35
+// 34
 #define FIRST_LUMPINFO_LOGICAL_PAGE                 FIRST_SCRATCH_LOGICAL_PAGE + 4
-// 38
+// 37
 #define FIRST_FLAT_CACHE_LOGICAL_PAGE               FIRST_LUMPINFO_LOGICAL_PAGE + 3
-// 44
+// 43
 #define FIRST_TEXTURE_LOGICAL_PAGE                  FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
-// 68  todo revisit, can maybe even be smaller.
+// 67  todo revisit, can maybe even be smaller.
 #define FIRST_EXTRA_MASKED_DATA_PAGE                FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
 
-// 70
+// 69
 #define FIRST_SPRITE_CACHE_LOGICAL_PAGE             FIRST_EXTRA_MASKED_DATA_PAGE + 2
 
-// 78
+// 77
 #define SCREEN1_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 8
-// 82
+// 81
 #define SCREEN2_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 12
-// 86
+// 85
 #define SCREEN3_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 16
 
-//90
+// 89
 #define FLAT_DATA_PAGES                             (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
 
-//93
+// 92
 #define MUS_DATA_PAGES                              FLAT_DATA_PAGES + 3
 
-//97
+// 96
 #define SFX_DATA_PAGES                              (MUS_DATA_PAGES + NUM_MUSIC_PAGES)
 
-//101
+// 100
 #define BSP_CODE_PAGE                               SFX_DATA_PAGES + NUM_SFX_PAGES
 
 
-// 102? (+1 for 0)
+// 101? (+1 for 0)
 #define NUM_EMS4_SWAP_PAGES                         (int16_t) BSP_CODE_PAGE + 1
 
 
