@@ -104,7 +104,7 @@ mov   bx, ax
 SHIFT_MACRO  shl bx 4
 xchg  ax, dx
 mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
-mov   word ptr ds:[_sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
+mov   word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
 mov   bl, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
 ; dx has secnum
 ; bl has lightlevel
@@ -192,7 +192,7 @@ mov   bx, ax
 SHIFT_MACRO  shl bx 4
 xchg  ax, dx
 mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
-mov   word ptr ds:[_sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
+mov   word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
 mov   bl, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
 ; dx has secnum
 ; bl has lightlevel
@@ -261,6 +261,7 @@ ENDP
 ;void __near P_SpawnStrobeFlash( int16_t secnum,int16_t		fastOrSlow,int16_t		inSync ){
 
 
+; i believe dx is ok to wreck..
 PROC    P_SpawnStrobeFlash_ NEAR
 PUBLIC  P_SpawnStrobeFlash_
 
@@ -298,7 +299,7 @@ mov   word ptr ds:[bx + STROBE_T.strobe_secnum], ax
 SHIFT_MACRO   sal si 4
 mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
-mov   word ptr ds:[_sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
+mov   word ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
 mov   dl, byte ptr es:[si + SECTOR_T.sec_lightlevel]
 mov   byte ptr ds:[bx + STROBE_T.strobe_maxlight], dl
 
@@ -458,10 +459,10 @@ push  bx
 push  si
 mov   bx, ax
 mov   ax, word ptr ds:[bx + GLOW_T.glow_secnum]
-mov   dl, byte ptr ds:[bx + GLOW_T.glow_maxlight]
+mov   dl, byte ptr ds:[bx + GLOW_T.glow_minlight]
 mov   si, word ptr ds:[bx + GLOW_T.glow_direction]
 shl   ax, 4
-mov   dh, byte ptr ds:[bx + GLOW_T.glow_minlight]
+mov   dh, byte ptr ds:[bx + GLOW_T.glow_maxlight]
 cmp   si, -1
 je    label_21
 cmp   si, 1
@@ -501,44 +502,31 @@ ret
 ENDP
 
 
+; i believe dx is ok to wreck..
 PROC    P_SpawnGlowingLight_ NEAR
 PUBLIC  P_SpawnGlowingLight_
 
 push  bx
-push  cx
-push  dx
-push  bp
-mov   bp, sp
-sub   sp, 6
-mov   cx, ax
-mov   word ptr [bp - 4], 0
-mov   bx, SECTORS_SEGMENT
-mov   dx, ax
-mov   ax, TF_GLOW_HIGHBITS
-shl   dx, 4
-mov   es, bx
-mov   bx, dx
-mov   word ptr [bp - 6], dx
-mov   dl, byte ptr es:[bx + SECTOR_PHYSICS_T.secp_special]
-add   bx, SECTOR_PHYSICS_T.secp_special
-xor   dh, dh
-mov   bx, word ptr [bp - 6]
-mov   word ptr [bp - 2], dx
-mov   byte ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], dh
-add   bx, _sectors_physics + SECTOR_PHYSICS_T.secp_special
-call  P_CreateThinker_
-mov   dl, byte ptr [bp - 2]
 mov   bx, ax
-mov   ax, cx
-mov   word ptr ds:[bx + GLOW_T.glow_secnum], cx
-call  P_FindMinSurroundingLight_
-mov   word ptr ds:[bx + GLOW_T.glow_direction], -1
+SHIFT_MACRO  shl bx 4
+xchg  ax, dx
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+mov   word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
+mov   bl, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
+; dx has secnum
+; bl has lightlevel
+mov   ax, TF_GLOW_HIGHBITS
+call  P_CreateThinker_
+
+xchg  ax, bx
+; al has lightlevel, bx has thing ptr
 mov   byte ptr ds:[bx + GLOW_T.glow_maxlight], al
-mov   al, byte ptr [bp - 2]
+xchg  ax, dx
+mov   word ptr ds:[bx + GLOW_T.glow_secnum], ax 
+
+call  P_FindMinSurroundingLight_
 mov   byte ptr ds:[bx + GLOW_T.glow_minlight], al
-LEAVE_MACRO 
-pop   dx
-pop   cx
+mov   word ptr ds:[bx + GLOW_T.glow_direction], -1
 pop   bx
 ret   
 

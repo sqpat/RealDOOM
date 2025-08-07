@@ -557,8 +557,8 @@ STROBE_T STRUC
 
     strobe_secnum             dw ?  ; 0
     strobe_count              dw ?  ; 2
-    strobe_maxlight           db ?  ; 4
-    strobe_minlight           db ?  ; 5
+    strobe_minlight           db ?  ; 4
+    strobe_maxlight           db ?  ; 5
     strobe_darktime           dw ?  ; 6
     strobe_brighttime         dw ?  ; 8
 
@@ -568,8 +568,10 @@ STROBE_T ENDS
 GLOW_T STRUC
 
     glow_secnum             dw ?  ; 0
-    glow_maxlight           db ?  ; 2
-    glow_minlight           db ?  ; 3
+    glow_minlight           db ?  ; 2
+    glow_maxlight           db ?  ; 3
     glow_direction          dw ?  ; 4
 
 GLOW_T ENDS
+
+
