@@ -99,38 +99,37 @@ PUBLIC  P_SpawnFireFlicker_
 
 
 push  bx
-push  cx
-push  dx
-push  bp
-mov   bp, sp
-sub   sp, 4
-mov   cx, ax
-mov   dx, ax
-mov   bx, SECTORS_SEGMENT
-shl   dx, 4
-mov   es, bx
-mov   bx, dx
-mov   word ptr [bp - 2], 0
-add   bx, SECTOR_PHYSICS_T.secp_special
-mov   word ptr [bp - 4], dx
-mov   dl, byte ptr es:[bx]
-mov   bx, word ptr [bp - 4]
-add   bx, _sectors_physics + SECTOR_PHYSICS_T.secp_special
-mov   ax, TF_FIREFLICKER_HIGHBITS
-mov   byte ptr ds:[bx + FIREFLICKER_T.fireflicker_secnum], 0
-call  P_CreateThinker_
+
 mov   bx, ax
-mov   ax, cx
-mov   byte ptr ds:[bx + FIREFLICKER_T.fireflicker_maxlight], dl
-xor   dh, dh
-mov   word ptr ds:[bx + FIREFLICKER_T.fireflicker_secnum], cx
-call  P_FindMinSurroundingLight_
-add   al, 16
+SHIFT_MACRO  shl bx 4
+xchg  ax, dx
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+mov   word ptr ds:[_sectors_physics + SECTOR_PHYSICS_T.secp_special], 0
+mov   bl, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
+; dx has secnum
+; bx has lightlevel
+mov   ax, TF_FIREFLICKER_HIGHBITS
+call  P_CreateThinker_
+
+xchg  ax, bx
+
+;    flick->secnum = secnum;
+;    flick->maxlight = seclightlevel;
+;	 flick->minlight = P_FindMinSurroundingLight(secnum, seclightlevel) + 16;
+;    flick->count = 4;
+
+
+
+mov   byte ptr ds:[bx + FIREFLICKER_T.fireflicker_maxlight], al ; seclightlevel
+xchg  ax, dx
+mov   word ptr ds:[bx + FIREFLICKER_T.fireflicker_secnum], ax ; secnum
 mov   word ptr ds:[bx + FIREFLICKER_T.fireflicker_count], 4
-mov   byte ptr ds:[bx + FIREFLICKER_T.fireflicker_minlight], al
-LEAVE_MACRO 
-pop   dx
-pop   cx
+
+call  P_FindMinSurroundingLight_
+
+add   ax, 16
+mov   word ptr ds:[bx + FIREFLICKER_T.fireflicker_minlight], ax
+
 pop   bx
 ret   
 
