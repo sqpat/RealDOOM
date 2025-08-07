@@ -1129,3 +1129,10 @@ boolean __far G_CheckDemoStatus (void)  {
  
  
  
+
+
+
+
+void __near OutOfThinkers (){
+	I_Error("Out of thinkers!");
+}

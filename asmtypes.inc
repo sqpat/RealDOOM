@@ -50,12 +50,12 @@ PLAYER_T STRUC
     player_secretcount        dw ?                      ; 52
     player_message            dw ?                      ; 54
 	player_messagestring      dw ?                      ; 56
-    player_damagecount        dw ?                      ; 58    ; 828
+    player_damagecount        dw ?                      ; 58    ;0828h
     player_bonuscount         db ?                      ; 5A
     player_refire		      db ?                      ; 5B
-    player_attackerRef        dw ?                      ; 5C    ; 82c
+    player_attackerRef        dw ?                      ; 5C    ;082Ch
     player_extralightvalue    db ?                      ; 5E
-    player_fixedcolormapvalue db ?                      ; 5F
+    player_fixedcolormapvalue db ?                      ; 5F    ;082Fh
     player_colormap	          db ?                      ; 60
     player_didsecret	      db ?                      ; 61
     player_backpack           db ?                      ; 62

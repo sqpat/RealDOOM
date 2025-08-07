@@ -28,7 +28,7 @@ EXTRN T_MoveCeiling_:NEAR
 EXTRN T_VerticalDoor_:NEAR
 EXTRN T_MoveFloor_:NEAR
 
-EXTRN OutOfThinkers_:NEAR
+EXTRN OutOfThinkers_:PROC
 EXTRN P_PlayerThink_:NEAR
 EXTRN P_UpdateSpecials_:NEAR
 

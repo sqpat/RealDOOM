@@ -30,11 +30,17 @@ EXTRN T_MovePlaneFloorUp_:NEAR
 EXTRN T_MovePlaneFloorDown_:NEAR
 EXTRN P_Random_:NEAR
 EXTRN P_UpdateThinkerFunc_:NEAR
+EXTRN P_PlayerInSpecialSector_:NEAR
+EXTRN FixedMulTrig_:PROC
+EXTRN FixedMul_:PROC
+EXTRN R_PointToAngle2_:PROC
 
 
 .DATA
 
 EXTRN _onground:BYTE
+EXTRN _P_MovePsprites:DWORD
+EXTRN _P_SetMobjState:DWORD
 
 .CODE
 
@@ -66,7 +72,7 @@ mov   cl, 11
 shl   di, cl
 rol   si, cl
 xor   di, si
-and   si, 0F800  ; shift mask todo make suck less.
+and   si, 0F800h  ; shift mask todo make suck less.
 xor   di, si
 mov   dx, ax
 mov   ax, FINECOSINE_SEGMENT
@@ -340,7 +346,7 @@ mov   di, _playerMobj_pos
 mov   ax, word ptr ds:[si + PLAYER_T.player_cmd_angleturn]
 les   bx, dword ptr ds:[di]
 add   word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], 0
-adc   word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], ax
+adc   word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], ax
 mov   bx, _playerMobj
 mov   bx, word ptr ds:[bx]
 mov   ax, word ptr ds:[bx + 6]
@@ -359,7 +365,7 @@ je    label_18
 jump_to_label_19:
 jmp   label_19
 label_18:
-cmp   dx, word ptr es:[bx + MOBJ_POS_T.mp_z + 8]
+cmp   dx, word ptr es:[bx + MOBJ_POS_T.mp_z + 0]
 jb    jump_to_label_19
 label_17:
 mov   al, 1
@@ -426,7 +432,7 @@ label_78:
 mov   bx, _playerMobj
 mov   dx, S_PLAY_RUN1
 mov   ax, word ptr ds:[bx]
-call  word ptr ds:[_P_SetMobjState]
+call  dword ptr ds:[_P_SetMobjState]
 pop   di
 pop   si
 pop   dx
@@ -456,7 +462,7 @@ push  dx
 push  si
 push  di
 mov   bx, _player + PLAYER_T.player_viewheightvalue
-call  word ptr ds:[_P_MovePsprites]
+call  dword ptr ds:[_P_MovePsprites]
 mov   ax, word ptr ds:[bx + 2]
 cmp   ax, 6
 jg    label_25
@@ -664,7 +670,7 @@ mov   word ptr ds:[bx], 100
 mov   di, si
 mov   si, word ptr ds:[si]
 mov   es, word ptr ds:[di + 2]
-and   byte ptr es:[si + MOBJ_POS_T.mp_flags1 + 1], (NOT MF_JUSTATTACKED)
+and   byte ptr es:[si + MOBJ_POS_T.mp_flags1], (NOT MF_JUSTATTACKED)
 label_45:
 mov   si, _player + PLAYER_T.player_playerstate
 cmp   byte ptr ds:[si], PST_DEAD
@@ -704,7 +710,7 @@ mov   bx, _player + PLAYER_T.player_usedown
 mov   byte ptr ds:[bx], 0
 label_63:
 mov   bx, _player + PLAYER_T.player_powers + (PW_STRENGTH * 2)
-call  word ptr ds:[_P_MovePsprites]
+call  dword ptr ds:[_P_MovePsprites]
 cmp   word ptr ds:[bx], 0
 je    label_64
 inc   word ptr ds:[bx]
@@ -730,9 +736,9 @@ dec   word ptr ds:[bx]
 label_76:
 mov   bx, _player + PLAYER_T.player_powers + (PW_IRONFEET * 2)
 cmp   word ptr ds:[bx], 0
-je    label_74
+je    label_85
 dec   word ptr ds:[bx]
-label_74:
+label_85:
 mov   bx, _player + PLAYER_T.player_damagecount
 cmp   word ptr ds:[bx], 0
 je    label_79
@@ -841,12 +847,12 @@ test  byte ptr ds:[bx + 7], 2
 jne   label_66
 jmp   label_67
 label_66:
-mov   bx, _player PLAYER_T.player_usedown
+mov   bx, _player +  PLAYER_T.player_usedown
 cmp   byte ptr ds:[bx], 0
 je    label_72
 jmp   label_63
 label_72:
-lcall [bp - 4]
+call  dword ptr [bp - 4] ; todo
 mov   byte ptr ds:[bx], 1
 jmp   label_63
 label_71:
