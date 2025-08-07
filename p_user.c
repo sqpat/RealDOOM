@@ -33,7 +33,6 @@
 
 
 // Index of the special effects (INVUL inverse) map.
-#define INVERSECOLORMAP		32
 
 
 //
@@ -42,7 +41,6 @@
 
 // 16 pixels of bob
 #define MAXBOB	0x100000	
-#define MAXBOBHIGHBITS	0x10
 
 
 

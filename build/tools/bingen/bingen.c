@@ -601,6 +601,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "P_SPAWNMOBJOFFSET = 0%Xh\n",                       FP_OFF(P_SpawnMobj)                       - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_SPAWNMAPTHINGOFFSET = 0%Xh\n",                   FP_OFF(P_SpawnMapThing)                   - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_SETMOBJSTATEOFFSET = 0%Xh\n",                    FP_OFF(P_SetMobjState)                    - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_USELINES_OFFSET = 0%Xh\n",                       FP_OFF(P_UseLines)                        - FP_OFF(P_SIGHT_STARTMARKER));
     
 
     fclose(fp);

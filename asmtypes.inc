@@ -21,39 +21,39 @@
 PLAYER_T STRUC 
 
     ; cmd struct 8 bytes
-    player_cmd_forwardmove    db ?                      ; 0     
+    player_cmd_forwardmove    db ?                      ; 0     ;7d0
     player_cmd_sidemove       db ?                      ; 1
     player_cmd_angleturn      dw ?                      ; 2
     player_cmd_consistancy    dw ?                      ; 4
     player_cmd_chatchar       db ?                      ; 6
-    player_cmd_buttons        db ?                      ; 7
-    player_viewzvalue         dd ?                      ; 8
-    player_viewheightvalue    dd ?                      ; C
-    player_deltaviewheight    dd ?                      ; 10
-    player_bob                dd ?                      ; 14
+    player_cmd_buttons        db ?                      ; 7     ;07d7h  07a7h
+    player_viewzvalue         dd ?                      ; 8     ;07d8h  07a8h
+    player_viewheightvalue    dd ?                      ; C     ;07dch  07ach
+    player_deltaviewheight    dd ?                      ; 10    ;07e0h  07b0h
+    player_bob                dd ?                      ; 14    ;07e4h  07b4h
     player_health             dw ?                      ; 18
     player_armorpoints        dw ?                      ; 1A
     player_armortype	      db ?                      ; 1C
-    player_playerstate        db ?                      ; 1D
-    player_powers             dw NUMPOWERS   DUP(?)     ; 1E
-    player_cards              db NUMCARDS    DUP(?)     ; 2A
-    player_readyweapon        db ?                      ; 30    ;800
-    player_pendingweapon      db ?                      ; 31    ;801
-    player_weaponowned        db NUMWEAPONS  DUP(?)     ; 32    ;802
-    player_cheats		      db ?                      ; 3B
-    player_ammo               dw NUMAMMO     DUP(?)     ; 3C    ;80C
+    player_playerstate        db ?                      ; 1D    ;07EDh  07Bdh
+    player_powers             dw NUMPOWERS   DUP(?)     ; 1E    ;07EEh  07BEh
+    player_cards              db NUMCARDS    DUP(?)     ; 2A    ;07FAh  07BAh
+    player_readyweapon        db ?                      ; 30    ;0800h  07C0h
+    player_pendingweapon      db ?                      ; 31    ;0801h  07C1h
+    player_weaponowned        db NUMWEAPONS  DUP(?)     ; 32    ;0802h  07C2h
+    player_cheats		      db ?                      ; 3B    ;080Bh  07CBh
+    player_ammo               dw NUMAMMO     DUP(?)     ; 3C    ;080Ch  07CCh
     player_maxammo            dw NUMAMMO     DUP(?)     ; 44
     player_attackdown         db ?                      ; 4C
-    player_usedown            db ?                      ; 4D
+    player_usedown            db ?                      ; 4D    ;081dh
     player_killcount          dw ?                      ; 4E
     player_itemcount          dw ?                      ; 50
     player_secretcount        dw ?                      ; 52
     player_message            dw ?                      ; 54
 	player_messagestring      dw ?                      ; 56
-    player_damagecount        dw ?                      ; 58
+    player_damagecount        dw ?                      ; 58    ; 828
     player_bonuscount         db ?                      ; 5A
     player_refire		      db ?                      ; 5B
-    player_attackerRef        dw ?                      ; 5C
+    player_attackerRef        dw ?                      ; 5C    ; 82c
     player_extralightvalue    db ?                      ; 5E
     player_fixedcolormapvalue db ?                      ; 5F
     player_colormap	          db ?                      ; 60

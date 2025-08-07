@@ -8,7 +8,7 @@
 #include "p_inter.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2499
+#define CONSTANTS_COUNT 2500
 #define LOCALS_COUNT 22
 
 
@@ -2584,7 +2584,8 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
  	"FLOOR_CRUSHED", 
  	"FLOOR_PASTDEST",
 	"VIEWHEIGHT_HIGHBITS",
-    "MAXBOB_HIGHBITS"
+    "MAXBOB_HIGHBITS",
+	"INVERSECOLORMAP"
 
 
 
@@ -5170,7 +5171,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
  	floor_pastdest,
     VIEWHEIGHT_HIGHBITS,
 	MAXBOB_HIGHBITS
-
+	INVERSECOLORMAP,
 
 	
     

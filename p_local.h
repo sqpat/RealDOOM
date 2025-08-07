@@ -53,6 +53,8 @@
 #define GRAVITY		FRACUNIT
 #define GRAVITY_HIGHBITS		1
 #define MAXMOVE		(30*FRACUNIT)
+#define INVERSECOLORMAP		32
+
 
 #define USERANGE         (64)
 #define MELEERANGE       (64)
