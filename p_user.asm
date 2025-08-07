@@ -108,227 +108,229 @@ ENDP
 PROC    P_CalcHeight_ NEAR
 PUBLIC  P_CalcHeight_
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 8
-mov   bx, _playerMobj
-mov   bx, word ptr ds:[bx]
-mov   ax, word ptr ds:[bx + MOBJ_T.m_ceilingz]
+;void __near P_CalcHeight ()  {
+
+PUSHA_NO_AX_MACRO
+
+mov   si, word ptr ds:[_playerMobj]
+mov   ax, word ptr ds:[si + MOBJ_T.m_ceilingz]
 sub   ax, (4 SHL SHORTFLOORBITS)
-mov   si, ax
-xor   ah, ah
-mov   bx, _playerMobj
-and   al, 7
-mov   bx, word ptr ds:[bx]
-shl   ax, 13
-mov   cx, word ptr ds:[bx + MOBJ_T.m_momx + 2]
-mov   word ptr [bp - 2], ax
-mov   ax, word ptr ds:[bx + MOBJ_T.m_momx + 0]
-mov   bx, _playerMobj
-mov   bx, word ptr ds:[bx]
-mov   di, word ptr ds:[bx + MOBJ_T.m_momx + 0]
-mov   dx, word ptr ds:[bx + MOBJ_T.m_momx + 2]
+xor   dx, dx
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+sar   ax, 1
+rcr   dx, 1
+
+push  ax
+push  dx  ; store temp. hi then lo push order..
+
+;player.bob.w =	FixedMul (playerMobj->momx.w, playerMobj->momx.w) + FixedMul (playerMobj->momy.w, playerMobj->momy.w);
+
+
+les   ax, dword ptr ds:[si + MOBJ_T.m_momx + 0] 
+mov   dx, es
 mov   bx, ax
-mov   ax, di
+mov   cx, es
 call  FixedMul_
-mov   bx, _playerMobj
-mov   di, ax
-mov   bx, word ptr ds:[bx]
-mov   word ptr [bp - 8], dx
-mov   ax, word ptr ds:[bx + MOBJ_T.m_momy + 0]
-mov   dx, word ptr ds:[bx + MOBJ_T.m_momy + 2]
-mov   bx, _playerMobj
-mov   bx, word ptr ds:[bx]
-mov   word ptr [bp - 6], dx
-mov   dx, word ptr ds:[bx + MOBJ_T.m_momy + 0]
-mov   bx, word ptr ds:[bx + MOBJ_T.m_momy + 2]
-mov   cx, word ptr [bp - 6]
-mov   word ptr [bp - 6], bx
-mov   bx, ax
-mov   ax, dx
-mov   dx, word ptr [bp - 6]
-sar   si, 3
+
+xchg  ax, di
+les   bx, dword ptr ds:[si + MOBJ_T.m_momy + 0]  ; last use of mobj. clobber si is fine..
+mov   si, dx ; backip in si
+mov   cx, es
+mov   dx, es
+mov   ax, bx
 call  FixedMul_
-mov   bx, _player + PLAYER_T.player_bob + 0
+
 add   ax, di
-adc   dx, word ptr [bp - 8]
-mov   word ptr ds:[bx], ax
-mov   word ptr ds:[bx + 2], dx
-sar   word ptr ds:[bx + 2], 1
-rcr   word ptr ds:[bx], 1
-sar   word ptr ds:[bx + 2], 1
-rcr   word ptr ds:[bx], 1
-mov   ax, word ptr ds:[bx + 2]
-cmp   ax, MAXBOB_HIGHBITS
-jg    label_1
-jne   label_2
-cmp   word ptr ds:[bx], 0
-jbe   label_2
-label_1:
-mov   word ptr ds:[bx], 0
-mov   word ptr ds:[bx + 2], MAXBOB_HIGHBITS
-label_2:
-mov   bx, _player + PLAYER_T.player_cheats
-test  byte ptr ds:[bx], CF_NOMOMENTUM
-jne   label_3
-cmp   byte ptr ds:[_onground], 0
-jne   label_4
-label_3:
-mov   bx, _playerMobj_pos
-les   di, dword ptr ds:[bx]
-mov   bx, _player + PLAYER_T.player_viewzvalue
-mov   dx, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
-mov   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
-mov   word ptr ds:[bx], dx
-mov   di, _player + PLAYER_T.player_viewzvalue + 2
-mov   word ptr ds:[bx + 2], ax
-add   word ptr ds:[di], VIEWHEIGHT_HIGHBITS
-mov   ax, word ptr ds:[bx + 2]
-cmp   si, ax
-jl    label_5
-jne   label_6
-mov   ax, word ptr ds:[bx]
-cmp   ax, word ptr [bp - 2]
-jbe   label_6
-label_5:
-mov   ax, word ptr [bp - 2]
-mov   word ptr ds:[bx + 2], si
-mov   word ptr ds:[bx], ax
-label_6:
-mov   bx, _playerMobj_pos
-les   di, dword ptr ds:[bx]
-mov   si, _player + PLAYER_T.player_viewheightvalue
-mov   bx, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
-mov   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
-add   bx, word ptr ds:[si]
-adc   ax, word ptr ds:[si + 2]
-mov   si, _player + PLAYER_T.player_viewzvalue
-mov   word ptr ds:[si], bx
-mov   word ptr ds:[si + 2], ax
-exit_p_calcheight:
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret  
-label_4:
-mov   bx, _leveltime
-mov   ax,   (FINEANGLES/20)
-mul   word ptr ds:[bx]
-xchg  ax, dx
-;imul  dx, word ptr ds:[bx], 409   ; 409 = (FINEANGLES/20)
-mov   bx, _player + PLAYER_T.player_bob
-mov   ax, word ptr ds:[bx]
-mov   cx, word ptr ds:[bx + 2]
-sar   cx, 1
+adc   dx, si
+
+;	player.bob.w >>= 2;
+sar   dx, 1
 rcr   ax, 1
-and   dh, (FINEMASK SHR 8)
-mov   bx, ax
+sar   dx, 1
+rcr   ax, 1
+
+;    if (player.bob.w>MAXBOB){
+;		player.bob.w = MAXBOB;
+;	}
+
+cmp   dx, MAXBOB_HIGHBITS
+jl    dont_cap_bob
+
+mov   dx, MAXBOB_HIGHBITS
+xor   ax, ax
+dont_cap_bob:
+
+mov   di, _player
+mov   word ptr ds:[di + PLAYER_T.player_bob + 0], ax
+mov   word ptr ds:[di + PLAYER_T.player_bob + 2], dx
+
+mov   cx, CF_NOMOMENTUM ; get ch 0 too
+cmp   byte ptr ds:[_onground], ch ; 0
+je    dont_calc_bob_stuff
+test  byte ptr ds:[di + PLAYER_T.player_cheats], cl
+je    do_further_bob_stuff
+
+dont_calc_bob_stuff:
+
+        ; THIS CODE IS DUMMIED...  clobbered by further code in block
+        ; les   di, dword ptr ds:[_playerMobjRef]
+        ;les   di, dword ptr es:[di + MOBJ_POS_T.mp_z]
+        ;mov   ax, es
+        ;ax:di is z..
+        ;add   ax, VIEWHEIGHT_HIGHBITS
+        ;pop   cx
+        ;pop   dx
+        ;;dx:cx is temp
+        ;cmp   ax, dx
+        ;jl    dont_cap_z
+        ;jg    do_cap_z
+        ;cmp   di, cx
+        ;jna   dont_cap_z
+        ;do_cap_z:
+        ;xchg  ax, dx
+        ;mov   di, cx
+        ;dont_cap_z:
+
+;		player.viewzvalue.w = playerMobj_pos->z.w + player.viewheightvalue.w;
+
+
+les   ax, dword ptr ds:[di + PLAYER_T.player_viewheightvalue + 0]
+mov   dx, es
+
+xor   si, si ; no temp check
+jmp   finish_viewz_calc_and_exit_p_calcheight
+
+
+do_further_bob_stuff:
+;    angle = (FINEANGLES/20*leveltime.w)&FINEMASK;
+
+xchg  ax, bx
+mov   cx, dx  ; bob to cx:bx
+
+mov   ax,   (FINEANGLES/20)
+mul   word ptr ds:[_leveltime]
+and   ah, (FINEMASK SHR 8)
+xchg  ax, dx
+
+sar   cx, 1
+rcr   bx, 1
 mov   ax, FINESINE_SEGMENT
+
 call  FixedMulTrig_
-mov   bx, _player + PLAYER_T.player_playerstate
-mov   cx, ax
-mov   word ptr [bp - 4], dx
-cmp   byte ptr ds:[bx], 0
-je    label_7
-jmp   label_8
-label_7:
-mov   di, _player + PLAYER_T.player_deltaviewheight
-mov   bx, _player + PLAYER_T.player_viewheightvalue
-mov   ax, word ptr ds:[di]
-mov   dx, word ptr ds:[di + 2]
-add   word ptr ds:[bx], ax
-adc   word ptr ds:[bx + 2], dx
-mov   ax, word ptr ds:[bx + 2]
-cmp   ax, VIEWHEIGHT_HIGHBITS
-jg    label_9
-jne   label_10
-cmp   word ptr ds:[bx], 0
-jbe   label_10
-label_9:
-mov   word ptr ds:[bx], 0
-mov   word ptr ds:[bx + 2], VIEWHEIGHT_HIGHBITS
-mov   word ptr ds:[di], 0
-mov   word ptr ds:[di + 2], 0
-label_10:
-mov   bx, _player + PLAYER_T.player_viewheightvalue
-mov   ax, word ptr ds:[bx + 2]
-cmp   ax, VIEWHEIGHT_HIGHBITS/2  ; 20
-jl    label_11
-jne   label_12
-cmp   word ptr ds:[bx], 08000h   ;  VIEWHEIGHT_HIGHBITS / 2 fractional part
-jae   label_12
-label_11:
-mov   word ptr ds:[bx], 08000h  ;  VIEWHEIGHT_HIGHBITS / 2 fractional part
-mov   word ptr ds:[bx + 2], VIEWHEIGHT_HIGHBITS/2 ; 20
-mov   bx, _player + PLAYER_T.player_deltaviewheight
-mov   ax, word ptr ds:[bx + 2]
-test  ax, ax
-jge   label_13
-jmp   label_14
-label_13:
-jne   label_12
-cmp   word ptr ds:[bx], 0
-jbe   label_14
-label_12:
-mov   bx, _player + PLAYER_T.player_deltaviewheight
-mov   ax, word ptr ds:[bx + 2]
-or    ax, word ptr ds:[bx]
-je    label_8
-add   word ptr ds:[bx], 04000h  ; FRACUNIT / 4
-adc   word ptr ds:[bx + 2], 0
-mov   ax, word ptr ds:[bx + 2]
-or    ax, word ptr ds:[bx]
-jne   label_8
-mov   word ptr ds:[bx], 1
-mov   word ptr ds:[bx + 2], ax
-label_8:
-mov   bx, _playerMobj_pos
-les   di, dword ptr ds:[bx]
-mov   dx, _player + PLAYER_T.player_viewheightvalue
-mov   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
-mov   bx, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
-mov   di, dx
-mov   dx, ax
-add   dx, word ptr ds:[di]
-adc   bx, word ptr ds:[di + 2]
-add   dx, cx
-mov   ax, word ptr [bp - 4]
-adc   ax, bx
-mov   bx, _player + PLAYER_T.player_viewzvalue
-mov   word ptr ds:[bx], dx
-mov   word ptr ds:[bx + 2], ax
-cmp   si, ax
-jl    label_15
-je    label_16
-jump_to_exit_p_calcheight:
-jmp   exit_p_calcheight
-label_16:
-mov   ax, word ptr ds:[bx]
-cmp   ax, word ptr [bp - 2]
-jbe   jump_to_exit_p_calcheight
-label_15:
-mov   ax, word ptr [bp - 2]
-mov   word ptr ds:[bx + 2], si
-mov   word ptr ds:[bx], ax
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
+
+xchg  ax, bx
+mov   cx, dx   ; cx:bx with bob
+
+
+les   ax, dword ptr ds:[di + PLAYER_T.player_viewheightvalue] ; dx:ax will have player_viewheightvalue
+mov   dx, es
+cmp   byte ptr ds:[di + PLAYER_T.player_playerstate], PST_LIVE ; 0
+jne   skip_live_height_checks
+    lea   di, [di + PLAYER_T.player_deltaviewheight + 0]
+    ; di is offset in this section.
+    xor   si, si ; use si as 0 reg
+
+    add   ax, word ptr ds:[di + 0]
+    adc   dx, word ptr ds:[di + 2]
+
+    cmp   dx, VIEWHEIGHT_HIGHBITS
+    jl    dont_cap_viewheight_high
+    jg    cap_viewheight_high
+    test  ax, ax
+    jz    dont_cap_viewheight_high
+    cap_viewheight_high:
+    xor   ax, ax
+    mov   dx, VIEWHEIGHT_HIGHBITS
+    mov   word ptr ds:[di + 0], ax ;zero
+    mov   word ptr ds:[di + 2], ax
+    jmp   done_with_viewheightcapping_all  ; the following checks would be guaranteed false...
+
+    dont_cap_viewheight_high:
+    cmp   dx, VIEWHEIGHT_HIGHBITS/2
+    jg    done_with_viewheightcapping_low
+    jl    cap_viewheight_low
+    cmp   ax, 08000h  ; VIEWHEIGHT_HIGHBITS/2 lowbits
+    jae   done_with_viewheightcapping_low
+    cap_viewheight_low:
+    mov   ax, 08000h
+    mov   dx, VIEWHEIGHT_HIGHBITS
+    cmp   word ptr ds:[di + 2], si 
+    jg    done_with_viewheightcapping_low  ; positive
+    jl    cap_delta
+    ; zero...
+    cmp   word ptr ds:[di + 0], si ; 0
+    jne   done_with_viewheightcapping_low
+    cap_delta:
+    mov   word ptr ds:[di + 0], 04000h  ; it would have been added below. instead add now and skip that section
+    inc   si
+    mov   word ptr ds:[di + 2], si ; 1
+    jmp   done_with_viewheightcapping_all
+
+    done_with_viewheightcapping_low:
+    cmp   word ptr ds:[di], si 
+    jne   add_to_viewheight_again
+    cmp   word ptr ds:[di + 2], si 
+    je    done_with_viewheightcapping_all
+    add_to_viewheight_again:
+    add   word ptr ds:[di + 0], 04000h  
+    adc   word ptr ds:[di + 2], si      ; 0
+    jnz   done_with_viewheightcapping_all
+    cmp   word ptr ds:[di], si   ; check zero again
+    jne   done_with_viewheightcapping_all
+    inc   word ptr ds:[di + 0] ; set to 1.
+
+done_with_viewheightcapping_all:
+; write these back
+
+mov   word ptr ds:[_player + PLAYER_T.player_viewheightvalue + 0], ax
+mov   word ptr ds:[_player + PLAYER_T.player_viewheightvalue + 2], dx  ; modified in this area, so write back player_viewheightvalue
+
+skip_live_height_checks:
+;	player.viewzvalue.w = playerMobj_pos->z.w + player.viewheightvalue.w + bob;
+ ; finally...
+
+add   ax, bx
+adc   dx, cx  ; add bob. box was in cx:bx
+mov   si, ds  ; nonzero flag
+
+
+finish_viewz_calc_and_exit_p_calcheight:
+
+les   di, dword ptr ds:[_playerMobj_pos]
+add   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
+adc   dx, word ptr es:[di + MOBJ_POS_T.mp_z + 2] ; add z
+
+pop   bx ; get temp in cx:bx
 pop   cx
-pop   bx
+
+
+test  si, si
+je    skip_temp_check
+
+;    if (player.viewzvalue.w > temp.w){
+;		player.viewzvalue = temp;
+;	}
+
+cmp   dx, cx
+jl    dont_cap_to_temp
+jg    cap_to_temp
+cmp   ax, bx
+jna   dont_cap_to_temp
+cap_to_temp:
+xchg  ax, bx
+mov   dx, cx
+
+dont_cap_to_temp:
+skip_temp_check:
+
+mov   word ptr ds:[_player + PLAYER_T.player_viewzvalue + 0], ax  ; write player_viewzvalue back
+mov   word ptr ds:[_player + PLAYER_T.player_viewzvalue + 2], dx
+exit_p_calcheight:
+POPA_NO_AX_MACRO
 ret  
-label_14:
-mov   word ptr ds:[bx], 1
-mov   word ptr ds:[bx + 2], 0
-jmp   label_12
 
 
 ENDP
