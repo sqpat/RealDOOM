@@ -533,4 +533,43 @@ PLAT_T STRUC
 PLAT_T ENDS
 
 
+FIREFLICKER_T STRUC
 
+    fireflicker_secnum             dw ?  ; 0
+    fireflicker_count              dw ?  ; 2
+    fireflicker_maxlight           db ?  ; 4
+    fireflicker_minlight           db ?  ; 5
+
+FIREFLICKER_T ENDS
+
+LIGHTFLASH_T STRUC
+
+    lightflash_secnum             dw ?  ; 0
+    lightflash_count              dw ?  ; 2
+    lightflash_maxlight           db ?  ; 4
+    lightflash_minlight           db ?  ; 5
+    lightflash_maxtime            db ?  ; 6
+    lightflash_mintime            db ?  ; 7
+
+LIGHTFLASH_T ENDS
+
+STROBE_T STRUC
+
+    strobe_secnum             dw ?  ; 0
+    strobe_count              dw ?  ; 2
+    strobe_maxlight           db ?  ; 4
+    strobe_minlight           db ?  ; 5
+    strobe_darktime           dw ?  ; 6
+    strobe_brighttime         dw ?  ; 8
+
+STROBE_T ENDS
+
+
+GLOW_T STRUC
+
+    glow_secnum             dw ?  ; 0
+    glow_maxlight           db ?  ; 2
+    glow_minlight           db ?  ; 3
+    glow_direction          dw ?  ; 4
+
+GLOW_T ENDS
