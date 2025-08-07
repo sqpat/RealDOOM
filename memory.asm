@@ -520,8 +520,8 @@ ENDM
 	_NPR PAGE_8800_OFFSET					 		PAGE_8800_OFFSET
 	_NPR PAGE_8C00_OFFSET		 					PAGE_8C00_OFFSET
 	_EPR 15 		 								PAGE_9000_OFFSET ;segs physics
-	_EPR FIRST_LUMPINFO_LOGICAL_PAGE    	 		PAGE_9400_OFFSET
-	_EPR FIRST_LUMPINFO_LOGICAL_PAGE+1 		 		PAGE_9800_OFFSET
+	_NPR PAGE_9400_OFFSET 							PAGE_9400_OFFSET ;pageswapargs_physics_code_offset_size
+	_NPR PAGE_9800_OFFSET 							PAGE_9800_OFFSET
 	_EPR FIRST_LUMPINFO_LOGICAL_PAGE+2 		 		PAGE_9C00_OFFSET
 		
 	_EPR 0		 									PAGE_4000_OFFSET ;pageswapargs_rend_offset_size   ; render
@@ -667,10 +667,7 @@ ENDM
 	_EPR SCREEN2_LOGICAL_PAGE+3 					PAGE_7C00_OFFSET 	; fwipe_ycolumns_segment here fwipe_mul160lookup_segment too
 	
 	_EPR EMS_VISPLANE_EXTRA_PAGE 				    PAGE_8400_OFFSET ;pageswapargs_visplanepage_offset_size
-	; note: no npr page_9000.
-	_NPR PAGE_9400_OFFSET 							PAGE_9400_OFFSET ;pageswapargs_physics_code_offset_size
-	_NPR PAGE_9800_OFFSET 							PAGE_9800_OFFSET
-			; render 4000 to 8000
+	
 	_EPR 0					 						PAGE_8000_OFFSET ;pageswapargs_rend_other9000_size
 	_EPR 1					 						PAGE_8400_OFFSET 
 	_EPR 2					 						PAGE_8800_OFFSET 

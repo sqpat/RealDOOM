@@ -734,10 +734,9 @@ void __near Z_LoadBinaries() {
 	fread(&codesize, 2, 1, fp);
 	FAR_fread(wianim_codespace, codesize, 1, fp);
  
-	Z_QuickMapPhysicsCode();
+	Z_QuickMapPhysics();
 	fread(&codesize, 2, 1, fp);
 	FAR_fread(psight_codespace, codesize, 1, fp);
-	Z_QuickMapPhysics();
 
 
 //todo should these be plus 2?

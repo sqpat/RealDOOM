@@ -135,20 +135,6 @@ ELSE
 ENDIF
 
 
-PROC Z_QuickMapPhysicsCode_ FAR
-PUBLIC Z_QuickMapPhysicsCode_
-
-push  dx
-push  cx
-push  si
-
-Z_QUICKMAPAI2 pageswapargs_physics_code_offset_size INDEXED_PAGE_9400_OFFSET
-
-pop   si
-pop   cx
-pop   dx
-
-retf  
 
 ENDP
 

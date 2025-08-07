@@ -141,7 +141,6 @@ void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 	P_GroupLines();
 
 
-	Z_QuickMapPhysicsCode(); 
 	P_LoadThings(lumpnum + ML_THINGS);
  
 

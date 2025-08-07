@@ -468,7 +468,7 @@ void __near G_Ticker (void)  {
     switch (gamestate)  { 
 		case GS_LEVEL:
 
-            Z_QuickMapPhysicsCode();
+            // Z_QuickMapPhysics(); 
 			P_Ticker();
 
             Z_QuickMapPhysics();
@@ -761,7 +761,7 @@ void __near G_DoLoadGame (void)  {
 
     // reload the file, re-set memory because G_InitNew ran a million things.
 	Z_QuickMapPhysics();        // may be unnecessary, G_InitNew runs it?
-	Z_QuickMapPhysicsCode();        // may be unnecessary, G_InitNew runs it?
+	
     Z_QuickMapScratch_5000();
 
     M_ReadFile (savename, savebuffer); 

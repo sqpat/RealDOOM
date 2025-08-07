@@ -5250,7 +5250,7 @@ void __near* VALUES[LOCALS_COUNT] = {
 
 };
 
-#define EMS_PAGE_STUFF_COUNT 123
+#define EMS_PAGE_STUFF_COUNT 122
 
 char* EMS_PAGE_STRINGS[EMS_PAGE_STUFF_COUNT] = {
 
@@ -5275,7 +5275,6 @@ char* EMS_PAGE_STRINGS[EMS_PAGE_STUFF_COUNT] = {
 	"NUM_INTERMISSION_PARAMS",
 	"NUM_WIPE_PARAMS",
 	"NUM_VISPLANEPAGE_PARAMS",
-	"NUM_PHYSICS_CODE_PARAMS",
 	"PAGESWAPARGS_PHYS_OFFSET_SIZE",
 	"PAGESWAPARGS_SCREEN0_OFFSET_SIZE",
 	"PAGESWAPARGS_REND_OFFSET_SIZE",
@@ -5414,7 +5413,6 @@ void __near* EMS_PAGE_VALUES[EMS_PAGE_STUFF_COUNT] = {
 	num_intermission_params,
 	num_wipe_params,
 	num_visplanepage_params,
-	num_physics_code_params,
 	pageswapargs_phys_offset_size,
 	pageswapargs_screen0_offset_size,
 	pageswapargs_rend_offset_size,

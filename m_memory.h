@@ -476,10 +476,10 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 // 4CD8:0000  FD80 linespeciallist
 // 4CE0:0000  FE00 font_widths
 // 4CE4:0000  xxxx code_overlay_segment
-// 4D16:0000  xxxx [empty]
+// 4DA1:0000  xxxx [empty]
 
 
-// 12000 bytes free?
+// 9712 bytes free?
 
 // PHYSICS 0x6000 - 0x7FFF DATA
 // note: strings in 0x6000-6400 region

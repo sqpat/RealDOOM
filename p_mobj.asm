@@ -322,7 +322,6 @@ Z_QUICKMAPAI1  (pageswapargs_phys_offset_size+20) INDEXED_PAGE_9000_OFFSET
 mov   byte ptr ds:[_currenttask], TASK_PHYSICS
 ;call     Z_QuickMapScratch_8000_   ; // gross, needed due to p_setup.... perhaps externalize.
 Z_QUICKMAPAI4 pageswapargs_scratch8000_offset_size INDEXED_PAGE_8000_OFFSET
-;Z_QUICKMAPAI2 pageswapargs_physics_code_offset_size INDEXED_PAGE_9400_OFFSET
 
 pop       si
 pop       dx

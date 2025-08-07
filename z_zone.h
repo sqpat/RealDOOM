@@ -424,7 +424,6 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define num_intermission_params 12
 #define num_wipe_params 12
 #define num_visplanepage_params 1
-#define num_physics_code_params 2
 #define num_render_4000_to_8000_params 4
 
 //#define pageswapargoff_demo pageswapargseg +
@@ -437,6 +436,8 @@ void __far Z_SetOverlay(int8_t wipeId);
 
 #define pageswapargs_phys_offset_size                0
 #define pageswapargs_screen0_offset_size             (16)
+#define pageswapargs_physics_code_offset_size        20
+#define pageswapargs_physics_code_offset             (pageswapargs_physics_code_offset_size * PAGE_SWAP_ARG_MULT)
 #define pageswapargs_rend_offset_size                (num_phys_params)
 
 #define pageswapargs_rend_texture_size                (pageswapargs_rend_offset_size + 4)
@@ -460,8 +461,7 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define pageswapargs_intermission_offset_size        (pageswapargs_menu_offset_size           + num_menu_params)
 #define pageswapargs_wipe_offset_size                (pageswapargs_intermission_offset_size   + num_intermission_params)
 #define pageswapargs_visplanepage_offset_size        (pageswapargs_wipe_offset_size           + num_wipe_params)
-#define pageswapargs_physics_code_offset_size        (pageswapargs_visplanepage_offset_size   + num_visplanepage_params)
-#define pageswapargs_rend_other8000_offset_size      (pageswapargs_physics_code_offset_size   + num_physics_code_params)
+#define pageswapargs_rend_other8000_offset_size      (pageswapargs_visplanepage_offset_size   + num_visplanepage_params)
 #define total_pages_size                             (pageswapargs_rend_other8000_offset_size + num_render_4000_to_8000_params)
  
 // used for array indices
@@ -483,8 +483,7 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define pageswapargs_intermission_offset    (pageswapargs_menu_offset               + (num_menu_params*PAGE_SWAP_ARG_MULT))
 #define pageswapargs_wipe_offset            (pageswapargs_intermission_offset       + (num_intermission_params*PAGE_SWAP_ARG_MULT))
 #define pageswapargs_visplanepage_offset    (pageswapargs_wipe_offset               + (num_wipe_params*PAGE_SWAP_ARG_MULT))
-#define pageswapargs_physics_code_offset    (pageswapargs_visplanepage_offset       + (num_visplanepage_params*PAGE_SWAP_ARG_MULT))
-#define pageswapargs_rend_other8000_size    (pageswapargs_physics_code_offset       + (num_physics_code_params*PAGE_SWAP_ARG_MULT))
+#define pageswapargs_rend_other8000_size    (pageswapargs_visplanepage_offset       + (num_visplanepage_params*PAGE_SWAP_ARG_MULT))
 #define total_pages                         (pageswapargs_rend_other8000_size       + (num_render_4000_to_8000_params*PAGE_SWAP_ARG_MULT))
 
 #define pageswapargs_rend_texture_offset                (pageswapargs_rend_offset + 4*PAGE_SWAP_ARG_MULT)
@@ -504,7 +503,6 @@ void __far Z_RestorePageFrameState();
 
 // EMS 4.0 stuff
 
-void __far Z_QuickMapPhysicsCode();
 void __far Z_QuickMapPhysics();
 void __far Z_QuickMapRender();
 void __far Z_QuickMapRender_4000To9000();
