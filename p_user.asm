@@ -57,47 +57,48 @@ ENDP
 PROC    P_Thrust_ NEAR
 PUBLIC  P_Thrust_
 
+;void __near P_Thrust (fineangle_t angle, fixed_t move )  {
+
+;	move <<= 11;
+;	//move *= 2048L;
+;	playerMobj->momx.w += FixedMulTrig(FINE_COSINE_ARGUMENT, angle, move);
+;	playerMobj->momy.w += FixedMulTrig(FINE_SINE_ARGUMENT, angle, move);
 
 push  dx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
-push  ax
-mov   si, bx
-mov   di, cx
-mov   bx, _playerMobj
-mov   cl, 11
-shl   di, cl
-rol   si, cl
-xor   di, si
-and   si, 0F800h  ; shift mask todo make suck less.
-xor   di, si
-mov   dx, ax
+
+xchg  ax, dx  ; dx gets angle...
+mov   ch, cl
+mov   cl, bh
+mov   bh, bl ; shift 8
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1
+sal   bx, 1
+rcl   cx, 1 ; shift 11
+and   bx, 0F800h  ; shift mask bx
+
+push  bx
+push  cx  ; store for second call
+push  dx  
+
 mov   ax, FINECOSINE_SEGMENT
-mov   bx, word ptr ds:[bx]
-mov   cx, di
-mov   word ptr [bp - 2], bx
-mov   bx, si
 call  FixedMulTrig_
-mov   bx, word ptr [bp - 2]
-mov   cx, di
+
+mov   bx, word ptr ds:[_playerMobj]
 add   word ptr ds:[bx + MOBJ_T.m_momx + 0], ax
 adc   word ptr ds:[bx + MOBJ_T.m_momx + 2], dx
-mov   bx, _playerMobj
+pop   dx
+pop   cx
+pop   bx
 mov   ax, FINESINE_SEGMENT
-mov   bx, word ptr ds:[bx]
-mov   dx, word ptr [bp - 4]
-mov   word ptr [bp - 2], bx
-mov   bx, si
+
 call  FixedMulTrig_
-mov   bx, word ptr [bp - 2]
+
+mov   bx, word ptr ds:[_playerMobj]
 add   word ptr ds:[bx + MOBJ_T.m_momy + 0], ax
 adc   word ptr ds:[bx + MOBJ_T.m_momy + 2], dx
-LEAVE_MACRO 
-pop   di
-pop   si
+
 pop   dx
 ret  
 
