@@ -608,248 +608,201 @@ PROC    P_PlayerThink_ NEAR
 PUBLIC  P_PlayerThink_
 
 
-push  bx
-push  dx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 4
-mov   word ptr [bp - 4], P_USELINES_OFFSET
-mov   bx, _player + PLAYER_T.player_cheats
-mov   word ptr [bp - 2], PHYSICS_HIGHCODE_SEGMENT
-test  byte ptr ds:[bx], CF_NOCLIP
-je    label_48
-jmp   label_49
-label_48:
-mov   si, _playerMobj_pos
-les   bx, dword ptr ds:[si]
-and   byte ptr es:[bx + MOBJ_POS_T.mp_flags1 + 1], (NOT (MF_NOCLIP SHR 8))
-label_44:
-mov   si, _playerMobj_pos
-les   di, dword ptr ds:[si]
+PUSHA_NO_AX_OR_BP_MACRO
+
+les   di, dword ptr ds:[_playerMobj_pos]
+test  byte ptr ds:[_player + PLAYER_T.player_cheats], CF_NOCLIP
+je    clip_off
+or    byte ptr es:[di + MOBJ_POS_T.mp_flags1 + 1], (MF_NOCLIP SHR 8)
+jmp   done_with_clip
+clip_off:
+
+and   byte ptr es:[di + MOBJ_POS_T.mp_flags1 + 1], (NOT (MF_NOCLIP SHR 8))
+done_with_clip:
 mov   bx, _player
+mov   ax, 100
+cwd
 test  byte ptr es:[di + MOBJ_POS_T.mp_flags1], MF_JUSTATTACKED
-je    label_45
-mov   word ptr ds:[bx + PLAYER_T.player_cmd_angleturn], 0  ; two two byte writes of 0... ok?
-mov   word ptr ds:[bx], 100
-mov   di, si
-mov   si, word ptr ds:[si]
-mov   es, word ptr ds:[di + 2]
-and   byte ptr es:[si + MOBJ_POS_T.mp_flags1], (NOT MF_JUSTATTACKED)
-label_45:
-mov   si, _player + PLAYER_T.player_playerstate
-cmp   byte ptr ds:[si], PST_DEAD
-jne   label_46
-jmp   label_47
-label_46:
-mov   si, _playerMobj
-mov   si, word ptr ds:[si]
-cmp   byte ptr ds:[si + MOBJ_T.m_reactiontime], 0
-jne   label_50
-jmp   label_51
-label_50:
-mov   si, _playerMobj
-mov   si, word ptr ds:[si]
-dec   byte ptr ds:[si + MOBJ_T.m_reactiontime]
-label_52:
-mov   si, _playerMobj
+je    skip_chainsaw_run_forward
+mov   word ptr ds:[bx + PLAYER_T.player_cmd_angleturn], dx  ; two two byte writes of 0... ok?
+mov   word ptr ds:[bx + PLAYER_T.player_cmd_forwardmove], ax ; 100
+and   byte ptr es:[di + MOBJ_POS_T.mp_flags1], (NOT MF_JUSTATTACKED)
+skip_chainsaw_run_forward:
 
-call  P_CalcHeight_
-mov   si, word ptr ds:[si]
-mov   ax, word ptr ds:[si + 4]
-shl   ax, 4
-mov   si, ax
-add   si, _sectors_physics + SECTOR_PHYSICS_T.secp_special
-cmp   byte ptr ds:[si], 0
-je    label_53
-call  P_PlayerInSpecialSector_
-label_53:
-mov   al, byte ptr ds:[bx + PLAYER_T.player_cmd_buttons]
-test  al, BT_SPECIAL
-jne   label_54
-jmp   label_55
-label_54:
-mov   byte ptr ds:[bx + PLAYER_T.player_cmd_buttons], 0
-label_67:
-mov   bx, _player + PLAYER_T.player_usedown
-mov   byte ptr ds:[bx], 0
-label_63:
-mov   bx, _player + PLAYER_T.player_powers + (PW_STRENGTH * 2)
-call  dword ptr ds:[_P_MovePsprites]
-cmp   word ptr ds:[bx], 0
-je    label_64
-inc   word ptr ds:[bx]
-label_64:
-mov   bx, _player + PLAYER_T.player_powers + (PW_INVULNERABILITY * 2)
-cmp   word ptr ds:[bx], 0
-je    label_65
-dec   word ptr ds:[bx]
-label_65:
-mov   bx, _player + PLAYER_T.player_powers + (PW_INVISIBILITY * 2)
-cmp   word ptr ds:[bx], 0
-je    label_75
-dec   word ptr ds:[bx]
-jne   label_75
-mov   si, _playerMobj_pos
-les   bx, dword ptr ds:[si]
-and   byte ptr es:[bx + MOBJ_POS_T.mp_flags2], (NOT MF_SHADOW)
-label_75:
-mov   bx, _player + PLAYER_T.player_powers + (PW_INFRARED * 2)
-cmp   word ptr ds:[bx], 0
-je    label_76
-dec   word ptr ds:[bx]
-label_76:
-mov   bx, _player + PLAYER_T.player_powers + (PW_IRONFEET * 2)
-cmp   word ptr ds:[bx], 0
-je    label_85
-dec   word ptr ds:[bx]
-label_85:
-mov   bx, _player + PLAYER_T.player_damagecount
-cmp   word ptr ds:[bx], 0
-je    label_79
-dec   word ptr ds:[bx]
-label_79:
-mov   bx, _player + PLAYER_T.player_bonuscount
-cmp   byte ptr ds:[bx], 0
-je    label_80
-dec   byte ptr ds:[bx]
-label_80:
-mov   bx, _player + PLAYER_T.player_fixedcolormapvalue
-mov   byte ptr ds:[bx], 0
-mov   bx, _player + PLAYER_T.player_powers + (PW_INVULNERABILITY * 2)
-mov   ax, word ptr ds:[bx]
-test  ax, ax
-je    jump_to_label_73
-cmp   ax, (4 * 32)
-jg    label_74
-test  byte ptr ds:[bx], 8
-jne   label_74
-exit_player_think:
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   bx
-ret   
-label_49:
-mov   si, _playerMobj_pos
-les   bx, dword ptr ds:[si]
-or    byte ptr es:[bx + MOBJ_POS_T.mp_flags1 + 1], (MF_NOCLIP SHR 8)
-jmp   label_44
-label_47:
-
+cmp   byte ptr ds:[bx + PLAYER_T.player_playerstate], PST_DEAD
+jne   not_dead
 call  P_DeathThink_
 jmp   exit_player_think
-label_51:
+
+not_dead:
+
+mov   si, word ptr ds:[_playerMobj]
+cmp   byte ptr ds:[si + MOBJ_T.m_reactiontime], dl ; 0
+jne   dec_reactiontime
+
 
 call  P_MovePlayer_
-jmp   label_52
-jump_to_label_73:
-jmp   label_73
-label_74:
-mov   bx, _player + PLAYER_T.player_fixedcolormapvalue
-mov   byte ptr ds:[bx], INVERSECOLORMAP
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   bx
-ret   
-label_55:
-test  al, 4
-jne   label_56
-jmp   label_57
-label_56:
-and   al, BT_WEAPONMASK  ; 8 + 16 + 32
-xor   ah, ah
-mov   dx, ax
-sar   dx, 3
-mov   al, dl
-test  dl, dl
-jne   label_62
-mov   si, _player + PLAYER_T.player_weaponowned + WP_CHAINSAW
-cmp   byte ptr ds:[si], 0
-je    label_62
-mov   si, _player + PLAYER_T.player_readyweapon
-cmp   byte ptr ds:[si], 7
-je    label_70
-jmp   label_71
-label_70:
-mov   si, _player + PLAYER_T.player_powers + (PW_STRENGTH * 2)
-cmp   word ptr ds:[si], 0
-je    label_71
-label_62:
-mov   si, _commercial
-cmp   byte ptr ds:[si], 0
-je    label_69
-cmp   al, 2
-jne   label_69
-mov   si, _player + PLAYER_T.player_weaponowned + WP_SUPERSHOTGUN
-cmp   byte ptr ds:[si], 0
-je    label_69
-mov   si, _player + PLAYER_T.player_readyweapon
-cmp   byte ptr ds:[si], 8
-je    label_69
-mov   al, 8
-label_69:
-mov   dl, al
-xor   dh, dh
-mov   si, dx
-cmp   byte ptr ds:[si + _player + PLAYER_T.player_weaponowned], 0
-je    label_57
-mov   si, _player + PLAYER_T.player_readyweapon
-cmp   al, byte ptr ds:[si]
-je    label_57
-cmp   al, 5
-je    label_68
-cmp   al, 6
-je    label_68
-label_61:
-mov   si, _player + PLAYER_T.player_pendingweapon
-mov   byte ptr ds:[si], al
-label_57:
-test  byte ptr ds:[bx + 7], 2
-jne   label_66
-jmp   label_67
-label_66:
-mov   bx, _player +  PLAYER_T.player_usedown
-cmp   byte ptr ds:[bx], 0
-je    label_72
-jmp   label_63
-label_72:
-call  dword ptr [bp - 4] ; todo
-mov   byte ptr ds:[bx], 1
-jmp   label_63
-label_71:
-mov   al, 7
-jmp   label_62
-label_68:
-mov   si, _shareware
-cmp   byte ptr ds:[si], 0
-je    label_61
-jmp   label_57
-label_73:
-mov   bx, _player + PLAYER_T.player_powers + (PW_INFRARED * 2)
-mov   ax, word ptr ds:[bx]
+jmp   done_with_player_movement
+
+dec_reactiontime:
+
+dec   byte ptr ds:[si + MOBJ_T.m_reactiontime]
+done_with_player_movement:
+
+
+call  P_CalcHeight_
+
+mov   si, word ptr ds:[si + MOBJ_T.m_secnum]
+SHIFT_MACRO shl   si 4
+
+cmp   byte ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_special], dl ; 0 
+je    skip_player_sector_special
+call  P_PlayerInSpecialSector_
+skip_player_sector_special:
+
+mov   al, byte ptr ds:[bx + PLAYER_T.player_cmd_buttons]
+test  al, BT_SPECIAL
+jne   zero_buttons
+
+do_buttons_check:
+test  al, BT_CHANGE
+je   check_for_use
+
+and   ax, BT_WEAPONMASK  ; 8 + 16 + 32
+SHIFT_MACRO shr   ax, BT_WEAPONSHIFT
+test  al, al 
+jne   not_chainsaw
+cmp   byte ptr ds:[bx + PLAYER_T.player_weaponowned + WP_CHAINSAW], dl
+je    not_chainsaw
+cmp   byte ptr ds:[bx + PLAYER_T.player_readyweapon], WP_CHAINSAW
+jne   set_chainsaw
+cmp   word ptr ds:[bx + PLAYER_T.player_powers + (PW_STRENGTH * 2)], dx
+jne   not_chainsaw
+set_chainsaw:
+mov   al, WP_CHAINSAW
+
+not_chainsaw:
+
+cmp   byte ptr ds:[_commercial], dl
+je    not_supershotgun
+cmp   al, WP_SHOTGUN
+jne   not_supershotgun
+cmp   byte ptr ds:[bx + PLAYER_T.player_weaponowned + WP_SUPERSHOTGUN], dl
+je    not_supershotgun
+cmp   byte ptr ds:[bx + PLAYER_T.player_readyweapon], WP_SUPERSHOTGUN
+je    not_supershotgun
+mov   al, WP_SUPERSHOTGUN
+not_supershotgun:
+
+mov   si, ax
+cmp   byte ptr ds:[si + bx + PLAYER_T.player_weaponowned], dl
+je    dont_change_weapon
+
+cmp   al, byte ptr ds:[bx + PLAYER_T.player_readyweapon]
+je    dont_change_weapon
+cmp   byte ptr ds:[_shareware], dl
+je    do_equip_weapon
+
+cmp   al, WP_PLASMA
+je    dont_change_weapon
+cmp   al, WP_BFG
+je    dont_change_weapon
+do_equip_weapon:
+
+mov   byte ptr ds:[bx + PLAYER_T.player_pendingweapon], al
+dont_change_weapon:
+
+check_for_use:
+test  byte ptr ds:[bx + PLAYER_T.player_cmd_buttons], BT_USE
+je    zero_usedown
+cmp   byte ptr ds:[bx +  PLAYER_T.player_usedown], dl
+jne   done_with_buttons
+
+;call      P_UseLines_
+db    09Ah
+dw    P_USELINES_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+mov   byte ptr ds:[bx +  PLAYER_T.player_usedown], 1
+jmp   done_with_buttons
+
+
+zero_buttons:
+mov   byte ptr ds:[bx + PLAYER_T.player_cmd_buttons], dl ; 0
+zero_usedown:
+
+mov   byte ptr ds:[bx + PLAYER_T.player_usedown], dl ; 0
+done_with_buttons:
+
+call  dword ptr ds:[_P_MovePsprites]
+cmp   word ptr ds:[_player + PLAYER_T.player_powers + (PW_STRENGTH * 2)], dx ; 0
+je    dont_inc_berserk
+inc   word ptr ds:[_player + PLAYER_T.player_powers + (PW_STRENGTH * 2)]
+dont_inc_berserk:
+
+cmp   word ptr ds:[_player + PLAYER_T.player_powers + (PW_INVULNERABILITY * 2)], dx ; 0
+je    dont_dec_invuln
+dec   word ptr ds:[_player + PLAYER_T.player_powers + (PW_INVULNERABILITY * 2)]
+dont_dec_invuln:
+cmp   word ptr ds:[_player + PLAYER_T.player_powers + (PW_INVISIBILITY * 2)], dx ; 0
+
+je    dont_dec_invis
+dec   word ptr ds:[_player + PLAYER_T.player_powers + (PW_INVISIBILITY * 2)]
+jne   dont_dec_invis
+and   byte ptr es:[di + MOBJ_POS_T.mp_flags2], (NOT MF_SHADOW)
+dont_dec_invis:
+
+cmp   word ptr ds:[_player + PLAYER_T.player_powers + (PW_INFRARED * 2)], dx ; 0
+je    dont_dev_infrared
+dec   word ptr ds:[_player + PLAYER_T.player_powers + (PW_INFRARED * 2)]
+dont_dev_infrared:
+cmp   word ptr ds:[_player + PLAYER_T.player_powers + (PW_IRONFEET * 2)], dx ; 0
+je    dont_dec_radsuit
+dec   word ptr ds:[_player + PLAYER_T.player_powers + (PW_IRONFEET * 2)]
+dont_dec_radsuit:
+cmp   word ptr ds:[_player + PLAYER_T.player_damagecount], dx ; 0
+je    dont_dec_damagecount_2
+dec   word ptr ds:[_player + PLAYER_T.player_damagecount]
+dont_dec_damagecount_2:
+
+cmp   byte ptr ds:[_player + PLAYER_T.player_bonuscount], dl ; 0
+je    dont_dec_bonuscount
+dec   byte ptr ds:[_player + PLAYER_T.player_bonuscount]
+dont_dec_bonuscount:
+
+mov   byte ptr ds:[_player + PLAYER_T.player_fixedcolormapvalue], dl ; 0
+
+mov   ax, word ptr ds:[_player + PLAYER_T.player_powers + (PW_INVULNERABILITY * 2)]
 test  ax, ax
-jne   label_60
-label_58:
-jmp   exit_player_think
-label_60:
+jne   invul_wearing_off_colormap
+mov   ax, word ptr ds:[bx + PLAYER_T.player_powers + (PW_INFRARED * 2)]
+test  ax, ax
+je    exit_player_think
 cmp   ax, (4 * 32)
-jg    label_59
-test  byte ptr ds:[bx], 8
-je    label_58
-label_59:
-mov   bx, _player + PLAYER_T.player_fixedcolormapvalue
-mov   byte ptr ds:[bx], 1
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   bx
+jg    set_colormap_1
+test  byte ptr ds:[bx + PLAYER_T.player_powers + (PW_INFRARED * 2)], 8
+je    exit_player_think
+
+set_colormap_1:
+mov   byte ptr ds:[bx + PLAYER_T.player_fixedcolormapvalue], 1
+jmp   exit_player_think
+
+invul_wearing_off_colormap:
+cmp   ax, (4 * 32)
+jg    set_inverse_colormap
+test  byte ptr ds:[_player + PLAYER_T.player_powers + (PW_INVULNERABILITY * 2)], 8
+je    exit_player_think
+
+set_inverse_colormap:
+mov   byte ptr ds:[_player + PLAYER_T.player_fixedcolormapvalue], INVERSECOLORMAP
+
+exit_player_think:
+POPA_NO_AX_MACRO
 ret   
+
+
+
+
+
 
 ENDP
 
