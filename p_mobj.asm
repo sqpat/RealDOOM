@@ -1000,7 +1000,6 @@ dw _S_StopSoundMobjRef_addr
 
        
 pop       ax  ; restore div result (mobjref)
-push      cs
 call      P_RemoveThinker_
 
 

@@ -161,7 +161,6 @@ xor   ax, ax
 mov   word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
 pop   ax ; bp - 2
 
-push  cs
 call  P_RemoveThinker_
 exit_t_verticaldoor:
 LEAVE_MACRO 
@@ -206,7 +205,6 @@ mov   word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef]
 pop   ax  ; bp - 2
 mov   dx, SFX_BDCLS
 
-push  cs
 call  P_RemoveThinker_
 jmp   call_sound_and_exit
 

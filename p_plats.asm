@@ -483,7 +483,6 @@ xchg        ax, si  ; si gets ptr. ax gets platref back. dx is zeroed from mul
 mov         si, word ptr [si + _thinkerlist + THINKER_T.t_data + PLAT_T.plat_secnum]
 SHIFT_MACRO shl         si 4
 
-push        cs
 call        P_RemoveThinker_
 
 mov         word ptr [si + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], dx ; 0

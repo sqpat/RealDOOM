@@ -138,7 +138,7 @@ ret
 
 ENDP
 
-PROC P_RemoveThinker_ FAR
+PROC P_RemoveThinker_ NEAR
 PUBLIC P_RemoveThinker_
 
 ;	thinkerlist[thinkerRef].prevFunctype = (thinkerlist[thinkerRef].prevFunctype & TF_PREVBITS) + TF_DELETEME_HIGHBITS;
@@ -154,7 +154,7 @@ and       ah, (TF_PREVBITS SHR 8)
 add       ah, (TF_DELETEME_HIGHBITS SHR 8)
 mov       word ptr ds:[bx], ax
 pop       bx
-retf
+ret
 
 
 ENDP

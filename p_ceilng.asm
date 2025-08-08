@@ -434,7 +434,6 @@ mov   word ptr ds:[bx + SECTOR_PHYSICS_T.secp_specialdataRef], 0
 xchg  ax, bx  ; bx gets acrtiveceiling ptr back again
 xchg  ax, dx  ; param for P_RemoveThinker_
 
-push  cs
 call  P_RemoveThinker_
 
 mov   word ptr ds:[bx], NULL_THINKERREF

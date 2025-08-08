@@ -326,7 +326,6 @@ dont_change_specials:
 pop   ax  ; bp - 2 retrieve floorRef
 mov   dx, SFX_PSTOP
 
-push  cs
 call  P_RemoveThinker_
 xchg  ax, di
 
