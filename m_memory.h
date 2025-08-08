@@ -289,38 +289,20 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 
 
-//#define SIZE_D_INFO          0x0698
-#define SIZE_D_INFO            0x069C
 
 
  // 0x92FA
 
 #define psight_codespace      ((byte __far*)             (0x90000000))
-#define InfoFuncLoadAddr      ((byte __far *)            MAKE_FULL_SEGMENT(psight_codespace, PSightCodeSize))
-#define physics_9000_end      ((byte __far*)             MAKE_FULL_SEGMENT(InfoFuncLoadAddr, SIZE_D_INFO))
 
-// note: entry point to the function is not necessarily the first byte of the compiled binary. (jump tables and stuff for switch cases)
-#define getPainChanceAddr     ((int16_t    (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x0034))
-#define getRaiseStateAddr     ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x00B2))
-#define getXDeathStateAddr    ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x010A))
-#define getMeleeStateAddr     ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x015A))
-#define getMobjMassAddr       ((int32_t    (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x01B8))
-#define getActiveSoundAddr    ((sfxenum_t  (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x0222))
-#define getPainSoundAddr      ((sfxenum_t  (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x0284))
-#define getAttackSoundAddr    ((sfxenum_t  (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x02B8))
-#define getDamageAddr         ((uint8_t    (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x02DA))
-#define getSeeStateAddr       ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x0350))
-#define getMissileStateAddr   ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x03F4))
-#define getDeathStateAddr     ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x04A8))
-#define getPainStateAddr      ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x0586))
-#define getSpawnHealthAddr    ((int16_t    (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x063C))
+#define physics_9000_end      ((byte __far*)             MAKE_FULL_SEGMENT(psight_codespace, PSightCodeSize))
+
 
 
 
 // 0x93E9
 
 #define physics_highcode_segment    ((segment_t) ((int32_t)psight_codespace >> 16))
-#define InfoFuncLoadSegment         ((segment_t) ((int32_t)InfoFuncLoadAddr >> 16))
 #define physics_9000_end_segment    ((segment_t) ((int32_t)physics_9000_end >> 16))
 
 

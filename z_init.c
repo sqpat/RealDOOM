@@ -656,7 +656,7 @@ void __near Z_LoadBinaries() {
 	int16_t i;
 	uint16_t codesize;
 	FILE* fp = fopen("DOOMDATA.BIN", "rb"); 
-	fseek(fp, DATA_DOOMDATA_OFFSET + SIZE_D_INFO, SEEK_SET);
+	fseek(fp, DATA_DOOMDATA_OFFSET, SEEK_SET);
 	// currently in physics region!
 	// all data now in this file instead of spread out a
 	
