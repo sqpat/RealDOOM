@@ -111,6 +111,7 @@ GLOBOBJS = $(GLOBOBJS) &
  p_telept.obj &
  p_tick.obj &
  p_user.obj &
+ p_info.obj &
  r_init.obj &
  r_setup.obj &
  r_main.obj &
