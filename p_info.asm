@@ -58,32 +58,33 @@ ENDP
 
 _pain_chance_lookup:
 
-dw 00044h
-dw 00049h
-dw 0004Eh
-dw 00053h
-dw 00080h
-dw 00058h
-dw 00080h
-dw 00080h
-dw 0005Dh
-dw 00080h
-dw 0004Eh
-dw 00049h
-dw 00062h
-dw 00062h
-dw 00067h
-dw 0006Ch
-dw 00080h
-dw 0006Ch
-dw 00071h
-dw 00076h
-dw 00067h
-dw 0007Bh
-dw 00067h
-dw 0004Eh
-dw 00071h
-dw 00044h 
+
+db 255  ; MT_PLAYER = 00h
+db 200  ; MT_POSSESSED = 01h
+db 170  ; MT_SHOTGUY = 02h
+db 10   ; MT_VILE = 03h
+db 0    ; MT_FIRE = 04h
+db 100  ; MT_UNDEAD = 05h
+db 0    ; MT_TRACER = 06h
+db 0    ; MT_SMOKE = 07h
+db 80   ; MT_FATSO = 08h
+db 0    ; MT_FATSHOT = 09h
+db 170  ; MT_CHAINGUY = 0Ah
+db 200  ; MT_TROOP = 0Bh
+db 180  ; MT_SERGEANT = 0Ch
+db 180  ; MT_SHADOWS = 0Dh
+db 128  ; MT_HEAD = 0Eh
+db 50   ; MT_BRUISER = 0Fh
+db 0    ; MT_BRUISERSHOT = 010h
+db 50   ; MT_KNIGHT = 011h
+db 0    ; MT_SKULL = 012h
+db 40   ; MT_SPIDER = 013h
+db 128  ; MT_BABY = 014h
+db 20   ; MT_CYBORG = 015h
+db 128  ; MT_PAIN = 016h
+db 170  ; MT_WOLFSS = 017h
+db 0    ; MT_KEEN = 018h
+db 255  ; MT_BOSSBRAIN = 019h
 
 
 PROC    getPainChance_  NEAR 
@@ -91,139 +92,68 @@ PUBLIC  getPainChance_
 
 
 
-0x0000000000000034:  53                push   bx
-0x0000000000000035:  3C 19             cmp    al, 25
-0x0000000000000037:  77 47             ja     pain_chance_default
-0x0000000000000039:  30 E4             xor    ah, ah
-0x000000000000003b:  89 C3             mov    bx, ax
-0x000000000000003d:  01 C3             add    bx, ax
-0x000000000000003f:  2E FF A7 00 00    jmp    word ptr cs:[bx + _pain_chance_lookup]
-0x0000000000000044:  B8 FF 00          mov    ax, 255
-0x0000000000000047:  5B                pop    bx
-0x0000000000000048:  CB                ret   
-0x0000000000000049:  B8 C8 00          mov    ax, 200
-0x000000000000004c:  5B                pop    bx
-0x000000000000004d:  CB                ret   
-0x000000000000004e:  B8 AA 00          mov    ax, 170
-0x0000000000000051:  5B                pop    bx
-0x0000000000000052:  CB                ret   
-0x0000000000000053:  B8 0A 00          mov    ax, 10
-0x0000000000000056:  5B                pop    bx
-0x0000000000000057:  CB                ret   
-0x0000000000000058:  B8 64 00          mov    ax, 100
-0x000000000000005b:  5B                pop    bx
-0x000000000000005c:  CB                ret   
-0x000000000000005d:  B8 50 00          mov    ax, 80
-0x0000000000000060:  5B                pop    bx
-0x0000000000000061:  CB                ret   
-0x0000000000000062:  B8 B4 00          mov    ax, 180
-0x0000000000000065:  5B                pop    bx
-0x0000000000000066:  CB                ret   
-0x0000000000000067:  B8 80 00          mov    ax, 128
-0x000000000000006a:  5B                pop    bx
-0x000000000000006b:  CB                ret   
-0x000000000000006c:  B8 32 00          mov    ax, 50
-0x000000000000006f:  5B                pop    bx
-0x0000000000000070:  CB                ret   
-0x0000000000000071:  B8 00 01          mov    ax, 256
-0x0000000000000074:  5B                pop    bx
-0x0000000000000075:  CB                ret   
-0x0000000000000076:  B8 28 00          mov    ax, 40
-0x0000000000000079:  5B                pop    bx
-0x000000000000007a:  CB                ret   
-0x000000000000007b:  B8 14 00          mov    ax, 20
-0x000000000000007e:  5B                pop    bx
-0x000000000000007f:  CB                ret   
-pain_chance_default:
-0x0000000000000080:  31 C0             xor    ax, ax
-0x0000000000000082:  5B                pop    bx
-0x0000000000000083:  CB                ret  
+cmp    al, MT_BOSSBRAIN
+ja     pain_chance_default
+cmp    al, MT_KEEN
+je     ret_pain_256
+cmp    al, MT_SKULL
+je     ret_pain_256
+push   bx
+xor    ah, ah
+mov    bx, ax
+mov    al, byte ptr cs:[bx + _pain_chance_lookup]
+pop    bx
+ret  
+ret_pain_256:
+mov    ax, 0100h
+ret
 
 ENDP
 
 
 _raise_state_lookup:
 
-dw 000C4h
-dw 000C9h
-dw 00105h
-dw 00105h
-dw 000CEh
-dw 00105h
-dw 00105h
-dw 000D3h
-dw 00105h
-dw 000D8h
-dw 000DDh
-dw 000E2h
-dw 000E2h
-dw 000E7h
-dw 000ECh
-dw 00105h
-dw 000F1h
-dw 00105h
-dw 00105h
-dw 000F6h
-dw 00105h
-dw 000FBh
-dw 00100h
+dw S_POSS_RAISE1 ; MT_POSSESSED = 01h
+dw S_SPOS_RAISE1 ; MT_SHOTGUY = 02h
+dw 0             ; MT_VILE = 03h
+dw 0             ; MT_FIRE = 04h
+dw S_SKEL_RAISE1 ; MT_UNDEAD = 05h
+dw 0             ; MT_TRACER = 06h
+dw 0             ; MT_SMOKE = 07h
+dw S_FATT_RAISE1 ; MT_FATSO = 08h
+dw 0             ; MT_FATSHOT = 09h
+dw S_CPOS_RAISE1 ; MT_CHAINGUY = 0Ah
+dw S_TROO_RAISE1 ; MT_TROOP = 0Bh
+dw S_SARG_RAISE1 ; MT_SERGEANT = 0Ch
+dw S_SARG_RAISE1 ; MT_SHADOWS = 0Dh
+dw S_HEAD_RAISE1 ; MT_HEAD = 0Eh
+dw S_BOSS_RAISE1 ; MT_BRUISER = 0Fh
+dw 0             ; MT_BRUISERSHOT = 010h
+dw S_BOS2_RAISE1 ; MT_KNIGHT = 011h
+dw 0             ; MT_SKULL = 012h
+dw 0             ; MT_SPIDER = 013h
+dw S_BSPI_RAISE1 ; MT_BABY = 014h
+dw 0             ; MT_CYBORG = 015h
+dw S_PAIN_RAISE1 ; MT_PAIN = 016h
+dw S_SSWV_RAISE1 ; MT_WOLFSS = 017h
 
 
 PROC    getRaiseState_  NEAR 
 PUBLIC  getRaiseState_
 
 
-0x00000000000000b2:  53                push   bx
-0x00000000000000b3:  FE C8             dec    al
-0x00000000000000b5:  3C 16             cmp    al, 22
-0x00000000000000b7:  77 4C             ja     raise_state_default
-0x00000000000000b9:  30 E4             xor    ah, ah
-0x00000000000000bb:  89 C3             mov    bx, ax
-0x00000000000000bd:  01 C3             add    bx, ax
-0x00000000000000bf:  2E FF A7 84 00    jmp    word ptr cs:[bx + _raise_state_lookup]
-0x00000000000000c4:  B8 CB 00          mov    ax, S_POSS_RAISE1
-0x00000000000000c7:  5B                pop    bx
-0x00000000000000c8:  CB                ret   
-0x00000000000000c9:  B8 EC 00          mov    ax, S_SPOS_RAISE1
-0x00000000000000cc:  5B                pop    bx
-0x00000000000000cd:  CB                ret   
-0x00000000000000ce:  B8 5F 01          mov    ax, S_SKEL_RAISE1
-0x00000000000000d1:  5B                pop    bx
-0x00000000000000d2:  CB                ret   
-0x00000000000000d3:  B8 8E 01          mov    ax, S_FATT_RAISE1
-0x00000000000000d6:  5B                pop    bx
-0x00000000000000d7:  CB                ret   
-0x00000000000000d8:  B8 B3 01          mov    ax, S_CPOS_RAISE1
-0x00000000000000db:  5B                pop    bx
-0x00000000000000dc:  CB                ret   
-0x00000000000000dd:  B8 D6 01          mov    ax, S_TROO_RAISE1
-0x00000000000000e0:  5B                pop    bx
-0x00000000000000e1:  CB                ret   
-0x00000000000000e2:  B8 F0 01          mov    ax, S_SARG_RAISE1
-0x00000000000000e5:  5B                pop    bx
-0x00000000000000e6:  CB                ret   
-0x00000000000000e7:  B8 04 02          mov    ax, S_HEAD_RAISE1
-0x00000000000000ea:  5B                pop    bx
-0x00000000000000eb:  CB                ret   
-0x00000000000000ec:  B8 25 02          mov    ax, S_BOSS_RAISE1
-0x00000000000000ef:  5B                pop    bx
-0x00000000000000f0:  CB                ret   
-0x00000000000000f1:  B8 42 02          mov    ax, S_BOS2_RAISE1
-0x00000000000000f4:  5B                pop    bx
-0x00000000000000f5:  CB                ret   
-0x00000000000000f6:  B8 94 02          mov    ax, S_BSPI_RAISE1
-0x00000000000000f9:  5B                pop    bx
-0x00000000000000fa:  CB                ret   
-0x00000000000000fb:  B8 D0 02          mov    ax, S_PAIN_RAISE1
-0x00000000000000fe:  5B                pop    bx
-0x00000000000000ff:  CB                ret   
-0x0000000000000100:  B8 F6 02          mov    ax, S_SSWV_RAISE1
-0x0000000000000103:  5B                pop    bx
-0x0000000000000104:  CB                ret   
+push   bx
+cmp    al, MT_WOLFSS
+mov    bx, ax
+mov    ax, 0
+ja     raise_state_default
+sal    bx, 1
+mov    ax word ptr cs:[bx + _raise_state_lookup - 2] ; 0 not counted..
 raise_state_default:
-0x0000000000000105:  31 C0             xor    ax, ax
-0x0000000000000107:  5B                pop    bx
-0x0000000000000108:  CB                ret   
+pop    bx
+ret   
+
+
 
 ENDP
 
