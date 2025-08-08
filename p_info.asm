@@ -362,8 +362,8 @@ melee_state_hellknight:
 mov    ax, S_BOS2_ATK1
 retf   
 
-PROC    getXDeathState_ FAR 
-PUBLIC  getXDeathState_
+PROC    GetXDeathState_ FAR 
+PUBLIC  GetXDeathState_
 
 
 cmp    al, MT_SHOTGUY
@@ -388,8 +388,8 @@ retf
 ENDP
 
 
-PROC    getMeleeState_ FAR 
-PUBLIC  getMeleeState_
+PROC    GetMeleeState_ FAR 
+PUBLIC  GetMeleeState_
 
 
 cmp    al, MT_KNIGHT
@@ -417,8 +417,8 @@ ret_pain_256:
 mov    ax, 0100h
 retf
 
-PROC    getPainChance_  FAR 
-PUBLIC  getPainChance_
+PROC    GetPainChance_  FAR 
+PUBLIC  GetPainChance_
 
 
 
@@ -438,8 +438,8 @@ retf
 ENDP
 
 
-PROC    getRaiseState_  FAR 
-PUBLIC  getRaiseState_
+PROC    GetRaiseState_  FAR 
+PUBLIC  GetRaiseState_
 
 
 dec    ax
@@ -460,38 +460,38 @@ ENDP
 
 
 
-PROC    getMobjMass_ FAR 
-PUBLIC  getMobjMass_
+PROC    GetMobjMass_ FAR 
+PUBLIC  GetMobjMass_
 
-push   bx
 sub    al, 3
 cmp    al, (MT_BOSSBRAIN - 3)
 ja     mobj_mass_default
 cmp    al, (MT_WOLFSS - 3)
 ja     mobj_mass_10million
 cbw    ; already filtered out anything 0x80
+push   bx
 xchg   ax, bx
 sal    bx, 1
 mov    ax, word ptr cs:[bx + _mobj_mass_lookup]
+pop    bx
 mobj_mass_cwd_and_return:
 cwd
-pop    bx
 retf   
 ; ton of mass
 mobj_mass_10million:
 mov    ax, 09680h  ; 10000000
 mov    dx, 098h
-pop    bx
 retf   
 mobj_mass_default:
 mov    ax, 100
-jmp    mobj_mass_cwd_and_return
+cwd
+retf   
 
 
 ENDP
 
-PROC    getActiveSound_ FAR 
-PUBLIC  getActiveSound_
+PROC    GetActiveSound_ FAR 
+PUBLIC  GetActiveSound_
 
 
 dec    al
@@ -509,8 +509,8 @@ ENDP
 
 
 
-PROC    getPainSound_ FAR 
-PUBLIC  getPainSound_
+PROC    GetPainSound_ FAR 
+PUBLIC  GetPainSound_
 
 
 cmp    al, MT_BOSSBRAIN
@@ -527,8 +527,8 @@ ENDP
 
 
 
-PROC    getSeeState_ FAR 
-PUBLIC  getSeeState_
+PROC    GetSeeState_ FAR 
+PUBLIC  GetSeeState_
 
 cmp    al, MT_BOSSSPIT
 ja     see_state_default
@@ -558,8 +558,8 @@ retf
 ENDP
 
 
-PROC    getMissileState_ FAR 
-PUBLIC  getMissileState_
+PROC    GetMissileState_ FAR 
+PUBLIC  GetMissileState_
 
 
 cmp    al, MT_WOLFSS
@@ -575,8 +575,8 @@ retf
 ENDP
 
 
-PROC    getDeathState_ FAR 
-PUBLIC  getDeathState_
+PROC    GetDeathState_ FAR 
+PUBLIC  GetDeathState_
 
 
 
@@ -596,8 +596,8 @@ ENDP
 
 
 
-PROC    getPainState_ FAR 
-PUBLIC  getPainState_
+PROC    GetPainState_ FAR 
+PUBLIC  GetPainState_
 
 
 cmp    al, MT_BOSSBRAIN
@@ -612,8 +612,8 @@ retf
 
 ENDP
 
-PROC    getAttackSound_ FAR 
-PUBLIC  getAttackSound_
+PROC    GetAttackSound_ FAR 
+PUBLIC  GetAttackSound_
 
 
 cmp    al, MT_SERGEANT
@@ -656,8 +656,8 @@ jne    damage_default
 mov    al, 100
 retf   
 
-PROC    getDamage_ FAR 
-PUBLIC  getDamage_
+PROC    GetDamage_ FAR 
+PUBLIC  GetDamage_
 
 cmp    al, MT_TROOPSHOT
 jae    damage_type_above_30
@@ -695,8 +695,8 @@ attack_sound_shotgun:
 mov    al, SFX_SHOTGN
 retf   
 
-PROC    getSpawnHealth_ FAR 
-PUBLIC  getSpawnHealth_
+PROC    GetSpawnHealth_ FAR 
+PUBLIC  GetSpawnHealth_
 
 
 push   bx

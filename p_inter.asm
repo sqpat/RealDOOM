@@ -25,6 +25,13 @@ EXTRN FastDiv32u16u_:PROC
 EXTRN FastMul16u32u_:PROC
 EXTRN R_PointToAngle2_:PROC
 EXTRN FixedMulTrigNoShift_:PROC
+EXTRN GetPainChance_:PROC
+EXTRN GetPainState_:PROC
+EXTRN GetSeeState_:PROC
+EXTRN GetDeathState_:PROC
+EXTRN GetXDeathState_:PROC
+EXTRN GetSpawnHealth_:PROC
+
 
 EXTRN _P_RemoveMobj:DWORD
 EXTRN _P_DropWeaponFar:DWORD
@@ -932,8 +939,7 @@ target_not_player:
 ;		P_SetMobjState (target, getDeathState(target->type));
 ;	 }
 mov   ax, di  ; retrieve type
-db     09Ah
-dw     GETSPAWNHEALTHADDR, INFOFUNCLOADSEGMENT
+call  GetSpawnHealth_
 
 neg    ax
 cmp    ax, word ptr ds:[si + MOBJ_T.m_health]
@@ -941,8 +947,7 @@ cmp    ax, word ptr ds:[si + MOBJ_T.m_health]
 jle    do_death_state
 mov    ax, di
 
-db     09Ah
-dw     GETXDEATHSTATEADDR, INFOFUNCLOADSEGMENT
+call   GetXDeathState_
 
 test   ax, ax
 jne    got_death_or_xdeath_state_in_ax
@@ -951,9 +956,7 @@ do_death_state:
 mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor    ah, ah
 
-db    09Ah
-dw    GETDEATHSTATEADDR, INFOFUNCLOADSEGMENT
-
+call   GetDeathState_
 
 got_death_or_xdeath_state_in_ax:
 xchg   ax, dx
@@ -1441,8 +1444,7 @@ xchg   ax, dx
 mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 
 
-db     09Ah
-dw     GETPAINCHANCEADDR, INFOFUNCLOADSEGMENT
+call   GetPainChance_
 
 cmp    dx, ax
 jge    dont_do_pain_state
@@ -1454,8 +1456,7 @@ jne    dont_do_pain_state
 or     byte ptr es:[bx + MOBJ_POS_T.mp_flags1], MF_JUSTHIT
 mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 
-db     09Ah
-dw     GETPAINSTATEADDR, INFOFUNCLOADSEGMENT
+call   GetPainState_
 xchg   ax, dx
 mov    ax, si
 call   dword ptr [_P_SetMobjState]
@@ -1527,8 +1528,7 @@ mov    dx, word ptr es:[di + MOBJ_POS_T.mp_statenum]
 cmp    dx, word ptr ds:[_mobjinfo + bx]
 jne    exit_p_damagemobj
 
-db     09Ah
-dw     GETSEESTATEADDR, INFOFUNCLOADSEGMENT
+call   GetSeeState_
 
 test   ax, ax
 je     exit_p_damagemobj ; no seestate.

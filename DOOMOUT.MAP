@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/07 21:21:39
+Created on:       25/08/07 21:26:17
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -69,7 +69,7 @@ P_SWITCH_TEXT          CODE           AUTO           0bc4:417c       000003c5
 P_TELEPT_TEXT          CODE           AUTO           0bc4:4542       00000185
 P_TICK_TEXT            CODE           AUTO           0bc4:46c8       000001e6
 P_USER_TEXT            CODE           AUTO           0bc4:48ae       0000042f
-P_INFO_TEXT            CODE           AUTO           0bc4:4cde       0000034a
+P_INFO_TEXT            CODE           AUTO           0bc4:4cde       00000349
 R_MAIN_TEXT            CODE           AUTO           0bc4:5028       000003dc
 w_wad_TEXT             CODE           AUTO           0bc4:5410       0000030c
 V_VIDEO_TEXT           CODE           AUTO           0bc4:571c       00000615
@@ -900,22 +900,22 @@ Module: p_user.obj(p_user.ASM)
 0bc4:4a1e*     P_MovePlayer_
 0bc4:4b9a      P_PlayerThink_
 Module: p_info.obj(p_info.ASM)
-0bc4:4f06*     getPainChance_
-0bc4:4fb6*     getAttackSound_
-0bc4:4f96*     getDeathState_
-0bc4:4f63*     getPainSound_
-0bc4:4ec7*     getXDeathState_
-0bc4:4f72*     getSeeState_
-0bc4:4f52*     getActiveSound_
-0bc4:4fa6*     getPainState_
-0bc4:4f1d*     getRaiseState_
-0bc4:4f86*     getMissileState_
-0bc4:4ee9*     getMeleeState_
-0bc4:4fe8*     getDamage_
-0bc4:5028*     P_INFO_ENDMARKER_
+0bc4:4f06      GetPainChance_
+0bc4:4fb5*     GetAttackSound_
+0bc4:4f95      GetDeathState_
+0bc4:4f62*     GetPainSound_
+0bc4:4ec7      GetXDeathState_
+0bc4:4f71      GetSeeState_
+0bc4:4f51*     GetActiveSound_
+0bc4:4fa5      GetPainState_
+0bc4:4f1d*     GetRaiseState_
+0bc4:4f85*     GetMissileState_
+0bc4:4ee9*     GetMeleeState_
+0bc4:4fe7*     GetDamage_
+0bc4:5027*     P_INFO_ENDMARKER_
 0bc4:4cde*     P_INFO_STARTMARKER_
-0bc4:4f2e*     getMobjMass_
-0bc4:5014*     getSpawnHealth_
+0bc4:4f2e*     GetMobjMass_
+0bc4:5013      GetSpawnHealth_
 Module: r_main.obj(r_main.ASM)
 0bc4:5368      R_VideoErase_
 0bc4:534a      R_PointToAngle2_16_
@@ -1230,4 +1230,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  00016d30 (93488.)
 Entry point address: 0bc4:6ba6
-Link time: 00:00.75
+Link time: 00:00.20
