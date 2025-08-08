@@ -99,7 +99,7 @@ je     ret_pain_256
 cmp    al, MT_SKULL
 je     ret_pain_256
 push   bx
-xor    ah, ah
+cbw
 mov    bx, ax
 mov    al, byte ptr cs:[bx + _pain_chance_lookup]
 pop    bx
@@ -142,16 +142,16 @@ PROC    getRaiseState_  NEAR
 PUBLIC  getRaiseState_
 
 
-push   bx
 dec    ax
 cmp    al, (MT_WOLFSS - 1)
-mov    bx, ax
-mov    ax, 0
 ja     raise_state_default
+push   bx
+cbw
+xchg   ax, bx
 sal    bx, 1
 mov    ax word ptr cs:[bx + _raise_state_lookup] ; 0 not counted..
 raise_state_default:
-pop    bx
+xor    ax, ax
 ret   
 
 
@@ -272,7 +272,7 @@ ja     mobj_mass_default
 cmp    al, (MT_WOLFSS - 3)
 ja     mobj_mass_10million
 cbw    ; already filtered out anything 0x80
-mov    bx, ax
+xchg   ax, bx
 sal    bx, 1
 mov    ax, word ptr cs:[bx + _mobj_mass_lookup]
 mobj_mass_cwd_and_return:
@@ -294,135 +294,94 @@ ENDP
 
 _active_sound_lookup:
 
-dw 00234h
-dw 00234h
-dw 00238h
-dw 0024Ch
-dw 0023Ch
-dw 0024Ch
-dw 0024Ch
-dw 00234h
-dw 0024Ch
-dw 00234h
-dw 00240h
-dw 00244h
-dw 00244h
-dw 00244h
-dw 00244h
-dw 0024Ch
-dw 00244h
-dw 00244h
-dw 00244h
-dw 00248h
-dw 00244h
-dw 00244h
-dw 00234h
+db SFX_POSACT   ; MT_POSSESSED = 01h
+db SFX_POSACT   ; MT_SHOTGUY = 02h
+db SFX_VILACT   ; MT_VILE = 03h
+db 0            ; MT_FIRE = 04h
+db SFX_SKEACT   ; MT_UNDEAD = 05h
+db 0            ; MT_TRACER = 06h
+db 0            ; MT_SMOKE = 07h
+db SFX_POSACT   ; MT_FATSO = 08h
+db 0            ; MT_FATSHOT = 09h
+db SFX_POSACT   ; MT_CHAINGUY = 0Ah
+db SFX_BGACT    ; MT_TROOP = 0Bh
+db SFX_DMACT    ; MT_SERGEANT = 0Ch
+db SFX_DMACT    ; MT_SHADOWS = 0Dh
+db SFX_DMACT    ; MT_HEAD = 0Eh
+db SFX_DMACT    ; MT_BRUISER = 0Fh
+db 0            ; MT_BRUISERSHOT = 010h
+db SFX_DMACT    ; MT_KNIGHT = 011h
+db SFX_DMACT    ; MT_SKULL = 012h
+db SFX_DMACT    ; MT_SPIDER = 013h
+db SFX_BSPACT   ; MT_BABY = 014h
+db SFX_DMACT    ; MT_CYBORG = 015h
+db SFX_DMACT    ; MT_PAIN = 016h
+db SFX_POSACT   ; MT_WOLFSS = 017h
 
 PROC    getActiveSound_ NEAR 
 PUBLIC  getActiveSound_
 
 
-0x0000000000000222:  53                push   bx
-0x0000000000000223:  FE C8             dec    al
-0x0000000000000225:  3C 16             cmp    al, 22
-0x0000000000000227:  77 23             ja     active_sound_default
-0x0000000000000229:  30 E4             xor    ah, ah
-0x000000000000022b:  89 C3             mov    bx, ax
-0x000000000000022d:  01 C3             add    bx, ax
-0x000000000000022f:  2E FF A7 F4 01    jmp    word ptr cs:[bx + _active_sound_lookup]
-0x0000000000000234:  B0 4B             mov    al, SFX_POSACT
-0x0000000000000236:  5B                pop    bx
-0x0000000000000237:  CB                ret   
-0x0000000000000238:  B0 50             mov    al, SFX_VILACT
-0x000000000000023a:  5B                pop    bx
-0x000000000000023b:  CB                ret   
-0x000000000000023c:  B0 69             mov    al, SFX_SKEACT
-0x000000000000023e:  5B                pop    bx
-0x000000000000023f:  CB                ret   
-0x0000000000000240:  B0 4C             mov    al, SFX_BGACT
-0x0000000000000242:  5B                pop    bx
-0x0000000000000243:  CB                ret   
-0x0000000000000244:  B0 4D             mov    al, SFX_DMACT
-0x0000000000000246:  5B                pop    bx
-0x0000000000000247:  CB                ret   
-0x0000000000000248:  B0 4E             mov    al, SFX_BSPACT
-0x000000000000024a:  5B                pop    bx
-0x000000000000024b:  CB                ret   
+dec    al
+cmp    al, (MT_WOLFSS - 1)
+ja     active_sound_default
+cbw
+push   bx
+mov    bx, ax
+mov    al, byte ptr cs:[bx + _active_sound_lookup]
+pop    bx
+ret   
+
 active_sound_default:
-0x000000000000024c:  30 C0             xor    al, al
-0x000000000000024e:  5B                pop    bx
-0x000000000000024f:  CB                ret   
+xor    ax, ax
+ret   
 
 ENDP
 
 _pain_sound_lookup:
 
-dw 00294h
-dw 00298h
-dw 00298h
-dw 0029Ch
-dw 002B4h
-dw 00298h
-dw 002B4h
-dw 002B4h
-dw 002A0h
-dw 002B4h
-dw 00298h
-dw 00298h
-dw 002A4h
-dw 002A4h
-dw 002A4h
-dw 002A4h
-dw 002B4h
-dw 002A4h
-dw 002A4h
-dw 002A4h
-dw 002A4h
-dw 002A4h
-dw 002A8h
-dw 00298h
-dw 002ACh
-dw 002B0h
+db SFX_PLPAIN ; MT_PLAYER = 00h
+db SFX_POPAIN ; MT_POSSESSED = 01h
+db SFX_POPAIN ; MT_SHOTGUY = 02h
+db SFX_VIPAIN ; MT_VILE = 03h
+db 0          ; MT_FIRE = 04h
+db SFX_POPAIN ; MT_UNDEAD = 05h
+db 0          ; MT_TRACER = 06h
+db 0          ; MT_SMOKE = 07h
+db SFX_MNPAIN ; MT_FATSO = 08h
+db 0          ; MT_FATSHOT = 09h
+db SFX_POPAIN ; MT_CHAINGUY = 0Ah
+db SFX_POPAIN ; MT_TROOP = 0Bh
+db SFX_DMPAIN ; MT_SERGEANT = 0Ch
+db SFX_DMPAIN ; MT_SHADOWS = 0Dh
+db SFX_DMPAIN ; MT_HEAD = 0Eh
+db SFX_DMPAIN ; MT_BRUISER = 0Fh
+db 0          ; MT_BRUISERSHOT = 010h
+db SFX_DMPAIN ; MT_KNIGHT = 011h
+db SFX_DMPAIN ; MT_SKULL = 012h
+db SFX_DMPAIN ; MT_SPIDER = 013h
+db SFX_DMPAIN ; MT_BABY = 014h
+db SFX_DMPAIN ; MT_CYBORG = 015h
+db SFX_PEPAIN ; MT_PAIN = 016h
+db SFX_POPAIN ; MT_WOLFSS = 017h
+db SFX_KEENPN ; MT_KEEN = 018h
+db SFX_BOSPN  ; MT_BOSSBRAIN = 019h
 
 
 PROC    getPainSound_ NEAR 
 PUBLIC  getPainSound_
 
 
-0x0000000000000284:  53                push bx
-0x0000000000000285:  3C 19             cmp    al, 25
+0x0000000000000285:  3C 19             cmp    al, MT_BOSSBRAIN
 0x0000000000000287:  77 2B             ja     pain_sound_default
-0x0000000000000289:  30 E4             xor    ah, ah
+0x0000000000000289:  30 E4             cbw
+0x0000000000000284:  53                push   bx
 0x000000000000028b:  89 C3             mov    bx, ax
-0x000000000000028d:  01 C3             add    bx, ax
-0x000000000000028f:  2E FF A7 50 02    jmp    word ptr cs:[bx + _pain_sound_lookup]
-0x0000000000000294:  B0 19             mov    al, SFX_PLPAIN
+0x000000000000028f:  2E FF A7 50 02    mov    al, byte ptr cs:[bx + _pain_sound_lookup]
 0x0000000000000296:  5B                pop    bx
-0x0000000000000297:  CB                ret   
-0x0000000000000298:  B0 1B             mov    al, SFX_POPAIN
-0x000000000000029a:  5B                pop    bx
-0x000000000000029b:  CB                ret   
-0x000000000000029c:  B0 1C             mov    al, SFX_VIPAIN
-0x000000000000029e:  5B                pop    bx
-0x000000000000029f:  CB                ret   
-0x00000000000002a0:  B0 1D             mov    al, SFX_MNPAIN
-0x00000000000002a2:  5B                pop    bx
-0x00000000000002a3:  CB                ret   
-0x00000000000002a4:  B0 1A             mov    al, SFX_DMPAIN
-0x00000000000002a6:  5B                pop    bx
-0x00000000000002a7:  CB                ret   
-0x00000000000002a8:  B0 1E             mov    al, SFX_PEPAIN
-0x00000000000002aa:  5B                pop    bx
-0x00000000000002ab:  CB                ret   
-0x00000000000002ac:  B0 67             mov    al, SFX_KEENPN
-0x00000000000002ae:  5B                pop    bx
-0x00000000000002af:  CB                ret   
-0x00000000000002b0:  B0 61             mov    al, SFX_BOSPN
-0x00000000000002b2:  5B                pop    bx
-0x00000000000002b3:  CB                ret   
+
 pain_sound_default:
-0x00000000000002b4:  30 C0             xor    al, al
-0x00000000000002b6:  5B                pop    bx
+0x00000000000002b4:  30 C0             xor    ax, ax
 0x00000000000002b7:  CB                ret 
 
 EDNP
@@ -507,201 +466,97 @@ damage_is_5:
 ENDP
 
 _see_state_lookup:
-dw 00360h
-dw 00365h
-dw 0036Ah
-dw 0036Fh
-dw 003BFh
-dw 00374h
-dw 003BFh
-dw 003BFh
-dw 00379h
-dw 003BFh
-dw 0037Eh
-dw 00383h
-dw 00388h
-dw 00388h
-dw 0038Dh
-dw 00392h
-dw 003BFh
-dw 00397h
-dw 0039Ch
-dw 003A1h
-dw 003A6h
-dw 003ABh
-dw 003B0h
-dw 003B5h
-dw 003BFh
-dw 003BFh
-dw 003BAh
+dw S_PLAY_RUN    ; MT_PLAYER = 00h
+dw S_POSS_RUN1   ; MT_POSSESSED = 01h
+dw S_SPOS_RUN1   ; MT_SHOTGUY = 02h
+dw S_VILE_RUN1   ; MT_VILE = 03h
+dw 0             ; MT_FIRE = 04h
+dw S_SKEL_RUN1   ; MT_UNDEAD = 05h
+dw 0             ; MT_TRACER = 06h
+dw 0             ; MT_SMOKE = 07h
+dw S_FATT_RUN1   ; MT_FATSO = 08h
+dw 0             ; MT_FATSHOT = 09h
+dw S_CPOS_RUN1   ; MT_CHAINGUY = 0Ah
+dw S_TROO_RUN1   ; MT_TROOP = 0Bh
+dw S_SARG_RUN1   ; MT_SERGEANT = 0Ch
+dw S_SARG_RUN1   ; MT_SHADOWS = 0Dh
+dw S_HEAD_RUN1   ; MT_HEAD = 0Eh
+dw S_BOSS_RUN1   ; MT_BRUISER = 0Fh
+dw 0             ; MT_BRUISERSHOT = 010h
+dw S_BOS2_RUN1   ; MT_KNIGHT = 011h
+dw S_SKULL_RUN1  ; MT_SKULL = 012h
+dw S_SPID_RUN1   ; MT_SPIDER = 013h
+dw S_BSPI_SIGHT  ; MT_BABY = 014h
+dw S_CYBER_RUN1  ; MT_CYBORG = 015h
+dw S_PAIN_RUN1   ; MT_PAIN = 016h
+dw S_SSWV_RUN1   ; MT_WOLFSS = 017h
+dw 0             ; MT_KEEN = 018h
+dw 0             ; MT_BOSSBRAIN = 019h
+dw S_BRAINEYESEE ; MT_BOSSSPIT = 01Ah
 
 PROC    getSeeState_ NEAR 
 PUBLIC  getSeeState_
 
-0x0000000000000350:  53                push   bx
-0x0000000000000351:  3C 1A             cmp    al, 26
-0x0000000000000353:  77 64             ja     see_state_default
-0x0000000000000355:  30 E4             xor    ah, ah
-0x0000000000000357:  89 C3             mov    bx, ax
-0x0000000000000359:  01 C3             add    bx, ax
-0x000000000000035b:  2E FF A7 1A 03    jmp    word ptr cs:[bx + _see_state_lookup]
-0x0000000000000360:  B8 96 00          mov    ax, S_PLAY_RUN
-0x0000000000000363:  5B                pop    bx
-0x0000000000000364:  CB                ret   
-0x0000000000000365:  B8 B0 00          mov    ax, S_POSS_RUN1
-0x0000000000000368:  5B                pop    bx
-0x0000000000000369:  CB                ret   
-0x000000000000036a:  B8 D1 00          mov    ax, S_SPOS_RUN1
-0x000000000000036d:  5B                pop    bx
-0x000000000000036e:  CB                ret   
-0x000000000000036f:  B8 F3 00          mov    ax, S_VILE_RUN1
-0x0000000000000372:  5B                pop    bx
-0x0000000000000373:  CB                ret   
-0x0000000000000374:  B8 43 01          mov    ax, S_SKEL_RUN1
-0x0000000000000377:  5B                pop    bx
-0x0000000000000378:  CB                ret   
-0x0000000000000379:  B8 6C 01          mov    ax, S_FATT_RUN1
-0x000000000000037c:  5B                pop    bx
-0x000000000000037d:  CB                ret   
-0x000000000000037e:  B8 98 01          mov    ax, S_CPOS_RUN1
-0x0000000000000381:  5B                pop    bx
-0x0000000000000382:  CB                ret   
-0x0000000000000383:  B8 BC 01          mov    ax, S_TROO_RUN1
-0x0000000000000386:  5B                pop    bx
-0x0000000000000387:  CB                ret   
-0x0000000000000388:  B8 DD 01          mov    ax, S_SARG_RUN1
-0x000000000000038b:  5B                pop    bx
-0x000000000000038c:  CB                ret   
-0x000000000000038d:  B8 F7 01          mov    ax, S_HEAD_RUN1
-0x0000000000000390:  5B                pop    bx
-0x0000000000000391:  CB                ret   
-0x0000000000000392:  B8 11 02          mov    ax, S_BOSS_RUN1
-0x0000000000000395:  5B                pop    bx
-0x0000000000000396:  CB                ret   
-0x0000000000000397:  B8 2E 02          mov    ax, S_BOS2_RUN1
-0x000000000000039a:  5B                pop    bx
-0x000000000000039b:  CB                ret   
-0x000000000000039c:  B8 4B 02          mov    ax, S_SKULL_RUN1
-0x000000000000039f:  5B                pop    bx
-0x00000000000003a0:  CB                ret   
-0x00000000000003a1:  B8 5B 02          mov    ax, S_SPID_RUN1
-0x00000000000003a4:  5B                pop    bx
-0x00000000000003a5:  CB                ret   
-0x00000000000003a6:  B8 7A 02          mov    ax, S_BSPI_SIGHT
-0x00000000000003a9:  5B                pop    bx
-0x00000000000003aa:  CB                ret   
-0x00000000000003ab:  B8 A4 02          mov    ax, S_CYBER_RUN1
-0x00000000000003ae:  5B                pop    bx
-0x00000000000003af:  CB                ret   
-0x00000000000003b0:  B8 BE 02          mov    ax, S_PAIN_RUN1
-0x00000000000003b3:  5B                pop    bx
-0x00000000000003b4:  CB                ret   
-0x00000000000003b5:  B8 D8 02          mov    ax, S_SSWV_RUN1
-0x00000000000003b8:  5B                pop    bx
+cmp    al, MT_BOSSSPIT
+ja     see_state_default
+cbw
+push   bx
+mov    bx, ax
+sal    bx, 1
+mov    ax, word ptr cs:[bx + _see_state_lookup]
+pop    bx
+ret   
+
+
 see_state_default:
-0x00000000000003b9:  CB                ret   
-0x00000000000003ba:  B8 11 03          mov    ax, S_BRAINEYESEE
-0x00000000000003bd:  5B                pop    bx
-0x00000000000003be:  CB                ret   
-0x00000000000003bf:  31 C0             xor    ax, ax
-0x00000000000003c1:  5B                pop    bx
-0x00000000000003c2:  CB                ret   
+xor    ax, ax
+ret   
 
 ENDP
 
 _missile_state_lookup:
 
-dw 00404h
-dw 00409h
-dw 0040Eh
-dw 00413h
-dw 00459h
-dw 00418h
-dw 00459h
-dw 00459h
-dw 0041Dh
-dw 00459h
-dw 00422h
-dw 00427h
-dw 00459h
-dw 00459h
-dw 0042Ch
-dw 00431h
-dw 00459h
-dw 00436h
-dw 0043Bh
-dw 00440h
-dw 00445h
-dw 0044Ah
-dw 0044Fh
-dw 00454h
+dw S_PLAY_ATK1  ; MT_PLAYER = 00h
+dw S_POSS_ATK1  ; MT_POSSESSED = 0
+dw S_SPOS_ATK1  ; MT_SHOTGUY = 02h
+dw S_VILE_ATK1  ; MT_VILE = 03h
+dw 0            ; MT_FIRE = 04h
+dw S_SKEL_MISS1 ; MT_UNDEAD = 05h
+dw 0            ; MT_TRACER = 06h
+dw 0            ; MT_SMOKE = 07h
+dw S_FATT_ATK1  ; MT_FATSO = 08h
+dw 0            ; MT_FATSHOT = 09h
+dw S_CPOS_ATK1  ; MT_CHAINGUY = 0A
+dw S_TROO_ATK1  ; MT_TROOP = 0Bh
+dw 0            ; MT_SERGEANT = 0C
+dw 0            ; MT_SHADOWS = 0Dh
+dw S_HEAD_ATK1  ; MT_HEAD = 0Eh
+dw S_BOSS_ATK1  ; MT_BRUISER = 0Fh
+dw 0            ; MT_BRUISERSHOT =
+dw S_BOS2_ATK1  ; MT_KNIGHT = 011h
+dw S_SKULL_ATK1 ; MT_SKULL = 012h
+dw S_SPID_ATK1  ; MT_SPIDER = 013h
+dw S_BSPI_ATK1  ; MT_BABY = 014h
+dw S_CYBER_ATK1 ; MT_CYBORG = 015h
+dw S_PAIN_ATK1  ; MT_PAIN = 016h
+dw S_SSWV_ATK1  ; MT_WOLFSS = 017h
 
 
 PROC    getMissileState_ NEAR 
 PUBLIC  getMissileState_
 
 
-0x00000000000003f4:  53                push   bx
-0x00000000000003f5:  3C 17             cmp    al, 23
+0x00000000000003f5:  3C 17             cmp    al, MT_WOLFSS
 0x00000000000003f7:  77 60             ja     missile_state_default
-0x00000000000003f9:  30 E4             xor    ah, ah
-0x00000000000003fb:  89 C3             mov    bx, ax
-0x00000000000003fd:  01 C3             add    bx, ax
-0x00000000000003ff:  2E FF A7 C4 03    jmp    word ptr cs:[bx + _missile_state_lookup]
-0x0000000000000404:  B8 9A 00          mov    ax, S_PLAY_AtK1
-0x0000000000000407:  5B                pop    bx
-0x0000000000000408:  CB                ret   
-0x0000000000000409:  B8 B8 00          mov    ax, S_POSS_ATK1
-0x000000000000040c:  5B                pop    bx
-0x000000000000040d:  CB                ret   
-0x000000000000040e:  B8 D9 00          mov    ax, S_SPOS_ATK1
-0x0000000000000411:  5B                pop    bx
-0x0000000000000412:  CB                ret   
-0x0000000000000413:  B8 FF 00          mov    ax, S_VILE_ATK1
-0x0000000000000416:  5B                pop    bx
-0x0000000000000417:  CB                ret   
-0x0000000000000418:  B8 53 01          mov    ax, S_SKEL_MISS1
-0x000000000000041b:  5B                pop    bx
-0x000000000000041c:  CB                ret   
-0x000000000000041d:  B8 78 01          mov    ax, S_FATT_ATK1
-0x0000000000000420:  5B                pop    bx
-0x0000000000000421:  CB                ret   
-0x0000000000000422:  B8 A0 01          mov    ax, S_CPOS_ATK1
-0x0000000000000425:  5B                pop    bx
-0x0000000000000426:  CB                ret   
-0x0000000000000427:  B8 C4 01          mov    ax, S_TROO_ATK1
-0x000000000000042a:  5B                pop    bx
-0x000000000000042b:  CB                ret   
-0x000000000000042c:  B8 F8 01          mov    ax, S_HEAD_ATK1
-0x000000000000042f:  5B                pop    bx
-0x0000000000000430:  CB                ret   
-0x0000000000000431:  B8 19 02          mov    ax, S_BOSS_ATK1
-0x0000000000000434:  5B                pop    bx
-0x0000000000000435:  CB                ret   
-0x0000000000000436:  B8 36 02          mov    ax, S_BOS2_ATK1
-0x0000000000000439:  5B                pop    bx
-0x000000000000043a:  CB                ret   
-0x000000000000043b:  B8 4D 02          mov    ax, S_SKULL_ATK1
-0x000000000000043e:  5B                pop    bx
-0x000000000000043f:  CB                ret   
-0x0000000000000440:  B8 67 02          mov    ax, S_SPID_ATK1
-0x0000000000000443:  5B                pop    bx
-0x0000000000000444:  CB                ret   
-0x0000000000000445:  B8 87 02          mov    ax, S_BSPI_ATK1
-0x0000000000000448:  5B                pop    bx
-0x0000000000000449:  CB                ret   
-0x000000000000044a:  B8 AC 02          mov    ax, S_CYBER_ATK1
-0x000000000000044d:  5B                pop    bx
-0x000000000000044e:  CB                ret   
-0x000000000000044f:  B8 C4 02          mov    ax, S_PAIN_ATK1
-0x0000000000000452:  5B                pop    bx
-0x0000000000000453:  CB                ret   
-0x0000000000000454:  B8 E0 02          mov    ax, S_SSWV_ATK1
-0x0000000000000457:  5B                pop    bx
-0x0000000000000458:  CB                ret   
+0x00000000000003f4:  53                push   bx
+0x00000000000003f9:  30 E4             cbw
+0x00000000000003fb:  89 C3             xchg   ax, bx
+0x00000000000003fd:  01 C3             sal    bx, 1
+0x00000000000003ff:  2E FF A7 C4 03    mov    ax, word ptr cs:[bx + _missile_state_lookup]
+
+
 missile_state_default:
 0x0000000000000459:  31 C0             xor    ax, ax
-0x000000000000045b:  5B                pop    bx
 0x000000000000045c:  CB                ret   
 
 ENDP
@@ -754,9 +609,9 @@ PUBLIC  getDeathState_
 0x00000000000004a8:  53                push   bx
 0x00000000000004a9:  3C 24             cmp    al, 36
 0x00000000000004ab:  77 6A             ja     death_state_default
-0x00000000000004ad:  30 E4             xor    ah, ah
+0x00000000000004ad:  30 E4             cbw
 0x00000000000004af:  89 C3             mov    bx, ax
-0x00000000000004b1:  01 C3             add    bx, ax
+0x00000000000004b1:  01 C3             sal    bx, 1
 0x00000000000004b3:  2E FF A7 5E 04    jmp    word ptr cs:[bx + _death_state_lookup]
 0x00000000000004b8:  B8 9E 00          mov    ax, S_PLAY_DIE1
 0x00000000000004bb:  5B                pop    bx
@@ -891,9 +746,9 @@ PUBLIC  getPainState_
 0x0000000000000586:  53                push   bx
 0x0000000000000587:  3C 19             cmp    al, 25
 0x0000000000000589:  77 6A             ja     pain_state_default
-0x000000000000058b:  30 E4             xor    ah, ah
+0x000000000000058b:  30 E4             cbw
 0x000000000000058d:  89 C3             mov    bx, ax
-0x000000000000058f:  01 C3             add    bx, ax
+0x000000000000058f:  01 C3             sal    bx, 1
 0x0000000000000591:  2E FF A7 52 05    jmp    word ptr cs:[bx + _pain_state_lookup]
 0x0000000000000596:  B8 9C 00          mov    ax, S_PLAY_PAIN
 0x0000000000000599:  5B                pop    bx
@@ -1004,9 +859,9 @@ PUBLIC  getSpawnHealth_
 0x000000000000063c:  53                push   bx
 0x000000000000063d:  3C 1E             cmp    al, 30
 0x000000000000063f:  77 1F             ja     spawn_health_default
-0x0000000000000641:  30 E4             xor    ah, ah
+0x0000000000000641:  30 E4             cbw
 0x0000000000000643:  89 C3             mov    bx, ax
-0x0000000000000645:  01 C3             add    bx, ax
+0x0000000000000645:  01 C3             sal    bx, 1
 0x0000000000000647:  2E FF A7 FE 05    jmp    word ptr cs:[bx + _spawn_health_lookup]
 0x000000000000064c:  B8 64 00          mov    ax, 100
 0x000000000000064f:  5B                pop    bx
