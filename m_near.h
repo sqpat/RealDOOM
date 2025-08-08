@@ -587,8 +587,8 @@
 #define skullName				          (((int16_t __near*)           	 (_NULL_OFFSET + 0x0B1C)))
 
 
-#define OutOfThinkers_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0820)))
-#define FastDiv32u16u_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0824)))
+#define OutOfThinkers_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0B20)))
+#define FastDiv32u16u_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0B24)))
 
 // 828 to 82f free
 
