@@ -738,55 +738,55 @@ PUBLIC  getMissileState_
 0x00000000000003fb:  89 C3             mov    bx, ax
 0x00000000000003fd:  01 C3             add    bx, ax
 0x00000000000003ff:  2E FF A7 C4 03    jmp    word ptr cs:[bx + _missile_state_lookup]
-0x0000000000000404:  B8 9A 00          mov    ax, 0x9a
+0x0000000000000404:  B8 9A 00          mov    ax, S_PLAY_AtK1
 0x0000000000000407:  5B                pop    bx
 0x0000000000000408:  CB                ret   
-0x0000000000000409:  B8 B8 00          mov    ax, 0xb8
+0x0000000000000409:  B8 B8 00          mov    ax, S_POSS_ATK1
 0x000000000000040c:  5B                pop    bx
 0x000000000000040d:  CB                ret   
-0x000000000000040e:  B8 D9 00          mov    ax, 0xd9
+0x000000000000040e:  B8 D9 00          mov    ax, S_SPOS_ATK1
 0x0000000000000411:  5B                pop    bx
 0x0000000000000412:  CB                ret   
-0x0000000000000413:  B8 FF 00          mov    ax, 255
+0x0000000000000413:  B8 FF 00          mov    ax, S_VILE_ATK1
 0x0000000000000416:  5B                pop    bx
 0x0000000000000417:  CB                ret   
-0x0000000000000418:  B8 53 01          mov    ax, 0x153
+0x0000000000000418:  B8 53 01          mov    ax, S_SKEL_MISS1
 0x000000000000041b:  5B                pop    bx
 0x000000000000041c:  CB                ret   
-0x000000000000041d:  B8 78 01          mov    ax, 0x178
+0x000000000000041d:  B8 78 01          mov    ax, S_FATT_ATK1
 0x0000000000000420:  5B                pop    bx
 0x0000000000000421:  CB                ret   
-0x0000000000000422:  B8 A0 01          mov    ax, 0x1a0
+0x0000000000000422:  B8 A0 01          mov    ax, S_CPOS_ATK1
 0x0000000000000425:  5B                pop    bx
 0x0000000000000426:  CB                ret   
-0x0000000000000427:  B8 C4 01          mov    ax, 0x1c4
+0x0000000000000427:  B8 C4 01          mov    ax, S_TROO_ATK1
 0x000000000000042a:  5B                pop    bx
 0x000000000000042b:  CB                ret   
-0x000000000000042c:  B8 F8 01          mov    ax, 0x1f8
+0x000000000000042c:  B8 F8 01          mov    ax, S_HEAD_ATK1
 0x000000000000042f:  5B                pop    bx
 0x0000000000000430:  CB                ret   
-0x0000000000000431:  B8 19 02          mov    ax, 0x219
+0x0000000000000431:  B8 19 02          mov    ax, S_BOSS_ATK1
 0x0000000000000434:  5B                pop    bx
 0x0000000000000435:  CB                ret   
-0x0000000000000436:  B8 36 02          mov    ax, 0x236
+0x0000000000000436:  B8 36 02          mov    ax, S_BOS2_ATK1
 0x0000000000000439:  5B                pop    bx
 0x000000000000043a:  CB                ret   
-0x000000000000043b:  B8 4D 02          mov    ax, 0x24d
+0x000000000000043b:  B8 4D 02          mov    ax, S_SKULL_ATK1
 0x000000000000043e:  5B                pop    bx
 0x000000000000043f:  CB                ret   
-0x0000000000000440:  B8 67 02          mov    ax, 0x267
+0x0000000000000440:  B8 67 02          mov    ax, S_SPID_ATK1
 0x0000000000000443:  5B                pop    bx
 0x0000000000000444:  CB                ret   
-0x0000000000000445:  B8 87 02          mov    ax, 0x287
+0x0000000000000445:  B8 87 02          mov    ax, S_BSPI_ATK1
 0x0000000000000448:  5B                pop    bx
 0x0000000000000449:  CB                ret   
-0x000000000000044a:  B8 AC 02          mov    ax, 0x2ac
+0x000000000000044a:  B8 AC 02          mov    ax, S_CYBER_ATK1
 0x000000000000044d:  5B                pop    bx
 0x000000000000044e:  CB                ret   
-0x000000000000044f:  B8 C4 02          mov    ax, 0x2c4
+0x000000000000044f:  B8 C4 02          mov    ax, S_PAIN_ATK1
 0x0000000000000452:  5B                pop    bx
 0x0000000000000453:  CB                ret   
-0x0000000000000454:  B8 E0 02          mov    ax, 0x2e0
+0x0000000000000454:  B8 E0 02          mov    ax, S_SSWV_ATK1
 0x0000000000000457:  5B                pop    bx
 0x0000000000000458:  CB                ret   
 missile_state_default:
@@ -848,98 +848,98 @@ PUBLIC  getDeathState_
 0x00000000000004af:  89 C3             mov    bx, ax
 0x00000000000004b1:  01 C3             add    bx, ax
 0x00000000000004b3:  2E FF A7 5E 04    jmp    word ptr cs:[bx + _death_state_lookup]
-0x00000000000004b8:  B8 9E 00          mov    ax, 0x9e
+0x00000000000004b8:  B8 9E 00          mov    ax, S_PLAY_DIE1
 0x00000000000004bb:  5B                pop    bx
 0x00000000000004bc:  CB                ret   
-0x00000000000004bd:  B8 BD 00          mov    ax, 0xbd
+0x00000000000004bd:  B8 BD 00          mov    ax, S_POSS_DIE1
 0x00000000000004c0:  5B                pop    bx
 0x00000000000004c1:  CB                ret   
-0x00000000000004c2:  B8 DE 00          mov    ax, 0xde
+0x00000000000004c2:  B8 DE 00          mov    ax, S_SPOS_DIE1
 0x00000000000004c5:  5B                pop    bx
 0x00000000000004c6:  CB                ret   
-0x00000000000004c7:  B8 0F 01          mov    ax, 0x10f
+0x00000000000004c7:  B8 0F 01          mov    ax, S_VILE_DIE1
 0x00000000000004ca:  5B                pop    bx
 0x00000000000004cb:  CB                ret   
-0x00000000000004cc:  B8 59 01          mov    ax, 0x159
+0x00000000000004cc:  B8 59 01          mov    ax, S_SKEL_DIE1
 0x00000000000004cf:  5B                pop    bx
 0x00000000000004d0:  CB                ret   
-0x00000000000004d1:  B8 3E 01          mov    ax, 0x13e
+0x00000000000004d1:  B8 3E 01          mov    ax, S_TRACEEXP1
 0x00000000000004d4:  5B                pop    bx
 0x00000000000004d5:  CB                ret   
-0x00000000000004d6:  B8 84 01          mov    ax, 0x184
+0x00000000000004d6:  B8 84 01          mov    ax, S_FATT_DIE1
 0x00000000000004d9:  5B                pop    bx
 0x00000000000004da:  CB                ret   
-0x00000000000004db:  B8 67 01          mov    ax, 0x167
+0x00000000000004db:  B8 67 01          mov    ax, S_FATSHOTX1
 0x00000000000004de:  5B                pop    bx
 0x00000000000004df:  CB                ret   
-0x00000000000004e0:  B8 A6 01          mov    ax, 0x1a6
+0x00000000000004e0:  B8 A6 01          mov    ax, S_CPOS_DIE1
 0x00000000000004e3:  5B                pop    bx
 0x00000000000004e4:  CB                ret   
-0x00000000000004e5:  B8 C9 01          mov    ax, 0x1c9
+0x00000000000004e5:  B8 C9 01          mov    ax, S_TROO_DIE1
 0x00000000000004e8:  5B                pop    bx
 0x00000000000004e9:  CB                ret   
-0x00000000000004ea:  B8 EA 01          mov    ax, 0x1ea
+0x00000000000004ea:  B8 EA 01          mov    ax, S_SARG_DIE1
 0x00000000000004ed:  5B                pop    bx
 0x00000000000004ee:  CB                ret   
-0x00000000000004ef:  B8 FE 01          mov    ax, 0x1fe
+0x00000000000004ef:  B8 FE 01          mov    ax, S_HEAD_DIE1
 0x00000000000004f2:  5B                pop    bx
 0x00000000000004f3:  CB                ret   
-0x00000000000004f4:  B8 1E 02          mov    ax, 0x21e
+0x00000000000004f4:  B8 1E 02          mov    ax, S_BOSS_DIE1
 0x00000000000004f7:  5B                pop    bx
 0x00000000000004f8:  CB                ret   
-0x00000000000004f9:  B8 0C 02          mov    ax, 0x20c
+0x00000000000004f9:  B8 0C 02          mov    ax, S_BRBALLX1
 0x00000000000004fc:  5B                pop    bx
 0x00000000000004fd:  CB                ret   
-0x00000000000004fe:  B8 3B 02          mov    ax, 0x23b
+0x00000000000004fe:  B8 3B 02          mov    ax, S_BOS2_DIE1
 0x0000000000000501:  5B                pop    bx
 0x0000000000000502:  CB                ret   
-0x0000000000000503:  B8 53 02          mov    ax, 0x253
+0x0000000000000503:  B8 53 02          mov    ax, S_SKULL_DIE1
 0x0000000000000506:  5B                pop    bx
 0x0000000000000507:  CB                ret   
-0x0000000000000508:  B8 6D 02          mov    ax, 0x26d
+0x0000000000000508:  B8 6D 02          mov    ax, S_SPID_DIE1
 0x000000000000050b:  5B                pop    bx
 0x000000000000050c:  CB                ret   
-0x000000000000050d:  B8 8D 02          mov    ax, 0x28d
+0x000000000000050d:  B8 8D 02          mov    ax, S_BSPI_DIE1
 0x0000000000000510:  5B                pop    bx
 0x0000000000000511:  CB                ret   
-0x0000000000000512:  B8 B3 02          mov    ax, 0x2b3
+0x0000000000000512:  B8 B3 02          mov    ax, S_CYBER_DIE1
 0x0000000000000515:  5B                pop    bx
 0x0000000000000516:  CB                ret   
 death_state_default:
 0x0000000000000517:  31 C0             xor    ax, ax
 0x0000000000000519:  5B                pop    bx
 0x000000000000051a:  CB                ret   
-0x000000000000051b:  B8 CA 02          mov    ax, 0x2ca
+0x000000000000051b:  B8 CA 02          mov    ax, S_PAIN_DIE1
 0x000000000000051e:  5B                pop    bx
 0x000000000000051f:  CB                ret   
-0x0000000000000520:  B8 E8 02          mov    ax, 0x2e8
+0x0000000000000520:  B8 E8 02          mov    ax, S_SSWV_DIE1
 0x0000000000000523:  5B                pop    bx
 0x0000000000000524:  CB                ret   
-0x0000000000000525:  B8 FC 02          mov    ax, 0x2fc
+0x0000000000000525:  B8 FC 02          mov    ax, S_COMMKEEN
 0x0000000000000528:  5B                pop    bx
 0x0000000000000529:  CB                ret   
-0x000000000000052a:  B8 0C 03          mov    ax, 0x30c
+0x000000000000052a:  B8 0C 03          mov    ax, S_BRAIN_DIE1
 0x000000000000052d:  5B                pop    bx
 0x000000000000052e:  CB                ret   
-0x000000000000052f:  B8 28 03          mov    ax, 0x328
+0x000000000000052f:  B8 28 03          mov    ax, S_BEXP
 0x0000000000000532:  5B                pop    bx
 0x0000000000000533:  CB                ret   
-0x0000000000000534:  B8 63 00          mov    ax, 0x63
+0x0000000000000534:  B8 63 00          mov    ax, S_TBALLX1
 0x0000000000000537:  5B                pop    bx
 0x0000000000000538:  CB                ret   
-0x0000000000000539:  B8 68 00          mov    ax, 0x68
+0x0000000000000539:  B8 68 00          mov    ax, S_RBALLX1
 0x000000000000053c:  5B                pop    bx
 0x000000000000053d:  CB                ret   
-0x000000000000053e:  B8 7F 00          mov    ax, 0x7f
+0x000000000000053e:  B8 7F 00          mov    ax, S_EXPLODE1
 0x0000000000000541:  5B                pop    bx
 0x0000000000000542:  CB                ret   
-0x0000000000000543:  B8 6D 00          mov    ax, 0x6d
+0x0000000000000543:  B8 6D 00          mov    ax, S_PLASEXP
 0x0000000000000546:  5B                pop    bx
 0x0000000000000547:  CB                ret   
-0x0000000000000548:  B8 75 00          mov    ax, 0x75
+0x0000000000000548:  B8 75 00          mov    ax, S_BFGLAND
 0x000000000000054b:  5B                pop    bx
 0x000000000000054c:  CB                ret   
-0x000000000000054d:  B8 9D 02          mov    ax, 0x29d
+0x000000000000054d:  B8 9D 02          mov    ax, S_ARACH_PLEX
 0x0000000000000550:  5B                pop    bx
 0x0000000000000551:  CB                ret   
 
@@ -985,68 +985,68 @@ PUBLIC  getPainState_
 0x000000000000058d:  89 C3             mov    bx, ax
 0x000000000000058f:  01 C3             add    bx, ax
 0x0000000000000591:  2E FF A7 52 05    jmp    word ptr cs:[bx + _pain_state_lookup]
-0x0000000000000596:  B8 9C 00          mov    ax, 0x9c
+0x0000000000000596:  B8 9C 00          mov    ax, S_PLAY_PAIN
 0x0000000000000599:  5B                pop    bx
 0x000000000000059a:  CB                ret   
-0x000000000000059b:  B8 BB 00          mov    ax, 0xbb
+0x000000000000059b:  B8 BB 00          mov    ax, S_POSS_PAIN
 0x000000000000059e:  5B                pop    bx
 0x000000000000059f:  CB                ret   
-0x00000000000005a0:  B8 DC 00          mov    ax, 0xdc
+0x00000000000005a0:  B8 DC 00          mov    ax, S_SPOS_PAIN
 0x00000000000005a3:  5B                pop    bx
 0x00000000000005a4:  CB                ret   
-0x00000000000005a5:  B8 0D 01          mov    ax, 0x10d
+0x00000000000005a5:  B8 0D 01          mov    ax, S_VILE_PAIN
 0x00000000000005a8:  5B                pop    bx
 0x00000000000005a9:  CB                ret   
-0x00000000000005aa:  B8 57 01          mov    ax, 0x157
+0x00000000000005aa:  B8 57 01          mov    ax, S_SKEL_PAIN
 0x00000000000005ad:  5B                pop    bx
 0x00000000000005ae:  CB                ret   
-0x00000000000005af:  B8 82 01          mov    ax, 0x182
+0x00000000000005af:  B8 82 01          mov    ax, S_FATT_PAIN
 0x00000000000005b2:  5B                pop    bx
 0x00000000000005b3:  CB                ret   
-0x00000000000005b4:  B8 A4 01          mov    ax, 0x1a4
+0x00000000000005b4:  B8 A4 01          mov    ax, S_CPOS_PAIN
 0x00000000000005b7:  5B                pop    bx
 0x00000000000005b8:  CB                ret   
-0x00000000000005b9:  B8 C7 01          mov    ax, 0x1c7
+0x00000000000005b9:  B8 C7 01          mov    ax, S_TROO_PAIN
 0x00000000000005bc:  5B                pop    bx
 0x00000000000005bd:  CB                ret   
-0x00000000000005be:  B8 E8 01          mov    ax, 0x1e8
+0x00000000000005be:  B8 E8 01          mov    ax, S_SARG_PAIN
 0x00000000000005c1:  5B                pop    bx
 0x00000000000005c2:  CB                ret   
-0x00000000000005c3:  B8 FB 01          mov    ax, 0x1fb
+0x00000000000005c3:  B8 FB 01          mov    ax, S_HEAD_PAIN
 0x00000000000005c6:  5B                pop    bx
 0x00000000000005c7:  CB                ret   
-0x00000000000005c8:  B8 1C 02          mov    ax, 0x21c
+0x00000000000005c8:  B8 1C 02          mov    ax, S_BOSS_PAIN
 0x00000000000005cb:  5B                pop    bx
 0x00000000000005cc:  CB                ret   
-0x00000000000005cd:  B8 39 02          mov    ax, 0x239
+0x00000000000005cd:  B8 39 02          mov    ax, S_BOS2_PAIN
 0x00000000000005d0:  5B                pop    bx
 0x00000000000005d1:  CB                ret   
-0x00000000000005d2:  B8 51 02          mov    ax, 0x251
+0x00000000000005d2:  B8 51 02          mov    ax, S_SKULL_PAIN
 0x00000000000005d5:  5B                pop    bx
 0x00000000000005d6:  CB                ret   
-0x00000000000005d7:  B8 6B 02          mov    ax, 0x26b
+0x00000000000005d7:  B8 6B 02          mov    ax, S_SPID_PAIN
 0x00000000000005da:  5B                pop    bx
 0x00000000000005db:  CB                ret   
-0x00000000000005dc:  B8 8B 02          mov    ax, 0x28b
+0x00000000000005dc:  B8 8B 02          mov    ax, S_BSPI_PAIN
 0x00000000000005df:  5B                pop    bx
 0x00000000000005e0:  CB                ret   
-0x00000000000005e1:  B8 B2 02          mov    ax, 0x2b2
+0x00000000000005e1:  B8 B2 02          mov    ax, S_CYBER_PAIN
 0x00000000000005e4:  5B                pop    bx
 0x00000000000005e5:  CB                ret   
-0x00000000000005e6:  B8 C8 02          mov    ax, 0x2c8
+0x00000000000005e6:  B8 C8 02          mov    ax, S_PAIN_PAIN
 0x00000000000005e9:  5B                pop    bx
 0x00000000000005ea:  CB                ret   
-0x00000000000005eb:  B8 E6 02          mov    ax, 0x2e6
+0x00000000000005eb:  B8 E6 02          mov    ax, S_SSWV_PAIN
 0x00000000000005ee:  5B                pop    bx
 0x00000000000005ef:  CB                ret   
-0x00000000000005f0:  B8 08 03          mov    ax, 0x308
+0x00000000000005f0:  B8 08 03          mov    ax, S_KEENPAIN
 0x00000000000005f3:  5B                pop    bx
 0x00000000000005f4:  CB                ret   
 pain_state_default:
 0x00000000000005f5:  31 C0             xor    ax, ax
 0x00000000000005f7:  5B                pop    bx
 0x00000000000005f8:  CB                ret   
-0x00000000000005f9:  B8 0B 03          mov    ax, 0x30b
+0x00000000000005f9:  B8 0B 03          mov    ax, S_BRAIN_PAIN
 0x00000000000005fc:  5B                pop    bx
 0x00000000000005fd:  CB                ret  
 
