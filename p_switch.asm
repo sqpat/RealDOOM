@@ -265,9 +265,10 @@ dw special_line_type_32, special_line_type_47, special_line_type_48, special_lin
 
 
 
+; return in carry 
+
 PROC    P_UseSpecialLine_ FAR
 PUBLIC  P_UseSpecialLine_
-
 ;boolean __far P_UseSpecialLine ( mobj_t __near*	thing, int16_t linenum,int16_t		side,THINKERREF thingRef){               
 ; args:
 ; ax thing
@@ -315,10 +316,10 @@ cmp   al, 34
 jbe   finished_with_player_check
 monster_secret_return_false:
 bad_monster_special_return_false:
-xor   ax, ax
+clc
 jmp   exit_usespecialline
 side_1_return_false:
-xor   ax, ax
+clc
 retf
 
 finished_with_player_check:
@@ -422,8 +423,8 @@ special_line_type_3:
 call  EV_DoDonut_
 
 check_change_switch_texture_0:
-test  ax, ax
-je    do_specialline_exit_1
+;test  ax, ax
+jnc    do_specialline_exit_1
 do_change_switch_texture_0:
 pop   dx   ; bp - 4
 xchg  ax, di
@@ -473,7 +474,7 @@ jmp   check_change_switch_texture_0
 
 special_line_case_default:
 do_specialline_exit_1:
-mov   al, 1
+stc
 exit_usespecialline:
 LEAVE_MACRO 
 pop   di
@@ -553,8 +554,8 @@ mov   dl, DOOR_CLOSE
 do_door_1:
 call  EV_DoDoor_
 check_change_switch_texture_1:
-test  ax, ax
-je    do_specialline_exit_1
+;test  ax, ax
+jnc   do_specialline_exit_1
 do_change_switch_texture_1:
 pop   dx   ; bp - 4
 xchg  ax, di

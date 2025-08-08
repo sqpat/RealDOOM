@@ -164,6 +164,8 @@ ENDP
 
 jump_to_exit:
 jmp         return_rtn_and_exit
+
+; return in carry
 PROC    EV_DoPlat_ NEAR
 PUBLIC  EV_DoPlat_ 
 
@@ -188,7 +190,7 @@ SHIFT_MACRO shl         cx SHORTFLOORBITS
 mov         word ptr cs:[OFFSET SELFMODIFY_set_amount + 1], cx
 xor         ax, ax
 
-mov         byte ptr cs:[SELFMODIFY_ev_doplatset_rtn+1], al
+mov         byte ptr cs:[SELFMODIFY_ev_doplatset_rtn], CLC_OPCODE
 test        bl, bl  ; perpetualRaise
 jne         not_perpetualRaise
 mov         al, bh  ; linetag
@@ -226,7 +228,7 @@ div         di
 mov         es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 mov         di, word ptr es:[si + SECTOR_T.sec_floorheight]
 
-mov         byte ptr cs:[SELFMODIFY_ev_doplatset_rtn+1], 1
+mov         byte ptr cs:[SELFMODIFY_ev_doplatset_rtn], STC_OPCODE
 
 
 mov         word ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
@@ -354,7 +356,7 @@ jl          return_rtn_and_exit
 jmp         loop_next_secnum_doplat
 return_rtn_and_exit:
 SELFMODIFY_ev_doplatset_rtn:
-mov         al, 010h
+clc
 LEAVE_MACRO       
 pop         di
 pop         si

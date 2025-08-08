@@ -354,6 +354,7 @@ dw do_floor_switch_case_type_raiseFloor512
 
 PROC    EV_DoFloor_ FAR
 PUBLIC  EV_DoFloor_
+; return in carry
 
 ;int16_t __far EV_DoFloor ( uint8_t linetag,int16_t linefrontsecnum,floor_e	floortype ){
 
@@ -372,7 +373,7 @@ mov   bp, sp
 mov   word ptr cs:[SELFMODIFY_set_frontsector+1], dx
 
 xor   bh, bh
-mov   byte ptr cs:[SELFMODIFY_set_dofloor_return + 1], bh ; zero
+mov   byte ptr cs:[SELFMODIFY_set_dofloor_return], CLC_OPCODE
 mov   word ptr cs:[SELFMODIFY_set_dofloor_type + 1], bx
 lea   dx, [bp - 0202h]
 sub   sp, 0200h
@@ -411,7 +412,7 @@ mov   di, SECTORS_SEGMENT
 mov   es, di
 
 mov   di, cx
-mov   byte ptr cs:[SELFMODIFY_set_dofloor_return+1], 1
+mov   byte ptr cs:[SELFMODIFY_set_dofloor_return], STC_OPCODE
 ; ax is floor ref
 SHIFT_MACRO shl  di 4  
 mov   word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax ;floor ref
@@ -482,7 +483,7 @@ jnl   loop_next_secnum_dofloor
 exit_ev_dofloor_and_return_rtn:
 no_sectors_in_list_exit:
 SELFMODIFY_set_dofloor_return:
-mov   al, 010h
+clc
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -755,6 +756,7 @@ ENDP
 
 
 ; i think space could be saved in this func with less selfmodify and more stack frames
+; return in carry
 
 PROC    EV_BuildStairs_ NEAR
 PUBLIC  EV_BuildStairs_
@@ -762,10 +764,7 @@ PUBLIC  EV_BuildStairs_
 ;int16_t __near EV_BuildStairs ( uint8_t	linetag,stair_e	type ) {
 
 
-push  bx
-push  cx
-push  si
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
 sub   sp, 0210h
@@ -781,7 +780,7 @@ do_type_selfmodify:
 
 mov   word ptr cs:[SELFMODIFY_check_stairtype], dx
 
-mov   byte ptr cs:[SELFMODIFY_set_buildstairs_return+1], 0
+mov   byte ptr cs:[SELFMODIFY_set_buildstairs_return], CLC_OPCODE
 
 
 lea   dx, [bp - 0200h]
@@ -830,7 +829,7 @@ mov   word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef]
 mov   ax, 1 ; zero ah
 cwd   ; zero dx
 mov   byte ptr ds:[si + FLOORMOVE_T.floormove_direction], al ; 1
-mov   byte ptr cs:[SELFMODIFY_set_buildstairs_return+1], al ; 1
+mov   byte ptr cs:[SELFMODIFY_set_buildstairs_return], STC_OPCODE
 mov   word ptr ds:[si + FLOORMOVE_T.floormove_secnum], cx
 
 
@@ -1030,13 +1029,10 @@ jmp   loop_next_secnum_buildstairs
 exit_ev_buildstairs:
 
 SELFMODIFY_set_buildstairs_return:
-mov   al, 010h
+clc
 
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 ret   
 
 ENDP

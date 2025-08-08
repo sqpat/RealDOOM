@@ -62,7 +62,7 @@ _ammo_jump_table:
 
 dw OFFSET give_ammo_case_0, OFFSET give_ammo_case_1, OFFSET give_ammo_case_2, OFFSET give_ammo_case_3
 
-
+; return in carry
 PROC    P_GiveAmmo_  NEAR
 PUBLIC  P_GiveAmmo_
 
@@ -124,7 +124,7 @@ mov    al, byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 jmp    word ptr cs:[bx + OFFSET _ammo_jump_table]
 
 exit_giveammo_ret_0:
-xor    ax, ax
+clc
 pop    bx
 ret    
 
@@ -136,8 +136,7 @@ cmp    byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_CHAINGUN], 0
 je     switch_to_pistol
 mov    byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_CHAINGUN
 exit_giveammo_ret_1:
-mov    al, 1
-exit_giveammo:
+stc
 pop    bx
 ret    
 
@@ -162,7 +161,7 @@ check_for_switch_to_shotgun:
 cmp    byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_SHOTGUN], 0
 je     exit_giveammo_ret_1
 mov    byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_SHOTGUN
-mov    al, 1
+stc
 pop    bx
 ret    
 give_ammo_case_2:
@@ -175,7 +174,7 @@ check_for_switch_to_plasma:
 cmp    byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_PLASMA], 0
 je     exit_giveammo_ret_1
 mov    byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_PLASMA
-mov    al, 1
+stc
 pop    bx
 ret    
 give_ammo_case_3:
@@ -186,12 +185,13 @@ cmp    byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_MISSILE], 0
 je     exit_giveammo_ret_1
 
 mov    byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_MISSILE
-mov    al, 1
+stc
 pop    bx
 ret    
 
 ENDP
 
+; return in carry
 
 PROC    P_GiveWeapon_ NEAR
 PUBLIC  P_GiveWeapon_
@@ -214,7 +214,7 @@ xchg   ax, bx  ; bx has weapontype.
 no_ammo_actually_given:
 cmp    byte ptr ds:[bx + _player + PLAYER_T.player_weaponowned], 0
 je     add_weapon
-xor    ax, ax
+clc
 pop    bx
 ret    
 
@@ -230,10 +230,7 @@ mov    dl, 2
 weapon_is_drop:   ; dl should have been 1.
 call_giveammo:
 call   P_GiveAmmo_
-; al = given ammo
-
-test   al, al
-jz     no_ammo_actually_given
+jnc    no_ammo_actually_given
 
 dont_give_ammo:
 ; bx has weapontype.
@@ -245,13 +242,14 @@ mov    byte ptr ds:[bx + _player + PLAYER_T.player_weaponowned], 1
 mov    byte ptr ds:[_player + PLAYER_T.player_pendingweapon], bl
 
 dont_add_weapon:
-mov    al, 1
+stc
 pop    bx
 ret    
 
 ENDP
 
 
+; return in carry
 
 PROC    P_GiveBody_  NEAR
 PUBLIC  P_GiveBody_
@@ -269,16 +267,17 @@ mov    word ptr ds:[bx], ax
 
 mov    bx, word ptr ds:[_playerMobj]
 mov    word ptr ds:[bx + MOBJ_T.m_health], ax
-mov    al, 1
+stc
 pop    bx
 ret    
 exit_pgivebody_return_0:
-xor    al, al
+clc
 pop    bx
 ret    
 ENDP
 
 
+; return in carry
 
 PROC    P_GiveArmor_  NEAR
 PUBLIC  P_GiveArmor_
@@ -291,14 +290,14 @@ sal    dx, 1 ; dx is 200
 dont_give_l2_armor:
 cmp    dx, word ptr ds:[_player + PLAYER_T.player_armorpoints]
 jg     do_give_armor
-xor    ax, ax
+clc
 pop    dx
 ret    
 
 do_give_armor:
 mov    byte ptr ds:[_player + PLAYER_T.player_armortype], al
 mov    word ptr ds:[_player + PLAYER_T.player_armorpoints], dx
-mov    al, 1
+stc
 pop    dx
 ret    
 ENDP
@@ -326,7 +325,7 @@ ENDP
 
 
 
-
+; return in carry
 PROC    P_GivePower_  FAR
 PUBLIC  P_GivePower_
 
@@ -349,7 +348,7 @@ ja     give_infrared       ; 5
 give_generic_power:
 cmp    word ptr ds:[bx + _player + PLAYER_T.player_powers], 0
 je     set_power_on_and_return
-xor    ax, ax
+clc
 pop    bx
 ret   
 
@@ -363,7 +362,7 @@ mov    ax, INVISTICS
 
 finish_giving_power:
 mov    word ptr ds:[bx + _player + PLAYER_T.player_powers], ax
-mov    al, 1
+stc
 pop    bx
 ret
 
@@ -375,7 +374,7 @@ give_berserk:
 mov    ax, MAXHEALTH
 call   P_GiveBody_
 set_power_on_and_return:
-mov    ax, 1
+stc
 mov    word ptr ds:[bx + _player + PLAYER_T.player_powers], ax
 pop    bx
 ret
@@ -523,8 +522,8 @@ mov    word ptr ds:[di], GOTARMOR
 mov    ax, 1
 do_givearmor_touchspecial:
 call   P_GiveArmor_
-test   al, al
-je     exit_ptouchspecialthing
+
+jnc    exit_ptouchspecialthing
 
 
 touchspecial_case_default:
@@ -592,8 +591,7 @@ mov    word ptr ds:[di], bx
 
 
 call   P_GiveWeapon_
-test   al, al
-je     exit_ptouchspecialthing
+jnc    exit_ptouchspecialthing
 
 mov    cx, SFX_WPNUP
 jmp    done_with_touchspecial_switch_block
@@ -619,8 +617,8 @@ mov    ax, 10
 mov    word ptr ds:[di], GOTSTIM
 do_givebody:
 call   P_GiveBody_
-test   al, al
-jne    done_with_touchspecial_switch_block
+
+jc     done_with_touchspecial_switch_block
 exitptouchspecialthing_2:
 ;pop    di
 retf
@@ -653,8 +651,7 @@ sub    ax, GOTINVUL    ; set ax parameter to correct powerup.
 
 
 call   P_GivePower_
-test   al, al
-je     exit_ptouchspecialthing
+jnc    exit_ptouchspecialthing
 
 mov    cx, SFX_GETPOW
 jmp    done_with_touchspecial_switch_block
@@ -742,8 +739,8 @@ add    bx, (GOTCLIP - SPR_CLIP + SPR_ARM1)
 mov    word ptr ds:[di], bx
 mov    dl ,ah
 call   P_GiveAmmo_
-test   al, al
-je     exitptouchspecialthing_2
+
+jnc     exitptouchspecialthing_2
 
 jmp    done_with_touchspecial_switch_block
 

@@ -262,7 +262,7 @@ dw OFFSET switch_block_ev_dodoor_case_doorblazeclose         - OFFSET SELFMODIFY
 
 ;int16_t __near EV_DoLockedDoor ( uint8_t linetag, int16_t linespecial, vldoor_e	type, THINKERREF thingRef ) {
 
-
+; return in carry
 PROC    EV_DoLockedDoor_ NEAR
 PUBLIC  EV_DoLockedDoor_
 
@@ -298,7 +298,7 @@ play_sound_and_exit_lockedoor:
 
 call  S_StartSound_
 exit_non_player_locked_door:
-xor   ax, ax
+clc
 ret
 
 
@@ -325,6 +325,7 @@ xchg  ax, cx  ; linetag restored
 
 ENDP
 
+; return in carry
 
 PROC    EV_DoDoor_ FAR
 PUBLIC  EV_DoDoor_
@@ -343,7 +344,7 @@ mov   si, dx
 push  word ptr cs:[_jump_table_do_door+si]
 pop   word ptr cs:[SELFMODIFY_evdoordoor_do_jmp+1]
 
-mov   byte ptr cs:[SELFMODIFY_evdoordoor_rtn+1], 0
+mov   byte ptr cs:[SELFMODIFY_evdoordoor_rtn], CLC_OPCODE
 lea   dx, [bp - 0200h]
 mov   si, dx
 
@@ -355,7 +356,7 @@ lodsw  ;get first secnum
 test  ax, ax
 js    exit_evdoodoor_return_rtn
 
-mov   byte ptr cs:[SELFMODIFY_evdoordoor_rtn+1], 1  ; only need to do once
+mov   byte ptr cs:[SELFMODIFY_evdoordoor_rtn], STC_OPCODE
 
 loop_next_secnum_evdodoor:
 
@@ -428,7 +429,7 @@ exit_evdoodoor_return_rtn:
 LEAVE_MACRO 
 POPA_NO_AX_OR_BP_MACRO
 SELFMODIFY_evdoordoor_rtn:
-mov   al, 010h
+clc
 retf  
 
 switch_block_ev_dodoor_case_doorclose:

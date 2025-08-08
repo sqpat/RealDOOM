@@ -1391,15 +1391,15 @@ exit_evdodonut_return_0:
 LEAVE_MACRO     
 POPA_NO_AX_OR_BP_MACRO
 
-xor       ax, ax
+clc
 ret       
 exit_evdodonut_return_1:
 LEAVE_MACRO     
 POPA_NO_AX_OR_BP_MACRO
-mov       ax, 1
+stc
 ret    
 
-
+; return in carry
 PROC    EV_DoDonut_  NEAR
 PUBLIC  EV_DoDonut_
 

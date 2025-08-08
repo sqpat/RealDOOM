@@ -216,7 +216,7 @@ jmp   exit_t_moveceiling
 ENDP
 
 
-; todo change to carry return
+; return in carry
 PROC    EV_DoCeiling_ NEAR
 PUBLIC  EV_DoCeiling_
 
@@ -226,17 +226,14 @@ PUBLIC  EV_DoCeiling_
 ; bp - 2 type
 ; bp - 0202h  ; secnumlist
 
-push  bx
-push  cx
-push  si
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
 push  dx  ; bp - 2
 sub   sp, 0200h
 xchg  ax, bx ; bx gets linetag
 xor   ax, ax
-mov   word ptr cs:[OFFSET SELFMODIFY_doceiling_return+1], ax
+mov   byte ptr cs:[OFFSET SELFMODIFY_doceiling_return], CLC_OPCODE
 
 
 cmp   dl, CEILING_CRUSHANDRAISE
@@ -290,7 +287,7 @@ xchg  ax, dx ; dx stores ceilingref
 xor   ax, ax
 mov   byte ptr ds:[bx + CEILING_T.ceiling_crush], al
 inc   ax
-mov   word ptr cs:[OFFSET SELFMODIFY_doceiling_return + 1], ax ; 1
+mov   byte ptr cs:[OFFSET SELFMODIFY_doceiling_return], STC_OPCODE
 
 
 mov   word ptr ds:[bx + CEILING_T.ceiling_secnum], cx
@@ -346,12 +343,9 @@ jnl   loop_next_secnum
 
 exit_doceiling:
 SELFMODIFY_doceiling_return:
-mov   ax, 01000h
+clc
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 ret   
 
 switch_doceiling_type_4:
@@ -502,18 +496,16 @@ ret
 ENDP
 
 
+; return in carry
 PROC    EV_CeilingCrushStop_ NEAR
 PUBLIC  EV_CeilingCrushStop_
 
 
-push  bx
-push  cx
-push  dx
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
 
 mov   ch, al ; ch gets tag
-xor   di, di ; di is retn
 xor   cl, cl ; cl is loop counter
+mov   byte ptr cs:[OFFSET SELFMODIFY_ceilingcrush_return], CLC_OPCODE
 
 
 
@@ -538,7 +530,8 @@ je    continue_ceiling_crush_stop_loop
 mov   byte ptr ds:[bx + CEILING_T.ceiling_olddirection], al
 xchg  ax, dx  ; recover _activeceilings into ax
 cwd   ; dx gets 0  (TF_NULL)
-mov   di, 1
+mov   byte ptr cs:[OFFSET SELFMODIFY_ceilingcrush_return], STC_OPCODE
+
 call  P_UpdateThinkerFunc_
 mov   byte ptr ds:[bx + CEILING_T.ceiling_direction], 0
 continue_ceiling_crush_stop_loop:
@@ -546,12 +539,11 @@ inc   cx
 inc   cx
 cmp   cl, (MAXCEILINGS * 2)
 jl    loop_next_ceiling_crush_stop
-xchg  ax, di
 
-pop   di
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
+SELFMODIFY_ceilingcrush_return:
+clc
+
 ret   
 
 ENDP

@@ -691,8 +691,7 @@ xor   bx, bx
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _P_UseSpecialLine_addr
-test  al, al
-je    do_next_spechit
+jnc   do_next_spechit
 mov   word ptr [bp - 2], 1
 jmp   do_next_spechit
 end_spechit_loop:
