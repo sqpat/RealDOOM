@@ -748,9 +748,9 @@ PUBLIC P_SpawnMobj_
 
 ;THINKERREF __far P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t knownsecnum ) {
 
-; bp + 0E knownsecnum
-; bp + 0C   type
-; bp + 0A   z hi
+; bp + 0Eh knownsecnum
+; bp + 0Ch   type
+; bp + 0Ah   z hi
 ; bp + 8   z lo
 
 
@@ -764,7 +764,8 @@ push      si
 push      di
 push      bp
 mov       bp, sp
-sub       sp, 2    ; need stack frame due to stack params. sad
+sub       sp, 2
+  ; need stack frame due to stack params. sad
 
 push      ax
 push      dx
@@ -961,7 +962,7 @@ ENDP
 
 
 
-PROC P_RemoveMobj_ FAR
+PROC P_RemoveMobj_ NEAR
 PUBLIC P_RemoveMobj_
 
 
@@ -1005,7 +1006,7 @@ call      P_RemoveThinker_
 
 pop       dx
 pop       cx
-retf      
+ret      
 ENDP
 
 
@@ -2906,8 +2907,13 @@ ret
 ENDP
 
 
+PROC P_RemoveMobjFar_ FAR
+PUBLIC P_RemoveMobjFar_
 
+call  P_RemoveMobj_
+retf
 
+ENDP
 
 
 PROC    P_MOBJ_ENDMARKER_ 

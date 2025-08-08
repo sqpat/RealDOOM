@@ -5372,7 +5372,6 @@ push  cs
 call  P_TeleportMove_
 
 xchg   ax, si
-push   cs
 call   P_RemoveMobj_
 
 ret   
@@ -5570,7 +5569,6 @@ mov       word ptr es:[bx + MOBJ_POS_T.mp_stateNum], 0
 
 xor       dx, dx
 
-push      cs
 call      P_RemoveMobj_
 
 

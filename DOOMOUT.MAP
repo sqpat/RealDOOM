@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/08 03:20:01
+Created on:       25/08/08 03:28:41
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -644,14 +644,14 @@ Module: main.obj(main.ASM)
 02e8:6586*     G_SetGameKeyDown_
 02e8:65a0      G_GetGameKey_
 02e8:6f41      I_SetPalette_
+02e8:6f92*     I_UpdateBox_
 02e8:6593*     G_SetGameKeyUp_
 02e8:6b8c      M_LoadDefaults_
-02e8:6f92*     I_UpdateBox_
 02e8:6274      I_KeyboardISR_
 02e8:6d34      M_ScanTranslateDefaults_
 02e8:6575      G_ResetGameKeys_
-02e8:68ec*     CopyString13_
 02e8:65ac      G_BuildTiccmd_
+02e8:68ec*     CopyString13_
 02e8:61b7      cht_CheckCheat_
 02e8:6219      cht_GetParam_
 02e8:6d69      M_SaveDefaults_
@@ -1089,4 +1089,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  00013b40 (80704.)
 Entry point address: 0bc2:39e6
-Link time: 00:00.19
+Link time: 00:00.64

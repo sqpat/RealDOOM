@@ -537,7 +537,6 @@ dont_increment_itemcount:
 SELFMODIFY_touchspecial_removemobj_ptr:
 mov    ax, 01000h
 
-push   cs
 call   P_RemoveMobj_
 
 mov    dx, cx

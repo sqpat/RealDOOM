@@ -59,20 +59,11 @@
 #define P_ArchiveSpecialsOffset                 0x9EE
 #define LoadSFXWadLumpsOffset                   0x3
 #define S_ActuallyChangeMusicOffset             0x404
-#define P_CheckSightOffset                      0x0
-#define P_SetThingPositionFarOffset             0x2983
-#define R_PointInSubsectorOffset                0xB34
-#define P_CheckPositionOffset                   0x17C9
-#define P_UseLinesOffset                        0x25BB
-#define P_ChangeSectorOffset                    0x28BC
-#define P_ExplodeMissileOffset                  0x341E
-#define P_SpawnPlayerMissileOffset              0x37DC
-#define P_MovePspritesOffset                    0x405F
-#define P_RemoveMobjOffset                      0x2E70
-#define P_SpawnMapThingOffset                   0x2B0F
-#define P_TickerOffset                          0x8404
-#define P_SpawnSpecialsOffset                   0x7D75
-#define P_GivePowerOffset                       0x67E4
+#define P_SetThingPositionFarOffset             0x2982
+#define P_SpawnMapThingOffset                   0x2B0D
+#define P_TickerOffset                          0x8402
+#define P_SpawnSpecialsOffset                   0x7D73
+#define P_GivePowerOffset                       0x67E2
 
 #define R_DrawColumn24CodeSize         0xE46
 #define R_DrawColumn16CodeSize         0xCB4
@@ -97,7 +88,7 @@
 #define R_BSP0CodeSize                 0x36C4
 #define R_BSPFLCodeSize                0x3666
 #define WI_StuffCodeSize               0x1011
-#define PSightCodeSize                 0x8C8F
+#define PSightCodeSize                 0x8C8D
 #define WipeCodeSize                   0x4B6
 #define FinaleCodeSize                 0xBCB
 #define SaveLoadCodeSize               0xB35

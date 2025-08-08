@@ -471,7 +471,7 @@ call_removemobj:
 mov       ax, di
 ;call      P_RemoveMobj_
 db    09Ah
-dw    P_REMOVEMOBJOFFSET, PHYSICS_HIGHCODE_SEGMENT
+dw    P_REMOVEMOBJFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 
 check_next_thinker_to_zero:

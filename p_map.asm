@@ -7820,7 +7820,7 @@ mov   byte ptr ds:[si + 01Eh], al
 jmp   exit_changesector_return_1
 crunch_items:
 mov   ax, dx
-push  cs
+
 call  P_RemoveMobj_
 
 
