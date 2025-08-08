@@ -143,12 +143,13 @@ PUBLIC  getRaiseState_
 
 
 push   bx
-cmp    al, MT_WOLFSS
+dec    ax
+cmp    al, (MT_WOLFSS - 1)
 mov    bx, ax
 mov    ax, 0
 ja     raise_state_default
 sal    bx, 1
-mov    ax word ptr cs:[bx + _raise_state_lookup - 2] ; 0 not counted..
+mov    ax word ptr cs:[bx + _raise_state_lookup] ; 0 not counted..
 raise_state_default:
 pop    bx
 ret   
@@ -162,34 +163,34 @@ PROC    getXDeathState_ NEAR
 PUBLIC  getXDeathState_
 
 
-0x000000000000010a:  3C 02             cmp    al, 2
-0x000000000000010c:  73 0C             jae    label_1
-0x000000000000010e:  3C 01             cmp    al, 1
-0x0000000000000110:  74 1A             je     label_2
+0x000000000000010a:  3C 02             cmp    al, MT_SHOTGUY
+0x000000000000010c:  73 0C             jae    xd_ae_2
+0x000000000000010e:  3C 01             cmp    al, MT_POSSESSED
+0x0000000000000110:  74 1A             je     xd_possessed
 0x0000000000000112:  84 C0             test   al, al
 0x0000000000000114:  75 26             jne    xdeath_state_default
 0x0000000000000116:  B8 A5 00          mov    ax, S_PLAY_XDIE1
 0x0000000000000119:  CB                ret   
-label_1:
-0x000000000000011a:  76 14             jbe    label_3
-0x000000000000011c:  3C 17             cmp    al, 23
-0x000000000000011e:  74 18             je     label_4
-0x0000000000000120:  3C 0B             cmp    al, 11
-0x0000000000000122:  74 10             je     label_5
-0x0000000000000124:  3C 0A             cmp    al, 10
+xd_ae_2:
+0x000000000000011a:  76 14             jbe    xd_shotguy
+0x000000000000011c:  3C 17             cmp    al, MT_WOLFSS
+0x000000000000011e:  74 18             je     xd_wolfss
+0x0000000000000120:  3C 0B             cmp    al, MT_TROOP
+0x0000000000000122:  74 10             je     xd_chainguy
+0x0000000000000124:  3C 0A             cmp    al, MT_CHAINGUY
 0x0000000000000126:  75 14             jne    xdeath_state_default
 0x0000000000000128:  B8 AD 01          mov    ax, S_CPOS_XDIE1
 0x000000000000012b:  CB                ret   
-label_2:
+xd_possessed:
 0x000000000000012c:  B8 C2 00          mov    ax, S_POSS_XDIE1
 0x000000000000012f:  CB                ret   
-label_3:
+xd_shotguy:
 0x0000000000000130:  B8 E3 00          mov    ax, S_SPOS_XDIE1
 0x0000000000000133:  CB                ret   
-label_5:
+xd_chainguy:
 0x0000000000000134:  B8 CE 01          mov    ax, S_TROO_XDIE1
 0x0000000000000137:  CB                ret   
-label_4:
+xd_wolfss:
 0x0000000000000138:  B8 ED 02          mov    ax, S_SSWV_XDIE1
 0x000000000000013b:  CB                ret   
 xdeath_state_default:
@@ -198,117 +199,96 @@ xdeath_state_default:
 
 ENDP
 
-_melee_state_lookup:
-
-dw 0016Ch
-dw 00185h
-dw 00185h
-dw 00185h
-dw 00185h
-dw 00185h
-dw 00171h
-dw 00176h
-dw 00176h
-dw 00185h
-dw 0017Bh
-dw 00185h
-dw 00180h
 
 
 PROC    getMeleeState_ NEAR 
 PUBLIC  getMeleeState_
 
 
-0x000000000000015a:  53                push   bx
-0x000000000000015b:  2C 05             sub    al, 5
-0x000000000000015d:  3C 0C             cmp    al, 12
-0x000000000000015f:  77 24             ja     melee_state_default
-0x0000000000000161:  30 E4             xor    ah, ah
-0x0000000000000163:  89 C3             mov    bx, ax
-0x0000000000000165:  01 C3             add    bx, ax
-0x0000000000000167:  2E FF A7 40 01    jmp    word ptr cs:[bx + _melee_state_lookup]
-0x000000000000016c:  B8 4F 01          mov    ax, S_SKEL_FIST1
-0x000000000000016f:  5B                pop    bx
-0x0000000000000170:  CB                ret   
-0x0000000000000171:  B8 C4 01          mov    ax, S_TROO_ATK1
-0x0000000000000174:  5B                pop    bx
-0x0000000000000175:  CB                ret   
-0x0000000000000176:  B8 E5 01          mov    ax, S_SARG_ATK1
-0x0000000000000179:  5B                pop    bx
-0x000000000000017a:  CB                ret   
-0x000000000000017b:  B8 19 02          mov    ax, S_BOSS_ATK1
-0x000000000000017e:  5B                pop    bx
-0x000000000000017f:  CB                ret   
-0x0000000000000180:  B8 36 02          mov    ax, S_BOS2_ATK1
-0x0000000000000183:  5B                pop    bx
-0x0000000000000184:  CB                ret   
+cmp    al, MT_KNIGHT
+;ja    melee_state_default
+je    melee_state_hellknight
+cmp   al, MT_BRUISER
+je    melee_state_baron
+cmp   al, MT_UNDEAD
+je    melee_state_revenant
+cmp   al, MT_TROOP
+jb    melee_state_default
+je    melee_state_imp
+cmp   al, MT_SHADOWS
+jbe   melee_state_pinky
 melee_state_default:
-0x0000000000000185:  31 C0             xor    ax, ax
-0x0000000000000187:  5B                pop    bx
-0x0000000000000188:  CB                ret   
+xor    ax, ax
+ret   
+melee_state_revenant:
+mov    ax, S_SKEL_FIST1
+ret   
+melee_state_imp:
+mov    ax, S_TROO_ATK1
+ret   
+melee_state_pinky:
+mov    ax, S_SARG_ATK1
+ret   
+melee_state_baron:
+mov    ax, S_BOSS_ATK1
+ret   
+melee_state_hellknight:
+mov    ax, S_BOS2_ATK1
+ret   
 
 ENDP
 
 _mobj_mass_lookup:
 
-dw 001CAh
-dw 001EDh
-dw 001CAh
-dw 001EDh
-dw 001EDh
-dw 001E0h
-dw 001EDh
-dw 001EDh
-dw 001EDh
-dw 001D6h
-dw 001D6h
-dw 001D6h
-dw 001E0h
-dw 001EDh
-dw 001E0h
-dw 001D1h
-dw 001E0h
-dw 001DBh
-dw 001E0h
-dw 001D6h
-dw 001EDh
-dw 001E5h
-dw 001E5h
+dw 500      ; MT_VILE = 03h
+dw 100      ; MT_FIRE = 04h
+dw 500      ; MT_UNDEAD = 05h
+dw 100      ; MT_TRACER = 06h
+dw 100      ; MT_SMOKE = 07h
+dw 1000     ; MT_FATSO = 08h
+dw 100      ; MT_FATSHOT = 09h
+dw 100      ; MT_CHAINGUY = 0Ah
+dw 100      ; MT_TROOP = 0Bh
+dw 400      ; MT_SERGEANT = 0Ch
+dw 400      ; MT_SHADOWS = 0Dh
+dw 400      ; MT_HEAD = 0Eh
+dw 1000     ; MT_BRUISER = 0Fh
+dw 100      ; MT_BRUISERSHOT = 010h
+dw 1000     ; MT_KNIGHT = 011h
+dw 50       ; MT_SKULL = 012h
+dw 1000     ; MT_SPIDER = 013h
+dw 600      ; MT_BABY = 014h
+dw 1000     ; MT_CYBORG = 015h
+dw 400      ; MT_PAIN = 016h
+dw 100      ; MT_WOLFSS = 017h
 
 PROC    getMobjMass_ NEAR 
 PUBLIC  getMobjMass_
 
-
-0x00000000000001b8:  53                push   bx
-0x00000000000001b9:  2C 03             sub    al, 3
-0x00000000000001bb:  3C 16             cmp    al, 22
-0x00000000000001bd:  77 2E             ja     mobj_mass_default
-0x00000000000001bf:  30 E4             xor    ah, ah
-0x00000000000001c1:  89 C3             mov    bx, ax
-0x00000000000001c3:  01 C3             add    bx, ax
-0x00000000000001c5:  2E FF A7 8A 01    jmp    word ptr cs:[bx + _mobj_mass_lookup]
-0x00000000000001ca:  B8 F4 01          mov    ax, 500
-zero_dx_and_exit_mobj_mass:
-0x00000000000001cd:  31 D2             cwd
-0x00000000000001cf:  5B                pop    bx
-0x00000000000001d0:  CB                ret   
-0x00000000000001d1:  B8 32 00          mov    ax, 50
-0x00000000000001d4:  EB F7             jmp    zero_dx_and_exit_mobj_mass
-0x00000000000001d6:  B8 90 01          mov    ax, 400
-0x00000000000001d9:  EB F2             jmp    zero_dx_and_exit_mobj_mass
-0x00000000000001db:  B8 58 02          mov    ax, 600
-0x00000000000001de:  EB ED             jmp    zero_dx_and_exit_mobj_mass
-0x00000000000001e0:  B8 E8 03          mov    ax, 1000
-0x00000000000001e3:  EB E8             jmp    zero_dx_and_exit_mobj_mass
-0x00000000000001e5:  B8 80 96          mov    ax, 09680h  ; 10000000
-0x00000000000001e8:  BA 98 00          mov    dx, 098h
-0x00000000000001eb:  5B                pop    bx
-0x00000000000001ec:  CB                ret   
+push   bx
+sub    al, 3
+cmp    al, (MT_BOSSBRAIN - 3)
+ja     mobj_mass_default
+cmp    al, (MT_WOLFSS - 3)
+ja     mobj_mass_10million
+cbw    ; already filtered out anything 0x80
+mov    bx, ax
+sal    bx, 1
+mov    ax, word ptr cs:[bx + _mobj_mass_lookup]
+mobj_mass_cwd_and_return:
+cwd
+pop    bx
+ret   
+; ton of mass
+mobj_mass_10million:
+mov    ax, 09680h  ; 10000000
+mov    dx, 098h
+pop    bx
+ret   
 mobj_mass_default:
-0x00000000000001ed:  B8 64 00          mov    ax, 100
-0x00000000000001f0:  31 D2             cwd
-0x00000000000001f2:  5B                pop    bx
-0x00000000000001f3:  CB                ret   
+mov    ax, 100
+jmp    mobj_mass_cwd_and_return
+
 
 ENDP
 
