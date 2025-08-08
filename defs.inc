@@ -479,6 +479,7 @@ _FastDiv32u16u_addr =                _NULL_OFFSET + 006FCh
 
 
 _playerMobj_pos =		         	 _NULL_OFFSET + 00700h
+_MOBJPOSLIST_6800_SEGMENT_PTR =      _NULL_OFFSET + 00702h
 _setStateReturn_pos =		         _NULL_OFFSET + 00704h
 _gametic =						     _NULL_OFFSET + 00708h
 _clipangle =				         _NULL_OFFSET + 0070Ch

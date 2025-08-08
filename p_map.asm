@@ -3467,8 +3467,8 @@ je    loop_next_num_spec		; todo direct
 
 ;	P_CrossSpecialLine(spechit[numspechit], oldside, thing, thing_pos);
 
-push  word ptr [bp - 2]     ; thing segment. could just do immediate?
-push  di    				; thing pos
+
+mov   cx, di ; offset
 mov   bx, word ptr ds:[_numspechit]
 sal   bx, 1
 cbw	  ; fill out ah from before
@@ -3476,8 +3476,8 @@ mov   dx, ax
 mov   ax, word ptr ds:[bx + _spechit]
 mov   bx, si
 
-; todo get rid of stack stuff.
-push  cs
+
+
 call  P_CrossSpecialLine_
 
 

@@ -46,14 +46,15 @@ PUBLIC  EV_Teleport_
 
 ;int16_t __near EV_Teleport (uint8_t linetag, int16_t		side,mobj_t __near*	thing,mobj_pos_t __far* thing_pos){
 
+
 ; bp - 2  thing
-; bp - 4  unused
+; bp - 4  thingpos offset
+; bp - 6  thingpos offset segment
 
-; bp + 0Ah thing_pos offset
-; bp + 0Ch thing_pos segment
+; cx thing_pos offset
 
 
-push  cx
+
 push  si
 push  di
 push  bp
@@ -61,11 +62,10 @@ mov   bp, sp
 mov   byte ptr cs:[OFFSET SELFMODIFY_telept_linetag + 4], al
 push  bx  ; bp - 2
 mov   di, bx
-
-
-
-les   bx, dword ptr [bp + 0Ah]
-
+mov   bx, cx
+mov   es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
+push  es ; bp - 4
+push  bx ; bp - 6
 
 test  byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_MISSILE
 jne   exit_ev_teleport_return_0
@@ -96,8 +96,7 @@ xor   ax, ax
 LEAVE_MACRO 
 pop   di
 pop   si
-pop   cx
-ret   4
+ret
 
 line_tag_match:
 
@@ -157,7 +156,7 @@ push  ax
 push  word ptr ds:[di + MOBJ_T.m_secnum]
 ;mov   ax, MT_TFOG
 push  ax
-lds   bx, dword ptr [bp + 0Ah]
+lds   bx, dword ptr [bp - 6]
 lea   si, [bx  + MOBJ_POS_T.mp_z + 2]
 std
 lodsw    ; z hi
@@ -223,7 +222,7 @@ push  cs
 call  P_TeleportMove_
 jnc   exit_ev_teleport_return_0; return false
 
-les   bx, dword ptr [bp + 0Ah]
+les   bx, dword ptr [bp - 6]
 
 ; TODO
 ;		#if (EXE_VERSION != EXE_VERSION_FINAL)
@@ -273,7 +272,7 @@ db 01Eh  ;
 dw _S_StartSound_addr
 
 
-lds   bx, dword ptr [bp + 0Ah]
+lds   bx, dword ptr [bp - 6]
 push  word ptr ds:[bx + MOBJ_POS_T.mp_z + 2]
 push  word ptr ds:[bx + MOBJ_POS_T.mp_z + 0]  ; push call 1 z
 
@@ -340,7 +339,7 @@ jne   skip_player_reaction_time_set
 mov   byte ptr ds:[bx + MOBJ_T.m_reactiontime], 18
 skip_player_reaction_time_set:
 
-lds   di, dword ptr [bp + 0Ah]
+lds   di, dword ptr [bp - 6]
 add   si, MOBJ_POS_T.mp_angle
 add   di, MOBJ_POS_T.mp_angle
 push  ds  ; lds above
@@ -373,8 +372,7 @@ inc ax ; return 1
 LEAVE_MACRO 
 pop   di
 pop   si
-pop   cx
-ret   4
+ret
 
 
 

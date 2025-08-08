@@ -617,7 +617,7 @@ dw switch_case_default, switch_case_default, switch_case_default, switch_case_de
 dw switch_case_default, switch_case_124, switch_case_125, switch_case_126, switch_case_default, switch_case_128, switch_case_129, switch_case_130, switch_case_default, switch_case_default, switch_case_default
 dw switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_141
 
-PROC    P_CrossSpecialLine_  FAR
+PROC    P_CrossSpecialLine_  NEAR
 PUBLIC  P_CrossSpecialLine_
 
 ; todo consider thingpos not on stack. pass in cx.
@@ -628,8 +628,10 @@ PUBLIC  P_CrossSpecialLine_
 ; bp - 4:  unused
 ; bp - 6:  LP segment
 ; bp - 8:  LP offset
+; bp - 0Ah:  thingpos offset
 
-push      cx
+; thing_pos in cx. es not set?
+
 push      si
 push      di
 push      bp
@@ -645,6 +647,7 @@ push      si ; bp - 4 in case needed
 
 push      dx ; bp - 6 need to juggle this (side argument) for a second
 push      bx ; bp - 8 need to juggle this (mobj argument) for a second
+push      cx
 xor       ax, ax
 cwd
 
@@ -768,8 +771,7 @@ exit_p_crossspecialline:
 LEAVE_MACRO     
 pop       di
 pop       si
-pop       cx
-retf      4
+ret
 switch_case_124:
 call  dword ptr ds:[_G_SecretExitLevel_addr]
 jmp       done_with_switch_block
@@ -962,8 +964,8 @@ do_monster_only_teleport_no_si_inc:
 switch_case_97:
 mov       dx, cx
 ; todo make this not use stack...
-push      word ptr [bp + 0Eh]
-push      word ptr [bp + 0Ch]
+
+mov       cx, word ptr [bp - 0Ah]
 mov       bx, es
 call      EV_Teleport_
 jmp       done_with_switch_block
