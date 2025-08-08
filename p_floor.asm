@@ -407,7 +407,6 @@ push  si ; bp - 0202h. pop at end of loop...
 
 mov   ax, TF_MOVEFLOOR_HIGHBITS
 cwd   ; zero dx
-push  cs
 call  P_CreateThinker_
 
 mov   si, ax  ;  si is floor
@@ -809,7 +808,6 @@ push  si
 mov   ax, TF_MOVEFLOOR_HIGHBITS
 cwd   
 
-push  cs
 call  P_CreateThinker_
 
 
@@ -974,7 +972,6 @@ mov   di, bx  ; update sector variable.
 push  ax       ; secnum on stack...
 
 mov   ax, TF_MOVEFLOOR_HIGHBITS
-push  cs
 call  P_CreateThinker_
 
 ;    floor->floordestheight = height;

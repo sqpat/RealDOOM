@@ -267,7 +267,6 @@ xchg  ax, cx
 ;		ceiling = (ceiling_t __near*) P_CreateThinker (TF_MOVECEILING_HIGHBITS);
 mov   ax, TF_MOVECEILING_HIGHBITS
 cwd  ; zero dx.
-push  cs
 call  P_CreateThinker_
 
 

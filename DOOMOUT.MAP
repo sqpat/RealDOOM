@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/08 03:08:37
+Created on:       25/08/08 03:20:01
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -644,9 +644,9 @@ Module: main.obj(main.ASM)
 02e8:6586*     G_SetGameKeyDown_
 02e8:65a0      G_GetGameKey_
 02e8:6f41      I_SetPalette_
-02e8:6f92*     I_UpdateBox_
 02e8:6593*     G_SetGameKeyUp_
 02e8:6b8c      M_LoadDefaults_
+02e8:6f92*     I_UpdateBox_
 02e8:6274      I_KeyboardISR_
 02e8:6d34      M_ScanTranslateDefaults_
 02e8:6575      G_ResetGameKeys_

@@ -771,7 +771,6 @@ push      dx
 push      bx
 push      cx
 mov       ax, TF_MOBJTHINKER_HIGHBITS
-push      cs
 call      P_CreateThinker_
 
 mov       si, ax

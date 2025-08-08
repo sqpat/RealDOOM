@@ -220,7 +220,6 @@ xchg        ax, si  ; si is sectors[secnum]
 mov         ax, TF_PLATRAISE_HIGHBITS
 cwd
 
-push        cs
 call        P_CreateThinker_
 
 mov         bx, ax ; bx gets plat. todo swap bx/si used for consistency with other funcs like this?

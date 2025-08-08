@@ -368,7 +368,6 @@ xchg  ax, cx ; cx has secnum
 mov   ax, TF_VERTICALDOOR_HIGHBITS
 cwd   ; zero dx
 
-push  cs
 call  P_CreateThinker_
 
 mov   bx, ax   ; bx gets door ptr
@@ -605,7 +604,6 @@ call  dword ptr ds:[_S_StartSoundWithParams_addr]
    
 mov   ax, TF_VERTICALDOOR_HIGHBITS
 
-push  cs
 call  P_CreateThinker_
 xor   dx, dx
 mov   si, ax
@@ -692,7 +690,6 @@ push  si
 xchg  si, ax
 mov   ax, TF_VERTICALDOOR_HIGHBITS
 
-push  cs
 call  P_CreateThinker_
    
 xor   dx, dx
@@ -733,7 +730,6 @@ push  si
 xchg  ax, si
 mov   ax, TF_VERTICALDOOR_HIGHBITS
 
-push  cs
 call  P_CreateThinker_
 
 xchg  ax, bx    

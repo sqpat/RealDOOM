@@ -44,7 +44,7 @@ ENDP
 
 ; THINKERREF __near P_GetNextThinkerRef(void) 
 
-PROC P_CreateThinker_ FAR
+PROC P_CreateThinker_ NEAR
 PUBLIC P_CreateThinker_
 
 
@@ -114,7 +114,7 @@ xchg      ax, bx
 add       ax, 4
 pop       si
 pop       bx
-retf      
+ret      
 
 ENDP
 

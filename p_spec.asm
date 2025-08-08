@@ -1524,7 +1524,6 @@ make_thinkers:
 push      dx  ; stores3
 
 mov       ax, TF_MOVEFLOOR_HIGHBITS
-push      cs
 call      P_CreateThinker_
 
 ;			floorRef = GETTHINKERREF(floor);
@@ -1558,7 +1557,6 @@ pop       word ptr ds:[di + FLOORMOVE_T.floormove_secnum]
 ;			//	Spawn lowering donut-hole
 
 mov       ax, TF_MOVEFLOOR_HIGHBITS
-push      cs
 call      P_CreateThinker_
 
 ;			floorRef = GETTHINKERREF(floor);
