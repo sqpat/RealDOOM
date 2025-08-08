@@ -264,7 +264,6 @@ pop   dx
 pop   bx
 pop   cx
 
-push  cs
 call  P_SpawnMobj_
 mov   dx, SFX_TELEPT
 mov   ax, word ptr ds:[_setStateReturn]
@@ -327,7 +326,6 @@ pop   ds ; restore ds
 
 pop   bx
 pop   cx ; cx/bx ready
-push  cs
 call  P_SpawnMobj_
 mov   dx, SFX_TELEPT
 mov   ax, word ptr ds:[_setStateReturn]

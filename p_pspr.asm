@@ -1265,7 +1265,6 @@ mov   cx, es
 push  ss
 pop   ds
 
-push  cs
 call  P_SpawnMobj_
 
 mov   cx, 15

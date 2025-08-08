@@ -1014,7 +1014,6 @@ mov    dx, word ptr es:[bx + 2]
 les    bx, dword ptr es:[bx + 4]
 mov    cx, es
 
-push   cs
 call   P_SpawnMobj_
 
 les    bx, dword ptr ds:[_setStateReturn_pos]

@@ -2583,7 +2583,6 @@ sbb   dx, word ptr ds:[di + MOBJ_T.m_momx + 2]
 sub   bx, word ptr ds:[di + MOBJ_T.m_momy + 0]
 sbb   cx, word ptr ds:[di + MOBJ_T.m_momy + 2]
 
-push  cs
 call  P_SpawnMobj_
 
 ;    th->momz = FRACUNIT
@@ -3589,7 +3588,6 @@ mov   cx, es
 push  ss
 pop   ds
 
-push  cs
 call  P_SpawnMobj_
 
 mov   word ptr ds:[si + MOBJ_T.m_tracerRef], ax
@@ -4323,7 +4321,6 @@ add   word ptr [bp - 0Ah], 8
 
 push  word ptr es:[si + MOBJ_POS_T.mp_z + 0]
 
-push  cs
 call  P_SpawnMobj_
 
 mov   ax, word ptr ds:[_setStateReturn]
@@ -4869,7 +4866,6 @@ sub   cx, 320
 xchg  ax, dx   ; ax gets x lobits
 mov   dx, si   ; dx gets stored x hibits
 
-push  cs
 call  P_SpawnMobj_
 
 
@@ -4985,7 +4981,6 @@ mov   cx, es
 
 
 
-push  cs
 call  P_SpawnMobj_
 
 
@@ -5239,7 +5234,6 @@ mov   dx, es
 push  ss
 pop   ds
 
-push  cs
 call  P_SpawnMobj_
 
 
@@ -5327,7 +5321,6 @@ mov   dx, es
 push  ss
 pop   ds
 
-push  cs
 call  P_SpawnMobj_
 
 

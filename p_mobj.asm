@@ -742,17 +742,16 @@ ret
 ENDP
 
 
-PROC P_SpawnMobj_ FAR
+PROC P_SpawnMobj_ NEAR
 PUBLIC P_SpawnMobj_
 
 
 ;THINKERREF __far P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t knownsecnum ) {
 
-; ugh also modify this when made near...
-; bp + 010h knownsecnum
-; bp + 0E   type
-; bp + 0C   z hi
-; bp + 0A   z lo
+; bp + 0E knownsecnum
+; bp + 0C   type
+; bp + 0A   z hi
+; bp + 8   z lo
 
 
 ; bp - 2    mobjRef
@@ -815,7 +814,7 @@ sub       di, SIZEOF_MOBJ_POS_T
 sub       si, SIZEOF_MOBJ_T
 
 
-mov       cl, byte ptr [bp + 0Eh]  ; type
+mov       cl, byte ptr [bp + 0Ch]  ; type
 mov       al, SIZEOF_MOBJINFO_T
 mul       cl
 
@@ -881,7 +880,7 @@ mov       es, ax
 
 mov       dx, di
 mov       al, byte ptr es:[bx + STATE_T.state_tics]
-mov       bx, word ptr [bp + 010h]
+mov       bx, word ptr [bp + 0Eh]
 mov       byte ptr ds:[si + MOBJ_T.m_tics], al
 mov       ax, si
 call      P_SetThingPosition_
@@ -900,14 +899,14 @@ mov       ax, MOBJPOSLIST_6800_SEGMENT
 mov       es, ax
 xor       dx, dx
 
-cmp       word ptr [bp + 0Ch], ONFLOORZ_HIGHBITS
+cmp       word ptr [bp + 0Ah], ONFLOORZ_HIGHBITS
 jne       not_floor_spawn
-cmp       word ptr [bp + 0Ah], 0
+cmp       word ptr [bp + 8], 0
 je        is_floor_spawn
 not_floor_spawn:
-cmp       word ptr [bp + 0Ch], ONCEILINGZ_HIGHBITS
+cmp       word ptr [bp + 0Ah], ONCEILINGZ_HIGHBITS
 jne       not_ceiling_spawn
-cmp       word ptr [bp + 0Ah], ONCEILINGZ_LOWBITS
+cmp       word ptr [bp + 8], ONCEILINGZ_LOWBITS
 jne       not_ceiling_spawn
 
 mov       bx, cx
@@ -938,7 +937,7 @@ mov       ax, word ptr [bp - 2]
 LEAVE_MACRO     
 pop       di
 pop       si
-retf      8
+ret       8
 is_floor_spawn:
 
 
@@ -954,8 +953,8 @@ rcr       dx, 1
 jmp       write_z ; todo cleanup. do two writes at once
 not_ceiling_spawn:
 
-mov       dx, word ptr [bp + 0Ah]
-mov       ax, word ptr [bp + 0Ch]
+mov       dx, word ptr [bp + 8]
+mov       ax, word ptr [bp + 0Ah]
 jmp       write_z
 
 ENDP

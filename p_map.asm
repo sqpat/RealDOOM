@@ -6008,7 +6008,6 @@ push  es
 ENDIF
 
 
-push  cs
 call  P_SpawnMobj_
 
 
@@ -7862,7 +7861,6 @@ mov   cx, word ptr es:[di + 6]
 les   ax, dword ptr es:[di]
 mov   dx, es
 
-push  cs
 call  P_SpawnMobj_
 
 call  P_Random_
