@@ -5472,7 +5472,7 @@ ENDP
 
 
 
-PROC P_SetMobjState_ FAR
+PROC P_SetMobjState_ NEAR
 PUBLIC P_SetMobjState_
 
 ; bp - 2   unused
@@ -5603,7 +5603,7 @@ pop       di
 pop       si
 pop       cx
 pop       bx
-retf
+ret
 exit_p_setmobjstate_return_1:
 mov       al, 1
 jmp       exit_p_setmobjstate

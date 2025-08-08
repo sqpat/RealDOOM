@@ -4438,7 +4438,6 @@ mul   dl
 xchg  ax, bx   ; ax gets tmthing from above, bx gets mobjinfo ptr
 mov   dx, word ptr ds:[bx + _mobjinfo]
 
-push  cs
 call  P_SetMobjState_
 
 exit_checkthing_return_0:
@@ -6044,14 +6043,12 @@ jmp   done_spawning_blood_or_puff
 draw_big_blood:
 mov   dx, S_BLOOD2
 mov   ax, bx
-push  cs
 call  P_SetMobjState_
 
 jmp   done_spawning_blood_or_puff
 draw_small_blood:
 mov   dx, S_BLOOD3
 mov   ax, bx
-push  cs
 call  P_SetMobjState_
 
 jmp   done_spawning_blood_or_puff
@@ -7812,7 +7809,6 @@ ret
 crush_to_gibs:
 mov   dx, S_GIBS
 mov   ax, si
-push  cs
 call  P_SetMobjState_
 
 mov   si, word ptr ds:[_setStateReturn]

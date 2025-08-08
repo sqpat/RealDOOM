@@ -439,7 +439,6 @@ jne   exit_p_moveplayer
 
 mov   ax, word ptr ds:[_playerMobj]
 mov   dx, S_PLAY_RUN1
-push  cs
 call  P_SetMobjState_
 exit_p_moveplayer:
 POPA_NO_AX_MACRO

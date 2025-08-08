@@ -960,7 +960,6 @@ call   GetDeathState_
 got_death_or_xdeath_state_in_ax:
 xchg   ax, dx
 mov    ax, si
-push   cs
 call   P_SetMobjState_
 call   P_Random_
 and    al, 3
@@ -1482,7 +1481,6 @@ push   cs
 call   GetPainState_
 xchg   ax, dx
 mov    ax, si
-push   cs
 call   P_SetMobjState_
 
 
@@ -1560,7 +1558,6 @@ test   ax, ax
 je     exit_p_damagemobj ; no seestate.
 xchg   ax, dx
 xchg   ax, si
-push   cs
 call   P_SetMobjState_
 
 exit_p_damagemobj:

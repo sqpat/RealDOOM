@@ -234,7 +234,6 @@ push  bx
 push  dx
 mov   dx, S_PLAY_ATK1
 mov   ax, word ptr ds:[_playerMobj]
-push  cs
 call  P_SetMobjState_
 
 mov   al, SIZEOF_WEAPONINFO_T
@@ -285,7 +284,6 @@ jne   dont_use_atk1_or_atk2_state
 use_atk1_or_atk2_state:
 mov   dx, S_PLAY
 mov   ax, word ptr ds:[_playerMobj]
-push  cs
 call  P_SetMobjState_
 
 dont_use_atk1_or_atk2_state:
@@ -464,7 +462,6 @@ PUBLIC A_GunFlash_
 
 mov   dx, S_PLAY_ATK2
 mov   ax, word ptr ds:[_playerMobj]
-push  cs
 call  P_SetMobjState_
 
 mov   al, SIZEOF_WEAPONINFO_T
@@ -914,7 +911,6 @@ dw _S_StartSound_addr
 mov   dx, S_PLAY_ATK2
 mov   ax, word ptr ds:[_playerMobj]
 
-push  cs
 call  P_SetMobjState_
 
 dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CLIP)]
@@ -947,7 +943,6 @@ dw _S_StartSound_addr
 mov   dx, S_PLAY_ATK2
 mov   ax, word ptr ds:[_playerMobj]
 
-push  cs
 call  P_SetMobjState_
 
 dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_SHELL)]
@@ -985,7 +980,6 @@ dw _S_StartSound_addr
 
 mov   dx, S_PLAY_ATK2
 mov   ax, word ptr ds:[_playerMobj]
-push  cs
 call  P_SetMobjState_
 
 ;    player.ammo[weaponinfo[player.readyweapon].ammo]-=2;
@@ -1083,7 +1077,6 @@ je    exit_fire_cgun
 
 mov   dx, S_PLAY_ATK2
 mov   ax, word ptr ds:[_playerMobj]
-push  cs
 call  P_SetMobjState_
 
 dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CLIP)]

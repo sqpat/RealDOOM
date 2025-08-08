@@ -160,7 +160,6 @@ ret
 spark_punch_on_wall:
 mov   dx, S_PUFF3
 mov   ax, bx
-push  cs
 call  P_SetMobjState_
 ret
 
@@ -704,7 +703,6 @@ mov       es, ax
 mov       ax, si
 mov       dx, word ptr es:[di + STATE_T.state_nextstate]
 
-push      cs
 call      P_SetMobjState_
 
 
@@ -1087,7 +1085,6 @@ mul   ah
 xchg  ax, bx
 mov   dx, word ptr ds:[bx + _mobjinfo]
 
-push  cs
 call  P_SetMobjState_
 
 jmp   exit_p_xymovement
@@ -1472,7 +1469,6 @@ jae   done_stepping_stop_moving
 mov   dx, S_PLAY
 mov   ax, word ptr ds:[_playerMobj]
 
-push  cs
 call  P_SetMobjState_
 
 done_stepping_stop_moving:
@@ -2021,7 +2017,6 @@ xchg  ax, dx    ; dx gets deathstate
 mov   ax, si    ; ax gets mobj ptr back
 
 
-push  cs
 call  P_SetMobjState_
 
 mov   ax, RNDTABLE_SEGMENT
