@@ -490,8 +490,8 @@ void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t
 		fixed_t_union originX;
 		fixed_t_union originY;
 		if (soundorg_secnum != SECNUM_NULL){
-			originX.h.intbits = sectors_soundorgs_far[soundorg_secnum].soundorgX;
-			originY.h.intbits = sectors_soundorgs_far[soundorg_secnum].soundorgY;
+			originX.h.intbits = sectors_soundorgs[soundorg_secnum].soundorgX;
+			originY.h.intbits = sectors_soundorgs[soundorg_secnum].soundorgY;
 			originX.h.fracbits = 0;
 			originY.h.fracbits = 0;
 		} else {
@@ -608,8 +608,8 @@ void S_UpdateSounds() {
 					fixed_t_union originY;
 
 					if (c->soundorg_secnum != SECNUM_NULL){
-						originX.h.intbits = sectors_soundorgs_far[c->soundorg_secnum].soundorgX;
-						originY.h.intbits = sectors_soundorgs_far[c->soundorg_secnum].soundorgY;
+						originX.h.intbits = sectors_soundorgs[c->soundorg_secnum].soundorgX;
+						originY.h.intbits = sectors_soundorgs[c->soundorg_secnum].soundorgY;
 						originX.h.fracbits = 0;
 						originY.h.fracbits = 0;
 					} else {

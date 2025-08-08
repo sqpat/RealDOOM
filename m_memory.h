@@ -283,8 +283,6 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 // note: 0x9400-0x9FFF is for lumpinfo...
 
-#define size_segs_physics     (MAX_SEGS_PHYSICS_SIZE)
-#define size_diskgraphicbytes (392)
 
 
 
@@ -296,11 +294,10 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 
  // 0x92FA
-#define segs_physics          ((seg_physics_t __far*)    (0x90000000))
-#define diskgraphicbytes      ((byte __far*)             MAKE_FULL_SEGMENT(segs_physics,     size_segs_physics))
-#define InfoFuncLoadAddr      ((byte __far *)            MAKE_FULL_SEGMENT(diskgraphicbytes, size_diskgraphicbytes))
-#define psight_codespace      ((byte __far*)             MAKE_FULL_SEGMENT(InfoFuncLoadAddr, SIZE_D_INFO))
-#define physics_9000_end      ((byte __far*)             MAKE_FULL_SEGMENT(psight_codespace, PSightCodeSize))
+
+#define psight_codespace      ((byte __far*)             (0x90000000))
+#define InfoFuncLoadAddr      ((byte __far *)            MAKE_FULL_SEGMENT(psight_codespace, PSightCodeSize))
+#define physics_9000_end      ((byte __far*)             MAKE_FULL_SEGMENT(InfoFuncLoadAddr, SIZE_D_INFO))
 
 // note: entry point to the function is not necessarily the first byte of the compiled binary. (jump tables and stuff for switch cases)
 #define getPainChanceAddr     ((int16_t    (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x0034))
@@ -322,10 +319,8 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 // 0x93E9
 
-#define segs_physics_segment        ((segment_t) ((int32_t)segs_physics >> 16))
-#define diskgraphicbytes_segment    ((segment_t) ((int32_t)diskgraphicbytes >> 16))
-#define InfoFuncLoadSegment         ((segment_t) ((int32_t)InfoFuncLoadAddr >> 16))
 #define physics_highcode_segment    ((segment_t) ((int32_t)psight_codespace >> 16))
+#define InfoFuncLoadSegment         ((segment_t) ((int32_t)InfoFuncLoadAddr >> 16))
 #define physics_9000_end_segment    ((segment_t) ((int32_t)physics_9000_end >> 16))
 
 
@@ -377,14 +372,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
  
 
 
-#define PSetupFuncLoadAddr      ((byte __far *)  (0xB14B0000))
-#define PSetupFuncFromAddr      ((byte __far *) ((int32_t)PSetupEndFunc &0xFFFF0000))
-//#define SIZE_PSetup             ((int16_t)(((int32_t)PSetupEndFunc) & 0xFFFF))
-#define SIZE_PSetup             0xFE0
 
-// 4064
-//#define SIZE_PSetup             0xFE0
-#define P_SetupLevelAddr        ((void     (__far *)(int8_t, int8_t, skill_t)) (0xB14B0000))
 
  
 
@@ -402,8 +390,6 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define size_thinkerlist           (sizeof(thinker_t) * MAX_THINKERS)
 #define size_linebuffer            (MAX_LINEBUFFER_SIZE)
 #define size_sectors_physics       (MAX_SECTORS_PHYSICS_SIZE)
-#define size_sectors_soundorgs     (MAX_SECTORS_SOUNDORGS_SIZE)
-#define size_sector_soundtraversed (MAX_SECTORS_SOUNDTRAVERSED_SIZE)
 #define size_mobjinfo              (sizeof(mobjinfo_t) * NUMMOBJTYPES)
 #define size_intercepts            (sizeof(intercept_t) * MAXINTERCEPTS)
 #define size_ammnumpatchbytes      (524)
@@ -411,6 +397,7 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define size_doomednum             ((sizeof(int16_t) * NUMMOBJTYPES))
 #define size_linespeciallist       ((sizeof(int16_t) * MAXLINEANIMS))
 #define size_font_widths           (HU_FONTSIZE * sizeof(int8_t))
+#define size_segs_physics          (MAX_SEGS_PHYSICS_SIZE)
 
 
 
@@ -418,16 +405,15 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define mobjinfo_far           ((mobjinfo_t __far *)          MAKE_FULL_SEGMENT(thinkerlist_far,            size_thinkerlist))
 #define linebuffer_far         ((int16_t __far*)              MAKE_FULL_SEGMENT(mobjinfo_far,               size_mobjinfo ))
 #define sectors_physics_far    ((sector_physics_t __far* )    MAKE_FULL_SEGMENT(linebuffer_far,             size_linebuffer ))
-#define sectors_soundorgs_far  ((sector_soundorg_t __far* )   MAKE_FULL_SEGMENT(sectors_physics_far,        size_sectors_physics ))
-#define sector_soundtraversed_far  ((int8_t __far*)           MAKE_FULL_SEGMENT(sectors_soundorgs_far,      size_sectors_soundorgs ))
 
-#define intercepts_far         ((intercept_t __far*)          MAKE_FULL_SEGMENT(sector_soundtraversed_far,  size_sector_soundtraversed ))
+#define intercepts_far         ((intercept_t __far*)          MAKE_FULL_SEGMENT(sectors_physics_far,        size_sectors_physics ))
 #define ammnumpatchbytes_far   ((byte __far *)                MAKE_FULL_SEGMENT(intercepts_far,             size_intercepts ))
 #define ammnumpatchoffsets_far ((uint16_t __far*)             (((int32_t)ammnumpatchbytes_far) + 0x020C))
 #define doomednum_far          ((int16_t __far*)              MAKE_FULL_SEGMENT(ammnumpatchbytes_far,     (size_ammnumpatchbytes+size_ammnumpatchoffsets )))
 #define linespeciallist_far    ((int16_t __far*)              MAKE_FULL_SEGMENT(doomednum_far,              size_doomednum ))
 #define font_widths_far        ((int8_t __far*)               MAKE_FULL_SEGMENT(linespeciallist_far,        size_linespeciallist))
-#define code_overlay_start     ((byte __far*)                 MAKE_FULL_SEGMENT(font_widths_far,            size_font_widths))
+#define segs_physics           ((seg_physics_t __far*)        MAKE_FULL_SEGMENT(font_widths_far,            size_font_widths))
+#define code_overlay_start     ((byte __far*)                 MAKE_FULL_SEGMENT(segs_physics,               size_segs_physics))
 #define code_overlay_end       ((byte __far*)                 MAKE_FULL_SEGMENT(code_overlay_start,         FinaleCodeSize))
 // WipeCodeSize
 
@@ -435,8 +421,6 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define mobjinfo_segment              ((segment_t) ((int32_t)mobjinfo_far >> 16))
 #define linebuffer_segment            ((segment_t) ((int32_t)linebuffer_far >> 16))
 #define sectors_physics_segment       ((segment_t) ((int32_t)sectors_physics_far >> 16))
-#define sectors_soundorgs_segment     ((segment_t) ((int32_t)sectors_soundorgs_far >> 16))
-#define sector_soundtraversed_segment ((segment_t) ((int32_t)sector_soundtraversed_far >> 16))
 
 #define intercepts_segment            ((segment_t) ((int32_t)intercepts_far >> 16))
 #define ammnumpatchbytes_segment      ((segment_t) ((int32_t)ammnumpatchbytes_far >> 16))
@@ -444,9 +428,10 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define doomednum_segment             ((segment_t) ((int32_t)doomednum_far >> 16))
 #define linespeciallist_segment       ((segment_t) ((int32_t)linespeciallist_far >> 16))
 #define font_widths_segment           ((segment_t) ((int32_t)font_widths_far >> 16))
+#define segs_physics_segment          ((segment_t) ((int32_t)segs_physics >> 16))
 #define code_overlay_segment          ((segment_t) ((int32_t)code_overlay_start >> 16))
 #define code_overlay_end_segment      ((segment_t) ((int32_t)code_overlay_end >> 16))
-// 4CE0h
+// 4FF4h
 
  // 3D00:4000
 #define thinkerlist        ((thinker_t __near*)          ((thinkerlist_segment       - FIXED_DS_SEGMENT) << 4))
@@ -468,16 +453,16 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 // 4906:0000  C060 mobjinfo
 // 4965:0000  C650 linebuffer
 // 4AA3:0000  DA30 sectors_physics
-// 4BFF:0000  EFF0 sectors_soundorgs
-// 4C56:0000  F560 sectors_soundstraversed
-// 4C6c:0000  F6C0 intercepts
-// 4CA4:0000  FA40 ammnumpatchbytes
-// 4CA4:020C  FC4C ammnumpatchoffsets
-// 4CC6:0000  FC60 doomednum
-// 4CD8:0000  FD80 linespeciallist
-// 4CE0:0000  FE00 font_widths
-// 4CE4:0000  xxxx code_overlay_segment
-// 4DA1:0000  xxxx [empty]
+// 4BFF:0000  F3F0 intercepts
+// 4C37:0000  F770 ammnumpatchbytes
+// 4C37:020C  F97C ammnumpatchoffsets
+// 4C59:0000  F9F0 doomednum
+// 4C6B:0000  FAB0 linespeciallist
+
+// 4C73:0000  FB30 font_widths
+// 4C77:0000  FB70 segs_physics
+// 4F37:0000  xxxx code_overlay_segment
+// 4FF4:0000  xxxx [empty]
 
 
 // 9712 bytes free?
@@ -518,33 +503,38 @@ this area used in many tasks including physics but not including render
 
 #define size_lines_physics    (MAX_LINES_PHYSICS_SIZE)
 #define size_blockmaplump     ( MAX_BLOCKMAP_LUMPSIZE)
-
-//3f8a, runs up close to 6800 which has mobjposlist, etc
 #define size_states              (sizeof(state_t) * NUMSTATES)
+#define size_sectors_soundorgs     (MAX_SECTORS_SOUNDORGS_SIZE)
+#define size_sector_soundtraversed (MAX_SECTORS_SOUNDTRAVERSED_SIZE)
+#define size_diskgraphicbytes (392)
 
 
-#define lines_physics       ((line_physics_t __far*)  MAKE_FULL_SEGMENT(0x70000000, 0))
-#define blockmaplump        ((int16_t __far*)         MAKE_FULL_SEGMENT(lines_physics, size_lines_physics))
-#define blockmaplump_plus4  ((int16_t __far*)         (((int32_t)blockmaplump) + 0x08))
-
-
-
-#define states             ((state_t __far*)          MAKE_FULL_SEGMENT(blockmaplump, size_blockmaplump+0x08))  
-
-#define physics_7000_end    ((uint8_t __far*)         MAKE_FULL_SEGMENT(states, size_states+0x08))
+#define lines_physics       ((line_physics_t __far*)       MAKE_FULL_SEGMENT(0x70000000, 0))
+#define blockmaplump        ((int16_t __far*)              MAKE_FULL_SEGMENT(lines_physics,         size_lines_physics))
+#define blockmaplump_plus4  ((int16_t __far*)              (((int32_t)blockmaplump) + 0x08))
+#define states              ((state_t __far*)              MAKE_FULL_SEGMENT(blockmaplump,           size_blockmaplump))  
+#define sectors_soundorgs   ((sector_soundorg_t __far* )   MAKE_FULL_SEGMENT(states,                 size_states ))
+#define sector_soundtraversed  ((int8_t __far*)            MAKE_FULL_SEGMENT(sectors_soundorgs,  size_sectors_soundorgs ))
+#define diskgraphicbytes      ((byte __far*)               MAKE_FULL_SEGMENT(sector_soundtraversed,  size_sector_soundtraversed ))
+#define physics_7000_end    ((uint8_t __far*)              MAKE_FULL_SEGMENT(diskgraphicbytes, size_diskgraphicbytes))
 
 #define lines_physics_segment       ((segment_t) ((int32_t)lines_physics >> 16))
 #define blockmaplump_segment        ((segment_t) ((int32_t)blockmaplump >> 16))
-#define states_segment                ((segment_t) ((int32_t)states >> 16))
+#define states_segment              ((segment_t) ((int32_t)states >> 16))
+#define sectors_soundorgs_segment     ((segment_t) ((int32_t)sectors_soundorgs >> 16))
+#define sector_soundtraversed_segment ((segment_t) ((int32_t)sector_soundtraversed >> 16))
+#define diskgraphicbytes_segment    ((segment_t) ((int32_t)diskgraphicbytes >> 16))
 #define physics_7000_end_segment    ((segment_t) ((int32_t)physics_7000_end >> 16))
 
 /*
-lines_physics       7000:0000
-blockmaplump        76E4:0000
-blockmaplump_plus4  76E4:0008
-states              7D74:0000
-FREEBYTES           7EE0:0000
- 4608 bytes free!
+lines_physics         7000:0000
+blockmaplump          76E4:0000
+blockmaplump_plus4    76E4:0008
+states                7D74:0000
+sectors_soundorgs     7EDF:0000
+sector_soundtraversed 7F4C:0000
+FREEBYTES             7F65:0000
+ 2480 bytes free!
 */
 
 
@@ -602,13 +592,13 @@ FREEBYTES           7EE0:0000
 #define colfunc_function_area_6800_segment   ((segment_t) ((int32_t)colfunc_function_area_6800 >> 16))
 #define mobjposlist_6800_segment             ((segment_t) ((int32_t)mobjposlist_6800 >> 16))
 #define seenlines_6800_segment               ((segment_t) ((int32_t)seenlines_6800 >> 16))
-#define empty_render_6800_segment       ((segment_t) ((int32_t)empty_render_6800 >> 16))
+#define empty_render_6800_segment            ((segment_t) ((int32_t)empty_render_6800 >> 16))
 
 
 
-// seenlines_segment:  6FE8:0000
-// empty:              6FF6:0000
-// FREEBYTES 160 bytes free
+// seenlines_segment:  6FE1:0000
+// empty:              6FEF:0000
+// FREEBYTES 272 bytes free
 
 // 8C60
 #define colormaps_maskedmapping_seg_diff  ((segment_t)0x8C00 - colormaps_segment)

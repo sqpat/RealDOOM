@@ -124,7 +124,7 @@ mov   ax, word ptr es:[bx + SECTOR_T.sec_validcount]
 cmp   ax, word ptr ds:[_validcount_global]
 jne   do_sound_recursion
 
-;    if (soundsector->validcount == validcount_global && sector_soundtraversed_far[secnum] <= soundblocks+1) {
+;    if (soundsector->validcount == validcount_global && sector_soundtraversed[secnum] <= soundblocks+1) {
 ;		return;		// already flooded
 ;    }
 
@@ -132,7 +132,7 @@ jne   do_sound_recursion
 mov   es, si
 mov   al, byte ptr es:[di]
 cbw
-dec   ax ; instead of plus 1 to soundblocks do minus 12 to sector_soundtraversed_far
+dec   ax ; instead of plus 1 to soundblocks do minus 12 to sector_soundtraversed
 js    exit_p_recursive_sound_2 ; was definitely too small...
 cmp   ax, dx
 jg    do_sound_recursion
@@ -154,7 +154,7 @@ mov   bp, word ptr es:[bx + SECTOR_T.sec_linecount]
 add   bp, cx
 
 
-;	sector_soundtraversed_far[secnum] = soundblocks+1;
+;	sector_soundtraversed[secnum] = soundblocks+1;
 mov   es, si
 mov   ax, dx
 inc   ax
@@ -1303,7 +1303,7 @@ xor   ax, ax
 mov   di, word ptr ds:[si + MOBJ_T.m_secnum] 
 mov   byte ptr ds:[si + MOBJ_T.m_threshold], al     ; actor->threshold = 0;	// any shot will wake up
 
-;    targRef = sector_soundtraversed_far[actorsecnum] ? playerMobjRef : 0;
+;    targRef = sector_soundtraversed[actorsecnum] ? playerMobjRef : 0;
 
 cmp   byte ptr es:[di], al
 je    no_target

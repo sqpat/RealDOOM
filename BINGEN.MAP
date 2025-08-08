@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/07 04:04:15
+Created on:       25/08/07 07:44:55
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -680,9 +680,9 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 0343:79d7*     WI_initStats_
 0343:7847*     WI_drawPercent_
 0343:70bc      WI_STARTMARKER_
+0343:74bc*     WI_slamBackground_
 0343:7797*     WI_drawNum_
 0343:74a3*     WI_MRandomLocal_
-0343:74bc*     WI_slamBackground_
 0343:7e61*     WI_updateNoState_
 0343:7ebf      WI_Ticker_
 0343:7f6d*     WI_initVariables_
@@ -1324,8 +1324,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 3360:57cb*     A_BabyMetal_
 3360:4c9f*     A_BruisAttack_
 3360:5667*     A_XScream_
-3360:5b50      P_SetMobjState_
 3360:57c0*     A_Metal_
+3360:5b50      P_SetMobjState_
 3360:44e0*     P_TryWalk_
 3360:582e*     A_BrainScream_
 3360:4c45*     A_HeadAttack_
@@ -1346,8 +1346,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 3360:4182*     P_ENEMY_STARTMARKER_
 3360:4bcc*     A_TroopAttack_
 3360:5602*     A_PainAttack_
-3360:5acc*     A_PlayerScream_
 3360:57d6*     A_BrainAwake_
+3360:5acc*     A_PlayerScream_
 3360:4705*     A_KeenDie_
 3360:4c86*     A_CyberAttack_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fopen.c)

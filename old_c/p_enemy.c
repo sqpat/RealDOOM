@@ -134,12 +134,12 @@ void __near P_RecursiveSound ( int16_t secnum, int8_t soundblocks){
 #endif
 
 	// wake up all monsters in this sector
-    if (soundsector->validcount == validcount_global && sector_soundtraversed_far[secnum] <= soundblocks+1) {
+    if (soundsector->validcount == validcount_global && sector_soundtraversed[secnum] <= soundblocks+1) {
 		return;		// already flooded
     }
 
 	soundsector->validcount = validcount_global;
-	sector_soundtraversed_far[secnum] = soundblocks+1;
+	sector_soundtraversed[secnum] = soundblocks+1;
 	//soundsector->soundtargetRef = 1;
 
 
@@ -702,7 +702,7 @@ void __near A_Look (mobj_t __near* actor, mobj_pos_t __far* actor_pos){
 			actor = (mobj_t __near*)(&thinkerlist[actorRef].data);
 		}
 	#endif
-    targRef = sector_soundtraversed_far[actorsecnum] ? playerMobjRef : 0;
+    targRef = sector_soundtraversed[actorsecnum] ? playerMobjRef : 0;
 
 
 

@@ -455,8 +455,8 @@ void __near P_LoadSectors(int16_t lump) {
 
 	FAR_memset(sectors, 0, MAX_SECTORS_SIZE);
 	memset(sectors_physics, 0, MAX_SECTORS_PHYSICS_SIZE);
-	FAR_memset(sectors_soundorgs_far, 0, MAX_SECTORS_SOUNDORGS_SIZE);
-	FAR_memset(sector_soundtraversed_far, 0, MAX_SECTORS_SOUNDTRAVERSED_SIZE);
+	FAR_memset(sectors_soundorgs, 0, MAX_SECTORS_SOUNDORGS_SIZE);
+	FAR_memset(sector_soundtraversed, 0, MAX_SECTORS_SOUNDTRAVERSED_SIZE);
 	Z_QuickMapScratch_8000();
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_8000);
@@ -948,8 +948,8 @@ void __near P_GroupLines(void) {
 		// set the degenmobj_t to the middle of the bounding box
 		
 		// todo does this have to be 32 bit? eventually investigate...
-		sectors_soundorgs_far[i].soundorgX = (bbox[BOXRIGHT] + bbox[BOXLEFT]) >> 1;
-		sectors_soundorgs_far[i].soundorgY = (bbox[BOXTOP] + bbox[BOXBOTTOM]) >> 1;
+		sectors_soundorgs[i].soundorgX = (bbox[BOXRIGHT] + bbox[BOXLEFT]) >> 1;
+		sectors_soundorgs[i].soundorgY = (bbox[BOXTOP] + bbox[BOXBOTTOM]) >> 1;
 
 		// adjust bounding box to map blocks
 		block = (bbox[BOXTOP] - bmaporgy + MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
