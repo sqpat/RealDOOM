@@ -1,9 +1,9 @@
 
-; Copyright (C) 1993-dw 01996h
+; Copyright (C) 1993-dw 09619h
 Id Software, Inc.
-; Copyright (C) 1993-dw 02008h
+; Copyright (C) 1993-dw 00820h
 Raven Software
-; Copyright (C) 2016-dw 02017h
+; Copyright (C) 2016-dw 01720h
 Alexey Khokholov (Nuke.YKT)
 ;
 ; This program is free software; you can redistribute it and/or
@@ -56,33 +56,34 @@ PROC    P_INFO_STARTMARKER_
 PUBLIC  P_INFO_STARTMARKER_
 ENDP
 
+_pain_chance_lookup:
 
-dw 04400h
-dw 04900h
-dw 04E00h
-dw 05300h
-dw 08000h
-dw 05800h
-dw 08000h
-dw 08000h
-dw 05D00h
-dw 08000h
-dw 04E00h
-dw 04900h
-dw 06200h
-dw 06200h
-dw 06700h
-dw 06C00h
-dw 08000h
-dw 06C00h
-dw 07100h
-dw 07600h
-dw 06700h
-dw 07B00h
-dw 06700h
-dw 04E00h
-dw 07100h
-dw 04400h 
+dw 00044h
+dw 00049h
+dw 0004Eh
+dw 00053h
+dw 00080h
+dw 00058h
+dw 00080h
+dw 00080h
+dw 0005Dh
+dw 00080h
+dw 0004Eh
+dw 00049h
+dw 00062h
+dw 00062h
+dw 00067h
+dw 0006Ch
+dw 00080h
+dw 0006Ch
+dw 00071h
+dw 00076h
+dw 00067h
+dw 0007Bh
+dw 00067h
+dw 0004Eh
+dw 00071h
+dw 00044h 
 
 
 PROC    getPainChance_  NEAR 
@@ -91,28 +92,28 @@ PUBLIC  getPainChance_
 
 
 0x0000000000000034:  53                push   bx
-0x0000000000000035:  3C 19             cmp    al, 0x19
-0x0000000000000037:  77 47             ja     label_1
+0x0000000000000035:  3C 19             cmp    al, 25
+0x0000000000000037:  77 47             ja     pain_chance_default
 0x0000000000000039:  30 E4             xor    ah, ah
 0x000000000000003b:  89 C3             mov    bx, ax
 0x000000000000003d:  01 C3             add    bx, ax
-0x000000000000003f:  2E FF A7 00 00    jmp    word ptr cs:[bx]
-0x0000000000000044:  B8 FF 00          mov    ax, 0xff
+0x000000000000003f:  2E FF A7 00 00    jmp    word ptr cs:[bx + _pain_chance_lookup]
+0x0000000000000044:  B8 FF 00          mov    ax, 255
 0x0000000000000047:  5B                pop    bx
 0x0000000000000048:  CB                ret   
-0x0000000000000049:  B8 C8 00          mov    ax, 0xc8
+0x0000000000000049:  B8 C8 00          mov    ax, 200
 0x000000000000004c:  5B                pop    bx
 0x000000000000004d:  CB                ret   
-0x000000000000004e:  B8 AA 00          mov    ax, 0xaa
+0x000000000000004e:  B8 AA 00          mov    ax, 170
 0x0000000000000051:  5B                pop    bx
 0x0000000000000052:  CB                ret   
-0x0000000000000053:  B8 0A 00          mov    ax, 0xa
+0x0000000000000053:  B8 0A 00          mov    ax, 10
 0x0000000000000056:  5B                pop    bx
 0x0000000000000057:  CB                ret   
-0x0000000000000058:  B8 64 00          mov    ax, 0x64
+0x0000000000000058:  B8 64 00          mov    ax, 100
 0x000000000000005b:  5B                pop    bx
 0x000000000000005c:  CB                ret   
-0x000000000000005d:  B8 50 00          mov    ax, 0x50
+0x000000000000005d:  B8 50 00          mov    ax, 80
 0x0000000000000060:  5B                pop    bx
 0x0000000000000061:  CB                ret   
 0x0000000000000062:  B8 B4 00          mov    ax, 0xb4
@@ -133,7 +134,7 @@ PUBLIC  getPainChance_
 0x000000000000007b:  B8 14 00          mov    ax, 0x14
 0x000000000000007e:  5B                pop    bx
 0x000000000000007f:  CB                ret   
-label_1:
+pain_chance_default:
 0x0000000000000080:  31 C0             xor    ax, ax
 0x0000000000000082:  5B                pop    bx
 0x0000000000000083:  CB                ret  
@@ -141,30 +142,31 @@ label_1:
 ENDP
 
 
+_raise_state_lookup:
 
-dw 0C400h
-dw 0C900h
-dw 00501h
-dw 00501h
-dw 0CE00h
-dw 00501h
-dw 00501h
-dw 0D300h
-dw 00501h
-dw 0D800h
-dw 0DD00h
-dw 0E200h
-dw 0E200h
-dw 0E700h
-dw 0EC00h
-dw 00501h
-dw 0F100h
-dw 00501h
-dw 00501h
-dw 0F600h
-dw 00501h
-dw 0FB00h
-dw 00001h
+dw 000C4h
+dw 000C9h
+dw 00105h
+dw 00105h
+dw 000CEh
+dw 00105h
+dw 00105h
+dw 000D3h
+dw 00105h
+dw 000D8h
+dw 000DDh
+dw 000E2h
+dw 000E2h
+dw 000E7h
+dw 000ECh
+dw 00105h
+dw 000F1h
+dw 00105h
+dw 00105h
+dw 000F6h
+dw 00105h
+dw 000FBh
+dw 00100h
 
 
 PROC    getRaiseState_  NEAR 
@@ -173,12 +175,12 @@ PUBLIC  getRaiseState_
 
 0x00000000000000b2:  53                push   bx
 0x00000000000000b3:  FE C8             dec    al
-0x00000000000000b5:  3C 16             cmp    al, 0x16
-0x00000000000000b7:  77 4C             ja     0x105
+0x00000000000000b5:  3C 16             cmp    al, 22
+0x00000000000000b7:  77 4C             ja     raise_state_default
 0x00000000000000b9:  30 E4             xor    ah, ah
 0x00000000000000bb:  89 C3             mov    bx, ax
 0x00000000000000bd:  01 C3             add    bx, ax
-0x00000000000000bf:  2E FF A7 84 00    jmp    word ptr cs:[bx + 0x84]
+0x00000000000000bf:  2E FF A7 84 00    jmp    word ptr cs:[bx + _raise_state_lookup]
 0x00000000000000c4:  B8 CB 00          mov    ax, 0xcb
 0x00000000000000c7:  5B                pop    bx
 0x00000000000000c8:  CB                ret   
@@ -218,6 +220,7 @@ PUBLIC  getRaiseState_
 0x0000000000000100:  B8 F6 02          mov    ax, 0x2f6
 0x0000000000000103:  5B                pop    bx
 0x0000000000000104:  CB                ret   
+raise_state_default:
 0x0000000000000105:  31 C0             xor    ax, ax
 0x0000000000000107:  5B                pop    bx
 0x0000000000000108:  CB                ret   
@@ -230,48 +233,56 @@ PUBLIC  getXDeathState_
 
 
 0x000000000000010a:  3C 02             cmp    al, 2
-0x000000000000010c:  73 0C             jae    0x11a
+0x000000000000010c:  73 0C             jae    label_1
 0x000000000000010e:  3C 01             cmp    al, 1
-0x0000000000000110:  74 1A             je     0x12c
+0x0000000000000110:  74 1A             je     label_2
 0x0000000000000112:  84 C0             test   al, al
-0x0000000000000114:  75 26             jne    0x13c
-0x0000000000000116:  B8 A5 00          mov    ax, 0xa5
+0x0000000000000114:  75 26             jne    xdeath_state_default
+0x0000000000000116:  B8 A5 00          mov    ax, S_PLAY_XDIE1
 0x0000000000000119:  CB                ret   
-0x000000000000011a:  76 14             jbe    0x130
-0x000000000000011c:  3C 17             cmp    al, 0x17
-0x000000000000011e:  74 18             je     0x138
-0x0000000000000120:  3C 0B             cmp    al, 0xb
-0x0000000000000122:  74 10             je     0x134
-0x0000000000000124:  3C 0A             cmp    al, 0xa
-0x0000000000000126:  75 14             jne    0x13c
-0x0000000000000128:  B8 AD 01          mov    ax, 0x1ad
+label_1:
+0x000000000000011a:  76 14             jbe    label_3
+0x000000000000011c:  3C 17             cmp    al, 23
+0x000000000000011e:  74 18             je     label_4
+0x0000000000000120:  3C 0B             cmp    al, 11
+0x0000000000000122:  74 10             je     label_5
+0x0000000000000124:  3C 0A             cmp    al, 10
+0x0000000000000126:  75 14             jne    xdeath_state_default
+0x0000000000000128:  B8 AD 01          mov    ax, S_CPOS_XDIE1
 0x000000000000012b:  CB                ret   
-0x000000000000012c:  B8 C2 00          mov    ax, 0xc2
+label_2:
+0x000000000000012c:  B8 C2 00          mov    ax, S_POSS_XDIE1
 0x000000000000012f:  CB                ret   
-0x0000000000000130:  B8 E3 00          mov    ax, 0xe3
+label_3:
+0x0000000000000130:  B8 E3 00          mov    ax, S_SPOS_XDIE1
 0x0000000000000133:  CB                ret   
-0x0000000000000134:  B8 CE 01          mov    ax, 0x1ce
+label_5:
+0x0000000000000134:  B8 CE 01          mov    ax, S_TROO_XDIE1
 0x0000000000000137:  CB                ret   
-0x0000000000000138:  B8 ED 02          mov    ax, 0x2ed
+label_4:
+0x0000000000000138:  B8 ED 02          mov    ax, S_SSWV_XDIE1
 0x000000000000013b:  CB                ret   
+xdeath_state_default:
 0x000000000000013c:  31 C0             xor    ax, ax
 0x000000000000013e:  CB                ret   
 
 ENDP
 
-dw 06C01h
-dw 08501h
-dw 08501h
-dw 08501h
-dw 08501h
-dw 08501h
-dw 07101h
-dw 07601h
-dw 07601h
-dw 08501h
-dw 07B01h
-dw 08501h
-dw 08001h
+_melee_state_lookup:
+
+dw 0016Ch
+dw 00185h
+dw 00185h
+dw 00185h
+dw 00185h
+dw 00185h
+dw 00171h
+dw 00176h
+dw 00176h
+dw 00185h
+dw 0017Bh
+dw 00185h
+dw 00180h
 
 
 PROC    getMeleeState_ NEAR 
@@ -280,56 +291,59 @@ PUBLIC  getMeleeState_
 
 0x000000000000015a:  53                push   bx
 0x000000000000015b:  2C 05             sub    al, 5
-0x000000000000015d:  3C 0C             cmp    al, 0xc
-0x000000000000015f:  77 24             ja     0x185
+0x000000000000015d:  3C 0C             cmp    al, 12
+0x000000000000015f:  77 24             ja     melee_state_default
 0x0000000000000161:  30 E4             xor    ah, ah
 0x0000000000000163:  89 C3             mov    bx, ax
 0x0000000000000165:  01 C3             add    bx, ax
-0x0000000000000167:  2E FF A7 40 01    jmp    word ptr cs:[bx + 0x140]
-0x000000000000016c:  B8 4F 01          mov    ax, 0x14f
+0x0000000000000167:  2E FF A7 40 01    jmp    word ptr cs:[bx + _melee_state_lookup]
+0x000000000000016c:  B8 4F 01          mov    ax, S_SKEL_FIST1
 0x000000000000016f:  5B                pop    bx
 0x0000000000000170:  CB                ret   
-0x0000000000000171:  B8 C4 01          mov    ax, 0x1c4
+0x0000000000000171:  B8 C4 01          mov    ax, S_TROO_ATK1
 0x0000000000000174:  5B                pop    bx
 0x0000000000000175:  CB                ret   
-0x0000000000000176:  B8 E5 01          mov    ax, 0x1e5
+0x0000000000000176:  B8 E5 01          mov    ax, S_SARG_ATK1
 0x0000000000000179:  5B                pop    bx
 0x000000000000017a:  CB                ret   
-0x000000000000017b:  B8 19 02          mov    ax, 0x219
+0x000000000000017b:  B8 19 02          mov    ax, S_BOSS_ATK1
 0x000000000000017e:  5B                pop    bx
 0x000000000000017f:  CB                ret   
-0x0000000000000180:  B8 36 02          mov    ax, 0x236
+0x0000000000000180:  B8 36 02          mov    ax, S_BOS2_ATK1
 0x0000000000000183:  5B                pop    bx
 0x0000000000000184:  CB                ret   
+melee_state_default:
 0x0000000000000185:  31 C0             xor    ax, ax
 0x0000000000000187:  5B                pop    bx
 0x0000000000000188:  CB                ret   
 
 ENDP
 
-dw 0CA01h
-dw 0ED01h
-dw 0CA01h
-dw 0ED01h
-dw 0ED01h
-dw 0E001h
-dw 0ED01h
-dw 0ED01h
-dw 0ED01h
-dw 0D601h
-dw 0D601h
-dw 0D601h
-dw 0E001h
-dw 0ED01h
-dw 0E001h
-dw 0D101h
-dw 0E001h
-dw 0DB01h
-dw 0E001h
-dw 0D601h
-dw 0ED01h
-dw 0E501h
-dw 0E501h
+_mobj_mass_lookup:
+
+dw 001CAh
+dw 001EDh
+dw 001CAh
+dw 001EDh
+dw 001EDh
+dw 001E0h
+dw 001EDh
+dw 001EDh
+dw 001EDh
+dw 001D6h
+dw 001D6h
+dw 001D6h
+dw 001E0h
+dw 001EDh
+dw 001E0h
+dw 001D1h
+dw 001E0h
+dw 001DBh
+dw 001E0h
+dw 001D6h
+dw 001EDh
+dw 001E5h
+dw 001E5h
 
 PROC    getMobjMass_ NEAR 
 PUBLIC  getMobjMass_
@@ -337,12 +351,12 @@ PUBLIC  getMobjMass_
 
 0x00000000000001b8:  53                push   bx
 0x00000000000001b9:  2C 03             sub    al, 3
-0x00000000000001bb:  3C 16             cmp    al, 0x16
-0x00000000000001bd:  77 2E             ja     0x1ed
+0x00000000000001bb:  3C 16             cmp    al, 22
+0x00000000000001bd:  77 2E             ja     mobj_mass_default
 0x00000000000001bf:  30 E4             xor    ah, ah
 0x00000000000001c1:  89 C3             mov    bx, ax
 0x00000000000001c3:  01 C3             add    bx, ax
-0x00000000000001c5:  2E FF A7 8A 01    jmp    word ptr cs:[bx + 0x18a]
+0x00000000000001c5:  2E FF A7 8A 01    jmp    word ptr cs:[bx + _mobj_mass_lookup]
 0x00000000000001ca:  B8 F4 01          mov    ax, 0x1f4
 0x00000000000001cd:  31 D2             xor    dx, dx
 0x00000000000001cf:  5B                pop    bx
@@ -359,36 +373,39 @@ PUBLIC  getMobjMass_
 0x00000000000001e8:  BA 98 00          mov    dx, 0x98
 0x00000000000001eb:  5B                pop    bx
 0x00000000000001ec:  CB                ret   
-0x00000000000001ed:  B8 64 00          mov    ax, 0x64
+mobj_mass_default:
+0x00000000000001ed:  B8 64 00          mov    ax, 100
 0x00000000000001f0:  31 D2             xor    dx, dx
 0x00000000000001f2:  5B                pop    bx
 0x00000000000001f3:  CB                ret   
 
 ENDP
 
-dw 03402h
-dw 03402h
-dw 03802h
-dw 04C02h
-dw 03C02h
-dw 04C02h
-dw 04C02h
-dw 03402h
-dw 04C02h
-dw 03402h
-dw 04002h
-dw 04402h
-dw 04402h
-dw 04402h
-dw 04402h
-dw 04C02h
-dw 04402h
-dw 04402h
-dw 04402h
-dw 04802h
-dw 04402h
-dw 04402h
-dw 03402h
+_active_sound_lookup
+
+dw 00234h
+dw 00234h
+dw 00238h
+dw 0024Ch
+dw 0023Ch
+dw 0024Ch
+dw 0024Ch
+dw 00234h
+dw 0024Ch
+dw 00234h
+dw 00240h
+dw 00244h
+dw 00244h
+dw 00244h
+dw 00244h
+dw 0024Ch
+dw 00244h
+dw 00244h
+dw 00244h
+dw 00248h
+dw 00244h
+dw 00244h
+dw 00234h
 
 PROC    getActiveSound_ NEAR 
 PUBLIC  getActiveSound_
@@ -396,62 +413,65 @@ PUBLIC  getActiveSound_
 
 0x0000000000000222:  53                push   bx
 0x0000000000000223:  FE C8             dec    al
-0x0000000000000225:  3C 16             cmp    al, 0x16
-0x0000000000000227:  77 23             ja     0x24c
+0x0000000000000225:  3C 16             cmp    al, 22
+0x0000000000000227:  77 23             ja     active_sound_default
 0x0000000000000229:  30 E4             xor    ah, ah
 0x000000000000022b:  89 C3             mov    bx, ax
 0x000000000000022d:  01 C3             add    bx, ax
-0x000000000000022f:  2E FF A7 F4 01    jmp    word ptr cs:[bx + 0x1f4]
-0x0000000000000234:  B0 4B             mov    al, 0x4b
+0x000000000000022f:  2E FF A7 F4 01    jmp    word ptr cs:[bx + _active_sound_lookup]
+0x0000000000000234:  B0 4B             mov    al, SFX_POSACT
 0x0000000000000236:  5B                pop    bx
 0x0000000000000237:  CB                ret   
-0x0000000000000238:  B0 50             mov    al, 0x50
+0x0000000000000238:  B0 50             mov    al, SFX_VILACT
 0x000000000000023a:  5B                pop    bx
 0x000000000000023b:  CB                ret   
-0x000000000000023c:  B0 69             mov    al, 0x69
+0x000000000000023c:  B0 69             mov    al, SFX_SKEACT
 0x000000000000023e:  5B                pop    bx
 0x000000000000023f:  CB                ret   
-0x0000000000000240:  B0 4C             mov    al, 0x4c
+0x0000000000000240:  B0 4C             mov    al, SFX_BGACT
 0x0000000000000242:  5B                pop    bx
 0x0000000000000243:  CB                ret   
-0x0000000000000244:  B0 4D             mov    al, 0x4d
+0x0000000000000244:  B0 4D             mov    al, SFX_DMACT
 0x0000000000000246:  5B                pop    bx
 0x0000000000000247:  CB                ret   
-0x0000000000000248:  B0 4E             mov    al, 0x4e
+0x0000000000000248:  B0 4E             mov    al, SFX_BSPACT
 0x000000000000024a:  5B                pop    bx
 0x000000000000024b:  CB                ret   
+active_sound_default:
 0x000000000000024c:  30 C0             xor    al, al
 0x000000000000024e:  5B                pop    bx
 0x000000000000024f:  CB                ret   
 
 ENDP
 
-dw 09402h
-dw 09802h
-dw 09802h
-dw 09C02h
-dw 0B402h
-dw 09802h
-dw 0B402h
-dw 0B402h
-dw 0A002h
-dw 0B402h
-dw 09802h
-dw 09802h
-dw 0A402h
-dw 0A402h
-dw 0A402h
-dw 0A402h
-dw 0B402h
-dw 0A402h
-dw 0A402h
-dw 0A402h
-dw 0A402h
-dw 0A402h
-dw 0A802h
-dw 09802h
-dw 0AC02h
-dw 0B002h
+_pain_sound_lookup:
+
+dw 00294h
+dw 00298h
+dw 00298h
+dw 0029Ch
+dw 002B4h
+dw 00298h
+dw 002B4h
+dw 002B4h
+dw 002A0h
+dw 002B4h
+dw 00298h
+dw 00298h
+dw 002A4h
+dw 002A4h
+dw 002A4h
+dw 002A4h
+dw 002B4h
+dw 002A4h
+dw 002A4h
+dw 002A4h
+dw 002A4h
+dw 002A4h
+dw 002A8h
+dw 00298h
+dw 002ACh
+dw 002B0h
 
 
 PROC    getPainSound_ NEAR 
@@ -459,12 +479,12 @@ PUBLIC  getPainSound_
 
 
 0x0000000000000284:  53                push bx
-0x0000000000000285:  3C 19             cmp    al, 0x19
-0x0000000000000287:  77 2B             ja     0x2b4
+0x0000000000000285:  3C 19             cmp    al, 25
+0x0000000000000287:  77 2B             ja     pain_sound_default
 0x0000000000000289:  30 E4             xor    ah, ah
 0x000000000000028b:  89 C3             mov    bx, ax
 0x000000000000028d:  01 C3             add    bx, ax
-0x000000000000028f:  2E FF A7 50 02    jmp    word ptr cs:[bx + 0x250]
+0x000000000000028f:  2E FF A7 50 02    jmp    word ptr cs:[bx + _pain_sound_lookup]
 0x0000000000000294:  B0 19             mov    al, 0x19
 0x0000000000000296:  5B                pop    bx
 0x0000000000000297:  CB                ret   
@@ -489,6 +509,7 @@ PUBLIC  getPainSound_
 0x00000000000002b0:  B0 61             mov    al, 0x61
 0x00000000000002b2:  5B                pop    bx
 0x00000000000002b3:  CB                ret   
+pain_sound_default:
 0x00000000000002b4:  30 C0             xor    al, al
 0x00000000000002b6:  5B                pop    bx
 0x00000000000002b7:  CB                ret 
@@ -533,7 +554,7 @@ PUBLIC  getDamage_
 0x00000000000002e4:  74 2E             je     0x314
 0x00000000000002e6:  3C 06             cmp    al, 6
 0x00000000000002e8:  75 EC             jne    0x2d6
-0x00000000000002ea:  B0 0A             mov    al, 0xa
+0x00000000000002ea:  B0 0A             mov    al, 10
 0x00000000000002ec:  CB                ret   
 0x00000000000002ed:  76 22             jbe    0x311
 0x00000000000002ef:  3C 22             cmp    al, 0x22
@@ -547,7 +568,7 @@ PUBLIC  getDamage_
 0x00000000000002fe:  74 17             je     0x317
 0x0000000000000300:  3C 23             cmp    al, 0x23
 0x0000000000000302:  75 D2             jne    0x2d6
-0x0000000000000304:  B0 64             mov    al, 0x64
+0x0000000000000304:  B0 64             mov    al, 100
 0x0000000000000306:  CB                ret   
 0x0000000000000307:  76 0B             jbe    0x314
 0x0000000000000309:  3C 1C             cmp    al, 0x1c
@@ -563,44 +584,45 @@ PUBLIC  getDamage_
 
 ENDP
 
-dw 06003h
-dw 06503h
-dw 06A03h
-dw 06F03h
-dw 0BF03h
-dw 07403h
-dw 0BF03h
-dw 0BF03h
-dw 07903h
-dw 0BF03h
-dw 07E03h
-dw 08303h
-dw 08803h
-dw 08803h
-dw 08D03h
-dw 09203h
-dw 0BF03h
-dw 09703h
-dw 09C03h
-dw 0A103h
-dw 0A603h
-dw 0AB03h
-dw 0B003h
-dw 0B503h
-dw 0BF03h
-dw 0BF03h
-dw 0BA03h
+_see_state_lookup:
+dw 00360h
+dw 00365h
+dw 0036Ah
+dw 0036Fh
+dw 003BFh
+dw 00374h
+dw 003BFh
+dw 003BFh
+dw 00379h
+dw 003BFh
+dw 0037Eh
+dw 00383h
+dw 00388h
+dw 00388h
+dw 0038Dh
+dw 00392h
+dw 003BFh
+dw 00397h
+dw 0039Ch
+dw 003A1h
+dw 003A6h
+dw 003ABh
+dw 003B0h
+dw 003B5h
+dw 003BFh
+dw 003BFh
+dw 003BAh
 
 PROC    getSeeState_ NEAR 
 PUBLIC  getSeeState_
 
 0x0000000000000350:  53                push   bx
-0x0000000000000351:  3C 1A             cmp    al, 0x1a
-0x0000000000000353:  77 64             ja     0x3b9
+0x0000000000000351:  3C 1A             cmp    al, 26
+0x0000000000000353:  77 64             ja     see_state_default
 0x0000000000000355:  30 E4             xor    ah, ah
 0x0000000000000357:  89 C3             mov    bx, ax
 0x0000000000000359:  01 C3             add    bx, ax
-0x000000000000035b:  2E FF A7 1A 03    jmp    word ptr cs:[bx + 0x31a]
+0x000000000000035b:  2E FF A7 1A 03    jmp    word ptr cs:[bx + _see_state_lookup]
 0x0000000000000360:  B8 96 00          mov    ax, 0x96
 0x0000000000000363:  5B                pop    bx
 0x0000000000000364:  CB                ret   
@@ -654,6 +676,7 @@ PUBLIC  getSeeState_
 0x00000000000003b4:  CB                ret   
 0x00000000000003b5:  B8 D8 02          mov    ax, 0x2d8
 0x00000000000003b8:  5B                pop    bx
+see_state_default:
 0x00000000000003b9:  CB                ret   
 0x00000000000003ba:  B8 11 03          mov    ax, 0x311
 0x00000000000003bd:  5B                pop    bx
@@ -664,30 +687,32 @@ PUBLIC  getSeeState_
 
 ENDP
 
+_missile_state_lookup:
+
 dw 00404h
-dw 00904h
-dw 00E04h
-dw 01304h
-dw 05904h
-dw 01804h
-dw 05904h
-dw 05904h
-dw 01D04h
-dw 05904h
-dw 02204h
-dw 02704h
-dw 05904h
-dw 05904h
-dw 02C04h
-dw 03104h
-dw 05904h
-dw 03604h
-dw 03B04h
-dw 04004h
-dw 04504h
-dw 04A04h
-dw 04F04h
-dw 05404h
+dw 00409h
+dw 0040Eh
+dw 00413h
+dw 00459h
+dw 00418h
+dw 00459h
+dw 00459h
+dw 0041Dh
+dw 00459h
+dw 00422h
+dw 00427h
+dw 00459h
+dw 00459h
+dw 0042Ch
+dw 00431h
+dw 00459h
+dw 00436h
+dw 0043Bh
+dw 00440h
+dw 00445h
+dw 0044Ah
+dw 0044Fh
+dw 00454h
 
 
 PROC    getMissileState_ NEAR 
@@ -695,12 +720,12 @@ PUBLIC  getMissileState_
 
 
 0x00000000000003f4:  53                push   bx
-0x00000000000003f5:  3C 17             cmp    al, 0x17
-0x00000000000003f7:  77 60             ja     0x459
+0x00000000000003f5:  3C 17             cmp    al, 23
+0x00000000000003f7:  77 60             ja     missile_state_default
 0x00000000000003f9:  30 E4             xor    ah, ah
 0x00000000000003fb:  89 C3             mov    bx, ax
 0x00000000000003fd:  01 C3             add    bx, ax
-0x00000000000003ff:  2E FF A7 C4 03    jmp    word ptr cs:[bx + 0x3c4]
+0x00000000000003ff:  2E FF A7 C4 03    jmp    word ptr cs:[bx + _missile_state_lookup]
 0x0000000000000404:  B8 9A 00          mov    ax, 0x9a
 0x0000000000000407:  5B                pop    bx
 0x0000000000000408:  CB                ret   
@@ -710,7 +735,7 @@ PUBLIC  getMissileState_
 0x000000000000040e:  B8 D9 00          mov    ax, 0xd9
 0x0000000000000411:  5B                pop    bx
 0x0000000000000412:  CB                ret   
-0x0000000000000413:  B8 FF 00          mov    ax, 0xff
+0x0000000000000413:  B8 FF 00          mov    ax, 255
 0x0000000000000416:  5B                pop    bx
 0x0000000000000417:  CB                ret   
 0x0000000000000418:  B8 53 01          mov    ax, 0x153
@@ -752,49 +777,52 @@ PUBLIC  getMissileState_
 0x0000000000000454:  B8 E0 02          mov    ax, 0x2e0
 0x0000000000000457:  5B                pop    bx
 0x0000000000000458:  CB                ret   
+missile_state_default:
 0x0000000000000459:  31 C0             xor    ax, ax
 0x000000000000045b:  5B                pop    bx
 0x000000000000045c:  CB                ret   
 
 ENDP
 
-dw 0B804h
-dw 0BD04h
-dw 0C204h
-dw 0C704h
-dw 01705h
-dw 0CC04h
-dw 0D104h
-dw 01705h
-dw 0D604h
-dw 0DB04h
-dw 0E004h
-dw 0E504h
-dw 0EA04h
-dw 0EA04h
-dw 0EF04h
-dw 0F404h
-dw 0F904h
-dw 0FE04h
-dw 00305h
-dw 00805h
-dw 00D05h
-dw 01205h
-dw 01B05h
-dw 02005h
-dw 02505h
-dw 02A05h
-dw 01705h
-dw 01705h
-dw 01705h
-dw 01705h
-dw 02F05h
-dw 03405h
-dw 03905h
-dw 03E05h
-dw 04305h
-dw 04805h
-dw 04D05h
+_death_state_lookup:
+
+dw 004B8h
+dw 004BDh
+dw 004C2h
+dw 004C7h
+dw 00517h
+dw 004CCh
+dw 004D1h
+dw 00517h
+dw 004D6h
+dw 004DBh
+dw 004E0h
+dw 004E5h
+dw 004EAh
+dw 004EAh
+dw 004EFh
+dw 004F4h
+dw 004F9h
+dw 004FEh
+dw 00503h
+dw 00508h
+dw 0050Dh
+dw 00512h
+dw 0051Bh
+dw 00520h
+dw 00525h
+dw 0052Ah
+dw 00517h
+dw 00517h
+dw 00517h
+dw 00517h
+dw 0052Fh
+dw 00534h
+dw 00539h
+dw 0053Eh
+dw 00543h
+dw 00548h
+dw 0054Dh
 
 PROC    getDeathState_ NEAR 
 PUBLIC  getDeathState_
@@ -802,12 +830,12 @@ PUBLIC  getDeathState_
 
 
 0x00000000000004a8:  53                push   bx
-0x00000000000004a9:  3C 24             cmp    al, 0x24
-0x00000000000004ab:  77 6A             ja     0x517
+0x00000000000004a9:  3C 24             cmp    al, 36
+0x00000000000004ab:  77 6A             ja     death_state_default
 0x00000000000004ad:  30 E4             xor    ah, ah
 0x00000000000004af:  89 C3             mov    bx, ax
 0x00000000000004b1:  01 C3             add    bx, ax
-0x00000000000004b3:  2E FF A7 5E 04    jmp    word ptr cs:[bx + 0x45e]
+0x00000000000004b3:  2E FF A7 5E 04    jmp    word ptr cs:[bx + _death_state_lookup]
 0x00000000000004b8:  B8 9E 00          mov    ax, 0x9e
 0x00000000000004bb:  5B                pop    bx
 0x00000000000004bc:  CB                ret   
@@ -865,6 +893,7 @@ PUBLIC  getDeathState_
 0x0000000000000512:  B8 B3 02          mov    ax, 0x2b3
 0x0000000000000515:  5B                pop    bx
 0x0000000000000516:  CB                ret   
+death_state_default:
 0x0000000000000517:  31 C0             xor    ax, ax
 0x0000000000000519:  5B                pop    bx
 0x000000000000051a:  CB                ret   
@@ -904,44 +933,46 @@ PUBLIC  getDeathState_
 
 ENDP
 
-dw 09605h
-dw 09B05h
-dw 0A005h
-dw 0A505h
-dw 0F505h
-dw 0AA05h
-dw 0F505h
-dw 0F505h
-dw 0AF05h
-dw 0F505h
-dw 0B405h
-dw 0B905h
-dw 0BE05h
-dw 0BE05h
-dw 0C305h
-dw 0C805h
-dw 0F505h
-dw 0CD05h
-dw 0D205h
-dw 0D705h
-dw 0DC05h
-dw 0E105h
-dw 0E605h
-dw 0EB05h
-dw 0F005h
-dw 0F905h
+_pain_state_lookup:
+
+dw 00596h
+dw 0059Bh
+dw 005A0h
+dw 005A5h
+dw 005F5h
+dw 005AAh
+dw 005F5h
+dw 005F5h
+dw 005AFh
+dw 005F5h
+dw 005B4h
+dw 005B9h
+dw 005BEh
+dw 005BEh
+dw 005C3h
+dw 005C8h
+dw 005F5h
+dw 005CDh
+dw 005D2h
+dw 005D7h
+dw 005DCh
+dw 005E1h
+dw 005E6h
+dw 005EBh
+dw 005F0h
+dw 005F9h
 
 PROC    getPainState_ NEAR 
 PUBLIC  getPainState_
 
 
 0x0000000000000586:  53                push   bx
-0x0000000000000587:  3C 19             cmp    al, 0x19
-0x0000000000000589:  77 6A             ja     0x5f5
+0x0000000000000587:  3C 19             cmp    al, 25
+0x0000000000000589:  77 6A             ja     pain_state_default
 0x000000000000058b:  30 E4             xor    ah, ah
 0x000000000000058d:  89 C3             mov    bx, ax
 0x000000000000058f:  01 C3             add    bx, ax
-0x0000000000000591:  2E FF A7 52 05    jmp    word ptr cs:[bx + 0x552]
+0x0000000000000591:  2E FF A7 52 05    jmp    word ptr cs:[bx + _pain_state_lookup]
 0x0000000000000596:  B8 9C 00          mov    ax, 0x9c
 0x0000000000000599:  5B                pop    bx
 0x000000000000059a:  CB                ret   
@@ -999,6 +1030,7 @@ PUBLIC  getPainState_
 0x00000000000005f0:  B8 08 03          mov    ax, 0x308
 0x00000000000005f3:  5B                pop    bx
 0x00000000000005f4:  CB                ret   
+pain_state_default:
 0x00000000000005f5:  31 C0             xor    ax, ax
 0x00000000000005f7:  5B                pop    bx
 0x00000000000005f8:  CB                ret   
@@ -1008,37 +1040,39 @@ PUBLIC  getPainState_
 
 ENDP
 
-dw 04C06h
-dw 05106h
-dw 05606h
-dw 05B06h
-dw 06006h
-dw 06506h
-dw 06006h
-dw 06006h
-dw 06A06h
-dw 06006h
-dw 06F06h
-dw 07406h
-dw 07906h
-dw 07906h
-dw 07E06h
-dw 06006h
-dw 06006h
-dw 08306h
-dw 04C06h
-dw 08806h
-dw 08306h
-dw 08D06h
-dw 07E06h
-dw 09206h
-dw 04C06h
-dw 09706h
-dw 06006h
-dw 06006h
-dw 06006h
-dw 06006h
-dw 05106h
+_spawn_health_lookup:
+
+dw 0064Ch
+dw 00651h
+dw 00656h
+dw 0065Bh
+dw 00660h
+dw 00665h
+dw 00660h
+dw 00660h
+dw 0066Ah
+dw 00660h
+dw 0066Fh
+dw 00674h
+dw 00679h
+dw 00679h
+dw 0067Eh
+dw 00660h
+dw 00660h
+dw 00683h
+dw 0064Ch
+dw 00688h
+dw 00683h
+dw 0068Dh
+dw 0067Eh
+dw 00692h
+dw 0064Ch
+dw 00697h
+dw 00660h
+dw 00660h
+dw 00660h
+dw 00660h
+dw 00651h
 
 
 PROC    getSpawnHealth_ NEAR 
@@ -1046,13 +1080,13 @@ PUBLIC  getSpawnHealth_
 
 
 0x000000000000063c:  53                push   bx
-0x000000000000063d:  3C 1E             cmp    al, 0x1e
-0x000000000000063f:  77 1F             ja     0x660
+0x000000000000063d:  3C 1E             cmp    al, 30
+0x000000000000063f:  77 1F             ja     spawn_health_default
 0x0000000000000641:  30 E4             xor    ah, ah
 0x0000000000000643:  89 C3             mov    bx, ax
 0x0000000000000645:  01 C3             add    bx, ax
-0x0000000000000647:  2E FF A7 FE 05    jmp    word ptr cs:[bx + 0x5fe]
-0x000000000000064c:  B8 64 00          mov    ax, 0x64
+0x0000000000000647:  2E FF A7 FE 05    jmp    word ptr cs:[bx + _spawn_health_lookup]
+0x000000000000064c:  B8 64 00          mov    ax, 100
 0x000000000000064f:  5B                pop    bx
 0x0000000000000650:  CB                ret   
 0x0000000000000651:  B8 14 00          mov    ax, 0x14
@@ -1064,6 +1098,7 @@ PUBLIC  getSpawnHealth_
 0x000000000000065b:  B8 BC 02          mov    ax, 0x2bc
 0x000000000000065e:  5B                pop    bx
 0x000000000000065f:  CB                ret   
+spawn_health_default:
 0x0000000000000660:  B8 E8 03          mov    ax, 0x3e8
 0x0000000000000663:  5B                pop    bx
 0x0000000000000664:  CB                ret   
