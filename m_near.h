@@ -508,7 +508,7 @@
 #define linetarget	     				  (*((mobj_t  __near* __near*)       (_NULL_OFFSET + 0x06E2)))
 #define linetarget_pos  			      (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x06E4)))
 #define attackrange16		   		      (*((int16_t __near*)               (_NULL_OFFSET + 0x06E8)))
-#define nofit		   		              (*((boolean __near*)               (_NULL_OFFSET + 0x06EA)))
+// 6ea unused
 #define crushchange		   		          (*((boolean __near*)               (_NULL_OFFSET + 0x06EB)))
 #define leveltime     				      (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x06EC)))
 #define fopen_rb_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x06F0))

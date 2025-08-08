@@ -134,8 +134,7 @@ mov   bx, cx
 mov   ax, si
 and   al, 0F0h ; undo the ptr
 call  dword ptr ds:[_P_ChangeSector]
-test  al, al
-je    exit_moveplanefloordown_return_floorpastdest
+jnc   exit_moveplanefloordown_return_floorpastdest
 ; something crushed
 
 mov   dx, SECTORS_SEGMENT
@@ -164,8 +163,7 @@ mov   bx, cx ; crush
 mov   ax, si
 and   al, 0F0h ; undo the ptr
 call  dword ptr ds:[_P_ChangeSector]
-test  al, al
-je    exit_moveplanefloordown_return_floorok
+jnc   exit_moveplanefloordown_return_floorok
 
 test  bp, bp
 jne   do_second_floor_changesector_call   ; skip second check...
@@ -185,8 +183,12 @@ exit_moveplanefloordown_return_floorcrushed:
 exit_moveplanefloorup_return_floorcrushed:
 exit_moveplaneceilingdown_return_floorcrushed:
 mov   al, FLOOR_CRUSHED
+jmp   exit_moveplanefloordown_return
 exit_moveplanefloordown_return_floorok:
 exit_moveplanefloorup_return_floorok:
+mov   al, 0
+exit_moveplanefloordown_return:
+exit_moveplanefloorup_return:
 pop   bp
 pop   di
 pop   si
@@ -225,8 +227,7 @@ mov   bx, cx
 mov   ax, si
 and   al, 0F0h ; undo the ptr
 call  dword ptr ds:[_P_ChangeSector]
-test  al, al
-je    exit_moveplanefloorup_return_floorok
+jnc   exit_moveplanefloorup_return_floorok
 mov   al, 0 ; to force a ret 0 below...
 test  bp, bp  ; skip 2nd call if 1
 jne   exit_moveplanefloorup_return_floorok

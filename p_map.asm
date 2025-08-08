@@ -7809,7 +7809,7 @@ test  byte ptr es:[di + MOBJ_POS_T.mp_flags2], MF_DROPPED
 jne   crunch_items
 test  byte ptr es:[di + MOBJ_POS_T.mp_flags1], MF_SHOOTABLE
 je    exit_changesector_return_1
-mov   byte ptr ds:[_nofit], 1
+mov   byte ptr cs:[OFFSET SELFMODIFY_dochangesector_return - OFFSET P_SIGHT_STARTMARKER_], STC_OPCODE
 cmp   byte ptr ds:[_crushchange], 0
 je    exit_changesector_return_1
 test  byte ptr ds:[_leveltime], 3
@@ -7918,7 +7918,7 @@ ret
 
 ENDP
 
-
+; return in carry
 PROC P_ChangeSector_ FAR
 PUBLIC P_ChangeSector_
 
@@ -7927,7 +7927,7 @@ push  si
 push  di
 
 mov   byte ptr ds:[_crushchange], bl
-mov   byte ptr ds:[_nofit], 0        ; todo one write
+mov   byte ptr cs:[OFFSET SELFMODIFY_dochangesector_return - OFFSET P_SIGHT_STARTMARKER_], CLC_OPCODE
 
 add   ax, OFFSET _sectors_physics
 xchg  ax, bx  ; sector pointer
@@ -7941,7 +7941,8 @@ mov   si, OFFSET PIT_ChangeSector_ - OFFSET P_SIGHT_STARTMARKER_
 xor   di, di
 
 call  DoBlockmapLoop_
-mov   al, byte ptr ds:[_nofit]
+SELFMODIFY_dochangesector_return:
+clc
 pop   di
 pop   si
 pop   cx

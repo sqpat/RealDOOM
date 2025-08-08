@@ -70,7 +70,7 @@
 #define P_TeleportMoveOffset                    0x222E
 #define P_UseLinesOffset                        0x25C8
 #define P_RadiusAttackOffset                    0x26CF
-#define P_ChangeSectorOffset                    0x28CC
+#define P_ChangeSectorOffset                    0x28CD
 #define P_XYMovementOffset                      0x2EC2
 #define P_ZMovementOffset                       0x31D2
 #define P_ExplodeMissileOffset                  0x344E
