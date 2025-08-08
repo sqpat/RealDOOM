@@ -19,8 +19,8 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN EV_DoFloor_:FAR
-EXTRN EV_DoDoor_:FAR
+EXTRN EV_DoFloor_:NEAR
+EXTRN EV_DoDoor_:NEAR
 EXTRN EV_DoPlat_:NEAR
 EXTRN EV_DoCeiling_:NEAR
 EXTRN EV_BuildStairs_:NEAR
@@ -29,21 +29,19 @@ EXTRN EV_Teleport_:NEAR
 EXTRN EV_PlatFunc_:NEAR
 EXTRN EV_LightChange_:NEAR
 EXTRN EV_CeilingCrushStop_:NEAR
-EXTRN G_SecretExitLevel_:FAR
-EXTRN G_ExitLevel_:FAR
+
+
+EXTRN P_CreateThinker_:NEAR
+EXTRN P_DamageMobj_:NEAR
 EXTRN P_ChangeSwitchTexture_:NEAR
-EXTRN P_DamageMobj_:FAR
 EXTRN P_Random_:NEAR
-EXTRN S_StartSoundWithParams_:FAR
-EXTRN P_CreateThinker_:FAR
 EXTRN P_SpawnFireFlicker_:NEAR
 EXTRN P_SpawnStrobeFlash_:NEAR
 EXTRN P_SpawnLightFlash_:NEAR
 EXTRN P_SpawnGlowingLight_:NEAR
 EXTRN P_SpawnDoorCloseIn30_:NEAR
 EXTRN P_SpawnDoorRaiseIn5Mins_:NEAR
-EXTRN CopyString9_:NEAR
-EXTRN W_CheckNumForName_:FAR
+
 
 .DATA
 
@@ -749,6 +747,7 @@ mov       dx, DOOR_OPEN
 call_do_door_with_si_inc:
 inc       si ; si becomes 0
 call_do_door_no_si_inc:
+
 call      EV_DoDoor_
 
 switch_case_default:
@@ -772,11 +771,14 @@ pop       si
 pop       cx
 retf      4
 switch_case_124:
-call      G_SecretExitLevel_
+call  dword ptr ds:[_G_SecretExitLevel_addr]
 jmp       done_with_switch_block
 
 switch_case_52:
-call      G_ExitLevel_
+;call  G_ExitLevel_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _G_ExitLevel_addr
 jmp       done_with_switch_block
 
 
@@ -1013,7 +1015,7 @@ jmp       done_with_switch_block
 ENDP
 
 
-PROC    P_ShootSpecialLine_  FAR
+PROC    P_ShootSpecialLine_  NEAR
 PUBLIC  P_ShootSpecialLine_
 
 PUSHA_NO_AX_OR_BP_MACRO
@@ -1078,10 +1080,11 @@ call      P_ChangeSwitchTexture_
 
 exit_shootspecialline:
 POPA_NO_AX_OR_BP_MACRO
-retf      
+ret      
 
 case_46:
 mov       dx, DOOR_OPEN
+
 call      EV_DoDoor_
 jmp       do_change_switch_texture_call
 
@@ -1168,6 +1171,7 @@ do_floor_damage_and_exit:
 xor       dx, dx
 mov       ax, word ptr ds:[_playerMobj]
 xor       bx, bx
+
 call      P_DamageMobj_
 exit_p_playerinspecialsector:
 POPA_NO_AX_OR_BP_MACRO
@@ -1205,13 +1209,17 @@ xor       dx, dx
 mov       ax, word ptr ds:[_playerMobj]
 xor       bx, bx
 
+
 call      P_DamageMobj_
 dont_damage_this_tic:
 cmp       word ptr ds:[_player + PLAYER_T.player_health], 10
 jle       call_exit_level_and_exit
 jmp       exit_p_playerinspecialsector_2
 call_exit_level_and_exit:
-call      G_ExitLevel_
+;call  G_ExitLevel_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _G_ExitLevel_addr
 exit_p_playerinspecialsector_2:
 POPA_NO_AX_OR_BP_MACRO
 ret       
@@ -1235,7 +1243,10 @@ adc       word ptr ds:[_levelTimeCount+2], -1
 mov       ax, word ptr ds:[_levelTimeCount+0]
 or        ax, word ptr ds:[_levelTimeCount+2]
 jne       level_timer_check_ok
-call      G_ExitLevel_
+;call  G_ExitLevel_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _G_ExitLevel_addr
 jmp       level_timer_check_ok
 
 level_timer_check_ok:
@@ -1365,7 +1376,7 @@ stosw      ; mov       word ptr es:[di], ax
 mov       dx, SFX_SWTCHN
 mov       ax, word ptr ds:[si + BUTTON_T.button_soundorg]
 
-call      S_StartSoundWithParams_
+call      dword ptr ds:[_S_StartSoundWithParams_addr]
 
 mov       di, si
 xor       al, al
@@ -1513,6 +1524,7 @@ make_thinkers:
 push      dx  ; stores3
 
 mov       ax, TF_MOVEFLOOR_HIGHBITS
+push      cs
 call      P_CreateThinker_
 
 ;			floorRef = GETTHINKERREF(floor);
@@ -1546,6 +1558,7 @@ pop       word ptr ds:[di + FLOORMOVE_T.floormove_secnum]
 ;			//	Spawn lowering donut-hole
 
 mov       ax, TF_MOVEFLOOR_HIGHBITS
+push      cs
 call      P_CreateThinker_
 
 ;			floorRef = GETTHINKERREF(floor);

@@ -19,14 +19,15 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN S_StartSoundWithParams_:PROC
-EXTRN P_RemoveThinker_:PROC
-EXTRN _P_ChangeSector:DWORD
+EXTRN P_RemoveThinker_:NEAR
+EXTRN P_CreateThinker_:NEAR
+EXTRN P_ChangeSector_:NEAR
 EXTRN P_FindHighestOrLowestFloorSurrounding_:NEAR
 EXTRN P_FindLowestOrHighestCeilingSurrounding_:NEAR
 EXTRN P_FindSectorsFromLineTag_:NEAR
 EXTRN P_FindNextHighestFloor_:NEAR
-EXTRN P_CreateThinker_:FAR
+
+
 
 SHORTFLOORBITS = 3
 
@@ -133,7 +134,8 @@ mov   dx, es
 mov   bx, cx
 mov   ax, si
 and   al, 0F0h ; undo the ptr
-call  dword ptr ds:[_P_ChangeSector]
+call  P_ChangeSector_
+
 jnc   exit_moveplanefloordown_return_floorpastdest
 ; something crushed
 
@@ -143,7 +145,8 @@ mov   word ptr es:[si], di
 mov   bx, cx
 xchg  ax, si
 and   al, 0F0h ; undo the ptr
-call  dword ptr ds:[_P_ChangeSector]
+call  P_ChangeSector_
+
 exit_moveplanefloordown_return_floorpastdest:
 exit_moveplanefloorup_return_floorpastdest:
 mov   al, FLOOR_PASTDEST
@@ -162,7 +165,8 @@ mov   dx, es
 mov   bx, cx ; crush
 mov   ax, si
 and   al, 0F0h ; undo the ptr
-call  dword ptr ds:[_P_ChangeSector]
+call  P_ChangeSector_
+
 jnc   exit_moveplanefloordown_return_floorok
 
 test  bp, bp
@@ -178,7 +182,8 @@ mov   word ptr es:[si], di
 mov   bx, cx ; crush
 xchg  ax, si
 and   al, 0F0h ; undo the ptr
-call  dword ptr ds:[_P_ChangeSector]
+call  P_ChangeSector_
+
 exit_moveplanefloordown_return_floorcrushed:
 exit_moveplanefloorup_return_floorcrushed:
 exit_moveplaneceilingdown_return_floorcrushed:
@@ -226,7 +231,8 @@ mov   dx, es
 mov   bx, cx
 mov   ax, si
 and   al, 0F0h ; undo the ptr
-call  dword ptr ds:[_P_ChangeSector]
+call  P_ChangeSector_
+
 jnc   exit_moveplanefloorup_return_floorok
 mov   al, 0 ; to force a ret 0 below...
 test  bp, bp  ; skip 2nd call if 1
@@ -260,7 +266,7 @@ test  byte ptr ds:[_leveltime], 7
 jne   dont_play_floor_sound
 mov   dx, SFX_STNMOV
 mov   ax, di
-call  S_StartSoundWithParams_   
+call  dword ptr ds:[_S_StartSoundWithParams_addr]   
 dont_play_floor_sound:
 
 mov   ax, di
@@ -320,10 +326,11 @@ dont_change_specials:
 pop   ax  ; bp - 2 retrieve floorRef
 mov   dx, SFX_PSTOP
 
+push  cs
 call  P_RemoveThinker_
 xchg  ax, di
 
-call  S_StartSoundWithParams_
+call  dword ptr ds:[_S_StartSoundWithParams_addr]
    
 exit_move_floor:
 LEAVE_MACRO 
@@ -353,7 +360,7 @@ dw do_floor_switch_case_type_raiseFloor512
 
 
 
-PROC    EV_DoFloor_ FAR
+PROC    EV_DoFloor_ NEAR
 PUBLIC  EV_DoFloor_
 ; return in carry
 
@@ -401,6 +408,7 @@ push  si ; bp - 0202h. pop at end of loop...
 
 mov   ax, TF_MOVEFLOOR_HIGHBITS
 cwd   ; zero dx
+push  cs
 call  P_CreateThinker_
 
 mov   si, ax  ;  si is floor
@@ -489,7 +497,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   cx
-retf  
+ret  
 
 
 do_floor_switch_case_type_turboLower:
@@ -802,6 +810,7 @@ push  si
 mov   ax, TF_MOVEFLOOR_HIGHBITS
 cwd   
 
+push  cs
 call  P_CreateThinker_
 
 
@@ -966,6 +975,7 @@ mov   di, bx  ; update sector variable.
 push  ax       ; secnum on stack...
 
 mov   ax, TF_MOVEFLOOR_HIGHBITS
+push  cs
 call  P_CreateThinker_
 
 ;    floor->floordestheight = height;

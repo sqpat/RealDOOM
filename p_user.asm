@@ -19,31 +19,32 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN S_StartSoundWithParams_:PROC
-EXTRN P_RemoveThinker_:PROC
+
+
+
+
 EXTRN P_FindHighestOrLowestFloorSurrounding_:NEAR
 EXTRN P_FindMinSurroundingLight_:NEAR
 EXTRN P_FindSectorsFromLineTag_:NEAR
 EXTRN P_FindNextHighestFloor_:NEAR
-EXTRN P_CreateThinker_:FAR
 EXTRN T_MovePlaneFloorUp_:NEAR
 EXTRN T_MovePlaneFloorDown_:NEAR
-EXTRN P_Random_:NEAR
 EXTRN P_UpdateThinkerFunc_:NEAR
 EXTRN P_PlayerInSpecialSector_:NEAR
-EXTRN FixedMulTrig_:PROC
-EXTRN FixedMul_:PROC
-EXTRN R_PointToAngle2_:PROC
-
+EXTRN P_SetMobjState_:NEAR
+EXTRN P_MovePsprites_:NEAR
+EXTRN P_UseLines_:NEAR
 
 .DATA
 
-EXTRN _onground:BYTE
-EXTRN _P_MovePsprites:DWORD
-EXTRN _P_SetMobjState:DWORD
+
+
 
 .CODE
 
+; kind of a local variable 
+_onground:
+db 0
 
 
 
@@ -89,7 +90,11 @@ push  cx  ; store for second call
 push  dx  
 
 mov   ax, FINECOSINE_SEGMENT
-call  FixedMulTrig_
+;call  FixedMulTrig_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrig_addr
+
 
 mov   bx, word ptr ds:[_playerMobj]
 add   word ptr ds:[bx + MOBJ_T.m_momx + 0], ax
@@ -99,7 +104,11 @@ pop   cx
 pop   bx
 mov   ax, FINESINE_SEGMENT
 
-call  FixedMulTrig_
+;call  FixedMulTrig_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrig_addr
+
 
 mov   bx, word ptr ds:[_playerMobj]
 add   word ptr ds:[bx + MOBJ_T.m_momy + 0], ax
@@ -139,7 +148,11 @@ les   ax, dword ptr ds:[si + MOBJ_T.m_momx + 0]
 mov   dx, es
 mov   bx, ax
 mov   cx, es
-call  FixedMul_
+;call FixedMul_ ; todo make a near one?
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul_addr
+
 
 xchg  ax, di
 les   bx, dword ptr ds:[si + MOBJ_T.m_momy + 0]  ; last use of mobj. clobber si is fine..
@@ -147,7 +160,11 @@ mov   si, dx ; backip in si
 mov   cx, es
 mov   dx, es
 mov   ax, bx
-call  FixedMul_
+;call FixedMul_ ; todo make a near one?
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMul_addr
+
 
 add   ax, di
 adc   dx, si
@@ -174,7 +191,7 @@ mov   word ptr ds:[di + PLAYER_T.player_bob + 0], ax
 mov   word ptr ds:[di + PLAYER_T.player_bob + 2], dx
 
 mov   cx, CF_NOMOMENTUM ; get ch 0 too
-cmp   byte ptr ds:[_onground], ch ; 0
+cmp   byte ptr cs:[_onground], ch ; 0
 je    dont_calc_bob_stuff
 test  byte ptr ds:[di + PLAYER_T.player_cheats], cl
 je    do_further_bob_stuff
@@ -225,7 +242,11 @@ sar   cx, 1
 rcr   bx, 1
 mov   ax, FINESINE_SEGMENT
 
-call  FixedMulTrig_
+;call  FixedMulTrig_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrig_addr
+
 
 xchg  ax, bx
 mov   cx, dx   ; cx:bx with bob
@@ -372,7 +393,7 @@ on_floor:
 inc   ax ; al is 1
 not_on_floor: ; al already 0
 set_onground:
-mov   byte ptr ds:[_onground], al
+mov   byte ptr cs:[_onground], al
 test  al, al
 je    not_on_ground_cant_move
 
@@ -418,7 +439,8 @@ jne   exit_p_moveplayer
 
 mov   ax, word ptr ds:[_playerMobj]
 mov   dx, S_PLAY_RUN1
-call  dword ptr ds:[_P_SetMobjState]
+push  cs
+call  P_SetMobjState_
 exit_p_moveplayer:
 POPA_NO_AX_MACRO
 ret  
@@ -441,7 +463,7 @@ PROC    P_DeathThink_ NEAR
 PUBLIC  P_DeathThink_
 
 PUSHA_NO_AX_OR_BP_MACRO
-call  dword ptr ds:[_P_MovePsprites]
+call  P_MovePsprites_
 
 xor   ax, ax
 cmp   word ptr ds:[_player + PLAYER_T.player_viewheightvalue + 2], 6
@@ -483,7 +505,7 @@ on_floor_2:
 inc   ax ; al is 1
 not_on_floor_2: ; al already 0
 
-mov   byte ptr ds:[_onground], al
+mov   byte ptr cs:[_onground], al
 
 call  P_CalcHeight_
 
@@ -525,7 +547,11 @@ push  ss
 pop   ds
 
 call_point_to_angle:
-call  R_PointToAngle2_
+
+;call  R_PointToAngle2_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _R_PointToAngle2_addr
 
 ;		delta.wu = angle.wu - playerMobj_pos->angle.wu;
 les   di, dword ptr ds:[_playerMobj_pos]
@@ -718,9 +744,8 @@ je    zero_usedown
 cmp   byte ptr ds:[bx +  PLAYER_T.player_usedown], dl
 jne   done_with_buttons
 
-;call      P_UseLines_
-db    09Ah
-dw    P_USELINES_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+call      P_UseLines_
 
 mov   byte ptr ds:[bx +  PLAYER_T.player_usedown], 1
 jmp   done_with_buttons
@@ -733,7 +758,7 @@ zero_usedown:
 mov   byte ptr ds:[bx + PLAYER_T.player_usedown], dl ; 0
 done_with_buttons:
 
-call  dword ptr ds:[_P_MovePsprites]
+call  P_MovePsprites_
 
 push  ds
 pop   es

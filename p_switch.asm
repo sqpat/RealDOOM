@@ -18,18 +18,9 @@
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
+EXTRN EV_DoFloor_:NEAR
+EXTRN EV_DoDoor_:NEAR
 
-EXTRN S_StartSoundWithParams_:PROC
-
-EXTRN _P_RemoveMobj:DWORD
-EXTRN _P_DropWeaponFar:DWORD
-EXTRN _P_SpawnMobj:DWORD
-EXTRN _P_SetMobjState:DWORD
-
-EXTRN EV_DoFloor_:PROC
-EXTRN EV_DoDoor_:PROC
-EXTRN G_ExitLevel_:PROC
-EXTRN G_SecretExitLevel_:PROC
 EXTRN EV_DoPlat_:NEAR
 EXTRN EV_DoDonut_:NEAR
 EXTRN EV_DoLockedDoor_:NEAR
@@ -37,6 +28,8 @@ EXTRN EV_VerticalDoor_:NEAR
 EXTRN EV_BuildStairs_:NEAR
 EXTRN EV_DoCeiling_:NEAR
 EXTRN EV_LightChange_:NEAR
+
+
 
 
 .DATA
@@ -152,7 +145,7 @@ xor   dx, dx
 mov   dl, byte ptr [bp - 2]
 mov   ax, word ptr ds:[_buttonlist + BUTTON_T.button_soundorg] ; jank. bug in original source?
 
-call  S_StartSoundWithParams_
+call  dword ptr ds:[_S_StartSoundWithParams_addr]
 
 
 mov   si, cx
@@ -267,7 +260,7 @@ dw special_line_type_32, special_line_type_47, special_line_type_48, special_lin
 
 ; return in carry 
 
-PROC    P_UseSpecialLine_ FAR
+PROC    P_UseSpecialLine_ NEAR
 PUBLIC  P_UseSpecialLine_
 ;boolean __far P_UseSpecialLine ( mobj_t __near*	thing, int16_t linenum,int16_t		side,THINKERREF thingRef){               
 ; args:
@@ -320,7 +313,7 @@ clc
 jmp   exit_usespecialline
 side_1_return_false:
 clc
-retf
+ret
 
 finished_with_player_check:
 skip_player_check:
@@ -370,7 +363,10 @@ mov   cx, si
 pop   bx   ; bp - 2
 xor   di, di
 call  P_ChangeSwitchTexture_
-call  G_ExitLevel_
+;call  G_ExitLevel_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _G_ExitLevel_addr
 jmp   do_specialline_exit_1
 
 special_line_type_5:
@@ -437,6 +433,7 @@ special_line_type_11:
 xor   dx, dx
 
 do_door:
+
 call  EV_DoDoor_
 jmp   check_change_switch_texture_0
 
@@ -479,7 +476,7 @@ exit_usespecialline:
 LEAVE_MACRO 
 pop   di
 pop   si
-retf  
+ret
 
 
 special_line_type_19:
@@ -518,7 +515,7 @@ mov   cx, si
 pop   bx   ; bp - 2
 xor   di, di
 call  P_ChangeSwitchTexture_
-call  G_SecretExitLevel_
+call  dword ptr ds:[_G_SecretExitLevel_addr]
 jmp   do_specialline_exit_1
 
 

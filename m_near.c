@@ -135,7 +135,7 @@ uint8_t                     screenSize;
 int8_t                     quickSaveSlot;
 
 boolean                 inhelpscreens;
-boolean                 menuactive;
+
 
 
 
@@ -379,51 +379,16 @@ uint8_t quality_port_lookup[12] = {
 
 
 
-
-
-
-
-
-#pragma aux P_AproxDistanceParams \
-			__modify [ax bx cx dx] \
-			__parm [dx ax] [cx bx] \
-                    __value [dx ax];
-
-#pragma aux (P_AproxDistanceParams) P_AproxDistance;
-
-
-
-// fixed_t (__far* P_AproxDistance)() =          ((fixed_t (__far *)(fixed_t dx, fixed_t dy))     	                                                                           (MK_FP(physics_highcode_segment, 		 P_AproxDistanceOffset)));
-// boolean (__far* P_CheckPosition)() =          ((boolean (__far *)(mobj_t __near* thing, int16_t oldsecnum, fixed_t_union x, fixed_t_union y))     	                       (MK_FP(physics_highcode_segment, 		 P_CheckPositionOffset)));
-boolean (__far* P_TeleportMove)() =           ((boolean (__far *)(mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y, int16_t oldsecnum)) (MK_FP(physics_highcode_segment, 		 P_TeleportMoveOffset)));
-// fixed_t (__far* P_AimLineAttack)() =          ((fixed_t (__far *)(mobj_t __near*	t1,fineangle_t	angle,int16_t	distance))     	                                       (MK_FP(physics_highcode_segment, 		 P_AimLineAttackOffset)));
-// void (__far* P_LineAttack)() =                ((void (__far *)(mobj_t __near*	t1,fineangle_t	angle,int16_t	distance,fixed_t	slope,int16_t		damage ))     	   (MK_FP(physics_highcode_segment, 		 P_LineAttackOffset)));
-// void (__far* P_UseLines)() =                  ((void (__far *)())     	                                                                                                   (MK_FP(physics_highcode_segment, 		 P_UseLinesOffset)));
-// void (__far* P_RadiusAttack)() =              ((void (__far *)(mobj_t __near* spot, uint16_t spot_pos, mobj_t __near* source, int16_t		damage))     	               (MK_FP(physics_highcode_segment, 		 P_RadiusAttackOffset)));
-boolean (__far* P_ChangeSector)() =           ((boolean (__far *)(sector_t __far* sector, boolean crunch))     	                                                           (MK_FP(physics_highcode_segment, 		 P_ChangeSectorOffset)));
-
-
-// boolean (__far* P_SpawnPuff)() =              ((boolean (__far *)(sector_t __far* sector, boolean crunch))     	                                                       (MK_FP(physics_highcode_segment, 		 P_SpawnPuffOffset)));
-// void (__far* P_XYMovement)() =                ((void (__far *)(mobj_t __near* mo, mobj_pos_t __far* mo_pos))     	                                                       (MK_FP(physics_highcode_segment, 		 P_XYMovementOffset)));
-// void (__far* P_ZMovement)() =                 ((void (__far *)(mobj_t __near* mo, mobj_pos_t __far* mo_pos))     	                                                       (MK_FP(physics_highcode_segment, 		 P_ZMovementOffset)));
-// void (__far* P_NightmareRespawn)() =          ((void (__far *)(mobj_t __near* mo, mobj_pos_t __far* mo_pos))     	                                                       (MK_FP(physics_highcode_segment, 		 P_NightmareRespawnOffset)));
-// THINKERREF (__far* P_SpawnMissile)() =        ((THINKERREF (__far *)(mobj_t __near* source, mobj_pos_t __far* source_pos, mobj_t __near* dest,  mobjtype_t type))     	   (MK_FP(physics_highcode_segment, 		 P_SpawnMissileOffset)));
-
-void (__far* P_MovePsprites)() =              ((void (__far *)())     	                                                                                                   (MK_FP(physics_highcode_segment, 		 P_MovePspritesOffset)));
-void (__far* P_DropWeaponFar)() =             ((void (__far *)())     	                                                                                                   (MK_FP(physics_highcode_segment, 		 P_DropWeaponFarOffset)));
-
-void (__far* P_RemoveMobj)() =                ((void (__far *)(mobj_t __near*	mobj))                                                                               	   (MK_FP(physics_highcode_segment, 		 P_RemoveMobjOffset)));
-void (__far* P_MobjThinker)() =                ((void (__far *)(mobj_t __near*	mobj, mobj_pos_t __far* thing_pos, THINKERREF mobjRef))                                    (MK_FP(physics_highcode_segment, 		 P_MobjThinkerOffset)));
-THINKERREF (__far* P_SpawnMobj)() =          ((THINKERREF (__far *)(fixed_t_union x, fixed_t_union y, fixed_t_union z, mobjtype_t type, int16_t knownsecnum))     	       (MK_FP(physics_highcode_segment, 		 P_SpawnMobjOffset)));
 void (__far* P_SpawnMapThing)() =            ((void (__far *)(mapthing_t mthing, int16_t key))                                        	                                   (MK_FP(physics_highcode_segment, 		 P_SpawnMapThingOffset)));
-void (__far* P_SetMobjState)() =            ((void (__far *)(mobj_t __near* mobj, statenum_t state))                                        	                           (MK_FP(physics_highcode_segment, 		 P_SetMobjStateOffset)));
 void (__far* R_WriteBackViewConstantsSpanCall)()  =   				      	  ((void    (__far *)())  								(MK_FP(spanfunc_jump_lookup_segment, 	 R_WriteBackViewConstantsSpan24Offset)));
 
 void (__far* R_WriteBackViewConstantsMaskedCall)() = 						  ((void    (__far *)())     							(MK_FP(maskedconstants_funcarea_segment, R_WriteBackViewConstantsMasked24Offset)));
 void (__far* R_WriteBackViewConstants)() =    ((void (__far *)())     	                                                                                                   (MK_FP(bsp_code_segment,          		 R_WriteBackViewConstants24Offset)));
 void (__far* R_RenderPlayerView)() =          ((void (__far *)())     	                                                                                                   (MK_FP(bsp_code_segment,          		 R_RenderPlayerView24Offset)));
 
-
+void (__far* P_Ticker)() =                    ((void (__far *)())     	                                                                                                    (MK_FP(physics_highcode_segment,         P_TickerOffset)));
+void (__far* P_SpawnSpecials)() =             ((void (__far *)())     	                                                                                                    (MK_FP(physics_highcode_segment,         P_SpawnSpecialsOffset)));
+void (__far* P_GivePower)() =                 ((void (__far *)(int16_t power))     	                                                                                        (MK_FP(physics_highcode_segment,         P_GivePowerOffset)));
 
 
 
@@ -478,7 +443,6 @@ uint8_t				usegamma;
 
  
  
-boolean         	paused; 
 boolean         	sendpause;              // send a pause event next tic 
 boolean         	sendsave;               // send a save event next tic 
 boolean         	usergame;               // ok to save / end game 
@@ -496,7 +460,7 @@ ticcount_t      	starttime;              // for comparative timing purposes
 
  
 boolean         demorecording; 
-boolean         demoplayback; 
+
 boolean         netdemo; 
 
 uint16_t           demo_p;				// buffer
@@ -1044,9 +1008,7 @@ uint16_t armsbgarray[1];
 
 
 int16_t	maxammo[NUMAMMO] = {200, 50, 300, 50};
-boolean		onground;
 
-int16_t currentThinkerListHead;
 // cached 'last used' mobjs for functions that operate on a mobj and where the mobj is often used right after. 
 
 uint16_t oldentertics;

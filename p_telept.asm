@@ -19,12 +19,11 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN S_StartSoundWithParams_:PROC
 
-EXTRN _P_TeleportMove:DWORD
-EXTRN _P_SpawnMobj:DWORD
 
-EXTRN FastMul16u32u_:NEAR
+EXTRN P_TeleportMove_:NEAR
+EXTRN P_SpawnMobj_:NEAR
+
 
 
 .DATA
@@ -220,7 +219,8 @@ mov   ax, di   ; ax gets thing ptr for first call
 
 
 mov   si, dx ; not needed, already equal after lodsw...
-call  dword ptr [_P_TeleportMove]
+push  cs
+call  P_TeleportMove_
 jnc   exit_ev_teleport_return_0; return false
 
 les   bx, dword ptr [bp + 0Ah]
@@ -264,7 +264,8 @@ pop   dx
 pop   bx
 pop   cx
 
-call  dword ptr ds:[_P_SpawnMobj]
+push  cs
+call  P_SpawnMobj_
 mov   dx, SFX_TELEPT
 mov   ax, word ptr ds:[_setStateReturn]
 ;call  S_StartSound_
@@ -326,7 +327,8 @@ pop   ds ; restore ds
 
 pop   bx
 pop   cx ; cx/bx ready
-call  dword ptr ds:[_P_SpawnMobj]
+push  cs
+call  P_SpawnMobj_
 mov   dx, SFX_TELEPT
 mov   ax, word ptr ds:[_setStateReturn]
 ;call  S_StartSound_

@@ -43,7 +43,6 @@ EXTRN Z_QuickMapByTaskNum_:PROC
 
 
 EXTRN _singledemo:BYTE
-EXTRN _demoplayback:BYTE
 EXTRN _mousepresent:BYTE
 EXTRN _key_strafe:BYTE
 EXTRN _key_straferight:BYTE
@@ -303,7 +302,7 @@ pop  di
 pop  bx
 ret  
 getparam_return_0:
-mov  byte ptr [di], 0
+mov  byte ptr ds:[di], 0
 pop  di
 pop  bx
 ret  
@@ -448,7 +447,7 @@ mov  bp, sp
 sub  sp, 0Eh
 ; event is created at 0Eh and passed to D_PostEvent and stored in stack
 
-cmp  byte ptr [_mousepresent], 0
+cmp  byte ptr ds:[_mousepresent], 0
 je   no_mouse
 
 call I_ReadMouse_
@@ -739,43 +738,43 @@ stosw
 stosw 
 
 
-mov       bl, byte ptr [_key_strafe]
+mov       bl, byte ptr ds:[_key_strafe]
 xor       bh, bh
 cmp       byte ptr cs:[bx + _gamekeydown], 0
 jne       strafe_is_on
 
-mov       al, byte ptr [_mousebstrafe]
-mov       bx, word ptr [_mousebuttons]
+mov       al, byte ptr ds:[_mousebstrafe]
+mov       bx, word ptr ds:[_mousebuttons]
 xor       ah, ah
 add       bx, ax
-mov       al, byte ptr [bx]
+mov       al, byte ptr ds:[bx]
 test      al, al
 je        strafe_is_not_on
 strafe_is_on:
 mov       al, 1
 strafe_is_not_on:
-mov       bl, byte ptr [_key_speed]
+mov       bl, byte ptr ds:[_key_speed]
 mov       byte ptr [bp - 2], al
 xor       cx, cx        ; cx:di is sidemove?
 xor       di, di
 xor       bh, bh
 mov       word ptr [bp - 4], cx
 mov       dh, byte ptr cs:[bx + _gamekeydown]
-mov       bl, byte ptr [_key_right]
+mov       bl, byte ptr ds:[_key_right]
 mov       word ptr [bp - 6], cx
 cmp       byte ptr cs:[bx + _gamekeydown], 0
 jne       turn_is_held
 
-mov       bl, byte ptr [_key_left]
+mov       bl, byte ptr ds:[_key_left]
 mov       al, byte ptr cs:[bx + _gamekeydown]
 test      al, al
 jne       turn_is_held
-mov       byte ptr [_turnheld], al
+mov       byte ptr ds:[_turnheld], al
 jmp       finished_checking_turn
 
 turn_is_held:
-inc       byte ptr [_turnheld]
-cmp       byte ptr [_turnheld], SLOWTURNTICS
+inc       byte ptr ds:[_turnheld]
+cmp       byte ptr ds:[_turnheld], SLOWTURNTICS
 jl        finished_checking_turn
 mov       dl, dh
 jmp       check_strafe
@@ -787,7 +786,7 @@ check_strafe:
 cmp       byte ptr [bp - 2], 0
 jne       handle_strafe
 handle_no_strafe:
-mov       bl, byte ptr [_key_right]
+mov       bl, byte ptr ds:[_key_right]
 xor       bh, bh
 cmp       byte ptr cs:[bx + _gamekeydown], 0
 je        handle_checking_left_turn
@@ -799,7 +798,7 @@ add       bx, ax
 mov       ax, word ptr cs:[bx + _angleturn]
 sub       word ptr cs:[si + 2], ax
 handle_checking_left_turn:
-mov       bl, byte ptr [_key_left]
+mov       bl, byte ptr ds:[_key_left]
 xor       bh, bh
 cmp       byte ptr cs:[bx + _gamekeydown], 0
 je        done_handling_strafe
@@ -813,7 +812,7 @@ add       word ptr cs:[si + 2], ax
 jmp       done_handling_strafe
 
 handle_strafe:
-mov       bl, byte ptr [_key_right]
+mov       bl, byte ptr ds:[_key_right]
 xor       bh, bh
 cmp       byte ptr cs:[bx + _gamekeydown], 0
 je        handle_checking_strafe_left
@@ -822,10 +821,10 @@ mov       al, dh
 cbw      
 mov       bx, ax
 SHIFT_MACRO shl bx 2
-add       cx, word ptr [bx + _sidemove]
-adc       di, word ptr [bx + _sidemove+2]
+add       cx, word ptr ds:[bx + _sidemove]
+adc       di, word ptr ds:[bx + _sidemove+2]
 handle_checking_strafe_left:
-mov       bl, byte ptr [_key_left]
+mov       bl, byte ptr ds:[_key_left]
 xor       bh, bh
 cmp       byte ptr cs:[bx + _gamekeydown], 0
 je        done_handling_strafe
@@ -834,10 +833,10 @@ mov       al, dh
 cbw      
 mov       bx, ax
 SHIFT_MACRO shl bx 2
-sub       cx, word ptr [bx + _sidemove]
-sbb       di, word ptr [bx + _sidemove+2]
+sub       cx, word ptr ds:[bx + _sidemove]
+sbb       di, word ptr ds:[bx + _sidemove+2]
 done_handling_strafe:
-mov       bl, byte ptr [_key_up]
+mov       bl, byte ptr ds:[_key_up]
 xor       bh, bh
 cmp       byte ptr cs:[bx + _gamekeydown], 0
 je        up_not_pressed
@@ -846,12 +845,12 @@ mov       al, dh
 cbw      
 mov       bx, ax
 SHIFT_MACRO shl bx 2
-mov       ax, word ptr [bx + _forwardmove]
+mov       ax, word ptr ds:[bx + _forwardmove]
 add       word ptr [bp - 4], ax
-mov       ax, word ptr [bx + _forwardmove+2]
+mov       ax, word ptr ds:[bx + _forwardmove+2]
 adc       word ptr [bp - 6], ax
 up_not_pressed:
-mov       bl, byte ptr [_key_down]
+mov       bl, byte ptr ds:[_key_down]
 xor       bh, bh
 cmp       byte ptr cs:[bx + _gamekeydown], 0
 je        down_not_pressed
@@ -860,12 +859,12 @@ mov       al, dh
 cbw      
 mov       bx, ax
 SHIFT_MACRO shl bx 2
-mov       ax, word ptr [bx + _forwardmove]
+mov       ax, word ptr ds:[bx + _forwardmove]
 sub       word ptr [bp - 4], ax
-mov       ax, word ptr [bx + _forwardmove+2]
+mov       ax, word ptr ds:[bx + _forwardmove+2]
 sbb       word ptr [bp - 6], ax
 down_not_pressed:
-mov       bl, byte ptr [_key_straferight]
+mov       bl, byte ptr ds:[_key_straferight]
 xor       bh, bh
 cmp       byte ptr cs:[bx + _gamekeydown], 0
 je        straferight_not_pressed
@@ -874,10 +873,10 @@ mov       al, dh
 cbw      
 mov       bx, ax
 SHIFT_MACRO shl bx 2
-add       cx, word ptr [bx + _sidemove]
-adc       di, word ptr [bx + _sidemove+2]
+add       cx, word ptr ds:[bx + _sidemove]
+adc       di, word ptr ds:[bx + _sidemove+2]
 straferight_not_pressed:
-mov       bl, byte ptr [_key_strafeleft]
+mov       bl, byte ptr ds:[_key_strafeleft]
 xor       bh, bh
 cmp       byte ptr cs:[bx + _gamekeydown], 0
 je        strafeleft_not_pressed
@@ -886,25 +885,25 @@ mov       al, dh
 cbw      
 mov       bx, ax
 SHIFT_MACRO shl bx 2
-sub       cx, word ptr [bx + _sidemove]
-sbb       di, word ptr [bx + _sidemove]
+sub       cx, word ptr ds:[bx + _sidemove]
+sbb       di, word ptr ds:[bx + _sidemove]
 strafeleft_not_pressed:
-mov       bl, byte ptr [_key_fire]
+mov       bl, byte ptr ds:[_key_fire]
 xor       bh, bh
 cmp       byte ptr cs:[bx + _gamekeydown], 0
 jne       fire_pressed
 ; check mouse fire
-mov       al, byte ptr [_mousebfire]
-mov       bx, word ptr [_mousebuttons]
+mov       al, byte ptr ds:[_mousebfire]
+mov       bx, word ptr ds:[_mousebuttons]
 xor       ah, ah
 add       bx, ax
-cmp       byte ptr [bx], 0
+cmp       byte ptr ds:[bx], 0
 je        done_handling_fire
 
 fire_pressed:
 or        byte ptr cs:[si + 7], BT_ATTACK
 done_handling_fire:
-mov       bl, byte ptr [_key_use]
+mov       bl, byte ptr ds:[_key_use]
 xor       bh, bh
 cmp       byte ptr cs:[bx + _gamekeydown], 0
 jne       use_pressed
@@ -925,7 +924,7 @@ jmp       loop_handle_weapon_swap
 use_pressed:
 xor       ax, ax
 or        byte ptr cs:[si + 7], BT_USE
-mov       word ptr [_dclicks], ax
+mov       word ptr ds:[_dclicks], ax
 jmp       done_handling_use
 
 handle_weapon_change:
@@ -934,55 +933,55 @@ or        byte ptr cs:[si + 7], BT_CHANGE
 SHIFT_MACRO shl al 3
 or        byte ptr cs:[si + 7], al
 done_checking_weapons:
-mov       al, byte ptr [_mousebforward]
-mov       bx, word ptr [_mousebuttons]
+mov       al, byte ptr ds:[_mousebforward]
+mov       bx, word ptr ds:[_mousebuttons]
 xor       ah, ah
 add       bx, ax
-cmp       byte ptr [bx], 0
+cmp       byte ptr ds:[bx], 0
 je        mouse_forward_not_pressed
 mov       al, dh
 cbw      
 mov       bx, ax
 SHIFT_MACRO shl bx 2
-mov       ax, word ptr [bx + _forwardmove]
+mov       ax, word ptr ds:[bx + _forwardmove]
 add       word ptr [bp - 4], ax
-mov       ax, word ptr [bx + _forwardmove+2]
+mov       ax, word ptr ds:[bx + _forwardmove+2]
 adc       word ptr [bp - 6], ax
 mouse_forward_not_pressed:
 
 ; check mouse strafe double click?
-mov       al, byte ptr [_mousebstrafe]
-mov       bx, word ptr [_mousebuttons]
+mov       al, byte ptr ds:[_mousebstrafe]
+mov       bx, word ptr ds:[_mousebuttons]
 xor       ah, ah
 add       bx, ax
-mov       al, byte ptr [bx]
+mov       al, byte ptr ds:[bx]
 cbw      
-cmp       ax, word ptr [_dclickstate2]
+cmp       ax, word ptr ds:[_dclickstate2]
 jne       strafe_clickstate_nonequal
 handle_strafe_clickstate:
-inc       word ptr [_dclicktime2]
-cmp       word ptr [_dclicktime2], 20  
+inc       word ptr ds:[_dclicktime2]
+cmp       word ptr ds:[_dclicktime2], 20  
 jng       done_handling_mouse_strafe
 xor       ax, ax
-mov       word ptr [_dclicks2], ax
-mov       word ptr [_dclickstate2], ax
+mov       word ptr ds:[_dclicks2], ax
+mov       word ptr ds:[_dclickstate2], ax
 jmp       done_handling_mouse_strafe
 strafe_clickstate_nonequal:
-cmp       word ptr [_dclicktime2], 1
+cmp       word ptr ds:[_dclicktime2], 1
 jle       handle_strafe_clickstate
-mov       word ptr [_dclickstate2], ax
+mov       word ptr ds:[_dclickstate2], ax
 test      ax, ax
 je        dont_increment_dclicks2
-inc       word ptr [_dclicks2]
+inc       word ptr ds:[_dclicks2]
 dont_increment_dclicks2:
-cmp       word ptr [_dclicks2], 2
+cmp       word ptr ds:[_dclicks2], 2
 je        handle_double_click
 
 xor       ax, ax
-mov       word ptr [_dclicktime2], ax
+mov       word ptr ds:[_dclicktime2], ax
 jmp       done_handling_mouse_strafe
 strafe_on_add_mousex:
-mov       ax, word ptr [_mousex]
+mov       ax, word ptr ds:[_mousex]
 SHIFT_MACRO shl ax 3
 sub       word ptr cs:[si + 2], ax
 jmp       done_handling_mousex
@@ -990,13 +989,13 @@ jmp       done_handling_mousex
 handle_double_click:
 xor       ax, ax
 or        byte ptr cs:[si + 7], BT_USE
-mov       word ptr [_dclicks2], ax
+mov       word ptr ds:[_dclicks2], ax
 
 done_handling_mouse_strafe:
 cmp       byte ptr [bp - 2], 0
 je        strafe_on_add_mousex
 ; set angle turn
-mov       ax, word ptr [_mousex]
+mov       ax, word ptr ds:[_mousex]
 add       ax, ax
 cwd       
 add       cx, ax
@@ -1005,40 +1004,40 @@ done_handling_mousex:
 
 ; limit move speed to max move (forward_move[1])
 
-mov       word ptr [_mousex], 0
+mov       word ptr ds:[_mousex], 0
 mov       ax, word ptr [bp - 6]
-cmp       ax, word ptr [_forwardmove + 6]
+cmp       ax, word ptr ds:[_forwardmove + 6]
 jg        clip_forwardmove_to_max
 jne       check_negative_max_forward
 mov       ax, word ptr [bp - 4]
-cmp       ax, word ptr [_forwardmove + 4]
+cmp       ax, word ptr ds:[_forwardmove + 4]
 jbe       check_negative_max_forward
 clip_forwardmove_to_max:
-mov       ax, word ptr [_forwardmove + 4]
+mov       ax, word ptr ds:[_forwardmove + 4]
 overwrite_forwardmove:
 mov       word ptr [bp - 4], ax
 dont_overwrite_forwardmove:
-mov       ax, word ptr [_forwardmove + 6]
+mov       ax, word ptr ds:[_forwardmove + 6]
 
 ; compare side to maxmove
 cmp       di, ax
 jg        clip_sidemove_to_max
 jne       check_negative_max_side
-cmp       cx, word ptr [_forwardmove + 4]
+cmp       cx, word ptr ds:[_forwardmove + 4]
 jbe       check_negative_max_side
 clip_sidemove_to_max:
-mov       cx, word ptr [_forwardmove + 4]
+mov       cx, word ptr ds:[_forwardmove + 4]
 done_checking_sidemove:
 ; add sidemove/forwardmove to cmd
 mov       al, byte ptr [bp - 4]
 add       byte ptr cs:[si + 1], cl
 add       byte ptr cs:[si], al
-cmp       byte ptr [_sendpause], 0
+cmp       byte ptr ds:[_sendpause], 0
 je        dont_pause
-mov       byte ptr [_sendpause], 0
+mov       byte ptr ds:[_sendpause], 0
 mov       byte ptr cs:[si + 7], (BT_SPECIAL OR BTS_PAUSE) 
 dont_pause:
-cmp       byte ptr [_sendsave], 0
+cmp       byte ptr ds:[_sendsave], 0
 jne       handle_save_press
 LEAVE_MACRO
 pop       di
@@ -1049,7 +1048,7 @@ pop       bx
 ret       
 check_negative_max_forward:
 
-les       ax, dword ptr [_forwardmove + 4]
+les       ax, dword ptr ds:[_forwardmove + 4]
 mov       dx, es
 neg       dx
 neg       ax
@@ -1066,11 +1065,11 @@ jmp       overwrite_forwardmove
 
 
 handle_save_press:
-mov       al, byte ptr [_savegameslot]
+mov       al, byte ptr ds:[_savegameslot]
 SHIFT_MACRO shl al 2
 ;; BTS_SAVESHIFT
 or        al, (BT_SPECIAL OR BTS_SAVEGAME)
-mov       byte ptr [_sendsave], 0
+mov       byte ptr ds:[_sendsave], 0
 mov       byte ptr cs:[si + 7], al
 LEAVE_MACRO     
 pop       di
@@ -1083,7 +1082,7 @@ ret
 
 check_negative_max_side:
 mov       dx, ax
-mov       ax, word ptr [_forwardmove + 4]
+mov       ax, word ptr ds:[_forwardmove + 4]
 neg       dx
 neg       ax
 sbb       dx, 0
@@ -1319,11 +1318,11 @@ cmp   si, OFFSET _snd_SBport    ; 16 bit value special case
 je    shift4_write_word
 cmp   si, OFFSET _snd_Mport    ; 16 bit value special case
 je    shift4_write_word
-mov   byte ptr [si], al         ; written here 1
+mov   byte ptr ds:[si], al         ; written here 1
 jmp   wrote_byte
 shift4_write_word:
 SHIFT_MACRO shl ax 4
-mov   word ptr [si], ax
+mov   word ptr ds:[si], ax
 wrote_byte:
 loop  loop_set_default_values
 
@@ -1336,14 +1335,14 @@ call  M_CheckParm_
 
 test  ax, ax
 je    set_default_defaultsfilename
-mov   dx, word ptr [_myargc]
+mov   dx, word ptr ds:[_myargc]
 dec   dx
 cmp   ax, dx
 jge   set_default_defaultsfilename
-mov   si, word ptr [_myargv]
+mov   si, word ptr ds:[_myargv]
 add   ax, ax
 add   si, ax
-mov   si, word ptr [si + 2]   ; pointer to myargv for default filename
+mov   si, word ptr ds:[si + 2]   ; pointer to myargv for default filename
 push  si
 mov   bx, si  ; cache
 
@@ -1407,7 +1406,7 @@ xor   al, al
 mov   byte ptr [bp + 07Ah], al          ; readphase
 mov   byte ptr [bp + 07Ch], al
 mov   byte ptr [bp + 07Eh], al          ; strparmindex
-test  byte ptr [bx + 6], 010h    ; check feof
+test  byte ptr ds:[bx + 6], 010h    ; check feof
 jne   end_loop_close_file
 handle_next_char:
 mov   ax, word ptr [bp + 076h]
@@ -1440,7 +1439,7 @@ inc   byte ptr [bp + 07Ch]
 mov   byte ptr [bp + si - 02Ah], dl
 character_finished_handling:
 mov   bx, word ptr [bp + 076h]
-test  byte ptr [bx + 6], 010h        ; test feof
+test  byte ptr ds:[bx + 6], 010h        ; test feof
 je    handle_next_char      
 end_loop_close_file:
 mov   ax, word ptr [bp + 076h]      ; retrieve FP
@@ -1536,10 +1535,10 @@ je    do_word_write
 cmp   bx, OFFSET _snd_Mport
 je    do_word_write
 do_byte_write:
-mov   byte ptr [bx], al                             ; written here 2 
+mov   byte ptr ds:[bx], al                             ; written here 2 
 jmp   character_finished_handling      
 do_word_write:
-mov   word ptr [bx], ax
+mov   word ptr ds:[bx], ax
 jmp   character_finished_handling
 no_match_increment_default:
 inc   di
@@ -1572,13 +1571,13 @@ loop_defaults_to_set_initial_values:
 cmp   byte ptr cs:[bx + _defaults + DEFAULT_T.default_scantranslate], 0
 je    no_pointer_load_next_defaults_value
 mov   si, word ptr cs:[bx + _defaults + DEFAULT_T.default_loc_ptr]
-mov   al, byte ptr [si]
+mov   al, byte ptr ds:[si]
 mov   byte ptr cs:[bx + _defaults + DEFAULT_T.default_untranslated], al  ; written here 3
 xor   ah, ah
 mov   si, ax
 mov   di, word ptr cs:[bx + _defaults + DEFAULT_T.default_loc_ptr]
 mov   al, byte ptr es:[si]
-mov   byte ptr [di], al                     ; written here 4
+mov   byte ptr ds:[di], al                     ; written here 4
 no_pointer_load_next_defaults_value:
 add   bx, SIZEOF_DEFAULT_T
 cmp   bx, NUM_DEFAULTS * SIZEOF_DEFAULT_T
@@ -1628,10 +1627,10 @@ je    get_16_bit
 cmp   di, OFFSET _snd_SBport
 je    get_16_bit
 xor   ah, ah
-mov   al, byte ptr [di]
+mov   al, byte ptr ds:[di]
 jmp   got_value_to_write
 get_16_bit:
-mov   ax, word ptr [di]
+mov   ax, word ptr ds:[di]
 
 got_value_to_write:         ; if we got untranslated value we skip here with value in al.
 
@@ -1737,9 +1736,9 @@ mov   bx, ax
 mov   cx, dx
 cmp   byte ptr ds:[_gameaction], 0
 jne   not_starting_controlpanel
-cmp   byte ptr [_singledemo], 0
+cmp   byte ptr ds:[_singledemo], 0
 jne   not_starting_controlpanel
-cmp   byte ptr [_demoplayback], 0
+cmp   byte ptr ds:[_demoplayback], 0
 jne   check_key_for_controlpanel
 cmp   byte ptr ds:[_gamestate], GS_DEMOSCREEN
 jne   not_starting_controlpanel
@@ -1786,7 +1785,7 @@ call  Z_SetOverlay_
 mov   dx, cx
 mov   ax, bx
 
-;call  dword ptr [_F_Responder]
+;call  dword ptr ds:[_F_Responder]
 db 09Ah
 dw F_RESPONDEROFFSET, CODE_OVERLAY_SEGMENT
 
@@ -1817,7 +1816,7 @@ mov   ax, word ptr es:[bx + 1]
 cmp   ax, KEY_PAUSE
 jne   not_pause
 
-mov   byte ptr [_sendpause], 1
+mov   byte ptr ds:[_sendpause], 1
 exit_gresponder_return_1_2:
 mov   al, 1
 pop   si
@@ -1833,23 +1832,23 @@ jmp   exit_gresponder_return_1_2
 
 handle_game_mouse_event:
 mov   al, byte ptr es:[bx + 1]
-mov   si, word ptr [_mousebuttons]
+mov   si, word ptr ds:[_mousebuttons]
 and   al, 1
-mov   byte ptr [si], al
+mov   byte ptr ds:[si], al
 mov   al, byte ptr es:[bx + 1]
 and   al, 2
-mov   byte ptr [si + 1], al
+mov   byte ptr ds:[si + 1], al
 mov   al, byte ptr es:[bx + 1]
 and   al, 4
-mov   byte ptr [si + 2], al
-mov   al, byte ptr [_mouseSensitivity]
+mov   byte ptr ds:[si + 2], al
+mov   al, byte ptr ds:[_mouseSensitivity]
 xor   ah, ah
 mov   dx, word ptr es:[bx + 5]
 add   ax, 5
 mov   bx, 10
 imul  dx
 call  FastDiv3216u_
-mov   word ptr [_mousex], ax
+mov   word ptr ds:[_mousex], ax
 mov   al, 1
 pop   si
 pop   cx

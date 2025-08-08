@@ -19,17 +19,18 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN S_StartSoundWithParams_:PROC
-EXTRN P_RemoveThinker_:PROC
+
+
 EXTRN P_FindHighestOrLowestFloorSurrounding_:NEAR
 EXTRN P_FindMinSurroundingLight_:NEAR
 EXTRN P_FindSectorsFromLineTag_:NEAR
 EXTRN P_FindNextHighestFloor_:NEAR
-EXTRN P_CreateThinker_:FAR
+EXTRN P_CreateThinker_:NEAR
 EXTRN T_MovePlaneFloorUp_:NEAR
 EXTRN T_MovePlaneFloorDown_:NEAR
-EXTRN P_Random_:NEAR
+
 EXTRN P_UpdateThinkerFunc_:NEAR
+EXTRN P_Random_:NEAR
 
 
 .DATA
@@ -109,6 +110,7 @@ mov   bl, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
 ; dx has secnum
 ; bl has lightlevel
 mov   ax, TF_FIREFLICKER_HIGHBITS
+push  cs
 call  P_CreateThinker_
 
 xchg  ax, bx
@@ -197,6 +199,7 @@ mov   bl, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
 ; dx has secnum
 ; bl has lightlevel
 mov   ax, TF_LIGHTFLASH_HIGHBITS
+push  cs
 call  P_CreateThinker_
 
 xchg  ax, bx
@@ -270,6 +273,7 @@ xchg    ax, si
 
 
 mov   ax, TF_STROBEFLASH_HIGHBITS
+push  cs
 call  P_CreateThinker_
 
 xchg  ax, bx
@@ -328,6 +332,7 @@ sub   sp, 0200h
 lea   dx, [bp - 0200h]
 mov   si, dx
 xor   bx, bx
+push  cs
 call  P_CreateThinker_
 
 cmp   word ptr [si], 0
@@ -551,6 +556,7 @@ mov   bl, byte ptr es:[bx + SECTOR_T.sec_lightlevel]  ; bl gets lightlevel.
 ; dx has secnum
 ; bl has lightlevel
 mov   ax, TF_GLOW_HIGHBITS
+push  cs
 call  P_CreateThinker_
 
 xchg  ax, bx

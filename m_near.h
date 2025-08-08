@@ -288,13 +288,13 @@
 #define ticcount                        (*((volatile uint32_t  __near*)      (_NULL_OFFSET + 0x01F0)))
 
 
-#define P_UseSpecialLine_addr          	(*((uint32_t  __near*)               (_NULL_OFFSET + 0x01F4)))
+// #define P_UseSpecialLine_addr          	(*((uint32_t  __near*)               (_NULL_OFFSET + 0x01F4)))
 #define deadAttackerX     		  	    (*((fixed_t_union  __near*)   	     (_NULL_OFFSET + 0x01F8)))
 #define deadAttackerY     				(*((fixed_t_union  __near*)   	     (_NULL_OFFSET + 0x01FC)))
 
 #define M_Random_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0200)))
-#define P_CrossSpecialLine_addr         (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0204)))
-#define P_ShootSpecialLine_addr         (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0208)))
+// #define P_CrossSpecialLine_addr         (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0204)))
+// #define P_ShootSpecialLine_addr         (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0208)))
 #define V_MarkRect_addr                 (*((uint32_t  __near*)               (_NULL_OFFSET + 0x020C)))
 #define M_Drawer_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0210)))
 
@@ -344,7 +344,7 @@
 // more far pointers to functions... once they are in ASM-fixed locations, they should be callable normally
 #define FixedMul_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C0)))
 #define FixedDiv_addr	                (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C4)))
-#define P_DamageMobj_addr             	(*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C8)))
+// #define P_DamageMobj_addr             	(*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C8)))
 #define R_GetCompositeTexture_addr 	    (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02CC)))
 
 
@@ -354,7 +354,11 @@
 #define columnquality                   (*((uint8_t __near*)                  (_NULL_OFFSET + 0x0439)))
 
 #define useDeadAttackerRef				(*((boolean __near*)                 (_NULL_OFFSET + 0x043A)))
-// 43B to 440 free?
+#define paused							(*((boolean __near*)                 (_NULL_OFFSET + 0x043B)))
+#define menuactive						(*((boolean __near*)                 (_NULL_OFFSET + 0x043C)))
+#define demoplayback					(*((boolean __near*)                 (_NULL_OFFSET + 0x043D)))
+
+// 43E to 440 free?
 
 // 12 bytes each. two for 24.
 #define psprites                        (((pspdef_t __near*)                 (_NULL_OFFSET + 0x0440))) 
@@ -372,25 +376,30 @@
 
 #define ems_backfill_page_order         (((int8_t    __near*)                (_NULL_OFFSET + 0x04B8)))
 #define LINEFLAGSLIST_SEGMENT_PTR		(*((segment_t __near*)               (_NULL_OFFSET + 0x04D0)))
+#define currentThinkerListHead  		(*((int16_t __near*)                 (_NULL_OFFSET + 0x04D2)))
 
+#define S_StartSoundWithParams_addr     (*((uint32_t  __near*)             (_NULL_OFFSET + 0x04D4)))
+#define G_SecretExitLevel_addr          (*((uint32_t  __near*)             (_NULL_OFFSET + 0x04D8)))
+#define AM_Stop_addr		            (*((uint32_t  __near*)             (_NULL_OFFSET + 0x04DC)))
 
-// 4d0-4df unused by bytes
+// 4d2-4d3 unused by bytes
 
 
 #define braintargets                    (((THINKERREF __near*)               (_NULL_OFFSET + 0x04E0)))
 #define tmbbox                          (((fixed_t_union __near*)            (_NULL_OFFSET + 0x0520)))
-// 530 unused
+
 #define SECTORS_SEGMENT_PTR				  (*((segment_t __near*)             (_NULL_OFFSET + 0x0530)))
 #define LINES_PHYSICS_SEGMENT_PTR	      (*((segment_t __near*)             (_NULL_OFFSET + 0x0532)))
 #define HU_Start_addr 					  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0534)))
 #define ST_Start_addr 				      (*((uint32_t __near*)              (_NULL_OFFSET + 0x0538)))
-#define P_RemoveThinker_addr 			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x053C)))
+// 53c unused
+// #define P_RemoveThinker_addr 			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x053C)))
 #define G_PlayerReborn_addr     		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0540)))
 
 #define FixedMulTrigSpeedNoShift_addr	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0544)))
 #define FixedMulTrigSpeed_addr			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0548)))
 #define FixedMulTrig_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x054C)))
-#define EV_DoFloor_addr		     		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0550)))
+// #define EV_DoFloor_addr		     		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0550)))
 
 
 #define V_DrawPatch_addr                  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0554)))
@@ -425,14 +434,15 @@
 #define bmaporgy                          (*(int16_t __near *)               (_NULL_OFFSET + 0x05B2))
 #define I_Error_addr                      (*((uint32_t __near*)              (_NULL_OFFSET + 0x05B4)))
 #define P_InitThinkers_addr               (*((uint32_t __near*)              (_NULL_OFFSET + 0x05B8)))
-#define P_CreateThinker_addr              (*((uint32_t __near*)              (_NULL_OFFSET + 0x05BC)))
+// 5bc unused
+// #define P_CreateThinker_addr              (*((uint32_t __near*)              (_NULL_OFFSET + 0x05BC)))
 #define S_StopSoundMobjRef_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C0)))
 
 #define R_DrawSkyPlaneDynamic_addr_Offset (*((int16_t __near*)               (_NULL_OFFSET + 0x05C4)))
 #define R_DrawSkyPlaneDynamic_addr    	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C4)))
 
-#define P_AddActiveCeiling_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C8)))
-#define P_AddActivePlat_addr              (*((uint32_t __near*)              (_NULL_OFFSET + 0x05CC)))
+// #define P_AddActiveCeiling_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C8)))
+// #define P_AddActivePlat_addr              (*((uint32_t __near*)              (_NULL_OFFSET + 0x05CC)))
 // 10 ints
 #define tallnum                           ((uint16_t __near *)               (_NULL_OFFSET + 0x05D0))
 // 10 ints
@@ -516,8 +526,8 @@
 
 #define R_DrawSkyPlane_addr_Offset        (*((int16_t __near*)               (_NULL_OFFSET + 0x06F4)))
 #define R_DrawSkyPlane_addr    			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06F4)))
-#define EV_DoDoor_addr     				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06F8)))
-#define P_TouchSpecialThing_addr     	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06FC)))
+// #define EV_DoDoor_addr     				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06F8)))
+// #define P_TouchSpecialThing_addr     	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06FC)))
 
 #define playerMobj_pos   		     	  (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x0700)))
 #define setStateReturn_pos	 	    	  (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x0704)))
@@ -577,8 +587,12 @@
 #define skullName				          (((int16_t __near*)           	 (_NULL_OFFSET + 0x0B1C)))
 
 
+#define OutOfThinkers_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0820)))
+#define FastDiv32u16u_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0824)))
 
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0B20)))
+// 828 to 82f free
+
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0B30)))
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
@@ -681,7 +695,7 @@ extern uint8_t              detailLevel;
 extern uint8_t              screenSize;
 extern int8_t               quickSaveSlot;
 extern boolean              inhelpscreens;
-extern boolean              menuactive;
+
 
 
 extern int8_t               skytextureloaded;
@@ -751,16 +765,10 @@ extern void (__far* R_RenderPlayerView)();
 extern void (__far* R_WriteBackViewConstantsMaskedCall)();
 extern void (__far* R_WriteBackViewConstants)();
 extern void 				(__far* R_WriteBackViewConstantsSpanCall)();
-extern boolean 				(__far* P_TeleportMove)(mobj_t __near* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
-extern boolean 				(__far* P_ChangeSector)(sector_t __far* sector, boolean crunch);
-extern void 				(__far* P_MovePsprites)();
-extern void 				(__far* P_DropWeaponFar)();
-extern void 				(__far* P_RemoveMobj)();
-extern void 				(__far* P_MobjThinker)();
-extern THINKERREF 			(__far* P_SpawnMobj)();
 extern void 				(__far* P_SpawnMapThing)();
-extern void					(__far* P_SetMobjState)();
-
+extern void					(__far* P_Ticker)();
+extern void					(__far* P_SpawnSpecials)();
+extern void					(__far* P_GivePower)();
 
 
 
@@ -859,7 +867,6 @@ extern uint8_t	usegamma;
 
  
 
-extern boolean            paused; 
 extern boolean            sendpause;              // send a pause event next tic 
 extern boolean            sendsave;               // send a save event next tic 
 extern boolean         	  usergame;               // ok to save / end game 
@@ -870,7 +877,6 @@ extern ticcount_t         starttime;              // for comparative timing purp
 
 
 extern boolean         demorecording; 
-extern boolean         demoplayback; 
 extern boolean         netdemo; 
 extern uint16_t           demo_p;				// buffer
 extern boolean         singledemo;             // quit after playing a demo from cmdline 
@@ -1112,10 +1118,8 @@ extern uint16_t armsbgarray[1];
 
 
 extern int16_t	maxammo[NUMAMMO];
-extern boolean		onground;
 
 
-extern int16_t currentThinkerListHead;
 extern uint16_t oldentertics;
 
    

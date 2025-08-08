@@ -19,15 +19,13 @@ INSTRUCTION_SET_MACRO
 
 
 
-
-
 .CODE
  
 PROC P_LOADSTART_
 PUBLIC P_LOADSTART_
 ENDP
 
-_CSDATA_playerMobjRef_ptr:
+_CSDATA_unused:
 dw    0
 
 
@@ -515,10 +513,10 @@ xor       dx, dx
 push      ds                              ; store p_save seg
 push      ss
 pop       ds                              ; restore ds to normal
-;call   P_CreateThinker_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_CreateThinker_addr
+
+db 09Ah
+dw P_CREATETHINKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 pop       ds                              ; ds is save seg again
 
 mov       bx, ax                          ; mobj pointer to bx
@@ -760,10 +758,10 @@ load_ceiling_special:
 add    si, cx
 mov    cx, dx
 mov    ax, TF_MOVECEILING_HIGHBITS
-;call   P_CreateThinker_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_CreateThinker_addr
+
+db 09Ah
+dw P_CREATETHINKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 
 push   ds
 pop    es
@@ -801,9 +799,8 @@ push   ss
 pop    ds
 mov    word ptr ds:[bx + (_sectors_physics + 8)], ax  ; sectors_physics specialdataRef
 ;call   P_AddActiveCeiling_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_AddActiveCeiling_addr
+db 09Ah
+dw P_ADDACTIVECEILINGOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 mov    ds, cx
 jmp    load_next_special
@@ -813,10 +810,9 @@ load_door_special:
 add    si, cx
 mov    cx, dx
 mov    ax, TF_VERTICALDOOR_HIGHBITS
-;call   P_CreateThinker_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_CreateThinker_addr
+db 09Ah
+dw P_CREATETHINKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 push   ds
 pop    es
 mov    ds, cx
@@ -858,10 +854,8 @@ load_movefloor_special:
 add    si, cx
 mov    cx, dx
 mov    ax, TF_MOVEFLOOR_HIGHBITS
-;call   P_CreateThinker_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_CreateThinker_addr
+db 09Ah
+dw P_CREATETHINKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
 push   ds
 pop    es
 mov    ds, cx
@@ -900,10 +894,10 @@ load_platraise_special:
 add    si, cx
 mov    cx, dx
 mov    ax, TF_PLATRAISE_HIGHBITS
-;call   P_CreateThinker_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_CreateThinker_addr
+
+db 09Ah
+dw P_CREATETHINKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 push   ds
 pop    es
 mov    ds, cx
@@ -948,9 +942,9 @@ mov    cx, ds
 push   ss
 pop    ds
 ;call   P_AddActivePlat_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_AddActivePlat_addr
+db 09Ah
+dw P_ADDACTIVEPLATOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 
 mov    ds, cx
 jmp    load_next_special
@@ -960,10 +954,10 @@ load_flash_special:
 add    si, cx
 mov    cx, dx
 mov    ax, TF_LIGHTFLASH_HIGHBITS
-;call   P_CreateThinker_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_CreateThinker_addr
+
+db 09Ah
+dw P_CREATETHINKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 push   ds
 pop    es
 mov    ds, cx
@@ -985,10 +979,10 @@ load_strobe_special:
 add    si, cx
 mov    cx, dx
 mov    ax, TF_STROBEFLASH_HIGHBITS
-;call   P_CreateThinker_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_CreateThinker_addr
+
+db 09Ah
+dw P_CREATETHINKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 push   ds
 pop    es
 mov    ds, cx
@@ -1010,10 +1004,10 @@ load_glow_special:
 add    si, cx
 mov    cx, dx
 mov    ax, TF_GLOW_HIGHBITS
-;call   P_CreateThinker_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_CreateThinker_addr
+
+db 09Ah
+dw P_CREATETHINKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 push   ds
 pop    es
 mov    ds, cx

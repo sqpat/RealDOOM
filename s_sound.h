@@ -65,9 +65,9 @@ void S_Start(void);
 // Start sound for thing at <origin>
 //  using <sound_id> from sounds.h
 //
-void S_StartSound (mobj_t __near*	origin, sfxenum_t	sound_id );
+void __far S_StartSound (mobj_t __near*	origin, sfxenum_t	sound_id );
 
-void S_StartSoundWithParams(int16_t soundorg_secnum, sfxenum_t sound_id);
+void __far S_StartSoundWithParams(int16_t soundorg_secnum, sfxenum_t sound_id);
 
 
 

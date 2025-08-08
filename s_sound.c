@@ -75,7 +75,7 @@
 //
 // Internals.
 //
-int8_t S_getChannel (mobj_t __near* origin , int16_t soundorg_secnum, sfxenum_t sfx_id );
+
 
 
 int16_t S_AdjustSoundParams ( fixed_t_union x, fixed_t_union y, uint8_t* vol, uint8_t* sep );
@@ -239,7 +239,7 @@ uint8_t S_AdjustSoundParamsSep ( fixed_t_union sourceX, fixed_t_union sourceY){
 
 #define MAX_SOUND_VOLUME 127
 
-uint8_t S_AdjustSoundParamsVol ( fixed_t_union sourceX, fixed_t_union sourceY){
+uint8_t __near S_AdjustSoundParamsVol ( fixed_t_union sourceX, fixed_t_union sourceY){
 	fixed_t_union	approx_dist;
     fixed_t_union	adx;
     fixed_t_union	ady;
@@ -322,7 +322,7 @@ void S_ResumeSound(void) {
     }
 }
 
-void far S_StopSound(mobj_t __near* origin, int16_t soundorg_secnum) {
+void __far S_StopSound(mobj_t __near* origin, int16_t soundorg_secnum) {
 	
 	int8_t cnum;
 
@@ -373,7 +373,7 @@ void far S_StopSoundMobjRef(mobj_t __near* origin) {
 // S_getChannel :
 //   If none available, return -1.  Otherwise channel #.
 //
-int8_t S_getChannel (mobj_t __near* origin, int16_t soundorg_secnum, sfxenum_t sfx_id ) {
+int8_t __near S_getChannel (mobj_t __near* origin, int16_t soundorg_secnum, sfxenum_t sfx_id ) {
     // channel number to use
 
     int8_t		cnum;
@@ -537,7 +537,7 @@ void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t
 }
 
 
-void S_StartSound(mobj_t __near* mobj, sfxenum_t sfx_id) {
+void __far S_StartSound(mobj_t __near* mobj, sfxenum_t sfx_id) {
 	
 	if (sfx_id == 0) {
 		return;
@@ -546,7 +546,7 @@ void S_StartSound(mobj_t __near* mobj, sfxenum_t sfx_id) {
 
 }
 
-void S_StartSoundWithParams(int16_t soundorg_secnum, sfxenum_t sfx_id) {
+void __far S_StartSoundWithParams(int16_t soundorg_secnum, sfxenum_t sfx_id) {
 	if (sfx_id == 0) {
 		return;
 	}

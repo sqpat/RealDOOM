@@ -20,18 +20,15 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN S_StartSoundWithParams_:PROC
 
-EXTRN _P_TeleportMove:DWORD
-EXTRN _P_SpawnMobj:DWORD
 
-EXTRN FastMul16u32u_:NEAR
+
 EXTRN T_MovePlaneCeilingUp_:NEAR
 EXTRN T_MovePlaneCeilingDown_:NEAR
 EXTRN P_FindSectorsFromLineTag_:NEAR
 EXTRN P_FindLowestOrHighestCeilingSurrounding_:NEAR
-EXTRN P_CreateThinker_:PROC
-EXTRN P_RemoveThinker_:PROC
+EXTRN P_CreateThinker_:NEAR
+EXTRN P_RemoveThinker_:NEAR
 EXTRN P_UpdateThinkerFunc_:NEAR
 
 SHORTFLOORBITS = 3
@@ -110,7 +107,8 @@ je    dont_play_ceiling_sound
 mov   dx, SFX_STNMOV
 push  ax
 mov   ax, word ptr [bp - 2]
-call  S_StartSoundWithParams_
+call  dword ptr ds:[_S_StartSoundWithParams_addr]
+
 pop   ax
 
 dont_play_ceiling_sound:
@@ -127,7 +125,7 @@ jbe   just_set_dir_negative ; 3, 4
 ; 5 fall thru
 mov   dx, SFX_PSTOP
 mov   ax, word ptr [bp - 2]
-call  S_StartSoundWithParams_
+call  dword ptr ds:[_S_StartSoundWithParams_addr]
 
 just_set_dir_negative:
 mov   byte ptr ds:[si + CEILING_T.ceiling_direction], -1
@@ -170,7 +168,7 @@ je    dont_play_ceiling_sound_2
 mov   dx, SFX_STNMOV
 push  ax ; backup
 mov   ax, word ptr [bp - 2]
-call  S_StartSoundWithParams_
+call  dword ptr ds:[_S_StartSoundWithParams_addr]
 pop   ax ; restore
 
 dont_play_ceiling_sound_2:
@@ -193,7 +191,7 @@ jb    switch_moveceiling_type_3 ; 4
 switch_moveceiling_type_4:
 mov   dx, SFX_PSTOP
 mov   ax, word ptr [bp - 2]
-call  S_StartSoundWithParams_
+call  dword ptr ds:[_S_StartSoundWithParams_addr]
 ; fall thru
 switch_moveceiling_type_2:
 mov   word ptr ds:[si + CEILING_T.ceiling_speed], CEILSPEED
@@ -269,6 +267,7 @@ xchg  ax, cx
 ;		ceiling = (ceiling_t __near*) P_CreateThinker (TF_MOVECEILING_HIGHBITS);
 mov   ax, TF_MOVECEILING_HIGHBITS
 cwd  ; zero dx.
+push  cs
 call  P_CreateThinker_
 
 
@@ -435,6 +434,7 @@ mov   word ptr ds:[bx + SECTOR_PHYSICS_T.secp_specialdataRef], 0
 xchg  ax, bx  ; bx gets acrtiveceiling ptr back again
 xchg  ax, dx  ; param for P_RemoveThinker_
 
+push  cs
 call  P_RemoveThinker_
 
 mov   word ptr ds:[bx], NULL_THINKERREF

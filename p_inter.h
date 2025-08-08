@@ -20,7 +20,6 @@
 #ifndef __P_INTER__
 #define __P_INTER__
 
-boolean	__far P_GivePower(int16_t);
 #define BONUSADD	6
 
 

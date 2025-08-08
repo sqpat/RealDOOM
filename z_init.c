@@ -649,6 +649,9 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 
 }
  
+void __far G_SecretExitLevel (void);
+void __far OutOfThinkers ();
+
 void __near Z_LoadBinaries() {
 	int16_t i;
 	uint16_t codesize;
@@ -824,15 +827,19 @@ void __near Z_LoadBinaries() {
 	W_CacheLumpNumDirectFragment_addr =	(uint32_t)(W_CacheLumpNumDirectFragment);
 	W_GetNumForName_addr =		 		(uint32_t)(W_GetNumForName);
 	S_StartSound_addr =		 			(uint32_t)(S_StartSound);
+	S_StartSoundWithParams_addr =		(uint32_t)(S_StartSoundWithParams);
+	G_SecretExitLevel_addr =			(uint32_t)(G_SecretExitLevel);
+	AM_Stop_addr =						(uint32_t)(AM_Stop);
+	OutOfThinkers_addr =				(uint32_t)(OutOfThinkers);
+	FastDiv32u16u_addr =				(uint32_t)(FastDiv32u16u);
+	
+
 	S_StartMusic_addr =		 			(uint32_t)(S_StartMusic);
 
 	
 	I_Error_addr =		 				(uint32_t)(I_Error);
 	P_InitThinkers_addr =		 		(uint32_t)(P_InitThinkers);
-	P_CreateThinker_addr =		 		(uint32_t)(P_CreateThinker);
 	
-	P_AddActiveCeiling_addr =		 	(uint32_t)(P_AddActiveCeiling);
-	P_AddActivePlat_addr =		 		(uint32_t)(P_AddActivePlat);
 
 	Z_SetOverlay_addr =	 				(uint32_t)(Z_SetOverlay);
 	W_LumpLength_addr =	 				(uint32_t)(W_LumpLength);
@@ -840,11 +847,6 @@ void __near Z_LoadBinaries() {
 	FixedMulTrigNoShift_addr =			(uint32_t)(FixedMulTrigNoShift);
 	R_PointToAngle2_16_addr =			(uint32_t)(R_PointToAngle2_16);
 	R_PointToAngle2_addr =				(uint32_t)(R_PointToAngle2);
-	P_UseSpecialLine_addr =				(uint32_t)(P_UseSpecialLine);
-	P_DamageMobj_addr =					(uint32_t)(P_DamageMobj);
-	P_CrossSpecialLine_addr =			(uint32_t)(P_CrossSpecialLine);
-	P_ShootSpecialLine_addr =			(uint32_t)(P_ShootSpecialLine);
-	P_TouchSpecialThing_addr =			(uint32_t)(P_TouchSpecialThing);
 
 
 	FixedMul16u32_addr =				(uint32_t)(FixedMul16u32);
@@ -858,12 +860,8 @@ void __near Z_LoadBinaries() {
 	G_ExitLevel_addr =					(uint32_t)(G_ExitLevel);
 	HU_Start_addr =						(uint32_t)(HU_Start);
 	ST_Start_addr =						(uint32_t)(ST_Start);
-	P_RemoveThinker_addr =				(uint32_t)(P_RemoveThinker);
 	G_PlayerReborn_addr =				(uint32_t)(G_PlayerReborn);
-	S_StopSoundMobjRef_addr =			(uint32_t)(S_StopSoundMobjRef);
- 	EV_DoDoor_addr =					(uint32_t)(EV_DoDoor);
- 	EV_DoFloor_addr =					(uint32_t)(EV_DoFloor);
-
+	S_StopSoundMobjRef_addr =			(uint32_t)(S_StopSoundMobjRef); 	
 }
 
 

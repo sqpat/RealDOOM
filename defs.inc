@@ -258,13 +258,13 @@ _ticcount =			              	_NULL_OFFSET + 001F0h
 
 
 
-_P_UseSpecialLine_addr =             _NULL_OFFSET + 001F4h
+;_P_UseSpecialLine_addr =             _NULL_OFFSET + 001F4h
 
 _deadAttackerX =                     _NULL_OFFSET + 001F8h
 _deadAttackerY =                     _NULL_OFFSET + 001FCh
 _M_Random_addr =                     _NULL_OFFSET + 00200h
-_P_CrossSpecialLine_addr =           _NULL_OFFSET + 00204h
-_P_ShootSpecialLine_addr =           _NULL_OFFSET + 00208h
+;_P_CrossSpecialLine_addr =           _NULL_OFFSET + 00204h
+;_P_ShootSpecialLine_addr =           _NULL_OFFSET + 00208h
 _V_MarkRect_addr =                   _NULL_OFFSET + 0020Ch
 _M_Drawer_addr =                     _NULL_OFFSET + 00210h
 
@@ -309,14 +309,20 @@ _fixedcolormap = 					_NULL_OFFSET + 002BFh
 
 _FixedMul_addr =               		 _NULL_OFFSET + 002C0h
 _FixedDiv_addr =                     _NULL_OFFSET + 002C4h
-_P_DamageMobj_addr =                 _NULL_OFFSET + 002C8h
+;_P_DamageMobj_addr =                 _NULL_OFFSET + 002C8h
 _R_GetCompositeTexture_addr =        _NULL_OFFSET + 002CCh
 
  
 _w_message =					     _NULL_OFFSET + 002D0h
 _columnquality =              	     _NULL_OFFSET + 00439h
 _useDeadAttackerRef =              	 _NULL_OFFSET + 0043Ah
-; 43B to 43F free
+_paused	=						     _NULL_OFFSET + 0043Bh
+_menuactive	=					     _NULL_OFFSET + 0043Ch
+_demoplayback =					     _NULL_OFFSET + 0043Dh
+
+
+
+; 43e to 43F free
 
 _psprites =              			 _NULL_OFFSET + 00440h
 _vga_read_port_lookup =              _NULL_OFFSET + 00458h
@@ -331,22 +337,27 @@ _savedescription =                   _NULL_OFFSET + 00478h
 _demoname =                          _NULL_OFFSET + 00498h
 _ems_backfill_page_order =           _NULL_OFFSET + 004B8h
 _LINEFLAGSLIST_SEGMENT_PTR =         _NULL_OFFSET + 004D0h
-; 4D2 to 4DF free
+_currentThinkerListHead = 			 _NULL_OFFSET + 004D2h
+
+_S_StartSoundWithParams_addr =       _NULL_OFFSET + 004D4h
+_G_SecretExitLevel_addr =            _NULL_OFFSET + 004D8h
+_AM_Stop_addr =		                 _NULL_OFFSET + 004DCh
+
 
 _braintargets =                      _NULL_OFFSET + 004E0h
 _tmbbox =                            _NULL_OFFSET + 00520h
 
-_SECTORS_SEGMENT_PTR =                _NULL_OFFSET + 00530h
+_SECTORS_SEGMENT_PTR =               _NULL_OFFSET + 00530h
 _LINES_PHYSICS_SEGMENT_PTR =         _NULL_OFFSET + 00532h
 
 _HU_Start_addr = 			 	 	 _NULL_OFFSET + 00534h
 _ST_Start_addr = 			 	 	 _NULL_OFFSET + 00538h
-_P_RemoveThinker_addr = 			 _NULL_OFFSET + 0053Ch
+;_P_RemoveThinker_addr = 			 _NULL_OFFSET + 0053Ch
 _G_PlayerReborn_addr =	 	 		 _NULL_OFFSET + 00540h
 _FixedMulTrigSpeedNoShift_addr =	 _NULL_OFFSET + 00544h
 _FixedMulTrigSpeed_addr =			 _NULL_OFFSET + 00548h
 _FixedMulTrig_addr = 			 	 _NULL_OFFSET + 0054Ch
-_EV_DoFloor_addr = 			 	 	 _NULL_OFFSET + 00550h
+;_EV_DoFloor_addr = 			 	 	 _NULL_OFFSET + 00550h
 
 
 _V_DrawPatch_addr =              	 _NULL_OFFSET + 00554h
@@ -387,12 +398,12 @@ _bmaporgy =				             _NULL_OFFSET + 005B2h
 
 _I_Error_addr =                      _NULL_OFFSET + 005B4h
 _P_InitThinkers_addr =               _NULL_OFFSET + 005B8h
-_P_CreateThinker_addr =              _NULL_OFFSET + 005BCh
+;_P_CreateThinker_addr =              _NULL_OFFSET + 005BCh
 _S_StopSoundMobjRef_addr =           _NULL_OFFSET + 005C0h
 _R_DrawSkyPlaneDynamic_addr =  	     _NULL_OFFSET + 005C4h
 
-_P_AddActiveCeiling_addr =           _NULL_OFFSET + 005C8h
-_P_AddActivePlat_addr =              _NULL_OFFSET + 005CCh
+;_P_AddActiveCeiling_addr =           _NULL_OFFSET + 005C8h
+;_P_AddActivePlat_addr =              _NULL_OFFSET + 005CCh
 _tallnum =              			 _NULL_OFFSET + 005D0h
 _shortnum =              			 _NULL_OFFSET + 005E4h
 _am_buffer =             			 _NULL_OFFSET + 005F8h
@@ -456,15 +467,15 @@ _la_damage = 		   			     _NULL_OFFSET + 006E0h
 _linetarget = 		   			     _NULL_OFFSET + 006E2h
 _linetarget_pos = 		   			 _NULL_OFFSET + 006E4h
 _attackrange16 = 		   			 _NULL_OFFSET + 006E8h
-_nofit = 		   			 		 _NULL_OFFSET + 006EAh
+;6EA unused
 _crushchange = 		   			 	 _NULL_OFFSET + 006EBh
 _leveltime =     		   			 _NULL_OFFSET + 006ECh
 _fopen_rb_argument =                 _NULL_OFFSET + 006F0h
 _currenttask =            		     _NULL_OFFSET + 006F3h
 
 _R_DrawSkyPlane_addr =               _NULL_OFFSET + 006F4h
-_EV_DoDoor_addr = 			 	 	 _NULL_OFFSET + 006F8h
-_P_TouchSpecialThing_addr =          _NULL_OFFSET + 006FCh
+;_EV_DoDoor_addr = 			 	 	 _NULL_OFFSET + 006F8h
+;_P_TouchSpecialThing_addr =          _NULL_OFFSET + 006FCh
 
 _playerMobj_pos =		         	 _NULL_OFFSET + 00700h
 _setStateReturn_pos =		         _NULL_OFFSET + 00704h
@@ -517,7 +528,12 @@ _whichSkull =				         _NULL_OFFSET + 00B1Ah
 _skullName =				         _NULL_OFFSET + 00B1Ch
 
 
-_flatcache_nodes =				     _NULL_OFFSET + 00B20h
+_OutOfThinkers_addr =                _NULL_OFFSET + 00B20h
+_FastDiv32u16u_addr =                _NULL_OFFSET + 00B24h
+
+; 828-82f free
+
+_flatcache_nodes =				     _NULL_OFFSET + 00B30h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

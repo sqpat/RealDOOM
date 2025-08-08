@@ -22,7 +22,7 @@ INSTRUCTION_SET_MACRO
 ; hack but oh well
 P_SIGHT_STARTMARKER_ = 0 
 
-EXTRN P_Random_MapLocal_:NEAR
+EXTRN P_Random_:NEAR
 EXTRN P_SpawnPuff_:NEAR
 EXTRN P_SpawnMobj_:NEAR
 EXTRN P_RemoveMobj_:NEAR
@@ -40,7 +40,10 @@ EXTRN P_CheckPosition_:NEAR
 EXTRN P_SpawnMissile_:NEAR
 EXTRN P_TeleportMove_:NEAR
 EXTRN P_BlockThingsIterator_:NEAR
-
+EXTRN P_UseSpecialLine_:NEAR
+EXTRN P_DamageMobj_:NEAR
+EXTRN EV_DoDoor_:NEAR
+EXTRN EV_DoFloor_:NEAR
 .DATA
 
 
@@ -496,7 +499,7 @@ cmp   dx, 160
 jle   not_cyborg_distance_check
 mov   dx, 160
 not_cyborg_distance_check:
-call  P_Random_MapLocal_
+call  P_Random_
 cmp   ax, dx
 jge   exit_checkmissilerange_return_1
 exit_checkmissilerange_return_0:
@@ -687,10 +690,9 @@ mov   dx, word ptr ds:[bx + _spechit]
 mov   cx, di
 mov   ax, si
 xor   bx, bx
-;call  P_UseSpecialLine_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_UseSpecialLine_addr
+
+call  P_UseSpecialLine_
+
 jnc   do_next_spechit
 mov   word ptr [bp - 2], 1
 jmp   do_next_spechit
@@ -745,7 +747,7 @@ PUBLIC  P_TryWalk_
 
 call  P_Move_
 jnc   exit_try_walk  ; al 0
-call  P_Random_MapLocal_
+call  P_Random_
 and   al, 15  
 mov   word ptr ds:[si + MOBJ_T.m_movecount], ax
 stc
@@ -968,7 +970,7 @@ cmp   bx, ax
 ja    do_other_direction_and_inc_random
 ;jmp   try_random_check
 try_random_check:
-call  P_Random_MapLocal_
+call  P_Random_
 cmp   al, 200
 ja    do_other_direction
 jmp   done_checking_for_direction_swap ; already incremented prndindex.
@@ -1030,7 +1032,7 @@ dont_try_olddir:
 
 mov   dh, byte ptr [bp - 1]  ; store this in dh
 
-call  P_Random_MapLocal_
+call  P_Random_
 test  al, 1
 je    loop_from_southeast
 
@@ -1278,10 +1280,8 @@ jne   loop_next_thinker_keendie
 ; done iteratng
 mov   dx, DOOR_OPEN
 mov   ax, TAG_666
-;call  EV_DoDoor_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _EV_DoDoor_addr
+call  EV_DoDoor_
+
 
 exit_keen_die:
 LEAVE_MACRO 
@@ -1380,13 +1380,13 @@ jbe   compare_seesound_2
 cmp   al, sfx_bgsit2
 ja    just_use_seesound
 
-call  P_Random_MapLocal_
+call  P_Random_
 and   al, 1
 add   al, SFX_BGSIT1
 xchg  ax, dx
 jmp   check_mobjtype
 compare_seesound_2:
-call  P_Random_MapLocal_
+call  P_Random_
 
 mov   dl, 3
 div   dl
@@ -1608,7 +1608,7 @@ mov   dl, al
 test  al, al
 je    exit_a_chase_2
 
-call  P_Random_MapLocal_
+call  P_Random_
 cmp   al, 3
 jae   exit_a_chase_2
 xchg  ax, si
@@ -1724,9 +1724,9 @@ mov   word ptr es:[si + MOBJ_POS_T.mp_angle + 2], dx
 test  di, di
 je    exit_a_facetarget
 
-call  P_Random_MapLocal_
+call  P_Random_
 xchg  ax, bx
-call  P_Random_MapLocal_
+call  P_Random_
 
 sub   bx, ax
 mov   es, cx
@@ -1792,16 +1792,16 @@ dw _S_StartSound_addr
 ;    angle = MOD_FINE_ANGLE(angle + (((P_Random()-P_Random())<<(20-ANGLETOFINESHIFT))));
 ;    damage = ((P_Random()%5)+1)*3;
 
-call  P_Random_MapLocal_
+call  P_Random_
 xchg  ax, dx
-call  P_Random_MapLocal_
+call  P_Random_
 sub   dx, ax
 sal   dx, 1
 add   dx, cx ; angle into dx.
 and   dh, (FINEMASK SHR 8)
 
 
-call  P_Random_MapLocal_
+call  P_Random_
 
 mov   cl, 5
 div   cl
@@ -1886,10 +1886,10 @@ do_next_shotgun_pellet:
 
 ;	angle = MOD_FINE_ANGLE((bangle + ((P_Random()-P_Random())<<(20-ANGLETOFINESHIFT))));
 
-call  P_Random_MapLocal_
+call  P_Random_
 
 xchg  ax, dx
-call  P_Random_MapLocal_
+call  P_Random_
 
 sub   dx, ax
 
@@ -1898,7 +1898,7 @@ add   dx, si ; bangle
 and   dx, FINEMASK
 
 ;		damage = ((P_Random()%5)+1)*3;
-call  P_Random_MapLocal_
+call  P_Random_
 
 mov   bl, 5
 div   bl
@@ -1970,16 +1970,16 @@ call  P_AimLineAttack_
 mov   di, ax
 mov   bx, dx
 
-call  P_Random_MapLocal_
+call  P_Random_
 xchg  ax, dx
-call  P_Random_MapLocal_
+call  P_Random_
 
 sub   dx, ax
 sal   dx, 1
 add   dx, cx
 and   dh, (FINEMASK SHR 8)
 
-call  P_Random_MapLocal_
+call  P_Random_
 
 mov   cl, 5
 div   cl
@@ -2011,7 +2011,7 @@ PUBLIC  A_CPosRefire_
 
 ;mov   si, ax
 call  A_FaceTarget_
-call  P_Random_MapLocal_
+call  P_Random_
 cmp   al, 40
 jb    exit_a_cposrefire
 mov   dx, word ptr ds:[si + MOBJ_T.m_targetRef]
@@ -2074,7 +2074,7 @@ PUBLIC  A_SpidRefire_
 ;mov   si, ax
 call  A_FaceTarget_
 
-call  P_Random_MapLocal_
+call  P_Random_
 cmp   al, 10
 jb    exit_a_spidrefire
 mov   dx, word ptr ds:[si + MOBJ_T.m_targetRef]
@@ -2179,7 +2179,7 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-call  P_Random_MapLocal_
+call  P_Random_
 
 ;		damage = (P_Random()%8+1)*3;
 
@@ -2201,10 +2201,9 @@ ENDIF
 mov   bx, si
 mov   dx, si
 add   ax, (_thinkerlist + THINKER_T.t_data)
-;call  P_DamageMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_DamageMobj_addr
+
+call  P_DamageMobj_
+
 ret   
 
 do_troop_missile:
@@ -2246,7 +2245,7 @@ jnc   exit_a_sargattack_full
 
 ;		damage = ((P_Random()%10)+1)*4;
 
-call  P_Random_MapLocal_
+call  P_Random_
 
 mov   cl, 10
 div   cl
@@ -2268,10 +2267,8 @@ mov   bx, si
 mov   dx, si
 
 add   ax, (_thinkerlist + THINKER_T.t_data)
-;call  P_DamageMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_DamageMobj_addr
+call  P_DamageMobj_
+
 exit_a_sargattack_full:
 exit_a_sargattack:
 ret   
@@ -2291,7 +2288,7 @@ call  A_FaceTarget_
 mov   bx, dx
 call  P_CheckMeleeRange_
 jnc   do_head_missile
-call  P_Random_MapLocal_
+call  P_Random_
 
 ;		damage = (P_Random()%6+1)*10;
 
@@ -2317,10 +2314,8 @@ ENDIF
 mov   bx, si
 mov   dx, si
 add   ax, (_thinkerlist + THINKER_T.t_data)
-;call  P_DamageMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_DamageMobj_addr
+call  P_DamageMobj_
+
 ret   
 
 do_head_missile:
@@ -2398,7 +2393,7 @@ dw _S_StartSound_addr
 ;		damage = (P_Random()%8+1)*10;
 
 
-call  P_Random_MapLocal_
+call  P_Random_
 and   al, 7
 inc   ax
 mov   ah, 10
@@ -2414,10 +2409,8 @@ ENDIF
 mov   bx, si
 mov   dx, si
 add   ax, (_thinkerlist + THINKER_T.t_data)
-;call  P_DamageMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_DamageMobj_addr
+call  P_DamageMobj_
+
 ret   
 
 do_bruis_missile:
@@ -2596,7 +2589,7 @@ mov   word ptr ds:[bx + MOBJ_T.m_momz + 2], 1
 
 ;    th->tics -= P_Random()&3;
 
-call  P_Random_MapLocal_
+call  P_Random_
 and   al, 3
 sub   byte ptr ds:[bx + MOBJ_T.m_tics], al
 
@@ -2879,7 +2872,7 @@ jnc    exit_a_skelfist_full
 
 ;		damage = ((P_Random()%10)+1)*6;
 
-call  P_Random_MapLocal_
+call  P_Random_
 
 mov   cl, 10
 div   cl
@@ -2907,10 +2900,8 @@ ENDIF
 mov   bx, si
 mov   dx, si
 add   ax, (_thinkerlist + THINKER_T.t_data)
-;call  P_DamageMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_DamageMobj_addr
+call  P_DamageMobj_
+
 exit_a_skelfist_full:
 exit_a_skelfist:
 ret   
@@ -3749,10 +3740,8 @@ mov   cx, 20
 mov   bx, si
 mov   dx, si
 
-;call  P_DamageMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_DamageMobj_addr
+call  P_DamageMobj_
+
 
 mov   bx, word ptr [bp - 2]
 mov   es, word ptr [bp - 4]
@@ -4350,10 +4339,8 @@ mov   cx, 10000
 pop   ax ; bp - 6
 mov   bx, di
 mov   dx, di
-;call  P_DamageMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_DamageMobj_addr
+call  P_DamageMobj_
+
 jmp   exit_a_painshootskull
 
 skull_nodamage:
@@ -4422,7 +4409,7 @@ cmp   al, SFX_PODTH3
 jbe   check_for_other_deathsound_2
 cmp   al, SFX_BGDTH2
 ja    got_deathsound
-call  P_Random_MapLocal_
+call  P_Random_
 
 ; sound = sfx_bgdth1 + P_Random ()%2;
 and   al, 1
@@ -4430,7 +4417,7 @@ add   al, SFX_BGDTH1
 jmp   got_deathsound
 
 check_for_other_deathsound_2:
-call  P_Random_MapLocal_
+call  P_Random_
 
 
 mov   dl, 3
@@ -4573,10 +4560,7 @@ cmp   byte ptr ds:[_gamemap], 8
 jmp   generic_shared_jne_weird
 
 do_floor_and_exit:
-;call  EV_DoFloor_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _EV_DoFloor_addr
+call  EV_DoFloor_
 
 exit_a_bossdeath_3:
 ret   
@@ -4863,7 +4847,7 @@ ELSE
     push  ax
 ENDIF
 
-call  P_Random_MapLocal_
+call  P_Random_
 
 sal   ax, 1
 add   ax, 128
@@ -4885,7 +4869,7 @@ call  P_SpawnMobj_
 
 
 mov   bx, word ptr ds:[_setStateReturn]
-call  P_Random_MapLocal_
+call  P_Random_
 
 ;		th->momz.w = P_Random()*512;
 
@@ -4900,7 +4884,7 @@ mov   ax, bx
 call  P_SetMobjState_
 
 
-call  P_Random_MapLocal_
+call  P_Random_
 and   al, 7
 sub   byte ptr ds:[bx + MOBJ_T.m_tics], al
 mov   al, byte ptr ds:[bx + MOBJ_T.m_tics]
@@ -4936,9 +4920,9 @@ PUBLIC  A_BrainExplode_
 
 
 
-call  P_Random_MapLocal_
+call  P_Random_
 xchg  ax, dx
-call  P_Random_MapLocal_
+call  P_Random_
 ;    x = mo_pos->x.w + (P_Random () - P_Random ())*2048;
 sub   dx, ax
 
@@ -4956,7 +4940,7 @@ ELSE
 ENDIF
 
 
-call  P_Random_MapLocal_
+call  P_Random_
 
 mov   es, cx
 
@@ -5001,7 +4985,7 @@ call  P_SpawnMobj_
 
 
 mov   bx, word ptr ds:[_setStateReturn]
-call  P_Random_MapLocal_
+call  P_Random_
 
 ;    th->momz.w = P_Random()*512;
 
@@ -5016,7 +5000,7 @@ mov   dx, S_BRAINEXPLODE1
 mov   ax, bx
 call  P_SetMobjState_
 
-call  P_Random_MapLocal_
+call  P_Random_
 and   al, 7
 sub   byte ptr ds:[bx + MOBJ_T.m_tics], al
 mov   al, byte ptr ds:[bx + MOBJ_T.m_tics]
@@ -5261,7 +5245,7 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-call  P_Random_MapLocal_
+call  P_Random_
 cmp   al, 50
 jb    spawn_imp
 spawn_non_imp:

@@ -24,13 +24,14 @@ P_SIGHT_STARTMARKER_ = 0
 
 
 ; these can be called near but must have push cs prefix
-EXTRN P_Random_MapLocal_:NEAR  
+EXTRN P_Random_:NEAR  
 EXTRN P_LineAttack_:NEAR
 EXTRN P_SpawnPlayerMissile_:NEAR
 EXTRN P_AimLineAttack_:NEAR  
 EXTRN P_SetMobjState_:NEAR         ; except this is really far
 EXTRN P_NoiseAlert_:NEAR         ; except this is really far
 EXTRN P_SpawnMobj_:NEAR          
+EXTRN P_DamageMobj_:NEAR
 
 
 .DATA
@@ -481,7 +482,7 @@ PUBLIC A_Punch_
 
 
 
-call  P_Random_MapLocal_
+call  P_Random_
 
 ;    damage = (P_Random ()%10+1)<<1;
 
@@ -514,9 +515,9 @@ push  dx ; damage parameter down the road
 les   di, dword ptr ds:[_playerMobj_pos]
 mov   cx, word ptr es:[di + MOBJ_POS_T.mp_angle+2]
 
-call  P_Random_MapLocal_
+call  P_Random_
 mov   bx, ax
-call  P_Random_MapLocal_
+call  P_Random_
 ; bh still zero
 sub   bx, ax
 
@@ -594,7 +595,7 @@ ENDP
 PROC A_Saw_ NEAR
 PUBLIC A_Saw_
 
-call  P_Random_MapLocal_
+call  P_Random_
 
 ;    damage = 2*(P_Random ()%10+1);
 
@@ -610,9 +611,9 @@ push  dx   ; push damage for later
 les   si, dword ptr ds:[_playerMobj_pos]
 mov   cx, word ptr es:[si + MOBJ_POS_T.mp_angle+2]
 
-call  P_Random_MapLocal_
+call  P_Random_
 mov   bx, ax
-call  P_Random_MapLocal_
+call  P_Random_
 
 xchg  ax, bx
 sub   ax, bx
@@ -773,7 +774,7 @@ PUBLIC A_FirePlasma_
 
 
 dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CELL)]
-call  P_Random_MapLocal_
+call  P_Random_
 and   al, 1
 mov   dx, word ptr ds:[_weaponinfo + (WP_PLASMA * SIZEOF_WEAPONINFO_T) + WEAPONINFO_T.weaponinfo_flashstate]
 add   dx, ax
@@ -852,7 +853,7 @@ PUBLIC P_GunShot_
 push  bx
 push  dx
 mov   bl, al ; bl stores accuracy
-call  P_Random_MapLocal_
+call  P_Random_
 mov   dx, 3 ; zero dh
 
 div   dl
@@ -876,9 +877,9 @@ jne   do_shot
 ; add shot inaccuracy
 
 
-call  P_Random_MapLocal_
+call  P_Random_
 mov   bx, ax
-call  P_Random_MapLocal_
+call  P_Random_
 
 sub   bx, ax
 sar   bx, 1
@@ -1010,7 +1011,7 @@ loop_next_super_pellet:
 
 ;	damage = 5*(P_Random ()%3+1);
 
-call  P_Random_MapLocal_
+call  P_Random_
 
 
 mov   dx, 3  ; dh made 0 here
@@ -1027,10 +1028,10 @@ mov   bx, word ptr es:[bx + MOBJ_POS_T.mp_angle+2]
 
 ;	angle = MOD_FINE_ANGLE( angle + ( ( P_Random()-P_Random() )<<(19-ANGLETOFINESHIFT)) );
 
-call  P_Random_MapLocal_
+call  P_Random_
 SHIFT_MACRO shr   bx 3
 add   bx, ax   ; add rand1
-call  P_Random_MapLocal_
+call  P_Random_
 sub   bx, ax   ; sub rand2
 and   bh, (FINEMASK SHR 8)
 
@@ -1039,9 +1040,9 @@ and   bh, (FINEMASK SHR 8)
 ;		MISSILERANGE,
 ;		      bulletslope + ((P_Random()-P_Random())<<5), damage);
 
-call  P_Random_MapLocal_
+call  P_Random_
 mov   dx, ax
-call  P_Random_MapLocal_
+call  P_Random_
 
 sub   dx, ax
 xchg  ax, dx
@@ -1281,7 +1282,7 @@ mov   dx, cx  ; add 1 15 times up front here (instead of inc in loop)
 ;        damage += (P_Random()&7) + 1;
 
 do_next_rand_damage_add:
-call  P_Random_MapLocal_
+call  P_Random_
 and   al, 7
 add   dx, ax
 loop  do_next_rand_damage_add
@@ -1295,9 +1296,8 @@ mov   bx, si
 mov   ax, word ptr ds:[_linetarget]
 
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_DamageMobj_addr
+call P_DamageMobj_
+
 
 pop   cx  ; get outer loop var..
 jmp   finish_this_bfg_spray_iter
@@ -1319,7 +1319,7 @@ ret
 
 ENDP
 
-PROC P_MovePsprites_ FAR
+PROC P_MovePsprites_ NEAR
 PUBLIC P_MovePsprites_
 
 push  bx
@@ -1374,7 +1374,7 @@ mov   word ptr ds:[_psprites + (PS_FLASH  * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_s
 pop   dx
 pop   cx
 pop   bx
-retf
+ret
 
 
 p_setpsprite_jump_table:
@@ -1486,16 +1486,6 @@ pop   si
 pop   bx
 ret   
 
-
-ENDP
-
-; far accessors... remove eventually
-
-PROC P_DropWeaponFar_ FAR
-PUBLIC P_DropWeaponFar_
-
-call   P_DropWeapon_
-retf
 
 ENDP
 

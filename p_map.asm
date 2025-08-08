@@ -23,6 +23,12 @@ EXTRN P_SpawnPuff_:NEAR            ; except this is really near
 EXTRN P_SpawnMobj_:NEAR            
 EXTRN P_RemoveMobj_:NEAR
 EXTRN P_CheckSight_:NEAR
+EXTRN P_UseSpecialLine_:NEAR
+EXTRN P_Random_:NEAR
+EXTRN P_DamageMobj_:NEAR
+EXTRN P_CrossSpecialLine_:NEAR
+EXTRN P_ShootSpecialLine_:NEAR
+EXTRN P_TouchSpecialThing_:NEAR
 
 ; hack but oh well
 P_SIGHT_STARTMARKER_ = 0 
@@ -2951,10 +2957,7 @@ mov   ax, word ptr ds:[_playerMobj]
 mov   bx, si
 mov   dx, di	; linenum
 
-;call  P_UseSpecialLine_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_UseSpecialLine_addr
+call  P_UseSpecialLine_
 
 clc
 LEAVE_MACRO
@@ -3471,10 +3474,11 @@ cbw	  ; fill out ah from before
 mov   dx, ax
 mov   ax, word ptr ds:[bx + _spechit]
 mov   bx, si
-;call  P_CrossSpecialLine_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_CrossSpecialLine_addr
+
+; todo get rid of stack stuff.
+push  cs
+call  P_CrossSpecialLine_
+
 
 jmp   loop_next_num_spec
 
@@ -4265,10 +4269,7 @@ mov   bx, word ptr [bp - 2]
 mov   dx, word ptr ds:[_tmthing]
 xchg  ax, si   ; get si in ax
 
-;call  P_TouchSpecialThing_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_TouchSpecialThing_addr
+call  P_TouchSpecialThing_
 
 dont_touch_anything:
 cmp   byte ptr [bp - 01Eh], 0
@@ -4386,7 +4387,7 @@ do_skull_fly_into_thing:
 
 ;		damage = ((P_Random()%8)+1)*getDamage(tmthing->type);
 
-call  P_Random_MapLocal_
+call  P_Random_
 and   al, 7
 inc   ax
 xchg  ax, cx  ; store random in cl
@@ -4404,10 +4405,7 @@ mov   dx, bx   ; tmthing
 mov   cx, ax   ; cx gets mul result
 mov   ax, si
 
-;call  P_DamageMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_DamageMobj_addr
+call  P_DamageMobj_
 
 
 ;		tmthing_pos->flags2 &= ~MF_SKULLFLY;
@@ -4455,7 +4453,7 @@ do_missile_damage:
 ; bx is tmthingtarget
 ;		damage = ((P_Random()%8)+1)*getDamage(tmthing->type);
 
-call  P_Random_MapLocal_
+call  P_Random_
 and   al, 7
 inc   ax
 xchg  ax, cx  ; store random in cl. keep ah 0
@@ -4473,10 +4471,8 @@ mul   cl ; this will fill up the queue so use mov not xchg
 mov   cx, ax   ; cx gets mul result
 mov   dx, di   ; tmthing
 mov   ax, si   ; ax gets thing ptr   
-;call  P_DamageMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_DamageMobj_addr
+call  P_DamageMobj_
+
 clc
 LEAVE_MACRO 
 pop   di
@@ -5454,10 +5450,8 @@ je    no_special
 
 mov   ax, word ptr ds:[_shootthing]
 ; dx is linenum
-;call  P_ShootSpecialLine_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_ShootSpecialLine_addr
+call  P_ShootSpecialLine_
+
 
 no_special:
 test  cl, ML_TWOSIDED
@@ -5943,10 +5937,8 @@ do_damage:
 mov   dx, word ptr ds:[_shootthing]
 mov   bx, dx
 mov   ax, word ptr [bp - 4]
-;call  P_DamageMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_DamageMobj_addr
+call  P_DamageMobj_
+
 exit_aimtraverse_return_0:
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
@@ -6530,10 +6522,8 @@ mov   cx, 10000
 mov   dx, word ptr ds:[_tmthing]
 mov   ax, si
 mov   bx, dx
-;call  P_DamageMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_DamageMobj_addr
+call  P_DamageMobj_
+
 exit_stompthing_return_1:
 stc
 pop   si
@@ -6544,7 +6534,7 @@ ENDP
 ; return in carry
 ;boolean __near P_TeleportMove (mobj_t __near* thing,mobj_pos_t __far* thing_pos,fixed_t_union	x,fixed_t_union	y, int16_t oldsecnum){
 
-PROC P_TeleportMove_ FAR
+PROC P_TeleportMove_ 
 PUBLIC P_TeleportMove_
 
 push  dx
@@ -7290,7 +7280,7 @@ ENDP
 
 
 
-PROC P_UseLines_ FAR
+PROC P_UseLines_ NEAR
 PUBLIC P_UseLines_
 
 PUSHA_NO_AX_MACRO
@@ -7525,10 +7515,8 @@ mov   cx, word ptr ds:[_bombdamage]
 sub   cx, di
 mov   bx, word ptr ds:[_bombsource] ; todo les. reorder?
 
-;call  P_DamageMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_DamageMobj_addr
+call  P_DamageMobj_
+
 exit_radiusattack_return_1:
 stc 
 pop   di
@@ -7851,10 +7839,8 @@ mov   cx, 10
 mov   ax, si
 xor   bx, bx
 mov   dx, bx
-;call  P_DamageMobj_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_DamageMobj_addr
+call  P_DamageMobj_
+
 mov   es, word ptr [bp - 2]
 mov   ax, word ptr es:[di + 8]
 mov   dx, word ptr es:[di + 0Ah]
@@ -7882,9 +7868,9 @@ mov   dx, es
 push  cs
 call  P_SpawnMobj_
 
-call  P_Random_MapLocal_
+call  P_Random_
 mov   dx, ax
-call  P_Random_MapLocal_
+call  P_Random_
 
 ;		mo->momx.w = (P_Random() - P_Random ())<<12;
 ;		mo->momy.w = (P_Random() - P_Random ())<<12;
@@ -7898,9 +7884,9 @@ cwd
 mov   si, word ptr ds:[_setStateReturn]
 mov   word ptr ds:[si + 0Eh], ax
 mov   word ptr ds:[si + 010h], dx
-call  P_Random_MapLocal_
+call  P_Random_
 mov   dx, ax
-call  P_Random_MapLocal_
+call  P_Random_
 sub   ax, dx
 SHIFT_MACRO  shl ax 4
 mov   ah, al
@@ -7919,7 +7905,7 @@ ret
 ENDP
 
 ; return in carry
-PROC P_ChangeSector_ FAR
+PROC P_ChangeSector_ NEAR
 PUBLIC P_ChangeSector_
 
 push  cx
@@ -7946,7 +7932,7 @@ clc
 pop   di
 pop   si
 pop   cx
-retf  
+ret
 
 ENDP
 
@@ -8159,28 +8145,6 @@ pop   si
 ret
 
 
-
-ENDP
-
-;uint8_t   P_Random(void) 
-	;prndindex = (prndindex+1)&0xff;
-    ;return rndtable[prndindex];
-; consider inlining
-
-; ah is 0 now
-
-PROC P_Random_MapLocal_ NEAR
-PUBLIC P_Random_MapLocal_
-push    bx
-inc 	byte ptr ds:[_prndindex]
-mov     ax, RNDTABLE_SEGMENT
-mov     es, ax
-xor     ax, ax
-mov     bx, ax
-mov     al, byte ptr ds:[_prndindex]
-xlat    byte ptr es:[bx]
-pop     bx
-ret
 
 ENDP
 

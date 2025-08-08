@@ -62,7 +62,7 @@ void __near P_LoadSegs(int16_t lump);
 void __far P_InitThinkers (void);
 void __near Z_FreeConventionalAllocations();
 void __near P_GroupLines();
-void __far P_SpawnSpecials(void);
+
 void R_LoadPatchColumnsColormap0(uint16_t lump, segment_t texlocation_segment, boolean ismasked);
 void S_Start(void);
 void GAMEKEYDOWNTHING();

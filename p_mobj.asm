@@ -31,6 +31,8 @@ EXTRN P_SetMobjState_:NEAR
 EXTRN P_BringUpWeapon_:NEAR
 EXTRN P_UnsetThingPosition_:NEAR
 EXTRN P_SetThingPosition_:NEAR
+EXTRN P_RemoveThinker_:NEAR
+EXTRN P_CreateThinker_:NEAR
 
 
 .DATA
@@ -575,7 +577,7 @@ jmp       exit_spawnmapthing_2
 ENDP
 
 
-PROC P_MobjThinker_ FAR
+PROC P_MobjThinker_ NEAR
 PUBLIC P_MobjThinker_
 
 ;void __near P_MobjThinker (mobj_t __near* mobj, mobj_pos_t __far* mobj_pos, THINKERREF mobjRef) {
@@ -677,7 +679,7 @@ jne       done_with_z_movement
 exit_p_mobjthinker:
 pop       di
 pop       si
-retf
+ret
 
 
 done_with_z_movement:
@@ -734,7 +736,7 @@ call      P_NightmareRespawn_
 
 pop       di
 pop       si
-retf       
+ret       
 
 ENDP
 
@@ -769,11 +771,8 @@ push      dx
 push      bx
 push      cx
 mov       ax, TF_MOBJTHINKER_HIGHBITS
-
-;call      P_CreateThinker_
- db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_CreateThinker_addr
+push      cs
+call      P_CreateThinker_
 
 mov       si, ax
 sub       ax, (_thinkerlist + THINKER_T.t_data)
@@ -1001,10 +1000,9 @@ dw _S_StopSoundMobjRef_addr
 
        
 pop       ax  ; restore div result (mobjref)
-;call      P_RemoveThinker_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_RemoveThinker_addr
+push      cs
+call      P_RemoveThinker_
+
 
 
 pop       dx

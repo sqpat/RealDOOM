@@ -27,18 +27,13 @@ EXTRN T_StrobeFlash_:NEAR
 EXTRN T_MoveCeiling_:NEAR
 EXTRN T_VerticalDoor_:NEAR
 EXTRN T_MoveFloor_:NEAR
+EXTRN P_MobjThinker_:NEAR
 
-EXTRN OutOfThinkers_:PROC
 EXTRN P_PlayerThink_:NEAR
 EXTRN P_UpdateSpecials_:NEAR
 
 
 .DATA
-
-EXTRN _currentThinkerListHead:WORD
-EXTRN _paused:BYTE
-EXTRN _menuactive:BYTE
-EXTRN _demoplayback:BYTE
 
 .CODE
 
@@ -85,7 +80,7 @@ add       bx, SIZEOF_THINKER_T
 cmp       ax, dx
 jne       loop_check_next_thinker
 error_no_thinker_found:
-call      OutOfThinkers_
+call      dword ptr ds:[_OutOfThinkers_addr]
 
 found_thinker:
 mov       word ptr ds:[_currentThinkerListHead], ax
@@ -247,9 +242,9 @@ mov       ax, di
 
 mov       cx, MOBJPOSLIST_6800_SEGMENT ; todo remove maybe?
 mov       dx, si
-;call      P_MobjThinker_
-db    09Ah
-dw    P_MOBJTHINKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
+call      P_MobjThinker_
+
+
 
 
 done_processing_thinker:

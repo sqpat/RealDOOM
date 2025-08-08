@@ -19,24 +19,22 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN AM_Stop_:PROC
 EXTRN P_Random_:NEAR
-EXTRN FastDiv32u16u_:PROC
-EXTRN FastMul16u32u_:PROC
-EXTRN R_PointToAngle2_:PROC
-EXTRN FixedMulTrigNoShift_:PROC
-EXTRN GetPainChance_:PROC
-EXTRN GetPainState_:PROC
-EXTRN GetSeeState_:PROC
-EXTRN GetDeathState_:PROC
-EXTRN GetXDeathState_:PROC
-EXTRN GetSpawnHealth_:PROC
+EXTRN GetPainChance_:NEAR
+EXTRN GetPainState_:NEAR
+EXTRN GetSeeState_:NEAR
+EXTRN GetDeathState_:NEAR
+EXTRN GetXDeathState_:NEAR
+EXTRN GetSpawnHealth_:NEAR
 
 
-EXTRN _P_RemoveMobj:DWORD
-EXTRN _P_DropWeaponFar:DWORD
-EXTRN _P_SpawnMobj:DWORD
-EXTRN _P_SetMobjState:DWORD
+EXTRN P_RemoveMobj_:NEAR
+EXTRN P_DropWeapon_:NEAR
+EXTRN P_SpawnMobj_:NEAR
+EXTRN P_SetMobjState_:NEAR
+
+
+
 
 .DATA
 
@@ -410,9 +408,9 @@ out_of_range:
 dead_toucher_cant_pickup:
 
 ;pop    di
-retf
+ret
 
-PROC    P_TouchSpecialThing_  FAR
+PROC    P_TouchSpecialThing_  NEAR
 PUBLIC  P_TouchSpecialThing_
 
 ; outer scope doesnt require preserved di
@@ -539,7 +537,8 @@ dont_increment_itemcount:
 SELFMODIFY_touchspecial_removemobj_ptr:
 mov    ax, 01000h
 
-call   dword ptr [_P_RemoveMobj]
+push   cs
+call   P_RemoveMobj_
 
 mov    dx, cx
 xor    ax, ax
@@ -552,7 +551,7 @@ dw _S_StartSound_addr
 
 exit_ptouchspecialthing:
 ;pop    di
-retf
+ret
 touchspecial_case_56:
 mov    ax, 2
 mov    word ptr ds:[di], GOTMEGA
@@ -621,7 +620,7 @@ call   P_GiveBody_
 jc     done_with_touchspecial_switch_block
 exitptouchspecialthing_2:
 ;pop    di
-retf
+ret
 
 
 ;71 025h 0
@@ -923,10 +922,10 @@ jne    target_not_player
 and    byte ptr es:[bx + MOBJ_POS_T.mp_flags1], (NOT MF_SOLID)
 mov    byte ptr ds:[_player + PLAYER_T.player_playerstate], 1
 
-call   dword ptr ds:[_P_DropWeaponFar]
+call   P_DropWeapon_
 cmp    byte ptr ds:[_automapactive], 0
 je     target_not_player
-call   AM_Stop_
+call   dword ptr ds:[_AM_Stop_addr]
 target_not_player:
 
 
@@ -936,6 +935,7 @@ target_not_player:
 ;		P_SetMobjState (target, getDeathState(target->type));
 ;	 }
 mov   ax, di  ; retrieve type
+push  cs
 call  GetSpawnHealth_
 
 neg    ax
@@ -944,6 +944,7 @@ cmp    ax, word ptr ds:[si + MOBJ_T.m_health]
 jle    do_death_state
 mov    ax, di
 
+push   cs
 call   GetXDeathState_
 
 test   ax, ax
@@ -953,12 +954,14 @@ do_death_state:
 mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor    ah, ah
 
+push   cs
 call   GetDeathState_
 
 got_death_or_xdeath_state_in_ax:
 xchg   ax, dx
 mov    ax, si
-call   dword ptr  ds:[_P_SetMobjState]
+push   cs
+call   P_SetMobjState_
 call   P_Random_
 and    al, 3
 sub    byte ptr ds:[si + MOBJ_T.m_tics], al
@@ -1012,7 +1015,8 @@ mov    dx, word ptr es:[bx + 2]
 les    bx, dword ptr es:[bx + 4]
 mov    cx, es
 
-call   dword ptr [_P_SpawnMobj]
+push   cs
+call   P_SpawnMobj_
 
 les    bx, dword ptr ds:[_setStateReturn_pos]
 or     byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_DROPPED
@@ -1072,23 +1076,35 @@ jmp    word ptr cs:[bx + OFFSET mass_thrust_switch_block]
 mass_thrust_type_1:
 mov    bx, 08000h
 mov    cx, 0Ch
-call   FastMul16u32u_
+; call  FastMul16u32u_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FastMul16u32u_addr
+
 mov    bx, 500
 do_mass_thrust_div:
-call   FastDiv32u16u_
+call   dword ptr ds:[_FastDiv32u16u_addr]
 pop    cx
 pop    bx
 ret    
 mass_thrust_type_5:
 mov    bx, 08000h
 mov    cx, 0Ch
-call   FastMul16u32u_
+; call  FastMul16u32u_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FastMul16u32u_addr
+
 mov    bx, 600
 jmp    do_mass_thrust_div
 mass_thrust_type_4:
 mov    bx, 08000h
 mov    cx, 0Ch
-call   FastMul16u32u_
+; call  FastMul16u32u_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FastMul16u32u_addr
+
 mov    bx, 1000
 jmp    do_mass_thrust_div
 mass_thrust_type_3:
@@ -1120,9 +1136,9 @@ exit_p_damagemobj_2:
 LEAVE_MACRO  
 pop    di
 pop    si
-retf
+ret
 
-PROC    P_DamageMobj_  FAR
+PROC    P_DamageMobj_  NEAR
 PUBLIC  P_DamageMobj_
 ;void __far P_DamageMobj (mobj_t __near*	target, mobj_t __near*	inflictor, mobj_t __near*	source, int16_t 		damage ) {
 
@@ -1245,7 +1261,10 @@ mov    dx, word ptr es:[di + MOBJ_POS_T.mp_x + 2]
 les    bx, dword ptr es:[di + MOBJ_POS_T.mp_y + 0]
 mov    cx, es
 
-call   R_PointToAngle2_
+;call   R_PointToAngle2_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _R_PointToAngle2_addr
 
 ; only intbits are used, currently in dx.
 
@@ -1314,7 +1333,10 @@ push   dx
 push   cx
 push   bx
 mov    ax, FINECOSINE_SEGMENT
-call   FixedMulTrigNoShift_
+;call  FixedMulTrigNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigNoShift_addr
 
 add    word ptr ds:[si + MOBJ_T.m_momx + 0], ax
 adc    word ptr ds:[si + MOBJ_T.m_momx + 2], dx
@@ -1325,7 +1347,10 @@ pop    bx
 pop    cx
 pop    dx
 
-call   FixedMulTrigNoShift_
+;call  FixedMulTrigNoShift_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedMulTrigNoShift_addr
 add    word ptr ds:[si + MOBJ_T.m_momy + 0], ax
 adc    word ptr ds:[si + MOBJ_T.m_momy + 2], dx
 
@@ -1440,7 +1465,7 @@ call   P_Random_
 xchg   ax, dx
 mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 
-
+push   cs
 call   GetPainChance_
 
 cmp    dx, ax
@@ -1453,10 +1478,13 @@ jne    dont_do_pain_state
 or     byte ptr es:[bx + MOBJ_POS_T.mp_flags1], MF_JUSTHIT
 mov    al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 
+push   cs
 call   GetPainState_
 xchg   ax, dx
 mov    ax, si
-call   dword ptr [_P_SetMobjState]
+push   cs
+call   P_SetMobjState_
+
 
 dont_do_pain_state:
 xor    ax, ax
@@ -1525,18 +1553,21 @@ mov    dx, word ptr es:[di + MOBJ_POS_T.mp_statenum]
 cmp    dx, word ptr ds:[_mobjinfo + bx]
 jne    exit_p_damagemobj
 
+push   cs
 call   GetSeeState_
 
 test   ax, ax
 je     exit_p_damagemobj ; no seestate.
 xchg   ax, dx
 xchg   ax, si
-call   dword ptr [_P_SetMobjState]
+push   cs
+call   P_SetMobjState_
+
 exit_p_damagemobj:
 LEAVE_MACRO  
 pop    di
 pop    si
-retf   
+ret
 
 
 
