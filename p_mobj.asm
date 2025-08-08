@@ -33,6 +33,9 @@ EXTRN P_UnsetThingPosition_:NEAR
 EXTRN P_SetThingPosition_:NEAR
 EXTRN P_RemoveThinker_:NEAR
 EXTRN P_CreateThinker_:NEAR
+EXTRN GetDeathState_:NEAR
+EXTRN GetSpawnHealth_:NEAR
+
 
 
 .DATA
@@ -852,8 +855,8 @@ pop       word ptr es:[di + MOBJ_POS_T.mp_flags2]
 
 pop       ax
 
-db 09Ah
-dw GETSPAWNHEALTHADDR, INFOFUNCLOADSEGMENT
+push  cs
+call  GetSpawnHealth_
 
 
 mov       word ptr ds:[si + MOBJ_T.m_health], ax
@@ -2011,9 +2014,8 @@ rep   stosw ; zero all six words out
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
 
-; call GetDeathState..
-db    09Ah
-dw    GETDEATHSTATEADDR, INFOFUNCLOADSEGMENT
+push  cs
+call  GetDeathState_
 
 xchg  ax, dx    ; dx gets deathstate
 mov   ax, si    ; ax gets mobj ptr back

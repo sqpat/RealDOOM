@@ -526,8 +526,8 @@
 
 #define R_DrawSkyPlane_addr_Offset        (*((int16_t __near*)               (_NULL_OFFSET + 0x06F4)))
 #define R_DrawSkyPlane_addr    			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06F4)))
-// #define EV_DoDoor_addr     				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06F8)))
-// #define P_TouchSpecialThing_addr     	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06FC)))
+#define OutOfThinkers_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06F8)))
+#define FastDiv32u16u_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06FC)))
 
 #define playerMobj_pos   		     	  (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x0700)))
 #define setStateReturn_pos	 	    	  (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x0704)))
@@ -587,12 +587,10 @@
 #define skullName				          (((int16_t __near*)           	 (_NULL_OFFSET + 0x0B1C)))
 
 
-#define OutOfThinkers_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0B20)))
-#define FastDiv32u16u_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0B24)))
 
 // 828 to 82f free
 
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0B30)))
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0B20)))
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))

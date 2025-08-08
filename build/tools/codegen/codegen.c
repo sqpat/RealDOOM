@@ -8,7 +8,7 @@
 #include "p_inter.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2502
+#define CONSTANTS_COUNT 2487
 #define LOCALS_COUNT 22
 
 
@@ -245,21 +245,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "FF_FRAMEMASK",
     "FF_FULLBRIGHT",
 
-    "INFOFUNCLOADSEGMENT",
-    "GETPAINCHANCEADDR",
-    "GETRAISESTATEADDR",
-    "GETXDEATHSTATEADDR",
-    "GETMELEESTATEADDR",
-    "GETMOBJMASSADDR",
-    "GETACTIVESOUNDADDR",
-    "GETPAINSOUNDADDR",
-    "GETATTACKSOUNDADDR",
-    "GETDAMAGEADDR",
-    "GETSEESTATEADDR",
-    "GETMISSILESTATEADDR",
-    "GETDEATHSTATEADDR",
-    "GETPAINSTATEADDR",
-    "GETSPAWNHEALTHADDR",
+
     "MUS_NONE",
 	"MUS_E1M1",
 	"MUS_E1M2",
@@ -2828,21 +2814,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     FF_FULLBRIGHT,
 
 
-    InfoFuncLoadSegment,
-    getPainChanceAddr,
-    getRaiseStateAddr,
-    getXDeathStateAddr,
-    getMeleeStateAddr,
-    getMobjMassAddr,
-    getActiveSoundAddr,
-    getPainSoundAddr,
-    getAttackSoundAddr,
-    getDamageAddr,
-    getSeeStateAddr,
-    getMissileStateAddr,
-    getDeathStateAddr,
-    getPainStateAddr,
-    getSpawnHealthAddr,
+    
 
     mus_None,
 	mus_e1m1,

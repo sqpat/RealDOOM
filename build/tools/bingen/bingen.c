@@ -219,6 +219,21 @@ void __far P_GivePower();
 
 void __far P_RemoveThinker();
 
+void __far GetPainChance();
+void __far GetRaiseState();
+void __far GetXDeathState();
+void __far GetMeleeState();
+void __far GetMobjMass();
+void __far GetActiveSound();
+void __far GetPainSound();
+void __far GetAttackSound();
+void __far GetDamage();
+void __far GetSeeState();
+void __far GetMissileState();
+void __far GetDeathState();
+void __far GetPainState();
+void __far GetSpawnHealth();
+
 
 
 /*
@@ -592,6 +607,20 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     
     fprintf(fp, "P_REMOVETHINKEROFFSET = 0%Xh\n",                   FP_OFF(P_RemoveThinker)                   - FP_OFF(P_SIGHT_STARTMARKER));
 
+    fprintf(fp, "GETPAINCHANCEADDR     = 0%Xh\n",                   FP_OFF(GetPainChance)                     - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETRAISESTATEADDR     = 0%Xh\n",                   FP_OFF(GetRaiseState)                     - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETXDEATHSTATEADDR    = 0%Xh\n",                   FP_OFF(GetXDeathState)                    - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETMELEESTATEADDR     = 0%Xh\n",                   FP_OFF(GetMeleeState)                     - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETMOBJMASSADDR       = 0%Xh\n",                   FP_OFF(GetMobjMass)                       - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETACTIVESOUNDADDR    = 0%Xh\n",                   FP_OFF(GetActiveSound)                    - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETPAINSOUNDADDR      = 0%Xh\n",                   FP_OFF(GetPainSound)                      - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETATTACKSOUNDADDR    = 0%Xh\n",                   FP_OFF(GetAttackSound)                    - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETDAMAGEADDR         = 0%Xh\n",                   FP_OFF(GetDamage)                         - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETSEESTATEADDR       = 0%Xh\n",                   FP_OFF(GetSeeState)                       - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETMISSILESTATEADDR   = 0%Xh\n",                   FP_OFF(GetMissileState)                   - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETDEATHSTATEADDR     = 0%Xh\n",                   FP_OFF(GetDeathState)                     - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETPAINSTATEADDR      = 0%Xh\n",                   FP_OFF(GetPainState)                      - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETSPAWNHEALTHADDR    = 0%Xh\n",                   FP_OFF(GetSpawnHealth)                    - FP_OFF(P_SIGHT_STARTMARKER));
 
 	// P_AddActiveCeiling_addr =		 	(uint32_t)(P_AddActiveCeiling);
 	// P_AddActivePlat_addr =		 		(uint32_t)(P_AddActivePlat);

@@ -1181,7 +1181,7 @@ xor   ah, ah
 mov   byte ptr ds:[_castnum], 0
 ; call getSeeState
 db    09Ah
-dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
+dw    GETSEESTATEADDR, PHYSICS_HIGHCODE_SEGMENT
 mov   bx, ax
 shl   bx, 1
 add   bx, ax
@@ -1261,7 +1261,7 @@ add   bx, ax
 mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
 xor   ah, ah
 db    09Ah
-dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
+dw    GETSEESTATEADDR, PHYSICS_HIGHCODE_SEGMENT
 mov   dl, al
 xor   dh, dh
 xor   ax, ax
@@ -1275,7 +1275,7 @@ add   bx, ax
 mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
 xor   ah, ah
 db    09Ah
-dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
+dw    GETSEESTATEADDR, PHYSICS_HIGHCODE_SEGMENT
 mov   dx, ax
 SHIFT_MACRO shl ax 2
 sub   ax, dx
@@ -1300,7 +1300,7 @@ add   bx, ax
 mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
 xor   ah, ah
 db    09Ah
-dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
+dw    GETSEESTATEADDR, PHYSICS_HIGHCODE_SEGMENT
 mov   dx, ax
 SHIFT_MACRO shl ax 2
 sub   ax, dx
@@ -1328,7 +1328,7 @@ add   bx, ax
 mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
 xor   ah, ah
 db    09Ah
-dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
+dw    GETSEESTATEADDR, PHYSICS_HIGHCODE_SEGMENT
 mov   dx, ax
 SHIFT_MACRO shl ax 2
 sub   ax, dx
@@ -1515,7 +1515,7 @@ mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
 xor   ah, ah
 
 db    09Ah
-dw    GETMISSILESTATEADDR, INFOFUNCLOADSEGMENT
+dw    GETMISSILESTATEADDR, PHYSICS_HIGHCODE_SEGMENT
 
 got_state:
 mov   dx, ax
@@ -1537,7 +1537,7 @@ add   bx, ax
 mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
 xor   ah, ah
 db    09Ah
-dw    GETMELEESTATEADDR, INFOFUNCLOADSEGMENT
+dw    GETMELEESTATEADDR, PHYSICS_HIGHCODE_SEGMENT
 mov   dx, ax
 SHIFT_MACRO shl ax 2
 sub   ax, dx
@@ -1552,7 +1552,7 @@ add   bx, ax
 mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
 xor   ah, ah
 db    09Ah
-dw    GETMELEESTATEADDR, INFOFUNCLOADSEGMENT
+dw    GETMELEESTATEADDR, PHYSICS_HIGHCODE_SEGMENT
 jmp   got_state
 non_melee_second_state:
 mov   al, byte ptr ds:[_castnum]
@@ -1562,7 +1562,7 @@ add   bx, ax
 mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
 xor   ah, ah
 db    09Ah
-dw    GETMISSILESTATEADDR, INFOFUNCLOADSEGMENT
+dw    GETMISSILESTATEADDR, PHYSICS_HIGHCODE_SEGMENT
 
 mov   dx, ax
 SHIFT_MACRO shl ax 2
@@ -1601,7 +1601,7 @@ mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
 xor   ah, ah
 mov   byte ptr ds:[_castdeath], 1
 db    09Ah
-dw    GETDEATHSTATEADDR, INFOFUNCLOADSEGMENT
+dw    GETDEATHSTATEADDR, PHYSICS_HIGHCODE_SEGMENT
 
 mov   bx, ax
 SHIFT_MACRO shl bx 2

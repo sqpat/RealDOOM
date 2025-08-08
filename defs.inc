@@ -474,8 +474,9 @@ _fopen_rb_argument =                 _NULL_OFFSET + 006F0h
 _currenttask =            		     _NULL_OFFSET + 006F3h
 
 _R_DrawSkyPlane_addr =               _NULL_OFFSET + 006F4h
-;_EV_DoDoor_addr = 			 	 	 _NULL_OFFSET + 006F8h
-;_P_TouchSpecialThing_addr =          _NULL_OFFSET + 006FCh
+_OutOfThinkers_addr =                _NULL_OFFSET + 006F8h
+_FastDiv32u16u_addr =                _NULL_OFFSET + 006FCh
+
 
 _playerMobj_pos =		         	 _NULL_OFFSET + 00700h
 _setStateReturn_pos =		         _NULL_OFFSET + 00704h
@@ -528,12 +529,10 @@ _whichSkull =				         _NULL_OFFSET + 00B1Ah
 _skullName =				         _NULL_OFFSET + 00B1Ch
 
 
-_OutOfThinkers_addr =                _NULL_OFFSET + 00B20h
-_FastDiv32u16u_addr =                _NULL_OFFSET + 00B24h
 
 ; 828-82f free
 
-_flatcache_nodes =				     _NULL_OFFSET + 00B30h
+_flatcache_nodes =				     _NULL_OFFSET + 00B20h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

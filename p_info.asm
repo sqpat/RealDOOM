@@ -468,8 +468,8 @@ cmp    al, (MT_BOSSBRAIN - 3)
 ja     mobj_mass_default
 cmp    al, (MT_WOLFSS - 3)
 ja     mobj_mass_10million
-cbw    ; already filtered out anything 0x80
 push   bx
+cbw    ; already filtered out anything 0x80
 xchg   ax, bx
 sal    bx, 1
 mov    ax, word ptr cs:[bx + _mobj_mass_lookup]
@@ -497,8 +497,8 @@ PUBLIC  GetActiveSound_
 dec    al
 cmp    al, (MT_WOLFSS - 1)
 ja     active_sound_default
-cbw
 push   bx
+cbw
 mov    bx, ax
 mov    al, byte ptr cs:[bx + _active_sound_lookup]
 pop    bx
@@ -515,8 +515,8 @@ PUBLIC  GetPainSound_
 
 cmp    al, MT_BOSSBRAIN
 ja     pain_sound_default
-cbw
 push   bx
+cbw
 mov    bx, ax
 mov    al, byte ptr cs:[bx + _pain_sound_lookup]
 pop    bx
@@ -532,8 +532,8 @@ PUBLIC  GetSeeState_
 
 cmp    al, MT_BOSSSPIT
 ja     see_state_default
-cbw
 push   bx
+cbw
 mov    bx, ax
 sal    bx, 1
 mov    ax, word ptr cs:[bx + _see_state_lookup]
@@ -699,9 +699,9 @@ PROC    GetSpawnHealth_ FAR
 PUBLIC  GetSpawnHealth_
 
 
-push   bx
 cmp    al, MT_BARREL
 ja     spawn_health_default
+push   bx
 cbw
 xchg   ax, bx
 sal    bx, 1

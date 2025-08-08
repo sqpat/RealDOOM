@@ -44,6 +44,15 @@ EXTRN P_UseSpecialLine_:NEAR
 EXTRN P_DamageMobj_:NEAR
 EXTRN EV_DoDoor_:NEAR
 EXTRN EV_DoFloor_:NEAR
+EXTRN GetPainSound_:NEAR
+EXTRN GetActiveSound_:NEAR
+EXTRN GetMeleeState_:NEAR
+EXTRN GetMissileState_:NEAR
+EXTRN GetSpawnHealth_:NEAR
+EXTRN GetSeeState_:NEAR
+EXTRN GetRaiseState_:NEAR
+EXTRN GetAttackSound_:NEAR
+
 .DATA
 
 
@@ -460,8 +469,8 @@ call   P_AproxDistance_
 mov   ax, bp
 sub   dx, 64
 
-db    09Ah
-dw    GETMELEESTATEADDR, INFOFUNCLOADSEGMENT
+push  cs
+call  GetMeleeState_
 
 test  ax, ax
 jne   has_melee
@@ -1365,8 +1374,8 @@ no_seesound:
 mov   al, bl
 xor   ah, ah
 
-db    09Ah
-dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
+push  cs
+call  GetSeeState_
 
 xchg  ax, dx
 xchg  ax, si
@@ -1524,9 +1533,9 @@ jmp   exit_a_chase
 check_for_melee_attack:
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
-;call  dword ptr [bp - 0Ch]
-db    09Ah
-dw    GETMELEESTATEADDR, INFOFUNCLOADSEGMENT
+
+push  cs
+call  GetMeleeState_
 
 
 test  ax, ax
@@ -1538,9 +1547,8 @@ jnc   melee_check_failed_try_missile
 do_melee_attack:
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
-;call  dword ptr [bp - 8]
-db    09Ah
-dw    GETATTACKSOUNDADDR, INFOFUNCLOADSEGMENT
+push  cs
+call  GetAttackSound_
 
 mov   dl, al
 mov   ax, si
@@ -1552,9 +1560,9 @@ dw _S_StartSound_addr
 
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
-;call  dword ptr [bp - 0Ch]
-db    09Ah
-dw    GETMELEESTATEADDR, INFOFUNCLOADSEGMENT
+
+push  cs
+call  GetMeleeState_
 
 mov   dx, ax
 mov   ax, si
@@ -1570,9 +1578,8 @@ ret
 melee_check_failed_try_missile:
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
-;call  dword ptr [bp - 010h]
-db    09Ah
-dw    GETMISSILESTATEADDR, INFOFUNCLOADSEGMENT
+push  cs
+call  GetMissileState_
 
 test  ax, ax
 je    nomissile
@@ -1600,9 +1607,8 @@ dont_change_dir:
 xor   ax, ax
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 
-;call  dword ptr [bp - 014h]
-db    09Ah
-dw    GETACTIVESOUNDADDR, INFOFUNCLOADSEGMENT
+push  cs
+call  GetActiveSound_
 
 mov   dl, al
 test  al, al
@@ -1630,9 +1636,8 @@ call  P_CheckMissileRange_
 jnc    nomissile
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
-;call  dword ptr [bp - 010h]
-db    09Ah
-dw    GETMISSILESTATEADDR, INFOFUNCLOADSEGMENT
+push  cs
+call  GetMissileState_
 
 mov   dx, ax
 mov   ax, si
@@ -2054,8 +2059,8 @@ set_cgunner_seestate:
 ; dumb thought. this is a hardcoded value as per engine right. Why call a function?
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
-db    09Ah
-dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
+push  cs
+call  GetSeeState_
 
 
 mov   dx, ax
@@ -2116,8 +2121,8 @@ set_spid_seestate:
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
 
-db    09Ah
-dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
+push  cs
+call  GetSeeState_
 
 mov   dx, ax
 mov   ax, si
@@ -2943,9 +2948,8 @@ push  ax    ; pop later... 3 pops
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
 
-;call  dword ptr [bp - 6]
-db    09Ah
-dw    GETRAISESTATEADDR, INFOFUNCLOADSEGMENT
+push  cs
+call  GetRaiseState_
 
 
 test  ax, ax
@@ -3292,8 +3296,8 @@ dw _S_StartSound_addr
 xor   ax, ax
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 
-db    09Ah
-dw    GETRAISESTATEADDR, INFOFUNCLOADSEGMENT
+push  cs
+call  GetRaiseState_
 
 xchg  ax, dx
 mov   ax, si
@@ -3323,8 +3327,8 @@ mov   word ptr ds:[si + MOBJ_T.m_targetRef], ax
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 
 
-db    09Ah
-dw    GETSPAWNHEALTHADDR, INFOFUNCLOADSEGMENT
+push  cs
+call  GetSpawnHealth_
 
 mov   word ptr ds:[si + MOBJ_T.m_health], ax
 
@@ -4029,9 +4033,10 @@ mov   es, cx
 or    byte ptr es:[di + MOBJ_POS_T.mp_flags2 + 1], 1
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
-;call  dword ptr [bp - 010h]
-db    09Ah
-dw    GETATTACKSOUNDADDR, INFOFUNCLOADSEGMENT
+
+push  cs
+call  GetAttackSound_
+
 
 xor   ah, ah
 xchg  ax, dx
@@ -4457,8 +4462,8 @@ mov   bx, ax
 mov   al, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 xor   ah, ah
 
-db    09Ah
-dw    GETPAINSOUNDADDR, INFOFUNCLOADSEGMENT
+push  cs
+call  GetPainSound_
 
 
 xor   ah, ah
@@ -5350,8 +5355,9 @@ jnc   dont_set_seestate
 mov   al, byte ptr ds:[di + MOBJ_T.m_mobjtype]
 xor   ah, ah
 
-db    09Ah
-dw    GETSEESTATEADDR, INFOFUNCLOADSEGMENT
+push  cs
+call  GetSeeState_
+
 
 mov   dx, ax
 mov   ax, di

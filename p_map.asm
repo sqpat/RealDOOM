@@ -29,6 +29,7 @@ EXTRN P_DamageMobj_:NEAR
 EXTRN P_CrossSpecialLine_:NEAR
 EXTRN P_ShootSpecialLine_:NEAR
 EXTRN P_TouchSpecialThing_:NEAR
+EXTRN GetDamage_:NEAR
 
 ; hack but oh well
 P_SIGHT_STARTMARKER_ = 0 
@@ -4394,8 +4395,8 @@ xchg  ax, cx  ; store random in cl
 mov   bx, word ptr ds:[_tmthing]
 mov   al, byte ptr ds:[bx + 01Ah]
 
-db    09Ah
-dw    GETDAMAGEADDR, INFOFUNCLOADSEGMENT
+push  cs
+call  GetDamage_
 
 ;		P_DamageMobj (thing, tmthing, tmthing, damage);
 
@@ -4461,8 +4462,8 @@ mov   di, word ptr ds:[_tmthing]
 mov   al, byte ptr ds:[di + 01Ah]
 
 
-db    09Ah
-dw    GETDAMAGEADDR, INFOFUNCLOADSEGMENT
+push  cs
+call  GetDamage_
 
 mul   cl ; this will fill up the queue so use mov not xchg
 
@@ -8154,6 +8155,7 @@ PUBLIC P_SetThingPositionFar_
 call   P_SetThingPosition_
 retf
 
+ENDP
 
 PROC    P_MAP_ENDMARKER_ 
 PUBLIC  P_MAP_ENDMARKER_
