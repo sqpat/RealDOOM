@@ -8,7 +8,7 @@
 #include "p_inter.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2487
+#define CONSTANTS_COUNT 2486
 #define LOCALS_COUNT 22
 
 
@@ -2347,7 +2347,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"TASK_WIPE",
 	"TASK_INTERMISSION",
 	"TASK_STATUS_NO_SCREEN4",
-	"P_CHECKSIGHTOFFSET",
 	"SPRITEWIDTHS_ULT_SEGMENT",
 	"SPRITEWIDTHS_NORMAL_SEGMENT",
 	"EMS_PAGE_SEGMENT",
@@ -4920,7 +4919,6 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	TASK_WIPE,
 	TASK_INTERMISSION,
 	TASK_STATUS_NO_SCREEN4,
-	P_CheckSightOffset,
 	spritewidths_ult_segment,
 	spritewidths_normal_segment,
 	EMS_PAGE_SEGMENT,

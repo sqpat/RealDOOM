@@ -394,9 +394,9 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define doomednum_far          ((int16_t __far*)              MAKE_FULL_SEGMENT(ammnumpatchbytes_far,     (size_ammnumpatchbytes+size_ammnumpatchoffsets )))
 #define linespeciallist_far    ((int16_t __far*)              MAKE_FULL_SEGMENT(doomednum_far,              size_doomednum ))
 #define font_widths_far        ((int8_t __far*)               MAKE_FULL_SEGMENT(linespeciallist_far,        size_linespeciallist))
-#define segs_physics           ((seg_physics_t __far*)        MAKE_FULL_SEGMENT(font_widths_far,            size_font_widths))
-#define code_overlay_start     ((byte __far*)                 MAKE_FULL_SEGMENT(segs_physics,               size_segs_physics))
+#define code_overlay_start     ((byte __far*)                 MAKE_FULL_SEGMENT(font_widths_far,            size_font_widths))
 #define code_overlay_end       ((byte __far*)                 MAKE_FULL_SEGMENT(code_overlay_start,         FinaleCodeSize))
+#define segs_physics           ((seg_physics_t __far*)        MAKE_FULL_SEGMENT(code_overlay_start,         FinaleCodeSize))
 // WipeCodeSize
 
 #define thinkerlist_segment           ((segment_t) ((int32_t)thinkerlist_far >> 16))
@@ -410,9 +410,9 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 #define doomednum_segment             ((segment_t) ((int32_t)doomednum_far >> 16))
 #define linespeciallist_segment       ((segment_t) ((int32_t)linespeciallist_far >> 16))
 #define font_widths_segment           ((segment_t) ((int32_t)font_widths_far >> 16))
-#define segs_physics_segment          ((segment_t) ((int32_t)segs_physics >> 16))
 #define code_overlay_segment          ((segment_t) ((int32_t)code_overlay_start >> 16))
 #define code_overlay_end_segment      ((segment_t) ((int32_t)code_overlay_end >> 16))
+#define segs_physics_segment          ((segment_t) ((int32_t)segs_physics >> 16))
 // 4FF4h
 
  // 3D00:4000

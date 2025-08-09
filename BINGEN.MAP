@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/08 07:34:44
+Created on:       25/08/08 11:07:06
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -60,12 +60,12 @@ hu_setup_TEXT          CODE           AUTO           033d:9e50       000000d6
 F_WIPE_TEXT            CODE           AUTO           0d2f:0006       000004b6
 F_FINALE_TEXT          CODE           AUTO           0d7a:000c       00000bcb
 P_SAVEG_TEXT           CODE           AUTO           0e37:0008       00000b35
-S_SOUND_TEXT           CODE           AUTO           0eea:000e       00000672
-SM_OPL2_TEXT           CODE           AUTO           0f52:0000       00000f3c
-SM_OPL3_TEXT           CODE           AUTO           0f52:0f3c       0000100e
-SM_SBMID_TEXT          CODE           AUTO           0f52:1f4a       00000730
-SM_MPUMD_TEXT          CODE           AUTO           0f52:267a       000007db
-s_sbsfx_TEXT           CODE           AUTO           0f52:2e60       000017f3
+S_SOUND_TEXT           CODE           AUTO           0eea:000e       0000066e
+SM_OPL2_TEXT           CODE           AUTO           0f51:000c       00000f3c
+SM_OPL3_TEXT           CODE           AUTO           0f51:0f48       0000100e
+SM_SBMID_TEXT          CODE           AUTO           0f51:1f56       00000730
+SM_MPUMD_TEXT          CODE           AUTO           0f51:2686       000007db
+s_sbsfx_TEXT           CODE           AUTO           0f51:2e70       000017f3
 R_BSP_TEXT             CODE           AUTO           13b8:0000       00006f32
 R_BSP0_TEXT            CODE           AUTO           1aac:0000       00006d36
 R_MAIN_TEXT            CODE           AUTO           217f:0006       000003dc
@@ -800,58 +800,58 @@ Module: s_sound.obj(s_sound.ASM)
 0eea:000e      S_SetMusicVolume_
 0eea:0293*     S_StopSound_
 0eea:0048      S_StartMusic_
-0eea:0557      S_StartSound_
+0eea:0556      S_StartSound_
 0eea:003b      S_ChangeMusic_
 0eea:0056      S_StopChannel_
-0eea:056a      S_StartSoundWithParams_
+0eea:0568      S_StartSoundWithParams_
 0eea:033e*     S_getChannel_
 0eea:0149*     S_AdjustSoundParamsVol_
-0eea:0680*     S_SOUND_ENDMARKER_
+0eea:067c*     S_SOUND_ENDMARKER_
 0eea:0300      S_StopSoundMobjRef_
 0eea:00cd*     S_AdjustSoundParamsSep_
 0eea:0415*     S_StartSoundWithPosition_
-0eea:057e      S_UpdateSounds_
+0eea:057b      S_UpdateSounds_
 0eea:0257      S_PauseSound_
 0eea:000e*     S_SOUND_STARTMARKER_
 0eea:0275      S_ResumeSound_
 Module: sm_opl2.obj(sm_opl2.ASM)
-0f52:0926*     OPLpauseMusic_OPL2_
-0f52:0f3c      SM_OPL2_ENDMARKER_
-0f52:0c95*     OPLreleaseNote_OPL2_
-0f52:0907*     OPL2deinitHardware_OPL2_
-0f52:0846*     OPL2initHardware_OPL2_
-0f52:0c0f*     OPLplayNote_OPL2_
-0f52:0d35*     OPLchangeControl_OPL2_
-0f52:0f0b*     OPLinitDriver_OPL2_
-0f52:0e9f*     OPLstopMusic_OPL2_
-0f52:0cd2*     OPLpitchWheel_OPL2_
-0f52:0ec0*     OPLchangeSystemVolume_OPL2_
-0f52:0929*     OPLresumeMusic_OPL2_
-0f52:089d*     OPL2detectHardware_OPL2_
-0f52:0e80*     OPLplayMusic_OPL2_
-0f52:0000      SM_OPL2_STARTMARKER_
+0f51:0932*     OPLpauseMusic_OPL2_
+0f51:0f48      SM_OPL2_ENDMARKER_
+0f51:0ca1*     OPLreleaseNote_OPL2_
+0f51:0913*     OPL2deinitHardware_OPL2_
+0f51:0852*     OPL2initHardware_OPL2_
+0f51:0c1b*     OPLplayNote_OPL2_
+0f51:0d41*     OPLchangeControl_OPL2_
+0f51:0f17*     OPLinitDriver_OPL2_
+0f51:0eab*     OPLstopMusic_OPL2_
+0f51:0cde*     OPLpitchWheel_OPL2_
+0f51:0ecc*     OPLchangeSystemVolume_OPL2_
+0f51:0935*     OPLresumeMusic_OPL2_
+0f51:08a9*     OPL2detectHardware_OPL2_
+0f51:0e8c*     OPLplayMusic_OPL2_
+0f51:000c      SM_OPL2_STARTMARKER_
 Module: sm_opl3.obj(sm_opl3.ASM)
-0f52:1931*     OPLpauseMusic_OPL3_
-0f52:1ca0*     OPLreleaseNote_OPL3_
-0f52:1f4a      SM_OPL3_ENDMARKER_
-0f52:1902*     OPL3deinitHardware_OPL3_
-0f52:1c1a*     OPLplayNote_OPL3_
-0f52:180c*     OPL3initHardware_OPL3_
-0f52:1d46*     OPLchangeControl_OPL3_
-0f52:1f1b*     OPLinitDriver_OPL3_
-0f52:1eb0*     OPLstopMusic_OPL3_
-0f52:1cdd*     OPLpitchWheel_OPL3_
-0f52:1ed1*     OPLchangeSystemVolume_OPL3_
-0f52:1934*     OPLresumeMusic_OPL3_
-0f52:1e91*     OPLplayMusic_OPL3_
-0f52:0f3c      SM_OPL3_STARTMARKER_
-0f52:18e6*     OPL3detectHardware_OPL3_
+0f51:193d*     OPLpauseMusic_OPL3_
+0f51:1cac*     OPLreleaseNote_OPL3_
+0f51:1f56      SM_OPL3_ENDMARKER_
+0f51:190e*     OPL3deinitHardware_OPL3_
+0f51:1c26*     OPLplayNote_OPL3_
+0f51:1818*     OPL3initHardware_OPL3_
+0f51:1d52*     OPLchangeControl_OPL3_
+0f51:1f27*     OPLinitDriver_OPL3_
+0f51:1ebc*     OPLstopMusic_OPL3_
+0f51:1ce9*     OPLpitchWheel_OPL3_
+0f51:1edd*     OPLchangeSystemVolume_OPL3_
+0f51:1940*     OPLresumeMusic_OPL3_
+0f51:1e9d*     OPLplayMusic_OPL3_
+0f51:0f48      SM_OPL3_STARTMARKER_
+0f51:18f2*     OPL3detectHardware_OPL3_
 Module: sm_sbmid.obj(sm_sbmid.ASM)
-0f52:267a      SM_SBMID_ENDMARKER_
-0f52:1f4a      SM_SBMID_STARTMARKER_
+0f51:2686      SM_SBMID_ENDMARKER_
+0f51:1f56      SM_SBMID_STARTMARKER_
 Module: sm_mpumd.obj(sm_mpumd.ASM)
-0f52:267a      SM_MPUMD_STARTMARKER_
-0f52:2e55      SM_MPUMD_ENDMARKER_
+0f51:2686      SM_MPUMD_STARTMARKER_
+0f51:2e61      SM_MPUMD_ENDMARKER_
 Module: s_sbsfx.obj(C:\REALDOOM\s_sbsfx.c)
 3c66:2b00+     _sfxcache_nodes
 3c66:2b20*     _sfx_page_multipage_count
@@ -872,46 +872,46 @@ Module: s_sbsfx.obj(C:\REALDOOM\s_sbsfx.c)
 3c66:245c+     _SB_OriginalVoiceVolumeRight
 3c66:245d+     _current_sampling_rate
 3c66:245e+     _last_sampling_rate
-0f52:2e60+     S_IncreaseRefCount_
-0f52:2eb2+     S_DecreaseRefCount_
-0f52:2f20+     S_MoveCacheItemBackOne_
-0f52:3008+     S_UpdateLRUCache_
-0f52:3070+     S_MarkSFXPageMRU_
-0f52:3198+     S_EvictSFXPage_
-0f52:327c+     SB_Service_Mix22Khz_
-0f52:377a+     SB_Service_Mix11Khz_
-0f52:3a3e+     SB_ServiceInterrupt_
-0f52:3a5a+     continuecall_
-0f52:3b76+     SB_WriteDSP_
-0f52:3ba6+     SB_ReadDSP_
-0f52:3bd4+     SB_ResetDSP_
-0f52:3c30+     SB_SetPlaybackRate_
-0f52:3c4e*     SB_SetMixMode_
-0f52:3c86+     SB_DSP1xx_BeginPlayback_
-0f52:3ca0+     SB_DSP2xx_BeginPlayback_
-0f52:3cc0+     SB_DSP4xx_BeginPlayback_
-0f52:3ce0+     SB_DMA_VerifyChannel_
-0f52:3cf2+     DMA_SetupTransfer_
-0f52:3de8+     SB_SetupDMABuffer_
-0f52:3e1e+     SB_EnableInterrupt_
-0f52:3e64+     SB_DisableInterrupt_
-0f52:3ee2+     SB_DMA_EndTransfer_
-0f52:3f1e*     SB_StopPlayback_
-0f52:3f3a+     SB_SetupPlayback_
-0f52:3fac+     SB_ReadMixer_
-0f52:3fc2+     SB_WriteMixer_
-0f52:3fd8+     SB_SaveVoiceVolume_
-0f52:4006+     SB_RestoreVoiceVolume_
-0f52:4044      SB_Shutdown_
-0f52:406c+     SB_GetDSPVersion_
-0f52:40b6+     SB_InitCard_
-0f52:4160      S_InitSFXCache_
-0f52:41c8      SB_StartInit_
-0f52:420e+     S_LoadSoundIntoCache_
-0f52:44d6      SFX_PlayPatch_
-0f52:45fe      SFX_StopPatch_
-0f52:461e      SFX_Playing_
-0f52:463a      SFX_SetOrigin_
+0f51:2e70+     S_IncreaseRefCount_
+0f51:2ec2+     S_DecreaseRefCount_
+0f51:2f30+     S_MoveCacheItemBackOne_
+0f51:3018+     S_UpdateLRUCache_
+0f51:3080+     S_MarkSFXPageMRU_
+0f51:31a8+     S_EvictSFXPage_
+0f51:328c+     SB_Service_Mix22Khz_
+0f51:378a+     SB_Service_Mix11Khz_
+0f51:3a4e+     SB_ServiceInterrupt_
+0f51:3a6a+     continuecall_
+0f51:3b86+     SB_WriteDSP_
+0f51:3bb6+     SB_ReadDSP_
+0f51:3be4+     SB_ResetDSP_
+0f51:3c40+     SB_SetPlaybackRate_
+0f51:3c5e*     SB_SetMixMode_
+0f51:3c96+     SB_DSP1xx_BeginPlayback_
+0f51:3cb0+     SB_DSP2xx_BeginPlayback_
+0f51:3cd0+     SB_DSP4xx_BeginPlayback_
+0f51:3cf0+     SB_DMA_VerifyChannel_
+0f51:3d02+     DMA_SetupTransfer_
+0f51:3df8+     SB_SetupDMABuffer_
+0f51:3e2e+     SB_EnableInterrupt_
+0f51:3e74+     SB_DisableInterrupt_
+0f51:3ef2+     SB_DMA_EndTransfer_
+0f51:3f2e*     SB_StopPlayback_
+0f51:3f4a+     SB_SetupPlayback_
+0f51:3fbc+     SB_ReadMixer_
+0f51:3fd2+     SB_WriteMixer_
+0f51:3fe8+     SB_SaveVoiceVolume_
+0f51:4016+     SB_RestoreVoiceVolume_
+0f51:4054      SB_Shutdown_
+0f51:407c+     SB_GetDSPVersion_
+0f51:40c6+     SB_InitCard_
+0f51:4170      S_InitSFXCache_
+0f51:41d8      SB_StartInit_
+0f51:421e+     S_LoadSoundIntoCache_
+0f51:44e6      SFX_PlayPatch_
+0f51:460e      SFX_StopPatch_
+0f51:462e      SFX_Playing_
+0f51:464a      SFX_SetOrigin_
 3c66:245f+     _change_sampling_to_22_next_int
 3c66:2460+     _change_sampling_to_11_next_int
 3c66:2461+     _in_first_buffer
@@ -1209,8 +1209,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 305f:4c80*     A_SkelMissile_
 305f:5391*     A_FatAttack1_
 305f:532d*     A_FatAttack3_
-305f:5963*     A_SpawnSound_
 305f:470f*     A_Look_
+305f:5963*     A_SpawnSound_
 305f:575e*     A_BabyMetal_
 305f:4c41*     A_BruisAttack_
 305f:55fc*     A_XScream_
@@ -1658,4 +1658,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  000402c0 (262848.)
 Entry point address: 305f:990e
-Link time: 00:00.39
+Link time: 00:00.94
