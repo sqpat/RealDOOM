@@ -583,3 +583,29 @@ CHANNEL_T STRUC
     channel_sfx_id           db ?  ; 5
 
 CHANNEL_T ENDS
+
+
+
+MUSIC_DRIVER_T STRUC
+    
+    md_initdriver_func            dd ?  ; 0
+    md_detecthardware_func        dd ?  ; 4
+    md_inithardward_func          dd ?  ; 8
+    md_deinithardward_func        dd ?  ; C
+    md_playnote_func              dd ?  ; 010h
+    md_releasenote_func           dd ?  ; 014h
+    md_pitchwheel_func            dd ?  ; 018h
+    md_changecontrol_func         dd ?  ; 01Ch
+    md_playmusic_func             dd ?  ; 020h
+    md_stopmusic_func             dd ?  ; 024h
+    md_pausemusic_func            dd ?  ; 028h
+    md_resumemusic_func           dd ?  ; 02Ch
+    md_changesystemvolume_func    dd ?  ; 030h
+    md_driverid                   db ?  ; 034h
+    md_unused                     db ?  ; 035h
+    md_driver_data_Block          db ?  ; 036h
+
+
+MUSIC_DRIVER_T ENDS
+
+
