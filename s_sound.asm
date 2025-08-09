@@ -205,119 +205,128 @@ PROC    S_AdjustSoundParamsVol_ NEAR
 PUBLIC  S_AdjustSoundParamsVol_
 
 push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 4
-push  bx
+
+;    adx.w = labs(playerMobj_pos->x.w - sourceX.w);
+;    ady.w = labs(playerMobj_pos->y.w - sourceY.w);
+
 push  cx
-mov   bx, _playerMobj_pos
-les   si, dword ptr ds:[bx]
+push  bx ; push arg y
+
+
+les   si, dword ptr ds:[_playerMobj_pos]
 mov   bx, word ptr es:[si + MOBJ_POS_T.mp_x + 0]
+mov   cx, word ptr es:[si + MOBJ_POS_T.mp_x + 2]
 sub   bx, ax
-mov   ax, bx
-mov   bx, word ptr es:[si + MOBJ_POS_T.mp_x + 2]
-sbb   bx, dx
-mov   dx, bx
-mov   di, _playerMobj_pos
-or    dx, dx
-jge   already_positive
+sbb   cx, dx
+
+test  bx, bx
+jns   x_already_positive
+neg   bx
+adc   cx, 0
+neg   cx
+x_already_positive:
+les   ax, dword ptr es:[si + MOBJ_POS_T.mp_y + 0]
+mov   dx, es
+pop   si  ; y lo
+sub   ax, si
+pop   si  ; y hi
+sbb   dx, si
+test  dx, dx
+jns   y_already_positive
 neg   ax
 adc   dx, 0
 neg   dx
-already_positive:
-mov   cx, ax
-mov   bx, dx
-les   si, dword ptr ds:[di]
-mov   word ptr [bp - 4], ax
-mov   ax, word ptr es:[si + MOBJ_POS_T.mp_y + 0]
-mov   word ptr [bp - 2], dx
-sub   ax, word ptr [bp - 6]
-mov   dx, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
-sbb   dx, word ptr [bp - 8]
-or    dx, dx
-jge   label_3
-neg   ax
-adc   dx, 0
-neg   dx
-label_3:
+y_already_positive:
+
+
+;	intermediate.w = ((adx.w < ady.w ? adx.w : ady.w)>>1);
+push  di
+
+cmp   cx, dx
+jg    adx_greater_than_ady
+jl    adx_less_than_ady
+cmp   bx, ax
+ja    adx_greater_than_ady
+adx_less_than_ady:
+
+mov   si, bx
+mov   di, cx
+
+jmp   done_calculating_intermediate
+
+adx_greater_than_ady:
 mov   si, ax
 mov   di, dx
-cmp   bx, dx
-jl    label_4
-jne   label_5
-cmp   cx, ax
-jae   label_5
-label_4:
-mov   ax, cx
-mov   dx, bx
-label_5:
-sar   dx, 1
-rcr   ax, 1
-mov   cx, dx
-mov   dx, word ptr [bp - 4]
-add   dx, si
-mov   bx, word ptr [bp - 2]
-adc   bx, di
-sub   dx, ax
-mov   ax, bx
-mov   bx, _gamemap
-sbb   ax, cx
-cmp   byte ptr ds:[bx], 8
-je    label_6
-cmp   ax, S_CLIPPING_DIST_HIGH
+
+done_calculating_intermediate:
+sar   di, 1
+rcr   si, 1
+
+; di:si is intermediate
+
+;approx_dist.w = adx.w + ady.w - intermediate.w;
+add   ax, bx
+adc   dx, cx
+sub   ax, si
+sbb   dx, di
+
+pop   di
+pop   si ; dont use di/si anymore. can just ret
+
+; dx:ax is approx_dist
+
+;    if (gamemap != 8 && approx_dist.w > S_CLIPPING_DIST) {
+;		return 0;
+ ;   }
+
+
+cmp   byte ptr ds:[_gamemap], 8
+je    skip_clip_dist_check
+cmp   dx, S_CLIPPING_DIST_HIGH
 jg    exit_s_adjustsoundparams_ret_0
-jne   label_6
-test  dx, dx
-jbe   label_6
+jne   skip_clip_dist_check
+test  ax, ax
+je    skip_clip_dist_check
 exit_s_adjustsoundparams_ret_0:
-xor   al, al
-LEAVE_MACRO 
-pop   di
-pop   si
+xor   ax, ax
+exit_s_adjustsoundparams:
 ret   
-label_6:
-cmp   ax, S_CLOSE_DIST_HIGH
-jl    label_15
-xor   cx, cx
-mov   bx, _gamemap
-sub   cx, dx
-mov   dx, S_CLIPPING_DIST_HIGH
-sbb   dx, ax
-cmp   byte ptr ds:[bx], 8
-jne   label_16
-cmp   ax, S_CLIPPING_DIST_HIGH
-jl    label_17
-mov   al, 15
-LEAVE_MACRO 
-pop   di
-pop   si
-ret   
-label_15:
-mov   al, MAX_SOUND_VOLUME
-LEAVE_MACRO 
-pop   di
-pop   si
-ret   
-label_16:
-mov   ax, MAX_SOUND_VOLUME
+
+skip_clip_dist_check:
+cmp   dx, S_CLOSE_DIST_HIGH
+jl    clip_max_vol
+
+;	intermediate.w = S_CLIPPING_DIST - approx_dist.w;
+
+neg   ax  ; set carry?
+mov   ax, S_CLIPPING_DIST_HIGH
+sbb   ax, dx
 mov   bx, S_ATTENUATOR
+
+; ax intermediate highbits
+cmp   byte ptr ds:[_gamemap], 8
+je    is_map_8
+; gamemap 8 case
+cmp   dx, S_CLIPPING_DIST_HIGH
+jl    dont_clip_map_8_high
+mov   al, 15
+ret
+
+clip_max_vol:
+mov   al, MAX_SOUND_VOLUME
+ret
+
+is_map_8:
+mov   dx, MAX_SOUND_VOLUME
 imul  dx
 call  FastDiv3216u_
-LEAVE_MACRO 
-pop   di
-pop   si
-ret   
-label_17:
-mov   ax, (MAX_SOUND_VOLUME - 15)
-mov   bx, S_ATTENUATOR
+ret
+dont_clip_map_8_high:
+mov   dx, (MAX_SOUND_VOLUME - 15)
 imul  dx
 call  FastDiv3216u_
 add   al, 15
-LEAVE_MACRO 
-pop   di
-pop   si
-ret   
+ret
 
 ENDP
 
