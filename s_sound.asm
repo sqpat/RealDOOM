@@ -41,13 +41,6 @@ EXTRN _mus_paused:BYTE
 
 .CODE
 
-S_CLIPPING_DIST_HIGH = 1200
-S_CLOSE_DIST_HIGH = 200
-S_ATTENUATOR = 1000
-MAX_SOUND_VOLUME = 127
-S_STEREO_SWING_HIGH = 96
-NORM_SEP = 128
-
 PROC    S_SOUND_STARTMARKER_ NEAR
 PUBLIC  S_SOUND_STARTMARKER_
 ENDP
@@ -75,7 +68,6 @@ ENDP
 PROC    S_ChangeMusic_ FAR
 PUBLIC  S_ChangeMusic_
 
-
 mov   byte ptr ds:[_pendingmusicenum], al
 mov   byte ptr ds:[_pendingmusicenumlooping], dl
 retf  
@@ -85,7 +77,6 @@ ENDP
 
 PROC    S_StartMusic_ FAR
 PUBLIC  S_StartMusic_
-
 
 mov   byte ptr ds:[_pendingmusicenum], al
 mov   byte ptr ds:[_pendingmusicenumlooping], 0
@@ -277,7 +268,7 @@ pop   si ; dont use di/si anymore. can just ret
 
 ;    if (gamemap != 8 && approx_dist.w > S_CLIPPING_DIST) {
 ;		return 0;
- ;   }
+;     }
 
 
 cmp   byte ptr ds:[_gamemap], 8
@@ -333,35 +324,36 @@ ENDP
 PROC    S_SetSfxVolume_ FAR
 PUBLIC  S_SetSfxVolume_
 
+
 push  bx
-push  dx
+cbw
 test  al, al
-jne   label_18
-label_20:
+
+je    dont_adjust_vol_up
+SHIFT_MACRO shl   al 3
+add   al, 7
+dont_adjust_vol_up:
+
 mov   byte ptr ds:[_snd_SfxVolume], al
+
 cli   
-xor   dl, dl
-label_19:
-mov   al, dl
-cbw  
-mov   bx, ax
-shl   bx, 3
-inc   dl
-mov   byte ptr ds:[bx + _sb_voicelist], 0
-cmp   dl, 8
-jl    label_19
+mov   bx, OFFSET _sb_voicelist
+
+;	//Kind of complicated... 
+;	// unload sfx. stop all sfx.
+;	// when we reload, the sfx will be premixed with application volume.
+;	// this way we dont do it in interrupt.
+
+loop_next_voiceinfo_setsfxvol:
+mov   byte ptr ds:[bx + SB_VOICEINFO_T.sbvi_sfx_id], ah
+add   bx, SIZEOF_SB_VOICEINFO_T
+cmp   bx, (OFFSET _sb_voicelist + (NUM_SFX_TO_MIX * SIZEOF_SB_VOICEINFO_T))
+jl    loop_next_voiceinfo_setsfxvol
 
 call  S_InitSFXCache_
-
 sti   
-cld   
-pop   dx
 pop   bx
 retf  
-label_18:
-shl   al, 3
-add   al, 7
-jmp   label_20
 
 ENDP
 
@@ -369,19 +361,13 @@ PROC    S_PauseSound_ FAR
 PUBLIC  S_PauseSound_
 
 
-push  bx
-mov   bx, _mus_playing
-cmp   byte ptr ds:[bx], 0
-je    label_21
-cmp   byte ptr ds:[_mus_paused], 0
-je    label_22
-label_21:
-pop   bx
-retf  
-label_22:
+cmp   byte ptr ds:[_mus_playing], 0
+je    exit_pause_sound
+cmp   byte ptr ds:[_mus_paused], 0  ; todo put these adjacent. use a single word check
+jne   exit_pause_sound
 call  I_PauseSong_
 mov   byte ptr ds:[_mus_paused], 1
-pop   bx
+exit_pause_sound:
 retf  
 
 ENDP
@@ -389,19 +375,13 @@ ENDP
 PROC    S_ResumeSound_ FAR
 PUBLIC  S_ResumeSound_
 
-push  bx
-mov   bx, _mus_playing
-cmp   byte ptr ds:[bx], 0
-je    label_23
-cmp   byte ptr ds:[_mus_paused], 0
-jne   label_24
-label_23:
-pop   bx
-retf  
-label_24:
+cmp   byte ptr ds:[_mus_playing], 0
+je    exit_resume_sound
+cmp   byte ptr ds:[_mus_paused], 0    ; todo put these adjacent. use a single word check
+je    exit_resume_sound
 call  I_ResumeSong_
 mov   byte ptr ds:[_mus_paused], 0
-pop   bx
+exit_resume_sound:
 retf  
 
 ENDP
@@ -676,7 +656,7 @@ mov   bx, word ptr [bp - 010h]
 mov   cx, word ptr [bp - 0Eh]
 mov   ax, word ptr [bp - 0Ah]
 mov   dx, word ptr [bp - 0Ch]
-call  S_AdjustSoundParamsVol_
+call  S_AdjustSoundParamsVol_  ; todo inline only use?
 mov   byte ptr [bp - 4], al
 test  al, al
 je    exit_startsoundwithposition

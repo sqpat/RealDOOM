@@ -608,4 +608,16 @@ MUSIC_DRIVER_T STRUC
 
 MUSIC_DRIVER_T ENDS
 
+SB_VOICEINFO_T STRUC
+
+    sbvi_sfx_id            db ?  ; 0
+    sbvi_samplerate        db ?  ; 1
+    sbvi_length            dw ?  ; 2
+    sbvi_currentsample     dw ?  ; 4
+    sbvi_volume            db ?  ; 6
+    sbvi_sep               db ?  ; 7
+
+SB_VOICEINFO_T ENDS
+
+
 

@@ -40,34 +40,6 @@
 
 
 
-// when to clip out sounds
-// Does not fit the large outdoor areas.
-#define S_CLIPPING_DIST		(1200*0x10000)
-#define S_CLIPPING_DIST_HIGH	(1200)
-
-// Distance tp origin when sounds should be maxed out.
-// This should relate to movement clipping resolution
-// (see BLOCKMAP handling).
-#define S_CLOSE_DIST		(200*0x10000)
-#define S_CLOSE_DIST_HIGH		(200)
-
-
-// #define S_ATTENUATOR		((S_CLIPPING_DIST-S_CLOSE_DIST)>>FRACBITS)
-#define S_ATTENUATOR		1000
-
-// Adjustable by menu.
-#define NORM_VOLUME    		snd_MaxVolume
-
-#define NORM_PRIORITY		64
-#define NORM_SEP		128
-
-#define S_STEREO_SWING		(96*0x10000)
-#define S_STEREO_SWING_HIGH	(96)
-
-// percent attenuation from front to back
-#define S_IFRACVOL		30
-
-#define NA			0
 
 
 
@@ -237,8 +209,7 @@ uint8_t S_AdjustSoundParamsSep ( fixed_t_union sourceX, fixed_t_union sourceY){
 
 }
 
-#define MAX_SOUND_VOLUME 127
-
+s
 uint8_t __near S_AdjustSoundParamsVol ( fixed_t_union sourceX, fixed_t_union sourceY){
 	fixed_t_union	approx_dist;
     fixed_t_union	adx;
