@@ -8,7 +8,7 @@
 #include "p_inter.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2486
+#define CONSTANTS_COUNT 2487
 #define LOCALS_COUNT 22
 
 
@@ -232,6 +232,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"SIZEOF_BUTTON_T",
 	"SIZEOF_FLOORMOVE_T",
 	"SIZEOF_VLDOOR_T",
+	"SIZEOF_CHANNEL_T",
 	
     "SPRITES_SEGMENT",
     "MAXVISSPRITES",
@@ -2799,6 +2800,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	sizeof(button_t),
 	sizeof(floormove_t),
 	sizeof(vldoor_t),
+	sizeof(channel_t),
 	
 	sprites_segment,
     MAXVISSPRITES,

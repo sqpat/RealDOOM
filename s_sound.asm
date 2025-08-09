@@ -93,70 +93,40 @@ retf
 
 ENDP
 
+SIZEOF_CHANNEL_T = 6
+
 PROC    S_StopChannel_ FAR
 PUBLIC  S_StopChannel_
 
 
-push  bx
-push  cx
-push  dx
+; dh gets cnum
+
+; dl will have i
+; si will have channels[cnum]
+
 push  si
-mov   cl, byte ptr ds:[_numChannels]
-mov   dh, al
 cbw  
-mov   bx, ax
-shl   ax, 2
-sub   ax, bx
-mov   si, _channels
-add   ax, ax
-add   si, ax
-cmp   byte ptr ds:[si + CHANNEL_T.channel_sfx_id], 0
-jne   label_1
-mov   cl, byte ptr ds:[_numChannels]
-pop   si
-pop   dx
-pop   cx
-pop   bx
-retf  
-label_1:
+mov   si, ax
+sal   si, 1  ; 2
+add   si, ax ; 3
+sal   si, 1  ; 6
+add   si, _channels
+cmp   byte ptr ds:[si + CHANNEL_T.channel_sfx_id], ah ; 0 or SFX_NONE
+je    exit_stop_channel
 mov   al, byte ptr ds:[si + CHANNEL_T.channel_handle]
-cbw  
-call  I_SoundIsPlaying_
+
+call  I_SoundIsPlaying_  ; todo stc/clc
 test  al, al
-jne   label_2
-label_10:
-mov   cl, byte ptr ds:[_numChannels]
-xor   dl, dl
-label_9:
-mov   al, dl
-mov   bl, cl
-label_2:
-cbw  
-xor   bh, bh
-cmp   ax, bx
-jge   label_7
-cmp   dh, dl
-jne   label_8
-label_11:
-inc   dl
-jmp   label_9
+je    dont_stop_sound
 mov   al, byte ptr ds:[si + CHANNEL_T.channel_handle]
-cbw  
 call  I_StopSound_
-jmp   label_10
-label_8:
-imul  bx, ax, 6
-mov   al, byte ptr ds:[si + CHANNEL_T.channel_sfx_id]
-cmp   al, byte ptr ds:[bx + _channels + CHANNEL_T.channel_sfx_id]
-jne   label_11
-label_7:
-mov   byte ptr ds:[_numChannels], cl
-mov   byte ptr ds:[si + + CHANNEL_T.channel_sfx_id], 0
-mov   cl, byte ptr ds:[_numChannels]
+
+dont_stop_sound:
+
+mov   byte ptr ds:[si + CHANNEL_T.channel_sfx_id], SFX_NONE ; 0
+
+exit_stop_channel:
 pop   si
-pop   dx
-pop   cx
-pop   bx
 retf  
 
 ENDP
