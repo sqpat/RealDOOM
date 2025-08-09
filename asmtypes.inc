@@ -575,3 +575,11 @@ GLOW_T STRUC
 GLOW_T ENDS
 
 
+
+CHANNEL_T STRUC
+    channel_soundorg_secnum  dw ?  ; 0
+    channel_originRef        dw ?  ; 2
+    channel_handle           db ?  ; 4
+    channel_sfx_id           db ?  ; 5
+
+CHANNEL_T ENDS
