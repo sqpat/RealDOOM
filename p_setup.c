@@ -64,7 +64,7 @@ void __near Z_FreeConventionalAllocations();
 void __near P_GroupLines();
 
 void R_LoadPatchColumnsColormap0(uint16_t lump, segment_t texlocation_segment, boolean ismasked);
-void S_Start(void);
+void __far S_Start(void);
 void GAMEKEYDOWNTHING();
 
 
@@ -182,14 +182,14 @@ void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 
 
 }
-void S_StopChannel(int8_t cnum);
+void __far S_StopChannel(int8_t cnum);
 
 //
 // Per level startup code.
 // Kills playing sounds at start of level,
 //  determines music if any, changes music.
 //
-void S_Start(void) {
+void __far S_Start(void) {
 
 
 	int8_t cnum;

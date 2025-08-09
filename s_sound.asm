@@ -26,6 +26,9 @@ EXTRN FastMul16u32u_:FAR
 EXTRN FastDiv3216u_:FAR
 EXTRN S_InitSFXCache_:FAR
 EXTRN I_UpdateSoundParams_:FAR
+EXTRN I_StartSound_:FAR
+EXTRN I_PauseSong_:FAR
+EXTRN I_ResumeSong_:FAR
 
 .DATA
 
@@ -43,12 +46,13 @@ S_CLOSE_DIST_HIGH = 200
 S_ATTENUATOR = 1000
 MAX_SOUND_VOLUME = 127
 S_STEREO_SWING_HIGH = 96
+NORM_SEP = 128
 
 PROC    S_SOUND_STARTMARKER_ NEAR
 PUBLIC  S_SOUND_STARTMARKER_
 ENDP
 
-PROC    S_SetMusicVolume_ NEAR
+PROC    S_SetMusicVolume_ FAR
 PUBLIC  S_SetMusicVolume_
 
 push  bx
@@ -79,7 +83,7 @@ retf
 
 ENDP
 
-PROC    S_ChangeMusic_ NEAR
+PROC    S_ChangeMusic_ FAR
 PUBLIC  S_ChangeMusic_
 
 
@@ -94,7 +98,7 @@ retf
 
 ENDP
 
-PROC    S_StartMusic_ NEAR
+PROC    S_StartMusic_ FAR
 PUBLIC  S_StartMusic_
 
 
@@ -108,7 +112,7 @@ retf
 
 ENDP
 
-PROC    S_StopChannel_ NEAR
+PROC    S_StopChannel_ FAR
 PUBLIC  S_StopChannel_
 
 
@@ -345,7 +349,7 @@ mov   ax, (MAX_SOUND_VOLUME - 15)
 mov   bx, S_ATTENUATOR
 imul  dx
 call  FastDiv3216u_
-add   al, 15f
+add   al, 15
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -353,7 +357,7 @@ ret
 
 ENDP
 
-PROC    S_SetSfxVolume_ NEAR
+PROC    S_SetSfxVolume_ FAR
 PUBLIC  S_SetSfxVolume_
 
 push  bx
@@ -388,7 +392,7 @@ jmp   label_20
 
 ENDP
 
-PROC    S_PauseSound_ NEAR
+PROC    S_PauseSound_ FAR
 PUBLIC  S_PauseSound_
 
 
@@ -409,7 +413,7 @@ retf
 
 ENDP
 
-PROC    S_ResumeSound_ NEAR
+PROC    S_ResumeSound_ FAR
 PUBLIC  S_ResumeSound_
 
 push  bx
@@ -429,7 +433,7 @@ retf
 
 ENDP
 
-PROC    S_StopSound_ NEAR
+PROC    S_StopSound_ FAR
 PUBLIC  S_StopSound_
 
 push  bx
@@ -463,7 +467,7 @@ retf
 label_25:
 test  ax, ax
 je    label_26
-mov   bx, MUL_SIZEOF_THINKER_T
+mov   bx, SIZEOF_THINKER_T
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
@@ -493,7 +497,7 @@ retf
 
 ENDP
 
-PROC    S_StopSoundMobjRef_ NEAR
+PROC    S_StopSoundMobjRef_ FAR
 PUBLIC  S_StopSoundMobjRef_
 
 push  bx
@@ -501,7 +505,7 @@ push  cx
 push  dx
 test  ax, ax
 je    exit_stopsoundmobjref
-mov   bx, MUL_SIZEOF_THINKER_T
+mov   bx, SIZEOF_THINKER_T
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
@@ -533,7 +537,7 @@ retf
 
 ENDP
 
-PROC    S_getChannel_ NEAR
+PROC    S_getChannel_ FAR
 PUBLIC  S_getChannel_
 
 push  cx
@@ -545,7 +549,7 @@ sub   sp, 4
 mov   cx, ax
 mov   word ptr [bp - 2], dx
 mov   bh, bl
-mov   si, MUL_SIZEOF_THINKER_T
+mov   si, SIZEOF_THINKER_T
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   si
@@ -624,7 +628,7 @@ test  cx, cx
 je    label_68
 mov   ax, cx
 xor   dx, dx
-mov   cx, MUL_SIZEOF_THINKER_T
+mov   cx, SIZEOF_THINKER_T
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 div   cx
 label_45:
@@ -637,7 +641,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   cx
-ret   
+retf   
 label_44:
 mov   al, -1
 jmp   exit_s_getchannel
@@ -647,7 +651,7 @@ jmp   label_45
 
 ENDP
 
-PROC    S_StartSoundWithPosition_ NEAR
+PROC    S_StartSoundWithPosition_ FAR
 PUBLIC  S_StartSoundWithPosition_
 
 push  cx
@@ -659,7 +663,7 @@ sub   sp, 010h
 mov   di, ax
 mov   byte ptr [bp - 8], dl
 mov   si, bx
-mov   bx, MUL_SIZEOF_THINKER_T
+mov   bx, SIZEOF_THINKER_T
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
@@ -727,7 +731,6 @@ label_55:
 mov   dx, si
 mov   ax, di
 mov   cl, byte ptr [bp - 8]
-push  cs
 call  S_StopSound_
 mov   dx, si
 xor   ch, ch
@@ -757,7 +760,7 @@ call  S_AdjustSoundParamsSep_
 mov   byte ptr [bp - 2], al
 jmp   label_55
 label_52:
-imul  bx, ax, SIEO_MOBJ_POS_T
+imul  bx, ax, SIZEOF_MOBJ_POS_T
 mov   es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
 mov   word ptr [bp - 0Ah], ax
@@ -767,7 +770,7 @@ mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
 mov   word ptr [bp - 010h], ax
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
 mov   word ptr [bp - 0Eh], ax
-jmp   label_56:
+jmp   label_56
 label_54:
 mov   bl, byte ptr [bp - 2]
 mov   dl, byte ptr [bp - 4]
@@ -794,7 +797,7 @@ retf
 
 ENDP
 
-PROC    S_StartSound_ NEAR
+PROC    S_StartSound_ FAR
 PUBLIC  S_StartSound_
 
 push  bx
@@ -805,14 +808,13 @@ retf
 label_57:
 mov   bx, -1
 xor   dh, dh
-push  cs
 call  S_StartSoundWithPosition_
 pop   bx
 retf  
 
 ENDP
 
-PROC    S_StartSoundWithParams_ NEAR
+PROC    S_StartSoundWithParams_ FAR
 PUBLIC  S_StartSoundWithParams_
 
 push  bx
@@ -824,14 +826,13 @@ label_58:
 mov   bx, ax
 xor   dh, dh
 xor   ax, ax
-push  cs
 call  S_StartSoundWithPosition_
 pop   bx
 retf  
 
 ENDP
 
-PROC    S_UpdateSounds_ NEAR
+PROC    S_UpdateSounds_ FAR
 PUBLIC  S_UpdateSounds_
 
 push  bx
@@ -933,12 +934,11 @@ mov   al, byte ptr ds:[si + + CHANNEL_T.channel_handle]
 xor   bh, bh
 xor   dh, dh
 cbw  
-I_UpdateSoundParams_
+call I_UpdateSoundParams_
 inc   byte ptr [bp - 4]
 jmp   label_61
 label_64:
 mov   ax, di
-push  cs
 call  S_StopChannel_
 inc   byte ptr [bp - 4]
 jmp   label_61
