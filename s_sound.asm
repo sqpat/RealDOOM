@@ -56,27 +56,16 @@ PROC    S_SetMusicVolume_ FAR
 PUBLIC  S_SetMusicVolume_
 
 push  bx
-push  si
 mov   ah, al
-mov   bx, _snd_MusicVolume
 shl   ah, 3
-mov   byte ptr ds:[bx], ah
-mov   bx, _playingdriver
-mov   si, word ptr ds:[bx]
-mov   bx, word ptr ds:[bx + 2]
-test  bx, bx
-jne   also_change_system_volume
-test  si, si
-jne   also_change_system_volume
-pop   si
-pop   bx
-retf  
-also_change_system_volume:
-mov   bx, _playingdriver
-les   si, dword ptr ds:[bx]
+mov   byte ptr ds:[_snd_MusicVolume], ah
 xor   ah, ah
-call  es:[si + MUSIC_DRIVER_T.md_changesystemvolume_func]
-pop   si
+cmp   byte ptr ds:[_playingdriver+3], ah  ; segment high byte shouldnt be 0 if its set.
+je    exit_setmusicvolume
+les   bx, dword ptr ds:[_playingdriver]
+; takes in ax, ah is 0...
+call  es:[bx + MUSIC_DRIVER_T.md_changesystemvolume_func]
+exit_setmusicvolume:
 pop   bx
 retf  
 
@@ -87,12 +76,8 @@ PROC    S_ChangeMusic_ FAR
 PUBLIC  S_ChangeMusic_
 
 
-push  bx
-mov   bx, _pendingmusicenum
-mov   byte ptr ds:[bx], al
-mov   bx, _pendingmusicenumlooping
-mov   byte ptr ds:[bx], dl
-pop   bx
+mov   byte ptr ds:[_pendingmusicenum], al
+mov   byte ptr ds:[_pendingmusicenumlooping], dl
 retf  
 
 
@@ -102,12 +87,8 @@ PROC    S_StartMusic_ FAR
 PUBLIC  S_StartMusic_
 
 
-push  bx
-mov   bx, _pendingmusicenum
-mov   byte ptr ds:[bx], al
-mov   bx, _pendingmusicenumlooping
-mov   byte ptr ds:[bx], 0
-pop   bx
+mov   byte ptr ds:[_pendingmusicenum], al
+mov   byte ptr ds:[_pendingmusicenumlooping], 0
 retf  
 
 ENDP
