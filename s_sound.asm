@@ -134,57 +134,70 @@ ENDP
 PROC    S_AdjustSoundParamsSep_ NEAR
 PUBLIC  S_AdjustSoundParamsSep_
 
-push  si
+
+
 push  cx
 push  bx
-mov   bx, _playerMobj_pos
 push  dx
-les   si, dword ptr ds:[bx]
 push  ax
-mov   bx, word ptr es:[si + MOBJ_POS_T.mp_y + 0]
-mov   cx, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
-mov   ax, word ptr es:[si + MOBJ_POS_T.mp_x + 0]
-mov   si, word ptr es:[si + MOBJ_POS_T.mp_x + 2]
-mov   dx, si
-mov   si, _playerMobj_pos
+
+les   bx, dword ptr ds:[_playerMobj_pos]
+
+mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
+mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
+les   bx, dword ptr es:[bx + MOBJ_POS_T.mp_y + 0]
+mov   cx, es
+
 
 call  R_PointToAngle2_
-les   bx, dword ptr ds:[si]
-cmp   dx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
-jg    label_12
-jne   label_13
-cmp   ax, word ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
-jbe   label_13
-label_12:
-mov   bx, si
-mov   si, word ptr ds:[si]
-mov   es, word ptr ds:[bx + 2]
-sub   ax, word ptr es:[si + MOBJ_POS_T.mp_angle + 0]
-sbb   dx, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
-label_14:
-mov   bx, dx
+
+les   bx, dword ptr ds:[_playerMobj_pos]
+les   bx, dword ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
+mov   cx, es
+
+cmp   dx, cx
+jg    adjustment_angle_above
+jne   adjustment_angle_below
+cmp   ax, bx
+ja    adjustment_angle_above
+
+adjustment_angle_below:
+; es already has cx
+
+; (0xffffffff - playerMobj_pos->angle.w)
+
+mov   cx, 0FFFFh
+sub   bx, cx
+mov   cx, es ; recover cx
+mov   es, bx ; store this
+mov   bx, 0FFFFh
+sbb   cx, bx
+mov   es, bx
+add   ax, bx
+adc   dx, cx
+jmp   done_with_angle_adjustment
+adjustment_angle_above:
+sub   ax, bx
+sbb   dx, cx
+done_with_angle_adjustment:
+
+; fine angle
+sar   dx, 1
+and   dx, 0FFFCh
+
 mov   ax, FINESINE_SEGMENT
-sar   bx, 3
 mov   es, ax
-shl   bx, 2
-mov   ax, word ptr es:[bx]
-mov   cx, word ptr es:[bx + 2]
-mov   bx, ax
+les   bx, dword ptr es:[bx]
+mov   cx, es
 mov   ax, S_STEREO_SWING_HIGH
-call  FastMul16u32u_
+
+call  FastMul16u32u_;  mul by 96.. worth inlining shift stuff?
+
 mov   ah, 128
 sub   ah, al
 mov   al, ah
-pop   si
-retf  
-label_13:
-mov   cx, -1
-sub   cx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
-mov   si, -1
-sbb   si, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
-add   ax, cx
-adc   dx, si
-jmp   label_14
+ret  
+
 
 ENDP
 
@@ -707,7 +720,7 @@ mov   cx, word ptr [bp - 0Eh]
 mov   ax, word ptr [bp - 0Ah]
 mov   dx, word ptr [bp - 0Ch]
 
-call  S_AdjustSoundParamsSep_
+call  S_AdjustSoundParamsSep_  ; todo inline only use?
 mov   byte ptr [bp - 2], al
 jmp   label_55
 label_52:
