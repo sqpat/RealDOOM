@@ -760,121 +760,99 @@ ENDP
 PROC    S_UpdateSounds_ FAR
 PUBLIC  S_UpdateSounds_
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 0Ah
-mov   byte ptr [bp - 4], 0
-label_61:
-mov   al, byte ptr [bp - 4]
-cbw  
-mov   di, ax
-mov   al, byte ptr ds:[_numChannels]
-xor   ah, ah
-cmp   di, ax
-jge   label_59
-imul  si, di, 6
-add   si, OFFSET _channels
-mov   al, byte ptr ds:[si + + CHANNEL_T.channel_sfx_id]
-test  al, al
-jne   label_60
-inc   byte ptr [bp - 4]
-jmp   label_61
-label_59:
-jmp   exit_s_updatesounds
-label_60:
-mov   al, byte ptr ds:[si + + CHANNEL_T.channel_handle]
-cbw  
+PUSHA_NO_AX_OR_BP_MACRO
+
+mov   si, OFFSET _channels
+xor   ax, ax
+cwd
+mov   dh, byte ptr ds:[_numChannels]
+test  dh, dh
+je    exit_s_updatesounds
+loop_next_channel_updatesounds:
+mov   cl, byte ptr ds:[si + CHANNEL_T.channel_sfx_id]
+test  cl, cl
+je    iter_next_channel_updatesounds
 call  I_SoundIsPlaying_
 test  al, al
-je    jump_to_label_64
-cmp   word ptr ds:[si + + CHANNEL_T.channel_originRef], -1
-je    label_65
-mov   ax, word ptr ds:[_playerMobjRef]
-cmp   ax, word ptr ds:[si + + CHANNEL_T.channel_originRef]
-je    label_65
-label_62:
-mov   ax, word ptr ds:[si]
-cmp   ax, -1
-je    label_67
-mov   dx, SECTORS_SOUNDORGS_SEGMENT
-mov   bx, ax
-mov   word ptr [bp - 8], 0
-shl   bx, 2
-mov   es, dx
-xor   di, di
-mov   dx, word ptr es:[bx]
-mov   ax, word ptr es:[bx + 2]
-add   bx, 2
-mov   word ptr [bp - 6], dx
-label_63:
-mov   word ptr [bp - 0Ah], ax
-mov   cx, word ptr [bp - 0Ah]
-mov   ax, word ptr [bp - 8]
-mov   dx, word ptr [bp - 6]
-mov   bx, di
-call  S_AdjustSoundParamsVol_
-mov   byte ptr [bp - 2], al
+jne   handle_position_update
+do_stop_channel_and_iter:
+mov   al, dl
+cbw
+call  S_StopChannel_
+jmp   iter_next_channel_updatesounds
+handle_position_update:
+
+mov   di, dx ; back this up...
+
+cmp   word ptr ds:[si + CHANNEL_T.channel_soundorg_secnum], SECNUM_NULL
+jne   update_sound_with_mobjpos
+update_sound_with_sector:
+mov   ax, SECTORS_SOUNDORGS_SEGMENT
+mov   es, ax
+SHIFT_MACRO shl   bx 2
+les   ax, dword ptr es:[bx + SECTOR_SOUNDORG_T.secso_soundorgX]
+mov   dx, es
+xor   cx, cx
+mov   bx, cx
+
+origins_ready:
+
+push  cx ; bp - 4
+push  bx ; bp - 6
+push  dx ; bp - 8
+push  ax ; bp - 0Ah  ;store in reverse order for later cmpsw.
+
+call  S_AdjustSoundParamsVol_  ; todo inline only use?
+
 test  al, al
-jne   label_66
-mov   al, byte ptr [bp - 4]
-cbw  
+jne   update_sound_params
 
-call  S_StopChannel_
-inc   byte ptr [bp - 4]
-jmp   label_61
-label_65:
-cmp   word ptr ds:[si], -1
-jne   label_62
-inc   byte ptr [bp - 4]
-jmp   label_61
-jump_to_label_64:
-jmp   label_64
-label_67:
-imul  bx, word ptr ds:[si + + CHANNEL_T.channel_originRef], SIZEOF_MOBJ_POS_T
+mov   dx, di ; restore loop counters
+add   sp, 8  ; undo those pushes.
+jmp   do_stop_channel_and_iter
 
-mov   es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
-mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
-mov   word ptr [bp - 8], ax
-mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
-mov   word ptr [bp - 6], ax
-mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-mov   di, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-jmp   label_63
-label_66:
-mov   cx, word ptr [bp - 0Ah]
-mov   ax, word ptr [bp - 8]
-mov   dx, word ptr [bp - 6]
-mov   bx, di
-
-call  S_AdjustSoundParamsSep_
-mov   dl, byte ptr [bp - 2]
-mov   bl, al
-mov   al, byte ptr ds:[si + + CHANNEL_T.channel_handle]
-xor   bh, bh
-xor   dh, dh
-cbw  
-call I_UpdateSoundParams_
-inc   byte ptr [bp - 4]
-jmp   label_61
-label_64:
-mov   ax, di
-call  S_StopChannel_
-inc   byte ptr [bp - 4]
-jmp   label_61
-exit_s_updatesounds:
-LEAVE_MACRO
-pop   di
-pop   si
+update_sound_params:
+mov   es, ax ; store volume
+pop   ax
 pop   dx
-pop   cx
 pop   bx
+pop   cx
+push  es
+call  S_AdjustSoundParamsSep_
+
+xchg  ax, cx
+pop   dx
+mov   al, byte ptr ds:[si + CHANNEL_T.channel_handle]
+call  I_UpdateSoundParams_
+
+mov   dx, di ; restore loop counters
+
+iter_next_channel_updatesounds:
+add   si, SIZEOF_CHANNEL_T
+inc   dx
+cmp   dl, dh
+jl    loop_next_channel_updatesounds
+
+exit_s_updatesounds:
+POPA_NO_AX_OR_BP_MACRO
 retf  
 
+update_sound_with_mobjpos:
+mov   bx, word ptr ds:[si + CHANNEL_T.channel_originRef]
+mov   ax, SIZEOF_MOBJ_POS_T
+mul   bx
+xchg  ax, bx
+mov   es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
+
+;    originX = originMobjPos->x;
+;    originY = originMobjPos->y;
+
+mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
+mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
+les   bx, dword ptr es:[bx + MOBJ_POS_T.mp_y + 0]
+mov   cx, es
+
+jmp   origins_ready
 ENDP
 
 
