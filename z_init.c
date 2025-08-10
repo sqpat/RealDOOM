@@ -652,6 +652,7 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 void __far G_SecretExitLevel (void);
 void __far OutOfThinkers ();
 
+
 void __near Z_LoadBinaries() {
 	int16_t i;
 	uint16_t codesize;
@@ -856,6 +857,9 @@ void __near Z_LoadBinaries() {
 	ST_Start_addr =						(uint32_t)(ST_Start);
 	G_PlayerReborn_addr =				(uint32_t)(G_PlayerReborn);
 	S_StopSoundMobjRef_addr =			(uint32_t)(S_StopSoundMobjRef); 	
+
+	Z_QuickMapMusicPageFrame_addr =     (uint32_t)(Z_QuickMapMusicPageFrame);
+
 }
 
 
