@@ -76,7 +76,7 @@ void __far S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, i
 
 
 // Stop sound for thing at <origin>
-void far S_StopSound(mobj_t __near* origin, int16_t soundorg_secnum);
+void near S_StopSound(mobj_t __near* origin, int16_t soundorg_secnum);
 void far S_StopSoundMobjRef(mobj_t __near* origin);
 
 

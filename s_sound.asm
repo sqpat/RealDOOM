@@ -86,7 +86,7 @@ ENDP
 
 SIZEOF_CHANNEL_T = 6
 
-PROC    S_StopChannel_ FAR
+PROC    S_StopChannel_ NEAR
 PUBLIC  S_StopChannel_
 
 
@@ -101,7 +101,7 @@ mov   si, ax
 sal   si, 1  ; 2
 add   si, ax ; 3
 sal   si, 1  ; 6
-add   si, _channels
+add   si, OFFSET _channels
 cmp   byte ptr ds:[si + CHANNEL_T.channel_sfx_id], ah ; 0 or SFX_NONE
 je    exit_stop_channel
 mov   al, byte ptr ds:[si + CHANNEL_T.channel_handle]
@@ -118,7 +118,7 @@ mov   byte ptr ds:[si + CHANNEL_T.channel_sfx_id], SFX_NONE ; 0
 
 exit_stop_channel:
 pop   si
-retf  
+ret  
 
 ENDP
 
@@ -384,7 +384,8 @@ retf
 
 ENDP
 
-PROC    S_StopSound_ FAR
+
+PROC    S_StopSound_ FAR ; has to be far for now because because S_StopSoundMobjRef_ jumps in.
 PUBLIC  S_StopSound_
 
 ;void __far S_StopSound(mobj_t __near* origin, int16_t soundorg_secnum) {
@@ -418,7 +419,7 @@ mov   bx, CHANNEL_T.channel_originRef
 
 setup_stopsound_channel_loop:
 cwd   ; zero dx. ax should be < 0x8000 in either case
-mov   si, _channels
+mov   si, OFFSET _channels
 mov   dh, byte ptr ds:[_numChannels]
 test  dh, dh
 je    exit_stopsound
@@ -461,118 +462,105 @@ jmp   check_for_mobjref
 
 ENDP
 
-PROC    S_getChannel_ FAR
+NULL_THINKER_ORIGINREF = -1
+
+;int8_t __near S_getChannel (mobj_t __near* origin, int16_t soundorg_secnum, sfxenum_t sfx_id ) {
+
+PROC    S_getChannel_ NEAR
 PUBLIC  S_getChannel_
 
 push  cx
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 4
-mov   cx, ax
-mov   word ptr [bp - 2], dx
-mov   bh, bl
+
+mov   di, NULL_THINKER_ORIGINREF
+mov   cx, dx ; backup soundorg secnum..
+xor   dx, dx
+xor   bh, bh ; sfx_id is oft used as byte lookup.
+
+test  ax, ax
+jz    dont_get_ref
+
 mov   si, SIZEOF_THINKER_T
 sub   ax, (_thinkerlist + THINKER_T.t_data)
-xor   dx, dx
 div   si
-xor   bl, bl
-mov   dl, byte ptr ds:[_numChannels]
-mov   di, ax
-label_35:
-mov   al, bl
-xor   dh, dh
-cbw  
-cmp   ax, dx
-jge   label_30
-imul  si, ax, 6
-cmp   byte ptr ds:[si + _channels + CHANNEL_T.channel_sfx_id], 0
-jne   label_33
-label_30:
-mov   al, bl
-cbw  
-mov   dx, ax
-mov   al, byte ptr ds:[_numChannels]
-xor   ah, ah
-cmp   dx, ax
-jne   label_31
-xor   bl, bl
-label_34:
-mov   al, bl
-mov   dl, byte ptr ds:[_numChannels]
-cbw  
-xor   dh, dh
-cmp   ax, dx
-jge   label_32
-imul  si, ax, 6
-mov   al, byte ptr ds:[si + _channels + CHANNEL_T.channel_sfx_id]
-xor   ah, ah
-mov   si, ax
-mov   dl, bh
-mov   al, byte ptr ds:[si + _sfx_priority]
-mov   si, dx
-cmp   al, byte ptr ds:[si + _sfx_priority]
-jae   label_32
-inc   bl
-jmp   label_34
-label_33:
-test  cx, cx
-jne   label_36
-label_37:
-inc   bl
-jmp   label_35
-label_36:
-cmp   di, word ptr ds:[si + _channels + CHANNEL_T.channel_originRef]
-jne   label_37
+xchg  ax, di  ; di has originref
 
-call  S_StopChannel_
-jmp   label_30
-label_32:
-mov   byte ptr [bp - 3], 0
-mov   al, bl
-mov   dl, byte ptr ds:[_numChannels]
-cbw  
-mov   byte ptr [bp - 4], dl
-cmp   ax, word ptr [bp - 4]
-je    label_44
+dont_get_ref:
 
-call  S_StopChannel_
-label_31:
-mov   al, bl
-cbw  
+
+
+xor   ax, ax
+cwd
+mov   ah, byte ptr ds:[_numChannels]
+mov   si, OFFSET _channels
+
+; loop al to ah
+
+loop_next_channel_getchannel:
+cmp   word ptr ds:[si + CHANNEL_T.channel_sfx_id], dx ; 0
+je    foundchannel
+cmp   di, NULL_THINKER_ORIGINREF
+je    check_secnum_instead
+cmp   word ptr ds:[si + CHANNEL_T.channel_originRef], di
+jne   iter_next_channel_getchannel
+found_channel_to_boot:
+cbw
 mov   dx, ax
-shl   ax, 2
-sub   ax, dx
-mov   si, _channels
-add   ax, ax
-add   si, ax
-mov   byte ptr ds:[si + CHANNEL_T.channel_sfx_id], bh
-test  cx, cx
-je    label_68
-mov   ax, cx
-xor   dx, dx
-mov   cx, SIZEOF_THINKER_T
-sub   ax, (_thinkerlist + THINKER_T.t_data)
-div   cx
-label_45:
-mov   word ptr ds:[si + CHANNEL_T.channel_originRef], ax
-mov   ax, word ptr [bp - 2]
-mov   word ptr ds:[si], ax
-mov   al, bl
+call  S_StopChannel_
+xchg  ax, dx
+
+foundchannel:
+; al already cnum
+; si alredy channel ptr
+cbw
+mov   byte ptr ds:[si + CHANNEL_T.channel_sfx_id], bl
+mov   word ptr ds:[si + CHANNEL_T.channel_originRef], di
+mov   word ptr ds:[si + CHANNEL_T.channel_soundorg_secnum], cx
+
+; ax has cnum already
+
 exit_s_getchannel:
-LEAVE_MACRO 
 pop   di
 pop   si
 pop   cx
 exit_startsoundwithpositionearly:
-retf   
-label_44:
-mov   al, -1
+ret   
+check_secnum_instead:
+cmp   word ptr ds:[si + CHANNEL_T.channel_soundorg_secnum], cx
+je    found_channel_to_boot
+iter_next_channel_getchannel:
+add   si, SIZEOF_CHANNEL_T
+inc   ax
+cmp   al, ah
+jl    loop_next_channel_getchannel
+
+; NO CHANNEL FOUND. look for lower priority to boot
+xor   al, al    ; reset counter
+mov   si, OFFSET _channels
+mov   dh, byte ptr ds:[bx + _sfx_priority]
+; dh stores sfx priority..
+
+loop_next_channel_getchannel_priority:
+mov   dl, byte ptr ds:[si + CHANNEL_T.channel_sfx_id]
+xchg  dl, bl  ; for _sfx_priority lookup
+mov   bl, byte ptr ds:[bx + _sfx_priority] ; bh always 0. these numbers are low
+xchg  dl, bl ; original bl back.
+
+cmp   dl, dh
+jge   found_channel_to_boot
+
+
+iter_next_channel_getchannel_priority:
+add   si, SIZEOF_CHANNEL_T
+inc   ax
+cmp   al, ah
+jl    loop_next_channel_getchannel_priority
+
+mov   ax, -1 ; no channel found
 jmp   exit_s_getchannel
-label_68:
-mov   ax, -1
-jmp   label_45
+
+
 
 ENDP
 
@@ -584,6 +572,7 @@ PUBLIC  S_StartSoundWithPosition_
 
 cmp   byte ptr ds:[_snd_SfxDevice], SFX_NONE ; 0
 je    exit_startsoundwithpositionearly
+
 push  cx
 push  si
 push  di
@@ -703,7 +692,7 @@ mov   si, bx ; copy sfx id to si
 call  S_getChannel_  ; cnum = S_getChannel(origin, soundorg_secnum, sfx_id);
 test  al, al
 jnge  exit_startsoundwithposition
-cbw   
+ 
 mov   dx, cx ; volume
 mov   bx, di ; sep
 xchg  ax, si ; si gets cnum. ax gets sfx_id
@@ -789,7 +778,7 @@ xor   ah, ah
 cmp   di, ax
 jge   label_59
 imul  si, di, 6
-add   si, _channels
+add   si, OFFSET _channels
 mov   al, byte ptr ds:[si + + CHANNEL_T.channel_sfx_id]
 test  al, al
 jne   label_60
@@ -805,8 +794,7 @@ test  al, al
 je    jump_to_label_64
 cmp   word ptr ds:[si + + CHANNEL_T.channel_originRef], -1
 je    label_65
-mov   bx, _playerMobjRef
-mov   ax, word ptr ds:[bx]
+mov   ax, word ptr ds:[_playerMobjRef]
 cmp   ax, word ptr ds:[si + + CHANNEL_T.channel_originRef]
 je    label_65
 label_62:
