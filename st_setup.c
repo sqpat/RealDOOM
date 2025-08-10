@@ -166,5 +166,5 @@ void __far ST_Start(void) {
 
     ST_createWidgets();
     st_stopped = false;
-
+    Z_QuickMapPhysics();
 }

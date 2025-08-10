@@ -103,20 +103,20 @@ mobj_t __near* SAVEDUNIT;
 
 
 // Which one is deterministic?
-/*
+
 uint8_t __near P_Random(void) {
 	 
     prndindex++;
     return rndtable[prndindex];
 }
-*/
+
 
 
 //
 // P_SetupPsprites
 // Called at start of level for each player.
 //
-/*
+
 void __near P_SetupPsprites() {
 	int8_t	i;
 
@@ -128,7 +128,7 @@ void __near P_SetupPsprites() {
 	player.pendingweapon = player.readyweapon;
 	P_BringUpWeaponFar();
 }
-*/
+
 void __far ST_Start(void);
 
 //
@@ -139,7 +139,7 @@ void __far ST_Start(void);
 //
 
 // todo move ot p_setup perhaps?
-/*
+
 void __near P_SpawnPlayer(mapthing_t __far* mthing) {
 	fixed_t_union		x;
 	fixed_t_union		y;
@@ -196,7 +196,7 @@ void __near P_SpawnPlayer(mapthing_t __far* mthing) {
 	Z_QuickMapPhysics();
 	Z_QuickMapScratch_8000(); // gross, due to p_setup.... perhaps externalize.
 	Z_QuickMapPhysicsCode();
-} */
+} 
 
 //
 // P_SpawnMapThing
@@ -206,7 +206,7 @@ void __near P_SpawnPlayer(mapthing_t __far* mthing) {
 
 // todo move ot p_setup perhaps?
 
-/*
+
 void __far P_SpawnMapThing(mapthing_t mthing, int16_t key) {
 
 
@@ -312,12 +312,12 @@ void __far P_SpawnMapThing(mapthing_t mthing, int16_t key) {
  
 
 }
- */
+ 
 
 // 
 // P_ExplodeMissile  
 //
-/*
+
 void __near P_ExplodeMissile(mobj_t __near* mo, mobj_pos_t __far* mo_pos){
 	//todoaddr inline later
 	statenum_t (__far  * getDeathState)(uint8_t) = getDeathStateAddr;
@@ -337,7 +337,7 @@ void __near P_ExplodeMissile(mobj_t __near* mo, mobj_pos_t __far* mo_pos){
 		S_StartSound(mo, mobjinfo[mo->type].deathsound);
 	}
 }
-*/
+
 
 //
 // P_XYMovement  
@@ -348,7 +348,7 @@ void __near P_ExplodeMissile(mobj_t __near* mo, mobj_pos_t __far* mo_pos){
 fixed_t  FastMulFriction (fixed_t num);
 // void __far P_XYMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos);
 
-/*
+
 void __near P_XYMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos) { 	
     fixed_t_union 	ptryx;
     fixed_t_union	ptryy;
@@ -498,13 +498,13 @@ void __near P_XYMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos) {
 	}
 
 }
-*/
+
 //
 // P_ZMovement
 //
 // void __far P_ZMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos);
 
-/*
+
 void __near P_ZMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos) {
     fixed_t	dist;
 	fixed_t	delta;
@@ -613,7 +613,7 @@ void __near P_ZMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos) {
 
 
 } 
-*/
+
 
 
 
@@ -621,7 +621,7 @@ void __near P_ZMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos) {
 // P_NightmareRespawn
 //
 
-/*
+
 void __near P_NightmareRespawn(mobj_t __near* mobj, mobj_pos_t __far* mobj_pos) {
 
 	
@@ -708,12 +708,12 @@ void __near P_NightmareRespawn(mobj_t __near* mobj, mobj_pos_t __far* mobj_pos) 
     P_RemoveMobj (mobj);
 
 }
-*/
+
 //
 // P_MobjThinker
 //
 
-/*
+
 void __near P_MobjThinker (mobj_t __near* mobj, mobj_pos_t __far* mobj_pos, THINKERREF mobjRef) {
 
 	// momentum movement
@@ -784,12 +784,12 @@ void __near P_MobjThinker (mobj_t __near* mobj, mobj_pos_t __far* mobj_pos, THIN
     }
 
 }
-*/
+
 
 //
 // P_SpawnMobj
 //
-/*
+
 THINKERREF __far P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t knownsecnum ) {
 	mobj_t __near*	mobj;
 	mobj_pos_t __far*	mobj_pos;
@@ -859,13 +859,13 @@ THINKERREF __far P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type,
 	setStateReturn_pos = mobj_pos;
     return mobjRef;
 }
-*/
+
 
 //
 // P_RemoveMobj
 //
 
-/*
+
 void __far P_RemoveMobj (mobj_t __near* mobj) {
 	THINKERREF mobjRef = GETTHINKERREF(mobj);
     // unlink from sector and block lists
@@ -877,7 +877,7 @@ void __far P_RemoveMobj (mobj_t __near* mobj) {
 	// free block
 	P_RemoveThinker(GETTHINKERREF(mobj));
 }
-*/
+
 
 
  
@@ -892,7 +892,7 @@ void __far P_RemoveMobj (mobj_t __near* mobj) {
 //
 // P_SpawnPuff
 //
-/*
+
 
 #pragma aux P_SpawnPuffParams __parm [dx ax] [cx bx] [di si]  __modify [ax bx cx dx si di];                    
 #pragma aux (P_SpawnPuffParams) P_SpawnPuff;
@@ -940,7 +940,7 @@ void __near P_SpawnBlood ( fixed_t x, fixed_t y, fixed_t z, int16_t damage ) {
     else if (damage < 9)
 		P_SetMobjState (th,S_BLOOD3);
 }
-*/
+
 
 
 //
@@ -948,7 +948,7 @@ void __near P_SpawnBlood ( fixed_t x, fixed_t y, fixed_t z, int16_t damage ) {
 // Moves the missile forward a bit
 //  and possibly explodes it right there.
 //
-/*
+
 
 void __near P_CheckMissileSpawn (mobj_t __near* th, mobj_pos_t __far* th_pos) {
 
@@ -967,7 +967,7 @@ void __near P_CheckMissileSpawn (mobj_t __near* th, mobj_pos_t __far* th_pos) {
 		P_ExplodeMissile(th, th_pos);
 	}
 }
-*/
+
 
 
 //
@@ -975,7 +975,7 @@ void __near P_CheckMissileSpawn (mobj_t __near* th, mobj_pos_t __far* th_pos) {
 //
 // THINKERREF __far P_SpawnMissile (mobj_t __near* source, mobj_pos_t __far* source_pos, mobj_t __near*	dest, mobjtype_t	type ) ;
 
-/*
+
 THINKERREF __near P_SpawnMissile (mobj_t __near* source, mobj_pos_t __far* source_pos, mobj_t __near*	dest, mobjtype_t	type ) {
 	mobj_t __near*	th;
 	mobj_pos_t __far*	th_pos;
@@ -1035,7 +1035,7 @@ THINKERREF __near P_SpawnMissile (mobj_t __near* source, mobj_pos_t __far* sourc
     return thRef;
 }
 
-*/
+
 
 // void __near A_BFGSpray(mobj_t __near* mo, mobj_pos_t __far* mo_pos);
 
@@ -1045,7 +1045,7 @@ THINKERREF __near P_SpawnMissile (mobj_t __near* source, mobj_pos_t __far* sourc
 //
 // void __far P_SpawnPlayerMissile ( mobjtype_t type );
 
-/*
+
 void __near P_SpawnPlayerMissile ( mobjtype_t type ) {
 	mobj_t __near*	th;
 	mobj_pos_t __far*	th_pos;
@@ -1105,9 +1105,9 @@ void __near P_SpawnPlayerMissile ( mobjtype_t type ) {
 
     P_CheckMissileSpawn (th, th_pos);
 }
-*/
 
-/*
+
+
 boolean __far P_SetMobjState (mobj_t __near* mobj, statenum_t state) {
 	state_t __far*	st;
 	mobj_pos_t __far* mobj_pos;
@@ -1211,4 +1211,4 @@ boolean __far P_SetMobjState (mobj_t __near* mobj, statenum_t state) {
 
 	return true;
 }
-*/
+

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/09 10:35:08
+Created on:       25/08/10 00:33:47
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -53,7 +53,7 @@ MATH_TEXT              CODE           AUTO           02e8:5b6c       00000564
 MAIN_TEXT              CODE           AUTO           02e8:60d0       00000ffc
 g_setup_TEXT           CODE           AUTO           02e8:70d0       000002de
 r_setup_TEXT           CODE           AUTO           02e8:73b0       0000046c
-st_setup_TEXT          CODE           AUTO           02e8:7820       00000202
+st_setup_TEXT          CODE           AUTO           02e8:7820       00000207
 hu_setup_TEXT          CODE           AUTO           02e8:7a30       000000d6
 p_setup_TEXT           CODE           AUTO           02e8:7b10       000011ee
 S_SOUND_TEXT           CODE           AUTO           0bb7:000e       0000045b
@@ -618,9 +618,9 @@ Module: d_int.obj(d_int.ASM)
 02e8:5b3d      locallib_int86_10_
 Module: math.obj(math.ASM)
 02e8:5c33      FixedMulTrigNoShift_
-02e8:5edd      FastDiv32u16u_
 02e8:5e6f      FixedDiv_
 02e8:5d0f      FastMul16u32u_
+02e8:5edd      FastDiv32u16u_
 02e8:5c7e*     FixedMulTrig16_
 02e8:5d24*     div48_32_
 02e8:5fa2*     div48_32_whole_
@@ -1091,4 +1091,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  000138a0 (80032.)
 Entry point address: 0bb7:37f6
-Link time: 00:00.19
+Link time: 00:00.20

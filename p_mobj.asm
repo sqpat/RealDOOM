@@ -320,8 +320,8 @@ dw _HU_Start_addr
 ; ST_Start internally ran I_SetPalette_ which clobbers 8000 to 9400.
 
 
-Z_QUICKMAPAI16 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
-Z_QUICKMAPAI1  (pageswapargs_phys_offset_size+20) INDEXED_PAGE_9000_OFFSET
+Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
+
 
 mov   byte ptr ds:[_currenttask], TASK_PHYSICS
 ;call     Z_QuickMapScratch_8000_   ; // gross, needed due to p_setup.... perhaps externalize.
