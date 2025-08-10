@@ -195,13 +195,16 @@ ENDP
 PROC    S_AdjustSoundParamsVol_ NEAR
 PUBLIC  S_AdjustSoundParamsVol_
 
-push  si
 
 ;    adx.w = labs(playerMobj_pos->x.w - sourceX.w);
 ;    ady.w = labs(playerMobj_pos->y.w - sourceY.w);
 
-push  cx
-push  bx ; push arg y
+
+push  si
+push  di
+
+mov   si, bx
+mov   di, cx
 
 
 les   si, dword ptr ds:[_playerMobj_pos]
@@ -218,10 +221,8 @@ neg   cx
 x_already_positive:
 les   ax, dword ptr es:[si + MOBJ_POS_T.mp_y + 0]
 mov   dx, es
-pop   si  ; y lo
 sub   ax, si
-pop   si  ; y hi
-sbb   dx, si
+sbb   dx, di
 test  dx, dx
 jns   y_already_positive
 neg   ax
@@ -231,7 +232,6 @@ y_already_positive:
 
 
 ;	intermediate.w = ((adx.w < ady.w ? adx.w : ady.w)>>1);
-push  di
 
 cmp   cx, dx
 jg    adx_greater_than_ady
@@ -263,7 +263,6 @@ sbb   dx, di
 
 pop   di
 pop   si ; dont use di/si anymore. can just ret
-
 ; dx:ax is approx_dist
 
 ;    if (gamemap != 8 && approx_dist.w > S_CLIPPING_DIST) {
@@ -389,63 +388,64 @@ ENDP
 PROC    S_StopSound_ FAR
 PUBLIC  S_StopSound_
 
+;void __far S_StopSound(mobj_t __near* origin, int16_t soundorg_secnum) {
+
+push  dx  ; push/pop dx allows the following function to piggyback.
 push  bx
-push  cx
-mov   cx, dx
-cmp   dx, -1
-je    label_25
-xor   dl, dl
-label_28:
-mov   al, dl
-mov   bl, byte ptr ds:[_numChannels]
-cbw  
-xor   bh, bh
-cmp   ax, bx
-jge   label_26
-imul  bx, ax, 6
-cmp   byte ptr ds:[bx + _channels + CHANNEL_T.channel_sfx_id], 0
-jne   label_27
-label_29:
-inc   dl
-jmp   label_28
-label_27:
-cmp   cx, word ptr ds:[bx + _channels]
-jne   label_29
+push  si
 
-call  S_StopChannel_
-label_26:
-pop   cx
-pop   bx
-retf  
-label_25:
-test  ax, ax
-je    label_26
-mov   bx, SIZEOF_THINKER_T
-sub   ax, (_thinkerlist + THINKER_T.t_data)
+cmp   dx, SECNUM_NULL
+je    check_for_origin
+; check_for_secnum
+xchg  ax, dx       ; loop condition soundorg_secnum
+mov   bx, CHANNEL_T.channel_soundorg_secnum
+
+jmp   setup_stopsound_channel_loop
+
+check_for_origin:
+
 xor   dx, dx
-div   bx
-mov   cx, ax
-xor   dl, dl
-label_39:
-mov   al, dl
-mov   bl, byte ptr ds:[_numChannels]
-cbw  
-xor   bh, bh
-cmp   ax, bx
-jge   label_26
-imul  bx, ax, 6
-cmp   byte ptr ds:[bx + _channels + CHANNEL_T.channel_sfx_id], 0
-jne   label_38
-label_40:
-inc   dl
-jmp   label_39
-label_38:
-cmp   cx, word ptr ds:[bx + _channels + CHANNEL_T.channel_originRef]
-jne   label_40
+mov   si, SIZEOF_THINKER_T
+sub   ax, (_thinkerlist + THINKER_T.t_data)
+div   si ; loop condition originRef
 
+check_for_mobjref:
+mov   bx, CHANNEL_T.channel_originRef
+
+; si + bx is comparison target
+; ax is what to compare to
+; dl is i for StopChannel call.
+; dh is end condition for loop.
+
+setup_stopsound_channel_loop:
+cwd   ; zero dx. ax should be < 0x8000 in either case
+mov   si, _channels
+mov   dh, byte ptr ds:[_numChannels]
+test  dh, dh
+je    exit_stopsound
+
+
+loop_next_channel_stopsound:
+cmp   byte ptr ds:[si + CHANNEL_T.channel_sfx_id], bh ; bh is zero for sure
+je    iter_next_channel_stopsound
+cmp   word ptr ds:[si + bx], ax
+jne   iter_next_channel_stopsound
+xchg  ax, dx
+cbw   ; necessary?
 call  S_StopChannel_
-pop   cx
+pop   si
 pop   bx
+pop   dx
+retf  
+iter_next_channel_stopsound:
+add   si, SIZEOF_CHANNEL_T
+inc   dx
+cmp   dl, dh
+jl    loop_next_channel_stopsound
+exit_stopsound:
+pop   si
+pop   bx
+pop   dx
 retf  
 
 ENDP
@@ -453,40 +453,11 @@ ENDP
 PROC    S_StopSoundMobjRef_ FAR
 PUBLIC  S_StopSoundMobjRef_
 
-push  bx
-push  cx
 push  dx
-test  ax, ax
-je    exit_stopsoundmobjref
-mov   bx, SIZEOF_THINKER_T
-sub   ax, (_thinkerlist + THINKER_T.t_data)
-xor   dx, dx
-div   bx
-mov   cx, ax
-xor   dl, dl
-label_42:
-mov   al, dl
-mov   bl, byte ptr ds:[_numChannels]
-cbw  
-xor   bh, bh
-cmp   ax, bx
-jge   exit_stopsoundmobjref
-imul  bx, ax, 6
-cmp   byte ptr ds:[bx + _channels + CHANNEL_T.channel_sfx_id], 0
-jne   label_41
-label_43:
-inc   dl
-jmp   label_42
-label_41:
-cmp   cx, word ptr ds:[bx + _channels + CHANNEL_T.channel_originRef]
-jne   label_43
+push  bx
+push  si
+jmp   check_for_mobjref
 
-call  S_StopChannel_
-exit_stopsoundmobjref:
-pop   dx
-pop   cx
-pop   bx
-retf  
 
 ENDP
 
