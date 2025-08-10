@@ -323,17 +323,14 @@ void __far S_StopSound(mobj_t __near* origin, int16_t soundorg_secnum) {
 
 }
 
-void far S_StopSoundMobjRef(mobj_t __near* origin) {
+void far S_StopSoundMobjRef(THINKERREF originRef) {
 	
 	int8_t cnum;
-	if (origin){
-		THINKERREF originRef = GETTHINKERREF(origin);
 
-		for (cnum=0 ; cnum<numChannels ; cnum++) {
-			if (channels[cnum].sfx_id && channels[cnum].originRef == originRef) {
-				S_StopChannel(cnum);
-				break;
-			}
+	for (cnum=0 ; cnum<numChannels ; cnum++) {
+		if (channels[cnum].sfx_id && channels[cnum].originRef == originRef) {
+			S_StopChannel(cnum);
+			break;
 		}
 	}
 

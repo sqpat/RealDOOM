@@ -126,7 +126,6 @@ PROC    S_AdjustSoundParamsSep_ NEAR
 PUBLIC  S_AdjustSoundParamsSep_
 
 
-
 push  cx ; params to R_PointToAngle2_
 push  bx
 push  dx
@@ -456,6 +455,7 @@ PUBLIC  S_StopSoundMobjRef_
 push  dx
 push  bx
 push  si
+; ax already ref
 jmp   check_for_mobjref
 
 
@@ -565,6 +565,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   cx
+exit_startsoundwithpositionearly:
 retf   
 label_44:
 mov   al, -1
@@ -578,146 +579,164 @@ ENDP
 PROC    S_StartSoundWithPosition_ FAR
 PUBLIC  S_StartSoundWithPosition_
 
+;void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t soundorg_secnum ) {
+
+
+cmp   byte ptr ds:[_snd_SfxDevice], SFX_NONE ; 0
+je    exit_startsoundwithpositionearly
 push  cx
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 010h
-mov   di, ax
-mov   byte ptr [bp - 8], dl
-mov   si, bx
+xor   dh, dh
+push  dx  ; sfx_id is [bp - 2]
+mov   di, ax  ; di holds origin
+mov   si, bx  ; si holds soundorg_secnum
+
+
+;	// Check to see if it is audible,
+;	//  and if not, modify the params
+;	if ((origin || (soundorg_secnum != SECNUM_NULL)) && (originRef != playerMobjRef)){
+
+
+
+cmp   si, SECNUM_NULL
+jne   location_good_adjust_sound_for_sector
+
+
+mov   cx, MAX_SOUND_VOLUME ; just in case we skip and dont calculate vol.
+
+test  di, di
+je    skip_vol_adjustment_use_norm_setp
+
+; div to get mobjref.
+
 mov   bx, SIZEOF_THINKER_T
-sub   ax, (_thinkerlist + THINKER_T.t_data)
+sub   ax, (_thinkerlist + THINKER_T.t_data) ; ax still origin
 xor   dx, dx
 div   bx
-mov   bx, _snd_SfxDevice
-mov   byte ptr [bp - 4], MAX_SOUND_VOLUME
-cmp   byte ptr ds:[bx], 0
-jne   label_46
-jmp   exit_startsoundwithposition
-label_46:
-test  di, di
-jne   label_47
-jmp   label_48
-label_47:
-mov   bx, _playerMobjRef
-cmp   ax, word ptr ds:[bx]
-jne   label_49
-jmp   label_50
-label_49:
-cmp   si, -1
-jne   label_51
-jmp   label_52
-label_51:
-mov   bx, si
+
+; ax is mobjref/originref
+cmp   ax, word ptr ds:[_playerMobjRef]
+je    skip_vol_adjustment_use_norm_setp
+
+location_good_adjust_sound_for_mobj:
+
+
+xchg  bx, ax
+mov   ax, SIZEOF_MOBJ_POS_T
+mul   bx
+xchg  ax, bx
+mov   es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
+
+;    originX = originMobjPos->x;
+;    originY = originMobjPos->y;
+
+mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
+mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
+les   bx, dword ptr es:[bx + MOBJ_POS_T.mp_y + 0]
+mov   cx, es
+jmp   params_ready_for_sound_vol_adjust
+
+
+
+location_good_adjust_sound_for_sector:
+;mov   bx, si  ; bx already si
 mov   ax, SECTORS_SOUNDORGS_SEGMENT
-shl   bx, 2
 mov   es, ax
-mov   ax, word ptr es:[bx]
-mov   word ptr [bp - 0Ch], ax
-mov   ax, word ptr es:[bx + 2]
-mov   word ptr [bp - 0Eh], ax
-xor   ax, ax
-add   bx, 2
-mov   word ptr [bp - 0Ah], ax
-mov   word ptr [bp - 010h], ax
-label_56:
-mov   bx, word ptr [bp - 010h]
-mov   cx, word ptr [bp - 0Eh]
-mov   ax, word ptr [bp - 0Ah]
-mov   dx, word ptr [bp - 0Ch]
+SHIFT_MACRO shl   bx 2
+les   ax, dword ptr es:[bx + SECTOR_SOUNDORG_T.secso_soundorgX]
+mov   dx, es
+xor   cx, cx
+mov   bx, cx
+
+params_ready_for_sound_vol_adjust:
+
+push  cx ; bp - 4
+push  bx ; bp - 6
+push  dx ; bp - 8
+push  ax ; bp - 0Ah  ;store in reverse order for later cmpsw.
+
 call  S_AdjustSoundParamsVol_  ; todo inline only use?
-mov   byte ptr [bp - 4], al
+
 test  al, al
 je    exit_startsoundwithposition
-mov   bx, _playerMobj_pos
-les   dx, dword ptr ds:[bx]
-mov   bx, dx
-mov   ax, word ptr [bp - 0Ch]
-cmp   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
-jne   label_53
-mov   ax, word ptr [bp - 0Ah]
-cmp   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
-jne   label_53
-mov   bx, _playerMobj_pos
-les   dx, dword ptr ds:[bx]
-mov   bx, dx
-mov   ax, word ptr [bp - 0Eh]
-cmp   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-jne   label_53
-mov   ax, word ptr [bp - 010h]
-cmp   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-jne   label_53
-label_50:
-mov   byte ptr [bp - 2], NORM_SEP
-label_55:
+
+;		if ( originX.w == playerMobj_pos->x.w && originY.w == playerMobj_pos->y.w) {	
+; we will do this with cmpsw.
+
+push  di
+push  si
+
+lea   si, [bp - 0Ah]
+les   di, dword ptr ds:[_playerMobj_pos]
+; es:di points to MOBJ_POS_T.mp_x already
+mov   cx, 4
+repe  cmpsw
+
+pop   si ; restore
+pop   di ; restore
+
+jnz   calculate_separation
+
+; fall thru. use norm sep
+xchg  ax, cx ; volume
+skip_vol_adjustment_use_norm_setp:
+mov   ax, NORM_SEP
+done_with_vol_adjustment:
+
+; cx has volume
+; ax has sep
+xchg  ax, bx  ; bx has sep
+
 mov   dx, si
 mov   ax, di
-mov   cl, byte ptr [bp - 8]
-call  S_StopSound_
+call  S_StopSound_  ;  S_StopSound(origin, soundorg_secnum);
+
 mov   dx, si
-xor   ch, ch
-mov   ax, di
-mov   bx, cx
-call  S_getChannel_
-mov   byte ptr [bp - 6], al
+xchg  ax, di
+mov   di, bx  ; di has sep
+mov   bx, word ptr [bp - 2] ; recover sfx_id
+mov   si, bx ; copy sfx id to si
+
+call  S_getChannel_  ; cnum = S_getChannel(origin, soundorg_secnum, sfx_id);
 test  al, al
-jge   label_54
+jnge  exit_startsoundwithposition
+cbw   
+mov   dx, cx ; volume
+mov   bx, di ; sep
+xchg  ax, si ; si gets cnum. ax gets sfx_id
+
+call  I_StartSound_  ; rc = I_StartSound(sfx_id, volume, sep);
+cmp   al, -1
+je    exit_startsoundwithposition
+mov   al, byte ptr [bp - 6]
+sal   si, 1  ; x2
+mov   bx, si ; x2
+sal   si, 1  ; x2 + x4 = 6
+mov   byte ptr ds:[bx + si + _channels + CHANNEL_T.channel_handle], al
+
 exit_startsoundwithposition:
 LEAVE_MACRO 
 pop   di
 pop   si
 pop   cx
 retf  
-label_48:
-cmp   si, -1
-je    label_50
-jmp   label_47
-label_53:
-mov   bx, word ptr [bp - 010h]
-mov   cx, word ptr [bp - 0Eh]
-mov   ax, word ptr [bp - 0Ah]
-mov   dx, word ptr [bp - 0Ch]
+
+calculate_separation:
+mov   es, ax
+pop   ax ;volume
+pop   dx
+pop   bx
+pop   cx
+push  es
 
 call  S_AdjustSoundParamsSep_  ; todo inline only use?
-mov   byte ptr [bp - 2], al
-jmp   label_55
-label_52:
-imul  bx, ax, SIZEOF_MOBJ_POS_T
-mov   es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
-mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
-mov   word ptr [bp - 0Ah], ax
-mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
-mov   word ptr [bp - 0Ch], ax
-mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-mov   word ptr [bp - 010h], ax
-mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-mov   word ptr [bp - 0Eh], ax
-jmp   label_56
-label_54:
-mov   bl, byte ptr [bp - 2]
-mov   dl, byte ptr [bp - 4]
-mov   ax, cx
-xor   bh, bh
-xor   dh, dh
-call  I_StartSound_
-cbw  
-mov   dx, ax
-cmp   ax, -1
-je    exit_startsoundwithposition
-mov   al, byte ptr [bp - 6]
-cbw  
-mov   si, ax
-shl   si, 2
-sub   si, ax
-add   si, si
-mov   byte ptr ds:[si + _channels + CHANNEL_T.channel_handle], dl
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-retf  
+pop   cx ; volume
+jmp   done_with_vol_adjustment
+
+
 
 ENDP
 

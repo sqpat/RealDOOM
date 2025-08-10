@@ -133,22 +133,20 @@ struct sfxinfo_struct{
 #define FINE_SINE_ARGUMENT   finesine_segment
 #define FINE_COSINE_ARGUMENT finecosine_segment
 
-//todo recalculate after moving stuff around...
 
-// sfxdata              31CD:0000
-// sb_dmabuffer         31F6:0000
-// finesine             3216:0000
-// finecosine           3216:2000
-// events               3C16:0000
+// sfxdata              318D:0000
+// sb_dmabuffer         ????:0000
+// finesine             31D6:0000
+// events               3C0A:0000
 // flattranslation      3C4A:0000
-// texturetranslation   3C53:0000
-// textureheights       3C8A:0000
-// rndtable             3CA5:0000
-// subsector_lines      3CB5:0000
-// savegamestrings      3CF1:0000
-// base_lower_end       3D00:0000
+// texturetranslation   3C14:0000
+// textureheights       3C4A:0000
+// rndtable             3C65:0000
+// subsector_lines      3C75:0000
+// savegamestrings      ????:0000
+// base_lower_end       3CC0:0000
 //03CACh
-// done                 3D00:0000
+
 
 
 
@@ -168,30 +166,20 @@ struct sfxinfo_struct{
 
 
 
-//0xE000
+//0x2190..
 /*
-sectors              E000:0000
-vertexes             E15C:0000
-sides                E2F3:0000
-lines                E801:0000
-lineflagslist        E9BA:0000
-subsectors           EA29:0000
-nodes                EB18:0000
-node_children        ECF6:0000
-segs_linedefs        EDE5:0000
-segs_sides           EF45:0000 
-scantokey            EFF5:0000
-[empty]              EFFD:0000
-              
+sectors              2190:0000
+vertexes             22EC:0000
+sides                2483:0000
+lines                2991:0000
+lineflagslist        2B4A:0000
+subsectors           2BB9:0000
+nodes                2CA8:0000
+node_children        2E86:0000
+segs_linedefs        2F75:0000
+segs_sides           30D5:0000 
+scantokey            3185:0000
 
-48 bytes left
-
-SUBSECTORS_SEGMENT= 0EA37h
-SUBSECTOR_LINES_SEGMENT = 0EB26h
-NODES_SEGMENT = EB18
-NODE_CHILDREN_SEGMENT = ECF6
-SEG_LINEDEFS_SEGMENT = EDE5
-SEG_SIDES_SEGMENT = 0EF8Fh
 
 
             
@@ -200,31 +188,6 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 
 
 */
-
-
-// 0xB000 BLOCK
-// #define B000BlockOffset 0x14B0
-// #define B000Block 0xB14B0000
-
-
-
-
-
-//#define SIZE_D_SETUP            0x122A
- 
-
-
-// 2a6c
-
-// 0xCC00 BLOCK
-// going to leave c800 free for xt-ide, etc bios
-
-//#define CC00Block 0xC000C000
-
-
-//CC00 block (16k)
- 
-  
 
 
  // ALLOCATION DEFINITIONS: LOWER MEMORY BLOCKS 
@@ -314,42 +277,6 @@ SEG_SIDES_SEGMENT = 0EF8Fh
 // [empty]          9343:0000
 // FREEBYTES 2784 bytes free
  // todo disassembly the above and put it int he other physics code space code!
-
-/*
-#define getPainChance(a)      ((getPainChanceAddr)(a) )
-#define getRaiseState(a)      ((getRaiseStateAddr)(a) )
-#define getXDeathState(a)     ((getXDeathStateAddr)(a) )
-#define getMeleeState(a)      ((getMeleeStateAddr)(a) )
-#define getMobjMass(a)        ((getMobjMassAddr)(a) )
-#define getActiveSound(a)     ((getActiveSoundAddr)(a) )
-#define getPainSound(a)       ((getPainSoundAddr)(a) )
-#define getAttackSound(a)     ((getAttackSoundAddr)(a) )
-#define getDamage(a)          ((getDamageAddr)(a) )
-#define getSeeState(a)        ((getSeeStateAddr)(a) )
-#define getMissileState(a)    ((getMissileStateAddr)(a) )
-#define getDeathState(a)      ((getDeathStateAddr)(a) )
-#define getPainState(a)       ((getPainStateAddr)(a) )
-#define getSpawnHealth(a)     ((getSpawnHealthAddr)(a) )
-*/
-
-/*
-//todo update
-92D9:0034      getPainChance_
-92D9:00b2      getRaiseState_
-92D9:010a      getXDeathState_
-92D9:015a      getMeleeState_
-92D9:01b8      getMobjMass_
-92D9:0222      getActiveSound_
-92D9:0284      getPainSound_
-92D9:02b8      getAttackSound_
-92D9:02da      getDamage_
-92D9:0350      getSeeState_
-92D9:03f4      getMissileState_
-92D9:04a8      getDeathState_
-92D9:0586      getPainState_
-92D9:063c      getSpawnHealth_
-92D9:069c*     [empty] ??
-*/
 
  
 
@@ -483,30 +410,30 @@ this area used in many tasks including physics but not including render
 
 //0x7000 BLOCK PHYSICS
 
-#define size_lines_physics    (MAX_LINES_PHYSICS_SIZE)
-#define size_blockmaplump     ( MAX_BLOCKMAP_LUMPSIZE)
-#define size_states              (sizeof(state_t) * NUMSTATES)
+#define size_lines_physics         (MAX_LINES_PHYSICS_SIZE)
+#define size_blockmaplump          ( MAX_BLOCKMAP_LUMPSIZE)
+#define size_states                (sizeof(state_t) * NUMSTATES)
 #define size_sectors_soundorgs     (MAX_SECTORS_SOUNDORGS_SIZE)
 #define size_sector_soundtraversed (MAX_SECTORS_SOUNDTRAVERSED_SIZE)
-#define size_diskgraphicbytes (392)
+#define size_diskgraphicbytes      (392)
 
 
-#define lines_physics       ((line_physics_t __far*)       MAKE_FULL_SEGMENT(0x70000000, 0))
-#define blockmaplump        ((int16_t __far*)              MAKE_FULL_SEGMENT(lines_physics,         size_lines_physics))
-#define blockmaplump_plus4  ((int16_t __far*)              (((int32_t)blockmaplump) + 0x08))
-#define states              ((state_t __far*)              MAKE_FULL_SEGMENT(blockmaplump,           size_blockmaplump))  
-#define sectors_soundorgs   ((sector_soundorg_t __far* )   MAKE_FULL_SEGMENT(states,                 size_states ))
-#define sector_soundtraversed  ((int8_t __far*)            MAKE_FULL_SEGMENT(sectors_soundorgs,  size_sectors_soundorgs ))
-#define diskgraphicbytes      ((byte __far*)               MAKE_FULL_SEGMENT(sector_soundtraversed,  size_sector_soundtraversed ))
-#define physics_7000_end    ((uint8_t __far*)              MAKE_FULL_SEGMENT(diskgraphicbytes, size_diskgraphicbytes))
+#define lines_physics          ((line_physics_t __far*)       MAKE_FULL_SEGMENT(0x70000000, 0))
+#define blockmaplump           ((int16_t __far*)              MAKE_FULL_SEGMENT(lines_physics,         size_lines_physics))
+#define blockmaplump_plus4     ((int16_t __far*)              (((int32_t)blockmaplump) + 0x08))
+#define states                 ((state_t __far*)              MAKE_FULL_SEGMENT(blockmaplump,           size_blockmaplump))  
+#define sectors_soundorgs      ((sector_soundorg_t __far* )   MAKE_FULL_SEGMENT(states,                 size_states ))
+#define sector_soundtraversed  ((int8_t __far*)               MAKE_FULL_SEGMENT(sectors_soundorgs,      size_sectors_soundorgs ))
+#define diskgraphicbytes       ((byte __far*)                 MAKE_FULL_SEGMENT(sector_soundtraversed,  size_sector_soundtraversed ))
+#define physics_7000_end       ((uint8_t __far*)              MAKE_FULL_SEGMENT(diskgraphicbytes,       size_diskgraphicbytes))
 
-#define lines_physics_segment       ((segment_t) ((int32_t)lines_physics >> 16))
-#define blockmaplump_segment        ((segment_t) ((int32_t)blockmaplump >> 16))
-#define states_segment              ((segment_t) ((int32_t)states >> 16))
+#define lines_physics_segment         ((segment_t) ((int32_t)lines_physics >> 16))
+#define blockmaplump_segment          ((segment_t) ((int32_t)blockmaplump >> 16))
+#define states_segment                ((segment_t) ((int32_t)states >> 16))
 #define sectors_soundorgs_segment     ((segment_t) ((int32_t)sectors_soundorgs >> 16))
 #define sector_soundtraversed_segment ((segment_t) ((int32_t)sector_soundtraversed >> 16))
-#define diskgraphicbytes_segment    ((segment_t) ((int32_t)diskgraphicbytes >> 16))
-#define physics_7000_end_segment    ((segment_t) ((int32_t)physics_7000_end >> 16))
+#define diskgraphicbytes_segment      ((segment_t) ((int32_t)diskgraphicbytes >> 16))
+#define physics_7000_end_segment      ((segment_t) ((int32_t)physics_7000_end >> 16))
 
 /*
 lines_physics         7000:0000

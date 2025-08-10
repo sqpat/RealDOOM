@@ -2178,7 +2178,7 @@ int8_t __far SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
     // vol should be 0-127
 
     if (vol > 127){
-        I_Error("bad vol!");
+        I_Error("bad vol! %i %i %i", sfx_id, sep, vol);
     }
 
 

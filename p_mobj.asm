@@ -977,8 +977,8 @@ sub       ax, (_thinkerlist + THINKER_T.t_data)
 xor       dx, dx
 div       cx  ; get mobjref
 
-pop       cx  ;  store mobj in cx
-push      ax  ; store mobjref for later
+mov       cx, ax ; store mobjref for later
+
 
 IF COMPISA GE COMPILE_186
     imul  dx, ax, SIZEOF_MOBJ_POS_T
@@ -988,18 +988,19 @@ ELSE
     xchg  ax, dx
 ENDIF
 
-mov       ax, cx
+pop       ax ; restore mobj
 
 call  P_UnsetThingPosition_
 
-mov       ax, cx
+mov       ax, cx ; restore div result (mobjref)
+
 ;call      S_StopSoundMobjRef_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StopSoundMobjRef_addr
 
        
-pop       ax  ; restore div result (mobjref)
+xchg      ax, cx  ; use div result (mobjref)
 call      P_RemoveThinker_
 
 

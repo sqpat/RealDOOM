@@ -467,7 +467,7 @@ void __near M_SfxVol(int16_t choice){
         break;
     }
         
-    S_SetSfxVolume(sfxVolume << 3);
+    S_SetSfxVolume(sfxVolume);
 }
 
 void __near M_MusicVol(int16_t choice){
