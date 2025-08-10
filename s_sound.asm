@@ -808,7 +808,7 @@ test  al, al
 jne   update_sound_params
 
 mov   dx, di ; restore loop counters
-add   sp, 8  ; undo those pushes.
+add   sp, 8  ; undo those four pushes.
 jmp   do_stop_channel_and_iter
 
 update_sound_params:
@@ -853,6 +853,95 @@ les   bx, dword ptr es:[bx + MOBJ_POS_T.mp_y + 0]
 mov   cx, es
 
 jmp   origins_ready
+ENDP
+
+_sp_mus:			
+db	MUS_E3M4	; American	e4m1
+db	MUS_E3M2	; Romero	e4m2
+db	MUS_E3M3	; Shawn	    e4m3
+db	MUS_E1M5	; American	e4m4
+db	MUS_E2M7	; Tim 	    e4m5
+db	MUS_E2M4	; Romero	e4m6
+db	MUS_E2M6	; J.Andersone4m7 CHIRON.WAD
+db	MUS_E2M5	; Shawn	    e4m8
+db	MUS_E1M9    ; Tim		e4m9
+
+
+PROC    S_Start_ FAR
+PUBLIC  S_Start_
+
+push  dx
+push  si
+
+mov   si, OFFSET _channels
+xor   dx, dx
+mov   dh, byte ptr ds:[_numChannels]
+test  dh, dh
+je    exit_s_start
+
+loop_next_channel_s_start:
+mov   al, byte ptr ds:[si + CHANNEL_T.channel_sfx_id]
+test  al, al
+je    iter_next_channel_s_start
+cbw
+call  S_StopChannel_
+
+iter_next_channel_s_start:
+add   si, SIZEOF_CHANNEL_T
+inc   dx
+cmp   dl, dh
+jl    loop_next_channel_s_start
+
+xor   ax, ax
+mov   byte ptr ds:[_mus_paused], al
+mov   dh, byte ptr ds:[_gamemap]
+cmp   byte ptr ds:[_commercial], al
+
+jne   use_commercial_track
+mov   dl, byte ptr ds:[_gameepisode]
+cmp   dl, 4
+jl    use_episode_under_4
+
+; mnum = spmus[gamemap-1];
+mov   al, dh
+cbw
+dec   ax
+xchg  ax, si
+mov   al, byte ptr cs:[_sp_mus + si]
+
+jmp   do_changemusic_call
+
+use_episode_under_4:
+
+;	mnum = mus_e1m1 + (gameepisode-1)*9 + gamemap-1;
+
+mov   al, 9
+dec   dx    ; has gameepisode
+mul   dl
+add   al, dh
+add   al, (MUS_E1M1 - 1)
+
+jmp   do_changemusic_call
+use_commercial_track:
+;mnum = mus_runnin + gamemap - 1;
+mov   al, (MUS_RUNNIN - 1)
+add   al, dh
+
+
+do_changemusic_call:
+cbw
+;  S_ChangeMusic(mnum, true);
+mov   dx, 1
+call  S_ChangeMusic_
+
+
+exit_s_start:
+
+pop   si
+pop   dx
+
+retf
+
 ENDP
 
 

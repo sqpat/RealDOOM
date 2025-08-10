@@ -189,6 +189,9 @@ void __far S_StopChannel(int8_t cnum);
 // Kills playing sounds at start of level,
 //  determines music if any, changes music.
 //
+void __far S_Start(void);
+
+/*
 void __far S_Start(void) {
 
 
@@ -238,7 +241,7 @@ void __far S_Start(void) {
   
 
 }
-
+*/
 
 
 // bypass the colofs cache stuff, store just raw pixel data at texlocation. 
