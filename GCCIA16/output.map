@@ -1963,7 +1963,7 @@ END GROUP
                 0x00000000000001e5                S_StartSoundAtVolume
                 0x00000000000001ed                S_StartSoundFromRef
                 0x00000000000001ee                S_StartSound
-                0x00000000000001ef                S_StartSoundWithParams
+                0x00000000000001ef                S_StartSoundWithSecnum
                 0x00000000000001f0                S_UpdateSounds
                 0x00000000000001f1                S_Start
  .fartext.f.malloc.c.71312$

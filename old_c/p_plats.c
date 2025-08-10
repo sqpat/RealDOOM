@@ -59,7 +59,7 @@ void __near T_PlatRaise(plat_t __near* plat, THINKERREF platRef) {
 				res = T_MovePlaneFloorUp(FP_OFF(platsector),  plat->speed, plat->high, plat->crush);
 				if (plat->type == raiseAndChange || plat->type == raiseToNearestAndChange) {
 					if (!(leveltime.w & 7)) {
-						S_StartSoundWithParams(platsecnum, sfx_stnmov);
+						S_StartSoundWithSecnum(platsecnum, sfx_stnmov);
 					}
 				}
 	
@@ -67,12 +67,12 @@ void __near T_PlatRaise(plat_t __near* plat, THINKERREF platRef) {
 				if (res == floor_crushed && (!plat->crush)) {
 					plat->count = plat->wait;
 					plat->status = plat_down;
-					S_StartSoundWithParams(platsecnum, sfx_pstart);
+					S_StartSoundWithSecnum(platsecnum, sfx_pstart);
 				} else {
 					if (res == floor_pastdest) {
 						plat->count = plat->wait;
 						plat->status = plat_waiting;
-						S_StartSoundWithParams(platsecnum, sfx_pstop);
+						S_StartSoundWithSecnum(platsecnum, sfx_pstop);
 
 						switch(plat->type) {
 						  case blazeDWUS:
@@ -97,7 +97,7 @@ void __near T_PlatRaise(plat_t __near* plat, THINKERREF platRef) {
 				if (res == floor_pastdest) {
 					plat->count = plat->wait;
 					plat->status = plat_waiting;
-					S_StartSoundWithParams(platsecnum, sfx_pstop);
+					S_StartSoundWithSecnum(platsecnum, sfx_pstop);
 				}
 				break;
 	
@@ -107,7 +107,7 @@ void __near T_PlatRaise(plat_t __near* plat, THINKERREF platRef) {
 						plat->status = plat_up;
 					else
 						plat->status = plat_down;
-					S_StartSoundWithParams(platsecnum, sfx_pstart);
+					S_StartSoundWithSecnum(platsecnum, sfx_pstart);
 			  }
 		  case	plat_in_stasis:
 			  break;
@@ -177,7 +177,7 @@ int16_t __near EV_DoPlat (  uint8_t linetag, int16_t linefrontsecnum,plattype_e	
 				// NO MORE DAMAGE, IF APPLICABLE
 				(&sectors_physics[secnum])->special = 0;
 
-				S_StartSoundWithParams(secnum, sfx_stnmov);
+				S_StartSoundWithSecnum(secnum, sfx_stnmov);
 				break;
 
 			case raiseAndChange:
@@ -188,7 +188,7 @@ int16_t __near EV_DoPlat (  uint8_t linetag, int16_t linefrontsecnum,plattype_e	
 				plat->wait = 0;
 				plat->status = plat_up;
 
-				S_StartSoundWithParams(secnum, sfx_stnmov);
+				S_StartSoundWithSecnum(secnum, sfx_stnmov);
 				break;
 
 			case downWaitUpStay:
@@ -203,7 +203,7 @@ int16_t __near EV_DoPlat (  uint8_t linetag, int16_t linefrontsecnum,plattype_e	
 				plat->wait = 35 * PLATWAIT;
 				plat->status = plat_down;
 
-				S_StartSoundWithParams(secnum, sfx_pstart);
+				S_StartSoundWithSecnum(secnum, sfx_pstart);
 				break;
 
 			case blazeDWUS:
@@ -218,7 +218,7 @@ int16_t __near EV_DoPlat (  uint8_t linetag, int16_t linefrontsecnum,plattype_e	
 				plat->high = sectorfloorheight;
 				plat->wait = 35 * PLATWAIT;
 				plat->status = plat_down;
-				S_StartSoundWithParams(secnum, sfx_pstart);
+				S_StartSoundWithSecnum(secnum, sfx_pstart);
 				break;
 
 			case perpetualRaise:
@@ -240,7 +240,7 @@ int16_t __near EV_DoPlat (  uint8_t linetag, int16_t linefrontsecnum,plattype_e	
 				plat->wait = 35*PLATWAIT;
 				plat->status = P_Random()&1;
 
-				S_StartSoundWithParams(secnum, sfx_pstart);
+				S_StartSoundWithSecnum(secnum, sfx_pstart);
 				break;
 		}
 		P_AddActivePlat(platRef);

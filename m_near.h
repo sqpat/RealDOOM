@@ -378,7 +378,7 @@
 #define LINEFLAGSLIST_SEGMENT_PTR		(*((segment_t __near*)               (_NULL_OFFSET + 0x04D0)))
 #define currentThinkerListHead  		(*((int16_t __near*)                 (_NULL_OFFSET + 0x04D2)))
 
-#define S_StartSoundWithParams_addr     (*((uint32_t  __near*)             (_NULL_OFFSET + 0x04D4)))
+#define S_StartSoundWithSecnum_addr     (*((uint32_t  __near*)             (_NULL_OFFSET + 0x04D4)))
 #define G_SecretExitLevel_addr          (*((uint32_t  __near*)             (_NULL_OFFSET + 0x04D8)))
 #define AM_Stop_addr		            (*((uint32_t  __near*)             (_NULL_OFFSET + 0x04DC)))
 

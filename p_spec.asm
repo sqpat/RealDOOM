@@ -1378,7 +1378,7 @@ stosw      ; mov       word ptr es:[di], ax
 mov       dx, SFX_SWTCHN
 mov       ax, word ptr ds:[si + BUTTON_T.button_soundorg]
 
-call      dword ptr ds:[_S_StartSoundWithParams_addr]
+call      dword ptr ds:[_S_StartSoundWithSecnum_addr]
 
 mov       di, si
 xor       al, al

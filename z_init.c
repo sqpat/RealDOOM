@@ -821,7 +821,7 @@ void __near Z_LoadBinaries() {
 	W_CacheLumpNumDirectFragment_addr =	(uint32_t)(W_CacheLumpNumDirectFragment);
 	W_GetNumForName_addr =		 		(uint32_t)(W_GetNumForName);
 	S_StartSound_addr =		 			(uint32_t)(S_StartSound);
-	S_StartSoundWithParams_addr =		(uint32_t)(S_StartSoundWithParams);
+	S_StartSoundWithSecnum_addr =		(uint32_t)(S_StartSoundWithSecnum);
 	G_SecretExitLevel_addr =			(uint32_t)(G_SecretExitLevel);
 	AM_Stop_addr =						(uint32_t)(AM_Stop);
 	OutOfThinkers_addr =				(uint32_t)(OutOfThinkers);

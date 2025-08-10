@@ -145,7 +145,7 @@ xor   dx, dx
 mov   dl, byte ptr [bp - 2]
 mov   ax, word ptr ds:[_buttonlist + BUTTON_T.button_soundorg] ; jank. bug in original source?
 
-call  dword ptr ds:[_S_StartSoundWithParams_addr]
+call  dword ptr ds:[_S_StartSoundWithSecnum_addr]
 
 
 mov   si, cx

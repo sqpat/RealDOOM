@@ -266,7 +266,7 @@ test  byte ptr ds:[_leveltime], 7
 jne   dont_play_floor_sound
 mov   dx, SFX_STNMOV
 mov   ax, di
-call  dword ptr ds:[_S_StartSoundWithParams_addr]   
+call  dword ptr ds:[_S_StartSoundWithSecnum_addr]   
 dont_play_floor_sound:
 
 mov   ax, di
@@ -329,7 +329,7 @@ mov   dx, SFX_PSTOP
 call  P_RemoveThinker_
 xchg  ax, di
 
-call  dword ptr ds:[_S_StartSoundWithParams_addr]
+call  dword ptr ds:[_S_StartSoundWithSecnum_addr]
    
 exit_move_floor:
 LEAVE_MACRO 

@@ -576,7 +576,7 @@ jmp   label_45
 
 ENDP
 
-PROC    S_StartSoundWithPosition_ FAR
+PROC    S_StartSoundWithPosition_ NEAR
 PUBLIC  S_StartSoundWithPosition_
 
 ;void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t soundorg_secnum ) {
@@ -722,7 +722,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   cx
-retf  
+ret
 
 calculate_separation:
 mov   es, ax
@@ -743,31 +743,24 @@ ENDP
 PROC    S_StartSound_ FAR
 PUBLIC  S_StartSound_
 
-push  bx
 test  dl, dl
-jne   label_57
-pop   bx
-retf  
-label_57:
+je    exit_startsound_sfxid_0
+push  bx
 mov   bx, -1
-xor   dh, dh
 call  S_StartSoundWithPosition_
 pop   bx
+exit_startsound_sfxid_0:
 retf  
 
 ENDP
 
-PROC    S_StartSoundWithParams_ FAR
-PUBLIC  S_StartSoundWithParams_
+PROC    S_StartSoundWithSecnum_ FAR
+PUBLIC  S_StartSoundWithSecnum_
 
-push  bx
 test  dl, dl
-jne   label_58
-pop   bx
-retf  
-label_58:
-mov   bx, ax
-xor   dh, dh
+je    exit_startsound_sfxid_0
+push  bx
+xchg  ax, bx
 xor   ax, ax
 call  S_StartSoundWithPosition_
 pop   bx

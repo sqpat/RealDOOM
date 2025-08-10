@@ -514,7 +514,7 @@ void __far S_StartSound(mobj_t __near* mobj, sfxenum_t sfx_id) {
 
 }
 
-void __far S_StartSoundWithParams(int16_t soundorg_secnum, sfxenum_t sfx_id) {
+void __far S_StartSoundWithSecnum(int16_t soundorg_secnum, sfxenum_t sfx_id) {
 	if (sfx_id == 0) {
 		return;
 	}

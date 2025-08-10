@@ -339,7 +339,7 @@ _ems_backfill_page_order =           _NULL_OFFSET + 004B8h
 _LINEFLAGSLIST_SEGMENT_PTR =         _NULL_OFFSET + 004D0h
 _currentThinkerListHead = 			 _NULL_OFFSET + 004D2h
 
-_S_StartSoundWithParams_addr =       _NULL_OFFSET + 004D4h
+_S_StartSoundWithSecnum_addr =       _NULL_OFFSET + 004D4h
 _G_SecretExitLevel_addr =            _NULL_OFFSET + 004D8h
 _AM_Stop_addr =		                 _NULL_OFFSET + 004DCh
 

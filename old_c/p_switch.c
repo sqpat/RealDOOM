@@ -97,7 +97,7 @@ void __near P_ChangeSwitchTexture ( int16_t linenum, int16_t lineside0, uint8_t 
 	
     for (i = 0;i < numswitches*2;i++) {
 		if (switchlist[i] == texTop) {
-			S_StartSoundWithParams(buttonlist->soundorg, sound);
+			S_StartSoundWithSecnum(buttonlist->soundorg, sound);
 			sides[lineside0].toptexture = switchlist[i^1];
 
 			if (useAgain) {
@@ -107,7 +107,7 @@ void __near P_ChangeSwitchTexture ( int16_t linenum, int16_t lineside0, uint8_t 
 		}
 		else {
 			if (switchlist[i] == texMid) {
-				S_StartSoundWithParams(buttonlist->soundorg, sound);
+				S_StartSoundWithSecnum(buttonlist->soundorg, sound);
 				sides[lineside0].midtexture = switchlist[i^1];
 
 				if (useAgain) {
@@ -118,7 +118,7 @@ void __near P_ChangeSwitchTexture ( int16_t linenum, int16_t lineside0, uint8_t 
 			
 			} else {
 				if (switchlist[i] == texBot) {
-					S_StartSoundWithParams(buttonlist->soundorg, sound);
+					S_StartSoundWithSecnum(buttonlist->soundorg, sound);
 					sides[lineside0].bottomtexture = switchlist[i^1];
 
 					if (useAgain) {

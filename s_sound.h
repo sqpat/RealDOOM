@@ -67,7 +67,7 @@ void __far S_Start(void);
 //
 void __far S_StartSound (mobj_t __near*	origin, sfxenum_t	sound_id );
 
-void __far S_StartSoundWithParams(int16_t soundorg_secnum, sfxenum_t sound_id);
+void __far S_StartSoundWithSecnum(int16_t soundorg_secnum, sfxenum_t sound_id);
 
 
 

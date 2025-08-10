@@ -96,7 +96,7 @@ test        byte ptr ds:[_leveltime], 7
 jne         done_checking_level_time
 mov         dx, SFX_STNMOV
 mov         ax, di
-call        dword ptr ds:[_S_StartSoundWithParams_addr]
+call        dword ptr ds:[_S_StartSoundWithSecnum_addr]
 done_checking_level_time:
 mov         dx, SFX_PSTART  ; in case we play this platform sound
 xor         bx, bx ; clear bx flag. use bx flag to determine if its the branch that does a 2nd switch block later
@@ -141,7 +141,7 @@ mov         dx, SFX_PSTART
 mov         byte ptr ds:[si + PLAT_T.plat_status], cl
 set_status_play_sound_and_exit_t_platraise:
 xchg        ax, di
-call        dword ptr ds:[_S_StartSoundWithParams_addr]
+call        dword ptr ds:[_S_StartSoundWithSecnum_addr]
 platraise_switch_case_3:
 platraise_switch_case_default:
 done_with_platraise_switch_block:
@@ -346,7 +346,7 @@ mov         byte ptr ds:[bx + PLAT_T.plat_wait], PLATWAIT * 35
 mov         dx, SFX_PSTART
 done_with_ev_doplat_switchblock_play_sound:
 xchg        ax, cx
-call        dword ptr ds:[_S_StartSoundWithParams_addr]
+call        dword ptr ds:[_S_StartSoundWithSecnum_addr]
 
 done_with_ev_doplat_switchblock:
 SELFMODIFY_setplatref:

@@ -128,7 +128,7 @@ mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], bx
 
 call_sound_and_exit:
 mov   ax, di
-call  dword ptr ds:[_S_StartSoundWithParams_addr]
+call  dword ptr ds:[_S_StartSoundWithSecnum_addr]
 switch_case_verticaldoor_2_default:
 switch_case_verticaldoor_3_default:
 exit_t_verticaldoor_2:   
@@ -421,7 +421,7 @@ mov   word ptr ds:[bx + VLDOOR_T.vldoor_direction], -1
 set_secnum_and_play_sound_and_exit:
 xchg  ax, cx
 
-call  dword ptr ds:[_S_StartSoundWithParams_addr]
+call  dword ptr ds:[_S_StartSoundWithSecnum_addr]
 switch_block_ev_dodoor_case_doorraisein5mins:
 done_with_evdodoor_switch_block:
 
@@ -600,7 +600,7 @@ mov   dx, SFX_BDOPN
 do_play_door_sound:
 
 mov   ax, bx
-call  dword ptr ds:[_S_StartSoundWithParams_addr]
+call  dword ptr ds:[_S_StartSoundWithSecnum_addr]
    
 mov   ax, TF_VERTICALDOOR_HIGHBITS
 
