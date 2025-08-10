@@ -484,7 +484,7 @@ void __near M_MusicVol(int16_t choice){
         break;
     }
         
-    S_SetMusicVolume(musicVolume * 8);
+    S_SetMusicVolume(musicVolume);
 }
 
 

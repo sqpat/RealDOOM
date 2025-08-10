@@ -48,18 +48,18 @@ ENDP
 PROC    S_SetMusicVolume_ FAR
 PUBLIC  S_SetMusicVolume_
 
-push  bx
 mov   ah, al
-shl   ah, 3
+SHIFT_MACRO shl   ah 3
 mov   byte ptr ds:[_snd_MusicVolume], ah
 xor   ah, ah
 cmp   byte ptr ds:[_playingdriver+3], ah  ; segment high byte shouldnt be 0 if its set.
 je    exit_setmusicvolume
+push  bx
 les   bx, dword ptr ds:[_playingdriver]
 ; takes in ax, ah is 0...
 call  es:[bx + MUSIC_DRIVER_T.md_changesystemvolume_func]
-exit_setmusicvolume:
 pop   bx
+exit_setmusicvolume:
 retf  
 
 
@@ -127,7 +127,7 @@ PUBLIC  S_AdjustSoundParamsSep_
 
 
 
-push  cx
+push  cx ; params to R_PointToAngle2_
 push  bx
 push  dx
 push  ax
