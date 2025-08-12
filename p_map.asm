@@ -2910,7 +2910,7 @@ ret
 use_thru_wall:
 
 mov   ax, word ptr ds:[_playerMobj]
-mov   dx, SFX_NOWAY
+mov   dl, SFX_NOWAY
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;

@@ -1033,7 +1033,7 @@ mov   al, byte ptr ds:[_finale_laststage]
 cbw  
 cmp   bx, ax
 jle   draw_end0_patch
-mov   dx, 1
+mov   dl, SFX_PISTOL
 xor   ax, ax
 
 db 0FFh  ; lcall[addr]
@@ -1263,7 +1263,7 @@ xor   ah, ah
 db    09Ah
 dw    GETSEESTATEADDR, PHYSICS_HIGHCODE_SEGMENT
 mov   dl, al
-xor   dh, dh
+
 xor   ax, ax
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -1494,7 +1494,7 @@ jmp   selected_sfx
 
 selected_sfx:
 mov   dl, al
-xor   dh, dh
+
 xor   ax, ax
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -1624,8 +1624,8 @@ mov   ah, 0Bh  ; sizeof mobjinfo? todo constant
 mul   ah
 mov   bx, ax
 xor   ax, ax
-mov   dl, byte ptr ds:[bx + _mobjinfo + 3]
-xor   dh, dh
+mov   dl, byte ptr ds:[bx + _mobjinfo + MOBJINFO_T.mobjinfo_deathsound]
+
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr

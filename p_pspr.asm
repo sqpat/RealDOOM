@@ -75,7 +75,7 @@ mov   al, byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 mov   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], al
 jmp   check_for_chainsaw_pending
 rev_chainsaw_noise:
-mov   dx, SFX_SAWUP
+mov   dl, SFX_SAWUP
 mov   ax, word ptr ds:[_playerMobj]
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -292,7 +292,7 @@ cmp   byte ptr ds:[_player + PLAYER_T.player_readyweapon], WP_CHAINSAW
 jne   dont_do_chainsaw_sound
 cmp   word ptr ds:[si], S_SAW
 jne   dont_do_chainsaw_sound
-mov   dx, SFX_SAWIDL
+mov   dl, SFX_SAWIDL
 mov   ax, word ptr ds:[_playerMobj]
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -554,7 +554,7 @@ have_linetarget:
 ;		playerMobj_pos->angle.wu = R_PointToAngle2 (playerMobj_pos->x, playerMobj_pos->y, linetarget_pos->x, linetarget_pos->y);
 
 
-mov   dx, SFX_PUNCH
+mov   dl, SFX_PUNCH
 mov   ax, word ptr ds:[_playerMobj]
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -645,7 +645,7 @@ cmp   word ptr ds:[_linetarget], 0
 jne   have_linetarget_chainsaw
 
 
-mov   dx, SFX_SAWFUL
+mov   dl, SFX_SAWFUL
 mov   ax, word ptr ds:[_playerMobj]
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -655,7 +655,7 @@ ret
 
 
 have_linetarget_chainsaw:
-mov   dx, SFX_SAWHIT
+mov   dl, SFX_SAWHIT
 mov   ax, word ptr ds:[_playerMobj]
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -902,7 +902,7 @@ ENDP
 PROC A_FirePistol_ NEAR
 PUBLIC A_FirePistol_
 
-mov   dx, SFX_PISTOL
+mov   dl, SFX_PISTOL
 mov   ax, word ptr ds:[_playerMobj]
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -934,7 +934,7 @@ PROC A_FireShotgun_ NEAR
 PUBLIC A_FireShotgun_
 
 
-mov   dx, SFX_SHOTGN
+mov   dl, SFX_SHOTGN
 mov   ax, word ptr ds:[_playerMobj]
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -970,7 +970,7 @@ PUBLIC A_FireShotgun2_
 ;	S_StartSound(playerMobj, sfx_dshtgn);
 
 
-mov   dx, SFX_DSHTGN
+mov   dl, SFX_DSHTGN
 mov   ax, word ptr ds:[_playerMobj]
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -1064,7 +1064,7 @@ PROC A_FireCGun_ NEAR
 PUBLIC A_FireCGun_
 
 mov   bx, ax
-mov   dx, SFX_PISTOL
+mov   dl, SFX_PISTOL
 mov   ax, word ptr ds:[_playerMobj]
 
 db 0FFh  ; lcall[addr]
@@ -1126,7 +1126,7 @@ ENDP
 PROC A_OpenShotgun2_ NEAR
 PUBLIC A_OpenShotgun2_
 
-mov   dx, SFX_DBOPN
+mov   dl, SFX_DBOPN
 mov   ax, word ptr ds:[_playerMobj]
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -1138,7 +1138,7 @@ ENDP
 PROC A_LoadShotgun2_ NEAR
 PUBLIC A_LoadShotgun2_
 
-mov   dx, SFX_DBLOAD
+mov   dl, SFX_DBLOAD
 mov   ax, word ptr ds:[_playerMobj]
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -1151,7 +1151,7 @@ PROC A_CloseShotgun2_ NEAR
 PUBLIC A_CloseShotgun2_
 
 push  ax
-mov   dx, SFX_DBCLS
+mov   dl, SFX_DBCLS
 mov   ax, word ptr ds:[_playerMobj]
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -1301,7 +1301,7 @@ PROC A_BFGsound_ NEAR
 PUBLIC A_BFGsound_
 
 
-mov   dx, SFX_BFG
+mov   dl, SFX_BFG
 mov   ax, word ptr ds:[_playerMobj]
 db 0FFh  ; lcall[addr]
 db 01Eh  ;

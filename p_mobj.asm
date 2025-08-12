@@ -1965,7 +1965,7 @@ rcr   ax, 1
 
 mov   word ptr ds:[_player + PLAYER_T.player_deltaviewheight+0], ax
 mov   word ptr ds:[_player + PLAYER_T.player_deltaviewheight+2], dx
-mov   dx, SFX_OOF
+mov   dl, SFX_OOF
 mov   ax, si
 
 ;call  S_StartSound_
@@ -2053,17 +2053,12 @@ and   byte ptr es:[bx + MOBJ_POS_T.mp_flags2], (NOT MF_MISSILE)
 mov   al, SIZEOF_MOBJINFO_T
 mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
 
-xor   dx, dx
-mov   dl, byte ptr ds:[si + _mobjinfo+3] ; deathsound offset
 xchg  ax, si
+mov   dl, byte ptr ds:[si + _mobjinfo + MOBJINFO_T.mobjinfo_deathsound] ; deathsound offset
 
 test  dl, dl
-jne   do_deathsound
+je    dont_do_deathsound
 
-pop   di
-pop   si
-pop   dx
-ret
 do_deathsound:
 ; ax got si earlier
 
@@ -2073,6 +2068,7 @@ db 01Eh  ;
 dw _S_StartSound_addr
 
 
+dont_do_deathsound:
 pop   di
 pop   si
 pop   dx
@@ -2207,7 +2203,7 @@ push  si
 
 call  P_SpawnMobj_
 
-mov   dx, SFX_TELEPT
+mov   dl, SFX_TELEPT
 mov   ax, word ptr ds:[_setStateReturn]
 mov   cx, word ptr [bp - 0Eh]
 ;call  S_StartSound_
@@ -2245,7 +2241,7 @@ mov   bx, ax
 
 call  P_SpawnMobj_
 
-mov   dx, SFX_TELEPT
+mov   dl, SFX_TELEPT
 mov   ax, word ptr ds:[_setStateReturn]
 mov   bx, word ptr [bp - 2]
 
@@ -2503,7 +2499,6 @@ test  al, al
 je    no_see_sound
 mov   dl, al
 mov   ax, di
-xor   dh, dh
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -2833,7 +2828,6 @@ je     no_see_sound_b
 
 mov    dl, al
 mov    ax, di
-xor    dh, dh
 
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]

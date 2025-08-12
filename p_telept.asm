@@ -264,7 +264,7 @@ pop   bx
 pop   cx
 
 call  P_SpawnMobj_
-mov   dx, SFX_TELEPT
+mov   dl, SFX_TELEPT
 mov   ax, word ptr ds:[_setStateReturn]
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]
@@ -326,7 +326,7 @@ pop   ds ; restore ds
 pop   bx
 pop   cx ; cx/bx ready
 call  P_SpawnMobj_
-mov   dx, SFX_TELEPT
+mov   dl, SFX_TELEPT
 mov   ax, word ptr ds:[_setStateReturn]
 ;call  S_StartSound_
 db 0FFh  ; lcall[addr]

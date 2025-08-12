@@ -289,7 +289,7 @@ jne   switch_block_fall_thru
 cmp   byte ptr ds:[_player + PLAYER_T.player_cards + bx + 3], bh  ; skull
 jne   switch_block_fall_thru
 xchg  ax, dx  ; ax gets dx
-mov   dx, SFX_OOF
+mov   dl, SFX_OOF
 add   bl, PD_BLUEO
 mov   word ptr ds:[_player + PLAYER_T.player_message], bx
 
@@ -523,7 +523,7 @@ jne   done_with_verticaldoor_switch_block
 cmp   byte ptr ds:[_player + PLAYER_T.player_cards + bx], bh 
 jne   done_with_verticaldoor_switch_block
 
-mov   dx, SFX_OOF
+mov   dl, SFX_OOF
 add   bl, PD_BLUEK
 mov   word ptr ds:[_player + PLAYER_T.player_message], bx
 

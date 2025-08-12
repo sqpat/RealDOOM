@@ -1285,7 +1285,7 @@ mov   ax, word ptr [bx + 0Ah]
 mov   cx, TICRATE
 cwd   
 idiv  cx
-mov   dx, SFX_BAREXP
+mov   dl, SFX_BAREXP
 mov   word ptr cs:[_cnt_par - OFFSET WI_STARTMARKER_], ax
 xor   ax, ax
 db 0FFh  ; lcall[addr]
@@ -1312,7 +1312,7 @@ jne   sp_state_not_2
 add   word ptr cs:[_cnt_kills - OFFSET WI_STARTMARKER_], ax
 test  byte ptr cs:[_bcnt - OFFSET WI_STARTMARKER_], 3
 jne   do_update_kills
-mov   dx, SFX_PISTOL
+mov   dl, SFX_PISTOL
 xor   ax, ax
 
 db 0FFh  ; lcall[addr]
@@ -1332,7 +1332,7 @@ jmp   play_barexp_sfx_inc_state_exit
 
 
 play_sgcock_sfx:
-mov   dx, SFX_SGCOCK
+mov   dl, SFX_SGCOCK
 xor   ax, ax
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -1362,7 +1362,7 @@ jne   sp_state_not_4
 add   word ptr cs:[_cnt_items - OFFSET WI_STARTMARKER_], 2
 test  byte ptr cs:[_bcnt - OFFSET WI_STARTMARKER_], 3
 jne   do_update_items
-mov   dx, sfx_pistol
+mov   dl, sfx_pistol
 xor   ax, ax
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -1378,7 +1378,7 @@ jg    exit_wi_updatestats_2
 mov   word ptr cs:[_cnt_items - OFFSET WI_STARTMARKER_], ax
 play_barexp_sfx_inc_state_exit:
 
-mov   dx, SFX_BAREXP
+mov   dl, SFX_BAREXP
 xor   ax, ax
 
 db 0FFh  ; lcall[addr]
@@ -1401,7 +1401,7 @@ jne   sp_state_not_6
 add   word ptr cs:[_cnt_secret - OFFSET WI_STARTMARKER_], 2
 test  byte ptr cs:[_bcnt - OFFSET WI_STARTMARKER_], 3
 jne   do_update_secrets
-mov   dx, SFX_PISTOL
+mov   dl, SFX_PISTOL
 xor   ax, ax
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -1425,7 +1425,7 @@ cmp   ax, 8
 jne   sp_state_not_8
 test  byte ptr cs:[_bcnt - OFFSET WI_STARTMARKER_], 3
 jne   dont_play_pistol_sfx_4
-mov   dx, SFX_PISTOL
+mov   dl, SFX_PISTOL
 xor   ax, ax
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -1451,7 +1451,7 @@ mov   word ptr cs:[_cnt_par - OFFSET WI_STARTMARKER_], ax
 mov   ax, word ptr cs:[_cnt_time - OFFSET WI_STARTMARKER_]
 cmp   ax, word ptr cs:[_plrs+7 - OFFSET WI_STARTMARKER_]
 jl    jump_to_exit_wi_updatestats_3
-mov   dx, SFX_BAREXP
+mov   dl, SFX_BAREXP
 xor   ax, ax
 
 db 0FFh  ; lcall[addr]

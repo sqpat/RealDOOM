@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/10 09:07:12
+Created on:       25/08/11 20:09:12
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -618,9 +618,9 @@ Module: d_int.obj(d_int.ASM)
 02e9:5b3d      locallib_int86_10_
 Module: math.obj(math.ASM)
 02e9:5c33      FixedMulTrigNoShift_
+02e9:5edd      FastDiv32u16u_
 02e9:5e6f      FixedDiv_
 02e9:5d0f      FastMul16u32u_
-02e9:5edd      FastDiv32u16u_
 02e9:5c7e*     FixedMulTrig16_
 02e9:5d24*     div48_32_
 02e9:5fa2*     div48_32_whole_
@@ -650,8 +650,8 @@ Module: main.obj(main.ASM)
 02e9:6264      I_KeyboardISR_
 02e9:6d24      M_ScanTranslateDefaults_
 02e9:6565      G_ResetGameKeys_
-02e9:68dc*     CopyString13_
 02e9:659c      G_BuildTiccmd_
+02e9:68dc*     CopyString13_
 02e9:61a7      cht_CheckCheat_
 02e9:6209      cht_GetParam_
 02e9:6d59      M_SaveDefaults_
@@ -810,8 +810,8 @@ Module: z_zone.obj(z_zone.ASM)
 0bb8:2ce8      Z_QuickMapUnmapAll_
 0bb8:2ab1      Z_QuickMapRender_9000To6000_
 0bb8:29d1      Z_QuickMapWADPageFrame_
-0bb8:2c4e      Z_QuickMapWipe_
 0bb8:2b7c      Z_QuickMapRenderPlanes_
+0bb8:2c4e      Z_QuickMapWipe_
 0bb8:29b2      Z_QuickMapSFXPageFrame_
 0bb8:2add      Z_QuickMapStatus_
 0bb8:2a42      Z_QuickMapRender_
@@ -1091,4 +1091,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  000138b0 (80048.)
 Entry point address: 0bb8:37f6
-Link time: 00:00.65
+Link time: 00:00.19
