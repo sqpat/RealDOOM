@@ -2493,7 +2493,7 @@ mul   byte ptr [bp + 8]   ; type
 mov   di, word ptr ds:[_setStateReturn]
 mov   bx, ax
 
-mov   al, byte ptr ds:[bx + _mobjInfo + 2]  ; seesound
+mov   al, byte ptr ds:[bx + _mobjInfo + MOBJINFO_T.mobjinfo_seesound]  ; seesound
 
 test  al, al
 je    no_see_sound
@@ -2821,7 +2821,7 @@ mul    byte ptr [bp - 2]
 mov    di, word ptr ds:[_setStateReturn]
 mov    bx, ax
 
-mov    al, byte ptr ds:[bx + _mobjinfo + 2]
+mov    al, byte ptr ds:[bx + _mobjinfo + MOBJINFO_T.mobjinfo_seesound]
 
 test   al, al
 je     no_see_sound_b
