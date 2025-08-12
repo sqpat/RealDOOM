@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/11 20:09:12
+Created on:       25/08/11 22:48:30
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -56,7 +56,7 @@ r_setup_TEXT           CODE           AUTO           02e9:73b0       0000046c
 st_setup_TEXT          CODE           AUTO           02e9:7820       00000207
 hu_setup_TEXT          CODE           AUTO           02e9:7a30       000000d6
 p_setup_TEXT           CODE           AUTO           02e9:7b10       000011ee
-S_SOUND_TEXT           CODE           AUTO           0bb8:000e       0000045b
+S_SOUND_TEXT           CODE           AUTO           0bb8:000e       0000045d
 s_sbsfx_TEXT           CODE           AUTO           0bb8:0470       0000180d
 R_MAIN_TEXT            CODE           AUTO           0bb8:1c7e       000003dc
 w_wad_TEXT             CODE           AUTO           0bb8:2060       0000030c
@@ -618,9 +618,9 @@ Module: d_int.obj(d_int.ASM)
 02e9:5b3d      locallib_int86_10_
 Module: math.obj(math.ASM)
 02e9:5c33      FixedMulTrigNoShift_
-02e9:5edd      FastDiv32u16u_
 02e9:5e6f      FixedDiv_
 02e9:5d0f      FastMul16u32u_
+02e9:5edd      FastDiv32u16u_
 02e9:5c7e*     FixedMulTrig16_
 02e9:5d24*     div48_32_
 02e9:5fa2*     div48_32_whole_
@@ -691,25 +691,25 @@ Module: p_setup.obj(C:\REALDOOM\p_setup.c)
 02e9:8a22+     Z_FreeConventionalAllocations_
 02e9:8ce2*     PSetupEndFunc_
 Module: s_sound.obj(s_sound.ASM)
-0bb8:0409      S_Start_
-0bb8:0179      S_SetSfxVolume_
+0bb8:040b      S_Start_
+0bb8:017b      S_SetSfxVolume_
 0bb8:000e      S_SetMusicVolume_
-0bb8:01d3*     S_StopSound_
+0bb8:01d5*     S_StopSound_
 0bb8:0035      S_StartMusic_
-0bb8:0358      S_StartSound_
+0bb8:035a      S_StartSound_
 0bb8:002d      S_ChangeMusic_
 0bb8:003e*     S_StopChannel_
-0bb8:021d*     S_getChannel_
-0bb8:00d1*     S_AdjustSoundParamsVol_
-0bb8:0469*     S_SOUND_ENDMARKER_
-0bb8:0218      S_StopSoundMobjRef_
-0bb8:0365      S_StartSoundWithSecnum_
+0bb8:021f*     S_getChannel_
+0bb8:00d3*     S_AdjustSoundParamsVol_
+0bb8:046b*     S_SOUND_ENDMARKER_
+0bb8:021a      S_StopSoundMobjRef_
+0bb8:0367      S_StartSoundWithSecnum_
 0bb8:006b*     S_AdjustSoundParamsSep_
-0bb8:0294*     S_StartSoundWithPosition_
-0bb8:0372      S_UpdateSounds_
-0bb8:01a1      S_PauseSound_
+0bb8:0296*     S_StartSoundWithPosition_
+0bb8:0374      S_UpdateSounds_
+0bb8:01a3      S_PauseSound_
 0bb8:000e*     S_SOUND_STARTMARKER_
-0bb8:01ba      S_ResumeSound_
+0bb8:01bc      S_ResumeSound_
 Module: s_sbsfx.obj(C:\REALDOOM\s_sbsfx.c)
 10df:2060+     _sfxcache_nodes
 10df:2080*     _sfx_page_multipage_count

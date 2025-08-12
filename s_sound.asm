@@ -174,6 +174,7 @@ done_with_angle_adjustment:
 ; fine angle
 sar   dx, 1
 and   dx, 0FFFCh
+mov   bx, dx
 
 mov   ax, FINESINE_SEGMENT
 mov   es, ax
