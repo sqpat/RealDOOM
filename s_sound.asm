@@ -1138,12 +1138,17 @@ jmp     setup_mus_driver
 setup_mpu_mus_driver_2:
 setup_mpu_mus_driver_3:
 mov     bl, MUS_DRIVER_TYPE_MPU401
-jmp     get_midi_port
+
+mov     si, word ptr ds:[_snd_Mport]
+test    si, si
+jne     setup_mus_driver
+mov     si, MPU401PORT
+jmp     setup_mus_driver ; fall thru
 
 setup_mpu_mus_driver:
 mov     bl, MUS_DRIVER_TYPE_SBMIDI
-get_midi_port:
-mov     si, word ptr ds:[_snd_Mport]
+
+mov     si, word ptr ds:[_snd_SBport]
 test    si, si
 jne     setup_mus_driver
 mov     si, SBMIDIPORT
