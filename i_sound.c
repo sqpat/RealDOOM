@@ -35,6 +35,7 @@
 #include "m_near.h"
 #include "sc_music.h"
   
+void near I_StartupTimer(void);
 
 
 
@@ -42,13 +43,14 @@
 // I_StartupTimer
 //
 
-
+/*
 void I_StartupTimer(void) {
 	DEBUG_PRINT("I_StartupTimer()\n");
 	// installs master timer.  Must be done before StartupTimer()!
 	TS_ScheduleMainTask();
 	TS_Dispatch();
 }
+*/
 /*
 void I_PauseSong() {
     playingstate = ST_PAUSED;

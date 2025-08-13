@@ -33,6 +33,9 @@ EXTRN fopen_:PROC
 EXTRN fgetc_:PROC
 EXTRN fputc_:PROC
 EXTRN fclose_:PROC
+EXTRN TS_Dispatch_:PROC
+EXTRN TS_ScheduleMainTask_:PROC
+EXTRN DEBUG_PRINT_:PROC
 ; todo only include if necessary via flags...
 ;EXTRN DEBUG_PRINT_:PROC
 
@@ -2288,5 +2291,23 @@ POPA_NO_AX_OR_BP_MACRO
 ret 
 
 ENDP
+
+_startuptimer_string:
+db "I_StartupTimer()", 0Dh, 0Ah, 0
+
+PROC I_StartupTimer_    NEAR
+PUBLIC I_StartupTimer_
+
+push     cs
+mov      ax, OFFSET _startuptimer_string
+push     ax
+call     DEBUG_PRINT_
+add      sp, 4
+call     TS_ScheduleMainTask_
+call     TS_Dispatch_
+ret 
+ENDP
+
+
 
 END
