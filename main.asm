@@ -69,8 +69,6 @@ EXTRN _turnheld:BYTE
 EXTRN _sidemove:BYTE
 EXTRN _forwardmove:WORD
 EXTRN _savegameslot:BYTE
-EXTRN _sendsave:BYTE
-EXTRN _sendpause:BYTE
 
 EXTRN _myargc:WORD
 EXTRN _myargv:BYTE

@@ -443,8 +443,6 @@ uint8_t				usegamma;
 
  
  
-boolean         	sendpause;              // send a pause event next tic 
-boolean         	sendsave;               // send a save event next tic 
 boolean         	usergame;               // ok to save / end game 
  
 boolean         	timingdemo;             // if true, exit with report on completion 
@@ -1253,8 +1251,6 @@ channel_t	channels[MAX_SFX_CHANNELS];
 // Internal default is max out of 0-15.
 
 
-// whether songs are mus_paused
-boolean		mus_paused;	
 
 
 

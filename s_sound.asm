@@ -27,8 +27,6 @@ EXTRN FastDiv3216u_:FAR
 EXTRN S_InitSFXCache_:FAR
 EXTRN I_UpdateSoundParams_:FAR
 EXTRN I_StartSound_:FAR
-EXTRN I_PauseSong_:FAR
-EXTRN I_ResumeSong_:FAR
 
 .DATA
 
@@ -37,7 +35,6 @@ EXTRN _numChannels:BYTE
 EXTRN _channels:WORD
 EXTRN _snd_SfxVolume:BYTE
 EXTRN _sb_voicelist:WORD
-EXTRN _mus_paused:BYTE
 
 .CODE
 
@@ -359,12 +356,19 @@ ENDP
 PROC    S_PauseSound_ FAR
 PUBLIC  S_PauseSound_
 
-
-cmp   byte ptr ds:[_mus_playing], 0
+xor   ax, ax
+cmp   byte ptr ds:[_mus_playing], al ; 0
 je    exit_pause_sound
-cmp   byte ptr ds:[_mus_paused], 0  ; todo put these adjacent. use a single word check
+cmp   byte ptr ds:[_mus_paused], al  ; todo put these adjacent. use a single word check
 jne   exit_pause_sound
-call  I_PauseSong_
+
+mov   byte ptr ds:[_playingstate], ST_PAUSED
+cmp   byte ptr ds:[_playingdriver+3], al  ; segment high byte shouldnt be 0 if its set.
+je    exit_pause_sound
+push  bx
+les   bx, dword ptr ds:[_playingdriver]
+call  es:[bx + MUSIC_DRIVER_T.md_pausemusic_func]
+pop   bx
 mov   byte ptr ds:[_mus_paused], 1
 exit_pause_sound:
 retf  
@@ -374,12 +378,21 @@ ENDP
 PROC    S_ResumeSound_ FAR
 PUBLIC  S_ResumeSound_
 
-cmp   byte ptr ds:[_mus_playing], 0
+xor   ax, ax
+cmp   byte ptr ds:[_mus_playing], al
 je    exit_resume_sound
-cmp   byte ptr ds:[_mus_paused], 0    ; todo put these adjacent. use a single word check
+cmp   byte ptr ds:[_mus_paused], al 
 je    exit_resume_sound
-call  I_ResumeSong_
-mov   byte ptr ds:[_mus_paused], 0
+mov   byte ptr ds:[_playingstate], ST_PLAYING
+
+cmp   byte ptr ds:[_playingdriver+3], al  ; segment high byte shouldnt be 0 if its set.
+je    exit_pause_sound
+push  bx
+les   bx, dword ptr ds:[_playingdriver]
+call  es:[bx + MUSIC_DRIVER_T.md_resumemusic_func]
+pop bx
+
+mov   byte ptr ds:[_mus_paused], al ; 0
 exit_resume_sound:
 retf  
 

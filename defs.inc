@@ -309,7 +309,11 @@ _fixedcolormap = 					_NULL_OFFSET + 002BFh
 
 _FixedMul_addr =               		 _NULL_OFFSET + 002C0h
 _FixedDiv_addr =                     _NULL_OFFSET + 002C4h
-;_P_DamageMobj_addr =                 _NULL_OFFSET + 002C8h
+_mus_playing =    			      	 _NULL_OFFSET + 002C8h
+_mus_paused =    			      	 _NULL_OFFSET + 002C9h
+_sendpause =    			      	 _NULL_OFFSET + 002CAh
+_sendsave =    			      	 	_NULL_OFFSET + 002CBh
+
 _R_GetCompositeTexture_addr =        _NULL_OFFSET + 002CCh
 
  
@@ -416,7 +420,7 @@ _currentsong_start_offset =          _NULL_OFFSET + 00618h
 _currentsong_playing_offset =        _NULL_OFFSET + 0061Ah
 _currentsong_ticks_to_process =      _NULL_OFFSET + 0061Ch
 _loops_enabled =    			     _NULL_OFFSET + 0061Eh
-_mus_playing =    			      	 _NULL_OFFSET + 0061Fh
+; 61F unused
 _Z_QuickMapMusicPageFrame_addr = 	 _NULL_OFFSET + 00620h
 
 _sightzstart =				         _NULL_OFFSET + 00624h

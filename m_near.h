@@ -345,6 +345,14 @@
 #define FixedMul_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C0)))
 #define FixedDiv_addr	                (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C4)))
 // #define P_DamageMobj_addr             	(*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C8)))
+
+#define mus_playing    			      	  (*((int8_t __near*)                (_NULL_OFFSET + 0x02C8)))
+#define mus_paused    			      	  (*((int8_t __near*)                (_NULL_OFFSET + 0x02C9)))
+#define sendpause    			      	  (*((int8_t __near*)                (_NULL_OFFSET + 0x02CA)))
+#define sendsave    			      	  (*((int8_t __near*)                (_NULL_OFFSET + 0x02CB)))
+
+// 2ca, 2cb unused
+
 #define R_GetCompositeTexture_addr 	    (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02CC)))
 
 
@@ -457,7 +465,7 @@
 #define currentsong_playing_offset        (*((uint16_t __near*)              (_NULL_OFFSET + 0x061A)))
 #define currentsong_ticks_to_process      (*((int16_t __near*)               (_NULL_OFFSET + 0x061C)))
 #define loops_enabled    			      (*((int8_t __near*)                (_NULL_OFFSET + 0x061E)))
-#define mus_playing    			      	  (*((int8_t __near*)                (_NULL_OFFSET + 0x061F)))
+// 61f unused
 #define Z_QuickMapMusicPageFrame_addr     (*((uint32_t __near*)              (_NULL_OFFSET + 0x0620)))
 
 #define sightzstart					      (*((fixed_t __near*)         		 (_NULL_OFFSET + 0x0624)))
@@ -865,8 +873,6 @@ extern uint8_t	usegamma;
 
  
 
-extern boolean            sendpause;              // send a pause event next tic 
-extern boolean            sendsave;               // send a save event next tic 
 extern boolean         	  usergame;               // ok to save / end game 
 extern boolean         	  timingdemo;             // if true, exit with report on completion 
 extern boolean         	  noblit;                 // for comparative timing purposes 
@@ -1371,7 +1377,6 @@ extern uint8_t sfx_priority[];
 
 
 extern channel_t	channels[MAX_SFX_CHANNELS];
-extern boolean		mus_paused;	
 
 //extern uint16_t shift4lookup[256];
 

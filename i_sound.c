@@ -49,7 +49,7 @@ void I_StartupTimer(void) {
 	TS_ScheduleMainTask();
 	TS_Dispatch();
 }
-
+/*
 void I_PauseSong() {
     playingstate = ST_PAUSED;
     if (playingdriver){
@@ -63,6 +63,7 @@ void I_ResumeSong() {
         playingdriver->resumeMusic();
     }
 }
+*/
 
 // void I_SetSfxVolume(uint8_t volume) {
 //     snd_SfxVolume = volume;
