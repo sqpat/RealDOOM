@@ -19,12 +19,12 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN I_SoundIsPlaying_:FAR
+EXTRN SFX_Playing_:FAR
 EXTRN R_PointToAngle2_:FAR
 EXTRN FastMul16u32u_:FAR
 EXTRN FastDiv3216u_:FAR
 EXTRN S_InitSFXCache_:FAR
-EXTRN I_UpdateSoundParams_:FAR
+EXTRN SFX_SetOrigin_:FAR
 EXTRN SFX_PlayPatch_:FAR
 EXTRN SFX_StopPatch_:FAR
 
@@ -114,7 +114,7 @@ cmp   byte ptr ds:[si + CHANNEL_T.channel_sfx_id], ah ; 0 or SFX_NONE
 je    exit_stop_channel
 mov   al, byte ptr ds:[si + CHANNEL_T.channel_handle]
 
-call  I_SoundIsPlaying_  ; todo stc/clc
+call  SFX_Playing_  ; todo stc/clc
 test  al, al
 je    dont_stop_sound
 
@@ -852,7 +852,7 @@ loop_next_channel_updatesounds:
 mov   cl, byte ptr ds:[si + CHANNEL_T.channel_sfx_id]
 test  cl, cl
 je    iter_next_channel_updatesounds
-call  I_SoundIsPlaying_
+call  SFX_Playing_
 test  al, al
 jne   handle_position_update
 do_stop_channel_and_iter:
@@ -900,10 +900,10 @@ pop   cx
 push  es
 call  S_AdjustSoundParamsSep_
 
-xchg  ax, cx
-pop   dx
+xchg  ax, dx
+pop   bx
 mov   al, byte ptr ds:[si + CHANNEL_T.channel_handle]
-call  I_UpdateSoundParams_
+call  SFX_SetOrigin_
 
 mov   dx, di ; restore loop counters
 

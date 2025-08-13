@@ -228,14 +228,14 @@ void I_StopSound(int8_t handle) {
     
 }
 
-*/
 
 
 boolean I_SoundIsPlaying(int8_t handle) {
     return SFX_Playing(handle);
 }
 
-void I_UpdateSoundParams(int8_t handle, uint8_t vol, uint8_t sep) {
+
+void I_UpdateSoundParams(int8_t handle, uint8_t sep, uint8_t vol) {
     SFX_SetOrigin(handle, sep, vol);
 }
 
@@ -245,7 +245,6 @@ void I_UpdateSoundParams(int8_t handle, uint8_t vol, uint8_t sep) {
 
 int16_t __far M_CheckParm (int8_t *check);
 
-/*
 
 void I_sndArbitrateCards(void) {
 

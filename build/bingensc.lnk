@@ -26,7 +26,6 @@ NEWSEGMENT
 file d_main.obj
 file i_quit.obj
 file i_ibm.obj
-file i_sound.obj
 file sm_load.obj
 file bingen.obj
 file d_net.obj

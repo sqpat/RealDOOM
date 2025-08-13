@@ -50,7 +50,6 @@ GLOBOBJS = &
  i_quit.obj &
  i_main.obj &
  i_ibm.obj &
- i_sound.obj &
  d_init.obj &
  d_main.obj &
  d_net.obj &
