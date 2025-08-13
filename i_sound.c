@@ -172,7 +172,7 @@ int16_t I_LoadSong(uint16_t lump) {
 // }
 
 
-
+/*
 int8_t I_StartSound(sfxenum_t sfx_id,  uint8_t vol, uint8_t sep) {
     // hacks out certain PC sounds
     // if (snd_SfxDevice == snd_PC
@@ -213,6 +213,7 @@ int8_t I_StartSound(sfxenum_t sfx_id,  uint8_t vol, uint8_t sep) {
 
     
 }
+*/
 
 void I_StopSound(int8_t handle) {
     

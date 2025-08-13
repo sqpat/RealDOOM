@@ -356,7 +356,10 @@ _LINES_PHYSICS_SEGMENT_PTR =         _NULL_OFFSET + 00532h
 
 _HU_Start_addr = 			 	 	 _NULL_OFFSET + 00534h
 _ST_Start_addr = 			 	 	 _NULL_OFFSET + 00538h
-;_P_RemoveThinker_addr = 			 _NULL_OFFSET + 0053Ch
+
+_pcspeaker_currentoffset = 			 _NULL_OFFSET + 0053Ch
+_pcspeaker_endoffset = 			 	 _NULL_OFFSET + 0053Eh
+
 _G_PlayerReborn_addr =	 	 		 _NULL_OFFSET + 00540h
 _FixedMulTrigSpeedNoShift_addr =	 _NULL_OFFSET + 00544h
 _FixedMulTrigSpeed_addr =			 _NULL_OFFSET + 00548h

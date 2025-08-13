@@ -26,7 +26,7 @@ EXTRN FastMul16u32u_:FAR
 EXTRN FastDiv3216u_:FAR
 EXTRN S_InitSFXCache_:FAR
 EXTRN I_UpdateSoundParams_:FAR
-EXTRN I_StartSound_:FAR
+EXTRN SFX_PlayPatch_:FAR
 
 .DATA
 
@@ -578,6 +578,55 @@ jmp   exit_s_getchannel
 
 ENDP
 
+; int8_t I_StartSound(sfxenum_t sfx_id, uint8_t sep, uint8_t vol) {
+
+PROC    I_StartSound_ NEAR
+PUBLIC  I_StartSound_
+
+cmp   byte ptr ds:[_snd_SfxDevice], SND_PC
+je    handle_pc_speaker_sound
+jb    no_sound
+; fallthru to sb sound
+
+
+call  SFX_PlayPatch_
+ret
+
+
+handle_pc_speaker_sound:
+
+cmp   al, SFX_POPAIN
+je    no_sound
+cmp   al, SFX_SAWIDL
+je    no_sound
+cmp   al, SFX_DMPAIN
+je    no_sound
+cmp   al, SFX_POSACT
+jb    do_pc_speaker_sound
+cmp   al, SFX_DMACT
+jnbe  no_sound  
+do_pc_speaker_sound:
+
+dec   ax
+xchg  ax, bx
+mov   ax, PC_SPEAKER_OFFSETS_SEGMENT
+mov   es, ax
+sal   bx, 1
+cli
+les   ax,  dword ptr es:[bx]
+mov   word ptr ds:[_pcspeaker_currentoffset], ax
+mov   word ptr ds:[_pcspeaker_endoffset], es
+sti
+
+xor   ax, ax
+ret
+
+no_sound:
+mov   al, 0FFh
+ret
+
+ENDP
+
 PROC    S_StartSoundWithPosition_ NEAR
 PUBLIC  S_StartSoundWithPosition_
 
@@ -707,11 +756,11 @@ call  S_getChannel_  ; cnum = S_getChannel(origin, soundorg_secnum, sfx_id);
 test  al, al
 jnge  exit_startsoundwithposition
  
-mov   dx, cx ; volume
-mov   bx, di ; sep
+mov   bx, cx ; volume
+mov   dx, di ; sep
 xchg  ax, si ; si gets cnum. ax gets sfx_id
 
-call  I_StartSound_  ; rc = I_StartSound(sfx_id, volume, sep);
+call  I_StartSound_  ; rc = I_StartSound(sfx_id, sep, volume);
 cmp   al, -1
 je    exit_startsoundwithposition
 mov   al, byte ptr [bp - 6]

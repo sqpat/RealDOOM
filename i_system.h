@@ -94,7 +94,7 @@ typedef uint8_t sfxenum_t;
 // They refer to the card type.  The routine will cache in the
 // appropriate sound effect when it is played.
 
-int8_t I_StartSound (sfxenum_t id, uint8_t vol, uint8_t sep);
+int8_t I_StartSound (sfxenum_t id, uint8_t sep, uint8_t vol);
 // Starts a sound in a particular sound channel
 
 void I_UpdateSoundParams(int8_t handle, uint8_t vol, uint8_t sep);

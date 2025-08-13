@@ -402,6 +402,10 @@
 #define ST_Start_addr 				      (*((uint32_t __near*)              (_NULL_OFFSET + 0x0538)))
 // 53c unused
 // #define P_RemoveThinker_addr 			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x053C)))
+
+#define pcspeaker_currentoffset           (*((uint16_t __near*)              (_NULL_OFFSET + 0x053C)))
+#define pcspeaker_endoffset     		  (*((uint16_t __near*)              (_NULL_OFFSET + 0x053E)))
+
 #define G_PlayerReborn_addr     		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0540)))
 
 #define FixedMulTrigSpeedNoShift_addr	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0544)))
@@ -1435,8 +1439,6 @@ extern int32_t musdriverstartposition[MUS_DRIVER_COUNT-1];
 #define NUMSFX      109
 
 
-extern uint16_t pcspeaker_currentoffset;
-extern uint16_t pcspeaker_endoffset;
 
 
 
