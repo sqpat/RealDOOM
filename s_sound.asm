@@ -20,13 +20,13 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN I_SoundIsPlaying_:FAR
-EXTRN I_StopSound_:FAR
 EXTRN R_PointToAngle2_:FAR
 EXTRN FastMul16u32u_:FAR
 EXTRN FastDiv3216u_:FAR
 EXTRN S_InitSFXCache_:FAR
 EXTRN I_UpdateSoundParams_:FAR
 EXTRN SFX_PlayPatch_:FAR
+EXTRN SFX_StopPatch_:FAR
 
 EXTRN fopen_:PROC
 EXTRN fseek_:PROC
@@ -117,8 +117,20 @@ mov   al, byte ptr ds:[si + CHANNEL_T.channel_handle]
 call  I_SoundIsPlaying_  ; todo stc/clc
 test  al, al
 je    dont_stop_sound
+
+mov   al, byte ptr ds:[_snd_SfxDevice]
+cmp   al, SND_SB
+je    stop_sb_patch
+cmp   al, SND_PC
+jne   dont_stop_sound
+mov   word ptr ds:[_pcspeaker_currentoffset], 0
+jmp   dont_stop_sound
+
+
+stop_sb_patch:
 mov   al, byte ptr ds:[si + CHANNEL_T.channel_handle]
-call  I_StopSound_
+call  SFX_StopPatch_
+
 
 dont_stop_sound:
 

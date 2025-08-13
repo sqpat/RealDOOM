@@ -215,7 +215,7 @@ int8_t I_StartSound(sfxenum_t sfx_id,  uint8_t vol, uint8_t sep) {
 
     
 }
-*/
+
 
 void I_StopSound(int8_t handle) {
     
@@ -227,6 +227,8 @@ void I_StopSound(int8_t handle) {
     
     
 }
+
+*/
 
 
 boolean I_SoundIsPlaying(int8_t handle) {
