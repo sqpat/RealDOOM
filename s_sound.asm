@@ -578,54 +578,7 @@ jmp   exit_s_getchannel
 
 ENDP
 
-; int8_t I_StartSound(sfxenum_t sfx_id, uint8_t sep, uint8_t vol) {
 
-PROC    I_StartSound_ NEAR
-PUBLIC  I_StartSound_
-
-cmp   byte ptr ds:[_snd_SfxDevice], SND_PC
-je    handle_pc_speaker_sound
-jb    no_sound
-; fallthru to sb sound
-
-
-call  SFX_PlayPatch_
-ret
-
-
-handle_pc_speaker_sound:
-
-cmp   al, SFX_POPAIN
-je    no_sound
-cmp   al, SFX_SAWIDL
-je    no_sound
-cmp   al, SFX_DMPAIN
-je    no_sound
-cmp   al, SFX_POSACT
-jb    do_pc_speaker_sound
-cmp   al, SFX_DMACT
-jnbe  no_sound  
-do_pc_speaker_sound:
-
-dec   ax
-xchg  ax, bx
-mov   ax, PC_SPEAKER_OFFSETS_SEGMENT
-mov   es, ax
-sal   bx, 1
-cli
-les   ax,  dword ptr es:[bx]
-mov   word ptr ds:[_pcspeaker_currentoffset], ax
-mov   word ptr ds:[_pcspeaker_endoffset], es
-sti
-
-xor   ax, ax
-ret
-
-no_sound:
-mov   al, 0FFh
-ret
-
-ENDP
 
 PROC    S_StartSoundWithPosition_ NEAR
 PUBLIC  S_StartSoundWithPosition_
@@ -760,9 +713,23 @@ mov   bx, cx ; volume
 mov   dx, di ; sep
 xchg  ax, si ; si gets cnum. ax gets sfx_id
 
-call  I_StartSound_  ; rc = I_StartSound(sfx_id, sep, volume);
+; todo this could be inlined and the inner check for driver type could be self modified.
+; INLINED I_StartSound_
+
+cmp   byte ptr ds:[_snd_SfxDevice], SND_PC
+je    handle_pc_speaker_sound
+jb    exit_startsoundwithposition ; no sfx driver to play.
+; fallthru to sb sound
+
+
+call  SFX_PlayPatch_
+
+
+done_with_i_sound:
+
 cmp   al, -1
 je    exit_startsoundwithposition
+successful_play:
 mov   al, byte ptr [bp - 6]
 sal   si, 1  ; x2
 mov   bx, si ; x2
@@ -787,6 +754,33 @@ push  es
 call  S_AdjustSoundParamsSep_  ; todo inline only use?
 pop   cx ; volume
 jmp   done_with_vol_adjustment
+
+
+handle_pc_speaker_sound:
+
+cmp   al, SFX_POPAIN
+je    exit_startsoundwithposition
+cmp   al, SFX_SAWIDL
+je    exit_startsoundwithposition
+cmp   al, SFX_DMPAIN
+je    exit_startsoundwithposition
+cmp   al, SFX_POSACT
+jb    do_pc_speaker_sound
+cmp   al, SFX_DMACT
+jnbe  exit_startsoundwithposition  
+do_pc_speaker_sound:
+
+dec   ax
+xchg  ax, bx
+mov   ax, PC_SPEAKER_OFFSETS_SEGMENT
+mov   es, ax
+sal   bx, 1
+cli
+les   ax,  dword ptr es:[bx]
+mov   word ptr ds:[_pcspeaker_currentoffset], ax
+mov   word ptr ds:[_pcspeaker_endoffset], es
+sti
+jmp   successful_play
 
 
 
