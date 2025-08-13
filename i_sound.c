@@ -35,7 +35,7 @@
 #include "m_near.h"
 #include "sc_music.h"
   
-void near I_StartupTimer(void);
+// void near I_StartupTimer(void);
 
 
 
@@ -509,7 +509,7 @@ void MUS_ServiceRoutine(){
 // I_StartupSound
 // Inits all sound stuff
 //
-
+/*
 
 void __far I_StartupSound(void) {
     int16_t useport = 0;
@@ -612,3 +612,4 @@ void __far I_StartupSound(void) {
     I_StartupTimer();
 
 }
+*/

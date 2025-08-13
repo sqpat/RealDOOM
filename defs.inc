@@ -105,11 +105,11 @@ _pendingmusicenum =                 _NULL_OFFSET + 000AEh
 _pendingmusicenumlooping =          _NULL_OFFSET + 000AFh
 
 
-_snd_MusicDevice =				    _NULL_OFFSET + 000B0h
+_skipdirectdraws = 					_NULL_OFFSET + 000B0h
+_is_ultimate = 						_NULL_OFFSET + 000B1h
 _dc_yl = 							_NULL_OFFSET + 000B2h
 _dc_yh = 							_NULL_OFFSET + 000B4h
 
-_is_ultimate = 						_NULL_OFFSET + 000B5h
 _firstspritelump = 					_NULL_OFFSET + 000B6h
 
 _finaletext =                    	_NULL_OFFSET + 000B8h
@@ -124,9 +124,8 @@ _mceilingclip = 					_NULL_OFFSET + 000C4h
 _viletryx =                         _NULL_OFFSET + 000CCh
 _viletryy =                         _NULL_OFFSET + 000D0h
 _viewangle_shiftright1 = 			_NULL_OFFSET + 000D4h
-_skipdirectdraws = 					_NULL_OFFSET + 000D6h
-
-_snd_SfxDevice = 					_NULL_OFFSET + 000D7h
+_snd_SfxDevice = 					_NULL_OFFSET + 000D6h
+_snd_MusicDevice =				    _NULL_OFFSET + 000D7h
 
 _ds_source_segment = 				_NULL_OFFSET + 000D8h
 
@@ -405,11 +404,18 @@ _bmaporgy =				             _NULL_OFFSET + 005B2h
 
 _I_Error_addr =                      _NULL_OFFSET + 005B4h
 _P_InitThinkers_addr =               _NULL_OFFSET + 005B8h
-;_P_CreateThinker_addr =              _NULL_OFFSET + 005BCh
+
+_snd_DesiredSfxDevice =              _NULL_OFFSET + 005BCh
+_snd_DesiredMusicDevice =            _NULL_OFFSET + 005BDh
+_snd_SBirq =              			 _NULL_OFFSET + 005BEh
+_snd_SBdma =              			 _NULL_OFFSET + 005BFh
+
+
 _S_StopSoundMobjRef_addr =           _NULL_OFFSET + 005C0h
 _R_DrawSkyPlaneDynamic_addr =  	     _NULL_OFFSET + 005C4h
+_snd_SBport =                        _NULL_OFFSET + 005C8h
+_snd_Mport =                         _NULL_OFFSET + 005CAh
 
-;_P_AddActiveCeiling_addr =           _NULL_OFFSET + 005C8h
 ;_P_AddActivePlat_addr =              _NULL_OFFSET + 005CCh
 _tallnum =              			 _NULL_OFFSET + 005D0h
 _shortnum =              			 _NULL_OFFSET + 005E4h

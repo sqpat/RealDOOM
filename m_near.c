@@ -48,16 +48,8 @@
 
 //int16_t dmxCodes[NUM_SCARDS]; // the dmx code for a given card
 
-uint8_t  snd_SBirq; // sound blaster variables
-uint8_t  snd_SBdma;
 
 uint8_t  snd_SfxVolume; // maximum volume for sound
-
-uint8_t  snd_DesiredSfxDevice;
-uint8_t  snd_DesiredMusicDevice;
-uint16_t snd_SBport;
-uint16_t snd_Mport;
-
 
 
 

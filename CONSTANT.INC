@@ -2495,6 +2495,9 @@ NORM_PRIORITY = 040h
 NORM_SEP = 080h
 S_STEREO_SWING_HIGH = 060h
 MAX_SOUND_VOLUME = 07Fh
+ADLIBPORT = 0388h
+SBMIDIPORT = 0220h
+MPU401PORT = 0330h
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 03400h

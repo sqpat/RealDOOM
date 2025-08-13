@@ -149,10 +149,10 @@
 
 #define pendingmusicenum                (*((musicenum_t _near*)              (_NULL_OFFSET + 0x00AE)))
 #define pendingmusicenumlooping         (*((boolean _near*)              	 (_NULL_OFFSET + 0x00AF)))
-#define dc_yl                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x00B0)))
-#define dc_yh                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x00B2)))
-#define snd_MusicDevice				    (*((uint8_t __near*)                 (_NULL_OFFSET + 0x00B4)))
-#define is_ultimate                     (*(boolean __near *)                 (_NULL_OFFSET + 0x00B5))
+#define skipdirectdraws                 (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00B0))
+#define is_ultimate                     (*(boolean __near *)                 (_NULL_OFFSET + 0x00B1))
+#define dc_yl                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x00B2)))
+#define dc_yh                           (*((int16_t __near*)                 (_NULL_OFFSET + 0x00B4)))
 #define firstspritelump                 (*(int16_t  __near *)                (_NULL_OFFSET + 0x00B6))
 #define finaletext                      (*((int16_t __near*)                 (_NULL_OFFSET + 0x00B8)))
 #define finalecount                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x00BA)))
@@ -169,8 +169,8 @@
 #define viletryx                        (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x00CC)))
 #define viletryy                        (*((fixed_t_union __near*)           (_NULL_OFFSET + 0x00D0)))
 #define viewangle_shiftright1           (*((uint16_t __near *)               (_NULL_OFFSET + 0x00D4)))
-#define skipdirectdraws                 (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00D6))
-#define snd_SfxDevice                   (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00D7))
+#define snd_SfxDevice                   (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00D6))
+#define snd_MusicDevice				    (*((uint8_t __near*)                 (_NULL_OFFSET + 0x00D7)))
 #define ds_source_segment               (*((byte __far* __near*)             (_NULL_OFFSET + 0x00D8)))
 #define ds_source_offset                (*((int16_t __near*)                 (_NULL_OFFSET + 0x00D8)))
 
@@ -446,14 +446,20 @@
 #define bmaporgy                          (*(int16_t __near *)               (_NULL_OFFSET + 0x05B2))
 #define I_Error_addr                      (*((uint32_t __near*)              (_NULL_OFFSET + 0x05B4)))
 #define P_InitThinkers_addr               (*((uint32_t __near*)              (_NULL_OFFSET + 0x05B8)))
-// 5bc unused
-// #define P_CreateThinker_addr              (*((uint32_t __near*)              (_NULL_OFFSET + 0x05BC)))
+
+#define snd_DesiredSfxDevice     		  (*((uint8_t __near*)               (_NULL_OFFSET + 0x05BC)))
+#define snd_DesiredMusicDevice     		  (*((uint8_t __near*)               (_NULL_OFFSET + 0x05BD)))
+#define snd_SBirq		        		  (*((uint8_t __near*)               (_NULL_OFFSET + 0x05BE)))
+#define snd_SBdma		        		  (*((uint8_t __near*)               (_NULL_OFFSET + 0x05BF)))
+
 #define S_StopSoundMobjRef_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C0)))
 
 #define R_DrawSkyPlaneDynamic_addr_Offset (*((int16_t __near*)               (_NULL_OFFSET + 0x05C4)))
 #define R_DrawSkyPlaneDynamic_addr    	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C4)))
 
-// #define P_AddActiveCeiling_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C8)))
+#define snd_SBport						  (*((uint16_t __near*)              (_NULL_OFFSET + 0x05C8)))
+#define snd_Mport						  (*((uint16_t __near*)              (_NULL_OFFSET + 0x05CA)))
+
 // #define P_AddActivePlat_addr              (*((uint32_t __near*)              (_NULL_OFFSET + 0x05CC)))
 // 10 ints
 #define tallnum                           ((uint16_t __near *)               (_NULL_OFFSET + 0x05D0))
@@ -637,15 +643,9 @@
 
 
 
-extern uint8_t              snd_SBirq; // sound blaster variables
-extern uint8_t              snd_SBdma;
 
 extern uint8_t              snd_SfxVolume; // maximum volume for sound
 
-extern uint8_t              snd_DesiredSfxDevice;
-extern uint8_t              snd_DesiredMusicDevice;
-extern uint16_t             snd_SBport;
-extern uint16_t             snd_Mport;
 
 
 // wipegamestate can be set to -1 to force a wipe on the next draw
