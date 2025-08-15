@@ -55,7 +55,7 @@ EXTRN combine_strings_:FAR
 EXTRN D_StartTitle_:FAR
 EXTRN locallib_strncpy_:FAR
 EXTRN locallib_strcpy_:FAR
-EXTRN locallib_toupper_:FAR
+
 EXTRN locallib_strlen_:FAR
 EXTRN combine_strings_near_:FAR
 EXTRN I_Quit_:FAR
@@ -267,52 +267,53 @@ PROC    M_DrawSaveLoadBorder_ NEAR
 PUBLIC  M_DrawSaveLoadBorder_
 
 
-push  bx
-push  cx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 4
+PUSHA_NO_AX_MACRO
+
 mov   si, ax
-mov   di, dx
-mov   al, MENUPATCH_M_LSLEFT
-call  M_GetMenuPatch_
-mov   bx, si
-add   di, 7
-sub   bx, 8
-mov   cx, dx
-mov   word ptr [bp - 4], bx
-mov   dx, di
-mov   bx, ax
-mov   ax, word ptr [bp - 4]
-mov   byte ptr [bp - 2], 0
-call  V_DrawPatchDirect_
-cld   
-loop_next_tile:
+add   dx, 7
+mov   di, dx  ; si/di get x/y
+
 mov   al, MENUPATCH_M_LSCNTR
 call  M_GetMenuPatch_
-mov   bx, ax
+mov   word ptr cs:[SELFMODIFY_set_saveloadborder_offset+1], ax
+mov   word ptr cs:[SELFMODIFY_set_saveloadborder_segment+1], dx
+
+
+mov   al, MENUPATCH_M_LSLEFT
+call  M_GetMenuPatch_
+
+xchg  ax, bx
 mov   cx, dx
+mov   ax, si
+mov   dx, di
+sub   ax, 8
+
+call  V_DrawPatchDirect_
+
+
+
+xor   bp, bp ; loop counter
+loop_next_tile:
 mov   dx, di
 mov   ax, si
-inc   byte ptr [bp - 2]
+SELFMODIFY_set_saveloadborder_offset:
+mov   bx, 01000h
+SELFMODIFY_set_saveloadborder_segment:
+mov   cx, 01000h
 call  V_DrawPatchDirect_
 add   si, 8
-cmp   byte ptr [bp - 2], 24
+inc   bp
+cmp   bp, 24
 jl    loop_next_tile
+
 mov   al, MENUPATCH_M_LSRGHT
 call  M_GetMenuPatch_
-mov   bx, ax
+xchg  bx, ax
 mov   cx, dx
 mov   dx, di
 mov   ax, si
 call  V_DrawPatchDirect_
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
+POPA_NO_AX_MACRO
 ret   
 
 
@@ -1777,7 +1778,7 @@ label_48:
 mov   es, word ptr [bp - 2]
 mov   al, byte ptr es:[si]
 xor   ah, ah
-call  locallib_toupper_
+call  M_ToUpper_
 xor   ah, ah
 sub   ax, HU_FONTSTART
 test  ax, ax
@@ -1859,6 +1860,25 @@ ENDP
 
 @
 
+;uint8_t __far locallib_toupper(uint8_t ch){
+;	if (ch >=  0x61 && ch <= 0x7A){
+;		return ch - 0x20;
+;	}
+;	return ch;
+;}
+
+
+PROC    M_ToUpper_ NEAR
+
+cmp   al, 061h
+jb    exit_m_to_upper
+cmp   al, 07Ah
+ja    exit_m_to_upper
+sub   al, 020h
+exit_m_to_upper:
+ret
+
+
 
 PROC    M_WriteText_ NEAR
 PUBLIC  M_WriteText_
@@ -1867,65 +1887,66 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 6
-push  ax
-mov   word ptr [bp - 4], bx
-mov   word ptr [bp - 2], cx
-mov   si, ax
+push  cx
+push  bx
+mov   word ptr cs:[SELFMODIFY_default_x_writetext+1], ax
+
+; si/di are cx/cy
+xchg  ax, si
 mov   di, dx
-label_54:
+
+loop_next_char_to_write:
 les   bx, dword ptr [bp - 4]
 mov   al, byte ptr es:[bx]
-cbw  
-inc   word ptr [bp - 4]
-mov   dx, ax
-test  ax, ax
+test  al, al
 je    exit_m_writetext
-cmp   ax, 0Ah  ; newline
-jne   label_53
-mov   si, word ptr [bp - 8]
-add   di, 12
-jmp   label_54
-label_53:
-xor   ah, ah
-call  locallib_toupper_
-mov   dl, al
-xor   dh, dh
-sub   dx, HU_FONTSTART
-test  dx, dx
-jl    label_55
-cmp   dx, HU_FONTSIZE
-jl    label_56
-label_55:
-add   si, 4
-jmp   label_54
-label_56:
+inc   word ptr [bp - 4]
+cmp   al, 0Ah  ; newline
+je    is_newline
+not_newline:
+call  M_ToUpper_ ; todo inline or 
+sub   al, HU_FONTSTART
+js    do_space_char
+cmp   al, HU_FONTSIZE
+jae   do_space_char
+good_fontchar:
+cbw
+xchg  ax, bx    ; bx gets 'c' index
 mov   ax, FONT_WIDTHS_SEGMENT
-mov   bx, dx
 mov   es, ax
 mov   al, byte ptr es:[bx]
 cbw  
-mov   bx, si
-add   bx, ax
-mov   word ptr [bp - 6], bx
-cmp   bx, SCREENWIDTH
-jle   do_write_char
+;        if (cx+w > SCREENWIDTH){
+;            break;
+;        }
+
+
+add   ax, si
+cmp   ax, SCREENWIDTH
+jg    exit_m_writetext
+do_write_char:
+mov   cx, ST_GRAPHICS_SEGMENT
+sal   bx, 1
+mov   bx, word ptr ds:[bx + _hu_font]
+xchg  ax, si
+mov   dx, di
+call  V_DrawPatchDirect_
+jmp   loop_next_char_to_write
 exit_m_writetext:
+
 LEAVE_MACRO 
 pop   di
 pop   si
 ret   
-do_write_char:
-mov   cx, ST_GRAPHICS_SEGMENT
-mov   bx, dx
-mov   ax, si
-add   bx, dx
-mov   dx, di
-mov   bx, word ptr ds:[bx + _hu_font]
-mov   si, word ptr [bp - 6]
-call  V_DrawPatchDirect_
-jmp   label_54
-cld   
+do_space_char:
+add   si, 4
+jmp   loop_next_char_to_write
+is_newline:
+SELFMODIFY_default_x_writetext:
+mov   si, 01000h
+add   di, 12
+jmp   loop_next_char_to_write
+
 
 ENDP
 
@@ -2013,7 +2034,7 @@ retf
 label_64:
 xor   bh, bh
 mov   ax, bx
-call  locallib_toupper_
+call  M_ToUpper_
 mov   bl, al
 cmp   bx, 32
 je    label_65
