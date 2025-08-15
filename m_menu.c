@@ -172,6 +172,7 @@ patch_t __far* __near M_GetMenuPatch(int16_t i) {
 // M_ReadSaveStrings
 //  read the strings from the savegame files
 //
+/*
 void __near M_ReadSaveStrings(void){
     int8_t             i;
     int8_t    name[256];
@@ -192,7 +193,7 @@ void __near M_ReadSaveStrings(void){
     }
 }
 
-
+*/
 //
 // M_LoadGame & Cie.
 //
@@ -227,7 +228,6 @@ void __near M_DrawSaveLoadBorder(int16_t x, int16_t y){
     V_DrawPatchDirect (x,y+7, M_GetMenuPatch(MENUPATCH_M_LSRGHT)) ;
 }
 
-*/
 
 //
 // User wants to load this game
@@ -270,6 +270,9 @@ void __near M_DrawSave(void){
         M_WriteText(LoadDef.x + i,LoadDef.y+LINEHEIGHT*saveSlot,"_");
     }
 }
+
+*/
+
 
 //
 // M_Responder calls this when user is finished
@@ -839,6 +842,7 @@ void __near M_StartMessage ( int8_t __near * string, void __near (*routine)(int1
 //
 // Find string width from hu_font chars
 //
+/*
 int16_t __near M_StringWidth(int8_t __far* string) {
     int16_t             i;
     int16_t             w = 0;
@@ -855,7 +859,7 @@ int16_t __near M_StringWidth(int8_t __far* string) {
                 
     return w;
 }
-
+*/
 
 
 //

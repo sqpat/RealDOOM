@@ -204,19 +204,9 @@ pop   bx
 ret  
 
 
-COMMENT @
-weird_label_out_here:
-mov   al, byte ptr [bp - 2]
-cbw  
-imul  bx, ax, SAVESTRINGSIZE
-mov   cx, SAVEGAMESTRINGS_SEGMENT
-mov   ax, EMPTYSTRING
-call  getStringByIndex_
-mov   byte ptr ds:[di + _LoadMenu + MENUITEM_T.menuitem_status], 0
-jmp   weird_label_out_here_back
+
 
 ENDP
-@
 
 LOADDEF_X = 80
 LOADDEF_Y = 54
@@ -319,7 +309,6 @@ ret
 
 ENDP
 
-COMMENT @
 
 PROC    M_LoadSelect_ NEAR
 PUBLIC  M_LoadSelect_
@@ -334,11 +323,10 @@ cbw
 mov   dx, ds
 mov   bx, ax
 lea   ax, [bp - 0100h]
-call  makesavegamename_
+call  makesavegamename_  ; todo make local
 lea   ax, [bp - 0100h]
-mov   bx, _menuactive
 call  G_LoadGame_
-mov   byte ptr ds:[bx], 0
+mov   byte ptr ds:[_menuactive], 0
 LEAVE_MACRO 
 pop   dx
 pop   bx
@@ -360,55 +348,70 @@ ENDP  ; fall thru?
 PROC    M_ReadSaveStrings_ NEAR
 PUBLIC  M_ReadSaveStrings_
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
-sub   sp, 0102h
-mov   byte ptr [bp - 2], 0
-label_6:
-mov   al, byte ptr [bp - 2]
-cbw  
-mov   cx, ax
-imul  di, cx, 5
-mov   dx, ds
-mov   bx, ax
-lea   ax, [bp - 0102h]
+sub   sp, 0100h
+xor   si, si
+mov   di, _LoadMenu + MENUITEM_T.menuitem_status
+
+
+loop_next_savestring:
+mov   bx, si
+mov   dx, ss
+lea   ax, [bp - 0100h]
 call  makesavegamename_
 mov   dx, OFFSET _fopen_rb_argument
-lea   ax, [bp - 0102h]
+lea   ax, [bp - 0100h]
 call  fopen_
-mov   si, ax
-test  ax, ax
-jne   label_7
-jmp   weird_label_out_here
-label_7:
-push  ax
-mov   al, byte ptr [bp - 2]
-cbw  
-imul  ax, ax, SAVESTRINGSIZE
-mov   cx, SAVESTRINGSIZE
-mov   bx, 1
-mov   dx, SAVEGAMESTRINGS_SEGMENT
-call  locallib_far_fread_
+
+xchg  ax, bx ; fp to bx
 mov   ax, si
+mov   cx, SAVESTRINGSIZE ; used in both loops.
+mul   cl
+mov   dx, SAVEGAMESTRINGS_SEGMENT
+
+test  bx, bx
+jne   good_savegame_file
+
+no_savegame_file:
+
+xchg  ax, bx  ; bx gets product result..
+mov   cx, dx ; actually cx gets the segment in this case.
+mov   ax, EMPTYSTRING
+call  getStringByIndex_
+
+mov   byte ptr ds:[di], 0
+jmp   iter_next_savestring
+
+good_savegame_file:
+; load file slot string
+
+; ax already has product/dest offset
+; dx already has segment
+; cx already has SAVESTRINGSIZE
+; bp currently has fp.
+
+push  bx ; fp. 2nd time for later pop
+push  bx ; fp arg for far read
+
+mov   bx, 1
+call  locallib_far_fread_
+
+pop   ax  ; recover fp
 call  fclose_
-mov   byte ptr ds:[di + _LoadMenu + MENUITEM_T.menuitem_status], 1
-weird_label_out_here_back:
-inc   byte ptr [bp - 2]
-cmp   byte ptr [bp - 2], 6
-jl    label_6
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+
+mov   byte ptr ds:[di], 1
+iter_next_savestring:
+inc   si
+add   di, SIZEOF_MENUITEM_T
+cmp   si, LOAD_END
+jl    loop_next_savestring
+
+LEAVE_MACRO
+POPA_NO_AX_OR_BP_MACRO
+
 ret   
-cld   
 
 
 ENDP
@@ -484,6 +487,9 @@ ret
 
 
 ENDP
+
+COMMENT @
+
 
 PROC    M_DoSave_ NEAR
 PUBLIC  M_DoSave_
@@ -1755,6 +1761,8 @@ cld
 
 ENDP
 
+@
+
 PROC    M_StringWidth_ NEAR
 PUBLIC  M_StringWidth_
 
@@ -1811,6 +1819,8 @@ jmp   label_49
 cld   
 
 ENDP
+
+COMMENT @
 
 PROC    M_StringHeight_ NEAR
 PUBLIC  M_StringHeight_
@@ -1878,6 +1888,7 @@ sub   al, 020h
 exit_m_to_upper:
 ret
 
+ENDP
 
 
 PROC    M_WriteText_ NEAR
