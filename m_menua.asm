@@ -189,6 +189,7 @@ PUBLIC  M_GetMenuPatch_
 
 
 push  bx
+cbw
 mov   bx, ax
 add   bx, ax
 cmp   al, 27   ; number of menu graphics in first menu page. Todo unhardcode?
@@ -217,53 +218,45 @@ jmp   weird_label_out_here_back
 ENDP
 @
 
-COMMENT @
+LOADDEF_X = 80
+LOADDEF_Y = 54
+
+
 PROC    M_DrawLoad_ NEAR
 PUBLIC  M_DrawLoad_
 
 
-push  bx
-push  cx
-push  dx
-push  bp
-mov   bp, sp
-sub   sp, 2
+PUSHA_NO_AX_OR_BP_MACRO
 call  Z_QuickMapStatus_
-mov   ax, 30
+mov   al, MENUPATCH_M_LOADG
 call  M_GetMenuPatch_
-mov   bx, ax
+xchg  ax, bx
 mov   cx, dx
+
+xor   si, si
+mov   di, LOADDEF_Y
+
 mov   dx, 28
 mov   ax, 72
-mov   byte ptr [bp - 2], 0
 call  V_DrawPatchDirect_
-label_2:
-mov   al, byte ptr [bp - 2]
-cbw  
-mov   dl, byte ptr [_LoadDef + MENU_T.menu_y]
-mov   bx, ax
-xor   dh, dh
-shl   bx, 4
-mov   ax, word ptr [_LoadDef + MENU_T.menu_x]
-add   dx, bx
+
+loop_draw_next_load_bar:
+
+mov   dx, di ; zero dh...
+mov   ax, LOADDEF_X
 call  M_DrawSaveLoadBorder_
-mov   al, byte ptr [bp - 2]
-cbw  
-imul  cx, ax, SAVESTRINGSIZE
-mov   dl, byte ptr [_LoadDef + MENU_T.menu_y]
-xor   dh, dh
-add   dx, bx
-mov   ax, word ptr [_LoadDef + MENU_T.menu_x]
-mov   bx, cx
+
+mov   bx, si
+mov   dx, di
+mov   ax, LOADDEF_X
 mov   cx, SAVEGAMESTRINGS_SEGMENT
-inc   byte ptr [bp - 2]
 call  M_WriteText_
-cmp   byte ptr [bp - 2], LOAD_END
-jl    label_2
-LEAVE_MACRO 
-pop   dx
-pop   cx
-pop   bx
+add   si, SAVESTRINGSIZE
+add   di, 16
+cmp   si, (LOAD_END * SAVESTRINGSIZE)
+jl    loop_draw_next_load_bar
+
+POPA_NO_AX_OR_BP_MACRO
 ret   
 
 
@@ -283,7 +276,7 @@ mov   bp, sp
 sub   sp, 4
 mov   si, ax
 mov   di, dx
-mov   ax, MENUPATCH_M_MSENS
+mov   al, MENUPATCH_M_LSLEFT
 call  M_GetMenuPatch_
 mov   bx, si
 add   di, 7
@@ -297,7 +290,7 @@ mov   byte ptr [bp - 2], 0
 call  V_DrawPatchDirect_
 cld   
 loop_next_tile:
-mov   ax, MENUPATCH_M_LSCNTR
+mov   al, MENUPATCH_M_LSCNTR
 call  M_GetMenuPatch_
 mov   bx, ax
 mov   cx, dx
@@ -308,7 +301,7 @@ call  V_DrawPatchDirect_
 add   si, 8
 cmp   byte ptr [bp - 2], 24
 jl    loop_next_tile
-mov   ax, MENUPATCH_M_LSRGHT
+mov   al, MENUPATCH_M_LSRGHT
 call  M_GetMenuPatch_
 mov   bx, ax
 mov   cx, dx
@@ -324,7 +317,7 @@ ret
 
 
 ENDP
-@
+
 COMMENT @
 
 PROC    M_LoadSelect_ NEAR
@@ -429,7 +422,7 @@ push  bp
 mov   bp, sp
 sub   sp, 2
 call  Z_QuickMapStatus_
-mov   ax, MENUPATCH_M_SAVEG
+mov   al, MENUPATCH_M_SAVEG
 call  M_GetMenuPatch_
 mov   bx, ax
 mov   cx, dx
@@ -874,7 +867,7 @@ PUBLIC  M_DrawSound_
 push  bx
 push  cx
 push  dx
-mov   ax, MENUPATCH_M_SVOL
+mov   al, MENUPATCH_M_SVOL
 call  M_GetMenuPatch_
 mov   cx, dx
 mov   bx, ax
@@ -1012,14 +1005,14 @@ PUBLIC  M_DrawNewGame_
 push  bx
 push  cx
 push  dx
-mov   ax, 24
+mov   al, 24
 call  M_GetMenuPatch_
 mov   bx, ax
 mov   cx, dx
 mov   dx, 14
 mov   ax, 96
 call  V_DrawPatchDirect_
-mov   ax, MENUPATCH_M_SKILL
+mov   al, MENUPATCH_M_SKILL
 call  M_GetMenuPatch_
 mov   bx, ax
 mov   cx, dx
@@ -1066,7 +1059,7 @@ PUBLIC  M_DrawEpisode_
 push  bx
 push  cx
 push  dx
-mov   ax, MENUPATCH_M_EPISOD
+mov   al, MENUPATCH_M_EPISOD
 call  M_GetMenuPatch_
 mov   bx, ax
 mov   cx, dx
@@ -1210,7 +1203,7 @@ push  bx
 push  cx
 push  dx
 push  si
-mov   ax, MENUPATCH_M_OPTTTL
+mov   al, MENUPATCH_M_OPTTTL
 call  M_GetMenuPatch_
 mov   cx, dx
 mov   bx, ax
@@ -1220,7 +1213,6 @@ call  V_DrawPatchDirect_
 mov   bl, byte ptr ds:[_detailLevel]
 xor   bh, bh
 mov   al, byte ptr ds:[bx + _detailNames]
-cbw  
 call  M_GetMenuPatch_
 mov   bl, byte ptr ds:[_OptionsDef + MENU_T.menu_y]
 mov   si, word ptr ds:[_OptionsDef + MENU_T.menu_x]
@@ -1233,7 +1225,6 @@ call  V_DrawPatchDirect_
 mov   bl, byte ptr ds:[_showMessages]
 xor   bh, bh
 mov   al, byte ptr ds:[bx + _msgNames]
-cbw  
 call  M_GetMenuPatch_
 mov   bl, byte ptr ds:[_OptionsDef + MENU_T.menu_y]
 mov   si, word ptr ds:[_OptionsDef + MENU_T.menu_x]
@@ -1676,7 +1667,7 @@ push  ax
 push  dx
 push  bx
 push  cx
-mov   ax, MENUPATCH_M_THERML
+mov   al, MENUPATCH_M_THERML
 mov   si, word ptr [bp - 2]
 call  M_GetMenuPatch_
 xor   di, di
@@ -1689,7 +1680,7 @@ call  V_DrawPatchDirect_
 cmp   word ptr [bp - 6], 0
 jle   label_43
 label_44:
-mov   ax, 9
+mov   al, 9
 call  M_GetMenuPatch_
 mov   bx, ax
 mov   cx, dx
@@ -1701,7 +1692,7 @@ add   si, 8
 cmp   di, word ptr [bp - 6]
 jl    label_44
 label_43:
-mov   ax, 8
+mov   al, 8
 mov   di, word ptr [bp - 2]
 call  M_GetMenuPatch_
 mov   bx, ax
@@ -1710,7 +1701,7 @@ mov   dx, word ptr [bp - 4]
 mov   ax, si
 add   di, 8
 call  V_DrawPatchDirect_
-mov   ax, 7
+mov   al, 7
 mov   si, word ptr [bp - 8]
 call  M_GetMenuPatch_
 shl   si, 3
@@ -1868,7 +1859,7 @@ ENDP
 
 @
 
-COMMENT @
+
 PROC    M_WriteText_ NEAR
 PUBLIC  M_WriteText_
 
@@ -1937,7 +1928,7 @@ jmp   label_54
 cld   
 
 ENDP
-@
+
 COMMENT @
 
 PROC    M_Responder_ NEAR
@@ -2824,7 +2815,7 @@ add   bx, di
 mov   al, byte ptr ds:[bx + 1]
 cmp   al, -1
 je    label_149
-cbw  
+
 call  M_GetMenuPatch_
 mov   cx, dx
 mov   bx, ax
@@ -2842,7 +2833,7 @@ label_148:
 mov   bx, _whichSkull
 mov   bx, word ptr ds:[bx]
 add   bx, bx
-mov   ax, word ptr ds:[bx + _skullName]
+mov   al, word ptr ds:[bx + _skullName]
 mov   di, word ptr [bp - 0Ch]
 call  M_GetMenuPatch_
 mov   bx, word ptr ds:[_currentMenu]

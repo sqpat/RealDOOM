@@ -196,6 +196,7 @@ void __near M_ReadSaveStrings(void){
 //
 // M_LoadGame & Cie.
 //
+/*
 void __near M_DrawLoad(void){
     int8_t             i;
     Z_QuickMapStatus();
@@ -226,7 +227,7 @@ void __near M_DrawSaveLoadBorder(int16_t x, int16_t y){
     V_DrawPatchDirect (x,y+7, M_GetMenuPatch(MENUPATCH_M_LSRGHT)) ;
 }
 
-
+*/
 
 //
 // User wants to load this game
@@ -878,6 +879,7 @@ int16_t __near M_StringHeight(int8_t __far* string){
 //
 //      Write a string using the hu_font
 //
+/*
 void __near M_WriteText (int16_t x, int16_t y, int8_t __far * string) {
     int16_t         w;
     int8_t __far*       ch;
@@ -914,7 +916,7 @@ void __near M_WriteText (int16_t x, int16_t y, int8_t __far * string) {
         cx+=w;
     }
 }
-
+*/
 //
 // CONTROL PANEL
 //
