@@ -21,9 +21,15 @@ INSTRUCTION_SET_MACRO
 
 EXTRN P_RemoveThinker_:NEAR
 EXTRN P_CreateThinker_:NEAR
-
-
-
+EXTRN V_DrawPatchDirect_:FAR
+EXTRN Z_QuickMapStatus_:FAR
+EXTRN S_SetSfxVolume_:FAR
+EXTRN getStringByIndex_:FAR
+EXTRN locallib_far_fread_:FAR
+EXTRN fclose_:PROC
+EXTRN fopen_:PROC
+EXTRN makesavegamename_:PROC
+EXTRN G_LoadGame_:PROC
 
 .DATA
 
@@ -52,7 +58,7 @@ PUBLIC  M_GetMenuPatch_
 0x0000000000004120:  53                   push  bx
 0x0000000000004121:  89 C3                mov   bx, ax
 0x0000000000004123:  01 C3                add   bx, ax
-0x0000000000004125:  3D 1B 00             cmp   ax, 0x1b
+0x0000000000004125:  3D 1B 00             cmp   ax, 27   ; number of menu graphics in first menu page. Todo unhardcode?
 0x0000000000004128:  7C 0D                jl    label_1
 0x000000000000412a:  B8 C7 6E             mov   ax, MENUOFFSETS_SEGMENT ; todo use offset in cs?
 0x000000000000412d:  8E C0                mov   es, ax
@@ -68,17 +74,19 @@ label_1:
 0x0000000000004142:  5B                   pop   bx
 0x0000000000004143:  C3                   ret   
 
+weird_label_out_here:
 0x0000000000004144:  8A 46 FE             mov   al, byte ptr [bp - 2]
 0x0000000000004147:  98                   cbw  
-0x0000000000004148:  6B D8 18             imul  bx, ax, 0x18
-0x000000000000414b:  B9 B1 3C             mov   cx, 0x3cb1
-0x000000000000414e:  B8 17 00             mov   ax, 0x17
-0x0000000000004151:  0E                   push  cs
-0x0000000000004152:  3E E8 D0 C2          call  0x426
-0x0000000000004156:  C6 85 97 10 00       mov   byte ptr [di + 0x1097], 0
-0x000000000000415b:  E9 63 01             jmp   0x42c1
+0x0000000000004148:  6B D8 18             imul  bx, ax, SAVESTRINGSIZE
+0x000000000000414b:  B9 B1 3C             mov   cx, SAVEGAMESTRINGS_SEGMENT
+0x000000000000414e:  B8 17 00             mov   ax, EMPTYSTRING
+0x0000000000004152:  3E E8 D0 C2          call  getStringByIndex_
+0x0000000000004156:  C6 85 97 10 00       mov   byte ptr [di + _LoadMenu + MENUITEM_T.menuitem_status], 0
+0x000000000000415b:  E9 63 01             jmp   weird_label_out_here_back
 
 ENDP
+
+LOAD_END = 6
 
 PROC    M_DrawLoad_ NEAR
 PUBLIC  M_DrawLoad_
@@ -90,38 +98,39 @@ PUBLIC  M_DrawLoad_
 0x0000000000004161:  55                   push  bp
 0x0000000000004162:  89 E5                mov   bp, sp
 0x0000000000004164:  83 EC 02             sub   sp, 2
-0x0000000000004167:  9A 7D 2C 4F 13       lcall 0x134f:0x2c7d
-0x000000000000416c:  B8 1E 00             mov   ax, 0x1e
+0x0000000000004167:  9A 7D 2C 4F 13       call  Z_QuickMapStatus_
+0x000000000000416c:  B8 1E 00             mov   ax, 30
 0x000000000000416f:  E8 AE FF             call  M_GetMenuPatch_
 0x0000000000004172:  89 C3                mov   bx, ax
 0x0000000000004174:  89 D1                mov   cx, dx
-0x0000000000004176:  BA 1C 00             mov   dx, 0x1c
-0x0000000000004179:  B8 48 00             mov   ax, 0x48
+0x0000000000004176:  BA 1C 00             mov   dx, 28
+0x0000000000004179:  B8 48 00             mov   ax, 72
 0x000000000000417c:  C6 46 FE 00          mov   byte ptr [bp - 2], 0
-0x0000000000004180:  9A CC 26 4F 13       lcall 0x134f:0x26cc
+0x0000000000004180:  9A CC 26 4F 13       call  V_DrawPatchDirect_
+label_2:
 0x0000000000004185:  8A 46 FE             mov   al, byte ptr [bp - 2]
 0x0000000000004188:  98                   cbw  
-0x0000000000004189:  8A 16 BE 10          mov   dl, byte ptr [0x10be]
+0x0000000000004189:  8A 16 BE 10          mov   dl, byte ptr [_LoadDef + MENU_T.menu_y]
 0x000000000000418d:  89 C3                mov   bx, ax
 0x000000000000418f:  30 F6                xor   dh, dh
 0x0000000000004191:  C1 E3 04             shl   bx, 4
-0x0000000000004194:  A1 BC 10             mov   ax, word ptr [0x10bc]
+0x0000000000004194:  A1 BC 10             mov   ax, word ptr [_LoadDef + MENU_T.menu_x]
 0x0000000000004197:  01 DA                add   dx, bx
 0x0000000000004199:  E8 28 00             call  M_DrawSaveLoadBorder_
 0x000000000000419c:  8A 46 FE             mov   al, byte ptr [bp - 2]
 0x000000000000419f:  98                   cbw  
-0x00000000000041a0:  6B C8 18             imul  cx, ax, 0x18
-0x00000000000041a3:  8A 16 BE 10          mov   dl, byte ptr [0x10be]
+0x00000000000041a0:  6B C8 18             imul  cx, ax, SAVESTRINGSIZE
+0x00000000000041a3:  8A 16 BE 10          mov   dl, byte ptr [_LoadDef + MENU_T.menu_y]
 0x00000000000041a7:  30 F6                xor   dh, dh
 0x00000000000041a9:  01 DA                add   dx, bx
-0x00000000000041ab:  A1 BC 10             mov   ax, word ptr [0x10bc]
+0x00000000000041ab:  A1 BC 10             mov   ax, word ptr [_LoadDef + MENU_T.menu_x]
 0x00000000000041ae:  89 CB                mov   bx, cx
-0x00000000000041b0:  B9 B1 3C             mov   cx, 0x3cb1
+0x00000000000041b0:  B9 B1 3C             mov   cx, SAVEGAMESTRINGS_SEGMENT
 0x00000000000041b3:  FE 46 FE             inc   byte ptr [bp - 2]
 0x00000000000041b6:  E8 29 0B             call  M_WriteText_
-0x00000000000041b9:  80 7E FE 06          cmp   byte ptr [bp - 2], 6
-0x00000000000041bd:  7C C6                jl    0x4185
-0x00000000000041bf:  C9                   leave 
+0x00000000000041b9:  80 7E FE 06          cmp   byte ptr [bp - 2], LOAD_END
+0x00000000000041bd:  7C C6                jl    label_2
+0x00000000000041bf:  C9                   LEAVE_MACRO 
 0x00000000000041c0:  5A                   pop   dx
 0x00000000000041c1:  59                   pop   cx
 0x00000000000041c2:  5B                   pop   bx
@@ -154,7 +163,7 @@ PUBLIC  M_DrawSaveLoadBorder_
 0x00000000000041e7:  89 C3                mov   bx, ax
 0x00000000000041e9:  8B 46 FC             mov   ax, word ptr [bp - 4]
 0x00000000000041ec:  C6 46 FE 00          mov   byte ptr [bp - 2], 0
-0x00000000000041f0:  9A CC 26 4F 13       lcall 0x134f:0x26cc
+0x00000000000041f0:  9A CC 26 4F 13       call  V_DrawPatchDirect_
 0x00000000000041f5:  FC                   cld   
 0x00000000000041f6:  B8 2B 00             mov   ax, 0x2b
 0x00000000000041f9:  E8 24 FF             call  M_GetMenuPatch_
@@ -163,7 +172,7 @@ PUBLIC  M_DrawSaveLoadBorder_
 0x0000000000004200:  89 FA                mov   dx, di
 0x0000000000004202:  89 F0                mov   ax, si
 0x0000000000004204:  FE 46 FE             inc   byte ptr [bp - 2]
-0x0000000000004207:  9A CC 26 4F 13       lcall 0x134f:0x26cc
+0x0000000000004207:  9A CC 26 4F 13       call  V_DrawPatchDirect_
 0x000000000000420c:  83 C6 08             add   si, 8
 0x000000000000420f:  80 7E FE 18          cmp   byte ptr [bp - 2], 0x18
 0x0000000000004213:  7C E1                jl    0x41f6
@@ -173,8 +182,8 @@ PUBLIC  M_DrawSaveLoadBorder_
 0x000000000000421d:  89 D1                mov   cx, dx
 0x000000000000421f:  89 FA                mov   dx, di
 0x0000000000004221:  89 F0                mov   ax, si
-0x0000000000004223:  9A CC 26 4F 13       lcall 0x134f:0x26cc
-0x0000000000004228:  C9                   leave 
+0x0000000000004223:  9A CC 26 4F 13       call  V_DrawPatchDirect_
+0x0000000000004228:  C9                   LEAVE_MACRO 
 0x0000000000004229:  5F                   pop   di
 0x000000000000422a:  5E                   pop   si
 0x000000000000422b:  59                   pop   cx
@@ -192,21 +201,21 @@ PUBLIC  M_LoadSelect_
 0x000000000000422f:  52                   push  dx
 0x0000000000004230:  55                   push  bp
 0x0000000000004231:  89 E5                mov   bp, sp
-0x0000000000004233:  81 EC 00 01          sub   sp, 0x100
+0x0000000000004233:  81 EC 00 01          sub   sp, 0100h
 0x0000000000004237:  98                   cbw  
 0x0000000000004238:  8C DA                mov   dx, ds
 0x000000000000423a:  89 C3                mov   bx, ax
-0x000000000000423c:  8D 86 00 FF          lea   ax, [bp - 0x100]
+0x000000000000423c:  8D 86 00 FF          lea   ax, [bp - 0100h]
 0x0000000000004240:  0E                   push  cs
-0x0000000000004241:  E8 B2 CA             call  0xcf6
+0x0000000000004241:  E8 B2 CA             call  makesavegamename_
 0x0000000000004244:  90                   nop   
-0x0000000000004245:  8D 86 00 FF          lea   ax, [bp - 0x100]
+0x0000000000004245:  8D 86 00 FF          lea   ax, [bp - 0100h]
 0x0000000000004249:  BB 6C 04             mov   bx, 0x46c
 0x000000000000424c:  0E                   push  cs
-0x000000000000424d:  E8 6E D6             call  0x18be
+0x000000000000424d:  E8 6E D6             call  G_LoadGame_
 0x0000000000004250:  90                   nop   
 0x0000000000004251:  C6 07 00             mov   byte ptr [bx], 0
-0x0000000000004254:  C9                   leave 
+0x0000000000004254:  C9                   LEAVE_MACRO 
 0x0000000000004255:  5A                   pop   dx
 0x0000000000004256:  5B                   pop   bx
 0x0000000000004257:  C3                   ret   
@@ -235,39 +244,42 @@ PUBLIC  M_ReadSaveStrings_
 0x0000000000004268:  57                   push  di
 0x0000000000004269:  55                   push  bp
 0x000000000000426a:  89 E5                mov   bp, sp
-0x000000000000426c:  81 EC 02 01          sub   sp, 0x102
+0x000000000000426c:  81 EC 02 01          sub   sp, 0102h
 0x0000000000004270:  C6 46 FE 00          mov   byte ptr [bp - 2], 0
+label_6:
 0x0000000000004274:  8A 46 FE             mov   al, byte ptr [bp - 2]
 0x0000000000004277:  98                   cbw  
 0x0000000000004278:  89 C1                mov   cx, ax
 0x000000000000427a:  6B F9 05             imul  di, cx, 5
 0x000000000000427d:  8C DA                mov   dx, ds
 0x000000000000427f:  89 C3                mov   bx, ax
-0x0000000000004281:  8D 86 FE FE          lea   ax, [bp - 0x102]
+0x0000000000004281:  8D 86 FE FE          lea   ax, [bp - 0102h]
 0x0000000000004285:  0E                   push  cs
-0x0000000000004286:  3E E8 6C CA          call  0xcf6
-0x000000000000428a:  BA D4 19             mov   dx, 0x19d4
-0x000000000000428d:  8D 86 FE FE          lea   ax, [bp - 0x102]
-0x0000000000004291:  9A A3 31 4F 13       lcall 0x134f:0x31a3
+0x0000000000004286:  3E E8 6C CA          call  makesavegamename_
+0x000000000000428a:  BA D4 19             mov   dx, OFFSET _fopen_rb_argument
+0x000000000000428d:  8D 86 FE FE          lea   ax, [bp - 0102h]
+0x0000000000004291:  9A A3 31 4F 13       call  fopen_
 0x0000000000004296:  89 C6                mov   si, ax
 0x0000000000004298:  85 C0                test  ax, ax
-0x000000000000429a:  75 03                jne   0x429f
-0x000000000000429c:  E9 A5 FE             jmp   0x4144
+0x000000000000429a:  75 03                jne   label_7
+0x000000000000429c:  E9 A5 FE             jmp   weird_label_out_here
+label_7:
 0x000000000000429f:  50                   push  ax
 0x00000000000042a0:  8A 46 FE             mov   al, byte ptr [bp - 2]
 0x00000000000042a3:  98                   cbw  
-0x00000000000042a4:  6B C0 18             imul  ax, ax, 0x18
-0x00000000000042a7:  B9 18 00             mov   cx, 0x18
+0x00000000000042a4:  6B C0 18             imul  ax, ax, SAVESTRINGSIZE
+0x00000000000042a7:  B9 18 00             mov   cx, SAVESTRINGSIZE
 0x00000000000042aa:  BB 01 00             mov   bx, 1
-0x00000000000042ad:  BA B1 3C             mov   dx, 0x3cb1
-0x00000000000042b0:  9A 00 22 4F 13       lcall 0x134f:0x2200
+0x00000000000042ad:  BA B1 3C             mov   dx, SAVEGAMESTRINGS_SEGMENT
+0x00000000000042b0:  9A 00 22 4F 13       call  locallib_far_fread_
 0x00000000000042b5:  89 F0                mov   ax, si
-0x00000000000042b7:  9A 37 34 4F 13       lcall 0x134f:0x3437
-0x00000000000042bc:  C6 85 97 10 01       mov   byte ptr [di + 0x1097], 1
+0x00000000000042b7:  9A 37 34 4F 13       call  fclose_
+0x00000000000042bc:  C6 85 97 10 01       mov   byte ptr [di + _LoadMenu + MENUITEM_T.menuitem_status], 1
+weird_label_out_here_back:
 0x00000000000042c1:  FE 46 FE             inc   byte ptr [bp - 2]
 0x00000000000042c4:  80 7E FE 06          cmp   byte ptr [bp - 2], 6
-0x00000000000042c8:  7C AA                jl    0x4274
-0x00000000000042ca:  C9                   leave 
+0x00000000000042c8:  7C AA                jl    label_6
+0x00000000000042ca:  C9                   LEAVE_MACRO 
 0x00000000000042cb:  5F                   pop   di
 0x00000000000042cc:  5E                   pop   si
 0x00000000000042cd:  5A                   pop   dx
@@ -288,7 +300,7 @@ PUBLIC  M_DrawSave_
 0x00000000000042d5:  55                   push  bp
 0x00000000000042d6:  89 E5                mov   bp, sp
 0x00000000000042d8:  83 EC 02             sub   sp, 2
-0x00000000000042db:  9A 7D 2C 4F 13       lcall 0x134f:0x2c7d
+0x00000000000042db:  9A 7D 2C 4F 13       call  Z_QuickMapStatus_
 0x00000000000042e0:  B8 1D 00             mov   ax, 0x1d
 0x00000000000042e3:  E8 3A FE             call  M_GetMenuPatch_
 0x00000000000042e6:  89 C3                mov   bx, ax
@@ -296,51 +308,51 @@ PUBLIC  M_DrawSave_
 0x00000000000042ea:  BA 1C 00             mov   dx, 0x1c
 0x00000000000042ed:  B8 48 00             mov   ax, 0x48
 0x00000000000042f0:  C6 46 FE 00          mov   byte ptr [bp - 2], 0
-0x00000000000042f4:  9A CC 26 4F 13       lcall 0x134f:0x26cc
+0x00000000000042f4:  9A CC 26 4F 13       call  V_DrawPatchDirect_
 0x00000000000042f9:  8A 46 FE             mov   al, byte ptr [bp - 2]
 0x00000000000042fc:  98                   cbw  
-0x00000000000042fd:  8A 16 BE 10          mov   dl, byte ptr [0x10be]
+0x00000000000042fd:  8A 16 BE 10          mov   dl, byte ptr [_LoadDef + MENU_T.menu_y]
 0x0000000000004301:  89 C3                mov   bx, ax
 0x0000000000004303:  30 F6                xor   dh, dh
 0x0000000000004305:  C1 E3 04             shl   bx, 4
-0x0000000000004308:  A1 BC 10             mov   ax, word ptr [0x10bc]
+0x0000000000004308:  A1 BC 10             mov   ax, word ptr [_LoadDef + MENU_T.menu_x]
 0x000000000000430b:  01 DA                add   dx, bx
 0x000000000000430d:  E8 B4 FE             call  M_DrawSaveLoadBorder_
 0x0000000000004310:  8A 46 FE             mov   al, byte ptr [bp - 2]
 0x0000000000004313:  98                   cbw  
-0x0000000000004314:  6B C8 18             imul  cx, ax, 0x18
-0x0000000000004317:  A0 BE 10             mov   al, byte ptr [0x10be]
+0x0000000000004314:  6B C8 18             imul  cx, ax, SAVESTRINGSIZE
+0x0000000000004317:  A0 BE 10             mov   al, byte ptr [_LoadDef + MENU_T.menu_y]
 0x000000000000431a:  30 E4                xor   ah, ah
 0x000000000000431c:  89 C2                mov   dx, ax
-0x000000000000431e:  A1 BC 10             mov   ax, word ptr [0x10bc]
+0x000000000000431e:  A1 BC 10             mov   ax, word ptr [_LoadDef + MENU_T.menu_x]
 0x0000000000004321:  01 DA                add   dx, bx
 0x0000000000004323:  89 CB                mov   bx, cx
-0x0000000000004325:  B9 B1 3C             mov   cx, 0x3cb1
+0x0000000000004325:  B9 B1 3C             mov   cx, SAVEGAMESTRINGS_SEGMENT
 0x0000000000004328:  FE 46 FE             inc   byte ptr [bp - 2]
 0x000000000000432b:  E8 B4 09             call  M_WriteText_
 0x000000000000432e:  80 7E FE 06          cmp   byte ptr [bp - 2], 6
 0x0000000000004332:  7C C5                jl    0x42f9
 0x0000000000004334:  83 3E 10 1F 00       cmp   word ptr [0x1f10], 0
 0x0000000000004339:  75 05                jne   0x4340
-0x000000000000433b:  C9                   leave 
+0x000000000000433b:  C9                   LEAVE_MACRO 
 0x000000000000433c:  5A                   pop   dx
 0x000000000000433d:  59                   pop   cx
 0x000000000000433e:  5B                   pop   bx
 0x000000000000433f:  C3                   ret   
-0x0000000000004340:  6B 06 18 1F 18       imul  ax, word ptr [0x1f18], 0x18
-0x0000000000004345:  BA B1 3C             mov   dx, 0x3cb1
+0x0000000000004340:  6B 06 18 1F 18       imul  ax, word ptr [0x1f18], SAVESTRINGSIZE
+0x0000000000004345:  BA B1 3C             mov   dx, SAVEGAMESTRINGS_SEGMENT
 0x0000000000004348:  8C D9                mov   cx, ds
 0x000000000000434a:  E8 F3 08             call  M_StringWidth_
-0x000000000000434d:  8A 16 BE 10          mov   dl, byte ptr [0x10be]
+0x000000000000434d:  8A 16 BE 10          mov   dl, byte ptr [_LoadDef + MENU_T.menu_y]
 0x0000000000004351:  8B 1E 18 1F          mov   bx, word ptr [0x1f18]
 0x0000000000004355:  98                   cbw  
 0x0000000000004356:  C1 E3 04             shl   bx, 4
 0x0000000000004359:  30 F6                xor   dh, dh
-0x000000000000435b:  03 06 BC 10          add   ax, word ptr [0x10bc]
+0x000000000000435b:  03 06 BC 10          add   ax, word ptr [_LoadDef + MENU_T.menu_x]
 0x000000000000435f:  01 DA                add   dx, bx
 0x0000000000004361:  BB D7 19             mov   bx, 0x19d7
 0x0000000000004364:  E8 7B 09             call  M_WriteText_
-0x0000000000004367:  C9                   leave 
+0x0000000000004367:  C9                   LEAVE_MACRO 
 0x0000000000004368:  5A                   pop   dx
 0x0000000000004369:  59                   pop   cx
 0x000000000000436a:  5B                   pop   bx
@@ -356,8 +368,8 @@ PUBLIC  M_DoSave_
 0x000000000000436d:  51                   push  cx
 0x000000000000436e:  52                   push  dx
 0x000000000000436f:  89 C2                mov   dx, ax
-0x0000000000004371:  6B D8 18             imul  bx, ax, 0x18
-0x0000000000004374:  B9 B1 3C             mov   cx, 0x3cb1
+0x0000000000004371:  6B D8 18             imul  bx, ax, SAVESTRINGSIZE
+0x0000000000004374:  B9 B1 3C             mov   cx, SAVEGAMESTRINGS_SEGMENT
 0x0000000000004377:  98                   cbw  
 0x0000000000004378:  0E                   push  cs
 0x0000000000004379:  E8 B4 D6             call  0x1a30
@@ -393,30 +405,30 @@ PUBLIC  M_SaveSelect_
 0x000000000000439c:  89 E5                mov   bp, sp
 0x000000000000439e:  81 EC 00 01          sub   sp, 0x100
 0x00000000000043a2:  89 C7                mov   di, ax
-0x00000000000043a4:  6B C8 18             imul  cx, ax, 0x18
+0x00000000000043a4:  6B C8 18             imul  cx, ax, SAVESTRINGSIZE
 0x00000000000043a7:  C7 06 10 1F 01 00    mov   word ptr [0x1f10], 1
 0x00000000000043ad:  30 D2                xor   dl, dl
 0x00000000000043af:  A3 18 1F             mov   word ptr [0x1f18], ax
 0x00000000000043b2:  88 D0                mov   al, dl
 0x00000000000043b4:  98                   cbw  
-0x00000000000043b5:  3D 18 00             cmp   ax, 0x18
+0x00000000000043b5:  3D 18 00             cmp   ax, SAVESTRINGSIZE
 0x00000000000043b8:  73 19                jae   0x43d3
 0x00000000000043ba:  88 D0                mov   al, dl
 0x00000000000043bc:  98                   cbw  
 0x00000000000043bd:  89 CE                mov   si, cx
 0x00000000000043bf:  89 C3                mov   bx, ax
 0x00000000000043c1:  01 C6                add   si, ax
-0x00000000000043c3:  B8 B1 3C             mov   ax, 0x3cb1
+0x00000000000043c3:  B8 B1 3C             mov   ax, SAVEGAMESTRINGS_SEGMENT
 0x00000000000043c6:  8E C0                mov   es, ax
 0x00000000000043c8:  26 8A 04             mov   al, byte ptr es:[si]
 0x00000000000043cb:  FE C2                inc   dl
 0x00000000000043cd:  88 87 70 1C          mov   byte ptr [bx + 0x1c70], al
 0x00000000000043d1:  EB DF                jmp   0x43b2
-0x00000000000043d3:  6B F7 18             imul  si, di, 0x18
+0x00000000000043d3:  6B F7 18             imul  si, di, SAVESTRINGSIZE
 0x00000000000043d6:  8D 9E 00 FF          lea   bx, [bp - 0x100]
 0x00000000000043da:  B8 17 00             mov   ax, 0x17
 0x00000000000043dd:  8C D9                mov   cx, ds
-0x00000000000043df:  BA B1 3C             mov   dx, 0x3cb1
+0x00000000000043df:  BA B1 3C             mov   dx, SAVEGAMESTRINGS_SEGMENT
 0x00000000000043e2:  0E                   push  cs
 0x00000000000043e3:  E8 40 C0             call  0x426
 0x00000000000043e6:  90                   nop   
@@ -427,15 +439,15 @@ PUBLIC  M_SaveSelect_
 0x00000000000043f0:  3E E8 56 C8          call  0xc4a
 0x00000000000043f4:  85 C0                test  ax, ax
 0x00000000000043f6:  75 09                jne   0x4401
-0x00000000000043f8:  B8 B1 3C             mov   ax, 0x3cb1
+0x00000000000043f8:  B8 B1 3C             mov   ax, SAVEGAMESTRINGS_SEGMENT
 0x00000000000043fb:  8E C0                mov   es, ax
 0x00000000000043fd:  26 C6 04 00          mov   byte ptr es:[si], 0
-0x0000000000004401:  6B C7 18             imul  ax, di, 0x18
-0x0000000000004404:  BA B1 3C             mov   dx, 0x3cb1
+0x0000000000004401:  6B C7 18             imul  ax, di, SAVESTRINGSIZE
+0x0000000000004404:  BA B1 3C             mov   dx, SAVEGAMESTRINGS_SEGMENT
 0x0000000000004407:  0E                   push  cs
 0x0000000000004408:  3E E8 9A C0          call  0x4a6
 0x000000000000440c:  A3 14 1F             mov   word ptr [0x1f14], ax
-0x000000000000440f:  C9                   leave 
+0x000000000000440f:  C9                   LEAVE_MACRO 
 0x0000000000004410:  5F                   pop   di
 0x0000000000004411:  5E                   pop   si
 0x0000000000004412:  5A                   pop   dx
@@ -461,7 +473,7 @@ PUBLIC  M_SaveGame_
 0x0000000000004427:  BB 9F 01             mov   bx, 0x19f
 0x000000000000442a:  80 3F 00             cmp   byte ptr [bx], 0
 0x000000000000442d:  74 20                je    0x444f
-0x000000000000442f:  C9                   leave 
+0x000000000000442f:  C9                   LEAVE_MACRO 
 0x0000000000004430:  5A                   pop   dx
 0x0000000000004431:  59                   pop   cx
 0x0000000000004432:  5B                   pop   bx
@@ -480,7 +492,7 @@ PUBLIC  M_SaveGame_
 0x0000000000004452:  C7 06 0E 1F DF 10    mov   word ptr [0x1f0e], 0x10df
 0x0000000000004458:  A3 12 1F             mov   word ptr [0x1f12], ax
 0x000000000000445b:  E8 06 FE             call  0x4264
-0x000000000000445e:  C9                   leave 
+0x000000000000445e:  C9                   LEAVE_MACRO 
 0x000000000000445f:  5A                   pop   dx
 0x0000000000004460:  59                   pop   cx
 0x0000000000004461:  5B                   pop   bx
@@ -499,7 +511,7 @@ PUBLIC  M_QuickSaveResponse_
 0x000000000000446b:  C3                   ret   
 0x000000000000446c:  A0 21 20             mov   al, byte ptr [0x2021]
 0x000000000000446f:  98                   cbw  
-0x0000000000004470:  BA 18 00             mov   dx, 0x18
+0x0000000000004470:  BA 18 00             mov   dx, SAVESTRINGSIZE
 0x0000000000004473:  E8 F6 FE             call  0x436c
 0x0000000000004476:  31 C0                xor   ax, ax
 0x0000000000004478:  9A BF 03 4F 13       lcall 0x134f:0x3bf
@@ -541,9 +553,9 @@ PUBLIC  M_QuickSave_
 0x00000000000044ba:  3E E8 68 BF          call  0x426
 0x00000000000044be:  A0 21 20             mov   al, byte ptr [0x2021]
 0x00000000000044c1:  98                   cbw  
-0x00000000000044c2:  6B C0 18             imul  ax, ax, 0x18
+0x00000000000044c2:  6B C0 18             imul  ax, ax, SAVESTRINGSIZE
 0x00000000000044c5:  8C DA                mov   dx, ds
-0x00000000000044c7:  68 B1 3C             push  0x3cb1
+0x00000000000044c7:  68 B1 3C             push  SAVEGAMESTRINGS_SEGMENT
 0x00000000000044ca:  8D 5E 4C             lea   bx, [bp + 0x4c]
 0x00000000000044cd:  8C D9                mov   cx, ds
 0x00000000000044cf:  50                   push  ax
@@ -595,14 +607,15 @@ PUBLIC  M_QuickLoadResponse_
 
 
 0x000000000000452e:  52                   push  dx
-0x000000000000452f:  3D 79 00             cmp   ax, 0x79
-0x0000000000004532:  74 02                je    0x4536
+0x000000000000452f:  3D 79 00             cmp   ax, 'y' ; 0x79
+0x0000000000004532:  74 02                je    label_3
 0x0000000000004534:  5A                   pop   dx
 0x0000000000004535:  C3                   ret   
+label_3:
 0x0000000000004536:  A0 21 20             mov   al, byte ptr [0x2021]
 0x0000000000004539:  98                   cbw  
-0x000000000000453a:  BA 18 00             mov   dx, 0x18
-0x000000000000453d:  E8 EE FC             call  0x422e
+0x000000000000453a:  BA 18 00             mov   dx, SFX_SWTCHX
+0x000000000000453d:  E8 EE FC             call  S_StartSound_
 0x0000000000004540:  31 C0                xor   ax, ax
 0x0000000000004542:  9A BF 03 4F 13       lcall 0x134f:0x3bf
 0x0000000000004547:  5A                   pop   dx
@@ -639,9 +652,9 @@ PUBLIC  M_QuickLoad_
 0x0000000000004578:  90                   nop   
 0x0000000000004579:  A0 21 20             mov   al, byte ptr [0x2021]
 0x000000000000457c:  98                   cbw  
-0x000000000000457d:  6B C0 18             imul  ax, ax, 0x18
+0x000000000000457d:  6B C0 18             imul  ax, ax, SAVESTRINGSIZE
 0x0000000000004580:  8C DA                mov   dx, ds
-0x0000000000004582:  68 B1 3C             push  0x3cb1
+0x0000000000004582:  68 B1 3C             push  SAVEGAMESTRINGS_SEGMENT
 0x0000000000004585:  8D 5E 4C             lea   bx, [bp + 0x4c]
 0x0000000000004588:  8C D9                mov   cx, ds
 0x000000000000458a:  50                   push  ax
@@ -746,7 +759,7 @@ PUBLIC  M_DrawSound_
 0x000000000000461d:  89 C3                mov   bx, ax
 0x000000000000461f:  BA 26 00             mov   dx, 0x26
 0x0000000000004622:  B8 3C 00             mov   ax, 0x3c
-0x0000000000004625:  9A CC 26 4F 13       lcall 0x134f:0x26cc
+0x0000000000004625:  9A CC 26 4F 13       call  V_DrawPatchDirect_
 0x000000000000462a:  BB 10 00             mov   bx, 0x10
 0x000000000000462d:  A0 94 10             mov   al, byte ptr [0x1094]
 0x0000000000004630:  8A 0E 25 20          mov   cl, byte ptr [0x2025]
@@ -795,23 +808,25 @@ PUBLIC  M_SfxVol_
 0x000000000000466e:  52                   push  dx
 0x000000000000466f:  8A 16 25 20          mov   dl, byte ptr [0x2025]
 0x0000000000004673:  3D 01 00             cmp   ax, 1
-0x0000000000004676:  75 1A                jne   0x4692
+0x0000000000004676:  75 1A                jne   label_4
 0x0000000000004678:  80 FA 0F             cmp   dl, 0xf
-0x000000000000467b:  73 02                jae   0x467f
+0x000000000000467b:  73 02                jae   label_5
 0x000000000000467d:  FE C2                inc   dl
+label_5:
 0x000000000000467f:  88 D0                mov   al, dl
 0x0000000000004681:  30 E4                xor   ah, ah
 0x0000000000004683:  88 16 25 20          mov   byte ptr [0x2025], dl
-0x0000000000004687:  9A 8E 01 4F 13       lcall 0x134f:0x18e
+0x0000000000004687:  9A 8E 01 4F 13       call  S_SetSfxVolume_
 0x000000000000468c:  8A 16 25 20          mov   dl, byte ptr [0x2025]
 0x0000000000004690:  5A                   pop   dx
 0x0000000000004691:  C3                   ret   
+label_4:
 0x0000000000004692:  85 C0                test  ax, ax
-0x0000000000004694:  75 E9                jne   0x467f
+0x0000000000004694:  75 E9                jne   label_5
 0x0000000000004696:  84 D2                test  dl, dl
-0x0000000000004698:  74 E5                je    0x467f
+0x0000000000004698:  74 E5                je    label_5
 0x000000000000469a:  FE CA                dec   dl
-0x000000000000469c:  EB E1                jmp   0x467f
+0x000000000000469c:  EB E1                jmp   label_5
 
 
 ENDP
@@ -857,7 +872,7 @@ PUBLIC  M_DrawMainMenu_
 0x00000000000046d8:  89 D1                mov   cx, dx
 0x00000000000046da:  BA 02 00             mov   dx, 2
 0x00000000000046dd:  B8 5E 00             mov   ax, 0x5e
-0x00000000000046e0:  9A CC 26 4F 13       lcall 0x134f:0x26cc
+0x00000000000046e0:  9A CC 26 4F 13       call  V_DrawPatchDirect_
 0x00000000000046e5:  5A                   pop   dx
 0x00000000000046e6:  59                   pop   cx
 0x00000000000046e7:  5B                   pop   bx
@@ -874,20 +889,20 @@ PUBLIC  M_DrawNewGame_
 0x00000000000046ea:  53                   push  bx
 0x00000000000046eb:  51                   push  cx
 0x00000000000046ec:  52                   push  dx
-0x00000000000046ed:  B8 18 00             mov   ax, 0x18
+0x00000000000046ed:  B8 18 00             mov   ax, 24
 0x00000000000046f0:  E8 2D FA             call  M_GetMenuPatch_
 0x00000000000046f3:  89 C3                mov   bx, ax
 0x00000000000046f5:  89 D1                mov   cx, dx
 0x00000000000046f7:  BA 0E 00             mov   dx, 0xe
 0x00000000000046fa:  B8 60 00             mov   ax, 0x60
-0x00000000000046fd:  9A CC 26 4F 13       lcall 0x134f:0x26cc
+0x00000000000046fd:  9A CC 26 4F 13       call  V_DrawPatchDirect_
 0x0000000000004702:  B8 17 00             mov   ax, 0x17
 0x0000000000004705:  E8 18 FA             call  M_GetMenuPatch_
 0x0000000000004708:  89 C3                mov   bx, ax
 0x000000000000470a:  89 D1                mov   cx, dx
 0x000000000000470c:  BA 26 00             mov   dx, 0x26
 0x000000000000470f:  B8 36 00             mov   ax, 0x36
-0x0000000000004712:  9A CC 26 4F 13       lcall 0x134f:0x26cc
+0x0000000000004712:  9A CC 26 4F 13       call  V_DrawPatchDirect_
 0x0000000000004717:  5A                   pop   dx
 0x0000000000004718:  59                   pop   cx
 0x0000000000004719:  5B                   pop   bx
@@ -933,7 +948,7 @@ PUBLIC  M_DrawEpisode_
 0x0000000000004751:  89 D1                mov   cx, dx
 0x0000000000004753:  BA 26 00             mov   dx, 0x26
 0x0000000000004756:  B8 36 00             mov   ax, 0x36
-0x0000000000004759:  9A CC 26 4F 13       lcall 0x134f:0x26cc
+0x0000000000004759:  9A CC 26 4F 13       call  V_DrawPatchDirect_
 0x000000000000475e:  5A                   pop   dx
 0x000000000000475f:  59                   pop   cx
 0x0000000000004760:  5B                   pop   bx
@@ -993,7 +1008,7 @@ PUBLIC  M_ChooseSkill_
 0x00000000000047a8:  BB 01 00             mov   bx, 1
 0x00000000000047ab:  8D 86 00 FF          lea   ax, [bp - 0x100]
 0x00000000000047af:  E8 4E 04             call  0x4c00
-0x00000000000047b2:  C9                   leave 
+0x00000000000047b2:  C9                   LEAVE_MACRO 
 0x00000000000047b3:  5A                   pop   dx
 0x00000000000047b4:  59                   pop   cx
 0x00000000000047b5:  5B                   pop   bx
@@ -1008,7 +1023,7 @@ PUBLIC  M_ChooseSkill_
 0x00000000000047c6:  E8 37 D4             call  0x1c00
 0x00000000000047c9:  BB 6C 04             mov   bx, 0x46c
 0x00000000000047cc:  C6 07 00             mov   byte ptr [bx], 0
-0x00000000000047cf:  C9                   leave 
+0x00000000000047cf:  C9                   LEAVE_MACRO 
 0x00000000000047d0:  5A                   pop   dx
 0x00000000000047d1:  59                   pop   cx
 0x00000000000047d2:  5B                   pop   bx
@@ -1036,7 +1051,7 @@ PUBLIC  M_Episode_
 0x00000000000047ed:  A1 1F 10             mov   ax, word ptr [0x101f]
 0x00000000000047f0:  C7 06 0E 1F 15 10    mov   word ptr [0x1f0e], 0x1015
 0x00000000000047f6:  A3 12 1F             mov   word ptr [0x1f12], ax
-0x00000000000047f9:  C9                   leave 
+0x00000000000047f9:  C9                   LEAVE_MACRO 
 0x00000000000047fa:  5A                   pop   dx
 0x00000000000047fb:  59                   pop   cx
 0x00000000000047fc:  5B                   pop   bx
@@ -1053,7 +1068,7 @@ PUBLIC  M_Episode_
 0x0000000000004817:  A1 64 10             mov   ax, word ptr [0x1064]
 0x000000000000481a:  C7 06 0E 1F 5A 10    mov   word ptr [0x1f0e], 0x105a
 0x0000000000004820:  A3 12 1F             mov   word ptr [0x1f12], ax
-0x0000000000004823:  C9                   leave 
+0x0000000000004823:  C9                   LEAVE_MACRO 
 0x0000000000004824:  5A                   pop   dx
 0x0000000000004825:  59                   pop   cx
 0x0000000000004826:  5B                   pop   bx
@@ -1075,7 +1090,7 @@ PUBLIC  M_DrawOptions_
 0x0000000000004834:  89 C3                mov   bx, ax
 0x0000000000004836:  BA 0F 00             mov   dx, 0xf
 0x0000000000004839:  B8 6C 00             mov   ax, 0x6c
-0x000000000000483c:  9A CC 26 4F 13       lcall 0x134f:0x26cc
+0x000000000000483c:  9A CC 26 4F 13       call  V_DrawPatchDirect_
 0x0000000000004841:  8A 1E 2D 20          mov   bl, byte ptr [0x202d]
 0x0000000000004845:  30 FF                xor   bh, bh
 0x0000000000004847:  8A 87 EB 10          mov   al, byte ptr [bx + 0x10eb]
@@ -1088,7 +1103,7 @@ PUBLIC  M_DrawOptions_
 0x000000000000485c:  81 C6 AF 00          add   si, 0xaf
 0x0000000000004860:  89 C3                mov   bx, ax
 0x0000000000004862:  89 F0                mov   ax, si
-0x0000000000004864:  9A CC 26 4F 13       lcall 0x134f:0x26cc
+0x0000000000004864:  9A CC 26 4F 13       call  V_DrawPatchDirect_
 0x0000000000004869:  8A 1E 27 20          mov   bl, byte ptr [0x2027]
 0x000000000000486d:  30 FF                xor   bh, bh
 0x000000000000486f:  8A 87 ED 10          mov   al, byte ptr [bx + 0x10ed]
@@ -1101,7 +1116,7 @@ PUBLIC  M_DrawOptions_
 0x0000000000004884:  83 C6 78             add   si, 0x78
 0x0000000000004887:  89 C3                mov   bx, ax
 0x0000000000004889:  89 F0                mov   ax, si
-0x000000000000488b:  9A CC 26 4F 13       lcall 0x134f:0x26cc
+0x000000000000488b:  9A CC 26 4F 13       call  V_DrawPatchDirect_
 0x0000000000004890:  BB 0A 00             mov   bx, 0xa
 0x0000000000004893:  A0 52 10             mov   al, byte ptr [0x1052]
 0x0000000000004896:  8A 0E 29 20          mov   cl, byte ptr [0x2029]
@@ -1211,7 +1226,7 @@ PUBLIC  M_EndGame_
 0x0000000000004931:  BA 22 00             mov   dx, 0x22
 0x0000000000004934:  30 E4                xor   ah, ah
 0x0000000000004936:  9A BF 03 4F 13       lcall 0x134f:0x3bf
-0x000000000000493b:  C9                   leave 
+0x000000000000493b:  C9                   LEAVE_MACRO 
 0x000000000000493c:  5A                   pop   dx
 0x000000000000493d:  59                   pop   cx
 0x000000000000493e:  5B                   pop   bx
@@ -1226,7 +1241,7 @@ PUBLIC  M_EndGame_
 0x0000000000004951:  BB 01 00             mov   bx, 1
 0x0000000000004954:  8D 86 00 FF          lea   ax, [bp - 0x100]
 0x0000000000004958:  E8 A5 02             call  0x4c00
-0x000000000000495b:  C9                   leave 
+0x000000000000495b:  C9                   LEAVE_MACRO 
 0x000000000000495c:  5A                   pop   dx
 0x000000000000495d:  59                   pop   cx
 0x000000000000495e:  5B                   pop   bx
@@ -1317,7 +1332,7 @@ PUBLIC  M_QuitResponse_
 0x00000000000049f4:  B8 69 00             mov   ax, 0x69
 0x00000000000049f7:  E8 26 B8             call  0x220
 0x00000000000049fa:  E8 C5 B7             call  0x1c2
-0x00000000000049fd:  C9                   leave 
+0x00000000000049fd:  C9                   LEAVE_MACRO 
 0x00000000000049fe:  5E                   pop   si
 0x00000000000049ff:  5A                   pop   dx
 0x0000000000004a00:  5B                   pop   bx
@@ -1534,7 +1549,7 @@ PUBLIC  M_DrawThermo_
 0x0000000000004b94:  8B 56 FC             mov   dx, word ptr [bp - 4]
 0x0000000000004b97:  8B 46 FE             mov   ax, word ptr [bp - 2]
 0x0000000000004b9a:  83 C6 08             add   si, 8
-0x0000000000004b9d:  9A CC 26 4F 13       lcall 0x134f:0x26cc
+0x0000000000004b9d:  9A CC 26 4F 13       call  V_DrawPatchDirect_
 0x0000000000004ba2:  83 7E FA 00          cmp   word ptr [bp - 6], 0
 0x0000000000004ba6:  7E 1D                jle   0x4bc5
 0x0000000000004ba8:  B8 09 00             mov   ax, 9
@@ -1544,7 +1559,7 @@ PUBLIC  M_DrawThermo_
 0x0000000000004bb2:  8B 56 FC             mov   dx, word ptr [bp - 4]
 0x0000000000004bb5:  89 F0                mov   ax, si
 0x0000000000004bb7:  47                   inc   di
-0x0000000000004bb8:  9A CC 26 4F 13       lcall 0x134f:0x26cc
+0x0000000000004bb8:  9A CC 26 4F 13       call  V_DrawPatchDirect_
 0x0000000000004bbd:  83 C6 08             add   si, 8
 0x0000000000004bc0:  3B 7E FA             cmp   di, word ptr [bp - 6]
 0x0000000000004bc3:  7C E3                jl    0x4ba8
@@ -1556,7 +1571,7 @@ PUBLIC  M_DrawThermo_
 0x0000000000004bd2:  8B 56 FC             mov   dx, word ptr [bp - 4]
 0x0000000000004bd5:  89 F0                mov   ax, si
 0x0000000000004bd7:  83 C7 08             add   di, 8
-0x0000000000004bda:  9A CC 26 4F 13       lcall 0x134f:0x26cc
+0x0000000000004bda:  9A CC 26 4F 13       call  V_DrawPatchDirect_
 0x0000000000004bdf:  B8 07 00             mov   ax, 7
 0x0000000000004be2:  8B 76 F8             mov   si, word ptr [bp - 8]
 0x0000000000004be5:  E8 38 F5             call  M_GetMenuPatch_
@@ -1566,8 +1581,8 @@ PUBLIC  M_DrawThermo_
 0x0000000000004bef:  01 FE                add   si, di
 0x0000000000004bf1:  8B 56 FC             mov   dx, word ptr [bp - 4]
 0x0000000000004bf4:  89 F0                mov   ax, si
-0x0000000000004bf6:  9A CC 26 4F 13       lcall 0x134f:0x26cc
-0x0000000000004bfb:  C9                   leave 
+0x0000000000004bf6:  9A CC 26 4F 13       call  V_DrawPatchDirect_
+0x0000000000004bfb:  C9                   LEAVE_MACRO 
 0x0000000000004bfc:  5F                   pop   di
 0x0000000000004bfd:  5E                   pop   si
 0x0000000000004bfe:  C3                   ret   
@@ -1604,7 +1619,7 @@ PUBLIC  M_StartMessage_
 0x0000000000004c31:  89 36 16 1F          mov   word ptr [0x1f16], si
 0x0000000000004c35:  A2 F5 1F             mov   byte ptr [0x1ff5], al
 0x0000000000004c38:  C6 07 01             mov   byte ptr [bx], 1
-0x0000000000004c3b:  C9                   leave 
+0x0000000000004c3b:  C9                   LEAVE_MACRO 
 0x0000000000004c3c:  5E                   pop   si
 0x0000000000004c3d:  59                   pop   cx
 0x0000000000004c3e:  C3                   ret   
@@ -1651,7 +1666,7 @@ PUBLIC  M_StringWidth_
 0x0000000000004c80:  39 CA                cmp   dx, cx
 0x0000000000004c82:  7C DC                jl    0x4c60
 0x0000000000004c84:  89 D8                mov   ax, bx
-0x0000000000004c86:  C9                   leave 
+0x0000000000004c86:  C9                   LEAVE_MACRO 
 0x0000000000004c87:  5F                   pop   di
 0x0000000000004c88:  5E                   pop   si
 0x0000000000004c89:  59                   pop   cx
@@ -1701,7 +1716,7 @@ PUBLIC  M_StringHeight_
 0x0000000000004cd3:  83 46 FE 08          add   word ptr [bp - 2], 8
 0x0000000000004cd7:  EB F6                jmp   0x4ccf
 0x0000000000004cd9:  8B 46 FE             mov   ax, word ptr [bp - 2]
-0x0000000000004cdc:  C9                   leave 
+0x0000000000004cdc:  C9                   LEAVE_MACRO 
 0x0000000000004cdd:  5F                   pop   di
 0x0000000000004cde:  5E                   pop   si
 0x0000000000004cdf:  59                   pop   cx
@@ -1759,7 +1774,7 @@ PUBLIC  M_WriteText_
 0x0000000000004d3d:  89 5E FA             mov   word ptr [bp - 6], bx
 0x0000000000004d40:  81 FB 40 01          cmp   bx, 0x140
 0x0000000000004d44:  7E 04                jle   0x4d4a
-0x0000000000004d46:  C9                   leave 
+0x0000000000004d46:  C9                   LEAVE_MACRO 
 0x0000000000004d47:  5F                   pop   di
 0x0000000000004d48:  5E                   pop   si
 0x0000000000004d49:  C3                   ret   
@@ -1770,7 +1785,7 @@ PUBLIC  M_WriteText_
 0x0000000000004d53:  89 FA                mov   dx, di
 0x0000000000004d55:  8B 9F 78 1E          mov   bx, word ptr [bx + 0x1e78]
 0x0000000000004d59:  8B 76 FA             mov   si, word ptr [bp - 6]
-0x0000000000004d5c:  9A CC 26 4F 13       lcall 0x134f:0x26cc
+0x0000000000004d5c:  9A CC 26 4F 13       call  V_DrawPatchDirect_
 0x0000000000004d61:  EB 92                jmp   0x4cf5
 0x0000000000004d63:  FC                   cld   
 
@@ -1796,9 +1811,9 @@ PUBLIC  M_Responder_
 0x0000000000004d87:  75 27                jne   0x4db0
 0x0000000000004d89:  83 3E 14 1F 00       cmp   word ptr [0x1f14], 0
 0x0000000000004d8e:  7E 16                jle   0x4da6
-0x0000000000004d90:  6B 1E 18 1F 18       imul  bx, word ptr [0x1f18], 0x18
+0x0000000000004d90:  6B 1E 18 1F 18       imul  bx, word ptr [0x1f18], SAVESTRINGSIZE
 0x0000000000004d95:  FF 0E 14 1F          dec   word ptr [0x1f14]
-0x0000000000004d99:  BA B1 3C             mov   dx, 0x3cb1
+0x0000000000004d99:  BA B1 3C             mov   dx, SAVEGAMESTRINGS_SEGMENT
 0x0000000000004d9c:  03 1E 14 1F          add   bx, word ptr [0x1f14]
 0x0000000000004da0:  8E C2                mov   es, dx
 0x0000000000004da2:  26 C6 07 00          mov   byte ptr es:[bx], 0
@@ -1814,7 +1829,7 @@ PUBLIC  M_Responder_
 0x0000000000004db5:  31 C0                xor   ax, ax
 0x0000000000004db7:  30 D2                xor   dl, dl
 0x0000000000004db9:  A3 10 1F             mov   word ptr [0x1f10], ax
-0x0000000000004dbc:  6B 0E 18 1F 18       imul  cx, word ptr [0x1f18], 0x18
+0x0000000000004dbc:  6B 0E 18 1F 18       imul  cx, word ptr [0x1f18], SAVESTRINGSIZE
 0x0000000000004dc1:  88 D0                mov   al, dl
 0x0000000000004dc3:  98                   cbw  
 0x0000000000004dc4:  3D 18 00             cmp   ax, 0x18
@@ -1824,7 +1839,7 @@ PUBLIC  M_Responder_
 0x0000000000004dcc:  89 CE                mov   si, cx
 0x0000000000004dce:  89 C3                mov   bx, ax
 0x0000000000004dd0:  01 C6                add   si, ax
-0x0000000000004dd2:  B8 B1 3C             mov   ax, 0x3cb1
+0x0000000000004dd2:  B8 B1 3C             mov   ax, SAVEGAMESTRINGS_SEGMENT
 0x0000000000004dd5:  8E C0                mov   es, ax
 0x0000000000004dd7:  8A 87 70 1C          mov   al, byte ptr [bx + 0x1c70]
 0x0000000000004ddb:  FE C2                inc   dl
@@ -1833,9 +1848,9 @@ PUBLIC  M_Responder_
 0x0000000000004de2:  E9 90 00             jmp   0x4e75
 0x0000000000004de5:  83 FB 0D             cmp   bx, 0xd
 0x0000000000004de8:  75 21                jne   0x4e0b
-0x0000000000004dea:  6B 1E 18 1F 18       imul  bx, word ptr [0x1f18], 0x18
+0x0000000000004dea:  6B 1E 18 1F 18       imul  bx, word ptr [0x1f18], SAVESTRINGSIZE
 0x0000000000004def:  31 C0                xor   ax, ax
-0x0000000000004df1:  BA B1 3C             mov   dx, 0x3cb1
+0x0000000000004df1:  BA B1 3C             mov   dx, SAVEGAMESTRINGS_SEGMENT
 0x0000000000004df4:  A3 10 1F             mov   word ptr [0x1f10], ax
 0x0000000000004df7:  8E C2                mov   es, dx
 0x0000000000004df9:  26 80 3F 00          cmp   byte ptr es:[bx], 0
@@ -1867,13 +1882,13 @@ PUBLIC  M_Responder_
 0x0000000000004e35:  7F F3                jg    0x4e2a
 0x0000000000004e37:  83 3E 14 1F 17       cmp   word ptr [0x1f14], 0x17
 0x0000000000004e3c:  73 EC                jae   0x4e2a
-0x0000000000004e3e:  6B 06 18 1F 18       imul  ax, word ptr [0x1f18], 0x18
-0x0000000000004e43:  BA B1 3C             mov   dx, 0x3cb1
+0x0000000000004e3e:  6B 06 18 1F 18       imul  ax, word ptr [0x1f18], SAVESTRINGSIZE
+0x0000000000004e43:  BA B1 3C             mov   dx, SAVEGAMESTRINGS_SEGMENT
 0x0000000000004e46:  E8 F7 FD             call  M_StringWidth_
 0x0000000000004e49:  3D B0 00             cmp   ax, 0xb0
 0x0000000000004e4c:  73 DC                jae   0x4e2a
-0x0000000000004e4e:  6B 06 18 1F 18       imul  ax, word ptr [0x1f18], 0x18
-0x0000000000004e53:  BA B1 3C             mov   dx, 0x3cb1
+0x0000000000004e4e:  6B 06 18 1F 18       imul  ax, word ptr [0x1f18], SAVESTRINGSIZE
+0x0000000000004e53:  BA B1 3C             mov   dx, SAVEGAMESTRINGS_SEGMENT
 0x0000000000004e56:  8B 36 14 1F          mov   si, word ptr [0x1f14]
 0x0000000000004e5a:  8E C2                mov   es, dx
 0x0000000000004e5c:  01 C6                add   si, ax
@@ -1902,10 +1917,10 @@ PUBLIC  M_Responder_
 0x0000000000004e9c:  89 D8                mov   ax, bx
 0x0000000000004e9e:  FF 16 16 1F          call  word ptr [0x1f16]
 0x0000000000004ea2:  BB 6C 04             mov   bx, 0x46c
-0x0000000000004ea5:  BA 18 00             mov   dx, 0x18
+0x0000000000004ea5:  BA 18 00             mov   dx, SFX_SWTCHX
 0x0000000000004ea8:  31 C0                xor   ax, ax
 0x0000000000004eaa:  C6 07 00             mov   byte ptr [bx], 0
-0x0000000000004ead:  9A BF 03 4F 13       lcall 0x134f:0x3bf
+0x0000000000004ead:  9A BF 03 4F 13       call  S_StartSound_
 0x0000000000004eb2:  B0 01                mov   al, 1
 0x0000000000004eb4:  5E                   pop   si
 0x0000000000004eb5:  59                   pop   cx
@@ -2304,9 +2319,9 @@ PUBLIC  M_Responder_
 0x0000000000005265:  80 3F 00             cmp   byte ptr [bx], 0
 0x0000000000005268:  74 03                je    0x526d
 0x000000000000526a:  C6 07 06             mov   byte ptr [bx], 6
-0x000000000000526d:  BA 18 00             mov   dx, 0x18
+0x000000000000526d:  BA 18 00             mov   dx, SFX_SWTCHX
 0x0000000000005270:  31 C0                xor   ax, ax
-0x0000000000005272:  9A BF 03 4F 13       lcall 0x134f:0x3bf
+0x0000000000005272:  9A BF 03 4F 13       call  S_StartSound_
 0x0000000000005277:  B0 01                mov   al, 1
 0x0000000000005279:  5E                   pop   si
 0x000000000000527a:  59                   pop   cx
@@ -2446,14 +2461,14 @@ PUBLIC  M_Drawer_
 0x000000000000539a:  BB 6C 04             mov   bx, 0x46c
 0x000000000000539d:  80 3F 00             cmp   byte ptr [bx], 0
 0x00000000000053a0:  75 57                jne   0x53f9
-0x00000000000053a2:  C9                   leave 
+0x00000000000053a2:  C9                   LEAVE_MACRO 
 0x00000000000053a3:  5F                   pop   di
 0x00000000000053a4:  5E                   pop   si
 0x00000000000053a5:  5A                   pop   dx
 0x00000000000053a6:  59                   pop   cx
 0x00000000000053a7:  5B                   pop   bx
 0x00000000000053a8:  CB                   retf  
-0x00000000000053a9:  9A 7D 2C 4F 13       lcall 0x134f:0x2c7d
+0x00000000000053a9:  9A 7D 2C 4F 13       call  Z_QuickMapStatus_
 0x00000000000053ae:  B8 6C 1F             mov   ax, 0x1f6c
 0x00000000000053b1:  8C DA                mov   dx, ds
 0x00000000000053b3:  E8 E6 F8             call  0x4c9c
@@ -2525,7 +2540,7 @@ PUBLIC  M_Drawer_
 0x0000000000005462:  80 7E FE 00          cmp   byte ptr [bp - 2], 0
 0x0000000000005466:  74 0C                je    0x5474
 0x0000000000005468:  9A EE 2D 4F 13       lcall 0x134f:0x2dee
-0x000000000000546d:  C9                   leave 
+0x000000000000546d:  C9                   LEAVE_MACRO 
 0x000000000000546e:  5F                   pop   di
 0x000000000000546f:  5E                   pop   si
 0x0000000000005470:  5A                   pop   dx
@@ -2533,7 +2548,7 @@ PUBLIC  M_Drawer_
 0x0000000000005472:  5B                   pop   bx
 0x0000000000005473:  CB                   retf  
 0x0000000000005474:  9A 9C 2B 4F 13       lcall 0x134f:0x2b9c
-0x0000000000005479:  C9                   leave 
+0x0000000000005479:  C9                   LEAVE_MACRO 
 0x000000000000547a:  5F                   pop   di
 0x000000000000547b:  5E                   pop   si
 0x000000000000547c:  5A                   pop   dx
@@ -2570,7 +2585,7 @@ PUBLIC  M_Drawer_
 0x00000000000054ca:  89 C3                mov   bx, ax
 0x00000000000054cc:  8B 46 F4             mov   ax, word ptr [bp - 0xc]
 0x00000000000054cf:  89 F2                mov   dx, si
-0x00000000000054d1:  9A CC 26 4F 13       lcall 0x134f:0x26cc
+0x00000000000054d1:  9A CC 26 4F 13       call  V_DrawPatchDirect_
 0x00000000000054d6:  FF 46 FA             inc   word ptr [bp - 6]
 0x00000000000054d9:  83 C6 10             add   si, 0x10
 0x00000000000054dc:  8B 5E FA             mov   bx, word ptr [bp - 6]
@@ -2595,12 +2610,12 @@ PUBLIC  M_Drawer_
 0x0000000000005512:  89 C3                mov   bx, ax
 0x0000000000005514:  89 F2                mov   dx, si
 0x0000000000005516:  89 F8                mov   ax, di
-0x0000000000005518:  9A CC 26 4F 13       lcall 0x134f:0x26cc
+0x0000000000005518:  9A CC 26 4F 13       call  V_DrawPatchDirect_
 0x000000000000551d:  80 7E FE 00          cmp   byte ptr [bp - 2], 0
 0x0000000000005521:  75 03                jne   0x5526
 0x0000000000005523:  E9 4E FF             jmp   0x5474
 0x0000000000005526:  9A EE 2D 4F 13       lcall 0x134f:0x2dee
-0x000000000000552b:  C9                   leave 
+0x000000000000552b:  C9                   LEAVE_MACRO 
 0x000000000000552c:  5F                   pop   di
 0x000000000000552d:  5E                   pop   si
 0x000000000000552e:  5A                   pop   dx

@@ -621,3 +621,26 @@ SB_VOICEINFO_T ENDS
 
 
 
+MENUITEM_T STRUC
+
+    menuitem_status        db ?  ; 0
+    menuitem_name          db ?  ; 1
+    menuitem_routine       dw ?  ; 2
+    menuitem_alphakey      db ?  ; 4
+
+MENUITEM_T ENDS
+
+
+; todo reorder..
+MENU_T STRUC
+
+    menu_numitems      db ?  ; 0
+    menu_prevMenu      dw ?  ; 1
+    menu_menuitems     dw ?  ; 3
+    menu_routine       dw ?  ; 5
+    menu_x             dw ?  ; 7
+    menu_y             db ?  ; 9
+    menu_laston        dw ?  ; 0Ah
+
+MENU_T ENDS
+

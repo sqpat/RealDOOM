@@ -143,7 +143,7 @@ struct sfxinfo_struct{
 // textureheights       3C4A:0000
 // rndtable             3C65:0000
 // subsector_lines      3C75:0000
-// savegamestrings      ????:0000
+// savegamestrings      3C810000
 // base_lower_end       3CC0:0000
 //03CACh
 
@@ -855,7 +855,9 @@ skytexture         5400:0000
 #define menugraphicspage4   (byte __far* )0x64000000
 #define menuoffsets         ((uint16_t __far*)  MAKE_FULL_SEGMENT(menugraphicspage4, size_menugraphcispage4 ))
 
-#define menuoffsets_segment  ((segment_t) ((int32_t)menuoffsets >> 16))
+#define menugraphicspage0segment  ((segment_t) ((int32_t)menugraphicspage0 >> 16))
+#define menugraphicspage4segment  ((segment_t) ((int32_t)menugraphicspage4 >> 16))
+#define menuoffsets_segment       ((segment_t) ((int32_t)menuoffsets >> 16))
 
 
 // menugraphicspage0  5000:0000

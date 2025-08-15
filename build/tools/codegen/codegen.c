@@ -8,7 +8,7 @@
 #include "p_inter.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2499
+#define CONSTANTS_COUNT 2503
 #define LOCALS_COUNT 22
 
 
@@ -178,6 +178,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "STATES_RENDER_SEGMENT",
     "BASE_LOWER_MEMORY_SEGMENT",
     "BASE_LOWER_END_SEGMENT",
+	"SAVEGAMESTRINGS_SEGMENT",
     "EMPTY_RENDER_9800_SEGMENT",
     "PHYSICS_7000_END_SEGMENT",
     "PHYSICS_9000_END_SEGMENT",
@@ -185,6 +186,10 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "RENDER_9000_END_SEGMENT",
     "RENDER_9C00_END_SEGMENT_16",
     "RENDER_9C00_END_SEGMENT_24",
+	"MENUGRAPHICSPAGE0SEGMENT",
+    "MENUGRAPHICSPAGE4SEGMENT",
+    "SAVESTRINGSIZE",
+
     "R_DRAWPLANES_24_OFFSET",
     "R_DRAWPLANES_16_OFFSET",
     "DRAWSKYPLANE_AREA_SEGMENT",
@@ -2761,13 +2766,18 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     states_render_segment,
     base_lower_memory_segment,
     base_lower_end_segment,
-    empty_render_9800_segment,
+    savegamestrings_segment,
+	empty_render_9800_segment,
     physics_7000_end_segment,
     physics_9000_end_segment,
     render_8800_end_segment,
     render_9000_end_segment,
     render_9C00_end_segment_16,
     render_9C00_end_segment_24,
+    menugraphicspage0segment,
+    menugraphicspage4segment,
+    SAVESTRINGSIZE,
+
     R_DrawPlanes24Offset,
     R_DrawPlanes16Offset,
     drawskyplane_area_segment,
