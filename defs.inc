@@ -545,7 +545,7 @@ _skullName =				         _NULL_OFFSET + 00B1Ch
 _STRING_HELP1   =      				 _NULL_OFFSET + 00820h
 _STRING_HELP2   =      				 _NULL_OFFSET + 00826h
 _STRING_HELP    =      				 _NULL_OFFSET + 0082Ch
-_STRING_newline =      				 _NULL_OFFSET + 00832h
+_STRING_newline =      				 _NULL_OFFSET + 00831h
 
 
 ; 828-82f free

@@ -19,8 +19,6 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 LINEHEIGHT = 16
-MENUGRAPHICS_PAGE4_SEGMENT = 06400h
-MENUGRAPHICS_PAGE0_SEGMENT = 05000h
 
 OPTIONS_E_MESSAGES = 1
 OPTIONS_E_MOUSESENS = 5
@@ -33,6 +31,7 @@ SOUND_E_MUSIC_VOL   = 2
 SOUND_E_SFX_EMPTY2  = 3
 SOUND_E_SOUND_END   = 4
 
+LOAD_END = 6
 
 
 EXTRN S_SetSfxVolume_:FAR
@@ -192,22 +191,19 @@ PUBLIC  M_GetMenuPatch_
 push  bx
 mov   bx, ax
 add   bx, ax
-cmp   ax, 27   ; number of menu graphics in first menu page. Todo unhardcode?
-jl    label_1
+cmp   al, 27   ; number of menu graphics in first menu page. Todo unhardcode?
 mov   ax, MENUOFFSETS_SEGMENT ; todo use offset in cs?
 mov   es, ax
-mov   dx, MENUGRAPHICS_PAGE4_SEGMENT
+mov   dx, MENUGRAPHICSPAGE0SEGMENT
+jl    use_page_0
+mov   dx, MENUGRAPHICSPAGE4SEGMENT
+use_page_0:
 mov   ax, word ptr es:[bx]
 pop   bx
-ret   
-label_1:
-mov   ax, MENUOFFSETS_SEGMENT
-mov   es, ax
-mov   dx, MENUGRAPHICS_PAGE0_SEGMENT
-mov   ax, word ptr es:[bx]
-pop   bx
-ret   
+ret  
 
+
+COMMENT @
 weird_label_out_here:
 mov   al, byte ptr [bp - 2]
 cbw  
@@ -219,9 +215,9 @@ mov   byte ptr ds:[di + _LoadMenu + MENUITEM_T.menuitem_status], 0
 jmp   weird_label_out_here_back
 
 ENDP
+@
 
-LOAD_END = 6
-
+COMMENT @
 PROC    M_DrawLoad_ NEAR
 PUBLIC  M_DrawLoad_
 
@@ -273,6 +269,7 @@ ret
 
 ENDP
 
+
 PROC    M_DrawSaveLoadBorder_ NEAR
 PUBLIC  M_DrawSaveLoadBorder_
 
@@ -286,7 +283,7 @@ mov   bp, sp
 sub   sp, 4
 mov   si, ax
 mov   di, dx
-mov   ax, 32 ; todo use constants
+mov   ax, MENUPATCH_M_MSENS
 call  M_GetMenuPatch_
 mov   bx, si
 add   di, 7
@@ -300,7 +297,7 @@ mov   byte ptr [bp - 2], 0
 call  V_DrawPatchDirect_
 cld   
 loop_next_tile:
-mov   ax, 43
+mov   ax, MENUPATCH_M_LSCNTR
 call  M_GetMenuPatch_
 mov   bx, ax
 mov   cx, dx
@@ -327,6 +324,8 @@ ret
 
 
 ENDP
+@
+COMMENT @
 
 PROC    M_LoadSelect_ NEAR
 PUBLIC  M_LoadSelect_
@@ -341,14 +340,10 @@ cbw
 mov   dx, ds
 mov   bx, ax
 lea   ax, [bp - 0100h]
-push  cs
 call  makesavegamename_
-nop   
 lea   ax, [bp - 0100h]
 mov   bx, _menuactive
-push  cs
 call  G_LoadGame_
-nop   
 mov   byte ptr ds:[bx], 0
 LEAVE_MACRO 
 pop   dx
@@ -388,7 +383,6 @@ imul  di, cx, 5
 mov   dx, ds
 mov   bx, ax
 lea   ax, [bp - 0102h]
-push  cs
 call  makesavegamename_
 mov   dx, OFFSET _fopen_rb_argument
 lea   ax, [bp - 0102h]
@@ -507,9 +501,7 @@ mov   dx, ax
 imul  bx, ax, SAVESTRINGSIZE
 mov   cx, SAVEGAMESTRINGS_SEGMENT
 cbw  
-push  cs
 call  G_SaveGame_
-nop   
 mov   bx, _menuactive
 mov   byte ptr ds:[bx], 0
 cmp   byte ptr ds:[_snd_SfxVolume], -2
@@ -568,13 +560,10 @@ lea   bx, [bp - 0100h]
 mov   ax, EMPTYSTRING
 mov   cx, ds
 mov   dx, SAVEGAMESTRINGS_SEGMENT
-push  cs
 call  getStringByIndex_
-nop   
 lea   bx, [bp - 0100h]
 mov   cx, ds
 mov   ax, si
-push  cs
 call  locallib_strcmp_
 test  ax, ax
 jne   label_13
@@ -584,7 +573,6 @@ mov   byte ptr es:[si], 0
 label_13:
 imul  ax, di, SAVESTRINGSIZE
 mov   dx, SAVEGAMESTRINGS_SEGMENT
-push  cs
 call  locallib_strlen_
 mov   word ptr ds:[_saveCharIndex], ax
 LEAVE_MACRO 
@@ -623,7 +611,6 @@ label_14:
 lea   bx, [bp - 0100h]
 mov   ax, SAVEDEAD
 mov   cx, ds
-push  cs
 call  getStringByIndex_
 xor   dx, dx
 lea   ax, [bp - 0100h]
@@ -687,13 +674,10 @@ jl    label_18
 lea   bx, [bp + 04ch]
 mov   ax, 7
 mov   cx, ds
-push  cs
 call  getStringByIndex_
-nop   
 lea   bx, [bp + 07Eh]
 mov   ax, QLQLPROMPTEND
 mov   cx, ds
-push  cs
 call  getStringByIndex_
 mov   al, byte ptr ds:[_quickSaveSlot]
 cbw  
@@ -704,7 +688,6 @@ lea   bx, [bp + 04Ch]
 mov   cx, ds
 push  ax
 lea   ax, [bp - 04Ah]
-push  cs
 call  combine_strings_
 lea   ax, [bp + 07Eh]
 lea   bx, [bp - 04Ah]
@@ -713,7 +696,6 @@ push  ds
 mov   cx, ds
 push  ax
 lea   ax, [bp - 04Ah]
-push  cs
 call  combine_strings_
 mov   bx, 1
 mov   dx, OFFSET M_QuickSaveResponse_
@@ -789,14 +771,11 @@ jl    label_19
 lea   bx, [bp + 04Ch]
 mov   ax, 8
 mov   cx, ds
-push  cs
 call  getStringByIndex_
 lea   bx, [bp + 07Eh]
 mov   ax, QLQLPROMPTEND
 mov   cx, ds
-push  cs
 call  getStringByIndex_
-nop   
 mov   al, byte ptr ds:[_quickSaveSlot]
 cbw  
 imul  ax, ax, SAVESTRINGSIZE
@@ -806,9 +785,7 @@ lea   bx, [bp + 04Ch]
 mov   cx, ds
 push  ax
 lea   ax, [bp - 04Ah]
-push  cs
 call  combine_strings_
-nop   
 lea   dx, [bp + 07Eh]
 lea   bx, [bp - 04Ah]
 lea   ax, [bp - 04Ah]
@@ -816,9 +793,7 @@ push  ds
 mov   cx, ds
 push  dx
 mov   dx, ds
-push  cs
 call  combine_strings_
-nop   
 mov   bx, 1
 mov   dx, OFFSET M_QuickLoadResponse_
 lea   ax, [bp - 04Ah]
@@ -833,9 +808,7 @@ label_19:
 lea   bx, [bp - 04Ah]
 mov   ax, 5
 mov   cx, ds
-push  cs
 call  getStringByIndex_
-nop   
 xor   dx, dx
 lea   ax, [bp - 04Ah]
 xor   bx, bx
@@ -1155,7 +1128,6 @@ lea   bx, [bp - 0100h]
 mov   ax, 9
 mov   cx, ds
 mov   dx, OFFSET M_VerifyNightmare_
-push  cs
 call  getStringByIndex_
 mov   bx, 1
 lea   ax, [bp - 0100h]
@@ -1214,7 +1186,6 @@ label_21:
 lea   bx, [bp - 0100h]
 mov   ax, SWSTRING
 mov   cx, ds
-push  cs
 call  getStringByIndex_
 xor   dx, dx
 lea   ax, [bp - 0100h]
@@ -1356,9 +1327,7 @@ mov   ax, word ptr ds:[_itemOn]
 mov   word ptr ds:[bx + MENU_T.menu_laston], ax
 mov   bx, _menuactive
 mov   byte ptr ds:[bx], 0
-push  cs
 call  D_StartTitle_
-nop   
 pop   bx
 ret   
 cld   
@@ -1393,9 +1362,7 @@ lea   bx, [bp - 0100h]
 mov   ax, ENDGAME
 mov   cx, ds
 mov   dx, OFFSET M_EndGameResponse_
-push  cs
 call  getStringByIndex_
-nop   
 mov   bx, 1
 lea   ax, [bp - 0100h]
 call  M_StartMessage_
@@ -1543,9 +1510,7 @@ sar   ax, 15 ; todo no
 lea   bx, [bp + 07Eh]
 sub   dx, ax
 mov   ax, DOSY
-push  cs
 call  getStringByIndex_
-nop   
 test  dx, dx
 je    label_34
 mov   bx, _commercial
@@ -1557,17 +1522,13 @@ label_36:
 lea   bx, [bp + 014h]
 mov   cx, ds
 lea   dx, [bp + 014h]
-push  cs
 call  getStringByIndex_
-nop   
 mov   bx, _STRING_newline
 lea   ax, [bp + 014h]
-push  cs
 call  combine_strings_near_
 lea   bx, [bp + 07Eh]
 lea   dx, [bp + 014h]
 lea   ax, [bp + 014h]
-push  cs
 call  combine_strings_near_
 mov   bx, 1
 mov   dx, OFFSET M_QuitResponse_
@@ -1788,9 +1749,7 @@ mov   word ptr ds:[_messageLastMenuActive], ax
 mov   cx, ds
 mov   ax, _menu_messageString
 mov   byte ptr ds:[_messageToPrint], 1
-push  cs
 call  locallib_strcpy_
-nop   
 mov   al, byte ptr [bp - 2]
 mov   bx, _menuactive
 mov   word ptr ds:[_messageRoutine], si
@@ -1816,9 +1775,7 @@ mov   bp, sp
 sub   sp, 2
 mov   si, ax
 mov   di, dx
-push  cs
 call  locallib_strlen_
-nop   
 mov   cx, ax
 xor   bx, bx
 xor   dx, dx
@@ -1829,9 +1786,7 @@ label_48:
 mov   es, word ptr [bp - 2]
 mov   al, byte ptr es:[si]
 xor   ah, ah
-push  cs
 call  locallib_toupper_
-nop   
 xor   ah, ah
 sub   ax, HU_FONTSTART
 test  ax, ax
@@ -1882,7 +1837,6 @@ xor   bl, bl
 label_51:
 mov   ax, cx
 mov   dx, si
-push  cs
 call  locallib_strlen_
 mov   dx, ax
 mov   al, bl
@@ -1912,6 +1866,9 @@ ret
 
 ENDP
 
+@
+
+COMMENT @
 PROC    M_WriteText_ NEAR
 PUBLIC  M_WriteText_
 
@@ -1940,9 +1897,7 @@ add   di, 12
 jmp   label_54
 label_53:
 xor   ah, ah
-push  cs
 call  locallib_toupper_
-nop   
 mov   dl, al
 xor   dh, dh
 sub   dx, HU_FONTSTART
@@ -1982,6 +1937,8 @@ jmp   label_54
 cld   
 
 ENDP
+@
+COMMENT @
 
 PROC    M_Responder_ NEAR
 PUBLIC  M_Responder_
@@ -2065,7 +2022,6 @@ retf
 label_64:
 xor   bh, bh
 mov   ax, bx
-push  cs
 call  locallib_toupper_
 mov   bl, al
 cmp   bx, 32
@@ -2770,7 +2726,6 @@ mov   word ptr [bp - 4], ax
 label_141:
 mov   ax, word ptr [bp - 4]
 mov   dx, ds
-push  cs
 call  locallib_strlen_
 cmp   si, ax
 jge   label_139
@@ -2789,7 +2744,6 @@ mov   bx, word ptr [bp - 4]
 lea   ax, [bp - 036h]
 push  si
 mov   dx, ds
-push  cs
 call  locallib_strncpy_
 add   word ptr [bp - 0Eh], di
 mov   byte ptr [bp + si - 036h], 0
@@ -2799,13 +2753,11 @@ add   bx, word ptr [bp - 0Eh]
 mov   dx, ds
 mov   ax, bx
 mov   cx, ds
-push  cs
 call  locallib_strlen_
 cmp   si, ax
 jne   label_151
 lea   ax, [bp - 036h]
 mov   dx, ds
-push  cs
 call  locallib_strcpy_
 add   word ptr [bp - 0Eh], si
 label_151:
@@ -2962,7 +2914,7 @@ retf
 
 
 ENDP
-
+@
 
 PROC    M_MENU_ENDMARKER_ NEAR
 PUBLIC  M_MENU_ENDMARKER_

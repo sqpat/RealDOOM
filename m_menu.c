@@ -153,9 +153,10 @@ int16_t  __near M_StringHeight(int8_t __far*string);
 void __near M_StartControlPanel(void);
 void __near M_StartMessage(int8_t __near * string,void __near (* routine)(int16_t), boolean input);
  
+patch_t __far* __near M_GetMenuPatch(int16_t i);
 
 
-
+/*
 patch_t __far* __near M_GetMenuPatch(int16_t i) {
     if (i >= 27){
         return (patch_t __far*)(menugraphicspage4 + menuoffsets[i]);
@@ -163,6 +164,7 @@ patch_t __far* __near M_GetMenuPatch(int16_t i) {
     return (patch_t __far*)(menugraphicspage0 + menuoffsets[i]);
 
 }
+*/
 
 #define load_end 6
 
@@ -206,10 +208,10 @@ void __near M_DrawLoad(void){
 }
 
 
-
 //
 // Draw border for the savegame description
 //
+void __near M_DrawSaveLoadBorder(int16_t x, int16_t y);
 void __near M_DrawSaveLoadBorder(int16_t x, int16_t y){
     int8_t             i;
         
@@ -912,7 +914,6 @@ void __near M_WriteText (int16_t x, int16_t y, int8_t __far * string) {
         cx+=w;
     }
 }
-
 
 //
 // CONTROL PANEL
