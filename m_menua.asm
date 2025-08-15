@@ -487,7 +487,6 @@ ret
 
 ENDP
 
-COMMENT @
 
 
 PROC    M_DoSave_ NEAR
@@ -497,20 +496,19 @@ push  bx
 push  cx
 push  dx
 mov   dx, ax
-imul  bx, ax, SAVESTRINGSIZE
+mov   ah, SAVESTRINGSIZE
+mul   ah
+xchg  ax, bx
+mov   ax, dx
 mov   cx, SAVEGAMESTRINGS_SEGMENT
 cbw  
 call  G_SaveGame_
-mov   bx, _menuactive
-mov   byte ptr ds:[bx], 0
-cmp   byte ptr ds:[_snd_SfxVolume], -2
-je    label_10
-pop   dx
-pop   cx
-pop   bx
-ret   
-label_10:
-mov   byte ptr ds:[_snd_SfxVolume], dl
+
+mov   byte ptr ds:[_menuactive], 0
+cmp   byte ptr ds:[_quickSaveSlot], -2
+jne   dont_update_quicksaveslot
+mov   byte ptr ds:[_quickSaveSlot], dl
+dont_update_quicksaveslot:
 pop   dx
 pop   cx
 pop   bx
@@ -519,6 +517,9 @@ ret
 
 
 ENDP
+
+COMMENT @
+
 
 PROC    M_SaveSelect_ NEAR
 PUBLIC  M_SaveSelect_
@@ -584,6 +585,8 @@ ret
 
 
 ENDP
+
+
 
 PROC    M_SaveGame_ NEAR
 PUBLIC  M_SaveGame_

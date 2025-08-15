@@ -271,7 +271,6 @@ void __near M_DrawSave(void){
     }
 }
 
-*/
 
 
 //
@@ -286,6 +285,9 @@ void __near M_DoSave(int16_t slot){
     if (quickSaveSlot == -2)  // means to pick a slot now
         quickSaveSlot = slot;
 }
+
+*/
+
 
 //
 // User wants to save. Start string input for M_Responder
