@@ -18,25 +18,107 @@
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
+LINEHEIGHT = 16
+MENUGRAPHICS_PAGE4_SEGMENT = 06400h
+MENUGRAPHICS_PAGE0_SEGMENT = 05000h
 
-EXTRN P_RemoveThinker_:NEAR
-EXTRN P_CreateThinker_:NEAR
-EXTRN V_DrawPatchDirect_:FAR
-EXTRN Z_QuickMapStatus_:FAR
+OPTIONS_E_MESSAGES = 1
+OPTIONS_E_MOUSESENS = 5
+OPTIONS_E_SCRNSIZE = 3
+OPTIONS_E_DETAIL = 2
+
+SOUND_E_SFX_VOL     = 0
+SOUND_E_SFX_EMPTY1  = 1
+SOUND_E_MUSIC_VOL   = 2
+SOUND_E_SFX_EMPTY2  = 3
+SOUND_E_SOUND_END   = 4
+
+
+
 EXTRN S_SetSfxVolume_:FAR
+EXTRN S_SetMusicVolume_:FAR
+
+
+EXTRN V_DrawPatchDirect_:FAR
+EXTRN V_DrawFullscreenPatch_:FAR
 EXTRN getStringByIndex_:FAR
 EXTRN locallib_far_fread_:FAR
 EXTRN fclose_:FAR
 EXTRN fopen_:FAR
 EXTRN makesavegamename_:FAR
+
 EXTRN G_LoadGame_:FAR
+EXTRN G_SaveGame_:FAR
+EXTRN G_DeferedInitNew_:NEAR
+
 EXTRN locallib_strcmp_:FAR
 EXTRN combine_strings_:FAR
 EXTRN D_StartTitle_:FAR
 EXTRN locallib_strncpy_:FAR
+EXTRN locallib_strcpy_:FAR
+EXTRN locallib_toupper_:FAR
+EXTRN locallib_strlen_:FAR
+EXTRN combine_strings_near_:FAR
+EXTRN I_Quit_:FAR
+EXTRN I_WaitVBL_:FAR
+EXTRN S_StartSound_:FAR
+EXTRN R_SetViewSize_:FAR
+EXTRN I_SetPalette_:FAR
+
+EXTRN Z_QuickMapStatus_:FAR
+EXTRN Z_QuickMapMenu_:FAR
+EXTRN Z_QuickMapPhysics_:FAR
+EXTRN Z_QuickMapWipe_:FAR
+EXTRN Z_QuickMapByTaskNum_:FAR
 
 .DATA
 
+
+EXTRN _saveSlot:WORD
+EXTRN _saveCharIndex:WORD
+EXTRN _saveStringEnter:WORD
+EXTRN _saveOldString:BYTE
+
+EXTRN _usegamma:BYTE
+EXTRN _inhelpscreens:BYTE
+EXTRN _borderdrawcount:BYTE
+EXTRN _sfxVolume:BYTE
+EXTRN _musicVolume:BYTE
+EXTRN _snd_SfxVolume:BYTE
+
+EXTRN   _quickSaveSlot:BYTE
+
+EXTRN _usergame:BYTE
+EXTRN _showMessages:BYTE
+EXTRN _itemOn:BYTE
+EXTRN _message_dontfuckwithme:BYTE
+EXTRN _msgNames:BYTE
+EXTRN _mouseSensitivity:BYTE
+EXTRN _detailLevel:BYTE
+EXTRN _detailNames:BYTE
+EXTRN _screenSize:BYTE
+
+EXTRN _hu_font:WORD
+
+EXTRN _messageToPrint:BYTE
+EXTRN _messageNeedsInput:BYTE
+EXTRN _messageLastMenuActive:WORD
+EXTRN _currentMenu:WORD
+EXTRN _messageRoutine:WORD
+EXTRN _menu_messageString:WORD
+
+
+EXTRN _OptionsDef:WORD
+EXTRN _menu_epi:WORD
+EXTRN _ReadDef1:WORD
+EXTRN _ReadDef2:WORD
+EXTRN _NewDef:WORD
+EXTRN _MainDef:WORD
+EXTRN _LoadDef:WORD
+EXTRN _SaveDef:WORD
+EXTRN _EpiDef:WORD
+EXTRN _SoundDef:WORD
+EXTRN _LoadMenu:WORD
 
 
 
@@ -550,7 +632,7 @@ call  M_StartMessage_
 jmp   exit_m_savegame
 label_15:
 mov   ax, word ptr ds:[_SaveDef + MENU_T.menu_laston]
-mov   word ptr ds:[_currentMenu], _SaveDef
+mov   word ptr ds:[_currentMenu], OFFSET _SaveDef
 mov   word ptr ds:[_itemOn], ax
 call  M_ReadSaveStrings_
 LEAVE_MACRO 
@@ -634,7 +716,7 @@ lea   ax, [bp - 04Ah]
 push  cs
 call  combine_strings_
 mov   bx, 1
-mov   dx, M_QuickSaveResponse_
+mov   dx, OFFSET M_QuickSaveResponse_
 lea   ax, [bp - 04Ah]
 call  M_StartMessage_
 label_17:
@@ -652,7 +734,7 @@ jmp   label_17
 label_18:
 call  M_StartControlPanel_
 call  M_ReadSaveStrings_
-mov   word ptr ds:[_currentMenu], _SaveDef
+mov   word ptr ds:[_currentMenu], OFFSET _SaveDef
 mov   ax, word ptr ds:[_SaveDef + MENU_T.menu_laston]
 mov   byte ptr ds:[_quickSaveSlot], -2
 mov   word ptr ds:[_itemOn], ax
@@ -738,7 +820,7 @@ push  cs
 call  combine_strings_
 nop   
 mov   bx, 1
-mov   dx, M_QuickLoadResponse_
+mov   dx, OFFSET M_QuickLoadResponse_
 lea   ax, [bp - 04Ah]
 call  M_StartMessage_
 lea   sp, [bp + 098h]
@@ -776,7 +858,7 @@ push  dx
 mov   ax, _STRING_HELP2
 xor   dx, dx
 mov   byte ptr ds:[_inhelpscreens], 1
-call  V_DrawFullScreenPatch_
+call  V_DrawFullscreenPatch_
 pop   dx
 ret   
 
@@ -791,7 +873,7 @@ push  dx
 mov   ax, _STRING_HELP1
 xor   dx, dx
 mov   byte ptr ds:[_inhelpscreens], 1
-call  V_DrawFullScreenPatch_
+call  V_DrawFullscreenPatch_
 pop   dx
 ret   
 
@@ -805,7 +887,7 @@ push  dx
 mov   ax, _STRING_HELP
 xor   dx, dx
 mov   byte ptr ds:[_inhelpscreens], 1
-call  V_DrawFullScreenPatch_
+call  V_DrawFullscreenPatch_
 pop   dx
 ret   
 
@@ -858,7 +940,7 @@ PUBLIC  M_Sound_
 
 
 mov   ax, word ptr ds:[_SoundDef + MENU_T.menu_laston]
-mov   word ptr ds:[_currentMenu], _SoundDef
+mov   word ptr ds:[_currentMenu], OFFSET _SoundDef
 mov   word ptr ds:[_itemOn], ax
 ret   
 cld   
@@ -989,13 +1071,13 @@ mov   bx, _commercial
 cmp   byte ptr ds:[bx], 0
 je    label_24
 mov   bx, word ptr ds:[_NewDef + MENU_T.menu_laston]
-mov   word ptr ds:[_currentMenu], _NewDef
+mov   word ptr ds:[_currentMenu], OFFSET _NewDef
 mov   word ptr ds:[_itemOn], bx
 pop   bx
 ret   
 label_24:
 mov   bx, word ptr ds:[_EpiDef + MENU_T.menu_laston]
-mov   word ptr ds:[_currentMenu], _EpiDef
+mov   word ptr ds:[_currentMenu], OFFSET _EpiDef
 mov   word ptr ds:[_itemOn], bx
 pop   bx
 ret   
@@ -1045,7 +1127,7 @@ cbw
 mov   bx, 1
 mov   dx, ax
 mov   ax, 4
-call  G_DeferredInitNew_
+call  G_DeferedInitNew_
 mov   bx, _menuactive
 mov   byte ptr ds:[bx], 0
 pop   dx
@@ -1072,7 +1154,7 @@ jne   label_26
 lea   bx, [bp - 0100h]
 mov   ax, 9
 mov   cx, ds
-mov   dx, M_VerifyNightmare_
+mov   dx, OFFSET M_VerifyNightmare_
 push  cs
 call  getStringByIndex_
 mov   bx, 1
@@ -1091,7 +1173,7 @@ mov   dx, ax
 mov   al, cl
 mov   bx, 1
 xor   ah, ah
-call  G_DeferredInitNew_
+call  G_DeferedInitNew_
 mov   bx, _menuactive
 mov   byte ptr ds:[bx], 0
 LEAVE_MACRO 
@@ -1121,7 +1203,7 @@ jne   label_21
 label_20:
 mov   byte ptr ds:[_menu_epi], al
 mov   ax, word ptr ds:[_ReadDef1 + MENU_T.menu_laston]
-mov   word ptr ds:[_currentMenu], _ReadDef1
+mov   word ptr ds:[_currentMenu], OFFSET _ReadDef1  
 mov   word ptr ds:[_itemOn], ax
 LEAVE_MACRO 
 pop   dx
@@ -1139,7 +1221,7 @@ lea   ax, [bp - 0100h]
 xor   bx, bx
 call  M_StartMessage_
 mov   ax, word ptr ds:[_NewDef + MENU_T.menu_laston]
-mov   word ptr ds:[_currentMenu], _NewDef
+mov   word ptr ds:[_currentMenu], OFFSET _NewDef
 mov   word ptr ds:[_itemOn], ax
 LEAVE_MACRO 
 pop   dx
@@ -1224,7 +1306,7 @@ PUBLIC  M_Options_
 
 
 mov   ax, word ptr ds:[_OptionsDef + MENU_T.menu_laston]
-mov   word ptr ds:[_currentMenu], _OptionsDef
+mov   word ptr ds:[_currentMenu], OFFSET _OptionsDef
 mov   word ptr ds:[_itemOn], ax
 ret   
 cld   
@@ -1310,7 +1392,7 @@ label_30:
 lea   bx, [bp - 0100h]
 mov   ax, ENDGAME
 mov   cx, ds
-mov   dx, M_EndGameResponse_
+mov   dx, OFFSET M_EndGameResponse_
 push  cs
 call  getStringByIndex_
 nop   
@@ -1337,13 +1419,13 @@ cmp   byte ptr ds:[bx], 0
 je    label_31
 ; todo inlined m_readthis2...
 mov   bx, word ptr ds:[_ReadDef2 + MENU_T.menu_laston]
-mov   word ptr ds:[_currentMenu], _ReadDef2
+mov   word ptr ds:[_currentMenu], OFFSET _ReadDef2
 mov   word ptr ds:[_itemOn], bx
 pop   bx
 ret   
 label_31:
 mov   bx, word ptr ds:[_ReadDef1 + MENU_T.menu_laston]
-mov   word ptr ds:[_currentMenu], _ReadDef1
+mov   word ptr ds:[_currentMenu], OFFSET _ReadDef1
 mov   word ptr ds:[_itemOn], bx
 pop   bx
 ret   
@@ -1356,7 +1438,7 @@ PROC    M_ReadThis2_ NEAR
 PUBLIC  M_ReadThis2_
 
 mov   ax, word ptr ds:[_ReadDef2 + MENU_T.menu_laston]
-mov   word ptr ds:[_currentMenu], _ReadDef2
+mov   word ptr ds:[_currentMenu], OFFSET _ReadDef2
 mov   word ptr ds:[_itemOn], ax
 ret   
 cld   
@@ -1368,7 +1450,7 @@ PROC    M_FinishReadThis_ NEAR
 PUBLIC  M_FinishReadThis_
 
 mov   ax, word ptr ds:[_MainDef + MENU_T.menu_laston]
-mov   word ptr ds:[_currentMenu], _MainDef
+mov   word ptr ds:[_currentMenu], OFFSET _MainDef
 mov   word ptr ds:[_itemOn], ax
 ret   
 cld   
@@ -1488,7 +1570,7 @@ lea   ax, [bp + 014h]
 push  cs
 call  combine_strings_near_
 mov   bx, 1
-mov   dx, M_QuitResponse_
+mov   dx, OFFSET M_QuitResponse_
 lea   ax, [bp + 014h]
 call  M_StartMessage_
 lea   sp, [bp + 09Ch]
@@ -1817,7 +1899,7 @@ inc   bl
 jmp   label_51
 label_50:
 add   word ptr [bp - 2], 8
-jmp   label_52:
+jmp   label_52
 done_with_stringheight_loop:
 mov   ax, word ptr [bp - 2]
 LEAVE_MACRO 
@@ -1844,7 +1926,7 @@ mov   word ptr [bp - 2], cx
 mov   si, ax
 mov   di, dx
 label_54:
-les   bx, ptr [bp - 4]
+les   bx, dword ptr [bp - 4]
 mov   al, byte ptr es:[bx]
 cbw  
 inc   word ptr [bp - 4]
@@ -2181,7 +2263,7 @@ retf
 label_87:
 jmp   label_96
 label_88:
-jmp   label_97:
+jmp   label_97
 label_95:
 xor   ah, ah
 mov   dx, SFX_STNMOV
@@ -2219,7 +2301,7 @@ mov   bx, _is_ultimate
 call  M_StartControlPanel_
 cmp   byte ptr ds:[bx], 0
 je    label_103
-mov   word ptr ds:[_currentMenu], _ReadDef2
+mov   word ptr ds:[_currentMenu], OFFSET _ReadDef2
 label_104:
 xor   ax, ax
 mov   dx, SFX_SWTCHN
@@ -2231,7 +2313,7 @@ pop   cx
 pop   bx
 retf  
 label_103:
-mov   word ptr ds:[_currentMenu], _ReadDef1
+mov   word ptr ds:[_currentMenu], OFFSET _ReadDef1
 jmp   label_104
 label_102:
 call  M_StartControlPanel_
@@ -2247,7 +2329,7 @@ pop   bx
 retf  
 pressed_f4:
 call  M_StartControlPanel_
-mov   word ptr ds:[_currentMenu], _SoundDef
+mov   word ptr ds:[_currentMenu], OFFSET _SoundDef
 xor   ax, ax
 mov   dx, SFX_SWTCHN
 mov   word ptr ds:[_itemOn], ax
@@ -2632,7 +2714,7 @@ ret
 label_135:
 mov   byte ptr ds:[bx], 1
 mov   bx, word ptr ds:[_MainDef + MENU_T.menu_laston]
-mov   word ptr ds:[_currentMenu], _MainDef
+mov   word ptr ds:[_currentMenu], OFFSET _MainDef
 mov   word ptr ds:[_itemOn], bx
 pop   bx
 ret   
@@ -2720,13 +2802,13 @@ mov   cx, ds
 push  cs
 call  locallib_strlen_
 cmp   si, ax
-jne   label_141
+jne   label_151
 lea   ax, [bp - 036h]
 mov   dx, ds
 push  cs
 call  locallib_strcpy_
 add   word ptr [bp - 0Eh], si
-label_141:
+label_151:
 lea   ax, [bp - 036h]
 mov   dx, ds
 call  M_StringWidth_
