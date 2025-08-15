@@ -542,11 +542,15 @@ _skullAnimCounter =				     _NULL_OFFSET + 00B18h
 _whichSkull =				         _NULL_OFFSET + 00B1Ah
 _skullName =				         _NULL_OFFSET + 00B1Ch
 
+_STRING_HELP1   =      				 _NULL_OFFSET + 00820h
+_STRING_HELP2   =      				 _NULL_OFFSET + 00826h
+_STRING_HELP    =      				 _NULL_OFFSET + 0082Ch
+_STRING_newline =      				 _NULL_OFFSET + 00832h
 
 
 ; 828-82f free
 
-_flatcache_nodes =				     _NULL_OFFSET + 00B20h
+_flatcache_nodes =				     _NULL_OFFSET + 00B40h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

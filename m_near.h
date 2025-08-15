@@ -604,11 +604,14 @@
 #define whichSkull       			      (*((int16_t __near*)               (_NULL_OFFSET + 0x0B1A)))
 #define skullName				          (((int16_t __near*)           	 (_NULL_OFFSET + 0x0B1C)))
 
+#define STRING_HELP1                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0820))
+#define STRING_HELP2                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0826))
+#define STRING_HELP                       ((int8_t __near *)                 (_NULL_OFFSET + 0x082C))
+#define STRING_newline                    ((int8_t __near *)                 (_NULL_OFFSET + 0x0832))
 
 
-// 828 to 82f free
 
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0B20)))
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0B40)))
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))

@@ -675,13 +675,13 @@ void __near M_QuitResponse(int16_t ch){
     if (commercial){
 
         quitsounds [0] = sfx_vilact;
-        quitsounds [0] = sfx_getpow;
-        quitsounds [0] = sfx_boscub;
-        quitsounds [0] = sfx_slop;
-        quitsounds [0] = sfx_skeswg;
-        quitsounds [0] = sfx_kntdth;
-        quitsounds [0] = sfx_bspact;
-        quitsounds [0] = sfx_sgtatk;
+        quitsounds [1] = sfx_getpow;
+        quitsounds [2] = sfx_boscub;
+        quitsounds [3] = sfx_slop;
+        quitsounds [4] = sfx_skeswg;
+        quitsounds [5] = sfx_kntdth;
+        quitsounds [6] = sfx_bspact;
+        quitsounds [7] = sfx_sgtatk;
 
         S_StartSound(NULL, quitsounds[(gametic >> 2) & 7]);
     } else {
