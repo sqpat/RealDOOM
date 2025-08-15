@@ -143,7 +143,7 @@ struct sfxinfo_struct{
 // textureheights       3C4A:0000
 // rndtable             3C65:0000
 // subsector_lines      3C75:0000
-// savegamestrings      3C810000
+// savegamestrings      3CB1:0000
 // base_lower_end       3CC0:0000
 //03CACh
 

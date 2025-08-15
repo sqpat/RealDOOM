@@ -102,8 +102,7 @@ patch_t __far* M_GetMenuPatch(int16_t i);
 #define options_e_scrnsize 3
 #define options_e_mousesens 5
 
-
-                    
+ 
 
 //
 // PROTOTYPES
@@ -199,7 +198,7 @@ void __near M_DrawLoad(void){
     int8_t             i;
     Z_QuickMapStatus();
         
-    V_DrawPatchDirect (72,28, M_GetMenuPatch(30));
+    V_DrawPatchDirect (72,28, M_GetMenuPatch(MENUPATCH_M_LOADG));
     for (i = 0;i < load_end; i++) {
         M_DrawSaveLoadBorder(LoadDef.x,LoadDef.y+LINEHEIGHT*i);
         M_WriteText(LoadDef.x,LoadDef.y+LINEHEIGHT*i,&savegamestrings[i*SAVESTRINGSIZE]);
@@ -214,15 +213,15 @@ void __near M_DrawLoad(void){
 void __near M_DrawSaveLoadBorder(int16_t x, int16_t y){
     int8_t             i;
         
-    V_DrawPatchDirect (x-8,y+7, M_GetMenuPatch(42));
+    V_DrawPatchDirect (x-8,y+7, M_GetMenuPatch(MENUPATCH_M_LSLEFT));
         
     for (i = 0;i < 24;i++)
     {
-        V_DrawPatchDirect (x,y+7, M_GetMenuPatch(43)) ;
+        V_DrawPatchDirect (x,y+7, M_GetMenuPatch(MENUPATCH_M_LSCNTR)) ;
         x += 8;
     }
 
-    V_DrawPatchDirect (x,y+7, M_GetMenuPatch(44)) ;
+    V_DrawPatchDirect (x,y+7, M_GetMenuPatch(MENUPATCH_M_LSRGHT)) ;
 }
 
 
@@ -257,7 +256,7 @@ void __near M_DrawSave(void){
     int8_t             i;
         
     Z_QuickMapStatus();
-    V_DrawPatchDirect (72,28, M_GetMenuPatch(29));
+    V_DrawPatchDirect (72,28, M_GetMenuPatch(MENUPATCH_M_SAVEG));
     for (i = 0;i < load_end; i++) {
         M_DrawSaveLoadBorder(LoadDef.x,LoadDef.y+LINEHEIGHT*i);
         M_WriteText(LoadDef.x,LoadDef.y+LINEHEIGHT*i,&savegamestrings[i*SAVESTRINGSIZE]);
@@ -440,7 +439,7 @@ void __near M_DrawReadThisRetail(void){
 // Change Sfx & Music volumes
 //
 void __near M_DrawSound(void){
-    V_DrawPatchDirect (60,38, M_GetMenuPatch(27));
+    V_DrawPatchDirect (60,38, M_GetMenuPatch(MENUPATCH_M_SVOL));
 
     M_DrawThermo(SoundDef.x,SoundDef.y+LINEHEIGHT*(sound_e_sfx_vol+1),
                  16,sfxVolume);
@@ -494,7 +493,7 @@ void __near M_MusicVol(int16_t choice){
 // M_DrawMainMenu
 //
 void __near M_DrawMainMenu(void){
-    V_DrawPatchDirect (94,2, M_GetMenuPatch(0));
+    V_DrawPatchDirect (94,2, M_GetMenuPatch(MENUPATCH_M_DOOM));
 }
 
 
@@ -504,8 +503,8 @@ void __near M_DrawMainMenu(void){
 // M_NewGame
 //
 void __near M_DrawNewGame(void){
-    V_DrawPatchDirect (96,14, M_GetMenuPatch(24));
-    V_DrawPatchDirect (54,38, M_GetMenuPatch(23));
+    V_DrawPatchDirect (96,14, M_GetMenuPatch(MENUPATCH_M_NEWG));
+    V_DrawPatchDirect (54,38, M_GetMenuPatch(MENUPATCH_M_SKILL));
 }
 
 void __near M_NewGame(int16_t choice){
@@ -522,7 +521,7 @@ void __near M_NewGame(int16_t choice){
 #define diff_nightmare 4
 
 void __near M_DrawEpisode(void){
-    V_DrawPatchDirect (54,38, M_GetMenuPatch(16));
+    V_DrawPatchDirect (54,38, M_GetMenuPatch(MENUPATCH_M_EPISOD));
 }
 
 void __near M_VerifyNightmare(int16_t ch){
@@ -570,7 +569,7 @@ void __near M_Episode(int16_t choice){
 void __near M_DrawOptions(void) {
     
 
-    V_DrawPatchDirect (108,15, M_GetMenuPatch(28));
+    V_DrawPatchDirect (108,15, M_GetMenuPatch(MENUPATCH_M_OPTTTL));
         
     V_DrawPatchDirect (OptionsDef.x + 175,OptionsDef.y+LINEHEIGHT*options_e_detail,
         M_GetMenuPatch(detailNames[detailLevel]));
@@ -805,15 +804,15 @@ void __near M_DrawThermo (int16_t   x, int16_t   y, int16_t   thermWidth, int16_
     xx = x;
 
 
-    V_DrawPatchDirect (xx,y, M_GetMenuPatch(10));
+    V_DrawPatchDirect (xx,y, M_GetMenuPatch(MENUPATCH_M_THERML));
     xx += 8;
     for (i=0;i<thermWidth;i++) {
-        V_DrawPatchDirect (xx,y, M_GetMenuPatch(9));
+        V_DrawPatchDirect (xx,y, M_GetMenuPatch(MENUPATCH_M_THERMM));
         xx += 8;
     }
-    V_DrawPatchDirect (xx,y, M_GetMenuPatch(8));
+    V_DrawPatchDirect (xx,y, M_GetMenuPatch(MENUPATCH_M_THERMR));
 
-    V_DrawPatchDirect ((x+8) + thermDot*8,y, M_GetMenuPatch(7));
+    V_DrawPatchDirect ((x+8) + thermDot*8,y, M_GetMenuPatch(MENUPATCH_M_THERMO));
 }
 
  

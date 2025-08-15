@@ -96,4 +96,51 @@ typedef struct menu_s{
 
  
 
+#define MENUPATCH_M_DOOM      0
+#define MENUPATCH_M_RDTHIS    1
+#define MENUPATCH_M_OPTION    2
+#define MENUPATCH_M_QUITG     3
+#define MENUPATCH_M_NGAME     4
+#define MENUPATCH_M_SKULL1    5
+#define MENUPATCH_M_SKULL2    6
+#define MENUPATCH_M_THERMO    7
+#define MENUPATCH_M_THERMR    8
+#define MENUPATCH_M_THERMM    9
+#define MENUPATCH_M_THERML    10
+#define MENUPATCH_M_ENDGAM    11
+#define MENUPATCH_M_PAUSE     12
+#define MENUPATCH_M_MESSG     13
+#define MENUPATCH_M_MSGON     14
+#define MENUPATCH_M_MSGOFF    15
+#define MENUPATCH_M_EPISOD    16
+#define MENUPATCH_M_EPI1      17
+#define MENUPATCH_M_EPI2      18
+#define MENUPATCH_M_EPI3      19
+#define MENUPATCH_M_HURT      20
+#define MENUPATCH_M_JKILL     21
+#define MENUPATCH_M_ROUGH     22
+#define MENUPATCH_M_SKILL     23
+#define MENUPATCH_M_NEWG      24
+#define MENUPATCH_M_ULTRA     25
+#define MENUPATCH_M_NMARE     26
+#define MENUPATCH_M_SVOL      27
+#define MENUPATCH_M_OPTTTL    28
+#define MENUPATCH_M_SAVEG     29
+#define MENUPATCH_M_LOADG     30
+#define MENUPATCH_M_DISP      31
+#define MENUPATCH_M_MSENS     32
+#define MENUPATCH_M_GDHIGH    33
+#define MENUPATCH_M_GDLOW     34
+#define MENUPATCH_M_DETAIL    35
+#define MENUPATCH_M_DISOPT    36
+#define MENUPATCH_M_SCRNSZ    37
+#define MENUPATCH_M_SGTTL     38
+#define MENUPATCH_M_LGTTL     39
+#define MENUPATCH_M_SFXVOL    40
+#define MENUPATCH_M_MUSVOL    41
+#define MENUPATCH_M_LSLEFT    42
+#define MENUPATCH_M_LSCNTR    43
+#define MENUPATCH_M_LSRGHT    44
+#define MENUPATCH_M_EPI4      45
+
 #endif    
