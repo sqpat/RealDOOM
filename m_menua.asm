@@ -56,7 +56,7 @@ EXTRN D_StartTitle_:FAR
 EXTRN locallib_strncpy_:FAR
 EXTRN locallib_strcpy_:FAR
 
-EXTRN locallib_strlen_:FAR
+
 EXTRN combine_strings_near_:FAR
 EXTRN I_Quit_:FAR
 EXTRN I_WaitVBL_:FAR
@@ -242,7 +242,7 @@ mov   ax, LOADDEF_X
 mov   cx, SAVEGAMESTRINGS_SEGMENT
 call  M_WriteText_
 add   si, SAVESTRINGSIZE
-add   di, 16
+add   di, LINEHEIGHT
 cmp   si, (LOAD_END * SAVESTRINGSIZE)
 jl    loop_draw_next_load_bar
 
@@ -419,70 +419,69 @@ ENDP
 PROC    M_DrawSave_ NEAR
 PUBLIC  M_DrawSave_
 
-push  bx
-push  cx
-push  dx
-push  bp
-mov   bp, sp
-sub   sp, 2
+PUSHA_NO_AX_OR_BP_MACRO
+
 call  Z_QuickMapStatus_
 mov   al, MENUPATCH_M_SAVEG
 call  M_GetMenuPatch_
-mov   bx, ax
+xchg  ax, bx
 mov   cx, dx
+
+mov   di, LOADDEF_Y
+
+
 mov   dx, 28
 mov   ax, 72
-mov   byte ptr [bp - 2], 0
+
 call  V_DrawPatchDirect_
-label_8:
-mov   al, byte ptr [bp - 2]
-cbw  
-mov   dl, byte ptr [_LoadDef + MENU_T.menu_y]
-mov   bx, ax
-xor   dh, dh
-shl   bx, 4
-mov   ax, word ptr [_LoadDef + MENU_T.menu_x]
-add   dx, bx
+
+xor   si, si
+
+loop_draw_next_save_bar:
+
+mov   dx, di
+mov   ax, LOADDEF_X
 call  M_DrawSaveLoadBorder_
-mov   al, byte ptr [bp - 2]
-cbw  
-imul  cx, ax, SAVESTRINGSIZE
-mov   al, byte ptr [_LoadDef + MENU_T.menu_y]
-xor   ah, ah
-mov   dx, ax
-mov   ax, word ptr [_LoadDef + MENU_T.menu_x]
-add   dx, bx
-mov   bx, cx
+
 mov   cx, SAVEGAMESTRINGS_SEGMENT
-inc   byte ptr [bp - 2]
+mov   bx, si
+mov   dx, di
+mov   ax, LOADDEF_X
 call  M_WriteText_
-cmp   byte ptr [bp - 2], 6
-jl    label_8
+
+add   si, SAVESTRINGSIZE
+add   di, LINEHEIGHT
+cmp   si, (LOAD_END * SAVESTRINGSIZE)
+jl    loop_draw_next_save_bar
+
 cmp   word ptr ds:[_saveStringEnter], 0
-jne   label_9
-LEAVE_MACRO 
-pop   dx
-pop   cx
-pop   bx
-ret   
-label_9:
-imul  ax, word ptr ds:[_saveSlot], SAVESTRINGSIZE
+je    exit_drawsave
+
+mov   al, SAVESTRINGSIZE
+mov   bl, byte ptr ds:[_saveSlot]
+mul   bl
+
 mov   dx, SAVEGAMESTRINGS_SEGMENT
-mov   cx, cs
 call  M_StringWidth_
-mov   dl, byte ptr [_LoadDef + MENU_T.menu_y]
-mov   bx, word ptr ds:[_saveSlot]
-cbw  
-shl   bx, 4
-xor   dh, dh
-add   ax, word ptr [_LoadDef + MENU_T.menu_x]
-add   dx, bx
+
+mov   al, LINEHEIGHT
+mul   bl
+
+xchg  ax, dx
+add   dx, di
+sub   dx, (LOAD_END * LINEHEIGHT)
+
+xchg  ax, si
+add   ax, LOADDEF_X
+
+mov   cx, cs
 mov   bx, OFFSET _menu_string_underscore
 call  M_WriteText_
-LEAVE_MACRO 
-pop   dx
-pop   cx
-pop   bx
+
+exit_drawsave:
+
+POPA_NO_AX_OR_BP_MACRO
+
 ret   
 
 
@@ -573,7 +572,7 @@ mov   byte ptr es:[si], 0
 label_13:
 imul  ax, di, SAVESTRINGSIZE
 mov   dx, SAVEGAMESTRINGS_SEGMENT
-call  locallib_strlen_
+call  M_Strlen_
 mov   word ptr ds:[_saveCharIndex], ax
 LEAVE_MACRO 
 pop   di
@@ -1763,60 +1762,83 @@ ENDP
 
 @
 
+PROC    M_Strlen_ NEAR
+
+push    cx
+push    di
+
+mov     cx, -1
+mov     es, dx
+mov     dx, ax
+xchg    ax, di
+xor     ax, ax
+repne   scasb
+sub     di, dx
+xchg    ax, di
+
+pop     di
+pop     cx
+
+
+ret
+ENDP
+
+
 PROC    M_StringWidth_ NEAR
 PUBLIC  M_StringWidth_
 
 push  bx
 push  cx
 push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
+
 mov   si, ax
-mov   di, dx
-call  locallib_strlen_
-mov   cx, ax
-xor   bx, bx
-xor   dx, dx
+mov   ds, dx  ; for lodsb
+
+call  M_Strlen_
+
+
+xchg  ax, cx
+add   cx, si  ; cx is end condition (startcondition + count)
+
+xor   dx, dx  ; dx is width
 test  ax, ax
-jle   label_45
-mov   word ptr [bp - 2], di
-label_48:
-mov   es, word ptr [bp - 2]
-mov   al, byte ptr es:[si]
-xor   ah, ah
+jle   exit_stringwidth
+
+mov   bx, FONT_WIDTHS_SEGMENT
+mov   es, bx
+
+
+loop_next_char_stringwidth:
+
+lodsb
 call  M_ToUpper_
-xor   ah, ah
-sub   ax, HU_FONTSTART
-test  ax, ax
-jl    label_46
-cmp   ax, HU_FONTSIZE
-jl    label_47
-label_46:
-add   bx, 4
-label_49:
-inc   dx
-inc   si
-cmp   dx, cx
-jl    label_48
-label_45:
-mov   ax, bx
-LEAVE_MACRO 
-pop   di
+sub   al, HU_FONTSTART
+js    bad_char_do_space
+cmp   al, HU_FONTSIZE
+ja    bad_char_do_space
+good_char:
+cbw
+xchg  ax, bx
+mov   al, byte ptr es:[bx]
+cbw  
+add   dx, ax
+
+iter_next_char_stringwidth:
+cmp   si, cx
+jl    loop_next_char_stringwidth
+
+exit_stringwidth:
+xchg  ax, dx
+push  ss
+pop   ds
 pop   si
 pop   cx
 pop   bx
 ret   
-label_47:
-mov   di, FONT_WIDTHS_SEGMENT
-mov   es, di
-mov   di, ax
-mov   al, byte ptr es:[di]
-cbw  
-add   bx, ax
-jmp   label_49
-cld   
+bad_char_do_space:
+add   dx, 4
+jmp   iter_next_char_stringwidth
+
 
 ENDP
 
@@ -1839,7 +1861,7 @@ xor   bl, bl
 label_51:
 mov   ax, cx
 mov   dx, si
-call  locallib_strlen_
+call  M_Strlen_
 mov   dx, ax
 mov   al, bl
 cbw  
@@ -2749,7 +2771,7 @@ mov   word ptr [bp - 4], ax
 label_141:
 mov   ax, word ptr [bp - 4]
 mov   dx, ds
-call  locallib_strlen_
+call  M_Strlen_
 cmp   si, ax
 jge   label_139
 lea   di, [si + 1]
@@ -2776,7 +2798,7 @@ add   bx, word ptr [bp - 0Eh]
 mov   dx, ds
 mov   ax, bx
 mov   cx, ds
-call  locallib_strlen_
+call  M_Strlen_
 cmp   si, ax
 jne   label_151
 lea   ax, [bp - 036h]
