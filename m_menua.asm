@@ -1501,55 +1501,41 @@ jmp   set_sensitivity_and_return
 
 ENDP
 
-COMMENT @
+
+_detaillevel_lookup:
+dw DETAILHI, DETAILLO, DETAILPOTATO
 
 PROC    M_ChangeDetail_ NEAR
 PUBLIC  M_ChangeDetail_
 
 push  bx
 push  dx
-push  si
-mov   bl, byte ptr ds:[_detailLevel]
-inc   bl
-cmp   bl, 3
-jne   label_27
-xor   bl, bl
-label_27:
-mov   al, bl
-xor   ah, ah
-mov   si, _screenblocks
-mov   dx, ax
-mov   al, byte ptr ds:[si]
-mov   byte ptr ds:[_detailLevel], bl
+mov   al, byte ptr ds:[_detailLevel]
+inc   ax
+cmp   al, 3
+jne   dont_cap_detail
+xor   ax, ax
+dont_cap_detail:
+cbw
+mov   byte ptr ds:[_detailLevel], al
+xchg  ax, dx
+mov   bx, dx
+shl   bx, 1
+mov   al, byte ptr ds:[_screenblocks]
 call  R_SetViewSize_
-mov   bl, byte ptr ds:[_detailLevel]
-test  bl, bl
-je    label_38
-cmp   bl, 1
-jne   label_39
-mov   si, _player + PLAYER_T.player_message
-mov   word ptr ds:[si], DETAILLO
-label_40:
-mov   byte ptr ds:[_detailLevel], bl
-pop   si
-pop   dx
-pop   bx
-ret   
-label_38:
-mov   si, _player + PLAYER_T.player_message
-mov   word ptr ds:[si], DETAILHI
-jmp   label_40
-label_39:
-mov   si, _player + PLAYER_T.player_message
-mov   word ptr ds:[si], DETAILPOTATO
-mov   byte ptr ds:[_detailLevel], bl
-pop   si
+
+mov   ax, word ptr cs:[bx + _detaillevel_lookup]
+mov   word ptr ds:[_player + PLAYER_T.player_message], ax
+
 pop   dx
 pop   bx
 ret   
 
 
 ENDP
+
+COMMENT @
+
 
 PROC    M_SizeDisplay_ NEAR
 PUBLIC  M_SizeDisplay_
