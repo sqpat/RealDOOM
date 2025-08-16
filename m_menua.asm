@@ -1252,7 +1252,6 @@ ret
 
 ENDP
 
-COMMENT @
 
 
 PROC    M_EndGameResponse_ NEAR
@@ -1260,21 +1259,20 @@ PUBLIC  M_EndGameResponse_
 
 
 
+cmp   al, 'y' ; 079h
+jne   exit_endgame_response
 push  bx
-cmp   ax, 'y' ; 079h
-je    label_29
-pop   bx
-ret   
-label_29:
-mov   bx, word ptr ds:[_currentMenu]
-mov   ax, word ptr ds:[_itemOn]
-mov   word ptr ds:[bx + MENU_T.menu_laston], ax
-mov   bx, _menuactive
-mov   byte ptr ds:[bx], 0
+;    currentMenu->lastOn = itemOn;
+mov   bx,  word ptr ds:[_currentMenu]
+
+push  word ptr ds:[_itemOn]
+pop   word ptr ds:[bx + MENU_T.menu_laston]
+mov   byte ptr ds:[_menuactive], 0
 call  D_StartTitle_
 pop   bx
+exit_endgame_response:
 ret   
-cld   
+   
 
 
 ENDP
@@ -1290,18 +1288,18 @@ push  dx
 push  bp
 mov   bp, sp
 sub   sp, 0100h
-mov   al, byte ptr ds:[_usergame]
-test  al, al
-jne   label_30
+xor   ax, ax
+cmp   byte ptr ds:[_usergame], al
+jne   do_endgame
 mov   dx, SFX_OOF
-xor   ah, ah
 call  S_StartSound_
+exit_end_game:
 LEAVE_MACRO 
 pop   dx
 pop   cx
 pop   bx
 ret   
-label_30:
+do_endgame:
 lea   bx, [bp - 0100h]
 mov   ax, ENDGAME
 mov   cx, ds
@@ -1310,11 +1308,7 @@ call  getStringByIndex_
 mov   bx, 1
 lea   ax, [bp - 0100h]
 call  M_StartMessage_
-LEAVE_MACRO 
-pop   dx
-pop   cx
-pop   bx
-ret   
+jmp   exit_end_game
 
 
 ENDP
@@ -1324,23 +1318,13 @@ PUBLIC  M_ReadThis_
 
 
 
-push  bx
-mov   bx, _is_ultimate
-cmp   byte ptr ds:[bx], 0
-je    label_31
-; todo inlined m_readthis2...
-mov   bx, word ptr ds:[_ReadDef2 + MENU_T.menu_laston]
-mov   word ptr ds:[_currentMenu], OFFSET _ReadDef2
-mov   word ptr ds:[_itemOn], bx
-pop   bx
-ret   
-label_31:
-mov   bx, word ptr ds:[_ReadDef1 + MENU_T.menu_laston]
+cmp   byte ptr ds:[_is_ultimate], 0
+jne   M_ReadThis2_
+
+push  word ptr ds:[_ReadDef1 + MENU_T.menu_laston]
+pop   word ptr ds:[_itemOn]
 mov   word ptr ds:[_currentMenu], OFFSET _ReadDef1
-mov   word ptr ds:[_itemOn], bx
-pop   bx
-ret   
-cld   
+ret      
 
 
 ENDP
@@ -1348,11 +1332,11 @@ ENDP
 PROC    M_ReadThis2_ NEAR
 PUBLIC  M_ReadThis2_
 
-mov   ax, word ptr ds:[_ReadDef2 + MENU_T.menu_laston]
+push  word ptr ds:[_ReadDef2 + MENU_T.menu_laston]
+pop   word ptr ds:[_itemOn]
 mov   word ptr ds:[_currentMenu], OFFSET _ReadDef2
-mov   word ptr ds:[_itemOn], ax
 ret   
-cld   
+   
 
 
 ENDP
@@ -1360,13 +1344,16 @@ ENDP
 PROC    M_FinishReadThis_ NEAR
 PUBLIC  M_FinishReadThis_
 
-mov   ax, word ptr ds:[_MainDef + MENU_T.menu_laston]
+push  word ptr ds:[_MainDef + MENU_T.menu_laston]
+pop   word ptr ds:[_itemOn]
 mov   word ptr ds:[_currentMenu], OFFSET _MainDef
-mov   word ptr ds:[_itemOn], ax
 ret   
-cld   
+   
 
 ENDP
+
+COMMENT @
+
 
 ; todo make quitsounds a lookup here.
 PROC    M_QuitResponse_ NEAR

@@ -619,7 +619,6 @@ void __near M_ChangeMessages(int16_t choice) {
     message_dontfuckwithme = true;
 }
 
-*/
 
 //
 // M_EndGame
@@ -674,6 +673,7 @@ void __near M_FinishReadThis(int16_t choice){
     M_SetupNextMenu(&MainDef);
 }
 
+*/
 
 
 
