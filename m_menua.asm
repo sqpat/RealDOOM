@@ -979,7 +979,6 @@ ret
 
 ENDP
 
-COMMENT @
 
 PROC    M_DrawNewGame_ NEAR
 PUBLIC  M_DrawNewGame_
@@ -988,25 +987,28 @@ PUBLIC  M_DrawNewGame_
 push  bx
 push  cx
 push  dx
-mov   al, 24
+mov   al, MENUPATCH_M_NEWG
 call  M_GetMenuPatch_
-mov   bx, ax
+
+xchg  ax, bx
 mov   cx, dx
 mov   dx, 14
 mov   ax, 96
 call  V_DrawPatchDirect_
+
 mov   al, MENUPATCH_M_SKILL
 call  M_GetMenuPatch_
-mov   bx, ax
+
+xchg  ax, bx
 mov   cx, dx
 mov   dx, 38
 mov   ax, 54
 call  V_DrawPatchDirect_
+
 pop   dx
 pop   cx
 pop   bx
 ret   
-cld   
 
 
 ENDP
@@ -1014,26 +1016,21 @@ ENDP
 PROC    M_NewGame_ NEAR
 PUBLIC  M_NewGame_
 
-
 push  bx
-mov   bx, _commercial
-cmp   byte ptr ds:[bx], 0
-je    label_24
-mov   bx, word ptr ds:[_NewDef + MENU_T.menu_laston]
-mov   word ptr ds:[_currentMenu], OFFSET _NewDef
-mov   word ptr ds:[_itemOn], bx
+mov   bx, OFFSET _EpiDef
+cmp   byte ptr ds:[_commercial], 0
+je    do_episode_menu
+mov   bx, OFFSET _NewDef
+do_episode_menu:
+push  word ptr ds:[bx + MENU_T.menu_laston]
+pop   word ptr ds:[_itemOn]
+mov   word ptr ds:[_currentMenu], bx
 pop   bx
-ret   
-label_24:
-mov   bx, word ptr ds:[_EpiDef + MENU_T.menu_laston]
-mov   word ptr ds:[_currentMenu], OFFSET _EpiDef
-mov   word ptr ds:[_itemOn], bx
-pop   bx
-ret   
-cld   
-
+ret
 
 ENDP
+
+
 
 PROC    M_DrawEpisode_ NEAR
 PUBLIC  M_DrawEpisode_
@@ -1044,16 +1041,15 @@ push  cx
 push  dx
 mov   al, MENUPATCH_M_EPISOD
 call  M_GetMenuPatch_
-mov   bx, ax
+xchg  ax, bx
 mov   cx, dx
-mov   dx, 54
-mov   ax, 38
+mov   dx, 38
+mov   ax, 54
 call  V_DrawPatchDirect_
 pop   dx
 pop   cx
 pop   bx
 ret   
-
 
 
 ENDP
@@ -1062,28 +1058,21 @@ PROC    M_VerifyNightmare_ NEAR
 PUBLIC  M_VerifyNightmare_
 
 
+cmp   al, 'y' ; 079h
+jne   exit_verify_nightmare
 push  bx
 push  dx
-cmp   ax, 'y' ; 079h
-je    label_25
-pop   dx
-pop   bx
-ret   
-label_25:
-mov   al, byte ptr ds:[_menu_epi]
-inc   al
-cbw  
+xor   dx, dx
+mov   dl, byte ptr ds:[_menu_epi]
+inc   dx
 mov   bx, 1
-mov   dx, ax
-mov   ax, 4
+mov   ax, SK_NIGHTMARE
 call  G_DeferedInitNew_
-mov   bx, _menuactive
-mov   byte ptr ds:[bx], 0
+mov   byte ptr ds:[_menuactive], 0
 pop   dx
 pop   bx
+exit_verify_nightmare:
 ret   
-
-
 
 ENDP
 
@@ -1097,33 +1086,26 @@ push  dx
 push  bp
 mov   bp, sp
 sub   sp, 0100h
-mov   cx, ax
-cmp   ax, 4
-jne   label_26
+
+cmp   al, 4
+jne   not_nightmare
 lea   bx, [bp - 0100h]
-mov   ax, 9
+mov   ax, NIGHTMARE
 mov   cx, ds
 mov   dx, OFFSET M_VerifyNightmare_
 call  getStringByIndex_
 mov   bx, 1
 lea   ax, [bp - 0100h]
 call  M_StartMessage_
-LEAVE_MACRO 
-pop   dx
-pop   cx
-pop   bx
-ret   
-label_26:
-mov   al, byte ptr ds:[_menu_epi]
-inc   al
-cbw  
-mov   dx, ax
-mov   al, cl
+jmp   exit_choose_skill
+not_nightmare:
+xor   dx, dx
+mov   dl, byte ptr ds:[_menu_epi]
+inc   dx
 mov   bx, 1
-xor   ah, ah
 call  G_DeferedInitNew_
-mov   bx, _menuactive
-mov   byte ptr ds:[bx], 0
+mov   byte ptr ds:[_menuactive], 0
+exit_choose_skill:
 LEAVE_MACRO 
 pop   dx
 pop   cx
@@ -1133,6 +1115,7 @@ ret
 
 
 ENDP
+
 
 PROC    M_Episode_ NEAR
 PUBLIC  M_Episode_
@@ -1143,22 +1126,20 @@ push  dx
 push  bp
 mov   bp, sp
 sub   sp, 0100h
-mov   bx, _shareware
-cmp   byte ptr ds:[bx], 0
-je    label_20
+
+cmp   byte ptr ds:[_shareware], 0
+je    show_episode
 test  ax, ax
-jne   label_21
-label_20:
+jne   force_shareware_msg
+
+show_episode:
 mov   byte ptr ds:[_menu_epi], al
-mov   ax, word ptr ds:[_ReadDef1 + MENU_T.menu_laston]
-mov   word ptr ds:[_currentMenu], OFFSET _ReadDef1  
-mov   word ptr ds:[_itemOn], ax
-LEAVE_MACRO 
-pop   dx
-pop   cx
-pop   bx
-ret   
-label_21:
+mov   word ptr ds:[_currentMenu], OFFSET _NewDef  
+push  word ptr ds:[_NewDef + MENU_T.menu_laston]
+jmp   pop_and_exit_m_episode
+
+
+force_shareware_msg:
 lea   bx, [bp - 0100h]
 mov   ax, SWSTRING
 mov   cx, ds
@@ -1167,9 +1148,10 @@ xor   dx, dx
 lea   ax, [bp - 0100h]
 xor   bx, bx
 call  M_StartMessage_
-mov   ax, word ptr ds:[_NewDef + MENU_T.menu_laston]
-mov   word ptr ds:[_currentMenu], OFFSET _NewDef
-mov   word ptr ds:[_itemOn], ax
+mov   word ptr ds:[_currentMenu], OFFSET _ReadDef1
+push  word ptr ds:[_ReadDef1 + MENU_T.menu_laston]
+pop_and_exit_m_episode:
+pop   word ptr ds:[_itemOn]
 LEAVE_MACRO 
 pop   dx
 pop   cx
@@ -1178,6 +1160,7 @@ ret
 
 
 ENDP
+COMMENT @
 
 PROC    M_DrawOptions_ NEAR
 PUBLIC  M_DrawOptions_

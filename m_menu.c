@@ -508,7 +508,6 @@ void __near M_DrawMainMenu(void){
 }
 
 
-*/
 
 
 //
@@ -536,6 +535,7 @@ void __near M_DrawEpisode(void){
     V_DrawPatchDirect (54,38, M_GetMenuPatch(MENUPATCH_M_EPISOD));
 }
 
+
 void __near M_VerifyNightmare(int16_t ch){
     if (ch != 'y')
         return;
@@ -544,6 +544,7 @@ void __near M_VerifyNightmare(int16_t ch){
     // M_ClearMenus
     menuactive = 0;
 }
+
 
 void __near M_ChooseSkill(int16_t choice){
     int8_t temp[256];
@@ -571,6 +572,7 @@ void __near M_Episode(int16_t choice){
     M_SetupNextMenu(&NewDef);
 }
 
+*/
 
 
 //
