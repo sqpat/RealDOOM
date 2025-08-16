@@ -104,7 +104,7 @@ EXTRN _messageNeedsInput:BYTE
 EXTRN _messageLastMenuActive:WORD
 EXTRN _currentMenu:WORD
 EXTRN _messageRoutine:WORD
-EXTRN _menu_messageString:WORD
+
 
 
 EXTRN _OptionsDef:WORD
@@ -183,6 +183,11 @@ MENUPATCH_M_EPI4    =  45
 
 _menu_string_underscore:
 db "_", 0
+
+_menu_messageString:
+REPT 100
+    db 0
+ENDM
 
 PROC    M_GetMenuPatch_ NEAR
 PUBLIC  M_GetMenuPatch_
@@ -1675,7 +1680,7 @@ mov   al, byte ptr ds:[_menuactive]
 cbw  
 mov   word ptr ds:[_messageLastMenuActive], ax
 
-mov   dx, ds
+mov   dx, cs
 mov   cx, ds
 mov   ax, OFFSET _menu_messageString
 call  locallib_strcpy_  ; todo make local
@@ -2657,14 +2662,14 @@ je    no_message_to_print
 xchg  ax, cx ; cx gets 0
 call  Z_QuickMapStatus_
 mov   ax, OFFSET _menu_messageString
-mov   dx, ds
+mov   dx, cs
 call  M_StringHeight_
 
 mov   dx, 100
 sar   ax, 1
 sub   dx, ax
 mov   word ptr [bp - 2], dx
-cmp   byte ptr ds:[_menu_messageString], cl ; 0
+cmp   byte ptr cs:[_menu_messageString], cl ; 0
 je    jump_to_do_exit_check
 
 
@@ -2694,11 +2699,13 @@ mov   si, OFFSET _menu_messageString
 
 loop_next_menu_string_line:
 mov   ax, si
-mov   dx, ds
+mov   dx, cs
 call  M_Strlen_
 
 push  ds
 pop   es
+push  cs
+pop   ds
 
 ; find newline
 
@@ -2719,6 +2726,8 @@ handle_newline:
 xor   ax, ax
 stosb
 
+push  ss
+pop   ds
 
 
 mov   ax, bx ;  bp - 02Ah
@@ -2739,7 +2748,7 @@ mov   cx, ds
 call  M_WriteText_
 
 
-cmp   byte ptr ds:[si], 0
+cmp   byte ptr cs:[si], 0
 jne   loop_next_menu_string_line
 
 jump_to_do_exit_check:

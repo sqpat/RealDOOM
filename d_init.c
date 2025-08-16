@@ -526,7 +526,7 @@ void __far M_Init(void){
 	skullAnimCounter = 10;
 	screenSize = screenblocks - 1;
 	messageToPrint = 0;
-	menu_messageString[0] = '\0';
+	// menu_messageString[0] = '\0';
 	messageLastMenuActive = menuactive;
 	quickSaveSlot = -1;  // means to pick a slot now
 

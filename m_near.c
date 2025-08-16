@@ -699,7 +699,7 @@ int16_t	t6text = T6TEXT;
 // 1 = message to be printed
 uint8_t                     messageToPrint;
 // ...and here is the message string!
-int8_t                   menu_messageString[105];
+// int8_t                   menu_messageString[105];
 
 // message x & y
 int16_t                     messageLastMenuActive;
