@@ -461,7 +461,6 @@ void __near M_Sound(int16_t choice){
     M_SetupNextMenu(&SoundDef);
 }
 
-*/
 
 
 void __near M_SfxVol(int16_t choice){
@@ -509,6 +508,7 @@ void __near M_DrawMainMenu(void){
 }
 
 
+*/
 
 
 //

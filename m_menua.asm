@@ -904,7 +904,6 @@ ret
 
 ENDP
 
-COMMENT @
 
 
 
@@ -912,28 +911,22 @@ PROC    M_SfxVol_ NEAR
 PUBLIC  M_SfxVol_
 
 
-push  dx
-mov   dl, byte ptr ds:[_sfxVolume]
-cmp   ax, 1
-jne   label_4
-cmp   dl, 15
-jae   label_5
-inc   dl
-label_5:
-mov   al, dl
-xor   ah, ah
-mov   byte ptr ds:[_sfxVolume], dl
-call  S_SetSfxVolume_
-mov   dl, byte ptr ds:[_sfxVolume]
-pop   dx
+cmp   al, 1
+mov   al, byte ptr ds:[_sfxVolume]
+jne   do_decrease
+cmp   al, 15
+jae   done_updating_vol
+inc   ax
+done_updating_vol:
+cbw
+mov   byte ptr ds:[_sfxVolume], al
+call  S_SetSfxVolume_  ; todo move local?
 ret   
-label_4:
-test  ax, ax
-jne   label_5
-test  dl, dl
-je    label_5
-dec   dl
-jmp   label_5
+do_decrease:
+test  al, al
+je    done_updating_vol
+dec   ax
+jmp   done_updating_vol
 
 
 ENDP
@@ -942,31 +935,27 @@ PROC    M_MusicVol_ NEAR
 PUBLIC  M_MusicVol_
 
 
-push  dx
-mov   dl, byte ptr ds:[_musicVolume]
-cmp   ax, 1
-jne   label_22
-cmp   dl, 15
-jae   label_23
-inc   dl
-label_23:
-mov   al, dl
-xor   ah, ah
-mov   byte ptr ds:[_musicVolume], dl
-call  S_SetMusicVolume_  ; todo maybe this should just be here?
-mov   dl, byte ptr ds:[_musicVolume]
-pop   dx
+cmp   al, 1
+mov   al, byte ptr ds:[_musicVolume]
+jne   do_music_decrease
+cmp   al, 15
+jae   done_updating_music_vol
+inc   ax
+done_updating_music_vol:
+cbw
+mov   byte ptr ds:[_musicVolume], al
+call  S_SetMusicVolume_  ; todo move local?
 ret   
-label_22:
-test  ax, ax
-jne   label_23
-test  dl, dl
-je    label_23
-dec   dl
-jmp   label_23
+do_music_decrease:
+test  al, al
+je    done_updating_music_vol
+dec   ax
+jmp   done_updating_music_vol
 
 
 ENDP
+
+
 
 PROC    M_DrawMainMenu_ NEAR
 PUBLIC  M_DrawMainMenu_
@@ -977,7 +966,7 @@ push  cx
 push  dx
 xor   ax, ax ; MENUPATCH_M_DOOM
 call  M_GetMenuPatch_
-mov   bx, ax
+xchg  ax, bx
 mov   cx, dx
 mov   dx, 2
 mov   ax, 94
@@ -986,10 +975,11 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-cld   
 
 
 ENDP
+
+COMMENT @
 
 PROC    M_DrawNewGame_ NEAR
 PUBLIC  M_DrawNewGame_
