@@ -716,9 +716,9 @@ void    (__near *messageRoutine)(int16_t response);
 
 
 // we are going to be entering a savegame string
-int16_t                     saveStringEnter;
-int16_t                     saveSlot;       // which slot to save in
-int16_t                     saveCharIndex;  // which char we're editing
+int8_t                      saveStringEnter;
+int8_t                      saveSlot;       // which slot to save in
+int16_t                      saveCharIndex;  // which char we're editing
 // old save description before edit
 int8_t                    saveOldString[SAVESTRINGSIZE];
 

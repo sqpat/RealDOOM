@@ -73,9 +73,9 @@ EXTRN Z_QuickMapByTaskNum_:FAR
 .DATA
 
 
-EXTRN _saveSlot:WORD
+EXTRN _saveSlot:BYTE
 EXTRN _saveCharIndex:WORD
-EXTRN _saveStringEnter:WORD
+EXTRN _saveStringEnter:BYTE
 EXTRN _saveOldString:BYTE
 
 EXTRN _usegamma:BYTE
@@ -454,7 +454,7 @@ add   di, LINEHEIGHT
 cmp   si, (LOAD_END * SAVESTRINGSIZE)
 jl    loop_draw_next_save_bar
 
-cmp   word ptr ds:[_saveStringEnter], 0
+cmp   byte ptr ds:[_saveStringEnter], 0
 je    exit_drawsave
 
 mov   al, SAVESTRINGSIZE
@@ -520,74 +520,65 @@ ret
 
 ENDP
 
-COMMENT @
 
 
 PROC    M_SaveSelect_ NEAR
 PUBLIC  M_SaveSelect_
+;void __near M_SaveSelect(int16_t choice){
 
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
 sub   sp, 0100h
-mov   di, ax
-imul  cx, ax, SAVESTRINGSIZE
-mov   word ptr ds:[_saveStringEnter], 1
-xor   dl, dl
-mov   word ptr ds:[_saveSlot], ax
-label_12:
-mov   al, dl
-cbw  
-cmp   ax, SAVESTRINGSIZE
-jae   label_11
-mov   al, dl
-cbw  
-mov   si, cx
-mov   bx, ax
-add   si, ax
+
+mov   byte ptr ds:[_saveSlot], al
+xchg  bx, ax ; backup
+mov   al, SAVESTRINGSIZE
+mul   bl
+xchg  ax, si ; 
+mov   byte ptr ds:[_saveStringEnter], 1
+
+push  ds
+pop   es
 mov   ax, SAVEGAMESTRINGS_SEGMENT
-mov   es, ax
-mov   al, byte ptr es:[si]
-inc   dl
-mov   byte ptr ds:[bx + _saveOldString], al
-jmp   label_12
-label_11:
-imul  si, di, SAVESTRINGSIZE
+mov   ds, ax
+mov   cx, SAVESTRINGSIZE / 2
+mov   di, OFFSET _saveOldString
+rep   movsw
+
+sub   si, SAVESTRINGSIZE ; si has original choice * savestringsize
+
+push  ss
+pop   ds ; restore ds.
+
 lea   bx, [bp - 0100h]
 mov   ax, EMPTYSTRING
 mov   cx, ds
 mov   dx, SAVEGAMESTRINGS_SEGMENT
 call  getStringByIndex_
+
 lea   bx, [bp - 0100h]
 mov   cx, ds
 mov   ax, si
-call  locallib_strcmp_
-test  ax, ax
-jne   label_13
-mov   ax, SAVEGAMESTRINGS_SEGMENT
-mov   es, ax
-mov   byte ptr es:[si], 0
-label_13:
-imul  ax, di, SAVESTRINGSIZE
+call  locallib_strcmp_   ; todo make this carry based?
 mov   dx, SAVEGAMESTRINGS_SEGMENT
+test  ax, ax
+jne   not_empty_string
+mov   es, dx
+mov   byte ptr es:[si], 0
+not_empty_string:
+xchg  ax, si  ; retrieve once more
 call  M_Strlen_
 mov   word ptr ds:[_saveCharIndex], ax
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 ret   
 
 
 ENDP
 
+COMMENT @
 
 
 PROC    M_SaveGame_ NEAR
@@ -2006,13 +1997,13 @@ mov   bx, word ptr es:[si + 1]
 label_57:
 cmp   bx, -1
 je    label_58
-cmp   word ptr ds:[_saveStringEnter], 0
+cmp   byte ptr ds:[_saveStringEnter], 0
 je    label_59
 cmp   bx, KEY_BACKSPACE
 jne   label_60
 cmp   word ptr ds:[_saveCharIndex], 0
 jle   exit_m_responder_return_1
-imul  bx, word ptr ds:[_saveSlot], SAVESTRINGSIZE
+imul  bx, byte ptr ds:[_saveSlot], SAVESTRINGSIZE
 dec   word ptr ds:[_saveCharIndex]
 mov   dx, SAVEGAMESTRINGS_SEGMENT
 add   bx, word ptr ds:[_saveCharIndex]
@@ -2033,8 +2024,8 @@ cmp   bx, KEY_ESCAPE
 jne   label_61
 xor   ax, ax
 xor   dl, dl
-mov   word ptr ds:[_saveStringEnter], ax
-imul  cx, word ptr ds:[_saveSlot], SAVESTRINGSIZE
+mov   byte ptr ds:[_saveStringEnter], al
+imul  cx, byte ptr ds:[_saveSlot], SAVESTRINGSIZE
 label_62:
 mov   al, dl
 cbw  
@@ -2056,14 +2047,14 @@ jmp   label_63
 label_61:
 cmp   bx, KEY_ENTER
 jne   label_64
-imul  bx, word ptr ds:[_saveSlot], SAVESTRINGSIZE
+imul  bx, byte ptr ds:[_saveSlot], SAVESTRINGSIZE
 xor   ax, ax
 mov   dx, SAVEGAMESTRINGS_SEGMENT
-mov   word ptr ds:[_saveStringEnter], ax
+mov   byte ptr ds:[_saveStringEnter], al
 mov   es, dx
 cmp   byte ptr es:[bx], 0
 je    exit_m_responder_return_1
-mov   ax, word ptr ds:[_saveSlot]
+mov   al, byte ptr ds:[_saveSlot]
 call  M_DoSave_
 mov   al, 1
 pop   si
@@ -2092,12 +2083,12 @@ cmp   bx, 127
 jg    jump_to_exit_m_responder_return_1
 cmp   word ptr ds:[_saveCharIndex], (SAVESTRINGSIZE-1)  ; 017h
 jae   jump_to_exit_m_responder_return_1
-imul  ax, word ptr ds:[_saveSlot], SAVESTRINGSIZE
+imul  ax, byte ptr ds:[_saveSlot], SAVESTRINGSIZE
 mov   dx, SAVEGAMESTRINGS_SEGMENT
 call  M_StringWidth_
 cmp   ax, ((SAVESTRINGSIZE-2)*8) ; 0B0h
 jae   jump_to_exit_m_responder_return_1
-imul  ax, word ptr ds:[_saveSlot], SAVESTRINGSIZE
+imul  ax, byte ptr ds:[_saveSlot], SAVESTRINGSIZE
 mov   dx, SAVEGAMESTRINGS_SEGMENT
 mov   si, word ptr ds:[_saveCharIndex]
 mov   es, dx

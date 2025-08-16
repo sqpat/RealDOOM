@@ -287,7 +287,6 @@ void __near M_DoSave(int16_t slot){
         quickSaveSlot = slot;
 }
 
-*/
 
 
 //
@@ -313,6 +312,7 @@ void __near M_SaveSelect(int16_t choice){
     }
     saveCharIndex = locallib_strlen(&savegamestrings[choice*SAVESTRINGSIZE]);
 }
+*/
 
 //
 // Selected from DOOM menu
