@@ -1354,7 +1354,7 @@ void __far M_Drawer (int8_t isFromWipe) {
 
 
 
-
+/*
 
 
 //
@@ -1375,7 +1375,7 @@ void __near M_Ticker (void) {
         skullAnimCounter = 8;
     }
 }
-
+*/
 
 
 #endif

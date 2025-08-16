@@ -2836,7 +2836,12 @@ retf
 
 ENDP
 
+@
 
+
+COMMENT @
+
+; NO LONGER USED! always inlined.
 PROC    M_SetupNextMenu_ NEAR
 PUBLIC  M_SetupNextMenu_
 
@@ -2847,37 +2852,27 @@ mov   word ptr ds:[_currentMenu], ax
 mov   word ptr ds:[_itemOn], bx
 pop   bx
 ret   
-cld   
+@
+
 
 
 ENDP
 
+; todo inline this wherever its used..
 PROC    M_Ticker_    NEAR
 PUBLIC  M_Ticker_
 
-push  bx
-mov   bx, _skullAnimCounter
-dec   word ptr ds:[bx]
-cmp   word ptr ds:[bx], 0
-jle   label_150
-pop   bx
+
+dec   word ptr ds:[_skullAnimCounter]
+jnle   exit_m_ticker
+xor   byte ptr ds:[_whichSkull], 1
+mov   word ptr ds:[_skullAnimCounter], 8
+exit_m_ticker:
 ret   
-label_150:
-mov   bx, _whichSkull
-xor   byte ptr ds:[bx], 1
-mov   bx, _skullAnimCounter
-mov   word ptr ds:[bx], 8
-pop   bx
-ret   
-push  ax
-mov   ax, FIXED_DS_SEGMENT
-mov   ds, ax
-pop   ax
-retf  
+
 
 
 ENDP
-@
 
 PROC    M_MENU_ENDMARKER_ NEAR
 PUBLIC  M_MENU_ENDMARKER_
