@@ -625,27 +625,26 @@ ret
    
 
 ENDP
-COMMENT @
 
 
 PROC    M_QuickSaveResponse_ NEAR
 PUBLIC  M_QuickSaveResponse_
 
-push  dx
-cmp   ax, 'y'  ; 079h
-je    do_quicksave
-pop   dx
-ret   
+cmp   al, 'y'  ; 079h
+jne   exit_quicksave
 do_quicksave:
+push  dx
 mov   al, byte ptr ds:[_quickSaveSlot]
 cbw  
-mov   dx, SAVESTRINGSIZE
 call  M_DoSave_
+mov   dx, SFX_SWTCHX
 xor   ax, ax
 call  S_StartSound_
 pop   dx
+exit_quicksave:
 ret   
    
+
 
 
 ENDP
@@ -662,14 +661,14 @@ sub   sp, 0E2h
 sub   bp, 098h
 mov   al, byte ptr ds:[_usergame]
 test  al, al
-je    label_16
-mov   bx, _gamestate
-cmp   byte ptr ds:[bx], 0
-jne   label_17
+je    cant_save_not_in_game
+
+cmp   byte ptr ds:[_gamestate], 0
+jne   exit_m_quicksave
 cmp   byte ptr ds:[_quickSaveSlot], 0
-jl    label_18
+jl    no_quicksave_slot
 lea   bx, [bp + 04ch]
-mov   ax, 7
+mov   ax, QSPROMPT
 mov   cx, ds
 call  getStringByIndex_
 lea   bx, [bp + 07Eh]
@@ -677,80 +676,77 @@ mov   ax, QLQLPROMPTEND
 mov   cx, ds
 call  getStringByIndex_
 mov   al, byte ptr ds:[_quickSaveSlot]
-cbw  
-imul  ax, ax, SAVESTRINGSIZE
-mov   dx, ds
-push  SAVEGAMESTRINGS_SEGMENT
-lea   bx, [bp + 04Ch]
-mov   cx, ds
+mov   ah, SAVESTRINGSIZE
+mul   ah
+mov   dx, SAVEGAMESTRINGS_SEGMENT
+push  dx
 push  ax
+mov   dx, ds
+mov   cx, ds
+lea   bx, [bp + 04Ch]
 lea   ax, [bp - 04Ah]
 call  combine_strings_
+
 lea   ax, [bp + 07Eh]
-lea   bx, [bp - 04Ah]
-mov   dx, ds
 push  ds
-mov   cx, ds
 push  ax
-lea   ax, [bp - 04Ah]
+lea   bx, [bp - 04Ah]
+mov   ax, bx
+mov   dx, ds
+mov   cx, ds
 call  combine_strings_
 mov   bx, 1
 mov   dx, OFFSET M_QuickSaveResponse_
 lea   ax, [bp - 04Ah]
 call  M_StartMessage_
-label_17:
+exit_m_quicksave:
 lea   sp, [bp + 098h]
 pop   bp
 pop   dx
 pop   cx
 pop   bx
 ret   
-label_16:
+cant_save_not_in_game:
 mov   dx, SFX_OOF
 xor   ah, ah
 call  S_StartSound_
-jmp   label_17
-label_18:
+jmp   exit_m_quicksave
+
+no_quicksave_slot:
 call  M_StartControlPanel_
 call  M_ReadSaveStrings_
 mov   word ptr ds:[_currentMenu], OFFSET _SaveDef
-mov   ax, word ptr ds:[_SaveDef + MENU_T.menu_laston]
+push  word ptr ds:[_SaveDef + MENU_T.menu_laston]
+pop   word ptr ds:[_itemOn]
 mov   byte ptr ds:[_quickSaveSlot], -2
-mov   word ptr ds:[_itemOn], ax
-lea   sp, [bp + 098h]
-pop   bp
-pop   dx
-pop   cx
-pop   bx
-ret   
-cld   
+jmp   exit_m_quicksave
+
 
 
 ENDP
+
+
 
 PROC    M_QuickLoadResponse_ NEAR
 PUBLIC  M_QuickLoadResponse_
 
 
+cmp   al, 'y' ; 079h
+jne   exit_quickload
 push  dx
-cmp   ax, 'y' ; 079h
-je    label_3
-pop   dx
-ret   
-label_3:
 mov   al, byte ptr ds:[_quickSaveSlot]
 cbw  
+call  M_LoadSelect_
 mov   dx, SFX_SWTCHX
-call  S_StartSound_
 xor   ax, ax
 call  S_StartSound_
 pop   dx
+exit_quickload:
 ret   
-cld   
-
-
 
 ENDP
+
+COMMENT @
 
 PROC    M_QuickLoad_ NEAR
 PUBLIC  M_QuickLoad_
@@ -2700,25 +2696,24 @@ retf
 
 ENDP
 
+@
+
 PROC    M_StartControlPanel_ NEAR
 PUBLIC  M_StartControlPanel_
 
 
-push  bx
-mov   bx, _menuactive
-cmp   byte ptr ds:[bx], 0
-je    label_135
-pop   bx
-ret   
-label_135:
-mov   byte ptr ds:[bx], 1
-mov   bx, word ptr ds:[_MainDef + MENU_T.menu_laston]
+cmp   byte ptr ds:[_menuactive], 0
+jne   exit_m_startcontrolpanel
+mov   byte ptr ds:[_menuactive], 1
+push  word ptr ds:[_MainDef + MENU_T.menu_laston]
 mov   word ptr ds:[_currentMenu], OFFSET _MainDef
-mov   word ptr ds:[_itemOn], bx
-pop   bx
+pop   word ptr ds:[_itemOn]
+exit_m_startcontrolpanel:
 ret   
 
 ENDP
+
+COMMENT @
 
 SKULLXOFF = 32
 
@@ -2916,6 +2911,7 @@ retf
 
 
 ENDP
+
 
 PROC    M_SetupNextMenu_ NEAR
 PUBLIC  M_SetupNextMenu_

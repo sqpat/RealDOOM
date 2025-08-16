@@ -153,6 +153,7 @@ int16_t  __near M_StringWidth(int8_t __far*string);
 int16_t  __near M_StringHeight(int8_t __far*string);
 void __near M_StartControlPanel(void);
 void __near M_StartMessage(int8_t __near * string,void __near (* routine)(int16_t), boolean input);
+void __near M_QuickLoadResponse(int16_t ch);
  
 patch_t __far* __near M_GetMenuPatch(int16_t i);
 
@@ -331,7 +332,6 @@ void __near M_SaveGame (int16_t choice){
     M_SetupNextMenu(&SaveDef);
     M_ReadSaveStrings();
 }
-*/
 
 
 
@@ -391,6 +391,7 @@ void __near M_QuickLoadResponse(int16_t ch){
     }
 }
 
+*/
 
 void __near M_QuickLoad(void){
     
@@ -1257,6 +1258,7 @@ boolean __far M_Responder (event_t __far*  ev) {
 //
 // M_StartControlPanel
 //
+/*
 void __near M_StartControlPanel (void) {
     // intro might call this repeatedly
     if (menuactive) {
@@ -1266,7 +1268,7 @@ void __near M_StartControlPanel (void) {
     currentMenu = &MainDef;         // JDC
     itemOn = currentMenu->lastOn;   // JDC
 }
-
+*/
 
 //
 // M_Drawer
