@@ -578,8 +578,8 @@ ret
 
 ENDP
 
-COMMENT @
 
+;void __near M_SaveGame (int16_t choice){
 
 PROC    M_SaveGame_ NEAR
 PUBLIC  M_SaveGame_
@@ -591,40 +591,42 @@ push  dx
 push  bp
 mov   bp, sp
 sub   sp, 0100h
-cmp   byte ptr ds:[_usergame], 0
-je    label_14
-mov   bx, _gamestate
-cmp   byte ptr ds:[bx], 0
-je    label_15
-exit_m_savegame:
-LEAVE_MACRO 
-pop   dx
-pop   cx
-pop   bx
-ret   
-label_14:
+xor   ax, ax
+cmp   byte ptr ds:[_usergame], al
+jne   can_save_game
+
 lea   bx, [bp - 0100h]
 mov   ax, SAVEDEAD
 mov   cx, ds
 call  getStringByIndex_
 xor   dx, dx
 lea   ax, [bp - 0100h]
-xor   bx, bx
+mov   bx, dx
 call  M_StartMessage_
 jmp   exit_m_savegame
-label_15:
-mov   ax, word ptr ds:[_SaveDef + MENU_T.menu_laston]
+
+can_save_game:
+cmp   byte ptr ds:[_gamestate], al
+jne   exit_m_savegame
+
+push  word ptr ds:[_SaveDef + MENU_T.menu_laston]
+pop   word ptr ds:[_itemOn]
 mov   word ptr ds:[_currentMenu], OFFSET _SaveDef
-mov   word ptr ds:[_itemOn], ax
 call  M_ReadSaveStrings_
+
+
+exit_m_savegame:
 LEAVE_MACRO 
 pop   dx
 pop   cx
 pop   bx
 ret   
-cld   
+
+   
 
 ENDP
+COMMENT @
+
 
 PROC    M_QuickSaveResponse_ NEAR
 PUBLIC  M_QuickSaveResponse_
@@ -643,7 +645,7 @@ xor   ax, ax
 call  S_StartSound_
 pop   dx
 ret   
-cld   
+   
 
 
 ENDP
@@ -1722,41 +1724,40 @@ cld
 
 ENDP
 
+@
+
+;void __near M_StartMessage ( int8_t __near * string, void __near (*routine)(int16_t), boolean input ) {
+
+; ax string
+; dx routine
+; bx input boolean
+
 PROC    M_StartMessage_ NEAR
 PUBLIC  M_StartMessage_
 
 push  cx
-push  si
-push  bp
-mov   bp, sp
-sub   sp, 2
-mov   cx, ax
-mov   si, dx
-mov   byte ptr [bp - 2], bl
-mov   bx, _menuactive
-mov   al, byte ptr ds:[bx]
-mov   dx, ds
-cbw  
-mov   bx, cx
-mov   word ptr ds:[_messageLastMenuActive], ax
-mov   cx, ds
-mov   ax, _menu_messageString
+
+mov   word ptr ds:[_messageRoutine], dx
+mov   byte ptr ds:[_messageNeedsInput], bl
 mov   byte ptr ds:[_messageToPrint], 1
-call  locallib_strcpy_
-mov   al, byte ptr [bp - 2]
-mov   bx, _menuactive
-mov   word ptr ds:[_messageRoutine], si
-mov   byte ptr ds:[_messageNeedsInput], al
-mov   byte ptr ds:[bx], 1
-LEAVE_MACRO 
-pop   si
+mov   byte ptr ds:[_menuactive], 1
+xchg  ax, bx  ; bx gets string ptr.
+
+mov   al, byte ptr ds:[_menuactive]
+cbw  
+mov   word ptr ds:[_messageLastMenuActive], ax
+
+mov   dx, ds
+mov   cx, ds
+mov   ax, OFFSET _menu_messageString
+call  locallib_strcpy_  ; todo make local
+
 pop   cx
 ret   
-cld   
 
 ENDP
 
-@
+
 
 PROC    M_Strlen_ NEAR
 

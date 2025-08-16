@@ -312,7 +312,6 @@ void __near M_SaveSelect(int16_t choice){
     }
     saveCharIndex = locallib_strlen(&savegamestrings[choice*SAVESTRINGSIZE]);
 }
-*/
 
 //
 // Selected from DOOM menu
@@ -332,6 +331,7 @@ void __near M_SaveGame (int16_t choice){
     M_SetupNextMenu(&SaveDef);
     M_ReadSaveStrings();
 }
+*/
 
 
 
@@ -825,7 +825,7 @@ void __near M_DrawThermo (int16_t   x, int16_t   y, int16_t   thermWidth, int16_
 }
 
  
-
+/*
 
 void __near M_StartMessage ( int8_t __near * string, void __near (*routine)(int16_t), boolean input ) {
     messageLastMenuActive = menuactive;
@@ -838,7 +838,7 @@ void __near M_StartMessage ( int8_t __near * string, void __near (*routine)(int1
 }
 
 
-
+*/
 
 
 
