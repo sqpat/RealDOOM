@@ -1658,60 +1658,77 @@ PUBLIC  M_DrawThermo_
 push  si
 push  di
 push  bp
-mov   bp, sp
-push  ax
-push  dx
-push  bx
-push  cx
+mov   bp, bx ; count in bp
+
+mov   di, dx  ; di holds y.
+xchg  ax, si  ; si holds xx. x + 8 combined with cx and written forward
+
+mov   al, MENUPATCH_M_THERMM
+call  M_GetMenuPatch_
+mov   word ptr cs:[SELFMODIFY_thermm_offset+1], ax
+mov   word ptr cs:[SELFMODIFY_thermm_segment+1], dx
+
 mov   al, MENUPATCH_M_THERML
-mov   si, word ptr [bp - 2]
 call  M_GetMenuPatch_
-xor   di, di
-mov   bx, ax
-mov   cx, dx
-mov   dx, word ptr [bp - 4]
-mov   ax, word ptr [bp - 2]
+
+xchg  bx, ax
+mov   ax, si
 add   si, 8
-call  V_DrawPatchDirect_
-cmp   word ptr [bp - 6], 0
-jle   label_43
-label_44:
-mov   al, 9
-call  M_GetMenuPatch_
-mov   bx, ax
+
+SHIFT_MACRO sal cx 3
+add   cx, si
+mov   word ptr cs:[SELFMODIFY_thermDot+1], cx
+
+
+
 mov   cx, dx
-mov   dx, word ptr [bp - 4]
+mov   dx, di
+
+call  V_DrawPatchDirect_
+
+
+loop_next_thermo:
+
+SELFMODIFY_thermm_offset:
+mov   bx, 01000h
+SELFMODIFY_thermm_segment:
+mov   cx, 01000h
+mov   dx, di
 mov   ax, si
-inc   di
+
 call  V_DrawPatchDirect_
 add   si, 8
-cmp   di, word ptr [bp - 6]
-jl    label_44
-label_43:
-mov   al, 8
-mov   di, word ptr [bp - 2]
+dec   bp
+jnz   loop_next_thermo
+done_with_thermo_loop:
+
+mov   al, MENUPATCH_M_THERMR
 call  M_GetMenuPatch_
-mov   bx, ax
+
+xchg  bx, ax
 mov   cx, dx
-mov   dx, word ptr [bp - 4]
+mov   dx, di
 mov   ax, si
-add   di, 8
+
 call  V_DrawPatchDirect_
-mov   al, 7
-mov   si, word ptr [bp - 8]
+mov   al, MENUPATCH_M_THERMO
 call  M_GetMenuPatch_
-shl   si, 3
-mov   bx, ax
+
+
+xchg  ax, bx
 mov   cx, dx
-add   si, di
-mov   dx, word ptr [bp - 4]
-mov   ax, si
+
+
+mov   dx, di
+SELFMODIFY_thermDot:
+mov   ax, 01000h
 call  V_DrawPatchDirect_
-LEAVE_MACRO 
+
+pop   bp
 pop   di
 pop   si
 ret   
-cld   
+
 
 
 ENDP
