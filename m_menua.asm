@@ -464,6 +464,8 @@ mul   bl
 mov   dx, SAVEGAMESTRINGS_SEGMENT
 call  M_StringWidth_
 
+xchg  ax, si ; store.
+
 mov   al, LINEHEIGHT
 mul   bl
 
@@ -1778,6 +1780,7 @@ xor     ax, ax
 repne   scasb
 sub     di, dx
 xchg    ax, di
+dec     ax
 
 pop     di
 pop     cx
@@ -1800,12 +1803,12 @@ mov   ds, dx  ; for lodsb
 call  M_Strlen_
 
 
-xchg  ax, cx
-add   cx, si  ; cx is end condition (startcondition + count)
-
 xor   dx, dx  ; dx is width
 test  ax, ax
 jle   exit_stringwidth
+xchg  ax, cx
+add   cx, si  ; cx is end condition (startcondition + count)
+
 
 mov   bx, FONT_WIDTHS_SEGMENT
 mov   es, bx

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/14 17:54:35
+Created on:       25/08/15 12:35:16
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -44,8 +44,8 @@ st_stuff_TEXT          CODE           AUTO           02e9:31d0       00000b95
 hu_stuff_TEXT          CODE           AUTO           02e9:3d70       000001e0
 hu_lib_TEXT            CODE           AUTO           02e9:3f50       000001c4
 m_menu_TEXT            CODE           AUTO           02e9:4120       000011c4
-M_MENUA_TEXT           CODE           AUTO           02e9:52e4       0000029e
-D_ALGO_TEXT            CODE           AUTO           02e9:5582       0000008c
+M_MENUA_TEXT           CODE           AUTO           02e9:52e4       000002a0
+D_ALGO_TEXT            CODE           AUTO           02e9:5584       0000008c
 dmx_TEXT               CODE           AUTO           02e9:5610       000001b8
 D_INT_TEXT             CODE           AUTO           02e9:57c8       00000176
 MEMORY_TEXT            CODE           AUTO           02e9:593e       00000000
@@ -559,24 +559,24 @@ Module: m_menu.obj(C:\REALDOOM\m_menu.c)
 02e9:52b8*     M_SetupNextMenu_
 02e9:52c8      M_Ticker_
 Module: m_menua.obj(m_menua.ASM)
-02e9:54db      M_StringWidth_
+02e9:54dd      M_StringWidth_
 02e9:5300      M_DrawLoad_
 02e9:53c1      M_LoadGame_
-02e9:549e      M_DoSave_
+02e9:549f      M_DoSave_
 02e9:52e6      M_GetMenuPatch_
-02e9:5522      M_WriteText_
+02e9:5524      M_WriteText_
 02e9:53cd      M_ReadSaveStrings_
 02e9:5398      M_LoadSelect_
-02e9:5582*     M_MENU_ENDMARKER_
+02e9:5584*     M_MENU_ENDMARKER_
 02e9:52e4*     M_MENU_STARTMARKER_
 02e9:5341*     M_DrawSaveLoadBorder_
 02e9:5432      M_DrawSave_
 Module: d_algo.obj(d_algo.ASM)
-02e9:55f2      hackDSBack_
-02e9:560e*     D_ALGO_END_
-02e9:55ab      zeroConventional_
-02e9:5582      resetDS_
-02e9:558a      hackDS_
+02e9:55f4      hackDSBack_
+02e9:5610*     D_ALGO_END_
+02e9:55ad      zeroConventional_
+02e9:5584      resetDS_
+02e9:558c      hackDS_
 Module: dmx.obj(C:\REALDOOM\dmx.c)
 02e9:5610*     TS_SetTimerToMaxTaskRate_
 02e9:5624+     playpcspeakernote_
