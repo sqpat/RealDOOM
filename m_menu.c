@@ -572,7 +572,6 @@ void __near M_Episode(int16_t choice){
     M_SetupNextMenu(&NewDef);
 }
 
-*/
 
 
 //
@@ -620,6 +619,7 @@ void __near M_ChangeMessages(int16_t choice) {
     message_dontfuckwithme = true;
 }
 
+*/
 
 //
 // M_EndGame

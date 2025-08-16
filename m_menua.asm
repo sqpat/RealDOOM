@@ -212,6 +212,8 @@ LOADDEF_X = 80
 LOADDEF_Y = 54
 SOUNDDEF_X = 80
 SOUNDDEF_Y = 64
+OPTIONSDEF_X = 60
+OPTIONSDEF_Y = 37
 
 
 PROC    M_DrawLoad_ NEAR
@@ -1160,70 +1162,60 @@ ret
 
 
 ENDP
-COMMENT @
 
 PROC    M_DrawOptions_ NEAR
 PUBLIC  M_DrawOptions_
 
-push  bx
-push  cx
-push  dx
-push  si
+PUSHA_NO_AX_OR_BP_MACRO
 mov   al, MENUPATCH_M_OPTTTL
 call  M_GetMenuPatch_
 mov   cx, dx
-mov   bx, ax
+xchg  ax, bx
 mov   dx, 15
 mov   ax, 108
 call  V_DrawPatchDirect_
+
+xor   bx, bx
 mov   bl, byte ptr ds:[_detailLevel]
-xor   bh, bh
 mov   al, byte ptr ds:[bx + _detailNames]
 call  M_GetMenuPatch_
-mov   bl, byte ptr ds:[_OptionsDef + MENU_T.menu_y]
-mov   si, word ptr ds:[_OptionsDef + MENU_T.menu_x]
+
+xchg  ax, bx
 mov   cx, dx
-lea   dx, [bx + LINEHEIGHT*options_e_detail]
-add   si, 175
-mov   bx, ax
-mov   ax, si
+
+mov   dx, OPTIONSDEF_Y + LINEHEIGHT*OPTIONS_E_DETAIL
+mov   ax, OPTIONSDEF_X + 175
 call  V_DrawPatchDirect_
+
+xor   bx, bx
 mov   bl, byte ptr ds:[_showMessages]
-xor   bh, bh
+
 mov   al, byte ptr ds:[bx + _msgNames]
 call  M_GetMenuPatch_
-mov   bl, byte ptr ds:[_OptionsDef + MENU_T.menu_y]
-mov   si, word ptr ds:[_OptionsDef + MENU_T.menu_x]
+
+xchg  ax, bx
 mov   cx, dx
-lea   dx, [bx + LINEHEIGHT*options_e_messages]
-add   si, 120
-mov   bx, ax
-mov   ax, si
+
+mov   dx, OPTIONSDEF_Y + LINEHEIGHT*OPTIONS_E_MESSAGES
+mov   ax, OPTIONSDEF_X + 120
+
 call  V_DrawPatchDirect_
 mov   bx, 10
-mov   al, byte ptr ds:[_OptionsDef + MENU_T.menu_y]
 mov   cl, byte ptr ds:[_mouseSensitivity]
-xor   ah, ah
-xor   ch, ch
-mov   dx, ax
-mov   ax, word ptr ds:[_OptionsDef + MENU_T.menu_x]
-add   dx, LINEHEIGHT*(options_e_mousesens+1)
+mov   ax, OPTIONSDEF_X
+mov   dx, OPTIONSDEF_Y + LINEHEIGHT*(OPTIONS_E_MOUSESENS+1)
+
 call  M_DrawThermo_
+
 mov   bx, 11
-mov   al, byte ptr ds:[_OptionsDef + MENU_T.menu_y]
 mov   cl, byte ptr ds:[_screenSize]
-xor   ah, ah
-xor   ch, ch
-mov   dx, ax
-mov   ax, word ptr ds:[_OptionsDef + MENU_T.menu_x]
-add   dx, LINEHEIGHT*(options_e_scrnsize+1)
+mov   ax, OPTIONSDEF_X
+mov   dx, OPTIONSDEF_Y + LINEHEIGHT*(OPTIONS_E_SCRNSIZE+1)
 call  M_DrawThermo_
-pop   si
-pop   dx
-pop   cx
-pop   bx
+
+POPA_NO_AX_OR_BP_MACRO
 ret   
-cld   
+
 
 
 
@@ -1233,40 +1225,35 @@ PROC    M_Options_ NEAR
 PUBLIC  M_Options_
 
 
-mov   ax, word ptr ds:[_OptionsDef + MENU_T.menu_laston]
+push  word ptr ds:[_OptionsDef + MENU_T.menu_laston]
+pop   word ptr ds:[_itemOn]
 mov   word ptr ds:[_currentMenu], OFFSET _OptionsDef
-mov   word ptr ds:[_itemOn], ax
 ret   
-cld   
+
 
 
 ENDP
+
 
 PROC    M_ChangeMessages_ NEAR
 PUBLIC  M_ChangeMessages_
 
 
 
-push  bx
-mov   bl, 1
-sub   bl, byte ptr ds:[_showMessages]
-mov   byte ptr ds:[_showMessages], bl
-jne   label_28
-mov   bx, _player + PLAYER_T.player_message
-mov   word ptr ds:[bx], MSGOFF
+mov   ax, MSGON
+xor   byte ptr ds:[_showMessages], 1
+jnz   use_message_on
+dec   ax
+use_message_on:
+mov   word ptr ds:[_player + PLAYER_T.player_message], ax
 mov   byte ptr ds:[_message_dontfuckwithme], 1
-pop   bx
 ret   
-label_28:
-mov   bx, _player + PLAYER_T.player_message
-mov   word ptr ds:[bx], MSGON
-mov   byte ptr ds:[_message_dontfuckwithme], 1
-pop   bx
-ret   
-cld   
 
 
 ENDP
+
+COMMENT @
+
 
 PROC    M_EndGameResponse_ NEAR
 PUBLIC  M_EndGameResponse_
@@ -1648,6 +1635,7 @@ xchg  bx, ax
 mov   ax, si
 add   si, 8
 
+xor   ch, ch
 SHIFT_MACRO sal cx 3
 add   cx, si
 mov   word ptr cs:[SELFMODIFY_thermDot+1], cx
