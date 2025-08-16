@@ -1768,55 +1768,47 @@ jmp   iter_next_char_stringwidth
 
 ENDP
 
-COMMENT @
+HU_FONT_SIZE = 8
 
 PROC    M_StringHeight_ NEAR
 PUBLIC  M_StringHeight_
 
-push  bx
 push  cx
 push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
-mov   cx, ax
-mov   si, dx
-mov   word ptr [bp - 2], 8
-xor   bl, bl
-label_51:
-mov   ax, cx
-mov   dx, si
+
+mov   si, ax
+mov   cx, dx
+
 call  M_Strlen_
-mov   dx, ax
-mov   al, bl
-cbw  
-cmp   ax, dx
-jge   done_with_stringheight_loop
-mov   di, cx
-mov   es, si
-add   di, ax
-cmp   byte ptr es:[di], 0Ah  ; newline char
-je    label_50
-label_52:
-inc   bl
-jmp   label_51
-label_50:
-add   word ptr [bp - 2], 8
-jmp   label_52
-done_with_stringheight_loop:
-mov   ax, word ptr [bp - 2]
-LEAVE_MACRO 
-pop   di
+
+mov   dx, HU_FONT_SIZE
+test  ax, ax 
+je    exit_stringheight
+xchg  ax, cx ; cx gets len
+mov   ds, ax ; ds gets segment
+mov   ah, 0Ah ; newline
+loop_next_stringheight:
+lodsb
+cmp   al, ah
+jne   iter_next_char_stringheight
+add   dx, HU_FONT_SIZE
+iter_next_char_stringheight:
+loop  loop_next_stringheight
+
+push  ss
+pop   ds
+
+
+exit_stringheight:
+xchg  ax, dx
 pop   si
 pop   cx
-pop   bx
 ret   
 
 
 ENDP
 
-@
+
 
 ;uint8_t __far locallib_toupper(uint8_t ch){
 ;	if (ch >=  0x61 && ch <= 0x7A){

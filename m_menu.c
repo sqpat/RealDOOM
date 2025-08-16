@@ -866,7 +866,6 @@ int16_t __near M_StringWidth(int8_t __far* string) {
                 
     return w;
 }
-*/
 
 
 //
@@ -890,7 +889,6 @@ int16_t __near M_StringHeight(int8_t __far* string){
 //
 //      Write a string using the hu_font
 //
-/*
 void __near M_WriteText (int16_t x, int16_t y, int8_t __far * string) {
     int16_t         w;
     int8_t __far*       ch;
