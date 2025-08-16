@@ -1352,59 +1352,65 @@ ret
 
 ENDP
 
-COMMENT @
+_quitsounds_1:
+db SFX_VILACT
+db SFX_GETPOW
+db SFX_BOSCUB
+db SFX_SLOP
+db SFX_SKESWG
+db SFX_KNTDTH
+db SFX_BSPACT
+db SFX_SGTATK
 
 
-; todo make quitsounds a lookup here.
+_quitsounds_2:
+
+db SFX_PLDETH
+db SFX_DMPAIN
+db SFX_POPAIN
+db SFX_SLOP
+db SFX_TELEPT
+db SFX_POSIT1
+db SFX_POSIT3
+db SFX_SGTATK
+
+
 PROC    M_QuitResponse_ NEAR
 PUBLIC  M_QuitResponse_
 
 push  bx
 push  dx
-push  si
-push  bp
-mov   bp, sp
-sub   sp, 8
-cmp   ax, 'y' ; 079h
+
+cmp   al, 'y' ; 079h
 jne   exit_m_quitresponse
-mov   bx, _commercial
-cmp   byte ptr ds:[bx], 0
-jne   label_32
-mov   word ptr [bp - 8], 01A39h
-mov   word ptr [bp - 6], 01F1Bh
-mov   word ptr [bp - 4], 02423h
-mov   byte ptr [bp - 2], 026h
-mov   bx, _gametic
-mov   byte ptr [bp - 1], 034h
+mov   bx, OFFSET _quitsounds_2
+cmp   byte ptr ds:[_commercial], 0
+je    label_33
+mov   bx, OFFSET _quitsounds_1
 label_33:
-mov   ax, word ptr ds:[bx]
-mov   dx, word ptr ds:[bx + 2]
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
-mov   si, ax
-and   si, 7
-mov   dl, byte ptr [bp + si - 8]
+mov   ax, word ptr ds:[_gametic]
+
+sar   ax, 1
+sar   ax, 1
+and   ax, 7
+add   bx, ax
 xor   ax, ax
-xor   dh, dh
+cwd
+mov   dl, byte ptr cs:[bx]
 call  S_StartSound_
-mov   ax, 069h  ;todo fix
+mov   ax, 105
 call  I_WaitVBL_
 call  I_Quit_
 exit_m_quitresponse:
-LEAVE_MACRO 
-pop   si
+
 pop   dx
 pop   bx
 ret   
-label_32:
-mov   bx, _gametic
-mov   byte ptr [bp - 8], 034h
-jmp   label_33
-cld   
+
 
 ENDP
+
+COMMENT @
 
 PROC    M_QuitDOOM_ NEAR
 PUBLIC  M_QuitDOOM_

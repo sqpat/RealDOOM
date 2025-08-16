@@ -154,6 +154,7 @@ int16_t  __near M_StringHeight(int8_t __far*string);
 void __near M_StartControlPanel(void);
 void __near M_StartMessage(int8_t __near * string,void __near (* routine)(int16_t), boolean input);
 void __near M_QuickLoadResponse(int16_t ch);
+void __near M_QuitResponse(int16_t ch);
  
 patch_t __far* __near M_GetMenuPatch(int16_t i);
 
@@ -673,7 +674,6 @@ void __near M_FinishReadThis(int16_t choice){
     M_SetupNextMenu(&MainDef);
 }
 
-*/
 
 
 
@@ -714,6 +714,7 @@ void __near M_QuitResponse(int16_t ch){
     I_Quit();
 }
 
+*/
 
 
 
