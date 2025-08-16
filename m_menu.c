@@ -781,7 +781,6 @@ void __near M_ChangeDetail(int16_t choice) {
         player.message = DETAILPOTATO;
     }
 }
-*/
 
 
 

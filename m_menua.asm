@@ -1534,49 +1534,41 @@ ret
 
 ENDP
 
-COMMENT @
 
 
 PROC    M_SizeDisplay_ NEAR
 PUBLIC  M_SizeDisplay_
 
-push  bx
-push  cx
 push  dx
-mov   cl, byte ptr ds:[_screenSize]
-cmp   ax, 1
-jne   label_41
-cmp   cl, 10
-jae   label_42
-mov   bx, _screenblocks
-inc   cl
-inc   byte ptr ds:[bx]
-label_42:
-mov   al, byte ptr ds:[_detailLevel]
-xor   ah, ah
-mov   bx, _screenblocks
-mov   dx, ax
-mov   al, byte ptr ds:[bx]
-mov   byte ptr ds:[_screenSize], cl
+cmp   al, 1
+mov   al, byte ptr ds:[_screenSize]
+cbw
+cwd
+jne   dec_size
+cmp   al, 10
+jae   update_size_display
+
+inc   ax
+inc   byte ptr ds:[_screenblocks]
+update_size_display:
+mov   byte ptr ds:[_screenSize], al
+mov   dl, byte ptr ds:[_detailLevel]
+mov   al, byte ptr ds:[_screenblocks]
+
 call  R_SetViewSize_
-mov   cl, byte ptr ds:[_screenSize]
+
 pop   dx
-pop   cx
-pop   bx
 ret   
-label_41:
+dec_size:
 test  ax, ax
-jne   label_42
-test  cl, cl
-jbe   label_42
-mov   bx, _screenblocks
-dec   cl
-dec   byte ptr ds:[bx]
-jmp   label_42
+je    update_size_display
+dec   ax
+dec   byte ptr ds:[_screenblocks]
+jmp   update_size_display
 
 ENDP
 
-@
+
 
 
 PROC    M_DrawThermo_ NEAR
