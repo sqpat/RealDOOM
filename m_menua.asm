@@ -210,6 +210,8 @@ ENDP
 
 LOADDEF_X = 80
 LOADDEF_Y = 54
+SOUNDDEF_X = 80
+SOUNDDEF_Y = 64
 
 
 PROC    M_DrawLoad_ NEAR
@@ -856,7 +858,6 @@ ret
 
 ENDP
 
-COMMENT @
 
 
 PROC    M_DrawSound_ NEAR
@@ -869,27 +870,19 @@ push  dx
 mov   al, MENUPATCH_M_SVOL
 call  M_GetMenuPatch_
 mov   cx, dx
-mov   bx, ax
+xchg  ax, bx
 mov   dx, 38
 mov   ax, 60
 call  V_DrawPatchDirect_
 mov   bx, 16
-mov   al, byte ptr ds:[_SoundDef + MENU_T.menu_y]
+mov   ax, SOUNDDEF_X
+mov   dx, SOUNDDEF_Y  + LINEHEIGHT*(SOUND_E_SFX_VOL+1)
 mov   cl, byte ptr ds:[_sfxVolume]
-xor   ah, ah
-xor   ch, ch
-mov   dx, ax
-mov   ax, word ptr ds:[_SoundDef + MENU_T.menu_x]
-add   dx, LINEHEIGHT*(SOUND_E_SFX_VOL+1)
 call  M_DrawThermo_
 mov   bx, 16
-mov   al, byte ptr ds:[_SoundDef + MENU_T.menu_y]
+mov   ax, SOUNDDEF_X
+mov   dx, SOUNDDEF_Y + LINEHEIGHT*(SOUND_E_MUSIC_VOL+1)
 mov   cl, byte ptr ds:[_musicVolume]
-xor   ah, ah
-xor   ch, ch
-mov   dx, ax
-mov   ax, word ptr ds:[_SoundDef + MENU_T.menu_x]
-add   dx, LINEHEIGHT*(SOUND_E_MUSIC_VOL+1)
 call  M_DrawThermo_
 pop   dx
 pop   cx
@@ -904,15 +897,16 @@ PROC    M_Sound_ NEAR
 PUBLIC  M_Sound_
 
 
-mov   ax, word ptr ds:[_SoundDef + MENU_T.menu_laston]
+push  word ptr ds:[_SoundDef + MENU_T.menu_laston]
+pop   word ptr ds:[_itemOn]
 mov   word ptr ds:[_currentMenu], OFFSET _SoundDef
-mov   word ptr ds:[_itemOn], ax
 ret   
-cld   
-
-
 
 ENDP
+
+COMMENT @
+
+
 
 PROC    M_SfxVol_ NEAR
 PUBLIC  M_SfxVol_
@@ -1655,6 +1649,9 @@ jmp   label_42
 
 ENDP
 
+@
+
+
 PROC    M_DrawThermo_ NEAR
 PUBLIC  M_DrawThermo_
 
@@ -1719,7 +1716,6 @@ cld
 
 ENDP
 
-@
 
 ;void __near M_StartMessage ( int8_t __near * string, void __near (*routine)(int16_t), boolean input ) {
 
