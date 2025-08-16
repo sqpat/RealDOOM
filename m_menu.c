@@ -714,7 +714,6 @@ void __near M_QuitResponse(int16_t ch){
     I_Quit();
 }
 
-*/
 
 
 
@@ -743,7 +742,7 @@ void __near M_QuitDOOM(int16_t choice) {
     combine_strings_near(endstring, endstring, temp2);
 
     M_StartMessage(endstring,M_QuitResponse,true);
-}
+}*/
 
 
 

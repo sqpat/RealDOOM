@@ -1385,10 +1385,10 @@ cmp   al, 'y' ; 079h
 jne   exit_m_quitresponse
 mov   bx, OFFSET _quitsounds_2
 cmp   byte ptr ds:[_commercial], 0
-je    label_33
+je    use_quitsounds_2
 mov   bx, OFFSET _quitsounds_1
-label_33:
-mov   ax, word ptr ds:[_gametic]
+use_quitsounds_2:
+mov   al, byte ptr ds:[_gametic]
 
 sar   ax, 1
 sar   ax, 1
@@ -1410,7 +1410,6 @@ ret
 
 ENDP
 
-COMMENT @
 
 PROC    M_QuitDOOM_ NEAR
 PUBLIC  M_QuitDOOM_
@@ -1423,50 +1422,41 @@ push  bp
 mov   bp, sp
 sub   sp, 088h
 sub   bp, 09ch
-mov   bx, _gametic
-mov   ax, word ptr ds:[bx]
-mov   dx, word ptr ds:[bx + 2]
-mov   cx, word ptr ds:[bx + 2]
-sar   dx, 1
-rcr   ax, 1
-sar   cx, 15 ; todo no
-sar   dx, 1
-rcr   ax, 1
-mov   dx, cx
-xor   dx, ax
-mov   ax, word ptr ds:[bx + 2]
-sar   ax, 15 ; todo no
-sub   dx, ax
-mov   ax, word ptr ds:[bx + 2]
-sar   ax, 15 ; todo no
-and   dx, 7
-xor   dx, ax
-mov   ax, word ptr ds:[bx + 2]
+
+mov   al, byte ptr ds:[_gametic]
+sar   ax, 1
+sar   ax, 1
+and   ax, 7
+xchg  ax, dx
+
+
 mov   cx, FIXED_DS_SEGMENT ; todo DS
-sar   ax, 15 ; todo no
 lea   bx, [bp + 07Eh]
-sub   dx, ax
 mov   ax, DOSY
 call  getStringByIndex_
-test  dx, dx
-je    label_34
-mov   bx, _commercial
-cmp   byte ptr ds:[bx], 0
-je    label_35
-mov   ax, dx
+xchg  ax, dx
+test  ax, ax
+je    force_message_as_2
+
+cmp   byte ptr ds:[_commercial], 0
+je    use_doom1_msg
 add   ax, QUITMSGD21 - 1
-label_36:
+got_message:
 lea   bx, [bp + 014h]
 mov   cx, ds
-lea   dx, [bp + 014h]
+mov   dx, bx
 call  getStringByIndex_
+
 mov   bx, _STRING_newline
 lea   ax, [bp + 014h]
 call  combine_strings_near_
+
 lea   bx, [bp + 07Eh]
-lea   dx, [bp + 014h]
 lea   ax, [bp + 014h]
+mov   dx, ax
+
 call  combine_strings_near_
+
 mov   bx, 1
 mov   dx, OFFSET M_QuitResponse_
 lea   ax, [bp + 014h]
@@ -1477,43 +1467,41 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-label_34:
+force_message_as_2:
 mov   ax, 2
-jmp   label_36
-label_35:
-mov   ax, dx
+jmp   got_message
+use_doom1_msg:
 add   ax, QUITMSGD11 - 1
-jmp   label_36
-cld   
+jmp   got_message
+
 
 ENDP
+
+
 
 PROC    M_ChangeSensitivity_ NEAR
 PUBLIC  M_ChangeSensitivity_
 
-push  dx
-mov   dl, byte ptr ds:[_mouseSensitivity]
-cmp   ax, 1
-jne   label_37
-cmp   dl, 9
-jae   set_sensitivity_and_return
-inc   dl
+cmp   al, 1
+mov   al, byte ptr ds:[_mouseSensitivity]
+cbw
+jne   do_dec_sensitivity
+cmp   al, 9
+jae   exit_change_set_sensitivity
+inc   ax
 set_sensitivity_and_return:
-mov   byte ptr ds:[_mouseSensitivity], dl
-pop   dx
+mov   byte ptr ds:[_mouseSensitivity], al
+exit_change_set_sensitivity:
 ret   
-label_37:
-test  ax, ax
-jne   set_sensitivity_and_return
-test  dl, dl
-je    set_sensitivity_and_return
-dec   dl
-mov   byte ptr ds:[_mouseSensitivity], dl
-pop   dx
-ret   
-cld   
+do_dec_sensitivity:
+test  al, al
+je    exit_change_set_sensitivity
+dec   ax
+jmp   set_sensitivity_and_return
 
 ENDP
+
+COMMENT @
 
 PROC    M_ChangeDetail_ NEAR
 PUBLIC  M_ChangeDetail_
