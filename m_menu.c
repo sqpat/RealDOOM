@@ -143,6 +143,7 @@ void __near M_DrawOptions(void);
 void __near M_DrawSound(void);
 void __near M_DrawLoad(void);
 void __near M_DrawSave(void);
+void __near M_DoSave(int16_t slot);
 
 void __near M_DrawSaveLoadBorder(int16_t x, int16_t y);
 void __near M_SetupNextMenu(menu_t __near*menudef);

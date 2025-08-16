@@ -44,6 +44,14 @@ ENDP
 
 ; THINKERREF __near P_GetNextThinkerRef(void) 
 
+PROC P_CreateThinkerFar_ FAR
+PUBLIC P_CreateThinkerFar_
+
+call   P_CreateThinker_
+retf
+
+ENDP
+
 PROC P_CreateThinker_ NEAR
 PUBLIC P_CreateThinker_
 

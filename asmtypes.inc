@@ -644,3 +644,47 @@ MENU_T STRUC
 
 MENU_T ENDS
 
+
+
+
+
+VANILLA_PLAYER_T STRUC
+
+    vanilla_player_mo                  dd ?                  ;  0
+    vanilla_player_playerstate         dd ?                  ;  4
+    vanilla_player_cmd                 db 8 DUP(?)           ;  8
+    vanilla_player_viewzvalue          dd ?                  ; 10
+    vanilla_player_viewheightvalue     dd ?                  ; 14
+    vanilla_player_deltaviewheight     dd ?                  ; 18
+    vanilla_player_bob                 dd ?                  ; 1C
+    vanilla_player_health              dd ?                  ; 20
+    vanilla_player_armorpoints         dd ?                  ; 24
+    vanilla_player_armortype           dd ?                  ; 28
+    vanilla_player_powers              dd NUMPOWERS DUP(?)   ; 2C 
+    vanilla_player_cards               dd NUMCARDS DUP(?)    ; 44 
+    vanilla_player_backpack            dd ?                  ; 5C 
+    vanilla_player_frags               dd 4 DUP(?)           ; 60 
+    vanilla_player_readyweapon         dd ?                  ; 70
+    vanilla_player_pendingweapon       dd ?                  ; 74
+    vanilla_player_weaponowned         dd NUMWEAPONS DUP(?)  ; 78
+    vanilla_player_ammo                dd NUMAMMO DUP(?)     ; 9C
+    vanilla_player_maxammo             dd NUMAMMO DUP(?)     ; AC
+    vanilla_player_attackdown          dd ?                  ; BC
+    vanilla_player_usedown             dd ?                  ; C0
+    vanilla_player_cheats              dd ?                  ; C4
+    vanilla_player_refire              dd ?                  ; C8
+    vanilla_player_killcount           dd ?                  ; CC
+    vanilla_player_itemcount           dd ?                  ; D0
+    vanilla_player_secretcount         dd ?                  ; D4
+    vanilla_player_message             dd ?                  ; D8
+    vanilla_player_damagecount         dd ?                  ; DC
+    vanilla_player_bonuscount          dd ?                  ; E0
+    vanilla_player_attacker            dd ?                  ; E4
+    vanilla_player_extralightvalue     dd ?                  ; E8
+    vanilla_player_fixedcolormapvalue  dd ?                  ; EC
+    vanilla_player_colormap            dd ?                  ; F0
+    vanilla_player_psprites_field      dd 8 DUP (?)          ; F4
+    vanilla_player_didsecret           dd ?                  ; 114
+
+VANILLA_PLAYER_T ENDS
+

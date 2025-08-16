@@ -213,7 +213,7 @@ void __far GetMissileState();
 void __far GetDeathState();
 void __far GetPainState();
 void __far GetSpawnHealth();
-
+void __far P_CreateThinkerFar();
 
 
 /*
@@ -562,9 +562,9 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "F_RESPONDEROFFSET = 0%Xh\n",                       FP_OFF(F_Responder)                       - FP_OFF(F_START));
     fprintf(fp, "P_SETTHINGPOSITIONFAROFFSET = 0%Xh\n",             FP_OFF(P_SetThingPositionFar)             - FP_OFF(P_SIGHT_STARTMARKER));
 
-    fprintf(fp, "P_REMOVEMOBJFAROFFSET = 0%Xh\n",                   FP_OFF(P_RemoveMobjFar)                      - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_REMOVEMOBJFAROFFSET = 0%Xh\n",                   FP_OFF(P_RemoveMobjFar)                   - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_SPAWNMAPTHINGOFFSET = 0%Xh\n",                   FP_OFF(P_SpawnMapThing)                   - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "P_CREATETHINKEROFFSET = 0%Xh\n",                   FP_OFF(P_CreateThinker)                   - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_CREATETHINKERFAROFFSET = 0%Xh\n",                FP_OFF(P_CreateThinkerFar)                - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_ADDACTIVECEILINGOFFSET = 0%Xh\n",                FP_OFF(P_AddActiveCeiling)                - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "P_ADDACTIVEPLATOFFSET = 0%Xh\n",                   FP_OFF(P_AddActivePlat)                   - FP_OFF(P_SIGHT_STARTMARKER));
     

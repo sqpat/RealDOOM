@@ -50,10 +50,10 @@ add   word ptr ds:[_save_p], cx
 dont_pad:
 les   bx, dword ptr ds:[_save_p]
 
-mov   al, byte ptr es:[bx + 4]
+mov   al, byte ptr es:[bx + VANILLA_PLAYER_T.vanilla_player_playerstate]
 
 mov   di, OFFSET _player
-mov   byte ptr ds:[di + 01Dh], al
+mov   byte ptr ds:[di + PLAYER_T.player_playerstate], al
 
 
 push  es  ; swap ds/es
@@ -79,48 +79,50 @@ pop   ds
 
 mov   di, OFFSET _player
 
-mov   al, byte ptr es:[bx + 05Ch]
-mov   byte ptr ds:[di + 022h], al
+; in hindsight feel like this could have used more lodsw stosw and different segments. but oh well.
 
-mov   al, byte ptr es:[bx + 070h]
-mov   ah, byte ptr es:[bx + 074h]
-mov   word ptr ds:[di + 030h], ax
+mov   al, byte ptr es:[bx + VANILLA_PLAYER_T.vanilla_player_backpack]
+mov   byte ptr ds:[di + PLAYER_T.player_backpack], al
 
-mov   al, byte ptr es:[bx + 0BCh]
-mov   ah, byte ptr es:[bx + 0C0h]
-mov   word ptr ds:[di + 04Ch], ax
+mov   al, byte ptr es:[bx + VANILLA_PLAYER_T.vanilla_player_readyweapon]
+mov   ah, byte ptr es:[bx + VANILLA_PLAYER_T.vanilla_player_pendingweapon]
+mov   word ptr ds:[di + PLAYER_T.player_readyweapon], ax
 
-mov   al, byte ptr es:[bx + 0C4h]
-mov   byte ptr ds:[di + 03Bh], al
-mov   al, byte ptr es:[bx + 0C8h]
-mov   byte ptr ds:[di + 05Dh], al
+mov   al, byte ptr es:[bx + VANILLA_PLAYER_T.vanilla_player_attackdown]
+mov   ah, byte ptr es:[bx + VANILLA_PLAYER_T.vanilla_player_usedown]
+mov   word ptr ds:[di + PLAYER_T.player_attackdown], ax
 
-mov   ax, word ptr es:[bx + 0CCh]
-mov   word ptr ds:[di + 043h], ax
-mov   ax, word ptr es:[bx + 0D0h]
-mov   word ptr ds:[di + 050h], ax
-mov   ax, word ptr es:[bx + 0D4h]
-mov   word ptr ds:[di + 052h], ax
-mov   ax, word ptr es:[bx + 0DCh]
-mov   word ptr ds:[di + 058h], ax
-mov   al, byte ptr es:[bx + 0E0h]
-mov   byte ptr ds:[di + 05Ah], al
+mov   al, byte ptr es:[bx + VANILLA_PLAYER_T.vanilla_player_cheats]
+mov   byte ptr ds:[di + PLAYER_T.player_cheats], al
+mov   al, byte ptr es:[bx + VANILLA_PLAYER_T.vanilla_player_refire]
+mov   byte ptr ds:[di + PLAYER_T.player_refire], al
 
-mov   al, byte ptr es:[bx + 0E8h]
-mov   ah, byte ptr es:[bx + 0ECh]
-mov   word ptr ds:[di + 05Eh], ax
+mov   ax, word ptr es:[bx + VANILLA_PLAYER_T.vanilla_player_killcount]
+mov   word ptr ds:[di + PLAYER_T.player_killcount], ax
+mov   ax, word ptr es:[bx + VANILLA_PLAYER_T.vanilla_player_itemcount]
+mov   word ptr ds:[di + PLAYER_T.player_itemcount], ax
+mov   ax, word ptr es:[bx + VANILLA_PLAYER_T.vanilla_player_secretcount]
+mov   word ptr ds:[di + PLAYER_T.player_secretcount], ax
+mov   ax, word ptr es:[bx + VANILLA_PLAYER_T.vanilla_player_damagecount]
+mov   word ptr ds:[di + PLAYER_T.player_damagecount], ax
+mov   al, byte ptr es:[bx + VANILLA_PLAYER_T.vanilla_player_bonuscount]
+mov   byte ptr ds:[di + PLAYER_T.player_bonuscount], al
 
-mov   al, byte ptr es:[bx + 0F0h]
-mov   ah, byte ptr es:[bx + 0114h]
-mov   word ptr ds:[di + 060h], ax
+mov   al, byte ptr es:[bx + VANILLA_PLAYER_T.vanilla_player_extralightvalue]
+mov   ah, byte ptr es:[bx + VANILLA_PLAYER_T.vanilla_player_fixedcolormapvalue]
+mov   word ptr ds:[di + PLAYER_T.player_extralightvalue], ax
+
+mov   al, byte ptr es:[bx + VANILLA_PLAYER_T.vanilla_player_colormap]
+mov   ah, byte ptr es:[bx + VANILLA_PLAYER_T.vanilla_player_didsecret]
+mov   word ptr ds:[di + PLAYER_T.player_colormap], ax
 
 mov   si, cx
 xor   bx, bx
 load_next_power:
 add   bx, 2
-mov   ax, word ptr es:[si + 02Ch]
+mov   ax, word ptr es:[si + VANILLA_PLAYER_T.vanilla_player_powers]
 add   si, 4
-mov   word ptr ds:[bx + di + 01Ch], ax
+mov   word ptr ds:[bx + di + PLAYER_T.player_powers], ax
 cmp   bx, NUMPOWERS * 2  ; sizeof dw
 jne   load_next_power
 mov   si, cx
@@ -128,22 +130,22 @@ xor   bx, bx
 
 load_next_key:
 inc   bx
-mov   al, byte ptr es:[si + 044h]
+mov   al, byte ptr es:[si + VANILLA_PLAYER_T.vanilla_player_cards]
 add   si, 4
-mov   byte ptr ds:[bx + di + 029h], al
+mov   byte ptr ds:[bx + di + PLAYER_T.player_cards], al
 cmp   bx, NUMCARDS
 jl    load_next_key
 mov   si, cx
 xor   bx, bx
 
 load_next_ammo:
-mov   ax, word ptr es:[si + 09ch]
-mov   word ptr ds:[bx + di + 03Ch], ax
+mov   ax, word ptr es:[si + VANILLA_PLAYER_T.vanilla_player_ammo]
+mov   word ptr ds:[bx + di + PLAYER_T.player_ammo], ax
 inc   bx
 inc   bx
-mov   ax, word ptr es:[si + 0ach]
+mov   ax, word ptr es:[si + VANILLA_PLAYER_T.vanilla_player_maxammo]
 add   si, 4
-mov   word ptr ds:[bx + di + 042h], ax
+mov   word ptr ds:[bx + di + PLAYER_T.player_maxammo], ax
 cmp   bx, NUMAMMO * 2
 jne   load_next_ammo
 mov   si, cx
@@ -151,28 +153,28 @@ xor   bx, bx
 
 load_next_weapon:
 inc   bx
-mov   al, byte ptr es:[si + 078h]
+mov   al, byte ptr es:[si + VANILLA_PLAYER_T.vanilla_player_weaponowned]
 add   si, 4
-mov   byte ptr ds:[bx + di + 031h], al
+mov   byte ptr ds:[bx + di + PLAYER_T.player_weaponowned], al
 cmp   bx, NUMWEAPONS
 jl    load_next_weapon
 mov   si, cx
 xor   bx, bx
 load_next_sprite:
-mov   ax, word ptr es:[si + 0F4h]
+mov   ax, word ptr es:[si + VANILLA_PLAYER_T.vanilla_player_psprites_field + 0]
 mov   word ptr ds:[bx + _psprites], ax
 test  ax, ax
 je    set_psprite_statenum_null
 done_with_psprite:
-mov   ax, word ptr es:[si + 0F8h]
+mov   ax, word ptr es:[si + VANILLA_PLAYER_T.vanilla_player_psprites_field + 4]
 mov   word ptr ds:[bx + _psprites + 2], ax
-mov   ax, word ptr es:[si + 0FCh]
+mov   ax, word ptr es:[si + VANILLA_PLAYER_T.vanilla_player_psprites_field + 8]
 mov   word ptr ds:[bx + _psprites + 4], ax
-mov   ax, word ptr es:[si + 0FEh]
+mov   ax, word ptr es:[si + VANILLA_PLAYER_T.vanilla_player_psprites_field + 0Ah]
 mov   word ptr ds:[bx + _psprites + 6], ax
-mov   ax, word ptr es:[si + 0100h]
+mov   ax, word ptr es:[si + VANILLA_PLAYER_T.vanilla_player_psprites_field + 0Ch]
 mov   word ptr ds:[bx + _psprites + 8], ax
-mov   ax, word ptr es:[si + 0102h]
+mov   ax, word ptr es:[si + VANILLA_PLAYER_T.vanilla_player_psprites_field + 0Eh]
 mov   word ptr ds:[bx + _psprites + 0Ah], ax
 add   si, SIZEOF_PSPDEF_VANILLA_T
 add   bx, SIZEOF_PSPDEF_T
@@ -515,7 +517,7 @@ push      ss
 pop       ds                              ; restore ds to normal
 
 db 09Ah
-dw P_CREATETHINKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
+dw P_CREATETHINKERFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 pop       ds                              ; ds is save seg again
 
@@ -760,7 +762,7 @@ mov    cx, dx
 mov    ax, TF_MOVECEILING_HIGHBITS
 
 db 09Ah
-dw P_CREATETHINKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
+dw P_CREATETHINKERFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 
 push   ds
@@ -811,7 +813,7 @@ add    si, cx
 mov    cx, dx
 mov    ax, TF_VERTICALDOOR_HIGHBITS
 db 09Ah
-dw P_CREATETHINKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
+dw P_CREATETHINKERFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 push   ds
 pop    es
@@ -855,7 +857,7 @@ add    si, cx
 mov    cx, dx
 mov    ax, TF_MOVEFLOOR_HIGHBITS
 db 09Ah
-dw P_CREATETHINKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
+dw P_CREATETHINKERFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 push   ds
 pop    es
 mov    ds, cx
@@ -896,7 +898,7 @@ mov    cx, dx
 mov    ax, TF_PLATRAISE_HIGHBITS
 
 db 09Ah
-dw P_CREATETHINKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
+dw P_CREATETHINKERFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 push   ds
 pop    es
@@ -956,7 +958,7 @@ mov    cx, dx
 mov    ax, TF_LIGHTFLASH_HIGHBITS
 
 db 09Ah
-dw P_CREATETHINKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
+dw P_CREATETHINKERFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 push   ds
 pop    es
@@ -981,7 +983,7 @@ mov    cx, dx
 mov    ax, TF_STROBEFLASH_HIGHBITS
 
 db 09Ah
-dw P_CREATETHINKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
+dw P_CREATETHINKERFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 push   ds
 pop    es
@@ -1006,7 +1008,7 @@ mov    cx, dx
 mov    ax, TF_GLOW_HIGHBITS
 
 db 09Ah
-dw P_CREATETHINKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
+dw P_CREATETHINKERFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 push   ds
 pop    es

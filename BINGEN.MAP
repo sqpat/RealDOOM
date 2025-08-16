@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/15 12:22:55
+Created on:       25/08/15 13:49:20
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -45,9 +45,9 @@ am_map_TEXT            CODE           AUTO           033f:3310       000012b1
 st_stuff_TEXT          CODE           AUTO           033f:45d0       00000b95
 hu_stuff_TEXT          CODE           AUTO           033f:5170       000001e0
 hu_lib_TEXT            CODE           AUTO           033f:5350       000001c4
-m_menu_TEXT            CODE           AUTO           033f:5520       000011c4
-M_MENUA_TEXT           CODE           AUTO           033f:66e4       0000029f
-D_ALGO_TEXT            CODE           AUTO           033f:6984       0000008c
+m_menu_TEXT            CODE           AUTO           033f:5520       000011c0
+M_MENUA_TEXT           CODE           AUTO           033f:66e0       000002a0
+D_ALGO_TEXT            CODE           AUTO           033f:6980       0000008c
 dmx_TEXT               CODE           AUTO           033f:6a10       000001b8
 D_INT_TEXT             CODE           AUTO           033f:6bc8       00000176
 WI_STUFF_TEXT          CODE           AUTO           033f:6d3e       00001009
@@ -101,15 +101,15 @@ P_PLATS_TEXT           CODE           AUTO           302f:7142       00000283
 P_SPEC_TEXT            CODE           AUTO           302f:73c6       000009e5
 P_SWITCH_TEXT          CODE           AUTO           302f:7dac       000003b4
 P_TELEPT_TEXT          CODE           AUTO           302f:8160       0000017f
-P_TICK_TEXT            CODE           AUTO           302f:82e0       000001e3
-P_USER_TEXT            CODE           AUTO           302f:84c4       00000428
-P_INFO_TEXT            CODE           AUTO           302f:88ec       00000349
+P_TICK_TEXT            CODE           AUTO           302f:82e0       000001e7
+P_USER_TEXT            CODE           AUTO           302f:84c8       00000428
+P_INFO_TEXT            CODE           AUTO           302f:88f0       00000349
 _TEXT                  CODE           AUTO           302f:8c40       000033dc
 FAR_DATA               FAR_DATA       AUTO           3c30:000c       00000000
 _NULL                  BEGDATA        DGROUP         3c31:0000       00000020
 _AFTERNULL             BEGDATA        DGROUP         3c33:0000       00000002
-CONST                  DATA           DGROUP         3c33:0002       00001e78
-CONST2                 DATA           DGROUP         3e1a:000a       00000127
+CONST                  DATA           DGROUP         3c33:0002       00001e7c
+CONST2                 DATA           DGROUP         3e1a:000e       00000127
 _DATA                  DATA           DGROUP         3e2e:0000       0000065c
 XIB                    DATA           DGROUP         3e93:000c       00000000
 XI                     DATA           DGROUP         3e93:000c       00000012
@@ -570,63 +570,63 @@ Module: m_menu.obj(C:\REALDOOM\m_menu.c)
 033f:5520      M_SaveSelect_
 033f:55a0      M_SaveGame_
 033f:55ee+     M_QuickSaveResponse_
-033f:560c+     M_QuickSave_
-033f:56ba+     M_QuickLoadResponse_
-033f:56d6+     M_QuickLoad_
-033f:5768      M_DrawReadThis1_
-033f:577a      M_DrawReadThis2_
-033f:578c      M_DrawReadThisRetail_
-033f:579e      M_DrawSound_
-033f:57ec      M_Sound_
-033f:57fa      M_SfxVol_
-033f:582a      M_MusicVol_
-033f:585a      M_DrawMainMenu_
-033f:5876      M_DrawNewGame_
-033f:58a8      M_NewGame_
-033f:58d2      M_DrawEpisode_
-033f:58ee+     M_VerifyNightmare_
-033f:5912      M_ChooseSkill_
-033f:5960      M_Episode_
-033f:59b4      M_DrawOptions_
-033f:5a54      M_Options_
-033f:5a62      M_ChangeMessages_
-033f:5a8c+     M_EndGameResponse_
-033f:5aac      M_EndGame_
-033f:5aec      M_ReadThis_
-033f:5b16      M_ReadThis2_
-033f:5b24      M_FinishReadThis_
-033f:5b32+     M_QuitResponse_
-033f:5ba4      M_QuitDOOM_
-033f:5c4e      M_ChangeSensitivity_
-033f:5c76      M_ChangeDetail_
-033f:5cce      M_SizeDisplay_
-033f:5d14+     M_DrawThermo_
-033f:5d98+     M_StartMessage_
-033f:5dd8+     M_StringHeight_
-033f:5e1e      M_Responder_
-033f:64e8      M_StartControlPanel_
-033f:6506      M_Drawer_
-033f:66b8*     M_SetupNextMenu_
-033f:66c8      M_Ticker_
+033f:560a+     M_QuickSave_
+033f:56b8+     M_QuickLoadResponse_
+033f:56d4+     M_QuickLoad_
+033f:5766      M_DrawReadThis1_
+033f:5778      M_DrawReadThis2_
+033f:578a      M_DrawReadThisRetail_
+033f:579c      M_DrawSound_
+033f:57ea      M_Sound_
+033f:57f8      M_SfxVol_
+033f:5828      M_MusicVol_
+033f:5858      M_DrawMainMenu_
+033f:5874      M_DrawNewGame_
+033f:58a6      M_NewGame_
+033f:58d0      M_DrawEpisode_
+033f:58ec+     M_VerifyNightmare_
+033f:5910      M_ChooseSkill_
+033f:595e      M_Episode_
+033f:59b2      M_DrawOptions_
+033f:5a52      M_Options_
+033f:5a60      M_ChangeMessages_
+033f:5a8a+     M_EndGameResponse_
+033f:5aaa      M_EndGame_
+033f:5aea      M_ReadThis_
+033f:5b14      M_ReadThis2_
+033f:5b22      M_FinishReadThis_
+033f:5b30+     M_QuitResponse_
+033f:5ba2      M_QuitDOOM_
+033f:5c4c      M_ChangeSensitivity_
+033f:5c74      M_ChangeDetail_
+033f:5ccc      M_SizeDisplay_
+033f:5d12+     M_DrawThermo_
+033f:5d96+     M_StartMessage_
+033f:5dd6+     M_StringHeight_
+033f:5e1c      M_Responder_
+033f:64e4      M_StartControlPanel_
+033f:6502      M_Drawer_
+033f:66b4*     M_SetupNextMenu_
+033f:66c4      M_Ticker_
 Module: m_menua.obj(m_menua.ASM)
-033f:68dc      M_StringWidth_
-033f:6700      M_DrawLoad_
-033f:67c1      M_LoadGame_
-033f:689f      M_DoSave_
-033f:66e6      M_GetMenuPatch_
-033f:6923      M_WriteText_
-033f:67cd      M_ReadSaveStrings_
-033f:6798      M_LoadSelect_
-033f:6983*     M_MENU_ENDMARKER_
-033f:66e4*     M_MENU_STARTMARKER_
-033f:6741*     M_DrawSaveLoadBorder_
-033f:6832      M_DrawSave_
+033f:68d9      M_StringWidth_
+033f:66fc      M_DrawLoad_
+033f:67bd      M_LoadGame_
+033f:689b      M_DoSave_
+033f:66e2      M_GetMenuPatch_
+033f:6920      M_WriteText_
+033f:67c9      M_ReadSaveStrings_
+033f:6794      M_LoadSelect_
+033f:6980*     M_MENU_ENDMARKER_
+033f:66e0*     M_MENU_STARTMARKER_
+033f:673d*     M_DrawSaveLoadBorder_
+033f:682e      M_DrawSave_
 Module: d_algo.obj(d_algo.ASM)
-033f:69f4      hackDSBack_
-033f:6a10*     D_ALGO_END_
-033f:69ad      zeroConventional_
-033f:6984      resetDS_
-033f:698c*     hackDS_
+033f:69f0      hackDSBack_
+033f:6a0c*     D_ALGO_END_
+033f:69a9      zeroConventional_
+033f:6980      resetDS_
+033f:6988*     hackDS_
 Module: dmx.obj(C:\REALDOOM\dmx.c)
 033f:6a10*     TS_SetTimerToMaxTaskRate_
 033f:6a24+     playpcspeakernote_
@@ -661,9 +661,9 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 033f:7adb*     WI_updateNoState_
 033f:7b39      WI_Ticker_
 033f:7be7*     WI_initVariables_
+033f:75da*     WI_drawShowNextLoc_
 033f:7113*     WI_GetPatchESBX_
 033f:7593*     WI_initNoState_
-033f:75da*     WI_drawShowNextLoc_
 033f:7101*     WI_GetPatch_
 033f:7960*     WI_loadData_
 033f:75a8*     WI_updateShowNextLoc_
@@ -802,8 +802,8 @@ Module: s_sound.obj(s_sound.ASM)
 0ec9:01d7      S_ResumeSound_
 Module: sm_opl2.obj(sm_opl2.ASM)
 0f29:0926*     OPLpauseMusic_OPL2_
-0f29:0c95*     OPLreleaseNote_OPL2_
 0f29:0f3c      SM_OPL2_ENDMARKER_
+0f29:0c95*     OPLreleaseNote_OPL2_
 0f29:0907*     OPL2deinitHardware_OPL2_
 0f29:0846*     OPL2initHardware_OPL2_
 0f29:0c0f*     OPLplayNote_OPL2_
@@ -1096,8 +1096,8 @@ Module: p_map.obj(p_map.ASM)
 302f:05ee*     P_MAP_STARTMARKER_
 302f:232c      P_AimLineAttack_
 302f:17c4      P_CheckPosition_
-302f:2481      P_LineAttack_
 302f:26bc      P_RadiusAttack_
+302f:2481      P_LineAttack_
 302f:0956      P_LineOpening_
 302f:297d      P_SetThingPositionFar_
 302f:098a      P_UnsetThingPosition_
@@ -1175,8 +1175,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 302f:4b89*     A_SargAttack_
 302f:51f9*     GetVileMomz_
 302f:5455*     A_PainDie_
-302f:587b*     A_BrainSpit_
 302f:4e15*     A_SkelWhoosh_
+302f:587b*     A_BrainSpit_
 302f:5174*     A_VileTarget_
 302f:5805*     A_BrainExplode_
 302f:4325*     P_Move_
@@ -1192,8 +1192,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 302f:5375*     A_FatAttack2_
 302f:4135*     P_RecursiveSound_
 302f:4c51*     A_SkelMissile_
-302f:52f6*     A_FatAttack3_
 302f:535a*     A_FatAttack1_
+302f:52f6*     A_FatAttack3_
 302f:46eb*     A_Look_
 302f:571e*     A_BabyMetal_
 302f:591e*     A_SpawnSound_
@@ -1312,38 +1312,39 @@ Module: p_telept.obj(p_telept.ASM)
 302f:8160*     P_TELEPT_STARTMARKER_
 302f:8160      EV_Teleport_
 Module: p_tick.obj(p_tick.ASM)
-302f:8355      P_UpdateThinkerFunc_
+302f:8359      P_UpdateThinkerFunc_
 302f:82e0*     P_TICK_STARTMARKER_
-302f:84ae      P_Random_
-302f:84c3*     P_TICK_ENDMARKER_
-302f:8377      P_RemoveThinker_
-302f:83aa      P_Ticker_
-302f:82e0      P_CreateThinker_
+302f:82e0      P_CreateThinkerFar_
+302f:84b2      P_Random_
+302f:84c7*     P_TICK_ENDMARKER_
+302f:837b      P_RemoveThinker_
+302f:83ae      P_Ticker_
+302f:82e4      P_CreateThinker_
 Module: p_user.obj(p_user.ASM)
-302f:88ec*     P_USER_ENDMARKER_
-302f:84c5*     P_Thrust_
-302f:8505*     P_CalcHeight_
-302f:86b0*     P_DeathThink_
-302f:84c5*     P_USER_STARTMARKER_
-302f:8631*     P_MovePlayer_
-302f:87ac      P_PlayerThink_
+302f:88f0*     P_USER_ENDMARKER_
+302f:84c9*     P_Thrust_
+302f:8509*     P_CalcHeight_
+302f:86b4*     P_DeathThink_
+302f:84c9*     P_USER_STARTMARKER_
+302f:8635*     P_MovePlayer_
+302f:87b0      P_PlayerThink_
 Module: p_info.obj(p_info.ASM)
-302f:8b14      GetPainChance_
-302f:8bc3      GetAttackSound_
-302f:8ba3      GetDeathState_
-302f:8ad5      GetXDeathState_
-302f:8b70      GetPainSound_
-302f:8b7f      GetSeeState_
-302f:8b5f      GetActiveSound_
-302f:8bb3      GetPainState_
-302f:8b2b      GetRaiseState_
-302f:8b93      GetMissileState_
-302f:8af7      GetMeleeState_
-302f:8bf5      GetDamage_
-302f:8c35      P_INFO_ENDMARKER_
-302f:88ec*     P_INFO_STARTMARKER_
-302f:8b3c      GetMobjMass_
-302f:8c21      GetSpawnHealth_
+302f:8b18      GetPainChance_
+302f:8bc7      GetAttackSound_
+302f:8ba7      GetDeathState_
+302f:8ad9      GetXDeathState_
+302f:8b74      GetPainSound_
+302f:8b83      GetSeeState_
+302f:8b63      GetActiveSound_
+302f:8bb7      GetPainState_
+302f:8b2f      GetRaiseState_
+302f:8b97      GetMissileState_
+302f:8afb      GetMeleeState_
+302f:8bf9      GetDamage_
+302f:8c39      P_INFO_ENDMARKER_
+302f:88f0*     P_INFO_STARTMARKER_
+302f:8b40      GetMobjMass_
+302f:8c25      GetSpawnHealth_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fopen.c)
 302f:8c40+     __open_flags_
 302f:8dee+     _fsopen_
@@ -1456,7 +1457,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(nfree.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(flush.c)
 302f:a0b3      __flush_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(istable.c)
-3c31:1e9a      __IsTable
+3c31:1e9e      __IsTable
 Module: C:\WATCOM2\lib286\dos\clibm.lib(lseek.c)
 302f:a1a7      lseek_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(tell.c)
@@ -1615,7 +1616,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(sbrk.c)
 302f:bd09      __brk_
 302f:bd5f*     sbrk_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(alphabet.c)
-3c31:1f9c      ___Alphabet
+3c31:1fa0      ___Alphabet
 Module: C:\WATCOM2\lib286\dos\clibm.lib(mbinit.c)
 302f:bdc2      __mbinit_
 3c31:262a+     ___MBCodePage
@@ -1643,4 +1644,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003ff40 (261952.)
 Entry point address: 302f:98be
-Link time: 00:00.40
+Link time: 00:00.39

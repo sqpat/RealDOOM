@@ -39,7 +39,6 @@
 //
 // P_ArchivePlayers
 //
-/*
 void __far P_ArchivePlayers (void) {
 	player_vanilla_t __far * saveplayer;
 	int16_t i;
@@ -113,13 +112,12 @@ void __far P_ArchivePlayers (void) {
 
 	
 }
-*/
+
 
 
 //
 // P_UnArchivePlayers
 //
-/*
 void __far P_UnArchivePlayers (void) {
 	player_vanilla_t __far * saveplayer;
 	int16_t i;
@@ -201,12 +199,11 @@ void __far P_UnArchivePlayers (void) {
 
 	
 }
-*/
+
 
 //
 // P_ArchiveWorld
 //
-/*
 void __far P_ArchiveWorld (void) {
 	
     int16_t			i;
@@ -278,12 +275,11 @@ void __far P_ArchiveWorld (void) {
 	
 }
 
-*/
+
 
 //
 // P_UnArchiveWorld
 //
-/*
 void __far P_UnArchiveWorld (void) {
 	
     int16_t			i;
@@ -340,14 +336,13 @@ void __far P_UnArchiveWorld (void) {
 	
 }
 
-*/
+
 
 
 
 //
 // Thinkers
 //
-/*
 typedef enum {
     tc_end,
     tc_mobj
@@ -355,12 +350,11 @@ typedef enum {
 } thinkerclass_t;
 
 
- */
+ 
 //
 // P_ArchiveThinkers
 //
 
-/*
 void __far P_ArchiveThinkers (void) {
 	
     THINKERREF				th;
@@ -454,14 +448,12 @@ void __far P_ArchiveThinkers (void) {
     // add a terminating marker
     *save_p++ = tc_end;	
 }
-*/
 
 void  __far P_InitThinkers (void);
 
 //
 // P_UnArchiveThinkers
 //
-/*
 void __far P_UnArchiveThinkers (void) {
 	
     byte					tclass;
@@ -557,12 +549,11 @@ void __far P_UnArchiveThinkers (void) {
 	
 }
 
-*/
+
 //
 // P_ArchiveSpecials
 //
 
-/*
 enum {
     tc_ceiling,
     tc_door,
@@ -574,7 +565,7 @@ enum {
     tc_endspecials
 
 } specials_e;	
-*/
+
 
 
 //
@@ -588,7 +579,6 @@ enum {
 // T_Glow, (glow_t: sector_t *),
 // T_PlatRaise, (plat_t: sector_t *), - active list
 //
-/*
 void __far P_ArchiveSpecials (void) {
 	
     THINKERREF					th;
@@ -801,13 +791,12 @@ void __far P_ArchiveSpecials (void) {
     *save_p++ = tc_endspecials;	
 	
 }
-*/
+
 
 
 //
 // P_UnArchiveSpecials
 //
-/*
 void __far P_UnArchiveSpecials (void) {
 	
     byte					tclass;
@@ -991,5 +980,5 @@ void __far P_UnArchiveSpecials (void) {
     }
 
 }
-*/
+
 
