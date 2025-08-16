@@ -542,10 +542,10 @@ _skullAnimCounter =				     _NULL_OFFSET + 00B18h
 _whichSkull =				         _NULL_OFFSET + 00B1Ah
 _skullName =				         _NULL_OFFSET + 00B1Ch
 
-_STRING_HELP1   =      				 _NULL_OFFSET + 00820h
-_STRING_HELP2   =      				 _NULL_OFFSET + 00826h
-_STRING_HELP    =      				 _NULL_OFFSET + 0082Ch
-_STRING_newline =      				 _NULL_OFFSET + 00831h
+_STRING_HELP1   =      				 _NULL_OFFSET + 00B20h
+_STRING_HELP2   =      				 _NULL_OFFSET + 00B26h
+_STRING_HELP    =      				 _NULL_OFFSET + 00B2Ch
+_STRING_newline =      				 _NULL_OFFSET + 00B31h
 
 
 ; 828-82f free

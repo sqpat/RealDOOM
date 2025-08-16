@@ -391,7 +391,6 @@ void __near M_QuickLoadResponse(int16_t ch){
     }
 }
 
-*/
 
 void __near M_QuickLoad(void){
     
@@ -443,6 +442,7 @@ void __near M_DrawReadThisRetail(void){
     inhelpscreens = true;
     V_DrawFullscreenPatch("HELP", 0);
 }
+*/
 
 
 //

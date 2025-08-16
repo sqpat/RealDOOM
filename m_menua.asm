@@ -338,9 +338,9 @@ ENDP
 PROC    M_LoadGame_ NEAR
 PUBLIC  M_LoadGame_
 
-mov   ax, word ptr ds:[_LoadDef + MENU_T.menu_laston]
+push  word ptr ds:[_LoadDef + MENU_T.menu_laston]
+pop   word ptr ds:[_itemOn]
 mov   word ptr ds:[_currentMenu], OFFSET _LoadDef  ; inlined setupnextmenu
-mov   word ptr ds:[_itemOn], ax
 
 
 ENDP  ; fall thru?
@@ -746,7 +746,6 @@ ret
 
 ENDP
 
-COMMENT @
 
 PROC    M_QuickLoad_ NEAR
 PUBLIC  M_QuickLoad_
@@ -760,9 +759,9 @@ mov   bp, sp
 sub   sp, 0E2h
 sub   bp, 098h
 cmp   byte ptr ds:[_quickSaveSlot], 0
-jl    label_19
+jl    no_quickload_slot
 lea   bx, [bp + 04Ch]
-mov   ax, 8
+mov   ax, QLPROMPT
 mov   cx, ds
 call  getStringByIndex_
 lea   bx, [bp + 07Eh]
@@ -770,25 +769,28 @@ mov   ax, QLQLPROMPTEND
 mov   cx, ds
 call  getStringByIndex_
 mov   al, byte ptr ds:[_quickSaveSlot]
-cbw  
-imul  ax, ax, SAVESTRINGSIZE
-mov   dx, ds
-push  SAVEGAMESTRINGS_SEGMENT
-lea   bx, [bp + 04Ch]
-mov   cx, ds
+mov   ah, SAVESTRINGSIZE
+mul   ah
+mov   dx, SAVEGAMESTRINGS_SEGMENT
+push  dx
 push  ax
+mov   dx, ds
+mov   cx, ds
+lea   bx, [bp + 04Ch]
 lea   ax, [bp - 04Ah]
 call  combine_strings_
+
 lea   dx, [bp + 07Eh]
 lea   bx, [bp - 04Ah]
-lea   ax, [bp - 04Ah]
+mov   ax, bx
 push  ds
-mov   cx, ds
 push  dx
+mov   cx, ds
 mov   dx, ds
 call  combine_strings_
 mov   bx, 1
 mov   dx, OFFSET M_QuickLoadResponse_
+show_message_and_exitquickload:
 lea   ax, [bp - 04Ah]
 call  M_StartMessage_
 lea   sp, [bp + 098h]
@@ -797,31 +799,25 @@ pop   dx
 pop   cx
 pop   bx
 ret   
-label_19:
+no_quickload_slot:
 lea   bx, [bp - 04Ah]
-mov   ax, 5
+mov   ax, QSAVESPOT
 mov   cx, ds
 call  getStringByIndex_
 xor   dx, dx
-lea   ax, [bp - 04Ah]
 xor   bx, bx
-call  M_StartMessage_
-lea   sp, [bp + 098h]
-pop   bp
-pop   dx
-pop   cx
-pop   bx
-ret   
-
+jmp   show_message_and_exitquickload
 
 
 ENDP
+
+
 
 PROC    M_DrawReadThis1_ NEAR
 PUBLIC  M_DrawReadThis1_
 
 push  dx
-mov   ax, _STRING_HELP2
+mov   ax, OFFSET _STRING_HELP2
 xor   dx, dx
 mov   byte ptr ds:[_inhelpscreens], 1
 call  V_DrawFullscreenPatch_
@@ -836,7 +832,7 @@ PUBLIC  M_DrawReadThis2_
 
 
 push  dx
-mov   ax, _STRING_HELP1
+mov   ax, OFFSET _STRING_HELP1
 xor   dx, dx
 mov   byte ptr ds:[_inhelpscreens], 1
 call  V_DrawFullscreenPatch_
@@ -850,7 +846,7 @@ PROC    M_DrawReadThisRetail_ NEAR
 PUBLIC  M_DrawReadThisRetail_
 
 push  dx
-mov   ax, _STRING_HELP
+mov   ax, OFFSET _STRING_HELP
 xor   dx, dx
 mov   byte ptr ds:[_inhelpscreens], 1
 call  V_DrawFullscreenPatch_
@@ -859,6 +855,9 @@ ret
 
 
 ENDP
+
+COMMENT @
+
 
 PROC    M_DrawSound_ NEAR
 PUBLIC  M_DrawSound_

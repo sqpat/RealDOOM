@@ -604,10 +604,10 @@
 #define whichSkull       			      (*((int16_t __near*)               (_NULL_OFFSET + 0x0B1A)))
 #define skullName				          (((int16_t __near*)           	 (_NULL_OFFSET + 0x0B1C)))
 
-#define STRING_HELP1                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0820))
-#define STRING_HELP2                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0826))
-#define STRING_HELP                       ((int8_t __near *)                 (_NULL_OFFSET + 0x082C))
-#define STRING_newline                    ((int8_t __near *)                 (_NULL_OFFSET + 0x0831))
+#define STRING_HELP1                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0B20))
+#define STRING_HELP2                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0B26))
+#define STRING_HELP                       ((int8_t __near *)                 (_NULL_OFFSET + 0x0B2C))
+#define STRING_newline                    ((int8_t __near *)                 (_NULL_OFFSET + 0x0B31))
 
 
 

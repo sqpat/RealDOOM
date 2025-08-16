@@ -482,6 +482,7 @@ void __near M_Reload(void) {
 		uint16_t lumpsize = W_LumpLength(lump);
 		if (i == 27) { // (size + lumpsize) > 65535u) {
 			// repage
+			// F81C
 			size = 0;
 			pageoffset += 4;
 			dst = menugraphicspage4;
