@@ -541,7 +541,7 @@ _switchlist =				         _NULL_OFFSET + 00A50h
 _skullAnimCounter =				     _NULL_OFFSET + 00B18h
 _whichSkull =				         _NULL_OFFSET + 00B1Ah
 _skullName =				         _NULL_OFFSET + 00B1Ch
-
+;b1e unused
 _STRING_HELP1   =      				 _NULL_OFFSET + 00B20h
 _STRING_HELP2   =      				 _NULL_OFFSET + 00B26h
 _STRING_HELP    =      				 _NULL_OFFSET + 00B2Ch

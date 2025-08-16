@@ -1269,7 +1269,6 @@ void __near M_StartControlPanel (void) {
     currentMenu = &MainDef;         // JDC
     itemOn = currentMenu->lastOn;   // JDC
 }
-*/
 
 //
 // M_Drawer
@@ -1354,7 +1353,6 @@ void __far M_Drawer (int8_t isFromWipe) {
 
 
 
-/*
 
 
 //

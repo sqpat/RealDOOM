@@ -2637,206 +2637,196 @@ ret
 
 ENDP
 
-COMMENT @
 
 SKULLXOFF = 32
 
-PROC    M_Drawer_ NEAR
+
+
+PROC    M_Drawer_ FAR
 PUBLIC  M_Drawer_
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
-sub   sp, 036h
-mov   byte ptr [bp - 2], al
-mov   byte ptr ds:[_inhelpscreens], 0
-cmp   byte ptr ds:[_messageToPrint], 0
-jne   label_136
-mov   bx, _menuactive
-cmp   byte ptr ds:[bx], 0
-jne   label_137
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-retf  
-label_136:
+sub   sp, 02Ah
+push  ax       ; isfromwipe - 2Ch
+xor   ax, ax
+mov   byte ptr ds:[_inhelpscreens], al  ; 0
+cmp   byte ptr ds:[_messageToPrint], al ; 0
+je    no_message_to_print
+xchg  ax, cx ; cx gets 0
 call  Z_QuickMapStatus_
-mov   ax, _menu_messageString
+mov   ax, OFFSET _menu_messageString
 mov   dx, ds
 call  M_StringHeight_
+
 mov   dx, 100
 sar   ax, 1
 sub   dx, ax
-mov   word ptr [bp - 0Eh], 0
-mov   word ptr [bp - 8], dx
-cmp   byte ptr ds:[_menu_messageString], 0
-je    label_138
-label_144:
-mov   ax, _menu_messageString
-mov   bx, word ptr [bp - 0Eh]
-mov   cx, ds
-add   ax, word ptr [bp - 0Eh]
-xor   si, si
-mov   word ptr [bp - 4], ax
-label_141:
-mov   ax, word ptr [bp - 4]
+mov   word ptr [bp - 2], dx
+cmp   byte ptr ds:[_menu_messageString], cl ; 0
+je    jump_to_do_exit_check
+
+
+;        while(*(menu_messageString+start)) {
+;            for (i = 0; i < locallib_strlen(menu_messageString + start); i++) {
+;                if (*(menu_messageString + start + i) == '\n') {
+;                    locallib_strncpy(string, menu_messageString + start, i);       ; this becomes repne scasb
+;                    string[i] = '\0';
+;                    start += i + 1;
+;                    break;
+;                }
+;            }
+;
+;            if (i == locallib_strlen(menu_messageString+start)) {
+;                locallib_strcpy(string,menu_messageString+start);
+;                start += i;
+;            }
+;                                
+;            menu_drawer_x = 160 - (M_StringWidth(string)>>1);
+;            M_WriteText(menu_drawer_x,menu_drawer_y,string);
+;
+;            menu_drawer_y += HU_FONT_SIZE;
+;        }
+
+; bx is start
+mov   si, OFFSET _menu_messageString
+
+loop_next_menu_string_line:
+mov   ax, si
 mov   dx, ds
 call  M_Strlen_
-cmp   si, ax
-jge   label_139
-lea   di, [si + 1]
-cmp   byte ptr ds:[bx + _menu_messageString], 0Ah   ; newline char
-je    label_140
-inc   bx
-mov   si, di
-jmp   label_141
-label_137:
-jmp   label_142
-label_138:
-jmp   label_143
-label_140:
-mov   bx, word ptr [bp - 4]
-lea   ax, [bp - 036h]
-push  si
-mov   dx, ds
-call  locallib_strncpy_
-add   word ptr [bp - 0Eh], di
-mov   byte ptr [bp + si - 036h], 0
-label_139:
-mov   bx, _menu_messageString
-add   bx, word ptr [bp - 0Eh]
-mov   dx, ds
-mov   ax, bx
-mov   cx, ds
-call  M_Strlen_
-cmp   si, ax
-jne   label_151
-lea   ax, [bp - 036h]
-mov   dx, ds
-call  locallib_strcpy_
-add   word ptr [bp - 0Eh], si
-label_151:
-lea   ax, [bp - 036h]
+
+push  ds
+pop   es
+
+; find newline
+
+xchg  ax, cx
+
+
+mov   ah, 0Ah; newline
+lea   di, [bp - 02Ah]
+mov   bx, di
+copy_next_message_char:
+lodsb
+cmp   al, ah
+je    handle_newline
+stosb
+loop  copy_next_message_char
+
+handle_newline:
+xor   ax, ax
+stosb
+
+
+
+mov   ax, bx ;  bp - 02Ah
 mov   dx, ds
 call  M_StringWidth_
+
 mov   dx, 160
 sar   ax, 1
-lea   bx, [bp - 036h]
 sub   dx, ax
-mov   cx, ds
-mov   ax, dx
-mov   dx, word ptr [bp - 8]
-call  M_WriteText_
-mov   bx, word ptr [bp - 0Eh]
-add   word ptr [bp - 8], 8
-cmp   byte ptr ds:[bx + _menu_messageString], 0
-je    label_143
-jmp   label_144
-label_143:
-cmp   byte ptr [bp - 2], 0
-je    label_145
-call  Z_QuickMapWipe_
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-retf  
-label_145:
-call  Z_QuickMapPhysics_
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-retf  
-label_142:
-call  Z_QuickMapMenu_
-mov   bx, word ptr ds:[_currentMenu]
-cmp   word ptr ds:[bx + 5], 0
-je    label_147
-call  word ptr ds:[bx + 5]
-label_147:
-mov   bx, word ptr ds:[_currentMenu]
-mov   ax, word ptr ds:[bx + 7]
-mov   word ptr [bp - 0Ch], ax
-mov   al, byte ptr ds:[bx + 9]
-xor   ah, ah
-mov   si, ax
-mov   al, byte ptr ds:[bx]
-cbw  
-mov   word ptr [bp - 6], 0
-mov   word ptr [bp - 0Ah], ax
-test  ax, ax
-jle   label_148
-xor   di, di
-label_101:
-mov   bx, word ptr ds:[_currentMenu]
-mov   bx, word ptr ds:[bx + 3]
-add   bx, di
-mov   al, byte ptr ds:[bx + 1]
-cmp   al, -1
-je    label_149
+xchg  ax, dx
 
-call  M_GetMenuPatch_
-mov   cx, dx
-mov   bx, ax
-mov   ax, word ptr [bp - 0Ch]
-mov   dx, si
-call  V_DrawPatchDirect_
-label_149:
-inc   word ptr [bp - 6]
-add   si, LINEHEIGHT
-mov   bx, word ptr [bp - 6]
-add   di, 5
-cmp   bx, word ptr [bp - 0Ah]
-jl    label_101
-label_148:
-mov   bx, _whichSkull
-mov   bx, word ptr ds:[bx]
-add   bx, bx
-mov   al, word ptr ds:[bx + _skullName]
-mov   di, word ptr [bp - 0Ch]
-call  M_GetMenuPatch_
+mov   dx, word ptr [bp - 2]
+add   word ptr [bp - 2], HU_FONT_SIZE
+
+mov   cx, ds
+
+
+call  M_WriteText_
+
+
+cmp   byte ptr ds:[si], 0
+jne   loop_next_menu_string_line
+
+jump_to_do_exit_check:
+jmp   do_exit_check
+
+
+
+
+
+no_message_to_print:
 mov   bx, word ptr ds:[_currentMenu]
-sub   di, SKULLXOFF
-mov   bl, byte ptr ds:[bx + 9]
-mov   si, word ptr ds:[_itemOn]
-xor   bh, bh
-shl   si, 4
-sub   bx, 5
+cmp   byte ptr ds:[_menuactive], al ; 0
+je    do_m_drawer_exit
+
+call  Z_QuickMapMenu_
+cmp   word ptr ds:[bx + MENU_T.menu_routine], 0
+je    no_menu_routine
+call  word ptr ds:[bx + MENU_T.menu_routine]
+no_menu_routine:
+
+mov   di, word ptr ds:[bx + MENU_T.menu_x]
+mov   al, byte ptr ds:[bx + MENU_T.menu_y]
+cbw
+xchg  ax, si
+mov   al, byte ptr ds:[bx + MENU_T.menu_numitems]
+mov   ah, SIZEOF_MENUITEM_T
+mul   ah
+mov   bx, word ptr ds:[bx + MENU_T.menu_menuitems]
+add   ax, bx
+mov   word ptr cs:[SELFMODIFY_lastmenuitem+2], ax
+inc   bx ; + MENUITEM_T.menuitem_name
+
+loop_next_menu_patch:
+mov   al, byte ptr ds:[bx]
+test  al, al
+js    dont_draw_this_item
+call  M_GetMenuPatch_
+push  bx
+xchg  ax, bx
 mov   cx, dx
-add   si, bx
-mov   bx, ax
-mov   dx, si
 mov   ax, di
+mov   dx, si
 call  V_DrawPatchDirect_
-cmp   byte ptr [bp - 2], 0
-jne   label_146
-jmp   label_145
-label_146:
-call  Z_QuickMapWipe_
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
 pop   bx
+
+dont_draw_this_item:
+add   bx, SIZEOF_MENUITEM_T
+add   si, LINEHEIGHT
+SELFMODIFY_lastmenuitem:
+cmp   bx, 01000h
+jl    loop_next_menu_patch
+
+done_with_menuitems:
+
+mov   bx, word ptr ds:[_whichSkull]
+mov   al, byte ptr ds:[bx + _skullName]
+call  M_GetMenuPatch_
+xchg  ax, bx
+mov   cx, dx
+
+mov   si, word ptr ds:[_currentMenu]
+xor   dx, dx
+mov   dl, byte ptr ds:[si + MENU_T.menu_y]
+
+mov   al, LINEHEIGHT
+mul   byte ptr ds:[_itemOn] 
+add   dx, ax
+sub   dx, 5
+lea   ax, [di - SKULLXOFF]
+call  V_DrawPatchDirect_
+do_exit_check:
+cmp   byte ptr [bp - 2Ch], 0   ; isFromWipe
+jne   do_quickmap_wipe_exit
+do_quickmap_physics_exit:
+call  Z_QuickMapPhysics_
+do_m_drawer_exit:
+LEAVE_MACRO 
+POPA_NO_AX_OR_BP_MACRO
 retf  
+do_quickmap_wipe_exit:
+call  Z_QuickMapWipe_
+jmp   do_m_drawer_exit
+
 
 
 ENDP
 
-@
 
 
 COMMENT @

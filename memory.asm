@@ -465,8 +465,12 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; B00
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; B10  b1c = skullName
-dw  00, 00, 00, 00, 00, 00, 5, 6
+; B10  
+dw  00, 00, 00, 00, 00, 00
+; b1c = skullName
+db  MENUPATCH_M_SKULL1, MENUPATCH_M_SKULL2
+; b1e unused
+dw  00
 ; B20
 db "HELP1", 0
 ; B26

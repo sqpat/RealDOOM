@@ -602,8 +602,8 @@
 
 #define skullAnimCounter   			      (*((int16_t __near*)               (_NULL_OFFSET + 0x0B18)))
 #define whichSkull       			      (*((int16_t __near*)               (_NULL_OFFSET + 0x0B1A)))
-#define skullName				          (((int16_t __near*)           	 (_NULL_OFFSET + 0x0B1C)))
-
+#define skullName				          (((int8_t __near*)         	  	 (_NULL_OFFSET + 0x0B1C)))
+// b1e unused
 #define STRING_HELP1                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0B20))
 #define STRING_HELP2                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0B26))
 #define STRING_HELP                       ((int8_t __near *)                 (_NULL_OFFSET + 0x0B2C))
