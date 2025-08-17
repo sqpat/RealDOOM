@@ -57,24 +57,17 @@ EXTRN fopen_:FAR
 EXTRN fseek_:FAR
 EXTRN fread_:FAR
 
-
-EXTRN W_LumpLength_:FAR
-EXTRN W_GetNumForName_:FAR
-EXTRN W_CacheLumpNumDirect_:FAR
-
-
 EXTRN G_DeferedInitNew_:NEAR
 
 EXTRN locallib_strcmp_:FAR
 EXTRN combine_strings_:FAR
-
 EXTRN locallib_strncpy_:FAR
 EXTRN locallib_strcpy_:FAR
 EXTRN combine_strings_near_:FAR
 
 EXTRN I_Quit_:FAR
 EXTRN I_WaitVBL_:FAR
-EXTRN S_StartSound_:FAR
+
 EXTRN R_SetViewSize_:FAR
 EXTRN I_SetPalette_:FAR
 
@@ -82,7 +75,7 @@ EXTRN Z_QuickMapStatus_:FAR
 EXTRN Z_QuickMapMenu_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
 EXTRN Z_QuickMapWipe_:FAR
-EXTRN Z_QuickMapByTaskNum_:FAR
+
 
 .DATA
 
@@ -98,7 +91,7 @@ EXTRN _sfxVolume:BYTE
 EXTRN _musicVolume:BYTE
 EXTRN _snd_SfxVolume:BYTE
 
-EXTRN   _quickSaveSlot:BYTE
+EXTRN _quickSaveSlot:BYTE
 
 EXTRN _usergame:BYTE
 EXTRN _showMessages:BYTE
@@ -675,7 +668,9 @@ cbw
 call  M_DoSave_
 mov   dx, SFX_SWTCHX
 xor   ax, ax
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 pop   dx
 exit_quicksave:
 ret   
@@ -744,7 +739,9 @@ ret
 cant_save_not_in_game:
 mov   dx, SFX_OOF
 xor   ah, ah
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 jmp   exit_m_quicksave
 
 no_quicksave_slot:
@@ -774,7 +771,9 @@ cbw
 call  M_LoadSelect_
 mov   dx, SFX_SWTCHX
 xor   ax, ax
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 pop   dx
 exit_quickload:
 ret   
@@ -1328,7 +1327,9 @@ xor   ax, ax
 cmp   byte ptr ds:[_usergame], al
 jne   do_endgame
 mov   dx, SFX_OOF
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 exit_end_game:
 LEAVE_MACRO 
 pop   dx
@@ -1433,7 +1434,9 @@ add   bx, ax
 xor   ax, ax
 cwd
 mov   dl, byte ptr cs:[bx]
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 mov   ax, 105
 call  I_WaitVBL_
 call  I_Quit_
@@ -2202,7 +2205,9 @@ play_switch_sound_and_exit_m_responder_return_1:
 mov   dx, SFX_SWTCHN
 play_sound_and_exit_m_responder_return_1:
 xor   ax, ax
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 
 mov   al, 1
 
@@ -2328,7 +2333,9 @@ call  word ptr ds:[si + MENUITEM_T.menuitem_routine]
 play_stnmov_sound_and_exit_m_responder_return_1:
 mov   dx, SFX_STNMOV
 xor   ax, ax
-call  S_StartSound_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _S_StartSound_addr
 exit_m_responder_return_1_3:
 mov   al, 1
 pop   di
@@ -2766,11 +2773,20 @@ push  bx  ; menuoffsets counter
 loop_load_next_menugraphic:
 
 mov   ax, si
-call  W_GetNumForName_
+;call  W_GetNumForName_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_GetNumForName_addr
+
 mov   cx, ax  ; store lump
 
 push  dx
-call  W_LumpLength_
+;call  W_LumpLength_
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_LumpLength_addr
+
 pop   dx   ; clobbered by return, but return should never be > 64k
 
 ; todo dynamic compare page size.
@@ -2799,8 +2815,11 @@ mov  bx, di ; bx gets old size
 mov  di, cx ; di gets new size (xchged from ax)
 mov  cx, dx ; current dest segment
 
-call W_CacheLumpNumDirect_  ; W_CacheLumpNumDirect(lump, dst);
-
+;call W_CacheLumpNumDirect_  ; W_CacheLumpNumDirect(lump, dst);
+;call      W_CacheLumpNumDirect_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _W_CacheLumpNumDirect_addr
 
 
 iter_load_next_menugraphic:
