@@ -441,8 +441,9 @@ je    exit_drawsave
 mov   al, SAVESTRINGSIZE
 mov   bl, byte ptr ds:[_saveSlot]
 mul   bl
+add   ax, OFFSET _savegamestrings
 
-mov   dx, cx
+mov   dx, cs
 call  M_StringWidth_
 
 xchg  ax, si ; store.
@@ -515,11 +516,10 @@ mov   bp, sp
 sub   sp, 0100h
 
 mov   byte ptr ds:[_saveSlot], al
-xchg  bx, ax ; backup
-mov   al, SAVESTRINGSIZE
-mul   bl
+mov   ah, SAVESTRINGSIZE
+mul   ah
+add   ax, OFFSET _savegamestrings
 xchg  ax, si ; 
-add   si, OFFSET _savegamestrings
 mov   byte ptr ds:[_saveStringEnter], 1
 
 push  ds
@@ -537,21 +537,22 @@ pop   ds ; restore ds.
 
 lea   bx, [bp - 0100h]
 mov   ax, EMPTYSTRING
-mov   cx, ds
+mov   cx, ss
 call  getStringByIndex_
 
 lea   bx, [bp - 0100h]
-mov   cx, ds
-lea   ax, cs:[si + OFFSET _savegamestrings]
+mov   cx, ss
+mov   ax, si
 mov   dx, cs
 call  locallib_strcmp_   ; todo make this carry based?
 
 test  ax, ax
 jne   not_empty_string
 
-mov   byte ptr cs:[si + OFFSET _savegamestrings], 0
+mov   byte ptr cs:[si], 0
 not_empty_string:
 xchg  ax, si  ; retrieve once more
+mov   dx, cs
 call  M_Strlen_
 mov   word ptr ds:[_saveCharIndex], ax
 LEAVE_MACRO 
@@ -658,9 +659,8 @@ lea   bx, [bp + 07Eh]
 mov   ax, QLQLPROMPTEND
 mov   cx, ds
 call  getStringByIndex_
-mov   al, byte ptr ds:[_quickSaveSlot]
-mov   ah, SAVESTRINGSIZE
-mul   ah
+mov   al, SAVESTRINGSIZE
+mul   byte ptr ds:[_quickSaveSlot]
 add   ax, OFFSET _savegamestrings
 push  cs
 push  ax
@@ -751,9 +751,8 @@ lea   bx, [bp + 07Eh]
 mov   ax, QLQLPROMPTEND
 mov   cx, ds
 call  getStringByIndex_
-mov   al, byte ptr ds:[_quickSaveSlot]
-mov   ah, SAVESTRINGSIZE
-mul   ah
+mov   al, SAVESTRINGSIZE
+mul   byte ptr ds:[_quickSaveSlot]
 add   ax, OFFSET _savegamestrings
 push  cs
 push  ax
@@ -1885,7 +1884,7 @@ xor   ax, ax
 jmp   exit_m_responder
 savestringenter_is_escape:
 mov   byte ptr ds:[_saveStringEnter], cl
-lea   di, cs:[bx + OFFSET _savegamestrings]
+mov   di, bx
 push  cs
 pop   es
 mov   cx, SAVESTRINGSIZE / 2
@@ -1893,13 +1892,14 @@ mov   si, OFFSET _saveOldString
 rep   movsw
 
 jmp   exit_m_responder_return_1
+
 savestringenter_is_backspace:
 cmp   di, cx ; 0
 jle   exit_m_responder_return_1
 
 dec   di
 mov   word ptr ds:[_saveCharIndex], di
-mov   byte ptr es:[bx+di], cl
+mov   byte ptr cs:[bx+di], cl ; 0
 jmp   exit_m_responder_return_1
 
 
@@ -1926,13 +1926,13 @@ je    not_savestringenter
 xchg  ax, bx
 mov   al, SAVESTRINGSIZE
 mul   byte ptr ds:[_saveSlot]
-
+add   ax, OFFSET _savegamestrings
 xchg  ax, bx
 mov   di, word ptr ds:[_saveCharIndex]
 
 ; di is savecharindex
 ; al is key
-; bx is (_saveSlot * savestringsize)
+; bx is (_saveSlot * savestringsize) + _savegamestrings
 ; cx is 0
 
 cmp   al, KEY_BACKSPACE
@@ -1953,8 +1953,8 @@ ja    exit_m_responder_return_1
 xchg  ax, bx  ; bx had saveslot * savestringsize. now it gets the char.
 cmp   di, (SAVESTRINGSIZE-1)
 jge   exit_m_responder_return_1
-add   di, ax  ; di gets that added to offset for stosw later
-add   di, OFFSET _savegamestrings
+add   di, ax  ; di gets that added to offset for write later
+
 
 mov   dx, cs
 call  M_StringWidth_
@@ -1962,15 +1962,11 @@ call  M_StringWidth_
 cmp   ax, (SAVESTRINGSIZE-2)*8 ; 0B0h
 jae   exit_m_responder_return_1
 
-
 xchg  ax, bx ; ax gets char
-
-push  cs
-pop   es
-
 inc   word ptr ds:[_saveCharIndex]
 cbw
-stosw  ; also hits 0 in 2nd byte.
+mov   word ptr cs:[di], ax
+
 exit_m_responder_return_1:
 mov   al, 1
 exit_m_responder:
@@ -1983,7 +1979,7 @@ retf
 savestringenter_is_enter:
 
 mov   byte ptr ds:[_saveStringEnter], cl ; 0
-cmp   byte ptr es:[bx], cl ; 0
+cmp   byte ptr cs:[bx], cl ; 0
 je    exit_m_responder_return_1
 mov   al, byte ptr ds:[_saveSlot]
 call  M_DoSave_
