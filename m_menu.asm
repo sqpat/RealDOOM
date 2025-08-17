@@ -55,7 +55,7 @@ EXTRN fclose_:FAR
 EXTRN fopen_:FAR
 EXTRN fseek_:FAR
 EXTRN fread_:FAR
-EXTRN makesavegamename_:FAR
+
 
 EXTRN W_LumpLength_:FAR
 EXTRN W_GetNumForName_:FAR
@@ -331,7 +331,7 @@ cbw
 mov   dx, ds
 mov   bx, ax
 lea   ax, [bp - 0100h]
-call  makesavegamename_  ; todo make local
+call  M_Makesavegamename  ; todo make local
 
 ; call  G_LoadGame_
 ; inlined G_LoadGame_
@@ -378,7 +378,7 @@ loop_next_savestring:
 mov   bx, si
 mov   dx, ss
 lea   ax, [bp - 0100h]
-call  makesavegamename_
+call  M_Makesavegamename
 mov   dx, OFFSET _fopen_rb_argument
 lea   ax, [bp - 0100h]
 call  fopen_
@@ -2851,6 +2851,43 @@ retf
 
 
 ENDP
+
+_savegamename:
+db "doomsav.dsg", 0
+; void __far makesavegamename(char __far *name, int8_t i){
+
+
+
+PROC    M_Makesavegamename NEAR
+PUBLIC  M_Makesavegamename
+push   di
+push   si
+
+push   cs
+pop    ds
+mov    es, dx
+xchg   ax, di
+mov    si, OFFSET _savegamename
+
+movsw ; "do"
+movsw ; "om"
+movsw ; "sa"
+movsb ; "v"
+xchg   ax, bx
+add    al, "0"  ; add 0 char value
+stosb  ; number
+movsw ; ".d"
+movsw ; "sg"
+movsb ; "\0"
+push   ss
+pop    ds
+
+pop    si
+pop    di
+ret
+ENDP
+
+
 
 
 PROC    M_MENU_ENDMARKER_ NEAR

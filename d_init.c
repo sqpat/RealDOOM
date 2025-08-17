@@ -1268,7 +1268,7 @@ R_PointToAngle(y, x);
 
 	p = M_CheckParm("-loadgame");
 	if (p && p < myargc - 1) {
-
+		// todo move both into menu.asm
 		makesavegamename(file, myargv[p + 1][0]);
 		G_LoadGame(file);
 	}
