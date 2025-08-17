@@ -2184,12 +2184,12 @@ pop   bx
 retf  
 menu_is_active:
 
-mov   bx, word ptr ds:[_currentMenu]
 mov   dx, word ptr ds:[_itemOn]
 xchg  ax, si
 mov   al, SIZEOF_MENUITEM_T
 mul   dl
 xchg  ax, si
+mov   bx, word ptr ds:[_currentMenu]
 mov   di, word ptr ds:[bx + MENU_T.menu_menuitems]
 add   si, di
 
@@ -2229,7 +2229,7 @@ do_menu_key_uparrow:
 loop_next_up:
 cmp   dx, cx
 jne   just_dec_itemon
-mov   dx, word ptr ds:[bx + MENU_T.menu_numitems]
+mov   dl, byte ptr ds:[bx + MENU_T.menu_numitems]
 just_dec_itemon:
 dec   dx
 mov   al, SIZEOF_MENUITEM_T
@@ -2273,15 +2273,13 @@ jmp   just_play_sound
 do_menu_key_downarrow:
 loop_next_down:
 inc   dx
-cmp   dx, word ptr ds:[bx + MENU_T.menu_numitems]
+add   si, SIZEOF_MENUITEM_T
+cmp   dl, byte ptr ds:[bx + MENU_T.menu_numitems]
 jne   dont_reset_itemon
 mov   dx, cx
+mov   si, di
 dont_reset_itemon:
 
-mov   al, SIZEOF_MENUITEM_T
-mul   dl
-xchg  ax, si
-add   si, di
 cmp   byte ptr ds:[si + MENUITEM_T.menuitem_status], -1
 je    loop_next_down
 jmp   finish_key_upordown
