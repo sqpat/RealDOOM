@@ -31,6 +31,15 @@ SOUND_E_MUSIC_VOL   = 2
 SOUND_E_SFX_EMPTY2  = 3
 SOUND_E_SOUND_END   = 4
 
+MENUITEM_MAIN_NEWGAME  = 0
+MENUITEM_MAIN_OPTIONS  = 1
+MENUITEM_MAIN_LOADGAME = 2
+MENUITEM_MAIN_SAVEGAME = 3
+MENUITEM_MAIN_READTHIS = 4
+MENUITEM_MAIN_QUITDOOM = 5
+MENUITEM_MAIN_MAIN_END = 6
+
+
 LOAD_END = 6
 
 
@@ -44,7 +53,13 @@ EXTRN getStringByIndex_:FAR
 EXTRN locallib_far_fread_:FAR
 EXTRN fclose_:FAR
 EXTRN fopen_:FAR
+EXTRN fseek_:FAR
+EXTRN fread_:FAR
 EXTRN makesavegamename_:FAR
+
+EXTRN W_LumpLength_:FAR
+EXTRN W_GetNumForName_:FAR
+EXTRN W_CacheLumpNumDirect_:FAR
 
 EXTRN G_LoadGame_:FAR
 EXTRN G_SaveGame_:FAR
@@ -105,7 +120,9 @@ EXTRN _messageRoutine:WORD
 EXTRN _OptionsDef:WORD
 EXTRN _menu_epi:WORD
 EXTRN _ReadDef1:WORD
+EXTRN _ReadMenu1:WORD
 EXTRN _ReadDef2:WORD
+EXTRN _MainMenu:WORD
 EXTRN _NewDef:WORD
 EXTRN _MainDef:WORD
 EXTRN _LoadDef:WORD
@@ -2622,6 +2639,220 @@ ret
 
 
 ENDP
+
+
+; copy string from cs:ax to ds:_filename_argument
+; return _filename_argument in ax
+; TODO make this near to everything eventually to not dupe..
+PROC CopyString13_menu_seg_ NEAR
+PUBLIC CopyString13_menu_seg_
+
+push  si
+push  di
+push  cx
+
+mov   di, OFFSET _filename_argument
+
+push  ds
+pop   es    ; es = ds
+
+push  cs
+pop   ds    ; ds = cs
+
+mov   si, ax
+
+mov   ax, 0
+stosw       ; zero out
+stosw
+stosw
+stosw
+stosw
+stosw
+stosb
+
+mov  cx, 13
+sub  di, cx
+
+do_next_char:
+lodsb
+stosb
+test  al, al
+je    done_writing
+loop do_next_char
+
+
+done_writing:
+
+mov   ax, OFFSET _filename_argument   ; ax now points to the near string
+
+push  ss
+pop   ds    ; restore ds
+
+pop   cx
+pop   di
+pop   si
+
+ret
+
+ENDP
+
+NUM_MENU_ITEMS = 46
+MENUGRAPHICS_STR_SIZE = (NUM_MENU_ITEMS * 9)  ; 019Eh
+
+_doomdata_bin_string:
+db "DOOMDATA.BIN", 0
+
+
+
+PROC    M_Init_ FAR
+PUBLIC  M_Init_
+
+
+PUSHA_NO_AX_OR_BP_MACRO
+push  bp
+mov   bp, sp
+sub   sp, MENUGRAPHICS_STR_SIZE
+
+; M_Reload inlined
+
+mov   ax, OFFSET _doomdata_bin_string
+call  CopyString13_menu_seg_
+mov   dx, OFFSET  _fopen_rb_argument
+call  fopen_        ; fopen("DOOMDATA.BIN", "rb"); 
+mov   di, ax ; store fp
+mov   bx, MENUDATA_DOOMDATA_OFFSET
+xor   cx, cx ; 0 high
+xor   dx, dx ; SEEK_SET
+call  fseek_   ;	fseek(fp, MENUDATA_DOOMDATA_OFFSET, SEEK_SET);
+
+lea   ax, [bp - MENUGRAPHICS_STR_SIZE]
+mov   si, ax
+mov   dx, 9
+mov   bx, NUM_MENU_ITEMS
+mov   cx, di
+call  fread_	;fread(menugraphics, 9, NUM_MENU_ITEMS, fp);
+
+xchg  ax, di
+call  fclose_
+
+; si is start of array.
+
+mov   ax, bp
+cmp   byte ptr ds:[_is_ultimate], 0
+jne   is_ultimate_dont_remove_lump
+
+sub   ax, 9   ; end loop one earlier
+is_ultimate_dont_remove_lump:
+
+mov   word ptr cs:[SELFMODIFY_menugraphics_loop_end+2], ax ; loop end condition
+
+mov   dx, MENUGRAPHICSPAGE0SEGMENT
+xor   di, di   
+
+; DX:DI is dest
+; si is array current addr
+; selfmodified end condition 
+
+xor   bx, bx
+push  bx  ; menuoffsets counter
+
+loop_load_next_menugraphic:
+
+mov   ax, si
+call  W_GetNumForName_
+mov   cx, ax  ; store lump
+
+push  dx
+call  W_LumpLength_
+pop   dx   ; clobbered by return, but return should never be > 64k
+
+; todo dynamic compare page size.
+
+mov  es, ax  ; backup size
+add  ax, di
+jnc  not_new_menu_page
+xor  di, di ; start from 0
+mov  ax, es ; get old size back
+mov  dx, MENUGRAPHICSPAGE4SEGMENT
+not_new_menu_page:
+
+mov  bx, MENUOFFSETS_SEGMENT
+mov  es, bx
+pop  bx
+mov  word ptr es:[bx], di
+inc  bx
+inc  bx
+push bx
+
+
+;    ax has size, needs to add to di 
+
+xchg ax, cx ; get lump back in ax
+mov  bx, di ; bx gets old size
+mov  di, cx ; di gets new size (xchged from ax)
+mov  cx, dx ; current dest segment
+
+call W_CacheLumpNumDirect_  ; W_CacheLumpNumDirect(lump, dst);
+
+
+
+iter_load_next_menugraphic:
+add   si, 9
+SELFMODIFY_menugraphics_loop_end:
+cmp   si, 01000h
+jl loop_load_next_menugraphic
+
+; pop   bx  ; undo the push. not really necessary but symmetrical
+
+xor  ax, ax
+mov  bx, OFFSET _MainDef
+mov  word ptr ds:[_currentMenu], bx
+mov  byte ptr ds:[_menuactive], al
+push word ptr ds:[bx + MENU_T.menu_laston]
+pop  word ptr ds:[_itemOn]
+mov  byte ptr ds:[_whichSkull], al
+mov  word ptr ds:[_skullAnimCounter], 10
+mov  byte ptr cs:[_messageToPrint], al
+mov  byte ptr cs:[_menu_messageString], al
+mov  word ptr cs:[_messageLastMenuActive], ax
+mov  byte ptr ds:[_quickSaveSlot], -1
+mov  al, byte ptr ds:[_screenblocks]
+dec  ax
+mov  byte ptr ds:[_screenSize], al
+
+cmp  byte ptr ds:[_commercial], 0
+je   done_with_commercial_menu_mod
+
+dec  byte ptr ds:[_MainDef + MENU_T.menu_numitems]
+add  byte ptr ds:[_MainDef + MENU_T.menu_y], 8
+
+;		MainMenu[readthis] = MainMenu[quitdoom];
+push ds
+pop  es
+lea  di, [_MainMenu + (SIZEOF_MENUITEM_T * MENUITEM_MAIN_READTHIS)]
+lea  si, [_MainMenu + (SIZEOF_MENUITEM_T * MENUITEM_MAIN_QUITDOOM)]
+mov  cx, 5
+rep  movsb
+
+mov  word ptr ds:[_MainMenu + (SIZEOF_MENUITEM_T * MENUITEM_MAIN_READTHIS) + MENUITEM_T.menuitem_routine], OFFSET M_FinishReadThis_
+mov  word ptr ds:[_NewDef + MENU_T.menu_prevMenu], OFFSET _MainDef
+mov  word ptr ds:[_ReadDef1 + MENU_T.menu_routine], OFFSET M_DrawReadThisRetail_
+mov  word ptr ds:[_ReadDef1 + MENU_T.menu_x], 330
+mov  word ptr ds:[_ReadDef1 + MENU_T.menu_y], 165
+mov  word ptr ds:[_ReadMenu1 + MENUITEM_T.menuitem_routine], OFFSET M_FinishReadThis_
+
+
+done_with_commercial_menu_mod:	
+
+
+
+LEAVE_MACRO
+POPA_NO_AX_OR_BP_MACRO
+retf
+
+
+ENDP
+
 
 PROC    M_MENU_ENDMARKER_ NEAR
 PUBLIC  M_MENU_ENDMARKER_

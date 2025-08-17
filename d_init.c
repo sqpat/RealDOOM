@@ -456,6 +456,8 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den);
 
 // this is only done in init... pull into there?
 
+void __far M_Init(void);
+/*
 void __near M_Reload(void) {
 	// reload menu graphics
 	int8_t i = 0;
@@ -494,28 +496,18 @@ void __near M_Reload(void) {
 	}
 	// I_Error("%x", size);
 	// 92b4
-	
-/*
-	if (is_ultimate){
-		int16_t lump = W_GetNumForName("M_EPI4");
-		uint16_t lumpsize = W_LumpLength(lump);
-		W_CacheLumpNumDirect(lump, dst);
-		menuoffsets[i] = size;
-		size += lumpsize;
-		//I_Error("size %x %x %x", menuoffsets[NUM_MENU_ITEMS-1], size, lumpsize);
-	}
-	*/
+
 
 }
-
+*/
 
 void __near M_DrawReadThisRetail(void);
 void __near M_FinishReadThis(int16_t choice);
 
+/*
 void __far M_Init(void){
 	
 
-	Z_QuickMapMenu();
 	
 	M_Reload();
 	
@@ -542,10 +534,9 @@ void __far M_Init(void){
 		ReadMenu1[0].routine = M_FinishReadThis;
 	}
 
-	Z_QuickMapPhysics();
 
 	
-}
+}*/
 
 
 /*
@@ -1194,7 +1185,9 @@ R_PointToAngle(y, x);
 	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
 	#endif
+	Z_QuickMapMenu();
 	M_Init();
+	Z_QuickMapPhysics();
 
 	// 6350 493 10
 	//I_Error("\n%u %u %hhi %s", stringoffsets[E3TEXT], stringoffsets[E3TEXT + 1] - stringoffsets[E3TEXT], textbuffer[0], textbuffer);

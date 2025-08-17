@@ -812,7 +812,7 @@ call  CopyString13_Zonelocal_
 mov   bx, word ptr ds:[si + _codestartposition-4]
 mov   cx, word ptr ds:[si + _codestartposition-2]
 call  fopen_
-xor   dx, dx
+xor   dx, dx ; SEEK_SET
 mov   si, ax
 call  fseek_
 mov   bx, 1
