@@ -1906,726 +1906,494 @@ jmp   loop_next_char_to_write
 
 ENDP
 
-COMMENT @
+exit_m_responder_return_false:
+xor   ax, ax
+jmp   exit_m_responder
+savestringenter_is_escape:
+mov   byte ptr ds:[_saveStringEnter], cl
+mov   di, bx 
+;mov   si, SAVEGAMESTRINGS_SEGMENT
+;mov   es, si
+mov   cx, SAVESTRINGSIZE / 2
+mov   si, OFFSET _saveOldString
+rep   movsw
 
-PROC    M_Responder_ NEAR
+jmp   exit_m_responder_return_1
+savestringenter_is_backspace:
+cmp   di, cx ; 0
+jle   exit_m_responder_return_1
+
+dec   di
+mov   word ptr ds:[_saveCharIndex], di
+mov   byte ptr es:[bx+di], cl
+jmp   exit_m_responder_return_1
+
+
+
+PROC    M_Responder_ FAR
 PUBLIC  M_Responder_
 
 push  bx
 push  cx
 push  si
-mov   si, ax
-mov   es, dx
-mov   bx, -1
-cmp   byte ptr es:[si], 0
-jne   label_57
-mov   bx, word ptr es:[si + 1]
-label_57:
-cmp   bx, -1
-je    label_58
-cmp   byte ptr ds:[_saveStringEnter], 0
-je    label_59
-cmp   bx, KEY_BACKSPACE
-jne   label_60
-cmp   word ptr ds:[_saveCharIndex], 0
-jle   exit_m_responder_return_1
-imul  bx, byte ptr ds:[_saveSlot], SAVESTRINGSIZE
-dec   word ptr ds:[_saveCharIndex]
+push  di
+xchg  ax, si
+mov   es, dx  ; events_segment
+xor   cx, cx
+mov   ax, -1
+cmp   byte ptr es:[si], cl ; 0 or EV_KEYDOWN
+jne   no_char
+mov   ax, word ptr es:[si + 1]
+no_char:
+cmp   al, -1
+je    exit_m_responder_return_false
+cmp   byte ptr ds:[_saveStringEnter], cl ; 0
+je    not_savestringenter
+xchg  ax, bx
+mov   al, SAVESTRINGSIZE
+mul   byte ptr ds:[_saveSlot]
 mov   dx, SAVEGAMESTRINGS_SEGMENT
-add   bx, word ptr ds:[_saveCharIndex]
 mov   es, dx
-mov   byte ptr es:[bx], 0
+xchg  ax, bx
+mov   di, word ptr ds:[_saveCharIndex]
+
+; di is savecharindex
+; dx/es are SAVEGAMESTRINGS_SEGMENT
+; al is key
+; bx is (_saveSlot * savestringsize)
+; cx is 0
+
+cmp   al, KEY_BACKSPACE
+je    savestringenter_is_backspace
+cmp   al, KEY_ESCAPE
+je    savestringenter_is_escape
+cmp   al, KEY_ENTER
+je    savestringenter_is_enter
+
+savestringenter_do_other_character:
+call  M_ToUpper_
+cmp   al, 32
+jl    exit_m_responder_return_1
+cmp   al, 127
+jg    exit_m_responder_return_1
+
+; saveCharIndex < (SAVESTRINGSIZE-1) &&
+
+cmp   ax, (SAVESTRINGSIZE-1)
+jl    exit_m_responder_return_1
+xchg  ax, bx  ; bx had saveslot * savestringsize. now it gets the char.
+mov   di, ax  ; copy this offset to di
+
+; mov   dx, SAVEGAMESTRINGS_SEGMENT
+call  M_StringWidth_
+
+cmp   ax, (SAVESTRINGSIZE-2)*8 ; 0B0h
+jae   exit_m_responder_return_1
+
+
+xchg  ax, bx ; ax gets char
+
+; mov   dx, SAVEGAMESTRINGS_SEGMENT
+mov   es, dx
+add   di, word ptr ds:[_saveCharIndex]
+inc   word ptr ds:[_saveCharIndex]
+xor   ah, ah
+stosw  ; also hits 0 in 2nd byte.
 exit_m_responder_return_1:
 mov   al, 1
 exit_m_responder:
+pop   di
 pop   si
 pop   cx
 pop   bx
 retf  
-label_58:
-xor   al, al
-jmp   exit_m_responder
-label_60:
-cmp   bx, KEY_ESCAPE
-jne   label_61
-xor   ax, ax
-xor   dl, dl
-mov   byte ptr ds:[_saveStringEnter], al
-imul  cx, byte ptr ds:[_saveSlot], SAVESTRINGSIZE
-label_62:
-mov   al, dl
-cbw  
-cmp   ax, SAVESTRINGSIZE
-jae   exit_m_responder_return_1
-mov   al, dl
-cbw  
-mov   si, cx
-mov   bx, ax
-add   si, ax
-mov   ax, SAVEGAMESTRINGS_SEGMENT
-mov   es, ax
-mov   al, byte ptr ds:[bx + _saveOldString]
-inc   dl
-mov   byte ptr es:[si], al
-jmp   label_62
-label_59:
-jmp   label_63
-label_61:
-cmp   bx, KEY_ENTER
-jne   label_64
-imul  bx, byte ptr ds:[_saveSlot], SAVESTRINGSIZE
-xor   ax, ax
-mov   dx, SAVEGAMESTRINGS_SEGMENT
-mov   byte ptr ds:[_saveStringEnter], al
-mov   es, dx
-cmp   byte ptr es:[bx], 0
+
+savestringenter_is_enter:
+
+mov   byte ptr ds:[_saveStringEnter], cl ; 0
+cmp   byte ptr es:[bx], cl ; 0
 je    exit_m_responder_return_1
 mov   al, byte ptr ds:[_saveSlot]
 call  M_DoSave_
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_64:
-xor   bh, bh
-mov   ax, bx
-call  M_ToUpper_
-mov   bl, al
-cmp   bx, 32
-je    label_65
-lea   ax, [bx - HU_FONTSTART]
-test  ax, ax
-jl    exit_m_responder_return_1
-lea   ax, [bx - HU_FONTSTART]
-cmp   ax, HU_FONTSIZE
-jl    label_65
-jump_to_exit_m_responder_return_1:
 jmp   exit_m_responder_return_1
-label_65:
-cmp   bx, 32
-jl    jump_to_exit_m_responder_return_1
-cmp   bx, 127
-jg    jump_to_exit_m_responder_return_1
-cmp   word ptr ds:[_saveCharIndex], (SAVESTRINGSIZE-1)  ; 017h
-jae   jump_to_exit_m_responder_return_1
-imul  ax, byte ptr ds:[_saveSlot], SAVESTRINGSIZE
-mov   dx, SAVEGAMESTRINGS_SEGMENT
-call  M_StringWidth_
-cmp   ax, ((SAVESTRINGSIZE-2)*8) ; 0B0h
-jae   jump_to_exit_m_responder_return_1
-imul  ax, byte ptr ds:[_saveSlot], SAVESTRINGSIZE
-mov   dx, SAVEGAMESTRINGS_SEGMENT
-mov   si, word ptr ds:[_saveCharIndex]
-mov   es, dx
-add   si, ax
-inc   word ptr ds:[_saveCharIndex]
-mov   byte ptr es:[si], bl
-mov   bx, word ptr ds:[_saveCharIndex]
-add   bx, ax
-mov   byte ptr es:[bx], 0
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_63:
-cmp   byte ptr ds:[_messageToPrint], 0
-je    label_66
+
+not_savestringenter:
+cmp   byte ptr ds:[_messageToPrint], cl ; 0
+je    no_message_to_print_mresponder
 cmp   byte ptr ds:[_messageNeedsInput], 1
-jne   label_67
-cmp   bx, 32
-jne   label_68
-label_67:
-mov   si, _menuactive
-mov   al, byte ptr ds:[_messageLastMenuActive]
-mov   byte ptr ds:[_messageToPrint], 0
-mov   byte ptr ds:[si], al
-cmp   word ptr ds:[_messageRoutine], 0
-je    label_69
-mov   ax, bx
+jne   no_input_needed
+cmp   al, 32
+je    not_response_char
+
+cmp   al, 06Eh  ; 'n'
+je    not_response_char
+cmp   al, 079h  ; 'y'
+je    not_response_char
+cmp   al, KEY_ESCAPE
+je    not_response_char
+jmp   exit_m_responder_return_0
+
+no_input_needed:
+not_response_char:
+
+mov   dl, byte ptr ds:[_messageLastMenuActive]
+mov   byte ptr ds:[_messageToPrint], cl ; 0
+mov   byte ptr ds:[_menuactive], dl
+cmp   word ptr ds:[_messageRoutine], cx ; 0
+je    no_message_routine
+
 call  word ptr ds:[_messageRoutine]
-label_69:
-mov   bx, _menuactive
+no_message_routine:
+mov   byte ptr ds:[_menuactive], cl  ; 0
+
 mov   dx, SFX_SWTCHX
-xor   ax, ax
-mov   byte ptr ds:[bx], 0
-call  S_StartSound_
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_68:
-cmp   bx, 06Eh  ; 'n'
-je    label_67
-cmp   bx, 079h  ; 'y'
-je    label_67
-cmp   bx, KEY_ESCAPE
-je    label_67
-xor   al, al
-pop   si
-pop   cx
-pop   bx
-retf  
-label_66:
-mov   si, _menuactive
-mov   al, byte ptr ds:[si]
-test  al, al
-jne   label_70
-cmp   bx, KEY_F5
-jae   label_71
-cmp   bx, KEY_F1
-jae   label_72
-cmp   bx, KEY_EQUALS
-jne   label_73
-mov   bx, _automapactive
-cmp   byte ptr ds:[bx], 0
-je    label_74
-pop   si
-pop   cx
-pop   bx
-retf  
-label_71:
-jbe   label_75
-cmp   bx, KEY_F8
-jae   label_76
-cmp   bx, KEY_F7
-jne   label_77
-mov   dx, SFX_SWTCHN
-xor   ah, ah
-call  S_StartSound_
-xor   ax, ax
-call  M_EndGame_
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_70:
-jmp   label_78
-label_76:
-jbe   label_79
-cmp   bx, KEY_F11
-jne   label_80
-inc   byte ptr ds:[_usegamma]
-cmp   byte ptr ds:[_usegamma], 4
-jbe   label_81
-mov   byte ptr ds:[_usegamma], al
-label_81:
-mov   al, byte ptr ds:[_usegamma]
-xor   ah, ah
-mov   bx, _player + PLAYER_T.player_message
-add   ax, GAMMALVL0
-mov   word ptr ds:[bx], ax
-xor   ax, ax
-call  I_SetPalette_
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_72:
-jmp   label_82
-label_73:
-jmp   label_83
-label_74:
-jmp   label_84
-label_75:
-jmp   label_85
-label_77:
-jmp   label_86
-label_80:
-cmp   bx, KEY_F10
-je    label_87
-cmp   bx, KEY_F9
-je    label_88
-label_78:
-mov   si, _menuactive
-mov   al, byte ptr ds:[si]
-test  al, al
-jne   label_89
-cmp   bx, KEY_ESCAPE
-je    label_90
-pop   si
-pop   cx
-pop   bx
-retf  
-label_79:
-jmp   label_91
-label_82:
-jbe   label_92
-cmp   bx, KEY_F4
-je    label_93
-cmp   bx, KEY_F3
-jne   label_94
+jmp   play_sound_and_exit_m_responder_return_1
+
+
+no_message_to_print_mresponder:
+ 
+cmp   byte ptr ds:[_menuactive], cl 
+jne   jump_to_menu_is_active
+
+; KEY_MINUS  2d
+; KEY_EQUALS 3d
+; KEY_ESCAPE 1B
+; KEY_F1     0BBh
+; KEY_F10    0C4h
+; KEY_F11    0D7h
+
+cmp   al, KEY_MINUS
+je    do_key_minus
+cmp   al, KEY_EQUALS
+je    do_key_equals
+cmp   al, KEY_ESCAPE
+je    do_key_escape
+cmp   al, KEY_F1
+je    do_key_f1
+jb    didnt_find_key_in_nonmenu
+cmp   al, KEY_F3
+jb    do_key_f2
+je    do_key_f3
+cmp   al, KEY_F5
+jb    do_key_f4
+je    do_key_f5
+cmp   al, KEY_F7
+jb    do_key_f6
+je    do_key_f7
+cmp   al, KEY_F9
+jb    do_key_f8
+je    do_key_f9
+cmp   al, KEY_F10
+je    do_key_f10
+cmp   al, KEY_F11
+jne   didnt_find_key_in_nonmenu
+jmp   do_key_f11
+
+jump_to_menu_is_active:
+jmp   menu_is_active
+do_key_escape:
 call  M_StartControlPanel_
-mov   dx, SFX_SWTCHN
-xor   ax, ax
-call  S_StartSound_
-mov   ax, word ptr ds:[_LoadDef + MENU_T.menu_laston]
-mov   word ptr ds:[_currentMenu], OFFSET _LoadDef
-mov   word ptr ds:[_itemOn], ax
-call  M_ReadSaveStrings_
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_83:
-cmp   bx, KEY_MINUS
-jne   label_78
-mov   bx, _automapactive
-mov   al, byte ptr ds:[bx]
-test  al, al
-je    label_95
-xor   al, al
-pop   si
-pop   cx
-pop   bx
-retf  
-label_87:
-jmp   label_96
-label_88:
-jmp   label_97
-label_95:
-xor   ah, ah
-mov   dx, SFX_STNMOV
+jmp   play_switch_sound_and_exit_m_responder_return_1
+
+do_key_equals:
+inc   cx
+do_key_minus:
+cmp   byte ptr ds:[_automapactive], 0
+jne   jump_to_exit_m_responder_return_0
+
+xchg  ax, cx
 call  M_SizeDisplay_
-xor   ax, ax
-call  S_StartSound_
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_89:
-jmp   label_98
-label_90:
-jmp   label_99
-label_92:
-jmp   label_100
-label_93:
-jmp   pressed_f4
-label_84:
-mov   ax, 1
-mov   dx, SFX_STNMOV
-call  M_SizeDisplay_
-xor   ax, ax
-call  S_StartSound_
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_94:
-jmp   label_102
-label_100:
-mov   bx, _is_ultimate
+
+jmp   play_stnmov_sound_and_exit_m_responder_return_1
+jump_to_exit_m_responder_return_0:
+didnt_find_key_in_nonmenu:
+jmp   exit_m_responder_return_0
+
+do_key_f1:
 call  M_StartControlPanel_
-cmp   byte ptr ds:[bx], 0
-je    label_103
-mov   word ptr ds:[_currentMenu], OFFSET _ReadDef2
-label_104:
-xor   ax, ax
-mov   dx, SFX_SWTCHN
-mov   word ptr ds:[_itemOn], ax
-call  S_StartSound_
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_103:
-mov   word ptr ds:[_currentMenu], OFFSET _ReadDef1
-jmp   label_104
-label_102:
+cmp   byte ptr ds:[_is_ultimate], cl
+mov   ax, OFFSET _ReadDef1
+je    use_readdef1
+mov   ax, OFFSET _ReadDef2
+use_readdef1:
+mov   word ptr ds:[_currentMenu], ax
+mov   word ptr ds:[_itemOn], cx 
+jmp   play_switch_sound_and_exit_m_responder_return_1
+
+
+do_key_f2:
 call  M_StartControlPanel_
-mov   dx, SFX_SWTCHN
-xor   ax, ax
-call  S_StartSound_
-xor   ax, ax
+xchg  ax, cx ; 0
 call  M_SaveGame_
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-pressed_f4:
+jmp   play_switch_sound_and_exit_m_responder_return_1
+
+do_key_f3:
+call  M_StartControlPanel_
+xchg  ax, cx ; 0
+call  M_LoadGame_
+jmp   play_switch_sound_and_exit_m_responder_return_1
+
+do_key_f4:
 call  M_StartControlPanel_
 mov   word ptr ds:[_currentMenu], OFFSET _SoundDef
-xor   ax, ax
-mov   dx, SFX_SWTCHN
-mov   word ptr ds:[_itemOn], ax
-call  S_StartSound_
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_85:
-xor   ah, ah
-mov   dx, SFX_SWTCHN
+mov   word ptr ds:[_itemOn], cx ; 0 , sound_e_sfx_vol
+jmp   play_switch_sound_and_exit_m_responder_return_1
+
+do_key_f5:
+xchg  ax, cx ; 0
 call  M_ChangeDetail_
-xor   ax, ax
-call  S_StartSound_
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_86:
-mov   dx, SFX_SWTCHN
-xor   ah, ah
-call  S_StartSound_
+jmp   play_switch_sound_and_exit_m_responder_return_1
+
+do_key_f6:
+xchg  ax, cx ; 0
 call  M_QuickSave_
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_91:
-xor   ah, ah
-mov   dx, SFX_SWTCHN
+jmp   play_switch_sound_and_exit_m_responder_return_1
+
+
+do_key_f7:
+xchg  ax, cx ; 0
+call  M_EndGame_
+jmp   play_switch_sound_and_exit_m_responder_return_1
+
+do_key_f8:
+xchg  ax, cx ; 0
 call  M_ChangeMessages_
-xor   ax, ax
-call  S_StartSound_
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_97:
-mov   dx, SFX_SWTCHN
-xor   ah, ah
-call  S_StartSound_
+jmp   play_switch_sound_and_exit_m_responder_return_1
+
+do_key_f9:
+xchg  ax, cx ; 0
 call  M_QuickLoad_
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_96:
-mov   dx, SFX_SWTCHN
-xor   ah, ah
-call  S_StartSound_
-xor   ax, ax
+jmp   play_switch_sound_and_exit_m_responder_return_1
+
+do_key_f10:
+xchg  ax, cx ; 0
 call  M_QuitDOOM_
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_99:
-call  M_StartControlPanel_
+play_switch_sound_and_exit_m_responder_return_1:
 mov   dx, SFX_SWTCHN
+play_sound_and_exit_m_responder_return_1:
 xor   ax, ax
 call  S_StartSound_
+
+exit_m_responder_return_1_2:
 mov   al, 1
+
+pop   di
 pop   si
 pop   cx
 pop   bx
 retf  
-label_98:
+menu_is_active:
+
+mov   bx, word ptr ds:[_currentMenu]
 mov   dx, word ptr ds:[_itemOn]
-mov   ax, dx
-shl   ax, 2
-add   ax, dx
-cmp   bx, KEY_LEFTARROW
-jae   label_105
-cmp   bx, KEY_BACKSPACE
-jne   label_106
-mov   bx, word ptr ds:[_currentMenu]
-mov   ax, word ptr ds:[bx + 1]
-mov   word ptr ds:[bx + MENU_T.menu_laston], dx
-test  ax, ax
-jne   label_107
-jump_to_exit_m_responder_return_1_2:
-jmp   exit_m_responder_return_1
-label_107:
-mov   bx, ax
-mov   word ptr ds:[_currentMenu], ax
-mov   ax, word ptr ds:[bx + MENU_T.menu_laston]
-mov   dx, SFX_SWTCHN
-mov   word ptr ds:[_itemOn], ax
-xor   ax, ax
-call  S_StartSound_
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_106:
-jmp   label_108
-label_105:
-ja    label_109
-mov   bx, word ptr ds:[_currentMenu]
-mov   bx, word ptr ds:[bx + 3]
-add   bx, ax
-cmp   word ptr ds:[bx + 2], 0
-je    jump_to_exit_m_responder_return_1_2
-cmp   byte ptr ds:[bx], 2
-jne   jump_to_exit_m_responder_return_1_2
-mov   bx, _currenttask
-mov   dx, SFX_STNMOV
-mov   bl, byte ptr ds:[bx]
-call  Z_QuickMapMenu_
-xor   ax, ax
-call  S_StartSound_
-mov   dx, word ptr ds:[_itemOn]
-mov   ax, dx
-mov   si, word ptr ds:[_currentMenu]
-shl   ax, 2
-mov   si, word ptr ds:[si + 3]
-add   ax, dx
-add   si, ax
-xor   ax, ax
-call  word ptr ds:[si + 2]
-mov   al, bl
-cbw  
-call  Z_QuickMapByTaskNum_
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_109:
-cmp   bx, KEY_DOWNARROW
-jne   label_110
-xor   cx, cx
-label_112:
-mov   bx, word ptr ds:[_currentMenu]
-mov   al, byte ptr ds:[bx]
-cbw  
-mov   dx, ax
-mov   ax, word ptr ds:[_itemOn]
+xchg  ax, si
+mov   al, SIZEOF_MENUITEM_T
+mul   dl
+xchg  ax, si
+mov   di, word ptr ds:[bx + MENU_T.menu_menuitems]
+add   si, di
+
+; al is key
+; bx is currentMenu
+; dx is itemOn
+; cx is 0
+; si is currentMenu->menuItems[itemOn]
+; di is currentMenu->menuItems
+
+; KEY_DOWNARROW  AF
+; KEY_UPARROW    AD
+; KEY_LEFTARROW  AC
+; KEY_RIGHTARROW AE
+; KEY_ENTER      13
+; KEY_ESCAPE     27
+; KEY_BACKSPACE  127
+; default..
+
+cmp   al, KEY_ENTER
+je    do_menu_key_enter
+cmp   al, KEY_ESCAPE
+je    do_menu_key_escape
+cmp   al, KEY_BACKSPACE
+je    do_menu_key_backspace
+
+cmp   al, KEY_DOWNARROW
+ja    handle_default
+je    do_menu_key_downarrow
+cmp   al, KEY_LEFTARROW
+je    do_menu_key_leftarrow
+jb    handle_default
+cmp   al, KEY_RIGHTARROW
+je    do_menu_key_rightarrow
+do_menu_key_uparrow:
+
+loop_next_up:
+cmp   dx, cx
+jne   just_dec_itemon
+mov   dx, word ptr ds:[bx + MENU_T.menu_numitems]
+just_dec_itemon:
 dec   dx
-inc   ax
-cmp   ax, dx
-jle   label_111
-mov   word ptr ds:[_itemOn], cx
-label_127:
-mov   dx, SFX_PSTOP
-mov   ax, cx
-call  S_StartSound_
-imul  ax, word ptr ds:[_itemOn], 5
-mov   bx, word ptr ds:[_currentMenu]
-mov   bx, word ptr ds:[bx + 3]
-add   bx, ax
-cmp   byte ptr ds:[bx], -1
-je    label_112
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_111:
-jmp   label_113
-label_110:
-cmp   bx, KEY_RIGHTARROW
-jne   label_114
-mov   bx, word ptr ds:[_currentMenu]
-mov   bx, word ptr ds:[bx + 3]
-add   bx, ax
-cmp   word ptr ds:[bx + 2], 0
-jne   label_115
-jump_to_exit_m_responder_return_1_3:
-jmp   exit_m_responder_return_1
-label_115:
-cmp   byte ptr ds:[bx], 2
-jne   jump_to_exit_m_responder_return_1_3
-mov   bx, _currenttask
-mov   dx, SFX_STNMOV
-mov   bl, byte ptr ds:[bx]
-call  Z_QuickMapMenu_
-xor   ax, ax
-call  S_StartSound_
-mov   dx, word ptr ds:[_itemOn]
-mov   ax, dx
-mov   si, word ptr ds:[_currentMenu]
-shl   ax, 2
-mov   si, word ptr ds:[si + 3]
-add   ax, dx
-add   si, ax
-mov   ax, 1
-call  word ptr ds:[si + 2]
-mov   al, bl
-cbw  
-call  Z_QuickMapByTaskNum_
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_114:
-cmp   bx, KEY_UPARROW
-jne   label_116
-mov   cx, -1
-xor   si, si
-label_118:
-cmp   si, word ptr ds:[_itemOn]
-jne   label_117
-mov   bx, word ptr ds:[_currentMenu]
-mov   al, byte ptr ds:[bx]
-cbw  
-add   ax, cx
-mov   word ptr ds:[_itemOn], ax
-label_128:
-mov   dx, SFX_PSTOP
-mov   ax, si
-call  S_StartSound_
-imul  ax, word ptr ds:[_itemOn], 5
-mov   bx, word ptr ds:[_currentMenu]
-mov   bx, word ptr ds:[bx + 3]
-add   bx, ax
-cmp   cl, byte ptr ds:[bx]
-je    label_118
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_116:
-jmp   label_119
-label_108:
-cmp   bx, KEY_ESCAPE
-jne   label_120
-mov   bx, word ptr ds:[_currentMenu]
-mov   word ptr ds:[bx + MENU_T.menu_laston], dx
-mov   bx, _screenblocks
-mov   byte ptr ds:[si], 0
-mov   byte ptr ds:[_inhelpscreens], 0
-cmp   byte ptr ds:[bx], 9
-ja    label_121
-mov   bx, _hudneedsupdate
-mov   byte ptr ds:[_borderdrawcount], 3
-cmp   byte ptr ds:[bx], 0
-je    label_121
-mov   byte ptr ds:[bx], 6
-label_121:
-mov   dx, SFX_SWTCHX
-xor   ax, ax
-call  S_StartSound_
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_117:
-jmp   label_122
-label_120:
-cmp   bx, KEY_ENTER
-je    label_123
-label_119:
-mov   dx, word ptr ds:[_itemOn]
-inc   dx
-mov   cx, dx
-shl   cx, 2
-add   cx, dx
-label_126:
-mov   si, word ptr ds:[_currentMenu]
-mov   al, byte ptr ds:[si]
-cbw  
-cmp   dx, ax
-jge   label_124
-mov   si, word ptr ds:[si + 3]
-add   si, cx
-mov   al, byte ptr ds:[si + 4]
-cbw  
-cmp   ax, bx
-je    label_125
-add   cx, 5
-inc   dx
-jmp   label_126
-label_113:
-mov   word ptr ds:[_itemOn], ax
-jmp   label_127
-label_122:
-add   word ptr ds:[_itemOn], cx
-jmp   label_128
-label_124:
-jmp   label_129
-label_123:
-mov   bx, word ptr ds:[_currentMenu]
-mov   bx, word ptr ds:[bx + 3]
-add   bx, ax
-cmp   word ptr ds:[bx + 2], 0
-jne   label_130
-jump_to_exit_m_responder_return_1_4:
-jmp   exit_m_responder_return_1
-label_130:
-cmp   byte ptr ds:[bx], 0
-je    jump_to_exit_m_responder_return_1_4
-mov   bx, _currenttask
-mov   cl, byte ptr ds:[bx]
-call  Z_QuickMapMenu_
-mov   ax, word ptr ds:[_itemOn]
-mov   bx, word ptr ds:[_currentMenu]
-mov   dx, ax
-mov   word ptr ds:[bx + MENU_T.menu_laston], ax
-shl   dx, 2
-mov   bx, word ptr ds:[bx + 3]
-add   dx, ax
-add   bx, dx
-cmp   byte ptr ds:[bx], 2
-jne   label_131
-mov   ax, 1
-mov   dx, SFX_STNMOV
-call  word ptr ds:[bx + 2]
-label_133:
-xor   ax, ax
-call  S_StartSound_
-mov   al, cl
-cbw  
-call  Z_QuickMapByTaskNum_
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_125:
-jmp   label_132
-label_131:
-call  word ptr ds:[bx + 2]
-mov   dx, 1
-jmp   label_133
-label_132:
+mov   al, SIZEOF_MENUITEM_T
+mul   dl
+xchg  ax, si
+add   si, di
+cmp   byte ptr ds:[si + MENUITEM_T.menuitem_status], -1
+je    loop_next_up
+finish_key_upordown:
 mov   word ptr ds:[_itemOn], dx
-xor   ax, bx
 mov   dx, SFX_PSTOP
-call  S_StartSound_
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-retf  
-label_129:
-xor   dx, dx
-cmp   word ptr ds:[_itemOn], 0
-jl    exit_m_responder_return_0
-xor   cx, cx
-label_134:
-mov   si, word ptr ds:[_currentMenu]
-mov   si, word ptr ds:[si + 3]
-add   si, cx
-mov   al, byte ptr ds:[si + 4]
-cbw  
-cmp   ax, bx
-je    label_132
+jmp   play_sound_and_exit_m_responder_return_1
+do_menu_key_enter:
+cmp   word ptr ds:[si + MENUITEM_T.menuitem_routine], cx
+jne   exit_m_responder_return_1_3
+cmp   byte ptr ds:[si + MENUITEM_T.menuitem_status], cl
+je    exit_m_responder_return_1_3
+jmp   handle_rest_of_enter_case
+
+
+do_menu_key_backspace:
+
+mov   word ptr ds:[bx + MENU_T.menu_laston], dx
+mov   ax, word ptr ds:[bx + MENU_T.menu_prevMenu]
+cmp   ax, cx
+je    exit_m_responder_return_1_3
+mov   word ptr ds:[_currentMenu], ax
+xchg  ax, bx
+push  word ptr ds:[bx + MENU_T.menu_laston]
+pop   word ptr ds:[_itemOn]
+jmp   play_switch_sound_and_exit_m_responder_return_1
+handle_default:
+jmp   do_menu_key_default
+do_menu_key_escape:
+mov   word ptr ds:[bx + MENU_T.menu_laston], dx
+mov   byte ptr ds:[_menuactive], cl ; 0
+mov   byte ptr ds:[_inhelpscreens], cl ; 0
+cmp   byte ptr ds:[_screenblocks], 9
+jle   force_hud_update
+jmp   just_play_sound
+do_menu_key_downarrow:
+loop_next_down:
 inc   dx
-add   cx, 5
-cmp   dx, word ptr ds:[_itemOn]
-jle   label_134
-exit_m_responder_return_0:
-xor   al, al
+cmp   dx, word ptr ds:[bx + MENU_T.menu_numitems]
+jne   dont_reset_itemon
+mov   dx, cx
+dont_reset_itemon:
+
+mov   al, SIZEOF_MENUITEM_T
+mul   dl
+xchg  ax, si
+add   si, di
+cmp   byte ptr ds:[si + MENUITEM_T.menuitem_status], -1
+je    loop_next_down
+jmp   finish_key_upordown
+do_menu_key_rightarrow:
+inc   cx
+do_menu_key_leftarrow:
+; cx already 0 in left arrow case
+cmp   word ptr ds:[si + MENUITEM_T.menuitem_routine], 0
+jne   exit_m_responder_return_1_3
+cmp   byte ptr ds:[si + MENUITEM_T.menuitem_status], 2
+jne   exit_m_responder_return_1_3
+mov   bl, byte ptr ds:[_currenttask]
+call  Z_QuickMapMenu_  ; todo remove
+xchg  ax, cx
+call  word ptr ds:[si + MENUITEM_T.menuitem_routine]
+xchg  ax, bx
+cbw
+call  Z_QuickMapByTaskNum_
+
+play_stnmov_sound_and_exit_m_responder_return_1:
+mov   dx, SFX_STNMOV
+xor   ax, ax
+call  S_StartSound_
+exit_m_responder_return_1_3:
+mov   al, 1
+pop   di
 pop   si
 pop   cx
 pop   bx
 retf  
+do_menu_key_default:
+
+mov   cl, byte ptr ds:[bx + MENU_T.menu_numitems]
+lea   bx, [si + SIZEOF_MENUITEM_T]
+mov   si, dx
+inc   si
+
+check_next_alphakey:
+
+cmp   al, byte ptr ds:[bx + MENUITEM_T.menuitem_alphakey]
+je    found_key_stop
+add   bx, SIZEOF_MENUITEM_T
+cmp   si, cx
+jl    check_next_alphakey
+
+xor   si, si
+
+check_next_alphakey_2:
+cmp   al, byte ptr ds:[di + MENUITEM_T.menuitem_alphakey]
+je    found_key_stop
+inc   si
+cmp   si, dx
+jl    check_next_alphakey_2
+
+exit_m_responder_return_0:
+xor   ax, ax
+pop   di
+pop   si
+pop   cx
+pop   bx
+retf  
+
+force_hud_update:
+mov   byte ptr ds:[_borderdrawcount], 3
+cmp   byte ptr ds:[_hudneedsupdate], cl
+je    just_play_sound
+mov   byte ptr ds:[_hudneedsupdate], 6
+
+just_play_sound:
+mov   dx, SFX_SWTCHX
+jmp   play_sound_and_exit_m_responder_return_1
+handle_rest_of_enter_case:
+mov   word ptr ds:[bx + MENU_T.menu_laston], dx
+mov   bl, byte ptr ds:[_currenttask]
+call  Z_QuickMapMenu_  ; todo remove
+
+cmp   byte ptr ds:[si + MENUITEM_T.menuitem_status], 2
+jne   status_not_2
+mov   ax, 1
+mov   dx, SFX_STNMOV
+jmp   do_enter_call
+status_not_2:
+xchg  ax, dx
+mov   dx, SFX_PISTOL
+do_enter_call:
+call  word ptr ds:[si + MENUITEM_T.menuitem_routine]
+xchg  ax, bx
+cbw
+call  Z_QuickMapByTaskNum_
+jmp   play_sound_and_exit_m_responder_return_1
+do_key_f11:
+mov   al, byte ptr ds:[_usegamma]
+inc   ax
+cmp   al, 4
+jbe   dont_cap_gamma
+mov   ax, cx ; 0
+dont_cap_gamma:
+mov   byte ptr ds:[_usegamma], al
+add   al, GAMMALVL0
+cbw
+mov   word ptr ds:[_player + PLAYER_T.player_message], ax
+xchg  ax, cx ; 0
+call  I_SetPalette_
+jmp   exit_m_responder_return_1
+
+found_key_stop:
+mov   word ptr ds:[_itemOn], si
+mov   dx, SFX_PSTOP
+jmp   play_sound_and_exit_m_responder_return_1
 
 ENDP
 
-@
 
 PROC    M_StartControlPanel_ NEAR
 PUBLIC  M_StartControlPanel_

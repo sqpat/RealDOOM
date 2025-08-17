@@ -925,7 +925,6 @@ void __near M_WriteText (int16_t x, int16_t y, int8_t __far * string) {
         cx+=w;
     }
 }
-*/
 //
 // CONTROL PANEL
 //
@@ -1259,7 +1258,6 @@ boolean __far M_Responder (event_t __far*  ev) {
 //
 // M_StartControlPanel
 //
-/*
 void __near M_StartControlPanel (void) {
     // intro might call this repeatedly
     if (menuactive) {
