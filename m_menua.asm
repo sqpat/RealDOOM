@@ -2244,7 +2244,7 @@ mov   dx, SFX_PSTOP
 jmp   play_sound_and_exit_m_responder_return_1
 do_menu_key_enter:
 cmp   word ptr ds:[si + MENUITEM_T.menuitem_routine], cx
-jne   exit_m_responder_return_1_3
+je    exit_m_responder_return_1_3
 cmp   byte ptr ds:[si + MENUITEM_T.menuitem_status], cl
 je    exit_m_responder_return_1_3
 jmp   handle_rest_of_enter_case
@@ -2290,7 +2290,7 @@ inc   cx
 do_menu_key_leftarrow:
 ; cx already 0 in left arrow case
 cmp   word ptr ds:[si + MENUITEM_T.menuitem_routine], 0
-jne   exit_m_responder_return_1_3
+je    exit_m_responder_return_1_3
 cmp   byte ptr ds:[si + MENUITEM_T.menuitem_status], 2
 jne   exit_m_responder_return_1_3
 mov   bl, byte ptr ds:[_currenttask]
