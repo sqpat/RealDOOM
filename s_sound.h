@@ -102,8 +102,8 @@ void __far S_ResumeSound(void);
 //
 void __far S_UpdateSounds();
 
-void __far S_SetMusicVolume(uint8_t volume);
-void __far S_SetSfxVolume(uint8_t volume);
+void __near S_SetMusicVolume(uint8_t volume);
+void __near S_SetSfxVolume(uint8_t volume);
 
 
 

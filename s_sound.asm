@@ -53,25 +53,7 @@ PROC    S_SOUND_STARTMARKER_ NEAR
 PUBLIC  S_SOUND_STARTMARKER_
 ENDP
 
-PROC    S_SetMusicVolume_ FAR
-PUBLIC  S_SetMusicVolume_
 
-mov   ah, al
-SHIFT_MACRO shl   ah 3
-mov   byte ptr ds:[_snd_MusicVolume], ah
-xor   ah, ah
-cmp   byte ptr ds:[_playingdriver+3], ah  ; segment high byte shouldnt be 0 if its set.
-je    exit_setmusicvolume
-push  bx
-les   bx, dword ptr ds:[_playingdriver]
-; takes in ax, ah is 0...
-call  es:[bx + MUSIC_DRIVER_T.md_changesystemvolume_func]
-pop   bx
-exit_setmusicvolume:
-retf  
-
-
-ENDP
 
 PROC    S_ChangeMusic_ FAR
 PUBLIC  S_ChangeMusic_
@@ -340,41 +322,7 @@ ret
 
 ENDP
 
-PROC    S_SetSfxVolume_ FAR
-PUBLIC  S_SetSfxVolume_
 
-
-push  bx
-cbw
-test  al, al
-
-je    dont_adjust_vol_up
-SHIFT_MACRO shl   al 3
-add   al, 7
-dont_adjust_vol_up:
-
-mov   byte ptr ds:[_snd_SfxVolume], al
-
-cli   
-mov   bx, OFFSET _sb_voicelist
-
-;	//Kind of complicated... 
-;	// unload sfx. stop all sfx.
-;	// when we reload, the sfx will be premixed with application volume.
-;	// this way we dont do it in interrupt.
-
-loop_next_voiceinfo_setsfxvol:
-mov   byte ptr ds:[bx + SB_VOICEINFO_T.sbvi_sfx_id], ah
-add   bx, SIZEOF_SB_VOICEINFO_T
-cmp   bx, (OFFSET _sb_voicelist + (NUM_SFX_TO_MIX * SIZEOF_SB_VOICEINFO_T))
-jl    loop_next_voiceinfo_setsfxvol
-
-call  S_InitSFXCache_
-sti   
-pop   bx
-retf  
-
-ENDP
 
 PROC    S_PauseSound_ FAR
 PUBLIC  S_PauseSound_

@@ -330,9 +330,6 @@ void  __near S_Init (uint8_t		sfxVolume, uint8_t		musicVolume) {
 
 	void (__far* LoadSFXWadLumps)() = 							        		  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 LoadSFXWadLumpsOffset)));
 
-	S_SetSfxVolume(sfxVolume);
-	S_SetMusicVolume(musicVolume);
-	mus_paused = 0;
 
 
 	// load sound setup code into overlay

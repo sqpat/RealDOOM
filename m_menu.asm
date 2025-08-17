@@ -43,12 +43,12 @@ MENUITEM_MAIN_MAIN_END = 6
 LOAD_END = 6
 
 
-EXTRN S_SetSfxVolume_:FAR
-EXTRN S_SetMusicVolume_:FAR
 
+
+EXTRN S_InitSFXCache_:FAR
 
 EXTRN V_DrawPatchDirect_:FAR
-EXTRN V_DrawFullscreenPatch_:FAR
+
 
 EXTRN getStringByIndex_:FAR
 EXTRN locallib_far_fread_:FAR
@@ -79,6 +79,7 @@ EXTRN Z_QuickMapWipe_:FAR
 
 .DATA
 
+EXTRN _sb_voicelist:WORD
 EXTRN _demosequence:BYTE
 EXTRN _advancedemo:BYTE
 EXTRN _savegameslot:BYTE
@@ -853,7 +854,11 @@ push  dx
 mov   ax, OFFSET _STRING_HELP2
 xor   dx, dx
 mov   byte ptr ds:[_inhelpscreens], 1
-call  V_DrawFullscreenPatch_
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _V_DrawFullscreenPatch_addr
+
 pop   dx
 ret   
 
@@ -868,7 +873,11 @@ push  dx
 mov   ax, OFFSET _STRING_HELP1
 xor   dx, dx
 mov   byte ptr ds:[_inhelpscreens], 1
-call  V_DrawFullscreenPatch_
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _V_DrawFullscreenPatch_addr
+
 pop   dx
 ret   
 
@@ -882,7 +891,11 @@ push  dx
 mov   ax, OFFSET _STRING_HELP
 xor   dx, dx
 mov   byte ptr ds:[_inhelpscreens], 1
-call  V_DrawFullscreenPatch_
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _V_DrawFullscreenPatch_addr
+
 pop   dx
 ret   
 
@@ -962,6 +975,42 @@ jmp   done_updating_vol
 
 ENDP
 
+PROC    S_SetSfxVolume_ NEAR
+PUBLIC  S_SetSfxVolume_
+
+
+push  bx
+cbw
+test  al, al
+
+je    dont_adjust_vol_up
+SHIFT_MACRO shl   al 3
+add   al, 7
+dont_adjust_vol_up:
+
+mov   byte ptr ds:[_snd_SfxVolume], al
+
+cli   
+mov   bx, OFFSET _sb_voicelist
+
+;	//Kind of complicated... 
+;	// unload sfx. stop all sfx.
+;	// when we reload, the sfx will be premixed with application volume.
+;	// this way we dont do it in interrupt.
+
+loop_next_voiceinfo_setsfxvol:
+mov   byte ptr ds:[bx + SB_VOICEINFO_T.sbvi_sfx_id], ah
+add   bx, SIZEOF_SB_VOICEINFO_T
+cmp   bx, (OFFSET _sb_voicelist + (NUM_SFX_TO_MIX * SIZEOF_SB_VOICEINFO_T))
+jl    loop_next_voiceinfo_setsfxvol
+
+call  S_InitSFXCache_
+sti   
+pop   bx
+ret
+
+ENDP
+
 PROC    M_MusicVol_ NEAR
 PUBLIC  M_MusicVol_
 
@@ -986,7 +1035,25 @@ jmp   done_updating_music_vol
 
 ENDP
 
+PROC    S_SetMusicVolume_ NEAR
+PUBLIC  S_SetMusicVolume_
 
+mov   ah, al
+SHIFT_MACRO shl   ah 3
+mov   byte ptr ds:[_snd_MusicVolume], ah
+xor   ah, ah
+cmp   byte ptr ds:[_playingdriver+3], ah  ; segment high byte shouldnt be 0 if its set.
+je    exit_setmusicvolume
+push  bx
+les   bx, dword ptr ds:[_playingdriver]
+; takes in ax, ah is 0...
+call  es:[bx + MUSIC_DRIVER_T.md_changesystemvolume_func]
+pop   bx
+exit_setmusicvolume:
+ret  
+
+
+ENDP
 
 PROC    M_DrawMainMenu_ NEAR
 PUBLIC  M_DrawMainMenu_
@@ -2870,6 +2937,13 @@ mov  word ptr ds:[_ReadMenu1 + MENUITEM_T.menuitem_routine], OFFSET M_FinishRead
 
 done_with_commercial_menu_mod:	
 
+; some inlined S_Init contents
+
+mov  al, byte ptr ds:[_sfxVolume]
+call S_SetSfxVolume_
+mov  al, byte ptr ds:[_musicVolume]
+call S_SetMusicVolume_
+mov  byte ptr ds:[_mus_paused], 0
 
 
 LEAVE_MACRO
