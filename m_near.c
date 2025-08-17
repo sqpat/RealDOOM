@@ -723,10 +723,6 @@ int16_t                      saveCharIndex;  // which char we're editing
 int8_t                    saveOldString[SAVESTRINGSIZE];
 
 
-
-//int8_t                    savegamestrings[10*SAVESTRINGSIZE];
-
-
 int16_t           itemOn;                 // menu item skull is on
 
 

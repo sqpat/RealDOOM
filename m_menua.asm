@@ -143,6 +143,13 @@ REPT 100
     db 0
 ENDM
 
+_savegamestrings:
+REPT (10 * SAVESTRINGSIZE)
+    db 0
+ENDM
+
+
+
 
 _detailnames:
 db MENUPATCH_M_GDHIGH, MENUPATCH_M_GDLOW, MENUPATCH_M_MSGOFF
@@ -208,10 +215,10 @@ mov   dx, di ; zero dh...
 mov   ax, LOADDEF_X
 call  M_DrawSaveLoadBorder_
 
-mov   bx, si
+lea   bx, cs:[si + OFFSET _savegamestrings]
 mov   dx, di
 mov   ax, LOADDEF_X
-mov   cx, SAVEGAMESTRINGS_SEGMENT
+mov   cx, cs
 call  M_WriteText_
 add   si, SAVESTRINGSIZE
 add   di, LINEHEIGHT
@@ -341,7 +348,9 @@ xchg  ax, bx ; fp to bx
 mov   ax, si
 mov   cx, SAVESTRINGSIZE ; used in both loops.
 mul   cl
-mov   dx, SAVEGAMESTRINGS_SEGMENT
+mov   dx, cs
+add   ax,  OFFSET _savegamestrings
+
 
 test  bx, bx
 jne   good_savegame_file
@@ -415,8 +424,8 @@ mov   dx, di
 mov   ax, LOADDEF_X
 call  M_DrawSaveLoadBorder_
 
-mov   cx, SAVEGAMESTRINGS_SEGMENT
-mov   bx, si
+mov   cx, cs
+lea   bx, cs:[si + OFFSET _savegamestrings]
 mov   dx, di
 mov   ax, LOADDEF_X
 call  M_WriteText_
@@ -433,11 +442,11 @@ mov   al, SAVESTRINGSIZE
 mov   bl, byte ptr ds:[_saveSlot]
 mul   bl
 
-mov   dx, SAVEGAMESTRINGS_SEGMENT
+mov   dx, cx
 call  M_StringWidth_
 
 xchg  ax, si ; store.
-
+add   ax, OFFSET _savegamestrings
 mov   al, LINEHEIGHT
 mul   bl
 
@@ -474,7 +483,8 @@ mov   ah, SAVESTRINGSIZE
 mul   ah
 xchg  ax, bx
 mov   ax, dx
-mov   cx, SAVEGAMESTRINGS_SEGMENT
+add   bx, OFFSET _savegamestrings
+mov   cx, cs
 cbw  
 call  G_SaveGame_
 
@@ -509,12 +519,13 @@ xchg  bx, ax ; backup
 mov   al, SAVESTRINGSIZE
 mul   bl
 xchg  ax, si ; 
+add   si, OFFSET _savegamestrings
 mov   byte ptr ds:[_saveStringEnter], 1
 
 push  ds
 pop   es
-mov   ax, SAVEGAMESTRINGS_SEGMENT
-mov   ds, ax
+push  cs
+pop   ds
 mov   cx, SAVESTRINGSIZE / 2
 mov   di, OFFSET _saveOldString
 rep   movsw
@@ -527,18 +538,18 @@ pop   ds ; restore ds.
 lea   bx, [bp - 0100h]
 mov   ax, EMPTYSTRING
 mov   cx, ds
-mov   dx, SAVEGAMESTRINGS_SEGMENT
 call  getStringByIndex_
 
 lea   bx, [bp - 0100h]
 mov   cx, ds
-mov   ax, si
+lea   ax, cs:[si + OFFSET _savegamestrings]
+mov   dx, cs
 call  locallib_strcmp_   ; todo make this carry based?
-mov   dx, SAVEGAMESTRINGS_SEGMENT
+
 test  ax, ax
 jne   not_empty_string
-mov   es, dx
-mov   byte ptr es:[si], 0
+
+mov   byte ptr cs:[si + OFFSET _savegamestrings], 0
 not_empty_string:
 xchg  ax, si  ; retrieve once more
 call  M_Strlen_
@@ -650,8 +661,8 @@ call  getStringByIndex_
 mov   al, byte ptr ds:[_quickSaveSlot]
 mov   ah, SAVESTRINGSIZE
 mul   ah
-mov   dx, SAVEGAMESTRINGS_SEGMENT
-push  dx
+add   ax, OFFSET _savegamestrings
+push  cs
 push  ax
 mov   dx, ds
 mov   cx, ds
@@ -743,8 +754,8 @@ call  getStringByIndex_
 mov   al, byte ptr ds:[_quickSaveSlot]
 mov   ah, SAVESTRINGSIZE
 mul   ah
-mov   dx, SAVEGAMESTRINGS_SEGMENT
-push  dx
+add   ax, OFFSET _savegamestrings
+push  cs
 push  ax
 mov   dx, ds
 mov   cx, ds
@@ -1874,9 +1885,9 @@ xor   ax, ax
 jmp   exit_m_responder
 savestringenter_is_escape:
 mov   byte ptr ds:[_saveStringEnter], cl
-mov   di, bx 
-;mov   si, SAVEGAMESTRINGS_SEGMENT
-;mov   es, si
+lea   di, cs:[bx + OFFSET _savegamestrings]
+push  cs
+pop   es
 mov   cx, SAVESTRINGSIZE / 2
 mov   si, OFFSET _saveOldString
 rep   movsw
@@ -1915,13 +1926,11 @@ je    not_savestringenter
 xchg  ax, bx
 mov   al, SAVESTRINGSIZE
 mul   byte ptr ds:[_saveSlot]
-mov   dx, SAVEGAMESTRINGS_SEGMENT
-mov   es, dx
+
 xchg  ax, bx
 mov   di, word ptr ds:[_saveCharIndex]
 
 ; di is savecharindex
-; dx/es are SAVEGAMESTRINGS_SEGMENT
 ; al is key
 ; bx is (_saveSlot * savestringsize)
 ; cx is 0
@@ -1945,8 +1954,9 @@ xchg  ax, bx  ; bx had saveslot * savestringsize. now it gets the char.
 cmp   di, (SAVESTRINGSIZE-1)
 jge   exit_m_responder_return_1
 add   di, ax  ; di gets that added to offset for stosw later
+add   di, OFFSET _savegamestrings
 
-; mov   dx, SAVEGAMESTRINGS_SEGMENT
+mov   dx, cs
 call  M_StringWidth_
 
 cmp   ax, (SAVESTRINGSIZE-2)*8 ; 0B0h
@@ -1955,8 +1965,9 @@ jae   exit_m_responder_return_1
 
 xchg  ax, bx ; ax gets char
 
-mov   dx, SAVEGAMESTRINGS_SEGMENT
-mov   es, dx
+push  cs
+pop   es
+
 inc   word ptr ds:[_saveCharIndex]
 cbw
 stosw  ; also hits 0 in 2nd byte.

@@ -51,7 +51,7 @@
 #define bsp_code_area     ((byte __far*)(((uint32_t)bsp_code_segment) << 16))
 
 
-#define baselowermemoryaddress    (0x21900000)
+#define baselowermemoryaddress    (0x219F0000)
 // MaximumMusDriverSize
 
 #define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
@@ -112,8 +112,7 @@ struct sfxinfo_struct{
 #define textureheights     ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturetranslation, size_texturetranslation))
 #define rndtable           ((uint8_t __far*)            MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
 #define subsector_lines    ((uint8_t __far*)            MAKE_FULL_SEGMENT(rndtable, size_rndtable))
-#define savegamestrings    ((int8_t __far *)            MAKE_FULL_SEGMENT(subsector_lines , size_subsector_lines))
-#define base_lower_end     ((uint8_t __far*)            MAKE_FULL_SEGMENT(savegamestrings , size_savegamestrings))
+#define base_lower_end     ((uint8_t __far*)            MAKE_FULL_SEGMENT(subsector_lines , size_subsector_lines))
 
 
 #define sfx_data_segment              ((segment_t) ((int32_t)sfx_data  >> 16))
@@ -127,23 +126,21 @@ struct sfxinfo_struct{
 #define textureheights_segment        ((segment_t) ((int32_t)textureheights >> 16))
 #define rndtable_segment              ((segment_t) ((int32_t)rndtable >> 16))
 #define subsector_lines_segment       ((segment_t) ((int32_t)subsector_lines >> 16))
-#define savegamestrings_segment       ((segment_t) ((int32_t)savegamestrings >> 16))
 #define base_lower_end_segment        ((segment_t) ((int32_t)base_lower_end >> 16))
 
 #define FINE_SINE_ARGUMENT   finesine_segment
 #define FINE_COSINE_ARGUMENT finecosine_segment
 
 
-// sfxdata              318D:0000
+// sfxdata              319C:0000
 // sb_dmabuffer         ????:0000
-// finesine             31D6:0000
-// events               3C0A:0000
-// flattranslation      3C4A:0000
-// texturetranslation   3C14:0000
-// textureheights       3C4A:0000
-// rndtable             3C65:0000
-// subsector_lines      3C75:0000
-// savegamestrings      3CB1:0000
+// finesine             31E5:0000
+// events               3C19:0000
+// flattranslation      3C59:0000
+// texturetranslation   3C23:0000
+// textureheights       3C59:0000
+// rndtable             3C74:0000
+// subsector_lines      3C84:0000
 // base_lower_end       3CC0:0000
 //03CACh
 
@@ -166,19 +163,19 @@ struct sfxinfo_struct{
 
 
 
-//0x2190..
+//0x219F..
 /*
-sectors              2190:0000
-vertexes             22EC:0000
-sides                2483:0000
-lines                2991:0000
-lineflagslist        2B4A:0000
-subsectors           2BB9:0000
-nodes                2CA8:0000
-node_children        2E86:0000
-segs_linedefs        2F75:0000
-segs_sides           30D5:0000 
-scantokey            3185:0000
+sectors              219F:0000
+vertexes             22FB:0000
+sides                2492:0000
+lines                29A0:0000
+lineflagslist        2B59:0000
+subsectors           2BC8:0000
+nodes                2CB7:0000
+node_children        2E76:0000
+segs_linedefs        2F84:0000
+segs_sides           30E4:0000 
+scantokey            3194:0000
 
 
 
@@ -226,7 +223,6 @@ scantokey            3185:0000
 #define size_textureheights      (MAX_TEXTURES * sizeof(uint8_t))
 #define size_rndtable            256
 #define size_subsector_lines     (MAX_SUBSECTOR_LINES_SIZE)
-#define size_savegamestrings     (10 * SAVESTRINGSIZE)
 
 
 
