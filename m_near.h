@@ -1098,8 +1098,6 @@ extern menu_t  SaveDef;
 extern int8_t     menu_epi;
 
 
-extern int8_t    detailNames[2];
-extern int8_t    msgNames[2];
 
 
 

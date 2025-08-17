@@ -463,7 +463,6 @@ void __near M_Reload(void) {
 
 	uint16_t size = 0;
 	byte __far* dst = menugraphicspage0;
-	uint8_t pageoffset = 0;
  	int8_t menugraphics[NUM_MENU_ITEMS * 9];
 
 
@@ -480,11 +479,11 @@ void __near M_Reload(void) {
 	for (i = 0; i < count; i++) {
 		int16_t lump = W_GetNumForName(&menugraphics[i*9]);
 		uint16_t lumpsize = W_LumpLength(lump);
-		if (i == 27) { // (size + lumpsize) > 65535u) {
+
+		if (i == 30) { // (size + lumpsize) > 65535u) {
 			// repage
-			// F81C
+			// 0xFFE0
 			size = 0;
-			pageoffset += 4;
 			dst = menugraphicspage4;
 		}
 		W_CacheLumpNumDirect(lump, dst);

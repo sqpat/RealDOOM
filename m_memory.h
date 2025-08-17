@@ -861,7 +861,7 @@ skytexture         5400:0000
 
 
 // menugraphicspage0  5000:0000
-// [empty]            5000:F81C 
+// [empty]            5000:FFE0 
 // menugraphicspage4  6400:0000
 // menuoffsets        6EC7:0000
 // [empty]            6ECD:0000 ?

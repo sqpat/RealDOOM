@@ -91,10 +91,10 @@ EXTRN _usergame:BYTE
 EXTRN _showMessages:BYTE
 EXTRN _itemOn:BYTE
 EXTRN _message_dontfuckwithme:BYTE
-EXTRN _msgNames:BYTE
+
 EXTRN _mouseSensitivity:BYTE
 EXTRN _detailLevel:BYTE
-EXTRN _detailNames:BYTE
+
 EXTRN _screenSize:BYTE
 
 EXTRN _hu_font:WORD
@@ -133,52 +133,6 @@ ENDP
 
 
 
-MENUPATCH_M_DOOM    =  0
-MENUPATCH_M_RDTHIS  =  1
-MENUPATCH_M_OPTION  =  2
-MENUPATCH_M_QUITG   =  3
-MENUPATCH_M_NGAME   =  4
-MENUPATCH_M_SKULL1  =  5
-MENUPATCH_M_SKULL2  =  6
-MENUPATCH_M_THERMO  =  7
-MENUPATCH_M_THERMR  =  8
-MENUPATCH_M_THERMM  =  9
-MENUPATCH_M_THERML  =  10
-MENUPATCH_M_ENDGAM  =  11
-MENUPATCH_M_PAUSE   =  12
-MENUPATCH_M_MESSG   =  13
-MENUPATCH_M_MSGON   =  14
-MENUPATCH_M_MSGOFF  =  15
-MENUPATCH_M_EPISOD  =  16
-MENUPATCH_M_EPI1    =  17
-MENUPATCH_M_EPI2    =  18
-MENUPATCH_M_EPI3    =  19
-MENUPATCH_M_HURT    =  20
-MENUPATCH_M_JKILL   =  21
-MENUPATCH_M_ROUGH   =  22
-MENUPATCH_M_SKILL   =  23
-MENUPATCH_M_NEWG    =  24
-MENUPATCH_M_ULTRA   =  25
-MENUPATCH_M_NMARE   =  26
-MENUPATCH_M_SVOL    =  27
-MENUPATCH_M_OPTTTL  =  28
-MENUPATCH_M_SAVEG   =  29
-MENUPATCH_M_LOADG   =  30
-MENUPATCH_M_DISP    =  31
-MENUPATCH_M_MSENS   =  32
-MENUPATCH_M_GDHIGH  =  33
-MENUPATCH_M_GDLOW   =  34
-MENUPATCH_M_DETAIL  =  35
-MENUPATCH_M_DISOPT  =  36
-MENUPATCH_M_SCRNSZ  =  37
-MENUPATCH_M_SGTTL   =  38
-MENUPATCH_M_LGTTL   =  39
-MENUPATCH_M_SFXVOL  =  40
-MENUPATCH_M_MUSVOL  =  41
-MENUPATCH_M_LSLEFT  =  42
-MENUPATCH_M_LSCNTR  =  43
-MENUPATCH_M_LSRGHT  =  44
-MENUPATCH_M_EPI4    =  45
 
 
 _menu_string_underscore:
@@ -189,6 +143,15 @@ REPT 100
     db 0
 ENDM
 
+
+_detailnames:
+db MENUPATCH_M_GDHIGH, MENUPATCH_M_GDLOW, MENUPATCH_M_MSGOFF
+
+_msgNames:
+db MENUPATCH_M_MSGOFF, MENUPATCH_M_MSGON
+
+
+
 PROC    M_GetMenuPatch_ NEAR
 PUBLIC  M_GetMenuPatch_
 
@@ -197,7 +160,7 @@ push  bx
 cbw
 mov   bx, ax
 add   bx, ax
-cmp   al, 27   ; number of menu graphics in first menu page. Todo unhardcode?
+cmp   al, 30   ; number of menu graphics in first menu page. Todo unhardcode?
 mov   ax, MENUOFFSETS_SEGMENT ; todo use offset in cs?
 mov   es, ax
 mov   dx, MENUGRAPHICSPAGE0SEGMENT
@@ -1182,7 +1145,7 @@ call  V_DrawPatchDirect_
 
 xor   bx, bx
 mov   bl, byte ptr ds:[_detailLevel]
-mov   al, byte ptr ds:[bx + _detailNames]
+mov   al, byte ptr cs:[bx + _detailNames]
 call  M_GetMenuPatch_
 
 xchg  ax, bx
@@ -1195,7 +1158,7 @@ call  V_DrawPatchDirect_
 xor   bx, bx
 mov   bl, byte ptr ds:[_showMessages]
 
-mov   al, byte ptr ds:[bx + _msgNames]
+mov   al, byte ptr cs:[bx + _msgNames]
 call  M_GetMenuPatch_
 
 xchg  ax, bx

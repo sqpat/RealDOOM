@@ -778,12 +778,12 @@ void __near M_DrawReadThisRetail(void);
 
 
 menuitem_t MainMenu[]={
-    {1,4,M_NewGame,'n'},
-    {1,2,M_Options,'o'},
-    {1,30,M_LoadGame,'l'},
-    {1,29,M_SaveGame,'s'},
-    {1,1,M_ReadThis,'r'},
-    {1,3,M_QuitDOOM,'q'}
+    {1,MENUPATCH_M_NGAME,M_NewGame,'n'},
+    {1,MENUPATCH_M_OPTION,M_Options,'o'},
+    {1,MENUPATCH_M_LOADG,M_LoadGame,'l'},
+    {1,MENUPATCH_M_SAVEG,M_SaveGame,'s'},
+    {1,MENUPATCH_M_RDTHIS,M_ReadThis,'r'},
+    {1,MENUPATCH_M_QUITG,M_QuitDOOM,'q'}
 };
 
 menu_t  MainDef ={
@@ -807,10 +807,10 @@ menu_t  MainDef ={
 
 
 menuitem_t EpisodeMenu[]={
-    {1,17, M_Episode,'k'},
-    {1,18, M_Episode,'t'},
-    {1,19, M_Episode,'i'},
-    {1,45, M_Episode,'t'}
+    {1,MENUPATCH_M_EPI1, M_Episode,'k'},
+    {1,MENUPATCH_M_EPI2, M_Episode,'t'},
+    {1,MENUPATCH_M_EPI3, M_Episode,'i'},
+    {1,MENUPATCH_M_EPI4, M_Episode,'t'}
 };
 
 
@@ -826,11 +826,11 @@ menu_t  EpiDef ={
 
 
 menuitem_t NewGameMenu[]={
-    {1,21,       M_ChooseSkill, 'i'},
-    {1,22,       M_ChooseSkill, 'h'},
-    {1,20,       M_ChooseSkill, 'h'},
-    {1,25,       M_ChooseSkill, 'u'},
-    {1,26,       M_ChooseSkill, 'n'}
+    {1,MENUPATCH_M_JKILL,       M_ChooseSkill, 'i'},
+    {1,MENUPATCH_M_ROUGH,       M_ChooseSkill, 'h'},
+    {1,MENUPATCH_M_HURT,        M_ChooseSkill, 'h'},
+    {1,MENUPATCH_M_ULTRA,       M_ChooseSkill, 'u'},
+    {1,MENUPATCH_M_NMARE,       M_ChooseSkill, 'n'}
 };
 
 menu_t  NewDef ={
@@ -846,14 +846,14 @@ menu_t  NewDef ={
 
 
 menuitem_t OptionsMenu[]={
-    {1,11,      M_EndGame,'e'},
-    {1,13,       M_ChangeMessages,'m'},
-    {1,35,      M_ChangeDetail,'g'},
-    {2,37,      M_SizeDisplay,'s'},
+    {1,MENUPATCH_M_ENDGAM,      M_EndGame,'e'},
+    {1,MENUPATCH_M_MESSG,       M_ChangeMessages,'m'},
+    {1,MENUPATCH_M_DETAIL,      M_ChangeDetail,'g'},
+    {2,MENUPATCH_M_SCRNSZ,      M_SizeDisplay,'s'},
     {-1,-1,0},
-    {2,32,       M_ChangeSensitivity,'m'},
+    {2,MENUPATCH_M_MSENS,       M_ChangeSensitivity,'m'},
     {-1,-1,0},
-    {1,27,        M_Sound,'s'}
+    {1,MENUPATCH_M_SVOL,        M_Sound,'s'}
 };
 
 menu_t  OptionsDef ={
@@ -906,9 +906,9 @@ menu_t  ReadDef2 ={
 //
 
 menuitem_t SoundMenu[]={
-    {2,40,M_SfxVol,'s'},
+    {2,MENUPATCH_M_SFXVOL,M_SfxVol,'s'},
     {-1,-1,0},
-    {2,41,M_MusicVol,'m'},
+    {2,MENUPATCH_M_MUSVOL,M_MusicVol,'m'},
     {-1,-1,0}
 };
 
@@ -968,8 +968,6 @@ menu_t  SaveDef ={
 
 
 int8_t     menu_epi;
-int8_t    detailNames[2]       = {33, 34};
-int8_t    msgNames[2]          = {15, 14};
 
 
 
