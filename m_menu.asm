@@ -49,6 +49,7 @@ EXTRN S_SetMusicVolume_:FAR
 
 EXTRN V_DrawPatchDirect_:FAR
 EXTRN V_DrawFullscreenPatch_:FAR
+
 EXTRN getStringByIndex_:FAR
 EXTRN locallib_far_fread_:FAR
 EXTRN fclose_:FAR
@@ -66,7 +67,7 @@ EXTRN G_DeferedInitNew_:NEAR
 
 EXTRN locallib_strcmp_:FAR
 EXTRN combine_strings_:FAR
-EXTRN D_StartTitle_:FAR
+
 EXTRN locallib_strncpy_:FAR
 EXTRN locallib_strcpy_:FAR
 EXTRN combine_strings_near_:FAR
@@ -85,7 +86,8 @@ EXTRN Z_QuickMapByTaskNum_:FAR
 
 .DATA
 
-
+EXTRN _demosequence:BYTE
+EXTRN _advancedemo:BYTE
 EXTRN _savegameslot:BYTE
 EXTRN _savename:BYTE
 
@@ -1296,7 +1298,13 @@ mov   bx,  word ptr ds:[_currentMenu]
 push  word ptr ds:[_itemOn]
 pop   word ptr ds:[bx + MENU_T.menu_laston]
 mov   byte ptr ds:[_menuactive], 0
-call  D_StartTitle_
+;call  D_StartTitle_
+; inlined
+
+mov   byte ptr ds:[_gameaction], GA_NOTHING
+mov   byte ptr ds:[_demosequence], -1
+mov   byte ptr ds:[_advancedemo], 1
+
 pop   bx
 exit_endgame_response:
 ret   
