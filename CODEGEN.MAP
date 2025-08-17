@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/16 19:36:59
+Created on:       25/08/16 20:29:15
 Executable Image: codegen.exe
 creating a DOS executable
 
@@ -76,10 +76,10 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:bc38*     _filetolumpsize
 02d1:bc44*     _TaskServiceCount
 02d1:bc48*     _OldInt8
-02d1:bc4c*     _w_armor
-02d1:bc58*     _st_stuff_buf
-02d1:bc8c*     _w_health
-02d1:bc98*     _keys
+02d1:bc4c*     _st_stuff_buf
+02d1:bc80*     _w_health
+02d1:bc8c*     _keys
+02d1:bc98*     _w_armor
 02d1:bca4*     _faces
 02d1:bcf8+     _mousearray
 02d1:bcfc*     _starttime
@@ -121,18 +121,18 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:bdde*     _am_min_level_x
 02d1:bde0*     _am_min_level_y
 02d1:bde2*     _screen_viewport_height
-02d1:bde4*     _screen_viewport_width
-02d1:bde6*     _am_min_scale_mtof
-02d1:bde8*     _old_screen_viewport_width
-02d1:bdea*     _old_screen_botleft_x
-02d1:bdec*     _old_screen_botleft_y
-02d1:bdee*     _am_max_level_y
-02d1:bdf0*     _am_max_level_x
-02d1:bdf2*     _old_screen_viewport_height
-02d1:bdf4*     _skytexture
-02d1:bdf6*     _screen_topright_y
-02d1:bdf8*     _numpatches
-02d1:bdfa*     _screen_topright_x
+02d1:bde4*     _am_min_scale_mtof
+02d1:bde6*     _old_screen_viewport_width
+02d1:bde8*     _old_screen_botleft_x
+02d1:bdea*     _old_screen_botleft_y
+02d1:bdec*     _am_max_level_y
+02d1:bdee*     _am_max_level_x
+02d1:bdf0*     _old_screen_viewport_height
+02d1:bdf2*     _skytexture
+02d1:bdf4*     _screen_topright_y
+02d1:bdf6*     _numpatches
+02d1:bdf8*     _screen_topright_x
+02d1:bdfa*     _screen_viewport_width
 02d1:bdfc*     _screen_botleft_x
 02d1:bdfe*     _screen_botleft_y
 02d1:be00*     _numtextures
@@ -147,20 +147,20 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:be2c*     _TS_TimesInInterrupt
 02d1:be2d*     _menu_epi
 02d1:be2e*     _messageNeedsInput
-02d1:be2f*     _message_dontfuckwithme
-02d1:be30*     _message_counter
-02d1:be31*     _message_nottobefuckedwith
-02d1:be32*     _st_randomnumber
-02d1:be33*     _message_on
+02d1:be2f*     _message_counter
+02d1:be30*     _message_nottobefuckedwith
+02d1:be31*     _st_randomnumber
+02d1:be32*     _message_on
+02d1:be33*     _message_dontfuckwithme
 02d1:be34*     _do_st_refresh
 02d1:be35*     _st_statusbaron
 02d1:be36*     _updatedthisframe
-02d1:be37*     _st_firsttime
-02d1:be38*     _st_gamestate
-02d1:be39*     _d_episode
-02d1:be3a*     _secretexit
-02d1:be3b*     _d_skill
-02d1:be3c*     _d_map
+02d1:be37*     _st_gamestate
+02d1:be38*     _d_episode
+02d1:be39*     _secretexit
+02d1:be3a*     _d_skill
+02d1:be3b*     _d_map
+02d1:be3c*     _st_firsttime
 02d1:be3d*     _savegameslot
 02d1:be3e*     _usemouse
 02d1:be3f*     _mousebforward
@@ -175,33 +175,34 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:be48*     _mousebstrafe
 02d1:be49*     _key_down
 02d1:be4a*     _key_use
-02d1:be4b*     _key_right
-02d1:be4c*     _key_strafeleft
-02d1:be4d*     _borderdrawcount
-02d1:be4e*     _timingdemo
-02d1:be4f*     _numChannels
-02d1:be50*     _noblit
-02d1:be51*     _demorecording
-02d1:be52*     _singledemo
-02d1:be53*     _netdemo
+02d1:be4b*     _key_strafeleft
+02d1:be4c*     _borderdrawcount
+02d1:be4d*     _timingdemo
+02d1:be4e*     _numChannels
+02d1:be4f*     _noblit
+02d1:be50*     _demorecording
+02d1:be51*     _singledemo
+02d1:be52*     _netdemo
+02d1:be53*     _key_right
 02d1:be54*     _usegamma
 02d1:be55*     _usergame
 02d1:be56*     _mousepresent
 02d1:be57*     _novideo
 02d1:be58*     _inhelpscreens
-02d1:be59*     _quickSaveSlot
-02d1:be5a*     _eventtail
-02d1:be5b*     _startmap
-02d1:be5c*     _modifiedgame
-02d1:be5d*     _sfxVolume
-02d1:be5e*     _autostart
-02d1:be5f*     _showMessages
-02d1:be60*     _advancedemo
-02d1:be61*     _mouseSensitivity
-02d1:be62*     _startskill
-02d1:be63*     _screenSize
-02d1:be64*     _eventhead
-02d1:be65*     _detailLevel
+02d1:be59*     _eventtail
+02d1:be5a*     _startmap
+02d1:be5b*     _modifiedgame
+02d1:be5c*     _sfxVolume
+02d1:be5d*     _autostart
+02d1:be5e*     _showMessages
+02d1:be5f*     _advancedemo
+02d1:be60*     _mouseSensitivity
+02d1:be61*     _screenSize
+02d1:be62*     _eventhead
+02d1:be63*     _quickSaveSlot
+02d1:be64*     _detailLevel
+02d1:be65*     _startepisode
+02d1:be66*     _musicVolume
 02d1:8cb0*     _singletics
 02d1:8cb1*     _skytextureloaded
 02d1:8cb2*     _am_cheating
@@ -259,10 +260,9 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:8e06*     _sfx_priority
 02d1:8e73*     _FORCE_5000_LUMP_LOAD
 02d1:8e74*     _lastpcspeakernotevalue
-02d1:be66*     _startepisode
-02d1:be67*     _musicVolume
-02d1:be68*     _demosequence
-02d1:be69*     _snd_SfxVolume
+02d1:be67*     _demosequence
+02d1:be68*     _snd_SfxVolume
+02d1:be69*     _startskill
 02d1:be6a*     _respawnparm
 Module: codegen.obj(C:\REALDOOM\build\tools\codegen\codegen.c)
 0000:0000      main_
@@ -532,4 +532,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  f8a0 (63648.)
 Entry point address: 0000:0446
-Link time: 00:00.65
+Link time: 00:00.10

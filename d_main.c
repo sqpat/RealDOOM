@@ -583,15 +583,7 @@ int16_t __far locallib_strcasecmp(char __far *str1, char __far *str2){
 */
 
 
-void __far makesavegamename(char __far *name, int8_t i){
 
-        int8_t numstring[2];
-        numstring[0] = '0' + i;
-        numstring[1] = '\0';
-        combine_strings(name, SAVEGAMENAME, numstring);
-        combine_strings(name, name, ".dsg");
-
-}
 
 patch_t __far* M_GetMenuPatch(int16_t i);
 

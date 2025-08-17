@@ -331,7 +331,7 @@ cbw
 mov   dx, ds
 mov   bx, ax
 lea   ax, [bp - 0100h]
-call  M_Makesavegamename  ; todo make local
+call  M_MakeSaveGameName_  ; todo make local
 
 ; call  G_LoadGame_
 ; inlined G_LoadGame_
@@ -378,7 +378,7 @@ loop_next_savestring:
 mov   bx, si
 mov   dx, ss
 lea   ax, [bp - 0100h]
-call  M_Makesavegamename
+call  M_MakeSaveGameName_
 mov   dx, OFFSET _fopen_rb_argument
 lea   ax, [bp - 0100h]
 call  fopen_
@@ -2858,8 +2858,8 @@ db "doomsav.dsg", 0
 
 
 
-PROC    M_Makesavegamename NEAR
-PUBLIC  M_Makesavegamename
+PROC    M_MakeSaveGameName_ NEAR
+PUBLIC  M_MakeSaveGameName_
 push   di
 push   si
 
@@ -2886,6 +2886,44 @@ pop    si
 pop    di
 ret
 ENDP
+
+PROC   M_LoadFromSaveGame_ FAR
+PUBLIC M_LoadFromSaveGame_  
+
+push  bx
+push  cx
+push  dx
+push  bp
+mov   bp, sp
+sub   sp, 20
+
+
+sub   al, 48  ; ascii 0
+xchg  ax, bx  ; digit
+lea   ax, [bp - 20]
+mov   dx, ds
+
+call  M_MakeSaveGameName_
+
+;call G_LoadGame_
+lea   bx, [bp - 20]
+mov   ax, OFFSET _savename
+mov   dx, ds
+mov   cx, ss
+
+call  locallib_strcpy_
+
+mov   byte ptr ds:[_gameaction], GA_LOADGAME
+
+LEAVE_MACRO
+pop   dx
+pop   cx
+pop   bx
+
+retf
+ENDP
+
+
 
 
 

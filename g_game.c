@@ -715,10 +715,6 @@ void __near G_DoCompleted (void)  {
 // todo make larger?
 
 
-void __far G_LoadGame (int8_t* name)  { 
-    strcpy (savename, name); 
-    gameaction = ga_loadgame; 
-} 
  
 #define VERSIONSIZE             16 
 

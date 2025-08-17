@@ -38,9 +38,6 @@ void __near G_DeferedInitNew (skill_t skill, int8_t episode, int8_t map);
 
 void __far G_DeferedPlayDemo (int8_t* demo);
 
-// Can be called by the startup code or M_Responder,
-// calls P_SetupLevel or W_EnterWorld.
-void __far G_LoadGame (int8_t* name);
 
 
 // Called by M_Responder.
