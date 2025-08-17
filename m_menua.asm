@@ -1094,7 +1094,7 @@ push  bp
 mov   bp, sp
 sub   sp, 0100h
 
-cmp   al, 4
+cmp   al, SK_NIGHTMARE
 jne   not_nightmare
 lea   bx, [bp - 0100h]
 mov   ax, NIGHTMARE
@@ -1973,16 +1973,15 @@ je    savestringenter_is_enter
 savestringenter_do_other_character:
 call  M_ToUpper_
 cmp   al, 32
-jl    exit_m_responder_return_1
+jb    exit_m_responder_return_1
 cmp   al, 127
-jg    exit_m_responder_return_1
+ja    exit_m_responder_return_1
 
 ; saveCharIndex < (SAVESTRINGSIZE-1) &&
-
-cmp   ax, (SAVESTRINGSIZE-1)
-jl    exit_m_responder_return_1
 xchg  ax, bx  ; bx had saveslot * savestringsize. now it gets the char.
-mov   di, ax  ; copy this offset to di
+cmp   di, (SAVESTRINGSIZE-1)
+jge   exit_m_responder_return_1
+add   di, ax  ; di gets that added to offset for stosw later
 
 ; mov   dx, SAVEGAMESTRINGS_SEGMENT
 call  M_StringWidth_
@@ -1993,11 +1992,10 @@ jae   exit_m_responder_return_1
 
 xchg  ax, bx ; ax gets char
 
-; mov   dx, SAVEGAMESTRINGS_SEGMENT
+mov   dx, SAVEGAMESTRINGS_SEGMENT
 mov   es, dx
-add   di, word ptr ds:[_saveCharIndex]
 inc   word ptr ds:[_saveCharIndex]
-xor   ah, ah
+cbw
 stosw  ; also hits 0 in 2nd byte.
 exit_m_responder_return_1:
 mov   al, 1
@@ -2174,7 +2172,6 @@ play_sound_and_exit_m_responder_return_1:
 xor   ax, ax
 call  S_StartSound_
 
-exit_m_responder_return_1_2:
 mov   al, 1
 
 pop   di
@@ -2419,8 +2416,8 @@ PUBLIC  M_Drawer_
 PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
-sub   sp, 02Ah
-push  ax       ; isfromwipe - 2Ch
+sub   sp, 02Ch
+push  ax       ; isfromwipe - 2Eh
 xor   ax, ax
 mov   byte ptr ds:[_inhelpscreens], al  ; 0
 cmp   byte ptr ds:[_messageToPrint], al ; 0
@@ -2479,7 +2476,7 @@ xchg  ax, cx
 
 
 mov   ah, 0Ah; newline
-lea   di, [bp - 02Ah]
+lea   di, [bp - 02Ch]
 mov   bx, di
 copy_next_message_char:
 lodsb
@@ -2496,7 +2493,7 @@ push  ss
 pop   ds
 
 
-mov   ax, bx ;  bp - 02Ah
+mov   ax, bx ;  bp - 02Ch
 mov   dx, ds
 call  M_StringWidth_
 
@@ -2586,7 +2583,7 @@ sub   dx, 5
 lea   ax, [di - SKULLXOFF]
 call  V_DrawPatchDirect_
 do_exit_check:
-cmp   byte ptr [bp - 2Ch], 0   ; isFromWipe
+cmp   byte ptr [bp - 2Eh], 0   ; isFromWipe
 jne   do_quickmap_wipe_exit
 do_quickmap_physics_exit:
 call  Z_QuickMapPhysics_

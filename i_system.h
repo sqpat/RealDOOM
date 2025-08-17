@@ -112,7 +112,7 @@ boolean I_SoundIsPlaying(int8_t handle);
 
 
 // Takes full 8 bit values.
-void __near I_SetPalette(int8_t paletteNumber);
+void __far I_SetPalette(int8_t paletteNumber);
 
 // Wait for vertical retrace or pause a bit.
 void __near I_WaitVBL(int16_t count);

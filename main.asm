@@ -1851,7 +1851,7 @@ ENDP
 
 ;void __near I_SetPalette(int8_t paletteNumber) {
 
-PROC I_SetPalette_  NEAR
+PROC I_SetPalette_  FAR
 PUBLIC I_SetPalette_
 
 PALETTEBYTES_SEGMENT = 09000h
@@ -1910,7 +1910,7 @@ call  Z_QuickMapByTaskNum_
 
 POPA_NO_AX_OR_BP_MACRO
 just_exit:
-ret   
+retf   
 ENDP
 
 
