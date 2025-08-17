@@ -2283,6 +2283,20 @@ ret
 
 ENDP
 
+PROC    M_Ticker_    NEAR
+PUBLIC  M_Ticker_
+
+
+dec   word ptr ds:[_skullAnimCounter]
+jnle   exit_m_ticker
+xor   byte ptr ds:[_whichSkull], 1
+mov   word ptr ds:[_skullAnimCounter], 8
+exit_m_ticker:
+ret   
+
+
+
+ENDP
 
 
 

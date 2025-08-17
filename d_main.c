@@ -107,14 +107,23 @@ boolean __near G_Responder (event_t __far* ev);
 // Send all the events of the given timestamp down the responder chain
 //
 void __near D_ProcessEvents (void) {
-    event_t __far*     ev;
-	for ( ; eventtail != eventhead ; eventtail = (++eventtail)&(MAXEVENTS-1) ) {
-		ev = &events[eventtail];
-		if (M_Responder(ev)) {
-			continue;
+	if (eventtail != eventhead){
+	    
+		int8_t oldtask = currenttask;
+		Z_QuickMapMenu();
+
+
+		for ( ; eventtail != eventhead ; eventtail = (++eventtail)&(MAXEVENTS-1) ) {
+			event_t __far*     ev = &events[eventtail];
+			if (M_Responder(ev)) {
+				continue;
+			}
+
+			G_Responder (ev);
 		}
 
-		G_Responder (ev);
+		Z_QuickMapByTaskNum(oldtask);
+
 	}
 }
 

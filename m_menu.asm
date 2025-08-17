@@ -69,9 +69,8 @@ EXTRN combine_strings_:FAR
 EXTRN D_StartTitle_:FAR
 EXTRN locallib_strncpy_:FAR
 EXTRN locallib_strcpy_:FAR
-
-
 EXTRN combine_strings_near_:FAR
+
 EXTRN I_Quit_:FAR
 EXTRN I_WaitVBL_:FAR
 EXTRN S_StartSound_:FAR
@@ -2313,13 +2312,10 @@ cmp   word ptr ds:[si + MENUITEM_T.menuitem_routine], 0
 je    exit_m_responder_return_1_3
 cmp   byte ptr ds:[si + MENUITEM_T.menuitem_status], 2
 jne   exit_m_responder_return_1_3
-mov   bl, byte ptr ds:[_currenttask]
-call  Z_QuickMapMenu_  ; todo remove
+
 xchg  ax, cx
 call  word ptr ds:[si + MENUITEM_T.menuitem_routine]
-xchg  ax, bx
-cbw
-call  Z_QuickMapByTaskNum_
+
 
 play_stnmov_sound_and_exit_m_responder_return_1:
 mov   dx, SFX_STNMOV
@@ -2375,8 +2371,7 @@ mov   dx, SFX_SWTCHX
 jmp   play_sound_and_exit_m_responder_return_1
 handle_rest_of_enter_case:
 mov   word ptr ds:[bx + MENU_T.menu_laston], dx
-mov   bl, byte ptr ds:[_currenttask]
-call  Z_QuickMapMenu_  ; todo remove
+
 
 cmp   byte ptr ds:[si + MENUITEM_T.menuitem_status], 2
 jne   status_not_2
@@ -2388,9 +2383,7 @@ xchg  ax, dx
 mov   dx, SFX_PISTOL
 do_enter_call:
 call  word ptr ds:[si + MENUITEM_T.menuitem_routine]
-xchg  ax, bx
-cbw
-call  Z_QuickMapByTaskNum_
+
 jmp   play_sound_and_exit_m_responder_return_1
 do_key_f11:
 mov   al, byte ptr ds:[_usegamma]
@@ -2551,7 +2544,7 @@ mov   bx, word ptr ds:[_currentMenu]
 cmp   byte ptr ds:[_menuactive], al ; 0
 je    do_m_drawer_exit
 
-call  Z_QuickMapMenu_
+call  Z_QuickMapMenu_ ; todo remove
 cmp   word ptr ds:[bx + MENU_T.menu_routine], 0
 je    no_menu_routine
 call  word ptr ds:[bx + MENU_T.menu_routine]
@@ -2645,21 +2638,6 @@ ret
 
 ENDP
 
-; todo inline this wherever its used..
-PROC    M_Ticker_    NEAR
-PUBLIC  M_Ticker_
-
-
-dec   word ptr ds:[_skullAnimCounter]
-jnle   exit_m_ticker
-xor   byte ptr ds:[_whichSkull], 1
-mov   word ptr ds:[_skullAnimCounter], 8
-exit_m_ticker:
-ret   
-
-
-
-ENDP
 
 
 ; copy string from cs:ax to ds:_filename_argument
