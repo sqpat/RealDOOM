@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/16 01:59:25
+Created on:       25/08/16 02:01:22
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -43,9 +43,8 @@ am_map_TEXT            CODE           AUTO           02e7:1f20       000012b1
 st_stuff_TEXT          CODE           AUTO           02e7:31e0       00000b97
 hu_stuff_TEXT          CODE           AUTO           02e7:3d80       000001e0
 hu_lib_TEXT            CODE           AUTO           02e7:3f60       000001c4
-m_menu_TEXT            CODE           AUTO           02e7:4130       00000000
-M_MENUA_TEXT           CODE           AUTO           02e7:4130       00000f31
-D_ALGO_TEXT            CODE           AUTO           02e7:5062       0000008c
+M_MENU_TEXT            CODE           AUTO           02e7:4124       00000f31
+D_ALGO_TEXT            CODE           AUTO           02e7:5056       0000008c
 dmx_TEXT               CODE           AUTO           02e7:50f0       000001b8
 D_INT_TEXT             CODE           AUTO           02e7:52a8       00000176
 MEMORY_TEXT            CODE           AUTO           02e7:541e       00000000
@@ -513,65 +512,65 @@ Module: hu_lib.obj(C:\REALDOOM\hu_lib.c)
 02e7:3fb0      HUlib_drawTextLine_
 02e7:402e      HUlib_eraseTextLine_
 02e7:40bc      HUlib_addMessageToSText_
-Module: m_menua.obj(m_menua.ASM)
-02e7:4ba4*     M_StringHeight_
-02e7:4b68*     M_StringWidth_
-02e7:4478      M_SaveSelect_
-02e7:42a5      M_DrawLoad_
-02e7:4a5e      M_ChangeDetail_
-02e7:4367      M_LoadGame_
-02e7:444c*     M_DoSave_
-02e7:4c5b      M_Responder_
-02e7:44d6      M_SaveGame_
-02e7:46b1      M_DrawSound_
-02e7:428b      M_GetMenuPatch_
-02e7:495f      M_ReadThis2_
-02e7:47ce      M_ChooseSkill_
-02e7:48ce      M_Options_
-02e7:504f      M_Ticker_
-02e7:4796      M_DrawEpisode_
-02e7:4b2a*     M_StartMessage_
-02e7:469f      M_DrawReadThisRetail_
-02e7:49c7      M_QuitDOOM_
-02e7:4a40      M_ChangeSensitivity_
-02e7:477b      M_NewGame_
-02e7:48dd      M_ChangeMessages_
-02e7:45f6*     M_QuickLoad_
-02e7:4717      M_MusicVol_
-02e7:490d      M_EndGame_
-02e7:451f*     M_QuickSaveResponse_
-02e7:474e      M_DrawNewGame_
-02e7:46eb      M_Sound_
-02e7:4bd4*     M_WriteText_
-02e7:4f45      M_Drawer_
-02e7:4949      M_ReadThis_
-02e7:4810      M_Episode_
-02e7:4537*     M_QuickSave_
-02e7:48f1*     M_EndGameResponse_
-02e7:4375*     M_ReadSaveStrings_
-02e7:46fa      M_SfxVol_
-02e7:4a86      M_SizeDisplay_
-02e7:4f2a      M_StartControlPanel_
-02e7:4ab5*     M_DrawThermo_
-02e7:433e      M_LoadSelect_
-02e7:5061*     M_MENU_ENDMARKER_
-02e7:4130*     M_MENU_STARTMARKER_
-02e7:42e7*     M_DrawSaveLoadBorder_
-02e7:4860      M_DrawOptions_
-02e7:498d*     M_QuitResponse_
-02e7:45de*     M_QuickLoadResponse_
-02e7:43dc      M_DrawSave_
-02e7:47b0*     M_VerifyNightmare_
-02e7:4734      M_DrawMainMenu_
-02e7:467b      M_DrawReadThis1_
-02e7:468d      M_DrawReadThis2_
-02e7:496e      M_FinishReadThis_
+Module: m_menu.obj(m_menu.ASM)
+02e7:4b98*     M_StringHeight_
+02e7:4b5c*     M_StringWidth_
+02e7:446c      M_SaveSelect_
+02e7:4299      M_DrawLoad_
+02e7:4a52      M_ChangeDetail_
+02e7:435b      M_LoadGame_
+02e7:4440*     M_DoSave_
+02e7:4c4f      M_Responder_
+02e7:44ca      M_SaveGame_
+02e7:46a5      M_DrawSound_
+02e7:427f      M_GetMenuPatch_
+02e7:4953      M_ReadThis2_
+02e7:47c2      M_ChooseSkill_
+02e7:48c2      M_Options_
+02e7:5043      M_Ticker_
+02e7:478a      M_DrawEpisode_
+02e7:4b1e*     M_StartMessage_
+02e7:4693      M_DrawReadThisRetail_
+02e7:49bb      M_QuitDOOM_
+02e7:4a34      M_ChangeSensitivity_
+02e7:476f      M_NewGame_
+02e7:48d1      M_ChangeMessages_
+02e7:45ea*     M_QuickLoad_
+02e7:470b      M_MusicVol_
+02e7:4901      M_EndGame_
+02e7:4513*     M_QuickSaveResponse_
+02e7:4742      M_DrawNewGame_
+02e7:46df      M_Sound_
+02e7:4bc8*     M_WriteText_
+02e7:4f39      M_Drawer_
+02e7:493d      M_ReadThis_
+02e7:4804      M_Episode_
+02e7:452b*     M_QuickSave_
+02e7:48e5*     M_EndGameResponse_
+02e7:4369*     M_ReadSaveStrings_
+02e7:46ee      M_SfxVol_
+02e7:4a7a      M_SizeDisplay_
+02e7:4f1e      M_StartControlPanel_
+02e7:4aa9*     M_DrawThermo_
+02e7:4332      M_LoadSelect_
+02e7:5055*     M_MENU_ENDMARKER_
+02e7:4124*     M_MENU_STARTMARKER_
+02e7:42db*     M_DrawSaveLoadBorder_
+02e7:4854      M_DrawOptions_
+02e7:4981*     M_QuitResponse_
+02e7:45d2*     M_QuickLoadResponse_
+02e7:43d0      M_DrawSave_
+02e7:47a4*     M_VerifyNightmare_
+02e7:4728      M_DrawMainMenu_
+02e7:466f      M_DrawReadThis1_
+02e7:4681      M_DrawReadThis2_
+02e7:4962      M_FinishReadThis_
 Module: d_algo.obj(d_algo.ASM)
-02e7:50d2      hackDSBack_
-02e7:50ee*     D_ALGO_END_
-02e7:508b      zeroConventional_
-02e7:5062      resetDS_
-02e7:506a      hackDS_
+02e7:50c6      hackDSBack_
+02e7:50e2*     D_ALGO_END_
+02e7:507f      zeroConventional_
+02e7:5056      resetDS_
+02e7:505e      hackDS_
 Module: dmx.obj(C:\REALDOOM\dmx.c)
 02e7:50f0*     TS_SetTimerToMaxTaskRate_
 02e7:5104+     playpcspeakernote_
@@ -1071,4 +1070,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  00013250 (78416.)
 Entry point address: 0b42:3996
-Link time: 00:00.65
+Link time: 00:00.20
