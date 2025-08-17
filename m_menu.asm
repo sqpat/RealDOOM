@@ -61,8 +61,7 @@ EXTRN W_LumpLength_:FAR
 EXTRN W_GetNumForName_:FAR
 EXTRN W_CacheLumpNumDirect_:FAR
 
-EXTRN G_LoadGame_:FAR
-EXTRN G_SaveGame_:FAR
+
 EXTRN G_DeferedInitNew_:NEAR
 
 EXTRN locallib_strcmp_:FAR
@@ -88,8 +87,8 @@ EXTRN Z_QuickMapByTaskNum_:FAR
 .DATA
 
 
-
-
+EXTRN _savegameslot:BYTE
+EXTRN _savename:BYTE
 
 EXTRN _usegamma:BYTE
 EXTRN _inhelpscreens:BYTE
@@ -324,6 +323,7 @@ PUBLIC  M_LoadSelect_
 
 
 push  bx
+push  cx
 push  dx
 push  bp
 mov   bp, sp
@@ -333,11 +333,21 @@ mov   dx, ds
 mov   bx, ax
 lea   ax, [bp - 0100h]
 call  makesavegamename_  ; todo make local
-lea   ax, [bp - 0100h]
-call  G_LoadGame_
+
+; call  G_LoadGame_
+; inlined G_LoadGame_
+
+mov   ax, OFFSET _savename
+mov   dx, ds
+mov   cx, ss
+lea   bx, [bp - 0100h]
+call  locallib_strcpy_
+
+mov   byte ptr ds:[_gameaction], GA_LOADGAME
 mov   byte ptr ds:[_menuactive], 0
 LEAVE_MACRO 
 pop   dx
+pop   cx
 pop   bx
 ret   
 
@@ -506,27 +516,38 @@ ENDP
 PROC    M_DoSave_ NEAR
 PUBLIC  M_DoSave_
 
-push  bx
-push  cx
-push  dx
-mov   dx, ax
-mov   ah, SAVESTRINGSIZE
-mul   ah
-xchg  ax, bx
-mov   ax, dx
-add   bx, OFFSET _savegamestrings
-mov   cx, cs
-cbw  
-call  G_SaveGame_
+PUSHA_NO_AX_OR_BP_MACRO
 
-mov   byte ptr ds:[_menuactive], 0
+mov   byte ptr ds:[_savegameslot], al
 cmp   byte ptr ds:[_quickSaveSlot], -2
 jne   dont_update_quicksaveslot
-mov   byte ptr ds:[_quickSaveSlot], dl
+mov   byte ptr ds:[_quickSaveSlot], al
 dont_update_quicksaveslot:
-pop   dx
-pop   cx
-pop   bx
+
+mov   ah, SAVESTRINGSIZE
+mul   ah
+xchg  ax, si
+add   si, OFFSET _savegamestrings
+
+;call  G_SaveGame_
+; inlined
+mov   cx, SAVESTRINGSIZE / 2
+push  ds
+pop   es
+push  cs
+pop   ds
+
+mov   di, OFFSET _savedescription
+
+rep   movsw
+
+push  ss
+pop   ds
+
+mov   byte ptr ds:[_sendsave], 1
+
+mov   byte ptr ds:[_menuactive], 0
+POPA_NO_AX_OR_BP_MACRO
 ret   
 
 

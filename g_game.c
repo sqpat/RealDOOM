@@ -809,6 +809,7 @@ void __near G_DoLoadGame (void)  {
 // Called by the menu task.
 // Description is a 24 byte text string 
 //
+/*
 void __far G_SaveGame(int8_t   slot, int8_t __far* description ) { 
     int8_t i;
     savegameslot = slot; 
@@ -824,7 +825,7 @@ void __far G_SaveGame(int8_t   slot, int8_t __far* description ) {
     
     sendsave = true; 
 } 
-
+*/
 
 void __near G_DoSaveGame (void)  { 
 	
