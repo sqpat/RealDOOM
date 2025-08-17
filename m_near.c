@@ -697,7 +697,6 @@ int16_t	t6text = T6TEXT;
 
 
 // 1 = message to be printed
-uint8_t                     messageToPrint;
 // ...and here is the message string!
 // int8_t                   menu_messageString[105];
 
@@ -715,12 +714,7 @@ void    (__near *messageRoutine)(int16_t response);
 
 
 
-// we are going to be entering a savegame string
-int8_t                      saveStringEnter;
-int8_t                      saveSlot;       // which slot to save in
-int16_t                      saveCharIndex;  // which char we're editing
 // old save description before edit
-int8_t                    saveOldString[SAVESTRINGSIZE];
 
 
 int16_t           itemOn;                 // menu item skull is on

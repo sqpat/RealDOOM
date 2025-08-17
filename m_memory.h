@@ -839,21 +839,24 @@ skytexture         5400:0000
 //#define armsbg_patch ((byte __far *)0x7000E668u)
 
 //#define armsbg  58984u
+#define NUM_MENU_ITEMS  46
 
 
 #define size_menugraphics      0x0000
 // note this is still gross.
-#define size_menugraphcispage4 0xAC64
+#define size_menugraphcispage4 0x92B4
 // and this is still gross too. we could move it deeper in the page frame if necessary?
 #define size_menuoffsets    ((sizeof(uint16_t) * NUM_MENU_ITEMS))
 
 #define menugraphicspage0   (byte __far* )0x50000000
 #define menugraphicspage4   (byte __far* )0x64000000
 #define menuoffsets         ((uint16_t __far*)  MAKE_FULL_SEGMENT(menugraphicspage4, size_menugraphcispage4 ))
+#define end_menu            ((uint16_t __far*)  MAKE_FULL_SEGMENT(menuoffsets, size_menuoffsets ))
 
 #define menugraphicspage0segment  ((segment_t) ((int32_t)menugraphicspage0 >> 16))
 #define menugraphicspage4segment  ((segment_t) ((int32_t)menugraphicspage4 >> 16))
 #define menuoffsets_segment       ((segment_t) ((int32_t)menuoffsets >> 16))
+#define end_menu_segment          ((segment_t) ((int32_t)end_menu >> 16))
 
 
 // menugraphicspage0  5000:0000

@@ -1037,15 +1037,11 @@ extern int16_t	t6text;
 #endif
 
 
-extern uint8_t  messageToPrint;
 // extern int8_t   menu_messageString[105];
 extern int16_t  messageLastMenuActive;
 extern boolean  messageNeedsInput;
 extern void     (__near *messageRoutine)(int16_t response);
-extern int8_t   saveStringEnter;
-extern int8_t   saveSlot;       // which slot to save in
-extern int16_t   saveCharIndex;  // which char we're editing
-extern int8_t   saveOldString[SAVESTRINGSIZE];
+
 extern int16_t  itemOn;                 // menu item skull is on
 
 extern menu_t   __near* currentMenu;      

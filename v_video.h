@@ -39,7 +39,6 @@
 
  
 
-#define NUM_MENU_ITEMS  46
 
  
 

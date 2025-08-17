@@ -73,10 +73,8 @@ EXTRN Z_QuickMapByTaskNum_:FAR
 .DATA
 
 
-EXTRN _saveSlot:BYTE
-EXTRN _saveCharIndex:WORD
-EXTRN _saveStringEnter:BYTE
-EXTRN _saveOldString:BYTE
+
+
 
 EXTRN _usegamma:BYTE
 EXTRN _inhelpscreens:BYTE
@@ -99,9 +97,6 @@ EXTRN _screenSize:BYTE
 
 EXTRN _hu_font:WORD
 
-EXTRN _messageToPrint:BYTE
-EXTRN _messageNeedsInput:BYTE
-EXTRN _messageLastMenuActive:WORD
 EXTRN _currentMenu:WORD
 EXTRN _messageRoutine:WORD
 
@@ -148,6 +143,24 @@ REPT (10 * SAVESTRINGSIZE)
     db 0
 ENDM
 
+_saveOldString:
+REPT SAVESTRINGSIZE
+    db 0
+ENDM
+
+_saveCharIndex:
+dw  0
+_messageLastMenuActive:
+dw  0
+
+_saveSlot:
+db  0
+_saveStringEnter:
+db  0
+_messageToPrint:
+db  0
+_messageNeedsInput:
+db  0
 
 
 
@@ -435,11 +448,11 @@ add   di, LINEHEIGHT
 cmp   si, (LOAD_END * SAVESTRINGSIZE)
 jl    loop_draw_next_save_bar
 
-cmp   byte ptr ds:[_saveStringEnter], 0
+cmp   byte ptr cs:[_saveStringEnter], 0
 je    exit_drawsave
 
 mov   al, SAVESTRINGSIZE
-mov   bl, byte ptr ds:[_saveSlot]
+mov   bl, byte ptr cs:[_saveSlot]
 mul   bl
 add   ax, OFFSET _savegamestrings
 
@@ -515,14 +528,14 @@ push  bp
 mov   bp, sp
 sub   sp, 0100h
 
-mov   byte ptr ds:[_saveSlot], al
+mov   byte ptr cs:[_saveSlot], al
 mov   ah, SAVESTRINGSIZE
 mul   ah
 add   ax, OFFSET _savegamestrings
 xchg  ax, si ; 
-mov   byte ptr ds:[_saveStringEnter], 1
+mov   byte ptr cs:[_saveStringEnter], 1
 
-push  ds
+push  cs
 pop   es
 push  cs
 pop   ds
@@ -554,7 +567,7 @@ not_empty_string:
 xchg  ax, si  ; retrieve once more
 mov   dx, cs
 call  M_Strlen_
-mov   word ptr ds:[_saveCharIndex], ax
+mov   word ptr cs:[_saveCharIndex], ax
 LEAVE_MACRO 
 POPA_NO_AX_OR_BP_MACRO
 ret   
@@ -1644,14 +1657,14 @@ PUBLIC  M_StartMessage_
 push  cx
 
 mov   word ptr ds:[_messageRoutine], dx
-mov   byte ptr ds:[_messageNeedsInput], bl
-mov   byte ptr ds:[_messageToPrint], 1
+mov   byte ptr cs:[_messageNeedsInput], bl
+mov   byte ptr cs:[_messageToPrint], 1
 mov   byte ptr ds:[_menuactive], 1
 xchg  ax, bx  ; bx gets string ptr.
 
 mov   al, byte ptr ds:[_menuactive]
 cbw  
-mov   word ptr ds:[_messageLastMenuActive], ax
+mov   word ptr cs:[_messageLastMenuActive], ax
 
 mov   dx, cs
 mov   cx, ds
@@ -1883,13 +1896,17 @@ exit_m_responder_return_false:
 xor   ax, ax
 jmp   exit_m_responder
 savestringenter_is_escape:
-mov   byte ptr ds:[_saveStringEnter], cl
+mov   byte ptr cs:[_saveStringEnter], cl
 mov   di, bx
 push  cs
 pop   es
+push  cs
+pop   ds
 mov   cx, SAVESTRINGSIZE / 2
 mov   si, OFFSET _saveOldString
 rep   movsw
+push  ss
+pop   ds
 
 jmp   exit_m_responder_return_1
 
@@ -1898,7 +1915,7 @@ cmp   di, cx ; 0
 jle   exit_m_responder_return_1
 
 dec   di
-mov   word ptr ds:[_saveCharIndex], di
+mov   word ptr cs:[_saveCharIndex], di
 mov   byte ptr cs:[bx+di], cl ; 0
 jmp   exit_m_responder_return_1
 
@@ -1921,14 +1938,14 @@ mov   ax, word ptr es:[si + 1]
 no_char:
 cmp   al, -1
 je    exit_m_responder_return_false
-cmp   byte ptr ds:[_saveStringEnter], cl ; 0
+cmp   byte ptr cs:[_saveStringEnter], cl ; 0
 je    not_savestringenter
 xchg  ax, bx
 mov   al, SAVESTRINGSIZE
-mul   byte ptr ds:[_saveSlot]
+mul   byte ptr cs:[_saveSlot]
 add   ax, OFFSET _savegamestrings
 xchg  ax, bx
-mov   di, word ptr ds:[_saveCharIndex]
+mov   di, word ptr cs:[_saveCharIndex]
 
 ; di is savecharindex
 ; al is key
@@ -1963,7 +1980,7 @@ cmp   ax, (SAVESTRINGSIZE-2)*8 ; 0B0h
 jae   exit_m_responder_return_1
 
 xchg  ax, bx ; ax gets char
-inc   word ptr ds:[_saveCharIndex]
+inc   word ptr cs:[_saveCharIndex]
 cbw
 mov   word ptr cs:[di], ax
 
@@ -1978,17 +1995,17 @@ retf
 
 savestringenter_is_enter:
 
-mov   byte ptr ds:[_saveStringEnter], cl ; 0
+mov   byte ptr cs:[_saveStringEnter], cl ; 0
 cmp   byte ptr cs:[bx], cl ; 0
 je    exit_m_responder_return_1
-mov   al, byte ptr ds:[_saveSlot]
+mov   al, byte ptr cs:[_saveSlot]
 call  M_DoSave_
 jmp   exit_m_responder_return_1
 
 not_savestringenter:
-cmp   byte ptr ds:[_messageToPrint], cl ; 0
+cmp   byte ptr cs:[_messageToPrint], cl ; 0
 je    no_message_to_print_mresponder
-cmp   byte ptr ds:[_messageNeedsInput], 1
+cmp   byte ptr cs:[_messageNeedsInput], 1
 jne   no_input_needed
 cmp   al, 32
 je    not_response_char
@@ -2004,8 +2021,8 @@ jmp   exit_m_responder_return_0
 no_input_needed:
 not_response_char:
 
-mov   dl, byte ptr ds:[_messageLastMenuActive]
-mov   byte ptr ds:[_messageToPrint], cl ; 0
+mov   dl, byte ptr cs:[_messageLastMenuActive]
+mov   byte ptr cs:[_messageToPrint], cl ; 0
 mov   byte ptr ds:[_menuactive], dl
 cmp   word ptr ds:[_messageRoutine], cx ; 0
 je    no_message_routine
@@ -2390,7 +2407,7 @@ sub   sp, 02Ch
 push  ax       ; isfromwipe - 2Eh
 xor   ax, ax
 mov   byte ptr ds:[_inhelpscreens], al  ; 0
-cmp   byte ptr ds:[_messageToPrint], al ; 0
+cmp   byte ptr cs:[_messageToPrint], al ; 0
 je    no_message_to_print
 xchg  ax, cx ; cx gets 0
 call  Z_QuickMapStatus_

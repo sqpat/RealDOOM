@@ -8,7 +8,7 @@
 #include "p_inter.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2550
+#define CONSTANTS_COUNT 2551
 #define LOCALS_COUNT 22
 
 
@@ -106,6 +106,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 
     "GAMMATABLE_SEGMENT",
     "MENUOFFSETS_SEGMENT",
+	"END_MENU_SEGMENT",
 
     "LINES_PHYSICS_SEGMENT",
     "BLOCKMAPLUMP_SEGMENT",
@@ -2740,6 +2741,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     fwipe_mul160lookup_segment,
     gammatable_segment,
     menuoffsets_segment,
+	end_menu_segment,
 
     lines_physics_segment,
     blockmaplump_segment,

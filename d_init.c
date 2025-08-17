@@ -492,7 +492,9 @@ void __near M_Reload(void) {
 		dst += lumpsize;
 
 	}
-	// grew from 9A78 end to AC64
+	// I_Error("%x", size);
+	// 92b4
+	
 /*
 	if (is_ultimate){
 		int16_t lump = W_GetNumForName("M_EPI4");
@@ -524,9 +526,9 @@ void __far M_Init(void){
 	whichSkull = 0;
 	skullAnimCounter = 10;
 	screenSize = screenblocks - 1;
-	messageToPrint = 0;
+	// messageToPrint = 0;
 	// menu_messageString[0] = '\0';
-	messageLastMenuActive = menuactive;
+	// messageLastMenuActive = menuactive;
 	quickSaveSlot = -1;  // means to pick a slot now
 
 	if (commercial) {
