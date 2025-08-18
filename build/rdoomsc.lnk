@@ -22,7 +22,6 @@ file i_init.obj
 file z_init.obj
 file p_init.obj
 
-NEWSEGMENT
 file i_main.obj
 file i_quit.obj
 file i_ibm.obj
@@ -47,9 +46,6 @@ file st_setup.obj
 file hu_setup.obj
 file p_setup.obj
 
-
-
-NEWSEGMENT
 file s_sound.obj
 file s_sbsfx.obj
 file r_main.obj
