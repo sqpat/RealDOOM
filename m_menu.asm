@@ -76,15 +76,13 @@ EXTRN I_WaitVBL_:FAR
 EXTRN R_SetViewSize_:FAR
 EXTRN I_SetPalette_:FAR
 
-EXTRN Z_QuickMapStatus_:FAR
-EXTRN Z_QuickMapMenu_:FAR
-EXTRN Z_QuickMapPhysics_:FAR
-EXTRN Z_QuickMapWipe_:FAR
+
+
+
 
 
 .DATA
 
-EXTRN _sb_voicelist:WORD
 
 
 
@@ -427,7 +425,7 @@ PUBLIC  M_DrawLoad_
 
 
 PUSHA_NO_AX_OR_BP_MACRO
-call  Z_QuickMapStatus_
+call  M_Z_QuickmapStatus_
 
 les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_LOADG)]
 mov   cx, es
@@ -642,7 +640,7 @@ PUBLIC  M_DrawSave_
 
 PUSHA_NO_AX_OR_BP_MACRO
 
-call  Z_QuickMapStatus_
+call  M_Z_QuickmapStatus_
 les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_SAVEG)]
 mov   cx, es
 
@@ -2744,7 +2742,7 @@ mov   byte ptr ds:[_inhelpscreens], al  ; 0
 cmp   byte ptr cs:[_messageToPrint], al ; 0
 je    no_message_to_print
 xchg  ax, cx ; cx gets 0
-call  Z_QuickMapStatus_
+call  M_Z_QuickmapStatus_
 mov   ax, OFFSET _menu_messageString
 mov   dx, cs
 call  M_StringHeight_
@@ -2848,7 +2846,7 @@ mov   bx, word ptr cs:[_currentMenu]
 cmp   byte ptr ds:[_menuactive], al ; 0
 je    jump_to_do_m_drawer_exit
 
-call  Z_QuickMapMenu_ ; todo remove
+call  M_Z_QuickmapMenu_ ; todo remove
 cmp   word ptr cs:[bx + MENU_T.menu_routine], 0
 je    no_menu_routine
 call  word ptr cs:[bx + MENU_T.menu_routine]
@@ -2909,13 +2907,20 @@ do_exit_check:
 cmp   byte ptr [bp - 2Eh], 0   ; isFromWipe
 jne   do_quickmap_wipe_exit
 do_quickmap_physics_exit:
-call  Z_QuickMapPhysics_
+
+Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
+mov   byte ptr ds:[_currenttask], TASK_PHYSICS
+
 do_m_drawer_exit:
 LEAVE_MACRO 
 POPA_NO_AX_OR_BP_MACRO
 retf  
 do_quickmap_wipe_exit:
-call  Z_QuickMapWipe_
+
+Z_QUICKMAPAI4 pageswapargs_wipe_offset_size    INDEXED_PAGE_9000_OFFSET
+Z_QUICKMAPAI8_NO_DX (pageswapargs_wipe_offset_size+4)  INDEXED_PAGE_6000_OFFSET
+mov   byte ptr ds:[_currenttask], TASK_WIPE
+
 jmp   do_m_drawer_exit
 
 
@@ -3424,6 +3429,47 @@ pop    bx
 retf
 
 ENDP
+
+
+PROC   M_Z_QuickmapStatus_ NEAR
+PUBLIC M_Z_QuickmapStatus_ 
+
+push  dx
+push  cx
+push  si
+
+Z_QUICKMAPAI1 pageswapargs_stat_offset_size INDEXED_PAGE_9C00_OFFSET
+Z_QUICKMAPAI4_NO_DX (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
+Z_QUICKMAPAI1_NO_DX (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
+
+mov   byte ptr ds:[_currenttask], TASK_STATUS
+pop   si
+pop   cx
+pop   dx
+ret
+
+ENDP
+
+PROC   M_Z_QuickmapMenu_ NEAR
+PUBLIC M_Z_QuickmapMenu_ 
+
+push  dx
+push  cx
+push  si
+
+Z_QUICKMAPAI8 pageswapargs_menu_offset_size INDEXED_PAGE_5000_OFFSET
+
+mov   byte ptr ds:[_currenttask], TASK_MENU
+pop   si
+pop   cx
+pop   dx
+ret 
+
+ENDP
+
+
+
+
 
 
 PROC    M_MENU_ENDMARKER_ NEAR

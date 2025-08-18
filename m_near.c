@@ -902,6 +902,9 @@ uint8_t sfx_priority[] = {
 };
 
 
+// the set of channels available
+channel_t	channels[MAX_SFX_CHANNELS];
+
 // These are not used, but should be (menu).
 // Maximum volume of a sound effect.
 // Internal default is max out of 0-15.
@@ -973,6 +976,6 @@ int32_t musdriverstartposition[MUS_DRIVER_COUNT-1];
 
 boolean FORCE_5000_LUMP_LOAD = false;
 
-SB_VoiceInfo        sb_voicelist[NUM_SFX_TO_MIX];
+
 
 uint16_t lastpcspeakernotevalue = 0;

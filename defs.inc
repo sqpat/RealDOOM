@@ -572,7 +572,7 @@ _hu_font =	 	      			     _NULL_OFFSET + 00B50h
 
 _viewactivestate =	 	     	     _NULL_OFFSET + 00BCEh
 _menuactivestate =	 	     	     _NULL_OFFSET + 00BCFh
-_channels =	 	  			   	     _NULL_OFFSET + 00BD0h
+_sb_voicelist =	 	  			   	 _NULL_OFFSET + 00BD0h
 
 
 _flatcache_nodes =				     _NULL_OFFSET + 00C10h

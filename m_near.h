@@ -637,8 +637,7 @@
 
 #define viewactivestate   			      (*((boolean __near*)               (_NULL_OFFSET + 0x0BCE)))
 #define menuactivestate   			      (*((boolean __near*)               (_NULL_OFFSET + 0x0BCF)))
-#define channels   			      	  	  ((channel_t __near *)              (_NULL_OFFSET + 0x0BD0))
-
+#define sb_voicelist   			      	  ((SB_VoiceInfo __near *)           (_NULL_OFFSET + 0x0BD0))
 
 
 
@@ -1398,7 +1397,6 @@ typedef struct {
 	uint8_t 	 		sep;				// stereo l/r mod
 } SB_VoiceInfo ;
 #define NUM_SFX_TO_MIX 8
-extern SB_VoiceInfo sb_voicelist[NUM_SFX_TO_MIX];
 
 #endif
 
