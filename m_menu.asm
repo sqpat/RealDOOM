@@ -58,8 +58,7 @@ EXTRN fseek_:FAR
 EXTRN fread_:FAR
 
 EXTRN G_DeferedInitNew_:NEAR
-EXTRN locallib_strncpy_:FAR
-EXTRN locallib_strcpy_:FAR
+
 
 
 EXTRN I_Quit_:FAR
@@ -333,7 +332,7 @@ mov   ax, OFFSET _savename
 mov   dx, ds
 mov   cx, ss
 lea   bx, [bp - 0100h]
-call  locallib_strcpy_
+call  M_strcpy_
 
 mov   byte ptr ds:[_gameaction], GA_LOADGAME
 mov   byte ptr ds:[_menuactive], 0
@@ -1781,7 +1780,7 @@ mov   word ptr cs:[_messageLastMenuActive], ax
 mov   dx, cs
 mov   cx, ds
 mov   ax, OFFSET _menu_messageString
-call  locallib_strcpy_  ; todo make local
+call  M_strcpy_
 
 pop   cx
 ret   
@@ -3009,7 +3008,7 @@ mov   ax, OFFSET _savename
 mov   dx, ds
 mov   cx, ss
 
-call  locallib_strcpy_
+call  M_strcpy_
 
 mov   byte ptr ds:[_gameaction], GA_LOADGAME
 
@@ -3136,6 +3135,36 @@ pop   si
 
 ret
 ENDP
+
+
+
+PROC   M_strcpy_ NEAR
+PUBLIC M_strcpy_ 
+
+push  si
+push  di
+
+xchg  ax, di
+mov   es, dx
+mov   si, bx
+mov   ds, cx
+
+
+copy_next_char_1:
+lodsb
+test al, al
+stosb
+jne  copy_next_char_1
+
+push  ss
+pop   ds
+
+pop   di
+pop   si
+
+ret
+ENDP
+
 
 PROC    M_MENU_ENDMARKER_ NEAR
 PUBLIC  M_MENU_ENDMARKER_

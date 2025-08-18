@@ -2381,4 +2381,34 @@ pop   si
 retf
 ENDP
 
+
+
+PROC   locallib_strcpy_ FAR
+PUBLIC locallib_strcpy_ 
+
+push  si
+push  di
+
+xchg  ax, di
+mov   es, dx
+mov   si, bx
+mov   ds, cx
+
+
+copy_next_char_1:
+lodsb
+test al, al
+stosb
+jne  copy_next_char_1
+
+push  ss
+pop   ds
+
+pop   di
+pop   si
+
+retf
+ENDP
+
+
 END

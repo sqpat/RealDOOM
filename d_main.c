@@ -234,15 +234,6 @@ uint8_t __far locallib_toupper(uint8_t ch){
 	return ch;
 }
 
-void __far locallib_strcpy(char __far *dest, char __far *src){
-	int16_t i = 0;
-	while (src[i] != '\0'){
-		dest[i] = src[i];
-		i++;
-	}
-	dest[i] = '\0';
-
-}
 
 void __far locallib_strncpy(char __far *dest, char __far *src, int16_t n){
 	int16_t i = 0;
