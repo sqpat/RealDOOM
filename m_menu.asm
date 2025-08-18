@@ -51,8 +51,6 @@ EXTRN S_InitSFXCache_:FAR
 
 EXTRN V_DrawPatchDirect_:FAR
 
-
-EXTRN getStringByIndex_:FAR
 EXTRN locallib_far_fread_:FAR
 EXTRN fclose_:FAR
 EXTRN fopen_:FAR
@@ -375,7 +373,8 @@ no_savegame_file:
 xchg  ax, bx  ; bx gets product result..
 mov   cx, dx ; actually cx gets the segment in this case.
 mov   ax, EMPTYSTRING
-call  getStringByIndex_
+
+call  dword ptr ds:[_getStringByIndex_addr]
 
 mov   byte ptr ds:[di], 0
 jmp   iter_next_savestring
@@ -562,7 +561,8 @@ pop   ds ; restore ds.
 lea   bx, [bp - 0100h]
 mov   ax, EMPTYSTRING
 mov   cx, ss
-call  getStringByIndex_
+
+call  dword ptr ds:[_getStringByIndex_addr]
 
 lea   bx, [bp - 0100h]
 mov   cx, ss
@@ -606,7 +606,8 @@ jne   can_save_game
 lea   bx, [bp - 0100h]
 mov   ax, SAVEDEAD
 mov   cx, ds
-call  getStringByIndex_
+
+call  dword ptr ds:[_getStringByIndex_addr]
 xor   dx, dx
 lea   ax, [bp - 0100h]
 mov   bx, dx
@@ -680,11 +681,15 @@ jl    no_quicksave_slot
 lea   bx, [bp + 04ch]
 mov   ax, QSPROMPT
 mov   cx, ds
-call  getStringByIndex_
+
+call  dword ptr ds:[_getStringByIndex_addr]
+
 lea   bx, [bp + 07Eh]
 mov   ax, QLQLPROMPTEND
 mov   cx, ds
-call  getStringByIndex_
+
+call  dword ptr ds:[_getStringByIndex_addr]
+
 mov   al, SAVESTRINGSIZE
 mul   byte ptr ds:[_quickSaveSlot]
 add   ax, OFFSET _savegamestrings
@@ -776,11 +781,17 @@ jl    no_quickload_slot
 lea   bx, [bp + 04Ch]
 mov   ax, QLPROMPT
 mov   cx, ds
-call  getStringByIndex_
+
+
+call  dword ptr ds:[_getStringByIndex_addr]
+
 lea   bx, [bp + 07Eh]
 mov   ax, QLQLPROMPTEND
 mov   cx, ds
-call  getStringByIndex_
+
+
+call  dword ptr ds:[_getStringByIndex_addr]
+
 mov   al, SAVESTRINGSIZE
 mul   byte ptr ds:[_quickSaveSlot]
 add   ax, OFFSET _savegamestrings
@@ -815,7 +826,10 @@ no_quickload_slot:
 lea   bx, [bp - 04Ah]
 mov   ax, QSAVESPOT
 mov   cx, ds
-call  getStringByIndex_
+
+
+call  dword ptr ds:[_getStringByIndex_addr]
+
 xor   dx, dx
 xor   bx, bx
 jmp   show_message_and_exitquickload
@@ -1166,7 +1180,10 @@ lea   bx, [bp - 0100h]
 mov   ax, NIGHTMARE
 mov   cx, ds
 mov   dx, OFFSET M_VerifyNightmare_
-call  getStringByIndex_
+
+
+call  dword ptr ds:[_getStringByIndex_addr]
+
 mov   bx, 1
 lea   ax, [bp - 0100h]
 call  M_StartMessage_
@@ -1216,7 +1233,9 @@ force_shareware_msg:
 lea   bx, [bp - 0100h]
 mov   ax, SWSTRING
 mov   cx, ds
-call  getStringByIndex_
+
+call  dword ptr ds:[_getStringByIndex_addr]
+
 xor   dx, dx
 lea   ax, [bp - 0100h]
 xor   bx, bx
@@ -1378,7 +1397,9 @@ lea   bx, [bp - 0100h]
 mov   ax, ENDGAME
 mov   cx, ds
 mov   dx, OFFSET M_EndGameResponse_
-call  getStringByIndex_
+
+call  dword ptr ds:[_getStringByIndex_addr]
+
 mov   bx, 1
 lea   ax, [bp - 0100h]
 call  M_StartMessage_
@@ -1509,7 +1530,9 @@ xchg  ax, dx
 mov   cx, FIXED_DS_SEGMENT ; todo DS
 lea   bx, [bp + 07Eh]
 mov   ax, DOSY
-call  getStringByIndex_
+
+call  dword ptr ds:[_getStringByIndex_addr]
+
 xchg  ax, dx
 test  ax, ax
 je    force_message_as_2
@@ -1521,7 +1544,8 @@ got_message:
 lea   bx, [bp + 014h]
 mov   cx, ds
 mov   dx, bx
-call  getStringByIndex_
+
+call  dword ptr ds:[_getStringByIndex_addr]
 
 mov   bx, _STRING_newline
 lea   ax, [bp + 014h]
@@ -2370,24 +2394,37 @@ pop   bx
 retf  
 do_menu_key_default:
 
+; al is key
+; bx is currentMenu
+; dx is itemOn
+; cx is 0
+; si is currentMenu->menuItems[itemOn]
+; di is currentMenu->menuItems
+
+
 mov   cl, byte ptr ds:[bx + MENU_T.menu_numitems]
-lea   bx, [si + SIZEOF_MENUITEM_T]
+lea   bx, [si + SIZEOF_MENUITEM_T] ; add one
 mov   si, dx
 inc   si
+
+cmp   si, cx
+jge   skip_first_loop
 
 check_next_alphakey:
 
 cmp   al, byte ptr ds:[bx + MENUITEM_T.menuitem_alphakey]
 je    found_key_stop
 add   bx, SIZEOF_MENUITEM_T
+inc   si
 cmp   si, cx
 jl    check_next_alphakey
-
+skip_first_loop:
 xor   si, si
 
 check_next_alphakey_2:
 cmp   al, byte ptr ds:[di + MENUITEM_T.menuitem_alphakey]
 je    found_key_stop
+add   di, SIZEOF_MENUITEM_T
 inc   si
 cmp   si, dx
 jl    check_next_alphakey_2
@@ -2882,10 +2919,9 @@ push ds
 pop  es
 lea  di, [_MainMenu + (SIZEOF_MENUITEM_T * MENUITEM_MAIN_READTHIS)]
 lea  si, [_MainMenu + (SIZEOF_MENUITEM_T * MENUITEM_MAIN_QUITDOOM)]
-mov  cx, 5
+mov  cx, SIZEOF_MENUITEM_T
 rep  movsb
 
-mov  word ptr ds:[_MainMenu + (SIZEOF_MENUITEM_T * MENUITEM_MAIN_READTHIS) + MENUITEM_T.menuitem_routine], OFFSET M_FinishReadThis_
 mov  word ptr ds:[_NewDef + MENU_T.menu_prevMenu], OFFSET _MainDef
 mov  word ptr ds:[_ReadDef1 + MENU_T.menu_routine], OFFSET M_DrawReadThisRetail_
 mov  word ptr ds:[_ReadDef1 + MENU_T.menu_x], 330

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/17 13:22:36
+Created on:       25/08/17 13:44:08
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -43,8 +43,8 @@ am_map_TEXT            CODE           AUTO           02d1:1d10       000012b1
 st_stuff_TEXT          CODE           AUTO           02d1:2fd0       00000b97
 hu_stuff_TEXT          CODE           AUTO           02d1:3b70       000001e0
 hu_lib_TEXT            CODE           AUTO           02d1:3d50       000001c4
-M_MENU_TEXT            CODE           AUTO           02d1:3f14       0000124c
-D_ALGO_TEXT            CODE           AUTO           02d1:5160       0000008c
+M_MENU_TEXT            CODE           AUTO           02d1:3f14       00001241
+D_ALGO_TEXT            CODE           AUTO           02d1:5156       0000008c
 dmx_TEXT               CODE           AUTO           02d1:51f0       000001b8
 D_INT_TEXT             CODE           AUTO           02d1:53a8       00000176
 MEMORY_TEXT            CODE           AUTO           02d1:551e       00000000
@@ -499,71 +499,71 @@ Module: hu_lib.obj(C:\REALDOOM\hu_lib.c)
 02d1:3e1e      HUlib_eraseTextLine_
 02d1:3eac      HUlib_addMessageToSText_
 Module: m_menu.obj(m_menu.ASM)
-02d1:4a73*     M_StringHeight_
-02d1:4a37*     M_StringWidth_
-02d1:4328      M_SaveSelect_
+02d1:4a66*     M_StringHeight_
+02d1:4a2a*     M_StringWidth_
+02d1:4327      M_SaveSelect_
 02d1:4210      M_LoadGame_
 02d1:4147      M_DrawLoad_
-02d1:493c      M_ChangeDetail_
-02d1:507d*     M_MakeSaveGameName_
-02d1:42f7*     M_DoSave_
-02d1:4b2e      M_Responder_
-02d1:4381      M_SaveGame_
-02d1:45af*     S_SetSfxVolume_
-02d1:454c      M_DrawSound_
-02d1:4842      M_ReadThis2_
-02d1:45f2*     S_SetMusicVolume_
-02d1:46a7      M_ChooseSkill_
-02d1:47a8      M_Options_
-02d1:4670      M_DrawEpisode_
-02d1:49f8*     M_StartMessage_
-02d1:453b*     M_DrawReadThisRetail_
-02d1:511f*     M_strcpy_
-02d1:48a9      M_QuitDOOM_
-02d1:491e      M_ChangeSensitivity_
-02d1:4655      M_NewGame_
-02d1:47b7      M_ChangeMessages_
-02d1:4499*     M_QuickLoad_
-02d1:45d7      M_MusicVol_
-02d1:47f1      M_EndGame_
-02d1:43ca*     M_QuickSaveResponse_
-02d1:462a      M_DrawNewGame_
-02d1:4585      M_Sound_
-02d1:4aa3*     M_WriteText_
-02d1:4dff      M_Drawer_
-02d1:482c      M_ReadThis_
-02d1:46e9      M_Episode_
-02d1:43e1*     M_QuickSave_
-02d1:47cb*     M_EndGameResponse_
+02d1:492f      M_ChangeDetail_
+02d1:5072*     M_MakeSaveGameName_
+02d1:42f6*     M_DoSave_
+02d1:4b21      M_Responder_
+02d1:437f      M_SaveGame_
+02d1:45a7*     S_SetSfxVolume_
+02d1:4544      M_DrawSound_
+02d1:4837      M_ReadThis2_
+02d1:45ea*     S_SetMusicVolume_
+02d1:469f      M_ChooseSkill_
+02d1:479e      M_Options_
+02d1:4668      M_DrawEpisode_
+02d1:49eb*     M_StartMessage_
+02d1:4533*     M_DrawReadThisRetail_
+02d1:5114*     M_strcpy_
+02d1:489e      M_QuitDOOM_
+02d1:4911      M_ChangeSensitivity_
+02d1:464d      M_NewGame_
+02d1:47ad      M_ChangeMessages_
+02d1:4494*     M_QuickLoad_
+02d1:45cf      M_MusicVol_
+02d1:47e7      M_EndGame_
+02d1:43c7*     M_QuickSaveResponse_
+02d1:4622      M_DrawNewGame_
+02d1:457d      M_Sound_
+02d1:4a96*     M_WriteText_
+02d1:4dfa      M_Drawer_
+02d1:4821      M_ReadThis_
+02d1:46e0      M_Episode_
+02d1:43de*     M_QuickSave_
+02d1:47c1*     M_EndGameResponse_
 02d1:421e*     M_ReadSaveStrings_
-02d1:4594      M_SfxVol_
-02d1:4964      M_SizeDisplay_
-02d1:4f55      M_Init_
-02d1:4de4      M_StartControlPanel_
-02d1:4993*     M_DrawThermo_
+02d1:458c      M_SfxVol_
+02d1:4957      M_SizeDisplay_
+02d1:4f50      M_Init_
+02d1:4ddf      M_StartControlPanel_
+02d1:4986*     M_DrawThermo_
 02d1:41dd      M_LoadSelect_
-02d1:5160*     M_MENU_ENDMARKER_
+02d1:5155*     M_MENU_ENDMARKER_
 02d1:3f14*     M_MENU_STARTMARKER_
 02d1:4188*     M_DrawSaveLoadBorder_
-02d1:5133      M_DrawPause_
-02d1:4739      M_DrawOptions_
-02d1:4870*     M_QuitResponse_
-02d1:4482*     M_QuickLoadResponse_
-02d1:4f1c*     CopyString13_menu_seg_
-02d1:4283      M_DrawSave_
-02d1:5097      M_LoadFromSaveGame_
-02d1:50fd*     M_Strcmp_
-02d1:4689*     M_VerifyNightmare_
-02d1:4611      M_DrawMainMenu_
-02d1:4519      M_DrawReadThis1_
-02d1:452a      M_DrawReadThis2_
-02d1:4851      M_FinishReadThis_
+02d1:5128      M_DrawPause_
+02d1:472f      M_DrawOptions_
+02d1:4865*     M_QuitResponse_
+02d1:447d*     M_QuickLoadResponse_
+02d1:4f17*     CopyString13_menu_seg_
+02d1:4282      M_DrawSave_
+02d1:508c      M_LoadFromSaveGame_
+02d1:50f2*     M_Strcmp_
+02d1:4681*     M_VerifyNightmare_
+02d1:4609      M_DrawMainMenu_
+02d1:4511      M_DrawReadThis1_
+02d1:4522      M_DrawReadThis2_
+02d1:4846      M_FinishReadThis_
 Module: d_algo.obj(d_algo.ASM)
-02d1:51d0      hackDSBack_
-02d1:51ec*     D_ALGO_END_
-02d1:5189      zeroConventional_
-02d1:5160      resetDS_
-02d1:5168      hackDS_
+02d1:51c6      hackDSBack_
+02d1:51e2*     D_ALGO_END_
+02d1:517f      zeroConventional_
+02d1:5156      resetDS_
+02d1:515e      hackDS_
 Module: dmx.obj(C:\REALDOOM\dmx.c)
 02d1:51f0*     TS_SetTimerToMaxTaskRate_
 02d1:5204+     playpcspeakernote_
@@ -1065,4 +1065,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  000131d0 (78288.)
 Entry point address: 0b43:3946
-Link time: 00:00.19
+Link time: 00:00.65

@@ -862,7 +862,7 @@ skytexture         5400:0000
 // menugraphicspage4  6400:0000
 // [empty]            6D32:0000 ?
 //FREEBYTES 11488 in menu page 4. Eventually move menu code here?
-// ends at AC64. are there other spare graphics to drop here?
+// note: less room with ultimate due to extra EPI4 patch
 
 
 #define NUM_WI_ITEMS 28
