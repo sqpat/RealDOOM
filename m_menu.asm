@@ -39,6 +39,15 @@ MENUITEM_MAIN_READTHIS = 4
 MENUITEM_MAIN_QUITDOOM = 5
 MENUITEM_MAIN_MAIN_END = 6
 
+MENUITEM_NEW_NEWG_END =  5
+MENUITEM_NEW_HURTME =  2
+MENUITEM_OPT_OPT_END =  8
+MENUITEM_EPI_EP1 =  0
+MENUITEM_READ_READ1_END =  1
+MENUITEM_READ_READ2_END =  1
+MENUITEM_SOUND_SOUND_END =  4
+
+
 
 LOAD_END = 6
 
@@ -92,7 +101,6 @@ EXTRN _quickSaveSlot:BYTE
 
 EXTRN _usergame:BYTE
 EXTRN _showMessages:BYTE
-EXTRN _itemOn:BYTE
 EXTRN _message_dontfuckwithme:BYTE
 
 EXTRN _mouseSensitivity:BYTE
@@ -102,24 +110,11 @@ EXTRN _screenSize:BYTE
 
 EXTRN _hu_font:WORD
 
-EXTRN _currentMenu:WORD
-EXTRN _messageRoutine:WORD
 
 
 
-EXTRN _OptionsDef:WORD
-EXTRN _menu_epi:WORD
-EXTRN _ReadDef1:WORD
-EXTRN _ReadMenu1:WORD
-EXTRN _ReadDef2:WORD
-EXTRN _MainMenu:WORD
-EXTRN _NewDef:WORD
-EXTRN _MainDef:WORD
-EXTRN _LoadDef:WORD
-EXTRN _SaveDef:WORD
-EXTRN _EpiDef:WORD
-EXTRN _SoundDef:WORD
-EXTRN _LoadMenu:WORD
+
+
 
 
 
@@ -159,6 +154,18 @@ _saveCharIndex:
 dw  0
 _messageLastMenuActive:
 dw  0
+_messageRoutine:
+dw  0
+_currentMenu:
+dw  0
+_itemOn:
+dw  0
+
+
+_skullName:
+db MENUPATCH_M_SKULL1 * 4, MENUPATCH_M_SKULL2 * 4
+
+
 
 _saveSlot:
 db  0
@@ -168,7 +175,8 @@ _messageToPrint:
 db  0
 _messageNeedsInput:
 db  0
-
+_menu_epi:
+db  0
 
 ;preshifted for lookup
 _detailnames:
@@ -184,9 +192,242 @@ ENDM
 
 
 
+_MainMenu:
+db 1, MENUPATCH_M_NGAME
+dw OFFSET M_NewGame_
+db 'n'
+db 1, MENUPATCH_M_OPTION
+dw OFFSET M_Options_
+db 'o'
+db 1, MENUPATCH_M_LOADG
+dw OFFSET M_LoadGame_
+db 'l'
+db 1, MENUPATCH_M_SAVEG
+dw OFFSET M_SaveGame_
+db 's'
+db 1, MENUPATCH_M_RDTHIS
+dw OFFSET M_ReadThis_
+db 'r'
+db 1, MENUPATCH_M_QUITG
+dw OFFSET M_QuitDOOM_
+db 'q'
+
+_EpisodeMenu:
+db 1, MENUPATCH_M_EPI1
+dw OFFSET  M_Episode_
+db 'k'
+db 1, MENUPATCH_M_EPI2
+dw OFFSET  M_Episode_
+db 't'
+db 1, MENUPATCH_M_EPI3
+dw OFFSET  M_Episode_
+db 'i'
+db 1, MENUPATCH_M_EPI4
+dw OFFSET  M_Episode_
+db 't'
+
+_NewGameMenu:
+db 1, MENUPATCH_M_JKILL
+dw OFFSET        M_ChooseSkill_
+db  'i'
+db 1, MENUPATCH_M_ROUGH
+dw OFFSET        M_ChooseSkill_
+db  'h'
+db 1, MENUPATCH_M_HURT
+dw OFFSET         M_ChooseSkill_
+db  'h'
+db 1, MENUPATCH_M_ULTRA
+dw OFFSET        M_ChooseSkill_
+db  'u'
+db 1, MENUPATCH_M_NMARE
+dw OFFSET        M_ChooseSkill_
+db  'n'
+
+_OptionsMenu:
+db 1, MENUPATCH_M_ENDGAM
+dw OFFSET       M_EndGame_
+db 'e'
+db 1, MENUPATCH_M_MESSG
+dw OFFSET        M_ChangeMessages_
+db 'm'
+db 1, MENUPATCH_M_DETAIL
+dw OFFSET       M_ChangeDetail_
+db 'g'
+db 2, MENUPATCH_M_SCRNSZ
+dw OFFSET       M_SizeDisplay_
+db 's'
+db -1, -1, 0, 0, 0
+db 2, MENUPATCH_M_MSENS
+dw OFFSET        M_ChangeSensitivity_
+db 'm'
+db -1, -1, 0, 0, 0
+db 1, MENUPATCH_M_SVOL
+dw OFFSET         M_Sound_
+db 's'
 
 
-ENDP
+_ReadMenu1:
+db 1, -1
+dw OFFSET M_ReadThis2_
+db 0
+
+_ReadMenu2:
+db 1, -1
+dw OFFSET M_FinishReadThis_
+db 0
+
+_SoundMenu:
+db 2, MENUPATCH_M_SFXVOL
+dw OFFSET M_SfxVol_
+db 's'
+db -1, -1, 0, 0, 0
+db 2, MENUPATCH_M_MUSVOL
+dw OFFSET M_MusicVol_
+db 'm'
+db -1, -1, 0, 0, 0
+
+
+_LoadMenu:
+db 1, -1
+dw OFFSET  M_LoadSelect_
+db '1'
+db 1, -1
+dw OFFSET  M_LoadSelect_
+db '2'
+db 1, -1
+dw OFFSET  M_LoadSelect_
+db '3'
+db 1, -1
+dw OFFSET  M_LoadSelect_
+db '4'
+db 1, -1
+dw OFFSET  M_LoadSelect_
+db '5'
+db 1, -1
+dw OFFSET  M_LoadSelect_
+db '6'
+
+_SaveMenu:
+db 1, -1
+dw OFFSET  M_SaveSelect_
+db '1'
+db 1, -1
+dw OFFSET  M_SaveSelect_
+db '2'
+db 1, -1
+dw OFFSET  M_SaveSelect_
+db '3'
+db 1, -1
+dw OFFSET  M_SaveSelect_
+db '4'
+db 1, -1
+dw OFFSET  M_SaveSelect_
+db '5'
+db 1, -1
+dw OFFSET  M_SaveSelect_
+db '6'
+
+
+
+
+_MainDef:
+db MENUITEM_MAIN_MAIN_END
+dw 0
+dw OFFSET _MainMenu
+dw OFFSET M_DrawMainMenu_
+dw 97
+db 64
+dw 0
+
+_EpiDef:
+db 3
+dw OFFSET _MainDef
+dw OFFSET _EpisodeMenu
+dw OFFSET M_DrawEpisode_
+dw 48
+db 63
+dw MENUITEM_EPI_EP1
+
+
+_NewDef:
+db MENUITEM_NEW_NEWG_END
+dw OFFSET _EpiDef
+dw OFFSET _NewGameMenu
+dw OFFSET M_DrawNewGame_
+dw 48
+db 63
+dw MENUITEM_NEW_HURTME
+
+_OptionsDef:
+db MENUITEM_OPT_OPT_END
+dw OFFSET _MainDef
+dw OFFSET _OptionsMenu
+dw OFFSET M_DrawOptions_
+dw 60
+db 37
+dw 0
+
+
+_ReadDef1:
+db MENUITEM_READ_READ1_END
+dw OFFSET _MainDef
+dw OFFSET _ReadMenu1
+dw OFFSET M_DrawReadThis1_
+dw 280
+db 185
+dw 0
+
+
+_ReadDef2:
+db MENUITEM_READ_READ2_END
+dw OFFSET _MainDef
+dw OFFSET _ReadMenu2
+dw OFFSET M_DrawReadThis2_
+dw 330
+db 175
+dw 0
+
+
+; todo above final build flag
+;#if (EXE_VERSION < EXE_VERSION_FINAL)
+;    M_DrawReadThis2,
+;#else
+;    M_DrawReadThisRetail,
+;#endif
+
+
+
+
+_SoundDef:
+db MENUITEM_SOUND_SOUND_END
+dw OFFSET _OptionsDef
+dw OFFSET _SoundMenu
+dw OFFSET M_DrawSound_
+dw 80
+db 64
+dw 0
+
+
+
+_LoadDef:
+db LOAD_END
+dw OFFSET _MainDef
+dw OFFSET _LoadMenu
+dw OFFSET M_DrawLoad_
+dw 80
+db 54
+dw 0
+
+_SaveDef:
+db LOAD_END
+dw OFFSET _MainDef
+dw OFFSET _SaveMenu
+dw OFFSET M_DrawSave_
+dw 80
+db 54
+dw 0
+
+
 
 LOADDEF_X = 80
 LOADDEF_Y = 54
@@ -330,9 +571,9 @@ ENDP
 PROC    M_LoadGame_ NEAR
 PUBLIC  M_LoadGame_
 
-push  word ptr ds:[_LoadDef + MENU_T.menu_laston]
-pop   word ptr ds:[_itemOn]
-mov   word ptr ds:[_currentMenu], OFFSET _LoadDef  ; inlined setupnextmenu
+push  word ptr cs:[_LoadDef + MENU_T.menu_laston]
+pop   word ptr cs:[_itemOn]
+mov   word ptr cs:[_currentMenu], OFFSET _LoadDef  ; inlined setupnextmenu
 
 
 ENDP  ; fall thru?
@@ -345,7 +586,7 @@ push  bp
 mov   bp, sp
 sub   sp, 0100h
 xor   si, si
-mov   di, _LoadMenu + MENUITEM_T.menuitem_status
+mov   di, OFFSET _LoadMenu + MENUITEM_T.menuitem_status
 
 
 loop_next_savestring:
@@ -618,9 +859,9 @@ can_save_game:
 cmp   byte ptr ds:[_gamestate], al
 jne   exit_m_savegame
 
-push  word ptr ds:[_SaveDef + MENU_T.menu_laston]
-pop   word ptr ds:[_itemOn]
-mov   word ptr ds:[_currentMenu], OFFSET _SaveDef
+push  word ptr cs:[_SaveDef + MENU_T.menu_laston]
+pop   word ptr cs:[_itemOn]
+mov   word ptr cs:[_currentMenu], OFFSET _SaveDef
 call  M_ReadSaveStrings_
 
 
@@ -731,9 +972,9 @@ jmp   exit_m_quicksave
 no_quicksave_slot:
 call  M_StartControlPanel_
 call  M_ReadSaveStrings_
-mov   word ptr ds:[_currentMenu], OFFSET _SaveDef
-push  word ptr ds:[_SaveDef + MENU_T.menu_laston]
-pop   word ptr ds:[_itemOn]
+mov   word ptr cs:[_currentMenu], OFFSET _SaveDef
+push  word ptr cs:[_SaveDef + MENU_T.menu_laston]
+pop   word ptr cs:[_itemOn]
 mov   byte ptr ds:[_quickSaveSlot], -2
 jmp   exit_m_quicksave
 
@@ -933,9 +1174,9 @@ PROC    M_Sound_ NEAR
 PUBLIC  M_Sound_
 
 
-push  word ptr ds:[_SoundDef + MENU_T.menu_laston]
-pop   word ptr ds:[_itemOn]
-mov   word ptr ds:[_currentMenu], OFFSET _SoundDef
+push  word ptr cs:[_SoundDef + MENU_T.menu_laston]
+pop   word ptr cs:[_itemOn]
+mov   word ptr cs:[_currentMenu], OFFSET _SoundDef
 ret   
 
 ENDP
@@ -1109,9 +1350,9 @@ cmp   byte ptr ds:[_commercial], 0
 je    do_episode_menu
 mov   bx, OFFSET _NewDef
 do_episode_menu:
-push  word ptr ds:[bx + MENU_T.menu_laston]
-pop   word ptr ds:[_itemOn]
-mov   word ptr ds:[_currentMenu], bx
+push  word ptr cs:[bx + MENU_T.menu_laston]
+pop   word ptr cs:[_itemOn]
+mov   word ptr cs:[_currentMenu], bx
 pop   bx
 ret
 
@@ -1150,7 +1391,7 @@ jne   exit_verify_nightmare
 push  bx
 push  dx
 xor   dx, dx
-mov   dl, byte ptr ds:[_menu_epi]
+mov   dl, byte ptr cs:[_menu_epi]
 inc   dx
 mov   bx, 1
 mov   ax, SK_NIGHTMARE
@@ -1190,7 +1431,7 @@ call  M_StartMessage_
 jmp   exit_choose_skill
 not_nightmare:
 xor   dx, dx
-mov   dl, byte ptr ds:[_menu_epi]
+mov   dl, byte ptr cs:[_menu_epi]
 inc   dx
 mov   bx, 1
 call  G_DeferedInitNew_
@@ -1223,9 +1464,9 @@ test  ax, ax
 jne   force_shareware_msg
 
 show_episode:
-mov   byte ptr ds:[_menu_epi], al
-mov   word ptr ds:[_currentMenu], OFFSET _NewDef  
-push  word ptr ds:[_NewDef + MENU_T.menu_laston]
+mov   byte ptr cs:[_menu_epi], al
+mov   word ptr cs:[_currentMenu], OFFSET _NewDef  
+push  word ptr cs:[_NewDef + MENU_T.menu_laston]
 jmp   pop_and_exit_m_episode
 
 
@@ -1240,10 +1481,10 @@ xor   dx, dx
 lea   ax, [bp - 0100h]
 xor   bx, bx
 call  M_StartMessage_
-mov   word ptr ds:[_currentMenu], OFFSET _ReadDef1
-push  word ptr ds:[_ReadDef1 + MENU_T.menu_laston]
+mov   word ptr cs:[_currentMenu], OFFSET _ReadDef1
+push  word ptr cs:[_ReadDef1 + MENU_T.menu_laston]
 pop_and_exit_m_episode:
-pop   word ptr ds:[_itemOn]
+pop   word ptr cs:[_itemOn]
 LEAVE_MACRO 
 pop   dx
 pop   cx
@@ -1310,9 +1551,9 @@ PROC    M_Options_ NEAR
 PUBLIC  M_Options_
 
 
-push  word ptr ds:[_OptionsDef + MENU_T.menu_laston]
-pop   word ptr ds:[_itemOn]
-mov   word ptr ds:[_currentMenu], OFFSET _OptionsDef
+push  word ptr cs:[_OptionsDef + MENU_T.menu_laston]
+pop   word ptr cs:[_itemOn]
+mov   word ptr cs:[_currentMenu], OFFSET _OptionsDef
 ret   
 
 
@@ -1348,10 +1589,10 @@ cmp   al, 'y' ; 079h
 jne   exit_endgame_response
 push  bx
 ;    currentMenu->lastOn = itemOn;
-mov   bx,  word ptr ds:[_currentMenu]
+mov   bx,  word ptr cs:[_currentMenu]
 
-push  word ptr ds:[_itemOn]
-pop   word ptr ds:[bx + MENU_T.menu_laston]
+push  word ptr cs:[_itemOn]
+pop   word ptr cs:[bx + MENU_T.menu_laston]
 mov   byte ptr ds:[_menuactive], 0
 ;call  D_StartTitle_
 ; inlined
@@ -1416,9 +1657,9 @@ PUBLIC  M_ReadThis_
 cmp   byte ptr ds:[_is_ultimate], 0
 jne   M_ReadThis2_
 
-push  word ptr ds:[_ReadDef1 + MENU_T.menu_laston]
-pop   word ptr ds:[_itemOn]
-mov   word ptr ds:[_currentMenu], OFFSET _ReadDef1
+push  word ptr cs:[_ReadDef1 + MENU_T.menu_laston]
+pop   word ptr cs:[_itemOn]
+mov   word ptr cs:[_currentMenu], OFFSET _ReadDef1
 ret      
 
 
@@ -1427,9 +1668,9 @@ ENDP
 PROC    M_ReadThis2_ NEAR
 PUBLIC  M_ReadThis2_
 
-push  word ptr ds:[_ReadDef2 + MENU_T.menu_laston]
-pop   word ptr ds:[_itemOn]
-mov   word ptr ds:[_currentMenu], OFFSET _ReadDef2
+push  word ptr cs:[_ReadDef2 + MENU_T.menu_laston]
+pop   word ptr cs:[_itemOn]
+mov   word ptr cs:[_currentMenu], OFFSET _ReadDef2
 ret   
    
 
@@ -1439,9 +1680,9 @@ ENDP
 PROC    M_FinishReadThis_ NEAR
 PUBLIC  M_FinishReadThis_
 
-push  word ptr ds:[_MainDef + MENU_T.menu_laston]
-pop   word ptr ds:[_itemOn]
-mov   word ptr ds:[_currentMenu], OFFSET _MainDef
+push  word ptr cs:[_MainDef + MENU_T.menu_laston]
+pop   word ptr cs:[_itemOn]
+mov   word ptr cs:[_currentMenu], OFFSET _MainDef
 ret   
    
 
@@ -1753,7 +1994,7 @@ PUBLIC  M_StartMessage_
 
 push  cx
 
-mov   word ptr ds:[_messageRoutine], dx
+mov   word ptr cs:[_messageRoutine], dx
 mov   byte ptr cs:[_messageNeedsInput], bl
 mov   byte ptr cs:[_messageToPrint], 1
 mov   byte ptr ds:[_menuactive], 1
@@ -2121,10 +2362,10 @@ not_response_char:
 mov   dl, byte ptr cs:[_messageLastMenuActive]
 mov   byte ptr cs:[_messageToPrint], cl ; 0
 mov   byte ptr ds:[_menuactive], dl
-cmp   word ptr ds:[_messageRoutine], cx ; 0
+cmp   word ptr cs:[_messageRoutine], cx ; 0
 je    no_message_routine
 
-call  word ptr ds:[_messageRoutine]
+call  word ptr cs:[_messageRoutine]
 no_message_routine:
 mov   byte ptr ds:[_menuactive], cl  ; 0
 
@@ -2198,8 +2439,8 @@ mov   ax, OFFSET _ReadDef1
 je    use_readdef1
 mov   ax, OFFSET _ReadDef2
 use_readdef1:
-mov   word ptr ds:[_currentMenu], ax
-mov   word ptr ds:[_itemOn], cx 
+mov   word ptr cs:[_currentMenu], ax
+mov   word ptr cs:[_itemOn], cx 
 jmp   play_switch_sound_and_exit_m_responder_return_1
 
 
@@ -2217,8 +2458,8 @@ jmp   play_switch_sound_and_exit_m_responder_return_1
 
 do_key_f4:
 call  M_StartControlPanel_
-mov   word ptr ds:[_currentMenu], OFFSET _SoundDef
-mov   word ptr ds:[_itemOn], cx ; 0 , sound_e_sfx_vol
+mov   word ptr cs:[_currentMenu], OFFSET _SoundDef
+mov   word ptr cs:[_itemOn], cx ; 0 , sound_e_sfx_vol
 jmp   play_switch_sound_and_exit_m_responder_return_1
 
 do_key_f5:
@@ -2267,13 +2508,13 @@ pop   bx
 retf  
 menu_is_active:
 
-mov   dx, word ptr ds:[_itemOn]
+mov   dx, word ptr cs:[_itemOn]
 xchg  ax, si
 mov   al, SIZEOF_MENUITEM_T
 mul   dl
 xchg  ax, si
-mov   bx, word ptr ds:[_currentMenu]
-mov   di, word ptr ds:[bx + MENU_T.menu_menuitems]
+mov   bx, word ptr cs:[_currentMenu]
+mov   di, word ptr cs:[bx + MENU_T.menu_menuitems]
 add   si, di
 
 ; al is key
@@ -2312,42 +2553,42 @@ do_menu_key_uparrow:
 loop_next_up:
 cmp   dx, cx
 jne   just_dec_itemon
-mov   dl, byte ptr ds:[bx + MENU_T.menu_numitems]
+mov   dl, byte ptr cs:[bx + MENU_T.menu_numitems]
 just_dec_itemon:
 dec   dx
 mov   al, SIZEOF_MENUITEM_T
 mul   dl
 xchg  ax, si
 add   si, di
-cmp   byte ptr ds:[si + MENUITEM_T.menuitem_status], -1
+cmp   byte ptr cs:[si + MENUITEM_T.menuitem_status], -1
 je    loop_next_up
 finish_key_upordown:
-mov   word ptr ds:[_itemOn], dx
+mov   word ptr cs:[_itemOn], dx
 mov   dx, SFX_PSTOP
 jmp   play_sound_and_exit_m_responder_return_1
 do_menu_key_enter:
-cmp   word ptr ds:[si + MENUITEM_T.menuitem_routine], cx
+cmp   word ptr cs:[si + MENUITEM_T.menuitem_routine], cx
 je    exit_m_responder_return_1_3
-cmp   byte ptr ds:[si + MENUITEM_T.menuitem_status], cl
+cmp   byte ptr cs:[si + MENUITEM_T.menuitem_status], cl
 je    exit_m_responder_return_1_3
 jmp   handle_rest_of_enter_case
 
 
 do_menu_key_backspace:
 
-mov   word ptr ds:[bx + MENU_T.menu_laston], dx
-mov   ax, word ptr ds:[bx + MENU_T.menu_prevMenu]
+mov   word ptr cs:[bx + MENU_T.menu_laston], dx
+mov   ax, word ptr cs:[bx + MENU_T.menu_prevMenu]
 cmp   ax, cx
 je    exit_m_responder_return_1_3
-mov   word ptr ds:[_currentMenu], ax
+mov   word ptr cs:[_currentMenu], ax
 xchg  ax, bx
-push  word ptr ds:[bx + MENU_T.menu_laston]
-pop   word ptr ds:[_itemOn]
+push  word ptr cs:[bx + MENU_T.menu_laston]
+pop   word ptr cs:[_itemOn]
 jmp   play_switch_sound_and_exit_m_responder_return_1
 handle_default:
 jmp   do_menu_key_default
 do_menu_key_escape:
-mov   word ptr ds:[bx + MENU_T.menu_laston], dx
+mov   word ptr cs:[bx + MENU_T.menu_laston], dx
 mov   byte ptr ds:[_menuactive], cl ; 0
 mov   byte ptr ds:[_inhelpscreens], cl ; 0
 cmp   byte ptr ds:[_screenblocks], 9
@@ -2357,26 +2598,26 @@ do_menu_key_downarrow:
 loop_next_down:
 inc   dx
 add   si, SIZEOF_MENUITEM_T
-cmp   dl, byte ptr ds:[bx + MENU_T.menu_numitems]
+cmp   dl, byte ptr cs:[bx + MENU_T.menu_numitems]
 jne   dont_reset_itemon
 mov   dx, cx
 mov   si, di
 dont_reset_itemon:
 
-cmp   byte ptr ds:[si + MENUITEM_T.menuitem_status], -1
+cmp   byte ptr cs:[si + MENUITEM_T.menuitem_status], -1
 je    loop_next_down
 jmp   finish_key_upordown
 do_menu_key_rightarrow:
 inc   cx
 do_menu_key_leftarrow:
 ; cx already 0 in left arrow case
-cmp   word ptr ds:[si + MENUITEM_T.menuitem_routine], 0
+cmp   word ptr cs:[si + MENUITEM_T.menuitem_routine], 0
 je    exit_m_responder_return_1_3
-cmp   byte ptr ds:[si + MENUITEM_T.menuitem_status], 2
+cmp   byte ptr cs:[si + MENUITEM_T.menuitem_status], 2
 jne   exit_m_responder_return_1_3
 
 xchg  ax, cx
-call  word ptr ds:[si + MENUITEM_T.menuitem_routine]
+call  word ptr cs:[si + MENUITEM_T.menuitem_routine]
 
 
 play_stnmov_sound_and_exit_m_responder_return_1:
@@ -2402,7 +2643,7 @@ do_menu_key_default:
 ; di is currentMenu->menuItems
 
 
-mov   cl, byte ptr ds:[bx + MENU_T.menu_numitems]
+mov   cl, byte ptr cs:[bx + MENU_T.menu_numitems]
 lea   bx, [si + SIZEOF_MENUITEM_T] ; add one
 mov   si, dx
 inc   si
@@ -2412,7 +2653,7 @@ jge   skip_first_loop
 
 check_next_alphakey:
 
-cmp   al, byte ptr ds:[bx + MENUITEM_T.menuitem_alphakey]
+cmp   al, byte ptr cs:[bx + MENUITEM_T.menuitem_alphakey]
 je    found_key_stop
 add   bx, SIZEOF_MENUITEM_T
 inc   si
@@ -2422,7 +2663,7 @@ skip_first_loop:
 xor   si, si
 
 check_next_alphakey_2:
-cmp   al, byte ptr ds:[di + MENUITEM_T.menuitem_alphakey]
+cmp   al, byte ptr cs:[di + MENUITEM_T.menuitem_alphakey]
 je    found_key_stop
 add   di, SIZEOF_MENUITEM_T
 inc   si
@@ -2447,10 +2688,10 @@ just_play_sound:
 mov   dx, SFX_SWTCHX
 jmp   play_sound_and_exit_m_responder_return_1
 handle_rest_of_enter_case:
-mov   word ptr ds:[bx + MENU_T.menu_laston], dx
+mov   word ptr cs:[bx + MENU_T.menu_laston], dx
 
 
-cmp   byte ptr ds:[si + MENUITEM_T.menuitem_status], 2
+cmp   byte ptr cs:[si + MENUITEM_T.menuitem_status], 2
 jne   status_not_2
 mov   ax, 1
 mov   dx, SFX_STNMOV
@@ -2459,7 +2700,7 @@ status_not_2:
 xchg  ax, dx
 mov   dx, SFX_PISTOL
 do_enter_call:
-call  word ptr ds:[si + MENUITEM_T.menuitem_routine]
+call  word ptr cs:[si + MENUITEM_T.menuitem_routine]
 
 jmp   play_sound_and_exit_m_responder_return_1
 do_key_f11:
@@ -2478,7 +2719,7 @@ call  I_SetPalette_
 jmp   exit_m_responder_return_1
 
 found_key_stop:
-mov   word ptr ds:[_itemOn], si
+mov   word ptr cs:[_itemOn], si
 mov   dx, SFX_PSTOP
 jmp   play_sound_and_exit_m_responder_return_1
 
@@ -2492,9 +2733,9 @@ PUBLIC  M_StartControlPanel_
 cmp   byte ptr ds:[_menuactive], 0
 jne   exit_m_startcontrolpanel
 mov   byte ptr ds:[_menuactive], 1
-push  word ptr ds:[_MainDef + MENU_T.menu_laston]
-mov   word ptr ds:[_currentMenu], OFFSET _MainDef
-pop   word ptr ds:[_itemOn]
+push  word ptr cs:[_MainDef + MENU_T.menu_laston]
+mov   word ptr cs:[_currentMenu], OFFSET _MainDef
+pop   word ptr cs:[_itemOn]
 exit_m_startcontrolpanel:
 ret   
 
@@ -2618,30 +2859,30 @@ jmp   do_m_drawer_exit
 
 
 no_message_to_print:
-mov   bx, word ptr ds:[_currentMenu]
+mov   bx, word ptr cs:[_currentMenu]
 cmp   byte ptr ds:[_menuactive], al ; 0
 je    jump_to_do_m_drawer_exit
 
 call  Z_QuickMapMenu_ ; todo remove
-cmp   word ptr ds:[bx + MENU_T.menu_routine], 0
+cmp   word ptr cs:[bx + MENU_T.menu_routine], 0
 je    no_menu_routine
-call  word ptr ds:[bx + MENU_T.menu_routine]
+call  word ptr cs:[bx + MENU_T.menu_routine]
 no_menu_routine:
 
-mov   di, word ptr ds:[bx + MENU_T.menu_x]
-mov   al, byte ptr ds:[bx + MENU_T.menu_y]
+mov   di, word ptr cs:[bx + MENU_T.menu_x]
+mov   al, byte ptr cs:[bx + MENU_T.menu_y]
 cbw
 xchg  ax, si
-mov   al, byte ptr ds:[bx + MENU_T.menu_numitems]
+mov   al, byte ptr cs:[bx + MENU_T.menu_numitems]
 mov   ah, SIZEOF_MENUITEM_T
 mul   ah
-mov   bx, word ptr ds:[bx + MENU_T.menu_menuitems]
+mov   bx, word ptr cs:[bx + MENU_T.menu_menuitems]
 add   ax, bx
 mov   word ptr cs:[SELFMODIFY_lastmenuitem+2], ax
 inc   bx ; + MENUITEM_T.menuitem_name
 
 loop_next_menu_patch:
-mov   al, byte ptr ds:[bx]
+mov   al, byte ptr cs:[bx]
 test  al, al
 js    dont_draw_this_item
 
@@ -2666,17 +2907,15 @@ jl    loop_next_menu_patch
 done_with_menuitems:
 
 mov   bx, word ptr ds:[_whichSkull]
-mov   bl, byte ptr ds:[bx + _skullName]
-xor   bh, bh
-SHIFT_MACRO sal bx 2
+mov   bl, byte ptr cs:[bx + _skullName] ; preshifted
 les   bx, dword ptr cs:[_menupatches + bx]
 mov   cx, es
-mov   si, word ptr ds:[_currentMenu]
+mov   si, word ptr cs:[_currentMenu]
 xor   dx, dx
-mov   dl, byte ptr ds:[si + MENU_T.menu_y]
+mov   dl, byte ptr cs:[si + MENU_T.menu_y]
 
 mov   al, LINEHEIGHT
-mul   byte ptr ds:[_itemOn] 
+mul   byte ptr cs:[_itemOn] 
 add   dx, ax
 sub   dx, 5
 lea   ax, [di - SKULLXOFF]
@@ -2708,9 +2947,9 @@ PUBLIC  M_SetupNextMenu_
 
 push  bx
 mov   bx, ax
-mov   bx, word ptr ds:[bx + MENU_T.menu_laston]
-mov   word ptr ds:[_currentMenu], ax
-mov   word ptr ds:[_itemOn], bx
+mov   bx, word ptr cs:[bx + MENU_T.menu_laston]
+mov   word ptr cs:[_currentMenu], ax
+mov   word ptr cs:[_itemOn], bx
 pop   bx
 ret   
 @
@@ -2894,10 +3133,10 @@ jl loop_load_next_menugraphic
 
 xor  ax, ax
 mov  bx, OFFSET _MainDef
-mov  word ptr ds:[_currentMenu], bx
+mov  word ptr cs:[_currentMenu], bx
 mov  byte ptr ds:[_menuactive], al
-push word ptr ds:[bx + MENU_T.menu_laston]
-pop  word ptr ds:[_itemOn]
+push word ptr cs:[bx + MENU_T.menu_laston]
+pop  word ptr cs:[_itemOn]
 mov  byte ptr ds:[_whichSkull], al
 mov  word ptr ds:[_skullAnimCounter], 10
 mov  byte ptr cs:[_messageToPrint], al
@@ -2911,22 +3150,28 @@ mov  byte ptr ds:[_screenSize], al
 cmp  byte ptr ds:[_commercial], 0
 je   done_with_commercial_menu_mod
 
-dec  byte ptr ds:[_MainDef + MENU_T.menu_numitems]
-add  byte ptr ds:[_MainDef + MENU_T.menu_y], 8
+dec  byte ptr cs:[_MainDef + MENU_T.menu_numitems]
+add  byte ptr cs:[_MainDef + MENU_T.menu_y], 8
 
 ;		MainMenu[readthis] = MainMenu[quitdoom];
-push ds
+push cs
+pop  ds
+push cs
 pop  es
 lea  di, [_MainMenu + (SIZEOF_MENUITEM_T * MENUITEM_MAIN_READTHIS)]
 lea  si, [_MainMenu + (SIZEOF_MENUITEM_T * MENUITEM_MAIN_QUITDOOM)]
 mov  cx, SIZEOF_MENUITEM_T
 rep  movsb
 
-mov  word ptr ds:[_NewDef + MENU_T.menu_prevMenu], OFFSET _MainDef
-mov  word ptr ds:[_ReadDef1 + MENU_T.menu_routine], OFFSET M_DrawReadThisRetail_
-mov  word ptr ds:[_ReadDef1 + MENU_T.menu_x], 330
-mov  word ptr ds:[_ReadDef1 + MENU_T.menu_y], 165
-mov  word ptr ds:[_ReadMenu1 + MENUITEM_T.menuitem_routine], OFFSET M_FinishReadThis_
+push ss
+pop  ds
+
+
+mov  word ptr cs:[_NewDef + MENU_T.menu_prevMenu], OFFSET _MainDef
+mov  word ptr cs:[_ReadDef1 + MENU_T.menu_routine], OFFSET M_DrawReadThisRetail_
+mov  word ptr cs:[_ReadDef1 + MENU_T.menu_x], 330
+mov  word ptr cs:[_ReadDef1 + MENU_T.menu_y], 165
+mov  word ptr cs:[_ReadMenu1 + MENUITEM_T.menuitem_routine], OFFSET M_FinishReadThis_
 
 
 done_with_commercial_menu_mod:	

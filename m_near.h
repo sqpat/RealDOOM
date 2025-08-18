@@ -602,8 +602,7 @@
 
 #define skullAnimCounter   			      (*((int16_t __near*)               (_NULL_OFFSET + 0x0B18)))
 #define whichSkull       			      (*((int16_t __near*)               (_NULL_OFFSET + 0x0B1A)))
-#define skullName				          (((int8_t __near*)         	  	 (_NULL_OFFSET + 0x0B1C)))
-// b1e unused
+// b1c-b1cf unused
 #define STRING_HELP1                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0B20))
 #define STRING_HELP2                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0B26))
 #define STRING_HELP                       ((int8_t __near *)                 (_NULL_OFFSET + 0x0B2C))
@@ -1019,80 +1018,6 @@ extern uint16_t hu_font[HU_FONTSIZE];
 
 
  
-
-#if (EXE_VERSION >= EXE_VERSION_FINAL)
-extern int16_t	p1text;
-extern int16_t	p2text;
-extern int16_t	p3text;
-extern int16_t	p4text;
-extern int16_t	p5text;
-extern int16_t	p6text;
-
-extern int16_t	t1text;
-extern int16_t	t2text;
-extern int16_t	t3text;
-extern int16_t	t4text;
-extern int16_t	t5text;
-extern int16_t	t6text;
-#endif
-
-
-// extern int8_t   menu_messageString[105];
-extern int16_t  messageLastMenuActive;
-extern boolean  messageNeedsInput;
-extern void     (__near *messageRoutine)(int16_t response);
-
-extern int16_t  itemOn;                 // menu item skull is on
-
-extern menu_t   __near* currentMenu;      
-
-
-
-
-
-
-extern menuitem_t MainMenu[6];
-extern menu_t  MainDef;
-
-
-
-extern menuitem_t EpisodeMenu[4];
-
-extern menu_t  EpiDef;
-//
-// NEW GAME
-//
-
-extern menuitem_t NewGameMenu[5];
-extern menu_t  NewDef;
-
-
-extern menuitem_t OptionsMenu[8];
-extern menu_t  OptionsDef;
-
-//
-// Read This! MENU 1 & 2
-//
-
-extern menuitem_t ReadMenu1[1];
-extern menu_t  ReadDef1;
-
-
-extern menuitem_t ReadMenu2[1];
-extern menu_t  ReadDef2;
-
-//
-// SOUND VOLUME MENU
-//
-
-extern menuitem_t SoundMenu[4];
-extern menu_t  SoundDef;
-extern menuitem_t LoadMenu[6];
-extern menu_t  LoadDef;
-extern menuitem_t SaveMenu[6];
-extern menu_t  SaveDef;
-extern int8_t     menu_epi;
-
 
 
 

@@ -678,35 +678,6 @@ uint16_t hu_font[HU_FONTSIZE];
 
  
 
-#if (EXE_VERSION >= EXE_VERSION_FINAL)
-int16_t	p1text = P1TEXT;
-int16_t	p2text = P2TEXT;
-int16_t	p3text = P3TEXT;
-int16_t	p4text = P4TEXT;
-int16_t	p5text = P5TEXT;
-int16_t	p6text = P6TEXT;
-
-int16_t	t1text = T1TEXT;
-int16_t	t2text = T2TEXT;
-int16_t	t3text = T3TEXT;
-int16_t	t4text = T4TEXT;
-int16_t	t5text = T5TEXT;
-int16_t	t6text = T6TEXT;
-#endif
-
-
-
-// 1 = message to be printed
-// ...and here is the message string!
-// int8_t                   menu_messageString[105];
-
-// message x & y
-int16_t                     messageLastMenuActive;
-
-// timed message = no input from user
-boolean                 messageNeedsInput;
-
-void    (__near *messageRoutine)(int16_t response);
 
 
 
@@ -714,76 +685,6 @@ void    (__near *messageRoutine)(int16_t response);
 
 
 
-// old save description before edit
-
-
-int16_t           itemOn;                 // menu item skull is on
-
-
-// current menudef
-menu_t __near* currentMenu;      
-
-
-#ifndef CODEGEN_SKIP_MENU
-
-void __near M_ChooseSkill(int16_t choice);
-void __near M_NewGame(int16_t choice);
-void __near M_Options(int16_t choice);
-void __near M_LoadGame(int16_t choice);
-void __near M_SaveGame(int16_t choice);
-void __near M_QuitDOOM(int16_t choice);
-void __near M_Episode(int16_t choice);
-void __near M_EndGame(int16_t choice);
-void __near M_ChangeMessages(int16_t choice);
-void __near M_ChangeDetail(int16_t choice);
-void __near M_SizeDisplay(int16_t choice);
-void __near M_Sound(int16_t choice);
-void __near M_ChangeSensitivity(int16_t choice);
-void __near M_ReadThis(int16_t choice);
-void __near M_ReadThis2(int16_t choice);
-void __near M_FinishReadThis(int16_t choice);
-void __near M_LoadSelect(int16_t choice);
-void __near M_SaveSelect(int16_t choice);
-void __near M_SfxVol(int16_t choice);
-void __near M_MusicVol(int16_t choice);
-
-
-
-void __near M_ReadThis(int16_t choice);
-void __near M_ReadThis2(int16_t choice);
-
-void __near M_DrawMainMenu(void);
-void __near M_DrawEpisode(void);
-void __near M_DrawMainMenu(void);
-void __near M_DrawNewGame(void);
-void __near M_DrawOptions(void);
-void __near M_DrawLoad(void);
-void __near M_DrawSave(void);
-void __near M_DrawSound(void);
-void __near M_DrawReadThis1(void);
-void __near M_DrawReadThis2(void);
-void __near M_DrawReadThisRetail(void);
-
-
-
-
-menuitem_t MainMenu[]={
-    {1,MENUPATCH_M_NGAME,M_NewGame,'n'},
-    {1,MENUPATCH_M_OPTION,M_Options,'o'},
-    {1,MENUPATCH_M_LOADG,M_LoadGame,'l'},
-    {1,MENUPATCH_M_SAVEG,M_SaveGame,'s'},
-    {1,MENUPATCH_M_RDTHIS,M_ReadThis,'r'},
-    {1,MENUPATCH_M_QUITG,M_QuitDOOM,'q'}
-};
-
-menu_t  MainDef ={
-    main_end,
-    NULL,
-    MainMenu,
-    M_DrawMainMenu,
-    97,64,
-    0
-};
 
 
 
@@ -796,168 +697,17 @@ menu_t  MainDef ={
 #define sound_end 4
 
 
-menuitem_t EpisodeMenu[]={
-    {1,MENUPATCH_M_EPI1, M_Episode,'k'},
-    {1,MENUPATCH_M_EPI2, M_Episode,'t'},
-    {1,MENUPATCH_M_EPI3, M_Episode,'i'},
-    {1,MENUPATCH_M_EPI4, M_Episode,'t'}
-};
 
-
-menu_t  EpiDef ={
-    3,             		// # of menu items. overwritten when is_ultimate is true
-    &MainDef,           // previous menu
-    EpisodeMenu,        // menuitem_t ->
-    M_DrawEpisode,      // drawing routine ->
-    48,63,              // x,y
-    ep1                 // lastOn
-};
-
-
-
-menuitem_t NewGameMenu[]={
-    {1,MENUPATCH_M_JKILL,       M_ChooseSkill, 'i'},
-    {1,MENUPATCH_M_ROUGH,       M_ChooseSkill, 'h'},
-    {1,MENUPATCH_M_HURT,        M_ChooseSkill, 'h'},
-    {1,MENUPATCH_M_ULTRA,       M_ChooseSkill, 'u'},
-    {1,MENUPATCH_M_NMARE,       M_ChooseSkill, 'n'}
-};
-
-menu_t  NewDef ={
-    newg_end,           // # of menu items
-    &EpiDef,            // previous menu
-    NewGameMenu,        // menuitem_t ->
-    M_DrawNewGame,      // drawing routine ->
-    48,63,              // x,y
-    hurtme              // lastOn
-};
-
-
-
-
-menuitem_t OptionsMenu[]={
-    {1,MENUPATCH_M_ENDGAM,      M_EndGame,'e'},
-    {1,MENUPATCH_M_MESSG,       M_ChangeMessages,'m'},
-    {1,MENUPATCH_M_DETAIL,      M_ChangeDetail,'g'},
-    {2,MENUPATCH_M_SCRNSZ,      M_SizeDisplay,'s'},
-    {-1,-1,0},
-    {2,MENUPATCH_M_MSENS,       M_ChangeSensitivity,'m'},
-    {-1,-1,0},
-    {1,MENUPATCH_M_SVOL,        M_Sound,'s'}
-};
-
-menu_t  OptionsDef ={
-    opt_end,
-    &MainDef,
-    OptionsMenu,
-    M_DrawOptions,
-    60,37,
-    0
-};
-
-//
-// Read This! MENU 1 & 2
-//
-
-
-menuitem_t ReadMenu1[] ={
-    {1,-1,M_ReadThis2,0}
-};
-
-menu_t  ReadDef1 ={
-    read1_end,
-    &MainDef,
-    ReadMenu1,
-    M_DrawReadThis1,
-    280,185,
-    0
-};
-
-
-menuitem_t ReadMenu2[]={
-    {1,-1,M_FinishReadThis,0}
-};
-
-menu_t  ReadDef2 ={
-    read2_end,
-    &ReadDef1,
-    ReadMenu2,
-#if (EXE_VERSION < EXE_VERSION_FINAL)
-    M_DrawReadThis2,
-#else
-    M_DrawReadThisRetail,
-#endif
-    330,175,
-    0
-};
-
-//
-// SOUND VOLUME MENU
-//
-
-menuitem_t SoundMenu[]={
-    {2,MENUPATCH_M_SFXVOL,M_SfxVol,'s'},
-    {-1,-1,0},
-    {2,MENUPATCH_M_MUSVOL,M_MusicVol,'m'},
-    {-1,-1,0}
-};
-
-menu_t  SoundDef ={
-    sound_end,
-    &OptionsDef,
-    SoundMenu,
-    M_DrawSound,
-    80,64,
-    0
-};
 
 //
 // LOAD GAME MENU
 //
 #define load_end 6
 
-menuitem_t LoadMenu[]={
-    {1,-1, M_LoadSelect,'1'},
-    {1,-1, M_LoadSelect,'2'},
-    {1,-1, M_LoadSelect,'3'},
-    {1,-1, M_LoadSelect,'4'},
-    {1,-1, M_LoadSelect,'5'},
-    {1,-1, M_LoadSelect,'6'}
-};
-
-menu_t  LoadDef ={
-    load_end,
-    &MainDef,
-    LoadMenu,
-    M_DrawLoad,
-    80,54,
-    0
-};
-
-//
-// SAVE GAME MENU
-//
-menuitem_t SaveMenu[]={
-    {1,-1, M_SaveSelect,'1'},
-    {1,-1, M_SaveSelect,'2'},
-    {1,-1, M_SaveSelect,'3'},
-    {1,-1, M_SaveSelect,'4'},
-    {1,-1, M_SaveSelect,'5'},
-    {1,-1, M_SaveSelect,'6'}
-};
-
-menu_t  SaveDef ={
-    load_end,
-    &MainDef,
-    SaveMenu,
-    M_DrawSave,
-    80,54,
-    0
-};
-#endif
 
 
-int8_t     menu_epi;
+
+
 
 
 
