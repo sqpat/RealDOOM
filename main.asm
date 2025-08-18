@@ -19,25 +19,25 @@ INSTRUCTION_SET_MACRO
 
 
 
-EXTRN resetDS_:PROC
-EXTRN I_ReadMouse_:PROC
-EXTRN D_PostEvent_:PROC
-EXTRN M_CheckParm_:PROC
+EXTRN resetDS_:FAR
+EXTRN I_ReadMouse_:NEAR
+EXTRN D_PostEvent_:NEAR
+EXTRN M_CheckParm_:NEAR
 EXTRN HU_Responder_:NEAR
 EXTRN ST_Responder_:NEAR
-EXTRN AM_Responder_:PROC
-EXTRN FastDiv3216u_:PROC
-EXTRN Z_SetOverlay_:PROC
-EXTRN fopen_:PROC
-EXTRN fgetc_:PROC
-EXTRN fputc_:PROC
-EXTRN fclose_:PROC
+EXTRN AM_Responder_:NEAR
+EXTRN FastDiv3216u_:FAR
+EXTRN Z_SetOverlay_:FAR
+EXTRN fopen_:FAR
+EXTRN fgetc_:FAR
+EXTRN fputc_:FAR
+EXTRN fclose_:FAR
 ; todo only include if necessary via flags...
-;EXTRN DEBUG_PRINT_:PROC
+;EXTRN DEBUG_PRINT_:FAR
 
 EXTRN I_WaitVBL_:FAR
-EXTRN Z_QuickMapPalette_:PROC
-EXTRN Z_QuickMapByTaskNum_:PROC
+EXTRN Z_QuickMapPalette_:FAR
+EXTRN Z_QuickMapByTaskNum_:FAR
 
 
 EXTRN _singledemo:BYTE

@@ -186,7 +186,7 @@ void __near I_Shutdown(void) {
 // or 0 if not present
 
 
-int16_t __far M_CheckParm (int8_t *check) {
+int16_t __near M_CheckParm (int8_t *check) {
     int16_t		i;
 	// ASSUMES *check is LOWERCASE. dont pass in uppercase!
 	// myargv must be tolower()

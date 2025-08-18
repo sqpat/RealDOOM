@@ -19,11 +19,11 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
  
-EXTRN fread_:PROC
-EXTRN fopen_:PROC
-EXTRN fclose_:PROC
-EXTRN fseek_:PROC
-EXTRN locallib_far_fread_:PROC
+EXTRN fread_:FAR
+EXTRN fopen_:FAR
+EXTRN fclose_:FAR
+EXTRN fseek_:FAR
+EXTRN locallib_far_fread_:FAR
 .DATA
 
 EXTRN _currentoverlay:BYTE

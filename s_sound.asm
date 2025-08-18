@@ -27,15 +27,15 @@ EXTRN SFX_SetOrigin_:FAR
 EXTRN SFX_PlayPatch_:FAR
 EXTRN SFX_StopPatch_:FAR
 
-EXTRN fopen_:PROC
-EXTRN fseek_:PROC
-EXTRN fread_:PROC
-EXTRN fclose_:PROC
-EXTRN locallib_far_fread_:PROC
+EXTRN fopen_:FAR
+EXTRN fseek_:FAR
+EXTRN fread_:FAR
+EXTRN fclose_:FAR
+EXTRN locallib_far_fread_:FAR
 ; todo only include if necessary via flags...
-EXTRN DEBUG_PRINT_:PROC
-EXTRN TS_Dispatch_:PROC
-EXTRN TS_ScheduleMainTask_:PROC
+EXTRN DEBUG_PRINT_:FAR
+EXTRN TS_Dispatch_:FAR
+EXTRN TS_ScheduleMainTask_:FAR
 
 .DATA
 

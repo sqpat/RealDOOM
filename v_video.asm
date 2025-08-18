@@ -21,16 +21,16 @@ INSTRUCTION_SET_MACRO
 ; NOTE i think a lot of this function is an optimization candidate
 ; todo move jump mult table to cs...
 
-EXTRN M_AddToBox16_:PROC  
+EXTRN M_AddToBox16_:NEAR
 .DATA
 
 
 .CODE
-EXTRN W_CacheLumpNameDirect_:PROC  
-EXTRN Z_QuickMapScratch_5000_:PROC  
-EXTRN W_GetNumForName_:PROC  
+EXTRN W_CacheLumpNameDirect_:FAR
+EXTRN Z_QuickMapScratch_5000_:FAR  
+EXTRN W_GetNumForName_:FAR  
 EXTRN W_CacheLumpNumDirectFragment_:PROC  
-EXTRN Z_QuickMapByTaskNum_:PROC
+EXTRN Z_QuickMapByTaskNum_:FAR
 
 
 

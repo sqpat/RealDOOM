@@ -922,7 +922,7 @@ retf
 
 ENDP
 
-
+COMMENT @
 PROC FixedMulBig1632_ FAR
 PUBLIC FixedMulBig1632_
 
@@ -980,12 +980,12 @@ ADD  DX, CX    ; add high bits back
 
 retf
 
-
+@
 
 ENDP
 
 ; first param is unsigned so DX and sign can be skipped
-PROC FixedMul16u32_
+PROC FixedMul16u32_   FAR
 PUBLIC FixedMul16u32_
 
 ; AX  *  CX:BX
@@ -1025,14 +1025,14 @@ ADC DX, BX     ; add high word
 
 
 
-ret
+retf
 
 
 
 ENDP
 
 
-
+COMMENT @
 ; unused??
 ; both params unsigned. drop all sign extensions..
 PROC FixedMul16u32u_
@@ -1072,10 +1072,10 @@ ADC DX, 0      ; add carry bit
 ret
 
 ENDP
-
+@
 
 ; both params unsigned. drop all sign extensions.. and dont shift by 16 like fixed algos!
-PROC FastMul16u32u_
+PROC FastMul16u32u_  FAR
 PUBLIC FastMul16u32u_
 
 ; AX  *  CX:BX
@@ -1107,7 +1107,7 @@ MUL  BX        ; AX * BX
 ADD  DX, CX    ; add 
 
 
-ret
+retf
 
 ENDP
 
@@ -1485,7 +1485,7 @@ endp
 
 IF COMPISA LE COMPILE_286
 
-PROC FixedDiv_
+PROC FixedDiv_   FAR
 PUBLIC FixedDiv_
 
 
@@ -1632,7 +1632,7 @@ ENDP
 
 ENDIF
 
-PROC FastDiv32u16u_ 
+PROC FastDiv32u16u_   FAR
 PUBLIC FastDiv32u16u_
 
 ;DX:AX / BX (?)
@@ -1657,14 +1657,14 @@ mov dx, ds  ; retrieve q1
             ; q0 already in ax
 mov bx, ss
 mov ds, bx  ; restored ds
-ret
+retf
 
 
 
 
 ENDP
 
-PROC FastDiv3216u_ 
+PROC FastDiv3216u_    FAR
 PUBLIC FastDiv3216u_
 
 ;DX:AX / BX (?)
@@ -1714,7 +1714,7 @@ neg dx
 
 mov bx, ss
 mov ds, bx  ; restored ds
-ret
+retf
 
 
 

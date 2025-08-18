@@ -80,7 +80,7 @@ void   __near G_DoCompleted (void);
 void   __near G_DoSaveGame (void); 
 
 // Called by main loop.
-boolean __far AM_Responder (event_t __far* ev);
+boolean __near AM_Responder (event_t __far* ev);
 
  
 #define MAXPLMOVE               (forwardmove[1]) 

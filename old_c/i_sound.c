@@ -43,15 +43,13 @@
 // I_StartupTimer
 //
 
-/*
 void I_StartupTimer(void) {
 	DEBUG_PRINT("I_StartupTimer()\n");
 	// installs master timer.  Must be done before StartupTimer()!
 	TS_ScheduleMainTask();
 	TS_Dispatch();
 }
-*/
-/*
+
 void I_PauseSong() {
     playingstate = ST_PAUSED;
     if (playingdriver){
@@ -65,7 +63,7 @@ void I_ResumeSong() {
         playingdriver->resumeMusic();
     }
 }
-*/
+
 
 // void I_SetSfxVolume(uint8_t volume) {
 //     snd_SfxVolume = volume;
@@ -76,7 +74,7 @@ void I_ResumeSong() {
 //
 
 //todo
-/*
+
 #define MUSIC_SEGMENT EMS_PAGE
 int16_t I_LoadSong(uint16_t lump) {
     // always use MUSIC SEGMENT, 0
@@ -152,7 +150,7 @@ int16_t I_LoadSong(uint16_t lump) {
 
 	
 }
-*/
+
 
 
 //
@@ -174,7 +172,7 @@ int16_t I_LoadSong(uint16_t lump) {
 // }
 
 
-/*
+
 int8_t I_StartSound(sfxenum_t sfx_id,  uint8_t vol, uint8_t sep) {
     // hacks out certain PC sounds
     // if (snd_SfxDevice == snd_PC
@@ -243,7 +241,7 @@ void I_UpdateSoundParams(int8_t handle, uint8_t sep, uint8_t vol) {
 // Sound startup stuff
 //
 
-int16_t __far M_CheckParm (int8_t *check);
+int16_t __near M_CheckParm (int8_t *check);
 
 
 void I_sndArbitrateCards(void) {
@@ -366,9 +364,9 @@ void I_sndArbitrateCards(void) {
     }
 }
 
-    */
+    
 
-/*
+
 
 void MUS_ServiceRoutine(){
 
@@ -503,14 +501,14 @@ void MUS_ServiceRoutine(){
 
 
 }
-*/
+
 
 
 //
 // I_StartupSound
 // Inits all sound stuff
 //
-/*
+
 
 void __far I_StartupSound(void) {
     int16_t useport = 0;
@@ -613,4 +611,4 @@ void __far I_StartupSound(void) {
     I_StartupTimer();
 
 }
-*/
+

@@ -49,7 +49,7 @@
 
 #define FREAD_BUFFER_SIZE 512
 
-void  locallib_far_fread(void __far* dest, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
+void  __far locallib_far_fread(void __far* dest, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
 	// cheating with size/element count
 	uint16_t totalsize = elementsize * elementcount;
 	uint16_t totalreadsize = 0;
@@ -96,7 +96,7 @@ void  _far_read(int16_t filehandle, void __far* dest, uint16_t totalsize) {
 }
 */
 // unused outside of debug stuff
-filelength_t  locallib_far_fwrite(void __far* src, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
+filelength_t  __far locallib_far_fwrite(void __far* src, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
 	// cheating with size/element count
 	uint16_t totalsize = elementsize * elementcount;
 	filelength_t totalreadsize = 0;
@@ -149,7 +149,7 @@ void _fmemmove(char __far *dest, const void __far *src, size_t size);
 //
 
 
-int16_t W_CheckNumForName (int8_t* name) {
+int16_t __far W_CheckNumForName (int8_t* name) {
     union {
 		int8_t    s[9];
 		int16_t     x[4];
@@ -222,7 +222,7 @@ int16_t W_CheckNumForName (int8_t* name) {
 // W_GetNumForName
 // Calls W_CheckNumForName, but bombs out if not found.
 //
-int16_t W_GetNumForName(int8_t* name) {
+int16_t __far W_GetNumForName(int8_t* name) {
 	int16_t i;
 
     i = W_CheckNumForName (name);
@@ -274,7 +274,7 @@ int32_t __far W_LumpLength (int16_t lump) {
 //
 
 
-void W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t size ) {
+void __far W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t size ) {
 	//filelength_t         c;  // size, leave as 32 bit
     lumpinfo_t __far* l;
 #ifdef CHECK_FOR_ERRORS
@@ -337,7 +337,7 @@ void W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t size ) {
  
  
 
-void W_CacheLumpNameDirect (int8_t* name, byte __far* dest ) {
+void __far W_CacheLumpNameDirect (int8_t* name, byte __far* dest ) {
 	W_ReadLump(W_GetNumForName(name), dest, 0, 0);
 }
 
@@ -352,7 +352,7 @@ void __far W_CacheLumpNumDirectWithOffset (int16_t lump, byte __far* dest, uint1
 
  
 // used for stuff > 64k, especially titlepics, to draw one ems frame at a tiem
-void W_CacheLumpNumDirectFragment (int16_t lump, byte __far* dest,int32_t offset){
+void __far W_CacheLumpNumDirectFragment (int16_t lump, byte __far* dest,int32_t offset){
  
 	W_ReadLump(lump, dest, offset, 16384);
     

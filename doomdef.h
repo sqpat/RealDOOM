@@ -570,9 +570,9 @@ void __far  _fstrncpy(char __far *dst, const char __far *src, size_t n);
 
 #endif
 
-void  locallib_far_fread(void __far* dest, uint16_t elementsize, uint16_t elementcount, FILE * stream);
-filelength_t locallib_far_fwrite(void __far* dest, uint16_t elementsize, uint16_t elementcount, FILE * stream);
-void  locallib_far_read(int16_t filehandle, void __far* dest, uint16_t totalsize);
+void  __far locallib_far_fread(void __far* dest, uint16_t elementsize, uint16_t elementcount, FILE * stream);
+filelength_t __far locallib_far_fwrite(void __far* dest, uint16_t elementsize, uint16_t elementcount, FILE * stream);
+void  __far locallib_far_read(int16_t filehandle, void __far* dest, uint16_t totalsize);
 
 #define FAR_fwrite locallib_far_fwrite
 #define FAR_fread locallib_far_fread

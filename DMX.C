@@ -170,7 +170,7 @@ void TS_Startup(void){
    Schedules a new task for processing.
 ---------------------------------------------------------------------*/
 
-void TS_ScheduleMainTask( ) {
+void __far TS_ScheduleMainTask( ) {
 	TS_Startup();
 	
 	_disable();
@@ -190,7 +190,7 @@ void TS_ScheduleMainTask( ) {
    Begins processing of all inactive tasks.
 ---------------------------------------------------------------------*/
 
-void TS_Dispatch(){
+void __far TS_Dispatch(){
 	
 	_disable();
 	HeadTask.active = true;

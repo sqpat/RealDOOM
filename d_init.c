@@ -392,7 +392,7 @@ void DUMP_MEMORY_TO_FILE() {
 int16_t main ( int16_t		argc, int8_t**	argv ) ;
  //void fakefunc();
 
-int16_t __far M_CheckParm (int8_t *check);
+int16_t __near M_CheckParm (int8_t *check);
 
 
 //

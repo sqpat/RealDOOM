@@ -84,8 +84,6 @@ MAXLIGHTZ_UNSHIFTED            = 0800h
 
 
 
-; todo: eventually call these directly... 
-;EXTRN W_CacheLumpNumDirect_:PROC
 
 
 

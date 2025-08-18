@@ -131,23 +131,6 @@
 
 // #define __DEMO_ONLY_BINARY 1
 
-#ifdef __DEMO_ONLY_BINARY
-void __far AM_Drawer(void) {
-}
-
-void __far AM_Ticker(void) {
-}
-
-boolean __far AM_Responder(event_t __far* ev){
-	return false;
-}
-
-void __far AM_Stop(void) {
-}
-
-#else
-
-
  
 #define NUMTHINTRIANGLEGUYLINES (sizeof(thintriangle_guy)/sizeof(mline_t))
 
@@ -436,7 +419,7 @@ void __near AM_maxOutWindowScale(void) {
 //
 // Handle events (user inputs) in automap mode
 //
-boolean __far AM_Responder ( event_t __far* ev ) {
+boolean __near AM_Responder ( event_t __far* ev ) {
 
 	boolean rc;
 	int8_t text[100];
@@ -1128,4 +1111,3 @@ void __far AM_Drawer (void) {
     V_MarkRect(0, 0, automap_screenwidth, automap_screenheight);
 
 }
-#endif

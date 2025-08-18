@@ -31,9 +31,9 @@ typedef struct task{
 typedef uint8_t sfxenum_t;
 
 
-void TS_ScheduleMainTask();
-void TS_Dispatch(void);
-void TS_SetTaskRate(task *Task, uint16_t rate);
+void __far TS_ScheduleMainTask();
+void __far TS_Dispatch(void);
+
 
 int8_t __far SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol);
 void __far SFX_StopPatch(int8_t handle);

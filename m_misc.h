@@ -49,7 +49,7 @@ uint8_t __far M_Random(void);
  // bbox coordinates
 
 // Bounding box functions.
-void M_AddToBox16( int16_t __near* box,int16_t x,  int16_t y );
+void __near M_AddToBox16( int16_t __near* box,int16_t x,  int16_t y );
 
 
  
