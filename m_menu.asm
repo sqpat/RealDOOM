@@ -3019,7 +3019,7 @@ ENDP
 _doomdata_bin_string:
 db "DOOMDATA.BIN", 0
 
-
+SIZEOF_LUMP_NAME = 9
 
 PROC    M_Init_ FAR
 PUBLIC  M_Init_
@@ -3044,7 +3044,7 @@ call  fseek_   ;	fseek(fp, MENUDATA_DOOMDATA_OFFSET, SEEK_SET);
 
 lea   ax, [bp - MENUGRAPHICS_STR_SIZE]
 mov   si, ax
-mov   dx, 9
+mov   dx, SIZEOF_LUMP_NAME
 mov   bx, NUM_MENU_ITEMS
 mov   cx, di
 call  fread_	;fread(menugraphics, 9, NUM_MENU_ITEMS, fp);
@@ -3054,12 +3054,14 @@ call  fclose_
 
 ; si is start of array.
 
-mov   ax, bp
+lea   ax, [bp - SIZEOF_LUMP_NAME]
 cmp   byte ptr ds:[_is_ultimate], 0
-jne   is_ultimate_dont_remove_lump
+je    is_not_ultimate_dont_add_back_lump
 
-sub   ax, 9   ; end loop one earlier
-is_ultimate_dont_remove_lump:
+mov   byte ptr cs:[_EpiDef + MENU_T.menu_numitems], 4
+
+add   ax, SIZEOF_LUMP_NAME   ; end loop one earlier
+is_not_ultimate_dont_add_back_lump:
 
 mov   word ptr cs:[SELFMODIFY_menugraphics_loop_end+2], ax ; loop end condition
 
@@ -3124,7 +3126,7 @@ dw _W_CacheLumpNumDirect_addr
 
 
 iter_load_next_menugraphic:
-add   si, 9
+add   si, SIZEOF_LUMP_NAME
 SELFMODIFY_menugraphics_loop_end:
 cmp   si, 01000h
 jl loop_load_next_menugraphic

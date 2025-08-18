@@ -710,17 +710,14 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den) {
 
 // check for doom ultimate.
 void check_is_ultimate(){
-/*
 	int16_t words[3];
 	FILE* fp = fopen("doom.wad", "rb");
 	fread (words, sizeof(int16_t), 3, fp);
 	fclose(fp);
 	if (words[2] == 0x0902){
 		is_ultimate = true;
-		EpiDef.numitems = 4;
 	
 	}
-	*/
 }
 
 
