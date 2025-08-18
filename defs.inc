@@ -429,7 +429,7 @@ _currentsong_start_offset =          _NULL_OFFSET + 00618h
 _currentsong_playing_offset =        _NULL_OFFSET + 0061Ah
 _currentsong_ticks_to_process =      _NULL_OFFSET + 0061Ch
 _loops_enabled =    			     _NULL_OFFSET + 0061Eh
-; 61F unused
+_inhelpscreens =    			     _NULL_OFFSET + 0061Fh
 _Z_QuickMapMusicPageFrame_addr = 	 _NULL_OFFSET + 00620h
 
 _sightzstart =				         _NULL_OFFSET + 00624h
@@ -480,7 +480,7 @@ _la_damage = 		   			     _NULL_OFFSET + 006E0h
 _linetarget = 		   			     _NULL_OFFSET + 006E2h
 _linetarget_pos = 		   			 _NULL_OFFSET + 006E4h
 _attackrange16 = 		   			 _NULL_OFFSET + 006E8h
-;6EA unused
+_usergame =		   		         	 _NULL_OFFSET + 006EAh
 _crushchange = 		   			 	 _NULL_OFFSET + 006EBh
 _leveltime =     		   			 _NULL_OFFSET + 006ECh
 _fopen_rb_argument =                 _NULL_OFFSET + 006F0h
@@ -540,18 +540,42 @@ _anims =				     		 _NULL_OFFSET + 00990h
 _switchlist =				         _NULL_OFFSET + 00A50h
 _skullAnimCounter =				     _NULL_OFFSET + 00B18h
 _whichSkull =				         _NULL_OFFSET + 00B1Ah
-; b1c to b1f unused
 
-;b1e unused
+_borderdrawcount =       		     _NULL_OFFSET + 00B1Ch
+_message_dontfuckwithme =            _NULL_OFFSET + 00B1Dh
+_message_on =     			         _NULL_OFFSET + 00B1Eh
+_message_nottobefuckedwith =         _NULL_OFFSET + 00B1Fh
+
 _STRING_HELP1   =      				 _NULL_OFFSET + 00B20h
 _STRING_HELP2   =      				 _NULL_OFFSET + 00B26h
 _STRING_HELP    =      				 _NULL_OFFSET + 00B2Ch
-_STRING_newline =      				 _NULL_OFFSET + 00B31h
+
+_demosequence =	       		         _NULL_OFFSET + 00B31h
+
+_STRING_newline =                    _NULL_OFFSET + 00B32h
+
+_advancedemo =	       			     _NULL_OFFSET + 00B34h
+_usegamma =	       			         _NULL_OFFSET + 00B35h
+_sfxVolume =	       			     _NULL_OFFSET + 00B36h
+_musicVolume =	       			     _NULL_OFFSET + 00B37h
+_snd_SfxVolume =      			     _NULL_OFFSET + 00B38h
+_detailLevel =	       			     _NULL_OFFSET + 00B39h
+_screenSize =	       			     _NULL_OFFSET + 00B3Ah
+_mouseSensitivity =   			     _NULL_OFFSET + 00B3Bh
+_showMessages =       			     _NULL_OFFSET + 00B3Ch
+_quickSaveSlot =      			     _NULL_OFFSET + 00B3Dh
+_savegameslot =       			     _NULL_OFFSET + 00B3Eh
+_modifiedgame =       			     _NULL_OFFSET + 00B3Fh
+_savename = 	      			     _NULL_OFFSET + 00B40h
+_hu_font =	 	      			     _NULL_OFFSET + 00B50h
 
 
-; 828-82f free
+_viewactivestate =	 	     	     _NULL_OFFSET + 00BCEh
+_menuactivestate =	 	     	     _NULL_OFFSET + 00BCFh
+_channels =	 	  			   	     _NULL_OFFSET + 00BD0h
 
-_flatcache_nodes =				     _NULL_OFFSET + 00B40h
+
+_flatcache_nodes =				     _NULL_OFFSET + 00C10h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

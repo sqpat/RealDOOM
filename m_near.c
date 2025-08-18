@@ -49,10 +49,6 @@
 //int16_t dmxCodes[NUM_SCARDS]; // the dmx code for a given card
 
 
-uint8_t  snd_SfxVolume; // maximum volume for sound
-
-
-
 
 
 
@@ -69,15 +65,12 @@ skill_t         startskill;
 int8_t          startepisode;
 int8_t          startmap;
 boolean         autostart;
-boolean         advancedemo;
-boolean         modifiedgame;
 
 
 
 //
 //  DEMO LOOP
 //
-int8_t             demosequence;
 int16_t             pagetic;
 int8_t                    *pagename;
 
@@ -102,31 +95,6 @@ uint16_t cachedrenderplayertics = 0;
 int8_t		eventhead;
 int8_t		eventtail;
 
-
-
- 
-
-//
-// defaulted values
-//
-uint8_t                     mouseSensitivity;       // has default
-
-// Show messages has default, 0 = off, 1 = on
-uint8_t                     showMessages;
-
-uint8_t         sfxVolume;
-uint8_t         musicVolume;
-
-// Blocky mode, has default, 0 = high, 1 = normal
-uint8_t                     detailLevel;
-
-// temp for screenblocks (0-9)
-uint8_t                     screenSize;
-
-// -1/255 = no quicksave slot picked!
-int8_t                     quickSaveSlot;
-
-boolean                 inhelpscreens;
 
 
 
@@ -420,22 +388,17 @@ boolean novideo; // if true, stay in text mode for debugging
 
 
 void (__interrupt __far_func *oldkeyboardisr) (void) = NULL;
-boolean             viewactivestate = false;
-boolean             menuactivestate = false;
 boolean             inhelpscreensstate = false;
 boolean             fullscreen = false;
 gamestate_t         oldgamestate = -1;
-uint8_t                 borderdrawcount;
 ticcount_t maketic;
 ticcount_t gametime;
 
 uint8_t				numChannels;	
-uint8_t				usegamma;
 
 
  
  
-boolean         	usergame;               // ok to save / end game 
  
 boolean         	timingdemo;             // if true, exit with report on completion 
 //boolean         	nodrawers;              // for comparative timing purposes 
@@ -502,8 +465,6 @@ int16_t             dclicktime2;
 int16_t             dclickstate2;
 int16_t             dclicks2;
 
- 
-int8_t             savegameslot;
 
 
 
@@ -643,40 +604,9 @@ int8_t     st_stuff_buf[ST_MSGWIDTH];
 
 
 
-
-boolean		message_on;
-boolean			message_dontfuckwithme;
-boolean		message_nottobefuckedwith;
-
 uint8_t		message_counter;
 
 
-
-// offsets within segment stored
-// long long time ago to get binary size down, constants like these were hardcoded.
-uint16_t hu_font[HU_FONTSIZE];
-/*
-  ={ 8468,
-	8368, 8252, 8124, 7980, 7848,
-	7788, 7668, 7548, 7452, 7376,
-	7316, 7236, 7180, 7080, 6948,
-	6864, 6724, 6592, 6476, 6352,
-	6220, 6100, 5960, 5828, 5744,
-	5672, 5592, 5512, 5432, 5304,
-	5148, 5016, 4876, 4736, 4604,
-	4472, 4344, 4212, 4076, 4004,
-	3884, 3744, 3624, 3476, 3340,
-	3216, 3088, 2952, 2812, 2692,
-	2572, 2440, 2332, 2184, 2024,
-	1900, 1772, 1680, 1580, 1488,
-	1392, 1288
-};
-*/
-
-
-
-
- 
 
 
 
@@ -844,7 +774,6 @@ boolean    					tnt = false;
 #endif
 
 
-int8_t    savename[16];
 int8_t versionstring[12] = "version 109";  // hardcoded from VERSION. todo dynamically generate?
 
 int8_t  currentoverlay = OVERLAY_ID_UNMAPPED;
@@ -972,9 +901,6 @@ uint8_t sfx_priority[] = {
   60
 };
 
-
-// the set of channels available
-channel_t	channels[MAX_SFX_CHANNELS];
 
 // These are not used, but should be (menu).
 // Maximum volume of a sound effect.

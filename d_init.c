@@ -326,7 +326,7 @@ int16_t   I_GetSfxLumpNum(sfxenum_t sfx);
 // Sets channels, SFX and music volume,
 //  allocates channel buffer, sets S_sfx lookup.
 //
-void  __near S_Init (uint8_t		sfxVolume, uint8_t		musicVolume) {
+void  __near S_Init () {
 
 	void (__far* LoadSFXWadLumps)() = 							        		  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 LoadSFXWadLumpsOffset)));
 
@@ -1222,7 +1222,7 @@ R_PointToAngle(y, x);
 	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
 #endif
-	S_Init(sfxVolume, musicVolume);
+	S_Init();
 
 #if DEBUG_PRINTING
 	getStringByIndex(HU_INIT_TEXT, textbuffer);

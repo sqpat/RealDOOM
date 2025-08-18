@@ -265,8 +265,7 @@ mov   di, ST_GRAPHICS_SEGMENT
 push  di        ; v_ drawpatch arg
 sal   bx, 1
 mov   di, ax
-add   bx, word ptr cs:[_CSDATA_hu_font_ptr - OFFSET F_START_]
-mov   ax, word ptr ds:[bx]
+mov   ax, word ptr ds:[bx + _hu_font]
 mov   dx, 180   ; y coord for draw patch.
 push  ax           ; v_ drawpatch arg
 xor   bx, bx
@@ -771,8 +770,7 @@ do_draw_glyph_ftextwrite:
 sal       bx, 1
 mov       ax, ST_GRAPHICS_SEGMENT
 push      ax
-add       bx, word ptr cs:[_CSDATA_hu_font_ptr - OFFSET F_START_]
-mov       ax, word ptr ds:[bx]
+mov       ax, word ptr ds:[bx + _hu_font]
 push      ax
 mov       dx, di
 xor       bx, bx

@@ -331,7 +331,7 @@ mov   si, dx
 xor   bx, bx
 call  P_CreateThinker_
 
-cmp   word ptr [si], 0
+cmp   word ptr ds:[si], 0
 jl    exit_evstartlightstrobing
 
 loop_next_secnum_lightstrobe:
@@ -340,7 +340,7 @@ mov   dx, SLOWDARK
 xor   bx, bx
 
 call  P_SpawnStrobeFlash_
-cmp   word ptr [si], 0
+cmp   word ptr ds:[si], 0
 jge   loop_next_secnum_lightstrobe
 exit_evstartlightstrobing:
 
@@ -382,7 +382,7 @@ mov   si, dx
 
 call  P_FindSectorsFromLineTag_
 
-cmp   word ptr [si], 0
+cmp   word ptr ds:[si], 0
 jnge  exit_ev_lightchange
 
 loop_next_secnm_lightchange:

@@ -42,8 +42,6 @@ EXTRN TS_ScheduleMainTask_:PROC
 
 EXTRN _sfx_priority:BYTE
 EXTRN _numChannels:BYTE
-EXTRN _channels:WORD
-EXTRN _snd_SfxVolume:BYTE
 EXTRN _sb_voicelist:WORD
 EXTRN _musdriverstartposition:DWORD
 

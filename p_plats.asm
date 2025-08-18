@@ -208,7 +208,7 @@ mov         si, dx
 xor         bx, bx
 call        P_FindSectorsFromLineTag_
 
-cmp         word ptr [si], 0
+cmp         word ptr ds:[si], 0
 jl          jump_to_exit
 
 loop_next_secnum_doplat:
@@ -354,7 +354,7 @@ mov         ax, 01000h
 
 call        P_AddActivePlat_
 pop         si
-cmp         word ptr [si], 0
+cmp   word ptr ds:[si], 0
 jl          return_rtn_and_exit
 jmp         loop_next_secnum_doplat
 return_rtn_and_exit:
@@ -479,15 +479,15 @@ mov         ax, SIZEOF_THINKER_T
 mul         si ; dx zeroed.
 xchg        ax, si  ; si gets ptr. ax gets platref back. dx is zeroed from mul
 
-mov         si, word ptr [si + _thinkerlist + THINKER_T.t_data + PLAT_T.plat_secnum]
+mov         si, word ptr ds:[si + _thinkerlist + THINKER_T.t_data + PLAT_T.plat_secnum]
 SHIFT_MACRO shl         si 4
 
 call        P_RemoveThinker_
 
-mov         word ptr [si + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], dx ; 0
+mov         word ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], dx ; 0
 pop         si
 
-mov         word ptr [si-2], dx ; 0
+mov         word ptr ds:[si-2], dx ; 0
 
 exit_removeactiveplat:
 pop         dx

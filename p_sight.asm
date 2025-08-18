@@ -53,12 +53,12 @@ mov   si, cx    ; si gets t2_pos
 ; todo clean up this di shuffling
 mov   es, ax    ; es holds t1
 mov   di, dx    ; di gets t2
-mov   ax, word ptr [di + 4]
+mov   ax, word ptr ds:[di + 4]
 cwd   
 
 xchg  ax, cx  ; back up low
 mov   di, es    ; di gets t1 
-mov   ax, word ptr [di + 4]
+mov   ax, word ptr ds:[di + 4]
 mov   di, dx  ; back up high	di:cx holds first result
 
 mul   word ptr ds:[_numsectors]
@@ -112,8 +112,8 @@ mov   di, cx				; grab t1 again
 
 mov   cx, word ptr es:[bx + 8]
 mov   si, word ptr es:[bx + 0Ah]
-mov   ax, word ptr [di + 0Ah]
-mov   dx, word ptr [di + 0Ch]
+mov   ax, word ptr ds:[di + 0Ah]
+mov   dx, word ptr ds:[di + 0Ch]
 add   cx, ax
 adc   si, dx			; si:cx result
 
@@ -254,26 +254,26 @@ PUBLIC  P_DivlineSide_
 
 	mov  ax, dx
 	mov  dx, cx
-	mov  cx, word ptr [si + 0Ah]	; if (!node->dx.w) {
-	or   cx, word ptr [si + 8]
+	mov  cx, word ptr ds:[si + 0Ah]	; if (!node->dx.w) {
+	or   cx, word ptr ds:[si + 8]
 	; todo seems to be some repeated logic in here...
 	jne  node_dx_nonzero
-	cmp  ax, word ptr [si + 2]
+	cmp  ax, word ptr ds:[si + 2]
 	jne  node_dx_not_x
-	cmp  bx, word ptr [si]
+	cmp  bx, word ptr ds:[si]
 	je   return_2
-	cmp  ax, word ptr [si + 2]
+	cmp  ax, word ptr ds:[si + 2]
 	node_dx_not_x:
 	jl   x_less_than_nodex
 	jne  x_more_than_nodex
-	cmp  bx, word ptr [si]
+	cmp  bx, word ptr ds:[si]
 	ja   x_more_than_nodex
 	x_less_than_nodex:
-	mov  ax, word ptr [si + 0Eh]
+	mov  ax, word ptr ds:[si + 0Eh]
 	test ax, ax
 	jg   divline_side_return_1
 	jne  return_0
-	cmp  word ptr [si + 0Ch], 0
+	cmp  word ptr ds:[si + 0Ch], 0
 	jbe  return_0
 	divline_side_return_1:
 	mov  ax, 1
@@ -289,58 +289,58 @@ PUBLIC  P_DivlineSide_
 	pop  di
 	ret
 	x_more_than_nodex:
-	mov  ax, word ptr [si + 0Eh]
+	mov  ax, word ptr ds:[si + 0Eh]
 	test ax, ax
 	jl   divline_side_return_1
 	xor  ax, ax
 	pop  di
 	ret
 	node_dx_nonzero:
-	mov  cx, word ptr [si + 0Eh]
-	or   cx, word ptr [si + 0Ch]
+	mov  cx, word ptr ds:[si + 0Eh]
+	or   cx, word ptr ds:[si + 0Ch]
 	jne  node_dy_nonzero
-	cmp  ax, word ptr [si + 6]
+	cmp  ax, word ptr ds:[si + 6]
 	jne  node_dy_not_y
-	cmp  bx, word ptr [si + 4]
+	cmp  bx, word ptr ds:[si + 4]
 	je   return_2
 	node_dy_not_y:
-	mov  ax, word ptr [si + 6]
+	mov  ax, word ptr ds:[si + 6]
 	cmp  dx, ax
 	jl   y_less_than_nodey
 	jne  y_more_than_nodey
-	cmp  di, word ptr [si + 4]
+	cmp  di, word ptr ds:[si + 4]
 	ja   y_more_than_nodey
 	y_less_than_nodey:
-	mov  ax, word ptr [si + 0Ah]
+	mov  ax, word ptr ds:[si + 0Ah]
 	test ax, ax
 	jl   divline_side_return_1
 	xor  ax, ax
 	pop  di
 	ret
 	y_more_than_nodey:
-	mov  ax, word ptr [si + 0Ah]
+	mov  ax, word ptr ds:[si + 0Ah]
 	test ax, ax
 	jg   divline_side_return_1
 	jne  return_0_2
-	cmp  word ptr [si + 8], 0
+	cmp  word ptr ds:[si + 8], 0
 	ja   divline_side_return_1
 	return_0_2:
 	xor  ax, ax
 	pop  di
 	ret
 	node_dy_nonzero:
-	sub  bx, word ptr [si]
-	sbb  ax, word ptr [si + 2]
+	sub  bx, word ptr ds:[si]
+	sbb  ax, word ptr ds:[si + 2]
 
-	sub  di, word ptr [si + 4]
-	sbb  dx, word ptr [si + 6]
+	sub  di, word ptr ds:[si + 4]
+	sbb  dx, word ptr ds:[si + 6]
 	mov  di, dx
 
-	imul word ptr [si + 0Eh]
+	imul word ptr ds:[si + 0Eh]
 
 	mov  bx, dx
 	xchg ax, di	; bx:di gets result..
-	imul word ptr [si + 0Ah]
+	imul word ptr ds:[si + 0Ah]
 	cmp  dx, bx
 	jl   return_0_2
 	jne  compare_leftright
@@ -369,17 +369,17 @@ PUBLIC  P_DivlineSide16_
 
 	push cx
 	mov  cx, ax
-	mov  ax, word ptr [bx + 0Ah]
-	or   ax, word ptr [bx + 8]
+	mov  ax, word ptr ds:[bx + 0Ah]
+	or   ax, word ptr ds:[bx + 8]
 	jne  node_dx_nonzero_16
-	cmp  cx, word ptr [bx + 2]
+	cmp  cx, word ptr ds:[bx + 2]
 	je   return_2_16
-	mov  ax, word ptr [bx + 0Eh]
+	mov  ax, word ptr ds:[bx + 0Eh]
 	jg   test_x_highbits_16
 	test ax, ax
 	jg   return_1_16
 	jne  return_0_divlineside_16
-	cmp  word ptr [bx + 0Ch], 0
+	cmp  word ptr ds:[bx + 0Ch], 0
 	jbe  return_0_divlineside_16
 	return_1_16:
 	mov  ax, 1
@@ -400,15 +400,15 @@ PUBLIC  P_DivlineSide16_
 	pop  cx
 	ret  
 	node_dx_nonzero_16:
-	mov  ax, word ptr [bx + 0Eh]
-	or   ax, word ptr [bx + 0Ch]
+	mov  ax, word ptr ds:[bx + 0Eh]
+	or   ax, word ptr ds:[bx + 0Ch]
 	jne  node_dy_nonzero_16
-	mov  ax, word ptr [bx + 6]
+	mov  ax, word ptr ds:[bx + 6]
 	cmp  cx, ax
 	je   return_2_16
 	cmp  dx, ax
 	jg   test_y_highbits_16
-	mov  ax, word ptr [bx + 0Ah]
+	mov  ax, word ptr ds:[bx + 0Ah]
 	test ax, ax
 	jl   return_1_16
 	xor  ax, ax
@@ -416,11 +416,11 @@ PUBLIC  P_DivlineSide16_
 	ret
 
 	test_y_highbits_16:
-	mov  ax, word ptr [bx + 0Ah]
+	mov  ax, word ptr ds:[bx + 0Ah]
 	test ax, ax
 	jg   return_1_16
 	jne  return_0_divlineside_16_2
-	cmp  word ptr [bx + 8], 0
+	cmp  word ptr ds:[bx + 8], 0
 	ja   return_1_16
 	return_0_divlineside_16_2:
 	xor  ax, ax
@@ -431,21 +431,21 @@ PUBLIC  P_DivlineSide16_
 	push di	; need this extra register
 	; todo just mov and neg?	
 	xor  ax, ax
-	sub  ax, word ptr [bx]
-	sbb  cx, word ptr [bx + 2]
+	sub  ax, word ptr ds:[bx]
+	sbb  cx, word ptr ds:[bx + 2]
 
 	mov  di, dx
 
 	xor  ax, ax
-	sub  ax, word ptr [bx + 4]
-	sbb  di, word ptr [bx + 6]
+	sub  ax, word ptr ds:[bx + 4]
+	sbb  di, word ptr ds:[bx + 6]
 
 	xchg ax, cx		
-	imul word ptr [bx + 0Eh]
+	imul word ptr ds:[bx + 0Eh]
 	xchg ax, di		; cx:di gets result
 	mov  cx, dx
 	
-	imul word ptr [bx + 0Ah]
+	imul word ptr ds:[bx + 0Ah]
 	cmp  dx, cx
 	jl   return_0_divlineside_16_3
 	jne  test_right_left_16
@@ -769,10 +769,10 @@ mov   di, OFFSET _strace
 ; inlined P_InterceptVector2_
 
 lea   si, [bp - 01Ah]
-mov   bx, word ptr [di + 8]
-mov   cx, word ptr [di + 0Ah]
-mov   ax, word ptr [si + 0Ch]
-mov   dx, word ptr [si + 0Eh]
+mov   bx, word ptr ds:[di + 8]
+mov   cx, word ptr ds:[di + 0Ah]
+mov   ax, word ptr ds:[si + 0Ch]
+mov   dx, word ptr ds:[si + 0Eh]
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -780,10 +780,10 @@ dw _FixedMul2432_addr
 
 mov   word ptr [bp - 022h], ax
 mov   word ptr [bp - 020h], dx
-mov   bx, word ptr [di + 0Ch]
-mov   cx, word ptr [di + 0Eh]
-mov   ax, word ptr [si + 8]
-mov   dx, word ptr [si + 0Ah]
+mov   bx, word ptr ds:[di + 0Ch]
+mov   cx, word ptr ds:[di + 0Eh]
+mov   ax, word ptr ds:[si + 8]
+mov   dx, word ptr ds:[si + 0Ah]
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -797,12 +797,12 @@ mov   word ptr [bp - 01Eh], bx
 mov   word ptr [bp - 01Ch], ax
 or    ax, bx
 je    denominator_0
-mov   bx, word ptr [si + 0Ch]
-mov   cx, word ptr [si + 0Eh]
-mov   ax, word ptr [si]
-mov   dx, word ptr [si + 2]
-sub   ax, word ptr [di]
-sbb   dx, word ptr [di + 2]
+mov   bx, word ptr ds:[si + 0Ch]
+mov   cx, word ptr ds:[si + 0Eh]
+mov   ax, word ptr ds:[si]
+mov   dx, word ptr ds:[si + 2]
+sub   ax, word ptr ds:[di]
+sbb   dx, word ptr ds:[di + 2]
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -810,12 +810,12 @@ dw _FixedMul2432_addr
 
 mov   word ptr [bp - 022h], ax
 mov   word ptr [bp - 020h], dx
-mov   bx, word ptr [si + 8]
-mov   cx, word ptr [si + 0Ah]
-mov   ax, word ptr [di + 4]
-mov   dx, word ptr [di + 6]
-sub   ax, word ptr [si + 4]
-sbb   dx, word ptr [si + 6]
+mov   bx, word ptr ds:[si + 8]
+mov   cx, word ptr ds:[si + 0Ah]
+mov   ax, word ptr ds:[di + 4]
+mov   dx, word ptr ds:[di + 6]
+sub   ax, word ptr ds:[si + 4]
+sbb   dx, word ptr ds:[si + 6]
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
@@ -874,14 +874,14 @@ dw _FixedDiv_addr
 
 
 mov   bx, OFFSET _bottomslope
-cmp   dx, word ptr [bx + 2]
+cmp   dx, word ptr ds:[bx + 2]
 jg    update_bottom_slope
 jne   done_setting_bottomslope
-cmp   ax, word ptr [bx]
+cmp   ax, word ptr ds:[bx]
 jbe   done_setting_bottomslope
 update_bottom_slope:
-mov   word ptr [bx], ax
-mov   word ptr [bx + 2], dx
+mov   word ptr ds:[bx], ax
+mov   word ptr ds:[bx + 2], dx
 done_setting_bottomslope:
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
@@ -911,14 +911,14 @@ db 01Eh  ;
 dw _FixedDiv_addr
 
 mov   bx, OFFSET _topslope
-cmp   dx, word ptr [bx + 2]
+cmp   dx, word ptr ds:[bx + 2]
 jl    update_topslope
 jne   done_setting_topslope
-cmp   ax, word ptr [bx]
+cmp   ax, word ptr ds:[bx]
 jae   done_setting_topslope
 update_topslope:
-mov   word ptr [bx], ax
-mov   word ptr [bx + 2], dx
+mov   word ptr ds:[bx], ax
+mov   word ptr ds:[bx + 2], dx
 done_setting_topslope:
 les   dx, dword ptr ds:[_topslope]
 mov   ax, es
@@ -956,9 +956,9 @@ jne    is_subsector
 
 iterate_bsp_recursion:
 mov   si, OFFSET _strace
-les   bx, dword ptr [si + 4]
+les   bx, dword ptr ds:[si + 4]
 mov   cx, es
-les   ax, dword ptr [si]
+les   ax, dword ptr ds:[si]
 mov   dx, es
 
 mov   si, NODES_SEGMENT		; todo move this out?
@@ -983,9 +983,9 @@ mov   ax, word ptr es:[bx]
 call  P_CrossBSPNode_
 jnc   exit_crossbspnode
 mov   si, OFFSET _cachedt2x
-les   bx, dword ptr [si + 4]	; cachedt2y
+les   bx, dword ptr ds:[si + 4]	; cachedt2y
 mov   cx, es
-les   ax, dword ptr [si] 
+les   ax, dword ptr ds:[si] 
 mov   dx, es
 
 mov   si, NODES_SEGMENT

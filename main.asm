@@ -67,17 +67,12 @@ EXTRN _mousex:BYTE
 EXTRN _turnheld:BYTE
 EXTRN _sidemove:BYTE
 EXTRN _forwardmove:WORD
-EXTRN _savegameslot:BYTE
 
 EXTRN _myargc:WORD
 EXTRN _myargv:BYTE
 EXTRN _novideo:BYTE
 
 
-EXTRN _mouseSensitivity
-EXTRN _sfxVolume:BYTE
-EXTRN _musicVolume:BYTE
-EXTRN _showMessages:BYTE
 EXTRN _key_right:BYTE
 EXTRN _key_left:BYTE
 EXTRN _key_up:BYTE
@@ -92,9 +87,7 @@ EXTRN _usemouse:BYTE
 EXTRN _mousebfire:BYTE
 EXTRN _mousebstrafe:BYTE
 EXTRN _mousebforward:BYTE
-EXTRN _detailLevel:BYTE
 EXTRN _numChannels:BYTE
-EXTRN _usegamma:BYTE
 
 
 

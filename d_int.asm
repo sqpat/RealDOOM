@@ -19,7 +19,6 @@ INSTRUCTION_SET_MACRO
 
 .DATA
 
-EXTRN _snd_SfxVolume:BYTE
 
 .CODE
  

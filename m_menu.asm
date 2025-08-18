@@ -85,30 +85,15 @@ EXTRN Z_QuickMapWipe_:FAR
 .DATA
 
 EXTRN _sb_voicelist:WORD
-EXTRN _demosequence:BYTE
-EXTRN _advancedemo:BYTE
-EXTRN _savegameslot:BYTE
-EXTRN _savename:BYTE
 
-EXTRN _usegamma:BYTE
-EXTRN _inhelpscreens:BYTE
-EXTRN _borderdrawcount:BYTE
-EXTRN _sfxVolume:BYTE
-EXTRN _musicVolume:BYTE
-EXTRN _snd_SfxVolume:BYTE
 
-EXTRN _quickSaveSlot:BYTE
 
-EXTRN _usergame:BYTE
-EXTRN _showMessages:BYTE
-EXTRN _message_dontfuckwithme:BYTE
 
-EXTRN _mouseSensitivity:BYTE
-EXTRN _detailLevel:BYTE
 
-EXTRN _screenSize:BYTE
 
-EXTRN _hu_font:WORD
+
+
+
 
 
 

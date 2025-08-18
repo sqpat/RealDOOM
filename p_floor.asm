@@ -394,7 +394,7 @@ mov   si, dx
 
 xor   bx, bx
 call  P_FindSectorsFromLineTag_
-cmp   word ptr [si], 0
+cmp   word ptr ds:[si], 0
 
 jl    no_sectors_in_list_exit
 
@@ -485,7 +485,7 @@ do_floor_switch_case_type_default:
 
 pop   si ; pop and inc word ptr
 
-cmp   word ptr [si], 0
+cmp   word ptr ds:[si], 0
 jnl   loop_next_secnum_dofloor
 exit_ev_dofloor_and_return_rtn:
 no_sectors_in_list_exit:
@@ -795,7 +795,7 @@ cbw
 xor   bx, bx
 mov   si, dx
 call  P_FindSectorsFromLineTag_
-cmp   word ptr [si], 0
+cmp   word ptr ds:[si], 0
 jge   loop_next_secnum_buildstairs
 jmp   exit_ev_buildstairs
 
@@ -1030,7 +1030,7 @@ end_middle_loop:
 continue_buildstairs_middle_loop:
 pop   si
 
-cmp   word ptr [si], 0
+cmp   word ptr ds:[si], 0
 jl    exit_ev_buildstairs
 jmp   loop_next_secnum_buildstairs
 exit_ev_buildstairs:

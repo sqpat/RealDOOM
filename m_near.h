@@ -475,7 +475,9 @@
 #define currentsong_playing_offset        (*((uint16_t __near*)              (_NULL_OFFSET + 0x061A)))
 #define currentsong_ticks_to_process      (*((int16_t __near*)               (_NULL_OFFSET + 0x061C)))
 #define loops_enabled    			      (*((int8_t __near*)                (_NULL_OFFSET + 0x061E)))
-// 61f unused
+#define inhelpscreens    			      (*((boolean __near*)               (_NULL_OFFSET + 0x061F)))
+
+
 #define Z_QuickMapMusicPageFrame_addr     (*((uint32_t __near*)              (_NULL_OFFSET + 0x0620)))
 
 #define sightzstart					      (*((fixed_t __near*)         		 (_NULL_OFFSET + 0x0624)))
@@ -536,7 +538,9 @@
 #define linetarget	     				  (*((mobj_t  __near* __near*)       (_NULL_OFFSET + 0x06E2)))
 #define linetarget_pos  			      (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x06E4)))
 #define attackrange16		   		      (*((int16_t __near*)               (_NULL_OFFSET + 0x06E8)))
-// 6ea unused
+
+
+#define usergame		   		          (*((boolean __near*)               (_NULL_OFFSET + 0x06EA)))
 #define crushchange		   		          (*((boolean __near*)               (_NULL_OFFSET + 0x06EB)))
 #define leveltime     				      (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x06EC)))
 #define fopen_rb_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x06F0))
@@ -602,15 +606,43 @@
 
 #define skullAnimCounter   			      (*((int16_t __near*)               (_NULL_OFFSET + 0x0B18)))
 #define whichSkull       			      (*((int16_t __near*)               (_NULL_OFFSET + 0x0B1A)))
-// b1c-b1cf unused
+#define borderdrawcount       		      (*((boolean __near*)               (_NULL_OFFSET + 0x0B1C)))
+#define message_dontfuckwithme     	      (*((boolean __near*)               (_NULL_OFFSET + 0x0B1D)))
+#define message_on     				      (*((boolean __near*)               (_NULL_OFFSET + 0x0B1E)))
+#define message_nottobefuckedwith         (*((boolean __near*)               (_NULL_OFFSET + 0x0B1F)))
+
+
 #define STRING_HELP1                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0B20))
 #define STRING_HELP2                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0B26))
 #define STRING_HELP                       ((int8_t __near *)                 (_NULL_OFFSET + 0x0B2C))
-#define STRING_newline                    ((int8_t __near *)                 (_NULL_OFFSET + 0x0B31))
+
+#define demosequence	       		      (*((boolean __near*)               (_NULL_OFFSET + 0x0B31)))
+
+#define STRING_newline                    ((int8_t __near *)                 (_NULL_OFFSET + 0x0B32))
+
+#define advancedemo	       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B34)))
+#define usegamma	       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B35)))
+#define sfxVolume	       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B36)))
+#define musicVolume	       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B37)))
+#define snd_SfxVolume      			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B38)))
+#define detailLevel	       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B39)))
+#define screenSize	       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B3A)))
+#define mouseSensitivity   			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B3B)))
+#define showMessages       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B3C)))
+#define quickSaveSlot      			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B3D)))
+#define savegameslot       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B3E)))
+#define modifiedgame       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B3F)))
+#define savename                          ((int8_t __near *)                 (_NULL_OFFSET + 0x0B40))
+#define hu_font                           ((uint16_t __near *)               (_NULL_OFFSET + 0x0B50))
+
+#define viewactivestate   			      (*((boolean __near*)               (_NULL_OFFSET + 0x0BCE)))
+#define menuactivestate   			      (*((boolean __near*)               (_NULL_OFFSET + 0x0BCF)))
+#define channels   			      	  	  ((channel_t __near *)              (_NULL_OFFSET + 0x0BD0))
 
 
 
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0B40)))
+
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0C10)))
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
@@ -646,7 +678,7 @@
 
 
 
-extern uint8_t              snd_SfxVolume; // maximum volume for sound
+
 
 
 
@@ -668,12 +700,11 @@ extern int8_t               startmap;
 extern boolean              autostart;
 
 
-extern boolean              advancedemo;
-
-extern boolean              modifiedgame;
 
 
-extern int8_t               demosequence;
+
+
+
 
 extern int16_t              pagetic;
 extern int8_t               *pagename;
@@ -699,14 +730,9 @@ extern uint16_t             cachedrenderplayertics;
 extern int8_t		        eventhead;
 extern int8_t		        eventtail;
 
-extern uint8_t              mouseSensitivity;       
-extern uint8_t              showMessages;
-extern uint8_t              sfxVolume;
-extern uint8_t              musicVolume;
-extern uint8_t              detailLevel;
-extern uint8_t              screenSize;
-extern int8_t               quickSaveSlot;
-extern boolean              inhelpscreens;
+
+
+
 
 
 
@@ -861,17 +887,14 @@ extern boolean novideo; // if true, stay in text mode for debugging
 #define KBDQUESIZE 32
 
 extern void (__interrupt __far_func *oldkeyboardisr) (void);
-extern boolean             viewactivestate;
-extern boolean             menuactivestate;
 extern boolean             inhelpscreensstate;
 extern boolean             fullscreen;
 extern gamestate_t         oldgamestate;
-extern uint8_t                 borderdrawcount;
+
 extern ticcount_t maketic;
 extern ticcount_t gametime;
 
 extern uint8_t			numChannels;	
-extern uint8_t	usegamma;
 
 #define BACKUPTICS		16
 #define NUMKEYS         256 
@@ -879,7 +902,6 @@ extern uint8_t	usegamma;
 
  
 
-extern boolean         	  usergame;               // ok to save / end game 
 extern boolean         	  timingdemo;             // if true, exit with report on completion 
 extern boolean         	  noblit;                 // for comparative timing purposes 
 extern ticcount_t         starttime;              // for comparative timing purposes       
@@ -924,7 +946,7 @@ extern int16_t             dclicks;
 extern int16_t             dclicktime2;
 extern int16_t             dclickstate2;
 extern int16_t             dclicks2;
-extern int8_t             savegameslot;
+
 
 extern skill_t d_skill; 
 extern int8_t     d_episode;
@@ -1003,15 +1025,11 @@ extern int8_t     st_stuff_buf[ST_MSGWIDTH];
 
 
 
-extern boolean		message_on;
-extern boolean			message_dontfuckwithme;
-extern boolean		message_nottobefuckedwith;
 extern uint8_t		message_counter;
 
 
 
-// offsets within segment stored
-extern uint16_t hu_font[HU_FONTSIZE];
+
 
 
 
@@ -1151,7 +1169,6 @@ extern int32_t visplaneswitchcount;
 
 
 
-extern int8_t    savename[16];
 extern int8_t versionstring[12];
 
 extern int8_t  currentoverlay;
@@ -1302,7 +1319,6 @@ extern uint8_t sfx_priority[];
 
 
 
-extern channel_t	channels[MAX_SFX_CHANNELS];
 
 //extern uint16_t shift4lookup[256];
 

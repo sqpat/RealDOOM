@@ -254,7 +254,7 @@ mov   si, dx    ; si is loop secnum ptr with bp offset included.
 
 call  P_FindSectorsFromLineTag_
 
-cmp   word ptr [si], 0
+cmp   word ptr ds:[si], 0
 jl    exit_doceiling
 
 loop_next_secnum:
@@ -336,7 +336,7 @@ mov   byte ptr ds:[bx], al
 xchg  ax, dx  ; recover ceilingref
 
 call  P_AddActiveCeiling_
-cmp   word ptr [si], 0
+cmp   word ptr ds:[si], 0
 jnl   loop_next_secnum
 
 exit_doceiling:
