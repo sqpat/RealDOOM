@@ -63,7 +63,7 @@ EXTRN locallib_strcmp_:FAR
 EXTRN combine_strings_:FAR
 EXTRN locallib_strncpy_:FAR
 EXTRN locallib_strcpy_:FAR
-EXTRN combine_strings_near_:FAR
+
 
 EXTRN I_Quit_:FAR
 EXTRN I_WaitVBL_:FAR
@@ -1555,13 +1555,13 @@ call  getStringByIndex_
 
 mov   bx, _STRING_newline
 lea   ax, [bp + 014h]
-call  combine_strings_near_
+call  M_CombineStringsNear_
 
 lea   bx, [bp + 07Eh]
 lea   ax, [bp + 014h]
 mov   dx, ax
 
-call  combine_strings_near_
+call  M_CombineStringsNear_
 
 mov   bx, 1
 mov   dx, OFFSET M_QuitResponse_
@@ -3025,9 +3025,43 @@ retf
 ENDP
 
 
+PROC M_CombineStringsNear_
+;void __far combine_strings_near(char __near *dest, char __near *src1, char __near *src2){
+
+push si
+push di
+
+xchg ax, di
+mov  si, dx
+push ds
+pop  es
+
+do_next_char_1:
+lodsb
+test al, al
+stosb
+jne  do_next_char_1
+
+dec  di ; back one up
+
+mov  si, bx
+
+do_next_char_2:
+lodsb
+test al, al
+stosb
+jne  do_next_char_2
+
+
+; leave last char, was the '\0'
 
 
 
+pop  di
+pop  si
+ret
+
+ENDP
 
 PROC    M_MENU_ENDMARKER_ NEAR
 PUBLIC  M_MENU_ENDMARKER_
