@@ -35,7 +35,6 @@ file am_map.obj
 file st_stuff.obj
 file hu_stuff.obj
 file hu_lib.obj
-file m_menu.obj
 file d_algo.obj
 file dmx.obj
 file d_int.obj
@@ -48,6 +47,10 @@ file g_setup.obj
 file r_setup.obj
 file st_setup.obj
 file hu_setup.obj
+
+
+NEWSEGMENT
+file m_menu.obj
 
 NEWSEGMENT
 file f_wipe.obj

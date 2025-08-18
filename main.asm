@@ -23,7 +23,6 @@ EXTRN resetDS_:PROC
 EXTRN I_ReadMouse_:PROC
 EXTRN D_PostEvent_:PROC
 EXTRN M_CheckParm_:PROC
-EXTRN M_StartControlPanel_:NEAR
 EXTRN HU_Responder_:NEAR
 EXTRN ST_Responder_:NEAR
 EXTRN AM_Responder_:PROC
@@ -1700,9 +1699,11 @@ jmp   print_last_digit
 
 
 ENDP
-
 call_startcontrolpanel:
-call  M_StartControlPanel_
+; should already be in menu task?
+db    09Ah
+dw    M_STARTCONTROLPANELOFFSET, MENU_CODE_AREA_SEGMENT
+
 exit_gresponder_return_1:
 mov   al, 1
 pop   si

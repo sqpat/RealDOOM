@@ -276,8 +276,6 @@ void __near makethreecharint(int16_t j, char __far *str ){
 
 }
 
-void __far M_LoadFromSaveGame(int8_t i);
-
 
 void __near HU_Init(void){
 
@@ -455,7 +453,7 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den);
 
 // this is only done in init... pull into there?
 
-void __far M_Init(void);
+
 /*
 void __near M_Reload(void) {
 	// reload menu graphics

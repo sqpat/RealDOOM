@@ -215,6 +215,16 @@ void __far GetPainState();
 void __far GetSpawnHealth();
 void __far P_CreateThinkerFar();
 
+void __far M_MENU_STARTMARKER();
+void __far M_MENU_ENDMARKER();
+void __far M_Init();
+void __far M_Responder (event_t __far* ev);
+void __far M_StartControlPanel();
+
+void __far M_Drawer();
+void __far M_LoadFromSaveGame();
+void __far M_DrawPause();
+
 
 /*
 void checkDS(int16_t a) {
@@ -242,7 +252,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     // Export .inc file with segment values, etc from the c coe
     FILE*  fp = fopen("doomcode.bin", "wb");
     //FILE*  fp2 = fopen("doomcod2.bin", "wb");
-	uint16_t codesize[29];
+	uint16_t codesize[30];
 	uint16_t muscodesize[4];
 	uint16_t maxmuscodesize = 0;
     int8_t i;
@@ -353,6 +363,9 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fwrite(&codesize[6], 2, 1, fp);
     FAR_fwrite((byte __far *)P_SIGHT_STARTMARKER, codesize[6], 1, fp);
 
+    codesize[29] = FP_OFF(M_MENU_ENDMARKER) - FP_OFF(M_MENU_STARTMARKER);
+    fwrite(&codesize[29], 2, 1, fp);
+    FAR_fwrite((byte __far *)M_MENU_STARTMARKER, codesize[29], 1, fp);
 
     codesize[7] = FP_OFF(F_WIPE_ENDMARKER) - FP_OFF(F_WIPE_STARTMARKER);
     fwrite(&codesize[7], 2, 1, fp);
@@ -505,9 +518,16 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "#define P_TickerOffset                          0x%X\n", FP_OFF(P_Ticker      )                    - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "#define P_SpawnSpecialsOffset                   0x%X\n", FP_OFF(P_SpawnSpecials)                   - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "#define P_GivePowerOffset                       0x%X\n", FP_OFF(P_GivePower)                        - FP_OFF(P_SIGHT_STARTMARKER));
+
+    // menu  code offsets
+    fprintf(fp, "#define M_InitOffset                            0x%X\n", FP_OFF(M_Init)                            - FP_OFF(M_MENU_STARTMARKER));
+    fprintf(fp, "#define M_ResponderOffset                       0x%X\n", FP_OFF(M_Responder)                       - FP_OFF(M_MENU_STARTMARKER));
+    fprintf(fp, "#define M_DrawerOffset                          0x%X\n", FP_OFF(M_Drawer      )                    - FP_OFF(M_MENU_STARTMARKER));
+    fprintf(fp, "#define M_LoadFromSaveGameOffset                0x%X\n", FP_OFF(M_LoadFromSaveGame)                - FP_OFF(M_MENU_STARTMARKER));
+    fprintf(fp, "#define M_DrawPauseOffset                       0x%X\n", FP_OFF(M_DrawPause)                       - FP_OFF(M_MENU_STARTMARKER));
+    fprintf(fp, "#define M_StartControlPanelOffset               0x%X\n", FP_OFF(M_StartControlPanel)               - FP_OFF(M_MENU_STARTMARKER));
     
-
-
+    
 	fprintf(fp, "\n");
  
 	fprintf(fp, "#define R_DrawColumn24CodeSize         0x%X\n", codesize[0]);
@@ -528,6 +548,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "#define R_MaskedConstantsFLCodeSize    0x%X\n", codesize[26]);
 	fprintf(fp, "#define R_DrawSkyColumnCodeSize        0x%X\n", codesize[4]);
 	fprintf(fp, "#define R_DrawSkyColumnFLCodeSize      0x%X\n", codesize[28]);
+	fprintf(fp, "#define M_MenuCodeSize                 0x%X\n", codesize[29]);
 	fprintf(fp, "#define R_BSP24CodeSize                0x%X\n", codesize[12]);
 	fprintf(fp, "#define R_BSP16CodeSize                0x%X\n", codesize[22]);
 	fprintf(fp, "#define R_BSP0CodeSize                 0x%X\n", codesize[16]);
@@ -584,6 +605,9 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "GETDEATHSTATEADDR     = 0%Xh\n",                   FP_OFF(GetDeathState)                     - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "GETPAINSTATEADDR      = 0%Xh\n",                   FP_OFF(GetPainState)                      - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "GETSPAWNHEALTHADDR    = 0%Xh\n",                   FP_OFF(GetSpawnHealth)                    - FP_OFF(P_SIGHT_STARTMARKER));
+
+    fprintf(fp, "M_STARTCONTROLPANELOFFSET  = 0%Xh\n",            FP_OFF(M_StartControlPanel)                 - FP_OFF(M_MENU_STARTMARKER));
+    fprintf(fp, "M_DRAWEROFFSET             = 0%Xh\n",            FP_OFF(M_Drawer)                            - FP_OFF(M_MENU_STARTMARKER));
 
 	// P_AddActiveCeiling_addr =		 	(uint32_t)(P_AddActiveCeiling);
 	// P_AddActivePlat_addr =		 		(uint32_t)(P_AddActivePlat);

@@ -999,11 +999,30 @@ mov       dx, ax    ; store "done" result from wipe_doMelt_
 
 call      I_UpdateNoBlit_Fwipe_local_
 
+push      dx
+push      cx
+push      si
 
-mov       ax, 1
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _M_Drawer_addr
+; Z_QuickmapMenu_. pages in menu code and graphics for m_drawer.
+Z_QUICKMAPAI8 pageswapargs_menu_offset_size INDEXED_PAGE_5000_OFFSET
+
+; mov   byte ptr ds:[_currenttask], TASK_MENU
+db    09Ah
+dw    M_DRAWEROFFSET, MENU_CODE_AREA_SEGMENT
+; mov   byte ptr ds:[_currenttask], TASK_WIPE
+
+; NOTE: m_drawer clobbers 5000-6fff via Z_QuickMapMenu, 
+; but in turn may call Z_QuickMapStatus_ which clobbers 7000-7FFF and 9C00-9FFF
+; Z_QuickMapWipe_. page back necessary fwipe data etc
+Z_QUICKMAPAI4 pageswapargs_wipe_offset_size    INDEXED_PAGE_9000_OFFSET
+Z_QUICKMAPAI8_NO_DX (pageswapargs_wipe_offset_size+4)  INDEXED_PAGE_6000_OFFSET
+;call      Z_QuickMapScratch_5000_
+;Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
+
+pop       si
+pop       cx
+pop       dx
+
 
 call      I_FinishUpdate_Fwipe_local_
 

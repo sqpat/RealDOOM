@@ -267,7 +267,7 @@ _I_SetPalette_addr = 	        	 _NULL_OFFSET + 00208h
 
 
 _V_MarkRect_addr =                   _NULL_OFFSET + 0020Ch
-_M_Drawer_addr =                     _NULL_OFFSET + 00210h
+;_M_Drawer_addr =                     _NULL_OFFSET + 00210h
 
 _wipeduration =                      _NULL_OFFSET + 00214h
 _detailshift2minus =  		 		 _NULL_OFFSET + 00216h

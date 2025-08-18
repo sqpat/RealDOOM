@@ -2296,6 +2296,10 @@ mov   byte ptr ds:[_menuactive], cl  ; 0
 mov   dx, SFX_SWTCHX
 jmp   play_sound_and_exit_m_responder_return_1
 
+jump_to_exit_m_responder_return_0:
+didnt_find_key_in_nonmenu:
+jmp   exit_m_responder_return_0
+
 
 no_message_to_print_mresponder:
  
@@ -2352,9 +2356,6 @@ xchg  ax, cx
 call  M_SizeDisplay_
 
 jmp   play_stnmov_sound_and_exit_m_responder_return_1
-jump_to_exit_m_responder_return_0:
-didnt_find_key_in_nonmenu:
-jmp   exit_m_responder_return_0
 
 do_key_f1:
 call  M_StartControlPanel_
@@ -2648,7 +2649,7 @@ jmp   play_sound_and_exit_m_responder_return_1
 ENDP
 
 
-PROC    M_StartControlPanel_ NEAR
+PROC    M_StartControlPanel_ FAR
 PUBLIC  M_StartControlPanel_
 
 
@@ -2659,7 +2660,7 @@ push  word ptr cs:[_MainDef + MENU_T.menu_laston]
 mov   word ptr cs:[_currentMenu], OFFSET _MainDef
 pop   word ptr cs:[_itemOn]
 exit_m_startcontrolpanel:
-ret   
+retf   
 
 ENDP
 
@@ -2675,7 +2676,7 @@ PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
 sub   sp, 02Ch
-push  ax       ; isfromwipe - 2Eh
+
 xor   ax, ax
 mov   byte ptr ds:[_inhelpscreens], al  ; 0
 cmp   byte ptr cs:[_messageToPrint], al ; 0
@@ -2785,7 +2786,7 @@ mov   bx, word ptr cs:[_currentMenu]
 cmp   byte ptr ds:[_menuactive], al ; 0
 je    jump_to_do_m_drawer_exit
 
-call  M_Z_QuickmapMenu_ ; todo remove
+
 cmp   word ptr cs:[bx + MENU_T.menu_routine], 0
 je    no_menu_routine
 call  word ptr cs:[bx + MENU_T.menu_routine]
@@ -2843,24 +2844,12 @@ sub   dx, 5
 lea   ax, [di - SKULLXOFF]
 call  dword ptr ds:[_V_DrawPatchDirect_addr]
 do_exit_check:
-cmp   byte ptr [bp - 2Eh], 0   ; isFromWipe
-jne   do_quickmap_wipe_exit
-do_quickmap_physics_exit:
-
-Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
-mov   byte ptr ds:[_currenttask], TASK_PHYSICS
-
+; actually we quickmap on exit...
 do_m_drawer_exit:
 LEAVE_MACRO 
 POPA_NO_AX_OR_BP_MACRO
 retf  
-do_quickmap_wipe_exit:
 
-Z_QUICKMAPAI4 pageswapargs_wipe_offset_size    INDEXED_PAGE_9000_OFFSET
-Z_QUICKMAPAI8_NO_DX (pageswapargs_wipe_offset_size+4)  INDEXED_PAGE_6000_OFFSET
-mov   byte ptr ds:[_currenttask], TASK_WIPE
-
-jmp   do_m_drawer_exit
 
 
 
@@ -3383,24 +3372,6 @@ pop   dx
 ret
 
 ENDP
-
-PROC   M_Z_QuickmapMenu_ NEAR
-PUBLIC M_Z_QuickmapMenu_ 
-
-push  dx
-push  cx
-push  si
-
-Z_QUICKMAPAI8 pageswapargs_menu_offset_size INDEXED_PAGE_5000_OFFSET
-
-mov   byte ptr ds:[_currenttask], TASK_MENU
-pop   si
-pop   cx
-pop   dx
-ret 
-
-ENDP
-
 
 
 

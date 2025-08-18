@@ -32,7 +32,6 @@
 // Even when the menu is not displayed,
 // this can resize the view and change game parameters.
 // Does all the real work of the menu interaction.
-boolean __far M_Responder (event_t __far* ev);
 
 
 // Called by main loop,
@@ -41,11 +40,9 @@ void __near M_Ticker (void);
 
 // Called by main loop,
 // draws the menus directly into the screen buffer.
-void __far M_Drawer (int8_t isFromWipe);
 
 // Called by intro code to force menu up upon a keypress,
 // does nothing if menu is already up.
-void __near M_StartControlPanel (void);
 
 //
 // DOOM MENU

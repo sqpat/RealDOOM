@@ -737,7 +737,11 @@ void __near Z_LoadBinaries() {
 	Z_QuickMapPhysics();
 	fread(&codesize, 2, 1, fp);
 	FAR_fread(psight_codespace, codesize, 1, fp);
-
+	
+	Z_QuickMapMenu();
+	fread(&codesize, 2, 1, fp);
+	FAR_fread(menu_code_area, codesize, 1, fp);
+	Z_QuickMapPhysics();
 
 //todo should these be plus 2?
 	codestartposition[0] = ftell(fp);
@@ -791,7 +795,6 @@ void __near Z_LoadBinaries() {
 	M_Random_addr = 				(uint32_t)(M_Random);
 	NetUpdate_addr = 				(uint32_t)(NetUpdate);
 	V_MarkRect_addr = 				(uint32_t)(V_MarkRect);
-	M_Drawer_addr = 				(uint32_t)(M_Drawer);
 
 	FixedMul_addr = 				(uint32_t)(FixedMul);
 	FixedMul2432_addr = 			(uint32_t)(FixedMul2432);

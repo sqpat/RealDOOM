@@ -538,8 +538,6 @@ int16_t __far locallib_strcasecmp(char __far *str1, char __far *str2){
 
 
 
-void __far M_DrawPause();
-
 
 void __near R_ExecuteSetViewSize (void);
 
@@ -794,18 +792,15 @@ void __near D_Display (void) {
     oldgamestate = wipegamestate = gamestate;
 
     // draw pause pic
+	Z_QuickMapMenu();		
     if (paused) {
-
-
-		Z_QuickMapMenu();		
 		M_DrawPause();
-		Z_QuickMapPhysics();
-
     }
 	
 
     // menus go directly to the screen
-	M_Drawer (false);          // menu is drawn even on top of everything
+	M_Drawer ();          // menu is drawn even on top of everything
+	Z_QuickMapPhysics();
 
 	NetUpdate ();         // send out any new accumulation
 

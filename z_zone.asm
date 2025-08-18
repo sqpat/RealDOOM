@@ -471,26 +471,6 @@ task_num_11_jump:
 Z_QUICKMAPAI16 pageswapargs_intermission_offset_size INDEXED_PAGE_6000_OFFSET
 
 mov   byte ptr ds:[_currenttask], TASK_INTERMISSION
-pop   si
-pop   cx
-pop   dx
-retf  
-
-ENDP
-
-; still used by menu
-PROC Z_QuickMapWipe_ FAR
-PUBLIC Z_QuickMapWipe_
-
-push  dx
-push  cx
-push  si
-
-Z_QUICKMAPAI4 pageswapargs_wipe_offset_size    INDEXED_PAGE_9000_OFFSET
-Z_QUICKMAPAI8_NO_DX (pageswapargs_wipe_offset_size+4)  INDEXED_PAGE_6000_OFFSET
-
-mov   byte ptr ds:[_currenttask], TASK_WIPE
-
 task_num_3_jump:
 task_num_4_jump:
 task_num_5_jump:

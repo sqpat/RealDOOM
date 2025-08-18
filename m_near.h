@@ -299,7 +299,7 @@
 
 
 #define V_MarkRect_addr                 (*((uint32_t  __near*)               (_NULL_OFFSET + 0x020C)))
-#define M_Drawer_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0210)))
+// #define M_Drawer_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0210)))
 
 #define wipeduration                    (*((uint16_t  __near*)               (_NULL_OFFSET + 0x0214)))
 // uses high byte for quick 0
@@ -815,6 +815,15 @@ extern void 				(__far* P_SpawnMapThing)();
 extern void					(__far* P_Ticker)();
 extern void					(__far* P_SpawnSpecials)();
 extern void					(__far* P_GivePower)();
+
+
+
+extern void (__far* M_Init)();
+extern void (__far* M_Drawer)();
+extern boolean (__far* M_Responder)();
+extern void (__far* M_DrawPause)();
+extern void (__far* M_LoadFromSaveGame)();
+
 
 
 

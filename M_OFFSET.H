@@ -64,6 +64,12 @@
 #define P_TickerOffset                          0x83AE
 #define P_SpawnSpecialsOffset                   0x7D1F
 #define P_GivePowerOffset                       0x6794
+#define M_InitOffset                            0x11A2
+#define M_ResponderOffset                       0xD61
+#define M_DrawerOffset                          0x1062
+#define M_LoadFromSaveGameOffset                0x12EF
+#define M_DrawPauseOffset                       0x138B
+#define M_StartControlPanelOffset               0x1044
 
 #define R_DrawColumn24CodeSize         0xE46
 #define R_DrawColumn16CodeSize         0xCB4
@@ -83,13 +89,14 @@
 #define R_MaskedConstantsFLCodeSize    0xEB
 #define R_DrawSkyColumnCodeSize        0xD86
 #define R_DrawSkyColumnFLCodeSize      0x303
+#define M_MenuCodeSize                 0x13E8
 #define R_BSP24CodeSize                0x3792
 #define R_BSP16CodeSize                0x3792
 #define R_BSP0CodeSize                 0x36C4
 #define R_BSPFLCodeSize                0x3666
 #define WI_StuffCodeSize               0x1009
 #define PSightCodeSize                 0x8C39
-#define WipeCodeSize                   0x4B6
+#define WipeCodeSize                   0x4E3
 #define FinaleCodeSize                 0xBBE
 #define SaveLoadCodeSize               0xB35
 #define SMLoadCodeSize                 0x4CB

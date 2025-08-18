@@ -8,7 +8,7 @@
 #include "p_inter.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2556
+#define CONSTANTS_COUNT 2557
 #define LOCALS_COUNT 22
 
 
@@ -203,6 +203,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "FLOORCLIP_PARAGRAPH_ALIGNED_SEGMENT",
 	"MUSIC_DRIVER_CODE_SEGMENT",
 	"END_SKY_PLANE_SEGMENT",
+	"MENU_CODE_AREA_SEGMENT",
     "OFFSET_NEGONEARRAY",
     "OFFSET_SCREENHEIGHTARRAY",
     "OFFSET_FLOORCLIP",
@@ -2847,6 +2848,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     floorclip_paragraph_aligned_segment,
 	music_driver_code_segment,
     END_SKY_PLANE_SEGMENT,
+	menu_code_area_segment,
     offset_negonearray,
     offset_screenheightarray,
     offset_floorclip,
