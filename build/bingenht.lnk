@@ -22,7 +22,6 @@ file i_init.obj
 file z_init.obj
 file p_init.obj
 
-NEWSEGMENT
 file d_main.obj
 file i_quit.obj
 file i_ibm.obj
@@ -49,6 +48,15 @@ file r_setup.obj
 file st_setup.obj
 file hu_setup.obj
 
+file w_wad.obj
+file v_video.obj
+file z_zone.obj
+file s_sbsfx.obj
+file s_sound.obj
+file r_main.obj
+file p_setup.obj
+file z_ht18.obj
+
 NEWSEGMENT
 file m_menu.obj
 
@@ -63,14 +71,10 @@ NEWSEGMENT
 file p_saveg.obj
 
 
-#todo put these in the future wad segment. maybe pull out p_tick.
-NEWSEGMENT
-file s_sound.obj
 
 
 
 NEWSEGMENT
-file s_sbsfx.obj
 file sm_opl2.obj
 file sm_opl3.obj
 file sm_sbmid.obj
@@ -86,7 +90,6 @@ NEWSEGMENT
 file r_bspfl.obj
 
 NEWSEGMENT
-file r_main.obj
 file r_col24.obj
 file r_col16.obj
 file r_col0.obj
@@ -101,14 +104,7 @@ file r_mask24.obj
 file r_mask16.obj
 file r_mask0.obj
 file r_maskfl.obj
-file w_wad.obj
-file v_video.obj
-file z_ht18.obj
-file z_zone.obj
 
-
-NEWSEGMENT
-file p_setup.obj
 NEWSEGMENT
 file p_sight.obj
 file p_map.obj
