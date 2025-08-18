@@ -34,7 +34,7 @@ void __far G_InitNew (skill_t skill, int8_t episode, int8_t map);
 // Can be called by the startup code or M_Responder.
 // A normal game starts at map 1,
 // but a warp test can start elsewhere
-void __near G_DeferedInitNew (skill_t skill, int8_t episode, int8_t map);
+void __far G_DeferedInitNew (skill_t skill, int8_t episode, int8_t map);
 
 void __far G_DeferedPlayDemo (int8_t* demo);
 

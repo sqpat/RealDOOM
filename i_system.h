@@ -53,7 +53,7 @@ void __near I_StartTic (void);
 
 // Called by M_Responder when quit is selected.
 // Clean exit, displays sell blurb.
-void __near I_Quit (void);
+void __far I_Quit (void);
 
 
 void __far I_Error (int8_t __far *error, ...);
@@ -115,7 +115,7 @@ boolean I_SoundIsPlaying(int8_t handle);
 void __far I_SetPalette(int8_t paletteNumber);
 
 // Wait for vertical retrace or pause a bit.
-void __near I_WaitVBL(int16_t count);
+void __far I_WaitVBL(int16_t count);
 
 void __far I_BeginRead(void);
 void __far I_EndRead(void);

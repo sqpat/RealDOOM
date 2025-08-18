@@ -406,6 +406,7 @@ didnt_find_slot:
 pop         cx
 pop         di
 retf
+ENDP
 
 
 ;void __near P_RemoveActiveCeiling(sector_physics_t __near* ceilingsector_physics, THINKERREF ceilingRef) {

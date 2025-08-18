@@ -257,13 +257,15 @@ _ticcount =			              	_NULL_OFFSET + 001F0h
 
 
 
-;_P_UseSpecialLine_addr =             _NULL_OFFSET + 001F4h
+_V_DrawPatchDirect_addr =            _NULL_OFFSET + 001F4h
 
 _deadAttackerX =                     _NULL_OFFSET + 001F8h
 _deadAttackerY =                     _NULL_OFFSET + 001FCh
 _M_Random_addr =                     _NULL_OFFSET + 00200h
-;_P_CrossSpecialLine_addr =           _NULL_OFFSET + 00204h
-;_P_ShootSpecialLine_addr =           _NULL_OFFSET + 00208h
+_I_WaitVBL_addr =       		     _NULL_OFFSET + 00204h
+_I_SetPalette_addr = 	        	 _NULL_OFFSET + 00208h
+
+
 _V_MarkRect_addr =                   _NULL_OFFSET + 0020Ch
 _M_Drawer_addr =                     _NULL_OFFSET + 00210h
 
@@ -363,7 +365,7 @@ _G_PlayerReborn_addr =	 	 		 _NULL_OFFSET + 00540h
 _FixedMulTrigSpeedNoShift_addr =	 _NULL_OFFSET + 00544h
 _FixedMulTrigSpeed_addr =			 _NULL_OFFSET + 00548h
 _FixedMulTrig_addr = 			 	 _NULL_OFFSET + 0054Ch
-;_EV_DoFloor_addr = 			 	 	 _NULL_OFFSET + 00550h
+_G_DeferedInitNew_addr = 			 _NULL_OFFSET + 00550h
 
 
 _V_DrawPatch_addr =              	 _NULL_OFFSET + 00554h
@@ -415,8 +417,8 @@ _S_StopSoundMobjRef_addr =           _NULL_OFFSET + 005C0h
 _R_DrawSkyPlaneDynamic_addr =  	     _NULL_OFFSET + 005C4h
 _snd_SBport =                        _NULL_OFFSET + 005C8h
 _snd_Mport =                         _NULL_OFFSET + 005CAh
+_I_Quit_addr = 			             _NULL_OFFSET + 005CCh
 
-;_P_AddActivePlat_addr =              _NULL_OFFSET + 005CCh
 _tallnum =              			 _NULL_OFFSET + 005D0h
 _shortnum =              			 _NULL_OFFSET + 005E4h
 _am_buffer =             			 _NULL_OFFSET + 005F8h
@@ -574,8 +576,15 @@ _viewactivestate =	 	     	     _NULL_OFFSET + 00BCEh
 _menuactivestate =	 	     	     _NULL_OFFSET + 00BCFh
 _sb_voicelist =	 	  			   	 _NULL_OFFSET + 00BD0h
 
+_fopen_addr =     			         _NULL_OFFSET + 00C10h
+_fseek_addr =     			         _NULL_OFFSET + 00C14h
+_fread_addr =     			         _NULL_OFFSET + 00C18h
+_fclose_addr =    			         _NULL_OFFSET + 00C1Ch
+_locallib_far_fread_addr =    		 _NULL_OFFSET + 00C20h
+_S_InitSFXCache_addr =     	    	 _NULL_OFFSET + 00C24h
+_R_SetViewSize_addr =     	    	 _NULL_OFFSET + 00C28h
 
-_flatcache_nodes =				     _NULL_OFFSET + 00C10h
+_flatcache_nodes =				     _NULL_OFFSET + 00C30h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

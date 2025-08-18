@@ -288,13 +288,16 @@
 #define ticcount                        (*((volatile uint32_t  __near*)      (_NULL_OFFSET + 0x01F0)))
 
 
-// #define P_UseSpecialLine_addr          	(*((uint32_t  __near*)               (_NULL_OFFSET + 0x01F4)))
+#define V_DrawPatchDirect_addr          (*((uint32_t  __near*)               (_NULL_OFFSET + 0x01F4)))
 #define deadAttackerX     		  	    (*((fixed_t_union  __near*)   	     (_NULL_OFFSET + 0x01F8)))
 #define deadAttackerY     				(*((fixed_t_union  __near*)   	     (_NULL_OFFSET + 0x01FC)))
 
 #define M_Random_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0200)))
-// #define P_CrossSpecialLine_addr         (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0204)))
-// #define P_ShootSpecialLine_addr         (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0208)))
+#define I_WaitVBL_addr                  (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0204)))
+#define I_SetPalette_addr               (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0208)))
+
+
+
 #define V_MarkRect_addr                 (*((uint32_t  __near*)               (_NULL_OFFSET + 0x020C)))
 #define M_Drawer_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0210)))
 
@@ -344,7 +347,6 @@
 // more far pointers to functions... once they are in ASM-fixed locations, they should be callable normally
 #define FixedMul_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C0)))
 #define FixedDiv_addr	                (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C4)))
-// #define P_DamageMobj_addr             	(*((uint32_t  __near*)               (_NULL_OFFSET + 0x02C8)))
 
 #define mus_playing    			      	  (*((int8_t __near*)                (_NULL_OFFSET + 0x02C8)))
 #define mus_paused    			      	  (*((int8_t __near*)                (_NULL_OFFSET + 0x02C9)))
@@ -400,8 +402,6 @@
 #define LINES_PHYSICS_SEGMENT_PTR	      (*((segment_t __near*)             (_NULL_OFFSET + 0x0532)))
 #define HU_Start_addr 					  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0534)))
 #define ST_Start_addr 				      (*((uint32_t __near*)              (_NULL_OFFSET + 0x0538)))
-// 53c unused
-// #define P_RemoveThinker_addr 			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x053C)))
 
 #define pcspeaker_currentoffset           (*((uint16_t __near*)              (_NULL_OFFSET + 0x053C)))
 #define pcspeaker_endoffset     		  (*((uint16_t __near*)              (_NULL_OFFSET + 0x053E)))
@@ -411,7 +411,7 @@
 #define FixedMulTrigSpeedNoShift_addr	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0544)))
 #define FixedMulTrigSpeed_addr			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0548)))
 #define FixedMulTrig_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x054C)))
-// #define EV_DoFloor_addr		     		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0550)))
+#define G_DeferedInitNew_addr			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0550)))
 
 
 #define V_DrawPatch_addr                  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0554)))
@@ -460,7 +460,8 @@
 #define snd_SBport						  (*((uint16_t __near*)              (_NULL_OFFSET + 0x05C8)))
 #define snd_Mport						  (*((uint16_t __near*)              (_NULL_OFFSET + 0x05CA)))
 
-// #define P_AddActivePlat_addr              (*((uint32_t __near*)              (_NULL_OFFSET + 0x05CC)))
+#define I_Quit_addr						  (*((uint32_t __near*)              (_NULL_OFFSET + 0x05CC)))
+
 // 10 ints
 #define tallnum                           ((uint16_t __near *)               (_NULL_OFFSET + 0x05D0))
 // 10 ints
@@ -640,8 +641,16 @@
 #define sb_voicelist   			      	  ((SB_VoiceInfo __near *)           (_NULL_OFFSET + 0x0BD0))
 
 
+#define fopen_addr     			          (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0C10)))
+#define fseek_addr     			          (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0C14)))
+#define fread_addr     			          (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0C18)))
+#define fclose_addr    			          (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0C1C)))
+#define locallib_far_fread_addr    		  (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0C20)))
+#define S_InitSFXCache_addr     		  (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0C24)))
+#define R_SetViewSize_addr	     		  (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0C28)))
 
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0C10)))
+
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0C30)))
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))

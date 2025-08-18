@@ -367,7 +367,7 @@ void __far M_LoadDefaults(void) {
 // Shuts down net game, saves defaults, prints the exit text message,
 // goes to text mode, and exits.
 //
-void __near I_Quit(void) {
+void __far I_Quit(void) {
 	Z_QuickMapPhysics();
 	if (demorecording) {
 		G_CheckDemoStatus();

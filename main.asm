@@ -36,7 +36,7 @@ EXTRN fclose_:PROC
 ; todo only include if necessary via flags...
 ;EXTRN DEBUG_PRINT_:PROC
 
-EXTRN I_WaitVBL_:NEAR
+EXTRN I_WaitVBL_:FAR
 EXTRN Z_QuickMapPalette_:PROC
 EXTRN Z_QuickMapByTaskNum_:PROC
 

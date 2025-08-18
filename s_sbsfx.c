@@ -13,6 +13,7 @@
 #include <string.h>
 #include "DMX.H"
 #include "w_wad.h"
+#include "i_sound.h"
 #include <signal.h>
 #include <bios.h>
 #include <ctype.h>
@@ -1925,13 +1926,13 @@ void __far  SB_StartInit(){
 
         } else {
             DEBUG_PRINT("\nSB INIT Error A\n");
-            snd_SfxDevice = sfx_None;
+            snd_SfxDevice = snd_none;
 
         }
 
     } else {
         DEBUG_PRINT("\nSB INIT Error B\n");
-        snd_SfxDevice = sfx_None;
+        snd_SfxDevice = snd_none;
     }
 
     // nodes, etc now initialized in S_InitSFXCache which is called by S_SetSfxVolume earlier in S_Init

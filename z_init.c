@@ -651,6 +651,8 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
  
 void __far G_SecretExitLevel (void);
 void __far OutOfThinkers ();
+void __far S_InitSFXCache();
+void __far G_DeferedInitNew (skill_t skill, int8_t episode, int8_t map);
 
 
 void __near Z_LoadBinaries() {
@@ -783,30 +785,17 @@ void __near Z_LoadBinaries() {
  
 	// set some function addresses for asm calls. 
 	// as these move to asm and EMS memory space themselves, these references can go away
-	// Z_QuickMapVisplanePage_addr = 	(uint32_t)(Z_QuickMapVisplanePage);
-	
-	// Z_QuickMapFlatPage_addr =   	(uint32_t)(Z_QuickMapFlatPage);
 	
 	W_CacheLumpNumDirect_addr = 	(uint32_t)(W_CacheLumpNumDirect);
 
-
-	// Z_QuickMapPhysics_addr = 		(uint32_t)(Z_QuickMapPhysics);
-	// Z_QuickMapWipe_addr = 			(uint32_t)(Z_QuickMapWipe);
-	// Z_QuickMapScratch_5000_addr = 	(uint32_t)(Z_QuickMapScratch_5000);
 	M_Random_addr = 				(uint32_t)(M_Random);
 	NetUpdate_addr = 				(uint32_t)(NetUpdate);
-	// I_UpdateNoBlit_addr = 			(uint32_t)(I_UpdateNoBlit);
-	// I_FinishUpdate_addr = 			(uint32_t)(I_FinishUpdate);
 	V_MarkRect_addr = 				(uint32_t)(V_MarkRect);
 	M_Drawer_addr = 				(uint32_t)(M_Drawer);
 
 	FixedMul_addr = 				(uint32_t)(FixedMul);
 	FixedMul2432_addr = 			(uint32_t)(FixedMul2432);
 	FixedDiv_addr =					(uint32_t)(FixedDiv);
-	// FastDiv3232_addr = 				(uint32_t)(FastDiv3232FFFF);
-	// R_GetPatchTexture_addr = 		(uint32_t)(R_GetPatchTexture);
-	// R_GetCompositeTexture_addr = 	(uint32_t)(R_GetCompositeTexture);
-	// R_GetSpriteTexture_addr = 		(uint32_t)(R_GetSpriteTexture);
 
 	// todo think of a better solution for dynamic linking of func locations for overlaid code.
 	V_DrawPatch_addr =			 		(uint32_t)(V_DrawPatch);
@@ -815,9 +804,6 @@ void __near Z_LoadBinaries() {
 	V_DrawFullscreenPatch_addr =		(uint32_t)(V_DrawFullscreenPatch);
 	getStringByIndex_addr =				(uint32_t)(getStringByIndex);
 	locallib_strlen_addr =			 	(uint32_t)(locallib_strlen);
-	// Z_QuickMapStatusNoScreen4_addr =	(uint32_t)(Z_QuickMapStatusNoScreen4);
-	// Z_QuickMapRender7000_addr =		 	(uint32_t)(Z_QuickMapRender7000);
-	// Z_QuickMapScreen0_addr =			(uint32_t)(Z_QuickMapScreen0);
 	W_CacheLumpNameDirect_addr =		(uint32_t)(W_CacheLumpNameDirect);
 	W_CacheLumpNumDirectFragment_addr =	(uint32_t)(W_CacheLumpNumDirectFragment);
 	W_GetNumForName_addr =		 		(uint32_t)(W_GetNumForName);
@@ -860,7 +846,21 @@ void __near Z_LoadBinaries() {
 
 	Z_QuickMapMusicPageFrame_addr =     (uint32_t)(Z_QuickMapMusicPageFrame);
 
+	fopen_addr =					    (uint32_t)(fopen);
+	fseek_addr =					    (uint32_t)(fseek);
+	fread_addr =					    (uint32_t)(fread);
+	fclose_addr =					    (uint32_t)(fclose);
+	locallib_far_fread_addr =			(uint32_t)(locallib_far_fread);
+
+
+	S_InitSFXCache_addr =			    (uint32_t)(S_InitSFXCache);
+	G_DeferedInitNew_addr =			    (uint32_t)(G_DeferedInitNew);
+	I_Quit_addr =					    (uint32_t)(I_Quit);
+	I_WaitVBL_addr =				    (uint32_t)(I_WaitVBL);
+	R_SetViewSize_addr =			    (uint32_t)(R_SetViewSize);
+	I_SetPalette_addr =				    (uint32_t)(I_SetPalette);
+	V_DrawPatchDirect_addr =			(uint32_t)(V_DrawPatchDirect);
+
+
 }
-
-
 

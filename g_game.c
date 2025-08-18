@@ -909,7 +909,7 @@ void __near G_DoSaveGame (void)  {
 // consoleplayer, displayplayer, playeringame[] should be set. 
 //
  
-void __near G_DeferedInitNew ( skill_t skill, int8_t episode, int8_t map) { 
+void __far G_DeferedInitNew ( skill_t skill, int8_t episode, int8_t map) { 
     d_skill = skill; 
     d_episode = episode; 
     d_map = map; 

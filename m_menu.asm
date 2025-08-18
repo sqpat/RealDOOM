@@ -47,72 +47,19 @@ MENUITEM_READ_READ1_END =  1
 MENUITEM_READ_READ2_END =  1
 MENUITEM_SOUND_SOUND_END =  4
 
-
-
 LOAD_END = 6
 
 NUM_MENU_ITEMS = 46
 MENUGRAPHICS_STR_SIZE = (NUM_MENU_ITEMS * 9)  ; 019Eh
 
-
-
-EXTRN S_InitSFXCache_:FAR
-
-EXTRN V_DrawPatchDirect_:FAR
-
-EXTRN locallib_far_fread_:FAR
-EXTRN fclose_:FAR
-EXTRN fopen_:FAR
-EXTRN fseek_:FAR
-EXTRN fread_:FAR
-
-EXTRN G_DeferedInitNew_:NEAR
-
-
-
-EXTRN I_Quit_:FAR
-EXTRN I_WaitVBL_:FAR
-
-EXTRN R_SetViewSize_:FAR
-EXTRN I_SetPalette_:FAR
-
-
-
-
-
-
 .DATA
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 .CODE
-
-
-
 
 
 PROC    M_MENU_STARTMARKER_ NEAR
 PUBLIC  M_MENU_STARTMARKER_
 ENDP
-
-
-
 
 
 _menu_string_underscore:
@@ -435,7 +382,8 @@ mov   di, LOADDEF_Y
 
 mov   dx, 28
 mov   ax, 72
-call  V_DrawPatchDirect_
+
+call  dword ptr ds:[_V_DrawPatchDirect_addr]
 
 loop_draw_next_load_bar:
 
@@ -484,7 +432,7 @@ mov   ax, si
 mov   dx, di
 sub   ax, 8
 
-call  V_DrawPatchDirect_
+call  dword ptr ds:[_V_DrawPatchDirect_addr]
 
 
 
@@ -496,7 +444,7 @@ SELFMODIFY_set_saveloadborder_offset:
 mov   bx, 01000h
 SELFMODIFY_set_saveloadborder_segment:
 mov   cx, 01000h
-call  V_DrawPatchDirect_
+call  dword ptr ds:[_V_DrawPatchDirect_addr]
 add   si, 8
 inc   bp
 cmp   bp, 24
@@ -507,7 +455,7 @@ mov   cx, es
 
 mov   dx, di
 mov   ax, si
-call  V_DrawPatchDirect_
+call  dword ptr ds:[_V_DrawPatchDirect_addr]
 POPA_NO_AX_MACRO
 ret   
 
@@ -579,7 +527,8 @@ lea   ax, [bp - 0100h]
 call  M_MakeSaveGameName_
 mov   dx, OFFSET _fopen_rb_argument
 lea   ax, [bp - 0100h]
-call  fopen_
+call  dword ptr ds:[_fopen_addr]
+
 
 xchg  ax, bx ; fp to bx
 mov   ax, si
@@ -615,10 +564,10 @@ push  bx ; fp. 2nd time for later pop
 push  bx ; fp arg for far read
 
 mov   bx, 1
-call  locallib_far_fread_
+call  dword ptr ds:[_locallib_far_fread_addr]
 
 pop   ax  ; recover fp
-call  fclose_
+call  dword ptr ds:[_fclose_addr]
 
 mov   byte ptr ds:[di], 1
 iter_next_savestring:
@@ -650,7 +599,7 @@ mov   di, LOADDEF_Y
 mov   dx, 28
 mov   ax, 72
 
-call  V_DrawPatchDirect_
+call  dword ptr ds:[_V_DrawPatchDirect_addr]
 
 xor   si, si
 
@@ -872,9 +821,7 @@ cbw
 call  M_DoSave_
 mov   dx, SFX_SWTCHX
 xor   ax, ax
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  dword ptr ds:[_S_StartSound_addr]
 pop   dx
 exit_quicksave:
 ret   
@@ -947,9 +894,7 @@ ret
 cant_save_not_in_game:
 mov   dx, SFX_OOF
 xor   ah, ah
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  dword ptr ds:[_S_StartSound_addr]
 jmp   exit_m_quicksave
 
 no_quicksave_slot:
@@ -979,9 +924,7 @@ cbw
 call  M_LoadSelect_
 mov   dx, SFX_SWTCHX
 xor   ax, ax
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  dword ptr ds:[_S_StartSound_addr]
 pop   dx
 exit_quickload:
 ret   
@@ -1071,9 +1014,7 @@ mov   ax, OFFSET _STRING_HELP2
 xor   dx, dx
 mov   byte ptr ds:[_inhelpscreens], 1
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawFullscreenPatch_addr
+call  dword ptr ds:[_V_DrawFullscreenPatch_addr]
 
 pop   dx
 ret   
@@ -1090,9 +1031,7 @@ mov   ax, OFFSET _STRING_HELP1
 xor   dx, dx
 mov   byte ptr ds:[_inhelpscreens], 1
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawFullscreenPatch_addr
+call  dword ptr ds:[_V_DrawFullscreenPatch_addr]
 
 pop   dx
 ret   
@@ -1108,9 +1047,7 @@ mov   ax, OFFSET _STRING_HELP
 xor   dx, dx
 mov   byte ptr ds:[_inhelpscreens], 1
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawFullscreenPatch_addr
+call  dword ptr ds:[_V_DrawFullscreenPatch_addr]
 
 pop   dx
 ret   
@@ -1133,7 +1070,7 @@ mov   cx, es
 
 mov   dx, 38
 mov   ax, 60
-call  V_DrawPatchDirect_
+call  dword ptr ds:[_V_DrawPatchDirect_addr]
 mov   bx, 16
 mov   ax, SOUNDDEF_X
 mov   dx, SOUNDDEF_Y  + LINEHEIGHT*(SOUND_E_SFX_VOL+1)
@@ -1206,6 +1143,9 @@ dont_adjust_vol_up:
 
 mov   byte ptr ds:[_snd_SfxVolume], al
 
+cmp   byte ptr ds:[_snd_SfxDevice], SND_NONE
+je    no_sound_dont_update
+
 cli   
 mov   bx, OFFSET _sb_voicelist
 
@@ -1220,8 +1160,10 @@ add   bx, SIZEOF_SB_VOICEINFO_T
 cmp   bx, (OFFSET _sb_voicelist + (NUM_SFX_TO_MIX * SIZEOF_SB_VOICEINFO_T))
 jl    loop_next_voiceinfo_setsfxvol
 
-call  S_InitSFXCache_
+call  dword ptr ds:[_S_InitSFXCache_addr]
+
 sti   
+no_sound_dont_update:
 pop   bx
 ret
 
@@ -1283,7 +1225,7 @@ les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_DOOM)]
 mov   cx, es
 mov   dx, 2
 mov   ax, 94
-call  V_DrawPatchDirect_
+call  dword ptr ds:[_V_DrawPatchDirect_addr]
 pop   dx
 pop   cx
 pop   bx
@@ -1306,7 +1248,7 @@ mov   cx, es
 
 mov   dx, 14
 mov   ax, 96
-call  V_DrawPatchDirect_
+call  dword ptr ds:[_V_DrawPatchDirect_addr]
 
 
 les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_SKILL)]
@@ -1314,7 +1256,7 @@ mov   cx, es
 
 mov   dx, 38
 mov   ax, 54
-call  V_DrawPatchDirect_
+call  dword ptr ds:[_V_DrawPatchDirect_addr]
 
 pop   dx
 pop   cx
@@ -1356,7 +1298,7 @@ mov   cx, es
 
 mov   dx, 38
 mov   ax, 54
-call  V_DrawPatchDirect_
+call  dword ptr ds:[_V_DrawPatchDirect_addr]
 pop   dx
 pop   cx
 pop   bx
@@ -1378,7 +1320,7 @@ mov   dl, byte ptr cs:[_menu_epi]
 inc   dx
 mov   bx, 1
 mov   ax, SK_NIGHTMARE
-call  G_DeferedInitNew_
+call  dword ptr ds:[_G_DeferedInitNew_addr]
 mov   byte ptr ds:[_menuactive], 0
 pop   dx
 pop   bx
@@ -1417,7 +1359,7 @@ xor   dx, dx
 mov   dl, byte ptr cs:[_menu_epi]
 inc   dx
 mov   bx, 1
-call  G_DeferedInitNew_
+call  dword ptr ds:[_G_DeferedInitNew_addr]
 mov   byte ptr ds:[_menuactive], 0
 exit_choose_skill:
 LEAVE_MACRO 
@@ -1487,7 +1429,7 @@ mov   cx, es
 
 mov   dx, 15
 mov   ax, 108
-call  V_DrawPatchDirect_
+call  dword ptr ds:[_V_DrawPatchDirect_addr]
 
 xor   bx, bx
 mov   bl, byte ptr ds:[_detailLevel]
@@ -1497,7 +1439,7 @@ les   bx, dword ptr cs:[_menupatches + bx]
 mov   cx, es
 mov   dx, OPTIONSDEF_Y + LINEHEIGHT*OPTIONS_E_DETAIL
 mov   ax, OPTIONSDEF_X + 175
-call  V_DrawPatchDirect_
+call  dword ptr ds:[_V_DrawPatchDirect_addr]
 
 xor   bx, bx
 mov   bl, byte ptr ds:[_showMessages]
@@ -1508,7 +1450,7 @@ mov   cx, es
 mov   dx, OPTIONSDEF_Y + LINEHEIGHT*OPTIONS_E_MESSAGES
 mov   ax, OPTIONSDEF_X + 120
 
-call  V_DrawPatchDirect_
+call  dword ptr ds:[_V_DrawPatchDirect_addr]
 
 mov   bx, 10
 mov   cl, byte ptr ds:[_mouseSensitivity]
@@ -1607,9 +1549,7 @@ xor   ax, ax
 cmp   byte ptr ds:[_usergame], al
 jne   do_endgame
 mov   dx, SFX_OOF
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  dword ptr ds:[_S_StartSound_addr]
 exit_end_game:
 LEAVE_MACRO 
 pop   dx
@@ -1716,12 +1656,12 @@ add   bx, ax
 xor   ax, ax
 cwd
 mov   dl, byte ptr cs:[bx]
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  dword ptr ds:[_S_StartSound_addr]
 mov   ax, 105
-call  I_WaitVBL_
-call  I_Quit_
+
+call  dword ptr ds:[_I_WaitVBL_addr]
+call  dword ptr ds:[_I_Quit_addr]
+
 exit_m_quitresponse:
 
 pop   dx
@@ -1846,7 +1786,8 @@ xchg  ax, dx
 mov   bx, dx
 shl   bx, 1
 mov   al, byte ptr ds:[_screenblocks]
-call  R_SetViewSize_
+
+call  dword ptr ds:[_R_SetViewSize_addr]
 
 mov   ax, word ptr cs:[bx + _detaillevel_lookup]
 mov   word ptr ds:[_player + PLAYER_T.player_message], ax
@@ -1879,7 +1820,7 @@ mov   byte ptr ds:[_screenSize], al
 mov   dl, byte ptr ds:[_detailLevel]
 mov   al, byte ptr ds:[_screenblocks]
 
-call  R_SetViewSize_
+call  dword ptr ds:[_R_SetViewSize_addr]
 
 pop   dx
 ret   
@@ -1923,7 +1864,7 @@ mov   cx, es
 
 mov   dx, di
 
-call  V_DrawPatchDirect_
+call  dword ptr ds:[_V_DrawPatchDirect_addr]
 
 
 loop_next_thermo:
@@ -1932,7 +1873,7 @@ les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_THERMM)]
 mov   cx, es
 mov   dx, di
 mov   ax, si
-call  V_DrawPatchDirect_
+call  dword ptr ds:[_V_DrawPatchDirect_addr]
 
 add   si, 8
 dec   bp
@@ -1945,7 +1886,7 @@ mov   cx, es
 mov   dx, di
 mov   ax, si
 
-call  V_DrawPatchDirect_
+call  dword ptr ds:[_V_DrawPatchDirect_addr]
 
 les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_THERMO)]
 mov   cx, es
@@ -1954,7 +1895,7 @@ mov   cx, es
 mov   dx, di
 SELFMODIFY_thermDot:
 mov   ax, 01000h
-call  V_DrawPatchDirect_
+call  dword ptr ds:[_V_DrawPatchDirect_addr]
 
 pop   bp
 pop   di
@@ -2193,7 +2134,7 @@ sal   bx, 1
 mov   bx, word ptr ds:[bx + _hu_font]
 xchg  ax, si
 mov   dx, di
-call  V_DrawPatchDirect_
+call  dword ptr ds:[_V_DrawPatchDirect_addr]
 jmp   loop_next_char_to_write
 exit_m_writetext:
 
@@ -2478,9 +2419,7 @@ play_switch_sound_and_exit_m_responder_return_1:
 mov   dx, SFX_SWTCHN
 play_sound_and_exit_m_responder_return_1:
 xor   ax, ax
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  dword ptr ds:[_S_StartSound_addr]
 
 mov   al, 1
 
@@ -2606,9 +2545,8 @@ call  word ptr cs:[si + MENUITEM_T.menuitem_routine]
 play_stnmov_sound_and_exit_m_responder_return_1:
 mov   dx, SFX_STNMOV
 xor   ax, ax
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  dword ptr ds:[_S_StartSound_addr]
+
 exit_m_responder_return_1_3:
 mov   al, 1
 pop   di
@@ -2698,7 +2636,8 @@ add   al, GAMMALVL0
 cbw
 mov   word ptr ds:[_player + PLAYER_T.player_message], ax
 xchg  ax, cx ; 0
-call  I_SetPalette_
+call  dword ptr ds:[_I_SetPalette_addr]
+
 jmp   exit_m_responder_return_1
 
 found_key_stop:
@@ -2877,7 +2816,7 @@ les   bx, dword ptr cs:[_menupatches + bx]
 mov   cx, es
 mov   ax, di
 mov   dx, si
-call  V_DrawPatchDirect_
+call  dword ptr ds:[_V_DrawPatchDirect_addr]
 pop   bx
 
 dont_draw_this_item:
@@ -2902,7 +2841,7 @@ mul   byte ptr cs:[_itemOn]
 add   dx, ax
 sub   dx, 5
 lea   ax, [di - SKULLXOFF]
-call  V_DrawPatchDirect_
+call  dword ptr ds:[_V_DrawPatchDirect_addr]
 do_exit_check:
 cmp   byte ptr [bp - 2Eh], 0   ; isFromWipe
 jne   do_quickmap_wipe_exit
@@ -3025,22 +2964,23 @@ sub   sp, MENUGRAPHICS_STR_SIZE
 mov   ax, OFFSET _doomdata_bin_string
 call  CopyString13_menu_seg_
 mov   dx, OFFSET  _fopen_rb_argument
-call  fopen_        ; fopen("DOOMDATA.BIN", "rb"); 
+call  dword ptr ds:[_fopen_addr]        ; fopen("DOOMDATA.BIN", "rb"); 
 mov   di, ax ; store fp
 mov   bx, MENUDATA_DOOMDATA_OFFSET
 xor   cx, cx ; 0 high
 xor   dx, dx ; SEEK_SET
-call  fseek_   ;	fseek(fp, MENUDATA_DOOMDATA_OFFSET, SEEK_SET);
+call  dword ptr ds:[_fseek_addr]   ;	fseek(fp, MENUDATA_DOOMDATA_OFFSET, SEEK_SET);
 
 lea   ax, [bp - MENUGRAPHICS_STR_SIZE]
 mov   si, ax
 mov   dx, SIZEOF_LUMP_NAME
 mov   bx, NUM_MENU_ITEMS
 mov   cx, di
-call  fread_	;fread(menugraphics, 9, NUM_MENU_ITEMS, fp);
+call  dword ptr ds:[_fread_addr]	;fread(menugraphics, 9, NUM_MENU_ITEMS, fp);
 
 xchg  ax, di
-call  fclose_
+call  dword ptr ds:[_fclose_addr]
+
 
 ; si is start of array.
 
@@ -3069,18 +3009,15 @@ loop_load_next_menugraphic:
 
 mov   ax, si
 ;call  W_GetNumForName_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_GetNumForName_addr
+
+call  dword ptr ds:[_W_GetNumForName_addr]
 
 mov   cx, ax  ; store lump
 
 push  dx
 ;call  W_LumpLength_
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_LumpLength_addr
+call  dword ptr ds:[_W_LumpLength_addr]
 
 pop   dx   ; clobbered by return, but return should never be > 64k
 
@@ -3109,10 +3046,7 @@ mov  di, cx ; di gets new size (xchged from ax)
 mov  cx, dx ; current dest segment
 
 ;call W_CacheLumpNumDirect_  ; W_CacheLumpNumDirect(lump, dst);
-;call      W_CacheLumpNumDirect_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_CacheLumpNumDirect_addr
+call  dword ptr ds:[_W_CacheLumpNumDirect_addr]
 
 
 iter_load_next_menugraphic:
@@ -3421,7 +3355,7 @@ add    ax, word ptr ds:[_viewwindowx]
 les    bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_PAUSE)]
 mov    cx, es
 
-call   V_DrawPatchDirect_
+call  dword ptr ds:[_V_DrawPatchDirect_addr]
 
 pop    dx
 pop    cx

@@ -23,7 +23,6 @@ EXTRN SFX_Playing_:FAR
 EXTRN R_PointToAngle2_:FAR
 EXTRN FastMul16u32u_:FAR
 EXTRN FastDiv3216u_:FAR
-EXTRN S_InitSFXCache_:FAR
 EXTRN SFX_SetOrigin_:FAR
 EXTRN SFX_PlayPatch_:FAR
 EXTRN SFX_StopPatch_:FAR

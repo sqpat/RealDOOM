@@ -500,8 +500,6 @@ void __near M_Reload(void) {
 }
 */
 
-void __near M_DrawReadThisRetail(void);
-void __near M_FinishReadThis(int16_t choice);
 
 /*
 void __far M_Init(void){

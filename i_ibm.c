@@ -91,7 +91,7 @@
 //
 // I_WaitVBL
 //
-void __near I_WaitVBL(int16_t vbls){
+void __far I_WaitVBL(int16_t vbls){
 	int16_t stat;
 
     if (novideo) {
