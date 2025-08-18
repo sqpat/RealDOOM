@@ -2299,6 +2299,55 @@ ret
 ENDP
 
 
+PROC   combine_strings_ FAR
+PUBLIC combine_strings_ 
+
+;void __far combine_strings_(char __far *dest, char __far *src1, char __far *src2){
+;               ; bp + A is CS?
+;               ; bp + 8 is IP?
+push si         ; bp + 4
+push di         ; bp + 2
+push bp         ; bp + 0
+mov  bp, sp
+
+mov  es, dx
+xchg ax, di
+
+
+mov  si, bx
+mov  ds, cx
+
+do_next_char_far_1:
+lodsb
+test al, al
+stosb
+jne  do_next_char_far_1
+
+dec  di ; back one up
+
+lds  si, dword ptr [bp + 0Ah]
+
+do_next_char_far_2:
+lodsb
+test al, al
+stosb
+jne  do_next_char_far_2
+
+push ss
+pop  ds
+
+; leave last char, was the '\0'
+
+
+LEAVE_MACRO
+
+pop  di
+pop  si
+retf
+
+ENDP
+
+
 
 
 END

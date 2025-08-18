@@ -60,7 +60,6 @@ EXTRN fread_:FAR
 EXTRN G_DeferedInitNew_:NEAR
 
 EXTRN locallib_strcmp_:FAR
-EXTRN combine_strings_:FAR
 EXTRN locallib_strncpy_:FAR
 EXTRN locallib_strcpy_:FAR
 
@@ -716,7 +715,7 @@ mov   dx, ds
 mov   cx, ds
 lea   bx, [bp + 04Ch]
 lea   ax, [bp - 04Ah]
-call  combine_strings_
+call  M_CombineStringsFar_
 
 lea   ax, [bp + 07Eh]
 push  ds
@@ -725,7 +724,7 @@ lea   bx, [bp - 04Ah]
 mov   ax, bx
 mov   dx, ds
 mov   cx, ds
-call  combine_strings_
+call  M_CombineStringsFar_
 mov   bx, 1
 mov   dx, OFFSET M_QuickSaveResponse_
 lea   ax, [bp - 04Ah]
@@ -812,7 +811,7 @@ mov   dx, ds
 mov   cx, ds
 lea   bx, [bp + 04Ch]
 lea   ax, [bp - 04Ah]
-call  combine_strings_
+call  M_CombineStringsFar_
 
 lea   dx, [bp + 07Eh]
 lea   bx, [bp - 04Ah]
@@ -821,7 +820,7 @@ push  ds
 push  dx
 mov   cx, ds
 mov   dx, ds
-call  combine_strings_
+call  M_CombineStringsFar_
 mov   bx, 1
 mov   dx, OFFSET M_QuickLoadResponse_
 show_message_and_exitquickload:
@@ -3025,7 +3024,7 @@ retf
 ENDP
 
 
-PROC M_CombineStringsNear_
+PROC M_CombineStringsNear_  NEAR
 ;void __far combine_strings_near(char __near *dest, char __near *src1, char __near *src2){
 
 push si
@@ -3054,8 +3053,50 @@ jne  do_next_char_2
 
 
 ; leave last char, was the '\0'
+pop  di
+pop  si
+ret
+ENDP
 
 
+PROC M_CombineStringsFar_ NEAR
+;void __far combine_strings_(char __far *dest, char __far *src1, char __far *src2){
+;               ; bp + 6 is IP?
+push si         ; bp + 4
+push di         ; bp + 2
+push bp         ; bp + 0
+mov  bp, sp
+
+mov  es, dx
+xchg ax, di
+
+
+mov  si, bx
+mov  ds, cx
+
+do_next_char_far_1:
+lodsb
+test al, al
+stosb
+jne  do_next_char_far_1
+
+dec  di ; back one up
+
+lds  si, dword ptr [bp + 8]
+
+do_next_char_far_2:
+lodsb
+test al, al
+stosb
+jne  do_next_char_far_2
+
+push ss
+pop  ds
+
+; leave last char, was the '\0'
+
+
+LEAVE_MACRO
 
 pop  di
 pop  si
