@@ -850,21 +850,18 @@ skytexture         5400:0000
 
 #define menugraphicspage0   (byte __far* )0x50000000
 #define menugraphicspage4   (byte __far* )0x64000000
-#define menuoffsets         ((uint16_t __far*)  MAKE_FULL_SEGMENT(menugraphicspage4, size_menugraphcispage4 ))
-#define end_menu            ((uint16_t __far*)  MAKE_FULL_SEGMENT(menuoffsets, size_menuoffsets ))
+#define end_menu            ((uint16_t __far*)  MAKE_FULL_SEGMENT(menugraphicspage4, size_menugraphcispage4 ))
 
 #define menugraphicspage0segment  ((segment_t) ((int32_t)menugraphicspage0 >> 16))
 #define menugraphicspage4segment  ((segment_t) ((int32_t)menugraphicspage4 >> 16))
-#define menuoffsets_segment       ((segment_t) ((int32_t)menuoffsets >> 16))
 #define end_menu_segment          ((segment_t) ((int32_t)end_menu >> 16))
 
 
 // menugraphicspage0  5000:0000
 // [empty]            5000:FFE0 
 // menugraphicspage4  6400:0000
-// menuoffsets        6EC7:0000
-// [empty]            6ECD:0000 ?
-//FREEBYTES 4992 in menu page 4. Eventually move menu code here?
+// [empty]            6D32:0000 ?
+//FREEBYTES 11488 in menu page 4. Eventually move menu code here?
 // ends at AC64. are there other spare graphics to drop here?
 
 

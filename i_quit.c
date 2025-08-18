@@ -368,10 +368,10 @@ void __far M_LoadDefaults(void) {
 // goes to text mode, and exits.
 //
 void __near I_Quit(void) {
-// todo Z_QuickmapPhysics?
+	Z_QuickMapPhysics();
 	if (demorecording) {
 		G_CheckDemoStatus();
-	}
+	}	
 
 	M_SaveDefaults();
 	I_ShutdownGraphics();

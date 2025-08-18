@@ -42,6 +42,8 @@ MENUITEM_MAIN_MAIN_END = 6
 
 LOAD_END = 6
 
+NUM_MENU_ITEMS = 46
+MENUGRAPHICS_STR_SIZE = (NUM_MENU_ITEMS * 9)  ; 019Eh
 
 
 
@@ -170,33 +172,18 @@ _messageNeedsInput:
 db  0
 
 
-
+;preshifted for lookup
 _detailnames:
-db MENUPATCH_M_GDHIGH, MENUPATCH_M_GDLOW, MENUPATCH_M_MSGOFF
+db MENUPATCH_M_GDHIGH * 4, MENUPATCH_M_GDLOW * 4, MENUPATCH_M_MSGOFF * 4
 
 _msgNames:
-db MENUPATCH_M_MSGOFF, MENUPATCH_M_MSGON
+db MENUPATCH_M_MSGOFF * 4, MENUPATCH_M_MSGON * 4
 
+_menupatches:
+REPT NUM_MENU_ITEMS
+    dw 0, 0
+ENDM
 
-
-PROC    M_GetMenuPatch_ NEAR
-PUBLIC  M_GetMenuPatch_
-
-
-push  bx
-cbw
-mov   bx, ax
-add   bx, ax
-cmp   al, 30   ; number of menu graphics in first menu page. Todo unhardcode?
-mov   ax, MENUOFFSETS_SEGMENT ; todo use offset in cs?
-mov   es, ax
-mov   dx, MENUGRAPHICSPAGE0SEGMENT
-jl    use_page_0
-mov   dx, MENUGRAPHICSPAGE4SEGMENT
-use_page_0:
-mov   ax, word ptr es:[bx]
-pop   bx
-ret  
 
 
 
@@ -217,10 +204,9 @@ PUBLIC  M_DrawLoad_
 
 PUSHA_NO_AX_OR_BP_MACRO
 call  Z_QuickMapStatus_
-mov   al, MENUPATCH_M_LOADG
-call  M_GetMenuPatch_
-xchg  ax, bx
-mov   cx, dx
+
+les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_LOADG)]
+mov   cx, es
 
 xor   si, si
 mov   di, LOADDEF_Y
@@ -262,17 +248,16 @@ mov   si, ax
 add   dx, 7
 mov   di, dx  ; si/di get x/y
 
-mov   al, MENUPATCH_M_LSCNTR
-call  M_GetMenuPatch_
+; todo worth optimizing?
+les   ax, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_LSCNTR)]
+
 mov   word ptr cs:[SELFMODIFY_set_saveloadborder_offset+1], ax
-mov   word ptr cs:[SELFMODIFY_set_saveloadborder_segment+1], dx
+mov   word ptr cs:[SELFMODIFY_set_saveloadborder_segment+1], es
 
 
-mov   al, MENUPATCH_M_LSLEFT
-call  M_GetMenuPatch_
+les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_LSLEFT)]
+mov   cx, es
 
-xchg  ax, bx
-mov   cx, dx
 mov   ax, si
 mov   dx, di
 sub   ax, 8
@@ -295,10 +280,9 @@ inc   bp
 cmp   bp, 24
 jl    loop_next_tile
 
-mov   al, MENUPATCH_M_LSRGHT
-call  M_GetMenuPatch_
-xchg  bx, ax
-mov   cx, dx
+les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_LSRGHT)]
+mov   cx, es
+
 mov   dx, di
 mov   ax, si
 call  V_DrawPatchDirect_
@@ -434,10 +418,8 @@ PUBLIC  M_DrawSave_
 PUSHA_NO_AX_OR_BP_MACRO
 
 call  Z_QuickMapStatus_
-mov   al, MENUPATCH_M_SAVEG
-call  M_GetMenuPatch_
-xchg  ax, bx
-mov   cx, dx
+les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_SAVEG)]
+mov   cx, es
 
 mov   di, LOADDEF_Y
 
@@ -907,10 +889,10 @@ PUBLIC  M_DrawSound_
 push  bx
 push  cx
 push  dx
-mov   al, MENUPATCH_M_SVOL
-call  M_GetMenuPatch_
-mov   cx, dx
-xchg  ax, bx
+
+les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_SVOL)]
+mov   cx, es
+
 mov   dx, 38
 mov   ax, 60
 call  V_DrawPatchDirect_
@@ -1058,10 +1040,9 @@ PUBLIC  M_DrawMainMenu_
 push  bx
 push  cx
 push  dx
-xor   ax, ax ; MENUPATCH_M_DOOM
-call  M_GetMenuPatch_
-xchg  ax, bx
-mov   cx, dx
+
+les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_DOOM)]
+mov   cx, es
 mov   dx, 2
 mov   ax, 94
 call  V_DrawPatchDirect_
@@ -1081,20 +1062,18 @@ PUBLIC  M_DrawNewGame_
 push  bx
 push  cx
 push  dx
-mov   al, MENUPATCH_M_NEWG
-call  M_GetMenuPatch_
 
-xchg  ax, bx
-mov   cx, dx
+les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_NEWG)]
+mov   cx, es
+
 mov   dx, 14
 mov   ax, 96
 call  V_DrawPatchDirect_
 
-mov   al, MENUPATCH_M_SKILL
-call  M_GetMenuPatch_
 
-xchg  ax, bx
-mov   cx, dx
+les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_SKILL)]
+mov   cx, es
+
 mov   dx, 38
 mov   ax, 54
 call  V_DrawPatchDirect_
@@ -1133,10 +1112,10 @@ PUBLIC  M_DrawEpisode_
 push  bx
 push  cx
 push  dx
-mov   al, MENUPATCH_M_EPISOD
-call  M_GetMenuPatch_
-xchg  ax, bx
-mov   cx, dx
+
+les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_EPISOD)]
+mov   cx, es
+
 mov   dx, 38
 mov   ax, 54
 call  V_DrawPatchDirect_
@@ -1259,44 +1238,39 @@ PROC    M_DrawOptions_ NEAR
 PUBLIC  M_DrawOptions_
 
 PUSHA_NO_AX_OR_BP_MACRO
-mov   al, MENUPATCH_M_OPTTTL
-call  M_GetMenuPatch_
-mov   cx, dx
-xchg  ax, bx
+
+les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_OPTTTL)]
+mov   cx, es
+
 mov   dx, 15
 mov   ax, 108
 call  V_DrawPatchDirect_
 
 xor   bx, bx
 mov   bl, byte ptr ds:[_detailLevel]
-mov   al, byte ptr cs:[bx + _detailNames]
-call  M_GetMenuPatch_
+mov   bl, byte ptr cs:[bx + _detailNames] ; preshifted for lookup
 
-xchg  ax, bx
-mov   cx, dx
-
+les   bx, dword ptr cs:[_menupatches + bx]
+mov   cx, es
 mov   dx, OPTIONSDEF_Y + LINEHEIGHT*OPTIONS_E_DETAIL
 mov   ax, OPTIONSDEF_X + 175
 call  V_DrawPatchDirect_
 
 xor   bx, bx
 mov   bl, byte ptr ds:[_showMessages]
+mov   bl, byte ptr cs:[bx + _msgNames]   ; preshifted for lookup
 
-mov   al, byte ptr cs:[bx + _msgNames]
-call  M_GetMenuPatch_
-
-xchg  ax, bx
-mov   cx, dx
-
+les   bx, dword ptr cs:[_menupatches + bx]
+mov   cx, es
 mov   dx, OPTIONSDEF_Y + LINEHEIGHT*OPTIONS_E_MESSAGES
 mov   ax, OPTIONSDEF_X + 120
 
 call  V_DrawPatchDirect_
+
 mov   bx, 10
 mov   cl, byte ptr ds:[_mouseSensitivity]
 mov   ax, OPTIONSDEF_X
 mov   dx, OPTIONSDEF_Y + LINEHEIGHT*(OPTIONS_E_MOUSESENS+1)
-
 call  M_DrawThermo_
 
 mov   bx, 11
@@ -1684,15 +1658,8 @@ mov   bp, bx ; count in bp
 mov   di, dx  ; di holds y.
 xchg  ax, si  ; si holds xx. x + 8 combined with cx and written forward
 
-mov   al, MENUPATCH_M_THERMM
-call  M_GetMenuPatch_
-mov   word ptr cs:[SELFMODIFY_thermm_offset+1], ax
-mov   word ptr cs:[SELFMODIFY_thermm_segment+1], dx
 
-mov   al, MENUPATCH_M_THERML
-call  M_GetMenuPatch_
 
-xchg  bx, ax
 mov   ax, si
 add   si, 8
 
@@ -1703,7 +1670,9 @@ mov   word ptr cs:[SELFMODIFY_thermDot+1], cx
 
 
 
-mov   cx, dx
+les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_THERML)]
+mov   cx, es
+
 mov   dx, di
 
 call  V_DrawPatchDirect_
@@ -1711,34 +1680,27 @@ call  V_DrawPatchDirect_
 
 loop_next_thermo:
 
-SELFMODIFY_thermm_offset:
-mov   bx, 01000h
-SELFMODIFY_thermm_segment:
-mov   cx, 01000h
+les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_THERMM)]
+mov   cx, es
 mov   dx, di
 mov   ax, si
-
 call  V_DrawPatchDirect_
+
 add   si, 8
 dec   bp
 jnz   loop_next_thermo
 done_with_thermo_loop:
 
-mov   al, MENUPATCH_M_THERMR
-call  M_GetMenuPatch_
+les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_THERMR)]
+mov   cx, es
 
-xchg  bx, ax
-mov   cx, dx
 mov   dx, di
 mov   ax, si
 
 call  V_DrawPatchDirect_
-mov   al, MENUPATCH_M_THERMO
-call  M_GetMenuPatch_
 
-
-xchg  ax, bx
-mov   cx, dx
+les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_THERMO)]
+mov   cx, es
 
 
 mov   dx, di
@@ -2612,7 +2574,8 @@ jne   loop_next_menu_string_line
 
 jump_to_do_exit_check:
 jmp   do_exit_check
-
+jump_to_do_m_drawer_exit:
+jmp   do_m_drawer_exit
 
 
 
@@ -2620,7 +2583,7 @@ jmp   do_exit_check
 no_message_to_print:
 mov   bx, word ptr ds:[_currentMenu]
 cmp   byte ptr ds:[_menuactive], al ; 0
-je    do_m_drawer_exit
+je    jump_to_do_m_drawer_exit
 
 call  Z_QuickMapMenu_ ; todo remove
 cmp   word ptr ds:[bx + MENU_T.menu_routine], 0
@@ -2644,10 +2607,13 @@ loop_next_menu_patch:
 mov   al, byte ptr ds:[bx]
 test  al, al
 js    dont_draw_this_item
-call  M_GetMenuPatch_
+
 push  bx
+cbw
 xchg  ax, bx
-mov   cx, dx
+SHIFT_MACRO sal bx 2
+les   bx, dword ptr cs:[_menupatches + bx]
+mov   cx, es
 mov   ax, di
 mov   dx, si
 call  V_DrawPatchDirect_
@@ -2663,11 +2629,11 @@ jl    loop_next_menu_patch
 done_with_menuitems:
 
 mov   bx, word ptr ds:[_whichSkull]
-mov   al, byte ptr ds:[bx + _skullName]
-call  M_GetMenuPatch_
-xchg  ax, bx
-mov   cx, dx
-
+mov   bl, byte ptr ds:[bx + _skullName]
+xor   bh, bh
+SHIFT_MACRO sal bx 2
+les   bx, dword ptr cs:[_menupatches + bx]
+mov   cx, es
 mov   si, word ptr ds:[_currentMenu]
 xor   dx, dx
 mov   dl, byte ptr ds:[si + MENU_T.menu_y]
@@ -2773,8 +2739,6 @@ ret
 
 ENDP
 
-NUM_MENU_ITEMS = 46
-MENUGRAPHICS_STR_SIZE = (NUM_MENU_ITEMS * 9)  ; 019Eh
 
 _doomdata_bin_string:
 db "DOOMDATA.BIN", 0
@@ -2862,12 +2826,10 @@ mov  ax, es ; get old size back
 mov  dx, MENUGRAPHICSPAGE4SEGMENT
 not_new_menu_page:
 
-mov  bx, MENUOFFSETS_SEGMENT
-mov  es, bx
 pop  bx
-mov  word ptr es:[bx], di
-inc  bx
-inc  bx
+mov  word ptr cs:[_menupatches + bx], di
+mov  word ptr cs:[_menupatches + bx + 2], dx
+add  bx, 4
 push bx
 
 
@@ -3163,6 +3125,36 @@ pop   di
 pop   si
 
 ret
+ENDP
+
+PROC    M_DrawPause_ FAR
+PUBLIC  M_DrawPause_ 
+
+push   bx
+push   cx
+push   dx
+
+mov    dx, 4
+cmp    byte ptr ds:[_automapactive], 0
+jne    use_y_4
+add    dx, word ptr ds:[_viewwindowy]
+
+use_y_4:
+mov    ax, word ptr ds:[_scaledviewwidth]
+sub    ax, 68
+sar    ax, 1
+add    ax, word ptr ds:[_viewwindowx]
+
+les    bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_PAUSE)]
+mov    cx, es
+
+call   V_DrawPatchDirect_
+
+pop    dx
+pop    cx
+pop    bx
+retf
+
 ENDP
 
 

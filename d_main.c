@@ -538,7 +538,7 @@ int16_t __far locallib_strcasecmp(char __far *str1, char __far *str2){
 
 
 
-patch_t __far* M_GetMenuPatch(int16_t i);
+void __far M_DrawPause();
 
 
 void __near R_ExecuteSetViewSize (void);
@@ -795,17 +795,12 @@ void __near D_Display (void) {
 
     // draw pause pic
     if (paused) {
-        if (automapactive){
-            y = 4;
-		} else{
-            y = viewwindowy+4;
-		}
-#ifndef __DEMO_ONLY_BINARY
+
 
 		Z_QuickMapMenu();		
-        V_DrawPatchDirect(viewwindowx+(scaledviewwidth-68)/2, y, M_GetMenuPatch(12));
+		M_DrawPause();
 		Z_QuickMapPhysics();
-#endif
+
     }
 	
 
