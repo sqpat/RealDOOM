@@ -36,7 +36,6 @@ EXTRN fclose_:PROC
 ; todo only include if necessary via flags...
 ;EXTRN DEBUG_PRINT_:PROC
 
-EXTRN locallib_strcmp_:PROC
 EXTRN I_WaitVBL_:NEAR
 EXTRN Z_QuickMapPalette_:PROC
 EXTRN Z_QuickMapByTaskNum_:PROC
@@ -2348,6 +2347,38 @@ retf
 ENDP
 
 
+PROC   locallib_strcmp_ FAR
+PUBLIC locallib_strcmp_ 
 
+push  si
+push  di
+
+xchg  ax, di
+mov   es, dx
+mov   si, bx
+mov   ds, cx
+
+xor   ax, ax
+mov   dx, di ; store old
+repne scasb  ; find end of string
+sub   di, dx
+mov   cx, di ; cx has len
+mov   di, dx ; di restored
+
+
+repe  cmpsb
+
+dec   si
+lodsb
+sub   al, byte ptr es:[di-1]
+
+push  ss
+pop   ds
+
+pop   di
+pop   si
+
+retf
+ENDP
 
 END

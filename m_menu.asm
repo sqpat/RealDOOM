@@ -58,8 +58,6 @@ EXTRN fseek_:FAR
 EXTRN fread_:FAR
 
 EXTRN G_DeferedInitNew_:NEAR
-
-EXTRN locallib_strcmp_:FAR
 EXTRN locallib_strncpy_:FAR
 EXTRN locallib_strcpy_:FAR
 
@@ -589,9 +587,9 @@ lea   bx, [bp - 0100h]
 mov   cx, ss
 mov   ax, si
 mov   dx, cs
-call  locallib_strcmp_   ; todo make this carry based?
+call  M_Strcmp_  
 
-test  ax, ax
+;test  ax, ax  ; flags pending from prior compare..
 jne   not_empty_string
 
 mov   byte ptr cs:[si], 0
@@ -3102,6 +3100,41 @@ pop  di
 pop  si
 ret
 
+ENDP
+
+
+PROC   M_Strcmp_ NEAR
+PUBLIC M_Strcmp_ 
+
+push  si
+push  di
+
+xchg  ax, di
+mov   es, dx
+mov   si, bx
+mov   ds, cx
+
+xor   ax, ax
+mov   dx, di ; store old
+repne scasb  ; find end of string
+sub   di, dx
+mov   cx, di ; cx has len
+mov   di, dx ; di restored
+
+
+repe  cmpsb
+
+dec   si
+lodsb
+sub   al, byte ptr es:[di-1]
+
+push  ss
+pop   ds
+
+pop   di
+pop   si
+
+ret
 ENDP
 
 PROC    M_MENU_ENDMARKER_ NEAR

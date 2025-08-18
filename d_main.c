@@ -502,17 +502,7 @@ void locallib_strlwr(char __far *str){
 }
 
 
-int16_t __far locallib_strcmp(char __far *str1, char __far *str2){
-	int16_t i = 0;
-	while (str1[i]){
-		int16_t b  = str1[i] - str2[i];
-		if (b){
-			return b;
-		}
-		i++;
-	}
-	return str1[i] - str2[i];
-}
+
 
 
 // todo leads to texture bugs, why?
