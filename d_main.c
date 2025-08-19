@@ -207,20 +207,6 @@ fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b) {
 
 
 
-void __far locallib_strncpy(char __far *dest, char __far *src, int16_t n){
-	int16_t i = 0;
-	while (i < n){
-        if (src[i] == '\0'){
-        	while (i < n){
-        		dest[i] = '\0';
-                i++;
-            }
-            return;
-        }
-		dest[i] = src[i];
-		i++;
-	}
-}
 
 
 char __far locallib_printhexdigit (uint8_t digit, boolean printifzero){
@@ -469,7 +455,7 @@ void locallib_strlwr(char __far *str){
 
 
 // todo leads to texture bugs, why?
-int16_t __far locallib_strncasecmp(char __near *str1, char __far *str2, int16_t n){
+int16_t __near locallib_strncasecmp(char __near *str1, char __far *str2, int16_t n){
 	int8_t i = 0;
 	while (i < n){
 		int8_t a = locallib_toupper(str1[i]);

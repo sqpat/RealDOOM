@@ -166,8 +166,10 @@ int16_t __far W_CheckNumForName (int8_t* name) {
 	lumpinfo_t __far* lump_p;
 	//lumpinfo_t __far* lumpinfo = lumpinfo9000;
     // make the name into two integers for easy compares
-	locallib_strncpy (name8.s,name,8);
-	name8.s[8] = '\0';
+	
+	memset(&name8, 0, 9);
+	copystr8 (name8.s,name);
+	//name8.s[8] = '\0';
 
     
     // case insensitive
