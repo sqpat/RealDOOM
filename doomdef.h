@@ -298,8 +298,8 @@ typedef uint16_t fineangle_t;
 
 // NoShift variant takes in an offset (index shifted by 2 already for dword lookup). 
 // We do this because shifts are a little slow and we would be shifting right then left again in many cases.
-fixed_t32	FixedMulTrig(uint16_t trigtype, fineangle_t fineangle, fixed_t32 b);
-fixed_t32	FixedMulTrigNoShift(uint16_t trigtype, uint16_t fineanglelookup, fixed_t32 b);
+fixed_t32	__far FixedMulTrig(uint16_t trigtype, fineangle_t fineangle, fixed_t32 b);
+fixed_t32	__far FixedMulTrigNoShift(uint16_t trigtype, uint16_t fineanglelookup, fixed_t32 b);
 
 
 #pragma aux speedfuncparams \
@@ -307,8 +307,8 @@ fixed_t32	FixedMulTrigNoShift(uint16_t trigtype, uint16_t fineanglelookup, fixed
 
 #pragma aux (speedfuncparams)  FixedMulTrigSpeed;
 #pragma aux (speedfuncparams)  FixedMulTrigSpeedNoShift;
-fixed_t32	FixedMulTrigSpeed(uint16_t trigtype, fineangle_t fineangle, int8_t speed);
-fixed_t32	FixedMulTrigSpeedNoShift(uint16_t trigtype, uint16_t fineanglelookup, int8_t speed);
+fixed_t32	__far FixedMulTrigSpeed(uint16_t trigtype, fineangle_t fineangle, int8_t speed);
+fixed_t32	__far FixedMulTrigSpeedNoShift(uint16_t trigtype, uint16_t fineanglelookup, int8_t speed);
 
 
 #pragma aux trig16params \
@@ -322,16 +322,16 @@ fixed_t32	FastMulTrig16(uint16_t trigtype, fineangle_t fineangle, int16_t b);
 //fixed_t32	FixedMulTrig16(uint16_t trigtype, fineangle_t fineangle, int16_t b);
 //fixed_t32	FixedMulTrigOld(fixed_t32 a, fixed_t32 b);
 fixed_t32	__far FixedMul1632(int16_t a, fixed_t32 b);
-fixed_t32	FixedMulBig1632(int16_t a, fixed_t b);
-fixed_t32	FixedMul (fixed_t32 a, fixed_t32 b);
-fixed_t32	FixedMul2424(fixed_t32 a, fixed_t32 b);
-fixed_t32	FixedMul2432(fixed_t32 a, fixed_t32 b);
+fixed_t32	__far FixedMulBig1632(int16_t a, fixed_t b);
+fixed_t32	__far FixedMul (fixed_t32 a, fixed_t32 b);
+fixed_t32	__near FixedMul2424(fixed_t32 a, fixed_t32 b);
+fixed_t32	__far FixedMul2432(fixed_t32 a, fixed_t32 b);
 
 
-fixed_t32	FixedMul16u32(uint16_t a, fixed_t32 b);
-fixed_t32	FixedMul16u32u(uint16_t a, uint32_t b);
+fixed_t32	__far FixedMul16u32(uint16_t a, fixed_t32 b);
+// fixed_t32	FixedMul16u32u(uint16_t a, uint32_t b);
 // 
-fixed_t32   FastMul16u32u(uint16_t a, uint32_t b);
+fixed_t32   __far FastMul16u32u(uint16_t a, uint32_t b);
 // i think its correct that the sign extends dont play a factor in this..
 #define     FastMul16u32(a, b)  FastMul16u32u(a, b)
 #define     FastMul8u32(a, b)   FastMul16u32(a, b)
@@ -448,15 +448,15 @@ inline int16_t_union FastDiv16u_8u(uint16_t ax, uint8_t dl);
 fixed_t32	FixedDiv(fixed_t32 a, fixed_t32 b);
 fixed_t32	__far FastDiv3232FFFF(fixed_t32 a, fixed_t32 b);
 uint16_t 	FastDiv3232_shift_3_8(fixed_t32 a, fixed_t32 b);
-fixed_t32	FastDiv32u16u (fixed_t32 a, uint16_t b);
-fixed_t32	FastDiv3216u (fixed_t32 a, int16_t b);
+fixed_t32	__far FastDiv32u16u (fixed_t32 a, uint16_t b);
+fixed_t32	__far FastDiv3216u (fixed_t32 a, int16_t b);
 //int16_t     R_CalculateScaleStep(fixed_t32 a, int16_t b);
 fixed_t32   FixedDivWholeA(fixed_16_t a, fixed_t32 b);
 
 void __near copystr8(int8_t __far* dst, int8_t __far* src);
 
 int16_t __far locallib_strcmp(char __far *str1, char __far *str2);
-int16_t __near locallib_strncasecmp(char __near *str1, char __far *str2, int16_t n);
+int16_t __far locallib_strncasecmp(char __near *str1, char __far *str2, int16_t n);
 
 //int16_t __far locallib_strcasecmp(char __far *str1, char __far *str2);
 void __far combine_strings(char __far *dest, char __far *src1, char __far *src2);

@@ -435,8 +435,6 @@ void __near W_AddFile(int8_t *filename);
 
 
 void 		M_ScanTranslateDefaults();
-fixed_t32	FixedMulBig1632(int16_t a, fixed_t b);
-fixed_t32	FixedMulBig16322(int16_t a, fixed_t b);
 
 
 int16_t countleadingzeroes(uint32_t num);

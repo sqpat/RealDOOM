@@ -785,84 +785,86 @@ void __near Z_LoadBinaries() {
 
 	DEBUG_PRINT("..");
 
-	// manual runtime linking
+	// manual runtime linking. these are all called from other segments in externalized code and need their addresses in constant variable locatioons
  
 	// set some function addresses for asm calls. 
 	// as these move to asm and EMS memory space themselves, these references can go away
 	
-	W_CacheLumpNumDirect_addr = 	(uint32_t)(W_CacheLumpNumDirect);
-
-	M_Random_addr = 				(uint32_t)(M_Random);
-	NetUpdate_addr = 				(uint32_t)(NetUpdate);
-	V_MarkRect_addr = 				(uint32_t)(V_MarkRect);
-
-	FixedMul_addr = 				(uint32_t)(FixedMul);
-	FixedMul2432_addr = 			(uint32_t)(FixedMul2432);
-	FixedDiv_addr =					(uint32_t)(FixedDiv);
-
-	// todo think of a better solution for dynamic linking of func locations for overlaid code.
-	V_DrawPatch_addr =			 		(uint32_t)(V_DrawPatch);
-	locallib_toupper_addr =				(uint32_t)(locallib_toupper);
-	S_ChangeMusic_addr =			 	(uint32_t)(S_ChangeMusic);
-	V_DrawFullscreenPatch_addr =		(uint32_t)(V_DrawFullscreenPatch);
-	getStringByIndex_addr =				(uint32_t)(getStringByIndex);
-	locallib_strlen_addr =			 	(uint32_t)(locallib_strlen);
+	W_CacheLumpNumDirect_addr = 		(uint32_t)(W_CacheLumpNumDirect);
+	W_LumpLength_addr =	 				(uint32_t)(W_LumpLength);
 	W_CacheLumpNameDirect_addr =		(uint32_t)(W_CacheLumpNameDirect);
 	W_CacheLumpNumDirectFragment_addr =	(uint32_t)(W_CacheLumpNumDirectFragment);
 	W_GetNumForName_addr =		 		(uint32_t)(W_GetNumForName);
-	S_StartSound_addr =		 			(uint32_t)(S_StartSound);
-	S_StartSoundWithSecnum_addr =		(uint32_t)(S_StartSoundWithSecnum);
-	G_SecretExitLevel_addr =			(uint32_t)(G_SecretExitLevel);
-	AM_Stop_addr =						(uint32_t)(AM_Stop);
-	OutOfThinkers_addr =				(uint32_t)(OutOfThinkers);
-	FastDiv32u16u_addr =				(uint32_t)(FastDiv32u16u);
-	
 
-	S_StartMusic_addr =		 			(uint32_t)(S_StartMusic);
-
-	
-	I_Error_addr =		 				(uint32_t)(I_Error);
-	P_InitThinkers_addr =		 		(uint32_t)(P_InitThinkers);
-	
-
-	Z_SetOverlay_addr =	 				(uint32_t)(Z_SetOverlay);
-	W_LumpLength_addr =	 				(uint32_t)(W_LumpLength);
-
-	FixedMulTrigNoShift_addr =			(uint32_t)(FixedMulTrigNoShift);
-	R_PointToAngle2_16_addr =			(uint32_t)(R_PointToAngle2_16);
-	R_PointToAngle2_addr =				(uint32_t)(R_PointToAngle2);
+	M_Random_addr = 					(uint32_t)(M_Random);
+	NetUpdate_addr = 					(uint32_t)(NetUpdate);
 
 
-	FixedMul16u32_addr =				(uint32_t)(FixedMul16u32);
-	FastMul16u32u_addr =				(uint32_t)(FastMul16u32u);
-	FastDiv3216u_addr =					(uint32_t)(FastDiv3216u);
-	FixedMulTrigSpeedNoShift_addr =		(uint32_t)(FixedMulTrigSpeedNoShift);
-	FixedMulTrigSpeed_addr =			(uint32_t)(FixedMulTrigSpeed);
-	FixedMulTrig_addr =					(uint32_t)(FixedMulTrig);
-
-
-	G_ExitLevel_addr =					(uint32_t)(G_ExitLevel);
-	HU_Start_addr =						(uint32_t)(HU_Start);
-	ST_Start_addr =						(uint32_t)(ST_Start);
-	G_PlayerReborn_addr =				(uint32_t)(G_PlayerReborn);
-	S_StopSoundMobjRef_addr =			(uint32_t)(S_StopSoundMobjRef); 	
-
-	Z_QuickMapMusicPageFrame_addr =     (uint32_t)(Z_QuickMapMusicPageFrame);
+	// todo think of a better solution for dynamic linking of func locations for overlaid code.
 
 	fopen_addr =					    (uint32_t)(fopen);
 	fseek_addr =					    (uint32_t)(fseek);
 	fread_addr =					    (uint32_t)(fread);
 	fclose_addr =					    (uint32_t)(fclose);
 	locallib_far_fread_addr =			(uint32_t)(locallib_far_fread);
+	locallib_toupper_addr =				(uint32_t)(locallib_toupper);
+	locallib_strlen_addr =			 	(uint32_t)(locallib_strlen);
+
+	getStringByIndex_addr =				(uint32_t)(getStringByIndex);
+	
+
+
+	S_StartSound_addr =		 			(uint32_t)(S_StartSound);
+	S_StartSoundWithSecnum_addr =		(uint32_t)(S_StartSoundWithSecnum);
+	S_StopSoundMobjRef_addr =			(uint32_t)(S_StopSoundMobjRef); 	
+	S_StartMusic_addr =		 			(uint32_t)(S_StartMusic);
+	S_ChangeMusic_addr =			 	(uint32_t)(S_ChangeMusic);
+	
+	I_Error_addr =		 				(uint32_t)(I_Error);
+	P_InitThinkers_addr =		 		(uint32_t)(P_InitThinkers);
+	HU_Start_addr =						(uint32_t)(HU_Start);
+	ST_Start_addr =						(uint32_t)(ST_Start);
+
+	Z_SetOverlay_addr =	 				(uint32_t)(Z_SetOverlay);
+	Z_QuickMapMusicPageFrame_addr =     (uint32_t)(Z_QuickMapMusicPageFrame);
+
+
+	FixedMul_addr = 					(uint32_t)(FixedMul);
+	FixedMul2432_addr = 				(uint32_t)(FixedMul2432);
+	FixedDiv_addr =						(uint32_t)(FixedDiv);
+	FixedMulTrigNoShift_addr =			(uint32_t)(FixedMulTrigNoShift);
+	FastDiv32u16u_addr =				(uint32_t)(FastDiv32u16u);
+	FixedMul16u32_addr =				(uint32_t)(FixedMul16u32);
+	FastMul16u32u_addr =				(uint32_t)(FastMul16u32u);
+	FastDiv3216u_addr =					(uint32_t)(FastDiv3216u);
+	FixedMulTrigSpeedNoShift_addr =		(uint32_t)(FixedMulTrigSpeedNoShift);
+	FixedMulTrigSpeed_addr =			(uint32_t)(FixedMulTrigSpeed);
+	FixedMulTrig_addr =					(uint32_t)(FixedMulTrig);
+	R_PointToAngle2_16_addr =			(uint32_t)(R_PointToAngle2_16);
+	R_PointToAngle2_addr =				(uint32_t)(R_PointToAngle2);
+	R_SetViewSize_addr =			    (uint32_t)(R_SetViewSize);
+
+
+	AM_Stop_addr =						(uint32_t)(AM_Stop);
+	G_ExitLevel_addr =					(uint32_t)(G_ExitLevel);
+	G_SecretExitLevel_addr =			(uint32_t)(G_SecretExitLevel);
+	G_PlayerReborn_addr =				(uint32_t)(G_PlayerReborn);
+
+	OutOfThinkers_addr =				(uint32_t)(OutOfThinkers);
+
 
 
 	S_InitSFXCache_addr =			    (uint32_t)(S_InitSFXCache);
 	G_DeferedInitNew_addr =			    (uint32_t)(G_DeferedInitNew);
 	I_Quit_addr =					    (uint32_t)(I_Quit);
 	I_WaitVBL_addr =				    (uint32_t)(I_WaitVBL);
-	R_SetViewSize_addr =			    (uint32_t)(R_SetViewSize);
 	I_SetPalette_addr =				    (uint32_t)(I_SetPalette);
+
+
+	V_MarkRect_addr = 					(uint32_t)(V_MarkRect);
 	V_DrawPatchDirect_addr =			(uint32_t)(V_DrawPatchDirect);
+	V_DrawPatch_addr =			 		(uint32_t)(V_DrawPatch);
+	V_DrawFullscreenPatch_addr =		(uint32_t)(V_DrawFullscreenPatch);
 
 
 }

@@ -67,7 +67,7 @@ void S_SetMusicVolume(uint8_t volume) {
 
 
 }
-void S_ChangeMusic ( musicenum_t musicnum, boolean looping ) {
+void __far S_ChangeMusic ( musicenum_t musicnum, boolean looping ) {
 	pendingmusicenum = musicnum;
 	pendingmusicenumlooping = looping;
 }
@@ -135,7 +135,7 @@ void S_ActuallyChangeMusic (  ) {
 //
 // Starts some music with the music id found in sounds.h.
 //
-void S_StartMusic(musicenum_t m_id) {
+void __far S_StartMusic(musicenum_t m_id) {
     S_ChangeMusic(m_id, false);
 }
 
@@ -323,7 +323,7 @@ void __far S_StopSound(mobj_t __near* origin, int16_t soundorg_secnum) {
 
 }
 
-void far S_StopSoundMobjRef(THINKERREF originRef) {
+void __far S_StopSoundMobjRef(THINKERREF originRef) {
 	
 	int8_t cnum;
 
