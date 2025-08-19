@@ -2479,7 +2479,7 @@ PROC   locallib_createhexnibble_ NEAR
 PUBLIC locallib_createhexnibble_
 
 ;char __far locallib_printhexdigit (uint8_t digit, boolean printifzero){
-    ; printifzero turned into selfmodify
+    ; printifzero turned into direction flag
 test   al, al
 je     handle_zero_hexdigit
 cmp    al, 0Ah
@@ -2487,9 +2487,9 @@ jl     add_zerochar
 add    al, 55
 ret
 handle_zero_hexdigit:
-SELFMODIFY_printifzero:
-clc
-jnc    ret_zero
+
+test   bh, bh
+je     ret_zero
 add_zerochar:
 add    al, '0'
 ret_zero:
@@ -2505,40 +2505,37 @@ PUBLIC locallib_printhex_
 push  cx
 
 
-mov   byte ptr cs:[SELFMODIFY_printifzero], CLC_OPCODE   ; p
-
 test  bl, bl
-
 mov   cx, 7
 jne   is_long
 mov   cl, 3
 mov   dx, ax ; dupe ax in DX. makes the algorithm work in both cases.
 is_long:
 
-mov   byte ptr cs:[SELFMODIFY_set_last_digit+1], al
+push  ax  ; save current ax state. 
 
 ; cx is shifter
+mov   bx, cx  ; zero bh
 
 loop_shifter:
 
 ; start with high nibbles. rotate left. each loop
 
 push  cx
-mov   cx, 4
-xor   bx, bx
+mov   cl, 4
+xor   bl, bl
 shift_nibble_loop:
 sal   ax, 1
 rcl   dx, 1
-rcl   bx, 1
+rcl   bl, 1
 loop  shift_nibble_loop
-or    ax, bx
+or    al, bl
 pop   cx
 
-
-mov   si, ax ; backup
+push  ax  ; back up
 and   al, 0Fh
 je    dont_update_self_modify ; update the instruction above if al is not zero
-mov   byte ptr cs:[SELFMODIFY_printifzero], STC_OPCODE
+inc   bh
 dont_update_self_modify:
 
 call  locallib_createhexnibble_
@@ -2550,23 +2547,23 @@ call  putchar_
 skip_print_hex_digit:
 iter_next_hex_digit:
 
-xchg  ax, bx  ; recover
+pop   ax  ; recover old ax
 
 loop  loop_shifter
 
 ; done with loop..
 
 ; last digit is forced print even if 0
-mov   byte ptr cs:[SELFMODIFY_printifzero], STC_OPCODE
-SELFMODIFY_set_last_digit:
+inc   bh
+
+pop   ax  ; recover initial digit
 mov   al, 010h
 and   al, 0Fh
 call  locallib_createhexnibble_
 call  putchar_
 
-
-
 pop   cx
+
 ret
 ENDP
 

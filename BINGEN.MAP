@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/19 10:51:04
+Created on:       25/08/19 10:58:34
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -50,7 +50,7 @@ dmx_TEXT               CODE           AUTO           0000:8510       000001b8
 D_INT_TEXT             CODE           AUTO           0000:86c8       00000176
 WI_STUFF_TEXT          CODE           AUTO           0000:883e       00001009
 MATH_TEXT              CODE           AUTO           0000:9848       00000541
-MAIN_TEXT              CODE           AUTO           0000:9d8a       000010fe
+MAIN_TEXT              CODE           AUTO           0000:9d8a       000010fc
 g_setup_TEXT           CODE           AUTO           0000:ae90       000002e0
 r_setup_TEXT           CODE           AUTO           0000:b170       0000046c
 st_setup_TEXT          CODE           AUTO           0000:b5e0       00000209
@@ -586,7 +586,7 @@ Module: main.obj(main.ASM)
 0000:ad8f      combine_strings_
 0000:ad7d      M_Ticker_
 0000:acf5      I_UpdateNoBlit_
-0000:ae88*     D_MAIN_ENDMARKER_
+0000:ae86*     D_MAIN_ENDMARKER_
 0000:a228*     G_SetGameKeyDown_
 0000:a242      G_GetGameKey_
 0000:abe0      I_SetPalette_
@@ -598,9 +598,9 @@ Module: main.obj(main.ASM)
 0000:9f1e      I_KeyboardISR_
 0000:a9d3      M_ScanTranslateDefaults_
 0000:ade7      locallib_strlen_
-0000:a217      G_ResetGameKeys_
 0000:a24e      G_BuildTiccmd_
 0000:a58e*     CopyString13_
+0000:a217      G_ResetGameKeys_
 0000:9e61      cht_CheckCheat_
 0000:adb1      locallib_strcmp_
 0000:ae06      copystr8_
@@ -1591,4 +1591,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003fa00 (260608.)
 Entry point address: 2fe8:98be
-Link time: 00:00.40
+Link time: 00:00.95
