@@ -2759,7 +2759,7 @@ sub    al, ah
 jne    done_with_strncasecmp
 
 test   ah, ah
-mov    al, 0    ; in case we return 0.
+mov    al, 0    ; in case we branch, we must return 0...
 je     done_with_strncasecmp
 
 dec    dx
@@ -2772,6 +2772,35 @@ pop    si
 
 ret
 ENDP
+
+
+PROC   locallib_printstringfar_ NEAR
+PUBLIC locallib_printstringfar_
+
+mov   ds, dx
+ENDP
+
+PROC   locallib_printstringnear_ NEAR
+PUBLIC locallib_printstringnear_
+
+push  si
+xchg  ax, si
+
+lodsb
+test  al, al
+je    done_printing
+call  putchar_
+done_printing:
+
+push  ss
+pop   ds
+pop   si
+ret
+
+ENDP
+
+
+
 
 
 

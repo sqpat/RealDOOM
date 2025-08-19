@@ -216,16 +216,8 @@ void __near locallib_printdecimal (int32_t number);
 
 
 
-void __far locallib_printstringfar (int8_t __far *str){
-	int16_t i;
-	for (i = 0; str[i] != '\0'; i++){
-		putchar(str[i]);
-	}
-}
-
-void __far locallib_printstringnear (int8_t __near *str){
-	locallib_printstringfar(str);
-}
+void __near locallib_printstringfar (int8_t __far *str);
+void __near locallib_printstringnear (int8_t __near *str);
 
 void __far locallib_printf (int8_t __far*str, va_list argptr){
     int16_t i = 0;
