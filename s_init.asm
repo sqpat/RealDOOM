@@ -35,9 +35,10 @@ ENDP
 
 SINGULARITY_FLAG_HIGH =  (SOUND_SINGULARITY_FLAG SHR 8)
 
-not_soundblaster:
-jmp  done_with_sfx_prep
 
+bad_lump_skip_pc:
+mov   ax, bx
+jmp   continue_bad_lump_skip_pc
 
 PROC   LoadSFXWadLumps_
 PUBLIC LoadSFXWadLumps_
@@ -79,6 +80,10 @@ PUBLIC LoadSFXWadLumps_
 
     mov  ax, di
     call I_GetSfxLumpNum_
+    
+    cmp  ax, 0FFFFh
+    je   bad_lump_skip_pc
+
     mov  si, ax  ; backup lump num
     
     db 0FFh  ; lcall[addr]
@@ -120,12 +125,11 @@ PUBLIC LoadSFXWadLumps_
 
     push ss
     pop  ds
-
     mov  bx, di  ; bx restored. has been incremented meanwhile...
     xchg ax, di  ; grab this into ax
     pop  di      ; di restored
 
-
+    continue_bad_lump_skip_pc:
     pop  es  ; PC_SPEAKER_OFFSETS_SEGMENT
 
     ; store ptr
@@ -137,6 +141,8 @@ PUBLIC LoadSFXWadLumps_
     cmp  di, NUMSFX
     jne  loop_load_pc_sfx
 
+    jmp  done_with_sfx_prep
+    not_soundblaster:
     jmp  done_with_sfx_prep
 
     not_pc_speaker:
