@@ -127,10 +127,10 @@ void __far F_StartFinale();
 void __far F_Drawer();
 void __far F_Responder();
 void __far F_Ticker();
-void __far F_START();
-void __far F_END();
-void __far P_LOADSTART();
-void __far P_LOADEND();
+void __far F_FINALE_STARTMARKER();
+void __far F_FINALE_ENDMARKER();
+void __far P_SAVEG_STARTMARKER();
+void __far P_SAVEG_ENDMARKER();
 void __far P_UnArchivePlayers();
 void __far P_UnArchiveWorld();
 void __far P_UnArchiveThinkers();
@@ -371,13 +371,13 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fwrite(&codesize[7], 2, 1, fp);
     FAR_fwrite((byte __far *)I_ReadScreen, codesize[7], 1, fp);
 
-    codesize[8] = FP_OFF(F_END) - FP_OFF(F_START);
+    codesize[8] = FP_OFF(F_FINALE_ENDMARKER) - FP_OFF(F_FINALE_STARTMARKER);
     fwrite(&codesize[8], 2, 1, fp);
-    FAR_fwrite((byte __far *)F_START, codesize[8], 1, fp);
+    FAR_fwrite((byte __far *)F_FINALE_STARTMARKER, codesize[8], 1, fp);
 
-    codesize[9] = FP_OFF(P_LOADEND) - FP_OFF(P_LOADSTART);
+    codesize[9] = FP_OFF(P_SAVEG_ENDMARKER) - FP_OFF(P_SAVEG_STARTMARKER);
     fwrite(&codesize[9], 2, 1, fp);
-    FAR_fwrite((byte __far *)P_LOADSTART, codesize[9], 1, fp);
+    FAR_fwrite((byte __far *)P_SAVEG_STARTMARKER, codesize[9], 1, fp);
 
     codesize[10] = FP_OFF(SM_LOAD_ENDMARKER) - FP_OFF(SM_LOAD_STARTMARKER);
     fwrite(&codesize[10], 2, 1, fp);
@@ -491,20 +491,20 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "#define wipe_WipeLoopOffset                     0x%X\n", FP_OFF(wipe_WipeLoop)                     - FP_OFF(I_ReadScreen));
 
     // finale offsets
-    fprintf(fp, "#define F_StartFinaleOffset                     0x%X\n", FP_OFF(F_StartFinale)                     - FP_OFF(F_START));
-    fprintf(fp, "#define F_ResponderOffset                       0x%X\n", FP_OFF(F_Responder)                       - FP_OFF(F_START));
-    fprintf(fp, "#define F_TickerOffset                          0x%X\n", FP_OFF(F_Ticker)                          - FP_OFF(F_START));
-    fprintf(fp, "#define F_DrawerOffset                          0x%X\n", FP_OFF(F_Drawer)                          - FP_OFF(F_START));
+    fprintf(fp, "#define F_StartFinaleOffset                     0x%X\n", FP_OFF(F_StartFinale)                     - FP_OFF(F_FINALE_STARTMARKER));
+    fprintf(fp, "#define F_ResponderOffset                       0x%X\n", FP_OFF(F_Responder)                       - FP_OFF(F_FINALE_STARTMARKER));
+    fprintf(fp, "#define F_TickerOffset                          0x%X\n", FP_OFF(F_Ticker)                          - FP_OFF(F_FINALE_STARTMARKER));
+    fprintf(fp, "#define F_DrawerOffset                          0x%X\n", FP_OFF(F_Drawer)                          - FP_OFF(F_FINALE_STARTMARKER));
 
     // load offsets
-    fprintf(fp, "#define P_UnArchivePlayersOffset                0x%X\n", FP_OFF(P_UnArchivePlayers)                - FP_OFF(P_LOADSTART));
-    fprintf(fp, "#define P_UnArchiveWorldOffset                  0x%X\n", FP_OFF(P_UnArchiveWorld)                  - FP_OFF(P_LOADSTART));
-    fprintf(fp, "#define P_UnArchiveThinkersOffset               0x%X\n", FP_OFF(P_UnArchiveThinkers)               - FP_OFF(P_LOADSTART));
-    fprintf(fp, "#define P_UnArchiveSpecialsOffset               0x%X\n", FP_OFF(P_UnArchiveSpecials)               - FP_OFF(P_LOADSTART));
-    fprintf(fp, "#define P_ArchivePlayersOffset                  0x%X\n", FP_OFF(P_ArchivePlayers)                  - FP_OFF(P_LOADSTART));
-    fprintf(fp, "#define P_ArchiveWorldOffset                    0x%X\n", FP_OFF(P_ArchiveWorld)                    - FP_OFF(P_LOADSTART));
-    fprintf(fp, "#define P_ArchiveThinkersOffset                 0x%X\n", FP_OFF(P_ArchiveThinkers)                 - FP_OFF(P_LOADSTART));
-    fprintf(fp, "#define P_ArchiveSpecialsOffset                 0x%X\n", FP_OFF(P_ArchiveSpecials)                 - FP_OFF(P_LOADSTART));
+    fprintf(fp, "#define P_UnArchivePlayersOffset                0x%X\n", FP_OFF(P_UnArchivePlayers)                - FP_OFF(P_SAVEG_STARTMARKER));
+    fprintf(fp, "#define P_UnArchiveWorldOffset                  0x%X\n", FP_OFF(P_UnArchiveWorld)                  - FP_OFF(P_SAVEG_STARTMARKER));
+    fprintf(fp, "#define P_UnArchiveThinkersOffset               0x%X\n", FP_OFF(P_UnArchiveThinkers)               - FP_OFF(P_SAVEG_STARTMARKER));
+    fprintf(fp, "#define P_UnArchiveSpecialsOffset               0x%X\n", FP_OFF(P_UnArchiveSpecials)               - FP_OFF(P_SAVEG_STARTMARKER));
+    fprintf(fp, "#define P_ArchivePlayersOffset                  0x%X\n", FP_OFF(P_ArchivePlayers)                  - FP_OFF(P_SAVEG_STARTMARKER));
+    fprintf(fp, "#define P_ArchiveWorldOffset                    0x%X\n", FP_OFF(P_ArchiveWorld)                    - FP_OFF(P_SAVEG_STARTMARKER));
+    fprintf(fp, "#define P_ArchiveThinkersOffset                 0x%X\n", FP_OFF(P_ArchiveThinkers)                 - FP_OFF(P_SAVEG_STARTMARKER));
+    fprintf(fp, "#define P_ArchiveSpecialsOffset                 0x%X\n", FP_OFF(P_ArchiveSpecials)                 - FP_OFF(P_SAVEG_STARTMARKER));
 
     // s_init offsets
     fprintf(fp, "#define LoadSFXWadLumpsOffset                   0x%X\n", FP_OFF(LoadSFXWadLumps)                   - FP_OFF(S_INIT_STARTMARKER));
@@ -580,7 +580,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "R_DRAWMASKEDFLOFFSET = 0%Xh\n",                    FP_OFF(R_DrawMaskedFL)                    - FP_OFF(R_MASKFL_STARTMARKER));
     fprintf(fp, "R_WRITEBACKMASKEDFRAMECONSTANTS24OFFSET = 0%Xh\n", FP_OFF(R_WriteBackMaskedFrameConstants24) - FP_OFF(R_WriteBackViewConstantsMasked24));
     
-    fprintf(fp, "F_RESPONDEROFFSET = 0%Xh\n",                       FP_OFF(F_Responder)                       - FP_OFF(F_START));
+    fprintf(fp, "F_RESPONDEROFFSET = 0%Xh\n",                       FP_OFF(F_Responder)                       - FP_OFF(F_FINALE_STARTMARKER));
     fprintf(fp, "P_SETTHINGPOSITIONFAROFFSET = 0%Xh\n",             FP_OFF(P_SetThingPositionFar)             - FP_OFF(P_SIGHT_STARTMARKER));
 
     fprintf(fp, "P_REMOVEMOBJFAROFFSET = 0%Xh\n",                   FP_OFF(P_RemoveMobjFar)                   - FP_OFF(P_SIGHT_STARTMARKER));

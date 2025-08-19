@@ -15,10 +15,13 @@
 ; DESCRIPTION:
 ;
 INCLUDE defs.inc
-INSTRUCTION_SET_MACRO
+INSTRUCTION_SET_MACRO_NO_MEDIUM
 
 
-.CODE
+SEGMENT F_WIPE_TEXT USE16 PARA PUBLIC 'CODE'
+ASSUME  CS:F_WIPE_TEXT
+
+
 
 PROC    F_WIPE_STARTMARKER_ 
 PUBLIC  F_WIPE_STARTMARKER_
@@ -443,7 +446,7 @@ ret
 ENDP
 
 
-PROC wipe_doMelt_ 
+PROC wipe_doMelt_   NEAR
 PUBLIC wipe_doMelt_
 
 
@@ -483,7 +486,7 @@ pop   si
 pop   dx
 pop   cx
 pop   bx
-retf
+ret
 
 skip_exit:
 mov   word ptr [bp - 2], 0
@@ -1048,6 +1051,6 @@ PROC    F_WIPE_ENDMARKER_
 PUBLIC  F_WIPE_ENDMARKER_
 ENDP
 
+ENDS
 
-
-end
+END

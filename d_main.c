@@ -392,7 +392,7 @@ void locallib_strlwr(char __far *str){
 
 
 // todo leads to texture bugs, why?
-int16_t __far locallib_strncasecmp(char __near *str1, char __far *str2, int16_t n){
+int16_t __near locallib_strncasecmp(char __near *str1, char __far *str2, int16_t n){
 	int8_t i = 0;
 	while (i < n){
 		int8_t a = locallib_toupper(str1[i]);

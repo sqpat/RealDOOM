@@ -2347,7 +2347,7 @@ retf
 ENDP
 
 
-PROC   locallib_strcmp_ FAR
+PROC   locallib_strcmp_ NEAR
 PUBLIC locallib_strcmp_ 
 
 push  si
@@ -2378,7 +2378,7 @@ pop   ds
 pop   di
 pop   si
 
-retf
+ret
 ENDP
 
 

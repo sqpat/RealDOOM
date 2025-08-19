@@ -15,14 +15,14 @@
 ; DESCRIPTION:
 ;
 INCLUDE defs.inc
-INSTRUCTION_SET_MACRO
+INSTRUCTION_SET_MACRO_NO_MEDIUM
 
 
-
-.CODE
+SEGMENT P_SAVEG_TEXT USE16 PARA PUBLIC 'CODE'
+ASSUME  CS:P_SAVEG_TEXT
  
-PROC P_LOADSTART_
-PUBLIC P_LOADSTART_
+PROC P_SAVEG_STARTMARKER_
+PUBLIC P_SAVEG_STARTMARKER_
 ENDP
 
 _CSDATA_unused:
@@ -457,7 +457,7 @@ pop       ds
 xor       ah, ah
 push      ax
 
-mov ax, OFFSET str_bad_tclass_1 - OFFSET P_LOADSTART_
+mov ax, OFFSET str_bad_tclass_1 - OFFSET P_SAVEG_STARTMARKER_
 push      cs
 push      ax
 ;call      I_Error_
@@ -698,14 +698,14 @@ SIZEOF_LIGHTFLASH_VANILLA_T = 024h
 SIZEOF_GLOW_VANILLA_T = 01Ch
 
 jump_table_unarchive_specials:
-dw  OFFSET  load_ceiling_special - OFFSET P_LOADSTART_    ; 0
-dw  OFFSET  load_door_special - OFFSET P_LOADSTART_       ; 1
-dw  OFFSET  load_movefloor_special - OFFSET P_LOADSTART_  ; 2
-dw  OFFSET  load_platraise_special - OFFSET P_LOADSTART_  ; 3
-dw  OFFSET  load_flash_special - OFFSET P_LOADSTART_      ; 4
-dw  OFFSET  load_strobe_special - OFFSET P_LOADSTART_     ; 5
-dw  OFFSET  load_glow_special - OFFSET P_LOADSTART_       ; 6
-dw  OFFSET  end_specials - OFFSET P_LOADSTART_            ; 7
+dw  OFFSET  load_ceiling_special - OFFSET P_SAVEG_STARTMARKER_    ; 0
+dw  OFFSET  load_door_special - OFFSET P_SAVEG_STARTMARKER_       ; 1
+dw  OFFSET  load_movefloor_special - OFFSET P_SAVEG_STARTMARKER_  ; 2
+dw  OFFSET  load_platraise_special - OFFSET P_SAVEG_STARTMARKER_  ; 3
+dw  OFFSET  load_flash_special - OFFSET P_SAVEG_STARTMARKER_      ; 4
+dw  OFFSET  load_strobe_special - OFFSET P_SAVEG_STARTMARKER_     ; 5
+dw  OFFSET  load_glow_special - OFFSET P_SAVEG_STARTMARKER_       ; 6
+dw  OFFSET  end_specials - OFFSET P_SAVEG_STARTMARKER_            ; 7
 
 PROC P_UnArchiveSpecials_  FAR
 PUBLIC P_UnArchiveSpecials_
@@ -739,13 +739,13 @@ and    cx, 3
 mov    di, SIZEOF_THINKER_T
 
 
-jmp    word ptr cs:[bx + OFFSET jump_table_unarchive_specials - OFFSET P_LOADSTART_]
+jmp    word ptr cs:[bx + OFFSET jump_table_unarchive_specials - OFFSET P_SAVEG_STARTMARKER_]
 
 ; default case
 bad_special_thinkerclass:
 xor    ah, ah
 
-mov    ax, OFFSET str_bad_tclass_2 - OFFSET P_LOADSTART_
+mov    ax, OFFSET str_bad_tclass_2 - OFFSET P_SAVEG_STARTMARKER_
 push   cs
 push   ax
 ;call      I_Error_
@@ -1818,7 +1818,7 @@ sub   al, 56
 
 sal   ax, 1     ; word lookup
 xchg  ax, bx
-mov   bx, word ptr cs:[tag_conversions_to_vanilla + bx - OFFSET P_LOADSTART_]
+mov   bx, word ptr cs:[tag_conversions_to_vanilla + bx - OFFSET P_SAVEG_STARTMARKER_]
 xchg  ax, bx
 
 use_tag:
@@ -1862,15 +1862,15 @@ db  -1, 3, 0, 1, 2, -1, 4, 5, 6
 
 jump_table_archive_specials:
 
-dw  OFFSET  iterate_to_next_special  - OFFSET P_LOADSTART_ ; 1 mobj, skip
-dw  OFFSET  save_platraise_special   - OFFSET P_LOADSTART_ ; 2
-dw  OFFSET  save_ceiling_special     - OFFSET P_LOADSTART_ ; 3
-dw  OFFSET  save_door_special        - OFFSET P_LOADSTART_ ; 4
-dw  OFFSET  save_movefloor_special   - OFFSET P_LOADSTART_ ; 5
-dw  OFFSET  iterate_to_next_special  - OFFSET P_LOADSTART_ ; 6 flicker?? not saved apparently, skip
-dw  OFFSET  save_flash_special       - OFFSET P_LOADSTART_ ; 7
-dw  OFFSET  save_strobe_special      - OFFSET P_LOADSTART_ ; 8
-dw  OFFSET  save_glow_special        - OFFSET P_LOADSTART_ ; 9
+dw  OFFSET  iterate_to_next_special  - OFFSET P_SAVEG_STARTMARKER_ ; 1 mobj, skip
+dw  OFFSET  save_platraise_special   - OFFSET P_SAVEG_STARTMARKER_ ; 2
+dw  OFFSET  save_ceiling_special     - OFFSET P_SAVEG_STARTMARKER_ ; 3
+dw  OFFSET  save_door_special        - OFFSET P_SAVEG_STARTMARKER_ ; 4
+dw  OFFSET  save_movefloor_special   - OFFSET P_SAVEG_STARTMARKER_ ; 5
+dw  OFFSET  iterate_to_next_special  - OFFSET P_SAVEG_STARTMARKER_ ; 6 flicker?? not saved apparently, skip
+dw  OFFSET  save_flash_special       - OFFSET P_SAVEG_STARTMARKER_ ; 7
+dw  OFFSET  save_strobe_special      - OFFSET P_SAVEG_STARTMARKER_ ; 8
+dw  OFFSET  save_glow_special        - OFFSET P_SAVEG_STARTMARKER_ ; 9
 
 erase_size_table:
 dw  0
@@ -1935,7 +1935,7 @@ force_ceiling:          ; active ceilings jump here from null thinker case.
 add       si, OFFSET _thinkerlist + THINKER_T.t_data   ; data pointer
 
 xchg      ax, bx
-mov       al, byte ptr cs:[bx + OFFSET _tc_enum_lookup - OFFSET P_LOADSTART_]
+mov       al, byte ptr cs:[bx + OFFSET _tc_enum_lookup - OFFSET P_SAVEG_STARTMARKER_]
 stosb     ; write tc_type  
 
 shl       bx, 1  ; word lookup
@@ -1956,7 +1956,7 @@ add       di, ax
 ; default the thinker memory area to 0.
 
 push      cx
-mov       dx, word ptr cs:[bx + OFFSET erase_size_table  - OFFSET P_LOADSTART_]
+mov       dx, word ptr cs:[bx + OFFSET erase_size_table  - OFFSET P_SAVEG_STARTMARKER_]
 mov       cx, dx
 xor       ax, ax
 rep       stosw 
@@ -1969,7 +1969,7 @@ add       di, 12 ; skip 12 byte thinker field
 
 
 
-jmp       word ptr cs:[bx + OFFSET jump_table_archive_specials  - OFFSET P_LOADSTART_]
+jmp       word ptr cs:[bx + OFFSET jump_table_archive_specials  - OFFSET P_SAVEG_STARTMARKER_]
 
 iterate_to_next_special:
 
@@ -2092,9 +2092,10 @@ jmp       iterate_to_next_special
 ENDP
 
 
-PROC P_LOADEND_
-PUBLIC P_LOADEND_
+PROC P_SAVEG_ENDMARKER_
+PUBLIC P_SAVEG_ENDMARKER_
 ENDP
 
+ENDS
 
 END

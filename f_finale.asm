@@ -15,15 +15,17 @@
 ; DESCRIPTION:
 ;
 INCLUDE defs.inc
-INSTRUCTION_SET_MACRO
+INSTRUCTION_SET_MACRO_NO_MEDIUM
 
 
 
 
-.CODE
+SEGMENT F_FINALE_TEXT USE16 PARA PUBLIC 'CODE'
+ASSUME  CS:F_FINALE_TEXT
 
-PROC F_START_ NEAR
-PUBLIC F_START_
+
+PROC   F_FINALE_STARTMARKER_ NEAR
+PUBLIC F_FINALE_STARTMARKER_
 ENDP
 
 ; vars and data..
@@ -85,7 +87,7 @@ mul   dx
 xchg  si, ax
 mov   di, word ptr ds:[bx]
 mov   word ptr [bp - 2], 0    ; loop counter?
-mov   word ptr cs:[SELFMODIFY_cmp_col_to_patch_width+3 - OFFSET F_START_], di
+mov   word ptr cs:[SELFMODIFY_cmp_col_to_patch_width+3 - OFFSET F_FINALE_STARTMARKER_], di
 sub   ax, word ptr ds:[bx + 4]
 mov   cx, word ptr ds:[bx + 2]
 mov   dx, es   ; get dx back
@@ -309,7 +311,7 @@ db "MFLR8_3", 0
 ; lookups for doom1 (noncommercial) case
 
 flat_nondoom2_lookup:
-dw flat_floor4_8 - OFFSET F_START_, flat_sflr6_1 - OFFSET F_START_, flat_mflr8_4 - OFFSET F_START_, flat_mflr8_3 - OFFSET F_START_
+dw flat_floor4_8 - OFFSET F_FINALE_STARTMARKER_, flat_sflr6_1 - OFFSET F_FINALE_STARTMARKER_, flat_mflr8_4 - OFFSET F_FINALE_STARTMARKER_, flat_mflr8_3 - OFFSET F_FINALE_STARTMARKER_
 
 ; BIG TODO: if other build versions are to be implemented then
 ;  the strings above must be added to and switch cases changed a bit. could make a big fat lookup table with all fields?
@@ -335,7 +337,7 @@ jae   doom2_above_or_equal_to_15
 cmp   al, 11
 jne   doom2_below_15_not_11
 ; doom2 case 11
-mov   bx, OFFSET flat_rrock14 - OFFSET F_START_
+mov   bx, OFFSET flat_rrock14 - OFFSET F_FINALE_STARTMARKER_
 mov   cx, C2TEXT
 got_flat_values:
 mov   ax, 65 ; set finale_music
@@ -365,28 +367,28 @@ retf
 doom2_above_or_equal_to_15:
 ja    doom2_above_15
 ; doom2 case 15 
-mov   bx, OFFSET flat_rrock13 - OFFSET F_START_
+mov   bx, OFFSET flat_rrock13 - OFFSET F_FINALE_STARTMARKER_
 mov   cx, C5TEXT
 jmp   got_flat_values
 doom2_above_15:
 cmp   al, 31
 jne   doom2_above_15_not_31
 ; doom2 case 31
-mov   bx, OFFSET flat_rrock19 - OFFSET F_START_
+mov   bx, OFFSET flat_rrock19 - OFFSET F_FINALE_STARTMARKER_
 mov   cx, C6TEXT
 jmp   got_flat_values
 doom2_above_15_not_31:
 cmp   al, 30
 jne   doom2_above_15_not_31_30
 ; doom2 case 30
-mov   bx, OFFSET flat_rrock17 - OFFSET F_START_
+mov   bx, OFFSET flat_rrock17 - OFFSET F_FINALE_STARTMARKER_
 mov   cx, C4TEXT
 jmp   got_flat_values
 doom2_above_15_not_31_30:
 cmp   al, 20
 jne   got_flat_values
 ;doom2 case 20
-mov   bx, OFFSET flat_floor4_8 - OFFSET F_START_
+mov   bx, OFFSET flat_floor4_8 - OFFSET F_FINALE_STARTMARKER_
 mov   cx, C3TEXT
 jmp   got_flat_values
 jump_to_handle_doom1:
@@ -395,7 +397,7 @@ doom2_below_15_not_11:
 cmp   al, 6
 jne   got_flat_values
 ; doom2 case 6
-mov   bx, OFFSET flat_slime16 - OFFSET F_START_
+mov   bx, OFFSET flat_slime16 - OFFSET F_FINALE_STARTMARKER_
 mov   cx, C1TEXT
 jmp   got_flat_values
 handle_doom1:
@@ -408,7 +410,7 @@ xor   ch, ch
 mov   si, cx
 sal   si, 1
 
-mov   bx, word ptr cs:[si + flat_nondoom2_lookup - OFFSET F_START_]
+mov   bx, word ptr cs:[si + flat_nondoom2_lookup - OFFSET F_FINALE_STARTMARKER_]
 got_string:
 mov   al, byte ptr ds:[_gameepisode]
 cbw
@@ -496,7 +498,7 @@ mov   ax, OFFSET _filename_argument
 
 ; copy 9 bytes "BOSSBACK" to ds. gross...
 push  bx
-mov   bx, OFFSET str_bossback - OFFSET F_START_
+mov   bx, OFFSET str_bossback - OFFSET F_FINALE_STARTMARKER_
 call  F_CopyString9_
 pop   bx
 
@@ -508,9 +510,9 @@ dw _V_DrawFullscreenPatch_addr
 mov   al, byte ptr ds:[_castnum]
 ;mov   bx, ax
 ;add   bx, ax
-;mov   al, byte ptr cs:[bx + _CSDATA_castorder - OFFSET F_START_]
+;mov   al, byte ptr cs:[bx + _CSDATA_castorder - OFFSET F_FINALE_STARTMARKER_]
 sal    ax, 1
-mov    bx, _CSDATA_castorder - OFFSET F_START_
+mov    bx, _CSDATA_castorder - OFFSET F_FINALE_STARTMARKER_
 xlat   byte ptr cs:[bx]
 mov   cx, ds
 ;xor   ah, ah   ; between 0-17, cbw is fine
@@ -913,7 +915,7 @@ mov   word ptr [bp - 0Ch], SCREENWIDTH
 scrolled_ready:
 
 
-mov   bx, OFFSET str_pfub2 - OFFSET F_START_
+mov   bx, OFFSET str_pfub2 - OFFSET F_FINALE_STARTMARKER_
 mov   ax, OFFSET _filename_argument
 call  F_CopyString9_
 
@@ -935,7 +937,7 @@ dw _W_CacheLumpNumDirectFragment_addr
 xor   bx, bx
 push  bx
 
-mov   bx, OFFSET str_pfub2 - OFFSET F_START_
+mov   bx, OFFSET str_pfub2 - OFFSET F_FINALE_STARTMARKER_
 mov   ax, OFFSET _filename_argument
 call  F_CopyString9_
 
@@ -982,7 +984,7 @@ use_pfub1:
 mov   bx, word ptr [bp - 6]
 push  bx
 
-mov   bx, OFFSET str_pfub1 - OFFSET F_START_
+mov   bx, OFFSET str_pfub1 - OFFSET F_FINALE_STARTMARKER_
 
 
 
@@ -1041,7 +1043,7 @@ dw _S_StartSound_addr
 mov   byte ptr ds:[_finale_laststage], bl
 draw_end0_patch:
 mov   cl, bl  ; get finale stage in cl
-mov   bx, OFFSET str_end0 - OFFSET F_START_
+mov   bx, OFFSET str_end0 - OFFSET F_FINALE_STARTMARKER_
 mov   ax, OFFSET _filename_argument
 call  F_CopyString9_
 add   byte ptr ds:[_filename_argument+3], cl ; add to the '0'
@@ -1072,7 +1074,7 @@ pop   bx
 ret   
 draw_end_patch:
 mov   cx, word ptr [bp - 0Eh]
-mov   bx, OFFSET str_end0 - OFFSET F_START_
+mov   bx, OFFSET str_end0 - OFFSET F_FINALE_STARTMARKER_
 mov   ax, OFFSET _filename_argument
 call  F_CopyString9_
 mov   bx, word ptr [bp - 8]
@@ -1115,7 +1117,7 @@ xor   ah, ah
 mov   word ptr [bp - 4], ax
 mov   word ptr [bp - 6], ax
 
-mov   bx, OFFSET str_pfub1 - OFFSET F_START_
+mov   bx, OFFSET str_pfub1 - OFFSET F_FINALE_STARTMARKER_
 mov   ax, OFFSET _filename_argument
 call  F_CopyString9_
 xor   bx, bx
@@ -1131,7 +1133,7 @@ dw _W_CacheLumpNumDirectFragment_addr
 xor   ax, ax
 push  ax
 
-mov   bx, OFFSET str_pfub1 - OFFSET F_START_
+mov   bx, OFFSET str_pfub1 - OFFSET F_FINALE_STARTMARKER_
 mov   ax, OFFSET _filename_argument
 call  F_CopyString9_
 
@@ -1154,7 +1156,7 @@ jmp   xcoord_ready
 use_pfub2:
 mov   bx,  word ptr [bp - 6]
 push  bx
-mov   bx, OFFSET str_pfub2 - OFFSET F_START_         ; string addr...
+mov   bx, OFFSET str_pfub2 - OFFSET F_FINALE_STARTMARKER_         ; string addr...
 jmp   draw_chosen_pfub
 
 
@@ -1174,7 +1176,7 @@ cmp   word ptr ds:[_finalestage], 2
 je    dont_force_screenwipe
 mov   byte ptr ds:[_wipegamestate], 0FFh  ; force screen wipe
 dont_force_screenwipe:
-mov   al, byte ptr cs:[_CSDATA_castorder+1 - OFFSET F_START_]     ;  castorder[castnum].type). castnum is 0.
+mov   al, byte ptr cs:[_CSDATA_castorder+1 - OFFSET F_FINALE_STARTMARKER_]     ;  castorder[castnum].type). castnum is 0.
 xor   ah, ah
 mov   byte ptr ds:[_castnum], 0
 ; call getSeeState
@@ -1256,7 +1258,7 @@ mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_FINALE_STARTMARKER_]
 xor   ah, ah
 db    09Ah
 dw    GETSEESTATEADDR, PHYSICS_HIGHCODE_SEGMENT
@@ -1270,7 +1272,7 @@ mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_FINALE_STARTMARKER_]
 xor   ah, ah
 db    09Ah
 dw    GETSEESTATEADDR, PHYSICS_HIGHCODE_SEGMENT
@@ -1295,7 +1297,7 @@ mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_FINALE_STARTMARKER_]
 xor   ah, ah
 db    09Ah
 dw    GETSEESTATEADDR, PHYSICS_HIGHCODE_SEGMENT
@@ -1323,7 +1325,7 @@ mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_FINALE_STARTMARKER_]
 xor   ah, ah
 db    09Ah
 dw    GETSEESTATEADDR, PHYSICS_HIGHCODE_SEGMENT
@@ -1509,7 +1511,7 @@ mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_FINALE_STARTMARKER_]
 xor   ah, ah
 
 db    09Ah
@@ -1532,7 +1534,7 @@ mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_FINALE_STARTMARKER_]
 xor   ah, ah
 db    09Ah
 dw    GETMELEESTATEADDR, PHYSICS_HIGHCODE_SEGMENT
@@ -1547,7 +1549,7 @@ mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_FINALE_STARTMARKER_]
 xor   ah, ah
 db    09Ah
 dw    GETMELEESTATEADDR, PHYSICS_HIGHCODE_SEGMENT
@@ -1557,7 +1559,7 @@ mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_FINALE_STARTMARKER_]
 xor   ah, ah
 db    09Ah
 dw    GETMISSILESTATEADDR, PHYSICS_HIGHCODE_SEGMENT
@@ -1595,7 +1597,7 @@ mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_FINALE_STARTMARKER_]
 xor   ah, ah
 mov   byte ptr ds:[_castdeath], 1
 db    09Ah
@@ -1617,7 +1619,7 @@ mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
 add   bx, ax
-mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_START_]
+mov   al, byte ptr cs:[bx + _CSDATA_castorder+1 - OFFSET F_FINALE_STARTMARKER_]
 mov   ah, 0Bh  ; sizeof mobjinfo? todo constant
 mul   ah
 mov   bx, ax
@@ -1767,7 +1769,7 @@ fdrawer_episode1:
 
 cmp   byte ptr ds:[_is_ultimate], 0
 jne   do_ultimate_fullscreenpatch
-mov   bx, OFFSET str_help2 - OFFSET F_START_
+mov   bx, OFFSET str_help2 - OFFSET F_FINALE_STARTMARKER_
 do_finaledraw:
 call  F_CopyString9_
 
@@ -1792,10 +1794,10 @@ pop   bx
 retf  
 
 do_ultimate_fullscreenpatch:
-mov   bx, OFFSET str_credit - OFFSET F_START_
+mov   bx, OFFSET str_credit - OFFSET F_FINALE_STARTMARKER_
 jmp   do_finaledraw
 fdrawer_episode2:
-mov   bx, OFFSET str_victory2 - OFFSET F_START_
+mov   bx, OFFSET str_victory2 - OFFSET F_FINALE_STARTMARKER_
 jmp   do_finaledraw
 fdrawer_episode3:
 call  F_BunnyScroll_
@@ -1803,14 +1805,15 @@ pop   dx
 pop   bx
 retf  
 fdrawer_episode4:
-mov   bx, OFFSET str_endpic - OFFSET F_START_
+mov   bx, OFFSET str_endpic - OFFSET F_FINALE_STARTMARKER_
 jmp   do_finaledraw
 
 ENDP
 
-PROC F_END_ NEAR
-PUBLIC F_END_
+PROC F_FINALE_ENDMARKER_ NEAR
+PUBLIC F_FINALE_ENDMARKER_
 ENDP
 
+ENDS
 
 END

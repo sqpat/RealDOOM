@@ -23,7 +23,7 @@ INSTRUCTION_SET_MACRO_NO_MEDIUM
 
 
 SEGMENT R_BSP_TEXT USE16 PARA PUBLIC 'CODE'
-ASSUME cs:R_BSP_TEXT
+ASSUME  CS:R_BSP_TEXT
 
 PROC R_BSP24_STARTMARKER_
 PUBLIC R_BSP24_STARTMARKER_
@@ -10986,7 +10986,7 @@ PUBLIC R_GetPatchTexture_Far24_
 
 call R_GetPatchTexture_
 retf
-
+ENDP
 
 PROC R_GetPatchTexture_ NEAR
 ;segment_t __near R_GetPatchTexture(int16_t lump, uint8_t maskedlookup) ;
@@ -11086,7 +11086,7 @@ PUBLIC R_GetCompositeTexture_Far24_
 
 call R_GetCompositeTexture_
 retf
-
+ENDP
 
 PROC R_GetCompositeTexture_ NEAR
 

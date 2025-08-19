@@ -96,7 +96,7 @@
 #define R_BSPFLCodeSize                0x3666
 #define WI_StuffCodeSize               0x1009
 #define PSightCodeSize                 0x8C39
-#define WipeCodeSize                   0x4E3
+#define WipeCodeSize                   0x4E2
 #define FinaleCodeSize                 0xBBE
 #define SaveLoadCodeSize               0xB35
 #define SMLoadCodeSize                 0x4CB
