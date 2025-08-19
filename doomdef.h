@@ -453,7 +453,7 @@ fixed_t32	FastDiv3216u (fixed_t32 a, int16_t b);
 //int16_t     R_CalculateScaleStep(fixed_t32 a, int16_t b);
 fixed_t32   FixedDivWholeA(fixed_16_t a, fixed_t32 b);
 
-void copystr8(int8_t __far* dst, int8_t __far* src);
+void __near copystr8(int8_t __far* dst, int8_t __far* src);
 
 int16_t __far locallib_strcmp(char __far *str1, char __far *str2);
 int16_t __far locallib_strncasecmp(char __near *str1, char __far *str2, int16_t n);

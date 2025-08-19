@@ -2404,5 +2404,71 @@ pop   si
 retf
 ENDP
 
+PROC   locallib_strlen_ FAR
+PUBLIC locallib_strlen_
+
+push   di
+push   cx
+mov    es, dx
+xchg   ax, di
+xor    ax, ax
+mov    cx, 0FFFFh
+
+repne  scasb
+mov    ax, 0FFFFh
+sub    ax, cx
+pop    cx
+pop    di
+retf
+
+ENDP
+
+
+PROC   locallib_toupper_ FAR
+PUBLIC locallib_toupper_
+
+cmp   al, 061h
+jb    exit_m_to_upper
+cmp   al, 07Ah
+ja    exit_m_to_upper
+sub   al, 020h
+exit_m_to_upper:
+retf
+
+ENDP
+
+
+
+PROC   copystr8_ NEAR
+PUBLIC copystr8_
+
+push   di
+push   si
+
+xchg  ax, di
+mov   es, dx
+mov   si, bx
+mov   ds, cx
+
+mov   cx, 8
+
+copy_next_char_str8:
+lodsb
+test al, al
+stosb
+je   break_loop_str8
+loop copy_next_char_str8
+break_loop_str8:
+
+push   ss
+pop    ds
+
+pop    si
+pop    di
+ret
+
+ENDP
+
+
 
 END

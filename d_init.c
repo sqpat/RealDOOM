@@ -439,8 +439,6 @@ fixed_t32	FixedMulBig1632(int16_t a, fixed_t b);
 fixed_t32	FixedMulBig16322(int16_t a, fixed_t b);
 
 
-void copystr8(int8_t __far* dst, int8_t __far* src);
-
 int16_t countleadingzeroes(uint32_t num);
 uint32_t divllu(fixed_t_union num_input, fixed_t_union den);
 

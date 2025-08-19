@@ -206,34 +206,6 @@ fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b) {
 // asm all these. they arent super performance critical but the point is to make them small and take advantage of x86 string commands and such.
 
 
-// basically our own little custom version of far fstrncpy. we were only ever using it with size 8
-void copystr8(int8_t __far* dst, int8_t __far* src){
-	int8_t j;
-	for (j = 0; j < 8; j++){
-		dst[j] = src[j];
-		if (dst[j] == '\0'){
-			return;
-		}
-	}
-}
-
-
-int16_t __far locallib_strlen(char __far *src){
-	int16_t i = 0;
-	while (src[i] != '\0'){
-		i++;
-	}
-	return i;
-
-}
-
-uint8_t __far locallib_toupper(uint8_t ch){
-	if (ch >=  0x61 && ch <= 0x7A){
-		return ch - 0x20;
-	}
-	return ch;
-}
-
 
 void __far locallib_strncpy(char __far *dest, char __far *src, int16_t n){
 	int16_t i = 0;
