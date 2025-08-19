@@ -2676,7 +2676,102 @@ ret
 ENDP
 
 
+PROC   locallib_strupr_ NEAR
+PUBLIC locallib_strupr_
 
+push   si
+xchg   ax, si
+mov    ds, dx
+loop_next_char_strupr:
+lodsb
+test   al, al
+je     done_with_strupr
+cmp    al, 'a'
+jb     loop_next_char_strupr
+cmp    al, 'z'
+ja     loop_next_char_strupr
+sub    al, 32
+mov    byte ptr ds:[si-1], al
+jmp    loop_next_char_strupr
+done_with_strupr:
+push   ss
+pop    ds
+pop    si
+
+ret
+ENDP
+
+PROC   locallib_strlwr_ NEAR
+PUBLIC locallib_strlwr_
+
+push   si
+xchg   ax, si
+mov    ds, dx
+loop_next_char_strlwr:
+lodsb
+test   al, al
+je     done_with_strlwr
+cmp    al, 'A'
+jb     loop_next_char_strlwr
+cmp    al, 'Z'
+ja     loop_next_char_strlwr
+add    al, 32
+mov    byte ptr ds:[si-1], al
+jmp    loop_next_char_strlwr
+done_with_strlwr:
+push   ss
+pop    ds
+pop    si
+
+ret
+ENDP
+
+
+
+PROC   locallib_strncasecmp_ NEAR
+PUBLIC locallib_strncasecmp_
+
+
+;int16_t __near locallib_strncasecmp(char __near *str1, char __near *str2, int16_t n){
+
+push   si
+
+xchg   ax, bx ; bx gets str1
+xchg   ax, dx ; dx gets n
+xchg   ax, si ; si gets str2
+
+; ds:si vs ds:bx.
+; n = dx 
+
+loop_next_char_strncasecmp:
+lodsb
+call   locallib_toupper_
+mov    ah, al
+xchg   bx, si
+lodsb
+xchg   bx, si
+call   locallib_toupper_
+
+; ah is a
+; al is b
+
+sub    al, ah
+jne    done_with_strncasecmp
+
+test   ah, ah
+mov    al, 0    ; in case we return 0.
+je     done_with_strncasecmp
+
+dec    dx
+jnz    loop_next_char_strncasecmp
+
+done_with_strncasecmp:
+cbw
+
+pop    si
+
+ret
+ENDP
 
 
 

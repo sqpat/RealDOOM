@@ -456,7 +456,7 @@ fixed_t32   FixedDivWholeA(fixed_16_t a, fixed_t32 b);
 void __near copystr8(int8_t __far* dst, int8_t __far* src);
 
 int16_t __near locallib_strcmp(char __far *str1, char __far *str2);
-int16_t __near locallib_strncasecmp(char __near *str1, char __far *str2, int16_t n);
+int16_t __near locallib_strncasecmp(char __near *str1, char __near *str2, int16_t n);
 
 //int16_t __far locallib_strcasecmp(char __far *str1, char __far *str2);
 void __far combine_strings(char __far *dest, char __far *src1, char __far *src2);
@@ -465,8 +465,8 @@ void __far locallib_printf (int8_t __far* str, va_list argptr);
 
 int16_t __far locallib_strlen(char __far *src);
 uint8_t __far locallib_toupper(uint8_t ch);
-void locallib_strupr(char __far *str);
-void locallib_strlwr(char __far *str);
+void __near locallib_strupr(char __far *str);
+void __near locallib_strlwr(char __far *str);
 
 // subtract 32 by turning off this bit..
 
