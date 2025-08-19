@@ -209,70 +209,8 @@ fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b) {
 
 
 
-char __far locallib_printhexdigit (uint8_t digit, boolean printifzero){
+void __near locallib_printhex (uint32_t number, boolean islong);
 	
-	if (digit){
-		if (digit < 0xA){
-			digit = ('0' + digit);
-		} else {
-			digit = (55 + digit);
-		}
-	} else {
-		if (printifzero){
-			digit = ('0');
-		} else {
-			return 0;
-		}
-	}
-	return(digit);
-}
-
-
-
-
-void __far locallib_printhex (uint32_t number, boolean islong, int8_t __near* outputtarget){
-	uint32_t modder = 0xF000;
-	int8_t shifter = 12;
-	boolean printedonedigit = false;
-	boolean printtostring = outputtarget != NULL;
-	int8_t index = 0;
-	int8_t thechar;
-
-	if (islong){
-		modder = 0xF0000000;
-		shifter = 28;
-	}
-	while (shifter ){
-		int8_t digit = (number&modder) >> shifter;
-		thechar = locallib_printhexdigit(digit, printedonedigit);
-		if (thechar){
-			if (printtostring){
-				outputtarget[index] = thechar;
-				index++;
-			} else {
-				putchar(thechar);
-			}
-		}
-		if (digit){
-			printedonedigit = true;
-		}
-		modder >>= 4;
-		shifter -=4;
-	}
-	
-	
-
-		thechar = locallib_printhexdigit((number&0x000F), true);
-		if (printtostring){
-			outputtarget[index] = thechar;
-			outputtarget[index+1] = '\0';
-		} else {
-			putchar(thechar);
-		}
-	
-}
-
- 
 
 void __far locallib_printdecimal (int32_t number){
 	// 4 billion max
@@ -334,7 +272,6 @@ void __far locallib_printf (int8_t __far*str, va_list argptr){
     int16_t i = 0;
     int8_t longflag = false;
 	
-
 	while (str[i] != '\0'){
 		for (; (str[i] != '%' && str[i] != '\0') && (!longflag); i++){
 			putchar(str[i]);
@@ -363,9 +300,9 @@ void __far locallib_printf (int8_t __far*str, va_list argptr){
 				case 'p':
 				case 'P':
 					if (longflag){
-						locallib_printhex(va_arg(argptr, uint32_t), true, NULL);
+						locallib_printhex(va_arg(argptr, uint32_t), true);
 					} else {
-						locallib_printhex((uint32_t)va_arg(argptr, uint16_t), false, NULL);
+						locallib_printhex((uint32_t)va_arg(argptr, uint16_t), false);
 					}
 					i+=2;
 					longflag = false;

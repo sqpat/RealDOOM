@@ -32,6 +32,7 @@ EXTRN fopen_:FAR
 EXTRN fgetc_:FAR
 EXTRN fputc_:FAR
 EXTRN fclose_:FAR
+EXTRN putchar_:FAR
 ; todo only include if necessary via flags...
 ;EXTRN DEBUG_PRINT_:FAR
 
@@ -180,6 +181,11 @@ cheat_clev:
 dw  OFFSET cheat_clev_seq, 0
 cheat_mypos:
 dw  OFFSET cheat_mypos_seq, 0
+
+
+PROC D_MAIN_STARTMARKER_ NEAR
+PUBLIC D_MAIN_STARTMARKER_
+ENDP
 
 
 ; ax is cheat index
@@ -2469,6 +2475,104 @@ ret
 
 ENDP
 
+PROC   locallib_createhexnibble_ NEAR
+PUBLIC locallib_createhexnibble_
+
+;char __far locallib_printhexdigit (uint8_t digit, boolean printifzero){
+    ; printifzero turned into selfmodify
+test   al, al
+je     handle_zero_hexdigit
+cmp    al, 0Ah
+jl     add_zerochar
+add    al, 55
+ret
+handle_zero_hexdigit:
+SELFMODIFY_printifzero:
+clc
+jnc    ret_zero
+add_zerochar:
+add    al, '0'
+ret_zero:
+ret
+ENDP
+
+
+PROC   locallib_printhex_ NEAR
+PUBLIC locallib_printhex_
+;void __far locallib_printhex (uint32_t number, boolean islong){
+; number to print in dx:ax.   islong boolean in bx 
+
+push  cx
+
+
+mov   byte ptr cs:[SELFMODIFY_printifzero], CLC_OPCODE   ; p
+
+test  bl, bl
+
+mov   cx, 7
+jne   is_long
+mov   cl, 3
+mov   dx, ax ; dupe ax in DX. makes the algorithm work in both cases.
+is_long:
+
+mov   byte ptr cs:[SELFMODIFY_set_last_digit+1], al
+
+; cx is shifter
+
+loop_shifter:
+
+; start with high nibbles. rotate left. each loop
+
+push  cx
+mov   cx, 4
+xor   bx, bx
+shift_nibble_loop:
+sal   ax, 1
+rcl   dx, 1
+rcl   bx, 1
+loop  shift_nibble_loop
+or    ax, bx
+pop   cx
+
+
+mov   si, ax ; backup
+and   al, 0Fh
+je    dont_update_self_modify ; update the instruction above if al is not zero
+mov   byte ptr cs:[SELFMODIFY_printifzero], STC_OPCODE
+dont_update_self_modify:
+
+call  locallib_createhexnibble_
+test  al, al
+je    skip_print_hex_digit
+
+call  putchar_
+
+skip_print_hex_digit:
+iter_next_hex_digit:
+
+xchg  ax, bx  ; recover
+
+loop  loop_shifter
+
+; done with loop..
+
+; last digit is forced print even if 0
+mov   byte ptr cs:[SELFMODIFY_printifzero], STC_OPCODE
+SELFMODIFY_set_last_digit:
+mov   al, 010h
+and   al, 0Fh
+call  locallib_createhexnibble_
+call  putchar_
+
+
+
+pop   cx
+ret
+ENDP
+
+PROC    D_MAIN_ENDMARKER_ NEAR
+PUBLIC  D_MAIN_ENDMARKER_
+ENDP
 
 
 END

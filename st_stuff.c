@@ -57,7 +57,7 @@
 #include "m_near.h"
 
 
-void __far locallib_printhex (uint32_t number, boolean islong, int8_t __near* outputtarget);
+void __near locallib_printhex (uint32_t number, boolean islong, int8_t __near* outputtarget);
 
 
 //
