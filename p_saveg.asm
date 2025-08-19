@@ -60,11 +60,10 @@ push  es  ; swap ds/es
 push  ds
 pop   es
 pop   ds
-lea   si, ds:[bx + 8]
+lea   si, es:[bx + VANILLA_PLAYER_T.vanilla_player_cmd]
 
 mov   cx, 13
 rep   movsw
-mov   cx, bx
 inc   si
 inc   si
 movsw           ; 024h -> 01Ah
@@ -116,23 +115,24 @@ mov   al, byte ptr es:[bx + VANILLA_PLAYER_T.vanilla_player_colormap]
 mov   ah, byte ptr es:[bx + VANILLA_PLAYER_T.vanilla_player_didsecret]
 mov   word ptr ds:[di + PLAYER_T.player_colormap], ax
 
+mov   cx, bx  ; store base pointer in cx...
 mov   si, cx
 xor   bx, bx
 load_next_power:
-add   bx, 2
 mov   ax, word ptr es:[si + VANILLA_PLAYER_T.vanilla_player_powers]
 add   si, 4
 mov   word ptr ds:[bx + di + PLAYER_T.player_powers], ax
+add   bx, 2
 cmp   bx, NUMPOWERS * 2  ; sizeof dw
 jne   load_next_power
 mov   si, cx
 xor   bx, bx
 
 load_next_key:
-inc   bx
 mov   al, byte ptr es:[si + VANILLA_PLAYER_T.vanilla_player_cards]
 add   si, 4
 mov   byte ptr ds:[bx + di + PLAYER_T.player_cards], al
+inc   bx
 cmp   bx, NUMCARDS
 jl    load_next_key
 mov   si, cx
@@ -141,21 +141,21 @@ xor   bx, bx
 load_next_ammo:
 mov   ax, word ptr es:[si + VANILLA_PLAYER_T.vanilla_player_ammo]
 mov   word ptr ds:[bx + di + PLAYER_T.player_ammo], ax
-inc   bx
-inc   bx
 mov   ax, word ptr es:[si + VANILLA_PLAYER_T.vanilla_player_maxammo]
 add   si, 4
 mov   word ptr ds:[bx + di + PLAYER_T.player_maxammo], ax
+inc   bx
+inc   bx
 cmp   bx, NUMAMMO * 2
 jne   load_next_ammo
 mov   si, cx
 xor   bx, bx
 
 load_next_weapon:
-inc   bx
 mov   al, byte ptr es:[si + VANILLA_PLAYER_T.vanilla_player_weaponowned]
 add   si, 4
 mov   byte ptr ds:[bx + di + PLAYER_T.player_weaponowned], al
+inc   bx
 cmp   bx, NUMWEAPONS
 jl    load_next_weapon
 mov   si, cx
@@ -1218,7 +1218,7 @@ call      SaveInt8_
 loop      loop_save_keys
 
 ;         si 030h,    di 05Ch
-add       di, 014h              ; backpack, MAX_PLAYERS * dword for frag count,
+add       di, 014h              ; skip backpack, MAX_PLAYERS * dword for frag count..
 ;         si  030h,   di 070h
 
 call      SaveInt8_     ;         si  031h,   di 078h

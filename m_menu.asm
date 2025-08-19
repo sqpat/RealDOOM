@@ -549,7 +549,7 @@ mov   ax, EMPTYSTRING
 
 call  dword ptr ds:[_getStringByIndex_addr]
 
-mov   byte ptr ds:[di], 0
+mov   byte ptr cs:[di], 0
 jmp   iter_next_savestring
 
 good_savegame_file:
@@ -569,7 +569,7 @@ call  dword ptr ds:[_locallib_far_fread_addr]
 pop   ax  ; recover fp
 call  dword ptr ds:[_fclose_addr]
 
-mov   byte ptr ds:[di], 1
+mov   byte ptr cs:[di], 1
 iter_next_savestring:
 inc   si
 add   di, SIZEOF_MENUITEM_T

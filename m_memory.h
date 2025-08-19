@@ -852,7 +852,7 @@ skytexture         5400:0000
 #define menugraphicspage4   (byte __far* )0x64000000
 #define end_menu            ((uint16_t __far*)  MAKE_FULL_SEGMENT(menugraphicspage4, size_menugraphcispage4 ))
 // todo calculate safely
-#define menu_code_area      (byte __far* )0x6E400000
+#define menu_code_area      (byte __far* )0x6E800000
 
 #define menugraphicspage0segment  ((segment_t) ((int32_t)menugraphicspage0 >> 16))
 #define menugraphicspage4segment  ((segment_t) ((int32_t)menugraphicspage4 >> 16))

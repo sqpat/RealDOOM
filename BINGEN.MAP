@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/17 19:45:07
+Created on:       25/08/17 23:53:50
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -62,14 +62,14 @@ s_sbsfx_TEXT           CODE           AUTO           0000:d620       00001815
 w_wad_TEXT             CODE           AUTO           0000:ee40       0000030c
 V_VIDEO_TEXT           CODE           AUTO           0000:f14c       00000611
 Z_ZONE_TEXT            CODE           AUTO           0000:f75e       00000461
-M_MENU_TEXT            CODE           AUTO           0fbc:0000       000013e8
-F_WIPE_TEXT            CODE           AUTO           10fa:0008       000004e3
-F_FINALE_TEXT          CODE           AUTO           1148:000c       00000bbe
-P_SAVEG_TEXT           CODE           AUTO           1204:000a       00000b35
-SM_OPL2_TEXT           CODE           AUTO           12b8:0000       00000f3c
-SM_OPL3_TEXT           CODE           AUTO           12b8:0f3c       0000100e
-SM_SBMID_TEXT          CODE           AUTO           12b8:1f4a       00000730
-SM_MPUMD_TEXT          CODE           AUTO           12b8:267a       000007db
+M_MENU_TEXT            CODE           AUTO           0fbc:0000       000013ea
+F_WIPE_TEXT            CODE           AUTO           10fa:000a       000004e3
+F_FINALE_TEXT          CODE           AUTO           1148:000e       00000bbe
+P_SAVEG_TEXT           CODE           AUTO           1204:000c       00000b35
+SM_OPL2_TEXT           CODE           AUTO           12b8:0002       00000f3c
+SM_OPL3_TEXT           CODE           AUTO           12b8:0f3e       0000100e
+SM_SBMID_TEXT          CODE           AUTO           12b8:1f4c       00000730
+SM_MPUMD_TEXT          CODE           AUTO           12b8:267c       000007db
 R_BSP_TEXT             CODE           AUTO           159e:0000       00006f32
 R_BSP0_TEXT            CODE           AUTO           1c92:0000       00006d36
 R_COL24_TEXT           CODE           AUTO           2365:0006       00000e46
@@ -783,143 +783,143 @@ Module: z_zone.obj(z_zone.ASM)
 0000:f849*     Z_QuickMapRender_4000To9000_9000Only_
 0000:fa38      Z_QuickMapVisplanePage_
 Module: m_menu.obj(m_menu.ASM)
-0fbc:0ca7*     M_StringHeight_
-0fbc:0c6b*     M_StringWidth_
-0fbc:054b*     M_SaveSelect_
+0fbc:0ca9*     M_StringHeight_
+0fbc:0c6d*     M_StringWidth_
+0fbc:054d*     M_SaveSelect_
 0fbc:0438*     M_LoadGame_
-0fbc:0b75*     M_ChangeDetail_
+0fbc:0b77*     M_ChangeDetail_
 0fbc:0375*     M_DrawLoad_
-0fbc:12d5*     M_MakeSaveGameName_
-0fbc:051a*     M_DoSave_
-0fbc:0d61      M_Responder_
-0fbc:07d4*     S_SetSfxVolume_
-0fbc:076f*     M_DrawSound_
-0fbc:0a79*     M_ReadThis2_
-0fbc:081d*     S_SetMusicVolume_
-0fbc:08d3*     M_ChooseSkill_
-0fbc:09d7*     M_Options_
-0fbc:05a3*     M_SaveGame_
-0fbc:089b*     M_DrawEpisode_
-0fbc:0c2b*     M_StartMessage_
-0fbc:075e*     M_DrawReadThisRetail_
-0fbc:1377*     M_strcpy_
-0fbc:0ae4*     M_QuitDOOM_
-0fbc:0b57*     M_ChangeSensitivity_
-0fbc:087d*     M_NewGame_
-0fbc:09e9*     M_ChangeMessages_
-0fbc:06bf*     M_QuickLoad_
-0fbc:0802*     M_MusicVol_
-0fbc:0a26*     M_EndGame_
-0fbc:05ee*     M_QuickSaveResponse_
-0fbc:0854*     M_DrawNewGame_
-0fbc:07a7*     M_Sound_
-0fbc:0cd7*     M_WriteText_
-0fbc:13b7*     M_Z_QuickmapStatus_
-0fbc:0a60*     M_ReadThis_
-0fbc:1062      M_Drawer_
-0fbc:0916*     M_Episode_
-0fbc:0605*     M_QuickSave_
-0fbc:09fd*     M_EndGameResponse_
+0fbc:12d7*     M_MakeSaveGameName_
+0fbc:051c*     M_DoSave_
+0fbc:0d63      M_Responder_
+0fbc:07d6*     S_SetSfxVolume_
+0fbc:0771*     M_DrawSound_
+0fbc:0a7b*     M_ReadThis2_
+0fbc:081f*     S_SetMusicVolume_
+0fbc:08d5*     M_ChooseSkill_
+0fbc:09d9*     M_Options_
+0fbc:05a5*     M_SaveGame_
+0fbc:089d*     M_DrawEpisode_
+0fbc:0c2d*     M_StartMessage_
+0fbc:0760*     M_DrawReadThisRetail_
+0fbc:1379*     M_strcpy_
+0fbc:0ae6*     M_QuitDOOM_
+0fbc:0b59*     M_ChangeSensitivity_
+0fbc:087f*     M_NewGame_
+0fbc:09eb*     M_ChangeMessages_
+0fbc:06c1*     M_QuickLoad_
+0fbc:0804*     M_MusicVol_
+0fbc:0a28*     M_EndGame_
+0fbc:05f0*     M_QuickSaveResponse_
+0fbc:0856*     M_DrawNewGame_
+0fbc:07a9*     M_Sound_
+0fbc:0cd9*     M_WriteText_
+0fbc:13b9*     M_Z_QuickmapStatus_
+0fbc:0a62*     M_ReadThis_
+0fbc:1064      M_Drawer_
+0fbc:0918*     M_Episode_
+0fbc:0607*     M_QuickSave_
+0fbc:09ff*     M_EndGameResponse_
 0fbc:0449*     M_ReadSaveStrings_
-0fbc:07b9*     M_SfxVol_
-0fbc:0b9c*     M_SizeDisplay_
-0fbc:11a2      M_Init_
-0fbc:1044      M_StartControlPanel_
-0fbc:0bca*     M_DrawThermo_
+0fbc:07bb*     M_SfxVol_
+0fbc:0b9e*     M_SizeDisplay_
+0fbc:11a4      M_Init_
+0fbc:1046      M_StartControlPanel_
+0fbc:0bcc*     M_DrawThermo_
 0fbc:0405*     M_LoadSelect_
-0fbc:13e8      M_MENU_ENDMARKER_
+0fbc:13ea      M_MENU_ENDMARKER_
 0fbc:0000      M_MENU_STARTMARKER_
 0fbc:03b3*     M_DrawSaveLoadBorder_
-0fbc:138b      M_DrawPause_
-0fbc:096b*     M_DrawOptions_
-0fbc:0aad*     M_QuitResponse_
-0fbc:06a8*     M_QuickLoadResponse_
-0fbc:1169*     CopyString13_menu_seg_
-0fbc:04a9*     M_DrawSave_
-0fbc:12ef      M_LoadFromSaveGame_
-0fbc:1355*     M_Strcmp_
-0fbc:08b3*     M_VerifyNightmare_
-0fbc:083c*     M_DrawMainMenu_
-0fbc:073c*     M_DrawReadThis1_
-0fbc:074d*     M_DrawReadThis2_
-0fbc:0a8b*     M_FinishReadThis_
+0fbc:138d      M_DrawPause_
+0fbc:096d*     M_DrawOptions_
+0fbc:0aaf*     M_QuitResponse_
+0fbc:06aa*     M_QuickLoadResponse_
+0fbc:116b*     CopyString13_menu_seg_
+0fbc:04ab*     M_DrawSave_
+0fbc:12f1      M_LoadFromSaveGame_
+0fbc:1357*     M_Strcmp_
+0fbc:08b5*     M_VerifyNightmare_
+0fbc:083e*     M_DrawMainMenu_
+0fbc:073e*     M_DrawReadThis1_
+0fbc:074f*     M_DrawReadThis2_
+0fbc:0a8d*     M_FinishReadThis_
 Module: f_wipe.obj(f_wipe.ASM)
-10fa:003a*     I_FinishUpdate_Fwipe_local_
-10fa:0008      I_ReadScreen_
-10fa:00fc*     I_UpdateNoBlit_Fwipe_local_
-10fa:0328*     wipe_initMelt_
-10fa:03b6      wipe_StartScreen_
-10fa:0184*     wipe_doMelt_
-10fa:02d8*     wipe_shittyColMajorXform_
-10fa:0054*     I_UpdateBox_Fwipe_local_
-10fa:0401      wipe_WipeLoop_
-10fa:04eb      F_WIPE_ENDMARKER_
-10fa:0008      F_WIPE_STARTMARKER_
+10fa:003c*     I_FinishUpdate_Fwipe_local_
+10fa:000a      I_ReadScreen_
+10fa:00fe*     I_UpdateNoBlit_Fwipe_local_
+10fa:032a*     wipe_initMelt_
+10fa:03b8      wipe_StartScreen_
+10fa:0186*     wipe_doMelt_
+10fa:02da*     wipe_shittyColMajorXform_
+10fa:0056*     I_UpdateBox_Fwipe_local_
+10fa:0403      wipe_WipeLoop_
+10fa:04ed      F_WIPE_ENDMARKER_
+10fa:000a      F_WIPE_STARTMARKER_
 Module: f_finale.obj(f_finale.ASM)
-1148:029d*     F_CastDrawer_
-1148:0b43      F_Responder_
-1148:000c      F_START_
-1148:0500*     F_BunnyScroll_
-1148:01bc      F_StartFinale_
-1148:0aa5      F_Ticker_
-1148:0030*     V_DrawPatchFlipped_
-1148:00cb*     F_CastPrint_
-1148:037c*     F_TextWrite_
-1148:076c*     F_CastTicker_
-1148:0bca      F_END_
-1148:0b6e      F_Drawer_
-1148:04ae*     F_DrawPatchCol_
-1148:0a31*     F_CastResponder_
-1148:0709*     F_StartCast_
+1148:029f*     F_CastDrawer_
+1148:0b45      F_Responder_
+1148:000e      F_START_
+1148:0502*     F_BunnyScroll_
+1148:01be      F_StartFinale_
+1148:0aa7      F_Ticker_
+1148:0032*     V_DrawPatchFlipped_
+1148:00cd*     F_CastPrint_
+1148:037e*     F_TextWrite_
+1148:076e*     F_CastTicker_
+1148:0bcc      F_END_
+1148:0b70      F_Drawer_
+1148:04b0*     F_DrawPatchCol_
+1148:0a33*     F_CastResponder_
+1148:070b*     F_StartCast_
 Module: p_saveg.obj(p_saveg.ASM)
-1204:02c9      P_UnArchiveThinkers_
-1204:000a      P_LOADSTART_
-1204:0445      P_UnArchiveSpecials_
-1204:0b3f      P_LOADEND_
-1204:0180      P_UnArchiveWorld_
-1204:079b      P_ArchiveWorld_
-1204:09f8      P_ArchiveSpecials_
-1204:000c      P_UnArchivePlayers_
-1204:0693      P_ArchivePlayers_
-1204:0860      P_ArchiveThinkers_
+1204:02cb      P_UnArchiveThinkers_
+1204:000c      P_LOADSTART_
+1204:0447      P_UnArchiveSpecials_
+1204:0b41      P_LOADEND_
+1204:0182      P_UnArchiveWorld_
+1204:079d      P_ArchiveWorld_
+1204:09fa      P_ArchiveSpecials_
+1204:000e      P_UnArchivePlayers_
+1204:0695      P_ArchivePlayers_
+1204:0862      P_ArchiveThinkers_
 Module: sm_opl2.obj(sm_opl2.ASM)
-12b8:0926*     OPLpauseMusic_OPL2_
-12b8:0f3c      SM_OPL2_ENDMARKER_
-12b8:0c95*     OPLreleaseNote_OPL2_
-12b8:0907*     OPL2deinitHardware_OPL2_
-12b8:0846*     OPL2initHardware_OPL2_
-12b8:0c0f*     OPLplayNote_OPL2_
-12b8:0d35*     OPLchangeControl_OPL2_
-12b8:0f0b*     OPLinitDriver_OPL2_
-12b8:0e9f*     OPLstopMusic_OPL2_
-12b8:0cd2*     OPLpitchWheel_OPL2_
-12b8:0ec0*     OPLchangeSystemVolume_OPL2_
-12b8:0929*     OPLresumeMusic_OPL2_
-12b8:089d*     OPL2detectHardware_OPL2_
-12b8:0000      SM_OPL2_STARTMARKER_
-12b8:0e80*     OPLplayMusic_OPL2_
+12b8:0928*     OPLpauseMusic_OPL2_
+12b8:0f3e      SM_OPL2_ENDMARKER_
+12b8:0c97*     OPLreleaseNote_OPL2_
+12b8:0909*     OPL2deinitHardware_OPL2_
+12b8:0848*     OPL2initHardware_OPL2_
+12b8:0c11*     OPLplayNote_OPL2_
+12b8:0d37*     OPLchangeControl_OPL2_
+12b8:0f0d*     OPLinitDriver_OPL2_
+12b8:0ea1*     OPLstopMusic_OPL2_
+12b8:0cd4*     OPLpitchWheel_OPL2_
+12b8:0ec2*     OPLchangeSystemVolume_OPL2_
+12b8:092b*     OPLresumeMusic_OPL2_
+12b8:089f*     OPL2detectHardware_OPL2_
+12b8:0e82*     OPLplayMusic_OPL2_
+12b8:0002      SM_OPL2_STARTMARKER_
 Module: sm_opl3.obj(sm_opl3.ASM)
-12b8:1931*     OPLpauseMusic_OPL3_
-12b8:1ca0*     OPLreleaseNote_OPL3_
-12b8:1f4a      SM_OPL3_ENDMARKER_
-12b8:1902*     OPL3deinitHardware_OPL3_
-12b8:1c1a*     OPLplayNote_OPL3_
-12b8:180c*     OPL3initHardware_OPL3_
-12b8:1d46*     OPLchangeControl_OPL3_
-12b8:1f1b*     OPLinitDriver_OPL3_
-12b8:1eb0*     OPLstopMusic_OPL3_
-12b8:1cdd*     OPLpitchWheel_OPL3_
-12b8:1ed1*     OPLchangeSystemVolume_OPL3_
-12b8:1934*     OPLresumeMusic_OPL3_
-12b8:1e91*     OPLplayMusic_OPL3_
-12b8:0f3c      SM_OPL3_STARTMARKER_
-12b8:18e6*     OPL3detectHardware_OPL3_
+12b8:1933*     OPLpauseMusic_OPL3_
+12b8:1ca2*     OPLreleaseNote_OPL3_
+12b8:1f4c      SM_OPL3_ENDMARKER_
+12b8:1904*     OPL3deinitHardware_OPL3_
+12b8:1c1c*     OPLplayNote_OPL3_
+12b8:180e*     OPL3initHardware_OPL3_
+12b8:1d48*     OPLchangeControl_OPL3_
+12b8:1f1d*     OPLinitDriver_OPL3_
+12b8:1eb2*     OPLstopMusic_OPL3_
+12b8:1cdf*     OPLpitchWheel_OPL3_
+12b8:1ed3*     OPLchangeSystemVolume_OPL3_
+12b8:1936*     OPLresumeMusic_OPL3_
+12b8:1e93*     OPLplayMusic_OPL3_
+12b8:0f3e      SM_OPL3_STARTMARKER_
+12b8:18e8*     OPL3detectHardware_OPL3_
 Module: sm_sbmid.obj(sm_sbmid.ASM)
-12b8:267a      SM_SBMID_ENDMARKER_
-12b8:1f4a      SM_SBMID_STARTMARKER_
+12b8:267c      SM_SBMID_ENDMARKER_
+12b8:1f4c      SM_SBMID_STARTMARKER_
 Module: sm_mpumd.obj(sm_mpumd.ASM)
-12b8:267a      SM_MPUMD_STARTMARKER_
-12b8:2e55      SM_MPUMD_ENDMARKER_
+12b8:267c      SM_MPUMD_STARTMARKER_
+12b8:2e57      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
 159e:3792      R_BSP24_ENDMARKER_
 159e:3458      R_WriteBackViewConstants24_
@@ -1076,9 +1076,9 @@ Module: p_pspr.obj(p_pspr.ASM)
 3004:3f71*     A_Light2_
 3004:3f6b*     A_Light1_
 3004:3a35*     P_FireWeapon_
-3004:3f65*     A_Light0_
 3004:40b9*     P_SetPsprite_
 3004:3b83*     A_Raise_
+3004:3f65*     A_Light0_
 3004:3bb7*     A_GunFlash_
 3004:3c63*     A_Saw_
 3004:3f77*     A_OpenShotgun2_
@@ -1211,8 +1211,8 @@ Module: p_inter.obj(p_inter.ASM)
 3004:6bb6*     getMassThrust_
 3004:6ea9*     P_INTER_ENDMARKER_
 Module: p_lights.obj(p_lights.ASM)
-3004:7114      P_SpawnGlowingLight_
 3004:7004      EV_StartLightStrobing_
+3004:7114      P_SpawnGlowingLight_
 3004:6f15      T_LightFlash_
 3004:7031      EV_LightChange_
 3004:70d9      T_Glow_
@@ -1588,4 +1588,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003fb70 (260976.)
 Entry point address: 3004:98be
-Link time: 00:00.95
+Link time: 00:00.40
