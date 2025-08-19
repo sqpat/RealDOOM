@@ -29,7 +29,7 @@
 // GAME
 //
 
-void __far G_InitNew (skill_t skill, int8_t episode, int8_t map);
+void __near G_InitNew (skill_t skill, int8_t episode, int8_t map);
 
 // Can be called by the startup code or M_Responder.
 // A normal game starts at map 1,

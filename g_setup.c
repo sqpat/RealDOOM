@@ -61,7 +61,7 @@
 #include "g_game.h"
 
 #define NUMKEYS         256 
-uint16_t   __far  R_TextureNumForName(int8_t* name);
+uint16_t   __near  R_TextureNumForName(int8_t* __near name);
 
 
 
@@ -71,7 +71,8 @@ uint16_t   __far  R_TextureNumForName(int8_t* name);
 //
 // this is always called in a situation where the texture defs must be mapped down to 6000
 // first, so we just use 6000 in here for texturedefs etc.
-uint16_t   __far  R_CheckTextureNumForName(int8_t *name) {
+uint16_t  __near   R_CheckTextureNumForName(int8_t * __far name){
+
 	uint16_t         i;
 	texture_t __far* texture;
 	int8_t texturename[8];
@@ -98,7 +99,7 @@ uint16_t   __far  R_CheckTextureNumForName(int8_t *name) {
 // Calls R_CheckTextureNumForName,
 //  aborts with error message.
 //
-uint16_t     __far R_TextureNumForName(int8_t* name) {
+uint16_t     __near R_TextureNumForName(int8_t* __near name) {
 	uint16_t i;
 	FILE* fp;
 	// "NoTexture" marker.
@@ -171,7 +172,7 @@ void __near G_DoLoadLevel(void) {
 
 
 
-void __far G_InitNew (skill_t skill, int8_t episode, int8_t map) {
+void __near G_InitNew (skill_t skill, int8_t episode, int8_t map) {
 	int16_t             i;
 
 	if (paused) {

@@ -149,7 +149,7 @@ void _fmemmove(char __far *dest, const void __far *src, size_t size);
 //
 
 
-int16_t __far W_CheckNumForName (int8_t* name) {
+int16_t __near W_CheckNumForName (int8_t* __far name) {
     union {
 		int8_t    s[9];
 		int16_t     x[4];
@@ -224,7 +224,7 @@ int16_t __far W_CheckNumForName (int8_t* name) {
 // W_GetNumForName
 // Calls W_CheckNumForName, but bombs out if not found.
 //
-int16_t __far W_GetNumForName(int8_t* name) {
+int16_t __far W_GetNumForName(int8_t* __far name) {
 	int16_t i;
 
     i = W_CheckNumForName (name);

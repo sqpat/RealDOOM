@@ -69,7 +69,7 @@ boolean __far G_CheckDemoStatus (void);
 void    __near G_ReadDemoTiccmd (ticcmd_t __near* cmd); 
 void    __near G_WriteDemoTiccmd (ticcmd_t __near* cmd); 
 void    __far G_PlayerReborn (); 
-void    __far G_InitNew (skill_t skill, int8_t episode, int8_t map);
+void    __near G_InitNew (skill_t skill, int8_t episode, int8_t map);
  
   
 void   __near G_DoLoadLevel (void); 
@@ -97,7 +97,7 @@ boolean __near AM_Responder (event_t __far* ev);
 // R_FlatNumForName
 // Retrieval, get a flat number for a flat name.
 //
-uint8_t __far R_FlatNumForName(int8_t* name) {
+uint8_t __near R_FlatNumForName(int8_t* __near name) {
 	int16_t         i;
 #ifdef CHECK_FOR_ERRORS
 	int8_t        namet[9];
@@ -916,7 +916,7 @@ void __far G_DeferedInitNew ( skill_t skill, int8_t episode, int8_t map) {
     gameaction = ga_newgame; 
 } 
 
-void __far G_InitNew(skill_t skill, int8_t episode, int8_t map);
+void __near G_InitNew(skill_t skill, int8_t episode, int8_t map);
 
 
 

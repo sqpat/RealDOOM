@@ -40,8 +40,8 @@
 #include "m_near.h"
 
 
-uint16_t  __far   R_TextureNumForName(int8_t* name);
-uint16_t  __far   R_CheckTextureNumForName(int8_t *name);
+uint16_t  __near   R_TextureNumForName(int8_t* __near name);
+uint16_t  __near   R_CheckTextureNumForName(int8_t * __near name);
   
 
 
@@ -159,7 +159,7 @@ typedef struct{
 
 
 
-uint8_t __far R_FlatNumForName(int8_t* name);
+uint8_t __near R_FlatNumForName(int8_t* __near name);
 
 
 

@@ -64,8 +64,8 @@ typedef struct {
 //#define lumpinfo4000 ((lumpinfo_t __far*) 0x44000000)
 
 
-int16_t	__far W_CheckNumForName (int8_t* name);
-int16_t	__far W_GetNumForName(int8_t* name);
+int16_t	__near W_CheckNumForName (int8_t* __far name);
+int16_t	__far W_GetNumForName(int8_t* __farname);
 
 int32_t	__far W_LumpLength (int16_t lump);
 

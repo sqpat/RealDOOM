@@ -42,7 +42,7 @@
 
 
 
-uint8_t R_FlatNumForName(int8_t* name);
+uint8_t __near R_FlatNumForName(int8_t* __near name);
 
 
 

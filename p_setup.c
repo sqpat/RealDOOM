@@ -47,8 +47,8 @@
 
  
  
-uint16_t   __far  R_TextureNumForName(int8_t* name);
-uint8_t    __far R_FlatNumForName(int8_t* name);
+uint16_t   __near  R_TextureNumForName(int8_t* __near name);
+uint8_t    __near R_FlatNumForName(int8_t* __near name);
 
 void __near P_LoadVertexes(int16_t lump);
 void __near P_LoadSectors(int16_t lump);
