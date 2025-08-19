@@ -212,49 +212,8 @@ fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b) {
 void __near locallib_printhex (uint32_t number, boolean islong);
 	
 
-void __far locallib_printdecimal (int32_t number){
-	// 4 billion max
+void __near locallib_printdecimal (int32_t number);
 
-
-	if (number) {
-		uint32_t positivenumber;
-		boolean firstdigitprinted = false;
-		int8_t i = 0;
-		if (number < 0) {
-			putchar('-');
-			positivenumber = -number;
-		} else {
-			positivenumber = number;
-		}
-
-		for (i = 9; i >= 0; i--){
-			uint32_t modder = 1;
-			int8_t j = 0;
-			for (j = 0; j < i; j++){
-				modder = FastMul16u32u(10, modder);
-			}
-			j = 0;
-			
-			// modulo...
-			while (positivenumber >= modder){
-				positivenumber -= modder;
-				j++;
-			}
-
-			if (j || firstdigitprinted){
-				putchar('0' + j);
-				firstdigitprinted = true;
-			}
-
-		}
-	
-	
-	} else {
-		putchar('0');
-	}
-
-
-}
 
 
 void __far locallib_printstringfar (int8_t __far *str){

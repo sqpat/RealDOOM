@@ -2567,6 +2567,119 @@ pop   cx
 ret
 ENDP
 
+_powers_of_ten_int:
+dw 0000Ah  ; 10
+dw 00064h  ; 100
+dw 003E8h  ; 1,000
+dw 02710h  ; 10,000
+
+_powers_of_ten_long:
+dd 0000186A0h  ; 100,000
+dd 0000F4240h  ; 1,000,000
+dd 000989680h  ; 10,000,000
+dd 005F5E100h  ; 100,000,000
+dd 03B9ACA00h  ; 1,000,000,000
+
+
+PROC   locallib_printdecimal_ NEAR
+PUBLIC locallib_printdecimal_
+;void __near locallib_printdecimal (uint32_t number){
+; number to print in dx:ax.   islong boolean in bx 
+
+PUSHA_NO_AX_MACRO
+xor   bp, bp
+xchg  ax, cx  ; print dx:cx 
+test  dx, dx
+js    print_negative_long
+jne   print_long
+test  cx, cx
+je    print_last_int_digit
+jmp   print_int
+print_negative_long:
+push  ax
+mov   al, '-'
+call  putchar_
+pop   ax
+neg   dx
+neg   ax
+sbb   dx, 0
+
+print_long:
+mov   bx, 16
+print_next_digit_long:
+les   si, dword ptr cs:[_powers_of_ten_long + bx]
+mov   di, es
+xor   ax, ax  ; digit counter
+sub   cx, si
+sbb   dx, di
+jl    skip_digit
+sub_again:
+inc   ax
+inc   bp  ; printed at least one char
+sub   cx, si
+sbb   dx, di
+jge   sub_again
+skip_digit:
+add   cx, si
+adc   dx, di
+test  bp, bp
+je    skip_print_char
+add   al, '0'
+call  putchar_
+
+skip_print_char:
+sub   bx, 4
+jns   print_next_digit_long
+
+
+print_int:
+
+mov   bx, 6
+
+print_next_digit_int:
+mov   dx, word ptr cs:[_powers_of_ten_int + bx]
+xor   ax, ax  ; digit counter
+sub   cx, dx
+jl    skip_digit_int
+sub_again_int:
+inc   ax
+inc   bp  ; printed at least one char
+sub   cx, dx
+jge   sub_again_int
+skip_digit_int:
+add   cx, dx
+test  bp, bp
+je    skip_print_char_int
+add   al, '0'
+call  putchar_
+
+skip_print_char_int:
+dec   bx
+dec   bx
+jns   print_next_digit_int
+
+
+print_last_int_digit:
+xchg  ax, cx
+add   al, '0'
+call  putchar_
+
+POPA_NO_AX_MACRO
+ret
+
+
+
+
+
+
+ret
+ENDP
+
+
+
+
+
+
 PROC    D_MAIN_ENDMARKER_ NEAR
 PUBLIC  D_MAIN_ENDMARKER_
 ENDP
