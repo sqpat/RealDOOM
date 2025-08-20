@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/20 15:42:40
+Created on:       25/08/20 15:56:58
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -50,7 +50,7 @@ dmx_TEXT               CODE           AUTO           0000:7f90       000001b8
 D_INT_TEXT             CODE           AUTO           0000:8148       00000176
 WI_STUFF_TEXT          CODE           AUTO           0000:82be       00001009
 MATH_TEXT              CODE           AUTO           0000:92c8       00000541
-MAIN_TEXT              CODE           AUTO           0000:980a       000012aa
+MAIN_TEXT              CODE           AUTO           0000:980a       000012ae
 g_setup_TEXT           CODE           AUTO           0000:aac0       000002da
 r_setup_TEXT           CODE           AUTO           0000:ada0       0000046c
 st_setup_TEXT          CODE           AUTO           0000:b210       00000209
@@ -583,7 +583,7 @@ Module: main.obj(main.ASM)
 0000:a80e      combine_strings_
 0000:a7fc      M_Ticker_
 0000:a774      I_UpdateNoBlit_
-0000:aab4*     D_MAIN_ENDMARKER_
+0000:aab8*     D_MAIN_ENDMARKER_
 0000:9ca8*     G_SetGameKeyDown_
 0000:9cc2      G_GetGameKey_
 0000:a65f      I_SetPalette_
