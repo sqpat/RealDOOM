@@ -36,7 +36,7 @@
 
 
 
-void __near HUlib_addStringToTextLine(hu_textline_t  __near*textline, int8_t* __far str){	
+void __near HUlib_addStringToTextLine(hu_textline_t  __near*textline, int8_t* __near str){	
 	int16_t index = 0;
 	while (str[index]){
 		if (textline->len == HU_MAXLINELENGTH) {
@@ -113,7 +113,7 @@ void __near HUlib_eraseTextLine(hu_textline_t __near* textline) {
 
 }
 
-void __near HUlib_addMessageToSText (int8_t* msg ) {
+void __near HUlib_addMessageToSText (int8_t* __near msg ) {
 	hu_stext_t __near* 	stext = &w_message;
 	int16_t i;
 	hu_textline_t __near* textline;

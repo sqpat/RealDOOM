@@ -48,51 +48,43 @@ PROC    HUlib_addStringToTextLine_ NEAR
 PUBLIC  HUlib_addStringToTextLine_
 
 
-;void __near HUlib_addStringToTextLine(hu_textline_t  __near*textline, int8_t* __far str){	
+;void __near HUlib_addStringToTextLine(hu_textline_t  __near*textline, int8_t* __near str){	
 
 
 push  bx
 push  si
 push  di
-mov   bx, ax
-mov   di, dx
-mov   si, dx
-cmp   byte ptr ds:[di], 0
-je    label_1
-label_3:
-mov   ax, word ptr ds:[bx + HU_TEXTLINE_T.hu_textline_len]
-cmp   ax, HU_MAXLINELENGTH
-jne   label_2
-add   bx, ax
-mov   byte ptr ds:[bx + HU_TEXTLINE_T.hu_textline_characters], 0
+
+xchg  ax, bx  ; bx is textline
+mov   si, dx  ; ds:si is str
+
+mov   di, word ptr ds:[bx + HU_TEXTLINE_T.hu_textline_len]  ; write back once at end of func
+
+loop_do_next_char:
+cmp   di, HU_MAXLINELENGTH
+je    done_adding_string_to_textline
+lodsb 
+test  al, al
+je    done_adding_string_to_textline
+call  locallib_toupper_
+
+mov   byte ptr ds:[bx + di + HU_TEXTLINE_T.hu_textline_characters], al
+inc   di
+mov   byte ptr ds:[bx + HU_TEXTLINE_T.hu_textline_needsupdate], 4
+
+jmp   loop_do_next_char
+        
+done_adding_string_to_textline:
+
+;	textline->characters[textline->len] = 0;
+mov   word ptr ds:[bx + HU_TEXTLINE_T.hu_textline_len], di  ; write back
+mov   byte ptr ds:[bx + di + HU_TEXTLINE_T.hu_textline_characters], 0
+
 pop   di
 pop   si
 pop   bx
 ret   
 
-label_2:
-mov   al, byte ptr ds:[si]
-xor   ah, ah
-call  locallib_toupper_
-mov   dl, al
-mov   ax, word ptr ds:[bx + HU_TEXTLINE_T.hu_textline_len]
-mov   di, ax
-inc   di
-mov   word ptr ds:[bx + HU_TEXTLINE_T.hu_textline_len], di
-mov   di, bx
-add   di, ax
-mov   byte ptr ds:[di + HU_TEXTLINE_T.hu_textline_characters], dl
-inc   si
-mov   byte ptr ds:[bx + HU_TEXTLINE_T.hu_textline_needsupdate], 4
-cmp   byte ptr ds:[si], 0
-jne   label_3
-label_1:
-add   bx, word ptr ds:[bx + HU_TEXTLINE_T.hu_textline_len]
-mov   byte ptr ds:[bx + HU_TEXTLINE_T.hu_textline_characters], 0
-pop   di
-pop   si
-pop   bx
-ret   
 
 ENDP
 
@@ -256,54 +248,54 @@ ENDP
 
 PROC    HUlib_addMessageToSText_ NEAR
 PUBLIC  HUlib_addMessageToSText_
+;void __near HUlib_addMessageToSText (int8_t* __near msg ) {
 
 
-push  bx
-push  cx
+
 push  dx
 push  si
-mov   cx, ax
+
+xchg  ax, dx  ; dx holds ptr
+
 mov   si, _w_message
 inc   byte ptr ds:[si + HU_STEXT_T.hu_stext_currentline]
-mov   al, byte ptr ds:[si + HU_STEXT_T.hu_stext_currentline]
-cmp   al, byte ptr ds:[si + HU_STEXT_T.hu_stext_height]
-je    label_12
-label_15:
-mov   al, byte ptr ds:[si + HU_STEXT_T.hu_stext_currentline]
-cbw  
-imul  ax, ax, SIZEOF_HUTEXTLINE_T
-mov   bx, si
-add   bx, ax
-mov   word ptr ds:[bx + HU_TEXTLINE_T.hu_textline_len], 0
-mov   byte ptr ds:[bx + HU_TEXTLINE_T.hu_textline_characters], 0
-xor   dx, dx
-mov   byte ptr ds:[bx + HU_TEXTLINE_T.hu_textline_needsupdate], 1
-mov   bx, si
-label_13:
 mov   al, byte ptr ds:[si + HU_STEXT_T.hu_stext_height]
-cbw  
-cmp   dx, ax
-jge   label_14
-add   bx, SIZEOF_HUTEXTLINE_T
-inc   dx
-mov   byte ptr ds:[bx - 1], 4
-jmp   label_13
-label_12:
-mov   byte ptr ds:[si + HU_STEXT_T.hu_stext_currentline], 0
-jmp   label_15
-label_14:
-mov   al, byte ptr ds:[si + HU_STEXT_T.hu_stext_currentline]
-cbw  
-imul  ax, ax, SIZEOF_HUTEXTLINE_T
-mov   dx, cx
-add   ax, si
+mov   byte ptr cs:[SELFMODIFY_check_stext_height+1], al
 
+cmp   al, byte ptr ds:[si + HU_STEXT_T.hu_stext_currentline]
+jne   dont_set_line_to_0
+mov   byte ptr ds:[si + HU_STEXT_T.hu_stext_currentline], 0
+dont_set_line_to_0:
+mov   al, SIZEOF_HUTEXTLINE_T
+mul   byte ptr ds:[si + HU_STEXT_T.hu_stext_currentline]
+add   si, ax
+push  si  ; store this one
+xor   ax, ax
+mov   word ptr ds:[si + HU_TEXTLINE_T.hu_textline_len], ax ; 0
+mov   byte ptr ds:[si + HU_TEXTLINE_T.hu_textline_characters], al ; 0
+mov   byte ptr ds:[si + HU_TEXTLINE_T.hu_textline_needsupdate], 1
+
+mov   si, _w_message
+; ax  loop counter
+
+loop_update_next_line:
+SELFMODIFY_check_stext_height:
+cmp   al, 010h
+jge   updated_all_lines
+inc   ax
+mov   byte ptr ds:[si + HU_TEXTLINE_T.hu_textline_needsupdate], 4
+add   si, SIZEOF_HUTEXTLINE_T
+jmp   loop_update_next_line
+
+updated_all_lines:
+
+pop   ax ; recover previously calculated currentline
+; dx already set
 call  HUlib_addStringToTextLine_
 mov   byte ptr ds:[_hudneedsupdate], 4
+
 pop   si
 pop   dx
-pop   cx
-pop   bx
 ret   
 
 ENDP

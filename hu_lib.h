@@ -93,7 +93,7 @@ typedef struct {
 
 
 // returns success
-void __near HUlib_addStringToTextLine(hu_textline_t  __near*t, int8_t* __far ch);
+void __near HUlib_addStringToTextLine(hu_textline_t  __near*t, int8_t* __near ch);
 
 // draws tline
 void __near HUlib_drawTextLine(hu_textline_t __near *l);
@@ -108,7 +108,7 @@ void __near HUlib_eraseTextLine(hu_textline_t __near *l);
 
  
 
-void __near HUlib_addMessageToSText( int8_t*		msg );
+void __near HUlib_addMessageToSText( int8_t* __near msg );
  
 
 // Input Text Line widget routines
