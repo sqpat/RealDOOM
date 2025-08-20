@@ -169,77 +169,81 @@ ENDP
 PROC    HUlib_eraseTextLine_ NEAR
 PUBLIC  HUlib_eraseTextLine_
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
-push  bp
-mov   bp, sp
-push  ax
+PUSHA_NO_AX_OR_BP_MACRO
 cmp   byte ptr ds:[_automapactive], 0
-jne   label_6
+jne   skip_erase
 cmp   word ptr ds:[_viewwindowx], 0
-je    label_6
-mov   bx, ax
-cmp   byte ptr ds:[bx + HU_TEXTLINE_T.hu_textline_needsupdate], 0
-je    label_6
-mov   cx, word ptr ds:[bx + 2]
-imul  bx, cx, SCREENWIDTH
-label_9:
-mov   si, word ptr [bp - 2]
-mov   ax, word ptr ds:[si + 2]
-add   ax, 8
+je    skip_erase
+xchg  ax, si
+cmp   byte ptr ds:[si + HU_TEXTLINE_T.hu_textline_needsupdate], 0
+je    skip_erase
+mov   cx, word ptr ds:[si + HU_TEXTLINE_T.hu_textline_y]
+mov   di, cx
+add   di, 8 
+mov   ax, SCREENWIDTH
+mul   cx
+xchg  ax, bx 
+
+; bx =  yoffset
+; cx =  y
+
+loop_next_textline_erase:
+
+;   for (y=textline->y, yoffset=y*SCREENWIDTH ; y<textline->y + lineheight ; y++,yoffset+=SCREENWIDTH) {
+;   	if (y < viewwindowy || y >= viewwindowy + viewheight) {
+;   		R_VideoErase(yoffset, SCREENWIDTH); // erase entire line
+;   	}  else {
+;   		R_VideoErase(yoffset, viewwindowx); // erase left border
+;   		R_VideoErase(yoffset + viewwindowx + viewwidth, viewwindowx);
+;   		// erase right border
+;   	}
+;   }
+
+cmp   cx, di  ; textline->y + lineheight
+jae   skip_erase
+mov   ax, word ptr ds:[_viewwindowy]
 cmp   cx, ax
-jae   label_6
-cmp   cx, word ptr ds:[_viewwindowy]
-jae   label_7
-label_8:
-mov   dx, SCREENWIDTH
-mov   ax, bx
-label_10:
-push  cs
-call  R_VideoErase_
-inc   cx
-add   bx, SCREENWIDTH
-jmp   label_9
-label_7:
-mov   di, si
-mov   ax, word ptr ds:[di]
+jnae  skip_first_videoerase
+
+
 add   ax, word ptr ds:[_viewheight]
 cmp   cx, ax
-jae   label_8
+jae   skip_first_videoerase
 
 mov   ax, bx
 mov   dx, word ptr ds:[_viewwindowx]
-push  cs
+
 call  R_VideoErase_
-mov   dx, word ptr ds:[_viewwindowx]
-mov   ax, dx
+
+mov   ax, word ptr ds:[_viewwindowx]
+mov   dx, ax
 
 add   ax, bx
 add   ax, word ptr ds:[_viewwidth]
-jmp   label_10
-label_6:
-mov   bx, word ptr [bp - 2]
-cmp   byte ptr ds:[bx + HU_TEXTLINE_T.hu_textline_needsupdate], 0
-jne   label_11
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret   
-label_11:
-dec   byte ptr ds:[bx + HU_TEXTLINE_T.hu_textline_needsupdate]
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret   
+jmp   do_final_erase
+
+skip_first_videoerase:
+mov   dx, SCREENWIDTH
+mov   ax, bx
+
+do_final_erase:
+
+call  R_VideoErase_
+inc   cx
+add   bx, SCREENWIDTH
+jmp   loop_next_textline_erase
+
+
+
+
+skip_erase:
+
+cmp   byte ptr ds:[si + HU_TEXTLINE_T.hu_textline_needsupdate], 0
+je    exit_HUlib_eraseTextLine_
+dec   byte ptr ds:[si + HU_TEXTLINE_T.hu_textline_needsupdate]
+exit_HUlib_eraseTextLine_:
+POPA_NO_AX_OR_BP_MACRO
+ret
 
 ENDP
 
