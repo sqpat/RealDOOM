@@ -423,7 +423,7 @@ void __far I_Error (int8_t __far *error, ...){
     va_start(argptr, error);
     locallib_printf(error, argptr);
     va_end(argptr);
-    putchar('\n');
+    locallib_putchar('\n');
 	
     exit(1);
 

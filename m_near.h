@@ -392,7 +392,7 @@
 #define G_SecretExitLevel_addr          (*((uint32_t  __near*)             (_NULL_OFFSET + 0x04D8)))
 #define AM_Stop_addr		            (*((uint32_t  __near*)             (_NULL_OFFSET + 0x04DC)))
 
-// 4d2-4d3 unused by bytes
+
 
 
 #define braintargets                    (((THINKERREF __near*)               (_NULL_OFFSET + 0x04E0)))
@@ -415,11 +415,11 @@
 
 
 #define V_DrawPatch_addr                  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0554)))
-#define locallib_toupper_addr             (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0558)))
+// #define locallib_toupper_addr             (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0558)))
 #define S_ChangeMusic_addr                (*((uint32_t  __near*)             (_NULL_OFFSET + 0x055C)))
 #define V_DrawFullscreenPatch_addr        (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0560)))
 #define getStringByIndex_addr             (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0564)))
-#define locallib_strlen_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0568)))
+// #define locallib_strlen_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0568)))
 #define FixedMulTrigNoShift_addr	      (*((uint32_t  __near*)             (_NULL_OFFSET + 0x056C)))
 #define R_PointToAngle2_16_addr           (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0570)))
 #define R_PointToAngle2_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0574)))

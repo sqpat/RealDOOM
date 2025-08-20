@@ -688,3 +688,52 @@ VANILLA_PLAYER_T STRUC
 
 VANILLA_PLAYER_T ENDS
 
+
+WATCOM_C_FILE STRUC
+
+    watcom_file_ptr        dw ? ; 00h      unsigned char        *   /* next character position */
+    watcom_file_cnt        dw ? ; 02h      int                      /* number of characters left */
+    watcom_file_link       dw ? ; 04h      struct __stream_link *   /* location of associated struct */
+    watcom_file_flag       dw ? ; 06h      unsigned                 /* mode of file access */
+    watcom_file_handle     dw ? ; 08h      int                      /* file handle */
+    watcom_file_bufsize    dw ? ; 0Ah      unsigned                 /* size of buffer */
+    watcom_file_ungotten   dw ? ; 0Ch      unsigned short           /* used by ungetc and ungetwc */
+
+
+WATCOM_C_FILE ENDS
+
+WATCOM_STREAM_LINK STRUC
+
+    watcom_streamlink_next             dw ? ; 00h  struct __stream_link *  
+    watcom_streamlink_stream           dw ? ; 02h  struct __iobuf *        
+    watcom_streamlink_base             dw ? ; 04h  unsigned char *                   /* location of buffer */
+    watcom_streamlink_orientation      dw ? ; 06h  int                        /* wide/byte/not oriented */
+    watcom_streamlink_extflags         dw ? ; 08h  int                           /* extended flags */
+    watcom_streamlink_tmpfchar         dw ? ; 0Ah  unsigned char                 /* tmpfile number */
+    watcom_streamlink_filler           dw ? ; 0Ch  unsigned char           sizeof(int)-1];/* explicit padding */
+
+WATCOM_STREAM_LINK ENDS
+; 0Dh
+
+    
+    
+    
+COMMENT @
+#define _READ   0x0001  /* file opened for reading */
+#define _WRITE  0x0002  /* file opened for writing */
+#define _UNGET  0x0004  /* ungetc has been done */
+#define _BIGBUF 0x0008  /* big buffer allocated */
+#define _EOF    0x0010  /* EOF has occurred */
+#define _SFERR  0x0020  /* error has occurred on this file */
+#define _APPEND 0x0080  /* file opened for append */
+#define _BINARY 0x0040  /* file is binary, skip CRLF processing */
+#define _IOFBF  0x0100  /* full buffering */
+#define _IOLBF  0x0200  /* line buffering */
+#define _IONBF  0x0400  /* no buffering */
+#define _TMPFIL 0x0800  /* this is a temporary file */
+#define _DIRTY  0x1000  /* buffer has been modified */
+#define _ISTTY  0x2000  /* is console device */
+#define _DYNAMIC 0x4000 /* FILE is dynamically allocated   */
+#define _FILEEXT 0x8000 /* lseek with positive offset has been done */
+#define _COMMIT 0x0001  /* extended flag: commit OS buffers on flush */
+@

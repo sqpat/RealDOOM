@@ -459,12 +459,13 @@ int16_t __near locallib_strcmp(char __far *str1, char __far *str2);
 int16_t __near locallib_strncasecmp(char __near *str1, char __near *str2, int16_t n);
 
 //int16_t __far locallib_strcasecmp(char __far *str1, char __far *str2);
-void __far combine_strings(char __far *dest, char __far *src1, char __far *src2);
-void __far locallib_strcpy(char __far *dest, char __far *src);
-void __far locallib_printf (int8_t __far* str, va_list argptr);
+void __near combine_strings(char __far *dest, char __far *src1, char __far *src2);
+void __near locallib_strcpy(char __far *dest, char __far *src);
+void __near locallib_printf (int8_t __far* str, va_list argptr);
+void __near locallib_putchar(int8_t c);
 
-int16_t __far locallib_strlen(char __far *src);
-uint8_t __far locallib_toupper(uint8_t ch);
+int16_t __near locallib_strlen(char __far *src);
+uint8_t __near locallib_toupper(uint8_t ch);
 void __near locallib_strupr(char __far *str);
 void __near locallib_strlwr(char __far *str);
 

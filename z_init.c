@@ -807,8 +807,8 @@ void __near Z_LoadBinaries() {
 	fread_addr =					    (uint32_t)(fread);
 	fclose_addr =					    (uint32_t)(fclose);
 	locallib_far_fread_addr =			(uint32_t)(locallib_far_fread);
-	locallib_toupper_addr =				(uint32_t)(locallib_toupper);
-	locallib_strlen_addr =			 	(uint32_t)(locallib_strlen);
+	// locallib_toupper_addr =				(uint32_t)(locallib_toupper);
+	// locallib_strlen_addr =			 	(uint32_t)(locallib_strlen);
 
 	getStringByIndex_addr =				(uint32_t)(getStringByIndex);
 	

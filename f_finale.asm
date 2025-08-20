@@ -213,9 +213,7 @@ ret
 char_not_string_end:
 xor   ah, ah
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _locallib_toupper_addr
+call  F_locallib_toupper_
 
 sub   al, HU_FONTSTART
 jl    bad_glyph
@@ -238,9 +236,7 @@ jmp   check_next_character_for_zero
 do_char_upper:
 xor   ah, ah
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _locallib_toupper_addr
+call  F_locallib_toupper_
 
 sub   al, HU_FONTSTART
 jl    bad_glyph2
@@ -739,9 +735,8 @@ jmp       loop_count        ; todo should this be a loop?
 do_char_upper_ftextwrite:
 xor       ah, ah
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _locallib_toupper_addr
+call      F_locallib_toupper_
+
 mov       bl, al
 sub       bl, HU_FONTSTART
 jl        bad_glyph_ftextwrite
@@ -1687,9 +1682,7 @@ jne   exit_fticker
 lea   ax, [bp - 029Ah]
 mov   dx, ds
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _locallib_strlen_addr
+call F_locallib_strlen_
 
 mov   dx, ax
 SHIFT_MACRO shl ax 2
@@ -1807,6 +1800,40 @@ retf
 fdrawer_episode4:
 mov   bx, OFFSET str_endpic - OFFSET F_FINALE_STARTMARKER_
 jmp   do_finaledraw
+
+ENDP
+
+PROC   F_locallib_strlen_ NEAR
+PUBLIC F_locallib_strlen_
+
+push   di
+push   cx
+
+mov    es, dx
+xchg   ax, di
+xor    ax, ax
+mov    cx, 0FFFFh
+repne  scasb
+; ax is 0
+dec    ax ; 0FFFh
+sub    ax, cx
+
+pop    cx
+pop    di
+ret
+
+ENDP
+
+PROC   F_locallib_toupper_ NEAR
+PUBLIC F_locallib_toupper_
+
+cmp   al, 061h
+jb    exit_m_to_upper
+cmp   al, 07Ah
+ja    exit_m_to_upper
+sub   al, 020h
+exit_m_to_upper:
+ret
 
 ENDP
 

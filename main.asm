@@ -32,14 +32,14 @@ EXTRN fopen_:FAR
 EXTRN fgetc_:FAR
 EXTRN fputc_:FAR
 EXTRN fclose_:FAR
-EXTRN putchar_:FAR
+;EXTRN locallib_putchar_:NEAR
+
 ; todo only include if necessary via flags...
 ;EXTRN DEBUG_PRINT_:FAR
 
 EXTRN I_WaitVBL_:FAR
 EXTRN Z_QuickMapPalette_:FAR
 EXTRN Z_QuickMapByTaskNum_:FAR
-
 
 EXTRN _singledemo:BYTE
 EXTRN _mousepresent:BYTE
@@ -88,10 +88,13 @@ EXTRN _mousebfire:BYTE
 EXTRN _mousebstrafe:BYTE
 EXTRN _mousebforward:BYTE
 EXTRN _numChannels:BYTE
-
+EXTRN ___iob:WORD
 
 
 .CODE
+
+SIZEOF_FILE = 0Eh
+STDOUT = OFFSET ___iob + SIZEOF_FILE
 
 
 ; ALL THE CHEAT DATA inlined here in CS rather than in DGROUP.
@@ -2298,11 +2301,10 @@ ret
 ENDP
 
 
-PROC   combine_strings_ FAR
+PROC   combine_strings_ NEAR
 PUBLIC combine_strings_ 
 
 ;void __far combine_strings_(char __far *dest, char __far *src1, char __far *src2){
-;               ; bp + A is CS?
 ;               ; bp + 8 is IP?
 push si         ; bp + 4
 push di         ; bp + 2
@@ -2324,7 +2326,7 @@ jne  do_next_char_far_1
 
 dec  di ; back one up
 
-lds  si, dword ptr [bp + 0Ah]
+lds  si, dword ptr [bp + 8]
 
 do_next_char_far_2:
 lodsb
@@ -2342,7 +2344,7 @@ LEAVE_MACRO
 
 pop  di
 pop  si
-retf
+ret
 
 ENDP
 
@@ -2383,7 +2385,7 @@ ENDP
 
 
 
-PROC   locallib_strcpy_ FAR
+PROC   locallib_strcpy_ NEAR
 PUBLIC locallib_strcpy_ 
 
 push  si
@@ -2407,10 +2409,10 @@ pop   ds
 pop   di
 pop   si
 
-retf
+ret
 ENDP
 
-PROC   locallib_strlen_ FAR
+PROC   locallib_strlen_ NEAR
 PUBLIC locallib_strlen_
 
 push   di
@@ -2421,16 +2423,19 @@ xor    ax, ax
 mov    cx, 0FFFFh
 
 repne  scasb
-mov    ax, 0FFFFh
+dec    ax ;  ax was 0, now 0FFFFh
 sub    ax, cx
+
+
 pop    cx
 pop    di
-retf
+ret
 
 ENDP
 
 
-PROC   locallib_toupper_ FAR
+
+PROC   locallib_toupper_ NEAR
 PUBLIC locallib_toupper_
 
 cmp   al, 061h
@@ -2439,7 +2444,7 @@ cmp   al, 07Ah
 ja    exit_m_to_upper
 sub   al, 020h
 exit_m_to_upper:
-retf
+ret
 
 ENDP
 
@@ -2496,16 +2501,52 @@ ret_zero:
 ret
 ENDP
 
+PROC   locallib_putchar_ NEAR
+PUBLIC locallib_putchar_ 
 
+push  dx
+mov   dx, STDOUT
+cbw
+call  fputc_
+pop   dx
+ret
+
+COMMENT @
+push  dx
+test  byte ptr ds:[STDOUT + WATCOM_C_FILE.watcom_file_flag+1], (0400h SHR 8) ; IONBF  0x0400  /* no buffering */
+jne   just_putchar
+mov   dx, word ptr ds:[STDOUT + WATCOM_C_FILE.watcom_file_bufsize]
+sub   dx, word ptr ds:[STDOUT + WATCOM_C_FILE.watcom_file_cnt]
+cmp   dx, 1         ; dec dx jnge?
+jbe   just_putchar
+push  bx
+mov   bx, word ptr ds:[STDOUT + WATCOM_C_FILE.watcom_file_ptr]
+mov   byte ptr ds:[bx], al
+pop   bx
+cmp   al, 0Ah  ; '\n'
+je    just_putchar
+or    byte ptr ds:[STDOUT + WATCOM_C_FILE.watcom_file_flag+1], (01000h SHR 8)  ; _DIRTY  0x1000  /* buffer has been modified */
+inc   byte ptr ds:[STDOUT + WATCOM_C_FILE.watcom_file_cnt]
+inc   byte ptr ds:[STDOUT + WATCOM_C_FILE.watcom_file_ptr]
+pop   dx
+ret
+just_putchar:
+mov   dx, STDOUT
+cbw
+call  fputc_
+pop   dx
+@
+ret
+
+ENDP
 PROC   locallib_printhex_ NEAR
 PUBLIC locallib_printhex_
 ;void __far locallib_printhex (uint32_t number, boolean islong){
-; number to print in dx:ax.   islong boolean in bx 
+; number to print in ax:dx.   islong boolean in cx 
 
-push  cx
+push  bx
 
-
-test  bl, bl
+test  cl, cl
 mov   cx, 7
 jne   is_long
 mov   cl, 3
@@ -2542,7 +2583,7 @@ call  locallib_createhexnibble_
 test  al, al
 je    skip_print_hex_digit
 
-call  putchar_
+call  locallib_putchar_
 
 skip_print_hex_digit:
 iter_next_hex_digit:
@@ -2560,9 +2601,9 @@ pop   ax  ; recover initial digit
 mov   al, 010h
 and   al, 0Fh
 call  locallib_createhexnibble_
-call  putchar_
+call  locallib_putchar_
 
-pop   cx
+pop   bx
 
 ret
 ENDP
@@ -2598,7 +2639,7 @@ jmp   print_int
 print_negative_long:
 push  ax
 mov   al, '-'
-call  putchar_
+call  locallib_putchar_
 pop   ax
 neg   dx
 neg   ax
@@ -2625,7 +2666,7 @@ adc   dx, di
 test  bp, bp
 je    skip_print_char
 add   al, '0'
-call  putchar_
+call  locallib_putchar_
 
 skip_print_char:
 sub   bx, 4
@@ -2651,7 +2692,7 @@ add   cx, dx
 test  bp, bp
 je    skip_print_char_int
 add   al, '0'
-call  putchar_
+call  locallib_putchar_
 
 skip_print_char_int:
 dec   bx
@@ -2662,17 +2703,12 @@ jns   print_next_digit_int
 print_last_int_digit:
 xchg  ax, cx
 add   al, '0'
-call  putchar_
+call  locallib_putchar_
 
 POPA_NO_AX_MACRO
 ret
 
 
-
-
-
-
-ret
 ENDP
 
 
@@ -2784,13 +2820,16 @@ PROC   locallib_printstringnear_ NEAR
 PUBLIC locallib_printstringnear_
 
 push  si
-xchg  ax, si
+xchg  ax, si    ; ds:si string
 
+print_next_string_char:
 lodsb
 test  al, al
 je    done_printing
-call  putchar_
+call  locallib_putchar_
+jmp   print_next_string_char
 done_printing:
+
 
 push  ss
 pop   ds
@@ -2801,6 +2840,153 @@ ENDP
 
 
 
+PROC    locallib_printf_ NEAR
+PUBLIC  locallib_printf_
+
+
+push  cx
+push  si
+push  di
+
+mov   di, dx  ; backup segment in di
+xchg  ax, si  
+
+; es:si will be string
+; ds:bx will be varargs
+
+loop_next_arg_and_reset_params:
+mov   es, di
+loop_next_arg:
+xor   cx, cx
+; cl holds 'longflag'
+
+lods  byte ptr es:[si]
+test  al, al
+je    done_with_printf_loop
+cmp   al, 025h   ; '%'
+je    handle_percent
+
+just_print_char:
+print_percent:
+call  locallib_putchar_
+jmp   loop_next_arg_and_reset_params
+
+done_with_printf_loop:
+pop   di
+pop   si
+pop   cx
+ret
+
+do_long:
+inc   cx ; long flag
+handle_percent:
+
+lods  byte ptr es:[si]
+test  al, al
+je    done_with_printf_loop
+cmp   al, 025h   ; '%'
+je    print_percent
+cmp   al, 04Ch   ; 'L'
+je    do_long
+cmp   al, 06Ch   ; 'l'
+je    do_long
+cmp   al, 046h   ; 'F'
+je    do_long
+cmp   al, 066h   ; 'f'
+je    do_long
+
+xchg  bx, si  ; set up si as varargs ptr instead of string ptr
+cmp   al, 058h   ; 'X'
+je    do_hex
+cmp   al, 078h   ; 'x'
+je    do_hex
+cmp   al, 050h   ; 'P'
+je    do_hex
+cmp   al, 070h   ; 'p'
+je    do_hex
+cmp   al, 049h   ; 'I'
+je    do_int
+cmp   al, 069h   ; 'i'
+je    do_int
+cmp   al, 053h   ; 'S'
+je    do_string
+cmp   al, 073h   ; 's'
+je    do_string
+cmp   al, 043h   ; 'C'
+je    do_char
+cmp   al, 063h   ; 'c'
+je    do_char
+xchg  bx, si   ; put string ptr back
+jmp   loop_next_arg
+
+do_hex:
+
+jcxz  do_hex_word
+do_hex_long:
+lodsw
+xchg  ax, dx
+lodsw
+xchg  ax, dx
+jmp   do_hex_call
+do_hex_word:
+lodsw
+do_hex_call:
+
+xchg  bx, si   ; put string ptr back
+call  locallib_printhex_   ; pass is-long in cx
+jmp   loop_next_arg_and_reset_params
+
+do_int:
+xor   dx, dx
+jcxz  do_int_word
+
+do_int_long:
+lodsw       
+xchg  ax, dx
+lodsw       
+xchg  ax, dx
+
+jmp   do_int_call
+
+do_int_word:
+lodsw           ;  only word in ax or high word in ax and low word in dx.
+
+do_int_call:
+xchg  bx, si   ; put string ptr back
+call  locallib_printdecimal_
+
+jmp   loop_next_arg_and_reset_params
+
+
+
+do_string:
+
+mov   dx, ds
+jcxz  do_near_string
+
+do_far_string:
+lodsw
+xchg  ax, dx  
+lodsw
+xchg  ax, dx  
+call  locallib_printstringfar_ 
+xchg  bx, si   ; put string ptr back
+jmp   loop_next_arg_and_reset_params
+
+do_near_string:
+lodsw
+xchg  bx, si   ; put string ptr back
+call  locallib_printstringnear_
+jmp   loop_next_arg_and_reset_params
+do_char :
+
+lodsw  ; todo or lodsb? not sure.
+xchg  bx, si   ; put string ptr back
+jmp   just_print_char
+
+
+
+ENDP
 
 
 

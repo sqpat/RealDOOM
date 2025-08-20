@@ -209,17 +209,13 @@ fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b) {
 
 
 
+/*
 void __near locallib_printhex (uint32_t number, boolean islong);
-	
-
 void __near locallib_printdecimal (int32_t number);
-
-
-
 void __near locallib_printstringfar (int8_t __far *str);
 void __near locallib_printstringnear (int8_t __near *str);
 
-void __far locallib_printf (int8_t __far*str, va_list argptr){
+void __near locallib_printf (int8_t __far*str, va_list argptr){
     int16_t i = 0;
     int8_t longflag = false;
 	
@@ -268,13 +264,13 @@ void __far locallib_printf (int8_t __far*str, va_list argptr){
 					i+=2;
 					longflag = false;
 					continue;
-/*
-				case 'u':
-				case 'U':
-					locallib_printdecimal(va_arg(argptr, uint16_t));
-					i+=2;
-					continue;
-*/
+
+				// case 'u':
+				// case 'U':
+				// 	locallib_printdecimal(va_arg(argptr, uint16_t));
+				// 	i+=2;
+				// 	continue;
+
 				case 's':
 				case 'S':
 					if (longflag){
@@ -303,7 +299,12 @@ void __far locallib_printf (int8_t __far*str, va_list argptr){
 	
 
 }
+*/
 
+// not sure whats going on yet. pulling this unused function makes 86box crash.
+void __near locallib_printf2 (int8_t __far*str, va_list argptr){
+    locallib_printf(str, argptr);
+}
 
 #if DEBUG_PRINTING
 
@@ -606,7 +607,12 @@ void __near D_Display (void) {
 	wipe_WipeLoopCall();
 #endif
 }
- 
+ /*
+ void __near locallib_putchar(int8_t c){
+	// fputc(c, stdout);
+	putchar(c);
+ }
+ */
 
 void __near G_BeginRecording (void)  { 
 	byte __far* demo_addr = (byte __far*)MK_FP(DEMO_SEGMENT, demo_p);

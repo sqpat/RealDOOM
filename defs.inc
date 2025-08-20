@@ -369,11 +369,11 @@ _G_DeferedInitNew_addr = 			 _NULL_OFFSET + 00550h
 
 
 _V_DrawPatch_addr =              	 _NULL_OFFSET + 00554h
-_locallib_toupper_addr =             _NULL_OFFSET + 00558h
+;_locallib_toupper_addr =             _NULL_OFFSET + 00558h
 _S_ChangeMusic_addr =              	 _NULL_OFFSET + 0055Ch
 _V_DrawFullscreenPatch_addr =        _NULL_OFFSET + 00560h
 _getStringByIndex_addr =             _NULL_OFFSET + 00564h
-_locallib_strlen_addr =              _NULL_OFFSET + 00568h
+;_locallib_strlen_addr =              _NULL_OFFSET + 00568h
 _FixedMulTrigNoShift_addr =          _NULL_OFFSET + 0056Ch
 _R_PointToAngle2_16_addr =           _NULL_OFFSET + 00570h
 _R_PointToAngle2_addr =              _NULL_OFFSET + 00574h
