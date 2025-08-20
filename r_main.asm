@@ -798,7 +798,7 @@ ENDP
 ;void __far R_VideoErase (uint16_t ofs, int16_t count ) 
 ;R_VideoErase_
 
-PROC R_VideoErase_ FAR
+PROC R_VideoErase_ NEAR
 PUBLIC R_VideoErase_ 
 
 
@@ -870,7 +870,7 @@ and   al, 0FEh
 out   dx, al
 
 POPA_NO_AX_OR_BP_MACRO
-retf  
+ret  
 
 ENDP
 
