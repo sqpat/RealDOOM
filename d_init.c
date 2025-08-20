@@ -267,14 +267,8 @@ void __near D_RedrawTitle(int8_t __near *title) {
 */
 
 
-void __near makethreecharint(int16_t j, char __far *str ){
-	int16_t val = j / 10;
-	str[0] = '0' + val / 10;
-	str[1] = '0' + val;
-	str[2] = '0' + j % 10;
-	str[3] = '\0';
+void __near makethreecharint(int16_t j, char __near *str );
 
-}
 
 
 void __near HU_Init(void){

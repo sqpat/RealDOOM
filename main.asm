@@ -2990,6 +2990,25 @@ ENDP
 
 
 
+
+PROC    makethreecharint_ NEAR
+PUBLIC  makethreecharint_
+
+push    bx
+mov     bx, dx
+mov     dl, 10
+div     dl
+mov     byte ptr ds:[bx+2], ah
+div     dl
+xchg    al, ah
+mov     word ptr ds:[bx], ax
+pop     bx
+ret
+ENDP
+
+
+
+
 PROC    D_MAIN_ENDMARKER_ NEAR
 PUBLIC  D_MAIN_ENDMARKER_
 ENDP
