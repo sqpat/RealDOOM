@@ -185,94 +185,87 @@ PUBLIC  HU_Ticker_
 
 push  bx
 push  cx
-push  si
 push  bp
 mov   bp, sp
 sub   sp, 0100h
-mov   bx, _message_counter
-cmp   byte ptr ds:[bx], 0
-jne   label_16
-label_21:
-mov   bx, _showMessages
-cmp   byte ptr ds:[bx], 0
-je    label_17
-label_22:
-mov   bx, _player + PLAYER_T.player_messagestring
-cmp   word ptr ds:[bx], 0
-je    label_18
-label_24:
-mov   bx, _message_nottobefuckedwith
-cmp   byte ptr ds:[bx], 0
-jne   label_19
-label_25:
-mov   bx, _player + PLAYER_T.player_message
-mov   ax, word ptr ds:[bx]
+
+xor   ax, ax
+
+cmp   byte ptr ds:[_message_counter], al
+jne   dont_reset_count
+dec   byte ptr ds:[_message_counter]
+jnz   dont_reset_count
+
+mov   byte ptr ds:[_message_counter], al ; 0
+mov   word ptr ds:[_message_on], ax      ; 0
+; mov   byte ptr ds:[_message_nottobefuckedwith], al ; 0
+
+dont_reset_count:
+
+cmp   byte ptr ds:[_showMessages], al ; 0
+jne   skip_early_exit_check
+cmp   byte ptr ds:[_message_dontfuckwithme], al
+je    exit_hu_ticker
+
+skip_early_exit_check:
+
+cmp   word ptr ds:[_player + PLAYER_T.player_messagestring], ax ; 0
+jne   has_message
+cmp   word ptr ds:[_player + PLAYER_T.player_message], -1
+je    check_player_message
+
+has_message:
+
+cmp   byte ptr ds:[_message_nottobefuckedwith], al ;0
+je    continue_checks
+
+
+check_player_message:
+
+cmp   word ptr ds:[_player + PLAYER_T.player_message], ax ; 0
+je    exit_hu_ticker
+
+cmp   byte ptr ds:[_message_dontfuckwithme], al ; 0
+je    exit_hu_ticker
+
+continue_checks:
+
+mov   ax, word ptr ds:[_player + PLAYER_T.player_message]
 cmp   ax, -1
-je    jump_to_label_20
+jne   go_get_string
+
+
+mov   ax, word ptr ds:[_player + PLAYER_T.player_messagestring]
+call  HUlib_addMessageToSText_
+mov   word ptr ds:[_player + PLAYER_T.player_messagestring], 0
+jmp   skip_getting_string
+
+go_get_string:
 lea   bx, [bp - 0100h]
 mov   cx, ds
-
+push  bx
 call  getStringByIndex_
 
-lea   ax, [bp - 0100h]
-mov   bx, _player + PLAYER_T.player_message
+pop   ax  ;bp - 0100h
 call  HUlib_addMessageToSText_
-mov   word ptr ds:[bx], -1
-label_23:
-mov   bx, _message_on
-mov   byte ptr ds:[bx], 1
-mov   bx, _message_counter
-mov   si, _message_dontfuckwithme
-mov   byte ptr ds:[bx], HU_MSGTIMEOUT
-mov   bx, _message_nottobefuckedwith
-mov   al, byte ptr ds:[si]
-mov   byte ptr ds:[bx], al
-mov   byte ptr ds:[si], 0
+
+mov   word ptr ds:[_player + PLAYER_T.player_message], -1
+skip_getting_string:
+
+mov   byte ptr ds:[_message_on], 1
+mov   byte ptr ds:[_message_counter], HU_MSGTIMEOUT
+mov   al, byte ptr ds:[_message_dontfuckwithme]
+mov   byte ptr ds:[_message_nottobefuckedwith], al
+mov   byte ptr ds:[_message_dontfuckwithme], 0
+
 exit_hu_ticker:
 LEAVE_MACRO 
-pop   si
 pop   cx
 pop   bx
 ret   
-label_16:
-dec   byte ptr ds:[bx]
-mov   al, byte ptr ds:[bx]
-test  al, al
-jne   label_21
-mov   bx, _message_on
-mov   byte ptr ds:[bx], al
-mov   bx, _message_nottobefuckedwith
-mov   byte ptr ds:[bx], al
-jmp   label_21
-label_17:
-mov   bx, _message_dontfuckwithme
-cmp   byte ptr ds:[bx], 0
-jne   label_22
-jmp   exit_hu_ticker
-jump_to_label_20:
-jmp   label_20
-label_18:
-mov   bx, _player + PLAYER_T.player_message
-cmp   word ptr ds:[bx], -1
-jne   label_24
-label_19:
-mov   bx, _player + PLAYER_T.player_message
-cmp   word ptr ds:[bx], 0
-je    exit_hu_ticker
-mov   bx, _message_dontfuckwithme
-cmp   byte ptr ds:[bx], 0
-jne   label_25
-LEAVE_MACRO 
-pop   si
-pop   cx
-pop   bx
-ret   
-label_20:
-mov   bx, _player + PLAYER_T.player_messagestring
-mov   ax, word ptr ds:[bx]
-call  HUlib_addMessageToSText_
-mov   word ptr ds:[bx], 0
-jmp   label_23
+
+
+
 
 
 ENDP
