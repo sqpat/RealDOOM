@@ -140,35 +140,33 @@ push  dx
 push  si
 mov   dx, _w_message
 xor   bx, bx
-label_14:
-mov   si, _w_message + HU_STEXT_T.hu_stext_height
-mov   al, byte ptr ds:[si]
-cbw  
-cmp   bx, ax
-jge   label_12
-mov   si, _w_message + HU_STEXT_T.hu_stext_laston
-cmp   byte ptr ds:[si], 0
-jne   label_13
-label_15:
+mov   si, word ptr ds:[_w_message + HU_STEXT_T.hu_stext_onptr]
+
+loop_hu_erase_next_line:
+cmp   bl, byte ptr ds:[_w_message + HU_STEXT_T.hu_stext_height]
+jge   end_erase_loop_erase_last_line
+cmp   byte ptr ds:[_w_message + HU_STEXT_T.hu_stext_laston], bh   ; known 0
+je    dont_mark_line_for_update
+
+
+cmp   byte ptr ds:[si], bh ; known 0
+jne   dont_mark_line_for_update
+xchg  dx, si
+mov   byte ptr ds:[si + OFFSET _w_message + HU_TEXTLINE_T.hu_textline_needsupdate], 4
+xchg  dx, si
+
+
+dont_mark_line_for_update:
 mov   ax, dx
 call  HUlib_eraseTextLine_
 inc   bx
 add   dx, SIZEOF_HUTEXTLINE_T
-jmp   label_14
-label_13:
-mov   si, _w_message + HU_STEXT_T.hu_stext_onptr
-mov   si, word ptr ds:[si]
-cmp   byte ptr ds:[si], 0
-jne   label_15
-imul  si, bx, SIZEOF_HUTEXTLINE_T
-mov   byte ptr ds:[si + OFFSET _w_message + HU_TEXTLINE_T.hu_textline_needsupdate], 4
-jmp   label_15
-label_12:
-mov   bx, _w_message + HU_STEXT_T.hu_stext_onptr
-mov   si, word ptr ds:[bx]
-mov   bx, _w_message + HU_STEXT_T.hu_stext_laston
-mov   al, byte ptr ds:[si]
-mov   byte ptr ds:[bx], al
+jmp   loop_hu_erase_next_line
+
+
+end_erase_loop_erase_last_line:
+lodsb ; word ptr ds:[_w_message + HU_STEXT_T.hu_stext_onptr]
+mov   byte ptr ds:[_w_message + HU_STEXT_T.hu_stext_laston], al
 mov   ax, _w_title
 call  HUlib_eraseTextLine_
 pop   si
