@@ -242,7 +242,7 @@ jmp   skip_getting_string
 
 go_get_string:
 lea   bx, [bp - 0100h]
-mov   cx, ds
+mov   cx, ss
 push  bx
 call  getStringByIndex_
 
