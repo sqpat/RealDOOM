@@ -48,8 +48,8 @@ PLAYER_T STRUC
     player_killcount          dw ?                      ; 4E
     player_itemcount          dw ?                      ; 50
     player_secretcount        dw ?                      ; 52
-    player_message            dw ?                      ; 54
-	player_messagestring      dw ?                      ; 56
+    player_message            dw ?                      ; 54    ;0824h
+	player_messagestring      dw ?                      ; 56    ;0826h
     player_damagecount        dw ?                      ; 58    ;0828h
     player_bonuscount         db ?                      ; 5A
     player_refire		      db ?                      ; 5B

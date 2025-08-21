@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/21 11:51:08
+Created on:       25/08/21 12:16:53
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -41,9 +41,9 @@ g_game_TEXT            CODE           AUTO           0000:3840       000009c1
 m_misc_TEXT            CODE           AUTO           0000:4210       000000d5
 am_map_TEXT            CODE           AUTO           0000:42f0       000012ad
 st_stuff_TEXT          CODE           AUTO           0000:55a0       00000b87
-hu_stuff_TEXT          CODE           AUTO           0000:6130       000001f2
-HU_LIB_TEXT            CODE           AUTO           0000:6322       00000131
-D_ALGO_TEXT            CODE           AUTO           0000:6454       0000008c
+HU_STUFF_TEXT          CODE           AUTO           0000:6128       000001f0
+HU_LIB_TEXT            CODE           AUTO           0000:6318       00000131
+D_ALGO_TEXT            CODE           AUTO           0000:644a       0000008c
 dmx_TEXT               CODE           AUTO           0000:64e0       000001b8
 D_INT_TEXT             CODE           AUTO           0000:6698       00000176
 MEMORY_TEXT            CODE           AUTO           0000:680e       00000000
@@ -430,24 +430,26 @@ Module: st_stuff.obj(C:\REALDOOM\st_stuff.c)
 0000:5faa+     STlib_updatePercent_
 0000:5fe4+     ST_drawWidgets_
 0000:60c2      ST_Drawer_
-Module: hu_stuff.obj(C:\REALDOOM\hu_stuff.c)
-0000:6130      HU_Drawer_
-0000:61c0      HU_Erase_
-0000:6210      HU_Ticker_
-0000:62c6      HU_Responder_
+Module: hu_stuff.obj(hu_stuff.ASM)
+0000:61b7      HU_Erase_
+0000:62bc      HU_Responder_
+0000:6128      HU_Drawer_
+0000:6318*     HU_STUFF_ENDMARKER_
+0000:6128*     HU_STUFF_STARTMARKER_
+0000:6206      HU_Ticker_
 Module: hu_lib.obj(hu_lib.ASM)
-0000:6453*     HULIB_ENDMARKER
-0000:6322*     HULIB_STARTMARKER
-0000:6404      HUlib_addMessageToSText_
-0000:634d      HUlib_drawTextLine_
-0000:639d      HUlib_eraseTextLine_
-0000:6322      HUlib_addStringToTextLine_
+0000:6318*     HULIB_STARTMARKER_
+0000:63fa      HUlib_addMessageToSText_
+0000:6449*     HULIB_ENDMARKER_
+0000:6343      HUlib_drawTextLine_
+0000:6393      HUlib_eraseTextLine_
+0000:6318      HUlib_addStringToTextLine_
 Module: d_algo.obj(d_algo.ASM)
-0000:64c4      hackDSBack_
-0000:64e0*     D_ALGO_END_
-0000:647d      zeroConventional_
-0000:6454      resetDS_
-0000:645c      hackDS_
+0000:64ba      hackDSBack_
+0000:64d6*     D_ALGO_END_
+0000:6473      zeroConventional_
+0000:644a      resetDS_
+0000:6452      hackDS_
 Module: dmx.obj(C:\REALDOOM\dmx.c)
 0000:64e0*     TS_SetTimerToMaxTaskRate_
 0000:64f4+     playpcspeakernote_
@@ -962,4 +964,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  00011890 (71824.)
 Entry point address: 0000:d556
-Link time: 00:00.64
+Link time: 00:00.19
