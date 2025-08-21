@@ -767,3 +767,12 @@ HU_STEXT_T STRUC
 ; 165h
 
 HU_STEXT_T ENDS
+
+EVENT_T STRUC
+    event_evtype                 db ?  ; 
+    event_data1                  dd ?  ; 01   keys/mouse buttons
+    event_data2                  dd ?  ; 05   mousex
+    event_data3                  dd ?  ; 09   mousey
+EVENT_T ENDS
+
+

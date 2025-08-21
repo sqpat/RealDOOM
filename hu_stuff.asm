@@ -54,22 +54,22 @@ push  cx
 push  dx
 push  si
 mov   si, _w_message
-mov   bx, word ptr [si + HU_STEXT_T.hu_stext_onptr]
+mov   bx, word ptr ds:[si + HU_STEXT_T.hu_stext_onptr]
 xor   cl, cl
-cmp   byte ptr [bx], 0
+cmp   byte ptr ds:[bx], 0
 je    exit_hu_drawer
 mov   bx, _hudneedsupdate
-cmp   byte ptr [bx], 0
+cmp   byte ptr ds:[bx], 0
 je    label_1
 label_6:
 xor   dx, dx
 label_5:
-mov   al, byte ptr [si + HU_STEXT_T.hu_stext_height]
+mov   al, byte ptr ds:[si + HU_STEXT_T.hu_stext_height]
 cbw  
 mov   bx, ax
 cmp   dx, ax
 jge   label_2
-mov   al, byte ptr [si + HU_STEXT_T.hu_stext_currentline]
+mov   al, byte ptr ds:[si + HU_STEXT_T.hu_stext_currentline]
 cbw  
 sub   ax, dx
 test  ax, ax
@@ -87,14 +87,14 @@ inc   dx
 jmp   label_5
 label_1:
 mov   bx, _automapactive
-cmp   byte ptr [bx], 0
+cmp   byte ptr ds:[bx], 0
 jne   label_6
 mov   bx, _screenblocks
-cmp   byte ptr [bx], 10
+cmp   byte ptr ds:[bx], 10
 jae   label_6
 label_9:
 mov   bx, _automapactive
-cmp   byte ptr [bx], 0
+cmp   byte ptr ds:[bx], 0
 jne   label_7
 test  cl, cl
 jne   label_10
@@ -113,7 +113,7 @@ mov   cl, 1
 jmp   label_8
 label_2:
 mov   bx, _hudneedsupdate
-dec   byte ptr [bx]
+dec   byte ptr ds:[bx]
 jmp   label_9
 label_7:
 call  Z_QuickMapStatus_
@@ -142,12 +142,12 @@ mov   dx, _w_message
 xor   bx, bx
 label_14:
 mov   si, _w_message + HU_STEXT_T.hu_stext_height
-mov   al, byte ptr [si]
+mov   al, byte ptr ds:[si]
 cbw  
 cmp   bx, ax
 jge   label_12
 mov   si, _w_message + HU_STEXT_T.hu_stext_laston
-cmp   byte ptr [si], 0
+cmp   byte ptr ds:[si], 0
 jne   label_13
 label_15:
 mov   ax, dx
@@ -157,18 +157,18 @@ add   dx, SIZEOF_HUTEXTLINE_T
 jmp   label_14
 label_13:
 mov   si, _w_message + HU_STEXT_T.hu_stext_onptr
-mov   si, word ptr [si]
-cmp   byte ptr [si], 0
+mov   si, word ptr ds:[si]
+cmp   byte ptr ds:[si], 0
 jne   label_15
 imul  si, bx, SIZEOF_HUTEXTLINE_T
-mov   byte ptr [si + OFFSET _w_message + HU_TEXTLINE_T.hu_textline_needsupdate], 4
+mov   byte ptr ds:[si + OFFSET _w_message + HU_TEXTLINE_T.hu_textline_needsupdate], 4
 jmp   label_15
 label_12:
 mov   bx, _w_message + HU_STEXT_T.hu_stext_onptr
-mov   si, word ptr [bx]
+mov   si, word ptr ds:[bx]
 mov   bx, _w_message + HU_STEXT_T.hu_stext_laston
-mov   al, byte ptr [si]
-mov   byte ptr [bx], al
+mov   al, byte ptr ds:[si]
+mov   byte ptr ds:[bx], al
 mov   ax, _w_title
 call  HUlib_eraseTextLine_
 pop   si
@@ -192,23 +192,23 @@ push  bp
 mov   bp, sp
 sub   sp, 0100h
 mov   bx, _message_counter
-cmp   byte ptr [bx], 0
+cmp   byte ptr ds:[bx], 0
 jne   label_16
 label_21:
 mov   bx, _showMessages
-cmp   byte ptr [bx], 0
+cmp   byte ptr ds:[bx], 0
 je    label_17
 label_22:
 mov   bx, _player + PLAYER_T.player_messagestring
-cmp   word ptr [bx], 0
+cmp   word ptr ds:[bx], 0
 je    label_18
 label_24:
 mov   bx, _message_nottobefuckedwith
-cmp   byte ptr [bx], 0
+cmp   byte ptr ds:[bx], 0
 jne   label_19
 label_25:
 mov   bx, _player + PLAYER_T.player_message
-mov   ax, word ptr [bx]
+mov   ax, word ptr ds:[bx]
 cmp   ax, -1
 je    jump_to_label_20
 lea   bx, [bp - 0100h]
@@ -219,17 +219,17 @@ call  getStringByIndex_
 lea   ax, [bp - 0100h]
 mov   bx, _player + PLAYER_T.player_message
 call  HUlib_addMessageToSText_
-mov   word ptr [bx], -1
+mov   word ptr ds:[bx], -1
 label_23:
 mov   bx, _message_on
-mov   byte ptr [bx], 1
+mov   byte ptr ds:[bx], 1
 mov   bx, _message_counter
 mov   si, _message_dontfuckwithme
-mov   byte ptr [bx], HU_MSGTIMEOUT
+mov   byte ptr ds:[bx], HU_MSGTIMEOUT
 mov   bx, _message_nottobefuckedwith
-mov   al, byte ptr [si]
-mov   byte ptr [bx], al
-mov   byte ptr [si], 0
+mov   al, byte ptr ds:[si]
+mov   byte ptr ds:[bx], al
+mov   byte ptr ds:[si], 0
 exit_hu_ticker:
 LEAVE_MACRO 
 pop   si
@@ -237,32 +237,32 @@ pop   cx
 pop   bx
 ret   
 label_16:
-dec   byte ptr [bx]
-mov   al, byte ptr [bx]
+dec   byte ptr ds:[bx]
+mov   al, byte ptr ds:[bx]
 test  al, al
 jne   label_21
 mov   bx, _message_on
-mov   byte ptr [bx], al
+mov   byte ptr ds:[bx], al
 mov   bx, _message_nottobefuckedwith
-mov   byte ptr [bx], al
+mov   byte ptr ds:[bx], al
 jmp   label_21
 label_17:
 mov   bx, _message_dontfuckwithme
-cmp   byte ptr [bx], 0
+cmp   byte ptr ds:[bx], 0
 jne   label_22
 jmp   exit_hu_ticker
 jump_to_label_20:
 jmp   label_20
 label_18:
 mov   bx, _player + PLAYER_T.player_message
-cmp   word ptr [bx], -1
+cmp   word ptr ds:[bx], -1
 jne   label_24
 label_19:
 mov   bx, _player + PLAYER_T.player_message
-cmp   word ptr [bx], 0
+cmp   word ptr ds:[bx], 0
 je    exit_hu_ticker
 mov   bx, _message_dontfuckwithme
-cmp   byte ptr [bx], 0
+cmp   byte ptr ds:[bx], 0
 jne   label_25
 LEAVE_MACRO 
 pop   si
@@ -271,9 +271,9 @@ pop   bx
 ret   
 label_20:
 mov   bx, _player + PLAYER_T.player_messagestring
-mov   ax, word ptr [bx]
+mov   ax, word ptr ds:[bx]
 call  HUlib_addMessageToSText_
-mov   word ptr [bx], 0
+mov   word ptr ds:[bx], 0
 jmp   label_23
 
 
@@ -283,40 +283,29 @@ PROC    HU_Responder_ NEAR
 PUBLIC  HU_Responder_
 
 push  bx
-mov   bx, ax
+xchg  ax, bx
 mov   es, dx
-xor   al, al
-cmp   word ptr es:[bx + 3], 0
-jne   label_26
-cmp   word ptr es:[bx + 1], KEY_RSHIFT
-je    exit_hu_responder_ret_0
-label_26:
-cmp   word ptr es:[bx + 3], 0
-jne   label_27
-cmp   word ptr es:[bx + 1], KEY_RALT
-je    exit_hu_responder_ret_0
-label_27:
-cmp   word ptr es:[bx + 3], 0
-jne   label_28
-cmp   word ptr es:[bx + 1], KEY_RALT ; todo remvoe check
-je    exit_hu_responder_ret_0
-label_28:
-cmp   byte ptr es:[bx], 0
+xor   ax, ax
+cmp   word ptr es:[bx + EVENT_T.event_data1 + 2], ax
+jne   not_rshift
+cmp   word ptr es:[bx + EVENT_T.event_data1], KEY_RSHIFT
+je    exit_hu_responder
+not_rshift:
+cmp   word ptr es:[bx + EVENT_T.event_data1 + 2], ax
+jne   not_alt
+cmp   word ptr es:[bx + EVENT_T.event_data1], KEY_RALT
+je    exit_hu_responder
+not_alt:
+cmp   byte ptr es:[bx + EVENT_T.event_evtype], al   ; EV_KEYDOWN
 jne   exit_hu_responder
-cmp   word ptr es:[bx + 3], 0
+cmp   word ptr es:[bx + EVENT_T.event_data1 + 2], ax
 jne   exit_hu_responder
-cmp   word ptr es:[bx + 1], HU_MSGREFRESH
+cmp   word ptr es:[bx + EVENT_T.event_data1], HU_MSGREFRESH
 jne   exit_hu_responder
-mov   bx, _message_on
-mov   byte ptr [bx], 1
-mov   bx, _message_counter
-mov   al, 1
-mov   byte ptr [bx], HU_MSGTIMEOUT
+inc   ax
+mov   byte ptr ds:[_message_on], al
+mov   byte ptr ds:[_message_counter], HU_MSGTIMEOUT
 exit_hu_responder:
-pop   bx
-ret   
-exit_hu_responder_ret_0:
-xor   al, al
 pop   bx
 ret   
 
