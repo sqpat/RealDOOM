@@ -92,11 +92,11 @@ jmp   switch_case_verticaldoor_dir_case_1
 
 switch_case_verticaldoor_dir_case_2:
 dec   word ptr ds:[si + VLDOOR_T.vldoor_topcountdown]
-jne   exit_t_verticaldoor
+jne   exit_t_verticaldoor_2
 
 mov   al, byte ptr ds:[si + VLDOOR_T.vldoor_type]
 cmp   al, DOOR_RAISEIN5MINS
-jne   exit_t_verticaldoor
+jne   exit_t_verticaldoor_2
 
 mov   dx, SFX_DOROPN
 mov   byte ptr ds:[si + VLDOOR_T.vldoor_type], cl; 0, DOOR_NORMAL
@@ -112,13 +112,13 @@ pop   bx  ; sector offset in bx in case necessary
 cmp   al, FLOOR_CRUSHED
 mov   al, byte ptr ds:[si + VLDOOR_T.vldoor_type]
 ja    vert_door_floor_past_dest ; pastdest
-jne   exit_t_verticaldoor
+jne   exit_t_verticaldoor_2
 ;crushed
 
 cmp   al, DOOR_BLAZECLOSE
-je    exit_t_verticaldoor
+je    exit_t_verticaldoor_2
 cmp   al, DOOR_CLOSE
-je    exit_t_verticaldoor
+je    exit_t_verticaldoor_2
 mov   dx, SFX_DOROPN
 
 set_dir_to_1_and_call_sound_and_exit:
@@ -138,14 +138,14 @@ ret
 
 vert_door_floor_past_dest:
 cmp   al, DOOR_BLAZECLOSE
-ja    exit_t_verticaldoor
+ja    exit_t_verticaldoor_2
 je    switch_case_verticaldoor_2_blazeclose
 cmp   al, DOOR_BLAZERAISE
 je    switch_case_verticaldoor_2_blazeraise
 cmp   al, DOOR_CLOSE30THENOPEN
 je    switch_case_verticaldoor_2_doorclose30thenopen
 cmp   al, DOOR_CLOSE
-ja    exit_t_verticaldoor
+ja    exit_t_verticaldoor_2
 ; fall thru to 0 and 2 case
 
 switch_case_verticaldoor_2_doornormal:
@@ -197,7 +197,7 @@ jmp   set_dir_to_1_and_call_sound_and_exit
 switch_case_verticaldoor_2_blazeraise:
 switch_case_verticaldoor_2_blazeclose:
 mov   bx, word ptr ds:[si + VLDOOR_T.vldoor_secnum]
-shl   bx, 4
+SHIFT_MACRO shl   bx 4
 
 xor   ax, ax
 

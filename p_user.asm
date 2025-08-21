@@ -356,7 +356,7 @@ skip_temp_check:
 mov   word ptr ds:[_player + PLAYER_T.player_viewzvalue + 0], ax  ; write player_viewzvalue back
 mov   word ptr ds:[_player + PLAYER_T.player_viewzvalue + 2], dx
 exit_p_calcheight:
-POPA_NO_AX_MACRO
+POPA_NO_AX_OR_BP_MACRO
 ret  
 
 
@@ -441,7 +441,7 @@ mov   ax, word ptr ds:[_playerMobj]
 mov   dx, S_PLAY_RUN1
 call  P_SetMobjState_
 exit_p_moveplayer:
-POPA_NO_AX_MACRO
+POPA_NO_AX_OR_BP_MACRO
 ret  
 
 
@@ -601,7 +601,7 @@ mov   byte ptr ds:[_player + PLAYER_T.player_playerstate], PST_REBORN
 no_reborn:
 
 
-POPA_NO_AX_MACRO
+POPA_NO_AX_OR_BP_MACRO
 ret  
 
 use_dead_attackerref:
@@ -864,7 +864,7 @@ set_inverse_colormap:
 mov   byte ptr ds:[bx + PLAYER_T.player_fixedcolormapvalue], INVERSECOLORMAP
 
 exit_player_think:
-POPA_NO_AX_MACRO
+POPA_NO_AX_OR_BP_MACRO
 ret   
 
 

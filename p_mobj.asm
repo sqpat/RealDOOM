@@ -1859,7 +1859,7 @@ jne   dont_explode_missile
 do_explode_missile:
 mov   bx, di
 mov   cx, es
-mov   ax, si
+xchg  ax, si
 call  P_ExplodeMissile_
 LEAVE_MACRO 
 pop   di

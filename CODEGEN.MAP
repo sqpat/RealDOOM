@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/21 11:48:35
+Created on:       25/08/21 14:56:29
 Executable Image: codegen.exe
 creating a DOS executable
 
@@ -71,8 +71,8 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:bc00*     _am_lc
 02d1:bc08*     _am_ml
 02d1:bc10*     _markpoints
-02d1:bc38*     _TaskServiceCount
-02d1:bc3c*     _filetolumpsize
+02d1:bc38*     _filetolumpsize
+02d1:bc44*     _TaskServiceCount
 02d1:bc48*     _OldInt8
 02d1:bc4c*     _st_stuff_buf
 02d1:bc80*     _w_health
@@ -140,34 +140,34 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:bda6*     _TS_TimesInInterrupt
 02d1:bda7*     _st_randomnumber
 02d1:bda8*     _do_st_refresh
-02d1:bda9*     _message_counter
-02d1:bdaa*     _st_statusbaron
-02d1:bdab*     _d_episode
-02d1:bdac*     _secretexit
-02d1:bdad*     _d_skill
-02d1:bdae*     _d_map
-02d1:bdaf*     _updatedthisframe
-02d1:bdb0*     _st_firsttime
-02d1:bdb1*     _st_gamestate
-02d1:bdb2*     _usemouse
-02d1:bdb3*     _mousebforward
-02d1:bdb4*     _key_speed
-02d1:bdb5*     _mousebfire
-02d1:bdb6*     _key_fire
-02d1:bdb7*     _key_strafe
-02d1:bdb8*     _turnheld
-02d1:bdb9*     _key_straferight
-02d1:bdba*     _key_up
-02d1:bdbb*     _mousebstrafe
-02d1:bdbc*     _key_down
-02d1:bdbd*     _key_use
-02d1:bdbe*     _key_strafeleft
-02d1:bdbf*     _key_left
-02d1:bdc0*     _timingdemo
-02d1:bdc1*     _numChannels
-02d1:bdc2*     _noblit
-02d1:bdc3*     _demorecording
-02d1:bdc4*     _singledemo
+02d1:bda9*     _st_statusbaron
+02d1:bdaa*     _d_episode
+02d1:bdab*     _secretexit
+02d1:bdac*     _d_skill
+02d1:bdad*     _d_map
+02d1:bdae*     _updatedthisframe
+02d1:bdaf*     _st_firsttime
+02d1:bdb0*     _st_gamestate
+02d1:bdb1*     _usemouse
+02d1:bdb2*     _mousebforward
+02d1:bdb3*     _key_speed
+02d1:bdb4*     _mousebfire
+02d1:bdb5*     _key_fire
+02d1:bdb6*     _key_strafe
+02d1:bdb7*     _turnheld
+02d1:bdb8*     _key_straferight
+02d1:bdb9*     _key_up
+02d1:bdba*     _mousebstrafe
+02d1:bdbb*     _key_down
+02d1:bdbc*     _key_use
+02d1:bdbd*     _key_strafeleft
+02d1:bdbe*     _key_left
+02d1:bdbf*     _timingdemo
+02d1:bdc0*     _numChannels
+02d1:bdc1*     _noblit
+02d1:bdc2*     _demorecording
+02d1:bdc3*     _singledemo
+02d1:bdc4*     _netdemo
 02d1:8ce0*     _singletics
 02d1:8ce1*     _skytextureloaded
 02d1:8ce2*     _am_cheating
@@ -228,17 +228,16 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:8e46*     _sfx_priority
 02d1:8eb3*     _FORCE_5000_LUMP_LOAD
 02d1:8eb4*     _lastpcspeakernotevalue
-02d1:bdc5*     _netdemo
-02d1:bdc6*     _key_right
-02d1:bdc7*     _mousepresent
-02d1:bdc8*     _novideo
-02d1:bdc9*     _eventtail
-02d1:bdca*     _startmap
-02d1:bdcb*     _autostart
-02d1:bdcc*     _startskill
-02d1:bdcd*     _eventhead
-02d1:bdce*     _respawnparm
-02d1:bdcf*     _startepisode
+02d1:bdc5*     _key_right
+02d1:bdc6*     _mousepresent
+02d1:bdc7*     _novideo
+02d1:bdc8*     _eventtail
+02d1:bdc9*     _startmap
+02d1:bdca*     _autostart
+02d1:bdcb*     _startskill
+02d1:bdcc*     _eventhead
+02d1:bdcd*     _respawnparm
+02d1:bdce*     _startepisode
 Module: codegen.obj(C:\REALDOOM\build\tools\codegen\codegen.c)
 0000:0000      main_
 02d1:8eb6+     _CONSTANTS
@@ -507,4 +506,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  f810 (63504.)
 Entry point address: 0000:0446
-Link time: 00:00.65
+Link time: 00:00.10
