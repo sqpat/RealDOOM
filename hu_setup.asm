@@ -49,14 +49,15 @@ TITLE_STRING_OFFSET = HUSTR_E1M1
 HU_TITLE2_OFFSET = (HUSTR_1  - TITLE_STRING_OFFSET - 1 )
 
 
-PROC    HU_Start_ NEAR
+PROC    HU_Start_ FAR
 PUBLIC  HU_Start_
 
 push    cx
 push    bx
 push    dx
-mov   bp, sp
-sub   sp, 0100h
+push    bp
+mov     bp, sp
+sub     sp, 0100h
 
 
 xor   ax, ax
@@ -114,9 +115,10 @@ mov   ax, NEWLEVELMSG - TITLE_STRING_OFFSET
 jmp   got_index
 
 do_other_calc:
-add   ax, (HUSTR_E1M1 - TITLE_STRING_OFFSET)
+;add   ax, (HUSTR_E1M1 - TITLE_STRING_OFFSET)  ; add zero???
 got_index:
 
+add   ax, TITLE_STRING_OFFSET
 lea   bx, [bp - 0100h]
 mov   cx, ss
 push  bx
