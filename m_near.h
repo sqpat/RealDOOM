@@ -592,6 +592,8 @@
 
 // 89 bytes
 #define w_title 						  (*((hu_textline_t __near*)         (_NULL_OFFSET + 0x0890)))
+#define message_counter					  (*((uint8_t    __near*)            (_NULL_OFFSET + 0x08E8)))
+
 #define levelTimer                   	  (*((boolean    __near*)            (_NULL_OFFSET + 0x08E9)))
 #define numlinespecials     			  (*((int16_t __near*)               (_NULL_OFFSET + 0x08EA)))
 
@@ -1042,7 +1044,6 @@ extern int8_t     st_stuff_buf[ST_MSGWIDTH];
 
 
 
-extern uint8_t		message_counter;
 
 
 

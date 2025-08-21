@@ -40,7 +40,6 @@ typedef struct {
     int16_t		x;
     int16_t		y;
     
-    uint8_t		sc;			// start character
 	int8_t		characters[HU_MAXLINELENGTH+1];	// line of text
     int16_t		len;		      	// current line length
 

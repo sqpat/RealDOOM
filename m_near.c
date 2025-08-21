@@ -610,7 +610,6 @@ int8_t     st_stuff_buf[ST_MSGWIDTH];
 
 
 
-uint8_t		message_counter;
 
 
 

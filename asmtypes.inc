@@ -746,11 +746,10 @@ HU_TEXTLINE_T STRUC
     ; left-justified position of scrolling text window
     hu_textline_x           dw ?                             ; 0
     hu_textline_y           dw ?                             ; 2
-    hu_textline_sc          db ?                             ; 4  ; start character
-    hu_textline_characters  db HU_MAXLINELENGTH + 1 DUP (?)  ; 5  ; line of text
-    hu_textline_len         dw ?                             ; 056h ; current line length
-    hu_textline_needsupdate db ?                             ; 058h ; whether this line needs to be udpated
-                                                             ; 059h
+    hu_textline_characters  db HU_MAXLINELENGTH + 1 DUP (?)  ; 4  ; line of text
+    hu_textline_len         dw ?                             ; 055h ; current line length
+    hu_textline_needsupdate db ?                             ; 057h ; whether this line needs to be udpated
+                                                             ; 058h
     
 HU_TEXTLINE_T ENDS
 
@@ -761,10 +760,10 @@ HU_MAXLINES = 4
 HU_STEXT_T STRUC
 
     hu_stext_textlines           HU_TEXTLINE_T HU_MAXLINES DUP (?)   ; 0
-    hu_stext_height              db ?                                ; 0164h   ; height in lines
-    hu_stext_currentline         db ?                                ; 0165h   ; current line number
-    hu_stext_onptr               dw ?                                ; 0166h   ; pointer to boolean stating whether to update window
-    hu_stext_laston              db ?                                ; 0168h   ; last value of *->on
-; 169h
+    hu_stext_height              db ?                                ; 0160h   ; height in lines
+    hu_stext_currentline         db ?                                ; 0161h   ; current line number
+    hu_stext_onptr               dw ?                                ; 0162h   ; pointer to boolean stating whether to update window
+    hu_stext_laston              db ?                                ; 0164h   ; last value of *->on
+; 165h
 
 HU_STEXT_T ENDS

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/21 11:44:45
+Created on:       25/08/21 11:51:08
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -41,9 +41,9 @@ g_game_TEXT            CODE           AUTO           0000:3840       000009c1
 m_misc_TEXT            CODE           AUTO           0000:4210       000000d5
 am_map_TEXT            CODE           AUTO           0000:42f0       000012ad
 st_stuff_TEXT          CODE           AUTO           0000:55a0       00000b87
-hu_stuff_TEXT          CODE           AUTO           0000:6130       000001ed
-HU_LIB_TEXT            CODE           AUTO           0000:631e       00000131
-D_ALGO_TEXT            CODE           AUTO           0000:6450       0000008c
+hu_stuff_TEXT          CODE           AUTO           0000:6130       000001f2
+HU_LIB_TEXT            CODE           AUTO           0000:6322       00000131
+D_ALGO_TEXT            CODE           AUTO           0000:6454       0000008c
 dmx_TEXT               CODE           AUTO           0000:64e0       000001b8
 D_INT_TEXT             CODE           AUTO           0000:6698       00000176
 MEMORY_TEXT            CODE           AUTO           0000:680e       00000000
@@ -106,8 +106,8 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 0efd:1c90      _am_lc
 0efd:1c98      _am_ml
 0efd:1ca0      _markpoints
-0efd:1cc8      _TaskServiceCount
-0efd:1ccc      _filetolumpsize
+0efd:1cc8      _filetolumpsize
+0efd:1cd4      _TaskServiceCount
 0efd:1cd8      _OldInt8
 0efd:1cdc      _st_stuff_buf
 0efd:1d10      _w_health
@@ -175,34 +175,34 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 0efd:1e36      _TS_TimesInInterrupt
 0efd:1e37      _st_randomnumber
 0efd:1e38      _do_st_refresh
-0efd:1e39      _message_counter
-0efd:1e3a      _st_statusbaron
-0efd:1e3b      _d_episode
-0efd:1e3c      _secretexit
-0efd:1e3d      _d_skill
-0efd:1e3e      _d_map
-0efd:1e3f      _updatedthisframe
-0efd:1e40      _st_firsttime
-0efd:1e41      _st_gamestate
-0efd:1e42      _usemouse
-0efd:1e43      _mousebforward
-0efd:1e44      _key_speed
-0efd:1e45      _mousebfire
-0efd:1e46      _key_fire
-0efd:1e47      _key_strafe
-0efd:1e48      _turnheld
-0efd:1e49      _key_straferight
-0efd:1e4a      _key_up
-0efd:1e4b      _mousebstrafe
-0efd:1e4c      _key_down
-0efd:1e4d      _key_use
-0efd:1e4e      _key_strafeleft
-0efd:1e4f      _key_left
-0efd:1e50      _timingdemo
-0efd:1e51      _numChannels
-0efd:1e52      _noblit
-0efd:1e53      _demorecording
-0efd:1e54      _singledemo
+0efd:1e39      _st_statusbaron
+0efd:1e3a      _d_episode
+0efd:1e3b      _secretexit
+0efd:1e3c      _d_skill
+0efd:1e3d      _d_map
+0efd:1e3e      _updatedthisframe
+0efd:1e3f      _st_firsttime
+0efd:1e40      _st_gamestate
+0efd:1e41      _usemouse
+0efd:1e42      _mousebforward
+0efd:1e43      _key_speed
+0efd:1e44      _mousebfire
+0efd:1e45      _key_fire
+0efd:1e46      _key_strafe
+0efd:1e47      _turnheld
+0efd:1e48      _key_straferight
+0efd:1e49      _key_up
+0efd:1e4a      _mousebstrafe
+0efd:1e4b      _key_down
+0efd:1e4c      _key_use
+0efd:1e4d      _key_strafeleft
+0efd:1e4e      _key_left
+0efd:1e4f      _timingdemo
+0efd:1e50      _numChannels
+0efd:1e51      _noblit
+0efd:1e52      _demorecording
+0efd:1e53      _singledemo
+0efd:1e54      _netdemo
 0efd:0f90      _singletics
 0efd:0f91      _skytextureloaded
 0efd:0f92      _am_cheating
@@ -263,17 +263,16 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 0efd:10f6      _sfx_priority
 0efd:1163      _FORCE_5000_LUMP_LOAD
 0efd:1164      _lastpcspeakernotevalue
-0efd:1e55      _netdemo
-0efd:1e56      _key_right
-0efd:1e57      _mousepresent
-0efd:1e58      _novideo
-0efd:1e59      _eventtail
-0efd:1e5a      _startmap
-0efd:1e5b      _autostart
-0efd:1e5c      _startskill
-0efd:1e5d      _eventhead
-0efd:1e5e      _respawnparm
-0efd:1e5f      _startepisode
+0efd:1e55      _key_right
+0efd:1e56      _mousepresent
+0efd:1e57      _novideo
+0efd:1e58      _eventtail
+0efd:1e59      _startmap
+0efd:1e5a      _autostart
+0efd:1e5b      _startskill
+0efd:1e5c      _eventhead
+0efd:1e5d      _respawnparm
+0efd:1e5e      _startepisode
 Module: d_init.obj(C:\REALDOOM\d_init.c)
 0000:0000      D_InitStrings_
 0000:00aa+     D_GetCursorColumnRow_
@@ -435,20 +434,20 @@ Module: hu_stuff.obj(C:\REALDOOM\hu_stuff.c)
 0000:6130      HU_Drawer_
 0000:61c0      HU_Erase_
 0000:6210      HU_Ticker_
-0000:62c2      HU_Responder_
+0000:62c6      HU_Responder_
 Module: hu_lib.obj(hu_lib.ASM)
-0000:644f*     HULIB_ENDMARKER
-0000:631e*     HULIB_STARTMARKER
-0000:6400      HUlib_addMessageToSText_
-0000:6349      HUlib_drawTextLine_
-0000:6399      HUlib_eraseTextLine_
-0000:631e      HUlib_addStringToTextLine_
+0000:6453*     HULIB_ENDMARKER
+0000:6322*     HULIB_STARTMARKER
+0000:6404      HUlib_addMessageToSText_
+0000:634d      HUlib_drawTextLine_
+0000:639d      HUlib_eraseTextLine_
+0000:6322      HUlib_addStringToTextLine_
 Module: d_algo.obj(d_algo.ASM)
-0000:64c0      hackDSBack_
-0000:64dc*     D_ALGO_END_
-0000:6479      zeroConventional_
-0000:6450      resetDS_
-0000:6458      hackDS_
+0000:64c4      hackDSBack_
+0000:64e0*     D_ALGO_END_
+0000:647d      zeroConventional_
+0000:6454      resetDS_
+0000:645c      hackDS_
 Module: dmx.obj(C:\REALDOOM\dmx.c)
 0000:64e0*     TS_SetTimerToMaxTaskRate_
 0000:64f4+     playpcspeakernote_
@@ -963,4 +962,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  00011890 (71824.)
 Entry point address: 0000:d556
-Link time: 00:00.65
+Link time: 00:00.64
