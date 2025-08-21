@@ -311,11 +311,11 @@ DRAWSEG_T ENDS
 
 
 PATCH_T STRUC 
-    patch_width           dw ?
-    patch_height          dw ?    
-    patch_leftoffset      dw ?    
-    patch_topoffset       dw ?    
-    patch_columnofs       dd 8
+    patch_width           dw ? ; 0
+    patch_height          dw ? ; 2 
+    patch_leftoffset      dw ? ; 4  
+    patch_topoffset       dw ? ; 6  
+    patch_columnofs       dd 8 ; 8 
 
 PATCH_T ENDS
 

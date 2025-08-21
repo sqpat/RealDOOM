@@ -97,68 +97,57 @@ PUBLIC  HUlib_drawTextLine_
 
 
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 4
-mov   si, ax
-mov   word ptr [bp - 2], 0
-mov   ax, word ptr ds:[si]
-cmp   word ptr ds:[si + HU_TEXTLINE_T.hu_textline_len], 0
-jle   exit_hulib_drawtextline
-mov   di, si
-label_5:
-mov   dl, byte ptr ds:[di + HU_TEXTLINE_T.hu_textline_characters]
-cmp   dl, ' '
-je    iter_next_drawtextline
-cmp   dl, byte ptr ds:[si + 4]
-jb    iter_next_drawtextline
-cmp   dl, '_'
-ja    iter_next_drawtextline
-mov   bl, byte ptr ds:[si + 4]
-xor   dh, dh
-xor   bh, bh
-sub   dx, bx
-mov   bx, dx
-add   bx, dx
-mov   dx, ST_GRAPHICS_SEGMENT
-mov   bx, word ptr ds:[bx + _hu_font]
-mov   es, dx
-mov   cx, ax
-mov   dx, word ptr es:[bx]
-add   cx, dx
-mov   word ptr [bp - 4], cx
-cmp   cx, SCREENWIDTH
-jg    exit_hulib_drawtextline
-mov   cx, es
-mov   dx, word ptr ds:[si + 2]
+PUSHA_NO_AX_MACRO
 
+xchg  ax, si
+xor   bp, bp  ; loop counter.
+cmp   word ptr ds:[si + HU_TEXTLINE_T.hu_textline_len], bp ; 0
+jnge  exit_hulib_drawtextline
+mov   ax, word ptr ds:[si + HU_TEXTLINE_T.hu_textline_x]
+
+loop_draw_next_textline:
+; be cheap and use ss i guess
+mov   bl, byte ptr ss:[si + bp + HU_TEXTLINE_T.hu_textline_characters]
+cmp   bl, ' '
+je    forced_space
+cmp   bl, '_'
+ja    forced_space
+sub   bl, HU_FONTSTART
+jb    forced_space
+mov   cx, ST_GRAPHICS_SEGMENT
+mov   es, cx
+
+xor   bh, bh
+sal   bx, 1
+
+mov   bx, word ptr ds:[bx + _hu_font]
+mov   di, word ptr es:[bx + PATCH_T.patch_width]
+add   di, ax
+
+cmp   di, SCREENWIDTH
+jg    exit_hulib_drawtextline
+
+
+mov   dx, word ptr ds:[si + HU_TEXTLINE_T.hu_textline_y]
 call  V_DrawPatchDirect_
-mov   ax, word ptr [bp - 4]
-label_4:
-inc   word ptr [bp - 2]
-mov   dx, word ptr [bp - 2]
-inc   di
-cmp   dx, word ptr ds:[si + HU_TEXTLINE_T.hu_textline_len]
-jl    label_5
+
+xchg  ax, di
+
+iter_next_drawtextline:
+inc   bp
+cmp   bp, word ptr ds:[si + HU_TEXTLINE_T.hu_textline_len]
+jl    loop_draw_next_textline
+
 exit_hulib_drawtextline:
 
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_MACRO
 ret   
-iter_next_drawtextline:
+
+forced_space:
 add   ax, 4
 cmp   ax, SCREENWIDTH
 jge   exit_hulib_drawtextline
-jmp   label_4
+jmp   iter_next_drawtextline
 
 
 ENDP

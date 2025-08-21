@@ -90,7 +90,7 @@ void __far HU_Start(void) {
 	t = &w_message.textlines[0];
 	t->x = HU_MSGX;
 	t->y = HU_MSGY;
-	t->sc = HU_FONTSTART;
+
 
 	t->len = 0;
 	t->characters[0] = 0;
@@ -105,7 +105,7 @@ void __far HU_Start(void) {
 
 	w_title.x = HU_TITLEX;
 	w_title.y = HU_TITLEY;
-	w_title.sc = HU_FONTSTART;
+
 	w_title.len = 0;
 	w_title.characters[0] = 0;
 	w_title.needsupdate = true;
