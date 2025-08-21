@@ -53,79 +53,79 @@ push  bx
 push  cx
 push  dx
 push  si
+
+xor   cx, cx
+xor   ax, ax
+cwd
 mov   si, _w_message
 mov   bx, word ptr ds:[si + HU_STEXT_T.hu_stext_onptr]
-xor   cl, cl
-cmp   byte ptr ds:[bx], 0
+cmp   byte ptr ds:[bx], al ; 0
 je    exit_hu_drawer
-mov   bx, _hudneedsupdate
-cmp   byte ptr ds:[bx], 0
-je    label_1
-label_6:
-xor   dx, dx
-label_5:
-mov   al, byte ptr ds:[si + HU_STEXT_T.hu_stext_height]
-cbw  
-mov   bx, ax
-cmp   dx, ax
-jge   label_2
+
+cmp   byte ptr ds:[_hudneedsupdate],al ; 0
+jne   draw_everything
+cmp   byte ptr ds:[_automapactive], al  ; 0
+jne   draw_everything
+cmp   byte ptr ds:[_screenblocks], 10
+jb    done_drawing_everything
+
+draw_everything:
+
+
+
+draw_next_line:
+mov   bl, byte ptr ds:[si + HU_STEXT_T.hu_stext_height]
+cmp   dl, bl
+jge   finish_loop
 mov   al, byte ptr ds:[si + HU_STEXT_T.hu_stext_currentline]
-cbw  
-sub   ax, dx
-test  ax, ax
-jl    label_3
-label_11:
-imul  ax, ax, SIZEOF_HUTEXTLINE_T
-mov   bx, si
-add   bx, ax
-test  cl, cl
-je    label_4
-label_8:
-mov   ax, bx
+
+sub   al, dl
+jge   dont_add_height
+add   al, bl
+dont_add_height:
+mov   ah, SIZEOF_HUTEXTLINE_T
+mul   ah
+xchg  ax, bx
+
+jcxz  do_quickmap
+done_mapping:
+
+lea   ax, [bx + si]
 call  HUlib_drawTextLine_
 inc   dx
-jmp   label_5
-label_1:
-mov   bx, _automapactive
-cmp   byte ptr ds:[bx], 0
-jne   label_6
-mov   bx, _screenblocks
-cmp   byte ptr ds:[bx], 10
-jae   label_6
-label_9:
-mov   bx, _automapactive
-cmp   byte ptr ds:[bx], 0
-jne   label_7
-test  cl, cl
-jne   label_10
+jmp   draw_next_line
+
+
+finish_loop:
+dec   byte ptr ds:[_hudneedsupdate]
+done_drawing_everything:
+
+cmp   byte ptr ds:[_automapactive], ch ; 0
+je    check_if_mapped
+inc   cx
+call  Z_QuickMapStatus_
+mov   ax, _w_title
+call  HUlib_drawTextLine_
+
+check_if_mapped:
+jcxz  exit_hu_drawer
+
+call  Z_QuickmapPhysics_
 exit_hu_drawer:
 pop   si
 pop   dx
 pop   cx
 pop   bx
 ret   
-label_3:
-add   ax, bx
-jmp   label_11
-label_4:
+
+do_quickmap:
+inc   cx    ; mark mapped
 call  Z_QuickMapStatus_
-mov   cl, 1
-jmp   label_8
-label_2:
-mov   bx, _hudneedsupdate
-dec   byte ptr ds:[bx]
-jmp   label_9
-label_7:
-call  Z_QuickMapStatus_
-mov   ax, _w_title
-call  HUlib_drawTextLine_
-label_10:
-call  Z_QuickmapPhysics_
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret   
+jmp   done_mapping
+
+
+
+
 
 ENDP
 
