@@ -40,7 +40,7 @@ PUBLIC  D_NET_STARTMARKER_
 ENDP
 
 
-
+; note: some of the math here assums tics wont differ by more than 16 bits signed (32768 tics) per call, which i think is more than more than enough precision in any case.
 
 PROC    NetUpdate_ FAR
 PUBLIC  NetUpdate_
@@ -92,94 +92,117 @@ PROC    TryRunTics_ NEAR
 PUBLIC  TryRunTics_
 
 
-push  bx
+push  cx
 push  dx
-push  si
-push  bp
-mov   bp, sp
-sub   sp, 2
-mov   bx, _ticcount
-mov   ax, word ptr ds:[bx]
-mov   si, _gametic
+
+
+mov   ax, word ptr ds:[_ticcount]
 mov   dx, ax
-mov   word ptr ds:[bp - 2], ax
-sub   dx, word ptr ds:[_oldentertics]
+mov   cx, ax ; entertic in cx
 mov   word ptr ds:[_oldentertics], ax
+sub   ax, word ptr ds:[_oldentertics]
+xchg  ax, dx  
 
 call  NetUpdate_
-mov   ax, dx
-mov   bx, word ptr ds:[_maketic + 0]
+
+;	availabletics = maketic - gametic;
+
+
+mov   ax, word ptr ds:[_maketic + 0]
+sub   ax, word ptr ds:[_gametic]
+
+xchg  ax, cx    ; cx is availabletics. ax is entertics
+xchg  ax, dx    ; cx is availabletics. dx is entertics. ax is realtics
+
 inc   ax
-sub   bx, word ptr ds:[si]
-cmp   ax, bx
-jge   label_3
-mov   bx, ax
-label_10:
-cmp   bx, 1
-jl    label_4
-label_11:
-mov   ax, bx
-mov   si, _gametic
-cwd
-add   ax, word ptr ds:[si]
-mov   si, word ptr ds:[si + 2]
-adc   si, dx
-cmp   si, word ptr ds:[_maketic + 2]
-jg    label_5
-jne   label_6
-cmp   ax, word ptr ds:[_maketic + 0]
-ja    label_5
-label_6:
-mov   dx, _gametic
-label_9:
-dec   bx
-cmp   bx, -1
-je    exit_tryruntics
-mov   si, _advancedemo
-cmp   byte ptr ds:[si], 0
-jne   label_7
-label_8:
-mov   si, dx
-call  M_Ticker_
-call  G_Ticker_
-add   word ptr ds:[si], 1
-adc   word ptr ds:[si + 2], 0
+
+;   realtic  availabletics 
+;      10          12          counts    11
+;      10          11          counts    10
+;      10          10          counts    10
+;      10          9           counts    9
+
+;	// decide how many tics to run
+;	if (realtics + 1 < availabletics){
+;		counts = realtics + 1;
+;	} else if (realtics < availabletics){
+;		counts = realtics;
+;	} else {
+;		counts = availabletics;
+;	}
+
+
+cmp   cx, ax
+jge   use_realtic_plus_1
+dec   ax
+cmp   ax, cx
+jge   use_counts
+
+use_realtic_plus_1:
+xchg  ax, cx  ; counts is realtics+1 or realtics
+use_counts:
+
+; cx is counts
+; dx is entertics
+test  cx, cx
+jg    counts_above_0
+mov   cx, 1
+counts_above_0:
+
+loop_next_maketic:
+
+;	while (maketic < gametic + counts) {
+;          maketic - gametic < counts  ; equivalent to this
+mov   ax, word ptr ds:[_maketic + 0]
+sub   ax, word ptr ds:[_gametic + 0] ; 16 bit precision fine if we use a diff.
+cmp   cx, ax
+jge   done_with_maketic_loop
 
 call  NetUpdate_
-jmp   label_9
-label_3:
-cmp   dx, bx
-jge   label_10
-mov   bx, dx
-jmp   label_10
-label_4:
-mov   bx, 1
-jmp   label_11
-label_5:
 
-call  NetUpdate_
-mov   si, _ticcount
-xor   ax, ax
-mov   dx, word ptr ds:[si]
-sub   dx, word ptr ds:[bp - 2]
-mov   si, word ptr ds:[si + 2]
-sbb   si, ax
-test  si, si
-ja    label_12
-jne   label_11
-cmp   dx, 20
-jb    label_11
-label_12:
+
+;		if (ticcount - entertic >= 20) {
+;			M_Ticker();
+;			return;
+;		}
+
+mov   ax, word ptr ds:[_ticcount]
+sub   ax, dx  ; entertic
+cmp   al, 20
+jb    loop_next_maketic
 call  M_Ticker_
 exit_tryruntics:
-leave 
-pop   si
+
 pop   dx
-pop   bx
+pop   cx
 ret   
-label_7:
+
+
+done_with_maketic_loop:
+
+loop_counts:
+
+cmp   byte ptr ds:[_advancedemo], 0
+je    dont_do_demo
 call  D_DoAdvanceDemo_
-jmp   label_8
+dont_do_demo:
+
+call  M_Ticker_
+call  G_Ticker_
+inc   word ptr ds:[_gametic + 0]
+jz    carry_add_2
+
+do_net_update_check_loop:
+call  NetUpdate_
+
+loop  loop_counts
+jmp   exit_tryruntics
+carry_add_2:
+inc   word ptr ds:[_gametic + 2]
+jmp   do_net_update_check_loop
+
+
+
 
 ENDP
 
