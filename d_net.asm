@@ -45,57 +45,46 @@ ENDP
 PROC    NetUpdate_ FAR
 PUBLIC  NetUpdate_
 
-push  bx
+
 push  cx
 push  dx
-push  si
-mov   bx, _ticcount
-mov   ax, word ptr ds:[bx]
-mov   dx, word ptr ds:[bx + 2]
+
+les   ax, dword ptr ds:[_ticcount]
 mov   cx, ax
 sub   cx, word ptr ds:[_gametime + 0]
-test  cx, cx
 jle   exit_net_update
 mov   word ptr ds:[_gametime + 0], ax
-mov   word ptr ds:[_gametime + 2], dx
-xor   bx, bx
-test  cx, cx
-jle   exit_net_update
-mov   si, _gametic
-label_2:
+mov   word ptr ds:[_gametime + 2], es
+; cx has loopcount..
+loop_next_tic:
 call  I_StartTic_
 call  D_ProcessEvents_
-mov   dx, word ptr ds:[_maketic + 0]
-mov   ax, word ptr ds:[_maketic + 2]
-sub   dx, word ptr ds:[si]
-sbb   ax, word ptr ds:[si + 2]
-test  ax, ax
-jg    exit_net_update
-jne   label_1
-cmp   dx, 7
-jb    label_1
-exit_net_update:
-pop   si
-pop   dx
-pop   cx
-pop   bx
-retf  
-label_1:
-mov   al, byte ptr ds:[_maketic + 0]
-and   al, 0Fh
-cbw  
-call  G_BuildTiccmd_
-add   word ptr ds:[_maketic + 0], 1
-adc   word ptr ds:[_maketic + 2], 0
-inc   bx
-cmp   bx, cx
-jl    label_2
-pop   si
-pop   dx
-pop   cx
-pop   bx
-retf  
 
+;		if (maketic - gametic >= (BACKUPTICS / 2 - 1)) {
+;			break; // can't hold any more
+;		}
+
+mov   ax, word ptr ds:[_maketic + 0]
+mov   dx, ax
+sub   ax, word ptr ds:[_gametic]
+; fair to assume it wont overflow by 65535.
+cmp   ax, (BACKUPTICS / 2) - 1  ; 7
+jge   exit_net_update
+xchg  ax, dx ; recover maketic
+and   ax, 0000Fh
+call  G_BuildTiccmd_
+inc   word ptr ds:[_maketic + 0]
+jz    carry_add
+check_loop:
+loop  loop_next_tic
+exit_net_update:
+pop   dx
+pop   cx
+
+retf  
+carry_add:
+inc   word ptr ds:[_maketic + 2]
+jmp   check_loop
 ENDP
 
 
