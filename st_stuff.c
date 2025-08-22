@@ -648,8 +648,8 @@ void __near ST_drawWidgets() {
     }
 }
 
-void __near ST_Drawer(boolean fullscreen, boolean refresh) {
-    st_statusbaron = (!fullscreen) || automapactive;
+void __near ST_Drawer(boolean usefullscreen, boolean refresh) {
+    st_statusbaron = (!usefullscreen) || automapactive;
     st_firsttime = st_firsttime || refresh;
     updatedthisframe = false;
     // Do red-/gold-shifts from damage/items

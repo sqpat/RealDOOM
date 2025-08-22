@@ -530,7 +530,17 @@ _FastDiv3216u_addr =				 _NULL_OFFSET + 00720h
 _bulletslope = 			 			 _NULL_OFFSET + 00724h
 _weaponinfo = 			 			 _NULL_OFFSET + 00728h
 _G_ExitLevel_addr = 			 	 _NULL_OFFSET + 0078Ch
-;_w_title =							 _NULL_OFFSET + 00790h
+
+_gametime = 				         _NULL_OFFSET + 00790h
+_maketic = 				             _NULL_OFFSET + 00794h
+_starttime = 				         _NULL_OFFSET + 00798h
+_oldentertics =					     _NULL_OFFSET + 0079Ch
+_inhelpscreensstate =				 _NULL_OFFSET + 0079Eh
+_fullscreen =					     _NULL_OFFSET + 0079Fh
+
+
+; 7a0 to 7e7 empty
+
 _message_counter =					 _NULL_OFFSET + 007E8h
 
 _levelTimer =						 _NULL_OFFSET + 007E9h

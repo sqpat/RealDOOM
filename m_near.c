@@ -168,11 +168,8 @@ uint16_t			skytexture;
 
  
 int16_t             numflats;
-
 int16_t             numpatches;
-
 int16_t             numspritelumps;
-
 int16_t             numtextures;
 
  
@@ -394,11 +391,7 @@ boolean novideo; // if true, stay in text mode for debugging
 
 
 void (__interrupt __far_func *oldkeyboardisr) (void) = NULL;
-boolean             inhelpscreensstate = false;
-boolean             fullscreen = false;
 gamestate_t         oldgamestate = -1;
-ticcount_t maketic;
-ticcount_t gametime;
 
 uint8_t				numChannels;	
 
@@ -409,7 +402,6 @@ uint8_t				numChannels;
 boolean         	timingdemo;             // if true, exit with report on completion 
 //boolean         	nodrawers;              // for comparative timing purposes 
 boolean         	noblit;                 // for comparative timing purposes 
-ticcount_t      	starttime;              // for comparative timing purposes       
  
  
 
@@ -674,7 +666,6 @@ int16_t	maxammo[NUMAMMO] = {200, 50, 300, 50};
 
 // cached 'last used' mobjs for functions that operate on a mobj and where the mobj is often used right after. 
 
-uint16_t oldentertics;
 
    
 

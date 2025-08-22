@@ -25,11 +25,9 @@ EXTRN I_StartTic_: NEAR
 EXTRN M_Ticker_:NEAR
 EXTRN G_Ticker_:NEAR
 EXTRN D_DoAdvanceDemo_:NEAR
+
 .DATA
 
-EXTRN _gametime:DWORD
-EXTRN _maketic:DWORD
-EXTRN _oldentertics:WORD
 
 .CODE
 

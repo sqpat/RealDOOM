@@ -601,8 +601,15 @@
 #define G_ExitLevel_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x078C)))
 
 
-// 89 bytes
-// #define w_title 						  (*((hu_textline_t __near*)         (_NULL_OFFSET + 0x0790)))
+#define gametime 						  (*((ticcount_t __near*)            (_NULL_OFFSET + 0x0790)))
+#define maketic 						  (*((ticcount_t __near*)            (_NULL_OFFSET + 0x0794)))
+#define starttime 						  (*((ticcount_t __near*)            (_NULL_OFFSET + 0x0798)))
+#define oldentertics					  (*((uint16_t __near*)              (_NULL_OFFSET + 0x079C)))
+#define inhelpscreensstate				  (*((boolean __near*)               (_NULL_OFFSET + 0x079E)))
+#define fullscreen						  (*((boolean __near*)               (_NULL_OFFSET + 0x079F)))
+
+// 7A0 to 7E8 empty
+
 #define message_counter					  (*((uint8_t    __near*)            (_NULL_OFFSET + 0x07E8)))
 
 #define levelTimer                   	  (*((boolean    __near*)            (_NULL_OFFSET + 0x07E9)))
@@ -908,12 +915,8 @@ extern boolean novideo; // if true, stay in text mode for debugging
 #define KBDQUESIZE 32
 
 extern void (__interrupt __far_func *oldkeyboardisr) (void);
-extern boolean             inhelpscreensstate;
-extern boolean             fullscreen;
 extern gamestate_t         oldgamestate;
 
-extern ticcount_t maketic;
-extern ticcount_t gametime;
 
 extern uint8_t			numChannels;	
 
@@ -925,7 +928,6 @@ extern uint8_t			numChannels;
 
 extern boolean         	  timingdemo;             // if true, exit with report on completion 
 extern boolean         	  noblit;                 // for comparative timing purposes 
-extern ticcount_t         starttime;              // for comparative timing purposes       
 
 
 
@@ -1088,7 +1090,6 @@ extern uint16_t armsbgarray[1];
 extern int16_t	maxammo[NUMAMMO];
 
 
-extern uint16_t oldentertics;
 
    
 
