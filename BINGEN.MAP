@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/22 12:00:27
+Created on:       25/08/22 12:23:18
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -542,8 +542,8 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 0000:8df0*     WI_loadData_
 0000:8a38*     WI_updateShowNextLoc_
 0000:8843*     WI_initAnimatedBack_
-0000:882f*     WI_initShowNextLoc_
 0000:8605*     WI_drawLF_
+0000:882f*     WI_initShowNextLoc_
 0000:8f7c*     G_WorldDone_
 0000:8b19*     WI_updateStats_
 0000:87cd*     WI_drawAnimatedBack_
@@ -591,9 +591,9 @@ Module: main.obj(main.ASM)
 0000:a5c2*     I_UpdateBox_
 0000:9bc5*     G_SetGameKeyUp_
 0000:a9b2      makethreecharint_
-0000:a1be      M_LoadDefaults_
 0000:a8fa*     locallib_printstringnear_
 0000:a7cb      locallib_printhex_
+0000:a1be      M_LoadDefaults_
 0000:a7be      locallib_putchar_
 0000:97f1*     D_MAIN_STARTMARKER_
 0000:98ae      I_KeyboardISR_
@@ -795,8 +795,8 @@ Module: z_zone.obj(z_zone.ASM)
 Module: m_menu.obj(m_menu.ASM)
 0f6a:0ca9*     M_StringHeight_
 0f6a:0c6d*     M_StringWidth_
-0f6a:054d*     M_SaveSelect_
 0f6a:0b77*     M_ChangeDetail_
+0f6a:054d*     M_SaveSelect_
 0f6a:0375*     M_DrawLoad_
 0f6a:12d7*     M_MakeSaveGameName_
 0f6a:0438*     M_LoadGame_
@@ -823,10 +823,10 @@ Module: m_menu.obj(m_menu.ASM)
 0f6a:05f0*     M_QuickSaveResponse_
 0f6a:0856*     M_DrawNewGame_
 0f6a:07a9*     M_Sound_
-0f6a:0cd9*     M_WriteText_
 0f6a:1064      M_Drawer_
 0f6a:13b9*     M_Z_QuickmapStatus_
 0f6a:0a62*     M_ReadThis_
+0f6a:0cd9*     M_WriteText_
 0f6a:0918*     M_Episode_
 0f6a:0607*     M_QuickSave_
 0f6a:09ff*     M_EndGameResponse_
@@ -886,8 +886,8 @@ Module: f_finale.obj(f_finale.ASM)
 Module: p_saveg.obj(p_saveg.ASM)
 11b6:02bf      P_UnArchiveThinkers_
 11b6:0b35      P_SAVEG_ENDMARKER_
-11b6:043b      P_UnArchiveSpecials_
 11b6:0000      P_SAVEG_STARTMARKER_
+11b6:043b      P_UnArchiveSpecials_
 11b6:0176      P_UnArchiveWorld_
 11b6:0791      P_ArchiveWorld_
 11b6:09ee      P_ArchiveSpecials_
@@ -908,8 +908,8 @@ Module: sm_opl2.obj(sm_opl2.ASM)
 126a:0ec0*     OPLchangeSystemVolume_OPL2_
 126a:0929*     OPLresumeMusic_OPL2_
 126a:089d*     OPL2detectHardware_OPL2_
-126a:0e80*     OPLplayMusic_OPL2_
 126a:0000      SM_OPL2_STARTMARKER_
+126a:0e80*     OPLplayMusic_OPL2_
 Module: sm_opl3.obj(sm_opl3.ASM)
 126a:1931*     OPLpauseMusic_OPL3_
 126a:1ca0*     OPLreleaseNote_OPL3_
@@ -1125,8 +1125,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2fb6:4954*     A_PosAttack_
 2fb6:4782*     A_Chase_
 2fb6:4b2b*     A_BspiAttack_
-2fb6:5775*     A_BrainPain_
 2fb6:4257*     P_CheckMissileRange_
+2fb6:5775*     A_BrainPain_
 2fb6:48e6*     A_FaceTarget_
 2fb6:4b89*     A_SargAttack_
 2fb6:51f9*     GetVileMomz_
@@ -1145,8 +1145,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2fb6:5575*     A_Scream_
 2fb6:41f8*     P_CheckMeleeRange_
 2fb6:570a*     A_Hoof_
-2fb6:5375*     A_FatAttack2_
 2fb6:4135*     P_RecursiveSound_
+2fb6:5375*     A_FatAttack2_
 2fb6:4c51*     A_SkelMissile_
 2fb6:535a*     A_FatAttack1_
 2fb6:52f6*     A_FatAttack3_
@@ -1173,8 +1173,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2fb6:50d5*     A_StartFire_
 2fb6:4c9d*     A_Tracer_
 2fb6:5390*     A_SkullAttack_
-2fb6:4a9f*     A_CPosRefire_
 2fb6:4118*     P_ENEMY_STARTMARKER_
+2fb6:4a9f*     A_CPosRefire_
 2fb6:4b44*     A_TroopAttack_
 2fb6:555e*     A_PainAttack_
 2fb6:5728*     A_BrainAwake_
@@ -1600,4 +1600,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003f690 (259728.)
 Entry point address: 2fb6:980e
-Link time: 00:00.95
+Link time: 00:00.94
