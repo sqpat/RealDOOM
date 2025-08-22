@@ -267,7 +267,8 @@ _I_SetPalette_addr = 	        	 _NULL_OFFSET + 00208h
 
 
 _V_MarkRect_addr =                   _NULL_OFFSET + 0020Ch
-;_M_Drawer_addr =                     _NULL_OFFSET + 00210h
+_R_SetViewSize_addr =     	    	 _NULL_OFFSET + 00210h
+
 
 _wipeduration =                      _NULL_OFFSET + 00214h
 _detailshift2minus =  		 		 _NULL_OFFSET + 00216h
@@ -291,303 +292,296 @@ _lastvisspritepatch =                _NULL_OFFSET + 00298h
 _lastvisspritepatch2 =               _NULL_OFFSET + 0029Ah
 _ds_p =               				 _NULL_OFFSET + 0029Ch
 
-_olddb =							_NULL_OFFSET + 002A0h
-_detailshift = 						_NULL_OFFSET + 002B0h
-_detailshiftitercount = 			_NULL_OFFSET + 002B2h
-_detailshiftandval = 				_NULL_OFFSET + 002B4h
-_ceilphyspage =                  	_NULL_OFFSET + 002B6h
-_floorphyspage =                 	_NULL_OFFSET + 002B7h
-_gameaction =                 		_NULL_OFFSET + 002B8h
-_viewactive =                 		_NULL_OFFSET + 002B9h
-_automapactive =                 	_NULL_OFFSET + 002BAh
-_commercial =                 		_NULL_OFFSET + 002BBh
-_registered =                 		_NULL_OFFSET + 002BCh
-_shareware =                 		_NULL_OFFSET + 002BDh
-_ds_colormap_index = 				_NULL_OFFSET + 002BEh
-_fixedcolormap = 					_NULL_OFFSET + 002BFh
-
-
-
+_olddb =							 _NULL_OFFSET + 002A0h
+_detailshift = 						 _NULL_OFFSET + 002B0h
+_detailshiftitercount = 			 _NULL_OFFSET + 002B2h
+_detailshiftandval = 				 _NULL_OFFSET + 002B4h
+_ceilphyspage =                  	 _NULL_OFFSET + 002B6h
+_floorphyspage =                 	 _NULL_OFFSET + 002B7h
+_gameaction =                 		 _NULL_OFFSET + 002B8h
+_viewactive =                 		 _NULL_OFFSET + 002B9h
+_automapactive =                 	 _NULL_OFFSET + 002BAh
+_commercial =                 		 _NULL_OFFSET + 002BBh
+_registered =                 		 _NULL_OFFSET + 002BCh
+_shareware =                 		 _NULL_OFFSET + 002BDh
+_ds_colormap_index = 				 _NULL_OFFSET + 002BEh
+_fixedcolormap = 					 _NULL_OFFSET + 002BFh
 _FixedMul_addr =               		 _NULL_OFFSET + 002C0h
 _FixedDiv_addr =                     _NULL_OFFSET + 002C4h
-_mus_playing =    			      	 _NULL_OFFSET + 002C8h
-_mus_paused =    			      	 _NULL_OFFSET + 002C9h
-_sendpause =    			      	 _NULL_OFFSET + 002CAh
-_sendsave =    			      	 	_NULL_OFFSET + 002CBh
-
+_mus_playing =    			     	 _NULL_OFFSET + 002C8h
+_mus_paused =    			     	 _NULL_OFFSET + 002C9h
+_sendpause =    			    	 _NULL_OFFSET + 002CAh
+_sendsave =    			      	 	 _NULL_OFFSET + 002CBh
 _R_GetCompositeTexture_addr =        _NULL_OFFSET + 002CCh
 
- 
-;_w_message =					     _NULL_OFFSET + 002D0h
-; 435 to 438 probably free?
-_columnquality =              	     _NULL_OFFSET + 00439h
-_useDeadAttackerRef =              	 _NULL_OFFSET + 0043Ah
-_paused	=						     _NULL_OFFSET + 0043Bh
-_menuactive	=					     _NULL_OFFSET + 0043Ch
-_demoplayback =					     _NULL_OFFSET + 0043Dh
+_sb_voicelist =	 	  			   	 _NULL_OFFSET + 002D0h
+_savename = 	      			     _NULL_OFFSET + 00310h
+
+_fopen_addr =     			         _NULL_OFFSET + 00320h
+_fseek_addr =     			         _NULL_OFFSET + 00324h
+_fread_addr =     			         _NULL_OFFSET + 00328h
+_fclose_addr =    			         _NULL_OFFSET + 0032Ch
+_locallib_far_fread_addr =    		 _NULL_OFFSET + 00330h
+_S_InitSFXCache_addr =     	    	 _NULL_OFFSET + 00334h
 
 
 
-; 43e to 43F free
+_demoplayback =					     _NULL_OFFSET + 00338h
+_columnquality =              	     _NULL_OFFSET + 00339h
+_useDeadAttackerRef =              	 _NULL_OFFSET + 0033Ah
+_paused	=						     _NULL_OFFSET + 0033Bh
+_menuactive	=					     _NULL_OFFSET + 0033Ch
 
-_psprites =              			 _NULL_OFFSET + 00440h
-_vga_read_port_lookup =              _NULL_OFFSET + 00458h
-_vissprite_p =                       _NULL_OFFSET + 00470h
+; 33d to 33F free
+
+_psprites =              			 _NULL_OFFSET + 00340h
+_vga_read_port_lookup =              _NULL_OFFSET + 00358h
+_vissprite_p =                       _NULL_OFFSET + 00370h
 ; high byte always 0
-_cachedbyteheight =                  _NULL_OFFSET + 00472h
-_currentMusPage = 					 _NULL_OFFSET + 00474h
-_snd_MusicVolume =                   _NULL_OFFSET + 00475h
-_gameepisode = 						 _NULL_OFFSET + 00476h
-_gamemap = 							 _NULL_OFFSET + 00477h
-_savedescription =                   _NULL_OFFSET + 00478h
-_demoname =                          _NULL_OFFSET + 00498h
-_ems_backfill_page_order =           _NULL_OFFSET + 004B8h
-_LINEFLAGSLIST_SEGMENT_PTR =         _NULL_OFFSET + 004D0h
-_currentThinkerListHead = 			 _NULL_OFFSET + 004D2h
+_cachedbyteheight =                  _NULL_OFFSET + 00372h
+_currentMusPage = 					 _NULL_OFFSET + 00374h
+_snd_MusicVolume =                   _NULL_OFFSET + 00375h
+_gameepisode = 						 _NULL_OFFSET + 00376h
+_gamemap = 							 _NULL_OFFSET + 00377h
+_savedescription =                   _NULL_OFFSET + 00378h
+_demoname =                          _NULL_OFFSET + 00398h
+_ems_backfill_page_order =           _NULL_OFFSET + 003B8h
+_LINEFLAGSLIST_SEGMENT_PTR =         _NULL_OFFSET + 003D0h
+_currentThinkerListHead = 			 _NULL_OFFSET + 003D2h
 
-_S_StartSoundWithSecnum_addr =       _NULL_OFFSET + 004D4h
-_G_SecretExitLevel_addr =            _NULL_OFFSET + 004D8h
-_AM_Stop_addr =		                 _NULL_OFFSET + 004DCh
-
-
-_braintargets =                      _NULL_OFFSET + 004E0h
-_tmbbox =                            _NULL_OFFSET + 00520h
-
-_SECTORS_SEGMENT_PTR =               _NULL_OFFSET + 00530h
-_LINES_PHYSICS_SEGMENT_PTR =         _NULL_OFFSET + 00532h
-
-_HU_Start_addr = 			 	 	 _NULL_OFFSET + 00534h
-_ST_Start_addr = 			 	 	 _NULL_OFFSET + 00538h
-
-_pcspeaker_currentoffset = 			 _NULL_OFFSET + 0053Ch
-_pcspeaker_endoffset = 			 	 _NULL_OFFSET + 0053Eh
-
-_G_PlayerReborn_addr =	 	 		 _NULL_OFFSET + 00540h
-_FixedMulTrigSpeedNoShift_addr =	 _NULL_OFFSET + 00544h
-_FixedMulTrigSpeed_addr =			 _NULL_OFFSET + 00548h
-_FixedMulTrig_addr = 			 	 _NULL_OFFSET + 0054Ch
-_G_DeferedInitNew_addr = 			 _NULL_OFFSET + 00550h
+_S_StartSoundWithSecnum_addr =       _NULL_OFFSET + 003D4h
+_G_SecretExitLevel_addr =            _NULL_OFFSET + 003D8h
+_AM_Stop_addr =		                 _NULL_OFFSET + 003DCh
 
 
-_V_DrawPatch_addr =              	 _NULL_OFFSET + 00554h
-;_locallib_toupper_addr =             _NULL_OFFSET + 00558h
-_S_ChangeMusic_addr =              	 _NULL_OFFSET + 0055Ch
-_V_DrawFullscreenPatch_addr =        _NULL_OFFSET + 00560h
-_getStringByIndex_addr =             _NULL_OFFSET + 00564h
-;_locallib_strlen_addr =              _NULL_OFFSET + 00568h
-_FixedMulTrigNoShift_addr =          _NULL_OFFSET + 0056Ch
-_R_PointToAngle2_16_addr =           _NULL_OFFSET + 00570h
-_R_PointToAngle2_addr =              _NULL_OFFSET + 00574h
+_braintargets =                      _NULL_OFFSET + 003E0h
+_tmbbox =                            _NULL_OFFSET + 00420h
+
+_SECTORS_SEGMENT_PTR =               _NULL_OFFSET + 00430h
+_LINES_PHYSICS_SEGMENT_PTR =         _NULL_OFFSET + 00432h
+
+_HU_Start_addr = 			 	 	 _NULL_OFFSET + 00434h
+_ST_Start_addr = 			 	 	 _NULL_OFFSET + 00438h
+
+_pcspeaker_currentoffset = 			 _NULL_OFFSET + 0043Ch
+_pcspeaker_endoffset = 			 	 _NULL_OFFSET + 0043Eh
+
+_G_PlayerReborn_addr =	 	 		 _NULL_OFFSET + 00440h
+_FixedMulTrigSpeedNoShift_addr =	 _NULL_OFFSET + 00444h
+_FixedMulTrigSpeed_addr =			 _NULL_OFFSET + 00448h
+_FixedMulTrig_addr = 			 	 _NULL_OFFSET + 0044Ch
+_G_DeferedInitNew_addr = 			 _NULL_OFFSET + 00450h
 
 
-_W_CacheLumpNameDirect_addr =        _NULL_OFFSET + 00578h
-_W_CacheLumpNumDirectFragment_addr = _NULL_OFFSET + 0057Ch
-_W_GetNumForName_addr =              _NULL_OFFSET + 00580h
-_S_StartSound_addr =                 _NULL_OFFSET + 00584h
-_S_StartMusic_addr =             	 _NULL_OFFSET + 00588h
+_V_DrawPatch_addr =              	 _NULL_OFFSET + 00454h
+;_locallib_toupper_addr =             _NULL_OFFSET + 00458h
+_S_ChangeMusic_addr =              	 _NULL_OFFSET + 0045Ch
+_V_DrawFullscreenPatch_addr =        _NULL_OFFSET + 00460h
+_getStringByIndex_addr =             _NULL_OFFSET + 00464h
+;_locallib_strlen_addr =              _NULL_OFFSET + 00468h
+_FixedMulTrigNoShift_addr =          _NULL_OFFSET + 0046Ch
+_R_PointToAngle2_16_addr =           _NULL_OFFSET + 00470h
+_R_PointToAngle2_addr =              _NULL_OFFSET + 00474h
+
+
+_W_CacheLumpNameDirect_addr =        _NULL_OFFSET + 00478h
+_W_CacheLumpNumDirectFragment_addr = _NULL_OFFSET + 0047Ch
+_W_GetNumForName_addr =              _NULL_OFFSET + 00480h
+_S_StartSound_addr =                 _NULL_OFFSET + 00484h
+_S_StartMusic_addr =             	 _NULL_OFFSET + 00488h
 
 ; 13 bytes in length
-_filename_argument = 				 _NULL_OFFSET + 0058Ch
+_filename_argument = 				 _NULL_OFFSET + 0048Ch
 
-_rndindex = 						 _NULL_OFFSET + 00599h
-_fopen_r_argument = 				 _NULL_OFFSET + 0059Ah
-_fopen_w_argument = 				 _NULL_OFFSET + 0059Ch
+_rndindex = 						 _NULL_OFFSET + 00499h
+_fopen_r_argument = 				 _NULL_OFFSET + 0049Ah
+_fopen_w_argument = 				 _NULL_OFFSET + 0049Ch
 
-_numsectors =						 _NULL_OFFSET + 0059Eh
-_numlines =						     _NULL_OFFSET + 005A0h
-_numvertexes =						 _NULL_OFFSET + 005A2h
-_numsegs =						     _NULL_OFFSET + 005A4h
-_numsubsectors =				     _NULL_OFFSET + 005A6h
-_numnodes =						 	 _NULL_OFFSET + 005A8h
-_numsides =						 	 _NULL_OFFSET + 005AAh
-_bmapwidth =						 _NULL_OFFSET + 005ACh
-_bmapheight =						 _NULL_OFFSET + 005AEh
-_bmaporgx =						 	 _NULL_OFFSET + 005B0h
-_bmaporgy =				             _NULL_OFFSET + 005B2h
+_numsectors =						 _NULL_OFFSET + 0049Eh
+_numlines =						     _NULL_OFFSET + 004A0h
+_numvertexes =						 _NULL_OFFSET + 004A2h
+_numsegs =						     _NULL_OFFSET + 004A4h
+_numsubsectors =				     _NULL_OFFSET + 004A6h
+_numnodes =						 	 _NULL_OFFSET + 004A8h
+_numsides =						 	 _NULL_OFFSET + 004AAh
+_bmapwidth =						 _NULL_OFFSET + 004ACh
+_bmapheight =						 _NULL_OFFSET + 004AEh
+_bmaporgx =						 	 _NULL_OFFSET + 004B0h
+_bmaporgy =				             _NULL_OFFSET + 004B2h
 
-_I_Error_addr =                      _NULL_OFFSET + 005B4h
-_P_InitThinkers_addr =               _NULL_OFFSET + 005B8h
+_I_Error_addr =                      _NULL_OFFSET + 004B4h
+_P_InitThinkers_addr =               _NULL_OFFSET + 004B8h
 
-_snd_DesiredSfxDevice =              _NULL_OFFSET + 005BCh
-_snd_DesiredMusicDevice =            _NULL_OFFSET + 005BDh
-_snd_SBirq =              			 _NULL_OFFSET + 005BEh
-_snd_SBdma =              			 _NULL_OFFSET + 005BFh
-
-
-_S_StopSoundMobjRef_addr =           _NULL_OFFSET + 005C0h
-_R_DrawSkyPlaneDynamic_addr =  	     _NULL_OFFSET + 005C4h
-_snd_SBport =                        _NULL_OFFSET + 005C8h
-_snd_Mport =                         _NULL_OFFSET + 005CAh
-_I_Quit_addr = 			             _NULL_OFFSET + 005CCh
-
-_tallnum =              			 _NULL_OFFSET + 005D0h
-_shortnum =              			 _NULL_OFFSET + 005E4h
-_am_buffer =             			 _NULL_OFFSET + 005F8h
-
-_Z_SetOverlay_addr =                 _NULL_OFFSET + 0060Ch
-_W_LumpLength_addr =                 _NULL_OFFSET + 00610h
-
-_playingdriver =                     _NULL_OFFSET + 00614h
-_currentsong_start_offset =          _NULL_OFFSET + 00618h
-_currentsong_playing_offset =        _NULL_OFFSET + 0061Ah
-_currentsong_ticks_to_process =      _NULL_OFFSET + 0061Ch
-_loops_enabled =    			     _NULL_OFFSET + 0061Eh
-_inhelpscreens =    			     _NULL_OFFSET + 0061Fh
-_Z_QuickMapMusicPageFrame_addr = 	 _NULL_OFFSET + 00620h
-
-_sightzstart =				         _NULL_OFFSET + 00624h
-_topslope =				         	 _NULL_OFFSET + 00628h
-_bottomslope =					     _NULL_OFFSET + 0062Ch
-_cachedt2x =				         _NULL_OFFSET + 00630h
-_cachedt2y =					     _NULL_OFFSET + 00634h
-_strace =					         _NULL_OFFSET + 00638h
-_sfx_free_bytes = 					 _NULL_OFFSET + 00648h
+_snd_DesiredSfxDevice =              _NULL_OFFSET + 004BCh
+_snd_DesiredMusicDevice =            _NULL_OFFSET + 004BDh
+_snd_SBirq =              			 _NULL_OFFSET + 004BEh
+_snd_SBdma =              			 _NULL_OFFSET + 004BFh
 
 
-_activespritepages =                 _NULL_OFFSET + 00670h
-_activespritenumpages =              _NULL_OFFSET + 00674h
-_spriteL1LRU =                 		 _NULL_OFFSET + 00678h
-_spritecache_l2_head =               _NULL_OFFSET + 0067Ch
-_spritecache_l2_tail =               _NULL_OFFSET + 0067Dh
-_texturecache_l2_head =              _NULL_OFFSET + 0067Eh
-_texturecache_l2_tail =              _NULL_OFFSET + 0067Fh
-_activetexturepages =                _NULL_OFFSET + 00680h
-_activenumpages =                 	 _NULL_OFFSET + 00688h
-_textureL1LRU =                 	 _NULL_OFFSET + 00690h
-_cachedsegmentlumps =                _NULL_OFFSET + 00698h
-_cachedlumps =                 	     _NULL_OFFSET + 006A0h
-_cachedtex =                 		 _NULL_OFFSET + 006A8h
-_cachedcollength =                   _NULL_OFFSET + 006ACh
-_flatcache_l2_head =                 _NULL_OFFSET + 006AEh
-_flatcache_l2_tail =                 _NULL_OFFSET + 006AFh
-_segloopprevlookup =                 _NULL_OFFSET + 006B0h
-_segloopcachedbasecol =              _NULL_OFFSET + 006B4h
-_cachedsegmenttex =                  _NULL_OFFSET + 006B8h
-_playerMobj =                   	 _NULL_OFFSET + 006BCh
-_ceilinglinenum =                    _NULL_OFFSET + 006BEh
+_S_StopSoundMobjRef_addr =           _NULL_OFFSET + 004C0h
+_R_DrawSkyPlaneDynamic_addr =  	     _NULL_OFFSET + 004C4h
+_snd_SBport =                        _NULL_OFFSET + 004C8h
+_snd_Mport =                         _NULL_OFFSET + 004CAh
+_I_Quit_addr = 			             _NULL_OFFSET + 004CCh
 
-_lineopening =				         _NULL_OFFSET + 006C0h
+_tallnum =              			 _NULL_OFFSET + 004D0h
+_shortnum =              			 _NULL_OFFSET + 004E4h
+_am_buffer =             			 _NULL_OFFSET + 004F8h
 
-_playerMobjRef =				     _NULL_OFFSET + 006C6h
-_intercept_p =				         _NULL_OFFSET + 006C8h
-_aimslope = 				         _NULL_OFFSET + 006CCh
-_bestslidefrac =				     _NULL_OFFSET + 006D0h
-_bestslidelinenum =				     _NULL_OFFSET + 006D4h
-_numspechit =				         _NULL_OFFSET + 006D6h
-_lastcalculatedsector =				 _NULL_OFFSET + 006D8h
+_Z_SetOverlay_addr =                 _NULL_OFFSET + 0050Ch
+_W_LumpLength_addr =                 _NULL_OFFSET + 00510h
 
-_shootthing =				 		 _NULL_OFFSET + 006DAh
-_shootz =				 			 _NULL_OFFSET + 006DCh
-_la_damage = 		   			     _NULL_OFFSET + 006E0h
+_playingdriver =                     _NULL_OFFSET + 00514h
+_currentsong_start_offset =          _NULL_OFFSET + 00518h
+_currentsong_playing_offset =        _NULL_OFFSET + 0051Ah
+_currentsong_ticks_to_process =      _NULL_OFFSET + 0051Ch
+_loops_enabled =    			     _NULL_OFFSET + 0051Eh
+_inhelpscreens =    			     _NULL_OFFSET + 0051Fh
+_Z_QuickMapMusicPageFrame_addr = 	 _NULL_OFFSET + 00520h
 
-_linetarget = 		   			     _NULL_OFFSET + 006E2h
-_linetarget_pos = 		   			 _NULL_OFFSET + 006E4h
-_attackrange16 = 		   			 _NULL_OFFSET + 006E8h
-_usergame =		   		         	 _NULL_OFFSET + 006EAh
-_crushchange = 		   			 	 _NULL_OFFSET + 006EBh
-_leveltime =     		   			 _NULL_OFFSET + 006ECh
-_fopen_rb_argument =                 _NULL_OFFSET + 006F0h
-_currenttask =            		     _NULL_OFFSET + 006F3h
-
-_R_DrawSkyPlane_addr =               _NULL_OFFSET + 006F4h
-_OutOfThinkers_addr =                _NULL_OFFSET + 006F8h
-_FastDiv32u16u_addr =                _NULL_OFFSET + 006FCh
+_sightzstart =				         _NULL_OFFSET + 00524h
+_topslope =				         	 _NULL_OFFSET + 00528h
+_bottomslope =					     _NULL_OFFSET + 0052Ch
+_cachedt2x =				         _NULL_OFFSET + 00530h
+_cachedt2y =					     _NULL_OFFSET + 00534h
+_strace =					         _NULL_OFFSET + 00538h
+_sfx_free_bytes = 					 _NULL_OFFSET + 00548h
 
 
-_playerMobj_pos =		         	 _NULL_OFFSET + 00700h
-_MOBJPOSLIST_6800_SEGMENT_PTR =      _NULL_OFFSET + 00702h
-_setStateReturn_pos =		         _NULL_OFFSET + 00704h
-_gametic =						     _NULL_OFFSET + 00708h
-_clipangle =				         _NULL_OFFSET + 0070Ch
-_fieldofview =				         _NULL_OFFSET + 0070Eh
+_activespritepages =                 _NULL_OFFSET + 00570h
+_activespritenumpages =              _NULL_OFFSET + 00574h
+_spriteL1LRU =                 		 _NULL_OFFSET + 00578h
+_spritecache_l2_head =               _NULL_OFFSET + 0057Ch
+_spritecache_l2_tail =               _NULL_OFFSET + 0057Dh
+_texturecache_l2_head =              _NULL_OFFSET + 0057Eh
+_texturecache_l2_tail =              _NULL_OFFSET + 0057Fh
+_activetexturepages =                _NULL_OFFSET + 00580h
+_activenumpages =                 	 _NULL_OFFSET + 00588h
+_textureL1LRU =                 	 _NULL_OFFSET + 00590h
+_cachedsegmentlumps =                _NULL_OFFSET + 00598h
+_cachedlumps =                 	     _NULL_OFFSET + 005A0h
+_cachedtex =                 		 _NULL_OFFSET + 005A8h
+_cachedcollength =                   _NULL_OFFSET + 005ACh
+_flatcache_l2_head =                 _NULL_OFFSET + 005AEh
+_flatcache_l2_tail =                 _NULL_OFFSET + 005AFh
+_segloopprevlookup =                 _NULL_OFFSET + 005B0h
+_segloopcachedbasecol =              _NULL_OFFSET + 005B4h
+_cachedsegmenttex =                  _NULL_OFFSET + 005B8h
+_playerMobj =                   	 _NULL_OFFSET + 005BCh
+_ceilinglinenum =                    _NULL_OFFSET + 005BEh
 
-_solidsegs = 			         	 _NULL_OFFSET + 00710h
-_newend = 				         	 _NULL_OFFSET + 00790h
-_pspritescale = 		         	 _NULL_OFFSET + 00792h
-_spritewidths_segment =              _NULL_OFFSET + 00794h
-_r_cachedplayerMobjsecnum = 		 _NULL_OFFSET + 00796h
-_scaledviewwidth = 					 _NULL_OFFSET + 00798h
-_viewwindowoffset = 				 _NULL_OFFSET + 0079Ah
-_pendingdetail = 				 	 _NULL_OFFSET + 0079Ch
-_setsizeneeded = 				 	 _NULL_OFFSET + 0079Eh
-_setblocks = 					 	 _NULL_OFFSET + 0079Fh
-_player = 						 	 _NULL_OFFSET + 007A0h
-_skyquality =  					 	 _NULL_OFFSET + 00803h
-_viewwindowx = 					 	 _NULL_OFFSET + 00804h
-_viewwindowy = 					 	 _NULL_OFFSET + 00806h
-_R_DrawPlanesCall = 	    	 	 _NULL_OFFSET + 00808h
-_R_DrawMaskedCall = 			 	 _NULL_OFFSET + 0080Ch
-_R_WriteBackMaskedFrameConstantsCall =  _NULL_OFFSET + 00810h
-_NetUpdate_addr =					 _NULL_OFFSET + 00814h
+_lineopening =				         _NULL_OFFSET + 005C0h
 
-_FixedMul16u32_addr =				 _NULL_OFFSET + 00818h
-_FastMul16u32u_addr =				 _NULL_OFFSET + 0081Ch
-_FastDiv3216u_addr =				 _NULL_OFFSET + 00820h
-_bulletslope = 			 			 _NULL_OFFSET + 00824h
-_weaponinfo = 			 			 _NULL_OFFSET + 00828h
-_G_ExitLevel_addr = 			 	 _NULL_OFFSET + 0088Ch
-;_w_title =							 _NULL_OFFSET + 00890h
-_message_counter =					 _NULL_OFFSET + 008E8h
+_playerMobjRef =				     _NULL_OFFSET + 005C6h
+_intercept_p =				         _NULL_OFFSET + 005C8h
+_aimslope = 				         _NULL_OFFSET + 005CCh
+_bestslidefrac =				     _NULL_OFFSET + 005D0h
+_bestslidelinenum =				     _NULL_OFFSET + 005D4h
+_numspechit =				         _NULL_OFFSET + 005D6h
+_lastcalculatedsector =				 _NULL_OFFSET + 005D8h
 
-_levelTimer =						 _NULL_OFFSET + 008E9h
-_numlinespecials =					 _NULL_OFFSET + 008EAh
+_shootthing =				 		 _NULL_OFFSET + 005DAh
+_shootz =				 			 _NULL_OFFSET + 005DCh
+_la_damage = 		   			     _NULL_OFFSET + 005E0h
+
+_linetarget = 		   			     _NULL_OFFSET + 005E2h
+_linetarget_pos = 		   			 _NULL_OFFSET + 005E4h
+_attackrange16 = 		   			 _NULL_OFFSET + 005E8h
+_usergame =		   		         	 _NULL_OFFSET + 005EAh
+_crushchange = 		   			 	 _NULL_OFFSET + 005EBh
+_leveltime =     		   			 _NULL_OFFSET + 005ECh
+_fopen_rb_argument =                 _NULL_OFFSET + 005F0h
+_currenttask =            		     _NULL_OFFSET + 005F3h
+
+_R_DrawSkyPlane_addr =               _NULL_OFFSET + 005F4h
+_OutOfThinkers_addr =                _NULL_OFFSET + 005F8h
+_FastDiv32u16u_addr =                _NULL_OFFSET + 005FCh
+
+
+_playerMobj_pos =		         	 _NULL_OFFSET + 00600h
+_MOBJPOSLIST_6800_SEGMENT_PTR =      _NULL_OFFSET + 00602h
+_setStateReturn_pos =		         _NULL_OFFSET + 00604h
+_gametic =						     _NULL_OFFSET + 00608h
+_clipangle =				         _NULL_OFFSET + 0060Ch
+_fieldofview =				         _NULL_OFFSET + 0060Eh
+
+_solidsegs = 			         	 _NULL_OFFSET + 00610h
+_newend = 				         	 _NULL_OFFSET + 00690h
+_pspritescale = 		         	 _NULL_OFFSET + 00692h
+_spritewidths_segment =              _NULL_OFFSET + 00694h
+_r_cachedplayerMobjsecnum = 		 _NULL_OFFSET + 00696h
+_scaledviewwidth = 					 _NULL_OFFSET + 00698h
+_viewwindowoffset = 				 _NULL_OFFSET + 0069Ah
+_pendingdetail = 				 	 _NULL_OFFSET + 0069Ch
+_setsizeneeded = 				 	 _NULL_OFFSET + 0069Eh
+_setblocks = 					 	 _NULL_OFFSET + 0069Fh
+_player = 						 	 _NULL_OFFSET + 006A0h
+_skyquality =  					 	 _NULL_OFFSET + 00703h
+_viewwindowx = 					 	 _NULL_OFFSET + 00704h
+_viewwindowy = 					 	 _NULL_OFFSET + 00706h
+_R_DrawPlanesCall = 	    	 	 _NULL_OFFSET + 00708h
+_R_DrawMaskedCall = 			 	 _NULL_OFFSET + 0070Ch
+_R_WriteBackMaskedFrameConstantsCall =  _NULL_OFFSET + 00710h
+_NetUpdate_addr =					 _NULL_OFFSET + 00714h
+
+_FixedMul16u32_addr =				 _NULL_OFFSET + 00718h
+_FastMul16u32u_addr =				 _NULL_OFFSET + 0071Ch
+_FastDiv3216u_addr =				 _NULL_OFFSET + 00720h
+_bulletslope = 			 			 _NULL_OFFSET + 00724h
+_weaponinfo = 			 			 _NULL_OFFSET + 00728h
+_G_ExitLevel_addr = 			 	 _NULL_OFFSET + 0078Ch
+;_w_title =							 _NULL_OFFSET + 00790h
+_message_counter =					 _NULL_OFFSET + 007E8h
+
+_levelTimer =						 _NULL_OFFSET + 007E9h
+_numlinespecials =					 _NULL_OFFSET + 007EAh
 ;3c or 60 bytes
-_activeceilings =                    _NULL_OFFSET + 008ECh
+_activeceilings =                    _NULL_OFFSET + 007ECh
 ;3c or 60 bytes
-_activeplats =                       _NULL_OFFSET + 00928h
+_activeplats =                       _NULL_OFFSET + 00828h
 ;24 or 36 bytes
-_buttonlist =                        _NULL_OFFSET + 00964h
-_levelTimeCount =				     _NULL_OFFSET + 00988h
-_lastanim =				             _NULL_OFFSET + 0098Ch
-_numswitches =						 _NULL_OFFSET + 0098Eh
-_anims =				     		 _NULL_OFFSET + 00990h
+_buttonlist =                        _NULL_OFFSET + 00864h
+_levelTimeCount =				     _NULL_OFFSET + 00888h
+_lastanim =				             _NULL_OFFSET + 0088Ch
+_numswitches =						 _NULL_OFFSET + 0088Eh
+_anims =				     		 _NULL_OFFSET + 00890h
 
-_switchlist =				         _NULL_OFFSET + 00A50h
-_skullAnimCounter =				     _NULL_OFFSET + 00B18h
-_whichSkull =				         _NULL_OFFSET + 00B1Ah
+_switchlist =				         _NULL_OFFSET + 00950h
+_skullAnimCounter =				     _NULL_OFFSET + 00A18h
+_whichSkull =				         _NULL_OFFSET + 00A1Ah
 
-_borderdrawcount =       		     _NULL_OFFSET + 00B1Ch
-_message_dontfuckwithme =            _NULL_OFFSET + 00B1Dh
-_message_on =     			         _NULL_OFFSET + 00B1Eh
-_message_nottobefuckedwith =         _NULL_OFFSET + 00B1Fh
+_borderdrawcount =       		     _NULL_OFFSET + 00A1Ch
+_message_dontfuckwithme =            _NULL_OFFSET + 00A1Dh
+_message_on =     			         _NULL_OFFSET + 00A1Eh
+_message_nottobefuckedwith =         _NULL_OFFSET + 00A1Fh
 
-_STRING_HELP1   =      				 _NULL_OFFSET + 00B20h
-_STRING_HELP2   =      				 _NULL_OFFSET + 00B26h
-_STRING_HELP    =      				 _NULL_OFFSET + 00B2Ch
+_STRING_HELP1   =      				 _NULL_OFFSET + 00A20h
+_STRING_HELP2   =      				 _NULL_OFFSET + 00A26h
+_STRING_HELP    =      				 _NULL_OFFSET + 00A2Ch
 
-_demosequence =	       		         _NULL_OFFSET + 00B31h
+_demosequence =	       		         _NULL_OFFSET + 00A31h
 
-_STRING_newline =                    _NULL_OFFSET + 00B32h
+_STRING_newline =                    _NULL_OFFSET + 00A32h
 
-_advancedemo =	       			     _NULL_OFFSET + 00B34h
-_usegamma =	       			         _NULL_OFFSET + 00B35h
-_sfxVolume =	       			     _NULL_OFFSET + 00B36h
-_musicVolume =	       			     _NULL_OFFSET + 00B37h
-_snd_SfxVolume =      			     _NULL_OFFSET + 00B38h
-_detailLevel =	       			     _NULL_OFFSET + 00B39h
-_screenSize =	       			     _NULL_OFFSET + 00B3Ah
-_mouseSensitivity =   			     _NULL_OFFSET + 00B3Bh
-_showMessages =       			     _NULL_OFFSET + 00B3Ch
-_quickSaveSlot =      			     _NULL_OFFSET + 00B3Dh
-_savegameslot =       			     _NULL_OFFSET + 00B3Eh
-_modifiedgame =       			     _NULL_OFFSET + 00B3Fh
-_savename = 	      			     _NULL_OFFSET + 00B40h
-_hu_font =	 	      			     _NULL_OFFSET + 00B50h
+_advancedemo =	       			     _NULL_OFFSET + 00A34h
+_usegamma =	       			         _NULL_OFFSET + 00A35h
+_sfxVolume =	       			     _NULL_OFFSET + 00A36h
+_musicVolume =	       			     _NULL_OFFSET + 00A37h
+_snd_SfxVolume =      			     _NULL_OFFSET + 00A38h
+_detailLevel =	       			     _NULL_OFFSET + 00A39h
+_screenSize =	       			     _NULL_OFFSET + 00A3Ah
+_mouseSensitivity =   			     _NULL_OFFSET + 00A3Bh
+_showMessages =       			     _NULL_OFFSET + 00A3Ch
+_quickSaveSlot =      			     _NULL_OFFSET + 00A3Dh
+_savegameslot =       			     _NULL_OFFSET + 00A3Eh
+_modifiedgame =       			     _NULL_OFFSET + 00A3Fh
+_hu_font =	 	      			     _NULL_OFFSET + 00A40h
 
 
-_viewactivestate =	 	     	     _NULL_OFFSET + 00BCEh
-_menuactivestate =	 	     	     _NULL_OFFSET + 00BCFh
-_sb_voicelist =	 	  			   	 _NULL_OFFSET + 00BD0h
+_viewactivestate =	 	     	     _NULL_OFFSET + 00ABEh
+_menuactivestate =	 	     	     _NULL_OFFSET + 00ABFh
 
-_fopen_addr =     			         _NULL_OFFSET + 00C10h
-_fseek_addr =     			         _NULL_OFFSET + 00C14h
-_fread_addr =     			         _NULL_OFFSET + 00C18h
-_fclose_addr =    			         _NULL_OFFSET + 00C1Ch
-_locallib_far_fread_addr =    		 _NULL_OFFSET + 00C20h
-_S_InitSFXCache_addr =     	    	 _NULL_OFFSET + 00C24h
-_R_SetViewSize_addr =     	    	 _NULL_OFFSET + 00C28h
-
-_flatcache_nodes =				     _NULL_OFFSET + 00C30h
+_flatcache_nodes =				     _NULL_OFFSET + 00AC0h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

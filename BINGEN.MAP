@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/22 11:06:51
+Created on:       25/08/22 12:00:27
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -44,8 +44,8 @@ m_misc_TEXT            CODE           AUTO           0000:5c30       000000d5
 am_map_TEXT            CODE           AUTO           0000:5d10       000012ad
 st_stuff_TEXT          CODE           AUTO           0000:6fc0       00000b87
 HU_STUFF_TEXT          CODE           AUTO           0000:7b48       00000183
-HU_LIB_TEXT            CODE           AUTO           0000:7ccc       00000140
-D_ALGO_TEXT            CODE           AUTO           0000:7e0c       0000008c
+HU_LIB_TEXT            CODE           AUTO           0000:7ccc       00000141
+D_ALGO_TEXT            CODE           AUTO           0000:7e0e       0000008c
 dmx_TEXT               CODE           AUTO           0000:7ea0       000001b8
 D_INT_TEXT             CODE           AUTO           0000:8058       00000176
 WI_STUFF_TEXT          CODE           AUTO           0000:81ce       00001009
@@ -490,17 +490,17 @@ Module: hu_stuff.obj(hu_stuff.ASM)
 0000:7bff      HU_Ticker_
 Module: hu_lib.obj(hu_lib.ASM)
 0000:7ccc*     HULIB_STARTMARKER_
-0000:7db9      HUlib_addMessageToSText_
-0000:7e0c*     HULIB_ENDMARKER_
-0000:7cf7      HUlib_drawTextLine_
-0000:7d4c      HUlib_eraseTextLine_
+0000:7dba      HUlib_addMessageToSText_
+0000:7e0d*     HULIB_ENDMARKER_
+0000:7cf8      HUlib_drawTextLine_
+0000:7d4d      HUlib_eraseTextLine_
 0000:7ccc      HUlib_addStringToTextLine_
 Module: d_algo.obj(d_algo.ASM)
-0000:7e7c      hackDSBack_
-0000:7e98*     D_ALGO_END_
-0000:7e35      zeroConventional_
-0000:7e0c      resetDS_
-0000:7e14*     hackDS_
+0000:7e7e      hackDSBack_
+0000:7e9a*     D_ALGO_END_
+0000:7e37      zeroConventional_
+0000:7e0e      resetDS_
+0000:7e16*     hackDS_
 Module: dmx.obj(C:\REALDOOM\dmx.c)
 0000:7ea0*     TS_SetTimerToMaxTaskRate_
 0000:7eb4+     playpcspeakernote_
@@ -542,9 +542,9 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 0000:8df0*     WI_loadData_
 0000:8a38*     WI_updateShowNextLoc_
 0000:8843*     WI_initAnimatedBack_
+0000:882f*     WI_initShowNextLoc_
 0000:8605*     WI_drawLF_
 0000:8f7c*     G_WorldDone_
-0000:882f*     WI_initShowNextLoc_
 0000:8b19*     WI_updateStats_
 0000:87cd*     WI_drawAnimatedBack_
 0000:91bf      WI_Start_
@@ -598,9 +598,9 @@ Module: main.obj(main.ASM)
 0000:97f1*     D_MAIN_STARTMARKER_
 0000:98ae      I_KeyboardISR_
 0000:a362      M_ScanTranslateDefaults_
+0000:9ba7      G_ResetGameKeys_
 0000:a776      locallib_strlen_
 0000:9f1e*     CopyString13_
-0000:9ba7      G_ResetGameKeys_
 0000:9bde      G_BuildTiccmd_
 0000:97f1      cht_CheckCheat_
 0000:a740      locallib_strcmp_
@@ -674,8 +674,8 @@ Module: s_sound.obj(s_sound.ASM)
 0000:cb83*     S_AdjustSoundParamsSep_
 0000:cda4*     S_StartSoundWithPosition_
 0000:ceb6      S_UpdateSounds_
-0000:cc93      S_PauseSound_
 0000:cb32*     S_SOUND_STARTMARKER_
+0000:cc93      S_PauseSound_
 0000:ccbc      S_ResumeSound_
 Module: s_sbsfx.obj(C:\REALDOOM\s_sbsfx.c)
 3bb8:29b0+     _sfxcache_nodes
@@ -776,11 +776,11 @@ Module: z_zone.obj(z_zone.ASM)
 0000:f397      Z_QuickMapStatus_
 0000:f2fc      Z_QuickMapRender_
 0000:f420*     Z_QuickMapScreen0_
-0000:f40a      Z_QuickMapScratch_4000_
 0000:f3f4      Z_QuickMapScratch_7000_
 0000:f3c8      Z_QuickMapScratch_5000_
-0000:f671*     CopyString13_Zonelocal_
+0000:f40a      Z_QuickMapScratch_4000_
 0000:f4ca      Z_QuickMapMenu_
+0000:f671*     CopyString13_Zonelocal_
 0000:f3de      Z_QuickMapScratch_8000_
 0000:f4af      Z_QuickMapPalette_
 0000:f381      Z_QuickMapRender4000_
@@ -796,10 +796,10 @@ Module: m_menu.obj(m_menu.ASM)
 0f6a:0ca9*     M_StringHeight_
 0f6a:0c6d*     M_StringWidth_
 0f6a:054d*     M_SaveSelect_
-0f6a:0438*     M_LoadGame_
 0f6a:0b77*     M_ChangeDetail_
 0f6a:0375*     M_DrawLoad_
 0f6a:12d7*     M_MakeSaveGameName_
+0f6a:0438*     M_LoadGame_
 0f6a:051c*     M_DoSave_
 0f6a:0d63      M_Responder_
 0f6a:07d6*     S_SetSfxVolume_
@@ -813,8 +813,8 @@ Module: m_menu.obj(m_menu.ASM)
 0f6a:0c2d*     M_StartMessage_
 0f6a:0760*     M_DrawReadThisRetail_
 0f6a:1379*     M_strcpy_
-0f6a:0ae6*     M_QuitDOOM_
 0f6a:0b59*     M_ChangeSensitivity_
+0f6a:0ae6*     M_QuitDOOM_
 0f6a:087f*     M_NewGame_
 0f6a:09eb*     M_ChangeMessages_
 0f6a:06c1*     M_QuickLoad_
@@ -824,9 +824,9 @@ Module: m_menu.obj(m_menu.ASM)
 0f6a:0856*     M_DrawNewGame_
 0f6a:07a9*     M_Sound_
 0f6a:0cd9*     M_WriteText_
+0f6a:1064      M_Drawer_
 0f6a:13b9*     M_Z_QuickmapStatus_
 0f6a:0a62*     M_ReadThis_
-0f6a:1064      M_Drawer_
 0f6a:0918*     M_Episode_
 0f6a:0607*     M_QuickSave_
 0f6a:09ff*     M_EndGameResponse_
@@ -936,8 +936,8 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 1550:3792      R_BSP24_ENDMARKER_
 1550:3458      R_WriteBackViewConstants24_
 1550:0000      R_BSP24_STARTMARKER_
-1550:32cd      R_RenderPlayerView24_
 1550:2f1c      R_GetPatchTexture_Far24_
+1550:32cd      R_RenderPlayerView24_
 1550:2fb7      R_GetCompositeTexture_Far24_
 Module: r_bsp16.obj(r_bsp16.ASM)
 1550:6a6d      R_RenderPlayerView16_
@@ -1117,16 +1117,16 @@ Module: p_pspr.obj(p_pspr.ASM)
 2fb6:3f8b*     A_CloseShotgun2_
 2fb6:38fe      P_BringUpWeapon_
 Module: p_enemy.obj(p_enemy.ASM)
-2fb6:52eb*     A_FatRaise_
 2fb6:55e2*     A_Explode_
+2fb6:52eb*     A_FatRaise_
 2fb6:41e7      P_NoiseAlert_
 2fb6:55da*     A_Fall_
 2fb6:5924*     A_SpawnFly_
 2fb6:4954*     A_PosAttack_
 2fb6:4782*     A_Chase_
 2fb6:4b2b*     A_BspiAttack_
-2fb6:4257*     P_CheckMissileRange_
 2fb6:5775*     A_BrainPain_
+2fb6:4257*     P_CheckMissileRange_
 2fb6:48e6*     A_FaceTarget_
 2fb6:4b89*     A_SargAttack_
 2fb6:51f9*     GetVileMomz_
@@ -1140,18 +1140,18 @@ Module: p_enemy.obj(p_enemy.ASM)
 2fb6:50ce*     A_VileStart_
 2fb6:50dd*     A_FireCrackle_
 2fb6:4e27*     A_SkelFist_
-2fb6:5481*     A_PainShootSkull_
 2fb6:4f42*     A_VileChase_
+2fb6:5481*     A_PainShootSkull_
 2fb6:5575*     A_Scream_
-2fb6:570a*     A_Hoof_
 2fb6:41f8*     P_CheckMeleeRange_
+2fb6:570a*     A_Hoof_
 2fb6:5375*     A_FatAttack2_
 2fb6:4135*     P_RecursiveSound_
 2fb6:4c51*     A_SkelMissile_
 2fb6:535a*     A_FatAttack1_
-2fb6:46eb*     A_Look_
-2fb6:571e*     A_BabyMetal_
 2fb6:52f6*     A_FatAttack3_
+2fb6:571e*     A_BabyMetal_
+2fb6:46eb*     A_Look_
 2fb6:591e*     A_SpawnSound_
 2fb6:4c13*     A_BruisAttack_
 2fb6:55c1*     A_XScream_
@@ -1236,8 +1236,8 @@ Module: p_lights.obj(p_lights.ASM)
 2fb6:6f88      T_StrobeFlash_
 2fb6:6eaa      T_FireFlicker_
 Module: p_plats.obj(p_plats.ASM)
-2fb6:7142      T_PlatRaise_
 2fb6:71f6      EV_DoPlat_
+2fb6:7142      T_PlatRaise_
 2fb6:737d      P_AddActivePlat_
 2fb6:7395*     P_RemoveActivePlat_
 2fb6:73c5*     P_PLATS_ENDMARKER_
@@ -1247,16 +1247,16 @@ Module: p_spec.obj(p_spec.ASM)
 2fb6:7a8b      P_UpdateSpecials_
 2fb6:7492      P_FindNextHighestFloor_
 2fb6:741c      P_FindHighestOrLowestFloorSurrounding_
-2fb6:73c6*     P_SPEC_STARTMARKER_
 2fb6:79c9      P_PlayerInSpecialSector_
+2fb6:73c6*     P_SPEC_STARTMARKER_
 2fb6:7dab*     P_SPEC_ENDMARKER_
 2fb6:7bb7      EV_DoDonut_
 2fb6:7503      P_FindLowestOrHighestCeilingSurrounding_
 2fb6:75b0      P_FindMinSurroundingLight_
 2fb6:73c6*     getNextSectorList_
 2fb6:7579      P_FindSectorsFromLineTag_
-2fb6:773c      P_CrossSpecialLine_
 2fb6:793a      P_ShootSpecialLine_
+2fb6:773c      P_CrossSpecialLine_
 2fb6:7d1f      P_SpawnSpecials_
 Module: p_switch.obj(p_switch.ASM)
 2fb6:7dac*     P_SWITCH_STARTMARKER_
@@ -1600,4 +1600,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003f690 (259728.)
 Entry point address: 2fb6:980e
-Link time: 00:00.94
+Link time: 00:00.95

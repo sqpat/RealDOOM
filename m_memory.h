@@ -338,7 +338,7 @@ scantokey            3194:0000
 #define segs_physics_segment          ((segment_t) ((int32_t)segs_physics >> 16))
 // 4FF4h
 
- // 3D00:4000
+ // 3CC0:0x3400
 #define thinkerlist        ((thinker_t __near*)          ((thinkerlist_segment       - FIXED_DS_SEGMENT) << 4))
 #define mobjinfo           ((mobjinfo_t  __near*)        ((mobjinfo_segment          - FIXED_DS_SEGMENT) << 4))
 #define linebuffer         ((int16_t __near*)            ((linebuffer_segment        - FIXED_DS_SEGMENT) << 4))
@@ -1393,7 +1393,7 @@ patch_sizes             4B70:0000   E670
 viewangletox            4C00:0000   F000
 // 1392 bytes here?
 [near range over]       
-
+// todo move viewangletox to later. the other stuff can all fit below
 states_render           4E00:0000
 flatindex               4E79:0000
 spritepage              4E83:0000

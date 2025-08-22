@@ -299,7 +299,7 @@
 
 
 #define V_MarkRect_addr                 (*((uint32_t  __near*)               (_NULL_OFFSET + 0x020C)))
-// #define M_Drawer_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0210)))
+#define R_SetViewSize_addr    		    (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0210)))
 
 #define wipeduration                    (*((uint16_t  __near*)               (_NULL_OFFSET + 0x0214)))
 // uses high byte for quick 0
@@ -357,302 +357,304 @@
 
 #define R_GetCompositeTexture_addr 	    (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02CC)))
 
+#define sb_voicelist   			      	  ((SB_VoiceInfo __near *)           (_NULL_OFFSET + 0x02D0))
+#define savename                          ((int8_t __near *)                 (_NULL_OFFSET + 0x0310))
 
-// 361 bytes? 0x169?
-// #define w_message 						(*((hu_stext_t __near*)               (_NULL_OFFSET + 0x02D0)))
+#define fopen_addr     			          (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0320)))
+#define fseek_addr     			          (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0324)))
+#define fread_addr     			          (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0328)))
+#define fclose_addr    			          (*((uint32_t  __near*)             (_NULL_OFFSET + 0x032C)))
+#define locallib_far_fread_addr    		  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0330)))
+#define S_InitSFXCache_addr     		  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0334)))
 
-#define columnquality                   (*((uint8_t __near*)                  (_NULL_OFFSET + 0x0439)))
 
-#define useDeadAttackerRef				(*((boolean __near*)                 (_NULL_OFFSET + 0x043A)))
-#define paused							(*((boolean __near*)                 (_NULL_OFFSET + 0x043B)))
-#define menuactive						(*((boolean __near*)                 (_NULL_OFFSET + 0x043C)))
-#define demoplayback					(*((boolean __near*)                 (_NULL_OFFSET + 0x043D)))
+#define demoplayback					(*((boolean __near*)                 (_NULL_OFFSET + 0x0338)))
+#define columnquality                   (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0339)))
+#define useDeadAttackerRef				(*((boolean __near*)                 (_NULL_OFFSET + 0x033A)))
+#define paused							(*((boolean __near*)                 (_NULL_OFFSET + 0x033B)))
+#define menuactive						(*((boolean __near*)                 (_NULL_OFFSET + 0x033C)))
 
-// 43E to 440 free?
+
+
+
+// 33d to 33F free
+
+
 
 // 12 bytes each. two for 24.
-#define psprites                        (((pspdef_t __near*)                 (_NULL_OFFSET + 0x0440))) 
-#define vga_read_port_lookup            (((uint16_t __near*)                 (_NULL_OFFSET + 0x0458)))
+#define psprites                        (((pspdef_t __near*)                 (_NULL_OFFSET + 0x0340))) 
+#define vga_read_port_lookup            (((uint16_t __near*)                 (_NULL_OFFSET + 0x0358)))
 
-#define vissprite_p                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x0470)))
-#define cachedbyteheight                (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0472)))
+#define vissprite_p                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x0370)))
+#define cachedbyteheight                (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0372)))
 // dont use this byte!!! its always 0 on purpose.
-#define currentMusPage					(*((uint8_t __near*)                 (_NULL_OFFSET + 0x0474)))
-#define snd_MusicVolume                 (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0475)))
-#define gameepisode                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x0476)))
-#define gamemap                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x0477)))
-#define savedescription                 (((int8_t    __near*)                (_NULL_OFFSET + 0x0478)))
-#define demoname                        (((int8_t    __near*)                (_NULL_OFFSET + 0x0498)))
+#define currentMusPage					(*((uint8_t __near*)                 (_NULL_OFFSET + 0x0374)))
+#define snd_MusicVolume                 (*((uint8_t __near*)                 (_NULL_OFFSET + 0x0375)))
+#define gameepisode                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x0376)))
+#define gamemap                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x0377)))
+#define savedescription                 (((int8_t    __near*)                (_NULL_OFFSET + 0x0378)))
+#define demoname                        (((int8_t    __near*)                (_NULL_OFFSET + 0x0398)))
 
-#define ems_backfill_page_order         (((int8_t    __near*)                (_NULL_OFFSET + 0x04B8)))
-#define LINEFLAGSLIST_SEGMENT_PTR		(*((segment_t __near*)               (_NULL_OFFSET + 0x04D0)))
-#define currentThinkerListHead  		(*((int16_t __near*)                 (_NULL_OFFSET + 0x04D2)))
+#define ems_backfill_page_order         (((int8_t    __near*)                (_NULL_OFFSET + 0x03B8)))
+#define LINEFLAGSLIST_SEGMENT_PTR		(*((segment_t __near*)               (_NULL_OFFSET + 0x03D0)))
+#define currentThinkerListHead  		(*((int16_t __near*)                 (_NULL_OFFSET + 0x03D2)))
 
-#define S_StartSoundWithSecnum_addr     (*((uint32_t  __near*)             (_NULL_OFFSET + 0x04D4)))
-#define G_SecretExitLevel_addr          (*((uint32_t  __near*)             (_NULL_OFFSET + 0x04D8)))
-#define AM_Stop_addr		            (*((uint32_t  __near*)             (_NULL_OFFSET + 0x04DC)))
-
-
+#define S_StartSoundWithSecnum_addr     (*((uint32_t  __near*)             (_NULL_OFFSET + 0x03D4)))
+#define G_SecretExitLevel_addr          (*((uint32_t  __near*)             (_NULL_OFFSET + 0x03D8)))
+#define AM_Stop_addr		            (*((uint32_t  __near*)             (_NULL_OFFSET + 0x03DC)))
 
 
-#define braintargets                    (((THINKERREF __near*)               (_NULL_OFFSET + 0x04E0)))
-#define tmbbox                          (((fixed_t_union __near*)            (_NULL_OFFSET + 0x0520)))
-
-#define SECTORS_SEGMENT_PTR				  (*((segment_t __near*)             (_NULL_OFFSET + 0x0530)))
-#define LINES_PHYSICS_SEGMENT_PTR	      (*((segment_t __near*)             (_NULL_OFFSET + 0x0532)))
-#define HU_Start_addr 					  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0534)))
-#define ST_Start_addr 				      (*((uint32_t __near*)              (_NULL_OFFSET + 0x0538)))
-
-#define pcspeaker_currentoffset           (*((uint16_t __near*)              (_NULL_OFFSET + 0x053C)))
-#define pcspeaker_endoffset     		  (*((uint16_t __near*)              (_NULL_OFFSET + 0x053E)))
-
-#define G_PlayerReborn_addr     		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0540)))
-
-#define FixedMulTrigSpeedNoShift_addr	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0544)))
-#define FixedMulTrigSpeed_addr			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0548)))
-#define FixedMulTrig_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x054C)))
-#define G_DeferedInitNew_addr			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0550)))
 
 
-#define V_DrawPatch_addr                  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0554)))
-// #define locallib_toupper_addr             (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0558)))
-#define S_ChangeMusic_addr                (*((uint32_t  __near*)             (_NULL_OFFSET + 0x055C)))
-#define V_DrawFullscreenPatch_addr        (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0560)))
-#define getStringByIndex_addr             (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0564)))
-// #define locallib_strlen_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0568)))
-#define FixedMulTrigNoShift_addr	      (*((uint32_t  __near*)             (_NULL_OFFSET + 0x056C)))
-#define R_PointToAngle2_16_addr           (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0570)))
-#define R_PointToAngle2_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0574)))
-#define W_CacheLumpNameDirect_addr        (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0578)))
-#define W_CacheLumpNumDirectFragment_addr (*((uint32_t  __near*)             (_NULL_OFFSET + 0x057C)))
-#define W_GetNumForName_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0580)))
-#define S_StartSound_addr                 (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0584)))
-#define S_StartMusic_addr                 (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0588)))
+#define braintargets                    (((THINKERREF __near*)               (_NULL_OFFSET + 0x03E0)))
+#define tmbbox                          (((fixed_t_union __near*)            (_NULL_OFFSET + 0x0420)))
+
+#define SECTORS_SEGMENT_PTR				  (*((segment_t __near*)             (_NULL_OFFSET + 0x0430)))
+#define LINES_PHYSICS_SEGMENT_PTR	      (*((segment_t __near*)             (_NULL_OFFSET + 0x0432)))
+#define HU_Start_addr 					  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0434)))
+#define ST_Start_addr 				      (*((uint32_t __near*)              (_NULL_OFFSET + 0x0438)))
+
+#define pcspeaker_currentoffset           (*((uint16_t __near*)              (_NULL_OFFSET + 0x043C)))
+#define pcspeaker_endoffset     		  (*((uint16_t __near*)              (_NULL_OFFSET + 0x043E)))
+
+#define G_PlayerReborn_addr     		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0440)))
+
+#define FixedMulTrigSpeedNoShift_addr	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0444)))
+#define FixedMulTrigSpeed_addr			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0448)))
+#define FixedMulTrig_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x044C)))
+#define G_DeferedInitNew_addr			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0450)))
+
+
+#define V_DrawPatch_addr                  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0454)))
+// #define locallib_toupper_addr             (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0458)))
+#define S_ChangeMusic_addr                (*((uint32_t  __near*)             (_NULL_OFFSET + 0x045C)))
+#define V_DrawFullscreenPatch_addr        (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0460)))
+#define getStringByIndex_addr             (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0464)))
+// #define locallib_strlen_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0468)))
+#define FixedMulTrigNoShift_addr	      (*((uint32_t  __near*)             (_NULL_OFFSET + 0x046C)))
+#define R_PointToAngle2_16_addr           (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0470)))
+#define R_PointToAngle2_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0474)))
+#define W_CacheLumpNameDirect_addr        (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0478)))
+#define W_CacheLumpNumDirectFragment_addr (*((uint32_t  __near*)             (_NULL_OFFSET + 0x047C)))
+#define W_GetNumForName_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0480)))
+#define S_StartSound_addr                 (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0484)))
+#define S_StartMusic_addr                 (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0488)))
 // 13 bytes (12345678.123) fileame format incl . and null term
-#define filename_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x058C))
-#define rndindex                          (*(uint8_t __near *)               (_NULL_OFFSET + 0x0599))
-#define fopen_r_argument                  ((int8_t __near *)                 (_NULL_OFFSET + 0x059A))
-#define fopen_w_argument                  ((int8_t __near *)                 (_NULL_OFFSET + 0x059C))
-#define numsectors                        (*(int16_t __near *)               (_NULL_OFFSET + 0x059E))
-#define numlines                          (*(int16_t __near *)               (_NULL_OFFSET + 0x05A0))
-#define numvertexes                       (*(int16_t __near *)               (_NULL_OFFSET + 0x05A2))
-#define numsegs                           (*(int16_t __near *)               (_NULL_OFFSET + 0x05A4))
-#define numsubsectors                     (*(int16_t __near *)               (_NULL_OFFSET + 0x05A6))
-#define numnodes                          (*(int16_t __near *)               (_NULL_OFFSET + 0x05A8))
-#define numsides                          (*(int16_t __near *)               (_NULL_OFFSET + 0x05AA))
-#define bmapwidth                         (*(int16_t __near *)               (_NULL_OFFSET + 0x05AC))
-#define bmapheight                        (*(int16_t __near *)               (_NULL_OFFSET + 0x05AE))
-#define bmaporgx                          (*(int16_t __near *)               (_NULL_OFFSET + 0x05B0))
-#define bmaporgy                          (*(int16_t __near *)               (_NULL_OFFSET + 0x05B2))
-#define I_Error_addr                      (*((uint32_t __near*)              (_NULL_OFFSET + 0x05B4)))
-#define P_InitThinkers_addr               (*((uint32_t __near*)              (_NULL_OFFSET + 0x05B8)))
+#define filename_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x048C))
+#define rndindex                          (*(uint8_t __near *)               (_NULL_OFFSET + 0x0499))
+#define fopen_r_argument                  ((int8_t __near *)                 (_NULL_OFFSET + 0x049A))
+#define fopen_w_argument                  ((int8_t __near *)                 (_NULL_OFFSET + 0x049C))
+#define numsectors                        (*(int16_t __near *)               (_NULL_OFFSET + 0x049E))
+#define numlines                          (*(int16_t __near *)               (_NULL_OFFSET + 0x04A0))
+#define numvertexes                       (*(int16_t __near *)               (_NULL_OFFSET + 0x04A2))
+#define numsegs                           (*(int16_t __near *)               (_NULL_OFFSET + 0x04A4))
+#define numsubsectors                     (*(int16_t __near *)               (_NULL_OFFSET + 0x04A6))
+#define numnodes                          (*(int16_t __near *)               (_NULL_OFFSET + 0x04A8))
+#define numsides                          (*(int16_t __near *)               (_NULL_OFFSET + 0x04AA))
+#define bmapwidth                         (*(int16_t __near *)               (_NULL_OFFSET + 0x04AC))
+#define bmapheight                        (*(int16_t __near *)               (_NULL_OFFSET + 0x04AE))
+#define bmaporgx                          (*(int16_t __near *)               (_NULL_OFFSET + 0x04B0))
+#define bmaporgy                          (*(int16_t __near *)               (_NULL_OFFSET + 0x04B2))
+#define I_Error_addr                      (*((uint32_t __near*)              (_NULL_OFFSET + 0x04B4)))
+#define P_InitThinkers_addr               (*((uint32_t __near*)              (_NULL_OFFSET + 0x04B8)))
 
-#define snd_DesiredSfxDevice     		  (*((uint8_t __near*)               (_NULL_OFFSET + 0x05BC)))
-#define snd_DesiredMusicDevice     		  (*((uint8_t __near*)               (_NULL_OFFSET + 0x05BD)))
-#define snd_SBirq		        		  (*((uint8_t __near*)               (_NULL_OFFSET + 0x05BE)))
-#define snd_SBdma		        		  (*((uint8_t __near*)               (_NULL_OFFSET + 0x05BF)))
+#define snd_DesiredSfxDevice     		  (*((uint8_t __near*)               (_NULL_OFFSET + 0x04BC)))
+#define snd_DesiredMusicDevice     		  (*((uint8_t __near*)               (_NULL_OFFSET + 0x04BD)))
+#define snd_SBirq		        		  (*((uint8_t __near*)               (_NULL_OFFSET + 0x04BE)))
+#define snd_SBdma		        		  (*((uint8_t __near*)               (_NULL_OFFSET + 0x04BF)))
 
-#define S_StopSoundMobjRef_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C0)))
+#define S_StopSoundMobjRef_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x04C0)))
 
-#define R_DrawSkyPlaneDynamic_addr_Offset (*((int16_t __near*)               (_NULL_OFFSET + 0x05C4)))
-#define R_DrawSkyPlaneDynamic_addr    	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x05C4)))
+#define R_DrawSkyPlaneDynamic_addr_Offset (*((int16_t __near*)               (_NULL_OFFSET + 0x04C4)))
+#define R_DrawSkyPlaneDynamic_addr    	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x04C4)))
 
-#define snd_SBport						  (*((uint16_t __near*)              (_NULL_OFFSET + 0x05C8)))
-#define snd_Mport						  (*((uint16_t __near*)              (_NULL_OFFSET + 0x05CA)))
+#define snd_SBport						  (*((uint16_t __near*)              (_NULL_OFFSET + 0x04C8)))
+#define snd_Mport						  (*((uint16_t __near*)              (_NULL_OFFSET + 0x04CA)))
 
-#define I_Quit_addr						  (*((uint32_t __near*)              (_NULL_OFFSET + 0x05CC)))
+#define I_Quit_addr						  (*((uint32_t __near*)              (_NULL_OFFSET + 0x04CC)))
 
 // 10 ints
-#define tallnum                           ((uint16_t __near *)               (_NULL_OFFSET + 0x05D0))
+#define tallnum                           ((uint16_t __near *)               (_NULL_OFFSET + 0x04D0))
 // 10 ints
-#define shortnum                          ((uint16_t __near *)               (_NULL_OFFSET + 0x05E4))
+#define shortnum                          ((uint16_t __near *)               (_NULL_OFFSET + 0x04E4))
 // 20 bytes
-#define am_buffer                         ((int8_t __near *)                 (_NULL_OFFSET + 0x05F8))
+#define am_buffer                         ((int8_t __near *)                 (_NULL_OFFSET + 0x04F8))
 
-#define Z_SetOverlay_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x060C)))
-#define W_LumpLength_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x0610)))
-#define playingdriver                     (*((driverBlock __far* __near *)   (_NULL_OFFSET + 0x0614)))
-#define currentsong_start_offset          (*((uint16_t __near*)              (_NULL_OFFSET + 0x0618)))
-#define currentsong_playing_offset        (*((uint16_t __near*)              (_NULL_OFFSET + 0x061A)))
-#define currentsong_ticks_to_process      (*((int16_t __near*)               (_NULL_OFFSET + 0x061C)))
-#define loops_enabled    			      (*((int8_t __near*)                (_NULL_OFFSET + 0x061E)))
-#define inhelpscreens    			      (*((boolean __near*)               (_NULL_OFFSET + 0x061F)))
+#define Z_SetOverlay_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x050C)))
+#define W_LumpLength_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x0510)))
+#define playingdriver                     (*((driverBlock __far* __near *)   (_NULL_OFFSET + 0x0514)))
+#define currentsong_start_offset          (*((uint16_t __near*)              (_NULL_OFFSET + 0x0518)))
+#define currentsong_playing_offset        (*((uint16_t __near*)              (_NULL_OFFSET + 0x051A)))
+#define currentsong_ticks_to_process      (*((int16_t __near*)               (_NULL_OFFSET + 0x051C)))
+#define loops_enabled    			      (*((int8_t __near*)                (_NULL_OFFSET + 0x051E)))
+#define inhelpscreens    			      (*((boolean __near*)               (_NULL_OFFSET + 0x051F)))
 
 
-#define Z_QuickMapMusicPageFrame_addr     (*((uint32_t __near*)              (_NULL_OFFSET + 0x0620)))
+#define Z_QuickMapMusicPageFrame_addr     (*((uint32_t __near*)              (_NULL_OFFSET + 0x0520)))
 
-#define sightzstart					      (*((fixed_t __near*)         		 (_NULL_OFFSET + 0x0624)))
-#define topslope					      (*((fixed_t __near*)         		 (_NULL_OFFSET + 0x0628)))
-#define bottomslope					      (*((fixed_t __near*)         		 (_NULL_OFFSET + 0x062C)))
-#define cachedt2x					      (*((fixed_t_union __near*)         (_NULL_OFFSET + 0x0630)))
-#define cachedt2y					      (*((fixed_t_union __near*)         (_NULL_OFFSET + 0x0634)))
-#define strace					          (*((divline_t __near*)             (_NULL_OFFSET + 0x0638)))
+#define sightzstart					      (*((fixed_t __near*)         		 (_NULL_OFFSET + 0x0524)))
+#define topslope					      (*((fixed_t __near*)         		 (_NULL_OFFSET + 0x0528)))
+#define bottomslope					      (*((fixed_t __near*)         		 (_NULL_OFFSET + 0x052C)))
+#define cachedt2x					      (*((fixed_t_union __near*)         (_NULL_OFFSET + 0x0530)))
+#define cachedt2y					      (*((fixed_t_union __near*)         (_NULL_OFFSET + 0x0534)))
+#define strace					          (*((divline_t __near*)             (_NULL_OFFSET + 0x0538)))
 
 // free bytes per EMS page. Allocated in 256k chunks, so defaults to 64.. 
 // leave what, 40 bytes just in case?
 // todo move this to bottom and make it growable...
-#define sfx_free_bytes					  (((uint8_t __near*)                (_NULL_OFFSET + 0x0648)))
+#define sfx_free_bytes					  (((uint8_t __near*)                (_NULL_OFFSET + 0x0548)))
 
 
 // 0x670
 
-#define activespritepages				  (((uint8_t __near*)                (_NULL_OFFSET + 0x0670)))
-#define activespritenumpages			  (((uint8_t __near*)                (_NULL_OFFSET + 0x0674)))
-#define spriteL1LRU						  (((uint8_t __near*)                (_NULL_OFFSET + 0x0678)))
-#define spritecache_l2_head				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x067C)))
-#define spritecache_l2_tail				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x067D)))
-#define texturecache_l2_head			  (*((uint8_t __near*)               (_NULL_OFFSET + 0x067E)))
-#define texturecache_l2_tail			  (*((uint8_t __near*)               (_NULL_OFFSET + 0x067F)))
-#define activetexturepages				  (((uint8_t __near*)                (_NULL_OFFSET + 0x0680)))
-#define activenumpages					  (((uint8_t __near*)                (_NULL_OFFSET + 0x0688)))
-#define textureL1LRU					  (((uint8_t __near*)                (_NULL_OFFSET + 0x0690)))
-#define cachedsegmentlumps				  (((segment_t __near*)              (_NULL_OFFSET + 0x0698)))
-#define cachedlumps					 	  (((int16_t __near*)                (_NULL_OFFSET + 0x06A0)))
-#define cachedtex				  		  (((int16_t __near*)                (_NULL_OFFSET + 0x06A8)))
-#define cachedcollength				      (((uint8_t __near*)                (_NULL_OFFSET + 0x06AC)))
-#define flatcache_l2_head				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x06AE)))
-#define flatcache_l2_tail				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x06AF)))
-#define segloopprevlookup				  (((int16_t __near*)                (_NULL_OFFSET + 0x06B0)))
-#define segloopcachedbasecol			  (((int16_t __near*)                (_NULL_OFFSET + 0x06B4)))
-#define cachedsegmenttex				  (((segment_t __near*)              (_NULL_OFFSET + 0x06B8)))
+#define activespritepages				  (((uint8_t __near*)                (_NULL_OFFSET + 0x0570)))
+#define activespritenumpages			  (((uint8_t __near*)                (_NULL_OFFSET + 0x0574)))
+#define spriteL1LRU						  (((uint8_t __near*)                (_NULL_OFFSET + 0x0578)))
+#define spritecache_l2_head				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x057C)))
+#define spritecache_l2_tail				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x057D)))
+#define texturecache_l2_head			  (*((uint8_t __near*)               (_NULL_OFFSET + 0x057E)))
+#define texturecache_l2_tail			  (*((uint8_t __near*)               (_NULL_OFFSET + 0x057F)))
+#define activetexturepages				  (((uint8_t __near*)                (_NULL_OFFSET + 0x0580)))
+#define activenumpages					  (((uint8_t __near*)                (_NULL_OFFSET + 0x0588)))
+#define textureL1LRU					  (((uint8_t __near*)                (_NULL_OFFSET + 0x0590)))
+#define cachedsegmentlumps				  (((segment_t __near*)              (_NULL_OFFSET + 0x0598)))
+#define cachedlumps					 	  (((int16_t __near*)                (_NULL_OFFSET + 0x05A0)))
+#define cachedtex				  		  (((int16_t __near*)                (_NULL_OFFSET + 0x05A8)))
+#define cachedcollength				      (((uint8_t __near*)                (_NULL_OFFSET + 0x05AC)))
+#define flatcache_l2_head				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x05AE)))
+#define flatcache_l2_tail				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x05AF)))
+#define segloopprevlookup				  (((int16_t __near*)                (_NULL_OFFSET + 0x05B0)))
+#define segloopcachedbasecol			  (((int16_t __near*)                (_NULL_OFFSET + 0x05B4)))
+#define cachedsegmenttex				  (((segment_t __near*)              (_NULL_OFFSET + 0x05B8)))
 
-#define playerMobj	     				  (*((mobj_t __near*  __near*)       (_NULL_OFFSET + 0x06BC)))
+#define playerMobj	     				  (*((mobj_t __near*  __near*)       (_NULL_OFFSET + 0x05BC)))
 
-#define ceilinglinenum				      (*((int16_t __near*)               (_NULL_OFFSET + 0x06BE)))
+#define ceilinglinenum				      (*((int16_t __near*)               (_NULL_OFFSET + 0x05BE)))
 
-#define lineopening  				      (*((lineopening_t __near*)         (_NULL_OFFSET + 0x06C0)))
-#define playerMobjRef  				      (*((THINKERREF __near*)         	 (_NULL_OFFSET + 0x06C6)))
-
-
-#define intercept_p  				      (*((intercept_t __far* __near*)    (_NULL_OFFSET + 0x06C8)))
-#define aimslope     				      (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x06CC)))
-#define bestslidefrac     				  (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x06D0)))
-#define bestslidelinenum		          (*((int16_t __near*)               (_NULL_OFFSET + 0x06D4)))
-#define numspechit		   			      (*((int16_t __near*)               (_NULL_OFFSET + 0x06D6)))
-#define lastcalculatedsector		      (*((int16_t __near*)               (_NULL_OFFSET + 0x06D8)))
-
-#define shootthing	     				  (*((mobj_t __near*  __near*)       (_NULL_OFFSET + 0x06DA)))
-#define shootz     				  		  (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x06DC)))
-
-#define la_damage		   			      (*((int16_t __near*)               (_NULL_OFFSET + 0x06E0)))
-
-#define linetarget	     				  (*((mobj_t  __near* __near*)       (_NULL_OFFSET + 0x06E2)))
-#define linetarget_pos  			      (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x06E4)))
-#define attackrange16		   		      (*((int16_t __near*)               (_NULL_OFFSET + 0x06E8)))
+#define lineopening  				      (*((lineopening_t __near*)         (_NULL_OFFSET + 0x05C0)))
+#define playerMobjRef  				      (*((THINKERREF __near*)         	 (_NULL_OFFSET + 0x05C6)))
 
 
-#define usergame		   		          (*((boolean __near*)               (_NULL_OFFSET + 0x06EA)))
-#define crushchange		   		          (*((boolean __near*)               (_NULL_OFFSET + 0x06EB)))
-#define leveltime     				      (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x06EC)))
-#define fopen_rb_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x06F0))
-#define currenttask                       (*(int8_t __near *)                (_NULL_OFFSET + 0x06F3))
+#define intercept_p  				      (*((intercept_t __far* __near*)    (_NULL_OFFSET + 0x05C8)))
+#define aimslope     				      (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x05CC)))
+#define bestslidefrac     				  (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x05D0)))
+#define bestslidelinenum		          (*((int16_t __near*)               (_NULL_OFFSET + 0x05D4)))
+#define numspechit		   			      (*((int16_t __near*)               (_NULL_OFFSET + 0x05D6)))
+#define lastcalculatedsector		      (*((int16_t __near*)               (_NULL_OFFSET + 0x05D8)))
 
-#define R_DrawSkyPlane_addr_Offset        (*((int16_t __near*)               (_NULL_OFFSET + 0x06F4)))
-#define R_DrawSkyPlane_addr    			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06F4)))
-#define OutOfThinkers_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06F8)))
-#define FastDiv32u16u_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x06FC)))
+#define shootthing	     				  (*((mobj_t __near*  __near*)       (_NULL_OFFSET + 0x05DA)))
+#define shootz     				  		  (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x05DC)))
 
-#define playerMobj_pos   		     	  (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x0700)))
-#define setStateReturn_pos	 	    	  (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x0704)))
-#define gametic						      (*((ticcount_t __near*)   	   	 (_NULL_OFFSET + 0x0708)))
+#define la_damage		   			      (*((int16_t __near*)               (_NULL_OFFSET + 0x05E0)))
 
-#define clipangle       			      (*((uint16_t __near*)              (_NULL_OFFSET + 0x070C)))
-#define fieldofview       			      (*((uint16_t __near*)              (_NULL_OFFSET + 0x070E)))
-#define solidsegs                 		  ((cliprange_t __near *)            (_NULL_OFFSET + 0x0710))
-#define newend	     		    		  (*((cliprange_t  __near* __near*)  (_NULL_OFFSET + 0x0790)))
-#define pspritescale       		  	      (*((uint16_t __near*)              (_NULL_OFFSET + 0x0792)))
-#define spritewidths_segment       		  (*((segment_t __near*)             (_NULL_OFFSET + 0x0794)))
-#define r_cachedplayerMobjsecnum 		  (*((int16_t __near*)               (_NULL_OFFSET + 0x0796)))
-#define scaledviewwidth 		 		  (*((int16_t __near*)               (_NULL_OFFSET + 0x0798)))
-#define viewwindowoffset 		 		  (*((int16_t __near*)               (_NULL_OFFSET + 0x079A)))
-#define pendingdetail 		 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x079C)))
-#define setsizeneeded                     (*((uint8_t    __near*)            (_NULL_OFFSET + 0x079E)))
-#define setblocks                   	  (*((uint8_t    __near*)            (_NULL_OFFSET + 0x079F)))
+#define linetarget	     				  (*((mobj_t  __near* __near*)       (_NULL_OFFSET + 0x05E2)))
+#define linetarget_pos  			      (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x05E4)))
+#define attackrange16		   		      (*((int16_t __near*)               (_NULL_OFFSET + 0x05E8)))
+
+
+#define usergame		   		          (*((boolean __near*)               (_NULL_OFFSET + 0x05EA)))
+#define crushchange		   		          (*((boolean __near*)               (_NULL_OFFSET + 0x05EB)))
+#define leveltime     				      (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x05EC)))
+#define fopen_rb_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x05F0))
+#define currenttask                       (*(int8_t __near *)                (_NULL_OFFSET + 0x05F3))
+
+#define R_DrawSkyPlane_addr_Offset        (*((int16_t __near*)               (_NULL_OFFSET + 0x05F4)))
+#define R_DrawSkyPlane_addr    			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x05F4)))
+#define OutOfThinkers_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x05F8)))
+#define FastDiv32u16u_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x05FC)))
+
+#define playerMobj_pos   		     	  (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x0600)))
+#define setStateReturn_pos	 	    	  (*((mobj_pos_t __far* __near*)     (_NULL_OFFSET + 0x0604)))
+#define gametic						      (*((ticcount_t __near*)   	   	 (_NULL_OFFSET + 0x0608)))
+
+#define clipangle       			      (*((uint16_t __near*)              (_NULL_OFFSET + 0x060C)))
+#define fieldofview       			      (*((uint16_t __near*)              (_NULL_OFFSET + 0x060E)))
+#define solidsegs                 		  ((cliprange_t __near *)            (_NULL_OFFSET + 0x0610))
+#define newend	     		    		  (*((cliprange_t  __near* __near*)  (_NULL_OFFSET + 0x0690)))
+#define pspritescale       		  	      (*((uint16_t __near*)              (_NULL_OFFSET + 0x0692)))
+#define spritewidths_segment       		  (*((segment_t __near*)             (_NULL_OFFSET + 0x0694)))
+#define r_cachedplayerMobjsecnum 		  (*((int16_t __near*)               (_NULL_OFFSET + 0x0696)))
+#define scaledviewwidth 		 		  (*((int16_t __near*)               (_NULL_OFFSET + 0x0698)))
+#define viewwindowoffset 		 		  (*((int16_t __near*)               (_NULL_OFFSET + 0x069A)))
+#define pendingdetail 		 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x069C)))
+#define setsizeneeded                     (*((uint8_t    __near*)            (_NULL_OFFSET + 0x069E)))
+#define setblocks                   	  (*((uint8_t    __near*)            (_NULL_OFFSET + 0x069F)))
 //99 bytes
-#define player 		 					  (*((player_t __near*)              (_NULL_OFFSET + 0x07A0)))
+#define player 		 					  (*((player_t __near*)              (_NULL_OFFSET + 0x06A0)))
 
-#define skyquality  					  (*(int8_t __near *)                (_NULL_OFFSET + 0x0803))
-#define viewwindowx 		 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x0804)))
-#define viewwindowy 		 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x0806)))
-#define R_DrawPlanesCall 		 		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0808)))
-#define R_DrawPlanesCallOffset 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x0808)))
-#define R_DrawMaskedCall 		 		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x080C)))
-#define R_DrawMaskedCallOffset 		      (*((int16_t __near*)               (_NULL_OFFSET + 0x080C)))
-#define R_WriteBackMaskedFrameConstantsCall  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0810)))
-#define R_WriteBackMaskedFrameConstantsCallOffset (*((int16_t __near*)              (_NULL_OFFSET + 0x0810)))
-#define NetUpdate_addr					  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0814)))
+#define skyquality  					  (*(int8_t __near *)                (_NULL_OFFSET + 0x0703))
+#define viewwindowx 		 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x0704)))
+#define viewwindowy 		 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x0706)))
+#define R_DrawPlanesCall 		 		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0708)))
+#define R_DrawPlanesCallOffset 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x0708)))
+#define R_DrawMaskedCall 		 		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x070C)))
+#define R_DrawMaskedCallOffset 		      (*((int16_t __near*)               (_NULL_OFFSET + 0x070C)))
+#define R_WriteBackMaskedFrameConstantsCall  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0710)))
+#define R_WriteBackMaskedFrameConstantsCallOffset (*((int16_t __near*)              (_NULL_OFFSET + 0x0710)))
+#define NetUpdate_addr					  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0714)))
 
-#define FixedMul16u32_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0818)))
-#define FastMul16u32u_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x081C)))
-#define FastDiv3216u_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0820)))
-#define bulletslope     				  (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x0824)))
-#define weaponinfo 						  ((weaponinfo_t __near *)           (_NULL_OFFSET + 0x0828))
-#define G_ExitLevel_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x088C)))
+#define FixedMul16u32_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0718)))
+#define FastMul16u32u_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x071C)))
+#define FastDiv3216u_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0720)))
+#define bulletslope     				  (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x0724)))
+#define weaponinfo 						  ((weaponinfo_t __near *)           (_NULL_OFFSET + 0x0728))
+#define G_ExitLevel_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x078C)))
 
 
 // 89 bytes
-// #define w_title 						  (*((hu_textline_t __near*)         (_NULL_OFFSET + 0x0890)))
-#define message_counter					  (*((uint8_t    __near*)            (_NULL_OFFSET + 0x08E8)))
+// #define w_title 						  (*((hu_textline_t __near*)         (_NULL_OFFSET + 0x0790)))
+#define message_counter					  (*((uint8_t    __near*)            (_NULL_OFFSET + 0x07E8)))
 
-#define levelTimer                   	  (*((boolean    __near*)            (_NULL_OFFSET + 0x08E9)))
-#define numlinespecials     			  (*((int16_t __near*)               (_NULL_OFFSET + 0x08EA)))
+#define levelTimer                   	  (*((boolean    __near*)            (_NULL_OFFSET + 0x07E9)))
+#define numlinespecials     			  (*((int16_t __near*)               (_NULL_OFFSET + 0x07EA)))
 
-#define activeceilings                    ((THINKERREF __near *)             (_NULL_OFFSET + 0x08EC))
-#define activeplats                       ((THINKERREF __near *)             (_NULL_OFFSET + 0x0928))
-#define buttonlist                        ((button_t __near *)               (_NULL_OFFSET + 0x0964))
-#define levelTimeCount                    (*((ticcount_t __near *)           (_NULL_OFFSET + 0x0988)))
-#define lastanim                          (*((p_spec_anim_t __near* __near*) (_NULL_OFFSET + 0x098C)))
-#define numswitches     			      (*((int16_t __near*)               (_NULL_OFFSET + 0x098E)))
-#define anims                             ((p_spec_anim_t __near *)          (_NULL_OFFSET + 0x0990))
+#define activeceilings                    ((THINKERREF __near *)             (_NULL_OFFSET + 0x07EC))
+#define activeplats                       ((THINKERREF __near *)             (_NULL_OFFSET + 0x0828))
+#define buttonlist                        ((button_t __near *)               (_NULL_OFFSET + 0x0864))
+#define levelTimeCount                    (*((ticcount_t __near *)           (_NULL_OFFSET + 0x0888)))
+#define lastanim                          (*((p_spec_anim_t __near* __near*) (_NULL_OFFSET + 0x088C)))
+#define numswitches     			      (*((int16_t __near*)               (_NULL_OFFSET + 0x088E)))
+#define anims                             ((p_spec_anim_t __near *)          (_NULL_OFFSET + 0x0890))
 
-#define switchlist				          (((uint16_t __near*)           	 (_NULL_OFFSET + 0x0A50)))
+#define switchlist				          (((uint16_t __near*)           	 (_NULL_OFFSET + 0x0950)))
 
-#define skullAnimCounter   			      (*((int16_t __near*)               (_NULL_OFFSET + 0x0B18)))
-#define whichSkull       			      (*((int16_t __near*)               (_NULL_OFFSET + 0x0B1A)))
-#define borderdrawcount       		      (*((boolean __near*)               (_NULL_OFFSET + 0x0B1C)))
-#define message_dontfuckwithme     	      (*((boolean __near*)               (_NULL_OFFSET + 0x0B1D)))
-#define message_on     				      (*((boolean __near*)               (_NULL_OFFSET + 0x0B1E)))
-#define message_nottobefuckedwith         (*((boolean __near*)               (_NULL_OFFSET + 0x0B1F)))
-
-
-#define STRING_HELP1                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0B20))
-#define STRING_HELP2                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0B26))
-#define STRING_HELP                       ((int8_t __near *)                 (_NULL_OFFSET + 0x0B2C))
-
-#define demosequence	       		      (*((boolean __near*)               (_NULL_OFFSET + 0x0B31)))
-
-#define STRING_newline                    ((int8_t __near *)                 (_NULL_OFFSET + 0x0B32))
-
-#define advancedemo	       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B34)))
-#define usegamma	       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B35)))
-#define sfxVolume	       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B36)))
-#define musicVolume	       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B37)))
-#define snd_SfxVolume      			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B38)))
-#define detailLevel	       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B39)))
-#define screenSize	       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B3A)))
-#define mouseSensitivity   			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B3B)))
-#define showMessages       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B3C)))
-#define quickSaveSlot      			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B3D)))
-#define savegameslot       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B3E)))
-#define modifiedgame       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0B3F)))
-#define savename                          ((int8_t __near *)                 (_NULL_OFFSET + 0x0B40))
-#define hu_font                           ((uint16_t __near *)               (_NULL_OFFSET + 0x0B50))
-
-#define viewactivestate   			      (*((boolean __near*)               (_NULL_OFFSET + 0x0BCE)))
-#define menuactivestate   			      (*((boolean __near*)               (_NULL_OFFSET + 0x0BCF)))
-#define sb_voicelist   			      	  ((SB_VoiceInfo __near *)           (_NULL_OFFSET + 0x0BD0))
+#define skullAnimCounter   			      (*((int16_t __near*)               (_NULL_OFFSET + 0x0A18)))
+#define whichSkull       			      (*((int16_t __near*)               (_NULL_OFFSET + 0x0A1A)))
+#define borderdrawcount       		      (*((boolean __near*)               (_NULL_OFFSET + 0x0A1C)))
+#define message_dontfuckwithme     	      (*((boolean __near*)               (_NULL_OFFSET + 0x0A1D)))
+#define message_on     				      (*((boolean __near*)               (_NULL_OFFSET + 0x0A1E)))
+#define message_nottobefuckedwith         (*((boolean __near*)               (_NULL_OFFSET + 0x0A1F)))
 
 
-#define fopen_addr     			          (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0C10)))
-#define fseek_addr     			          (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0C14)))
-#define fread_addr     			          (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0C18)))
-#define fclose_addr    			          (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0C1C)))
-#define locallib_far_fread_addr    		  (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0C20)))
-#define S_InitSFXCache_addr     		  (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0C24)))
-#define R_SetViewSize_addr	     		  (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0C28)))
+#define STRING_HELP1                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0A20))
+#define STRING_HELP2                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0A26))
+#define STRING_HELP                       ((int8_t __near *)                 (_NULL_OFFSET + 0x0A2C))
+
+#define demosequence	       		      (*((boolean __near*)               (_NULL_OFFSET + 0x0A31)))
+
+#define STRING_newline                    ((int8_t __near *)                 (_NULL_OFFSET + 0x0A32))
+
+#define advancedemo	       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0A34)))
+#define usegamma	       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0A35)))
+#define sfxVolume	       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0A36)))
+#define musicVolume	       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0A37)))
+#define snd_SfxVolume      			      (*((boolean __near*)               (_NULL_OFFSET + 0x0A38)))
+#define detailLevel	       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0A39)))
+#define screenSize	       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0A3A)))
+#define mouseSensitivity   			      (*((boolean __near*)               (_NULL_OFFSET + 0x0A3B)))
+#define showMessages       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0A3C)))
+#define quickSaveSlot      			      (*((boolean __near*)               (_NULL_OFFSET + 0x0A3D)))
+#define savegameslot       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0A3E)))
+#define modifiedgame       			      (*((boolean __near*)               (_NULL_OFFSET + 0x0A3F)))
+#define hu_font                           ((uint16_t __near *)               (_NULL_OFFSET + 0x0A40))
+
+#define viewactivestate   			      (*((boolean __near*)               (_NULL_OFFSET + 0x0ABE)))
+#define menuactivestate   			      (*((boolean __near*)               (_NULL_OFFSET + 0x0ABF)))
 
 
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0C30)))
+
+
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0AC0)))
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
