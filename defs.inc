@@ -318,7 +318,7 @@ _sendsave =    			      	 	_NULL_OFFSET + 002CBh
 _R_GetCompositeTexture_addr =        _NULL_OFFSET + 002CCh
 
  
-_w_message =					     _NULL_OFFSET + 002D0h
+;_w_message =					     _NULL_OFFSET + 002D0h
 ; 435 to 438 probably free?
 _columnquality =              	     _NULL_OFFSET + 00439h
 _useDeadAttackerRef =              	 _NULL_OFFSET + 0043Ah
@@ -526,7 +526,7 @@ _FastDiv3216u_addr =				 _NULL_OFFSET + 00820h
 _bulletslope = 			 			 _NULL_OFFSET + 00824h
 _weaponinfo = 			 			 _NULL_OFFSET + 00828h
 _G_ExitLevel_addr = 			 	 _NULL_OFFSET + 0088Ch
-_w_title =							 _NULL_OFFSET + 00890h
+;_w_title =							 _NULL_OFFSET + 00890h
 _message_counter =					 _NULL_OFFSET + 008E8h
 
 _levelTimer =						 _NULL_OFFSET + 008E9h

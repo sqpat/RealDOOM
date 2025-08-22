@@ -48,6 +48,18 @@ TITLE_STRING_OFFSET = HUSTR_E1M1
 
 HU_TITLE2_OFFSET = (HUSTR_1  - TITLE_STRING_OFFSET - 1 )
 
+_w_message:
+PUBLIC _w_message
+REPT SIZEOF_HUSTEXT_T
+    db 0
+ENDM
+
+
+_w_title:
+PUBLIC _w_title
+REPT SIZEOF_HUTEXTLINE_T
+    db 0
+ENDM
 
 PROC    HU_Start_ FAR
 PUBLIC  HU_Start_
@@ -70,29 +82,37 @@ mov   byte ptr ds:[_message_dontfuckwithme], al  ; 0
 ;	w_message.laston = true;
 ;	w_message.currentline = 0;
 
+push  cs
+pop   ds
+
+ASSUME DS:HU_SETUP_TEXT
 mov   byte ptr ds:[bx + HU_STEXT_T.hu_stext_currentline], al ; 0
 
-mov   word ptr ds:[_w_message + HU_STEXT_T.hu_stext_textlines + HU_TEXTLINE_T.hu_textline_x], ax  ; 0, HU_MSGX
-mov   word ptr ds:[_w_message + HU_STEXT_T.hu_stext_textlines + HU_TEXTLINE_T.hu_textline_y], ax  ; 0, HU_MSGY
-mov   word ptr ds:[_w_message + HU_STEXT_T.hu_stext_textlines + HU_TEXTLINE_T.hu_textline_len], ax  ; 0
-mov   byte ptr ds:[_w_message + HU_STEXT_T.hu_stext_textlines + HU_TEXTLINE_T.hu_textline_characters], al  ; 0
+mov   word ptr ds:[OFFSET _w_message + HU_STEXT_T.hu_stext_textlines + HU_TEXTLINE_T.hu_textline_x], ax  ; 0, HU_MSGX
+mov   word ptr ds:[OFFSET _w_message + HU_STEXT_T.hu_stext_textlines + HU_TEXTLINE_T.hu_textline_y], ax  ; 0, HU_MSGY
+mov   word ptr ds:[OFFSET _w_message + HU_STEXT_T.hu_stext_textlines + HU_TEXTLINE_T.hu_textline_len], ax  ; 0
+mov   byte ptr ds:[OFFSET _w_message + HU_STEXT_T.hu_stext_textlines + HU_TEXTLINE_T.hu_textline_characters], al  ; 0
 
-mov   word ptr ds:[_w_title + HU_TEXTLINE_T.hu_textline_x], ax      ; 0  HU_TITLEX
-mov   word ptr ds:[_w_title + HU_TEXTLINE_T.hu_textline_y], HU_TITLEY
-mov   word ptr ds:[_w_title + HU_TEXTLINE_T.hu_textline_len], ax ; 0
-mov   byte ptr ds:[_w_title + HU_TEXTLINE_T.hu_textline_characters], al  ; 0
+mov   word ptr ds:[OFFSET _w_title + HU_TEXTLINE_T.hu_textline_x], ax      ; 0  HU_TITLEX
+mov   word ptr ds:[OFFSET _w_title + HU_TEXTLINE_T.hu_textline_y], HU_TITLEY
+mov   word ptr ds:[OFFSET _w_title + HU_TEXTLINE_T.hu_textline_len], ax ; 0
+mov   byte ptr ds:[OFFSET _w_title + HU_TEXTLINE_T.hu_textline_characters], al  ; 0
 
 
-mov   word ptr ds:[_w_message + HU_STEXT_T.hu_stext_onptr], OFFSET _message_on
+mov   word ptr ds:[OFFSET _w_message + HU_STEXT_T.hu_stext_onptr], OFFSET _message_on
 
 
 inc   ax
-mov   byte ptr ds:[_w_message + HU_STEXT_T.hu_stext_height], al ; 1
-mov   byte ptr ds:[_w_message + HU_STEXT_T.hu_stext_laston], al ; 1
-mov   byte ptr ds:[_w_message + HU_STEXT_T.hu_stext_textlines + HU_TEXTLINE_T.hu_textline_needsupdate], al  ; 1
-mov   byte ptr ds:[_w_title + HU_TEXTLINE_T.hu_textline_needsupdate], al ; 1
+mov   byte ptr ds:[OFFSET _w_message + HU_STEXT_T.hu_stext_height], al ; 1
+mov   byte ptr ds:[OFFSET _w_message + HU_STEXT_T.hu_stext_laston], al ; 1
+mov   byte ptr ds:[OFFSET _w_message + HU_STEXT_T.hu_stext_textlines + HU_TEXTLINE_T.hu_textline_needsupdate], al  ; 1
+mov   byte ptr ds:[OFFSET _w_title + HU_TEXTLINE_T.hu_textline_needsupdate], al ; 1
 
-cmp   byte ptr ds:[_commercial], 0
+push  ss
+pop   ds
+ASSUME DS:DGROUP
+
+cmp   byte ptr ds:[_commercial], ah ; 0
 mov   al, byte ptr ds:[_gamemap]
 
 je    not_commercial
@@ -125,8 +145,17 @@ push  bx
 call  getStringByIndex_
 
 pop   dx  ;bp - 0100h
-mov   ax, _w_title
+
+push  cs
+pop   ds
+
+ASSUME DS:HU_SETUP_TEXT
+mov   ax, OFFSET _w_title
 call  HUlib_addStringToTextLine_
+
+ASSUME DS:DGROUP
+push  ss
+pop   ds
 
 
 LEAVE_MACRO

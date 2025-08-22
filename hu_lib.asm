@@ -25,6 +25,7 @@ EXTRN V_DrawPatchDirect_:FAR
 EXTRN locallib_toupper_:NEAR
 EXTRN R_VideoErase_:NEAR
 
+EXTRN _w_message:NEAR
 
 SHORTFLOORBITS = 3
 
@@ -47,9 +48,10 @@ ENDP
 PROC    HUlib_addStringToTextLine_ NEAR
 PUBLIC  HUlib_addStringToTextLine_
 
-
+; DS = CS when called
 ;void __near HUlib_addStringToTextLine(hu_textline_t  __near*textline, int8_t* __near str){	
 
+ASSUME DS:HU_LIB_TEXT
 
 push  bx
 push  si
@@ -63,7 +65,7 @@ mov   di, word ptr ds:[bx + HU_TEXTLINE_T.hu_textline_len]  ; write back once at
 loop_do_next_char:
 cmp   di, HU_MAXLINELENGTH
 je    done_adding_string_to_textline
-lodsb 
+lods  byte ptr ss:[si] 
 test  al, al
 je    done_adding_string_to_textline
 call  locallib_toupper_
@@ -85,6 +87,8 @@ pop   si
 pop   bx
 ret   
 
+ASSUME DS:DGROUP
+
 
 ENDP
 
@@ -94,6 +98,7 @@ ENDP
 PROC    HUlib_drawTextLine_ NEAR
 PUBLIC  HUlib_drawTextLine_
 
+; DOES NOT assume ds = cs
 
 
 
@@ -101,13 +106,12 @@ PUSHA_NO_AX_MACRO
 
 xchg  ax, si
 xor   bp, bp  ; loop counter.
-cmp   word ptr ds:[si + HU_TEXTLINE_T.hu_textline_len], bp ; 0
+cmp   word ptr cs:[si + HU_TEXTLINE_T.hu_textline_len], bp ; 0
 jnge  exit_hulib_drawtextline
-mov   ax, word ptr ds:[si + HU_TEXTLINE_T.hu_textline_x]
+mov   ax, word ptr cs:[si + HU_TEXTLINE_T.hu_textline_x]
 
 loop_draw_next_textline:
-; be cheap and use ss i guess
-mov   bl, byte ptr ss:[si + bp + HU_TEXTLINE_T.hu_textline_characters]
+mov   bl, byte ptr cs:[si + bp + HU_TEXTLINE_T.hu_textline_characters]
 cmp   bl, ' '
 je    forced_space
 cmp   bl, '_'
@@ -128,14 +132,14 @@ cmp   di, SCREENWIDTH
 jg    exit_hulib_drawtextline
 
 
-mov   dx, word ptr ds:[si + HU_TEXTLINE_T.hu_textline_y]
+mov   dx, word ptr cs:[si + HU_TEXTLINE_T.hu_textline_y]
 call  V_DrawPatchDirect_
 
 xchg  ax, di
 
 iter_next_drawtextline:
 inc   bp
-cmp   bp, word ptr ds:[si + HU_TEXTLINE_T.hu_textline_len]
+cmp   bp, word ptr cs:[si + HU_TEXTLINE_T.hu_textline_len]
 jl    loop_draw_next_textline
 
 exit_hulib_drawtextline:
@@ -153,15 +157,17 @@ jmp   iter_next_drawtextline
 ENDP
 
 
+; DOES assume ds = cs 
 
 
 PROC    HUlib_eraseTextLine_ NEAR
 PUBLIC  HUlib_eraseTextLine_
 
+ASSUME DS:HU_LIB_TEXT
 PUSHA_NO_AX_OR_BP_MACRO
-cmp   byte ptr ds:[_automapactive], 0
+cmp   byte ptr ss:[_automapactive], 0
 jne   skip_erase
-cmp   word ptr ds:[_viewwindowx], 0
+cmp   word ptr ss:[_viewwindowx], 0
 je    skip_erase
 xchg  ax, si
 cmp   byte ptr ds:[si + HU_TEXTLINE_T.hu_textline_needsupdate], 0
@@ -172,6 +178,11 @@ add   di, 8
 mov   ax, SCREENWIDTH
 mul   cx
 xchg  ax, bx 
+
+push  ss
+pop   ds
+ASSUME DS:DGROUP
+
 
 ; bx =  yoffset
 ; cx =  y
@@ -189,7 +200,7 @@ loop_next_textline_erase:
 ;   }
 
 cmp   cx, di  ; textline->y + lineheight
-jae   skip_erase
+jae   done_with_erase
 mov   ax, word ptr ds:[_viewwindowy]
 cmp   cx, ax
 jnae  skip_first_videoerase
@@ -222,7 +233,11 @@ inc   cx
 add   bx, SCREENWIDTH
 jmp   loop_next_textline_erase
 
+done_with_erase:
 
+push  cs
+pop   ds
+ASSUME DS:HU_LIB_TEXT
 
 
 skip_erase:
@@ -232,13 +247,14 @@ je    exit_HUlib_eraseTextLine_
 dec   byte ptr ds:[si + HU_TEXTLINE_T.hu_textline_needsupdate]
 exit_HUlib_eraseTextLine_:
 POPA_NO_AX_OR_BP_MACRO
+ASSUME DS:DGROUP
 ret
 
 ENDP
 
 
 
-
+; DOES NOT assume ds = cs
 PROC    HUlib_addMessageToSText_ NEAR
 PUBLIC  HUlib_addMessageToSText_
 ;void __near HUlib_addMessageToSText (int8_t* __near msg ) {
@@ -249,8 +265,10 @@ push  dx
 push  si
 
 xchg  ax, dx  ; dx holds ptr
-
-mov   si, _w_message
+push  cs
+pop   ds
+ASSUME DS:HU_LIB_TEXT
+mov   si, OFFSET _w_message
 inc   byte ptr ds:[si + HU_STEXT_T.hu_stext_currentline]
 mov   al, byte ptr ds:[si + HU_STEXT_T.hu_stext_height]
 mov   byte ptr cs:[SELFMODIFY_check_stext_height+1], al
@@ -268,7 +286,7 @@ mov   word ptr ds:[si + HU_TEXTLINE_T.hu_textline_len], ax ; 0
 mov   byte ptr ds:[si + HU_TEXTLINE_T.hu_textline_characters], al ; 0
 mov   byte ptr ds:[si + HU_TEXTLINE_T.hu_textline_needsupdate], 1
 
-mov   si, _w_message
+mov   si, OFFSET _w_message
 ; ax  loop counter
 
 loop_update_next_line:
@@ -285,6 +303,10 @@ updated_all_lines:
 pop   ax ; recover previously calculated currentline
 ; dx already set
 call  HUlib_addStringToTextLine_
+push  ss
+pop   ds
+
+ASSUME DS:DGROUP
 mov   byte ptr ds:[_hudneedsupdate], 4
 
 pop   si

@@ -359,7 +359,7 @@
 
 
 // 361 bytes? 0x169?
-#define w_message 						(*((hu_stext_t __near*)               (_NULL_OFFSET + 0x02D0)))
+// #define w_message 						(*((hu_stext_t __near*)               (_NULL_OFFSET + 0x02D0)))
 
 #define columnquality                   (*((uint8_t __near*)                  (_NULL_OFFSET + 0x0439)))
 
@@ -591,7 +591,7 @@
 
 
 // 89 bytes
-#define w_title 						  (*((hu_textline_t __near*)         (_NULL_OFFSET + 0x0890)))
+// #define w_title 						  (*((hu_textline_t __near*)         (_NULL_OFFSET + 0x0890)))
 #define message_counter					  (*((uint8_t    __near*)            (_NULL_OFFSET + 0x08E8)))
 
 #define levelTimer                   	  (*((boolean    __near*)            (_NULL_OFFSET + 0x08E9)))

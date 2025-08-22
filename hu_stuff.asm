@@ -27,7 +27,8 @@ EXTRN HUlib_addMessageToSText_:NEAR
 EXTRN Z_QuickMapStatus_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
 EXTRN getStringByIndex_:FAR
-
+EXTRN _w_message:NEAR
+EXTRN _w_title:NEAR
 .DATA
 
 
@@ -57,8 +58,8 @@ push  si
 xor   cx, cx
 xor   ax, ax
 cwd
-mov   si, _w_message
-mov   bx, word ptr ds:[si + HU_STEXT_T.hu_stext_onptr]
+mov   si, OFFSET _w_message
+mov   bx, word ptr cs:[si + HU_STEXT_T.hu_stext_onptr]
 cmp   byte ptr ds:[bx], al ; 0
 je    exit_hu_drawer
 
@@ -74,10 +75,10 @@ draw_everything:
 
 
 draw_next_line:
-mov   bl, byte ptr ds:[si + HU_STEXT_T.hu_stext_height]
+mov   bl, byte ptr cs:[si + HU_STEXT_T.hu_stext_height]
 cmp   dl, bl
 jge   finish_loop
-mov   al, byte ptr ds:[si + HU_STEXT_T.hu_stext_currentline]
+mov   al, byte ptr cs:[si + HU_STEXT_T.hu_stext_currentline]
 
 sub   al, dl
 jge   dont_add_height
@@ -104,7 +105,7 @@ cmp   byte ptr ds:[_automapactive], ch ; 0
 je    check_if_mapped
 inc   cx
 call  Z_QuickMapStatus_
-mov   ax, _w_title
+mov   ax, OFFSET _w_title
 call  HUlib_drawTextLine_
 
 check_if_mapped:
@@ -138,14 +139,19 @@ PUBLIC  HU_Erase_
 push  bx
 push  dx
 push  si
-mov   dx, _w_message
+
+push  cs
+pop   ds
+ASSUME DS:HU_STUFF_TEXT
+
+mov   dx, OFFSET _w_message
 xor   bx, bx
-mov   si, word ptr ds:[_w_message + HU_STEXT_T.hu_stext_onptr]
+mov   si, word ptr ds:[OFFSET _w_message + HU_STEXT_T.hu_stext_onptr]
 
 loop_hu_erase_next_line:
-cmp   bl, byte ptr ds:[_w_message + HU_STEXT_T.hu_stext_height]
+cmp   bl, byte ptr ds:[OFFSET _w_message + HU_STEXT_T.hu_stext_height]
 jge   end_erase_loop_erase_last_line
-cmp   byte ptr ds:[_w_message + HU_STEXT_T.hu_stext_laston], bh   ; known 0
+cmp   byte ptr ds:[OFFSET _w_message + HU_STEXT_T.hu_stext_laston], bh   ; known 0
 je    dont_mark_line_for_update
 
 
@@ -158,17 +164,28 @@ xchg  dx, si
 
 dont_mark_line_for_update:
 mov   ax, dx
+
+
 call  HUlib_eraseTextLine_
+
+
 inc   bx
 add   dx, SIZEOF_HUTEXTLINE_T
 jmp   loop_hu_erase_next_line
 
 
 end_erase_loop_erase_last_line:
-lodsb ; word ptr ds:[_w_message + HU_STEXT_T.hu_stext_onptr]
-mov   byte ptr ds:[_w_message + HU_STEXT_T.hu_stext_laston], al
-mov   ax, _w_title
+lodsb ; word ptr ds:[OFFSET _w_message + HU_STEXT_T.hu_stext_onptr]
+mov   byte ptr ds:[OFFSET _w_message + HU_STEXT_T.hu_stext_laston], al
+mov   ax, OFFSET _w_title
+
 call  HUlib_eraseTextLine_
+
+push  ss
+pop   ds
+ASSUME DS:DGROUP
+
+
 pop   si
 pop   dx
 pop   bx
