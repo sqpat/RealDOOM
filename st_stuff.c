@@ -611,7 +611,7 @@ void __near STlib_drawNum ( st_number_t __near*	number, int16_t num) {
 void __near STlib_updatePercent ( st_percent_t __near* per, int16_t value) {
     if (do_st_refresh) {
         STlib_updateflag();
-        V_DrawPatch(per->num.x, per->num.y, FG, (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, per->patch_offset)));
+        V_DrawPatch(per->num.x, per->num.y, FG, (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, *(uint16_t __near*)(per->patch_offset))));
     }
     STlib_drawNum(&per->num, value);
 }

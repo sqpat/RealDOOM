@@ -21,41 +21,41 @@
 PLAYER_T STRUC 
 
     ; cmd struct 8 bytes
-    player_cmd_forwardmove    db ?                      ; 0     ;7d0
+    player_cmd_forwardmove    db ?                      ; 0     ;6d0
     player_cmd_sidemove       db ?                      ; 1
     player_cmd_angleturn      dw ?                      ; 2
     player_cmd_consistancy    dw ?                      ; 4
     player_cmd_chatchar       db ?                      ; 6
-    player_cmd_buttons        db ?                      ; 7     ;07d7h  07a7h
-    player_viewzvalue         dd ?                      ; 8     ;07d8h  07a8h
-    player_viewheightvalue    dd ?                      ; C     ;07dch  07ach
-    player_deltaviewheight    dd ?                      ; 10    ;07e0h  07b0h
-    player_bob                dd ?                      ; 14    ;07e4h  07b4h
+    player_cmd_buttons        db ?                      ; 7     ;06d7h  06a7h
+    player_viewzvalue         dd ?                      ; 8     ;06d8h  06a8h
+    player_viewheightvalue    dd ?                      ; C     ;06dch  06ach
+    player_deltaviewheight    dd ?                      ; 10    ;06e0h  06b0h
+    player_bob                dd ?                      ; 14    ;06e4h  06b4h
     player_health             dw ?                      ; 18
     player_armorpoints        dw ?                      ; 1A
     player_armortype	      db ?                      ; 1C
-    player_playerstate        db ?                      ; 1D    ;07EDh  07Bdh
-    player_powers             dw NUMPOWERS   DUP(?)     ; 1E    ;07EEh  07BEh
-    player_cards              db NUMCARDS    DUP(?)     ; 2A    ;07FAh  07BAh
-    player_readyweapon        db ?                      ; 30    ;0800h  07C0h
-    player_pendingweapon      db ?                      ; 31    ;0801h  07C1h
-    player_weaponowned        db NUMWEAPONS  DUP(?)     ; 32    ;0802h  07C2h
-    player_cheats		      db ?                      ; 3B    ;080Bh  07CBh
-    player_ammo               dw NUMAMMO     DUP(?)     ; 3C    ;080Ch  07CCh
+    player_playerstate        db ?                      ; 1D    ;06EDh  06CDh
+    player_powers             dw NUMPOWERS   DUP(?)     ; 1E    ;06EEh  06CEh
+    player_cards              db NUMCARDS    DUP(?)     ; 2A    ;06FAh  06CAh
+    player_readyweapon        db ?                      ; 30    ;0700h  06D0h
+    player_pendingweapon      db ?                      ; 31    ;0701h  06D1h
+    player_weaponowned        db NUMWEAPONS  DUP(?)     ; 32    ;0702h  06D2h
+    player_cheats		      db ?                      ; 3B    ;070Bh  06DBh
+    player_ammo               dw NUMAMMO     DUP(?)     ; 3C    ;070Ch  06DCh
     player_maxammo            dw NUMAMMO     DUP(?)     ; 44
     player_attackdown         db ?                      ; 4C
-    player_usedown            db ?                      ; 4D    ;081dh
+    player_usedown            db ?                      ; 4D    ;071dh
     player_killcount          dw ?                      ; 4E
     player_itemcount          dw ?                      ; 50
     player_secretcount        dw ?                      ; 52
-    player_message            dw ?                      ; 54    ;0824h
-	player_messagestring      dw ?                      ; 56    ;0826h
-    player_damagecount        dw ?                      ; 58    ;0828h
+    player_message            dw ?                      ; 54    ;0724h
+	player_messagestring      dw ?                      ; 56    ;0726h
+    player_damagecount        dw ?                      ; 58    ;0728h
     player_bonuscount         db ?                      ; 5A
     player_refire		      db ?                      ; 5B
-    player_attackerRef        dw ?                      ; 5C    ;082Ch
+    player_attackerRef        dw ?                      ; 5C    ;072Ch
     player_extralightvalue    db ?                      ; 5E
-    player_fixedcolormapvalue db ?                      ; 5F    ;082Fh
+    player_fixedcolormapvalue db ?                      ; 5F    ;072Fh
     player_colormap	          db ?                      ; 60
     player_didsecret	      db ?                      ; 61
     player_backpack           db ?                      ; 62
@@ -774,5 +774,31 @@ EVENT_T STRUC
     event_data2                  dd ?  ; 05   mousex
     event_data3                  dd ?  ; 09   mousey
 EVENT_T ENDS
+
+
+
+ST_NUMBER_T STRUC
+    st_number_x                dw ? ; 0
+    st_number_y                dw ? ; 2
+    st_number_width            dw ? ; 4
+    st_number_oldnum           dw ? ; 6
+    st_number_patch_offset     dw ? ; 8
+ST_NUMBER_T ENDS
+
+
+ST_PERCENT_T STRUC
+    st_percent_number         ST_NUMBER_T  ?; 0
+    st_percent_patch_offset   dw ?        ; 0Ah
+ST_PERCENT_T ENDS
+
+
+
+ST_MULTIICON_T STRUC
+    st_multicon_x                dw ? ; 0
+    st_multicon_y                dw ? ; 2
+    st_multicon_oldinum          dw ? ; 4
+    st_multicon_patch_offset     dw ? ; 6
+ST_MULTIICON_T ENDS
+
 
 
