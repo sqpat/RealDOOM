@@ -18,10 +18,13 @@
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
+
+
 ASCII_0 = 030h
 ASCII_1 = 031h
 
 EXTRN Z_QuickMapPhysics_:FAR
+EXTRN Z_QuickMapStatus_:FAR
 EXTRN I_SetPalette_:FAR
 EXTRN V_CopyRect_:FAR
 EXTRN V_MarkRect_:FAR
@@ -29,8 +32,16 @@ EXTRN V_DrawPatch_:FAR
 EXTRN cht_CheckCheat_:NEAR
 EXTRN cht_GetParam_:NEAR
 EXTRN S_ChangeMusic_:FAR
+EXTRN locallib_printhex_:NEAR
+EXTRN G_DeferedInitNew_:FAR
+EXTRN R_PointToAngle2_:FAR
+EXTRN combine_strings_:NEAR
+
 .DATA
 
+EXTRN _st_randomnumber:BYTE
+EXTRN _updatedthisframe:BYTE
+EXTRN _do_st_refresh:BYTE
 EXTRN _st_facecount:WORD
 EXTRN _st_faceindex:WORD
 EXTRN _st_calc_lastcalc:WORD
@@ -48,8 +59,8 @@ EXTRN _tallpercent:BYTE
 
 EXTRN _armsbgarray:BYTE
 
-
-
+;todo move to cs
+EXTRN _st_stuff_buf:BYTE
 EXTRN _arms:BYTE
 EXTRN _faces:BYTE
 EXTRN _keys:BYTE
@@ -70,10 +81,11 @@ EXTRN _sbar:WORD
 
 .CODE
 
+RADIATIONPAL = 13
 
 
-PROC    ST_SETUP_STARTMARKER_ NEAR
-PUBLIC  ST_SETUP_STARTMARKER_
+PROC    ST_STUFF_STARTMARKER_ NEAR
+PUBLIC  ST_STUFF_STARTMARKER_
 ENDP
 
 
@@ -443,7 +455,7 @@ label_11:
 0x000000000000518c:  BB EE 06             mov   bx, _player + PLAYER_T.player_powers
 0x000000000000518f:  C7 07 01 00          mov   word ptr ds:[bx], 1
 0x0000000000005193:  BB 24 07             mov   bx, _player + PLAYER_T.player_message
-0x0000000000005196:  C7 07 EB 00          mov   word ptr ds:[bx], 0xeb
+0x0000000000005196:  C7 07 EB 00          mov   word ptr ds:[bx], STSTR_CHOPPERS
 0x000000000000519a:  E9 BD FD             jmp   label_2
 label_35:
 0x000000000000519d:  8E 46 FE             mov   es, word ptr [bp - 2]
@@ -460,46 +472,46 @@ label_36:
 0x00000000000051b7:  8D 4E EC             lea   cx, [bp - 014h]
 0x00000000000051ba:  C4 37                les   si, dword ptr ds:[bx]
 0x00000000000051bc:  BB 01 00             mov   bx, 1
-0x00000000000051bf:  26 8B 44 0E          mov   ax, word ptr es:[si + 0xe]
-0x00000000000051c3:  26 8B 54 10          mov   dx, word ptr es:[si + 0x10]
-0x00000000000051c7:  E8 97 24             call  0x7661
+0x00000000000051bf:  26 8B 44 0E          mov   ax, word ptr es:[si + MOBJ_POS_T.mp_angle + 0]
+0x00000000000051c3:  26 8B 54 10          mov   dx, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
+0x00000000000051c7:  E8 97 24             call  locallib_printhex_
 0x00000000000051ca:  8D 56 EC             lea   dx, [bp - 014h]
 0x00000000000051cd:  BB 12 18             mov   bx, 0x1812
-0x00000000000051d0:  B8 7C 1B             mov   ax, 0x1b7c
+0x00000000000051d0:  B8 7C 1B             mov   ax, OFFSET _st_stuff_buf
 0x00000000000051d3:  1E                   push  ds
 0x00000000000051d4:  8C D9                mov   cx, ds
 0x00000000000051d6:  52                   push  dx
 0x00000000000051d7:  8C DA                mov   dx, ds
-0x00000000000051d9:  E8 D8 23             call  0x75b4
-0x00000000000051dc:  BB 7C 1B             mov   bx, 0x1b7c
+0x00000000000051d9:  E8 D8 23             call  combine_strings_
+0x00000000000051dc:  BB 7C 1B             mov   bx, OFFSET _st_stuff_buf
 0x00000000000051df:  1E                   push  ds
 0x00000000000051e0:  8C D9                mov   cx, ds
 0x00000000000051e2:  8C DA                mov   dx, ds
 0x00000000000051e4:  68 19 18             push  0x1819
 0x00000000000051e7:  89 D8                mov   ax, bx
-0x00000000000051e9:  BE 30 06             mov   si, 0x630
-0x00000000000051ec:  E8 C5 23             call  0x75b4
+0x00000000000051e9:  BE 30 06             mov   si, _playerMobj_pos
+0x00000000000051ec:  E8 C5 23             call  combine_strings_
 0x00000000000051ef:  C4 1C                les   bx, dword ptr ds:[si]
 0x00000000000051f1:  8D 4E EC             lea   cx, [bp - 014h]
 0x00000000000051f4:  26 8B 07             mov   ax, word ptr es:[bx]
 0x00000000000051f7:  26 8B 57 02          mov   dx, word ptr es:[bx + 2]
 0x00000000000051fb:  BB 01 00             mov   bx, 1
-0x00000000000051fe:  E8 60 24             call  0x7661
+0x00000000000051fe:  E8 60 24             call  locallib_printhex_
 0x0000000000005201:  8D 56 EC             lea   dx, [bp - 014h]
-0x0000000000005204:  BB 7C 1B             mov   bx, 0x1b7c
+0x0000000000005204:  BB 7C 1B             mov   bx, OFFSET _st_stuff_buf
 0x0000000000005207:  1E                   push  ds
 0x0000000000005208:  8C D9                mov   cx, ds
 0x000000000000520a:  52                   push  dx
 0x000000000000520b:  89 D8                mov   ax, bx
 0x000000000000520d:  8C DA                mov   dx, ds
-0x000000000000520f:  E8 A2 23             call  0x75b4
-0x0000000000005212:  BB 7C 1B             mov   bx, 0x1b7c
+0x000000000000520f:  E8 A2 23             call  combine_strings_
+0x0000000000005212:  BB 7C 1B             mov   bx, OFFSET _st_stuff_buf
 0x0000000000005215:  1E                   push  ds
 0x0000000000005216:  8C D9                mov   cx, ds
 0x0000000000005218:  8C DA                mov   dx, ds
 0x000000000000521a:  68 22 18             push  0x1822
 0x000000000000521d:  89 D8                mov   ax, bx
-0x000000000000521f:  E8 92 23             call  0x75b4
+0x000000000000521f:  E8 92 23             call  combine_strings_
 0x0000000000005222:  8D 4E EC             lea   cx, [bp - 014h]
 0x0000000000005225:  89 F3                mov   bx, si
 0x0000000000005227:  8B 34                mov   si, word ptr ds:[si]
@@ -507,68 +519,73 @@ label_36:
 0x000000000000522c:  BB 01 00             mov   bx, 1
 0x000000000000522f:  26 8B 44 04          mov   ax, word ptr es:[si + 4]
 0x0000000000005233:  26 8B 54 06          mov   dx, word ptr es:[si + 6]
-0x0000000000005237:  E8 27 24             call  0x7661
+0x0000000000005237:  E8 27 24             call  locallib_printhex_
 0x000000000000523a:  8D 56 EC             lea   dx, [bp - 014h]
-0x000000000000523d:  BB 7C 1B             mov   bx, 0x1b7c
+0x000000000000523d:  BB 7C 1B             mov   bx, OFFSET _st_stuff_buf
 0x0000000000005240:  1E                   push  ds
 0x0000000000005241:  8C D9                mov   cx, ds
 0x0000000000005243:  52                   push  dx
 0x0000000000005244:  89 D8                mov   ax, bx
 0x0000000000005246:  8C DA                mov   dx, ds
-0x0000000000005248:  E8 69 23             call  0x75b4
-0x000000000000524b:  BB 7C 1B             mov   bx, 0x1b7c
+0x0000000000005248:  E8 69 23             call  combine_strings_
+0x000000000000524b:  BB 7C 1B             mov   bx, OFFSET _st_stuff_buf
 0x000000000000524e:  1E                   push  ds
 0x000000000000524f:  8C D9                mov   cx, ds
 0x0000000000005251:  8C DA                mov   dx, ds
 0x0000000000005253:  68 26 18             push  0x1826
 0x0000000000005256:  89 D8                mov   ax, bx
-0x0000000000005258:  E8 59 23             call  0x75b4
+0x0000000000005258:  E8 59 23             call  combine_strings_
 0x000000000000525b:  BB 26 07             mov   bx, _player + PLAYER_T.player_messagestring
-0x000000000000525e:  C7 07 7C 1B          mov   word ptr ds:[bx], 0x1b7c
+0x000000000000525e:  C7 07 7C 1B          mov   word ptr ds:[bx], OFFSET _st_stuff_buf
 0x0000000000005262:  E9 F5 FC             jmp   label_2
 label_17:
 0x0000000000005265:  8D 56 FA             lea   dx, [bp - 6]
-0x0000000000005268:  B8 3C 00             mov   ax, 0x3c
+0x0000000000005268:  B8 3C 00             mov   ax, CHEATID_CHANGE_LEVEL
 0x000000000000526b:  B3 04                mov   bl, 4
-0x000000000000526d:  E8 79 14             call  0x66e9
+0x000000000000526d:  E8 79 14             call  cht_GetParam_
 0x0000000000005270:  8A 46 FA             mov   al, byte ptr [bp - 6]
 0x0000000000005273:  BE EB 02             mov   si, _commercial
-0x0000000000005276:  2C 30                sub   al, 0x30
+0x0000000000005276:  2C 30                sub   al, ASCII_0
 0x0000000000005278:  80 3C 00             cmp   byte ptr ds:[si], 0
-0x000000000000527b:  74 63                je    0x52e0
-0x000000000000527d:  B4 0A                mov   ah, 0xa
+0x000000000000527b:  74 63                je    label_58
+0x000000000000527d:  B4 0A                mov   ah, 10
 0x000000000000527f:  F6 EC                imul  ah
 0x0000000000005281:  02 46 FB             add   al, byte ptr [bp - 5]
 0x0000000000005284:  30 D2                xor   dl, dl
 
 label_16:
-0x0000000000005286:  2C 30                sub   al, 0x30
-0x0000000000005288:  BE E1 00             mov   si, 0xe1
+0x0000000000005286:  2C 30                sub   al, ASCII_0
+0x0000000000005288:  BE E1 00             mov   si, _is_ultimate
 0x000000000000528b:  80 3C 00             cmp   byte ptr ds:[si], 0
-0x000000000000528e:  74 02                je    0x5292
+0x000000000000528e:  74 02                je    label_56
 0x0000000000005290:  B3 05                mov   bl, 5
+label_56:
 0x0000000000005292:  BE EB 02             mov   si, _commercial
 0x0000000000005295:  80 3C 00             cmp   byte ptr ds:[si], 0
-0x0000000000005298:  75 10                jne   0x52aa
+0x0000000000005298:  75 10                jne   label_57
 0x000000000000529a:  84 D2                test  dl, dl
-0x000000000000529c:  7E 0C                jle   0x52aa
+0x000000000000529c:  7E 0C                jle   label_57
 0x000000000000529e:  38 DA                cmp   dl, bl
-0x00000000000052a0:  7D 08                jge   0x52aa
+0x00000000000052a0:  7D 08                jge   label_57
 0x00000000000052a2:  84 C0                test  al, al
-0x00000000000052a4:  7E 04                jle   0x52aa
-0x00000000000052a6:  3C 0A                cmp   al, 0xa
-0x00000000000052a8:  7C 13                jl    0x52bd
+0x00000000000052a4:  7E 04                jle   label_57
+0x00000000000052a6:  3C 0A                cmp   al, 10
+0x00000000000052a8:  7C 13                jl    label_59
+label_57:
 0x00000000000052aa:  BB EB 02             mov   bx, _commercial
 0x00000000000052ad:  80 3F 00             cmp   byte ptr ds:[bx], 0
-0x00000000000052b0:  75 03                jne   0x52b5
+0x00000000000052b0:  75 03                jne   label_60
+label_55:
 0x00000000000052b2:  E9 B9 FC             jmp   exit_st_responder_ret_0
+label_60:
 0x00000000000052b5:  84 C0                test  al, al
-0x00000000000052b7:  7E F9                jle   0x52b2
-0x00000000000052b9:  3C 28                cmp   al, 0x28
-0x00000000000052bb:  7F F5                jg    0x52b2
+0x00000000000052b7:  7E F9                jle   label_55
+0x00000000000052b9:  3C 28                cmp   al, 40
+0x00000000000052bb:  7F F5                jg    label_55
+label_59:
 0x00000000000052bd:  BB 24 07             mov   bx, _player + PLAYER_T.player_message
 0x00000000000052c0:  98                   cbw  
-0x00000000000052c1:  C7 07 EC 00          mov   word ptr ds:[bx], 0xec
+0x00000000000052c1:  C7 07 EC 00          mov   word ptr ds:[bx], STSTR_CLEV
 0x00000000000052c5:  89 C3                mov   bx, ax
 0x00000000000052c7:  88 D0                mov   al, dl
 0x00000000000052c9:  98                   cbw  
@@ -576,8 +593,7 @@ label_16:
 0x00000000000052cd:  89 C2                mov   dx, ax
 0x00000000000052cf:  8A 04                mov   al, byte ptr ds:[si]
 0x00000000000052d1:  30 E4                xor   ah, ah
-0x00000000000052d3:  0E                   push  cs
-0x00000000000052d4:  3E E8 D4 E5          call  0x38ac
+0x00000000000052d4:  3E E8 D4 E5          call  G_DeferedInitNew_
 0x00000000000052d8:  30 C0                xor   al, al
 0x00000000000052da:  C9                   LEAVE_MACRO 
 0x00000000000052db:  5F                   pop   di
@@ -585,6 +601,7 @@ label_16:
 0x00000000000052dd:  59                   pop   cx
 0x00000000000052de:  5B                   pop   bx
 0x00000000000052df:  C3                   ret   
+label_58:
 0x00000000000052e0:  88 C2                mov   dl, al
 0x00000000000052e2:  8A 46 FB             mov   al, byte ptr [bp - 5]
 0x00000000000052e5:  EB 9F                jmp   label_16
@@ -645,7 +662,7 @@ PUBLIC  ST_updateFaceWidget_
 0x000000000000532f:  56                   push  si
 0x0000000000005330:  80 3E 61 0F 0A       cmp   byte ptr ds:[_st_face_priority], 10
 0x0000000000005335:  7D 0B                jge   label_37
-0x0000000000005337:  BB E8 06             mov   bx, 0x6e8
+0x0000000000005337:  BB E8 06             mov   bx, _player + PLAYER_T.player_health
 0x000000000000533a:  83 3F 00             cmp   word ptr ds:[bx], 0
 0x000000000000533d:  75 03                jne   label_37
 0x000000000000533f:  E9 05 01             jmp   label_38
@@ -657,6 +674,7 @@ label_37:
 0x000000000000534f:  74 3C                je    label_39
 0x0000000000005351:  30 F6                xor   dh, dh
 0x0000000000005353:  30 D2                xor   dl, dl
+label_61:
 0x0000000000005355:  88 D0                mov   al, dl
 0x0000000000005357:  98                   cbw  
 0x0000000000005358:  89 C3                mov   bx, ax
@@ -669,92 +687,102 @@ label_37:
 label_40:
 0x000000000000536e:  FE C2                inc   dl
 0x0000000000005370:  80 FA 09             cmp   dl, 9
-0x0000000000005373:  7C E0                jl    0x5355
+0x0000000000005373:  7C E0                jl    label_61
 0x0000000000005375:  84 F6                test  dh, dh
 0x0000000000005377:  74 14                je    label_39
 0x0000000000005379:  C6 06 61 0F 08       mov   byte ptr ds:[_st_face_priority], 8
-0x000000000000537e:  C7 06 58 0F 46 00    mov   word ptr ds:[_st_facecount], 0x46
-0x0000000000005384:  E8 61 FF             call  0x52e8
+0x000000000000537e:  C7 06 58 0F 46 00    mov   word ptr ds:[_st_facecount], ST_EVILGRINCOUNT
+0x0000000000005384:  E8 61 FF             call  ST_calcPainOffset_
 0x0000000000005387:  05 06 00             add   ax, 6
 0x000000000000538a:  A3 5A 0F             mov   word ptr ds:[_st_faceindex], ax
 label_39:
 0x000000000000538d:  80 3E 61 0F 08       cmp   byte ptr ds:[_st_face_priority], 8
-0x0000000000005392:  7D 3D                jge   0x53d1
+0x0000000000005392:  7D 3D                jge   label_62
 0x0000000000005394:  BB 28 07             mov   bx, _player + PLAYER_T.player_damagecount
 0x0000000000005397:  83 3F 00             cmp   word ptr ds:[bx], 0
-0x000000000000539a:  74 35                je    0x53d1
-0x000000000000539c:  BB 2C 07             mov   bx, 0x72c
+0x000000000000539a:  74 35                je    label_62
+0x000000000000539c:  BB 2C 07             mov   bx, _player + PLAYER_T.player_attackerRef
 0x000000000000539f:  8B 07                mov   ax, word ptr ds:[bx]
 0x00000000000053a1:  85 C0                test  ax, ax
-0x00000000000053a3:  74 2C                je    0x53d1
-0x00000000000053a5:  BE F6 05             mov   si, 0x5f6
+0x00000000000053a3:  74 2C                je    label_62
+0x00000000000053a5:  BE F6 05             mov   si, _playerMobjRef
 0x00000000000053a8:  3B 04                cmp   ax, word ptr ds:[si]
-0x00000000000053aa:  74 25                je    0x53d1
-0x00000000000053ac:  BB E8 06             mov   bx, 0x6e8
+0x00000000000053aa:  74 25                je    label_62
+0x00000000000053ac:  BB E8 06             mov   bx, _player + PLAYER_T.player_health
 0x00000000000053af:  8B 07                mov   ax, word ptr ds:[bx]
 0x00000000000053b1:  2B 06 56 0F          sub   ax, word ptr ds:[_st_oldhealth]
 0x00000000000053b5:  C6 06 61 0F 07       mov   byte ptr ds:[_st_face_priority], 7
-0x00000000000053ba:  3D 14 00             cmp   ax, 0x14
-0x00000000000053bd:  7F 03                jg    0x53c2
-0x00000000000053bf:  E9 C8 00             jmp   0x548a
+0x00000000000053ba:  3D 14 00             cmp   ax, 20
+0x00000000000053bd:  7F 03                jg    label_87
+0x00000000000053bf:  E9 C8 00             jmp   label_88
+label_87:
 0x00000000000053c2:  C7 06 58 0F 23 00    mov   word ptr ds:[_st_facecount], 0x23
-0x00000000000053c8:  E8 1D FF             call  0x52e8
+0x00000000000053c8:  E8 1D FF             call  ST_calcPainOffset_
 0x00000000000053cb:  05 05 00             add   ax, 5
 0x00000000000053ce:  A3 5A 0F             mov   word ptr ds:[_st_faceindex], ax
+label_62:
 0x00000000000053d1:  80 3E 61 0F 07       cmp   byte ptr ds:[_st_face_priority], 7
-0x00000000000053d6:  7D 2A                jge   0x5402
+0x00000000000053d6:  7D 2A                jge   label_89
 0x00000000000053d8:  BB 28 07             mov   bx, _player + PLAYER_T.player_damagecount
 0x00000000000053db:  83 3F 00             cmp   word ptr ds:[bx], 0
-0x00000000000053de:  74 22                je    0x5402
-0x00000000000053e0:  BB E8 06             mov   bx, 0x6e8
+0x00000000000053de:  74 22                je    label_89
+0x00000000000053e0:  BB E8 06             mov   bx, _player + PLAYER_T.player_health
 0x00000000000053e3:  8B 07                mov   ax, word ptr ds:[bx]
 0x00000000000053e5:  2B 06 56 0F          sub   ax, word ptr ds:[_st_oldhealth]
 0x00000000000053e9:  3D 14 00             cmp   ax, 0x14
-0x00000000000053ec:  7E 56                jle   0x5444
+0x00000000000053ec:  7E 56                jle   jump_to_label_90
 0x00000000000053ee:  C6 06 61 0F 07       mov   byte ptr ds:[_st_face_priority], 7
 0x00000000000053f3:  C7 06 58 0F 23 00    mov   word ptr ds:[_st_facecount], 0x23
-0x00000000000053f9:  E8 EC FE             call  0x52e8
+0x00000000000053f9:  E8 EC FE             call  ST_calcPainOffset_
 0x00000000000053fc:  05 05 00             add   ax, 5
 0x00000000000053ff:  A3 5A 0F             mov   word ptr ds:[_st_faceindex], ax
+label_89:
 0x0000000000005402:  80 3E 61 0F 06       cmp   byte ptr ds:[_st_face_priority], 6
-0x0000000000005407:  7D 14                jge   0x541d
+0x0000000000005407:  7D 14                jge   label_91
 0x0000000000005409:  BB 1C 07             mov   bx, 0x71c
 0x000000000000540c:  80 3F 00             cmp   byte ptr ds:[bx], 0
-0x000000000000540f:  74 49                je    0x545a
+0x000000000000540f:  74 49                je    jump_to_label_92
 0x0000000000005411:  80 3E 60 0F FF       cmp   byte ptr ds:[0xf60], 0xff
-0x0000000000005416:  75 45                jne   0x545d
+0x0000000000005416:  75 45                jne   jump_to_label_93
 0x0000000000005418:  C6 06 60 0F 46       mov   byte ptr ds:[0xf60], 0x46
+label_91:
 0x000000000000541d:  80 3E 61 0F 05       cmp   byte ptr ds:[_st_face_priority], 5
-0x0000000000005422:  7D 10                jge   0x5434
+0x0000000000005422:  7D 10                jge   label_94
 0x0000000000005424:  BB 0B 07             mov   bx, _player + PLAYER_T.player_cheats
 0x0000000000005427:  F6 07 02             test  byte ptr ds:[bx], 2
-0x000000000000542a:  75 34                jne   0x5460
+0x000000000000542a:  75 34                jne   jump_to_label_95
 0x000000000000542c:  BB EE 06             mov   bx, _player + PLAYER_T.player_powers
 0x000000000000542f:  83 3F 00             cmp   word ptr ds:[bx], 0
-0x0000000000005432:  75 2C                jne   0x5460
+0x0000000000005432:  75 2C                jne   jump_to_label_95
+label_94:
 0x0000000000005434:  83 3E 58 0F 00       cmp   word ptr ds:[_st_facecount], 0
-0x0000000000005439:  74 28                je    0x5463
+0x0000000000005439:  74 28                je    label_96
 0x000000000000543b:  FF 0E 58 0F          dec   word ptr ds:[_st_facecount]
 0x000000000000543f:  5E                   pop   si
 0x0000000000005440:  5A                   pop   dx
 0x0000000000005441:  59                   pop   cx
 0x0000000000005442:  5B                   pop   bx
 0x0000000000005443:  C3                   ret   
-0x0000000000005444:  E9 FC 00             jmp   0x5543
+jump_to_label_90:
+0x0000000000005444:  E9 FC 00             jmp   label_90
 label_38:
 0x0000000000005447:  C6 06 61 0F 09       mov   byte ptr ds:[_st_face_priority], 9
 0x000000000000544c:  C7 06 5A 0F 29 00    mov   word ptr ds:[_st_faceindex], ST_DEADFACE
 0x0000000000005452:  C7 06 58 0F 01 00    mov   word ptr ds:[_st_facecount], 1
 0x0000000000005458:  EB E1                jmp   0x543b
-0x000000000000545a:  E9 1F 01             jmp   0x557c
-0x000000000000545d:  E9 F7 00             jmp   0x5557
-0x0000000000005460:  E9 21 01             jmp   0x5584
-0x0000000000005463:  A0 C8 1C             mov   al, byte ptr ds:[0x1cc8]
+jump_to_label_92:
+0x000000000000545a:  E9 1F 01             jmp   label_92
+jump_to_label_93:
+0x000000000000545d:  E9 F7 00             jmp   label_93
+jump_to_label_95:
+0x0000000000005460:  E9 21 01             jmp   label_95
+label_96:
+0x0000000000005463:  A0 C8 1C             mov   al, byte ptr ds:[_st_randomnumber]
 0x0000000000005466:  30 E4                xor   ah, ah
 0x0000000000005468:  BB 03 00             mov   bx, 3
 0x000000000000546b:  99                   cwd   
 0x000000000000546c:  F7 FB                idiv  bx
-0x000000000000546e:  E8 77 FE             call  0x52e8
+0x000000000000546e:  E8 77 FE             call  ST_calcPainOffset_
 0x0000000000005471:  C7 06 58 0F 11 00    mov   word ptr ds:[_st_facecount], 0x11
 0x0000000000005477:  01 D0                add   ax, dx
 0x0000000000005479:  C6 06 61 0F 00       mov   byte ptr ds:[_st_face_priority], 0
@@ -765,14 +793,15 @@ label_38:
 0x0000000000005487:  59                   pop   cx
 0x0000000000005488:  5B                   pop   bx
 0x0000000000005489:  C3                   ret   
-0x000000000000548a:  BB 2C 07             mov   bx, 0x72c
-0x000000000000548d:  6B 1F 18             imul  bx, word ptr ds:[bx], 0x18
-0x0000000000005490:  B8 F5 6A             mov   ax, 0x6af5
+label_88:
+0x000000000000548a:  BB 2C 07             mov   bx, _player + PLAYER_T.player_attackerRef
+0x000000000000548d:  6B 1F 18             imul  bx, word ptr ds:[bx], SIZEOF_MOBJ_POS_T
+0x0000000000005490:  B8 F5 6A             mov   ax, MOBJPOSLIST_6800_SEGMENT
 0x0000000000005493:  8E C0                mov   es, ax
 0x0000000000005495:  26 FF 77 06          push  word ptr es:[bx + 6]
 0x0000000000005499:  26 FF 77 04          push  word ptr es:[bx + 4]
 0x000000000000549d:  26 FF 77 02          push  word ptr es:[bx + 2]
-0x00000000000054a1:  BE 30 06             mov   si, 0x630
+0x00000000000054a1:  BE 30 06             mov   si, _playerMobj_pos
 0x00000000000054a4:  26 FF 37             push  word ptr es:[bx]
 0x00000000000054a7:  C4 1C                les   bx, dword ptr ds:[si]
 0x00000000000054a9:  26 8B 47 04          mov   ax, word ptr es:[bx + 4]
@@ -782,9 +811,8 @@ label_38:
 0x00000000000054b8:  89 C3                mov   bx, ax
 0x00000000000054ba:  89 D0                mov   ax, dx
 0x00000000000054bc:  89 F2                mov   dx, si
-0x00000000000054be:  BE 30 06             mov   si, 0x630
-0x00000000000054c1:  0E                   push  cs
-0x00000000000054c2:  3E E8 4D 61          call  0xb613
+0x00000000000054be:  BE 30 06             mov   si, _playerMobj_pos
+0x00000000000054c2:  3E E8 4D 61          call  R_PointToAngle2_
 0x00000000000054c6:  C4 1C                les   bx, dword ptr ds:[si]
 0x00000000000054c8:  26 3B 57 10          cmp   dx, word ptr es:[bx + 0x10]
 0x00000000000054cc:  77 08                ja    0x54d6
@@ -803,7 +831,7 @@ label_38:
 0x00000000000054ef:  76 17                jbe   0x5508
 0x00000000000054f1:  B3 01                mov   bl, 1
 0x00000000000054f3:  C7 06 58 0F 23 00    mov   word ptr ds:[_st_facecount], 0x23
-0x00000000000054f9:  E8 EC FD             call  0x52e8
+0x00000000000054f9:  E8 EC FD             call  ST_calcPainOffset_
 0x00000000000054fc:  81 FA 00 20          cmp   dx, 0x2000
 0x0000000000005500:  73 31                jae   0x5533
 0x0000000000005502:  05 07 00             add   ax, 7
@@ -832,23 +860,27 @@ label_38:
 0x000000000000553a:  E9 91 FE             jmp   0x53ce
 0x000000000000553d:  05 04 00             add   ax, 4
 0x0000000000005540:  E9 8B FE             jmp   0x53ce
+label_90:
 0x0000000000005543:  C6 06 61 0F 06       mov   byte ptr ds:[_st_face_priority], 6
 0x0000000000005548:  C7 06 58 0F 23 00    mov   word ptr ds:[_st_facecount], 0x23
-0x000000000000554e:  E8 97 FD             call  0x52e8
+0x000000000000554e:  E8 97 FD             call  ST_calcPainOffset_
 0x0000000000005551:  05 07 00             add   ax, 7
 0x0000000000005554:  E9 A8 FE             jmp   0x53ff
+label_93:
 0x0000000000005557:  FE 0E 60 0F          dec   byte ptr ds:[0xf60]
 0x000000000000555b:  74 03                je    0x5560
 0x000000000000555d:  E9 BD FE             jmp   0x541d
 0x0000000000005560:  C6 06 61 0F 05       mov   byte ptr ds:[_st_face_priority], 5
-0x0000000000005565:  E8 80 FD             call  0x52e8
+0x0000000000005565:  E8 80 FD             call  ST_calcPainOffset_
 0x0000000000005568:  C7 06 58 0F 01 00    mov   word ptr ds:[_st_facecount], 1
 0x000000000000556e:  05 07 00             add   ax, 7
 0x0000000000005571:  C6 06 60 0F 01       mov   byte ptr ds:[0xf60], 1
 0x0000000000005576:  A3 5A 0F             mov   word ptr ds:[_st_faceindex], ax
 0x0000000000005579:  E9 A1 FE             jmp   0x541d
+label_92:
 0x000000000000557c:  C6 06 60 0F FF       mov   byte ptr ds:[0xf60], 0xff
 0x0000000000005581:  E9 99 FE             jmp   0x541d
+label_95:
 0x0000000000005584:  C6 06 61 0F 04       mov   byte ptr ds:[_st_face_priority], 4
 0x0000000000005589:  C7 06 5A 0F 28 00    mov   word ptr ds:[_st_faceindex], 0x28
 0x000000000000558f:  C7 06 58 0F 01 00    mov   word ptr ds:[_st_facecount], 1
@@ -869,33 +901,37 @@ PUBLIC  ST_updateWidgets_
 0x00000000000055a0:  52                   push  dx
 0x00000000000055a1:  56                   push  si
 0x00000000000055a2:  30 D2                xor   dl, dl
+label_53:
 0x00000000000055a4:  88 D0                mov   al, dl
 0x00000000000055a6:  98                   cbw  
 0x00000000000055a7:  89 C3                mov   bx, ax
 0x00000000000055a9:  80 BF FA 06 00       cmp   byte ptr ds:[bx + _player + PLAYER_T.player_cards], 0
-0x00000000000055ae:  74 2C                je    0x55dc
+0x00000000000055ae:  74 2C                je    label_51
 0x00000000000055b0:  89 C1                mov   cx, ax
+label_54:
 0x00000000000055b2:  88 D0                mov   al, dl
 0x00000000000055b4:  98                   cbw  
 0x00000000000055b5:  89 C6                mov   si, ax
 0x00000000000055b7:  01 C6                add   si, ax
 0x00000000000055b9:  89 C3                mov   bx, ax
-0x00000000000055bb:  89 8C 4E 1C          mov   word ptr ds:[si + 0x1c4e], cx
-0x00000000000055bf:  80 BF FD 06 00       cmp   byte ptr ds:[bx + 0x6fd], 0
-0x00000000000055c4:  74 07                je    0x55cd
+0x00000000000055bb:  89 8C 4E 1C          mov   word ptr ds:[si + _keyboxes], cx
+0x00000000000055bf:  80 BF FD 06 00       cmp   byte ptr ds:[bx + _player + PLAYER_T + player_cards + 3], 0
+0x00000000000055c4:  74 07                je    label_52
 0x00000000000055c6:  83 C3 03             add   bx, 3
-0x00000000000055c9:  89 9C 4E 1C          mov   word ptr ds:[si + 0x1c4e], bx
+0x00000000000055c9:  89 9C 4E 1C          mov   word ptr ds:[si + _keyboxes], bx
+label_52:
 0x00000000000055cd:  FE C2                inc   dl
 0x00000000000055cf:  80 FA 03             cmp   dl, 3
-0x00000000000055d2:  7C D0                jl    0x55a4
-0x00000000000055d4:  E8 55 FD             call  0x532c
+0x00000000000055d2:  7C D0                jl    label_53
+0x00000000000055d4:  E8 55 FD             call  ST_updateFaceWidget_
 0x00000000000055d7:  5E                   pop   si
 0x00000000000055d8:  5A                   pop   dx
 0x00000000000055d9:  59                   pop   cx
 0x00000000000055da:  5B                   pop   bx
 0x00000000000055db:  C3                   ret   
-0x00000000000055dc:  B9 FF FF             mov   cx, 0xffff
-0x00000000000055df:  EB D1                jmp   0x55b2
+label_51:
+0x00000000000055dc:  B9 FF FF             mov   cx, -1
+0x00000000000055df:  EB D1                jmp   label_54
 
 ENDP
 
@@ -904,11 +940,10 @@ PROC    ST_Ticker_ NEAR
 PUBLIC  ST_Ticker_
 
 0x00000000000055e2:  53                   push  bx
-0x00000000000055e3:  0E                   push  cs
-0x00000000000055e4:  3E E8 E8 E4          call  0x3ad0
-0x00000000000055e8:  BB E8 06             mov   bx, 0x6e8
-0x00000000000055eb:  A2 C8 1C             mov   byte ptr ds:[0x1cc8], al
-0x00000000000055ee:  E8 AD FF             call  0x559e
+0x00000000000055e4:  3E E8 E8 E4          call  M_Random_
+0x00000000000055e8:  BB E8 06             mov   bx, _player + PLAYER_T.player_health
+0x00000000000055eb:  A2 C8 1C             mov   byte ptr ds:[_st_randomnumber], al
+0x00000000000055ee:  E8 AD FF             call  ST_updateWidgets_
 0x00000000000055f1:  8B 1F                mov   bx, word ptr ds:[bx]
 0x00000000000055f3:  89 1E 56 0F          mov   word ptr ds:[_st_oldhealth], bx
 0x00000000000055f7:  5B                   pop   bx
@@ -924,66 +959,73 @@ PUBLIC  ST_doPaletteStuff_
 0x00000000000055fb:  52                   push  dx
 0x00000000000055fc:  BB 28 07             mov   bx, _player + PLAYER_T.player_damagecount
 0x00000000000055ff:  8B 07                mov   ax, word ptr ds:[bx]
-0x0000000000005601:  BB F0 06             mov   bx, 0x6f0
+0x0000000000005601:  BB F0 06             mov   bx, _player + PLAYER_T.player_powers + (2 * PW_STRENGTH)
 0x0000000000005604:  83 3F 00             cmp   word ptr ds:[bx], 0
-0x0000000000005607:  74 12                je    0x561b
+0x0000000000005607:  74 12                je    label_63
 0x0000000000005609:  8B 17                mov   dx, word ptr ds:[bx]
-0x000000000000560b:  BB 0C 00             mov   bx, 0xc
+0x000000000000560b:  BB 0C 00             mov   bx, 12  ; fade berserk out
 0x000000000000560e:  C1 FA 06             sar   dx, 6
 0x0000000000005611:  29 D3                sub   bx, dx
 0x0000000000005613:  89 DA                mov   dx, bx
 0x0000000000005615:  39 C3                cmp   bx, ax
-0x0000000000005617:  7E 02                jle   0x561b
+0x0000000000005617:  7E 02                jle   label_63
 0x0000000000005619:  89 D8                mov   ax, bx
+label_63:
 0x000000000000561b:  85 C0                test  ax, ax
-0x000000000000561d:  74 17                je    0x5636
+0x000000000000561d:  74 17                je    label_64
 0x000000000000561f:  05 07 00             add   ax, 7
 0x0000000000005622:  C1 F8 03             sar   ax, 3
 0x0000000000005625:  3C 08                cmp   al, 8
-0x0000000000005627:  7C 02                jl    0x562b
+0x0000000000005627:  7C 02                jl    label_65
 0x0000000000005629:  B0 07                mov   al, 7
+label_65:
 0x000000000000562b:  FE C0                inc   al
-0x000000000000562d:  3A 06 5C 0F          cmp   al, byte ptr ds:[0xf5c]
-0x0000000000005631:  75 46                jne   0x5679
+0x000000000000562d:  3A 06 5C 0F          cmp   al, byte ptr ds:[_st_palette]
+0x0000000000005631:  75 46                jne   label_66
 0x0000000000005633:  5A                   pop   dx
 0x0000000000005634:  5B                   pop   bx
 0x0000000000005635:  C3                   ret   
+label_64:
 0x0000000000005636:  BB 2A 07             mov   bx, _player + PLAYER_T.player_bonuscount
 0x0000000000005639:  8A 07                mov   al, byte ptr ds:[bx]
 0x000000000000563b:  84 C0                test  al, al
-0x000000000000563d:  74 18                je    0x5657
+0x000000000000563d:  74 18                je    label_69
 0x000000000000563f:  98                   cbw  
 0x0000000000005640:  05 07 00             add   ax, 7
 0x0000000000005643:  C1 F8 03             sar   ax, 3
 0x0000000000005646:  3C 04                cmp   al, 4
-0x0000000000005648:  7C 02                jl    0x564c
+0x0000000000005648:  7C 02                jl    label_70
 0x000000000000564a:  B0 03                mov   al, 3
+label_70:
 0x000000000000564c:  04 09                add   al, 9
-0x000000000000564e:  3A 06 5C 0F          cmp   al, byte ptr ds:[0xf5c]
-0x0000000000005652:  75 25                jne   0x5679
+0x000000000000564e:  3A 06 5C 0F          cmp   al, byte ptr ds:[_st_palette]
+0x0000000000005652:  75 25                jne   label_66
 0x0000000000005654:  5A                   pop   dx
 0x0000000000005655:  5B                   pop   bx
 0x0000000000005656:  C3                   ret   
-0x0000000000005657:  BB F4 06             mov   bx, 0x6f4
-0x000000000000565a:  81 3F 80 00          cmp   word ptr ds:[bx], 0x80
-0x000000000000565e:  7E 0B                jle   0x566b
-0x0000000000005660:  B0 0D                mov   al, 0xd
-0x0000000000005662:  3A 06 5C 0F          cmp   al, byte ptr ds:[0xf5c]
-0x0000000000005666:  75 11                jne   0x5679
+label_69:
+0x0000000000005657:  BB F4 06             mov   bx, _player + PLAYER_T.player_powers + (2 * PW_IRONFEET)
+0x000000000000565a:  81 3F 80 00          cmp   word ptr ds:[bx], 128
+0x000000000000565e:  7E 0B                jle   label_68
+label_67:
+0x0000000000005660:  B0 0D                mov   al, RADIATIONPAL
+0x0000000000005662:  3A 06 5C 0F          cmp   al, byte ptr ds:[_st_palette]
+0x0000000000005666:  75 11                jne   label_66
 0x0000000000005668:  5A                   pop   dx
 0x0000000000005669:  5B                   pop   bx
 0x000000000000566a:  C3                   ret   
+label_68:
 0x000000000000566b:  F6 07 08             test  byte ptr ds:[bx], 8
-0x000000000000566e:  75 F0                jne   0x5660
-0x0000000000005670:  3A 06 5C 0F          cmp   al, byte ptr ds:[0xf5c]
-0x0000000000005674:  75 03                jne   0x5679
+0x000000000000566e:  75 F0                jne   label_67
+0x0000000000005670:  3A 06 5C 0F          cmp   al, byte ptr ds:[_st_palette]
+0x0000000000005674:  75 03                jne   label_66
 0x0000000000005676:  5A                   pop   dx
 0x0000000000005677:  5B                   pop   bx
 0x0000000000005678:  C3                   ret   
-0x0000000000005679:  A2 5C 0F             mov   byte ptr ds:[0xf5c], al
+label_66:
+0x0000000000005679:  A2 5C 0F             mov   byte ptr ds:[_st_palette], al
 0x000000000000567c:  98                   cbw  
-0x000000000000567d:  0E                   push  cs
-0x000000000000567e:  3E E8 83 1D          call  0x7405
+0x000000000000567e:  3E E8 83 1D          call  I_SetPalette_
 0x0000000000005682:  5A                   pop   dx
 0x0000000000005683:  5B                   pop   bx
 0x0000000000005684:  C3                   ret   
@@ -994,13 +1036,11 @@ ENDP
 PROC    STlib_updateflag_ NEAR
 PUBLIC  STlib_updateflag_
 
-0x0000000000005686:  80 3E D0 1C 00       cmp   byte ptr ds:[0x1cd0], 0
-0x000000000000568b:  74 01                je    0x568e
-0x000000000000568d:  C3                   ret   
-0x000000000000568e:  0E                   push  cs
-0x000000000000568f:  E8 E5 6A             call  0xc177
-0x0000000000005692:  90                   nop   
-0x0000000000005693:  C6 06 D0 1C 01       mov   byte ptr ds:[0x1cd0], 1
+0x0000000000005686:  80 3E D0 1C 00       cmp   byte ptr ds:[_updatedthisframe], 0
+0x000000000000568b:  74 01                jne   exit_updateflag
+0x000000000000568f:  E8 E5 6A             call  Z_QuickMapStatus_
+0x0000000000005693:  C6 06 D0 1C 01       mov   byte ptr ds:[_updatedthisframe], 1
+exit_updateflag:
 0x0000000000005698:  C3                   ret   
 
 
@@ -1015,34 +1055,38 @@ PUBLIC  STlib_updateMultIcon_
 0x000000000000569c:  57                   push  di
 0x000000000000569d:  55                   push  bp
 0x000000000000569e:  89 E5                mov   bp, sp
-0x00000000000056a0:  83 EC 0A             sub   sp, 0xa
+0x00000000000056a0:  83 EC 0A             sub   sp, 0Ah
 0x00000000000056a3:  89 C6                mov   si, ax
 0x00000000000056a5:  89 56 FC             mov   word ptr [bp - 4], dx
 0x00000000000056a8:  88 5E FE             mov   byte ptr [bp - 2], bl
 0x00000000000056ab:  8B 44 04             mov   ax, word ptr ds:[si + 4]
 0x00000000000056ae:  39 D0                cmp   ax, dx
-0x00000000000056b0:  74 0B                je    0x56bd
+0x00000000000056b0:  74 0B                je    label_72
+label_74:
 0x00000000000056b2:  83 7E FC FF          cmp   word ptr [bp - 4], -1
-0x00000000000056b6:  75 0E                jne   0x56c6
+0x00000000000056b6:  75 0E                jne   label_73
+exit_updatemulticon:
 0x00000000000056b8:  C9                   LEAVE_MACRO 
 0x00000000000056b9:  5F                   pop   di
 0x00000000000056ba:  5E                   pop   si
 0x00000000000056bb:  59                   pop   cx
 0x00000000000056bc:  C3                   ret   
-0x00000000000056bd:  80 3E C9 1C 00       cmp   byte ptr ds:[0x1cc9], 0
-0x00000000000056c2:  75 EE                jne   0x56b2
-0x00000000000056c4:  EB F2                jmp   0x56b8
-0x00000000000056c6:  E8 BD FF             call  0x5686
+label_72:
+0x00000000000056bd:  80 3E C9 1C 00       cmp   byte ptr ds:[_do_st_refresh], 0
+0x00000000000056c2:  75 EE                jne   label_74
+0x00000000000056c4:  EB F2                jmp   exit_updatemulticon
+label_73:
+0x00000000000056c6:  E8 BD FF             call  STlib_updateflag_
 0x00000000000056c9:  80 7E FE 00          cmp   byte ptr [bp - 2], 0
-0x00000000000056cd:  75 5E                jne   0x572d
+0x00000000000056cd:  75 5E                jne   label_75
 0x00000000000056cf:  8B 44 04             mov   ax, word ptr ds:[si + 4]
-0x00000000000056d2:  3D FF FF             cmp   ax, 0xffff
-0x00000000000056d5:  74 56                je    0x572d
+0x00000000000056d2:  3D FF FF             cmp   ax, -1
+0x00000000000056d5:  74 56                je    label_75
 0x00000000000056d7:  89 C3                mov   bx, ax
 0x00000000000056d9:  01 C3                add   bx, ax
 0x00000000000056db:  8B 44 06             mov   ax, word ptr ds:[si + 6]
 0x00000000000056de:  01 C3                add   bx, ax
-0x00000000000056e0:  B8 00 70             mov   ax, 0x7000
+0x00000000000056e0:  B8 00 70             mov   ax, ST_GRAPHICS_SEGMENT
 0x00000000000056e3:  8B 1F                mov   bx, word ptr ds:[bx]
 0x00000000000056e5:  8E C0                mov   es, ax
 0x00000000000056e7:  8B 44 02             mov   ax, word ptr ds:[si + 2]
@@ -1059,17 +1103,17 @@ PUBLIC  STlib_updateMultIcon_
 0x000000000000570a:  89 46 F6             mov   word ptr [bp - 0Ah], ax
 0x000000000000570d:  89 C1                mov   cx, ax
 0x000000000000570f:  89 F8                mov   ax, di
-0x0000000000005711:  0E                   push  cs
-0x0000000000005712:  3E E8 D9 67          call  0xbeef
-0x0000000000005716:  69 56 FA 40 01       imul  dx, word ptr [bp - 6], 0x140
+
+0x0000000000005712:  3E E8 D9 67          call  V_MarkRect_
+0x0000000000005716:  69 56 FA 40 01       imul  dx, word ptr [bp - 6], SCREENWIDTH
 0x000000000000571b:  01 FA                add   dx, di
 0x000000000000571d:  8B 4E F6             mov   cx, word ptr [bp - 0Ah]
 0x0000000000005720:  89 D0                mov   ax, dx
 0x0000000000005722:  8B 5E F8             mov   bx, word ptr [bp - 8]
 0x0000000000005725:  2D 00 D2             sub   ax, ST_Y * SCREENWIDTH ; 0D200
-0x0000000000005728:  0E                   push  cs
-0x0000000000005729:  E8 E1 67             call  0xbf0d
-0x000000000000572c:  90                   nop   
+
+0x0000000000005729:  E8 E1 67             call  V_CopyRect_
+label_75:
 0x000000000000572d:  8A 46 FE             mov   al, byte ptr [bp - 2]
 0x0000000000005730:  8B 56 FC             mov   dx, word ptr [bp - 4]
 0x0000000000005733:  98                   cbw  
@@ -1078,15 +1122,15 @@ PUBLIC  STlib_updateMultIcon_
 0x0000000000005738:  8B 5C 06             mov   bx, word ptr ds:[si + 6]
 0x000000000000573b:  01 D0                add   ax, dx
 0x000000000000573d:  01 C3                add   bx, ax
-0x000000000000573f:  68 00 70             push  0x7000
+0x000000000000573f:  68 00 70             push  ST_GRAPHICS_SEGMENT
 0x0000000000005742:  8B 07                mov   ax, word ptr ds:[bx]
 0x0000000000005744:  8B 54 02             mov   dx, word ptr ds:[si + 2]
 0x0000000000005747:  50                   push  ax
 0x0000000000005748:  31 DB                xor   bx, bx
 0x000000000000574a:  8B 04                mov   ax, word ptr ds:[si]
-0x000000000000574c:  0E                   push  cs
-0x000000000000574d:  E8 BA 62             call  0xba0a
-0x0000000000005750:  90                   nop   
+
+0x000000000000574d:  E8 BA 62             call  V_DrawPatch_
+
 0x0000000000005751:  8B 46 FC             mov   ax, word ptr [bp - 4]
 0x0000000000005754:  89 44 04             mov   word ptr ds:[si + 4], ax
 0x0000000000005757:  C9                   LEAVE_MACRO 
@@ -1115,13 +1159,14 @@ PUBLIC  STlib_drawNum_
 0x000000000000576a:  8A 45 04             mov   al, byte ptr ds:[di + 4]
 0x000000000000576d:  88 46 FC             mov   byte ptr [bp - 4], al
 0x0000000000005770:  3B 55 06             cmp   dx, word ptr ds:[di + 6]
-0x0000000000005773:  75 0A                jne   0x577f
-0x0000000000005775:  80 3E C9 1C 00       cmp   byte ptr ds:[0x1cc9], 0
-0x000000000000577a:  75 03                jne   0x577f
-0x000000000000577c:  E9 8B 00             jmp   0x580a
-0x000000000000577f:  E8 04 FF             call  0x5686
+0x0000000000005773:  75 0A                jne   label_76
+0x0000000000005775:  80 3E C9 1C 00       cmp   byte ptr ds:[_do_st_refresh], 0
+0x000000000000577a:  75 03                jne   label_76
+0x000000000000577c:  E9 8B 00             jmp   exit_stlib_drawnum
+label_76:
+0x000000000000577f:  E8 04 FF             call  STlib_updateflag_
 0x0000000000005782:  8B 5D 08             mov   bx, word ptr ds:[di + 8]
-0x0000000000005785:  B8 00 70             mov   ax, 0x7000
+0x0000000000005785:  B8 00 70             mov   ax, ST_GRAPHICS_SEGMENT
 0x0000000000005788:  8B 1F                mov   bx, word ptr ds:[bx]
 0x000000000000578a:  8E C0                mov   es, ax
 0x000000000000578c:  26 8B 07             mov   ax, word ptr es:[bx]
@@ -1130,13 +1175,15 @@ PUBLIC  STlib_drawNum_
 0x0000000000005796:  89 46 F8             mov   word ptr [bp - 8], ax
 0x0000000000005799:  89 75 06             mov   word ptr ds:[di + 6], si
 0x000000000000579c:  85 F6                test  si, si
-0x000000000000579e:  7D 10                jge   0x57b0
+0x000000000000579e:  7D 10                jge   label_77
 0x00000000000057a0:  80 7E FC 02          cmp   byte ptr [bp - 4], 2
-0x00000000000057a4:  75 6A                jne   0x5810
+0x00000000000057a4:  75 6A                jne   label_78
 0x00000000000057a6:  83 FE F7             cmp   si, -9
-0x00000000000057a9:  7D 65                jge   0x5810
-0x00000000000057ab:  BE F7 FF             mov   si, 0xfff7
+0x00000000000057a9:  7D 65                jge   label_78
+0x00000000000057ab:  BE F7 FF             mov   si, -9
+neg_si:
 0x00000000000057ae:  F7 DE                neg   si
+label_77:
 0x00000000000057b0:  8A 46 FA             mov   al, byte ptr [bp - 6]
 0x00000000000057b3:  F6 66 FC             mul   byte ptr [bp - 4]
 0x00000000000057b6:  88 46 FE             mov   byte ptr [bp - 2], al
@@ -1147,61 +1194,62 @@ PUBLIC  STlib_drawNum_
 0x00000000000057c2:  29 D8                sub   ax, bx
 0x00000000000057c4:  8B 55 02             mov   dx, word ptr ds:[di + 2]
 0x00000000000057c7:  89 46 F6             mov   word ptr [bp - 0Ah], ax
-0x00000000000057ca:  0E                   push  cs
-0x00000000000057cb:  E8 21 67             call  0xbeef
-0x00000000000057ce:  90                   nop   
-0x00000000000057cf:  69 55 02 40 01       imul  dx, word ptr ds:[di + 2], 0x140
+
+0x00000000000057cb:  E8 21 67             call  V_MarkRect_
+0x00000000000057cf:  69 55 02 40 01       imul  dx, word ptr ds:[di + 2], SCREENWIDTH
 0x00000000000057d4:  8B 45 02             mov   ax, word ptr ds:[di + 2]
 0x00000000000057d7:  2D A8 00             sub   ax, ST_Y
-0x00000000000057da:  69 C0 40 01          imul  ax, ax, 0x140
+0x00000000000057da:  69 C0 40 01          imul  ax, ax, SCREENWIDTH
 0x00000000000057de:  8A 5E FE             mov   bl, byte ptr [bp - 2]
 0x00000000000057e1:  8B 4E F8             mov   cx, word ptr [bp - 8]
 0x00000000000057e4:  30 FF                xor   bh, bh
 0x00000000000057e6:  03 56 F6             add   dx, word ptr [bp - 0Ah]
 0x00000000000057e9:  03 46 F6             add   ax, word ptr [bp - 0Ah]
-0x00000000000057ec:  0E                   push  cs
-0x00000000000057ed:  E8 1D 67             call  0xbf0d
-0x00000000000057f0:  90                   nop   
-0x00000000000057f1:  81 FE CA 07          cmp   si, 0x7ca
-0x00000000000057f5:  74 13                je    0x580a
+0x00000000000057ed:  E8 1D 67             call  V_CopyRect_
+0x00000000000057f1:  81 FE CA 07          cmp   si, 1994
+0x00000000000057f5:  74 13                je    exit_stlib_drawnum
 0x00000000000057f7:  8B 0D                mov   cx, word ptr ds:[di]
 0x00000000000057f9:  85 F6                test  si, si
-0x00000000000057fb:  74 23                je    0x5820
+0x00000000000057fb:  74 23                je    label_80
+label_79:
 0x00000000000057fd:  85 F6                test  si, si
-0x00000000000057ff:  74 09                je    0x580a
+0x00000000000057ff:  74 09                je    exit_stlib_drawnum
 0x0000000000005801:  FE 4E FC             dec   byte ptr [bp - 4]
-0x0000000000005804:  80 7E FC FF          cmp   byte ptr [bp - 4], 0xff
-0x0000000000005808:  75 30                jne   0x583a
+0x0000000000005804:  80 7E FC FF          cmp   byte ptr [bp - 4], -1
+0x0000000000005808:  75 30                jne   label_81
+exit_stlib_drawnum:
 0x000000000000580a:  C9                   LEAVE_MACRO 
 0x000000000000580b:  5F                   pop   di
 0x000000000000580c:  5E                   pop   si
 0x000000000000580d:  59                   pop   cx
 0x000000000000580e:  5B                   pop   bx
 0x000000000000580f:  C3                   ret   
+label_78:
 0x0000000000005810:  80 7E FC 03          cmp   byte ptr [bp - 4], 3
-0x0000000000005814:  75 98                jne   0x57ae
-0x0000000000005816:  83 FE 9D             cmp   si, -0x63
-0x0000000000005819:  7D 93                jge   0x57ae
-0x000000000000581b:  BE 9D FF             mov   si, 0xff9d
-0x000000000000581e:  EB 8E                jmp   0x57ae
+0x0000000000005814:  75 98                jne   neg_si
+0x0000000000005816:  83 FE 9D             cmp   si, -99
+0x0000000000005819:  7D 93                jge   neg_si
+0x000000000000581b:  BE 9D FF             mov   si, -99
+0x000000000000581e:  EB 8E                jmp   neg_si
+label_80:
 0x0000000000005820:  8B 5D 08             mov   bx, word ptr ds:[di + 8]
-0x0000000000005823:  68 00 70             push  0x7000
+0x0000000000005823:  68 00 70             push  ST_GRAPHICS_SEGMENT
 0x0000000000005826:  8B 07                mov   ax, word ptr ds:[bx]
 0x0000000000005828:  8B 55 02             mov   dx, word ptr ds:[di + 2]
 0x000000000000582b:  50                   push  ax
 0x000000000000582c:  89 C8                mov   ax, cx
 0x000000000000582e:  31 DB                xor   bx, bx
 0x0000000000005830:  2B 46 FA             sub   ax, word ptr [bp - 6]
-0x0000000000005833:  0E                   push  cs
-0x0000000000005834:  3E E8 D2 61          call  0xba0a
-0x0000000000005838:  EB C3                jmp   0x57fd
+0x0000000000005834:  3E E8 D2 61          call  V_DrawPatch_
+0x0000000000005838:  EB C3                jmp   label_79
+label_81:
 0x000000000000583a:  89 F0                mov   ax, si
-0x000000000000583c:  BB 0A 00             mov   bx, 0xa
+0x000000000000583c:  BB 0A 00             mov   bx, 10
 0x000000000000583f:  99                   cwd   
 0x0000000000005840:  F7 FB                idiv  bx
 0x0000000000005842:  8B 5D 08             mov   bx, word ptr ds:[di + 8]
 0x0000000000005845:  01 D2                add   dx, dx
-0x0000000000005847:  68 00 70             push  0x7000
+0x0000000000005847:  68 00 70             push  ST_GRAPHICS_SEGMENT
 0x000000000000584a:  01 D3                add   bx, dx
 0x000000000000584c:  2B 4E FA             sub   cx, word ptr [bp - 6]
 0x000000000000584f:  8B 17                mov   dx, word ptr ds:[bx]
@@ -1209,14 +1257,13 @@ PUBLIC  STlib_drawNum_
 0x0000000000005853:  52                   push  dx
 0x0000000000005854:  31 DB                xor   bx, bx
 0x0000000000005856:  8B 55 02             mov   dx, word ptr ds:[di + 2]
-0x0000000000005859:  0E                   push  cs
-0x000000000000585a:  3E E8 AC 61          call  0xba0a
+0x000000000000585a:  3E E8 AC 61          call  V_DrawPatch_
 0x000000000000585e:  89 F0                mov   ax, si
-0x0000000000005860:  BB 0A 00             mov   bx, 0xa
+0x0000000000005860:  BB 0A 00             mov   bx, 10
 0x0000000000005863:  99                   cwd   
 0x0000000000005864:  F7 FB                idiv  bx
 0x0000000000005866:  89 C6                mov   si, ax
-0x0000000000005868:  EB 93                jmp   0x57fd
+0x0000000000005868:  EB 93                jmp   label_79
 
 
 ENDP
@@ -1231,29 +1278,30 @@ PUBLIC  STlib_updatePercent_
 0x000000000000586c:  56                   push  si
 0x000000000000586d:  89 C6                mov   si, ax
 0x000000000000586f:  89 D1                mov   cx, dx
-0x0000000000005871:  80 3E C9 1C 00       cmp   byte ptr ds:[0x1cc9], 0
-0x0000000000005876:  75 0B                jne   0x5883
+0x0000000000005871:  80 3E C9 1C 00       cmp   byte ptr ds:[_do_st_refresh], 0
+0x0000000000005876:  75 0B                jne   label_82
 0x0000000000005878:  89 CA                mov   dx, cx
 0x000000000000587a:  89 F0                mov   ax, si
-0x000000000000587c:  E8 DD FE             call  0x575c
+0x000000000000587c:  E8 DD FE             call  STlib_drawNum_
 0x000000000000587f:  5E                   pop   si
 0x0000000000005880:  59                   pop   cx
 0x0000000000005881:  5B                   pop   bx
 0x0000000000005882:  C3                   ret   
-0x0000000000005883:  E8 00 FE             call  0x5686
-0x0000000000005886:  8B 5C 0A             mov   bx, word ptr ds:[si + 0xa]
-0x0000000000005889:  68 00 70             push  0x7000
+label_82:
+0x0000000000005883:  E8 00 FE             call  STlib_updateflag_
+0x0000000000005886:  8B 5C 0A             mov   bx, word ptr ds:[si + ST_PERCENT_T.st_percent_patch_offset]
+0x0000000000005889:  68 00 70             push  ST_GRAPHICS_SEGMENT
 0x000000000000588c:  8B 07                mov   ax, word ptr ds:[bx]
 0x000000000000588e:  8B 54 02             mov   dx, word ptr ds:[si + 2]
 0x0000000000005891:  50                   push  ax
 0x0000000000005892:  31 DB                xor   bx, bx
 0x0000000000005894:  8B 04                mov   ax, word ptr ds:[si]
-0x0000000000005896:  0E                   push  cs
-0x0000000000005897:  E8 70 61             call  0xba0a
-0x000000000000589a:  90                   nop   
+
+0x0000000000005897:  E8 70 61             call  V_DrawPatch_
+
 0x000000000000589b:  89 CA                mov   dx, cx
 0x000000000000589d:  89 F0                mov   ax, si
-0x000000000000589f:  E8 BA FE             call  0x575c
+0x000000000000589f:  E8 BA FE             call  STlib_drawNum_
 0x00000000000058a2:  5E                   pop   si
 0x00000000000058a3:  59                   pop   cx
 0x00000000000058a4:  5B                   pop   bx
@@ -1270,54 +1318,59 @@ PUBLIC  ST_drawWidgets_
 0x00000000000058a8:  52                   push  dx
 0x00000000000058a9:  56                   push  si
 0x00000000000058aa:  80 3E CF 1C 00       cmp   byte ptr ds:[_st_statusbaron], 0
-0x00000000000058af:  75 03                jne   0x58b4
-0x00000000000058b1:  E9 BA 00             jmp   0x596e
-0x00000000000058b4:  BB 00 07             mov   bx, 0x700
+0x00000000000058af:  75 03                jne   label_49
+0x00000000000058b1:  E9 BA 00             jmp   exit_st_drawwidgets
+label_49:
+0x00000000000058b4:  BB 00 07             mov   bx, _player + PLAYER_T.player_readyweapon
 0x00000000000058b7:  8A 07                mov   al, byte ptr ds:[bx]
 0x00000000000058b9:  30 E4                xor   ah, ah
-0x00000000000058bb:  6B D8 0B             imul  bx, ax, 0xb
-0x00000000000058be:  8A AF 58 07          mov   ch, byte ptr ds:[bx + 0x758]
+0x00000000000058bb:  6B D8 0B             imul  bx, ax, SIZEOF_WEAPONINFO_T
+0x00000000000058be:  8A AF 58 07          mov   ch, byte ptr ds:[bx + _weaponinfo]
 0x00000000000058c2:  30 C9                xor   cl, cl
+label_83:
 0x00000000000058c4:  88 C8                mov   al, cl
 0x00000000000058c6:  98                   cbw  
 0x00000000000058c7:  89 C3                mov   bx, ax
 0x00000000000058c9:  01 C3                add   bx, ax
-0x00000000000058cb:  6B F0 0A             imul  si, ax, 0xa
-0x00000000000058ce:  B8 68 1A             mov   ax, 0x1a68
+0x00000000000058cb:  6B F0 0A             imul  si, ax, SIZEOF_ST_NUMBER_T
+0x00000000000058ce:  B8 68 1A             mov   ax, _w_ammo
 0x00000000000058d1:  8B 97 0C 07          mov   dx, word ptr ds:[bx + _player + PLAYER_T.player_ammo]
 0x00000000000058d5:  01 F0                add   ax, si
-0x00000000000058d7:  E8 82 FE             call  0x575c
-0x00000000000058da:  B8 F8 1A             mov   ax, 0x1af8
+0x00000000000058d7:  E8 82 FE             call  STlib_drawNum_
+0x00000000000058da:  B8 F8 1A             mov   ax, _w_maxammo
 0x00000000000058dd:  8B 97 14 07          mov   dx, word ptr ds:[bx + _player + PLAYER_T.player_maxammo]
 0x00000000000058e1:  01 F0                add   ax, si
 0x00000000000058e3:  FE C1                inc   cl
-0x00000000000058e5:  E8 74 FE             call  0x575c
+0x00000000000058e5:  E8 74 FE             call  STlib_drawNum_
 0x00000000000058e8:  80 F9 04             cmp   cl, 4
-0x00000000000058eb:  7C D7                jl    0x58c4
+0x00000000000058eb:  7C D7                jl    label_83
 0x00000000000058ed:  80 FD 05             cmp   ch, 5
-0x00000000000058f0:  74 03                je    0x58f5
-0x00000000000058f2:  E9 7E 00             jmp   0x5973
-0x00000000000058f5:  BA CA 07             mov   dx, 0x7ca
-0x00000000000058f8:  B8 44 1C             mov   ax, 0x1c44
-0x00000000000058fb:  E8 5E FE             call  0x575c
-0x00000000000058fe:  BB E8 06             mov   bx, 0x6e8
-0x0000000000005901:  B8 B0 1B             mov   ax, 0x1bb0
+0x00000000000058f0:  74 03                je    label_84
+0x00000000000058f2:  E9 7E 00             jmp   label_85
+label_84:
+0x00000000000058f5:  BA CA 07             mov   dx, 1994
+0x00000000000058f8:  B8 44 1C             mov   ax, _w_ready
+label_86:
+0x00000000000058fb:  E8 5E FE             call  STlib_drawNum_
+0x00000000000058fe:  BB E8 06             mov   bx, _player + PLAYER_T.player_health
+0x0000000000005901:  B8 B0 1B             mov   ax, OFFSET _w_health
 0x0000000000005904:  8B 17                mov   dx, word ptr ds:[bx]
-0x0000000000005906:  E8 61 FF             call  0x586a
+0x0000000000005906:  E8 61 FF             call  STlib_updatePercent_
 0x0000000000005909:  BB EA 06             mov   bx, _player + PLAYER_T.player_armorpoints
-0x000000000000590c:  B8 C8 1B             mov   ax, 0x1bc8
+0x000000000000590c:  B8 C8 1B             mov   ax, OFFSET _w_armor
 0x000000000000590f:  8B 17                mov   dx, word ptr ds:[bx]
-0x0000000000005911:  E8 56 FF             call  0x586a
+0x0000000000005911:  E8 56 FF             call  STlib_updatePercent_
 0x0000000000005914:  BB 01 00             mov   bx, 1
-0x0000000000005917:  B8 F0 1A             mov   ax, 0x1af0
+0x0000000000005917:  B8 F0 1A             mov   ax, OFFSET _w_armsbg
 0x000000000000591a:  89 DA                mov   dx, bx
 0x000000000000591c:  30 C9                xor   cl, cl
-0x000000000000591e:  E8 79 FD             call  0x569a
+0x000000000000591e:  E8 79 FD             call  STlib_updateMultIcon_
+label_71:
 0x0000000000005921:  88 C8                mov   al, cl
 0x0000000000005923:  98                   cbw  
 0x0000000000005924:  89 C3                mov   bx, ax
-0x0000000000005926:  BE 90 1A             mov   si, 0x1a90
-0x0000000000005929:  8A 87 03 07          mov   al, byte ptr ds:[bx + 0x703]
+0x0000000000005926:  BE 90 1A             mov   si, OFFSET _w_arms
+0x0000000000005929:  8A 87 03 07          mov   al, byte ptr ds:[bx + _player + PLAYER_T._player_weaponowned + 1]
 0x000000000000592d:  C1 E3 03             shl   bx, 3
 0x0000000000005930:  98                   cbw  
 0x0000000000005931:  01 DE                add   si, bx
@@ -1325,38 +1378,41 @@ PUBLIC  ST_drawWidgets_
 0x0000000000005935:  89 F0                mov   ax, si
 0x0000000000005937:  31 DB                xor   bx, bx
 0x0000000000005939:  FE C1                inc   cl
-0x000000000000593b:  E8 5C FD             call  0x569a
+0x000000000000593b:  E8 5C FD             call  STlib_updateMultIcon_
 0x000000000000593e:  80 F9 06             cmp   cl, 6
-0x0000000000005941:  7C DE                jl    0x5921
-0x0000000000005943:  B8 60 1A             mov   ax, 0x1a60
+0x0000000000005941:  7C DE                jl    label_71
+0x0000000000005943:  B8 60 1A             mov   ax, OFFSET _w_faces
 0x0000000000005946:  8B 16 5A 0F          mov   dx, word ptr ds:[_st_faceindex]
 0x000000000000594a:  31 DB                xor   bx, bx
-0x000000000000594c:  E8 4B FD             call  0x569a
+0x000000000000594c:  E8 4B FD             call  STlib_updateMultIcon_
 0x000000000000594f:  30 C9                xor   cl, cl
+label_50:
 0x0000000000005951:  88 C8                mov   al, cl
 0x0000000000005953:  98                   cbw  
 0x0000000000005954:  89 C3                mov   bx, ax
 0x0000000000005956:  01 C3                add   bx, ax
 0x0000000000005958:  C1 E0 03             shl   ax, 3
-0x000000000000595b:  8B 97 4E 1C          mov   dx, word ptr ds:[bx + 0x1c4e]
-0x000000000000595f:  05 C0 1A             add   ax, 0x1ac0
+0x000000000000595b:  8B 97 4E 1C          mov   dx, word ptr ds:[bx + _keyboxes]
+0x000000000000595f:  05 C0 1A             add   ax, OFFSET _w_keyboxes
 0x0000000000005962:  31 DB                xor   bx, bx
 0x0000000000005964:  FE C1                inc   cl
-0x0000000000005966:  E8 31 FD             call  0x569a
+0x0000000000005966:  E8 31 FD             call  STlib_updateMultIcon_
 0x0000000000005969:  80 F9 03             cmp   cl, 3
-0x000000000000596c:  7C E3                jl    0x5951
+0x000000000000596c:  7C E3                jl    label_50
+exit_st_drawwidgets:
 0x000000000000596e:  5E                   pop   si
 0x000000000000596f:  5A                   pop   dx
 0x0000000000005970:  59                   pop   cx
 0x0000000000005971:  5B                   pop   bx
 0x0000000000005972:  C3                   ret   
+label_85:
 0x0000000000005973:  88 E8                mov   al, ch
 0x0000000000005975:  98                   cbw  
 0x0000000000005976:  89 C3                mov   bx, ax
 0x0000000000005978:  01 C3                add   bx, ax
-0x000000000000597a:  B8 44 1C             mov   ax, 0x1c44
+0x000000000000597a:  B8 44 1C             mov   ax, _w_ready
 0x000000000000597d:  8B 97 0C 07          mov   dx, word ptr ds:[bx + _player + PLAYER_T.player_ammo]
-0x0000000000005981:  E9 77 FF             jmp   0x58fb
+0x0000000000005981:  E9 77 FF             jmp   label_86
 
 
 ENDP
@@ -1367,49 +1423,56 @@ PUBLIC  ST_Drawer_
 
 0x0000000000005984:  53                   push  bx
 0x0000000000005985:  84 C0                test  al, al
-0x0000000000005987:  75 43                jne   0x59cc
+0x0000000000005987:  75 43                jne   label_42
+label_45:
 0x0000000000005989:  B0 01                mov   al, 1
+label_46:
 0x000000000000598b:  A2 CF 1C             mov   byte ptr ds:[_st_statusbaron], al
-0x000000000000598e:  A0 D1 1C             mov   al, byte ptr ds:[0x1cd1]
+0x000000000000598e:  A0 D1 1C             mov   al, byte ptr ds:[_st_firsttime]
 0x0000000000005991:  84 C0                test  al, al
-0x0000000000005993:  74 42                je    0x59d7
+0x0000000000005993:  74 42                je    label_43
+label_47:
 0x0000000000005995:  B0 01                mov   al, 1
-0x0000000000005997:  C6 06 D0 1C 00       mov   byte ptr ds:[0x1cd0], 0
-0x000000000000599c:  A2 D1 1C             mov   byte ptr ds:[0x1cd1], al
-0x000000000000599f:  E8 58 FC             call  0x55fa
-0x00000000000059a2:  A0 D1 1C             mov   al, byte ptr ds:[0x1cd1]
+label_48:
+0x0000000000005997:  C6 06 D0 1C 00       mov   byte ptr ds:[_updatedthisframe], 0
+0x000000000000599c:  A2 D1 1C             mov   byte ptr ds:[_st_firsttime], al
+0x000000000000599f:  E8 58 FC             call  ST_doPaletteStuff_
+0x00000000000059a2:  A0 D1 1C             mov   al, byte ptr ds:[_st_firsttime]
 0x00000000000059a5:  84 C0                test  al, al
-0x00000000000059a7:  74 34                je    0x59dd
-0x00000000000059a9:  C6 06 D1 1C 00       mov   byte ptr ds:[0x1cd1], 0
-0x00000000000059ae:  C6 06 D0 1C 01       mov   byte ptr ds:[0x1cd0], 1
-0x00000000000059b3:  0E                   push  cs
-0x00000000000059b4:  3E E8 BF 67          call  0xc177
-0x00000000000059b8:  E8 A5 F4             call  0x4e60
-0x00000000000059bb:  C6 06 C9 1C 01       mov   byte ptr ds:[0x1cc9], 1
-0x00000000000059c0:  E8 E3 FE             call  0x58a6
-0x00000000000059c3:  80 3E D0 1C 00       cmp   byte ptr ds:[0x1cd0], 0
-0x00000000000059c8:  75 18                jne   0x59e2
+0x00000000000059a7:  74 34                je    label_44
+0x00000000000059a9:  C6 06 D1 1C 00       mov   byte ptr ds:[_st_firsttime], 0
+0x00000000000059ae:  C6 06 D0 1C 01       mov   byte ptr ds:[_updatedthisframe], 1
+
+0x00000000000059b4:  3E E8 BF 67          call  Z_QuickMapStatus_
+0x00000000000059b8:  E8 A5 F4             call  ST_refreshBackground_  ; todo inline?
+0x00000000000059bb:  C6 06 C9 1C 01       mov   byte ptr ds:[_do_st_refresh], 1
+label_41:
+0x00000000000059c0:  E8 E3 FE             call  ST_drawWidgets_
+0x00000000000059c3:  80 3E D0 1C 00       cmp   byte ptr ds:[_updatedthisframe], 0
+0x00000000000059c8:  75 18                jne   do_quickmapphysics
 0x00000000000059ca:  5B                   pop   bx
 0x00000000000059cb:  C3                   ret   
-0x00000000000059cc:  BB EA 02             mov   bx, 0x2ea
+label_42:
+0x00000000000059cc:  BB EA 02             mov   bx, _automapactive
 0x00000000000059cf:  8A 07                mov   al, byte ptr ds:[bx]
 0x00000000000059d1:  84 C0                test  al, al
-0x00000000000059d3:  75 B4                jne   0x5989
-0x00000000000059d5:  EB B4                jmp   0x598b
+0x00000000000059d3:  75 B4                jne   label_45
+0x00000000000059d5:  EB B4                jmp   label_46
+label_43:
 0x00000000000059d7:  84 D2                test  dl, dl
-0x00000000000059d9:  75 BA                jne   0x5995
-0x00000000000059db:  EB BA                jmp   0x5997
-0x00000000000059dd:  A2 C9 1C             mov   byte ptr ds:[0x1cc9], al
-0x00000000000059e0:  EB DE                jmp   0x59c0
-0x00000000000059e2:  0E                   push  cs
-0x00000000000059e3:  E8 B0 66             call  0xc096
-0x00000000000059e6:  90                   nop   
+0x00000000000059d9:  75 BA                jne   label_47
+0x00000000000059db:  EB BA                jmp   label_48
+label_44:
+0x00000000000059dd:  A2 C9 1C             mov   byte ptr ds:[_do_st_refresh], al
+0x00000000000059e0:  EB DE                jmp   label_41
+do_quickmapphysics:
+0x00000000000059e3:  E8 B0 66             call  Z_QuickMapPhysics_
 0x00000000000059e7:  5B                   pop   bx
 0x00000000000059e8:  C3                   ret   
 
 
-PROC    ST_SETUP_ENDMARKER_ NEAR
-PUBLIC  ST_SETUP_ENDMARKER_
+PROC    ST_STUFF_ENDMARKER_ NEAR
+PUBLIC  ST_STUFF_ENDMARKER_
 ENDP
 
 

@@ -26,36 +26,36 @@ PLAYER_T STRUC
     player_cmd_angleturn      dw ?                      ; 2
     player_cmd_consistancy    dw ?                      ; 4
     player_cmd_chatchar       db ?                      ; 6
-    player_cmd_buttons        db ?                      ; 7     ;06d7h  06a7h
-    player_viewzvalue         dd ?                      ; 8     ;06d8h  06a8h
-    player_viewheightvalue    dd ?                      ; C     ;06dch  06ach
-    player_deltaviewheight    dd ?                      ; 10    ;06e0h  06b0h
-    player_bob                dd ?                      ; 14    ;06e4h  06b4h
-    player_health             dw ?                      ; 18
-    player_armorpoints        dw ?                      ; 1A
-    player_armortype	      db ?                      ; 1C
-    player_playerstate        db ?                      ; 1D    ;06EDh  06CDh
-    player_powers             dw NUMPOWERS   DUP(?)     ; 1E    ;06EEh  06CEh
+    player_cmd_buttons        db ?                      ; 7     ;06D7h  06A7h
+    player_viewzvalue         dd ?                      ; 8     ;06D8h  06A8h
+    player_viewheightvalue    dd ?                      ; C     ;06DCh  06Ach
+    player_deltaviewheight    dd ?                      ; 10    ;06E0h  06B0h
+    player_bob                dd ?                      ; 14    ;06E4h  06B4h
+    player_health             dw ?                      ; 18    ;06E8h  06B8h
+    player_armorpoints        dw ?                      ; 1A    ;06EAh  06BAh
+    player_armortype	      db ?                      ; 1C    ;06ECh  06BCh
+    player_playerstate        db ?                      ; 1D    ;06EDh  06BDh
+    player_powers             dw NUMPOWERS   DUP(?)     ; 1E    ;06EEh  06BEh
     player_cards              db NUMCARDS    DUP(?)     ; 2A    ;06FAh  06CAh
     player_readyweapon        db ?                      ; 30    ;0700h  06D0h
     player_pendingweapon      db ?                      ; 31    ;0701h  06D1h
     player_weaponowned        db NUMWEAPONS  DUP(?)     ; 32    ;0702h  06D2h
     player_cheats		      db ?                      ; 3B    ;070Bh  06DBh
     player_ammo               dw NUMAMMO     DUP(?)     ; 3C    ;070Ch  06DCh
-    player_maxammo            dw NUMAMMO     DUP(?)     ; 44
-    player_attackdown         db ?                      ; 4C
-    player_usedown            db ?                      ; 4D    ;071dh
-    player_killcount          dw ?                      ; 4E
-    player_itemcount          dw ?                      ; 50
-    player_secretcount        dw ?                      ; 52
-    player_message            dw ?                      ; 54    ;0724h
-	player_messagestring      dw ?                      ; 56    ;0726h
-    player_damagecount        dw ?                      ; 58    ;0728h
-    player_bonuscount         db ?                      ; 5A
-    player_refire		      db ?                      ; 5B
-    player_attackerRef        dw ?                      ; 5C    ;072Ch
-    player_extralightvalue    db ?                      ; 5E
-    player_fixedcolormapvalue db ?                      ; 5F    ;072Fh
+    player_maxammo            dw NUMAMMO     DUP(?)     ; 44    ;0714h  06E4h
+    player_attackdown         db ?                      ; 4C    ;071Ch  06ECh
+    player_usedown            db ?                      ; 4D    ;071Dh  06EDh
+    player_killcount          dw ?                      ; 4E    ;071Eh  06EEh
+    player_itemcount          dw ?                      ; 50    ;0720h  06F0h
+    player_secretcount        dw ?                      ; 52    ;0722h  06F2h
+    player_message            dw ?                      ; 54    ;0724h  06F4h
+	player_messagestring      dw ?                      ; 56    ;0726h  06F6h
+    player_damagecount        dw ?                      ; 58    ;0728h  06F8h
+    player_bonuscount         db ?                      ; 5A    ;072Ah  06FAh
+    player_refire		      db ?                      ; 5B    ;072Bh  06FBh
+    player_attackerRef        dw ?                      ; 5C    ;072Ch  06FCh
+    player_extralightvalue    db ?                      ; 5E    ;072Eh  06FEh
+    player_fixedcolormapvalue db ?                      ; 5F    ;072Fh  06FFh
     player_colormap	          db ?                      ; 60
     player_didsecret	      db ?                      ; 61
     player_backpack           db ?                      ; 62
