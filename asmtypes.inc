@@ -28,7 +28,7 @@ PLAYER_T STRUC
     player_cmd_chatchar       db ?                      ; 6
     player_cmd_buttons        db ?                      ; 7     ;06D7h  06A7h
     player_viewzvalue         dd ?                      ; 8     ;06D8h  06A8h
-    player_viewheightvalue    dd ?                      ; C     ;06DCh  06Ach
+    player_viewheightvalue    dd ?                      ; C     ;06DCh  06ACh
     player_deltaviewheight    dd ?                      ; 10    ;06E0h  06B0h
     player_bob                dd ?                      ; 14    ;06E4h  06B4h
     player_health             dw ?                      ; 18    ;06E8h  06B8h

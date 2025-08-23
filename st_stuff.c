@@ -63,7 +63,9 @@ void __near locallib_printhex (uint32_t number, boolean islong, int8_t __near* o
 //
 // STATUS BAR CODE
 //
+void __near ST_refreshBackground(void);
 
+/*
 void __near ST_refreshBackground(void) {
 
     if (st_statusbaron) {
@@ -73,6 +75,7 @@ void __near ST_refreshBackground(void) {
     }
 
 }
+*/
 
 
 // Respond to keyboard input events,
