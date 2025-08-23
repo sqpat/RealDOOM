@@ -111,26 +111,31 @@ PUBLIC  ST_refreshBackground_
 push  bx
 push  cx
 push  dx
-cmp   byte ptr ds:[_st_statusbaron], 0
+xor   ax, ax
+cmp   byte ptr ds:[_st_statusbaron], al
 je    exit_st_refresh_background
 
 
-push  ST_GRAPHICS_SEGMENT
+mov   dx, ST_GRAPHICS_SEGMENT
+push  dx
 mov   bx, 4
 push  word ptr ds:[_sbar]
-xor   ax, ax
+; ax already 0
 cwd
 mov   cx, ST_HEIGHT
 call  V_DrawPatch_
+
 mov   bx, SCREENWIDTH
 mov   dx, ST_Y
 xor   ax, ax
 call  V_MarkRect_
+
 mov   cx, ST_HEIGHT
 mov   bx, SCREENWIDTH
 mov   dx, ST_Y * SCREENWIDTH ;0D200h
 xor   ax, ax
 call  V_CopyRect_
+
 exit_st_refresh_background:
 pop   dx
 pop   cx
@@ -623,48 +628,46 @@ jmp   label_16
 
 ENDP
 
+@
 
 PROC    ST_calcPainOffset_ NEAR
 PUBLIC  ST_calcPainOffset_
 
 push  bx
-push  cx
 push  dx
-mov   bx, _player_health
-mov   ax, word ptr ds:[bx]
+mov   ax, word ptr ds:[_player + PLAYER_T._player_health]
 cmp   ax, 100
-jle   label_13
-mov   bx, 100
-label_15:
-cmp   bx, word ptr ds:[_st_calc_oldhealth]
-jne   label_14
-mov   ax, word ptr ds:[_st_calc_lastcalc]
-pop   dx
-pop   cx
-pop   bx
-ret   
-label_13:
+jle   more_than_100_health
+
 mov   bx, ax
-jmp   label_15
-label_14:
-mov   dx, 100
-sub   dx, bx
-mov   ax, dx
-shl   ax, 2
-add   ax, dx
-mov   cx, 101
-cwd   
-idiv  cx
-shl   ax, 3
+jmp   use_current_health
+more_than_100_health:
+mov   bx, 100
+use_current_health:
+cmp   bx, word ptr ds:[_st_calc_oldhealth]
+je    old_health_100
+
+mov   ax, 100
+sub   ax, bx
+mov   ah, 5
+mul   ah
+mov   dl, 101
+div   dl
+SHIFT_MACRO shl   ax 3
 mov   word ptr ds:[_st_calc_oldhealth], bx
 mov   word ptr ds:[_st_calc_lastcalc], ax
+old_health_100:
+
 mov   ax, word ptr ds:[_st_calc_lastcalc]
 pop   dx
-pop   cx
 pop   bx
 ret   
 
+
+
 ENDP
+
+COMMENT @
 
 
 PROC    ST_updateFaceWidget_ NEAR
