@@ -130,12 +130,12 @@ inc   ax
 ;	}
 
 
-cmp   cx, ax
-jge   use_realtic_plus_1
-dec   ax
 cmp   ax, cx
-jge   use_counts
-
+jl    use_realtic_plus_1
+je    use_realtic
+jmp   use_counts
+use_realtic:
+dec   ax
 use_realtic_plus_1:
 xchg  ax, cx  ; counts is realtics+1 or realtics
 use_counts:
