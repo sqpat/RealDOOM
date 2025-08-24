@@ -64,6 +64,10 @@ void __near locallib_printhex (uint32_t number, boolean islong, int8_t __near* o
 // STATUS BAR CODE
 //
 void __near ST_refreshBackground(void);
+void __near ST_doPaletteStuff(void);
+void __near STlib_updateflag();
+void __near STlib_updateMultIcon ( st_multicon_t __near* mi, int16_t inum, boolean        is_binicon);
+
 
 /*
 void __near ST_refreshBackground(void) {
@@ -501,9 +505,7 @@ void __near ST_doPaletteStuff(void){
 
 }
 
-*/
 
-void __near ST_doPaletteStuff(void);
 
 
 void __near STlib_updateflag() {
@@ -549,6 +551,9 @@ void __near STlib_updateMultIcon ( st_multicon_t __near* mi, int16_t inum, boole
         mi->oldinum = inum;
     }
 }
+
+*/
+
 
 
 void __near STlib_drawNum ( st_number_t __near*	number, int16_t num) {

@@ -1045,7 +1045,6 @@ ret
 
 ENDP
 
-COMMENT @
 
 PROC    STlib_updateflag_ NEAR
 PUBLIC  STlib_updateflag_
@@ -1059,102 +1058,130 @@ ret
 
 
 ENDP
+;void __near STlib_updateMultIcon ( st_multicon_t __near* mi, int16_t inum, boolean        is_binicon) {
 
 
 PROC    STlib_updateMultIcon_ NEAR
 PUBLIC  STlib_updateMultIcon_
 
-push  cx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 0Ah
-mov   si, ax
-mov   word ptr [bp - 4], dx
-mov   byte ptr [bp - 2], bl
-mov   ax, word ptr ds:[si + 4]
-cmp   ax, dx
-je    label_72
-label_74:
-cmp   word ptr [bp - 4], -1
-jne   label_73
-exit_updatemulticon:
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-ret   
-label_72:
+cmp   dx, -1
+je    exit_updatemulticon_no_pop  ; test once.
+PUSHA_NO_AX_OR_BP_MACRO
+xchg  ax, si
 cmp   byte ptr ds:[_do_st_refresh], 0
-jne   label_74
-jmp   exit_updatemulticon
-label_73:
+jne   do_draw
+mov   cx, word ptr ds:[si + ST_MULTIICON_T.st_multicon_oldinum]
+cmp   cx, dx
+je    do_draw
+exit_updatemulticon:
+POPA_NO_AX_OR_BP_MACRO
+exit_updatemulticon_no_pop:
+ret   
+
+do_draw:
 call  STlib_updateflag_
-cmp   byte ptr [bp - 2], 0
-jne   label_75
-mov   ax, word ptr ds:[si + 4]
-cmp   ax, -1
-je    label_75
-mov   bx, ax
-add   bx, ax
-mov   ax, word ptr ds:[si + 6]
-add   bx, ax
-mov   ax, ST_GRAPHICS_SEGMENT
-mov   bx, word ptr ds:[bx]
-mov   es, ax
-mov   ax, word ptr ds:[si + 2]
-mov   di, word ptr ds:[si]
-mov   word ptr [bp - 6], ax
-mov   ax, word ptr es:[bx + 6]
-sub   di, word ptr es:[bx + 4]
-sub   word ptr [bp - 6], ax
-mov   ax, word ptr es:[bx]
-mov   dx, word ptr [bp - 6]
-mov   word ptr [bp - 8], ax
-mov   ax, word ptr es:[bx + 2]
-mov   bx, word ptr [bp - 8]
-mov   word ptr [bp - 0Ah], ax
-mov   cx, ax
-mov   ax, di
+
+mov   word ptr ds:[si + ST_MULTIICON_T.st_multicon_oldinum], dx ; update oldinum, dont need anymore
+mov   ax, bx 
+cbw
+sub   dx, ax   ; calculate  "inum-is_binicon" lookup
+sal   dx, 1
+push  dx       ; store inum-is_binicon lookup
+
+cmp   cx, -1                ; mi->oldinum != -1
+je    skip_rect
+test  bl, bl                ; !is_binicon
+jne   skip_rect
+
+
+mov   di, ST_GRAPHICS_SEGMENT   ; todo load from mem?
+mov   es, di
+
+mov   di, word ptr  ds:[si + ST_MULTIICON_T.st_multicon_patch_offset] ; mi->patch_offset
+sal   cx, 1     ; word lookup
+add   di, cx    ; mi->patch_offset[mi->oldinum]
+mov   di, word ptr  ds:[di] ; es:di is patch
+
+
+
+IF COMPISA GE COMPILE_186
+    
+    mov   ax, word ptr es:[di + PATCH_T.patch_leftoffset]
+    mov   dx, word ptr es:[di + PATCH_T.patch_topoffset]
+    mov   cx, dx
+    add   cx, ax
+    imul  cx, cx, SCREENWIDTH
+    push  cx                    ; offset on stack
+    sub   cx, ST_Y * SCREENWIDTH ; 0D200
+    push  cx        ; offset - d200 on stack
+
+ELSE
+
+    mov   ax, word ptr es:[di + PATCH_T.patch_leftoffset]
+    mov   dx, word ptr es:[di + PATCH_T.patch_topoffset]
+    push  ax
+    push  dx
+    add   ax, dx
+    mov   dx, SCREENWIDTH
+    mul   dx
+    pop   dx
+    pop   cx
+    push  ax        ; offset on stack
+    sub   ax, ST_Y * SCREENWIDTH ; 0D200
+    push  ax        ; offset - d200 on stack
+    xchg  ax, cx
+
+
+ENDIF
+
+neg   ax
+add   ax, word ptr ds:[si + ST_MULTIICON_T.st_multicon_x]
+neg   dx
+add   dx, word ptr ds:[si + ST_MULTIICON_T.st_multicon_y]
+
+les   bx, dword ptr es:[di + PATCH_T.patch_width]
+mov   cx, es  ;  height
+
+push  cx
+push  bx  ; for the next call..
 
 call  V_MarkRect_
-imul  dx, word ptr [bp - 6], SCREENWIDTH
-add   dx, di
-mov   cx, word ptr [bp - 0Ah]
-mov   ax, dx
-mov   bx, word ptr [bp - 8]
-sub   ax, ST_Y * SCREENWIDTH ; 0D200
+
+pop   bx    ; width
+pop   cx    ; height
+pop   ax    ; offset minus stuff
+pop   dx    ; offset
 
 call  V_CopyRect_
-label_75:
-mov   al, byte ptr [bp - 2]
-mov   dx, word ptr [bp - 4]
-cbw  
-sub   dx, ax
-mov   ax, dx
-mov   bx, word ptr ds:[si + 6]
-add   ax, dx
-add   bx, ax
-push  ST_GRAPHICS_SEGMENT
-mov   ax, word ptr ds:[bx]
-mov   dx, word ptr ds:[si + 2]
+
+skip_rect:
+
+lodsw           ; x
+xchg  ax, bx    ; bx holds x
+lodsw           ; y
+xchg  ax, dx    ; dx gets y
+lodsw           ; oldinum
+lodsw           ; patch_offset
+pop   si        ;   get inum-is_binicon lookup
+add   si, ax    ; patch_offset[0] + inum-is_binicon lookup
+
+
+mov   ax, ST_GRAPHICS_SEGMENT
 push  ax
-xor   bx, bx
-mov   ax, word ptr ds:[si]
+push  word ptr ds:[si]
+
+xor   ax, ax
+xchg  ax, bx    ; ax gets x. bx gets FG == 0
+
 
 call  V_DrawPatch_
 
-mov   ax, word ptr [bp - 4]
-mov   word ptr ds:[si + 4], ax
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-ret   
+jmp   exit_updatemulticon
 
 
 ENDP
+
+COMMENT @
 
 
 PROC    STlib_drawNum_ NEAR
