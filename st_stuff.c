@@ -261,7 +261,8 @@ boolean __near ST_Responder (event_t __far* ev) {
 }
 
 
-
+int16_t __near ST_calcPainOffset(void) ;
+/*
 int16_t __near ST_calcPainOffset(void) {
     int16_t         health;
     
@@ -273,7 +274,7 @@ int16_t __near ST_calcPainOffset(void) {
     }
     return st_calc_lastcalc;
 }
-
+*/
 
 //
 // This is a not-very-pretty routine which handles
@@ -421,7 +422,9 @@ void __near ST_updateFaceWidget(void) {
     st_facecount--;
 
 }
+void __near ST_updateWidgets(void);
 
+/*
 void __near ST_updateWidgets(void) {
     int8_t i;
 
@@ -447,6 +450,7 @@ void __near ST_Ticker (void) {
     st_oldhealth = player.health;
 
 }
+*/
 
 
 void __near ST_doPaletteStuff(void){

@@ -41,6 +41,8 @@ EXTRN locallib_printhex_:NEAR
 EXTRN G_DeferedInitNew_:FAR
 EXTRN R_PointToAngle2_:FAR
 EXTRN combine_strings_:NEAR
+EXTRN M_Random_:FAR
+EXTRN ST_updateFaceWidget_:NEAR
 
 .DATA
 
@@ -635,7 +637,7 @@ PUBLIC  ST_calcPainOffset_
 
 push  bx
 push  dx
-mov   ax, word ptr ds:[_player + PLAYER_T._player_health]
+mov   ax, word ptr ds:[_player + PLAYER_T.player_health]
 cmp   ax, 100
 jle   more_than_100_health
 
@@ -922,46 +924,41 @@ pop   bx
 ret   
 ENDP
 
+@
 
 PROC    ST_updateWidgets_ NEAR
 PUBLIC  ST_updateWidgets_
 
-push  bx
-push  cx
-push  dx
+push  di
 push  si
-xor   dl, dl
-label_53:
-mov   al, dl
-cbw  
-mov   bx, ax
-cmp   byte ptr ds:[bx + _player + PLAYER_T.player_cards], 0
-je    label_51
-mov   cx, ax
-label_54:
-mov   al, dl
-cbw  
-mov   si, ax
-add   si, ax
-mov   bx, ax
-mov   word ptr ds:[si + _keyboxes], cx
-cmp   byte ptr ds:[bx + _player + PLAYER_T + player_cards + 3], 0
-je    label_52
-add   bx, 3
-mov   word ptr ds:[si + _keyboxes], bx
-label_52:
-inc   dl
-cmp   dl, 3
-jl    label_53
+
+push  ds
+pop   es
+mov   si, OFFSET _player + PLAYER_T.player_cards
+mov   di, OFFSET _keyboxes
+
+do_next_cardcolor:
+xor   ax, ax
+lodsb
+;        keyboxes[i] = player.cards[i] ? i : -1;
+test  ax, ax
+jnz   dont_set_minus_one
+mov   al, -1
+dont_set_minus_one:
+cbw
+cmp   byte ptr ds:[si+2],0 ;si has already been incremented.
+je    dont_set_iplus3
+lea   ax, [si + 2 - (_player + PLAYER_T.player_cards)]
+dont_set_iplus3:
+stosw
+cmp   si, (OFFSET _player + PLAYER_T.player_cards + 3)
+jl    do_next_cardcolor
+
+
 call  ST_updateFaceWidget_
 pop   si
-pop   dx
-pop   cx
-pop   bx
+pop   di
 ret   
-label_51:
-mov   cx, -1
-jmp   label_54
 
 ENDP
 
@@ -969,17 +966,16 @@ ENDP
 PROC    ST_Ticker_ NEAR
 PUBLIC  ST_Ticker_
 
-push  bx
 call  M_Random_
-mov   bx, _player + PLAYER_T.player_health
 mov   byte ptr ds:[_st_randomnumber], al
 call  ST_updateWidgets_
-mov   bx, word ptr ds:[bx]
-mov   word ptr ds:[_st_oldhealth], bx
-pop   bx
+mov   ax, word ptr ds:[_player + PLAYER_T.player_health]
+mov   word ptr ds:[_st_oldhealth], ax
 ret   
 
 ENDP
+
+COMMENT @
 
 
 PROC    ST_doPaletteStuff_ NEAR
