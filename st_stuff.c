@@ -659,7 +659,6 @@ void __near ST_drawWidgets() {
         }
     }
 }
-*/
 
 
 void __near ST_Drawer(boolean usefullscreen, boolean refresh) {
@@ -691,6 +690,8 @@ void __near ST_Drawer(boolean usefullscreen, boolean refresh) {
         Z_QuickMapPhysics();
     }
 }
+*/
+
 
 
 

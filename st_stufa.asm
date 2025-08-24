@@ -1481,62 +1481,45 @@ ret
 
 ENDP
 
-COMMENT @
 
 
 PROC    ST_Drawer_ NEAR
 PUBLIC  ST_Drawer_
 
-push  bx
-test  al, al
-jne   label_42
-label_45:
-mov   al, 1
-label_46:
+dec   ax
+neg   ax ; ! fullscreen
+or    al, byte ptr ds:[_automapactive]
 mov   byte ptr ds:[_st_statusbaron], al
-mov   al, byte ptr ds:[_st_firsttime]
-test  al, al
-je    label_43
-label_47:
-mov   al, 1
-label_48:
-mov   byte ptr ds:[_updatedthisframe], 0
-mov   byte ptr ds:[_st_firsttime], al
 call  ST_doPaletteStuff_
-mov   al, byte ptr ds:[_st_firsttime]
-test  al, al
-je    label_44
-mov   byte ptr ds:[_st_firsttime], 0
-mov   byte ptr ds:[_updatedthisframe], 1
+mov   ax, 0100h  ; ah = 1 al = 0
+
+mov   byte ptr ds:[_updatedthisframe], al ; 0
+or    byte ptr ds:[_st_firsttime], dl
+je    not_first_time
+first_time:
+mov   byte ptr ds:[_st_firsttime], al ; 0
+mov   byte ptr ds:[_updatedthisframe], ah ; 1
+mov   byte ptr ds:[_do_st_refresh], ah ; 1
 
 call  Z_QuickMapStatus_
-call  ST_refreshBackground_  ; todo inline?
-mov   byte ptr ds:[_do_st_refresh], 1
-label_41:
+call  ST_refreshBackground_
 call  ST_drawWidgets_
-cmp   byte ptr ds:[_updatedthisframe], 0
-jne   do_quickmapphysics
-pop   bx
-ret   
-label_42:
-mov   bx, _automapactive
-mov   al, byte ptr ds:[bx]
-test  al, al
-jne   label_45
-jmp   label_46
-label_43:
-test  dl, dl
-jne   label_47
-jmp   label_48
-label_44:
-mov   byte ptr ds:[_do_st_refresh], al
-jmp   label_41
-do_quickmapphysics:
-call  Z_QuickMapPhysics_
-pop   bx
-ret   
+jmp   do_quickmapphysics_and_exit
 
-@
+not_first_time:
+
+mov   byte ptr ds:[_do_st_refresh], al ; 0
+call  ST_drawWidgets_
+
+cmp   byte ptr ds:[_updatedthisframe], 0
+je    just_exit
+
+do_quickmapphysics_and_exit:
+
+call  Z_QuickMapPhysics_
+just_exit:
+ret   
+ENDP
 
 PROC    ST_STUFF_ENDMARKER_ NEAR
 PUBLIC  ST_STUFF_ENDMARKER_
