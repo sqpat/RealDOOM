@@ -1324,45 +1324,47 @@ call  V_DrawPatch_
 jmp   exit_stlib_drawnum
 ENDP
 
-COMMENT @
 
 PROC    STlib_updatePercent_ NEAR
 PUBLIC  STlib_updatePercent_
 
 
-push  bx
-push  cx
-push  si
-mov   si, ax
-mov   cx, dx
 cmp   byte ptr ds:[_do_st_refresh], 0
-jne   label_82
-mov   dx, cx
-mov   ax, si
-call  STlib_drawNum_
-pop   si
-pop   cx
-pop   bx
-ret   
-label_82:
-call  STlib_updateflag_
-mov   bx, word ptr ds:[si + ST_PERCENT_T.st_percent_patch_offset]
-push  ST_GRAPHICS_SEGMENT
-mov   ax, word ptr ds:[bx]
-mov   dx, word ptr ds:[si + 2]
-push  ax
-xor   bx, bx
-mov   ax, word ptr ds:[si]
+je    skip_percent
 
+push  si
+push  bx
+push  dx ; store for 2nd call
+push  ax
+
+xchg  ax, si
+
+call  STlib_updateflag_
+
+;        V_DrawPatch(per->num.x, per->num.y, FG, (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, *(uint16_t __near*)(per->patch_offset))));
+
+
+mov   ax, ST_GRAPHICS_SEGMENT
+push  ax
+les   ax, dword ptr ds:[si + ST_NUMBER_T.st_number_x]
+mov   dx, es
+mov   si, word ptr ds:[si + ST_PERCENT_T.st_percent_patch_offset]
+push  word ptr ds:[si]
+xor   bx, bx
 call  V_DrawPatch_
 
-mov   dx, cx
-mov   ax, si
-call  STlib_drawNum_
-pop   si
-pop   cx
+pop   ax
+pop   dx
 pop   bx
+pop   si
+
+skip_percent:
+
+call  STlib_drawNum_
+exit_st_drawwidgets_no_pop:
 ret   
+
+
 
 ENDP
 
@@ -1370,109 +1372,116 @@ ENDP
 PROC    ST_drawWidgets_ NEAR
 PUBLIC  ST_drawWidgets_
 
-push  bx
-push  cx
-push  dx
-push  si
+
 cmp   byte ptr ds:[_st_statusbaron], 0
-jne   label_49
-jmp   exit_st_drawwidgets
-label_49:
-mov   bx, _player + PLAYER_T.player_readyweapon
-mov   al, byte ptr ds:[bx]
-xor   ah, ah
-imul  bx, ax, SIZEOF_WEAPONINFO_T
-mov   ch, byte ptr ds:[bx + _weaponinfo]
-xor   cl, cl
-label_83:
-mov   al, cl
-cbw  
-mov   bx, ax
-add   bx, ax
-imul  si, ax, SIZEOF_ST_NUMBER_T
-mov   ax, _w_ammo
-mov   dx, word ptr ds:[bx + _player + PLAYER_T.player_ammo]
-add   ax, si
-call  STlib_drawNum_
-mov   ax, _w_maxammo
-mov   dx, word ptr ds:[bx + _player + PLAYER_T.player_maxammo]
-add   ax, si
-inc   cl
-call  STlib_drawNum_
-cmp   cl, 4
-jl    label_83
-cmp   ch, 5
-je    label_84
-jmp   label_85
-label_84:
-mov   dx, 1994
-mov   ax, _w_ready
-label_86:
-call  STlib_drawNum_
-mov   bx, _player + PLAYER_T.player_health
-mov   ax, OFFSET _w_health
-mov   dx, word ptr ds:[bx]
-call  STlib_updatePercent_
-mov   bx, _player + PLAYER_T.player_armorpoints
-mov   ax, OFFSET _w_armor
-mov   dx, word ptr ds:[bx]
-call  STlib_updatePercent_
-mov   bx, 1
-mov   ax, OFFSET _w_armsbg
-mov   dx, bx
-xor   cl, cl
-call  STlib_updateMultIcon_
-label_71:
-mov   al, cl
-cbw  
-mov   bx, ax
-mov   si, OFFSET _w_arms
-mov   al, byte ptr ds:[bx + _player + PLAYER_T._player_weaponowned + 1]
-shl   bx, 3
-cbw  
-add   si, bx
-mov   dx, ax
-mov   ax, si
+je    exit_st_drawwidgets_no_pop
+PUSHA_NO_AX_OR_BP_MACRO
+
 xor   bx, bx
-inc   cl
+mov   cx, 4
+
+mov   si, OFFSET _player + PLAYER_T.player_ammo
+
+
+update_next_ammo:
+
+;            STlib_drawNum(&w_ammo[i], player.ammo[i]);
+;            STlib_drawNum(&w_maxammo[i], player.maxammo[i]);
+
+lodsw
+xchg  ax, dx
+lea   ax, [bx + _w_ammo]
+call  STlib_drawNum_
+
+mov   dx, word ptr ds:[si - 2 + PLAYER_T.player_maxammo - PLAYER_T.player_ammo]
+lea   ax, [bx + _w_maxammo]
+call  STlib_drawNum_
+
+add   bx, SIZEOF_ST_NUMBER_T
+loop  update_next_ammo
+
+mov   al, SIZEOF_WEAPONINFO_T
+mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
+xchg  ax, bx
+
+
+mov   al, byte ptr ds:[bx + _weaponinfo]
+cmp   al, AM_NOAMMO
+
+mov   dx, 1994
+
+je    do_noammo
+
+
+cbw  
+mov   bx, ax
+sal   bx, 1
+mov   dx, word ptr ds:[bx + _player + PLAYER_T.player_ammo]
+
+do_noammo:
+
+done_with_ammo:
+mov   ax, OFFSET _w_ready
+call  STlib_drawNum_
+
+mov   ax, OFFSET _w_health
+mov   dx, word ptr ds:[_player + PLAYER_T.player_health]
+call  STlib_updatePercent_
+
+mov   ax, OFFSET _w_armor
+mov   dx, word ptr ds:[_player + PLAYER_T.player_armorpoints]
+call  STlib_updatePercent_
+
+mov   bx, 1  ; true
+mov   dx, bx ; true
+mov   ax, OFFSET _w_armsbg
 call  STlib_updateMultIcon_
-cmp   cl, 6
-jl    label_71
+
+mov   cx, 6
+mov   di, OFFSET _w_arms
+mov   si, _player + PLAYER_T.player_weaponowned + 1
+
+update_next_weapon:
+
+;            STlib_updateMultIcon(&w_arms[i], player.weaponowned[i + 1], false);
+lodsb
+cbw
+xchg  ax, dx
+mov   ax, di
+xor   bx, bx
+call  STlib_updateMultIcon_
+add   di, SIZEOF_ST_MULTICON_T
+loop  update_next_weapon
+
+;        STlib_updateMultIcon(&w_faces, st_faceindex, false);
+
 mov   ax, OFFSET _w_faces
 mov   dx, word ptr ds:[_st_faceindex]
 xor   bx, bx
 call  STlib_updateMultIcon_
-xor   cl, cl
-label_50:
-mov   al, cl
-cbw  
-mov   bx, ax
-add   bx, ax
-shl   ax, 3
-mov   dx, word ptr ds:[bx + _keyboxes]
-add   ax, OFFSET _w_keyboxes
+
+mov   di, OFFSET _w_keyboxes
+mov   si, OFFSET _keyboxes
+mov   cx, 3
+;            STlib_updateMultIcon(&w_keyboxes[i], keyboxes[i], false);
+
+update_next_keybox:
+lodsw
+xchg  ax, dx
+mov   ax, di
 xor   bx, bx
-inc   cl
 call  STlib_updateMultIcon_
-cmp   cl, 3
-jl    label_50
+add   di, SIZEOF_ST_MULTICON_T
+loop  update_next_keybox
+
 exit_st_drawwidgets:
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 ret   
-label_85:
-mov   al, ch
-cbw  
-mov   bx, ax
-add   bx, ax
-mov   ax, _w_ready
-mov   dx, word ptr ds:[bx + _player + PLAYER_T.player_ammo]
-jmp   label_86
 
 
 ENDP
+
+COMMENT @
 
 
 PROC    ST_Drawer_ NEAR

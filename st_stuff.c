@@ -65,9 +65,7 @@ void __near locallib_printhex (uint32_t number, boolean islong, int8_t __near* o
 //
 void __near ST_refreshBackground(void);
 void __near ST_doPaletteStuff(void);
-void __near STlib_updateflag();
-void __near STlib_updateMultIcon ( st_multicon_t __near* mi, int16_t inum, boolean        is_binicon);
-void __near STlib_drawNum ( st_number_t __near*	number, int16_t num);
+void __near ST_drawWidgets();
 
 
 /*
@@ -620,7 +618,6 @@ void __near STlib_drawNum ( st_number_t __near*	number, int16_t num) {
  
 }
 
-*/
 
 
 void __near STlib_updatePercent ( st_percent_t __near* per, int16_t value) {
@@ -662,6 +659,8 @@ void __near ST_drawWidgets() {
         }
     }
 }
+*/
+
 
 void __near ST_Drawer(boolean usefullscreen, boolean refresh) {
     st_statusbaron = (!usefullscreen) || automapactive;
