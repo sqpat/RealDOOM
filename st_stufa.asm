@@ -88,7 +88,6 @@ EXTRN _sbar:WORD
 
 .CODE
 
-RADIATIONPAL = 13
 
 
 PROC    ST_STUFF_STARTMARKER_ NEAR
@@ -975,89 +974,78 @@ ret
 
 ENDP
 
-COMMENT @
-
+NUMREDPALS = 8
+NUMBONUSPALS = 3
+STARTBONUSPALS = 9
+RADIATIONPAL = 13
 
 PROC    ST_doPaletteStuff_ NEAR
 PUBLIC  ST_doPaletteStuff_
 
-push  bx
 push  dx
-mov   bx, _player + PLAYER_T.player_damagecount
-mov   ax, word ptr ds:[bx]
-mov   bx, _player + PLAYER_T.player_powers + (2 * PW_STRENGTH)
-cmp   word ptr ds:[bx], 0
-je    label_63
-mov   dx, word ptr ds:[bx]
-mov   bx, 12  ; fade berserk out
-sar   dx, 6
-sub   bx, dx
-mov   dx, bx
-cmp   bx, ax
-jle   label_63
-mov   ax, bx
-label_63:
+mov   ax, word ptr ds:[_player + PLAYER_T.player_damagecount]
+mov   dx, word ptr ds:[_player + PLAYER_T.player_powers + (2 * PW_STRENGTH)]
+test  dx, dx
+je    done_with_berz_check
+; fade berserk out
+SHIFT_MACRO sar   dx 6
+neg   dx
+add   dx, 12
+cmp   dx, ax
+jle   done_with_berz_check
+xchg  ax, dx
+done_with_berz_check:
 test  ax, ax
-je    label_64
+je    no_red_fadeout
 add   ax, 7
-sar   ax, 3
-cmp   al, 8
-jl    label_65
+SHIFT_MACRO sar   ax 3
+cmp   al, NUMREDPALS
+jl    dont_cap_redpedals
 mov   al, 7
-label_65:
+dont_cap_redpedals:
 inc   al
-cmp   al, byte ptr ds:[_st_palette]
-jne   label_66
-pop   dx
-pop   bx
-ret   
-label_64:
-mov   bx, _player + PLAYER_T.player_bonuscount
-mov   al, byte ptr ds:[bx]
+jmp   check_set_palette_and_exit
+
+no_red_fadeout:
+
+mov   al, byte ptr ds:[_player + PLAYER_T.player_bonuscount]
 test  al, al
-je    label_69
+je    no_bonus
 cbw  
 add   ax, 7
-sar   ax, 3
-cmp   al, 4
-jl    label_70
-mov   al, 3
-label_70:
-add   al, 9
-cmp   al, byte ptr ds:[_st_palette]
-jne   label_66
-pop   dx
-pop   bx
-ret   
-label_69:
-mov   bx, _player + PLAYER_T.player_powers + (2 * PW_IRONFEET)
-cmp   word ptr ds:[bx], 128
-jle   label_68
-label_67:
+SHIFT_MACRO sar   ax, 3
+cmp   al, NUMBONUSPALS
+jle   dont_cap_bonuspals
+mov   al, NUMBONUSPALS
+dont_cap_bonuspals:
+add   al, STARTBONUSPALS
+jmp   check_set_palette_and_exit
+
+no_bonus:
+
+cmp   word ptr ds:[_player + PLAYER_T.player_powers + (2 * PW_IRONFEET)], 128
+jle   check_mod_8_tic
+set_rad_pal:
 mov   al, RADIATIONPAL
+jmp   check_set_palette_and_exit
+check_mod_8_tic:
+test  byte ptr ds:[_player + PLAYER_T.player_powers + (2 * PW_IRONFEET)], 8
+jne   set_rad_pal
+
+check_set_palette_and_exit:
 cmp   al, byte ptr ds:[_st_palette]
-jne   label_66
-pop   dx
-pop   bx
-ret   
-label_68:
-test  byte ptr ds:[bx], 8
-jne   label_67
-cmp   al, byte ptr ds:[_st_palette]
-jne   label_66
-pop   dx
-pop   bx
-ret   
-label_66:
+je    dont_set_palette_and_exit
+set_palette_and_exit:
 mov   byte ptr ds:[_st_palette], al
 cbw  
 call  I_SetPalette_
+dont_set_palette_and_exit:
 pop   dx
-pop   bx
 ret   
 
 ENDP
 
+COMMENT @
 
 PROC    STlib_updateflag_ NEAR
 PUBLIC  STlib_updateflag_

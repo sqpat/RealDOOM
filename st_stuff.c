@@ -450,7 +450,6 @@ void __near ST_Ticker (void) {
     st_oldhealth = player.health;
 
 }
-*/
 
 
 void __near ST_doPaletteStuff(void){
@@ -502,7 +501,9 @@ void __near ST_doPaletteStuff(void){
 
 }
 
+*/
 
+void __near ST_doPaletteStuff(void);
 
 
 void __near STlib_updateflag() {
