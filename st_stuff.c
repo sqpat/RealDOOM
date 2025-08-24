@@ -67,6 +67,7 @@ void __near ST_refreshBackground(void);
 void __near ST_doPaletteStuff(void);
 void __near STlib_updateflag();
 void __near STlib_updateMultIcon ( st_multicon_t __near* mi, int16_t inum, boolean        is_binicon);
+void __near STlib_drawNum ( st_number_t __near*	number, int16_t num);
 
 
 /*
@@ -552,7 +553,6 @@ void __near STlib_updateMultIcon ( st_multicon_t __near* mi, int16_t inum, boole
     }
 }
 
-*/
 
 
 
@@ -597,7 +597,8 @@ void __near STlib_drawNum ( st_number_t __near*	number, int16_t num) {
     x = number->x - digitwidth;
 
     V_MarkRect (x, number->y, digitwidth, h); 
-    V_CopyRect (x + SCREENWIDTH*(number->y - ST_Y), x + SCREENWIDTH*number->y, digitwidth, h);
+    V_CopyRect (x + SCREENWIDTH*(number->y - ST_Y), 
+                x + SCREENWIDTH*number->y, digitwidth, h);
 
     // if non-number, do not draw it
     if (num == 1994){
@@ -619,6 +620,7 @@ void __near STlib_drawNum ( st_number_t __near*	number, int16_t num) {
  
 }
 
+*/
 
 
 void __near STlib_updatePercent ( st_percent_t __near* per, int16_t value) {

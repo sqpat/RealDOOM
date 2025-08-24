@@ -1076,6 +1076,7 @@ je    do_draw
 exit_updatemulticon:
 POPA_NO_AX_OR_BP_MACRO
 exit_updatemulticon_no_pop:
+exit_stlib_drawnum_no_pop:
 ret   
 
 do_draw:
@@ -1175,140 +1176,170 @@ xchg  ax, bx    ; ax gets x. bx gets FG == 0
 
 
 call  V_DrawPatch_
+exit_stlib_drawnum_other:
 
 jmp   exit_updatemulticon
 
 
 ENDP
 
-COMMENT @
 
 
 PROC    STlib_drawNum_ NEAR
 PUBLIC  STlib_drawNum_
 
 
-push  bx
-push  cx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 0Ah
-mov   di, ax
-mov   si, dx
-mov   al, byte ptr ds:[di + 4]
-mov   byte ptr [bp - 4], al
-cmp   dx, word ptr ds:[di + 6]
-jne   label_76
+PUSHA_NO_AX_OR_BP_MACRO
+xchg  ax, si
+mov   cx, word ptr ds:[si + ST_NUMBER_T.st_number_oldnum]
+cmp   cx, dx
+jne   drawnum
 cmp   byte ptr ds:[_do_st_refresh], 0
-jne   label_76
-jmp   exit_stlib_drawnum
-label_76:
+je    exit_stlib_drawnum_other
+drawnum:
+
 call  STlib_updateflag_
-mov   bx, word ptr ds:[di + 8]
+
+;	p0 = (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, number->patch_offset[0]));
 mov   ax, ST_GRAPHICS_SEGMENT
-mov   bx, word ptr ds:[bx]
 mov   es, ax
-mov   ax, word ptr es:[bx]
-mov   word ptr [bp - 6], ax
-mov   ax, word ptr es:[bx + 2]
-mov   word ptr [bp - 8], ax
-mov   word ptr ds:[di + 6], si
-test  si, si
-jge   label_77
-cmp   byte ptr [bp - 4], 2
-jne   label_78
-cmp   si, -9
-jge   label_78
-mov   si, -9
-neg_si:
-neg   si
-label_77:
-mov   al, byte ptr [bp - 6]
-mul   byte ptr [bp - 4]
-mov   byte ptr [bp - 2], al
-mov   bl, al
-mov   ax, word ptr ds:[di]
-xor   bh, bh
-mov   cx, word ptr [bp - 8]
+mov   di, word ptr ds:[si + ST_NUMBER_T.st_number_patch_offset]
+mov   di, word ptr ds:[di] ; offset 0
+les   bx, dword ptr es:[di + PATCH_T.patch_width]
+
+; bx has width, es has height for now
+
+mov   word ptr ds:[si + ST_NUMBER_T.st_number_oldnum], dx
+test  dx, dx
+mov   ax,word ptr ds:[si + ST_NUMBER_T.st_number_width] ; numdigits
+jns   skip_neg
+cmp   al, 2
+jne   check_3_digit
+cmp   dx, -9
+jge   check_3_digit
+mov   dx, -9
+jmp   do_neg
+check_3_digit:
+cmp   al, 3
+jne   do_neg
+cmp   dx, -99
+jge   do_neg
+mov   dx, -99
+do_neg:
+neg   dx ; set positive
+skip_neg:
+
+;    digitwidth = w * numdigits;
+; bx has width, but its smaller than 256.
+mul   bl
+; digits * w in ax
+;    x = number->x - digitwidth;
+push  bx   ; push width (-2)
+xchg  ax, bx  ; digitwidth in bx
+mov   ax, word ptr ds:[si + ST_NUMBER_T.st_number_x]
 sub   ax, bx
-mov   dx, word ptr ds:[di + 2]
-mov   word ptr [bp - 0Ah], ax
+
+mov   di, dx ; back up num
+mov   dx, word ptr ds:[si + ST_NUMBER_T.st_number_y]
+mov   cx, es  ; h
+
+push  bx    ; (use as is in bx later)
+push  cx    ; (use as is in cx later)
+push  ax    ; x
+push  dx    ; number->y
+
 
 call  V_MarkRect_
-imul  dx, word ptr ds:[di + 2], SCREENWIDTH
-mov   ax, word ptr ds:[di + 2]
-sub   ax, ST_Y
-imul  ax, ax, SCREENWIDTH
-mov   bl, byte ptr [bp - 2]
-mov   cx, word ptr [bp - 8]
-xor   bh, bh
-add   dx, word ptr [bp - 0Ah]
-add   ax, word ptr [bp - 0Ah]
+
+;    V_CopyRect (x + SCREENWIDTH*(number->y - ST_Y), x + SCREENWIDTH*number->y, digitwidth, h);
+
+pop   cx    ; number->y
+mov   bx, cx
+sub   bx, ST_y
+mov   ax, SCREENWIDTH
+mul   bx
+pop   bx        ; x
+add   ax, bx ; + x
+mov   es, ax ; backup
+mov   ax, SCREENWIDTH
+mul   cx
+add   ax, bx ; + x
+xchg  ax, dx
+mov   ax, es
+pop   cx ; restore these args
+pop   bx ; restore these args
 call  V_CopyRect_
-cmp   si, 1994
+
+pop   cx  ; get w
+
+cmp   di, 1994
 je    exit_stlib_drawnum
-mov   cx, word ptr ds:[di]
-test  si, si
-je    label_80
-label_79:
-test  si, si
-je    exit_stlib_drawnum
-dec   byte ptr [bp - 4]
-cmp   byte ptr [bp - 4], -1
-jne   label_81
-exit_stlib_drawnum:
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret   
-label_78:
-cmp   byte ptr [bp - 4], 3
-jne   neg_si
-cmp   si, -99
-jge   neg_si
-mov   si, -99
-jmp   neg_si
-label_80:
-mov   bx, word ptr ds:[di + 8]
-push  ST_GRAPHICS_SEGMENT
-mov   ax, word ptr ds:[bx]
-mov   dx, word ptr ds:[di + 2]
-push  ax
-mov   ax, cx
-xor   bx, bx
-sub   ax, word ptr [bp - 6]
-call  V_DrawPatch_
-jmp   label_79
-label_81:
-mov   ax, si
-mov   bx, 10
-cwd   
-idiv  bx
-mov   bx, word ptr ds:[di + 8]
-add   dx, dx
-push  ST_GRAPHICS_SEGMENT
-add   bx, dx
-sub   cx, word ptr [bp - 6]
-mov   dx, word ptr ds:[bx]
-mov   ax, cx
+
+lodsw ;  number->x
+xchg  ax, bx
+lodsw ;  number->y
+xchg  ax, dx
+add   si, 4
+lodsw ;  number->patchoffset
+xchg  ax, si
+xchg  ax, bx ; get x back
+
+
+; di has num
+; cx has w
+; ax has x
+; dx has number-y
+; si is patch offsets ptr 
+
+test  di, di
+je    draw_zero
+; drawnonzero
+; do draw loop
+draw_nonzero:
+sub   ax, cx
+push  ax    ; store for postcall
+push  dx    ; store for postcall
+
+mov   bx, ST_GRAPHICS_SEGMENT
+push  bx  ; func arc 1
+
+xchg  ax, di
 push  dx
-xor   bx, bx
-mov   dx, word ptr ds:[di + 2]
+cwd
+mov   bx, 10  ; bh 0
+div   bx
+mov   bx, dx  ; bx gets digit.
+xchg  ax, di  ; di gets result / 10. ax gets its value back
+pop   dx  ; restore dx for call
+sal   bx, 1   ; word lookup
+
+push  word ptr ds:[si+bx]
+xor   bx, bx ; FG
+
 call  V_DrawPatch_
-mov   ax, si
-mov   bx, 10
-cwd   
-idiv  bx
-mov   si, ax
-jmp   label_79
+
+pop   dx
+pop   ax
+test  di, di
+jnz   draw_nonzero
+
+exit_stlib_drawnum:
+POPA_NO_AX_OR_BP_MACRO
+ret   
 
 
+draw_zero:
+; draw one zero
+mov   bx, ST_GRAPHICS_SEGMENT
+push  bx
+xor   bx, bx
+push  word ptr ds:[si]
+sub   ax, cx
+call  V_DrawPatch_
+jmp   exit_stlib_drawnum
 ENDP
 
+COMMENT @
 
 PROC    STlib_updatePercent_ NEAR
 PUBLIC  STlib_updatePercent_
