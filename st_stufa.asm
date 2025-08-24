@@ -42,10 +42,10 @@ EXTRN G_DeferedInitNew_:FAR
 EXTRN R_PointToAngle2_:FAR
 EXTRN combine_strings_:NEAR
 EXTRN M_Random_:FAR
-EXTRN ST_updateFaceWidget_:NEAR
 
 .DATA
 
+EXTRN _st_face_priority:BYTE
 EXTRN _st_face_lastattackdown:BYTE
 EXTRN _st_randomnumber:BYTE
 EXTRN _updatedthisframe:BYTE
@@ -668,7 +668,7 @@ ret
 
 ENDP
 
-COMMENT @
+
 
 
 PROC    ST_updateFaceWidget_ NEAR
@@ -679,126 +679,153 @@ push  bx
 push  cx
 push  dx
 push  si
-cmp   byte ptr ds:[_st_face_priority], 10
-jge   label_37
-mov   bx, _player + PLAYER_T.player_health
-cmp   word ptr ds:[bx], 0
-jne   label_37
-jmp   label_38
-label_37:
-cmp   byte ptr ds:[_st_face_priority], 9
-jge   label_39
-mov   bx, _player + PLAYER_T.player_bonuscount
-cmp   byte ptr ds:[bx], 0
-je    label_39
-xor   dh, dh
-xor   dl, dl
-label_61:
-mov   al, dl
-cbw  
+xor   ax, ax
+cwd
 mov   bx, ax
+mov   cx, ax
+mov   cl, byte ptr ds:[_st_face_priority]
+cmp   cl, 10
+jge   not_face_10
+cmp   word ptr ds:[_player + PLAYER_T.player_health], ax
+jne   not_face_10
+mov   cl, 9
+mov   byte ptr ds:[_st_face_priority], cl
+mov   word ptr ds:[_st_faceindex], ST_DEADFACE
+mov   word ptr ds:[_st_facecount], 1
+jmp   dec_facecount_and_exit
+not_face_10:
+cmp   cl, 9
+jge   not_face_9
+cmp   byte ptr ds:[_player + PLAYER_T.player_bonuscount], 0
+je    not_face_9
+
+loop_next_wepowned_face:
+
+
 mov   al, byte ptr ds:[bx + _oldweaponsowned]
 cmp   al, byte ptr ds:[bx + _player + PLAYER_T.player_weaponowned]
-je    label_40
+je    not_weapon_change
 mov   al, byte ptr ds:[bx + _player + PLAYER_T.player_weaponowned]
-mov   dh, 1
+inc   dx  ; do evil grin
 mov   byte ptr ds:[bx + _oldweaponsowned], al
-label_40:
-inc   dl
-cmp   dl, 9
-jl    label_61
-test  dh, dh
-je    label_39
-mov   byte ptr ds:[_st_face_priority], 8
+not_weapon_change:
+inc   bx
+cmp   bl, NUMWEAPONS
+jl    loop_next_wepowned_face
+
+test  dx, dx
+je    not_face_9
+mov   cl, 8
+mov   byte ptr ds:[_st_face_priority], cl
 mov   word ptr ds:[_st_facecount], ST_EVILGRINCOUNT
 call  ST_calcPainOffset_
 add   ax, 6
-mov   word ptr ds:[_st_faceindex], ax
-label_39:
-cmp   byte ptr ds:[_st_face_priority], 8
-jge   label_62
-mov   bx, _player + PLAYER_T.player_damagecount
-cmp   word ptr ds:[bx], 0
-je    label_62
-mov   bx, _player + PLAYER_T.player_attackerRef
-mov   ax, word ptr ds:[bx]
+jmp   write_face_index_and_finish_face_checks
+
+
+
+not_face_9:
+xor   ax, ax
+cmp   cl, 8
+jge   not_face_8
+
+cmp   word ptr ds:[_player + PLAYER_T.player_damagecount], ax
+je    not_face_8
+mov   ax, word ptr ds:[_player + PLAYER_T.player_attackerRef]
 test  ax, ax
-je    label_62
-mov   si, _playerMobjRef
-cmp   ax, word ptr ds:[si]
-je    label_62
-mov   bx, _player + PLAYER_T.player_health
-mov   ax, word ptr ds:[bx]
+je    not_face_8
+cmp   ax, word ptr ds:[_playerMobjRef]
+je    not_face_8
+
+mov   ax, word ptr ds:[_player + PLAYER_T.player_health]
 sub   ax, word ptr ds:[_st_oldhealth]
-mov   byte ptr ds:[_st_face_priority], 7
+mov   cl, 7
+mov   byte ptr ds:[_st_face_priority], cl
 cmp   ax, ST_MUCHPAIN
-jg    label_87
-jmp   label_88
-label_87:
+jg    dont_look_at_attacker
+jmp   look_at_attacker
+dont_look_at_attacker:
 mov   word ptr ds:[_st_facecount], ST_TURNCOUNT
 call  ST_calcPainOffset_
 add   ax, 5
-label_102:
-mov   word ptr ds:[_st_faceindex], ax
-label_62:
-cmp   byte ptr ds:[_st_face_priority], 7
-jge   label_89
-mov   bx, _player + PLAYER_T.player_damagecount
-cmp   word ptr ds:[bx], 0
-je    label_89
-mov   bx, _player + PLAYER_T.player_health
-mov   ax, word ptr ds:[bx]
+jmp   write_face_index_and_finish_face_checks
+
+
+
+not_face_8:
+cmp   cl, 7
+jge   not_face_7
+cmp   word ptr ds:[_player + PLAYER_T.player_damagecount], 0
+je    not_face_7
+mov   ax, word ptr ds:[_player + PLAYER_T.player_health]
 sub   ax, word ptr ds:[_st_oldhealth]
 cmp   ax, ST_MUCHPAIN
-jle   jump_to_label_90
-mov   byte ptr ds:[_st_face_priority], 7
+jnle   label_90
+mov   cl, 6
+mov   byte ptr ds:[_st_face_priority], cl
+mov   word ptr ds:[_st_facecount], ST_OUCHCOUNT
+call  ST_calcPainOffset_
+add   ax, 7
+jmp   write_face_index_and_finish_face_checks
+
+label_90:
+mov   cl, 7
+mov   byte ptr ds:[_st_face_priority], cl
 mov   word ptr ds:[_st_facecount], ST_TURNCOUNT
 call  ST_calcPainOffset_
 add   ax, 5
-label_106:
-mov   word ptr ds:[_st_faceindex], ax
-label_89:
-cmp   byte ptr ds:[_st_face_priority], 6
-jge   label_91
-mov   bx, _player + PLAYER_T.player_attackdown
-cmp   byte ptr ds:[bx], 0
-je    jump_to_label_92
+jmp   write_face_index_and_finish_face_checks
+not_face_7:
+
+cmp   cl, 6
+jge   not_face_6
+cmp   byte ptr ds:[_player + PLAYER_T.player_attackdown], 0
+jne   label_92
+mov   byte ptr ds:[_st_face_lastattackdown], -1
+jmp   not_face_6
+label_92:
 cmp   byte ptr ds:[_st_face_lastattackdown], -1
-jne   jump_to_label_93
+je    label_93
+dec   byte ptr ds:[_st_face_lastattackdown]
+je    label_107
+jmp   not_face_6
+label_107:
+mov   cl, 5
+mov   byte ptr ds:[_st_face_priority], cl
+call  ST_calcPainOffset_
+mov   word ptr ds:[_st_facecount], 1
+add   ax, 7
+mov   byte ptr ds:[_st_face_lastattackdown], 1
+jmp   write_face_index_and_finish_face_checks
+
+
+
+label_93:
 mov   byte ptr ds:[_st_face_lastattackdown], ST_RAMPAGEDELAY
-label_91:
-cmp   byte ptr ds:[_st_face_priority], 5
-jge   label_94
+not_face_6:
+cmp   cl, 5
+jge   not_face_5
 mov   bx, _player + PLAYER_T.player_cheats
 test  byte ptr ds:[bx], 2
-jne   jump_to_label_95
+jne   label_95
 mov   bx, _player + PLAYER_T.player_powers
 cmp   word ptr ds:[bx], 0
-jne   jump_to_label_95
-label_94:
+je    not_face_5
+
+label_95:
+mov   cl, 4
+mov   byte ptr ds:[_st_face_priority], cl ; todo jsut write 4?
+mov   word ptr ds:[_st_faceindex], ST_GODFACE
+mov   word ptr ds:[_st_facecount], 0
+
+jmp   exit_updatefacewidget
+
+
+
+not_face_5:
 cmp   word ptr ds:[_st_facecount], 0
-je    label_96
-label_108:
-dec   word ptr ds:[_st_facecount]
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret   
-jump_to_label_90:
-jmp   label_90
-label_38:
-mov   byte ptr ds:[_st_face_priority], 9
-mov   word ptr ds:[_st_faceindex], ST_DEADFACE
-mov   word ptr ds:[_st_facecount], 1
-jmp   label_108
-jump_to_label_92:
-jmp   label_92
-jump_to_label_93:
-jmp   label_93
-jump_to_label_95:
-jmp   label_95
-label_96:
+jne   dec_facecount_and_exit
+
 mov   al, byte ptr ds:[_st_randomnumber]
 xor   ah, ah
 mov   bx, 3
@@ -808,14 +835,21 @@ call  ST_calcPainOffset_
 mov   word ptr ds:[_st_facecount], ST_STRAIGHTFACECOUNT
 add   ax, dx
 mov   byte ptr ds:[_st_face_priority], 0
+
+write_face_index_and_finish_face_checks:
 mov   word ptr ds:[_st_faceindex], ax
+
+dec_facecount_and_exit:
 dec   word ptr ds:[_st_facecount]
+exit_updatefacewidget:
 pop   si
 pop   dx
 pop   cx
 pop   bx
 ret   
-label_88:
+
+
+look_at_attacker:
 mov   bx, _player + PLAYER_T.player_attackerRef
 imul  bx, word ptr ds:[bx], SIZEOF_MOBJ_POS_T
 mov   ax, MOBJPOSLIST_6800_SEGMENT
@@ -860,7 +894,7 @@ call  ST_calcPainOffset_
 cmp   dx, ANG45_HIGHBITS
 jae   label_101
 add   ax, 7
-jmp   label_102
+jmp   write_face_index_and_finish_face_checks
 label_100:
 xor   bl, bl
 jmp   label_104
@@ -886,44 +920,13 @@ label_101:
 test  bl, bl
 je    label_105
 add   ax, 3
-jmp   label_102
+jmp   write_face_index_and_finish_face_checks
 label_105:
 add   ax, 4
-jmp   label_102
-label_90:
-mov   byte ptr ds:[_st_face_priority], 6
-mov   word ptr ds:[_st_facecount], ST_OUCHCOUNT
-call  ST_calcPainOffset_
-add   ax, 7
-jmp   label_106
-label_93:
-dec   byte ptr ds:[_st_face_lastattackdown]
-je    label_107
-jmp   label_91
-label_107:
-mov   byte ptr ds:[_st_face_priority], 5
-call  ST_calcPainOffset_
-mov   word ptr ds:[_st_facecount], 1
-add   ax, 7
-mov   byte ptr ds:[_st_face_lastattackdown], 1
-mov   word ptr ds:[_st_faceindex], ax
-jmp   label_91
-label_92:
-mov   byte ptr ds:[_st_face_lastattackdown], -1
-jmp   label_91
-label_95:
-mov   byte ptr ds:[_st_face_priority], 4
-mov   word ptr ds:[_st_faceindex], ST_GODFACE
-mov   word ptr ds:[_st_facecount], 1
-dec   word ptr ds:[_st_facecount]
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret   
+jmp   write_face_index_and_finish_face_checks
+
 ENDP
 
-@
 
 PROC    ST_updateWidgets_ NEAR
 PUBLIC  ST_updateWidgets_

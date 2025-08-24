@@ -285,6 +285,8 @@ int16_t __near ST_calcPainOffset(void) {
 // the precedence of expressions is:
 //  dead > evil grin > turned head > straight ahead
 //
+/*
+
 void __near ST_updateFaceWidget(void) {
     int8_t         i;
     angle_t     badguyangle;
@@ -427,7 +429,6 @@ void __near ST_updateFaceWidget(void) {
 }
 void __near ST_updateWidgets(void);
 
-/*
 void __near ST_updateWidgets(void) {
     int8_t i;
 
