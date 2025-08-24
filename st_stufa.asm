@@ -1210,24 +1210,9 @@ les   bx, dword ptr es:[di + PATCH_T.patch_width]
 ; bx has width, es has height for now
 
 mov   word ptr ds:[si + ST_NUMBER_T.st_number_oldnum], dx
-test  dx, dx
 mov   ax,word ptr ds:[si + ST_NUMBER_T.st_number_width] ; numdigits
-jns   skip_neg
-cmp   al, 2
-jne   check_3_digit
-cmp   dx, -9
-jge   check_3_digit
-mov   dx, -9
-jmp   do_neg
-check_3_digit:
-cmp   al, 3
-jne   do_neg
-cmp   dx, -99
-jge   do_neg
-mov   dx, -99
-do_neg:
-neg   dx ; set positive
-skip_neg:
+
+
 
 ;    digitwidth = w * numdigits;
 ; bx has width, but its smaller than 256.
