@@ -1060,6 +1060,8 @@ ret
 ENDP
 ;void __near STlib_updateMultIcon ( st_multicon_t __near* mi, int16_t inum, boolean        is_binicon) {
 
+; 
+
 
 PROC    STlib_updateMultIcon_ NEAR
 PUBLIC  STlib_updateMultIcon_
@@ -1068,11 +1070,11 @@ cmp   dx, -1
 je    exit_updatemulticon_no_pop  ; test once.
 PUSHA_NO_AX_OR_BP_MACRO
 xchg  ax, si
-cmp   byte ptr ds:[_do_st_refresh], 0
-jne   do_draw
 mov   cx, word ptr ds:[si + ST_MULTIICON_T.st_multicon_oldinum]
 cmp   cx, dx
-je    do_draw
+jne   do_draw
+cmp   byte ptr ds:[_do_st_refresh], 0
+jne   do_draw
 exit_updatemulticon:
 POPA_NO_AX_OR_BP_MACRO
 exit_updatemulticon_no_pop:
@@ -1083,9 +1085,7 @@ do_draw:
 call  STlib_updateflag_
 
 mov   word ptr ds:[si + ST_MULTIICON_T.st_multicon_oldinum], dx ; update oldinum, dont need anymore
-mov   ax, bx 
-cbw
-sub   dx, ax   ; calculate  "inum-is_binicon" lookup
+sub   dx, bx   ; calculate  "inum-is_binicon" lookup
 sal   dx, 1
 push  dx       ; store inum-is_binicon lookup
 

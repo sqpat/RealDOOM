@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/24 13:22:50
+Created on:       25/08/24 13:27:32
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -41,10 +41,10 @@ g_game_TEXT            CODE           AUTO           0000:37f0       000009bf
 m_misc_TEXT            CODE           AUTO           0000:41b0       000000d5
 am_map_TEXT            CODE           AUTO           0000:4290       000012ad
 st_stuff_TEXT          CODE           AUTO           0000:5540       00000719
-ST_STUFA_TEXT          CODE           AUTO           0000:5c5a       00000351
-HU_STUFF_TEXT          CODE           AUTO           0000:5fac       00000183
-HU_LIB_TEXT            CODE           AUTO           0000:6130       00000141
-D_ALGO_TEXT            CODE           AUTO           0000:6272       0000008c
+ST_STUFA_TEXT          CODE           AUTO           0000:5c5a       0000034e
+HU_STUFF_TEXT          CODE           AUTO           0000:5fa8       00000183
+HU_LIB_TEXT            CODE           AUTO           0000:612c       00000141
+D_ALGO_TEXT            CODE           AUTO           0000:626e       0000008c
 dmx_TEXT               CODE           AUTO           0000:6300       000001b8
 D_INT_TEXT             CODE           AUTO           0000:64b8       00000176
 MEMORY_TEXT            CODE           AUTO           0000:662e       00000000
@@ -418,38 +418,38 @@ Module: st_stuff.obj(C:\REALDOOM\st_stuff.c)
 0000:5982      ST_updateFaceWidget_
 0000:5bf4      ST_Drawer_
 Module: st_stufa.obj(st_stufa.ASM)
-0000:5e2e*     STlib_drawNum_
-0000:5f06      ST_drawWidgets_
+0000:5e2b*     STlib_drawNum_
+0000:5f03      ST_drawWidgets_
 0000:5ce7*     ST_updateWidgets_
 0000:5da5*     STlib_updateMultIcon_
 0000:5d24      ST_doPaletteStuff_
-0000:5edb*     STlib_updatePercent_
+0000:5ed8*     STlib_updatePercent_
 0000:5c70      ST_refreshBackground_
 0000:5d93*     STlib_updateflag_
 0000:5c5a*     ST_STUFF_STARTMARKER_
-0000:5fab*     ST_STUFF_ENDMARKER_
+0000:5fa8*     ST_STUFF_ENDMARKER_
 0000:5d12      ST_Ticker_
 0000:5cb0      ST_calcPainOffset_
 Module: hu_stuff.obj(hu_stuff.ASM)
-0000:6021      HU_Erase_
-0000:60f0      HU_Responder_
-0000:5fac      HU_Drawer_
-0000:612f*     HU_STUFF_ENDMARKER_
-0000:5fac*     HU_STUFF_STARTMARKER_
-0000:6063      HU_Ticker_
+0000:601d      HU_Erase_
+0000:60ec      HU_Responder_
+0000:5fa8      HU_Drawer_
+0000:612b*     HU_STUFF_ENDMARKER_
+0000:5fa8*     HU_STUFF_STARTMARKER_
+0000:605f      HU_Ticker_
 Module: hu_lib.obj(hu_lib.ASM)
-0000:6130*     HULIB_STARTMARKER_
-0000:621e      HUlib_addMessageToSText_
-0000:6271*     HULIB_ENDMARKER_
-0000:615c      HUlib_drawTextLine_
-0000:61b1      HUlib_eraseTextLine_
-0000:6130      HUlib_addStringToTextLine_
+0000:612c*     HULIB_STARTMARKER_
+0000:621a      HUlib_addMessageToSText_
+0000:626d*     HULIB_ENDMARKER_
+0000:6158      HUlib_drawTextLine_
+0000:61ad      HUlib_eraseTextLine_
+0000:612c      HUlib_addStringToTextLine_
 Module: d_algo.obj(d_algo.ASM)
-0000:62e2      hackDSBack_
-0000:62fe*     D_ALGO_END_
-0000:629b      zeroConventional_
-0000:6272      resetDS_
-0000:627a      hackDS_
+0000:62de      hackDSBack_
+0000:62fa*     D_ALGO_END_
+0000:6297      zeroConventional_
+0000:626e      resetDS_
+0000:6276      hackDS_
 Module: dmx.obj(C:\REALDOOM\dmx.c)
 0000:6300*     TS_SetTimerToMaxTaskRate_
 0000:6314+     playpcspeakernote_
