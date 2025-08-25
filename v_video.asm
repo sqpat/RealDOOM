@@ -1113,13 +1113,13 @@ cmp       byte ptr ds:[_skipdirectdraws], 0
 jne       exit_v_copyrect
 
 
-test      cx, cx            ; todo necessary? ever called with 0 height?
-jbe       exit_v_copyrect
+
+jcxz      exit_v_copyrect    ; todo necessary? ever called with 0 height?
 
 push      si
 push      di
 
-mov       si, ax ; set src offset
+xchg      ax, si ; set src offset
 mov       di, dx ; set dst offset
 
 mov       ax, SCREEN0_SEGMENT
@@ -1140,7 +1140,7 @@ mov       cx, bx
 
 shr       cx, 1
 rep movsw 
-adc       cx, cx
+;adc       cx, cx
 rep movsb 
 
 add       si, ax

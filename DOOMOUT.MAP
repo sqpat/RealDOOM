@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/24 15:07:43
+Created on:       25/08/24 22:42:22
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -41,10 +41,10 @@ g_game_TEXT            CODE           AUTO           0000:37f0       000009bf
 m_misc_TEXT            CODE           AUTO           0000:41b0       000000d5
 am_map_TEXT            CODE           AUTO           0000:4290       000012ad
 st_stuff_TEXT          CODE           AUTO           0000:5540       00000441
-ST_STUFA_TEXT          CODE           AUTO           0000:5982       0000057c
-HU_STUFF_TEXT          CODE           AUTO           0000:5efe       00000183
-HU_LIB_TEXT            CODE           AUTO           0000:6082       00000141
-D_ALGO_TEXT            CODE           AUTO           0000:61c4       0000008c
+ST_STUFA_TEXT          CODE           AUTO           0000:5982       00000572
+HU_STUFF_TEXT          CODE           AUTO           0000:5ef4       00000183
+HU_LIB_TEXT            CODE           AUTO           0000:6078       00000141
+D_ALGO_TEXT            CODE           AUTO           0000:61ba       0000008c
 dmx_TEXT               CODE           AUTO           0000:6250       000001b8
 D_INT_TEXT             CODE           AUTO           0000:6408       00000176
 MEMORY_TEXT            CODE           AUTO           0000:657e       00000000
@@ -59,8 +59,8 @@ S_SOUND_TEXT           CODE           AUTO           0000:9a52       000005b2
 s_sbsfx_TEXT           CODE           AUTO           0000:a010       00001815
 R_MAIN_TEXT            CODE           AUTO           0000:b826       000003d9
 w_wad_TEXT             CODE           AUTO           0000:bc00       0000031a
-V_VIDEO_TEXT           CODE           AUTO           0000:bf1a       00000611
-Z_ZONE_TEXT            CODE           AUTO           0000:c52c       00000461
+V_VIDEO_TEXT           CODE           AUTO           0000:bf1a       0000060c
+Z_ZONE_TEXT            CODE           AUTO           0000:c526       00000461
 _TEXT                  CODE           AUTO           0000:c990       0000245e
 FAR_DATA               FAR_DATA       AUTO           0ede:000e       00000000
 _NULL                  BEGDATA        DGROUP         0edf:0000       00000020
@@ -417,39 +417,39 @@ Module: st_stuff.obj(C:\REALDOOM\st_stuff.c)
 0000:5540      ST_Responder_
 Module: st_stufa.obj(st_stufa.ASM)
 0000:5a0f*     ST_updateFaceWidget_
-0000:5d3d*     STlib_drawNum_
-0000:5e15*     ST_drawWidgets_
-0000:5bf9*     ST_updateWidgets_
-0000:5cb7*     STlib_updateMultIcon_
-0000:5c36*     ST_doPaletteStuff_
-0000:5dea*     STlib_updatePercent_
-0000:5eba      ST_Drawer_
+0000:5d33*     STlib_drawNum_
+0000:5e0b*     ST_drawWidgets_
+0000:5bf6*     ST_updateWidgets_
+0000:5cb4*     STlib_updateMultIcon_
+0000:5c33*     ST_doPaletteStuff_
+0000:5de0*     STlib_updatePercent_
+0000:5eb0      ST_Drawer_
 0000:5998*     ST_refreshBackground_
-0000:5ca5*     STlib_updateflag_
+0000:5ca2*     STlib_updateflag_
 0000:5982*     ST_STUFF_STARTMARKER_
-0000:5efe*     ST_STUFF_ENDMARKER_
-0000:5c24      ST_Ticker_
+0000:5ef4*     ST_STUFF_ENDMARKER_
+0000:5c21      ST_Ticker_
 0000:59d8*     ST_calcPainOffset_
 Module: hu_stuff.obj(hu_stuff.ASM)
-0000:5f73      HU_Erase_
-0000:6042      HU_Responder_
-0000:5efe      HU_Drawer_
-0000:6081*     HU_STUFF_ENDMARKER_
-0000:5efe*     HU_STUFF_STARTMARKER_
-0000:5fb5      HU_Ticker_
+0000:5f69      HU_Erase_
+0000:6038      HU_Responder_
+0000:5ef4      HU_Drawer_
+0000:6077*     HU_STUFF_ENDMARKER_
+0000:5ef4*     HU_STUFF_STARTMARKER_
+0000:5fab      HU_Ticker_
 Module: hu_lib.obj(hu_lib.ASM)
-0000:6082*     HULIB_STARTMARKER_
-0000:6170      HUlib_addMessageToSText_
-0000:61c3*     HULIB_ENDMARKER_
-0000:60ae      HUlib_drawTextLine_
-0000:6103      HUlib_eraseTextLine_
-0000:6082      HUlib_addStringToTextLine_
+0000:6078*     HULIB_STARTMARKER_
+0000:6166      HUlib_addMessageToSText_
+0000:61b9*     HULIB_ENDMARKER_
+0000:60a4      HUlib_drawTextLine_
+0000:60f9      HUlib_eraseTextLine_
+0000:6078      HUlib_addStringToTextLine_
 Module: d_algo.obj(d_algo.ASM)
-0000:6234      hackDSBack_
-0000:6250*     D_ALGO_END_
-0000:61ed      zeroConventional_
-0000:61c4      resetDS_
-0000:61cc      hackDS_
+0000:622a      hackDSBack_
+0000:6246*     D_ALGO_END_
+0000:61e3      zeroConventional_
+0000:61ba      resetDS_
+0000:61c2      hackDS_
 Module: dmx.obj(C:\REALDOOM\dmx.c)
 0000:6250*     TS_SetTimerToMaxTaskRate_
 0000:6264+     playpcspeakernote_
@@ -671,7 +671,7 @@ Module: w_wad.obj(C:\REALDOOM\w_wad.c)
 0000:bf04      W_CacheLumpNumDirectFragment_
 Module: v_video.obj(v_video.ASM)
 0000:c1d2*     CopyString9_
-0000:c458      V_DrawFullscreenPatch_
+0000:c453      V_DrawFullscreenPatch_
 0000:c248      R_FillBackScreen_
 0000:c41d      V_CopyRect_
 0000:c0da      V_DrawPatchDirect_
@@ -679,33 +679,33 @@ Module: v_video.obj(v_video.ASM)
 0000:bf1a      V_DrawPatch_
 0000:c00d*     V_DrawPatch5000Screen0_
 Module: z_zone.obj(z_zone.ASM)
-0000:c5a6      Z_QuickMapPhysics_
-0000:c544      Z_QuickMapMusicPageFrame_
-0000:c62d      Z_QuickMapRender_4000To9000_
-0000:c86c      Z_QuickMapUnmapAll_
-0000:c65b      Z_QuickMapRender_9000To6000_
-0000:c57b      Z_QuickMapWADPageFrame_
-0000:c726      Z_QuickMapRenderPlanes_
-0000:c55c      Z_QuickMapSFXPageFrame_
-0000:c687      Z_QuickMapStatus_
-0000:c710*     Z_QuickMapScreen0_
-0000:c5ec      Z_QuickMapRender_
-0000:c6e4      Z_QuickMapScratch_7000_
-0000:c6b8      Z_QuickMapScratch_5000_
-0000:c6fa      Z_QuickMapScratch_4000_
-0000:c7ba      Z_QuickMapMenu_
-0000:c961*     CopyString13_Zonelocal_
-0000:c6ce      Z_QuickMapScratch_8000_
-0000:c79f      Z_QuickMapPalette_
-0000:c671      Z_QuickMapRender4000_
-0000:c789      Z_QuickMapMaskedExtraData_
-0000:c8cd      Z_SetOverlay_
-0000:c7f8      Z_QuickMapByTaskNum_
-0000:c752      Z_QuickMapUndoFlatCache_
-0000:c5d1      Z_QuickMapDemo_
-0000:c7d5      Z_QuickMapIntermission_
-0000:c617*     Z_QuickMapRender_4000To9000_9000Only_
-0000:c806      Z_QuickMapVisplanePage_
+0000:c5a0      Z_QuickMapPhysics_
+0000:c53e      Z_QuickMapMusicPageFrame_
+0000:c627      Z_QuickMapRender_4000To9000_
+0000:c866      Z_QuickMapUnmapAll_
+0000:c655      Z_QuickMapRender_9000To6000_
+0000:c575      Z_QuickMapWADPageFrame_
+0000:c720      Z_QuickMapRenderPlanes_
+0000:c556      Z_QuickMapSFXPageFrame_
+0000:c681      Z_QuickMapStatus_
+0000:c70a*     Z_QuickMapScreen0_
+0000:c5e6      Z_QuickMapRender_
+0000:c6de      Z_QuickMapScratch_7000_
+0000:c6b2      Z_QuickMapScratch_5000_
+0000:c6f4      Z_QuickMapScratch_4000_
+0000:c7b4      Z_QuickMapMenu_
+0000:c95b*     CopyString13_Zonelocal_
+0000:c6c8      Z_QuickMapScratch_8000_
+0000:c799      Z_QuickMapPalette_
+0000:c66b      Z_QuickMapRender4000_
+0000:c783      Z_QuickMapMaskedExtraData_
+0000:c8c7      Z_SetOverlay_
+0000:c7f2      Z_QuickMapByTaskNum_
+0000:c74c      Z_QuickMapUndoFlatCache_
+0000:c5cb      Z_QuickMapDemo_
+0000:c7cf      Z_QuickMapIntermission_
+0000:c611*     Z_QuickMapRender_4000To9000_9000Only_
+0000:c800      Z_QuickMapVisplanePage_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fopen.c)
 0000:c990+     __open_flags_
 0000:cb3e+     _fsopen_

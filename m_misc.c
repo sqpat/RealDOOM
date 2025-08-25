@@ -52,7 +52,7 @@
 
 
 
-
+// todo move to fwipe as well.
 uint8_t __far M_Random (void){
     rndindex = (rndindex+1)&0xff;
     return rndtable[rndindex];

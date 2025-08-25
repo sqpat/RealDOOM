@@ -1071,7 +1071,7 @@ ret
 do_draw:
 call  STlib_updateflag_
 
-mov   word ptr ds:[si + ST_MULTIICON_T.st_multicon_oldinum], dx ; update oldinum, dont need anymore
+mov   word ptr ds:[si + ST_MULTIICON_T.st_multicon_oldinum], dx ; update oldinum, dont need dx anymore
 sub   dx, bx   ; calculate  "inum-is_binicon" lookup
 sal   dx, 1
 push  dx       ; store inum-is_binicon lookup
@@ -1081,39 +1081,42 @@ je    skip_rect
 test  bl, bl                ; !is_binicon
 jne   skip_rect
 
+les   ax, dword ptr ds:[si + ST_MULTIICON_T.st_multicon_x]
+mov   dx, es  ; st_multicon_y
 
 mov   di, ST_GRAPHICS_SEGMENT   ; todo load from mem?
 mov   es, di
 
 mov   di, word ptr  ds:[si + ST_MULTIICON_T.st_multicon_patch_offset] ; mi->patch_offset
+
 sal   cx, 1     ; word lookup
 add   di, cx    ; mi->patch_offset[mi->oldinum]
 mov   di, word ptr  ds:[di] ; es:di is patch
 
 
+sub   ax, word ptr es:[di + PATCH_T.patch_leftoffset]
+sub   dx, word ptr es:[di + PATCH_T.patch_topoffset]
+
+;  offset = x+y*SCREENWIDTH;
 
 IF COMPISA GE COMPILE_186
     
-    mov   ax, word ptr es:[di + PATCH_T.patch_leftoffset]
-    mov   dx, word ptr es:[di + PATCH_T.patch_topoffset]
-    mov   cx, dx
+    imul  cx, dx, SCREENWIDTH
     add   cx, ax
-    imul  cx, cx, SCREENWIDTH
     push  cx                    ; offset on stack
     sub   cx, ST_Y * SCREENWIDTH ; 0D200
     push  cx        ; offset - d200 on stack
 
 ELSE
 
-    mov   ax, word ptr es:[di + PATCH_T.patch_leftoffset]
-    mov   dx, word ptr es:[di + PATCH_T.patch_topoffset]
     push  ax
     push  dx
-    add   ax, dx
-    mov   dx, SCREENWIDTH
+    
+    mov   ax, SCREENWIDTH
     mul   dx
     pop   dx
     pop   cx
+    add   ax, cx
     push  ax        ; offset on stack
     sub   ax, ST_Y * SCREENWIDTH ; 0D200
     push  ax        ; offset - d200 on stack
@@ -1122,10 +1125,6 @@ ELSE
 
 ENDIF
 
-neg   ax
-add   ax, word ptr ds:[si + ST_MULTIICON_T.st_multicon_x]
-neg   dx
-add   dx, word ptr ds:[si + ST_MULTIICON_T.st_multicon_y]
 
 les   bx, dword ptr es:[di + PATCH_T.patch_width]
 mov   cx, es  ;  height
