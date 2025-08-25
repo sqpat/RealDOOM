@@ -32,7 +32,6 @@ void __near TS_Startup(void);
 #define HZ_INTERRUPTS_PER_TICK  4
 
 
-/*
 
 void __near TS_SetTimerToMaxTaskRate(void){
 	// reset interrupt rate
@@ -150,7 +149,7 @@ void __interrupt __far_func TS_ServiceScheduleIntEnabled(void){
 
    Sets up the task service routine.
 ---------------------------------------------------------------------*/
-/*
+
 void __near TS_Startup(void){
 
 	if (!TS_Installed) {
@@ -164,14 +163,12 @@ void __near TS_Startup(void){
 	}
 
 }
-*/
 
 /*---------------------------------------------------------------------
    Function: TS_ScheduleTask
 
    Schedules a new task for processing.
 ---------------------------------------------------------------------*/
-/*
 void __near TS_ScheduleMainTask( ) {
 	TS_Startup();
 	
@@ -184,14 +181,12 @@ void __near TS_ScheduleMainTask( ) {
 
 }
 
-*/
 
 /*---------------------------------------------------------------------
    Function: TS_Dispatch
 
    Begins processing of all inactive tasks.
 ---------------------------------------------------------------------*/
-/*
 void __near TS_Dispatch(){
 	
 	_disable();
@@ -203,4 +198,3 @@ void __near TS_Dispatch(){
 }
 
  
-*/

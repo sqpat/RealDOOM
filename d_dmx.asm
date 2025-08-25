@@ -21,7 +21,6 @@ INSTRUCTION_SET_MACRO
 
 EXTRN _dos_setvect_:FAR
 EXTRN _dos_getvect_:FAR
-EXTRN _chain_intr_:FAR
 EXTRN MUS_ServiceRoutine_:NEAR
 
 .DATA
@@ -112,7 +111,50 @@ ENDP
 do_chain:
 les    ax, dword ptr ds:[_OldInt8]
 mov    dx, es
-jmp    _chain_intr_
+;jmp    locallib_chain_intr_
+
+; inlined watcom chain_intr for now. todo: suck less
+
+
+;flags bp + 01Ch
+; cs   bp + 01Ah
+; ip   bp + 018h
+
+; ax   bp + 016h
+; cx   bp + 014h
+; dx   bp + 012h
+; bx   bp + 010h
+; sp   bp + 0Eh
+; bp   bp + 0Ch
+; si   bp + 0Ah
+; di   bp + 8
+; ds   bp + 6
+; es   bp + 4
+; ax   bp + 2
+; ax   bp + 0
+
+
+mov   cx, ax
+mov   ax, dx
+mov   sp, bp
+xchg  word ptr [bp + 014h], cx
+xchg  word ptr [bp + 016h], ax
+mov   bx, word ptr [bp + 01Ch]   ; get old flags
+and   bx, 0FCFFh
+push  bx ; push flags
+
+popf  ; pop flags
+pop   dx
+pop   dx
+pop   es
+pop   ds
+pop   di
+pop   si
+pop   bp
+pop   bx
+pop   bx
+pop   dx
+retf  
 
 
 ; main interrupt
