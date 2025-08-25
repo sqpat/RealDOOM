@@ -245,7 +245,7 @@ void __near G_InitNew (skill_t skill, int8_t episode, int8_t map) {
 	paused = false;
 	demoplayback = false;
 	automapactive = false;
-	viewactive = true;
+
 	gameepisode = episode;
 	gamemap = map;
 	gameskill = skill;

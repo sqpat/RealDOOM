@@ -94,12 +94,12 @@ push  cx
 push  dx
 
 
-mov   ax, word ptr ds:[_ticcount]
-mov   dx, ax
-mov   cx, ax ; entertic in cx
+mov   ax, word ptr ds:[_ticcount]           ; ax is ticcount
+mov   dx, ax                                ; dx is ticcount
+mov   cx, ax ; entertic in cx               ; cx is ticcount (entertic)
 mov   word ptr ds:[_oldentertics], ax
-sub   ax, word ptr ds:[_oldentertics]
-xchg  ax, dx  
+sub   ax, word ptr ds:[_oldentertics]       ; ax is realtics, dx is ticcount, cx is entertic
+xchg  ax, dx                                ; dx is realtics, cx is entertic
 
 call  NetUpdate_
 
@@ -107,12 +107,12 @@ call  NetUpdate_
 
 
 mov   ax, word ptr ds:[_maketic + 0]
-sub   ax, word ptr ds:[_gametic]
+sub   ax, word ptr ds:[_gametic]            ; ax is availabletics, dx is realtics, cx is entertic
 
-xchg  ax, cx    ; cx is availabletics. ax is entertics
-xchg  ax, dx    ; cx is availabletics. dx is entertics. ax is realtics
+xchg  ax, cx                                ; cx is availabletics. ax is entertics
+xchg  ax, dx                                ; cx is availabletics. dx is entertics. ax is realtics
 
-inc   ax
+inc   ax                                    ; ; cx is availabletics. dx is entertics. ax is realtics + 1
 
 ;   realtic  availabletics 
 ;      10          12          counts    11
@@ -132,8 +132,7 @@ inc   ax
 
 cmp   ax, cx
 jl    use_realtic_plus_1
-je    use_realtic
-jmp   use_counts
+jne   use_counts
 use_realtic:
 dec   ax
 use_realtic_plus_1:
@@ -153,7 +152,7 @@ loop_next_maketic:
 ;          maketic - gametic < counts  ; equivalent to this
 mov   ax, word ptr ds:[_maketic + 0]
 sub   ax, word ptr ds:[_gametic + 0] ; 16 bit precision fine if we use a diff.
-cmp   cx, ax
+cmp   ax, cx
 jge   done_with_maketic_loop
 
 call  NetUpdate_
@@ -181,8 +180,8 @@ done_with_maketic_loop:
 loop_counts:
 
 cmp   byte ptr ds:[_advancedemo], 0
-je    dont_do_demo
-call  D_DoAdvanceDemo_
+jne   do_demo          ; todo make this default off?
+
 dont_do_demo:
 
 call  M_Ticker_
@@ -198,9 +197,9 @@ jmp   exit_tryruntics
 carry_add_2:
 inc   word ptr ds:[_gametic + 2]
 jmp   do_net_update_check_loop
-
-
-
+do_demo:
+call  D_DoAdvanceDemo_  ; performance matters less for the title screen case. 
+jmp   dont_do_demo
 
 ENDP
 
