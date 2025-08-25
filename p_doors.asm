@@ -162,10 +162,7 @@ mov   word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef]
 pop   ax ; bp - 2
 
 call  P_RemoveThinker_
-exit_t_verticaldoor:
-LEAVE_MACRO 
-POPA_NO_AX_OR_BP_MACRO
-ret   
+jmp   exit_t_verticaldoor_2
 switch_case_verticaldoor_dir_case_0:
 
 dec   word ptr ds:[si + VLDOOR_T.vldoor_topcountdown]
@@ -241,7 +238,11 @@ switch_case_verticaldoor_3_doorraisein5mins:
 mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], 0
 mov   ax, word ptr ds:[si + VLDOOR_T.vldoor_topwait]
 mov   word ptr ds:[si + VLDOOR_T.vldoor_topcountdown], ax
-jmp   exit_t_verticaldoor
+exit_t_verticaldoor:
+LEAVE_MACRO 
+POPA_NO_AX_OR_BP_MACRO
+ret   
+
 
 
 

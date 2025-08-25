@@ -712,15 +712,50 @@ ENDIF
 
 ENDM
 
+PUSHA_MACRO_REAL MACRO
+
+IF COMPISA GE COMPILE_186
+	pusha
+ELSE
+    push  ax	
+	push  cx
+	push  dx
+	push  bx
+	push  sp
+	push  bp
+	push  si
+	push  di
+ENDIF
+
+ENDM
+
+POPA_MACRO_REAL MACRO
+
+IF COMPISA GE COMPILE_186
+	popa
+ELSE	
+	pop   di
+	pop   si
+    pop   bp
+    pop   sp
+	pop   bx
+	pop   dx
+	pop   cx
+	pop   ax
+ENDIF
+
+ENDM
+
+
 PUSHA_MACRO MACRO
 
 IF COMPISA GE COMPILE_186
 	pusha
 ELSE
     push  ax	
-	push  bx
 	push  cx
 	push  dx
+	push  bx
 	push  bp
 	push  si
 	push  di
@@ -736,9 +771,9 @@ ELSE
 	pop   di
 	pop   si
     pop   bp
+	pop   bx
 	pop   dx
 	pop   cx
-	pop   bx
 	pop   ax
 ENDIF
 
@@ -750,9 +785,9 @@ PUSHA_NO_AX_MACRO MACRO
 IF COMPISA GE COMPILE_186
 	pusha
 ELSE	
-	push  bx
 	push  cx
 	push  dx
+	push  bx
 	push  bp
 	push  si
 	push  di
@@ -766,9 +801,9 @@ PUSHA_NO_AX_OR_BP_MACRO MACRO
 IF COMPISA GE COMPILE_186
 	pusha
 ELSE	
-	push  bx
 	push  cx
 	push  dx
+	push  bx
 	push  si
 	push  di
 ENDIF
@@ -783,9 +818,9 @@ ELSE
 	pop   di
 	pop   si
     pop   bp
+	pop   bx
 	pop   dx
 	pop   cx
-	pop   bx
 ENDIF
 
 ENDM
@@ -797,9 +832,9 @@ IF COMPISA GE COMPILE_186
 ELSE	
 	pop   di
 	pop   si
+	pop   bx
 	pop   dx
 	pop   cx
-	pop   bx
 ENDIF
 
 

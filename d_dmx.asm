@@ -109,51 +109,45 @@ ENDP
 
 
 do_chain:
-les    ax, dword ptr ds:[_OldInt8]
-mov    dx, es
+les    cx, dword ptr ds:[_OldInt8]
+mov    ax, es
 ;jmp    locallib_chain_intr_
 
-; inlined watcom chain_intr for now. todo: suck less
+; inlined chain_intr for now. todo: suck less
 
 
-;flags bp + 01Ch
-; cs   bp + 01Ah
-; ip   bp + 018h
+;flags bp + 018h
+; cs   bp + 016h
+; ip   bp + 014h
 
-; ax   bp + 016h
-; cx   bp + 014h
-; dx   bp + 012h
-; bx   bp + 010h
-; sp   bp + 0Eh
-; bp   bp + 0Ch
-; si   bp + 0Ah
-; di   bp + 8
-; ds   bp + 6
-; es   bp + 4
-; ax   bp + 2
-; ax   bp + 0
+; ax   bp + 012h    ; replaced with cs:ip for retf
+; cx   bp + 010h    ; replaced with cs:ip for retf
+; dx   bp + 0Eh
+; bx   bp + 0Ch
+; sp   bp + 0Ah
+; bp   bp + 8
+; si   bp + 6
+; di   bp + 4
+; ds   bp + 2
+; es   bp + 0
 
 
-mov   cx, ax
-mov   ax, dx
 mov   sp, bp
-xchg  word ptr [bp + 014h], cx
-xchg  word ptr [bp + 016h], ax
-mov   bx, word ptr [bp + 01Ch]   ; get old flags
+xchg  word ptr [bp + 010h], cx
+xchg  word ptr [bp + 012h], ax
+mov   bx, word ptr [bp + 018h]   ; get old flags
 and   bx, 0FCFFh
 push  bx ; push flags
 
-popf  ; pop flags
-pop   dx
-pop   dx
-pop   es
-pop   ds
-pop   di
-pop   si
-pop   bp
-pop   bx
-pop   bx
-pop   dx
+popf  ; pop flags   ; bp + 01Eh
+pop   es ; bp + 0
+pop   ds ; bp + 2
+pop   di ; bp + 4
+pop   si ; bp + 6
+pop   bp ; bp + 8
+pop   bx ; bp + 0Ah
+pop   bx ; bp + 0Ch
+pop   dx ; bp + 0Eh
 retf  
 
 
@@ -162,11 +156,9 @@ retf
 PROC   TS_ServiceScheduleIntEnabled_ FAR
 PUBLIC TS_ServiceScheduleIntEnabled_
 
-PUSHA_MACRO 
+PUSHA_MACRO_REAL 
 push   ds
 push   es
-push   ax
-push   ax
 mov    bp, sp
 
 cld    
@@ -262,11 +254,9 @@ mov    byte ptr ds:[_TS_InInterrupt], 0
 exit_interrupt:
 
 
-pop    ax
-pop    ax
 pop    es
 pop    ds
-POPA_MACRO  
+POPA_MACRO_REAL  
 iret   
 
 
