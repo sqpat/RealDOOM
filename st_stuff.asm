@@ -324,16 +324,15 @@ cmp   cl, 5
 jge   not_face_5
 test  byte ptr ds:[_player + PLAYER_T.player_cheats], CF_GODMODE
 jne   handle_invuln
-cmp   word ptr ds:[_player + PLAYER_T.player_powers], ax ; 0
+cmp   word ptr ds:[_player + PLAYER_T.player_powers + 2 * PW_INVULNERABILITY], ax ; 0
 je    not_face_5
 
 handle_invuln:
-;mov   cl, 4
-mov   byte ptr ds:[_st_face_priority], 4
-mov   word ptr ds:[_st_faceindex], ST_GODFACE
-mov   word ptr ds:[_st_facecount], ax ; 0
+mov   cl, 4
+mov   word ptr ds:[_st_facecount], 1
+mov   ax, ST_GODFACE
 
-jmp   exit_updatefacewidget
+jmp   set_face_priority_dec_facecount_and_exit
 
 
 
@@ -996,7 +995,7 @@ PUSHA_NO_AX_OR_BP_MACRO
 xchg  ax, di
 xor   ax, ax
 mov   es, dx
-mov   si, _player + PLAYER_T.player_powers
+mov   si, _player + PLAYER_T.player_cheats
 cmp   byte ptr es:[di + EVENT_T.event_evtype], al
 jne   exit_st_responder_early
 
@@ -1165,6 +1164,7 @@ jc    do_clip_doom1_or_doom2
 check_behold_cheats:
 
 xor   bx, bx
+mov   si, _player + PLAYER_T.player_powers
 
 loop_next_behold_cheat:
 
