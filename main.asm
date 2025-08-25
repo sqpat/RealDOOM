@@ -261,18 +261,15 @@ ENDP
 
 
 ; get custom param for change level, change music type cheats.
-
+; pass in via di not dx
+; pass in via bx not ax
 PROC cht_GetParam_ NEAR
 PUBLIC cht_GetParam_
 
-push bx
-push di
-mov  di, dx
- 
+push ds
+pop  es
 ; argument is preshifted by 2 (as the struct offset should be)
-mov  bx, ax
-add  bx, OFFSET BASE_CHEAT_ADDRESS
-mov  bx, word ptr cs:[bx]        ; get str addr
+mov  bx, word ptr cs:[bx + OFFSET BASE_CHEAT_ADDRESS]        ; get str addr
 loop_find_param_marker:
 inc  bx
 cmp  byte ptr cs:[bx-1], 1       ; 1 is marker for custom params position in cheat
@@ -280,8 +277,9 @@ jne  loop_find_param_marker
 
 check_next_cheat_char:
 mov  al, byte ptr cs:[bx]
-mov  byte ptr ds:[di], al
-inc  di
+;mov  byte ptr ds:[di], al
+;inc  di
+stosb
 mov  byte ptr cs:[bx], 0
 inc  bx
 test al, al
@@ -292,13 +290,9 @@ end_of_custom_param:
 cmp  byte ptr cs:[bx], 0FFh
 je   getparam_return_0
 getparam_return_1:
-pop  di
-pop  bx
 ret  
 getparam_return_0:
 mov  byte ptr ds:[di], 0
-pop  di
-pop  bx
 ret  
 
 ENDP

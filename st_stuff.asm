@@ -1088,8 +1088,8 @@ call  cht_CheckCheat_
 jnc    is_not_music
 
 is_music:
-lea   dx, [bp - 0Ah]
-mov   ax, CHEATID_MUSIC
+lea   di, [bp - 0Ah]
+mov   bx, (CHEATID_MUSIC)
 mov   word ptr ds:[_player + PLAYER_T.player_message], STSTR_MUS
 
 call  cht_GetParam_
@@ -1218,6 +1218,7 @@ mov   byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_CHAINSAW], 1
 mov   word ptr ds:[_player + PLAYER_T.player_powers + 2 * PW_INVULNERABILITY], 1
 mov   word ptr ds:[_player + PLAYER_T.player_message], STSTR_CHOPPERS
 jmp   done_checking_main_cheats
+
 not_choppers:
 mov   dx, cx
 mov   al, CHEATID_MAPPOS
@@ -1237,16 +1238,14 @@ ret
 
 do_change_level_cheat:
 
-
-
-lea   dx, [bp - 0Ah]
-mov   al, CHEATID_CHANGE_LEVEL
+lea   di, [bp - 4]
+mov   bx, (CHEATID_CHANGE_LEVEL)
 call  cht_GetParam_
 
-xor   dx, dx ; map, epsd
+
 mov   cl, 4  ; max epsd
 
-mov   ax, word ptr [bp - 6]
+mov   ax, word ptr [bp - 4]
 
 sub   ax, ((ASCII_0 SHL 8) + ASCII_0)  ; subtract '0' from both 
 mov   bl, ah
@@ -1280,22 +1279,19 @@ dont_inc_max_epsd:
 ;        G_DeferedInitNew(gameskill, epsd, map);
 ;    }
 
-cmp   byte ptr ds:[_commercial], 0
-jne   first_check_fail
-test  al, al
-jle   first_check_fail
-cmp   al, cl
-jge   first_check_fail
-test  ah, ah
-jle   first_check_fail
-cmp   ah, 10
-jl    checks_passed
-first_check_fail:
-
-cmp   byte ptr ds:[_commercial], 0
-je    exit_st_responder_return
 test  al, al
 jle   exit_st_responder_return
+cmp   byte ptr ds:[_commercial], 0
+jne   first_check_fail
+cmp   al, cl
+jge   exit_st_responder_return
+test  ah, ah
+jle   exit_st_responder_return
+cmp   ah, 10
+jl    checks_passed
+
+first_check_fail:
+; implied commercial is the other result
 cmp   al, 40
 jg    exit_st_responder_return
 checks_passed:
@@ -1309,8 +1305,6 @@ mov   al, byte ptr ds:[_gameskill]
 xor   ah, ah
 call  G_DeferedInitNew_
 jmp   exit_st_responder_return
-
-
 
 do_mappos_cheat:
 
