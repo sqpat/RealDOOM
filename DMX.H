@@ -31,14 +31,14 @@ typedef struct task{
 typedef uint8_t sfxenum_t;
 
 
-void __far TS_ScheduleMainTask();
-void __far TS_Dispatch(void);
+void __near TS_ScheduleMainTask();
+void __near TS_Dispatch(void);
 
 
-int8_t __far SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol);
-void __far SFX_StopPatch(int8_t handle);
-boolean __far SFX_Playing(int8_t handle);
-void __far SFX_SetOrigin(int8_t handle, uint8_t sep, uint8_t vol);
+int8_t __near SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol);
+void __near SFX_StopPatch(int8_t handle);
+boolean __near SFX_Playing(int8_t handle);
+void __near SFX_SetOrigin(int8_t handle, uint8_t sep, uint8_t vol);
 
 
 

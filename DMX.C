@@ -21,10 +21,10 @@
    Function prototypes
 ---------------------------------------------------------------------*/
 
-uint16_t TS_SetTimer(int32_t TickBase);
-void TS_SetTimerToMaxTaskRate(void);
+uint16_t __near TS_SetTimer(int32_t TickBase);
+void __near TS_SetTimerToMaxTaskRate(void);
 void __interrupt __far_func TS_ServiceScheduleIntEnabled(void);
-void TS_Startup(void);
+void __near TS_Startup(void);
 
 #define HZ_RATE_35 				(1192030L / 35)
 #define HZ_RATE_140 			(1192030L / 140)
@@ -34,7 +34,7 @@ void TS_Startup(void);
 
 
 
-void TS_SetTimerToMaxTaskRate(void){
+void __near TS_SetTimerToMaxTaskRate(void){
 	// reset interrupt rate
 	_disable();
 	outp(0x43, 0x36);
@@ -45,13 +45,13 @@ void TS_SetTimerToMaxTaskRate(void){
 
 void	resetDS();
 // void I_TimerISR(void);
-void MUS_ServiceRoutine(void);
+void __near MUS_ServiceRoutine(void);
 
 //todo move this where it needs to go.
 
 
 
-void playpcspeakernote(uint16_t value){
+void __near playpcspeakernote(uint16_t value){
 	
 
 	if (value){
@@ -148,8 +148,8 @@ void __interrupt __far_func TS_ServiceScheduleIntEnabled(void){
 
    Sets up the task service routine.
 ---------------------------------------------------------------------*/
-
-void TS_Startup(void){
+/*
+void __near TS_Startup(void){
 
 	if (!TS_Installed) {
 
@@ -162,15 +162,15 @@ void TS_Startup(void){
 	}
 
 }
-
+*/
 
 /*---------------------------------------------------------------------
    Function: TS_ScheduleTask
 
    Schedules a new task for processing.
 ---------------------------------------------------------------------*/
-
-void __far TS_ScheduleMainTask( ) {
+/*
+void __near TS_ScheduleMainTask( ) {
 	TS_Startup();
 	
 	_disable();
@@ -182,15 +182,15 @@ void __far TS_ScheduleMainTask( ) {
 
 }
 
-
+*/
 
 /*---------------------------------------------------------------------
    Function: TS_Dispatch
 
    Begins processing of all inactive tasks.
 ---------------------------------------------------------------------*/
-
-void __far TS_Dispatch(){
+/*
+void __near TS_Dispatch(){
 	
 	_disable();
 	HeadTask.active = true;
@@ -201,3 +201,4 @@ void __far TS_Dispatch(){
 }
 
  
+*/

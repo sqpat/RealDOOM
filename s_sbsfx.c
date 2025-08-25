@@ -2172,7 +2172,7 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
 }
 
 
-int8_t __far SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
+int8_t __near SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
     
     int8_t i;
     
@@ -2239,7 +2239,7 @@ int8_t __far SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
     return -1;
 }
 
-void __far SFX_StopPatch(int8_t handle){
+void __near SFX_StopPatch(int8_t handle){
     // if (handle >= 0 && handle < NUM_SFX_TO_MIX){
         // disable interrupts... otherwise we might turn it off mid-interrupt and double dec ref count
         _disable();
@@ -2255,14 +2255,14 @@ void __far SFX_StopPatch(int8_t handle){
     // }
 }
 
-boolean __far SFX_Playing(int8_t handle){
+boolean __near SFX_Playing(int8_t handle){
     if (handle >= 0 && handle < NUM_SFX_TO_MIX){
         return (sb_voicelist[handle].sfx_id & PLAYING_FLAG);
     }
     return false;
 }
 
-void __far SFX_SetOrigin(int8_t handle, uint8_t sep, uint8_t vol){
+void __near SFX_SetOrigin(int8_t handle, uint8_t sep, uint8_t vol){
     if (sb_voicelist[handle].sfx_id & PLAYING_FLAG){
         sb_voicelist[handle].sep = sep;
         sb_voicelist[handle].volume = vol;

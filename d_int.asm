@@ -58,10 +58,10 @@ dw unused_routine
 
 
 ; todo make near? 
-PROC MUS_ServiceRoutine_ FAR
+PROC MUS_ServiceRoutine_ NEAR
 PUBLIC MUS_ServiceRoutine_
 
-
+;todo pusha
 push  bx
 push  cx
 push  dx

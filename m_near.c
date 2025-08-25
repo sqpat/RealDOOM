@@ -648,6 +648,7 @@ task HeadTask = {0, false};
 task MUSTask = {0, false};
 
 void( __interrupt __far_func *OldInt8)(void);
+//todo uint16t
 volatile fixed_t_union TaskServiceCount;
 
 volatile int8_t TS_TimesInInterrupt;

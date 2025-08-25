@@ -77,6 +77,7 @@ GLOBOBJS = &
  s_sound.obj &
  s_sbsfx.obj &
  dmx.obj &
+ d_dmx.obj &
  d_int.obj &
  memory.obj &
  math.obj &

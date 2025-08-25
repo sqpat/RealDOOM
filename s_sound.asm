@@ -23,9 +23,9 @@ EXTRN SFX_Playing_:FAR
 EXTRN R_PointToAngle2_:FAR
 EXTRN FastMul16u32u_:FAR
 EXTRN FastDiv3216u_:FAR
-EXTRN SFX_SetOrigin_:FAR
-EXTRN SFX_PlayPatch_:FAR
-EXTRN SFX_StopPatch_:FAR
+EXTRN SFX_SetOrigin_:NEAR
+EXTRN SFX_PlayPatch_:NEAR
+EXTRN SFX_StopPatch_:NEAR
 
 EXTRN fopen_:FAR
 EXTRN fseek_:FAR
@@ -34,8 +34,8 @@ EXTRN fclose_:FAR
 EXTRN locallib_far_fread_:FAR
 ; todo only include if necessary via flags...
 EXTRN DEBUG_PRINT_:FAR
-EXTRN TS_Dispatch_:FAR
-EXTRN TS_ScheduleMainTask_:FAR
+EXTRN TS_Dispatch_:NEAR
+EXTRN TS_ScheduleMainTask_:NEAR
 
 .DATA
 

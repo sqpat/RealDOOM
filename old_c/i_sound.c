@@ -368,7 +368,7 @@ void I_sndArbitrateCards(void) {
 
 
 
-void MUS_ServiceRoutine(){
+void __near MUS_ServiceRoutine(){
 
     if (playingstate != ST_PLAYING){
         return;

@@ -801,4 +801,7 @@ ST_MULTIICON_T STRUC
 ST_MULTIICON_T ENDS
 
 
-
+TASK_T STRUC
+    task_count                db ? ; 0
+    task_active               db ? ; 1
+TASK_T ENDS
