@@ -264,7 +264,8 @@ PROC   TS_Dispatch_ NEAR
 PUBLIC TS_Dispatch_
 
 cli
-mov    word ptr ds:[_HeadTask], (HZ_INTERRUPTS_PER_TICK SHL 8 + 1)
+;mov    word ptr ds:[_HeadTask], (1 SHL 8 + HZ_INTERRUPTS_PER_TICK)
+mov    word ptr ds:[_HeadTask], (1 SHL 8 + 0)
 cmp    word ptr ds:[_playingdriver + 2], 0
 je     dont_set_mustask_active
 mov    byte ptr ds:[_MUSTask + TASK_T.task_active], 1

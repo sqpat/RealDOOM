@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/25 13:43:05
+Created on:       25/08/25 13:57:41
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -55,7 +55,7 @@ r_setup_TEXT           CODE           AUTO           0000:7e40       0000046c
 ST_SETUP_TEXT          CODE           AUTO           0000:82ac       00000159
 HU_SETUP_TEXT          CODE           AUTO           0000:8406       00000247
 p_setup_TEXT           CODE           AUTO           0000:8650       000011de
-S_SOUND_TEXT           CODE           AUTO           0000:982e       000005a8
+S_SOUND_TEXT           CODE           AUTO           0000:982e       000005a4
 s_sbsfx_TEXT           CODE           AUTO           0000:9de0       00001815
 R_MAIN_TEXT            CODE           AUTO           0000:b5f6       000003d9
 w_wad_TEXT             CODE           AUTO           0000:b9d0       0000031a
@@ -569,25 +569,25 @@ Module: p_setup.obj(C:\REALDOOM\p_setup.c)
 0000:9552+     Z_FreeConventionalAllocations_
 0000:9812*     PSetupEndFunc_
 Module: s_sound.obj(s_sound.ASM)
-0000:9c43      S_Start_
-0000:99dd*     S_StopSound_
-0000:9cef      I_StartupSound_
+0000:9c3f      S_Start_
+0000:99db*     S_StopSound_
+0000:9ceb      I_StartupSound_
 0000:9836      S_StartMusic_
-0000:9b94      S_StartSound_
+0000:9b92      S_StartSound_
 0000:982e      S_ChangeMusic_
 0000:983f*     S_StopChannel_
-0000:9a27*     S_getChannel_
-0000:9ca3*     CopyString13_physics_seg_
-0000:98e5*     S_AdjustSoundParamsVol_
-0000:9dd6*     S_SOUND_ENDMARKER_
-0000:9a22      S_StopSoundMobjRef_
-0000:9ba1      S_StartSoundWithSecnum_
-0000:987d*     S_AdjustSoundParamsSep_
-0000:9a9e*     S_StartSoundWithPosition_
-0000:9bae      S_UpdateSounds_
+0000:9a25*     S_getChannel_
+0000:9c9f*     CopyString13_physics_seg_
+0000:98e3*     S_AdjustSoundParamsVol_
+0000:9dd2*     S_SOUND_ENDMARKER_
+0000:9a20      S_StopSoundMobjRef_
+0000:9b9f      S_StartSoundWithSecnum_
+0000:987b*     S_AdjustSoundParamsSep_
+0000:9a9c*     S_StartSoundWithPosition_
+0000:9bac      S_UpdateSounds_
 0000:982e*     S_SOUND_STARTMARKER_
-0000:998d      S_PauseSound_
-0000:99b6      S_ResumeSound_
+0000:998b      S_PauseSound_
+0000:99b4      S_ResumeSound_
 Module: s_sbsfx.obj(C:\REALDOOM\s_sbsfx.c)
 0ebc:1ce0+     _sfxcache_nodes
 0ebc:1d00*     _sfx_page_multipage_count

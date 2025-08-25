@@ -120,7 +120,7 @@ pop   si
 pop   dx
 pop   cx
 pop   bx
-retf  
+ret
 
 
 release_note_routine:
@@ -283,7 +283,7 @@ PUBLIC locallib_int86_67_3arg_return_
 PUBLIC locallib_int86_67_esdi_
 
 int 067h
-retf 
+ret 
 ENDP
 
 ; todo make this near.
@@ -295,14 +295,14 @@ PUBLIC locallib_int86_10_
 PUBLIC locallib_int86_10_4args_
 
 int 010h
-retf 
+ret 
 ENDP
 
 PROC locallib_int86_33_ FAR
 PUBLIC locallib_int86_33_
 
 int 033h
-retf 
+ret 
 ENDP
 
 
