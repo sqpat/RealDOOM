@@ -41,7 +41,7 @@ EXTRN locallib_printhex_:NEAR
 EXTRN G_DeferedInitNew_:FAR
 EXTRN R_PointToAngle2_:FAR
 EXTRN combine_strings_:NEAR
-EXTRN M_Random_:FAR
+EXTRN M_Random_:NEAR
 
 .DATA
 

@@ -61,7 +61,7 @@ uint8_t __far M_Random (void){
 
  // todo swap such that bx gets the box
 
-void __near M_AddToBox16 ( int16_t __near*	box, int16_t	x, int16_t	y ) {
+void __near M_AddToBox16 ( int16_t	x, int16_t	y, int16_t __near*	box  ) {
     if (x<box[BOXLEFT])
 		  box[BOXLEFT] = x;
     else if (x>box[BOXRIGHT])
@@ -80,7 +80,7 @@ void __near M_AddToBox16 ( int16_t __near*	box, int16_t	x, int16_t	y ) {
 #define O_BINARY 0
 #endif
 
-boolean M_WriteFile (int8_t const*	name, void __far*		source, filelength_t		length ){
+boolean __near M_WriteFile (int8_t const*	name, void __far*		source, filelength_t		length ){
     filelength_t		count;
 	
     FILE* fp = fopen ( name, "wb");

@@ -938,8 +938,8 @@ void __near P_GroupLines(void) {
 			if (li_physics->frontsecnum == i || li_physics->backsecnum == i) {
 				linebuffer[linebufferindex] = j;
 				linebufferindex++;
-				M_AddToBox16(bbox, vertexes[linev1Offset].x, vertexes[linev1Offset].y);
-				M_AddToBox16(bbox, vertexes[linev2Offset].x, vertexes[linev2Offset].y);
+				M_AddToBox16(vertexes[linev1Offset].x, vertexes[linev1Offset].y, bbox);
+				M_AddToBox16(vertexes[linev2Offset].x, vertexes[linev2Offset].y, bbox);
 			}
 		}
 #ifdef CHECK_FOR_ERRORS

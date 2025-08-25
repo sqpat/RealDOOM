@@ -463,7 +463,13 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; AB0 hu_font
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; AC0 
+; AC0  ; _fopen_wb_argument
+db "w", "b", "0"
+db 0
+dw  00, 00, 00, 00, 00, 00
+; AD0 
+
+
 
 REPT NUM_FLAT_CACHE_PAGES
 	dw  00

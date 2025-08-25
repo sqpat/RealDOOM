@@ -1081,15 +1081,13 @@ add       bx, ax
 dec       bx      ; x + width - 1
 mov       di, bx
 
-xchg      ax, dx  ; dx gets x. ax gets y
-mov       bx, ax  ; bx gets y
-mov       ax, OFFSET _dirtybox
+mov       bx, OFFSET _dirtybox
 
 call      M_AddToBox16_
 
-mov       dx, di
-mov       bx, cx
-mov       ax, OFFSET _dirtybox
+xchg      ax, di
+mov       dx, cx
+mov       bx, OFFSET _dirtybox
 call      M_AddToBox16_
 
 pop       di

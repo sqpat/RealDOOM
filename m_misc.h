@@ -28,13 +28,13 @@
 
 
 
-boolean M_WriteFile (int8_t const* name, void __far* source,filelength_t length );
+boolean __near M_WriteFile (int8_t const* name, void __far* source,filelength_t length );
 
-void M_ReadFile (int8_t const* name, byte __far* bufferRef );
+void __near M_ReadFile (int8_t const* name, byte __far* bufferRef );
 
 // Returns a number from 0 to 255,
 // from a lookup table.
-uint8_t __far M_Random(void);
+uint8_t __near M_Random(void);
 
 
 
@@ -49,7 +49,7 @@ uint8_t __far M_Random(void);
  // bbox coordinates
 
 // Bounding box functions.
-void __near M_AddToBox16( int16_t __near* box,int16_t x,  int16_t y );
+void __near M_AddToBox16 ( int16_t	x, int16_t	y, int16_t __near*	box  );
 
 
  

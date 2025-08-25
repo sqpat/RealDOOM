@@ -261,7 +261,7 @@ _V_DrawPatchDirect_addr =            _NULL_OFFSET + 001F4h
 
 _deadAttackerX =                     _NULL_OFFSET + 001F8h
 _deadAttackerY =                     _NULL_OFFSET + 001FCh
-_M_Random_addr =                     _NULL_OFFSET + 00200h
+;_M_Random_addr =                     _NULL_OFFSET + 00200h
 _I_WaitVBL_addr =       		     _NULL_OFFSET + 00204h
 _I_SetPalette_addr = 	        	 _NULL_OFFSET + 00208h
 
@@ -590,8 +590,9 @@ _hu_font =	 	      			     _NULL_OFFSET + 00A40h
 
 _viewactivestate =	 	     	     _NULL_OFFSET + 00ABEh
 _menuactivestate =	 	     	     _NULL_OFFSET + 00ABFh
+_fopen_wb_argument =	 	     	 _NULL_OFFSET + 00AC0h
 
-_flatcache_nodes =				     _NULL_OFFSET + 00AC0h
+_flatcache_nodes =				     _NULL_OFFSET + 00AD0h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

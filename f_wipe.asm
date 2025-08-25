@@ -845,11 +845,7 @@ call      wipe_shittyColMajorXform_
 mov       ax, SCREEN3_SEGMENT
 call      wipe_shittyColMajorXform_
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _M_Random_addr
-
-
+call      FWIPE_M_Random_
 
 ;    y[0] = -(M_Random()%16);
 
@@ -867,11 +863,8 @@ mov       cx, SCREENWIDTH
 mov       bl, 3
 
 loop_screenwidth:
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _M_Random_addr
+call      FWIPE_M_Random_
 
-xor       ah, ah
 div       bl     ; modulo 3...
 mov       al, ah
 cbw
@@ -1045,6 +1038,26 @@ pop       cx
 pop       bx
 retf      
  
+ENDP
+
+PROC FWIPE_M_Random_ NEAR
+PUBLIC FWIPE_M_Random_
+
+;    rndindex = (rndindex+1)&0xff;
+;    return rndtable[rndindex];
+
+push      bx
+mov       ax, RNDTABLE_SEGMENT
+mov       es, ax
+xor       ax, ax
+mov       bx, ax
+inc       byte ptr ds:[_rndindex]
+mov       bl, byte ptr ds:[_rndindex]
+mov       al, byte ptr es:[bx]
+pop      bx
+
+ret
+
 ENDP
 
 PROC    F_WIPE_ENDMARKER_ 

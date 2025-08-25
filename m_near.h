@@ -292,7 +292,7 @@
 #define deadAttackerX     		  	    (*((fixed_t_union  __near*)   	     (_NULL_OFFSET + 0x01F8)))
 #define deadAttackerY     				(*((fixed_t_union  __near*)   	     (_NULL_OFFSET + 0x01FC)))
 
-#define M_Random_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0200)))
+// #define M_Random_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0200)))
 #define I_WaitVBL_addr                  (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0204)))
 #define I_SetPalette_addr               (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0208)))
 
@@ -657,11 +657,12 @@
 
 #define viewactivestate   			      (*((boolean __near*)               (_NULL_OFFSET + 0x0ABE)))
 #define menuactivestate   			      (*((boolean __near*)               (_NULL_OFFSET + 0x0ABF)))
+#define fopen_wb_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x0AC0))
 
 
 
 
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0AC0)))
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0AD0)))
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))

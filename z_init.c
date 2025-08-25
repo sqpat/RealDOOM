@@ -796,7 +796,7 @@ void __near Z_LoadBinaries() {
 	W_CacheLumpNumDirectFragment_addr =	(uint32_t)(W_CacheLumpNumDirectFragment);
 	W_GetNumForName_addr =		 		(uint32_t)(W_GetNumForName);
 
-	M_Random_addr = 					(uint32_t)(M_Random);
+	// M_Random_addr = 					(uint32_t)(M_Random);
 	NetUpdate_addr = 					(uint32_t)(NetUpdate);
 
 
