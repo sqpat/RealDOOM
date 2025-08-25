@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/25 00:11:56
+Created on:       25/08/25 00:17:57
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -40,11 +40,10 @@ D_NET_TEXT             CODE           AUTO           0000:3734       000000b3
 g_game_TEXT            CODE           AUTO           0000:37f0       000009bf
 m_misc_TEXT            CODE           AUTO           0000:41b0       000000d5
 am_map_TEXT            CODE           AUTO           0000:4290       000012ad
-st_stuff_TEXT          CODE           AUTO           0000:5540       00000000
-ST_STUFA_TEXT          CODE           AUTO           0000:5540       00000849
-HU_STUFF_TEXT          CODE           AUTO           0000:5d8a       00000183
-HU_LIB_TEXT            CODE           AUTO           0000:5f0e       00000141
-D_ALGO_TEXT            CODE           AUTO           0000:6050       0000008c
+ST_STUFF_TEXT          CODE           AUTO           0000:553e       00000849
+HU_STUFF_TEXT          CODE           AUTO           0000:5d88       00000183
+HU_LIB_TEXT            CODE           AUTO           0000:5f0c       00000141
+D_ALGO_TEXT            CODE           AUTO           0000:604e       0000008c
 dmx_TEXT               CODE           AUTO           0000:60e0       000001b8
 D_INT_TEXT             CODE           AUTO           0000:6298       00000176
 MEMORY_TEXT            CODE           AUTO           0000:640e       00000000
@@ -413,42 +412,42 @@ Module: am_map.obj(C:\REALDOOM\am_map.c)
 0000:543c+     AM_drawMarks_
 0000:54d2*     AM_drawCrosshair_
 0000:54e2      AM_Drawer_
-Module: st_stufa.obj(st_stufa.ASM)
-0000:55cd*     ST_updateFaceWidget_
-0000:58f1*     STlib_drawNum_
-0000:59c9*     ST_drawWidgets_
-0000:57b4*     ST_updateWidgets_
-0000:5872*     STlib_updateMultIcon_
-0000:57f1*     ST_doPaletteStuff_
-0000:599e*     STlib_updatePercent_
-0000:5d45      ST_Drawer_
-0000:5556*     ST_refreshBackground_
-0000:5a6e      ST_Responder_
-0000:5860*     STlib_updateflag_
-0000:5540*     ST_STUFF_STARTMARKER_
-0000:5d89*     ST_STUFF_ENDMARKER_
-0000:57df      ST_Ticker_
-0000:5596*     ST_calcPainOffset_
+Module: st_stuff.obj(st_stuff.ASM)
+0000:55cb*     ST_updateFaceWidget_
+0000:58ef*     STlib_drawNum_
+0000:59c7*     ST_drawWidgets_
+0000:57b2*     ST_updateWidgets_
+0000:5870*     STlib_updateMultIcon_
+0000:57ef*     ST_doPaletteStuff_
+0000:599c*     STlib_updatePercent_
+0000:5d43      ST_Drawer_
+0000:5554*     ST_refreshBackground_
+0000:5a6c      ST_Responder_
+0000:585e*     STlib_updateflag_
+0000:553e*     ST_STUFF_STARTMARKER_
+0000:5d87*     ST_STUFF_ENDMARKER_
+0000:57dd      ST_Ticker_
+0000:5594*     ST_calcPainOffset_
 Module: hu_stuff.obj(hu_stuff.ASM)
-0000:5dff      HU_Erase_
-0000:5ece      HU_Responder_
-0000:5d8a      HU_Drawer_
-0000:5f0d*     HU_STUFF_ENDMARKER_
-0000:5d8a*     HU_STUFF_STARTMARKER_
-0000:5e41      HU_Ticker_
+0000:5dfd      HU_Erase_
+0000:5ecc      HU_Responder_
+0000:5d88      HU_Drawer_
+0000:5f0b*     HU_STUFF_ENDMARKER_
+0000:5d88*     HU_STUFF_STARTMARKER_
+0000:5e3f      HU_Ticker_
 Module: hu_lib.obj(hu_lib.ASM)
-0000:5f0e*     HULIB_STARTMARKER_
-0000:5ffc      HUlib_addMessageToSText_
-0000:604f*     HULIB_ENDMARKER_
-0000:5f3a      HUlib_drawTextLine_
-0000:5f8f      HUlib_eraseTextLine_
-0000:5f0e      HUlib_addStringToTextLine_
+0000:5f0c*     HULIB_STARTMARKER_
+0000:5ffa      HUlib_addMessageToSText_
+0000:604d*     HULIB_ENDMARKER_
+0000:5f38      HUlib_drawTextLine_
+0000:5f8d      HUlib_eraseTextLine_
+0000:5f0c      HUlib_addStringToTextLine_
 Module: d_algo.obj(d_algo.ASM)
-0000:60c0      hackDSBack_
-0000:60dc*     D_ALGO_END_
-0000:6079      zeroConventional_
-0000:6050      resetDS_
-0000:6058      hackDS_
+0000:60be      hackDSBack_
+0000:60da*     D_ALGO_END_
+0000:6077      zeroConventional_
+0000:604e      resetDS_
+0000:6056      hackDS_
 Module: dmx.obj(C:\REALDOOM\dmx.c)
 0000:60e0*     TS_SetTimerToMaxTaskRate_
 0000:60f4+     playpcspeakernote_
