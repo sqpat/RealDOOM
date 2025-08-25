@@ -145,491 +145,9 @@ ret
 
 ENDP
 
-COMMENT @
-
-PROC    ST_Responder_ NEAR
-PUBLIC  ST_Responder_
 
 
-push  bx
-push  cx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, 014h
-mov   di, ax
-mov   word ptr [bp - 2], dx
-mov   es, dx
-cmp   byte ptr es:[di], 0
-je    label_1
-jmp   exit_st_responder_ret_0
-label_1:
-mov   bx, _gameskill
-cmp   byte ptr ds:[bx], 4
-jne   label_3
-jmp   label_2
-label_3:
-mov   al, byte ptr es:[di + 1]
-cbw  
-mov   dx, ax
-mov   ax, CHEATID_GODMODE
-call  cht_CheckCheat_
-test  al, al
-jne   label_4
-jmp   label_5
-label_4:
-mov   bx, _player + PLAYER_T.player_cheats
-xor   byte ptr ds:[bx], 2
-test  byte ptr ds:[bx], 2
-jne   label_7
-jmp   label_6
-label_7:
-mov   bx, _playerMobj
-mov   bx, word ptr ds:[bx]
-mov   word ptr ds:[bx + MOBJ_T.m_health], 100
-mov   bx, _player + PLAYER_T.player_health
-mov   word ptr ds:[bx], 100
-mov   bx, _player + PLAYER_T.player_message
-mov   word ptr ds:[bx], STSTR_DQDON
-label_12:
-xor   bl, bl
-label_10:
-mov   es, word ptr [bp - 2]
-mov   al, byte ptr es:[di + 1]
-cbw  
-mov   dx, ax
-mov   al, bl
-cbw  
-mov   cx, ax
-shl   ax, 2
-call  cht_CheckCheat_
-test  al, al
-je    label_8
-mov   si, cx
-add   si, si
-cmp   word ptr ds:[si + _player + PLAYER_T.player_powers], 0
-jne   jump_to_label_9
-mov   ax, cx
-call  dword ptr [_P_GivePower]
-label_34:
-mov   si, _player + PLAYER_T.player_message
-mov   word ptr ds:[si], STSTR_BEHOLDX
-label_8:
-inc   bl
-cmp   bl, 6
-jl    label_10
-mov   es, word ptr [bp - 2]
-mov   al, byte ptr es:[di + 1]
-cbw  
-mov   dx, ax
-mov   ax, CHEATID_BEHOLD
-call  cht_CheckCheat_
-test  al, al
-je    jump_to_label_11
-mov   bx, _player + PLAYER_T.player_message
-mov   word ptr ds:[bx], STSTR_BEHOLD
-label_2:
-mov   es, word ptr [bp - 2]
-mov   al, byte ptr es:[di + 1]
-cbw  
-mov   dx, ax
-mov   ax, CHEATID_CHANGE_LEVEL
-call  cht_CheckCheat_
-test  al, al
-jne   jump_to_label_17
-exit_st_responder_ret_0:
-xor   al, al
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret   
-label_6:
-mov   bx, _player + PLAYER_T.player_message
-mov   word ptr ds:[bx], STSTR_DQDOFF
-jmp   label_12
-jump_to_label_9:
-jmp   label_9
-jump_to_label_11:
-jmp   label_11
-label_5:
-mov   es, word ptr [bp - 2]
-mov   al, byte ptr es:[di + 1]
-cbw  
-mov   dx, ax
-mov   ax, CHEATID_AMMONOKEYS
-call  cht_CheckCheat_
-test  al, al
-je    label_18
-mov   bx, _player + PLAYER_T.player_armorpoints
-mov   word ptr ds:[bx], 200
-mov   bx, _player + PLAYER_T.player_armortype
-mov   byte ptr ds:[bx], 2
-xor   bl, bl
-label_20:
-mov   al, bl
-cbw  
-mov   si, ax
-inc   bl
-mov   byte ptr ds:[si + _player + PLAYER_T.player_weaponowned], 1
-cmp   bl, 9
-jl    label_20
-xor   bl, bl
-label_19:
-mov   al, bl
-cbw  
-mov   si, ax
-add   si, ax
-mov   ax, word ptr ds:[si + _player + PLAYER_T.player_maxammo]
-inc   bl
-mov   word ptr ds:[si + _player + PLAYER_T.player_ammo], ax
-cmp   bl, 4
-jl    label_19
-mov   bx, _player + PLAYER_T.player_message
-mov   word ptr ds:[bx], STSTR_KFAADDED
-jmp   label_12
-jump_to_label_17:
-jmp   label_17
-label_18:
-mov   es, word ptr [bp - 2]
-mov   al, byte ptr es:[di + 1]
-cbw  
-mov   dx, ax
-mov   ax, CHEATID_AMMOANDKEYS
-call  cht_CheckCheat_
-test  al, al
-je    label_21
-mov   bx, _player + PLAYER_T.player_armorpoints
-mov   word ptr ds:[bx], 200
-mov   bx, _player + PLAYER_T.player_armortype
-mov   byte ptr ds:[bx], 2
-xor   bl, bl
-label_22:
-mov   al, bl
-cbw  
-mov   si, ax
-inc   bl
-mov   byte ptr ds:[si + _player + PLAYER_T.player_weaponowned], 1
-cmp   bl, 9
-jl    label_22
-xor   bl, bl
-label_23:
-mov   al, bl
-cbw  
-mov   si, ax
-add   si, ax
-mov   ax, word ptr ds:[si + _player + PLAYER_T.player_maxammo]
-inc   bl
-mov   word ptr ds:[si + _player + PLAYER_T.player_ammo], ax
-cmp   bl, 4
-jl    label_23
-xor   bl, bl
-label_24:
-mov   al, bl
-cbw  
-mov   si, ax
-inc   bl
-mov   byte ptr ds:[si + _player + PLAYER_T.player_cards], 1
-cmp   bl, 6
-jl    label_24
-mov   bx, _player + PLAYER_T.player_message
-mov   word ptr ds:[bx], STSTR_KFAADDED
-jmp   label_12
-label_21:
-mov   es, word ptr [bp - 2]
-mov   al, byte ptr es:[di + 1]
-cbw  
-mov   dx, ax
-mov   ax, CHEATID_MUSIC
-call  cht_CheckCheat_
-test  al, al
-jne   label_25
-mov   bx, _commercial
-cmp   byte ptr ds:[bx], 0
-je    jump_to_label_26
-label_32:
-mov   bx, _commercial
-cmp   byte ptr ds:[bx], 0
-jne   label_27
-jump_to_label_12:
-jmp   label_12
-label_27:
-mov   es, word ptr [bp - 2]
-mov   al, byte ptr es:[di + 1]
-cbw  
-mov   dx, ax
-mov   ax, CHEATID_NOCLIPDOOM2
-call  cht_CheckCheat_
-test  al, al
-je    jump_to_label_12
-mov   bx, _player + PLAYER_T.player_cheats
-xor   byte ptr ds:[bx], 1
-test  byte ptr ds:[bx], 1
-je    jump_to_label_28
-mov   bx, _player + PLAYER_T.player_message
-mov   word ptr ds:[bx], STSTR_NCON
-jmp   label_12
-jump_to_label_26:
-jmp   label_26
-label_25:
-mov   bx, _player + PLAYER_T.player_message
-lea   dx, [bp - 0Ah]
-mov   ax, CHEATID_MUSIC
-mov   word ptr ds:[bx], STSTR_MUS
-mov   bx, _commercial
-call  cht_GetParam_
-cmp   byte ptr ds:[bx], 0
-je    label_29
-mov   al, byte ptr [bp - 0Ah]
-cbw  
-sub   ax, ASCII_0
-mov   dx, ax
-shl   dx, 2
-add   dx, ax
-add   dx, dx
-mov   al, byte ptr [bp - 9]
-mov   bx, dx
-cbw  
-add   bx, MUS_RUNNIN
-add   bx, ax
-add   ax, dx
-sub   ax, ASCII_0
-lea   cx, [bx - ASCII_1]
-cmp   ax, 35
-jle   label_30
-mov   bx, _player + PLAYER_T.player_message
-mov   word ptr ds:[bx], STSTR_NOMUS
-jmp   label_12
-label_30:
-mov   al, cl
-mov   dx, 1
-xor   ah, ah
 
-call  S_ChangeMusic_
-jmp   label_12
-jump_to_label_28:
-jmp   label_28
-label_29:
-mov   al, byte ptr [bp - 0Ah]
-cbw  
-sub   ax, ASCII_1
-mov   dx, ax
-shl   dx, 3
-add   dx, ax
-mov   al, byte ptr [bp - 9]
-mov   bx, dx
-cbw  
-inc   bx
-mov   cx, ax
-add   ax, dx
-sub   cx, ASCII_1
-sub   ax, ASCII_1
-add   cx, bx
-cmp   ax, 31
-jle   label_30
-mov   bx, _player + PLAYER_T.player_message
-mov   word ptr ds:[bx], STSTR_NOMUS
-jmp   label_12
-label_26:
-mov   es, word ptr [bp - 2]
-mov   al, byte ptr es:[di + 1]
-cbw  
-mov   dx, ax
-mov   ax, CHEATID_NOCLIP
-call  cht_CheckCheat_
-test  al, al
-jne   label_31
-jmp   label_32
-label_31:
-mov   bx, _player + PLAYER_T.player_cheats
-xor   byte ptr ds:[bx], 1
-test  byte ptr ds:[bx], 1
-je    label_28
-mov   bx, _player + PLAYER_T.player_message
-mov   word ptr ds:[bx], STSTR_NCON
-jmp   label_12
-label_28:
-mov   bx, _player + PLAYER_T.player_message
-mov   word ptr ds:[bx], STSTR_NCOFF
-jmp   label_12
-label_9:
-cmp   bl, 1
-je    label_33
-mov   word ptr ds:[si + _player + PLAYER_T.player_powers], 1
-jmp   label_34
-label_33:
-mov   word ptr ds:[si + _player + PLAYER_T.player_powers], 0
-jmp   label_34
-label_11:
-mov   es, word ptr [bp - 2]
-mov   al, byte ptr es:[di + 1]
-cbw  
-mov   dx, ax
-mov   ax, CHEATID_CHOPPERS
-call  cht_CheckCheat_
-test  al, al
-je    label_35
-mov   bx, _player + PLAYER_T.player_weaponowned + WP_CHAINSAW
-mov   byte ptr ds:[bx], 1
-mov   bx, _player + PLAYER_T.player_powers + 2 * PW_INVULNERABILITY
-mov   word ptr ds:[bx], 1
-mov   bx, _player + PLAYER_T.player_message
-mov   word ptr ds:[bx], STSTR_CHOPPERS
-jmp   label_2
-label_35:
-mov   es, word ptr [bp - 2]
-mov   al, byte ptr es:[di + 1]
-cbw  
-mov   dx, ax
-mov   ax, CHEATID_MAPPOS
-call  cht_CheckCheat_
-test  al, al
-jne   label_36
-jmp   label_2
-label_36:
-mov   bx, _playerMobj_pos
-lea   cx, [bp - 014h]
-les   si, dword ptr ds:[bx]
-mov   bx, 1
-mov   ax, word ptr es:[si + MOBJ_POS_T.mp_angle + 0]
-mov   dx, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
-call  locallib_printhex_
-lea   dx, [bp - 014h]
-mov   bx, OFFSET _st_mapcheat_string1
-mov   ax, OFFSET _st_stuff_buf
-push  ds
-mov   cx, cs
-push  dx
-mov   dx, ds
-call  combine_strings_
-mov   bx, OFFSET _st_stuff_buf
-push  cs
-mov   cx, ds
-mov   dx, ds
-push  OFFSET _st_mapcheat_string2
-mov   ax, bx
-mov   si, _playerMobj_pos
-call  combine_strings_
-les   bx, dword ptr ds:[si]
-lea   cx, [bp - 014h]
-mov   ax, word ptr es:[bx]
-mov   dx, word ptr es:[bx + 2]
-mov   bx, 1
-call  locallib_printhex_
-lea   dx, [bp - 014h]
-mov   bx, OFFSET _st_stuff_buf
-push  ds
-mov   cx, ds
-push  dx
-mov   ax, bx
-mov   dx, ds
-call  combine_strings_
-mov   bx, OFFSET _st_stuff_buf
-push  cs
-mov   cx, ds
-mov   dx, ds
-push  OFFSET _st_mapcheat_string3
-mov   ax, bx
-call  combine_strings_
-lea   cx, [bp - 014h]
-mov   bx, si
-mov   si, word ptr ds:[si]
-mov   es, word ptr ds:[bx + 2]
-mov   bx, 1
-mov   ax, word ptr es:[si + 4]
-mov   dx, word ptr es:[si + 6]
-call  locallib_printhex_
-lea   dx, [bp - 014h]
-mov   bx, OFFSET _st_stuff_buf
-push  ds
-mov   cx, ds
-push  dx
-mov   ax, bx
-mov   dx, ds
-call  combine_strings_
-mov   bx, OFFSET _st_stuff_buf
-push  cs
-mov   cx, ds
-mov   dx, ds
-push  OFFSET _st_mapcheat_string4
-mov   ax, bx
-call  combine_strings_
-mov   bx, _player + PLAYER_T.player_messagestring
-mov   word ptr ds:[bx], OFFSET _st_stuff_buf
-jmp   label_2
-label_17:
-lea   dx, [bp - 6]
-mov   ax, CHEATID_CHANGE_LEVEL
-mov   bl, 4
-call  cht_GetParam_
-mov   al, byte ptr [bp - 6]
-mov   si, _commercial
-sub   al, ASCII_0
-cmp   byte ptr ds:[si], 0
-je    label_58
-mov   ah, 10
-imul  ah
-add   al, byte ptr [bp - 5]
-xor   dl, dl
-
-label_16:
-sub   al, ASCII_0
-mov   si, _is_ultimate
-cmp   byte ptr ds:[si], 0
-je    label_56
-mov   bl, 5
-label_56:
-mov   si, _commercial
-cmp   byte ptr ds:[si], 0
-jne   label_57
-test  dl, dl
-jle   label_57
-cmp   dl, bl
-jge   label_57
-test  al, al
-jle   label_57
-cmp   al, 10
-jl    label_59
-label_57:
-mov   bx, _commercial
-cmp   byte ptr ds:[bx], 0
-jne   label_60
-label_55:
-jmp   exit_st_responder_ret_0
-label_60:
-test  al, al
-jle   label_55
-cmp   al, 40
-jg    label_55
-label_59:
-mov   bx, _player + PLAYER_T.player_message
-cbw  
-mov   word ptr ds:[bx], STSTR_CLEV
-mov   bx, ax
-mov   al, dl
-cbw  
-mov   si, _gameskill
-mov   dx, ax
-mov   al, byte ptr ds:[si]
-xor   ah, ah
-call  G_DeferedInitNew_
-xor   al, al
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret   
-label_58:
-mov   dl, al
-mov   al, byte ptr [bp - 5]
-jmp   label_16
-
-ENDP
-
-@
 
 PROC    ST_calcPainOffset_ NEAR
 PUBLIC  ST_calcPainOffset_
@@ -1461,12 +979,414 @@ add   di, SIZEOF_ST_MULTICON_T
 loop  update_next_keybox
 
 exit_st_drawwidgets:
+exit_st_responder_early:
 POPA_NO_AX_OR_BP_MACRO
 ret   
 
 
 ENDP
 
+
+PROC    ST_Responder_ NEAR
+PUBLIC  ST_Responder_
+
+
+PUSHA_NO_AX_OR_BP_MACRO
+
+xchg  ax, di
+xor   ax, ax
+mov   es, dx
+mov   si, _player + PLAYER_T.player_powers
+cmp   byte ptr es:[di + EVENT_T.event_evtype], al
+jne   exit_st_responder_early
+
+push  bp
+mov   bp, sp
+sub   sp, 014h
+
+cmp   byte ptr ds:[_gameskill], SK_NIGHTMARE
+jne   not_nightmare
+jmp   done_checking_main_cheats
+not_nightmare:
+
+mov   al, byte ptr es:[di + EVENT_T.event_data1]
+cbw  
+mov   cx, ax        ; cx holds event?
+xchg  ax, dx
+mov   al, CHEATID_GODMODE
+call  cht_CheckCheat_
+jnc   is_not_godmode
+
+is_godmode:
+xor   byte ptr ds:[si], CF_GODMODE
+test  byte ptr ds:[si], CF_GODMODE
+jne   turn_godmode_on
+
+turn_godmode_off:
+mov   word ptr ds:[_player + PLAYER_T.player_message], STSTR_DQDOFF
+jmp   check_behold_cheats
+
+turn_godmode_on:
+mov   bx, word ptr ds:[_playerMobj]
+mov   word ptr ds:[bx + MOBJ_T.m_health], 100
+mov   word ptr ds:[_player + PLAYER_T.player_health], 100
+mov   word ptr ds:[_player + PLAYER_T.player_message], STSTR_DQDON
+
+jmp   check_behold_cheats
+
+is_not_godmode:
+mov   dx, cx ; data1
+mov   al, CHEATID_AMMONOKEYS
+call  cht_CheckCheat_
+jc    do_ammo_no_keys
+
+not_ammonokeys:
+mov   dx, cx
+mov   al, CHEATID_AMMOANDKEYS
+call  cht_CheckCheat_
+jnc   not_ammoandkeys
+
+do_ammo_and_keys:
+
+mov   word ptr ds:[_player + PLAYER_T.player_message], STSTR_KFAADDED
+xor   bx, bx
+
+loop_next_set_key:
+mov   byte ptr ds:[bx + _player + PLAYER_T.player_cards], 1
+inc   bx
+cmp   bl, 6
+jl    loop_next_set_key
+jmp   do_ammo_part
+
+do_ammo_no_keys:
+mov   word ptr ds:[_player + PLAYER_T.player_message], STSTR_FAADDED
+do_ammo_part:
+mov   word ptr ds:[_player + PLAYER_T.player_armorpoints], 200
+mov   byte ptr ds:[_player + PLAYER_T.player_armortype], 2
+xor   bx, bx
+loop_next_set_weapon_owned:
+mov   byte ptr ds:[bx + _player + PLAYER_T.player_weaponowned], 1
+inc   bx
+cmp   bl, NUMWEAPONS
+jl    loop_next_set_weapon_owned
+xor   bx, bx
+
+loop_next_set_max_ammo:
+push  word ptr ds:[bx + _player + PLAYER_T.player_maxammo]
+pop   word ptr ds:[bx + _player + PLAYER_T.player_ammo]
+inc   bx
+inc   bx
+cmp   bl, (4 * 2)
+jl    loop_next_set_max_ammo
+
+jmp   check_behold_cheats
+
+
+not_ammoandkeys:
+mov   dx, cx
+mov   al, CHEATID_MUSIC
+call  cht_CheckCheat_
+jnc    is_not_music
+
+is_music:
+lea   dx, [bp - 0Ah]
+mov   ax, CHEATID_MUSIC
+mov   word ptr ds:[_player + PLAYER_T.player_message], STSTR_MUS
+
+call  cht_GetParam_
+cmp   byte ptr ds:[_commercial], 0
+mov   ax, word ptr [bp - 0Ah]
+mov   bl, ah
+je    noncommercial_music
+sub   al, ASCII_0
+mov   ah, 10
+mul   ah
+xchg  ax, bx
+; al has bp - 9
+sub   al, ASCII_0
+
+add   al, bl  ; ax has digits added
+mov   bx, ax
+add   al, (MUS_RUNNIN - 1)
+cmp   bl, 35
+jle   music_id_ok
+
+mov   word ptr ds:[_player + PLAYER_T.player_message], STSTR_NOMUS
+jmp   check_behold_cheats
+music_id_ok:
+xor   ah, ah
+mov   dx, 1
+call  S_ChangeMusic_
+jmp   check_behold_cheats
+
+noncommercial_music:
+
+sub   al, ASCII_1
+mov   ah, 9
+mul   ah
+xchg  ax, bx
+; al has bp - 9
+sub   al, ASCII_1
+
+add   al, bl
+cmp   al, 31
+jle   music_id_ok
+mov   word ptr ds:[_player + PLAYER_T.player_message], STSTR_NOMUS
+jmp   check_behold_cheats
+
+
+is_not_music:
+cmp   byte ptr ds:[_commercial], 0
+jne   notclip_doom1_commercial_set
+
+mov   dx, cx
+mov   al, CHEATID_NOCLIP
+call  cht_CheckCheat_
+
+jnc   check_behold_cheats
+do_clip_doom1_or_doom2:
+xor   byte ptr ds:[si], CF_NOCLIP
+test  byte ptr ds:[si], CF_NOCLIP
+mov   ax, STSTR_NCOFF
+je    turn_clipping_off
+mov   ax, STSTR_NCON
+turn_clipping_off:
+mov   word ptr ds:[_player + PLAYER_T.player_message], ax
+jmp   check_behold_cheats
+
+notclip_doom1_commercial_set:
+mov   dx, cx
+mov   al, CHEATID_NOCLIPDOOM2
+call  cht_CheckCheat_
+jc    do_clip_doom1_or_doom2
+
+; fall thru..
+
+check_behold_cheats:
+
+xor   bx, bx
+
+loop_next_behold_cheat:
+
+mov   dx, cx
+mov   ax, CHEATID_BEHOLDV
+add   ax, bx
+add   ax, bx
+call  cht_CheckCheat_
+jnc   skip_this_behold
+
+cmp   word ptr ds:[si + bx], 0  ; check powers
+jne   dont_give_power
+mov   ax, bx
+sar   ax, 1
+call  dword ptr ds:[_P_GivePower]
+jmp   done_applying_behold
+dont_give_power:
+cmp   bx, (PW_STRENGTH * 2)
+jne   do_non_strength
+mov   word ptr ds:[si + bx], 1
+jmp   done_applying_behold
+do_non_strength:
+mov   word ptr ds:[si + bx], 0
+done_applying_behold:
+mov   word ptr ds:[_player + PLAYER_T.player_message], STSTR_BEHOLDX
+
+
+skip_this_behold:
+inc   bx
+inc   bx
+cmp   bx, (6 * 2)
+jl    loop_next_behold_cheat
+
+; done with behold loop
+
+mov   dx, cx
+mov   al, CHEATID_BEHOLD
+call  cht_CheckCheat_
+jnc   not_single_behold
+mov   word ptr ds:[_player + PLAYER_T.player_message], STSTR_BEHOLD
+jmp   done_checking_main_cheats
+not_single_behold:
+
+
+mov   dx, cx
+mov   al, CHEATID_CHOPPERS
+call  cht_CheckCheat_
+
+jnc   not_choppers
+mov   byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_CHAINSAW], 1
+mov   word ptr ds:[_player + PLAYER_T.player_powers + 2 * PW_INVULNERABILITY], 1
+mov   word ptr ds:[_player + PLAYER_T.player_message], STSTR_CHOPPERS
+jmp   done_checking_main_cheats
+not_choppers:
+mov   dx, cx
+mov   al, CHEATID_MAPPOS
+call  cht_CheckCheat_
+jc    do_mappos_cheat
+
+
+done_checking_main_cheats:
+mov   dx, cx
+mov   al, CHEATID_CHANGE_LEVEL
+call  cht_CheckCheat_
+jc    do_change_level_cheat
+exit_st_responder_return:
+LEAVE_MACRO 
+POPA_NO_AX_OR_BP_MACRO
+ret   
+
+do_change_level_cheat:
+
+
+
+lea   dx, [bp - 0Ah]
+mov   al, CHEATID_CHANGE_LEVEL
+call  cht_GetParam_
+
+xor   dx, dx ; map, epsd
+mov   cl, 4  ; max epsd
+
+mov   ax, word ptr [bp - 6]
+
+sub   ax, ((ASCII_0 SHL 8) + ASCII_0)  ; subtract '0' from both 
+mov   bl, ah
+cmp   byte ptr ds:[_commercial], 0
+je    map_epsd_set
+
+;    epsd = 0;
+;    map = (buf[0] - '0')*10 + buf[1] - '0';
+
+mov   ah, 10
+mul   ah
+add   al, bl
+mov   ah, al
+xor   al, al
+
+
+map_epsd_set:
+
+; al is epsd ah is map
+
+
+cmp   byte ptr ds:[_is_ultimate], 0
+je    dont_inc_max_epsd
+inc   cx
+dont_inc_max_epsd:
+
+;    if ((!commercial && epsd > 0 && epsd < max_epsd && map > 0 && map < 10)
+;        || (commercial && map > 0 && map <= 40)) {
+;        // So be it.
+;        player.message = STSTR_CLEV;
+;        G_DeferedInitNew(gameskill, epsd, map);
+;    }
+
+cmp   byte ptr ds:[_commercial], 0
+jne   first_check_fail
+test  al, al
+jle   first_check_fail
+cmp   al, cl
+jge   first_check_fail
+test  ah, ah
+jle   first_check_fail
+cmp   ah, 10
+jl    checks_passed
+first_check_fail:
+
+cmp   byte ptr ds:[_commercial], 0
+je    exit_st_responder_return
+test  al, al
+jle   exit_st_responder_return
+cmp   al, 40
+jg    exit_st_responder_return
+checks_passed:
+
+xor   dx, dx
+xor   bx, bx
+mov   dl, al
+mov   bl, ah
+mov   word ptr ds:[_player + PLAYER_T.player_message], STSTR_CLEV
+mov   al, byte ptr ds:[_gameskill]
+xor   ah, ah
+call  G_DeferedInitNew_
+jmp   exit_st_responder_return
+
+
+
+do_mappos_cheat:
+
+; todo. this
+
+lea   cx, [bp - 014h]
+les   si, dword ptr ds:[_playerMobj_pos]
+mov   bx, 1
+mov   ax, word ptr es:[si + MOBJ_POS_T.mp_angle + 0]
+mov   dx, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
+call  locallib_printhex_
+lea   dx, [bp - 014h]
+mov   bx, OFFSET _st_mapcheat_string1
+mov   ax, OFFSET _st_stuff_buf
+push  ds
+mov   cx, cs
+push  dx
+mov   dx, ds
+call  combine_strings_
+mov   bx, OFFSET _st_stuff_buf
+push  cs
+mov   cx, ds
+mov   dx, ds
+push  OFFSET _st_mapcheat_string2
+mov   ax, bx
+call  combine_strings_
+les   bx, dword ptr ds:[_playerMobj_pos]
+lea   cx, [bp - 014h]
+mov   ax, word ptr es:[bx]
+mov   dx, word ptr es:[bx + 2]
+mov   bx, 1
+call  locallib_printhex_
+lea   dx, [bp - 014h]
+mov   bx, OFFSET _st_stuff_buf
+push  ds
+mov   cx, ds
+push  dx
+mov   ax, bx
+mov   dx, ds
+call  combine_strings_
+mov   bx, OFFSET _st_stuff_buf
+push  cs
+mov   cx, ds
+mov   dx, ds
+push  OFFSET _st_mapcheat_string3
+mov   ax, bx
+call  combine_strings_
+lea   cx, [bp - 014h]
+mov   bx, si
+mov   si, word ptr ds:[si]
+mov   es, word ptr ds:[bx + 2]
+mov   bx, 1
+mov   ax, word ptr es:[si + 4]
+mov   dx, word ptr es:[si + 6]
+call  locallib_printhex_
+lea   dx, [bp - 014h]
+mov   bx, OFFSET _st_stuff_buf
+push  ds
+mov   cx, ds
+push  dx
+mov   ax, bx
+mov   dx, ds
+call  combine_strings_
+mov   bx, OFFSET _st_stuff_buf
+push  cs
+mov   cx, ds
+mov   dx, ds
+push  OFFSET _st_mapcheat_string4
+mov   ax, bx
+call  combine_strings_
+
+mov   word ptr ds:[_player + PLAYER_T.player_messagestring], OFFSET _st_stuff_buf
+jmp   done_checking_main_cheats
+
+
+ENDP
 
 
 PROC    ST_Drawer_ NEAR

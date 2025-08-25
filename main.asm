@@ -196,11 +196,13 @@ ENDP
 PROC cht_CheckCheat_ NEAR
 PUBLIC cht_CheckCheat_
 
+; return in carry
 
 push bx
 push si
  
 ; argument is preshifted by 2 (as the struct offset should be)
+cbw
 mov  bx, ax
 add  bx, OFFSET BASE_CHEAT_ADDRESS
 cmp  word ptr cs:[bx + 2], 0
@@ -222,7 +224,7 @@ je   reached_custom_param
 cmp  al, 0FFh
 je   reached_end_of_cheat
 return_fail:
-mov  al, 0
+clc
 pop  si
 pop  bx
 ret  
@@ -249,7 +251,7 @@ reached_end_of_cheat:
 ; return success
 mov  ax, word ptr cs:[bx]
 mov  word ptr cs:[bx + 2], ax
-mov  al, 1
+stc
 pop  si
 pop  bx
 ret  
@@ -1762,9 +1764,9 @@ test  al, al
 jne   exit_gresponder_return_1
 mov   ax, bx
 mov   dx, cx
-call  ST_Responder_
-test  al, al
-jne   exit_gresponder_return_1
+call  ST_Responder_ ; never returns true
+;test  al, al
+;jne   exit_gresponder_return_1
 mov   ax, bx
 mov   dx, cx
 call  AM_Responder_

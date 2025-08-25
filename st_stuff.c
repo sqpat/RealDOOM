@@ -78,7 +78,6 @@ void __near ST_refreshBackground(void) {
     }
 
 }
-*/
 
 
 // Respond to keyboard input events,
@@ -265,7 +264,6 @@ boolean __near ST_Responder (event_t __far* ev) {
 
 
 int16_t __near ST_calcPainOffset(void) ;
-/*
 int16_t __near ST_calcPainOffset(void) {
     int16_t         health;
     
@@ -277,7 +275,6 @@ int16_t __near ST_calcPainOffset(void) {
     }
     return st_calc_lastcalc;
 }
-*/
 
 //
 // This is a not-very-pretty routine which handles
