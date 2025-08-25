@@ -35,7 +35,6 @@ file st_stuff.obj
 file hu_stuff.obj
 file hu_lib.obj
 file d_algo.obj
-file dmx.obj
 file d_dmx.obj
 file d_int.obj
 file memory.obj

@@ -132,7 +132,6 @@ GLOBOBJS = $(GLOBOBJS) &
  sm_sbmid.obj &
  sm_mpumd.obj &
  f_wipe.obj &
- dmx.obj &
  d_dmx.obj &
  d_int.obj &
  memory.obj &

@@ -66,9 +66,8 @@ ret
 
 ENDP
 
-@ 
 
-; todo inline
+; note inlined
 PROC   playpcspeakernote_ NEAR
 PUBLIC playpcspeakernote_
 
@@ -106,6 +105,9 @@ ret
 
 
 ENDP
+
+@ 
+
 
 do_chain:
 les    ax, dword ptr ds:[_OldInt8]
@@ -162,29 +164,49 @@ skip_mus_task:
 cmp    word ptr ds:[_pcspeaker_currentoffset], 0
 je     no_pc_speaker
 
-; STOP INTERUPPT FOR SPEAKER PLAY
+; NO INTERUPT FOR SPEAKER PLAY
 cli    
-mov    ax, PC_SPEAKER_SFX_DATA_SEGMENT
+mov    ax, PC_SPEAKER_SFX_DATA_SEGMENT  ; todo in memory
 mov    es, ax
 mov    si, word ptr ds:[_pcspeaker_currentoffset]
 lods   word ptr es:[si]
-call   playpcspeakernote_
+;call   playpcspeakernote_ ; inlined
 
-;			pcspeaker_currentoffset+=2;
-;			if (pcspeaker_currentoffset >= pcspeaker_endoffset){
-;				pcspeaker_currentoffset = 0;
-;				// ? turn off speaker? todo should this be on next frame?
-;				outp(0x61, inp(0x61) & 0xFC);
-;
-;			}
-
-mov    word ptr ds:[_pcspeaker_endoffset], si
 cmp    si, word ptr ds:[_pcspeaker_endoffset]
-jb     finish_pc_speaker_update
-mov    word ptr ds:[_pcspeaker_currentoffset], 0
-in     al, 061h
-and    al, 0FCh
-out    061h, al
+jge    end_sound
+mov    word ptr ds:[_pcspeaker_currentoffset], si
+
+    test   ax, ax
+    je     no_note
+    cmp    ax, word ptr ds:[_lastpcspeakernotevalue]
+    je     done_with_pcspeaker
+
+    mov    word ptr ds:[_lastpcspeakernotevalue], ax
+
+    ;	outp (0x43, 0xB6);
+    ;	outp (0x42, value &0xFF);
+    ;	outp (0x42, value >> 8);
+
+    push   ax
+    mov    al, 0B6h
+    out    043h, al
+    pop    ax
+    out    042h, al
+    mov    al, ah
+    out    042h, al
+    in     al, 061h
+    or     al, 3
+    out    061h, al
+    jmp    done_with_pcspeaker
+
+    no_note:
+
+    in     al, 061h
+    and    al, 0FCh
+    out    061h, al
+    done_with_pcspeaker:
+
+
 finish_pc_speaker_update:
 sti     ;restore interrupts
 
@@ -205,9 +227,14 @@ pop    ds
 POPA_MACRO  
 iret   
 
+
 add_second_ticcount:
 inc    word ptr ds:[_ticcount + 2]
 jmp    done_adding_ticcount_high
+end_sound:
+mov    word ptr ds:[_pcspeaker_currentoffset], 0
+jmp    no_note
+
 
 ENDP
 
