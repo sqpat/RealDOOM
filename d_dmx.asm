@@ -50,6 +50,7 @@ PROC    D_DMX_STARTMARKER_ NEAR
 PUBLIC  D_DMX_STARTMARKER_
 ENDP
 
+; unused
 COMMENT @
 
 PROC TS_SetTimerToMaxTaskRate_ NEAR
@@ -66,7 +67,10 @@ ret
 
 ENDP
 
-PROC playpcspeakernote_ NEAR
+@ 
+
+; todo inline
+PROC   playpcspeakernote_ NEAR
 PUBLIC playpcspeakernote_
 
 test   ax, ax
@@ -85,7 +89,7 @@ mov    al, 0B6h
 out    043h, al
 pop    ax
 out    042h, al
-xchg   al, ah
+mov    al, ah
 out    042h, al
 in     al, 061h
 or     al, 3
@@ -103,6 +107,7 @@ ret
 
 
 ENDP
+COMMENT @
 
 do_chain:
 jmp    _chain_intr_
@@ -110,7 +115,7 @@ jmp    no_chain
 
 ; main interrupt
 
-PROC TS_ServiceScheduleIntEnabled_ FAR
+PROC   TS_ServiceScheduleIntEnabled_ FAR
 PUBLIC TS_ServiceScheduleIntEnabled_
 
 PUSHA_NO_AX_MACRO 
@@ -170,7 +175,7 @@ call   playpcspeakernote_
 ;			}
 
 add    bx, 2
-mov    ax, word ptr ds:[_pcspeaker_currentoffset]
+mov    word ptr ds:[_pcspeaker_endoffset], bx
 cmp    bx, word ptr ds:[_pcspeaker_endoffset]
 jb     finish_pc_speaker_update
 mov    word ptr ds:[_pcspeaker_currentoffset], 0
@@ -202,7 +207,7 @@ ENDP
 @
 
 
-PROC TS_Startup_ NEAR
+PROC   TS_Startup_ NEAR
 PUBLIC TS_Startup_
 
 
@@ -235,7 +240,7 @@ ENDP
 
 
 
-PROC TS_ScheduleMainTask_ NEAR
+PROC   TS_ScheduleMainTask_ NEAR
 PUBLIC TS_ScheduleMainTask_
 
 
@@ -255,7 +260,7 @@ ret
 
 ENDP
 
-PROC TS_Dispatch_ NEAR
+PROC   TS_Dispatch_ NEAR
 PUBLIC TS_Dispatch_
 
 cli

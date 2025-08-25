@@ -32,7 +32,7 @@ void __near TS_Startup(void);
 #define HZ_INTERRUPTS_PER_TICK  4
 
 
-
+/*
 
 void __near TS_SetTimerToMaxTaskRate(void){
 	// reset interrupt rate
@@ -43,9 +43,7 @@ void __near TS_SetTimerToMaxTaskRate(void){
 	_enable();
 }
 
-void	resetDS();
 // void I_TimerISR(void);
-void __near MUS_ServiceRoutine(void);
 
 //todo move this where it needs to go.
 
@@ -74,7 +72,11 @@ void __near playpcspeakernote(uint16_t value){
 
 
 }
+*/
 
+void __near playpcspeakernote(uint16_t value);
+void	resetDS();
+void __near MUS_ServiceRoutine(void);
 
 void __interrupt __far_func TS_ServiceScheduleIntEnabled(void){
 
