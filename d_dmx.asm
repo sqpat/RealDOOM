@@ -23,7 +23,6 @@ EXTRN _dos_setvect_:FAR
 EXTRN _dos_getvect_:FAR
 EXTRN _chain_intr_:FAR
 EXTRN MUS_ServiceRoutine_:NEAR
-EXTRN TS_ServiceScheduleIntEnabled_:FAR
 
 .DATA
 
@@ -107,21 +106,24 @@ ret
 
 
 ENDP
-COMMENT @
 
 do_chain:
+les    ax, dword ptr ds:[_OldInt8]
+mov    dx, es
 jmp    _chain_intr_
-jmp    no_chain
+
 
 ; main interrupt
 
 PROC   TS_ServiceScheduleIntEnabled_ FAR
 PUBLIC TS_ServiceScheduleIntEnabled_
 
-PUSHA_NO_AX_MACRO 
+PUSHA_MACRO 
 push   ds
 push   es
 push   ax
+push   ax
+mov    bp, sp
 
 cld    
 mov    ax, FIXED_DS_SEGMENT
@@ -137,20 +139,22 @@ cmp    byte ptr ds:[_TS_InInterrupt], al ; 0
 jnz    exit_interrupt
 inc    byte ptr ds:[_TS_InInterrupt] ; set to 1
 sti    
-cmp    byte ptr ds:[_TS_TimesInInterrupt], al ; 0
-je     exit_interrupt_store_not_in_interrupt
+
+;cmp    byte ptr ds:[_TS_TimesInInterrupt], al ; 0
+;je     exit_interrupt_store_not_in_interrupt
 
 repeat_interrupt:
-cmp    byte ptr ds:[_HeadTask + TASK_T.task_active], al ; 0
+cmp    byte ptr ds:[_HeadTask + TASK_T.task_active], 0
 je     done_with_headtask
 dec    byte ptr ds:[_HeadTask + TASK_T.task_count]
 jnz    done_with_headtask
 mov    byte ptr ds:[_HeadTask + TASK_T.task_count], HZ_INTERRUPTS_PER_TICK
 inc    word ptr ds:[_ticcount + 0]
 jz     add_second_ticcount
+
 done_adding_ticcount_high:
 done_with_headtask:
-cmp    byte ptr ds:[_MUSTask + TASK_T.task_active], al
+cmp    byte ptr ds:[_MUSTask + TASK_T.task_active], 0
 je     skip_mus_task
 call   MUS_ServiceRoutine_
 skip_mus_task:
@@ -162,8 +166,8 @@ je     no_pc_speaker
 cli    
 mov    ax, PC_SPEAKER_SFX_DATA_SEGMENT
 mov    es, ax
-mov    bx, word ptr ds:[_pcspeaker_currentoffset]
-mov    ax, word ptr es:[bx]
+mov    si, word ptr ds:[_pcspeaker_currentoffset]
+lods   word ptr es:[si]
 call   playpcspeakernote_
 
 ;			pcspeaker_currentoffset+=2;
@@ -174,16 +178,15 @@ call   playpcspeakernote_
 ;
 ;			}
 
-add    bx, 2
-mov    word ptr ds:[_pcspeaker_endoffset], bx
-cmp    bx, word ptr ds:[_pcspeaker_endoffset]
+mov    word ptr ds:[_pcspeaker_endoffset], si
+cmp    si, word ptr ds:[_pcspeaker_endoffset]
 jb     finish_pc_speaker_update
 mov    word ptr ds:[_pcspeaker_currentoffset], 0
 in     al, 061h
 and    al, 0FCh
 out    061h, al
 finish_pc_speaker_update:
-sti    
+sti     ;restore interrupts
 
 no_pc_speaker:
 dec    byte ptr ds:[_TS_TimesInInterrupt]
@@ -191,11 +194,15 @@ jnz    repeat_interrupt
 exit_interrupt_store_not_in_interrupt:
 cli    
 mov    byte ptr ds:[_TS_InInterrupt], 0
+
 exit_interrupt:
+
+
+pop    ax
 pop    ax
 pop    es
 pop    ds
-POPA_NO_AX_MACRO  
+POPA_MACRO  
 iret   
 
 add_second_ticcount:
@@ -204,7 +211,6 @@ jmp    done_adding_ticcount_high
 
 ENDP
 
-@
 
 
 PROC   TS_Startup_ NEAR
@@ -264,8 +270,8 @@ PROC   TS_Dispatch_ NEAR
 PUBLIC TS_Dispatch_
 
 cli
-;mov    word ptr ds:[_HeadTask], (1 SHL 8 + HZ_INTERRUPTS_PER_TICK)
-mov    word ptr ds:[_HeadTask], (1 SHL 8 + 0)
+mov    word ptr ds:[_HeadTask], (1 SHL 8 + HZ_INTERRUPTS_PER_TICK)
+;mov    word ptr ds:[_HeadTask], (1 SHL 8 + 0)
 cmp    word ptr ds:[_playingdriver + 2], 0
 je     dont_set_mustask_active
 mov    byte ptr ds:[_MUSTask + TASK_T.task_active], 1

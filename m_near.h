@@ -1068,8 +1068,7 @@ extern task HeadTask;
 extern task MUSTask;
 
 extern void( __interrupt __far_func *OldInt8)(void);
-//todo uint16t
-extern volatile fixed_t_union TaskServiceCount;
+extern volatile uint16_t TaskServiceCount;
 
 extern volatile int8_t TS_TimesInInterrupt;
 extern int8_t TS_Installed;

@@ -72,11 +72,11 @@ void __near playpcspeakernote(uint16_t value){
 
 
 }
-*/
 
 void __near playpcspeakernote(uint16_t value);
 void	resetDS();
 void __near MUS_ServiceRoutine(void);
+
 
 void __interrupt __far_func TS_ServiceScheduleIntEnabled(void){
 
