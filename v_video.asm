@@ -1128,8 +1128,8 @@ mov       ds, ax
 mov       ax, SCREENWIDTH
 sub       ax, bx        ; screenwidth minus width
 
-mov       dx, cx  ; outer loop counter
-dec       dx ; do one early...
+mov       dx, cx  ; outer loop counter (height)
+
 
 ; bx holds width, refreshes cs
 
@@ -1138,14 +1138,14 @@ mov       cx, bx
 
 shr       cx, 1
 rep movsw 
-;adc       cx, cx
+adc       cx, cx
 rep movsb 
 
 add       si, ax
 add       di, ax
 
 dec       dx
-jns       copy_next_rect_line
+jnz       copy_next_rect_line
 mov       ax, ss
 mov       ds, ax 
 pop       di

@@ -68,7 +68,6 @@ void __near ST_doPaletteStuff(void);
 void __near ST_drawWidgets();
 
 
-/*
 void __near ST_refreshBackground(void) {
 
     if (st_statusbaron) {
@@ -282,7 +281,6 @@ int16_t __near ST_calcPainOffset(void) {
 // the precedence of expressions is:
 //  dead > evil grin > turned head > straight ahead
 //
-/*
 
 void __near ST_updateFaceWidget(void) {
     int8_t         i;
@@ -688,7 +686,6 @@ void __near ST_Drawer(boolean usefullscreen, boolean refresh) {
         Z_QuickMapPhysics();
     }
 }
-*/
 
 
 

@@ -97,8 +97,6 @@ ST_ARMSY =               172    ; ACh
 ST_ARMSXSPACE =          12     ; 0Ch
 ST_ARMSYSPACE =          10     ; 0Ah
 
-ST_FACESX =              143    ; 08Fh
-ST_FACESY =              168    ; 0A8h
 
 ST_ARMSBGX =             104    ; 068h
 ST_ARMSBGY =             168    ; 0A8h

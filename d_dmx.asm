@@ -66,7 +66,7 @@ ret
 ENDP
 
 
-; note inlined
+; note inlined and thus commented out
 PROC   playpcspeakernote_ NEAR
 PUBLIC playpcspeakernote_
 
@@ -196,8 +196,29 @@ call   MUS_ServiceRoutine_
 skip_mus_task:
 
 cmp    word ptr ds:[_pcspeaker_currentoffset], 0
-je     no_pc_speaker
+jne    do_pc_speaker
 
+no_pc_speaker:
+dec    byte ptr ds:[_TS_TimesInInterrupt]
+jnz    repeat_interrupt
+exit_interrupt_store_not_in_interrupt:
+cli    
+mov    byte ptr ds:[_TS_InInterrupt], 0
+
+exit_interrupt:
+
+
+pop    es
+pop    ds
+POPA_MACRO_REAL  
+iret   
+
+
+add_second_ticcount:
+inc    word ptr ds:[_ticcount + 2]
+jmp    done_adding_ticcount_high
+
+do_pc_speaker:
 ; NO INTERUPT FOR SPEAKER PLAY
 cli    
 mov    ax, PC_SPEAKER_SFX_DATA_SEGMENT  ; todo in memory
@@ -243,29 +264,11 @@ mov    word ptr ds:[_pcspeaker_currentoffset], si
 
 finish_pc_speaker_update:
 sti     ;restore interrupts
-
-no_pc_speaker:
-dec    byte ptr ds:[_TS_TimesInInterrupt]
-jnz    repeat_interrupt
-exit_interrupt_store_not_in_interrupt:
-cli    
-mov    byte ptr ds:[_TS_InInterrupt], 0
-
-exit_interrupt:
-
-
-pop    es
-pop    ds
-POPA_MACRO_REAL  
-iret   
-
-
-add_second_ticcount:
-inc    word ptr ds:[_ticcount + 2]
-jmp    done_adding_ticcount_high
+jmp  no_pc_speaker
 end_sound:
 mov    word ptr ds:[_pcspeaker_currentoffset], 0
 jmp    no_note
+
 
 
 ENDP

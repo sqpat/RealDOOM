@@ -152,34 +152,36 @@ ENDP
 PROC    ST_calcPainOffset_ NEAR
 PUBLIC  ST_calcPainOffset_
 
-push  bx
 push  dx
 mov   ax, word ptr ds:[_player + PLAYER_T.player_health]
-cmp   ax, 100
-jle   more_than_100_health
 
-mov   bx, ax
-jmp   use_current_health
+;    health = player.health > 100 ? 100 : player.health;
+
+cmp   ax, 100
+jle   use_current_health
 more_than_100_health:
-mov   bx, 100
+mov   ax, 100
 use_current_health:
-cmp   bx, word ptr ds:[_st_calc_oldhealth]
+cmp   ax, word ptr ds:[_st_calc_oldhealth]
 je    old_health_100
 
-mov   ax, 100
-sub   ax, bx
-mov   ah, 5
+;  st_calc_lastcalc = ST_FACESTRIDE * (((100 - health) * ST_NUMPAINFACES) / 101);
+mov   word ptr ds:[_st_calc_oldhealth], ax
+
+neg   ax
+add   ax, 100  ; 100 - health
+
+mov   ah, ST_NUMPAINFACES ; 5
 mul   ah
 mov   dl, 101
 div   dl
-SHIFT_MACRO shl   ax 3
-mov   word ptr ds:[_st_calc_oldhealth], bx
+cbw   ; clear remainder.
+SHIFT_MACRO shl   ax 3 ; * 8   ; ST_FACESTRIDE 
 mov   word ptr ds:[_st_calc_lastcalc], ax
 old_health_100:
 
 mov   ax, word ptr ds:[_st_calc_lastcalc]
 pop   dx
-pop   bx
 ret   
 
 
@@ -205,16 +207,16 @@ cmp   word ptr ds:[_player + PLAYER_T.player_health], ax ; 0
 jne   not_face_10
 mov   cl, 9
 
-mov   word ptr ds:[_st_faceindex], ST_DEADFACE
-mov   word ptr ds:[_st_facecount], 1
-
-jmp   set_face_priority_dec_facecount_and_exit
+mov   al, ST_DEADFACE
+jmp   set_facecount_1_and_face_priority_dec_facecount_and_exit
 
 not_face_10:
 cmp   cl, 9
 jge   not_face_9
 cmp   byte ptr ds:[_player + PLAYER_T.player_bonuscount], al ; 0
 je    not_face_9
+
+; bx/dx known zero
 
 loop_next_wepowned_face:
 
@@ -308,10 +310,9 @@ jne   not_face_6
 mov   cl, 5
 
 call  ST_calcPainOffset_
-mov   word ptr ds:[_st_facecount], 1
 add   al, ST_RAMPAGEOFFSET
 mov   byte ptr ds:[_st_face_lastattackdown], 1
-jmp   set_face_priority_dec_facecount_and_exit
+jmp   set_facecount_1_and_face_priority_dec_facecount_and_exit
 
 
 
@@ -325,35 +326,35 @@ jge   not_face_5
 test  byte ptr ds:[_player + PLAYER_T.player_cheats], CF_GODMODE
 jne   handle_invuln
 cmp   word ptr ds:[_player + PLAYER_T.player_powers + 2 * PW_INVULNERABILITY], ax ; 0
-je    not_face_5
-
-handle_invuln:
-mov   cl, 4
-mov   word ptr ds:[_st_facecount], 1
-mov   ax, ST_GODFACE
-
-jmp   set_face_priority_dec_facecount_and_exit
-
-
+jne   handle_invuln
 
 not_face_5:
 cmp   word ptr ds:[_st_facecount], ax ; 0
 jne   dec_facecount_and_exit
 
 mov   al, byte ptr ds:[_st_randomnumber]
-cwd
 mov   bl, 3
 div   bl
-mov   dl, ah
+mov   dl, ah ; store mod
 call  ST_calcPainOffset_
 mov   word ptr ds:[_st_facecount], ST_STRAIGHTFACECOUNT
-add   ax, dx ; rand mod 3
+add   al, dl ; rand mod 3
 xor   cx, cx
+jmp   set_face_priority_dec_facecount_and_exit
+
+
+handle_invuln:
+mov   cl, 4
+mov   al, ST_GODFACE
+
+set_facecount_1_and_face_priority_dec_facecount_and_exit:
+mov   word ptr ds:[_st_facecount], 1
+
 set_face_priority_dec_facecount_and_exit:
 mov   byte ptr ds:[_st_face_priority], cl
 
 write_face_index_and_finish_face_checks:
-mov   word ptr ds:[_st_faceindex], ax
+mov   byte ptr ds:[_st_faceindex], al
 
 dec_facecount_and_exit:
 dec   word ptr ds:[_st_facecount]
@@ -369,6 +370,12 @@ mul   word ptr ds:[_player + PLAYER_T.player_attackerRef]
 xchg  ax, di
 mov   ax, MOBJPOSLIST_6800_SEGMENT
 mov   es, ax
+
+;   badguyangle.wu = R_PointToAngle2(playerMobj_pos->x,
+;       playerMobj_pos->y,
+;       plyrattacker_pos->x,
+;       plyrattacker_pos->y);
+                
 push  word ptr es:[di + MOBJ_POS_T.mp_y + 2]
 push  word ptr es:[di + MOBJ_POS_T.mp_y + 0]
 push  word ptr es:[di + MOBJ_POS_T.mp_x + 2]
@@ -381,6 +388,7 @@ les   ax, dword ptr es:[si + MOBJ_POS_T.mp_x + 0]
 mov   dx, es
 
 call  R_PointToAngle2_
+xor   bx, bx ; zero bx...
 les   si, dword ptr ds:[_playerMobj_pos]
 cmp   dx, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
 ja    angle_larger
@@ -396,7 +404,8 @@ jne   set_i_0
 test  ax, ax
 jbe   set_i_0
 set_i_1:
-mov   bl, 1
+inc   bx
+set_i_0:
 angle_and_i_set:
 mov   word ptr ds:[_st_facecount], ST_OUCHCOUNT
 call  ST_calcPainOffset_
@@ -405,9 +414,6 @@ jae   do_side_look
 ; head on
 add   al, ST_RAMPAGEOFFSET
 jmp   write_face_index_and_finish_face_checks
-set_i_0:
-xor   bl, bl
-jmp   angle_and_i_set
 angle_smaller:
 neg   dx
 neg   ax
@@ -422,7 +428,7 @@ jbe   set_i_1
 jmp   set_i_0
 
 do_side_look:
-add   al, bl ; 1 or 0.
+add   al, bl ; 1 or 0 for left or right.
 add   al, ST_TURNOFFSET ; 3, so 3 or 4..
 jmp   write_face_index_and_finish_face_checks
 
@@ -556,7 +562,7 @@ PUBLIC  STlib_updateflag_
 cmp   byte ptr ds:[_updatedthisframe], 0
 jne   exit_updateflag
 call  Z_QuickMapStatus_
-mov   byte ptr ds:[_updatedthisframe], 1
+inc   byte ptr ds:[_updatedthisframe]
 exit_updateflag:
 ret   
 
