@@ -1721,7 +1721,7 @@ void __far SB_Shutdown(){
     }
 
 
-    _dos_setvect(IRQ_TO_INTERRUPT_MAP[sb_irq], SB_OldInt);
+    locallib_dos_setvect(IRQ_TO_INTERRUPT_MAP[sb_irq], SB_OldInt);
 
     // SB_CallBack = null;
     // SB_Installed = false;
@@ -1837,13 +1837,13 @@ int16_t __far  SB_InitCard(){
         }
 
 
-        SB_OldInt = _dos_getvect(sb_int);
+        SB_OldInt = locallib_dos_getvect(sb_int);
         if (sb_irq < 8) {
 			// 8 bit logic?
 
-            _dos_setvect(sb_int, SB_ServiceInterrupt);
+            locallib_dos_setvect(sb_int, SB_ServiceInterrupt);
 
-            // I_Error("%i %lx %lx %lx", sb_irq, SB_OldInt, _dos_getvect(sb_int), SB_ServiceInterrupt);
+            // I_Error("%i %lx %lx %lx", sb_irq, SB_OldInt, locallib_dos_getvect(sb_int), SB_ServiceInterrupt);
 
         } else {
 			// 16 bit logic?

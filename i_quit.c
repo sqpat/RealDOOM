@@ -77,8 +77,10 @@ void __interrupt __far_func TS_ServiceScheduleIntEnabled(void);
 
 int16_t __far I_ResetMouse(void);
 
+void __near I_ShutdownTimer(void);
+void __near I_ShutdownKeyboard(void);
 
-
+/*
 void __near I_ShutdownTimer(void) {
 	// set timer to maximum rate
 
@@ -88,7 +90,7 @@ void __near I_ShutdownTimer(void) {
 	outp(0x40, 0x00);
 	_enable();	
 	if (TS_Installed) {
-		_dos_setvect(0x08, OldInt8);
+		locallib_dos_setvect(0x08, OldInt8);
 		// Set Date and Time from CMOS
 		//      RestoreRealTimeClock();
 		TS_Installed = FALSE;
@@ -98,10 +100,11 @@ void __near I_ShutdownTimer(void) {
 
 void __near I_ShutdownKeyboard(void) {
 	if (oldkeyboardisr){
-		_dos_setvect(KEYBOARDINT, oldkeyboardisr);
+		locallib_dos_setvect(KEYBOARDINT, oldkeyboardisr);
 	}
 	*(int16_t __far*)0x41c = *(int16_t __far*)0x41a;      // clear bios key buffer
 }
+*/
  
 
 //

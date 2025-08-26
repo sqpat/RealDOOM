@@ -19,8 +19,8 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN _dos_setvect_:FAR
-EXTRN _dos_getvect_:FAR
+EXTRN locallib_dos_setvect_:NEAR
+EXTRN locallib_dos_getvect_:NEAR
 EXTRN MUS_ServiceRoutine_:NEAR
 
 .DATA
@@ -273,14 +273,13 @@ jmp    no_note
 
 ENDP
 
-
+COMMENT
 
 PROC   TS_Startup_ NEAR
 PUBLIC TS_Startup_
 
 
 push   bx
-push   cx
 push   dx
 mov    al, byte ptr ds:[_TS_Installed]
 test   al, al
@@ -289,17 +288,16 @@ xor    ax, ax
 mov    word ptr ds:[_TaskServiceCount], ax
 mov    byte ptr ds:[_TS_TimesInInterrupt], al
 mov    al, 8
-call   _dos_getvect_
+call   locallib_dos_getvect_
 mov    word ptr ds:[_OldInt8 + 0], ax
 mov    word ptr ds:[_OldInt8 + 2], dx
-mov    bx, OFFSET TS_ServiceScheduleIntEnabled_
-mov    cx, cs
+mov    dx, OFFSET TS_ServiceScheduleIntEnabled_
+mov    bx, cs
 mov    ax, 8
-call   _dos_setvect_
-mov    byte ptr ds:[_TS_Installed], 1
+call   locallib_dos_setvect_
+inc    byte ptr ds:[_TS_Installed]
 exit_ts_startup:
 pop    dx
-pop    cx
 pop    bx
 ret   
 

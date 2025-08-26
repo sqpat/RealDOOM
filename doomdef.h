@@ -469,6 +469,17 @@ uint8_t __near locallib_toupper(uint8_t ch);
 void __near locallib_strupr(char __far *str);
 void __near locallib_strlwr(char __far *str);
 
+
+
+#pragma aux setvectparams \
+                    __parm [al] [bx dx];
+#pragma aux (setvectparams)  locallib_dos_setvect;
+void __near locallib_dos_setvect(uint8_t interruptnumber, void __far*interrupt);
+
+// todo how to declare this as a near func πroperly...?
+void (__interrupt __far * __near locallib_dos_getvect (uint8_t intnum))  (void);
+
+
 // subtract 32 by turning off this bit..
 
 

@@ -127,19 +127,21 @@ void __near I_StartupMouse(void) {
 
 
 void __interrupt I_KeyboardISR(void);
+void __near I_StartupKeyboard(void);
 
 
 //
 // I_StartupKeyboard
 //
-void __near I_StartupKeyboard(void) {
-	int8_t i = 0;
+/*
+*/
+// todo getting rid of this causes a crash?
+void __near I_StartupKeyboard2(void) {
 
 
-	oldkeyboardisr = _dos_getvect(KEYBOARDINT);
-	_dos_setvect(KEYBOARDINT, I_KeyboardISR);
+	oldkeyboardisr = locallib_dos_getvect(KEYBOARDINT);
+	locallib_dos_setvect(KEYBOARDINT, I_KeyboardISR);
 }
-
 
  
 //

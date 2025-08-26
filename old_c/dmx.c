@@ -87,7 +87,7 @@ void __interrupt __far_func TS_ServiceScheduleIntEnabled(void){
 	// only need a 16 bit variable too.
 	if (TaskServiceCount.h.intbits) {
 		TaskServiceCount.h.intbits = 0;
-		_chain_intr(OldInt8);
+		_chain_intr(OldInt9);
 	}
 
 	outp(0x20, 0x20); // Acknowledge interrupt
@@ -157,8 +157,8 @@ void __near TS_Startup(void){
 		TaskServiceCount.w = 0;
 		TS_TimesInInterrupt = 0;
 
-		OldInt8 = _dos_getvect(0x08);
-		_dos_setvect(0x08, TS_ServiceScheduleIntEnabled);
+		OldInt8 = locallib_dos_getvect(0x08);
+		locallib_dos_setvect(0x08, TS_ServiceScheduleIntEnabled);
 		TS_Installed = true;
 	}
 

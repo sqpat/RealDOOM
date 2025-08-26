@@ -432,7 +432,7 @@ void __near I_FinishUpdate(void);
 
 void __near D_Display (void) {
 	int16_t                         y;
-    boolean                     wipe;
+    boolean                     wipe = false;
     boolean                     redrawsbar;
 	void (__far* WI_Drawer)() = 										 		  ((void    (__far *)())     							(MK_FP(wianim_codespace_segment, 		 WI_DrawerOffset)));
 	void (__far* F_Drawer)() = 											  		  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 F_DrawerOffset)));
@@ -456,6 +456,7 @@ void __near D_Display (void) {
 
 
 #ifndef SKIPWIPE
+	wipe = false;
 
     // save the current screen if about to wipe
     if (gamestate != wipegamestate) {

@@ -89,6 +89,9 @@ EXTRN _mousebstrafe:BYTE
 EXTRN _mousebforward:BYTE
 EXTRN _numChannels:BYTE
 EXTRN ___iob:WORD
+EXTRN _oldkeyboardisr:DWORD
+EXTRN _OldInt8:DWORD
+EXTRN _TS_Installed:BYTE
 
 
 .CODE
@@ -2505,6 +2508,7 @@ pop    es
 stosb
 
 ret
+ENDP
 
 PROC   locallib_putchar_ NEAR
 PUBLIC locallib_putchar_ 
@@ -3020,6 +3024,112 @@ pop     bx
 
 ret
 ENDP
+
+
+PROC    locallib_dos_getvect_ NEAR
+PUBLIC  locallib_dos_getvect_
+
+push  bx
+mov   ah, 035h
+int   021h
+xchg  ax, bx
+pop   bx
+mov   dx, es   ; todo get rid of this
+ret
+
+ENDP
+
+;	AH = 25h
+;	AL = interrupt number
+;	DS:DX = pointer to interrupt handler
+
+; params are ax, bx:dx, 
+PROC    locallib_dos_setvect_ NEAR
+PUBLIC  locallib_dos_setvect_
+
+push  ds
+mov   ds, bx
+mov   ah, 025h
+int   021h
+pop   ds
+ret
+
+ENDP
+
+KEYBOARDINT = 9
+
+PROC    I_StartupKeyboard_ NEAR
+PUBLIC  I_StartupKeyboard_
+
+push  bx
+push  dx
+mov   al, KEYBOARDINT
+call  locallib_dos_getvect_
+mov   word ptr ds:[_oldkeyboardisr + 0], ax
+mov   word ptr ds:[_oldkeyboardisr + 2], es  
+mov   al, KEYBOARDINT
+mov   bx, cs
+mov   dx, OFFSET I_KeyboardISR_
+call  locallib_dos_setvect_
+pop   dx
+pop   bx
+ret
+
+ENDP
+
+
+
+PROC    I_ShutdownTimer_ NEAR
+PUBLIC  I_ShutdownTimer_
+
+cli
+mov   al, 036h
+out   043h, al
+xor   ax, ax
+out   040h, al
+out   040h, al
+sti
+cmp   byte ptr ds:[_TS_Installed], al ; 0 
+je    exit_shutdown_timer
+push  bx
+push  dx
+les   dx, dword ptr ds:[_OldInt8]
+mov   bx, es
+mov   byte ptr ds:[_TS_Installed], al ; 0 
+mov   al, 8
+call  locallib_dos_setvect_
+pop   dx
+pop   bx
+exit_shutdown_timer:
+ret
+
+ENDP
+
+PROC    I_ShutdownKeyboard_ NEAR
+PUBLIC  I_ShutdownKeyboard_
+
+xor   ax, ax
+cmp   word ptr ds:[_oldkeyboardisr], ax
+je    exit_shutdown_keyboard
+push  bx
+push  dx
+les   dx, dword ptr ds:[_oldkeyboardisr]
+mov   bx, es
+mov   byte ptr ds:[_oldkeyboardisr], al ; 0 
+mov   al, KEYBOARDINT
+call  locallib_dos_setvect_
+pop   dx
+pop   bx
+exit_shutdown_keyboard:
+xor   ax, ax
+mov   es, ax
+push  word ptr es:[041Ah]
+pop   word ptr es:[041Ch]
+ret
+
+ENDP
+
+
 
 
 
