@@ -1223,7 +1223,15 @@ not_choppers:
 mov   dx, cx
 mov   al, CHEATID_MAPPOS
 call  cht_CheckCheat_
-jc    do_mappos_cheat
+jnc   done_checking_main_cheats
+
+do_mappos_cheat:
+; set flag for deferred calculation
+
+mov   byte ptr ds:[_domapcheatthisframe], 1
+
+
+
 
 
 done_checking_main_cheats:
@@ -1306,82 +1314,107 @@ xor   ah, ah
 call  G_DeferedInitNew_
 jmp   exit_st_responder_return
 
-do_mappos_cheat:
-
-; todo. this
-
-lea   cx, [bp - 014h]
-les   si, dword ptr ds:[_playerMobj_pos]
-mov   bx, 1
-mov   ax, word ptr es:[si + MOBJ_POS_T.mp_angle + 0]
-mov   dx, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
-call  locallib_printhex_
-lea   dx, [bp - 014h]
-mov   bx, OFFSET _st_mapcheat_string1
-mov   ax, OFFSET _st_stuff_buf
-push  ds
-mov   cx, cs
-push  dx
-mov   dx, ds
-call  combine_strings_
-mov   bx, OFFSET _st_stuff_buf
-push  cs
-mov   cx, ds
-mov   dx, ds
-push  OFFSET _st_mapcheat_string2
-mov   ax, bx
-call  combine_strings_
-les   bx, dword ptr ds:[_playerMobj_pos]
-lea   cx, [bp - 014h]
-mov   ax, word ptr es:[bx]
-mov   dx, word ptr es:[bx + 2]
-mov   bx, 1
-call  locallib_printhex_
-lea   dx, [bp - 014h]
-mov   bx, OFFSET _st_stuff_buf
-push  ds
-mov   cx, ds
-push  dx
-mov   ax, bx
-mov   dx, ds
-call  combine_strings_
-mov   bx, OFFSET _st_stuff_buf
-push  cs
-mov   cx, ds
-mov   dx, ds
-push  OFFSET _st_mapcheat_string3
-mov   ax, bx
-call  combine_strings_
-lea   cx, [bp - 014h]
-mov   bx, si
-mov   si, word ptr ds:[si]
-mov   es, word ptr ds:[bx + 2]
-mov   bx, 1
-mov   ax, word ptr es:[si + 4]
-mov   dx, word ptr es:[si + 6]
-call  locallib_printhex_
-lea   dx, [bp - 014h]
-mov   bx, OFFSET _st_stuff_buf
-push  ds
-mov   cx, ds
-push  dx
-mov   ax, bx
-mov   dx, ds
-call  combine_strings_
-mov   bx, OFFSET _st_stuff_buf
-push  cs
-mov   cx, ds
-mov   dx, ds
-push  OFFSET _st_mapcheat_string4
-mov   ax, bx
-call  combine_strings_
-
-mov   word ptr ds:[_player + PLAYER_T.player_messagestring], OFFSET _st_stuff_buf
-jmp   done_checking_main_cheats
 
 
 ENDP
 
+PROC    ST_PrepareMapPosCheat_ NEAR
+PUBLIC  ST_PrepareMapPosCheat_
+; st_responder up above does not playermobjpos in memory. deferred calculation...
+
+PUSHA_NO_AX_OR_BP_MACRO
+push  bp
+mov   bp, sp
+sub   sp, 0Ah
+
+mov   di, sp
+
+mov   si, OFFSET _st_stuff_buf
+les   bx, dword ptr ds:[_playerMobj_pos]
+
+les   ax, dword ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
+mov   dx, es
+mov   cx, 1 ; isLong
+mov   bx, di
+call  locallib_printhex_
+
+push  ss
+push  di
+mov   cx, cs
+mov   bx, OFFSET _st_mapcheat_string1
+mov   dx, ds
+mov   ax, si
+call  combine_strings_
+
+push  cs
+mov   ax, OFFSET _st_mapcheat_string2
+push  ax
+
+mov   cx, ds
+mov   bx, si
+mov   dx, ds
+mov   ax, si
+call  combine_strings_
+
+les   bx, dword ptr ds:[_playerMobj_pos]
+les   ax, dword ptr es:[bx + MOBJ_POS_T.mp_x + 0]
+mov   dx, es
+mov   cx, 1 ; isLong
+mov   bx, di
+call  locallib_printhex_
+
+push  ss
+push  di
+mov   cx, ds
+mov   bx, si
+mov   dx, ds
+mov   ax, si
+call  combine_strings_
+
+push  cs
+mov   ax, OFFSET _st_mapcheat_string3
+push  ax
+
+mov   cx, ds
+mov   bx, si
+mov   dx, ds
+mov   ax, si
+call  combine_strings_
+
+les   bx, dword ptr ds:[_playerMobj_pos]
+les   ax, dword ptr es:[bx + MOBJ_POS_T.mp_y + 0]
+mov   dx, es
+mov   cx, 1 ; isLong
+mov   bx, di
+call  locallib_printhex_
+
+push  ss
+push  di
+mov   cx, ds
+mov   bx, si
+mov   dx, ds
+mov   ax, si
+call  combine_strings_
+
+push  cs
+mov   ax, OFFSET _st_mapcheat_string4  ; todo smart push ax macro for push immediate?
+push  ax
+
+mov   cx, ds
+mov   bx, si
+mov   dx, ds
+xchg  ax, si
+mov   word ptr ds:[_player + PLAYER_T.player_messagestring], ax ; 
+
+call  combine_strings_
+mov   byte ptr ds:[_domapcheatthisframe], 0
+
+LEAVE_MACRO
+POPA_NO_AX_OR_BP_MACRO
+ret
+
+
+ENDP
 
 PROC    ST_Drawer_ NEAR
 PUBLIC  ST_Drawer_

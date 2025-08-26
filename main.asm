@@ -2497,6 +2497,15 @@ ret_zero:
 ret
 ENDP
 
+PROC   locallib_putchar_check_di NEAR
+test   di, di
+je     locallib_putchar_
+push   ds
+pop    es
+stosb
+
+ret
+
 PROC   locallib_putchar_ NEAR
 PUBLIC locallib_putchar_ 
 
@@ -2540,7 +2549,9 @@ PUBLIC locallib_printhex_
 ;void __far locallib_printhex (uint32_t number, boolean islong){
 ; number to print in ax:dx.   islong boolean in cx 
 
-push  bx
+; if bx nonzero then print to it.
+push  di
+mov   di, bx
 
 test  cl, cl
 mov   cx, 7
@@ -2579,7 +2590,7 @@ call  locallib_createhexnibble_
 test  al, al
 je    skip_print_hex_digit
 
-call  locallib_putchar_
+call  locallib_putchar_check_di
 
 skip_print_hex_digit:
 iter_next_hex_digit:
@@ -2597,9 +2608,9 @@ pop   ax  ; recover initial digit
 mov   al, 010h
 and   al, 0Fh
 call  locallib_createhexnibble_
-call  locallib_putchar_
+call  locallib_putchar_check_di
 
-pop   bx
+pop   di
 
 ret
 ENDP
@@ -2929,7 +2940,10 @@ lodsw
 do_hex_call:
 
 xchg  bx, si   ; put string ptr back
+push  bx
+xor   bx, bx
 call  locallib_printhex_   ; pass is-long in cx
+pop   bx
 jmp   loop_next_arg_and_reset_params
 
 do_int:

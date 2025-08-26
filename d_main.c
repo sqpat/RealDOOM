@@ -101,7 +101,7 @@ void __near D_PostEvent (event_t __far* ev) {
 
 
 boolean __near G_Responder (event_t __far* ev);
-
+void    __near ST_PrepareMapPosCheat();
 //
 // D_ProcessEvents
 // Send all the events of the given timestamp down the responder chain
@@ -123,7 +123,9 @@ void __near D_ProcessEvents (void) {
 		}
 
 		Z_QuickMapByTaskNum(oldtask);
-
+		if (domapcheatthisframe){
+			ST_PrepareMapPosCheat();
+		}
 	}
 }
 

@@ -592,6 +592,8 @@ _viewactivestate =	 	     	     _NULL_OFFSET + 00ABEh
 _menuactivestate =	 	     	     _NULL_OFFSET + 00ABFh
 _fopen_wb_argument =	 	     	 _NULL_OFFSET + 00AC0h
 
+_domapcheatthisframe =				 _NULL_OFFSET + 00AC3h
+
 _flatcache_nodes =				     _NULL_OFFSET + 00AD0h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))

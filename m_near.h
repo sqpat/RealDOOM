@@ -658,6 +658,7 @@
 #define viewactivestate   			      (*((boolean __near*)               (_NULL_OFFSET + 0x0ABE)))
 #define menuactivestate   			      (*((boolean __near*)               (_NULL_OFFSET + 0x0ABF)))
 #define fopen_wb_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x0AC0))
+#define domapcheatthisframe 		      (*((boolean __near*)               (_NULL_OFFSET + 0x0AC3)))
 
 
 
