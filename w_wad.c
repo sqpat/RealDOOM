@@ -149,7 +149,7 @@ void _fmemmove(char __far *dest, const void __far *src, size_t size);
 //
 
 
-int16_t __near W_CheckNumForName (int8_t* __far name) {
+int16_t __near W_CheckNumForName (int8_t __far* name) {
     union {
 		int8_t    s[9];
 		int16_t     x[4];
@@ -224,7 +224,8 @@ int16_t __near W_CheckNumForName (int8_t* __far name) {
 // W_GetNumForName
 // Calls W_CheckNumForName, but bombs out if not found.
 //
-int16_t __far W_GetNumForName(int8_t* __far name) {
+int16_t __far W_GetNumForName(int8_t __far* name) {
+
 	int16_t i;
 
     i = W_CheckNumForName (name);
@@ -340,6 +341,10 @@ void __far W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t si
  
 
 void __far W_CacheLumpNameDirect (int8_t* name, byte __far* dest ) {
+	W_ReadLump(W_GetNumForName(name), dest, 0, 0);
+}
+
+void __far W_CacheLumpNameDirectFarString (int8_t __far* name, byte __far* dest ) {
 	W_ReadLump(W_GetNumForName(name), dest, 0, 0);
 }
 

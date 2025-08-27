@@ -1167,7 +1167,7 @@ R_PointToAngle(y, x);
 		D_RedrawTitle(title);
 	}
 
-	getStringByIndex(M_INIT_TEXT, textbuffer);
+	getStringByIndex(M_INIT_TEXT_STR, textbuffer);
 	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
 	#endif
@@ -1180,7 +1180,7 @@ R_PointToAngle(y, x);
 
 
 #if DEBUG_PRINTING
-	getStringByIndex(R_INIT_TEXT, textbuffer);
+	getStringByIndex(R_INIT_TEXT_STR, textbuffer);
 	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
 #endif
@@ -1189,7 +1189,7 @@ R_PointToAngle(y, x);
 
 
 #if DEBUG_PRINTING
-	getStringByIndex(P_INIT_TEXT, textbuffer);
+	getStringByIndex(P_INIT_TEXT_STR, textbuffer);
 	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
 #endif
@@ -1197,7 +1197,7 @@ R_PointToAngle(y, x);
 
 
 #if DEBUG_PRINTING
-	getStringByIndex(I_INIT_TEXT, textbuffer);
+	getStringByIndex(I_INIT_TEXT_STR, textbuffer);
 	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
 #endif
@@ -1212,14 +1212,14 @@ R_PointToAngle(y, x);
 	S_Init();
 
 #if DEBUG_PRINTING
-	getStringByIndex(HU_INIT_TEXT, textbuffer);
+	getStringByIndex(HU_INIT_TEXT_STR, textbuffer);
 	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
 #endif
 	HU_Init();
 
 #if DEBUG_PRINTING
-	getStringByIndex(ST_INIT_TEXT, textbuffer);
+	getStringByIndex(ST_INIT_TEXT_STR, textbuffer);
 	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
 #endif

@@ -321,13 +321,13 @@ int16_t getStringLength(int16_t stringindex);
 #define VERSION_REGISTERED	294
 #define VERSION_SHAREWARE	295
 #define VERSION_COMMERCIAL	296
-#define M_INIT_TEXT			297
-#define R_INIT_TEXT			298
-#define P_INIT_TEXT			299
-#define I_INIT_TEXT			300
+#define M_INIT_TEXT_STR			297
+#define R_INIT_TEXT_STR			298
+#define P_INIT_TEXT_STR			299
+#define I_INIT_TEXT_STR			300
 #define S_INIT_STRING_TEXT	301
-#define HU_INIT_TEXT		302
-#define ST_INIT_TEXT		303
+#define HU_INIT_TEXT_STR		302
+#define ST_INIT_TEXT_STR		303
 #define DETAILPOTATO	    304
 #define QLQLPROMPTEND        305
 

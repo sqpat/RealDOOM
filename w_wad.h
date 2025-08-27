@@ -64,15 +64,17 @@ typedef struct {
 //#define lumpinfo4000 ((lumpinfo_t __far*) 0x44000000)
 
 
-int16_t	__near W_CheckNumForName (int8_t* __far name);
-int16_t	__far W_GetNumForName(int8_t* __farname);
+int16_t	__near W_CheckNumForName (int8_t __far* name);
+int16_t	__far W_GetNumForName(int8_t __far* name);
 
 int32_t	__far W_LumpLength (int16_t lump);
 
 
 void __far W_CacheLumpNumDirectFragment(int16_t lump, byte __far* dest, int32_t offset);
 
-void __far W_CacheLumpNameDirect(int8_t* name, byte __far* dest);
+void __far W_CacheLumpNameDirect(int8_t __near* name, byte __far* dest);
+void __far W_CacheLumpNameDirectFarString (int8_t __far* name, byte __far* dest );
+
 void __far W_CacheLumpNumDirect(int16_t lump, byte __far* dest);
 void __far W_CacheLumpNumDirectWithOffset (int16_t lump, byte __far* dest, uint16_t offset, uint16_t length);
 
