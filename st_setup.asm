@@ -26,16 +26,7 @@ EXTRN I_SetPalette_:FAR
 
 
 
-EXTRN _tallpercent:BYTE
 
-EXTRN _armsbgarray:BYTE
-
-
-
-EXTRN _arms:BYTE
-EXTRN _faces:BYTE
-EXTRN _keys:BYTE
-EXTRN _keyboxes:BYTE
 
 EXTRN _w_ammo:BYTE
 EXTRN _w_arms:BYTE
@@ -49,6 +40,15 @@ EXTRN _w_ready:BYTE
 
 
 .CODE
+
+EXTRN _tallpercent:BYTE
+EXTRN _armsbgarray:BYTE
+EXTRN _arms:BYTE
+EXTRN _faces:BYTE
+EXTRN _keys:BYTE
+EXTRN _keyboxes:BYTE
+EXTRN _shortnum:BYTE
+EXTRN _tallnum:BYTE
 
 EXTRN _st_palette:BYTE
 EXTRN _st_faceindex:BYTE
@@ -193,19 +193,19 @@ neg   ax
 mov   byte ptr cs:[_st_palette], al   ; -1
 mov   word ptr cs:[_st_oldhealth], ax ; -1
 
-push  ds
+push  cs
 pop   es
 mov   di, OFFSET _keyboxes
-stosw ; mov   word ptr ds:[_keyboxes + 0], ax  ; -1
-stosw ; mov   word ptr ds:[_keyboxes + 2], ax  ; -1
-stosw ; mov   word ptr ds:[_keyboxes + 4], ax  ; -1
+stosw ; mov   word ptr cs:[_keyboxes + 0], ax  ; -1
+stosw ; mov   word ptr cs:[_keyboxes + 2], ax  ; -1
+stosw ; mov   word ptr cs:[_keyboxes + 4], ax  ; -1
 
 inc   ax ; 0
 mov   word ptr cs:[_st_faceindex], ax ; 0
 mov   byte ptr cs:[_st_stopped], al   ; 0
 
-push  cs
-pop   es
+;push  cs
+;pop   es
 
 
 mov   si, OFFSET _player + PLAYER_T.player_weaponowned

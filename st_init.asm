@@ -21,7 +21,7 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN W_LumpLength_:FAR
-EXTRN W_GetNumForName_:FAR
+EXTRN W_GetNumForNameFarString_:FAR
 EXTRN W_CacheLumpNameDirectFarString_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
 EXTRN Z_QuickMapPalette_:FAR
@@ -34,37 +34,18 @@ EXTRN Z_QuickMapStatus_:FAR
 .DATA
 
 
-EXTRN _P_GivePower:DWORD
 
-
-EXTRN _tallpercent:BYTE
-
-EXTRN _armsbgarray:BYTE
-
-;todo move to cs
+.CODE
 EXTRN _arms:BYTE
 EXTRN _armsbg:BYTE
 EXTRN _armsbgarray:BYTE
 EXTRN _faces:BYTE
 EXTRN _keys:BYTE
-EXTRN _keyboxes:BYTE
-
-
-EXTRN _w_ammo:BYTE
-EXTRN _w_arms:BYTE
-EXTRN _w_armsbg:BYTE
-EXTRN _w_armor:BYTE
-EXTRN _w_health:BYTE
-EXTRN _w_faces:BYTE
-EXTRN _w_keyboxes:BYTE
-EXTRN _w_maxammo:BYTE
-EXTRN _w_ready:BYTE
+EXTRN _shortnum:BYTE
+EXTRN _tallnum:BYTE
 EXTRN _sbar:WORD
 EXTRN _faceback:WORD
-
-
-.CODE
-
+EXTRN _tallpercent:BYTE
 
 
 
@@ -119,7 +100,7 @@ PROC    ST_load_and_rundownoffset_ NEAR
 
 mov   dx, cs
 push  ax
-call  W_GetNumForName_
+call  W_GetNumForNameFarString_
 call  W_LumpLength_
 sub   si, ax
 pop   ax
@@ -172,12 +153,12 @@ mov   ax, OFFSET st_init_str_1
 call  ST_load_and_rundownoffset_
 
 
-mov   word ptr ds:[di + _tallnum], si
+mov   word ptr cs:[di + _tallnum], si
 
 
 mov   ax, OFFSET st_init_str_2
 call  ST_load_and_rundownoffset_
-mov   word ptr ds:[di + _shortnum], si
+mov   word ptr cs:[di + _shortnum], si
 
 inc   byte ptr cs:[st_init_str_1 + 6]
 inc   byte ptr cs:[st_init_str_2 + 7]
@@ -190,7 +171,7 @@ jl    loop_load_next_num_graphics
 
 mov   ax, OFFSET st_init_str_11
 call  ST_load_and_rundownoffset_
-mov   word ptr ds:[_tallpercent], si
+mov   word ptr cs:[_tallpercent], si
 
 
 
@@ -200,7 +181,7 @@ loop_load_next_key_graphics:
 
 mov   ax, OFFSET st_init_str_3
 call  ST_load_and_rundownoffset_
-mov   word ptr ds:[di + _keys], si
+mov   word ptr cs:[di + _keys], si
 
 inc   byte ptr cs:[st_init_str_3 + 6]
 
@@ -212,9 +193,9 @@ jl    loop_load_next_key_graphics
 
 mov   ax, OFFSET st_init_str_12
 call  ST_load_and_rundownoffset_
-mov   word ptr ds:[_armsbg], si
+mov   word ptr cs:[_armsbg], si
 
-mov   word ptr ds:[_armsbgarray], si
+mov   word ptr cs:[_armsbgarray], si
 
 
 xor   di, di  ; offset for writes
@@ -222,12 +203,12 @@ loop_load_next_arms_graphics:
 
 mov   ax, OFFSET st_init_str_4
 call  ST_load_and_rundownoffset_
-mov   word ptr ds:[di + _arms], si
+mov   word ptr cs:[di + _arms], si
 
 mov   bx, di
 sar   bx, 1
-push  word ptr ds:[bx + _shortnum + 4]
-pop   word ptr ds:[di + _arms + 2]
+push  word ptr cs:[bx + _shortnum + 4]
+pop   word ptr cs:[di + _arms + 2]
 
 
 inc   byte ptr cs:[st_init_str_4 + 6]
@@ -239,11 +220,11 @@ jl    loop_load_next_arms_graphics
 
 mov   ax, OFFSET st_init_str_13
 call  ST_load_and_rundownoffset_
-mov   word ptr ds:[_faceback], si
+mov   word ptr cs:[_faceback], si
 
 mov   ax, OFFSET st_init_str_14
 call  ST_load_and_rundownoffset_
-mov   word ptr ds:[_sbar], si
+mov   word ptr cs:[_sbar], si
 
 ;facenum
 xor   di, di
@@ -253,7 +234,7 @@ loop_next_pain_state:
     loop_next_straight_face:
     mov   ax, OFFSET st_init_str_5
     call  ST_load_and_rundownoffset_
-    mov   word ptr ds:[di + _faces], si
+    mov   word ptr cs:[di + _faces], si
 
     
     inc   byte ptr cs:[st_init_str_5 + 6]
@@ -269,32 +250,32 @@ inc   byte ptr cs:[st_init_str_5 + 5]
 
 mov   ax, OFFSET st_init_str_6
 call  ST_load_and_rundownoffset_
-mov   word ptr ds:[di + _faces], si
+mov   word ptr cs:[di + _faces], si
 inc   di
 inc   di
 
 mov   ax, OFFSET st_init_str_7
 call  ST_load_and_rundownoffset_
-mov   word ptr ds:[di + _faces], si
+mov   word ptr cs:[di + _faces], si
 inc   di
 inc   di
 
 mov   ax, OFFSET st_init_str_8
 call  ST_load_and_rundownoffset_
-mov   word ptr ds:[di + _faces], si
+mov   word ptr cs:[di + _faces], si
 inc   di
 inc   di
 
 mov   ax, OFFSET st_init_str_9
 call  ST_load_and_rundownoffset_
-mov   word ptr ds:[di + _faces], si
+mov   word ptr cs:[di + _faces], si
 inc   di
 inc   di
 
 
 mov   ax, OFFSET st_init_str_10
 call  ST_load_and_rundownoffset_
-mov   word ptr ds:[di + _faces], si
+mov   word ptr cs:[di + _faces], si
 inc   di
 inc   di
 
@@ -304,17 +285,17 @@ inc   byte ptr cs:[st_init_str_8 + 7]
 inc   byte ptr cs:[st_init_str_9 + 6]
 inc   byte ptr cs:[st_init_str_10 + 7]
 cmp   di, ((ST_NUMFACES - 2) * 2)
-jl    loop_next_pain_state
+jl    jump_to_loop_next_pain_state
     
 mov   ax, OFFSET st_init_str_15
 call  ST_load_and_rundownoffset_
-mov   word ptr ds:[di + _faces], si
+mov   word ptr cs:[di + _faces], si
 inc   di
 inc   di
 
 mov   ax, OFFSET st_init_str_16
 call  ST_load_and_rundownoffset_
-mov   word ptr ds:[di + _faces], si
+mov   word ptr cs:[di + _faces], si
 
 call  Z_QuickMapPhysics_
 
@@ -323,6 +304,9 @@ POPA_NO_AX_MACRO
 ret
 
 ENDP
+
+jump_to_loop_next_pain_state:
+jmp   loop_next_pain_state
 
 
 PROC    ST_INIT_ENDMARKER_ NEAR

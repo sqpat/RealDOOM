@@ -1034,7 +1034,6 @@ void __near Z_FreeConventionalAllocations() {
 	fps_last_measure_start_tic = gametic;
 #endif
 
-	skytextureloaded = 0;
 
 	// put these all next to each other for a single memset..
 

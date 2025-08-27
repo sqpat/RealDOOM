@@ -474,9 +474,9 @@
 #define I_Quit_addr						  (*((uint32_t __near*)              (_NULL_OFFSET + 0x04CC)))
 
 // 10 ints
-#define tallnum                           ((uint16_t __near *)               (_NULL_OFFSET + 0x04D0))
+// #define tallnum                           ((uint16_t __near *)               (_NULL_OFFSET + 0x04D0))
 // 10 ints
-#define shortnum                          ((uint16_t __near *)               (_NULL_OFFSET + 0x04E4))
+// #define shortnum                          ((uint16_t __near *)               (_NULL_OFFSET + 0x04E4))
 // 20 bytes
 #define am_buffer                         ((int8_t __near *)                 (_NULL_OFFSET + 0x04F8))
 
@@ -752,14 +752,6 @@ extern uint16_t             cachedrenderplayertics;
 extern int8_t		        eventhead;
 extern int8_t		        eventtail;
 
-
-
-
-
-
-
-extern int8_t               skytextureloaded;
-
 extern uint16_t			    skytexture;
 
 extern int16_t              numflats;
@@ -989,14 +981,6 @@ extern boolean         secretexit;
 
 
 
-
-extern uint16_t 		tallpercent;
-extern uint16_t			faceback;
-extern uint16_t			sbar;
-extern uint16_t			armsbg;
-extern uint16_t         keys[NUMCARDS];
-extern uint16_t         faces[ST_NUMFACES];
-extern uint16_t 		arms[6][2];
 extern st_number_t      w_ready;
 extern st_percent_t     w_health;
 extern st_multicon_t     w_armsbg;
@@ -1006,7 +990,6 @@ extern st_multicon_t    w_keyboxes[3];
 extern st_percent_t     w_armor;
 extern st_number_t      w_ammo[4];
 extern st_number_t      w_maxammo[4]; 
-extern int16_t      keyboxes[3];
 
 
 // Now what?
@@ -1069,8 +1052,6 @@ extern volatile int8_t TS_InInterrupt;
  
 
  
-
-extern uint16_t armsbgarray[1];
 
 
 

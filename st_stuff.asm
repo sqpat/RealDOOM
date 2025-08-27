@@ -49,16 +49,10 @@ EXTRN M_Random_:NEAR
 EXTRN _P_GivePower:DWORD
 
 
-EXTRN _tallpercent:BYTE
 
-EXTRN _armsbgarray:BYTE
 
 ;todo move to cs
 EXTRN _st_stuff_buf:BYTE
-EXTRN _arms:BYTE
-EXTRN _faces:BYTE
-EXTRN _keys:BYTE
-EXTRN _keyboxes:BYTE
 
 
 EXTRN _w_ammo:BYTE
@@ -70,7 +64,7 @@ EXTRN _w_faces:BYTE
 EXTRN _w_keyboxes:BYTE
 EXTRN _w_maxammo:BYTE
 EXTRN _w_ready:BYTE
-EXTRN _sbar:WORD
+
 
 
 .CODE
@@ -96,6 +90,32 @@ _st_oldhealth:
 dw 0
 _st_faceindex:
 dw 0
+
+_shortnum:
+dw 10 DUP(0)
+_tallnum:
+dw 10 DUP(0)
+_arms:
+dw 12 DUP(0)
+_tallpercent:
+dw 0
+_sbar:
+dw 0
+_faceback:
+dw 0
+_armsbg:
+dw 0
+_armsbgarray:
+dw 0
+_faces:
+dw ST_NUMFACES DUP(0)
+_keys:
+dw NUMCARDS DUP(0)
+_keyboxes:
+dw 0, 0, 0
+
+
+
 
 _st_mapcheat_string1:
 db "ang=0x", 0
@@ -124,9 +144,8 @@ _updatedthisframe:
 db 0
 
 _oldweaponsowned:
-REPT NUMWEAPONS
-    db 0
-endm
+db NUMWEAPONS DUP(0)
+
 
 
 
@@ -135,7 +154,17 @@ PUBLIC _st_oldhealth
 PUBLIC _st_faceindex
 PUBLIC _oldweaponsowned
 PUBLIC _st_stopped
-
+PUBLIC _tallpercent
+PUBLIC _armsbgarray
+PUBLIC _arms
+PUBLIC _armsbg
+PUBLIC _faces
+PUBLIC _keys
+PUBLIC _keyboxes
+PUBLIC _shortnum
+PUBLIC _tallnum
+PUBLIC _faceback
+PUBLIC _sbar
 PUBLIC _st_statusbaron
 
 
@@ -155,7 +184,7 @@ je    exit_st_refresh_background
 mov   dx, ST_GRAPHICS_SEGMENT
 push  dx
 mov   bx, 4
-push  word ptr ds:[_sbar]
+push  word ptr cs:[_sbar]
 ; ax already 0
 cwd
 mov   cx, ST_HEIGHT
@@ -476,7 +505,7 @@ PUBLIC  ST_updateWidgets_
 push  di
 push  si
 
-push  ds
+push  cs
 pop   es
 mov   si, OFFSET _player + PLAYER_T.player_cards
 mov   di, OFFSET _keyboxes
@@ -649,7 +678,7 @@ mov   di, word ptr  ds:[si + ST_MULTIICON_T.st_multicon_patch_offset] ; mi->patc
 
 sal   cx, 1     ; word lookup
 add   di, cx    ; mi->patch_offset[mi->oldinum]
-mov   di, word ptr  ds:[di] ; es:di is patch
+mov   di, word ptr  cs:[di] ; es:di is patch
 
 
 sub   ax, word ptr es:[di + PATCH_T.patch_leftoffset]
@@ -713,7 +742,7 @@ add   si, ax    ; patch_offset[0] + inum-is_binicon lookup
 
 mov   ax, ST_GRAPHICS_SEGMENT
 push  ax
-push  word ptr ds:[si]
+push  word ptr cs:[si]
 
 xor   ax, ax
 xchg  ax, bx    ; ax gets x. bx gets FG == 0
@@ -748,7 +777,7 @@ call  STlib_updateflag_
 mov   ax, ST_GRAPHICS_SEGMENT
 mov   es, ax
 mov   di, word ptr ds:[si + ST_NUMBER_T.st_number_patch_offset]
-mov   di, word ptr ds:[di] ; offset 0
+mov   di, word ptr cs:[di] ; offset 0
 les   bx, dword ptr es:[di + PATCH_T.patch_width]
 
 ; bx has width, es has height for now
@@ -842,7 +871,7 @@ xchg  ax, di  ; di gets result / 10. ax gets its value back
 pop   dx  ; restore dx for call
 sal   bx, 1   ; word lookup
 
-push  word ptr ds:[si+bx]
+push  word ptr cs:[si+bx]
 xor   bx, bx ; FG
 
 call  V_DrawPatch_
@@ -862,7 +891,7 @@ draw_zero:
 mov   bx, ST_GRAPHICS_SEGMENT
 push  bx
 xor   bx, bx
-push  word ptr ds:[si]
+push  word ptr cs:[si]
 sub   ax, cx
 call  V_DrawPatch_
 jmp   exit_stlib_drawnum
@@ -893,7 +922,7 @@ push  ax
 les   ax, dword ptr ds:[si + ST_NUMBER_T.st_number_x]
 mov   dx, es
 mov   si, word ptr ds:[si + ST_PERCENT_T.st_percent_patch_offset]
-push  word ptr ds:[si]
+push  word ptr cs:[si]
 xor   bx, bx
 call  V_DrawPatch_
 
@@ -1010,7 +1039,7 @@ mov   cx, 3
 ;            STlib_updateMultIcon(&w_keyboxes[i], keyboxes[i], false);
 
 update_next_keybox:
-lodsw
+lods  word ptr cs:[si]
 xchg  ax, dx
 mov   ax, di
 xor   bx, bx

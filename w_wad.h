@@ -65,7 +65,8 @@ typedef struct {
 
 
 int16_t	__near W_CheckNumForName (int8_t __far* name);
-int16_t	__far W_GetNumForName(int8_t __far* name);
+int16_t	__far W_GetNumForNameFarString(int8_t __far* name);
+int16_t __far W_GetNumForName(int8_t __near* name);
 
 int32_t	__far W_LumpLength (int16_t lump);
 

@@ -424,8 +424,8 @@ _snd_SBport =                        _NULL_OFFSET + 004C8h
 _snd_Mport =                         _NULL_OFFSET + 004CAh
 _I_Quit_addr = 			             _NULL_OFFSET + 004CCh
 
-_tallnum =              			 _NULL_OFFSET + 004D0h
-_shortnum =              			 _NULL_OFFSET + 004E4h
+;_tallnum =              			 _NULL_OFFSET + 004D0h
+;_shortnum =              			 _NULL_OFFSET + 004E4h
 _am_buffer =             			 _NULL_OFFSET + 004F8h
 
 _Z_SetOverlay_addr =                 _NULL_OFFSET + 0050Ch

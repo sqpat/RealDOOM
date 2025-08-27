@@ -224,7 +224,13 @@ int16_t __near W_CheckNumForName (int8_t __far* name) {
 // W_GetNumForName
 // Calls W_CheckNumForName, but bombs out if not found.
 //
-int16_t __far W_GetNumForName(int8_t __far* name) {
+
+// todo clean this up...
+int16_t __far W_GetNumForName(int8_t __near* name) {
+	return W_GetNumForNameFarString(name);
+}
+
+int16_t __far W_GetNumForNameFarString(int8_t __far* name) {
 
 	int16_t i;
 
@@ -345,7 +351,7 @@ void __far W_CacheLumpNameDirect (int8_t* name, byte __far* dest ) {
 }
 
 void __far W_CacheLumpNameDirectFarString (int8_t __far* name, byte __far* dest ) {
-	W_ReadLump(W_GetNumForName(name), dest, 0, 0);
+	W_ReadLump(W_GetNumForNameFarString(name), dest, 0, 0);
 }
 
 

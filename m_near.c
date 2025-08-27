@@ -111,7 +111,6 @@ int8_t		eventtail;
 
  
 
-int8_t skytextureloaded = false;
 
 
 
@@ -483,41 +482,6 @@ boolean         secretexit;
 
 
 
-            
-
-
-
-// main bar left
-//uint16_t         sbar;
-
-uint16_t 		tallpercent;
-uint16_t		faceback;
-uint16_t		sbar;
-uint16_t		armsbg;
-
-// 3 key-cards, 3 skulls
-uint16_t         keys[NUMCARDS];// = { 61200u, 61096u, 60992u, 60872u, 60752u, 60632u };
-
-// weapon ownership patches
-uint16_t arms[6][2];// = { {58908u, 0}, {58836u, 0}, {58776u, 0}, {58704u, 0}, {58632u, 0}, {58560u, 0} };
-
-// face status patch offsets
-// long long time ago to get binary size down, constants like these were hardcoded.
-uint16_t         faces[ST_NUMFACES];
-/*
- = { 43216u,
-        42408u, 41600u, 40720u, 39836u, 38992u,
-        38176u, 37352u, 36544u, 35736u, 34936u,
-        34048u, 33164u, 32320u, 31504u, 30680u,
-        29856u, 29028u, 28204u, 27308u, 26412u,
-        25568u, 24752u, 23928u, 23088u, 22252u,
-        21420u, 20512u, 19568u, 18724u, 17908u,
-        17084u, 16240u, 15404u, 14560u, 13652u,
-        12668u, 11824u, 11008u, 10184u, 9376u,
-        8540u
-
-};*/
-
 
 
 // ready-weapon widget
@@ -556,12 +520,6 @@ st_number_t      w_maxammo[4];
 
 
 
-// holds key-type for each key box on bar
-int16_t      keyboxes[3];
-
-
-
- 
 
 int8_t     st_stuff_buf[ST_MSGWIDTH];
 
@@ -620,9 +578,7 @@ int8_t TS_Installed = false;
 volatile int8_t TS_InInterrupt = false;
 
 
-// used for general timing
 
-uint16_t armsbgarray[1];
 
 
 
