@@ -24,13 +24,7 @@ EXTRN I_SetPalette_:FAR
 
 .DATA
 
-EXTRN _st_stopped:BYTE
-EXTRN _st_palette:BYTE
-EXTRN _st_oldhealth:BYTE
-EXTRN _st_firsttime:BYTE
-EXTRN _st_gamestate:BYTE
-EXTRN _st_statusbaron:BYTE
-EXTRN _st_faceindex:BYTE
+
 
 EXTRN _tallpercent:BYTE
 
@@ -42,7 +36,6 @@ EXTRN _arms:BYTE
 EXTRN _faces:BYTE
 EXTRN _keys:BYTE
 EXTRN _keyboxes:BYTE
-EXTRN _oldweaponsowned:BYTE
 
 EXTRN _w_ammo:BYTE
 EXTRN _w_arms:BYTE
@@ -56,6 +49,15 @@ EXTRN _w_ready:BYTE
 
 
 .CODE
+
+EXTRN _st_palette:BYTE
+EXTRN _st_faceindex:BYTE
+EXTRN _st_oldhealth:BYTE
+EXTRN _oldweaponsowned:BYTE
+
+EXTRN _st_stopped:BYTE
+EXTRN _st_statusbaron:BYTE
+
 
 
 
@@ -176,20 +178,20 @@ PUBLIC  ST_Start_
 PUSHA_NO_AX_MACRO
 
 xor   ax, ax
-cmp   byte ptr ds:[_st_stopped], al
+cmp   byte ptr cs:[_st_stopped], al
 jne   dont_call_st_stop
 ; inlined st_stop only use
 call  I_SetPalette_
-mov   byte ptr ds:[_st_stopped], 1
+mov   byte ptr cs:[_st_stopped], 1
 
 dont_call_st_stop:
 mov   ax, 1
 mov   byte ptr ds:[_st_firsttime], al   ; 1
 mov   byte ptr ds:[_st_gamestate], al   ; 1
-mov   byte ptr ds:[_st_statusbaron], al ; 1
+mov   byte ptr cs:[_st_statusbaron], al ; 1
 neg   ax
-mov   byte ptr ds:[_st_palette], al   ; -1
-mov   word ptr ds:[_st_oldhealth], ax ; -1
+mov   byte ptr cs:[_st_palette], al   ; -1
+mov   word ptr cs:[_st_oldhealth], ax ; -1
 
 push  ds
 pop   es
@@ -199,8 +201,12 @@ stosw ; mov   word ptr ds:[_keyboxes + 2], ax  ; -1
 stosw ; mov   word ptr ds:[_keyboxes + 4], ax  ; -1
 
 inc   ax ; 0
-mov   word ptr ds:[_st_faceindex], ax ; 0
-mov   byte ptr ds:[_st_stopped], al   ; 0
+mov   word ptr cs:[_st_faceindex], ax ; 0
+mov   byte ptr cs:[_st_stopped], al   ; 0
+
+push  cs
+pop   es
+
 
 mov   si, OFFSET _player + PLAYER_T.player_weaponowned
 mov   di, OFFSET _oldweaponsowned
@@ -210,8 +216,8 @@ rep   movsb
 ;call  ST_createWidgets_  ; inlined
 
 
-;push  ds
-;pop   es
+push  ds
+pop   es
 push  cs
 pop   ds
 

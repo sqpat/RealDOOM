@@ -659,7 +659,8 @@
 #define menuactivestate   			      (*((boolean __near*)               (_NULL_OFFSET + 0x0ABF)))
 #define fopen_wb_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x0AC0))
 #define domapcheatthisframe 		      (*((boolean __near*)               (_NULL_OFFSET + 0x0AC3)))
-
+#define st_gamestate 		      		  (*((st_stateenum_t __near*)        (_NULL_OFFSET + 0x0AC4)))
+#define st_firsttime 		      		  (*((boolean __near*)        		 (_NULL_OFFSET + 0x0AC5)))
 
 
 
@@ -986,10 +987,8 @@ extern uint8_t		usemouse;
 extern int8_t*   defdemoname; 
 extern boolean         secretexit; 
 
-extern boolean          st_firsttime;
-extern boolean          updatedthisframe;
-extern st_stateenum_t   st_gamestate;
-extern boolean          st_statusbaron;
+
+
 
 extern uint16_t 		tallpercent;
 extern uint16_t			faceback;
@@ -1007,12 +1006,7 @@ extern st_multicon_t    w_keyboxes[3];
 extern st_percent_t     w_armor;
 extern st_number_t      w_ammo[4];
 extern st_number_t      w_maxammo[4]; 
-extern int16_t      st_oldhealth;
-extern boolean  oldweaponsowned[NUMWEAPONS]; 
-extern int16_t      st_facecount;
-extern int16_t      st_faceindex;
 extern int16_t      keyboxes[3];
-extern uint8_t      st_randomnumber;
 
 
 // Now what?
@@ -1038,14 +1032,7 @@ extern uint8_t      st_randomnumber;
 #define CHEATID_MAPPOS          64
 
 
-extern boolean do_st_refresh;
- 
-extern int8_t st_palette;
 
-extern int16_t  st_calc_lastcalc;
-extern int16_t  st_calc_oldhealth;
-extern int8_t  st_face_lastattackdown;
-extern int8_t  st_face_priority;
 extern int8_t     st_stuff_buf[ST_MSGWIDTH];
 
 
@@ -1083,7 +1070,6 @@ extern volatile int8_t TS_InInterrupt;
 
  
 
-extern boolean  st_stopped;
 extern uint16_t armsbgarray[1];
 
 

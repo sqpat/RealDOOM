@@ -593,6 +593,8 @@ _menuactivestate =	 	     	     _NULL_OFFSET + 00ABFh
 _fopen_wb_argument =	 	     	 _NULL_OFFSET + 00AC0h
 
 _domapcheatthisframe =				 _NULL_OFFSET + 00AC3h
+_st_gamestate =	  	  				 _NULL_OFFSET + 00AC4h
+_st_firsttime =	  	  				 _NULL_OFFSET + 00AC5h
 
 _flatcache_nodes =				     _NULL_OFFSET + 00AD0h
 

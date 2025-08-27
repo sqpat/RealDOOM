@@ -456,7 +456,6 @@ void __near D_Display (void) {
 
 
 #ifndef SKIPWIPE
-	wipe = false;
 
     // save the current screen if about to wipe
     if (gamestate != wipegamestate) {
@@ -879,6 +878,7 @@ void __near Z_ClearDeadCode() {
 	//9350           - 10/07/24
 	//11222          - 01/18/25		at this point like 3000 bytes to save.
 	//11284          - 06/30/25   
+	//11470          - 08/26/25
 	uint16_t size = endaddr - startaddr-16;
 	FILE* fp;
 

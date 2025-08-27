@@ -45,22 +45,9 @@ EXTRN M_Random_:NEAR
 
 .DATA
 
-EXTRN _st_face_priority:BYTE
-EXTRN _st_face_lastattackdown:BYTE
-EXTRN _st_randomnumber:BYTE
-EXTRN _updatedthisframe:BYTE
-EXTRN _do_st_refresh:BYTE
-EXTRN _st_facecount:WORD
-EXTRN _st_calc_lastcalc:WORD
-EXTRN _st_calc_oldhealth:WORD
+
 EXTRN _P_GivePower:DWORD
-EXTRN _st_stopped:BYTE
-EXTRN _st_palette:BYTE
-EXTRN _st_oldhealth:WORD
-EXTRN _st_firsttime:BYTE
-EXTRN _st_gamestate:BYTE
-EXTRN _st_statusbaron:BYTE
-EXTRN _st_faceindex:BYTE
+
 
 EXTRN _tallpercent:BYTE
 
@@ -72,7 +59,7 @@ EXTRN _arms:BYTE
 EXTRN _faces:BYTE
 EXTRN _keys:BYTE
 EXTRN _keyboxes:BYTE
-EXTRN _oldweaponsowned:BYTE
+
 
 EXTRN _w_ammo:BYTE
 EXTRN _w_arms:BYTE
@@ -95,6 +82,21 @@ PUBLIC  ST_STUFF_STARTMARKER_
 ENDP
 
 
+
+
+
+
+_st_facecount:
+dw 0
+_st_calc_lastcalc:
+dw 0
+_st_calc_oldhealth:
+dw 0
+_st_oldhealth:
+dw 0
+_st_faceindex:
+dw 0
+
 _st_mapcheat_string1:
 db "ang=0x", 0
 _st_mapcheat_string2:
@@ -103,6 +105,39 @@ _st_mapcheat_string3:
 db ",0x", 0
 _st_mapcheat_string4:
 db ")", 0
+
+_st_face_priority:
+db 0
+_st_face_lastattackdown:
+db 0
+_st_randomnumber:
+db 0
+_st_palette:
+db 0
+_do_st_refresh:
+db 0
+_st_statusbaron:
+db 0
+_st_stopped:
+db 0
+_updatedthisframe:
+db 0
+
+_oldweaponsowned:
+REPT NUMWEAPONS
+    db 0
+endm
+
+
+
+PUBLIC _st_palette
+PUBLIC _st_oldhealth
+PUBLIC _st_faceindex
+PUBLIC _oldweaponsowned
+PUBLIC _st_stopped
+
+PUBLIC _st_statusbaron
+
 
 PROC    ST_refreshBackground_ NEAR
 PUBLIC  ST_refreshBackground_
@@ -113,7 +148,7 @@ push  bx
 push  cx
 push  dx
 xor   ax, ax
-cmp   byte ptr ds:[_st_statusbaron], al
+cmp   byte ptr cs:[_st_statusbaron], al
 je    exit_st_refresh_background
 
 
@@ -162,11 +197,11 @@ jle   use_current_health
 more_than_100_health:
 mov   ax, 100
 use_current_health:
-cmp   ax, word ptr ds:[_st_calc_oldhealth]
+cmp   ax, word ptr cs:[_st_calc_oldhealth]
 je    old_health_100
 
 ;  st_calc_lastcalc = ST_FACESTRIDE * (((100 - health) * ST_NUMPAINFACES) / 101);
-mov   word ptr ds:[_st_calc_oldhealth], ax
+mov   word ptr cs:[_st_calc_oldhealth], ax
 
 neg   ax
 add   ax, 100  ; 100 - health
@@ -177,10 +212,10 @@ mov   dl, 101
 div   dl
 cbw   ; clear remainder.
 SHIFT_MACRO shl   ax 3 ; * 8   ; ST_FACESTRIDE 
-mov   word ptr ds:[_st_calc_lastcalc], ax
+mov   word ptr cs:[_st_calc_lastcalc], ax
 old_health_100:
 
-mov   ax, word ptr ds:[_st_calc_lastcalc]
+mov   ax, word ptr cs:[_st_calc_lastcalc]
 pop   dx
 ret   
 
@@ -200,7 +235,7 @@ xor   ax, ax
 cwd
 mov   bx, ax
 mov   cx, ax
-mov   cl, byte ptr ds:[_st_face_priority]
+mov   cl, byte ptr cs:[_st_face_priority]
 cmp   cl, 10
 jge   not_face_10
 cmp   word ptr ds:[_player + PLAYER_T.player_health], ax ; 0
@@ -221,12 +256,12 @@ je    not_face_9
 loop_next_wepowned_face:
 
 
-mov   al, byte ptr ds:[bx + _oldweaponsowned]
+mov   al, byte ptr cs:[bx + _oldweaponsowned]
 cmp   al, byte ptr ds:[bx + _player + PLAYER_T.player_weaponowned]
 je    not_weapon_change
 mov   al, byte ptr ds:[bx + _player + PLAYER_T.player_weaponowned]
 inc   dx  ; do evil grin
-mov   byte ptr ds:[bx + _oldweaponsowned], al
+mov   byte ptr cs:[bx + _oldweaponsowned], al
 not_weapon_change:
 inc   bx
 cmp   bl, NUMWEAPONS
@@ -236,7 +271,7 @@ test  dx, dx
 je    not_face_9
 mov   cl, 8
 
-mov   word ptr ds:[_st_facecount], ST_EVILGRINCOUNT
+mov   word ptr cs:[_st_facecount], ST_EVILGRINCOUNT
 call  ST_calcPainOffset_
 add   al, ST_EVILGRINOFFSET
 jmp   set_face_priority_dec_facecount_and_exit
@@ -257,14 +292,14 @@ cmp   bx, word ptr ds:[_playerMobjRef]
 je    not_face_8
 
 mov   ax, word ptr ds:[_player + PLAYER_T.player_health]
-sub   ax, word ptr ds:[_st_oldhealth]
+sub   ax, word ptr cs:[_st_oldhealth]
 mov   cl, 7
 
 cmp   ax, ST_MUCHPAIN
 jg    dont_look_at_attacker
 jmp   look_at_attacker
 dont_look_at_attacker:
-mov   word ptr ds:[_st_facecount], ST_TURNCOUNT
+mov   word ptr cs:[_st_facecount], ST_TURNCOUNT
 call  ST_calcPainOffset_
 add   al, ST_OUCHOFFSET
 jmp   set_face_priority_dec_facecount_and_exit
@@ -277,8 +312,8 @@ jge   not_face_7
 cmp   word ptr ds:[_player + PLAYER_T.player_damagecount], ax
 je    not_face_7
 mov   ax, word ptr ds:[_player + PLAYER_T.player_health]
-sub   ax, word ptr ds:[_st_oldhealth]
-mov   word ptr ds:[_st_facecount], ST_TURNCOUNT
+sub   ax, word ptr cs:[_st_oldhealth]
+mov   word ptr cs:[_st_facecount], ST_TURNCOUNT
 cmp   ax, ST_MUCHPAIN
 jg    more_pain
 mov   cl, 6
@@ -300,24 +335,24 @@ cmp   cl, 6
 jge   not_face_6
 cmp   byte ptr ds:[_player + PLAYER_T.player_attackdown], al ; 0
 jne   attack_down
-mov   byte ptr ds:[_st_face_lastattackdown], -1
+mov   byte ptr cs:[_st_face_lastattackdown], -1
 jmp   not_face_6
 attack_down:
-cmp   byte ptr ds:[_st_face_lastattackdown], -1
+cmp   byte ptr cs:[_st_face_lastattackdown], -1
 je    add_rampage_delay
-dec   byte ptr ds:[_st_face_lastattackdown]
+dec   byte ptr cs:[_st_face_lastattackdown]
 jne   not_face_6
 mov   cl, 5
 
 call  ST_calcPainOffset_
 add   al, ST_RAMPAGEOFFSET
-mov   byte ptr ds:[_st_face_lastattackdown], 1
+mov   byte ptr cs:[_st_face_lastattackdown], 1
 jmp   set_facecount_1_and_face_priority_dec_facecount_and_exit
 
 
 
 add_rampage_delay:
-mov   byte ptr ds:[_st_face_lastattackdown], ST_RAMPAGEDELAY
+mov   byte ptr cs:[_st_face_lastattackdown], ST_RAMPAGEDELAY
 not_face_6:
 
 cmp   cl, 5
@@ -329,15 +364,15 @@ cmp   word ptr ds:[_player + PLAYER_T.player_powers + 2 * PW_INVULNERABILITY], a
 jne   handle_invuln
 
 not_face_5:
-cmp   word ptr ds:[_st_facecount], ax ; 0
+cmp   word ptr cs:[_st_facecount], ax ; 0
 jne   dec_facecount_and_exit
 
-mov   al, byte ptr ds:[_st_randomnumber]
+mov   al, byte ptr cs:[_st_randomnumber]
 mov   bl, 3
 div   bl
 mov   dl, ah ; store mod
 call  ST_calcPainOffset_
-mov   word ptr ds:[_st_facecount], ST_STRAIGHTFACECOUNT
+mov   word ptr cs:[_st_facecount], ST_STRAIGHTFACECOUNT
 add   al, dl ; rand mod 3
 xor   cx, cx
 jmp   set_face_priority_dec_facecount_and_exit
@@ -348,23 +383,23 @@ mov   cl, 4
 mov   al, ST_GODFACE
 
 set_facecount_1_and_face_priority_dec_facecount_and_exit:
-mov   word ptr ds:[_st_facecount], 1
+mov   word ptr cs:[_st_facecount], 1
 
 set_face_priority_dec_facecount_and_exit:
-mov   byte ptr ds:[_st_face_priority], cl
+mov   byte ptr cs:[_st_face_priority], cl
 
 write_face_index_and_finish_face_checks:
-mov   byte ptr ds:[_st_faceindex], al
+mov   byte ptr cs:[_st_faceindex], al
 
 dec_facecount_and_exit:
-dec   word ptr ds:[_st_facecount]
+dec   word ptr cs:[_st_facecount]
 exit_updatefacewidget:
 POPA_NO_AX_OR_BP_MACRO
 ret   
 
 
 look_at_attacker:
-mov   byte ptr ds:[_st_face_priority], cl
+mov   byte ptr cs:[_st_face_priority], cl
 mov   ax, SIZEOF_MOBJ_POS_T
 mul   word ptr ds:[_player + PLAYER_T.player_attackerRef]
 xchg  ax, di
@@ -407,7 +442,7 @@ set_i_1:
 inc   bx
 set_i_0:
 angle_and_i_set:
-mov   word ptr ds:[_st_facecount], ST_OUCHCOUNT
+mov   word ptr cs:[_st_facecount], ST_OUCHCOUNT
 call  ST_calcPainOffset_
 cmp   dx, ANG45_HIGHBITS
 jae   do_side_look
@@ -476,10 +511,10 @@ PROC    ST_Ticker_ NEAR
 PUBLIC  ST_Ticker_
 
 call  M_Random_
-mov   byte ptr ds:[_st_randomnumber], al
+mov   byte ptr cs:[_st_randomnumber], al
 call  ST_updateWidgets_
 mov   ax, word ptr ds:[_player + PLAYER_T.player_health]
-mov   word ptr ds:[_st_oldhealth], ax
+mov   word ptr cs:[_st_oldhealth], ax
 ret   
 
 ENDP
@@ -543,10 +578,10 @@ test  byte ptr ds:[_player + PLAYER_T.player_powers + (2 * PW_IRONFEET)], 8
 jne   set_rad_pal
 
 check_set_palette_and_exit:
-cmp   al, byte ptr ds:[_st_palette]
+cmp   al, byte ptr cs:[_st_palette]
 je    dont_set_palette_and_exit
 set_palette_and_exit:
-mov   byte ptr ds:[_st_palette], al
+mov   byte ptr cs:[_st_palette], al
 cbw  
 call  I_SetPalette_
 dont_set_palette_and_exit:
@@ -559,10 +594,10 @@ ENDP
 PROC    STlib_updateflag_ NEAR
 PUBLIC  STlib_updateflag_
 
-cmp   byte ptr ds:[_updatedthisframe], 0
+cmp   byte ptr cs:[_updatedthisframe], 0
 jne   exit_updateflag
 call  Z_QuickMapStatus_
-inc   byte ptr ds:[_updatedthisframe]
+inc   byte ptr cs:[_updatedthisframe]
 exit_updateflag:
 ret   
 
@@ -583,7 +618,7 @@ xchg  ax, si
 mov   cx, word ptr ds:[si + ST_MULTIICON_T.st_multicon_oldinum]
 cmp   cx, dx
 jne   do_draw
-cmp   byte ptr ds:[_do_st_refresh], 0
+cmp   byte ptr cs:[_do_st_refresh], 0
 jne   do_draw
 exit_updatemulticon:
 POPA_NO_AX_OR_BP_MACRO
@@ -670,7 +705,7 @@ lodsw           ; x
 xchg  ax, bx    ; bx holds x
 lodsw           ; y
 xchg  ax, dx    ; dx gets y
-lodsw           ; oldinum
+lodsw           ; oldinum (dontuse)
 lodsw           ; patch_offset
 pop   si        ;   get inum-is_binicon lookup
 add   si, ax    ; patch_offset[0] + inum-is_binicon lookup
@@ -703,7 +738,7 @@ xchg  ax, si
 mov   cx, word ptr ds:[si + ST_NUMBER_T.st_number_oldnum]
 cmp   cx, dx
 jne   drawnum
-cmp   byte ptr ds:[_do_st_refresh], 0
+cmp   byte ptr cs:[_do_st_refresh], 0
 je    exit_stlib_drawnum_other
 drawnum:
 
@@ -838,7 +873,7 @@ PROC    STlib_updatePercent_ NEAR
 PUBLIC  STlib_updatePercent_
 
 
-cmp   byte ptr ds:[_do_st_refresh], 0
+cmp   byte ptr cs:[_do_st_refresh], 0
 je    skip_percent
 
 push  si
@@ -882,7 +917,7 @@ PROC    ST_drawWidgets_ NEAR
 PUBLIC  ST_drawWidgets_
 
 
-cmp   byte ptr ds:[_st_statusbaron], 0
+cmp   byte ptr cs:[_st_statusbaron], 0
 je    exit_st_drawwidgets_no_pop
 PUSHA_NO_AX_OR_BP_MACRO
 
@@ -965,7 +1000,7 @@ loop  update_next_weapon
 ;        STlib_updateMultIcon(&w_faces, st_faceindex, false);
 
 mov   ax, OFFSET _w_faces
-mov   dx, word ptr ds:[_st_faceindex]
+mov   dx, word ptr cs:[_st_faceindex]
 xor   bx, bx
 call  STlib_updateMultIcon_
 
@@ -1428,17 +1463,17 @@ PUBLIC  ST_Drawer_
 dec   ax
 neg   ax ; ! fullscreen
 or    al, byte ptr ds:[_automapactive]
-mov   byte ptr ds:[_st_statusbaron], al
+mov   byte ptr cs:[_st_statusbaron], al
 call  ST_doPaletteStuff_
 mov   ax, 0100h  ; ah = 1 al = 0
 
-mov   byte ptr ds:[_updatedthisframe], al ; 0
+mov   byte ptr cs:[_updatedthisframe], al ; 0
 or    byte ptr ds:[_st_firsttime], dl
 je    not_first_time
 first_time:
 mov   byte ptr ds:[_st_firsttime], al ; 0
-mov   byte ptr ds:[_updatedthisframe], ah ; 1
-mov   byte ptr ds:[_do_st_refresh], ah ; 1
+mov   byte ptr cs:[_updatedthisframe], ah ; 1
+mov   byte ptr cs:[_do_st_refresh], ah ; 1
 
 call  Z_QuickMapStatus_
 call  ST_refreshBackground_
@@ -1447,10 +1482,10 @@ jmp   do_quickmapphysics_and_exit
 
 not_first_time:
 
-mov   byte ptr ds:[_do_st_refresh], al ; 0
+mov   byte ptr cs:[_do_st_refresh], al ; 0
 call  ST_drawWidgets_
 
-cmp   byte ptr ds:[_updatedthisframe], 0
+cmp   byte ptr cs:[_updatedthisframe], 0
 je    just_exit
 
 do_quickmapphysics_and_exit:

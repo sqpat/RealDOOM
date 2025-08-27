@@ -484,24 +484,8 @@ boolean         secretexit;
 
 
             
-// ST_Start() has just been called
-boolean          st_firsttime;
-boolean          updatedthisframe;
-
-// used to execute ST_Init() only once
-
-// lump number for PLAYPAL
-//int16_t              lu_palette;
-//byte __far*  palettebytes;
-
-// used for timing
 
 
-// whether in automap or first-person
-st_stateenum_t   st_gamestate;
-
-// whether left-side main status bar is active
-boolean          st_statusbaron;
 
 // main bar left
 //uint16_t         sbar;
@@ -569,35 +553,16 @@ st_number_t      w_maxammo[4];
 
 
 
-// used to use appopriately pained face 
-int16_t      st_oldhealth = -1;
 
-// used for evil grin
-boolean  oldweaponsowned[NUMWEAPONS]; 
 
- // count until face changes
-int16_t      st_facecount = 0;
-
-// current face index, used by w_faces
-int16_t      st_faceindex = 0;
 
 // holds key-type for each key box on bar
 int16_t      keyboxes[3];
 
-// a random number per tick
-uint8_t      st_randomnumber;
 
 
  
 
-boolean do_st_refresh;
-
-int8_t st_palette = 0;
-
-int16_t  st_calc_lastcalc;
-int16_t  st_calc_oldhealth = -1;
-int8_t  st_face_lastattackdown = -1;
-int8_t  st_face_priority = 0;
 int8_t     st_stuff_buf[ST_MSGWIDTH];
 
 
@@ -657,7 +622,6 @@ volatile int8_t TS_InInterrupt = false;
 
 // used for general timing
 
-boolean  st_stopped = true;
 uint16_t armsbgarray[1];
 
 
