@@ -980,18 +980,6 @@ extern int8_t*   defdemoname;
 extern boolean         secretexit; 
 
 
-
-extern st_number_t      w_ready;
-extern st_percent_t     w_health;
-extern st_multicon_t     w_armsbg;
-extern st_multicon_t    w_arms[6];
-extern st_multicon_t    w_faces; 
-extern st_multicon_t    w_keyboxes[3];
-extern st_percent_t     w_armor;
-extern st_number_t      w_ammo[4];
-extern st_number_t      w_maxammo[4]; 
-
-
 // Now what?
 #define NUM_CHEATS 17
 

@@ -55,15 +55,6 @@ EXTRN _P_GivePower:DWORD
 EXTRN _st_stuff_buf:BYTE
 
 
-EXTRN _w_ammo:BYTE
-EXTRN _w_arms:BYTE
-EXTRN _w_armsbg:BYTE
-EXTRN _w_armor:BYTE
-EXTRN _w_health:BYTE
-EXTRN _w_faces:BYTE
-EXTRN _w_keyboxes:BYTE
-EXTRN _w_maxammo:BYTE
-EXTRN _w_ready:BYTE
 
 
 
@@ -113,6 +104,27 @@ _keys:
 dw NUMCARDS DUP(0)
 _keyboxes:
 dw 0, 0, 0
+
+
+_w_ready:
+ ST_NUMBER_T ?
+_w_health:
+ ST_PERCENT_T ?
+_w_armsbg:
+ ST_MULTIICON_T ?
+_w_arms:
+ ST_MULTIICON_T 6 DUP (?)
+_w_faces:
+ ST_MULTIICON_T ?
+_w_armor:
+ ST_PERCENT_T ?
+_w_keyboxes:
+ ST_MULTIICON_T 3 DUP (?)
+_w_ammo:
+ ST_NUMBER_T 4 DUP (?)
+_w_maxammo:
+ ST_NUMBER_T 4 DUP (?)
+
 
 
 
@@ -166,6 +178,16 @@ PUBLIC _tallnum
 PUBLIC _faceback
 PUBLIC _sbar
 PUBLIC _st_statusbaron
+
+PUBLIC _w_ready
+PUBLIC _w_health
+PUBLIC _w_armsbg
+PUBLIC _w_arms
+PUBLIC _w_faces
+PUBLIC _w_armor
+PUBLIC _w_keyboxes
+PUBLIC _w_ammo
+PUBLIC _w_maxammo
 
 
 PROC    ST_refreshBackground_ NEAR
@@ -644,7 +666,7 @@ cmp   dx, -1
 je    exit_updatemulticon_no_pop  ; test once.
 PUSHA_NO_AX_OR_BP_MACRO
 xchg  ax, si
-mov   cx, word ptr ds:[si + ST_MULTIICON_T.st_multicon_oldinum]
+mov   cx, word ptr cs:[si + ST_MULTIICON_T.st_multicon_oldinum]
 cmp   cx, dx
 jne   do_draw
 cmp   byte ptr cs:[_do_st_refresh], 0
@@ -658,7 +680,7 @@ ret
 do_draw:
 call  STlib_updateflag_
 
-mov   word ptr ds:[si + ST_MULTIICON_T.st_multicon_oldinum], dx ; update oldinum, dont need dx anymore
+mov   word ptr cs:[si + ST_MULTIICON_T.st_multicon_oldinum], dx ; update oldinum, dont need dx anymore
 sub   dx, bx   ; calculate  "inum-is_binicon" lookup
 sal   dx, 1
 push  dx       ; store inum-is_binicon lookup
@@ -668,13 +690,13 @@ je    skip_rect
 test  bl, bl                ; !is_binicon
 jne   skip_rect
 
-les   ax, dword ptr ds:[si + ST_MULTIICON_T.st_multicon_x]
+les   ax, dword ptr cs:[si + ST_MULTIICON_T.st_multicon_x]
 mov   dx, es  ; st_multicon_y
 
 mov   di, ST_GRAPHICS_SEGMENT   ; todo load from mem?
 mov   es, di
 
-mov   di, word ptr  ds:[si + ST_MULTIICON_T.st_multicon_patch_offset] ; mi->patch_offset
+mov   di, word ptr  cs:[si + ST_MULTIICON_T.st_multicon_patch_offset] ; mi->patch_offset
 
 sal   cx, 1     ; word lookup
 add   di, cx    ; mi->patch_offset[mi->oldinum]
@@ -730,14 +752,14 @@ call  V_CopyRect_
 
 skip_rect:
 
-lodsw           ; x
-xchg  ax, bx    ; bx holds x
-lodsw           ; y
-xchg  ax, dx    ; dx gets y
-lodsw           ; oldinum (dontuse)
-lodsw           ; patch_offset
-pop   si        ;   get inum-is_binicon lookup
-add   si, ax    ; patch_offset[0] + inum-is_binicon lookup
+lods  word ptr cs:[si]           ; x
+xchg  ax, bx                     ; bx holds x
+lods  word ptr cs:[si]           ; y
+xchg  ax, dx                     ; dx gets y
+lods  word ptr cs:[si]           ; oldinum (dontuse)
+lods  word ptr cs:[si]           ; patch_offset
+pop   si                         ;   get inum-is_binicon lookup
+add   si, ax                     ; patch_offset[0] + inum-is_binicon lookup
 
 
 mov   ax, ST_GRAPHICS_SEGMENT
@@ -764,7 +786,7 @@ PUBLIC  STlib_drawNum_
 
 PUSHA_NO_AX_OR_BP_MACRO
 xchg  ax, si
-mov   cx, word ptr ds:[si + ST_NUMBER_T.st_number_oldnum]
+mov   cx, word ptr cs:[si + ST_NUMBER_T.st_number_oldnum]
 cmp   cx, dx
 jne   drawnum
 cmp   byte ptr cs:[_do_st_refresh], 0
@@ -776,14 +798,14 @@ call  STlib_updateflag_
 ;	p0 = (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, number->patch_offset[0]));
 mov   ax, ST_GRAPHICS_SEGMENT
 mov   es, ax
-mov   di, word ptr ds:[si + ST_NUMBER_T.st_number_patch_offset]
+mov   di, word ptr cs:[si + ST_NUMBER_T.st_number_patch_offset]
 mov   di, word ptr cs:[di] ; offset 0
 les   bx, dword ptr es:[di + PATCH_T.patch_width]
 
 ; bx has width, es has height for now
 
-mov   word ptr ds:[si + ST_NUMBER_T.st_number_oldnum], dx
-mov   ax,word ptr ds:[si + ST_NUMBER_T.st_number_width] ; numdigits
+mov   word ptr cs:[si + ST_NUMBER_T.st_number_oldnum], dx
+mov   ax,word ptr cs:[si + ST_NUMBER_T.st_number_width] ; numdigits
 
 
 
@@ -794,11 +816,11 @@ mul   bl
 ;    x = number->x - digitwidth;
 push  bx   ; push width (-2)
 xchg  ax, bx  ; digitwidth in bx
-mov   ax, word ptr ds:[si + ST_NUMBER_T.st_number_x]
+mov   ax, word ptr cs:[si + ST_NUMBER_T.st_number_x]
 sub   ax, bx
 
 mov   di, dx ; back up num
-mov   dx, word ptr ds:[si + ST_NUMBER_T.st_number_y]
+mov   dx, word ptr cs:[si + ST_NUMBER_T.st_number_y]
 mov   cx, es  ; h
 
 push  bx    ; (use as is in bx later)
@@ -833,12 +855,12 @@ pop   cx  ; get w
 cmp   di, 1994
 je    exit_stlib_drawnum
 
-lodsw ;  number->x
+lods  word ptr cs:[si] ;  number->x
 xchg  ax, bx
-lodsw ;  number->y
+lods  word ptr cs:[si] ;  number->y
 xchg  ax, dx
 add   si, 4
-lodsw ;  number->patchoffset
+lods  word ptr cs:[si] ;  number->patchoffset
 xchg  ax, si
 xchg  ax, bx ; get x back
 
@@ -891,7 +913,7 @@ draw_zero:
 mov   bx, ST_GRAPHICS_SEGMENT
 push  bx
 xor   bx, bx
-push  word ptr cs:[si]
+push  word ptr cs:[si] ; first offset is 0
 sub   ax, cx
 call  V_DrawPatch_
 jmp   exit_stlib_drawnum
@@ -919,9 +941,9 @@ call  STlib_updateflag_
 
 mov   ax, ST_GRAPHICS_SEGMENT
 push  ax
-les   ax, dword ptr ds:[si + ST_NUMBER_T.st_number_x]
+les   ax, dword ptr cs:[si + ST_NUMBER_T.st_number_x]
 mov   dx, es
-mov   si, word ptr ds:[si + ST_PERCENT_T.st_percent_patch_offset]
+mov   si, word ptr cs:[si + ST_PERCENT_T.st_percent_patch_offset]
 push  word ptr cs:[si]
 xor   bx, bx
 call  V_DrawPatch_
@@ -945,7 +967,6 @@ ENDP
 PROC    ST_drawWidgets_ NEAR
 PUBLIC  ST_drawWidgets_
 
-
 cmp   byte ptr cs:[_st_statusbaron], 0
 je    exit_st_drawwidgets_no_pop
 PUSHA_NO_AX_OR_BP_MACRO
@@ -963,11 +984,15 @@ update_next_ammo:
 
 lodsw
 xchg  ax, dx
-lea   ax, [bx + _w_ammo]
+ASSUME DS:ST_STUFF_TEXT
+lea   ax, [bx + OFFSET _w_ammo]
+ASSUME DS:DGROUP
 call  STlib_drawNum_
 
 mov   dx, word ptr ds:[si - 2 + PLAYER_T.player_maxammo - PLAYER_T.player_ammo]
-lea   ax, [bx + _w_maxammo]
+ASSUME DS:ST_STUFF_TEXT
+lea   ax, [bx + OFFSET _w_maxammo]
+ASSUME DS:DGROUP
 call  STlib_drawNum_
 
 add   bx, SIZEOF_ST_NUMBER_T

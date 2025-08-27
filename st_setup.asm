@@ -28,18 +28,20 @@ EXTRN I_SetPalette_:FAR
 
 
 
-EXTRN _w_ammo:BYTE
-EXTRN _w_arms:BYTE
-EXTRN _w_armsbg:BYTE
-EXTRN _w_armor:BYTE
-EXTRN _w_health:BYTE
-EXTRN _w_faces:BYTE
-EXTRN _w_keyboxes:BYTE
-EXTRN _w_maxammo:BYTE
-EXTRN _w_ready:BYTE
+
 
 
 .CODE
+
+EXTRN _w_ready:BYTE
+EXTRN _w_health:BYTE
+EXTRN _w_armsbg:BYTE
+EXTRN _w_arms:BYTE
+EXTRN _w_faces:BYTE
+EXTRN _w_armor:BYTE
+EXTRN _w_keyboxes:BYTE
+EXTRN _w_ammo:BYTE
+EXTRN _w_maxammo:BYTE
 
 EXTRN _tallpercent:BYTE
 EXTRN _armsbgarray:BYTE
@@ -195,17 +197,19 @@ mov   word ptr cs:[_st_oldhealth], ax ; -1
 
 push  cs
 pop   es
+push  cs
+pop   ds
+
 mov   di, OFFSET _keyboxes
 stosw ; mov   word ptr cs:[_keyboxes + 0], ax  ; -1
 stosw ; mov   word ptr cs:[_keyboxes + 2], ax  ; -1
 stosw ; mov   word ptr cs:[_keyboxes + 4], ax  ; -1
 
 inc   ax ; 0
-mov   word ptr cs:[_st_faceindex], ax ; 0
-mov   byte ptr cs:[_st_stopped], al   ; 0
-
-;push  cs
-;pop   es
+ASSUME DS:ST_SETUP_TEXT
+mov   word ptr ds:[_st_faceindex], ax ; 0  ; actually cs
+mov   byte ptr ds:[_st_stopped], al   ; 0  ; actually cs
+ASSUME DS:DGROUP
 
 
 mov   si, OFFSET _player + PLAYER_T.player_weaponowned
@@ -215,11 +219,6 @@ rep   movsb
 
 ;call  ST_createWidgets_  ; inlined
 
-
-push  ds
-pop   es
-push  cs
-pop   ds
 
 ; todo align these targets all in memory. one rep movsw.
 ; further todo: source data in file. read from file. less persistent ram usage.
@@ -267,7 +266,7 @@ push  ss
 pop   ds
 
 ; hardcoded in
-;mov   word ptr ds:[_w_armsbg + ST_MULTIICON_T.st_multicon_oldinum], 0
+;mov   word ptr cs:[_w_armsbg + ST_MULTIICON_T.st_multicon_oldinum], 0
 
 call  Z_QuickMapPhysics_
 POPA_NO_AX_MACRO

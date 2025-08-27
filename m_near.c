@@ -484,37 +484,6 @@ boolean         secretexit;
 
 
 
-// ready-weapon widget
-st_number_t      w_ready;
-
-
-// health widget
-st_percent_t     w_health;
-
-// arms background
-st_multicon_t     w_armsbg;
-//st_binicon_t     w_armsbg;
-
-
-// weapon ownership widgets
-st_multicon_t    w_arms[6];
-
-// face status widget
-st_multicon_t    w_faces; 
-
-// keycard widgets
-st_multicon_t    w_keyboxes[3];
-
-// armor widget
-st_percent_t     w_armor;
-
-// ammo widgets
-st_number_t      w_ammo[4];
-
-// max ammo widgets
-st_number_t      w_maxammo[4]; 
-
-
 
 
 
