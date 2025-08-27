@@ -102,9 +102,14 @@ _faces:
 dw ST_NUMFACES DUP(0)
 _keys:
 dw NUMCARDS DUP(0)
-_keyboxes:
-dw 0, 0, 0
 
+; even number of bytes for word alignment. matches order of stosw in init..
+_updatedthisframe:
+db 0
+_oldweaponsowned:
+db NUMWEAPONS DUP(0)
+_keyboxes:
+dw 3 DUP(0)
 
 _w_ready:
  ST_NUMBER_T ?
@@ -125,8 +130,8 @@ _w_ammo:
 _w_maxammo:
  ST_NUMBER_T 4 DUP (?)
 
-
-
+_w_end:
+dw (OFFSET _w_end - OFFSET _w_ready) / 2
 
 
 _st_mapcheat_string1:
@@ -152,11 +157,7 @@ _st_statusbaron:
 db 0
 _st_stopped:
 db 0
-_updatedthisframe:
-db 0
 
-_oldweaponsowned:
-db NUMWEAPONS DUP(0)
 
 
 
@@ -188,6 +189,7 @@ PUBLIC _w_armor
 PUBLIC _w_keyboxes
 PUBLIC _w_ammo
 PUBLIC _w_maxammo
+PUBLIC _w_end
 
 
 PROC    ST_refreshBackground_ NEAR

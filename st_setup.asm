@@ -42,6 +42,7 @@ EXTRN _w_armor:BYTE
 EXTRN _w_keyboxes:BYTE
 EXTRN _w_ammo:BYTE
 EXTRN _w_maxammo:BYTE
+EXTRN _w_end:BYTE
 
 EXTRN _tallpercent:BYTE
 EXTRN _armsbgarray:BYTE
@@ -197,10 +198,16 @@ mov   word ptr cs:[_st_oldhealth], ax ; -1
 
 push  cs
 pop   es
+
+mov   si, OFFSET _player + PLAYER_T.player_weaponowned
+mov   di, OFFSET _oldweaponsowned
+mov   cx, 9
+rep   movsb
+
 push  cs
 pop   ds
 
-mov   di, OFFSET _keyboxes
+;mov   di, OFFSET _keyboxes
 stosw ; mov   word ptr cs:[_keyboxes + 0], ax  ; -1
 stosw ; mov   word ptr cs:[_keyboxes + 2], ax  ; -1
 stosw ; mov   word ptr cs:[_keyboxes + 4], ax  ; -1
@@ -212,10 +219,6 @@ mov   byte ptr ds:[_st_stopped], al   ; 0  ; actually cs
 ASSUME DS:DGROUP
 
 
-mov   si, OFFSET _player + PLAYER_T.player_weaponowned
-mov   di, OFFSET _oldweaponsowned
-mov   cx, 9
-rep   movsb
 
 ;call  ST_createWidgets_  ; inlined
 
@@ -224,43 +227,12 @@ rep   movsb
 ; further todo: source data in file. read from file. less persistent ram usage.
 
 mov   si, OFFSET _ammobgdata
-mov   di, OFFSET _w_ready
-mov   cx, (SIZEOF_ST_NUMBER_T / 2)
-rep   movsw
-; si carries..
+;mov   di, OFFSET _w_ready
+mov   cx, word ptr cs:[_w_end] ; todo should be constant but borland wont let me
 
-mov   di, OFFSET _w_health
-mov   cl, (SIZEOF_ST_PERCENT_T / 2)
-rep   movsw
-
-mov   di, OFFSET _w_armsbg
-mov   cl, (SIZEOF_ST_MULTICON_T / 2)
-rep   movsw
-
-mov   di, OFFSET _w_arms
-mov   cl, (SIZEOF_ST_MULTICON_T / 2) * 6 
 rep   movsw
 
 
-mov   di, offset _w_faces
-mov   cl, (SIZEOF_ST_MULTICON_T / 2)
-rep   movsw
-
-mov   di, offset _w_armor
-mov   cl, (SIZEOF_ST_PERCENT_T / 2)
-rep   movsw
-
-mov   di, offset _w_keyboxes
-mov   cl, (SIZEOF_ST_MULTICON_T / 2) * 3
-rep   movsw
-
-mov   di, offset _w_ammo
-mov   cl, (SIZEOF_ST_NUMBER_T / 2) * 4
-rep   movsw
-
-mov   di, offset _w_maxammo
-mov   cl, (SIZEOF_ST_NUMBER_T / 2) * 4
-rep   movsw
 
 push  ss
 pop   ds
