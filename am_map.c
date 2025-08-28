@@ -139,7 +139,12 @@
 #define	automap_screenheight ((int16_t)(SCREENHEIGHT - 32))
 
 
+fixed_16_t __near MTOF16(fixed_16_t x);
+fixed_16_t __near CXMTOF16(fixed_16_t x);
+fixed_16_t __near CYMTOF16(fixed_16_t y);
 
+
+/*
 
 fixed_16_t __near MTOF16(fixed_16_t x) {
 	return FixedMul1632(x, am_scale_mtof.w);
@@ -156,7 +161,7 @@ fixed_16_t __near CYMTOF16(fixed_16_t y) {
 	return automap_screenheight - MTOF16(y - screen_botleft_y);
 }
 
- 
+ */
 
 void __far V_MarkRect ( int16_t x, int16_t y, int16_t width, int16_t height);
 
@@ -602,7 +607,7 @@ void __near AM_doFollowPlayer(void) {
 //
 // Updates on Game Tick
 //
-void __far AM_Ticker (void) {
+void __near AM_Ticker (void) {
 
 	if (followplayer) {
 		AM_doFollowPlayer();
@@ -1056,7 +1061,7 @@ void __near AM_drawCrosshair() {
 
 //void __far G_ExitLevel (void) ;
 
-void __far AM_Drawer (void) {
+void __near AM_Drawer (void) {
 
 	// sq - DEBUG: enable for easy/quick level change while debugging, i.e. to put pressure on memory
 	//G_ExitLevel();

@@ -734,12 +734,12 @@ void __far D_DoomMain2(void) {
 	int8_t            wadfile[20];
 	#define DGROUP_SIZE 0x2CA0
 
+	/*
 
 	FILE *fp = fopen("output9.bin", "wb");
 	FAR_fwrite(M_Random, (byte __far *)ST_STUFF_STARTMARKER - (byte __far *)M_Random, 1, fp);
 	fclose(fp);
 	exit(0);
-	/*
 
 
 	fixed_t_union x, y;

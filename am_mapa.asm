@@ -30,7 +30,7 @@ EXTRN combine_strings_:NEAR
 EXTRN FastMulTrig16_:NEAR
 EXTRN V_DrawPatch_:FAR
 EXTRN V_MarkRect_:FAR
-.DATA
+EXTRN getStringByIndex_:FAR
 
 ; todo ghetto
 AMMNUMPATCHOFFSETS_FAR_OFFSET = 20Ch 
@@ -90,6 +90,57 @@ AM_MARKKEY =       	'm'
 AM_CLEARMARKKEY =   'c'
 
 
+.DATA
+
+EXTRN _m_paninc:MPOINT_T
+EXTRN _am_scale_ftom:DWORD
+EXTRN _am_scale_mtof:DWORD
+EXTRN _mtof_zoommul:WORD
+EXTRN _ftom_zoommul:WORD
+
+EXTRN _am_min_level_x:WORD
+EXTRN _am_min_level_y:WORD
+EXTRN _am_min_scale_mtof:WORD
+EXTRN _am_max_scale_mtof:WORD
+EXTRN _am_max_level_x:WORD
+EXTRN _am_max_level_y:WORD
+
+EXTRN _screen_botleft_x:WORD
+EXTRN _screen_botleft_y:WORD
+EXTRN _screen_topright_x:WORD
+EXTRN _screen_topright_y:WORD
+EXTRN _screen_viewport_width:WORD
+EXTRN _screen_viewport_height:WORD
+
+EXTRN _screen_oldloc:MPOINT_T
+EXTRN _screen_oldloc:MPOINT_T
+EXTRN _old_screen_botleft_x:WORD
+EXTRN _old_screen_botleft_y:WORD
+EXTRN _old_screen_viewport_width:WORD
+EXTRN _old_screen_viewport_height:WORD
+
+EXTRN _followplayer:BYTE
+EXTRN _am_cheating:BYTE
+EXTRN _am_grid:BYTE
+EXTRN _am_bigstate:BYTE
+EXTRN _am_stopped:BYTE
+
+EXTRN _markpointnum:BYTE
+EXTRN _am_lastlevel:BYTE
+EXTRN _am_lastepisode:BYTE
+
+
+EXTRN _am_fl:FLINE_T
+EXTRN _am_l:MLINE_T
+EXTRN _am_ml:MLINE_T
+EXTRN _am_lc:FLINE_T
+
+EXTRN _cheat_player_arrow:MLINE_T
+EXTRN _player_arrow:MLINE_T
+EXTRN _thintriangle_guy:MLINE_T
+EXTRN _markpoints:MLINE_T
+
+
 
 .CODE
 
@@ -110,9 +161,8 @@ PUBLIC  MTOF16_
 push      bx
 push      cx
 push      dx
-mov       bx, word ptr ds:[_am_scale_mtof + 0]
-mov       cx, word ptr ds:[_am_scale_mtof + 2]
-push      cs
+les       bx, dword ptr ds:[_am_scale_mtof + 0]
+mov       cx, es
 call      FixedMul1632_
 pop       dx
 pop       cx
@@ -128,10 +178,9 @@ PUBLIC  CXMTOF16_
 push      bx
 push      cx
 push      dx
-mov       bx, word ptr ds:[_am_scale_mtof + 0]
-mov       cx, word ptr ds:[_am_scale_mtof + 2]
-sub       ax, word ptr ds:[_screen_botleft_x]
-push      cs
+les       bx, dword ptr ds:[_am_scale_mtof + 0]
+mov       cx, es
+sub       ax, word ptr ds:[_screen_botleft_x]  ; todo dont suppose this can be self modified start of frame?
 call      FixedMul1632_
 pop       dx
 pop       cx
@@ -139,6 +188,7 @@ pop       bx
 ret       
 
 ENDP
+
 
 PROC    CYMTOF16_ NEAR
 PUBLIC  CYMTOF16_
@@ -146,20 +196,20 @@ PUBLIC  CYMTOF16_
 push      bx
 push      cx
 push      dx
-mov       bx, word ptr ds:[_am_scale_mtof + 0]
-mov       cx, word ptr ds:[_am_scale_mtof + 2]
-sub       ax, word ptr ds:[_screen_botleft_y]
-push      cs
+les       bx, dword ptr ds:[_am_scale_mtof + 0]
+mov       cx, es
+sub       ax, word ptr ds:[_screen_botleft_y]  ; todo dont suppose this can be self modified start of frame?
 call      FixedMul1632_
-mov       bx, AUTOMAP_SCREENHEIGHT
-sub       bx, ax
-mov       ax, bx
+neg       ax
+add       ax, AUTOMAP_SCREENHEIGHT
 pop       dx
 pop       cx
 pop       bx
 ret       
 
 ENDP
+
+COMMENT @
 
 PROC    AM_activateNewScale_ NEAR
 PUBLIC  AM_activateNewScale_
@@ -176,14 +226,11 @@ sar       ax, 1
 mov       cx, word ptr ds:[_am_scale_ftom + 2]
 add       word ptr ds:[_screen_botleft_y], ax
 mov       ax, AUTOMAP_SCREENWIDTH
-push      cs
 call      FixedMul1632_
-nop       
 mov       bx, word ptr ds:[_am_scale_ftom + 0]
 mov       cx, word ptr ds:[_am_scale_ftom + 2]
 mov       word ptr ds:[_screen_viewport_width], ax
 mov       ax, AUTOMAP_SCREENHEIGHT
-push      cs
 call      FixedMul1632_
 mov       bx, word ptr ds:[_screen_viewport_width]
 sar       bx, 1
@@ -221,7 +268,7 @@ cmp       byte ptr ds:[_followplayer], 0
 jne       label_1
 mov       ax, word ptr ds:[_old_screen_botleft_x]
 mov       word ptr ds:[_screen_botleft_x], ax
-mov       ax, word ptr ds:[_old_screencbotleft_h]
+mov       ax, word ptr ds:[_old_screen_botleft_y]
 label_2:
 mov       word ptr ds:[_screen_botleft_y], ax
 mov       ax, word ptr ds:[_screen_botleft_x]
@@ -233,15 +280,12 @@ add       ax, word ptr ds:[_screen_viewport_height]
 xor       bx, bx
 mov       word ptr ds:[_screen_topright_y], ax
 mov       ax, AUTOMAP_SCREENWIDTH
-push      cs
 call      FixedDivWholeA_
-nop       
 mov       word ptr ds:[_am_scale_mtof + 0], ax
 mov       bx, ax
 mov       cx, dx
 mov       ax, 1
 mov       word ptr ds:[_am_scale_mtof + 2], dx
-push      cs
 call      FixedDivWholeA_
 mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx
@@ -251,13 +295,13 @@ pop       cx
 pop       bx
 ret       
 label_1:
-mov       bx, _playerMobj_pos
+mov       bx, OFFSET _playerMobj_pos
 les       si, dword ptr ds:[bx]
 sar       ax, 1
 mov       bx, word ptr es:[si + 2]
 sub       bx, ax
 mov       word ptr ds:[_screen_botleft_x], bx
-mov       bx, _playerMobj_pos
+mov       bx, OFFSET _playerMobj_pos
 les       si, dword ptr ds:[bx]
 sar       dx, 1
 mov       ax, word ptr es:[si + 6]
@@ -306,14 +350,14 @@ push      bp
 mov       bp, sp
 sub       sp, 4
 mov       ax, MAXSHORT
-mov       di, -MAX_SHORT ;08001 h
+mov       di, -MAXSHORT ;08001 h
 xor       bx, bx
 xor       dx, dx
 mov       word ptr ds:[_am_min_level_y], ax
 mov       word ptr ds:[_am_min_level_x], ax
 mov       word ptr ds:[_am_max_level_x], di
 label_6:
-mov       si, _numvertexes
+mov       si, OFFSET _numvertexes
 cmp       bx, word ptr ds:[si]
 jge       label_3
 mov       ax, VERTEXES_SEGMENT
@@ -357,9 +401,7 @@ mov       cx, dx
 mov       ax, AUTOMAP_SCREENWIDTH
 xor       dx, dx
 sub       si, word ptr ds:[_am_min_level_y]
-push      cs
 call      FixedDiv_
-nop       
 mov       word ptr [bp - 4], ax
 mov       ax, si
 mov       word ptr [bp - 2], dx
@@ -368,7 +410,6 @@ mov       bx, ax
 mov       cx, dx
 mov       ax, AUTOMAP_SCREENHEIGHT
 xor       dx, dx
-push      cs
 call      FixedDiv_
 mov       di, word ptr ds:[_am_max_level_y]
 cmp       dx, word ptr [bp - 2]
@@ -469,7 +510,7 @@ push      bx
 push      cx
 push      dx
 push      si
-mov       bx, _automapactive
+mov       bx, OFFSET _automapactive
 xor       ax, ax
 mov       cx, word ptr ds:[_am_scale_ftom + 2]
 mov       word ptr ds:[_m_paninc + 2], ax
@@ -481,23 +522,20 @@ mov       word ptr ds:[_ftom_zoommul], ax
 mov       word ptr ds:[_mtof_zoommul], ax
 mov       ax, AUTOMAP_SCREENWIDTH
 mov       word ptr ds:[_screen_oldloc + 0], MAXSHORT
-push      cs
 call      FixedMul1632_
-nop       
 mov       bx, word ptr ds:[_am_scale_ftom + 0]
 mov       cx, word ptr ds:[_am_scale_ftom + 2]
 mov       word ptr ds:[_screen_viewport_width], ax
 mov       ax, AUTOMAP_SCREENHEIGHT
-push      cs
 call      FixedMul1632_
-mov       bx, _playerMobj_pos
+mov       bx, OFFSET _playerMobj_pos
 mov       word ptr ds:[_screen_viewport_height], ax
 les       si, dword ptr ds:[bx]
 mov       bx, word ptr ds:[_screen_viewport_width]
 mov       cx, word ptr es:[si + 2]
 sar       bx, 1
 sub       cx, bx
-mov       bx, _playerMobj_pos
+mov       bx, OFFSET _playerMobj_pos
 mov       word ptr ds:[_screen_botleft_x], cx
 les       si, dword ptr ds:[bx]
 sar       ax, 1
@@ -506,13 +544,13 @@ sub       bx, ax
 mov       word ptr ds:[_screen_botleft_y], bx
 call      AM_changeWindowLoc_
 mov       ax, word ptr ds:[_screen_botleft_x]
-mov       bx, _st_gamestate
+mov       bx, OFFSET _st_gamestate
 mov       word ptr ds:[_old_screen_botleft_x], ax
 mov       ax, word ptr ds:[_screen_botleft_y]
 mov       byte ptr ds:[bx], 0
-mov       word ptr ds:[_old_screencbotleft_h], ax
+mov       word ptr ds:[_old_screen_botleft_y], ax
 mov       ax, word ptr ds:[_screen_viewport_width]
-mov       bx, _st_firsttime
+mov       bx, OFFSET _st_firsttime
 mov       word ptr ds:[_old_screen_viewport_width], ax
 mov       ax, word ptr ds:[_screen_viewport_height]
 mov       byte ptr ds:[bx], 1
@@ -530,17 +568,17 @@ PUBLIC  AM_clearMarks_
 
 push      cx
 push      di
-mov       cx, AM_NUMMARKPOINTS * SIZEOF_MPOINT_T  ; todo div 2 etc
+mov       cx, AM_NUMMARKPOINTS * SIZE MPOINT_T  ; todo div 2 etc
 mov       al, -1
-mov       di, _markpoints
+mov       di, OFFSET _markpoints
 push      di
 push      ds
 pop       es
 mov       ah, al
 shr       cx, 1
-rep stosw word ptr es:[di], ax
+rep stosw
 adc       cx, cx
-rep stosb byte ptr es:[di], al
+rep stosb
 pop       di
 mov       byte ptr ds:[_markpointnum], 0
 pop       di
@@ -559,7 +597,7 @@ push      di
 mov       word ptr ds:[_am_scale_mtof + 0], 03333h  ; 0x10000 / 5
 mov       cx, 028h 
 xor       ax, ax
-mov       di, _markpoints
+mov       di, OFFSET _markpoints
 mov       word ptr ds:[_am_scale_mtof + 2], ax
 mov       al, -1
 mov       bx, 0B333h
@@ -568,17 +606,15 @@ push      ds
 pop       es
 mov       ah, al
 shr       cx, 1
-rep stosw word ptr es:[di], ax  ; todo just call the func above.
+rep stosw   ; todo just call the func above.
 adc       cx, cx
-rep stosb byte ptr es:[di], al
+rep stosb 
 pop       di
 mov       byte ptr ds:[_markpointnum], 0
 call      AM_findMinMaxBoundaries_
 mov       dx, word ptr ds:[_am_min_scale_mtof]
 xor       ax, ax
-push      cs
 call      FastDiv3216u_
-nop       
 mov       word ptr ds:[_am_scale_mtof + 0], ax
 mov       word ptr ds:[_am_scale_mtof + 2], dx
 cmp       dx, word ptr ds:[_am_max_scale_mtof + 2]
@@ -595,9 +631,7 @@ label_20:
 mov       ax, 1
 mov       bx, word ptr ds:[_am_scale_mtof + 0]
 mov       cx, word ptr ds:[_am_scale_mtof + 2]
-push      cs
 call      FixedDivWholeA_
-nop       
 mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx
 pop       di
@@ -613,9 +647,9 @@ PROC    AM_Stop_ FAR
 PUBLIC  AM_Stop_
 
 push      bx
-mov       bx, _automapactive
+mov       bx, OFFSET _automapactive
 mov       byte ptr ds:[bx], 0
-mov       bx, _st_gamestate
+mov       bx, OFFSET _st_gamestate
 mov       byte ptr ds:[_am_stopped], 1
 mov       byte ptr ds:[bx], 1
 pop       bx
@@ -633,12 +667,12 @@ mov       al, byte ptr ds:[_am_stopped]
 test      al, al
 je        label_21
 label_23:
-mov       bx, _gamemap
+mov       bx, OFFSET _gamemap
 mov       al, byte ptr ds:[_am_lastlevel]
 mov       byte ptr ds:[_am_stopped], 0
 cmp       al, byte ptr ds:[bx]
 jne       label_22
-mov       bx, _gameepisode
+mov       bx, OFFSET _gameepisode
 mov       al, byte ptr ds:[_am_lastepisode]
 cmp       al, byte ptr ds:[bx]
 jne       label_22
@@ -646,17 +680,17 @@ call      AM_initVariables_
 pop       bx
 retf      
 label_21:
-mov       bx, _automapactive
+mov       bx, OFFSET _automapactive
 mov       byte ptr ds:[bx], al
-mov       bx, _st_gamestate
+mov       bx, OFFSET _st_gamestate
 mov       byte ptr ds:[bx], 1
 jmp       label_23
 label_22:
-mov       bx, _gamemap
+mov       bx, OFFSET _gamemap
 call      AM_LevelInit_
 mov       bl, byte ptr ds:[bx]
 mov       byte ptr ds:[_am_lastlevel], bl
-mov       bx, _gameepisode
+mov       bx, OFFSET _gameepisode
 mov       bl, byte ptr ds:[bx]
 mov       byte ptr ds:[_am_lastepisode], bl
 call      AM_initVariables_
@@ -678,7 +712,6 @@ mov       bx, word ptr ds:[_am_scale_mtof + 0]
 mov       word ptr ds:[_am_scale_mtof + 2], ax
 mov       cx, ax
 mov       ax, 1
-push      cs
 call      FixedDivWholeA_
 mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx
@@ -701,9 +734,7 @@ mov       bx, word ptr ds:[_am_max_scale_mtof + 0]
 mov       cx, word ptr ds:[_am_max_scale_mtof + 2]
 mov       word ptr ds:[_am_scale_mtof + 0], bx
 mov       word ptr ds:[_am_scale_mtof + 2], cx
-push      cs
 call      FixedDivWholeA_
-nop       
 mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx
 call      AM_activateNewScale_
@@ -726,7 +757,7 @@ mov       bp, sp
 sub       sp, 06Ah
 mov       si, ax
 mov       word ptr [bp - 4], dx
-mov       bx, _automapactive
+mov       bx, OFFSET _automapactive
 mov       byte ptr [bp - 2], 0
 cmp       byte ptr ds:[bx], 0
 jne       label_24
@@ -747,9 +778,8 @@ pop       cx
 pop       bx
 ret       
 label_26:
-push      cs
 call      AM_Start_
-mov       bx, _viewactive
+mov       bx, OFFSET _viewactive
 mov       byte ptr [bp - 2], 1
 mov       byte ptr ds:[bx], 0
 jmp       label_25
@@ -819,7 +849,7 @@ mov       byte ptr ds:[_followplayer], al
 test      al, al
 je        label_36
 mov       ax, AMSTR_FOLLOWON
-mov       bx, _player + PLAYER_T.player_message
+mov       bx, OFFSET _player + PLAYER_T.player_message
 mov       word ptr ds:[bx], ax
 jmp       label_37
 label_34:
@@ -844,7 +874,7 @@ mov       byte ptr ds:[_am_grid], al
 test      al, al
 je        label_171
 mov       ax, AMSTR_GRIDON
-mov       bx, _player + PLAYER_T.player_message
+mov       bx, OFFSET _player + PLAYER_T.player_message
 mov       word ptr ds:[bx], ax
 jmp       label_37
 label_35:
@@ -915,7 +945,7 @@ je        label_52
 mov       ax, word ptr ds:[_screen_botleft_x]
 mov       word ptr ds:[_old_screen_botleft_x], ax
 mov       ax, word ptr ds:[_screen_botleft_y]
-mov       word ptr ds:[_old_screencbotleft_h], ax
+mov       word ptr ds:[_old_screen_botleft_y], ax
 mov       ax, word ptr ds:[_screen_viewport_width]
 mov       word ptr ds:[_old_screen_viewport_width], ax
 mov       ax, word ptr ds:[_screen_viewport_height]
@@ -948,13 +978,13 @@ test      cx, cx
 jne       label_42
 cmp       ax, 9
 jne       label_42
-mov       bx, _viewactive
+mov       bx, OFFSET _viewactive
 xor       al, al
 mov       byte ptr ds:[bx], 1
-mov       bx, _automapactive
+mov       bx, OFFSET _automapactive
 mov       byte ptr ds:[_am_stopped], 1
 mov       byte ptr ds:[bx], al
-mov       bx, _st_gamestate
+mov       bx, OFFSET _st_gamestate
 mov       byte ptr ds:[_am_bigstate], al
 mov       byte ptr ds:[bx], 1
 jmp       label_37
@@ -962,24 +992,22 @@ label_53:
 mov       ax, 4
 mov       bx, word ptr ds:[_am_scale_ftom + 0]
 mov       cx, word ptr ds:[_am_scale_ftom + 2]
-push      cs
 call      FixedMul1632_
-nop       
 mov       word ptr ds:[_m_paninc + 0], ax
 jmp       label_37
 label_56:
-mov       cx, AM_NUMMARKPOINTS * SIZEOF_MPOINT_T ; todo div 2 etc
+mov       cx, AM_NUMMARKPOINTS * SIZE MPOINT_T ; todo div 2 etc
 mov       ax, -1
-mov       di, _markpoints
-mov       bx, _player + PLAYER_T.player_message
+mov       di, OFFSET _markpoints
+mov       bx, OFFSET _player + PLAYER_T.player_message
 push      di
 push      ds
 pop       es
 mov       ah, al
 shr       cx, 1
-rep stosw word ptr es:[di], ax
+rep stosw
 adc       cx, cx
-rep stosb byte ptr es:[di], al
+rep stosb
 pop       di
 mov       byte ptr ds:[_markpointnum], 0
 mov       word ptr ds:[bx], AMSTR_MARKSCLEARED
@@ -988,9 +1016,7 @@ label_48:
 mov       ax, 4
 mov       bx, word ptr ds:[_am_scale_ftom + 0]
 mov       cx, word ptr ds:[_am_scale_ftom + 2]
-push      cs
 call      FixedMul1632_
-nop       
 mov       word ptr ds:[_m_paninc + 0], ax
 neg       word ptr ds:[_m_paninc + 0]
 jmp       label_37
@@ -998,18 +1024,14 @@ label_54:
 mov       ax, 4
 mov       bx, word ptr ds:[_am_scale_ftom + 0]
 mov       cx, word ptr ds:[_am_scale_ftom + 2]
-push      cs
 call      FixedMul1632_
-nop       
 mov       word ptr ds:[_m_paninc + 2], ax
 jmp       label_37
 label_49:
 mov       ax, 4
 mov       bx, word ptr ds:[_am_scale_ftom + 0]
 mov       cx, word ptr ds:[_am_scale_ftom + 2]
-push      cs
 call      FixedMul1632_
-nop       
 mov       word ptr ds:[_m_paninc + 2], ax
 neg       word ptr ds:[_m_paninc + 2]
 jmp       label_37
@@ -1024,7 +1046,7 @@ xor       al, al
 jmp       label_60
 label_64:
 mov       ax, AMSTR_FOLLOWOFF
-mov       bx, _player + PLAYER_T.player_message
+mov       bx, OFFSET _player + PLAYER_T.player_message
 mov       word ptr ds:[bx], ax
 jmp       label_37
 label_43:
@@ -1032,7 +1054,7 @@ xor       al, al
 jmp       label_61
 label_46:
 mov       ax, AMSTR_GRIDOFF
-mov       bx, _player + PLAYER_T.player_message
+mov       bx, OFFSET _player + PLAYER_T.player_message
 mov       word ptr ds:[bx], ax
 jmp       label_37
 label_67:
@@ -1040,10 +1062,9 @@ lea       bx, [bp - 06Ah]
 mov       ax, AMSTR_MARKEDSPOT
 mov       cx, ds
 lea       dx, [bp - 6]
-push      cs
 call      getStringByIndex_
 lea       bx, [bp - 06Ah]
-mov       ax, _player_message_string
+mov       ax, OFFSET _player_message_string
 push      ds
 mov       cx, ds
 push      dx
@@ -1156,7 +1177,7 @@ pop       si
 pop       cx
 pop       bx
 ret       
-cld       
+
 
 ENDP
 
@@ -1169,9 +1190,7 @@ push      dx
 mov       bx, word ptr ds:[_am_scale_mtof + 0]
 mov       cx, word ptr ds:[_am_scale_mtof + 2]
 mov       ax, word ptr ds:[_mtof_zoommul]
-push      cs
 call      FixedMul1632_
-nop       
 mov       cl, 4
 shl       dx, cl
 rol       ax, cl
@@ -1183,7 +1202,6 @@ mov       bx, ax
 mov       cx, dx
 mov       ax, 1
 mov       word ptr ds:[_am_scale_mtof + 2], dx
-push      cs
 call      FixedDivWholeA_
 mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx
@@ -1228,7 +1246,7 @@ PUBLIC  AM_doFollowPlayer_
 push      bx
 push      dx
 push      si
-mov       bx, _playerMobj_pos
+mov       bx, OFFSET _playerMobj_pos
 les       si, dword ptr ds:[bx]
 mov       ax, word ptr ds:[_screen_oldloc + 0]
 cmp       ax, word ptr es:[si + 2]
@@ -1241,7 +1259,7 @@ pop       dx
 pop       bx
 ret       
 label_82:
-mov       bx, _playerMobj_pos
+mov       bx, OFFSET _playerMobj_pos
 les       si, dword ptr ds:[bx]
 mov       ax, word ptr ds:[_screen_viewport_width]
 mov       bx, word ptr es:[si + 2]
@@ -1249,7 +1267,7 @@ sar       ax, 1
 sub       bx, ax
 mov       ax, bx
 mov       word ptr ds:[_screen_botleft_x], bx
-mov       bx, _playerMobj_pos
+mov       bx, OFFSET _playerMobj_pos
 les       si, dword ptr ds:[bx]
 mov       dx, word ptr ds:[_screen_viewport_height]
 mov       bx, word ptr es:[si + 6]
@@ -1259,7 +1277,7 @@ mov       word ptr ds:[_screen_botleft_y], bx
 add       bx, word ptr ds:[_screen_viewport_height]
 add       ax, word ptr ds:[_screen_viewport_width]
 mov       word ptr ds:[_screen_topright_y], bx
-mov       bx, _playerMobj_pos
+mov       bx, OFFSET _playerMobj_pos
 mov       word ptr ds:[_screen_topright_x], ax
 les       si, dword ptr ds:[bx]
 mov       ax, word ptr es:[si + 2]
@@ -1273,7 +1291,7 @@ ret
 
 ENDP
 
-PROC    AM_Ticker_ FAR
+PROC    AM_Ticker_ NEAR
 PUBLIC  AM_Ticker_
 
 cmp       byte ptr ds:[_followplayer], 0
@@ -1287,13 +1305,13 @@ cmp       word ptr ds:[_m_paninc + 0], 0
 jne       label_85
 cmp       word ptr ds:[_m_paninc + 2], 0
 jne       label_85
-retf      
+ret      
 label_83:
 call      AM_doFollowPlayer_
 jmp       label_86
 label_85:
 call      AM_changeWindowLoc_
-retf      
+ret      
 
 ENDP
 
@@ -1406,7 +1424,6 @@ mov       cx, word ptr ds:[_am_scale_mtof + 2]
 mov       ax, word ptr ds:[bx]
 mov       bx, word ptr ds:[_am_scale_mtof + 0]
 sub       ax, word ptr ds:[_screen_botleft_x]
-push      cs
 call      FixedMul1632_
 mov       bx, word ptr [bp - 8]
 mov       cx, word ptr ds:[_am_scale_mtof + 2]
@@ -1414,7 +1431,6 @@ mov       word ptr ds:[_am_fl + 0], ax
 mov       ax, word ptr ds:[bx + 2]
 mov       bx, word ptr ds:[_am_scale_mtof + 0]
 sub       ax, word ptr ds:[_screen_botleft_y]
-push      cs
 call      FixedMul1632_
 mov       dx, AUTOMAP_SCREENHEIGHT
 mov       bx, word ptr [bp - 8]
@@ -1424,7 +1440,6 @@ mov       ax, word ptr ds:[bx + 4]
 mov       bx, word ptr ds:[_am_scale_mtof + 0]
 sub       ax, word ptr ds:[_screen_botleft_x]
 mov       word ptr ds:[_am_fl + 2], dx
-push      cs
 call      FixedMul1632_
 mov       bx, word ptr [bp - 8]
 mov       cx, word ptr ds:[_am_scale_mtof + 2]
@@ -1432,7 +1447,6 @@ mov       word ptr ds:[_am_fl + 4], ax
 mov       ax, word ptr ds:[bx + 6]
 mov       bx, word ptr ds:[_am_scale_mtof + 0]
 sub       ax, word ptr ds:[_screen_botleft_y]
-push      cs
 call      FixedMul1632_
 mov       dx, AUTOMAP_SCREENHEIGHT
 mov       bx, word ptr ds:[_am_fl + 2]
@@ -1681,7 +1695,7 @@ push      bx
 push      cx
 push      dx
 mov       ax, word ptr ds:[_screen_botleft_x]
-mov       bx, _bmaporgx
+mov       bx, OFFSET _bmaporgx
 mov       cx, ax
 mov       dx, ax
 sub       cx, word ptr ds:[bx]
@@ -1693,7 +1707,7 @@ sub       dx, word ptr ds:[bx]
 mov       bx, dx
 sar       bx, 15 ; todo no
 sub       cx, bx
-mov       bx, _bmaporgx
+mov       bx, OFFSET _bmaporgx
 mov       dx, ax
 sub       dx, word ptr ds:[bx]
 xor       ch, ch
@@ -1701,14 +1715,14 @@ mov       bx, dx
 and       cl, 07Fh
 sar       bx, 15 ; todo no
 xor       cx, bx
-mov       bx, _bmaporgx
+mov       bx, OFFSET _bmaporgx
 mov       dx, ax
 sub       dx, word ptr ds:[bx]
 mov       bx, dx
 sar       bx, 15 ; todo no
 sub       cx, bx
 je        label_132
-mov       bx, _bmaporgx
+mov       bx, OFFSET _bmaporgx
 mov       cx, ax
 mov       dx, ax
 sub       cx, word ptr ds:[bx]
@@ -1720,7 +1734,7 @@ sub       dx, word ptr ds:[bx]
 mov       bx, dx
 sar       bx, 15 ; todo no
 sub       cx, bx
-mov       bx, _bmaporgx
+mov       bx, OFFSET _bmaporgx
 mov       dx, ax
 sub       dx, word ptr ds:[bx]
 xor       ch, ch
@@ -1728,7 +1742,7 @@ mov       bx, dx
 and       cl, 07Fh
 sar       bx, 15 ; todo no
 xor       cx, bx
-mov       bx, _bmaporgx
+mov       bx, OFFSET _bmaporgx
 mov       dx, ax
 sub       dx, word ptr ds:[bx]
 mov       bx, dx
@@ -1749,7 +1763,7 @@ cmp       ax, cx
 jge       label_131
 label_130:
 mov       dx, GRIDCOLORS
-mov       ax, _am_ml + 0
+mov       ax, OFFSET _am_ml + 0
 mov       word ptr ds:[_am_ml + 0], bx
 mov       word ptr ds:[_am_ml + 4], bx
 add       bx, 080h
@@ -1758,7 +1772,7 @@ cmp       bx, cx
 jl        label_130
 label_131:
 mov       ax, word ptr ds:[_screen_botleft_y]
-mov       bx, _bmaporgy
+mov       bx, OFFSET _bmaporgy
 mov       cx, ax
 mov       dx, ax
 sub       cx, word ptr ds:[bx]
@@ -1770,7 +1784,7 @@ sub       dx, word ptr ds:[bx]
 mov       bx, dx
 sar       bx, 15 ; todo no
 sub       cx, bx
-mov       bx, _bmaporgy
+mov       bx, OFFSET _bmaporgy
 mov       dx, ax
 sub       dx, word ptr ds:[bx]
 xor       ch, ch
@@ -1778,14 +1792,14 @@ mov       bx, dx
 and       cl, 07Fh
 sar       bx, 15 ; todo no
 xor       cx, bx
-mov       bx, _bmaporgy
+mov       bx, OFFSET _bmaporgy
 mov       dx, ax
 sub       dx, word ptr ds:[bx]
 mov       bx, dx
 sar       bx, 15 ; todo no
 sub       cx, bx
 je        label_133
-mov       bx, _bmaporgy
+mov       bx, OFFSET _bmaporgy
 mov       cx, ax
 mov       dx, ax
 sub       cx, word ptr ds:[bx]
@@ -1797,7 +1811,7 @@ sub       dx, word ptr ds:[bx]
 mov       bx, dx
 sar       bx, 15 ; todo no
 sub       cx, bx
-mov       bx, _bmaporgy
+mov       bx, OFFSET _bmaporgy
 mov       dx, ax
 sub       dx, word ptr ds:[bx]
 xor       ch, ch
@@ -1805,7 +1819,7 @@ mov       bx, dx
 and       cl, 07Fh
 sar       bx, 15 ; todo no
 xor       cx, bx
-mov       bx, _bmaporgy
+mov       bx, OFFSET _bmaporgy
 mov       dx, ax
 sub       dx, word ptr ds:[bx]
 mov       bx, dx
@@ -1826,7 +1840,7 @@ cmp       ax, cx
 jge       label_134
 label_135:
 mov       dx, GRIDCOLORS
-mov       ax, _am_ml + 0
+mov       ax, OFFSET _am_ml + 0
 mov       word ptr ds:[_am_ml + 2], bx
 mov       word ptr ds:[_am_ml + 6], bx
 add       bx, 080h
@@ -1856,7 +1870,7 @@ sub       sp, 0Eh
 mov       word ptr [bp - 4], 0
 xor       bx, bx
 label_139:
-mov       si, _numlines
+mov       si, OFFSET _numlines
 mov       ax, word ptr [bp - 4]
 cmp       ax, word ptr ds:[si]
 jb        label_136
@@ -1934,13 +1948,13 @@ jmp       label_139
 label_137:
 cmp       byte ptr [bp - 2], 0
 jne       label_140
-mov       si, _player + PLAYER_T.player_messagestring ; 6f6? todo dummied? whats this
+mov       si, OFFSET _player + PLAYER_T.player_messagestring ; 6f6? todo dummied? whats this
 cmp       word ptr ds:[si], 0
 je        label_141
 test      al, 080h
 jne       label_141
 mov       dx, AM_CLEARMARKKEY
-mov       ax, _am_l + 0
+mov       ax, OFFSET _am_l + 0
 call      AM_drawMline_
 jmp       label_141
 label_138:
@@ -1978,7 +1992,7 @@ je        label_150
 cmp       byte ptr ds:[_am_cheating], 0
 label_142:
 mov       dx, WALLCOLORS
-mov       ax, _am_l + 0
+mov       ax, OFFSET _am_l + 0
 call      AM_drawMline_
 inc       word ptr [bp - 4]
 add       bx, 010h
@@ -1991,7 +2005,7 @@ xor       al, al
 jmp       label_145
 label_149:
 mov       dx, WALLCOLORS + WALLRANGE / 2
-mov       ax, _am_l + 0
+mov       ax, OFFSET _am_l + 0
 call      AM_drawMline_
 inc       word ptr [bp - 4]
 add       bx, 010h
@@ -2006,21 +2020,21 @@ jne       label_148
 jmp       label_141
 label_148:
 mov       dx, TSWALLCOLORS
-mov       ax, _am_l + 0
+mov       ax, OFFSET _am_l + 0
 call      AM_drawMline_
 inc       word ptr [bp - 4]
 add       bx, 010h
 jmp       label_139
 label_146:
 mov       dx, FDWALLCOLORS
-mov       ax, _am_l + 0
+mov       ax, OFFSET _am_l + 0
 call      AM_drawMline_
 inc       word ptr [bp - 4]
 add       bx, 010h
 jmp       label_139
 label_147:
 mov       dx, CDWALLCOLORS
-mov       ax, _am_l + 0
+mov       ax, OFFSET _am_l + 0
 call      AM_drawMline_
 inc       word ptr [bp - 4]
 add       bx, 010h
@@ -2044,17 +2058,13 @@ mov       cx, bx
 mov       ax, FINECOSINE_SEGMENT
 mov       dx, cx
 mov       bx, word ptr ds:[si]
-push      cs
 call      FastMulTrig16_
-nop       
 mov       word ptr [bp - 4], ax
 mov       word ptr [bp - 2], dx
 mov       bx, word ptr ds:[di]
 mov       ax, FINESINE_SEGMENT
 mov       dx, cx
-push      cs
 call      FastMulTrig16_
-nop       
 mov       bx, word ptr [bp - 4]
 sub       bx, ax
 mov       ax, word ptr [bp - 2]
@@ -2063,14 +2073,12 @@ mov       bx, word ptr ds:[si]
 mov       word ptr [bp - 6], ax
 mov       dx, cx
 mov       ax, FINESINE_SEGMENT
-push      cs
 call      FastMulTrig16_
 mov       word ptr [bp - 4], ax
 mov       word ptr [bp - 2], dx
 mov       bx, word ptr ds:[di]
 mov       ax, FINECOSINE_SEGMENT
 mov       dx, cx
-push      cs
 call      FastMulTrig16_
 mov       bx, word ptr [bp - 4]
 add       bx, ax
@@ -2112,8 +2120,8 @@ jmp       label_157
 label_158:
 test      cx, cx
 je        label_156
-mov       dx, _am_lc + 2
-mov       ax, _am_lc + 0
+mov       dx, OFFSET _am_lc + 2
+mov       ax, OFFSET _am_lc + 0
 mov       bx, cx
 call      AM_rotate_
 label_156:
@@ -2134,8 +2142,8 @@ shl       word ptr ds:[_am_lc + 6], 4
 label_155:
 test      cx, cx
 je        label_154
-mov       dx, _am_lc + 6
-mov       ax, _am_lc + 4
+mov       dx, OFFSET _am_lc + 6
+mov       ax, OFFSET _am_lc + 4
 mov       bx, cx
 call      AM_rotate_
 label_154:
@@ -2149,7 +2157,7 @@ mov       al, byte ptr [bp + 8]
 xor       ah, ah
 add       si, 8
 mov       dx, ax
-mov       ax, _am_lc + 0
+mov       ax, OFFSET _am_lc + 0
 inc       di
 call      AM_drawMline_
 cmp       di, word ptr [bp - 2]
@@ -2177,7 +2185,7 @@ push      dx
 push      si
 cmp       byte ptr ds:[_am_cheating], 0
 je        label_159
-mov       bx, _playerMobj_pos
+mov       bx, OFFSET _playerMobj_pos
 mov       dx, 010h
 les       si, dword ptr ds:[bx]
 mov       ax, OFFSET _cheat_player_arrow
@@ -2195,7 +2203,7 @@ pop       cx
 pop       bx
 ret       
 label_159:
-mov       bx, _playerMobj_pos
+mov       bx, OFFSET _playerMobj_pos
 mov       dx, 7
 les       si, dword ptr ds:[bx]
 mov       ax, OFFSET _player_arrow
@@ -2218,7 +2226,7 @@ sub       sp, 4
 mov       word ptr [bp - 2], 0
 xor       di, di
 label_162:
-mov       si, _numsectors
+mov       si, OFFSET _numsectors
 mov       ax, word ptr [bp - 2]
 cmp       ax, word ptr ds:[si]
 jb        label_160
@@ -2292,16 +2300,13 @@ label_164:
 mov       bx, word ptr ds:[_am_scale_mtof + 0]
 mov       cx, word ptr ds:[_am_scale_mtof + 2]
 sub       ax, word ptr ds:[_screen_botleft_x]
-push      cs
 call      FixedMul1632_
 mov       bx, word ptr ds:[_am_scale_mtof + 0]
 mov       si, ax
 mov       ax, word ptr ds:[di + _markpoints + 2]
 mov       cx, word ptr ds:[_am_scale_mtof + 2]
 sub       ax, word ptr ds:[_screen_botleft_y]
-push      cs
 call      FixedMul1632_
-nop       
 mov       dx, AUTOMAP_SCREENHEIGHT
 sub       dx, ax
 test      si, si
@@ -2322,7 +2327,6 @@ add       bx, AMMNUMPATCHOFFSETS_FAR_OFFSET
 push      ax
 xor       bx, bx
 mov       ax, si
-push      cs
 call      V_DrawPatch_
 jmp       label_166
 
@@ -2354,7 +2358,7 @@ push      bx
 push      cx
 push      dx
 push      di
-mov       cx, AUTOMAP_SCREENWIDTH*AUTOMAP_SCREENHEIGHT 0D200h
+mov       cx, AUTOMAP_SCREENWIDTH*AUTOMAP_SCREENHEIGHT; 0D200h
 mov       dx, SCREEN0_SEGMENT
 xor       al, al
 xor       di, di
@@ -2362,9 +2366,9 @@ mov       es, dx
 push      di
 mov       ah, al
 shr       cx, 1
-rep stosw word ptr es:[di], ax
+rep stosw 
 adc       cx, cx
-rep stosb byte ptr es:[di], al
+rep stosb 
 pop       di
 cmp       byte ptr ds:[_am_grid], 0
 je        label_167
@@ -2385,20 +2389,20 @@ call      AM_drawMarks_
 xor       dx, dx
 mov       bx, AUTOMAP_SCREENWIDTH
 xor       ax, ax
-push      cs
 call      V_MarkRect_
-nop       
 pop       di
 pop       dx
 pop       cx
 pop       bx
-retf      
+ret      
 label_168:
 call      AM_drawThings_
 jmp       label_169
 
 
 ENDP
+
+@
 
 PROC    AM_MAP_ENDMARKER_ NEAR
 PUBLIC  AM_MAP_ENDMARKER_
