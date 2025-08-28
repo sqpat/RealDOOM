@@ -205,8 +205,7 @@ ret
 
 ENDP
 
-COMMENT @
-; todo optim
+
 PROC    AM_activateNewScale_ NEAR
 PUBLIC  AM_activateNewScale_
 
@@ -249,6 +248,7 @@ pop       bx
 ret  
 
 ENDP
+
 
 ; todo inline its single usage
 ; todo optim
@@ -348,44 +348,34 @@ PROC    AM_findMinMaxBoundaries_ NEAR
 PUBLIC  AM_findMinMaxBoundaries_
 
 PUSHA_NO_AX_MACRO
-mov       ax, MAXSHORT
-cwd     
-mov       bx, dx ; zero
-mov       word ptr ds:[_am_min_level_y], ax
-mov       word ptr ds:[_am_min_level_x], ax
-mov       ax, -MAXSHORT ;08001 h
-mov       word ptr ds:[_am_max_level_x], ax
-mov       word ptr ds:[_am_max_level_y], ax
-mov       bx, word ptr ds:[_numvertexes]
+mov       dx, MAXSHORT
+mov       di, MAXSHORT
+mov       bx, -MAXSHORT
+mov       bp, -MAXSHORT
 
-mov       dx, word ptr ds:[_am_min_level_x]
-mov       cx, word ptr ds:[_am_max_level_x]
-mov       di, word ptr ds:[_am_min_level_y]
-mov       bp, word ptr ds:[_am_max_level_y]
+mov       cx, word ptr ds:[_numvertexes]
 
-SHIFT_MACRO sal bx 2
+
 mov       ds, word ptr ds:[_VERTEXES_SEGMENT_PTR]
-
+xor       si, si
 ; dx = minx
-; cx = maxx
+; bx = maxx
 ; di = miny
 ; bp = maxy
 ; si = current ptr
-; bx = loop end 
+; cx = loop end 
 
 
 loop_next_vertex:
-cmp       si, bx
-jge       done_iterating_vertexes
 
-lodsw
+lodsw ; get x
 
 cmp       ax, dx
-jnge      update_minx
+jl        update_minx
 
-cmp       ax, cx
+cmp       ax, bx
 jle       dont_update_x_minmax
-xchg      ax, cx ; update_max_x
+xchg      ax, bx ; update_max_x
 jmp       dont_update_x_minmax
 
 update_minx:
@@ -393,10 +383,10 @@ xchg      ax, dx ; update_min_x
 dont_update_x_minmax:
 
 
-lodsw
+lodsw ; get y
 
 cmp       ax, di
-jnge      update_miny
+jl        update_miny
 cmp       ax, bp
 jle       dont_update_y_minmax
 xchg      ax, bp ; update max_y
@@ -404,16 +394,15 @@ jmp       dont_update_y_minmax
 update_miny:
 xchg      ax, di ; update min_y
 dont_update_y_minmax:
-jmp       loop_next_vertex
 
-done_iterating_vertexes:
+loop      loop_next_vertex
 
-mov       ax, ss
-mov       ds, ax
 
-; todo    stosw?
+push      ss
+pop       ds
+
 mov       word ptr ds:[_am_min_level_x], dx
-mov       word ptr ds:[_am_max_level_x], cx
+mov       word ptr ds:[_am_max_level_x], bx
 mov       word ptr ds:[_am_min_level_y], di
 mov       word ptr ds:[_am_max_level_y], bp
 
@@ -425,42 +414,44 @@ mov       word ptr ds:[_am_max_level_y], bp
 ;	b = FixedDiv(automap_screenheight, max_h);
 
 
-xchg      ax, cx
-sub       ax, dx
-cwd       
-xchg      ax, bx
-mov       cx, dx
+sub       bx, dx
+xor       cx, cx
+
+
 mov       ax, AUTOMAP_SCREENWIDTH
 cwd
 call      FixedDiv_
-
-xchg      ax, si
-lea       ax, [bp - di] ; max y - min y
-mov       di, dx
-cwd
-xchg      ax, bx
-mov       cx, dx
+xchg      ax, si ; store a
+mov       di, dx ; store a
+lea       bx, [bp - di] ; max y - min y
 mov       ax, AUTOMAP_SCREENHEIGHT
 cwd
 call      FixedDiv_
 
+;    am_min_scale_mtof = a < b ? a : b;
+; dx:ax is b
+
 cmp       dx, di
 jg        use_b
-jne       use_a
+jl        use_a
 cmp       ax, si
-jbe       use_a
-use_b:
-xchg       ax, si
+jge       use_b
 use_a:
+xchg       ax, si
+use_b:
 ;	am_max_scale_mtof.w = 0x54000;// FixedDiv(automap_screenheight, 2*16);
 
 mov       word ptr ds:[_am_min_scale_mtof], ax
 mov       word ptr ds:[_am_max_scale_mtof + 0], 04000h
 mov       word ptr ds:[_am_max_scale_mtof + 2], 5
+
 POPA_NO_AX_MACRO
 ret       
 
 ENDP
+
+COMMENT @
+
 
 PROC    AM_changeWindowLoc_ NEAR
 PUBLIC  AM_changeWindowLoc_

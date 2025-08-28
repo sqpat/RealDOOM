@@ -168,7 +168,6 @@ fixed_16_t __near CYMTOF16(fixed_16_t y) {
 
 void __far V_MarkRect ( int16_t x, int16_t y, int16_t width, int16_t height);
 
- */
 
 //
 //
@@ -270,6 +269,7 @@ void __near AM_findMinMaxBoundaries(void) {
 
 }
 
+ */
 
 //
 //
