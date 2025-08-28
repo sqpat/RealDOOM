@@ -590,8 +590,8 @@
 #define R_WriteBackMaskedFrameConstantsCallOffset (*((int16_t __near*)              (_NULL_OFFSET + 0x0710)))
 #define NetUpdate_addr					  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0714)))
 
-#define FixedMul16u32_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0718)))
-#define FastMul16u32u_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x071C)))
+// #define FixedMul16u32_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0718)))
+// #define FastMul16u32u_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x071C)))
 #define FastDiv3216u_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0720)))
 #define bulletslope     				  (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x0724)))
 #define weaponinfo 						  ((weaponinfo_t __near *)           (_NULL_OFFSET + 0x0728))

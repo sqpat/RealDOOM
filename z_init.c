@@ -834,8 +834,8 @@ void __near Z_LoadBinaries() {
 	FixedDiv_addr =						(uint32_t)(FixedDiv);
 	FixedMulTrigNoShift_addr =			(uint32_t)(FixedMulTrigNoShift);
 	FastDiv32u16u_addr =				(uint32_t)(FastDiv32u16u);
-	FixedMul16u32_addr =				(uint32_t)(FixedMul16u32);
-	FastMul16u32u_addr =				(uint32_t)(FastMul16u32u);
+	// FixedMul16u32_addr =				(uint32_t)(FixedMul16u32);
+	// FastMul16u32u_addr =				(uint32_t)(FastMul16u32u);
 	FastDiv3216u_addr =					(uint32_t)(FastDiv3216u);
 	FixedMulTrigSpeedNoShift_addr =		(uint32_t)(FixedMulTrigSpeedNoShift);
 	FixedMulTrigSpeed_addr =			(uint32_t)(FixedMulTrigSpeed);

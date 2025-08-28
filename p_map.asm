@@ -8039,7 +8039,7 @@ ENDP
 
 ; first param is unsigned so DX and sign can be skipped
 PROC FixedMul16u32_MapLocal_ NEAR
-
+PUBLIC FixedMul16u32_MapLocal_
 ; AX  *  CX:BX
 ;  0  1   2  3
 
@@ -8079,9 +8079,46 @@ ret
 ENDP
 
 
+; both params unsigned. drop all sign extensions.. and dont shift by 16 like fixed algos!
+PROC FastMul16u32u_MapLocal_  NEAR
+PUBLIC FastMul16u32u_MapLocal_
+
+; AX  *  CX:BX
+;  0  1   2  3
+
+; AX * CX:BX
+
+;
+; 
+;BYTE
+; RETURN VALUE
+;                3       2       1		0
+;                DONTUSE USE     USE    DONTUSE
+
+
+;                               AXBXhi	 AXBXlo
+;                       AXCXhi  AXCXlo
+;       
+
+
+
+; need to get the sign-extends for DX and CX
+
+
+XCHG CX, AX    ; AX stored in CX
+MUL  CX        ; AX * CX
+XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+MUL  BX        ; AX * BX
+ADD  DX, CX    ; add 
+
+
+ret
+
+ENDP
+
 
 PROC FixedMul1632_MapLocal_ NEAR
-
+PUBLIC FixedMul1632_MapLocal_
 
 
 push  si

@@ -35,7 +35,8 @@ EXTRN P_RemoveThinker_:NEAR
 EXTRN P_CreateThinker_:NEAR
 EXTRN GetDeathState_:NEAR
 EXTRN GetSpawnHealth_:NEAR
-
+EXTRN FixedMul16u32_MapLocal_:NEAR
+EXTRN FastMul16u32u_MapLocal_:NEAR
 
 
 .DATA
@@ -251,11 +252,7 @@ mov       cx, 45
 idiv      cx
 mov       cx, ANG45_HIGHBITS
 xor       bx, bx
-;call      FastMul16u32u_
-; call  FastMul16u32u_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FastMul16u32u_addr
+call  FastMul16u32u_MapLocal_
 
 les       bx, dword ptr ds:[_playerMobj_pos]
 mov       word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], ax
@@ -560,11 +557,7 @@ mov       bx, dx ; zero
 mov       cx, 45
 idiv      cx
 mov       cx, ANG45_HIGHBITS
-;call      FastMul16u32u_
-; call  FastMul16u32u_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FastMul16u32u_addr
+call  FastMul16u32u_MapLocal_
 les       bx, dword ptr ds:[_setStateReturn_pos]
 mov       word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], ax
 mov       word ptr es:[bx + MOBJ_POS_T.mp_angle + 2], dx
@@ -1400,10 +1393,7 @@ je    continue_stopspeed_checks_1
 apply_friction:
 
 mov   ax, FRICTION
-;call  FixedMul16u32_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul16u32_addr
+call  FixedMul16u32_MapLocal_
 
 
 mov   bx, word ptr [bp - 2]
@@ -1412,10 +1402,8 @@ mov   cx, si
 mov   word ptr ds:[bx + MOBJ_T.m_momx+2], dx
 mov   bx, di
 mov   ax, FRICTION
-;call  FixedMul16u32_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul16u32_addr
+call  FixedMul16u32_MapLocal_
+
 
 mov   bx, word ptr [bp - 2]
 mov   word ptr ds:[bx + MOBJ_T.m_momy+0], ax
@@ -1709,10 +1697,7 @@ push  dx ; in case we need delta again
 mov   bx, ax
 mov   cx, dx
 mov   ax, 3
-; call  FastMul16u32u_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FastMul16u32u_addr
+call  FastMul16u32u_MapLocal_
 
 mov   bx, ax
 mov   ax, dx
@@ -1748,10 +1733,7 @@ check_for_add_floatspeed:
 mov   bx, ax
 mov   cx, dx
 mov   ax, 3
-; call  FastMul16u32u_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FastMul16u32u_addr
+call  FastMul16u32u_MapLocal_
 
 cmp   dx, word ptr [bp - 0Ah]
 jg    do_add_floatspeed
@@ -2313,10 +2295,7 @@ xor   bx, bx
 mov   cx, ANG45_HIGHBITS
 mov   si, word ptr ds:[_setStateReturn_pos + 0]
 mov   di, word ptr ds:[_setStateReturn_pos + 2]
-; call  FastMul16u32u_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FastMul16u32u_addr
+call  FastMul16u32u_MapLocal_
 
 mov   es, di
 mov   word ptr es:[si + MOBJ_POS_T.mp_angle + 0], ax
@@ -2881,10 +2860,7 @@ sub    ax, 080h
 mov    cx, word ptr [bp - 4]
 mov    bx, word ptr [bp - 6]
 
-; call  FastMul16u32u_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FastMul16u32u_addr
+call  FastMul16u32u_MapLocal_
 
 mov    bx, word ptr [bp - 8]
 mov    cx, MOBJPOSLIST_6800_SEGMENT

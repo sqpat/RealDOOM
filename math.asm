@@ -276,7 +276,7 @@ ENDP
 
 
 
-PROC FixedMul1632_ FAR
+PROC FixedMul1632_  NEAR
 PUBLIC FixedMul1632_
 
 ; AX  *  CX:BX
@@ -364,7 +364,7 @@ ADC  DX, SI
  
 
 pop   si
-retf
+ret
 
 
 
@@ -923,7 +923,7 @@ retf
 ENDP
 
 COMMENT @
-PROC FixedMulBig1632_ FAR
+PROC FixedMulBig1632_ NEAR
 PUBLIC FixedMulBig1632_
 
 ; AX  *  CX:BX
@@ -1075,7 +1075,7 @@ ENDP
 @
 
 ; both params unsigned. drop all sign extensions.. and dont shift by 16 like fixed algos!
-PROC FastMul16u32u_  FAR
+PROC FastMul16u32u_  NEAR
 PUBLIC FastMul16u32u_
 
 ; AX  *  CX:BX
@@ -1107,7 +1107,7 @@ MUL  BX        ; AX * BX
 ADD  DX, CX    ; add 
 
 
-retf
+ret
 
 ENDP
 

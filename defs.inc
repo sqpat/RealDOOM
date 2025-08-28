@@ -525,8 +525,8 @@ _R_DrawMaskedCall = 			 	 _NULL_OFFSET + 0070Ch
 _R_WriteBackMaskedFrameConstantsCall =  _NULL_OFFSET + 00710h
 _NetUpdate_addr =					 _NULL_OFFSET + 00714h
 
-_FixedMul16u32_addr =				 _NULL_OFFSET + 00718h
-_FastMul16u32u_addr =				 _NULL_OFFSET + 0071Ch
+;_FixedMul16u32_addr =				 _NULL_OFFSET + 00718h
+;_FastMul16u32u_addr =				 _NULL_OFFSET + 0071Ch
 _FastDiv3216u_addr =				 _NULL_OFFSET + 00720h
 _bulletslope = 			 			 _NULL_OFFSET + 00724h
 _weaponinfo = 			 			 _NULL_OFFSET + 00728h

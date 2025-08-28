@@ -32,7 +32,7 @@ EXTRN P_RemoveMobj_:NEAR
 EXTRN P_DropWeapon_:NEAR
 EXTRN P_SpawnMobj_:NEAR
 EXTRN P_SetMobjState_:NEAR
-
+EXTRN FastMul16u32u_MapLocal_:NEAR
 
 
 
@@ -1073,10 +1073,7 @@ jmp    word ptr cs:[bx + OFFSET mass_thrust_switch_block]
 mass_thrust_type_1:
 mov    bx, 08000h
 mov    cx, 0Ch
-; call  FastMul16u32u_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FastMul16u32u_addr
+call  FastMul16u32u_MapLocal_
 
 mov    bx, 500
 do_mass_thrust_div:
@@ -1087,20 +1084,14 @@ ret
 mass_thrust_type_5:
 mov    bx, 08000h
 mov    cx, 0Ch
-; call  FastMul16u32u_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FastMul16u32u_addr
+call  FastMul16u32u_MapLocal_
 
 mov    bx, 600
 jmp    do_mass_thrust_div
 mass_thrust_type_4:
 mov    bx, 08000h
 mov    cx, 0Ch
-; call  FastMul16u32u_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FastMul16u32u_addr
+call  FastMul16u32u_MapLocal_
 
 mov    bx, 1000
 jmp    do_mass_thrust_div
