@@ -142,6 +142,8 @@
 fixed_16_t __near MTOF16(fixed_16_t x);
 fixed_16_t __near CXMTOF16(fixed_16_t x);
 fixed_16_t __near CYMTOF16(fixed_16_t y);
+void __near AM_activateNewScale(void);
+void __near AM_restoreScaleAndLoc(void);
 
 
 /*
@@ -161,7 +163,6 @@ fixed_16_t __near CYMTOF16(fixed_16_t y) {
 	return automap_screenheight - MTOF16(y - screen_botleft_y);
 }
 
- */
 
 void __far V_MarkRect ( int16_t x, int16_t y, int16_t width, int16_t height);
 
@@ -206,6 +207,8 @@ void __near AM_restoreScaleAndLoc(void) {
 	am_scale_mtof.w = FixedDivWholeA(automap_screenwidth, temp.w);
     am_scale_ftom.w = FixedDivWholeA(1, am_scale_mtof.w);
 }
+ */
+
 
 //
 // adds a marker at the current location

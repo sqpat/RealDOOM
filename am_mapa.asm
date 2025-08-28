@@ -209,15 +209,14 @@ ret
 
 ENDP
 
-COMMENT @
-
+; todo optim
 PROC    AM_activateNewScale_ NEAR
 PUBLIC  AM_activateNewScale_
 
 push      bx
 push      cx
 push      dx
-mov       ax, word ptr ds:[_screen_viewport_width]
+mov       ax, word ptr ds:[_screen_viewport_width]  ; todo put side by side, LES and get both
 sar       ax, 1
 add       word ptr ds:[_screen_botleft_x], ax
 mov       ax, word ptr ds:[_screen_viewport_height]
@@ -252,6 +251,8 @@ ret
 
 ENDP
 
+; todo inline its single usage
+; todo optim
 PROC    AM_restoreScaleAndLoc_ NEAR
 PUBLIC  AM_restoreScaleAndLoc_
 
@@ -259,17 +260,27 @@ PUBLIC  AM_restoreScaleAndLoc_
 push      bx
 push      cx
 push      dx
-push      si
 mov       ax, word ptr ds:[_old_screen_viewport_width]
 mov       dx, word ptr ds:[_old_screen_viewport_height]
 mov       word ptr ds:[_screen_viewport_width], ax
 mov       word ptr ds:[_screen_viewport_height], dx
 cmp       byte ptr ds:[_followplayer], 0
-jne       label_1
+jne       do_follow_player
 mov       ax, word ptr ds:[_old_screen_botleft_x]
 mov       word ptr ds:[_screen_botleft_x], ax
 mov       ax, word ptr ds:[_old_screen_botleft_y]
-label_2:
+jmp       got_screen_xy
+do_follow_player:
+les       bx, dword ptr ds:[_playerMobj_pos]
+sar       ax, 1
+mov       cx, word ptr es:[si + MOBJ_POS_T.mp_x + 2]
+sub       cx, ax
+mov       word ptr ds:[_screen_botleft_x], cx
+sar       dx, 1
+mov       ax, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
+sub       ax, dx
+
+got_screen_xy:
 mov       word ptr ds:[_screen_botleft_y], ax
 mov       ax, word ptr ds:[_screen_botleft_x]
 add       ax, word ptr ds:[_screen_viewport_width]
@@ -289,26 +300,16 @@ mov       word ptr ds:[_am_scale_mtof + 2], dx
 call      FixedDivWholeA_
 mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx
-pop       si
 pop       dx
 pop       cx
 pop       bx
 ret       
-label_1:
-mov       bx, OFFSET _playerMobj_pos
-les       si, dword ptr ds:[bx]
-sar       ax, 1
-mov       bx, word ptr es:[si + 2]
-sub       bx, ax
-mov       word ptr ds:[_screen_botleft_x], bx
-mov       bx, OFFSET _playerMobj_pos
-les       si, dword ptr ds:[bx]
-sar       dx, 1
-mov       ax, word ptr es:[si + 6]
-sub       ax, dx
-jmp       label_2
+
 
 ENDP
+
+COMMENT @
+
 
 PROC    AM_addMark_ NEAR
 PUBLIC  AM_addMark_
