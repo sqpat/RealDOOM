@@ -148,7 +148,8 @@ void __near AM_addMark(void);
 void __near AM_findMinMaxBoundaries(void);
 void __near AM_changeWindowLoc(void);
 void __near AM_initVariables(void);
-
+void __near AM_clearMarks(void) ;
+void __near AM_LevelInit(void);
 /*
 
 fixed_16_t __near MTOF16(fixed_16_t x) {
@@ -334,7 +335,6 @@ void __near AM_initVariables(void) {
 
 }
 
- */
 
 //
 // 
@@ -351,6 +351,7 @@ void __near AM_clearMarks(void) {
 	memset(markpoints, -1, AM_NUMMARKPOINTS*sizeof(mpoint_t));
     markpointnum = 0;
 }
+
 
 //
 // should be called at the start of every level
@@ -377,6 +378,7 @@ void __near AM_LevelInit(void) {
     am_scale_ftom.w = FixedDivWholeA(1, am_scale_mtof.w);
 }
 
+ */
 
 
 

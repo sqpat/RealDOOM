@@ -582,26 +582,19 @@ POPA_NO_AX_OR_BP_MACRO
 ret       
 
 ENDP
-COMMENT @
 
 PROC    AM_clearMarks_ NEAR
 PUBLIC  AM_clearMarks_
 
 push      cx
 push      di
-mov       cx, AM_NUMMARKPOINTS * SIZE MPOINT_T  ; todo div 2 etc
-mov       al, -1
+mov       cx, (AM_NUMMARKPOINTS * SIZE MPOINT_T) / 2  ; todo div 2 etc
+mov       ax, -1
 mov       di, OFFSET _markpoints
-push      di
 push      ds
 pop       es
-mov       ah, al
-shr       cx, 1
 rep stosw
-adc       cx, cx
-rep stosb
-pop       di
-mov       byte ptr ds:[_markpointnum], 0
+mov       byte ptr ds:[_markpointnum], cl ; 0
 pop       di
 pop       cx
 ret       
@@ -614,48 +607,35 @@ PUBLIC  AM_LevelInit_
 push      bx
 push      cx
 push      dx
-push      di
 mov       word ptr ds:[_am_scale_mtof + 0], 03333h  ; 0x10000 / 5
-mov       cx, 028h 
-xor       ax, ax
-mov       di, OFFSET _markpoints
-mov       word ptr ds:[_am_scale_mtof + 2], ax
-mov       al, -1
+
+call      AM_clearMarks_
 mov       bx, 0B333h
-push      di
-push      ds
-pop       es
-mov       ah, al
-shr       cx, 1
-rep stosw   ; todo just call the func above.
-adc       cx, cx
-rep stosb 
-pop       di
-mov       byte ptr ds:[_markpointnum], 0
+xor       cx, cx
 call      AM_findMinMaxBoundaries_
 mov       dx, word ptr ds:[_am_min_scale_mtof]
 xor       ax, ax
 call      FastDiv3216u_
 mov       word ptr ds:[_am_scale_mtof + 0], ax
 mov       word ptr ds:[_am_scale_mtof + 2], dx
+
 cmp       dx, word ptr ds:[_am_max_scale_mtof + 2]
-jg        label_19
-jne       label_20
+jg        set_to_minscale
+jne       dont_set_to_minscale
 cmp       ax, word ptr ds:[_am_max_scale_mtof + 0]
-jbe       label_20
-label_19:
+jbe       dont_set_to_minscale
+set_to_minscale:
 mov       ax, word ptr ds:[_am_min_scale_mtof]
 mov       word ptr ds:[_am_scale_mtof + 0], ax
-xor       ax, ax
-mov       word ptr ds:[_am_scale_mtof + 2], ax
-label_20:
+xor       dx, dx
+mov       word ptr ds:[_am_scale_mtof + 2], dx
+dont_set_to_minscale:
+xchg      ax, bx
+mov       cx, dx
 mov       ax, 1
-mov       bx, word ptr ds:[_am_scale_mtof + 0]
-mov       cx, word ptr ds:[_am_scale_mtof + 2]
 call      FixedDivWholeA_
 mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx
-pop       di
 pop       dx
 pop       cx
 pop       bx
@@ -663,6 +643,9 @@ ret
 
 
 ENDP
+
+COMMENT @
+
 
 PROC    AM_Stop_ FAR
 PUBLIC  AM_Stop_
