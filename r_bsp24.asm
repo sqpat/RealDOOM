@@ -108,7 +108,7 @@ mov   bx, 01000h
 SELFMODIFY_get_rw_distance_hi_1:
 mov   cx, 01000h
 
-; todo is rw_distance = 0 a common case...?
+
 
 ;    den = FixedMulTrig(FINE_SINE_ARGUMENT, anglea, rw_distance);
  
@@ -169,8 +169,8 @@ shift_done:
 ; is there a cleaner way?
 
  
-xchg   cx, ax  ; temp storage
-mov    ax, dx
+xchg   cx, ax  ; temp storage  ; cx has low
+xchg   ax, dx
 cwd            ; sign extend
 
 cmp   di, dx
@@ -211,6 +211,9 @@ do_divide:
 ; set up params
 mov   ax, cx  ; mov back..
 mov   cx, di 
+;or    di, si
+;je    return_maxvalue
+;mov   di, cx
 
 ; we actually already bounds check more aggressively than fixeddiv
 ;  and guarantee positives here so the fixeddiv wrapper is unnecessary
@@ -4305,8 +4308,8 @@ mov       di, si
 shl       si, 1
 
 mov       cx, ds  ; store for later.
-mov       ax, SIDES_SEGMENT
-mov       ds, ax
+mov       ds, word ptr ds:[_SIDES_SEGMENT_PTR]
+
 
 ; read all the sides fields now. ;preshift them as they are word lookups
 
@@ -4330,8 +4333,7 @@ mov       ax, word ptr ss:[di+_sides_render]
 mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
-mov       ax, VERTEXES_SEGMENT 
-mov       ds, ax	; if put into ds we could lodsw a bit... worth?
+mov   ds, word ptr ss:[_VERTEXES_SEGMENT_PTR]
 SHIFT_MACRO shl si 2
 lodsw
 push      ax       ; bp - 010h
@@ -4418,8 +4420,7 @@ sar       ax, 1
 and       al, 0FCh
 push      ax  ; bp - 016h
 mov       si, FINE_ANG90_NOSHIFT
-cmp       ax, si
-jnb        offsetangle_above_ang_90
+
 
 offsetangle_below_ang_90:
 les       dx, dword ptr [bp - 012h]
@@ -4428,17 +4429,11 @@ call      R_PointToDist_
 mov       word ptr [bp - 6], ax
 mov       word ptr [bp - 8], dx
 sub       si, word ptr [bp - 016h]
-mov       bx, ax
+xchg      ax, bx
 mov       cx, dx
 mov       ax, FINESINE_SEGMENT
 mov       dx, si
 call     FixedMulTrigNoShiftBSPLocal_
-
-jmp       do_set_rw_distance
-offsetangle_above_ang_90:
-xor       ax, ax
-mov       dx, ax
-
 
 
 do_set_rw_distance:

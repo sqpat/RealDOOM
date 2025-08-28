@@ -346,7 +346,7 @@ _gamemap = 							 _NULL_OFFSET + 00377h
 _savedescription =                   _NULL_OFFSET + 00378h
 _demoname =                          _NULL_OFFSET + 00398h
 _ems_backfill_page_order =           _NULL_OFFSET + 003B8h
-_LINEFLAGSLIST_SEGMENT_PTR =         _NULL_OFFSET + 003D0h
+;_LINEFLAGSLIST_SEGMENT_PTR =         _NULL_OFFSET + 003D0h
 _currentThinkerListHead = 			 _NULL_OFFSET + 003D2h
 
 _S_StartSoundWithSecnum_addr =       _NULL_OFFSET + 003D4h
@@ -359,9 +359,11 @@ _tmbbox =                            _NULL_OFFSET + 00420h
 
 _SECTORS_SEGMENT_PTR =               _NULL_OFFSET + 00430h
 _LINES_PHYSICS_SEGMENT_PTR =         _NULL_OFFSET + 00432h
+_VERTEXES_SEGMENT_PTR =			     _NULL_OFFSET + 00434h
+_LINEFLAGSLIST_SEGMENT_PTR =         _NULL_OFFSET + 00436h
+_SEENLINES_6800_SEGMENT_PTR =        _NULL_OFFSET + 00438h
+_SIDES_SEGMENT_PTR =			     _NULL_OFFSET + 0043Ah
 
-_HU_Start_addr = 			 	 	 _NULL_OFFSET + 00434h
-_ST_Start_addr = 			 	 	 _NULL_OFFSET + 00438h
 
 _pcspeaker_currentoffset = 			 _NULL_OFFSET + 0043Ch
 _pcspeaker_endoffset = 			 	 _NULL_OFFSET + 0043Eh
@@ -374,11 +376,12 @@ _G_DeferedInitNew_addr = 			 _NULL_OFFSET + 00450h
 
 
 _V_DrawPatch_addr =              	 _NULL_OFFSET + 00454h
-;_locallib_toupper_addr =             _NULL_OFFSET + 00458h
+;_HU_Start_addr = 			 	 	 _NULL_OFFSET + 00458h
+
 _S_ChangeMusic_addr =              	 _NULL_OFFSET + 0045Ch
 _V_DrawFullscreenPatch_addr =        _NULL_OFFSET + 00460h
 _getStringByIndex_addr =             _NULL_OFFSET + 00464h
-;_locallib_strlen_addr =              _NULL_OFFSET + 00468h
+_ST_Start_addr = 			 	 	 _NULL_OFFSET + 00468h
 _FixedMulTrigNoShift_addr =          _NULL_OFFSET + 0046Ch
 _R_PointToAngle2_16_addr =           _NULL_OFFSET + 00470h
 _R_PointToAngle2_addr =              _NULL_OFFSET + 00474h
@@ -596,6 +599,10 @@ _fopen_wb_argument =	 	     	 _NULL_OFFSET + 00AC0h
 _domapcheatthisframe =				 _NULL_OFFSET + 00AC3h
 _st_gamestate =	  	  				 _NULL_OFFSET + 00AC4h
 _st_firsttime =	  	  				 _NULL_OFFSET + 00AC5h
+_screen_viewport_width =	  	  	 _NULL_OFFSET + 00AC8h
+_screen_viewport_height =	  	  	 _NULL_OFFSET + 00ACAh
+_old_screen_viewport_width =	  	 _NULL_OFFSET + 00ACCh
+_oldscreen_viewport_height =	  	 _NULL_OFFSET + 00ACEh
 
 _flatcache_nodes =				     _NULL_OFFSET + 00AD0h
 

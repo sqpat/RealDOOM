@@ -299,16 +299,16 @@ Z_QUICKMAPAI4_NO_DX (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
 Z_QUICKMAPAI1_NO_DX (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
 mov   byte ptr ds:[_currenttask], TASK_STATUS
 
-
+; todo abtch call these
 ;call      ST_Start_
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _ST_Start_addr
 
+; st start calls hustart when its done.
+
 ;call      HU_Start_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _HU_Start_addr
+
 
 
 

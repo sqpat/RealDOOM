@@ -1893,8 +1893,8 @@ les   bx, dword ptr es:[si]
 mov   cx, es ; store si + 2 in cx for now
 SHIFT_MACRO shl   bx 2
 
-mov   dx, VERTEXES_SEGMENT
-mov   es, dx
+mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
+
 
 les   dx, dword ptr es:[bx]
 
@@ -1946,8 +1946,7 @@ call  P_PointOnDivlineSide_
 pop   bx
 SHIFT_MACRO shl   bx 2
 mov   byte ptr cs:[SELFMODIFY_compares1s2 - OFFSET P_SIGHT_STARTMARKER_+1], al  ; store s1
-mov   ax, VERTEXES_SEGMENT
-mov   es, ax
+mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 les   dx, dword ptr es:[bx]
 mov   cx, es
 xor   ax, ax
@@ -2877,8 +2876,8 @@ mov   di, bx	; linenum
 ;	if (!line_physics->special) {
 
 
-mov   cx, LINES_PHYSICS_SEGMENT
-mov   es, cx
+mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
+
 SHIFT_MACRO shl   bx 2
 mov   si, bx
 SHIFT_MACRO shl   bx 2
@@ -2928,8 +2927,7 @@ push  word ptr es:[bx + 4]
 mov   bx, word ptr es:[bx]  ; get vertex
 SHIFT_MACRO shl   bx 2
 
-mov   ax, VERTEXES_SEGMENT
-mov   es, ax
+mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 push  word ptr es:[bx+2]
 push  word ptr es:[bx]
 
@@ -3001,8 +2999,7 @@ push  word ptr es:[bx + LINE_PHYSICS_T.lp_dx]
 mov   bx, LINE_PHYSICS_T ptr es:[bx + LINE_PHYSICS_T.lp_v1Offset]
 SHIFT_MACRO shl   bx 2
 
-mov   ax, VERTEXES_SEGMENT
-mov   es, ax
+mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 
 push  word ptr es:[bx+2]
 push  word ptr es:[bx]
@@ -3064,8 +3061,8 @@ les   di, dword ptr ds:[_playerMobj_pos]
 
 ;    if (temp.h.intbits < playerMobj->height.h.intbits) // 16 bit okay
 
-sub   ax, word ptr es:[di + 8]		; subtract height
-sbb   dx, word ptr es:[di + 0Ah]	; subtract height
+sub   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 0]		; subtract height
+sbb   dx, word ptr es:[di + MOBJ_POS_T.mp_z + 2]	; subtract height
 cmp   dx, word ptr ds:[bx + 0Ch]
 jge   continue_blocking_check
 is_blocking:
@@ -3413,8 +3410,7 @@ push  word ptr es:[bx + LINE_PHYSICS_T.lp_dx]
 
 mov   bx, word ptr es:[bx + LINE_PHYSICS_T.lp_v1Offset] ; vertexes
 SHIFT_MACRO shl   bx 2
-mov   ax, VERTEXES_SEGMENT
-mov   es, ax
+mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 
 push  word ptr es:[bx+2]
 push  word ptr es:[bx]
@@ -3679,8 +3675,7 @@ push  word ptr es:[si + 4]
 mov   bx, word ptr es:[si] ; get vertex
 SHIFT_MACRO shl   bx 2
 
-mov   ax, VERTEXES_SEGMENT
-mov   es, ax
+mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 
 push  word ptr es:[bx+2] ; push vertices
 push  word ptr es:[bx]
@@ -3851,8 +3846,7 @@ les   dx, dword ptr es:[di + 4]    ; dx
 mov   cx, es                       ; dy
 
 SHIFT_MACRO shl   si 2
-mov   ax, VERTEXES_SEGMENT
-mov   es, ax
+mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 
 les   si, dword ptr es:[si]
 
@@ -5436,9 +5430,8 @@ mov   dx, bx
 SHIFT_MACRO shl   bx 2
 push  bx		    ; linenum shift 2  bp - 4
 SHIFT_MACRO shl   bx 2
-mov   ax, LINES_PHYSICS_SEGMENT
-push  ax		    ; bp - 6
-mov   es, ax
+mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
+push  es		    ; bp - 6
 push  bx			; bp - 8 linenum shift 4
 
 ;		if (li_physics->special)
@@ -6104,8 +6097,7 @@ mov   ax, LINES_SEGMENT
 mov   es, ax
 mov   ax, word ptr es:[bx + 2]
 
-mov   cx, LINES_PHYSICS_SEGMENT
-mov   es, cx
+mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
 les   dx, LINE_PHYSICS_T ptr es:[di + LINE_PHYSICS_T.lp_frontsecnum]
 mov   bx, es
 call  P_LineOpening_
@@ -6129,15 +6121,14 @@ call  P_GetAttackRangeMult_
 
 ;		if (sectors[li_physics->frontsecnum].floorheight != sectors[li_physics->backsecnum].floorheight) {
 
-mov   cx, LINES_PHYSICS_SEGMENT
-mov   es, cx
+mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
 push  ax  
 push  dx  ; store dist
 les   di, LINE_PHYSICS_T ptr es:[di + LINE_PHYSICS_T.lp_frontsecnum] ; frontsector
 mov   si, es					  ; backsector
 SHIFT_MACRO shl   di 4
-mov   cx, SECTORS_SEGMENT
-mov   es, cx
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+
 SHIFT_MACRO shl   si 4
 
 

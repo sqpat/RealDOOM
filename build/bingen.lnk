@@ -35,7 +35,6 @@ file am_mapa.obj
 file st_stuff.obj
 file hu_stuff.obj
 file hu_lib.obj
-file d_algo.obj
 file d_dmx.obj
 file d_int.obj
 file wi_stuff.obj
@@ -125,3 +124,6 @@ file p_tick.obj
 file p_user.obj
 file p_info.obj
 
+#hack..
+NEWSEGMENT 
+file d_algo.obj

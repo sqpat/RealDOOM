@@ -61,8 +61,9 @@ REPT SIZEOF_HUTEXTLINE_T
     db 0
 ENDM
 
-PROC    HU_Start_ FAR
+PROC    HU_Start_ NEAR
 PUBLIC  HU_Start_
+; todo no push/pop because last func did?
 
 push    cx
 push    bx
@@ -165,7 +166,7 @@ pop   cx
 
 
 
-retf
+ret
 ENDP
 
 PROC    HU_SETUP_ENDMARKER_ NEAR

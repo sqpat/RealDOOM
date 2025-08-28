@@ -679,7 +679,7 @@ void __near D_DoomLoop (void) {
 #endif
 			I_StartTic ();
 			D_ProcessEvents ();
-			G_BuildTiccmd(maketic % BACKUPTICS);
+			G_BuildTiccmd(maketic & (BACKUPTICS-1));
 			if (advancedemo) {
 				D_DoAdvanceDemo();
 			}

@@ -1253,7 +1253,7 @@ jmp       level_timer_check_ok
 
 level_timer_check_ok:
 mov       di, OFFSET _anims
-cmp       di, word ptr ds:[_lastanim]
+cmp       di, word ptr ds:[_lastanim] ; this can probably be a startup selfmodified constant one day?
 jae       done_with_anims_loop
 loop_next_anim_outer:
 mov       cx, word ptr ds:[di + P_SPEC_ANIM_T.pspecanim_basepic] ; cx is i

@@ -189,8 +189,6 @@ int16_t 	screen_topright_x, screen_topright_y; // UR x,y where the window is on 
 //
 // width/height of window on map (map coords)
 //
-int16_t	screen_viewport_width;
-int16_t	screen_viewport_height;
 
 // based on level size
 int16_t am_min_level_x;
@@ -205,7 +203,6 @@ uint16_t 	am_min_scale_mtof; // used to tell when to stop zooming out
 fixed_t_union 	am_max_scale_mtof; // used to tell when to stop zooming in
 
 // old stuff for recovery later
-int16_t old_screen_viewport_width, old_screen_viewport_height;
 int16_t old_screen_botleft_x, old_screen_botleft_y;
 
 // old location used by the Follower routine

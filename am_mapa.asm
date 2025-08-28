@@ -109,15 +109,11 @@ EXTRN _screen_botleft_x:WORD
 EXTRN _screen_botleft_y:WORD
 EXTRN _screen_topright_x:WORD
 EXTRN _screen_topright_y:WORD
-EXTRN _screen_viewport_width:WORD
-EXTRN _screen_viewport_height:WORD
 
 EXTRN _screen_oldloc:MPOINT_T
 EXTRN _screen_oldloc:MPOINT_T
 EXTRN _old_screen_botleft_x:WORD
 EXTRN _old_screen_botleft_y:WORD
-EXTRN _old_screen_viewport_width:WORD
-EXTRN _old_screen_viewport_height:WORD
 
 EXTRN _followplayer:BYTE
 EXTRN _am_cheating:BYTE
@@ -209,6 +205,7 @@ ret
 
 ENDP
 
+COMMENT @
 ; todo optim
 PROC    AM_activateNewScale_ NEAR
 PUBLIC  AM_activateNewScale_
@@ -216,34 +213,36 @@ PUBLIC  AM_activateNewScale_
 push      bx
 push      cx
 push      dx
-mov       ax, word ptr ds:[_screen_viewport_width]  ; todo put side by side, LES and get both
+les       ax, dword ptr ds:[_screen_viewport_width]  ; todo put side by side, LES and get both
 sar       ax, 1
 add       word ptr ds:[_screen_botleft_x], ax
-mov       ax, word ptr ds:[_screen_viewport_height]
-mov       bx, word ptr ds:[_am_scale_ftom + 0]
+mov       ax, es
 sar       ax, 1
-mov       cx, word ptr ds:[_am_scale_ftom + 2]
 add       word ptr ds:[_screen_botleft_y], ax
+les       bx, dword ptr ds:[_am_scale_ftom + 0]
+mov       cx, es
 mov       ax, AUTOMAP_SCREENWIDTH
 call      FixedMul1632_
-mov       bx, word ptr ds:[_am_scale_ftom + 0]
-mov       cx, word ptr ds:[_am_scale_ftom + 2]
+les       bx, dword ptr ds:[_am_scale_ftom + 0]
+mov       cx, es
 mov       word ptr ds:[_screen_viewport_width], ax
+push      ax
+sar       ax, 1
+sub       word ptr ds:[_screen_botleft_x], ax
+pop       ax
+add       ax, word ptr ds:[_screen_botleft_x]
+mov       word ptr ds:[_screen_topright_x], ax
+
 mov       ax, AUTOMAP_SCREENHEIGHT
 call      FixedMul1632_
-mov       bx, word ptr ds:[_screen_viewport_width]
-sar       bx, 1
-sub       word ptr ds:[_screen_botleft_x], bx
-mov       bx, ax
-sar       bx, 1
-sub       word ptr ds:[_screen_botleft_y], bx
-mov       bx, word ptr ds:[_screen_botleft_x]
-add       bx, word ptr ds:[_screen_viewport_width]
-mov       word ptr ds:[_screen_topright_x], bx
-mov       bx, word ptr ds:[_screen_botleft_y]
 mov       word ptr ds:[_screen_viewport_height], ax
-add       ax, bx
+push      ax
+sar       ax, 1
+sub       word ptr ds:[_screen_botleft_y], ax
+pop       ax
+add       ax, word ptr ds:[_screen_botleft_y]
 mov       word ptr ds:[_screen_topright_y], ax
+
 pop       dx
 pop       cx
 pop       bx
@@ -260,10 +259,9 @@ PUBLIC  AM_restoreScaleAndLoc_
 push      bx
 push      cx
 push      dx
-mov       ax, word ptr ds:[_old_screen_viewport_width]
-mov       dx, word ptr ds:[_old_screen_viewport_height]
+les       ax, dword ptr ds:[_old_screen_viewport_width]
 mov       word ptr ds:[_screen_viewport_width], ax
-mov       word ptr ds:[_screen_viewport_height], dx
+mov       word ptr ds:[_screen_viewport_height], es
 cmp       byte ptr ds:[_followplayer], 0
 jne       do_follow_player
 mov       ax, word ptr ds:[_old_screen_botleft_x]
@@ -271,6 +269,7 @@ mov       word ptr ds:[_screen_botleft_x], ax
 mov       ax, word ptr ds:[_old_screen_botleft_y]
 jmp       got_screen_xy
 do_follow_player:
+mov       dx, es
 les       bx, dword ptr ds:[_playerMobj_pos]
 sar       ax, 1
 mov       cx, word ptr es:[si + MOBJ_POS_T.mp_x + 2]
@@ -343,103 +342,122 @@ ret
 
 ENDP
 
-COMMENT @
 
 
 PROC    AM_findMinMaxBoundaries_ NEAR
 PUBLIC  AM_findMinMaxBoundaries_
 
-push      bx
-push      cx
-push      dx
-push      si
-push      di
-push      bp
-mov       bp, sp
-sub       sp, 4
+PUSHA_NO_AX_MACRO
 mov       ax, MAXSHORT
-mov       di, -MAXSHORT ;08001 h
-xor       bx, bx
-xor       dx, dx
+cwd     
+mov       bx, dx ; zero
 mov       word ptr ds:[_am_min_level_y], ax
 mov       word ptr ds:[_am_min_level_x], ax
-mov       word ptr ds:[_am_max_level_x], di
-label_6:
-mov       si, OFFSET _numvertexes
-cmp       bx, word ptr ds:[si]
-jge       label_3
-mov       ax, VERTEXES_SEGMENT
-mov       si, dx
-mov       es, ax
-mov       ax, word ptr es:[si]
-cmp       ax, word ptr ds:[_am_min_level_x]
-jge       label_4
-mov       word ptr ds:[_am_min_level_x], ax
-label_7:
-mov       ax, VERTEXES_SEGMENT
-mov       si, dx
-mov       es, ax
-mov       ax, word ptr es:[si + 2]
-add       si, 2
-cmp       ax, word ptr ds:[_am_min_level_y]
-jge       label_5
-mov       word ptr ds:[_am_min_level_y], ax
-label_8:
-add       dx, 4
-inc       bx
-jmp       label_6
-label_4:
-cmp       ax, word ptr ds:[_am_max_level_x]
-jle       label_7
+mov       ax, -MAXSHORT ;08001 h
 mov       word ptr ds:[_am_max_level_x], ax
-jmp       label_7
-label_5:
+mov       word ptr ds:[_am_max_level_y], ax
+mov       bx, word ptr ds:[_numvertexes]
+
+mov       dx, word ptr ds:[_am_min_level_x]
+mov       cx, word ptr ds:[_am_max_level_x]
+mov       di, word ptr ds:[_am_min_level_y]
+mov       bp, word ptr ds:[_am_max_level_y]
+
+SHIFT_MACRO sal bx 2
+mov       ds, word ptr ds:[_VERTEXES_SEGMENT_PTR]
+
+; dx = minx
+; cx = maxx
+; di = miny
+; bp = maxy
+; si = current ptr
+; bx = loop end 
+
+
+loop_next_vertex:
+cmp       si, bx
+jge       done_iterating_vertexes
+
+lodsw
+
+cmp       ax, dx
+jnge      update_minx
+
+cmp       ax, cx
+jle       dont_update_x_minmax
+xchg      ax, cx ; update_max_x
+jmp       dont_update_x_minmax
+
+update_minx:
+xchg      ax, dx ; update_min_x
+dont_update_x_minmax:
+
+
+lodsw
+
 cmp       ax, di
-jle       label_8
-mov       di, ax
-jmp       label_8
-label_3:
-mov       ax, word ptr ds:[_am_max_level_x]
-sub       ax, word ptr ds:[_am_min_level_x]
-mov       si, di
+jnge      update_miny
+cmp       ax, bp
+jle       dont_update_y_minmax
+xchg      ax, bp ; update max_y
+jmp       dont_update_y_minmax
+update_miny:
+xchg      ax, di ; update min_y
+dont_update_y_minmax:
+jmp       loop_next_vertex
+
+done_iterating_vertexes:
+
+mov       ax, ss
+mov       ds, ax
+
+; todo    stosw?
+mov       word ptr ds:[_am_min_level_x], dx
+mov       word ptr ds:[_am_max_level_x], cx
+mov       word ptr ds:[_am_min_level_y], di
+mov       word ptr ds:[_am_max_level_y], bp
+
+;todo this in theory can be better. but whoe cares, runs once
+;    max_w = am_max_level_x - am_min_level_x;
+;    max_h = am_max_level_y - am_min_level_y;
+
+;	a = FixedDiv(automap_screenwidth, max_w);
+;	b = FixedDiv(automap_screenheight, max_h);
+
+
+xchg      ax, cx
+sub       ax, dx
 cwd       
-mov       word ptr ds:[_am_max_level_y], di
-mov       bx, ax
+xchg      ax, bx
 mov       cx, dx
 mov       ax, AUTOMAP_SCREENWIDTH
-xor       dx, dx
-sub       si, word ptr ds:[_am_min_level_y]
+cwd
 call      FixedDiv_
-mov       word ptr [bp - 4], ax
-mov       ax, si
-mov       word ptr [bp - 2], dx
-cwd       
-mov       bx, ax
+
+xchg      ax, si
+lea       ax, [bp - di] ; max y - min y
+mov       di, dx
+cwd
+xchg      ax, bx
 mov       cx, dx
 mov       ax, AUTOMAP_SCREENHEIGHT
-xor       dx, dx
+cwd
 call      FixedDiv_
-mov       di, word ptr ds:[_am_max_level_y]
-cmp       dx, word ptr [bp - 2]
-jg        label_9
-jne       label_10
-cmp       ax, word ptr [bp - 4]
-jbe       label_10
-label_9:
-mov       ax, word ptr [bp - 4]
-label_10:
+
+cmp       dx, di
+jg        use_b
+jne       use_a
+cmp       ax, si
+jbe       use_a
+use_b:
+xchg       ax, si
+use_a:
 ;	am_max_scale_mtof.w = 0x54000;// FixedDiv(automap_screenheight, 2*16);
 
+mov       word ptr ds:[_am_min_scale_mtof], ax
 mov       word ptr ds:[_am_max_scale_mtof + 0], 04000h
 mov       word ptr ds:[_am_max_scale_mtof + 2], 5
-mov       word ptr ds:[_am_min_scale_mtof], ax
-mov       word ptr ds:[_am_max_level_y], di
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
+POPA_NO_AX_MACRO
 ret       
 
 ENDP
@@ -508,6 +526,8 @@ mov       bx, word ptr ds:[_am_max_level_y]
 jmp       label_18
 
 ENDP
+
+
 
 FRAC_SCALE_UNIT = 01000h
 
@@ -1892,10 +1912,9 @@ mov       ax, word ptr es:[si]
 and       cl, 7
 mov       word ptr [bp - 0Eh], ax
 lea       si, [bx + 2]
-mov       ax, SEENLINES_6800_SEGMENT
 mov       di, word ptr es:[si]
 mov       si, word ptr [bp - 4]
-mov       es, ax
+mov       es, word ptr ds:[_SEENLINES_6800_SEGMENT_PTR]
 mov       al, 1
 shr       si, 3
 shl       al, cl

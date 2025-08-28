@@ -295,8 +295,9 @@ and   ax, 0100h
 sar   ax, cl    ; dl has the flag.
 
 
-mov   cx, SEENLINES_6800_SEGMENT
-mov   es, cx
+mov   es, word ptr ss:[_SEENLINES_6800_SEGMENT_PTR]
+
+
 SHIFT_MACRO SAR BX 3
 or    byte ptr es:[bx], al
 
@@ -1418,13 +1419,13 @@ mov   si, 14
 
 loop_save_next_line:
 
-mov   ax, LINEFLAGSLIST_SEGMENT
-mov   ds, ax
+
+mov   ds, word ptr ds:[_LINEFLAGSLIST_SEGMENT_PTR]
 mov   bx, dx
 mov   al, byte ptr ds:[bx]
 
-mov   cx, SEENLINES_6800_SEGMENT
-mov   ds, cx
+mov   ds, word ptr ss:[_SEENLINES_6800_SEGMENT_PTR]
+
 SHIFT_MACRO SAR BX 3
 mov   ah, byte ptr ds:[bx]   ; get seenlines bit in byte
 

@@ -657,8 +657,7 @@ mov   bx, es					; linev2Offset
 SHIFT_MACRO shl   di 2
 and   bh, (VERTEX_OFFSET_MASK SHR 8)
 SHIFT_MACRO shl   bx 2
-mov   ax, VERTEXES_SEGMENT
-mov   es, ax
+mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 mov   si, word ptr es:[di]		; v1.x
 mov   dx, word ptr es:[di + 2]  ; v1.y into dx
 les   ax, dword ptr es:[bx]		; v2.x

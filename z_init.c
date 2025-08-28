@@ -822,7 +822,7 @@ void __near Z_LoadBinaries() {
 	
 	I_Error_addr =		 				(uint32_t)(I_Error);
 	P_InitThinkers_addr =		 		(uint32_t)(P_InitThinkers);
-	HU_Start_addr =						(uint32_t)(HU_Start);
+	// HU_Start_addr =						(uint32_t)(HU_Start);
 	ST_Start_addr =						(uint32_t)(ST_Start);
 
 	Z_SetOverlay_addr =	 				(uint32_t)(Z_SetOverlay);

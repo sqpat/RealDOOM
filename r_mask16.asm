@@ -1257,15 +1257,15 @@ peg_bottom:
 ; write instruction forward
 mov   word ptr cs:[SELFMODIFY_MASKED_lineflags_ml_dontpegbottom - OFFSET R_MASK16_STARTMARKER_], ax
 
-mov   cx, word ptr ds:[bx+2]			; get v2 offset
-mov   bx, word ptr ds:[bx]				; get v1 offset
-mov   ax, VERTEXES_SEGMENT
+les   bx, dword ptr ds:[bx]				; get v1 offset
+mov   cx, es                            ; get v2 offset
+mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 
 SHIFT_MACRO shl bx 2
 SHIFT_MACRO shl cx 2
 
 
-mov   es, ax
+
 
 ; compare v1/v2 fields right now, self modify the lightnum diff that it is used for later.
 
@@ -3970,8 +3970,7 @@ SHIFT_MACRO shl si 3
 mov   di, word ptr ds:[_segs_render + si]
 SHIFT_MACRO shl di 2
 
-mov   ax, VERTEXES_SEGMENT
-mov   es, ax  ; DS for vertexes lookup
+mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 
 
 mov   bx, word ptr es:[di]      ; lx

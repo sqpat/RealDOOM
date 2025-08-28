@@ -102,7 +102,6 @@ void __far R_DrawMaskedFL();
 
 
 void __far R_DrawPlayerSprites();
-void __far hackDSBack();
 int16_t __far wipe_doMelt(int16_t ticks);
 void __far wipe_WipeLoop();
 void __far wipe_StartScreen();

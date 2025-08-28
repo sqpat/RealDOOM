@@ -20,9 +20,11 @@ INSTRUCTION_SET_MACRO
 
 .CODE
 
+EXTRN __GETDS:WORD;
 
 
-PROC resetDS_ FAR
+
+PROC resetDS_ NEAR
 PUBLIC resetDS_
 
 ;todo is ax necessary? if 286+ can push immediate.
@@ -31,11 +33,11 @@ mov ax, FIXED_DS_SEGMENT
 mov ds, ax
 pop ax
 
-retf
+ret
 endp
 
 
-PROC hackDS_ FAR
+PROC hackDS_ NEAR
 PUBLIC hackDS_
 
 ;todo: make cli held for less time
@@ -61,6 +63,12 @@ mov cx, es
 mov ds, cx
 mov ss, cx
 
+mov word ptr cs:[__GETDS+2], cx
+
+;extern uint16_t __near* _GETDS;
+;	((uint16_t __near*)(&_GETDS))[1] = FIXED_DS_SEGMENT;
+
+
 
 
 pop di
@@ -74,12 +82,12 @@ sti
 
 
 
-retf
+ret
 
 ENDP
 
 
-PROC zeroConventional_ FAR
+PROC zeroConventional_ NEAR
 PUBLIC zeroConventional_
 
 cli
@@ -125,7 +133,7 @@ pop cx
 sti
 
 
-retf
+ret
 
 ENDP
 
@@ -133,28 +141,28 @@ ENDP
 ; nice for debug... 
 COMMENT @
 
-PROC getSPBP_ FAR
+PROC getSPBP_ NEAR
 PUBLIC getSPBP_
 
 mov dx, sp
 mov ax, bp
 
 
-retf
+ret
 
 
-PROC getDSSS_ FAR
+PROC getDSSS_ NEAR
 PUBLIC getDSSS_
 
 mov dx, ds
 mov ax, ss
 
 
-retf
+ret
 
 @
 
-PROC hackDSBack_ FAR
+PROC hackDSBack_ NEAR
 PUBLIC hackDSBack_
 
 cli
@@ -182,12 +190,12 @@ sti
 
 
 
-retf
+ret
 
 ENDP
 
 ; end marker for this asm file
-PROC D_ALGO_END_ FAR
+PROC D_ALGO_END_ NEAR
 PUBLIC D_ALGO_END_ 
 ENDP
 

@@ -150,8 +150,8 @@ void __near Z_ShutdownEMS() {
 }
 
 
-void hackDSBack();
-void zeroConventional();
+void __near hackDSBack();
+void __near zeroConventional();
 
 //
 // I_Shutdown

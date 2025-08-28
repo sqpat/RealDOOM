@@ -396,7 +396,7 @@
 #define demoname                        (((int8_t    __near*)                (_NULL_OFFSET + 0x0398)))
 
 #define ems_backfill_page_order         (((int8_t    __near*)                (_NULL_OFFSET + 0x03B8)))
-#define LINEFLAGSLIST_SEGMENT_PTR		(*((segment_t __near*)               (_NULL_OFFSET + 0x03D0)))
+// #define LINEFLAGSLIST_SEGMENT_PTR		(*((segment_t __near*)               (_NULL_OFFSET + 0x03D0)))
 #define currentThinkerListHead  		(*((int16_t __near*)                 (_NULL_OFFSET + 0x03D2)))
 
 #define S_StartSoundWithSecnum_addr     (*((uint32_t  __near*)             (_NULL_OFFSET + 0x03D4)))
@@ -411,8 +411,10 @@
 
 #define SECTORS_SEGMENT_PTR				  (*((segment_t __near*)             (_NULL_OFFSET + 0x0430)))
 #define LINES_PHYSICS_SEGMENT_PTR	      (*((segment_t __near*)             (_NULL_OFFSET + 0x0432)))
-#define HU_Start_addr 					  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0434)))
-#define ST_Start_addr 				      (*((uint32_t __near*)              (_NULL_OFFSET + 0x0438)))
+#define VERTEXES_SEGMENT_PTR	          (*((segment_t __near*)             (_NULL_OFFSET + 0x0434)))
+#define LINEFLAGSLIST_SEGMENT_PTR	  	  (*((segment_t __near*)             (_NULL_OFFSET + 0x0436)))
+#define SEENLINES_6000_SEGMENT_PTR	      (*((segment_t __near*)             (_NULL_OFFSET + 0x0438)))
+#define SIDES_SEGMENT_PTR		          (*((segment_t __near*)             (_NULL_OFFSET + 0x043A)))
 
 #define pcspeaker_currentoffset           (*((uint16_t __near*)              (_NULL_OFFSET + 0x043C)))
 #define pcspeaker_endoffset     		  (*((uint16_t __near*)              (_NULL_OFFSET + 0x043E)))
@@ -426,11 +428,13 @@
 
 
 #define V_DrawPatch_addr                  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0454)))
-// #define locallib_toupper_addr             (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0458)))
+// #define HU_Start_addr 					  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0458)))
+
 #define S_ChangeMusic_addr                (*((uint32_t  __near*)             (_NULL_OFFSET + 0x045C)))
 #define V_DrawFullscreenPatch_addr        (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0460)))
 #define getStringByIndex_addr             (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0464)))
-// #define locallib_strlen_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0468)))
+#define ST_Start_addr 				      (*((uint32_t __near*)              (_NULL_OFFSET + 0x0468)))
+
 #define FixedMulTrigNoShift_addr	      (*((uint32_t  __near*)             (_NULL_OFFSET + 0x046C)))
 #define R_PointToAngle2_16_addr           (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0470)))
 #define R_PointToAngle2_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0474)))
@@ -658,7 +662,11 @@
 #define domapcheatthisframe 		      (*((boolean __near*)               (_NULL_OFFSET + 0x0AC3)))
 #define st_gamestate 		      		  (*((st_stateenum_t __near*)        (_NULL_OFFSET + 0x0AC4)))
 #define st_firsttime 		      		  (*((boolean __near*)        		 (_NULL_OFFSET + 0x0AC5)))
-
+// ac6-7 free
+#define screen_viewport_width 		      (*((int16_t __near*)        		 (_NULL_OFFSET + 0x0AC8)))
+#define screen_viewport_height 		      (*((int16_t __near*)        		 (_NULL_OFFSET + 0x0ACA)))
+#define old_screen_viewport_width 		  (*((int16_t __near*)        		 (_NULL_OFFSET + 0x0ACC)))
+#define old_screen_viewport_height 		  (*((int16_t __near*)        		 (_NULL_OFFSET + 0x0ACE)))
 
 
 #define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0AD0)))
@@ -767,16 +775,12 @@ extern int16_t 	            screen_botleft_x;
 extern int16_t              screen_botleft_y;
 extern int16_t 	            screen_topright_x;
 extern int16_t              screen_topright_y;
-extern int16_t	            screen_viewport_width;
-extern int16_t	            screen_viewport_height;
 extern int16_t              am_min_level_x;
 extern int16_t	            am_min_level_y;
 extern int16_t              am_max_level_x;
 extern int16_t	            am_max_level_y;
 extern uint16_t 	        am_min_scale_mtof;
 extern fixed_t_union 	    am_max_scale_mtof;
-extern int16_t              old_screen_viewport_width;
-extern int16_t              old_screen_viewport_height;
 extern int16_t              old_screen_botleft_x;
 extern int16_t              old_screen_botleft_y;
 extern mpoint_t             screen_oldloc;
