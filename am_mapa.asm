@@ -22,6 +22,14 @@ INSTRUCTION_SET_MACRO
 EXTRN Z_QuickMapPhysics_:FAR
 EXTRN M_Random_:NEAR
 EXTRN FixedMul1632_:FAR
+EXTRN FixedDivWholeA_:FAR
+EXTRN FixedDiv_:FAR
+EXTRN FastDiv3216u_:FAR
+EXTRN cht_CheckCheat_:NEAR
+EXTRN combine_strings_:NEAR
+EXTRN FastMulTrig16_:NEAR
+EXTRN V_DrawPatch_:FAR
+EXTRN V_MarkRect_:FAR
 .DATA
 
 
@@ -174,7 +182,7 @@ PUBLIC  AM_restoreScaleAndLoc_
 0x000000000000375e:  A3 46 1A             mov       word ptr ds:[_screen_topright_y], ax
 0x0000000000003761:  B8 40 01             mov       ax, SCREENWIDTH
 0x0000000000003764:  0E                   push      cs
-0x0000000000003765:  E8 4A 25             call      0x5cb2
+0x0000000000003765:  E8 4A 25             call      FixedDivWholeA_
 0x0000000000003768:  90                   nop       
 0x0000000000003769:  A3 04 1A             mov       word ptr ds:[_am_scale_mtof + 0], ax
 0x000000000000376c:  89 C3                mov       bx, ax
@@ -182,7 +190,7 @@ PUBLIC  AM_restoreScaleAndLoc_
 0x0000000000003770:  B8 01 00             mov       ax, 1
 0x0000000000003773:  89 16 06 1A          mov       word ptr ds:[_am_scale_mtof + 2], dx
 0x0000000000003777:  0E                   push      cs
-0x0000000000003778:  3E E8 36 25          call      0x5cb2
+0x0000000000003778:  3E E8 36 25          call      FixedDivWholeA_
 0x000000000000377c:  A3 08 1A             mov       word ptr ds:[_am_scale_ftom + 0], ax
 0x000000000000377f:  89 16 0A 1A          mov       word ptr ds:[_am_scale_ftom + 2], dx
 0x0000000000003783:  5E                   pop       si
@@ -291,7 +299,7 @@ PUBLIC  AM_findMinMaxBoundaries_
 0x000000000000385c:  31 D2                xor       dx, dx
 0x000000000000385e:  2B 36 32 1A          sub       si, word ptr ds:[_am_min_level_y]
 0x0000000000003862:  0E                   push      cs
-0x0000000000003863:  E8 80 23             call      0x5be6
+0x0000000000003863:  E8 80 23             call      FixedDiv_
 0x0000000000003866:  90                   nop       
 0x0000000000003867:  89 46 FC             mov       word ptr [bp - 4], ax
 0x000000000000386a:  89 F0                mov       ax, si
@@ -302,7 +310,7 @@ PUBLIC  AM_findMinMaxBoundaries_
 0x0000000000003874:  B8 A8 00             mov       ax, AUTOMAP_SCREENHEIGHT
 0x0000000000003877:  31 D2                xor       dx, dx
 0x0000000000003879:  0E                   push      cs
-0x000000000000387a:  3E E8 68 23          call      0x5be6
+0x000000000000387a:  3E E8 68 23          call      FixedDiv_
 0x000000000000387e:  8B 3E 3E 1A          mov       di, word ptr ds:[_am_max_level_y]
 0x0000000000003882:  3B 56 FE             cmp       dx, word ptr [bp - 2]
 0x0000000000003885:  7F 07                jg        0x388e
@@ -314,7 +322,7 @@ PUBLIC  AM_findMinMaxBoundaries_
 0x0000000000003897:  C7 06 02 1A 05 00    mov       word ptr ds:[_am_max_scale_mtof + 2], 5
 0x000000000000389d:  A3 36 1A             mov       word ptr ds:[_am_min_scale_mtof], ax
 0x00000000000038a0:  89 3E 3E 1A          mov       word ptr ds:[_am_max_level_y], di
-0x00000000000038a4:  C9                   leave     
+0x00000000000038a4:  C9                   LEAVE_MACRO     
 0x00000000000038a5:  5F                   pop       di
 0x00000000000038a6:  5E                   pop       si
 0x00000000000038a7:  5A                   pop       dx
@@ -423,7 +431,7 @@ PUBLIC  AM_initVariables_
 0x000000000000399d:  26 8B 5C 06          mov       bx, word ptr es:[si + 6]
 0x00000000000039a1:  29 C3                sub       bx, ax
 0x00000000000039a3:  89 1E 50 1A          mov       word ptr ds:[_screen_botleft_y], bx
-0x00000000000039a7:  E8 02 FF             call      0x38ac
+0x00000000000039a7:  E8 02 FF             call      AM_changeWindowLoc_
 0x00000000000039aa:  A1 4E 1A             mov       ax, word ptr ds:[_screen_botleft_x]
 0x00000000000039ad:  BB F4 0A             mov       bx, _st_gamestate
 0x00000000000039b0:  A3 3A 1A             mov       word ptr ds:[_old_screen_botleft_x], ax
@@ -492,11 +500,11 @@ PUBLIC  AM_LevelInit_
 0x0000000000003a19:  F3 AA                rep stosb byte ptr es:[di], al
 0x0000000000003a1b:  5F                   pop       di
 0x0000000000003a1c:  C6 06 33 0E 00       mov       byte ptr ds:[_markpointnum], 0
-0x0000000000003a21:  E8 BA FD             call      0x37de
+0x0000000000003a21:  E8 BA FD             call      AM_findMinMaxBoundaries_
 0x0000000000003a24:  8B 16 36 1A          mov       dx, word ptr ds:[_am_min_scale_mtof]
 0x0000000000003a28:  31 C0                xor       ax, ax
 0x0000000000003a2a:  0E                   push      cs
-0x0000000000003a2b:  E8 44 22             call      0x5c72
+0x0000000000003a2b:  E8 44 22             call      FastDiv3216u_
 0x0000000000003a2e:  90                   nop       
 0x0000000000003a2f:  A3 04 1A             mov       word ptr ds:[_am_scale_mtof + 0], ax
 0x0000000000003a32:  89 16 06 1A          mov       word ptr ds:[_am_scale_mtof + 2], dx
@@ -513,7 +521,7 @@ PUBLIC  AM_LevelInit_
 0x0000000000003a52:  8B 1E 04 1A          mov       bx, word ptr ds:[_am_scale_mtof + 0]
 0x0000000000003a56:  8B 0E 06 1A          mov       cx, word ptr ds:[_am_scale_mtof + 2]
 0x0000000000003a5a:  0E                   push      cs
-0x0000000000003a5b:  E8 54 22             call      0x5cb2
+0x0000000000003a5b:  E8 54 22             call      FixedDivWholeA_
 0x0000000000003a5e:  90                   nop       
 0x0000000000003a5f:  A3 08 1A             mov       word ptr ds:[_am_scale_ftom + 0], ax
 0x0000000000003a62:  89 16 0A 1A          mov       word ptr ds:[_am_scale_ftom + 2], dx
@@ -558,7 +566,7 @@ PUBLIC  AM_Start_
 0x0000000000003a9a:  A0 38 0E             mov       al, byte ptr ds:[_am_lastepisode]
 0x0000000000003a9d:  3A 07                cmp       al, byte ptr ds:[bx]
 0x0000000000003a9f:  75 12                jne       0x3ab3
-0x0000000000003aa1:  E8 96 FE             call      0x393a
+0x0000000000003aa1:  E8 96 FE             call      AM_initVariables_
 0x0000000000003aa4:  5B                   pop       bx
 0x0000000000003aa5:  CB                   retf      
 0x0000000000003aa6:  BB EA 02             mov       bx, _automapactive
@@ -567,13 +575,13 @@ PUBLIC  AM_Start_
 0x0000000000003aae:  C6 07 01             mov       byte ptr ds:[bx], 1
 0x0000000000003ab1:  EB D5                jmp       0x3a88
 0x0000000000003ab3:  BB A7 03             mov       bx, 0x3a7
-0x0000000000003ab6:  E8 3B FF             call      0x39f4
+0x0000000000003ab6:  E8 3B FF             call      AM_LevelInit_
 0x0000000000003ab9:  8A 1F                mov       bl, byte ptr ds:[bx]
 0x0000000000003abb:  88 1E 37 0E          mov       byte ptr ds:[_am_lastlevel], bl
 0x0000000000003abf:  BB A6 03             mov       bx, 0x3a6
 0x0000000000003ac2:  8A 1F                mov       bl, byte ptr ds:[bx]
 0x0000000000003ac4:  88 1E 38 0E          mov       byte ptr ds:[_am_lastepisode], bl
-0x0000000000003ac8:  E8 6F FE             call      0x393a
+0x0000000000003ac8:  E8 6F FE             call      AM_initVariables_
 0x0000000000003acb:  5B                   pop       bx
 0x0000000000003acc:  CB                   retf      
 
@@ -593,10 +601,10 @@ PUBLIC  AM_minOutWindowScale_
 0x0000000000003ae0:  89 C1                mov       cx, ax
 0x0000000000003ae2:  B8 01 00             mov       ax, 1
 0x0000000000003ae5:  0E                   push      cs
-0x0000000000003ae6:  3E E8 C8 21          call      0x5cb2
+0x0000000000003ae6:  3E E8 C8 21          call      FixedDivWholeA_
 0x0000000000003aea:  A3 08 1A             mov       word ptr ds:[_am_scale_ftom + 0], ax
 0x0000000000003aed:  89 16 0A 1A          mov       word ptr ds:[_am_scale_ftom + 2], dx
-0x0000000000003af1:  E8 C8 FB             call      0x36bc
+0x0000000000003af1:  E8 C8 FB             call      AM_activateNewScale_
 0x0000000000003af4:  5A                   pop       dx
 0x0000000000003af5:  59                   pop       cx
 0x0000000000003af6:  5B                   pop       bx
@@ -616,11 +624,11 @@ PUBLIC  AM_maxOutWindowScale_
 0x0000000000003b06:  89 1E 04 1A          mov       word ptr ds:[_am_scale_mtof + 0], bx
 0x0000000000003b0a:  89 0E 06 1A          mov       word ptr ds:[_am_scale_mtof + 2], cx
 0x0000000000003b0e:  0E                   push      cs
-0x0000000000003b0f:  E8 A0 21             call      0x5cb2
+0x0000000000003b0f:  E8 A0 21             call      FixedDivWholeA_
 0x0000000000003b12:  90                   nop       
 0x0000000000003b13:  A3 08 1A             mov       word ptr ds:[_am_scale_ftom + 0], ax
 0x0000000000003b16:  89 16 0A 1A          mov       word ptr ds:[_am_scale_ftom + 2], dx
-0x0000000000003b1a:  E8 9F FB             call      0x36bc
+0x0000000000003b1a:  E8 9F FB             call      AM_activateNewScale_
 0x0000000000003b1d:  5A                   pop       dx
 0x0000000000003b1e:  59                   pop       cx
 0x0000000000003b1f:  5B                   pop       bx
@@ -652,14 +660,14 @@ PUBLIC  AM_Responder_
 0x0000000000003b4c:  26 83 7C 01 09       cmp       word ptr es:[si + 1], 9
 0x0000000000003b51:  74 09                je        0x3b5c
 0x0000000000003b53:  8A 46 FE             mov       al, byte ptr [bp - 2]
-0x0000000000003b56:  C9                   leave     
+0x0000000000003b56:  C9                   LEAVE_MACRO     
 0x0000000000003b57:  5F                   pop       di
 0x0000000000003b58:  5E                   pop       si
 0x0000000000003b59:  59                   pop       cx
 0x0000000000003b5a:  5B                   pop       bx
 0x0000000000003b5b:  C3                   ret       
 0x0000000000003b5c:  0E                   push      cs
-0x0000000000003b5d:  E8 20 FF             call      0x3a80
+0x0000000000003b5d:  E8 20 FF             call      AM_Start_
 0x0000000000003b60:  BB E9 02             mov       bx, _viewactive
 0x0000000000003b63:  C6 46 FE 01          mov       byte ptr [bp - 2], 1
 0x0000000000003b67:  C6 07 00             mov       byte ptr ds:[bx], 0
@@ -690,9 +698,9 @@ PUBLIC  AM_Responder_
 0x0000000000003baf:  98                   cwde      
 0x0000000000003bb0:  89 C2                mov       dx, ax
 0x0000000000003bb2:  B8 1C 00             mov       ax, 0x1c
-0x0000000000003bb5:  E8 67 23             call      0x5f1f
-0x0000000000003bb8:  84 C0                test      al, al
-0x0000000000003bba:  74 97                je        0x3b53
+0x0000000000003bb5:  E8 67 23             call      cht_CheckCheat_
+
+0x0000000000003bba:  74 97                jnc       0x3b53
 0x0000000000003bbc:  A0 31 0E             mov       al, byte ptr ds:[_am_cheating]
 0x0000000000003bbf:  98                   cwde      
 0x0000000000003bc0:  40                   inc       ax
@@ -702,7 +710,7 @@ PUBLIC  AM_Responder_
 0x0000000000003bc7:  C6 46 FE 00          mov       byte ptr [bp - 2], 0
 0x0000000000003bcb:  88 16 31 0E          mov       byte ptr ds:[_am_cheating], dl
 0x0000000000003bcf:  8A 46 FE             mov       al, byte ptr [bp - 2]
-0x0000000000003bd2:  C9                   leave     
+0x0000000000003bd2:  C9                   LEAVE_MACRO     
 0x0000000000003bd3:  5F                   pop       di
 0x0000000000003bd4:  5E                   pop       si
 0x0000000000003bd5:  59                   pop       cx
@@ -806,7 +814,7 @@ PUBLIC  AM_Responder_
 0x0000000000003cdb:  A3 38 1A             mov       word ptr ds:[_old_screen_viewport_width], ax
 0x0000000000003cde:  A1 34 1A             mov       ax, word ptr ds:[_screen_viewport_height]
 0x0000000000003ce1:  A3 42 1A             mov       word ptr ds:[_old_screen_viewport_height], ax
-0x0000000000003ce4:  E8 E7 FD             call      0x3ace
+0x0000000000003ce4:  E8 E7 FD             call      AM_minOutWindowScale_
 0x0000000000003ce7:  E9 BE FE             jmp       0x3ba8
 0x0000000000003cea:  EB 51                jmp       0x3d3d
 0x0000000000003cec:  E9 A4 00             jmp       0x3d93
@@ -889,7 +897,7 @@ PUBLIC  AM_Responder_
 0x0000000000003dc0:  E9 E5 FD             jmp       0x3ba8
 0x0000000000003dc3:  30 C0                xor       al, al
 0x0000000000003dc5:  E9 FD FE             jmp       0x3cc5
-0x0000000000003dc8:  E8 57 F9             call      0x3722
+0x0000000000003dc8:  E8 57 F9             call      AM_restoreScaleAndLoc_
 0x0000000000003dcb:  E9 DA FD             jmp       0x3ba8
 0x0000000000003dce:  30 C0                xor       al, al
 0x0000000000003dd0:  E9 20 FE             jmp       0x3bf3
@@ -908,7 +916,7 @@ PUBLIC  AM_Responder_
 0x0000000000003df4:  8C D9                mov       cx, ds
 0x0000000000003df6:  8D 56 FA             lea       dx, [bp - 6]
 0x0000000000003df9:  0E                   push      cs
-0x0000000000003dfa:  3E E8 D8 E9          call      0x27d6
+0x0000000000003dfa:  3E E8 D8 E9          call      getStringByIndex_
 0x0000000000003dfe:  8D 5E 96             lea       bx, [bp - 0x6a]
 0x0000000000003e01:  B8 00 05             mov       ax, 0x500
 0x0000000000003e04:  1E                   push      ds
@@ -916,8 +924,8 @@ PUBLIC  AM_Responder_
 0x0000000000003e07:  52                   push      dx
 0x0000000000003e08:  31 D2                xor       dx, dx
 0x0000000000003e0a:  C6 46 FA 00          mov       byte ptr [bp - 6], 0
-0x0000000000003e0e:  E8 2A 30             call      0x6e3b
-0x0000000000003e11:  E8 94 F9             call      0x37a8
+0x0000000000003e0e:  E8 2A 30             call      combine_strings_
+0x0000000000003e11:  E8 94 F9             call      AM_addMark_
 0x0000000000003e14:  E9 91 FD             jmp       0x3ba8
 0x0000000000003e17:  3C 01                cmp       al, 1
 0x0000000000003e19:  74 03                je        0x3e1e
@@ -941,7 +949,7 @@ PUBLIC  AM_Responder_
 0x0000000000003e49:  A3 58 1A             mov       word ptr ds:[_mtof_zoommul], ax
 0x0000000000003e4c:  A3 54 1A             mov       word ptr ds:[_ftom_zoommul], ax
 0x0000000000003e4f:  8A 46 FE             mov       al, byte ptr [bp - 2]
-0x0000000000003e52:  C9                   leave     
+0x0000000000003e52:  C9                   LEAVE_MACRO     
 0x0000000000003e53:  5F                   pop       di
 0x0000000000003e54:  5E                   pop       si
 0x0000000000003e55:  59                   pop       cx
@@ -957,7 +965,7 @@ PUBLIC  AM_Responder_
 0x0000000000003e69:  30 E4                xor       ah, ah
 0x0000000000003e6b:  A3 10 1A             mov       word ptr ds:[_m_paninc + 0], ax
 0x0000000000003e6e:  8A 46 FE             mov       al, byte ptr [bp - 2]
-0x0000000000003e71:  C9                   leave     
+0x0000000000003e71:  C9                   LEAVE_MACRO     
 0x0000000000003e72:  5F                   pop       di
 0x0000000000003e73:  5E                   pop       si
 0x0000000000003e74:  59                   pop       cx
@@ -973,7 +981,7 @@ PUBLIC  AM_Responder_
 0x0000000000003e88:  30 E4                xor       ah, ah
 0x0000000000003e8a:  A3 12 1A             mov       word ptr ds:[_m_paninc + 2], ax
 0x0000000000003e8d:  8A 46 FE             mov       al, byte ptr [bp - 2]
-0x0000000000003e90:  C9                   leave     
+0x0000000000003e90:  C9                   LEAVE_MACRO     
 0x0000000000003e91:  5F                   pop       di
 0x0000000000003e92:  5E                   pop       si
 0x0000000000003e93:  59                   pop       cx
@@ -990,7 +998,7 @@ PUBLIC  AM_Responder_
 0x0000000000003eaa:  30 E4                xor       ah, ah
 0x0000000000003eac:  A3 10 1A             mov       word ptr ds:[_m_paninc + 0], ax
 0x0000000000003eaf:  8A 46 FE             mov       al, byte ptr [bp - 2]
-0x0000000000003eb2:  C9                   leave     
+0x0000000000003eb2:  C9                   LEAVE_MACRO     
 0x0000000000003eb3:  5F                   pop       di
 0x0000000000003eb4:  5E                   pop       si
 0x0000000000003eb5:  59                   pop       cx
@@ -1006,7 +1014,7 @@ PUBLIC  AM_Responder_
 0x0000000000003ec9:  30 E4                xor       ah, ah
 0x0000000000003ecb:  A3 12 1A             mov       word ptr ds:[_m_paninc + 2], ax
 0x0000000000003ece:  8A 46 FE             mov       al, byte ptr [bp - 2]
-0x0000000000003ed1:  C9                   leave     
+0x0000000000003ed1:  C9                   LEAVE_MACRO     
 0x0000000000003ed2:  5F                   pop       di
 0x0000000000003ed3:  5E                   pop       si
 0x0000000000003ed4:  59                   pop       cx
@@ -1040,7 +1048,7 @@ PUBLIC  AM_changeWindowScale_
 0x0000000000003f00:  B8 01 00             mov       ax, 1
 0x0000000000003f03:  89 16 06 1A          mov       word ptr ds:[_am_scale_mtof + 2], dx
 0x0000000000003f07:  0E                   push      cs
-0x0000000000003f08:  3E E8 A6 1D          call      0x5cb2
+0x0000000000003f08:  3E E8 A6 1D          call      FixedDivWholeA_
 0x0000000000003f0c:  A3 08 1A             mov       word ptr ds:[_am_scale_ftom + 0], ax
 0x0000000000003f0f:  89 16 0A 1A          mov       word ptr ds:[_am_scale_ftom + 2], dx
 0x0000000000003f13:  A1 36 1A             mov       ax, word ptr ds:[_am_min_scale_mtof]
@@ -1056,14 +1064,14 @@ PUBLIC  AM_changeWindowScale_
 0x0000000000003f32:  75 12                jne       0x3f46
 0x0000000000003f34:  3B 16 00 1A          cmp       dx, word ptr ds:[_am_max_scale_mtof + 0]
 0x0000000000003f38:  76 0C                jbe       0x3f46
-0x0000000000003f3a:  E8 BB FB             call      0x3af8
+0x0000000000003f3a:  E8 BB FB             call      AM_maxOutWindowScale_
 0x0000000000003f3d:  5A                   pop       dx
 0x0000000000003f3e:  59                   pop       cx
 0x0000000000003f3f:  5B                   pop       bx
 0x0000000000003f40:  C3                   ret       
-0x0000000000003f41:  E8 8A FB             call      0x3ace
+0x0000000000003f41:  E8 8A FB             call      AM_minOutWindowScale_
 0x0000000000003f44:  EB F7                jmp       0x3f3d
-0x0000000000003f46:  E8 73 F7             call      0x36bc
+0x0000000000003f46:  E8 73 F7             call      AM_activateNewScale_
 0x0000000000003f49:  5A                   pop       dx
 0x0000000000003f4a:  59                   pop       cx
 0x0000000000003f4b:  5B                   pop       bx
@@ -1123,22 +1131,22 @@ PUBLIC  AM_doFollowPlayer_
 
 ENDP
 
-PROC    AM_Ticker_ NEAR
+PROC    AM_Ticker_ FAR
 PUBLIC  AM_Ticker_
 
 0x0000000000003fbe:  80 3E 34 0E 00       cmp       byte ptr ds:[_followplayer], 0
 0x0000000000003fc3:  75 1A                jne       0x3fdf
 0x0000000000003fc5:  81 3E 54 1A 00 10    cmp       word ptr ds:[_ftom_zoommul], 0x1000
 0x0000000000003fcb:  74 03                je        0x3fd0
-0x0000000000003fcd:  E8 08 FF             call      0x3ed8
+0x0000000000003fcd:  E8 08 FF             call      AM_changeWindowScale_
 0x0000000000003fd0:  83 3E 10 1A 00       cmp       word ptr ds:[_m_paninc + 0], 0
 0x0000000000003fd5:  75 0D                jne       0x3fe4
 0x0000000000003fd7:  83 3E 12 1A 00       cmp       word ptr ds:[_m_paninc + 2], 0
 0x0000000000003fdc:  75 06                jne       0x3fe4
 0x0000000000003fde:  CB                   retf      
-0x0000000000003fdf:  E8 6C FF             call      0x3f4e
+0x0000000000003fdf:  E8 6C FF             call      AM_doFollowPlayer_
 0x0000000000003fe2:  EB E1                jmp       0x3fc5
-0x0000000000003fe4:  E8 C5 F8             call      0x38ac
+0x0000000000003fe4:  E8 C5 F8             call      AM_changeWindowLoc_
 0x0000000000003fe7:  CB                   retf      
 
 ENDP
@@ -1209,7 +1217,7 @@ PUBLIC  AM_clipMline_
 0x000000000000406c:  85 46 FC             test      word ptr [bp - 4], ax
 0x000000000000406f:  74 3B                je        0x40ac
 0x0000000000004071:  30 C0                xor       al, al
-0x0000000000004073:  C9                   leave     
+0x0000000000004073:  C9                   LEAVE_MACRO     
 0x0000000000004074:  5F                   pop       di
 0x0000000000004075:  5E                   pop       si
 0x0000000000004076:  5A                   pop       dx
@@ -1271,13 +1279,13 @@ PUBLIC  AM_clipMline_
 0x000000000000411f:  8B 46 FE             mov       ax, word ptr [bp - 2]
 0x0000000000004122:  89 16 AE 19          mov       word ptr ds:[_am_fl + 6], dx
 0x0000000000004126:  8B 16 A8 19          mov       dx, word ptr ds:[_am_fl + 0]
-0x000000000000412a:  E8 BB FE             call      0x3fe8
+0x000000000000412a:  E8 BB FE             call      DOOUTCODE_
 0x000000000000412d:  8B 1E AE 19          mov       bx, word ptr ds:[_am_fl + 6]
 0x0000000000004131:  8B 16 AC 19          mov       dx, word ptr ds:[_am_fl + 4]
 0x0000000000004135:  89 C1                mov       cx, ax
 0x0000000000004137:  89 46 FE             mov       word ptr [bp - 2], ax
 0x000000000000413a:  8B 46 FC             mov       ax, word ptr [bp - 4]
-0x000000000000413d:  E8 A8 FE             call      0x3fe8
+0x000000000000413d:  E8 A8 FE             call      DOOUTCODE_
 0x0000000000004140:  89 46 FC             mov       word ptr [bp - 4], ax
 0x0000000000004143:  85 C1                test      cx, ax
 0x0000000000004145:  74 03                je        0x414a
@@ -1311,13 +1319,13 @@ PUBLIC  AM_clipMline_
 0x0000000000004191:  89 F3                mov       bx, si
 0x0000000000004193:  89 FA                mov       dx, di
 0x0000000000004195:  89 36 AA 19          mov       word ptr ds:[_am_fl + 2], si
-0x0000000000004199:  E8 4C FE             call      0x3fe8
+0x0000000000004199:  E8 4C FE             call      DOOUTCODE_
 0x000000000000419c:  89 46 FE             mov       word ptr [bp - 2], ax
 0x000000000000419f:  8B 46 FE             mov       ax, word ptr [bp - 2]
 0x00000000000041a2:  85 46 FC             test      word ptr [bp - 4], ax
 0x00000000000041a5:  74 A3                je        0x414a
 0x00000000000041a7:  30 C0                xor       al, al
-0x00000000000041a9:  C9                   leave     
+0x00000000000041a9:  C9                   LEAVE_MACRO     
 0x00000000000041aa:  5F                   pop       di
 0x00000000000041ab:  5E                   pop       si
 0x00000000000041ac:  5A                   pop       dx
@@ -1367,11 +1375,11 @@ PUBLIC  AM_clipMline_
 0x000000000000421a:  89 F3                mov       bx, si
 0x000000000000421c:  89 FA                mov       dx, di
 0x000000000000421e:  89 36 AE 19          mov       word ptr ds:[_am_fl + 6], si
-0x0000000000004222:  E8 C3 FD             call      0x3fe8
+0x0000000000004222:  E8 C3 FD             call      DOOUTCODE_
 0x0000000000004225:  89 46 FC             mov       word ptr [bp - 4], ax
 0x0000000000004228:  E9 74 FF             jmp       0x419f
 0x000000000000422b:  B0 01                mov       al, 1
-0x000000000000422d:  C9                   leave     
+0x000000000000422d:  C9                   LEAVE_MACRO     
 0x000000000000422e:  5F                   pop       di
 0x000000000000422f:  5E                   pop       si
 0x0000000000004230:  5A                   pop       dx
@@ -1393,7 +1401,7 @@ PUBLIC  AM_drawMline_
 0x0000000000004239:  89 E5                mov       bp, sp
 0x000000000000423b:  83 EC 08             sub       sp, 8
 0x000000000000423e:  88 56 FE             mov       byte ptr [bp - 2], dl
-0x0000000000004241:  E8 C8 FD             call      0x400c
+0x0000000000004241:  E8 C8 FD             call      AM_clipMline_
 0x0000000000004244:  84 C0                test      al, al
 0x0000000000004246:  75 03                jne       0x424b
 0x0000000000004248:  E9 0B F9             jmp       0x3b56
@@ -1553,7 +1561,7 @@ PUBLIC  AM_drawGrid_
 0x00000000000043b5:  89 1E B8 19          mov       word ptr ds:[_am_ml + 0], bx
 0x00000000000043b9:  89 1E BC 19          mov       word ptr ds:[_am_ml + 4], bx
 0x00000000000043bd:  81 C3 80 00          add       bx, 0x80
-0x00000000000043c1:  E8 70 FE             call      0x4234
+0x00000000000043c1:  E8 70 FE             call      AM_drawMline_
 0x00000000000043c4:  39 CB                cmp       bx, cx
 0x00000000000043c6:  7C E7                jl        0x43af
 0x00000000000043c8:  A1 50 1A             mov       ax, word ptr ds:[_screen_botleft_y]
@@ -1627,7 +1635,7 @@ PUBLIC  AM_drawGrid_
 0x0000000000004470:  89 1E BA 19          mov       word ptr ds:[_am_ml + 2], bx
 0x0000000000004474:  89 1E BE 19          mov       word ptr ds:[_am_ml + 6], bx
 0x0000000000004478:  81 C3 80 00          add       bx, 0x80
-0x000000000000447c:  E8 B5 FD             call      0x4234
+0x000000000000447c:  E8 B5 FD             call      AM_drawMline_
 0x000000000000447f:  39 CB                cmp       bx, cx
 0x0000000000004481:  7C E7                jl        0x446a
 0x0000000000004483:  5A                   pop       dx
@@ -1732,7 +1740,7 @@ PUBLIC  AM_drawWalls_
 0x000000000000457a:  75 E5                jne       0x4561
 0x000000000000457c:  BA 63 00             mov       dx, 0x63
 0x000000000000457f:  B8 A0 19             mov       ax, _am_l + 0
-0x0000000000004582:  E8 AF FC             call      0x4234
+0x0000000000004582:  E8 AF FC             call      AM_drawMline_
 0x0000000000004585:  EB DA                jmp       0x4561
 0x0000000000004587:  83 FA FF             cmp       dx, -1
 0x000000000000458a:  74 4E                je        0x45da
@@ -1766,7 +1774,7 @@ PUBLIC  AM_drawWalls_
 0x00000000000045d5:  80 3E 31 0E 00       cmp       byte ptr ds:[_am_cheating], 0
 0x00000000000045da:  BA B0 00             mov       dx, 0xb0
 0x00000000000045dd:  B8 A0 19             mov       ax, _am_l + 0
-0x00000000000045e0:  E8 51 FC             call      0x4234
+0x00000000000045e0:  E8 51 FC             call      AM_drawMline_
 0x00000000000045e3:  FF 46 FC             inc       word ptr [bp - 4]
 0x00000000000045e6:  83 C3 10             add       bx, 0x10
 0x00000000000045e9:  E9 AE FE             jmp       0x449a
@@ -1776,7 +1784,7 @@ PUBLIC  AM_drawWalls_
 0x00000000000045f2:  EB D5                jmp       0x45c9
 0x00000000000045f4:  BA B8 00             mov       dx, 0xb8
 0x00000000000045f7:  B8 A0 19             mov       ax, _am_l + 0
-0x00000000000045fa:  E8 37 FC             call      0x4234
+0x00000000000045fa:  E8 37 FC             call      AM_drawMline_
 0x00000000000045fd:  FF 46 FC             inc       word ptr [bp - 4]
 0x0000000000004600:  83 C3 10             add       bx, 0x10
 0x0000000000004603:  E9 94 FE             jmp       0x449a
@@ -1789,19 +1797,19 @@ PUBLIC  AM_drawWalls_
 0x0000000000004615:  E9 49 FF             jmp       0x4561
 0x0000000000004618:  BA 60 00             mov       dx, 0x60
 0x000000000000461b:  B8 A0 19             mov       ax, _am_l + 0
-0x000000000000461e:  E8 13 FC             call      0x4234
+0x000000000000461e:  E8 13 FC             call      AM_drawMline_
 0x0000000000004621:  FF 46 FC             inc       word ptr [bp - 4]
 0x0000000000004624:  83 C3 10             add       bx, 0x10
 0x0000000000004627:  E9 70 FE             jmp       0x449a
 0x000000000000462a:  BA 40 00             mov       dx, 0x40
 0x000000000000462d:  B8 A0 19             mov       ax, _am_l + 0
-0x0000000000004630:  E8 01 FC             call      0x4234
+0x0000000000004630:  E8 01 FC             call      AM_drawMline_
 0x0000000000004633:  FF 46 FC             inc       word ptr [bp - 4]
 0x0000000000004636:  83 C3 10             add       bx, 0x10
 0x0000000000004639:  E9 5E FE             jmp       0x449a
 0x000000000000463c:  BA E7 00             mov       dx, 0xe7
 0x000000000000463f:  B8 A0 19             mov       ax, _am_l + 0
-0x0000000000004642:  E8 EF FB             call      0x4234
+0x0000000000004642:  E8 EF FB             call      AM_drawMline_
 0x0000000000004645:  FF 46 FC             inc       word ptr [bp - 4]
 0x0000000000004648:  83 C3 10             add       bx, 0x10
 0x000000000000464b:  E9 4C FE             jmp       0x449a
@@ -1825,7 +1833,7 @@ PUBLIC  AM_rotate_
 0x0000000000004660:  89 CA                mov       dx, cx
 0x0000000000004662:  8B 1C                mov       bx, word ptr ds:[si]
 0x0000000000004664:  0E                   push      cs
-0x0000000000004665:  E8 C8 13             call      0x5a30
+0x0000000000004665:  E8 C8 13             call      FastMulTrig16_
 0x0000000000004668:  90                   nop       
 0x0000000000004669:  89 46 FC             mov       word ptr [bp - 4], ax
 0x000000000000466c:  89 56 FE             mov       word ptr [bp - 2], dx
@@ -1833,7 +1841,7 @@ PUBLIC  AM_rotate_
 0x0000000000004671:  B8 25 32             mov       ax, 0x3225
 0x0000000000004674:  89 CA                mov       dx, cx
 0x0000000000004676:  0E                   push      cs
-0x0000000000004677:  E8 B6 13             call      0x5a30
+0x0000000000004677:  E8 B6 13             call      FastMulTrig16_
 0x000000000000467a:  90                   nop       
 0x000000000000467b:  8B 5E FC             mov       bx, word ptr [bp - 4]
 0x000000000000467e:  29 C3                sub       bx, ax
@@ -1844,21 +1852,21 @@ PUBLIC  AM_rotate_
 0x000000000000468a:  89 CA                mov       dx, cx
 0x000000000000468c:  B8 25 32             mov       ax, 0x3225
 0x000000000000468f:  0E                   push      cs
-0x0000000000004690:  3E E8 9C 13          call      0x5a30
+0x0000000000004690:  3E E8 9C 13          call      FastMulTrig16_
 0x0000000000004694:  89 46 FC             mov       word ptr [bp - 4], ax
 0x0000000000004697:  89 56 FE             mov       word ptr [bp - 2], dx
 0x000000000000469a:  8B 1D                mov       bx, word ptr ds:[di]
 0x000000000000469c:  B8 25 34             mov       ax, 0x3425
 0x000000000000469f:  89 CA                mov       dx, cx
 0x00000000000046a1:  0E                   push      cs
-0x00000000000046a2:  3E E8 8A 13          call      0x5a30
+0x00000000000046a2:  3E E8 8A 13          call      FastMulTrig16_
 0x00000000000046a6:  8B 5E FC             mov       bx, word ptr [bp - 4]
 0x00000000000046a9:  01 C3                add       bx, ax
 0x00000000000046ab:  13 56 FE             adc       dx, word ptr [bp - 2]
 0x00000000000046ae:  8B 46 FA             mov       ax, word ptr [bp - 6]
 0x00000000000046b1:  89 15                mov       word ptr ds:[di], dx
 0x00000000000046b3:  89 04                mov       word ptr ds:[si], ax
-0x00000000000046b5:  C9                   leave     
+0x00000000000046b5:  C9                   LEAVE_MACRO     
 0x00000000000046b6:  5F                   pop       di
 0x00000000000046b7:  5E                   pop       si
 0x00000000000046b8:  59                   pop       cx
@@ -1892,7 +1900,7 @@ PUBLIC  AM_drawLineCharacter_
 0x00000000000046e4:  BA B2 19             mov       dx, _am_lc + 2
 0x00000000000046e7:  B8 B0 19             mov       ax, _am_lc + 0
 0x00000000000046ea:  89 CB                mov       bx, cx
-0x00000000000046ec:  E8 5F FF             call      0x464e
+0x00000000000046ec:  E8 5F FF             call      AM_rotate_
 0x00000000000046ef:  8B 46 0A             mov       ax, word ptr [bp + 0xa]
 0x00000000000046f2:  C1 3E B0 19 04       sar       word ptr ds:[_am_lc + 0], 4
 0x00000000000046f7:  C1 3E B2 19 04       sar       word ptr ds:[_am_lc + 2], 4
@@ -1912,7 +1920,7 @@ PUBLIC  AM_drawLineCharacter_
 0x0000000000004727:  BA B6 19             mov       dx, _am_lc + 6
 0x000000000000472a:  B8 B4 19             mov       ax, _am_lc + 4
 0x000000000000472d:  89 CB                mov       bx, cx
-0x000000000000472f:  E8 1C FF             call      0x464e
+0x000000000000472f:  E8 1C FF             call      AM_rotate_
 0x0000000000004732:  8B 46 0A             mov       ax, word ptr [bp + 0xa]
 0x0000000000004735:  C1 3E B4 19 04       sar       word ptr ds:[_am_lc + 4], 4
 0x000000000000473a:  C1 3E B6 19 04       sar       word ptr ds:[_am_lc + 6], 4
@@ -1925,11 +1933,11 @@ PUBLIC  AM_drawLineCharacter_
 0x0000000000004752:  89 C2                mov       dx, ax
 0x0000000000004754:  B8 B0 19             mov       ax, _am_lc + 0
 0x0000000000004757:  47                   inc       di
-0x0000000000004758:  E8 D9 FA             call      0x4234
+0x0000000000004758:  E8 D9 FA             call      AM_drawMline_
 0x000000000000475b:  3B 7E FE             cmp       di, word ptr [bp - 2]
 0x000000000000475e:  73 03                jae       0x4763
 0x0000000000004760:  E9 69 FF             jmp       0x46cc
-0x0000000000004763:  C9                   leave     
+0x0000000000004763:  C9                   LEAVE_MACRO     
 0x0000000000004764:  5F                   pop       di
 0x0000000000004765:  5E                   pop       si
 0x0000000000004766:  C2 06 00             ret       6
@@ -1959,7 +1967,7 @@ PUBLIC  AM_drawPlayers_
 0x0000000000004798:  31 DB                xor       bx, bx
 0x000000000000479a:  68 D1 00             push      0xd1
 0x000000000000479d:  C1 E9 03             shr       cx, 3
-0x00000000000047a0:  E8 17 FF             call      0x46ba
+0x00000000000047a0:  E8 17 FF             call      AM_drawLineCharacter_
 0x00000000000047a3:  5E                   pop       si
 0x00000000000047a4:  5A                   pop       dx
 0x00000000000047a5:  59                   pop       cx
@@ -2009,7 +2017,7 @@ PUBLIC  AM_drawThings_
 0x0000000000004800:  26 8B 4C 10          mov       cx, word ptr es:[si + 0x10]
 0x0000000000004804:  6A 70                push      0x70
 0x0000000000004806:  C1 E9 03             shr       cx, 3
-0x0000000000004809:  E8 AE FE             call      0x46ba
+0x0000000000004809:  E8 AE FE             call      AM_drawLineCharacter_
 0x000000000000480c:  8E 46 FC             mov       es, word ptr [bp - 4]
 0x000000000000480f:  26 8B 44 0C          mov       ax, word ptr es:[si + 0xc]
 0x0000000000004813:  85 C0                test      ax, ax
@@ -2045,7 +2053,7 @@ PUBLIC  AM_drawMarks_
 0x0000000000004845:  FE 46 FE             inc       byte ptr [bp - 2]
 0x0000000000004848:  80 7E FE 0A          cmp       byte ptr [bp - 2], 0xa
 0x000000000000484c:  7C E2                jl        0x4830
-0x000000000000484e:  C9                   leave     
+0x000000000000484e:  C9                   LEAVE_MACRO     
 0x000000000000484f:  5F                   pop       di
 0x0000000000004850:  5E                   pop       si
 0x0000000000004851:  5A                   pop       dx
@@ -2086,7 +2094,7 @@ PUBLIC  AM_drawMarks_
 0x00000000000048ab:  31 DB                xor       bx, bx
 0x00000000000048ad:  89 F0                mov       ax, si
 0x00000000000048af:  0E                   push      cs
-0x00000000000048b0:  3E E8 10 6C          call      0xb4c4
+0x00000000000048b0:  3E E8 10 6C          call      V_DrawPatch_
 0x00000000000048b4:  EB 8F                jmp       0x4845
 
 
@@ -2128,9 +2136,9 @@ PUBLIC  AM_Drawer_
 0x00000000000048e1:  5F                   pop       di
 0x00000000000048e2:  80 3E 32 0E 00       cmp       byte ptr ds:[_am_grid], 0
 0x00000000000048e7:  74 03                je        0x48ec
-0x00000000000048e9:  E8 1E FA             call      0x430a
-0x00000000000048ec:  E8 99 FB             call      0x4488
-0x00000000000048ef:  E8 84 FE             call      0x4776
+0x00000000000048e9:  E8 1E FA             call      AM_drawGrid_
+0x00000000000048ec:  E8 99 FB             call      AM_drawWalls_
+0x00000000000048ef:  E8 84 FE             call      AM_drawPlayers_
 0x00000000000048f2:  80 3E 31 0E 02       cmp       byte ptr ds:[_am_cheating], 2
 0x00000000000048f7:  74 23                je        0x491c
 0x00000000000048f9:  BA FF 7F             mov       dx, 0x7fff
@@ -2138,19 +2146,19 @@ PUBLIC  AM_Drawer_
 0x00000000000048ff:  8E C2                mov       es, dx
 0x0000000000004901:  B9 A8 00             mov       cx, AUTOMAP_SCREENHEIGHT
 0x0000000000004904:  26 C6 07 60          mov       byte ptr es:[bx], 0x60
-0x0000000000004908:  E8 15 FF             call      0x4820
+0x0000000000004908:  E8 15 FF             call      AM_drawMarks_
 0x000000000000490b:  31 D2                xor       dx, dx
 0x000000000000490d:  BB 40 01             mov       bx, SCREENWIDTH
 0x0000000000004910:  31 C0                xor       ax, ax
 0x0000000000004912:  0E                   push      cs
-0x0000000000004913:  E8 8B 70             call      0xb9a1
+0x0000000000004913:  E8 8B 70             call      V_MarkRect_
 0x0000000000004916:  90                   nop       
 0x0000000000004917:  5F                   pop       di
 0x0000000000004918:  5A                   pop       dx
 0x0000000000004919:  59                   pop       cx
 0x000000000000491a:  5B                   pop       bx
 0x000000000000491b:  CB                   retf      
-0x000000000000491c:  E8 97 FE             call      0x47b6
+0x000000000000491c:  E8 97 FE             call      AM_drawThings_
 0x000000000000491f:  EB D8                jmp       0x48f9
 
 

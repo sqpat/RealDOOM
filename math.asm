@@ -731,7 +731,7 @@ ENDIF
 
 IF COMPISA GE COMPILE_386
 
-    PROC FastMulTrig16_
+    PROC FastMulTrig16_    NEAR
     PUBLIC FastMulTrig16_
 
     
@@ -760,7 +760,7 @@ IF COMPISA GE COMPILE_386
 ELSE
 
 
-    PROC FastMulTrig16_
+    PROC FastMulTrig16_    NEAR
     PUBLIC FastMulTrig16_
     ; ax:[dx * 4] * BX
     ; (dont shift answer 16)
