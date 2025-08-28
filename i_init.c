@@ -135,13 +135,6 @@ void __near I_StartupKeyboard(void);
 //
 /*
 */
-// todo getting rid of this causes a crash?
-void __near I_StartupKeyboard2(void) {
-
-
-	oldkeyboardisr = locallib_dos_getvect(KEYBOARDINT);
-	locallib_dos_setvect(KEYBOARDINT, I_KeyboardISR);
-}
 
  
 //
