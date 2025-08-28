@@ -3183,29 +3183,30 @@ jne   exit_d_display_early
 
 PUSHA_NO_AX_OR_BP_MACRO
 
+;todo: cache game state (cl?)
 
 xor   bx, bx  ; bl is wipe state
+mov   cx, bx  ; bl is wipe state
+mov   cl, byte ptr ds:[_gamestate]
 cmp   byte ptr ds:[_setsizeneeded], bh ; 0
 jne   do_execute_setviewsize
 done_with_execute_viewsize:
-mov   al, byte ptr ds:[_gamestate]
-cmp   al, byte ptr ds:[_wipegamestate]
+cmp   cl, byte ptr ds:[_wipegamestate]
 jne   do_wipe_start
 
 done_zeroing_wipe:
 
-cmp   byte ptr ds:[_gamestate], bh ; 0
+cmp   cl, bh ; 0
 jne   dont_erase_hud
 mov   ax, word ptr ds:[_gametic + 2]
 or    ax, word ptr ds:[_gametic + 0]
 je    dont_erase_hud
 call  HU_Erase_
 dont_erase_hud:
-mov   al, byte ptr ds:[_gamestate]
-cmp   al, 3
+cmp   cl, 3
 ja    done_with_gs_level_case
-cbw
-xchg  ax, si
+
+mov   si, cx
 sal   si, 1
 jmp   word ptr cs:[si + d_display_switch_table] 
 
@@ -3260,7 +3261,7 @@ mov   byte ptr ds:[_fullscreen], al
 done_with_gs_level_case:
 
 call  I_UpdateNoBlit_
-cmp   byte ptr ds:[_gamestate], bh ; 0
+cmp   cl, bh ; 0
 jne   skip_render_player_view
 
 cmp   byte ptr ds:[_automapactive], bh ; 0
@@ -3275,7 +3276,7 @@ jne   skip_render_player_view
 call  dword ptr ds:[_R_RenderPlayerView]
 skip_render_player_view:
 
-cmp   byte ptr ds:[_gamestate], bh ; 0
+cmp   cl, bh ; 0
 jne   skip_hu_drawer
 
 mov   ax, word ptr ds:[_gametic + 2]
@@ -3287,18 +3288,18 @@ jne   skip_hu_drawer
 call  HU_Drawer_
 skip_hu_drawer:
 
-mov   al, byte ptr ds:[_gamestate]
-cmp   al, byte ptr ds:[_oldgamestate]
+
+cmp   cl, byte ptr ds:[_oldgamestate]
 je    skip_set_palette
-test  al, al
-je    skip_set_palette
+
+jcxz  skip_set_palette
 xor   ax, ax
 
 call  I_SetPalette_
 
 skip_set_palette:
 
-cmp   byte ptr ds:[_gamestate], bh ; 0
+cmp   cl, bh ; 0
 jne   skip_fillbackscreen
 cmp   byte ptr ds:[_oldgamestate], bh ; 0
 je    skip_fillbackscreen
@@ -3308,7 +3309,7 @@ call  R_FillBackScreen_
 
 skip_fillbackscreen:
 
-cmp   byte ptr ds:[_gamestate], bh ; 0
+cmp   cl, bh ; 0
 jne   skip_border_checks
 
 cmp   byte ptr ds:[_automapactive], bh ; 0
@@ -3347,9 +3348,9 @@ mov   al, byte ptr ds:[_viewactive]
 mov   byte ptr ds:[_inhelpscreensstate], al
 mov   al, byte ptr ds:[_inhelpscreens]
 mov   byte ptr ds:[_inhelpscreensstate], al
-mov   al, byte ptr ds:[_gamestate]
-mov   byte ptr ds:[_wipegamestate], al
-mov   byte ptr ds:[_oldgamestate], al
+
+mov   byte ptr ds:[_wipegamestate], cl
+mov   byte ptr ds:[_oldgamestate], cl
 
 call  Z_QuickMapMenu_
 cmp   byte ptr ds:[_paused], bh ; 0

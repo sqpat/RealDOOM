@@ -714,9 +714,13 @@ uint16_t  __near   R_CheckTextureNumForName(int8_t * __near name);
 
 int16_t __near P_DivlineSide ( fixed_t_union	x, fixed_t_union	y, divline_t __near*	node ) ;
 void __far P_TouchSpecialThing (mobj_t __near*	special,mobj_t __near*	toucher,mobj_pos_t  __far*special_pos,mobj_pos_t  __far*toucher_pos);
-void P_PLATS_STARTMARKER();
+void ST_STUFF_STARTMARKER();
 void P_INTER_ENDMARKER();
 void __near P_SpawnGlowingLight(int16_t secnum) ;
+void __near D_Display (void) ;
+void __near G_BeginRecording (void) ;
+void __far D_StartTitle(void);
+uint8_t __near M_Random (void);
 
 void    __near P_UpdateSpecials (void);
 
@@ -730,14 +734,12 @@ void __far D_DoomMain2(void) {
 	int8_t            wadfile[20];
 	#define DGROUP_SIZE 0x2CA0
 
-/*
-	
 
 	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(P_INTER_ENDMARKER, (byte __far *)P_PLATS_STARTMARKER - (byte __far *)P_INTER_ENDMARKER, 1, fp);
+	FAR_fwrite(M_Random, (byte __far *)ST_STUFF_STARTMARKER - (byte __far *)M_Random, 1, fp);
 	fclose(fp);
 	exit(0);
-	
+	/*
 
 
 	fixed_t_union x, y;
