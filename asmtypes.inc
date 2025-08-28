@@ -805,3 +805,31 @@ TASK_T STRUC
     task_count                db ? ; 0
     task_active               db ? ; 1
 TASK_T ENDS
+
+
+
+
+MPOINT_T STRUC
+    mpoint_x                dw ? ; 0
+    mpoint_y                dw ? ; 2
+MPOINT_T ENDS
+
+
+
+MLINE_T STRUC
+    mline_a                MPOINT_T ? ; 0
+    mline_b                MPOINT_T ? ; 4
+MLINE_T ENDS
+
+
+FPOINT_T STRUC
+    mpoint_x                dw ? ; 0
+    mpoint_y                dw ? ; 2
+FPOINT_T ENDS
+
+
+FLINE_T STRUC
+    fline_a                FPOINT_T ? ; 0
+    fline_b                FPOINT_T ? ; 4
+FLINE_T ENDS
+
