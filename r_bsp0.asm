@@ -589,10 +589,10 @@ ENDP
 
 shift_word:
 mov si, dx
-mov dx, ax
+xchg  ax, dx
 xor ax, ax
 mov cx, bx
-xor bx, bx
+mov bx, ax
 
 jmp shift_bits
 
@@ -607,14 +607,13 @@ PROC div48_32_BSPLocal_
 
 push  si
 push  bp
-mov   bp, sp
+
 
 
 XOR SI, SI ; zero this out to get high bits of numhi
 
 
-test cx, cx
-je  shift_word
+jcxz  shift_word
 ; default branch taken 314358 vs 126885
 
 
@@ -715,10 +714,10 @@ RCR BX, 1
 ; numlo = AX:00...
 
 
-; save numlo word in sp.
+; save numlo word in bp.
 ; avoid going to memory... lets do interrupt magic
-cli
-mov sp, ax
+
+mov bp, ax
 
 
 ; set up first div. 
@@ -765,13 +764,13 @@ cmp   dx, bx
 
 ja    check_c1_c2_diff
 jne   q1_ready
-cmp   ax, sp
+cmp   ax, bp
 jbe   q1_ready
 check_c1_c2_diff:
 
 ; (c1 - c2.wu > den.wu)
 
-sub   ax, sp
+sub   ax, bp
 sbb   dx, bx
 cmp   dx, di
 ja    qhat_subtract_2
@@ -818,11 +817,11 @@ ADD  DX, CX    ; add
 ; actual 2nd division...
 
 
-sub   sp, ax
+sub   bp, ax
 mov   cx, ds
 sbb   cx, dx
 mov   dx, cx
-mov   ax, sp
+mov   ax, bp
 
 cmp   dx, di
 
@@ -854,8 +853,8 @@ mov   ax, bx
 
 mov   cx, ss      ; restore ds
 mov   ds, cx      
-LEAVE_MACRO
-sti
+
+pop   bp
 pop   si
 ret  
 
@@ -920,8 +919,8 @@ mov   ax, bx
 mov   dx, es   ;retrieve q1
 mov   cx, ss
 mov   ds, cx
-LEAVE_MACRO
-sti
+
+pop   bp
 pop   si
 ret  
 
@@ -939,8 +938,8 @@ div   di
 mov   dx, es
 mov   cx, ss
 mov   ds, cx
-LEAVE_MACRO
-sti
+
+pop   bp
 pop   si
 ret 
 
