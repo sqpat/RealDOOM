@@ -337,7 +337,7 @@
 #define floorphyspage                   (*((int8_t __near*)                  (_NULL_OFFSET + 0x02B7)))
 #define gameaction                      (*((gameaction_t __near*)            (_NULL_OFFSET + 0x02B8)))
 #define viewactive                      (*((boolean __near*)                 (_NULL_OFFSET + 0x02B9)))
-#define automapactive                   (*((boolean __near*)                 (_NULL_OFFSET + 0x02BA)))
+// #define automapactive                   (*((boolean __near*)                 (_NULL_OFFSET + 0x02BA)))
 #define commercial                      (*((boolean __near*)                 (_NULL_OFFSET + 0x02BB)))
 #define registered                      (*((boolean __near*)                 (_NULL_OFFSET + 0x02BC)))
 #define shareware                       (*((boolean __near*)                 (_NULL_OFFSET + 0x02BD)))
@@ -396,12 +396,15 @@
 #define demoname                        (((int8_t    __near*)                (_NULL_OFFSET + 0x0398)))
 
 #define ems_backfill_page_order         (((int8_t    __near*)                (_NULL_OFFSET + 0x03B8)))
-// #define LINEFLAGSLIST_SEGMENT_PTR		(*((segment_t __near*)               (_NULL_OFFSET + 0x03D0)))
+#define am_stopped						(*((boolean __near*)                 (_NULL_OFFSET + 0x03D0)))
+#define automapactive					(*((boolean __near*)                 (_NULL_OFFSET + 0x03D1)))
+
+
 #define currentThinkerListHead  		(*((int16_t __near*)                 (_NULL_OFFSET + 0x03D2)))
 
 #define S_StartSoundWithSecnum_addr     (*((uint32_t  __near*)             (_NULL_OFFSET + 0x03D4)))
 #define G_SecretExitLevel_addr          (*((uint32_t  __near*)             (_NULL_OFFSET + 0x03D8)))
-#define AM_Stop_addr		            (*((uint32_t  __near*)             (_NULL_OFFSET + 0x03DC)))
+// #define AM_Stop_addr		            (*((uint32_t  __near*)             (_NULL_OFFSET + 0x03DC)))
 
 
 
@@ -789,7 +792,7 @@ extern fixed_t_union        am_scale_ftom;
 extern mpoint_t             markpoints[AM_NUMMARKPOINTS];
 extern int8_t               markpointnum;
 extern int8_t               followplayer;
-extern boolean              am_stopped;
+
 extern boolean              am_bigstate;
 
 extern fline_t              am_fl;

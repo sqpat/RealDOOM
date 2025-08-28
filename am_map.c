@@ -150,6 +150,11 @@ void __near AM_changeWindowLoc(void);
 void __near AM_initVariables(void);
 void __near AM_clearMarks(void) ;
 void __near AM_LevelInit(void);
+void __far AM_Start (void) ;
+void __near AM_minOutWindowScale(void) ;
+void __near AM_maxOutWindowScale(void);
+
+
 /*
 
 fixed_16_t __near MTOF16(fixed_16_t x) {
@@ -378,7 +383,6 @@ void __near AM_LevelInit(void) {
     am_scale_ftom.w = FixedDivWholeA(1, am_scale_mtof.w);
 }
 
- */
 
 
 
@@ -429,6 +433,9 @@ void __near AM_maxOutWindowScale(void) {
     am_scale_ftom.w = FixedDivWholeA(1, am_scale_mtof.w);
     AM_activateNewScale();
 }
+
+ */
+
 
 //
 // Handle events (user inputs) in automap mode

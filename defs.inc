@@ -300,7 +300,7 @@ _ceilphyspage =                  	 _NULL_OFFSET + 002B6h
 _floorphyspage =                 	 _NULL_OFFSET + 002B7h
 _gameaction =                 		 _NULL_OFFSET + 002B8h
 _viewactive =                 		 _NULL_OFFSET + 002B9h
-_automapactive =                 	 _NULL_OFFSET + 002BAh
+; 2ba empty
 _commercial =                 		 _NULL_OFFSET + 002BBh
 _registered =                 		 _NULL_OFFSET + 002BCh
 _shareware =                 		 _NULL_OFFSET + 002BDh
@@ -346,12 +346,13 @@ _gamemap = 							 _NULL_OFFSET + 00377h
 _savedescription =                   _NULL_OFFSET + 00378h
 _demoname =                          _NULL_OFFSET + 00398h
 _ems_backfill_page_order =           _NULL_OFFSET + 003B8h
-;_LINEFLAGSLIST_SEGMENT_PTR =         _NULL_OFFSET + 003D0h
+_am_stopped = 						 _NULL_OFFSET + 003D0h
+_automapactive =                 	 _NULL_OFFSET + 003D1h
 _currentThinkerListHead = 			 _NULL_OFFSET + 003D2h
 
 _S_StartSoundWithSecnum_addr =       _NULL_OFFSET + 003D4h
 _G_SecretExitLevel_addr =            _NULL_OFFSET + 003D8h
-_AM_Stop_addr =		                 _NULL_OFFSET + 003DCh
+;_AM_Stop_addr =		                 _NULL_OFFSET + 003DCh
 
 
 _braintargets =                      _NULL_OFFSET + 003E0h

@@ -845,7 +845,7 @@ void __near Z_LoadBinaries() {
 	R_SetViewSize_addr =			    (uint32_t)(R_SetViewSize);
 
 
-	AM_Stop_addr =						(uint32_t)(AM_Stop);
+	// AM_Stop_addr =						(uint32_t)(AM_Stop);
 	G_ExitLevel_addr =					(uint32_t)(G_ExitLevel);
 	G_SecretExitLevel_addr =			(uint32_t)(G_SecretExitLevel);
 	G_PlayerReborn_addr =				(uint32_t)(G_PlayerReborn);

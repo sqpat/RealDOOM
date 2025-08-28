@@ -220,7 +220,7 @@ int8_t markpointnum = 0; // next point to be assigned
 
 int8_t followplayer = 1; // specifies whether to follow the player around
 
-boolean am_stopped = true;
+
 boolean am_bigstate=0;
 
 fline_t am_fl;

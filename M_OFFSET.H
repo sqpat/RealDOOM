@@ -61,8 +61,8 @@
 #define S_ActuallyChangeMusicOffset             0x404
 #define P_SetThingPositionFarOffset             0x2978
 #define P_SpawnMapThingOffset                   0x2AF7
-#define P_TickerOffset                          0x8398
-#define P_SpawnSpecialsOffset                   0x7D09
+#define P_TickerOffset                          0x83A0
+#define P_SpawnSpecialsOffset                   0x7D11
 #define M_InitOffset                            0x11A4
 #define M_ResponderOffset                       0xD63
 #define M_DrawerOffset                          0x1064
@@ -94,7 +94,7 @@
 #define R_BSP0CodeSize                 0x36AF
 #define R_BSPFLCodeSize                0x3654
 #define WI_StuffCodeSize               0x1009
-#define PSightCodeSize                 0x8C23
+#define PSightCodeSize                 0x8C2B
 #define WipeCodeSize                   0x4F5
 #define FinaleCodeSize                 0xBD7
 #define SaveLoadCodeSize               0xB34

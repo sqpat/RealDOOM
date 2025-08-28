@@ -924,7 +924,12 @@ mov    byte ptr ds:[_player + PLAYER_T.player_playerstate], 1
 call   P_DropWeapon_
 cmp    byte ptr ds:[_automapactive], 0
 je     target_not_player
-call   dword ptr ds:[_AM_Stop_addr]
+
+; inlined AM_Stop_
+;mov       byte ptr ds:[_automapactive], 0
+mov       word ptr ds:[_am_stopped], 00001h
+mov       byte ptr ds:[_st_gamestate], 1
+
 target_not_player:
 
 

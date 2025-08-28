@@ -119,7 +119,7 @@ EXTRN _followplayer:BYTE
 EXTRN _am_cheating:BYTE
 EXTRN _am_grid:BYTE
 EXTRN _am_bigstate:BYTE
-EXTRN _am_stopped:BYTE
+
 
 EXTRN _markpointnum:BYTE
 EXTRN _am_lastlevel:BYTE
@@ -644,20 +644,15 @@ ret
 
 ENDP
 
-COMMENT @
 
-
-PROC    AM_Stop_ FAR
+; todo inline
+PROC    AM_Stop_ NEAR
 PUBLIC  AM_Stop_
 
-push      bx
-mov       bx, OFFSET _automapactive
-mov       byte ptr ds:[bx], 0
-mov       bx, OFFSET _st_gamestate
-mov       byte ptr ds:[_am_stopped], 1
-mov       byte ptr ds:[bx], 1
-pop       bx
-retf      
+;mov       byte ptr ds:[_automapactive], 0
+mov       word ptr ds:[_am_stopped], 00001h
+mov       byte ptr ds:[_st_gamestate], 1
+ret      
 
 
 ENDP
@@ -665,41 +660,32 @@ ENDP
 PROC    AM_Start_ NEAR
 PUBLIC  AM_Start_
 
-
-push      bx
 mov       al, byte ptr ds:[_am_stopped]
 test      al, al
-je        label_21
-label_23:
-mov       bx, OFFSET _gamemap
-mov       al, byte ptr ds:[_am_lastlevel]
+jne       dont_call_am_stop
+call      AM_Stop_
+dont_call_am_stop:
+
 mov       byte ptr ds:[_am_stopped], 0
-cmp       al, byte ptr ds:[bx]
-jne       label_22
-mov       bx, OFFSET _gameepisode
+mov       al, byte ptr ds:[_am_lastlevel] ; todo make these two adjacent
+cmp       al, byte ptr ds:[_gamemap]
+jne       do_level_init
 mov       al, byte ptr ds:[_am_lastepisode]
-cmp       al, byte ptr ds:[bx]
-jne       label_22
-call      AM_initVariables_
-pop       bx
-retf      
-label_21:
-mov       bx, OFFSET _automapactive
-mov       byte ptr ds:[bx], al
-mov       bx, OFFSET _st_gamestate
-mov       byte ptr ds:[bx], 1
-jmp       label_23
-label_22:
-mov       bx, OFFSET _gamemap
+cmp       al, byte ptr ds:[_gameepisode]
+je        just_init_variables
+do_level_init:
 call      AM_LevelInit_
-mov       bl, byte ptr ds:[bx]
-mov       byte ptr ds:[_am_lastlevel], bl
-mov       bx, OFFSET _gameepisode
-mov       bl, byte ptr ds:[bx]
-mov       byte ptr ds:[_am_lastepisode], bl
+mov       al, byte ptr ds:[_gamemap]
+mov       byte ptr ds:[_am_lastlevel], al   ; todo make these all adjacent.. one read one write?
+mov       al, byte ptr ds:[_gameepisode]
+mov       byte ptr ds:[_am_lastepisode], al
+
+just_init_variables:
 call      AM_initVariables_
-pop       bx
-retf      
+ret      
+
+
+
 
 ENDP
 
@@ -711,11 +697,11 @@ push      cx
 push      dx
 mov       ax, word ptr ds:[_am_min_scale_mtof]
 mov       word ptr ds:[_am_scale_mtof + 0], ax
+xchg      ax, bx
 xor       ax, ax
-mov       bx, word ptr ds:[_am_scale_mtof + 0]
 mov       word ptr ds:[_am_scale_mtof + 2], ax
 mov       cx, ax
-mov       ax, 1
+inc       ax ; 1
 call      FixedDivWholeA_
 mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx
@@ -734,8 +720,8 @@ push      bx
 push      cx
 push      dx
 mov       ax, 1
-mov       bx, word ptr ds:[_am_max_scale_mtof + 0]
-mov       cx, word ptr ds:[_am_max_scale_mtof + 2]
+les       bx, dword ptr ds:[_am_max_scale_mtof + 0]
+mov       cx, es
 mov       word ptr ds:[_am_scale_mtof + 0], bx
 mov       word ptr ds:[_am_scale_mtof + 2], cx
 call      FixedDivWholeA_
@@ -748,6 +734,9 @@ pop       bx
 ret       
 
 ENDP
+
+COMMENT @
+
 
 PROC    AM_Responder_ NEAR
 PUBLIC  AM_Responder_
