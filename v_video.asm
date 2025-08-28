@@ -796,15 +796,11 @@ db "brdr_tr", 0
 str_brdr_br:
 db "brdr_br", 0
 
-PROC R_FillBackScreen_ FAR
+PROC R_FillBackScreen_ NEAR
 PUBLIC R_FillBackScreen_
 
 
-push      bx
-push      cx
-push      dx
-push      si
-push      di
+PUSHA_NO_AX_OR_BP_MACRO
 
 cmp       word ptr ds:[_scaledviewwidth], SCREENWIDTH
 jne       continue_fillbackscreen
@@ -1053,12 +1049,8 @@ pop       ds
 
 exit_fillbackscreen:
 
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
-retf     
+POPA_NO_AX_OR_BP_MACRO
+ret     
 
 
 ENDP

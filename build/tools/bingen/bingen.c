@@ -610,6 +610,12 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "M_DRAWEROFFSET             = 0%Xh\n",            FP_OFF(M_Drawer)                            - FP_OFF(M_MENU_STARTMARKER));
 
 
+    fprintf(fp, "WIPE_STARTSCREENOFFSET     = 0%Xh\n",            FP_OFF(wipe_StartScreen)                    - FP_OFF(I_ReadScreen));
+    fprintf(fp, "WIPE_WIPELOOPOFFSET        = 0%Xh\n",            FP_OFF(wipe_WipeLoop)                       - FP_OFF(I_ReadScreen));
+    fprintf(fp, "WI_DRAWEROFFSET            = 0%Xh\n",            FP_OFF(WI_Drawer)                           - FP_OFF(WI_STARTMARKER));
+    fprintf(fp, "F_DRAWEROFFSET             = 0%Xh\n",            FP_OFF(F_Drawer)                            - FP_OFF(F_FINALE_STARTMARKER));
+
+
 	// P_AddActiveCeiling_addr =		 	(uint32_t)(P_AddActiveCeiling);
 	// P_AddActivePlat_addr =		 		(uint32_t)(P_AddActivePlat);
     // P_UseSpecialLine_addr =				(uint32_t)(P_UseSpecialLine);

@@ -18,6 +18,18 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
+EXTRN ST_Drawer_:NEAR
+EXTRN HU_Drawer_:NEAR
+EXTRN AM_Drawer_:NEAR
+EXTRN HU_Erase_:NEAR
+EXTRN R_ExecuteSetViewSize_:NEAR
+EXTRN R_DrawViewBorder_:NEAR
+EXTRN D_PageDrawer_:NEAR
+EXTRN R_FillBackScreen_:NEAR
+EXTRN NetUpdate_:FAR
+EXTRN Z_QuickMapMenu_:FAR
+EXTRN Z_QuickMapPhysics_:FAR
+EXTRN Z_QuickMapIntermission_:FAR
 
 EXTRN resetDS_:FAR
 EXTRN I_ReadMouse_:NEAR
@@ -41,6 +53,10 @@ EXTRN I_WaitVBL_:FAR
 EXTRN Z_QuickMapPalette_:FAR
 EXTRN Z_QuickMapByTaskNum_:FAR
 
+EXTRN _R_RenderPlayerView:DWORD
+EXTRN _M_Drawer:DWORD
+EXTRN _M_DrawPause:DWORD
+EXTRN _oldgamestate:BYTE
 EXTRN _singledemo:BYTE
 EXTRN _mousepresent:BYTE
 EXTRN _key_strafe:BYTE
@@ -3131,12 +3147,324 @@ xor   ax, ax
 mov   es, ax
 push  word ptr es:[041Ah]
 pop   word ptr es:[041Ch]
+exit_d_display_early:
 ret
 
 ENDP
 
+d_display_switch_table:
+dw switch_case_1
+dw switch_case_2
+dw switch_case_3
+dw switch_case_4
 
 
+PROC    D_Display_ NEAR
+PUBLIC  D_Display_
+
+
+cmp   byte ptr ds:[_novideo], 0
+jne   exit_d_display_early
+
+push  bx
+push  dx
+push  si
+push  di
+
+mov   si, _setsizeneeded
+xor   dl, dl
+cmp   byte ptr ds:[si], 0
+jne   jump_to_do_execute_setviewsize
+label_20:
+mov   di, _gamestate
+mov   si, _wipegamestate
+mov   al, byte ptr ds:[di]
+cmp   al, byte ptr ds:[si]
+je    jump_to_zero_wipe
+mov   ax, 1
+mov   bl, 1
+
+call  Z_SetOverlay_
+
+db 09Ah
+dw WIPE_STARTSCREENOFFSET, CODE_OVERLAY_SEGMENT
+
+done_zeroing_wipe:
+mov   si, _gamestate
+cmp   byte ptr ds:[si], 0
+jne   label_1
+mov   si, _gametic
+mov   ax, word ptr ds:[si + 2]
+or    ax, word ptr ds:[si]
+je    label_1
+call  HU_Erase_
+label_1:
+mov   si, _gamestate
+mov   al, byte ptr ds:[si]
+cmp   al, 3
+ja    label_2
+xor   ah, ah
+mov   si, ax
+add   si, ax
+jmp   word ptr cs:[si + d_display_switch_table] ; todo switch block..
+jump_to_exit_d_display:
+jmp   exit_d_display
+jump_to_do_execute_setviewsize:
+jmp   do_execute_setviewsize
+jump_to_zero_wipe:
+jmp   zero_wipe
+switch_case_1:
+mov   si, _gametic
+mov   ax, word ptr ds:[si + 2]
+or    ax, word ptr ds:[si]
+je    label_2
+jmp   label_3
+label_2:
+mov   si, _gamestate
+call  I_UpdateNoBlit_
+cmp   byte ptr ds:[si], 0
+jne   label_4
+mov   si, _automapactive
+cmp   byte ptr ds:[si], 0
+jne   label_4
+mov   si, _gametic
+mov   ax, word ptr ds:[si + 2]
+or    ax, word ptr ds:[si]
+je    label_4
+mov   si, _inhelpscreens
+cmp   byte ptr ds:[si], 0
+jne   label_4
+call  dword ptr ds:[_R_RenderPlayerView]
+label_4:
+mov   si, _gamestate
+cmp   byte ptr ds:[si], 0
+jne   label_5
+mov   si, _gametic
+mov   ax, word ptr ds:[si + 2]
+or    ax, word ptr ds:[si]
+je    label_5
+mov   si, _inhelpscreens
+cmp   byte ptr ds:[si], 0
+jne   label_5
+call  HU_Drawer_
+label_5:
+mov   si, _gamestate
+mov   al, byte ptr ds:[si]
+cmp   al, byte ptr ds:[_oldgamestate]
+je    label_6
+test  al, al
+je    label_6
+xor   ax, ax
+
+call  I_SetPalette_
+
+label_6:
+mov   si, _gamestate
+cmp   byte ptr ds:[si], 0
+jne   label_7
+cmp   byte ptr ds:[_oldgamestate], 0
+je    label_7
+mov   si, _viewactivestate
+mov   byte ptr ds:[si], 0
+
+call  R_FillBackScreen_
+
+label_7:
+mov   si, _gamestate
+cmp   byte ptr ds:[si], 0
+jne   label_8
+mov   si, _automapactive
+cmp   byte ptr ds:[si], 0
+jne   label_8
+mov   si, _scaledviewwidth
+cmp   word ptr ds:[si], SCREENWIDTH
+je    label_8
+mov   si, _menuactive
+cmp   byte ptr ds:[si], 0
+jne   label_9
+jmp   label_10
+label_9:
+mov   si, _borderdrawcount
+mov   byte ptr ds:[si], 3
+label_12:
+mov   si, _borderdrawcount
+cmp   byte ptr ds:[si], 0
+je    label_8
+mov   si, _inhelpscreens
+cmp   byte ptr ds:[si], 0
+jne   label_11
+
+call  R_DrawViewBorder_ ; todo near?
+label_11:
+mov   si, _borderdrawcount
+mov   di, _hudneedsupdate
+dec   byte ptr ds:[si]
+cmp   byte ptr ds:[di], 0
+je    label_8
+inc   byte ptr ds:[di]
+label_8:
+mov   si, _menuactive
+mov   di, _fullscreen
+mov   al, byte ptr ds:[si]
+mov   si, _viewactive
+mov   byte ptr ds:[di], al
+mov   di, _inhelpscreensstate
+mov   al, byte ptr ds:[si]
+mov   byte ptr ds:[di], al
+mov   di, _inhelpscreens
+mov   si, _inhelpscreensstate
+mov   al, byte ptr ds:[di]
+mov   di, _gamestate
+mov   byte ptr ds:[si], al
+mov   si, _wipegamestate
+mov   al, byte ptr ds:[di]
+mov   byte ptr ds:[si], al
+mov   si, _paused
+mov   byte ptr ds:[_oldgamestate], al
+
+call  Z_QuickMapMenu_
+cmp   byte ptr ds:[si], 0
+je    label_18
+call  dword ptr ds:[_M_DrawPause]
+label_18:
+call  dword ptr ds:[_M_Drawer]
+
+call  Z_QuickmapPhysics_
+
+call  NetUpdate_
+
+test  bl, bl
+jne   label_19
+call  I_FinishUpdate_
+exit_d_display:
+ 
+pop   di
+pop   si
+pop   dx
+pop   bx
+ret   
+do_execute_setviewsize:
+call  R_ExecuteSetViewSize_
+mov   si, _borderdrawcount
+mov   byte ptr ds:[_oldgamestate], -1
+mov   byte ptr ds:[si], 3
+jmp   label_20
+zero_wipe:
+xor   bl, bl
+jmp   done_zeroing_wipe
+label_19:
+mov   ax, 1
+
+call  Z_SetOverlay_
+
+db 09Ah
+dw WIPE_WIPELOOPOFFSET, CODE_OVERLAY_SEGMENT
+
+pop   di
+pop   si
+pop   dx
+pop   bx
+ret   
+
+label_3:
+mov   si, _automapactive
+cmp   byte ptr ds:[si], 0
+je    label_16
+
+call  AM_Drawer_
+label_16:
+test  bl, bl
+je    label_17
+label_15:
+mov   dl, 1
+label_14:
+mov   si, _inhelpscreensstate
+cmp   byte ptr ds:[si], 0
+je    label_21
+mov   si, _inhelpscreens
+cmp   byte ptr ds:[si], 0
+jne   label_21
+mov   dl, 1
+label_21:
+mov   si, _inhelpscreens
+cmp   byte ptr ds:[si], 0
+je    label_22
+mov   si, _skipdirectdraws
+mov   byte ptr ds:[si], 1
+label_22:
+mov   al, dl
+cbw
+mov   si, _viewheight
+mov   dx, ax
+cmp   word ptr ds:[si], SCREENHEIGHT
+jne   label_23
+mov   al, 1
+label_24:
+cbw  
+mov   si, _skipdirectdraws
+call  ST_Drawer_
+mov   byte ptr ds:[si], 0
+mov   si, _viewheight
+cmp   word ptr ds:[si], SCREENHEIGHT
+jne   label_25
+mov   al, 1
+mov   si, _fullscreen
+mov   byte ptr ds:[si], al
+jmp   label_2
+label_17:
+mov   si, _viewheight
+cmp   word ptr ds:[si], SCREENHEIGHT
+je    label_14
+mov   si, _fullscreen
+cmp   byte ptr ds:[si], 0
+jne   label_15
+jmp   label_14
+label_23:
+xor   al, al
+jmp   label_24
+label_25:
+xor   al, al
+mov   si, _fullscreen
+mov   byte ptr ds:[si], al
+jmp   label_2
+
+switch_case_2:
+call  Z_QuickMapIntermission_
+
+db 09Ah
+dw WI_DRAWEROFFSET, WIANIM_CODESPACE_SEGMENT
+
+
+call  Z_QuickmapPhysics_
+
+jmp   label_2
+switch_case_3:
+mov   ax, 2
+
+call  Z_SetOverlay_
+db 09Ah
+dw F_DRAWEROFFSET, CODE_OVERLAY_SEGMENT
+
+call  Z_QuickmapPhysics_
+jmp   label_2
+switch_case_4:
+call  D_PageDrawer_
+jmp   label_2
+label_10:
+mov   si, _fullscreen
+cmp   byte ptr ds:[si], 0
+je    label_13
+jump_to_label_9:
+jmp   label_9
+label_13:
+mov   si, _inhelpscreensstate
+cmp   byte ptr ds:[si], 0
+je    jump_to_label_9
+jmp   label_12
+
+
+
+ENDP
 
 
 

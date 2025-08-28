@@ -880,19 +880,17 @@ ENDP
 ; could probably be improved a small amount wrt screenwidth constants and viewheight
 ; but dont care much
 
-PROC R_DrawViewBorder_ FAR
+PROC R_DrawViewBorder_ NEAR
 PUBLIC R_DrawViewBorder_ 
 
 
+cmp   word ptr ds:[_scaledviewwidth], SCREENWIDTH
+jne   view_border_exists
+ret  
+view_border_exists:
 PUSHA_NO_AX_OR_BP_MACRO
 mov   ax, word ptr ds:[_scaledviewwidth]
-cmp   ax, SCREENWIDTH
-jne   view_border_exists
-exit_drawviewborder:
 
-POPA_NO_AX_OR_BP_MACRO
-retf  
-view_border_exists:
 mov   bx, SCREENHEIGHT - SBARHEIGHT
 sub   bx, word ptr ds:[_viewheight]
 shr   bx, 1
@@ -945,7 +943,7 @@ call  R_VideoErase_
 add   si, bx
 loop  loop_erase_border
 POPA_NO_AX_OR_BP_MACRO
-retf  
+ret
 
 
 

@@ -430,6 +430,8 @@ void __near I_FinishUpdate(void);
 
 
 
+void __near D_Display (void);
+/*
 void __near D_Display (void) {
 	int16_t                         y;
     boolean                     wipe = false;
@@ -601,7 +603,6 @@ void __near D_Display (void) {
 		return;
     }
 
-
     
     // wipe update
 #ifndef SKIPWIPE
@@ -609,6 +610,8 @@ void __near D_Display (void) {
 	wipe_WipeLoopCall();
 #endif
 }
+*/
+
  /*
  void __near locallib_putchar(int8_t c){
 	// fputc(c, stdout);
