@@ -450,7 +450,6 @@ ret
 
 ENDP
 
-COMMENT @
 
 
 PROC    AM_changeWindowLoc_ NEAR
@@ -459,68 +458,75 @@ PUBLIC  AM_changeWindowLoc_
 push      bx
 push      cx
 push      dx
-mov       dx, word ptr ds:[_screen_botleft_x]
-mov       bx, word ptr ds:[_screen_botleft_y]
-cmp       word ptr ds:[_m_paninc + 0], 0
-jne       label_11
-cmp       word ptr ds:[_m_paninc + 2], 0
-je        label_12
-label_11:
+les       ax, dword ptr ds:[_m_paninc]
+mov       dx, es
+or        dx, ax
+je        dont_follow_player
+
 mov       byte ptr ds:[_followplayer], 0
 mov       word ptr ds:[_screen_oldloc + 0], MAXSHORT
-label_12:
-mov       ax, word ptr ds:[_m_paninc + 0]
+dont_follow_player:
+mov       dx, word ptr ds:[_screen_botleft_x]
+mov       bx, word ptr ds:[_screen_botleft_y]
 add       dx, ax
-mov       ax, word ptr ds:[_m_paninc + 2]
+mov       ax, es
 add       bx, ax
+
 mov       ax, word ptr ds:[_screen_viewport_width]
 mov       cx, dx
 sar       ax, 1
 add       cx, ax
+neg       ax
 cmp       cx, word ptr ds:[_am_max_level_x]
-jle       label_13
-mov       dx, word ptr ds:[_am_max_level_x]
-label_17:
-sub       dx, ax
-label_16:
+jg        use_maxlevelx
+cmp       cx, word ptr ds:[_am_min_level_x]
+jge       dont_subtract_x
+add       ax, word ptr ds:[_am_min_level_x]
+jmp       done_subtracting_x
+use_maxlevelx:
+add       ax, word ptr ds:[_am_max_level_x]
+jmp       done_subtracting_x
+dont_subtract_x:
+xchg      ax, dx  ; just use this value
+done_subtracting_x:
+mov       word ptr ds:[_screen_botleft_x], ax
+add       ax, word ptr ds:[_screen_viewport_width]
+mov       word ptr ds:[_screen_topright_x], ax
+
 mov       ax, word ptr ds:[_screen_viewport_height]
 mov       cx, bx
 sar       ax, 1
 add       cx, ax
+neg       ax
 cmp       cx, word ptr ds:[_am_max_level_y]
-jg        label_14
+jle       use_minlevel7
+add       ax, word ptr ds:[_am_max_level_y]
+jmp       done_subtracting_y
+use_minlevel7:
 cmp       cx, word ptr ds:[_am_min_level_y]
-jge       label_15
-mov       bx, word ptr ds:[_am_min_level_y]
-label_18:
-sub       bx, ax
-label_15:
-mov       ax, dx
-add       ax, word ptr ds:[_screen_viewport_width]
-mov       word ptr ds:[_screen_topright_x], ax
-mov       ax, bx
+jge       dont_subtract_y
+add       ax, word ptr ds:[_am_min_level_y]
+jmp       done_subtracting_y
+dont_subtract_y:
+xchg      ax, bx
+done_subtracting_y:
+
+mov       word ptr ds:[_screen_botleft_y], ax
 add       ax, word ptr ds:[_screen_viewport_height]
 mov       word ptr ds:[_screen_topright_y], ax
-mov       word ptr ds:[_screen_botleft_y], bx
-mov       word ptr ds:[_screen_botleft_x], dx
 pop       dx
 pop       cx
 pop       bx
 ret       
-label_13:
-cmp       cx, word ptr ds:[_am_min_level_x]
-jge       label_16
-mov       dx, word ptr ds:[_am_min_level_x]
-jmp       label_17
-label_14:
-mov       bx, word ptr ds:[_am_max_level_y]
-jmp       label_18
 
 ENDP
 
 
 
 FRAC_SCALE_UNIT = 01000h
+
+COMMENT @
+
 
 PROC    AM_initVariables_ NEAR
 PUBLIC  AM_initVariables_

@@ -269,7 +269,6 @@ void __near AM_findMinMaxBoundaries(void) {
 
 }
 
- */
 
 //
 //
@@ -297,6 +296,7 @@ void __near AM_changeWindowLoc(void) {
     screen_topright_x = screen_botleft_x + screen_viewport_width;
     screen_topright_y = screen_botleft_y + screen_viewport_height;
 }
+ */
 
 
 //
