@@ -823,8 +823,8 @@ MLINE_T ENDS
 
 
 FPOINT_T STRUC
-    mpoint_x                dw ? ; 0
-    mpoint_y                dw ? ; 2
+    fpoint_x                dw ? ; 0
+    fpoint_y                dw ? ; 2
 FPOINT_T ENDS
 
 

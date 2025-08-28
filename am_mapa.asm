@@ -308,36 +308,43 @@ ret
 
 ENDP
 
-COMMENT @
 
 
 PROC    AM_addMark_ NEAR
 PUBLIC  AM_addMark_
 
+;	markpointnum = (markpointnum + 1) % AM_NUMMARKPOINTS;
+;    markpoints[markpointnum].x = screen_botleft_x + (screen_viewport_width >>1);
+;    markpoints[markpointnum].y = screen_botleft_y + (screen_viewport_height >>1);
+
+
 push      bx
-push      dx
 mov       al, byte ptr ds:[_markpointnum]
 cbw      
-mov       dx, word ptr ds:[_screen_viewport_width]
+
 mov       bx, ax
-sar       dx, 1
-shl       bx, 2
-add       dx, word ptr ds:[_screen_botleft_x]
-mov       word ptr ds:[bx + _markpoints], dx
-mov       dx, word ptr ds:[_screen_viewport_height]
-sar       dx, 1
-add       dx, word ptr ds:[_screen_botleft_y]
 inc       ax
-mov       word ptr ds:[bx + _markpoints + 2], dx
-mov       bx, AM_NUMMARKPOINTS
-cwd       
-idiv      bx
-mov       byte ptr ds:[_markpointnum], dl
-pop       dx
+mov       bh, AM_NUMMARKPOINTS
+div       bh
+mov       byte ptr ds:[_markpointnum], ah
+xor       bh, bh
+
+mov       ax, word ptr ds:[_screen_viewport_width] ; todo les
+sar       ax, 1
+SHIFT_MACRO shl       bx 2
+add       ax, word ptr ds:[_screen_botleft_x]
+mov       word ptr ds:[bx + _markpoints + MPOINT_T.mpoint_x], ax
+mov       ax, word ptr ds:[_screen_viewport_height]
+sar       ax, 1
+add       ax, word ptr ds:[_screen_botleft_y]
+mov       word ptr ds:[bx + _markpoints + MPOINT_T.mpoint_y], ax
 pop       bx
 ret       
 
 ENDP
+
+COMMENT @
+
 
 PROC    AM_findMinMaxBoundaries_ NEAR
 PUBLIC  AM_findMinMaxBoundaries_

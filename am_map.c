@@ -144,6 +144,7 @@ fixed_16_t __near CXMTOF16(fixed_16_t x);
 fixed_16_t __near CYMTOF16(fixed_16_t y);
 void __near AM_activateNewScale(void);
 void __near AM_restoreScaleAndLoc(void);
+void __near AM_addMark(void);
 
 
 /*
@@ -207,7 +208,6 @@ void __near AM_restoreScaleAndLoc(void) {
 	am_scale_mtof.w = FixedDivWholeA(automap_screenwidth, temp.w);
     am_scale_ftom.w = FixedDivWholeA(1, am_scale_mtof.w);
 }
- */
 
 
 //
@@ -220,6 +220,8 @@ void __near AM_addMark(void) {
 	markpointnum = (markpointnum + 1) % AM_NUMMARKPOINTS;
 
 }
+ */
+
 
 //
 // Determines bounding box of all vertices,
