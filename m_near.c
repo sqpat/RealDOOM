@@ -348,9 +348,7 @@ void (__far* P_SpawnSpecials)() =             ((void (__far *)())     	         
 
 
 void (__far* M_Init)() =                      ((void (__far *)())     	                                                                                                    (MK_FP(menu_code_area_segment,         M_InitOffset)));
-void (__far* M_Drawer)() =                    ((void (__far *)())                   	                                                                                    (MK_FP(menu_code_area_segment,         M_DrawerOffset)));
 boolean (__far* M_Responder)() =              ((boolean (__far *)(event_t __far* ev))     	                                                                                (MK_FP(menu_code_area_segment,         M_ResponderOffset)));
-void (__far* M_DrawPause)() =                 ((void (__far *)())     	                                                                                                    (MK_FP(menu_code_area_segment,         M_DrawPauseOffset)));
 void (__far* M_LoadFromSaveGame)() =          ((void (__far *)(int8_t i))     	                                                                                            (MK_FP(menu_code_area_segment,         M_LoadFromSaveGameOffset)));
 
 

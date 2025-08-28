@@ -608,6 +608,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 
     fprintf(fp, "M_STARTCONTROLPANELOFFSET  = 0%Xh\n",            FP_OFF(M_StartControlPanel)                 - FP_OFF(M_MENU_STARTMARKER));
     fprintf(fp, "M_DRAWEROFFSET             = 0%Xh\n",            FP_OFF(M_Drawer)                            - FP_OFF(M_MENU_STARTMARKER));
+    fprintf(fp, "M_DRAWPAUSEOFFSET          = 0%Xh\n",            FP_OFF(M_DrawPause)                         - FP_OFF(M_MENU_STARTMARKER));
 
 
     fprintf(fp, "WIPE_STARTSCREENOFFSET     = 0%Xh\n",            FP_OFF(wipe_StartScreen)                    - FP_OFF(I_ReadScreen));

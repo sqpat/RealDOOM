@@ -822,9 +822,7 @@ extern void					(__far* P_GivePower)();
 
 
 extern void (__far* M_Init)();
-extern void (__far* M_Drawer)();
 extern boolean (__far* M_Responder)();
-extern void (__far* M_DrawPause)();
 extern void (__far* M_LoadFromSaveGame)();
 
 

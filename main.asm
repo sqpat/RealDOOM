@@ -54,8 +54,6 @@ EXTRN Z_QuickMapPalette_:FAR
 EXTRN Z_QuickMapByTaskNum_:FAR
 
 EXTRN _R_RenderPlayerView:DWORD
-EXTRN _M_Drawer:DWORD
-EXTRN _M_DrawPause:DWORD
 EXTRN _oldgamestate:BYTE
 EXTRN _singledemo:BYTE
 EXTRN _mousepresent:BYTE
@@ -3158,6 +3156,23 @@ dw switch_case_2
 dw switch_case_3
 dw switch_case_4
 
+do_execute_setviewsize:
+call  R_ExecuteSetViewSize_
+mov   byte ptr ds:[_oldgamestate], -1
+mov   byte ptr ds:[_borderdrawcount], 3
+jmp   done_with_execute_viewsize
+
+do_wipe_start:
+mov   ax, OVERLAY_ID_WIPE
+inc   bx ; 1
+
+call  Z_SetOverlay_
+
+db 09Ah
+dw WIPE_STARTSCREENOFFSET, CODE_OVERLAY_SEGMENT
+
+jmp   done_zeroing_wipe
+
 
 PROC    D_Display_ NEAR
 PUBLIC  D_Display_
@@ -3166,267 +3181,213 @@ PUBLIC  D_Display_
 cmp   byte ptr ds:[_novideo], 0
 jne   exit_d_display_early
 
-push  bx
-push  dx
-push  si
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
 
-mov   si, _setsizeneeded
-xor   dl, dl
-cmp   byte ptr ds:[si], 0
-jne   jump_to_do_execute_setviewsize
-label_20:
-mov   di, _gamestate
-mov   si, _wipegamestate
-mov   al, byte ptr ds:[di]
-cmp   al, byte ptr ds:[si]
-je    jump_to_zero_wipe
-mov   ax, 1
-mov   bl, 1
 
-call  Z_SetOverlay_
-
-db 09Ah
-dw WIPE_STARTSCREENOFFSET, CODE_OVERLAY_SEGMENT
+xor   bx, bx  ; bl is wipe state
+cmp   byte ptr ds:[_setsizeneeded], bh ; 0
+jne   do_execute_setviewsize
+done_with_execute_viewsize:
+mov   al, byte ptr ds:[_gamestate]
+cmp   al, byte ptr ds:[_wipegamestate]
+jne   do_wipe_start
 
 done_zeroing_wipe:
-mov   si, _gamestate
-cmp   byte ptr ds:[si], 0
-jne   label_1
-mov   si, _gametic
-mov   ax, word ptr ds:[si + 2]
-or    ax, word ptr ds:[si]
-je    label_1
+
+cmp   byte ptr ds:[_gamestate], bh ; 0
+jne   dont_erase_hud
+mov   ax, word ptr ds:[_gametic + 2]
+or    ax, word ptr ds:[_gametic + 0]
+je    dont_erase_hud
 call  HU_Erase_
-label_1:
-mov   si, _gamestate
-mov   al, byte ptr ds:[si]
+dont_erase_hud:
+mov   al, byte ptr ds:[_gamestate]
 cmp   al, 3
-ja    label_2
-xor   ah, ah
-mov   si, ax
-add   si, ax
-jmp   word ptr cs:[si + d_display_switch_table] ; todo switch block..
-jump_to_exit_d_display:
-jmp   exit_d_display
-jump_to_do_execute_setviewsize:
-jmp   do_execute_setviewsize
-jump_to_zero_wipe:
-jmp   zero_wipe
+ja    done_with_gs_level_case
+cbw
+xchg  ax, si
+sal   si, 1
+jmp   word ptr cs:[si + d_display_switch_table] 
+
+
 switch_case_1:
-mov   si, _gametic
-mov   ax, word ptr ds:[si + 2]
-or    ax, word ptr ds:[si]
-je    label_2
-jmp   label_3
-label_2:
-mov   si, _gamestate
+mov   ax, word ptr ds:[_gametic + 2]
+or    ax, word ptr ds:[_gametic + 0]
+je    done_with_gs_level_case
+
+cmp   byte ptr ds:[_automapactive], bh ; 0
+je    dont_draw_automap
+call  AM_Drawer_
+dont_draw_automap:
+xor    ax, ax
+cwd
+test   bl, bl
+jne    draw_status_bar
+
+cmp   word ptr ds:[_viewheight], SCREENHEIGHT
+je    screen_too_big_for_statusbar
+cmp   byte ptr ds:[_fullscreen], al
+je    screen_too_big_for_statusbar
+
+draw_status_bar:
+inc   dx
+screen_too_big_for_statusbar:
+cmp   byte ptr ds:[_inhelpscreensstate], al; 0
+je    fullscreen_statusbar_hidden
+
+cmp   byte ptr ds:[_inhelpscreens], al; 0
+jne   fullscreen_statusbar_hidden
+mov   dl, 1
+fullscreen_statusbar_hidden:
+cmp   byte ptr ds:[_inhelpscreens], al; 0
+je    helpscreen_hide_level
+mov   byte ptr ds:[_skipdirectdraws], 1
+helpscreen_hide_level:
+cmp   word ptr ds:[_viewheight], SCREENHEIGHT
+jne   screen_too_small_for_statusbar ; ax already 0
+inc   ax  ; ax is 1
+
+screen_too_small_for_statusbar:
+call  ST_Drawer_
+xor   ax, ax
+mov   byte ptr ds:[_skipdirectdraws], al
+cmp   word ptr ds:[_viewheight], SCREENHEIGHT
+jne   fulscreen_zero
+inc   ax
+fulscreen_zero:
+mov   byte ptr ds:[_fullscreen], al
+
+done_with_gs_level_case:
+
 call  I_UpdateNoBlit_
-cmp   byte ptr ds:[si], 0
-jne   label_4
-mov   si, _automapactive
-cmp   byte ptr ds:[si], 0
-jne   label_4
-mov   si, _gametic
-mov   ax, word ptr ds:[si + 2]
-or    ax, word ptr ds:[si]
-je    label_4
-mov   si, _inhelpscreens
-cmp   byte ptr ds:[si], 0
-jne   label_4
+cmp   byte ptr ds:[_gamestate], bh ; 0
+jne   skip_render_player_view
+
+cmp   byte ptr ds:[_automapactive], bh ; 0
+jne   skip_render_player_view
+
+mov   ax, word ptr ds:[_gametic + 2]
+or    ax, word ptr ds:[_gametic + 0]
+je    skip_render_player_view
+
+cmp   byte ptr ds:[_inhelpscreens], bh ; 0
+jne   skip_render_player_view
 call  dword ptr ds:[_R_RenderPlayerView]
-label_4:
-mov   si, _gamestate
-cmp   byte ptr ds:[si], 0
-jne   label_5
-mov   si, _gametic
-mov   ax, word ptr ds:[si + 2]
-or    ax, word ptr ds:[si]
-je    label_5
-mov   si, _inhelpscreens
-cmp   byte ptr ds:[si], 0
-jne   label_5
+skip_render_player_view:
+
+cmp   byte ptr ds:[_gamestate], bh ; 0
+jne   skip_hu_drawer
+
+mov   ax, word ptr ds:[_gametic + 2]
+or    ax, word ptr ds:[_gametic]
+je    skip_hu_drawer
+
+cmp   byte ptr ds:[_inhelpscreens], bh ; 0
+jne   skip_hu_drawer
 call  HU_Drawer_
-label_5:
-mov   si, _gamestate
-mov   al, byte ptr ds:[si]
+skip_hu_drawer:
+
+mov   al, byte ptr ds:[_gamestate]
 cmp   al, byte ptr ds:[_oldgamestate]
-je    label_6
+je    skip_set_palette
 test  al, al
-je    label_6
+je    skip_set_palette
 xor   ax, ax
 
 call  I_SetPalette_
 
-label_6:
-mov   si, _gamestate
-cmp   byte ptr ds:[si], 0
-jne   label_7
-cmp   byte ptr ds:[_oldgamestate], 0
-je    label_7
-mov   si, _viewactivestate
-mov   byte ptr ds:[si], 0
+skip_set_palette:
+
+cmp   byte ptr ds:[_gamestate], bh ; 0
+jne   skip_fillbackscreen
+cmp   byte ptr ds:[_oldgamestate], bh ; 0
+je    skip_fillbackscreen
+mov   byte ptr ds:[_viewactivestate], bh ; 0
 
 call  R_FillBackScreen_
 
-label_7:
-mov   si, _gamestate
-cmp   byte ptr ds:[si], 0
-jne   label_8
-mov   si, _automapactive
-cmp   byte ptr ds:[si], 0
-jne   label_8
-mov   si, _scaledviewwidth
-cmp   word ptr ds:[si], SCREENWIDTH
-je    label_8
-mov   si, _menuactive
-cmp   byte ptr ds:[si], 0
-jne   label_9
-jmp   label_10
-label_9:
-mov   si, _borderdrawcount
-mov   byte ptr ds:[si], 3
-label_12:
-mov   si, _borderdrawcount
-cmp   byte ptr ds:[si], 0
-je    label_8
-mov   si, _inhelpscreens
-cmp   byte ptr ds:[si], 0
-jne   label_11
+skip_fillbackscreen:
 
-call  R_DrawViewBorder_ ; todo near?
-label_11:
-mov   si, _borderdrawcount
-mov   di, _hudneedsupdate
-dec   byte ptr ds:[si]
-cmp   byte ptr ds:[di], 0
-je    label_8
-inc   byte ptr ds:[di]
-label_8:
-mov   si, _menuactive
-mov   di, _fullscreen
-mov   al, byte ptr ds:[si]
-mov   si, _viewactive
-mov   byte ptr ds:[di], al
-mov   di, _inhelpscreensstate
-mov   al, byte ptr ds:[si]
-mov   byte ptr ds:[di], al
-mov   di, _inhelpscreens
-mov   si, _inhelpscreensstate
-mov   al, byte ptr ds:[di]
-mov   di, _gamestate
-mov   byte ptr ds:[si], al
-mov   si, _wipegamestate
-mov   al, byte ptr ds:[di]
-mov   byte ptr ds:[si], al
-mov   si, _paused
+cmp   byte ptr ds:[_gamestate], bh ; 0
+jne   skip_border_checks
+
+cmp   byte ptr ds:[_automapactive], bh ; 0
+jne   skip_border_checks
+
+cmp   word ptr ds:[_scaledviewwidth], SCREENWIDTH
+je    skip_border_checks
+
+cmp   byte ptr ds:[_menuactive], bh ; 0
+jne   set_border_draw_count
+cmp   byte ptr ds:[_fullscreen], bh ; 0
+jne   set_border_draw_count
+cmp   byte ptr ds:[_inhelpscreensstate], bh ; 0
+jne   skip_set_border_draw_count
+set_border_draw_count:
+
+mov   byte ptr ds:[_borderdrawcount], 3
+skip_set_border_draw_count:
+
+cmp   byte ptr ds:[_borderdrawcount], bh ; 0
+je    skip_border_checks
+
+cmp   byte ptr ds:[_inhelpscreens], bh ; 0
+jne   dont_draw_border
+call  R_DrawViewBorder_ 
+dont_draw_border:
+dec   byte ptr ds:[_borderdrawcount]
+cmp   byte ptr ds:[_hudneedsupdate], bh ; 0
+je    skip_border_checks
+inc   byte ptr ds:[_hudneedsupdate]
+skip_border_checks:
+
+mov   al, byte ptr ds:[_menuactive]
+mov   byte ptr ds:[_fullscreen], al
+mov   al, byte ptr ds:[_viewactive]
+mov   byte ptr ds:[_inhelpscreensstate], al
+mov   al, byte ptr ds:[_inhelpscreens]
+mov   byte ptr ds:[_inhelpscreensstate], al
+mov   al, byte ptr ds:[_gamestate]
+mov   byte ptr ds:[_wipegamestate], al
 mov   byte ptr ds:[_oldgamestate], al
 
 call  Z_QuickMapMenu_
-cmp   byte ptr ds:[si], 0
-je    label_18
-call  dword ptr ds:[_M_DrawPause]
-label_18:
-call  dword ptr ds:[_M_Drawer]
+cmp   byte ptr ds:[_paused], bh ; 0
+je    done_pause
+
+db 09Ah
+dw M_DRAWPAUSEOFFSET, MENU_CODE_AREA_SEGMENT
+
+done_pause:
+
+db 09Ah
+dw M_DRAWEROFFSET, MENU_CODE_AREA_SEGMENT
+
 
 call  Z_QuickmapPhysics_
 
 call  NetUpdate_
 
 test  bl, bl
-jne   label_19
+jne   do_fwipe
 call  I_FinishUpdate_
 exit_d_display:
  
-pop   di
-pop   si
-pop   dx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 ret   
-do_execute_setviewsize:
-call  R_ExecuteSetViewSize_
-mov   si, _borderdrawcount
-mov   byte ptr ds:[_oldgamestate], -1
-mov   byte ptr ds:[si], 3
-jmp   label_20
-zero_wipe:
-xor   bl, bl
-jmp   done_zeroing_wipe
-label_19:
-mov   ax, 1
+
+do_fwipe:
+mov   ax, OVERLAY_ID_WIPE
 
 call  Z_SetOverlay_
 
 db 09Ah
 dw WIPE_WIPELOOPOFFSET, CODE_OVERLAY_SEGMENT
 
-pop   di
-pop   si
-pop   dx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 ret   
 
-label_3:
-mov   si, _automapactive
-cmp   byte ptr ds:[si], 0
-je    label_16
 
-call  AM_Drawer_
-label_16:
-test  bl, bl
-je    label_17
-label_15:
-mov   dl, 1
-label_14:
-mov   si, _inhelpscreensstate
-cmp   byte ptr ds:[si], 0
-je    label_21
-mov   si, _inhelpscreens
-cmp   byte ptr ds:[si], 0
-jne   label_21
-mov   dl, 1
-label_21:
-mov   si, _inhelpscreens
-cmp   byte ptr ds:[si], 0
-je    label_22
-mov   si, _skipdirectdraws
-mov   byte ptr ds:[si], 1
-label_22:
-mov   al, dl
-cbw
-mov   si, _viewheight
-mov   dx, ax
-cmp   word ptr ds:[si], SCREENHEIGHT
-jne   label_23
-mov   al, 1
-label_24:
-cbw  
-mov   si, _skipdirectdraws
-call  ST_Drawer_
-mov   byte ptr ds:[si], 0
-mov   si, _viewheight
-cmp   word ptr ds:[si], SCREENHEIGHT
-jne   label_25
-mov   al, 1
-mov   si, _fullscreen
-mov   byte ptr ds:[si], al
-jmp   label_2
-label_17:
-mov   si, _viewheight
-cmp   word ptr ds:[si], SCREENHEIGHT
-je    label_14
-mov   si, _fullscreen
-cmp   byte ptr ds:[si], 0
-jne   label_15
-jmp   label_14
-label_23:
-xor   al, al
-jmp   label_24
-label_25:
-xor   al, al
-mov   si, _fullscreen
-mov   byte ptr ds:[si], al
-jmp   label_2
 
 switch_case_2:
 call  Z_QuickMapIntermission_
@@ -3437,30 +3398,20 @@ dw WI_DRAWEROFFSET, WIANIM_CODESPACE_SEGMENT
 
 call  Z_QuickmapPhysics_
 
-jmp   label_2
+jmp   done_with_gs_level_case
 switch_case_3:
-mov   ax, 2
+mov   ax, OVERLAY_ID_FINALE
 
 call  Z_SetOverlay_
 db 09Ah
 dw F_DRAWEROFFSET, CODE_OVERLAY_SEGMENT
 
 call  Z_QuickmapPhysics_
-jmp   label_2
+jmp   done_with_gs_level_case
 switch_case_4:
 call  D_PageDrawer_
-jmp   label_2
-label_10:
-mov   si, _fullscreen
-cmp   byte ptr ds:[si], 0
-je    label_13
-jump_to_label_9:
-jmp   label_9
-label_13:
-mov   si, _inhelpscreensstate
-cmp   byte ptr ds:[si], 0
-je    jump_to_label_9
-jmp   label_12
+jmp   done_with_gs_level_case
+
 
 
 
