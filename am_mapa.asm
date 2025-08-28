@@ -525,68 +525,64 @@ ENDP
 
 FRAC_SCALE_UNIT = 01000h
 
-COMMENT @
 
 
 PROC    AM_initVariables_ NEAR
 PUBLIC  AM_initVariables_
 
-push      bx
-push      cx
-push      dx
-push      si
-mov       bx, OFFSET _automapactive
+PUSHA_NO_AX_OR_BP_MACRO
 xor       ax, ax
-mov       cx, word ptr ds:[_am_scale_ftom + 2]
-mov       word ptr ds:[_m_paninc + 2], ax
-mov       word ptr ds:[_m_paninc + 0], ax
-mov       byte ptr ds:[bx], 1
+mov       word ptr ds:[_m_paninc + MPOINT_T.mpoint_y], ax
+mov       word ptr ds:[_m_paninc + MPOINT_T.mpoint_x], ax
+mov       word ptr ds:[_screen_oldloc + 0], MAXSHORT
+mov       byte ptr ds:[_automapactive], 1
 mov       ax, FRAC_SCALE_UNIT
-mov       bx, word ptr ds:[_am_scale_ftom + 0]
 mov       word ptr ds:[_ftom_zoommul], ax
 mov       word ptr ds:[_mtof_zoommul], ax
+les       bx, dword ptr ds:[_am_scale_ftom]
+mov       cx, es
 mov       ax, AUTOMAP_SCREENWIDTH
-mov       word ptr ds:[_screen_oldloc + 0], MAXSHORT
+
 call      FixedMul1632_
-mov       bx, word ptr ds:[_am_scale_ftom + 0]
-mov       cx, word ptr ds:[_am_scale_ftom + 2]
+les       bx, dword ptr ds:[_am_scale_ftom]
+mov       cx, es
 mov       word ptr ds:[_screen_viewport_width], ax
+sar       ax, 1
+xchg      ax, si
 mov       ax, AUTOMAP_SCREENHEIGHT
 call      FixedMul1632_
-mov       bx, OFFSET _playerMobj_pos
+
+les       bx, dword ptr ds:[_playerMobj_pos]
+
 mov       word ptr ds:[_screen_viewport_height], ax
-les       si, dword ptr ds:[bx]
-mov       bx, word ptr ds:[_screen_viewport_width]
-mov       cx, word ptr es:[si + 2]
-sar       bx, 1
-sub       cx, bx
-mov       bx, OFFSET _playerMobj_pos
-mov       word ptr ds:[_screen_botleft_x], cx
-les       si, dword ptr ds:[bx]
+
 sar       ax, 1
-mov       bx, word ptr es:[si + 6]
-sub       bx, ax
-mov       word ptr ds:[_screen_botleft_y], bx
+neg       ax
+add       ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
+mov       word ptr ds:[_screen_botleft_y], ax
+
+mov       ax, word ptr es:[si + MOBJ_POS_T.mp_x + 2]
+sub       ax, si
+mov       word ptr ds:[_screen_botleft_x], ax
+
 call      AM_changeWindowLoc_
+
+; todo movsw? once in right spot in memory
 mov       ax, word ptr ds:[_screen_botleft_x]
-mov       bx, OFFSET _st_gamestate
 mov       word ptr ds:[_old_screen_botleft_x], ax
 mov       ax, word ptr ds:[_screen_botleft_y]
-mov       byte ptr ds:[bx], 0
 mov       word ptr ds:[_old_screen_botleft_y], ax
 mov       ax, word ptr ds:[_screen_viewport_width]
-mov       bx, OFFSET _st_firsttime
 mov       word ptr ds:[_old_screen_viewport_width], ax
 mov       ax, word ptr ds:[_screen_viewport_height]
-mov       byte ptr ds:[bx], 1
 mov       word ptr ds:[_old_screen_viewport_height], ax
-pop       si
-pop       dx
-pop       cx
-pop       bx
+mov       byte ptr ds:[_st_gamestate], 0
+mov       byte ptr ds:[_st_firsttime], 1
+POPA_NO_AX_OR_BP_MACRO
 ret       
 
 ENDP
+COMMENT @
 
 PROC    AM_clearMarks_ NEAR
 PUBLIC  AM_clearMarks_

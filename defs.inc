@@ -602,7 +602,7 @@ _st_firsttime =	  	  				 _NULL_OFFSET + 00AC5h
 _screen_viewport_width =	  	  	 _NULL_OFFSET + 00AC8h
 _screen_viewport_height =	  	  	 _NULL_OFFSET + 00ACAh
 _old_screen_viewport_width =	  	 _NULL_OFFSET + 00ACCh
-_oldscreen_viewport_height =	  	 _NULL_OFFSET + 00ACEh
+_old_screen_viewport_height =	  	 _NULL_OFFSET + 00ACEh
 
 _flatcache_nodes =				     _NULL_OFFSET + 00AD0h
 
