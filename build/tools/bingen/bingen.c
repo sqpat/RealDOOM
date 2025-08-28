@@ -517,7 +517,6 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "#define P_SpawnMapThingOffset                   0x%X\n", FP_OFF(P_SpawnMapThing)                   - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "#define P_TickerOffset                          0x%X\n", FP_OFF(P_Ticker      )                    - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "#define P_SpawnSpecialsOffset                   0x%X\n", FP_OFF(P_SpawnSpecials)                   - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define P_GivePowerOffset                       0x%X\n", FP_OFF(P_GivePower)                        - FP_OFF(P_SIGHT_STARTMARKER));
 
     // menu  code offsets
     fprintf(fp, "#define M_InitOffset                            0x%X\n", FP_OFF(M_Init)                            - FP_OFF(M_MENU_STARTMARKER));
@@ -590,6 +589,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "P_ADDACTIVEPLATOFFSET = 0%Xh\n",                   FP_OFF(P_AddActivePlat)                   - FP_OFF(P_SIGHT_STARTMARKER));
     
     fprintf(fp, "P_REMOVETHINKEROFFSET = 0%Xh\n",                   FP_OFF(P_RemoveThinker)                   - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_GIVEPOWEROFFSET     = 0%Xh\n",                   FP_OFF(P_GivePower)                       - FP_OFF(P_SIGHT_STARTMARKER));
 
     fprintf(fp, "GETPAINCHANCEADDR     = 0%Xh\n",                   FP_OFF(GetPainChance)                     - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "GETRAISESTATEADDR     = 0%Xh\n",                   FP_OFF(GetRaiseState)                     - FP_OFF(P_SIGHT_STARTMARKER));
@@ -608,6 +608,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 
     fprintf(fp, "M_STARTCONTROLPANELOFFSET  = 0%Xh\n",            FP_OFF(M_StartControlPanel)                 - FP_OFF(M_MENU_STARTMARKER));
     fprintf(fp, "M_DRAWEROFFSET             = 0%Xh\n",            FP_OFF(M_Drawer)                            - FP_OFF(M_MENU_STARTMARKER));
+
 
 	// P_AddActiveCeiling_addr =		 	(uint32_t)(P_AddActiveCeiling);
 	// P_AddActivePlat_addr =		 		(uint32_t)(P_AddActivePlat);

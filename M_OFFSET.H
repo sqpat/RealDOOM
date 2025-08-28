@@ -63,7 +63,6 @@
 #define P_SpawnMapThingOffset                   0x2B02
 #define P_TickerOffset                          0x83AE
 #define P_SpawnSpecialsOffset                   0x7D1F
-#define P_GivePowerOffset                       0x6794
 #define M_InitOffset                            0x11A4
 #define M_ResponderOffset                       0xD63
 #define M_DrawerOffset                          0x1064

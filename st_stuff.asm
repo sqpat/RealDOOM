@@ -46,13 +46,10 @@ EXTRN M_Random_:NEAR
 .DATA
 
 
-EXTRN _P_GivePower:DWORD
 
 
 
 
-;todo move to cs
-EXTRN _st_stuff_buf:BYTE
 
 
 
@@ -67,7 +64,7 @@ PUBLIC  ST_STUFF_STARTMARKER_
 ENDP
 
 
-
+; various st vars
 
 
 
@@ -1276,7 +1273,10 @@ cmp   word ptr ds:[si + bx], 0  ; check powers
 jne   dont_give_power
 mov   ax, bx
 sar   ax, 1
-call  dword ptr ds:[_P_GivePower]
+
+db    09Ah
+dw    P_GIVEPOWEROFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 jmp   done_applying_behold
 dont_give_power:
 cmp   bx, (PW_STRENGTH * 2)
@@ -1426,7 +1426,7 @@ sub   sp, 0Ah
 
 mov   di, sp
 
-mov   si, OFFSET _st_stuff_buf
+mov   si, OFFSET _player_message_string
 les   bx, dword ptr ds:[_playerMobj_pos]
 
 les   ax, dword ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
@@ -1501,7 +1501,6 @@ mov   cx, ds
 mov   bx, si
 mov   dx, ds
 xchg  ax, si
-mov   word ptr ds:[_player + PLAYER_T.player_messagestring], ax ; 
 
 call  combine_strings_
 mov   byte ptr ds:[_domapcheatthisframe], 0

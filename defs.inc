@@ -424,9 +424,10 @@ _snd_SBport =                        _NULL_OFFSET + 004C8h
 _snd_Mport =                         _NULL_OFFSET + 004CAh
 _I_Quit_addr = 			             _NULL_OFFSET + 004CCh
 
-;_tallnum =              			 _NULL_OFFSET + 004D0h
-;_shortnum =              			 _NULL_OFFSET + 004E4h
-_am_buffer =             			 _NULL_OFFSET + 004F8h
+; 52 bytes
+_player_message_string =  			 _NULL_OFFSET + 004D0h
+
+; 504-50B free
 
 _Z_SetOverlay_addr =                 _NULL_OFFSET + 0050Ch
 _W_LumpLength_addr =                 _NULL_OFFSET + 00510h

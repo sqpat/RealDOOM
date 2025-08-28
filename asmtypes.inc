@@ -49,7 +49,7 @@ PLAYER_T STRUC
     player_itemcount          dw ?                      ; 50    ;0720h  06F0h
     player_secretcount        dw ?                      ; 52    ;0722h  06F2h
     player_message            dw ?                      ; 54    ;0724h  06F4h
-	player_messagestring      dw ?                      ; 56    ;0726h  06F6h
+	player_messagestring      dw ?                      ; 56    ;0726h  06F6h ; unused now
     player_damagecount        dw ?                      ; 58    ;0728h  06F8h
     player_bonuscount         db ?                      ; 5A    ;072Ah  06FAh
     player_refire		      db ?                      ; 5B    ;072Bh  06FBh

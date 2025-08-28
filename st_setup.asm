@@ -26,11 +26,6 @@ EXTRN I_SetPalette_:FAR
 
 
 
-
-
-
-
-
 .CODE
 
 EXTRN _w_ready:BYTE

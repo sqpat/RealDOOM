@@ -473,13 +473,10 @@
 
 #define I_Quit_addr						  (*((uint32_t __near*)              (_NULL_OFFSET + 0x04CC)))
 
-// 10 ints
-// #define tallnum                           ((uint16_t __near *)               (_NULL_OFFSET + 0x04D0))
-// 10 ints
-// #define shortnum                          ((uint16_t __near *)               (_NULL_OFFSET + 0x04E4))
-// 20 bytes
-#define am_buffer                         ((int8_t __near *)                 (_NULL_OFFSET + 0x04F8))
+// 52 bytes
+#define player_message_string             ((int8_t __near *)                 (_NULL_OFFSET + 0x04D0))
 
+// 504-50B free
 #define Z_SetOverlay_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x050C)))
 #define W_LumpLength_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x0510)))
 #define playingdriver                     (*((driverBlock __far* __near *)   (_NULL_OFFSET + 0x0514)))

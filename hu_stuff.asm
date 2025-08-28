@@ -209,7 +209,7 @@ sub   sp, 0100h
 xor   ax, ax
 
 cmp   byte ptr ds:[_message_counter], al
-jne   dont_reset_count
+je    dont_reset_count
 dec   byte ptr ds:[_message_counter]
 jnz   dont_reset_count
 
@@ -226,7 +226,7 @@ je    exit_hu_ticker
 
 skip_early_exit_check:
 
-cmp   word ptr ds:[_player + PLAYER_T.player_messagestring], ax ; 0
+cmp   byte ptr ds:[_player_message_string], al ; 0
 jne   has_message
 cmp   word ptr ds:[_player + PLAYER_T.player_message], -1
 je    check_player_message
@@ -252,9 +252,9 @@ cmp   ax, -1
 jne   go_get_string
 
 
-mov   ax, word ptr ds:[_player + PLAYER_T.player_messagestring]
+mov   ax, OFFSET _player_message_string
 call  HUlib_addMessageToSText_
-mov   word ptr ds:[_player + PLAYER_T.player_messagestring], 0
+mov   word ptr ds:[_player_message_string], 0
 jmp   skip_getting_string
 
 go_get_string:

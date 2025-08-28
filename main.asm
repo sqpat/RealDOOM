@@ -2614,6 +2614,12 @@ and   al, 0Fh
 call  locallib_createhexnibble_
 call  locallib_putchar_check_di
 
+test   di, di
+je     exit_printhex
+xor    ax, ax
+stosb
+exit_printhex:
+
 pop   di
 
 ret

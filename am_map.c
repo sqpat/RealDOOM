@@ -507,8 +507,8 @@ boolean __near AM_Responder ( event_t __far* ev ) {
 				char markpointstr[2];
 				markpointstr[0] = '0' + markpointnum; 
 				markpointstr[0] = '\0';
-				combine_strings(am_buffer, text, markpointstr);
-				player.messagestring = am_buffer;
+				combine_strings(player_message_string, text, markpointstr);
+
 
 			}
 			AM_addMark();
