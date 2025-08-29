@@ -221,7 +221,7 @@ Follow Mode ON
 Follow Mode OFF
 Grid ON
 Grid OFF
-Marked Spot
+Marked Spot 
 All Marks Cleared
 Music Change
 IMPOSSIBLE SELECTION

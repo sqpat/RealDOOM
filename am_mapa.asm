@@ -463,11 +463,11 @@ push      dx
 les       ax, dword ptr ds:[_m_paninc]
 mov       dx, es
 or        dx, ax
-je        dont_follow_player
+jne       dont_cancel_follow_player
 
 mov       byte ptr ds:[_followplayer], 0
 mov       word ptr ds:[_screen_oldloc + 0], MAXSHORT
-dont_follow_player:
+dont_cancel_follow_player:
 mov       dx, word ptr ds:[_screen_botleft_x]
 mov       bx, word ptr ds:[_screen_botleft_y]
 add       dx, ax
@@ -570,6 +570,17 @@ mov       word ptr ds:[_screen_botleft_x], ax
 call      AM_changeWindowLoc_
 
 ; todo movsw? once in right spot in memory
+
+call      AM_recordOldViewport_
+mov       byte ptr ds:[_st_gamestate], 0
+mov       byte ptr ds:[_st_firsttime], 1
+POPA_NO_AX_OR_BP_MACRO
+ret       
+
+ENDP
+
+PROC    AM_recordOldViewport_
+
 mov       ax, word ptr ds:[_screen_botleft_x]
 mov       word ptr ds:[_old_screen_botleft_x], ax
 mov       ax, word ptr ds:[_screen_botleft_y]
@@ -578,10 +589,8 @@ mov       ax, word ptr ds:[_screen_viewport_width]
 mov       word ptr ds:[_old_screen_viewport_width], ax
 mov       ax, word ptr ds:[_screen_viewport_height]
 mov       word ptr ds:[_old_screen_viewport_height], ax
-mov       byte ptr ds:[_st_gamestate], 0
-mov       byte ptr ds:[_st_firsttime], 1
-POPA_NO_AX_OR_BP_MACRO
-ret       
+
+ret
 
 ENDP
 
@@ -590,7 +599,7 @@ PUBLIC  AM_clearMarks_
 
 push      cx
 push      di
-mov       cx, (AM_NUMMARKPOINTS * SIZE MPOINT_T) / 2  ; todo div 2 etc
+mov       cx, (AM_NUMMARKPOINTS * SIZE MPOINT_T) / 2 
 mov       ax, -1
 mov       di, OFFSET _markpoints
 push      ds
@@ -762,33 +771,31 @@ PUBLIC  AM_Responder_
 
 ;boolean __near AM_Responder ( event_t __far* ev ) {
 
-
 PUSHA_NO_AX_OR_BP_MACRO
-push      bp
-mov       bp, sp
-sub       sp, 06Ah
 
 xchg      ax, si
-xor       ax, ax
 mov       es, dx
 
-mov       bl, byte ptr es:[si + EVENT_T.event_evtype]
-mov       si, word ptr es:[si + EVENT_T.event_data1]
-; todo dont use cx at all?
-and       si, 0FFh ; meh
-; si is evdata
+xor       ax, ax
+cwd
 
-cmp       byte ptr ds:[_automapactive], al ; 0
+mov       bl, byte ptr es:[si + EVENT_T.event_evtype]
+mov       al, byte ptr es:[si + EVENT_T.event_data1]
+
+
+; al is evdata
+; dx is 0reg here
+
+cmp       byte ptr ds:[_automapactive], dl ; 0
 jne       automap_is_active
-cmp       bl, al  ; EV_KEYDOWN
+cmp       bl, dl  ; EV_KEYDOWN
 jne       exit_am_responder_return_0
-cmp       si, AM_STARTKEY
+cmp       al, AM_STARTKEY
 jne       exit_am_responder_return_0
 
 call      AM_Start_
 
-xor       ax, ax
-mov       byte ptr ds:[_viewactive], ah ; 0 
+mov       byte ptr ds:[_viewactive], dl ; 0 
 
 exit_am_responder_return_1:
 stc
@@ -797,21 +804,19 @@ jmp       do_return
 exit_am_responder_return_0:
 clc
 do_return:
-label_114:
-LEAVE_MACRO     
+
+
 POPA_NO_AX_OR_BP_MACRO
 ret       
 
 automap_is_active:
 
 ; bl is evtype
-; si is data1 lo
+; al is data1 lo ; i guess we are just ignoring the 3 other bytes (??)
 ; cx is 0, inverse of cx
-xor  cx, cx
+xor       cx, cx
+mov       si, ax  ; back up in case we need it when done with keypress..
 
-; i guess we are just ignoring the 3 other bytes (??)
-mov       ax, si ; get key
-mov       dl, byte ptr ds:[_followplayer]
 
 cmp       bl, EV_KEYUP
 jb        do_keydown
@@ -853,62 +858,49 @@ mov       word ptr ds:[_ftom_zoommul], ax
 jmp       exit_am_responder_return_0
 
 do_keydown:
+inc       cx  ; rc = true (mostly) for these cases
+mov       di, OFFSET _m_paninc + MPOINT_T.mpoint_x
+; dx was cwded to 0 earlier. inc to 1 for a negative result..
+; inc di twice to write to y
 
 cmp       al, AM_PANRIGHTKEY
-jne       not_panright
-
-test      dl, dl; followplayer
-jne       set_rc_false
-mov       ax, SCREEN_PAN_INC
-call      FTOM16_
-mov       word ptr ds:[_m_paninc + MPOINT_T.mpoint_x], ax
-jmp       done_with_keypress
+je        do_panright
 
 not_panright:
 cmp       al, AM_PANLEFTKEY
-jne       not_panleft
-
-test      dl, dl; followplayer
-jne       set_rc_false
-mov       ax, SCREEN_PAN_INC
-call      FTOM16_
-neg       ax  ; todo combine with above?
-mov       word ptr ds:[_m_paninc + MPOINT_T.mpoint_x], ax
-jmp       done_with_keypress
-
-
+je        do_panleft
 not_panleft:
+inc       di
+inc       di ; di points to mpoint_y
 cmp       al, AM_PANUPKEY
-jne       not_panup
-
-test      dl, dl; followplayer
-jne       set_rc_false
-mov       ax, SCREEN_PAN_INC
-call      FTOM16_
-mov       word ptr ds:[_m_paninc + MPOINT_T.mpoint_y], ax
-jmp       done_with_keypress
-
+je        do_pan_up
 
 not_panup:
 cmp       al, AM_PANDOWNKEY
 jne       not_pandown
 
-test      dl, dl; followplayer
-jne       set_rc_false
-mov       ax, SCREEN_PAN_INC
+do_panup:    
+do_panleft:  
+inc       dx ; set negative flag for up/left
+do_panright:
+do_pan_up:
+
+; if follow player is 0, dont set pan
+
+cmp       byte ptr ds:[_followplayer], ch; 0
+jne       done_with_keypress_do_false
+
+mov       al, SCREEN_PAN_INC ; todo just shift left or something? figure this out, inline
 call      FTOM16_
-neg       ax  ; todo combine with above?
-mov       word ptr ds:[_m_paninc + MPOINT_T.mpoint_y], ax
+dec       dx  ; if zero then signed now.
+js        dont_neg_ax
+neg       ax
+dont_neg_ax:
+mov       word ptr ds:[di], ax
+
 jmp       done_with_keypress
-
-
-set_rc_false:
-; todo something
-jmp       done_with_keypress
-
 
 not_pandown:
-inc       cx  ; rc = false for these cases
 cmp       al, AM_ZOOMOUTKEY
 jne       not_zoomout_key
 
@@ -930,7 +922,7 @@ cmp       al, AM_ENDKEY
 jne       not_end_key
 
 mov       byte ptr ds:[_am_bigstate], ah ; 0
-mov       byte ptr ds:[_viewactive], 1
+mov       byte ptr ds:[_viewactive], cl ; 1
 call      AM_Stop_
 
 jmp       done_with_keypress
@@ -940,7 +932,7 @@ not_end_key:
 cmp       al, AM_GOBIGKEY
 jne       not_gobig_key
 
-xor       byte ptr ds:[_am_bigstate], 1
+xor       byte ptr ds:[_am_bigstate], cl ; 1
 je        turn_off_bigstate
 call      AM_restoreScaleAndLoc_
 
@@ -948,24 +940,40 @@ jmp       done_with_keypress
 
 turn_off_bigstate:
 
-mov       word ptr ds:[_old_screen_botleft_x], ax
-mov       ax, word ptr ds:[_screen_botleft_y]
-mov       word ptr ds:[_old_screen_botleft_y], ax
-mov       ax, word ptr ds:[_screen_viewport_width]
-mov       word ptr ds:[_old_screen_viewport_width], ax
-mov       ax, word ptr ds:[_screen_viewport_height]
-mov       word ptr ds:[_old_screen_viewport_height], ax
+call      AM_recordOldViewport_
 call      AM_minOutWindowScale_
 jmp       done_with_keypress		
 
+done_with_keypress_do_false:
+not_clearmark_key:
+dec       cx ; rc = false, cx = 0 again for default case
+done_with_keypress:
 
+mov       dx, si ; ev1
+mov       al, CHEATID_AUTOMAP ; todo al or ax?
+call      cht_CheckCheat_
+
+jnc       return_cx
+mov       al, byte ptr ds:[_am_cheating]
+inc       ax
+cmp       al, 3
+jne       dont_zero_cheating
+xor       ax, ax
+dont_zero_cheating:
+mov       byte ptr ds:[_am_cheating], al
+
+xor       cx, cx
+
+return_cx:
+sar       cx, 1  ; carry means false.. inverse
+jmp       do_return
 
 not_gobig_key:
 cmp       al, AM_FOLLOWKEY
 jne       not_follow_key
 
 mov       ax, AMSTR_FOLLOWOFF
-xor       byte ptr ds:[_followplayer], 1
+xor       byte ptr ds:[_followplayer], cl ; 1
 je        toggle_follow_player_off
 dec ax  ; mov       ax, AMSTR_FOLLOWON
 toggle_follow_player_off:
@@ -980,7 +988,7 @@ cmp       al, AM_GRIDKEY
 jne       not_grid_key
 
 mov       ax, AMSTR_GRIDOFF
-xor       byte ptr ds:[_am_grid], 1
+xor       byte ptr ds:[_am_grid], cl ; 1
 je        toggle_grid_off
 dec ax  ; mov       ax, AMSTR_GRIDON
 toggle_grid_off:
@@ -993,25 +1001,17 @@ not_grid_key:
 cmp       al, AM_MARKKEY
 jne       not_mark_key
 
-lea       bx, [bp - 06Ah]
+mov       bx, OFFSET _player_message_string
 mov       ax, AMSTR_MARKEDSPOT
-mov       cx, ss
+mov       cx, ds
 call      getStringByIndex_
 
-push      ds
-lea       bx, [bp - 6]
-push      dx
 mov       ax, 030h ; null terminated '0'
-add       al, byte ptr ds:[_markpointnum]
-mov       word ptr ds:[bx], ax
+add       al, byte ptr ds:[_markpointnum] ; add digit
+mov       word ptr ds:[_player_message_string + 12], ax
 
-mov       cx, ss
-lea       bx, [bp - 06Ah]
-mov       ax, OFFSET _player_message_string
-xor       dx, dx
-call      combine_strings_
 call      AM_addMark_
-mov       cx, 1
+mov       cl, 1
 jmp       done_with_keypress		
 
 not_mark_key:
@@ -1022,28 +1022,7 @@ mov       word ptr ds:[OFFSET _player + PLAYER_T.player_message], AMSTR_MARKSCLE
 call      AM_clearMarks_
 jmp       done_with_keypress		
 
-not_clearmark_key:
-xor       cx, cx ; rc = false again for default..
-done_with_keypress:
 
-mov       dx, si ; ev1
-mov       ax, CHEATID_AUTOMAP
-call      cht_CheckCheat_
-
-jnc       return_cx
-mov       al, byte ptr ds:[_am_cheating]
-inc       ax
-cmp       al, 3
-jne       dont_zero_cheating
-xor       ax, ax
-dont_zero_cheating:
-mov       byte ptr ds:[_am_cheating], al
-
-;xor       cx, cx ; todo is this necessary
-
-return_cx:
-sar       cx, 1  ; carry means false.. inverse
-jmp       do_return
 
 
 
@@ -1454,10 +1433,7 @@ ENDP
 PROC    AM_drawMline_ NEAR
 PUBLIC  AM_drawMline_
 
-push      bx
-push      cx
-push      si
-push      di
+PUSHA_NO_AX_OR_BP_MACRO
 push      bp
 mov       bp, sp
 sub       sp, 8
@@ -1466,7 +1442,7 @@ call      AM_clipMline_
 test      al, al
 jne       label_113
 label_123:
-jmp       label_114
+jmp       do_return
 label_113:
 mov       ax, word ptr ds:[_am_fl + 4]
 sub       ax, word ptr ds:[_am_fl + 0]
@@ -1547,7 +1523,7 @@ mov       cl, byte ptr [bp - 2]
 mov       byte ptr es:[si], cl
 cmp       ax, word ptr ds:[_am_fl + 6]
 jne       label_115
-jmp       label_114
+jmp       do_return
 label_115:
 test      bx, bx
 jl        label_116
