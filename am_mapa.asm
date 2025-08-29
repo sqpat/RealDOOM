@@ -1147,58 +1147,73 @@ pop       bx
 ret       
 
 ENDP
-COMMENT @
 
 PROC    AM_Ticker_ NEAR
 PUBLIC  AM_Ticker_
 
 cmp       byte ptr ds:[_followplayer], 0
-jne       label_83
-label_86:
-cmp       word ptr ds:[_ftom_zoommul], FRAC_SCALE_UNIT
-je        label_84
-call      AM_changeWindowScale_
-label_84:
-cmp       word ptr ds:[_m_paninc + 0], 0
-jne       label_85
-cmp       word ptr ds:[_m_paninc + 2], 0
-jne       label_85
-ret      
-label_83:
+je        dont_follow
 call      AM_doFollowPlayer_
-jmp       label_86
-label_85:
+dont_follow:
+cmp       word ptr ds:[_ftom_zoommul], FRAC_SCALE_UNIT
+je        dont_scale
+call      AM_changeWindowScale_
+dont_scale:
+cmp       word ptr ds:[_m_paninc + 0], 0
+jne       do_change_window_loc
+cmp       word ptr ds:[_m_paninc + 2], 0
+je        exit_am_ticker
+do_change_window_loc:
 call      AM_changeWindowLoc_
+exit_am_ticker:
 ret      
 
 ENDP
+
+
+;int16_t __near DOOUTCODE(int16_t oc, int16_t mx, int16_t my) {
+
+;// Automap clipping of lines.
+;//
+;// Based on Cohen-Sutherland clipping algorithm but with a slightly
+;// faster reject and precalculated slopes.  If the speed is needed,
+;// use a hash algorithm to handle  the common cases.
+;//
+
+AM_OUT_LEFT = 	1
+AM_OUT_RIGHT = 	2
+AM_OUT_BOTTOM = 4
+AM_OUT_TOP = 	8
+
+; todo this can take in ax/dx
 
 PROC    DOOUTCODE_ NEAR
 PUBLIC  DOOUTCODE_
 
 xor       ax, ax
 test      bx, bx
-jl        label_87
+jge       not_top
+mov       al, AM_OUT_TOP
+jmp       done_with_y
+not_top:
 cmp       bx, AUTOMAP_SCREENHEIGHT
-jl        label_88
-mov       ax, 4
-label_88:
+jl        done_with_y
+mov       al, AM_OUT_BOTTOM
+done_with_y:
 test      dx, dx
-jl        label_89
+jge       not_left
+or        al, AM_OUT_LEFT
+ret
+not_left:
 cmp       dx, AUTOMAP_SCREENWIDTH
-jl        label_92
-or        al, 2
-label_92:
-ret       
-label_87:
-mov       ax, 8
-jmp       label_88
-label_89:
-or        al, 1
+jl        done_with_x
+or        al, AM_OUT_RIGHT
+done_with_x:
 ret       
 
 
 ENDP
+COMMENT @
 
 PROC    AM_clipMline_ NEAR
 PUBLIC  AM_clipMline_

@@ -155,6 +155,7 @@ void __near AM_minOutWindowScale(void) ;
 void __near AM_maxOutWindowScale(void);
 void __near AM_changeWindowScale(void);
 void __near AM_doFollowPlayer(void);
+int16_t __near DOOUTCODE(int16_t oc, int16_t mx, int16_t my);
 
 
 
@@ -620,7 +621,6 @@ void __near AM_doFollowPlayer(void) {
 
 }
 
- */
 
 //
 // Updates on Game Tick
@@ -676,6 +676,11 @@ int16_t __near DOOUTCODE(int16_t oc, int16_t mx, int16_t my) {
 	return oc;
 }
 
+ */
+#define  LEFT	1
+#define  RIGHT	2
+#define  BOTTOM	4
+#define  TOP	8
 
 boolean __near AM_clipMline ( mline_t __near*	ml) {
     
