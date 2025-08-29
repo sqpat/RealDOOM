@@ -1781,8 +1781,7 @@ call  ST_Responder_ ; never returns true
 mov   ax, bx
 mov   dx, cx
 call  AM_Responder_
-test  al, al
-jne   exit_gresponder_return_1
+jc    exit_gresponder_return_1
 
 not_gamestate_level:
 cmp   byte ptr ds:[_gamestate], GS_FINALE

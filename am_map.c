@@ -434,7 +434,6 @@ void __near AM_maxOutWindowScale(void) {
     AM_activateNewScale();
 }
 
- */
 
 
 //
@@ -580,6 +579,7 @@ boolean __near AM_Responder ( event_t __far* ev ) {
 
 }
 
+ */
 
 //
 // Zooming

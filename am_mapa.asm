@@ -46,6 +46,8 @@ M_ZOOMIN =        4177
 ; FRAC_SCALE_UNIT / 1.02
 M_ZOOMOUT =      4015
 
+SCREEN_PAN_INC = 4
+
 COLOR_REDS	=	(256-5*16)
 REDRANGE = 16
 COLOR_BLUES	=	(256-4*16+8)
@@ -735,207 +737,217 @@ ret
 
 ENDP
 
-COMMENT @
+; todo precalculate/etc
+
+PROC    FTOM16_ NEAR
+push    bx
+push    cx
+push    dx
+
+les     bx, dword ptr ds:[_am_scale_ftom]
+mov     cx, es
+call    FixedMul1632_
+
+pop     dx
+pop     cx
+pop     bx
+
+ret
+ENDP
 
 
+; todo return carry
 PROC    AM_Responder_ NEAR
 PUBLIC  AM_Responder_
 
-push      bx
-push      cx
-push      si
-push      di
+;boolean __near AM_Responder ( event_t __far* ev ) {
+
+
+PUSHA_NO_AX_OR_BP_MACRO
 push      bp
 mov       bp, sp
 sub       sp, 06Ah
-mov       si, ax
-mov       word ptr [bp - 4], dx
-mov       bx, OFFSET _automapactive
-mov       byte ptr [bp - 2], 0
-cmp       byte ptr ds:[bx], 0
-jne       label_24
+
+xchg      ax, si
+xor       ax, ax
 mov       es, dx
-cmp       byte ptr es:[si], 0
-jne       label_25
-cmp       word ptr es:[si + 3], 0
-jne       label_25
-cmp       word ptr es:[si + 1], 9
-je        label_26
-label_25:
-mov       al, byte ptr [bp - 2]
+
+mov       bl, byte ptr es:[si + EVENT_T.event_evtype]
+mov       si, word ptr es:[si + EVENT_T.event_data1]
+; todo dont use cx at all?
+and       si, 0FFh ; meh
+; si is evdata
+
+cmp       byte ptr ds:[_automapactive], al ; 0
+jne       automap_is_active
+cmp       bl, al  ; EV_KEYDOWN
+jne       exit_am_responder_return_0
+cmp       si, AM_STARTKEY
+jne       exit_am_responder_return_0
+
+call      AM_Start_
+
+xor       ax, ax
+mov       byte ptr ds:[_viewactive], ah ; 0 
+
+exit_am_responder_return_1:
+stc
+jmp       do_return
+; fall thru return 1?
+exit_am_responder_return_0:
+clc
+do_return:
 label_114:
 LEAVE_MACRO     
-pop       di
-pop       si
-pop       cx
-pop       bx
+POPA_NO_AX_OR_BP_MACRO
 ret       
-label_26:
-call      AM_Start_
-mov       bx, OFFSET _viewactive
-mov       byte ptr [bp - 2], 1
-mov       byte ptr ds:[bx], 0
-jmp       label_25
-label_24:
-mov       es, dx
-mov       al, byte ptr es:[si]
-test      al, al
-jne       label_27
-mov       byte ptr [bp - 2], 1
-mov       cx, word ptr es:[si + 3]
-mov       ax, word ptr es:[si + 1]
-test      cx, cx
-jne       label_28
-cmp       ax, AM_FOLLOWKEY
-jae       label_28
-test      cx, cx
-jne       label_29
-cmp       ax, AM_GOBIGKEY
-jae       label_29
-test      cx, cx
-jne       label_30
-cmp       ax, AM_ZOOMOUTKEY
-jne       label_30
+
+automap_is_active:
+
+; bl is evtype
+; si is data1 lo
+; cx is 0, inverse of cx
+xor  cx, cx
+
+; i guess we are just ignoring the 3 other bytes (??)
+mov       ax, si ; get key
+mov       dl, byte ptr ds:[_followplayer]
+
+cmp       bl, EV_KEYUP
+jb        do_keydown
+ja        exit_am_responder_return_0
+cmp       al, AM_PANRIGHTKEY
+je        release_x_pan
+cmp       al, AM_PANLEFTKEY
+jne       not_release_x_pan
+
+release_x_pan:
+
+mov       word ptr ds:[_m_paninc + MPOINT_T.mpoint_x], cx
+jmp       exit_am_responder_return_0
+
+
+not_release_x_pan:
+
+cmp       al, AM_PANUPKEY
+je        release_y_pan
+cmp       al, AM_PANDOWNKEY
+jne       not_release_y_pan
+
+release_y_pan:
+
+mov       word ptr ds:[_m_paninc + MPOINT_T.mpoint_y], cx
+jmp       exit_am_responder_return_0
+
+not_release_y_pan:
+cmp       al, AM_ZOOMINKEY
+je        release_zoom
+cmp       al, AM_ZOOMOUTKEY
+jne       exit_am_responder_return_0
+
+release_zoom:
+mov       ax, FRAC_SCALE_UNIT
+mov       word ptr ds:[_mtof_zoommul], ax
+mov       word ptr ds:[_ftom_zoommul], ax
+
+jmp       exit_am_responder_return_0
+
+do_keydown:
+
+cmp       al, AM_PANRIGHTKEY
+jne       not_panright
+
+test      dl, dl; followplayer
+jne       set_rc_false
+mov       ax, SCREEN_PAN_INC
+call      FTOM16_
+mov       word ptr ds:[_m_paninc + MPOINT_T.mpoint_x], ax
+jmp       done_with_keypress
+
+not_panright:
+cmp       al, AM_PANLEFTKEY
+jne       not_panleft
+
+test      dl, dl; followplayer
+jne       set_rc_false
+mov       ax, SCREEN_PAN_INC
+call      FTOM16_
+neg       ax  ; todo combine with above?
+mov       word ptr ds:[_m_paninc + MPOINT_T.mpoint_x], ax
+jmp       done_with_keypress
+
+
+not_panleft:
+cmp       al, AM_PANUPKEY
+jne       not_panup
+
+test      dl, dl; followplayer
+jne       set_rc_false
+mov       ax, SCREEN_PAN_INC
+call      FTOM16_
+mov       word ptr ds:[_m_paninc + MPOINT_T.mpoint_y], ax
+jmp       done_with_keypress
+
+
+not_panup:
+cmp       al, AM_PANDOWNKEY
+jne       not_pandown
+
+test      dl, dl; followplayer
+jne       set_rc_false
+mov       ax, SCREEN_PAN_INC
+call      FTOM16_
+neg       ax  ; todo combine with above?
+mov       word ptr ds:[_m_paninc + MPOINT_T.mpoint_y], ax
+jmp       done_with_keypress
+
+
+set_rc_false:
+; todo something
+jmp       done_with_keypress
+
+
+not_pandown:
+inc       cx  ; rc = false for these cases
+cmp       al, AM_ZOOMOUTKEY
+jne       not_zoomout_key
+
 mov       word ptr ds:[_mtof_zoommul], M_ZOOMOUT
 mov       word ptr ds:[_ftom_zoommul], M_ZOOMIN
-label_37:
-mov       es, word ptr [bp - 4]
-mov       al, byte ptr es:[si + 1]
-cbw      
-mov       dx, ax
-mov       ax, CHEATID_AUTOMAP
-call      cht_CheckCheat_
+jmp       done_with_keypress
 
-jnc       label_25
-mov       al, byte ptr ds:[_am_cheating]
-cbw      
-inc       ax
-mov       bx, 3
-cwd       
-idiv      bx
-mov       byte ptr [bp - 2], 0
-mov       byte ptr ds:[_am_cheating], dl
-mov       al, byte ptr [bp - 2]
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       cx
-pop       bx
-ret       
-label_27:
-jmp       label_31
-label_29:
-jmp       label_32
-label_30:
-jmp       label_33
-label_28:
-test      cx, cx
-jne       label_34
-cmp       ax, AM_FOLLOWKEY
-ja        label_34
-cmp       byte ptr ds:[_followplayer], 0
-jne       label_35
-mov       al, 1
-label_60:
-mov       word ptr ds:[_screen_oldloc + 0], MAXSHORT
-mov       byte ptr ds:[_followplayer], al
-test      al, al
-je        label_36
-mov       ax, AMSTR_FOLLOWON
-mov       bx, OFFSET _player + PLAYER_T.player_message
-mov       word ptr ds:[bx], ax
-jmp       label_37
-label_34:
-test      cx, cx
-jne       label_38
-cmp       ax, AM_PANLEFTKEY
-jae       label_38
-test      cx, cx
-jne       label_39
-cmp       ax, AM_MARKKEY
-je        label_40
-label_39:
-test      cx, cx
-jne       label_41
-cmp       ax, AM_GRIDKEY
-jne       label_41
-cmp       byte ptr ds:[_am_grid], 0
-jne       label_170
-mov       al, 1
-label_61:
-mov       byte ptr ds:[_am_grid], al
-test      al, al
-je        label_171
-mov       ax, AMSTR_GRIDON
-mov       bx, OFFSET _player + PLAYER_T.player_message
-mov       word ptr ds:[bx], ax
-jmp       label_37
-label_35:
-jmp       label_172
-label_38:
-test      cx, cx
-jne       label_62
-cmp       ax, AM_PANLEFTKEY
-ja        label_62
-cmp       byte ptr ds:[_followplayer], 0
-je        label_63
-mov       byte ptr [bp - 2], 0
-jmp       label_37
-label_36:
-jmp       label_64
-label_62:
-test      cx, cx
-jne       label_65
-cmp       ax, AM_PANDOWNKEY
-jne       label_65
-cmp       byte ptr ds:[_followplayer], 0
-je        label_66
-mov       byte ptr [bp - 2], 0
-jmp       label_37
-label_40:
-jmp       label_67
-label_41:
-jmp       label_42
-label_170:
-jmp       label_43
-label_65:
-test      cx, cx
-jne       label_44
-cmp       ax, AM_PANRIGHTKEY
-jne       label_44
-cmp       byte ptr ds:[_followplayer], 0
-je        label_45
-mov       byte ptr [bp - 2], 0
-jmp       label_37
-label_171:
-jmp       label_46
-label_44:
-test      cx, cx
-jne       label_42
-cmp       ax, AM_PANUPKEY
-jne       label_42
-cmp       byte ptr ds:[_followplayer], 0
-je        label_47
-label_42:
-mov       byte ptr [bp - 2], 0
-jmp       label_37
-label_63:
-jmp       label_48
-label_66:
-jmp       label_49
-label_32:
-test      cx, cx
-jne       label_50
-cmp       ax, AM_GOBIGKEY
-ja        label_50
-cmp       byte ptr ds:[_am_bigstate], 0
-jne       label_51
-mov       al, 1
-label_59:
-mov       byte ptr ds:[_am_bigstate], al
-test      al, al
-je        label_52
-mov       ax, word ptr ds:[_screen_botleft_x]
+not_zoomout_key:
+cmp       al, AM_ZOOMINKEY
+jne       not_zoomin_key
+
+mov       word ptr ds:[_mtof_zoommul], M_ZOOMIN
+mov       word ptr ds:[_ftom_zoommul], M_ZOOMOUT
+jmp       done_with_keypress
+
+
+not_zoomin_key:
+cmp       al, AM_ENDKEY
+jne       not_end_key
+
+mov       byte ptr ds:[_am_bigstate], ah ; 0
+mov       byte ptr ds:[_viewactive], 1
+call      AM_Stop_
+
+jmp       done_with_keypress
+
+
+not_end_key:
+cmp       al, AM_GOBIGKEY
+jne       not_gobig_key
+
+xor       byte ptr ds:[_am_bigstate], 1
+je        turn_off_bigstate
+call      AM_restoreScaleAndLoc_
+
+jmp       done_with_keypress
+
+turn_off_bigstate:
+
 mov       word ptr ds:[_old_screen_botleft_x], ax
 mov       ax, word ptr ds:[_screen_botleft_y]
 mov       word ptr ds:[_old_screen_botleft_y], ax
@@ -944,235 +956,103 @@ mov       word ptr ds:[_old_screen_viewport_width], ax
 mov       ax, word ptr ds:[_screen_viewport_height]
 mov       word ptr ds:[_old_screen_viewport_height], ax
 call      AM_minOutWindowScale_
-jmp       label_37
-label_45:
-jmp       label_53
-label_47:
-jmp       label_54
-label_50:
-test      cx, cx
-jne       label_55
-cmp       ax, AM_CLEARMARKKEY
-je        label_56
-label_55:
-test      cx, cx
-jne       label_42
-cmp       ax, AM_ZOOMINKEY
-jne       label_42
-mov       word ptr ds:[_mtof_zoommul], M_ZOOMIN
-mov       word ptr ds:[_ftom_zoommul], M_ZOOMOUT
-jmp       label_37
-label_51:
-jmp       label_57
-label_52:
-jmp       label_58
-label_33:
-test      cx, cx
-jne       label_42
-cmp       ax, 9
-jne       label_42
-mov       bx, OFFSET _viewactive
-xor       al, al
-mov       byte ptr ds:[bx], 1
-mov       bx, OFFSET _automapactive
-mov       byte ptr ds:[_am_stopped], 1
-mov       byte ptr ds:[bx], al
-mov       bx, OFFSET _st_gamestate
-mov       byte ptr ds:[_am_bigstate], al
-mov       byte ptr ds:[bx], 1
-jmp       label_37
-label_53:
-mov       ax, 4
-mov       bx, word ptr ds:[_am_scale_ftom + 0]
-mov       cx, word ptr ds:[_am_scale_ftom + 2]
-call      FixedMul1632_
-mov       word ptr ds:[_m_paninc + 0], ax
-jmp       label_37
-label_56:
-mov       cx, AM_NUMMARKPOINTS * SIZE MPOINT_T ; todo div 2 etc
-mov       ax, -1
-mov       di, OFFSET _markpoints
-mov       bx, OFFSET _player + PLAYER_T.player_message
-push      di
-push      ds
-pop       es
-mov       ah, al
-shr       cx, 1
-rep stosw
-adc       cx, cx
-rep stosb
-pop       di
-mov       byte ptr ds:[_markpointnum], 0
-mov       word ptr ds:[bx], AMSTR_MARKSCLEARED
-jmp       label_37
-label_48:
-mov       ax, 4
-mov       bx, word ptr ds:[_am_scale_ftom + 0]
-mov       cx, word ptr ds:[_am_scale_ftom + 2]
-call      FixedMul1632_
-mov       word ptr ds:[_m_paninc + 0], ax
-neg       word ptr ds:[_m_paninc + 0]
-jmp       label_37
-label_54:
-mov       ax, 4
-mov       bx, word ptr ds:[_am_scale_ftom + 0]
-mov       cx, word ptr ds:[_am_scale_ftom + 2]
-call      FixedMul1632_
-mov       word ptr ds:[_m_paninc + 2], ax
-jmp       label_37
-label_49:
-mov       ax, 4
-mov       bx, word ptr ds:[_am_scale_ftom + 0]
-mov       cx, word ptr ds:[_am_scale_ftom + 2]
-call      FixedMul1632_
-mov       word ptr ds:[_m_paninc + 2], ax
-neg       word ptr ds:[_m_paninc + 2]
-jmp       label_37
-label_57:
-xor       al, al
-jmp       label_59
-label_58:
-call      AM_restoreScaleAndLoc_
-jmp       label_37
-label_172:
-xor       al, al
-jmp       label_60
-label_64:
+jmp       done_with_keypress		
+
+
+
+not_gobig_key:
+cmp       al, AM_FOLLOWKEY
+jne       not_follow_key
+
 mov       ax, AMSTR_FOLLOWOFF
-mov       bx, OFFSET _player + PLAYER_T.player_message
-mov       word ptr ds:[bx], ax
-jmp       label_37
-label_43:
-xor       al, al
-jmp       label_61
-label_46:
+xor       byte ptr ds:[_followplayer], 1
+je        toggle_follow_player_off
+dec ax  ; mov       ax, AMSTR_FOLLOWON
+toggle_follow_player_off:
+
+mov       word ptr ds:[OFFSET _player + PLAYER_T.player_message], ax
+jmp       done_with_keypress		
+
+
+
+not_follow_key:
+cmp       al, AM_GRIDKEY
+jne       not_grid_key
+
 mov       ax, AMSTR_GRIDOFF
-mov       bx, OFFSET _player + PLAYER_T.player_message
-mov       word ptr ds:[bx], ax
-jmp       label_37
-label_67:
+xor       byte ptr ds:[_am_grid], 1
+je        toggle_grid_off
+dec ax  ; mov       ax, AMSTR_GRIDON
+toggle_grid_off:
+
+mov       word ptr ds:[OFFSET _player + PLAYER_T.player_message], ax
+jmp       done_with_keypress		
+
+
+not_grid_key:
+cmp       al, AM_MARKKEY
+jne       not_mark_key
+
 lea       bx, [bp - 06Ah]
 mov       ax, AMSTR_MARKEDSPOT
-mov       cx, ds
-lea       dx, [bp - 6]
+mov       cx, ss
 call      getStringByIndex_
+
+push      ds
+lea       bx, [bp - 6]
+push      dx
+mov       ax, 030h ; null terminated '0'
+add       al, byte ptr ds:[_markpointnum]
+mov       word ptr ds:[bx], ax
+
+mov       cx, ss
 lea       bx, [bp - 06Ah]
 mov       ax, OFFSET _player_message_string
-push      ds
-mov       cx, ds
-push      dx
 xor       dx, dx
-mov       byte ptr [bp - 6], 0
 call      combine_strings_
 call      AM_addMark_
-jmp       label_37
-label_31:
-cmp       al, 1
-je        label_68
-label_72:
-jmp       label_25
-label_68:
-mov       byte ptr [bp - 2], 0
-mov       ax, word ptr es:[si + 3]
-mov       cx, word ptr es:[si + 1]
-test      ax, ax
-jne       label_69
-cmp       cx, AM_PANLEFTKEY
-jae       label_69
-test      ax, ax
-jne       label_70
-cmp       cx, AM_ZOOMINKEY
-je        label_71
-label_70:
-test      ax, ax
-jne       label_72
-cmp       cx, AM_ZOOMOUTKEY
-jne       label_72
-label_71:
-mov       ax, FRAC_SCALE_UNIT
-mov       word ptr ds:[_mtof_zoommul], ax
-mov       word ptr ds:[_ftom_zoommul], ax
-mov       al, byte ptr [bp - 2]
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       cx
-pop       bx
-ret       
-label_69:
-test      ax, ax
-jne       label_73
-cmp       cx, AM_PANLEFTKEY
-ja        label_73
-mov       al, byte ptr ds:[_followplayer]
-test      al, al
-jne       label_72
-xor       ah, ah
-mov       word ptr ds:[_m_paninc + 0], ax
-mov       al, byte ptr [bp - 2]
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       cx
-pop       bx
-ret       
-label_73:
-test      ax, ax
-jne       label_74
-cmp       cx, AM_PANDOWNKEY
-jne       label_74
-mov       al, byte ptr ds:[_followplayer]
-test      al, al
-jne       label_72
-xor       ah, ah
-mov       word ptr ds:[_m_paninc + 2], ax
-mov       al, byte ptr [bp - 2]
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       cx
-pop       bx
-ret       
-label_74:
-test      ax, ax
-jne       label_75
-cmp       cx, AM_PANRIGHTKEY
-jne       label_75
-mov       al, byte ptr ds:[_followplayer]
-test      al, al
-je        label_76
-label_77:
-jmp       label_25
-label_76:
-xor       ah, ah
-mov       word ptr ds:[_m_paninc + 0], ax
-mov       al, byte ptr [bp - 2]
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       cx
-pop       bx
-ret       
-label_75:
-test      ax, ax
-jne       label_77
-cmp       cx, AM_PANUPKEY
-jne       label_77
-mov       al, byte ptr ds:[_followplayer]
-test      al, al
-jne       label_77
-xor       ah, ah
-mov       word ptr ds:[_m_paninc + 2], ax
-mov       al, byte ptr [bp - 2]
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       cx
-pop       bx
-ret       
+mov       cx, 1
+jmp       done_with_keypress		
+
+not_mark_key:
+cmp       al, AM_CLEARMARKKEY
+jne       not_clearmark_key
+
+mov       word ptr ds:[OFFSET _player + PLAYER_T.player_message], AMSTR_MARKSCLEARED
+call      AM_clearMarks_
+jmp       done_with_keypress		
+
+not_clearmark_key:
+xor       cx, cx ; rc = false again for default..
+done_with_keypress:
+
+mov       dx, si ; ev1
+mov       ax, CHEATID_AUTOMAP
+call      cht_CheckCheat_
+
+jnc       return_cx
+mov       al, byte ptr ds:[_am_cheating]
+inc       ax
+cmp       al, 3
+jne       dont_zero_cheating
+xor       ax, ax
+dont_zero_cheating:
+mov       byte ptr ds:[_am_cheating], al
+
+;xor       cx, cx ; todo is this necessary
+
+return_cx:
+sar       cx, 1  ; carry means false.. inverse
+jmp       do_return
+
+
+
 
 
 ENDP
+
+
+COMMENT @
 
 PROC    AM_changeWindowScale_ NEAR
 PUBLIC  AM_changeWindowScale_
