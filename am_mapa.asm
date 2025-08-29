@@ -151,38 +151,16 @@ ENDP
 
 
 
-
-PROC    MTOF16_ NEAR
-PUBLIC  MTOF16_
-
-
-push      bx
-push      cx
-push      dx
-les       bx, dword ptr ds:[_am_scale_mtof + 0]
-mov       cx, es
-call      FixedMul1632_
-pop       dx
-pop       cx
-pop       bx
-ret       
-
-ENDP
-
 PROC    CXMTOF16_ NEAR
 PUBLIC  CXMTOF16_
 
-
-push      bx
-push      cx
+; we can clobber cx, bx
 push      dx
 les       bx, dword ptr ds:[_am_scale_mtof + 0]
 mov       cx, es
 sub       ax, word ptr ds:[_screen_botleft_x]  ; todo dont suppose this can be self modified start of frame?
 call      FixedMul1632_
 pop       dx
-pop       cx
-pop       bx
 ret       
 
 ENDP
@@ -191,8 +169,7 @@ ENDP
 PROC    CYMTOF16_ NEAR
 PUBLIC  CYMTOF16_
 
-push      bx
-push      cx
+; we can clobber cx, bx
 push      dx
 les       bx, dword ptr ds:[_am_scale_mtof + 0]
 mov       cx, es
@@ -201,8 +178,6 @@ call      FixedMul1632_
 neg       ax
 add       ax, AUTOMAP_SCREENHEIGHT
 pop       dx
-pop       cx
-pop       bx
 ret       
 
 ENDP
@@ -1185,8 +1160,6 @@ AM_OUT_RIGHT = 	2
 AM_OUT_BOTTOM = 4
 AM_OUT_TOP = 	8
 
-; todo this can take in ax/dx
-
 PROC    DOOUTCODE_ NEAR
 PUBLIC  DOOUTCODE_
 
@@ -1228,44 +1201,9 @@ xor       cx, cx ; cl = outcode1. ch = outcode2
 
 ;todo reverse order again a little less reg swapping
 
-les       dx, dword ptr ds:[si + MLINE_T.mline_a + MPOINT_T.mpoint_x]
-mov       ax, es ; ax  
-mov       di, word ptr ds:[_screen_botleft_y]  ; todo les?
-mov       bx, word ptr ds:[_screen_topright_y]
-cmp       ax, bx
-jng       dont_and_top_a
-or        cl, AM_OUT_TOP
-dont_and_top_a:
-cmp       ax, di
-jnl       dont_and_bottom_a
-or        cl, AM_OUT_BOTTOM
-dont_and_bottom_a:
-
-xchg      ax, bp ; bp gets a.y
-les       si, dword ptr ds:[si + MLINE_T.mline_b + MPOINT_T.mpoint_x]
-mov       ax, es 
-
-; dx has a.x
-; bp has a.y
-; si has b.x
-; ax has b.y
-
-cmp       ax, di
-jng       dont_and_top_b
-or        ch, AM_OUT_TOP
-dont_and_top_b:
-cmp       ax, bx
-jnl       dont_and_bottom_b
-or        ch, AM_OUT_BOTTOM
-dont_and_bottom_b:
-test      cl, ch
-jne       exit_am_clipline_return_false
-
-
-
-xchg      ax, dx 
-
-mov       di, word ptr ds:[_screen_botleft_x]
+lodsw
+; ax has a.x
+mov       di, word ptr ds:[_screen_botleft_x]  ; todo les?
 mov       bx, word ptr ds:[_screen_topright_x]
 cmp       ax, di
 jnl       dont_and_left_a
@@ -1276,9 +1214,11 @@ jng       dont_and_right_a
 or        cl, AM_OUT_RIGHT
 dont_and_right_a:
 
-xchg      ax, si
+xchg      ax, bp  ; bp has a.x
+lodsw
+xchg      ax, dx  ; dx has a.y. ax gets b.x after
+lodsw
 
-mov       ax, es
 cmp       ax, di
 jnl       dont_and_left_b
 or        ch, AM_OUT_LEFT
@@ -1290,38 +1230,89 @@ dont_and_right_b:
 test      cl, ch
 jne       exit_am_clipline_return_false
 
-; si has a.x
-; bp has a.y
-; ax has b.x
+xchg      ax, di    ; di gets b.x
+lodsw     
+
+mov       bx, word ptr ds:[_screen_botleft_y]  ; todo les?
+mov       si, word ptr ds:[_screen_topright_y]
+
+cmp       ax, bx
+jnl       dont_and_bottom_b
+or        ch, AM_OUT_BOTTOM
+dont_and_bottom_b:
+cmp       ax, si
+jng       dont_and_top_b
+or        ch, AM_OUT_TOP
+dont_and_top_b:
+
+xchg      ax, dx  ; ax gets a.y, dx gets b.y
+
+cmp       ax, bx
+jnl       dont_and_bottom_a
+or        cl, AM_OUT_BOTTOM
+dont_and_bottom_a:
+cmp       ax, si
+jng       dont_and_top_a
+or        cl, AM_OUT_TOP
+dont_and_top_a:
+test      cl, ch
+jne       exit_am_clipline_return_false
+
+
+
+
+
+; bp has a.x
+; ax has a.y
 ; dx has b.y
+; di has b.x
+
 
 ; cl/ch is outcode1/2
 
-call      CXMTOF16_   ;b.x
+; todo use di instead of dx,, dont push/pop in this func?
+; todo inline these funcs?
 
-xchg      ax, si   ; si gets b.x
+call      CYMTOF16_   ;a.y
+
+xchg      ax, bp      ; bp gets a.y
 call      CXMTOF16_   ;a.x
 
-xchg      ax, dx   ; dx gets a.x
+xchg      ax, dx      ; dx gets a.x
 call      CYMTOF16_   ;b.y 
 
-xchg      ax, bp   ; bp gets b.y
-call      CYMTOF16_   ;a.y
+xchg      ax, di      ; di gets b.y
+call      CXMTOF16_   ;b.x
+
+
 
 
 ; dx has am_fl.a.x
-; ax has am_fl.a.y
-; si has am_fl.b.x
-; bp has am_fl.b.y
+; bp has am_fl.a.y
+; ax has am_fl.b.x
+; di has am_fl.b.y
 
+xchg      ax, bp   ; si gets b.x
 xchg      ax, bx
+
+; dx has am_fl.a.x
+; bx has am_fl.a.y
+; bp has am_fl.b.x
+; di has am_fl.b.y
+
+
 call      DOOUTCODE_  ; a case
 xchg      ax, cx  ; outcode 1 to cl
-xchg      bx, bp
-xchg      dx, si
-call      DOOUTCODE_  ; a case
+xchg      bx, di
+xchg      dx, bp
+call      DOOUTCODE_  ; b case
 
-mov       di, dx
+mov       si, dx
+
+; bp has am_fl.a.x
+; di has am_fl.a.y
+; si has am_fl.b.x
+; bx has am_fl.b.y
 
 test      al, cl
 je        dont_exit_and_return_false
@@ -1332,9 +1323,9 @@ POPA_NO_AX_MACRO
 xor       ax, ax
 ret
 exit_am_clipline_return_true:
-mov       word ptr ds:[_am_fl + FLINE_T.fline_a + FPOINT_T.fpoint_x], si
-mov       word ptr ds:[_am_fl + FLINE_T.fline_a + FPOINT_T.fpoint_y], bp
-mov       word ptr ds:[_am_fl + FLINE_T.fline_b + FPOINT_T.fpoint_x], di
+mov       word ptr ds:[_am_fl + FLINE_T.fline_a + FPOINT_T.fpoint_x], bp
+mov       word ptr ds:[_am_fl + FLINE_T.fline_a + FPOINT_T.fpoint_y], di
+mov       word ptr ds:[_am_fl + FLINE_T.fline_b + FPOINT_T.fpoint_x], si
 mov       word ptr ds:[_am_fl + FLINE_T.fline_b + FPOINT_T.fpoint_y], bx
 POPA_NO_AX_MACRO
 mov       ax, 1
@@ -1343,10 +1334,10 @@ ret
 dont_exit_and_return_false:
 
 mov       ch, al ; outcode 2 in ch
-; di has am_fl.b.x
+; si has am_fl.b.x
 ; bx has am_fl.b.y
-; si has am_fl.a.x
-; bp has am_fl.a.y
+; bp has am_fl.a.x
+; di has am_fl.a.y
 ;  ch has outcode 2
 ;  cl has outcode 1
 
@@ -1370,9 +1361,9 @@ mov      es, cx   ; backup outcode1/outcode2 in es
 ; dy = am_fl.a.y - am_fl.b.y;
 
 
-mov      dx, di
-sub      dx, si
-mov      cx, bp
+mov      dx, si
+sub      dx, bp
+mov      cx, di
 sub      cx, bx
 
 ; dx is 'dx'
@@ -1385,9 +1376,9 @@ je       outside_not_top
 ; tmp.y = 0;
 
 xchg   ax, dx
-imul   bp
+imul   di
 idiv   cx
-add    ax, si
+add    ax, bp
 xor    dx, dx
 
 jmp      done_with_side_check
@@ -1398,11 +1389,11 @@ je       outside_not_bottom
 ; tmp.x = am_fl.a.x + (dx*(am_fl.a.y-automap_screenheight))/dy;
 ; tmp.y = automap_screenheight-1;
 
-mov     ax, bp
+mov     ax, di
 sub     ax, AUTOMAP_SCREENHEIGHT
 imul    dx
 idiv    cx
-add     ax, si
+add     ax, bp
 mov     dx, AUTOMAP_SCREENHEIGHT-1
 
 jmp      done_with_side_check
@@ -1416,7 +1407,7 @@ je       outside_not_right
 ; tmp.x = automap_screenwidth-1;
 
 mov      ax, (AUTOMAP_SCREENWIDTH - 1)
-sub      ax, si
+sub      ax, bp
 imul     dx
 idiv     cx
 xchg     ax, dx
@@ -1429,21 +1420,21 @@ outside_not_right:
 ; tmp.y = am_fl.a.y + (dy*(-am_fl.a.x))/dx;
 ; tmp.x = 0;
 
-mov      ax, si
+mov      ax, bp
 neg      ax
 imul     dx
 idiv     cx
 xchg     ax, dx
 xor      ax, ax
 add_bp_and_done_with_sidecheck:
-add      dx, bp
+add      dx, di
 
 done_with_side_check:
 
-; di has am_fl.b.x
+; si has am_fl.b.x
 ; bx has am_fl.b.y
-; si has am_fl.a.x
-; bp has am_fl.a.y
+; bp has am_fl.a.x
+; di has am_fl.a.y
 mov      cx, es   ; recover outcode1/outcode2 from es
 
 ;ax = tmp.x
@@ -1457,13 +1448,13 @@ outside_is_outcode1:
 ;	am_fl.a = tmp;
 ;	outcode1 = DOOUTCODE(outcode1, am_fl.a.x, am_fl.a.y);
 
-xchg     ax, si
-mov      bp, dx
-mov      dx, si
-xchg     bx, bp ; get this param...
+xchg     ax, bp
+mov      di, dx
+mov      dx, bp
+xchg     bx, di ; get this param...
 
 call     DOOUTCODE_
-xchg     bx, bp ; recover
+xchg     bx, di ; recover
 mov      cl, al 
 
 checkoutcodes_again:
@@ -1478,9 +1469,9 @@ outside_is_outcode2:
 ;	am_fl.b = tmp;
 ;	outcode2 = DOOUTCODE(outcode2, am_fl.b.x, am_fl.b.y);
 xor      ch, OUTCODE2_FLAG  ; turn that off
-xchg     ax, di
+xchg     ax, si
 mov      bx, dx
-mov      dx, di
+mov      dx, si
 ; bx is already correct...
 call     DOOUTCODE_
 mov      ch, al
