@@ -1037,9 +1037,17 @@ push      dx
 les       bx, dword ptr ds:[_am_scale_mtof + 0]
 mov       cx, es
 mov       ax, word ptr ds:[_mtof_zoommul]
-SHIFT_MACRO sal ax 4
+;SHIFT_MACRO sal ax 4   ; didnt work
 call      FixedMul1632_
 
+sal       ax, 1
+rcl       dx, 1
+sal       ax, 1
+rcl       dx, 1
+sal       ax, 1
+rcl       dx, 1
+sal       ax, 1
+rcl       dx, 1
 
 mov       word ptr ds:[_am_scale_mtof + 0], ax
 mov       word ptr ds:[_am_scale_mtof + 2], dx
@@ -1051,14 +1059,13 @@ mov       ax, 1
 call      FixedDivWholeA_
 mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx
-pop       ax
+pop       ax ; ax gets high
 pop       dx
 
 test      ax, ax
-js        min_out_windowscale
 jne       not_minout
-cmp       dx, word ptr ds:[_am_scale_mtof + 0]
-ja        min_out_windowscale
+cmp       dx, word ptr ds:[_am_min_scale_mtof + 0]
+jb        min_out_windowscale
 not_minout:
 cmp       ax, word ptr ds:[_am_max_scale_mtof + 2]
 jg        max_out_windowscale
