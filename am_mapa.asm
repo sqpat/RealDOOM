@@ -1022,7 +1022,6 @@ jmp       done_with_keypress
 ENDP
 
 
-COMMENT @
 
 PROC    AM_changeWindowScale_ NEAR
 PUBLIC  AM_changeWindowScale_
@@ -1030,57 +1029,59 @@ PUBLIC  AM_changeWindowScale_
 push      bx
 push      cx
 push      dx
-mov       bx, word ptr ds:[_am_scale_mtof + 0]
-mov       cx, word ptr ds:[_am_scale_mtof + 2]
+
+;    am_scale_mtof.w = FixedMul1632(mtof_zoommul, am_scale_mtof.w)<<4;
+;    am_scale_ftom.w = FixedDivWholeA(1, am_scale_mtof.w);
+
+
+les       bx, dword ptr ds:[_am_scale_mtof + 0]
+mov       cx, es
 mov       ax, word ptr ds:[_mtof_zoommul]
+SHIFT_MACRO sal ax 4
 call      FixedMul1632_
-mov       cl, 4
-shl       dx, cl
-rol       ax, cl
-xor       dx, ax
-and       ax, 0FFF0h  ; todo clean up shift...
-xor       dx, ax
+
+
 mov       word ptr ds:[_am_scale_mtof + 0], ax
-mov       bx, ax
+mov       word ptr ds:[_am_scale_mtof + 2], dx
+push      ax
+push      dx
+xchg      ax, bx
 mov       cx, dx
 mov       ax, 1
-mov       word ptr ds:[_am_scale_mtof + 2], dx
 call      FixedDivWholeA_
 mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx
-mov       ax, word ptr ds:[_am_min_scale_mtof]
-cmp       word ptr ds:[_am_scale_mtof + 2], 0
-jl        label_78
-jne       label_79
-cmp       ax, word ptr ds:[_am_scale_mtof + 0]
-ja        label_78
-label_79:
-mov       ax, word ptr ds:[_am_scale_mtof + 2]
-mov       dx, word ptr ds:[_am_scale_mtof + 0]
+pop       ax
+pop       dx
+
+test      ax, ax
+js        min_out_windowscale
+jne       not_minout
+cmp       dx, word ptr ds:[_am_scale_mtof + 0]
+ja        min_out_windowscale
+not_minout:
 cmp       ax, word ptr ds:[_am_max_scale_mtof + 2]
-jg        label_80
-jne       label_81
+jg        max_out_windowscale
+jne       activate_new_scale
 cmp       dx, word ptr ds:[_am_max_scale_mtof + 0]
-jbe       label_81
-label_80:
+jbe       activate_new_scale
+max_out_windowscale:
 call      AM_maxOutWindowScale_
 exit_am_changewindowscale:
 pop       dx
 pop       cx
 pop       bx
 ret       
-label_78:
+min_out_windowscale:
 call      AM_minOutWindowScale_
 jmp       exit_am_changewindowscale
-label_81:
+activate_new_scale:
 call      AM_activateNewScale_
-pop       dx
-pop       cx
-pop       bx
-ret       
+jmp       exit_am_changewindowscale
 
 
 ENDP
+
 
 PROC    AM_doFollowPlayer_ NEAR
 PUBLIC  AM_doFollowPlayer_
@@ -1088,51 +1089,58 @@ PUBLIC  AM_doFollowPlayer_
 
 push      bx
 push      dx
-push      si
-mov       bx, OFFSET _playerMobj_pos
-les       si, dword ptr ds:[bx]
-mov       ax, word ptr ds:[_screen_oldloc + 0]
-cmp       ax, word ptr es:[si + 2]
-jne       label_82
-mov       ax, word ptr ds:[_screen_oldloc + 2]
-cmp       ax, word ptr es:[si + 6]
-jne       label_82
-pop       si
-pop       dx
-pop       bx
-ret       
-label_82:
-mov       bx, OFFSET _playerMobj_pos
-les       si, dword ptr ds:[bx]
-mov       ax, word ptr ds:[_screen_viewport_width]
-mov       bx, word ptr es:[si + 2]
+
+; compare intbits
+les       bx, dword ptr ds:[_playerMobj_pos]
+mov       dx, word ptr word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
+mov       bx, word ptr word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
+; dx has x intbits
+; bx has y intbits
+
+cmp       dx, word ptr ds:[_screen_oldloc + MPOINT_T.mpoint_x]
+jne       not_equal_do_update
+cmp       bx, word ptr ds:[_screen_oldloc + MPOINT_T.mpoint_y]
+je        exit_follow_player
+
+not_equal_do_update:
+
+;	screen_oldloc.x = playerMobj_pos->x.h.intbits;
+;	screen_oldloc.y = playerMobj_pos->y.h.intbits;
+mov       word ptr ds:[_screen_oldloc + MPOINT_T.mpoint_x], dx
+mov       word ptr ds:[_screen_oldloc + MPOINT_T.mpoint_y], bx
+
+;	screen_botleft_x = (playerMobj_pos->x.h.intbits) - (screen_viewport_width >>1);
+;	screen_topright_x = screen_botleft_x + screen_viewport_width;
+
+les       ax, dword ptr ds:[_screen_viewport_width] ; es gets height
+push      ax
+sar       ax, 1
+sub       dx, ax
+mov       word ptr ds:[_screen_botleft_x], dx
+pop       ax
+add       ax, dx
+mov       word ptr ds:[_screen_topright_x], ax
+
+;	screen_botleft_y = (playerMobj_pos->y.h.intbits) - (screen_viewport_height >>1);
+;	screen_topright_y= screen_botleft_y + screen_viewport_height;
+
+mov       ax, es ; get height
+push      ax
 sar       ax, 1
 sub       bx, ax
-mov       ax, bx
-mov       word ptr ds:[_screen_botleft_x], bx
-mov       bx, OFFSET _playerMobj_pos
-les       si, dword ptr ds:[bx]
-mov       dx, word ptr ds:[_screen_viewport_height]
-mov       bx, word ptr es:[si + 6]
-sar       dx, 1
-sub       bx, dx
 mov       word ptr ds:[_screen_botleft_y], bx
-add       bx, word ptr ds:[_screen_viewport_height]
-add       ax, word ptr ds:[_screen_viewport_width]
-mov       word ptr ds:[_screen_topright_y], bx
-mov       bx, OFFSET _playerMobj_pos
-mov       word ptr ds:[_screen_topright_x], ax
-les       si, dword ptr ds:[bx]
-mov       ax, word ptr es:[si + 2]
-mov       word ptr ds:[_screen_oldloc + 0], ax
-mov       ax, word ptr es:[si + 6]
-mov       word ptr ds:[_screen_oldloc + 2], ax
-pop       si
+pop       ax
+add       ax, bx
+mov       word ptr ds:[_screen_topright_y], ax
+
+
+exit_follow_player:
 pop       dx
 pop       bx
 ret       
 
 ENDP
+COMMENT @
 
 PROC    AM_Ticker_ NEAR
 PUBLIC  AM_Ticker_

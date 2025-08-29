@@ -153,6 +153,9 @@ void __near AM_LevelInit(void);
 void __far AM_Start (void) ;
 void __near AM_minOutWindowScale(void) ;
 void __near AM_maxOutWindowScale(void);
+void __near AM_changeWindowScale(void);
+void __near AM_doFollowPlayer(void);
+
 
 
 /*
@@ -579,7 +582,6 @@ boolean __near AM_Responder ( event_t __far* ev ) {
 
 }
 
- */
 
 //
 // Zooming
@@ -618,7 +620,7 @@ void __near AM_doFollowPlayer(void) {
 
 }
 
- 
+ */
 
 //
 // Updates on Game Tick
