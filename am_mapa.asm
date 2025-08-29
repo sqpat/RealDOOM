@@ -463,7 +463,7 @@ push      dx
 les       ax, dword ptr ds:[_m_paninc]
 mov       dx, es
 or        dx, ax
-jne       dont_cancel_follow_player
+je        dont_cancel_follow_player
 
 mov       byte ptr ds:[_followplayer], 0
 mov       word ptr ds:[_screen_oldloc + 0], MAXSHORT
@@ -746,23 +746,7 @@ ret
 
 ENDP
 
-; todo precalculate/etc
 
-PROC    FTOM16_ NEAR
-push    bx
-push    cx
-push    dx
-
-les     bx, dword ptr ds:[_am_scale_ftom]
-mov     cx, es
-call    FixedMul1632_
-
-pop     dx
-pop     cx
-pop     bx
-
-ret
-ENDP
 
 
 ; todo return carry
@@ -881,7 +865,7 @@ jne       not_pandown
 
 do_panup:    
 do_panleft:  
-inc       dx ; set negative flag for up/left
+dec       dx ; set negative flag for up/left
 do_panright:
 do_pan_up:
 
@@ -890,12 +874,19 @@ do_pan_up:
 cmp       byte ptr ds:[_followplayer], ch; 0
 jne       done_with_keypress_do_false
 
-mov       al, SCREEN_PAN_INC ; todo just shift left or something? figure this out, inline
-call      FTOM16_
-dec       dx  ; if zero then signed now.
-js        dont_neg_ax
-neg       ax
-dont_neg_ax:
+; fixed mul by 4, or shift right 14 essentially.
+; instead of sar 14
+
+les       ax, dword ptr ds:[_am_scale_ftom]  
+mov       bx, es
+sal       ax, 1
+rcl       bx, 1
+sal       ax, 1
+rcl       bx, 1
+xchg      ax, bx
+xor       ax, dx ; dx is -1 if this is to be a negative result
+sub       ax, dx ; works for positive or negative
+
 mov       word ptr ds:[di], ax
 
 jmp       done_with_keypress
