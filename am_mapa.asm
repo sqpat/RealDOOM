@@ -1213,350 +1213,275 @@ ret
 
 
 ENDP
-COMMENT @
+
+OUTCODE2_FLAG = 16
 
 PROC    AM_clipMline_ NEAR
 PUBLIC  AM_clipMline_
 
 
-push      bx
-push      cx
-push      dx
-push      si
-push      di
-push      bp
-mov       bp, sp
-sub       sp, 6
-push      ax
+PUSHA_NO_AX_MACRO
+xchg      ax, si  ; todo pass in via si
+xor       cx, cx ; cl = outcode1. ch = outcode2
+
+les       dx, dword ptr ds:[si + MLINE_T.mline_a + MPOINT_T.mpoint_x]
+mov       ax, es ; ax  
+mov       di, word ptr ds:[_screen_botleft_y]
+mov       bx, word ptr ds:[_screen_topright_y]
+cmp       ax, di
+jng       dont_and_top_a
+or        cl, AM_OUT_TOP
+dont_and_top_a:
+cmp       ax, bx
+jnl       dont_and_bottom_a
+or        cl, AM_OUT_BOTTOM
+dont_and_bottom_a:
+
+xchg      ax, bp ; bp gets a.y
+les       si, dword ptr ds:[si + MLINE_T.mline_b + MPOINT_T.mpoint_x]
+mov       ax, es 
+
+; dx has a.x
+; bp has a.y
+; si has b.x
+; ax has b.y
+
+cmp       ax, di
+jng       dont_and_top_b
+or        ch, AM_OUT_TOP
+dont_and_top_b:
+cmp       ax, bx
+jnl       dont_and_bottom_b
+or        ch, AM_OUT_BOTTOM
+dont_and_bottom_b:
+test      cl, ch
+jne       exit_am_clipline_return_false
+
+
+
+xchg      ax, dx 
+
+mov       di, word ptr ds:[_screen_botleft_x]
+mov       bx, word ptr ds:[_screen_topright_x]
+cmp       ax, di
+jnl       dont_and_left_a
+or        cl, AM_OUT_LEFT
+dont_and_left_a:
+cmp       ax, bx
+jng       dont_and_right_a
+or        cl, AM_OUT_RIGHT
+dont_and_right_a:
+
+xchg      ax, si
+
+mov       ax, es
+cmp       ax, di
+jnl       dont_and_left_b
+or        ch, AM_OUT_LEFT
+dont_and_left_b:
+cmp       ax, bx
+jng       dont_and_right_b
+or        ch, AM_OUT_RIGHT
+dont_and_right_b:
+test      cl, ch
+jne       exit_am_clipline_return_false
+
+; si has a.x
+; bp has a.y
+; ax has b.x
+; dx has b.y
+
+; cl/ch is outcode1/2
+
+call      CXMTOF16_   ;b.x
+
+xchg      ax, si
+call      CXMTOF16_   ;a.x
+
+xchg      ax, dx      ;b.y
+call      CYMTOF16_
+
+xchg      ax, bp      ;a.y
+call      CYMTOF16_
+
+
+; dx has am_fl.a.x
+; ax has am_fl.a.y
+; si has am_fl.b.x
+; bp has am_fl.b.y
+
+xchg      ax, bx
+call      DOOUTCODE_  ; a case
+xchg      ax, cx  ; outcode 1 to cl
+xchg      bx, bp
+xchg      dx, si
+call      DOOUTCODE_  ; a case
+
+mov       di, dx
+
+test      al, cl
+je        dont_exit_and_return_false
+
+exit_am_clipline_return_false:
+
+POPA_NO_AX_MACRO
 xor       ax, ax
-mov       bx, word ptr [bp - 8]
-mov       word ptr [bp - 2], ax
-mov       word ptr [bp - 4], ax
-mov       ax, word ptr ds:[bx + 2]
-cmp       ax, word ptr ds:[_screen_topright_y]
-jle       label_90
-mov       word ptr [bp - 2], 8
-label_97:
-mov       bx, word ptr [bp - 8]
-mov       ax, word ptr ds:[bx + 6]
-cmp       ax, word ptr ds:[_screen_topright_y]
-jle       label_91
-mov       word ptr [bp - 4], 8
-label_98:
-mov       ax, word ptr [bp - 2]
-test      word ptr [bp - 4], ax
-jne       label_93
-mov       bx, word ptr [bp - 8]
-mov       ax, word ptr ds:[bx]
-cmp       ax, word ptr ds:[_screen_botleft_x]
-jge       label_94
-or        byte ptr [bp - 2], 1
-label_99:
-mov       bx, word ptr [bp - 8]
-mov       ax, word ptr ds:[bx + 4]
-cmp       ax, word ptr ds:[_screen_botleft_x]
-jge       label_95
-or        byte ptr [bp - 4], 1
-label_100:
-mov       ax, word ptr [bp - 2]
-test      word ptr [bp - 4], ax
-je        label_96
-label_93:
-xor       al, al
-exit_am_clipline:
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
-ret       
-label_90:
-cmp       ax, word ptr ds:[_screen_botleft_y]
-jge       label_97
-mov       word ptr [bp - 2], 4
-jmp       label_97
-label_91:
-cmp       ax, word ptr ds:[_screen_botleft_y]
-jge       label_98
-mov       word ptr [bp - 4], 4
-jmp       label_98
-label_94:
-cmp       ax, word ptr ds:[_screen_topright_x]
-jle       label_99
-or        byte ptr [bp - 2], 2
-jmp       label_99
-label_95:
-cmp       ax, word ptr ds:[_screen_topright_x]
-jle       label_100
-or        byte ptr [bp - 4], 2
-jmp       label_100
-label_96:
-mov       bx, word ptr [bp - 8]
-mov       cx, word ptr ds:[_am_scale_mtof + 2]
-mov       ax, word ptr ds:[bx]
-mov       bx, word ptr ds:[_am_scale_mtof + 0]
-sub       ax, word ptr ds:[_screen_botleft_x]
-call      FixedMul1632_
-mov       bx, word ptr [bp - 8]
-mov       cx, word ptr ds:[_am_scale_mtof + 2]
-mov       word ptr ds:[_am_fl + 0], ax
-mov       ax, word ptr ds:[bx + 2]
-mov       bx, word ptr ds:[_am_scale_mtof + 0]
-sub       ax, word ptr ds:[_screen_botleft_y]
-call      FixedMul1632_
-mov       dx, AUTOMAP_SCREENHEIGHT
-mov       bx, word ptr [bp - 8]
-mov       cx, word ptr ds:[_am_scale_mtof + 2]
-sub       dx, ax
-mov       ax, word ptr ds:[bx + 4]
-mov       bx, word ptr ds:[_am_scale_mtof + 0]
-sub       ax, word ptr ds:[_screen_botleft_x]
-mov       word ptr ds:[_am_fl + 2], dx
-call      FixedMul1632_
-mov       bx, word ptr [bp - 8]
-mov       cx, word ptr ds:[_am_scale_mtof + 2]
-mov       word ptr ds:[_am_fl + 4], ax
-mov       ax, word ptr ds:[bx + 6]
-mov       bx, word ptr ds:[_am_scale_mtof + 0]
-sub       ax, word ptr ds:[_screen_botleft_y]
-call      FixedMul1632_
-mov       dx, AUTOMAP_SCREENHEIGHT
-mov       bx, word ptr ds:[_am_fl + 2]
-sub       dx, ax
-mov       ax, word ptr [bp - 2]
-mov       word ptr ds:[_am_fl + 6], dx
-mov       dx, word ptr ds:[_am_fl + 0]
-call      DOOUTCODE_
-mov       bx, word ptr ds:[_am_fl + 6]
-mov       dx, word ptr ds:[_am_fl + 4]
-mov       cx, ax
-mov       word ptr [bp - 2], ax
-mov       ax, word ptr [bp - 4]
-call      DOOUTCODE_
-mov       word ptr [bp - 4], ax
-test      cx, ax
-je        label_101
-jmp       label_93
-label_101:
-mov       ax, word ptr [bp - 2]
-or        ax, word ptr [bp - 4]
-je        label_102
-mov       ax, word ptr [bp - 2]
-test      ax, ax
-je        label_103
-mov       cx, ax
-label_106:
-mov       ax, word ptr ds:[_am_fl + 2]
-mov       bx, word ptr ds:[_am_fl + 4]
-mov       word ptr [bp - 6], ax
-mov       ax, word ptr ds:[_am_fl + 6]
-sub       bx, word ptr ds:[_am_fl + 0]
-sub       word ptr [bp - 6], ax
-test      cl, 8
-je        label_104
-mov       ax, bx
-imul      word ptr ds:[_am_fl + 2]
-cwd       
-idiv      word ptr [bp - 6]
-mov       di, word ptr ds:[_am_fl + 0]
-xor       si, si
-label_109:
-add       di, ax
-label_111:
-mov       ax, word ptr [bp - 2]
-cmp       cx, ax
-jne       label_105
-mov       word ptr ds:[_am_fl + 0], di
-mov       bx, si
-mov       dx, di
-mov       word ptr ds:[_am_fl + 2], si
-call      DOOUTCODE_
-mov       word ptr [bp - 2], ax
-label_173:
-mov       ax, word ptr [bp - 2]
-test      word ptr [bp - 4], ax
-je        label_101
-xor       al, al
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
-ret       
-label_103:
-mov       cx, word ptr [bp - 4]
-jmp       label_106
-label_102:
-jmp       label_107
-label_104:
-test      cl, 4
-je        label_108
-mov       dx, word ptr ds:[_am_fl + 2]
-mov       ax, bx
-sub       dx, AUTOMAP_SCREENHEIGHT
-imul      dx
-cwd       
-idiv      word ptr [bp - 6]
-mov       di, word ptr ds:[_am_fl + 0]
-mov       si, AUTOMAP_SCREENHEIGHT - 1
-jmp       label_109
-label_108:
-sub       ax, word ptr ds:[_am_fl + 2]
-test      cl, 2
-je        label_110
-mov       dx, AUTOMAP_SCREENWIDTH - 1
-sub       dx, word ptr ds:[_am_fl + 0]
-imul      dx
-cwd       
-idiv      bx
-mov       si, word ptr ds:[_am_fl + 2]
-mov       di, AUTOMAP_SCREENWIDTH - 1
-add       si, ax
-jmp       label_111
-label_105:
-jmp       label_112
-label_110:
-test      cl, 1
-je        label_111
-mov       dx, word ptr ds:[_am_fl + 0]
-neg       dx
-imul      dx
-cwd       
-idiv      bx
-mov       si, word ptr ds:[_am_fl + 2]
-xor       di, di
-add       si, ax
-jmp       label_111
-label_112:
-mov       ax, word ptr [bp - 4]
-mov       word ptr ds:[_am_fl + 4], di
-mov       bx, si
-mov       dx, di
-mov       word ptr ds:[_am_fl + 6], si
-call      DOOUTCODE_
-mov       word ptr [bp - 4], ax
-jmp       label_173
-label_107:
-mov       al, 1
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
+ret
+exit_am_clipline_return_true:
+mov       ax, 1;  set 1. return true
+mov       word ptr ds:[_am_fl + FLINE_T.fline_a + FPOINT_T.fpoint_x], si
+mov       word ptr ds:[_am_fl + FLINE_T.fline_a + FPOINT_T.fpoint_y], bp
+mov       word ptr ds:[_am_fl + FLINE_T.fline_b + FPOINT_T.fpoint_x], bx
+mov       word ptr ds:[_am_fl + FLINE_T.fline_b + FPOINT_T.fpoint_y], di
+POPA_NO_AX_MACRO
+mov       ax, 1
+ret
+
+dont_exit_and_return_false:
+
+; di has am_fl.b.x
+; bx has am_fl.b.y
+; si has am_fl.a.x
+; bp has am_fl.a.y
+
+mov       ch, al ; backup outcode 2 in ch
+
+;  ch has outcode 2
+;  cl has outcode 1
+
+loop_next_outcode_loop:
+mov       al, ch
+test      al, al 
+jne       use_outcode_1_as_outside
+test      cl, cl
+je        exit_am_clipline_return_true
+
+
+use_outcode_2_as_outside:
+mov      al, cl
+or       ch, OUTCODE2_FLAG
+use_outcode_1_as_outside:
+; al is outside
+
+mov      es, cx   ; backup outcode1/outcode2 in es
+
+mov      dx, di
+sub      dx, si
+mov      cx, bp
+sub      cx, bx
+
+; dx is 'dx'
+; cx is 'dy
+
+test     al, AM_OUT_TOP
+je       outside_not_top
+
+; tmp.x = am_fl.a.x + (dx*(am_fl.a.y))/dy;
+; tmp.y = 0;
+
+xchg   ax, dx
+imul   bp               ; dx*(am_fl.a.y 
+idiv   cx               ; (dx*(am_fl.a.y))/dy;
+add    ax, si           ;  tmp.x = am_fl.a.x + (dx*(am_fl.a.y))/dy;
+xor    dx, dx           ;  tmp.y = 0
+
+jmp      done_with_side_check
+outside_not_top:
+test     al, AM_OUT_BOTTOM
+je       outside_not_bottom
+
+; tmp.x = am_fl.a.x + (dx*(am_fl.a.y-automap_screenheight))/dy;
+; tmp.y = automap_screenheight-1;
+
+mov     ax, bp
+sub     ax, AUTOMAP_SCREENWIDTH
+imul    dx             ; (dx*(am_fl.a.y-automap_screenheight))
+idiv    cx               ; (dx*(am_fl.a.y-automap_screenheight))/dy;
+add     ax, si           ;  tmp.x = am_fl.a.x + (dx*(am_fl.a.y))/dy;
+mov     dx, AUTOMAP_SCREENHEIGHT-1
+
+jmp      done_with_side_check
+outside_not_bottom:
+neg     cx ; dy reverse for these 2 cases
+xchg    cx, dx   ; dx is dy. cx is dx
+test     al, AM_OUT_RIGHT
+je       outside_not_right
+
+; dy = am_fl.b.y - am_fl.a.y;
+; dx = am_fl.b.x - am_fl.a.x;
+; tmp.y = am_fl.a.y + (dy*(automap_screenwidth-1 - am_fl.a.x))/dx;
+; tmp.x = automap_screenwidth-1;
+
+mov      ax, (AUTOMAP_SCREENWIDTH - 1)
+sub      ax, si
+idiv     cx               ; (dx*(am_fl.a.y-automap_screenheight))/dy;
+add      ax, bp
+xchg     ax, dx
+mov      ax, AUTOMAP_SCREENHEIGHT-1
+jmp      done_with_side_check
+outside_not_right:
+; must be left
+; dy = am_fl.b.y - am_fl.a.y;
+; dx = am_fl.b.x - am_fl.a.x;
+; tmp.y = am_fl.a.y + (dy*(-am_fl.a.x))/dx;
+; tmp.x = 0;
+
+mov      ax, si
+neg      ax
+imul     dx               ; (dy*(-am_fl.a.x))
+idiv     cx               ; (dx*(am_fl.a.y-automap_screenheight))/dy;
+add      ax, bp
+xchg     ax, dx
+xor      ax, ax
+
+done_with_side_check:
+
+; di has am_fl.b.x
+; bx has am_fl.b.y
+; si has am_fl.a.x
+; bp has am_fl.a.y
+mov      cx, es   ; escover outcode1/outcode2 from es
+
+
+test     ch, OUTCODE2_FLAG
+jne      outside_is_outcode2
+
+outside_is_outcode1:
+
+;	am_fl.a = tmp;
+;	outcode1 = DOOUTCODE(outcode1, am_fl.a.x, am_fl.a.y);
+
+xchg     ax, si
+mov      bp, dx
+mov      dx, si
+push     bx
+mov      bx, bp
+call     DOOUTCODE_
+pop      bx     ; recover
+mov      cl, al 
+
+checkoutcodes_again:
+test     cl, ch
+je       loop_next_outcode_loop
+POPA_NO_AX_MACRO
+xor      ax, ax
 ret       
 
+outside_is_outcode2:
+
+;	am_fl.b = tmp;
+;	outcode2 = DOOUTCODE(outcode2, am_fl.b.x, am_fl.b.y);
+xchg     ax, di
+mov      bx, dx
+mov      dx, di
+; bx is already correct...
+call     DOOUTCODE_
+mov      ch, al
+jmp      checkoutcodes_again
 
 ENDP
 
-PROC    AM_drawMline_ NEAR
-PUBLIC  AM_drawMline_
-
-PUSHA_NO_AX_OR_BP_MACRO
-push      bp
-mov       bp, sp
-sub       sp, 8
-mov       byte ptr [bp - 2], dl
-call      AM_clipMline_
-test      al, al
-jne       label_113
-label_123:
-jmp       do_return
-label_113:
-mov       ax, word ptr ds:[_am_fl + 4]
-sub       ax, word ptr ds:[_am_fl + 0]
-mov       dx, ax
-test      ax, ax
-jl        label_118
-label_126:
-mov       di, ax
-add       di, ax
-test      dx, dx
-jl        label_119
-mov       ax, 1
-label_127:
-mov       word ptr [bp - 8], ax
-mov       ax, word ptr ds:[_am_fl + 6]
-sub       ax, word ptr ds:[_am_fl + 2]
-mov       dx, ax
-test      ax, ax
-jl        label_120
-label_128:
-add       ax, ax
-mov       word ptr [bp - 4], ax
-test      dx, dx
-jl        label_121
-mov       ax, 1
-label_129:
-mov       dx, word ptr ds:[_am_fl + 0]
-mov       word ptr [bp - 6], ax
-mov       ax, word ptr ds:[_am_fl + 2]
-cmp       di, word ptr [bp - 4]
-jle       label_122
-mov       bx, di
-mov       si, word ptr [bp - 4]
-sar       bx, 1
-sub       si, bx
-mov       bx, si
-label_125:
-imul      si, ax, AUTOMAP_SCREENWIDTH
-mov       cx, SCREEN0_SEGMENT
-mov       es, cx
-add       si, dx
-mov       cl, byte ptr [bp - 2]
-mov       byte ptr es:[si], cl
-cmp       dx, word ptr ds:[_am_fl + 4]
-je        label_123
-test      bx, bx
-jl        label_124
-add       ax, word ptr [bp - 6]
-sub       bx, di
-label_124:
-add       dx, word ptr [bp - 8]
-add       bx, word ptr [bp - 4]
-jmp       label_125
-label_118:
-neg       ax
-jmp       label_126
-label_119:
-mov       ax, -1
-jmp       label_127
-label_120:
-neg       ax
-jmp       label_128
-label_121:
-mov       ax, -1
-jmp       label_129
-label_122:
-mov       bx, word ptr [bp - 4]
-mov       si, di
-sar       bx, 1
-sub       si, bx
-mov       bx, si
-label_117:
-imul      si, ax, AUTOMAP_SCREENWIDTH
-mov       cx, SCREEN0_SEGMENT
-mov       es, cx
-add       si, dx
-mov       cl, byte ptr [bp - 2]
-mov       byte ptr es:[si], cl
-cmp       ax, word ptr ds:[_am_fl + 6]
-jne       label_115
-jmp       do_return
-label_115:
-test      bx, bx
-jl        label_116
-add       dx, word ptr [bp - 8]
-sub       bx, word ptr [bp - 4]
-label_116:
-add       ax, word ptr [bp - 6]
-add       bx, di
-jmp       label_117
-
-
-ENDP
+COMMENT @
 
 PROC    AM_drawGrid_ NEAR
 PUBLIC  AM_drawGrid_

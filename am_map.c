@@ -156,7 +156,7 @@ void __near AM_maxOutWindowScale(void);
 void __near AM_changeWindowScale(void);
 void __near AM_doFollowPlayer(void);
 int16_t __near DOOUTCODE(int16_t oc, int16_t mx, int16_t my);
-
+boolean __near AM_clipMline ( mline_t __near*	ml);
 
 
 /*
@@ -676,7 +676,6 @@ int16_t __near DOOUTCODE(int16_t oc, int16_t mx, int16_t my) {
 	return oc;
 }
 
- */
 #define  LEFT	1
 #define  RIGHT	2
 #define  BOTTOM	4
@@ -779,12 +778,14 @@ boolean __near AM_clipMline ( mline_t __near*	ml) {
 			outcode2 = DOOUTCODE(outcode2, am_fl.b.x, am_fl.b.y);
 		}
 	
-		if (outcode1 & outcode2)
+		if (outcode1 & outcode2){
 			return false; // trivially outside
 		}
+	}
 
 	return true;
 }
+ */
 
 
 
