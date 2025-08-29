@@ -1216,6 +1216,8 @@ ENDP
 
 OUTCODE2_FLAG = 16
 
+; inline intot he other thing
+
 PROC    AM_clipMline_ NEAR
 PUBLIC  AM_clipMline_
 
@@ -1224,15 +1226,17 @@ PUSHA_NO_AX_MACRO
 xchg      ax, si  ; todo pass in via si
 xor       cx, cx ; cl = outcode1. ch = outcode2
 
+;todo reverse order again a little less reg swapping
+
 les       dx, dword ptr ds:[si + MLINE_T.mline_a + MPOINT_T.mpoint_x]
 mov       ax, es ; ax  
-mov       di, word ptr ds:[_screen_botleft_y]
+mov       di, word ptr ds:[_screen_botleft_y]  ; todo les?
 mov       bx, word ptr ds:[_screen_topright_y]
-cmp       ax, di
+cmp       ax, bx
 jng       dont_and_top_a
 or        cl, AM_OUT_TOP
 dont_and_top_a:
-cmp       ax, bx
+cmp       ax, di
 jnl       dont_and_bottom_a
 or        cl, AM_OUT_BOTTOM
 dont_and_bottom_a:
@@ -1295,14 +1299,14 @@ jne       exit_am_clipline_return_false
 
 call      CXMTOF16_   ;b.x
 
-xchg      ax, si
+xchg      ax, si   ; si gets b.x
 call      CXMTOF16_   ;a.x
 
-xchg      ax, dx      ;b.y
-call      CYMTOF16_
+xchg      ax, dx   ; dx gets a.x
+call      CYMTOF16_   ;b.y 
 
-xchg      ax, bp      ;a.y
-call      CYMTOF16_
+xchg      ax, bp   ; bp gets b.y
+call      CYMTOF16_   ;a.y
 
 
 ; dx has am_fl.a.x
@@ -1328,42 +1332,43 @@ POPA_NO_AX_MACRO
 xor       ax, ax
 ret
 exit_am_clipline_return_true:
-mov       ax, 1;  set 1. return true
 mov       word ptr ds:[_am_fl + FLINE_T.fline_a + FPOINT_T.fpoint_x], si
 mov       word ptr ds:[_am_fl + FLINE_T.fline_a + FPOINT_T.fpoint_y], bp
-mov       word ptr ds:[_am_fl + FLINE_T.fline_b + FPOINT_T.fpoint_x], bx
-mov       word ptr ds:[_am_fl + FLINE_T.fline_b + FPOINT_T.fpoint_y], di
+mov       word ptr ds:[_am_fl + FLINE_T.fline_b + FPOINT_T.fpoint_x], di
+mov       word ptr ds:[_am_fl + FLINE_T.fline_b + FPOINT_T.fpoint_y], bx
 POPA_NO_AX_MACRO
 mov       ax, 1
 ret
 
 dont_exit_and_return_false:
 
+mov       ch, al ; outcode 2 in ch
 ; di has am_fl.b.x
 ; bx has am_fl.b.y
 ; si has am_fl.a.x
 ; bp has am_fl.a.y
-
-mov       ch, al ; backup outcode 2 in ch
-
 ;  ch has outcode 2
 ;  cl has outcode 1
 
 loop_next_outcode_loop:
-mov       al, ch
+jcxz      exit_am_clipline_return_true
+mov       al, cl
 test      al, al 
 jne       use_outcode_1_as_outside
-test      cl, cl
-je        exit_am_clipline_return_true
+
 
 
 use_outcode_2_as_outside:
-mov      al, cl
+mov      al, ch
 or       ch, OUTCODE2_FLAG
 use_outcode_1_as_outside:
 ; al is outside
 
 mov      es, cx   ; backup outcode1/outcode2 in es
+
+; dx = am_fl.b.x - am_fl.a.x;
+; dy = am_fl.a.y - am_fl.b.y;
+
 
 mov      dx, di
 sub      dx, si
@@ -1380,10 +1385,10 @@ je       outside_not_top
 ; tmp.y = 0;
 
 xchg   ax, dx
-imul   bp               ; dx*(am_fl.a.y 
-idiv   cx               ; (dx*(am_fl.a.y))/dy;
-add    ax, si           ;  tmp.x = am_fl.a.x + (dx*(am_fl.a.y))/dy;
-xor    dx, dx           ;  tmp.y = 0
+imul   bp
+idiv   cx
+add    ax, si
+xor    dx, dx
 
 jmp      done_with_side_check
 outside_not_top:
@@ -1394,45 +1399,44 @@ je       outside_not_bottom
 ; tmp.y = automap_screenheight-1;
 
 mov     ax, bp
-sub     ax, AUTOMAP_SCREENWIDTH
-imul    dx             ; (dx*(am_fl.a.y-automap_screenheight))
-idiv    cx               ; (dx*(am_fl.a.y-automap_screenheight))/dy;
-add     ax, si           ;  tmp.x = am_fl.a.x + (dx*(am_fl.a.y))/dy;
+sub     ax, AUTOMAP_SCREENHEIGHT
+imul    dx
+idiv    cx
+add     ax, si
 mov     dx, AUTOMAP_SCREENHEIGHT-1
 
 jmp      done_with_side_check
 outside_not_bottom:
-neg     cx ; dy reverse for these 2 cases
+neg     cx       ; dy reverse for these 2 cases
 xchg    cx, dx   ; dx is dy. cx is dx
 test     al, AM_OUT_RIGHT
 je       outside_not_right
 
-; dy = am_fl.b.y - am_fl.a.y;
-; dx = am_fl.b.x - am_fl.a.x;
 ; tmp.y = am_fl.a.y + (dy*(automap_screenwidth-1 - am_fl.a.x))/dx;
 ; tmp.x = automap_screenwidth-1;
 
 mov      ax, (AUTOMAP_SCREENWIDTH - 1)
 sub      ax, si
-idiv     cx               ; (dx*(am_fl.a.y-automap_screenheight))/dy;
-add      ax, bp
+imul     dx
+idiv     cx
 xchg     ax, dx
-mov      ax, AUTOMAP_SCREENHEIGHT-1
-jmp      done_with_side_check
+mov      ax, AUTOMAP_SCREENWIDTH-1
+jmp      add_bp_and_done_with_sidecheck
 outside_not_right:
+
 ; must be left
-; dy = am_fl.b.y - am_fl.a.y;
-; dx = am_fl.b.x - am_fl.a.x;
+
 ; tmp.y = am_fl.a.y + (dy*(-am_fl.a.x))/dx;
 ; tmp.x = 0;
 
 mov      ax, si
 neg      ax
-imul     dx               ; (dy*(-am_fl.a.x))
-idiv     cx               ; (dx*(am_fl.a.y-automap_screenheight))/dy;
-add      ax, bp
+imul     dx
+idiv     cx
 xchg     ax, dx
 xor      ax, ax
+add_bp_and_done_with_sidecheck:
+add      dx, bp
 
 done_with_side_check:
 
@@ -1440,8 +1444,10 @@ done_with_side_check:
 ; bx has am_fl.b.y
 ; si has am_fl.a.x
 ; bp has am_fl.a.y
-mov      cx, es   ; escover outcode1/outcode2 from es
+mov      cx, es   ; recover outcode1/outcode2 from es
 
+;ax = tmp.x
+;dx = tmp.y
 
 test     ch, OUTCODE2_FLAG
 jne      outside_is_outcode2
@@ -1454,10 +1460,10 @@ outside_is_outcode1:
 xchg     ax, si
 mov      bp, dx
 mov      dx, si
-push     bx
-mov      bx, bp
+xchg     bx, bp ; get this param...
+
 call     DOOUTCODE_
-pop      bx     ; recover
+xchg     bx, bp ; recover
 mov      cl, al 
 
 checkoutcodes_again:
@@ -1471,6 +1477,7 @@ outside_is_outcode2:
 
 ;	am_fl.b = tmp;
 ;	outcode2 = DOOUTCODE(outcode2, am_fl.b.x, am_fl.b.y);
+xor      ch, OUTCODE2_FLAG  ; turn that off
 xchg     ax, di
 mov      bx, dx
 mov      dx, di
@@ -1482,6 +1489,116 @@ jmp      checkoutcodes_again
 ENDP
 
 COMMENT @
+
+PROC    AM_drawMline_ NEAR
+PUBLIC  AM_drawMline_
+
+PUSHA_NO_AX_MACRO
+push      bp
+mov       bp, sp
+sub       sp, 8
+mov       byte ptr [bp - 2], dl
+call      AM_clipMline_
+test      al, al
+jne       label_113
+label_123:
+jmp       do_return
+label_113:
+mov       ax, word ptr ds:[_am_fl + 4]
+sub       ax, word ptr ds:[_am_fl + 0]
+mov       dx, ax
+test      ax, ax
+jl        label_118
+label_126:
+mov       di, ax
+add       di, ax
+test      dx, dx
+jl        label_119
+mov       ax, 1
+label_127:
+mov       word ptr [bp - 8], ax
+mov       ax, word ptr ds:[_am_fl + 6]
+sub       ax, word ptr ds:[_am_fl + 2]
+mov       dx, ax
+test      ax, ax
+jl        label_120
+label_128:
+add       ax, ax
+mov       word ptr [bp - 4], ax
+test      dx, dx
+jl        label_121
+mov       ax, 1
+label_129:
+mov       dx, word ptr ds:[_am_fl + 0]
+mov       word ptr [bp - 6], ax
+mov       ax, word ptr ds:[_am_fl + 2]
+cmp       di, word ptr [bp - 4]
+jle       label_122
+mov       bx, di
+mov       si, word ptr [bp - 4]
+sar       bx, 1
+sub       si, bx
+mov       bx, si
+label_125:
+imul      si, ax, AUTOMAP_SCREENWIDTH
+mov       cx, SCREEN0_SEGMENT
+mov       es, cx
+add       si, dx
+mov       cl, byte ptr [bp - 2]
+mov       byte ptr es:[si], cl
+cmp       dx, word ptr ds:[_am_fl + 4]
+je        label_123
+test      bx, bx
+jl        label_124
+add       ax, word ptr [bp - 6]
+sub       bx, di
+label_124:
+add       dx, word ptr [bp - 8]
+add       bx, word ptr [bp - 4]
+jmp       label_125
+label_118:
+neg       ax
+jmp       label_126
+label_119:
+mov       ax, -1
+jmp       label_127
+label_120:
+neg       ax
+jmp       label_128
+label_121:
+mov       ax, -1
+jmp       label_129
+label_122:
+mov       bx, word ptr [bp - 4]
+mov       si, di
+sar       bx, 1
+sub       si, bx
+mov       bx, si
+label_117:
+imul      si, ax, AUTOMAP_SCREENWIDTH
+mov       cx, SCREEN0_SEGMENT
+mov       es, cx
+add       si, dx
+mov       cl, byte ptr [bp - 2]
+mov       byte ptr es:[si], cl
+cmp       ax, word ptr ds:[_am_fl + 6]
+jne       label_115
+jmp       do_return
+label_115:
+test      bx, bx
+jl        label_116
+add       dx, word ptr [bp - 8]
+sub       bx, word ptr [bp - 4]
+label_116:
+add       ax, word ptr [bp - 6]
+add       bx, di
+jmp       label_117
+
+
+ENDP
+
+
+
 
 PROC    AM_drawGrid_ NEAR
 PUBLIC  AM_drawGrid_
