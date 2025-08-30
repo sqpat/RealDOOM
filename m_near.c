@@ -223,7 +223,6 @@ int8_t followplayer = 1; // specifies whether to follow the player around
 
 boolean am_bigstate=0;
 
-fline_t am_fl;
 mline_t am_ml;
 mline_t am_l;
 int8_t am_lastlevel = -1;

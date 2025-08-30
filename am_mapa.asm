@@ -128,7 +128,7 @@ EXTRN _am_lastlevel:BYTE
 EXTRN _am_lastepisode:BYTE
 
 
-EXTRN _am_fl:FLINE_T
+
 EXTRN _am_l:MLINE_T
 EXTRN _am_ml:MLINE_T
 EXTRN _am_lc:FLINE_T
@@ -1191,11 +1191,12 @@ OUTCODE2_FLAG = 16
 
 ; inline intot he other thing
 
-PROC    AM_clipMline_ NEAR
-PUBLIC  AM_clipMline_
-
+PROC    AM_drawMline_ NEAR
+PUBLIC  AM_drawMline_
 
 PUSHA_NO_AX_MACRO
+push      dx    ; color
+
 xchg      ax, si  ; todo pass in via si
 xor       cx, cx ; cl = outcode1. ch = outcode2
 
@@ -1285,8 +1286,6 @@ xchg      ax, di      ; di gets b.y
 call      CXMTOF16_   ;b.x
 
 
-
-
 ; dx has am_fl.a.x
 ; bp has am_fl.a.y
 ; ax has am_fl.b.x
@@ -1318,18 +1317,11 @@ test      al, cl
 je        dont_exit_and_return_false
 
 exit_am_clipline_return_false:
+pop       ax ; color
+POPA_NO_AX_MACRO
+ret
 
-POPA_NO_AX_MACRO
-xor       ax, ax
-ret
-exit_am_clipline_return_true:
-mov       word ptr ds:[_am_fl + FLINE_T.fline_a + FPOINT_T.fpoint_x], bp
-mov       word ptr ds:[_am_fl + FLINE_T.fline_a + FPOINT_T.fpoint_y], di
-mov       word ptr ds:[_am_fl + FLINE_T.fline_b + FPOINT_T.fpoint_x], si
-mov       word ptr ds:[_am_fl + FLINE_T.fline_b + FPOINT_T.fpoint_y], bx
-POPA_NO_AX_MACRO
-mov       ax, 1
-ret
+
 
 dont_exit_and_return_false:
 
@@ -1342,7 +1334,7 @@ mov       ch, al ; outcode 2 in ch
 ;  cl has outcode 1
 
 loop_next_outcode_loop:
-jcxz      exit_am_clipline_return_true
+jcxz      do_mlinedraw
 mov       al, cl
 test      al, al 
 jne       use_outcode_1_as_outside
@@ -1460,15 +1452,130 @@ mov      cl, al
 checkoutcodes_again:
 test     cl, ch
 je       loop_next_outcode_loop
+pop       ax ; color
 POPA_NO_AX_MACRO
-xor      ax, ax
 ret       
+
+
+; continue draw
+do_mlinedraw:
+
+; a.x bp
+; a.y di
+; b.x si
+; b.y bx
+
+
+
+; dx = am_fl.b.x - am_fl.a.x;
+; ax = (dx<0 ? -dx : dx) << 1;
+; sx = dx<0 ? -1 : 1;
+
+mov       dx, 1              ; "sx"
+sub       si, bp             ; 
+jns       dont_negative_dx
+neg       si
+neg       dx
+dont_negative_dx:
+mov       cx, si             ; abs("dx")
+sal       si, 1              ; "ax"
+
+IF COMPISA GE COMPILE_186
+    imul      ax, di, AUTOMAP_SCREENWIDTH
+    add       ax, bp  
+
+ELSE
+    push      dx
+    mov       ax, AUTOMAP_SCREENWIDTH  ; todo 3 arg imul ifelse
+    mul       di 
+    pop       dx  ;   dx has sx
+    add       ax, bp  
+ENDIF
+
+
+
+
+; dy = am_fl.b.y - am_fl.a.y;
+; ay = (dy<0 ? -dy : dy) << 1;
+; sy = dy<0 ? -1 : 1;
+
+mov       bp, SCREENWIDTH  ; "sy"
+sub       bx, di  ; dy
+xchg      ax, di  ; di holds dest
+jns       dont_negative_dy
+neg       bx
+neg       bp      ; "sy" negative
+dont_negative_dy:
+mov       es, bx  ; store positive dy
+sal       bx, 1   ; "ay"
+
+
+; di: dest pixel
+; si: "ax"
+; bx: "ay"  
+; dx: "sx"  (1 or -1)
+; bp: "sy"  (320 or -320)
+; cx: abs (dx) (x loop length)
+; es: abs (dy) (y loop length)
+
+cmp       si, bx ; 		if (ax > ay) {
+jg        dont_do_xy_swaps
+
+xchg      dx, bp  ; "sx" "sy" swap
+xchg      si, bx  ; "ax" "ay" swap
+mov       cx, es ; use dy for loop length
+dont_do_xy_swaps:
+
+dec       dx  ; minus 1 to account for the stosb every step
+
+;  d = ay - (ax>>1);
+mov        ax, SCREEN0_SEGMENT
+mov        es, ax
+pop        ax ; get color into al
+
+inc        cx
+cli
+mov        ds, sp ; backup
+mov        sp, si
+sar        sp, 1    ; ax >> 1
+neg        sp
+add        sp, bx  ; flags carry to js below
+
+
+
+; dx is dominant coord  we add to di/screenpos every step. either sx or sy
+; bp is the nondominant coord we only add when d >= 0
+; sp is "d"
+; bx is the nondominant coord we add to d every step
+; si is the dominant coord we subtract when d >= 0
+; cx is loop length (longest of positive dx and positive dy)
+
+loop_next_pixel:
+
+stosb      ; write pixel to screen
+
+js         dont_do_d_stuff
+; crossed over least dominant coord
+add        di, bp  ; add nondominant screen step
+sub        sp, si  ; subtract slope 
+
+dont_do_d_stuff:
+add        di, dx  ; add dominant screen step. dx was decced by 1 to account for stosb
+add        sp, bx  ; add to slope 
+loop       loop_next_pixel
+
+mov        sp, ds
+push       ss
+pop        ds
+sti
+POPA_NO_AX_MACRO
+ret
 
 outside_is_outcode2:
 
 ;	am_fl.b = tmp;
 ;	outcode2 = DOOUTCODE(outcode2, am_fl.b.x, am_fl.b.y);
-xor      ch, OUTCODE2_FLAG  ; turn that off
+
 xchg     ax, si
 mov      bx, dx
 mov      dx, si
@@ -1477,117 +1584,9 @@ call     DOOUTCODE_
 mov      ch, al
 jmp      checkoutcodes_again
 
-ENDP
+ENDP 
 
 COMMENT @
-
-PROC    AM_drawMline_ NEAR
-PUBLIC  AM_drawMline_
-
-PUSHA_NO_AX_MACRO
-push      bp
-mov       bp, sp
-sub       sp, 8
-mov       byte ptr [bp - 2], dl
-call      AM_clipMline_
-test      al, al
-jne       label_113
-label_123:
-jmp       do_return
-label_113:
-mov       ax, word ptr ds:[_am_fl + 4]
-sub       ax, word ptr ds:[_am_fl + 0]
-mov       dx, ax
-test      ax, ax
-jl        label_118
-label_126:
-mov       di, ax
-add       di, ax
-test      dx, dx
-jl        label_119
-mov       ax, 1
-label_127:
-mov       word ptr [bp - 8], ax
-mov       ax, word ptr ds:[_am_fl + 6]
-sub       ax, word ptr ds:[_am_fl + 2]
-mov       dx, ax
-test      ax, ax
-jl        label_120
-label_128:
-add       ax, ax
-mov       word ptr [bp - 4], ax
-test      dx, dx
-jl        label_121
-mov       ax, 1
-label_129:
-mov       dx, word ptr ds:[_am_fl + 0]
-mov       word ptr [bp - 6], ax
-mov       ax, word ptr ds:[_am_fl + 2]
-cmp       di, word ptr [bp - 4]
-jle       label_122
-mov       bx, di
-mov       si, word ptr [bp - 4]
-sar       bx, 1
-sub       si, bx
-mov       bx, si
-label_125:
-imul      si, ax, AUTOMAP_SCREENWIDTH
-mov       cx, SCREEN0_SEGMENT
-mov       es, cx
-add       si, dx
-mov       cl, byte ptr [bp - 2]
-mov       byte ptr es:[si], cl
-cmp       dx, word ptr ds:[_am_fl + 4]
-je        label_123
-test      bx, bx
-jl        label_124
-add       ax, word ptr [bp - 6]
-sub       bx, di
-label_124:
-add       dx, word ptr [bp - 8]
-add       bx, word ptr [bp - 4]
-jmp       label_125
-label_118:
-neg       ax
-jmp       label_126
-label_119:
-mov       ax, -1
-jmp       label_127
-label_120:
-neg       ax
-jmp       label_128
-label_121:
-mov       ax, -1
-jmp       label_129
-label_122:
-mov       bx, word ptr [bp - 4]
-mov       si, di
-sar       bx, 1
-sub       si, bx
-mov       bx, si
-label_117:
-imul      si, ax, AUTOMAP_SCREENWIDTH
-mov       cx, SCREEN0_SEGMENT
-mov       es, cx
-add       si, dx
-mov       cl, byte ptr [bp - 2]
-mov       byte ptr es:[si], cl
-cmp       ax, word ptr ds:[_am_fl + 6]
-jne       label_115
-jmp       do_return
-label_115:
-test      bx, bx
-jl        label_116
-add       dx, word ptr [bp - 8]
-sub       bx, word ptr [bp - 4]
-label_116:
-add       ax, word ptr [bp - 6]
-add       bx, di
-jmp       label_117
-
-
-ENDP
-
 
 
 

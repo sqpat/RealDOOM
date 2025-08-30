@@ -795,7 +795,6 @@ extern int8_t               followplayer;
 
 extern boolean              am_bigstate;
 
-extern fline_t              am_fl;
 extern mline_t              am_ml;
 extern mline_t              am_l;
 extern int8_t               am_lastlevel; 
