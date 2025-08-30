@@ -1818,7 +1818,6 @@ jmp       draw_wall_and_iter
 
 
 ENDP
-COMMENT @
 
 PROC    AM_rotate_ NEAR
 PUBLIC  AM_rotate_
@@ -1827,49 +1826,51 @@ push      cx
 push      si
 push      di
 push      bp
-mov       bp, sp
-sub       sp, 6
-mov       si, ax
-mov       di, dx
+
+xchg      ax, si  ; x
+mov       di, dx  ; y
+
 mov       cx, bx
 mov       ax, FINECOSINE_SEGMENT
 mov       dx, cx
 mov       bx, word ptr ds:[si]
 call      FastMulTrig16_
-mov       word ptr [bp - 4], ax
-mov       word ptr [bp - 2], dx
+xchg      ax, bp
+push      dx
+
 mov       bx, word ptr ds:[di]
 mov       ax, FINESINE_SEGMENT
 mov       dx, cx
 call      FastMulTrig16_
-mov       bx, word ptr [bp - 4]
-sub       bx, ax
-mov       ax, word ptr [bp - 2]
+sub       bp, ax
+pop       ax
 sbb       ax, dx
+xchg      ax, bp
+
 mov       bx, word ptr ds:[si]
-mov       word ptr [bp - 6], ax
 mov       dx, cx
 mov       ax, FINESINE_SEGMENT
 call      FastMulTrig16_
-mov       word ptr [bp - 4], ax
-mov       word ptr [bp - 2], dx
+mov       word ptr ds:[si], bp   ; write updated x
+xchg      ax, bp  ; low result
+xchg      cx, dx  ; high result and also set dx angle
+
 mov       bx, word ptr ds:[di]
 mov       ax, FINECOSINE_SEGMENT
-mov       dx, cx
+
 call      FastMulTrig16_
-mov       bx, word ptr [bp - 4]
-add       bx, ax
-adc       dx, word ptr [bp - 2]
-mov       ax, word ptr [bp - 6]
+add       bp, ax
+adc       dx, cx
 mov       word ptr ds:[di], dx
-mov       word ptr ds:[si], ax
-LEAVE_MACRO     
+
+pop       bp
 pop       di
 pop       si
 pop       cx
 ret       
 
 ENDP
+COMMENT @
 
 PROC    AM_drawLineCharacter_ NEAR
 PUBLIC  AM_drawLineCharacter_
