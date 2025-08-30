@@ -129,7 +129,6 @@ EXTRN _am_lastepisode:BYTE
 
 
 
-EXTRN _am_l:MLINE_T
 EXTRN _am_lc:FLINE_T
 
 EXTRN _cheat_player_arrow:MLINE_T
@@ -1684,8 +1683,8 @@ push      bp
 mov       bp, sp
 sub       sp, 8
 
-xor       bx, bx
-xor       di, di
+xor       bx, bx ; LINE_PHYSICS_T offset (16 bytes)
+xor       di, di ; i/loop counter and 1 byte offset
 
 loop_draw_next_wall:
 
@@ -1707,11 +1706,11 @@ SHIFT_MACRO sal ax 2
 ;	am_l.b.y = vertexes[linev2Offset].y;
 push      di
 lea       di, [bp - 8]
-movsw
-movsw
+movsw   ;a.x
+movsw   ;a.y
 xchg      ax, si
-movsw
-movsw
+movsw   ;b.x
+movsw   ;b.y
 pop       di 
 
 push      ss
@@ -1727,14 +1726,15 @@ cmp       byte ptr ds:[_am_cheating], 0
 jne       do_draw_wall
 mov       es, word ptr ds:[_SEENLINES_6800_SEGMENT_PTR]
 ; figure out mappedflag
-
+;	mappedflag = seenlines_6800[i / 8] & (0x01 << (i%8));  // todo this seems wasteful? just add up during the loop to avoid all these shifts?
+mov       si, di
 SHIFT_MACRO  sar si 3
 mov       cx, di
 and       cl, 7
 mov       al, 1
 sal       ax, cl
 
-test      byte ptr es:[di], al
+test      byte ptr es:[si], al
 jz        wall_not_mapped
 ; can see wall
 
@@ -1748,7 +1748,7 @@ mov       cx, dx  ; now cx holds backsecnum
 
 mov       dl, WALLCOLORS
 cmp       cx, SECNUM_NULL
-jne       draw_wall_and_iter
+je        draw_wall_and_iter
 
 
 do_other_wallchecks:
@@ -1756,9 +1756,9 @@ mov       es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
 mov       si, word ptr es:[bx + LINE_PHYSICS_T.lp_frontsecnum]
 ; cx is backsecnum
 ; si is frontsecnum..
-mov       dl, WALLCOLORS+WALLRANGE/2
+mov       dl, WALLCOLORS+(WALLRANGE/2)
 cmp       word ptr es:[bx + LINE_PHYSICS_T.lp_special], 39  ; teleporters
-jne       draw_wall_and_iter
+je        draw_wall_and_iter
 
 mov       es, word ptr ds:[_LINEFLAGSLIST_SEGMENT_PTR]
 test      byte ptr es:[di], ML_SECRET ; secret_door
@@ -1780,7 +1780,7 @@ cmp       cx, word ptr es:[si + SECTOR_T.sec_ceilingheight]
 jne       draw_wall_and_iter
 mov       dl, TSWALLCOLORS
 cmp       byte ptr ds:[_am_cheating], 0
-je        iter_draw_wall_loop
+je        iter_draw_wall_loop  ; fall thru
 
 
 draw_wall_and_iter:
