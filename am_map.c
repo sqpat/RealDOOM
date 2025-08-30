@@ -163,6 +163,7 @@ void __near AM_drawWalls();
 void __near AM_rotate ( int16_t __near*	x, int16_t __near* y, fineangle_t a );
 void __near AM_drawLineCharacter ( mline_t __near*	lineguy,int16_t		lineguylines,int16_t	scale,fineangle_t	angle,uint8_t		color,int16_t	x,int16_t	y );
 void __near AM_drawPlayers(void) ;
+void __near AM_drawThings();
 
 /*
 
@@ -1041,7 +1042,6 @@ void __near AM_drawPlayers(void) {
 
 
 }
- */
 
 void __near AM_drawThings() {
     uint16_t		i;
@@ -1058,6 +1058,7 @@ void __near AM_drawThings() {
 		}
     }
 }
+ */
 
 void __near AM_drawMarks(void) {
 	int8_t i;

@@ -1987,10 +1987,10 @@ do_player_draw:
 push      word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
 push      word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
 mov       cx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
+SHIFT_MACRO shr       cx 3 ; fineangle
 mov       bx, COLOR_WHITE
 push      bx
 xor       bx, bx
-SHIFT_MACRO shr       cx 3 ; fineangle
 call      AM_drawLineCharacter_
 pop       dx
 pop       cx
@@ -2000,59 +2000,67 @@ ret
 
 ENDP
 
-COMMENT @
 
 
 PROC    AM_drawThings_ NEAR
 PUBLIC  AM_drawThings_
 
-push      bx
+PUSHA_NO_AX_MACRO
+
+mov       cx, word ptr ds:[_numsectors]
+mov       di, SECTOR_T.sec_thinglistRef
+
+loop_next_sector:
 push      cx
-push      dx
-push      si
-push      di
-push      bp
-mov       bp, sp
-sub       sp, 4
-mov       word ptr [bp - 2], 0
-xor       di, di
-label_162:
-mov       si, OFFSET _numsectors
-mov       ax, word ptr [bp - 2]
-cmp       ax, word ptr ds:[si]
-jb        label_160
-jmp       exit_am_clipline ; shared exit
-label_160:
-mov       ax, SECTORS_SEGMENT
-lea       si, [di + 8]
-mov       es, ax
-mov       ax, word ptr es:[si]
-test      ax, ax
-je        label_161
-label_163:
-imul      si, ax, SIZEOF_MOBJ_POS_T
-mov       word ptr [bp - 4], MOBJPOSLIST_6800_SEGMENT
-mov       bx, 010h
-mov       es, word ptr [bp - 4]
-mov       dx, 3
-push      word ptr es:[si + 6]
+
+mov       es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+; si is thingref
+mov       si, word ptr es:[di] ;  + SECTOR_T.sec_thinglistRef
+
+loop_next_thingref:
+test      si, si
+je        done_with_sector
+
+IF COMPISA GE COMPILE_186
+    imul      si, si, SIZEOF_MOBJ_POS_T
+ELSE
+    mov       ax, SIZEOF_MOBJ_POS_T
+    mul       si
+    xchg      ax, si
+ENDIF
+
+mov       es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
+
 mov       ax, OFFSET _thintriangle_guy
-push      word ptr es:[si + 2]
-mov       cx, word ptr es:[si + 010h]
-push      THINGCOLORS
-shr       cx, 3
+mov       dx, 3
+
+push      word ptr es:[si + MOBJ_POS_T.mp_y + 2]
+push      word ptr es:[si + MOBJ_POS_T.mp_x + 2]
+mov       cx, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
+SHIFT_MACRO shr       cx 3 ; fineangle
+mov       bx, THINGCOLORS
+push      bx
+mov       bx, 010h
+mov       si, word ptr es:[si + MOBJ_POS_T.mp_snextRef] ; get next ref...
+
 call      AM_drawLineCharacter_
-mov       es, word ptr [bp - 4]
-mov       ax, word ptr es:[si + 0Ch]
-test      ax, ax
-jne       label_163
-label_161:
-inc       word ptr [bp - 2]
-add       di, 010h
-jmp       label_162
+
+jmp       loop_next_thingref
+
+done_with_sector:
+
+add       di, SIZE SECTOR_T
+pop       cx
+loop      loop_next_sector
+
+POPA_NO_AX_MACRO
+ret
+
+
 
 
 ENDP
+COMMENT @
 
 PROC    AM_drawMarks_ NEAR
 PUBLIC  AM_drawMarks_
