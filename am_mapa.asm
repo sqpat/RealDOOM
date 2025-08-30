@@ -1964,7 +1964,6 @@ ret       6
 
 ENDP
 
-COMMENT @
 
 PROC    AM_drawPlayers_ NEAR
 PUBLIC  AM_drawPlayers_
@@ -1972,35 +1971,37 @@ PUBLIC  AM_drawPlayers_
 push      bx
 push      cx
 push      dx
-push      si
 cmp       byte ptr ds:[_am_cheating], 0
-je        label_159
-mov       bx, OFFSET _playerMobj_pos
-mov       dx, 010h
-les       si, dword ptr ds:[bx]
+les       bx, dword ptr ds:[_playerMobj_pos]
+jne       do_cheat_player_draw
+
+mov       dx, 7 ; NUMPLYRLINES
+mov       ax, OFFSET _player_arrow
+jmp       do_player_draw
+
+do_cheat_player_draw:
+mov       dx, 16 ; NUMCHEATPLYRLINES
 mov       ax, OFFSET _cheat_player_arrow
-label_174:
-push      word ptr es:[si + 6]
-mov       cx, word ptr es:[si + 010h]
-push      word ptr es:[si + 2]
+
+do_player_draw:
+push      word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
+push      word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
+mov       cx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
+mov       bx, COLOR_WHITE
+push      bx
 xor       bx, bx
-push      COLOR_WHITE
-shr       cx, 3
+SHIFT_MACRO shr       cx 3 ; fineangle
 call      AM_drawLineCharacter_
-pop       si
 pop       dx
 pop       cx
 pop       bx
 ret       
-label_159:
-mov       bx, OFFSET _playerMobj_pos
-mov       dx, 7
-les       si, dword ptr ds:[bx]
-mov       ax, OFFSET _player_arrow
-jmp       label_174
 
 
 ENDP
+
+COMMENT @
+
 
 PROC    AM_drawThings_ NEAR
 PUBLIC  AM_drawThings_
