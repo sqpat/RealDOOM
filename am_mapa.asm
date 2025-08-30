@@ -129,7 +129,6 @@ EXTRN _am_lastepisode:BYTE
 
 
 
-EXTRN _am_lc:FLINE_T
 
 EXTRN _cheat_player_arrow:MLINE_T
 EXTRN _player_arrow:MLINE_T
@@ -1822,137 +1821,150 @@ ENDP
 PROC    AM_rotate_ NEAR
 PUBLIC  AM_rotate_
 
+push      bx
 push      cx
 push      si
 push      di
 push      bp
 
-xchg      ax, si  ; x
-mov       di, dx  ; y
+mov       bx, word ptr [bp - 0Eh] ; angle from outer scope.
+
+xchg      ax, si  ; x ; not pointer
+mov       di, dx  ; y ; not pointer
 
 mov       cx, bx
 mov       ax, FINECOSINE_SEGMENT
 mov       dx, cx
-mov       bx, word ptr ds:[si]
+mov       bx, si
 call      FastMulTrig16_
 xchg      ax, bp
 push      dx
 
-mov       bx, word ptr ds:[di]
+mov       bx, di
 mov       ax, FINESINE_SEGMENT
 mov       dx, cx
 call      FastMulTrig16_
 sub       bp, ax
 pop       ax
 sbb       ax, dx
-xchg      ax, bp
 
-mov       bx, word ptr ds:[si]
+xchg      ax, si   ; si stores new value
+xchg      ax, bx   ; bx gets old x value once more
+
 mov       dx, cx
 mov       ax, FINESINE_SEGMENT
 call      FastMulTrig16_
-mov       word ptr ds:[si], bp   ; write updated x
 xchg      ax, bp  ; low result
 xchg      cx, dx  ; high result and also set dx angle
 
-mov       bx, word ptr ds:[di]
+mov       bx, di
 mov       ax, FINECOSINE_SEGMENT
-
 call      FastMulTrig16_
-add       bp, ax
+add       ax, bp
 adc       dx, cx
-mov       word ptr ds:[di], dx
+xchg      ax, si ; recover original
 
 pop       bp
 pop       di
 pop       si
 pop       cx
+pop       bx
 ret       
 
 ENDP
-COMMENT @
+
+;void __near AM_drawLineCharacter
+   ; ax     mline_t __near*	lineguy,
+   ; dx     int16_t		lineguylines,
+   ; bx     int16_t	scale,
+   ; dx     fineangle_t	angle,
+   ; bp+8   uint8_t		color,
+   ; bp+A   int16_t	x,
+   ; bp+C   int16_t	y ){
+
+
+; todo inline scale in the argument.
 
 PROC    AM_drawLineCharacter_ NEAR
 PUBLIC  AM_drawLineCharacter_
 
-push      si
-push      di
-push      bp
+push      si ; bp + 4
+push      di ; bp + 2
+push      bp ; bp + 0
 mov       bp, sp
-push      dx
-push      bx
-xor       di, di
-test      dx, dx
-ja        label_152
-jmp       exit_am_drawlinecharacter
-label_152:
-mov       si, ax
-label_153:
-mov       ax, word ptr ds:[si]
-mov       word ptr ds:[_am_lc + 0], ax
-mov       ax, word ptr ds:[si + 2]
-mov       word ptr ds:[_am_lc + 2], ax
-cmp       word ptr [bp - 4], 0
-je        label_158
-jmp       label_157
-label_158:
-test      cx, cx
-je        label_156
-mov       dx, OFFSET _am_lc + 2
-mov       ax, OFFSET _am_lc + 0
-mov       bx, cx
+sub       sp, 8
+push      dx ; bp - 0Ah
+push      bx ; bp - 0Ch
+push      cx ; bp - 0Eh
+
+mov       cx, dx
+xchg      ax, si ; si gets lineguy...
+
+loop_next_lineguy_line:
+
+lodsw
+xchg      ax, di ; a.x
+lodsw
+xchg      ax, dx ; a.y
+lodsw
+xchg      ax, bx ; b.x
+lodsw
+xchg      ax, di ; a.x in ax
+
+
+
+cmp       word ptr [bp - 0Ch], 0  ; check scale...
+je        skip_scale
+; scale is only ever 16 or 0
+SHIFT_MACRO sal ax 4
+SHIFT_MACRO sal dx 4
+SHIFT_MACRO sal bx 4
+SHIFT_MACRO sal di 4
+skip_scale:
+
+; 
+
+; todo do we really need to check for ang 0?
 call      AM_rotate_
-label_156:
-mov       ax, word ptr [bp + 0Ah]
-sar       word ptr ds:[_am_lc + 0], 4
-sar       word ptr ds:[_am_lc + 2], 4
-add       word ptr ds:[_am_lc + 0], ax
-mov       ax, word ptr [bp + 0Ch]
-add       word ptr ds:[_am_lc + 2], ax
-mov       ax, word ptr ds:[si + 4]
-mov       word ptr ds:[_am_lc + 4], ax
-mov       ax, word ptr ds:[si + 6]
-mov       word ptr ds:[_am_lc + 6], ax
-cmp       word ptr [bp - 4], 0
-je        label_155
-shl       word ptr ds:[_am_lc + 4], 4
-shl       word ptr ds:[_am_lc + 6], 4
-label_155:
-test      cx, cx
-je        label_154
-mov       dx, OFFSET _am_lc + 6
-mov       ax, OFFSET _am_lc + 4
-mov       bx, cx
+
+SHIFT_MACRO sar ax 4
+SHIFT_MACRO sar dx 4
+add       ax, word ptr [bp + 0Ah] ; x
+add       dx, word ptr [bp + 0Ch] ; y
+
+mov       word ptr [bp - 8], ax
+mov       word ptr [bp - 6], dx
+
+xchg      ax, bx
+xchg      dx, di
 call      AM_rotate_
-label_154:
-mov       ax, word ptr [bp + 0Ah]
-sar       word ptr ds:[_am_lc + 4], 4
-sar       word ptr ds:[_am_lc + 6], 4
-add       word ptr ds:[_am_lc + 4], ax
-mov       ax, word ptr [bp + 0Ch]
-add       word ptr ds:[_am_lc + 6], ax
-mov       al, byte ptr [bp + 8]
-xor       ah, ah
-add       si, 8
-mov       dx, ax
-mov       ax, OFFSET _am_lc + 0
-inc       di
+
+SHIFT_MACRO sar ax 4
+SHIFT_MACRO sar dx 4
+add       ax, word ptr [bp + 0Ah] ; x
+add       dx, word ptr [bp + 0Ch] ; y
+
+
+mov       word ptr [bp - 4], ax
+mov       word ptr [bp - 2], dx
+
+lea       ax, [bp - 8]
+mov       dx, word ptr [bp + 8] ; color
+
 call      AM_drawMline_
-cmp       di, word ptr [bp - 2]
-jae       exit_am_drawlinecharacter
-jmp       label_153
+
+loop      loop_next_lineguy_line
+
 exit_am_drawlinecharacter:
 LEAVE_MACRO     
 pop       di
 pop       si
 ret       6
-label_157:
-shl       word ptr ds:[_am_lc + 0], 4
-shl       word ptr ds:[_am_lc + 2], 4
-jmp       label_158
 
 
 ENDP
+
+COMMENT @
 
 PROC    AM_drawPlayers_ NEAR
 PUBLIC  AM_drawPlayers_

@@ -225,7 +225,6 @@ boolean am_bigstate=0;
 
 int8_t am_lastlevel = -1;
 int8_t am_lastepisode = -1;
-mline_t	am_lc;
 
 
 //#define LINE_PLAYERRADIUS 16<<4
