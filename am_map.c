@@ -158,6 +158,7 @@ void __near AM_doFollowPlayer(void);
 int16_t __near DOOUTCODE(int16_t oc, int16_t mx, int16_t my);
 boolean __near AM_clipMline ( mline_t __near*	ml);
 void __near AM_drawMline ( mline_t __near*	ml, uint8_t	color );
+void __near AM_drawGrid();
 
 /*
 
@@ -855,7 +856,6 @@ void __near AM_drawMline ( mline_t __near*	ml, uint8_t	color ) {
 	}
 }
 
- */
 
 //
 // Draws flat (floor/ceiling tile) aligned grid lines.
@@ -898,6 +898,7 @@ void __near AM_drawGrid() {
     }
 
 }
+ */
 
 //
 // Determines visible lines, draws them.

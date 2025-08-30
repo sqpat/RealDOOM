@@ -130,7 +130,6 @@ EXTRN _am_lastepisode:BYTE
 
 
 EXTRN _am_l:MLINE_T
-EXTRN _am_ml:MLINE_T
 EXTRN _am_lc:FLINE_T
 
 EXTRN _cheat_player_arrow:MLINE_T
@@ -1586,7 +1585,6 @@ jmp      checkoutcodes_again
 
 ENDP 
 
-COMMENT @
 
 
 
@@ -1596,167 +1594,87 @@ PUBLIC  AM_drawGrid_
 push      bx
 push      cx
 push      dx
+push      bp
+mov       bp, sp
+sub       sp, 8 ; size of mline
+
+
 mov       ax, word ptr ds:[_screen_botleft_x]
-mov       bx, OFFSET _bmaporgx
-mov       cx, ax
-mov       dx, ax
-sub       cx, word ptr ds:[bx]
-sub       dx, word ptr ds:[bx]
-sar       cx, 15 ; todo no
-xor       cx, dx
-mov       dx, ax
-sub       dx, word ptr ds:[bx]
-mov       bx, dx
-sar       bx, 15 ; todo no
-sub       cx, bx
-mov       bx, OFFSET _bmaporgx
-mov       dx, ax
-sub       dx, word ptr ds:[bx]
-xor       ch, ch
-mov       bx, dx
-and       cl, 07Fh
-sar       bx, 15 ; todo no
-xor       cx, bx
-mov       bx, OFFSET _bmaporgx
-mov       dx, ax
-sub       dx, word ptr ds:[bx]
-mov       bx, dx
-sar       bx, 15 ; todo no
-sub       cx, bx
-je        label_132
-mov       bx, OFFSET _bmaporgx
-mov       cx, ax
-mov       dx, ax
-sub       cx, word ptr ds:[bx]
-sub       dx, word ptr ds:[bx]
-sar       cx, 15 ; todo no
-xor       cx, dx
-mov       dx, ax
-sub       dx, word ptr ds:[bx]
-mov       bx, dx
-sar       bx, 15 ; todo no
-sub       cx, bx
-mov       bx, OFFSET _bmaporgx
-mov       dx, ax
-sub       dx, word ptr ds:[bx]
-xor       ch, ch
-mov       bx, dx
-and       cl, 07Fh
-sar       bx, 15 ; todo no
-xor       cx, bx
-mov       bx, OFFSET _bmaporgx
-mov       dx, ax
-sub       dx, word ptr ds:[bx]
-mov       bx, dx
-sar       bx, 15 ; todo no
-sub       cx, bx
-mov       bx, 080h
-sub       bx, cx
-add       ax, bx
-label_132:
-mov       bx, word ptr ds:[_screen_botleft_y]
-mov       cx, word ptr ds:[_screen_botleft_x]
-mov       word ptr ds:[_am_ml + 2], bx
-add       bx, word ptr ds:[_screen_viewport_height]
-add       cx, word ptr ds:[_screen_viewport_width]
-mov       word ptr ds:[_am_ml + 6], bx
-mov       bx, ax
-cmp       ax, cx
-jge       label_131
-label_130:
-mov       dx, GRIDCOLORS
-mov       ax, OFFSET _am_ml + 0
-mov       word ptr ds:[_am_ml + 0], bx
-mov       word ptr ds:[_am_ml + 4], bx
-add       bx, 080h
-call      AM_drawMline_
-cmp       bx, cx
-jl        label_130
-label_131:
-mov       ax, word ptr ds:[_screen_botleft_y]
-mov       bx, OFFSET _bmaporgy
-mov       cx, ax
-mov       dx, ax
-sub       cx, word ptr ds:[bx]
-sub       dx, word ptr ds:[bx]
-sar       cx, 15 ; todo no
-xor       cx, dx
-mov       dx, ax
-sub       dx, word ptr ds:[bx]
-mov       bx, dx
-sar       bx, 15 ; todo no
-sub       cx, bx
-mov       bx, OFFSET _bmaporgy
-mov       dx, ax
-sub       dx, word ptr ds:[bx]
-xor       ch, ch
-mov       bx, dx
-and       cl, 07Fh
-sar       bx, 15 ; todo no
-xor       cx, bx
-mov       bx, OFFSET _bmaporgy
-mov       dx, ax
-sub       dx, word ptr ds:[bx]
-mov       bx, dx
-sar       bx, 15 ; todo no
-sub       cx, bx
-je        label_133
-mov       bx, OFFSET _bmaporgy
-mov       cx, ax
-mov       dx, ax
-sub       cx, word ptr ds:[bx]
-sub       dx, word ptr ds:[bx]
-sar       cx, 15 ; todo no
-xor       cx, dx
-mov       dx, ax
-sub       dx, word ptr ds:[bx]
-mov       bx, dx
-sar       bx, 15 ; todo no
-sub       cx, bx
-mov       bx, OFFSET _bmaporgy
-mov       dx, ax
-sub       dx, word ptr ds:[bx]
-xor       ch, ch
-mov       bx, dx
-and       cl, 07Fh
-sar       bx, 15 ; todo no
-xor       cx, bx
-mov       bx, OFFSET _bmaporgy
-mov       dx, ax
-sub       dx, word ptr ds:[bx]
-mov       bx, dx
-sar       bx, 15 ; todo no
-mov       dx, 080h
-sub       cx, bx
-sub       dx, cx
-add       ax, dx
-label_133:
-mov       bx, word ptr ds:[_screen_botleft_x]
-mov       cx, word ptr ds:[_screen_botleft_y]
-mov       word ptr ds:[_am_ml + 0], bx
+mov       cx, ax  ; cx = start
+mov       bx, ax  ; bx = end
 add       bx, word ptr ds:[_screen_viewport_width]
-add       cx, word ptr ds:[_screen_viewport_height]
-mov       word ptr ds:[_am_ml + 4], bx
-mov       bx, ax
-cmp       ax, cx
-jge       label_134
-label_135:
-mov       dx, GRIDCOLORS
-mov       ax, OFFSET _am_ml + 0
-mov       word ptr ds:[_am_ml + 2], bx
-mov       word ptr ds:[_am_ml + 6], bx
-add       bx, 080h
+sub       ax, word ptr ds:[_bmaporgx]
+jns       dont_do_abs_x
+neg       ax
+dont_do_abs_x:
+and       ax, 07Fh
+jz        dont_mod_start_x
+skip_sign_adjust:
+add       cx, 080h
+sub       cx, ax
+dont_mod_start_x:
+
+mov       ax, word ptr ds:[_screen_botleft_y]
+mov       word ptr ss:[bp - 6], ax  ; am_ml_a.y
+add       ax, word ptr ds:[_screen_viewport_height]
+mov       word ptr ss:[bp - 2], ax  ; am_ml_b.y
+
+loop_do_next_vertical_line:
+cmp       cx, bx
+jge       done_with_vertical_grid
+mov       word ptr ss:[bp - 4], cx  ; am_ml_b.x
+mov       word ptr ss:[bp - 8], cx  ; am_ml_a.x
+lea       ax, [bp - 8]
+mov       dl, GRIDCOLORS
 call      AM_drawMline_
-cmp       bx, cx
-jl        label_135
-label_134:
+add       cx, 080h
+jmp       loop_do_next_vertical_line
+done_with_vertical_grid:
+
+
+mov       ax, word ptr ds:[_screen_botleft_y]
+mov       cx, ax  ; cx = start
+mov       bx, ax  ; bx = end
+add       bx, word ptr ds:[_screen_viewport_height]
+sub       ax, word ptr ds:[_bmaporgy]
+jns       dont_do_abs_y
+neg       ax
+dont_do_abs_y:
+
+and       ax, 07Fh
+jz        dont_mod_start_y
+add       cx, 080h
+sub       cx, ax
+dont_mod_start_y:
+
+
+mov       ax, word ptr ds:[_screen_botleft_x]
+mov       word ptr ss:[bp - 8], ax  ; am_ml_a.x
+add       ax, word ptr ds:[_screen_viewport_width]
+mov       word ptr ss:[bp - 4], ax  ; am_ml_b.x
+
+loop_do_next_horizontal_line:
+cmp       cx, bx
+jge       done_with_horizontal_grid
+mov       word ptr ss:[bp - 2], cx  ; am_ml_a.y
+mov       word ptr ss:[bp - 6], cx  ; am_ml_b.y
+lea       ax, [bp - 8]
+mov       dl, GRIDCOLORS
+call      AM_drawMline_
+add       cx, 080h
+jmp       loop_do_next_horizontal_line
+done_with_horizontal_grid:
+
+LEAVE_MACRO
 pop       dx
 pop       cx
 pop       bx
 ret       
 
-
 ENDP
+
+COMMENT @
+
 
 PROC    AM_drawWalls_ NEAR
 PUBLIC  AM_drawWalls_
