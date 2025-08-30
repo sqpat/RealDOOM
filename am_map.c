@@ -159,6 +159,7 @@ int16_t __near DOOUTCODE(int16_t oc, int16_t mx, int16_t my);
 boolean __near AM_clipMline ( mline_t __near*	ml);
 void __near AM_drawMline ( mline_t __near*	ml, uint8_t	color );
 void __near AM_drawGrid();
+void __near AM_drawWalls();
 
 /*
 
@@ -898,7 +899,6 @@ void __near AM_drawGrid() {
     }
 
 }
- */
 
 //
 // Determines visible lines, draws them.
@@ -964,6 +964,7 @@ void __near AM_drawWalls() {
     }
 }
 
+ */
 
 //
 // Rotation in 2D.

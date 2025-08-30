@@ -1673,194 +1673,152 @@ ret
 
 ENDP
 
-COMMENT @
 
+LINE_NEVERSEE = ML_DONTDRAW
 
 PROC    AM_drawWalls_ NEAR
 PUBLIC  AM_drawWalls_
 
-push      bx
-push      cx
-push      dx
-push      si
-push      di
+PUSHA_NO_AX_OR_BP_MACRO
 push      bp
 mov       bp, sp
-sub       sp, 0Eh
-mov       word ptr [bp - 4], 0
+sub       sp, 8
+
 xor       bx, bx
-label_139:
-mov       si, OFFSET _numlines
-mov       ax, word ptr [bp - 4]
-cmp       ax, word ptr ds:[si]
-jb        label_136
-jmp       exit_am_clipline   ;shared exit. 
-label_136:
-mov       ax, LINES_PHYSICS_SEGMENT; _LINES_PHYSICS_SEGMENT_PTR
-mov       si, bx
-mov       es, ax
-mov       cl, byte ptr [bp - 4]
-mov       ax, word ptr es:[si]
-and       cl, 7
-mov       word ptr [bp - 0Eh], ax
-lea       si, [bx + 2]
-mov       di, word ptr es:[si]
-mov       si, word ptr [bp - 4]
+xor       di, di
+
+loop_draw_next_wall:
+
+mov       es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
+mov       dx, word ptr es:[bx + LINE_PHYSICS_T.lp_backsecnum]
+
+les       si, dword ptr es:[bx]  ; v1/v2
+mov       ax, es
+;and       ax, VERTEX_OFFSET_MASK  ; dont need to, shift left two kills the 2 hi bits
+mov       ds, word ptr ds:[_VERTEXES_SEGMENT_PTR]
+push      ss
+pop       es
+SHIFT_MACRO sal si 2
+SHIFT_MACRO sal ax 2
+
+;	am_l.a.x = vertexes[linev1Offset].x;
+;	am_l.a.y = vertexes[linev1Offset].y;
+;	am_l.b.x = vertexes[linev2Offset].x;
+;	am_l.b.y = vertexes[linev2Offset].y;
+push      di
+lea       di, [bp - 8]
+movsw
+movsw
+xchg      ax, si
+movsw
+movsw
+pop       di 
+
+push      ss
+pop       ds  ; recover ds
+
+
+
+; dx holds backsecnum
+; bx holds LINE_PHYSICS offset still
+; di holds i...
+
+cmp       byte ptr ds:[_am_cheating], 0
+jne       do_draw_wall
 mov       es, word ptr ds:[_SEENLINES_6800_SEGMENT_PTR]
-mov       al, 1
-shr       si, 3
-shl       al, cl
-mov       ah, byte ptr es:[si]
-and       ah, al
-mov       byte ptr [bp - 2], ah
-mov       ax, LINEFLAGSLIST_SEGMENT ; todo _LINEFLAGSLIST_SEGMENT_PTR
-mov       si, word ptr [bp - 4]
-mov       es, ax
-mov       dx, LINES_PHYSICS_SEGMENT
-mov       al, byte ptr es:[si]
-mov       es, dx
-lea       si, [bx + 0Ch]
-mov       dx, word ptr es:[si]
-lea       si, [bx + 0Ah]
-xor       ah, ah
-mov       cx, word ptr es:[si]
-lea       si, [bx + 0Fh]
-mov       word ptr [bp - 8], cx
-mov       cl, byte ptr es:[si]
-mov       byte ptr [bp - 0Bh], ah
-mov       byte ptr [bp - 0Ch], cl
-mov       cx, word ptr [bp - 0Ch]
-mov       word ptr [bp - 0Ah], cx
-mov       cx, word ptr [bp - 0Eh]
-mov       si, VERTEXES_SEGMENT
-shl       cx, 2
-mov       es, si
-mov       si, cx
-mov       si, word ptr es:[si]
-mov       word ptr ds:[_am_l + 0], si
-mov       si, cx
-mov       cx, word ptr es:[si + 2]
-and       di, VERTEX_OFFSET_MASK
-mov       word ptr ds:[_am_l + 2], cx
+; figure out mappedflag
+
+SHIFT_MACRO  sar si 3
 mov       cx, di
-add       si, 2
-shl       cx, 2
-mov       si, cx
-mov       si, word ptr es:[si]
-mov       word ptr ds:[_am_l + 4], si
-mov       si, cx
-mov       word ptr [bp - 6], ax
-mov       cx, word ptr es:[si + 2]
-add       si, 2
-mov       word ptr ds:[_am_l + 6], cx
-cmp       byte ptr ds:[_am_cheating], 0
-je        label_137
-label_140:
-test      byte ptr [bp - 6], 080h
-je        label_138
-cmp       byte ptr ds:[_am_cheating], 0
-jne       label_138
-label_141:
-inc       word ptr [bp - 4]
-add       bx, 010h
-jmp       label_139
-label_137:
-cmp       byte ptr [bp - 2], 0
-jne       label_140
-mov       si, OFFSET _player + PLAYER_T.player_messagestring ; 6f6? todo dummied? whats this
-cmp       word ptr ds:[si], 0
-je        label_141
-test      al, 080h
-jne       label_141
-mov       dx, AM_CLEARMARKKEY
-mov       ax, OFFSET _am_l + 0
-call      AM_drawMline_
-jmp       label_141
-label_138:
-cmp       dx, -1
-je        label_142
-mov       ax, SECTORS_SEGMENT
-mov       di, dx
-mov       si, word ptr [bp - 8]
-shl       di, 4
-mov       es, ax
-shl       si, 4
-mov       ax, word ptr es:[di]
-cmp       ax, word ptr es:[si]
-je        label_143
+and       cl, 7
 mov       al, 1
-label_151:
-mov       di, word ptr [bp - 8]
-mov       cl, al
-mov       si, dx
-mov       ax, SECTORS_SEGMENT
-shl       si, 4
-shl       di, 4
-mov       es, ax
-add       di, 2
-mov       ax, word ptr es:[si + 2]
-add       si, 2
-cmp       ax, word ptr es:[di]
-je        label_144
-mov       al, 1
-label_145:
-cmp       word ptr [bp - 0Ah], 39  ; teleporters
-je        label_149
-test      byte ptr [bp - 6], ML_SECRET
-je        label_150
+sal       ax, cl
+
+test      byte ptr es:[di], al
+jz        wall_not_mapped
+; can see wall
+
+mov       es, word ptr ds:[_LINEFLAGSLIST_SEGMENT_PTR]
+test      byte ptr es:[di], LINE_NEVERSEE
+jne       iter_draw_wall_loop
+
+; wall is visible, or cheating
+do_draw_wall:
+mov       cx, dx  ; now cx holds backsecnum
+
+mov       dl, WALLCOLORS
+cmp       cx, SECNUM_NULL
+jne       draw_wall_and_iter
+
+
+do_other_wallchecks:
+mov       es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
+mov       si, word ptr es:[bx + LINE_PHYSICS_T.lp_frontsecnum]
+; cx is backsecnum
+; si is frontsecnum..
+mov       dl, WALLCOLORS+WALLRANGE/2
+cmp       word ptr es:[bx + LINE_PHYSICS_T.lp_special], 39  ; teleporters
+jne       draw_wall_and_iter
+
+mov       es, word ptr ds:[_LINEFLAGSLIST_SEGMENT_PTR]
+test      byte ptr es:[di], ML_SECRET ; secret_door
+jne       draw_secret_door
+
+
+SHIFT_MACRO  sal si 4
+mov       es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+mov       ax, word ptr es:[si + SECTOR_T.sec_floorheight]
+mov       si, word ptr es:[si + SECTOR_T.sec_ceilingheight]
+xchg      cx, si
+SHIFT_MACRO  sal si 4
+; check floor level change
+mov       dl, FDWALLCOLORS
+cmp       ax, word ptr es:[si + SECTOR_T.sec_floorheight]
+jne       draw_wall_and_iter
+mov       dl, CDWALLCOLORS
+cmp       cx, word ptr es:[si + SECTOR_T.sec_ceilingheight]
+jne       draw_wall_and_iter
+mov       dl, TSWALLCOLORS
 cmp       byte ptr ds:[_am_cheating], 0
-label_142:
-mov       dx, WALLCOLORS
-mov       ax, OFFSET _am_l + 0
+je        iter_draw_wall_loop
+
+
+draw_wall_and_iter:
+lea       ax, [bp - 8]
 call      AM_drawMline_
-inc       word ptr [bp - 4]
-add       bx, 010h
-jmp       label_139
-label_143:
-xor       al, al
-jmp       label_151
-label_144:
-xor       al, al
-jmp       label_145
-label_149:
-mov       dx, WALLCOLORS + WALLRANGE / 2
-mov       ax, OFFSET _am_l + 0
-call      AM_drawMline_
-inc       word ptr [bp - 4]
-add       bx, 010h
-jmp       label_139
-label_150:
-test      cl, cl
-jne       label_146
-test      al, al
-jne       label_147
+
+iter_draw_wall_loop:
+add       bx, SIZE LINE_PHYSICS_T
+inc       di
+cmp       di, word ptr ds:[_numlines]
+jge       exit_drawwalls
+jmp       loop_draw_next_wall
+exit_drawwalls:
+LEAVE_MACRO
+POPA_NO_AX_OR_BP_MACRO
+ret
+
+wall_not_mapped:
+cmp       word ptr ds:[_player + PLAYER_T.player_powers + (PW_ALLMAP * 2)], 0
+je        iter_draw_wall_loop
+mov       es, word ptr ds:[_LINEFLAGSLIST_SEGMENT_PTR]
+test      byte ptr es:[di], LINE_NEVERSEE
+jne       iter_draw_wall_loop
+mov       dl, COLOR_GREYS + 3
+jmp       draw_wall_and_iter
+
+
+
+draw_secret_door:
+mov       dl, WALLCOLORS
 cmp       byte ptr ds:[_am_cheating], 0
-jne       label_148
-jmp       label_141
-label_148:
-mov       dx, TSWALLCOLORS
-mov       ax, OFFSET _am_l + 0
-call      AM_drawMline_
-inc       word ptr [bp - 4]
-add       bx, 010h
-jmp       label_139
-label_146:
-mov       dx, FDWALLCOLORS
-mov       ax, OFFSET _am_l + 0
-call      AM_drawMline_
-inc       word ptr [bp - 4]
-add       bx, 010h
-jmp       label_139
-label_147:
-mov       dx, CDWALLCOLORS
-mov       ax, OFFSET _am_l + 0
-call      AM_drawMline_
-inc       word ptr [bp - 4]
-add       bx, 010h
-jmp       label_139
+je        draw_wall_and_iter
+mov       dl, SECRETWALLCOLORS
+jmp       draw_wall_and_iter
 
 
 ENDP
+COMMENT @
 
 PROC    AM_rotate_ NEAR
 PUBLIC  AM_rotate_
