@@ -560,7 +560,7 @@ ELSE
 
 
     mov si, dx
-    mov ds, ax  ; put segment in ES
+    mov ds, ax  ; put segment in dS
     lodsw
     mov es, ax
     lodsw
@@ -742,12 +742,12 @@ IF COMPISA GE COMPILE_386
     mov es, ax
 
     db  066h, 081h, 0E2h, 0FFh, 0FFh, 0, 0  ;  and edx, 0x0000FFFF   
-    sal   dx, 2
+    ;sal   dx, 2
 
-    xchg  bx, ax                            ; get bx in ax for sign extend
+    xchg  dx, ax                            ; get dx in ax for sign extend
     db 066h, 098h                           ; cwde  (sign extend ax to eax for imul)
 
-    db 026h, 067h, 066h, 0F7h, 02Ah         ; imul dword ptr es:[edx]
+    db 026h, 067h, 066h, 0F7h, 02Bh         ; imul dword ptr es:[ebx]
 
     db  066h, 00Fh, 0A4h, 0C2h, 010h        ; shld edx, eax, 0x10
 
@@ -790,11 +790,9 @@ ELSE
 
     ; do lookup..
 
-    SAL dx, 1
-    SAL dx, 1   ; DWORD lookup index
-    xchg BX, dx
+    ; bx already passed in as lookup index...  value in dx etc
 
-    MOV es, ax  ; put segment in ES
+    mov es, ax  ; put segment in ES
     les ax, dword ptr es:[BX]
     mov bx, es
 
@@ -893,7 +891,7 @@ PUBLIC FixedMulTrigSpeed_
 
 SHIFT_MACRO shl dx 2
 
-
+ENDP
 PROC FixedMulTrigSpeedNoShift_
 PUBLIC FixedMulTrigSpeedNoShift_
 

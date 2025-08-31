@@ -14,6 +14,11 @@
 ;
 ; DESCRIPTION:
 ;
+
+
+;; TODO - SOME 32 bit work done here. would need AM_drawMline_ and such to also be done 32 bit to benefit from the added precision.
+; low priority now.
+
 .MODEL  medium
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
@@ -28,6 +33,7 @@ EXTRN FastDiv3216u_:FAR
 EXTRN cht_CheckCheat_:NEAR
 EXTRN combine_strings_:NEAR
 EXTRN FastMulTrig16_:NEAR
+EXTRN FixedMulTrigNoShift_:FAR
 EXTRN V_DrawPatch_:FAR
 EXTRN V_MarkRect_:FAR
 EXTRN getStringByIndex_:FAR
@@ -142,7 +148,6 @@ PROC    AM_MAP_STARTMARKER_ NEAR
 PUBLIC  AM_MAP_STARTMARKER_
 ENDP
 
-COMMENT @
 
 _player_arrow:
 
@@ -256,8 +261,8 @@ _thintriangle_guy:
  dd 0FFF80000h
  dd 0FFF4CCD0h
 
-@
 ; 16 bit versions below...
+COMMENT @
 
 _player_arrow:
  dw 0FF00h
@@ -373,6 +378,8 @@ _thintriangle_guy:
  dw 000B0h
  dw 0FF80h
  dw 0FF50h
+
+@
 
 
 PROC    CXMTOF16_ NEAR
@@ -2045,56 +2052,73 @@ jmp       draw_wall_and_iter
 
 ENDP
 
+    ; AX is param 1 (segment)
+    ; DX is param 2 (fineangle or lookup)
+    ; CX:BX is value 2
+
+
 PROC    AM_rotate_ NEAR
 PUBLIC  AM_rotate_
 
-push      bx
-push      cx
 push      si
 push      di
 push      bp
 
-mov       cx, word ptr [bp - 0Ch] ; angle from outer scope.
+; pass in x via dx:ax
+; pass in y via cx:bx
 
-xchg      ax, si  ; x backup
-mov       di, dx  ; y backup
+push      bx ; y 1
+push      cx ; y 1
+push      ax ; x 2
+push      dx ; x 2
+push      ax ; x 1
+push      dx ; x 1
+
+mov       di, word ptr [bp - 0Ch] ; angle from outer scope.
+
 mov       ax, FINESINE_SEGMENT
-mov       bx, cx
-;mov       dx, di ; already set
-call      FastMulTrig16_
-xchg      ax, bp
-push      dx
+mov       dx, di
+call      FixedMulTrigNoShift_
+
+; intermediate (to be subtracted) in si:bp
+xchg      ax, bp 
+mov       si, dx
 
 mov       ax, FINECOSINE_SEGMENT
-mov       bx, cx
-mov       dx, si
-call      FastMulTrig16_
-sub       ax, bp
-pop       ax
-sbb       dx, ax
+mov       dx, di
+pop       cx ; x1
+pop       bx ; x1
+call      FixedMulTrigNoShift_
+sub       ax, bp 
+sbb       dx, si 
 
+xchg      ax, bp   ; bp stores new x lo
+mov       si, dx   ; si stores new x hi
 
-
-xchg      dx, si   ; dx gets old x value once more and si stores x result
-
-mov       bx, cx
+pop       cx  ; x 2
+pop       bx  ; x 2
 mov       ax, FINESINE_SEGMENT
-call      FastMulTrig16_
-xchg      ax, bp  ; low result
-xchg      dx, di  ; high result, get last y value into dx
+mov       dx, di
+call      FixedMulTrigNoShift_
 
-mov       bx, cx
+pop       cx  ; y 1
+pop       bx  ; y 1
+push      ax ; store... out of space
+
+xchg      dx, di  ; high result in di. get angle
 mov       ax, FINECOSINE_SEGMENT
-call      FastMulTrig16_
-add       ax, bp
-adc       dx, di ; y result right into dx.
-xchg      ax, si ; recover x result
+call      FixedMulTrigNoShift_
+pop       bx
+add       bx, ax ; bx gets low y result
+adc       dx, di
+mov       cx, dx ; cx gets hi y result
+
+xchg      ax, bp ; recover new x low
+mov       dx, si ; recover new x hi
 
 pop       bp
 pop       di
 pop       si
-pop       cx
-pop       bx
 ret       
 
 ENDP
@@ -2104,8 +2128,10 @@ ENDP
    ; dx     int16_t		lineguylines,
    ; bx     uint8_t		color,
    ; dx     fineangle_t	angle,
-   ; bp+8   int16_t	x,
-   ; bp+A   int16_t	y 
+   ; bp+8   fixed_t	x (lo)
+   ; bp+A   fixed_t	x (hi)
+   ; bp+C   fixed_t	y (lo)
+   ; bp+E   fixed_t	y (hi)
 
 
 
@@ -2124,43 +2150,53 @@ push      dx ; bp - 0Ch angle
 
 xchg      ax, si ; si gets lineguy...
 loop_next_lineguy_line:
+ push      cx
 
 lods      word ptr cs:[si]
-xchg      ax, di ; a.x
+xchg      ax, cx ; a.x lo
 lods      word ptr cs:[si]
-xchg      ax, dx ; a.y
+xchg      ax, dx ; a.x hi
 lods      word ptr cs:[si]
-xchg      ax, bx ; b.x
+xchg      ax, bx ; a.y lo
 lods      word ptr cs:[si]
-xchg      ax, di ; a.x in ax
+xchg      ax, cx ; a.y hi in cx a.x lo back in ax
 
 call      AM_rotate_
 
-SHIFT_MACRO sar ax 4
-SHIFT_MACRO sar dx 4
-add       ax, word ptr [bp + 8] ; x
-add       dx, word ptr [bp + 0Ah] ; y
+add       ax, word ptr [bp + 8]   ; x lo
+adc       dx, word ptr [bp + 0Ah] ; x hi
+add       bx, word ptr [bp + 0Ch] ; y lo
+adc       cx, word ptr [bp + 0Eh] ; y hi
 
-mov       word ptr [bp - 8], ax
-mov       word ptr [bp - 6], dx
+mov       word ptr [bp - 8], dx
+mov       word ptr [bp - 6], cx
 
-xchg      ax, bx
-xchg      dx, di
+lods      word ptr cs:[si]
+xchg      ax, cx ; b.x lo
+lods      word ptr cs:[si]
+xchg      ax, dx ; b.x hi
+lods      word ptr cs:[si]
+xchg      ax, bx ; b.y lo
+lods      word ptr cs:[si]
+xchg      ax, cx ; b.y hi in cx b.x lo back in ax
+
+
 call      AM_rotate_
 
-SHIFT_MACRO sar ax 4
-SHIFT_MACRO sar dx 4
-add       ax, word ptr [bp + 8] ; x
-add       dx, word ptr [bp + 0Ah] ; y
+add       ax, word ptr [bp + 8]   ; x lo
+adc       dx, word ptr [bp + 0Ah] ; x hi
+add       bx, word ptr [bp + 0Ch] ; y lo
+adc       cx, word ptr [bp + 0Eh] ; y hi
 
-
-mov       word ptr [bp - 4], ax
-mov       word ptr [bp - 2], dx
+mov       word ptr [bp - 4], dx
+mov       word ptr [bp - 2], cx
 
 lea       ax, [bp - 8]
 mov       dx, word ptr [bp - 0Ah] ; color
 
 call      AM_drawMline_
+
+pop       cx
 
 loop      loop_next_lineguy_line
 
@@ -2168,7 +2204,7 @@ exit_am_drawlinecharacter:
 LEAVE_MACRO     
 pop       di
 pop       si
-ret       4
+ret       8
 
 
 ENDP
@@ -2194,7 +2230,9 @@ mov       ax, OFFSET _cheat_player_arrow
 
 do_player_draw:
 push      word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
+push      word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
 push      word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
+push      word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
 mov       dx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
 shr       dx, 1
 and       dl, 0FCh ; fineangle
@@ -2244,7 +2282,9 @@ mov       ax, OFFSET _thintriangle_guy
 mov       cx, 3
 
 push      word ptr es:[si + MOBJ_POS_T.mp_y + 2]
+push      word ptr es:[si + MOBJ_POS_T.mp_y + 0]
 push      word ptr es:[si + MOBJ_POS_T.mp_x + 2]
+push      word ptr es:[si + MOBJ_POS_T.mp_x + 0]
 mov       dx, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
 shr       dx, 1
 and       dl, 0FCh ; fineangle
