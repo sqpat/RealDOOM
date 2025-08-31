@@ -2306,78 +2306,52 @@ ret
 
 ENDP
 
-COMMENT @
 
-
-PROC    AM_drawCrosshair_ NEAR
-PUBLIC  AM_drawCrosshair_
-
-;    screen0[(automap_screenwidth*(automap_screenheight+1))/2] = XHAIRCOLORS; // single point for now
-; todo should be 8000:69A0 ?
-
-push      bx
-mov       ax, SCREEN0_SEGMENT
-mov       bx, (AUTOMAP_SCREENWIDTH*(AUTOMAP_SCREENHEIGHT+1))/2 ; 69A0h
-mov       es, ax
-mov       byte ptr es:[bx], XHAIRCOLORS
-pop       bx
-ret       
-
-
-ENDP
 
 PROC    AM_Drawer_ NEAR
 PUBLIC  AM_Drawer_
 
-push      bx
-push      cx
-push      dx
-push      di
-mov       cx, AUTOMAP_SCREENWIDTH*AUTOMAP_SCREENHEIGHT; 0D200h
+PUSHA_NO_AX_OR_BP_MACRO
+
+
+mov       cx, AUTOMAP_SCREENWIDTH*AUTOMAP_SCREENHEIGHT / 2; 0D200h
 mov       dx, SCREEN0_SEGMENT
-xor       al, al
-xor       di, di
 mov       es, dx
-push      di
-mov       ah, al
-shr       cx, 1
+xor       ax, ax
+mov       di, ax
 rep stosw 
-adc       cx, cx
-rep stosb 
-pop       di
-cmp       byte ptr ds:[_am_grid], 0
-je        label_167
-call      AM_drawGrid_
-label_167:
+
+cmp       byte ptr ds:[_am_grid], al ; 0
+jne       do_draw_grid
+done_drawing_grid:
 call      AM_drawWalls_
 call      AM_drawPlayers_
 cmp       byte ptr ds:[_am_cheating], 2
-je        label_168
-label_169:
-; todo inlined funcs 
-mov       dx, 07FFFh
-mov       bx, 0E9A0h
+je        do_draw_things
+done_drawing_things:
+; draw crosshair
+
+;    screen0[(automap_screenwidth*(automap_screenheight+1))/2] = XHAIRCOLORS; // single point for now
 mov       es, dx
+mov       byte ptr es:[(AUTOMAP_SCREENWIDTH*(AUTOMAP_SCREENHEIGHT+1))/2 ], XHAIRCOLORS
+call      AM_drawMarks_  ; todo inline
+
 mov       cx, AUTOMAP_SCREENHEIGHT
-mov       byte ptr es:[bx], XHAIRCOLORS
-call      AM_drawMarks_
-xor       dx, dx
+
 mov       bx, AUTOMAP_SCREENWIDTH
 xor       ax, ax
+cwd
 call      V_MarkRect_
-pop       di
-pop       dx
-pop       cx
-pop       bx
+POPA_NO_AX_OR_BP_MACRO
 ret      
-label_168:
+do_draw_things:
 call      AM_drawThings_
-jmp       label_169
-
+jmp       done_drawing_things
+do_draw_grid:
+call      AM_drawGrid_
+jmp       done_drawing_grid
 
 ENDP
-
-@
 
 PROC    AM_MAP_ENDMARKER_ NEAR
 PUBLIC  AM_MAP_ENDMARKER_

@@ -1084,67 +1084,67 @@ void __near AM_drawMarks(void) {
     }
 
 }
- */
 
 void __near AM_drawCrosshair() {
     screen0[(automap_screenwidth*(automap_screenheight+1))/2] = XHAIRCOLORS; // single point for now
 
 }
+ */
 
 //void __far G_ExitLevel (void) ;
 
-void __near AM_Drawer (void) {
+// void __near AM_Drawer (void) {
 
-	// sq - DEBUG: enable for easy/quick level change while debugging, i.e. to put pressure on memory
-	//G_ExitLevel();
+// 	// sq - DEBUG: enable for easy/quick level change while debugging, i.e. to put pressure on memory
+// 	//G_ExitLevel();
 
-/*
-	FILE* fp = fopen ("indump.txt", "w");
-	Z_QuickMapRender();
-	FAR_fwrite((byte __far*) flatindex, size_flatindex, 1, fp);
-	fclose(fp);
-	I_Error("done");
-	*/
+// /*
+// 	FILE* fp = fopen ("indump.txt", "w");
+// 	Z_QuickMapRender();
+// 	FAR_fwrite((byte __far*) flatindex, size_flatindex, 1, fp);
+// 	fclose(fp);
+// 	I_Error("done");
+// 	*/
 
-/*
-	I_Error("%lx %lx %lx %lx", 
-		playerMobj_pos->x.w, 
-		playerMobj_pos->y.w, 
-		playerMobj_pos->z.w,
-		playerMobj_pos->angle.w
-	);*/
-
-
-	// 0E280C9b
-	// 01532DF7
-	// 0
-	// 34C00000
+// /*
+// 	I_Error("%lx %lx %lx %lx", 
+// 		playerMobj_pos->x.w, 
+// 		playerMobj_pos->y.w, 
+// 		playerMobj_pos->z.w,
+// 		playerMobj_pos->angle.w
+// 	);*/
 
 
-/*
-	playerMobj_pos->x.w =     0x0E280C9b;
-	playerMobj_pos->y.w =     0x01532DF7;
-	playerMobj_pos->z.w =     0x00000000;
-	playerMobj_pos->angle.w = 0x34C00000;
+// 	// 0E280C9b
+// 	// 01532DF7
+// 	// 0
+// 	// 34C00000
+
+
+// /*
+// 	playerMobj_pos->x.w =     0x0E280C9b;
+// 	playerMobj_pos->y.w =     0x01532DF7;
+// 	playerMobj_pos->z.w =     0x00000000;
+// 	playerMobj_pos->angle.w = 0x34C00000;
 	 
-*/
-	//setval = 1;
-	// I_Error("out! %x", playerMobj_pos->flags2);
-	// Clear automap frame buffer.
-	FAR_memset(screen0, BACKGROUND, automap_screenwidth*automap_screenheight);
+// */
+// 	//setval = 1;
+// 	// I_Error("out! %x", playerMobj_pos->flags2);
+// 	// Clear automap frame buffer.
+// 	FAR_memset(screen0, BACKGROUND, automap_screenwidth*automap_screenheight);
 
-	if (am_grid){
-		AM_drawGrid();
-	}
-	AM_drawWalls();
-	AM_drawPlayers();
-	if (am_cheating==2){
-		AM_drawThings();
-	}
-	AM_drawCrosshair();
+// 	if (am_grid){
+// 		AM_drawGrid();
+// 	}
+// 	AM_drawWalls();
+// 	AM_drawPlayers();
+// 	if (am_cheating==2){
+// 		AM_drawThings();
+// 	}
+// 	AM_drawCrosshair();
 
-    AM_drawMarks();
+//     AM_drawMarks();
 
-    V_MarkRect(0, 0, automap_screenwidth, automap_screenheight);
+//     V_MarkRect(0, 0, automap_screenwidth, automap_screenheight);
 
-}
+// }
