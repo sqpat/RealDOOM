@@ -884,11 +884,29 @@ mov       es, ax
 xor       di, di
 mov       ax, di
 
-
-mov       cx, SCREENHEIGHT
+mov       bx, SCREENWIDTHOVER2
+mov       cx, SCREENHEIGHT/10
 loop_screenheight:
 stosw
-add       ax, SCREENWIDTHOVER2
+add       ax, bx
+stosw
+add       ax, bx
+stosw
+add       ax, bx
+stosw
+add       ax, bx
+stosw
+add       ax, bx
+stosw
+add       ax, bx
+stosw
+add       ax, bx
+stosw
+add       ax, bx
+stosw
+add       ax, bx
+stosw
+add       ax, bx
 loop        loop_screenheight
 
 pop       di
@@ -996,8 +1014,6 @@ mov       dx, ax    ; store "done" result from wipe_doMelt_
 call      I_UpdateNoBlit_Fwipe_local_
 
 push      dx
-push      cx
-push      si
 
 ; Z_QuickmapMenu_. pages in menu code and graphics for m_drawer.
 Z_QUICKMAPAI8 pageswapargs_menu_offset_size INDEXED_PAGE_5000_OFFSET
@@ -1015,8 +1031,6 @@ Z_QUICKMAPAI8_NO_DX (pageswapargs_wipe_offset_size+4)  INDEXED_PAGE_6000_OFFSET
 ;call      Z_QuickMapScratch_5000_
 ;Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
 
-pop       si
-pop       cx
 pop       dx
 
 

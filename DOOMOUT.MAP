@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/31 10:02:52
+Created on:       25/08/31 12:43:27
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -52,7 +52,7 @@ MAIN_TEXT              CODE           AUTO           0000:5d00       00001510
 g_setup_TEXT           CODE           AUTO           0000:7210       000002d8
 r_setup_TEXT           CODE           AUTO           0000:74f0       0000046c
 ST_SETUP_TEXT          CODE           AUTO           0000:795c       00000125
-HU_SETUP_TEXT          CODE           AUTO           0000:7a82       00000247
+HU_SETUP_TEXT          CODE           AUTO           0000:7a82       00000246
 p_setup_TEXT           CODE           AUTO           0000:7cd0       000011dc
 S_SOUND_TEXT           CODE           AUTO           0000:8eac       000005a2
 s_sbsfx_TEXT           CODE           AUTO           0000:9450       000017fd
@@ -432,8 +432,8 @@ Module: math.obj(math.ASM)
 Module: main.obj(main.ASM)
 0000:6d35      locallib_strcpy_
 0000:6e82      locallib_strupr_
-0000:6d5b      locallib_toupper_
 0000:6a4e      G_Responder_
+0000:6d5b      locallib_toupper_
 0000:6edc*     locallib_printstringfar_
 0000:6059      G_CopyCmd_
 0000:6fc9      I_StartupKeyboard_
@@ -490,7 +490,7 @@ Module: st_setup.obj(st_setup.ASM)
 Module: hu_setup.obj(hu_setup.ASM)
 0000:7be7      _w_title
 0000:7c3f      HU_Start_
-0000:7cc9*     HU_SETUP_ENDMARKER_
+0000:7cc8*     HU_SETUP_ENDMARKER_
 0000:7a82*     HU_SETUP_STARTMARKER_
 0000:7a82      _w_message
 Module: p_setup.obj(C:\REALDOOM\p_setup.c)

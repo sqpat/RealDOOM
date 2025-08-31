@@ -87,7 +87,7 @@ push  cs
 pop   ds
 
 ASSUME DS:HU_SETUP_TEXT
-mov   byte ptr ds:[bx + HU_STEXT_T.hu_stext_currentline], al ; 0
+mov   byte ptr ds:[OFFSET _w_message + HU_STEXT_T.hu_stext_currentline], al ; 0
 
 mov   word ptr ds:[OFFSET _w_message + HU_STEXT_T.hu_stext_textlines + HU_TEXTLINE_T.hu_textline_x], ax  ; 0, HU_MSGX
 mov   word ptr ds:[OFFSET _w_message + HU_STEXT_T.hu_stext_textlines + HU_TEXTLINE_T.hu_textline_y], ax  ; 0, HU_MSGY
