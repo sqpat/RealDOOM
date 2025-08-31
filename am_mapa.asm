@@ -27,7 +27,7 @@ EXTRN FixedDiv_:FAR
 EXTRN FastDiv3216u_:FAR
 EXTRN cht_CheckCheat_:NEAR
 EXTRN combine_strings_:NEAR
-EXTRN FastMulTrig16_:NEAR
+
 EXTRN V_DrawPatch_:FAR
 EXTRN V_MarkRect_:FAR
 EXTRN getStringByIndex_:FAR
@@ -374,6 +374,113 @@ _thintriangle_guy:
  dw 0FF80h
  dw 0FF50h
 
+
+
+;#pragma aux trig16params \
+;                    __modify [bx] \
+;                    __parm [ax] [dx] [bx] \
+;                    __value [dx ax];
+
+
+
+IF COMPISA GE COMPILE_386
+
+    PROC FastMulTrig16_    NEAR
+    PUBLIC FastMulTrig16_
+
+    
+    ;db  066h, 025h, 0FFh, 0FFh, 0, 0        ;  and eax, 0x0000FFFF      ; todo necessary...?
+    ;db 066h, 08eh, 0c0h                   ; mov es, eax
+    
+    ; seems to work instead of the above
+    mov es, ax
+
+    db  066h, 081h, 0E3h, 0FFh, 0FFh, 0, 0  ;  and ebx, 0x0000FFFF   
+    ;sal   dx, 2
+
+    xchg  dx, ax                            ; get dx in ax for sign extend
+    db 066h, 098h                           ; cwde  (sign extend ax to eax for imul)
+
+    db 026h, 067h, 066h, 0F7h, 02Bh         ; imul dword ptr es:[ebx]
+
+    db  066h, 00Fh, 0A4h, 0C2h, 010h        ; shld edx, eax, 0x10
+
+    ret
+
+
+
+    ENDP
+
+ELSE
+
+
+    PROC FastMulTrig16_    NEAR
+    PUBLIC FastMulTrig16_
+    ; ax:[dx * 4] * BX
+    ; (dont shift answer 16)
+    ;
+    ; 
+    ;BYTE
+    ; RETURN VALUE
+    ;                3       2       1		0
+    ;                DONTUSE DONTUSE USE    USE
+
+
+    ;                               AXBXhi	 AXBXlo
+    ;                       DXBXhi  DXBXlo          
+    ;               S0BXhi  S0BXlo                          
+    ;
+    ;               AXS1hi  AXS1lo
+    ;                               
+    ;                       
+    ;       
+
+    ; AX is param 1 (segment)
+    ; DX is param 2 (fineangle or lookup)
+    ; BX is value 2
+
+    ; DX:AX * BX
+    ; need to sign extend BX to CX...
+
+    ; do lookup..
+
+    ; bx already passed in as lookup index...  value in dx etc
+
+    mov es, ax  ; put segment in ES
+    les ax, dword ptr es:[BX]
+    mov bx, es
+
+    ;BX:AX * DX
+
+    ; begin multiply...
+
+    AND   BX, DX
+    NEG   BX        ; get sign mult for 16 bit param * high trig.
+
+    MOV   ES, BX    ; store it in ES
+
+    MOV   BX, AX  ; BX stores trig param lowbits
+    MOV   AX, DX  ; AX stores 16 bit param 
+
+    CWD   ; DX gets 16 bit arg's sign bits
+    AND   DX, BX  ; still need to neg. move after mul for pipelining
+    XCHG  DX, BX  ; swap params
+
+    MUL   DX
+
+    NEG   BX      ; finish the sign multiply from above, after the queue is full from mul
+    ADD   DX, BX  ; add first sign bits back
+    MOV   BX, ES  ; add second sign bits back
+    ADD   DX, BX
+
+
+
+    ret
+
+
+    ENDP
+
+ENDIF
 
 PROC    CXMTOF16_ NEAR
 PUBLIC  CXMTOF16_
