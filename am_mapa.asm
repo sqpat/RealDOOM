@@ -146,116 +146,118 @@ COMMENT @
 
 _player_arrow:
 
- dd FFF00000h
- dd 00000000h
- dd 00124924h
- dd 00000000h
- dd 00124924h
- dd 00000000h
- dd 00092492h
- dd 00049249h
- dd 00124924h
- dd 00000000h
- dd 00092492h
- dd FFFB6DB7h
- dd FFF00000h
- dd 00000000h
- dd FFEB6DB8h
- dd 00049249h
- dd FFF00000h
- dd 00000000h
- dd FFEB6DB8h
- dd FFFB6DB7h
- dd FFF49249h
- dd 00000000h
- dd FFF00000h
- dd 00049249h
- dd FFF49249h
- dd 00000000h
- dd FFF00000h
- dd FFFB6DB7h
+ dd 0FFF00000h
+ dd 000000000h
+ dd 000124924h
+ dd 000000000h
+ dd 000124924h
+ dd 000000000h
+ dd 000092492h
+ dd 000049249h
+ dd 000124924h
+ dd 000000000h
+ dd 000092492h
+ dd 0FFFB6DB7h
+ dd 0FFF00000h
+ dd 000000000h
+ dd 0FFEB6DB8h
+ dd 000049249h
+ dd 0FFF00000h
+ dd 000000000h
+ dd 0FFEB6DB8h
+ dd 0FFFB6DB7h
+ dd 0FFF49249h
+ dd 000000000h
+ dd 0FFF00000h
+ dd 000049249h
+ dd 0FFF49249h
+ dd 000000000h
+ dd 0FFF00000h
+ dd 0FFFB6DB7h
 
 _cheat_player_arrow:
-dd FFF00000h
- dd 00000000h
- dd 00124924h
- dd 00000000h
- dd 00124924h
- dd 00000000h
- dd 00092492h
- dd 00030C30h
- dd 00124924h
- dd 00000000h
- dd 00092492h
- dd FFFCF3D0h
- dd FFF00000h
- dd 00000000h
- dd FFEB6DB8h
- dd 00030C30h
- dd FFF00000h
- dd 00000000h
- dd FFEB6DB8h
- dd FFFCF3D0h
- dd FFF49249h
- dd 00000000h
- dd FFF00000h
- dd 00030C30h
- dd FFF49249h
- dd 00000000h
- dd FFF00000h
- dd FFFCF3D0h
- dd FFF6DB6Eh
- dd 00000000h
- dd FFF6DB6Eh
- dd FFFCF3D0h
- dd FFF6DB6Eh
- dd FFFCF3D0h
- dd FFF9E79Eh
- dd FFFCF3D0h
- dd FFF9E79Eh
- dd FFFCF3D0h
- dd FFF9E79Eh
- dd 00049249h
- dd FFFCF3D0h
- dd 00000000h
- dd FFFCF3D0h
- dd FFFCF3D0h
- dd FFFCF3D0h
- dd FFFCF3D0h
- dd 00000000h
- dd FFFCF3D0h
- dd 00000000h
- dd FFFCF3D0h
- dd 00000000h
- dd 00049249h
- dd 00030C30h
- dd 00049249h
- dd 00030C30h
- dd FFFD6344h
- dd 00030C30h
- dd FFFD6344h
- dd 00039E79h
- dd FFFCD0FBh
- dd 00039E79h
- dd FFFCD0FBh
- dd 0004E04Dh
- dd FFFD6344h
+ dd 0FFF00000h
+ dd 000000000h
+ dd 000124924h
+ dd 000000000h
+ dd 000124924h
+ dd 000000000h
+ dd 000092492h
+ dd 000030C30h
+ dd 000124924h
+ dd 000000000h
+ dd 000092492h
+ dd 0FFFCF3D0h
+ dd 0FFF00000h
+ dd 000000000h
+ dd 0FFEB6DB8h
+ dd 000030C30h
+ dd 0FFF00000h
+ dd 000000000h
+ dd 0FFEB6DB8h
+ dd 0FFFCF3D0h
+ dd 0FFF49249h
+ dd 000000000h
+ dd 0FFF00000h
+ dd 000030C30h
+ dd 0FFF49249h
+ dd 000000000h
+ dd 0FFF00000h
+ dd 0FFFCF3D0h
+ dd 0FFF6DB6Eh
+ dd 000000000h
+ dd 0FFF6DB6Eh
+ dd 0FFFCF3D0h
+ dd 0FFF6DB6Eh
+ dd 0FFFCF3D0h
+ dd 0FFF9E79Eh
+ dd 0FFFCF3D0h
+ dd 0FFF9E79Eh
+ dd 0FFFCF3D0h
+ dd 0FFF9E79Eh
+ dd 000049249h
+ dd 0FFFCF3D0h
+ dd 000000000h
+ dd 0FFFCF3D0h
+ dd 0FFFCF3D0h
+ dd 0FFFCF3D0h
+ dd 0FFFCF3D0h
+ dd 000000000h
+ dd 0FFFCF3D0h
+ dd 000000000h
+ dd 0FFFCF3D0h
+ dd 000000000h
+ dd 000049249h
+ dd 000030C30h
+ dd 000049249h
+ dd 000030C30h
+ dd 0FFFD6344h
+ dd 000030C30h
+ dd 0FFFD6344h
+ dd 000039E79h
+ dd 0FFFCD0FBh
+ dd 000039E79h
+ dd 0FFFCD0FBh
+ dd 00004E04Dh
+ dd 0FFFD6344h
 
+; preshifted 16?
 _thintriangle_guy:
- dd FFFF8000h
- dd FFFF4CCDh
- dd 00010000h
- dd 00000000h
- dd 00010000h
- dd 00000000h
- dd FFFF8000h
- dd 0000B333h
- dd FFFF8000h
- dd 0000B333h
- dd FFFF8000h
- dd FFFF4CCDh
+ dd 0FFF80000h
+ dd 0FFF4CCD0h
+ dd 000100000h
+ dd 000000000h
+ dd 000100000h
+ dd 000000000h
+ dd 0FFF80000h
+ dd 0000B3330h
+ dd 0FFF80000h
+ dd 0000B3330h
+ dd 0FFF80000h
+ dd 0FFF4CCD0h
 
 @
+; 16 bit versions below...
 
 _player_arrow:
  dw 0FF00h
@@ -356,21 +358,21 @@ dw 0FF00h
  dw 0FFD7h
 
 
+
 _thintriangle_guy:
 
- dw 0FFF8h
- dw 0FFF5h
- dw 00010h
+ dw 0FF80h
+ dw 0FF50h
+ dw 00100h
  dw 00000h
- dw 00010h
+ dw 00100h
  dw 00000h
- dw 0FFF8h
- dw 0000Bh
- dw 0FFF8h
- dw 0000Bh
- dw 0FFF8h
- dw 0FFF5h
-
+ dw 0FF80h
+ dw 000B0h
+ dw 0FF80h
+ dw 000B0h
+ dw 0FF80h
+ dw 0FF50h
 
 
 PROC    CXMTOF16_ NEAR
@@ -2052,7 +2054,7 @@ push      si
 push      di
 push      bp
 
-mov       bx, word ptr [bp - 0Eh] ; angle from outer scope.
+mov       bx, word ptr [bp - 0Ch] ; angle from outer scope.
 
 xchg      ax, si  ; x ; not pointer
 mov       di, dx  ; y ; not pointer
@@ -2101,14 +2103,13 @@ ENDP
 ;void __near AM_drawLineCharacter
    ; ax     mline_t __near*	lineguy,
    ; dx     int16_t		lineguylines,
-   ; bx     int16_t	scale,
+   ; bx     uint8_t		color,
    ; dx     fineangle_t	angle,
-   ; bp+8   uint8_t		color,
-   ; bp+A   int16_t	x,
-   ; bp+C   int16_t	y ){
+   ; bp+8   int16_t	x,
+   ; bp+A   int16_t	y 
 
 
-; todo inline scale in the argument.
+
 
 PROC    AM_drawLineCharacter_ NEAR
 PUBLIC  AM_drawLineCharacter_
@@ -2118,11 +2119,10 @@ push      di ; bp + 2
 push      bp ; bp + 0
 mov       bp, sp
 sub       sp, 8
-push      dx ; bp - 0Ah
-push      bx ; bp - 0Ch
-push      cx ; bp - 0Eh
+push      bx ; bp - 0Ah color
+push      dx ; bp - 0Ch angle
 
-mov       cx, dx
+
 xchg      ax, si ; si gets lineguy...
 loop_next_lineguy_line:
 
@@ -2135,26 +2135,12 @@ xchg      ax, bx ; b.x
 lods      word ptr cs:[si]
 xchg      ax, di ; a.x in ax
 
-
-
-cmp       word ptr [bp - 0Ch], 0  ; check scale...
-je        skip_scale
-; scale is only ever 16 or 0
-SHIFT_MACRO sal ax 4
-SHIFT_MACRO sal dx 4
-SHIFT_MACRO sal bx 4
-SHIFT_MACRO sal di 4
-skip_scale:
-
-; 
-
-; todo do we really need to check for ang 0?
 call      AM_rotate_
 
 SHIFT_MACRO sar ax 4
 SHIFT_MACRO sar dx 4
-add       ax, word ptr [bp + 0Ah] ; x
-add       dx, word ptr [bp + 0Ch] ; y
+add       ax, word ptr [bp + 8] ; x
+add       dx, word ptr [bp + 0Ah] ; y
 
 mov       word ptr [bp - 8], ax
 mov       word ptr [bp - 6], dx
@@ -2165,15 +2151,15 @@ call      AM_rotate_
 
 SHIFT_MACRO sar ax 4
 SHIFT_MACRO sar dx 4
-add       ax, word ptr [bp + 0Ah] ; x
-add       dx, word ptr [bp + 0Ch] ; y
+add       ax, word ptr [bp + 8] ; x
+add       dx, word ptr [bp + 0Ah] ; y
 
 
 mov       word ptr [bp - 4], ax
 mov       word ptr [bp - 2], dx
 
 lea       ax, [bp - 8]
-mov       dx, word ptr [bp + 8] ; color
+mov       dx, word ptr [bp - 0Ah] ; color
 
 call      AM_drawMline_
 
@@ -2183,7 +2169,7 @@ exit_am_drawlinecharacter:
 LEAVE_MACRO     
 pop       di
 pop       si
-ret       6
+ret       4
 
 
 ENDP
@@ -2199,22 +2185,21 @@ cmp       byte ptr ds:[_am_cheating], 0
 les       bx, dword ptr ds:[_playerMobj_pos]
 jne       do_cheat_player_draw
 
-mov       dx, 7 ; NUMPLYRLINES
+mov       cx, 7 ; NUMPLYRLINES
 mov       ax, OFFSET _player_arrow
 jmp       do_player_draw
 
 do_cheat_player_draw:
-mov       dx, 16 ; NUMCHEATPLYRLINES
+mov       cx, 16 ; NUMCHEATPLYRLINES
 mov       ax, OFFSET _cheat_player_arrow
 
 do_player_draw:
 push      word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
 push      word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
-mov       cx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
-SHIFT_MACRO shr       cx 3 ; fineangle
+mov       dx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
+SHIFT_MACRO shr       dx 3 ; fineangle
 mov       bx, COLOR_WHITE
-push      bx
-xor       bx, bx
+
 call      AM_drawLineCharacter_
 pop       dx
 pop       cx
@@ -2256,15 +2241,14 @@ ENDIF
 mov       es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
 
 mov       ax, OFFSET _thintriangle_guy
-mov       dx, 3
+mov       cx, 3
 
 push      word ptr es:[si + MOBJ_POS_T.mp_y + 2]
 push      word ptr es:[si + MOBJ_POS_T.mp_x + 2]
-mov       cx, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
-SHIFT_MACRO shr       cx 3 ; fineangle
+mov       dx, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
+SHIFT_MACRO shr       dx 3 ; fineangle
 mov       bx, THINGCOLORS
-push      bx
-mov       bx, 010h 
+
 mov       si, word ptr es:[si + MOBJ_POS_T.mp_snextRef] ; get next ref...
 
 call      AM_drawLineCharacter_
