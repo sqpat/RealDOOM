@@ -129,7 +129,7 @@ EXTRN _am_lastepisode:BYTE
 
 
 
-EXTRN _markpoints:MLINE_T
+
 
 
 
@@ -258,6 +258,8 @@ _thintriangle_guy:
  dw 0FF80h
  dw 0FF50h
 
+_markpoints:
+dw AM_NUMMARKPOINTS * 2 DUP(-1)
 
 
 ;#pragma aux trig16params \
@@ -523,11 +525,11 @@ les       ax, dword ptr ds:[_screen_viewport_width] ; todo les
 sar       ax, 1
 SHIFT_MACRO shl       bx 2
 add       ax, word ptr ds:[_screen_botleft_x]
-mov       word ptr ds:[bx + _markpoints + MPOINT_T.mpoint_x], ax
+mov       word ptr cs:[bx + _markpoints + MPOINT_T.mpoint_x], ax
 mov       ax, es
 sar       ax, 1
 add       ax, word ptr ds:[_screen_botleft_y]
-mov       word ptr ds:[bx + _markpoints + MPOINT_T.mpoint_y], ax
+mov       word ptr cs:[bx + _markpoints + MPOINT_T.mpoint_y], ax
 pop       bx
 ret       
 
@@ -742,7 +744,7 @@ push      di
 mov       cx, (AM_NUMMARKPOINTS * SIZE MPOINT_T) / 2 
 mov       ax, -1
 mov       di, OFFSET _markpoints
-push      ds
+push      cs
 pop       es
 rep stosw
 mov       byte ptr ds:[_markpointnum], cl ; 0
@@ -2166,9 +2168,9 @@ mov       di, AMMNUMPATCHOFFSETS_FAR_OFFSET
 mov       bp, AMMNUMPATCHBYTES_SEGMENT
 loop_next_mark:
 
-lodsw
+lods      word ptr cs:[si]
 xchg      ax, dx
-lodsw
+lods      word ptr cs:[si]
 cmp       dx, -1
 je        skip_draw_mark
 

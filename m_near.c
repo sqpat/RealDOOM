@@ -215,7 +215,6 @@ fixed_t_union am_scale_mtof;
 // used by FTOM to scale from frame-buffer-to-map coords (=1/scale_mtof)
 fixed_t_union am_scale_ftom;
 
-mpoint_t markpoints[AM_NUMMARKPOINTS]; // where the points are
 int8_t markpointnum = 0; // next point to be assigned
 
 int8_t followplayer = 1; // specifies whether to follow the player around

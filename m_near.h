@@ -789,7 +789,6 @@ extern int16_t              old_screen_botleft_y;
 extern mpoint_t             screen_oldloc;
 extern fixed_t_union        am_scale_mtof;
 extern fixed_t_union        am_scale_ftom;
-extern mpoint_t             markpoints[AM_NUMMARKPOINTS];
 extern int8_t               markpointnum;
 extern int8_t               followplayer;
 
