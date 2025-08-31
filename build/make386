@@ -57,7 +57,6 @@ GLOBOBJS = &
  g_game.obj &
  m_misc.obj &
  am_map.obj &
- am_mapa.obj &
  p_init.obj &
  p_ceilng.obj &
  p_doors.obj &

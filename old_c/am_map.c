@@ -139,35 +139,6 @@
 #define	automap_screenheight ((int16_t)(SCREENHEIGHT - 32))
 
 
-fixed_16_t __near MTOF16(fixed_16_t x);
-fixed_16_t __near CXMTOF16(fixed_16_t x);
-fixed_16_t __near CYMTOF16(fixed_16_t y);
-void __near AM_activateNewScale(void);
-void __near AM_restoreScaleAndLoc(void);
-void __near AM_addMark(void);
-void __near AM_findMinMaxBoundaries(void);
-void __near AM_changeWindowLoc(void);
-void __near AM_initVariables(void);
-void __near AM_clearMarks(void) ;
-void __near AM_LevelInit(void);
-void __far AM_Start (void) ;
-void __near AM_minOutWindowScale(void) ;
-void __near AM_maxOutWindowScale(void);
-void __near AM_changeWindowScale(void);
-void __near AM_doFollowPlayer(void);
-int16_t __near DOOUTCODE(int16_t oc, int16_t mx, int16_t my);
-boolean __near AM_clipMline ( mline_t __near*	ml);
-void __near AM_drawMline ( mline_t __near*	ml, uint8_t	color );
-void __near AM_drawGrid();
-void __near AM_drawWalls();
-void __near AM_rotate ( int16_t __near*	x, int16_t __near* y, fineangle_t a );
-void __near AM_drawLineCharacter ( mline_t __near*	lineguy,int16_t		lineguylines,int16_t	scale,fineangle_t	angle,uint8_t		color,int16_t	x,int16_t	y );
-void __near AM_drawPlayers(void) ;
-void __near AM_drawThings();
-void __near AM_drawMarks(void);
-
-/*
-
 fixed_16_t __near MTOF16(fixed_16_t x) {
 	return FixedMul1632(x, am_scale_mtof.w);
 }
@@ -1089,62 +1060,61 @@ void __near AM_drawCrosshair() {
     screen0[(automap_screenwidth*(automap_screenheight+1))/2] = XHAIRCOLORS; // single point for now
 
 }
- */
 
 //void __far G_ExitLevel (void) ;
 
-// void __near AM_Drawer (void) {
+void __near AM_Drawer (void) {
 
-// 	// sq - DEBUG: enable for easy/quick level change while debugging, i.e. to put pressure on memory
-// 	//G_ExitLevel();
+	// sq - DEBUG: enable for easy/quick level change while debugging, i.e. to put pressure on memory
+	//G_ExitLevel();
 
-// /*
-// 	FILE* fp = fopen ("indump.txt", "w");
-// 	Z_QuickMapRender();
-// 	FAR_fwrite((byte __far*) flatindex, size_flatindex, 1, fp);
-// 	fclose(fp);
-// 	I_Error("done");
-// 	*/
+/*
+	FILE* fp = fopen ("indump.txt", "w");
+	Z_QuickMapRender();
+	FAR_fwrite((byte __far*) flatindex, size_flatindex, 1, fp);
+	fclose(fp);
+	I_Error("done");
+	*/
 
-// /*
-// 	I_Error("%lx %lx %lx %lx", 
-// 		playerMobj_pos->x.w, 
-// 		playerMobj_pos->y.w, 
-// 		playerMobj_pos->z.w,
-// 		playerMobj_pos->angle.w
-// 	);*/
-
-
-// 	// 0E280C9b
-// 	// 01532DF7
-// 	// 0
-// 	// 34C00000
+/*
+	I_Error("%lx %lx %lx %lx", 
+		playerMobj_pos->x.w, 
+		playerMobj_pos->y.w, 
+		playerMobj_pos->z.w,
+		playerMobj_pos->angle.w
+	);*/
 
 
-// /*
-// 	playerMobj_pos->x.w =     0x0E280C9b;
-// 	playerMobj_pos->y.w =     0x01532DF7;
-// 	playerMobj_pos->z.w =     0x00000000;
-// 	playerMobj_pos->angle.w = 0x34C00000;
+	// 0E280C9b
+	// 01532DF7
+	// 0
+	// 34C00000
+
+
+/*
+	playerMobj_pos->x.w =     0x0E280C9b;
+	playerMobj_pos->y.w =     0x01532DF7;
+	playerMobj_pos->z.w =     0x00000000;
+	playerMobj_pos->angle.w = 0x34C00000;
 	 
-// */
-// 	//setval = 1;
-// 	// I_Error("out! %x", playerMobj_pos->flags2);
-// 	// Clear automap frame buffer.
-// 	FAR_memset(screen0, BACKGROUND, automap_screenwidth*automap_screenheight);
+*/
+	//setval = 1;
+	// I_Error("out! %x", playerMobj_pos->flags2);
+	// Clear automap frame buffer.
+	FAR_memset(screen0, BACKGROUND, automap_screenwidth*automap_screenheight);
 
-// 	if (am_grid){
-// 		AM_drawGrid();
-// 	}
-// 	AM_drawWalls();
-// 	AM_drawPlayers();
-// 	if (am_cheating==2){
-// 		AM_drawThings();
-// 	}
-// 	AM_drawCrosshair();
+	if (am_grid){
+		AM_drawGrid();
+	}
+	AM_drawWalls();
+	AM_drawPlayers();
+	if (am_cheating==2){
+		AM_drawThings();
+	}
+	AM_drawCrosshair();
 
-//     AM_drawMarks();
+    AM_drawMarks();
 
-//     V_MarkRect(0, 0, automap_screenwidth, automap_screenheight);
+    V_MarkRect(0, 0, automap_screenwidth, automap_screenheight);
 
-// }
+}
