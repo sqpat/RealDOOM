@@ -433,53 +433,50 @@ ENDP
 PROC    AM_restoreScaleAndLoc_ NEAR
 PUBLIC  AM_restoreScaleAndLoc_
 
-
-push      bx
+; bx/dx are safe to clobber in outer scope
+;push      bx
 push      cx
-push      dx
+;push      dx
 les       ax, dword ptr ds:[_old_screen_viewport_width]
 mov       word ptr ds:[_screen_viewport_width], ax
 mov       word ptr ds:[_screen_viewport_height], es
-cmp       byte ptr ds:[_followplayer], 0
+cmp       byte ptr ds:[_followplayer], ch ; 0 known from outer func scope..
 jne       do_follow_player
-mov       ax, word ptr ds:[_old_screen_botleft_x]
-mov       word ptr ds:[_screen_botleft_x], ax
-mov       ax, word ptr ds:[_old_screen_botleft_y]
+les       ax, dword ptr ds:[_old_screen_botleft_x]
+mov       dx, es
 jmp       got_screen_xy
 do_follow_player:
 mov       dx, es
 les       bx, dword ptr ds:[_playerMobj_pos]
 sar       ax, 1
-mov       cx, word ptr es:[si + MOBJ_POS_T.mp_x + 2]
-sub       cx, ax
-mov       word ptr ds:[_screen_botleft_x], cx
 sar       dx, 1
-mov       ax, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
-sub       ax, dx
-
+neg       ax
+neg       dx
+add       ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
+add       dx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
 got_screen_xy:
-mov       word ptr ds:[_screen_botleft_y], ax
-mov       ax, word ptr ds:[_screen_botleft_x]
-add       ax, word ptr ds:[_screen_viewport_width]
-mov       word ptr ds:[_screen_topright_x], ax
-mov       ax, word ptr ds:[_screen_botleft_y]
+; ax/dx have botleft x/y ready 
+mov       word ptr ds:[_screen_botleft_x], ax
+mov       word ptr ds:[_screen_botleft_y], dx
 mov       cx, word ptr ds:[_screen_viewport_width]
-add       ax, word ptr ds:[_screen_viewport_height]
+add       ax, cx
+mov       word ptr ds:[_screen_topright_x], ax
+add       dx, word ptr ds:[_screen_viewport_height]
+mov       word ptr ds:[_screen_topright_y], dx
 xor       bx, bx
-mov       word ptr ds:[_screen_topright_y], ax
 mov       ax, AUTOMAP_SCREENWIDTH
 call      FixedDivWholeA_
 mov       word ptr ds:[_am_scale_mtof + 0], ax
-mov       bx, ax
-mov       cx, dx
+xchg      ax, bx
 mov       ax, 1
 mov       word ptr ds:[_am_scale_mtof + 2], dx
+mov       cx, dx
 call      FixedDivWholeA_
 mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx
-pop       dx
+;pop       dx
 pop       cx
-pop       bx
+;pop       bx
 ret       
 
 
@@ -707,14 +704,12 @@ FRAC_SCALE_UNIT = 01000h
 
 PROC    AM_recordOldViewport_
 
-mov       ax, word ptr ds:[_screen_botleft_x]
+les       ax, dword ptr ds:[_screen_botleft_x]
 mov       word ptr ds:[_old_screen_botleft_x], ax
-mov       ax, word ptr ds:[_screen_botleft_y]
-mov       word ptr ds:[_old_screen_botleft_y], ax
-mov       ax, word ptr ds:[_screen_viewport_width]
+mov       word ptr ds:[_old_screen_botleft_y], es
+les       ax, dword ptr ds:[_screen_viewport_width]
 mov       word ptr ds:[_old_screen_viewport_width], ax
-mov       ax, word ptr ds:[_screen_viewport_height]
-mov       word ptr ds:[_old_screen_viewport_height], ax
+mov       word ptr ds:[_old_screen_viewport_height], es
 
 ret
 
