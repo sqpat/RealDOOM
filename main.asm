@@ -3216,6 +3216,8 @@ mov   ax, word ptr ds:[_gametic + 2]
 or    ax, word ptr ds:[_gametic + 0]
 je    done_with_gs_level_case
 
+cmp   byte ptr ds:[_inhelpscreensstate], bh ; 0
+jne   dont_draw_automap
 cmp   byte ptr ds:[_automapactive], bh ; 0
 je    dont_draw_automap
 call  AM_Drawer_
