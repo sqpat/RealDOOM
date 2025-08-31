@@ -429,7 +429,7 @@ ret
 ENDP
 
 
-; todo optim
+
 PROC    AM_restoreScaleAndLoc_ NEAR
 PUBLIC  AM_restoreScaleAndLoc_
 
@@ -505,7 +505,7 @@ div       bh
 mov       byte ptr cs:[_markpointnum], ah
 xor       bh, bh
 
-les       ax, dword ptr ds:[_screen_viewport_width] ; todo les
+les       ax, dword ptr ds:[_screen_viewport_width]
 sar       ax, 1
 SHIFT_MACRO shl       bx 2
 add       ax, word ptr ds:[_screen_botleft_x]
@@ -741,13 +741,11 @@ ENDP
 
 
 
-; todo inline
+; todo inline once g_game done
 PROC    AM_Stop_ NEAR
 PUBLIC  AM_Stop_
 
 ;mov       byte ptr ds:[_automapactive], 0
-mov       word ptr ds:[_am_stopped], 00001h
-mov       byte ptr ds:[_st_gamestate], 1
 ret      
 
 
@@ -764,7 +762,7 @@ call      AM_Stop_
 dont_call_am_stop:
 
 mov       byte ptr ds:[_am_stopped], 0
-mov       ax, word ptr cs:[_am_lastlevel] ; todo make these two adjacent
+mov       ax, word ptr cs:[_am_lastlevel] 
 cmp       al, byte ptr ds:[_gamemap]
 jne       do_level_init
 cmp       ah, byte ptr ds:[_gameepisode]
@@ -804,9 +802,8 @@ mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx
 
 mov       al, byte ptr ds:[_gamemap]
-mov       byte ptr cs:[_am_lastlevel], al   ; todo make these all adjacent.. one read one write?
-mov       al, byte ptr ds:[_gameepisode]
-mov       byte ptr cs:[_am_lastepisode], al
+mov       ah, byte ptr ds:[_gameepisode]  ; todo make these all adjacent.. one read one write?
+mov       word ptr cs:[_am_lastlevel], ax  
 
 just_init_variables:
 ;call      AM_initVariables_
@@ -848,7 +845,7 @@ mov       word ptr ds:[_screen_botleft_x], ax
 
 call      AM_changeWindowLoc_
 
-; todo movsw? once in right spot in memory
+
 
 call      AM_recordOldViewport_
 mov       byte ptr ds:[_st_gamestate], 0
@@ -890,7 +887,7 @@ ENDP
 
 
 
-; todo return carry
+
 PROC    AM_Responder_ NEAR
 PUBLIC  AM_Responder_
 
@@ -1082,7 +1079,7 @@ dec       cx ; rc = false, cx = 0 again for default case
 done_with_keypress:
 
 mov       dx, si ; ev1
-mov       al, CHEATID_AUTOMAP ; todo al or ax?
+mov       al, CHEATID_AUTOMAP 
 call      cht_CheckCheat_
 
 jnc       return_cx
@@ -1359,14 +1356,14 @@ PUBLIC  AM_drawMline_
 PUSHA_NO_AX_MACRO
 push      dx    ; color
 
-xchg      ax, si  ; todo pass in via si
+xchg      ax, si  
 xor       cx, cx ; cl = outcode1. ch = outcode2
 
-;todo reverse order again a little less reg swapping
+
 
 lodsw
 ; ax has a.x
-mov       di, word ptr ds:[_screen_botleft_x]  ; todo les?
+les       di, dword ptr ds:[_screen_botleft_x]  
 mov       bx, word ptr ds:[_screen_topright_x]
 cmp       ax, di
 jnl       dont_and_left_a
@@ -1396,7 +1393,7 @@ jne       exit_am_clipline_return_false
 xchg      ax, di    ; di gets b.x
 lodsw     
 
-mov       bx, word ptr ds:[_screen_botleft_y]  ; todo les?
+mov       bx, es ; got it earlier
 mov       si, word ptr ds:[_screen_topright_y]
 
 cmp       ax, bx
@@ -1432,9 +1429,6 @@ jne       exit_am_clipline_return_false
 
 
 ; cl/ch is outcode1/2
-
-; todo use di instead of dx,, dont push/pop in this func?
-; todo inline these funcs?
 
 call      CYMTOF16_   ;a.y
 
@@ -1648,7 +1642,7 @@ IF COMPISA GE COMPILE_186
 
 ELSE
     push      dx
-    mov       ax, AUTOMAP_SCREENWIDTH  ; todo 3 arg imul ifelse
+    mov       ax, AUTOMAP_SCREENWIDTH  
     mul       di 
     pop       dx  ;   dx has sx
     add       ax, bp  
@@ -1805,7 +1799,7 @@ cmp       byte ptr ds:[_am_cheating], 0
 jne       do_draw_wall
 mov       es, word ptr ds:[_SEENLINES_6800_SEGMENT_PTR]
 ; figure out mappedflag
-;	mappedflag = seenlines_6800[i / 8] & (0x01 << (i%8));  // todo this seems wasteful? just add up during the loop to avoid all these shifts?
+;	mappedflag = seenlines_6800[i / 8] & (0x01 << (i%8));
 mov       si, di
 SHIFT_MACRO  sar si 3
 mov       cx, di
@@ -2157,14 +2151,14 @@ lods      word ptr cs:[si]
 cmp       dx, -1
 je        skip_draw_mark
 
-call      CYMTOF16_  ; todo inline?
+call      CYMTOF16_ 
 
 test      ax, ax
 js        skip_draw_mark
 cmp       ax, (AUTOMAP_SCREENHEIGHT - 6)
 jg        skip_draw_mark
 xchg      ax, dx
-call      CXMTOF16_  ; todo inline?
+call      CXMTOF16_ 
 test      ax, ax
 js        skip_draw_mark
 cmp       ax, (AUTOMAP_SCREENWIDTH - 5)
