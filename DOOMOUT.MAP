@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/31 12:43:27
+Created on:       25/08/31 13:03:26
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -48,7 +48,7 @@ D_DMX_TEXT             CODE           AUTO           0000:5554       00000125
 D_INT_TEXT             CODE           AUTO           0000:567a       00000176
 MEMORY_TEXT            CODE           AUTO           0000:57f0       00000000
 MATH_TEXT              CODE           AUTO           0000:57f0       00000510
-MAIN_TEXT              CODE           AUTO           0000:5d00       00001510
+MAIN_TEXT              CODE           AUTO           0000:5d00       0000150c
 g_setup_TEXT           CODE           AUTO           0000:7210       000002d8
 r_setup_TEXT           CODE           AUTO           0000:74f0       0000046c
 ST_SETUP_TEXT          CODE           AUTO           0000:795c       00000125
@@ -430,51 +430,51 @@ Module: math.obj(math.ASM)
 0000:5934*     FixedMul16u32_
 0000:591e      FixedMulTrigSpeedNoShift_
 Module: main.obj(main.ASM)
-0000:6d35      locallib_strcpy_
-0000:6e82      locallib_strupr_
+0000:6d31      locallib_strcpy_
+0000:6e7e      locallib_strupr_
 0000:6a4e      G_Responder_
-0000:6d5b      locallib_toupper_
-0000:6edc*     locallib_printstringfar_
+0000:6d57      locallib_toupper_
+0000:6ed8*     locallib_printstringfar_
 0000:6059      G_CopyCmd_
-0000:6fc9      I_StartupKeyboard_
-0000:6cf1      combine_strings_
-0000:6cdf      M_Ticker_
-0000:6c57*     I_UpdateNoBlit_
-0000:7210*     D_MAIN_ENDMARKER_
-0000:6fe4      I_ShutdownTimer_
+0000:6fc5      I_StartupKeyboard_
+0000:6ced      combine_strings_
+0000:6cdb      M_Ticker_
+0000:6c53*     I_UpdateNoBlit_
+0000:720c*     D_MAIN_ENDMARKER_
+0000:6fe0      I_ShutdownTimer_
 0000:6191*     G_SetGameKeyDown_
 0000:61ab      G_GetGameKey_
-0000:6b42      I_SetPalette_
-0000:6f9a      makethreecharint_
+0000:6b3e      I_SetPalette_
+0000:6f96      makethreecharint_
 0000:619e*     G_SetGameKeyUp_
-0000:6da6      locallib_printhex_
+0000:6da2      locallib_printhex_
 0000:6797      M_LoadDefaults_
 0000:5dd7*     D_MAIN_STARTMARKER_
-0000:6d99      locallib_putchar_
-0000:6ede*     locallib_printstringnear_
-0000:6b95*     I_UpdateBox_
-0000:7059      D_Display_
+0000:6d95      locallib_putchar_
+0000:6eda*     locallib_printstringnear_
+0000:6b91*     I_UpdateBox_
+0000:7055      D_Display_
 0000:5e87*     I_KeyboardISR_
 0000:693b      M_ScanTranslateDefaults_
-0000:6d49      locallib_strlen_
+0000:6d45      locallib_strlen_
 0000:64f7*     CopyString13_
 0000:61b7      G_BuildTiccmd_
 0000:6180      G_ResetGameKeys_
-0000:7009      I_ShutdownKeyboard_
+0000:7005      I_ShutdownKeyboard_
 0000:5dd7      cht_CheckCheat_
-0000:6fc0      locallib_dos_setvect_
-0000:6d13      locallib_strcmp_
-0000:6fb6      locallib_dos_getvect_
-0000:6e0d*     locallib_printdecimal_
-0000:6d66      copystr8_
+0000:6fbc      locallib_dos_setvect_
+0000:6d0f      locallib_strcmp_
+0000:6fb2      locallib_dos_getvect_
+0000:6e09*     locallib_printdecimal_
+0000:6d62      copystr8_
 0000:5e38      cht_GetParam_
 0000:6970      M_SaveDefaults_
-0000:6c3d*     I_FinishUpdate_
-0000:6d7f*     locallib_createhexnibble_
-0000:6eba      locallib_strncasecmp_
-0000:6eee      locallib_printf_
+0000:6c39*     I_FinishUpdate_
+0000:6d7b*     locallib_createhexnibble_
+0000:6eb6      locallib_strncasecmp_
+0000:6eea      locallib_printf_
 0000:5eb9      I_StartTic_
-0000:6e9e      locallib_strlwr_
+0000:6e9a      locallib_strlwr_
 Module: g_setup.obj(C:\REALDOOM\g_setup.c)
 0000:7210      R_CheckTextureNumForName_
 0000:726a      R_TextureNumForName_
@@ -907,4 +907,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  000105b0 (66992.)
 Entry point address: 0000:c79e
-Link time: 00:00.19
+Link time: 00:00.20

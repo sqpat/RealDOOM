@@ -1761,7 +1761,7 @@ mov   si, word ptr es:[bx + 3]
 or    si, word ptr es:[bx + 1]
 jne   call_startcontrolpanel
 exit_gresponder_return_0:
-xor   al, al
+xor   ax, ax
 pop   si
 pop   cx
 pop   bx
@@ -1772,8 +1772,7 @@ jne   not_gamestate_level
 mov   ax, bx
 mov   dx, cx
 call  HU_Responder_
-test  al, al
-jne   exit_gresponder_return_1
+; jc    exit_gresponder_return_1  ; always false. i think only netcode/chat stuff could eat the key
 mov   ax, bx
 mov   dx, cx
 call  ST_Responder_ ; never returns true

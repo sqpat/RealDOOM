@@ -294,7 +294,7 @@ push  bx
 xchg  ax, bx
 mov   es, dx
 xor   ax, ax
-cmp   word ptr es:[bx + EVENT_T.event_data1 + 2], ax
+cmp   word ptr es:[bx + EVENT_T.event_data1 + 2], ax   ; todo i dont think these +2 checks are necessary if we know its a keydown.
 jne   not_rshift
 cmp   word ptr es:[bx + EVENT_T.event_data1], KEY_RSHIFT
 je    exit_hu_responder
