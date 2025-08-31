@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/08/30 22:56:13
+Created on:       25/08/30 23:10:01
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -13,7 +13,7 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          0e23:0000            000023c0
+DGROUP                          0e23:0000            000023a0
 
 
 
@@ -75,8 +75,8 @@ YIB                    DATA           DGROUP         0fa7:0004       00000000
 YI                     DATA           DGROUP         0fa7:0004       00000012
 YIE                    DATA           DGROUP         0fa8:0006       00000000
 DATA                   DATA           DGROUP         0fa8:0006       00000000
-_BSS                   BSS            DGROUP         0fa9:0000       0000015e
-STACK                  STACK          DGROUP         0fbf:0000       00000a00
+_BSS                   BSS            DGROUP         0fa9:0000       0000013e
+STACK                  STACK          DGROUP         0fbd:0000       00000a00
 
 
                         +----------------+
@@ -94,78 +94,56 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 0e23:1890      _musdriverstartposition
 0e23:18a0      _codestartposition
 0e23:18b8      _wadfiles
-0e23:18c0      _OldInt8
-0e23:18c4      _filetolumpsize
+0e23:18c0      _filetolumpsize
+0e23:18cc      _OldInt8
 0e23:18d0+     _mousearray
 0e23:18d4      _p_init_sprtemp
-0e23:18d8      _screen_oldloc
-0e23:18dc      _am_max_scale_mtof
-0e23:18e0      _m_paninc
-0e23:18e4      _TaskServiceCount
-0e23:18e6      _numlumps
-0e23:18e8      _dclicks
-0e23:18ea      _dclicktime
-0e23:18ec      _dclickstate
-0e23:18ee      _dclicktime2
-0e23:18f0      _mousex
-0e23:18f2      _defdemoname
-0e23:18f4      _myargc
-0e23:18f6      _myargv
-0e23:18f8      _dclickstate2
-0e23:18fa      _dclicks2
-0e23:18fc      _p_init_maxframe
-0e23:18fe      _demo_p
-0e23:1900      _old_screen_botleft_y
-0e23:1902      _skytexture
-0e23:1904      _screen_topright_y
-0e23:1906      _numpatches
-0e23:1908      _screen_topright_x
-0e23:190a      _am_min_scale_mtof
-0e23:190c      _old_screen_botleft_x
-0e23:190e      _screen_botleft_x
-0e23:1910      _screen_botleft_y
-0e23:1912      _numtextures
-0e23:1914      _ftom_zoommul
-0e23:1916      _numspritelumps
-0e23:1918      _mtof_zoommul
-0e23:191a      _numflats
-0e23:191c      _pagename
-0e23:191e      _pagetic
-0e23:1920      _wminfo
-0e23:1935      _TS_TimesInInterrupt
-0e23:1936      _d_episode
-0e23:1937      _secretexit
-0e23:1938      _d_skill
-0e23:1939      _d_map
-0e23:193a      _usemouse
-0e23:193b      _mousebforward
-0e23:193c      _key_speed
-0e23:193d      _mousebfire
-0e23:193e      _key_left
-0e23:193f      _key_fire
-0e23:1940      _key_strafe
-0e23:1941      _turnheld
-0e23:1942      _key_straferight
-0e23:1943      _key_up
-0e23:1944      _mousebstrafe
-0e23:1945      _key_down
-0e23:1946      _key_use
-0e23:1947      _key_right
-0e23:1948      _key_strafeleft
-0e23:1949      _timingdemo
-0e23:194a      _numChannels
-0e23:194b      _noblit
-0e23:194c      _demorecording
-0e23:194d      _singledemo
-0e23:194e      _netdemo
-0e23:194f      _mousepresent
-0e23:1950      _novideo
-0e23:1951      _eventtail
-0e23:1952      _eventhead
-0e23:1953      _startmap
-0e23:1954      _autostart
+0e23:18d8      _TaskServiceCount
+0e23:18da      _defdemoname
+0e23:18dc      _numlumps
+0e23:18de      _myargv
+0e23:18e0      _dclicks
+0e23:18e2      _dclicktime
+0e23:18e4      _dclickstate
+0e23:18e6      _dclicktime2
+0e23:18e8      _mousex
+0e23:18ea      _myargc
+0e23:18ec      _dclickstate2
+0e23:18ee      _dclicks2
+0e23:18f0      _demo_p
+0e23:18f2      _p_init_maxframe
+0e23:18f4      _skytexture
+0e23:18f6      _numpatches
+0e23:18f8      _numtextures
+0e23:18fa      _numspritelumps
+0e23:18fc      _numflats
+0e23:18fe      _pagename
+0e23:1900      _pagetic
+0e23:1902      _wminfo
+0e23:1917      _secretexit
+0e23:1918      _TS_TimesInInterrupt
+0e23:1919      _usemouse
+0e23:191a      _mousebforward
+0e23:191b      _d_episode
+0e23:191c      _turnheld
+0e23:191d      _d_skill
+0e23:191e      _d_map
+0e23:191f      _key_speed
+0e23:1920      _mousebfire
+0e23:1921      _key_left
+0e23:1922      _key_fire
+0e23:1923      _key_strafe
+0e23:1924      _key_straferight
+0e23:1925      _key_up
+0e23:1926      _mousebstrafe
+0e23:1927      _singledemo
+0e23:1928      _netdemo
+0e23:1929      _key_down
+0e23:192a      _key_use
+0e23:192b      _key_right
+0e23:192c      _key_strafeleft
+0e23:192d      _timingdemo
 0e23:0e30      _singletics
-0e23:0e31*     _markpointnum
 0e23:0e34      _P_SpawnMapThing
 0e23:0e38      _R_WriteBackViewConstantsSpanCall
 0e23:0e3c      _R_WriteBackViewConstantsMaskedCall
@@ -200,9 +178,18 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 0e23:0ea4      _sfx_priority
 0e23:0f11      _FORCE_5000_LUMP_LOAD
 0e23:0f12      _lastpcspeakernotevalue
-0e23:1955      _startskill
-0e23:1956      _respawnparm
-0e23:1957      _startepisode
+0e23:192e      _numChannels
+0e23:192f      _noblit
+0e23:1930      _demorecording
+0e23:1931      _mousepresent
+0e23:1932      _novideo
+0e23:1933      _eventtail
+0e23:1934      _eventhead
+0e23:1935      _startmap
+0e23:1936      _autostart
+0e23:1937      _startskill
+0e23:1938      _respawnparm
+0e23:1939      _startepisode
 Module: d_init.obj(C:\REALDOOM\d_init.c)
 0000:0000      D_InitStrings_
 0000:00aa+     D_GetCursorColumnRow_
@@ -329,19 +316,19 @@ Module: am_map.obj(am_map.ASM)
 0000:3dc0*     FastMulTrig16_
 0000:3df1*     CYMTOF16_
 0000:3de1*     CXMTOF16_
-0000:3e5b*     AM_restoreScaleAndLoc_
 0000:470f      AM_Drawer_
 0000:3ed8*     AM_addMark_
 0000:481d*     AM_MAP_ENDMARKER_
 0000:4699*     AM_drawPlayers_
+0000:3e5b*     AM_restoreScaleAndLoc_
 0000:404b      AM_Stop_
 0000:4161      AM_Responder_
 0000:451e*     AM_drawWalls_
 0000:439c*     DOOUTCODE_
 Module: st_stuff.obj(st_stuff.ASM)
 0000:4a42*     ST_updateFaceWidget_
-0000:4d72*     STlib_drawNum_
 0000:48d3      _oldweaponsowned
+0000:4d72*     STlib_drawNum_
 0000:4944      _w_keyboxes
 0000:486e      _armsbg
 0000:4850      _arms
@@ -449,8 +436,8 @@ Module: main.obj(main.ASM)
 0000:6d73      locallib_toupper_
 0000:6ef4*     locallib_printstringfar_
 0000:6071      G_CopyCmd_
-0000:6d09      combine_strings_
 0000:6fe1      I_StartupKeyboard_
+0000:6d09      combine_strings_
 0000:6cf7      M_Ticker_
 0000:6c6f*     I_UpdateNoBlit_
 0000:7222*     D_MAIN_ENDMARKER_
@@ -470,9 +457,9 @@ Module: main.obj(main.ASM)
 0000:5e9f*     I_KeyboardISR_
 0000:6953      M_ScanTranslateDefaults_
 0000:6d61      locallib_strlen_
-0000:6198      G_ResetGameKeys_
 0000:650f*     CopyString13_
 0000:61cf      G_BuildTiccmd_
+0000:6198      G_ResetGameKeys_
 0000:7021      I_ShutdownKeyboard_
 0000:5def      cht_CheckCheat_
 0000:6fd8      locallib_dos_setvect_
@@ -539,19 +526,19 @@ Module: s_sound.obj(s_sound.ASM)
 0000:923b      S_StartSoundWithSecnum_
 0000:9138*     S_StartSoundWithPosition_
 0000:9248      S_UpdateSounds_
-0000:9027      S_PauseSound_
 0000:8ecc*     S_SOUND_STARTMARKER_
+0000:9027      S_PauseSound_
 0000:9050      S_ResumeSound_
 Module: s_sbsfx.obj(C:\REALDOOM\s_sbsfx.c)
-0e23:1960+     _sfxcache_nodes
-0e23:1980*     _sfx_page_multipage_count
-0e23:1988+     _sfx_page_reference_count
-0e23:1990+     _SB_OldInt
-0e23:1994+     _SB_IntController1Mask
-0e23:1996+     _SB_IntController2Mask
-0e23:1998+     _SB_DSP_Version
-0e23:199a+     _sfxcache_tail
-0e23:199b+     _sfxcache_head
+0e23:1940+     _sfxcache_nodes
+0e23:1960*     _sfx_page_multipage_count
+0e23:1968+     _sfx_page_reference_count
+0e23:1970+     _SB_OldInt
+0e23:1974+     _SB_IntController1Mask
+0e23:1976+     _SB_IntController2Mask
+0e23:1978+     _SB_DSP_Version
+0e23:197a+     _SB_Mixer_Status
+0e23:197b+     _sfxcache_tail
 0e23:0f2c+     _sb_port
 0e23:0f2e+     _sb_dma
 0e23:0f30+     _sb_irq
@@ -608,7 +595,7 @@ Module: s_sbsfx.obj(C:\REALDOOM\s_sbsfx.c)
 0e23:0f3c+     _in_sound
 0e23:0f3d+     _IRQ_TO_INTERRUPT_MAP
 0e23:0f4d+     _DMA_PortInfo
-0e23:199c+     _SB_Mixer_Status
+0e23:197c+     _sfxcache_head
 Module: r_main.obj(r_main.ASM)
 0000:afae      R_VideoErase_
 0000:af90      R_PointToAngle2_16_
@@ -651,8 +638,8 @@ Module: z_zone.obj(z_zone.ASM)
 0000:ba46      Z_QuickMapRender_
 0000:bb3e      Z_QuickMapScratch_7000_
 0000:bb12      Z_QuickMapScratch_5000_
-0000:bb54      Z_QuickMapScratch_4000_
 0000:bc14      Z_QuickMapMenu_
+0000:bb54      Z_QuickMapScratch_4000_
 0000:bdbb*     CopyString13_Zonelocal_
 0000:bb28      Z_QuickMapScratch_8000_
 0000:bbf9      Z_QuickMapPalette_
@@ -677,7 +664,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(fclose.c)
 0000:c1cd      __doclose_
 0000:c263      __shutdown_stream_
 0000:c277      fclose_
-0e23:199e+     ___RmTmpFileFn
+0e23:197e+     ___RmTmpFileFn
 Module: C:\WATCOM2\lib286\dos\clibm.lib(atoi.c)
 0000:c29a      atoi_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fread.c)
@@ -686,8 +673,8 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(accss.c)
 0000:c492      access_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(iob.c)
 0e23:0f66      ___iob
-0e23:19a2      ___OpenStreams
-0e23:19a4      ___ClosedStreams
+0e23:1982      ___OpenStreams
+0e23:1984      ___ClosedStreams
 Module: C:\WATCOM2\lib286\dos\clibm.lib(setbuf.c)
 0000:c4c8      setbuf_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(i4m.asm)
@@ -719,10 +706,10 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(cstart)
 0000:c98c      __do_exit_with_msg_
 0000:ca6b      __GETDS
 Module: C:\WATCOM2\lib286\dos\clibm.lib(argcv.c)
-0e23:19a6      __argc
-0e23:19a8      __argv
-0e23:19aa      ___argc
-0e23:19ac      ___argv
+0e23:1986      __argc
+0e23:1988      __argv
+0e23:198a      ___argc
+0e23:198c      ___argv
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fputc.c)
 0000:ca75      fputc_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(chainint)
@@ -734,7 +721,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(comtflag.c)
 0e23:108c      __commode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(errno.c)
 0000:cd06      __get_errno_ptr_
-0e23:19ae+     _errno
+0e23:198e+     _errno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(textmode.c)
 0e23:108e      __fmode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(tolower.c)
@@ -765,7 +752,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(_clse.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nfree.c)
 0000:d157      _nfree_
 0000:d157      free_
-0e23:19b0+     ___MiniHeapFreeRover
+0e23:1990+     ___MiniHeapFreeRover
 Module: C:\WATCOM2\lib286\dos\clibm.lib(flush.c)
 0000:d21c      __flush_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(istable.c)
@@ -837,7 +824,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(isatt.c)
 0000:d8a6      isatty_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(doserrno.c)
 0000:d8c2      __get_doserrno_ptr_
-0e23:19b4+     __doserrno
+0e23:1994+     __doserrno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(umaskval.c)
 0e23:10fc      ___umaskval
 Module: C:\WATCOM2\lib286\dos\clibm.lib(creatdos.c)
@@ -870,10 +857,10 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(enterdb.c)
 0000:dd12      __EnterWVIDEO_
 0e23:1104+     __WD_Present
 Module: C:\WATCOM2\lib286\dos\clibm.lib(___argc.c)
-0e23:19b8      ____Argv
-0e23:19ba      ____Argc
+0e23:1998      ____Argv
+0e23:199a      ____Argc
 Module: C:\WATCOM2\lib286\dos\clibm.lib(histsplt.c)
-0e23:19bc      ___historical_splitparms
+0e23:199c      ___historical_splitparms
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nrealloc.c)
 0000:dd2e*     _nrealloc_
 0000:dd2e      realloc_
@@ -918,6 +905,6 @@ C:\WATCOM2\lib286\dos\clibm.lib
                         +-----------------------+
 
 Stack size:  0a00 (2560.)
-Memory size:  000105f0 (67056.)
+Memory size:  000105d0 (67024.)
 Entry point address: 0000:c7be
 Link time: 00:00.20

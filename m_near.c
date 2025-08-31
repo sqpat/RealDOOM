@@ -175,35 +175,6 @@ int16_t             numtextures;
 
 
 
-// size of window on screen
-mpoint_t 	m_paninc; // how far the window pans each tic (map coords)
-int16_t 	mtof_zoommul; // how far the window zooms in each tic (map coords)
-int16_t 	ftom_zoommul; // how far the window zooms in each tic (fb coords)
-
-int16_t 	screen_botleft_x, screen_botleft_y;   // LL x,y where the window is on the map (map coords)
-int16_t 	screen_topright_x, screen_topright_y; // UR x,y where the window is on the map (map coords)
-
-//
-// width/height of window on map (map coords)
-//
-
-
-
-// based on player size
-//this is never a 32 bit level in any commercial levels..
-uint16_t 	am_min_scale_mtof; // used to tell when to stop zooming out
-fixed_t_union 	am_max_scale_mtof; // used to tell when to stop zooming in
-
-// old stuff for recovery later
-int16_t old_screen_botleft_x, old_screen_botleft_y;
-
-// old location used by the Follower routine
-mpoint_t screen_oldloc;
-
-int8_t markpointnum = 0; // next point to be assigned
-
-
-
 
 
 

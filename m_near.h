@@ -434,7 +434,7 @@
 
 
 #define V_DrawPatch_addr                  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0454)))
-// #define HU_Start_addr 					  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0458)))
+#define m_paninc                          (*((mpoint_t __near*)              (_NULL_OFFSET + 0x0458)))
 
 #define S_ChangeMusic_addr                (*((uint32_t  __near*)             (_NULL_OFFSET + 0x045C)))
 #define V_DrawFullscreenPatch_addr        (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0460)))
@@ -486,7 +486,11 @@
 // 52 bytes
 #define player_message_string             ((int8_t __near *)                 (_NULL_OFFSET + 0x04D0))
 
-// 504-50B free
+
+#define screen_botleft_x				  (*((int16_t __near*)               (_NULL_OFFSET + 0x0504)))
+#define screen_botleft_y				  (*((int16_t __near*)               (_NULL_OFFSET + 0x0506)))
+#define screen_topright_x				  (*((int16_t __near*)               (_NULL_OFFSET + 0x0508)))
+#define screen_topright_y				  (*((int16_t __near*)               (_NULL_OFFSET + 0x050A)))
 #define Z_SetOverlay_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x050C)))
 #define W_LumpLength_addr                 (*((uint32_t __near*)              (_NULL_OFFSET + 0x0510)))
 #define playingdriver                     (*((driverBlock __far* __near *)   (_NULL_OFFSET + 0x0514)))
@@ -512,7 +516,7 @@
 #define sfx_free_bytes					  (((uint8_t __near*)                (_NULL_OFFSET + 0x0548)))
 
 
-// 0x670
+// 0x570
 
 #define activespritepages				  (((uint8_t __near*)                (_NULL_OFFSET + 0x0570)))
 #define activespritenumpages			  (((uint8_t __near*)                (_NULL_OFFSET + 0x0574)))
@@ -600,8 +604,13 @@
 #define R_WriteBackMaskedFrameConstantsCallOffset (*((int16_t __near*)              (_NULL_OFFSET + 0x0710)))
 #define NetUpdate_addr					  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0714)))
 
-// #define FixedMul16u32_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0718)))
-// #define FastMul16u32u_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x071C)))
+
+#define mtof_zoommul        			  (*((int16_t __near*)               (_NULL_OFFSET + 0x0718)))
+#define ftom_zoommul        			  (*((int16_t __near*)               (_NULL_OFFSET + 0x071A)))
+#define am_min_scale_mtof       	      (*((int16_t __near*)               (_NULL_OFFSET + 0x071C)))
+#define am_max_scale_mtof       		  (*((int16_t __near*)               (_NULL_OFFSET + 0x071E)))
+
+
 #define FastDiv3216u_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0720)))
 #define bulletslope     				  (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x0724)))
 #define weaponinfo 						  ((weaponinfo_t __near *)           (_NULL_OFFSET + 0x0728))
@@ -615,7 +624,12 @@
 #define inhelpscreensstate				  (*((boolean __near*)               (_NULL_OFFSET + 0x079E)))
 #define fullscreen						  (*((boolean __near*)               (_NULL_OFFSET + 0x079F)))
 
-// 7A0 to 7E8 empty
+// 7A0 to 7DF empty
+#define screen_oldloc					  (*((mpoint_t __near*)              (_NULL_OFFSET + 0x07E0)))
+#define old_screen_botleft_x			  (*((int16_t __near*)               (_NULL_OFFSET + 0x07E4)))
+#define old_screen_botleft_y			  (*((int16_t __near*)               (_NULL_OFFSET + 0x07E6)))
+
+
 
 #define message_counter					  (*((uint8_t    __near*)            (_NULL_OFFSET + 0x07E8)))
 
@@ -772,19 +786,6 @@ extern int16_t              numtextures;
  
 //extern int16_t              ;
 
-extern mpoint_t             m_paninc; 
-extern int16_t 	            mtof_zoommul; 
-extern int16_t 	            ftom_zoommul; 
-extern int16_t 	            screen_botleft_x;
-extern int16_t              screen_botleft_y;
-extern int16_t 	            screen_topright_x;
-extern int16_t              screen_topright_y;
-extern uint16_t 	        am_min_scale_mtof;
-extern fixed_t_union 	    am_max_scale_mtof;
-extern int16_t              old_screen_botleft_x;
-extern int16_t              old_screen_botleft_y;
-extern mpoint_t             screen_oldloc;
-extern int8_t               markpointnum;
 
 
 

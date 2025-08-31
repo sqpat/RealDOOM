@@ -338,8 +338,6 @@ _am_cheating =			             _NULL_OFFSET + 0033Eh
 _am_grid = 		       		         _NULL_OFFSET + 0033Fh
 
 
-; 33d to 33F free
-
 _psprites =              			 _NULL_OFFSET + 00340h
 _vga_read_port_lookup =              _NULL_OFFSET + 00358h
 _vissprite_p =                       _NULL_OFFSET + 00370h
@@ -382,7 +380,8 @@ _G_DeferedInitNew_addr = 			 _NULL_OFFSET + 00450h
 
 
 _V_DrawPatch_addr =              	 _NULL_OFFSET + 00454h
-;_HU_Start_addr = 			 	 	 _NULL_OFFSET + 00458h
+_m_paninc = 				 	 	 _NULL_OFFSET + 00458h
+
 
 _S_ChangeMusic_addr =              	 _NULL_OFFSET + 0045Ch
 _V_DrawFullscreenPatch_addr =        _NULL_OFFSET + 00460h
@@ -436,7 +435,10 @@ _I_Quit_addr = 			             _NULL_OFFSET + 004CCh
 ; 52 bytes
 _player_message_string =  			 _NULL_OFFSET + 004D0h
 
-; 504-50B free
+_screen_botleft_x =				     _NULL_OFFSET + 00504h
+_screen_botleft_y =				     _NULL_OFFSET + 00506h
+_screen_topright_x =				 _NULL_OFFSET + 00508h
+_screen_topright_y =			     _NULL_OFFSET + 0050Ah
 
 _Z_SetOverlay_addr =                 _NULL_OFFSET + 0050Ch
 _W_LumpLength_addr =                 _NULL_OFFSET + 00510h
@@ -534,8 +536,12 @@ _R_DrawMaskedCall = 			 	 _NULL_OFFSET + 0070Ch
 _R_WriteBackMaskedFrameConstantsCall =  _NULL_OFFSET + 00710h
 _NetUpdate_addr =					 _NULL_OFFSET + 00714h
 
-;_FixedMul16u32_addr =				 _NULL_OFFSET + 00718h
-;_FastMul16u32u_addr =				 _NULL_OFFSET + 0071Ch
+
+_mtof_zoommul =        			     _NULL_OFFSET + 00718h
+_ftom_zoommul =        			     _NULL_OFFSET + 0071Ah
+_am_min_scale_mtof =       	         _NULL_OFFSET + 0071Ch
+_am_max_scale_mtof =       		     _NULL_OFFSET + 0071Eh
+
 _FastDiv3216u_addr =				 _NULL_OFFSET + 00720h
 _bulletslope = 			 			 _NULL_OFFSET + 00724h
 _weaponinfo = 			 			 _NULL_OFFSET + 00728h
@@ -549,7 +555,10 @@ _inhelpscreensstate =				 _NULL_OFFSET + 0079Eh
 _fullscreen =					     _NULL_OFFSET + 0079Fh
 
 
-; 7a0 to 7e7 empty
+; 7a0 to 7DF empty
+_screen_oldloc =					 _NULL_OFFSET + 007E0h
+_old_screen_botleft_x =				 _NULL_OFFSET + 007E4h
+_old_screen_botleft_y =				 _NULL_OFFSET + 007E6h
 
 _message_counter =					 _NULL_OFFSET + 007E8h
 

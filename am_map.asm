@@ -93,22 +93,6 @@ AM_CLEARMARKKEY =   'c'
 
 .DATA
 
-EXTRN _m_paninc:MPOINT_T
-EXTRN _mtof_zoommul:WORD
-EXTRN _ftom_zoommul:WORD
-
-EXTRN _am_min_scale_mtof:WORD
-EXTRN _am_max_scale_mtof:WORD
-
-EXTRN _screen_botleft_x:WORD
-EXTRN _screen_botleft_y:WORD
-EXTRN _screen_topright_x:WORD
-EXTRN _screen_topright_y:WORD
-
-EXTRN _screen_oldloc:MPOINT_T
-EXTRN _screen_oldloc:MPOINT_T
-EXTRN _old_screen_botleft_x:WORD
-EXTRN _old_screen_botleft_y:WORD
 
 
 
