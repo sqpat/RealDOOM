@@ -1805,98 +1805,13 @@ ENDP
 
 
 
-PROC    AM_drawGrid_ NEAR
-PUBLIC  AM_drawGrid_
-
-push      bx
-push      cx
-push      dx
-push      bp
-mov       bp, sp
-sub       sp, 8 ; size of mline
-
-
-mov       ax, word ptr ds:[_screen_botleft_x]
-mov       cx, ax  ; cx = start
-mov       bx, ax  ; bx = end
-add       bx, word ptr ds:[_screen_viewport_width]
-sub       ax, word ptr ds:[_bmaporgx]
-jns       dont_do_abs_x
-neg       ax
-dont_do_abs_x:
-and       ax, 07Fh
-jz        dont_mod_start_x
-skip_sign_adjust:
-add       cx, 080h
-sub       cx, ax
-dont_mod_start_x:
-
-mov       ax, word ptr ds:[_screen_botleft_y]
-mov       word ptr ss:[bp - 6], ax  ; am_ml_a.y
-add       ax, word ptr ds:[_screen_viewport_height]
-mov       word ptr ss:[bp - 2], ax  ; am_ml_b.y
-
-loop_do_next_vertical_line:
-cmp       cx, bx
-jge       done_with_vertical_grid
-mov       word ptr ss:[bp - 4], cx  ; am_ml_b.x
-mov       word ptr ss:[bp - 8], cx  ; am_ml_a.x
-lea       ax, [bp - 8]
-mov       dl, GRIDCOLORS
-call      AM_drawMline_
-add       cx, 080h
-jmp       loop_do_next_vertical_line
-done_with_vertical_grid:
-
-
-mov       ax, word ptr ds:[_screen_botleft_y]
-mov       cx, ax  ; cx = start
-mov       bx, ax  ; bx = end
-add       bx, word ptr ds:[_screen_viewport_height]
-sub       ax, word ptr ds:[_bmaporgy]
-jns       dont_do_abs_y
-neg       ax
-dont_do_abs_y:
-
-and       ax, 07Fh
-jz        dont_mod_start_y
-add       cx, 080h
-sub       cx, ax
-dont_mod_start_y:
-
-
-mov       ax, word ptr ds:[_screen_botleft_x]
-mov       word ptr ss:[bp - 8], ax  ; am_ml_a.x
-add       ax, word ptr ds:[_screen_viewport_width]
-mov       word ptr ss:[bp - 4], ax  ; am_ml_b.x
-
-loop_do_next_horizontal_line:
-cmp       cx, bx
-jge       done_with_horizontal_grid
-mov       word ptr ss:[bp - 2], cx  ; am_ml_a.y
-mov       word ptr ss:[bp - 6], cx  ; am_ml_b.y
-lea       ax, [bp - 8]
-mov       dl, GRIDCOLORS
-call      AM_drawMline_
-add       cx, 080h
-jmp       loop_do_next_horizontal_line
-done_with_horizontal_grid:
-
-LEAVE_MACRO
-pop       dx
-pop       cx
-pop       bx
-ret       
-
-ENDP
 
 
 LINE_NEVERSEE = ML_DONTDRAW
 
 PROC    AM_drawWalls_ NEAR
 PUBLIC  AM_drawWalls_
-
-PUSHA_NO_AX_OR_BP_MACRO
+; okay to use registers.
 push      bp
 mov       bp, sp
 sub       sp, 8
@@ -2013,7 +1928,6 @@ jge       exit_drawwalls
 jmp       loop_draw_next_wall
 exit_drawwalls:
 LEAVE_MACRO
-POPA_NO_AX_OR_BP_MACRO
 ret
 
 wall_not_mapped:
@@ -2169,9 +2083,10 @@ ENDP
 PROC    AM_drawPlayers_ NEAR
 PUBLIC  AM_drawPlayers_
 
-push      bx
-push      cx
-push      dx
+; unused in outer scope
+;push      bx
+;push      cx
+;push      dx
 cmp       byte ptr ds:[_am_cheating], 0
 les       bx, dword ptr ds:[_playerMobj_pos]
 jne       do_cheat_player_draw
@@ -2193,9 +2108,9 @@ and       dl, 0FCh ; fineangle
 mov       bx, COLOR_WHITE
 
 call      AM_drawLineCharacter_
-pop       dx
-pop       cx
-pop       bx
+;pop       dx
+;pop       cx
+;pop       bx
 ret       
 
 
@@ -2203,10 +2118,8 @@ ENDP
 
 
 
-PROC    AM_drawThings_ NEAR
-PUBLIC  AM_drawThings_
-
-PUSHA_NO_AX_MACRO
+do_draw_things:
+;call      AM_drawThings_
 
 mov       cx, word ptr ds:[_numsectors]
 mov       di, SECTOR_T.sec_thinglistRef
@@ -2254,18 +2167,39 @@ add       di, SIZE SECTOR_T
 pop       cx
 loop      loop_next_sector
 
-POPA_NO_AX_MACRO
-ret
+jmp       done_drawing_things
 
 
 
-
-ENDP
-
-PROC    AM_drawMarks_ NEAR
-PUBLIC  AM_drawMarks_
+PROC    AM_Drawer_ NEAR
+PUBLIC  AM_Drawer_
 
 PUSHA_NO_AX_MACRO
+
+
+mov       cx, AUTOMAP_SCREENWIDTH*AUTOMAP_SCREENHEIGHT / 2; 0D200h
+mov       dx, SCREEN0_SEGMENT
+mov       es, dx
+xor       ax, ax
+mov       di, ax
+rep stosw 
+
+cmp       byte ptr ds:[_am_grid], al ; 0
+jne       do_draw_grid
+done_drawing_grid:
+call      AM_drawWalls_
+call      AM_drawPlayers_
+cmp       byte ptr ds:[_am_cheating], 2
+je        do_draw_things
+done_drawing_things:
+; draw crosshair
+
+;    screen0[(automap_screenwidth*(automap_screenheight+1))/2] = XHAIRCOLORS; // single point for now
+mov       dx, SCREEN0_SEGMENT
+mov       es, dx
+mov       byte ptr es:[(AUTOMAP_SCREENWIDTH*(AUTOMAP_SCREENHEIGHT+1))/2 ], XHAIRCOLORS
+;call      AM_drawMarks_  ; inlined
+
 mov       si, OFFSET _markpoints
 mov       di, AMMNUMPATCHOFFSETS_FAR_OFFSET
 mov       bp, AMMNUMPATCHBYTES_SEGMENT
@@ -2299,42 +2233,7 @@ inc       di
 inc       di
 cmp       si, OFFSET _markpoints + (AM_NUMMARKPOINTS * (SIZE MPOINT_T))
 jl        loop_next_mark
-POPA_NO_AX_MACRO
-ret       
 
-
-
-ENDP
-
-
-
-PROC    AM_Drawer_ NEAR
-PUBLIC  AM_Drawer_
-
-PUSHA_NO_AX_OR_BP_MACRO
-
-
-mov       cx, AUTOMAP_SCREENWIDTH*AUTOMAP_SCREENHEIGHT / 2; 0D200h
-mov       dx, SCREEN0_SEGMENT
-mov       es, dx
-xor       ax, ax
-mov       di, ax
-rep stosw 
-
-cmp       byte ptr ds:[_am_grid], al ; 0
-jne       do_draw_grid
-done_drawing_grid:
-call      AM_drawWalls_
-call      AM_drawPlayers_
-cmp       byte ptr ds:[_am_cheating], 2
-je        do_draw_things
-done_drawing_things:
-; draw crosshair
-
-;    screen0[(automap_screenwidth*(automap_screenheight+1))/2] = XHAIRCOLORS; // single point for now
-mov       es, dx
-mov       byte ptr es:[(AUTOMAP_SCREENWIDTH*(AUTOMAP_SCREENHEIGHT+1))/2 ], XHAIRCOLORS
-call      AM_drawMarks_  ; todo inline
 
 mov       cx, AUTOMAP_SCREENHEIGHT
 
@@ -2342,13 +2241,89 @@ mov       bx, AUTOMAP_SCREENWIDTH
 xor       ax, ax
 cwd
 call      V_MarkRect_
-POPA_NO_AX_OR_BP_MACRO
+POPA_NO_AX_MACRO
 ret      
-do_draw_things:
-call      AM_drawThings_
-jmp       done_drawing_things
+
 do_draw_grid:
-call      AM_drawGrid_
+
+;call      AM_drawGrid_
+; inlined
+
+
+push      bp
+mov       bp, sp
+sub       sp, 8 ; size of mline
+
+
+mov       ax, word ptr ds:[_screen_botleft_x]
+mov       cx, ax  ; cx = start
+mov       bx, ax  ; bx = end
+add       bx, word ptr ds:[_screen_viewport_width]
+sub       ax, word ptr ds:[_bmaporgx]
+jns       dont_do_abs_x
+neg       ax
+dont_do_abs_x:
+and       ax, 07Fh
+jz        dont_mod_start_x
+skip_sign_adjust:
+add       cx, 080h
+sub       cx, ax
+dont_mod_start_x:
+
+mov       ax, word ptr ds:[_screen_botleft_y]
+mov       word ptr ss:[bp - 6], ax  ; am_ml_a.y
+add       ax, word ptr ds:[_screen_viewport_height]
+mov       word ptr ss:[bp - 2], ax  ; am_ml_b.y
+
+loop_do_next_vertical_line:
+cmp       cx, bx
+jge       done_with_vertical_grid
+mov       word ptr ss:[bp - 4], cx  ; am_ml_b.x
+mov       word ptr ss:[bp - 8], cx  ; am_ml_a.x
+lea       ax, [bp - 8]
+mov       dl, GRIDCOLORS
+call      AM_drawMline_
+add       cx, 080h
+jmp       loop_do_next_vertical_line
+done_with_vertical_grid:
+
+
+mov       ax, word ptr ds:[_screen_botleft_y]
+mov       cx, ax  ; cx = start
+mov       bx, ax  ; bx = end
+add       bx, word ptr ds:[_screen_viewport_height]
+sub       ax, word ptr ds:[_bmaporgy]
+jns       dont_do_abs_y
+neg       ax
+dont_do_abs_y:
+
+and       ax, 07Fh
+jz        dont_mod_start_y
+add       cx, 080h
+sub       cx, ax
+dont_mod_start_y:
+
+
+mov       ax, word ptr ds:[_screen_botleft_x]
+mov       word ptr ss:[bp - 8], ax  ; am_ml_a.x
+add       ax, word ptr ds:[_screen_viewport_width]
+mov       word ptr ss:[bp - 4], ax  ; am_ml_b.x
+
+loop_do_next_horizontal_line:
+cmp       cx, bx
+jge       done_with_horizontal_grid
+mov       word ptr ss:[bp - 2], cx  ; am_ml_a.y
+mov       word ptr ss:[bp - 6], cx  ; am_ml_b.y
+lea       ax, [bp - 8]
+mov       dl, GRIDCOLORS
+call      AM_drawMline_
+add       cx, 080h
+jmp       loop_do_next_horizontal_line
+done_with_horizontal_grid:
+
+LEAVE_MACRO
+
+
 jmp       done_drawing_grid
 
 ENDP
