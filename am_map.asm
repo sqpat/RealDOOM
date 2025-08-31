@@ -745,7 +745,8 @@ ENDP
 PROC    AM_Stop_ NEAR
 PUBLIC  AM_Stop_
 
-;mov       byte ptr ds:[_automapactive], 0
+mov       word ptr ds:[_am_stopped], 00001h
+mov       byte ptr ds:[_st_gamestate], 1
 ret      
 
 

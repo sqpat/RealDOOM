@@ -50,7 +50,8 @@ push  dx
 les   ax, dword ptr ds:[_ticcount]
 mov   cx, ax
 sub   cx, word ptr ds:[_gametime + 0]
-jle   exit_net_update
+;js    exit_net_update  ; todo not sure this case is even poossible? maybe remove
+je    exit_net_update
 mov   word ptr ds:[_gametime + 0], ax
 mov   word ptr ds:[_gametime + 2], es
 ; cx has loopcount..
@@ -180,7 +181,7 @@ done_with_maketic_loop:
 loop_counts:
 
 cmp   byte ptr ds:[_advancedemo], 0
-jne   do_demo          ; todo make this default off?
+jne   do_demo
 
 dont_do_demo:
 
