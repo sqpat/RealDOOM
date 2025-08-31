@@ -292,8 +292,9 @@
 #define deadAttackerX     		  	    (*((fixed_t_union  __near*)   	     (_NULL_OFFSET + 0x01F8)))
 #define deadAttackerY     				(*((fixed_t_union  __near*)   	     (_NULL_OFFSET + 0x01FC)))
 
-// #define M_Random_addr                   (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0200)))
-#define I_WaitVBL_addr                  (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0204)))
+#define am_scale_mtof     		  	    (*((fixed_t_union  __near*)   	     (_NULL_OFFSET + 0x0200)))
+#define am_scale_ftom     				(*((fixed_t_union  __near*)   	     (_NULL_OFFSET + 0x0204)))
+
 #define I_SetPalette_addr               (*((uint32_t  __near*)               (_NULL_OFFSET + 0x0208)))
 
 
@@ -337,7 +338,7 @@
 #define floorphyspage                   (*((int8_t __near*)                  (_NULL_OFFSET + 0x02B7)))
 #define gameaction                      (*((gameaction_t __near*)            (_NULL_OFFSET + 0x02B8)))
 #define viewactive                      (*((boolean __near*)                 (_NULL_OFFSET + 0x02B9)))
-// #define automapactive                   (*((boolean __near*)                 (_NULL_OFFSET + 0x02BA)))
+#define am_bigstate                     (*((boolean __near*)                 (_NULL_OFFSET + 0x02BA)))
 #define commercial                      (*((boolean __near*)                 (_NULL_OFFSET + 0x02BB)))
 #define registered                      (*((boolean __near*)                 (_NULL_OFFSET + 0x02BC)))
 #define shareware                       (*((boolean __near*)                 (_NULL_OFFSET + 0x02BD)))
@@ -353,7 +354,7 @@
 #define sendpause    			      	  (*((int8_t __near*)                (_NULL_OFFSET + 0x02CA)))
 #define sendsave    			      	  (*((int8_t __near*)                (_NULL_OFFSET + 0x02CB)))
 
-// 2ca, 2cb unused
+
 
 #define R_GetCompositeTexture_addr 	    (*((uint32_t  __near*)               (_NULL_OFFSET + 0x02CC)))
 
@@ -373,7 +374,9 @@
 #define useDeadAttackerRef				(*((boolean __near*)                 (_NULL_OFFSET + 0x033A)))
 #define paused							(*((boolean __near*)                 (_NULL_OFFSET + 0x033B)))
 #define menuactive						(*((boolean __near*)                 (_NULL_OFFSET + 0x033C)))
-
+#define followplayer					(*((boolean __near*)                 (_NULL_OFFSET + 0x033D)))
+#define am_cheating						(*((boolean __near*)                 (_NULL_OFFSET + 0x033E)))
+#define am_grid 						(*((boolean __near*)                 (_NULL_OFFSET + 0x033F)))
 
 
 
@@ -402,9 +405,9 @@
 
 #define currentThinkerListHead  		(*((int16_t __near*)                 (_NULL_OFFSET + 0x03D2)))
 
-#define S_StartSoundWithSecnum_addr     (*((uint32_t  __near*)             (_NULL_OFFSET + 0x03D4)))
-#define G_SecretExitLevel_addr          (*((uint32_t  __near*)             (_NULL_OFFSET + 0x03D8)))
-// #define AM_Stop_addr		            (*((uint32_t  __near*)             (_NULL_OFFSET + 0x03DC)))
+#define S_StartSoundWithSecnum_addr     (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03D4)))
+#define G_SecretExitLevel_addr          (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03D8)))
+#define I_WaitVBL_addr                  (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03DC)))
 
 
 
@@ -769,8 +772,6 @@ extern int16_t              numtextures;
  
 //extern int16_t              ;
 
-extern int8_t               am_cheating;
-extern int8_t 	            am_grid;
 extern mpoint_t             m_paninc; 
 extern int16_t 	            mtof_zoommul; 
 extern int16_t 	            ftom_zoommul; 
@@ -778,24 +779,14 @@ extern int16_t 	            screen_botleft_x;
 extern int16_t              screen_botleft_y;
 extern int16_t 	            screen_topright_x;
 extern int16_t              screen_topright_y;
-extern int16_t              am_min_level_x;
-extern int16_t	            am_min_level_y;
-extern int16_t              am_max_level_x;
-extern int16_t	            am_max_level_y;
 extern uint16_t 	        am_min_scale_mtof;
 extern fixed_t_union 	    am_max_scale_mtof;
 extern int16_t              old_screen_botleft_x;
 extern int16_t              old_screen_botleft_y;
 extern mpoint_t             screen_oldloc;
-extern fixed_t_union        am_scale_mtof;
-extern fixed_t_union        am_scale_ftom;
 extern int8_t               markpointnum;
-extern int8_t               followplayer;
 
-extern boolean              am_bigstate;
 
-extern int8_t               am_lastlevel; 
-extern int8_t               am_lastepisode;
 
 
 

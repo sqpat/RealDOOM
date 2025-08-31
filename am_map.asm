@@ -94,17 +94,11 @@ AM_CLEARMARKKEY =   'c'
 .DATA
 
 EXTRN _m_paninc:MPOINT_T
-EXTRN _am_scale_ftom:DWORD
-EXTRN _am_scale_mtof:DWORD
 EXTRN _mtof_zoommul:WORD
 EXTRN _ftom_zoommul:WORD
 
-EXTRN _am_min_level_x:WORD
-EXTRN _am_min_level_y:WORD
 EXTRN _am_min_scale_mtof:WORD
 EXTRN _am_max_scale_mtof:WORD
-EXTRN _am_max_level_x:WORD
-EXTRN _am_max_level_y:WORD
 
 EXTRN _screen_botleft_x:WORD
 EXTRN _screen_botleft_y:WORD
@@ -115,17 +109,6 @@ EXTRN _screen_oldloc:MPOINT_T
 EXTRN _screen_oldloc:MPOINT_T
 EXTRN _old_screen_botleft_x:WORD
 EXTRN _old_screen_botleft_y:WORD
-
-EXTRN _followplayer:BYTE
-EXTRN _am_cheating:BYTE
-EXTRN _am_grid:BYTE
-EXTRN _am_bigstate:BYTE
-
-
-EXTRN _markpointnum:BYTE
-EXTRN _am_lastlevel:BYTE
-EXTRN _am_lastepisode:BYTE
-
 
 
 
@@ -260,6 +243,24 @@ _thintriangle_guy:
 
 _markpoints:
 dw AM_NUMMARKPOINTS * 2 DUP(-1)
+
+_am_min_level_x:
+dw 0
+_am_min_level_y:
+dw 0
+_am_max_level_x:
+dw 0
+_am_max_level_y:
+dw 0
+
+
+_am_lastlevel:
+db 0
+_am_lastepisode:
+db 0
+_markpointnum:
+dw 0
+
 
 
 ;#pragma aux trig16params \
@@ -511,14 +512,13 @@ PUBLIC  AM_addMark_
 
 
 push      bx
-mov       al, byte ptr ds:[_markpointnum]
-cbw      
+mov       ax, word ptr cs:[_markpointnum]
 
 mov       bx, ax
 inc       ax ; for division
 mov       bh, AM_NUMMARKPOINTS
 div       bh
-mov       byte ptr ds:[_markpointnum], ah
+mov       byte ptr cs:[_markpointnum], ah
 xor       bh, bh
 
 les       ax, dword ptr ds:[_screen_viewport_width] ; todo les
@@ -594,10 +594,10 @@ loop      loop_next_vertex
 push      ss
 pop       ds
 
-mov       word ptr ds:[_am_min_level_x], dx
-mov       word ptr ds:[_am_max_level_x], bx
-mov       word ptr ds:[_am_min_level_y], di
-mov       word ptr ds:[_am_max_level_y], bp
+mov       word ptr cs:[_am_min_level_x], dx
+mov       word ptr cs:[_am_max_level_x], bx
+mov       word ptr cs:[_am_min_level_y], di
+mov       word ptr cs:[_am_max_level_y], bp
 
 ;todo this in theory can be better. but whoe cares, runs once
 ;    max_w = am_max_level_x - am_min_level_x;
@@ -670,14 +670,14 @@ mov       cx, dx
 sar       ax, 1
 add       cx, ax
 neg       ax
-cmp       cx, word ptr ds:[_am_max_level_x]
+cmp       cx, word ptr cs:[_am_max_level_x]
 jg        use_maxlevelx
-cmp       cx, word ptr ds:[_am_min_level_x]
+cmp       cx, word ptr cs:[_am_min_level_x]
 jge       dont_subtract_x
-add       ax, word ptr ds:[_am_min_level_x]
+add       ax, word ptr cs:[_am_min_level_x]
 jmp       done_subtracting_x
 use_maxlevelx:
-add       ax, word ptr ds:[_am_max_level_x]
+add       ax, word ptr cs:[_am_max_level_x]
 jmp       done_subtracting_x
 dont_subtract_x:
 xchg      ax, dx  ; just use this value
@@ -691,14 +691,14 @@ mov       cx, bx
 sar       ax, 1
 add       cx, ax
 neg       ax
-cmp       cx, word ptr ds:[_am_max_level_y]
+cmp       cx, word ptr cs:[_am_max_level_y]
 jle       use_minlevel7
-add       ax, word ptr ds:[_am_max_level_y]
+add       ax, word ptr cs:[_am_max_level_y]
 jmp       done_subtracting_y
 use_minlevel7:
-cmp       cx, word ptr ds:[_am_min_level_y]
+cmp       cx, word ptr cs:[_am_min_level_y]
 jge       dont_subtract_y
-add       ax, word ptr ds:[_am_min_level_y]
+add       ax, word ptr cs:[_am_min_level_y]
 jmp       done_subtracting_y
 dont_subtract_y:
 xchg      ax, bx
@@ -747,7 +747,7 @@ mov       di, OFFSET _markpoints
 push      cs
 pop       es
 rep stosw
-mov       byte ptr ds:[_markpointnum], cl ; 0
+mov       byte ptr cs:[_markpointnum], cl ; 0
 pop       di
 pop       cx
 ret       
@@ -780,11 +780,10 @@ call      AM_Stop_
 dont_call_am_stop:
 
 mov       byte ptr ds:[_am_stopped], 0
-mov       al, byte ptr ds:[_am_lastlevel] ; todo make these two adjacent
+mov       ax, word ptr cs:[_am_lastlevel] ; todo make these two adjacent
 cmp       al, byte ptr ds:[_gamemap]
 jne       do_level_init
-mov       al, byte ptr ds:[_am_lastepisode]
-cmp       al, byte ptr ds:[_gameepisode]
+cmp       ah, byte ptr ds:[_gameepisode]
 je        just_init_variables
 do_level_init:
 ;call      AM_LevelInit_
@@ -821,9 +820,9 @@ mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx
 
 mov       al, byte ptr ds:[_gamemap]
-mov       byte ptr ds:[_am_lastlevel], al   ; todo make these all adjacent.. one read one write?
+mov       byte ptr cs:[_am_lastlevel], al   ; todo make these all adjacent.. one read one write?
 mov       al, byte ptr ds:[_gameepisode]
-mov       byte ptr ds:[_am_lastepisode], al
+mov       byte ptr cs:[_am_lastepisode], al
 
 just_init_variables:
 ;call      AM_initVariables_
@@ -1156,7 +1155,7 @@ mov       cx, ds
 call      getStringByIndex_
 
 mov       ax, 030h ; null terminated '0'
-add       al, byte ptr ds:[_markpointnum] ; add digit
+add       al, byte ptr cs:[_markpointnum] ; add digit
 mov       word ptr ds:[_player_message_string + 12], ax
 
 call      AM_addMark_

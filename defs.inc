@@ -261,8 +261,9 @@ _V_DrawPatchDirect_addr =            _NULL_OFFSET + 001F4h
 
 _deadAttackerX =                     _NULL_OFFSET + 001F8h
 _deadAttackerY =                     _NULL_OFFSET + 001FCh
-;_M_Random_addr =                     _NULL_OFFSET + 00200h
-_I_WaitVBL_addr =       		     _NULL_OFFSET + 00204h
+_am_scale_mtof =                     _NULL_OFFSET + 00200h
+_am_scale_ftom =       		     	 _NULL_OFFSET + 00204h
+
 _I_SetPalette_addr = 	        	 _NULL_OFFSET + 00208h
 
 
@@ -300,7 +301,7 @@ _ceilphyspage =                  	 _NULL_OFFSET + 002B6h
 _floorphyspage =                 	 _NULL_OFFSET + 002B7h
 _gameaction =                 		 _NULL_OFFSET + 002B8h
 _viewactive =                 		 _NULL_OFFSET + 002B9h
-; 2ba empty
+_am_bigstate =                 		 _NULL_OFFSET + 002BAh
 _commercial =                 		 _NULL_OFFSET + 002BBh
 _registered =                 		 _NULL_OFFSET + 002BCh
 _shareware =                 		 _NULL_OFFSET + 002BDh
@@ -332,6 +333,11 @@ _useDeadAttackerRef =              	 _NULL_OFFSET + 0033Ah
 _paused	=						     _NULL_OFFSET + 0033Bh
 _menuactive	=					     _NULL_OFFSET + 0033Ch
 
+_followplayer =			             _NULL_OFFSET + 0033Dh
+_am_cheating =			             _NULL_OFFSET + 0033Eh
+_am_grid = 		       		         _NULL_OFFSET + 0033Fh
+
+
 ; 33d to 33F free
 
 _psprites =              			 _NULL_OFFSET + 00340h
@@ -352,8 +358,7 @@ _currentThinkerListHead = 			 _NULL_OFFSET + 003D2h
 
 _S_StartSoundWithSecnum_addr =       _NULL_OFFSET + 003D4h
 _G_SecretExitLevel_addr =            _NULL_OFFSET + 003D8h
-;_AM_Stop_addr =		                 _NULL_OFFSET + 003DCh
-
+_I_WaitVBL_addr =       		     _NULL_OFFSET + 003DCh
 
 _braintargets =                      _NULL_OFFSET + 003E0h
 _tmbbox =                            _NULL_OFFSET + 00420h

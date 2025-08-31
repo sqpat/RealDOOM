@@ -175,9 +175,6 @@ int16_t             numtextures;
 
 
 
-int8_t 	am_cheating = 0;
-int8_t 	am_grid = 0;
-
 // size of window on screen
 mpoint_t 	m_paninc; // how far the window pans each tic (map coords)
 int16_t 	mtof_zoommul; // how far the window zooms in each tic (map coords)
@@ -190,11 +187,6 @@ int16_t 	screen_topright_x, screen_topright_y; // UR x,y where the window is on 
 // width/height of window on map (map coords)
 //
 
-// based on level size
-int16_t am_min_level_x;
-int16_t	am_min_level_y;
-int16_t am_max_level_x;
-int16_t	am_max_level_y;
 
 
 // based on player size
@@ -208,22 +200,11 @@ int16_t old_screen_botleft_x, old_screen_botleft_y;
 // old location used by the Follower routine
 mpoint_t screen_oldloc;
 
-// used by MTOF to scale from map-to-frame-buffer coords
-
-fixed_t_union am_scale_mtof;
-
-// used by FTOM to scale from frame-buffer-to-map coords (=1/scale_mtof)
-fixed_t_union am_scale_ftom;
-
 int8_t markpointnum = 0; // next point to be assigned
 
-int8_t followplayer = 1; // specifies whether to follow the player around
 
 
-boolean am_bigstate=0;
 
-int8_t am_lastlevel = -1;
-int8_t am_lastepisode = -1;
 
 
 
