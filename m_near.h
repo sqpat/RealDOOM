@@ -797,12 +797,7 @@ extern boolean              am_bigstate;
 
 extern int8_t               am_lastlevel; 
 extern int8_t               am_lastepisode;
-extern mline_t              player_arrow[7];
-extern mline_t              cheat_player_arrow[16]; 
-/*
-extern mline_t              triangle_guy[3];
-*/
-extern mline_t              thintriangle_guy[3];
+
 
 
 

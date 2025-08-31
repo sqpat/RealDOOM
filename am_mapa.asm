@@ -130,9 +130,6 @@ EXTRN _am_lastepisode:BYTE
 
 
 
-EXTRN _cheat_player_arrow:MLINE_T
-EXTRN _player_arrow:MLINE_T
-EXTRN _thintriangle_guy:MLINE_T
 EXTRN _markpoints:MLINE_T
 
 
@@ -145,6 +142,234 @@ PROC    AM_MAP_STARTMARKER_ NEAR
 PUBLIC  AM_MAP_STARTMARKER_
 ENDP
 
+COMMENT @
+
+_player_arrow:
+
+ dd FFF00000h
+ dd 00000000h
+ dd 00124924h
+ dd 00000000h
+ dd 00124924h
+ dd 00000000h
+ dd 00092492h
+ dd 00049249h
+ dd 00124924h
+ dd 00000000h
+ dd 00092492h
+ dd FFFB6DB7h
+ dd FFF00000h
+ dd 00000000h
+ dd FFEB6DB8h
+ dd 00049249h
+ dd FFF00000h
+ dd 00000000h
+ dd FFEB6DB8h
+ dd FFFB6DB7h
+ dd FFF49249h
+ dd 00000000h
+ dd FFF00000h
+ dd 00049249h
+ dd FFF49249h
+ dd 00000000h
+ dd FFF00000h
+ dd FFFB6DB7h
+
+_cheat_player_arrow:
+dd FFF00000h
+ dd 00000000h
+ dd 00124924h
+ dd 00000000h
+ dd 00124924h
+ dd 00000000h
+ dd 00092492h
+ dd 00030C30h
+ dd 00124924h
+ dd 00000000h
+ dd 00092492h
+ dd FFFCF3D0h
+ dd FFF00000h
+ dd 00000000h
+ dd FFEB6DB8h
+ dd 00030C30h
+ dd FFF00000h
+ dd 00000000h
+ dd FFEB6DB8h
+ dd FFFCF3D0h
+ dd FFF49249h
+ dd 00000000h
+ dd FFF00000h
+ dd 00030C30h
+ dd FFF49249h
+ dd 00000000h
+ dd FFF00000h
+ dd FFFCF3D0h
+ dd FFF6DB6Eh
+ dd 00000000h
+ dd FFF6DB6Eh
+ dd FFFCF3D0h
+ dd FFF6DB6Eh
+ dd FFFCF3D0h
+ dd FFF9E79Eh
+ dd FFFCF3D0h
+ dd FFF9E79Eh
+ dd FFFCF3D0h
+ dd FFF9E79Eh
+ dd 00049249h
+ dd FFFCF3D0h
+ dd 00000000h
+ dd FFFCF3D0h
+ dd FFFCF3D0h
+ dd FFFCF3D0h
+ dd FFFCF3D0h
+ dd 00000000h
+ dd FFFCF3D0h
+ dd 00000000h
+ dd FFFCF3D0h
+ dd 00000000h
+ dd 00049249h
+ dd 00030C30h
+ dd 00049249h
+ dd 00030C30h
+ dd FFFD6344h
+ dd 00030C30h
+ dd FFFD6344h
+ dd 00039E79h
+ dd FFFCD0FBh
+ dd 00039E79h
+ dd FFFCD0FBh
+ dd 0004E04Dh
+ dd FFFD6344h
+
+_thintriangle_guy:
+ dd FFFF8000h
+ dd FFFF4CCDh
+ dd 00010000h
+ dd 00000000h
+ dd 00010000h
+ dd 00000000h
+ dd FFFF8000h
+ dd 0000B333h
+ dd FFFF8000h
+ dd 0000B333h
+ dd FFFF8000h
+ dd FFFF4CCDh
+
+@
+
+_player_arrow:
+ dw 0FF00h
+ dw 00000h
+ dw 00124h
+ dw 00000h
+ dw 00124h
+ dw 00000h
+ dw 00092h
+ dw 00049h
+ dw 00124h
+ dw 00000h
+ dw 00092h
+ dw 0FFB7h
+ dw 0FF00h
+ dw 00000h
+ dw 0FEB8h
+ dw 00049h
+ dw 0FF00h
+ dw 00000h
+ dw 0FEB8h
+ dw 0FFB7h
+ dw 0FF49h
+ dw 00000h
+ dw 0FF00h
+ dw 00049h
+ dw 0FF49h
+ dw 00000h
+ dw 0FF00h
+ dw 0FFB7h
+
+
+_cheat_player_arrow:
+
+dw 0FF00h
+ dw 00000h
+ dw 00124h
+ dw 00000h
+ dw 00124h
+ dw 00000h
+ dw 00092h
+ dw 00030h
+ dw 00124h
+ dw 00000h
+ dw 00092h
+ dw 0FFD0h
+ dw 0FF00h
+ dw 00000h
+ dw 0FEB8h
+ dw 00030h
+ dw 0FF00h
+ dw 00000h
+ dw 0FEB8h
+ dw 0FFD0h
+ dw 0FF49h
+ dw 00000h
+ dw 0FF00h
+ dw 00030h
+ dw 0FF49h
+ dw 00000h
+ dw 0FF00h
+ dw 0FFD0h
+ dw 0FF6Eh
+ dw 00000h
+ dw 0FF6Eh
+ dw 0FFD0h
+ dw 0FF6Eh
+ dw 0FFD0h
+ dw 0FF9Eh
+ dw 0FFD0h
+ dw 0FF9Eh
+ dw 0FFD0h
+ dw 0FF9Eh
+ dw 00049h
+ dw 0FFD0h
+ dw 00000h
+ dw 0FFD0h
+ dw 0FFD0h
+ dw 0FFD0h
+ dw 0FFD0h
+ dw 00000h
+ dw 0FFD0h
+ dw 00000h
+ dw 0FFD0h
+ dw 00000h
+ dw 00049h
+ dw 00030h
+ dw 00049h
+ dw 00030h
+ dw 0FFD7h
+ dw 00030h
+ dw 0FFD7h
+ dw 00039h
+ dw 0FFCEh
+ dw 00039h
+ dw 0FFCEh
+ dw 0004Dh
+ dw 0FFD7h
+
+
+_thintriangle_guy:
+
+ dw 0FFF8h
+ dw 0FFF5h
+ dw 00010h
+ dw 00000h
+ dw 00010h
+ dw 00000h
+ dw 0FFF8h
+ dw 0000Bh
+ dw 0FFF8h
+ dw 0000Bh
+ dw 0FFF8h
+ dw 0FFF5h
 
 
 
@@ -1899,16 +2124,15 @@ push      cx ; bp - 0Eh
 
 mov       cx, dx
 xchg      ax, si ; si gets lineguy...
-
 loop_next_lineguy_line:
 
-lodsw
+lods      word ptr cs:[si]
 xchg      ax, di ; a.x
-lodsw
+lods      word ptr cs:[si]
 xchg      ax, dx ; a.y
-lodsw
+lods      word ptr cs:[si]
 xchg      ax, bx ; b.x
-lodsw
+lods      word ptr cs:[si]
 xchg      ax, di ; a.x in ax
 
 
@@ -2040,7 +2264,7 @@ mov       cx, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
 SHIFT_MACRO shr       cx 3 ; fineangle
 mov       bx, THINGCOLORS
 push      bx
-mov       bx, 010h
+mov       bx, 010h 
 mov       si, word ptr es:[si + MOBJ_POS_T.mp_snextRef] ; get next ref...
 
 call      AM_drawLineCharacter_
