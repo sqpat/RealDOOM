@@ -32,7 +32,6 @@ EXTRN V_DrawPatch_:FAR
 EXTRN V_MarkRect_:FAR
 EXTRN getStringByIndex_:FAR
 
-; todo ghetto
 AMMNUMPATCHOFFSETS_FAR_OFFSET = 20Ch 
 
 AUTOMAP_SCREENWIDTH = SCREENWIDTH
@@ -274,7 +273,7 @@ IF COMPISA GE COMPILE_386
     PUBLIC FastMulTrig16_
 
     
-    ;db  066h, 025h, 0FFh, 0FFh, 0, 0        ;  and eax, 0x0000FFFF      ; todo necessary...?
+    ;db  066h, 025h, 0FFh, 0FFh, 0, 0        ;  and eax, 0x0000FFFF  
     ;db 066h, 08eh, 0c0h                   ; mov es, eax
     
     ; seems to work instead of the above
@@ -405,7 +404,7 @@ PUBLIC  AM_activateNewScale_
 push      bx
 push      cx
 push      dx
-les       ax, dword ptr ds:[_screen_viewport_width]  ; todo put side by side, LES and get both
+les       ax, dword ptr ds:[_screen_viewport_width] 
 sar       ax, 1
 add       word ptr ds:[_screen_botleft_x], ax
 mov       ax, es
@@ -443,7 +442,6 @@ ret
 ENDP
 
 
-; todo inline its single usage
 ; todo optim
 PROC    AM_restoreScaleAndLoc_ NEAR
 PUBLIC  AM_restoreScaleAndLoc_
@@ -515,18 +513,18 @@ mov       al, byte ptr ds:[_markpointnum]
 cbw      
 
 mov       bx, ax
-inc       ax
+inc       ax ; for division
 mov       bh, AM_NUMMARKPOINTS
 div       bh
 mov       byte ptr ds:[_markpointnum], ah
 xor       bh, bh
 
-mov       ax, word ptr ds:[_screen_viewport_width] ; todo les
+les       ax, dword ptr ds:[_screen_viewport_width] ; todo les
 sar       ax, 1
 SHIFT_MACRO shl       bx 2
 add       ax, word ptr ds:[_screen_botleft_x]
 mov       word ptr ds:[bx + _markpoints + MPOINT_T.mpoint_x], ax
-mov       ax, word ptr ds:[_screen_viewport_height]
+mov       ax, es
 sar       ax, 1
 add       ax, word ptr ds:[_screen_botleft_y]
 mov       word ptr ds:[bx + _markpoints + MPOINT_T.mpoint_y], ax
@@ -720,10 +718,115 @@ FRAC_SCALE_UNIT = 01000h
 
 
 
-PROC    AM_initVariables_ NEAR
-PUBLIC  AM_initVariables_
 
+PROC    AM_recordOldViewport_
+
+mov       ax, word ptr ds:[_screen_botleft_x]
+mov       word ptr ds:[_old_screen_botleft_x], ax
+mov       ax, word ptr ds:[_screen_botleft_y]
+mov       word ptr ds:[_old_screen_botleft_y], ax
+mov       ax, word ptr ds:[_screen_viewport_width]
+mov       word ptr ds:[_old_screen_viewport_width], ax
+mov       ax, word ptr ds:[_screen_viewport_height]
+mov       word ptr ds:[_old_screen_viewport_height], ax
+
+ret
+
+ENDP
+
+PROC    AM_clearMarks_ NEAR
+PUBLIC  AM_clearMarks_
+
+push      cx
+push      di
+mov       cx, (AM_NUMMARKPOINTS * SIZE MPOINT_T) / 2 
+mov       ax, -1
+mov       di, OFFSET _markpoints
+push      ds
+pop       es
+rep stosw
+mov       byte ptr ds:[_markpointnum], cl ; 0
+pop       di
+pop       cx
+ret       
+
+ENDP
+
+
+
+
+; todo inline
+PROC    AM_Stop_ NEAR
+PUBLIC  AM_Stop_
+
+;mov       byte ptr ds:[_automapactive], 0
+mov       word ptr ds:[_am_stopped], 00001h
+mov       byte ptr ds:[_st_gamestate], 1
+ret      
+
+
+ENDP
+
+PROC    AM_Start_ NEAR
+PUBLIC  AM_Start_
 PUSHA_NO_AX_OR_BP_MACRO
+
+mov       al, byte ptr ds:[_am_stopped]
+test      al, al
+jne       dont_call_am_stop
+call      AM_Stop_
+dont_call_am_stop:
+
+mov       byte ptr ds:[_am_stopped], 0
+mov       al, byte ptr ds:[_am_lastlevel] ; todo make these two adjacent
+cmp       al, byte ptr ds:[_gamemap]
+jne       do_level_init
+mov       al, byte ptr ds:[_am_lastepisode]
+cmp       al, byte ptr ds:[_gameepisode]
+je        just_init_variables
+do_level_init:
+;call      AM_LevelInit_
+; inlined
+
+mov       word ptr ds:[_am_scale_mtof + 0], 03333h  ; 0x10000 / 5
+
+call      AM_clearMarks_
+mov       bx, 0B333h
+xor       cx, cx
+call      AM_findMinMaxBoundaries_
+mov       dx, word ptr ds:[_am_min_scale_mtof]
+xor       ax, ax
+call      FastDiv3216u_
+mov       word ptr ds:[_am_scale_mtof + 0], ax
+mov       word ptr ds:[_am_scale_mtof + 2], dx
+
+cmp       dx, word ptr ds:[_am_max_scale_mtof + 2]
+jg        set_to_minscale
+jne       dont_set_to_minscale
+cmp       ax, word ptr ds:[_am_max_scale_mtof + 0]
+jbe       dont_set_to_minscale
+set_to_minscale:
+mov       ax, word ptr ds:[_am_min_scale_mtof]
+mov       word ptr ds:[_am_scale_mtof + 0], ax
+xor       dx, dx
+mov       word ptr ds:[_am_scale_mtof + 2], dx
+dont_set_to_minscale:
+xchg      ax, bx
+mov       cx, dx
+mov       ax, 1
+call      FixedDivWholeA_
+mov       word ptr ds:[_am_scale_ftom + 0], ax
+mov       word ptr ds:[_am_scale_ftom + 2], dx
+
+mov       al, byte ptr ds:[_gamemap]
+mov       byte ptr ds:[_am_lastlevel], al   ; todo make these all adjacent.. one read one write?
+mov       al, byte ptr ds:[_gameepisode]
+mov       byte ptr ds:[_am_lastepisode], al
+
+just_init_variables:
+;call      AM_initVariables_
+
+; inlined
 xor       ax, ax
 mov       word ptr ds:[_m_paninc + MPOINT_T.mpoint_y], ax
 mov       word ptr ds:[_m_paninc + MPOINT_T.mpoint_x], ax
@@ -766,124 +869,6 @@ call      AM_recordOldViewport_
 mov       byte ptr ds:[_st_gamestate], 0
 mov       byte ptr ds:[_st_firsttime], 1
 POPA_NO_AX_OR_BP_MACRO
-ret       
-
-ENDP
-
-PROC    AM_recordOldViewport_
-
-mov       ax, word ptr ds:[_screen_botleft_x]
-mov       word ptr ds:[_old_screen_botleft_x], ax
-mov       ax, word ptr ds:[_screen_botleft_y]
-mov       word ptr ds:[_old_screen_botleft_y], ax
-mov       ax, word ptr ds:[_screen_viewport_width]
-mov       word ptr ds:[_old_screen_viewport_width], ax
-mov       ax, word ptr ds:[_screen_viewport_height]
-mov       word ptr ds:[_old_screen_viewport_height], ax
-
-ret
-
-ENDP
-
-PROC    AM_clearMarks_ NEAR
-PUBLIC  AM_clearMarks_
-
-push      cx
-push      di
-mov       cx, (AM_NUMMARKPOINTS * SIZE MPOINT_T) / 2 
-mov       ax, -1
-mov       di, OFFSET _markpoints
-push      ds
-pop       es
-rep stosw
-mov       byte ptr ds:[_markpointnum], cl ; 0
-pop       di
-pop       cx
-ret       
-
-ENDP
-
-PROC    AM_LevelInit_ NEAR
-PUBLIC  AM_LevelInit_
-
-push      bx
-push      cx
-push      dx
-mov       word ptr ds:[_am_scale_mtof + 0], 03333h  ; 0x10000 / 5
-
-call      AM_clearMarks_
-mov       bx, 0B333h
-xor       cx, cx
-call      AM_findMinMaxBoundaries_
-mov       dx, word ptr ds:[_am_min_scale_mtof]
-xor       ax, ax
-call      FastDiv3216u_
-mov       word ptr ds:[_am_scale_mtof + 0], ax
-mov       word ptr ds:[_am_scale_mtof + 2], dx
-
-cmp       dx, word ptr ds:[_am_max_scale_mtof + 2]
-jg        set_to_minscale
-jne       dont_set_to_minscale
-cmp       ax, word ptr ds:[_am_max_scale_mtof + 0]
-jbe       dont_set_to_minscale
-set_to_minscale:
-mov       ax, word ptr ds:[_am_min_scale_mtof]
-mov       word ptr ds:[_am_scale_mtof + 0], ax
-xor       dx, dx
-mov       word ptr ds:[_am_scale_mtof + 2], dx
-dont_set_to_minscale:
-xchg      ax, bx
-mov       cx, dx
-mov       ax, 1
-call      FixedDivWholeA_
-mov       word ptr ds:[_am_scale_ftom + 0], ax
-mov       word ptr ds:[_am_scale_ftom + 2], dx
-pop       dx
-pop       cx
-pop       bx
-ret       
-
-
-ENDP
-
-
-; todo inline
-PROC    AM_Stop_ NEAR
-PUBLIC  AM_Stop_
-
-;mov       byte ptr ds:[_automapactive], 0
-mov       word ptr ds:[_am_stopped], 00001h
-mov       byte ptr ds:[_st_gamestate], 1
-ret      
-
-
-ENDP
-
-PROC    AM_Start_ NEAR
-PUBLIC  AM_Start_
-
-mov       al, byte ptr ds:[_am_stopped]
-test      al, al
-jne       dont_call_am_stop
-call      AM_Stop_
-dont_call_am_stop:
-
-mov       byte ptr ds:[_am_stopped], 0
-mov       al, byte ptr ds:[_am_lastlevel] ; todo make these two adjacent
-cmp       al, byte ptr ds:[_gamemap]
-jne       do_level_init
-mov       al, byte ptr ds:[_am_lastepisode]
-cmp       al, byte ptr ds:[_gameepisode]
-je        just_init_variables
-do_level_init:
-call      AM_LevelInit_
-mov       al, byte ptr ds:[_gamemap]
-mov       byte ptr ds:[_am_lastlevel], al   ; todo make these all adjacent.. one read one write?
-mov       al, byte ptr ds:[_gameepisode]
-mov       byte ptr ds:[_am_lastepisode], al
-
-just_init_variables:
-call      AM_initVariables_
 ret      
 
 
@@ -915,27 +900,7 @@ ret
 
 ENDP
 
-PROC    AM_maxOutWindowScale_ NEAR
-PUBLIC  AM_maxOutWindowScale_
 
-push      bx
-push      cx
-push      dx
-mov       ax, 1
-les       bx, dword ptr ds:[_am_max_scale_mtof + 0]
-mov       cx, es
-mov       word ptr ds:[_am_scale_mtof + 0], bx
-mov       word ptr ds:[_am_scale_mtof + 2], cx
-call      FixedDivWholeA_
-mov       word ptr ds:[_am_scale_ftom + 0], ax
-mov       word ptr ds:[_am_scale_ftom + 2], dx
-call      AM_activateNewScale_
-pop       dx
-pop       cx
-pop       bx
-ret       
-
-ENDP
 
 
 
@@ -1214,79 +1179,20 @@ ENDP
 
 
 
-PROC    AM_changeWindowScale_ NEAR
-PUBLIC  AM_changeWindowScale_
+
+
+
+PROC    AM_Ticker_ NEAR
+PUBLIC  AM_Ticker_
 
 push      bx
 push      cx
 push      dx
 
-;    am_scale_mtof.w = FixedMul1632(mtof_zoommul, am_scale_mtof.w)<<4;
-;    am_scale_ftom.w = FixedDivWholeA(1, am_scale_mtof.w);
-
-
-les       bx, dword ptr ds:[_am_scale_mtof + 0]
-mov       cx, es
-mov       ax, word ptr ds:[_mtof_zoommul]
-;SHIFT_MACRO sal ax 4   ; didnt work
-call      FixedMul1632_
-
-sal       ax, 1
-rcl       dx, 1
-sal       ax, 1
-rcl       dx, 1
-sal       ax, 1
-rcl       dx, 1
-sal       ax, 1
-rcl       dx, 1
-
-mov       word ptr ds:[_am_scale_mtof + 0], ax
-mov       word ptr ds:[_am_scale_mtof + 2], dx
-push      ax
-push      dx
-xchg      ax, bx
-mov       cx, dx
-mov       ax, 1
-call      FixedDivWholeA_
-mov       word ptr ds:[_am_scale_ftom + 0], ax
-mov       word ptr ds:[_am_scale_ftom + 2], dx
-pop       ax ; ax gets high
-pop       dx
-
-test      ax, ax
-jne       not_minout
-cmp       dx, word ptr ds:[_am_min_scale_mtof + 0]
-jb        min_out_windowscale
-not_minout:
-cmp       ax, word ptr ds:[_am_max_scale_mtof + 2]
-jg        max_out_windowscale
-jne       activate_new_scale
-cmp       dx, word ptr ds:[_am_max_scale_mtof + 0]
-jbe       activate_new_scale
-max_out_windowscale:
-call      AM_maxOutWindowScale_
-exit_am_changewindowscale:
-pop       dx
-pop       cx
-pop       bx
-ret       
-min_out_windowscale:
-call      AM_minOutWindowScale_
-jmp       exit_am_changewindowscale
-activate_new_scale:
-call      AM_activateNewScale_
-jmp       exit_am_changewindowscale
-
-
-ENDP
-
-
-PROC    AM_doFollowPlayer_ NEAR
-PUBLIC  AM_doFollowPlayer_
-
-
-push      bx
-push      dx
+cmp       byte ptr ds:[_followplayer], 0
+je        dont_follow
+;call      AM_doFollowPlayer_
+; inlined
 
 ; compare intbits
 les       bx, dword ptr ds:[_playerMobj_pos]
@@ -1333,22 +1239,69 @@ mov       word ptr ds:[_screen_topright_y], ax
 
 
 exit_follow_player:
-pop       dx
-pop       bx
-ret       
-
-ENDP
-
-PROC    AM_Ticker_ NEAR
-PUBLIC  AM_Ticker_
-
-cmp       byte ptr ds:[_followplayer], 0
-je        dont_follow
-call      AM_doFollowPlayer_
 dont_follow:
 cmp       word ptr ds:[_ftom_zoommul], FRAC_SCALE_UNIT
 je        dont_scale
-call      AM_changeWindowScale_
+;call      AM_changeWindowScale_
+; inlined
+
+;    am_scale_mtof.w = FixedMul1632(mtof_zoommul, am_scale_mtof.w)<<4;
+;    am_scale_ftom.w = FixedDivWholeA(1, am_scale_mtof.w);
+
+les       bx, dword ptr ds:[_am_scale_mtof + 0]
+mov       cx, es
+mov       ax, word ptr ds:[_mtof_zoommul]
+;SHIFT_MACRO sal ax 4   ; didnt work
+call      FixedMul1632_
+
+sal       ax, 1
+rcl       dx, 1
+sal       ax, 1
+rcl       dx, 1
+sal       ax, 1
+rcl       dx, 1
+sal       ax, 1
+rcl       dx, 1
+
+mov       word ptr ds:[_am_scale_mtof + 0], ax
+mov       word ptr ds:[_am_scale_mtof + 2], dx
+push      ax
+push      dx
+xchg      ax, bx
+mov       cx, dx
+mov       ax, 1
+call      FixedDivWholeA_
+mov       word ptr ds:[_am_scale_ftom + 0], ax
+mov       word ptr ds:[_am_scale_ftom + 2], dx
+pop       ax ; ax gets high
+pop       dx
+
+test      ax, ax
+jne       not_minout
+cmp       dx, word ptr ds:[_am_min_scale_mtof + 0]
+jb        min_out_windowscale
+not_minout:
+cmp       ax, word ptr ds:[_am_max_scale_mtof + 2]
+jg        max_out_windowscale
+jne       activate_new_scale
+cmp       dx, word ptr ds:[_am_max_scale_mtof + 0]
+jbe       activate_new_scale
+max_out_windowscale:
+;call      AM_maxOutWindowScale_
+; inlined
+
+mov       ax, 1
+les       bx, dword ptr ds:[_am_max_scale_mtof + 0]
+mov       cx, es
+mov       word ptr ds:[_am_scale_mtof + 0], bx
+mov       word ptr ds:[_am_scale_mtof + 2], cx
+call      FixedDivWholeA_
+mov       word ptr ds:[_am_scale_ftom + 0], ax
+mov       word ptr ds:[_am_scale_ftom + 2], dx
+activate_new_scale:
+call      AM_activateNewScale_
+exit_am_changewindowscale:
+
 dont_scale:
 cmp       word ptr ds:[_m_paninc + 0], 0
 jne       do_change_window_loc
@@ -1357,7 +1310,15 @@ je        exit_am_ticker
 do_change_window_loc:
 call      AM_changeWindowLoc_
 exit_am_ticker:
+
+pop       dx
+pop       cx
+pop       bx
+
 ret      
+min_out_windowscale:
+call      AM_minOutWindowScale_
+jmp       exit_am_changewindowscale
 
 ENDP
 
