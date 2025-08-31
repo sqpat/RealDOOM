@@ -142,121 +142,6 @@ PROC    AM_MAP_STARTMARKER_ NEAR
 PUBLIC  AM_MAP_STARTMARKER_
 ENDP
 
-COMMENT @
-
-_player_arrow:
-
- dd 0FFF00000h
- dd 000000000h
- dd 000124924h
- dd 000000000h
- dd 000124924h
- dd 000000000h
- dd 000092492h
- dd 000049249h
- dd 000124924h
- dd 000000000h
- dd 000092492h
- dd 0FFFB6DB7h
- dd 0FFF00000h
- dd 000000000h
- dd 0FFEB6DB8h
- dd 000049249h
- dd 0FFF00000h
- dd 000000000h
- dd 0FFEB6DB8h
- dd 0FFFB6DB7h
- dd 0FFF49249h
- dd 000000000h
- dd 0FFF00000h
- dd 000049249h
- dd 0FFF49249h
- dd 000000000h
- dd 0FFF00000h
- dd 0FFFB6DB7h
-
-_cheat_player_arrow:
- dd 0FFF00000h
- dd 000000000h
- dd 000124924h
- dd 000000000h
- dd 000124924h
- dd 000000000h
- dd 000092492h
- dd 000030C30h
- dd 000124924h
- dd 000000000h
- dd 000092492h
- dd 0FFFCF3D0h
- dd 0FFF00000h
- dd 000000000h
- dd 0FFEB6DB8h
- dd 000030C30h
- dd 0FFF00000h
- dd 000000000h
- dd 0FFEB6DB8h
- dd 0FFFCF3D0h
- dd 0FFF49249h
- dd 000000000h
- dd 0FFF00000h
- dd 000030C30h
- dd 0FFF49249h
- dd 000000000h
- dd 0FFF00000h
- dd 0FFFCF3D0h
- dd 0FFF6DB6Eh
- dd 000000000h
- dd 0FFF6DB6Eh
- dd 0FFFCF3D0h
- dd 0FFF6DB6Eh
- dd 0FFFCF3D0h
- dd 0FFF9E79Eh
- dd 0FFFCF3D0h
- dd 0FFF9E79Eh
- dd 0FFFCF3D0h
- dd 0FFF9E79Eh
- dd 000049249h
- dd 0FFFCF3D0h
- dd 000000000h
- dd 0FFFCF3D0h
- dd 0FFFCF3D0h
- dd 0FFFCF3D0h
- dd 0FFFCF3D0h
- dd 000000000h
- dd 0FFFCF3D0h
- dd 000000000h
- dd 0FFFCF3D0h
- dd 000000000h
- dd 000049249h
- dd 000030C30h
- dd 000049249h
- dd 000030C30h
- dd 0FFFD6344h
- dd 000030C30h
- dd 0FFFD6344h
- dd 000039E79h
- dd 0FFFCD0FBh
- dd 000039E79h
- dd 0FFFCD0FBh
- dd 00004E04Dh
- dd 0FFFD6344h
-
-; preshifted 16
-_thintriangle_guy:
- dd 0FFF80000h
- dd 0FFF4CCD0h
- dd 000100000h
- dd 000000000h
- dd 000100000h
- dd 000000000h
- dd 0FFF80000h
- dd 0000B3330h
- dd 0FFF80000h
- dd 0000B3330h
- dd 0FFF80000h
- dd 0FFF4CCD0h
-
-@
 ; 16 bit versions below...
 
 _player_arrow:
@@ -2376,77 +2261,52 @@ ret
 
 
 ENDP
-COMMENT @
 
 PROC    AM_drawMarks_ NEAR
 PUBLIC  AM_drawMarks_
 
-push      bx
-push      cx
-push      dx
-push      si
-push      di
-push      bp
-mov       bp, sp
-sub       sp, 4
-mov       byte ptr [bp - 2], 0
-cld       
-label_165:
-mov       al, byte ptr [bp - 2]
-cbw      
-mov       di, ax
-shl       di, 2
-mov       word ptr [bp - 4], ax
-mov       ax, word ptr ds:[di + _markpoints]
-cmp       ax, -1
-jne       label_164
-label_166:
-inc       byte ptr [bp - 2]
-cmp       byte ptr [bp - 2], AM_NUMMARKPOINTS
-jl        label_165
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
-ret       
-label_164:
-mov       bx, word ptr ds:[_am_scale_mtof + 0]
-mov       cx, word ptr ds:[_am_scale_mtof + 2]
-sub       ax, word ptr ds:[_screen_botleft_x]
-call      FixedMul1632_
-mov       bx, word ptr ds:[_am_scale_mtof + 0]
-mov       si, ax
-mov       ax, word ptr ds:[di + _markpoints + 2]
-mov       cx, word ptr ds:[_am_scale_mtof + 2]
-sub       ax, word ptr ds:[_screen_botleft_y]
-call      FixedMul1632_
-mov       dx, AUTOMAP_SCREENHEIGHT
-sub       dx, ax
-test      si, si
-jl        label_166
-cmp       si, (AUTOMAP_SCREENWIDTH - 5)
-jg        label_166
-test      dx, dx
-jl        label_166
-cmp       dx, (AUTOMAP_SCREENHEIGHT - 6)
-jg        label_166
-mov       ax, AMMNUMPATCHBYTES_SEGMENT
-mov       bx, word ptr [bp - 4]
-mov       es, ax
-add       bx, bx
+PUSHA_NO_AX_MACRO
+mov       si, OFFSET _markpoints
+mov       di, AMMNUMPATCHOFFSETS_FAR_OFFSET
+mov       bp, AMMNUMPATCHBYTES_SEGMENT
+loop_next_mark:
+
+lodsw
+xchg      ax, dx
+lodsw
+cmp       dx, -1
+je        skip_draw_mark
+
+call      CYMTOF16_  ; todo inline?
+
+test      ax, ax
+js        skip_draw_mark
+cmp       ax, (AUTOMAP_SCREENHEIGHT - 6)
+jg        skip_draw_mark
+xchg      ax, dx
+call      CXMTOF16_  ; todo inline?
+test      ax, ax
+js        skip_draw_mark
+cmp       ax, (AUTOMAP_SCREENWIDTH - 5)
+jg        skip_draw_mark
+mov       es, bp
 push      es
-mov       ax, word ptr es:[bx + AMMNUMPATCHOFFSETS_FAR_OFFSET]        ; todo near
-add       bx, AMMNUMPATCHOFFSETS_FAR_OFFSET
-push      ax
-xor       bx, bx
-mov       ax, si
+push      word ptr es:[di]  ;  + AMMNUMPATCHOFFSETS_FAR_OFFSET
+xor       bx, bx ; FB = 0
 call      V_DrawPatch_
-jmp       label_166
+skip_draw_mark:
+inc       di
+inc       di
+cmp       si, OFFSET _markpoints + (AM_NUMMARKPOINTS * (SIZE MPOINT_T))
+jl        loop_next_mark
+POPA_NO_AX_MACRO
+ret       
+
 
 
 ENDP
+
+COMMENT @
 
 
 PROC    AM_drawCrosshair_ NEAR
