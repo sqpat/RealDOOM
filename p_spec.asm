@@ -503,9 +503,8 @@ sub       sp, 4 * MAX_ADJOINING_SECTORS  ; 400
 mov       cx, ax
 xchg      ax, bx
 SHIFT_MACRO shl       bx 4
-mov       ax, SECTORS_SEGMENT
-mov       es, ax
-xchg      ax, dx ; ax stores max
+mov       es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+push      dx
 
 lea       di, [bp - 0400h]
 mov       si, word ptr es:[bx + SECTOR_T.sec_linesoffset]
@@ -523,7 +522,6 @@ push      ds
 pop       es
 rep movsw 
 
-xchg      ax, di   ; di stores max
 
 
 ; dx already has secnum...
@@ -537,14 +535,13 @@ call      getNextSectorList_
 
 
 xchg      ax, cx
-mov       dx, di  ; dx stores max again
+pop       dx  ; retrieve max
 xor       dh, dh
 
 jcxz      skip_loop_light
 lea       si, [bp - 0200h]
 
-mov       di, SECTORS_SEGMENT
-mov       es, di
+mov       es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
 
 loop_next_sector_light:
@@ -555,7 +552,7 @@ SHIFT_MACRO shl       bx 4
 
 mov       al, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
 cmp       al, dl
-jge       dont_update_light
+jae       dont_update_light
 mov       dl, al
 
 dont_update_light:

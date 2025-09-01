@@ -517,16 +517,20 @@ jg    do_glow_1_case
 do_glow_minus_1_case:
 add   dl, GLOWSPEED
 cmp   dl, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
-jge   do_change_glow_dir
+jae   do_change_glow_dir
 sub   byte ptr es:[bx + SECTOR_T.sec_lightlevel], GLOWSPEED
-jmp   exit_t_glow
+pop   bx
+ret
+
 
 do_glow_1_case:
 sub   dh, GLOWSPEED
 cmp   dh, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
-jle   do_change_glow_dir
-sub   byte ptr es:[bx + SECTOR_T.sec_lightlevel], GLOWSPEED
-jmp   exit_t_glow
+jbe   do_change_glow_dir
+add   byte ptr es:[bx + SECTOR_T.sec_lightlevel], GLOWSPEED
+pop   bx
+ret
+
 
 do_change_glow_dir:
 xchg  ax, bx
