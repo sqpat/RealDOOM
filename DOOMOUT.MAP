@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/01 13:14:44
+Created on:       25/09/01 14:07:28
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -40,7 +40,7 @@ D_NET_TEXT             CODE           AUTO           0000:31b0       000000b3
 g_game_TEXT            CODE           AUTO           0000:3270       00000999
 M_MISC_TEXT            CODE           AUTO           0000:3c0a       000000b1
 AM_MAP_TEXT            CODE           AUTO           0000:3cbc       00000b4a
-ST_STUFF_TEXT          CODE           AUTO           0000:4806       000009f5
+ST_STUFF_TEXT          CODE           AUTO           0000:4806       000009f6
 HU_STUFF_TEXT          CODE           AUTO           0000:51fc       00000183
 HU_LIB_TEXT            CODE           AUTO           0000:5380       00000141
 D_ALGO_TEXT            CODE           AUTO           0000:54c2       00000091
@@ -48,7 +48,7 @@ D_DMX_TEXT             CODE           AUTO           0000:5554       00000125
 D_INT_TEXT             CODE           AUTO           0000:567a       00000176
 MEMORY_TEXT            CODE           AUTO           0000:57f0       00000000
 MATH_TEXT              CODE           AUTO           0000:57f0       00000510
-MAIN_TEXT              CODE           AUTO           0000:5d00       0000150c
+MAIN_TEXT              CODE           AUTO           0000:5d00       00001507
 g_setup_TEXT           CODE           AUTO           0000:7210       000002d8
 r_setup_TEXT           CODE           AUTO           0000:74f0       0000046c
 ST_SETUP_TEXT          CODE           AUTO           0000:795c       00000125
@@ -329,26 +329,26 @@ Module: am_map.obj(am_map.ASM)
 Module: st_stuff.obj(st_stuff.ASM)
 0000:4a2a*     ST_updateFaceWidget_
 0000:48bb      _oldweaponsowned
-0000:4d5a*     STlib_drawNum_
+0000:4d59*     STlib_drawNum_
 0000:492c      _w_keyboxes
 0000:4856      _armsbg
 0000:4838      _arms
 0000:48c4      _keyboxes
-0000:4e43*     ST_drawWidgets_
+0000:4e44*     ST_drawWidgets_
 0000:4920      _w_armor
 0000:4852      _sbar
-0000:4c0f*     ST_updateWidgets_
+0000:4c0e*     ST_updateWidgets_
 0000:4994      _w_end
-0000:4cd0*     STlib_updateMultIcon_
-0000:4c4c*     ST_doPaletteStuff_
-0000:4e14*     STlib_updatePercent_
-0000:51b1      ST_Drawer_
+0000:4ccf*     STlib_updateMultIcon_
+0000:4c4b*     ST_doPaletteStuff_
+0000:4e15*     STlib_updatePercent_
+0000:51b2      ST_Drawer_
 0000:48e8      _w_arms
 0000:480e      _st_faceindex
 0000:49af      _st_palette
 0000:4858      _armsbgarray
 0000:496c      _w_maxammo
-0000:5111      ST_PrepareMapPosCheat_
+0000:5112      ST_PrepareMapPosCheat_
 0000:4850      _tallpercent
 0000:48d4      _w_health
 0000:49b3*     ST_refreshBackground_
@@ -358,17 +358,17 @@ Module: st_stuff.obj(st_stuff.ASM)
 0000:48ca      _w_ready
 0000:4944      _w_ammo
 0000:4824      _tallnum
-0000:4eeb      ST_Responder_
+0000:4eec      ST_Responder_
 0000:49b1      _st_statusbaron
-0000:4cbd*     STlib_updateflag_
+0000:4cbc*     STlib_updateflag_
 0000:48ae      _keys
 0000:480c      _st_oldhealth
 0000:4806*     ST_STUFF_STARTMARKER_
-0000:51fb*     ST_STUFF_ENDMARKER_
+0000:51fc*     ST_STUFF_ENDMARKER_
 0000:4918      _w_faces
 0000:48e0      _w_armsbg
 0000:485a      _faces
-0000:4c3a      ST_Ticker_
+0000:4c39      ST_Ticker_
 0000:49f5*     ST_calcPainOffset_
 Module: hu_stuff.obj(hu_stuff.ASM)
 0000:5271      HU_Erase_
@@ -441,7 +441,7 @@ Module: main.obj(main.ASM)
 0000:6ced      combine_strings_
 0000:6cdb      M_Ticker_
 0000:6c53*     I_UpdateNoBlit_
-0000:720c*     D_MAIN_ENDMARKER_
+0000:7207*     D_MAIN_ENDMARKER_
 0000:6fe0      I_ShutdownTimer_
 0000:6191*     G_SetGameKeyDown_
 0000:61ab      G_GetGameKey_
@@ -911,4 +911,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  000105e0 (67040.)
 Entry point address: 0000:c7ce
-Link time: 00:00.19
+Link time: 00:00.20

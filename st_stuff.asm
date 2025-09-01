@@ -770,9 +770,8 @@ xchg  ax, bx    ; ax gets x. bx gets FG == 0
 
 
 call  V_DrawPatch_
-exit_stlib_drawnum_other:
-
 jmp   exit_updatemulticon
+
 
 
 ENDP
@@ -789,7 +788,10 @@ mov   cx, word ptr cs:[si + ST_NUMBER_T.st_number_oldnum]
 cmp   cx, dx
 jne   drawnum
 cmp   byte ptr cs:[_do_st_refresh], 0
-je    exit_stlib_drawnum_other
+jne   drawnum
+POPA_NO_AX_OR_BP_MACRO
+ret
+
 drawnum:
 
 call  STlib_updateflag_

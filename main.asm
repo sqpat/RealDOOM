@@ -3223,29 +3223,29 @@ call  AM_Drawer_
 dont_draw_automap:
 xor    ax, ax
 cwd
-test   bl, bl
+test   bl, bl ; wipe state
 jne    draw_status_bar
 
-cmp   word ptr ds:[_viewheight], SCREENHEIGHT
+cmp   byte ptr ds:[_fullscreen], al ; 0
 je    screen_too_big_for_statusbar
-cmp   byte ptr ds:[_fullscreen], al
-je    screen_too_big_for_statusbar
+cmp   byte ptr ds:[_viewheight], SCREENHEIGHT
+jne   draw_status_bar
 
-draw_status_bar:
-inc   dx
 screen_too_big_for_statusbar:
 cmp   byte ptr ds:[_inhelpscreensstate], al; 0
 je    fullscreen_statusbar_hidden
 
 cmp   byte ptr ds:[_inhelpscreens], al; 0
 jne   fullscreen_statusbar_hidden
-mov   dl, 1
+
+draw_status_bar:
+inc   dx
 fullscreen_statusbar_hidden:
 cmp   byte ptr ds:[_inhelpscreens], al; 0
 je    helpscreen_hide_level
 mov   byte ptr ds:[_skipdirectdraws], 1
 helpscreen_hide_level:
-cmp   word ptr ds:[_viewheight], SCREENHEIGHT
+cmp   byte ptr ds:[_viewheight], SCREENHEIGHT
 jne   screen_too_small_for_statusbar ; ax already 0
 inc   ax  ; ax is 1
 
@@ -3253,7 +3253,7 @@ screen_too_small_for_statusbar:
 call  ST_Drawer_
 xor   ax, ax
 mov   byte ptr ds:[_skipdirectdraws], al
-cmp   word ptr ds:[_viewheight], SCREENHEIGHT
+cmp   byte ptr ds:[_viewheight], SCREENHEIGHT
 jne   fulscreen_zero
 inc   ax
 fulscreen_zero:
@@ -3344,9 +3344,9 @@ inc   byte ptr ds:[_hudneedsupdate]
 skip_border_checks:
 
 mov   al, byte ptr ds:[_menuactive]
-mov   byte ptr ds:[_fullscreen], al
+mov   byte ptr ds:[_menuactivestate], al
 mov   al, byte ptr ds:[_viewactive]
-mov   byte ptr ds:[_inhelpscreensstate], al
+mov   byte ptr ds:[_viewactivestate], al
 mov   al, byte ptr ds:[_inhelpscreens]
 mov   byte ptr ds:[_inhelpscreensstate], al
 
