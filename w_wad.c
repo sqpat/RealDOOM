@@ -148,7 +148,7 @@ void _fmemmove(char __far *dest, const void __far *src, size_t size);
 // Returns -1 if name not found.
 //
 
-
+/*
 int16_t __near W_CheckNumForName (int8_t __far* name) {
     union {
 		int8_t    s[9];
@@ -219,6 +219,7 @@ int16_t __near W_CheckNumForName (int8_t __far* name) {
     // TFB. Not found.
     return returnval;
 }
+*/
 
 //
 // W_GetNumForName

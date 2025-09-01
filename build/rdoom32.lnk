@@ -53,6 +53,7 @@ file s_sound.obj
 file s_sbsfx.obj
 file r_main.obj
 file w_wad.obj
+file w_wada.obj
 file v_video.obj
 file z_zone.obj
 

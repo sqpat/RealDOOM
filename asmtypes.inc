@@ -833,3 +833,10 @@ FLINE_T STRUC
     fline_b                FPOINT_T ? ; 4
 FLINE_T ENDS
 
+
+
+LUMPINFO_T STRUC
+    lumpinfo_name                db 8 DUP (?) 
+    lumpinfo_position            dd ?
+    lumpinfo_size                dd ?
+LUMPINFO_T ENDS
