@@ -320,22 +320,20 @@ PATCH_T STRUC
 PATCH_T ENDS
 
 VISSPRITE_T STRUC 
-    vs_next                db ?
-    vs_colormap            db ?
-    vs_x1                  dw ?
-    vs_x2                  dw ?
-    vs_gx                  dd ?
-    vs_gy                  dd ?
-    vs_gz                  dd ?
-    vs_gzt                 dd ?
-
-    vs_startfrac           dd ?
-    vs_scale               dd ?
-    vs_xiscale             dd ?
-
-    vs_texturemid          dd ?
-    vs_patch               dw ?
-
+    vs_next                db ? ; 0
+    vs_colormap            db ? ; 1
+    vs_x1                  dw ? ; 2
+    vs_x2                  dw ? ; 4
+    vs_gx                  dd ? ; 6
+    vs_gy                  dd ? ; 0Ah
+    vs_gz                  dd ? ; 0Eh
+    vs_gzt                 dd ? ; 012h
+    vs_startfrac           dd ? ; 016h
+    vs_scale               dd ? ; 01Ah
+    vs_xiscale             dd ? ; 01Eh
+    vs_texturemid          dd ? ; 022h
+    vs_patch               dw ? ; 026h
+;28h
 
 VISSPRITE_T ENDS
 

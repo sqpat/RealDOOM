@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/01 14:20:06
+Created on:       25/09/01 18:24:37
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -27,7 +27,7 @@ Segment                Class          Group          Address         Size
 m_near_TEXT            CODE           AUTO           0000:0000       00000000
 d_init_TEXT            CODE           AUTO           0000:0000       00000a77
 S_INIT_TEXT            CODE           AUTO           0000:0a78       00000560
-ST_INIT_TEXT           CODE           AUTO           0000:0fd8       00000205
+ST_INIT_TEXT           CODE           AUTO           0000:0fd8       00000203
 r_init_TEXT            CODE           AUTO           0000:11e0       00000c27
 w_init_TEXT            CODE           AUTO           0000:1e10       00000274
 i_init_TEXT            CODE           AUTO           0000:2090       0000007d
@@ -58,34 +58,34 @@ R_MAIN_TEXT            CODE           AUTO           0000:a6c8       000003db
 p_setup_TEXT           CODE           AUTO           0000:aab0       000011dc
 S_SOUND_TEXT           CODE           AUTO           0000:bc8c       000005a2
 s_sbsfx_TEXT           CODE           AUTO           0000:c230       000017fd
-w_wad_TEXT             CODE           AUTO           0000:da30       0000025e
-W_WADA_TEXT            CODE           AUTO           0000:dc8e       000000ea
-V_VIDEO_TEXT           CODE           AUTO           0000:dd78       00000601
-Z_ZONE_TEXT            CODE           AUTO           0000:e37a       00000461
-M_MENU_TEXT            CODE           AUTO           0e7e:0000       000013ea
-F_WIPE_TEXT            CODE           AUTO           0fbd:0000       0000050e
-F_FINALE_TEXT          CODE           AUTO           100e:0000       00000bd7
-P_SAVEG_TEXT           CODE           AUTO           10cc:0000       00000b34
-SM_OPL2_TEXT           CODE           AUTO           1180:0000       00000f3c
-SM_OPL3_TEXT           CODE           AUTO           1180:0f3c       0000100e
-SM_SBMID_TEXT          CODE           AUTO           1180:1f4a       00000730
-SM_MPUMD_TEXT          CODE           AUTO           1180:267a       000007db
-R_BSP_TEXT             CODE           AUTO           1466:0000       00006efd
-R_BSP0_TEXT            CODE           AUTO           1b56:0000       00006d04
-R_COL24_TEXT           CODE           AUTO           2226:0004       00000e46
-R_COL16_TEXT           CODE           AUTO           2226:0e4a       00000cb4
-R_COL0_TEXT            CODE           AUTO           2226:1afe       0000058e
-R_COLFL_TEXT           CODE           AUTO           2226:208c       0000058e
-R_SPAN24_TEXT          CODE           AUTO           2226:261a       000011a6
-R_SPAN16_TEXT          CODE           AUTO           2226:37c0       00000f6a
-R_SPAN0_TEXT           CODE           AUTO           2226:472a       0000063e
-R_SPANFL_TEXT          CODE           AUTO           2226:4d68       00000595
-R_SKY_TEXT             CODE           AUTO           2226:52fe       00000d86
-R_SKYFL_TEXT           CODE           AUTO           2226:6084       00000303
-R_MASK24_TEXT          CODE           AUTO           2226:6388       000019ef
-R_MASK16_TEXT          CODE           AUTO           2226:7d78       000019ef
-R_MASK0_TEXT           CODE           AUTO           2226:9768       0000195b
-R_MASKFL_TEXT          CODE           AUTO           2226:b0c4       0000191d
+w_wad_TEXT             CODE           AUTO           0000:da30       0000026e
+W_WADA_TEXT            CODE           AUTO           0000:dc9e       000000ea
+V_VIDEO_TEXT           CODE           AUTO           0000:dd88       00000601
+Z_ZONE_TEXT            CODE           AUTO           0000:e38a       00000461
+M_MENU_TEXT            CODE           AUTO           0e7f:0000       000013ea
+F_WIPE_TEXT            CODE           AUTO           0fbe:0000       0000050e
+F_FINALE_TEXT          CODE           AUTO           100f:0000       00000bd7
+P_SAVEG_TEXT           CODE           AUTO           10cd:0000       00000b34
+SM_OPL2_TEXT           CODE           AUTO           1181:0000       00000f3c
+SM_OPL3_TEXT           CODE           AUTO           1181:0f3c       0000100e
+SM_SBMID_TEXT          CODE           AUTO           1181:1f4a       00000730
+SM_MPUMD_TEXT          CODE           AUTO           1181:267a       000007db
+R_BSP_TEXT             CODE           AUTO           1467:0000       00006ef8
+R_BSP0_TEXT            CODE           AUTO           1b57:0000       00006cff
+R_COL24_TEXT           CODE           AUTO           2227:0000       00000e46
+R_COL16_TEXT           CODE           AUTO           2227:0e46       00000cb4
+R_COL0_TEXT            CODE           AUTO           2227:1afa       0000058e
+R_COLFL_TEXT           CODE           AUTO           2227:2088       0000058e
+R_SPAN24_TEXT          CODE           AUTO           2227:2616       000011a6
+R_SPAN16_TEXT          CODE           AUTO           2227:37bc       00000f6a
+R_SPAN0_TEXT           CODE           AUTO           2227:4726       0000063e
+R_SPANFL_TEXT          CODE           AUTO           2227:4d64       00000595
+R_SKY_TEXT             CODE           AUTO           2227:52fa       00000d86
+R_SKYFL_TEXT           CODE           AUTO           2227:6080       00000303
+R_MASK24_TEXT          CODE           AUTO           2227:6384       000019ef
+R_MASK16_TEXT          CODE           AUTO           2227:7d74       000019ef
+R_MASK0_TEXT           CODE           AUTO           2227:9764       0000195b
+R_MASKFL_TEXT          CODE           AUTO           2227:b0c0       0000191d
 P_SIGHT_TEXT           CODE           AUTO           2ec5:0000       000005ec
 P_MAP_TEXT             CODE           AUTO           2ec5:05ec       00002390
 P_MOBJ_TEXT            CODE           AUTO           2ec5:297c       00000f6f
@@ -97,13 +97,13 @@ P_FLOOR_TEXT           CODE           AUTO           2ec5:6176       000004b1
 P_INTER_TEXT           CODE           AUTO           2ec5:6628       00000873
 P_LIGHTS_TEXT          CODE           AUTO           2ec5:6e9c       00000298
 P_PLATS_TEXT           CODE           AUTO           2ec5:7134       00000283
-P_SPEC_TEXT            CODE           AUTO           2ec5:73b8       000009e5
-P_SWITCH_TEXT          CODE           AUTO           2ec5:7d9e       000003b4
-P_TELEPT_TEXT          CODE           AUTO           2ec5:8152       0000017f
-P_TICK_TEXT            CODE           AUTO           2ec5:82d2       000001e7
-P_USER_TEXT            CODE           AUTO           2ec5:84ba       00000428
-P_INFO_TEXT            CODE           AUTO           2ec5:88e2       00000349
-D_ALGO_TEXT            CODE           AUTO           3787:000c       00000091
+P_SPEC_TEXT            CODE           AUTO           2ec5:73b8       000009e1
+P_SWITCH_TEXT          CODE           AUTO           2ec5:7d9a       000003b4
+P_TELEPT_TEXT          CODE           AUTO           2ec5:814e       0000017f
+P_TICK_TEXT            CODE           AUTO           2ec5:82ce       000001e7
+P_USER_TEXT            CODE           AUTO           2ec5:84b6       00000428
+P_INFO_TEXT            CODE           AUTO           2ec5:88de       00000349
+D_ALGO_TEXT            CODE           AUTO           3787:0008       00000091
 _TEXT                  CODE           AUTO           3787:00a0       000033cc
 FAR_DATA               FAR_DATA       AUTO           3acd:000c       00000000
 _NULL                  BEGDATA        DGROUP         3ace:0000       00000020
@@ -253,8 +253,8 @@ Module: s_init.obj(s_init.ASM)
 0000:0fad*     I_GetSfxLumpNum_
 Module: st_init.obj(st_init.ASM)
 0000:0fd8*     ST_INIT_STARTMARKER_
-0000:11dd*     ST_INIT_ENDMARKER_
-0000:107d      ST_Init_
+0000:11db*     ST_INIT_ENDMARKER_
+0000:107b      ST_Init_
 Module: r_init.obj(C:\REALDOOM\r_init.c)
 0000:11e0+     R_InitSpriteLumps_
 0000:1378+     R_GenerateLookup_
@@ -527,10 +527,10 @@ Module: main.obj(main.ASM)
 0000:8ba0*     G_SetGameKeyUp_
 0000:97a4      locallib_printhex_
 0000:9199      M_LoadDefaults_
-0000:87d9*     D_MAIN_STARTMARKER_
 0000:9797      locallib_putchar_
-0000:98dc*     locallib_printstringnear_
 0000:9593*     I_UpdateBox_
+0000:98dc*     locallib_printstringnear_
+0000:87d9*     D_MAIN_STARTMARKER_
 0000:9a57      D_Display_
 0000:8889*     I_KeyboardISR_
 0000:933d      M_ScanTranslateDefaults_
@@ -683,303 +683,302 @@ Module: s_sbsfx.obj(C:\REALDOOM\s_sbsfx.c)
 Module: w_wad.obj(C:\REALDOOM\w_wad.c)
 0000:da30      locallib_far_fread_
 0000:daba      locallib_far_fwrite_
-0000:db44      W_GetNumForNameFarString_
 0000:db44      W_GetNumForName_
 0000:db48      W_LumpLength_
 0000:db9c+     W_ReadLump_
-0000:dc46      W_CacheLumpNameDirectFarString_
 0000:dc46      W_CacheLumpNameDirect_
-0000:dc56      W_CacheLumpNumDirect_
-0000:dc64      W_CacheLumpNumDirectWithOffset_
-0000:dc78      W_CacheLumpNumDirectFragment_
+0000:dc56      W_CacheLumpNameDirectFarString_
+0000:dc66      W_CacheLumpNumDirect_
+0000:dc74      W_CacheLumpNumDirectWithOffset_
+0000:dc88      W_CacheLumpNumDirectFragment_
 Module: w_wada.obj(w_wada.ASM)
-0000:dc90      W_CheckNumForName_
-0000:dd78*     W_WAD_ENDMARKER_
-0000:dc8e*     W_WAD_STARTMARKER_
-0000:dc8e*     W_CheckNumForNameFarString_
+0000:dd88*     W_WAD_ENDMARKER_
+0000:dca0      W_CheckNumForName_
+0000:dc9e*     W_WAD_STARTMARKER_
+0000:dc9e      W_CheckNumForNameFarString_
 Module: v_video.obj(v_video.ASM)
-0000:e030*     CopyString9_
-0000:e2a6      V_DrawFullscreenPatch_
-0000:e0a6      R_FillBackScreen_
-0000:e26f      V_CopyRect_
-0000:df38      V_DrawPatchDirect_
-0000:e255      V_MarkRect_
-0000:dd78      V_DrawPatch_
-0000:de6b*     V_DrawPatch5000Screen0_
+0000:e040*     CopyString9_
+0000:e2b6      V_DrawFullscreenPatch_
+0000:e0b6      R_FillBackScreen_
+0000:e27f      V_CopyRect_
+0000:df48      V_DrawPatchDirect_
+0000:e265      V_MarkRect_
+0000:dd88      V_DrawPatch_
+0000:de7b*     V_DrawPatch5000Screen0_
 Module: z_zone.obj(z_zone.ASM)
-0000:e3f4      Z_QuickMapPhysics_
-0000:e392      Z_QuickMapMusicPageFrame_
-0000:e47b      Z_QuickMapRender_4000To9000_
-0000:e6ba      Z_QuickMapUnmapAll_
-0000:e4a9      Z_QuickMapRender_9000To6000_
-0000:e3c9      Z_QuickMapWADPageFrame_
-0000:e574      Z_QuickMapRenderPlanes_
-0000:e3aa      Z_QuickMapSFXPageFrame_
-0000:e4d5      Z_QuickMapStatus_
-0000:e55e*     Z_QuickMapScreen0_
-0000:e43a      Z_QuickMapRender_
-0000:e532      Z_QuickMapScratch_7000_
-0000:e506      Z_QuickMapScratch_5000_
-0000:e608      Z_QuickMapMenu_
-0000:e548      Z_QuickMapScratch_4000_
-0000:e7af*     CopyString13_Zonelocal_
-0000:e51c      Z_QuickMapScratch_8000_
-0000:e5ed      Z_QuickMapPalette_
-0000:e4bf      Z_QuickMapRender4000_
-0000:e5d7      Z_QuickMapMaskedExtraData_
-0000:e71b      Z_SetOverlay_
-0000:e646      Z_QuickMapByTaskNum_
-0000:e5a0      Z_QuickMapUndoFlatCache_
-0000:e41f      Z_QuickMapDemo_
-0000:e623      Z_QuickMapIntermission_
-0000:e465*     Z_QuickMapRender_4000To9000_9000Only_
-0000:e654      Z_QuickMapVisplanePage_
+0000:e404      Z_QuickMapPhysics_
+0000:e3a2      Z_QuickMapMusicPageFrame_
+0000:e48b      Z_QuickMapRender_4000To9000_
+0000:e6ca      Z_QuickMapUnmapAll_
+0000:e4b9      Z_QuickMapRender_9000To6000_
+0000:e3d9      Z_QuickMapWADPageFrame_
+0000:e584      Z_QuickMapRenderPlanes_
+0000:e3ba      Z_QuickMapSFXPageFrame_
+0000:e4e5      Z_QuickMapStatus_
+0000:e56e*     Z_QuickMapScreen0_
+0000:e44a      Z_QuickMapRender_
+0000:e542      Z_QuickMapScratch_7000_
+0000:e516      Z_QuickMapScratch_5000_
+0000:e618      Z_QuickMapMenu_
+0000:e558      Z_QuickMapScratch_4000_
+0000:e7bf*     CopyString13_Zonelocal_
+0000:e52c      Z_QuickMapScratch_8000_
+0000:e5fd      Z_QuickMapPalette_
+0000:e4cf      Z_QuickMapRender4000_
+0000:e5e7      Z_QuickMapMaskedExtraData_
+0000:e72b      Z_SetOverlay_
+0000:e656      Z_QuickMapByTaskNum_
+0000:e5b0      Z_QuickMapUndoFlatCache_
+0000:e42f      Z_QuickMapDemo_
+0000:e633      Z_QuickMapIntermission_
+0000:e475*     Z_QuickMapRender_4000To9000_9000Only_
+0000:e664      Z_QuickMapVisplanePage_
 Module: m_menu.obj(m_menu.ASM)
-0e7e:0ca9*     M_StringHeight_
-0e7e:054d*     M_SaveSelect_
-0e7e:0b77*     M_ChangeDetail_
-0e7e:12d7*     M_MakeSaveGameName_
-0e7e:0375*     M_DrawLoad_
-0e7e:0438*     M_LoadGame_
-0e7e:0c6d*     M_StringWidth_
-0e7e:051c*     M_DoSave_
-0e7e:0d63      M_Responder_
-0e7e:07d6*     S_SetSfxVolume_
-0e7e:0771*     M_DrawSound_
-0e7e:0a7b*     M_ReadThis2_
-0e7e:081f*     S_SetMusicVolume_
-0e7e:08d5*     M_ChooseSkill_
-0e7e:089d*     M_DrawEpisode_
-0e7e:09d9*     M_Options_
-0e7e:05a5*     M_SaveGame_
-0e7e:0c2d*     M_StartMessage_
-0e7e:0760*     M_DrawReadThisRetail_
-0e7e:1379*     M_strcpy_
-0e7e:0ae6*     M_QuitDOOM_
-0e7e:0b59*     M_ChangeSensitivity_
-0e7e:087f*     M_NewGame_
-0e7e:09eb*     M_ChangeMessages_
-0e7e:06c1*     M_QuickLoad_
-0e7e:0804*     M_MusicVol_
-0e7e:0a28*     M_EndGame_
-0e7e:05f0*     M_QuickSaveResponse_
-0e7e:0856*     M_DrawNewGame_
-0e7e:07a9*     M_Sound_
-0e7e:1064      M_Drawer_
-0e7e:13b9*     M_Z_QuickmapStatus_
-0e7e:0a62*     M_ReadThis_
-0e7e:0cd9*     M_WriteText_
-0e7e:0918*     M_Episode_
-0e7e:0607*     M_QuickSave_
-0e7e:09ff*     M_EndGameResponse_
-0e7e:0449*     M_ReadSaveStrings_
-0e7e:07bb*     M_SfxVol_
-0e7e:0b9e*     M_SizeDisplay_
-0e7e:11a4      M_Init_
-0e7e:1046      M_StartControlPanel_
-0e7e:0bcc*     M_DrawThermo_
-0e7e:0405*     M_LoadSelect_
-0e7e:13ea      M_MENU_ENDMARKER_
-0e7e:0000      M_MENU_STARTMARKER_
-0e7e:03b3*     M_DrawSaveLoadBorder_
-0e7e:138d      M_DrawPause_
-0e7e:096d*     M_DrawOptions_
-0e7e:0aaf*     M_QuitResponse_
-0e7e:06aa*     M_QuickLoadResponse_
-0e7e:116b*     CopyString13_menu_seg_
-0e7e:04ab*     M_DrawSave_
-0e7e:12f1      M_LoadFromSaveGame_
-0e7e:1357*     M_Strcmp_
-0e7e:08b5*     M_VerifyNightmare_
-0e7e:083e*     M_DrawMainMenu_
-0e7e:073e*     M_DrawReadThis1_
-0e7e:074f*     M_DrawReadThis2_
-0e7e:0a8d*     M_FinishReadThis_
+0e7f:0ca9*     M_StringHeight_
+0e7f:0c6d*     M_StringWidth_
+0e7f:054d*     M_SaveSelect_
+0e7f:0b77*     M_ChangeDetail_
+0e7f:12d7*     M_MakeSaveGameName_
+0e7f:0375*     M_DrawLoad_
+0e7f:0438*     M_LoadGame_
+0e7f:051c*     M_DoSave_
+0e7f:0d63      M_Responder_
+0e7f:0771*     M_DrawSound_
+0e7f:07d6*     S_SetSfxVolume_
+0e7f:0a7b*     M_ReadThis2_
+0e7f:081f*     S_SetMusicVolume_
+0e7f:08d5*     M_ChooseSkill_
+0e7f:089d*     M_DrawEpisode_
+0e7f:09d9*     M_Options_
+0e7f:05a5*     M_SaveGame_
+0e7f:0c2d*     M_StartMessage_
+0e7f:0760*     M_DrawReadThisRetail_
+0e7f:1379*     M_strcpy_
+0e7f:0ae6*     M_QuitDOOM_
+0e7f:0b59*     M_ChangeSensitivity_
+0e7f:087f*     M_NewGame_
+0e7f:09eb*     M_ChangeMessages_
+0e7f:06c1*     M_QuickLoad_
+0e7f:0804*     M_MusicVol_
+0e7f:0a28*     M_EndGame_
+0e7f:05f0*     M_QuickSaveResponse_
+0e7f:0856*     M_DrawNewGame_
+0e7f:07a9*     M_Sound_
+0e7f:1064      M_Drawer_
+0e7f:13b9*     M_Z_QuickmapStatus_
+0e7f:0a62*     M_ReadThis_
+0e7f:0cd9*     M_WriteText_
+0e7f:0918*     M_Episode_
+0e7f:0607*     M_QuickSave_
+0e7f:09ff*     M_EndGameResponse_
+0e7f:0449*     M_ReadSaveStrings_
+0e7f:07bb*     M_SfxVol_
+0e7f:0b9e*     M_SizeDisplay_
+0e7f:11a4      M_Init_
+0e7f:1046      M_StartControlPanel_
+0e7f:0bcc*     M_DrawThermo_
+0e7f:0405*     M_LoadSelect_
+0e7f:13ea      M_MENU_ENDMARKER_
+0e7f:0000      M_MENU_STARTMARKER_
+0e7f:03b3*     M_DrawSaveLoadBorder_
+0e7f:138d      M_DrawPause_
+0e7f:096d*     M_DrawOptions_
+0e7f:0aaf*     M_QuitResponse_
+0e7f:06aa*     M_QuickLoadResponse_
+0e7f:116b*     CopyString13_menu_seg_
+0e7f:04ab*     M_DrawSave_
+0e7f:12f1      M_LoadFromSaveGame_
+0e7f:1357*     M_Strcmp_
+0e7f:08b5*     M_VerifyNightmare_
+0e7f:083e*     M_DrawMainMenu_
+0e7f:073e*     M_DrawReadThis1_
+0e7f:074f*     M_DrawReadThis2_
+0e7f:0a8d*     M_FinishReadThis_
 Module: f_wipe.obj(f_wipe.ASM)
-0fbd:0032*     I_FinishUpdate_Fwipe_local_
-0fbd:0000      I_ReadScreen_
-0fbd:00f4*     I_UpdateNoBlit_Fwipe_local_
-0fbd:0320*     wipe_initMelt_
-0fbd:03c7      wipe_StartScreen_
-0fbd:017c*     wipe_doMelt_
-0fbd:02d0*     wipe_shittyColMajorXform_
-0fbd:004c*     I_UpdateBox_Fwipe_local_
-0fbd:0412      wipe_WipeLoop_
-0fbd:04f7*     FWIPE_M_Random_
-0fbd:050e      F_WIPE_ENDMARKER_
-0fbd:0000      F_WIPE_STARTMARKER_
+0fbe:0032*     I_FinishUpdate_Fwipe_local_
+0fbe:0000      I_ReadScreen_
+0fbe:00f4*     I_UpdateNoBlit_Fwipe_local_
+0fbe:0320*     wipe_initMelt_
+0fbe:03c7      wipe_StartScreen_
+0fbe:017c*     wipe_doMelt_
+0fbe:02d0*     wipe_shittyColMajorXform_
+0fbe:004c*     I_UpdateBox_Fwipe_local_
+0fbe:0412      wipe_WipeLoop_
+0fbe:04f7*     FWIPE_M_Random_
+0fbe:050e      F_WIPE_ENDMARKER_
+0fbe:0000      F_WIPE_STARTMARKER_
 Module: f_finale.obj(f_finale.ASM)
-100e:028f*     F_CastDrawer_
-100e:0b33      F_Responder_
-100e:01ae      F_StartFinale_
-100e:04f1*     F_BunnyScroll_
-100e:0a96      F_Ticker_
-100e:0bcc*     F_locallib_toupper_
-100e:0024*     V_DrawPatchFlipped_
-100e:00bf*     F_CastPrint_
-100e:036e*     F_TextWrite_
-100e:075d*     F_CastTicker_
-100e:0b5e      F_Drawer_
-100e:049f*     F_DrawPatchCol_
-100e:0a22*     F_CastResponder_
-100e:0bba*     F_locallib_strlen_
-100e:0bd7      F_FINALE_ENDMARKER_
-100e:06fa*     F_StartCast_
-100e:0000      F_FINALE_STARTMARKER_
+100f:028f*     F_CastDrawer_
+100f:0b33      F_Responder_
+100f:01ae      F_StartFinale_
+100f:04f1*     F_BunnyScroll_
+100f:0a96      F_Ticker_
+100f:0bcc*     F_locallib_toupper_
+100f:0024*     V_DrawPatchFlipped_
+100f:00bf*     F_CastPrint_
+100f:036e*     F_TextWrite_
+100f:075d*     F_CastTicker_
+100f:0b5e      F_Drawer_
+100f:049f*     F_DrawPatchCol_
+100f:0a22*     F_CastResponder_
+100f:0bba*     F_locallib_strlen_
+100f:0bd7      F_FINALE_ENDMARKER_
+100f:06fa*     F_StartCast_
+100f:0000      F_FINALE_STARTMARKER_
 Module: p_saveg.obj(p_saveg.ASM)
-10cc:02bf      P_UnArchiveThinkers_
-10cc:0b34      P_SAVEG_ENDMARKER_
-10cc:0000      P_SAVEG_STARTMARKER_
-10cc:043b      P_UnArchiveSpecials_
-10cc:0176      P_UnArchiveWorld_
-10cc:0791      P_ArchiveWorld_
-10cc:09ed      P_ArchiveSpecials_
-10cc:0002      P_UnArchivePlayers_
-10cc:0689      P_ArchivePlayers_
-10cc:0855      P_ArchiveThinkers_
+10cd:02bf      P_UnArchiveThinkers_
+10cd:0b34      P_SAVEG_ENDMARKER_
+10cd:0000      P_SAVEG_STARTMARKER_
+10cd:043b      P_UnArchiveSpecials_
+10cd:0176      P_UnArchiveWorld_
+10cd:0791      P_ArchiveWorld_
+10cd:09ed      P_ArchiveSpecials_
+10cd:0002      P_UnArchivePlayers_
+10cd:0689      P_ArchivePlayers_
+10cd:0855      P_ArchiveThinkers_
 Module: sm_opl2.obj(sm_opl2.ASM)
-1180:0926*     OPLpauseMusic_OPL2_
-1180:0f3c      SM_OPL2_ENDMARKER_
-1180:0c95*     OPLreleaseNote_OPL2_
-1180:0907*     OPL2deinitHardware_OPL2_
-1180:0846*     OPL2initHardware_OPL2_
-1180:0c0f*     OPLplayNote_OPL2_
-1180:0d35*     OPLchangeControl_OPL2_
-1180:0f0b*     OPLinitDriver_OPL2_
-1180:0e9f*     OPLstopMusic_OPL2_
-1180:0cd2*     OPLpitchWheel_OPL2_
-1180:0ec0*     OPLchangeSystemVolume_OPL2_
-1180:0929*     OPLresumeMusic_OPL2_
-1180:089d*     OPL2detectHardware_OPL2_
-1180:0000      SM_OPL2_STARTMARKER_
-1180:0e80*     OPLplayMusic_OPL2_
+1181:0926*     OPLpauseMusic_OPL2_
+1181:0f3c      SM_OPL2_ENDMARKER_
+1181:0c95*     OPLreleaseNote_OPL2_
+1181:0907*     OPL2deinitHardware_OPL2_
+1181:0846*     OPL2initHardware_OPL2_
+1181:0c0f*     OPLplayNote_OPL2_
+1181:0d35*     OPLchangeControl_OPL2_
+1181:0f0b*     OPLinitDriver_OPL2_
+1181:0e9f*     OPLstopMusic_OPL2_
+1181:0cd2*     OPLpitchWheel_OPL2_
+1181:0ec0*     OPLchangeSystemVolume_OPL2_
+1181:0929*     OPLresumeMusic_OPL2_
+1181:089d*     OPL2detectHardware_OPL2_
+1181:0000      SM_OPL2_STARTMARKER_
+1181:0e80*     OPLplayMusic_OPL2_
 Module: sm_opl3.obj(sm_opl3.ASM)
-1180:1931*     OPLpauseMusic_OPL3_
-1180:1ca0*     OPLreleaseNote_OPL3_
-1180:1f4a      SM_OPL3_ENDMARKER_
-1180:1902*     OPL3deinitHardware_OPL3_
-1180:1c1a*     OPLplayNote_OPL3_
-1180:180c*     OPL3initHardware_OPL3_
-1180:1d46*     OPLchangeControl_OPL3_
-1180:1f1b*     OPLinitDriver_OPL3_
-1180:1eb0*     OPLstopMusic_OPL3_
-1180:1cdd*     OPLpitchWheel_OPL3_
-1180:1ed1*     OPLchangeSystemVolume_OPL3_
-1180:1934*     OPLresumeMusic_OPL3_
-1180:1e91*     OPLplayMusic_OPL3_
-1180:0f3c      SM_OPL3_STARTMARKER_
-1180:18e6*     OPL3detectHardware_OPL3_
+1181:1931*     OPLpauseMusic_OPL3_
+1181:1ca0*     OPLreleaseNote_OPL3_
+1181:1f4a      SM_OPL3_ENDMARKER_
+1181:1902*     OPL3deinitHardware_OPL3_
+1181:1c1a*     OPLplayNote_OPL3_
+1181:180c*     OPL3initHardware_OPL3_
+1181:1d46*     OPLchangeControl_OPL3_
+1181:1f1b*     OPLinitDriver_OPL3_
+1181:1eb0*     OPLstopMusic_OPL3_
+1181:1cdd*     OPLpitchWheel_OPL3_
+1181:1ed1*     OPLchangeSystemVolume_OPL3_
+1181:1934*     OPLresumeMusic_OPL3_
+1181:1e91*     OPLplayMusic_OPL3_
+1181:0f3c      SM_OPL3_STARTMARKER_
+1181:18e6*     OPL3detectHardware_OPL3_
 Module: sm_sbmid.obj(sm_sbmid.ASM)
-1180:267a      SM_SBMID_ENDMARKER_
-1180:1f4a      SM_SBMID_STARTMARKER_
+1181:267a      SM_SBMID_ENDMARKER_
+1181:1f4a      SM_SBMID_STARTMARKER_
 Module: sm_mpumd.obj(sm_mpumd.ASM)
-1180:267a      SM_MPUMD_STARTMARKER_
-1180:2e55      SM_MPUMD_ENDMARKER_
+1181:267a      SM_MPUMD_STARTMARKER_
+1181:2e55      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-1466:377c      R_BSP24_ENDMARKER_
-1466:3442      R_WriteBackViewConstants24_
-1466:0000      R_BSP24_STARTMARKER_
-1466:32b7      R_RenderPlayerView24_
-1466:2f06      R_GetPatchTexture_Far24_
-1466:2fa1      R_GetCompositeTexture_Far24_
+1467:3777      R_BSP24_ENDMARKER_
+1467:343d      R_WriteBackViewConstants24_
+1467:0000      R_BSP24_STARTMARKER_
+1467:32b2      R_RenderPlayerView24_
+1467:2f01      R_GetPatchTexture_Far24_
+1467:2f9c      R_GetCompositeTexture_Far24_
 Module: r_bsp16.obj(r_bsp16.ASM)
-1466:6a38      R_RenderPlayerView16_
-1466:3780      R_BSP16_STARTMARKER_
-1466:6bc3      R_WriteBackViewConstants16_
-1466:6687      R_GetPatchTexture_Far16_
-1466:6efd      R_BSP16_ENDMARKER_
-1466:6722      R_GetCompositeTexture_Far16_
+1467:6a33      R_RenderPlayerView16_
+1467:3780      R_BSP16_STARTMARKER_
+1467:6bbe      R_WriteBackViewConstants16_
+1467:6682      R_GetPatchTexture_Far16_
+1467:6ef8      R_BSP16_ENDMARKER_
+1467:671d      R_GetCompositeTexture_Far16_
 Module: r_bsp0.obj(r_bsp0.ASM)
-1b56:36af      R_BSP0_ENDMARKER_
-1b56:2e41      R_GetPatchTexture_Far0_
-1b56:2edc      R_GetCompositeTexture_Far0_
-1b56:31f2      R_RenderPlayerView0_
-1b56:337d      R_WriteBackViewConstants0_
-1b56:0000      R_BSP0_STARTMARKER_
+1b57:36aa      R_BSP0_ENDMARKER_
+1b57:2e3c      R_GetPatchTexture_Far0_
+1b57:2ed7      R_GetCompositeTexture_Far0_
+1b57:31ed      R_RenderPlayerView0_
+1b57:3378      R_WriteBackViewConstants0_
+1b57:0000      R_BSP0_STARTMARKER_
 Module: r_bspfl.obj(r_bspfl.ASM)
-1b56:6531      R_GetCompositeTexture_FarFL_
-1b56:6847      R_RenderPlayerViewFL_
-1b56:36b0      R_BSPFL_STARTMARKER_
-1b56:6d04      R_BSPFL_ENDMARKER_
-1b56:6496      R_GetPatchTexture_FarFL_
-1b56:69d2      R_WriteBackViewConstantsFL_
+1b57:652c      R_GetCompositeTexture_FarFL_
+1b57:6842      R_RenderPlayerViewFL_
+1b57:36b0      R_BSPFL_STARTMARKER_
+1b57:6cff      R_BSPFL_ENDMARKER_
+1b57:6491      R_GetPatchTexture_FarFL_
+1b57:69cd      R_WriteBackViewConstantsFL_
 Module: r_col24.obj(r_col24.ASM)
-2226:0004      R_COLUMN24_STARTMARKER_
-2226:0e4a      R_COLUMN24_ENDMARKER_
-2226:0324*     R_DrawColumn24_
+2227:0000      R_COLUMN24_STARTMARKER_
+2227:0e46      R_COLUMN24_ENDMARKER_
+2227:0320*     R_DrawColumn24_
 Module: r_col16.obj(r_col16.ASM)
-2226:1afe      R_COLUMN16_ENDMARKER_
-2226:0e4a      R_COLUMN16_STARTMARKER_
-2226:116a*     R_DrawColumn16_
+2227:1afa      R_COLUMN16_ENDMARKER_
+2227:0e46      R_COLUMN16_STARTMARKER_
+2227:1166*     R_DrawColumn16_
 Module: r_col0.obj(r_col0.ASM)
-2226:1e1e*     R_DrawColumn0_
-2226:208c      R_COLUMN0_ENDMARKER_
-2226:1afe      R_COLUMN0_STARTMARKER_
+2227:1e1a*     R_DrawColumn0_
+2227:2088      R_COLUMN0_ENDMARKER_
+2227:1afa      R_COLUMN0_STARTMARKER_
 Module: r_colfl.obj(r_colfl.ASM)
-2226:261a      R_COLUMNFL_ENDMARKER_
-2226:23ac*     R_DrawColumnFL_
-2226:208c      R_COLUMNFL_STARTMARKER_
+2227:2616      R_COLUMNFL_ENDMARKER_
+2227:23a8*     R_DrawColumnFL_
+2227:2088      R_COLUMNFL_STARTMARKER_
 Module: r_span24.obj(r_span24.ASM)
-2226:273e*     R_DrawSpan24_
-2226:3674      R_WriteBackViewConstantsSpan24_
-2226:261a      R_SPAN24_STARTMARKER_
-2226:31ef      R_DrawPlanes24_
-2226:37c0      R_SPAN24_ENDMARKER_
+2227:273a*     R_DrawSpan24_
+2227:3670      R_WriteBackViewConstantsSpan24_
+2227:2616      R_SPAN24_STARTMARKER_
+2227:31eb      R_DrawPlanes24_
+2227:37bc      R_SPAN24_ENDMARKER_
 Module: r_span16.obj(r_span16.ASM)
-2226:4632      R_WriteBackViewConstantsSpan16_
-2226:38e4*     R_DrawSpan16_
-2226:472a      R_SPAN16_ENDMARKER_
-2226:37c0      R_SPAN16_STARTMARKER_
-2226:41ad      R_DrawPlanes16_
+2227:462e      R_WriteBackViewConstantsSpan16_
+2227:38e0*     R_DrawSpan16_
+2227:4726      R_SPAN16_ENDMARKER_
+2227:37bc      R_SPAN16_STARTMARKER_
+2227:41a9      R_DrawPlanes16_
 Module: r_span0.obj(r_span0.ASM)
-2226:472a*     R_DrawSpan0_
-2226:486f      R_DrawPlanes0_
-2226:4d68      R_SPAN0_ENDMARKER_
-2226:4ccc      R_WriteBackViewConstantsSpan0_
-2226:472a      R_SPAN0_STARTMARKER_
+2227:4726*     R_DrawSpan0_
+2227:4d64      R_SPAN0_ENDMARKER_
+2227:486b      R_DrawPlanes0_
+2227:4cc8      R_WriteBackViewConstantsSpan0_
+2227:4726      R_SPAN0_STARTMARKER_
 Module: r_spanfl.obj(r_spanfl.ASM)
-2226:52fd      R_SPANFL_ENDMARKER_
-2226:4e19      R_DrawPlanesFL_
-2226:4d68      R_SPANFL_STARTMARKER_
-2226:5261      R_WriteBackViewConstantsSpanFL_
-2226:4d68*     R_DrawSpanFL_
+2227:52f9      R_SPANFL_ENDMARKER_
+2227:4e15      R_DrawPlanesFL_
+2227:4d64      R_SPANFL_STARTMARKER_
+2227:525d      R_WriteBackViewConstantsSpanFL_
+2227:4d64*     R_DrawSpanFL_
 Module: r_sky.obj(r_sky.ASM)
-2226:52fe      R_DrawSkyColumn_
-2226:6084      R_SKY_ENDMARKER_
-2226:52fe      R_SKY_STARTMARKER_
-2226:573a*     R_DrawSkyColumnDynamic_
-2226:6013      R_DrawSkyPlane_
-2226:5fa2      R_DrawSkyPlaneDynamic_
+2227:52fa      R_DrawSkyColumn_
+2227:6080      R_SKY_ENDMARKER_
+2227:52fa      R_SKY_STARTMARKER_
+2227:5736*     R_DrawSkyColumnDynamic_
+2227:600f      R_DrawSkyPlane_
+2227:5f9e      R_DrawSkyPlaneDynamic_
 Module: r_skyfl.obj(r_skyfl.ASM)
-2226:6318      R_DrawSkyPlaneDynamicFL_
-2226:6387      R_SKYFL_ENDMARKER_
-2226:6084      R_DrawSkyColumnFL_
-2226:6084      R_SKYFL_STARTMARKER_
-2226:6318      R_DrawSkyPlaneFL_
+2227:6314      R_DrawSkyPlaneDynamicFL_
+2227:6383      R_SKYFL_ENDMARKER_
+2227:6080      R_DrawSkyColumnFL_
+2227:6080      R_SKYFL_STARTMARKER_
+2227:6314      R_DrawSkyPlaneFL_
 Module: r_mask24.obj(r_mask24.ASM)
-2226:7c8c      R_WriteBackViewConstantsMasked24_
-2226:7d19      R_WriteBackMaskedFrameConstants24_
-2226:7860      R_DrawMasked24_
-2226:7d77      R_MASK24_ENDMARKER_
-2226:6388      R_MASK24_STARTMARKER_
+2227:7c88      R_WriteBackViewConstantsMasked24_
+2227:7d15      R_WriteBackMaskedFrameConstants24_
+2227:785c      R_DrawMasked24_
+2227:7d73      R_MASK24_ENDMARKER_
+2227:6384      R_MASK24_STARTMARKER_
 Module: r_mask16.obj(r_mask16.ASM)
-2226:9250      R_DrawMasked16_
-2226:9767      R_MASK16_ENDMARKER_
-2226:967c      R_WriteBackViewConstantsMasked16_
-2226:9709      R_WriteBackMaskedFrameConstants16_
-2226:7d78      R_MASK16_STARTMARKER_
+2227:9763      R_MASK16_ENDMARKER_
+2227:924c      R_DrawMasked16_
+2227:9678      R_WriteBackViewConstantsMasked16_
+2227:9705      R_WriteBackMaskedFrameConstants16_
+2227:7d74      R_MASK16_STARTMARKER_
 Module: r_mask0.obj(r_mask0.ASM)
-2226:afd8      R_WriteBackViewConstantsMasked0_
-2226:9768      R_MASK0_STARTMARKER_
-2226:b0c3      R_MASK0_ENDMARKER_
-2226:abb9      R_DrawMasked0_
-2226:b065      R_WriteBackMaskedFrameConstants0_
+2227:afd4      R_WriteBackViewConstantsMasked0_
+2227:9764      R_MASK0_STARTMARKER_
+2227:b0bf      R_MASK0_ENDMARKER_
+2227:abb5      R_DrawMasked0_
+2227:b061      R_WriteBackMaskedFrameConstants0_
 Module: r_maskfl.obj(r_maskfl.ASM)
-2226:b0c4      R_MASKFL_STARTMARKER_
-2226:c9e1      R_MASKFL_ENDMARKER_
-2226:c4fd      R_DrawMaskedFL_
-2226:c983      R_WriteBackMaskedFrameConstantsFL_
-2226:c8f6      R_WriteBackViewConstantsMaskedFL_
+2227:b0c0      R_MASKFL_STARTMARKER_
+2227:c9dd      R_MASKFL_ENDMARKER_
+2227:c4f9      R_DrawMaskedFL_
+2227:c97f      R_WriteBackMaskedFrameConstantsFL_
+2227:c8f2      R_WriteBackViewConstantsMaskedFL_
 Module: p_sight.obj(p_sight.ASM)
 2ec5:054e*     P_CrossBSPNode_
 2ec5:0000      P_CheckSight_
@@ -1093,9 +1092,9 @@ Module: p_enemy.obj(p_enemy.ASM)
 2ec5:56f8*     A_Hoof_
 2ec5:4123*     P_RecursiveSound_
 2ec5:5363*     A_FatAttack2_
-2ec5:52e4*     A_FatAttack3_
 2ec5:4c3f*     A_SkelMissile_
 2ec5:5348*     A_FatAttack1_
+2ec5:52e4*     A_FatAttack3_
 2ec5:570c*     A_BabyMetal_
 2ec5:46d9*     A_Look_
 2ec5:590c*     A_SpawnSound_
@@ -1190,69 +1189,69 @@ Module: p_plats.obj(p_plats.ASM)
 2ec5:7325      EV_PlatFunc_
 2ec5:7134*     P_PLATS_STARTMARKER_
 Module: p_spec.obj(p_spec.ASM)
-2ec5:7a7d      P_UpdateSpecials_
+2ec5:7a79      P_UpdateSpecials_
 2ec5:7484      P_FindNextHighestFloor_
 2ec5:740e      P_FindHighestOrLowestFloorSurrounding_
 2ec5:73b8*     P_SPEC_STARTMARKER_
-2ec5:79bb      P_PlayerInSpecialSector_
-2ec5:7d9d*     P_SPEC_ENDMARKER_
-2ec5:7ba9      EV_DoDonut_
+2ec5:79b7      P_PlayerInSpecialSector_
+2ec5:7d99*     P_SPEC_ENDMARKER_
+2ec5:7ba5      EV_DoDonut_
 2ec5:74f5      P_FindLowestOrHighestCeilingSurrounding_
 2ec5:75a2      P_FindMinSurroundingLight_
 2ec5:73b8*     getNextSectorList_
 2ec5:756b      P_FindSectorsFromLineTag_
-2ec5:792c      P_ShootSpecialLine_
-2ec5:772e      P_CrossSpecialLine_
-2ec5:7d11      P_SpawnSpecials_
+2ec5:7928      P_ShootSpecialLine_
+2ec5:772a      P_CrossSpecialLine_
+2ec5:7d0d      P_SpawnSpecials_
 Module: p_switch.obj(p_switch.ASM)
-2ec5:7d9e*     P_SWITCH_STARTMARKER_
-2ec5:8152*     P_SWITCH_ENDMARKER_
-2ec5:7d9e      P_ChangeSwitchTexture_
-2ec5:7fa6      P_UseSpecialLine_
+2ec5:7d9a*     P_SWITCH_STARTMARKER_
+2ec5:814e*     P_SWITCH_ENDMARKER_
+2ec5:7d9a      P_ChangeSwitchTexture_
+2ec5:7fa2      P_UseSpecialLine_
 Module: p_telept.obj(p_telept.ASM)
-2ec5:82d1*     P_TELEPT_ENDMARKER_
-2ec5:8152*     P_TELEPT_STARTMARKER_
-2ec5:8152      EV_Teleport_
+2ec5:82cd*     P_TELEPT_ENDMARKER_
+2ec5:814e*     P_TELEPT_STARTMARKER_
+2ec5:814e      EV_Teleport_
 Module: p_tick.obj(p_tick.ASM)
-2ec5:834b      P_UpdateThinkerFunc_
-2ec5:82d2*     P_TICK_STARTMARKER_
-2ec5:82d2      P_CreateThinkerFar_
-2ec5:84a4      P_Random_
-2ec5:84b9*     P_TICK_ENDMARKER_
-2ec5:836d      P_RemoveThinker_
-2ec5:83a0      P_Ticker_
-2ec5:82d6      P_CreateThinker_
+2ec5:8347      P_UpdateThinkerFunc_
+2ec5:82ce*     P_TICK_STARTMARKER_
+2ec5:82ce      P_CreateThinkerFar_
+2ec5:84a0      P_Random_
+2ec5:84b5*     P_TICK_ENDMARKER_
+2ec5:8369      P_RemoveThinker_
+2ec5:839c      P_Ticker_
+2ec5:82d2      P_CreateThinker_
 Module: p_user.obj(p_user.ASM)
-2ec5:88e2*     P_USER_ENDMARKER_
-2ec5:84bb*     P_Thrust_
-2ec5:84fb*     P_CalcHeight_
-2ec5:86a6*     P_DeathThink_
-2ec5:84bb*     P_USER_STARTMARKER_
-2ec5:8627*     P_MovePlayer_
-2ec5:87a2      P_PlayerThink_
+2ec5:88de*     P_USER_ENDMARKER_
+2ec5:84b7*     P_Thrust_
+2ec5:84f7*     P_CalcHeight_
+2ec5:86a2*     P_DeathThink_
+2ec5:84b7*     P_USER_STARTMARKER_
+2ec5:8623*     P_MovePlayer_
+2ec5:879e      P_PlayerThink_
 Module: p_info.obj(p_info.ASM)
-2ec5:8b0a      GetPainChance_
-2ec5:8bb9      GetAttackSound_
-2ec5:8b99      GetDeathState_
-2ec5:8b75      GetSeeState_
-2ec5:8acb      GetXDeathState_
-2ec5:8b55      GetActiveSound_
-2ec5:8b66      GetPainSound_
-2ec5:8ba9      GetPainState_
-2ec5:8b21      GetRaiseState_
-2ec5:8b89      GetMissileState_
-2ec5:8aed      GetMeleeState_
-2ec5:8beb      GetDamage_
-2ec5:8c2b      P_INFO_ENDMARKER_
-2ec5:88e2*     P_INFO_STARTMARKER_
-2ec5:8b32      GetMobjMass_
-2ec5:8c17      GetSpawnHealth_
+2ec5:8b06      GetPainChance_
+2ec5:8bb5      GetAttackSound_
+2ec5:8b95      GetDeathState_
+2ec5:8b71      GetSeeState_
+2ec5:8ac7      GetXDeathState_
+2ec5:8b62      GetPainSound_
+2ec5:8b51      GetActiveSound_
+2ec5:8ba5      GetPainState_
+2ec5:8b1d      GetRaiseState_
+2ec5:8b85      GetMissileState_
+2ec5:8ae9      GetMeleeState_
+2ec5:8be7      GetDamage_
+2ec5:8c27      P_INFO_ENDMARKER_
+2ec5:88de*     P_INFO_STARTMARKER_
+2ec5:8b2e      GetMobjMass_
+2ec5:8c13      GetSpawnHealth_
 Module: d_algo.obj(d_algo.ASM)
-3787:0081      hackDSBack_
-3787:009d*     D_ALGO_END_
-3787:003a      zeroConventional_
-3787:000c      resetDS_
-3787:0014*     hackDS_
+3787:007d      hackDSBack_
+3787:0099*     D_ALGO_END_
+3787:0036      zeroConventional_
+3787:0008      resetDS_
+3787:0010*     hackDS_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fopen.c)
 3787:00a0+     __open_flags_
 3787:024e+     _fsopen_

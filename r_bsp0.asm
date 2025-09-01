@@ -4228,7 +4228,6 @@ ANG180_HIGHBITS = 08000h
 MOD_FINE_ANGLE_NOSHIFT_HIGHBITS = 07Fh
 ML_DONTPEGBOTTOM = 010h
 ML_DONTPEGTOP = 8
-SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT = 030h
 MAXDRAWSEGS = 256
 
 
@@ -4943,24 +4942,24 @@ jne       v1x_equals_v2x
 
 inc       dx
 jge       lightnum_greater_than_0
-mov       ax, _scalelightfixed + SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT
+mov       ax, OFFSET _scalelight
 jmp       done_setting_ax_to_wallights
 
 
 v1y_equals_v2y:
 dec       dx
 jge       lightnum_greater_than_0
-mov       ax, _scalelightfixed + SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT
+mov       ax, OFFSET _scalelight
 jmp       done_setting_ax_to_wallights
 
 v1x_equals_v2x:
 test      dx, dx
 
 jge       lightnum_greater_than_0
-mov       ax, _scalelightfixed + SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT
+mov       ax, OFFSET _scalelight
 jmp       done_setting_ax_to_wallights
 lightnum_max:
-mov      ax, 720 + _scalelightfixed + SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT
+mov      ax, 720 + OFFSET _scalelight
 jmp      done_setting_ax_to_wallights
 lightnum_greater_than_0:
 cmp       dx, LIGHTLEVELS
@@ -4969,7 +4968,7 @@ jnl       lightnum_max
 lightnum_less_than_lightlevels:
 mov       al, 48
 mul       dl
-add       ax, _scalelightfixed + SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT
+add       ax, OFFSET _scalelight
 done_setting_ax_to_wallights:
 
 
@@ -8599,11 +8598,9 @@ ret
 
 
 set_vis_colormap:
-mov   ax, SCALELIGHTFIXED_SEGMENT   ; todo dont use segment
 SELFMODIFY_set_spritelights_2:
 mov   bx, 01000h
-mov   es, ax
-mov   al, byte ptr es:[bx + (MAXLIGHTSCALE-1)]
+mov   al, byte ptr ds:[bx + (MAXLIGHTSCALE-1) + _scalelight]  ;todo or is this supposed to be scalelightfixed...?
 mov   byte ptr ds:[si + 1], al
 LEAVE_MACRO
 ret   

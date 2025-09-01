@@ -65,7 +65,7 @@ int16_t __near getNextSectorList(int16_t __near * linenums,int16_t	sec,int16_t _
 // Given the sector number and the line number,
 //  it will tell you whether the line is two-sided or not.
 //
-/*
+
 int16_t __near twoSided( int16_t	sector,int16_t	line ){
 	line = sectors[sector].linesoffset + line;
 	line = linebuffer[line];
@@ -181,7 +181,7 @@ short_height_t __near P_FindNextHighestFloor( int16_t	secnum,short_height_t		cur
 //
 // FIND LOWEST CEILING IN THE SURROUNDING SECTORS
 //
-/*
+
 short_height_t __near P_FindLowestOrHighestCeilingSurrounding(int16_t	secnum, int8_t isHigh){
     uint8_t		i;
 	short_height_t		height = isHigh ? 0 : MAXSHORT ;
@@ -1159,4 +1159,4 @@ void __far P_SpawnSpecials(void) {
 
 
 }
-*/
+
