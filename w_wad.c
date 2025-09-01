@@ -227,23 +227,24 @@ int16_t __near W_CheckNumForName (int8_t __far* name) {
 //
 
 // todo clean this up...
+// far endpoint to near func. rename though
 int16_t __far W_GetNumForName(int8_t __near* name) {
-	return W_GetNumForNameFarString(name);
+	return W_CheckNumForName(name);
 }
 
-int16_t __far W_GetNumForNameFarString(int8_t __far* name) {
+// int16_t __far W_GetNumForNameFarString(int8_t __far* name) {
 
-	int16_t i;
+// 	int16_t i;
 
-    i = W_CheckNumForName (name);
+//     i = W_CheckNumForNameFarString (name);
 
-#ifdef CHECK_FOR_ERRORS
-	if (i == -1)
-		I_Error("\nW_GetNumForName: %s not found!", name);
-#endif
+// #ifdef CHECK_FOR_ERRORS
+// 	if (i == -1)
+// 		I_Error("\nW_GetNumForName: %s not found!", name);
+// #endif
 
-    return i;
-}
+//     return i;
+// }
 
 
 //
@@ -352,7 +353,7 @@ void __far W_CacheLumpNameDirect (int8_t* name, byte __far* dest ) {
 }
 
 void __far W_CacheLumpNameDirectFarString (int8_t __far* name, byte __far* dest ) {
-	W_ReadLump(W_GetNumForNameFarString(name), dest, 0, 0);
+	W_ReadLump(W_CheckNumForNameFarString(name), dest, 0, 0);
 }
 
 

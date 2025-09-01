@@ -21,7 +21,7 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN W_LumpLength_:FAR
-EXTRN W_GetNumForNameFarString_:FAR
+EXTRN W_CheckNumForNameFarString_:NEAR
 EXTRN W_CacheLumpNameDirectFarString_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
 EXTRN Z_QuickMapPalette_:FAR
@@ -100,7 +100,7 @@ PROC    ST_load_and_rundownoffset_ NEAR
 
 mov   dx, cs
 push  ax
-call  W_GetNumForNameFarString_
+call  W_CheckNumForNameFarString_
 call  W_LumpLength_
 sub   si, ax
 pop   ax

@@ -39,13 +39,18 @@ ENDP
 
 ; note: some of the math here assums tics wont differ by more than 16 bits signed (32768 tics) per call, which i think is more than more than enough precision in any case.
 
+PROC    W_CheckNumForNameFarString_ NEAR
+PUBLIC  W_CheckNumForNameFarString_
+
+mov    ds, dx
+; fall thru
+
 PROC    W_CheckNumForName_ NEAR
 PUBLIC  W_CheckNumForName_
 
 PUSHA_NO_AX_OR_BP_MACRO
 
 xchg  ax, si
-mov   ds, dx
 
 xor   ax, ax
 mov   cx, ax
