@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/01 18:24:39
+Created on:       25/09/01 21:19:01
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -450,10 +450,10 @@ Module: main.obj(main.ASM)
 0000:6198*     G_SetGameKeyUp_
 0000:6d9c      locallib_printhex_
 0000:6791      M_LoadDefaults_
+0000:5dd1*     D_MAIN_STARTMARKER_
 0000:6d8f      locallib_putchar_
 0000:6b8b*     I_UpdateBox_
 0000:6ed4*     locallib_printstringnear_
-0000:5dd1*     D_MAIN_STARTMARKER_
 0000:704f      D_Display_
 0000:5e81*     I_KeyboardISR_
 0000:6935      M_ScanTranslateDefaults_
@@ -911,4 +911,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  000105d0 (67024.)
 Entry point address: 0000:c7be
-Link time: 00:00.20
+Link time: 00:00.74

@@ -96,7 +96,7 @@ sub   ax, 01000h
 and   dh, 01Fh
 and   ah, 01Fh
 
-mov   di, ax
+xchg  ax, di
 
 ; dx = anglea
 ; di = angleb
@@ -122,28 +122,28 @@ call FixedMulTrig_BSPLocal_
 
 mov es, si
 SHIFT_MACRO sal di 2
-les si, dword ptr es:[di]
-mov di, es
-xchg dx, di
-xchg ax, si
+les bx, dword ptr es:[di]
+mov cx, es
+xchg dx, cx
+xchg ax, bx
 
 ;  dx now has anglea
 ;  ax has finesine_segment
-;  di:si is den
+;  cx:bx is den
 
 SELFMODIFY_BSP_centerx_1:
-mov   cx, 01000h
+mov   si, 01000h
 
 
-AND  DX, CX    ; DX*CX
+AND  DX, SI    ; DX*CX
 NEG  DX
-MOV  BX, DX    ; store high result
+MOV  DI, DX    ; store high result
 
-MUL  CX       ; AX*CX
-ADD  DX, BX   
+MUL  SI       ; AX*CX
+ADD  DX, DI   
 
 
-; di:si had den
+; cx:bx had den
 ; dx:ax has num
 
 SELFMODIFY_BSP_detailshift2minus_1:
@@ -158,46 +158,37 @@ rcl   dx, 1
 shift_done:
 
 
-; di:si had den
+; cx:bx had den
 ; dx:ax has num
 
-
-
+;    if (den > num >> 16)
 ;    if (den > num.h.intbits) {
 
 ; annoying - we have to account for sign!
 ; is there a cleaner way?
 
- 
-xchg   cx, ax  ; temp storage  ; cx has low
-xchg   ax, dx
-cwd            ; sign extend
+mov    di, dx
+xor    di, cx   ; different signs?
+js     figure_out_sign_return  ; different bit 15s
 
-cmp   di, dx
-mov   dx, ax
-mov   bx, si 
+test   dx, dx
+jns    two_positives
 
-jg    do_divide  ; compare sign bits..
+two_negatives:
+neg    cx
+neg    bx
+adc    cx, 0
+neg    dx
+neg    ax
+adc    dx, 0
+
+two_positives:
 
 
-
-
-jne   return_maxvalue   ; less than case - result is greater than 0x1,0000,0000
-
-; todo we can bitshift and catch more cases here...
-
-
-; shift to account for 0x400000 compare
-
-; so this does work but it triggers once every [many] frames, so wasting 8 ticks to save a hundred or two
-; isn't worth it when the hit rate is < 1%
-;mov ah, al
-;xor al, al
-;sal ah, 1
-;sal ah, 1
-
-cmp   si, ax    
-ja    do_divide
+test  cx, cx
+jne   do_divide ; definitely larger than dx if nonzero..
+cmp   bx, dx
+jg    do_divide
 
 
 return_maxvalue:
@@ -205,15 +196,15 @@ return_maxvalue:
 mov   dx, 040h
 xor   ax, ax
 jmp normal_return
+figure_out_sign_return:
+test  cx, cx
+js    return_maxvalue
+jmp   return_minvalue
 
 do_divide:
 
 ; set up params
-mov   ax, cx  ; mov back..
-mov   cx, di 
-;or    di, si
-;je    return_maxvalue
-;mov   di, cx
+;cx/bx already set
 
 ; we actually already bounds check more aggressively than fixeddiv
 ;  and guarantee positives here so the fixeddiv wrapper is unnecessary
