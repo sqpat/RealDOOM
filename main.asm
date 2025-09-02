@@ -3323,7 +3323,7 @@ cmp   byte ptr ds:[_menuactive], bh ; 0
 jne   set_border_draw_count
 cmp   byte ptr ds:[_fullscreen], bh ; 0
 jne   set_border_draw_count
-cmp   byte ptr ds:[_inhelpscreensstate], bh ; 0
+cmp   byte ptr ds:[_viewactivestate], bh ; 0
 jne   skip_set_border_draw_count
 set_border_draw_count:
 

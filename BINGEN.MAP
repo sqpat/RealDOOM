@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/01 21:19:00
+Created on:       25/09/01 21:34:43
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -1235,8 +1235,8 @@ Module: p_info.obj(p_info.ASM)
 2ec9:8b95      GetDeathState_
 2ec9:8b71      GetSeeState_
 2ec9:8ac7      GetXDeathState_
-2ec9:8b51      GetActiveSound_
 2ec9:8b62      GetPainSound_
+2ec9:8b51      GetActiveSound_
 2ec9:8ba5      GetPainState_
 2ec9:8b1d      GetRaiseState_
 2ec9:8b85      GetMissileState_
@@ -1547,4 +1547,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003e510 (255248.)
 Entry point address: 378b:0c56
-Link time: 00:00.50
+Link time: 00:00.49
