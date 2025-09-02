@@ -61,6 +61,7 @@ GLOBOBJS = &
  p_setup.obj &
  p_mobj.obj &
  r_init.obj &
+ r_inita.obj &
  r_setup.obj &
  r_main.obj &
  w_init.obj &

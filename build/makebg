@@ -112,6 +112,7 @@ GLOBOBJS = $(GLOBOBJS) &
  p_user.obj &
  p_info.obj &
  r_init.obj &
+ r_inita.obj &
  r_setup.obj &
  r_main.obj &
  w_init.obj &

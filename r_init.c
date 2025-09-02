@@ -44,6 +44,7 @@
 
 uint8_t __near R_FlatNumForName(int8_t* __near name);
 
+void __near R_InitSpriteLumps(void);
 
 
 #define DISTMAP		2
@@ -57,6 +58,8 @@ uint8_t __near R_FlatNumForName(int8_t* __near name);
 //  so the sprite does not need to be cached completely
 //  just for having the header info ready during rendering.
 //
+
+/*
 void R_InitSpriteLumps(void) {
 	int16_t         i;
 	if (is_ultimate){
@@ -147,7 +150,7 @@ void R_InitSpriteLumps(void) {
 
 
 }
-
+*/
 
 //
 // Texture definition.
