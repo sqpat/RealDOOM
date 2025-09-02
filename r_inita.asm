@@ -24,6 +24,7 @@ EXTRN DEBUG_PRINT_:FAR
 EXTRN Z_QuickMapScratch_5000_:FAR
 EXTRN Z_QuickMapUndoFlatCache_:FAR
 EXTRN Z_QuickMapRender_:FAR
+EXTRN W_CacheLumpNumDirect_:FAR
 EXTRN W_CacheLumpNameDirect_:FAR
 .DATA
 
@@ -46,11 +47,11 @@ str_dot:
 db ".", 0
 
 do_print_dot:
-;push      cs
-;mov       ax, OFFSET str_dot
-;push      ax
-;call      DEBUG_PRINT_       
-;add       sp, 4
+push      cs
+mov       ax, OFFSET str_dot
+push      ax
+call      DEBUG_PRINT_       
+add       sp, 4
 jmp       done_printing_dot
 
 
@@ -68,18 +69,14 @@ mov       ax, SPRITEWIDTHS_ULT_SEGMENT
 not_ultimate:
 mov       word ptr ds:[_spritewidths_segment], ax
 mov       bp, dx ; 0
-; 0 sprite check should be unnecessary
-; cmp       word ptr ds:[_numspritelumps], dx ; 0
-; jg        continue_spritelumps
-; jmp       exit_r_initspritelumps
+
 continue_spritelumps:
 
 loop_next_sprite:
 xor       ax, ax
-mov       di, ax   ; postdatasize
 
 
-test      byte ptr bp, 63
+test      bp, 63
 je        do_print_dot
 done_printing_dot:
 call      Z_QuickMapScratch_5000_
@@ -88,48 +85,44 @@ mov       cx, SCRATCH_SEGMENT_5000
 add       ax, bp
 xor       bx, bx
 
-call      W_CacheLumpNameDirect_
+call      W_CacheLumpNumDirect_
 
 mov       es, word ptr ds:[_spritewidths_segment]
 mov       ax, SCRATCH_SEGMENT_5000
 mov       ds, ax
-xor       bx, bx
 
-mov       cx, word ptr ds:[bx + PATCH_T.patch_topoffset]
-mov       bx, bp
-mov       dl, 1
+mov       ax, word ptr ds:[0 + PATCH_T.patch_width]
+mov       byte ptr es:[bp], al
+xchg      ax, cx ; cx gets patchwidth
 
-cmp       ax, 257
-je        hardcode_257_spritewidth
-normal_spritewidth:
-xchg      ax, dx
-hardcode_257_spritewidth:
-mov       byte ptr es:[bx], dl
-mov       ax, word ptr ds:[bx + PATCH_T.patch_leftoffset]
-; abs ax
+; abs ax. todo just use cbw?
+mov       ax, word ptr ds:[0 + PATCH_T.patch_leftoffset]
 cwd       
 xor       ax, dx
 sub       ax, dx
-; bx still this
-;mov       bx, bp
+
 mov       dx, SPRITEOFFSETS_SEGMENT
 mov       es, dx
-mov       byte ptr es:[bx], al
+mov       byte ptr es:[bp], al
+
 mov       ax, SPRITETOPOFFSETS_SEGMENT
 mov       es, ax
-mov       al, 080h  ; - 128
-cmp       cx, 129
-je        handle_129_spritetopoffset
-handle_normal_sprite_offset:
-xchg      ax, cx
+mov       ax, word ptr ds:[0 + PATCH_T.patch_topoffset]
+
+cmp       ax, 129
+jne       handle_normal_sprite_offset
 handle_129_spritetopoffset:
-mov       byte ptr es:[bx], al
+mov       al, 080h  ; - 128
+handle_normal_sprite_offset:
+mov       byte ptr es:[bp], al
 
-; sprite width/columncount
-mov       cx, word ptr ds:[0 + PATCH_T.patch_width]
 
+;   cx has patchwidth for looping
+xor       ax, ax  ; ah 0 for whole loop
+cwd               ; dx = pixelsize
+mov       di, ax  ; di = postdatasize
 mov       bx, 8   ; PATCH_T.patch_columnofs
-xor       dx, dx  ; pixelsize
+
 ; ds still 05000h
 
 loop_next_spritecolumn:
@@ -141,27 +134,20 @@ cmp       al, 0FFh
 je        found_end_of_spritecolumn
 
 loop_next_spritepost:
-xor       ax, ax
-lodsb     ; length
-add       dx, ax
+lodsb     ; length ; max value of 127 i think?
 add       si, ax
-
-mov       ah, 16
-and       al, 0Fh
-sub       ah, al
-mov       al, ah
-and       ax, 0Fh
+add       al, 00Fh
+and       al, 0F0h ; round to next paragraph
+add       dx, ax
 inc       si
-inc       si
-inc       di
-inc       di
+inc       si  ; length + 4, but did two lodsb already.
+inc       di  ; add by 2, will shift later
 lodsb
 cmp       al, 0FFh
 jne       loop_next_spritepost
 found_end_of_spritecolumn:
-add       bx, 4
-inc       di
-inc       di
+add       bx, 4 ; next column
+inc       di    ; add by 2, will shift later
 loop      loop_next_spritecolumn
 finished_sprite_loading_loop:
 push      ss
@@ -170,12 +156,12 @@ pop       ds
 ;		startoffset = 8 + (patchwidth << 2) + postdatasize;
 ;		startoffset += (16 - ((startoffset &0xF)) &0xF); // round up so first pixel data starts aligned of course.
 
+sal       di, 1
 
-mov       ax, word ptr ds:[0 + PATCH_T.patch_width]
+mov       bx, word ptr ds:[0 + PATCH_T.patch_width]
 
-SHIFT_MACRO shl       ax 2
-add       ax, 8
-add       ax, di  ; postdatasize
+SHIFT_MACRO shl       bx 2
+lea       ax, [bx + di + 8] ; di is post size
 
 
 add       ax, 0Fh
@@ -188,7 +174,7 @@ add       dx, ax  ; pixelsize + startoffset
 call      Z_QuickMapUndoFlatCache_
 mov       bx, bp
 sal       bx, 1
-inc       bp  ; todo push pop this.
+
 mov       ax, SPRITETOTALDATASIZES_SEGMENT
 mov       es, ax
 mov       word ptr es:[bx], dx
@@ -199,6 +185,8 @@ mov       word ptr es:[bx], di
 
 
 call      Z_QuickMapRender_
+
+inc       bp 
 cmp       bp, word ptr ds:[_numspritelumps]
 jge       exit_r_initspritelumps
 jmp       loop_next_sprite
@@ -318,7 +306,7 @@ PROC    R_GenerateLookup_ NEAR
 0x0000000000000856:  8B 46 20          mov       ax, word ptr [bp + 0x20]
 0x0000000000000859:  31 DB             xor       bx, bx
 0x000000000000085b:  0E                
-0x000000000000085c:  3E E8 06 A3       call      W_CacheLumpNameDirect_
+0x000000000000085c:  3E E8 06 A3       call      W_CacheLumpNumDirect_
 0x0000000000000860:  8E 46 0A          mov       es, word ptr [bp + 0xa]
 0x0000000000000863:  8B 5E 26          mov       bx, word ptr [bp + 0x26]
 0x0000000000000866:  26 8B 47 02       mov       ax, word ptr es:[bx + 2]
@@ -1133,7 +1121,7 @@ PROC   R_InitPatches_ NEAR
 0x00000000000010b3:  01 D0             add       ax, dx
 0x00000000000010b5:  31 DB             xor       bx, bx
 0x00000000000010b7:  0E                
-0x00000000000010b8:  3E E8 AA 9A       call      W_CacheLumpNameDirect_
+0x00000000000010b8:  3E E8 AA 9A       call      W_CacheLumpNumDirect_
 0x00000000000010bc:  B9 7E 93          mov       cx, 0x937e
 0x00000000000010bf:  8E C7             mov       es, di
 0x00000000000010c1:  89 D3             mov       bx, dx
@@ -1227,7 +1215,7 @@ PROC   R_Init_ NEAR
 0x000000000000115f:  B8 01 00          mov       ax, 1
 0x0000000000001162:  31 DB             xor       bx, bx
 0x0000000000001164:  0E                
-0x0000000000001165:  E8 FE 99          call      W_CacheLumpNameDirect_
+0x0000000000001165:  E8 FE 99          call      W_CacheLumpNumDirect_
 0x0000000000001168:  90                       
 0x0000000000001169:  E8 98 FF          call      R_InitData_
 0x000000000000116c:  1E                push      ds
