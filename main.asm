@@ -1334,6 +1334,7 @@ loop  loop_set_default_values
 
 mov   ax, OFFSET _str_config
 call  CopyString13_
+mov   dx, ds
 call  M_CheckParm_
 
 
@@ -3044,6 +3045,7 @@ pop     bx
 ret
 ENDP
 
+; todo these can move to init code and get safely clobbered?
 
 PROC    locallib_dos_getvect_ NEAR
 PUBLIC  locallib_dos_getvect_
@@ -3077,24 +3079,7 @@ ENDP
 
 KEYBOARDINT = 9
 
-PROC    I_StartupKeyboard_ NEAR
-PUBLIC  I_StartupKeyboard_
 
-push  bx
-push  dx
-mov   al, KEYBOARDINT
-call  locallib_dos_getvect_
-mov   word ptr ds:[_oldkeyboardisr + 0], ax
-mov   word ptr ds:[_oldkeyboardisr + 2], es  
-mov   al, KEYBOARDINT
-mov   bx, cs
-mov   dx, OFFSET I_KeyboardISR_
-call  locallib_dos_setvect_
-pop   dx
-pop   bx
-ret
-
-ENDP
 
 
 

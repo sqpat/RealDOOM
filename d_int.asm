@@ -261,19 +261,19 @@ ENDP
 
 ; todo make this near.
 
-PROC locallib_int86_67_ FAR
+PROC locallib_int86_67_ NEAR
 ENDP
-PROC locallib_int86_67_2arg_ FAR
+PROC locallib_int86_67_2arg_ NEAR
 ENDP
-PROC locallib_int86_67_1arg_ FAR
+PROC locallib_int86_67_1arg_ NEAR
 ENDP
-PROC locallib_int86_67_multiple_ FAR
+PROC locallib_int86_67_multiple_ NEAR
 ENDP
-PROC locallib_int86_67_1arg_return_ FAR
+PROC locallib_int86_67_1arg_return_ NEAR
 ENDP
-PROC locallib_int86_67_3arg_return_ FAR
+PROC locallib_int86_67_3arg_return_ NEAR
 ENDP
-PROC locallib_int86_67_esdi_ FAR
+PROC locallib_int86_67_esdi_ NEAR
 PUBLIC locallib_int86_67_
 PUBLIC locallib_int86_67_2arg_
 PUBLIC locallib_int86_67_1arg_
@@ -288,9 +288,9 @@ ENDP
 
 ; todo make this near.
 
-PROC locallib_int86_10_ FAR
+PROC locallib_int86_10_ NEAR
 ENDP
-PROC locallib_int86_10_4args_ FAR
+PROC locallib_int86_10_4args_ NEAR
 PUBLIC locallib_int86_10_
 PUBLIC locallib_int86_10_4args_
 
@@ -298,7 +298,7 @@ int 010h
 ret 
 ENDP
 
-PROC locallib_int86_33_ FAR
+PROC locallib_int86_33_ NEAR
 PUBLIC locallib_int86_33_
 
 int 033h

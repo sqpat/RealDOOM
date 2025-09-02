@@ -38,8 +38,8 @@
 #include "z_zone.h"
 #include "m_near.h"
 void __interrupt I_KeyboardISR(void);
-int16_t __far I_ResetMouse(void);
-void __far I_StartupSound(void);
+int16_t __near I_ResetMouse(void);
+void __near I_StartupSound(void);
 
 
 #define KBDQUESIZE 32

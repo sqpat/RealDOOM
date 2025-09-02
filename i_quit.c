@@ -75,7 +75,7 @@ void __interrupt __far_func TS_ServiceScheduleIntEnabled(void);
 //void RestoreRealTimeClock(void);
 
 
-int16_t __far I_ResetMouse(void);
+int16_t __near I_ResetMouse(void);
 
 void __near I_ShutdownTimer(void);
 void __near I_ShutdownKeyboard(void);
@@ -189,7 +189,7 @@ void __near I_Shutdown(void) {
 // or 0 if not present
 
 
-int16_t __near M_CheckParm (int8_t *check) {
+int16_t __near M_CheckParm (int8_t *__far check) {
     int16_t		i;
 	// ASSUMES *check is LOWERCASE. dont pass in uppercase!
 	// myargv must be tolower()

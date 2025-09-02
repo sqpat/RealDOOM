@@ -522,16 +522,16 @@ typedef uint8_t  THINKFUNCTION;
 
 
 
-uint16_t locallib_int86_33( uint16_t ax);
-uint32_t locallib_int86_10( uint16_t ax, uint16_t dx, uint16_t bx);
-uint64_t locallib_int86_67_1arg_return( uint16_t ax);
-uint64_t locallib_int86_67_3arg_return( uint16_t ax, uint16_t dx, uint16_t bx);
-void locallib_int86_10_4args( uint16_t ax, uint16_t dx, uint16_t bx, uint16_t cx);
-uint16_t locallib_int86_67( uint16_t ax, uint16_t dx, uint16_t bx);
-uint16_t locallib_int86_67_2arg( uint16_t ax, uint16_t dx);
-uint16_t locallib_int86_67_1arg( uint16_t ax);
-uint16_t locallib_int86_67_multiple( uint16_t ax, uint16_t dx, uint16_t cx, uint16_t si);
-uint16_t locallib_int86_67_esdi( uint16_t ax, uint16_t di, uint16_t es);
+uint16_t __near locallib_int86_33( uint16_t ax);
+uint32_t __near locallib_int86_10( uint16_t ax, uint16_t dx, uint16_t bx);
+uint64_t __near locallib_int86_67_1arg_return( uint16_t ax);
+uint64_t __near locallib_int86_67_3arg_return( uint16_t ax, uint16_t dx, uint16_t bx);
+void     __near locallib_int86_10_4args( uint16_t ax, uint16_t dx, uint16_t bx, uint16_t cx);
+uint16_t __near locallib_int86_67( uint16_t ax, uint16_t dx, uint16_t bx);
+uint16_t __near locallib_int86_67_2arg( uint16_t ax, uint16_t dx);
+uint16_t __near locallib_int86_67_1arg( uint16_t ax);
+uint16_t __near locallib_int86_67_multiple( uint16_t ax, uint16_t dx, uint16_t cx, uint16_t si);
+uint16_t __near locallib_int86_67_esdi( uint16_t ax, uint16_t di, uint16_t es);
 
 
 #define EMS_INT 0x67
