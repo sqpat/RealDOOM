@@ -191,7 +191,10 @@ typedef struct {
 // complicated memory situation... creating render data at 0x5000-0x6000... lump info will be in 0x4000 range...
 // use scratch at 0x7000 which is usually level data. level data is not used during init, only during setup,
 // so its technically a free area here. (init is game init, setup is level setup)
-void R_GenerateLookup(uint16_t texnum) {
+void __near R_GenerateLookup(uint16_t texnum);
+
+/*
+void __near R_GenerateLookup(uint16_t texnum) {
 
 	texture_t __far*          texture;
 	patch_t __far*            wadpatch;
@@ -345,19 +348,7 @@ void R_GenerateLookup(uint16_t texnum) {
 						
 						// 209 (thus 208)
 						// 0
-/*
-					if (texnum == 4 && x == 45) {
-						I_Error("\ntexture stuff %u %u %u %x %x %x %x %u %u", texnum, x, 
-							currenttexturepixelbytecount, 
-							*((uint16_t __far *)( (byte  __far*)column + 3)),
-							*((uint16_t __far *)( (byte  __far*)column + 5)),
-							*column,
-							texmaskedpostdata[currenttexturepostoffset-1],
-							currenttexturepostoffset,
-							currentpostoffset
-						 );
-					}
-						 */
+
 
 					column = (column_t  __far*)(  (byte  __far*)column + column->length + 4);
 					colpatchcount++;
@@ -500,6 +491,8 @@ void R_GenerateLookup(uint16_t texnum) {
 	currentlumpindex += 2;
 
 }
+
+*/
 
 #define TEX_LOAD_ADDRESS (byte __far*) (0x70000000)
 #define TEX_LOAD_ADDRESS_SEGMENT (segment_t) ((uint32_t)TEX_LOAD_ADDRESS >> 16)
