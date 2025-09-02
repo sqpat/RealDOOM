@@ -77,8 +77,10 @@ mov       word ptr [bp - 8], dx ; 0
 continue_spritelumps:
 mov       word ptr [bp - 0Ch], dx ; 0
 loop_next_sprite:
-xor       di, di
-xor       si, si
+xor       ax, ax
+mov       word ptr [bp - 6], ax   ; postdatasize
+mov       word ptr [bp - 0Ah], ax ; pixelsize
+
 test      byte ptr [bp - 8], 63
 je        do_print_dot
 done_printing_dot:
@@ -87,12 +89,11 @@ mov       ax, word ptr ds:[_firstspritelump]
 mov       cx, SCRATCH_SEGMENT_5000
 add       ax, word ptr [bp - 8]
 xor       bx, bx
-mov       word ptr [bp - 010h], bx ; 0
+
 call      W_CacheLumpNameDirect_
 mov       ax, SCRATCH_SEGMENT_5000
 mov       es, ax
 xor       bx, bx
-mov       word ptr [bp - 0Ah], ax
 mov       ax, word ptr es:[bx + PATCH_T.patch_width]
 mov       cx, word ptr es:[bx + PATCH_T.patch_topoffset]
 mov       word ptr [bp - 4], ax
@@ -126,52 +127,51 @@ xchg      ax, cx
 handle_129_spritetopoffset:
 mov       byte ptr es:[bx], al
 
-xor       dx, dx
-; shouldnt have width 0 sprites..
-;cmp       word ptr [bp - 4], dx ; 0
-;jle       finished_sprite_loading_loop
-mov       bx, word ptr [bp - 010h]
-mov       word ptr [bp - 2], bx
+; sprite width/columncount
+mov       cx, word ptr [bp - 4]
+
+
+mov       bx, 8   ; PATCH_T.patch_columnofs
+mov       ax, SCRATCH_SEGMENT_5000
+mov       ds, ax
+mov       dx, 2 ; common adder..
 
 loop_next_spritecolumn:
-mov       ax, SCRATCH_SEGMENT_5000
-mov       es, ax
 
-mov       bx, word ptr [bp - 2]
-mov       bx, word ptr es:[bx + 8]
-mov       word ptr [bp - 0Eh], ax
-cmp       byte ptr es:[bx], 0FFh
+; bx is column
+mov       si, word ptr ds:[bx] ; si is post
+lodsb
+cmp       al, 0FFh
 je        found_end_of_spritecolumn
-mov       es, word ptr [bp - 0Eh]
+
 loop_next_spritepost:
-mov       al, byte ptr es:[bx + 1]
-xor       ah, ah
-mov       cx, 16
+xor       ax, ax
+lodsb     ; length
+add       word ptr [bp - 0Ah], ax
 add       si, ax
+
+mov       ah, 16
 and       al, 0Fh
-sub       cx, ax
-mov       ax, cx
-xor       ah, ch
-and       al, 0Fh
-add       si, ax
-mov       al, byte ptr es:[bx + 1]
-xor       ah, ah
-add       bx, ax
-add       bx, 4
-add       di, 2
-cmp       byte ptr es:[bx], 0FFh
+sub       ah, al
+mov       al, ah
+and       ax, 0Fh
+add       si, dx ; 2
+add       word ptr [bp - 6], dx ; 2
+lodsb
+cmp       al, 0FFh
 jne       loop_next_spritepost
 found_end_of_spritecolumn:
-add       word ptr [bp - 2], 4
-inc       dx
-add       di, 2
-cmp       dx, word ptr [bp - 4]
-jl        loop_next_spritecolumn
+add       bx, 4
+add       word ptr [bp - 6], dx ; 2
+loop      loop_next_spritecolumn
 finished_sprite_loading_loop:
+push      ss
+pop       ds
+
 mov       dx, word ptr [bp - 4]
 shl       dx, 2
 add       dx, 8
-add       dx, di
+add       dx, word ptr [bp - 6]
 mov       ax, dx
 xor       ah, dh
 mov       bx, 16
@@ -184,10 +184,11 @@ and       al, 15
 mov       bx, word ptr [bp - 0Ch]
 add       dx, ax
 call      Z_QuickMapUndoFlatCache_
-add       dx, si
+add       dx, word ptr [bp - 0Ah]
 mov       ax, SPRITEPOSTDATASIZES_SEGMENT
 mov       es, ax
-mov       word ptr es:[bx], di
+push      word ptr [bp - 6]
+pop       word ptr es:[bx]
 mov       ax, SPRITETOTALDATASIZES_SEGMENT
 mov       es, ax
 add       word ptr [bp - 0Ch], 2

@@ -319,6 +319,14 @@ PATCH_T STRUC
 
 PATCH_T ENDS
 
+
+
+
+COLUMN_T STRUC
+    column_topdelta        db ?
+    column_length          db ?
+COLUMN_T ENDS
+
 VISSPRITE_T STRUC 
     vs_next                db ? ; 0
     vs_colormap            db ? ; 1
