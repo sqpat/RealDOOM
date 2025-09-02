@@ -46,21 +46,19 @@ str_dot:
 db ".", 0
 
 do_print_dot:
-push      cs
-mov       ax, OFFSET str_dot
-push      ax
-call      DEBUG_PRINT_       
-add       sp, 4
+;push      cs
+;mov       ax, OFFSET str_dot
+;push      ax
+;call      DEBUG_PRINT_       
+;add       sp, 4
 jmp       done_printing_dot
 
 
 PROC   R_InitSpriteLumps_ NEAR
 PUBLIC R_InitSpriteLumps_
 
-PUSHA_NO_AX_OR_BP_MACRO
-push      bp
-mov       bp, sp
-sub       sp, 010h
+PUSHA_NO_AX_MACRO
+
 xor       dx, dx
 cmp       byte ptr ds:[_is_ultimate], dl ; 0
 mov       ax, SPRITEWIDTHS_NORMAL_SEGMENT
@@ -69,51 +67,51 @@ mov       ax, SPRITEWIDTHS_ULT_SEGMENT
 
 not_ultimate:
 mov       word ptr ds:[_spritewidths_segment], ax
-mov       word ptr [bp - 8], dx ; 0
+mov       bp, dx ; 0
 ; 0 sprite check should be unnecessary
 ; cmp       word ptr ds:[_numspritelumps], dx ; 0
 ; jg        continue_spritelumps
 ; jmp       exit_r_initspritelumps
 continue_spritelumps:
-mov       word ptr [bp - 0Ch], dx ; 0
+
 loop_next_sprite:
 xor       ax, ax
-mov       word ptr [bp - 6], ax   ; postdatasize
-mov       word ptr [bp - 0Ah], ax ; pixelsize
+mov       di, ax   ; postdatasize
 
-test      byte ptr [bp - 8], 63
+
+test      byte ptr bp, 63
 je        do_print_dot
 done_printing_dot:
 call      Z_QuickMapScratch_5000_
 mov       ax, word ptr ds:[_firstspritelump]
 mov       cx, SCRATCH_SEGMENT_5000
-add       ax, word ptr [bp - 8]
+add       ax, bp
 xor       bx, bx
 
 call      W_CacheLumpNameDirect_
-mov       ax, SCRATCH_SEGMENT_5000
-mov       es, ax
-xor       bx, bx
-mov       ax, word ptr es:[bx + PATCH_T.patch_width]
-mov       cx, word ptr es:[bx + PATCH_T.patch_topoffset]
-mov       word ptr [bp - 4], ax
-mov       ax, word ptr es:[bx + PATCH_T.patch_leftoffset]
+
 mov       es, word ptr ds:[_spritewidths_segment]
-mov       bx, word ptr [bp - 8]
+mov       ax, SCRATCH_SEGMENT_5000
+mov       ds, ax
+xor       bx, bx
+
+mov       cx, word ptr ds:[bx + PATCH_T.patch_topoffset]
+mov       bx, bp
 mov       dl, 1
 
-cmp       word ptr [bp - 4], 257
+cmp       ax, 257
 je        hardcode_257_spritewidth
 normal_spritewidth:
-mov       dl, byte ptr [bp - 4]
+xchg      ax, dx
 hardcode_257_spritewidth:
 mov       byte ptr es:[bx], dl
+mov       ax, word ptr ds:[bx + PATCH_T.patch_leftoffset]
 ; abs ax
 cwd       
 xor       ax, dx
 sub       ax, dx
 ; bx still this
-;mov       bx, word ptr [bp - 8]
+;mov       bx, bp
 mov       dx, SPRITEOFFSETS_SEGMENT
 mov       es, dx
 mov       byte ptr es:[bx], al
@@ -128,13 +126,11 @@ handle_129_spritetopoffset:
 mov       byte ptr es:[bx], al
 
 ; sprite width/columncount
-mov       cx, word ptr [bp - 4]
-
+mov       cx, word ptr ds:[0 + PATCH_T.patch_width]
 
 mov       bx, 8   ; PATCH_T.patch_columnofs
-mov       ax, SCRATCH_SEGMENT_5000
-mov       ds, ax
-mov       dx, 2 ; common adder..
+xor       dx, dx  ; pixelsize
+; ds still 05000h
 
 loop_next_spritecolumn:
 
@@ -147,7 +143,7 @@ je        found_end_of_spritecolumn
 loop_next_spritepost:
 xor       ax, ax
 lodsb     ; length
-add       word ptr [bp - 0Ah], ax
+add       dx, ax
 add       si, ax
 
 mov       ah, 16
@@ -155,52 +151,60 @@ and       al, 0Fh
 sub       ah, al
 mov       al, ah
 and       ax, 0Fh
-add       si, dx ; 2
-add       word ptr [bp - 6], dx ; 2
+inc       si
+inc       si
+inc       di
+inc       di
 lodsb
 cmp       al, 0FFh
 jne       loop_next_spritepost
 found_end_of_spritecolumn:
 add       bx, 4
-add       word ptr [bp - 6], dx ; 2
+inc       di
+inc       di
 loop      loop_next_spritecolumn
 finished_sprite_loading_loop:
 push      ss
 pop       ds
 
-mov       dx, word ptr [bp - 4]
-shl       dx, 2
-add       dx, 8
-add       dx, word ptr [bp - 6]
-mov       ax, dx
-xor       ah, dh
-mov       bx, 16
-and       al, 15
-sub       bx, ax
-mov       ax, bx
-xor       ah, bh
-inc       word ptr [bp - 8]
-and       al, 15
-mov       bx, word ptr [bp - 0Ch]
-add       dx, ax
+;		startoffset = 8 + (patchwidth << 2) + postdatasize;
+;		startoffset += (16 - ((startoffset &0xF)) &0xF); // round up so first pixel data starts aligned of course.
+
+
+mov       ax, word ptr ds:[0 + PATCH_T.patch_width]
+
+SHIFT_MACRO shl       ax 2
+add       ax, 8
+add       ax, di  ; postdatasize
+
+
+add       ax, 0Fh
+and       ax, 0FFF0h
+add       dx, ax  ; pixelsize + startoffset
+
+
+; todo... dont do quickmap in a loop! so what? push a bunch and memcpy at the end?
+
 call      Z_QuickMapUndoFlatCache_
-add       dx, word ptr [bp - 0Ah]
-mov       ax, SPRITEPOSTDATASIZES_SEGMENT
-mov       es, ax
-push      word ptr [bp - 6]
-pop       word ptr es:[bx]
+mov       bx, bp
+sal       bx, 1
+inc       bp  ; todo push pop this.
 mov       ax, SPRITETOTALDATASIZES_SEGMENT
 mov       es, ax
-add       word ptr [bp - 0Ch], 2
 mov       word ptr es:[bx], dx
-mov       bx, word ptr [bp - 8]
+
+mov       ax, SPRITEPOSTDATASIZES_SEGMENT
+mov       es, ax
+mov       word ptr es:[bx], di
+
+
 call      Z_QuickMapRender_
-cmp       bx, word ptr ds:[_numspritelumps]
+cmp       bp, word ptr ds:[_numspritelumps]
 jge       exit_r_initspritelumps
 jmp       loop_next_sprite
 exit_r_initspritelumps:
-LEAVE_MACRO     
-POPA_NO_AX_OR_BP_MACRO
+ 
+POPA_NO_AX_MACRO
 ret      
 
 
