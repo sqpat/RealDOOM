@@ -45,6 +45,8 @@ EXTRN _musdriverstartposition:BYTE
 
 .CODE
 
+EXTRN _doomcode_filename:BYTE
+
 KEYBOARDINT = 9
 
 
@@ -67,9 +69,6 @@ str_startup_keyboard:
 db "I_StartupKeyboard", 0Ah, 0
 str_startup_sound:
 db "I_StartupSound", 0Ah, 0
-_doomcode_bin_string:
-PUBLIC _doomcode_bin_string
-db "DOOMCODE.BIN", 0
 
 
 _startuptimer_string:
@@ -227,7 +226,7 @@ setup_mus_driver:
 ; si is port bl is type
 
 
-mov   ax, OFFSET _doomcode_bin_string
+mov   ax, OFFSET _doomcode_filename
 call  CopyString13_physics_seg_
 mov   dx, OFFSET  _fopen_rb_argument
 call  fopen_        ; fopen("DOOMCODE.BIN", "rb"); 

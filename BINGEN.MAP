@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/01 23:27:08
+Created on:       25/09/02 10:13:48
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -34,7 +34,7 @@ I_INIT_TEXT            CODE           AUTO           0000:2074       000001dc
 z_init_TEXT            CODE           AUTO           0000:2250       00000a6f
 p_init_TEXT            CODE           AUTO           0000:2cc0       00000496
 d_main_TEXT            CODE           AUTO           0000:3160       000003d0
-i_quit_TEXT            CODE           AUTO           0000:3530       0000017b
+i_quit_TEXT            CODE           AUTO           0000:3530       00000179
 i_ibm_TEXT             CODE           AUTO           0000:36b0       0000014c
 SM_LOAD_TEXT           CODE           AUTO           0000:37fc       000004cb
 bingen_TEXT            CODE           AUTO           0000:3cd0       0000107e
@@ -61,7 +61,7 @@ s_sbsfx_TEXT           CODE           AUTO           0000:c220       000017fd
 w_wad_TEXT             CODE           AUTO           0000:da20       0000026e
 W_WADA_TEXT            CODE           AUTO           0000:dc8e       000000ea
 V_VIDEO_TEXT           CODE           AUTO           0000:dd78       00000601
-Z_ZONE_TEXT            CODE           AUTO           0000:e37a       00000461
+Z_ZONE_TEXT            CODE           AUTO           0000:e37a       0000045e
 M_MENU_TEXT            CODE           AUTO           0e7e:0000       000013ea
 F_WIPE_TEXT            CODE           AUTO           0fbd:0000       0000050e
 F_FINALE_TEXT          CODE           AUTO           100e:0000       00000bd7
@@ -267,6 +267,7 @@ Module: w_init.obj(C:\REALDOOM\w_init.c)
 0000:1e00      W_AddFile_
 Module: i_init.obj(i_init.ASM)
 0000:2250*     D_INIT_ENDMARKER_
+0000:20dd      _doomcode_bin_string
 0000:2074*     D_INIT_STARTMARKER_
 0000:20fd      I_Init_
 Module: z_init.obj(C:\REALDOOM\z_init.c)
@@ -304,9 +305,9 @@ Module: i_quit.obj(C:\REALDOOM\i_quit.c)
 0000:3566+     I_ShutdownGraphics_
 0000:3586+     I_ShutdownMouse_
 0000:3592+     Z_ShutdownEMS_
-0000:35c4      I_Shutdown_
-0000:3606      M_CheckParm_
-0000:365a      I_Quit_
+0000:35c2      I_Shutdown_
+0000:3604      M_CheckParm_
+0000:3658      I_Quit_
 Module: i_ibm.obj(C:\REALDOOM\i_ibm.c)
 0000:36b0      I_WaitVBL_
 0000:36dc*     I_EndRead_
@@ -708,7 +709,7 @@ Module: z_zone.obj(z_zone.ASM)
 0000:e3f4      Z_QuickMapPhysics_
 0000:e392      Z_QuickMapMusicPageFrame_
 0000:e47b      Z_QuickMapRender_4000To9000_
-0000:e6ba      Z_QuickMapUnmapAll_
+0000:e6d2      Z_QuickMapUnmapAll_
 0000:e4a9      Z_QuickMapRender_9000To6000_
 0000:e3c9      Z_QuickMapWADPageFrame_
 0000:e574      Z_QuickMapRenderPlanes_
@@ -720,12 +721,12 @@ Module: z_zone.obj(z_zone.ASM)
 0000:e506      Z_QuickMapScratch_5000_
 0000:e608      Z_QuickMapMenu_
 0000:e548      Z_QuickMapScratch_4000_
-0000:e7af*     CopyString13_Zonelocal_
+0000:e7ac*     CopyString13_Zonelocal_
 0000:e51c      Z_QuickMapScratch_8000_
 0000:e5ed      Z_QuickMapPalette_
 0000:e4bf      Z_QuickMapRender4000_
 0000:e5d7      Z_QuickMapMaskedExtraData_
-0000:e71b      Z_SetOverlay_
+0000:e719      Z_SetOverlay_
 0000:e646      Z_QuickMapByTaskNum_
 0000:e5a0      Z_QuickMapUndoFlatCache_
 0000:e41f      Z_QuickMapDemo_
@@ -1112,9 +1113,9 @@ Module: p_enemy.obj(p_enemy.ASM)
 2ec8:50d1*     A_Fire_
 2ec8:49ab*     A_SPosAttack_
 2ec8:4a23*     A_CPosAttack_
-2ec8:4ad3*     A_SpidRefire_
 2ec8:446e*     P_NewChaseDir_
 2ec8:50c3*     A_StartFire_
+2ec8:4ad3*     A_SpidRefire_
 2ec8:4c8b*     A_Tracer_
 2ec8:537e*     A_SkullAttack_
 2ec8:4106*     P_ENEMY_STARTMARKER_

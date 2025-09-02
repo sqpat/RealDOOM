@@ -31,7 +31,6 @@ EXTRN _codestartposition:DWORD
 
 
 .CODE
-EXTRN _doomcode_bin_string:BYTE
 quickmap_by_taskjump_jump_table:
 dw task_num_0_jump
 dw task_num_1_jump
@@ -724,38 +723,38 @@ IFDEF COMP_CH
 
 ELSE
 
-    push  bx
-    push  cx
-    push  dx
-    push  si
-    mov   cx, word ptr ds:[_pagenum9000]
+    PUSHA_NO_AX_OR_BP_MACRO
+    mov   dx, word ptr ds:[_pagenum9000]
     mov   si, OFFSET _ems_backfill_page_order
-    mov   bx, OFFSET _pageswapargs
+    mov   di, OFFSET _pageswapargs
+    push  ds
+    pop   es
+    mov   cx, 24
 
     loop_next_page_to_unmap:
-    mov   word ptr ds:[bx], -1
+    mov   ax, -1
+    stosw
+    
     lods  byte ptr cs:[si]
     cbw  
-    add   ax, cx
+    add   ax, dx
+    stosw
 
-    mov   word ptr ds:[bx +2], ax
-    add   bx, 4  ; includes pageswap
-    cmp   si, (OFFSET _ems_backfill_page_order) + 24
-    jl    loop_next_page_to_unmap
+    loop    loop_next_page_to_unmap
 
     Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
 
-    pop   si
-    pop   dx
-    pop   cx
-    pop   bx
-    ret  
+    POPA_NO_AX_OR_BP_MACRO
+    ret
 ENDIF
 
 
 
 ENDP
 
+_doomcode_filename:
+db "DOOMCODE.BIN", 0
+PUBLIC _doomcode_filename
 
 set_overlay_jump_table:
 
@@ -770,8 +769,8 @@ dw    exit_set_overlay
 PROC Z_SetOverlay_ FAR
 PUBLIC Z_SetOverlay_
 cmp   al, byte ptr ds:[_currentoverlay]
-jne   do_overlay_change
-retf  
+je   exit_overlay_early
+
 do_overlay_change:
 
 push  bx
@@ -789,7 +788,7 @@ mov   si, ax
 mov   dx, _fopen_rb_argument
 SHIFT_MACRO shl   si 2
 
-mov   ax, OFFSET _doomcode_bin_string
+mov   ax, OFFSET _doomcode_filename
 call  CopyString13_Zonelocal_
 ; todo les
 mov   bx, word ptr ds:[si + _codestartposition-4]
@@ -829,6 +828,7 @@ pop   si
 pop   dx
 pop   cx
 pop   bx
+exit_overlay_early:
 retf 
 
 finale_overlay_jump_target:

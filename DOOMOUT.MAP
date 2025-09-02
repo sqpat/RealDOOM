@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/01 23:38:56
+Created on:       25/09/02 10:19:28
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -29,7 +29,7 @@ d_init_TEXT            CODE           AUTO           0000:0000       00000a69
 ST_INIT_TEXT           CODE           AUTO           0000:0a6a       00000203
 r_init_TEXT            CODE           AUTO           0000:0c70       00000c27
 w_init_TEXT            CODE           AUTO           0000:18a0       00000274
-I_INIT_TEXT            CODE           AUTO           0000:1b14       000001dc
+I_INIT_TEXT            CODE           AUTO           0000:1b14       000001cf
 z_init_TEXT            CODE           AUTO           0000:1cf0       00000a6f
 p_init_TEXT            CODE           AUTO           0000:2760       00000496
 i_main_TEXT            CODE           AUTO           0000:2c00       00000010
@@ -60,7 +60,7 @@ R_MAIN_TEXT            CODE           AUTO           0000:ac2e       000003db
 w_wad_TEXT             CODE           AUTO           0000:b010       0000026e
 W_WADA_TEXT            CODE           AUTO           0000:b27e       000000ea
 V_VIDEO_TEXT           CODE           AUTO           0000:b368       00000601
-Z_ZONE_TEXT            CODE           AUTO           0000:b96a       00000469
+Z_ZONE_TEXT            CODE           AUTO           0000:b96a       0000046b
 _TEXT                  CODE           AUTO           0000:bde0       0000243e
 FAR_DATA               FAR_DATA       AUTO           0e21:000e       00000000
 _NULL                  BEGDATA        DGROUP         0e22:0000       00000020
@@ -219,10 +219,9 @@ Module: r_init.obj(C:\REALDOOM\r_init.c)
 Module: w_init.obj(C:\REALDOOM\w_init.c)
 0000:18a0      W_AddFile_
 Module: i_init.obj(i_init.ASM)
-0000:1cf0*     D_INIT_ENDMARKER_
-0000:1b7d      _doomcode_bin_string
+0000:1ce3*     D_INIT_ENDMARKER_
 0000:1b14*     D_INIT_STARTMARKER_
-0000:1b9d      I_Init_
+0000:1b90      I_Init_
 Module: z_init.obj(C:\REALDOOM\z_init.c)
 0000:1cf0*     doerror_
 0000:1d00      Z_InitEMS_
@@ -644,12 +643,13 @@ Module: z_zone.obj(z_zone.ASM)
 0000:baf6      Z_QuickMapScratch_5000_
 0000:bbf8      Z_QuickMapMenu_
 0000:bb38      Z_QuickMapScratch_4000_
-0000:bda7*     CopyString13_Zonelocal_
+0000:bda9*     CopyString13_Zonelocal_
 0000:bb0c      Z_QuickMapScratch_8000_
 0000:bbdd      Z_QuickMapPalette_
 0000:baaf      Z_QuickMapRender4000_
 0000:bbc7      Z_QuickMapMaskedExtraData_
-0000:bd13      Z_SetOverlay_
+0000:bd16      Z_SetOverlay_
+0000:bcff      _doomcode_filename
 0000:bc36      Z_QuickMapByTaskNum_
 0000:bb90      Z_QuickMapUndoFlatCache_
 0000:ba0f      Z_QuickMapDemo_
@@ -911,4 +911,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  00010550 (66896.)
 Entry point address: 0000:c7ae
-Link time: 00:00.74
+Link time: 00:00.20
