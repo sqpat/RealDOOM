@@ -31,6 +31,7 @@ EXTRN _codestartposition:DWORD
 
 
 .CODE
+EXTRN _doomcode_bin_string:BYTE
 quickmap_by_taskjump_jump_table:
 dw task_num_0_jump
 dw task_num_1_jump
@@ -44,7 +45,6 @@ dw task_num_8_jump
 dw task_num_9_jump
 dw task_num_10_jump
 dw task_num_11_jump
-
 
 ; todo get rid of tasks
 
@@ -640,7 +640,13 @@ jmp   done_with_visplane_loop
 
 ENDP
 
-PROC Z_QuickMapUnmapAll_ FAR
+_ems_backfill_page_order:
+;  ems_backfill_page_order[24] 
+db         0, 1, 2, 3, -4, -3, -2, -1, -8, -7, -6, -5 
+db -12, -11, -10, -9, -16, -15, -14, -13, -20, -19, -18, -17
+
+
+PROC Z_QuickMapUnmapAll_ NEAR
 PUBLIC Z_QuickMapUnmapAll_
 
 IFDEF COMP_CH
@@ -663,7 +669,7 @@ IFDEF COMP_CH
 
         pop   cx
         pop   dx
-        retf  
+        ret  
 	ELSEIF COMP_CH EQ CHIPSET_SCAMP
 
         push  dx
@@ -676,7 +682,7 @@ IFDEF COMP_CH
         loop_next_page_to_unmap:
     ; todo test
         xor   ax, ax
-        xlat
+        xlat  byte ptr cs:[bx]
         add   ax, (SCAMP_PAGE_9000_OFFSET + 4)
 
         mov   word ptr ds:[si + _pageswapargs], ax
@@ -692,7 +698,7 @@ IFDEF COMP_CH
         pop   cx
         pop   si
         pop   dx
-        retf  
+        ret  
 
 	ELSEIF COMP_CH EQ CHIPSET_HT18
         push  dx
@@ -712,7 +718,7 @@ IFDEF COMP_CH
 
         pop   cx
         pop   dx
-        retf  
+        ret 
     ENDIF
 
 
@@ -723,18 +729,18 @@ ELSE
     push  dx
     push  si
     mov   cx, word ptr ds:[_pagenum9000]
-    xor   si, si
-    xor   bx, bx
-; todo get rid of _ems_backfill_page_order and calc in the loop
+    mov   si, OFFSET _ems_backfill_page_order
+    mov   bx, OFFSET _pageswapargs
+
     loop_next_page_to_unmap:
-    mov   word ptr ds:[bx + _pageswapargs], -1
-    mov   al, byte ptr ds:[si + _ems_backfill_page_order]
+    mov   word ptr ds:[bx], -1
+    lods  byte ptr cs:[si]
     cbw  
     add   ax, cx
-    inc   si
-    mov   word ptr [bx + _pageswapargs+2], ax
+
+    mov   word ptr ds:[bx +2], ax
     add   bx, 4  ; includes pageswap
-    cmp   si, 24
+    cmp   si, (OFFSET _ems_backfill_page_order) + 24
     jl    loop_next_page_to_unmap
 
     Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
@@ -743,15 +749,13 @@ ELSE
     pop   dx
     pop   cx
     pop   bx
-    retf  
+    ret  
 ENDIF
 
 
 
 ENDP
 
-_doomcode_filename:
-db "DOOMCODE.BIN", 0
 
 set_overlay_jump_table:
 
@@ -785,7 +789,7 @@ mov   si, ax
 mov   dx, _fopen_rb_argument
 SHIFT_MACRO shl   si 2
 
-mov   ax, OFFSET _doomcode_filename
+mov   ax, OFFSET _doomcode_bin_string
 call  CopyString13_Zonelocal_
 ; todo les
 mov   bx, word ptr ds:[si + _codestartposition-4]

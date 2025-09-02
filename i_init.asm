@@ -68,6 +68,7 @@ db "I_StartupKeyboard", 0Ah, 0
 str_startup_sound:
 db "I_StartupSound", 0Ah, 0
 _doomcode_bin_string:
+PUBLIC _doomcode_bin_string
 db "DOOMCODE.BIN", 0
 
 

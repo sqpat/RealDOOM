@@ -398,7 +398,7 @@
 #define savedescription                 (((int8_t    __near*)                (_NULL_OFFSET + 0x0378)))
 #define demoname                        (((int8_t    __near*)                (_NULL_OFFSET + 0x0398)))
 
-#define ems_backfill_page_order         (((int8_t    __near*)                (_NULL_OFFSET + 0x03B8)))
+// #define ems_backfill_page_order         (((int8_t    __near*)                (_NULL_OFFSET + 0x03B8)))
 #define am_stopped						(*((boolean __near*)                 (_NULL_OFFSET + 0x03D0)))
 #define automapactive					(*((boolean __near*)                 (_NULL_OFFSET + 0x03D1)))
 

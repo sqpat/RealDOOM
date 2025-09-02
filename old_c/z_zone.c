@@ -656,7 +656,7 @@ void __far Z_QuickMapVisplaneRevert(){
 }
 // todo do we need to do the page frame?
 
-void __far Z_QuickMapUnmapAll() {
+void __near Z_QuickMapUnmapAll() {
 	int16_t i;
 	for (i = 0; i < 24; i++) {
 

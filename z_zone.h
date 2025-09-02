@@ -142,7 +142,7 @@
 
 byte __far* __near Z_InitEMS(void);
 //void Z_InitUMB(void);
-void __far Z_QuickMapUnmapAll();
+void __near Z_QuickMapUnmapAll();
 void __far Z_SetOverlay(int8_t wipeId);
 
  
