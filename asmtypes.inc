@@ -849,9 +849,9 @@ LUMPINFO_T ENDS
 
 
 TEXPATCH_T STRUC
-    texpatch_originx             db ?
-    texpatch_originy             db ?
-    texpatch_patch               dw ?
+    texpatch_originx             db ?  ; 0
+    texpatch_originy             db ?  ; 1
+    texpatch_patch               dw ?  ; 2
 TEXPATCH_T ENDS
 
 
