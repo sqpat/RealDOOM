@@ -379,9 +379,8 @@ mov       word ptr cs:[SELFMODIFY_set_wadpatch_width+4], dx ; update lastpatch
 mov       word ptr ss:[di + _patch_sizes], ax
 ;       x1 = patch->originx * (patch->patch & ORIGINX_SIGN_FLAG ? -1 : 1);
 ;		x2 = x1 + (wadpatch->width);
-
-add       dx, si   ; si = x1, dx = x2
-
+mov       ax, si   ; x1 into ax
+add       si, dx   ; ax = x1, si = x2
 ;		if (x1 < 0) {
 ;			x = 0;
 ;		} else {
@@ -389,13 +388,12 @@ add       dx, si   ; si = x1, dx = x2
 ;		}
 
 
-xchg      ax, dx    ; 
 cwd                 ; thanks smartest_blob
 not       dx        ;
 and       dx, ax    ; 0 if negative..
 
-
-; dx = x, ax = x2, si = x1
+xchg      ax, si
+; dx = x, ax = x2. si free (technicaly x1 not used)
 
 mov       byte ptr cs:[SELFMODIFY_set_startx+4], dl ; startx = x...
 
@@ -661,7 +659,7 @@ push      bp  ; we will use this in following loops
 
 SELFMODIFY_add_usedtextureheight:
 mov       bp, 01000h  ; usedtextureheight
-push      cx   ; save texturewidth for post loop
+push      cx   ; save texturewidth for post loop [MATCH I]
 loop_next_column_check_2:
 lodsb
 ; if al is zero this is a missing column.
@@ -693,7 +691,7 @@ push      ax
 call      I_Error_
 jmp       exit_r_generate_composite
 continue_to_final_rle_loop:
-pop      cx  ; retrieve texturewidth
+pop      cx  ; retrieve texturewidth  [MATCH I]
 
 mov      ax, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
 mov      es, ax
