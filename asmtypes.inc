@@ -846,3 +846,23 @@ LUMPINFO_T STRUC
     lumpinfo_position            dd ?
     lumpinfo_size                dd ?
 LUMPINFO_T ENDS
+
+
+TEXPATCH_T STRUC
+    texpatch_originx             db ?
+    texpatch_originy             db ?
+    texpatch_patch               dw ?
+TEXPATCH_T ENDS
+
+
+TEXTURE_T STRUC
+    texture_name                 db 8  DUP(?) ; 0
+    texture_width                db ?         ; 8
+    texture_height               db ?         ; 9
+    texture_patchcount           db ?         ; 0Ah
+    texture_patches              TEXPATCH_T ? ; 0Bh  ; ? should have padding maybe?
+TEXTURE_T ENDS
+
+
+
+

@@ -208,555 +208,537 @@ ENDP
 PROC    R_GenerateLookup_ NEAR
 PUBLIC  R_GenerateLookup_ 
 
-push      bx
-push      cx
-push      dx
-push      si
-push      di
+PUSHA_NO_AX_OR_BP_MACRO
 push      bp
 mov       bp, sp
-sub       sp, 082h
-push      ax
-sub       bp, 080h
-mov       word ptr [bp + 4], 0FFFFh
-mov       byte ptr [bp + 07ch], 0
-mov       byte ptr [bp + 07eh], 1
-mov       word ptr [bp + 6], 0E000h
-mov       word ptr [bp + 010h], 07000h
-mov       word ptr [bp + 040h], 0F500h
-mov       word ptr [bp + 03eh], 07000h
-mov       word ptr [bp + 022h], 0F700h
-xor       ax, ax
-mov       si, word ptr [bp - 4]
-mov       word ptr [bp + 01ch], ax
-add       si, si
-mov       ax, word ptr ds:[_currentlumpindex]
-lea       bx, [si + _texturepatchlump_offset]
-mov       word ptr [bp + 0Eh], 07000h
-mov       word ptr ds:[bx], ax
-mov       ax, TEXTUREDEFS_OFFSET_SEGMENT
-mov       word ptr [bp + 02ch], 0F800h
-mov       es, ax
-mov       cx, TEXTUREDEFS_BYTES_SEGMENT
-mov       si, word ptr es:[si]
-mov       es, cx
-mov       word ptr [bp + 024h], 07000h
-mov       al, byte ptr es:[si + 8]
-mov       word ptr [bp + 016h], 0FA00h
-xor       ah, ah
-mov       word ptr [bp + 04ah], 07000h
-inc       ax
-mov       word ptr [bp + 04ch], 0FC00h
-mov       word ptr [bp + 8], ax
-mov       al, byte ptr es:[si + 9]
-mov       word ptr [bp + 014h], 07000h
-xor       ah, ah
-mov       word ptr [bp + 052h], 0FF00h
-inc       ax
-mov       word ptr [bp + 054h], 07000h
-mov       word ptr [bp + 0Ch], ax
-xor       ah, ah
-mov       dx, 16
-and       al, 0Fh
-mov       word ptr [bp + 018h], 0
-sub       dx, ax
-mov       word ptr [bp + 01ah], 09000h
-mov       ax, dx
-xor       di, di
-xor       ah, dh
-mov       dx, word ptr [bp + 0Ch]
-and       al, 0Fh
-mov       bx, 0FF00h
-add       dx, ax
-mov       ax, 07000h
-mov       word ptr [bp + 038h], dx
-label_6:
-mov       es, ax
-mov       word ptr es:[bx], 0
-add       bx, 2
-jne       label_6
-mov       word ptr [bp + 0Ah], 07000h
-mov       es, cx
-mov       word ptr [bp + 026h], bx
-mov       word ptr [bp + 034h], bx
-add       si, 0Bh ; todo
-mov       word ptr [bp + 05ch], cx
-mov       al, byte ptr es:[si - 1]
-mov       word ptr [bp + 05ah], si
-mov       byte ptr [bp + 07ah], al
-label_20:
-mov       al, byte ptr [bp + 07ah]
-xor       ah, ah
-cmp       ax, word ptr [bp + 034h]
-jg        label_1
-jmp       label_2
-label_1:
-mov       cx, word ptr [bp + 05ch]
-mov       bx, word ptr [bp + 05ah]
-mov       es, cx
-mov       si, bx
-test      byte ptr es:[si + 3], (ORIGINX_SIGN_FLAG SHR 8)
-jne       label_3
-jmp       label_4
-label_3:
-mov       dx, -1
-label_16:
-mov       es, cx
-mov       al, byte ptr es:[bx]
-xor       ah, ah
-imul      dx
-mov       si, ax
-mov       ax, word ptr es:[bx + 2]
-and       ah, 07Fh
-mov       word ptr [bp + 020h], ax
-mov       ax, word ptr [bp + 4]
-cmp       ax, word ptr [bp + 020h]
-je        label_5
-mov       cx, 07000h
-mov       ax, word ptr [bp + 020h]
-xor       bx, bx
 
-call      W_CacheLumpNumDirect_
-mov       es, word ptr [bp + 0Ah]
-mov       bx, word ptr [bp + 026h]
-mov       ax, word ptr es:[bx + 2]
-mov       word ptr [bp + 2], ax
-xor       ah, ah
-mov       dx, 16
-and       al, 0Fh
-sub       dx, ax
-mov       ax, dx
-xor       ah, dh
-and       al, 0Fh
-add       word ptr [bp + 2], ax
-label_5:
-mov       es, word ptr [bp + 0Ah]
-mov       bx, word ptr [bp + 026h]
-mov       ax, word ptr [bp + 2]
-imul      word ptr es:[bx]
-mov       bx, _firstpatch
-mov       dx, word ptr [bp + 020h]
-sub       dx, word ptr ds:[bx]
-add       dx, dx
-mov       bx, dx
-mov       word ptr ds:[bx + _patch_sizes], ax
-add       bx, _patch_sizes
-mov       ax, word ptr [bp + 020h]
-mov       bx, word ptr [bp + 026h]
-mov       word ptr [bp + 4], ax
-mov       ax, word ptr es:[bx]
-add       ax, si
-mov       word ptr [bp + 032h], ax
-test      si, si
-jge       label_7
-jmp       label_8
-label_7:
-mov       word ptr [bp], si
-label_17:
-mov       ax, word ptr [bp + 032h]
-cmp       ax, word ptr [bp + 8]
-jle       label_9
-mov       ax, word ptr [bp + 8]
-mov       word ptr [bp + 032h], ax
-label_9:
-mov       bx, word ptr [bp]
-mov       dh, byte ptr [bp]
-mov       ax, word ptr [bp]
-shl       bx, 2
-cmp       ax, word ptr [bp + 032h]
-jl        label_10
-jmp       label_11
-label_10:
-mov       si, word ptr [bp + 040h]
-mov       cx, word ptr [bp + 03eh]
-add       ax, ax
-mov       word ptr [bp + 058h], 07000h
-add       si, ax
-mov       word ptr [bp + 056h], bx
-mov       word ptr [bp + 03ah], si
-mov       si, word ptr [bp + 022h]
-mov       word ptr [bp + 03ch], cx
-add       si, word ptr [bp]
-mov       cx, word ptr [bp + 0Eh]
-mov       word ptr [bp + 042h], si
-mov       si, word ptr [bp + 02ch]
-mov       word ptr [bp + 044h], cx
-add       si, ax
-mov       ax, word ptr [bp + 024h]
-mov       word ptr [bp + 046h], si
-mov       si, word ptr [bp + 052h]
-mov       word ptr [bp + 048h], ax
-add       si, word ptr [bp]
-mov       ax, word ptr [bp + 054h]
-mov       word ptr [bp + 04eh], si
-mov       word ptr [bp + 050h], ax
-label_19:
-les       bx, dword ptr [bp + 04eh]
-mov       si, word ptr [bp + 046h]
-inc       byte ptr es:[bx]
-mov       es, word ptr [bp + 048h]
-mov       bx, word ptr [bp + 020h]
-mov       word ptr es:[si], bx
-les       bx, dword ptr [bp + 042h]
-mov       ax, word ptr [bp]
-mov       byte ptr es:[bx], dh
-mov       es, word ptr [bp + 0Ah]
-mov       bx, word ptr [bp + 026h]
-mov       si, word ptr [bp + 03ah]
-mov       bx, word ptr es:[bx]
-mov       es, word ptr [bp + 03ch]
-add       ax, ax
-mov       word ptr es:[si], bx
-cmp       byte ptr [bp + 07ah], 1
-je        label_12
-jmp       label_13
-label_12:
-les       bx, dword ptr [bp + 056h]
-mov       si, word ptr [bp + 04ch]
-mov       cx, word ptr [bp + 01ch]
-mov       bx, word ptr es:[bx + 8]
-add       si, ax
-mov       es, word ptr [bp + 014h]
-mov       word ptr [bp + 028h], 0
-mov       word ptr es:[si], cx
-mov       cx, di
-mov       si, word ptr ds:[_currentpostdataoffset]
-add       cx, di
-mov       word ptr [bp + 012h], 07000h
-add       si, cx
-xor       dl, dl
-mov       word ptr [bp + 02ah], si
-mov       si, word ptr [bp + 016h]
-mov       es, word ptr [bp + 04ah]
-add       si, ax
-mov       ax, word ptr [bp + 02ah]
-mov       word ptr es:[si], ax
-mov       ax, word ptr [bp + 010h]
-mov       si, word ptr [bp + 6]
-mov       word ptr [bp + 036h], ax
-add       si, cx
-label_15:
-mov       es, word ptr [bp + 012h]
-inc       di
-cmp       byte ptr es:[bx], 0FFh
-je        label_14
-mov       al, byte ptr es:[bx + 1]
-xor       ah, ah
-mov       cx, ax
-and       cl, 0Fh
-mov       word ptr [bp + 02ah], cx
-mov       cx, 16
-sub       cx, word ptr [bp + 02ah]
-and       cx, 0Fh
-add       word ptr [bp + 028h], ax
-add       ax, cx
-add       word ptr [bp + 01ch], ax
-mov       ax, word ptr es:[bx]
-mov       es, word ptr [bp + 036h]
-mov       word ptr es:[si], ax
-mov       es, word ptr [bp + 012h]
-mov       al, byte ptr es:[bx + 1]
-add       si, 2
-xor       ah, ah
-inc       dl
-add       bx, ax
-add       bx, 4
-jmp       label_15
-label_4:
-mov       dx, 1
-jmp       label_16
-label_8:
-mov       word ptr [bp], 0
-jmp       label_17
-label_14:
-mov       es, word ptr [bp + 036h]
-mov       word ptr es:[si], -1
-cmp       dl, 1
-jle       label_13
-mov       ax, word ptr [bp + 028h]
-cmp       ax, word ptr [bp + 0Ch]
-jge       label_13
-cmp       word ptr [bp + 8], 0100h
-je        label_18
-label_21:
-mov       byte ptr [bp + 07ch], 1
-label_13:
-add       word ptr [bp + 03ah], 2
-inc       word ptr [bp + 042h]
-add       word ptr [bp + 046h], 2
-inc       word ptr [bp]
-inc       word ptr [bp + 04eh]
-mov       ax, word ptr [bp]
-add       word ptr [bp + 056h], 4
-cmp       ax, word ptr [bp + 032h]
-jge       label_11
-jmp       label_19
-label_11:
-add       word ptr [bp + 05ah], 4
-inc       word ptr [bp + 034h]
-jmp       label_20
-label_18:
-cmp       dl, 3
-jg        label_21
-jmp       label_13
-label_2:
+push      ax      ; bp - 2: texnum
+xchg      ax, bx  ; texnum
 mov       ax, MASKED_LOOKUP_SEGMENT
-mov       bx, word ptr [bp - 4]
 mov       es, ax
-mov       byte ptr es:[bx], 0FFh
-cmp       byte ptr [bp + 07ch], 0
-jne       label_22
-jmp       label_23
-label_22:
-mov       ax, word ptr ds:[_currentpostdataoffset]
-mov       word ptr [bp + 02eh], ax
-mov       al, byte ptr ds:[_maskedcount]
-mov       byte ptr es:[bx], al
-mov       bx, word ptr ds:[_maskedcount]
-mov       ax, word ptr [bp + 01ch]
-shl       bx, 3
-mov       cx, word ptr ds:[_currentpixeloffset]
-mov       word ptr ds:[bx + _masked_headers + 4], ax
-mov       dx, word ptr ds:[_currentpostoffset]
-mov       word ptr ds:[bx + _masked_headers + 0], cx
-mov       word ptr [bp + 030h], MASKEDPOSTDATA_SEGMENT
-mov       word ptr ds:[bx + _masked_headers + 2], dx
+mov       byte ptr es:[bx], 0FFh  ; default state...   todo do this in a single big movsw earlier.
+sal       bx, 1   ; texnum x 2
+mov       ax, word ptr ds:[_currentlumpindex]
+mov       word ptr ds:[bx + _texturepatchlump_offset], ax
+
+;	texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
+;	texturewidth = texture->width + 1;
+;	textureheight = texture->height + 1;
+;	usedtextureheight = textureheight + ((16 - (textureheight &0xF) ) & 0xF);
+
+; todo use ds and lodsw?
+
+mov       dx, TEXTUREDEFS_OFFSET_SEGMENT
+mov       es, dx
+mov       bx, word ptr es:[bx] ; texturedefs_offset[texnum]
+mov       dx, TEXTUREDEFS_BYTES_SEGMENT
+mov       es, dx
+mov       bx, word ptr es:[bx];
+
+;	textureheight = texture->height + 1;
+;	usedtextureheight = textureheight + ((16 - (textureheight &0xF) ) & 0xF);
+;	texturewidth = texture->width + 1;
+
 xor       ax, ax
-cmp       word ptr [bp + 8], 0
-jle       label_24
-mov       word ptr [bp + 060h], MASKEDPOSTDATAOFS_SEGMENT  ; todo use offset from 8400
-mov       bx, word ptr [bp + 016h]
-mov       word ptr [bp + 066h], MASKEDPIXELDATAOFS_SEGMENT  ; todo use offset from 8400
-mov       word ptr [bp + 05eh], dx
-mov       dx, word ptr [bp + 04ah]
-mov       word ptr [bp + 062h], bx
-mov       word ptr [bp + 064h], dx
-mov       bx, cx
-mov       dx, word ptr [bp + 014h]
-mov       cx, word ptr [bp + 04ch]
-mov       word ptr [bp + 068h], dx
-label_25:
-mov       es, word ptr [bp + 068h]
-mov       si, cx
-add       bx, 2
+mov       byte ptr cs:[SELFMODIFY_is_masked+1], al       ; ismaskedtexture= 0
+mov       byte ptr cs:[SELFMODIFY_isSingleRLERun+1], 1   ; isSingleRLERun = 1
+
+push      ax  ; bp - 4: currenttexturepixelbytecount = 0
+; todo remove
+push      ax  ; bp - 6: currenttexturepostoffset = 0
+mov       word ptr cs:[SELFMODIFY_set_currenttexturepostoffset + 1], ax ; set to 0
+
+mov       al, byte ptr es:[bx + TEXTURE_T.texture_height]
+inc       ax  ; max 128
+push      ax  ; bp - 8: textureheight
+add       al, 00Fh
+and       al, 0F0h
+push      ax  ; bp - 0Ah: usedtextureheight
+mov       al, byte ptr es:[bx + TEXTURE_T.texture_width]
 inc       ax
-add       cx, 2
-mov       dx, word ptr es:[si]
-mov       es, word ptr [bp + 066h]
-shr       dx, 4
-mov       si, word ptr [bp + 062h]
-mov       word ptr es:[bx - 2], dx
-mov       es, word ptr [bp + 064h]
-add       word ptr [bp + 062h], 2
-mov       dx, word ptr es:[si]
-les       si, dword ptr [bp + 05eh]
-add       word ptr [bp + 05eh], 2
-mov       word ptr es:[si], dx
-cmp       ax, word ptr [bp + 8]
-jl        label_25
-label_24:
+push      ax  ; bp - 0Ch: texturewidth
+mov       ax, -1
+push      ax  ; bp - 0Eh: lastusedpatch
+push      ax  ; bp - 010h: patchusedheight. gets updated first iter
+mov       dl, byte ptr es:[bx + TEXTURE_T.texture_patchcount]  ; texturepatchcount = texture->patchcount;
+
+
+;	for (eraseoffset = 0xFF00; eraseoffset != 0; eraseoffset+=2) {
+;		*((uint16_t __far *) MK_FP(SCRATCH_PAGE_SEGMENT_7000, eraseoffset)) = 0;
+;	}
+    
+; todo maskednum = -1 up here?
+
+mov       ax, SCRATCH_PAGE_SEGMENT_7000
+mov       es, ax
+
+mov       di, 0FF00h
+mov       cx, 128
 xor       ax, ax
-test      di, di
-jbe       label_26
-mov       si, word ptr [bp + 02eh]
-mov       dx, word ptr [bp + 030h]
-mov       bx, word ptr [bp + 6]
-mov       cx, word ptr [bp + 010h]
-mov       word ptr [bp + 06ah], dx
-label_27:
-mov       es, cx
-add       bx, 2
-add       si, 2
-mov       dx, word ptr es:[bx - 2]
-mov       es, word ptr [bp + 06ah]
-inc       ax
-mov       word ptr es:[si - 2], dx
-cmp       ax, di
-jb        label_27
-label_26:
-mov       ax, word ptr [bp + 8]
-inc       word ptr ds:[_maskedcount]
-add       di, di
-add       ax, ax
-add       word ptr ds:[_currentpostdataoffset], di
-add       word ptr ds:[_currentpostoffset], ax
-add       word ptr ds:[_currentpixeloffset], ax
-label_23:
-mov       word ptr [bp], 0
-xor       al, al
-cmp       word ptr [bp + 8], 0
-jg        label_28
-jmp       label_29
-label_28:
-mov       dx, word ptr [bp - 4]
-mov       bx, word ptr [bp + 052h]
-mov       cx, word ptr [bp + 054h]
-mov       si, word ptr [bp + 040h]
-mov       di, word ptr [bp + 022h]
-mov       word ptr [bp + 06ch], cx
-mov       word ptr [bp + 06eh], si
-mov       cx, word ptr [bp + 03eh]
-add       dx, dx
-mov       word ptr [bp + 070h], cx
-mov       cx, word ptr [bp + 0Eh]
-mov       si, word ptr [bp + 02ch]
-mov       word ptr [bp + 072h], cx
-mov       cx, word ptr [bp + 024h]
-mov       word ptr [bp + 076h], si
-mov       word ptr [bp + 074h], cx
-label_33:
-mov       es, word ptr [bp + 06ch]
-cmp       byte ptr es:[bx], 0
-jne       label_30
-jmp       bad_patch_error
-label_30:
-cmp       byte ptr es:[bx], 1
-jbe       label_32
-mov       es, word ptr [bp + 074h]
-mov       si, word ptr [bp + 076h]
-mov       cx, TEXTURECOMPOSITESIZES_SEGMENT
-mov       word ptr es:[si], -1
-mov       es, cx
-mov       si, dx
-mov       cx, word ptr [bp + 038h]
-add       word ptr es:[si], cx
-mov       es, word ptr [bp + 072h]
-mov       si, word ptr [bp + 06eh]
-mov       byte ptr es:[di], al
-mov       es, word ptr [bp + 070h]
-inc       al
-mov       word ptr es:[si], 07FFFh ; todo
-label_32:
-add       word ptr [bp + 06eh], 2
-add       word ptr [bp + 076h], 2
-inc       word ptr [bp]
-inc       bx
-mov       cx, word ptr [bp]
-inc       di
-cmp       cx, word ptr [bp + 8]
-jl        label_33
-label_29:
-mov       es, word ptr [bp + 024h]
-mov       bx, word ptr [bp + 02ch]
-mov       word ptr [bp], 1
-xor       dx, dx
-mov       ax, word ptr es:[bx]
-mov       es, word ptr [bp + 0Eh]
-mov       bx, word ptr [bp + 022h]
-mov       word ptr [bp + 01eh], ax
-mov       al, byte ptr es:[bx]
-cmp       word ptr [bp + 8], 1
-jg        label_35
-jmp       label_34
-label_35:
-mov       cx, word ptr [bp + 024h]
-lea       si, [bx + 1]
-mov       word ptr [bp - 2], es
-mov       bx, word ptr [bp + 02ch]
-mov       word ptr [bp + 078h], cx
-add       bx, 2
-label_38:
-mov       di, word ptr [bp]
-mov       cx, word ptr [bp + 01eh]
-mov       es, word ptr [bp + 078h]
-add       di, di
-cmp       cx, word ptr es:[bx]
-jne       label_36
-jmp       label_37
-label_36:
-mov       di, word ptr ds:[_currentlumpindex]
-mov       cx, word ptr [bp + 01eh]
-add       di, di
-mov       es, word ptr [bp + 01ah]
-add       di, word ptr [bp + 018h]
-mov       byte ptr [bp + 07eh], 0
-mov       word ptr es:[di], cx
-mov       cx, word ptr ds:[_currentlumpindex]
-mov       ah, byte ptr [bp]
-mov       di, cx
-sub       ah, dl
-add       di, cx
-dec       ah
-add       di, word ptr [bp + 018h]
-mov       dx, word ptr [bp]
-mov       byte ptr es:[di + 2], ah
-add       cx, 2
-mov       byte ptr es:[di + 3], al
-mov       es, word ptr [bp + 078h]
-mov       word ptr ds:[_currentlumpindex], cx
-mov       ax, word ptr es:[bx]
-mov       es, word ptr [bp - 2]
-mov       word ptr [bp + 01eh], ax
-mov       al, byte ptr es:[si]
-label_42:
-inc       word ptr [bp]
-inc       si
-mov       cx, word ptr [bp]
-add       bx, 2
-cmp       cx, word ptr [bp + 8]
-jl        label_38
-label_34:
-cmp       byte ptr [bp + 07eh], 0
-je        label_39
-mov       al, byte ptr [bp + 8]
-dec       al
-label_39:
-mov       cx, word ptr ds:[_currentlumpindex]
-mov       bx, cx
-add       bx, cx
-mov       es, word ptr [bp + 01ah]
-add       bx, word ptr [bp + 018h]
-mov       byte ptr es:[bx + 3], al
-mov       ax, word ptr [bp + 01eh]
-mov       word ptr es:[bx], ax
-mov       al, byte ptr [bp + 8]
-sub       al, dl
-add       cx, 2
-dec       al
-mov       word ptr ds:[_currentlumpindex], cx
-mov       byte ptr es:[bx + 2], al
-lea       sp, [bp + 080h]
-pop       bp
-pop       di
-pop       si
-pop       dx
+rep       stosw
+
+
+
+; ch is 0 from rep stosw
+mov       cl, dl   ; cx gets texturepatchcount
+mov       byte ptr cs:[SELFMODIFY_set_texturepatchcount+1], cl
+
+; ds texturebytes
+; es 7000
+; ? maybe we want to swap ds/es
+; wadpatch = 7000
+; texture  = texturebytes
+; patch    = texturebytes   (si)
+
+
+lea       bx, [bx + 0Bh]
+
+
+loop_next_texture_patch:
+
+mov       si, word ptr ds:[bx]  ;  + 0Bh TEXTURE_T.texture_patches
+
+
+;    ds:si is patch
+
+mov       ax, word ptr ds:[si + TEXPATCH_T.texpatch_patch]
+mov       si, word ptr ds:[si + TEXPATCH_T.texpatch_originx] ; done with patch/si
+test      ah, (ORIGINX_SIGN_FLAG SHR 8)
+je        positive_origin
+neg       si     ; si is x1
+positive_origin:
+and       ah, (PATCHMASK SHR 8)
+
+
+cmp       ax, word ptr [bp - 0Eh] ; lastpatch
+mov       di, ax ; store patchpatch in di
+je        skip_patch_load
+
+do_patch_load:
+mov       word ptr [bp - 8], ax ; update lastpatch
+push      bx
+push      cx
+
+mov       cx, SCRATCH_PAGE_SEGMENT_7000
+xor       bx, bx
+call      W_CacheLumpNumDirect_
+
+
 pop       cx
 pop       bx
-ret      
+mov       ax, SCRATCH_PAGE_SEGMENT_7000
+mov       ds, ax
+xor       ax, ax
+mov       al, byte ptr ds:[0 + PATCH_T.patch_height]
+add       al, 00Fh
+and       al, 0F0h
+mov       word ptr [bp - 0Ch], ax ; patchusedheight
 
-bad_patch_error:
+
+skip_patch_load:
+mov       ax, SCRATCH_PAGE_SEGMENT_7000
+mov       ds, ax
+
+; ds is 07000h
+xor       ax, ax
+cwd
+mov       ax, word ptr [bp - 010h] ; patchusedheight
+
+
+
+SELFMODIFY_subtract_firstpatch:
+sub       di, word ptr ss:[_firstpatch]
+sal       di, 1
+xor       dx ,dx
+mov       dl, byte ptr ds:[0 + PATCH_T.patch_width]
+mul       dl
+
+
+push      dx    ; bp - 012h ; patchwidth
+mov       word ptr ss:[di + _patch_sizes], ax
+;       x1 = patch->originx * (patch->patch & ORIGINX_SIGN_FLAG ? -1 : 1);
+;		x2 = x1 + (wadpatch->width);
+
+add       dx, si   ; si = x1, dx = x2
+
+;		if (x1 < 0) {
+;			x = 0;
+;		} else {
+;			x = x1;
+;		}
+
+
+mov       ax, dx
+jns       dont_cap_x_at_0
+xor       ax, ax
+dont_cap_x_at_0:
+
+; ax = x, dx = x2, si = x1
+
+
+cmp       dx, word ptr [bp - 0Ch]  ; texturewidth
+jle       dont_cap_x2       
+mov       dx, word ptr [bp - 0Ch]
+dont_cap_x2:
+
+; inner loop iterates from x to x2. x1 no longer necessary, x2 can be selfmodified at the end
+
+push      ax   ; bp - 014h : startx
+mov       word ptr cs:[SELFMODIFY_x2_compare+2], dx
+xchg      ax, di   ;  di is 'x'
+
+mov       si, word ptr ds:[0 + PATCH_T.patch_columnofs]
+
+
+
+;  
+;  dx not in use
+;  bx in use in outer scope (texture)
+;  cx in use in outer scope (numtextures) 
+;  7000:si is the column
+
+loop_next_patchcolumn:
+
+inc       byte ptr es:[0FF00h + di] ; columnpatchcount[x]++;
+mov       ax, word ptr [bp - 014h]        ; startx
+mov       byte ptr es:[0F700h + di], al  ; startpixel[x] = startx;
+sal       di, 1
+mov       ax, word ptr [bp - 0Eh]          ; patchpatch/lastpatch
+mov       word ptr es:[0F800h + di], ax  ; texcollump[x] = patchpatch;
+mov       ax, word ptr [bp - 012h]        ; wadpatch->width;
+mov       word ptr es:[0F500h + di], ax  ; wadpatch->width;
+xor       dx, dx ; column total size
+mov       word ptr cs:[SELFMODIFY_getpatchcount+1], dx ; 0
+
+SELFMODIFY_set_texturepatchcount:
+mov       al, 010h
+cmp       al, 1  
+jne       multi_patch_skip
+
+;	maskedpixlofs[x] = currenttexturepixelbytecount; 
+;	maskedtexpostdataofs[x] = (currentpostdataoffset)+ (currenttexturepostoffset << 1);
+
+;	uint16_t __far*              maskedpixlofs        = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFC00);
+;	uint16_t __far*              maskedtexpostdataofs = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFA00);
+
+mov       ax, word ptr [bp - 4]          ; currenttexturepixelbytecount
+mov       word ptr es:[0FC00h + di], ax  ; maskedpixlofs[x] = currenttexturepixelbytecount; 
+push      bx
+SELFMODIFY_set_currenttexturepostoffset: 
+mov       bx, 01000h                     ; currenttexturepostoffset
+
+mov       ax, word ptr ss:[_currentpostdataoffset]      ; todo make cs
+add       ax, bx
+mov       word ptr es:[0FA00h + di], ax  ; maskedtexpostdataofs[x] = (currentpostdataoffset)+ (currenttexturepostoffset << 1);
+
+lodsw
+cmp       al, 0FFh
+je        found_end_of_patchcolumn
+				; for ( ; (column->topdelta != 0xff)  ; )  {
+
+
+loop_next_patchpost:
+
+mov       word ptr es:[0E000h + bx], ax  ; texmaskedpostdata[currenttexturepostoffset] = *((uint16_t __far *)column);
+inc       bx
+inc       bx
+
+mov       al, ah
+xor       ah, ah
+add       dx, ax                 ; columntotalsize += runsize;
+add       al, 00Fh
+and       al, 0F0h               ; runsize += (16 - ((runsize &0xF)) &0xF);
+add       word ptr [bp - 4], ax  ; currenttexturepixelbytecount += runsize;
+
+;	// copy both topdelta and length at once
+;	texmaskedpostdata[currenttexturepostoffset] = *((uint16_t __far *)column);
+;	currenttexturepostoffset ++;
+inc       word ptr cs:[SELFMODIFY_getpatchcount+1]
+
+; texmaskedpostdata[currenttexturepostoffset] = *((uint16_t __far *)column);
+
+inc       si
+inc       si  ; length + 4, but did two lodsb already.
+lodsw
+cmp       al, 0FFh
+jne       loop_next_patchpost
+
+found_end_of_patchcolumn:
+
+
+;	texmaskedpostdata[currenttexturepostoffset] = 0xFFFF; // end the post.
+;	currenttexturepostoffset ++;
+mov       word ptr es:[0E000h + bx], 0FFFFh  ; texmaskedpostdata[currenttexturepostoffset] = *((uint16_t __far *)column);
+
+inc       bx
+inc       bx
+mov       word ptr cs:[SELFMODIFY_set_currenttexturepostoffset + 1], bx  ; write back for next iter
+pop       bx
+
+
+SELFMODIFY_getpatchcount:
+mov       ax, 01000h
+;   
+;    all masked textures (NOT SPRITES) have at least one col with multiple columns
+;    which adds up to less than texture height; seems to be an accurate enough check...
+; if (colpatchcount > 1 && columntotalsize < textureheight ){
+cmp       dx, word ptr [bp - 8]
+jge       not_masked
+cmp       ax, 1
+jle       not_masked
+
+;	// most masked textures are not 256 wide. (the ones that are have tons of col patches.)
+;	// but theres a couple bugged doom2 256x128 textures that have a pixel gap but arent masked. 
+;	// However doom1 has some masked textures that have tons of gaps... We kind of hack around this bad data.
+;	
+;	if (texturewidth != 256 || colpatchcount > 3){
+;		ismaskedtexture = 1;
+;	}
+cmp       ax, 3
+jg        is_masked
+cmp       word ptr [bp - 0Ch], 256
+je        not_masked
+is_masked:
+inc       byte ptr cs:[SELFMODIFY_is_masked+1]
+
+not_masked:
+
+multi_patch_skip:
+
+sar       di, 1 ; undo word lookup
+inc       di
+SELFMODIFY_x2_compare:
+cmp       di, 01000h
+jge       done_with_patchcolumn
+jmp       loop_next_patchcolumn
+jump_to_loop_next_texture_patch:
+jmp       loop_next_texture_patch
+done_with_patchcolumn:
+
+
+loop      jump_to_loop_next_texture_patch
+
+push      ss
+pop       ds
+
+SELFMODIFY_is_masked:
+mov       al, 010h
+
+
+
+test      al, al
+
+; note: dx and si and bx all free again?
+mov       si, word ptr [bp - 2]  ; texnum
+sal       si, 1
+jz        skip_masked_stuff
+
+;	uint16_t __far* pixelofs   =  MK_FP(maskedpixeldataofs_segment, currentpixeloffset);
+;	uint16_t __far* postofs    =  MK_FP(maskedpostdataofs_segment, currentpostoffset);
+;	uint16_t __far* postdata   =  MK_FP(maskedpostdata_segment, currentpostdataoffset);
+; we will use 8400 segment with offsets for all 3.
+
+MASKEDPOSTDATAOFS_OFFSET = (MASKEDPOSTDATAOFS_SEGMENT - MASKEDPOSTDATA_SEGMENT) SHL 4
+MASKEDPIXELDATAOFS_OFFSET = (MASKEDPIXELDATAOFS_SEGMENT - MASKEDPOSTDATA_SEGMENT) SHL 4
+
+mov       di, word ptr ds:[_maskedcount]  
+
+mov       ax, MASKED_LOOKUP_SEGMENT
+mov       es, ax
+mov       word ptr ds:[si], di
+
+SHIFT_MACRO  sal di 3
+push      ds
+pop       es
+
+mov       cx, word ptr [bp - 0Ch]         ; texturewidth
+mov       dx, cx
+sal       dx, 1                           ; texturewidth * 2
+
+mov       bx, word ptr ds:[_maskedcount]  
+add       bx, _masked_headers
+mov       ax, word ptr ds:[_currentpixeloffset]                     ; currentpixeloffset 
+stosw     ; masked_headers[maskedcount].pixelofsoffset = currentpixeloffset;
+mov       bx, ax
+add       ax, dx
+mov       word ptr ds:[_currentpixeloffset], ax                     ; currentpixeloffset += (texturewidth*2); 
+mov       ax, word ptr ds:[_currentpostoffset]                      ; currentpostoffset
+stosw     ; masked_headers[maskedcount].postofsoffset = currentpostoffset;
+mov       si, ax
+add       ax, dx
+mov       word ptr ds:[_currentpostoffset], ax                      ; currentpostoffset += (texturewidth*2);
+
+mov       ax, word ptr [bp - 4]           ; currenttexturepixelbytecount
+stosw     ; masked_headers[maskedcount].texturesize = currenttexturepixelbytecount;
+inc       word ptr ds:[_maskedcount]
+
+mov       ax, MASKEDPOSTDATA_SEGMENT
+mov       es, ax
+
+
+;	// copy the offset data...
+;	for (i = 0; i < texturewidth; i++){
+;		pixelofs[i] = maskedpixlofs[i] >> 4;
+;		postofs[i] = maskedtexpostdataofs[i];
+;	}
+
+mov       dx, cx ; backup texturewidth
+mov       ax, SCRATCH_PAGE_SEGMENT_7000
+mov       ds, ax
+
+lea       di, [si + MASKEDPOSTDATAOFS_OFFSET]
+mov       si, 0FA00h        ; maskedtexpostdataofs = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFA00);
+rep       movsw
+
+mov       cx, dx
+lea       di, [bx + MASKEDPIXELDATAOFS_OFFSET]
+mov       si, 0FC00h
+write_next_pixel_data:
+lodsw
+SHIFT_MACRO sar ax 4
+stosw
+loop      write_next_pixel_data
+
+;	// copy the actual post data
+;	for (i = 0; i < currenttexturepostoffset; i++){
+;		postdata[i] = texmaskedpostdata[i];
+;    }
+
+mov       cx, dx
+mov       di, word ptr ss:[_currentpostdataoffset]
+mov       ax, di
+sal       ax, 1
+mov       si, 0E000h
+rep       movsw
+
+add       word ptr ss:[_currentpostdataoffset], ax
+
+
+skip_masked_stuff:
+
+mov       si, 0FF00h                      ; columnpatchcount
+xor       dx, dx                          ; totalcompositecolumns = 0;
+mov       cx, word ptr [bp - 0Ch]         ; texturewidth
+mov       ax, SCRATCH_PAGE_SEGMENT_7000
+mov       ds, ax
+xor       bx, bx
+mov       di, word ptr [bp - 2]           ; texnum
+sal       di, 1
+mov       ax, TEXTURECOMPOSITESIZES_SEGMENT
+mov       es, ax
+
+loop_next_column_check_2:
+lodsb
+; if al is zero this is a missing column.
+cmp      al, 1
+jb       do_error_no_column
+je       not_composite
+	; two plus patches in this column!
+	; so it's composite.
+
+mov      word ptr ds:[0F000h + bx], -1            ;   texcollump[x] = -1;
+mov      ax, word ptr [bp - 0Ah]
+add      word ptr es:[di], ax                     ;   texturecompositesizes[texnum] += usedtextureheight;
+mov      byte ptr ds:[(0F000h - 0FF00h) + si], dl ;   startpixel[x] = totalcompositecolumns;
+mov      word ptr ds:[0F500h + bx], MAXSHORT      ;   columnwidths[x] = MAXSHORT;
+inc      dx                                       ;   totalcompositecolumns ++;
+
+not_composite:
+inc      bx
+inc      bx  ; word offset
+
+loop     loop_next_column_check_2
+
+mov      ax, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
+mov      es, ax
+mov      ax, word ptr ds:[0F800h]               ; currentcollump = texcollump[0];
+xor      bx, bx                                 ; currentcollumpRLEStart = 0;
+mov      dx, word ptr ds:[0F700h]               ; startx = startpixel[0];
+mov      si, 1
+mov      di, word ptr ss:[_currentlumpindex]
+sal      di, 1
+
+; es:di is collumps..
+; todo use cx in loop 
+
+loop_next_RLE_run:
+;		if (currentcollump != texcollump[x] 
+;		|| (x - currentcollumpRLEStart) >= columnwidths[x]
+;		|| (texcollump[x] != -1 && (startpixel[x] != startx))    // this handles cases like PLANET1 where AG128_1 ends then restarts again with other composite textures in between.
+
+mov      byte ptr cs:[SELFMODIFY_isSingleRLERun+1], 0       ; issingleRLErun = false;
+
+ stosw         ; collump[currentlumpindex].h = currentcollump;
+
+ neg     bx
+ lea     bx, [bx + si - 1]   ; (x - currentcollumpRLEStart) - 1
+ mov     byte ptr es:[di], bl             ; collump[currentlumpindex + 1].bu.bytelow = (x - currentcollumpRLEStart) - 1; 
+ 
+ inc     di
+ mov     byte ptr es:[di], dl             ; collump[currentlumpindex + 1].bu.bytehigh = startx;
+ 
+ mov     bx, si                           ; currentcollumpRLEStart = x;
+ mov     dl, byte ptr ds:[0F700h + si]    ; startx = startpixel[x];
+ sal     si, 1      ; word lookup
+ mov     ax, word ptr ds:[0F800h + si]    ; currentcollump = texcollump[x];
+ inc     di                               ; currentlumpindex += 2 (word shifted, 2 added from stosw for 4 total)
+ sar     si, 1      ; back to bytes
+ 
+
+not_new_RLE_run:
+ inc      si
+ cmp      si, word ptr [bp - 0Ch]  ; x < texturewidth
+ jl       loop_next_RLE_run
+
+
+SELFMODIFY_isSingleRLERun:
+mov      al, 010h;
+test     al, al
+je       not_single_run
+;   startx = texturewidth-1;
+mov      dx, word ptr [bp - 0Ch]   ; texturewidth
+dec      dx
+not_single_run:
+
+stosw       ;	collump[currentlumpindex].h = currentcollump;
+
+push    ss
+pop     ds
+
+; si is texturewidth upon loop completion
+
+sub     si, bx
+dec     si                      ; (texturewidth - currentcollumpRLEStart) - 1;
+xchg    ax, si
+mov     byte ptr es:[di], al    ; collump[currentlumpindex + 1].bu.bytelow = (texturewidth - currentcollumpRLEStart) - 1;
+inc     di
+mov     byte ptr es:[di], dl    ; collump[currentlumpindex + 1].bu.bytehigh = startx;
+inc     di
+sar     di, 1 
+mov     word ptr ds:[_currentlumpindex], di
+
+
+;	collump[currentlumpindex + 1].bu.bytehigh = startx;
+
+;	collump[currentlumpindex + 1].bu.bytelow = (texturewidth - currentcollumpRLEStart) - 1;
+;	currentlumpindex += 2;
+
+
+exit_r_generate_composite:
+
+
+
+LEAVE_MACRO
+POPA_NO_AX_OR_BP_MACRO
+ret
+do_error_no_column:
+push      ss
+pop       ds
 push      cs
 mov       ax, OFFSET str_bad_column_patch 
 push      ax
 call      I_Error_
-add       sp, 4
-lea       sp, [bp + 080h]
-pop       bp
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
-ret      
-label_37:
-mov       cx, word ptr [bp]
-mov       es, word ptr [bp + 03eh]
-sub       cx, dx
-add       di, word ptr [bp + 040h]
-cmp       cx, word ptr es:[di]
-jl        label_40
-jump_to_label_36:
-jmp       label_36
-label_40:
-mov       es, word ptr [bp + 078h]
-cmp       word ptr es:[bx], -1
-jne       label_41
-jmp       label_42
-label_41:
-mov       es, word ptr [bp - 2]
-cmp       al, byte ptr es:[si]
-jne       jump_to_label_36
-jmp       label_42
+jmp       exit_r_generate_composite
 
 ENDP
 
