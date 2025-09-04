@@ -409,37 +409,36 @@ jge       jump_to_done_with_patchcolumn ; gross
 
 
 mov       word ptr cs:[SELFMODIFY_x2_compare+2], ax
-mov       di, dx                        ; startx = x
+mov       bx, dx                        ; startx = x
 
-mov       si, word ptr ds:[0 + PATCH_T.patch_columnofs]
 
 jmp       loop_next_patchcolumn         ; gross all gross
 jump_to_done_with_patchcolumn:          
 jmp       done_with_patchcolumn         ; gross make it stop
 ;  
-;  dx not in use
-;  bx in use in outer scope (texture)
+
+
 ;  cx in use in outer scope (numtextures) 
 ;  7000:si is the column
 
 loop_next_patchcolumn:
 
-inc       byte ptr ds:[0FF00h + di] ; columnpatchcount[x]++;
+inc       byte ptr ds:[0FF00h + bx] ; columnpatchcount[x]++;
 
 SELFMODIFY_set_startx:
-mov       byte ptr ds:[0F700h + di], 010h  ; startpixel[x] = startx;
-sal       di, 1
+mov       byte ptr ds:[0F700h + bx], 010h  ; startpixel[x] = startx;
+sal       bx, 1
 SELFMODIFY_set_lastpatch:
-mov       word ptr ds:[0F800h + di], 01000h  ; texcollump[x] = patchpatch;
+mov       word ptr ds:[0F800h + bx], 01000h  ; texcollump[x] = patchpatch;
 SELFMODIFY_set_wadpatch_width:
-mov       word ptr ds:[0F500h + di], 01000h  ; wadpatch->width;
+mov       word ptr ds:[0F500h + bx], 01000h  ; wadpatch->width;
 xor       dx, dx ; column total size
 mov       word ptr cs:[SELFMODIFY_getpatchcount+1], dx ; 0
 
 SELFMODIFY_set_texturepatchcount:
 mov       al, 010h
 cmp       al, 1  
-jne       multi_patch_skip
+jne       multi_patch_skip  ; note in practice all masked textures are single patch. so we can skip masked preprocessing for any multi-patch texture..
 
 ;	maskedpixlofs[x] = currenttexturepixelbytecount; 
 ;	maskedtexpostdataofs[x] = (currentpostdataoffset)+ (currenttexturepostoffset << 1);
@@ -448,15 +447,18 @@ jne       multi_patch_skip
 ;	uint16_t __far*              maskedtexpostdataofs = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFA00);
 
 mov       ax, word ptr [bp - 4]          ; currenttexturepixelbytecount
-mov       word ptr ds:[0FC00h + di], ax  ; maskedpixlofs[x] = currenttexturepixelbytecount; 
+mov       word ptr ds:[0FC00h + bx], ax  ; maskedpixlofs[x] = currenttexturepixelbytecount; 
 
 SELFMODIFY_set_currenttexturepostoffset: 
-mov       bx, 01000h                     ; currenttexturepostoffset
+mov       di, 01000h                     ; currenttexturepostoffset
 
 mov       ax, word ptr ss:[_currentpostdataoffset]      ; todo make cs
-add       ax, bx
-mov       word ptr ds:[0FA00h + di], ax  ; maskedtexpostdataofs[x] = (currentpostdataoffset)+ (currenttexturepostoffset << 1);
+add       ax, di
+mov       word ptr ds:[0FA00h + bx], ax  ; maskedtexpostdataofs[x] = (currentpostdataoffset)+ (currenttexturepostoffset << 1);
+mov       si, bx
+mov       si, word ptr ds:[si + bx + PATCH_T.patch_columnofs]
 
+add       di, 0E000h    ; texmaskedpostdata offset
 lodsw
 cmp       al, 0FFh
 je        found_end_of_patchcolumn
@@ -465,12 +467,12 @@ je        found_end_of_patchcolumn
 
 loop_next_patchpost:
 
-mov       word ptr ds:[0E000h + bx], ax  ; texmaskedpostdata[currenttexturepostoffset] = *((uint16_t __far *)column);
-inc       bx
-inc       bx
+; es is also 7000h..
+stosw  ; texmaskedpostdata[currenttexturepostoffset] = *((uint16_t __far *)column);
 
 mov       al, ah
 xor       ah, ah
+add       si, ax                 ; add length to column
 add       dx, ax                 ; columntotalsize += runsize;
 add       al, 00Fh
 and       al, 0F0h               ; runsize += (16 - ((runsize &0xF)) &0xF);
@@ -484,7 +486,7 @@ inc       word ptr cs:[SELFMODIFY_getpatchcount+1]
 ; texmaskedpostdata[currenttexturepostoffset] = *((uint16_t __far *)column);
 
 inc       si
-inc       si  ; length + 4, but did two lodsb already.
+inc       si  ; length + 4, but did lodsw already.
 lodsw
 cmp       al, 0FFh
 jne       loop_next_patchpost
@@ -494,11 +496,12 @@ found_end_of_patchcolumn:
 
 ;	texmaskedpostdata[currenttexturepostoffset] = 0xFFFF; // end the post.
 ;	currenttexturepostoffset ++;
-mov       word ptr ds:[0E000h + bx], 0FFFFh  ; texmaskedpostdata[currenttexturepostoffset] = *((uint16_t __far *)column);
+stosb ; texmaskedpostdata[currenttexturepostoffset] = *((uint16_t __far *)column);
+stosb ; al was 0FFh. write it twice..
 
-inc       bx
-inc       bx
-mov       word ptr cs:[SELFMODIFY_set_currenttexturepostoffset + 1], bx  ; write back for next iter
+sub       di, 0E000h
+
+mov       word ptr cs:[SELFMODIFY_set_currenttexturepostoffset + 1], di  ; write back for next iter
 
 
 SELFMODIFY_getpatchcount:
@@ -525,16 +528,16 @@ jg        is_masked
 cmp       word ptr [bp - 6], 256
 je        not_masked
 is_masked:
-inc       byte ptr cs:[SELFMODIFY_is_masked+1]
+mov       byte ptr cs:[SELFMODIFY_is_masked+1], al ; known to be at least 3..
 
 not_masked:
 
 multi_patch_skip:
 
-sar       di, 1 ; undo word lookup
-inc       di
+sar       bx, 1 ; undo word lookup
+inc       bx
 SELFMODIFY_x2_compare:
-cmp       di, 01000h
+cmp       bx, 01000h
 jge       done_with_patchcolumn
 jmp       loop_next_patchcolumn
 jump_to_loop_next_texture_patch:
@@ -553,6 +556,7 @@ SELFMODIFY_is_masked:
 mov       al, 010h
 
 
+mov       cx, word ptr [bp - 6]         ; texturewidth
 
 
 ; note: dx and si and bx all free again?
@@ -567,7 +571,6 @@ jz        skip_masked_stuff
 ; we will use 8400 segment with offsets for all 3.
 
 push      ds    ; store SCRATCH_PAGE_SEGMENT_7000 for ds later  [MATCH F]
-push      ds    ; store SCRATCH_PAGE_SEGMENT_7000 for es later  [MATCH E]
 push      ss
 pop       ds    ; ds back to normal
 mov       di, word ptr ds:[_maskedcount]  
@@ -577,32 +580,30 @@ mov       es, ax
 mov       word ptr es:[si + MASKED_LOOKUP_OFFSET], di ;		masked_lookup[texnum] = maskedcount;	// index to lookup of struct...
 
 SHIFT_MACRO  sal di 3
+push      ds
+pop       es  ; get normal data segment for stosw
 
-pop       es  ; get SCRATCH_PAGE_SEGMENT_7000 [MATCH E]
 push      ax  ; store MASKEDPOSTDATA_SEGMENT [MATCH D]
 
-mov       cx, word ptr [bp - 6]         ; texturewidth
-mov       dx, cx
-sal       dx, 1                           ; texturewidth * 2
-
-mov       bx, word ptr ds:[_maskedcount]  
-add       bx, _masked_headers
+add       di, _masked_headers
 mov       ax, word ptr ds:[_currentpixeloffset]                     ; currentpixeloffset 
 stosw     ; masked_headers[maskedcount].pixelofsoffset = currentpixeloffset;
-mov       bx, ax  ; bx gets pixeloffset
-add       ax, dx
-mov       word ptr ds:[_currentpixeloffset], ax                     ; currentpixeloffset += (texturewidth*2); 
+xchg      ax, bx  ; bx gets pixeloffset
+
 mov       ax, word ptr ds:[_currentpostoffset]                      ; currentpostoffset
 stosw     ; masked_headers[maskedcount].postofsoffset = currentpostoffset;
-mov       si, ax  ; si gets postsoffset
-add       ax, dx
-mov       word ptr ds:[_currentpostoffset], ax                      ; currentpostoffset += (texturewidth*2);
+xchg      ax, si  ; si gets postsoffset
+
+
 
 mov       ax, word ptr [bp - 4]           ; currenttexturepixelbytecount
 stosw     ; masked_headers[maskedcount].texturesize = currenttexturepixelbytecount;
 inc       word ptr ds:[_maskedcount]
 
+; di free. done with ES as DS for maskedheaders writes
+
 pop       es ; recover MASKEDPOSTDATA_SEGMENT [MATCH D]
+pop       ds  ; SCRATCH_PAGE_SEGMENT_7000 [MATCH F]
 
 ;	// copy the offset data...
 ;	for (i = 0; i < texturewidth; i++){
@@ -611,11 +612,11 @@ pop       es ; recover MASKEDPOSTDATA_SEGMENT [MATCH D]
 ;	}
 
 mov       dx, cx ; backup texturewidth
-pop       ds  ; SCRATCH_PAGE_SEGMENT_7000 [MATCH F]
-
-lea       di, [si + MASKEDPOSTDATAOFS_OFFSET]
+lea       di, [si + MASKEDPOSTDATAOFS_OFFSET] 
 mov       si, 0FA00h        ; maskedtexpostdataofs = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFA00);
 rep       movsw
+; todo self modify right above?
+mov       word ptr ss:[_currentpostoffset], di ; has been advanced the right amount
 
 mov       cx, dx
 lea       di, [bx + MASKEDPIXELDATAOFS_OFFSET]
@@ -625,34 +626,36 @@ lodsw
 SHIFT_MACRO sar ax 4
 stosw
 loop      write_next_pixel_data
+; todo self modify right above?
+mov       word ptr ss:[_currentpixeloffset], di ; has been advanced the right amount
+
 
 ;	// copy the actual post data
 ;	for (i = 0; i < currenttexturepostoffset; i++){
 ;		postdata[i] = texmaskedpostdata[i];
 ;    }
 
-mov       cx, dx
-mov       di, word ptr ss:[_currentpostdataoffset]
-mov       ax, di
-sal       ax, 1
+
+mov       cx, word ptr cs:[SELFMODIFY_set_currenttexturepostoffset + 1]
+mov       di, word ptr ss:[3]
 mov       si, 0E000h
 rep       movsw
+; todo self modify right above?
+mov       word ptr ss:[_currentpostdataoffset], di ; has been advanced the right amount
 
-add       word ptr ss:[_currentpostdataoffset], ax
 
+mov       cx, dx      ; recover texturewidth
 
 skip_masked_stuff:
 
 ; ds is 07000h
-
+; cx is texturewidth
 
 mov       si, 0FF00h                      ; columnpatchcount
 xor       dx, dx                          ; totalcompositecolumns = 0;
-mov       cx, word ptr [bp - 6]         ; texturewidth
-
-xor       bx, bx
+xor       bx, bx                          ; word offset
 mov       di, word ptr [bp - 2]           ; texnum
-sal       di, 1
+sal       di, 1                           ; textnum word offset
 mov       ax, TEXTURECOMPOSITESIZES_SEGMENT
 mov       es, ax
 push      bp  ; we will use this in following loops

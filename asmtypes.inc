@@ -267,17 +267,17 @@ NODE_RENDER_T ENDS
 
 
 POST_T STRUC 
-    post_topdelta           db ?
-    post_length             db ?
+    post_topdelta           db ?  ; 0
+    post_length             db ?  ; 1
 POST_T ENDS
 
 
 
 MASKED_HEADER_T STRUC 
-    mh_pixelofsoffset     dw ?
-    mh_postofsoffset      dw ?
-    mh_texturesize        dw ?
-    mh_reserved           dw ?
+    mh_pixelofsoffset     dw ? ; 0
+    mh_postofsoffset      dw ? ; 2
+    mh_texturesize        dw ? ; 4
+    mh_reserved           dw ? ; 6
 MASKED_HEADER_T ENDS
 
 
@@ -323,8 +323,8 @@ PATCH_T ENDS
 
 
 COLUMN_T STRUC
-    column_topdelta        db ?
-    column_length          db ?
+    column_topdelta        db ?  ; 0
+    column_length          db ?  ; 1
 COLUMN_T ENDS
 
 VISSPRITE_T STRUC 
