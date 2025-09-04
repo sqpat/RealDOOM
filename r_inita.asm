@@ -303,10 +303,10 @@ lea       bx, [bx + 0Bh] ; + 0Bh TEXTURE_T.texture_patches
 
 loop_next_texture_patch:
 
+; bx seems to be wrong.
 
-
-;    ds:si is patch
-
+;    es:bx is patch
+; es:0000 got very clobbered! 
 
 mov       ax, word ptr es:[bx + TEXPATCH_T.texpatch_patch]
 cwd       ; we will neg if ORIGINX_SIGN_FLAG is set. put sign bits in dx
@@ -672,7 +672,7 @@ je       not_composite
 	; two plus patches in this column!
 	; so it's composite.
 
-mov      word ptr ds:[0F000h + bx], -1            ;   texcollump[x] = -1;
+mov      word ptr ds:[0F800h + bx], -1            ;   texcollump[x] = -1;
 add      word ptr es:[di], bp                     ;   texturecompositesizes[texnum] += usedtextureheight;
 ; minus one extra for lodsb..
 mov      byte ptr ds:[((0F000h - 0FF00h) - 1) + si], dl ;   startpixel[x] = totalcompositecolumns;
@@ -710,13 +710,13 @@ sal      di, 1                                  ; word lookup
 
 loop_next_RLE_run:
 
-mov      bp, si
+mov      bp, si                              ; bp + si for word lookup
 cmp      ax, word ptr ds:[0F800h + si + bp]  ; if (currentcollump != texcollump[x] 
 jne      do_new_RLE_run
 mov      bp, word ptr ds:[0F500h + si + bp]  ; || (x - currentcollumpRLEStart) >= columnwidths[x]
 add      bp, bx
 cmp      bp, si
-jl       do_new_RLE_run   
+jbe      do_new_RLE_run     ; do unsigned becasue of MAXSHORT case...
 mov      bp, si
 cmp      word ptr ds:[0F800h + si + bp], -1  ; || (texcollump[x] != -1
 je       not_new_RLE_run
@@ -725,21 +725,30 @@ je       not_new_RLE_run
 do_new_RLE_run:
 
 mov      byte ptr cs:[SELFMODIFY_isSingleRLERun+1], 0       ; issingleRLErun = false;
-mov      bp, si
- stosw         ; collump[currentlumpindex].h = currentcollump;
+mov      bp, si                                             ; bp + si for word lookup..
+stosw         ; collump[currentlumpindex].h = currentcollump;
+  ; es might be texturebytes??
+;   es = 9000, di = b22
+; currentlumpindex overran
 
- neg     bx
- lea     bx, [bx + si - 1]   ; (x - currentcollumpRLEStart) - 1
- mov     byte ptr es:[di], bl             ; collump[currentlumpindex + 1].bu.bytelow = (x - currentcollumpRLEStart) - 1; 
+; si is x
+; bx is currentcollumpRLEStart
+
+ neg     bx      ; (- currentcollumpRLEStart)
+ dec     bx      ; -1
+ lea     ax, [bx + si]  ; x + (-currentcollumpRLEStart - 1)     result: (x - currentcollumpRLEStart) - 1
+ stosb                                    ; collump[currentlumpindex + 1].bu.bytelow = (x - currentcollumpRLEStart) - 1; 
  
- inc     di
- mov     byte ptr es:[di], dl             ; collump[currentlumpindex + 1].bu.bytehigh = startx;
- 
+ xchg    ax, dx
+ stosb                                    ; collump[currentlumpindex + 1].bu.bytehigh = startx;
+
+; di/currentlumpindex has been incremented via stosb
+
  mov     bx, si                           ; currentcollumpRLEStart = x;
  mov     dl, byte ptr ds:[0F700h + si]    ; startx = startpixel[x];
  
  mov     ax, word ptr ds:[0F800h + si + bp]    ; currentcollump = texcollump[x];
- inc     di                               ; currentlumpindex += 2 (word shifted, 2 added from stosw for 4 total)
+
 
  
 
@@ -754,6 +763,7 @@ SELFMODIFY_isSingleRLERun:
 mov      al, 010h;
 test     al, al
 je       not_single_run
+;if (issingleRLErun)
 ;   startx = texturewidth-1;
 mov      dx, cx   ; texturewidth
 dec      dx
@@ -761,19 +771,20 @@ not_single_run:
 
 stosw       ;	collump[currentlumpindex].h = currentcollump;
 
-push    ss
-pop     ds
 
 ; si is texturewidth upon loop completion
 
-sub     si, bx
-dec     si                      ; (texturewidth - currentcollumpRLEStart) - 1;
-xchg    ax, si
-mov     byte ptr es:[di], al    ; collump[currentlumpindex + 1].bu.bytelow = (texturewidth - currentcollumpRLEStart) - 1;
-inc     di
-mov     byte ptr es:[di], dl    ; collump[currentlumpindex + 1].bu.bytehigh = startx;
-inc     di                      ; currentlumpindex += 2;
+neg     bx      ; (- currentcollumpRLEStart)
+dec     bx      ; -1
+lea     ax, [bx + si]  ; x + (-currentcollumpRLEStart - 1)     result: (texturewidth - currentcollumpRLEStart) - 1 (x == texturewidth at loop end)
+ 
+stosb                           ; collump[currentlumpindex + 1].bu.bytelow = (texturewidth - currentcollumpRLEStart) - 1;
+xchg    ax, dx
+stosb                           ; collump[currentlumpindex + 1].bu.bytehigh = startx;
 sar     di, 1 
+push    ss
+pop     ds
+
 mov     word ptr ds:[_currentlumpindex], di
 
 
