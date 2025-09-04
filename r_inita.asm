@@ -305,8 +305,6 @@ loop_next_texture_patch:
 
 ; bx seems to be wrong.
 
-;    es:bx is patch
-; es:0000 got very clobbered! 
 
 mov       ax, word ptr es:[bx + TEXPATCH_T.texpatch_patch]
 cwd       ; we will neg if ORIGINX_SIGN_FLAG is set. put sign bits in dx
@@ -370,8 +368,12 @@ SELFMODIFY_subtract_firstpatch:
 sub       di, word ptr ss:[_firstpatch]
 sal       di, 1
 ; dx is zeroed above by a cbw
-mov       dl, byte ptr ds:[0 + PATCH_T.patch_width]
+mov       dx, word ptr ds:[0 + PATCH_T.patch_width]
+; if zero then make handle as 256 rare case so make it default to not doing that.
+test      dl, dl
+jz        handle_256_mul
 mul       dl   ; patchusedheight * wadpatch->width; // used for non masked sizes. doesnt include colofs, headers.
+dont_do_width_mul:
 
 mov       word ptr cs:[SELFMODIFY_set_wadpatch_width+4], dx ; update lastpatch
 
@@ -413,6 +415,10 @@ mov       bx, dx                        ; startx = x
 
 
 jmp       loop_next_patchcolumn         ; gross all gross
+handle_256_mul:
+mov       ah, al
+xor       al, al
+jmp       dont_do_width_mul
 jump_to_done_with_patchcolumn:          
 jmp       done_with_patchcolumn         ; gross make it stop
 ;  
@@ -588,7 +594,7 @@ push      ax  ; store MASKEDPOSTDATA_SEGMENT [MATCH D]
 add       di, _masked_headers
 mov       ax, word ptr ds:[_currentpixeloffset]                     ; currentpixeloffset 
 stosw     ; masked_headers[maskedcount].pixelofsoffset = currentpixeloffset;
-xchg      ax, bx  ; bx gets pixeloffset
+xchg      ax, bx  ; bx gets currentpixeloffset
 
 mov       ax, word ptr ds:[_currentpostoffset]                      ; currentpostoffset
 stosw     ; masked_headers[maskedcount].postofsoffset = currentpostoffset;
@@ -616,6 +622,7 @@ lea       di, [si + MASKEDPOSTDATAOFS_OFFSET]
 mov       si, 0FA00h        ; maskedtexpostdataofs = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFA00);
 rep       movsw
 ; todo self modify right above?
+sub       di, MASKEDPOSTDATAOFS_OFFSET
 mov       word ptr ss:[_currentpostoffset], di ; has been advanced the right amount
 
 mov       cx, dx
@@ -627,6 +634,7 @@ SHIFT_MACRO sar ax 4
 stosw
 loop      write_next_pixel_data
 ; todo self modify right above?
+sub       di, MASKEDPIXELDATAOFS_OFFSET
 mov       word ptr ss:[_currentpixeloffset], di ; has been advanced the right amount
 
 
@@ -637,7 +645,7 @@ mov       word ptr ss:[_currentpixeloffset], di ; has been advanced the right am
 
 
 mov       cx, word ptr cs:[SELFMODIFY_set_currenttexturepostoffset + 1]
-mov       di, word ptr ss:[3]
+mov       di, word ptr ss:[_currentpostdataoffset]
 mov       si, 0E000h
 rep       movsw
 ; todo self modify right above?
