@@ -457,11 +457,11 @@ mov       word ptr ds:[0FC00h + bx], ax  ; maskedpixlofs[x] = currenttexturepixe
 
 SELFMODIFY_set_currenttexturepostoffset: 
 mov       di, 01000h                     ; currenttexturepostoffset
-
+; todo did something have to be SALed?
+; maskedtexpostdataofs[x] = (currentpostdataoffset)+ (currenttexturepostoffset << 1);
 mov       ax, word ptr ss:[_currentpostdataoffset]      ; todo make cs
 add       ax, di
-mov       word ptr ds:[0FA00h + bx], ax  ; maskedtexpostdataofs[x] = (currentpostdataoffset)+ (currenttexturepostoffset << 1);
-mov       si, bx
+mov       si, bx  ;dword lookup
 mov       si, word ptr ds:[si + bx + PATCH_T.patch_columnofs]
 
 add       di, 0E000h    ; texmaskedpostdata offset
@@ -617,6 +617,8 @@ pop       ds  ; SCRATCH_PAGE_SEGMENT_7000 [MATCH F]
 ;		postofs[i] = maskedtexpostdataofs[i];
 ;	}
 
+; issues here 
+
 mov       dx, cx ; backup texturewidth
 lea       di, [si + MASKEDPOSTDATAOFS_OFFSET] 
 mov       si, 0FA00h        ; maskedtexpostdataofs = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFA00);
@@ -767,6 +769,8 @@ not_new_RLE_run:
 
 pop      bp  ; restore bp
 
+stosw       ;	collump[currentlumpindex].h = currentcollump;
+
 SELFMODIFY_isSingleRLERun:
 mov      al, 010h;
 test     al, al
@@ -777,7 +781,6 @@ mov      dx, cx   ; texturewidth
 dec      dx
 not_single_run:
 
-stosw       ;	collump[currentlumpindex].h = currentcollump;
 
 
 ; si is texturewidth upon loop completion
