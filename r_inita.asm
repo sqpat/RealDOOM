@@ -216,7 +216,7 @@ PUSHA_NO_AX_OR_BP_MACRO
 push      bp
 mov       bp, sp
 
-push      ax      ; bp - 2: texnum
+push      ax      ; bp - 2: texnum  ; todo selfmodify in two spots. then use bp as texwidth later?
 xchg      ax, bx  ; texnum
 mov       ax, MASKED_LOOKUP_SEGMENT
 mov       es, ax
@@ -456,11 +456,13 @@ mov       ax, word ptr [bp - 4]          ; currenttexturepixelbytecount
 mov       word ptr ds:[0FC00h + bx], ax  ; maskedpixlofs[x] = currenttexturepixelbytecount; 
 
 SELFMODIFY_set_currenttexturepostoffset: 
-mov       di, 01000h                     ; currenttexturepostoffset
-; todo did something have to be SALed?
-; maskedtexpostdataofs[x] = (currentpostdataoffset)+ (currenttexturepostoffset << 1);
+mov       di, 01000h                     ; currenttexturepostoffset << 1
+
 mov       ax, word ptr ss:[_currentpostdataoffset]      ; todo make cs
 add       ax, di
+
+mov       word ptr ds:[0FA00h + bx], ax          ; maskedtexpostdataofs[x] = (currentpostdataoffset)+ (currenttexturepostoffset << 1);
+
 mov       si, bx  ;dword lookup
 mov       si, word ptr ds:[si + bx + PATCH_T.patch_columnofs]
 
@@ -469,7 +471,7 @@ lodsw
 cmp       al, 0FFh
 je        found_end_of_patchcolumn
 				; for ( ; (column->topdelta != 0xff)  ; )  {
-
+; todo use cx as bp - 4 in here?
 
 loop_next_patchpost:
 
@@ -647,6 +649,7 @@ mov       word ptr ss:[_currentpixeloffset], di ; has been advanced the right am
 
 
 mov       cx, word ptr cs:[SELFMODIFY_set_currenttexturepostoffset + 1]
+sar       cx, 1 ; was a word lookup before..
 mov       di, word ptr ss:[_currentpostdataoffset]
 mov       si, 0E000h
 rep       movsw
