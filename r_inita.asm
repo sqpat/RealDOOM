@@ -220,8 +220,8 @@ push      ax      ; bp - 2: texnum  ; todo selfmodify in two spots. then use bp 
 xchg      ax, bx  ; texnum
 mov       ax, MASKED_LOOKUP_SEGMENT
 mov       es, ax
-mov       byte ptr es:[bx], 0FFh  ; default state...   todo do this in a single big movsw earlier.
 sal       bx, 1   ; texnum x 2
+mov       word ptr es:[bx], 0FFFFh  ; default state...   todo do this in a single big movsw earlier.
 mov       ax, word ptr ds:[_currentlumpindex]
 mov       word ptr ds:[bx + _texturepatchlump_offset], ax
 
@@ -515,13 +515,13 @@ mov       word ptr cs:[SELFMODIFY_set_currenttexturepostoffset + 1], di  ; write
 SELFMODIFY_getpatchcount:
 mov       ax, 01000h
 ;   
-;    all masked textures (NOT SPRITES) have at least one col with multiple columns
+;    all masked textures (NOT SPRITES) have at least one col with multiple posts
 ;    which adds up to less than texture height; seems to be an accurate enough check...
 ; if (colpatchcount > 1 && columntotalsize < textureheight ){
 SELFMODIFY_compare_textureheight:
 cmp       dx, 01000h
 jge       not_masked
-cmp       ax, 1
+cmp       al, 1
 jle       not_masked
 
 ;	// most masked textures are not 256 wide. (the ones that are have tons of col patches.)
@@ -531,8 +531,8 @@ jle       not_masked
 ;	if (texturewidth != 256 || colpatchcount > 3){
 ;		ismaskedtexture = 1;
 ;	}
-cmp       ax, 3
-jg        is_masked
+cmp       al, 3
+ja        is_masked
 cmp       word ptr [bp - 6], 256
 je        not_masked
 is_masked:
@@ -688,7 +688,7 @@ je       not_composite
 mov      word ptr ds:[0F800h + bx], -1            ;   texcollump[x] = -1;
 add      word ptr es:[di], bp                     ;   texturecompositesizes[texnum] += usedtextureheight;
 ; minus one extra for lodsb..
-mov      byte ptr ds:[((0F000h - 0FF00h) - 1) + si], dl ;   startpixel[x] = totalcompositecolumns;
+mov      byte ptr ds:[((0F700h - 0FF00h) - 1) + si], dl ;   startpixel[x] = totalcompositecolumns;
 mov      word ptr ds:[0F500h + bx], MAXSHORT      ;   columnwidths[x] = MAXSHORT;
 inc      dx                                       ;   totalcompositecolumns ++;
 
