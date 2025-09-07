@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/06 23:25:31
+Created on:       25/09/06 23:47:23
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -28,8 +28,7 @@ m_near_TEXT            CODE           AUTO           0000:0000       00000000
 d_init_TEXT            CODE           AUTO           0000:0000       00000a69
 S_INIT_TEXT            CODE           AUTO           0000:0a6a       00000560
 ST_INIT_TEXT           CODE           AUTO           0000:0fca       00000203
-r_init_TEXT            CODE           AUTO           0000:11d0       00000000
-R_INITA_TEXT           CODE           AUTO           0000:11d0       00000783
+R_INIT_TEXT            CODE           AUTO           0000:11ce       00000783
 w_init_TEXT            CODE           AUTO           0000:1960       00000274
 I_INIT_TEXT            CODE           AUTO           0000:1bd4       000001cf
 z_init_TEXT            CODE           AUTO           0000:1db0       00000a6f
@@ -256,11 +255,11 @@ Module: st_init.obj(st_init.ASM)
 0000:0fca*     ST_INIT_STARTMARKER_
 0000:11cd*     ST_INIT_ENDMARKER_
 0000:106d      ST_Init_
-Module: r_inita.obj(r_inita.ASM)
-0000:1617*     R_InitTextures_
-0000:1269*     R_InitSpriteLumps_
-0000:18f9      R_Init_
-0000:1335*     R_GenerateLookup_
+Module: r_init.obj(r_init.ASM)
+0000:1615*     R_InitTextures_
+0000:1267*     R_InitSpriteLumps_
+0000:18f7      R_Init_
+0000:1333*     R_GenerateLookup_
 Module: w_init.obj(C:\REALDOOM\w_init.c)
 0000:1960      W_AddFile_
 Module: i_init.obj(i_init.ASM)

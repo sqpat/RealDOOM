@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/06 23:45:16
+Created on:       25/09/06 23:47:26
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -27,8 +27,7 @@ Segment                Class          Group          Address         Size
 m_near_TEXT            CODE           AUTO           0000:0000       00000000
 d_init_TEXT            CODE           AUTO           0000:0000       00000a69
 ST_INIT_TEXT           CODE           AUTO           0000:0a6a       00000203
-r_init_TEXT            CODE           AUTO           0000:0c70       00000000
-R_INITA_TEXT           CODE           AUTO           0000:0c70       00000783
+R_INIT_TEXT            CODE           AUTO           0000:0c6e       00000783
 w_init_TEXT            CODE           AUTO           0000:1400       00000274
 I_INIT_TEXT            CODE           AUTO           0000:1674       000001cf
 z_init_TEXT            CODE           AUTO           0000:1850       00000a6f
@@ -209,11 +208,11 @@ Module: st_init.obj(st_init.ASM)
 0000:0a6a*     ST_INIT_STARTMARKER_
 0000:0c6d*     ST_INIT_ENDMARKER_
 0000:0b0d      ST_Init_
-Module: r_inita.obj(r_inita.ASM)
-0000:10b7*     R_InitTextures_
-0000:0d09*     R_InitSpriteLumps_
-0000:1399      R_Init_
-0000:0dd5*     R_GenerateLookup_
+Module: r_init.obj(r_init.ASM)
+0000:10b5*     R_InitTextures_
+0000:0d07*     R_InitSpriteLumps_
+0000:1397      R_Init_
+0000:0dd3*     R_GenerateLookup_
 Module: w_init.obj(C:\REALDOOM\w_init.c)
 0000:1400      W_AddFile_
 Module: i_init.obj(i_init.ASM)
