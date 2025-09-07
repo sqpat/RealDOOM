@@ -97,7 +97,7 @@ boolean __near AM_Responder (event_t __far* ev);
 // R_FlatNumForName
 // Retrieval, get a flat number for a flat name.
 //
-uint8_t __near R_FlatNumForName(int8_t* __near name) {
+uint8_t __near R_FlatNumForName(int8_t* __far name) {
 	int16_t         i;
 #ifdef CHECK_FOR_ERRORS
 	int8_t        namet[9];

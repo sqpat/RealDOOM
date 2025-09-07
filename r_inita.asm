@@ -27,6 +27,10 @@ EXTRN Z_QuickMapUndoFlatCache_:FAR
 EXTRN Z_QuickMapRender_:FAR
 EXTRN W_CacheLumpNumDirect_:FAR
 EXTRN W_CacheLumpNameDirect_:FAR
+EXTRN R_InitData_:NEAR
+EXTRN R_SetViewSize_:FAR
+EXTRN Z_QuickMapPhysics_:FAR
+EXTRN R_FlatNumForName_:NEAR
 
 .DATA
 
@@ -50,6 +54,17 @@ db ".", 0
 
 str_bad_column_patch:
 db "R_GenerateLookup: column without a patch", 0
+
+str_triple_dot:
+db '.'
+str_double_dot:
+db '.'
+str_single_dot:
+db '.', 0
+str_f_sky1:
+db 'F_SKY1', 0
+
+COLORMAP_LUMP = 1
 
 do_print_dot:
 push      cs
@@ -1308,59 +1323,58 @@ PROC   R_InitData_ NEAR
 
 ENDP
 
+@
+
+
+
 PROC   R_Init_ NEAR
+PUBLIC R_Init_ 
 
 
-0x0000000000001154:  53                push      bx
-0x0000000000001155:  51                push      cx
-0x0000000000001156:  52                push      dx
-0x0000000000001157:  0E                
-0x0000000000001158:  3E E8 EE A1       call      Z_QuickMapRender_
-0x000000000000115c:  B9 00 98          mov       cx, 0x9800
-0x000000000000115f:  B8 01 00          mov       ax, 1
-0x0000000000001162:  31 DB             xor       bx, bx
-0x0000000000001164:  0E                
-0x0000000000001165:  E8 FE 99          call      W_CacheLumpNumDirect_
-0x0000000000001168:  90                       
-0x0000000000001169:  E8 98 FF          call      R_InitData_
-0x000000000000116c:  1E                push      ds
-0x000000000000116d:  68 76 14          push      0x1476
-0x0000000000001170:  BB 69 0A          mov       bx, 0xa69
-0x0000000000001173:  0E                
-0x0000000000001174:  3E E8 68 17       call      DEBUG_PRINT_
-0x0000000000001178:  8A 07             mov       al, byte ptr ds:[bx]
-0x000000000000117a:  83 C4 04          add       sp, 4
-0x000000000000117d:  30 E4             xor       ah, ah
-0x000000000000117f:  BB 9B 01          mov       bx, 0x19b
-0x0000000000001182:  89 C2             mov       dx, ax
-0x0000000000001184:  8A 07             mov       al, byte ptr ds:[bx]
-0x0000000000001186:  0E                
-0x0000000000001187:  E8 F5 96          call      R_SetViewSize_
-0x000000000000118a:  90                       
-0x000000000000118b:  1E                push      ds
-0x000000000000118c:  68 79 14          push      0x1479
-0x000000000000118f:  0E                
-0x0000000000001190:  3E E8 4C 17       call      DEBUG_PRINT_
-0x0000000000001194:  83 C4 04          add       sp, 4
-0x0000000000001197:  0E                
-0x0000000000001198:  3E E8 68 A1       call      Z_QuickMapPhysics_
-0x000000000000119c:  B8 7D 14          mov       ax, 0x147d
-0x000000000000119f:  E8 EE 1A          call      R_FlatNumForName_
-0x00000000000011a2:  1E                push      ds
-0x00000000000011a3:  BB 98 01          mov       bx, 0x198
-0x00000000000011a6:  68 12 14          push      0x1412
-0x00000000000011a9:  88 07             mov       byte ptr ds:[bx], al
-0x00000000000011ab:  0E                
-0x00000000000011ac:  3E E8 30 17       call      DEBUG_PRINT_
-0x00000000000011b0:  83 C4 04          add       sp, 4
-0x00000000000011b3:  5A                pop       dx
-0x00000000000011b4:  59                pop       cx
-0x00000000000011b5:  5B                pop       bx
-0x00000000000011b6:  C3                ret     
+push      bx
+push      cx
+push      dx
+
+call      Z_QuickMapRender_
+mov       cx, COLORMAPS_SEGMENT
+mov       ax, COLORMAP_LUMP
+xor       bx, bx
+
+call      W_CacheLumpNumDirect_
+       
+call      R_InitData_
+push      cs
+push      OFFSET str_double_dot
+call      DEBUG_PRINT_
+
+mov       al, byte ptr ds:[_detailLevel]
+add       sp, 4
+cbw
+xchg      ax, dx
+mov       al, byte ptr ds:[_screenblocks]
+call      R_SetViewSize_
+push      cs
+push      OFFSET str_triple_dot
+call      DEBUG_PRINT_
+add       sp, 4
+
+call      Z_QuickMapPhysics_
+mov       dx, cs
+mov       ax, OFFSET str_f_sky1
+call      R_FlatNumForName_
+push      cs
+push      OFFSET str_single_dot
+mov       byte ptr ds:[_skyflatnum], al
+
+call      DEBUG_PRINT_
+add       sp, 4  ; todo batch them
+pop       dx
+pop       cx
+pop       bx
+ret     
 
 
 ENDP
 
-@
 
 END

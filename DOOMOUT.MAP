@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/06 17:49:24
+Created on:       25/09/06 17:59:46
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -13,7 +13,7 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          0deb:0000            00002330
+DGROUP                          0deb:0000            00002320
 
 
 
@@ -27,8 +27,8 @@ Segment                Class          Group          Address         Size
 m_near_TEXT            CODE           AUTO           0000:0000       00000000
 d_init_TEXT            CODE           AUTO           0000:0000       00000a69
 ST_INIT_TEXT           CODE           AUTO           0000:0a6a       00000203
-r_init_TEXT            CODE           AUTO           0000:0c70       000004d3
-R_INITA_TEXT           CODE           AUTO           0000:1144       000003e8
+r_init_TEXT            CODE           AUTO           0000:0c70       0000046f
+R_INITA_TEXT           CODE           AUTO           0000:10e0       00000450
 w_init_TEXT            CODE           AUTO           0000:1530       00000274
 I_INIT_TEXT            CODE           AUTO           0000:17a4       000001cf
 z_init_TEXT            CODE           AUTO           0000:1980       00000a6f
@@ -68,17 +68,17 @@ _NULL                  BEGDATA        DGROUP         0deb:0000       00000020
 _AFTERNULL             BEGDATA        DGROUP         0ded:0000       00000002
 _FIXEDDATA             DATA           DGROUP         0dee:0000       00000df2
 _DATA                  DATA           DGROUP         0ece:0000       000002d8
-CONST                  DATA           DGROUP         0efb:0008       000005c2
-CONST2                 DATA           DGROUP         0f57:000a       00000101
-XIB                    DATA           DGROUP         0f67:000c       00000000
-XI                     DATA           DGROUP         0f67:000c       0000000c
-XIE                    DATA           DGROUP         0f68:0008       00000000
-YIB                    DATA           DGROUP         0f68:0008       00000000
-YI                     DATA           DGROUP         0f68:0008       00000012
-YIE                    DATA           DGROUP         0f69:000a       00000000
-DATA                   DATA           DGROUP         0f69:000a       00000000
-_BSS                   BSS            DGROUP         0f6a:0000       0000013e
-STACK                  STACK          DGROUP         0f7e:0000       00000a00
+CONST                  DATA           DGROUP         0efb:0008       000005b6
+CONST2                 DATA           DGROUP         0f56:000e       00000101
+XIB                    DATA           DGROUP         0f67:0000       00000000
+XI                     DATA           DGROUP         0f67:0000       0000000c
+XIE                    DATA           DGROUP         0f67:000c       00000000
+YIB                    DATA           DGROUP         0f67:000c       00000000
+YI                     DATA           DGROUP         0f67:000c       00000012
+YIE                    DATA           DGROUP         0f68:000e       00000000
+DATA                   DATA           DGROUP         0f68:000e       00000000
+_BSS                   BSS            DGROUP         0f69:0000       0000013e
+STACK                  STACK          DGROUP         0f7d:0000       00000a00
 
 
                         +----------------+
@@ -92,59 +92,59 @@ Address        Symbol
 =======        ======
 
 Module: m_near.obj(C:\REALDOOM\m_near.c)
-0deb:17f0      _channels
-0deb:1820      _musdriverstartposition
-0deb:1830      _codestartposition
-0deb:1848      _wadfiles
-0deb:1850      _filetolumpsize
-0deb:185c      _OldInt8
-0deb:1860+     _mousearray
-0deb:1864      _p_init_sprtemp
-0deb:1868      _TaskServiceCount
-0deb:186a      _defdemoname
-0deb:186c      _numlumps
-0deb:186e      _myargv
-0deb:1870      _dclicks
-0deb:1872      _dclicktime
-0deb:1874      _dclickstate
-0deb:1876      _dclicktime2
-0deb:1878      _mousex
-0deb:187a      _myargc
-0deb:187c      _dclickstate2
-0deb:187e      _dclicks2
-0deb:1880      _demo_p
-0deb:1882      _p_init_maxframe
-0deb:1884      _skytexture
-0deb:1886      _numpatches
-0deb:1888      _numtextures
-0deb:188a      _numspritelumps
-0deb:188c      _numflats
-0deb:188e      _pagename
-0deb:1890      _pagetic
-0deb:1892      _wminfo
-0deb:18a7      _secretexit
-0deb:18a8      _TS_TimesInInterrupt
-0deb:18a9      _usemouse
-0deb:18aa      _mousebforward
-0deb:18ab      _d_episode
-0deb:18ac      _turnheld
-0deb:18ad      _d_skill
-0deb:18ae      _d_map
-0deb:18af      _key_speed
-0deb:18b0      _mousebfire
-0deb:18b1      _key_left
-0deb:18b2      _key_fire
-0deb:18b3      _key_strafe
-0deb:18b4      _key_straferight
-0deb:18b5      _key_up
-0deb:18b6      _mousebstrafe
-0deb:18b7      _singledemo
-0deb:18b8      _netdemo
-0deb:18b9      _key_down
-0deb:18ba      _key_use
-0deb:18bb      _key_right
-0deb:18bc      _key_strafeleft
-0deb:18bd      _timingdemo
+0deb:17e0      _channels
+0deb:1810      _musdriverstartposition
+0deb:1820      _codestartposition
+0deb:1838      _wadfiles
+0deb:1840      _filetolumpsize
+0deb:184c      _OldInt8
+0deb:1850+     _mousearray
+0deb:1854      _p_init_sprtemp
+0deb:1858      _TaskServiceCount
+0deb:185a      _defdemoname
+0deb:185c      _numlumps
+0deb:185e      _myargv
+0deb:1860      _dclicks
+0deb:1862      _dclicktime
+0deb:1864      _dclickstate
+0deb:1866      _dclicktime2
+0deb:1868      _mousex
+0deb:186a      _myargc
+0deb:186c      _dclickstate2
+0deb:186e      _dclicks2
+0deb:1870      _demo_p
+0deb:1872      _p_init_maxframe
+0deb:1874      _skytexture
+0deb:1876      _numpatches
+0deb:1878      _numtextures
+0deb:187a      _numspritelumps
+0deb:187c      _numflats
+0deb:187e      _pagename
+0deb:1880      _pagetic
+0deb:1882      _wminfo
+0deb:1897      _secretexit
+0deb:1898      _TS_TimesInInterrupt
+0deb:1899      _usemouse
+0deb:189a      _mousebforward
+0deb:189b      _d_episode
+0deb:189c      _turnheld
+0deb:189d      _d_skill
+0deb:189e      _d_map
+0deb:189f      _key_speed
+0deb:18a0      _mousebfire
+0deb:18a1      _key_left
+0deb:18a2      _key_fire
+0deb:18a3      _key_strafe
+0deb:18a4      _key_straferight
+0deb:18a5      _key_up
+0deb:18a6      _mousebstrafe
+0deb:18a7      _singledemo
+0deb:18a8      _netdemo
+0deb:18a9      _key_down
+0deb:18aa      _key_use
+0deb:18ab      _key_right
+0deb:18ac      _key_strafeleft
+0deb:18ad      _timingdemo
 0deb:0e30      _singletics
 0deb:0e34      _P_SpawnMapThing
 0deb:0e38      _R_WriteBackViewConstantsSpanCall
@@ -180,18 +180,18 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 0deb:0ea4      _sfx_priority
 0deb:0f11      _FORCE_5000_LUMP_LOAD
 0deb:0f12      _lastpcspeakernotevalue
-0deb:18be      _numChannels
-0deb:18bf      _noblit
-0deb:18c0      _demorecording
-0deb:18c1      _mousepresent
-0deb:18c2      _novideo
-0deb:18c3      _eventtail
-0deb:18c4      _eventhead
-0deb:18c5      _startmap
-0deb:18c6      _autostart
-0deb:18c7      _startskill
-0deb:18c8      _respawnparm
-0deb:18c9      _startepisode
+0deb:18ae      _numChannels
+0deb:18af      _noblit
+0deb:18b0      _demorecording
+0deb:18b1      _mousepresent
+0deb:18b2      _novideo
+0deb:18b3      _eventtail
+0deb:18b4      _eventhead
+0deb:18b5      _startmap
+0deb:18b6      _autostart
+0deb:18b7      _startskill
+0deb:18b8      _respawnparm
+0deb:18b9      _startepisode
 Module: d_init.obj(C:\REALDOOM\d_init.c)
 0000:0000      D_InitStrings_
 0000:00aa+     D_GetCursorColumnRow_
@@ -213,11 +213,11 @@ Module: r_init.obj(C:\REALDOOM\r_init.c)
 0000:0c70+     R_InitTextures_
 0000:0fd6+     R_InitTextures2_
 0000:1024+     R_InitPatches_
-0000:1090+     R_InitData_
-0000:10e0      R_Init_
+0000:1090      R_InitData_
 Module: r_inita.obj(r_inita.ASM)
-0000:117e      R_InitSpriteLumps_
-0000:124a      R_GenerateLookup_
+0000:1125      R_InitSpriteLumps_
+0000:14d3      R_Init_
+0000:11f1      R_GenerateLookup_
 Module: w_init.obj(C:\REALDOOM\w_init.c)
 0000:1530      W_AddFile_
 Module: i_init.obj(i_init.ASM)
@@ -532,15 +532,15 @@ Module: s_sound.obj(s_sound.ASM)
 0000:8d77      S_PauseSound_
 0000:8da0      S_ResumeSound_
 Module: s_sbsfx.obj(C:\REALDOOM\s_sbsfx.c)
-0deb:18d0+     _sfxcache_nodes
-0deb:18f0*     _sfx_page_multipage_count
-0deb:18f8+     _sfx_page_reference_count
-0deb:1900+     _SB_OldInt
-0deb:1904+     _SB_IntController1Mask
-0deb:1906+     _SB_IntController2Mask
-0deb:1908+     _SB_DSP_Version
-0deb:190a+     _SB_Mixer_Status
-0deb:190b+     _sfxcache_tail
+0deb:18c0+     _sfxcache_nodes
+0deb:18e0*     _sfx_page_multipage_count
+0deb:18e8+     _sfx_page_reference_count
+0deb:18f0+     _SB_OldInt
+0deb:18f4+     _SB_IntController1Mask
+0deb:18f6+     _SB_IntController2Mask
+0deb:18f8+     _SB_DSP_Version
+0deb:18fa+     _SB_Mixer_Status
+0deb:18fb+     _sfxcache_tail
 0deb:0f2c+     _sb_port
 0deb:0f2e+     _sb_dma
 0deb:0f30+     _sb_irq
@@ -597,7 +597,7 @@ Module: s_sbsfx.obj(C:\REALDOOM\s_sbsfx.c)
 0deb:0f3c+     _in_sound
 0deb:0f3d+     _IRQ_TO_INTERRUPT_MAP
 0deb:0f4d+     _DMA_PortInfo
-0deb:190c+     _sfxcache_head
+0deb:18fc+     _sfxcache_head
 Module: r_main.obj(r_main.ASM)
 0000:abfe      R_VideoErase_
 0000:abe0      R_PointToAngle2_16_
@@ -670,7 +670,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(fclose.c)
 0000:be4d      __doclose_
 0000:bee3      __shutdown_stream_
 0000:bef7      fclose_
-0deb:190e+     ___RmTmpFileFn
+0deb:18fe+     ___RmTmpFileFn
 Module: C:\WATCOM2\lib286\dos\clibm.lib(atoi.c)
 0000:bf1a      atoi_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fread.c)
@@ -679,8 +679,8 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(accss.c)
 0000:c112      access_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(iob.c)
 0deb:0f66      ___iob
-0deb:1912      ___OpenStreams
-0deb:1914      ___ClosedStreams
+0deb:1902      ___OpenStreams
+0deb:1904      ___ClosedStreams
 Module: C:\WATCOM2\lib286\dos\clibm.lib(setbuf.c)
 0000:c148      setbuf_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(i4m.asm)
@@ -712,10 +712,10 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(cstart)
 0000:c60c      __do_exit_with_msg_
 0000:c6eb      __GETDS
 Module: C:\WATCOM2\lib286\dos\clibm.lib(argcv.c)
-0deb:1916      __argc
-0deb:1918      __argv
-0deb:191a      ___argc
-0deb:191c      ___argv
+0deb:1906      __argc
+0deb:1908      __argv
+0deb:190a      ___argc
+0deb:190c      ___argv
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fputc.c)
 0000:c6f5      fputc_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(chainint)
@@ -727,7 +727,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(comtflag.c)
 0deb:108c      __commode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(errno.c)
 0000:c986      __get_errno_ptr_
-0deb:191e+     _errno
+0deb:190e+     _errno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(textmode.c)
 0deb:108e      __fmode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(tolower.c)
@@ -758,11 +758,11 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(_clse.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nfree.c)
 0000:cdd7      _nfree_
 0000:cdd7      free_
-0deb:1920+     ___MiniHeapFreeRover
+0deb:1910+     ___MiniHeapFreeRover
 Module: C:\WATCOM2\lib286\dos\clibm.lib(flush.c)
 0000:ce9c      __flush_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(istable.c)
-0deb:16ca      __IsTable
+0deb:16be      __IsTable
 Module: C:\WATCOM2\lib286\dos\clibm.lib(gfattdos.c)
 0000:cf90      _dos_getfileattr_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(dosret.c)
@@ -830,7 +830,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(isatt.c)
 0000:d526      isatty_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(doserrno.c)
 0000:d542      __get_doserrno_ptr_
-0deb:1924+     __doserrno
+0deb:1914+     __doserrno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(umaskval.c)
 0deb:10fc      ___umaskval
 Module: C:\WATCOM2\lib286\dos\clibm.lib(creatdos.c)
@@ -855,18 +855,18 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(error086.asm)
 0000:d978      __doserror_
 0000:d986*     __doserror1_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(sgdef086)
-0deb:17cc      __Start_XI
-0deb:17d8      __End_XI
-0deb:17d8      __Start_YI
-0deb:17ea      __End_YI
+0deb:17c0      __Start_XI
+0deb:17cc      __End_XI
+0deb:17cc      __Start_YI
+0deb:17de      __End_YI
 Module: C:\WATCOM2\lib286\dos\clibm.lib(enterdb.c)
 0000:d992      __EnterWVIDEO_
 0deb:1104+     __WD_Present
 Module: C:\WATCOM2\lib286\dos\clibm.lib(___argc.c)
-0deb:1928      ____Argv
-0deb:192a      ____Argc
+0deb:1918      ____Argv
+0deb:191a      ____Argc
 Module: C:\WATCOM2\lib286\dos\clibm.lib(histsplt.c)
-0deb:192c      ___historical_splitparms
+0deb:191c      ___historical_splitparms
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nrealloc.c)
 0000:d9ae*     _nrealloc_
 0000:d9ae      realloc_
@@ -911,6 +911,6 @@ C:\WATCOM2\lib286\dos\clibm.lib
                         +-----------------------+
 
 Stack size:  0a00 (2560.)
-Memory size:  000101e0 (66016.)
+Memory size:  000101d0 (66000.)
 Entry point address: 0000:c43e
 Link time: 00:00.75

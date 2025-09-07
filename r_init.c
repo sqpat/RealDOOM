@@ -42,7 +42,7 @@
 
 
 
-uint8_t __near R_FlatNumForName(int8_t* __near name);
+uint8_t __near R_FlatNumForName(int8_t* __far name);
 
 void __near R_InitSpriteLumps(void);
 
@@ -804,8 +804,7 @@ void __near R_InitData(void) {
  
 }
 
-
-
+/*
 void __near R_Init(void) {
 	Z_QuickMapRender();
 	// load colormaps while this memory region active.
@@ -827,3 +826,5 @@ void __near R_Init(void) {
 	DEBUG_PRINT(".");
 
 	}
+*/
+
