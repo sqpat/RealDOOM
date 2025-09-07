@@ -28,9 +28,10 @@ EXTRN Z_QuickMapRender_:FAR
 EXTRN W_CacheLumpNumDirect_:FAR
 EXTRN W_CacheLumpNameDirect_:FAR
 EXTRN R_InitTextures_:NEAR
-EXTRN R_InitTextures2_:NEAR
 EXTRN R_SetViewSize_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
+EXTRN Z_QuickMapMaskedExtraData_:FAR
+EXTRN Z_QuickMapScratch_7000_:FAR
 EXTRN R_FlatNumForName_:NEAR
 
 .DATA
@@ -1176,54 +1177,68 @@ PROC   R_InitTextures_ NEAR
 0x0000000000001044:  5A                pop       dx
 0x0000000000001045:  59                pop       cx
 0x0000000000001046:  5B                pop       bx
-0x0000000000001047:  CB                retf      
-
-ENDP
-
-PROC   R_InitTextures2_ NEAR
-
-
-0x0000000000001048:  53                push      bx
-0x0000000000001049:  52                push      dx
-0x000000000000104a:  56                push      si
-0x000000000000104b:  0E                
-0x000000000000104c:  3E E8 97 A4       call      Z_QuickMapMaskedExtraData_
-0x0000000000001050:  0E                
-0x0000000000001051:  E8 EE A3          call      Z_QuickMapScratch_7000_
-0x0000000000001054:  90                       
-0x0000000000001055:  BA 2D 93          mov       dx, TEXTUREDEFS_OFFSET_SEGMENT
-0x0000000000001058:  31 DB             xor       bx, bx
-0x000000000000105a:  8E C2             mov       es, dx
-0x000000000000105c:  31 D2             xor       dx, dx
-0x000000000000105e:  26 89 1F          mov       word ptr es:[bx], bx
-0x0000000000001061:  83 3E 98 18 00    cmp       word ptr ds:[_numtextures], 0
-0x0000000000001066:  7E 26             jle       0x108e
-0x0000000000001068:  BE 4B 4F          mov       si, 0x4f4b
-0x000000000000106b:  8E C6             mov       es, si
-0x000000000000106d:  89 DE             mov       si, bx
-0x000000000000106f:  26 C7 04 00 00    mov       word ptr es:[si], 0
-0x0000000000001074:  BE 63 3C          mov       si, 0x3c63
-0x0000000000001077:  8E C6             mov       es, si
-0x0000000000001079:  89 DE             mov       si, bx
-0x000000000000107b:  89 D0             mov       ax, dx
-0x000000000000107d:  26 89 14          mov       word ptr es:[si], dx
-0x0000000000001080:  0E                
-0x0000000000001081:  E8 A4 F6          call      R_GenerateLookup_
-0x0000000000001084:  42                inc       dx
-0x0000000000001085:  83 C3 02          add       bx, 2
-0x0000000000001088:  3B 16 98 18       cmp       dx, word ptr ds:[_numtextures]
-0x000000000000108c:  7C DA             jl        0x1068
-0x000000000000108e:  0E                
-0x000000000000108f:  E8 B8 A2          call      Z_QuickMapRender_
-0x0000000000001092:  90                       
-0x0000000000001093:  5E                pop       si
-0x0000000000001094:  5A                pop       dx
-0x0000000000001095:  5B                pop       bx
-0x0000000000001096:  CB                retf      
+0x0000000000001047:  CB                ret      
 
 ENDP
 
 @
+
+PROC   R_InitTextures2_ NEAR
+
+
+push      dx
+push      cx
+push      di
+
+call      Z_QuickMapMaskedExtraData_
+call      Z_QuickMapScratch_7000_
+mov       ax, TEXTUREDEFS_OFFSET_SEGMENT
+mov       es, ax
+xor       di, di
+xor       dx, dx
+mov       word ptr es:[di], di
+
+mov       cx, word ptr ds:[_numtextures]
+mov       dx, cx ; backup
+
+;texturecompositesizes[i] = 0;
+mov       ax, TEXTURECOMPOSITESIZES_SEGMENT
+mov       es, ax
+xor       ax, ax
+mov       di, ax
+
+rep       stosw
+
+mov       cx, dx  ; get _numtextures back
+
+
+mov       di, TEXTURETRANSLATION_SEGMENT
+mov       es, di
+mov       di, ax  ; zero again
+
+loop_next_texture:
+stosw
+inc       ax
+loop      loop_next_texture
+
+mov       cx, dx
+
+loop_next_lookup:
+mov       ax, dx
+sub       ax, cx
+call      R_GenerateLookup_
+loop      loop_next_lookup
+
+
+
+call      Z_QuickMapRender_
+pop       di
+pop       dx
+pop       cx
+ret
+
+ENDP
+
 
 
 PROC   R_InitPatches_ NEAR

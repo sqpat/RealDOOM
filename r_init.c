@@ -649,6 +649,7 @@ void __near R_InitTextures(void) {
 
 
 }
+/*
 
 // openwatcom really struggles on the one huge function, causing memory bugs. i've lost a lot of time collectively there.
 // lets just split this into two.
@@ -688,7 +689,6 @@ void __near R_InitTextures2(){
 	//I_Error("final size: %i", currentlumpindex);
 }
 
-/*
 // Preload all patches - i dont think we actually need this...
 void R_InitPatches() {
 
