@@ -217,7 +217,7 @@ pop       ds
 ;		startoffset = 8 + (patchwidth << 2) + postdatasize;
 ;		startoffset += (16 - ((startoffset &0xF)) &0xF); // round up so first pixel data starts aligned of course.
 
-sal       di, 1
+shl       di, 1
 
 mov       bx, word ptr ds:[0 + PATCH_T.patch_width]
 
@@ -234,7 +234,7 @@ add       dx, ax  ; pixelsize + startoffset
 
 call      Z_QuickMapUndoFlatCache_
 mov       bx, bp
-sal       bx, 1
+shl       bx, 1
 
 mov       ax, SPRITETOTALDATASIZES_SEGMENT
 mov       es, ax
@@ -277,7 +277,7 @@ xchg      ax, bx  ; texnum
 mov       ax, MASKED_LOOKUP_SEGMENT
 mov       es, ax
 mov       byte ptr es:[bx], 0FFh  ; default state...   todo do this in a single big movsw earlier.
-sal       bx, 1   ; texnum x 2
+shl       bx, 1   ; texnum x 2
 mov       ax, word ptr ds:[_currentlumpindex]
 mov       word ptr ds:[bx + _texturepatchlump_offset], ax
 
@@ -422,7 +422,7 @@ cwd       ; zero dx.... ah is known zero
 ; todo this
 SELFMODIFY_subtract_firstpatch:
 sub       di, word ptr ss:[_firstpatch]
-sal       di, 1
+shl       di, 1
 ; dx is zeroed above by a cbw
 mov       dx, word ptr ds:[0 + PATCH_T.patch_width]
 ; if zero then make handle as 256 rare case so make it default to not doing that.
@@ -489,7 +489,7 @@ inc       byte ptr ds:[0FF00h + bx] ; columnpatchcount[x]++;
 
 SELFMODIFY_set_startx:
 mov       byte ptr ds:[0F700h + bx], 010h  ; startpixel[x] = startx;
-sal       bx, 1
+shl       bx, 1
 SELFMODIFY_set_lastpatch:
 mov       word ptr ds:[0F800h + bx], 01000h  ; texcollump[x] = patchpatch;
 SELFMODIFY_set_wadpatch_width:
@@ -598,7 +598,7 @@ not_masked:
 
 multi_patch_skip:
 
-sar       bx, 1 ; undo word lookup
+shr       bx, 1 ; undo word lookup
 inc       bx
 SELFMODIFY_x2_compare:
 cmp       bx, 01000h
@@ -645,7 +645,7 @@ cbw
 mov       byte ptr es:[di + MASKED_LOOKUP_OFFSET], al ;		masked_lookup[texnum] = maskedcount;	// index to lookup of struct...
 xchg      ax, di
 
-SHIFT_MACRO  sal di 3
+SHIFT_MACRO  shl di 3
 push      ds
 pop       es  ; get normal data segment for stosw
 
@@ -691,7 +691,7 @@ lea       di, [bx + MASKEDPIXELDATAOFS_OFFSET]
 mov       si, 0FC00h
 write_next_pixel_data:
 lodsw
-SHIFT_MACRO sar ax 4
+SHIFT_MACRO shr ax 4
 stosw
 loop      write_next_pixel_data
 ; todo self modify right above?
@@ -706,7 +706,7 @@ mov       word ptr ss:[_currentpixeloffset], di ; has been advanced the right am
 
 
 mov       cx, word ptr cs:[SELFMODIFY_set_currenttexturepostoffset + 1]
-sar       cx, 1 ; was a word lookup before..
+shr       cx, 1 ; was a word lookup before..
 mov       di, word ptr ss:[_currentpostdataoffset]
 mov       si, 0E000h
 rep       movsw
@@ -725,7 +725,7 @@ mov       si, 0FF00h                      ; columnpatchcount
 xor       dx, dx                          ; totalcompositecolumns = 0;
 xor       bx, bx                          ; word offset
 mov       di, word ptr [bp - 2]           ; texnum
-sal       di, 1                           ; textnum word offset
+shl       di, 1                           ; textnum word offset
 mov       ax, TEXTURECOMPOSITESIZES_SEGMENT
 mov       es, ax
 push      bp  ; we will use this in following loops
@@ -773,7 +773,7 @@ xor      bx, bx                                 ; currentcollumpRLEStart = 0;
 mov      dx, word ptr ds:[0F700h]               ; startx = startpixel[0];
 mov      si, 1
 mov      di, word ptr ss:[_currentlumpindex]
-sal      di, 1                                  ; word lookup
+shl      di, 1                                  ; word lookup
 
 ; es:di is collumps..
 
@@ -852,7 +852,7 @@ lea     ax, [bx + si]  ; x + (-currentcollumpRLEStart - 1)     result: (texturew
 stosb                           ; collump[currentlumpindex + 1].bu.bytelow = (texturewidth - currentcollumpRLEStart) - 1;
 xchg    ax, dx
 stosb                           ; collump[currentlumpindex + 1].bu.bytehigh = startx;
-sar     di, 1 
+shr     di, 1 
 push    ss
 pop     ds
 
@@ -972,9 +972,9 @@ mov       dx, ss
 lea       ax, [bp - 0Ah]  ; todo whatever
 call      W_CheckNumForNameFarString_
 
-sal       di, 1
+shl       di, 1
 mov       word ptr ds:[bp - 03B6h + di], ax         ; patchlookup[i] = W_CheckNumForName(name);
-sar       di, 1
+shr       di, 1
 
 
 add       si, 8
@@ -1131,7 +1131,7 @@ push    di          ; [STACK C] di
 mov     ax, TEXTUREDEFS_BYTES_SEGMENT
 mov     es, ax
 mov     bx, di 
-sal     bx, 1
+shl     bx, 1
 
 
 lea       ax, [di + 1]
@@ -1143,10 +1143,6 @@ jg        skip_setting_texdefoffset
 ;	// texturedefs sizes are variable and dependent on texture size/texture patch count.
 ;	texturedefs_offset[i + 1] = texturedefs_offset[i] + (sizeof(texture_t) + sizeof(texpatch_t)*((mtexture->patchcount) - 1));
 ; todo selfmodify this ahead to the other di check (?)
-
-inc       bx
-inc       bx ; bx + 1 word index
-
 
 mov       al, byte ptr ds:[si + MAPTEXTURE_T.maptexture_patchcount]
 mov       ah, SIZE TEXPATCH_T
@@ -1200,6 +1196,7 @@ stosb       ; patch->originx = abs(mpatch->originx);
 lodsw
 stosb       ; patch->originy = (mpatch->originy);
 lodsw
+shl     ax, 1
 xchg    ax, si
 mov     si, word ptr ss:[bp - 03B6h + si]
 xchg    ax, si 
@@ -1215,11 +1212,11 @@ pop       bx            ; [STACK D] bx
 
 mov       ax, 1
 shift_width_again:
-sal       ax, 1
+shl       ax, 1
 cmp       ax, cx ; texturewidth  ; todo alternatively shift until cx 0?
 jle       shift_width_again
 done_shifting_width:
-sar       ax, 1 ; undo one
+shr       ax, 1 ; undo one
 dec       ax   
 
 
@@ -1241,7 +1238,7 @@ mov       es, cx
 inc       ax
 add       al, 15
 and       al, 0F0h
-SHIFT_MACRO  sar al, 4
+SHIFT_MACRO  shr al, 4
 stosb
 
 pop       es   ; [STACK A] es
