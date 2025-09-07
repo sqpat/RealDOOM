@@ -27,7 +27,9 @@ EXTRN Z_QuickMapUndoFlatCache_:FAR
 EXTRN Z_QuickMapRender_:FAR
 EXTRN W_CacheLumpNumDirect_:FAR
 EXTRN W_CacheLumpNameDirect_:FAR
-EXTRN R_InitData_:NEAR
+EXTRN R_InitPatches_:NEAR
+EXTRN R_InitTextures_:NEAR
+EXTRN R_InitTextures2_:NEAR
 EXTRN R_SetViewSize_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
 EXTRN R_FlatNumForName_:NEAR
@@ -1278,52 +1280,52 @@ PROC   R_InitPatches_ NEAR
 
 ENDP
 
+@
+
 PROC   R_InitData_ NEAR
 
 
-0x0000000000001104:  53                push      bx
-0x0000000000001105:  52                push      dx
-0x0000000000001106:  B8 2D 93          mov       ax, TEXTUREDEFS_OFFSET_SEGMENT
-0x0000000000001109:  8E C0             mov       es, ax
-0x000000000000110b:  31 DB             xor       bx, bx
-0x000000000000110d:  26 89 1F          mov       word ptr es:[bx], bx
-0x0000000000001110:  0E                
-0x0000000000001111:  E8 CE FB          call      R_InitTextures_
-0x0000000000001114:  0E                
-0x0000000000001115:  E8 30 FF          call      R_InitTextures2_
-0x0000000000001118:  1E                push      ds
-0x0000000000001119:  68 76 14          push      0x1476
-0x000000000000111c:  0E                
-0x000000000000111d:  E8 C0 17          call      DEBUG_PRINT_
-0x0000000000001120:  90                       
-0x0000000000001121:  83 C4 04          add       sp, 4
-0x0000000000001124:  30 D2             xor       dl, dl
-0x0000000000001126:  E8 6F FF          call      R_InitPatches_
-0x0000000000001129:  88 D0             mov       al, dl
-0x000000000000112b:  30 E4             xor       ah, ah
-0x000000000000112d:  3B 06 9C 18       cmp       ax, word ptr ds:[_numflats]
-0x0000000000001131:  7D 0E             jge       0x1141
-0x0000000000001133:  BB 59 3C          mov       bx, 0x3c59
-0x0000000000001136:  8E C3             mov       es, bx
-0x0000000000001138:  89 C3             mov       bx, ax
-0x000000000000113a:  26 88 17          mov       byte ptr es:[bx], dl
-0x000000000000113d:  FE C2             inc       dl
-0x000000000000113f:  EB E8             jmp       0x1129
-0x0000000000001141:  0E                
-0x0000000000001142:  E8 4B F4          call      R_InitSpriteLumps_
-0x0000000000001145:  1E                push      ds
-0x0000000000001146:  68 12 14          push      0x1412
-0x0000000000001149:  0E                
-0x000000000000114a:  3E E8 92 17       call      DEBUG_PRINT_
-0x000000000000114e:  83 C4 04          add       sp, 4
-0x0000000000001151:  5A                pop       dx
-0x0000000000001152:  5B                pop       bx
-0x0000000000001153:  C3                ret       
+push      bx
+push      dx
+mov       ax, TEXTUREDEFS_OFFSET_SEGMENT
+mov       es, ax
+xor       bx, bx
+mov       word ptr es:[bx], bx
+call      R_InitTextures_
+call      R_InitTextures2_
+push      cs
+mov       ax, OFFSET str_double_dot
+push      ax
+call      DEBUG_PRINT_
+add       sp, 4
+xor       dl, dl
+call      R_InitPatches_
+loop_next_anim:
+mov       al, dl
+xor       ah, ah
+cmp       ax, word ptr ds:[_numflats]
+jge       done_with_anim_loop
+mov       bx, FLATTRANSLATION_SEGMENT
+mov       es, bx
+mov       bx, ax
+mov       byte ptr es:[bx], dl
+inc       dl
+jmp       loop_next_anim
+done_with_anim_loop:
+call      R_InitSpriteLumps_
+push      cs
+mov       ax, OFFSET str_single_dot
+push      ax
+
+call      DEBUG_PRINT_
+add       sp, 4
+pop       dx
+pop       bx
+ret       
 
 
 ENDP
 
-@
 
 
 
@@ -1344,30 +1346,33 @@ call      W_CacheLumpNumDirect_
        
 call      R_InitData_
 push      cs
-push      OFFSET str_double_dot
+mov       ax, OFFSET str_double_dot
+push      ax
 call      DEBUG_PRINT_
 
 mov       al, byte ptr ds:[_detailLevel]
-add       sp, 4
+
 cbw
 xchg      ax, dx
 mov       al, byte ptr ds:[_screenblocks]
 call      R_SetViewSize_
 push      cs
-push      OFFSET str_triple_dot
+mov       ax, OFFSET str_triple_dot
+push      ax
 call      DEBUG_PRINT_
-add       sp, 4
+
 
 call      Z_QuickMapPhysics_
 mov       dx, cs
 mov       ax, OFFSET str_f_sky1
 call      R_FlatNumForName_
 push      cs
-push      OFFSET str_single_dot
+mov       ax, OFFSET str_single_dot
+push      ax
 mov       byte ptr ds:[_skyflatnum], al
 
 call      DEBUG_PRINT_
-add       sp, 4  ; todo batch them
+add       sp, 12  ; three debug prints..
 pop       dx
 pop       cx
 pop       bx

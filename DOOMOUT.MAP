@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/06 17:59:46
+Created on:       25/09/06 18:08:20
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -27,8 +27,8 @@ Segment                Class          Group          Address         Size
 m_near_TEXT            CODE           AUTO           0000:0000       00000000
 d_init_TEXT            CODE           AUTO           0000:0000       00000a69
 ST_INIT_TEXT           CODE           AUTO           0000:0a6a       00000203
-r_init_TEXT            CODE           AUTO           0000:0c70       0000046f
-R_INITA_TEXT           CODE           AUTO           0000:10e0       00000450
+r_init_TEXT            CODE           AUTO           0000:0c70       00000420
+R_INITA_TEXT           CODE           AUTO           0000:1090       0000049c
 w_init_TEXT            CODE           AUTO           0000:1530       00000274
 I_INIT_TEXT            CODE           AUTO           0000:17a4       000001cf
 z_init_TEXT            CODE           AUTO           0000:1980       00000a6f
@@ -68,15 +68,15 @@ _NULL                  BEGDATA        DGROUP         0deb:0000       00000020
 _AFTERNULL             BEGDATA        DGROUP         0ded:0000       00000002
 _FIXEDDATA             DATA           DGROUP         0dee:0000       00000df2
 _DATA                  DATA           DGROUP         0ece:0000       000002d8
-CONST                  DATA           DGROUP         0efb:0008       000005b6
-CONST2                 DATA           DGROUP         0f56:000e       00000101
-XIB                    DATA           DGROUP         0f67:0000       00000000
-XI                     DATA           DGROUP         0f67:0000       0000000c
-XIE                    DATA           DGROUP         0f67:000c       00000000
-YIB                    DATA           DGROUP         0f67:000c       00000000
-YI                     DATA           DGROUP         0f67:000c       00000012
-YIE                    DATA           DGROUP         0f68:000e       00000000
-DATA                   DATA           DGROUP         0f68:000e       00000000
+CONST                  DATA           DGROUP         0efb:0008       000005b4
+CONST2                 DATA           DGROUP         0f56:000c       00000101
+XIB                    DATA           DGROUP         0f66:000e       00000000
+XI                     DATA           DGROUP         0f66:000e       0000000c
+XIE                    DATA           DGROUP         0f67:000a       00000000
+YIB                    DATA           DGROUP         0f67:000a       00000000
+YI                     DATA           DGROUP         0f67:000a       00000012
+YIE                    DATA           DGROUP         0f68:000c       00000000
+DATA                   DATA           DGROUP         0f68:000c       00000000
 _BSS                   BSS            DGROUP         0f69:0000       0000013e
 STACK                  STACK          DGROUP         0f7d:0000       00000a00
 
@@ -210,14 +210,13 @@ Module: st_init.obj(st_init.ASM)
 0000:0c6d*     ST_INIT_ENDMARKER_
 0000:0b0d      ST_Init_
 Module: r_init.obj(C:\REALDOOM\r_init.c)
-0000:0c70+     R_InitTextures_
-0000:0fd6+     R_InitTextures2_
-0000:1024+     R_InitPatches_
-0000:1090      R_InitData_
+0000:0c70      R_InitTextures_
+0000:0fd6      R_InitTextures2_
+0000:1024      R_InitPatches_
 Module: r_inita.obj(r_inita.ASM)
-0000:1125      R_InitSpriteLumps_
-0000:14d3      R_Init_
-0000:11f1      R_GenerateLookup_
+0000:10d5*     R_InitSpriteLumps_
+0000:14d2      R_Init_
+0000:11a1      R_GenerateLookup_
 Module: w_init.obj(C:\REALDOOM\w_init.c)
 0000:1530      W_AddFile_
 Module: i_init.obj(i_init.ASM)
@@ -762,7 +761,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(nfree.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(flush.c)
 0000:ce9c      __flush_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(istable.c)
-0deb:16be      __IsTable
+0deb:16bc      __IsTable
 Module: C:\WATCOM2\lib286\dos\clibm.lib(gfattdos.c)
 0000:cf90      _dos_getfileattr_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(dosret.c)
@@ -855,10 +854,10 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(error086.asm)
 0000:d978      __doserror_
 0000:d986*     __doserror1_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(sgdef086)
-0deb:17c0      __Start_XI
-0deb:17cc      __End_XI
-0deb:17cc      __Start_YI
-0deb:17de      __End_YI
+0deb:17be      __Start_XI
+0deb:17ca      __End_XI
+0deb:17ca      __Start_YI
+0deb:17dc      __End_YI
 Module: C:\WATCOM2\lib286\dos\clibm.lib(enterdb.c)
 0000:d992      __EnterWVIDEO_
 0deb:1104+     __WD_Present

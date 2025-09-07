@@ -504,7 +504,7 @@ void __near R_GenerateLookup(uint16_t texnum) {
 // Initializes the texture list
 //  with the textures from the world map.
 //
-void R_InitTextures(void) {
+void __near R_InitTextures(void) {
 	maptexture_t __far*       mtexture;
 	texture_t __far*          texture;
 	mappatch_t __far*         mpatch;
@@ -652,7 +652,7 @@ void R_InitTextures(void) {
 
 // openwatcom really struggles on the one huge function, causing memory bugs. i've lost a lot of time collectively there.
 // lets just split this into two.
-void R_InitTextures2(){
+void __near R_InitTextures2(){
 	int16_t i;
 
 	Z_QuickMapMaskedExtraData();
@@ -767,6 +767,8 @@ void __near R_InitPatches(){
 
 }
 
+/*
+
 void __near R_InitData(void) {
 	uint8_t         i;
 
@@ -804,7 +806,6 @@ void __near R_InitData(void) {
  
 }
 
-/*
 void __near R_Init(void) {
 	Z_QuickMapRender();
 	// load colormaps while this memory region active.
