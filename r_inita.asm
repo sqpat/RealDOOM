@@ -1282,45 +1282,41 @@ ENDP
 
 @
 
-PROC   R_InitData_ NEAR
+PROC   R_InitData_ NEAR  ; todo inline below...
 
 
-push      bx
-push      dx
+push      di
+
 mov       ax, TEXTUREDEFS_OFFSET_SEGMENT
 mov       es, ax
-xor       bx, bx
-mov       word ptr es:[bx], bx
+xor       di, di
+mov       word ptr es:[di], di
 call      R_InitTextures_
 call      R_InitTextures2_
 push      cs
 mov       ax, OFFSET str_double_dot
 push      ax
 call      DEBUG_PRINT_
-add       sp, 4
-xor       dl, dl
+
+mov       di, FLATTRANSLATION_SEGMENT
+mov       es, di
 call      R_InitPatches_
+xor       ax, ax
+mov       di, ax
 loop_next_anim:
-mov       al, dl
-xor       ah, ah
+stosb
+inc       ax
 cmp       ax, word ptr ds:[_numflats]
-jge       done_with_anim_loop
-mov       bx, FLATTRANSLATION_SEGMENT
-mov       es, bx
-mov       bx, ax
-mov       byte ptr es:[bx], dl
-inc       dl
-jmp       loop_next_anim
+jl        loop_next_anim
 done_with_anim_loop:
 call      R_InitSpriteLumps_
 push      cs
 mov       ax, OFFSET str_single_dot
 push      ax
-
 call      DEBUG_PRINT_
-add       sp, 4
-pop       dx
-pop       bx
+add       sp, 8 
+
+pop       di
 ret       
 
 
