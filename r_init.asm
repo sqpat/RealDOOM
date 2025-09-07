@@ -274,9 +274,6 @@ mov       bp, sp
 
 push      ax      ; bp - 2: texnum  ; todo selfmodify in two spots. then use bp as texwidth later?
 xchg      ax, bx  ; texnum
-mov       ax, MASKED_LOOKUP_SEGMENT
-mov       es, ax
-mov       byte ptr es:[bx], 0FFh  ; default state...   todo do this in a single big movsw earlier.
 shl       bx, 1   ; texnum x 2
 mov       ax, word ptr ds:[_currentlumpindex]
 mov       word ptr ds:[bx + _texturepatchlump_offset], ax
@@ -1255,22 +1252,6 @@ exit_loop_init_next_texture:
 push      ss 
 pop       ds  ; restore ds
 
-LEAVE_MACRO
-POPA_NO_AX_OR_BP_MACRO
-ret
-
-
-
-
-ENDP
-
-
-PROC   R_InitTextures2_ NEAR
-
-
-push      dx
-push      cx
-push      di
 
 call      Z_QuickMapMaskedExtraData_
 call      Z_QuickMapScratch_7000_
@@ -1291,12 +1272,29 @@ mov       di, ax
 
 rep       stosw
 
+; inlined old R_InitTextures2_
+
+mov       di, MASKED_LOOKUP_SEGMENT
+mov       es, di
+mov       di, ax  ; zero again
 mov       cx, dx  ; get _numtextures back
+
+dec       ax  ; ffh
+
+shr       cx, 1
+rep       stosw
+rcl       cx, 1
+rep       stosb
+
+inc       ax  ; zero
 
 
 mov       di, TEXTURETRANSLATION_SEGMENT
 mov       es, di
 mov       di, ax  ; zero again
+
+mov       cx, dx  ; get _numtextures back
+
 
 loop_next_texture:
 stosw
@@ -1314,19 +1312,59 @@ loop      loop_next_lookup
 
 
 call      Z_QuickMapRender_
-pop       di
-pop       dx
-pop       cx
+
+LEAVE_MACRO
+POPA_NO_AX_OR_BP_MACRO
 ret
+
+
+
 
 ENDP
 
 
 
-PROC   R_InitPatches_ NEAR
 
+
+
+
+
+
+
+
+PROC   R_Init_ NEAR
+PUBLIC R_Init_ 
 
 PUSHA_NO_AX_OR_BP_MACRO
+
+call      Z_QuickMapRender_
+mov       cx, COLORMAPS_SEGMENT
+mov       ax, COLORMAP_LUMP
+xor       bx, bx
+
+call      W_CacheLumpNumDirect_
+       
+;call      R_InitData_
+
+; inlined
+
+mov       ax, TEXTUREDEFS_OFFSET_SEGMENT
+mov       es, ax
+xor       di, di
+mov       word ptr es:[di], di
+call      R_InitTextures_
+
+push      cs
+mov       ax, OFFSET str_double_dot
+push      ax
+call      DEBUG_PRINT_
+
+mov       di, FLATTRANSLATION_SEGMENT
+mov       es, di
+;call      R_InitPatches_
+
+;inlined
+
 mov       si, SCRATCH_PAGE_SEGMENT_7000
 xor       di, di   ; counters
 
@@ -1366,31 +1404,7 @@ stosb
 cmp       di, word ptr ds:[_numpatches] ; todo probably selfmodifiable from outside the func
 jl        loop_next_patch_init
 exit_r_initpatches:
-POPA_NO_AX_OR_BP_MACRO
-ret       
 
-ENDP
-
-
-PROC   R_InitData_ NEAR  ; todo inline below...
-
-
-push      di
-
-mov       ax, TEXTUREDEFS_OFFSET_SEGMENT
-mov       es, ax
-xor       di, di
-mov       word ptr es:[di], di
-call      R_InitTextures_
-call      R_InitTextures2_
-push      cs
-mov       ax, OFFSET str_double_dot
-push      ax
-call      DEBUG_PRINT_
-
-mov       di, FLATTRANSLATION_SEGMENT
-mov       es, di
-call      R_InitPatches_
 xor       ax, ax
 mov       di, ax
 loop_next_anim:
@@ -1404,42 +1418,14 @@ push      cs
 mov       ax, OFFSET str_single_dot
 push      ax
 call      DEBUG_PRINT_
-add       sp, 8 
-
-pop       di
-ret       
 
 
-ENDP
-
-
-
-
-PROC   R_Init_ NEAR
-PUBLIC R_Init_ 
-
-
-push      bx
-push      cx
-push      dx
-
-call      Z_QuickMapRender_
-mov       cx, COLORMAPS_SEGMENT
-mov       ax, COLORMAP_LUMP
-xor       bx, bx
-
-call      W_CacheLumpNumDirect_
-       
-call      R_InitData_
 push      cs
 mov       ax, OFFSET str_double_dot
 push      ax
 call      DEBUG_PRINT_
 
-mov       al, byte ptr ds:[_detailLevel]
-
-cbw
-xchg      ax, dx
+mov       dl, byte ptr ds:[_detailLevel]
 mov       al, byte ptr ds:[_screenblocks]
 call      R_SetViewSize_
 push      cs
@@ -1458,10 +1444,9 @@ push      ax
 mov       byte ptr ds:[_skyflatnum], al
 
 call      DEBUG_PRINT_
-add       sp, 12  ; three debug prints..
-pop       dx
-pop       cx
-pop       bx
+add       sp, 20  ; five debug prints..
+
+POPA_NO_AX_OR_BP_MACRO
 ret     
 
 
