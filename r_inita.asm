@@ -1230,42 +1230,43 @@ PROC   R_InitPatches_ NEAR
 
 
 PUSHA_NO_AX_OR_BP_MACRO
-mov       di, SCRATCH_PAGE_SEGMENT_7000
-xor       si, si
-xor       dx, dx
+mov       si, SCRATCH_PAGE_SEGMENT_7000
+xor       di, di   ; counters
+
 loop_next_patch_init:
-mov       ax, word ptr ds:[_firstpatch]
-mov       cx, SCRATCH_PAGE_SEGMENT_7000
-add       ax, dx
+mov       ax, word ptr ds:[_firstpatch]  ; todo probably selfmodifiable from outside the func
+mov       cx, si
+add       ax, di
 xor       bx, bx
 
-call      W_CacheLumpNumDirect_
+
+; !!!!todo... can this be done by scanning wad data directly instead of loading every lump
+; actually probably not that slow though (?)
+
+call      W_CacheLumpNumDirect_ ;		W_CacheLumpNumDirect(patchindex, (byte __far*)wadpatch);
+
+
+mov       es, si  ; 7000
+les       ax, dword ptr es:[0 + PATCH_T.patch_width]      ; width
+; mov       dx, word ptr es:[0 + PATCH_T.patch_height]  ; height
+mov       dx, es  ; height
 mov       cx, PATCHWIDTHS_SEGMENT
-mov       es, di
-mov       bx, dx
-mov       al, byte ptr es:[si]
-mov       es, cx
-mov       byte ptr es:[bx], al
-mov       es, di
-mov       ax, word ptr es:[si + 2]
-mov       bx, ax
-xor       bh, ah
-mov       cx, 16
-and       bl, 0Fh
-sub       cx, bx
-mov       bx, cx
-xor       bh, ch
-and       bl, 0Fh
-add       ax, bx
-mov       bx, ax
-sar       bx, 4
-or        ax, bx
-mov       bx, PATCHHEIGHTS_SEGMENT
-mov       es, bx
-mov       bx, dx
-inc       dx
-mov       byte ptr es:[bx], al
-cmp       dx, word ptr ds:[_numpatches]
+mov       es, cx ; patchheights
+
+stosb
+dec       di
+
+xchg      ax, dx
+add       al, 0Fh
+and       al, 0F0h
+mov       ah, al
+SHIFT_MACRO SHR ah, 4
+or        al, ah        ; patchheight |= (patchheight >> 4);
+mov       cx, PATCHHEIGHTS_SEGMENT
+mov       es, cx ; patchheights
+stosb
+
+cmp       di, word ptr ds:[_numpatches] ; todo probably selfmodifiable from outside the func
 jl        loop_next_patch_init
 exit_r_initpatches:
 POPA_NO_AX_OR_BP_MACRO
