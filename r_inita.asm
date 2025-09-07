@@ -27,7 +27,6 @@ EXTRN Z_QuickMapUndoFlatCache_:FAR
 EXTRN Z_QuickMapRender_:FAR
 EXTRN W_CacheLumpNumDirect_:FAR
 EXTRN W_CacheLumpNameDirect_:FAR
-EXTRN R_InitPatches_:NEAR
 EXTRN R_InitTextures_:NEAR
 EXTRN R_InitTextures2_:NEAR
 EXTRN R_SetViewSize_:FAR
@@ -1224,63 +1223,56 @@ PROC   R_InitTextures2_ NEAR
 
 ENDP
 
+@
+
+
 PROC   R_InitPatches_ NEAR
 
 
-0x0000000000001098:  53                push      bx
-0x0000000000001099:  51                push      cx
-0x000000000000109a:  52                push      dx
-0x000000000000109b:  56                push      si
-0x000000000000109c:  57                push      di
-0x000000000000109d:  BF 00 70          mov       di, 07000h
-0x00000000000010a0:  31 F6             xor       si, si
-0x00000000000010a2:  31 D2             xor       dx, dx
-0x00000000000010a4:  83 3E 96 18 00    cmp       word ptr ds:[_numpatches], 0
-0x00000000000010a9:  7E 53             jle       0x10fe
-0x00000000000010ab:  BB 26 01          mov       bx, _firstpatch
-0x00000000000010ae:  8B 07             mov       ax, word ptr ds:[bx]
-0x00000000000010b0:  B9 00 70          mov       cx, 07000h
-0x00000000000010b3:  01 D0             add       ax, dx
-0x00000000000010b5:  31 DB             xor       bx, bx
-0x00000000000010b7:  0E                
-0x00000000000010b8:  3E E8 AA 9A       call      W_CacheLumpNumDirect_
-0x00000000000010bc:  B9 7E 93          mov       cx, 0x937e
-0x00000000000010bf:  8E C7             mov       es, di
-0x00000000000010c1:  89 D3             mov       bx, dx
-0x00000000000010c3:  26 8A 04          mov       al, byte ptr es:[si]
-0x00000000000010c6:  8E C1             mov       es, cx
-0x00000000000010c8:  26 88 07          mov       byte ptr es:[bx], al
-0x00000000000010cb:  8E C7             mov       es, di
-0x00000000000010cd:  26 8B 44 02       mov       ax, word ptr es:[si + 2]
-0x00000000000010d1:  89 C3             mov       bx, ax
-0x00000000000010d3:  30 E7             xor       bh, ah
-0x00000000000010d5:  B9 10 00          mov       cx, 0x10
-0x00000000000010d8:  80 E3 0F          and       bl, 0xf
-0x00000000000010db:  29 D9             sub       cx, bx
-0x00000000000010dd:  89 CB             mov       bx, cx
-0x00000000000010df:  30 EF             xor       bh, ch
-0x00000000000010e1:  80 E3 0F          and       bl, 0xf
-0x00000000000010e4:  01 D8             add       ax, bx
-0x00000000000010e6:  89 C3             mov       bx, ax
-0x00000000000010e8:  C1 FB 04          sar       bx, 4
-0x00000000000010eb:  09 D8             or        ax, bx
-0x00000000000010ed:  BB 9C 93          mov       bx, 0x939c
-0x00000000000010f0:  8E C3             mov       es, bx
-0x00000000000010f2:  89 D3             mov       bx, dx
-0x00000000000010f4:  42                inc       dx
-0x00000000000010f5:  26 88 07          mov       byte ptr es:[bx], al
-0x00000000000010f8:  3B 16 96 18       cmp       dx, word ptr ds:[_numpatches]
-0x00000000000010fc:  7C AD             jl        0x10ab
-0x00000000000010fe:  5F                pop       di
-0x00000000000010ff:  5E                pop       si
-0x0000000000001100:  5A                pop       dx
-0x0000000000001101:  59                pop       cx
-0x0000000000001102:  5B                pop       bx
-0x0000000000001103:  C3                ret       
+PUSHA_NO_AX_OR_BP_MACRO
+mov       di, SCRATCH_PAGE_SEGMENT_7000
+xor       si, si
+xor       dx, dx
+loop_next_patch_init:
+mov       ax, word ptr ds:[_firstpatch]
+mov       cx, SCRATCH_PAGE_SEGMENT_7000
+add       ax, dx
+xor       bx, bx
+
+call      W_CacheLumpNumDirect_
+mov       cx, PATCHWIDTHS_SEGMENT
+mov       es, di
+mov       bx, dx
+mov       al, byte ptr es:[si]
+mov       es, cx
+mov       byte ptr es:[bx], al
+mov       es, di
+mov       ax, word ptr es:[si + 2]
+mov       bx, ax
+xor       bh, ah
+mov       cx, 16
+and       bl, 0Fh
+sub       cx, bx
+mov       bx, cx
+xor       bh, ch
+and       bl, 0Fh
+add       ax, bx
+mov       bx, ax
+sar       bx, 4
+or        ax, bx
+mov       bx, PATCHHEIGHTS_SEGMENT
+mov       es, bx
+mov       bx, dx
+inc       dx
+mov       byte ptr es:[bx], al
+cmp       dx, word ptr ds:[_numpatches]
+jl        loop_next_patch_init
+exit_r_initpatches:
+POPA_NO_AX_OR_BP_MACRO
+ret       
 
 ENDP
 
-@
 
 PROC   R_InitData_ NEAR  ; todo inline below...
 

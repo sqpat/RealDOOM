@@ -734,7 +734,6 @@ void R_InitPatches() {
 
 
 }
-*/
 
 
 void __near R_InitPatches(){
@@ -767,7 +766,6 @@ void __near R_InitPatches(){
 
 }
 
-/*
 
 void __near R_InitData(void) {
 	uint8_t         i;
