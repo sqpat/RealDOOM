@@ -27,7 +27,8 @@ EXTRN Z_QuickMapUndoFlatCache_:FAR
 EXTRN Z_QuickMapRender_:FAR
 EXTRN W_CacheLumpNumDirect_:FAR
 EXTRN W_CacheLumpNameDirect_:FAR
-EXTRN R_InitTextures_:NEAR
+EXTRN W_CheckNumForNameFarString_:NEAR
+EXTRN copystr8_:NEAR
 EXTRN R_SetViewSize_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
 EXTRN Z_QuickMapMaskedExtraData_:FAR
@@ -831,357 +832,419 @@ ret
 
 ENDP
 
-COMMENT @
+; num int16_ts needed on stack
+MAX_PATCH_COUNT = 470
+
+str_patch_start:
+db "P_START", 0
+str_patch_end:
+db "P_END", 0
+
+str_flat_start:
+db "F_START", 0
+str_flat_end:
+db "F_END", 0
+
+str_sprite_start:
+db "S_START", 0
+str_sprite_end:
+db "S_END", 0
+
+
+str_pnames:
+db "PNAMES", 0
+
+
+str_texture1:
+db "TEXTURE1", 0
+str_texture2:
+db "TEXTURE2", 0
+str_leftbracket:
+db "[", 0
+str_rightbracket:
+db "         ]", 0
+str_single_space:
+db " ", 0
+
+str_single_backspace:
+db 0Bh, 0
+
+
+
+
+
+
+TEX_LOAD_ADDRESS_SEGMENT = 07000h
+TEX_LOAD_ADDRESS_2_SEGMENT = 07800h
 
 PROC   R_InitTextures_ NEAR
 
-0x0000000000000ce2:  53                push      bx
-0x0000000000000ce3:  51                push      cx
-0x0000000000000ce4:  52                push      dx
-0x0000000000000ce5:  56                push      si
-0x0000000000000ce6:  57                push      di
-0x0000000000000ce7:  55                push      bp
-0x0000000000000ce8:  89 E5             mov       bp, sp
-0x0000000000000cea:  81 EC D8 03       sub       sp, 03d8h
-0x0000000000000cee:  B8 17 14          mov       ax, 0x1417
-0x0000000000000cf1:  BB 26 01          mov       bx, _firstpatch
-0x0000000000000cf4:  0E                
-0x0000000000000cf5:  E8 4C 9D          call      W_GetNumForName_
-0x0000000000000cf8:  90                       
-0x0000000000000cf9:  40                inc       ax
-0x0000000000000cfa:  89 07             mov       word ptr ds:[bx], ax
-0x0000000000000cfc:  B8 1F 14          mov       ax, 0x141f
-0x0000000000000cff:  0E                
-0x0000000000000d00:  3E E8 40 9D       call      W_GetNumForName_
-0x0000000000000d04:  48                dec       ax
-0x0000000000000d05:  2B 07             sub       ax, word ptr ds:[bx]
-0x0000000000000d07:  40                inc       ax
-0x0000000000000d08:  A3 96 18          mov       word ptr ds:[_numpatches], ax
-0x0000000000000d0b:  B8 25 14          mov       ax, 0x1425
-0x0000000000000d0e:  BB 6E 01          mov       bx, 0x16e
-0x0000000000000d11:  0E                
-0x0000000000000d12:  3E E8 2E 9D       call      W_GetNumForName_
-0x0000000000000d16:  40                inc       ax
-0x0000000000000d17:  89 07             mov       word ptr ds:[bx], ax
-0x0000000000000d19:  B8 2D 14          mov       ax, 0x142d
-0x0000000000000d1c:  0E                
-0x0000000000000d1d:  E8 24 9D          call      W_GetNumForName_
-0x0000000000000d20:  90                       
-0x0000000000000d21:  48                dec       ax
-0x0000000000000d22:  2B 07             sub       ax, word ptr ds:[bx]
-0x0000000000000d24:  40                inc       ax
-0x0000000000000d25:  A3 9C 18          mov       word ptr ds:[_numflats], ax
-0x0000000000000d28:  B8 33 14          mov       ax, 0x1433
-0x0000000000000d2b:  BB E6 00          mov       bx, 0xe6
-0x0000000000000d2e:  0E                
-0x0000000000000d2f:  E8 12 9D          call      W_GetNumForName_
-0x0000000000000d32:  90                       
-0x0000000000000d33:  40                inc       ax
-0x0000000000000d34:  89 07             mov       word ptr ds:[bx], ax
-0x0000000000000d36:  B8 3B 14          mov       ax, 0x143b
-0x0000000000000d39:  0E                
-0x0000000000000d3a:  3E E8 06 9D       call      W_GetNumForName_
-0x0000000000000d3e:  48                dec       ax
-0x0000000000000d3f:  2B 07             sub       ax, word ptr ds:[bx]
-0x0000000000000d41:  B9 00 70          mov       cx, 07000h
-0x0000000000000d44:  40                inc       ax
-0x0000000000000d45:  31 DB             xor       bx, bx
-0x0000000000000d47:  A3 9A 18          mov       word ptr ds:[_numspritelumps], ax
-0x0000000000000d4a:  B8 41 14          mov       ax, 0x1441
-0x0000000000000d4d:  C6 46 DC 00       mov       byte ptr [bp - 024h], 0
-0x0000000000000d51:  0E                
-0x0000000000000d52:  3E E8 F0 9D       call      W_CacheLumpNameDirect_
-0x0000000000000d56:  B8 00 70          mov       ax, 07000h
-0x0000000000000d59:  31 DB             xor       bx, bx
-0x0000000000000d5b:  8E C0             mov       es, ax
-0x0000000000000d5d:  C7 46 EA 00 70    mov       word ptr [bp - 016h], 07000h
-0x0000000000000d62:  26 8B 07          mov       ax, word ptr es:[bx]
-0x0000000000000d65:  89 5E E8          mov       word ptr [bp - 018h], bx
-0x0000000000000d68:  89 46 E2          mov       word ptr [bp - 01eh], ax
-0x0000000000000d6b:  85 C0             test      ax, ax
-0x0000000000000d6d:  7E 30             jle       0xd9f
-0x0000000000000d6f:  BE 04 00          mov       si, 4
-0x0000000000000d72:  8C 46 E0          mov       word ptr [bp - 020h], es
-0x0000000000000d75:  31 FF             xor       di, di
-0x0000000000000d77:  8B 4E E0          mov       cx, word ptr [bp - 020h]
-0x0000000000000d7a:  8D 46 D4          lea       ax, [bp - 02ch]
-0x0000000000000d7d:  89 F3             mov       bx, si
-0x0000000000000d7f:  8C DA             mov       dx, ds
-0x0000000000000d81:  E8 FA 59          call      copystr8_
-0x0000000000000d84:  83 C7 02          add       di, 2
-0x0000000000000d87:  8D 46 D4          lea       ax, [bp - 02ch]
-0x0000000000000d8a:  FF 46 E8          inc       word ptr [bp - 018h]
-0x0000000000000d8d:  E8 10 9E          call      W_CheckNumForName_
-0x0000000000000d90:  89 83 26 FC       mov       word ptr [bp + di - 0x3da], ax
-0x0000000000000d94:  8B 46 E8          mov       ax, word ptr [bp - 018h]
-0x0000000000000d97:  83 C6 08          add       si, 8
-0x0000000000000d9a:  3B 46 E2          cmp       ax, word ptr [bp - 01eh]
-0x0000000000000d9d:  7C D8             jl        0xd77
-0x0000000000000d9f:  B9 00 70          mov       cx, 07000h
-0x0000000000000da2:  B8 48 14          mov       ax, 0x1448
-0x0000000000000da5:  31 DB             xor       bx, bx
-0x0000000000000da7:  0E                
-0x0000000000000da8:  3E E8 9A 9D       call      W_CacheLumpNameDirect_
-0x0000000000000dac:  B8 00 70          mov       ax, 07000h
-0x0000000000000daf:  31 DB             xor       bx, bx
-0x0000000000000db1:  8E C0             mov       es, ax
-0x0000000000000db3:  26 8B 07          mov       ax, word ptr es:[bx]
-0x0000000000000db6:  C7 46 DE 04 00    mov       word ptr [bp - 022h], 4
-0x0000000000000dbb:  89 46 E4          mov       word ptr [bp - 01ch], ax
-0x0000000000000dbe:  A3 98 18          mov       word ptr ds:[_numtextures], ax
-0x0000000000000dc1:  B8 51 14          mov       ax, 0x1451
-0x0000000000000dc4:  8C 46 E6          mov       word ptr [bp - 01ah], es
-0x0000000000000dc7:  E8 D6 9D          call      W_CheckNumForName_
-0x0000000000000dca:  3D FF FF          cmp       ax, -1
-0x0000000000000dcd:  74 19             je        0xde8
-0x0000000000000dcf:  B9 00 78          mov       cx, 0x7800
-0x0000000000000dd2:  B8 51 14          mov       ax, 0x1451
-0x0000000000000dd5:  0E                
-0x0000000000000dd6:  3E E8 6C 9D       call      W_CacheLumpNameDirect_
-0x0000000000000dda:  B8 00 78          mov       ax, 0x7800
-0x0000000000000ddd:  31 DB             xor       bx, bx
-0x0000000000000ddf:  8E C0             mov       es, ax
-0x0000000000000de1:  26 8B 07          mov       ax, word ptr es:[bx]
-0x0000000000000de4:  01 06 98 18       add       word ptr ds:[_numtextures], ax
-0x0000000000000de8:  B8 3B 14          mov       ax, 0x143b
-0x0000000000000deb:  0E                
-0x0000000000000dec:  3E E8 54 9C       call      W_GetNumForName_
-0x0000000000000df0:  89 C2             mov       dx, ax
-0x0000000000000df2:  89 D7             mov       di, dx
-0x0000000000000df4:  B8 33 14          mov       ax, 0x1433
-0x0000000000000df7:  4F                dec       di
-0x0000000000000df8:  0E                
-0x0000000000000df9:  E8 48 9C          call      W_GetNumForName_
-0x0000000000000dfc:  90                       
-0x0000000000000dfd:  29 C7             sub       di, ax
-0x0000000000000dff:  8D 45 3F          lea       ax, [di + 03Fh]
-0x0000000000000e02:  99                cwd       
-0x0000000000000e03:  C1 E2 06          shl       dx, 6
-0x0000000000000e06:  1B C2             sbb       ax, dx
-0x0000000000000e08:  C1 F8 06          sar       ax, 6
-0x0000000000000e0b:  89 C7             mov       di, ax
-0x0000000000000e0d:  A1 98 18          mov       ax, word ptr ds:[_numtextures]
-0x0000000000000e10:  05 3F 00          add       ax, 0x3f
-0x0000000000000e13:  99                cwd       
-0x0000000000000e14:  C1 E2 06          shl       dx, 6
-0x0000000000000e17:  1B C2             sbb       ax, dx
-0x0000000000000e19:  C1 F8 06          sar       ax, 6
-0x0000000000000e1c:  1E                push      ds
-0x0000000000000e1d:  31 F6             xor       si, si
-0x0000000000000e1f:  68 5A 14          push      0x145a
-0x0000000000000e22:  01 C7             add       di, ax
-0x0000000000000e24:  0E                
-0x0000000000000e25:  E8 B8 1A          call      DEBUG_PRINT_
-0x0000000000000e28:  90                       
-0x0000000000000e29:  83 C4 04          add       sp, 4
-0x0000000000000e2c:  85 FF             test      di, di
-0x0000000000000e2e:  7E 11             jle       0xe41
-0x0000000000000e30:  1E                push      ds
-0x0000000000000e31:  68 5C 14          push      0x145c
-0x0000000000000e34:  46                inc       si
-0x0000000000000e35:  0E                
-0x0000000000000e36:  3E E8 A6 1A       call      DEBUG_PRINT_
-0x0000000000000e3a:  83 C4 04          add       sp, 4
-0x0000000000000e3d:  39 FE             cmp       si, di
-0x0000000000000e3f:  7C EF             jl        0xe30
-0x0000000000000e41:  1E                push      ds
-0x0000000000000e42:  68 5E 14          push      0x145e
-0x0000000000000e45:  31 D2             xor       dx, dx
-0x0000000000000e47:  0E                
-0x0000000000000e48:  3E E8 94 1A       call      DEBUG_PRINT_
-0x0000000000000e4c:  83 C4 04          add       sp, 4
-0x0000000000000e4f:  85 FF             test      di, di
-0x0000000000000e51:  7E 11             jle       0xe64
-0x0000000000000e53:  1E                push      ds
-0x0000000000000e54:  68 69 14          push      0x1469
-0x0000000000000e57:  42                inc       dx
-0x0000000000000e58:  0E                
-0x0000000000000e59:  E8 84 1A          call      DEBUG_PRINT_
-0x0000000000000e5c:  90                       
-0x0000000000000e5d:  83 C4 04          add       sp, 4
-0x0000000000000e60:  39 FA             cmp       dx, di
-0x0000000000000e62:  7C EF             jl        0xe53
-0x0000000000000e64:  1E                push      ds
-0x0000000000000e65:  68 6B 14          push      0x146b
-0x0000000000000e68:  C7 46 F0 00 00    mov       word ptr [bp - 010h], 0
-0x0000000000000e6d:  0E                
-0x0000000000000e6e:  3E E8 6E 1A       call      DEBUG_PRINT_
-0x0000000000000e72:  83 C4 04          add       sp, 4
-0x0000000000000e75:  83 3E 98 18 00    cmp       word ptr ds:[_numtextures], 0
-0x0000000000000e7a:  7F 03             jg        0xe7f
-0x0000000000000e7c:  E9 C2 01          jmp       0x1041
-0x0000000000000e7f:  C7 46 EC 02 00    mov       word ptr [bp - 014h], 2
-0x0000000000000e84:  C7 46 EE 00 00    mov       word ptr [bp - 012h], 0
-0x0000000000000e89:  F6 46 F0 3F       test      byte ptr [bp - 010h], 0x3f
-0x0000000000000e8d:  75 03             jne       0xe92
-0x0000000000000e8f:  E9 D8 00          jmp       0xf6a
-0x0000000000000e92:  8B 46 F0          mov       ax, word ptr [bp - 010h]
-0x0000000000000e95:  3B 46 E4          cmp       ax, word ptr [bp - 01ch]
-0x0000000000000e98:  75 0F             jne       0xea9
-0x0000000000000e9a:  C7 46 EA 00 78    mov       word ptr [bp - 016h], 0x7800
-0x0000000000000e9f:  C7 46 DE 04 00    mov       word ptr [bp - 022h], 4
-0x0000000000000ea4:  C7 46 E6 00 78    mov       word ptr [bp - 01ah], 0x7800
-0x0000000000000ea9:  8E 46 E6          mov       es, word ptr [bp - 01ah]
-0x0000000000000eac:  8B 46 F0          mov       ax, word ptr [bp - 010h]
-0x0000000000000eaf:  8B 76 DE          mov       si, word ptr [bp - 022h]
-0x0000000000000eb2:  40                inc       ax
-0x0000000000000eb3:  26 8B 34          mov       si, word ptr es:[si]
-0x0000000000000eb6:  8E 46 EA          mov       es, word ptr [bp - 016h]
-0x0000000000000eb9:  89 F3             mov       bx, si
-0x0000000000000ebb:  8C C2             mov       dx, es
-0x0000000000000ebd:  3B 06 98 18       cmp       ax, word ptr ds:[_numtextures]
-0x0000000000000ec1:  7D 03             jge       0xec6
-0x0000000000000ec3:  E9 B3 00          jmp       0xf79
-0x0000000000000ec6:  B8 2D 93          mov       ax, TEXTUREDEFS_OFFSET_SEGMENT
-0x0000000000000ec9:  8B 76 EE          mov       si, word ptr [bp - 012h]
-0x0000000000000ecc:  8E C0             mov       es, ax
-0x0000000000000ece:  26 8B 34          mov       si, word ptr es:[si]
-0x0000000000000ed1:  8E C2             mov       es, dx
-0x0000000000000ed3:  C7 46 F6 B2 90    mov       word ptr [bp - 0xa], TEXTUREDEFS_BYTES_SEGMENT
-0x0000000000000ed8:  26 8A 47 0C       mov       al, byte ptr es:[bx + 0Ch]
-0x0000000000000edc:  8E 46 F6          mov       es, word ptr [bp - 0xa]
-0x0000000000000edf:  FE C8             dec       al
-0x0000000000000ee1:  26 88 44 08       mov       byte ptr es:[si + 8], al
-0x0000000000000ee5:  8E C2             mov       es, dx
-0x0000000000000ee7:  26 8A 47 0E       mov       al, byte ptr es:[bx + 0Eh]
-0x0000000000000eeb:  8E 46 F6          mov       es, word ptr [bp - 0xa]
-0x0000000000000eee:  FE C8             dec       al
-0x0000000000000ef0:  26 88 44 09       mov       byte ptr es:[si + 9], al
-0x0000000000000ef4:  8E C2             mov       es, dx
-0x0000000000000ef6:  26 8A 47 14       mov       al, byte ptr es:[bx + 014h]
-0x0000000000000efa:  8E 46 F6          mov       es, word ptr [bp - 0xa]
-0x0000000000000efd:  C7 46 FC B2 90    mov       word ptr [bp - 4], TEXTUREDEFS_BYTES_SEGMENT
-0x0000000000000f02:  26 88 44 0A       mov       byte ptr es:[si + 0Ah], al
-0x0000000000000f06:  C7 46 F8 B2 90    mov       word ptr [bp - 8], TEXTUREDEFS_BYTES_SEGMENT
-0x0000000000000f0b:  26 8A 44 08       mov       al, byte ptr es:[si + 8]
-0x0000000000000f0f:  89 D1             mov       cx, dx
-0x0000000000000f11:  30 E4             xor       ah, ah
-0x0000000000000f13:  89 76 F4          mov       word ptr [bp - 0xc], si
-0x0000000000000f16:  40                inc       ax
-0x0000000000000f17:  8B 7E F4          mov       di, word ptr [bp - 0xc]
-0x0000000000000f1a:  89 46 F2          mov       word ptr [bp - 0xe], ax
-0x0000000000000f1d:  26 8A 44 09       mov       al, byte ptr es:[si + 9]
-0x0000000000000f21:  8E 46 FC          mov       es, word ptr [bp - 4]
-0x0000000000000f24:  88 46 FE          mov       byte ptr [bp - 2], al
-0x0000000000000f27:  89 DE             mov       si, bx
-0x0000000000000f29:  B8 08 00          mov       ax, 8
-0x0000000000000f2c:  C7 46 FA 00 00    mov       word ptr [bp - 6], 0
-0x0000000000000f31:  1E                push      ds
-0x0000000000000f32:  57                push      di
-0x0000000000000f33:  91                xchg      ax, cx
-0x0000000000000f34:  8E D8             mov       ds, ax
-0x0000000000000f36:  D1 E9             shr       cx, 1
-0x0000000000000f38:  F3 A5             rep movsw word ptr es:[di], word ptr ds:[si]
-0x0000000000000f3a:  13 C9             adc       cx, cx
-0x0000000000000f3c:  F3 A4             rep movsb byte ptr es:[di], byte ptr ds:[si]
-0x0000000000000f3e:  5F                pop       di
-0x0000000000000f3f:  1F                pop       ds
-0x0000000000000f40:  83 C3 16          add       bx, 0x16
-0x0000000000000f43:  89 D1             mov       cx, dx
-0x0000000000000f45:  8D 75 0B          lea       si, [di + 0Bh]
-0x0000000000000f48:  C4 7E F4          les       di, ptr [bp - 0xc]
-0x0000000000000f4b:  26 8A 45 0A       mov       al, byte ptr es:[di + 0Ah]
-0x0000000000000f4f:  30 E4             xor       ah, ah
-0x0000000000000f51:  3B 46 FA          cmp       ax, word ptr [bp - 6]
-0x0000000000000f54:  7F 42             jg        0xf98
-0x0000000000000f56:  C7 46 FA 01 00    mov       word ptr [bp - 6], 1
-0x0000000000000f5b:  8B 46 FA          mov       ax, word ptr [bp - 6]
-0x0000000000000f5e:  01 C0             add       ax, ax
-0x0000000000000f60:  3B 46 F2          cmp       ax, word ptr [bp - 0xe]
-0x0000000000000f63:  7F 79             jg        0xfde
-0x0000000000000f65:  89 46 FA          mov       word ptr [bp - 6], ax
-0x0000000000000f68:  EB F1             jmp       0xf5b
-0x0000000000000f6a:  1E                push      ds
-0x0000000000000f6b:  68 12 14          push      0x1412
-0x0000000000000f6e:  0E                
-0x0000000000000f6f:  E8 6E 19          call      DEBUG_PRINT_
-0x0000000000000f72:  90                       
-0x0000000000000f73:  83 C4 04          add       sp, 4
-0x0000000000000f76:  E9 19 FF          jmp       0xe92
-0x0000000000000f79:  26 8B 44 14       mov       ax, word ptr es:[si + 014h]
-0x0000000000000f7d:  B9 2D 93          mov       cx, TEXTUREDEFS_OFFSET_SEGMENT
-0x0000000000000f80:  48                dec       ax
-0x0000000000000f81:  8B 76 EE          mov       si, word ptr [bp - 012h]
-0x0000000000000f84:  C1 E0 02          shl       ax, 2
-0x0000000000000f87:  8E C1             mov       es, cx
-0x0000000000000f89:  05 0F 00          add       ax, 0xf
-0x0000000000000f8c:  26 03 04          add       ax, word ptr es:[si]
-0x0000000000000f8f:  8B 76 EC          mov       si, word ptr [bp - 014h]
-0x0000000000000f92:  26 89 04          mov       word ptr es:[si], ax
-0x0000000000000f95:  E9 2E FF          jmp       0xec6
-0x0000000000000f98:  8E C1             mov       es, cx
-0x0000000000000f9a:  26 8B 07          mov       ax, word ptr es:[bx]
-0x0000000000000f9d:  99                cwd       
-0x0000000000000f9e:  33 C2             xor       ax, dx
-0x0000000000000fa0:  2B C2             sub       ax, dx
-0x0000000000000fa2:  8E 46 F8          mov       es, word ptr [bp - 8]
-0x0000000000000fa5:  26 88 04          mov       byte ptr es:[si], al
-0x0000000000000fa8:  8E C1             mov       es, cx
-0x0000000000000faa:  26 8A 47 02       mov       al, byte ptr es:[bx + 2]
-0x0000000000000fae:  8E 46 F8          mov       es, word ptr [bp - 8]
-0x0000000000000fb1:  26 88 44 01       mov       byte ptr es:[si + 1], al
-0x0000000000000fb5:  8E C1             mov       es, cx
-0x0000000000000fb7:  26 8B 7F 04       mov       di, word ptr es:[bx + 4]
-0x0000000000000fbb:  01 FF             add       di, di
-0x0000000000000fbd:  26 83 3F 00       cmp       word ptr es:[bx], 0
-0x0000000000000fc1:  7C 1D             jl        0xfe0
-0x0000000000000fc3:  31 D2             xor       dx, dx
-0x0000000000000fc5:  FF 46 FA          inc       word ptr [bp - 6]
-0x0000000000000fc8:  83 C6 04          add       si, 4
-0x0000000000000fcb:  8B 83 28 FC       mov       ax, word ptr [bp + di - 0x3d8]
-0x0000000000000fcf:  8E 46 F8          mov       es, word ptr [bp - 8]
-0x0000000000000fd2:  01 D0             add       ax, dx
-0x0000000000000fd4:  83 C3 0A          add       bx, 0xa
-0x0000000000000fd7:  26 89 44 FE       mov       word ptr es:[si - 2], ax
-0x0000000000000fdb:  E9 6A FF          jmp       0xf48
-0x0000000000000fde:  EB 05             jmp       0xfe5
-0x0000000000000fe0:  BA 00 80          mov       dx, 0x8000
-0x0000000000000fe3:  EB E0             jmp       0xfc5
-0x0000000000000fe5:  8A 46 FA          mov       al, byte ptr [bp - 6]
-0x0000000000000fe8:  BA A2 82          mov       dx, 0x82a2
-0x0000000000000feb:  8B 5E F0          mov       bx, word ptr [bp - 010h]
-0x0000000000000fee:  8E C2             mov       es, dx
-0x0000000000000ff0:  FE C8             dec       al
-0x0000000000000ff2:  26 88 07          mov       byte ptr es:[bx], al
-0x0000000000000ff5:  B8 99 3C          mov       ax, 0x3c99
-0x0000000000000ff8:  8E C0             mov       es, ax
-0x0000000000000ffa:  8A 46 FE          mov       al, byte ptr [bp - 2]
-0x0000000000000ffd:  26 88 07          mov       byte ptr es:[bx], al
-0x0000000000001000:  30 E4             xor       ah, ah
-0x0000000000001002:  40                inc       ax
-0x0000000000001003:  89 C2             mov       dx, ax
-0x0000000000001005:  30 E6             xor       dh, ah
-0x0000000000001007:  BB 10 00          mov       bx, 0x10
-0x000000000000100a:  80 E2 0F          and       dl, 0xf
-0x000000000000100d:  29 D3             sub       bx, dx
-0x000000000000100f:  89 DA             mov       dx, bx
-0x0000000000001011:  83 46 EC 02       add       word ptr [bp - 014h], 2
-0x0000000000001015:  30 FE             xor       dh, bh
-0x0000000000001017:  83 46 EE 02       add       word ptr [bp - 012h], 2
-0x000000000000101b:  80 E2 0F          and       dl, 0xf
-0x000000000000101e:  8B 5E F0          mov       bx, word ptr [bp - 010h]
-0x0000000000001021:  01 D0             add       ax, dx
-0x0000000000001023:  BA 30 4F          mov       dx, 0x4f30
-0x0000000000001026:  C1 F8 04          sar       ax, 4
-0x0000000000001029:  8E C2             mov       es, dx
-0x000000000000102b:  FF 46 F0          inc       word ptr [bp - 010h]
-0x000000000000102e:  26 88 07          mov       byte ptr es:[bx], al
-0x0000000000001031:  8B 46 F0          mov       ax, word ptr [bp - 010h]
-0x0000000000001034:  83 46 DE 04       add       word ptr [bp - 022h], 4
-0x0000000000001038:  3B 06 98 18       cmp       ax, word ptr ds:[_numtextures]
-0x000000000000103c:  7D 03             jge       0x1041
-0x000000000000103e:  E9 48 FE          jmp       0xe89
-0x0000000000001041:  C9                LEAVE_MACRO     
-0x0000000000001042:  5F                pop       di
-0x0000000000001043:  5E                pop       si
-0x0000000000001044:  5A                pop       dx
-0x0000000000001045:  59                pop       cx
-0x0000000000001046:  5B                pop       bx
-0x0000000000001047:  CB                ret      
+PUSHA_NO_AX_OR_BP_MACRO
+
+push      bp
+mov       bp, sp
+sub       sp, 10 + (2 * MAX_PATCH_COUNT);  03B6h
+mov       ax, OFFSET str_patch_start
+mov       dx, cs
+call      W_CheckNumForNameFarString_
+inc       ax
+mov       word ptr ds:[_firstpatch], ax
+xchg      ax, cx
+mov       ax, OFFSET str_patch_end
+mov       dx, cs
+call      W_CheckNumForNameFarString_
+sub       ax, cx
+mov       word ptr ds:[_numpatches], ax
+
+mov       ax, OFFSET str_flat_start
+mov       dx, cs
+call      W_CheckNumForNameFarString_
+inc       ax
+mov       word ptr ds:[_firstflat], ax
+
+xchg      ax, cx
+
+mov       ax, OFFSET str_flat_end
+mov       dx, cs
+call      W_CheckNumForNameFarString_
+sub       ax, cx
+mov       word ptr ds:[_numflats], ax
+
+mov       ax, OFFSET str_sprite_start
+mov       dx, cs
+call      W_CheckNumForNameFarString_
+
+inc       ax
+mov       word ptr ds:[_firstspritelump], ax
+xchg      ax, cx
+
+mov       ax, OFFSET str_sprite_end
+mov       dx, cs
+call      W_CheckNumForNameFarString_
+
+sub       ax, cx
+mov       word ptr ds:[_numspritelumps], ax
+
+mov       word ptr cs:[SELFMODIFY_set_tempt_to_numsprites+1], ax
+
+
+mov       ax, OFFSET str_pnames
+
+; todo name[9] 
+
+mov       di, SCRATCH_PAGE_SEGMENT_7000
+mov       cx, di
+xor       bx, bx
+
+call      W_CacheLumpNameDirect_  ; W_CacheLumpNameDirect("PNAMES", (byte __far*)TEX_LOAD_ADDRESS);
+
+
+push      dx ; store temp. TODO do this earlier...
+
+mov       es, di  ; 7000
+xor       bx, bx
+mov       byte ptr [bp - 2], bl   ; name[9] = 0;
+
+
+mov       di, word ptr es:[bx]
+mov       word ptr cs:[SELFMODIFY_pnames_loop_value+2], di
+
+mov       di, bx ; 0 
+mov       si, 4 ; name_p
+
+;	temp = (*((int32_t  __far*)TEX_LOAD_ADDRESS));
+;	name_p = (int8_t __far*)(TEX_LOAD_ADDRESS + 4);
+;	for (i = 0; i < temp; i++) {
+;		copystr8(name, name_p + (i << 3 ));
+;		patchlookup[i] = W_CheckNumForName(name);
+;	}
+
+
+loop_next_patchlookup:
+
+
+mov       dx, ss
+lea       ax, [bp - 0Ah]  
+mov       bx, si
+mov       cx, SCRATCH_PAGE_SEGMENT_7000
+call      copystr8_
+
+mov       dx, ss
+lea       ax, [bp - 0Ah]  ; todo whatever
+call      W_CheckNumForNameFarString_
+
+sal       di, 1
+mov       word ptr ds:[bp - 03B6h + di], ax  ;		patchlookup[i] = W_CheckNumForName(name);
+sar       di, 1
+
+
+add       si, 8
+inc       di
+SELFMODIFY_pnames_loop_value:
+cmp       di, 01000h
+jl        loop_next_patchlookup
+
+
+
+mov       ax, OFFSET str_texture1
+mov       di, SCRATCH_PAGE_SEGMENT_7000
+mov       cx, di
+xor       bx, bx
+
+call      W_CacheLumpNameDirect_  ; W_CacheLumpNameDirect("TEXTURE1", (byte __far*)TEX_LOAD_ADDRESS);
+
+mov       es, di
+xor       bx, bx
+mov       ax, word ptr es:[bx]  ; numtextures = numtextures1 = * ((int16_t __far*)TEX_LOAD_ADDRESS);
+mov       word ptr cs:[SELFMODIFY_numtextures1 + 2], ax
+mov       word ptr ds:[_numtextures], ax
+
+
+
+
+mov       dx, cs
+mov       ax, OFFSET str_texture2
+call      W_CheckNumForNameFarString_
+test      ax, ax 
+js        no_texture2_patch         ; 	if (W_CheckNumForName("TEXTURE2") != -1) {
+
+;		W_CacheLumpNameDirect("TEXTURE2", (byte __far*)TEX_LOAD_ADDRESS_2);
+;		numtextures +=  * ((int16_t __far*)TEX_LOAD_ADDRESS_2);
+
+mov       ax, OFFSET str_texture2
+mov       cx, TEX_LOAD_ADDRESS_2_SEGMENT
+xor       bx, bx
+call      W_CacheLumpNameDirect_  ; W_CacheLumpNameDirect("TEXTURE2", (byte __far*)TEX_LOAD_ADDRESS);
+
+mov       ax, TEX_LOAD_ADDRESS_2_SEGMENT
+mov       es, ax
+xor       bx, bx
+mov       ax, word ptr es:[bx]  
+add       word ptr ds:[_numtextures], ax ; numtextures +=  * ((int16_t __far*)TEX_LOAD_ADDRESS_2);
+
+no_texture2_patch:
+
+
+;	DEBUG_PRINT("[");
+;	for (i = 0; i < temp; i++) {
+;		DEBUG_PRINT(" ");
+;	}
+;	DEBUG_PRINT("         ]");
+;	for (i = 0; i < temp; i++) {
+;		DEBUG_PRINT("\x8");
+;	}
+;	DEBUG_PRINT("\x8\x8\x8\x8\x8\x8\x8\x8\x8\x8");
+
+SELFMODIFY_set_tempt_to_numsprites:
+mov       ax, 01000h            ;	temp = (W_GetNumForName("S_END") - 1) - W_GetNumForName("S_START");
+add       ax, 63
+SHIFT_MACRO shr ax 6
+mov       cx, word ptr ds:[_numtextures]
+mov       word ptr cs:[SELFMODIFY_compare_numtextures + 2], cx
+add       cx, 63
+SHIFT_MACRO shr cx 6
+add       cx, ax                ; temp = ((temp + 63) / 64) + ((numtextures + 63) / 64);
+
+mov       dx, cs
+mov       ax, OFFSET str_leftbracket
+call      DEBUG_PRINT_
+add       sp, 4
+
+mov       bx, cx
+
+loop_print_space:
+mov       dx, cs
+mov       ax, OFFSET str_single_space
+call      DEBUG_PRINT_
+add       sp, 4
+loop      loop_print_space
+
+mov       dx, cs
+mov       ax, OFFSET str_rightbracket
+call      DEBUG_PRINT_
+add       sp, 4
+
+lea       cx, [bx + 10]  ; ten extra backspaces..
+
+
+loop_print_backspace:
+mov       dx, cs
+mov       ax, OFFSET str_single_backspace
+call      DEBUG_PRINT_
+add       sp, 4
+loop      loop_print_backspace
+
+mov       bx, 4    ; "directory"/texture location
+xor       di, di   ; i
+
+
+mov       ax, TEX_LOAD_ADDRESS_SEGMENT
+mov       ds, ax
+
+; ds will be texaddress segment...
+
+
+; MAIN inittextures loop!
+; MAIN inittextures loop!
+; MAIN inittextures loop!
+
+
+loop_init_next_texture:
+test      di, 63
+jne       done_printing_dot_2
+print_another_dot:
+mov       dx, cs
+mov       ax, OFFSET str_single_dot
+push      ds  ; store ds
+push      ss
+pop       ds
+call      DEBUG_PRINT_
+pop       ds  ; recover ds
+add       sp, 4
+done_printing_dot_2:
+
+SELFMODIFY_numtextures1:
+cmp       di, 0FFFFh
+jne       done_resetting_tex_vars
+
+mov       bx, 4
+mov       ax, TEX_LOAD_ADDRESS_2_SEGMENT
+mov       es, ax
+
+done_resetting_tex_vars:
+
+
+
+mov       si, word ptr ds:[bx]           ; mtexture = (maptexture_t  __far*)MK_FP(maptexsegment, *directory);
+; ds:si is maptex
+
+lea       ax, [di + 1]
+cmp       ax, word ptr ss:[_numtextures]  ;	if ((i + 1) < numtextures) {
+jnl       skip_setting_texdefoffset
+;	// texturedefs sizes are variable and dependent on texture size/texture patch count.
+;	texturedefs_offset[i + 1] = texturedefs_offset[i] + (sizeof(texture_t) + sizeof(texpatch_t)*((mtexture->patchcount) - 1));
+; TODO THIS
+skip_setting_texdefoffset:
+
+push    bx          ; [STACK D] bx
+push    di          ; [STACK C] di
+mov     bx, di 
+sal     bx, 1
+
+mov     ax, TEXTUREDEFS_BYTES_SEGMENT
+mov     es, ax
+mov     di, word ptr es:[bx + TEXTUREDEFS_OFFSET_SEGMENT]  ; texturedefs_offset[i]
+mov     di, word ptr es:[di]                               ; texturedefs_bytes[texturedefs_offset[i]])
+
+; ds:si is maptex
+; es:di is tex
+
+movsw
+movsw
+movsw
+movsw ; name[8]     ; FAR_memcpy(texture->name, mtexture->name, sizeof(texture->name));
+add     si, 4
+lodsw   ; width     ;		texture->width = (mtexture->width) - 1;
+push    ax          ;       [STACK B] texturewidth = texture->width + 1;
+dec     ax
+stosb
+lodsw   ; height
+dec     ax
+push    ax          ;       [STACK A] textureheightval = texture->height; 
+stosb               ;		texture->height = (mtexture->height) - 1;
+add     si, 4
+lodsw               ;		texture->patchcount = (mtexture->patchcount);
+stosb
+
+
+
+; cx = textureheightval
+; bx = texturewidth
+; ax = patchcount
+
+xchg    ax, cx
+; cx gets patchcount
+
+
+loop_next_patch:
+
+lodsw
+test    ax, ax
+cwd     ; dx = 0 
+jns     dont_make_pos
+neg     ax
+dont_make_pos:
+and     dx, 08000h  ; dx is 08000h or 0...
+stosb       ; patch->originx = abs(mpatch->originx);
+lodsw
+stosb       ; patch->originy = (mpatch->originy);
+lodsw
+xchg    ax, si
+mov     si, word ptr ss:[bp - 03B6h + si]
+xchg    ax, si 
+add     ax, dx          ; (mpatch->originx < 0 ? 0x8000 : 0)
+stosw                   ; patch->patch = patchlookup[(mpatch->patch)] + (mpatch->originx < 0 ? 0x8000 : 0);
+add    si, 4            ; skip a couple unused int16_t fields..
+loop loop_next_patch
+
+pop       dx            ; [STACK A] textureheightval
+pop       cx            ; [STACK B] texturewidth
+pop       di            ; [STACK C] di
+pop       bx            ; [STACK D] bx
+
+mov       ax, 1
+shift_width_again:
+cmp       ax, cx ; texturewidth  ; todo alternatively shift until cx 0?
+jge       done_shifting_width
+sal       ax, 1
+jmp       shift_width_again
+done_shifting_width:
+dec       ax   
+
+
+push      es    ; [STACK A] es
+mov       cx, TEXTUREWIDTHMASKS_SEGMENT
+mov       es, cx
+stosb                   ; texturewidthmasks[i] = j - 1;
+dec       di            ; undo stosb
+
+mov       cx, TEXTUREHEIGHTS_SEGMENT
+mov       es, cx
+xchg      ax, dx
+stosb
+dec       di
+
+mov       cx, TEXTURECOLLENGTH_SEGMENT
+mov       es, cx
+inc       ax
+add       al, 15
+and       al, 0F0h
+SHIFT_MACRO  sar al, 4
+stosb
+
+pop       es   ; [STACK A] es
+
+
+add       bx, 4
+; di incremented by last stosb...
+SELFMODIFY_compare_numtextures:
+cmp       di, 01000h
+jge       exit_loop_init_next_texture
+jmp       loop_init_next_texture
+exit_loop_init_next_texture:
+
+push      ss 
+pop       ds  ; restore ds
+
+LEAVE_MACRO
+POPA_NO_AX_OR_BP_MACRO
+ret
+
+
+
 
 ENDP
 
-@
 
 PROC   R_InitTextures2_ NEAR
 

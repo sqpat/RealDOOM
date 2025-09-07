@@ -492,7 +492,6 @@ void __near R_GenerateLookup(uint16_t texnum) {
 
 }
 
-*/
 
 #define TEX_LOAD_ADDRESS (byte __far*) (0x70000000)
 #define TEX_LOAD_ADDRESS_SEGMENT (segment_t) ((uint32_t)TEX_LOAD_ADDRESS >> 16)
@@ -649,7 +648,6 @@ void __near R_InitTextures(void) {
 
 
 }
-/*
 
 // openwatcom really struggles on the one huge function, causing memory bugs. i've lost a lot of time collectively there.
 // lets just split this into two.
