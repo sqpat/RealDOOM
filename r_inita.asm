@@ -220,8 +220,8 @@ push      ax      ; bp - 2: texnum  ; todo selfmodify in two spots. then use bp 
 xchg      ax, bx  ; texnum
 mov       ax, MASKED_LOOKUP_SEGMENT
 mov       es, ax
+mov       byte ptr es:[bx], 0FFh  ; default state...   todo do this in a single big movsw earlier.
 sal       bx, 1   ; texnum x 2
-mov       word ptr es:[bx], 0FFFFh  ; default state...   todo do this in a single big movsw earlier.
 mov       ax, word ptr ds:[_currentlumpindex]
 mov       word ptr ds:[bx + _texturepatchlump_offset], ax
 
@@ -568,8 +568,6 @@ mov       cx, word ptr [bp - 6]         ; texturewidth
 
 
 ; note: dx and si and bx all free again?
-mov       si, word ptr [bp - 2]  ; texnum
-sal       si, 1
 test      al, al
 jz        skip_masked_stuff
 
@@ -581,17 +579,20 @@ jz        skip_masked_stuff
 push      ds    ; store SCRATCH_PAGE_SEGMENT_7000 for ds later  [MATCH F]
 push      ss
 pop       ds    ; ds back to normal
-mov       di, word ptr ds:[_maskedcount]  
 
 mov       ax, MASKEDPOSTDATA_SEGMENT
 mov       es, ax
-mov       word ptr es:[si + MASKED_LOOKUP_OFFSET], di ;		masked_lookup[texnum] = maskedcount;	// index to lookup of struct...
+push      ax  ; store MASKEDPOSTDATA_SEGMENT [MATCH D]
+mov       di, word ptr [bp - 2]  ; texnum
+mov       al, byte ptr ds:[_maskedcount]  
+cbw
+mov       byte ptr es:[di + MASKED_LOOKUP_OFFSET], al ;		masked_lookup[texnum] = maskedcount;	// index to lookup of struct...
+xchg      ax, di
 
 SHIFT_MACRO  sal di 3
 push      ds
 pop       es  ; get normal data segment for stosw
 
-push      ax  ; store MASKEDPOSTDATA_SEGMENT [MATCH D]
 
 add       di, _masked_headers
 mov       ax, word ptr ds:[_currentpixeloffset]                     ; currentpixeloffset 
