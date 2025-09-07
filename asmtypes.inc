@@ -863,6 +863,23 @@ TEXTURE_T STRUC
     texture_patches              TEXPATCH_T ? ; 0Bh  ; ? should have padding maybe?
 TEXTURE_T ENDS
 
+MAPPATCH_T STRUC
+    mappatch_originx           dw ? ; 0
+    mappatch_originy           dw ? ; 2
+    mappatch_patch             dw ? ; 4
+    mappatch_stepdir           dw ? ; 6
+    mappatch_colormap          dw ? ; 8
+MAPPATCH_T ENDS
 
+
+MAPTEXTURE_T STRUC
+    maptexture_name              db 8  DUP(?) ; 0
+    maptexture_unusedA           db 4  DUP(?) ; 8
+    maptexture_width             dw ? ; A
+    maptexture_height            dw ? ; C
+    maptexture_unusedB           db 4  DUP(?) ; E
+    maptexture_patchcount        dw ? ; 12
+    ; maptexture_t_patches       MAPPATCH_T ? 
+MAPTEXTURE_T ENDS
 
 

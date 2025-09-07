@@ -26,7 +26,7 @@ EXTRN Z_QuickMapScratch_5000_:FAR
 EXTRN Z_QuickMapUndoFlatCache_:FAR
 EXTRN Z_QuickMapRender_:FAR
 EXTRN W_CacheLumpNumDirect_:FAR
-EXTRN W_CacheLumpNameDirect_:FAR
+EXTRN W_CacheLumpNameDirectFarString_:FAR
 EXTRN W_CheckNumForNameFarString_:NEAR
 EXTRN copystr8_:NEAR
 EXTRN R_SetViewSize_:FAR
@@ -66,6 +66,44 @@ str_single_dot:
 db '.', 0
 str_f_sky1:
 db 'F_SKY1', 0
+
+
+; num int16_ts needed on stack
+MAX_PATCH_COUNT = 470
+
+str_patch_start:
+db "P_START", 0
+str_patch_end:
+db "P_END", 0
+
+str_flat_start:
+db "F_START", 0
+str_flat_end:
+db "F_END", 0
+
+str_sprite_start:
+db "S_START", 0
+str_sprite_end:
+db "S_END", 0
+
+
+str_pnames:
+db "PNAMES", 0
+str_texture1:
+db "TEXTURE1", 0
+str_texture2:
+db "TEXTURE2", 0
+str_leftbracket:
+db "[", 0
+str_rightbracket:
+db "         ]", 0
+str_single_space:
+db " ", 0
+str_single_backspace:
+db 08h, 0
+
+
+
 
 COLORMAP_LUMP = 1
 
@@ -225,7 +263,7 @@ MASKEDPOSTDATAOFS_OFFSET = (MASKEDPOSTDATAOFS_SEGMENT - MASKEDPOSTDATA_SEGMENT) 
 MASKEDPIXELDATAOFS_OFFSET = (MASKEDPIXELDATAOFS_SEGMENT - MASKEDPOSTDATA_SEGMENT) SHL 4
 MASKED_LOOKUP_OFFSET = (MASKED_LOOKUP_SEGMENT - MASKEDPOSTDATA_SEGMENT) SHL 4
 
-TEXTUREDEFS_OFFSET_SEGMENT = (TEXTUREDEFS_OFFSET_SEGMENT - TEXTUREDEFS_BYTES_SEGMENT) SHL 4
+TEXTUREDEFS_OFFSET_OFFSET = (TEXTUREDEFS_OFFSET_SEGMENT - TEXTUREDEFS_BYTES_SEGMENT) SHL 4
 
 PROC    R_GenerateLookup_ NEAR
 PUBLIC  R_GenerateLookup_ 
@@ -253,7 +291,7 @@ mov       word ptr ds:[bx + _texturepatchlump_offset], ax
 
 mov       dx, TEXTUREDEFS_BYTES_SEGMENT   
 mov       es, dx
-mov       bx, word ptr es:[bx + TEXTUREDEFS_OFFSET_SEGMENT] ; texturedefs_offset[texnum]
+mov       bx, word ptr es:[bx + TEXTUREDEFS_OFFSET_OFFSET] ; texturedefs_offset[texnum]
 
 
 ;	textureheight = texture->height + 1;
@@ -832,45 +870,6 @@ ret
 
 ENDP
 
-; num int16_ts needed on stack
-MAX_PATCH_COUNT = 470
-
-str_patch_start:
-db "P_START", 0
-str_patch_end:
-db "P_END", 0
-
-str_flat_start:
-db "F_START", 0
-str_flat_end:
-db "F_END", 0
-
-str_sprite_start:
-db "S_START", 0
-str_sprite_end:
-db "S_END", 0
-
-
-str_pnames:
-db "PNAMES", 0
-
-
-str_texture1:
-db "TEXTURE1", 0
-str_texture2:
-db "TEXTURE2", 0
-str_leftbracket:
-db "[", 0
-str_rightbracket:
-db "         ]", 0
-str_single_space:
-db " ", 0
-
-str_single_backspace:
-db 0Bh, 0
-
-
-
 
 
 
@@ -878,6 +877,7 @@ TEX_LOAD_ADDRESS_SEGMENT = 07000h
 TEX_LOAD_ADDRESS_2_SEGMENT = 07800h
 
 PROC   R_InitTextures_ NEAR
+PUBLIC R_InitTextures_ 
 
 PUSHA_NO_AX_OR_BP_MACRO
 
@@ -925,21 +925,18 @@ call      W_CheckNumForNameFarString_
 sub       ax, cx
 mov       word ptr ds:[_numspritelumps], ax
 
-mov       word ptr cs:[SELFMODIFY_set_tempt_to_numsprites+1], ax
+mov       word ptr cs:[SELFMODIFY_set_temp_to_numsprites+1], ax
 
 
 mov       ax, OFFSET str_pnames
 
-; todo name[9] 
-
-mov       di, SCRATCH_PAGE_SEGMENT_7000
+mov       di, TEX_LOAD_ADDRESS_SEGMENT
 mov       cx, di
 xor       bx, bx
+mov       dx, cs
+call      W_CacheLumpNameDirectFarString_  ; W_CacheLumpNameDirect("PNAMES", (byte __far*)TEX_LOAD_ADDRESS);
 
-call      W_CacheLumpNameDirect_  ; W_CacheLumpNameDirect("PNAMES", (byte __far*)TEX_LOAD_ADDRESS);
 
-
-push      dx ; store temp. TODO do this earlier...
 
 mov       es, di  ; 7000
 xor       bx, bx
@@ -960,6 +957,8 @@ mov       si, 4 ; name_p
 ;	}
 
 
+;alternatively movsw x4 instead of copystr8_?
+; this is actually a pretty slow loop. could be improved... how?
 loop_next_patchlookup:
 
 
@@ -974,7 +973,7 @@ lea       ax, [bp - 0Ah]  ; todo whatever
 call      W_CheckNumForNameFarString_
 
 sal       di, 1
-mov       word ptr ds:[bp - 03B6h + di], ax  ;		patchlookup[i] = W_CheckNumForName(name);
+mov       word ptr ds:[bp - 03B6h + di], ax         ; patchlookup[i] = W_CheckNumForName(name);
 sar       di, 1
 
 
@@ -982,16 +981,15 @@ add       si, 8
 inc       di
 SELFMODIFY_pnames_loop_value:
 cmp       di, 01000h
-jl        loop_next_patchlookup
-
+jl        loop_next_patchlookup  
 
 
 mov       ax, OFFSET str_texture1
 mov       di, SCRATCH_PAGE_SEGMENT_7000
 mov       cx, di
 xor       bx, bx
-
-call      W_CacheLumpNameDirect_  ; W_CacheLumpNameDirect("TEXTURE1", (byte __far*)TEX_LOAD_ADDRESS);
+mov       dx, cs
+call      W_CacheLumpNameDirectFarString_           ; W_CacheLumpNameDirect("TEXTURE1", (byte __far*)TEX_LOAD_ADDRESS);
 
 mov       es, di
 xor       bx, bx
@@ -1006,7 +1004,7 @@ mov       dx, cs
 mov       ax, OFFSET str_texture2
 call      W_CheckNumForNameFarString_
 test      ax, ax 
-js        no_texture2_patch         ; 	if (W_CheckNumForName("TEXTURE2") != -1) {
+js        no_texture2_patch                          ; if (W_CheckNumForName("TEXTURE2") != -1) {
 
 ;		W_CacheLumpNameDirect("TEXTURE2", (byte __far*)TEX_LOAD_ADDRESS_2);
 ;		numtextures +=  * ((int16_t __far*)TEX_LOAD_ADDRESS_2);
@@ -1014,7 +1012,8 @@ js        no_texture2_patch         ; 	if (W_CheckNumForName("TEXTURE2") != -1) 
 mov       ax, OFFSET str_texture2
 mov       cx, TEX_LOAD_ADDRESS_2_SEGMENT
 xor       bx, bx
-call      W_CacheLumpNameDirect_  ; W_CacheLumpNameDirect("TEXTURE2", (byte __far*)TEX_LOAD_ADDRESS);
+mov       dx, cs
+call      W_CacheLumpNameDirectFarString_  ; W_CacheLumpNameDirect("TEXTURE2", (byte __far*)TEX_LOAD_ADDRESS);
 
 mov       ax, TEX_LOAD_ADDRESS_2_SEGMENT
 mov       es, ax
@@ -1035,7 +1034,7 @@ no_texture2_patch:
 ;	}
 ;	DEBUG_PRINT("\x8\x8\x8\x8\x8\x8\x8\x8\x8\x8");
 
-SELFMODIFY_set_tempt_to_numsprites:
+SELFMODIFY_set_temp_to_numsprites:
 mov       ax, 01000h            ;	temp = (W_GetNumForName("S_END") - 1) - W_GetNumForName("S_START");
 add       ax, 63
 SHIFT_MACRO shr ax 6
@@ -1045,36 +1044,42 @@ add       cx, 63
 SHIFT_MACRO shr cx 6
 add       cx, ax                ; temp = ((temp + 63) / 64) + ((numtextures + 63) / 64);
 
-mov       dx, cs
+
+push      cs
 mov       ax, OFFSET str_leftbracket
+push      ax
 call      DEBUG_PRINT_
 add       sp, 4
 
 mov       bx, cx
 
 loop_print_space:
-mov       dx, cs
+push      cs
 mov       ax, OFFSET str_single_space
+push      ax
 call      DEBUG_PRINT_
+push      ax
 add       sp, 4
+
 loop      loop_print_space
 
-mov       dx, cs
+push      cs
 mov       ax, OFFSET str_rightbracket
+push      ax
 call      DEBUG_PRINT_
 add       sp, 4
 
 lea       cx, [bx + 10]  ; ten extra backspaces..
 
-
 loop_print_backspace:
-mov       dx, cs
+push      cs
 mov       ax, OFFSET str_single_backspace
+push      ax
 call      DEBUG_PRINT_
 add       sp, 4
 loop      loop_print_backspace
 
-mov       bx, 4    ; "directory"/texture location
+mov       bx, 4    ; "directory"/texture location  ; todo use si and lodsw pairs for smaller code...
 xor       di, di   ; i
 
 
@@ -1082,7 +1087,7 @@ mov       ax, TEX_LOAD_ADDRESS_SEGMENT
 mov       ds, ax
 
 ; ds will be texaddress segment...
-
+; es will mostly be tex1 or tex2 segment todo test doom2 with that.
 
 ; MAIN inittextures loop!
 ; MAIN inittextures loop!
@@ -1093,18 +1098,21 @@ loop_init_next_texture:
 test      di, 63
 jne       done_printing_dot_2
 print_another_dot:
-mov       dx, cs
-mov       ax, OFFSET str_single_dot
+
 push      ds  ; store ds
 push      ss
 pop       ds
+
+push      cs
+mov       ax, OFFSET str_single_dot
+push      ax
 call      DEBUG_PRINT_
-pop       ds  ; recover ds
 add       sp, 4
+pop       ds  ; recover ds
 done_printing_dot_2:
 
 SELFMODIFY_numtextures1:
-cmp       di, 0FFFFh
+cmp       di, 0EEEEh
 jne       done_resetting_tex_vars
 
 mov       bx, 4
@@ -1118,23 +1126,39 @@ done_resetting_tex_vars:
 mov       si, word ptr ds:[bx]           ; mtexture = (maptexture_t  __far*)MK_FP(maptexsegment, *directory);
 ; ds:si is maptex
 
-lea       ax, [di + 1]
-cmp       ax, word ptr ss:[_numtextures]  ;	if ((i + 1) < numtextures) {
-jnl       skip_setting_texdefoffset
-;	// texturedefs sizes are variable and dependent on texture size/texture patch count.
-;	texturedefs_offset[i + 1] = texturedefs_offset[i] + (sizeof(texture_t) + sizeof(texpatch_t)*((mtexture->patchcount) - 1));
-; TODO THIS
-skip_setting_texdefoffset:
-
 push    bx          ; [STACK D] bx
 push    di          ; [STACK C] di
+mov     ax, TEXTUREDEFS_BYTES_SEGMENT
+mov     es, ax
 mov     bx, di 
 sal     bx, 1
 
-mov     ax, TEXTUREDEFS_BYTES_SEGMENT
-mov     es, ax
-mov     di, word ptr es:[bx + TEXTUREDEFS_OFFSET_SEGMENT]  ; texturedefs_offset[i]
-mov     di, word ptr es:[di]                               ; texturedefs_bytes[texturedefs_offset[i]])
+
+lea       ax, [di + 1]
+cmp       di, word ptr ss:[_numtextures]  ;	if ((i + 1) < numtextures) {
+mov       di, word ptr es:[bx + TEXTUREDEFS_OFFSET_OFFSET]  ; texturedefs_offset[i]
+
+jg        skip_setting_texdefoffset  
+
+;	// texturedefs sizes are variable and dependent on texture size/texture patch count.
+;	texturedefs_offset[i + 1] = texturedefs_offset[i] + (sizeof(texture_t) + sizeof(texpatch_t)*((mtexture->patchcount) - 1));
+; todo selfmodify this ahead to the other di check (?)
+
+inc       bx
+inc       bx ; bx + 1 word index
+
+
+mov       al, byte ptr ds:[si + MAPTEXTURE_T.maptexture_patchcount]
+mov       ah, SIZE TEXPATCH_T
+mul       ah
+
+add       ax, di
+add       ax, SIZE TEXTURE_T   ; todo double check 
+mov       word ptr es:[bx + TEXTUREDEFS_OFFSET_OFFSET + 2], ax  ; texturedefs_offset[i + 1],
+
+
+
+skip_setting_texdefoffset:
 
 ; ds:si is maptex
 ; es:di is tex
@@ -1143,7 +1167,7 @@ movsw
 movsw
 movsw
 movsw ; name[8]     ; FAR_memcpy(texture->name, mtexture->name, sizeof(texture->name));
-add     si, 4
+add     si, 4       ;           skip padding
 lodsw   ; width     ;		texture->width = (mtexture->width) - 1;
 push    ax          ;       [STACK B] texturewidth = texture->width + 1;
 dec     ax
@@ -1152,15 +1176,12 @@ lodsw   ; height
 dec     ax
 push    ax          ;       [STACK A] textureheightval = texture->height; 
 stosb               ;		texture->height = (mtexture->height) - 1;
-add     si, 4
+add     si, 4       ;           skip padding
 lodsw               ;		texture->patchcount = (mtexture->patchcount);
 stosb
 
 
 
-; cx = textureheightval
-; bx = texturewidth
-; ax = patchcount
 
 xchg    ax, cx
 ; cx gets patchcount
@@ -1170,7 +1191,7 @@ loop_next_patch:
 
 lodsw
 test    ax, ax
-cwd     ; dx = 0 
+cwd     ; dx = 0 or FFFF
 jns     dont_make_pos
 neg     ax
 dont_make_pos:
@@ -1194,15 +1215,16 @@ pop       bx            ; [STACK D] bx
 
 mov       ax, 1
 shift_width_again:
-cmp       ax, cx ; texturewidth  ; todo alternatively shift until cx 0?
-jge       done_shifting_width
 sal       ax, 1
-jmp       shift_width_again
+cmp       ax, cx ; texturewidth  ; todo alternatively shift until cx 0?
+jle       shift_width_again
 done_shifting_width:
+sar       ax, 1 ; undo one
 dec       ax   
 
 
 push      es    ; [STACK A] es
+
 mov       cx, TEXTUREWIDTHMASKS_SEGMENT
 mov       es, cx
 stosb                   ; texturewidthmasks[i] = j - 1;
