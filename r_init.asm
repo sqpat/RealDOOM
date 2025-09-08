@@ -65,7 +65,7 @@ db '.'
 str_single_dot:
 db '.', 0
 str_f_sky1:
-db 'F_SKY1', 0
+db "F_SKY1", 0
 
 
 ; num int16_ts needed on stack
@@ -1420,8 +1420,10 @@ stosb
 inc       ax
 cmp       ax, word ptr ds:[_numflats]
 jl        loop_next_anim
+
 done_with_anim_loop:
 call      R_InitSpriteLumps_
+
 push      cs
 mov       ax, OFFSET str_single_dot
 push      ax
@@ -1446,10 +1448,11 @@ call      Z_QuickMapPhysics_
 mov       dx, cs
 mov       ax, OFFSET str_f_sky1
 call      R_FlatNumForName_
+mov       byte ptr ds:[_skyflatnum], al
+
 push      cs
 mov       ax, OFFSET str_single_dot
 push      ax
-mov       byte ptr ds:[_skyflatnum], al
 
 call      DEBUG_PRINT_
 add       sp, 20  ; five debug prints..

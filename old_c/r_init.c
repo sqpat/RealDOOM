@@ -42,7 +42,7 @@
 
 
 
-uint8_t __near R_FlatNumForName(int8_t* __far name);
+uint8_t __near R_FlatNumForName(int8_t __far* name);
 
 void __near R_InitSpriteLumps(void);
 

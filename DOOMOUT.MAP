@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/07 01:15:16
+Created on:       25/09/07 01:51:04
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -53,8 +53,8 @@ g_setup_TEXT           CODE           AUTO           0000:6e40       000002d8
 r_setup_TEXT           CODE           AUTO           0000:7120       0000046c
 ST_SETUP_TEXT          CODE           AUTO           0000:758c       00000125
 HU_SETUP_TEXT          CODE           AUTO           0000:76b2       00000246
-p_setup_TEXT           CODE           AUTO           0000:7900       000011dc
-S_SOUND_TEXT           CODE           AUTO           0000:8adc       0000049b
+p_setup_TEXT           CODE           AUTO           0000:7900       000011e4
+S_SOUND_TEXT           CODE           AUTO           0000:8ae4       0000049b
 s_sbsfx_TEXT           CODE           AUTO           0000:8f80       000017fd
 R_MAIN_TEXT            CODE           AUTO           0000:a77e       000003db
 w_wad_TEXT             CODE           AUTO           0000:ab60       0000026e
@@ -498,34 +498,34 @@ Module: p_setup.obj(C:\REALDOOM\p_setup.c)
 0000:7bd2+     P_LoadSegs_
 0000:7da4+     P_LoadSubsectors_
 0000:7e2c+     P_LoadSectors_
-0000:7f9c+     P_LoadNodes_
-0000:8080+     P_LoadThings_
-0000:8184+     P_LoadLineDefs_
-0000:83dc+     P_LoadSideDefs_
-0000:8546+     P_LoadBlockMap_
-0000:85ac+     P_GroupLines_
-0000:87d6      P_InitThinkers_
-0000:8802+     Z_FreeConventionalAllocations_
-0000:8ac0*     PSetupEndFunc_
+0000:7fa4+     P_LoadNodes_
+0000:8088+     P_LoadThings_
+0000:818c+     P_LoadLineDefs_
+0000:83e4+     P_LoadSideDefs_
+0000:854e+     P_LoadBlockMap_
+0000:85b4+     P_GroupLines_
+0000:87de      P_InitThinkers_
+0000:880a+     Z_FreeConventionalAllocations_
+0000:8ac8*     PSetupEndFunc_
 Module: s_sound.obj(s_sound.ASM)
-0000:8eeb      S_Start_
-0000:8c87*     S_StopSound_
-0000:8ae4      S_StartMusic_
-0000:8e3e      S_StartSound_
-0000:8adc      S_ChangeMusic_
-0000:8aed*     S_StopChannel_
-0000:8cd1*     S_getChannel_
-0000:8f4b      CopyString13_physics_seg_
-0000:8b8f*     S_AdjustSoundParamsVol_
-0000:8f77*     S_SOUND_ENDMARKER_
-0000:8ccc      S_StopSoundMobjRef_
-0000:8b29*     S_AdjustSoundParamsSep_
-0000:8e4b      S_StartSoundWithSecnum_
-0000:8d48*     S_StartSoundWithPosition_
-0000:8e58      S_UpdateSounds_
-0000:8adc*     S_SOUND_STARTMARKER_
-0000:8c37      S_PauseSound_
-0000:8c60      S_ResumeSound_
+0000:8ef3      S_Start_
+0000:8c8f*     S_StopSound_
+0000:8aec      S_StartMusic_
+0000:8e46      S_StartSound_
+0000:8ae4      S_ChangeMusic_
+0000:8af5*     S_StopChannel_
+0000:8cd9*     S_getChannel_
+0000:8f53      CopyString13_physics_seg_
+0000:8b97*     S_AdjustSoundParamsVol_
+0000:8f7f*     S_SOUND_ENDMARKER_
+0000:8cd4      S_StopSoundMobjRef_
+0000:8b31*     S_AdjustSoundParamsSep_
+0000:8e53      S_StartSoundWithSecnum_
+0000:8d50*     S_StartSoundWithPosition_
+0000:8e60      S_UpdateSounds_
+0000:8ae4*     S_SOUND_STARTMARKER_
+0000:8c3f      S_PauseSound_
+0000:8c68      S_ResumeSound_
 Module: s_sbsfx.obj(C:\REALDOOM\s_sbsfx.c)
 0dd7:1860+     _sfxcache_nodes
 0dd7:1880*     _sfx_page_multipage_count
@@ -908,4 +908,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  00010030 (65584.)
 Entry point address: 0000:c2fe
-Link time: 00:00.19
+Link time: 00:00.74
