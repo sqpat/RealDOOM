@@ -21,13 +21,11 @@ INSTRUCTION_SET_MACRO
 
 EXTRN DEBUG_PRINT_:FAR
 EXTRN I_Error_:FAR
-;todo inline quickmaps?
 EXTRN Z_QuickMapScratch_5000_:FAR
 EXTRN Z_QuickMapRender_:FAR
 EXTRN W_CacheLumpNumDirect_:FAR
 EXTRN W_CacheLumpNameDirectFarString_:FAR
 EXTRN W_CheckNumForNameFarString_:NEAR
-EXTRN copystr8_:NEAR
 EXTRN R_SetViewSize_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
 EXTRN Z_QuickMapMaskedExtraData_:FAR
@@ -116,8 +114,7 @@ PUSHA_NO_AX_MACRO
 ;	textureheight = texture->height + 1;
 ;	usedtextureheight = textureheight + ((16 - (textureheight &0xF) ) & 0xF);
 
-; todo use ds and lodsw?
-; todo use same segment for these
+
 
 
 
@@ -155,7 +152,7 @@ mov       dl, byte ptr es:[bx + TEXTURE_T.texture_patchcount]  ; texturepatchcou
 ;		*((uint16_t __far *) MK_FP(SCRATCH_PAGE_SEGMENT_7000, eraseoffset)) = 0;
 ;	}
     
-; todo maskednum = -1 up here?
+
 
 mov       si, SCRATCH_PAGE_SEGMENT_7000
 mov       es, si
@@ -246,7 +243,7 @@ skip_patch_load:
 
 cwd       ; zero dx.... ah is known zero
 
-; todo this
+
 SELFMODIFY_subtract_firstpatch:
 sub       di, word ptr ss:[_firstpatch]
 shl       di, 1
@@ -520,7 +517,7 @@ pop       ds  ; SCRATCH_PAGE_SEGMENT_7000 [MATCH F]
 lea       di, [si + MASKEDPOSTDATAOFS_OFFSET] 
 mov       si, 0FA00h        ; maskedtexpostdataofs = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFA00);
 rep       movsw
-; todo self modify right above?
+
 sub       di, MASKEDPOSTDATAOFS_OFFSET
 mov     word ptr cs:[SELFMODIFY_set_currentpostoffset+1], di
 
@@ -532,7 +529,7 @@ lodsw
 SHIFT_MACRO shr ax 4
 stosw
 loop      write_next_pixel_data
-; todo self modify right above?
+
 sub       di, MASKEDPIXELDATAOFS_OFFSET
 
 mov       word ptr cs:[SELFMODIFY_set_currentpixeloffset+1], di ; has been advanced the right amount
@@ -701,7 +698,7 @@ mov     word ptr cs:[SELFMODIFY_set_currentlumpindex+1] ,di
 
 exit_r_generate_composite:
 
-; todo clean up accurately...
+
 
 POPA_NO_AX_MACRO
 ret
@@ -723,12 +720,13 @@ PUSHA_NO_AX_OR_BP_MACRO
 
 push      bp
 mov       bp, sp
-sub       sp, 10 + (2 * MAX_PATCH_COUNT);  03B6h
+sub       sp, 10 + (2 * MAX_PATCH_COUNT);  03ACh
 mov       ax, OFFSET str_patch_start
 mov       dx, cs
 call      W_CheckNumForNameFarString_
 inc       ax
 mov       word ptr ds:[_firstpatch], ax
+mov       word ptr cs:[SELFMODIFY_set_firstpatch + 1], ax
 xchg      ax, cx
 mov       ax, OFFSET str_patch_end
 mov       dx, cs
@@ -782,11 +780,10 @@ call      W_CacheLumpNameDirectFarString_  ; W_CacheLumpNameDirect("PNAMES", (by
 
 mov       es, di  ; 7000
 xor       bx, bx
-mov       byte ptr [bp - 2], bl   ; name[9] = 0;
 
 
-mov       di, word ptr es:[bx]
-mov       word ptr cs:[SELFMODIFY_pnames_loop_value+2], di
+mov       cx, word ptr es:[bx]  ; loop counter
+
 
 mov       di, bx ; 0 
 mov       si, 4 ; name_p
@@ -801,29 +798,25 @@ mov       si, 4 ; name_p
 
 ;alternatively movsw x4 instead of copystr8_?
 ; this is actually a pretty slow loop. could be improved... how?
+
+
+mov       bx, SCRATCH_PAGE_SEGMENT_7000
+lea       di, [bp - 03ACh]
+
 loop_next_patchlookup:
 
-
-mov       dx, ss
-lea       ax, [bp - 0Ah]  
-mov       bx, si
-mov       cx, SCRATCH_PAGE_SEGMENT_7000
-call      copystr8_
-
-mov       dx, ss
-lea       ax, [bp - 0Ah]  ; todo whatever
+; copystr8 not needed. dont need to null terminate. pass directly
+mov       dx, bx
+mov       ax, si
 call      W_CheckNumForNameFarString_
 
-shl       di, 1
-mov       word ptr ds:[bp - 03B6h + di], ax         ; patchlookup[i] = W_CheckNumForName(name);
-shr       di, 1
+mov       word ptr ds:[di], ax         ; patchlookup[i] = W_CheckNumForName(name);
 
 
-add       si, 8
 inc       di
-SELFMODIFY_pnames_loop_value:
-cmp       di, 01000h
-jl        loop_next_patchlookup  
+inc       di
+add       si, 8
+loop      loop_next_patchlookup  
 
 
 mov       ax, OFFSET str_texture1
@@ -926,10 +919,10 @@ xor       di, di   ; i
 
 mov       ax, TEX_LOAD_ADDRESS_SEGMENT
 mov       ds, ax
-mov       bx, 4    ; "directory"/texture location  ; todo use si and lodsw pairs for smaller code...
+mov       bx, 4    ; "directory"/texture location 
 
 ; ds will be texaddress segment...
-; es will mostly be tex1 or tex2 segment todo test doom2 with that.
+; es will mostly be tex1 or tex2 segment 
 
 ; MAIN inittextures loop!
 ; MAIN inittextures loop!
@@ -991,7 +984,7 @@ mov       ah, SIZE TEXPATCH_T
 mul       ah
 
 add       ax, di
-add       ax, SIZE TEXTURE_T   ; todo double check 
+add       ax, SIZE TEXTURE_T   
 mov       word ptr es:[bx + TEXTUREDEFS_OFFSET_OFFSET + 2], ax  ; texturedefs_offset[i + 1],
 
 
@@ -1040,7 +1033,7 @@ stosb       ; patch->originy = (mpatch->originy);
 lodsw
 shl     ax, 1
 xchg    ax, si
-mov     si, word ptr ss:[bp - 03B6h + si]
+mov     si, word ptr ss:[bp - 03ACh + si]
 xchg    ax, si 
 add     ax, dx          ; (mpatch->originx < 0 ? 0x8000 : 0)
 stosw                   ; patch->patch = patchlookup[(mpatch->patch)] + (mpatch->originx < 0 ? 0x8000 : 0);
@@ -1052,14 +1045,16 @@ pop       cx            ; [STACK B] texturewidth
 pop       di            ; [STACK C] di
 pop       bx            ; [STACK D] bx
 
-mov       ax, 1
-shift_width_again:
-shl       ax, 1
-cmp       ax, cx ; texturewidth  ; todo alternatively shift until cx 0?
-jle       shift_width_again
-done_shifting_width:
-shr       ax, 1 ; undo one
-dec       ax   
+; round up to nearest power of 2 - 1
+xchg      ax, cx
+dec       ax
+mov       ah, al
+shr       al, 1
+or        al, ah
+SHIFT_MACRO shr       al 2
+or        al, ah
+SHIFT_MACRO shr       al 4
+or        al, ah
 
 
 push      es    ; [STACK A] es
@@ -1236,7 +1231,8 @@ mov       si, SCRATCH_PAGE_SEGMENT_7000
 xor       di, di   ; counters
 
 loop_next_patch_init:
-mov       ax, word ptr ds:[_firstpatch]  ; todo probably selfmodifiable from outside the func
+SELFMODIFY_set_firstpatch:
+mov       ax, 01000h
 mov       cx, si
 add       ax, di
 xor       bx, bx

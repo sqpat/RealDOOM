@@ -406,7 +406,7 @@
 #define numpatches  					(*((int16_t __near*)                 (_NULL_OFFSET + 0x03BC)))
 #define numspritelumps  				(*((int16_t __near*)                 (_NULL_OFFSET + 0x03BE)))
 #define numtextures  					(*((int16_t __near*)                 (_NULL_OFFSET + 0x03C0)))
-
+//3c2 to 3cf free
 
 #define am_stopped						(*((boolean __near*)                 (_NULL_OFFSET + 0x03D0)))
 #define automapactive					(*((boolean __near*)                 (_NULL_OFFSET + 0x03D1)))
