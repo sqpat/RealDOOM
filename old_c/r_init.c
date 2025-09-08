@@ -59,7 +59,7 @@ void __near R_InitSpriteLumps(void);
 //  just for having the header info ready during rendering.
 //
 
-/*
+
 void R_InitSpriteLumps(void) {
 	int16_t         i;
 	if (is_ultimate){
@@ -150,7 +150,7 @@ void R_InitSpriteLumps(void) {
 
 
 }
-*/
+
 
 //
 // Texture definition.
@@ -193,7 +193,7 @@ typedef struct {
 // so its technically a free area here. (init is game init, setup is level setup)
 void __near R_GenerateLookup(uint16_t texnum);
 
-/*
+
 void __near R_GenerateLookup(uint16_t texnum) {
 
 	texture_t __far*          texture;
@@ -823,5 +823,5 @@ void __near R_Init(void) {
 	DEBUG_PRINT(".");
 
 	}
-*/
+
 

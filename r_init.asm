@@ -997,14 +997,14 @@ call      W_CheckNumForNameFarString_
 test      ax, ax 
 js        no_texture2_patch                          ; if (W_CheckNumForName("TEXTURE2") != -1) {
 
-;		W_CacheLumpNameDirect("TEXTURE2", (byte __far*)TEX_LOAD_ADDRESS_2);
-;		numtextures +=  * ((int16_t __far*)TEX_LOAD_ADDRESS_2);
 
 mov       ax, OFFSET str_texture2
 mov       cx, TEX_LOAD_ADDRESS_2_SEGMENT
 xor       bx, bx
 mov       dx, cs
 call      W_CacheLumpNameDirectFarString_  ; W_CacheLumpNameDirect("TEXTURE2", (byte __far*)TEX_LOAD_ADDRESS);
+
+;		numtextures +=  * ((int16_t __far*)TEX_LOAD_ADDRESS_2);
 
 mov       ax, TEX_LOAD_ADDRESS_2_SEGMENT
 mov       es, ax
@@ -1070,12 +1070,12 @@ call      DEBUG_PRINT_
 add       sp, 4
 loop      loop_print_backspace
 
-mov       bx, 4    ; "directory"/texture location  ; todo use si and lodsw pairs for smaller code...
 xor       di, di   ; i
 
 
 mov       ax, TEX_LOAD_ADDRESS_SEGMENT
 mov       ds, ax
+mov       bx, 4    ; "directory"/texture location  ; todo use si and lodsw pairs for smaller code...
 
 ; ds will be texaddress segment...
 ; es will mostly be tex1 or tex2 segment todo test doom2 with that.
@@ -1106,9 +1106,9 @@ SELFMODIFY_numtextures1:
 cmp       di, 0EEEEh
 jne       done_resetting_tex_vars
 
-mov       bx, 4
 mov       ax, TEX_LOAD_ADDRESS_2_SEGMENT
-mov       es, ax
+mov       ds, ax
+mov       bx, 4   ; alternatively just set bx to 8004?
 
 done_resetting_tex_vars:
 
@@ -1193,8 +1193,8 @@ mov     si, word ptr ss:[bp - 03B6h + si]
 xchg    ax, si 
 add     ax, dx          ; (mpatch->originx < 0 ? 0x8000 : 0)
 stosw                   ; patch->patch = patchlookup[(mpatch->patch)] + (mpatch->originx < 0 ? 0x8000 : 0);
-add    si, 4            ; skip a couple unused int16_t fields..
-loop loop_next_patch
+add     si, 4            ; skip a couple unused int16_t fields..
+loop    loop_next_patch
 
 pop       dx            ; [STACK A] textureheightval
 pop       cx            ; [STACK B] texturewidth
