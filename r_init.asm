@@ -116,6 +116,7 @@ add       sp, 4
 jmp       done_printing_dot
 
 
+;todo inline?
 PROC   R_InitSpriteLumps_ NEAR
 PUBLIC R_InitSpriteLumps_
 
@@ -1367,8 +1368,6 @@ mov       ax, OFFSET str_double_dot
 push      ax
 call      DEBUG_PRINT_
 
-mov       di, FLATTRANSLATION_SEGMENT
-mov       es, di
 ;call      R_InitPatches_
 
 ;inlined
@@ -1413,15 +1412,17 @@ cmp       di, word ptr ds:[_numpatches] ; todo probably selfmodifiable from outs
 jl        loop_next_patch_init
 exit_r_initpatches:
 
+mov       di, FLATTRANSLATION_SEGMENT
+mov       es, di
+
 xor       ax, ax
 mov       di, ax
+mov       cx, word ptr ds:[_numflats]
 loop_next_anim:
 stosb
 inc       ax
-cmp       ax, word ptr ds:[_numflats]
-jl        loop_next_anim
+loop      loop_next_anim
 
-done_with_anim_loop:
 call      R_InitSpriteLumps_
 
 push      cs
