@@ -41,12 +41,7 @@ EXTRN _numflats:WORD
 EXTRN _numpatches:WORD
 EXTRN _numtextures:WORD
 
-EXTRN _currentlumpindex:WORD
-EXTRN _maskedcount:WORD
 
-EXTRN _currentpostdataoffset:WORD
-EXTRN _currentpostoffset:WORD
-EXTRN _currentpixeloffset:WORD
 
 .CODE
 
@@ -100,6 +95,7 @@ str_single_space:
 db " ", 0
 str_single_backspace:
 db 08h, 0
+
 
 
 
@@ -354,7 +350,8 @@ mov       word ptr ds:[0FC00h + bx], cx  ; maskedpixlofs[x] = currenttexturepixe
 SELFMODIFY_set_currenttexturepostoffset: 
 mov       di, 01000h                     ; currenttexturepostoffset << 1
 
-mov       ax, word ptr ss:[_currentpostdataoffset]      ; todo make cs
+SELFMODIFY_set_currentpostdataoffset: 
+mov       ax, 01000h
 add       ax, di
 
 mov       word ptr ds:[0FA00h + bx], ax          ; maskedtexpostdataofs[x] = (currentpostdataoffset)+ (currenttexturepostoffset << 1);
@@ -483,7 +480,8 @@ mov       es, ax
 push      ax  ; store MASKEDPOSTDATA_SEGMENT [MATCH D]
 SELFMODIFY_get_texnum:
 mov       di, 01000h  ; texnum
-mov       al, byte ptr ds:[_maskedcount]  
+SELFMODIFY_get_maskedcount:
+mov       al, 00h;
 cbw
 mov       byte ptr es:[di + MASKED_LOOKUP_OFFSET], al ;		masked_lookup[texnum] = maskedcount;	// index to lookup of struct...
 xchg      ax, di
@@ -494,11 +492,16 @@ pop       es  ; get normal data segment for stosw
 
 
 add       di, _masked_headers
-mov       ax, word ptr ds:[_currentpixeloffset]                     ; currentpixeloffset 
+SELFMODIFY_set_currentpixeloffset:
+mov       ax, 01000h							                     ; currentpixeloffset 
 stosw     ; masked_headers[maskedcount].pixelofsoffset = currentpixeloffset;
 xchg      ax, bx  ; bx gets currentpixeloffset
 
-mov       ax, word ptr ds:[_currentpostoffset]                      ; currentpostoffset
+
+SELFMODIFY_set_currentpostoffset:
+mov       ax, 01000h   					                      		; currentpostoffset
+
+
 stosw     ; masked_headers[maskedcount].postofsoffset = currentpostoffset;
 xchg      ax, si  ; si gets postsoffset
 
@@ -506,7 +509,7 @@ xchg      ax, si  ; si gets postsoffset
 
 mov       ax, word ptr cs:[SELFMODIFY_currenttexturepixelbytecount + 1]  ; currenttexturepixelbytecount
 stosw     ; masked_headers[maskedcount].texturesize = currenttexturepixelbytecount;
-inc       word ptr ds:[_maskedcount]
+inc       byte ptr cs:[SELFMODIFY_get_maskedcount+1]
 
 ; di free. done with ES as DS for maskedheaders writes
 
@@ -526,7 +529,7 @@ mov       si, 0FA00h        ; maskedtexpostdataofs = MK_FP(SCRATCH_PAGE_SEGMENT_
 rep       movsw
 ; todo self modify right above?
 sub       di, MASKEDPOSTDATAOFS_OFFSET
-mov       word ptr ss:[_currentpostoffset], di ; has been advanced the right amount
+mov     word ptr cs:[SELFMODIFY_set_currentpostoffset+1], di
 
 mov       cx, bp
 lea       di, [bx + MASKEDPIXELDATAOFS_OFFSET]
@@ -538,7 +541,8 @@ stosw
 loop      write_next_pixel_data
 ; todo self modify right above?
 sub       di, MASKEDPIXELDATAOFS_OFFSET
-mov       word ptr ss:[_currentpixeloffset], di ; has been advanced the right amount
+
+mov       word ptr cs:[SELFMODIFY_set_currentpixeloffset+1], di ; has been advanced the right amount
 
 
 ;	// copy the actual post data
@@ -549,11 +553,11 @@ mov       word ptr ss:[_currentpixeloffset], di ; has been advanced the right am
 
 mov       cx, word ptr cs:[SELFMODIFY_set_currenttexturepostoffset + 1]
 shr       cx, 1 ; was a word lookup before..
-mov       di, word ptr ss:[_currentpostdataoffset]
+mov       di, word ptr cs:[SELFMODIFY_set_currentpostdataoffset+1]
 mov       si, 0E000h
 rep       movsw
-; todo self modify right above?
-mov       word ptr ss:[_currentpostdataoffset], di ; has been advanced the right amount
+
+mov       word ptr cs:[SELFMODIFY_set_currentpostdataoffset+1], di ; has been advanced the right amount
 
 
 mov       cx, bp      ; recover texturewidth
@@ -614,7 +618,7 @@ mov      ax, word ptr ds:[0F800h]               ; currentcollump = texcollump[0]
 xor      bx, bx                                 ; currentcollumpRLEStart = 0;
 mov      dx, word ptr ds:[0F700h]               ; startx = startpixel[0];
 mov      si, 1
-mov      di, word ptr ss:[_currentlumpindex]
+mov      di, word ptr cs:[SELFMODIFY_set_currentlumpindex+1]
 shl      di, 1                                  ; word lookup
 
 ; es:di is collumps..
@@ -698,7 +702,8 @@ shr     di, 1
 push    ss
 pop     ds
 
-mov     word ptr ds:[_currentlumpindex], di
+mov     word ptr cs:[SELFMODIFY_set_currentlumpindex+1] ,di
+
 
 
 exit_r_generate_composite:
@@ -737,6 +742,8 @@ mov       dx, cs
 call      W_CheckNumForNameFarString_
 sub       ax, cx
 mov       word ptr ds:[_numpatches], ax
+
+mov       word ptr cs:[SELFMODIFY_set_numpatches+2], ax
 
 mov       ax, OFFSET str_flat_start
 mov       dx, cs
@@ -1159,7 +1166,8 @@ sal       ax, 1
 mov       word ptr cs:[SELFMODIFY_get_texnum_shifted+1], ax
 xchg      ax, bx  ; texnum x 2
 
-mov       ax, word ptr ds:[_currentlumpindex]
+SELFMODIFY_set_currentlumpindex:
+mov       ax, 01000h  ; currentlumpindex
 mov       word ptr ds:[bx + _texturepatchlump_offset], ax
 
 mov       es, di
@@ -1197,9 +1205,18 @@ PUBLIC R_Init_
 PUSHA_NO_AX_OR_BP_MACRO
 
 call      Z_QuickMapRender_
+
 mov       cx, COLORMAPS_SEGMENT
 mov       ax, COLORMAP_LUMP
 xor       bx, bx
+
+mov     word ptr cs:[SELFMODIFY_set_currentlumpindex+1], bx   ; zero this
+mov     word ptr cs:[SELFMODIFY_set_currentpostoffset+1], bx  ; zero this
+mov     word ptr cs:[SELFMODIFY_set_currentpixeloffset+1], bx  ; zero this
+mov     word ptr cs:[SELFMODIFY_set_currentpostdataoffset+1], bx  ; zero this
+
+
+
 
 call      W_CacheLumpNumDirect_
        
@@ -1258,7 +1275,8 @@ mov       cx, PATCHHEIGHTS_SEGMENT
 mov       es, cx ; patchheights
 stosb
 
-cmp       di, word ptr ds:[_numpatches] ; todo probably selfmodifiable from outside the func
+SELFMODIFY_set_numpatches:
+cmp       di, 01000h
 jl        loop_next_patch_init
 exit_r_initpatches:
 
@@ -1399,8 +1417,6 @@ add       ax, 0Fh
 and       ax, 0FFF0h
 add       dx, ax  ; pixelsize + startoffset
 
-
-; todo... dont do quickmap in a loop! so what? push a bunch and memcpy at the end?
 
 mov       bx, bp
 shl       bx, 1

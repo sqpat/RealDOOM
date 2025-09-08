@@ -816,13 +816,6 @@ extern void (__far* M_LoadFromSaveGame)();
 
 
 
-
-extern int16_t              currentlumpindex;
-extern uint16_t             maskedcount;
-extern uint16_t             currentpostoffset;
-extern uint16_t             currentpostdataoffset;
-extern uint16_t             currentpixeloffset;
-
 extern spriteframe_t __far* p_init_sprtemp;
 extern int16_t              p_init_maxframe;
 

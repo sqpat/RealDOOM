@@ -241,17 +241,6 @@ void (__far* M_LoadFromSaveGame)() =          ((void (__far *)(int8_t i))     	 
 
 
 
-int16_t                 currentlumpindex = 0;
-//
-// R_GenerateLookup
-//
-//todo pull down below?
-uint16_t maskedcount = 0;
-// global post offset for masked texture posts
-uint16_t currentpostoffset = 0;
-uint16_t currentpostdataoffset = 0;
-uint16_t currentpixeloffset = 0;
-// global colof offset for masked texture colofs
 
 
 spriteframe_t __far* p_init_sprtemp;
