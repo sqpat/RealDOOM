@@ -156,7 +156,7 @@ mov       ax, word ptr ds:[0 + PATCH_T.patch_width]
 mov       byte ptr es:[bp], al
 xchg      ax, cx ; cx gets patchwidth
 
-; abs ax. todo just use cbw?
+; abs ax
 mov       ax, word ptr ds:[0 + PATCH_T.patch_leftoffset]
 cwd       
 xor       ax, dx
@@ -268,15 +268,10 @@ TEXTUREDEFS_OFFSET_OFFSET = (TEXTUREDEFS_OFFSET_SEGMENT - TEXTUREDEFS_BYTES_SEGM
 PROC    R_GenerateLookup_ NEAR
 PUBLIC  R_GenerateLookup_ 
 
-PUSHA_NO_AX_OR_BP_MACRO
+PUSHA_NO_AX_MACRO
 push      bp
 mov       bp, sp
 
-push      ax      ; bp - 2: texnum  ; todo selfmodify in two spots. then use bp as texwidth later?
-xchg      ax, bx  ; texnum
-shl       bx, 1   ; texnum x 2
-mov       ax, word ptr ds:[_currentlumpindex]
-mov       word ptr ds:[bx + _texturepatchlump_offset], ax
 
 ;	texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
 ;	texturewidth = texture->width + 1;
@@ -286,9 +281,6 @@ mov       word ptr ds:[bx + _texturepatchlump_offset], ax
 ; todo use ds and lodsw?
 ; todo use same segment for these
 
-mov       dx, TEXTUREDEFS_BYTES_SEGMENT   
-mov       es, dx
-mov       bx, word ptr es:[bx + TEXTUREDEFS_OFFSET_OFFSET] ; texturedefs_offset[texnum]
 
 
 ;	textureheight = texture->height + 1;
@@ -298,15 +290,15 @@ mov       bx, word ptr es:[bx + TEXTUREDEFS_OFFSET_OFFSET] ; texturedefs_offset[
 xor       ax, ax
 mov       byte ptr cs:[SELFMODIFY_is_masked+1], al       ; ismaskedtexture= 0
 
-push      ax  ; bp - 4: currenttexturepixelbytecount = 0
+push      ax  ; bp - 2: currenttexturepixelbytecount = 0
 mov       word ptr cs:[SELFMODIFY_set_currenttexturepostoffset + 1], ax ; set to 0
 dec       ax  ; -1
-mov       word ptr cs:[SELFMODIFY_compare_lastpatch+2], ax ; update lastpatch
+mov       word ptr cs:[SELFMODIFY_compare_lastpatch+2], ax       		; update lastpatch
 ; this gets updated first run anyway. does not to be initialized
-;mov       word ptr cs:[SELFMODIFY_set_patchusedheight+1], ax ; patchusedheight
+;mov       word ptr cs:[SELFMODIFY_set_patchusedheight+1], ax 		    ; patchusedheight
 
 neg       ax  ; 1
-mov       byte ptr cs:[SELFMODIFY_isSingleRLERun+1], al   ; isSingleRLERun = 1
+mov       byte ptr cs:[SELFMODIFY_isSingleRLERun+1], al   			    ; isSingleRLERun = 1
 mov       al, byte ptr es:[bx + TEXTURE_T.texture_height]
 inc       ax  ; max 128
 mov       word ptr cs:[SELFMODIFY_compare_textureheight+2], ax
@@ -315,9 +307,9 @@ and       al, 0F0h
 mov       word ptr cs:[SELFMODIFY_add_usedtextureheight + 1], ax
 mov       al, byte ptr es:[bx + TEXTURE_T.texture_width]
 inc       ax
-push      ax  ; bp - 6: texturewidth
+push      ax  ; bp - 4: texturewidth
 
-push      dx  ; store TEXTUREDEFS_BYTES_SEGMENT [MATCH A]
+push      es  ; store TEXTUREDEFS_BYTES_SEGMENT [MATCH A]  ; carried in from outside frame
 mov       dl, byte ptr es:[bx + TEXTURE_T.texture_patchcount]  ; texturepatchcount = texture->patchcount;
 
 
@@ -452,9 +444,9 @@ xchg      ax, si
 
 mov       byte ptr cs:[SELFMODIFY_set_startx+4], dl ; startx = x...
 
-cmp       ax, word ptr [bp - 6]  ; texturewidth
+cmp       ax, word ptr [bp - 4]  ; texturewidth
 jle       dont_cap_x2       
-mov       ax, word ptr [bp - 6]
+mov       ax, word ptr [bp - 4]
 dont_cap_x2:
 
 cmp       dx, ax
@@ -505,8 +497,9 @@ jne       multi_patch_skip  ; note in practice all masked textures are single pa
 ;	uint16_t __far*              maskedpixlofs        = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFC00);
 ;	uint16_t __far*              maskedtexpostdataofs = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFA00);
 
-mov       ax, word ptr [bp - 4]          ; currenttexturepixelbytecount
-mov       word ptr ds:[0FC00h + bx], ax  ; maskedpixlofs[x] = currenttexturepixelbytecount; 
+push      cx
+mov       cx, word ptr [bp - 2]          ; currenttexturepixelbytecount
+mov       word ptr ds:[0FC00h + bx], cx  ; maskedpixlofs[x] = currenttexturepixelbytecount; 
 
 SELFMODIFY_set_currenttexturepostoffset: 
 mov       di, 01000h                     ; currenttexturepostoffset << 1
@@ -537,7 +530,7 @@ add       si, ax                 ; add length to column
 add       dx, ax                 ; columntotalsize += runsize;
 add       al, 00Fh
 and       al, 0F0h               ; runsize += (16 - ((runsize &0xF)) &0xF);
-add       word ptr [bp - 4], ax  ; currenttexturepixelbytecount += runsize;
+add       cx, ax  ; currenttexturepixelbytecount += runsize;
 
 ;	// copy both topdelta and length at once
 ;	texmaskedpostdata[currenttexturepostoffset] = *((uint16_t __far *)column);
@@ -554,6 +547,8 @@ jne       loop_next_patchpost
 
 found_end_of_patchcolumn:
 
+mov       word ptr [bp - 2], cx          ; currenttexturepixelbytecount
+pop       cx
 
 ;	texmaskedpostdata[currenttexturepostoffset] = 0xFFFF; // end the post.
 ;	currenttexturepostoffset ++;
@@ -586,7 +581,7 @@ jle       not_masked
 ;	}
 cmp       al, 3
 ja        is_masked
-cmp       word ptr [bp - 6], 256
+cmp       word ptr [bp - 4], 256
 je        not_masked
 is_masked:
 mov       byte ptr cs:[SELFMODIFY_is_masked+1], al ; known to be at least 3..
@@ -617,7 +612,7 @@ SELFMODIFY_is_masked:
 mov       al, 010h
 
 
-mov       cx, word ptr [bp - 6]         ; texturewidth
+mov       cx, word ptr [bp - 4]         ; texturewidth
 
 
 ; note: dx and si and bx all free again?
@@ -636,7 +631,8 @@ pop       ds    ; ds back to normal
 mov       ax, MASKEDPOSTDATA_SEGMENT
 mov       es, ax
 push      ax  ; store MASKEDPOSTDATA_SEGMENT [MATCH D]
-mov       di, word ptr [bp - 2]  ; texnum
+SELFMODIFY_get_texnum:
+mov       di, 01000h  ; texnum
 mov       al, byte ptr ds:[_maskedcount]  
 cbw
 mov       byte ptr es:[di + MASKED_LOOKUP_OFFSET], al ;		masked_lookup[texnum] = maskedcount;	// index to lookup of struct...
@@ -658,7 +654,7 @@ xchg      ax, si  ; si gets postsoffset
 
 
 
-mov       ax, word ptr [bp - 4]           ; currenttexturepixelbytecount
+mov       ax, word ptr [bp - 2]           ; currenttexturepixelbytecount
 stosw     ; masked_headers[maskedcount].texturesize = currenttexturepixelbytecount;
 inc       word ptr ds:[_maskedcount]
 
@@ -721,8 +717,8 @@ skip_masked_stuff:
 mov       si, 0FF00h                      ; columnpatchcount
 xor       dx, dx                          ; totalcompositecolumns = 0;
 xor       bx, bx                          ; word offset
-mov       di, word ptr [bp - 2]           ; texnum
-shl       di, 1                           ; textnum word offset
+SELFMODIFY_get_texnum_shifted:
+mov       di, 01000h                      ; texnum sal 1
 mov       ax, TEXTURECOMPOSITESIZES_SEGMENT
 mov       es, ax
 push      bp  ; we will use this in following loops
@@ -858,9 +854,9 @@ mov     word ptr ds:[_currentlumpindex], di
 
 exit_r_generate_composite:
 
-
+; todo clean up accurately...
 LEAVE_MACRO
-POPA_NO_AX_OR_BP_MACRO
+POPA_NO_AX_MACRO
 ret
 
 
@@ -1303,9 +1299,23 @@ loop      loop_next_texture
 
 mov       cx, dx
 
+mov       di, TEXTUREDEFS_BYTES_SEGMENT   
+
 loop_next_lookup:
 mov       ax, dx
 sub       ax, cx
+
+mov       word ptr cs:[SELFMODIFY_get_texnum+1], ax
+sal       ax, 1
+mov       word ptr cs:[SELFMODIFY_get_texnum_shifted+1], ax
+xchg      ax, bx  ; texnum x 2
+
+mov       ax, word ptr ds:[_currentlumpindex]
+mov       word ptr ds:[bx + _texturepatchlump_offset], ax
+
+mov       es, di
+mov       bx, word ptr es:[bx + TEXTUREDEFS_OFFSET_OFFSET] ; texturedefs_offset[texnum]
+
 call      R_GenerateLookup_
 loop      loop_next_lookup
 
