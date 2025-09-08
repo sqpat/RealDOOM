@@ -23,7 +23,6 @@ EXTRN DEBUG_PRINT_:FAR
 EXTRN I_Error_:FAR
 ;todo inline quickmaps?
 EXTRN Z_QuickMapScratch_5000_:FAR
-EXTRN Z_QuickMapUndoFlatCache_:FAR
 EXTRN Z_QuickMapRender_:FAR
 EXTRN W_CacheLumpNumDirect_:FAR
 EXTRN W_CacheLumpNameDirectFarString_:FAR
@@ -1300,6 +1299,9 @@ mov       word ptr ds:[_spritewidths_segment], ax
 mov       bp, dx ; 0
 
 
+; set up sprite stuff in memory
+Z_QUICKMAPAI3 pageswapargs_maskeddata_offset_size   	INDEXED_PAGE_8400_OFFSET
+
 
 loop_next_sprite:
 xor       ax, ax
@@ -1400,7 +1402,6 @@ add       dx, ax  ; pixelsize + startoffset
 
 ; todo... dont do quickmap in a loop! so what? push a bunch and memcpy at the end?
 
-call      Z_QuickMapUndoFlatCache_
 mov       bx, bp
 shl       bx, 1
 
@@ -1413,13 +1414,14 @@ mov       es, ax
 mov       word ptr es:[bx], di
 
 
-call      Z_QuickMapRender_
 
 inc       bp 
 cmp       bp, word ptr ds:[_numspritelumps]
 jge       exit_r_initspritelumps
 jmp       loop_next_sprite
 exit_r_initspritelumps:
+
+call      Z_QuickMapRender_  ; undo flat cache stuff. 
 
 push      cs
 mov       ax, OFFSET str_single_dot
