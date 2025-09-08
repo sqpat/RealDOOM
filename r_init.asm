@@ -107,158 +107,9 @@ db 08h, 0
 
 COLORMAP_LUMP = 1
 
-do_print_dot:
-push      cs
-mov       ax, OFFSET str_dot
-push      ax
-call      DEBUG_PRINT_       
-add       sp, 4
-jmp       done_printing_dot
 
 
-;todo inline?
-PROC   R_InitSpriteLumps_ NEAR
-PUBLIC R_InitSpriteLumps_
 
-PUSHA_NO_AX_MACRO
-
-xor       dx, dx
-cmp       byte ptr ds:[_is_ultimate], dl ; 0
-mov       ax, SPRITEWIDTHS_NORMAL_SEGMENT
-je        not_ultimate
-mov       ax, SPRITEWIDTHS_ULT_SEGMENT
-
-not_ultimate:
-mov       word ptr ds:[_spritewidths_segment], ax
-mov       bp, dx ; 0
-
-continue_spritelumps:
-
-loop_next_sprite:
-xor       ax, ax
-
-
-test      bp, 63
-je        do_print_dot
-done_printing_dot:
-call      Z_QuickMapScratch_5000_
-mov       ax, word ptr ds:[_firstspritelump]
-mov       cx, SCRATCH_SEGMENT_5000
-add       ax, bp
-xor       bx, bx
-
-call      W_CacheLumpNumDirect_
-
-mov       es, word ptr ds:[_spritewidths_segment]
-mov       ax, SCRATCH_SEGMENT_5000
-mov       ds, ax
-
-mov       ax, word ptr ds:[0 + PATCH_T.patch_width]
-mov       byte ptr es:[bp], al
-xchg      ax, cx ; cx gets patchwidth
-
-; abs ax
-mov       ax, word ptr ds:[0 + PATCH_T.patch_leftoffset]
-cwd       
-xor       ax, dx
-sub       ax, dx
-
-mov       dx, SPRITEOFFSETS_SEGMENT
-mov       es, dx
-mov       byte ptr es:[bp], al
-
-mov       ax, SPRITETOPOFFSETS_SEGMENT
-mov       es, ax
-mov       ax, word ptr ds:[0 + PATCH_T.patch_topoffset]
-
-cmp       ax, 129
-jne       handle_normal_sprite_offset
-handle_129_spritetopoffset:
-mov       al, 080h  ; - 128
-handle_normal_sprite_offset:
-mov       byte ptr es:[bp], al
-
-
-;   cx has patchwidth for looping
-xor       ax, ax  ; ah 0 for whole loop
-cwd               ; dx = pixelsize
-mov       di, ax  ; di = postdatasize
-mov       bx, 8   ; PATCH_T.patch_columnofs
-
-; ds still 05000h
-
-loop_next_spritecolumn:
-
-; bx is column
-mov       si, word ptr ds:[bx] ; si is post
-lodsb
-cmp       al, 0FFh
-je        found_end_of_spritecolumn
-
-loop_next_spritepost:
-lodsb     ; length ; max value of 127 i think?
-add       si, ax
-add       al, 00Fh
-and       al, 0F0h ; round to next paragraph
-add       dx, ax
-inc       si
-inc       si  ; length + 4, but did two lodsb already.
-inc       di  ; add by 2, will shift later
-lodsb
-cmp       al, 0FFh
-jne       loop_next_spritepost
-found_end_of_spritecolumn:
-add       bx, 4 ; next column
-inc       di    ; add by 2, will shift later
-loop      loop_next_spritecolumn
-finished_sprite_loading_loop:
-push      ss
-pop       ds
-
-;		startoffset = 8 + (patchwidth << 2) + postdatasize;
-;		startoffset += (16 - ((startoffset &0xF)) &0xF); // round up so first pixel data starts aligned of course.
-
-shl       di, 1
-
-mov       bx, word ptr ds:[0 + PATCH_T.patch_width]
-
-SHIFT_MACRO shl       bx 2
-lea       ax, [bx + di + 8] ; di is post size
-
-
-add       ax, 0Fh
-and       ax, 0FFF0h
-add       dx, ax  ; pixelsize + startoffset
-
-
-; todo... dont do quickmap in a loop! so what? push a bunch and memcpy at the end?
-
-call      Z_QuickMapUndoFlatCache_
-mov       bx, bp
-shl       bx, 1
-
-mov       ax, SPRITETOTALDATASIZES_SEGMENT
-mov       es, ax
-mov       word ptr es:[bx], dx
-
-mov       ax, SPRITEPOSTDATASIZES_SEGMENT
-mov       es, ax
-mov       word ptr es:[bx], di
-
-
-call      Z_QuickMapRender_
-
-inc       bp 
-cmp       bp, word ptr ds:[_numspritelumps]
-jge       exit_r_initspritelumps
-jmp       loop_next_sprite
-exit_r_initspritelumps:
- 
-POPA_NO_AX_MACRO
-ret      
-
-
-ENDP
 
 MASKEDPOSTDATAOFS_OFFSET = (MASKEDPOSTDATAOFS_SEGMENT - MASKEDPOSTDATA_SEGMENT) SHL 4
 MASKEDPIXELDATAOFS_OFFSET = (MASKEDPIXELDATAOFS_SEGMENT - MASKEDPOSTDATA_SEGMENT) SHL 4
@@ -267,7 +118,7 @@ MASKED_LOOKUP_OFFSET = (MASKED_LOOKUP_SEGMENT - MASKEDPOSTDATA_SEGMENT) SHL 4
 TEXTUREDEFS_OFFSET_OFFSET = (TEXTUREDEFS_OFFSET_SEGMENT - TEXTUREDEFS_BYTES_SEGMENT) SHL 4
 
 PROC    R_GenerateLookup_ NEAR
-PUBLIC  R_GenerateLookup_ 
+
 
 PUSHA_NO_AX_MACRO
 
@@ -869,7 +720,7 @@ TEX_LOAD_ADDRESS_SEGMENT = 07000h
 TEX_LOAD_ADDRESS_2_SEGMENT = 07800h
 
 PROC   R_InitTextures_ NEAR
-PUBLIC R_InitTextures_ 
+
 
 PUSHA_NO_AX_OR_BP_MACRO
 
@@ -1423,7 +1274,152 @@ stosb
 inc       ax
 loop      loop_next_anim
 
-call      R_InitSpriteLumps_
+jmp       do_R_InitSpriteLumps_
+
+do_print_dot:
+push      cs
+mov       ax, OFFSET str_dot
+push      ax
+call      DEBUG_PRINT_       
+add       sp, 4
+jmp       done_printing_dot
+
+
+;call      R_InitSpriteLumps_
+do_R_InitSpriteLumps_:
+; inlined
+
+xor       dx, dx
+cmp       byte ptr ds:[_is_ultimate], dl ; 0
+mov       ax, SPRITEWIDTHS_NORMAL_SEGMENT
+je        not_ultimate
+mov       ax, SPRITEWIDTHS_ULT_SEGMENT
+
+not_ultimate:
+mov       word ptr ds:[_spritewidths_segment], ax
+mov       bp, dx ; 0
+
+
+
+loop_next_sprite:
+xor       ax, ax
+
+
+test      bp, 63
+je        do_print_dot
+done_printing_dot:
+call      Z_QuickMapScratch_5000_
+mov       ax, word ptr ds:[_firstspritelump]
+mov       cx, SCRATCH_SEGMENT_5000
+add       ax, bp
+xor       bx, bx
+
+call      W_CacheLumpNumDirect_
+
+mov       es, word ptr ds:[_spritewidths_segment]
+mov       ax, SCRATCH_SEGMENT_5000
+mov       ds, ax
+
+mov       ax, word ptr ds:[0 + PATCH_T.patch_width]
+mov       byte ptr es:[bp], al
+xchg      ax, cx ; cx gets patchwidth
+
+; abs ax
+mov       ax, word ptr ds:[0 + PATCH_T.patch_leftoffset]
+cwd       
+xor       ax, dx
+sub       ax, dx
+
+mov       dx, SPRITEOFFSETS_SEGMENT
+mov       es, dx
+mov       byte ptr es:[bp], al
+
+mov       ax, SPRITETOPOFFSETS_SEGMENT
+mov       es, ax
+mov       ax, word ptr ds:[0 + PATCH_T.patch_topoffset]
+
+cmp       ax, 129
+jne       handle_normal_sprite_offset
+handle_129_spritetopoffset:
+mov       al, 080h  ; - 128
+handle_normal_sprite_offset:
+mov       byte ptr es:[bp], al
+
+
+;   cx has patchwidth for looping
+xor       ax, ax  ; ah 0 for whole loop
+cwd               ; dx = pixelsize
+mov       di, ax  ; di = postdatasize
+mov       bx, 8   ; PATCH_T.patch_columnofs
+
+; ds still 05000h
+
+loop_next_spritecolumn:
+
+; bx is column
+mov       si, word ptr ds:[bx] ; si is post
+lodsb
+cmp       al, 0FFh
+je        found_end_of_spritecolumn
+
+loop_next_spritepost:
+lodsb     ; length ; max value of 127 i think?
+add       si, ax
+add       al, 00Fh
+and       al, 0F0h ; round to next paragraph
+add       dx, ax
+inc       si
+inc       si  ; length + 4, but did two lodsb already.
+inc       di  ; add by 2, will shift later
+lodsb
+cmp       al, 0FFh
+jne       loop_next_spritepost
+found_end_of_spritecolumn:
+add       bx, 4 ; next column
+inc       di    ; add by 2, will shift later
+loop      loop_next_spritecolumn
+finished_sprite_loading_loop:
+push      ss
+pop       ds
+
+;		startoffset = 8 + (patchwidth << 2) + postdatasize;
+;		startoffset += (16 - ((startoffset &0xF)) &0xF); // round up so first pixel data starts aligned of course.
+
+shl       di, 1
+
+mov       bx, word ptr ds:[0 + PATCH_T.patch_width]
+
+SHIFT_MACRO shl       bx 2
+lea       ax, [bx + di + 8] ; di is post size
+
+
+add       ax, 0Fh
+and       ax, 0FFF0h
+add       dx, ax  ; pixelsize + startoffset
+
+
+; todo... dont do quickmap in a loop! so what? push a bunch and memcpy at the end?
+
+call      Z_QuickMapUndoFlatCache_
+mov       bx, bp
+shl       bx, 1
+
+mov       ax, SPRITETOTALDATASIZES_SEGMENT
+mov       es, ax
+mov       word ptr es:[bx], dx
+
+mov       ax, SPRITEPOSTDATASIZES_SEGMENT
+mov       es, ax
+mov       word ptr es:[bx], di
+
+
+call      Z_QuickMapRender_
+
+inc       bp 
+cmp       bp, word ptr ds:[_numspritelumps]
+jge       exit_r_initspritelumps
+jmp       loop_next_sprite
+exit_r_initspritelumps:
 
 push      cs
 mov       ax, OFFSET str_single_dot
