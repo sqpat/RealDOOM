@@ -396,9 +396,18 @@
 #define gameepisode                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x0376)))
 #define gamemap                         (*((int8_t __near*)                  (_NULL_OFFSET + 0x0377)))
 #define savedescription                 (((int8_t    __near*)                (_NULL_OFFSET + 0x0378)))
+//todo this is big???
 #define demoname                        (((int8_t    __near*)                (_NULL_OFFSET + 0x0398)))
 
 // #define ems_backfill_page_order         (((int8_t    __near*)                (_NULL_OFFSET + 0x03B8)))
+
+#define skytexture 						(*((uint16_t __near*)                (_NULL_OFFSET + 0x03B8)))
+#define numflats  						(*((int16_t __near*)                 (_NULL_OFFSET + 0x03BA)))
+#define numpatches  					(*((int16_t __near*)                 (_NULL_OFFSET + 0x03BC)))
+#define numspritelumps  				(*((int16_t __near*)                 (_NULL_OFFSET + 0x03BE)))
+#define numtextures  					(*((int16_t __near*)                 (_NULL_OFFSET + 0x03C0)))
+
+
 #define am_stopped						(*((boolean __near*)                 (_NULL_OFFSET + 0x03D0)))
 #define automapactive					(*((boolean __near*)                 (_NULL_OFFSET + 0x03D1)))
 
@@ -777,12 +786,7 @@ extern uint16_t             cachedrenderplayertics;
 extern int8_t		        eventhead;
 extern int8_t		        eventtail;
 
-extern uint16_t			    skytexture;
 
-extern int16_t              numflats;
-extern int16_t              numpatches;
-extern int16_t              numspritelumps;
-extern int16_t              numtextures;
  
 //extern int16_t              ;
 

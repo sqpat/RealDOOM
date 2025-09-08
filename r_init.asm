@@ -36,13 +36,6 @@ EXTRN R_FlatNumForName_:NEAR
 
 .DATA
 
-EXTRN _numspritelumps:WORD
-EXTRN _numflats:WORD
-EXTRN _numpatches:WORD
-EXTRN _numtextures:WORD
-
-
-
 .CODE
 
 

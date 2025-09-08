@@ -349,7 +349,16 @@ _gameepisode = 						 _NULL_OFFSET + 00376h
 _gamemap = 							 _NULL_OFFSET + 00377h
 _savedescription =                   _NULL_OFFSET + 00378h
 _demoname =                          _NULL_OFFSET + 00398h
-;_ems_backfill_page_order =           _NULL_OFFSET + 003B8h
+
+
+_skytexture = 						 _NULL_OFFSET + 003B8h
+_numflats =  					     _NULL_OFFSET + 003BAh
+_numpatches =  					     _NULL_OFFSET + 003BCh
+_numspritelumps =  				     _NULL_OFFSET + 003BEh
+_numtextures =  				     _NULL_OFFSET + 003C0h
+
+; 3c2 to 3cf free
+
 _am_stopped = 						 _NULL_OFFSET + 003D0h
 _automapactive =                 	 _NULL_OFFSET + 003D1h
 _currentThinkerListHead = 			 _NULL_OFFSET + 003D2h
