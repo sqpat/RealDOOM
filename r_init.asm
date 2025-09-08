@@ -269,8 +269,6 @@ PROC    R_GenerateLookup_ NEAR
 PUBLIC  R_GenerateLookup_ 
 
 PUSHA_NO_AX_MACRO
-push      bp
-mov       bp, sp
 
 
 ;	texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
@@ -290,7 +288,7 @@ mov       bp, sp
 xor       ax, ax
 mov       byte ptr cs:[SELFMODIFY_is_masked+1], al       ; ismaskedtexture= 0
 
-push      ax  ; bp - 2: currenttexturepixelbytecount = 0
+mov       word ptr cs:[SELFMODIFY_currenttexturepixelbytecount + 1], ax          ; currenttexturepixelbytecount
 mov       word ptr cs:[SELFMODIFY_set_currenttexturepostoffset + 1], ax ; set to 0
 dec       ax  ; -1
 mov       word ptr cs:[SELFMODIFY_compare_lastpatch+2], ax       		; update lastpatch
@@ -307,7 +305,7 @@ and       al, 0F0h
 mov       word ptr cs:[SELFMODIFY_add_usedtextureheight + 1], ax
 mov       al, byte ptr es:[bx + TEXTURE_T.texture_width]
 inc       ax
-push      ax  ; bp - 4: texturewidth
+xchg      ax, bp  ; bp = texturewidth
 
 push      es  ; store TEXTUREDEFS_BYTES_SEGMENT [MATCH A]  ; carried in from outside frame
 mov       dl, byte ptr es:[bx + TEXTURE_T.texture_patchcount]  ; texturepatchcount = texture->patchcount;
@@ -444,9 +442,9 @@ xchg      ax, si
 
 mov       byte ptr cs:[SELFMODIFY_set_startx+4], dl ; startx = x...
 
-cmp       ax, word ptr [bp - 4]  ; texturewidth
+cmp       ax, bp  ; texturewidth
 jle       dont_cap_x2       
-mov       ax, word ptr [bp - 4]
+mov       ax, bp
 dont_cap_x2:
 
 cmp       dx, ax
@@ -498,7 +496,8 @@ jne       multi_patch_skip  ; note in practice all masked textures are single pa
 ;	uint16_t __far*              maskedtexpostdataofs = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFA00);
 
 push      cx
-mov       cx, word ptr [bp - 2]          ; currenttexturepixelbytecount
+SELFMODIFY_currenttexturepixelbytecount:
+mov       cx, 01000h          ; currenttexturepixelbytecount
 mov       word ptr ds:[0FC00h + bx], cx  ; maskedpixlofs[x] = currenttexturepixelbytecount; 
 
 SELFMODIFY_set_currenttexturepostoffset: 
@@ -517,7 +516,7 @@ lodsw
 cmp       al, 0FFh
 je        found_end_of_patchcolumn
 				; for ( ; (column->topdelta != 0xff)  ; )  {
-; todo use cx as bp - 4 in here?
+
 
 loop_next_patchpost:
 
@@ -547,7 +546,7 @@ jne       loop_next_patchpost
 
 found_end_of_patchcolumn:
 
-mov       word ptr [bp - 2], cx          ; currenttexturepixelbytecount
+mov       word ptr cs:[SELFMODIFY_currenttexturepixelbytecount + 1], cx          ; currenttexturepixelbytecount
 pop       cx
 
 ;	texmaskedpostdata[currenttexturepostoffset] = 0xFFFF; // end the post.
@@ -572,7 +571,7 @@ jge       not_masked
 cmp       al, 1
 jle       not_masked
 
-;	// most masked textures are not 256 wide. (the ones that are have tons of col patches.)
+;	// most masked textures are not 256 wide. (the ones that apusre have tons of col patches.)
 ;	// but theres a couple bugged doom2 256x128 textures that have a pixel gap but arent masked. 
 ;	// However doom1 has some masked textures that have tons of gaps... We kind of hack around this bad data.
 ;	
@@ -581,7 +580,7 @@ jle       not_masked
 ;	}
 cmp       al, 3
 ja        is_masked
-cmp       word ptr [bp - 4], 256
+cmp       bp, 256
 je        not_masked
 is_masked:
 mov       byte ptr cs:[SELFMODIFY_is_masked+1], al ; known to be at least 3..
@@ -612,7 +611,7 @@ SELFMODIFY_is_masked:
 mov       al, 010h
 
 
-mov       cx, word ptr [bp - 4]         ; texturewidth
+mov       cx, bp         ; texturewidth
 
 
 ; note: dx and si and bx all free again?
@@ -654,7 +653,7 @@ xchg      ax, si  ; si gets postsoffset
 
 
 
-mov       ax, word ptr [bp - 2]           ; currenttexturepixelbytecount
+mov       ax, word ptr cs:[SELFMODIFY_currenttexturepixelbytecount + 1]  ; currenttexturepixelbytecount
 stosw     ; masked_headers[maskedcount].texturesize = currenttexturepixelbytecount;
 inc       word ptr ds:[_maskedcount]
 
@@ -671,7 +670,6 @@ pop       ds  ; SCRATCH_PAGE_SEGMENT_7000 [MATCH F]
 
 ; issues here 
 
-mov       dx, cx ; backup texturewidth
 lea       di, [si + MASKEDPOSTDATAOFS_OFFSET] 
 mov       si, 0FA00h        ; maskedtexpostdataofs = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFA00);
 rep       movsw
@@ -679,7 +677,7 @@ rep       movsw
 sub       di, MASKEDPOSTDATAOFS_OFFSET
 mov       word ptr ss:[_currentpostoffset], di ; has been advanced the right amount
 
-mov       cx, dx
+mov       cx, bp
 lea       di, [bx + MASKEDPIXELDATAOFS_OFFSET]
 mov       si, 0FC00h
 write_next_pixel_data:
@@ -707,7 +705,7 @@ rep       movsw
 mov       word ptr ss:[_currentpostdataoffset], di ; has been advanced the right amount
 
 
-mov       cx, dx      ; recover texturewidth
+mov       cx, bp      ; recover texturewidth
 
 skip_masked_stuff:
 
@@ -855,7 +853,7 @@ mov     word ptr ds:[_currentlumpindex], di
 exit_r_generate_composite:
 
 ; todo clean up accurately...
-LEAVE_MACRO
+
 POPA_NO_AX_MACRO
 ret
 
