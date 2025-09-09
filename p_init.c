@@ -159,7 +159,7 @@ typedef struct{
 
 
 
-uint8_t __near R_FlatNumForName(int8_t* __near name);
+uint8_t __near R_FlatNumForName(int8_t __far*  name);
 
 
 
