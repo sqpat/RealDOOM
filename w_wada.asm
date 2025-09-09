@@ -36,17 +36,20 @@ PROC    W_WAD_STARTMARKER_ NEAR
 PUBLIC  W_WAD_STARTMARKER_
 ENDP
 
+PUBLIC  SELFMODIFY_end_lump_for_search
+PUBLIC  SELFMODIFY_start_lump_for_search
 
 
-PROC    W_CheckNumForNameFarStringWithHint_ NEAR
-PUBLIC  W_CheckNumForNameFarStringWithHint_
+PROC    W_UpdateNumLumps_ NEAR
+PUBLIC  W_UpdateNumLumps_
 
-mov      ds, dx
-PUSHA_NO_AX_OR_BP_MACRO
-xchg    ax, si
-xchg    ax, bx
-jmp     set_hint
+mov     ax, word ptr ds:[_numlumps]
+mov     word ptr cs:[SELFMODIFY_start_lump_for_search+1], ax
+ret     
+
 ENDP
+
+
 
 PROC    W_CheckNumForNameFarString_ NEAR
 PUBLIC  W_CheckNumForNameFarString_
@@ -63,9 +66,6 @@ PUSHA_NO_AX_OR_BP_MACRO
 
 xchg  ax, si
 
-mov   ax, word ptr ss:[_numlumps]
-set_hint:
-mov   word ptr cs:[SELFMODIFY_start_lump_for_search+1], ax
 
 done_setting_hint:
 
@@ -189,18 +189,19 @@ loop_next_lump_check:
 sub   si, SIZE LUMPINFO_T
 js    reset_page  ; underflow, get next wad page...
 return_to_lump_check:
+
 cmp   ax, word ptr ds:[si]
-jne   no_match
-cmp   bx, word ptr ds:[si+2]
-jne   no_match
-cmp   dx, word ptr ds:[si+4]
-jne   no_match
-cmp   di, word ptr ds:[si+6]
-je    found_match_return
+je    continue_checks
 
 no_match:
+dec   cx
+SELFMODIFY_end_lump_for_search:
+db    081h, 0F9h, 00h, 00h   ; cmp cx, 0
+ja    loop_next_lump_check
 
-loop loop_next_lump_check
+
+exit_early:
+xor   cx, cx
 
 break_wad_loop:         ; negative 1 return val on fail
 
@@ -216,6 +217,22 @@ pop   ds
 POPA_NO_AX_OR_BP_MACRO
 mov   ax, es
 ret
+
+
+
+continue_checks:
+jne   no_match
+cmp   bx, word ptr ds:[si+2]
+jne   no_match
+cmp   dx, word ptr ds:[si+4]
+jne   no_match
+cmp   di, word ptr ds:[si+6]
+je    found_match_return
+jmp   no_match
+
+
+
+
 
 reset_page:
 

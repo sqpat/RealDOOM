@@ -59,6 +59,8 @@
 
 #define SCRATCH_FILE_LOAD_LOCATION  (filelump_t __far*)(0x50000000)
 
+void __near W_UpdateNumLumps();
+
 void __near W_AddFile(int8_t *filename) {
 	wadinfo_t			header;
 	lumpinfo_t __far*		lump_p;
@@ -173,6 +175,8 @@ void __near W_AddFile(int8_t *filename) {
 		fseek(usefp, header.infotableofs, SEEK_SET);
 		FAR_fread(fileinfo, length, 1, usefp);
 		numlumps += header.numlumps;
+
+		W_UpdateNumLumps();
 
 	}
 

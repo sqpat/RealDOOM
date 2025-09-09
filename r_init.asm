@@ -26,7 +26,7 @@ EXTRN Z_QuickMapRender_:FAR
 EXTRN W_CacheLumpNumDirect_:FAR
 EXTRN W_CacheLumpNumDirectSmall_:NEAR
 EXTRN W_CacheLumpNameDirectFarString_:FAR
-EXTRN W_CheckNumForNameFarStringWithHint_:NEAR
+
 EXTRN W_CheckNumForNameFarString_:NEAR
 EXTRN R_SetViewSize_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
@@ -36,7 +36,13 @@ EXTRN R_FlatNumForName_:NEAR
 
 .DATA
 
+EXTRN _numlumps:WORD
+
 .CODE
+
+EXTRN SELFMODIFY_end_lump_for_search:WORD
+EXTRN SELFMODIFY_start_lump_for_search:WORD
+
 
 
 str_dot:
@@ -754,6 +760,7 @@ mov       dx, cs
 call      W_CheckNumForNameFarString_
 inc       ax
 mov       word ptr ds:[_firstpatch], ax
+mov       word ptr cs:[SELFMODIFY_set_patchstart + 1], ax
 mov       word ptr cs:[SELFMODIFY_set_firstpatch + 1], ax
 xchg      ax, cx
 mov       ax, OFFSET str_patch_end
@@ -833,14 +840,25 @@ mov       si, 4 ; name_p
 
 lea       di, [bp - 03ACh]
 
+SELFMODIFY_set_patchend:
+mov       bx, 01000h
+mov       word ptr cs:[SELFMODIFY_start_lump_for_search+1], bx
+
+SELFMODIFY_set_patchstart:
+mov       bx, 01000h
+mov       word ptr cs:[SELFMODIFY_end_lump_for_search+2], bx
+
+mov       dx, SCRATCH_PAGE_SEGMENT_7000
 loop_next_patchlookup:
 
 ; copystr8 not needed. dont need to null terminate. pass directly
-mov       dx, SCRATCH_PAGE_SEGMENT_7000
+
+ ;  dx preserved thru call due to pusha/popa...
 mov       ax, si
-SELFMODIFY_set_patchend:
-mov       bx, 01000h
-call      W_CheckNumForNameFarStringWithHint_
+; try push pop stosw
+; todo make a version expecting caps and skipping checks. make local to this function to get clobbered after startup?
+
+call      W_CheckNumForNameFarString_
 mov       word ptr ds:[di], ax         ; patchlookup[i] = W_CheckNumForName(name);
 
 
@@ -848,6 +866,11 @@ inc       di
 inc       di
 add       si, 8
 loop      loop_next_patchlookup  
+
+
+mov       word ptr cs:[SELFMODIFY_end_lump_for_search+2], cx     ; cx is 0 after loop
+mov       ax, word ptr ds:[_numlumps]
+mov       word ptr cs:[SELFMODIFY_start_lump_for_search+1], ax
 
 
 mov       ax, OFFSET str_texture1
