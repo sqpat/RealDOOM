@@ -573,40 +573,50 @@ skip_masked_stuff:
 ; ds is 07000h
 ; cx is texturewidth
 
-mov       si, 0FF00h                      ; columnpatchcount
+push      ds
+pop       es
+
+mov       di, 0FF00h                      ; columnpatchcount
 xor       dx, dx                          ; totalcompositecolumns = 0;
 xor       bx, bx                          ; word offset
 SELFMODIFY_get_texnum_shifted:
-mov       di, 01000h                      ; texnum sal 1
+mov       si, 01000h                      ; texnum sal 1
 mov       ax, TEXTURECOMPOSITESIZES_SEGMENT
-mov       es, ax
+mov       ds, ax
 push      bp  ; we will use this in following loops
 
 SELFMODIFY_add_usedtextureheight:
 mov       bp, 01000h  ; usedtextureheight
 push      cx   ; save texturewidth for post loop [MATCH I]
+
+
+mov       al, 1
+
 loop_next_column_check_2:
-lodsb
-; if al is zero this is a missing column.
-cmp      al, 1
-jb       do_error_no_column
-je       not_composite
+repe     cmpsb	; find first non-one
+
+ja       do_error_no_column          ; if al is zero this is a missing column.
+jnz      continue_to_final_rle_loop
+pop      bx  ; get width
+push     bx  ; put back
+sub      bx, cx  ; width minus loop
+sal      bx, 1   ; word lookup
+
 	; two plus patches in this column!
 	; so it's composite.
 
-mov      word ptr ds:[0F800h + bx], -1            ;   texcollump[x] = -1;
-add      word ptr es:[di], bp                     ;   texturecompositesizes[texnum] += usedtextureheight;
+mov      word ptr es:[0F800h + bx], -1            ;   texcollump[x] = -1;
+add      word ptr ds:[si], bp                     ;   texturecompositesizes[texnum] += usedtextureheight;
 ; minus one extra for lodsb..
-mov      byte ptr ds:[((0F700h - 0FF00h) - 1) + si], dl ;   startpixel[x] = totalcompositecolumns;
-mov      word ptr ds:[0F500h + bx], MAXSHORT      ;   columnwidths[x] = MAXSHORT;
+mov      byte ptr es:[((0F700h - 0FF00h) - 1) + si], dl ;   startpixel[x] = totalcompositecolumns;
+mov      word ptr es:[0F500h + bx], MAXSHORT      ;   columnwidths[x] = MAXSHORT;
 inc      dx                                       ;   totalcompositecolumns ++;
 
 not_composite:
-inc      bx
-inc      bx  ; word offset
 
-loop     loop_next_column_check_2
-jmp      continue_to_final_rle_loop
+
+jmp     loop_next_column_check_2
+
 do_error_no_column:
 push      ss
 pop       ds
@@ -616,6 +626,8 @@ push      ax
 call      I_Error_
 jmp       exit_r_generate_composite
 continue_to_final_rle_loop:
+push     es
+pop      ds  ; 07000h
 pop      cx  ; retrieve texturewidth  [MATCH I]
 
 mov      ax, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
