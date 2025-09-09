@@ -285,7 +285,7 @@ int32_t __far W_LumpLength (int16_t lump) {
 //
 
 
-void __far W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t size ) {
+void __near W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t size ) {
 	//filelength_t         c;  // size, leave as 32 bit
     lumpinfo_t __far* l;
 #ifdef CHECK_FOR_ERRORS
@@ -316,7 +316,7 @@ void __far W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t si
 #endif
 	lumpsize = l->size;
 
-	
+	// todo do this hack at the data level during loading/setup.
 	if (lump == 1) {//colormaps hack.
 		lumpsize = 33 * 256; // hack to override lumpsize of colormaps
 	}
@@ -359,6 +359,21 @@ void __far W_CacheLumpNameDirectFarString (int8_t __far* name, byte __far* dest 
 
 void __far W_CacheLumpNumDirect (int16_t lump, byte __far* dest ) {
 	W_ReadLump(lump, dest, 0, 0);
+}
+
+// todo inline in r_init?
+void __near W_CacheLumpNumDirectSmall (int16_t lump, byte __far* dest ) {
+	byte stackbuffer[8];
+    lumpinfo_t __far* l;
+	FILE* usedfile = wadfiles[0];
+	Z_QuickMapWADPageFrame(lump);
+	l = &(lumpinfoD800[lump & (LUMP_PER_EMS_PAGE-1)]);
+
+    fseek(usedfile, l->position, SEEK_SET);
+	fread(stackbuffer, 4, 2, usedfile);
+	FAR_memcpy(dest, stackbuffer, 8);
+
+
 }
 
 void __far W_CacheLumpNumDirectWithOffset (int16_t lump, byte __far* dest, uint16_t offset, uint16_t length) {

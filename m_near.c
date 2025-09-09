@@ -386,7 +386,7 @@ int16_t	maxammo[NUMAMMO] = {200, 50, 300, 50};
 // newend is one past the last valid seg
 
 uint16_t                    numlumps;
-FILE*                		wadfiles[MAX_WADFILES];
+FILE*                		  wadfiles[MAX_WADFILES];
 int16_t                		filetolumpindex[MAX_WADFILES-1] = {-1, -1, -1};
 int32_t                		filetolumpsize[MAX_WADFILES-1];
 int8_t                     	currentloadedfileindex = 0;

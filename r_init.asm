@@ -24,6 +24,7 @@ EXTRN I_Error_:FAR
 EXTRN Z_QuickMapScratch_5000_:FAR
 EXTRN Z_QuickMapRender_:FAR
 EXTRN W_CacheLumpNumDirect_:FAR
+EXTRN W_CacheLumpNumDirectSmall_:NEAR
 EXTRN W_CacheLumpNameDirectFarString_:FAR
 EXTRN W_CheckNumForNameFarStringWithHint_:NEAR
 EXTRN W_CheckNumForNameFarString_:NEAR
@@ -105,6 +106,7 @@ MASKED_LOOKUP_OFFSET = (MASKED_LOOKUP_SEGMENT - MASKEDPOSTDATA_SEGMENT) SHL 4
 TEXTUREDEFS_OFFSET_OFFSET = (TEXTUREDEFS_OFFSET_SEGMENT - TEXTUREDEFS_BYTES_SEGMENT) SHL 4
 
 PROC    R_GenerateLookup_ NEAR
+PUBLIC  R_GenerateLookup_
 
 
 PUSHA_NO_AX_MACRO
@@ -170,6 +172,7 @@ mov       ds, si ; SCRATCH_PAGE_SEGMENT_7000
 ; ch is 0 from rep stosw
 mov       cl, dl   ; cx gets texturepatchcount
 mov       byte ptr cs:[SELFMODIFY_set_texturepatchcount+1], cl
+mov       byte ptr cs:[SELFMODIFY_set_texturepatchcount_flag+1], cl
 
 ; es texturebytes
 ; ds 7000
@@ -217,12 +220,24 @@ mov       word ptr cs:[SELFMODIFY_set_lastpatch+4], ax ; update lastpatch
 push      cx ; backup [MATCH B]
 push      ds ; backup [MATCH B]
 mov       cx, ds   ; SCRATCH_PAGE_SEGMENT_7000
-xor       bx, bx
 
 push      ss
 pop       ds
 
+SELFMODIFY_set_texturepatchcount_flag:
+mov       bl, 010h
+dec       bl
+mov       bx, 0
+jnz       do_small_call   ; if only one lump in tex, load full... if multipatch then small load as columns wont be iterated
+
 call      W_CacheLumpNumDirect_
+
+jmp       done_with_cachelump_call
+do_small_call:
+
+call      W_CacheLumpNumDirectSmall_
+
+done_with_cachelump_call:
 
 
 pop       ds ; restore [MATCH B]
