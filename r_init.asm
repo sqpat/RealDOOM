@@ -1257,7 +1257,7 @@ xor       bx, bx
 ; !!!!todo... can this be done by scanning wad data directly instead of loading every lump
 ; actually probably not that slow though (?)
 
-call      W_CacheLumpNumDirect_ ;		W_CacheLumpNumDirect(patchindex, (byte __far*)wadpatch);
+call      W_CacheLumpNumDirectSmall_ ;		W_CacheLumpNumDirect(patchindex, (byte __far*)wadpatch);
 
 
 mov       es, si  ; 7000
@@ -1339,6 +1339,7 @@ mov       cx, SCRATCH_SEGMENT_5000
 add       ax, bp
 xor       bx, bx
 
+; has column iteration, can't be small...
 call      W_CacheLumpNumDirect_
 
 mov       es, word ptr ds:[_spritewidths_segment]

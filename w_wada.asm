@@ -46,12 +46,14 @@ PUSHA_NO_AX_OR_BP_MACRO
 xchg    ax, si
 xchg    ax, bx
 jmp     set_hint
+ENDP
 
 PROC    W_CheckNumForNameFarString_ NEAR
 PUBLIC  W_CheckNumForNameFarString_
 
 mov    ds, dx
 ; fall thru
+ENDP
 
 PROC    W_CheckNumForName_ NEAR
 PUBLIC  W_CheckNumForName_
