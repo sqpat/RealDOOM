@@ -25,6 +25,7 @@ EXTRN Z_QuickMapScratch_5000_:FAR
 EXTRN Z_QuickMapRender_:FAR
 EXTRN W_CacheLumpNumDirect_:FAR
 EXTRN W_CacheLumpNameDirectFarString_:FAR
+EXTRN W_CheckNumForNameFarStringWithHint_:NEAR
 EXTRN W_CheckNumForNameFarString_:NEAR
 EXTRN R_SetViewSize_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
@@ -731,6 +732,8 @@ xchg      ax, cx
 mov       ax, OFFSET str_patch_end
 mov       dx, cs
 call      W_CheckNumForNameFarString_
+mov       word ptr cs:[SELFMODIFY_set_patchend+1], ax
+
 sub       ax, cx
 mov       word ptr ds:[_numpatches], ax
 
@@ -800,16 +803,17 @@ mov       si, 4 ; name_p
 ; this is actually a pretty slow loop. could be improved... how?
 
 
-mov       bx, SCRATCH_PAGE_SEGMENT_7000
+
 lea       di, [bp - 03ACh]
 
 loop_next_patchlookup:
 
 ; copystr8 not needed. dont need to null terminate. pass directly
-mov       dx, bx
+mov       dx, SCRATCH_PAGE_SEGMENT_7000
 mov       ax, si
-call      W_CheckNumForNameFarString_
-
+SELFMODIFY_set_patchend:
+mov       bx, 01000h
+call      W_CheckNumForNameFarStringWithHint_
 mov       word ptr ds:[di], ax         ; patchlookup[i] = W_CheckNumForName(name);
 
 

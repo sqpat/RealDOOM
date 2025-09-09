@@ -37,7 +37,15 @@ PUBLIC  W_WAD_STARTMARKER_
 ENDP
 
 
-; note: some of the math here assums tics wont differ by more than 16 bits signed (32768 tics) per call, which i think is more than more than enough precision in any case.
+
+PROC    W_CheckNumForNameFarStringWithHint_ NEAR
+PUBLIC  W_CheckNumForNameFarStringWithHint_
+
+mov      ds, dx
+PUSHA_NO_AX_OR_BP_MACRO
+xchg    ax, si
+xchg    ax, bx
+jmp     set_hint
 
 PROC    W_CheckNumForNameFarString_ NEAR
 PUBLIC  W_CheckNumForNameFarString_
@@ -50,7 +58,14 @@ PUBLIC  W_CheckNumForName_
 
 PUSHA_NO_AX_OR_BP_MACRO
 
+
 xchg  ax, si
+
+mov   ax, word ptr ss:[_numlumps]
+set_hint:
+mov   word ptr cs:[SELFMODIFY_start_lump_for_search+1], ax
+
+done_setting_hint:
 
 xor   ax, ax
 mov   cx, ax
@@ -150,7 +165,8 @@ done_uppering:
 push  ss
 pop   ds
 
-mov   ax, word ptr ds:[_numlumps]
+SELFMODIFY_start_lump_for_search:
+mov   ax, 01000h
 mov   si, ax
 call  Z_QuickMapWADPageFrame_
 
