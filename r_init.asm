@@ -1212,10 +1212,7 @@ call      W_CacheLumpNumDirect_
 
 ; inlined
 
-mov       ax, TEXTUREDEFS_OFFSET_SEGMENT
-mov       es, ax
-xor       di, di
-mov       word ptr es:[di], di
+
 call      R_InitTextures_
 
 push      cs
