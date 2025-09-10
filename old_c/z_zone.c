@@ -728,7 +728,7 @@ void DUMP_4000_TO_FILE() {
 	FILE*fp = fopen("DUMP4000.BIN", "wb");
 	while (segment < 0x5000) {
 		byte __far * dest = MK_FP(segment, 0);
-		FAR_fwrite(dest, 32768, 1, fp);
+		locallib_far_fwrite(dest, 32768, 1, fp);
 		segment += 0x0800;
 	}
 	fclose(fp);
@@ -746,7 +746,7 @@ void DUMP_MEMORY_TO_FILE() {
 	while (segment < 0xA000) {
 		byte __far * dest = MK_FP(segment, 0);
 		//DEBUG_PRINT("\nloop %u", segment);
-		FAR_fwrite(dest, 32768, 1, fp);
+		locallib_far_fwrite(dest, 32768, 1, fp);
 		segment += 0x0800;
 	}
 	fclose(fp);

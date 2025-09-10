@@ -656,8 +656,8 @@ void __far R_RenderPlayerView () {
 		byte __far* addr1 = MK_FP(drawfuzzcol_area_segment, 0);
 		byte __far* addr2 = MK_FP(drawmaskedfuncarea_sprite_segment, 0);
 
-	    FAR_fwrite((byte __far *)addr1, R_DrawFuzzColumnCodeSize, 1, fp1);
-	    FAR_fwrite((byte __far *)addr2, R_DrawMaskedColumnCodeSize, 1, fp2);
+	    locallib_far_fwrite((byte __far *)addr1, R_DrawFuzzColumnCodeSize, 1, fp1);
+	    locallib_far_fwrite((byte __far *)addr2, R_DrawMaskedColumnCodeSize, 1, fp2);
 
 
 		fclose(fp1);

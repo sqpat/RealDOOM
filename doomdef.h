@@ -590,10 +590,9 @@ void __far  _fstrncpy(char __far *dst, const char __far *src, size_t n);
 #pragma aux (locallib_far_fread_params)  locallib_far_freads;
 
 void  __far locallib_far_fread(void __far* dest, uint16_t size, FILE * stream);
-void  __far locallib_far_fread_old(void __far* dest, uint16_t size, FILE * stream);
-filelength_t __far locallib_far_fwrite(void __far* dest, uint16_t elementsize, uint16_t elementcount, FILE * stream);
+filelength_t __far locallib_far_fwrite(void __far* dest, uint16_t size, FILE * stream);
 
-#define FAR_fwrite locallib_far_fwrite
+
 
 
 #define SAVEGAMESIZE    0xF800

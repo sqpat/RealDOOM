@@ -370,7 +370,7 @@ void DUMP_MEMORY_TO_FILE() {
 	while (segment < 0xA000) {
 		byte __far * dest = MK_FP(segment, 0);
 		//DEBUG_PRINT("\nloop %u", segment);
-		FAR_fwrite(dest, 32768, 1, fp);
+		locallib_far_fwrite(dest, 32768, 1, fp);
 		segment += 0x0800;
 	}
 	fclose(fp);
@@ -737,7 +737,7 @@ void __far D_DoomMain2(void) {
 	/*
 
 	FILE *fp = fopen("output9.bin", "wb");
-	FAR_fwrite(M_Random, (byte __far *)ST_STUFF_STARTMARKER - (byte __far *)M_Random, 1, fp);
+	locallib_far_fwrite(M_Random, (byte __far *)ST_STUFF_STARTMARKER - (byte __far *)M_Random, 1, fp);
 	fclose(fp);
 	exit(0);
 

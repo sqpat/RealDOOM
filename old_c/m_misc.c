@@ -89,7 +89,7 @@ boolean __near M_WriteFile (int8_t const*	name, void __far*		source, filelength_
 	    return false;
     }
 
-    count = FAR_fwrite (source, 1, length, fp);
+    count = locallib_far_fwrite (source, length, fp);
     fclose (fp);
 	
     if (count < length){

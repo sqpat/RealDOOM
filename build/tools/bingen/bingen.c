@@ -260,151 +260,151 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     // write filesize..
     fwrite(&codesize[0], 2, 1, fp);
     // write data
-    FAR_fwrite((byte __far *)R_COLUMN24_STARTMARKER, codesize[0], 1, fp);
+    locallib_far_fwrite((byte __far *)R_COLUMN24_STARTMARKER, codesize[0], fp);
     
     codesize[19] = FP_OFF(R_COLUMN16_ENDMARKER) - FP_OFF(R_COLUMN16_STARTMARKER);
     // write filesize..
     fwrite(&codesize[19], 2, 1, fp);
     // write data
-    FAR_fwrite((byte __far *)R_COLUMN16_STARTMARKER, codesize[19], 1, fp);
+    locallib_far_fwrite((byte __far *)R_COLUMN16_STARTMARKER, codesize[19], fp);
 
     codesize[15] = FP_OFF(R_COLUMN0_ENDMARKER) - FP_OFF(R_COLUMN0_STARTMARKER);
     fwrite(&codesize[15], 2, 1, fp);
-    FAR_fwrite((byte __far *)R_COLUMN0_STARTMARKER, codesize[15], 1, fp);
+    locallib_far_fwrite((byte __far *)R_COLUMN0_STARTMARKER, codesize[15], fp);
 
     codesize[24] = FP_OFF(R_COLUMNFL_ENDMARKER) - FP_OFF(R_COLUMNFL_STARTMARKER);
     fwrite(&codesize[24], 2, 1, fp);
-    FAR_fwrite((byte __far *)R_COLUMNFL_STARTMARKER, codesize[24], 1, fp);
+    locallib_far_fwrite((byte __far *)R_COLUMNFL_STARTMARKER, codesize[24], fp);
 
     
     codesize[1] = FP_OFF(R_SPAN24_ENDMARKER) - FP_OFF(R_SPAN24_STARTMARKER);
     fwrite(&codesize[1], 2, 1, fp); // write filesize..
-    FAR_fwrite((byte __far *)R_SPAN24_STARTMARKER, codesize[1], 1, fp); // write data
+    locallib_far_fwrite((byte __far *)R_SPAN24_STARTMARKER, codesize[1], fp); // write data
     
     codesize[13] = FP_OFF(R_SPAN16_ENDMARKER) - FP_OFF(R_SPAN16_STARTMARKER);    
     fwrite(&codesize[13], 2, 1, fp); // write filesize..
-    FAR_fwrite((byte __far *)R_SPAN16_STARTMARKER, codesize[13], 1, fp); // write data
+    locallib_far_fwrite((byte __far *)R_SPAN16_STARTMARKER, codesize[13], fp); // write data
     
     codesize[14] = FP_OFF(R_SPAN0_ENDMARKER) - FP_OFF(R_SPAN0_STARTMARKER);    
     fwrite(&codesize[14], 2, 1, fp); // write filesize..
-    FAR_fwrite((byte __far *)R_SPAN0_STARTMARKER, codesize[14], 1, fp); // write data
+    locallib_far_fwrite((byte __far *)R_SPAN0_STARTMARKER, codesize[14], fp); // write data
 
     codesize[23] = FP_OFF(R_SPANFL_ENDMARKER) - FP_OFF(R_SPANFL_STARTMARKER);
     fwrite(&codesize[23], 2, 1, fp); // write filesize..
-    FAR_fwrite((byte __far *)R_SPANFL_STARTMARKER, codesize[23], 1, fp); // write data
+    locallib_far_fwrite((byte __far *)R_SPANFL_STARTMARKER, codesize[23], fp); // write data
 
 
     codesize[2] = FP_OFF(R_WriteBackViewConstantsMasked24) - FP_OFF(R_MASK24_STARTMARKER);
     fwrite(&codesize[2], 2, 1, fp);
-    FAR_fwrite((byte __far *)R_MASK24_STARTMARKER, codesize[2], 1, fp);
+    locallib_far_fwrite((byte __far *)R_MASK24_STARTMARKER, codesize[2], fp);
 
 
     codesize[20] = FP_OFF(R_WriteBackViewConstantsMasked16) - FP_OFF(R_MASK16_STARTMARKER);
     fwrite(&codesize[20], 2, 1, fp);
-    FAR_fwrite((byte __far *)R_MASK16_STARTMARKER, codesize[20], 1, fp);
+    locallib_far_fwrite((byte __far *)R_MASK16_STARTMARKER, codesize[20], fp);
 
     codesize[17] = FP_OFF(R_WriteBackViewConstantsMasked0) - FP_OFF(R_MASK0_STARTMARKER);
     fwrite(&codesize[17], 2, 1, fp);
-    FAR_fwrite((byte __far *)R_MASK0_STARTMARKER, codesize[17], 1, fp);
+    locallib_far_fwrite((byte __far *)R_MASK0_STARTMARKER, codesize[17], fp);
 
     codesize[25] = FP_OFF(R_WriteBackViewConstantsMaskedFL) - FP_OFF(R_MASKFL_STARTMARKER);
     fwrite(&codesize[25], 2, 1, fp);
-    FAR_fwrite((byte __far *)R_MASKFL_STARTMARKER, codesize[25], 1, fp);
+    locallib_far_fwrite((byte __far *)R_MASKFL_STARTMARKER, codesize[25], fp);
 
     codesize[3] = FP_OFF(R_MASK24_ENDMARKER) - FP_OFF(R_WriteBackViewConstantsMasked24);
     fwrite(&codesize[3], 2, 1, fp);
-    FAR_fwrite((byte __far *)R_WriteBackViewConstantsMasked24, codesize[3], 1, fp); 
+    locallib_far_fwrite((byte __far *)R_WriteBackViewConstantsMasked24, codesize[3], fp); 
 
     codesize[21] = FP_OFF(R_MASK16_ENDMARKER) - FP_OFF(R_WriteBackViewConstantsMasked16);
     fwrite(&codesize[21], 2, 1, fp);
-    FAR_fwrite((byte __far *)R_WriteBackViewConstantsMasked16, codesize[21], 1, fp); 
+    locallib_far_fwrite((byte __far *)R_WriteBackViewConstantsMasked16, codesize[21], fp); 
 
     codesize[18] = FP_OFF(R_MASK0_ENDMARKER) - FP_OFF(R_WriteBackViewConstantsMasked0);
     fwrite(&codesize[18], 2, 1, fp);
-    FAR_fwrite((byte __far *)R_WriteBackViewConstantsMasked0, codesize[18], 1, fp); 
+    locallib_far_fwrite((byte __far *)R_WriteBackViewConstantsMasked0, codesize[18], fp); 
 
     codesize[26] = FP_OFF(R_MASKFL_ENDMARKER) - FP_OFF(R_WriteBackViewConstantsMaskedFL);
     fwrite(&codesize[26], 2, 1, fp);
-    FAR_fwrite((byte __far *)R_WriteBackViewConstantsMaskedFL, codesize[26], 1, fp); 
+    locallib_far_fwrite((byte __far *)R_WriteBackViewConstantsMaskedFL, codesize[26], fp); 
 
 
     codesize[4] = FP_OFF(R_SKY_ENDMARKER) - FP_OFF(R_SKY_STARTMARKER);
     fwrite(&codesize[4], 2, 1, fp);
-    FAR_fwrite((byte __far *)R_SKY_STARTMARKER, codesize[4], 1, fp);
+    locallib_far_fwrite((byte __far *)R_SKY_STARTMARKER, codesize[4], fp);
 
     codesize[28] = FP_OFF(R_SKYFL_ENDMARKER) - FP_OFF(R_SKYFL_STARTMARKER);
     fwrite(&codesize[28], 2, 1, fp);
-    FAR_fwrite((byte __far *)R_SKYFL_STARTMARKER, codesize[28], 1, fp);
+    locallib_far_fwrite((byte __far *)R_SKYFL_STARTMARKER, codesize[28], fp);
 
     codesize[12] = FP_OFF(R_BSP24_ENDMARKER) - FP_OFF(R_BSP24_STARTMARKER);
     fwrite(&codesize[12], 2, 1, fp);
-    FAR_fwrite((byte __far *)R_BSP24_STARTMARKER, codesize[12], 1, fp);
+    locallib_far_fwrite((byte __far *)R_BSP24_STARTMARKER, codesize[12], fp);
 
     codesize[22] = FP_OFF(R_BSP16_ENDMARKER) - FP_OFF(R_BSP16_STARTMARKER);
     fwrite(&codesize[22], 2, 1, fp);
-    FAR_fwrite((byte __far *)R_BSP16_STARTMARKER, codesize[22], 1, fp);
+    locallib_far_fwrite((byte __far *)R_BSP16_STARTMARKER, codesize[22], fp);
 
     codesize[16] = FP_OFF(R_BSP0_ENDMARKER) - FP_OFF(R_BSP0_STARTMARKER);
     fwrite(&codesize[16], 2, 1, fp);
-    FAR_fwrite((byte __far *)R_BSP0_STARTMARKER, codesize[16], 1, fp);
+    locallib_far_fwrite((byte __far *)R_BSP0_STARTMARKER, codesize[16], fp);
 
     codesize[27] = FP_OFF(R_BSPFL_ENDMARKER) - FP_OFF(R_BSPFL_STARTMARKER);
     fwrite(&codesize[27], 2, 1, fp);
-    FAR_fwrite((byte __far *)R_BSPFL_STARTMARKER, codesize[27], 1, fp);
+    locallib_far_fwrite((byte __far *)R_BSPFL_STARTMARKER, codesize[27], fp);
 
 
     codesize[5] = FP_OFF(WI_ENDMARKER) - FP_OFF(WI_STARTMARKER);
     fwrite(&codesize[5], 2, 1, fp);
-    FAR_fwrite((byte __far *)WI_STARTMARKER, codesize[5], 1, fp);
+    locallib_far_fwrite((byte __far *)WI_STARTMARKER, codesize[5], fp);
 
 
     codesize[6] = FP_OFF(P_INFO_ENDMARKER) - FP_OFF(P_SIGHT_STARTMARKER);
     fwrite(&codesize[6], 2, 1, fp);
-    FAR_fwrite((byte __far *)P_SIGHT_STARTMARKER, codesize[6], 1, fp);
+    locallib_far_fwrite((byte __far *)P_SIGHT_STARTMARKER, codesize[6], fp);
 
     codesize[29] = FP_OFF(M_MENU_ENDMARKER) - FP_OFF(M_MENU_STARTMARKER);
     fwrite(&codesize[29], 2, 1, fp);
-    FAR_fwrite((byte __far *)M_MENU_STARTMARKER, codesize[29], 1, fp);
+    locallib_far_fwrite((byte __far *)M_MENU_STARTMARKER, codesize[29], fp);
 
     codesize[7] = FP_OFF(F_WIPE_ENDMARKER) - FP_OFF(F_WIPE_STARTMARKER);
     fwrite(&codesize[7], 2, 1, fp);
-    FAR_fwrite((byte __far *)I_ReadScreen, codesize[7], 1, fp);
+    locallib_far_fwrite((byte __far *)I_ReadScreen, codesize[7], fp);
 
     codesize[8] = FP_OFF(F_FINALE_ENDMARKER) - FP_OFF(F_FINALE_STARTMARKER);
     fwrite(&codesize[8], 2, 1, fp);
-    FAR_fwrite((byte __far *)F_FINALE_STARTMARKER, codesize[8], 1, fp);
+    locallib_far_fwrite((byte __far *)F_FINALE_STARTMARKER, codesize[8], fp);
 
     codesize[9] = FP_OFF(P_SAVEG_ENDMARKER) - FP_OFF(P_SAVEG_STARTMARKER);
     fwrite(&codesize[9], 2, 1, fp);
-    FAR_fwrite((byte __far *)P_SAVEG_STARTMARKER, codesize[9], 1, fp);
+    locallib_far_fwrite((byte __far *)P_SAVEG_STARTMARKER, codesize[9], fp);
 
     codesize[10] = FP_OFF(SM_LOAD_ENDMARKER) - FP_OFF(SM_LOAD_STARTMARKER);
     fwrite(&codesize[10], 2, 1, fp);
-    FAR_fwrite((byte __far *)SM_LOAD_STARTMARKER, codesize[10], 1, fp);
+    locallib_far_fwrite((byte __far *)SM_LOAD_STARTMARKER, codesize[10], fp);
 
     codesize[11] = FP_OFF(S_INIT_ENDMARKER) - FP_OFF(S_INIT_STARTMARKER);
     fwrite(&codesize[11], 2, 1, fp);
-    FAR_fwrite((byte __far *)S_INIT_STARTMARKER, codesize[11], 1, fp);
+    locallib_far_fwrite((byte __far *)S_INIT_STARTMARKER, codesize[11], fp);
 
 
     muscodesize[0] = FP_OFF(SM_OPL2_ENDMARKER) - FP_OFF(SM_OPL2_STARTMARKER);
     fwrite(&muscodesize[0], 2, 1, fp);
-    FAR_fwrite((byte __far *)SM_OPL2_STARTMARKER, muscodesize[0], 1, fp);
+    locallib_far_fwrite((byte __far *)SM_OPL2_STARTMARKER, muscodesize[0], fp);
     maxmuscodesize = muscodesize[0] > maxmuscodesize ? muscodesize[0] : maxmuscodesize;
 
     muscodesize[1] = FP_OFF(SM_OPL3_ENDMARKER) - FP_OFF(SM_OPL3_STARTMARKER);
     fwrite(&muscodesize[1], 2, 1, fp);
-    FAR_fwrite((byte __far *)SM_OPL3_STARTMARKER, muscodesize[1], 1, fp);
+    locallib_far_fwrite((byte __far *)SM_OPL3_STARTMARKER, muscodesize[1], fp);
     maxmuscodesize = muscodesize[1] > maxmuscodesize ? muscodesize[1] : maxmuscodesize;
 
     muscodesize[2] = FP_OFF(SM_MPUMD_ENDMARKER) - FP_OFF(SM_MPUMD_STARTMARKER);
     fwrite(&muscodesize[2], 2, 1, fp);
-    FAR_fwrite((byte __far *)SM_MPUMD_STARTMARKER, muscodesize[2], 1, fp);
+    locallib_far_fwrite((byte __far *)SM_MPUMD_STARTMARKER, muscodesize[2], fp);
     maxmuscodesize = muscodesize[2] > maxmuscodesize ? muscodesize[2] : maxmuscodesize;
 
     muscodesize[3] = FP_OFF(SM_SBMID_ENDMARKER) - FP_OFF(SM_SBMID_STARTMARKER);
     fwrite(&muscodesize[3], 2, 1, fp);
-    FAR_fwrite((byte __far *)SM_SBMID_STARTMARKER, muscodesize[3], 1, fp);
+    locallib_far_fwrite((byte __far *)SM_SBMID_STARTMARKER, muscodesize[3], fp);
     maxmuscodesize = muscodesize[3] > maxmuscodesize ? muscodesize[3] : maxmuscodesize;
 
 

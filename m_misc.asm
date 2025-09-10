@@ -99,12 +99,13 @@ test  ax, ax
 je    exit_writefile_return_0
 
 push  ax      ; fp 2nd to retrieve later
-push  ax      ; fp
 
-mov   dx, cx  
-xchg  ax, bx  
-mov   cx, di
-mov   bx, 1
+mov   dx, cx  ; dx gets segment
+xchg  ax, cx  ; fp to cx
+xchg  ax, bx  ; dest offset to ax
+
+mov   bx, di  ; len to bx
+
 
 call  locallib_far_fwrite_
 

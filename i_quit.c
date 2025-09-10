@@ -29,7 +29,7 @@
 
 void __near finishlogging(){
     FILE* fp = fopen("outp.txt", "wb");
-    FAR_fwrite(MK_FP(0xDC00, 0), 16384, 1, fp);
+    locallib_far_fwrite(MK_FP(0xDC00, 0), 16384, 1, fp);
     fclose(fp);
 }
 */

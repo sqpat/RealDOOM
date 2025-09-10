@@ -1071,7 +1071,7 @@ void __near AM_Drawer (void) {
 /*
 	FILE* fp = fopen ("indump.txt", "w");
 	Z_QuickMapRender();
-	FAR_fwrite((byte __far*) flatindex, size_flatindex, 1, fp);
+	locallib_far_fwrite((byte __far*) flatindex, size_flatindex, 1, fp);
 	fclose(fp);
 	I_Error("done");
 	*/

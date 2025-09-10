@@ -113,20 +113,17 @@ PROC    locallib_far_fwrite_ FAR
 PUBLIC  locallib_far_fwrite_
 ;filelength_t  __far locallib_far_fwrite(void __far* src, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
 
-
-push      si
-push      di
-push      bp
+push      cx      ; fp = bp + 6
+push      si      ; bp + 4
+push      di      ; bp + 2
+push      bp      ; bp + 0
 mov       bp, sp
 sub       sp, FREAD_BUFFER_SIZE
 xchg      ax, si  ; si = src offset
 mov       di, dx  ; di = src segment
-mov       ax, bx
-mul       cx
-jz        skip_write_zero
+mov       cx, bx
 
-xchg      ax, cx ; cx gets size to write
-
+; cx has size 
 ; si has dest segment
 ; di has dest offset
 ; dx has size to write...
@@ -147,7 +144,7 @@ mov       bx, ds
 mov       es, bx
 
 mov       ds, di
-lea       di, [bp - FREAD_BUFFER_SIZE]
+lea       di, [bp - FREAD_BUFFER_SIZE] ; todo mov sp?
 mov       ax, di
 
 shr       cx, 1         ;FAR_memcpy(destloc, stackbufferfar, copysize);
@@ -160,7 +157,7 @@ mov       di, ds   ; restore backup segment...
 mov       ds, bx   ; restore ds
 
 mov       bx, 1
-mov       cx, word ptr [bp + 0Ah]   ; fp
+mov       cx, word ptr [bp + 6]   ; fp
 
 
 call      fwrite_   ;fwrite(stackbuffer, copysize, 1, fp);
@@ -177,7 +174,8 @@ skip_write_zero:
 LEAVE_MACRO
 pop       di
 pop       si
-retf      2
+pop       cx
+retf
 
 ENDP
 
