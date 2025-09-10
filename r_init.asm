@@ -583,11 +583,11 @@ skip_masked_stuff:
 ; cx is texturewidth
 
 push      ds
-pop       es
+pop       es   ; 7000
 
 mov       di, 0FF00h                      ; columnpatchcount
 xor       dx, dx                          ; totalcompositecolumns = 0;
-xor       bx, bx                          ; word offset
+
 SELFMODIFY_get_texnum_shifted:
 mov       si, 01000h                      ; texnum sal 1
 mov       ax, TEXTURECOMPOSITESIZES_SEGMENT
@@ -596,20 +596,18 @@ push      bp  ; we will use this in following loops
 
 SELFMODIFY_add_usedtextureheight:
 mov       bp, 01000h  ; usedtextureheight
-push      cx   ; save texturewidth for post loop [MATCH I]
-
 
 mov       al, 1
 
 loop_next_column_check_2:
 repe     scasb	; find first non-one
-jz       not_composite   ; implies cx 0
-ja       do_error_no_column          ; if al is zero this is a missing column.
-actually_go_do_one_more_iteration:
+jz       continue_to_final_rle_loop   ; implies cx 0
+ja       do_error_no_column           ; if al is zero this is a missing column.
 
 ; todo  get a start and end range by doing repne scasb then range writes?
 
 lea      bx, [di - 0FF01h]      ; repe overindexes by 1... ff01 instead of ff00
+mov      byte ptr es:[0F700h + bx], dl ;   startpixel[x] = totalcompositecolumns;
 sal      bx, 1   ; word lookup
 
 	; two plus patches in this column!
@@ -618,7 +616,6 @@ sal      bx, 1   ; word lookup
 mov      word ptr es:[0F800h + bx], -1            ;   texcollump[x] = -1;
 add      word ptr ds:[si], bp                     ;   texturecompositesizes[texnum] += usedtextureheight;
 ; minus one extra for lodsb..
-mov      byte ptr es:[((0F700h - 0FF00h) - 1) + si], dl ;   startpixel[x] = totalcompositecolumns;
 mov      word ptr es:[0F500h + bx], MAXSHORT      ;   columnwidths[x] = MAXSHORT;
 inc      dx                                       ;   totalcompositecolumns ++;
 
@@ -636,9 +633,10 @@ push      ax
 call      I_Error_
 jmp       exit_r_generate_composite
 continue_to_final_rle_loop:
-push     es
+push     es  ; 07000h
 pop      ds  ; 07000h
-pop      cx  ; retrieve texturewidth  [MATCH I]
+lea      cx, [di - 0FF00h] ; retrieve cx from di
+
 
 mov      ax, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
 mov      es, ax
