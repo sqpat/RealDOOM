@@ -602,13 +602,14 @@ push      cx   ; save texturewidth for post loop [MATCH I]
 mov       al, 1
 
 loop_next_column_check_2:
-repe     cmpsb	; find first non-one
-
+repe     scasb	; find first non-one
+jz       not_composite   ; implies cx 0
 ja       do_error_no_column          ; if al is zero this is a missing column.
-jnz      continue_to_final_rle_loop
-pop      bx  ; get width
-push     bx  ; put back
-sub      bx, cx  ; width minus loop
+actually_go_do_one_more_iteration:
+
+; todo  get a start and end range by doing repne scasb then range writes?
+
+lea      bx, [di - 0FF01h]      ; repe overindexes by 1... ff01 instead of ff00
 sal      bx, 1   ; word lookup
 
 	; two plus patches in this column!
@@ -623,7 +624,7 @@ inc      dx                                       ;   totalcompositecolumns ++;
 
 not_composite:
 
-
+jcxz    continue_to_final_rle_loop
 jmp     loop_next_column_check_2
 
 do_error_no_column:
