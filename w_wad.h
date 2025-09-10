@@ -76,6 +76,14 @@ void __far W_CacheLumpNameDirect(int8_t __near* name, byte __far* dest);
 void __far W_CacheLumpNameDirectFarString (int8_t __far* name, byte __far* dest );
 
 void __far W_CacheLumpNumDirect(int16_t lump, byte __far* dest);
+
+
+#pragma aux W_CacheLumpNumDirectWithOffsetParam \
+                    __parm [ax] [cx bx] [dx] [si] \
+                    __modify [ax bx cx dx si];
+
+#pragma aux (W_CacheLumpNumDirectWithOffsetParam)  W_CacheLumpNumDirectWithOffset;
+
 void __far W_CacheLumpNumDirectWithOffset (int16_t lump, byte __far* dest, uint16_t offset, uint16_t length);
 
 

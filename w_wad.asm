@@ -315,8 +315,8 @@ mov       ax, 0D800h
 mov       es, ax
 mov       bx, cx
 shl       bx, 4
-mov       ax, word ptr es:[bx + 0Ch]
-mov       dx, word ptr es:[bx + 0Eh]
+les       ax, dword ptr es:[bx + LUMPINFO_T.lumpinfo_size + 0]
+mov       dx, es
 
 pop       cx
 pop       bx
@@ -325,91 +325,132 @@ retf
 
 ENDP
 
+; void __near W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t size ) {
+
+; dx size
+
+do_colormaps_size:
+mov       di, COLORMAPS_SIZE
+jmp       got_lump_size
+found_lump_file:
+inc       bx    ; fileindex = i+1
+inc       bx    ; fileindex = i+1 (word lookup)
+jmp       done_finding_lump_file
+
+
 PROC    W_ReadLump_ NEAR
 PUBLIC  W_ReadLump_
+
+; bp - 4 dest
+
 
 
 push      dx
 push      si
 push      di
-push      bp
-mov       bp, sp
-sub       sp, 4
+
+
 mov       si, ax
-mov       word ptr [bp - 4], bx
-mov       di, cx
+push      cx  ; [MATCH A] store dest segment
+push      bx  ; [MATCH A] store dest offset
+
 call      Z_QuickMapWADPageFrame_
 mov       bx, si
+
+;	l = &(lumpinfoD800[lump & (LUMP_PER_EMS_PAGE-1)]);
+
+
 SELFMODIFY_set_lumpinfo_segment_4:
 mov       ax, 0D800h
-and       bh, 3
 mov       es, ax
-shl       bx, 4
-xor       dh, dh
-mov       ax, word ptr es:[bx + 0Ch]
-mov       cx, bx
-mov       word ptr [bp - 2], ax
+
+and       bh, 3      ; (LUMP_PER_EMS_PAGE - 1 ) SHR 8
+SHIFT_MACRO shl       bx 4
+
+
+mov       di, word ptr es:[bx + LUMPINFO_T.lumpinfo_size]  ; di has size
+
 cmp       si, 1
-je        label_4
-label_8:
-xor       dl, dl
-label_7:
+je        do_colormaps_size
+got_lump_size:
+
+; di has size to read (16 bit)
+
+
+les       dx, dword ptr es:[bx + LUMPINFO_T.lumpinfo_position]
+mov       cx, es
+; dx has position low
+; cx has position high
+
+;	for (i = 0; i < currentloadedfileindex-1; i++){
+;		if (lump == filetolumpindex[i]){
+;			fileindex = i+1;	// this is a single lump file
+;			break;
+;		}
+;	}
+
+; si = lump
+
+xor       bx, bx
 mov       al, byte ptr ds:[_currentloadedfileindex]
 cbw      
-mov       bx, ax
-mov       al, dl
-dec       bx
-cbw      
-cmp       ax, bx
-jge       label_5
-mov       bx, ax
-add       bx, ax
+dec       ax
+jz        skip_loop
+shl       ax, 1
+
+loop_next_fileindex:
 cmp       si, word ptr ds:[bx + _filetolumpindex]
-je        label_6
-inc       dl
-jmp       label_7
-label_4:
-mov       word ptr [bp - 2], COLORMAPS_SIZE
-jmp       label_8
-label_6:
-mov       dh, dl
-inc       dh
-label_5:
-mov       bx, cx
-mov       si, cx
-mov       bx, word ptr es:[bx + 8]
-mov       al, dh
-add       bx, word ptr [bp + 0Ah]
-mov       cx, word ptr es:[si + 0Ah]
-adc       cx, word ptr [bp + 0Ch]
-cbw      
-mov       si, ax
-add       si, ax
-xor       dx, dx
-mov       ax, word ptr ds:[si + _wadfiles]
+je        found_lump_file
+inc       bx
+inc       bx
+cmp       bx, ax
 
-call      fseek_
+jge       loop_next_fileindex
+xor       bx, bx
 
-mov       cx, 1
-mov       ax, word ptr [bp + 010h]
-push      word ptr ds:[si + _wadfiles]
-or        ax, word ptr [bp + 0Eh]
-je        label_9
-mov       bx, word ptr [bp + 0Eh]
-label_10:
-mov       ax, word ptr [bp - 4]
-mov       dx, di
+done_finding_lump_file:
+skip_loop:
 
-call      locallib_far_fread_
-LEAVE_MACRO     
+mov       ax, word ptr ds:[bx + _wadfiles]
+
+mov       bx, dx   ; get position low
+
+;	startoffset = l->position + start;
+
+SELFMODIFY_set_start_offset_low:
+mov       si, 0h
+add       bx, si
+SELFMODIFY_add_start_offset_high:
+db 081h, 0D1h, 00, 00       ; 81 D1 00 00    ; adc cx, 0
+
+
+sub       di, si   ; di now equals lumpsize - start if needed
+
+xor       dx, dx  ; SEEK_SET
+mov       si, ax  ; store fp
+call      fseek_  ;    fseek(wadfiles[fileindex], startoffset, SEEK_SET);
+
+
+SELFMODIFY_set_length:
+db 0BBh, 00, 00   ;  BB 00 00    mov bx, 0
+test      bx, bx
+jne       skip_lumpsize_load
+mov       bx, di  ; (lumpsize - start)
+
+skip_lumpsize_load:
+
+pop       ax ; [MATCH A] get dest offset
+pop       dx ; [MATCH A] get dest segment
+mov       cx, 1   ; blocksize
+
+push      si ; fp arg to function
+call      locallib_far_fread_ ; FAR_fread(dest, size ? size : (lumpsize - start), 1, wadfiles[fileindex]);
+
 pop       di
 pop       si
 pop       dx
-ret       8
-label_9:
-mov       bx, word ptr [bp - 2]
-sub       bx, word ptr [bp + 0Ah]
-jmp       label_10
+ret
+
 
 
 ENDP
@@ -418,10 +459,6 @@ PROC    W_CacheLumpNameDirect_ FAR
 PUBLIC  W_CacheLumpNameDirect_
 
 
-push      0
-push      0
-push      0
-push      0
 call      W_CheckNumForName_
 call      W_ReadLump_
 retf      
@@ -432,10 +469,6 @@ ENDP
 PROC    W_CacheLumpNameDirectFarString_ FAR
 PUBLIC  W_CacheLumpNameDirectFarString_
 
-push      0
-push      0
-push      0
-push      0
 call      W_CheckNumForNameFarString_
 call      W_ReadLump_
 retf      
@@ -446,10 +479,6 @@ ENDP
 PROC    W_CacheLumpNumDirect_ FAR
 PUBLIC  W_CacheLumpNumDirect_
 
-push      0
-push      0
-push      0
-push      0
 call      W_ReadLump_
 retf      
 
@@ -514,29 +543,46 @@ ENDP
 PROC    W_CacheLumpNumDirectWithOffset_ FAR
 PUBLIC  W_CacheLumpNumDirectWithOffset_
 
-push      bp
-mov       bp, sp
-push      0
-push      word ptr [bp + 6]
-push      0
-push      dx
+
+; offset in dx
+; size in si
+
+mov       word ptr cs:[SELFMODIFY_set_start_offset_low + 1], dx
+mov       word ptr cs:[SELFMODIFY_set_length + 1], si
+
 call      W_ReadLump_
-pop       bp
-retf      2
+
+xor       ax, ax
+mov       word ptr cs:[SELFMODIFY_set_start_offset_low + 1], ax
+mov       word ptr cs:[SELFMODIFY_set_length + 1], ax
+
+
+retf      
 
 
 ENDP
+
+; todo suck less
 
 PROC    W_CacheLumpNumDirectFragment_ FAR
 PUBLIC  W_CacheLumpNumDirectFragment_
 
 push      bp
 mov       bp, sp
-push      0
-push      16384
-push      word ptr [bp + 8]
-push      word ptr [bp + 6]
+mov       word ptr cs:[SELFMODIFY_set_length + 1], 16384
+push      ax
+mov       ax, word ptr [bp + 6]
+mov       word ptr cs:[SELFMODIFY_set_start_offset_low + 1], ax
+mov       ax, word ptr [bp + 8]
+mov       word ptr cs:[SELFMODIFY_add_start_offset_high + 2], ax
+pop       ax
 call      W_ReadLump_
+; reset it all to base
+xor       ax, ax
+mov       word ptr cs:[SELFMODIFY_set_length + 1], ax
+mov       word ptr cs:[SELFMODIFY_set_start_offset_low + 1], ax
+mov       word ptr cs:[SELFMODIFY_add_start_offset_high + 2], ax
+
 pop       bp
 retf      4
 
