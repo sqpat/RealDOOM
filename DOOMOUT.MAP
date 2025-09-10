@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/09 12:00:32
+Created on:       25/09/09 12:07:49
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -57,10 +57,10 @@ p_setup_TEXT           CODE           AUTO           0000:7970       000011e6
 S_SOUND_TEXT           CODE           AUTO           0000:8b56       0000049b
 s_sbsfx_TEXT           CODE           AUTO           0000:9000       00001803
 R_MAIN_TEXT            CODE           AUTO           0000:a804       000003db
-f_file_TEXT            CODE           AUTO           0000:abe0       00000113
-W_WAD_TEXT             CODE           AUTO           0000:acf4       00000218
-V_VIDEO_TEXT           CODE           AUTO           0000:af0c       00000601
-Z_ZONE_TEXT            CODE           AUTO           0000:b50e       00000469
+F_FILE_TEXT            CODE           AUTO           0000:abe0       00000116
+W_WAD_TEXT             CODE           AUTO           0000:acf6       00000218
+V_VIDEO_TEXT           CODE           AUTO           0000:af0e       00000601
+Z_ZONE_TEXT            CODE           AUTO           0000:b510       00000469
 _TEXT                  CODE           AUTO           0000:b980       0000243e
 FAR_DATA               FAR_DATA       AUTO           0ddb:000e       00000000
 _NULL                  BEGDATA        DGROUP         0ddc:0000       00000020
@@ -588,63 +588,65 @@ Module: r_main.obj(r_main.ASM)
 0000:ab35      R_SetViewSize_
 0000:ab01      R_PointToAngle2_
 0000:ab83      R_DrawViewBorder_
-Module: f_file.obj(C:\REALDOOM\f_file.c)
+Module: f_file.obj(f_file.ASM)
+0000:ac64      locallib_far_fwrite_
 0000:abe0      locallib_far_fread_
-0000:ac6a      locallib_far_fwrite_
+0000:abe0*     F_FILE_STARTMARKER_
+0000:acf6*     F_FILE_ENDMARKER_
 Module: w_wad.obj(w_wad.ASM)
-0000:aec1      W_CacheLumpNumDirect_
-0000:ae41*     W_ReadLump_
-0000:adfe      W_LumpLength_
-0000:aec5      W_CacheLumpNumDirectWithOffset_
-0000:af0c*     W_WAD_ENDMARKER_
-0000:adef      W_GetNumForName_
-0000:acfe      W_CheckNumForName_
-0000:aeba      W_CacheLumpNameDirectFarString_
-0000:aedd      W_CacheLumpNumDirectFragment_
-0000:ad92      SELFMODIFY_start_lump_for_search
-0000:acf4*     W_WAD_STARTMARKER_
-0000:adb4      SELFMODIFY_end_lump_for_search
-0000:acf4      W_UpdateNumLumps_
-0000:acfc      W_CheckNumForNameFarString_
-0000:aeb3      W_CacheLumpNameDirect_
+0000:aec3      W_CacheLumpNumDirect_
+0000:ae43*     W_ReadLump_
+0000:ae00      W_LumpLength_
+0000:aec7      W_CacheLumpNumDirectWithOffset_
+0000:af0e*     W_WAD_ENDMARKER_
+0000:adf1      W_GetNumForName_
+0000:ad00      W_CheckNumForName_
+0000:aebc      W_CacheLumpNameDirectFarString_
+0000:aedf      W_CacheLumpNumDirectFragment_
+0000:ad94      SELFMODIFY_start_lump_for_search
+0000:acf6*     W_WAD_STARTMARKER_
+0000:adb6      SELFMODIFY_end_lump_for_search
+0000:acf6      W_UpdateNumLumps_
+0000:acfe      W_CheckNumForNameFarString_
+0000:aeb5      W_CacheLumpNameDirect_
 Module: v_video.obj(v_video.ASM)
-0000:b1c4*     CopyString9_
-0000:b43a      V_DrawFullscreenPatch_
-0000:b23a      R_FillBackScreen_
-0000:b403      V_CopyRect_
-0000:b0cc      V_DrawPatchDirect_
-0000:b3e9      V_MarkRect_
-0000:af0c      V_DrawPatch_
-0000:afff*     V_DrawPatch5000Screen0_
+0000:b1c6*     CopyString9_
+0000:b43c      V_DrawFullscreenPatch_
+0000:b23c      R_FillBackScreen_
+0000:b405      V_CopyRect_
+0000:b0ce      V_DrawPatchDirect_
+0000:b3eb      V_MarkRect_
+0000:af0e      V_DrawPatch_
+0000:b001*     V_DrawPatch5000Screen0_
 Module: z_zone.obj(z_zone.ASM)
-0000:b586      Z_QuickMapPhysics_
-0000:b526      Z_QuickMapMusicPageFrame_
-0000:b60d      Z_QuickMapRender_4000To9000_
-0000:b864      Z_QuickMapUnmapAll_
-0000:b63b      Z_QuickMapRender_9000To6000_
-0000:b55d      Z_QuickMapWADPageFrame_
-0000:b706      Z_QuickMapRenderPlanes_
-0000:b53e      Z_QuickMapSFXPageFrame_
-0000:b667      Z_QuickMapStatus_
-0000:b6f0*     Z_QuickMapScreen0_
-0000:b5cc      Z_QuickMapRender_
-0000:b6c4      Z_QuickMapScratch_7000_
-0000:b698      Z_QuickMapScratch_5000_
-0000:b79a      Z_QuickMapMenu_
-0000:b6da      Z_QuickMapScratch_4000_
-0000:b94b*     CopyString13_Zonelocal_
-0000:b6ae      Z_QuickMapScratch_8000_
-0000:b77f      Z_QuickMapPalette_
-0000:b651      Z_QuickMapRender4000_
-0000:b769      Z_QuickMapMaskedExtraData_
-0000:b8b8      Z_SetOverlay_
-0000:b8a1      _doomcode_filename
-0000:b7d8      Z_QuickMapByTaskNum_
-0000:b732      Z_QuickMapUndoFlatCache_
-0000:b5b1      Z_QuickMapDemo_
-0000:b7b5      Z_QuickMapIntermission_
-0000:b5f7*     Z_QuickMapRender_4000To9000_9000Only_
-0000:b7e6      Z_QuickMapVisplanePage_
+0000:b588      Z_QuickMapPhysics_
+0000:b528      Z_QuickMapMusicPageFrame_
+0000:b60f      Z_QuickMapRender_4000To9000_
+0000:b866      Z_QuickMapUnmapAll_
+0000:b63d      Z_QuickMapRender_9000To6000_
+0000:b55f      Z_QuickMapWADPageFrame_
+0000:b708      Z_QuickMapRenderPlanes_
+0000:b540      Z_QuickMapSFXPageFrame_
+0000:b669      Z_QuickMapStatus_
+0000:b6f2*     Z_QuickMapScreen0_
+0000:b5ce      Z_QuickMapRender_
+0000:b6c6      Z_QuickMapScratch_7000_
+0000:b69a      Z_QuickMapScratch_5000_
+0000:b79c      Z_QuickMapMenu_
+0000:b6dc      Z_QuickMapScratch_4000_
+0000:b94d*     CopyString13_Zonelocal_
+0000:b6b0      Z_QuickMapScratch_8000_
+0000:b781      Z_QuickMapPalette_
+0000:b653      Z_QuickMapRender4000_
+0000:b76b      Z_QuickMapMaskedExtraData_
+0000:b8ba      Z_SetOverlay_
+0000:b8a3      _doomcode_filename
+0000:b7da      Z_QuickMapByTaskNum_
+0000:b734      Z_QuickMapUndoFlatCache_
+0000:b5b3      Z_QuickMapDemo_
+0000:b7b7      Z_QuickMapIntermission_
+0000:b5f9*     Z_QuickMapRender_4000To9000_9000Only_
+0000:b7e8      Z_QuickMapVisplanePage_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fopen.c)
 0000:b980+     __open_flags_
 0000:bb2e+     _fsopen_
@@ -900,4 +902,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  00010070 (65648.)
 Entry point address: 0000:c34e
-Link time: 00:00.20
+Link time: 00:00.75
