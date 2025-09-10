@@ -276,45 +276,51 @@ retf
 
 ENDP
 
+found_lump_file_2:
+shl       bx, 1 ; dword lookup
+les       ax, dword ptr ds:[bx + _filetolumpsize + 0]
+mov       dx, es
+pop       cx
+pop       bx
+retf      
+
+
 PROC    W_LumpLength_ FAR
 PUBLIC  W_LumpLength_
 
 push      bx
 push      cx
-mov       cx, ax
+xchg      ax, cx   ; cx gets lump
 xor       dl, dl
-label_3:
+
+xor       bx, bx
 mov       al, byte ptr ds:[_currentloadedfileindex]
 cbw      
-mov       bx, ax
-mov       al, dl
-dec       bx
-cbw      
-cmp       ax, bx
-jge       label_1
-mov       bx, ax
-add       bx, ax
+dec       ax
+jz        skip_loop_2
+shl       ax, 1
+
+loop_next_fileindex_2:
 cmp       cx, word ptr ds:[bx + _filetolumpindex]
-je        label_2
-inc       dl
-jmp       label_3
-label_2:
-mov       bx, ax
-shl       bx, 2
-mov       ax, word ptr ds:[bx + _filetolumpsize + 0]
-mov       dx, word ptr ds:[bx + _filetolumpsize + 2]
-pop       cx
-pop       bx
-retf      
-label_1:
+je        found_lump_file_2
+inc       bx
+inc       bx
+cmp       bx, ax
+
+jl        loop_next_fileindex_2
+xor       bx, bx
+
+skip_loop_2:
+
 mov       ax, cx
 call      Z_QuickMapWADPageFrame_
-and       ch, 3
+and       ch, 3     ;      ; (LUMP_PER_EMS_PAGE - 1 ) SHR 8
 SELFMODIFY_set_lumpinfo_segment_3:
 mov       ax, 0D800h
 mov       es, ax
+
 mov       bx, cx
-shl       bx, 4
+SHIFT_MACRO shl       bx 4
 les       ax, dword ptr es:[bx + LUMPINFO_T.lumpinfo_size + 0]
 mov       dx, es
 
@@ -405,7 +411,7 @@ inc       bx
 inc       bx
 cmp       bx, ax
 
-jge       loop_next_fileindex
+jl        loop_next_fileindex
 xor       bx, bx
 
 done_finding_lump_file:
