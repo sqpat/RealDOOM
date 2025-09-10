@@ -357,7 +357,11 @@ _numpatches =  					     _NULL_OFFSET + 003BCh
 _numspritelumps =  				     _NULL_OFFSET + 003BEh
 _numtextures =  				     _NULL_OFFSET + 003C0h
 
-; 3c2 to 3cf free
+_pcspeaker_currentoffset = 			 _NULL_OFFSET + 003C2h
+_pcspeaker_endoffset = 			 	 _NULL_OFFSET + 003C4h
+; 3c6 to 3cf free
+
+
 
 _am_stopped = 						 _NULL_OFFSET + 003D0h
 _automapactive =                 	 _NULL_OFFSET + 003D1h
@@ -376,10 +380,8 @@ _VERTEXES_SEGMENT_PTR =			     _NULL_OFFSET + 00434h
 _LINEFLAGSLIST_SEGMENT_PTR =         _NULL_OFFSET + 00436h
 _SEENLINES_6800_SEGMENT_PTR =        _NULL_OFFSET + 00438h
 _SIDES_SEGMENT_PTR =			     _NULL_OFFSET + 0043Ah
-
-
-_pcspeaker_currentoffset = 			 _NULL_OFFSET + 0043Ch
-_pcspeaker_endoffset = 			 	 _NULL_OFFSET + 0043Eh
+_LUMPINFO_SEGMENT_PTR = 			 _NULL_OFFSET + 0043Ch
+; 43e free
 
 _G_PlayerReborn_addr =	 	 		 _NULL_OFFSET + 00440h
 _FixedMulTrigSpeedNoShift_addr =	 _NULL_OFFSET + 00444h

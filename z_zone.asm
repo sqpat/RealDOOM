@@ -104,7 +104,6 @@ ELSE
     PUBLIC Z_QuickMapWADPageFrame_
 
 
-    xor   al, al
     and   ah, 0FCh
     cmp   ah, byte ptr ds:[_currentpageframes + WAD_PAGE_FRAME_INDEX]
     jne   actually_changing_wad_page_frame

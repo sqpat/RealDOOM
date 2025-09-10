@@ -181,10 +181,7 @@ mov   ax, 01000h
 mov   si, ax
 call  Z_QuickMapWADPageFrame_
 
-
-SELFMODIFY_set_lumpinfo_segment_1:
-mov   ax, 0D800h ; todo constant
-mov   ds, ax
+mov   ds, word ptr ds:[_LUMPINFO_SEGMENT_PTR]
 
 mov   ax, si
 xchg  ax, cx     ; cx gets numlumps and ax gets first word
@@ -256,9 +253,8 @@ pop   ds
 
 call  Z_QuickMapWADPageFrame_
 
-SELFMODIFY_set_lumpinfo_segment_2:
-mov   ax, 0D800h
-mov   ds, ax
+mov   ds, word ptr ds:[_LUMPINFO_SEGMENT_PTR]
+
 xchg  ax, si ; restore
 
 mov   si, (LUMP_PER_EMS_PAGE - 1) SHL 4
@@ -315,9 +311,7 @@ skip_loop_2:
 mov       ax, cx
 call      Z_QuickMapWADPageFrame_
 and       ch, 3     ;      ; (LUMP_PER_EMS_PAGE - 1 ) SHR 8
-SELFMODIFY_set_lumpinfo_segment_3:
-mov       ax, 0D800h
-mov       es, ax
+mov       es, word ptr ds:[_LUMPINFO_SEGMENT_PTR]
 
 mov       bx, cx
 SHIFT_MACRO shl       bx 4
@@ -366,9 +360,7 @@ mov       bx, si
 ;	l = &(lumpinfoD800[lump & (LUMP_PER_EMS_PAGE-1)]);
 
 
-SELFMODIFY_set_lumpinfo_segment_4:
-mov       ax, 0D800h
-mov       es, ax
+mov       es, word ptr ds:[_LUMPINFO_SEGMENT_PTR]
 
 and       bh, 3      ; (LUMP_PER_EMS_PAGE - 1 ) SHR 8
 SHIFT_MACRO shl       bx 4
@@ -491,67 +483,6 @@ retf
 ENDP
 
 
-; void __near W_CacheLumpNumDirectSmall (int16_t lump, byte __far* dest ) {
-
-PROC    W_CacheLumpNumDirectSmall_ NEAR
-PUBLIC  W_CacheLumpNumDirectSmall_
-
-
-
-push      dx
-push      si
-push      di
-push      bp
-mov       bp, sp
-sub       sp, 8
-mov       di, bx
-mov       si, cx      ; si:di is dest
-mov       bx, ax
-
-call      Z_QuickMapWADPageFrame_
-
-and       bh, 3      ; (LUMP_PER_EMS_PAGE - 1 ) SHR 8
-
-SHIFT_MACRO shl       bx 4
-SELFMODIFY_set_lumpinfo_segment_5:
-mov       ax, 0D800h
-mov       es, ax
-
-
-
-xor       dx, dx  ; SEEK_SET
-mov       ax, word ptr ds:[_wadfiles]
-les       bx, dword ptr es:[bx + LUMPINFO_T.lumpinfo_position]
-mov       cx, es
-push      ax   ; fp
-call      fseek_  ;    fseek(usedfile, l->position, SEEK_SET);
-
-
-
-mov       bx, 1
-mov       dx, 8
-lea       ax, [bp - 8]
-pop       cx  ; fp
-push      ax  ; src
-call      fread_   ;	fread(stackbuffer, 4, 2, usedfile);
-
-
-mov       es, si   ; dest seg
-pop       si       ; src  offset
-
-movsw
-movsw
-movsw
-movsw
-
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       dx
-ret       
-
-
-ENDP
 
 PROC    W_CacheLumpNumDirectWithOffset_ FAR
 PUBLIC  W_CacheLumpNumDirectWithOffset_
@@ -600,22 +531,6 @@ pop       bp
 retf      4
 
 ENDP
-
-PROC    W_SetLumpInfoConstant_ NEAR
-PUBLIC  W_SetLumpInfoConstant_
-
-; if this grows much turn it into a lodsw situation?
-
-mov     word ptr cs:[SELFMODIFY_set_lumpinfo_segment_1+1], ax
-mov     word ptr cs:[SELFMODIFY_set_lumpinfo_segment_2+1], ax
-mov     word ptr cs:[SELFMODIFY_set_lumpinfo_segment_3+1], ax
-mov     word ptr cs:[SELFMODIFY_set_lumpinfo_segment_4+1], ax
-mov     word ptr cs:[SELFMODIFY_set_lumpinfo_segment_5+1], ax
-
-ret
-ENDP
-
-
 
 
 PROC    W_WAD_ENDMARKER_ NEAR

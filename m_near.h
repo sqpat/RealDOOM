@@ -406,7 +406,11 @@
 #define numpatches  					(*((int16_t __near*)                 (_NULL_OFFSET + 0x03BC)))
 #define numspritelumps  				(*((int16_t __near*)                 (_NULL_OFFSET + 0x03BE)))
 #define numtextures  					(*((int16_t __near*)                 (_NULL_OFFSET + 0x03C0)))
-//3c2 to 3cf free
+
+#define pcspeaker_currentoffset         (*((uint16_t __near*)                (_NULL_OFFSET + 0x03C2)))
+#define pcspeaker_endoffset       	    (*((uint16_t __near*)                (_NULL_OFFSET + 0x03C4)))
+
+//3c6 to 3cf free
 
 #define am_stopped						(*((boolean __near*)                 (_NULL_OFFSET + 0x03D0)))
 #define automapactive					(*((boolean __near*)                 (_NULL_OFFSET + 0x03D1)))
@@ -430,9 +434,8 @@
 #define LINEFLAGSLIST_SEGMENT_PTR	  	  (*((segment_t __near*)             (_NULL_OFFSET + 0x0436)))
 #define SEENLINES_6000_SEGMENT_PTR	      (*((segment_t __near*)             (_NULL_OFFSET + 0x0438)))
 #define SIDES_SEGMENT_PTR		          (*((segment_t __near*)             (_NULL_OFFSET + 0x043A)))
-
-#define pcspeaker_currentoffset           (*((uint16_t __near*)              (_NULL_OFFSET + 0x043C)))
-#define pcspeaker_endoffset     		  (*((uint16_t __near*)              (_NULL_OFFSET + 0x043E)))
+#define LUMPINFO_SEGMENT_PTR		      (*((segment_t __near*)             (_NULL_OFFSET + 0x043C)))
+// 43e free
 
 #define G_PlayerReborn_addr     		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0440)))
 

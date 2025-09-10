@@ -24,7 +24,7 @@ EXTRN I_Error_:FAR
 EXTRN Z_QuickMapScratch_5000_:FAR
 EXTRN Z_QuickMapRender_:FAR
 EXTRN W_CacheLumpNumDirect_:FAR
-EXTRN W_CacheLumpNumDirectSmall_:NEAR
+
 EXTRN W_CacheLumpNameDirectFarString_:FAR
 
 EXTRN W_CheckNumForNameFarString_:NEAR
@@ -33,10 +33,14 @@ EXTRN Z_QuickMapPhysics_:FAR
 EXTRN Z_QuickMapMaskedExtraData_:FAR
 EXTRN Z_QuickMapScratch_7000_:FAR
 EXTRN R_FlatNumForName_:NEAR
+EXTRN Z_QuickMapWADPageFrame_:FAR
+EXTRN fseek_:FAR
+EXTRN fread_:FAR
 
 .DATA
 
 EXTRN _numlumps:WORD
+EXTRN _wadfiles:WORD
 
 .CODE
 
@@ -1523,6 +1527,67 @@ add       sp, 20  ; five debug prints..
 
 POPA_NO_AX_MACRO
 ret     
+
+
+ENDP
+
+; todo i think dx can be clobbered here from either call
+; todo fixed segment dest? always 7000?
+
+; void __near W_CacheLumpNumDirectSmall (int16_t lump, byte __far* dest ) {
+
+PROC    W_CacheLumpNumDirectSmall_ NEAR
+PUBLIC  W_CacheLumpNumDirectSmall_
+
+
+push      dx
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 8
+mov       di, bx
+mov       si, cx      ; si:di is dest
+mov       bx, ax
+
+call      Z_QuickMapWADPageFrame_
+
+and       bh, 3      ; (LUMP_PER_EMS_PAGE - 1 ) SHR 8
+
+SHIFT_MACRO shl       bx 4
+
+mov       es, word ptr ds:[_LUMPINFO_SEGMENT_PTR]
+
+xor       dx, dx  ; SEEK_SET
+mov       ax, word ptr ds:[_wadfiles]
+les       bx, dword ptr es:[bx + LUMPINFO_T.lumpinfo_position]
+mov       cx, es
+push      ax   ; fp
+call      fseek_  ;    fseek(usedfile, l->position, SEEK_SET);
+
+
+
+mov       bx, 1
+mov       dx, 8
+lea       ax, [bp - 8]
+pop       cx  ; fp
+push      ax  ; src
+call      fread_   ;	fread(stackbuffer, 4, 2, usedfile);
+
+
+mov       es, si   ; dest seg
+pop       si       ; src  offset
+
+movsw
+movsw
+movsw
+movsw
+
+LEAVE_MACRO     
+pop       di
+pop       si
+pop       dx
+ret       
 
 
 ENDP
