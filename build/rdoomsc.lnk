@@ -49,8 +49,8 @@ file p_setup.obj
 file s_sound.obj
 file s_sbsfx.obj
 file r_main.obj
+file f_file.obj
 file w_wad.obj
-file w_wada.obj
 file v_video.obj
 file z_zone.obj
 file z_scamp.obj

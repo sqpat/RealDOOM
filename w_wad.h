@@ -79,9 +79,6 @@ void __far W_CacheLumpNumDirect(int16_t lump, byte __far* dest);
 void __far W_CacheLumpNumDirectWithOffset (int16_t lump, byte __far* dest, uint16_t offset, uint16_t length);
 
 
-// correct value for DOOM Sharware
-#define LUMPINFO_SIZE 16432 
-//#define LUMPCACHE_SIZE 2528 
  
 
 #endif

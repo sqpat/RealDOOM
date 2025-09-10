@@ -71,30 +71,6 @@ void  __far locallib_far_fread(void __far* dest, uint16_t elementsize, uint16_t 
 
 }
 
-/*
-void  _far_read(int16_t filehandle, void __far* dest, uint16_t totalsize) {
-
-	// cheating with size/element count
-	uint16_t totalreadsize = 0;
-	int16_t copysize;
-	uint16_t remaining;
-	byte stackbuffer[FREAD_BUFFER_SIZE];
-	byte __far* stackbufferfar = (byte __far *)stackbuffer;
-	byte __far* destloc = dest;
-	while (totalreadsize < totalsize) {
-
-		remaining = totalsize - totalreadsize;
-		copysize = (FREAD_BUFFER_SIZE > remaining) ? remaining : FREAD_BUFFER_SIZE;
-		read(filehandle, stackbuffer, copysize);
-
-		FAR_memcpy(destloc, stackbufferfar, copysize);
-
-		destloc += copysize;
-		totalreadsize += copysize;
-	}
-
-}
-*/
 // unused outside of debug stuff
 filelength_t  __far locallib_far_fwrite(void __far* src, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
 	// cheating with size/element count
@@ -116,31 +92,7 @@ filelength_t  __far locallib_far_fwrite(void __far* src, uint16_t elementsize, u
 	return totalreadsize;
 }
 
-#ifdef __COMPILER_WATCOM
 
-#else
-void __far  _fstrncpy(char __far *dst, const char __far *src, size_t totalsize) {
-
-	// very jank. only used for size 8 or 9 or so 
-
-	/*
-	byte stackbuffer[FREAD_BUFFER_SIZE];
-	byte __far* stackbufferfar = (byte __far *)stackbuffer;
-	byte __far* destloc = dest;
-	*/
-
-	_fmemcpy(dst, src, totalsize);
-	//return dst;
-}
-
-/*
-void  _fmemset(void __far* dest, int16_t value, size_t size);
-void _fmemcpy(void __far* dest, void __far* src, size_t size);
-void  _fstrncpy(char __far *dest, const char __far *src, size_t size);
-void _fstrcpy(char __far *dest, const char __far *src);
-void _fmemmove(char __far *dest, const void __far *src, size_t size);
-*/
-#endif
 
 
 //
@@ -219,7 +171,7 @@ int16_t __near W_CheckNumForName (int8_t __far* name) {
     // TFB. Not found.
     return returnval;
 }
-*/
+
 
 //
 // W_GetNumForName
@@ -389,3 +341,4 @@ void __far W_CacheLumpNumDirectFragment (int16_t lump, byte __far* dest,int32_t 
 }
 
  
+*/
