@@ -69,9 +69,9 @@ loop_fread_next_chunk:
 push      dx  ; [MATCH A]  size left to read
 
 cmp       dx, FREAD_BUFFER_SIZE
-jb        use_remaining_size     ; unsigned compare
+jb        use_remaining_write_size     ; unsigned compare
 mov       dx, FREAD_BUFFER_SIZE
-use_remaining_size:
+use_remaining_write_size:
 
 
 push      dx  ; [MATCH B]  size to read this time
@@ -115,68 +115,73 @@ ENDP
 
 PROC    locallib_far_fwrite_ FAR
 PUBLIC  locallib_far_fwrite_
+;filelength_t  __far locallib_far_fwrite(void __far* src, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
 
 
 push      si
 push      di
 push      bp
 mov       bp, sp
-sub       sp, 020Eh
-mov       si, ax
-mov       di, dx
+sub       sp, FREAD_BUFFER_SIZE
+xchg      ax, si  ; si = src offset
+mov       di, dx  ; di = src segment
 mov       ax, bx
 mul       cx
-mov       word ptr [bp - 4], 0
-mov       word ptr [bp - 0Ch], ds
-mov       word ptr [bp - 6], si
-mov       word ptr [bp - 0Eh], di
-lea       cx, [bp - 020Eh]
-mov       word ptr [bp - 8], ax
-mov       word ptr [bp - 0Ah], cx
-test      ax, ax
-jbe       label_3
-mov       di, word ptr [bp - 0Ah]
-label_5:
-mov       ax, word ptr [bp - 8]
-sub       ax, word ptr [bp - 4]
-cmp       ax, FREAD_BUFFER_SIZE
-jae       label_4
-mov       word ptr [bp - 2], ax
-label_6:
-mov       ax, word ptr [bp - 2]
-mov       si, word ptr [bp - 6]
-les       cx, dword ptr [bp - 0Eh]
-mov       bx, 1
-mov       dx, word ptr [bp - 2]
-push      ds
-push      di
-xchg      ax, cx
-mov       ds, ax
-shr       cx, 1
+jz        skip_write_zero
+
+xchg      ax, cx ; cx gets size to write
+
+; si has dest segment
+; di has dest offset
+; dx has size to write...
+
+loop_fwrite_next_chunk:
+
+push      cx  ; [MATCH A]  size left to write
+mov       dx, cx
+cmp       cx, FREAD_BUFFER_SIZE
+jb        use_remaining_read_size     ; unsigned compare
+mov       cx, FREAD_BUFFER_SIZE
+use_remaining_read_size:
+
+push      cx  ; [MATCH B]  size to write this time
+mov       dx, cx
+
+mov       bx, ds
+mov       es, bx
+
+mov       ds, di
+lea       di, [bp - FREAD_BUFFER_SIZE]
+mov       ax, di
+
+shr       cx, 1         ;FAR_memcpy(destloc, stackbufferfar, copysize);
 rep movsw 
 adc       cx, cx
 rep movsb 
-pop       di
-pop       ds
-mov       cx, word ptr [bp + 0Ah]
-lea       ax, [bp - 020Eh]
 
-call      fwrite_
-mov       ax, word ptr [bp - 2]
-add       word ptr [bp - 4], ax
-add       word ptr [bp - 6], ax
-mov       ax, word ptr [bp - 4]
-cmp       ax, word ptr [bp - 8]
-jb        label_5
-label_3:
-mov       ax, word ptr [bp - 4]
+mov       di, ds   ; restore backup segment...
+
+mov       ds, bx   ; restore ds
+
+mov       bx, 1
+mov       cx, word ptr [bp + 0Ah]   ; fp
+
+
+call      fwrite_   ;fwrite(stackbuffer, copysize, 1, fp);
+
+
+		
+pop       bx     ; [MATCH B]  size to write this time
+pop       cx     ; [MATCH A]  size left to write
+sub       cx, bx
+jne       loop_fwrite_next_chunk
+
+skip_write_zero:
+
 LEAVE_MACRO
 pop       di
 pop       si
 retf      2
-label_4:
-mov       word ptr [bp - 2], FREAD_BUFFER_SIZE
-jmp       label_6
 
 ENDP
 
