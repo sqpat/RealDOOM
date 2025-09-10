@@ -118,7 +118,7 @@ void M_ReadFile (int8_t const*	name, byte __far*	buffer ){
     }
     */
     fseek(fp, 0L, SEEK_SET);
-    FAR_fread(buffer, 1, length, fp);
+    locallib_far_fread(buffer, 1, length, fp);
 
     fclose (fp);
 

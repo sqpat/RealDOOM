@@ -128,7 +128,7 @@ int16_t I_LoadSong(uint16_t lump) {
                     // 8 for the string at the start of the lump...
                     uint16_t offset = 8 +(sizeof(OP2instrEntry) * j);
 
-                    //far_fread(&AdLibInstrumentList[instrumentindex], sizeof(OP2instrEntry), 1, fp);
+                    //locallib_far_fread(&AdLibInstrumentList[instrumentindex], sizeof(OP2instrEntry), 1, fp);
                     FAR_memcpy(&adlibinstrumentlist[instrumentindex], MK_FP(MUSIC_SEGMENT, offset), sizeof(OP2instrEntry));
                 }
             }
@@ -578,7 +578,7 @@ void __far I_StartupSound(void) {
         playingdriver = MK_FP(music_driver_code_segment, 0000); 
         fseek(fp, musdriverstartposition[driverindex-1], SEEK_SET);
         fread(&codesize, 2, 1, fp);
-        FAR_fread(playingdriver, codesize, 1, fp);
+        locallib_far_fread(playingdriver, codesize, 1, fp);
         fclose(fp);
         
 

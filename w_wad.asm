@@ -439,10 +439,14 @@ skip_lumpsize_load:
 
 pop       ax ; [MATCH A] get dest offset
 pop       dx ; [MATCH A] get dest segment
-mov       cx, 1   ; blocksize
 
-push      si ; fp arg to function
+push      cx  ; 
+mov       cx, si   ; fp
+
+
 call      locallib_far_fread_ ; FAR_fread(dest, size ? size : (lumpsize - start), 1, wadfiles[fileindex]);
+
+pop       cx ; todo why is this necessary ? bad things happen.. 
 
 pop       di
 pop       si

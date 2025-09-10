@@ -486,7 +486,7 @@ void  __near ReadFileRegionWithIndex(FILE* fp, int16_t index, uint32_t target_ad
 	while (index >= 0)	{
 		if ((index & 0xFF) == 0){
 			fread(&codesize, 2, 1, fp);
-			FAR_fread((byte __far*) target_addr, codesize, 1, fp);
+			locallib_far_fread((byte __far*) target_addr, codesize, fp);
 		} else {
 			fread(&codesize, 2, 1, fp);
 			fseek(fp, codesize, SEEK_CUR);
@@ -664,30 +664,30 @@ void __near Z_LoadBinaries() {
 	// all data now in this file instead of spread out a
 	
 	//256
-	FAR_fread(rndtable, 1, 256, fp);
+	locallib_far_fread(rndtable, 256, fp);
 	//128
-	FAR_fread(scantokey, 1, 128, fp);
+	locallib_far_fread(scantokey, 128, fp);
 	
 	//1507
 	fread(mobjinfo, sizeof(mobjinfo_t), NUMMOBJTYPES, fp);
 	DEBUG_PRINT(".");
 
 	//5802
-	FAR_fread(states, sizeof(state_t), NUMSTATES, fp);
+	locallib_far_fread(states, sizeof(state_t) * NUMSTATES, fp);
 	DEBUG_PRINT(".");
 
 	//1280
-	FAR_fread(gammatable, 1, 5 * 256, fp);
+	locallib_far_fread(gammatable, 5 * 256, fp);
 	DEBUG_PRINT(".");
 
 	//40960
-	FAR_fread(finesine, 4, 10240, fp);
+	locallib_far_fread(finesine, 4 * 10240u, fp);
 	DEBUG_PRINT(".");
 
 	Z_QuickMapRender();
 
 	//8192
-	FAR_fread(finetangentinner, 4, 2048, fp);
+	locallib_far_fread(finetangentinner, 4 * 2048, fp);
 
 
 	//  fixes an issue with garbage left over from other applications running.
@@ -700,7 +700,7 @@ void __near Z_LoadBinaries() {
 	Z_QuickMapPhysics();
 
 	//274
-	FAR_fread(doomednum_far, 2, NUMMOBJTYPES, fp);
+	locallib_far_fread(doomednum_far, 2 * NUMMOBJTYPES, fp);
 	
 	Z_QuickMapRender4000();
 	// todo put in doomdata...
@@ -715,7 +715,7 @@ void __near Z_LoadBinaries() {
 	Z_QuickMapRender();
 
 	//2048
-	FAR_fread(zlight, 1, 2048, fp);
+	locallib_far_fread(zlight, 2048, fp);
 
 	fclose(fp);
 
@@ -732,15 +732,15 @@ void __near Z_LoadBinaries() {
 
 	Z_QuickMapIntermission();
 	fread(&codesize, 2, 1, fp);
-	FAR_fread(wianim_codespace, codesize, 1, fp);
+	locallib_far_fread(wianim_codespace, codesize, fp);
  
 	Z_QuickMapPhysics();
 	fread(&codesize, 2, 1, fp);
-	FAR_fread(psight_codespace, codesize, 1, fp);
+	locallib_far_fread(psight_codespace, codesize, fp);
 	
 	Z_QuickMapMenu();
 	fread(&codesize, 2, 1, fp);
-	FAR_fread(menu_code_area, codesize, 1, fp);
+	locallib_far_fread(menu_code_area, codesize, fp);
 	Z_QuickMapPhysics();
 
 //todo should these be plus 2?
@@ -772,7 +772,7 @@ void __near Z_LoadBinaries() {
 
 
 
-	//FAR_fread(code_overlay_start, codesize, 1, fp2);
+	//locallib_far_fread(code_overlay_start, codesize, 1, fp2);
 
 
 	fclose(fp);

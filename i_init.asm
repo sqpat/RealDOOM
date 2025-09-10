@@ -249,13 +249,13 @@ mov   cx, di
 call  fread_        ; fread(&codesize, 2, 1, fp);
 
 
-mov   cx, 1                  ; blocksize
+mov   cx, di                  ; fp
 mov   bx, word ptr [bp - 4]  ; codesize
 mov   dx, MUSIC_DRIVER_CODE_SEGMENT
-push  di            ; fp
+
 xor   ax, ax        ; offset
 
-call  locallib_far_fread_       ; FAR_fread(playingdriver, codesize, 1, fp);
+call  locallib_far_fread_       ; locallib_far_fread(playingdriver, codesize, 1, fp);
 xchg  ax, di
 call  fclose_                   ; fclose(fp);
 

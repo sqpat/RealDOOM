@@ -39,11 +39,11 @@ ENDP
 
 FREAD_BUFFER_SIZE = 512
 
-;void  __far locallib_far_fread(void __far* dest, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
+;void  __far locallib_far_fread(void __far* dest, uint16_t size, FILE * fp) {
 
-; todo combne dx/cx into one
 
-PROC    locallib_far_fread_ FAR
+
+PROC    locallib_far_fread_   FAR
 PUBLIC  locallib_far_fread_
 
 
@@ -54,15 +54,12 @@ mov       bp, sp
 sub       sp, FREAD_BUFFER_SIZE
 xchg      ax, di  ; di = dest offset
 mov       si, dx  ; si = dest segment
-mov       ax, bx
-mul       cx
-jz        skip_read_zero
-
-xchg      ax, dx ; dx gets size to read
+mov       dx, bx ; dx gets size to read
 
 ; si has dest segment
 ; di has dest offset
 ; dx has size to read...
+; cx has fp
 
 loop_fread_next_chunk:
 
@@ -74,20 +71,19 @@ mov       dx, FREAD_BUFFER_SIZE
 use_remaining_write_size:
 
 
-push      dx  ; [MATCH B]  size to read this time
+push      cx  ; [MATCH B]  fp
+push      dx  ; [MATCH C]  size to read this time
 lea       ax, [bp - FREAD_BUFFER_SIZE]
 mov       bx, 1
-mov       cx, word ptr [bp + 0Ah]   ; fp
-push      ax  ; [MATCH C]  buffer pos
-
+push      ax  ; [MATCH D]  buffer pos
 call      fread_   ;fread(stackbuffer, copysize, 1, fp);
 
 mov       es, si ; dest segment in es
-pop       si     ; [MATCH C]  buffer pos
+pop       si     ; [MATCH D]  buffer pos
 		
-pop       cx     ; [MATCH B]  size to read this time
+pop       cx     ; [MATCH C]  size to read this time
 mov       bx, cx ; len copy 
-lea       si, [bp - FREAD_BUFFER_SIZE]
+
 
                 ; ds = ss
                 ; di updates as we go set
@@ -98,8 +94,8 @@ adc       cx, cx
 rep movsb 
 
 mov       si, es   ; restore segment...
-
-pop       dx  ; [MATCH A]  size left to read
+pop       cx     ; [MATCH B]  fp
+pop       dx     ; [MATCH A]  size left to read
 sub       dx, bx
 jne       loop_fread_next_chunk
 skip_read_zero:
@@ -107,7 +103,7 @@ skip_read_zero:
 LEAVE_MACRO
 pop       di
 pop       si
-retf      2
+retf
 
 ENDP
 

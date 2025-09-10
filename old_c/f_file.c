@@ -287,7 +287,7 @@ void __near W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t s
 
     fseek(wadfiles[fileindex], startoffset, SEEK_SET);
 
-	FAR_fread(dest, size ? size : (lumpsize - start), 1, wadfiles[fileindex]);
+	locallib_far_fread(dest, size ? size : (lumpsize - start), 1, wadfiles[fileindex]);
 
 	#ifdef ENABLE_DISK_FLASH
     	I_EndRead ();

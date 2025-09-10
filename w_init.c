@@ -147,7 +147,7 @@ void __near W_AddFile(int8_t *filename) {
 
 	} else {
 		// WAD file
-		FAR_fread(&header, sizeof(header), 1, usefp);	
+		locallib_far_fread(&header, sizeof(wadinfo_t), usefp);	
 
 		// 0x4957 == "IW" && 0x4144 == "AD"
 		if (((uint16_t)(header.identification[0])) == 0x4957 && 
@@ -173,7 +173,7 @@ void __near W_AddFile(int8_t *filename) {
 		// let's piggyback off scratch EMS block
 		fileinfo = SCRATCH_FILE_LOAD_LOCATION;
 		fseek(usefp, header.infotableofs, SEEK_SET);
-		FAR_fread(fileinfo, length, 1, usefp);
+		locallib_far_fread(fileinfo, length, usefp);
 		numlumps += header.numlumps;
 
 		W_UpdateNumLumps();

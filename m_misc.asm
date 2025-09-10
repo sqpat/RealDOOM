@@ -133,8 +133,7 @@ PROC    M_ReadFile_ NEAR
 PUBLIC  M_ReadFile_
 
 
-push  dx
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
 
 mov   dx, _fopen_rb_argument
 call  fopen_
@@ -145,12 +144,10 @@ push  cx
 xor   bx, bx
 xor   cx, cx
 mov   dx, 2     ; SEEK_END
-push  ax        ; store fp
-push  ax        ; store fp
-push  ax        ; store fp
+mov   si, ax    ; store fp
 call  fseek_
 
-pop   ax
+mov   ax, si    ; fp
 call  ftell_
 
 xchg  ax, di    ; store length
@@ -158,28 +155,28 @@ xchg  ax, di    ; store length
 xor   bx, bx
 xor   cx, cx
 xor   dx, dx    ; SEEK_SET
-mov   ax, si
 
-pop   ax
+
+mov   ax, si    ; fp
 call  fseek_
 
-pop   cx  ; fp
+mov   bx, di  ; bx gets len
+
 pop   dx  ; seg
 pop   ax  ; off
-mov   bx, 1
 
 
 
-xchg  cx, di  ; cx gets len di gets fp
-push  di  ; arg fp
+mov   cx, si    ; fp
+
 call  locallib_far_fread_
 
-xchg  ax, di  ; fp
+xchg  ax, si  ; fp
 
 call  fclose_
 
-pop   di
-pop   dx
+POPA_NO_AX_OR_BP_MACRO
+
 ret  
 
 

@@ -559,12 +559,11 @@ good_savegame_file:
 ; ax already has product/dest offset
 ; dx already has segment
 ; cx already has SAVESTRINGSIZE
-; bp currently has fp.
+; bx currently has fp.
 
 push  bx ; fp. 2nd time for later pop
-push  bx ; fp arg for far read
 
-mov   bx, 1
+xchg  bx, cx  ; reverse arg order..
 call  dword ptr ds:[_locallib_far_fread_addr]
 
 pop   ax  ; recover fp

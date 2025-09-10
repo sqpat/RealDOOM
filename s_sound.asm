@@ -31,7 +31,7 @@ EXTRN fopen_:FAR
 EXTRN fseek_:FAR
 EXTRN fread_:FAR
 EXTRN fclose_:FAR
-EXTRN locallib_far_fread_:FAR
+
 ; todo only include if necessary via flags...
 EXTRN DEBUG_PRINT_:FAR
 EXTRN TS_Dispatch_:NEAR

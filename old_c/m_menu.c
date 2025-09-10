@@ -190,7 +190,7 @@ void __near M_ReadSaveStrings(void){
             LoadMenu[i].status = 0;
             continue;
         }
-        FAR_fread (&savegamestrings[i*SAVESTRINGSIZE], 1, SAVESTRINGSIZE, fp);
+        locallib_far_fread (&savegamestrings[i*SAVESTRINGSIZE], 1, SAVESTRINGSIZE, fp);
         fclose (fp);
         LoadMenu[i].status = 1;
     }

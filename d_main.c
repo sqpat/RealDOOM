@@ -894,7 +894,7 @@ void __near Z_ClearDeadCode() {
 	
 	fp = fopen("DOOMDATA.BIN", "rb");
 	fseek(fp, TANTOA_DOOMDATA_OFFSET, SEEK_SET);
-	FAR_fread(dest, 4, 2049, fp);
+	locallib_far_fread(dest, 4 * 2049, fp);
 	fclose(fp);
 
 }

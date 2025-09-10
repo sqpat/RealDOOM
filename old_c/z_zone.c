@@ -688,7 +688,7 @@ void __far Z_SetOverlay(int8_t wipeId){
 	fp = fopen("DOOMCODE.BIN", "rb"); 
 	fseek(fp, codeoffset, SEEK_SET);
 	fread(&codesize, 2, 1, fp);
-	FAR_fread(code_overlay_start, codesize, 1, fp);
+	locallib_far_fread(code_overlay_start, codesize, 1, fp);
 	fclose(fp);
 
 

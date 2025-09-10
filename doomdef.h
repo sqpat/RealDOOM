@@ -581,20 +581,26 @@ void __far  _fstrncpy(char __far *dst, const char __far *src, size_t n);
 
 #endif
 
-void  __far locallib_far_fread(void __far* dest, uint16_t elementsize, uint16_t elementcount, FILE * stream);
+#pragma aux locallib_far_fread_params \
+        __parm [dx ax] [bx] [cx] \
+        modify [ax dx bx cx]   ;
+
+
+
+#pragma aux (locallib_far_fread_params)  locallib_far_freads;
+
+void  __far locallib_far_fread(void __far* dest, uint16_t size, FILE * stream);
+void  __far locallib_far_fread_old(void __far* dest, uint16_t size, FILE * stream);
 filelength_t __far locallib_far_fwrite(void __far* dest, uint16_t elementsize, uint16_t elementcount, FILE * stream);
-void  __far locallib_far_read(int16_t filehandle, void __far* dest, uint16_t totalsize);
 
 #define FAR_fwrite locallib_far_fwrite
-#define FAR_fread locallib_far_fread
-#define FAR_read locallib_far_read
 
 
 #define SAVEGAMESIZE    0xF800
 // lets keep this comfortably 16 bit. otherwise how do we fit in ems without big rewrite?
 #define DEMO_MAX_SIZE 0xF800
 
-//#define FAR_fread fread
+//#define locallib_far_fread fread
 //#define FAR_read read
 
 

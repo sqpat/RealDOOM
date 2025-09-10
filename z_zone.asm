@@ -801,14 +801,15 @@ mov   dx, 2
 lea   ax, [bp - 4]
 mov   cx, si
 call  fread_
-mov   cx, 1
+
 mov   bx, word ptr [bp - 4]
 mov   dx, CODE_OVERLAY_SEGMENT
-push  si
+mov   cx, si ; fp
 xor   ax, ax
 
 call  locallib_far_fread_
-mov   ax, si
+
+xchg  ax, si
 call  fclose_
 mov   al, byte ptr [bp - 2]
 dec   al

@@ -63,12 +63,12 @@
 #define P_SpawnMapThingOffset                   0x2AF7
 #define P_TickerOffset                          0x839C
 #define P_SpawnSpecialsOffset                   0x7D0D
-#define M_InitOffset                            0x11A4
-#define M_ResponderOffset                       0xD63
-#define M_DrawerOffset                          0x1064
-#define M_LoadFromSaveGameOffset                0x12F1
-#define M_DrawPauseOffset                       0x138D
-#define M_StartControlPanelOffset               0x1046
+#define M_InitOffset                            0x11A2
+#define M_ResponderOffset                       0xD61
+#define M_DrawerOffset                          0x1062
+#define M_LoadFromSaveGameOffset                0x12EF
+#define M_DrawPauseOffset                       0x138B
+#define M_StartControlPanelOffset               0x1044
 
 #define R_DrawColumn24CodeSize         0xE46
 #define R_DrawColumn16CodeSize         0xCB4
@@ -88,7 +88,7 @@
 #define R_MaskedConstantsFLCodeSize    0xEB
 #define R_DrawSkyColumnCodeSize        0xD86
 #define R_DrawSkyColumnFLCodeSize      0x303
-#define M_MenuCodeSize                 0x13EA
+#define M_MenuCodeSize                 0x13E8
 #define R_BSP24CodeSize                0x3787
 #define R_BSP16CodeSize                0x3787
 #define R_BSP0CodeSize                 0x36B9
