@@ -490,6 +490,9 @@ retf
 
 ENDP
 
+
+; void __near W_CacheLumpNumDirectSmall (int16_t lump, byte __far* dest ) {
+
 PROC    W_CacheLumpNumDirectSmall_ NEAR
 PUBLIC  W_CacheLumpNumDirectSmall_
 
@@ -500,43 +503,47 @@ push      si
 push      di
 push      bp
 mov       bp, sp
-sub       sp, 0Ah
-mov       dx, ax
+sub       sp, 8
 mov       di, bx
-mov       word ptr [bp - 2], cx
-mov       si, word ptr ds:[_wadfiles]
-and       dh, 3
+mov       si, cx      ; si:di is dest
+mov       bx, ax
+
 call      Z_QuickMapWADPageFrame_
-mov       bx, dx
+
+and       bh, 3      ; (LUMP_PER_EMS_PAGE - 1 ) SHR 8
+
+SHIFT_MACRO shl       bx 4
 SELFMODIFY_set_lumpinfo_segment_5:
 mov       ax, 0D800h
-shl       bx, 4
 mov       es, ax
-xor       dx, dx
-mov       ax, word ptr es:[bx + 8]
-mov       cx, word ptr es:[bx + 0Ah]
-mov       bx, ax
-mov       ax, si
-call      fseek_
-mov       bx, 2
-mov       dx, 4
-lea       ax, [bp - 0Ah]
-mov       cx, si
-call      fread_
-mov       ax, 8
-lea       si, [bp - 0Ah]
-mov       es, word ptr [bp - 2]
-mov       cx, ds
-push      ds
-push      di
-xchg      ax, cx
-mov       ds, ax
-shr       cx, 1
-rep movsw 
-adc       cx, cx
-rep movsb 
-pop       di
-pop       ds
+
+
+
+xor       dx, dx  ; SEEK_SET
+mov       ax, word ptr ds:[_wadfiles]
+les       bx, dword ptr es:[bx + LUMPINFO_T.lumpinfo_position]
+mov       cx, es
+push      ax   ; fp
+call      fseek_  ;    fseek(usedfile, l->position, SEEK_SET);
+
+
+
+mov       bx, 1
+mov       dx, 8
+lea       ax, [bp - 8]
+pop       cx  ; fp
+push      ax  ; src
+call      fread_   ;	fread(stackbuffer, 4, 2, usedfile);
+
+
+mov       es, si   ; dest seg
+pop       si       ; src  offset
+
+movsw
+movsw
+movsw
+movsw
+
 LEAVE_MACRO     
 pop       di
 pop       si
