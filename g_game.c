@@ -953,6 +953,7 @@ void __near G_WriteDemoTiccmd (ticcmd_t __near* cmd)  {
 	byte __far* demo_addr = (byte __far*)MK_FP(DEMO_SEGMENT, demo_p);
 
 	Z_QuickMapDemo();
+    // todo inline this code and get rid of the func...
 	if (G_GetGameKey('q')){           // press q to end demo recording 
         G_CheckDemoStatus (); 
     }

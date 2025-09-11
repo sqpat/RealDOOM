@@ -248,14 +248,7 @@ boolean         mousearray[4];
 boolean*        mousebuttons = &mousearray[1];          // allow [-1]
 
 // mouse values are used once 
-int16_t             mousex;
 
-int16_t             dclicktime;
-int16_t             dclickstate;
-int16_t             dclicks;
-int16_t             dclicktime2;
-int16_t             dclickstate2;
-int16_t             dclicks2;
 
 
 

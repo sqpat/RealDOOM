@@ -952,13 +952,6 @@ extern fixed_t             sidemove[2];
 extern int8_t             turnheld;
 extern boolean         mousearray[4]; 
 extern boolean*        mousebuttons;
-extern int16_t             mousex;
-extern int16_t             dclicktime;
-extern int16_t             dclickstate;
-extern int16_t             dclicks;
-extern int16_t             dclicktime2;
-extern int16_t             dclickstate2;
-extern int16_t             dclicks2;
 
 
 extern skill_t d_skill; 

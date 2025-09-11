@@ -66,17 +66,11 @@ EXTRN _key_up:BYTE
 EXTRN _key_down:BYTE
 EXTRN _key_fire:BYTE
 EXTRN _key_use:BYTE
-EXTRN _dclicks:WORD
-EXTRN _dclicks2:WORD
-EXTRN _dclicktime:WORD
-EXTRN _dclicktime2:WORD
-EXTRN _dclickstate:WORD
-EXTRN _dclickstate2:WORD
 EXTRN _mousebforward:BYTE
 EXTRN _mousebstrafe:BYTE
 EXTRN _mousebuttons:BYTE
 EXTRN _mousebfire:BYTE
-EXTRN _mousex:BYTE
+
 EXTRN _turnheld:BYTE
 EXTRN _sidemove:BYTE
 EXTRN _forwardmove:WORD
@@ -205,6 +199,22 @@ dw  OFFSET cheat_mypos_seq, 0
 PROC D_MAIN_STARTMARKER_ NEAR
 PUBLIC D_MAIN_STARTMARKER_
 ENDP
+
+_dclicks:
+dw 0
+_dclicks2:
+dw 0
+_dclicktime:
+dw 0
+_dclicktime2:
+dw 0
+_dclickstate:
+dw 0
+_dclickstate2:
+dw 0
+
+_mousex:
+dw 0
 
 
 ; ax is cheat index
@@ -665,12 +675,15 @@ mov  di, OFFSET _gamekeydown
 
 rep  stosw
 
+mov  word ptr cs:[_mousex], ax
+
 pop  di
 pop  cx
 ret
 
 ENDP
 
+; todo inline
 PROC G_SetGameKeyDown_  NEAR
 PUBLIC G_SetGameKeyDown_
 
@@ -683,6 +696,7 @@ ret
 
 ENDP
 
+; todo inline
 PROC G_SetGameKeyUp_  NEAR
 PUBLIC G_SetGameKeyUp_
 
@@ -928,7 +942,7 @@ jmp       loop_handle_weapon_swap
 use_pressed:
 xor       ax, ax
 or        byte ptr cs:[si + 7], BT_USE
-mov       word ptr ds:[_dclicks], ax
+mov       word ptr cs:[_dclicks], ax
 jmp       done_handling_use
 
 handle_weapon_change:
@@ -960,32 +974,32 @@ xor       ah, ah
 add       bx, ax
 mov       al, byte ptr ds:[bx]
 cbw      
-cmp       ax, word ptr ds:[_dclickstate2]
+cmp       ax, word ptr cs:[_dclickstate2]
 jne       strafe_clickstate_nonequal
 handle_strafe_clickstate:
-inc       word ptr ds:[_dclicktime2]
-cmp       word ptr ds:[_dclicktime2], 20  
+inc       word ptr cs:[_dclicktime2]
+cmp       word ptr cs:[_dclicktime2], 20  
 jng       done_handling_mouse_strafe
 xor       ax, ax
-mov       word ptr ds:[_dclicks2], ax
-mov       word ptr ds:[_dclickstate2], ax
+mov       word ptr cs:[_dclicks2], ax
+mov       word ptr cs:[_dclickstate2], ax
 jmp       done_handling_mouse_strafe
 strafe_clickstate_nonequal:
-cmp       word ptr ds:[_dclicktime2], 1
+cmp       word ptr cs:[_dclicktime2], 1
 jle       handle_strafe_clickstate
-mov       word ptr ds:[_dclickstate2], ax
+mov       word ptr cs:[_dclickstate2], ax
 test      ax, ax
 je        dont_increment_dclicks2
-inc       word ptr ds:[_dclicks2]
+inc       word ptr cs:[_dclicks2]
 dont_increment_dclicks2:
-cmp       word ptr ds:[_dclicks2], 2
+cmp       word ptr cs:[_dclicks2], 2
 je        handle_double_click
 
 xor       ax, ax
-mov       word ptr ds:[_dclicktime2], ax
+mov       word ptr cs:[_dclicktime2], ax
 jmp       done_handling_mouse_strafe
 strafe_on_add_mousex:
-mov       ax, word ptr ds:[_mousex]
+mov       ax, word ptr cs:[_mousex]
 SHIFT_MACRO shl ax 3
 sub       word ptr cs:[si + 2], ax
 jmp       done_handling_mousex
@@ -993,13 +1007,13 @@ jmp       done_handling_mousex
 handle_double_click:
 xor       ax, ax
 or        byte ptr cs:[si + 7], BT_USE
-mov       word ptr ds:[_dclicks2], ax
+mov       word ptr cs:[_dclicks2], ax
 
 done_handling_mouse_strafe:
 cmp       byte ptr [bp - 2], 0
 je        strafe_on_add_mousex
 ; set angle turn
-mov       ax, word ptr ds:[_mousex]
+mov       ax, word ptr cs:[_mousex]
 add       ax, ax
 cwd       
 add       cx, ax
@@ -1008,7 +1022,7 @@ done_handling_mousex:
 
 ; limit move speed to max move (forward_move[1])
 
-mov       word ptr ds:[_mousex], 0
+mov       word ptr cs:[_mousex], 0
 mov       ax, word ptr [bp - 6]
 cmp       ax, word ptr ds:[_forwardmove + 6]
 jg        clip_forwardmove_to_max
@@ -1854,7 +1868,7 @@ add   ax, 5
 mov   bx, 10
 imul  dx
 call  FastDiv3216u_
-mov   word ptr ds:[_mousex], ax
+mov   word ptr cs:[_mousex], ax
 mov   al, 1
 pop   si
 pop   cx
