@@ -1256,7 +1256,7 @@ pop       dx
 
 test      ax, ax
 jne       not_minout
-cmp       dx, word ptr ds:[_am_min_scale_mtof + 0]
+cmp       dx, word ptr ds:[_am_min_scale_mtof]
 jb        min_out_windowscale
 not_minout:
 cmp       ax, word ptr ds:[_am_max_scale_mtof + 2]

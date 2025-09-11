@@ -550,8 +550,7 @@ _NetUpdate_addr =					 _NULL_OFFSET + 00714h
 
 _mtof_zoommul =        			     _NULL_OFFSET + 00718h
 _ftom_zoommul =        			     _NULL_OFFSET + 0071Ah
-_am_min_scale_mtof =       	         _NULL_OFFSET + 0071Ch
-_am_max_scale_mtof =       		     _NULL_OFFSET + 0071Eh
+_am_max_scale_mtof =       		     _NULL_OFFSET + 0071Ch
 
 _FastDiv3216u_addr =				 _NULL_OFFSET + 00720h
 _bulletslope = 			 			 _NULL_OFFSET + 00724h
@@ -566,7 +565,8 @@ _inhelpscreensstate =				 _NULL_OFFSET + 0079Eh
 _fullscreen =					     _NULL_OFFSET + 0079Fh
 
 
-; 7a0 to 7DF empty
+
+; 7a4 to 7DF empty
 _screen_oldloc =					 _NULL_OFFSET + 007E0h
 _old_screen_botleft_x =				 _NULL_OFFSET + 007E4h
 _old_screen_botleft_y =				 _NULL_OFFSET + 007E6h
@@ -625,6 +625,7 @@ _fopen_wb_argument =	 	     	 _NULL_OFFSET + 00AC0h
 _domapcheatthisframe =				 _NULL_OFFSET + 00AC3h
 _st_gamestate =	  	  				 _NULL_OFFSET + 00AC4h
 _st_firsttime =	  	  				 _NULL_OFFSET + 00AC5h
+_am_min_scale_mtof =       	         _NULL_OFFSET + 00AC6h
 _screen_viewport_width =	  	  	 _NULL_OFFSET + 00AC8h
 _screen_viewport_height =	  	  	 _NULL_OFFSET + 00ACAh
 _old_screen_viewport_width =	  	 _NULL_OFFSET + 00ACCh

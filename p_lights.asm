@@ -233,21 +233,22 @@ jnz   exit_t_strobeflash_early
 
 mov   dx, word ptr ds:[bx + STROBE_T.strobe_secnum]
 SHIFT_MACRO shl dx 4
-mov   ax, word ptr ds:[bx + STROBE_T.strobe_maxlight]
-; maxlight al
-; minlight ah
+
+mov   ax, word ptr ds:[bx + STROBE_T.strobe_minlight]
+; minlight al
+; maxlight ah
 xchg  bx, dx
 mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
-cmp   ah, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
+cmp   al, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
 jne   strobe_not_equal_to_minlight
-mov   byte ptr es:[bx + SECTOR_T.sec_lightlevel], al
+mov   byte ptr es:[bx + SECTOR_T.sec_lightlevel], ah
 mov   bx, dx
 push  word ptr ds:[bx + STROBE_T.strobe_brighttime]
 jmp   set_count_and_exit_strobe
 
 strobe_not_equal_to_minlight:
-mov   byte ptr es:[bx + SECTOR_T.sec_lightlevel], ah
+mov   byte ptr es:[bx + SECTOR_T.sec_lightlevel], al
 mov   bx, dx
 push  word ptr ds:[bx + STROBE_T.strobe_darktime]
 set_count_and_exit_strobe:

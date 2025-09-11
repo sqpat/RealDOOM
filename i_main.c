@@ -84,8 +84,8 @@ _WCRTDATA unsigned _WCDATA _amblksiz = 0x700;
 
 
 void __near hackDS();
-void __near zeroConventional();
-void __near hackDSBack();
+
+
 
 int16_t main ( int16_t argc, int8_t** argv ) { 
     myargc = argc; 
@@ -93,10 +93,6 @@ int16_t main ( int16_t argc, int8_t** argv ) {
 
 	// set DS to FIXED_DS_SEGMENT. we must also do this in interrupts.
 	hackDS();
-	// override __GETDS mov ax, #### but im not sure anything uses it after init anyway?
-	
-	// zeroConventional(); // zero conventional. clears various bugs that assume 0 in memory. kind of bad practice, the bugs shouldnt happen... todo fix
-
     D_DoomMain (); 
 
     return 0;

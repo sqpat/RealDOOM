@@ -87,56 +87,6 @@ ret
 ENDP
 
 
-PROC zeroConventional_ NEAR
-PUBLIC zeroConventional_
-
-cli
-
-push cx
-push di
-
-xor  ax, ax
-mov  di, ax
-
-mov  cx, 04000h
-mov  es, cx
-mov  cx, 08000h
-rep  stosw
-
-mov  cx, 05000h
-mov  es, cx
-mov  cx, 08000h
-rep  stosw
-
-mov  cx, 06000h
-mov  es, cx
-mov  cx, 08000h
-rep  stosw
-
-mov  cx, 07000h
-mov  es, cx
-mov  cx, 08000h
-rep  stosw
-
-mov  cx, 08000h
-mov  es, cx
-mov  cx, 08000h
-rep  stosw
-
-mov  cx, 09000h
-mov  es, cx
-mov  cx, 08000h
-rep  stosw
-
-pop di
-pop cx
-sti
-
-
-ret
-
-ENDP
-
 
 ; nice for debug... 
 COMMENT @
@@ -162,35 +112,7 @@ ret
 
 @
 
-PROC hackDSBack_ NEAR
-PUBLIC hackDSBack_
 
-cli
-push cx
-push si
-push di
-
-mov es, ds:[_stored_ds]
-
-xor di, di
-mov si, di
-mov CX, 2000h   ; 4000h bytes
-rep movsw
-mov cx, es
-mov ds, cx
-mov ss, cx
-
-
-pop di
-pop si
-pop cx
-
-
-sti
-
-
-
-ret
 
 ENDP
 

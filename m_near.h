@@ -612,18 +612,19 @@
 #define R_DrawPlanesCallOffset 			  (*((int16_t __near*)               (_NULL_OFFSET + 0x0708)))
 #define R_DrawMaskedCall 		 		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x070C)))
 #define R_DrawMaskedCallOffset 		      (*((int16_t __near*)               (_NULL_OFFSET + 0x070C)))
-#define R_WriteBackMaskedFrameConstantsCall  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0710)))
-#define R_WriteBackMaskedFrameConstantsCallOffset (*((int16_t __near*)              (_NULL_OFFSET + 0x0710)))
+#define R_WriteBackMaskedFrameConstantsCall  (*((uint32_t __near*)           (_NULL_OFFSET + 0x0710)))
+#define R_WriteBackMaskedFrameConstantsCallOffset (*((int16_t __near*)       (_NULL_OFFSET + 0x0710)))
 #define NetUpdate_addr					  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0714)))
 
 
 #define mtof_zoommul        			  (*((int16_t __near*)               (_NULL_OFFSET + 0x0718)))
 #define ftom_zoommul        			  (*((int16_t __near*)               (_NULL_OFFSET + 0x071A)))
-#define am_min_scale_mtof       	      (*((int16_t __near*)               (_NULL_OFFSET + 0x071C)))
-#define am_max_scale_mtof       		  (*((int16_t __near*)               (_NULL_OFFSET + 0x071E)))
+#define am_max_scale_mtof       		  (*((int16_t __near*)               (_NULL_OFFSET + 0x071C)))
+
 
 
 #define FastDiv3216u_addr				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0720)))
+
 #define bulletslope     				  (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x0724)))
 #define weaponinfo 						  ((weaponinfo_t __near *)           (_NULL_OFFSET + 0x0728))
 #define G_ExitLevel_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x078C)))
@@ -694,7 +695,7 @@
 #define domapcheatthisframe 		      (*((boolean __near*)               (_NULL_OFFSET + 0x0AC3)))
 #define st_gamestate 		      		  (*((st_stateenum_t __near*)        (_NULL_OFFSET + 0x0AC4)))
 #define st_firsttime 		      		  (*((boolean __near*)        		 (_NULL_OFFSET + 0x0AC5)))
-// ac6-7 free
+#define am_min_scale_mtof       	      (*((int16_t __near*)               (_NULL_OFFSET + 0x0AC6)))
 #define screen_viewport_width 		      (*((int16_t __near*)        		 (_NULL_OFFSET + 0x0AC8)))
 #define screen_viewport_height 		      (*((int16_t __near*)        		 (_NULL_OFFSET + 0x0ACA)))
 #define old_screen_viewport_width 		  (*((int16_t __near*)        		 (_NULL_OFFSET + 0x0ACC)))
