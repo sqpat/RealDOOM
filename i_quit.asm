@@ -25,7 +25,7 @@ EXTRN Z_QuickMapUnmapAll_:NEAR
 EXTRN Z_QuickMapPhysics_:FAR
 EXTRN G_CheckDemoStatus_:NEAR
 EXTRN M_SaveDefaults_:NEAR
-EXTRN W_CacheLumpNameDirect_:FAR
+EXTRN W_CacheLumpNameDirectFarString_:FAR
 EXTRN I_ShutdownTimer_:NEAR
 EXTRN I_ShutdownKeyboard_:NEAR
 EXTRN zeroConventional_:NEAR
@@ -55,6 +55,11 @@ LUMP_PER_EMS_PAGE = 1024
 PROC    I_QUIT_STARTMARKER_ NEAR
 PUBLIC  I_QUIT_STARTMARKER_
 ENDP
+
+
+str_ENDOOM:
+db "ENDOOM", 0
+
 
 PROC    I_ShutdownSound_   NEAR
 PUBLIC  I_ShutdownSound_
@@ -89,7 +94,7 @@ PROC    I_ShutdownGraphics_   NEAR
 PUBLIC  I_ShutdownGraphics_
     xor  ax, ax
     mov  es, ax
-    cmp  word ptr es:[0449h], 013h  ;  // don't reset mode if it didn't get set
+    cmp  byte ptr es:[0449h], 013h  ;  // don't reset mode if it didn't get set
     jne  just_exit_graphics
     mov  al, 3
     push dx
@@ -170,6 +175,7 @@ PROC    I_Shutdown_   NEAR
 PUBLIC  I_Shutdown_
 
 push bx
+push dx
 
 xor  bx, bx
 
@@ -184,22 +190,17 @@ call  fclose_
 
 skip_fclose_wadfile:
 shr   bx, 1
+inc   bx
 cmp   bl, byte ptr ds:[_currentloadedfileindex]
 jl    loop_wad_unload
 
 skip_wad_unload:
 
+xor  dx, dx
 
+call CallQuitFunctions_
 
-call I_ShutdownGraphics_
-call I_ShutdownSound_
-call I_ShutdownTimer_
-call I_ShutdownMouse_
-call I_ShutdownKeyboard_
-call Z_ShutdownEMS_
-call zeroConventional_
-call hackDSBack_
-
+pop dx
 pop bx
 ret
 	
@@ -209,15 +210,45 @@ ENDP
 
 
 
-str_ENDOOM:
-db "ENDOOM", 0
+PROC    CallQuitFunctions_  NEAR
+
+call  I_ShutdownGraphics_
+call  I_ShutdownSound_
+call  I_ShutdownTimer_
+call  I_ShutdownMouse_
+call  I_ShutdownKeyboard_
+test  dx, dx
+je    skip_enddoom
+
+    push  bx
+    push  cx
+
+    mov  ax, OFFSET str_ENDOOM
+    mov  dx, cs
+    mov  cx, 0B800h
+    xor  bx, bx
+    call W_CacheLumpNameDirectFarString_ ; ("ENDOOM", (byte __far *)0xb8000000);
+
+    mov ax, 00200h
+    xor bx, bx
+    mov dx, 02300h
+    int 010h        ; // Set text pos
+
+    pop   cx
+    pop   bx
+
+
+skip_enddoom:
+call  Z_ShutdownEMS_
+call  zeroConventional_; // zero conventional. clears various bugs that assume 0 in memory. kind of bad practice, the bugs shouldnt happen... todo fix
+call  hackDSBack_
+
+ret
 
 
 PROC    I_Quit_   FAR
 PUBLIC  I_Quit_
 
-push  bx
-push  cx
 push  dx
 
 call Z_QuickMapPhysics_
@@ -228,35 +259,14 @@ dont_check_demo_status:
 
 call M_SaveDefaults_
 
-; todo call these five in common?
-call I_ShutdownGraphics_
-call I_ShutdownSound_
-call I_ShutdownTimer_
-call I_ShutdownMouse_
-call I_ShutdownKeyboard_
+mov  dx, 1
+call CallQuitFunctions_
 
-mov  ax, OFFSET str_ENDOOM
-mov  cx, 0B800h
-xor  bx, bx
-call W_CacheLumpNameDirect_ ; ("ENDOOM", (byte __far *)0xb8000000);
-	
-
-mov ax, 00200h
-xor bx, bx
-mov dx, 02300h
-int 010h        ; // Set text pos
-	
-call  Z_ShutdownEMS_
-call  zeroConventional_; // zero conventional. clears various bugs that assume 0 in memory. kind of bad practice, the bugs shouldnt happen... todo fix
-
-call  hackDSBack_
 
 mov   ax, 1
 call  exit_
 
 pop   dx
-pop   cx
-pop   bx
 
 
 retf

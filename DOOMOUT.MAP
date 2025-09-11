@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/11 08:57:19
+Created on:       25/09/11 09:14:01
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -33,7 +33,7 @@ I_INIT_TEXT            CODE           AUTO           0000:16fe       000001cd
 z_init_TEXT            CODE           AUTO           0000:18d0       00000a57
 p_init_TEXT            CODE           AUTO           0000:2330       0000049e
 i_main_TEXT            CODE           AUTO           0000:27d0       00000010
-I_QUIT_TEXT            CODE           AUTO           0000:27e0       0000012c
+I_QUIT_TEXT            CODE           AUTO           0000:27e0       00000129
 i_ibm_TEXT             CODE           AUTO           0000:2910       0000014c
 d_main_TEXT            CODE           AUTO           0000:2a60       000003ce
 D_NET_TEXT             CODE           AUTO           0000:2e2e       000000b3
@@ -228,14 +228,14 @@ Module: i_main.obj(C:\REALDOOM\i_main.c)
 0000:27d0      main_
 0dd2:0f14      __amblksiz
 Module: i_quit.obj(i_quit.ASM)
-0000:281c*     I_ShutdownMouse_
+0000:2823*     I_ShutdownMouse_
 0000:27e0*     I_QUIT_STARTMARKER_
-0000:290c*     I_QUIT_ENDMARKER_
-0000:287b      I_Shutdown_
-0000:27e0*     I_ShutdownSound_
-0000:28bc      I_Quit_
-0000:2828*     Z_ShutdownEMS_
-0000:2804*     I_ShutdownGraphics_
+0000:2909*     I_QUIT_ENDMARKER_
+0000:2882      I_Shutdown_
+0000:27e7*     I_ShutdownSound_
+0000:28e6      I_Quit_
+0000:282f*     Z_ShutdownEMS_
+0000:280b*     I_ShutdownGraphics_
 Module: i_ibm.obj(C:\REALDOOM\i_ibm.c)
 0000:2910      I_WaitVBL_
 0000:293c*     I_EndRead_
@@ -904,4 +904,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  ffa0 (65440.)
 Entry point address: 0000:c2ae
-Link time: 00:00.20
+Link time: 00:00.74
