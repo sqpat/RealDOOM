@@ -1708,7 +1708,7 @@ void __near SB_RestoreVoiceVolume() {
     }
 }
 
-void __far SB_Shutdown(){
+void __near SB_Shutdown(){
     // sfx_playing = false;
 
 	SB_StopPlayback();

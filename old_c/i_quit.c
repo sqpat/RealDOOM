@@ -34,7 +34,7 @@ void __near finishlogging(){
 }
 */
 
-void __far SB_Shutdown();
+void __near SB_Shutdown();
 
 void __near I_ShutdownSound(void) {
 
@@ -189,7 +189,7 @@ void __near I_Shutdown(void) {
 // or 0 if not present
 
 
-int16_t __near M_CheckParm (int8_t *__far check) {
+int16_t __near M_CheckParm (int8_t __far* check) {
     int16_t		i;
 	// ASSUMES *check is LOWERCASE. dont pass in uppercase!
 	// myargv must be tolower()

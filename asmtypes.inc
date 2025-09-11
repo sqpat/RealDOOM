@@ -597,7 +597,7 @@ MUSIC_DRIVER_T STRUC
     md_initdriver_func            dd ?  ; 0
     md_detecthardware_func        dd ?  ; 4
     md_inithardware_func          dd ?  ; 8
-    md_deinithardward_func        dd ?  ; C
+    md_deinithardware_func        dd ?  ; C
     md_playnote_func              dd ?  ; 010h
     md_releasenote_func           dd ?  ; 014h
     md_pitchwheel_func            dd ?  ; 018h

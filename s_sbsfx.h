@@ -6,7 +6,7 @@
 
 
 int16_t __far SB_InitCard();
-void __far SB_Shutdown();
+void __near SB_Shutdown();
 void __far SB_StartInit();
 
 
