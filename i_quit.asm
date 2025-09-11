@@ -30,8 +30,6 @@ EXTRN I_ShutdownTimer_:NEAR
 EXTRN I_ShutdownKeyboard_:NEAR
 EXTRN zeroConventional_:NEAR
 EXTRN hackDSBack_:NEAR
-EXTRN locallib_strcmp_:NEAR
-EXTRN locallib_strlwr_:NEAR
 EXTRN DEBUG_PRINT_:FAR
 EXTRN exit_:FAR
 
@@ -41,8 +39,6 @@ EXTRN exit_:FAR
 EXTRN _wadfiles:WORD
 EXTRN _mousepresent:BYTE
 EXTRN _currentloadedfileindex:BYTE
-EXTRN _myargc:WORD
-EXTRN _myargv:WORD
 EXTRN _demorecording:BYTE
 
 
@@ -211,63 +207,7 @@ ret
 
 ENDP
 
-; int16_t __near M_CheckParm (int8_t *__far check) {
 
-
-
-PROC    M_CheckParm_   NEAR
-PUBLIC  M_CheckParm_
-
-
-PUSHA_NO_AX_MACRO
-
-
-xchg ax, di   ; di stores arg offset
-mov  bp, dx   ; bp stores arg segment
-
-mov  si, 1
-cmp  si, word ptr ds:[_myargc]
-jge  exit_check_parm_return_0
-
-loop_check_next_parm:
-sal  si, 1
-mov  bx, word ptr ds:[_myargv] ; myargv
-mov  ax, word ptr ds:[bx + si] ; myargv[i]
-mov  dx, ds
-call locallib_strlwr_   ;  locallib_strlwr(myargv[i]);
-
-mov  ax, di
-mov  dx, bp
-mov  bx, word ptr ds:[bx + si] ; myargv[i]
-mov  cx, ds
-
-call locallib_strcmp_ ; todo carry return?      ; if ( !locallib_strcmp(check, myargv[i]) )
-
-shr  si, 1
-
-test ax, ax
-mov  ax, si
-je   exit_check_parm_return
-
-xchg ax, bx ; retrieve check
-
-
-inc  si
-cmp  si, word ptr ds:[_myargc]
-jl   loop_check_next_parm
-
-
-exit_check_parm_return_0:
-xor  ax, ax
-exit_check_parm_return:
-
-mov  es, ax
-POPA_NO_AX_MACRO
-mov  ax, es
-
-ret
-
-ENDP
 
 str_ENDOOM:
 db "ENDOOM", 0
