@@ -364,7 +364,6 @@ void __near G_DoWorldDone(void) {
 
 void __near G_DoNewGame(void) {
 	demoplayback = false;
-	netdemo = false;
 	//playeringame[1] = playeringame[2] = playeringame[3] = 0;
 	respawnparm = false;
 	fastparm = false;
@@ -1103,7 +1102,6 @@ boolean __far G_CheckDemoStatus (void)  {
         }
                          
         demoplayback = false; 
-        netdemo = false;
         respawnparm = false;
         fastparm = false;
         nomonsters = false;

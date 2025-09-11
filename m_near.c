@@ -52,7 +52,7 @@
 
 
 
-boolean         respawnparm;    // checkparm of -respawn
+
 
 
 boolean         singletics = false; // debug flag to cancel adaptiveness
@@ -178,7 +178,7 @@ int16_t             p_init_maxframe;
 
 
 boolean grmode = 0;
-boolean mousepresent;
+
 
 
 boolean novideo; // if true, stay in text mode for debugging
@@ -206,9 +206,7 @@ boolean         	noblit;                 // for comparative timing purposes
  
 
  
-boolean         demorecording; 
 
-boolean         netdemo; 
 
 uint16_t           demo_p;				// buffer
 //byte __far*           demoend; 
@@ -367,35 +365,6 @@ int16_t	maxammo[NUMAMMO] = {200, 50, 300, 50};
 //
 
 
-
-
-
-
-
-//
-//      source animation definition
-//
-
-
-
-
-
-
-
-
-// newend is one past the last valid seg
-
-uint16_t                    numlumps;
-FILE*                		  wadfiles[MAX_WADFILES];
-int16_t                		filetolumpindex[MAX_WADFILES-1] = {-1, -1, -1};
-int32_t                		filetolumpsize[MAX_WADFILES-1];
-int8_t                     	currentloadedfileindex = 0;
-
-
-
-
-
-  
 
 
 

@@ -191,7 +191,6 @@ _castframes =                    	_NULL_OFFSET + 00143h
 _casttics =                      	_NULL_OFFSET + 00144h
 _castnum =                       	_NULL_OFFSET + 00145h
 _finaleflat =                   	_NULL_OFFSET + 00146h
-; 147 free
 _FixedMul2432_addr =                _NULL_OFFSET + 00148h
 _tmthing_pos =                      _NULL_OFFSET + 0014Ch
 
@@ -564,9 +563,19 @@ _oldentertics =					     _NULL_OFFSET + 0079Ch
 _inhelpscreensstate =				 _NULL_OFFSET + 0079Eh
 _fullscreen =					     _NULL_OFFSET + 0079Fh
 
+_wadfiles = 						 _NULL_OFFSET + 007A0h
+_filetolumpindex = 					 _NULL_OFFSET + 007A8h
+_numlumps = 						 _NULL_OFFSET + 007AEh
+_filetolumpsize = 				     _NULL_OFFSET + 007B0h
+_currentloadedfileindex =       	 _NULL_OFFSET + 007BCh
+_mousepresent =				       	 _NULL_OFFSET + 007BDh
+_respawnparm =				       	 _NULL_OFFSET + 007BEh
+_demorecording =			       	 _NULL_OFFSET + 007BFh
 
 
-; 7a4 to 7DF empty
+
+
+; 7c0 to 7DF free
 _screen_oldloc =					 _NULL_OFFSET + 007E0h
 _old_screen_botleft_x =				 _NULL_OFFSET + 007E4h
 _old_screen_botleft_y =				 _NULL_OFFSET + 007E6h

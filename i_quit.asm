@@ -36,10 +36,7 @@ EXTRN exit_:FAR
 
 .DATA
 
-EXTRN _wadfiles:WORD
-EXTRN _mousepresent:BYTE
-EXTRN _currentloadedfileindex:BYTE
-EXTRN _demorecording:BYTE
+
 
 
 

@@ -28,7 +28,7 @@
 typedef struct {
     // Should be "IWAD" or "PWAD".
 	int8_t		identification[4];
-    int32_t			numlumps;
+    int32_t			wad_numlumps;
 	int32_t			infotableofs;
     
 } wadinfo_t;

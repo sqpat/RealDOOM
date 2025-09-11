@@ -637,7 +637,19 @@
 #define inhelpscreensstate				  (*((boolean __near*)               (_NULL_OFFSET + 0x079E)))
 #define fullscreen						  (*((boolean __near*)               (_NULL_OFFSET + 0x079F)))
 
-// 7A0 to 7DF empty
+// todo put wad fields somewhere with roof to grow should the constant grow?
+#define wadfiles 						  ((FILE* __near *)           	 (_NULL_OFFSET + 0x07A0))
+#define filetolumpindex 				  ((int16_t __near *)           	 (_NULL_OFFSET + 0x07A8))
+#define numlumps						  (*((uint16_t __near*)              (_NULL_OFFSET + 0x07AE)))
+#define filetolumpsize 					  ((int32_t __near *)            	 (_NULL_OFFSET + 0x07B0))
+#define currentloadedfileindex     		  (*((int8_t __near*)                (_NULL_OFFSET + 0x07BC)))
+#define mousepresent     				  (*((boolean __near*)               (_NULL_OFFSET + 0x07BD)))
+#define respawnparm       				  (*((boolean __near*)               (_NULL_OFFSET + 0x07BE)))
+#define demorecording     				  (*((boolean __near*)               (_NULL_OFFSET + 0x07BF)))
+
+
+
+// 7C0 to 7DF empty
 #define screen_oldloc					  (*((mpoint_t __near*)              (_NULL_OFFSET + 0x07E0)))
 #define old_screen_botleft_x			  (*((int16_t __near*)               (_NULL_OFFSET + 0x07E4)))
 #define old_screen_botleft_y			  (*((int16_t __near*)               (_NULL_OFFSET + 0x07E6)))
@@ -749,7 +761,7 @@
 
 
 
-extern boolean              respawnparm;    // checkparm of -respawn
+
 
 extern boolean              singletics;
 
@@ -888,7 +900,6 @@ extern int16_t              p_init_maxframe;
 #define SC_LSHIFT       0x2a
 
 extern boolean grmode;
-extern boolean mousepresent;
 // REGS stuff used for int calls
 
 extern boolean novideo; // if true, stay in text mode for debugging
@@ -911,8 +922,7 @@ extern boolean         	  noblit;                 // for comparative timing purp
 
 
 
-extern boolean         demorecording; 
-extern boolean         netdemo; 
+
 extern uint16_t           demo_p;				// buffer
 extern boolean         singledemo;             // quit after playing a demo from cmdline 
 extern boolean         precache;        // if true, load all graphics at start 
@@ -1090,17 +1100,6 @@ typedef	struct {
 
 #define MAXSEGS		32
 #define MAX_WADFILES 4
-
-
-// newend is one past the last valid seg
-extern uint16_t                     numlumps;
-extern FILE*               		    wadfiles[MAX_WADFILES];
-extern int16_t                	    filetolumpindex[MAX_WADFILES-1];
-extern int32_t                		filetolumpsize[MAX_WADFILES-1];
-extern int8_t                       currentloadedfileindex;
-  
-
-
 
 
 

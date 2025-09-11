@@ -26,12 +26,6 @@ EXTRN locallib_far_fread_:FAR
 
 .DATA
 
-EXTRN _wadfiles:WORD
-EXTRN _filetolumpindex:WORD
-EXTRN _filetolumpsize:WORD
-EXTRN _currentloadedfileindex:WORD
-EXTRN _numlumps:WORD
-
 
 COLORMAPS_SIZE = 33 * 256
 LUMP_PER_EMS_PAGE = 1024 

@@ -39,7 +39,6 @@ EXTRN locallib_dos_setvect_:NEAR
 EXTRN _oldkeyboardisr:DWORD
 EXTRN _novideo:BYTE
 EXTRN _usemouse:BYTE
-EXTRN _mousepresent:BYTE
 EXTRN _musdriverstartposition:BYTE
 
 

@@ -56,7 +56,6 @@ EXTRN Z_QuickMapByTaskNum_:FAR
 EXTRN _R_RenderPlayerView:DWORD
 EXTRN _oldgamestate:BYTE
 EXTRN _singledemo:BYTE
-EXTRN _mousepresent:BYTE
 EXTRN _key_strafe:BYTE
 EXTRN _key_straferight:BYTE
 EXTRN _key_strafeleft:BYTE

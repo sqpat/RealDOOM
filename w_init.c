@@ -166,15 +166,15 @@ void __near W_AddFile(int8_t *filename) {
 
 			modifiedgame = true;
 		}
-		//header.numlumps = (header.numlumps);
+		//header.wad_numlumps = (header.wad_numlumps);
 		//header.infotableofs = (header.infotableofs);
-		length = header.numlumps * sizeof(filelump_t);
+		length = header.wad_numlumps * sizeof(filelump_t);
 
 		// let's piggyback off scratch EMS block
 		fileinfo = SCRATCH_FILE_LOAD_LOCATION;
 		fseek(usefp, header.infotableofs, SEEK_SET);
 		locallib_far_fread(fileinfo, length, usefp);
-		numlumps += header.numlumps;
+		numlumps += header.wad_numlumps;
 
 		W_UpdateNumLumps();
 

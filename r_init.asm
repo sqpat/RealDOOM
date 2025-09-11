@@ -39,8 +39,6 @@ EXTRN fread_:FAR
 
 .DATA
 
-EXTRN _numlumps:WORD
-EXTRN _wadfiles:WORD
 
 .CODE
 
