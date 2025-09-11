@@ -1428,6 +1428,8 @@ xor    dx, dx
 sub    ax, (_thinkerlist + THINKER_T.t_data)
 div    bx
 
+; todo here
+
 ; got sourceref
 xor    dx, dx
 mov    word ptr ds:[_player + PLAYER_T.player_attackerRef], ax

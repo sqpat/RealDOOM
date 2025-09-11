@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/11 10:09:16
+Created on:       25/09/11 11:17:12
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -438,10 +438,10 @@ Module: main.obj(main.ASM)
 0000:5e48*     G_SetGameKeyUp_
 0000:6a4e      locallib_printhex_
 0000:5a81*     D_MAIN_STARTMARKER_
-0000:6441      M_LoadDefaults_
 0000:6a41      locallib_putchar_
-0000:683d*     I_UpdateBox_
+0000:6441      M_LoadDefaults_
 0000:6b86*     locallib_printstringnear_
+0000:683d*     I_UpdateBox_
 0000:6ce6      D_Display_
 0000:5b31      I_KeyboardISR_
 0000:65e7      M_ScanTranslateDefaults_
@@ -600,9 +600,9 @@ Module: w_wad.obj(w_wad.ASM)
 0000:adab*     W_ReadLump_
 0000:ad68      W_LumpLength_
 0000:ae2f      W_CacheLumpNumDirectWithOffset_
+0000:ac68      W_CheckNumForName_
 0000:ae76*     W_WAD_ENDMARKER_
 0000:ad59      W_GetNumForName_
-0000:ac68      W_CheckNumForName_
 0000:ae24      W_CacheLumpNameDirectFarString_
 0000:ae47      W_CacheLumpNumDirectFragment_
 0000:acfc      SELFMODIFY_start_lump_for_search

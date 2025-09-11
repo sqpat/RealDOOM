@@ -642,9 +642,10 @@ mov       es, ax
 push      es ; bp - 2 in case needed
 push      si ; bp - 4 in case needed
 
-push      dx ; bp - 6 need to juggle this (side argument) for a second
-push      bx ; bp - 8 need to juggle this (mobj argument) for a second
-push      cx
+push      cx ; bp - 6 mobj pos in case needed (EV_Teleport)
+push      dx ; bp - 8 need to juggle this (side argument) for a second
+push      bx ; bp - 0Ah need to juggle this (mobj argument) for a second
+
 xor       ax, ax
 cwd
 
@@ -668,10 +669,10 @@ jz        exit_p_crossspecialline
 mov       cx, 7
 xchg      ax, dx
 repne     scasb
-jz        monser_only_special_ok
+jz        monster_only_special_ok
 jmp       exit_p_crossspecialline
 
-monser_only_special_ok:
+monster_only_special_ok:
 xchg      ax, dx
 thing_is_player:
 
@@ -682,8 +683,8 @@ sal       dx, 1
 mov       di, dx
 xchg      ax, bx
 
-pop       es  ; es holds mobj if necessary
-pop       cx  ; retrieve side parameter
+pop       es  ; bp - 0Ah es holds mobj if necessary
+pop       cx  ; bp - 8 retrieve side parameter
 
 mov       dx, si
 mov       si, -1
@@ -757,6 +758,7 @@ je        exit_p_crossspecialline
 
 ;		line_physics[linenum].special = setlinespecial;
 
+pop       bx  ;  bp - 6 (dump this)
 pop       bx  ;  bp - 4
 pop       es  ;  bp - 2
 
@@ -954,17 +956,16 @@ call      EV_StartLightStrobing_
 jmp       done_with_switch_block
 
 switch_case_39:
-;		EV_Teleport( linetag, side, thing, thing_pos );
 do_monster_only_teleport:
 inc       si ; si becomes 0
 do_monster_only_teleport_no_si_inc:
 switch_case_97:
-mov       dx, cx
-; todo make this not use stack...
+mov       dx, cx ; side to dx
 
-mov       cx, word ptr [bp - 0Ah]
+pop       cx     ; bp - 6, mobjpos
+push      cx     ; bp - 6 garbage to pop back later.
 mov       bx, es
-call      EV_Teleport_
+call      EV_Teleport_		           ;   EV_Teleport( linetag, side, thing, thing_pos );
 jmp       done_with_switch_block
 switch_case_125:
 test      bl, bl

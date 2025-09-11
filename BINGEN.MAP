@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/11 10:09:14
+Created on:       25/09/11 11:17:09
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -88,22 +88,22 @@ R_MASK0_TEXT           CODE           AUTO           21de:9772       0000195b
 R_MASKFL_TEXT          CODE           AUTO           21de:b0ce       0000191d
 P_SIGHT_TEXT           CODE           AUTO           2e7d:0000       000005ec
 P_MAP_TEXT             CODE           AUTO           2e7d:05ec       00002390
-P_MOBJ_TEXT            CODE           AUTO           2e7d:297c       00000f6f
-P_PSPR_TEXT            CODE           AUTO           2e7d:38ec       0000081a
-P_ENEMY_TEXT           CODE           AUTO           2e7d:4106       00001a22
-P_CEILNG_TEXT          CODE           AUTO           2e7d:5b28       0000028a
-P_DOORS_TEXT           CODE           AUTO           2e7d:5db2       000003c4
-P_FLOOR_TEXT           CODE           AUTO           2e7d:6176       000004b1
-P_INTER_TEXT           CODE           AUTO           2e7d:6628       00000873
-P_LIGHTS_TEXT          CODE           AUTO           2e7d:6e9c       00000298
-P_PLATS_TEXT           CODE           AUTO           2e7d:7134       00000283
-P_SPEC_TEXT            CODE           AUTO           2e7d:73b8       000009e1
-P_SWITCH_TEXT          CODE           AUTO           2e7d:7d9a       000003b4
-P_TELEPT_TEXT          CODE           AUTO           2e7d:814e       0000017f
-P_TICK_TEXT            CODE           AUTO           2e7d:82ce       000001e7
-P_USER_TEXT            CODE           AUTO           2e7d:84b6       00000428
-P_INFO_TEXT            CODE           AUTO           2e7d:88de       00000349
-D_ALGO_TEXT            CODE           AUTO           373f:0008       0000002e
+P_MOBJ_TEXT            CODE           AUTO           2e7d:297c       00000f71
+P_PSPR_TEXT            CODE           AUTO           2e7d:38ee       0000081a
+P_ENEMY_TEXT           CODE           AUTO           2e7d:4108       00001a22
+P_CEILNG_TEXT          CODE           AUTO           2e7d:5b2a       0000028a
+P_DOORS_TEXT           CODE           AUTO           2e7d:5db4       000003c4
+P_FLOOR_TEXT           CODE           AUTO           2e7d:6178       000004b1
+P_INTER_TEXT           CODE           AUTO           2e7d:662a       00000873
+P_LIGHTS_TEXT          CODE           AUTO           2e7d:6e9e       00000298
+P_PLATS_TEXT           CODE           AUTO           2e7d:7136       00000283
+P_SPEC_TEXT            CODE           AUTO           2e7d:73ba       000009e1
+P_SWITCH_TEXT          CODE           AUTO           2e7d:7d9c       000003b4
+P_TELEPT_TEXT          CODE           AUTO           2e7d:8150       0000017f
+P_TICK_TEXT            CODE           AUTO           2e7d:82d0       000001e7
+P_USER_TEXT            CODE           AUTO           2e7d:84b8       00000428
+P_INFO_TEXT            CODE           AUTO           2e7d:88e0       00000349
+D_ALGO_TEXT            CODE           AUTO           373f:000a       0000002e
 _TEXT                  CODE           AUTO           373f:0040       000033cc
 FAR_DATA               FAR_DATA       AUTO           3a7f:000c       00000000
 _NULL                  BEGDATA        DGROUP         3a80:0000       00000020
@@ -517,10 +517,10 @@ Module: main.obj(main.ASM)
 0000:8884*     G_SetGameKeyUp_
 0000:948a      locallib_printhex_
 0000:84bd*     D_MAIN_STARTMARKER_
-0000:8e7d      M_LoadDefaults_
 0000:947d      locallib_putchar_
-0000:9279*     I_UpdateBox_
+0000:8e7d      M_LoadDefaults_
 0000:95c2*     locallib_printstringnear_
+0000:9279*     I_UpdateBox_
 0000:9722      D_Display_
 0000:856d      I_KeyboardISR_
 0000:9023      M_ScanTranslateDefaults_
@@ -679,9 +679,9 @@ Module: w_wad.obj(w_wad.ASM)
 0000:d7ef*     W_ReadLump_
 0000:d7ac      W_LumpLength_
 0000:d873      W_CacheLumpNumDirectWithOffset_
+0000:d6ac      W_CheckNumForName_
 0000:d8ba*     W_WAD_ENDMARKER_
 0000:d79d      W_GetNumForName_
-0000:d6ac      W_CheckNumForName_
 0000:d868      W_CacheLumpNameDirectFarString_
 0000:d88b      W_CacheLumpNumDirectFragment_
 0000:d740      SELFMODIFY_start_lump_for_search
@@ -738,8 +738,8 @@ Module: m_menu.obj(m_menu.ASM)
 0e33:0438*     M_LoadGame_
 0e33:051a*     M_DoSave_
 0e33:0d61      M_Responder_
-0e33:076f*     M_DrawSound_
 0e33:07d4*     S_SetSfxVolume_
+0e33:076f*     M_DrawSound_
 0e33:0a79*     M_ReadThis2_
 0e33:081d*     S_SetMusicVolume_
 0e33:08d3*     M_ChooseSkill_
@@ -766,8 +766,8 @@ Module: m_menu.obj(m_menu.ASM)
 0e33:0916*     M_Episode_
 0e33:0605*     M_QuickSave_
 0e33:09fd*     M_EndGameResponse_
-0e33:07b9*     M_SfxVol_
 0e33:0449*     M_ReadSaveStrings_
+0e33:07b9*     M_SfxVol_
 0e33:0b9c*     M_SizeDisplay_
 0e33:11a2      M_Init_
 0e33:1044      M_StartControlPanel_
@@ -881,8 +881,8 @@ Module: r_bsp16.obj(r_bsp16.ASM)
 141b:3790      R_BSP16_STARTMARKER_
 141b:6bdd      R_WriteBackViewConstants16_
 141b:66a1      R_GetPatchTexture_Far16_
-141b:673c      R_GetCompositeTexture_Far16_
 141b:6f17      R_BSP16_ENDMARKER_
+141b:673c      R_GetCompositeTexture_Far16_
 Module: r_bsp0.obj(r_bsp0.ASM)
 1b0d:36b9      R_BSP0_ENDMARKER_
 1b0d:2e4b      R_GetPatchTexture_Far0_
@@ -1007,11 +1007,11 @@ Module: p_map.obj(p_map.ASM)
 2e7d:28a8      P_ChangeSector_
 Module: p_mobj.obj(p_mobj.ASM)
 2e7d:2d12      P_SpawnMobj_
-2e7d:37af      P_SpawnPlayerMissile_
-2e7d:35ac*     P_CheckMissileSpawn_
+2e7d:37b1      P_SpawnPlayerMissile_
+2e7d:35ad*     P_CheckMissileSpawn_
 2e7d:345f*     P_NightmareRespawn_
 2e7d:2af7      P_SpawnMapThing_
-2e7d:38e7      P_RemoveMobjFar_
+2e7d:38e9      P_RemoveMobjFar_
 2e7d:2e57      P_RemoveMobj_
 2e7d:29f3*     P_SpawnPlayer_
 2e7d:33fd*     P_ExplodeMissile_
@@ -1019,232 +1019,232 @@ Module: p_mobj.obj(p_mobj.ASM)
 2e7d:297c*     P_MOBJ_STARTMARKER_
 2e7d:2c33      P_MobjThinker_
 2e7d:3185*     P_ZMovement_
-2e7d:3634      P_SpawnMissile_
-2e7d:38eb*     P_MOBJ_ENDMARKER_
+2e7d:3635      P_SpawnMissile_
+2e7d:38ed*     P_MOBJ_ENDMARKER_
 2e7d:2e7a*     P_XYMovement_
 Module: p_pspr.obj(p_pspr.ASM)
-2e7d:3b3b*     A_Lower_
-2e7d:3bc0*     A_Punch_
-2e7d:3f5f*     A_Light2_
-2e7d:3f59*     A_Light1_
-2e7d:3a23*     P_FireWeapon_
-2e7d:3b71*     A_Raise_
-2e7d:3ba5*     A_GunFlash_
-2e7d:40a7*     P_SetPsprite_
-2e7d:3f53*     A_Light0_
-2e7d:3c51*     A_Saw_
-2e7d:3f65*     A_OpenShotgun2_
-2e7d:3e3b*     A_FirePistol_
-2e7d:3930*     P_CheckAmmo_
-2e7d:3b15*     A_ReFire_
-2e7d:3f88      A_BFGSpray_
-2e7d:3d4e*     A_FireMissile_
-2e7d:3d59*     A_FireBFG_
-2e7d:4026      P_MovePsprites_
-2e7d:3d65*     A_FirePlasma_
-2e7d:4106*     P_PSPR_ENDMARKER_
-2e7d:3deb*     P_GunShot_
-2e7d:401c*     A_BFGsound_
-2e7d:3a5e*     A_WeaponReady_
-2e7d:3930*     A_CheckReload_
-2e7d:3e6b*     A_FireShotgun_
-2e7d:3d80*     P_BulletSlope_
-2e7d:3f6f*     A_LoadShotgun2_
-2e7d:3e9d*     A_FireShotgun2_
-2e7d:38ec*     P_PSPR_STARTMARKER_
-2e7d:3f15*     A_FireCGun_
-2e7d:3a49      P_DropWeapon_
-2e7d:3f79*     A_CloseShotgun2_
-2e7d:38ec      P_BringUpWeapon_
+2e7d:3b3d*     A_Lower_
+2e7d:3bc2*     A_Punch_
+2e7d:3f61*     A_Light2_
+2e7d:3f5b*     A_Light1_
+2e7d:3a25*     P_FireWeapon_
+2e7d:3b73*     A_Raise_
+2e7d:3ba7*     A_GunFlash_
+2e7d:40a9*     P_SetPsprite_
+2e7d:3f55*     A_Light0_
+2e7d:3c53*     A_Saw_
+2e7d:3f67*     A_OpenShotgun2_
+2e7d:3e3d*     A_FirePistol_
+2e7d:3932*     P_CheckAmmo_
+2e7d:3b17*     A_ReFire_
+2e7d:3f8a      A_BFGSpray_
+2e7d:3d50*     A_FireMissile_
+2e7d:3d5b*     A_FireBFG_
+2e7d:4028      P_MovePsprites_
+2e7d:3d67*     A_FirePlasma_
+2e7d:4108*     P_PSPR_ENDMARKER_
+2e7d:3ded*     P_GunShot_
+2e7d:401e*     A_BFGsound_
+2e7d:3a60*     A_WeaponReady_
+2e7d:3932*     A_CheckReload_
+2e7d:3e6d*     A_FireShotgun_
+2e7d:3d82*     P_BulletSlope_
+2e7d:3f71*     A_LoadShotgun2_
+2e7d:3e9f*     A_FireShotgun2_
+2e7d:38ee*     P_PSPR_STARTMARKER_
+2e7d:3f17*     A_FireCGun_
+2e7d:3a4b      P_DropWeapon_
+2e7d:3f7b*     A_CloseShotgun2_
+2e7d:38ee      P_BringUpWeapon_
 Module: p_enemy.obj(p_enemy.ASM)
-2e7d:52d9*     A_FatRaise_
-2e7d:55d0*     A_Explode_
-2e7d:41d5      P_NoiseAlert_
-2e7d:5912*     A_SpawnFly_
-2e7d:4942*     A_PosAttack_
-2e7d:4770*     A_Chase_
-2e7d:4b19*     A_BspiAttack_
-2e7d:55c8*     A_Fall_
-2e7d:4245*     P_CheckMissileRange_
-2e7d:5763*     A_BrainPain_
-2e7d:48d4*     A_FaceTarget_
-2e7d:4b77*     A_SargAttack_
-2e7d:51e7*     GetVileMomz_
-2e7d:4e03*     A_SkelWhoosh_
-2e7d:5443*     A_PainDie_
-2e7d:5162*     A_VileTarget_
-2e7d:5869*     A_BrainSpit_
-2e7d:4313*     P_Move_
-2e7d:45e1*     P_LookForPlayers_
-2e7d:57f3*     A_BrainExplode_
-2e7d:50bc*     A_VileStart_
-2e7d:50cb*     A_FireCrackle_
-2e7d:4f30*     A_VileChase_
-2e7d:4e15*     A_SkelFist_
-2e7d:546f*     A_PainShootSkull_
-2e7d:5563*     A_Scream_
-2e7d:41e6*     P_CheckMeleeRange_
-2e7d:56f8*     A_Hoof_
-2e7d:4123*     P_RecursiveSound_
-2e7d:5363*     A_FatAttack2_
-2e7d:52e4*     A_FatAttack3_
-2e7d:4c3f*     A_SkelMissile_
-2e7d:5348*     A_FatAttack1_
-2e7d:570c*     A_BabyMetal_
-2e7d:590c*     A_SpawnSound_
-2e7d:46d9*     A_Look_
-2e7d:4c01*     A_BruisAttack_
-2e7d:55af*     A_XScream_
-2e7d:5702*     A_Metal_
-2e7d:445f*     P_TryWalk_
-2e7d:5a81      P_SetMobjState_
-2e7d:576c*     A_BrainScream_
-2e7d:4ba8*     A_HeadAttack_
-2e7d:55b6*     A_Pain_
-2e7d:4e4e*     PIT_VileCheck_
-2e7d:5213*     A_VileAttack_
-2e7d:562b*     A_BossDeath_
-2e7d:5b28*     P_ENEMY_ENDMARKER_
-2e7d:50d1*     A_Fire_
-2e7d:49ab*     A_SPosAttack_
-2e7d:4a23*     A_CPosAttack_
-2e7d:4ad3*     A_SpidRefire_
-2e7d:446e*     P_NewChaseDir_
-2e7d:50c3*     A_StartFire_
-2e7d:4c8b*     A_Tracer_
-2e7d:537e*     A_SkullAttack_
-2e7d:4106*     P_ENEMY_STARTMARKER_
-2e7d:4a8d*     A_CPosRefire_
-2e7d:4b32*     A_TroopAttack_
-2e7d:554c*     A_PainAttack_
-2e7d:5716*     A_BrainAwake_
-2e7d:59fd*     A_PlayerScream_
-2e7d:4684*     A_KeenDie_
-2e7d:4be8*     A_CyberAttack_
+2e7d:52db*     A_FatRaise_
+2e7d:55d2*     A_Explode_
+2e7d:41d7      P_NoiseAlert_
+2e7d:5914*     A_SpawnFly_
+2e7d:4944*     A_PosAttack_
+2e7d:4772*     A_Chase_
+2e7d:4b1b*     A_BspiAttack_
+2e7d:55ca*     A_Fall_
+2e7d:4247*     P_CheckMissileRange_
+2e7d:5765*     A_BrainPain_
+2e7d:48d6*     A_FaceTarget_
+2e7d:4b79*     A_SargAttack_
+2e7d:51e9*     GetVileMomz_
+2e7d:4e05*     A_SkelWhoosh_
+2e7d:5445*     A_PainDie_
+2e7d:5164*     A_VileTarget_
+2e7d:586b*     A_BrainSpit_
+2e7d:4315*     P_Move_
+2e7d:45e3*     P_LookForPlayers_
+2e7d:57f5*     A_BrainExplode_
+2e7d:50be*     A_VileStart_
+2e7d:50cd*     A_FireCrackle_
+2e7d:4f32*     A_VileChase_
+2e7d:4e17*     A_SkelFist_
+2e7d:5471*     A_PainShootSkull_
+2e7d:5565*     A_Scream_
+2e7d:41e8*     P_CheckMeleeRange_
+2e7d:56fa*     A_Hoof_
+2e7d:4125*     P_RecursiveSound_
+2e7d:5365*     A_FatAttack2_
+2e7d:52e6*     A_FatAttack3_
+2e7d:4c41*     A_SkelMissile_
+2e7d:534a*     A_FatAttack1_
+2e7d:570e*     A_BabyMetal_
+2e7d:46db*     A_Look_
+2e7d:590e*     A_SpawnSound_
+2e7d:4c03*     A_BruisAttack_
+2e7d:55b1*     A_XScream_
+2e7d:5704*     A_Metal_
+2e7d:4461*     P_TryWalk_
+2e7d:5a83      P_SetMobjState_
+2e7d:576e*     A_BrainScream_
+2e7d:4baa*     A_HeadAttack_
+2e7d:55b8*     A_Pain_
+2e7d:4e50*     PIT_VileCheck_
+2e7d:5215*     A_VileAttack_
+2e7d:562d*     A_BossDeath_
+2e7d:5b2a*     P_ENEMY_ENDMARKER_
+2e7d:50d3*     A_Fire_
+2e7d:49ad*     A_SPosAttack_
+2e7d:4a25*     A_CPosAttack_
+2e7d:4ad5*     A_SpidRefire_
+2e7d:4470*     P_NewChaseDir_
+2e7d:50c5*     A_StartFire_
+2e7d:4c8d*     A_Tracer_
+2e7d:5380*     A_SkullAttack_
+2e7d:4108*     P_ENEMY_STARTMARKER_
+2e7d:4a8f*     A_CPosRefire_
+2e7d:4b34*     A_TroopAttack_
+2e7d:554e*     A_PainAttack_
+2e7d:5718*     A_BrainAwake_
+2e7d:59ff*     A_PlayerScream_
+2e7d:4686*     A_KeenDie_
+2e7d:4bea*     A_CyberAttack_
 Module: p_ceilng.obj(p_ceilng.ASM)
-2e7d:5ced      P_AddActiveCeiling_
-2e7d:5b28*     P_CEILNG_STARTMARKER_
-2e7d:5d03*     P_RemoveActiveCeiling_
-2e7d:5db2*     P_CEILNG_ENDMARKER_
-2e7d:5d68      EV_CeilingCrushStop_
-2e7d:5bfe      EV_DoCeiling_
-2e7d:5d26*     P_ActivateInStasisCeiling_
-2e7d:5b28      T_MoveCeiling_
+2e7d:5cef      P_AddActiveCeiling_
+2e7d:5b2a*     P_CEILNG_STARTMARKER_
+2e7d:5d05*     P_RemoveActiveCeiling_
+2e7d:5db4*     P_CEILNG_ENDMARKER_
+2e7d:5d6a      EV_CeilingCrushStop_
+2e7d:5c00      EV_DoCeiling_
+2e7d:5d28*     P_ActivateInStasisCeiling_
+2e7d:5b2a      T_MoveCeiling_
 Module: p_doors.obj(p_doors.ASM)
-2e7d:5ec1      EV_DoLockedDoor_
-2e7d:6176*     P_DOORS_ENDMARKER_
-2e7d:612a      P_SpawnDoorRaiseIn5Mins_
-2e7d:5db2*     P_DOORS_STARTMARKER_
-2e7d:60f3      P_SpawnDoorCloseIn30_
-2e7d:5db2      T_VerticalDoor_
-2e7d:5f02      EV_DoDoor_
-2e7d:5fcc      EV_VerticalDoor_
+2e7d:5ec3      EV_DoLockedDoor_
+2e7d:6178*     P_DOORS_ENDMARKER_
+2e7d:612c      P_SpawnDoorRaiseIn5Mins_
+2e7d:5db4*     P_DOORS_STARTMARKER_
+2e7d:60f5      P_SpawnDoorCloseIn30_
+2e7d:5db4      T_VerticalDoor_
+2e7d:5f04      EV_DoDoor_
+2e7d:5fce      EV_VerticalDoor_
 Module: p_floor.obj(p_floor.ASM)
-2e7d:64fa      EV_BuildStairs_
-2e7d:62e1      EV_DoFloor_
-2e7d:6627*     P_FLOOR_ENDMARKER_
-2e7d:61ac      T_MovePlaneFloorDown_
-2e7d:6176*     P_FLOOR_STARTMARKER_
-2e7d:621d      T_MovePlaneFloorUp_
-2e7d:6251      T_MoveFloor_
-2e7d:6176      T_MovePlaneCeilingDown_
-2e7d:6190      T_MovePlaneCeilingUp_
+2e7d:64fc      EV_BuildStairs_
+2e7d:62e3      EV_DoFloor_
+2e7d:6629*     P_FLOOR_ENDMARKER_
+2e7d:61ae      T_MovePlaneFloorDown_
+2e7d:6178*     P_FLOOR_STARTMARKER_
+2e7d:621f      T_MovePlaneFloorUp_
+2e7d:6253      T_MoveFloor_
+2e7d:6178      T_MovePlaneCeilingDown_
+2e7d:6192      T_MovePlaneCeilingUp_
 Module: p_inter.obj(p_inter.ASM)
-2e7d:681c      P_TouchSpecialThing_
-2e7d:66ec*     P_GiveWeapon_
-2e7d:6768*     P_GiveCard_
-2e7d:6c0f      P_DamageMobj_
-2e7d:674b*     P_GiveArmor_
-2e7d:6729*     P_GiveBody_
-2e7d:6628*     P_INTER_STARTMARKER_
-2e7d:6a4b*     P_KillMobj_
-2e7d:6638*     P_GiveAmmo_
-2e7d:6782      P_GivePower_
-2e7d:6bab*     getMassThrust_
-2e7d:6e9b*     P_INTER_ENDMARKER_
+2e7d:681e      P_TouchSpecialThing_
+2e7d:66ee*     P_GiveWeapon_
+2e7d:676a*     P_GiveCard_
+2e7d:6c11      P_DamageMobj_
+2e7d:674d*     P_GiveArmor_
+2e7d:672b*     P_GiveBody_
+2e7d:662a*     P_INTER_STARTMARKER_
+2e7d:6a4d*     P_KillMobj_
+2e7d:663a*     P_GiveAmmo_
+2e7d:6784      P_GivePower_
+2e7d:6bad*     getMassThrust_
+2e7d:6e9d*     P_INTER_ENDMARKER_
 Module: p_lights.obj(p_lights.ASM)
-2e7d:6ff6      EV_StartLightStrobing_
-2e7d:6f07      T_LightFlash_
-2e7d:7106      P_SpawnGlowingLight_
-2e7d:7023      EV_LightChange_
-2e7d:70cb      T_Glow_
-2e7d:7134*     P_LIGHTS_ENDMARKER_
-2e7d:6fae      P_SpawnStrobeFlash_
-2e7d:6ed7      P_SpawnFireFlicker_
-2e7d:6f43      P_SpawnLightFlash_
-2e7d:6e9c*     P_LIGHTS_STARTMARKER_
-2e7d:6f7a      T_StrobeFlash_
-2e7d:6e9c      T_FireFlicker_
+2e7d:6ff8      EV_StartLightStrobing_
+2e7d:6f09      T_LightFlash_
+2e7d:7108      P_SpawnGlowingLight_
+2e7d:7025      EV_LightChange_
+2e7d:70cd      T_Glow_
+2e7d:7136*     P_LIGHTS_ENDMARKER_
+2e7d:6fb0      P_SpawnStrobeFlash_
+2e7d:6ed9      P_SpawnFireFlicker_
+2e7d:6f45      P_SpawnLightFlash_
+2e7d:6e9e*     P_LIGHTS_STARTMARKER_
+2e7d:6f7c      T_StrobeFlash_
+2e7d:6e9e      T_FireFlicker_
 Module: p_plats.obj(p_plats.ASM)
-2e7d:7134      T_PlatRaise_
-2e7d:71e8      EV_DoPlat_
-2e7d:736f      P_AddActivePlat_
-2e7d:7387*     P_RemoveActivePlat_
-2e7d:73b7*     P_PLATS_ENDMARKER_
-2e7d:7325      EV_PlatFunc_
-2e7d:7134*     P_PLATS_STARTMARKER_
+2e7d:7136      T_PlatRaise_
+2e7d:71ea      EV_DoPlat_
+2e7d:7371      P_AddActivePlat_
+2e7d:7389*     P_RemoveActivePlat_
+2e7d:73b9*     P_PLATS_ENDMARKER_
+2e7d:7327      EV_PlatFunc_
+2e7d:7136*     P_PLATS_STARTMARKER_
 Module: p_spec.obj(p_spec.ASM)
-2e7d:7a79      P_UpdateSpecials_
-2e7d:7484      P_FindNextHighestFloor_
-2e7d:740e      P_FindHighestOrLowestFloorSurrounding_
-2e7d:73b8*     P_SPEC_STARTMARKER_
-2e7d:79b7      P_PlayerInSpecialSector_
-2e7d:7d99*     P_SPEC_ENDMARKER_
-2e7d:7ba5      EV_DoDonut_
-2e7d:74f5      P_FindLowestOrHighestCeilingSurrounding_
-2e7d:75a2      P_FindMinSurroundingLight_
-2e7d:73b8*     getNextSectorList_
-2e7d:756b      P_FindSectorsFromLineTag_
-2e7d:7928      P_ShootSpecialLine_
-2e7d:772a      P_CrossSpecialLine_
-2e7d:7d0d      P_SpawnSpecials_
+2e7d:7a7b      P_UpdateSpecials_
+2e7d:7486      P_FindNextHighestFloor_
+2e7d:7410      P_FindHighestOrLowestFloorSurrounding_
+2e7d:73ba*     P_SPEC_STARTMARKER_
+2e7d:79b9      P_PlayerInSpecialSector_
+2e7d:7d9b*     P_SPEC_ENDMARKER_
+2e7d:7ba7      EV_DoDonut_
+2e7d:74f7      P_FindLowestOrHighestCeilingSurrounding_
+2e7d:75a4      P_FindMinSurroundingLight_
+2e7d:73ba*     getNextSectorList_
+2e7d:756d      P_FindSectorsFromLineTag_
+2e7d:792a      P_ShootSpecialLine_
+2e7d:772c      P_CrossSpecialLine_
+2e7d:7d0f      P_SpawnSpecials_
 Module: p_switch.obj(p_switch.ASM)
-2e7d:7d9a*     P_SWITCH_STARTMARKER_
-2e7d:814e*     P_SWITCH_ENDMARKER_
-2e7d:7d9a      P_ChangeSwitchTexture_
-2e7d:7fa2      P_UseSpecialLine_
+2e7d:7d9c*     P_SWITCH_STARTMARKER_
+2e7d:8150*     P_SWITCH_ENDMARKER_
+2e7d:7d9c      P_ChangeSwitchTexture_
+2e7d:7fa4      P_UseSpecialLine_
 Module: p_telept.obj(p_telept.ASM)
-2e7d:82cd*     P_TELEPT_ENDMARKER_
-2e7d:814e*     P_TELEPT_STARTMARKER_
-2e7d:814e      EV_Teleport_
+2e7d:82cf*     P_TELEPT_ENDMARKER_
+2e7d:8150*     P_TELEPT_STARTMARKER_
+2e7d:8150      EV_Teleport_
 Module: p_tick.obj(p_tick.ASM)
-2e7d:8347      P_UpdateThinkerFunc_
-2e7d:82ce*     P_TICK_STARTMARKER_
-2e7d:82ce      P_CreateThinkerFar_
-2e7d:84a0      P_Random_
-2e7d:84b5*     P_TICK_ENDMARKER_
-2e7d:8369      P_RemoveThinker_
-2e7d:839c      P_Ticker_
-2e7d:82d2      P_CreateThinker_
+2e7d:8349      P_UpdateThinkerFunc_
+2e7d:82d0*     P_TICK_STARTMARKER_
+2e7d:82d0      P_CreateThinkerFar_
+2e7d:84a2      P_Random_
+2e7d:84b7*     P_TICK_ENDMARKER_
+2e7d:836b      P_RemoveThinker_
+2e7d:839e      P_Ticker_
+2e7d:82d4      P_CreateThinker_
 Module: p_user.obj(p_user.ASM)
-2e7d:88de*     P_USER_ENDMARKER_
-2e7d:84b7*     P_Thrust_
-2e7d:84f7*     P_CalcHeight_
-2e7d:86a2*     P_DeathThink_
-2e7d:84b7*     P_USER_STARTMARKER_
-2e7d:8623*     P_MovePlayer_
-2e7d:879e      P_PlayerThink_
+2e7d:88e0*     P_USER_ENDMARKER_
+2e7d:84b9*     P_Thrust_
+2e7d:84f9*     P_CalcHeight_
+2e7d:86a4*     P_DeathThink_
+2e7d:84b9*     P_USER_STARTMARKER_
+2e7d:8625*     P_MovePlayer_
+2e7d:87a0      P_PlayerThink_
 Module: p_info.obj(p_info.ASM)
-2e7d:8b06      GetPainChance_
-2e7d:8bb5      GetAttackSound_
-2e7d:8b95      GetDeathState_
-2e7d:8b71      GetSeeState_
-2e7d:8ac7      GetXDeathState_
-2e7d:8b51      GetActiveSound_
-2e7d:8b62      GetPainSound_
-2e7d:8ba5      GetPainState_
-2e7d:8b1d      GetRaiseState_
-2e7d:8b85      GetMissileState_
-2e7d:8ae9      GetMeleeState_
-2e7d:8be7      GetDamage_
-2e7d:8c27      P_INFO_ENDMARKER_
-2e7d:88de*     P_INFO_STARTMARKER_
-2e7d:8b2e      GetMobjMass_
-2e7d:8c13      GetSpawnHealth_
+2e7d:8b08      GetPainChance_
+2e7d:8bb7      GetAttackSound_
+2e7d:8b97      GetDeathState_
+2e7d:8b73      GetSeeState_
+2e7d:8ac9      GetXDeathState_
+2e7d:8b53      GetActiveSound_
+2e7d:8b64      GetPainSound_
+2e7d:8ba7      GetPainState_
+2e7d:8b1f      GetRaiseState_
+2e7d:8b87      GetMissileState_
+2e7d:8aeb      GetMeleeState_
+2e7d:8be9      GetDamage_
+2e7d:8c29      P_INFO_ENDMARKER_
+2e7d:88e0*     P_INFO_STARTMARKER_
+2e7d:8b30      GetMobjMass_
+2e7d:8c15      GetSpawnHealth_
 Module: d_algo.obj(d_algo.ASM)
-373f:0036*     D_ALGO_END_
-373f:0008      resetDS_
-373f:0010*     hackDS_
+373f:0038*     D_ALGO_END_
+373f:000a      resetDS_
+373f:0012*     hackDS_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fopen.c)
 373f:0040+     __open_flags_
 373f:01ee+     _fsopen_
@@ -1540,4 +1540,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003dec0 (253632.)
 Entry point address: 373f:0bf6
-Link time: 00:00.04
+Link time: 00:00.50
