@@ -66,7 +66,7 @@ boolean __far P_GivePower (  int16_t /*powertype_t*/	power );
 
 void __near P_KillMobj (	mobj_t __near* source, mobj_t __near*	target, mobj_pos_t __far*	target_pos);
 fixed_t __near getMassThrust(int16_t damage, int8_t id);
-/*
+
 
 boolean __near P_GiveAmmo (  ammotype_t	ammo, int16_t		num ) {
     int16_t		oldammo;
@@ -950,4 +950,4 @@ void __far P_DamageMobj (mobj_t __near*	target, mobj_t __near*	inflictor, mobj_t
 
 }
 
-*/
+

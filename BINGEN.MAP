@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/11 11:17:09
+Created on:       25/09/11 12:02:18
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -94,16 +94,16 @@ P_ENEMY_TEXT           CODE           AUTO           2e7d:4108       00001a22
 P_CEILNG_TEXT          CODE           AUTO           2e7d:5b2a       0000028a
 P_DOORS_TEXT           CODE           AUTO           2e7d:5db4       000003c4
 P_FLOOR_TEXT           CODE           AUTO           2e7d:6178       000004b1
-P_INTER_TEXT           CODE           AUTO           2e7d:662a       00000873
-P_LIGHTS_TEXT          CODE           AUTO           2e7d:6e9e       00000298
-P_PLATS_TEXT           CODE           AUTO           2e7d:7136       00000283
-P_SPEC_TEXT            CODE           AUTO           2e7d:73ba       000009e1
-P_SWITCH_TEXT          CODE           AUTO           2e7d:7d9c       000003b4
-P_TELEPT_TEXT          CODE           AUTO           2e7d:8150       0000017f
-P_TICK_TEXT            CODE           AUTO           2e7d:82d0       000001e7
-P_USER_TEXT            CODE           AUTO           2e7d:84b8       00000428
-P_INFO_TEXT            CODE           AUTO           2e7d:88e0       00000349
-D_ALGO_TEXT            CODE           AUTO           373f:000a       0000002e
+P_INTER_TEXT           CODE           AUTO           2e7d:662a       00000878
+P_LIGHTS_TEXT          CODE           AUTO           2e7d:6ea2       00000298
+P_PLATS_TEXT           CODE           AUTO           2e7d:713a       00000283
+P_SPEC_TEXT            CODE           AUTO           2e7d:73be       000009e1
+P_SWITCH_TEXT          CODE           AUTO           2e7d:7da0       000003b4
+P_TELEPT_TEXT          CODE           AUTO           2e7d:8154       0000017f
+P_TICK_TEXT            CODE           AUTO           2e7d:82d4       000001e7
+P_USER_TEXT            CODE           AUTO           2e7d:84bc       00000428
+P_INFO_TEXT            CODE           AUTO           2e7d:88e4       00000349
+D_ALGO_TEXT            CODE           AUTO           373f:000e       0000002e
 _TEXT                  CODE           AUTO           373f:0040       000033cc
 FAR_DATA               FAR_DATA       AUTO           3a7f:000c       00000000
 _NULL                  BEGDATA        DGROUP         3a80:0000       00000020
@@ -473,8 +473,8 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 0000:7817*     WI_updateStats_
 0000:74cb*     WI_drawAnimatedBack_
 0000:7ebd      WI_Start_
-0000:7412*     WI_updateAnimatedBack_
 0000:7d4e      WI_Drawer_
+0000:7412*     WI_updateAnimatedBack_
 0000:735d*     WI_drawEL_
 0000:73b0*     WI_drawOnLnode_
 0000:7de6*     WI_Init_
@@ -766,8 +766,8 @@ Module: m_menu.obj(m_menu.ASM)
 0e33:0916*     M_Episode_
 0e33:0605*     M_QuickSave_
 0e33:09fd*     M_EndGameResponse_
-0e33:0449*     M_ReadSaveStrings_
 0e33:07b9*     M_SfxVol_
+0e33:0449*     M_ReadSaveStrings_
 0e33:0b9c*     M_SizeDisplay_
 0e33:11a2      M_Init_
 0e33:1044      M_StartControlPanel_
@@ -833,8 +833,8 @@ Module: p_saveg.obj(p_saveg.ASM)
 1081:0855      P_ArchiveThinkers_
 Module: sm_opl2.obj(sm_opl2.ASM)
 1135:0926*     OPLpauseMusic_OPL2_
-1135:0f3c      SM_OPL2_ENDMARKER_
 1135:0c95*     OPLreleaseNote_OPL2_
+1135:0f3c      SM_OPL2_ENDMARKER_
 1135:0907*     OPL2deinitHardware_OPL2_
 1135:0846*     OPL2initHardware_OPL2_
 1135:0c0f*     OPLplayNote_OPL2_
@@ -881,8 +881,8 @@ Module: r_bsp16.obj(r_bsp16.ASM)
 141b:3790      R_BSP16_STARTMARKER_
 141b:6bdd      R_WriteBackViewConstants16_
 141b:66a1      R_GetPatchTexture_Far16_
-141b:6f17      R_BSP16_ENDMARKER_
 141b:673c      R_GetCompositeTexture_Far16_
+141b:6f17      R_BSP16_ENDMARKER_
 Module: r_bsp0.obj(r_bsp0.ASM)
 1b0d:36b9      R_BSP0_ENDMARKER_
 1b0d:2e4b      R_GetPatchTexture_Far0_
@@ -1057,6 +1057,7 @@ Module: p_pspr.obj(p_pspr.ASM)
 2e7d:3f7b*     A_CloseShotgun2_
 2e7d:38ee      P_BringUpWeapon_
 Module: p_enemy.obj(p_enemy.ASM)
+2e7d:4bea*     A_CyberAttack_
 2e7d:52db*     A_FatRaise_
 2e7d:55d2*     A_Explode_
 2e7d:41d7      P_NoiseAlert_
@@ -1120,7 +1121,6 @@ Module: p_enemy.obj(p_enemy.ASM)
 2e7d:5718*     A_BrainAwake_
 2e7d:59ff*     A_PlayerScream_
 2e7d:4686*     A_KeenDie_
-2e7d:4bea*     A_CyberAttack_
 Module: p_ceilng.obj(p_ceilng.ASM)
 2e7d:5cef      P_AddActiveCeiling_
 2e7d:5b2a*     P_CEILNG_STARTMARKER_
@@ -1161,90 +1161,90 @@ Module: p_inter.obj(p_inter.ASM)
 2e7d:663a*     P_GiveAmmo_
 2e7d:6784      P_GivePower_
 2e7d:6bad*     getMassThrust_
-2e7d:6e9d*     P_INTER_ENDMARKER_
+2e7d:6ea2*     P_INTER_ENDMARKER_
 Module: p_lights.obj(p_lights.ASM)
-2e7d:6ff8      EV_StartLightStrobing_
-2e7d:6f09      T_LightFlash_
-2e7d:7108      P_SpawnGlowingLight_
-2e7d:7025      EV_LightChange_
-2e7d:70cd      T_Glow_
-2e7d:7136*     P_LIGHTS_ENDMARKER_
-2e7d:6fb0      P_SpawnStrobeFlash_
-2e7d:6ed9      P_SpawnFireFlicker_
-2e7d:6f45      P_SpawnLightFlash_
-2e7d:6e9e*     P_LIGHTS_STARTMARKER_
-2e7d:6f7c      T_StrobeFlash_
-2e7d:6e9e      T_FireFlicker_
+2e7d:6ffc      EV_StartLightStrobing_
+2e7d:6f0d      T_LightFlash_
+2e7d:710c      P_SpawnGlowingLight_
+2e7d:7029      EV_LightChange_
+2e7d:70d1      T_Glow_
+2e7d:713a*     P_LIGHTS_ENDMARKER_
+2e7d:6fb4      P_SpawnStrobeFlash_
+2e7d:6edd      P_SpawnFireFlicker_
+2e7d:6f49      P_SpawnLightFlash_
+2e7d:6ea2*     P_LIGHTS_STARTMARKER_
+2e7d:6f80      T_StrobeFlash_
+2e7d:6ea2      T_FireFlicker_
 Module: p_plats.obj(p_plats.ASM)
-2e7d:7136      T_PlatRaise_
-2e7d:71ea      EV_DoPlat_
-2e7d:7371      P_AddActivePlat_
-2e7d:7389*     P_RemoveActivePlat_
-2e7d:73b9*     P_PLATS_ENDMARKER_
-2e7d:7327      EV_PlatFunc_
-2e7d:7136*     P_PLATS_STARTMARKER_
+2e7d:713a      T_PlatRaise_
+2e7d:71ee      EV_DoPlat_
+2e7d:7375      P_AddActivePlat_
+2e7d:738d*     P_RemoveActivePlat_
+2e7d:73bd*     P_PLATS_ENDMARKER_
+2e7d:732b      EV_PlatFunc_
+2e7d:713a*     P_PLATS_STARTMARKER_
 Module: p_spec.obj(p_spec.ASM)
-2e7d:7a7b      P_UpdateSpecials_
-2e7d:7486      P_FindNextHighestFloor_
-2e7d:7410      P_FindHighestOrLowestFloorSurrounding_
-2e7d:73ba*     P_SPEC_STARTMARKER_
-2e7d:79b9      P_PlayerInSpecialSector_
-2e7d:7d9b*     P_SPEC_ENDMARKER_
-2e7d:7ba7      EV_DoDonut_
-2e7d:74f7      P_FindLowestOrHighestCeilingSurrounding_
-2e7d:75a4      P_FindMinSurroundingLight_
-2e7d:73ba*     getNextSectorList_
-2e7d:756d      P_FindSectorsFromLineTag_
-2e7d:792a      P_ShootSpecialLine_
-2e7d:772c      P_CrossSpecialLine_
-2e7d:7d0f      P_SpawnSpecials_
+2e7d:7a7f      P_UpdateSpecials_
+2e7d:748a      P_FindNextHighestFloor_
+2e7d:7414      P_FindHighestOrLowestFloorSurrounding_
+2e7d:73be*     P_SPEC_STARTMARKER_
+2e7d:79bd      P_PlayerInSpecialSector_
+2e7d:7d9f*     P_SPEC_ENDMARKER_
+2e7d:7bab      EV_DoDonut_
+2e7d:74fb      P_FindLowestOrHighestCeilingSurrounding_
+2e7d:75a8      P_FindMinSurroundingLight_
+2e7d:73be*     getNextSectorList_
+2e7d:7571      P_FindSectorsFromLineTag_
+2e7d:792e      P_ShootSpecialLine_
+2e7d:7730      P_CrossSpecialLine_
+2e7d:7d13      P_SpawnSpecials_
 Module: p_switch.obj(p_switch.ASM)
-2e7d:7d9c*     P_SWITCH_STARTMARKER_
-2e7d:8150*     P_SWITCH_ENDMARKER_
-2e7d:7d9c      P_ChangeSwitchTexture_
-2e7d:7fa4      P_UseSpecialLine_
+2e7d:7da0*     P_SWITCH_STARTMARKER_
+2e7d:8154*     P_SWITCH_ENDMARKER_
+2e7d:7da0      P_ChangeSwitchTexture_
+2e7d:7fa8      P_UseSpecialLine_
 Module: p_telept.obj(p_telept.ASM)
-2e7d:82cf*     P_TELEPT_ENDMARKER_
-2e7d:8150*     P_TELEPT_STARTMARKER_
-2e7d:8150      EV_Teleport_
+2e7d:82d3*     P_TELEPT_ENDMARKER_
+2e7d:8154*     P_TELEPT_STARTMARKER_
+2e7d:8154      EV_Teleport_
 Module: p_tick.obj(p_tick.ASM)
-2e7d:8349      P_UpdateThinkerFunc_
-2e7d:82d0*     P_TICK_STARTMARKER_
-2e7d:82d0      P_CreateThinkerFar_
-2e7d:84a2      P_Random_
-2e7d:84b7*     P_TICK_ENDMARKER_
-2e7d:836b      P_RemoveThinker_
-2e7d:839e      P_Ticker_
-2e7d:82d4      P_CreateThinker_
+2e7d:834d      P_UpdateThinkerFunc_
+2e7d:82d4*     P_TICK_STARTMARKER_
+2e7d:82d4      P_CreateThinkerFar_
+2e7d:84a6      P_Random_
+2e7d:84bb*     P_TICK_ENDMARKER_
+2e7d:836f      P_RemoveThinker_
+2e7d:83a2      P_Ticker_
+2e7d:82d8      P_CreateThinker_
 Module: p_user.obj(p_user.ASM)
-2e7d:88e0*     P_USER_ENDMARKER_
-2e7d:84b9*     P_Thrust_
-2e7d:84f9*     P_CalcHeight_
-2e7d:86a4*     P_DeathThink_
-2e7d:84b9*     P_USER_STARTMARKER_
-2e7d:8625*     P_MovePlayer_
-2e7d:87a0      P_PlayerThink_
+2e7d:88e4*     P_USER_ENDMARKER_
+2e7d:84bd*     P_Thrust_
+2e7d:84fd*     P_CalcHeight_
+2e7d:86a8*     P_DeathThink_
+2e7d:84bd*     P_USER_STARTMARKER_
+2e7d:8629*     P_MovePlayer_
+2e7d:87a4      P_PlayerThink_
 Module: p_info.obj(p_info.ASM)
-2e7d:8b08      GetPainChance_
-2e7d:8bb7      GetAttackSound_
-2e7d:8b97      GetDeathState_
-2e7d:8b73      GetSeeState_
-2e7d:8ac9      GetXDeathState_
-2e7d:8b53      GetActiveSound_
-2e7d:8b64      GetPainSound_
-2e7d:8ba7      GetPainState_
-2e7d:8b1f      GetRaiseState_
-2e7d:8b87      GetMissileState_
-2e7d:8aeb      GetMeleeState_
-2e7d:8be9      GetDamage_
-2e7d:8c29      P_INFO_ENDMARKER_
-2e7d:88e0*     P_INFO_STARTMARKER_
-2e7d:8b30      GetMobjMass_
-2e7d:8c15      GetSpawnHealth_
+2e7d:8b0c      GetPainChance_
+2e7d:8bbb      GetAttackSound_
+2e7d:8b9b      GetDeathState_
+2e7d:8b77      GetSeeState_
+2e7d:8acd      GetXDeathState_
+2e7d:8b57      GetActiveSound_
+2e7d:8b68      GetPainSound_
+2e7d:8bab      GetPainState_
+2e7d:8b23      GetRaiseState_
+2e7d:8b8b      GetMissileState_
+2e7d:8aef      GetMeleeState_
+2e7d:8bed      GetDamage_
+2e7d:8c2d      P_INFO_ENDMARKER_
+2e7d:88e4*     P_INFO_STARTMARKER_
+2e7d:8b34      GetMobjMass_
+2e7d:8c19      GetSpawnHealth_
 Module: d_algo.obj(d_algo.ASM)
-373f:0038*     D_ALGO_END_
-373f:000a      resetDS_
-373f:0012*     hackDS_
+373f:003c*     D_ALGO_END_
+373f:000e      resetDS_
+373f:0016*     hackDS_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fopen.c)
 373f:0040+     __open_flags_
 373f:01ee+     _fsopen_
@@ -1540,4 +1540,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003dec0 (253632.)
 Entry point address: 373f:0bf6
-Link time: 00:00.50
+Link time: 00:00.49

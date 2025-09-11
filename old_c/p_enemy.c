@@ -104,7 +104,7 @@ int16_t __near P_FixedMulBySpeed(fixed_t num, uint8_t speed){
 // sound blocking lines cut off traversal.
 //
 
-/*
+
 
 
 void __near P_RecursiveSound ( int16_t secnum, int8_t soundblocks){

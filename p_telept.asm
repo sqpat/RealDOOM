@@ -60,12 +60,12 @@ push  di
 push  bp
 mov   bp, sp
 mov   byte ptr cs:[OFFSET SELFMODIFY_telept_linetag + 4], al
-push  bx  ; bp - 2
+push  bx  ; bp - 2 mobj
 mov   di, bx
 mov   bx, cx
 mov   es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
-push  es ; bp - 4
-push  bx ; bp - 6
+push  es ; bp - 4 mobjpos segment
+push  cx ; bp - 6 mobjpos offset
 
 test  byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_MISSILE
 jne   exit_ev_teleport_return_0
@@ -74,7 +74,7 @@ je    exit_ev_teleport_return_0
 push  word ptr ds:[_numsectors]
 pop   word ptr cs:[OFFSET SELFMODIFY_telept_numsectors + 2]
 xor   cx, cx   ; i 
-xor   si, si   ; sector physics for inner loop
+mov   si, cx   ; sector physics for inner loop
 
 ;    for (i = 0; i < numsectors; i++) {
 

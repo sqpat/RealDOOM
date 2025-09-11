@@ -1136,9 +1136,8 @@ PUBLIC  P_DamageMobj_
 ;void __far P_DamageMobj (mobj_t __near*	target, mobj_t __near*	inflictor, mobj_t __near*	source, int16_t 		damage ) {
 
 ; bp - 2 damage
-; bp - 4 targetpos offset
-; bp - 6 source
-; bp - 8 inflictor
+; bp - 4 source
+; bp - 6 inflictor
 
 
 
@@ -1148,7 +1147,7 @@ push   si
 push   di
 push   bp
 mov    bp, sp
-push   cx
+push   cx   ; bp - 2
 push   bx   ; bp - 4
 push   dx   ; bp - 6
 mov    si, ax
@@ -1421,14 +1420,17 @@ dont_cap_health_to_zero:
 
 ; cx has damage
 
-mov    ax, word ptr [bp - 4] ; get source
+mov    ax, word ptr [bp - 4] ; get source   ; todo what if this is 0???
+cwd    ; zero in jump case...
+test   ax, ax
+je     dont_do_dead_attackerref_stuff
 mov    di, ax
 mov    bx, SIZEOF_THINKER_T
 xor    dx, dx
 sub    ax, (_thinkerlist + THINKER_T.t_data)
 div    bx
 
-; todo here
+; todo here  9000:6da4  di was 0????
 
 ; got sourceref
 xor    dx, dx
