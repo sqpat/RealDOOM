@@ -67,9 +67,9 @@
 #define MAX_STRINGS 306
 
 
-void __far M_LoadDefaults();
+void __near M_LoadDefaults();
 
-void __far D_InitStrings() {
+void __near D_InitStrings() {
 
 	// load file
 	FILE* fp;
@@ -725,7 +725,6 @@ void    __near P_UpdateSpecials (void);
 void __far D_DoomMain2(void) {
 	int16_t             p;
 	int8_t                    file[256];
-	int8_t          textbuffer[280]; // must be 276 to fit the 3 line titles
 	int8_t            title[128];
 	int8_t            wadfile[20];
 	#define DGROUP_SIZE 0x2250
@@ -1122,6 +1121,18 @@ R_PointToAngle(y, x);
 		W_AddFile(file);
 	}
 
+
+
+
+
+}
+
+
+void __near D_DoomMain3(){
+	int8_t          textbuffer[280]; // must be 276 to fit the 3 line titles
+	int8_t            title[128];
+	int16_t             p;
+
 	DEBUG_PRINT_NOARG("\nZ_GetEMSPageMap: Init EMS 4.0 features.");
 	Z_GetEMSPageMap();
 
@@ -1138,7 +1149,7 @@ R_PointToAngle(y, x);
 	D_InitStrings();
 
 
-	// Check for -file in shareware
+		// Check for -file in shareware
 	if (registered) {
 		getStringByIndex(VERSION_REGISTERED, textbuffer);
 		DEBUG_PRINT_NOARG(textbuffer);
@@ -1255,7 +1266,4 @@ R_PointToAngle(y, x);
 		}
 
 	}
-
 }
-
-

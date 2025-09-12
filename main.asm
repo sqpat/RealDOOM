@@ -1316,7 +1316,7 @@ db  0, 0, 0
 
 
 
-PROC M_LoadDefaults_  FAR
+PROC M_LoadDefaults_  NEAR
 PUBLIC M_LoadDefaults_
 
 PUSHA_NO_AX_MACRO
@@ -1411,7 +1411,7 @@ lea   sp, [bp + 080h]
 pop   bp
 POPA_NO_AX_MACRO
 
-retf  
+ret
 
 
 defaults_file_loaded:
@@ -1568,7 +1568,7 @@ jmp   character_finished_handling
 
 ENDP
 
-PROC M_ScanTranslateDefaults_ FAR
+PROC M_ScanTranslateDefaults_ NEAR
 PUBLIC M_ScanTranslateDefaults_
 
 PUSHA_NO_AX_MACRO
@@ -1602,7 +1602,7 @@ cmp   bx, NUM_DEFAULTS * SIZEOF_DEFAULT_T
 jne   loop_defaults_to_set_initial_values
 
 POPA_NO_AX_MACRO
-retf
+ret
 
 
 
@@ -1937,7 +1937,7 @@ call  Z_QuickMapByTaskNum_
 
 POPA_NO_AX_OR_BP_MACRO
 just_exit:
-retf   
+ret   
 ENDP
 
 

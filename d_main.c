@@ -888,6 +888,7 @@ void __near Z_ClearDeadCode() {
 }
  void __near D_DoomMain(void) {
 	 D_DoomMain2();
+	 D_DoomMain3();
 #ifdef DETAILED_BENCH_STATS
 	 cachedtics = ticcount;
 #endif
