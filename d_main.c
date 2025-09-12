@@ -848,7 +848,6 @@ void __near D_PageDrawer (void) {
 }
 
 
- void __far D_DoomMain2(void);
 
 
 
@@ -886,6 +885,10 @@ void __near Z_ClearDeadCode() {
 	fclose(fp);
 
 }
+
+void __near D_DoomMain2(void);
+void __near D_DoomMain3();
+
  void __near D_DoomMain(void) {
 	 D_DoomMain2();
 	 D_DoomMain3();

@@ -990,7 +990,7 @@ void __near G_WriteDemoTiccmd (ticcmd_t __near* cmd)  {
 //
 
  
-void __far G_DeferedPlayDemo (int8_t* name)  { 
+void __near G_DeferedPlayDemo (int8_t* name)  { 
     defdemoname = name; 
     gameaction = ga_playdemo; 
 } 

@@ -36,7 +36,7 @@ void __near G_InitNew (skill_t skill, int8_t episode, int8_t map);
 // but a warp test can start elsewhere
 void __far G_DeferedInitNew (skill_t skill, int8_t episode, int8_t map);
 
-void __far G_DeferedPlayDemo (int8_t* demo);
+void __near G_DeferedPlayDemo (int8_t* demo);
 
 
 

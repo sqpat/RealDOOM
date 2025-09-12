@@ -23,39 +23,56 @@ EXTRN fread_:FAR
 EXTRN fseek_:FAR
 EXTRN fopen_:FAR
 EXTRN fclose_:FAR
-EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
-EXTRN M_CheckParm_:NEAR
 
 
-EXTRN D_InitStrings_:FAR
-EXTRN Z_LoadBinaries_:NEAR ; todo
+EXTRN Z_QuickMapMenu_:FAR
+EXTRN Z_QuickMapPhysics_:FAR
+EXTRN getStringByIndex_:FAR
+EXTRN D_InitStrings_:NEAR
+EXTRN Z_LoadBinaries_:NEAR
 EXTRN M_LoadDefaults_:NEAR
 EXTRN M_ScanTranslateDefaults_:NEAR
 EXTRN Z_GetEMSPageMap_:NEAR
+EXTRN P_Init_:NEAR
+EXTRN I_Init_:NEAR
+EXTRN R_Init_:NEAR
+EXTRN HU_Init_:NEAR
+EXTRN ST_Init_:NEAR
+EXTRN S_Init_:NEAR
+EXTRN AM_loadPics_:NEAR
+EXTRN G_RecordDemo_:NEAR
+EXTRN G_TimeDemo_:NEAR
+EXTRN G_InitNew_:NEAR
+EXTRN G_DeferedPlayDemo_:NEAR
+EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
+EXTRN DEBUG_PRINT_NOARG_:NEAR
+EXTRN M_CheckParm_:NEAR
 
 
 .DATA
 
-EXTRN _oldkeyboardisr:DWORD
-EXTRN _novideo:BYTE
-EXTRN _usemouse:BYTE
-EXTRN _musdriverstartposition:BYTE
-
+EXTRN _M_Init:DWORD
+EXTRN _M_LoadFromSaveGame:DWORD
+EXTRN _myargc:WORD
+EXTRN _myargv:WORD
+EXTRN _autostart:BYTE
+EXTRN _singledemo:BYTE
+EXTRN _startskill:BYTE
+EXTRN _startepisode:BYTE
+EXTRN _startmap:BYTE
 
 .CODE
-
-EXTRN _doomcode_filename:BYTE
 
 KEYBOARDINT = 9
 
 str_getemspagemap:
-db "\nZ_GetEMSPageMap: Init EMS 4.0 features.", 0
+db 0Ah, "Z_GetEMSPageMap: Init EMS 4.0 features.", 0
 str_loaddefaults:
-db "\nM_LoadDefaults	: Load system defaults.", 0
+db 0Ah, "M_LoadDefaults	: Load system defaults.", 0
 str_z_loadbinaries:
-db "\nZ_LoadBinaries: Load game code into memory", 0
+db 0Ah, "Z_LoadBinaries: Load game code into memory", 0
 str_initstrings:
-db "\nD_InitStrings: loading text.", 0
+db 0Ah, "D_InitStrings: loading text.", 0
 str_record_param:
 db "-record", 0
 str_playdemo_param:
@@ -72,10 +89,13 @@ ENDP
 
 PROC    DoPrintChain_ NEAR
 
-lea   bx, [sp + 2]
+mov   bx, sp
+inc   bx
+inc   bx
+push  bx  ; sp + 2
 mov   cx, ss
 call  getStringByIndex_
-lea   bx, [sp + 2]
+pop   ax  ; sp + 2
 mov   dx, ss
 call  DEBUG_PRINT_NOARG_
 ;call  D_RedrawTitle_
@@ -87,9 +107,9 @@ PROC    D_DoomMain3_ NEAR
 PUBLIC  D_DoomMain3_
 
 PUSHA_NO_AX_MACRO
+push    bp
 mov     bp, sp
 sub     sp, 280
-lea     dx, sp  ; todo title
 
 
 mov     ax, OFFSET str_getemspagemap
@@ -147,7 +167,7 @@ call  DoPrintChain_
 
 
 call  Z_QuickMapMenu_
-call  M_Init_
+call  dword ptr ds:[_M_Init]
 call  Z_QuickMapPhysics_
 
 
@@ -167,7 +187,7 @@ mov   word ptr ds:[_maketic+0], 0
 mov   word ptr ds:[_maketic+2], 0
 
 
-mov   ax, S_INIT_TEXT_STR
+mov   ax, S_INIT_STRING_TEXT
 call  DoPrintChain_
 call  S_Init_
 
@@ -202,7 +222,7 @@ jnl   skip_record_param
     xchg  ax, si
     mov   ax, word ptr ds:[bx + si]
     call  G_RecordDemo_
-    mov   word ptr ds:[_autostart], cl  ; 1
+    mov   byte ptr ds:[_autostart], cl  ; 1
 
 skip_record_param:
 
@@ -216,7 +236,7 @@ je    skip_playdemo_param
 cmp   ax, dx
 jnl   skip_playdemo_param
 
-    mov   word ptr ds:[_singledemo], cl  ; 1
+    mov   byte ptr ds:[_singledemo], cl  ; 1
     sal   ax, 1
     xchg  ax, si
     mov   ax, word ptr ds:[bx + si]
@@ -258,7 +278,7 @@ jnl   skip_loadgame_param
     sal   ax, 1
     xchg  ax, si
     mov   ax, word ptr ds:[bx + si]
-    call  M_LoadFromSaveGame_
+    call  dword ptr ds:[_M_LoadFromSaveGame]
     call  Z_QuickMapPhysics_
 
 skip_loadgame_param:

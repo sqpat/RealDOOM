@@ -722,7 +722,7 @@ uint8_t __near M_Random (void);
 
 void    __near P_UpdateSpecials (void);
 
-void __far D_DoomMain2(void) {
+void __near D_DoomMain2(void) {
 	int16_t             p;
 	int8_t                    file[256];
 	int8_t            title[128];
@@ -1126,7 +1126,7 @@ R_PointToAngle(y, x);
 
 
 }
-
+/*
 
 void __near D_DoomMain3(){
 	int8_t          textbuffer[280]; // must be 276 to fit the 3 line titles
@@ -1267,3 +1267,4 @@ void __near D_DoomMain3(){
 
 	}
 }
+*/
