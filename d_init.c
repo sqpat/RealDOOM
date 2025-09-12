@@ -1266,7 +1266,12 @@ R_PointToAngle(y, x);
 		if (autostart){
 			G_InitNew(startskill, startepisode, startmap);
 		} else {
-			D_StartTitle();                // start up intro loop
+			// D_StartTitle();                // start up intro loop
+			// inlined
+			gameaction = ga_nothing;
+			demosequence = -1;
+    		advancedemo = true;
+
 		}
 
 	}

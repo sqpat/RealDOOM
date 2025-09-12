@@ -336,12 +336,14 @@ void __near R_ExecuteSetViewSize (void);
 //
 // D_StartTitle
 //
+/*
 void __far D_StartTitle(void){
 
 	gameaction = ga_nothing;
 	demosequence = -1;
     advancedemo = true;
 }
+*/
 
 //
 // D_Display
