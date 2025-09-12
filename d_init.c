@@ -175,7 +175,7 @@ void __near D_SetCursorPosition(int16_t columnrow){
 //
 // D_DrawTitle
 //
-void __near D_DrawTitle(int8_t __near *string){
+void __near D_DrawTitle(int8_t __far *string){
 
 	int16_t_union columnrow;
 	int16_t i;
@@ -693,7 +693,7 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den) {
 
 
 // check for doom ultimate.
-void check_is_ultimate(){
+void __near check_is_ultimate(){
 	int16_t words[3];
 	FILE* fp = fopen("doom.wad", "rb");
 	fread (words, sizeof(int16_t), 3, fp);
@@ -722,7 +722,7 @@ boolean __near locallib_fileexists(int8_t __far* name);
 uint8_t __near M_Random (void);
 
 void    __near P_UpdateSpecials (void);
-
+/*
 void __near D_DoomMain2(void) {
 	int16_t             p;
 	int8_t                    file[256];
@@ -730,201 +730,14 @@ void __near D_DoomMain2(void) {
 	int8_t            wadfile[20];
 	#define DGROUP_SIZE 0x2250
 
-	/*
-
-	FILE *fp = fopen("output9.bin", "wb");
-	locallib_far_fwrite(M_Random, (byte __far *)ST_STUFF_STARTMARKER - (byte __far *)M_Random, 1, fp);
-	fclose(fp);
-	exit(0);
 
 
-	fixed_t_union x, y;
 
-
-	// bugged with i = 3025 j = 2139
-
-	
-	//I_Error("leading: %i", countleadingzeroes(0x0));
-	//I_Error("res: %li %lx", divllu(a, b ), divllu(a, b ));
-	//I_Error("res: %li %lx %li %lx", divllu(a, b ), divllu(a, b ), 	 FixedDiv(a.wu, b.wu ), FixedDiv(a.wu, b.wu ));
-					//tempDivision.w = (y.w << 3) / (x.w >> 8);
-					//tempDivision.w = FastDiv3232_shift_3_8(y.w, x.w);
-
-	y.wu = 0xfac00000; 
-	x.wu = 0xf2c00000;
-	//0x22511E38
-	// 0x44A86
-
-// 0x180000 / 0x1678
-
-R_PointToAngle(y, x);
-
-	I_Error("res: %lx %lx\n %lu %lx %lu %lx", y, x, 
-	R_PointToAngle10(y, x), R_PointToAngle10(y, x),
-							    	R_PointToAngle11(y, x), R_PointToAngle11(y, x));
-									*/
-/*
-	a.w = 0x0fedcba9;
-	b.w = 0x07654321;
-
-	I_StartupSound();
-
-	tica = ticcount;
-
-	for (i = 2; i < 1000; i++){
-		fixed_t_union ii;
-		ii.wu = i * i;
-		for (j = i/2; j < i; j++){
-			fixed_t_union jj;
-			jj.wu = j * j;
-			FixedDiv(ii.wu, jj.wu);
-		}
-	}
-	ticb = ticcount;
-	for (i = 2; i < 1000; i++){
-		fixed_t_union ii;
-		ii.wu = i * i;
-		for (j = i/2; j < i; j++){
-			fixed_t_union jj;
-			jj.wu = j * j;
-			FixedDiv10(ii.wu, jj.wu);
-		}
-	}
-	ticc = ticcount;
-	I_Error("values %li %li %li %li %li", tica, ticb, ticc, ticb-tica, ticc-ticb);
-*/
-	//int16_t i;
-	//int16_t j;
-
-	//FixedDivWholeA(257l*257, 65536);
-
-	//DEBUG_PRINT("%li  ok\n",FixedDiv(4L * 4L * 10000L, 4));
-	// 0x38400
-	// 0x7D29
-	// 0xE1000000
-	// 0x1F4A4000
-	//I_Error("doneA %li %lx %li %lx", FixedDiv(0xe1000000, 0x7D29), FixedDiv(0xe1000000, 0x7D29), 
-	//			FixedDivWholeA(0xe100, 0x7D29), FixedDivWholeA(0xe100, 0x7D29));
-
-//0x7D29
-/*
-	// 240 57600 179
-	// - max but shouldnt be
-
-	int16_t i, j;
-	for (i = 2; i < 127; i++){
-		fixed_t_union ii;
-		fixed_t_union jj;
-		jj.hu.fracbits = 0;
-		ii.hu.intbits = i;
-		ii.hu.fracbits = 0;
-		for (j = i+1; j < 4096; j++){
-			jj.h.intbits = j;
-
-
-			if (FixedDivWholeAB2(i 	, j) != FixedDiv(ii.wu, jj.wu)){
-				I_Error("inequal %i %i %i %lx %lx %li %li %lx %lx",
-					 i,
-					 0xff, j, 
-				ii.wu, jj.wu,
-				FixedDivWholeAB2(i, j),
-				FixedDiv(ii.wu, jj.wu),
-				FixedDivWholeAB2(i, j),
-				FixedDiv(ii.wu, jj.wu)
-				);
-			}
-
-			DEBUG_PRINT("%i %i %li %li ok\n", i, j, ii.wu, jj.wu);
-		}
-
-	}
-
-	I_Error("done");
-	
-
-	//I_Error("res: %li %lx", divllu(a, b ), divllu(a, b ));
-	//I_Error("done");
-	
-/*
-	I_Error("blah %Fp %Fp %lx", (byte __far *)R_DrawMaskedColumn, (byte __far *)R_DrawSingleMaskedColumn,
-		FixedDiv(0x0FEDCBA9, 0x07654321 ));  // 2276
-//		FixedDiv(0x7FFE0000, 0x7FFF0000	));	
-
-//	I_Error("blah %x %x %x", colfunc_segment_high, colfunc_segment, R_DrawColumnPrepOffset);
-	//I_Error("blah %Fp", MAKE_FULL_SEGMENT(spritepage, size_spriteoffset + size_spritepage));
-
-/*
-	uint16_t i;
-
-	for (i = 0; i < 65535; i++){
-		if (FixedMulBig1632(i, 0x12345678) != FixedMulBig16322(i, 0x12345678)){
-			I_Error("%lx %lx %i %i", FixedMulBig1632(i, 0x12345678), FixedMulBig16322(i, 0x12345678), i, 0x12345678);
-		}
-		if (FixedMulBig1632(i, 0x92345678) != FixedMulBig16322(i, 0x92345678)){
-			I_Error("%lx %lx %i %i", FixedMulBig1632(i, 0x92345678), FixedMulBig16322(i, 0x92345678), i, 0x92345678);
-		}
-	}
-	I_Error("\n\n%lx %lx %lx %lx", 
-		FixedMulBig16322(0xFFFF, 0x0020),
-		FixedMulBig1632(0xFFFF, 0x0020),
-
-		FixedMulBig16322(0xFFFF, 0x1020),
-		FixedMulBig1632(0xFFFF, 0x1020)
-
-	);	
-
-*/
-  
-/*
-	I_Error("\n%lx %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%p",
-		spritewidths_ult,
-		spritewidths_normal,
-		sprites, 
-//73bb 73b9 7410 7412 7410 
-		
-		 MAKE_FULL_SEGMENT(spritewidths_ult, size_spritewidths),
-		 MAKE_FULL_SEGMENT(spritewidths_normal, size_spritewidths),
-			scalelight, 
-			patch_sizes,
-			viewangletox
-);
-
-*/
 
 	file[0] = 0;
 
 
-/*
-	if (M_CheckParm("-debug")){
-		segread(&sregs);
-		//I_Error("\npointer is %Fp %Fp %Fp %Fp", MK_FP(sregs.ds, DGROUP_SIZE), MK_FP(sregs.cs, &main), MK_FP(sregs.ds +( DGROUP_SIZE >> 4), 0), MK_FP(sregs.ss, 0));
-		// 
-		
 
-		DEBUG_PRINT("\nResult: %li %li %li %li %li", 
-		R_FixedMulLocalWrapper(128L, 0L),
-		R_FixedMulLocalWrapper(0x10000, 1L),
-		R_FixedMulLocalWrapper(128L, 1L),
-		R_FixedMulLocalWrapper(0x10000, 127L),
-		R_FixedMulLocalWrapper(0, 0)
-
-		);
-		exit(0);
-	}
-*/
-
-
-	
-
-	//I_Error("\npointer is %Fp %Fp %Fp %Fp %Fp", MK_FP(sregs.ds, &EMS_PAGE), MK_FP(sregs.ds, &p), MK_FP(sregs.ss, &title), _fmalloc(1024), malloc(1024));
-
-
-
-  
-
-	// Removed
-	//FindResponseFile ();
-	//P_Init();
 
 
 	if (locallib_fileexists("doom2.wad")) {
@@ -1127,6 +940,7 @@ R_PointToAngle(y, x);
 
 
 }
+*/
 /*
 
 void __near D_DoomMain3(){

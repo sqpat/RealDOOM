@@ -23,8 +23,11 @@ EXTRN fread_:FAR
 EXTRN fseek_:FAR
 EXTRN fopen_:FAR
 EXTRN fclose_:FAR
+EXTRN setbuf_:FAR
+EXTRN exit_:FAR
 
 
+EXTRN I_Error_:FAR
 EXTRN Z_QuickMapMenu_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
 EXTRN getStringByIndex_:FAR
@@ -33,6 +36,8 @@ EXTRN Z_LoadBinaries_:NEAR
 EXTRN M_LoadDefaults_:NEAR
 EXTRN M_ScanTranslateDefaults_:NEAR
 EXTRN Z_GetEMSPageMap_:NEAR
+EXTRN Z_InitEMS_:NEAR
+EXTRN W_AddFile_:NEAR
 EXTRN P_Init_:NEAR
 EXTRN I_Init_:NEAR
 EXTRN R_Init_:NEAR
@@ -46,7 +51,12 @@ EXTRN G_InitNew_:NEAR
 EXTRN G_DeferedPlayDemo_:NEAR
 EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
 EXTRN DEBUG_PRINT_NOARG_:NEAR
+EXTRN DEBUG_PRINT_:NEAR
 EXTRN M_CheckParm_CS_:NEAR
+EXTRN combine_strings_:NEAR
+EXTRN D_DrawTitle_:NEAR
+EXTRN check_is_ultimate_:NEAR
+EXTRN locallib_strcpy_:NEAR
 
 
 .DATA
@@ -60,6 +70,11 @@ EXTRN _singledemo:BYTE
 EXTRN _startskill:BYTE
 EXTRN _startepisode:BYTE
 EXTRN _startmap:BYTE
+EXTRN ___iob:WORD
+
+
+
+
 
 .CODE
 
@@ -73,6 +88,38 @@ str_z_loadbinaries:
 db 0Ah, "Z_LoadBinaries: Load game code into memory", 0
 str_initstrings:
 db 0Ah, "D_InitStrings: loading text.", 0
+str_no_wad:
+db "Game mode indeterminate.", 0Ah, 0
+str_mem_param:
+db 0Ah, "BYTES LEFT: %i %x (DS : %x to %x BASEMEM : %x)", 0Ah, 0
+
+str_P_Init:
+db 0Ah, "P_Init: Checking cmd-line parameters...", 0
+
+str_title_ultimate:
+db " The Ultimate DOOM Startup v1.9", 0
+str_title_normal:
+db "  DOOM System Startup v1.9  ", 0
+str_title_spaces: ; todo dont do this
+db "                        ", 0  
+str_title_doom2: ; todo dont do this
+db "                         DOOM 2: Hell on Earth v1.9                           ", 0
+str_title_doom2_done:
+
+str_z_init_ems:
+db 0Ah, "Z_InitEMS: Initialize EMS memory regions.", 0
+str_w_init:
+db 0Ah, "W_Init: Init WADfiles.", 0
+
+COMMENT @
+str_title_plutonia:
+db "                   DOOM 2: Plutonia Experiment v", 0
+str_title_tnt:
+db "                     DOOM 2: TNT - Evilution v", 0
+str_title_doom2other:
+db "                         DOOM 2: Hell on Earth v", 0
+@
+
 str_record_param:
 db "-record", 0
 str_playdemo_param:
@@ -81,33 +128,75 @@ str_timedemo_param:
 db "-timedemo", 0
 str_loadgame_param:
 db "-loadgame", 0
+str_turbo:
+db "-turbo", 0
+str_skill:
+db "-skill", 0
+str_episode:
+db "-episode", 0
+str_warp:
+db "-warp", 0
+str_nosound:
+db "-nosound", 0
+str_nosfx:
+db "-nosfx", 0
+str_nomusic:
+db "-nomusic", 0
+str_mem:
+db "-mem", 0
+
+str_nomonsters:
+db "-nomonsters", 0
+str_respawn:
+db "-respawn", 0
+str_fast:
+db "-fast", 0
+
 str_doom2filename_:
 db "doom2.wad", 0
+str_doomfilename_:
+db "doom.wad", 0
+str_doom1filename_:
+db "doom1.wad", 0
+
+str_lmp_file_ext:
+db ".lmp", 0
+str_playing_demo:
+db "Playing demo %s.lmp.\n", 0
+
+COMMENT @
+str_plutoniafilename_:
+db "plutonia.wad", 0
+str_tntfilename_:
+db "tnt.wad", 0
+@
 
 PROC    D_INIT_STARTMARKER_ NEAR
 PUBLIC  D_INIT_STARTMARKER_
 ENDP
 
+SIZEOF_FILE = 0Eh
+STDOUT = OFFSET ___iob + SIZEOF_FILE
+
 
 
 PROC    locallib_fileexists_ NEAR
-PUBLIC  locallib_fileexists_ 
+ 
 
-
-
-push  cx
-mov   ds, dx
+; note: clobbers cx, dx
+push  cs
+pop   ds
 xchg  ax, dx ; dx gets filename
 mov   ax, 04300h
 int   021h          ; DS:DX = pointer to an ASCIIZ path name  CX = attribute to set
 push  ss
 pop   ds
 mov   ax, 0
-jc    return_0    ; file error, presumably file not found. anyway, cant read
-inc   ax
-return_0:
+;jc    return_0    ; file error, presumably file not found. anyway, cant read
+;clc   
+;return_0:
+cmc         ; just cms to reverse the result
 
-pop   cx
 
 ret
 
@@ -139,21 +228,365 @@ pop  bx
 retf 
 @
 
-COMMENT @
+
+
 PROC    D_DoomMain2_ NEAR
 PUBLIC  D_DoomMain2_
 push    bp
 mov     bp, sp
 sub     sp, 280
+; _wadfile bp - 20
+; _file    bp - 276
+; _textbuffer bp - 280 (overlaps above but not in use at the same time)
+; title will go in SECTORS_SEGMENT: 0 for now (since thats not used during init...)
+
+mov     byte ptr [bp - 276], 0  ; file[0] = 0
+
 
 mov     ax, OFFSET str_doom2filename_
-mov     dx, CS
+mov     dx, cs
+call    locallib_fileexists_
+jnc     no_doom2_present
+mov     byte ptr ds:[_commercial], 1
+mov     cx, cs
+mov     bx, OFFSET str_doom2filename_
+mov     dx, ss
+lea     ax, [bp - 20]
+call    locallib_strcpy_
+jmp     foundfile
+no_doom2_present:
+
+mov     ax, OFFSET str_doomfilename_
+
+call    locallib_fileexists_
+jnc     no_doom_present
+mov     byte ptr ds:[_registered], 1
+mov     cx, cs
+mov     bx, OFFSET str_doomfilename_
+mov     dx, ss
+lea     ax, [bp - 20]
+call    locallib_strcpy_
+call    check_is_ultimate_
+jmp     foundfile
+no_doom_present:
+
+mov     ax, OFFSET str_doom1filename_
+
+call    locallib_fileexists_
+jnc     no_doom1_present
+mov     byte ptr ds:[_shareware], 1
+mov     cx, cs
+mov     bx, OFFSET str_doom1filename_
+mov     dx, ss
+lea     ax, [bp - 20]
+call    locallib_strcpy_
+call    check_is_ultimate_
+jmp     foundfile
+no_doom1_present:
+
+mov     ax, OFFSET str_no_wad
+call    DEBUG_PRINT_NOARG_CS_
+mov     ax, 1
+call    exit_
+
+foundfile:
+
+mov     ax, STDOUT
+xor     dx, dx ; NULL
+call    setbuf_
+
+xor     ax, ax
+mov     byte ptr ds:[_modifiedgame], al
+
+
+mov   ax, OFFSET str_mem
+call  M_CheckParm_CS_
+test  ax, ax
+jne   do_mem_thing
+
+
+
+mov   ax, OFFSET str_nomonsters
+call  M_CheckParm_CS_
+mov   byte ptr ds:[_nomonsters], al
+
+mov   ax, OFFSET str_respawn
+call  M_CheckParm_CS_
+mov   byte ptr ds:[_respawnparm], al
+
+mov   ax, OFFSET str_fast
+call  M_CheckParm_CS_
+mov   byte ptr ds:[_fastparm], al
+
+xor   di, di
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+
+cmp   byte ptr ds:[_commercial], 0
+jne   commercial_title
+mov   cx, 15
+mov   ax, 02020h
+rep   stosw  ; 30 spaces..
+mov   si, OFFSET str_title_normal
+cmp   byte ptr ds:[_is_ultimate], 0
+je    not_ultimate_title_
+mov   si, OFFSET str_title_ultimate
+not_ultimate_title_:
+push  cs
+push  si
+xor   ax, ax
+mov   dx, es
+mov   bx, ax
+mov   cx, es
+mov   di, es
+call  combine_strings_
+push  cs
+mov   ax, OFFSET str_title_spaces
+push  ax
+xor   ax, ax
+mov   dx, di
+mov   bx, ax
+mov   cx, di
+call  combine_strings_
+
+jmp   got_title
+do_mem_thing:
+
+
+
+mov     dx, BASE_LOWER_MEMORY_SEGMENT ; base_lower_memory_segment
+push    dx
+mov     bx, word ptr ds:[_stored_ds]
+lea     ax, [bx + 0100h]
+push    ax              ; stored_ds + 0x100, 
+push    bx              ; stored_ds
+sub     dx, bx
+mov     ax, 16
+mul     dx
+sub     ax, 0100h       ; 16 * (base_lower_memory_segment - stored_ds )- 0x100, 
+push    ax
+push    cs
+mov     ax, OFFSET str_mem_param
+push    ax
+call    I_Error_
+
+commercial_title:
+push  cs
+pop   ds
+mov   si, OFFSET str_title_doom2
+mov   cx, (OFFSET str_title_doom2_done - OFFSET str_title_doom2)
+rep   movsb
+push  ss
+pop   ds
+got_title:
+
+mov   ax, 3
+cwd
+mov   bx, 0
+int   010h    ;  set video mode?
+
+mov   dx, word ptr ds:[_SECTORS_SEGMENT_PTR]
+xor   ax, ax
+call  D_DrawTitle_
+
+mov   ax, OFFSET str_P_Init
+call  DEBUG_PRINT_NOARG_CS_
+
+mov   ax, OFFSET str_turbo
+call  M_CheckParm_CS_
+je    skip_turbo
+; TODO!!
+
+skip_turbo:
+
+mov   di, word ptr ds:[_myargc]
+dec   di                        ; myargc - 1
+mov   bx, word ptr ds:[_myargv]
+inc   bx
+inc   bx                        ; myargv[n + 1]
+
+mov   ax, OFFSET str_playdemo_param
+call  M_CheckParm_CS_
+jne   is_playdemo
+mov   ax, OFFSET str_timedemo_param
+call  M_CheckParm_CS_
+
+is_playdemo:
+
+test  ax, ax
+je   not_demo
+cmp   ax, di
+jnl   not_demo
+
+    sal   ax, 1
+    xchg  ax, si
+    push  cs
+    mov   ax, OFFSET str_lmp_file_ext
+    push  ax
+    mov   si, word ptr ds:[bx + si]
+    mov   bx, si
+    mov   cx, ds
+
+    lea   ax, [bp - 276]
+    mov   dx, ss
+    call  combine_strings_
+
+    mov   word ptr [bp - 278], si
+    lea   si, [bp - 278]
+    push  si
+    push  cs
+    mov   ax, OFFSET str_playing_demo
+    push  ax
+    ;mov   dx, cs
+    call  DEBUG_PRINT_                  ;		DEBUG_PRINT("Playing demo %s.lmp.\n", myargv[p + 1]);
+;		combine_strings(file, myargv[p + 1], ".lmp");
+
+
+    mov   bx, word ptr ds:[_myargv]
+    inc   bx
+    inc   bx                        ; myargv[n + 1]
+
+
+not_demo:
+
+
+xor   cx, cx
+mov   byte ptr ds:[_autostart], cl     ; 0/false
+inc   cx
+mov   byte ptr ds:[_startepisode], cl  ; 1
+mov   byte ptr ds:[_startmap], cl  ; 1
+inc   cx
+mov   byte ptr ds:[_startmap], cl  ; SK_MEDIUM/2
+dec   dx  ; 1
+
+mov   ax, OFFSET str_skill
+call  M_CheckParm_CS_
+
+test  ax, ax
+je    not_skill
+cmp   ax, di
+jnl   not_skill
+
+    sal   ax, 1
+    xchg  ax, si
+    mov   si, word ptr ds:[bx + si]
+    lodsb 
+    sub   al, '1'
+    mov   byte ptr ds:[_startskill], al    ;    startskill = myargv[p + 1][0] - '1';
+    mov   byte ptr ds:[_autostart], cl     ;    autostart = true;
+
+not_skill:
+
+mov   ax, OFFSET str_episode
+call  M_CheckParm_CS_
+
+test  ax, ax
+je    not_episode
+cmp   ax, di
+jnl   not_episode
+
+    sal   ax, 1
+    xchg  ax, si
+    mov   si, word ptr ds:[bx + si]
+    lodsb
+    
+    mov   byte ptr ds:[_startepisode], al  ;    startepisode = myargv[p + 1][0] - '0';
+    mov   byte ptr ds:[_startmap], cl      ;    startmap = 1;
+    mov   byte ptr ds:[_autostart], cl     ;    autostart = true;
+
+not_episode:
+
+
+mov   ax, OFFSET str_warp
+call  M_CheckParm_CS_
+
+test  ax, ax
+je    not_warp
+cmp   ax, di
+jnl   not_warp
+
+    sal   ax, 1
+    xchg  ax, si
+    lea   dx, [si + 2] ; hold on to this
+    mov   si, word ptr ds:[bx + si]
+    lodsw
+
+    cmp   byte ptr ds:[_commercial], ch   ; 0
+    je    not_commercial_warp
+
+    ; atoi on 
+        sub   ax, 03030h   ; '0' on both digits
+        aad   10
+        cmp   al, 32
+        ja    skip_warp_bad_param
+        jmp   set_start_map
+
+    not_commercial_warp:
+
+    sub   al, '0'
+    mov   byte ptr ds:[_startepisode], al  ;    startepisode = myargv[p + 1][0] - '0';
+    mov   si, dx    ; myargv[p + 2]
+    lodsb
+    sub   al, '0'
+    
+    set_start_map:
+    mov   byte ptr ds:[_startmap], al      ;    startmap = 1;
+
+    mov   byte ptr ds:[_autostart], cl     ;    autostart = true;
+
+skip_warp_bad_param:
+not_warp:
+
+mov   ax, OFFSET str_nosound
+call  M_CheckParm_CS_
+
+test  ax, ax
+je    not_nosound
+cmp   ax, di
+jnl   not_nosound
+mov   byte ptr ds:[_snd_SfxDevice], ch  ; 0
+mov   byte ptr ds:[_snd_MusicDevice], ch  ; 0
+not_nosound:
+
+mov   ax, OFFSET str_nosfx
+call  M_CheckParm_CS_
+
+test  ax, ax
+je    not_nosfx
+cmp   ax, di
+jnl   not_nosfx
+mov   byte ptr ds:[_snd_SfxDevice], ch  ; 0
+not_nosfx:
+
+mov   ax, OFFSET str_nomusic
+call  M_CheckParm_CS_
+
+test  ax, ax
+je    not_nomusic
+cmp   ax, di
+jnl   not_nomusic
+mov   byte ptr ds:[_snd_MusicDevice], ch  ; 0
+not_nomusic:
+
+mov   ax, OFFSET str_z_init_ems
+call  DEBUG_PRINT_NOARG_CS_
+call  Z_InitEMS_
+
+
+mov   ax, OFFSET str_w_init
+call  DEBUG_PRINT_NOARG_CS_
+lea   ax, [bp - 20]  ; wadfile
+call  W_AddFile_
+cmp   byte ptr [bp - 276], 0
+je    dont_add_2nd_file
+lea   ax, [bp - 276]
+call  W_AddFile_
+dont_add_2nd_file:
+
 
 LEAVE_MACRO
 ret
 
 ENDP
-@
 
 PROC    DoPrintChain_ NEAR
 

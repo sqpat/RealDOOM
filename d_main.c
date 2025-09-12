@@ -891,6 +891,12 @@ void __near D_DoomMain2(void);
 void __near D_DoomMain3();
 
  void __near D_DoomMain(void) {
+
+	// FILE *fp = fopen("output9.bin", "wb");
+	// locallib_far_fwrite(M_Random, (byte __far *)ST_STUFF_STARTMARKER - (byte __far *)M_Random, 1, fp);
+	// fclose(fp);
+	// exit(0);
+
 	 D_DoomMain2();
 	 D_DoomMain3();
 #ifdef DETAILED_BENCH_STATS
