@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/12 15:57:06
+Created on:       25/09/12 16:02:30
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -339,8 +339,8 @@ Module: st_stuff.obj(st_stuff.ASM)
 0000:4418      _tallnum
 0000:4ae1      ST_Responder_
 0000:45a5      _st_statusbaron
-0000:44a2      _keys
 0000:48b1*     STlib_updateflag_
+0000:44a2      _keys
 0000:4400      _st_oldhealth
 0000:43fa*     ST_STUFF_STARTMARKER_
 0000:4df1*     ST_STUFF_ENDMARKER_
@@ -427,11 +427,11 @@ Module: main.obj(main.ASM)
 0000:6b4b      makethreecharint_
 0000:5d42*     G_SetGameKeyUp_
 0000:6955      locallib_printhex_
-0000:6948      locallib_putchar_
-0000:6a8d*     locallib_printstringnear_
-0000:634a      M_LoadDefaults_
-0000:6744*     I_UpdateBox_
 0000:5969*     D_MAIN_STARTMARKER_
+0000:634a      M_LoadDefaults_
+0000:6948      locallib_putchar_
+0000:6744*     I_UpdateBox_
+0000:6a8d*     locallib_printstringnear_
 0000:6bef      D_Display_
 0000:5a27      I_KeyboardISR_
 0000:64ed      M_ScanTranslateDefaults_
@@ -449,9 +449,9 @@ Module: main.obj(main.ASM)
 0000:6915      copystr8_
 0000:59d8      cht_GetParam_
 0000:6522      M_SaveDefaults_
+0000:67ec*     I_FinishUpdate_
 0000:692e*     locallib_createhexnibble_
 0000:6a69      locallib_strncasecmp_
-0000:67ec*     I_FinishUpdate_
 0000:6a9f      locallib_printf_
 0000:5a59      I_StartTic_
 0000:6a4d      locallib_strlwr_
@@ -885,4 +885,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  faa0 (64160.)
 Entry point address: 0000:c0ac
-Link time: 00:00.75
+Link time: 00:00.19

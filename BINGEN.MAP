@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/12 15:52:17
+Created on:       25/09/12 16:02:27
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -26,10 +26,10 @@ Segment                Class          Group          Address         Size
 
 m_near_TEXT            CODE           AUTO           0000:0000       00000000
 d_init_TEXT            CODE           AUTO           0000:0000       00000357
-D_INITA_TEXT           CODE           AUTO           0000:0358       000006b3
-S_INIT_TEXT            CODE           AUTO           0000:0a0c       00000560
-ST_INIT_TEXT           CODE           AUTO           0000:0f6c       00000203
-R_INIT_TEXT            CODE           AUTO           0000:1170       000007b0
+D_INITA_TEXT           CODE           AUTO           0000:0358       000006b0
+S_INIT_TEXT            CODE           AUTO           0000:0a08       00000560
+ST_INIT_TEXT           CODE           AUTO           0000:0f68       00000203
+R_INIT_TEXT            CODE           AUTO           0000:116c       000007b0
 w_init_TEXT            CODE           AUTO           0000:1920       00000285
 I_INIT_TEXT            CODE           AUTO           0000:1ba6       000001b9
 z_init_TEXT            CODE           AUTO           0000:1d60       00000a3b
@@ -221,23 +221,23 @@ Module: d_init.obj(C:\REALDOOM\d_init.c)
 0000:02ec      G_TimeDemo_
 0000:0310      check_is_ultimate_
 Module: d_inita.obj(d_inita.ASM)
-0000:0a0b*     D_INIT_ENDMARKER_
+0000:0a08*     D_INIT_ENDMARKER_
 0000:0604*     D_INIT_STARTMARKER_
 0000:0616      D_DoomMain2_
-0000:08a0      D_DoomMain3_
+0000:089d      D_DoomMain3_
 Module: s_init.obj(s_init.ASM)
-0000:0f6c      S_INIT_ENDMARKER_
-0000:0a0c      S_INIT_STARTMARKER_
-0000:0a10      LoadSFXWadLumps_
-0000:0f41*     I_GetSfxLumpNum_
+0000:0f68      S_INIT_ENDMARKER_
+0000:0a08      S_INIT_STARTMARKER_
+0000:0a0c      LoadSFXWadLumps_
+0000:0f3d*     I_GetSfxLumpNum_
 Module: st_init.obj(st_init.ASM)
-0000:0f6c*     ST_INIT_STARTMARKER_
-0000:116f*     ST_INIT_ENDMARKER_
-0000:100f      ST_Init_
+0000:0f68*     ST_INIT_STARTMARKER_
+0000:116b*     ST_INIT_ENDMARKER_
+0000:100b      ST_Init_
 Module: r_init.obj(r_init.ASM)
-0000:1761      R_Init_
-0000:11fa*     R_GenerateLookup_
-0000:18d5*     W_CacheLumpNumDirectSmall_
+0000:175d      R_Init_
+0000:11f6*     R_GenerateLookup_
+0000:18d1*     W_CacheLumpNumDirectSmall_
 Module: w_init.obj(C:\REALDOOM\w_init.c)
 0000:1920      W_AddFile_
 Module: i_init.obj(i_init.ASM)
@@ -390,8 +390,8 @@ Module: st_stuff.obj(st_stuff.ASM)
 0000:5e78      _tallnum
 0000:6541      ST_Responder_
 0000:6005      _st_statusbaron
-0000:5f02      _keys
 0000:6311*     STlib_updateflag_
+0000:5f02      _keys
 0000:5e60      _st_oldhealth
 0000:5e5a*     ST_STUFF_STARTMARKER_
 0000:6851*     ST_STUFF_ENDMARKER_
@@ -506,11 +506,11 @@ Module: main.obj(main.ASM)
 0000:9587      makethreecharint_
 0000:877e*     G_SetGameKeyUp_
 0000:9391      locallib_printhex_
-0000:9384      locallib_putchar_
-0000:94c9*     locallib_printstringnear_
-0000:8d86      M_LoadDefaults_
-0000:9180*     I_UpdateBox_
 0000:83a5*     D_MAIN_STARTMARKER_
+0000:8d86      M_LoadDefaults_
+0000:9384      locallib_putchar_
+0000:9180*     I_UpdateBox_
+0000:94c9*     locallib_printstringnear_
 0000:962b      D_Display_
 0000:8463      I_KeyboardISR_
 0000:8f29      M_ScanTranslateDefaults_
@@ -528,9 +528,9 @@ Module: main.obj(main.ASM)
 0000:9351      copystr8_
 0000:8414      cht_GetParam_
 0000:8f5e      M_SaveDefaults_
+0000:9228*     I_FinishUpdate_
 0000:936a*     locallib_createhexnibble_
 0000:94a5      locallib_strncasecmp_
-0000:9228*     I_FinishUpdate_
 0000:94db      locallib_printf_
 0000:8495      I_StartTic_
 0000:9489      locallib_strlwr_
@@ -729,15 +729,15 @@ Module: m_menu.obj(m_menu.ASM)
 0e24:0438*     M_LoadGame_
 0e24:051a*     M_DoSave_
 0e24:0d61      M_Responder_
-0e24:07d4*     S_SetSfxVolume_
 0e24:076f*     M_DrawSound_
+0e24:07d4*     S_SetSfxVolume_
 0e24:0a79*     M_ReadThis2_
 0e24:081d*     S_SetMusicVolume_
 0e24:08d3*     M_ChooseSkill_
 0e24:089b*     M_DrawEpisode_
 0e24:09d7*     M_Options_
-0e24:0c2b*     M_StartMessage_
 0e24:05a3*     M_SaveGame_
+0e24:0c2b*     M_StartMessage_
 0e24:075e*     M_DrawReadThisRetail_
 0e24:1377*     M_strcpy_
 0e24:0ae4*     M_QuitDOOM_
@@ -782,8 +782,8 @@ Module: m_menu.obj(m_menu.ASM)
 0e24:0a8b*     M_FinishReadThis_
 Module: f_wipe.obj(f_wipe.ASM)
 0f63:0132*     I_FinishUpdate_Fwipe_local_
-0f63:01f4*     I_UpdateNoBlit_Fwipe_local_
 0f63:0100*     I_ReadScreen_
+0f63:01f4*     I_UpdateNoBlit_Fwipe_local_
 0f63:0420*     wipe_initMelt_
 0f63:04cc      wipe_StartScreen_
 0f63:027c*     wipe_doMelt_
@@ -954,8 +954,8 @@ Module: r_mask16.obj(r_mask16.ASM)
 21de:7d82      R_MASK16_STARTMARKER_
 Module: r_mask0.obj(r_mask0.ASM)
 21de:afe2      R_WriteBackViewConstantsMasked0_
-21de:b0cd      R_MASK0_ENDMARKER_
 21de:9772      R_MASK0_STARTMARKER_
+21de:b0cd      R_MASK0_ENDMARKER_
 21de:abc3      R_DrawMasked0_
 21de:b06f      R_WriteBackMaskedFrameConstants0_
 Module: r_maskfl.obj(r_maskfl.ASM)
@@ -1029,9 +1029,9 @@ Module: p_pspr.obj(p_pspr.ASM)
 2e7d:3bf5*     A_ReFire_
 2e7d:4068      A_BFGSpray_
 2e7d:3e2e*     A_FireMissile_
-2e7d:3e39*     A_FireBFG_
 2e7d:4106      P_MovePsprites_
 2e7d:3e45*     A_FirePlasma_
+2e7d:3e39*     A_FireBFG_
 2e7d:41e6*     P_PSPR_ENDMARKER_
 2e7d:3ecb*     P_GunShot_
 2e7d:40fc*     A_BFGsound_
@@ -1047,8 +1047,8 @@ Module: p_pspr.obj(p_pspr.ASM)
 2e7d:4059*     A_CloseShotgun2_
 2e7d:39cc      P_BringUpWeapon_
 Module: p_enemy.obj(p_enemy.ASM)
-2e7d:56b0*     A_Explode_
 2e7d:53b9*     A_FatRaise_
+2e7d:56b0*     A_Explode_
 2e7d:42b5      P_NoiseAlert_
 2e7d:59f2*     A_SpawnFly_
 2e7d:4a22*     A_PosAttack_
@@ -1075,13 +1075,13 @@ Module: p_enemy.obj(p_enemy.ASM)
 2e7d:5643*     A_Scream_
 2e7d:42c6*     P_CheckMeleeRange_
 2e7d:57d8*     A_Hoof_
-2e7d:5443*     A_FatAttack2_
 2e7d:4203*     P_RecursiveSound_
+2e7d:5443*     A_FatAttack2_
 2e7d:53c4*     A_FatAttack3_
 2e7d:4d1f*     A_SkelMissile_
 2e7d:5428*     A_FatAttack1_
-2e7d:47b9*     A_Look_
 2e7d:57ec*     A_BabyMetal_
+2e7d:47b9*     A_Look_
 2e7d:59ec*     A_SpawnSound_
 2e7d:4ce1*     A_BruisAttack_
 2e7d:568f*     A_XScream_
@@ -1105,8 +1105,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2e7d:545e*     A_SkullAttack_
 2e7d:41e6*     P_ENEMY_STARTMARKER_
 2e7d:4b6d*     A_CPosRefire_
-2e7d:4c12*     A_TroopAttack_
 2e7d:57f6*     A_BrainAwake_
+2e7d:4c12*     A_TroopAttack_
 2e7d:562c*     A_PainAttack_
 2e7d:5add*     A_PlayerScream_
 2e7d:4764*     A_KeenDie_
@@ -1166,8 +1166,8 @@ Module: p_lights.obj(p_lights.ASM)
 2e7d:705e      T_StrobeFlash_
 2e7d:6f80      T_FireFlicker_
 Module: p_plats.obj(p_plats.ASM)
-2e7d:72cc      EV_DoPlat_
 2e7d:7218      T_PlatRaise_
+2e7d:72cc      EV_DoPlat_
 2e7d:7453      P_AddActivePlat_
 2e7d:746b*     P_RemoveActivePlat_
 2e7d:749b*     P_PLATS_ENDMARKER_
@@ -1523,4 +1523,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003dbb0 (252848.)
 Entry point address: 374d:0ad4
-Link time: 00:00.04
+Link time: 00:00.05
