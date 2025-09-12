@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/12 09:47:47
+Created on:       25/09/12 10:18:26
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -430,18 +430,18 @@ Module: main.obj(main.ASM)
 0000:5b65      I_KeyboardISR_
 0000:662e      M_ScanTranslateDefaults_
 0000:6a39      locallib_strlen_
-0000:5e99      G_BuildTiccmd_
 0000:61e8*     CopyString13_
+0000:5e99      G_BuildTiccmd_
 0000:5e5e      G_ResetGameKeys_
 0000:6cde      I_ShutdownKeyboard_
 0000:5ab5      cht_CheckCheat_
 0000:6cb0      locallib_dos_setvect_
 0000:6a03      locallib_strcmp_
-0000:6afd*     locallib_printdecimal_
 0000:6ca6      locallib_dos_getvect_
+0000:6afd*     locallib_printdecimal_
 0000:6a56      copystr8_
-0000:6663      M_SaveDefaults_
 0000:5b16      cht_GetParam_
+0000:6663      M_SaveDefaults_
 0000:6a6f*     locallib_createhexnibble_
 0000:6baa      locallib_strncasecmp_
 0000:692d*     I_FinishUpdate_
@@ -494,8 +494,8 @@ Module: s_sound.obj(s_sound.ASM)
 0000:8c39*     S_AdjustSoundParamsVol_
 0000:9021*     S_SOUND_ENDMARKER_
 0000:8d76      S_StopSoundMobjRef_
-0000:8ef5      S_StartSoundWithSecnum_
 0000:8bd3*     S_AdjustSoundParamsSep_
+0000:8ef5      S_StartSoundWithSecnum_
 0000:8df2*     S_StartSoundWithPosition_
 0000:8f02      S_UpdateSounds_
 0000:8b86*     S_SOUND_STARTMARKER_
@@ -888,4 +888,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  ffb0 (65456.)
 Entry point address: 0000:c2ee
-Link time: 00:00.75
+Link time: 00:00.19

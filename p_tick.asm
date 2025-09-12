@@ -352,15 +352,14 @@ ENDP
 PROC P_Random_ NEAR
 PUBLIC P_Random_
 
-; ah guaranteed 0 now!
+; ah guaranteed 0!
 push    bx
 inc 	byte ptr ds:[_prndindex]
-mov     ax, RNDTABLE_SEGMENT
-mov     es, ax
+
 xor     ax, ax
 mov     bx, ax
 mov     al, byte ptr ds:[_prndindex]
-xlat    byte ptr es:[bx]
+xlat    byte ptr cs:[bx]
 pop     bx
 ret
 

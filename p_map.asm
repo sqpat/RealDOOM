@@ -5945,16 +5945,15 @@ push  ax
 push  dx
 push  bx
 
-mov   ax, RNDTABLE_SEGMENT
-mov   es, ax
 
-mov   al, byte ptr ds:[_prndindex]
-add   byte ptr ds:[_prndindex], 3  ; for 3 calls this func..
-xor   ah, ah
+xor   ax, ax
 mov   bx, ax
-inc   bx
-mov   al, byte ptr es:[bx]
-sub   al, byte ptr es:[bx+1]
+mov   bl, byte ptr ds:[_prndindex]
+add   byte ptr ds:[_prndindex], 3  ; for 3 calls this func..
+
+
+mov   al, byte ptr cs:[bx+1]
+sub   al, byte ptr cs:[bx+2]
 
 sbb   ah, 0
 cwd
@@ -5972,7 +5971,7 @@ and   ax, 0FC00h  ; clean out bottom bits
 add   si, ax
 adc   di, dx
 
-mov   al, byte ptr es:[bx+2]
+mov   al, byte ptr cs:[bx+3]
 mov   byte ptr cs:[SELFMODIFY_blood_set_rnd_value_3 - OFFSET P_SIGHT_STARTMARKER_+1], al  
 
 pop   bx

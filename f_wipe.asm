@@ -27,6 +27,9 @@ PROC    F_WIPE_STARTMARKER_
 PUBLIC  F_WIPE_STARTMARKER_
 ENDP
 
+
+;todo rndtable here too
+
 PROC I_ReadScreen_ NEAR
 PUBLIC I_ReadScreen_
 

@@ -73,16 +73,14 @@ push  ax
 push  dx
 push  bx
 
-mov   ax, RNDTABLE_SEGMENT
-mov   es, ax
 
 mov   al, byte ptr ds:[_prndindex]
 add   byte ptr ds:[_prndindex], 3  ; for 3 calls this func..
 xor   ah, ah
 mov   bx, ax
 inc   bx
-mov   al, byte ptr es:[bx]
-sub   al, byte ptr es:[bx+1]
+mov   al, byte ptr cs:[bx]
+sub   al, byte ptr cs:[bx+1]
 
 sbb   ah, 0
 cwd
@@ -525,16 +523,13 @@ jae       dont_set_random_tics
 
 
 inc       byte ptr ds:[_prndindex]
-mov       bl, byte ptr ds:[_prndindex]
-xor       bh, bh
+xchg      ax, dx ; dl gets al
+xor       ax, ax
+mov       bx, ax
+mov       al, byte ptr ds:[_prndindex]
 
-mov       dl, al
+xlat      byte ptr cs:[bx]
 
-mov       ax, RNDTABLE_SEGMENT
-mov       es, ax
-
-mov       al, byte ptr es:[bx]
-xor       ah, ah
 div       dl
 inc       ah
 
@@ -722,12 +717,9 @@ jne       exit_p_mobjthinker
 
 
 inc       byte ptr ds:[_prndindex]
-mov       bl, byte ptr ds:[bx]
-mov       ax, RNDTABLE_SEGMENT
-mov       es, ax
-xor       bh, bh
-mov       al, byte ptr es:[bx]
-cmp       al, 4
+xor       bx, bx
+mov       bl, byte ptr ds:[_prndindex]
+cmp       byte ptr cs:[bx], 4
 ja        exit_p_mobjthinker
 
 mov       bx, di
@@ -2008,11 +2000,10 @@ mov   ax, si    ; ax gets mobj ptr back
 
 call  P_SetMobjState_
 
-mov   ax, RNDTABLE_SEGMENT
-mov   es, ax
+
 inc   byte ptr ds:[_prndindex]
+xor   ax, ax
 mov   al, byte ptr ds:[_prndindex]
-xor   ah, ah
 xchg  ax, di
 
 ;    mo->tics -= P_Random()&3;
@@ -2020,7 +2011,7 @@ xchg  ax, di
 ;		mo->tics = 1;
 ;	}
 
-mov   al, byte ptr es:[di]
+mov   al, byte ptr cs:[di]
 and   al, 3
 sub   byte ptr ds:[si + MOBJ_T.m_tics], al
 mov   al, byte ptr ds:[si + MOBJ_T.m_tics]
@@ -2334,13 +2325,12 @@ mov   di, ax
 mov   si, bx
 mov   es, cx
 inc   byte ptr ds:[_prndindex]
-mov   bl, byte ptr ds:[_prndindex]
-xor   bh, bh
-mov   ax, RNDTABLE_SEGMENT
-mov   es, ax
+xor   ax, ax 
+mov   bx, ax
 
-mov   al, byte ptr es:[bx]
-mov   es, cx
+mov   al, byte ptr ds:[_prndindex]
+xlat  byte ptr cs:[bx]
+
 
 and   al, 3
 sub   byte ptr ds:[di + MOBJ_T.m_tics], al
@@ -2540,8 +2530,7 @@ push  ax  ; bp - 010h
 test  byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_SHADOW
 
 je    no_fuzzmissile
-mov   ax, RNDTABLE_SEGMENT
-mov   es, ax
+
 
 
 ;		temp = (P_Random() - P_Random());
@@ -2551,9 +2540,9 @@ xor   ax, ax
 mov   bx, ax
 mov   bl, byte ptr ds:[_prndindex]
 inc   bl
-mov   al, byte ptr es:[bx]
-inc   bl
-sub   al, byte ptr es:[bx]
+xlat  byte ptr cs:[bx]
+inc   bl             
+sub   al, byte ptr cs:[bx]
 sbb   ah, 0
 mov   byte ptr ds:[_prndindex], bl
 
