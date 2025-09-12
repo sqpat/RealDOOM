@@ -211,7 +211,7 @@ mov  ds, ax	; restore ds..
 
 mov   ax, word ptr ds:[_numnodes]
 dec   ax
-call  P_CrossBSPNode_ ; seems good?
+call  P_CrossBSPNode_ ; return carry thru 
 
 
 pop   di

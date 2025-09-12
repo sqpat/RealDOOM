@@ -333,24 +333,23 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_StartSound_addr
 
-pop   bx  ;mov   bx, word ptr [bp - 2]  ; last use.
+pop   di  ; bp - 6  mobjpos offset
+pop   es  ; bp - 4  mobjpost segment
+pop   bx  ; bp - 2  ; last use.
 cmp   byte ptr ds:[bx + MOBJ_T.m_mobjtype], MT_PLAYER
 jne   skip_player_reaction_time_set
 mov   byte ptr ds:[bx + MOBJ_T.m_reactiontime], 18
 skip_player_reaction_time_set:
 
-lds   di, dword ptr [bp - 6]
 add   si, MOBJ_POS_T.mp_angle
 add   di, MOBJ_POS_T.mp_angle
-push  ds  ; lds above
-pop   es
+push  es  ; les above
+pop   ds
 movsw
 movsw
 ;				thing_pos->angle = m_pos->angle;
 ;				thing->momx.w = thing->momy.w = thing->momz.w = 0;
 ;				return 1;
-
-
 
 
 xor    ax, ax
@@ -369,7 +368,7 @@ push   ss
 pop    ds
 
 inc ax ; return 1
-LEAVE_MACRO 
+pop   bp  ;LEAVE_MACRO   ; bp = sp at this point?
 pop   di
 pop   si
 ret
