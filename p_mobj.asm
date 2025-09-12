@@ -593,7 +593,91 @@ mov       ax, word ptr ds:[si + MOBJ_T.m_momy + 2]
 or        ax, word ptr ds:[si + MOBJ_T.m_momy + 0]
 jne       do_xy_movement
 test      byte ptr es:[di + MOBJ_POS_T.mp_flags2 + 1], (MF_SKULLFLY SHR 8)
-je        done_with_xy_movement
+jne       do_xy_movement   ; rare case so default dont do
+
+
+
+
+done_with_xy_movement:
+
+;	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  mobj->floorz);
+
+xor       ax, ax
+mov       bx, word ptr ds:[si + 6]
+sar       bx, 1
+rcr       ax, 1
+sar       bx, 1
+rcr       ax, 1
+sar       bx, 1
+rcr       ax, 1
+
+
+cmp       bx, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
+jne       do_z_movement
+cmp       ax, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
+jne       do_z_movement
+
+mov       ax, word ptr ds:[si + MOBJ_T.m_momz + 2]
+or        ax, word ptr ds:[si + MOBJ_T.m_momz + 0]
+jne       do_z_movement  ; rare case so default dont do
+
+done_with_z_movement:
+
+
+cmp       byte ptr ds:[si + MOBJ_T.m_tics], 255
+je        tics_255
+dec       byte ptr ds:[si + MOBJ_T.m_tics]
+jne       exit_p_mobjthinker
+
+mov       di, word ptr es:[di + MOBJ_POS_T.mp_statenum]
+mov       ax, SIZEOF_STATE_T
+mul       di
+xchg      ax, di
+mov       cx, es 
+mov       ax, STATES_SEGMENT
+mov       es, ax
+
+mov       ax, si
+mov       dx, word ptr es:[di + STATE_T.state_nextstate]
+
+call      P_SetMobjState_
+
+
+exit_p_mobjthinker:
+pop       di
+pop       si
+ret
+
+
+do_z_movement:
+
+mov       bx, di
+mov       ax, si
+mov       cx, es
+
+call      P_ZMovement_
+
+
+
+IF COMPISA GE COMPILE_186
+    imul  bx, dx, SIZEOF_THINKER_T
+ELSE
+    push  dx
+    mov   ax, SIZEOF_THINKER_T
+    mul   dx
+    xchg  ax, bx
+    pop   dx
+
+ENDIF
+
+
+
+mov       ax, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
+and       ax, TF_FUNCBITS
+cmp       ax, TF_DELETEME_HIGHBITS
+je        exit_p_mobjthinker
+mov       es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
+jmp       done_with_z_movement
 
 do_xy_movement:
 mov       bx, di
@@ -619,87 +703,11 @@ mov       ax, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
 and       ax, TF_FUNCBITS
 cmp       ax, TF_DELETEME_HIGHBITS
 je        exit_p_mobjthinker
-
-
-done_with_xy_movement:
-mov       cx, MOBJPOSLIST_6800_SEGMENT
-mov       es, cx
-
-;	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  mobj->floorz);
-
-xor       ax, ax
-mov       bx, word ptr ds:[si + 6]
-sar       bx, 1
-rcr       ax, 1
-sar       bx, 1
-rcr       ax, 1
-sar       bx, 1
-rcr       ax, 1
-
-
-cmp       bx, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
-jne       do_z_movement
-cmp       ax, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
-jne       do_z_movement
-
-mov       ax, word ptr ds:[si + MOBJ_T.m_momz + 2]
-or        ax, word ptr ds:[si + MOBJ_T.m_momz + 0]
-je        done_with_z_movement
-do_z_movement:
-
-mov       bx, di
-mov       ax, si
-
-call      P_ZMovement_
+mov       es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
+jmp       done_with_xy_movement
 
 
 
-IF COMPISA GE COMPILE_186
-    imul  bx, dx, SIZEOF_THINKER_T
-ELSE
-    push  dx
-    mov   ax, SIZEOF_THINKER_T
-    mul   dx
-    xchg  ax, bx
-    pop   dx
-
-ENDIF
-
-
-
-mov       ax, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
-and       ax, TF_FUNCBITS
-cmp       ax, TF_DELETEME_HIGHBITS
-jne       done_with_z_movement
-exit_p_mobjthinker:
-pop       di
-pop       si
-ret
-
-
-done_with_z_movement:
-mov       cx, MOBJPOSLIST_6800_SEGMENT
-mov       es, cx
-
-cmp       byte ptr ds:[si + MOBJ_T.m_tics], 255
-je        tics_255
-dec       byte ptr ds:[si + MOBJ_T.m_tics]
-jne       exit_p_mobjthinker
-
-mov       di, word ptr es:[di + MOBJ_POS_T.mp_statenum]
-mov       ax, SIZEOF_STATE_T
-mul       di
-xchg      ax, di
-mov       ax, STATES_SEGMENT
-mov       es, ax
-
-mov       ax, si
-mov       dx, word ptr es:[di + STATE_T.state_nextstate]
-
-call      P_SetMobjState_
-
-
-jmp       exit_p_mobjthinker
 tics_255:
 
 test      byte ptr es:[di + MOBJ_POS_T.mp_flags2], MF_COUNTKILL

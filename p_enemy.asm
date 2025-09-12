@@ -1101,6 +1101,9 @@ jmp   check_turnaround
 
 ENDP
 
+player_dead_dont_look:
+clc
+ret
 
 PROC    P_LookForPlayers_ NEAR
 PUBLIC  P_LookForPlayers_
@@ -1109,9 +1112,7 @@ PUBLIC  P_LookForPlayers_
 
 
 cmp   word ptr ds:[_player + PLAYER_T.player_health], 0
-jg    do_look_for_players  ; would be nice to jump somehwere but too far
-clc
-ret
+jng   player_dead_dont_look  ; todo can this reach another exit for free code
 
 do_look_for_players:
 
