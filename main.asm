@@ -1247,6 +1247,8 @@ str_defaultname_30:
 db "sky_quality", 0
 
 ; 7 bytes per.
+; todo move the vars all to a cs array?
+; will need to mirror some vars like screenblocks, detaillevel..
 _defaults:
 dw OFFSET str_defaultname_00, OFFSET _mouseSensitivity
 db  5, 0, 0
@@ -2882,8 +2884,16 @@ ret
 
 ENDP
 
+PROC    DEBUG_PRINT_NOARG_CS_ NEAR
+PUBLIC  DEBUG_PRINT_NOARG_CS_
 
+mov     dx, cs
 
+ENDP
+PROC    DEBUG_PRINT_NOARG_ NEAR
+PUBLIC  DEBUG_PRINT_NOARG_
+
+ENDP
 PROC    locallib_printf_ NEAR
 PUBLIC  locallib_printf_
 
@@ -3416,6 +3426,28 @@ jmp   done_with_gs_level_case
 
 
 ENDP
+
+PROC    DEBUG_PRINT_ FAR
+PUBLIC  DEBUG_PRINT_
+
+
+push bx
+push dx
+push bp
+mov  bp, sp
+lea  bx, [bp + 0Eh]
+mov  ax, word ptr [bp + 0Ah]
+mov  dx, word ptr [bp + 0Ch]
+call locallib_printf_
+pop  bp
+pop  dx
+pop  bx
+retf 
+
+
+ENDP
+
+
 
 
 

@@ -462,6 +462,7 @@ int16_t __near locallib_strncasecmp(char __near *str1, char __near *str2, int16_
 void __near combine_strings(char __far *dest, char __far *src1, char __far *src2);
 void __near locallib_strcpy(char __far *dest, char __far *src);
 void __near locallib_printf (int8_t __far* str, va_list argptr);
+void __near DEBUG_PRINT_NOARG (int8_t __far*str);
 void __near locallib_putchar(int8_t c);
 
 int16_t __near locallib_strlen(char __far *src);

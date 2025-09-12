@@ -19,7 +19,7 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN DEBUG_PRINT_:FAR
+EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
 EXTRN I_Error_:FAR
 EXTRN Z_QuickMapScratch_5000_:FAR
 EXTRN Z_QuickMapRender_:FAR
@@ -940,38 +940,31 @@ SHIFT_MACRO shr cx 6
 add       cx, ax                ; temp = ((temp + 63) / 64) + ((numtextures + 63) / 64);
 
 
-push      cs
+
 mov       ax, OFFSET str_leftbracket
-push      ax
-call      DEBUG_PRINT_
-add       sp, 4
+call      DEBUG_PRINT_NOARG_CS_
+
 
 mov       bx, cx
 
 loop_print_space:
-push      cs
 mov       ax, OFFSET str_single_space
+call      DEBUG_PRINT_NOARG_CS_
 push      ax
-call      DEBUG_PRINT_
-push      ax
-add       sp, 4
 
 loop      loop_print_space
 
-push      cs
 mov       ax, OFFSET str_rightbracket
-push      ax
-call      DEBUG_PRINT_
-add       sp, 4
+call      DEBUG_PRINT_NOARG_CS_
+
 
 lea       cx, [bx + 10]  ; ten extra backspaces..
 
 loop_print_backspace:
-push      cs
+
 mov       ax, OFFSET str_single_backspace
-push      ax
-call      DEBUG_PRINT_
-add       sp, 4
+call      DEBUG_PRINT_NOARG_CS_
+
 loop      loop_print_backspace
 
 xor       di, di   ; i
@@ -998,11 +991,10 @@ push      ds  ; store ds
 push      ss
 pop       ds
 
-push      cs
+
 mov       ax, OFFSET str_single_dot
-push      ax
-call      DEBUG_PRINT_
-add       sp, 4
+call      DEBUG_PRINT_NOARG_CS_
+
 pop       ds  ; recover ds
 done_printing_dot_2:
 
@@ -1275,10 +1267,9 @@ call      W_CacheLumpNumDirect_
 
 call      R_InitTextures_
 
-push      cs
+
 mov       ax, OFFSET str_double_dot
-push      ax
-call      DEBUG_PRINT_
+call      DEBUG_PRINT_NOARG_CS_
 
 ;call      R_InitPatches_
 
@@ -1340,11 +1331,10 @@ loop      loop_next_anim
 jmp       do_R_InitSpriteLumps_
 
 do_print_dot:
-push      cs
+
 mov       ax, OFFSET str_dot
-push      ax
-call      DEBUG_PRINT_       
-add       sp, 4
+call      DEBUG_PRINT_NOARG_CS_ 
+
 jmp       done_printing_dot
 
 handle_129_spritetopoffset:
@@ -1490,24 +1480,20 @@ exit_r_initspritelumps:
 
 call      Z_QuickMapRender_  ; undo flat cache stuff. 
 
-push      cs
+
 mov       ax, OFFSET str_single_dot
-push      ax
-call      DEBUG_PRINT_
+call      DEBUG_PRINT_NOARG_CS_
 
 
-push      cs
 mov       ax, OFFSET str_double_dot
-push      ax
-call      DEBUG_PRINT_
+call      DEBUG_PRINT_NOARG_CS_
 
 mov       dl, byte ptr ds:[_detailLevel]
 mov       al, byte ptr ds:[_screenblocks]
 call      R_SetViewSize_
-push      cs
+
 mov       ax, OFFSET str_triple_dot
-push      ax
-call      DEBUG_PRINT_
+call      DEBUG_PRINT_NOARG_CS_
 
 
 call      Z_QuickMapPhysics_
@@ -1516,12 +1502,9 @@ mov       ax, OFFSET str_f_sky1
 call      R_FlatNumForName_
 mov       byte ptr ds:[_skyflatnum], al
 
-push      cs
 mov       ax, OFFSET str_single_dot
-push      ax
+call      DEBUG_PRINT_NOARG_CS_
 
-call      DEBUG_PRINT_
-add       sp, 20  ; five debug prints..
 
 POPA_NO_AX_MACRO
 ret     

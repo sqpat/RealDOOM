@@ -308,21 +308,7 @@ void __near locallib_printf2 (int8_t __far*str, va_list argptr){
     locallib_printf(str, argptr);
 }
 
-#if DEBUG_PRINTING
-
-
-void __far DEBUG_PRINT (int8_t __far *error, ...){
-    va_list argptr;
-    
-	va_start(argptr, error);
-    locallib_printf(error, argptr);
-    va_end(argptr);
-}
-#else
-//void __far DEBUG_PRINT (int8_t *error, ...){ }
-#endif
-
-
+void __far DEBUG_PRINT (int8_t __far *error, ...);
 
 
 

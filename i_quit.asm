@@ -155,7 +155,7 @@ ELSE
         push  dx
         call  DEBUG_PRINT_
         pop   dx
-        add   sp, 4   ; or 6?
+        add   sp, 6
     ret
     _str_ems_unmap_error:
     db "Failed deallocating EMS memory! %i!", 0Ah, 0
