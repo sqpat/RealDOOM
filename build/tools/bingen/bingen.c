@@ -105,7 +105,6 @@ void __far R_DrawPlayerSprites();
 int16_t __far wipe_doMelt(int16_t ticks);
 void __far wipe_WipeLoop();
 void __far wipe_StartScreen();
-void __far I_ReadScreen(); //todo this gets made the first function...
 void __far D_ALGO_END();
 
 void __far R_SKY_STARTMARKER();
@@ -368,7 +367,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 
     codesize[7] = FP_OFF(F_WIPE_ENDMARKER) - FP_OFF(F_WIPE_STARTMARKER);
     fwrite(&codesize[7], 2, 1, fp);
-    locallib_far_fwrite((byte __far *)I_ReadScreen, codesize[7], fp);
+    locallib_far_fwrite((byte __far *)F_WIPE_STARTMARKER, codesize[7], fp);
 
     codesize[8] = FP_OFF(F_FINALE_ENDMARKER) - FP_OFF(F_FINALE_STARTMARKER);
     fwrite(&codesize[8], 2, 1, fp);
@@ -486,8 +485,8 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 
 
     // wipe offsets
-    fprintf(fp, "#define wipe_StartScreenOffset                  0x%X\n", FP_OFF(wipe_StartScreen)                  - FP_OFF(I_ReadScreen));
-	fprintf(fp, "#define wipe_WipeLoopOffset                     0x%X\n", FP_OFF(wipe_WipeLoop)                     - FP_OFF(I_ReadScreen));
+    fprintf(fp, "#define wipe_StartScreenOffset                  0x%X\n", FP_OFF(wipe_StartScreen)                  - FP_OFF(F_WIPE_STARTMARKER));
+	fprintf(fp, "#define wipe_WipeLoopOffset                     0x%X\n", FP_OFF(wipe_WipeLoop)                     - FP_OFF(F_WIPE_STARTMARKER));
 
     // finale offsets
     fprintf(fp, "#define F_StartFinaleOffset                     0x%X\n", FP_OFF(F_StartFinale)                     - FP_OFF(F_FINALE_STARTMARKER));
@@ -610,8 +609,8 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "M_DRAWPAUSEOFFSET          = 0%Xh\n",            FP_OFF(M_DrawPause)                         - FP_OFF(M_MENU_STARTMARKER));
 
 
-    fprintf(fp, "WIPE_STARTSCREENOFFSET     = 0%Xh\n",            FP_OFF(wipe_StartScreen)                    - FP_OFF(I_ReadScreen));
-    fprintf(fp, "WIPE_WIPELOOPOFFSET        = 0%Xh\n",            FP_OFF(wipe_WipeLoop)                       - FP_OFF(I_ReadScreen));
+    fprintf(fp, "WIPE_STARTSCREENOFFSET     = 0%Xh\n",            FP_OFF(wipe_StartScreen)                    - FP_OFF(F_WIPE_STARTMARKER));
+    fprintf(fp, "WIPE_WIPELOOPOFFSET        = 0%Xh\n",            FP_OFF(wipe_WipeLoop)                       - FP_OFF(F_WIPE_STARTMARKER));
     fprintf(fp, "WI_DRAWEROFFSET            = 0%Xh\n",            FP_OFF(WI_Drawer)                           - FP_OFF(WI_STARTMARKER));
     fprintf(fp, "F_DRAWEROFFSET             = 0%Xh\n",            FP_OFF(F_Drawer)                            - FP_OFF(F_FINALE_STARTMARKER));
 

@@ -30,8 +30,7 @@ PROC    P_SIGHT_STARTMARKER_
 PUBLIC  P_SIGHT_STARTMARKER_
 ENDP
 
-_rndtable_9000_segment:
-PUBLIC    _rndtable_9000_segment
+_rndtable_9000:
 
  db 0,   8, 109, 220, 222, 241, 149, 107,  75, 248, 254, 140,  16,  66  
  db 74,  21, 211,  47,  80, 242, 154,  27, 205, 128, 161,  89,  77,  36 
