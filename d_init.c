@@ -718,6 +718,7 @@ void __near P_SpawnGlowingLight(int16_t secnum) ;
 void __near D_Display (void) ;
 void __near G_BeginRecording (void) ;
 void __far D_StartTitle(void);
+boolean __near locallib_fileexists(int8_t __far* name);
 uint8_t __near M_Random (void);
 
 void    __near P_UpdateSpecials (void);
@@ -926,21 +927,21 @@ R_PointToAngle(y, x);
 	//P_Init();
 
 
-	if (!access("doom2.wad", R_OK)) {
+	if (locallib_fileexists("doom2.wad")) {
 		commercial = true;
 		locallib_strcpy(wadfile,"doom2.wad");
 		goto foundfile;
 	}
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
-	if (!access("plutonia.wad", R_OK)) {
+	if (locallib_fileexists("plutonia.wad")) {
 		commercial = true;
 		plutonia = true;
 		locallib_strcpy(wadfile,"plutonia.wad");
 		goto foundfile;
 	}
 
-	if (!access("tnt.wad", R_OK)) {
+	if (locallib_fileexists("tnt.wad")) {
 		commercial = true;
 		tnt = true;
 		locallib_strcpy(wadfile,"tnt.wad");
@@ -948,14 +949,14 @@ R_PointToAngle(y, x);
 	}
 #endif
 
-	if (!access("doom.wad", R_OK)) {
+	if (locallib_fileexists("doom.wad")) {
 		registered = true;
 		locallib_strcpy(wadfile,"doom.wad");
 		check_is_ultimate();
 		goto foundfile;
 	}
 
-	if (!access("doom1.wad", R_OK)) {
+	if (locallib_fileexists("doom1.wad")) {
 		shareware = true;
 		locallib_strcpy(wadfile,"doom1.wad");
 		goto foundfile;

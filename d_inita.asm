@@ -81,11 +81,79 @@ str_timedemo_param:
 db "-timedemo", 0
 str_loadgame_param:
 db "-loadgame", 0
+str_doom2filename_:
+db "doom2.wad", 0
 
 PROC    D_INIT_STARTMARKER_ NEAR
 PUBLIC  D_INIT_STARTMARKER_
 ENDP
 
+
+
+PROC    locallib_fileexists_ NEAR
+PUBLIC  locallib_fileexists_ 
+
+
+
+push  cx
+mov   ds, dx
+xchg  ax, dx ; dx gets filename
+mov   ax, 04300h
+int   021h          ; DS:DX = pointer to an ASCIIZ path name  CX = attribute to set
+push  ss
+pop   ds
+mov   ax, 0
+jc    return_0    ; file error, presumably file not found. anyway, cant read
+inc   ax
+return_0:
+
+pop   cx
+
+ret
+
+
+do_dos_error:
+;call  __doserror_
+; todo??
+xor   ax, ax
+ret
+
+ENDP
+
+
+COMMENT @
+PROC  locallib_setbuf_
+
+push bx
+push cx
+mov  bx, 256
+test dx, dx
+jne  label_5
+mov  bx, 1024
+label_5
+mov  cx, 512
+push cs
+call setvbuf_
+pop  cx
+pop  bx
+retf 
+@
+
+COMMENT @
+PROC    D_DoomMain2_ NEAR
+PUBLIC  D_DoomMain2_
+push    bp
+mov     bp, sp
+sub     sp, 280
+
+mov     ax, OFFSET str_doom2filename_
+mov     dx, CS
+
+LEAVE_MACRO
+ret
+
+ENDP
+@
 
 PROC    DoPrintChain_ NEAR
 

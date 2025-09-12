@@ -869,6 +869,7 @@ void __near Z_ClearDeadCode() {
 	//11222          - 01/18/25		at this point like 3000 bytes to save.
 	//11284          - 06/30/25   
 	//11470          - 08/26/25
+	//9798           - 09/12/25	   ; note 8196 is "max". or "min". there are probably some funcs that can be moved into init like wad or file funcs only used in init though.
 	uint16_t size = endaddr - startaddr-16;
 	FILE* fp;
 
@@ -876,7 +877,7 @@ void __near Z_ClearDeadCode() {
 	angle_t __far*  dest;
 	
 	tantoangle_segment = FP_SEG(startaddr) + 1;
-	//I_Error("size: %i", size);
+	// I_Error("size: %i", size);
 	dest =  (angle_t __far* )MK_FP(tantoangle_segment, 0);
 	
 	fp = fopen("DOOMDATA.BIN", "rb");
