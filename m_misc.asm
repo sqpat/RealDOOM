@@ -191,6 +191,10 @@ ENDP
 
 
 
+PROC    M_CheckParm_CS_   NEAR
+PUBLIC  M_CheckParm_CS_
+mov     dx, cs
+ENDP
 PROC    M_CheckParm_   NEAR
 PUBLIC  M_CheckParm_
 

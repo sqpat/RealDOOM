@@ -46,7 +46,7 @@ EXTRN G_InitNew_:NEAR
 EXTRN G_DeferedPlayDemo_:NEAR
 EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
 EXTRN DEBUG_PRINT_NOARG_:NEAR
-EXTRN M_CheckParm_:NEAR
+EXTRN M_CheckParm_CS_:NEAR
 
 
 .DATA
@@ -201,20 +201,20 @@ call  ST_Init_
 
 call  AM_loadPics_
 
-mov   dx, word ptr ds:[_myargc]
-dec   dx                        ; myargc - 1
-mov   cx, 1
+mov   di, word ptr ds:[_myargc]
+dec   di                        ; myargc - 1
+mov   cl, 1
 mov   bx, word ptr ds:[_myargv]
 inc   bx
 inc   bx                        ; myargv[n + 1]
 
 mov   ax, OFFSET str_record_param
-call  M_CheckParm_
+call  M_CheckParm_CS_
 
 
 test  ax, ax
 je    skip_record_param
-cmp   ax, dx
+cmp   ax, di
 jnl   skip_record_param
 
 
@@ -228,12 +228,12 @@ skip_record_param:
 
 
 mov   ax, OFFSET str_playdemo_param
-call  M_CheckParm_
+call  M_CheckParm_CS_
 
 
 test  ax, ax
 je    skip_playdemo_param
-cmp   ax, dx
+cmp   ax, di
 jnl   skip_playdemo_param
 
     mov   byte ptr ds:[_singledemo], cl  ; 1
@@ -248,12 +248,12 @@ skip_playdemo_param:
 
 
 mov   ax, OFFSET str_timedemo_param
-call  M_CheckParm_
+call  M_CheckParm_CS_
 
 
 test  ax, ax
 je    skip_timedemo_param
-cmp   ax, dx
+cmp   ax, di
 jnl   skip_timedemo_param
 
 
@@ -266,12 +266,12 @@ jnl   skip_timedemo_param
 skip_timedemo_param:
 
 mov   ax, OFFSET str_loadgame_param
-call  M_CheckParm_
+call  M_CheckParm_CS_
 
 
 test  ax, ax
 je    skip_loadgame_param
-cmp   ax, dx
+cmp   ax, di
 jnl   skip_loadgame_param
 
     call  Z_QuickMapMenu_
