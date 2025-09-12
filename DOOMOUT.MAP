@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/12 09:08:04
+Created on:       25/09/12 09:47:47
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -304,9 +304,9 @@ Module: am_map.obj(am_map.ASM)
 Module: st_stuff.obj(st_stuff.ASM)
 0000:475c*     ST_updateFaceWidget_
 0000:45ed      _oldweaponsowned
-0000:4a8c*     STlib_drawNum_
 0000:465e      _w_keyboxes
 0000:4588      _armsbg
+0000:4a8c*     STlib_drawNum_
 0000:456a      _arms
 0000:45f6      _keyboxes
 0000:4b77*     ST_drawWidgets_
@@ -335,8 +335,8 @@ Module: st_stuff.obj(st_stuff.ASM)
 0000:4556      _tallnum
 0000:4c1f      ST_Responder_
 0000:46e3      _st_statusbaron
-0000:49ef*     STlib_updateflag_
 0000:45e0      _keys
+0000:49ef*     STlib_updateflag_
 0000:453e      _st_oldhealth
 0000:4538*     ST_STUFF_STARTMARKER_
 0000:4f2f*     ST_STUFF_ENDMARKER_
@@ -421,11 +421,11 @@ Module: main.obj(main.ASM)
 0000:6c8a      makethreecharint_
 0000:5e80*     G_SetGameKeyUp_
 0000:6a96      locallib_printhex_
-0000:5aa7*     D_MAIN_STARTMARKER_
 0000:6a89      locallib_putchar_
 0000:6bce*     locallib_printstringnear_
 0000:6488      M_LoadDefaults_
 0000:6885*     I_UpdateBox_
+0000:5aa7*     D_MAIN_STARTMARKER_
 0000:6d2e      D_Display_
 0000:5b65      I_KeyboardISR_
 0000:662e      M_ScanTranslateDefaults_
@@ -442,9 +442,9 @@ Module: main.obj(main.ASM)
 0000:6a56      copystr8_
 0000:6663      M_SaveDefaults_
 0000:5b16      cht_GetParam_
-0000:692d*     I_FinishUpdate_
 0000:6a6f*     locallib_createhexnibble_
 0000:6baa      locallib_strncasecmp_
+0000:692d*     I_FinishUpdate_
 0000:6bde      locallib_printf_
 0000:5b97      I_StartTic_
 0000:6b8e      locallib_strlwr_
@@ -888,4 +888,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  ffb0 (65456.)
 Entry point address: 0000:c2ee
-Link time: 00:00.74
+Link time: 00:00.75

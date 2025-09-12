@@ -41,7 +41,7 @@
 // round up a segment if necessary. convert size to segments
 #define MAKE_FULL_SEGMENT(a, b)  ((int32_t)a + ((((int32_t)b + 0x0F) >> 4) << 16))
 
-#define FIXED_DS_SEGMENT  0x3D00
+#define FIXED_DS_SEGMENT  0x3D40
 
 // ALLOCATION DEFINITIONS: UPPER MEMORY
 
@@ -50,8 +50,8 @@
 #define bsp_code_segment  EMS_PAGE_SEGMENT + 0x0C00
 #define bsp_code_area     ((byte __far*)(((uint32_t)bsp_code_segment) << 16))
 
-
-#define baselowermemoryaddress    (0x21DF0000)
+// todo generate this programatically
+#define baselowermemoryaddress    (0x221F0000)
 // MaximumMusDriverSize
 
 #define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
@@ -1101,7 +1101,7 @@ patchoffset                 83BD:01DC
 // lazily assign worst case and make it always fit.
 // It fails filling in the allotted space by only 32 bytes.
 // so shift the middle element (spritewidths)  by 32 bytes at runtime.
-// this means spritewidths is a variable and not a constant, 
+// this means spritewidths segment is a variable and not a constant, 
 // but it also means the ultimate doom version will work with either wad
 
 #define FLAT_CACHE_BASE_SEGMENT  0x7000

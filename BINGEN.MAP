@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/12 09:08:01
+Created on:       25/09/12 09:47:44
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -355,9 +355,9 @@ Module: am_map.obj(am_map.ASM)
 Module: st_stuff.obj(st_stuff.ASM)
 0000:61bc*     ST_updateFaceWidget_
 0000:604d      _oldweaponsowned
-0000:64ec*     STlib_drawNum_
 0000:60be      _w_keyboxes
 0000:5fe8      _armsbg
+0000:64ec*     STlib_drawNum_
 0000:5fca      _arms
 0000:6056      _keyboxes
 0000:65d7*     ST_drawWidgets_
@@ -386,8 +386,8 @@ Module: st_stuff.obj(st_stuff.ASM)
 0000:5fb6      _tallnum
 0000:667f      ST_Responder_
 0000:6143      _st_statusbaron
-0000:644f*     STlib_updateflag_
 0000:6040      _keys
+0000:644f*     STlib_updateflag_
 0000:5f9e      _st_oldhealth
 0000:5f98*     ST_STUFF_STARTMARKER_
 0000:698f*     ST_STUFF_ENDMARKER_
@@ -500,11 +500,11 @@ Module: main.obj(main.ASM)
 0000:96c6      makethreecharint_
 0000:88bc*     G_SetGameKeyUp_
 0000:94d2      locallib_printhex_
-0000:84e3*     D_MAIN_STARTMARKER_
 0000:94c5      locallib_putchar_
 0000:960a*     locallib_printstringnear_
 0000:8ec4      M_LoadDefaults_
 0000:92c1*     I_UpdateBox_
+0000:84e3*     D_MAIN_STARTMARKER_
 0000:976a      D_Display_
 0000:85a1      I_KeyboardISR_
 0000:906a      M_ScanTranslateDefaults_
@@ -521,9 +521,9 @@ Module: main.obj(main.ASM)
 0000:9492      copystr8_
 0000:909f      M_SaveDefaults_
 0000:8552      cht_GetParam_
-0000:9369*     I_FinishUpdate_
 0000:94ab*     locallib_createhexnibble_
 0000:95e6      locallib_strncasecmp_
+0000:9369*     I_FinishUpdate_
 0000:961a      locallib_printf_
 0000:85d3      I_StartTic_
 0000:95ca      locallib_strlwr_
@@ -720,16 +720,16 @@ Module: m_menu.obj(m_menu.ASM)
 0e37:12d5*     M_MakeSaveGameName_
 0e37:0375*     M_DrawLoad_
 0e37:0438*     M_LoadGame_
-0e37:0d61      M_Responder_
 0e37:051a*     M_DoSave_
+0e37:0d61      M_Responder_
 0e37:07d4*     S_SetSfxVolume_
 0e37:076f*     M_DrawSound_
 0e37:0a79*     M_ReadThis2_
 0e37:081d*     S_SetMusicVolume_
 0e37:08d3*     M_ChooseSkill_
 0e37:089b*     M_DrawEpisode_
-0e37:09d7*     M_Options_
 0e37:0c2b*     M_StartMessage_
+0e37:09d7*     M_Options_
 0e37:05a3*     M_SaveGame_
 0e37:075e*     M_DrawReadThisRetail_
 0e37:1377*     M_strcpy_
@@ -744,14 +744,14 @@ Module: m_menu.obj(m_menu.ASM)
 0e37:0854*     M_DrawNewGame_
 0e37:07a7*     M_Sound_
 0e37:1062      M_Drawer_
+0e37:0cd7*     M_WriteText_
 0e37:13b7*     M_Z_QuickmapStatus_
 0e37:0a60*     M_ReadThis_
-0e37:0cd7*     M_WriteText_
 0e37:0916*     M_Episode_
 0e37:0605*     M_QuickSave_
 0e37:09fd*     M_EndGameResponse_
-0e37:0449*     M_ReadSaveStrings_
 0e37:07b9*     M_SfxVol_
+0e37:0449*     M_ReadSaveStrings_
 0e37:0b9c*     M_SizeDisplay_
 0e37:11a2      M_Init_
 0e37:1044      M_StartControlPanel_
@@ -865,8 +865,8 @@ Module: r_bsp16.obj(r_bsp16.ASM)
 141f:3790      R_BSP16_STARTMARKER_
 141f:6bdd      R_WriteBackViewConstants16_
 141f:66a1      R_GetPatchTexture_Far16_
-141f:6f17      R_BSP16_ENDMARKER_
 141f:673c      R_GetCompositeTexture_Far16_
+141f:6f17      R_BSP16_ENDMARKER_
 Module: r_bsp0.obj(r_bsp0.ASM)
 1b11:36b9      R_BSP0_ENDMARKER_
 1b11:2e4b      R_GetPatchTexture_Far0_
@@ -911,8 +911,8 @@ Module: r_span16.obj(r_span16.ASM)
 21e2:41b7      R_DrawPlanes16_
 Module: r_span0.obj(r_span0.ASM)
 21e2:4734*     R_DrawSpan0_
-21e2:4879      R_DrawPlanes0_
 21e2:4d72      R_SPAN0_ENDMARKER_
+21e2:4879      R_DrawPlanes0_
 21e2:4cd6      R_WriteBackViewConstantsSpan0_
 21e2:4734      R_SPAN0_STARTMARKER_
 Module: r_spanfl.obj(r_spanfl.ASM)
@@ -948,8 +948,8 @@ Module: r_mask16.obj(r_mask16.ASM)
 21e2:7d82      R_MASK16_STARTMARKER_
 Module: r_mask0.obj(r_mask0.ASM)
 21e2:afe2      R_WriteBackViewConstantsMasked0_
-21e2:9772      R_MASK0_STARTMARKER_
 21e2:b0cd      R_MASK0_ENDMARKER_
+21e2:9772      R_MASK0_STARTMARKER_
 21e2:abc3      R_DrawMasked0_
 21e2:b06f      R_WriteBackMaskedFrameConstants0_
 Module: r_maskfl.obj(r_maskfl.ASM)
@@ -1041,8 +1041,8 @@ Module: p_pspr.obj(p_pspr.ASM)
 2e81:3f7f*     A_CloseShotgun2_
 2e81:38f2      P_BringUpWeapon_
 Module: p_enemy.obj(p_enemy.ASM)
-2e81:52df*     A_FatRaise_
 2e81:55d6*     A_Explode_
+2e81:52df*     A_FatRaise_
 2e81:41db      P_NoiseAlert_
 2e81:5918*     A_SpawnFly_
 2e81:4948*     A_PosAttack_
@@ -1069,13 +1069,13 @@ Module: p_enemy.obj(p_enemy.ASM)
 2e81:5569*     A_Scream_
 2e81:41ec*     P_CheckMeleeRange_
 2e81:56fe*     A_Hoof_
-2e81:4129*     P_RecursiveSound_
 2e81:5369*     A_FatAttack2_
+2e81:4129*     P_RecursiveSound_
 2e81:52ea*     A_FatAttack3_
 2e81:4c45*     A_SkelMissile_
 2e81:534e*     A_FatAttack1_
-2e81:5712*     A_BabyMetal_
 2e81:46df*     A_Look_
+2e81:5712*     A_BabyMetal_
 2e81:5912*     A_SpawnSound_
 2e81:4c07*     A_BruisAttack_
 2e81:55b5*     A_XScream_
@@ -1160,8 +1160,8 @@ Module: p_lights.obj(p_lights.ASM)
 2e81:6f84      T_StrobeFlash_
 2e81:6ea6      T_FireFlicker_
 Module: p_plats.obj(p_plats.ASM)
-2e81:713e      T_PlatRaise_
 2e81:71f2      EV_DoPlat_
+2e81:713e      T_PlatRaise_
 2e81:7379      P_AddActivePlat_
 2e81:7391*     P_RemoveActivePlat_
 2e81:73c1*     P_PLATS_ENDMARKER_
@@ -1524,4 +1524,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003dee0 (253664.)
 Entry point address: 3744:0be6
-Link time: 00:00.04
+Link time: 00:00.49
