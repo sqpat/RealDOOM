@@ -280,7 +280,6 @@ mov     bx, OFFSET str_doom1filename_
 mov     dx, ss
 lea     ax, [bp - 20]
 call    locallib_strcpy_
-call    check_is_ultimate_
 jmp     foundfile
 no_doom1_present:
 

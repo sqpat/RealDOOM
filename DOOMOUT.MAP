@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/12 16:02:30
+Created on:       25/09/12 16:06:28
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -26,9 +26,9 @@ Segment                Class          Group          Address         Size
 
 m_near_TEXT            CODE           AUTO           0000:0000       00000000
 d_init_TEXT            CODE           AUTO           0000:0000       00000357
-D_INITA_TEXT           CODE           AUTO           0000:0358       000006b0
-ST_INIT_TEXT           CODE           AUTO           0000:0a08       00000203
-R_INIT_TEXT            CODE           AUTO           0000:0c0c       000007b0
+D_INITA_TEXT           CODE           AUTO           0000:0358       000006ad
+ST_INIT_TEXT           CODE           AUTO           0000:0a06       00000203
+R_INIT_TEXT            CODE           AUTO           0000:0c0a       000007b0
 w_init_TEXT            CODE           AUTO           0000:13c0       00000285
 I_INIT_TEXT            CODE           AUTO           0000:1646       000001b9
 z_init_TEXT            CODE           AUTO           0000:1800       00000a3b
@@ -179,18 +179,18 @@ Module: d_init.obj(C:\REALDOOM\d_init.c)
 0000:02ec      G_TimeDemo_
 0000:0310      check_is_ultimate_
 Module: d_inita.obj(d_inita.ASM)
-0000:0a08*     D_INIT_ENDMARKER_
+0000:0a05*     D_INIT_ENDMARKER_
 0000:0604*     D_INIT_STARTMARKER_
 0000:0616      D_DoomMain2_
-0000:089d      D_DoomMain3_
+0000:089a      D_DoomMain3_
 Module: st_init.obj(st_init.ASM)
-0000:0a08*     ST_INIT_STARTMARKER_
-0000:0c0b*     ST_INIT_ENDMARKER_
-0000:0aab      ST_Init_
+0000:0a06*     ST_INIT_STARTMARKER_
+0000:0c09*     ST_INIT_ENDMARKER_
+0000:0aa9      ST_Init_
 Module: r_init.obj(r_init.ASM)
-0000:11fd      R_Init_
-0000:0c96*     R_GenerateLookup_
-0000:1371*     W_CacheLumpNumDirectSmall_
+0000:11fb      R_Init_
+0000:0c94*     R_GenerateLookup_
+0000:136f*     W_CacheLumpNumDirectSmall_
 Module: w_init.obj(C:\REALDOOM\w_init.c)
 0000:13c0      W_AddFile_
 Module: i_init.obj(i_init.ASM)
@@ -885,4 +885,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  faa0 (64160.)
 Entry point address: 0000:c0ac
-Link time: 00:00.19
+Link time: 00:00.75
