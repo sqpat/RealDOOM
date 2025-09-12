@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/12 11:50:33
+Created on:       25/09/12 12:08:00
 Executable Image: codegen.exe
 creating a DOS executable
 
@@ -72,15 +72,15 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:bc04*     _wminfo
 02d1:bc19*     _TS_TimesInInterrupt
 02d1:bc1a*     _mousebforward
-02d1:bc1b*     _mousebfire
-02d1:bc1c*     _d_episode
-02d1:bc1d*     _secretexit
-02d1:bc1e*     _turnheld
-02d1:bc1f*     _d_skill
-02d1:bc20*     _d_map
-02d1:bc21*     _mousebstrafe
-02d1:bc22*     _usemouse
-02d1:bc23*     _key_speed
+02d1:bc1b*     _key_speed
+02d1:bc1c*     _mousebfire
+02d1:bc1d*     _d_episode
+02d1:bc1e*     _secretexit
+02d1:bc1f*     _turnheld
+02d1:bc20*     _d_skill
+02d1:bc21*     _d_map
+02d1:bc22*     _mousebstrafe
+02d1:bc23*     _usemouse
 02d1:bc24*     _key_left
 02d1:bc25*     _timingdemo
 02d1:bc26*     _key_fire
@@ -94,7 +94,7 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:bc2e*     _key_use
 02d1:bc2f*     _key_right
 02d1:bc30*     _key_strafeleft
-02d1:bc31*     _novideo
+02d1:bc31*     _eventtail
 02d1:8e50*     _singletics
 02d1:8e54*     _P_SpawnMapThing
 02d1:8e58*     _R_WriteBackViewConstantsSpanCall
@@ -123,7 +123,7 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:8eb5*     _sfx_priority
 02d1:8f22*     _FORCE_5000_LUMP_LOAD
 02d1:8f24*     _lastpcspeakernotevalue
-02d1:bc32*     _eventtail
+02d1:bc32*     _novideo
 02d1:bc33*     _startmap
 02d1:bc34*     _autostart
 02d1:bc35*     _startskill

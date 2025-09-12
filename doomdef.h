@@ -50,14 +50,7 @@ enum { VERSION =  109 };
 // MAIN FEATURE FLAGS
 
 // Prints startup messages. Good for development, turn off to save a little bit of binary size (~2k)
-#define DEBUG_PRINTING 1
-
-#if DEBUG_PRINTING
-    void __far DEBUG_PRINT (int8_t __far*error, ...);
-#else
-    //void __far DEBUG_PRINT (int8_t *error, ...);
-	#define DEBUG_PRINT(...)
-#endif
+void __far DEBUG_PRINT (int8_t __far*error, ...);
 
 // Print player fields by tic to file. useful for debugging 16 vs 32 bit demo playback
 //#define DEBUGLOG_TO_FILE

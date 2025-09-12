@@ -218,7 +218,7 @@ byte __far *__near Z_InitEMS() {
 	int16_t pagestotal, pagesavail;
 	int16_t errorreg;
 	uint8_t vernum;
-	DEBUG_PRINT("  Checking EMS...");
+	DEBUG_PRINT_NOARG("  Checking EMS...");
 
 	// used:
 	/*
@@ -670,19 +670,19 @@ void __near Z_LoadBinaries() {
 	
 	//1507
 	fread(mobjinfo, sizeof(mobjinfo_t), NUMMOBJTYPES, fp);
-	DEBUG_PRINT(".");
+	DEBUG_PRINT_NOARG(".");
 
 	//5802
 	locallib_far_fread(states, sizeof(state_t) * NUMSTATES, fp);
-	DEBUG_PRINT(".");
+	DEBUG_PRINT_NOARG(".");
 
 	//1280
 	locallib_far_fread(gammatable, 5 * 256, fp);
-	DEBUG_PRINT(".");
+	DEBUG_PRINT_NOARG(".");
 
 	//40960
 	locallib_far_fread(finesine, 4 * 10240u, fp);
-	DEBUG_PRINT(".");
+	DEBUG_PRINT_NOARG(".");
 
 	Z_QuickMapRender();
 
@@ -696,7 +696,7 @@ void __near Z_LoadBinaries() {
 	Z_QuickMapVisplanePage(4, 2);
 	FAR_memset(visplanes_8800, 0x00,   0x8000);
 
-	DEBUG_PRINT(".");
+	DEBUG_PRINT_NOARG(".");
 	Z_QuickMapPhysics();
 
 	//274
@@ -783,7 +783,7 @@ void __near Z_LoadBinaries() {
 
 
 
-	DEBUG_PRINT("..");
+	DEBUG_PRINT_NOARG("..");
 
 	// manual runtime linking. these are all called from other segments in externalized code and need their addresses in constant variable locatioons
  

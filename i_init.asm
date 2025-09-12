@@ -24,7 +24,7 @@ EXTRN fseek_:FAR
 EXTRN fopen_:FAR
 EXTRN fclose_:FAR
 EXTRN locallib_far_fread_:FAR
-EXTRN DEBUG_PRINT_:FAR
+EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
 EXTRN M_CheckParm_:NEAR
 EXTRN TS_Dispatch_:NEAR
 EXTRN TS_ScheduleMainTask_:NEAR
@@ -93,10 +93,9 @@ mov  dx, cs
 call M_CheckParm_
 mov  byte ptr ds:[_novideo], al
 
-push cs
+
 mov  ax,  OFFSET str_startup_mouse
-push ax
-call DEBUG_PRINT_
+call DEBUG_PRINT_NOARG_CS_
 
 
 ;call I_StartupMouse_
@@ -114,7 +113,7 @@ je   exit_startup_mouse
 
 int  033h
 
-push cs
+
 cmp  ax, -1
 mov  ax, OFFSET str_mousenotpresent
 jne   mouse_not_present
@@ -122,15 +121,12 @@ jne   mouse_not_present
 mov  ax, OFFSET str_mousedetected
 mov  byte ptr ds:[_mousepresent], 1
 mouse_not_present:
-push ax
-call DEBUG_PRINT_
+call DEBUG_PRINT_NOARG_CS_
 
 exit_startup_mouse:
 
-push cs
 mov  ax,  OFFSET str_startup_keyboard
-push ax
-call DEBUG_PRINT_
+call DEBUG_PRINT_NOARG_CS_
 
 
 
@@ -147,10 +143,9 @@ mov   dx, OFFSET I_KeyboardISR_
 call  locallib_dos_setvect_
 
 
-push cs
+
 mov  ax,  OFFSET str_startup_sound
-push ax
-call DEBUG_PRINT_
+call DEBUG_PRINT_NOARG_CS_
 
 ;call I_StartupSound_
 ;inlined
@@ -290,10 +285,9 @@ done_setting_up_mus_driver:
 ; I_StartupTimer():
 ; fall thru. inlined only use
 
-push     cs
+
 mov      ax, OFFSET _startuptimer_string
-push     ax
-call     DEBUG_PRINT_
+call     DEBUG_PRINT_NOARG_CS_
 
 call     TS_ScheduleMainTask_
 call     TS_Dispatch_

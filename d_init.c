@@ -228,7 +228,6 @@ void __near D_DrawTitle(int8_t __near *string){
 // D_RedrawTitle
 //
 
-#if DEBUG_PRINTING
 
 void __near D_RedrawTitle(int8_t __near *title) {
 	int16_t_union columnrow;
@@ -245,7 +244,6 @@ void __near D_RedrawTitle(int8_t __near *title) {
 	//Restore old cursor pos
 	D_SetCursorPosition(columnrow.h);
 }
-#endif
  
  
 
@@ -727,10 +725,8 @@ void    __near P_UpdateSpecials (void);
 void __far D_DoomMain2(void) {
 	int16_t             p;
 	int8_t                    file[256];
-#if DEBUG_PRINTING
 	int8_t          textbuffer[280]; // must be 276 to fit the 3 line titles
 	int8_t            title[128];
-#endif
 	int8_t            wadfile[20];
 	#define DGROUP_SIZE 0x2250
 
@@ -966,7 +962,7 @@ R_PointToAngle(y, x);
 		goto foundfile;
 	}
 
-	DEBUG_PRINT("Game mode indeterminate.\n");
+	DEBUG_PRINT_NOARG("Game mode indeterminate.\n");
 	exit(1);
 
 	foundfile:
@@ -989,7 +985,6 @@ R_PointToAngle(y, x);
 	}
 
 
-#if DEBUG_PRINTING
 
 	if (!commercial) {
 		memcpy(title, "                        ", 30);
@@ -1028,8 +1023,7 @@ R_PointToAngle(y, x);
 
 	
 
-	DEBUG_PRINT("\nP_Init: Checking cmd-line parameters...");
-#endif
+	DEBUG_PRINT_NOARG("\nP_Init: Checking cmd-line parameters...");
 
 
 	// turbo option
@@ -1118,61 +1112,59 @@ R_PointToAngle(y, x);
 	// init subsystems
 
 
-	DEBUG_PRINT("\nZ_InitEMS: Initialize EMS memory regions.");
+	DEBUG_PRINT_NOARG("\nZ_InitEMS: Initialize EMS memory regions.");
 	Z_InitEMS();
 
-	DEBUG_PRINT("\nW_Init: Init WADfiles.");
+	DEBUG_PRINT_NOARG("\nW_Init: Init WADfiles.");
 	numlumps = 0;
 	W_AddFile(wadfile);
 	if (file[0]){
 		W_AddFile(file);
 	}
 
-	DEBUG_PRINT("\nZ_GetEMSPageMap: Init EMS 4.0 features.");
+	DEBUG_PRINT_NOARG("\nZ_GetEMSPageMap: Init EMS 4.0 features.");
 	Z_GetEMSPageMap();
 
-	DEBUG_PRINT("\nM_LoadDefaults	: Load system defaults.");
+	DEBUG_PRINT_NOARG("\nM_LoadDefaults	: Load system defaults.");
 	M_LoadDefaults();              // load before initing other systems
 
-	DEBUG_PRINT("\nZ_LoadBinaries: Load game code into memory");
+	DEBUG_PRINT_NOARG("\nZ_LoadBinaries: Load game code into memory");
 	Z_LoadBinaries();
 
 	M_ScanTranslateDefaults();
 
 	// init subsystems
-	DEBUG_PRINT("\nD_InitStrings: loading text.");
+	DEBUG_PRINT_NOARG("\nD_InitStrings: loading text.");
 	D_InitStrings();
 
 
 	// Check for -file in shareware
-	#if DEBUG_PRINTING
 	if (registered) {
 		getStringByIndex(VERSION_REGISTERED, textbuffer);
-		DEBUG_PRINT(textbuffer);
+		DEBUG_PRINT_NOARG(textbuffer);
 		D_RedrawTitle(title);
 		getStringByIndex(NOT_SHAREWARE, textbuffer);
-		DEBUG_PRINT(textbuffer);
+		DEBUG_PRINT_NOARG(textbuffer);
 		D_RedrawTitle(title);
 	}
 	if (shareware) {
 		getStringByIndex(VERSION_SHAREWARE, textbuffer);
-		DEBUG_PRINT(textbuffer);
+		DEBUG_PRINT_NOARG(textbuffer);
 		D_RedrawTitle(title);
 	}
 	if (commercial) {
 		getStringByIndex(VERSION_COMMERCIAL, textbuffer);
-		DEBUG_PRINT(textbuffer);
+		DEBUG_PRINT_NOARG(textbuffer);
 		D_RedrawTitle(title);
 
 		getStringByIndex(DO_NOT_DISTRIBUTE, textbuffer);
-		DEBUG_PRINT(textbuffer);
+		DEBUG_PRINT_NOARG(textbuffer);
 		D_RedrawTitle(title);
 	}
 
 	getStringByIndex(M_INIT_TEXT_STR, textbuffer);
-	DEBUG_PRINT(textbuffer);
+	DEBUG_PRINT_NOARG(textbuffer);
 	D_RedrawTitle(title);
-	#endif
 	Z_QuickMapMenu();
 	M_Init();
 	Z_QuickMapPhysics();
@@ -1181,50 +1173,38 @@ R_PointToAngle(y, x);
 	//I_Error("\n%u %u %hhi %s", stringoffsets[E3TEXT], stringoffsets[E3TEXT + 1] - stringoffsets[E3TEXT], textbuffer[0], textbuffer);
 
 
-#if DEBUG_PRINTING
 	getStringByIndex(R_INIT_TEXT_STR, textbuffer);
-	DEBUG_PRINT(textbuffer);
+	DEBUG_PRINT_NOARG(textbuffer);
 	D_RedrawTitle(title);
-#endif
 	//DUMP_MEMORY_TO_FILE();
 	R_Init();
 
 
-#if DEBUG_PRINTING
 	getStringByIndex(P_INIT_TEXT_STR, textbuffer);
-	DEBUG_PRINT(textbuffer);
+	DEBUG_PRINT_NOARG(textbuffer);
 	D_RedrawTitle(title);
-#endif
 	P_Init();
 
 
-#if DEBUG_PRINTING
 	getStringByIndex(I_INIT_TEXT_STR, textbuffer);
-	DEBUG_PRINT(textbuffer);
+	DEBUG_PRINT_NOARG(textbuffer);
 	D_RedrawTitle(title);
-#endif
 	I_Init();
 	maketic = 0;
 
-#if DEBUG_PRINTING
 	getStringByIndex(S_INIT_STRING_TEXT, textbuffer);
-	DEBUG_PRINT(textbuffer);
+	DEBUG_PRINT_NOARG(textbuffer);
 	D_RedrawTitle(title);
-#endif
 	S_Init();
 
-#if DEBUG_PRINTING
 	getStringByIndex(HU_INIT_TEXT_STR, textbuffer);
-	DEBUG_PRINT(textbuffer);
+	DEBUG_PRINT_NOARG(textbuffer);
 	D_RedrawTitle(title);
-#endif
 	HU_Init();
 
-#if DEBUG_PRINTING
 	getStringByIndex(ST_INIT_TEXT_STR, textbuffer);
-	DEBUG_PRINT(textbuffer);
+	DEBUG_PRINT_NOARG(textbuffer);
 	D_RedrawTitle(title);
-#endif
 	ST_Init();
 
 	// moving this here. We want to load automap related wad lumps into physics ems pages now rather than lazily load it where pages are in a dynamic state.

@@ -78,10 +78,8 @@ void R_InitSpriteLumps(void) {
 		column_t    __far * column;
 		uint16_t    pixelsize = 0;
 		
-#if DEBUG_PRINTING
 		if (!(i & 63))
 			DEBUG_PRINT(".");
-#endif
 		Z_QuickMapScratch_5000();
 
 		W_CacheLumpNumDirect(firstspritelump + i, SCRATCH_ADDRESS_5000);

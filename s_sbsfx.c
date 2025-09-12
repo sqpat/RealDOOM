@@ -1922,16 +1922,16 @@ void __far  SB_StartInit(){
 
     if (SB_InitCard() == SB_OK){
         if (SB_SetupPlayback() == SB_OK){
-            DEBUG_PRINT("Sound Blaster SFX Engine Initailized!..\n");
+            DEBUG_PRINT_NOARG("Sound Blaster SFX Engine Initailized!..\n");
 
         } else {
-            DEBUG_PRINT("\nSB INIT Error A\n");
+            DEBUG_PRINT_NOARG("\nSB INIT Error A\n");
             snd_SfxDevice = snd_none;
 
         }
 
     } else {
-        DEBUG_PRINT("\nSB INIT Error B\n");
+        DEBUG_PRINT_NOARG("\nSB INIT Error B\n");
         snd_SfxDevice = snd_none;
     }
 

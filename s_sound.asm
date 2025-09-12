@@ -32,8 +32,8 @@ EXTRN fseek_:FAR
 EXTRN fread_:FAR
 EXTRN fclose_:FAR
 
-; todo only include if necessary via flags...
-EXTRN DEBUG_PRINT_:FAR
+
+
 EXTRN TS_Dispatch_:NEAR
 EXTRN TS_ScheduleMainTask_:NEAR
 

@@ -46,8 +46,7 @@ EXTRN fputc_:FAR
 EXTRN fclose_:FAR
 ;EXTRN locallib_putchar_:NEAR
 
-; todo only include if necessary via flags...
-;EXTRN DEBUG_PRINT_:FAR
+
 
 EXTRN I_WaitVBL_:FAR
 EXTRN Z_QuickMapPalette_:FAR
@@ -1383,11 +1382,9 @@ loop loop_copy_new_defaults_filename
 done_copying_new_defaults_filename:
 
 ;mov   ax, OFFSET _str_default_file
-;push  cs
-;push  ax                            ; a little roundabout. i think we could copy to CS first, then join with the other branch 
 ;call  DEBUG_PRINT_
+;add   sp, 4
 
-add   sp, 4 ; todo what the heck
 
 
 
@@ -3427,7 +3424,7 @@ jmp   done_with_gs_level_case
 
 ENDP
 
-PROC    DEBUG_PRINT_ FAR
+PROC    DEBUG_PRINT_ NEAR
 PUBLIC  DEBUG_PRINT_
 
 
@@ -3442,7 +3439,7 @@ call locallib_printf_
 pop  bp
 pop  dx
 pop  bx
-retf 
+ret
 
 
 ENDP
