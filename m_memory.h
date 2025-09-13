@@ -350,7 +350,7 @@ scantokey            3194:0000
 // #define ammnumpatchoffsets ((uint16_t __near* )          (((uint16_t)ammnumpatchbytes) + 0x020C))
 // #define doomednum          ((int16_t __near* )           ((doomednum_segment - FIXED_DS_SEGMENT) << 4))
 // #define linespeciallist    ((int8_t __near* )            ((linespeciallist_segment - FIXED_DS_SEGMENT) << 4))
-// #define font_widths        ((int8_t __near* )            ((font_widths_segment - FIXED_DS_SEGMENT) << 4))
+#define font_widths        ((int8_t __near* )            ((font_widths_segment - FIXED_DS_SEGMENT) << 4))
 
 
 

@@ -3050,25 +3050,7 @@ ENDP
 
 
 
-PROC    makethreecharint_ NEAR
-PUBLIC  makethreecharint_
 
-push    bx
-mov     bx, dx                      
-mov     dh, 10                    
-div     dh                        
-mov     dl, ah                      ; store 3rd digit
-add     dl, '0'                     ; piggyback on div queue fill
-xor     ah, ah                      ; clear for divide
-div     dh                          ;  23 ->   2  1 
-xor     dh, dh                      ; null terminate
-add     ax, 03030h  ; '0' '0'
-mov     word ptr ds:[bx], ax        
-mov     word ptr ds:[bx+2], dx      
-pop     bx
-
-ret
-ENDP
 
 ; todo these can move to init code and get safely clobbered?
 

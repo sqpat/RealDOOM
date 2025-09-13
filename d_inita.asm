@@ -37,6 +37,7 @@ EXTRN Z_QuickMapMenu_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
 EXTRN Z_LoadBinaries_:NEAR
 EXTRN Z_SetOverlay_:FAR
+EXTRN Z_QuickMapStatus_:FAR
 
 
 EXTRN I_Error_:FAR
@@ -47,7 +48,7 @@ EXTRN M_ScanTranslateDefaults_:NEAR
 EXTRN P_Init_:NEAR
 EXTRN I_Init_:NEAR
 EXTRN R_Init_:NEAR
-EXTRN HU_Init_:NEAR
+
 EXTRN ST_Init_:NEAR
 EXTRN SB_StartInit_:NEAR
 
@@ -125,6 +126,9 @@ str_z_init_ems:
 db 0Ah, "Z_InitEMS: Initialize EMS memory regions.", 0
 str_w_init:
 db 0Ah, "W_Init: Init WADfiles.", 0
+
+str_hu_init_font_lump:
+db "STCFN033", 0
 
 COMMENT @
 str_title_plutonia:
@@ -917,7 +921,58 @@ skip_sb_init:
 
 mov   ax, HU_INIT_TEXT_STR
 call  DoPrintChain_
-call  HU_Init_
+;call  HU_Init_
+; inlined
+
+call  Z_QuickMapStatus_
+
+xor  si, si ; runningoffset = 0
+mov  di, si ; loop index
+loop_load_next_fontchar:
+
+mov   ax, OFFSET str_hu_init_font_lump
+mov   dx, cs
+call W_CheckNumForNameFarString_
+
+mov   bx, ax ; store
+call  W_LumpLength_
+
+
+sub   si, ax    ; runningoffset -= size;
+mov   ax, si    
+
+shl   di, 1
+mov   word ptr ds:[_hu_font + di], ax           ; hu_font[i] = runningoffset;
+shr   di, 1
+
+mov   cx, ST_GRAPHICS_SEGMENT
+xchg  ax, bx  ; size/lump trade
+call  W_CacheLumpNumDirect_  ;		W_CacheLumpNumDirect(lump, (byte __far*)(MK_FP(ST_GRAPHICS_SEGMENT, hu_font[i])));
+
+;		font_widths_far[i] = (((patch_t __far *)MK_FP(ST_GRAPHICS_SEGMENT, hu_font[i]))->width);
+
+mov   cx, ST_GRAPHICS_SEGMENT
+mov   es, cx
+mov   ax, word ptr es:[si + PATCH_T.patch_width] 
+
+FONT_WIDTHS_NEAR = (FONT_WIDTHS_SEGMENT - FIXED_DS_SEGMENT) SHL 4
+
+mov   byte ptr ds:[FONT_WIDTHS_NEAR + di], al
+
+inc   di
+
+inc  byte ptr cs:[str_hu_init_font_lump+7] 
+cmp  byte ptr cs:[str_hu_init_font_lump+7], '9'
+jbe  dont_adjust_tens
+inc  byte ptr cs:[str_hu_init_font_lump+6]
+mov  byte ptr cs:[str_hu_init_font_lump+7], '0'
+dont_adjust_tens:
+cmp  word ptr cs:[str_hu_init_font_lump+6], 03539h  ; '9' and '5' chars. stop condition is 63 in, after "033" thru "095" patches have been loaded
+jne  loop_load_next_fontchar
+
+call   Z_QuickMapPhysics_
+
+
 
 mov   ax, ST_INIT_TEXT_STR
 call  DoPrintChain_
@@ -1162,6 +1217,26 @@ dont_set_ultimate_true:
 LEAVE_MACRO
 ret
 
+ENDP
+
+
+PROC    makethreecharint_ NEAR
+
+push    bx
+mov     bx, dx                      
+mov     dh, 10                    
+div     dh                        
+mov     dl, ah                      ; store 3rd digit
+add     dl, '0'                     ; piggyback on div queue fill
+xor     ah, ah                      ; clear for divide
+div     dh                          ;  23 ->   2  1 
+xor     dh, dh                      ; null terminate
+add     ax, 03030h  ; '0' '0'
+mov     word ptr ds:[bx], ax        
+mov     word ptr ds:[bx+2], dx      
+pop     bx
+
+ret
 ENDP
 
 

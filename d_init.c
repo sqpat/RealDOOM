@@ -267,6 +267,7 @@ void __near D_RedrawTitle(int8_t __near *title) {
 
 void __near makethreecharint(int16_t j, char __near *str );
 
+/*
 
 
 void __near HU_Init(void){
@@ -316,7 +317,6 @@ int16_t   I_GetSfxLumpNum(sfxenum_t sfx);
 // Sets channels, SFX and music volume,
 //  allocates channel buffer, sets S_sfx lookup.
 //
-/*
 
 void  __near S_Init () {
 
