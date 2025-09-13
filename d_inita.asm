@@ -54,7 +54,6 @@ EXTRN DEBUG_PRINT_NOARG_:NEAR
 EXTRN DEBUG_PRINT_:NEAR
 EXTRN M_CheckParm_CS_:NEAR
 EXTRN combine_strings_:NEAR
-EXTRN D_DrawTitle_:NEAR
 EXTRN check_is_ultimate_:NEAR
 EXTRN locallib_strcpy_:NEAR
 
@@ -341,6 +340,7 @@ mov   si, OFFSET str_title_normal
 cmp   byte ptr ds:[_is_ultimate], al ; just made 0 
 je    not_ultimate_title_
 mov   si, OFFSET str_title_ultimate
+mov   byte ptr cs:[SELFMODIFY_set_ultimate_color+1], 120
 not_ultimate_title_:
 push  cs
 push  si
@@ -407,8 +407,6 @@ cwd
 mov   bx, 0
 int   010h    ;  set video mode?
 
-mov   dx, word ptr ds:[_SECTORS_SEGMENT_PTR]
-xor   ax, ax
 call  D_DrawTitle_
 
 mov   ax, OFFSET str_P_Init
@@ -711,6 +709,65 @@ ret
 
 ENDP
 
+PROC  D_DrawTitle_ NEAR
+
+PUSHA_NO_AX_MACRO
+
+mov   ax, 0300h
+xor   bx, bx
+int   010h               ; get cursor position
+push  dx ; store old pos
+
+mov   ax, 0200h
+cwd   ; zero for column pos 0
+xor   bx, bx
+int   010h               ; set cursor position (to 0 to redraw title above potentially scrolled text)
+
+
+xor   ax, ax
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+mov   si, ax  ; string pos
+mov   di, ax  ; column
+
+
+loop_next_char:
+lods  byte ptr es:[si]
+test  al, al
+je    end_of_string
+;locallib_int86_10_4args(0x900 + string[i], 0, COLOR, 1);
+mov   ah, 9
+cwd   ; zero dx
+SELFMODIFY_set_ultimate_color:
+db    0BBh, 116, 00  ; mov   bx, 116 . selfmodified to 120 if ultimate.
+mov   cx, 1
+int   010h
+
+inc   di ; column
+cmp   di, 80
+jl    dont_dec_column
+xor   di, di
+dont_dec_column:
+;call  D_SetCursorPosition_  ; update cursor position
+mov   ax, 0200h
+mov   dx, di
+xor   bx, bx
+int   010h
+
+jmp   loop_next_char
+
+end_of_string:
+
+
+;call  D_SetCursorPosition_  ; restore cursor position
+mov   ax, 0200h
+pop   dx   ; restore old pos
+xor   bx, bx
+int   010h
+
+POPA_NO_AX_MACRO
+
+ret
+ENDP
 
 
 PROC    DoPrintChain_ NEAR
@@ -726,26 +783,10 @@ mov   dx, ss
 call  DEBUG_PRINT_NOARG_
 ;call  D_RedrawTitle_  ; inlined
 
-mov   ax, 0300h
-xor   bx, bx
-int   10h               ; get cursor position
-push  dx ; store old pos
 
-mov   ax, 0200h
-cwd   ; zero for column pos 0
-xor   bx, bx
-int   10h               ; set cursor position (to 0 to redraw title above potentially scrolled text)
-
-mov   dx, word ptr ds:[_SECTORS_SEGMENT_PTR]
-xor   ax, ax
 call  D_DrawTitle_      ; todo maybe inline
 
 
-;call  D_SetCursorPosition_  ; restore cursor position
-mov   ax, 0200h
-pop   dx   ; restore old pos
-xor   bx, bx
-int   10h
 
 
 

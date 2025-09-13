@@ -142,6 +142,7 @@ void __near D_InitStrings() {
 }
 
 
+/*
 
 
 //
@@ -227,7 +228,6 @@ void __near D_DrawTitle(int8_t __far *string){
 //
 // D_RedrawTitle
 //
-/*
 
 
 void __near D_RedrawTitle(int8_t __near *title) {
