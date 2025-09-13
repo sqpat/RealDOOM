@@ -25,6 +25,7 @@ EXTRN fopen_:FAR
 EXTRN fclose_:FAR
 EXTRN setbuf_:FAR
 EXTRN exit_:FAR
+EXTRN fgetc_:FAR
 
 EXTRN W_LumpLength_:FAR
 EXTRN W_CacheLumpNumDirect_:FAR
@@ -42,7 +43,7 @@ EXTRN Z_QuickMapStatus_:FAR
 
 EXTRN I_Error_:FAR
 EXTRN getStringByIndex_:FAR
-EXTRN D_InitStrings_:NEAR
+
 EXTRN M_LoadDefaults_:NEAR
 EXTRN M_ScanTranslateDefaults_:NEAR
 EXTRN P_Init_:NEAR
@@ -95,6 +96,11 @@ EXTRN _sidemove:WORD
 
 DEMO_MAX_SIZE = 0F800h
 AMMNUMPATCHOFFSETS_FAR_OFFSET = 20Ch
+
+PROC    D_INIT_STARTMARKER_ NEAR
+PUBLIC  D_INIT_STARTMARKER_
+ENDP
+
 
 str_getemspagemap:
 db 0Ah, "Z_GetEMSPageMap: Init EMS 4.0 features.", 0
@@ -182,6 +188,10 @@ str_doomfilename_:
 db "doom.wad", 0
 str_doom1filename_:
 db "doom1.wad", 0
+str_dstrings_filename_:
+db "dstrings.txt", 0
+str_dstrings_missing:
+db "dstrings.txt missing?", 0
 
 str_lmp_file_ext:
 db ".lmp", 0
@@ -195,13 +205,93 @@ str_tntfilename_:
 db "tnt.wad", 0
 @
 
-PROC    D_INIT_STARTMARKER_ NEAR
-PUBLIC  D_INIT_STARTMARKER_
-ENDP
 
 SIZEOF_FILE = 0Eh
 STDOUT = OFFSET ___iob + SIZEOF_FILE
 
+STRINGDATA_SEGMENT = 06000h
+STRINGOFFSETS_OFFSET = 03C40h
+
+do_string_error:
+push    cs
+mov     ax, OFFSET str_dstrings_missing
+push    ax
+call    I_Error_
+
+PROC D_InitStrings_ NEAR
+
+push    bp
+mov     bp, sp
+sub     sp, 14
+lea     si, str_dstrings_filename_
+push    cs
+pop     ds
+push    ss
+pop     es
+lea     di, [bp - 14]
+mov     ax, di
+mov     cx, 13
+rep     movsb
+push    ss
+pop     ds
+
+mov     dx, OFFSET _fopen_rb_argument
+call    fopen_
+test    ax, ax
+je      do_string_error
+
+xchg    ax, si   ; si gets fp
+mov     cx, STRINGDATA_SEGMENT
+xor     di, di
+mov     dx, di ; previous char
+mov     bx, STRINGOFFSETS_OFFSET
+
+loop_next_stringfile_char:
+mov     ax, si
+call    fgetc_
+
+test    ax, ax
+js      done_parsing_string_file  ; 0FFFFh = EOF
+
+cmp     al, 0Dh   ; carriage return
+je      skip_write
+
+mov     es, cx
+
+cmp     al, 0Ah   ; newline
+je      terminate_string
+
+not_real_newline:
+
+
+cmp     al, 'n';
+jne     not_fake_newline
+cmp     dl, '\';  prev char
+jne     not_fake_newline
+mov     al, 0Ah ; write a newline
+dec     di
+not_fake_newline:
+
+stosb
+xchg    ax, dx ; store prev char in dx
+
+
+
+jmp     loop_next_stringfile_char
+terminate_string:
+inc     bx
+inc     bx
+mov     word ptr es:[bx], di;  stringoffsets[j] = i;// +(page * 16384);
+skip_write:
+xor     dx, dx
+jmp     loop_next_stringfile_char
+done_parsing_string_file:
+xchg    ax, si
+call    fclose_
+LEAVE_MACRO
+
+ret
+ENDP
 
 
 PROC    locallib_fileexists_ NEAR

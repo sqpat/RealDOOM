@@ -68,6 +68,7 @@
 
 
 void __near M_LoadDefaults();
+/*
 
 void __near D_InitStrings() {
 
@@ -142,7 +143,6 @@ void __near D_InitStrings() {
 }
 
 
-/*
 
 
 //

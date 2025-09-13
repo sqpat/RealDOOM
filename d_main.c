@@ -851,12 +851,12 @@ void __near D_PageDrawer (void) {
 
 
 
-void D_InitStrings();
+void D_INIT_STARTMARKER();
 
 
 // clears dead initialization code.
 void __near Z_ClearDeadCode() {
-	byte __far *startaddr =	(byte __far*)D_InitStrings;
+	byte __far *startaddr =	(byte __far*)D_INIT_STARTMARKER;
 	byte __far *endaddr =		(byte __far*)P_Init;
 	
 	// accurate enough
