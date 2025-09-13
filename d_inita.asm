@@ -45,8 +45,8 @@ EXTRN HU_Init_:NEAR
 EXTRN ST_Init_:NEAR
 EXTRN S_Init_:NEAR
 EXTRN AM_loadPics_:NEAR
-EXTRN G_RecordDemo_:NEAR
-EXTRN G_TimeDemo_:NEAR
+
+
 EXTRN G_InitNew_:NEAR
 EXTRN G_DeferedPlayDemo_:NEAR
 EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
@@ -69,6 +69,10 @@ EXTRN _singledemo:BYTE
 EXTRN _startskill:BYTE
 EXTRN _startepisode:BYTE
 EXTRN _startmap:BYTE
+EXTRN _defdemoname:BYTE
+EXTRN _noblit:BYTE
+EXTRN _timingdemo:BYTE
+EXTRN _singletics:BYTE
 EXTRN ___iob:WORD
 
 
@@ -80,7 +84,9 @@ EXTRN ___iob:WORD
 EXTRN _forwardmove:WORD
 EXTRN _sidemove:WORD
 
-KEYBOARDINT = 9
+
+DEMO_MAX_SIZE = 0F800h
+
 
 str_getemspagemap:
 db 0Ah, "Z_GetEMSPageMap: Init EMS 4.0 features.", 0
@@ -146,6 +152,8 @@ str_nomusic:
 db "-nomusic", 0
 str_mem:
 db "-mem", 0
+str_noblit_param:
+db "-noblit", 0
 
 str_nomonsters:
 db "-nomonsters", 0
@@ -910,9 +918,46 @@ jnl   skip_record_param
 
     sal   ax, 1
     xchg  ax, si
-    mov   ax, word ptr ds:[bx + si]
-    call  G_RecordDemo_
+    ;call  G_RecordDemo_ ; inlined
+
+
+    push  cx ; backup
+    push  bx ; backup
+    
+    mov   ax, OFFSET str_lmp_file_ext
+    push  cs
+    push  ax
+
+    mov   bx, word ptr ds:[bx + si]
+    mov   cx, cs
+    mov   dx, ds
+    mov   ax, OFFSET _demoname
+    call  combine_strings_
+
+    pop   bx 
+    pop   cx
+
+; todo we dont handle DEMO_MAX_SIZE. we give it 64k and thats it... would require some more advanced ems pagination setup.
+COMMENT @
+    mov   ax, OFFSET str_maxdemo_param  ; todo this is probably not really supported?
+    call  M_CheckParm_CS_
+
+    mov   dx,  DEMO_MAX_SIZE
+
+    test  ax, ax
+    je    skip_custom_maxdemo_param
+    cmp   ax, di
+    jnl   skip_custom_maxdemo_param
+    sal   ax, 1
+    xchg  ax, si
+    mov   si, word ptr ds:[bx + si]
+    skip_custom_maxdemo_param:
+@
+
+    mov   byte ptr ds:[_demorecording], cl  ; 1
     mov   byte ptr ds:[_autostart], cl  ; 1
+
+        
 
 skip_record_param:
 
@@ -950,7 +995,20 @@ jnl   skip_timedemo_param
     sal   ax, 1
     xchg  ax, si
     mov   ax, word ptr ds:[bx + si]
-    call  G_TimeDemo_
+    ;call  G_TimeDemo_ ; inlined
+
+    mov   word ptr ds:[_defdemoname], ax ; defdemoname = name; 
+    mov   ax, OFFSET str_noblit_param
+    call  M_CheckParm_CS_
+    mov   byte ptr ds:[_noblit], al     ; noblit = M_CheckParm ("-noblit"); 
+
+    mov   byte ptr ds:[_timingdemo], cl ; 1 ; timingdemo = true; 
+    mov   byte ptr ds:[_singletics], cl ; 1 ; singletics = true; 
+    mov   byte ptr ds:[_gameaction], GA_PLAYDEMO ; gameaction = ga_playdemo; 
+    
+    
+
+
     jmp   exit_doommain
 
 skip_timedemo_param:

@@ -390,6 +390,7 @@ int16_t __near M_CheckParm (int8_t __far* check);
 //
 // G_RecordDemo 
 // 
+/*
 void __near G_RecordDemo (int8_t* name) {
  
 	int32_t                         maxsize;
@@ -420,6 +421,7 @@ void __near G_TimeDemo (int8_t* name) {
     defdemoname = name; 
     gameaction = ga_playdemo; 
 } 
+*/
 
 void __near W_AddFile(int8_t *filename);
 
