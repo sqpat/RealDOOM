@@ -337,6 +337,7 @@ void  __near S_Init () {
 
 
 
+/*
 
 
 void __near AM_loadPics(void){
@@ -356,7 +357,6 @@ void __near AM_loadPics(void){
 	}
 
 }
-/*
 
 void DUMP_MEMORY_TO_FILE() {
 	uint16_t segment = 0x4000;

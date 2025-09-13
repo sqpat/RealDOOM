@@ -26,6 +26,10 @@ EXTRN fclose_:FAR
 EXTRN setbuf_:FAR
 EXTRN exit_:FAR
 
+EXTRN W_LumpLength_:FAR
+EXTRN W_CacheLumpNumDirect_:FAR
+EXTRN W_CheckNumForNameFarString_:NEAR
+
 
 EXTRN I_Error_:FAR
 EXTRN Z_QuickMapMenu_:FAR
@@ -44,7 +48,7 @@ EXTRN R_Init_:NEAR
 EXTRN HU_Init_:NEAR
 EXTRN ST_Init_:NEAR
 EXTRN S_Init_:NEAR
-EXTRN AM_loadPics_:NEAR
+
 
 
 EXTRN G_InitNew_:NEAR
@@ -86,7 +90,7 @@ EXTRN _sidemove:WORD
 
 
 DEMO_MAX_SIZE = 0F800h
-
+AMMNUMPATCHOFFSETS_FAR_OFFSET = 20Ch
 
 str_getemspagemap:
 db 0Ah, "Z_GetEMSPageMap: Init EMS 4.0 features.", 0
@@ -127,6 +131,9 @@ db "                     DOOM 2: TNT - Evilution v", 0
 str_title_doom2other:
 db "                         DOOM 2: Hell on Earth v", 0
 @
+
+ str_ammonamebuf:
+ db "AMMNUM0", 0
 
 str_record_param:
 db "-record", 0
@@ -897,7 +904,39 @@ mov   ax, ST_INIT_TEXT_STR
 call  DoPrintChain_
 call  ST_Init_
 
-call  AM_loadPics_
+;call  AM_loadPics_  ; inlined
+
+
+xor   si, si  ; offset
+mov   di, AMMNUMPATCHOFFSETS_FAR_OFFSET
+
+do_next_patch:
+xchg  ax, si
+mov   si, AMMNUMPATCHBYTES_SEGMENT
+mov   es, si
+mov   cx, si ; for later call
+stosw
+
+xchg  ax, si  ; put back in si
+mov   ax, OFFSET str_ammonamebuf
+mov   dx, cs
+call  W_CheckNumForNameFarString_
+
+mov   dx, ax ; backup lump
+
+; done earlier from si
+;mov   cx, AMMNUMPATCHBYTES_SEGMENT
+mov   bx, si
+call  W_CacheLumpNumDirect_
+
+xchg  ax, dx    ; retrieve lump
+call  W_LumpLength_
+add   si, ax
+
+inc   byte ptr cs:[str_ammonamebuf+6]
+cmp   byte ptr cs:[str_ammonamebuf+6], '9'
+jbe   do_next_patch
+
 
 mov   di, word ptr ds:[_myargc]
 dec   di                        ; myargc - 1
