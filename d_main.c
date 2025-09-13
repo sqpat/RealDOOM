@@ -869,6 +869,8 @@ void __near Z_ClearDeadCode() {
 	//11284          - 06/30/25   
 	//11470          - 08/26/25
 	//9798           - 09/12/25	   ; note 8196 is "max". or "min". there are probably some funcs that can be moved into init like wad or file funcs only used in init though.
+	//9398           - 09/13/25	
+
 	uint16_t size = endaddr - startaddr-16;
 	FILE* fp;
 
@@ -878,7 +880,6 @@ void __near Z_ClearDeadCode() {
 	tantoangle_segment = FP_SEG(startaddr) + 1;
 	// I_Error("size: %i", size);
 	dest =  (angle_t __far* )MK_FP(tantoangle_segment, 0);
-	
 	fp = fopen("DOOMDATA.BIN", "rb");
 	fseek(fp, TANTOA_DOOMDATA_OFFSET, SEEK_SET);
 	locallib_far_fread(dest, 4 * 2049, fp);
@@ -887,7 +888,7 @@ void __near Z_ClearDeadCode() {
 }
 
 void __near D_DoomMain2(void);
-void __near D_DoomMain3();
+
 
  void __near D_DoomMain(void) {
 
@@ -897,7 +898,7 @@ void __near D_DoomMain3();
 	// exit(0);
 
 	 D_DoomMain2();
-	 D_DoomMain3();
+
 #ifdef DETAILED_BENCH_STATS
 	 cachedtics = ticcount;
 #endif
