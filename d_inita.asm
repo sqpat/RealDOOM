@@ -105,10 +105,8 @@ str_title_ultimate:
 db " The Ultimate DOOM Startup v1.9", 0
 str_title_normal:
 db "  DOOM System Startup v1.9  ", 0
-str_title_spaces: ; todo dont do this
-db "                        ", 0  
-str_title_doom2: ; todo dont do this
-db "                         DOOM 2: Hell on Earth v1.9                           ", 0
+str_title_doom2: 
+db "DOOM 2: Hell on Earth v1.9", 0
 str_title_doom2_done:
 
 str_z_init_ems:
@@ -167,7 +165,7 @@ db "doom1.wad", 0
 str_lmp_file_ext:
 db ".lmp", 0
 str_playing_demo:
-db "Playing demo %s.lmp.\n", 0
+db "Playing demo %s.lmp.", 0Ah, 0
 
 COMMENT @
 str_plutoniafilename_:
@@ -233,6 +231,15 @@ pop  bx
 retf 
 @
 
+PROC    PrintSpaces_
+
+mov   ax, 02020h
+rep   stosb
+xchg  ax, cx ; 0. null term
+stosb
+
+ret
+ENDP
 
 
 PROC    D_DoomMain2_ NEAR
@@ -327,11 +334,11 @@ mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
 cmp   byte ptr ds:[_commercial], 0
 jne   commercial_title
-mov   cx, 15
-mov   ax, 02020h
-rep   stosw  ; 30 spaces..
+mov   cx, 26
+call  PrintSpaces_
+
 mov   si, OFFSET str_title_normal
-cmp   byte ptr ds:[_is_ultimate], 0
+cmp   byte ptr ds:[_is_ultimate], al ; just made 0 
 je    not_ultimate_title_
 mov   si, OFFSET str_title_ultimate
 not_ultimate_title_:
@@ -343,14 +350,19 @@ mov   bx, ax
 mov   cx, es
 mov   di, es
 call  combine_strings_
-push  cs
-mov   ax, OFFSET str_title_spaces
-push  ax
+
+
+mov   es, di
 xor   ax, ax
-mov   dx, di
-mov   bx, ax
-mov   cx, di
-call  combine_strings_
+mov   di, ax
+mov   ch, 3 ; enough to find what we're looking for
+repne scasb ; find end of string
+dec   di
+mov   cx, 24 
+call  PrintSpaces_
+
+
+
 
 jmp   got_title
 do_mem_thing:
@@ -377,8 +389,15 @@ commercial_title:
 push  cs
 pop   ds
 mov   si, OFFSET str_title_doom2
+mov   cx, 25
+call  PrintSpaces_
+dec   di
 mov   cx, (OFFSET str_title_doom2_done - OFFSET str_title_doom2)
 rep   movsb
+mov   cl, 27
+call  PrintSpaces_
+
+
 push  ss
 pop   ds
 got_title:
@@ -512,6 +531,7 @@ je   not_demo
 cmp   ax, di
 jnl   not_demo
 
+    push  bx ; save
     sal   ax, 1
     xchg  ax, si
     push  cs
@@ -537,9 +557,7 @@ jnl   not_demo
     ;add   sp, 6 probably fine to do via leave macro
 
 
-    mov   bx, word ptr ds:[_myargv]
-    inc   bx
-    inc   bx                        ; myargv[n + 1]
+    pop   bx ; recover
 
 
 not_demo:
@@ -692,6 +710,13 @@ LEAVE_MACRO
 ret
 
 ENDP
+
+; todo inline below perhaps?
+;PROC  D_RedrawTitle_  NEAR
+
+;ret
+;ENDP
+
 
 PROC    DoPrintChain_ NEAR
 
