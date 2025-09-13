@@ -505,17 +505,24 @@ jnl   not_warp
 
     sal   ax, 1
     xchg  ax, si
-    lea   dx, [si + 2] ; hold on to this
+    mov   dx, word ptr ds:[bx + si + 2] ; hold on to this in case.
     mov   si, word ptr ds:[bx + si]
-    lodsw
+    lodsw    ; al gets first digit and ah gets second if it exists..
 
     cmp   byte ptr ds:[_commercial], ch   ; 0
     je    not_commercial_warp
 
-    ; atoi on 
+    ; atoi on 1-2 numbers al/ah
+        test  ah, ah        ; if null terminated 2nd char then handle a single digit
+        je    handle_two_digit
+        handle_single_digit:
+        mov   ah, '0'
+        handle_two_digit:
         sub   ax, 03030h   ; '0' on both digits
+        xchg  al, ah
         aad   10
-        cmp   al, 32
+        check_level_param:
+        cmp   al, 32       ; highest level number?
         ja    skip_warp_bad_param
         jmp   set_start_map
 
@@ -526,7 +533,9 @@ jnl   not_warp
     mov   si, dx    ; myargv[p + 2]
     lodsb
     sub   al, '0'
-    
+    cmp   al, 9       ; highest episode level number?
+    ja    skip_warp_bad_param
+
     set_start_map:
     mov   byte ptr ds:[_startmap], al      ;    startmap = 1;
 
