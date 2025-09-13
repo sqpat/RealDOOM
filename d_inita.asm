@@ -69,6 +69,8 @@ EXTRN _autostart:BYTE
 EXTRN _singledemo:BYTE
 EXTRN _startskill:BYTE
 EXTRN _startepisode:BYTE
+EXTRN _forwardmove:WORD
+EXTRN _sidemove:WORD
 EXTRN _startmap:BYTE
 EXTRN ___iob:WORD
 
@@ -95,6 +97,8 @@ db 0Ah, "BYTES LEFT: %i %x (DS : %x to %x BASEMEM : %x)", 0Ah, 0
 
 str_P_Init:
 db 0Ah, "P_Init: Checking cmd-line parameters...", 0
+str_turbo_scale:
+db "turbo scale: %i%%", 0Ah, 0
 
 str_title_ultimate:
 db " The Ultimate DOOM Startup v1.9", 0
@@ -390,18 +394,110 @@ call  D_DrawTitle_
 mov   ax, OFFSET str_P_Init
 call  DEBUG_PRINT_NOARG_CS_
 
-mov   ax, OFFSET str_turbo
-call  M_CheckParm_CS_
-je    skip_turbo
-; TODO!!
-
-skip_turbo:
-
 mov   di, word ptr ds:[_myargc]
 dec   di                        ; myargc - 1
 mov   bx, word ptr ds:[_myargv]
 inc   bx
 inc   bx                        ; myargv[n + 1]
+
+mov   ax, OFFSET str_turbo
+call  M_CheckParm_CS_
+test  ax, ax
+je    skip_turbo
+
+    mov  dx, 200
+    cmp   ax, di
+    jnl   skip_turbo_second_param
+
+
+    sal   ax, 1
+    xchg  ax, si
+
+
+    xor   ax, ax
+
+    ; mul old number by ten each step. use aad and put into ah
+    lodsb           ; digit 1
+    sub   al, '0'
+    js    done_parsing_turbo_number ; likely was zero or some other garbage. doesn't catch every case.
+    aad
+    mov   ah, al
+
+    lodsb           ; digit 2
+    sub   al, '0'
+    js    done_parsing_turbo_number 
+    aad
+    mov   ah, al
+
+    lodsb           ; digit 3
+    sub   al, '0'
+    js    done_parsing_turbo_number
+    ; scale too big for aad...
+    mov   dl, al
+    mov   al, 10
+    mul   ah
+    add   dx, ax
+    jmp   done_parsing_three_digit_turbo_number
+
+    done_parsing_turbo_number:
+
+    mov   dl, ah  ; 1 or 2 digit comes out of ah into dl. dh was 0.
+    done_parsing_three_digit_turbo_number:
+    skip_turbo_second_param:
+
+    cmp   dx, 10
+    jg    dont_cap_turbo_min
+    mov   dx, 10
+    dont_cap_turbo_min:
+    cmp   dx, 400
+    jl    dont_cap_turbo_max
+    mov   dx, 400
+    dont_cap_turbo_max:
+    
+    push  dx
+    push  cs
+    mov   ax, OFFSET str_turbo_scale
+    push  ax
+    call  DEBUG_PRINT_
+
+    mov   es, dx  ; backup
+    push  bx
+    mov   bx, 100
+
+	;forwardmove[0] = forwardmove[0] * scale / 100;
+	;forwardmove[1] = forwardmove[1] * scale / 100;
+	;sidemove[0] = sidemove[0] * scale / 100;
+	;sidemove[1] = sidemove[1] * scale / 100;
+
+    xchg  ax, dx
+    mul   word ptr ds:[_forwardmove + 0]
+    div   bx
+    mov   word ptr ds:[_forwardmove + 0], ax
+
+    mov   ax, es
+    mul   word ptr ds:[_forwardmove + 2]
+    div   bx
+    mov   word ptr ds:[_forwardmove + 2], ax
+
+    mov   ax, es
+    mul   word ptr ds:[_sidemove + 0]
+    div   bx
+    mov   word ptr ds:[_sidemove + 0], ax
+
+    mov   ax, es
+    mul   word ptr ds:[_sidemove + 2]
+    div   bx
+    mov   word ptr ds:[_sidemove + 2], ax
+
+
+    pop   bx  ; get this back
+
+
+
+
+skip_turbo:
+
+
 
 mov   ax, OFFSET str_playdemo_param
 call  M_CheckParm_CS_
