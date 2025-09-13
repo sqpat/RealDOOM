@@ -216,9 +216,9 @@ _mousex:
 dw 0
 
 _forwardmove:
-dd  019h, 032h
+dw  019h, 032h
 _sidemove:
-dd  018h, 028h
+dw  018h, 028h
 
 PUBLIC _forwardmove
 PUBLIC _sidemove
@@ -847,7 +847,7 @@ cbw
 mov       bx, ax
 SHIFT_MACRO shl bx 2
 add       cx, word ptr cs:[bx + _sidemove]
-adc       di, word ptr cs:[bx + _sidemove+2]
+adc       di, 0
 handle_checking_strafe_left:
 mov       bl, byte ptr ds:[_key_left]
 xor       bh, bh
@@ -859,7 +859,7 @@ cbw
 mov       bx, ax
 SHIFT_MACRO shl bx 2
 sub       cx, word ptr cs:[bx + _sidemove]
-sbb       di, word ptr cs:[bx + _sidemove+2]
+sbb       di, 0
 done_handling_strafe:
 mov       bl, byte ptr ds:[_key_up]
 xor       bh, bh
@@ -872,8 +872,7 @@ mov       bx, ax
 SHIFT_MACRO shl bx 2
 mov       ax, word ptr cs:[bx + _forwardmove]
 add       word ptr [bp - 4], ax
-mov       ax, word ptr cs:[bx + _forwardmove+2]
-adc       word ptr [bp - 6], ax
+adc       word ptr [bp - 6], 0
 up_not_pressed:
 mov       bl, byte ptr ds:[_key_down]
 xor       bh, bh
@@ -886,8 +885,7 @@ mov       bx, ax
 SHIFT_MACRO shl bx 2
 mov       ax, word ptr cs:[bx + _forwardmove]
 sub       word ptr [bp - 4], ax
-mov       ax, word ptr cs:[bx + _forwardmove+2]
-sbb       word ptr [bp - 6], ax
+sbb       word ptr [bp - 6], 0
 down_not_pressed:
 mov       bl, byte ptr ds:[_key_straferight]
 xor       bh, bh
@@ -899,7 +897,7 @@ cbw
 mov       bx, ax
 SHIFT_MACRO shl bx 2
 add       cx, word ptr cs:[bx + _sidemove]
-adc       di, word ptr cs:[bx + _sidemove+2]
+adc       di, 0
 straferight_not_pressed:
 mov       bl, byte ptr ds:[_key_strafeleft]
 xor       bh, bh
@@ -911,7 +909,7 @@ cbw
 mov       bx, ax
 SHIFT_MACRO shl bx 2
 sub       cx, word ptr cs:[bx + _sidemove]
-sbb       di, word ptr cs:[bx + _sidemove]
+sbb       di, 0
 strafeleft_not_pressed:
 mov       bl, byte ptr ds:[_key_fire]
 xor       bh, bh
@@ -970,8 +968,7 @@ mov       bx, ax
 SHIFT_MACRO shl bx 2
 mov       ax, word ptr cs:[bx + _forwardmove]
 add       word ptr [bp - 4], ax
-mov       ax, word ptr cs:[bx + _forwardmove+2]
-adc       word ptr [bp - 6], ax
+adc       word ptr [bp - 6], 0
 mouse_forward_not_pressed:
 
 ; check mouse strafe double click?
@@ -1028,30 +1025,30 @@ adc       di, dx
 done_handling_mousex:
 
 ; limit move speed to max move (forward_move[1])
-
+; so many zero immediates, so many bytes to save... is a register possibly free?
 mov       word ptr cs:[_mousex], 0
 mov       ax, word ptr [bp - 6]
-cmp       ax, word ptr cs:[_forwardmove + 6]
+cmp       ax, 0
 jg        clip_forwardmove_to_max
 jne       check_negative_max_forward
 mov       ax, word ptr [bp - 4]
-cmp       ax, word ptr cs:[_forwardmove + 4]
+cmp       ax, word ptr cs:[_forwardmove + 2]
 jbe       check_negative_max_forward
 clip_forwardmove_to_max:
-mov       ax, word ptr cs:[_forwardmove + 4]
+mov       ax, word ptr cs:[_forwardmove + 2]
 overwrite_forwardmove:
 mov       word ptr [bp - 4], ax
 dont_overwrite_forwardmove:
-mov       ax, word ptr cs:[_forwardmove + 6]
+mov       ax, 0
 
 ; compare side to maxmove
 cmp       di, ax
 jg        clip_sidemove_to_max
 jne       check_negative_max_side
-cmp       cx, word ptr cs:[_forwardmove + 4]
+cmp       cx, word ptr cs:[_forwardmove + 2]
 jbe       check_negative_max_side
 clip_sidemove_to_max:
-mov       cx, word ptr cs:[_forwardmove + 4]
+mov       cx, word ptr cs:[_forwardmove + 2]
 done_checking_sidemove:
 ; add sidemove/forwardmove to cmd
 mov       al, byte ptr [bp - 4]
@@ -1073,8 +1070,8 @@ pop       bx
 ret       
 check_negative_max_forward:
 
-les       ax, dword ptr cs:[_forwardmove + 4]
-mov       dx, es
+mov       ax, word ptr cs:[_forwardmove + 2]
+cwd
 neg       dx
 neg       ax
 sbb       dx, 0
@@ -1107,7 +1104,7 @@ ret
 
 check_negative_max_side:
 mov       dx, ax
-mov       ax, word ptr cs:[_forwardmove + 4]
+mov       ax, word ptr cs:[_forwardmove + 2]
 neg       dx
 neg       ax
 sbb       dx, 0
