@@ -711,11 +711,6 @@ ret
 
 ENDP
 
-; todo inline below perhaps?
-;PROC  D_RedrawTitle_  NEAR
-
-;ret
-;ENDP
 
 
 PROC    DoPrintChain_ NEAR
@@ -729,7 +724,30 @@ call  getStringByIndex_
 pop   ax  ; sp + 2
 mov   dx, ss
 call  DEBUG_PRINT_NOARG_
-;call  D_RedrawTitle_
+;call  D_RedrawTitle_  ; inlined
+
+mov   ax, 0300h
+xor   bx, bx
+int   10h               ; get cursor position
+push  dx ; store old pos
+
+mov   ax, 0200h
+cwd   ; zero for column pos 0
+xor   bx, bx
+int   10h               ; set cursor position (to 0 to redraw title above potentially scrolled text)
+
+mov   dx, word ptr ds:[_SECTORS_SEGMENT_PTR]
+xor   ax, ax
+call  D_DrawTitle_      ; todo maybe inline
+
+
+;call  D_SetCursorPosition_  ; restore cursor position
+mov   ax, 0200h
+pop   dx   ; restore old pos
+xor   bx, bx
+int   10h
+
+
 
 ret
 ENDP

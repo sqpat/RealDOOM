@@ -227,6 +227,7 @@ void __near D_DrawTitle(int8_t __far *string){
 //
 // D_RedrawTitle
 //
+/*
 
 
 void __near D_RedrawTitle(int8_t __near *title) {
@@ -247,7 +248,6 @@ void __near D_RedrawTitle(int8_t __near *title) {
  
  
 
-/*
 
 
  uint8_t __far sscanf_uint8(int8_t* strparm){
