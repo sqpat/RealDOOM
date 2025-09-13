@@ -2760,30 +2760,7 @@ ret
 ENDP
 
 
-PROC   locallib_strupr_ NEAR
-PUBLIC locallib_strupr_
 
-push   si
-xchg   ax, si
-mov    ds, dx
-loop_next_char_strupr:
-lodsb
-test   al, al
-je     done_with_strupr
-cmp    al, 'a'
-jb     loop_next_char_strupr
-cmp    al, 'z'
-ja     loop_next_char_strupr
-sub    al, 32
-mov    byte ptr ds:[si-1], al
-jmp    loop_next_char_strupr
-done_with_strupr:
-push   ss
-pop    ds
-pop    si
-
-ret
-ENDP
 
 PROC   locallib_strlwr_ NEAR
 PUBLIC locallib_strlwr_

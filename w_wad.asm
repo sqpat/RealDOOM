@@ -43,14 +43,6 @@ PUBLIC  SELFMODIFY_end_lump_for_search
 PUBLIC  SELFMODIFY_start_lump_for_search
 
 
-PROC    W_UpdateNumLumps_ NEAR
-PUBLIC  W_UpdateNumLumps_
-
-mov     ax, word ptr ds:[_numlumps]
-mov     word ptr cs:[SELFMODIFY_start_lump_for_search+1], ax
-ret     
-
-ENDP
 
 
 

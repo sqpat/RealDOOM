@@ -55,6 +55,7 @@
 // MaximumMusDriverSize
 
 #define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
+#define lumpinfoinitsegment       base_lower_memory_segment + (0x20)
 
 #define music_driver_code_segment_size   ((int32_t)(MaximumMusDriverSize + 0xF) >> 4)
 //208E
@@ -1417,7 +1418,9 @@ compositetextureoffset  4F80:01AC
 // #define lumpinfo5000 ((lumpinfo_t __far*) 0x54000000)
 // #define lumpinfo9000 ((lumpinfo_t __far*) 0x94000000)
 #define lumpinfoD800 ((lumpinfo_t __far*) 0xD8000000)
-#define lumpinfoinit ((lumpinfo_t __far*) baselowermemoryaddress)
+// todo change this to avoid clobbering title
+//20 segments or 512 higher.. to leave space for d_init title
+#define lumpinfoinit ((lumpinfo_t __far*) (lumpinfoinitsegment << 16)) 
 
 #define ANIMS_DOOMDATA_SIZE     0x1B5
 #define SPLIST_DOOMDATA_SIZE    0x2B2

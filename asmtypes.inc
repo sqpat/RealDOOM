@@ -847,6 +847,19 @@ LUMPINFO_T STRUC
     lumpinfo_size                dd ?
 LUMPINFO_T ENDS
 
+WADINFO_T STRUC
+    wadinfo_identification              db 4 DUP (?) 
+    wadinfo_numlumps                    dd ?
+    wadinfo_infotableofs                dd ?
+WADINFO_T ENDS
+
+FILEINFO_T STRUC
+    fileinfo_filepos             dd ?
+    fileinfo_size                dd ?
+    fileinfo_name                db 8 DUP (?) 
+FILEINFO_T ENDS
+
+
 
 TEXPATCH_T STRUC
     texpatch_originx             db ?  ; 0
