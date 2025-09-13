@@ -69,8 +69,6 @@ EXTRN _autostart:BYTE
 EXTRN _singledemo:BYTE
 EXTRN _startskill:BYTE
 EXTRN _startepisode:BYTE
-EXTRN _forwardmove:WORD
-EXTRN _sidemove:WORD
 EXTRN _startmap:BYTE
 EXTRN ___iob:WORD
 
@@ -79,6 +77,9 @@ EXTRN ___iob:WORD
 
 
 .CODE
+
+EXTRN _forwardmove:WORD
+EXTRN _sidemove:WORD
 
 KEYBOARDINT = 9
 
@@ -468,7 +469,12 @@ je    skip_turbo
 	;forwardmove[1] = forwardmove[1] * scale / 100;
 	;sidemove[0] = sidemove[0] * scale / 100;
 	;sidemove[1] = sidemove[1] * scale / 100;
+    push  cs
+    pop   ds
 
+    ASSUME DS:D_INITA_TEXT
+    
+    
     xchg  ax, dx
     mul   word ptr ds:[_forwardmove + 0]
     div   bx
@@ -489,10 +495,11 @@ je    skip_turbo
     div   bx
     mov   word ptr ds:[_sidemove + 2], ax
 
-
+    push  ss
+    pop   ds
     pop   bx  ; get this back
 
-
+    ASSUME DS:DGROUP
 
 
 skip_turbo:

@@ -71,8 +71,8 @@ EXTRN _mousebuttons:BYTE
 EXTRN _mousebfire:BYTE
 
 EXTRN _turnheld:BYTE
-EXTRN _sidemove:BYTE
-EXTRN _forwardmove:WORD
+
+
 
 EXTRN _myargc:WORD
 EXTRN _myargv:BYTE
@@ -214,6 +214,14 @@ dw 0
 
 _mousex:
 dw 0
+
+_forwardmove:
+dd  019h, 032h
+_sidemove:
+dd  018h, 028h
+
+PUBLIC _forwardmove
+PUBLIC _sidemove
 
 
 ; ax is cheat index
@@ -838,8 +846,8 @@ mov       al, dh
 cbw      
 mov       bx, ax
 SHIFT_MACRO shl bx 2
-add       cx, word ptr ds:[bx + _sidemove]
-adc       di, word ptr ds:[bx + _sidemove+2]
+add       cx, word ptr cs:[bx + _sidemove]
+adc       di, word ptr cs:[bx + _sidemove+2]
 handle_checking_strafe_left:
 mov       bl, byte ptr ds:[_key_left]
 xor       bh, bh
@@ -850,8 +858,8 @@ mov       al, dh
 cbw      
 mov       bx, ax
 SHIFT_MACRO shl bx 2
-sub       cx, word ptr ds:[bx + _sidemove]
-sbb       di, word ptr ds:[bx + _sidemove+2]
+sub       cx, word ptr cs:[bx + _sidemove]
+sbb       di, word ptr cs:[bx + _sidemove+2]
 done_handling_strafe:
 mov       bl, byte ptr ds:[_key_up]
 xor       bh, bh
@@ -862,9 +870,9 @@ mov       al, dh
 cbw      
 mov       bx, ax
 SHIFT_MACRO shl bx 2
-mov       ax, word ptr ds:[bx + _forwardmove]
+mov       ax, word ptr cs:[bx + _forwardmove]
 add       word ptr [bp - 4], ax
-mov       ax, word ptr ds:[bx + _forwardmove+2]
+mov       ax, word ptr cs:[bx + _forwardmove+2]
 adc       word ptr [bp - 6], ax
 up_not_pressed:
 mov       bl, byte ptr ds:[_key_down]
@@ -876,9 +884,9 @@ mov       al, dh
 cbw      
 mov       bx, ax
 SHIFT_MACRO shl bx 2
-mov       ax, word ptr ds:[bx + _forwardmove]
+mov       ax, word ptr cs:[bx + _forwardmove]
 sub       word ptr [bp - 4], ax
-mov       ax, word ptr ds:[bx + _forwardmove+2]
+mov       ax, word ptr cs:[bx + _forwardmove+2]
 sbb       word ptr [bp - 6], ax
 down_not_pressed:
 mov       bl, byte ptr ds:[_key_straferight]
@@ -890,8 +898,8 @@ mov       al, dh
 cbw      
 mov       bx, ax
 SHIFT_MACRO shl bx 2
-add       cx, word ptr ds:[bx + _sidemove]
-adc       di, word ptr ds:[bx + _sidemove+2]
+add       cx, word ptr cs:[bx + _sidemove]
+adc       di, word ptr cs:[bx + _sidemove+2]
 straferight_not_pressed:
 mov       bl, byte ptr ds:[_key_strafeleft]
 xor       bh, bh
@@ -902,8 +910,8 @@ mov       al, dh
 cbw      
 mov       bx, ax
 SHIFT_MACRO shl bx 2
-sub       cx, word ptr ds:[bx + _sidemove]
-sbb       di, word ptr ds:[bx + _sidemove]
+sub       cx, word ptr cs:[bx + _sidemove]
+sbb       di, word ptr cs:[bx + _sidemove]
 strafeleft_not_pressed:
 mov       bl, byte ptr ds:[_key_fire]
 xor       bh, bh
@@ -960,9 +968,9 @@ mov       al, dh
 cbw      
 mov       bx, ax
 SHIFT_MACRO shl bx 2
-mov       ax, word ptr ds:[bx + _forwardmove]
+mov       ax, word ptr cs:[bx + _forwardmove]
 add       word ptr [bp - 4], ax
-mov       ax, word ptr ds:[bx + _forwardmove+2]
+mov       ax, word ptr cs:[bx + _forwardmove+2]
 adc       word ptr [bp - 6], ax
 mouse_forward_not_pressed:
 
@@ -1023,27 +1031,27 @@ done_handling_mousex:
 
 mov       word ptr cs:[_mousex], 0
 mov       ax, word ptr [bp - 6]
-cmp       ax, word ptr ds:[_forwardmove + 6]
+cmp       ax, word ptr cs:[_forwardmove + 6]
 jg        clip_forwardmove_to_max
 jne       check_negative_max_forward
 mov       ax, word ptr [bp - 4]
-cmp       ax, word ptr ds:[_forwardmove + 4]
+cmp       ax, word ptr cs:[_forwardmove + 4]
 jbe       check_negative_max_forward
 clip_forwardmove_to_max:
-mov       ax, word ptr ds:[_forwardmove + 4]
+mov       ax, word ptr cs:[_forwardmove + 4]
 overwrite_forwardmove:
 mov       word ptr [bp - 4], ax
 dont_overwrite_forwardmove:
-mov       ax, word ptr ds:[_forwardmove + 6]
+mov       ax, word ptr cs:[_forwardmove + 6]
 
 ; compare side to maxmove
 cmp       di, ax
 jg        clip_sidemove_to_max
 jne       check_negative_max_side
-cmp       cx, word ptr ds:[_forwardmove + 4]
+cmp       cx, word ptr cs:[_forwardmove + 4]
 jbe       check_negative_max_side
 clip_sidemove_to_max:
-mov       cx, word ptr ds:[_forwardmove + 4]
+mov       cx, word ptr cs:[_forwardmove + 4]
 done_checking_sidemove:
 ; add sidemove/forwardmove to cmd
 mov       al, byte ptr [bp - 4]
@@ -1065,7 +1073,7 @@ pop       bx
 ret       
 check_negative_max_forward:
 
-les       ax, dword ptr ds:[_forwardmove + 4]
+les       ax, dword ptr cs:[_forwardmove + 4]
 mov       dx, es
 neg       dx
 neg       ax
@@ -1099,7 +1107,7 @@ ret
 
 check_negative_max_side:
 mov       dx, ax
-mov       ax, word ptr ds:[_forwardmove + 4]
+mov       ax, word ptr cs:[_forwardmove + 4]
 neg       dx
 neg       ax
 sbb       dx, 0

@@ -946,8 +946,6 @@ extern uint8_t             key_speed;
 extern uint8_t             mousebfire;
 extern uint8_t             mousebstrafe;
 extern uint8_t             mousebforward;
-extern fixed_t             forwardmove[2];
-extern fixed_t             sidemove[2];
 
 extern int8_t             turnheld;
 extern boolean         mousearray[4]; 
