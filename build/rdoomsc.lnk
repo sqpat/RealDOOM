@@ -15,7 +15,6 @@ name doomout
 
 file m_near.obj
 file d_init.obj
-file d_inita.obj
 file st_init.obj
 file r_init.obj
 file w_init.obj

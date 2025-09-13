@@ -47,7 +47,6 @@ GLOBOBJS = &
  i_main.obj &
  i_ibm.obj &
   d_init.obj &
- d_inita.obj &
  d_main.obj &
  d_net.obj &
  g_setup.obj &
