@@ -316,6 +316,8 @@ int16_t   I_GetSfxLumpNum(sfxenum_t sfx);
 // Sets channels, SFX and music volume,
 //  allocates channel buffer, sets S_sfx lookup.
 //
+/*
+
 void  __near S_Init () {
 
 	void (__far* LoadSFXWadLumps)() = 							        		  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 LoadSFXWadLumpsOffset)));
@@ -337,7 +339,6 @@ void  __near S_Init () {
 
 
 
-/*
 
 
 void __near AM_loadPics(void){

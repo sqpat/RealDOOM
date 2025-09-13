@@ -29,25 +29,28 @@ EXTRN exit_:FAR
 EXTRN W_LumpLength_:FAR
 EXTRN W_CacheLumpNumDirect_:FAR
 EXTRN W_CheckNumForNameFarString_:NEAR
+EXTRN W_AddFile_:NEAR
+
+EXTRN Z_GetEMSPageMap_:NEAR
+EXTRN Z_InitEMS_:NEAR
+EXTRN Z_QuickMapMenu_:FAR
+EXTRN Z_QuickMapPhysics_:FAR
+EXTRN Z_LoadBinaries_:NEAR
+EXTRN Z_SetOverlay_:FAR
 
 
 EXTRN I_Error_:FAR
-EXTRN Z_QuickMapMenu_:FAR
-EXTRN Z_QuickMapPhysics_:FAR
 EXTRN getStringByIndex_:FAR
 EXTRN D_InitStrings_:NEAR
-EXTRN Z_LoadBinaries_:NEAR
 EXTRN M_LoadDefaults_:NEAR
 EXTRN M_ScanTranslateDefaults_:NEAR
-EXTRN Z_GetEMSPageMap_:NEAR
-EXTRN Z_InitEMS_:NEAR
-EXTRN W_AddFile_:NEAR
 EXTRN P_Init_:NEAR
 EXTRN I_Init_:NEAR
 EXTRN R_Init_:NEAR
 EXTRN HU_Init_:NEAR
 EXTRN ST_Init_:NEAR
-EXTRN S_Init_:NEAR
+EXTRN SB_StartInit_:NEAR
+
 
 
 
@@ -894,7 +897,23 @@ mov   word ptr ds:[_maketic+2], 0
 
 mov   ax, S_INIT_STRING_TEXT
 call  DoPrintChain_
-call  S_Init_
+;call  S_Init_  ; inlined
+
+mov   ax, OVERLAY_ID_SOUND_INIT
+call  Z_SetOverlay_
+
+
+;call  LoadSFXWadLumps
+db 09Ah
+dw LOADSFXWADLUMPSOFFSET, CODE_OVERLAY_SEGMENT
+
+cmp   byte ptr ds:[_snd_SfxDevice], SND_SB
+jne   skip_sb_init
+
+call  SB_StartInit_
+skip_sb_init:
+
+
 
 mov   ax, HU_INIT_TEXT_STR
 call  DoPrintChain_
