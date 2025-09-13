@@ -693,6 +693,7 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den) {
 
 
 // check for doom ultimate.
+/*
 void __near check_is_ultimate(){
 	int16_t words[3];
 	FILE* fp = fopen("doom.wad", "rb");
@@ -703,6 +704,7 @@ void __near check_is_ultimate(){
 	
 	}
 }
+*/
 
 
 //void checkDS(int16_t a);

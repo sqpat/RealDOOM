@@ -54,7 +54,7 @@ EXTRN DEBUG_PRINT_NOARG_:NEAR
 EXTRN DEBUG_PRINT_:NEAR
 EXTRN M_CheckParm_CS_:NEAR
 EXTRN combine_strings_:NEAR
-EXTRN check_is_ultimate_:NEAR
+
 EXTRN locallib_strcpy_:NEAR
 
 
@@ -1008,6 +1008,46 @@ POPA_NO_AX_MACRO
 ret
 
 ENDP
+
+PROC check_is_ultimate_ NEAR
+
+push    bp
+mov     bp, sp
+sub     sp, 10
+lea     si, str_doomfilename_
+push    cs
+pop     ds
+push    ss
+pop     es
+lea     di, [bp - 10]
+mov     ax, di
+movsw
+movsw
+movsw
+movsw
+movsb
+push    ss
+pop     ds
+mov     dx, OFFSET _fopen_rb_argument
+call    fopen_
+push    ax
+xchg    cx, ax
+lea     ax, [bp - 6]
+mov     dx, 6
+mov     bx, 1
+call    fread_
+pop     ax  ; fp
+call    fclose_
+cmp     word ptr [bp - 2], 0902h
+jne     dont_set_ultimate_true
+mov     byte ptr ds:[_is_ultimate], 1
+dont_set_ultimate_true:
+
+LEAVE_MACRO
+ret
+
+ENDP
+
 
 PROC    D_INIT_ENDMARKER_ NEAR
 PUBLIC  D_INIT_ENDMARKER_
