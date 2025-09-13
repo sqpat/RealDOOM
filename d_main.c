@@ -308,7 +308,6 @@ void __near locallib_printf2 (int8_t __far*str, va_list argptr){
     locallib_printf(str, argptr);
 }
 
-void __far DEBUG_PRINT (int8_t __far *error, ...);
 
 
 

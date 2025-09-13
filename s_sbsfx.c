@@ -2184,7 +2184,6 @@ int8_t __near SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
 
 
     // I_Error("\n here %i %lx\n", W_LumpLength(110), lumpinfo9000[110].position);
-    FORCE_5000_LUMP_LOAD = true;
     for (i = 0; i < NUM_SFX_TO_MIX;i++){
         if (!(sb_voicelist[i].sfx_id & PLAYING_FLAG)){
             // check if sound already in cache (using map lookup)
@@ -2193,7 +2192,6 @@ int8_t __near SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
                 int8_t result = S_LoadSoundIntoCache(sfx_id);
                 if (result == -1){
                     // couldnt make space in cache.
-                    FORCE_5000_LUMP_LOAD = false;
                     return -1; 
                 }
             }
@@ -2227,7 +2225,6 @@ int8_t __near SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
 
                     }
                 }
-                FORCE_5000_LUMP_LOAD = false;
 
                 // only do this at the very end.
                 sb_voicelist[i].sfx_id |= PLAYING_FLAG;
@@ -2235,7 +2232,6 @@ int8_t __near SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
             }
         }
     }
-    FORCE_5000_LUMP_LOAD = false;
     return -1;
 }
 

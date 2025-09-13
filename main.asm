@@ -3437,9 +3437,9 @@ push bx
 push dx
 push bp
 mov  bp, sp
-lea  bx, [bp + 0Eh]
-mov  ax, word ptr [bp + 0Ah]
-mov  dx, word ptr [bp + 0Ch]
+lea  bx, [bp + 0Ch]
+mov  ax, word ptr [bp + 8]
+mov  dx, word ptr [bp + 0Ah]
 call locallib_printf_
 pop  bp
 pop  dx

@@ -43,30 +43,11 @@
 // DEFINE ALL LOCALS HERE. EXTERN IN m_near.h
 
 
-
-// todo most of these aren't used??
-
-//int16_t dmxCodes[NUM_SCARDS]; // the dmx code for a given card
-
-
-
-
-
-
-
-
 boolean         singletics = false; // debug flag to cancel adaptiveness
-
-
-
-
-
 skill_t         startskill;
 int8_t          startepisode;
 int8_t          startmap;
 boolean         autostart;
-
-
 
 //
 //  DEMO LOOP
@@ -94,56 +75,6 @@ uint16_t cachedrenderplayertics = 0;
 
 int8_t		eventhead;
 int8_t		eventtail;
-
-
-
-
-
- 
-
-
-
-
-
-
-
-
-/* 
-uint8_t quality_port_lookup[12] = {
-
-// lookup for what to write in the planar port of vga during draw column etc.
-//. constructed from detailshift and dc_x & 0x3
-	// bit 34  00
-         1, 2, 4, 8,
-
-	// bit 34  01 = low
-	     3, 12, 3, 12,
-
-	    
-	// bit 34  10  = potato
-		15, 15, 15, 15
-
-
-};
-*/
-
-
-// int16_t 					segloopprevlookup[2];
-// int16_t 					segloopnextlookup[2] = {-1, -1}; // 0 would be fine too...
-// uint8_t 					seglooptexrepeat[2] = {0, 0}; 
-// segment_t 					segloopcachedsegment[2];
-// int16_t 					segloopcachedbasecol[2];
-
-//uint8_t 					segloopheightvalcache[2];
-
-
-
-
-
-
-
-
-
 
 void (__far* P_SpawnMapThing)() =            ((void (__far *)(mapthing_t mthing, int16_t key))                                        	                                   (MK_FP(physics_highcode_segment, 		 P_SpawnMapThingOffset)));
 void (__far* R_WriteBackViewConstantsSpanCall)()  =   				      	  ((void    (__far *)())  								(MK_FP(spanfunc_jump_lookup_segment, 	 R_WriteBackViewConstantsSpan24Offset)));
@@ -174,36 +105,18 @@ void (__far* M_LoadFromSaveGame)() =          ((void (__far *)(int8_t i))     	 
 spriteframe_t __far* p_init_sprtemp;
 int16_t             p_init_maxframe;
 
-
-
-
 boolean grmode = 0;
-
-
-
 boolean novideo; // if true, stay in text mode for debugging
-
-
 
 
 void (__interrupt __far_func *oldkeyboardisr) (void) = NULL;
 gamestate_t         oldgamestate = -1;
-
 uint8_t				numChannels;	
-
-
- 
  
  
 boolean         	timingdemo;             // if true, exit with report on completion 
 //boolean         	nodrawers;              // for comparative timing purposes 
 boolean         	noblit;                 // for comparative timing purposes 
- 
- 
-
-
-
- 
 
  
 
@@ -337,27 +250,6 @@ volatile int8_t TS_InInterrupt = false;
 
 
 int16_t	maxammo[NUMAMMO] = {200, 50, 300, 50};
-
-// cached 'last used' mobjs for functions that operate on a mobj and where the mobj is often used right after. 
-
-
-   
-
-
-
-
-
-
-
-//
-// SLIDE MOVE
-// Allows the player to slide along any angled walls.
-//
-
-
-
-
-
 
 
 
@@ -608,14 +500,6 @@ driverBlock OPL3driver = {
 
 int32_t musdriverstartposition[MUS_DRIVER_COUNT-1];
 
-
-
-
-
-
-
-
-boolean FORCE_5000_LUMP_LOAD = false;
 
 
 

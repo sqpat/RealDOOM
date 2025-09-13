@@ -413,7 +413,7 @@ je    skip_turbo
 
     sal   ax, 1
     xchg  ax, si
-
+    mov   si, word ptr ds:[bx + si]
 
     xor   ax, ax
 
@@ -460,46 +460,39 @@ je    skip_turbo
     mov   ax, OFFSET str_turbo_scale
     push  ax
     call  DEBUG_PRINT_
+    ;add   sp, 6 ; probably fine to do via leave macro
 
-    mov   es, dx  ; backup
+
+    push  di
+    push  cx
     push  bx
-    mov   bx, 100
+
+    mov   si, 100
+    mov   cx, 4
+    mov   bx, dx  ; backup
+
 
 	;forwardmove[0] = forwardmove[0] * scale / 100;
 	;forwardmove[1] = forwardmove[1] * scale / 100;
 	;sidemove[0] = sidemove[0] * scale / 100;
 	;sidemove[1] = sidemove[1] * scale / 100;
     push  cs
-    pop   ds
+    pop   es
 
-    ASSUME DS:D_INITA_TEXT
+
+    mov  di, OFFSET _forwardmove
     
+    loop_next_param_modify:
+    mov   ax, bx
+    mul   word ptr es:[di]  ; _forwardmove + 2
+    div   si     ; / 100
+    stosw
+    loop  loop_next_param_modify
+
+    pop   bx  ; restore..
+    pop   cx  ; restore..
+    pop   di  ; restore..
     
-    xchg  ax, dx
-    mul   word ptr ds:[_forwardmove + 0]
-    div   bx
-    mov   word ptr ds:[_forwardmove + 0], ax
-
-    mov   ax, es
-    mul   word ptr ds:[_forwardmove + 2]
-    div   bx
-    mov   word ptr ds:[_forwardmove + 2], ax
-
-    mov   ax, es
-    mul   word ptr ds:[_sidemove + 0]
-    div   bx
-    mov   word ptr ds:[_sidemove + 0], ax
-
-    mov   ax, es
-    mul   word ptr ds:[_sidemove + 2]
-    div   bx
-    mov   word ptr ds:[_sidemove + 2], ax
-
-    push  ss
-    pop   ds
-    pop   bx  ; get this back
-
-    ASSUME DS:DGROUP
 
 
 skip_turbo:
@@ -541,6 +534,7 @@ jnl   not_demo
     ;mov   dx, cs
     call  DEBUG_PRINT_                  ;		DEBUG_PRINT("Playing demo %s.lmp.\n", myargv[p + 1]);
 ;		combine_strings(file, myargv[p + 1], ".lmp");
+    ;add   sp, 6 probably fine to do via leave macro
 
 
     mov   bx, word ptr ds:[_myargv]

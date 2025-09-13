@@ -30,7 +30,7 @@ EXTRN I_ShutdownTimer_:NEAR
 EXTRN I_ShutdownKeyboard_:NEAR
 
 
-EXTRN DEBUG_PRINT_:FAR
+EXTRN DEBUG_PRINT_:NEAR
 EXTRN exit_:FAR
 
 

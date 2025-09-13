@@ -731,37 +731,13 @@
 #define CURRENT_POSITION_6  			  (((uint16_t) usedtexturepagemem) + (sizeof(uint8_t) * NUM_TEXTURE_PAGES))
 #define pageswapargs				  	  (((uint16_t __near*) (CURRENT_POSITION_6)))
 #define CURRENT_POSITION_7  			  (((uint16_t) pageswapargs) + (sizeof(uint16_t) * total_pages))
-//extern uint16_t pageswapargs[total_pages];
 
-
-// extern int16_t 					segloopprevlookup[2];
-// extern int16_t 					segloopnextlookup[2];
-
-// extern uint8_t 					seglooptexrepeat[2]; 
-// extern segment_t 				segloopcachedsegment[2];
-// extern int16_t 					segloopcachedbasecol[2];
-// extern uint8_t 					segloopheightvalcache[2];
-
-// biggest MUS in doom1/2 is 64808... divided by 4 this 
-// gives us 128 free bytes of overlap per page and fits the 64808 barely.
 #define MUS_SIZE_PER_PAGE 16256
-
-
-
-
-
-
-
-
 
 // wipegamestate can be set to -1 to force a wipe on the next draw
 
 
 #define MAXWADFILES             3
-
-
-
-
 
 extern boolean              singletics;
 
@@ -770,12 +746,6 @@ extern skill_t              startskill;
 extern int8_t               startepisode;
 extern int8_t               startmap;
 extern boolean              autostart;
-
-
-
-
-
-
 
 
 extern int16_t              pagetic;
@@ -801,20 +771,6 @@ extern uint16_t             cachedrenderplayertics;
 
 extern int8_t		        eventhead;
 extern int8_t		        eventtail;
-
-
- 
-//extern int16_t              ;
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1261,25 +1217,7 @@ typedef struct {
 	uint32_t time;			/* note start time */
 }  AdlibChannelEntry;
 
-
-
-
-
-// the complete set of sound effects
 extern uint8_t sfx_priority[];
-
-// the complete set of music
-
-
-
-
-//extern uint16_t shift4lookup[256];
-
-//extern      driverBlock OPL3driver;
-
-
-
-
 
 
 void	OPLplayNote(uint8_t channel, uint8_t note, int8_t noteVolume);
@@ -1333,7 +1271,6 @@ extern int32_t musdriverstartposition[MUS_DRIVER_COUNT-1];
 
 
 
-extern boolean FORCE_5000_LUMP_LOAD;
 
 
 // in order to keep this 8 bytes, not 9 -> we put plauing as a flag on sfx_id which maxes at under 127.
