@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/14 10:32:45
+Created on:       25/09/14 11:02:52
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -34,7 +34,7 @@ z_init_TEXT            CODE           AUTO           0000:1600       00000a33
 p_init_TEXT            CODE           AUTO           0000:2040       0000049c
 i_main_TEXT            CODE           AUTO           0000:24e0       00000010
 I_QUIT_TEXT            CODE           AUTO           0000:24f0       0000018a
-i_ibm_TEXT             CODE           AUTO           0000:2680       0000014c
+i_ibm_TEXT             CODE           AUTO           0000:2680       00000146
 d_main_TEXT            CODE           AUTO           0000:27d0       0000039b
 D_NET_TEXT             CODE           AUTO           0000:2b6c       000000b3
 g_game_TEXT            CODE           AUTO           0000:2c20       00000997
@@ -220,9 +220,8 @@ Module: i_ibm.obj(C:\REALDOOM\i_ibm.c)
 0000:26ac*     I_BeginRead_
 0000:26ae      I_ReadMouse_
 0000:26ea*     I_InitDiskFlash_
-0000:26ec*     I_ResetMouse_
-0000:26f2      I_Error_
-0000:2714      I_InitGraphics_
+0000:26ec      I_Error_
+0000:270e      I_InitGraphics_
 Module: d_main.obj(C:\REALDOOM\d_main.c)
 0000:27d0      D_PostEvent_
 0000:27fc      D_ProcessEvents_
@@ -868,4 +867,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  f560 (62816.)
 Entry point address: 0000:bcfc
-Link time: 00:00.20
+Link time: 00:00.74

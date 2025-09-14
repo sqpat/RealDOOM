@@ -388,22 +388,6 @@ void __interrupt I_KeyboardISR(void) {
 */
 
 
-
-//
-// Mouse
-//
-
-int16_t __near I_ResetMouse(void) {
-
-        // regs.w.ax = 0; // reset
-        // intx86 (0x33, &regs, &regs);
-		
-		// todo test
-        return locallib_int86_33(0);
-}
-
-
-
  
  
  
