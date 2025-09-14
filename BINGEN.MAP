@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/14 07:37:58
+Created on:       25/09/14 07:53:00
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -51,7 +51,7 @@ WI_STUFF_TEXT          CODE           AUTO           0000:6bc4       00001009
 MATH_TEXT              CODE           AUTO           0000:7bce       00000510
 MAIN_TEXT              CODE           AUTO           0000:80de       000014cf
 g_setup_TEXT           CODE           AUTO           0000:95b0       0000027e
-G_SETUPA_TEXT          CODE           AUTO           0000:982e       00000047
+G_SETUPA_TEXT          CODE           AUTO           0000:982e       00000045
 r_setup_TEXT           CODE           AUTO           0000:9880       0000046c
 ST_SETUP_TEXT          CODE           AUTO           0000:9cec       00000125
 HU_SETUP_TEXT          CODE           AUTO           0000:9e12       00000246
@@ -527,7 +527,7 @@ Module: g_setup.obj(C:\REALDOOM\g_setup.c)
 0000:966c      G_InitNew_
 Module: g_setupa.obj(g_setupa.ASM)
 0000:982e      R_CheckTextureNumForName_
-0000:9875*     G_SETUP_ENDMARKER_
+0000:9873*     G_SETUP_ENDMARKER_
 0000:982e*     G_SETUP_STARTMARKER_
 Module: r_setup.obj(C:\REALDOOM\r_setup.c)
 0000:9880+     R_InitTextureMapping_
@@ -1508,4 +1508,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003d770 (251760.)
 Entry point address: 3725:0a84
-Link time: 00:00.49
+Link time: 00:00.04

@@ -88,29 +88,20 @@ inc    bx
 ; al is a
 
 sub    al, ah
-jne    done_with_strncasecmp
+jne    tex_not_found ; chars different.
 
 test   ah, ah
-; mov    al, 0    ; in case we branch, we must return 0... but al is known zero
-je     done_with_strncasecmp
+je     found_tex  ; both were zero, or null terminated.
 
 dec    dx
 jnz    loop_next_char_strncasecmp
-; fall thru, found tex. but zero flag is set so it will work out?
+; fall thru, found tex.
 done_with_strncasecmp:
-
-;test    al, al
-je      found_tex ; zero flag still carried thru
-
-tex_not_found:
-loop    loop_next_tex
-
-mov     si, 0FFFFh
-jmp     didnt_find_tex
 
 found_tex:
 shr     si, 1
 didnt_find_tex:
+dec     si ; si overshot by 1 due to lods
 mov     es, si
 
 push    ss
@@ -120,6 +111,13 @@ POPA_NO_AX_OR_BP_MACRO
 mov     ax, es
 
 ret
+
+tex_not_found:
+loop    loop_next_tex
+
+xor     si, si		; to return -1
+jmp     didnt_find_tex
+
 ENDP
 
 
