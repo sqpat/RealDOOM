@@ -713,7 +713,6 @@ void __near check_is_ultimate(){
 //void checkDS(int16_t a);
 void __far wipe_WipeLoop();
 void __far I_ReadScreen();
-uint16_t  __near   R_CheckTextureNumForName(int8_t * __near name);
 
 int16_t __near P_DivlineSide ( fixed_t_union	x, fixed_t_union	y, divline_t __near*	node ) ;
 void __far P_TouchSpecialThing (mobj_t __near*	special,mobj_t __near*	toucher,mobj_pos_t  __far*special_pos,mobj_pos_t  __far*toucher_pos);

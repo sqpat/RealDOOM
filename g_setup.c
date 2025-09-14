@@ -61,10 +61,7 @@
 #include "g_game.h"
 
 #define NUMKEYS         256 
-uint16_t   __near  R_TextureNumForName(int8_t* __near name);
 
-
-uint16_t  __near   R_CheckTextureNumForName(int8_t __near *  name);
 
 // R_CheckTextureNumForName
 // Check whether texture is available.

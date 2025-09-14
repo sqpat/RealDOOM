@@ -40,8 +40,6 @@
 #include "m_near.h"
 
 
-uint16_t  __near   R_TextureNumForName(int8_t* __near name);
-uint16_t  __near   R_CheckTextureNumForName(int8_t * __near name);
   
 
 

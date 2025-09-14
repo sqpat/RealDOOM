@@ -39,7 +39,7 @@ PUBLIC  G_SETUP_STARTMARKER_
 ENDP
 
 
-
+; todo support cs string?
 
 PROC    R_CheckTextureNumForName_ NEAR
 PUBLIC  R_CheckTextureNumForName_
@@ -47,83 +47,62 @@ PUBLIC  R_CheckTextureNumForName_
 mov     word ptr cs:[SELFMODIFY_set_arg_pointer+1], ax
 
 PUSHA_NO_AX_OR_BP_MACRO
-push     bp
-mov      bp, sp
-sub      sp, 8
 
 
-mov     cx, word ptr ds:[_numtextures]
+mov     cx, word ptr ds:[_numtextures] 
 
 
 xor     si, si ; loop counter
-
-
-loop_next_tex:
+mov     dx, si ; zero dh.
 mov     ax, TEXTUREDEFS_OFFSET_6000_SEGMENT
 mov     ds, ax
-
-lodsw   
-mov     di, sp
-mov     bx, sp
-push    si ; store this
-
-xchg    ax, si
-
 mov     ax, TEXTUREDEFS_BYTES_6000_SEGMENT
-mov     ds, ax
-push    ss
-pop     es
+mov     es, ax
 
-movsw
-movsw
-movsw
-movsw  ; name copy
+loop_next_tex:
+lodsw   
 
-push    ss
-pop     ds
+xchg    ax, bx  ; bx gets es:bx ptr
 
 
 SELFMODIFY_set_arg_pointer:
-mov     si, 01000h
+mov     di, 01000h			; di gets arg param ptr
 
-; inline
+; inline strncasecmp
 
-;int16_t __near locallib_strncasecmp(char __near *str1, char __near *str2, int16_t n){
 
-;ds:bx and ds:si already pass this in.
-mov   dx, 8
+mov   dl, 8   ; 8 chars
 
-; ds:si vs ds:bx.
+; ss:di vs es:bx.
 ; n = dx 
 
 loop_next_char_strncasecmp:
-lodsb
+mov    al, byte ptr ss:[di]
+inc    di
 call   locallib_toupper_
-mov    ah, al
-xchg   bx, si
-lodsb
-xchg   bx, si
-call   locallib_toupper_
+mov    ah, byte ptr es:[bx]
+inc    bx
+;call   locallib_toupper_  ; these are always caps already right
 
-; ah is a
-; al is b
+; ah is b
+; al is a
 
 sub    al, ah
 jne    done_with_strncasecmp
 
 test   ah, ah
-mov    al, 0    ; in case we branch, we must return 0...
+; mov    al, 0    ; in case we branch, we must return 0... but al is known zero
 je     done_with_strncasecmp
 
 dec    dx
 jnz    loop_next_char_strncasecmp
-
+; fall thru, found tex. but zero flag is set so it will work out?
 done_with_strncasecmp:
 
-pop     si
-test    al, al
+;test    al, al
 je      found_tex ; zero flag still carried thru
 
+tex_not_found:
 loop    loop_next_tex
 
 mov     si, 0FFFFh
@@ -134,7 +113,9 @@ shr     si, 1
 didnt_find_tex:
 mov     es, si
 
-LEAVE_MACRO
+push    ss
+pop     ds
+
 POPA_NO_AX_OR_BP_MACRO
 mov     ax, es
 
