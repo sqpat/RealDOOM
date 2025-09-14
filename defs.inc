@@ -358,7 +358,10 @@ _numtextures =  				     _NULL_OFFSET + 003C0h
 
 _pcspeaker_currentoffset = 			 _NULL_OFFSET + 003C2h
 _pcspeaker_endoffset = 			 	 _NULL_OFFSET + 003C4h
-; 3c6 to 3cf free
+_SKY_String = 					 	 _NULL_OFFSET + 003C6h
+
+
+; 3cb to 3cf free
 
 
 

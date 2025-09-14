@@ -160,7 +160,6 @@ void __near G_DoLoadLevel(void) {
 
 
 }
-*/
 
 
 
@@ -285,3 +284,4 @@ void __near G_InitNew (skill_t skill, int8_t episode, int8_t map) {
 
 
 
+*/

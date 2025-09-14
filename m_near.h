@@ -409,8 +409,9 @@
 
 #define pcspeaker_currentoffset         (*((uint16_t __near*)                (_NULL_OFFSET + 0x03C2)))
 #define pcspeaker_endoffset       	    (*((uint16_t __near*)                (_NULL_OFFSET + 0x03C4)))
+#define SKY_String       	            (((int8_t    __near*)                (_NULL_OFFSET + 0x0336)))
 
-//3c6 to 3cf free
+//3CB to 3cf free
 
 #define am_stopped						(*((boolean __near*)                 (_NULL_OFFSET + 0x03D0)))
 #define automapactive					(*((boolean __near*)                 (_NULL_OFFSET + 0x03D1)))

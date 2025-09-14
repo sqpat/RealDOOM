@@ -507,7 +507,7 @@ void __far Z_QuickMapPhysics();
 void __far Z_QuickMapRender();
 void __far Z_QuickMapRender_4000To9000();
 void __far Z_QuickMapRender_9000To7000();
-void __far Z_QuickMapRender_9000To6000();
+void __near Z_QuickMapRender_9000To6000();
 
 void __far Z_QuickMapStatus();
 void __far Z_QuickMapStatusNoScreen4();

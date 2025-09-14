@@ -69,7 +69,6 @@ boolean __far G_CheckDemoStatus (void);
 void    __near G_ReadDemoTiccmd (ticcmd_t __near* cmd); 
 void    __near G_WriteDemoTiccmd (ticcmd_t __near* cmd); 
 void    __far G_PlayerReborn (); 
-void    __near G_InitNew (skill_t skill, int8_t episode, int8_t map);
  
   
 void   __near G_DoLoadLevel (void); 
@@ -915,7 +914,6 @@ void __far G_DeferedInitNew ( skill_t skill, int8_t episode, int8_t map) {
     gameaction = ga_newgame; 
 } 
 
-void __near G_InitNew(skill_t skill, int8_t episode, int8_t map);
 
 
 

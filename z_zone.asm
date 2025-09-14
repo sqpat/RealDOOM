@@ -223,7 +223,9 @@ retf
 
 ENDP
 
-PROC Z_QuickMapRender_9000To6000_ FAR
+
+; setup only? should be near
+PROC Z_QuickMapRender_9000To6000_ NEAR
 PUBLIC Z_QuickMapRender_9000To6000_
 
 
@@ -236,7 +238,7 @@ Z_QUICKMAPAI2 pageswapargs_render_to_6000_size INDEXED_PAGE_6000_OFFSET
 pop   si
 pop   cx
 pop   dx
-retf  
+ret
 
 ENDP
 

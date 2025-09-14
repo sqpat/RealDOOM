@@ -27,6 +27,9 @@ EXTRN Z_QuickMapPhysics_:FAR
 EXTRN locallib_toupper_:NEAR
 EXTRN G_ResetGameKeys_:NEAR
 EXTRN P_SetupLevel_:NEAR
+EXTRN S_ResumeSound_:FAR
+EXTRN Z_QuickMapRender_:FAR
+EXTRN Z_QuickMapRender_9000To6000_:NEAR
 
 .DATA
 
@@ -47,8 +50,6 @@ ENDP
 str_texturenum_error:
 db 0Ah, "R_TextureNumForName: %s not found", 0
 
-
-; todo support cs string?
 
 PROC    R_CheckTextureNumForName_ NEAR
 PUBLIC  R_CheckTextureNumForName_
@@ -217,6 +218,203 @@ pop    bx
 ret
 ENDP
 
+HIGHBIT = 080h
+
+;void __near G_InitNew (skill_t skill, int8_t episode, int8_t map) {
+
+PROC    G_InitNew_ NEAR
+PUBLIC  G_InitNew_
+
+xor   ah, ah
+
+cmp   byte ptr ds:[_paused], ah ; 0
+jne   dont_unpause
+mov   byte ptr ds:[_paused], ah ; 0
+push  ax
+call  S_ResumeSound_
+pop   ax
+
+dont_unpause:
+
+cmp   al, SK_NIGHTMARE
+jbe   dont_cap_skill
+mov   al, SK_NIGHTMARE
+dont_cap_skill:
+
+cmp   byte ptr ds:[_is_ultimate], ah
+xchg  ax, dx
+
+jne   not_ultimate
+cmp   al, 3
+jb    dont_cap_ultimate_ep_high
+mov   al, 3
+dont_cap_ultimate_ep_high:
+test  al, al
+jne   ultimate_ep_not_zero
+inc   ax  ; change 0 to 1
+ultimate_ep_not_zero:
+jmp   done_with_episode_check
+not_ultimate:
+test  al, al
+jne   done_with_episode_check
+mov   al, 4
+
+
+done_with_episode_check:
+xchg  ax, dx
+
+
+cmp   byte ptr ds:[_shareware], ah
+je    skip_shareware_checks
+mov   dl, 1 ; forced episode 1
+skip_shareware_checks:
+
+cmp   bl, 1
+jnb   map_not_too_low
+mov   bl, 1
+map_not_too_low:
+
+cmp   byte ptr ds:[_commercial], ah
+jne   skip_commercial_mapcheck
+cmp   bl, 9
+ja    skip_commercial_mapcheck
+mov   bl, 9
+skip_commercial_mapcheck:
+
+mov   byte ptr ds:[_prndindex], ah ; 0
+mov   byte ptr ds:[_rndindex], ah ; 0
+
+mov   byte ptr ds:[_gamemap], bl ; free up bx
+mov   byte ptr ds:[_gameepisode], dl ; free up dx
+
+
+
+mov   byte ptr ds:[_respawnmonsters], ah
+cmp   byte ptr ds:[_respawnparm], ah
+jne   do_respawn_on
+cmp   al, SK_NIGHTMARE
+jne   keep_respawn_off
+do_respawn_on:
+inc   byte ptr ds:[_respawnparm]
+keep_respawn_off:
+
+mov   dx, STATES_SEGMENT
+mov   es, dx
+mov   bx, (S_SARG_RUN1 * SIZE STATE_T) + STATE_T.state_tics ; 6 bytes per
+
+cmp   byte ptr ds:[_fastparm], ah
+jne   do_fastmonsters_on
+
+; (skill == sk_nightmare && gameskill != sk_nightmare)
+cmp   al, SK_NIGHTMARE
+jne   check_fastmonsters_off
+cmp   byte ptr ds:[_gameskill], SK_NIGHTMARE
+je    check_fastmonsters_off
+do_fastmonsters_on:
+
+speedup_next_state:
+shr   byte ptr es:[bx ], 1  ; already offset to  STATE_T.state_tics
+add   bx, SIZE STATE_T
+cmp   bx, (S_SARG_PAIN2 * SIZE STATE_T)
+jl    speedup_next_state
+
+mov   al, 20 + HIGHBIT
+mov   byte ptr ds:[_mobjinfo + (MT_BRUISERSHOT * (SIZE MOBJINFO_T )) + MOBJINFO_T.mobjinfo_speed], al
+mov   byte ptr ds:[_mobjinfo + (MT_HEADSHOT * (SIZE MOBJINFO_T)) + MOBJINFO_T.mobjinfo_speed], al
+mov   byte ptr ds:[_mobjinfo + (MT_TROOPSHOT * (SIZE MOBJINFO_T)) + MOBJINFO_T.mobjinfo_speed], al
+
+
+jmp     done_with_fastmonsters
+check_fastmonsters_off:
+cmp   al, SK_NIGHTMARE
+je    done_with_fastmonsters
+cmp   byte ptr ds:[_gameskill], SK_NIGHTMARE
+jne   done_with_fastmonsters
+
+do_fastmonsters_off:
+
+
+
+speeddown_next_state:
+shl   byte ptr es:[bx ], 1  ; already offset to  STATE_T.state_tics
+add   bx, SIZE STATE_T
+cmp   bx, (S_SARG_PAIN2 * SIZE STATE_T)
+jl    speeddown_next_state
+
+mov   al, 10 + HIGHBIT
+mov   byte ptr ds:[_mobjinfo + (MT_BRUISERSHOT * (SIZE MOBJINFO_T)) + MOBJINFO_T.mobjinfo_speed], 15 + HIGHBIT
+mov   byte ptr ds:[_mobjinfo + (MT_HEADSHOT * (SIZE MOBJINFO_T)) + MOBJINFO_T.mobjinfo_speed], al
+mov   byte ptr ds:[_mobjinfo + (MT_TROOPSHOT * (SIZE MOBJINFO_T)) + MOBJINFO_T.mobjinfo_speed], al
+
+
+done_with_fastmonsters:
+
+mov   byte ptr ds:[_gameskill], al ; finally write this
+mov   byte ptr ds:[_player + PLAYER_T.player_playerstate], PST_REBORN
+mov   al, 1 ; ah already 0
+
+mov   byte ptr ds:[_usergame], al		; true
+mov   byte ptr ds:[_paused], ah			; false
+mov   byte ptr ds:[_demoplayback], ah	; false
+mov   byte ptr ds:[_automapactive], ah	; false
+
+mov   byte ptr ds:[_viewactive], al		; true
+
+
+xchg  ax, dx ; dx gets 0001
+
+call	Z_QuickMapRender_
+call    Z_QuickMapRender_9000To6000_  ; //for R_TextureNumForName
+
+; todo this stuff
+
+mov   bl, '1'
+
+cmp   byte ptr ds:[_commercial], dl
+xchg  ax, dx  ; ah zero again.
+je    commercial_on_sky
+
+
+
+jmp   done_with_sky
+commercial_on_sky:
+mov   al, byte ptr ds:[_gamemap]
+
+cmp  al, 12
+jl   do_sky_load
+cmp  al, 21
+jl   add_one_do_sky_load
+jmp  add_two_do_sky_load
+
+done_with_sky:
+mov   al, byte ptr ds:[_gameepisode]
+dec   ax
+jz    do_sky_load
+dec   ax
+jz    add_one_do_sky_load
+dec   ax
+jz    add_two_do_sky_load
+
+add_three_do_sky_load:
+inc   bx
+add_two_do_sky_load:
+inc   bx
+add_one_do_sky_load:
+inc   bx
+do_sky_load:
+mov     byte ptr ds:[_SKY_String + 3], bl
+mov     ax, OFFSET _SKY_String
+call    R_TextureNumForName_
+mov     word ptr ds:[_skytexture], ax
+
+
+call	Z_QuickMapPhysics_
+call	G_DoLoadLevel_  ; todo do a fall thru 
+
+ret
+
+
+ENDP
 
  
 
