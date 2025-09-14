@@ -88,6 +88,7 @@ GLOBOBJS = $(GLOBOBJS) &
  bingen.obj &
  d_net.obj &
  g_setup.obj &
+ g_setupa.obj &
  g_game.obj &
  m_menu.obj &
  m_misc.obj &

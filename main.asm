@@ -2787,7 +2787,8 @@ pop    si
 ret
 ENDP
 
-
+; old version, now used optimized in the single use case in g_setup
+COMMENT @
 
 PROC   locallib_strncasecmp_ NEAR
 PUBLIC locallib_strncasecmp_
@@ -2834,6 +2835,7 @@ pop    si
 ret
 ENDP
 
+@
 
 PROC   locallib_printstringfar_ NEAR
 PUBLIC locallib_printstringfar_

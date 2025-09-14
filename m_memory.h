@@ -1224,6 +1224,10 @@ spritedefs_bytes    7410:0000
 #define drawsegs_BASE_segment_7000      ((segment_t) ((int32_t)drawsegs_BASE_7000 >> 16))
 #define masked_lookup_segment_7000      ((segment_t) ((int32_t)masked_lookup_7000 >> 16))
 
+#define texturecolumnlumps_bytes_6000_segment ((segment_t) ((int32_t)texturecolumnlumps_bytes_6000 >> 16))
+#define texturedefs_bytes_6000_segment        ((segment_t) ((int32_t)texturedefs_bytes_6000 >> 16))
+#define texturedefs_offset_6000_segment       ((segment_t) ((int32_t)texturedefs_offset_6000 >> 16))
+
 
 #define texturecolumnlumps_bytes_7000_segment ((segment_t) ((int32_t)texturecolumnlumps_bytes_7000 >> 16))
 #define texturedefs_bytes_7000_segment        ((segment_t) ((int32_t)texturedefs_bytes_7000 >> 16))

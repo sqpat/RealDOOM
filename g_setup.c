@@ -64,6 +64,7 @@
 uint16_t   __near  R_TextureNumForName(int8_t* __near name);
 
 
+uint16_t  __near   R_CheckTextureNumForName(int8_t __near *  name);
 
 // R_CheckTextureNumForName
 // Check whether texture is available.
@@ -71,7 +72,8 @@ uint16_t   __near  R_TextureNumForName(int8_t* __near name);
 //
 // this is always called in a situation where the texture defs must be mapped down to 6000
 // first, so we just use 6000 in here for texturedefs etc.
-uint16_t  __near   R_CheckTextureNumForName(int8_t * __near name){
+/*
+uint16_t  __near   R_CheckTextureNumForName(int8_t __near *  name){
 
 	uint16_t         i;
 	texture_t __far* texture;
@@ -93,7 +95,7 @@ uint16_t  __near   R_CheckTextureNumForName(int8_t * __near name){
 	return BAD_TEXTURE;
 }
 
-
+*/
 //
 // R_TextureNumForName
 // Calls R_CheckTextureNumForName,
