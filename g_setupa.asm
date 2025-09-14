@@ -22,6 +22,7 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN locallib_toupper_:NEAR
+EXTRN I_Error_:FAR
 
 .DATA
 
@@ -37,6 +38,9 @@ LUMP_PER_EMS_PAGE = 1024
 PROC    G_SETUP_STARTMARKER_ NEAR
 PUBLIC  G_SETUP_STARTMARKER_
 ENDP
+
+str_texturenum_error:
+db 0Ah, "R_TextureNumForName: %s not found", 0
 
 
 ; todo support cs string?
@@ -120,6 +124,38 @@ jmp     didnt_find_tex
 
 ENDP
 
+
+PROC    R_TextureNumForName_ NEAR
+PUBLIC  R_TextureNumForName_
+
+push    si
+xchg    ax, si
+xor     ax, ax ; return 0 case
+cmp     byte ptr ds:[si], '-'
+je      return_false
+
+xchg    ax, si
+push    ax  ; in case needed for error case below
+call    R_CheckTextureNumForName_
+js      do_error  ; signed from dec si in the function above
+
+pop     si  ; undo push above..
+return_false:
+
+pop     si
+
+
+ret
+
+do_error:
+
+; ax with ptr already passed in
+push    cs
+mov     ax, OFFSET str_texturenum_error
+push    ax
+call    I_Error_
+
+ENDP
 
 
  

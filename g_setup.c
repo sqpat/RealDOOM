@@ -92,7 +92,6 @@ uint16_t  __near   R_CheckTextureNumForName(int8_t __near *  name){
 	return BAD_TEXTURE;
 }
 
-*/
 //
 // R_TextureNumForName
 // Calls R_CheckTextureNumForName,
@@ -107,17 +106,13 @@ uint16_t     __near R_TextureNumForName(int8_t* __near name) {
 	}
 
 	i = R_CheckTextureNumForName(name);
-	/*
-	fp = fopen ("texes.txt", "ab");
-	fprintf (fp, "%i %s\n",i, name );
-	fclose(fp);
-	*/
-
+	
 	if (i == BAD_TEXTURE) {
 		I_Error("\n96 %s", name); // \nR_TextureNumForName: %s not found
 	}
 	return i;
 }
+*/
 
 
 //
