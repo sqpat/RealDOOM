@@ -937,7 +937,7 @@ sub   si, ax    ; runningoffset -= size;
 mov   ax, si    
 
 shl   di, 1
-mov   word ptr ds:[_hu_font + di], ax           ; hu_font[i] = runningoffset;
+mov   word ptr ds:[_hu_font + di], si           ; hu_font[i] = runningoffset;
 shr   di, 1
 
 mov   cx, ST_GRAPHICS_SEGMENT
@@ -948,7 +948,7 @@ call  W_CacheLumpNumDirect_  ;		W_CacheLumpNumDirect(lump, (byte __far*)(MK_FP(S
 
 mov   cx, ST_GRAPHICS_SEGMENT
 mov   es, cx
-mov   ax, word ptr es:[si + PATCH_T.patch_width] 
+mov   ax, word ptr es:[si + PATCH_T.patch_width]  ; read just byte..?
 
 FONT_WIDTHS_NEAR = (FONT_WIDTHS_SEGMENT - FIXED_DS_SEGMENT) SHL 4
 
@@ -962,10 +962,13 @@ jbe  dont_adjust_tens
 inc  byte ptr cs:[str_hu_init_font_lump+6]
 mov  byte ptr cs:[str_hu_init_font_lump+7], '0'
 dont_adjust_tens:
-cmp  word ptr cs:[str_hu_init_font_lump+6], 03539h  ; '9' and '5' chars. stop condition is 63 in, after "033" thru "095" patches have been loaded
-jne  loop_load_next_fontchar
+;cmp  word ptr cs:[str_hu_init_font_lump+6], ((9' SHL 8) + '6')  ; '9' and '6' chars. stop condition is 63 in, after "033" thru "095" patches have been loaded
+cmp  di, 03Fh
+jl  loop_load_next_fontchar
 
 call   Z_QuickMapPhysics_
+
+; END HU_INIT_
 
 
 
