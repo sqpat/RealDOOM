@@ -228,7 +228,7 @@ PUBLIC  G_InitNew_
 xor   ah, ah
 
 cmp   byte ptr ds:[_paused], ah ; 0
-jne   dont_unpause
+je    dont_unpause
 mov   byte ptr ds:[_paused], ah ; 0
 push  ax
 call  S_ResumeSound_
@@ -244,7 +244,7 @@ dont_cap_skill:
 cmp   byte ptr ds:[_is_ultimate], ah
 xchg  ax, dx
 
-jne   not_ultimate
+je    not_ultimate
 cmp   al, 3
 jb    dont_cap_ultimate_ep_high
 mov   al, 3
@@ -277,7 +277,7 @@ map_not_too_low:
 cmp   byte ptr ds:[_commercial], ah
 jne   skip_commercial_mapcheck
 cmp   bl, 9
-ja    skip_commercial_mapcheck
+jna   skip_commercial_mapcheck
 mov   bl, 9
 skip_commercial_mapcheck:
 
@@ -288,9 +288,11 @@ mov   byte ptr ds:[_gamemap], bl ; free up bx
 mov   byte ptr ds:[_gameepisode], dl ; free up dx
 
 
+mov   dl, byte ptr ds:[_gameskill]
 
 mov   byte ptr ds:[_respawnmonsters], ah
 cmp   byte ptr ds:[_respawnparm], ah
+mov   byte ptr ds:[_gameskill], al ; finally write this
 jne   do_respawn_on
 cmp   al, SK_NIGHTMARE
 jne   keep_respawn_off
@@ -308,7 +310,7 @@ jne   do_fastmonsters_on
 ; (skill == sk_nightmare && gameskill != sk_nightmare)
 cmp   al, SK_NIGHTMARE
 jne   check_fastmonsters_off
-cmp   byte ptr ds:[_gameskill], SK_NIGHTMARE
+cmp   dl, SK_NIGHTMARE    ; check old setting
 je    check_fastmonsters_off
 do_fastmonsters_on:
 
@@ -328,7 +330,7 @@ jmp     done_with_fastmonsters
 check_fastmonsters_off:
 cmp   al, SK_NIGHTMARE
 je    done_with_fastmonsters
-cmp   byte ptr ds:[_gameskill], SK_NIGHTMARE
+cmp   dl, SK_NIGHTMARE    ; check old setting
 jne   done_with_fastmonsters
 
 do_fastmonsters_off:
@@ -349,9 +351,8 @@ mov   byte ptr ds:[_mobjinfo + (MT_TROOPSHOT * (SIZE MOBJINFO_T)) + MOBJINFO_T.m
 
 done_with_fastmonsters:
 
-mov   byte ptr ds:[_gameskill], al ; finally write this
 mov   byte ptr ds:[_player + PLAYER_T.player_playerstate], PST_REBORN
-mov   al, 1 ; ah already 0
+mov   al, 1 ; ah still 0
 
 mov   byte ptr ds:[_usergame], al		; true
 mov   byte ptr ds:[_paused], ah			; false
@@ -369,9 +370,8 @@ call    Z_QuickMapRender_9000To6000_  ; //for R_TextureNumForName
 ; todo this stuff
 
 mov   bl, '1'
-
-cmp   byte ptr ds:[_commercial], dl
 xchg  ax, dx  ; ah zero again.
+cmp   byte ptr ds:[_commercial], al
 je    commercial_on_sky
 
 
