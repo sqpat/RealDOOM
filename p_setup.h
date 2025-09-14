@@ -22,7 +22,7 @@
 // NOT called by W_Ticker. Fixme.
 
 
-void __far P_SetupLevel ( int8_t episode, int8_t map, skill_t skill);
+void __near P_SetupLevel ( int8_t episode, int8_t map, skill_t skill);
 
 
 // Called by startup code.

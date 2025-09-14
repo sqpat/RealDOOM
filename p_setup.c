@@ -72,7 +72,7 @@ void GAMEKEYDOWNTHING();
 // P_SetupLevel
 //
 // stick this at top so entry point is always xxxx:0000
-void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
+void __near P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 	int8_t        lumpname[9];
 	int16_t         lumpnum;
 	

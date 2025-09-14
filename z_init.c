@@ -458,7 +458,7 @@ void  __far P_InitThinkers (void);
 
 
 void PSetupEndFunc();
-void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill);
+void __near P_SetupLevel (int8_t episode, int8_t map, skill_t skill);
 segment_t __far R_GetPatchTexture(int16_t lump, uint8_t maskedlookup) ;
 segment_t __far R_GetCompositeTexture(int16_t tex_index) ;
 void __far ST_Start(void) ;

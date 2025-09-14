@@ -62,6 +62,7 @@
 
 #define NUMKEYS         256 
 
+void __near G_DoLoadLevel(void);
 
 // R_CheckTextureNumForName
 // Check whether texture is available.
@@ -112,12 +113,10 @@ uint16_t     __near R_TextureNumForName(int8_t* __near name) {
 	}
 	return i;
 }
-*/
 
 
 //
  
-void __near G_ResetGameKeys();
 
 void __near G_DoLoadLevel(void) {
 
@@ -161,6 +160,7 @@ void __near G_DoLoadLevel(void) {
 
 
 }
+*/
 
 
 

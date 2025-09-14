@@ -155,6 +155,7 @@ int8_t             turnheld;                               // for accelerative t
  
 boolean         mousearray[4]; 
 // note: i think the -1 array thing  might be causing 16 bit binary to act up - not 100% sure - sq
+// todo this is jank in asm just use an offset.
 boolean*        mousebuttons = &mousearray[1];          // allow [-1]
 
 // mouse values are used once 

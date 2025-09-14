@@ -21,11 +21,16 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN locallib_toupper_:NEAR
 EXTRN I_Error_:FAR
+EXTRN Z_QuickMapPhysics_:FAR
+
+EXTRN locallib_toupper_:NEAR
+EXTRN G_ResetGameKeys_:NEAR
+EXTRN P_SetupLevel_:NEAR
 
 .DATA
 
+EXTRN _mousebuttons:BYTE
 
 COLORMAPS_SIZE = 33 * 256
 LUMP_PER_EMS_PAGE = 1024 
@@ -154,7 +159,62 @@ push    cs
 mov     ax, OFFSET str_texturenum_error
 push    ax
 call    I_Error_
+; ret not needed
+ENDP
 
+
+PROC    G_DoLoadLevel_ NEAR
+PUBLIC  G_DoLoadLevel_
+
+push    bx
+push    dx
+
+call	Z_QuickMapPhysics_
+
+cmp     byte ptr ds:[_wipegamestate], GS_LEVEL
+jne     dont_force_wipe
+mov     byte ptr ds:[_wipegamestate], -1
+dont_force_wipe:
+mov     byte ptr ds:[_gamestate], GS_LEVEL
+
+cmp     byte ptr ds:[_player + PLAYER_T.player_playerstate], PST_DEAD
+jne     dont_do_reborn_player
+mov     byte ptr ds:[_player + PLAYER_T.player_playerstate], PST_REBORN
+
+dont_do_reborn_player:
+
+xor     ax, ax
+cwd
+mov     bx, ax
+
+mov     al, byte ptr ds:[_gameepisode]
+mov     dl, byte ptr ds:[_gamemap]
+mov     bl, byte ptr ds:[_gameskill]
+call    P_SetupLevel_
+
+les     ax, dword ptr ds:[_ticcount]
+mov     word ptr ds:[_starttime+0], ax
+mov     word ptr ds:[_starttime+2], es
+
+mov     byte ptr ds:[_gameaction], GA_NOTHING
+
+call    G_ResetGameKeys_
+
+xor     ax, ax
+mov     byte ptr ds:[_paused], al ; 0
+mov     byte ptr ds:[_sendsave], al ; 0
+mov     byte ptr ds:[_sendpause], al ; 0
+mov     bx, word ptr ds:[_mousebuttons]
+mov     word ptr ds:[bx], ax
+mov     byte ptr ds:[bx+2], al ; i guess 3 bytes...?
+
+
+pop    dx
+pop    bx
+
+
+
+ret
 ENDP
 
 
