@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/14 10:24:29
+Created on:       25/09/14 10:32:45
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -49,8 +49,7 @@ D_INT_TEXT             CODE           AUTO           0000:4ffc       00000176
 MEMORY_TEXT            CODE           AUTO           0000:5172       00000000
 MATH_TEXT              CODE           AUTO           0000:5172       00000510
 MAIN_TEXT              CODE           AUTO           0000:5682       000014cf
-g_setup_TEXT           CODE           AUTO           0000:6b60       00000000
-G_SETUPA_TEXT          CODE           AUTO           0000:6b60       00000210
+G_SETUP_TEXT           CODE           AUTO           0000:6b52       00000210
 r_setup_TEXT           CODE           AUTO           0000:6d70       0000046c
 ST_SETUP_TEXT          CODE           AUTO           0000:71dc       00000125
 HU_SETUP_TEXT          CODE           AUTO           0000:7302       00000246
@@ -442,13 +441,13 @@ Module: main.obj(main.ASM)
 0000:6856      locallib_printf_
 0000:5851      I_StartTic_
 0000:6826      locallib_strlwr_
-Module: g_setupa.obj(g_setupa.ASM)
-0000:6b83      R_CheckTextureNumForName_
-0000:6d70*     G_SETUP_ENDMARKER_
-0000:6b60*     G_SETUP_STARTMARKER_
-0000:6bc8      R_TextureNumForName_
-0000:6c46      G_InitNew_
-0000:6be5      G_DoLoadLevel_
+Module: g_setup.obj(g_setup.ASM)
+0000:6b75      R_CheckTextureNumForName_
+0000:6d62*     G_SETUP_ENDMARKER_
+0000:6b52*     G_SETUP_STARTMARKER_
+0000:6bba      R_TextureNumForName_
+0000:6c38      G_InitNew_
+0000:6bd7      G_DoLoadLevel_
 Module: r_setup.obj(C:\REALDOOM\r_setup.c)
 0000:6d70+     R_InitTextureMapping_
 0000:7068      R_ExecuteSetViewSize_
@@ -869,4 +868,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  f560 (62816.)
 Entry point address: 0000:bcfc
-Link time: 00:00.19
+Link time: 00:00.20

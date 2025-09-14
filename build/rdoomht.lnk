@@ -42,7 +42,6 @@ file main.obj
 
 
 file g_setup.obj
-file g_setupa.obj
 file r_setup.obj
 file st_setup.obj
 file hu_setup.obj
