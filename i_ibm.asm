@@ -129,40 +129,26 @@ ENDP
 
 
 
-; todo make near
-; todo eventually jump to instead of call. 
+
+; todo jump to instead of exit
 PROC   I_Error_ FAR
 PUBLIC I_Error_
 
-push bx
-push dx
-push bp
-mov  bp, sp
-call I_Shutdown_
-lea  bx, [bp + 0Eh]
-mov  ax, word ptr [bp + 0Ah]
-mov  dx, word ptr [bp + 0Ch]
-call locallib_printf_
-mov  ax, 0Ah
-call locallib_putchar_
-mov  ax, 1
-jmp  exit_
 
 ;doesnt work, figure it out..
-COMMENT @
 
 call I_Shutdown_
 pop  ax  ; ip
 pop  ax  ; cs
 pop  ax  ; str off
 pop  dx  ; str seg
-lea  bx, [bp]  ; args ptr
+mov  bx, sp  ; args ptr
 call locallib_printf_
 mov  al, 0Ah  ; newline
 call locallib_putchar_
 mov  ax, 1
 jmp  exit_
-@
+
 ENDP
 
 

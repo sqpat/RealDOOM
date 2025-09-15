@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/15 07:39:54
+Created on:       25/09/15 07:58:01
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -34,7 +34,7 @@ z_init_TEXT            CODE           AUTO           0000:1600       00000a33
 p_init_TEXT            CODE           AUTO           0000:2040       0000049c
 i_main_TEXT            CODE           AUTO           0000:24e0       00000010
 I_QUIT_TEXT            CODE           AUTO           0000:24f0       0000018a
-I_IBM_TEXT             CODE           AUTO           0000:267a       000000f6
+I_IBM_TEXT             CODE           AUTO           0000:267a       000000ed
 d_main_TEXT            CODE           AUTO           0000:2770       0000039b
 D_NET_TEXT             CODE           AUTO           0000:2b0c       000000b3
 g_game_TEXT            CODE           AUTO           0000:2bc0       00000997
@@ -216,9 +216,9 @@ Module: i_quit.obj(i_quit.ASM)
 0000:251b*     I_ShutdownGraphics_
 Module: i_ibm.obj(i_ibm.ASM)
 0000:267a*     I_IBM_STARTMARKER_
-0000:26e9      I_InitGraphics_
+0000:26e0      I_InitGraphics_
 0000:267a      I_WaitVBL_
-0000:2770*     I_IBM_ENDMARKER_
+0000:2767*     I_IBM_ENDMARKER_
 0000:269a      I_ReadMouse_
 0000:26c7      I_Error_
 Module: d_main.obj(C:\REALDOOM\d_main.c)
@@ -866,4 +866,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  f500 (62720.)
 Entry point address: 0000:bc9c
-Link time: 00:00.74
+Link time: 00:00.75
