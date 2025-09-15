@@ -238,7 +238,7 @@ out    dx, al
 
 inc    dx
 in     al, dx
-and    al, NOT 40
+and    al, NOT 040h
 out    dx, al   ; inp(CRTC_INDEX + 1)&~0x40
 
 dec    dx
@@ -247,7 +247,7 @@ out    dx, al
 
 inc    dx
 in     al, dx
-or     al, 40
+or     al, 040h
 out    dx, al   ; inp(CRTC_INDEX + 1) | 0x40)
 
 mov    dx, GC_INDEX
