@@ -658,7 +658,7 @@ jnl   not_demo
     call  combine_strings_
 
     mov   word ptr [bp - 278], si
-    lea   si, [bp - 278]
+    ;lea   si, [bp - 278]
     push  si
     push  cs
     mov   ax, OFFSET str_playing_demo

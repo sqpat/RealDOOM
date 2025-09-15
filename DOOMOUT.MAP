@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/15 07:58:01
+Created on:       25/09/15 08:00:35
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -25,11 +25,11 @@ Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
 m_near_TEXT            CODE           AUTO           0000:0000       00000000
-D_INIT_TEXT            CODE           AUTO           0000:0000       00000914
-ST_INIT_TEXT           CODE           AUTO           0000:0914       00000203
-R_INIT_TEXT            CODE           AUTO           0000:0b18       000007b0
-W_INIT_TEXT            CODE           AUTO           0000:12c8       0000017e
-I_INIT_TEXT            CODE           AUTO           0000:1446       000001b9
+D_INIT_TEXT            CODE           AUTO           0000:0000       00000910
+ST_INIT_TEXT           CODE           AUTO           0000:0910       00000203
+R_INIT_TEXT            CODE           AUTO           0000:0b14       000007b0
+W_INIT_TEXT            CODE           AUTO           0000:12c4       0000017e
+I_INIT_TEXT            CODE           AUTO           0000:1442       000001b9
 z_init_TEXT            CODE           AUTO           0000:1600       00000a33
 p_init_TEXT            CODE           AUTO           0000:2040       0000049c
 i_main_TEXT            CODE           AUTO           0000:24e0       00000010
@@ -163,27 +163,27 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 0d70:1396      _eventhead
 0d70:1397      _startepisode
 Module: d_init.obj(d_init.ASM)
-0000:0914*     D_INIT_ENDMARKER_
+0000:0910*     D_INIT_ENDMARKER_
 0000:0000      D_INIT_STARTMARKER_
 0000:0337      D_DoomMain2_
 Module: st_init.obj(st_init.ASM)
-0000:0914*     ST_INIT_STARTMARKER_
-0000:0b17*     ST_INIT_ENDMARKER_
-0000:09b7      ST_Init_
+0000:0910*     ST_INIT_STARTMARKER_
+0000:0b13*     ST_INIT_ENDMARKER_
+0000:09b3      ST_Init_
 Module: r_init.obj(r_init.ASM)
-0000:0e81*     R_InitTextures_
-0000:1109      R_Init_
-0000:0ba2*     R_GenerateLookup_
-0000:127d*     W_CacheLumpNumDirectSmall_
+0000:0e7d*     R_InitTextures_
+0000:1105      R_Init_
+0000:0b9e*     R_GenerateLookup_
+0000:1279*     W_CacheLumpNumDirectSmall_
 Module: w_init.obj(w_init.ASM)
-0000:142a*     locallib_strupr_
-0000:12c8*     W_INIT_STARTMARKER_
-0000:1446*     W_INIT_ENDMARKER_
-0000:12f2      W_AddFile_
+0000:1426*     locallib_strupr_
+0000:12c4*     W_INIT_STARTMARKER_
+0000:1442*     W_INIT_ENDMARKER_
+0000:12ee      W_AddFile_
 Module: i_init.obj(i_init.ASM)
-0000:15ff*     I_INIT_ENDMARKER_
-0000:14c2      I_Init_
-0000:1446*     I_INIT_STARTMARKER_
+0000:15fb*     I_INIT_ENDMARKER_
+0000:14be      I_Init_
+0000:1442*     I_INIT_STARTMARKER_
 Module: z_init.obj(C:\REALDOOM\z_init.c)
 0000:1600*     doerror_
 0000:1610      Z_InitEMS_
@@ -866,4 +866,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  f500 (62720.)
 Entry point address: 0000:bc9c
-Link time: 00:00.75
+Link time: 00:00.74
