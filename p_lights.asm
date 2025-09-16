@@ -367,9 +367,9 @@ mov   bp, sp
 mov   dh, bl
 mov   word ptr cs:[SELFMODIFY_set_on_bright+1], dx 
 test  dl, dl
-mov   dl, 07Dh   ; jnl opcode
+mov   dl, 073h   ; jnb opcode. jna = 076h if it was 1
 je    use_off_smc
-mov   dl, 07Eh   ; jng opcode
+mov   dl, 076h   ; jna opcode
 use_off_smc:
 mov   byte ptr cs:[SELFMODIFY_set_on_off_branch], dl
 
@@ -390,6 +390,7 @@ loop_next_secnm_lightchange:
 lodsw
 push  si
 mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+
 
 mov   di, ax
 SHIFT_MACRO shl di 4
@@ -459,10 +460,10 @@ cmp   ch, cl
 ;if (sectors[offset].lightlevel > bright){
 ; OFF case
 ;if (sectors[offset].lightlevel < min) {
-; on: jng. 0x7E   off: jnl  0x7D
+; on: jna. 0x76   off: jnb  0x73
 
 SELFMODIFY_set_on_off_branch:
-jng  done_updating_this_sector_light
+jna  done_updating_this_sector_light
 mov  cl, ch
 done_updating_this_sector_light:
 
