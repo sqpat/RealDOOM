@@ -985,13 +985,12 @@ mov   es, si
 mov   si, word ptr [bp - 6]
 
 call  P_DivlineSideNode_
-and   al, 1
-mov   byte ptr [bp - 2], al
+and   ax, 1
+mov   word ptr [bp - 2], ax
 mov   ax, word ptr [bp - 6]
 SHIFT_MACRO shl ax 2
 mov   word ptr [bp - 4], ax
-mov   al, byte ptr [bp - 2]
-cbw  
+mov   ax, word ptr [bp - 2]
 mov   bx, ax
 mov   di, ax
 add   bx, ax
@@ -1015,9 +1014,8 @@ cmp   di, ax
 je    cross_bsp_node_return_1
 mov   ax, NODE_CHILDREN_SEGMENT
 mov   es, ax
-mov   al, byte ptr [bp - 2]
+mov   ax, word ptr [bp - 2]
 xor   al, 1
-cbw
 mov   bx, word ptr [bp - 4]
 sal   ax, 1		
 add   bx, ax ; add side offset

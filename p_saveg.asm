@@ -839,14 +839,8 @@ call   LoadInt16_
 
 
 mov    ax, word ptr ds:[di - 0Ch]  ; di is 0Dh, we want 1
-IF COMPISA GE COMPILE_186
-    shl    ax, 4
-ELSE
-    shl    ax, 1
-    shl    ax, 1
-    shl    ax, 1
-    shl    ax, 1
-ENDIF
+
+SHIFT_MACRO     shl    ax 4
 mov    di, ax
 mov    word ptr ss:[di + (_sectors_physics + 8)], bx  ; sectors_physics specialdataRef
 jmp    load_next_special

@@ -359,6 +359,7 @@ _numtextures =  				     _NULL_OFFSET + 003C0h
 _pcspeaker_currentoffset = 			 _NULL_OFFSET + 003C2h
 _pcspeaker_endoffset = 			 	 _NULL_OFFSET + 003C4h
 _SKY_String = 					 	 _NULL_OFFSET + 003C6h
+;_MainLogger_addr =      	         _NULL_OFFSET + 003CCh
 
 
 ; 3cb to 3cf free
@@ -788,7 +789,7 @@ ELSE
 	pop   di
 	pop   si
     pop   bp
-    pop   sp
+    pop   bx	;   ; was actually sp, but we dont want to push/pop back into sp... complicated but we dont use this value and 8086/286 are different and bad stuff happens.
 	pop   bx
 	pop   dx
 	pop   cx

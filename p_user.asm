@@ -456,6 +456,9 @@ ANG5_LOW  = 038E3h
 NEG_ANG5_HIGH = 0FC71h
 NEG_ANG5_LOW  = 0C71Dh
 
+use_dead_attackerref:
+mov   si, _deadAttackerX
+jmp   set_values_call_point_to_angle
 
 
 PROC    P_DeathThink_ NEAR
@@ -604,9 +607,6 @@ no_reborn:
 POPA_NO_AX_OR_BP_MACRO
 ret  
 
-use_dead_attackerref:
-mov   si, _deadAttackerX
-jmp   set_values_call_point_to_angle
 
 
 

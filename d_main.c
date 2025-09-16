@@ -710,7 +710,6 @@ if (gametic == 200){
 }
 */
 
-#ifdef DEBUGLOG_TO_FILE
 				
 
 
@@ -721,29 +720,36 @@ if (gametic == 200){
 			//sprintf(result2, "%i %i %i \n", gametic, prndindex, SAV);
 			//SAVEDUNIT = playerMobj;
 			//SAVEDUNIT_POS = playerMobj_pos;
-			SAVEDUNIT = &thinkerlist[222].data;
-			SAVEDUNIT_POS = &mobjposlist_6800[222];
-			//SAVEDUNIT = &thinkerlist[playerMobjRef].data;
-			//if (gametic == 1) {
-			//	fp = fopen("debuglog.txt", "w"); // clear old file
-			//} else {
-				fp = fopen("debuglog.txt", "a");
-			//}
-			//sprintf(result2, "%li %hhu %li %li %li %li %li %l %l %i \n", gametic, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->z, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->floorz, SAVEDUNIT->ceilingz, SAVEDUNIT->secnum);
-			fprintf(fp, "%li %i  %li %li %li %li %li %i %i %i\n", gametic, prndindex,   SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT_POS->z.w, SAVEDUNIT_POS->x.w, SAVEDUNIT_POS->y.w,SAVEDUNIT_POS->stateNum, SAVEDUNIT->tics);
-			fclose(fp);
+{
+			// FILE* fp = fopen("debuglog.txt", "ab");
+			// fprintf(fp, "%li %i \n", gametic, prndindex);
+			// fclose(fp);
 
-			if (gametic == 400){
-				I_Error("done blah");
-			}
-				
+			// if (gametic == 78){
+			// 	I_Error("done blah");
+			// }
+}
  
-#endif
 		
 		
 	}
 }
 
+// int16_t counter = 0;
+// int16_t setval = 0;
+
+// void __far MainLogger (uint16_t ax, uint16_t dx, uint16_t bx, uint16_t cx){
+// 	if (gametic == 77){
+// 		// FILE* fp = fopen("tick.txt", "ab");
+// 		// fprintf(fp, "%li %i %i %x %i %x\n", gametic, prndindex, counter, ax & 0xFF, dx, bx);
+// 		// fclose(fp);
+
+// 		counter++;
+// 		if (counter == 91){
+// 			setval = 1;
+// 		}
+// 	}
+// }
 
 
 

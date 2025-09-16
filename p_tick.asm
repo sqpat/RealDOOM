@@ -190,6 +190,17 @@ dw OFFSET T_StrobeFlash_
 dw OFFSET T_Glow_
 
 
+COMMENT @
+PROC do_logger_ NEAR
+
+PUSHA_NO_AX_MACRO
+call dword ptr ds:[_MainLogger_addr];
+POPA_NO_AX_MACRO
+
+ret
+
+@
+
 
 
 
@@ -234,6 +245,9 @@ MUL_SIZEOF_THINKER_T bx, si
 mov       al, byte ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype +1]  ; just get high bit
 lea       di, ds:[bx + _thinkerlist + THINKER_T.t_data]
 and       al, (TF_FUNCBITS SHR 8)
+
+; call  do_logger_
+
 cmp       al, (TF_MOBJTHINKER_HIGHBITS SHR 8)
 jne       continue_checking_tf_types
 do_mobjthinker:

@@ -654,6 +654,7 @@ void __far OutOfThinkers ();
 void __far S_InitSFXCache();
 void __far G_DeferedInitNew (skill_t skill, int8_t episode, int8_t map);
 
+void __far MainLogger (uint16_t ax, uint16_t dx, uint16_t bx, uint16_t cx);
 
 void __near Z_LoadBinaries() {
 	int16_t i;
@@ -866,6 +867,11 @@ void __near Z_LoadBinaries() {
 	V_DrawPatch_addr =			 		(uint32_t)(V_DrawPatch);
 	V_DrawFullscreenPatch_addr =		(uint32_t)(V_DrawFullscreenPatch);
 
+	// MainLogger_addr =  					(uint32_t)(MainLogger);
+
+
 
 }
+
+
 

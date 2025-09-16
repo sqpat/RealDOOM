@@ -310,11 +310,11 @@ IF COMPISA GE COMPILE_186
 ELSE
     mov   ax, SIZEOF_THINKER_T
     mul   si
-    mov   bx, ax
-    add   bx, (_thinkerlist + THINKER_T.t_data)
+    add   ax, (_thinkerlist + THINKER_T.t_data)
+    xchg  ax, bx
     mov   ax, SIZEOF_MOBJ_POS_T
     mul   si
-    mov   si, ax
+    xchg  ax, si
 
 ENDIF
 
@@ -381,7 +381,7 @@ PROC    P_CheckMissileRange_ NEAR
 PUBLIC  P_CheckMissileRange_
 
 
-PUSHA_NO_AX_OR_BP_MACRO
+PUSHA_NO_AX_MACRO
 xchg  di, si
 
 IF COMPISA GE COMPILE_186
@@ -389,7 +389,7 @@ IF COMPISA GE COMPILE_186
 ELSE
     mov   ax, SIZEOF_THINKER_T 
     mul   word ptr ds:[di + MOBJ_T.m_targetRef]
-    mov   bx, ax
+    xchg  ax, bx
 ENDIF
 
 mov   cx, SIZEOF_THINKER_T
@@ -408,7 +408,7 @@ IF COMPISA GE COMPILE_186
 ELSE
     mov   dx, SIZEOF_MOBJ_POS_T
     mul   dx
-    mov   cx, ax
+    xchg  ax, cx
 ENDIF
 
 mov   bp, cx
@@ -430,7 +430,7 @@ je    ready_to_attack
 exit_checkmissilerange_return_0_and_pop:
 
 ;LEAVE_MACRO 
-POPA_NO_AX_OR_BP_MACRO
+POPA_NO_AX_MACRO
 clc
 ret   
 just_hit_enemy:
@@ -513,7 +513,7 @@ cmp   ax, dx
 jge   exit_checkmissilerange_return_1
 exit_checkmissilerange_return_0:
 ;LEAVE_MACRO 
-POPA_NO_AX_OR_BP_MACRO
+POPA_NO_AX_MACRO
 exit_pmove_ret_0_early:
 clc
 ret   
@@ -525,7 +525,7 @@ je    missile_is_spider_skull_cyborg
 jmp   missile_dist_200_check
 exit_checkmissilerange_return_1:
 ;LEAVE_MACRO 
-POPA_NO_AX_OR_BP_MACRO
+POPA_NO_AX_MACRO
 stc
 ret   
 ENDP
@@ -1118,7 +1118,7 @@ do_look_for_players:
 
 PUSHA_NO_AX_MACRO
 
-mov   bp, dx
+mov   bp, dx        ; todo selfmodify below instead? or could this be recursively called
 mov   di, ax
 
 
@@ -1134,7 +1134,7 @@ IF COMPISA GE COMPILE_186
     imul  si, ax, SIZEOF_MOBJ_POS_T
 ELSE
     mov  dx, SIZEOF_MOBJ_POS_T
-    mul  ax
+    mul  dx
     xchg ax, si
 ENDIF
 
@@ -1262,7 +1262,7 @@ IF COMPISA GE COMPILE_186
     imul  bx, ax, SIZEOF_THINKER_T
 ELSE
     mov  dx, SIZEOF_THINKER_T
-    mul  ax
+    mul  dx
     xchg ax, bx
 ENDIF
 
@@ -2156,7 +2156,7 @@ ELSE
     push  ax
 ENDIF
 
-mov   ax, si
+xchg  ax, si
 add   dx, (_thinkerlist + THINKER_T.t_data)
 call  P_SpawnMissile_
 a_bspiexit:
@@ -4493,10 +4493,12 @@ IF COMPISA GE COMPILE_186
     mov   dx, bx
     imul  bx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
 ELSE
+    push  ax
     mov   ax, SIZEOF_THINKER_T
     mul   word ptr ds:[si + MOBJ_T.m_targetRef]
     xchg  ax, bx  ; product to bx
     xchg  ax, dx  ; dx gets bx
+    pop   ax
 ENDIF
 
 mov   cx, 128
@@ -4747,7 +4749,8 @@ loop_next_brainawake:
 IF COMPISA GE COMPILE_186
     imul  bx, ax, SIZEOF_THINKER_T
 ELSE
-    mov   bx, SIZEOF_THINKER_T
+    xchg  ax, bx
+    mov   ax, SIZEOF_THINKER_T
     mul   bx
     xchg  ax, bx
 ENDIF
@@ -5461,7 +5464,7 @@ ENDP
 
 
 
-
+; todo idea p_setmobjstate variant with mobjpos already loaded. skips the div/mul steps.
 PROC P_SetMobjState_ NEAR
 PUBLIC P_SetMobjState_
 
@@ -5507,7 +5510,7 @@ do_next_state:
 push      ax  ; mobjpos offset
 xchg      ax, bx   ; bx gets mobjpos offset
 mov       ax, 6
-mul       cx
+mul       cx        ; todo shift.. 
 mov       di, MOBJPOSLIST_6800_SEGMENT
 mov       es, di
 push      ax    ; state offset
