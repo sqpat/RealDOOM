@@ -30,7 +30,6 @@ file bingen.obj
 file d_net.obj
 file g_game.obj
 file m_misc.obj
-file am_map.obj
 file st_stuff.obj
 file hu_stuff.obj
 file hu_lib.obj
@@ -123,6 +122,7 @@ file p_telept.obj
 file p_tick.obj
 file p_user.obj
 file p_info.obj
+file am_map.obj
 
 #hack..
 NEWSEGMENT 

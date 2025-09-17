@@ -19,18 +19,16 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN Z_QuickMapPhysics_:FAR
-EXTRN M_Random_:NEAR
-EXTRN FixedMul1632_:NEAR
-EXTRN FixedDivWholeA_:FAR
-EXTRN FixedDiv_:FAR
-EXTRN FastDiv3216u_:FAR
-EXTRN cht_CheckCheat_:NEAR
-EXTRN combine_strings_:NEAR
 
-EXTRN V_DrawPatch_:FAR
-EXTRN V_MarkRect_:FAR
-EXTRN getStringByIndex_:FAR
+
+EXTRN FixedMul1632_MapLocal_:NEAR
+
+
+
+
+
+
+
 
 AMMNUMPATCHOFFSETS_FAR_OFFSET = 20Ch 
 
@@ -361,7 +359,7 @@ push      dx
 les       bx, dword ptr ds:[_am_scale_mtof + 0]
 mov       cx, es
 sub       ax, word ptr ds:[_screen_botleft_x]  ; todo dont suppose this can be self modified start of frame?
-call      FixedMul1632_
+call      FixedMul1632_MapLocal_
 pop       dx
 ret       
 
@@ -376,7 +374,7 @@ push      dx
 les       bx, dword ptr ds:[_am_scale_mtof + 0]
 mov       cx, es
 sub       ax, word ptr ds:[_screen_botleft_y]  ; todo dont suppose this can be self modified start of frame?
-call      FixedMul1632_
+call      FixedMul1632_MapLocal_
 neg       ax
 add       ax, AUTOMAP_SCREENHEIGHT
 pop       dx
@@ -400,7 +398,7 @@ add       word ptr ds:[_screen_botleft_y], ax
 les       bx, dword ptr ds:[_am_scale_ftom + 0]
 mov       cx, es
 mov       ax, AUTOMAP_SCREENWIDTH
-call      FixedMul1632_
+call      FixedMul1632_MapLocal_
 les       bx, dword ptr ds:[_am_scale_ftom + 0]
 mov       cx, es
 mov       word ptr ds:[_screen_viewport_width], ax
@@ -412,7 +410,7 @@ add       ax, word ptr ds:[_screen_botleft_x]
 mov       word ptr ds:[_screen_topright_x], ax
 
 mov       ax, AUTOMAP_SCREENHEIGHT
-call      FixedMul1632_
+call      FixedMul1632_MapLocal_
 mov       word ptr ds:[_screen_viewport_height], ax
 push      ax
 sar       ax, 1
@@ -465,13 +463,19 @@ add       dx, word ptr ds:[_screen_viewport_height]
 mov       word ptr ds:[_screen_topright_y], dx
 xor       bx, bx
 mov       ax, AUTOMAP_SCREENWIDTH
-call      FixedDivWholeA_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDivWholeA_addr
+
 mov       word ptr ds:[_am_scale_mtof + 0], ax
 xchg      ax, bx
 mov       ax, 1
 mov       word ptr ds:[_am_scale_mtof + 2], dx
 mov       cx, dx
-call      FixedDivWholeA_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDivWholeA_addr
+
 mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx
 ;pop       dx
@@ -594,13 +598,19 @@ xor       cx, cx
 
 mov       ax, AUTOMAP_SCREENWIDTH
 cwd
-call      FixedDiv_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDiv_addr
+
 xchg      ax, si ; store a
 mov       di, dx ; store a
 lea       bx, [bp - di] ; max y - min y
 mov       ax, AUTOMAP_SCREENHEIGHT
 cwd
-call      FixedDiv_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDiv_addr
+
 
 ;    am_min_scale_mtof = a < b ? a : b;
 ; dx:ax is b
@@ -734,9 +744,9 @@ ret
 ENDP
 
 
+COMMENT @
+; inlined
 
-
-; todo inline once g_game done
 PROC    AM_Stop_ NEAR
 PUBLIC  AM_Stop_
 
@@ -744,6 +754,7 @@ mov       word ptr ds:[_am_stopped], 00001h
 mov       byte ptr ds:[_st_gamestate], 1
 ret      
 
+@
 
 ENDP
 
@@ -753,11 +764,14 @@ PUSHA_NO_AX_OR_BP_MACRO
 
 mov       al, byte ptr ds:[_am_stopped]
 test      al, al
+mov       ax, 1
 jne       dont_call_am_stop
-call      AM_Stop_
+mov       word ptr ds:[_am_stopped], ax   ; 1
+mov       byte ptr ds:[_st_gamestate], al ; 1
+
 dont_call_am_stop:
 
-mov       byte ptr ds:[_am_stopped], 0
+mov       byte ptr ds:[_am_stopped], ah ; 0
 mov       ax, word ptr cs:[_am_lastlevel] 
 cmp       al, byte ptr ds:[_gamemap]
 jne       do_level_init
@@ -775,7 +789,10 @@ xor       cx, cx
 call      AM_findMinMaxBoundaries_
 mov       dx, word ptr ds:[_am_min_scale_mtof]
 xor       ax, ax
-call      FastDiv3216u_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FastDiv3216u_addr
+
 mov       word ptr ds:[_am_scale_mtof + 0], ax
 mov       word ptr ds:[_am_scale_mtof + 2], dx
 
@@ -793,7 +810,10 @@ dont_set_to_minscale:
 xchg      ax, bx
 mov       cx, dx
 mov       ax, 1
-call      FixedDivWholeA_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDivWholeA_addr
+
 mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx
 
@@ -817,14 +837,14 @@ les       bx, dword ptr ds:[_am_scale_ftom]
 mov       cx, es
 mov       ax, AUTOMAP_SCREENWIDTH
 
-call      FixedMul1632_
+call      FixedMul1632_MapLocal_
 les       bx, dword ptr ds:[_am_scale_ftom]
 mov       cx, es
 mov       word ptr ds:[_screen_viewport_width], ax
 sar       ax, 1
 xchg      ax, si
 mov       ax, AUTOMAP_SCREENHEIGHT
-call      FixedMul1632_
+call      FixedMul1632_MapLocal_
 
 les       bx, dword ptr ds:[_playerMobj_pos]
 
@@ -867,7 +887,10 @@ xor       ax, ax
 mov       word ptr ds:[_am_scale_mtof + 2], ax
 mov       cx, ax
 inc       ax ; 1
-call      FixedDivWholeA_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDivWholeA_addr
+
 mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx
 call      AM_activateNewScale_
@@ -884,7 +907,7 @@ ENDP
 
 
 
-PROC    AM_Responder_ NEAR
+PROC    AM_Responder_ FAR
 PUBLIC  AM_Responder_
 
 ;boolean __near AM_Responder ( event_t __far* ev ) {
@@ -924,7 +947,7 @@ do_return:
 
 
 POPA_NO_AX_OR_BP_MACRO
-ret       
+retf       
 
 automap_is_active:
 
@@ -1046,8 +1069,12 @@ cmp       al, AM_ENDKEY
 jne       not_end_key
 
 mov       byte ptr ds:[_am_bigstate], ah ; 0
+
 mov       byte ptr ds:[_viewactive], cl ; 1
-call      AM_Stop_
+;call      AM_Stop_
+mov       word ptr ds:[_am_stopped], cx   ; 1
+mov       byte ptr ds:[_st_gamestate], cl ; 1
+
 
 jmp       done_with_keypress
 
@@ -1075,7 +1102,7 @@ done_with_keypress:
 
 mov       dx, si ; ev1
 mov       al, CHEATID_AUTOMAP 
-call      cht_CheckCheat_
+call      dword ptr ds:[_cht_CheckCheat_Far_addr]
 
 jnc       return_cx
 mov       al, byte ptr ds:[_am_cheating]
@@ -1128,7 +1155,10 @@ jne       not_mark_key
 mov       bx, OFFSET _player_message_string
 mov       ax, AMSTR_MARKEDSPOT
 mov       cx, ds
-call      getStringByIndex_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _getStringByIndex_addr
+
 
 mov       ax, 030h ; null terminated '0'
 add       al, byte ptr cs:[_markpointnum] ; add digit
@@ -1159,7 +1189,7 @@ ENDP
 
 
 
-PROC    AM_Ticker_ NEAR
+PROC    AM_Ticker_ FAR
 PUBLIC  AM_Ticker_
 
 push      bx
@@ -1229,7 +1259,7 @@ les       bx, dword ptr ds:[_am_scale_mtof + 0]
 mov       cx, es
 mov       ax, word ptr ds:[_mtof_zoommul]
 ;SHIFT_MACRO sal ax 4   ; didnt work
-call      FixedMul1632_
+call      FixedMul1632_MapLocal_
 
 sal       ax, 1
 rcl       dx, 1
@@ -1247,7 +1277,10 @@ push      dx
 xchg      ax, bx
 mov       cx, dx
 mov       ax, 1
-call      FixedDivWholeA_
+
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDivWholeA_addr
 mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx
 pop       ax ; ax gets high
@@ -1272,7 +1305,10 @@ les       bx, dword ptr ds:[_am_max_scale_mtof + 0]
 mov       cx, es
 mov       word ptr ds:[_am_scale_mtof + 0], bx
 mov       word ptr ds:[_am_scale_mtof + 2], cx
-call      FixedDivWholeA_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FixedDivWholeA_addr
+
 mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx
 activate_new_scale:
@@ -1292,7 +1328,7 @@ pop       dx
 pop       cx
 pop       bx
 
-ret      
+retf      
 min_out_windowscale:
 call      AM_minOutWindowScale_
 jmp       exit_am_changewindowscale
@@ -2106,7 +2142,7 @@ jmp       done_drawing_things
 
 
 
-PROC    AM_Drawer_ NEAR
+PROC    AM_Drawer_ FAR
 PUBLIC  AM_Drawer_
 
 PUSHA_NO_AX_MACRO
@@ -2162,7 +2198,9 @@ mov       es, bp
 push      es
 push      word ptr es:[di]  ;  + AMMNUMPATCHOFFSETS_FAR_OFFSET
 xor       bx, bx ; FB = 0
-call      V_DrawPatch_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _V_DrawPatch_addr
 skip_draw_mark:
 inc       di
 inc       di
@@ -2175,9 +2213,12 @@ mov       cx, AUTOMAP_SCREENHEIGHT
 mov       bx, AUTOMAP_SCREENWIDTH
 xor       ax, ax
 cwd
-call      V_MarkRect_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _V_MarkRect_addr
+
 POPA_NO_AX_MACRO
-ret      
+retf      
 
 do_draw_grid:
 

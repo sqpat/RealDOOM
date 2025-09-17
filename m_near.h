@@ -715,9 +715,12 @@
 #define screen_viewport_height 		      (*((int16_t __near*)        		 (_NULL_OFFSET + 0x0ACA)))
 #define old_screen_viewport_width 		  (*((int16_t __near*)        		 (_NULL_OFFSET + 0x0ACC)))
 #define old_screen_viewport_height 		  (*((int16_t __near*)        		 (_NULL_OFFSET + 0x0ACE)))
+#define FixedDivWholeA_addr	  		      (*((uint32_t __near*)              (_NULL_OFFSET + 0x0AD0)))
+#define cht_CheckCheat_Far_addr	 	      (*((uint32_t __near*)              (_NULL_OFFSET + 0x0AD4)))
 
 
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0AD0)))
+
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0AE0)))
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
@@ -786,6 +789,9 @@ extern void 				(__far* P_SpawnMapThing)();
 extern void					(__far* P_Ticker)();
 extern void					(__far* P_SpawnSpecials)();
 extern void					(__far* P_GivePower)();
+
+extern void (__far* AM_Ticker)();
+extern void (__far* AM_Drawer)();
 
 
 

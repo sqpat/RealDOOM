@@ -956,7 +956,7 @@ ENDP
 
 
 ; todo return carry
-PROC    AM_Responder_ NEAR
+PROC    AM_Responder_ FAR
 PUBLIC  AM_Responder_
 
 ;boolean __near AM_Responder ( event_t __far* ev ) {
@@ -1354,7 +1354,7 @@ ret
 
 ENDP
 
-PROC    AM_Ticker_ NEAR
+PROC    AM_Ticker_ FAR
 PUBLIC  AM_Ticker_
 
 cmp       byte ptr ds:[_followplayer], 0

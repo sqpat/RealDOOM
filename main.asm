@@ -20,7 +20,6 @@ INSTRUCTION_SET_MACRO
 
 EXTRN ST_Drawer_:NEAR
 EXTRN HU_Drawer_:NEAR
-EXTRN AM_Drawer_:NEAR
 EXTRN HU_Erase_:NEAR
 EXTRN R_ExecuteSetViewSize_:NEAR
 EXTRN R_DrawViewBorder_:NEAR
@@ -37,7 +36,7 @@ EXTRN D_PostEvent_:NEAR
 EXTRN M_CheckParm_:NEAR
 EXTRN HU_Responder_:NEAR
 EXTRN ST_Responder_:NEAR
-EXTRN AM_Responder_:NEAR
+
 EXTRN FastDiv3216u_:FAR
 EXTRN Z_SetOverlay_:FAR
 EXTRN fopen_:FAR
@@ -221,6 +220,14 @@ dw  018h, 028h
 
 PUBLIC _forwardmove
 PUBLIC _sidemove
+
+; external hook for am_map which is high
+
+PROC   cht_CheckCheat_Far_ FAR
+PUBLIC cht_CheckCheat_Far_
+call cht_CheckCheat_
+retf
+ENDP
 
 
 ; ax is cheat index
@@ -1782,7 +1789,11 @@ call  ST_Responder_ ; never returns true
 ;jne   exit_gresponder_return_1
 mov   ax, bx
 mov   dx, cx
-call  AM_Responder_
+
+;call  AM_Responder_
+db    09Ah
+dw    AM_RESPONDER_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 jc    exit_gresponder_return_1
 
 not_gamestate_level:
@@ -3172,7 +3183,11 @@ cmp   byte ptr ds:[_inhelpscreensstate], bh ; 0
 jne   dont_draw_automap
 cmp   byte ptr ds:[_automapactive], bh ; 0
 je    dont_draw_automap
-call  AM_Drawer_
+
+
+db    09Ah
+dw    AM_DRAWER_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 dont_draw_automap:
 xor    ax, ax
 cwd

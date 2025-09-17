@@ -582,7 +582,11 @@ void __near G_DoCompleted (void)  {
 	G_PlayerFinishLevel(0); // take away cards and stuff
 
     if (automapactive) {
-        AM_Stop (); 
+        // AM_Stop (); 
+        // inlined
+        am_stopped = 1;
+        st_gamestate = 1;
+
     }
     if (!commercial){
         switch(gamemap) {

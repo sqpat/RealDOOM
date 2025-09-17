@@ -86,6 +86,10 @@ void (__far* R_RenderPlayerView)() =          ((void (__far *)())     	         
 void (__far* P_Ticker)() =                    ((void (__far *)())     	                                                                                                    (MK_FP(physics_highcode_segment,         P_TickerOffset)));
 void (__far* P_SpawnSpecials)() =             ((void (__far *)())     	                                                                                                    (MK_FP(physics_highcode_segment,         P_SpawnSpecialsOffset)));
 
+void (__far* AM_Ticker)() =                    ((void (__far *)())     	                                                                                                    (MK_FP(physics_highcode_segment,         AM_TickerOffset)));
+void (__far* AM_Drawer)() =                    ((void (__far *)())     	                                                                                                    (MK_FP(physics_highcode_segment,         AM_DrawerOffset)));
+
+
 
 
 void (__far* M_Init)() =                      ((void (__far *)())     	                                                                                                    (MK_FP(menu_code_area_segment,         M_InitOffset)));

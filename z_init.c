@@ -598,6 +598,8 @@ void __near Z_RemapRenderFunctions(){
 
 
 }
+void  __far cht_CheckCheat_Far();
+
 
 void __near Z_DoRenderCodeLoad(FILE* fp){
 
@@ -833,7 +835,8 @@ void __near Z_LoadBinaries() {
 	FixedDiv_addr =						(uint32_t)(FixedDiv);
 	FixedMulTrigNoShift_addr =			(uint32_t)(FixedMulTrigNoShift);
 	FastDiv32u16u_addr =				(uint32_t)(FastDiv32u16u);
-	// FixedMul16u32_addr =				(uint32_t)(FixedMul16u32);
+	FixedDivWholeA_addr =				(uint32_t)(FixedDivWholeA);
+	cht_CheckCheat_Far_addr =           (uint32_t)(cht_CheckCheat_Far);
 	// FastMul16u32u_addr =				(uint32_t)(FastMul16u32u);
 	FastDiv3216u_addr =					(uint32_t)(FastDiv3216u);
 	FixedMulTrigSpeedNoShift_addr =		(uint32_t)(FixedMulTrigSpeedNoShift);
