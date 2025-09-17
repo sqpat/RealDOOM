@@ -244,7 +244,7 @@ dont_cap_skill:
 cmp   byte ptr ds:[_is_ultimate], ah
 xchg  ax, dx
 
-je    not_ultimate
+jne   us_ultimate
 cmp   al, 3
 jb    dont_cap_ultimate_ep_high
 mov   al, 3
@@ -254,7 +254,7 @@ jne   ultimate_ep_not_zero
 inc   ax  ; change 0 to 1
 ultimate_ep_not_zero:
 jmp   done_with_episode_check
-not_ultimate:
+us_ultimate:
 test  al, al
 jne   done_with_episode_check
 mov   al, 4
