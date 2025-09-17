@@ -3801,19 +3801,17 @@ jump_to_exit_project_sprite_2:
 jmp   exit_project_sprite
 not_too_far_off_right_side_highbits:
 mov   bx, word ptr [bp - 020h]
-mov   es, word ptr ds:[_spritewidths_segment]
 xor   ax, ax
-xlat  byte ptr es:[bx]
-
+mov   al, byte ptr cs:[bx + (SPRITEWIDTHS_OFFSET)]
 
 ;    if (usedwidth == 1){
 ;        usedwidth = 257;
 ;    }
 
 
-cmp   ax, 1
+cmp   al, 1
 jne   usedwidth_not_1
-mov   ax, 257   
+mov   ah, al
 usedwidth_not_1:
 
 ;   temp.h.fracbits = 0;
@@ -8609,11 +8607,8 @@ mov   ax, word ptr [bp - 4]
 add   di, word ptr [bp - 6]
 x1_calculcated:
 mov   bx, word ptr [bp - 0Ch]
-mov   es, word ptr ds:[_spritewidths_segment]
-;mov   al, byte ptr es:[bx]
-;xor   ah, ah
 xor   ax, ax
-xlat  byte ptr es:[bx]
+mov   al, byte ptr cs:[bx + (SPRITEWIDTHS_OFFSET)]
 
 mov   word ptr [bp - 0Eh], di
 cmp   ax, 1

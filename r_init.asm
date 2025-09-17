@@ -1348,13 +1348,7 @@ do_R_InitSpriteLumps_:
 ; inlined
 
 xor       dx, dx
-cmp       byte ptr ds:[_is_ultimate], dl ; 0
-mov       ax, SPRITEWIDTHS_NORMAL_SEGMENT
-je        not_ultimate
-mov       ax, SPRITEWIDTHS_ULT_SEGMENT
 
-not_ultimate:
-mov       word ptr ds:[_spritewidths_segment], ax
 mov       di, dx ; 0
 
 
@@ -1375,7 +1369,8 @@ xor       bx, bx
 mov       cx, SCRATCH_SEGMENT_5000
 
 call      W_CacheLumpNumDirect_			; has column iteration, can't be small lump load...
-mov       es, word ptr ds:[_spritewidths_segment]
+mov       ax, SPRITEWIDTHS_SEGMENT
+mov       es, ax
 mov       ax, SCRATCH_SEGMENT_5000
 mov       ds, ax
 xor       si, si

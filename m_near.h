@@ -598,7 +598,7 @@
 #define solidsegs                 		  ((cliprange_t __near *)            (_NULL_OFFSET + 0x0610))
 #define newend	     		    		  (*((cliprange_t  __near* __near*)  (_NULL_OFFSET + 0x0690)))
 #define pspritescale       		  	      (*((uint16_t __near*)              (_NULL_OFFSET + 0x0692)))
-#define spritewidths_segment       		  (*((segment_t __near*)             (_NULL_OFFSET + 0x0694)))
+// #define SPRITEWIDTHS_SEGMENT_PTR   		  (*((segment_t __near*)             (_NULL_OFFSET + 0x0694)))
 #define r_cachedplayerMobjsecnum 		  (*((int16_t __near*)               (_NULL_OFFSET + 0x0696)))
 #define scaledviewwidth 		 		  (*((int16_t __near*)               (_NULL_OFFSET + 0x0698)))
 #define viewwindowoffset 		 		  (*((int16_t __near*)               (_NULL_OFFSET + 0x069A)))

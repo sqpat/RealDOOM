@@ -1095,15 +1095,7 @@ patchoffset                 83BD:01DC
 
 // RENDER 0x7000-0x77FF DATA - USED ONLY IN BSP ... 13k + 8k ... 10592 free
 
-// complicated... 
-// nodes_render is larger for ultimate doom but sprites are smaller.
-// in doom2, etc - sprites etc are larger but nodes are smaller.
-// they can always fit in the 32k at 0x7000-7800, but you cant
-// lazily assign worst case and make it always fit.
-// It fails filling in the allotted space by only 32 bytes.
-// so shift the middle element (spritewidths)  by 32 bytes at runtime.
-// this means spritewidths segment is a variable and not a constant, 
-// but it also means the ultimate doom version will work with either wad
+
 
 #define FLAT_CACHE_BASE_SEGMENT  0x7000
 
@@ -1111,20 +1103,20 @@ patchoffset                 83BD:01DC
 #define size_spritedefs        16114u
 #define size_spritewidths      (sizeof(uint8_t) * MAX_SPRITE_LUMPS)
 
+// spritewidths at end of bsp
+#define spritewidths_segment   ((bsp_code_segment + 0x400) - ((size_spritewidths + 0xF) >> 4))
+#define spritewidths_offset    (((0x400) - ((size_spritewidths + 0xF) >> 4)) << 4)
+
 // first element
 #define nodes_render          ((node_render_t __far*)  MAKE_FULL_SEGMENT(0x70000000, 0))
 
 //middle element
-#define spritewidths_ult          ((uint8_t __far*)        MAKE_FULL_SEGMENT(nodes_render, size_nodes_render))
-#define spritewidths_normal       ((uint8_t __far*)        MAKE_FULL_SEGMENT(nodes_render, size_nodes_render - 0x20))
 
 //last element
-#define sprites               ((spritedef_t __far*)    MAKE_FULL_SEGMENT(0x74100000, 0))
+#define sprites               ((spritedef_t __far*)    MAKE_FULL_SEGMENT(nodes_render, size_nodes_render))
 #define spritedefs_bytes      ((byte __far*)           sprites)
 
 
-#define spritewidths_ult_segment    ((segment_t)     ((int32_t)spritewidths_ult >> 16))
-#define spritewidths_normal_segment ((segment_t)     ((int32_t)spritewidths_normal >> 16))
 #define sprites_segment             ((segment_t)     ((int32_t)sprites >> 16))
 
 #define nodes_render_segment 0x7000
@@ -1134,12 +1126,10 @@ patchoffset                 83BD:01DC
 /*
 
 nodes_render        7000:0000
-spritewidths_ult    73BB:0000
-spritewidths_normal 73B9:0000
-spritedefs_bytes    7410:0000
-[empty]             77FF2 (14 bytes left)
+spritedefs_bytes    73BB:0000
+[empty]             ???? (1300-1400 bytes left?)
 
-0 bytes free
+?? bytes free
 */
 
 
