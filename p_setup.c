@@ -1004,8 +1004,8 @@ void __near Z_FreeConventionalAllocations() {
 	// we should be paged to physics now - should be ok
 	memset(thinkerlist, 0, MAX_THINKERS * sizeof(thinker_t));
 
-	//erase the level data region (BUT NOT SCANTOKEY)
-	FAR_memset(((byte __far*) baselowermemoryaddress), 0, (scantokey_segment - base_lower_memory_segment) << 4);
+	//erase the level data region
+	FAR_memset(((byte __far*) baselowermemoryaddress), 0, (sfx_data_segment - base_lower_memory_segment) << 4);
 
 	// todo make this area less jank. We want to free all the ems 4.0 region level data...
 	// handles blockmaps and lines_physics...

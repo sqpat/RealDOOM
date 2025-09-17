@@ -666,8 +666,6 @@ void __near Z_LoadBinaries() {
 	
 	//256
 	locallib_far_fread(rndtable, 256, fp);
-	//128
-	locallib_far_fread(scantokey, 128, fp);
 	
 	//1507
 	fread(mobjinfo, sizeof(mobjinfo_t), NUMMOBJTYPES, fp);

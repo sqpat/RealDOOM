@@ -542,9 +542,7 @@ cmp  al, SC_LEFTARROW
 je   case_leftarrow
 default_case_key:
 xchg ax, bx
-mov  ax, SCANTOKEY_SEGMENT
-mov  es, ax
-mov  al, byte ptr es:[bx]
+mov  al, byte ptr cs:[bx + _scantokey]
 key_selected:
 mov  byte ptr [bp - SIZE EVENT_T + EVENT_T.event_data1], al
 call_post_event:
@@ -652,6 +650,28 @@ db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 _angleturn:
 dw 640, 1280, 320
+
+_scantokey:
+
+
+db  0  ,    27,     '1',    '2',    '3',    '4',    '5',    '6'
+db '7',    '8',    '9',    '0',    '-',    '=',    KEY_BACKSPACE, 9
+db 'q',    'w',    'e',    'r',    't',    'y',    'u',    'i'
+db 'o',    'p',    '[',    ']',    13 ,    KEY_RCTRL,'a',  's'    
+db 'd',    'f',    'g',    'h',    'j',    'k',    'l',    ';'
+db 39 ,    '`',    KEY_LSHIFT,92,  'z',    'x',    'c',    'v' 
+db 'b',    'n',    'm',    ',',    '.',    '/',    KEY_RSHIFT,'*'
+db KEY_RALT,' ',   0  ,    KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5
+db KEY_F6, KEY_F7, KEY_F8, KEY_F9, KEY_F10,0  ,    0  , KEY_HOME
+db KEY_UPARROW,KEY_PGUP,'-',KEY_LEFTARROW,'5',KEY_RIGHTARROW,'+',KEY_END
+db KEY_DOWNARROW,KEY_PGDN,KEY_INS,KEY_DEL,0,0,             0,              KEY_F11
+db KEY_F12,0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0
+db 0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0
+db 0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0
+db 0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0
+db 0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0
+
+
 
 
 PROC G_ResetGameKeys_  NEAR
@@ -1545,8 +1565,6 @@ PUBLIC M_ScanTranslateDefaults_
 
 PUSHA_NO_AX_MACRO
 
-mov   dx, SCANTOKEY_SEGMENT
-mov   es, dx
 xor   bx, bx
 
 ;	for (i = 0; i < NUM_DEFAULTS; i++) {
@@ -1566,7 +1584,7 @@ mov   byte ptr cs:[bx + _defaults + DEFAULT_T.default_untranslated], al  ; writt
 xor   ah, ah
 mov   si, ax
 mov   di, word ptr cs:[bx + _defaults + DEFAULT_T.default_loc_ptr]
-mov   al, byte ptr es:[si]
+mov   al, byte ptr cs:[si + _scantokey]
 mov   byte ptr ds:[di], al                     ; written here 4
 no_pointer_load_next_defaults_value:
 add   bx, SIZEOF_DEFAULT_T

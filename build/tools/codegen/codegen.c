@@ -8,7 +8,7 @@
 #include "p_inter.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2582
+#define CONSTANTS_COUNT 2581
 #define LOCALS_COUNT 22
 
 
@@ -74,7 +74,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "FLATTRANSLATION_SEGMENT",
     "TEXTURETRANSLATION_SEGMENT",
     "TEXTUREHEIGHTS_SEGMENT",
-    "SCANTOKEY_SEGMENT",
     "RNDTABLE_SEGMENT",
 
     "SEGS_PHYSICS_SEGMENT",
@@ -2747,7 +2746,6 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     flattranslation_segment,
     texturetranslation_segment,
     textureheights_segment,
-    scantokey_segment,
     rndtable_segment,
 
     segs_physics_segment,
