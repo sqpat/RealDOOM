@@ -88,7 +88,6 @@ EXTRN _key_straferight:BYTE
 EXTRN _key_fire:BYTE
 EXTRN _key_use:BYTE
 EXTRN _key_strafe:BYTE
-EXTRN _key_speed:BYTE
 EXTRN _usemouse:BYTE
 EXTRN _mousebfire:BYTE
 EXTRN _mousebstrafe:BYTE
@@ -482,8 +481,7 @@ sub  byte ptr cs:[_kbdhead], KBDQUESIZE
 mov  byte ptr cs:[_kbdtail], al
 kbpos_ready:
 mov  bl, byte ptr cs:[_kbdtail]
-and  bl, KBDQUESIZE - 1
-xor  bh, bh
+and  bx, KBDQUESIZE - 1
 mov  al, byte ptr cs:[bx + _keyboardque]
 mov  ah, al
 and  ah, 07Fh                 ; just the key, no 080h up/downflag
@@ -499,7 +497,7 @@ cmp  ah, SC_RSHIFT
 jne  rshift_not_held
 
 
-rhift_held:
+shift_held:
 mov  dl, byte ptr cs:[_kbdtail]
 mov  bx, dx
 dec  bx
@@ -738,7 +736,6 @@ push      si
 push      di
 push      bp
 mov       bp, sp
-sub       sp, 6
 cbw      
 mov       si, OFFSET _localcmds
 SHIFT_MACRO shl ax 3
@@ -754,32 +751,33 @@ stosw
 stosw 
 stosw 
 
-
+xor       bx, bx
 mov       bl, byte ptr ds:[_key_strafe]
-xor       bh, bh
-cmp       byte ptr cs:[bx + _gamekeydown], 0
+cmp       byte ptr cs:[bx + _gamekeydown], bh  ; 0
 jne       strafe_is_on
-
+; ax already 0
 mov       al, byte ptr ds:[_mousebstrafe]
 mov       bx, word ptr ds:[_mousebuttons]
-xor       ah, ah
+
 add       bx, ax
 mov       al, byte ptr ds:[bx]
 test      al, al
 je        strafe_is_not_on
 strafe_is_on:
-mov       al, 1
+inc       ax ; strafe = 1
 strafe_is_not_on:
+xor       bx, bx
 mov       bl, byte ptr ds:[_key_speed]
-mov       byte ptr [bp - 2], al
+push      ax
 xor       cx, cx        ; cx:di is sidemove?
+push      cx
+push      cx
 xor       di, di
-xor       bh, bh
-mov       word ptr [bp - 4], cx
-mov       dh, byte ptr cs:[bx + _gamekeydown]
+
+mov       dh, byte ptr cs:[bx + _gamekeydown]    ; speed
 mov       bl, byte ptr ds:[_key_right]
-mov       word ptr [bp - 6], cx
-cmp       byte ptr cs:[bx + _gamekeydown], 0
+
+cmp       byte ptr cs:[bx + _gamekeydown], bh ; 0
 jne       turn_is_held
 
 mov       bl, byte ptr ds:[_key_left]
@@ -798,129 +796,106 @@ jmp       check_strafe
 finished_checking_turn:
 mov       dl, 2
 check_strafe:
+shl       dh, 1  ; do this once here and re-use
 ; let movement keys cancel each other out
+; dl is speed or strafe?
 
-cmp       byte ptr [bp - 2], 0
+cmp       byte ptr [bp - 2], bh ; 0
 jne       handle_strafe
 handle_no_strafe:
 mov       bl, byte ptr ds:[_key_right]
-xor       bh, bh
-cmp       byte ptr cs:[bx + _gamekeydown], 0
+cmp       byte ptr cs:[bx + _gamekeydown], bh ; 0
 je        handle_checking_left_turn
 handle_right_turn:
 mov       al, dl
 cbw      
 mov       bx, ax
-add       bx, ax
+sal       bx, 1
 mov       ax, word ptr cs:[bx + _angleturn]
 sub       word ptr cs:[si + 2], ax
 handle_checking_left_turn:
 mov       bl, byte ptr ds:[_key_left]
-xor       bh, bh
-cmp       byte ptr cs:[bx + _gamekeydown], 0
+cmp       byte ptr cs:[bx + _gamekeydown], bh ; 0
 je        done_handling_strafe
 handle_left_turn:
-mov       al, dl
-cbw      
-mov       bx, ax
-add       bx, ax
+mov       bl, dl
+shl       bx, 1
 mov       ax, word ptr cs:[bx + _angleturn]
 add       word ptr cs:[si + 2], ax
 jmp       done_handling_strafe
 
 handle_strafe:
 mov       bl, byte ptr ds:[_key_right]
-xor       bh, bh
-cmp       byte ptr cs:[bx + _gamekeydown], 0
+cmp       byte ptr cs:[bx + _gamekeydown], bh ; 0
 je        handle_checking_strafe_left
 handle_strafe_right:
-mov       al, dh
-cbw      
-mov       bx, ax
-SHIFT_MACRO shl bx 2
+mov       bl, dh
 add       cx, word ptr cs:[bx + _sidemove]
 adc       di, 0
 handle_checking_strafe_left:
 mov       bl, byte ptr ds:[_key_left]
-xor       bh, bh
-cmp       byte ptr cs:[bx + _gamekeydown], 0
+cmp       byte ptr cs:[bx + _gamekeydown], bh
 je        done_handling_strafe
 handle_strafe_left:
-mov       al, dh
-cbw      
-mov       bx, ax
-SHIFT_MACRO shl bx 2
+mov       bl, dh
 sub       cx, word ptr cs:[bx + _sidemove]
 sbb       di, 0
 done_handling_strafe:
 mov       bl, byte ptr ds:[_key_up]
-xor       bh, bh
-cmp       byte ptr cs:[bx + _gamekeydown], 0
+cmp       byte ptr cs:[bx + _gamekeydown], bh ; 0
 je        up_not_pressed
 up_pressed:
-mov       al, dh
-cbw      
-mov       bx, ax
-SHIFT_MACRO shl bx 2
+mov       bl, dh
 mov       ax, word ptr cs:[bx + _forwardmove]
 add       word ptr [bp - 4], ax
 adc       word ptr [bp - 6], 0
 up_not_pressed:
 mov       bl, byte ptr ds:[_key_down]
-xor       bh, bh
-cmp       byte ptr cs:[bx + _gamekeydown], 0
+
+cmp       byte ptr cs:[bx + _gamekeydown], bh ; 0
 je        down_not_pressed
 down_pressed:
-mov       al, dh
-cbw      
-mov       bx, ax
-SHIFT_MACRO shl bx 2
+mov       bl, dh
 mov       ax, word ptr cs:[bx + _forwardmove]
 sub       word ptr [bp - 4], ax
 sbb       word ptr [bp - 6], 0
 down_not_pressed:
 mov       bl, byte ptr ds:[_key_straferight]
-xor       bh, bh
-cmp       byte ptr cs:[bx + _gamekeydown], 0
+
+cmp       byte ptr cs:[bx + _gamekeydown], bh; 0
 je        straferight_not_pressed
 straferight_pressed:
-mov       al, dh
-cbw      
-mov       bx, ax
-SHIFT_MACRO shl bx 2
+mov       bl, dh
 add       cx, word ptr cs:[bx + _sidemove]
 adc       di, 0
 straferight_not_pressed:
 mov       bl, byte ptr ds:[_key_strafeleft]
-xor       bh, bh
-cmp       byte ptr cs:[bx + _gamekeydown], 0
+
+cmp       byte ptr cs:[bx + _gamekeydown], bh; 0
 je        strafeleft_not_pressed
 strafeleft_pressed:
-mov       al, dh
-cbw      
-mov       bx, ax
-SHIFT_MACRO shl bx 2
+mov       bl, dh
 sub       cx, word ptr cs:[bx + _sidemove]
 sbb       di, 0
 strafeleft_not_pressed:
 mov       bl, byte ptr ds:[_key_fire]
-xor       bh, bh
-cmp       byte ptr cs:[bx + _gamekeydown], 0
+
+cmp       byte ptr cs:[bx + _gamekeydown], bh ; 0
 jne       fire_pressed
 ; check mouse fire
 mov       al, byte ptr ds:[_mousebfire]
+cbw
 mov       bx, word ptr ds:[_mousebuttons]
-xor       ah, ah
 add       bx, ax
-cmp       byte ptr ds:[bx], 0
+cmp       byte ptr ds:[bx], ah ; 0
 je        done_handling_fire
 
 fire_pressed:
 or        byte ptr cs:[si + 7], BT_ATTACK
 done_handling_fire:
+xor       bx, bx
 mov       bl, byte ptr ds:[_key_use]
-xor       bh, bh
-cmp       byte ptr cs:[bx + _gamekeydown], 0
+cmp       byte ptr cs:[bx + _gamekeydown], bh ; 0
 jne       use_pressed
 
 done_handling_use:
@@ -957,7 +932,7 @@ je        mouse_forward_not_pressed
 mov       al, dh
 cbw      
 mov       bx, ax
-SHIFT_MACRO shl bx 2
+SHIFT_MACRO shl bx 1
 mov       ax, word ptr cs:[bx + _forwardmove]
 add       word ptr [bp - 4], ax
 adc       word ptr [bp - 6], 0

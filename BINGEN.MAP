@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/17 06:34:47
+Created on:       25/09/17 07:04:19
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -49,8 +49,8 @@ D_DMX_TEXT             CODE           AUTO           0000:6898       00000125
 D_INT_TEXT             CODE           AUTO           0000:69be       00000176
 WI_STUFF_TEXT          CODE           AUTO           0000:6b34       00001009
 MATH_TEXT              CODE           AUTO           0000:7b3e       00000510
-MAIN_TEXT              CODE           AUTO           0000:804e       0000144f
-G_SETUP_TEXT           CODE           AUTO           0000:949e       00000210
+MAIN_TEXT              CODE           AUTO           0000:804e       0000144c
+G_SETUP_TEXT           CODE           AUTO           0000:949a       00000210
 r_setup_TEXT           CODE           AUTO           0000:96b0       0000046c
 ST_SETUP_TEXT          CODE           AUTO           0000:9b1c       00000125
 HU_SETUP_TEXT          CODE           AUTO           0000:9c42       00000246
@@ -442,9 +442,9 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 0000:71a9*     WI_initAnimatedBack_
 0000:6f6b*     WI_drawLF_
 0000:78e2*     G_WorldDone_
-0000:7195*     WI_initShowNextLoc_
 0000:747f*     WI_updateStats_
 0000:7133*     WI_drawAnimatedBack_
+0000:7195*     WI_initShowNextLoc_
 0000:7b25      WI_Start_
 0000:707a*     WI_updateAnimatedBack_
 0000:79b6      WI_Drawer_
@@ -472,57 +472,57 @@ Module: math.obj(math.ASM)
 0000:7c82*     FixedMul16u32_
 0000:7c6c      FixedMulTrigSpeedNoShift_
 Module: main.obj(main.ASM)
-0000:91a2      DEBUG_PRINT_NOARG_
-0000:9025      locallib_strcpy_
-0000:904b      locallib_toupper_
-0000:8d62      G_Responder_
-0000:918e*     locallib_printstringfar_
-0000:9488      DEBUG_PRINT_
-0000:8378      G_CopyCmd_
-0000:8fe1      combine_strings_
+0000:919f      DEBUG_PRINT_NOARG_
+0000:9022      locallib_strcpy_
+0000:9048      locallib_toupper_
+0000:8d5f      G_Responder_
+0000:918b*     locallib_printstringfar_
+0000:9485      DEBUG_PRINT_
+0000:8376      G_CopyCmd_
+0000:8fde      combine_strings_
 0000:8137      _sidemove
-0000:8fcf      M_Ticker_
-0000:8f47*     I_UpdateNoBlit_
-0000:949d*     D_MAIN_ENDMARKER_
+0000:8fcc      M_Ticker_
+0000:8f44*     I_UpdateNoBlit_
+0000:949a*     D_MAIN_ENDMARKER_
 0000:8133      _forwardmove
-0000:9261      I_ShutdownTimer_
-0000:84b4      G_GetGameKey_
-0000:8e32      I_SetPalette_
-0000:9096      locallib_printhex_
+0000:925e      I_ShutdownTimer_
+0000:84b2      G_GetGameKey_
+0000:8e2f      I_SetPalette_
+0000:9093      locallib_printhex_
 0000:8125*     D_MAIN_STARTMARKER_
-0000:9089      locallib_putchar_
-0000:8aac      M_LoadDefaults_
-0000:9190*     locallib_printstringnear_
-0000:8e85*     I_UpdateBox_
-0000:92d6      D_Display_
+0000:9086      locallib_putchar_
+0000:8aa9      M_LoadDefaults_
+0000:918d*     locallib_printstringnear_
+0000:8e82*     I_UpdateBox_
+0000:92d3      D_Display_
 0000:81eb      I_KeyboardISR_
-0000:8c4f      M_ScanTranslateDefaults_
-0000:9039*     locallib_strlen_
-0000:880c*     CopyString13_
-0000:84c0      G_BuildTiccmd_
-0000:849f      G_ResetGameKeys_
+0000:8c4c      M_ScanTranslateDefaults_
+0000:9036*     locallib_strlen_
+0000:8809*     CopyString13_
+0000:84be      G_BuildTiccmd_
+0000:849d      G_ResetGameKeys_
 0000:813b      cht_CheckCheat_
-0000:91a0      DEBUG_PRINT_NOARG_CS_
-0000:9286      I_ShutdownKeyboard_
-0000:9258      locallib_dos_setvect_
-0000:9003      locallib_strcmp_
-0000:924e      locallib_dos_getvect_
-0000:90fd*     locallib_printdecimal_
-0000:9056      copystr8_
+0000:919d      DEBUG_PRINT_NOARG_CS_
+0000:9283      I_ShutdownKeyboard_
+0000:9255      locallib_dos_setvect_
+0000:9000      locallib_strcmp_
+0000:924b      locallib_dos_getvect_
+0000:90fa*     locallib_printdecimal_
+0000:9053      copystr8_
 0000:819c      cht_GetParam_
-0000:8c84      M_SaveDefaults_
-0000:8f2d*     I_FinishUpdate_
-0000:906f*     locallib_createhexnibble_
-0000:91a2      locallib_printf_
+0000:8c81      M_SaveDefaults_
+0000:8f2a*     I_FinishUpdate_
+0000:906c*     locallib_createhexnibble_
+0000:919f      locallib_printf_
 0000:8216      I_StartTic_
-0000:9172      locallib_strlwr_
+0000:916f      locallib_strlwr_
 Module: g_setup.obj(g_setup.ASM)
-0000:94c1      R_CheckTextureNumForName_
-0000:96ae*     G_SETUP_ENDMARKER_
-0000:949e*     G_SETUP_STARTMARKER_
-0000:9506      R_TextureNumForName_
-0000:9584      G_InitNew_
-0000:9523      G_DoLoadLevel_
+0000:94bd      R_CheckTextureNumForName_
+0000:96aa*     G_SETUP_ENDMARKER_
+0000:949a*     G_SETUP_STARTMARKER_
+0000:9502      R_TextureNumForName_
+0000:9580      G_InitNew_
+0000:951f      G_DoLoadLevel_
 Module: r_setup.obj(C:\REALDOOM\r_setup.c)
 0000:96b0+     R_InitTextureMapping_
 0000:99a8      R_ExecuteSetViewSize_
@@ -1502,4 +1502,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003d560 (251232.)
 Entry point address: 3706:0a84
-Link time: 00:00.50
+Link time: 00:00.04
