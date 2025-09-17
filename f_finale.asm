@@ -1576,7 +1576,7 @@ PUBLIC F_CastResponder_
 push  bx
 mov   bx, ax
 mov   es, dx
-cmp   byte ptr es:[bx], 0
+cmp   byte ptr es:[bx + EVENT_T.event_evtype], 0
 jne   exit_fresponder_return0
 cmp   byte ptr ds:[_castdeath], 0
 je    do_castdeath

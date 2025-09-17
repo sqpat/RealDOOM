@@ -2193,13 +2193,9 @@ push  di
 xchg  ax, si
 mov   es, dx  ; events_segment
 xor   cx, cx
-mov   ax, -1
-cmp   byte ptr es:[si], cl ; 0 or EV_KEYDOWN
-jne   no_char
-mov   ax, word ptr es:[si + 1]
-no_char:
-cmp   al, -1
-je    exit_m_responder_return_false
+mov   ax, word ptr es:[si + EVENT_T.event_data1]
+test  ah, ah  ; test for 0 for EV_KEYDOWN
+jne   exit_m_responder_return_false
 cmp   byte ptr cs:[_saveStringEnter], cl ; 0
 je    not_savestringenter
 xchg  ax, bx

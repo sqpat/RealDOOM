@@ -445,7 +445,7 @@ ENDP
 
 
 
-; todo not heavily optimized
+; todo revisit and optimize a bit better.
 
 
 do_exit:
@@ -453,10 +453,6 @@ LEAVE_MACRO
 pop     dx
 pop     bx
 ret
-lshift_not_held:
-cmp  ah, SC_RSHIFT
-je   rshift_held
-jmp  rshift_not_held
 
 PROC I_StartTic_ NEAR
 PUBLIC I_StartTic_
@@ -465,8 +461,7 @@ push bx
 push dx
 push bp
 mov  bp, sp
-sub  sp, 0Eh
-; event is created at 0Eh and passed to D_PostEvent and stored in stack
+sub  sp, SIZE EVENT_T ; built event stored in stack
 
 cmp  byte ptr ds:[_mousepresent], 0
 je   no_mouse
@@ -491,32 +486,36 @@ and  bl, KBDQUESIZE - 1
 xor  bh, bh
 mov  al, byte ptr cs:[bx + _keyboardque]
 mov  ah, al
-and  ah, 07Fh                 ; some constant
-
+and  ah, 07Fh                 ; just the key, no 080h up/downflag
+cwd  ; zero dx
 ;		// extended keyboard shift key bullshit
 
 
 inc  byte ptr cs:[_kbdtail]
 cmp  ah, SC_LSHIFT
-jne  lshift_not_held
-rshift_held:
+je   shift_held
+lshift_not_held:
+cmp  ah, SC_RSHIFT
+jne  rshift_not_held
+
+
+rhift_held:
 mov  dl, byte ptr cs:[_kbdtail]
-xor  dh, dh
 mov  bx, dx
-sub  bx, 2
-and  bx, KBDQUESIZE - 1
+dec  bx
+dec  bx 
+and  bl, KBDQUESIZE - 1
 cmp  byte ptr cs:[bx + _keyboardque], 0E0h   ; special / pause keys
 je   loop_next_char
-and  al, 080h       ; keyup/down
+and  al, 080h       ; preserve keyup/down
 or   al, SC_RSHIFT
 rshift_not_held:
 cmp  al, 0E0h       ; special/pause keys
 je   loop_next_char
 mov  dl, byte ptr cs:[_kbdtail]
-xor  dh, dh
 mov  bx, dx
-sub  bx, 2
-xor  bh, bh
+dec  bx
+dec  bx
 and  bl, KBDQUESIZE - 1
 cmp  byte ptr cs:[bx + _keyboardque], 0E1h   ; pause key bullshit
 je   loop_next_char
@@ -526,60 +525,50 @@ cmp  byte ptr cs:[bx + _keyboardque], 09Dh
 je   is_9D_press
 not_c5_press:
 test al, 080h   ; keyup/down
+mov  ah, EV_KEYDOWN
 je   is_keydown
-mov  byte ptr [bp - 0Eh], 1
+mov  ah, EV_KEYUP
+is_keydown:
+mov  byte ptr [bp - SIZE EVENT_T + EVENT_T.event_evtype], ah
+
 check_pressed_key:
-and  al, 07Fh                            ; keycode
-mov  dl, al
-cmp  dl, SC_UPARROW
+and  ax, 07Fh                            ; keycode
+
+cmp  al, SC_UPARROW
 je   case_uparrow
-cmp  dl, SC_DOWNARROW
+cmp  al, SC_DOWNARROW
 je   case_downarrow
-cmp  dl, SC_RIGHTARROW
+cmp  al, SC_RIGHTARROW
 je   case_rightarrow
-cmp  dl, SC_LEFTARROW
+cmp  al, SC_LEFTARROW
 je   case_leftarrow
 default_case_key:
-mov  dx, SCANTOKEY_SEGMENT
-xor  ah, ah
-mov  es, dx
-mov  bx, ax
-mov  dl, byte ptr es:[bx]
-xor  al, al
-xor  dh, dh
-mov  word ptr [bp - 0Bh], ax
-mov  word ptr [bp - 0Dh], dx
-lea  ax, [bp - 0Eh]
+xchg ax, bx
+mov  ax, SCANTOKEY_SEGMENT
+mov  es, ax
+mov  al, byte ptr es:[bx]
+key_selected:
+mov  byte ptr [bp - SIZE EVENT_T + EVENT_T.event_data1], al
+call_post_event:
+mov  ax, sp
 mov  dx, ds
 call D_PostEvent_
 jmp  loop_next_char
 case_uparrow:
-mov  word ptr [bp - 0Dh], KEY_UPARROW
-key_selected:
-mov  word ptr [bp - 0Bh], 0
-lea  ax, [bp - 0Eh]
-mov  dx, ds
-call D_PostEvent_
-jmp  loop_next_char
+mov  al, KEY_UPARROW
+jmp  key_selected
 is_9D_press:
-mov  word ptr [bp - 0Dh], KEY_PAUSE
-lea  ax, [bp - 0Eh]
-mov  byte ptr [bp - 0Eh], dh
-mov  dx, ds
-mov  word ptr [bp - 0Bh], 0
-call D_PostEvent_
-jmp  loop_next_char
-is_keydown:
-mov  byte ptr [bp - 0Eh], 0
-jmp  check_pressed_key
+mov  word ptr [bp - SIZE EVENT_T + EVENT_T.event_data1], KEY_PAUSE + (EV_KEYDOWN SHL 8)
+;mov  byte ptr [bp - SIZE EVENT_T + EVENT_T.event_evtype], EV_KEYDOWN
+jmp  call_post_event
 case_downarrow:
-mov  word ptr [bp - 0Dh], KEY_DOWNARROW
+mov  al, KEY_DOWNARROW
 jmp  key_selected
 case_leftarrow:
-mov  word ptr [bp - 0Dh], KEY_LEFTARROW
+mov  al, KEY_LEFTARROW
 jmp  key_selected
 case_rightarrow:
-mov  word ptr [bp - 0Dh], KEY_RIGHTARROW
+mov  al, KEY_RIGHTARROW
 jmp  key_selected
 
 
@@ -690,7 +679,9 @@ ret
 
 ENDP
 
-; todo inline
+; inlined
+COMMENT @
+
 PROC G_SetGameKeyDown_  NEAR
 PUBLIC G_SetGameKeyDown_
 
@@ -716,7 +707,8 @@ ret
 
 ENDP
 
-
+@
+; todo inline later
 PROC G_GetGameKey_  NEAR
 PUBLIC G_GetGameKey_
 
@@ -1770,14 +1762,13 @@ cmp   byte ptr ds:[_gamestate], GS_DEMOSCREEN
 jne   not_starting_controlpanel
 check_key_for_controlpanel:
 mov   es, cx
-mov   al, byte ptr es:[bx]
-test  al, al
-je    call_startcontrolpanel
-cmp   al, 2
+mov   ax, word ptr es:[bx + EVENT_T.event_data1]
+test  ah, ah ; EV_KEYDOWN
+je    call_startcontrolpanel    ; keydown?
+cmp   ah, EV_MOUSE              ; mouse?
 jne   exit_gresponder_return_0
-mov   si, word ptr es:[bx + 3]
-or    si, word ptr es:[bx + 1]
-jne   call_startcontrolpanel
+test  al, al
+jne   call_startcontrolpanel    ; any mousebutton down?
 exit_gresponder_return_0:
 xor   ax, ax
 pop   si
@@ -1818,56 +1809,54 @@ jne   exit_gresponder_return_1_2
 
 not_gamestate_finale:
 
-; check game type
+; check event type
 mov   es, cx
-mov   al, byte ptr es:[bx]
-cmp   al, EV_MOUSE
-je    handle_game_mouse_event
-cmp   al, EV_KEYUP
-jne   handle_game_keydown_event
-mov   ax, word ptr es:[bx + 1]
-cmp   ax, 0100h
-jae   exit_gresponder_return_0
-
-call  G_SetGameKeyUp_
-jmp   exit_gresponder_return_0
-
-
+mov   ax, word ptr es:[bx + EVENT_T.event_data1]
+cmp   ah, EV_KEYUP
+ja    handle_game_mouse_event  ; ev_mouse
+xchg  ax, bx
+mov   al, 0
+je   handle_game_keyup_event
+; al has key
 
 handle_game_keydown_event:
 ; i dont think we have to handle high word
-mov   ax, word ptr es:[bx + 1]
-cmp   ax, KEY_PAUSE
-jne   not_pause
+cmp   bl, KEY_PAUSE
+jne   handle_nonpause_game_keydown_event
 
 mov   byte ptr ds:[_sendpause], 1
 exit_gresponder_return_1_2:
 mov   al, 1
+exit_gresponder_return_al:
 pop   si
 pop   cx
 pop   bx
 ret   
 
-not_pause:
-cmp   ax, 0100h
-jnb   exit_gresponder_return_1_2
-call  G_SetGameKeyDown_
-jmp   exit_gresponder_return_1_2
+handle_nonpause_game_keydown_event:
+inc   ax  ; al is 1. write 1 not 0 and return 1.
+handle_game_keyup_event:
+; G_SetGameKeyUp/Down:
+
+xor   bh, bh
+mov   byte ptr cs:[bx + _gamekeydown], al ; 0 or 1...
+jmp   exit_gresponder_return_al
+
+
 
 handle_game_mouse_event:
-mov   al, byte ptr es:[bx + 1]
+mov   ah, al
+mov   bx, ax ; backup button
 mov   si, word ptr ds:[_mousebuttons]
-and   al, 1
-mov   byte ptr ds:[si], al
-mov   al, byte ptr es:[bx + 1]
-and   al, 2
-mov   byte ptr ds:[si + 1], al
-mov   al, byte ptr es:[bx + 1]
-and   al, 4
+and   ax, 00201h
+mov   word ptr ds:[si], ax ; write two buttons;
+
+xchg  ax, bx  ; get another copy of button
+and   ax, 4   ; zero ah
 mov   byte ptr ds:[si + 2], al
 mov   al, byte ptr ds:[_mouseSensitivity]
-xor   ah, ah
-mov   dx, word ptr es:[bx + 5]
+
+mov   dx, word ptr es:[bx + EVENT_T.event_data2]
 add   ax, 5
 mov   bx, 10
 imul  dx

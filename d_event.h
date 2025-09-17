@@ -36,10 +36,8 @@ typedef uint8_t evtype_t;
 // Event structure.
 // todo 13 bytes gross. maybe re-align at least.
 typedef struct {
-    evtype_t	type;
-    int32_t		data1;		// keys / mouse buttons
-    int32_t		data2;		// mouse x move
-    int32_t		data3;		// mouse y move
+    int16_t		data1;		// type high byte, keys / mouse buttons low byte
+    int16_t		data2;		// mouse x move
 } event_t;
 
  

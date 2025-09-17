@@ -1092,7 +1092,7 @@ xchg  ax, di
 xor   ax, ax
 mov   es, dx
 mov   si, _player + PLAYER_T.player_cheats
-cmp   byte ptr es:[di + EVENT_T.event_evtype], al
+cmp   byte ptr es:[di + EVENT_T.event_evtype], al ; EV_KEYDOWN
 jne   exit_st_responder_early
 
 push  bp

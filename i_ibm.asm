@@ -93,7 +93,6 @@ push    di
 push    bp
 mov     bp, sp
 sub     sp, SIZE EVENT_T
-mov     byte ptr [bp - SIZE EVENT_T + EVENT_T.event_evtype], EV_MOUSE
 mov     ax, 0Bh
 int     033h
 
@@ -101,24 +100,16 @@ xchg    ax, bx
 lea     di, [bp - SIZE EVENT_T + EVENT_T.event_data1]
 push    ss
 pop     es
-stosw
-xor     ax, ax
+mov     ah, EV_MOUSE
 stosw
 xchg    ax, cx 
 stosw   ; data 2
-xchg    ax, cx
-stosw   ; data 2
-stosw   ; data 3
-stosw   ; data 3
-
-; TODO: event_t should be words?
-; data3 isnt even used...
-
 
 
 mov     ax, sp
 call    D_PostEvent_
 
+LEAVE_MACRO
 pop     di
 pop     dx
 pop     cx

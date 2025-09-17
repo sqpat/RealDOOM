@@ -46,9 +46,9 @@
 #define wipe_StartScreenOffset                  0x4CC
 #define wipe_WipeLoopOffset                     0x517
 #define F_StartFinaleOffset                     0x1AE
-#define F_ResponderOffset                       0xB33
-#define F_TickerOffset                          0xA96
-#define F_DrawerOffset                          0xB5E
+#define F_ResponderOffset                       0xB34
+#define F_TickerOffset                          0xA97
+#define F_DrawerOffset                          0xB5F
 #define P_UnArchivePlayersOffset                0x2
 #define P_UnArchiveWorldOffset                  0x176
 #define P_UnArchiveThinkersOffset               0x2BF
@@ -63,12 +63,12 @@
 #define P_SpawnMapThingOffset                   0x2BEE
 #define P_TickerOffset                          0x847E
 #define P_SpawnSpecialsOffset                   0x7DF1
-#define M_InitOffset                            0x11A2
+#define M_InitOffset                            0x1199
 #define M_ResponderOffset                       0xD61
-#define M_DrawerOffset                          0x1062
-#define M_LoadFromSaveGameOffset                0x12EF
-#define M_DrawPauseOffset                       0x138B
-#define M_StartControlPanelOffset               0x1044
+#define M_DrawerOffset                          0x1059
+#define M_LoadFromSaveGameOffset                0x12E6
+#define M_DrawPauseOffset                       0x1382
+#define M_StartControlPanelOffset               0x103B
 
 #define R_DrawColumn24CodeSize         0xE46
 #define R_DrawColumn16CodeSize         0xCB4
@@ -88,7 +88,7 @@
 #define R_MaskedConstantsFLCodeSize    0xEB
 #define R_DrawSkyColumnCodeSize        0xD86
 #define R_DrawSkyColumnFLCodeSize      0x303
-#define M_MenuCodeSize                 0x13E8
+#define M_MenuCodeSize                 0x13DF
 #define R_BSP24CodeSize                0x3787
 #define R_BSP16CodeSize                0x3787
 #define R_BSP0CodeSize                 0x36B9
@@ -96,7 +96,7 @@
 #define WI_StuffCodeSize               0x1009
 #define PSightCodeSize                 0x8D03
 #define WipeCodeSize                   0x5FC
-#define FinaleCodeSize                 0xBD7
+#define FinaleCodeSize                 0xBD8
 #define SaveLoadCodeSize               0xB34
 #define SMLoadCodeSize                 0x4CB
 #define SInitCodeSize                  0x560

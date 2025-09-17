@@ -969,16 +969,16 @@ mov       es, dx
 xor       ax, ax
 cwd
 
-mov       bl, byte ptr es:[si + EVENT_T.event_evtype]
-mov       al, byte ptr es:[si + EVENT_T.event_data1]
+mov       ax, word ptr es:[si + EVENT_T.event_data1]
 
 
 ; al is evdata
+; ah is type
 ; dx is 0reg here
 
 cmp       byte ptr ds:[_automapactive], dl ; 0
 jne       automap_is_active
-cmp       bl, dl  ; EV_KEYDOWN
+cmp       ah, dl  ; EV_KEYDOWN
 jne       exit_am_responder_return_0
 cmp       al, AM_STARTKEY
 jne       exit_am_responder_return_0
@@ -1001,14 +1001,14 @@ ret
 
 automap_is_active:
 
-; bl is evtype
+; ah is evtype
 ; al is data1 lo ; i guess we are just ignoring the 3 other bytes (??)
 ; cx is 0, inverse of cx
 xor       cx, cx
 mov       si, ax  ; back up in case we need it when done with keypress..
 
 
-cmp       bl, EV_KEYUP
+cmp       ah, EV_KEYUP
 jb        do_keydown
 ja        exit_am_responder_return_0
 cmp       al, AM_PANRIGHTKEY

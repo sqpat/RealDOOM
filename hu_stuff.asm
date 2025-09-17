@@ -293,25 +293,18 @@ PUBLIC  HU_Responder_
 push  bx
 xchg  ax, bx
 mov   es, dx
-xor   ax, ax
-cmp   word ptr es:[bx + EVENT_T.event_data1 + 2], ax   ; todo i dont think these +2 checks are necessary if we know its a keydown.
-jne   not_rshift
-cmp   word ptr es:[bx + EVENT_T.event_data1], KEY_RSHIFT
+mov   ax, word ptr es:[bx + EVENT_T.event_data1]
+cmp   al, KEY_RSHIFT
 je    exit_hu_responder
 not_rshift:
-cmp   word ptr es:[bx + EVENT_T.event_data1 + 2], ax
-jne   not_alt
-cmp   word ptr es:[bx + EVENT_T.event_data1], KEY_RALT
+cmp   al, KEY_RALT
 je    exit_hu_responder
 not_alt:
-cmp   byte ptr es:[bx + EVENT_T.event_evtype], al   ; EV_KEYDOWN
+cmp   ah,  EV_KEYDOWN
 jne   exit_hu_responder
-cmp   word ptr es:[bx + EVENT_T.event_data1 + 2], ax
+cmp   al, HU_MSGREFRESH
 jne   exit_hu_responder
-cmp   word ptr es:[bx + EVENT_T.event_data1], HU_MSGREFRESH
-jne   exit_hu_responder
-inc   ax
-mov   byte ptr ds:[_message_on], al
+mov   byte ptr ds:[_message_on], 1
 mov   byte ptr ds:[_message_counter], HU_MSGTIMEOUT
 exit_hu_responder:
 pop   bx

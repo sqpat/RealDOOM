@@ -51,7 +51,7 @@
 #define bsp_code_area     ((byte __far*)(((uint32_t)bsp_code_segment) << 16))
 
 // todo generate this programatically
-#define baselowermemoryaddress    (0x21DF0000)
+#define baselowermemoryaddress    (0x22830000)
 // MaximumMusDriverSize
 
 #define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
@@ -135,14 +135,14 @@ struct sfxinfo_struct{
 
 // sfxdata              319C:0000
 // sb_dmabuffer         ????:0000
-// finesine             31E5:0000
-// events               3C19:0000
-// flattranslation      3C59:0000
-// texturetranslation   3C23:0000
-// textureheights       3C59:0000
-// rndtable             3C74:0000
-// subsector_lines      3C84:0000
-// base_lower_end       3CC0:0000
+// finesine             3225:0000
+// events               3C25:0000
+// flattranslation      3C35:0000
+// texturetranslation   3C3F:0000
+// textureheights       3C75:0000
+// rndtable             3C90:0000
+// subsector_lines      3CA0:0000
+// base_lower_end       3CDC:0000
 //03CACh
 
 
