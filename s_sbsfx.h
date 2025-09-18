@@ -5,9 +5,9 @@
 #include "m_near.h"
 
 
-int16_t __far SB_InitCard();
+int16_t __near SB_InitCard();
 void __near SB_Shutdown();
-void __far SB_StartInit();
+void __near SB_StartInit();
 
 
 

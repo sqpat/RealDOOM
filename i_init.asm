@@ -157,53 +157,24 @@ call DEBUG_PRINT_NOARG_CS_
 
 mov     ax, word ptr ds:[_snd_DesiredSfxDevice]  ; ah is music device
 mov     word ptr ds:[_snd_SfxDevice], ax  ; ah is music device
-
-cmp     ah, SND_ADLIB ; 2
+mov     al, ah
+cmp     al, SND_ADLIB ; 2
 je      setup_adlib_mus_driver ; 2
 jb      no_music_driver        ; 0/1
-cmp     ah, SND_PAS            
+cmp     al, SND_PAS            
 jb      setup_sb_mus_driver    ; 3
 je      setup_pas_mus_driver   ; 4
 
-cmp     ah, SND_MPU
+cmp     al, SND_MPU
 je      setup_mpu_mus_driver   ; 6
 jb      setup_gus_mus_driver   ; 5
-cmp     ah, SND_MPU3
+cmp     al, SND_MPU3
 je      setup_mpu_mus_driver_3 ; 8
 jb      setup_mpu_mus_driver_2 ; 7
-cmp     ah, SND_ENSONIQ
-je      setup_ensoniq_mus_driver_3 ; 0Ah
+cmp     al, SND_ENSONIQ
+;je      setup_ensoniq_mus_driver_3 ; 0Ah
 jb      setup_awe_mus_driver       ; 9
 ja      setup_codec_mus_driver     ; 0Bh
-
-setup_adlib_mus_driver:
-mov     bl, MUS_DRIVER_TYPE_OPL2
-mov     si, ADLIBPORT
-jmp     setup_mus_driver
-
-setup_sb_mus_driver:
-mov     bl, MUS_DRIVER_TYPE_OPL3
-mov     si, ADLIBPORT
-jmp     setup_mus_driver
-
-setup_mpu_mus_driver_2:
-setup_mpu_mus_driver_3:
-mov     bl, MUS_DRIVER_TYPE_MPU401
-
-mov     si, word ptr ds:[_snd_Mport]
-test    si, si
-jne     setup_mus_driver
-mov     si, MPU401PORT
-jmp     setup_mus_driver ; fall thru
-
-setup_mpu_mus_driver:
-mov     bl, MUS_DRIVER_TYPE_SBMIDI
-
-mov     si, word ptr ds:[_snd_SBport]
-test    si, si
-jne     setup_mus_driver
-mov     si, SBMIDIPORT
-jmp     setup_mus_driver ; fall thru
 
 ; TODO unimplemented drivers below...
 no_music_driver:
@@ -213,6 +184,37 @@ setup_awe_mus_driver:
 setup_pas_mus_driver:
 setup_gus_mus_driver:
 jmp   done_setting_up_mus_driver
+
+setup_adlib_mus_driver:
+;mov     bl, MUS_DRIVER_TYPE_OPL2
+mov     si, ADLIBPORT
+jmp     setup_mus_driver
+
+setup_sb_mus_driver:
+;mov     bl, MUS_DRIVER_TYPE_OPL3
+mov     si, ADLIBPORT
+jmp     setup_mus_driver
+
+setup_mpu_mus_driver_2:
+setup_mpu_mus_driver_3:
+;mov     bl, MUS_DRIVER_TYPE_MPU401
+
+mov     si, word ptr ds:[_snd_Mport]
+test    si, si
+jne     setup_mus_driver
+mov     si, MPU401PORT
+jmp     setup_mus_driver ; fall thru
+
+setup_mpu_mus_driver:
+;mov     bl, MUS_DRIVER_TYPE_SBMIDI
+
+mov     si, word ptr ds:[_snd_SBport]
+test    si, si
+jne     setup_mus_driver
+mov     si, SBMIDIPORT
+jmp     setup_mus_driver ; fall thru
+
+
 
 
 setup_mus_driver:
@@ -226,11 +228,7 @@ mov   dx, OFFSET  _fopen_rb_argument
 call  fopen_        ; fopen("DOOMCODE.BIN", "rb"); 
 mov   di, ax ; di stores fp
 
-xor   bh, bh
-dec   bx     ; we use bx - 1 dword offset
-shl   bx, 1
-shl   bx, 1
-les   bx, dword ptr ds:[_musdriverstartposition + bx]
+les   bx, dword ptr ds:[_musdriverstartposition]
 mov   cx, es
 xor   dx, dx  ; SEEK_SET  ; 0?
 call  fseek_        ; fseek(fp, musdriverstartposition[driverindex-1], SEEK_SET);

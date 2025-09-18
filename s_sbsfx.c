@@ -1773,7 +1773,7 @@ uint16_t __near SB_GetDSPVersion() {
     return SB_DSP_Version.hu;
 }
 
-int16_t __far  SB_InitCard(){
+int16_t __near  SB_InitCard(){
 	int8_t status;
 
 	//todo get these from environment variables or config file.
@@ -1889,7 +1889,7 @@ void __far S_InitSFXCache(){
 
 }
 
-void __far  SB_StartInit(){
+void __near  SB_StartInit(){
     // todo move this crap into asm. dump the 
     // uint8_t i;
     // char lumpname[9];

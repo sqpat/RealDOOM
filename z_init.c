@@ -19,6 +19,7 @@
 #include "doomdef.h"
 #include "z_zone.h"
 #include "i_system.h"
+#include "i_sound.h"
 
 #include "m_menu.h"
 #include "w_wad.h"
@@ -660,6 +661,8 @@ void __far MainLogger (uint16_t ax, uint16_t dx, uint16_t bx, uint16_t cx);
 
 void __near Z_LoadBinaries() {
 	int16_t i;
+	int16_t index;
+
 	uint16_t codesize;
 	FILE* fp = fopen("DOOMDATA.BIN", "rb"); 
 	fseek(fp, DATA_DOOMDATA_OFFSET, SEEK_SET);
@@ -762,12 +765,32 @@ void __near Z_LoadBinaries() {
 	fread(&codesize, 2, 1, fp);
 	fseek(fp, codesize, SEEK_CUR);
 	codestartposition[4] = ftell(fp);
+	switch (snd_DesiredMusicDevice){
+		case snd_Adlib:
+			index = MUS_DRIVER_TYPE_OPL2;
+			break;
+		case snd_SB:
+			index = MUS_DRIVER_TYPE_OPL3;
+			break;
+		case snd_MPU:
+			index = MUS_DRIVER_TYPE_SBMIDI;
+			break;
+		case snd_MPU2:
+		case snd_MPU3:
+			index = MUS_DRIVER_TYPE_MPU401;
+			break;
+		default:
+			index = MUS_DRIVER_TYPE_NONE;
+	}
+
+	index--;
 
 	for (i = 0; i < MUS_DRIVER_COUNT-1; i++){
 		fread(&codesize, 2, 1, fp);
 		fseek(fp, codesize, SEEK_CUR);
-		musdriverstartposition[i] = ftell(fp);
-
+		if (i == index){
+			musdriverstartposition  = ftell(fp);
+		}
 	}
 
 

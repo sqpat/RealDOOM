@@ -39,17 +39,37 @@ EXTRN TS_ScheduleMainTask_:NEAR
 
 .DATA
 
-EXTRN _sfx_priority:BYTE
-EXTRN _numChannels:BYTE
-EXTRN _channels:WORD
-
-EXTRN _musdriverstartposition:DWORD
 
 .CODE
 
 PROC    S_SOUND_STARTMARKER_ NEAR
 PUBLIC  S_SOUND_STARTMARKER_
 ENDP
+
+_channels:
+;  channel_t	channels[MAX_SFX_CHANNELS];
+dw 0, 0, 0
+dw 0, 0, 0
+dw 0, 0, 0
+dw 0, 0, 0
+dw 0, 0, 0
+dw 0, 0, 0
+dw 0, 0, 0
+dw 0, 0, 0
+
+_sfx_priority:
+
+db  0, 64, 64, 64, 64, 64, 64, 64, 64, 64
+db  64, 118, 64, 64, 64, 70, 70, 70, 100, 100
+db  100, 100, 119, 78, 78, 96, 96, 96, 96, 96
+db  96, 78, 78, 78, 96, 32, 98, 98, 98, 98 
+db  98, 98, 98, 94, 92, 90, 90, 90, 90, 90
+db  90, 70, 70, 70, 70, 70, 70, 32, 32, 70
+db  70, 70, 70, 70, 70, 70, 70, 32, 32, 32 
+db  32, 32, 32, 32, 32, 120, 120, 120, 100, 100
+db  100, 78, 60, 64, 70, 70, 64, 60, 100, 100
+db  100, 32, 32, 60, 70, 70, 70, 70, 70, 70
+db  70, 70, 70, 70, 70, 70, 70, 70, 60
 
 
 
@@ -90,9 +110,9 @@ sal   si, 1  ; 2
 add   si, ax ; 3
 sal   si, 1  ; 6
 add   si, OFFSET _channels
-cmp   byte ptr ds:[si + CHANNEL_T.channel_sfx_id], ah ; 0 or SFX_NONE
+cmp   byte ptr cs:[si + CHANNEL_T.channel_sfx_id], ah ; 0 or SFX_NONE
 je    exit_stop_channel
-mov   al, byte ptr ds:[si + CHANNEL_T.channel_handle]
+mov   al, byte ptr cs:[si + CHANNEL_T.channel_handle]
 
 call  SFX_Playing_  ; todo stc/clc
 test  al, al
@@ -108,13 +128,13 @@ jmp   dont_stop_sound
 
 
 stop_sb_patch:
-mov   al, byte ptr ds:[si + CHANNEL_T.channel_handle]
+mov   al, byte ptr cs:[si + CHANNEL_T.channel_handle]
 call  SFX_StopPatch_
 
 
 dont_stop_sound:
 
-mov   byte ptr ds:[si + CHANNEL_T.channel_sfx_id], SFX_NONE ; 0
+mov   byte ptr cs:[si + CHANNEL_T.channel_sfx_id], SFX_NONE ; 0
 
 exit_stop_channel:
 pop   si
@@ -409,9 +429,9 @@ je    exit_stopsound
 
 
 loop_next_channel_stopsound:
-cmp   byte ptr ds:[si + CHANNEL_T.channel_sfx_id], bh ; bh is zero for sure
+cmp   byte ptr cs:[si + CHANNEL_T.channel_sfx_id], bh ; bh is zero for sure
 je    iter_next_channel_stopsound
-cmp   word ptr ds:[si + bx], ax
+cmp   word ptr cs:[si + bx], ax
 jne   iter_next_channel_stopsound
 xchg  ax, dx
 cbw   ; necessary?
@@ -481,11 +501,11 @@ mov   si, OFFSET _channels
 ; loop al to ah
 
 loop_next_channel_getchannel:
-cmp   word ptr ds:[si + CHANNEL_T.channel_sfx_id], dx ; 0
+cmp   word ptr cs:[si + CHANNEL_T.channel_sfx_id], dx ; 0
 je    foundchannel
 cmp   di, NULL_THINKER_ORIGINREF
 je    check_secnum_instead
-cmp   word ptr ds:[si + CHANNEL_T.channel_originRef], di
+cmp   word ptr cs:[si + CHANNEL_T.channel_originRef], di
 jne   iter_next_channel_getchannel
 found_channel_to_boot:
 cbw
@@ -497,9 +517,9 @@ foundchannel:
 ; al already cnum
 ; si alredy channel ptr
 cbw
-mov   byte ptr ds:[si + CHANNEL_T.channel_sfx_id], bl
-mov   word ptr ds:[si + CHANNEL_T.channel_originRef], di
-mov   word ptr ds:[si + CHANNEL_T.channel_soundorg_secnum], cx
+mov   byte ptr cs:[si + CHANNEL_T.channel_sfx_id], bl
+mov   word ptr cs:[si + CHANNEL_T.channel_originRef], di
+mov   word ptr cs:[si + CHANNEL_T.channel_soundorg_secnum], cx
 
 ; ax has cnum already
 
@@ -510,7 +530,7 @@ pop   cx
 exit_startsoundwithpositionearly:
 ret   
 check_secnum_instead:
-cmp   word ptr ds:[si + CHANNEL_T.channel_soundorg_secnum], cx
+cmp   word ptr cs:[si + CHANNEL_T.channel_soundorg_secnum], cx
 je    found_channel_to_boot
 iter_next_channel_getchannel:
 add   si, SIZEOF_CHANNEL_T
@@ -521,13 +541,13 @@ jl    loop_next_channel_getchannel
 ; NO CHANNEL FOUND. look for lower priority to boot
 xor   al, al    ; reset counter
 mov   si, OFFSET _channels
-mov   dh, byte ptr ds:[bx + _sfx_priority]
+mov   dh, byte ptr cs:[bx + _sfx_priority]
 ; dh stores sfx priority..
 
 loop_next_channel_getchannel_priority:
-mov   dl, byte ptr ds:[si + CHANNEL_T.channel_sfx_id]
+mov   dl, byte ptr cs:[si + CHANNEL_T.channel_sfx_id]
 xchg  dl, bl  ; for _sfx_priority lookup
-mov   bl, byte ptr ds:[bx + _sfx_priority] ; bh always 0. these numbers are low
+mov   bl, byte ptr cs:[bx + _sfx_priority] ; bh always 0. these numbers are low
 xchg  dl, bl ; original bl back.
 
 cmp   dl, dh
@@ -703,7 +723,7 @@ mov   al, byte ptr [bp - 6]
 sal   si, 1  ; x2
 mov   bx, si ; x2
 sal   si, 1  ; x2 + x4 = 6
-mov   byte ptr ds:[bx + si + _channels + CHANNEL_T.channel_handle], al
+mov   byte ptr cs:[bx + si + _channels + CHANNEL_T.channel_handle], al
 
 exit_startsoundwithposition:
 LEAVE_MACRO 
@@ -795,7 +815,7 @@ mov   dh, byte ptr ds:[_numChannels]
 test  dh, dh
 je    exit_s_updatesounds
 loop_next_channel_updatesounds:
-mov   cl, byte ptr ds:[si + CHANNEL_T.channel_sfx_id]
+mov   cl, byte ptr cs:[si + CHANNEL_T.channel_sfx_id]
 test  cl, cl
 je    iter_next_channel_updatesounds
 call  SFX_Playing_
@@ -810,7 +830,7 @@ handle_position_update:
 
 mov   di, dx ; back this up...
 
-cmp   word ptr ds:[si + CHANNEL_T.channel_soundorg_secnum], SECNUM_NULL
+cmp   word ptr cs:[si + CHANNEL_T.channel_soundorg_secnum], SECNUM_NULL
 jne   update_sound_with_mobjpos
 update_sound_with_sector:
 mov   ax, SECTORS_SOUNDORGS_SEGMENT
@@ -848,7 +868,7 @@ call  S_AdjustSoundParamsSep_
 
 xchg  ax, dx
 pop   bx
-mov   al, byte ptr ds:[si + CHANNEL_T.channel_handle]
+mov   al, byte ptr cs:[si + CHANNEL_T.channel_handle]
 call  SFX_SetOrigin_
 
 mov   dx, di ; restore loop counters
@@ -864,7 +884,7 @@ POPA_NO_AX_OR_BP_MACRO
 retf  
 
 update_sound_with_mobjpos:
-mov   bx, word ptr ds:[si + CHANNEL_T.channel_originRef]
+mov   bx, word ptr cs:[si + CHANNEL_T.channel_originRef]
 mov   ax, SIZEOF_MOBJ_POS_T
 mul   bx
 xchg  ax, bx
@@ -906,7 +926,7 @@ test  dh, dh
 je    exit_s_start
 
 loop_next_channel_s_start:
-mov   al, byte ptr ds:[si + CHANNEL_T.channel_sfx_id]
+mov   al, byte ptr cs:[si + CHANNEL_T.channel_sfx_id]
 test  al, al
 je    iter_next_channel_s_start
 cbw

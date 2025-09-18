@@ -115,7 +115,6 @@ boolean novideo; // if true, stay in text mode for debugging
 
 void (__interrupt __far_func *oldkeyboardisr) (void) = NULL;
 gamestate_t         oldgamestate = -1;
-uint8_t				numChannels;	
  
  
 boolean         	timingdemo;             // if true, exit with report on completion 
@@ -324,124 +323,13 @@ int32_t codestartposition[NUM_OVERLAYS];
 
 
 //todo move these to cs section of asm once sfx driver in asm. Not needed for pc speaker?
-uint8_t sfx_priority[] = {
   // S_sfx[0] needs to be a dummy for odd reasons.
   // todo: move this into asm 
-  0 ,
 
-  64,
-  64,
-  64,
-  64,
-  64,
-  64,
-  64,
-  64,
-  64,
-  64,
-  118,
-  64,
-  64,
-  64,
-  70,
-  70,
-  70,
-  100,
-  100,
-  100,
-  100,
-  119,
-  78,
-  78,
-  96,
-  96,
-  96,
-  96,
-  96,
-  96,
-  78,
-  78,
-  78,
-  96,
-  32,
-  98,
-  98,
-  98,
-  98,
-  98,
-  98,
-  98,
-  94,
-  92,
-  90,
-  90,
-  90,
-  90,
-  90,
-  90,
-  70,
-  70,
-  70,
-  70,
-  70,
-  70,
-  32,
-  32,
-  70,
-  70,
-  70,
-  70,
-  70,
-  70,
-  70,
-  70,
-  32,
-  32,
-  32,
-  32,
-  32,
-  32,
-  32,
-  32,
-  120,
-  120,
-  120,
-  100,
-  100,
-  100,
-  78,
-  60,
-  64,
-  70,
-  70,
-  64,
-  60,
-  100,
-  100,
-  100,
-  32,
-  32,
-  60,
-  70,
-  70,
-  70,
-  70,
-  70,
-  70,
-  70,
-  70,
-  70,
-  70,
-  70,
-  70,
-  70,
-  70,
-  60
-};
 
 
 // the set of channels available
-channel_t	channels[MAX_SFX_CHANNELS];
+// channel_t	channels[MAX_SFX_CHANNELS];
 
 // These are not used, but should be (menu).
 // Maximum volume of a sound effect.
@@ -503,7 +391,7 @@ driverBlock OPL3driver = {
 
 
 
-int32_t musdriverstartposition[MUS_DRIVER_COUNT-1];
+int32_t musdriverstartposition;
 
 
 

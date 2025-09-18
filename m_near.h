@@ -410,6 +410,7 @@
 #define pcspeaker_currentoffset         (*((uint16_t __near*)                (_NULL_OFFSET + 0x03C2)))
 #define pcspeaker_endoffset       	    (*((uint16_t __near*)                (_NULL_OFFSET + 0x03C4)))
 #define SKY_String       	            (((int8_t    __near*)                (_NULL_OFFSET + 0x03C6)))
+#define numChannels  					(*((uint8_t __near*)                 (_NULL_OFFSET + 0x03CB)))
 
 // #define MainLogger_addr       	        (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03CC)))
 
@@ -874,7 +875,6 @@ extern void (__interrupt __far_func *oldkeyboardisr) (void);
 extern gamestate_t         oldgamestate;
 
 
-extern uint8_t			numChannels;	
 
 #define BACKUPTICS		16
 #define NUMKEYS         256 
@@ -1226,7 +1226,7 @@ typedef struct {
 	uint32_t time;			/* note start time */
 }  AdlibChannelEntry;
 
-extern uint8_t sfx_priority[];
+
 
 
 void	OPLplayNote(uint8_t channel, uint8_t note, int8_t noteVolume);
@@ -1272,7 +1272,7 @@ int8_t SBMIDIdeinitHardware(void);
 #define  MUS_DRIVER_TYPE_MPU401 3
 #define  MUS_DRIVER_TYPE_SBMIDI 4
 #define  MUS_DRIVER_COUNT 5
-extern int32_t musdriverstartposition[MUS_DRIVER_COUNT-1];
+extern int32_t musdriverstartposition;
 
 #define NUMSFX      109
 

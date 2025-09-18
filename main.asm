@@ -91,7 +91,6 @@ EXTRN _usemouse:BYTE
 EXTRN _mousebfire:BYTE
 EXTRN _mousebstrafe:BYTE
 EXTRN _mousebforward:BYTE
-EXTRN _numChannels:BYTE
 EXTRN ___iob:WORD
 EXTRN _oldkeyboardisr:DWORD
 EXTRN _OldInt8:DWORD
