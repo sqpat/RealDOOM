@@ -19,23 +19,6 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN SFX_Playing_:NEAR
-EXTRN R_PointToAngle2_:FAR
-EXTRN FastMul16u32u_:NEAR
-EXTRN FastDiv3216u_:FAR
-EXTRN SFX_SetOrigin_:NEAR
-EXTRN SFX_PlayPatch_:NEAR
-EXTRN SFX_StopPatch_:NEAR
-
-EXTRN fopen_:FAR
-EXTRN fseek_:FAR
-EXTRN fread_:FAR
-EXTRN fclose_:FAR
-
-
-
-EXTRN TS_Dispatch_:NEAR
-EXTRN TS_ScheduleMainTask_:NEAR
 
 .DATA
 
@@ -114,7 +97,11 @@ cmp   byte ptr cs:[si + CHANNEL_T.channel_sfx_id], ah ; 0 or SFX_NONE
 je    exit_stop_channel
 mov   al, byte ptr cs:[si + CHANNEL_T.channel_handle]
 
-call  SFX_Playing_  ; todo stc/clc
+;call  SFX_Playing_  ; todo stc/clc
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _SFX_Playing_addr
+
 test  al, al
 je    dont_stop_sound
 
@@ -129,7 +116,10 @@ jmp   dont_stop_sound
 
 stop_sb_patch:
 mov   al, byte ptr cs:[si + CHANNEL_T.channel_handle]
-call  SFX_StopPatch_
+;call  SFX_StopPatch_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _SFX_StopPatch_addr
 
 
 dont_stop_sound:
@@ -159,7 +149,9 @@ les   bx, dword ptr es:[bx + MOBJ_POS_T.mp_y + 0]
 mov   cx, es
 
 
-call  R_PointToAngle2_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _R_PointToAngle2_addr
 
 les   bx, dword ptr ds:[_playerMobj_pos]
 les   bx, dword ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
@@ -200,13 +192,21 @@ mov   ax, FINESINE_SEGMENT
 mov   es, ax
 les   bx, dword ptr es:[bx]
 mov   cx, es
-mov   ax, S_STEREO_SWING_HIGH
 
-call  FastMul16u32u_;  mul by 96.. worth inlining shift stuff?
+; todo im not sure if this comes out correct.
+; mul 96... 0x60
+sar  cx, 1
+rcr  bx, 1  ; bh has 0x80
+sar  cx, 1
+rcr  bx, 1  ; bh has 0x40
+mov  ax, bx
+sar  cx, 1
+rcl  bx, 1  ; ah has 0x40 bh has 0x20
+add  ax, bx
 
-mov   ah, 128
-sub   ah, al
-mov   al, ah
+mov   al, 128
+sub   al, ah
+
 ret  
 
 
@@ -329,12 +329,16 @@ ret
 is_map_8:
 mov   dx, MAX_SOUND_VOLUME
 imul  dx
-call  FastDiv3216u_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FastDiv3216u_addr
 ret
 dont_clip_map_8_high:
 mov   dx, (MAX_SOUND_VOLUME - 15)
 imul  dx
-call  FastDiv3216u_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _FastDiv3216u_addr
 add   al, 15
 ret
 
@@ -711,7 +715,11 @@ jb    exit_startsoundwithposition ; no sfx driver to play.
 ; fallthru to sb sound
 
 
-call  SFX_PlayPatch_
+;call  SFX_PlayPatch_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _SFX_PlayPatch_addr
+
 
 
 done_with_i_sound:
@@ -818,7 +826,10 @@ loop_next_channel_updatesounds:
 mov   cl, byte ptr cs:[si + CHANNEL_T.channel_sfx_id]
 test  cl, cl
 je    iter_next_channel_updatesounds
-call  SFX_Playing_
+;call  SFX_Playing_  ; todo stc/clc
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _SFX_Playing_addr
 test  al, al
 jne   handle_position_update
 do_stop_channel_and_iter:
@@ -869,7 +880,11 @@ call  S_AdjustSoundParamsSep_
 xchg  ax, dx
 pop   bx
 mov   al, byte ptr cs:[si + CHANNEL_T.channel_handle]
-call  SFX_SetOrigin_
+;call  SFX_SetOrigin_
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _SFX_SetOrigin_addr
+
 
 mov   dx, di ; restore loop counters
 

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/17 22:11:32
+Created on:       25/09/17 23:45:18
 Executable Image: codegen.exe
 creating a DOS executable
 
@@ -71,15 +71,15 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:bb98*     _wminfo
 02d1:bbad*     _TS_TimesInInterrupt
 02d1:bbae*     _mousebforward
-02d1:bbaf*     _mousebfire
-02d1:bbb0*     _d_episode
-02d1:bbb1*     _secretexit
-02d1:bbb2*     _turnheld
-02d1:bbb3*     _d_skill
-02d1:bbb4*     _d_map
-02d1:bbb5*     _mousebstrafe
-02d1:bbb6*     _usemouse
-02d1:bbb7*     _key_speed
+02d1:bbaf*     _key_speed
+02d1:bbb0*     _mousebfire
+02d1:bbb1*     _d_episode
+02d1:bbb2*     _secretexit
+02d1:bbb3*     _turnheld
+02d1:bbb4*     _d_skill
+02d1:bbb5*     _d_map
+02d1:bbb6*     _mousebstrafe
+02d1:bbb7*     _usemouse
 02d1:bbb8*     _key_left
 02d1:bbb9*     _timingdemo
 02d1:bbba*     _key_fire
@@ -393,4 +393,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  f600 (62976.)
 Entry point address: 0000:0446
-Link time: 00:00.65
+Link time: 00:00.64

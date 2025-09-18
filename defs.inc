@@ -647,7 +647,12 @@ _old_screen_viewport_height =	  	 _NULL_OFFSET + 00ACEh
 _FixedDivWholeA_addr =   		     _NULL_OFFSET + 00AD0h
 _cht_CheckCheat_Far_addr = 	 	     _NULL_OFFSET + 00AD4h
 
-_flatcache_nodes =				     _NULL_OFFSET + 00AE0h
+_SFX_Playing_addr = 			 	 _NULL_OFFSET + 00AE0h
+_SFX_SetOrigin_addr = 		  		 _NULL_OFFSET + 00AE4h
+_SFX_PlayPatch_addr = 		  		 _NULL_OFFSET + 00AE8h
+_SFX_StopPatch_addr = 		  		 _NULL_OFFSET + 00AECh
+
+_flatcache_nodes =				     _NULL_OFFSET + 00AF0h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

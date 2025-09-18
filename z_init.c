@@ -891,6 +891,13 @@ void __near Z_LoadBinaries() {
 	V_DrawPatch_addr =			 		(uint32_t)(V_DrawPatch);
 	V_DrawFullscreenPatch_addr =		(uint32_t)(V_DrawFullscreenPatch);
 
+
+	SFX_Playing_addr = 					(uint32_t)(SFX_Playing);
+	SFX_SetOrigin_addr = 				(uint32_t)(SFX_SetOrigin);
+	SFX_PlayPatch_addr = 				(uint32_t)(SFX_PlayPatch);
+	SFX_StopPatch_addr = 				(uint32_t)(SFX_StopPatch);
+
+
 	// MainLogger_addr =  					(uint32_t)(MainLogger);
 
 
