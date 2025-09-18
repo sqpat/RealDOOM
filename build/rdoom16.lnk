@@ -50,7 +50,6 @@ file p_setup.obj
 
 
 
-file s_sound.obj
 file s_sbsfx.obj
 file r_main.obj
 file f_file.obj

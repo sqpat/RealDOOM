@@ -58,49 +58,29 @@ typedef struct {
 // Kills playing sounds at start of level,
 //  determines music if any, changes music.
 //
-void __far S_Start(void);
 
 
 //
 // Start sound for thing at <origin>
 //  using <sound_id> from sounds.h
 //
-void __far S_StartSound (mobj_t __near*	origin, sfxenum_t	sound_id );
-
-void __far S_StartSoundWithSecnum(int16_t soundorg_secnum, sfxenum_t sound_id);
+// void __far S_StartSound (mobj_t __near*	origin, sfxenum_t	sound_id );
 
 
 
-// Will start a sound at a given volume.
-void __far S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t soundorg_secnum );
-
-
-// Stop sound for thing at <origin>
-void near S_StopSound(mobj_t __near* origin, int16_t soundorg_secnum);
-void far S_StopSoundMobjRef(mobj_t __near* origin);
-
-
-// Start music using <music_id> from sounds.h
-void __far S_StartMusic(musicenum_t music_id);
-
-// Start music using <music_id> from sounds.h,
-//  and set whether looping
-void __far S_ChangeMusic ( musicenum_t music_id, boolean looping );
 
 
 
-// Stops the music fer sure.
-void __far S_StopMusic(void);
 
 // Stop and resume music, during game PAUSE.
-void __far S_PauseSound(void);
-void __far S_ResumeSound(void);
+void __near S_PauseSound(void);
+void __near S_ResumeSound(void);
 
 
 //
 // Updates music & sounds
 //
-void __far S_UpdateSounds();
+// void __far S_UpdateSounds();
 
 void __near S_SetMusicVolume(uint8_t volume);
 void __near S_SetSfxVolume(uint8_t volume);

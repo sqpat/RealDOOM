@@ -28,7 +28,7 @@ EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
 EXTRN M_CheckParm_:NEAR
 EXTRN TS_Dispatch_:NEAR
 EXTRN TS_ScheduleMainTask_:NEAR
-EXTRN CopyString13_physics_seg_:NEAR ; todo
+EXTRN CopyString13_:NEAR
 EXTRN I_KeyboardISR_:NEAR
 EXTRN locallib_dos_getvect_:NEAR
 EXTRN locallib_dos_setvect_:NEAR
@@ -223,7 +223,7 @@ setup_mus_driver:
 
 
 mov   ax, OFFSET _doomcode_filename
-call  CopyString13_physics_seg_
+call  CopyString13_
 mov   dx, OFFSET  _fopen_rb_argument
 call  fopen_        ; fopen("DOOMCODE.BIN", "rb"); 
 mov   di, ax ; di stores fp

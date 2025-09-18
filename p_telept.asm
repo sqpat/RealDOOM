@@ -23,6 +23,7 @@ INSTRUCTION_SET_MACRO
 
 EXTRN P_TeleportMove_:NEAR
 EXTRN P_SpawnMobj_:NEAR
+EXTRN S_StartSound_:NEAR
 
 
 
@@ -266,10 +267,7 @@ pop   cx
 call  P_SpawnMobj_
 mov   dl, SFX_TELEPT
 mov   ax, word ptr ds:[_setStateReturn]
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 
 lds   bx, dword ptr [bp - 6]
@@ -328,10 +326,7 @@ pop   cx ; cx/bx ready
 call  P_SpawnMobj_
 mov   dl, SFX_TELEPT
 mov   ax, word ptr ds:[_setStateReturn]
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 pop   di  ; bp - 6  mobjpos offset
 pop   es  ; bp - 4  mobjpost segment

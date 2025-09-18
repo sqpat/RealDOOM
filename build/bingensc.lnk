@@ -40,7 +40,6 @@ file wi_stuff.obj
 file math.obj
 file main.obj
 
-file s_sound.obj
 file r_main.obj
 file f_file.obj
 file w_wad.obj
@@ -123,6 +122,7 @@ file p_tick.obj
 file p_user.obj
 file p_info.obj
 file am_map.obj
+file s_sound.obj
 
 #hack..
 NEWSEGMENT 

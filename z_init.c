@@ -803,10 +803,6 @@ void __near Z_LoadBinaries() {
 
 
 
-
-
-
-
 	DEBUG_PRINT_NOARG("..");
 
 	// manual runtime linking. these are all called from other segments in externalized code and need their addresses in constant variable locatioons
@@ -820,9 +816,7 @@ void __near Z_LoadBinaries() {
 	W_CacheLumpNumDirectFragment_addr =	(uint32_t)(W_CacheLumpNumDirectFragment);
 	W_GetNumForName_addr =		 		(uint32_t)(W_GetNumForName);
 
-	// M_Random_addr = 					(uint32_t)(M_Random);
 	NetUpdate_addr = 					(uint32_t)(NetUpdate);
-
 
 	// todo think of a better solution for dynamic linking of func locations for overlaid code.
 
@@ -831,22 +825,13 @@ void __near Z_LoadBinaries() {
 	fread_addr =					    (uint32_t)(fread);
 	fclose_addr =					    (uint32_t)(fclose);
 	locallib_far_fread_addr =			(uint32_t)(locallib_far_fread);
-	// locallib_toupper_addr =				(uint32_t)(locallib_toupper);
-	// locallib_strlen_addr =			 	(uint32_t)(locallib_strlen);
 
 	getStringByIndex_addr =				(uint32_t)(getStringByIndex);
 	
 
-
-	S_StartSound_addr =		 			(uint32_t)(S_StartSound);
-	S_StartSoundWithSecnum_addr =		(uint32_t)(S_StartSoundWithSecnum);
-	S_StopSoundMobjRef_addr =			(uint32_t)(S_StopSoundMobjRef); 	
-	S_StartMusic_addr =		 			(uint32_t)(S_StartMusic);
-	S_ChangeMusic_addr =			 	(uint32_t)(S_ChangeMusic);
 	
 	I_Error_addr =		 				(uint32_t)(I_Error);
 	P_InitThinkers_addr =		 		(uint32_t)(P_InitThinkers);
-	// HU_Start_addr =						(uint32_t)(HU_Start);
 	ST_Start_addr =						(uint32_t)(ST_Start);
 
 	Z_SetOverlay_addr =	 				(uint32_t)(Z_SetOverlay);
@@ -860,7 +845,6 @@ void __near Z_LoadBinaries() {
 	FastDiv32u16u_addr =				(uint32_t)(FastDiv32u16u);
 	FixedDivWholeA_addr =				(uint32_t)(FixedDivWholeA);
 	cht_CheckCheat_Far_addr =           (uint32_t)(cht_CheckCheat_Far);
-	// FastMul16u32u_addr =				(uint32_t)(FastMul16u32u);
 	FastDiv3216u_addr =					(uint32_t)(FastDiv3216u);
 	FixedMulTrigSpeedNoShift_addr =		(uint32_t)(FixedMulTrigSpeedNoShift);
 	FixedMulTrigSpeed_addr =			(uint32_t)(FixedMulTrigSpeed);
@@ -870,7 +854,6 @@ void __near Z_LoadBinaries() {
 	R_SetViewSize_addr =			    (uint32_t)(R_SetViewSize);
 
 
-	// AM_Stop_addr =						(uint32_t)(AM_Stop);
 	G_ExitLevel_addr =					(uint32_t)(G_ExitLevel);
 	G_SecretExitLevel_addr =			(uint32_t)(G_SecretExitLevel);
 	G_PlayerReborn_addr =				(uint32_t)(G_PlayerReborn);

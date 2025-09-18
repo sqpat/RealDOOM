@@ -52,7 +52,6 @@ file w_wad.obj
 file v_video.obj
 file z_zone.obj
 file s_sbsfx.obj
-file s_sound.obj
 file r_main.obj
 file p_setup.obj
 file z_ht18.obj
@@ -124,3 +123,4 @@ file p_tick.obj
 file p_user.obj
 file p_info.obj
 file am_map.obj
+file s_sound.obj

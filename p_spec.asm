@@ -19,6 +19,8 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
+EXTRN S_StartSound_:NEAR
+EXTRN S_StartSoundWithSecnum_:NEAR
 EXTRN EV_DoFloor_:NEAR
 EXTRN EV_DoDoor_:NEAR
 EXTRN EV_DoPlat_:NEAR
@@ -1376,7 +1378,7 @@ stosw      ; mov       word ptr es:[di], ax
 mov       dx, SFX_SWTCHN
 mov       ax, word ptr ds:[si + BUTTON_T.button_soundorg]
 
-call      dword ptr ds:[_S_StartSoundWithSecnum_addr]
+call      S_StartSoundWithSecnum_
 
 mov       di, si
 xor       al, al

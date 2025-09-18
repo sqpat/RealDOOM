@@ -36,7 +36,6 @@ EXTRN V_MarkRect_:FAR
 EXTRN V_DrawPatch_:FAR
 EXTRN cht_CheckCheat_:NEAR
 EXTRN cht_GetParam_:NEAR
-EXTRN S_ChangeMusic_:FAR
 EXTRN locallib_printhex_:NEAR
 EXTRN G_DeferedInitNew_:FAR
 EXTRN R_PointToAngle2_:FAR
@@ -1209,9 +1208,10 @@ jle   music_id_ok
 mov   word ptr ds:[_player + PLAYER_T.player_message], STSTR_NOMUS
 jmp   check_behold_cheats
 music_id_ok:
-xor   ah, ah
-mov   dx, 1
-call  S_ChangeMusic_
+mov   ah, 1
+;call  S_ChangeMusic_
+mov   word ptr ds:[_pendingmusicenum], ax
+
 jmp   check_behold_cheats
 
 noncommercial_music:

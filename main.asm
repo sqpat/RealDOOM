@@ -3421,8 +3421,52 @@ ret
 ENDP
 
 
+PROC    S_PauseSound_ NEAR
+PUBLIC  S_PauseSound_
+
+xor   ax, ax
+cmp   byte ptr ds:[_mus_playing], al ; 0
+je    exit_pause_sound
+cmp   byte ptr ds:[_mus_paused], al  ; todo put these adjacent. use a single word check
+jne   exit_pause_sound
+
+mov   byte ptr ds:[_playingstate], ST_PAUSED
+cmp   byte ptr ds:[_playingdriver+3], al  ; segment high byte shouldnt be 0 if its set.
+je    exit_pause_sound
+push  bx
+les   bx, dword ptr ds:[_playingdriver]
+call  es:[bx + MUSIC_DRIVER_T.md_pausemusic_func]
+pop   bx
+mov   byte ptr ds:[_mus_paused], 1
+exit_pause_sound:
+ret  
+
+ENDP
 
 
+
+PROC    S_ResumeSound_ NEAR
+PUBLIC  S_ResumeSound_
+
+xor   ax, ax
+cmp   byte ptr ds:[_mus_playing], al
+je    exit_resume_sound
+cmp   byte ptr ds:[_mus_paused], al 
+je    exit_resume_sound
+mov   byte ptr ds:[_playingstate], ST_PLAYING
+
+cmp   byte ptr ds:[_playingdriver+3], al  ; segment high byte shouldnt be 0 if its set.
+je    exit_pause_sound
+push  bx
+les   bx, dword ptr ds:[_playingdriver]
+call  es:[bx + MUSIC_DRIVER_T.md_resumemusic_func]
+pop bx
+
+mov   byte ptr ds:[_mus_paused], al ; 0
+exit_resume_sound:
+ret
+
+ENDP
 
 PROC    D_MAIN_ENDMARKER_ NEAR
 PUBLIC  D_MAIN_ENDMARKER_

@@ -27,7 +27,7 @@ EXTRN Z_QuickMapPhysics_:FAR
 EXTRN locallib_toupper_:NEAR
 EXTRN G_ResetGameKeys_:NEAR
 EXTRN P_SetupLevel_:NEAR
-EXTRN S_ResumeSound_:FAR
+EXTRN S_ResumeSound_:NEAR
 EXTRN Z_QuickMapRender_:FAR
 EXTRN Z_QuickMapRender_9000To6000_:NEAR
 

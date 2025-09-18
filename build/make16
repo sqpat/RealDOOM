@@ -68,7 +68,6 @@ GLOBOBJS = &
  hu_setup.obj &
  hu_stuff.obj &
  hu_lib.obj &
- s_sound.obj &
  s_sbsfx.obj &
  d_dmx.obj &
  d_int.obj &

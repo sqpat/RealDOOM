@@ -22,6 +22,7 @@ INSTRUCTION_SET_MACRO
 ; hack but oh well
 P_SIGHT_STARTMARKER_ = 0 
 
+EXTRN S_StartSound_:NEAR
 EXTRN P_Random_:NEAR
 EXTRN P_SpawnPuff_:NEAR
 EXTRN P_SpawnMobj_:NEAR
@@ -1367,10 +1368,7 @@ found_boss_loud_mobjtype:
 xor   ax, ax
 do_seesound:
 
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 no_seesound:
 mov   al, bl
 xor   ah, ah
@@ -1554,10 +1552,7 @@ call  GetAttackSound_
 mov   dl, al
 mov   ax, si
 
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
@@ -1620,10 +1615,7 @@ cmp   al, 3
 jae   exit_a_chase_2
 xchg  ax, si
 
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 jmp   exit_a_chase_2
 
@@ -1789,10 +1781,7 @@ mov   bx, ax
 mov   di, dx
 mov   dl, SFX_PISTOL
 mov   ax, si
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 
 ;    angle = MOD_FINE_ANGLE(angle + (((P_Random()-P_Random())<<(20-ANGLETOFINESHIFT))));
@@ -1861,10 +1850,7 @@ ENDIF
 
 mov   dl, SFX_SHOTGN
 mov   ax, di
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 mov   ax, di
 call  A_FaceTarget_
@@ -1956,10 +1942,7 @@ ENDIF
 
 mov   dl, SFX_SHOTGN
 mov   ax, si
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 mov   ax, si
 call  A_FaceTarget_
@@ -2180,10 +2163,7 @@ call  P_CheckMeleeRange_
 jnc    do_troop_missile
 mov   dl, SFX_CLAW
 mov   ax, si
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 call  P_Random_
 
@@ -2391,10 +2371,7 @@ call  P_CheckMeleeRange_
 jnc    do_bruis_missile
 mov   dl, SFX_CLAW
 mov   ax, si
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 ;		damage = (P_Random()%8+1)*10;
 
@@ -2848,10 +2825,7 @@ do_a_skelwhoosh:
 call  A_FaceTarget_
 mov   dl, SFX_SKESWG
 mov   ax, si
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 exit_skelwhoosh:
 ret   
@@ -2890,10 +2864,7 @@ xchg  ax, cx
 
 mov   ax, si
 mov   dl, SFX_SKEPCH
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 IF COMPISA GE COMPILE_186
     imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
@@ -3288,10 +3259,7 @@ ENDIF
 add   si, (_thinkerlist + THINKER_T.t_data)
 mov   dl, SFX_SLOP
 mov   ax, si
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 xor   ax, ax
 mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
@@ -3381,10 +3349,7 @@ PROC    A_VileStart_ NEAR
 PUBLIC  A_VileStart_
 
 mov   dl, SFX_VILATK
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 exit_a_fire_early:
 ret   
@@ -3397,10 +3362,7 @@ PUBLIC  A_StartFire_
 
 
 mov   dl, SFX_FLAMST
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 jmp   A_Fire_ 
 
@@ -3412,10 +3374,7 @@ PUBLIC  A_FireCrackle_
 
 
 mov   dl, SFX_FLAME
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 ENDP
 
@@ -3733,10 +3692,7 @@ call  P_CheckSight_
 jnc   exit_vile_attack
 mov   dl, SFX_BAREXP
 mov   ax, si
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 mov   ax, di
 mov   cx, 20
@@ -3836,10 +3792,7 @@ PUBLIC  A_FatRaise_
 call  A_FaceTarget_
 mov   dl, SFX_MANATK
 xchg  ax, si  ; si has ax value
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 ret   
 
 ENDP
@@ -4039,10 +3992,7 @@ call  GetAttackSound_
 
 xchg  ax, dx
 mov   ax, si
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 mov   ax, si
 call  A_FaceTarget_
@@ -4398,10 +4348,7 @@ full_sound_deathscream:
 xchg  ax, dx
 xor   ax, ax
 do_death_sound:
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 exit_a_scream:
 ret   
@@ -4441,10 +4388,7 @@ PROC    A_XScream_ NEAR
 PUBLIC  A_XScream_
 
 mov   dl, SFX_SLOP
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 ret   
 
@@ -4464,10 +4408,7 @@ call  GetPainSound_
 
 xchg  ax, dx  ; dx gets ax
 xchg  ax, bx  ; bx gets ax
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 ret   
 
@@ -4693,10 +4634,7 @@ PUBLIC  A_Hoof_
 
 
 mov   dl, SFX_HOOF
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 xchg  ax, si  ; si has ax value
 jmp   A_Chase_
@@ -4709,10 +4647,7 @@ PUBLIC  A_Metal_
 
 
 mov   dl, SFX_METAL
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 xchg  ax, si  ; si has ax value
 jmp   A_Chase_
@@ -4725,10 +4660,7 @@ PUBLIC  A_BabyMetal_
 
 
 mov   dl, SFX_BSPWLK
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 xchg  ax, si  ; si has ax value
 jmp   A_Chase_
@@ -4788,10 +4720,7 @@ jne   loop_next_brainawake
 
 mov   dl, SFX_BOSSIT
 xor   ax, ax
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 ret   
 
@@ -4804,10 +4733,7 @@ PUBLIC  A_BrainPain_
 
 mov   dl, SFX_BOSPN
 xor   ax, ax
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 ret   
 
@@ -4906,10 +4832,7 @@ jmp   do_next_brain_scream_iter
 done_with_brain_scream_loop:
 mov   dl, SFX_BOSDTH
 xor   ax, ax
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 ret   
 
@@ -5155,10 +5078,7 @@ div   cl
 mov   byte ptr ds:[si + MOBJ_T.m_reactiontime], al
 mov   dl, SFX_BOSPIT
 xor   ax, ax
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 exit_spawnfly:
 ret   
 
@@ -5169,10 +5089,7 @@ PROC    A_SpawnSound_ NEAR
 PUBLIC  A_SpawnSound_
 
 mov   dl, SFX_BOSCUB
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 
 
@@ -5240,10 +5157,7 @@ call  P_SpawnMobj_
 
 mov   dl, SFX_TELEPT
 mov   ax, word ptr ds:[_setStateReturn]
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 call  P_Random_
 cmp   al, 50
@@ -5394,10 +5308,7 @@ jge   normal_scream
 mov   dl, SFX_PDIEHI
 normal_scream:
 xchg  ax, bx ; player
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 ret   
 

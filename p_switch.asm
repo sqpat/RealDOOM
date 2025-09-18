@@ -21,6 +21,7 @@ INSTRUCTION_SET_MACRO
 EXTRN EV_DoFloor_:NEAR
 EXTRN EV_DoDoor_:NEAR
 
+EXTRN S_StartSoundWithSecnum_:NEAR
 EXTRN EV_DoPlat_:NEAR
 EXTRN EV_DoDonut_:NEAR
 EXTRN EV_DoLockedDoor_:NEAR
@@ -145,7 +146,7 @@ xor   dx, dx
 mov   dl, byte ptr [bp - 2]
 mov   ax, word ptr ds:[_buttonlist + BUTTON_T.button_soundorg] ; jank. bug in original source?
 
-call  dword ptr ds:[_S_StartSoundWithSecnum_addr]
+call  S_StartSoundWithSecnum_
 
 
 mov   si, cx

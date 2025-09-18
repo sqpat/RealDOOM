@@ -1288,9 +1288,10 @@ idiv  cx
 mov   dl, SFX_BAREXP
 mov   word ptr cs:[_cnt_par - OFFSET WI_STARTMARKER_], ax
 xor   ax, ax
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+;call  S_StartSound_
+db    09Ah
+dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 mov   word ptr cs:[_sp_state - OFFSET WI_STARTMARKER_], 10
 
 done_checking_sp_state:
@@ -1315,9 +1316,9 @@ jne   do_update_kills
 mov   dl, SFX_PISTOL
 xor   ax, ax
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+;call  S_StartSound_
+db    09Ah
+dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 do_update_kills:
 
@@ -1334,9 +1335,9 @@ jmp   play_barexp_sfx_inc_state_exit
 play_sgcock_sfx:
 mov   dl, SFX_SGCOCK
 xor   ax, ax
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+;call  S_StartSound_
+db    09Ah
+dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 cmp   byte ptr ds:[_commercial], 0
 je    do_initshownextloc
@@ -1364,9 +1365,9 @@ test  byte ptr cs:[_bcnt - OFFSET WI_STARTMARKER_], 3
 jne   do_update_items
 mov   dl, sfx_pistol
 xor   ax, ax
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+;call  S_StartSound_
+db    09Ah
+dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 do_update_items:
 mov   ax, 100
@@ -1381,9 +1382,9 @@ play_barexp_sfx_inc_state_exit:
 mov   dl, SFX_BAREXP
 xor   ax, ax
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+;call  S_StartSound_
+db    09Ah
+dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 inc   word ptr cs:[_sp_state - OFFSET WI_STARTMARKER_]
 exit_wi_updatestats_2:
@@ -1403,9 +1404,9 @@ test  byte ptr cs:[_bcnt - OFFSET WI_STARTMARKER_], 3
 jne   do_update_secrets
 mov   dl, SFX_PISTOL
 xor   ax, ax
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+;call  S_StartSound_
+db    09Ah
+dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 do_update_secrets:
 mov   ax, 100
@@ -1427,9 +1428,9 @@ test  byte ptr cs:[_bcnt - OFFSET WI_STARTMARKER_], 3
 jne   dont_play_pistol_sfx_4
 mov   dl, SFX_PISTOL
 xor   ax, ax
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+;call  S_StartSound_
+db    09Ah
+dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 dont_play_pistol_sfx_4:
 add   word ptr cs:[_cnt_time - OFFSET WI_STARTMARKER_], 3
@@ -1454,9 +1455,9 @@ jl    jump_to_exit_wi_updatestats_3
 mov   dl, SFX_BAREXP
 xor   ax, ax
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+;call  S_StartSound_
+db    09Ah
+dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 inc   word ptr cs:[_sp_state - OFFSET WI_STARTMARKER_]
 pop   dx
@@ -1932,13 +1933,13 @@ jne   music_already_init
 cmp   byte ptr ds:[_commercial], 0
 je    set_doom1_music
 ;set doom2 music
-mov   dx, 1
-mov   ax, MUS_DM2INT
+mov   ax, MUS_DM2INT + 0100h
 call_music:
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_ChangeMusic_addr
+; S_ChangeMusic_ inlined
+mov   word ptr ds:[_pendingmusicenum], ax
+;mov   byte ptr ds:[_pendingmusicenumlooping], dl
+
 
 music_already_init:
 
@@ -1986,8 +1987,7 @@ pop   dx
 pop   bx
 retf  
 set_doom1_music:
-mov   dx, 1
-mov   ax, MUS_INTER
+mov   ax, MUS_INTER + 0100h
 jmp   call_music
 
 branch_StatCount:

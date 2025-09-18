@@ -341,15 +341,11 @@ got_flat_values_and_music:
 ; ax is finale music
 ; cx is finaletext
 ; bx is text for the flat graphic
-mov   dx, 1
+mov   ah, 1
 mov   word ptr ds:[_finaleflat], bx
-
-xor   ah, ah
 mov   word ptr ds:[_finaletext], cx
-
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_ChangeMusic_addr
+;call  S_ChangeMusic_
+mov   word ptr ds:[_pendingmusicenum], ax
 
 xor   ax, ax
 mov   word ptr ds:[_finalestage], ax
@@ -1031,9 +1027,10 @@ jle   draw_end0_patch
 mov   dl, SFX_PISTOL
 xor   ax, ax
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+;call  S_StartSound_
+db    09Ah
+dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 
 mov   byte ptr ds:[_finale_laststage], bl
 draw_end0_patch:
@@ -1186,18 +1183,15 @@ mov   ax, STATES_SEGMENT
 mov   word ptr ds:[_caststate], bx
 mov   es, ax
 mov   al, byte ptr es:[bx + 2]
-mov   dx, 1
 mov   byte ptr ds:[_casttics], al
-xor   al, al
 mov   byte ptr ds:[_castdeath], 0
 mov   byte ptr ds:[_castframes], al
 mov   byte ptr ds:[_castonmelee], al
 mov   byte ptr ds:[_castattacking], al
-mov   ax, MUS_EVIL
-mov   word ptr ds:[_finalestage], 2
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_ChangeMusic_addr
+mov   ax, MUS_EVIL + 0100h
+;call  S_ChangeMusic_
+mov   word ptr ds:[_pendingmusicenum], ax
+
 pop   dx
 pop   bx
 ret   
@@ -1260,9 +1254,10 @@ dw    GETSEESTATEADDR, PHYSICS_HIGHCODE_SEGMENT
 mov   dl, al
 
 xor   ax, ax
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+;call  S_StartSound_
+db    09Ah
+dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 mov   al, byte ptr ds:[_castnum]
 cbw  
 mov   bx, ax
@@ -1491,9 +1486,10 @@ selected_sfx:
 mov   dl, al
 
 xor   ax, ax
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+;call  S_StartSound_
+db    09Ah
+dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 cmp   byte ptr ds:[_castframes], 0Ch
 je    do_attack_frame
 jump_to_finished_attack_frame_switch_check:
@@ -1621,9 +1617,10 @@ mov   bx, ax
 xor   ax, ax
 mov   dl, byte ptr ds:[bx + _mobjinfo + MOBJINFO_T.mobjinfo_deathsound]
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+;call  S_StartSound_
+db    09Ah
+dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 mov   al, 1
 pop   bx
 ret   
@@ -1697,9 +1694,11 @@ mov   word ptr ds:[_finalecount], ax
 cmp   byte ptr ds:[_gameepisode], 3
 jne   exit_fticker
 mov   ax, MUS_BUNNY
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartMusic_addr
+;call  S_StartMusic_
+mov   word ptr ds:[_pendingmusicenum], ax
+;mov   byte ptr ds:[_pendingmusicenumlooping], 0
+
+
 LEAVE_MACRO
 pop   dx
 pop   cx

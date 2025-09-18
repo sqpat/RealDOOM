@@ -64,7 +64,6 @@ void __near Z_FreeConventionalAllocations();
 void __near P_GroupLines();
 
 void R_LoadPatchColumnsColormap0(uint16_t lump, segment_t texlocation_segment, boolean ismasked);
-void __far S_Start(void);
 void GAMEKEYDOWNTHING();
 
 
@@ -75,7 +74,6 @@ void GAMEKEYDOWNTHING();
 void __near P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 	int8_t        lumpname[9];
 	int16_t         lumpnum;
-	
 	
 	//I_Error("level is %i %i", episode, map);
 
@@ -182,14 +180,14 @@ void __near P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 
 
 }
-void __far S_StopChannel(int8_t cnum);
+//void __far S_StopChannel(int8_t cnum);
 
 //
 // Per level startup code.
 // Kills playing sounds at start of level,
 //  determines music if any, changes music.
 //
-void __far S_Start(void);
+
 
 /*
 void __far S_Start(void) {

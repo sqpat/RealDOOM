@@ -32,6 +32,7 @@ EXTRN P_SetMobjState_:NEAR         ; except this is really far
 EXTRN P_NoiseAlert_:NEAR         ; except this is really far
 EXTRN P_SpawnMobj_:NEAR          
 EXTRN P_DamageMobj_:NEAR
+EXTRN S_StartSound_:NEAR
 
 
 .DATA
@@ -77,9 +78,7 @@ jmp   check_for_chainsaw_pending
 rev_chainsaw_noise:
 mov   dl, SFX_SAWUP
 mov   ax, word ptr ds:[_playerMobj]
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 jmp   pending_weapon_checks_done
 ENDP
 
@@ -294,9 +293,7 @@ cmp   word ptr ds:[si], S_SAW
 jne   dont_do_chainsaw_sound
 mov   dl, SFX_SAWIDL
 mov   ax, word ptr ds:[_playerMobj]
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 dont_do_chainsaw_sound:
 
 
@@ -556,9 +553,7 @@ have_linetarget:
 
 mov   dl, SFX_PUNCH
 mov   ax, word ptr ds:[_playerMobj]
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 mov   si, word ptr ds:[_playerMobj_pos]
 lds   di, dword ptr ds:[_linetarget_pos]
@@ -647,9 +642,7 @@ jne   have_linetarget_chainsaw
 
 mov   dl, SFX_SAWFUL
 mov   ax, word ptr ds:[_playerMobj]
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 ret   
 
 
@@ -657,9 +650,7 @@ ret
 have_linetarget_chainsaw:
 mov   dl, SFX_SAWHIT
 mov   ax, word ptr ds:[_playerMobj]
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 mov   si, word ptr ds:[_playerMobj_pos]
 lds   di, dword ptr ds:[_linetarget_pos]
@@ -904,9 +895,7 @@ PUBLIC A_FirePistol_
 
 mov   dl, SFX_PISTOL
 mov   ax, word ptr ds:[_playerMobj]
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 mov   dx, S_PLAY_ATK2
 mov   ax, word ptr ds:[_playerMobj]
@@ -936,9 +925,7 @@ PUBLIC A_FireShotgun_
 
 mov   dl, SFX_SHOTGN
 mov   ax, word ptr ds:[_playerMobj]
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 mov   dx, S_PLAY_ATK2
 mov   ax, word ptr ds:[_playerMobj]
@@ -972,9 +959,7 @@ PUBLIC A_FireShotgun2_
 
 mov   dl, SFX_DSHTGN
 mov   ax, word ptr ds:[_playerMobj]
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 ;    P_SetMobjState (playerMobj, S_PLAY_ATK2);
 
@@ -1067,9 +1052,7 @@ mov   bx, ax
 mov   dl, SFX_PISTOL
 mov   ax, word ptr ds:[_playerMobj]
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 
 cmp   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CLIP)], 0
@@ -1128,9 +1111,7 @@ PUBLIC A_OpenShotgun2_
 
 mov   dl, SFX_DBOPN
 mov   ax, word ptr ds:[_playerMobj]
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 ret
 
 ENDP
@@ -1140,9 +1121,7 @@ PUBLIC A_LoadShotgun2_
 
 mov   dl, SFX_DBLOAD
 mov   ax, word ptr ds:[_playerMobj]
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 ret   
 
 ENDP
@@ -1153,9 +1132,7 @@ PUBLIC A_CloseShotgun2_
 push  ax
 mov   dl, SFX_DBCLS
 mov   ax, word ptr ds:[_playerMobj]
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 pop   ax
 call  A_Refire_
 ret   
@@ -1303,9 +1280,7 @@ PUBLIC A_BFGsound_
 
 mov   dl, SFX_BFG
 mov   ax, word ptr ds:[_playerMobj]
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 ret   
 
 

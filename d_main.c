@@ -809,9 +809,13 @@ void __near D_PageDrawer (void) {
 		gamestate = GS_DEMOSCREEN;
 		pagename = "TITLEPIC"; 
 		if ( commercial ){
-          S_StartMusic(mus_dm2ttl);
+        //   S_StartMusic(mus_dm2ttl);
+			pendingmusicenum = mus_dm2ttl;
+			pendingmusicenumlooping = 0;
 		} else {
-          S_StartMusic (mus_intro);
+        //   S_StartMusic (mus_intro);
+			pendingmusicenum = mus_intro;
+			pendingmusicenumlooping = 0;
 		}
 		break;
       case 1:
@@ -830,7 +834,10 @@ void __near D_PageDrawer (void) {
         if ( commercial) {
             pagetic = 35 * 11;
             pagename = "TITLEPIC";
-            S_StartMusic(mus_dm2ttl);
+            // S_StartMusic(mus_dm2ttl);
+			pendingmusicenum = mus_dm2ttl;
+			pendingmusicenumlooping = 0;
+
         } else {
             pagetic = 200;
 			if (is_ultimate){

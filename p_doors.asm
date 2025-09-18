@@ -22,6 +22,8 @@ INSTRUCTION_SET_MACRO
 EXTRN P_RemoveThinker_:NEAR
 EXTRN P_CreateThinker_:NEAR
 
+EXTRN S_StartSound_:NEAR
+EXTRN S_StartSoundWithSecnum_:NEAR
 EXTRN P_FindHighestOrLowestFloorSurrounding_:NEAR
 EXTRN P_FindLowestOrHighestCeilingSurrounding_:NEAR
 EXTRN P_FindSectorsFromLineTag_:NEAR
@@ -128,7 +130,8 @@ mov   word ptr ds:[si + VLDOOR_T.vldoor_direction], bx
 
 call_sound_and_exit:
 mov   ax, di
-call  dword ptr ds:[_S_StartSoundWithSecnum_addr]
+call  S_StartSoundWithSecnum_
+
 switch_case_verticaldoor_2_default:
 switch_case_verticaldoor_3_default:
 exit_t_verticaldoor_2:   
@@ -296,10 +299,8 @@ mov   word ptr ds:[_player + PLAYER_T.player_message], bx
 
 play_sound_and_exit_lockedoor:
 
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
+
 
 exit_non_player_locked_door:
 clc
@@ -422,7 +423,8 @@ mov   word ptr ds:[bx + VLDOOR_T.vldoor_direction], -1
 set_secnum_and_play_sound_and_exit:
 xchg  ax, cx
 
-call  dword ptr ds:[_S_StartSoundWithSecnum_addr]
+call  S_StartSoundWithSecnum_
+
 switch_block_ev_dodoor_case_doorraisein5mins:
 done_with_evdodoor_switch_block:
 
@@ -531,10 +533,7 @@ mov   word ptr ds:[_player + PLAYER_T.player_message], bx
 
 xor   ax, ax
 
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
    
 jmp   exit_ev_verticaldoor
 
@@ -601,7 +600,8 @@ mov   dx, SFX_BDOPN
 do_play_door_sound:
 
 mov   ax, bx
-call  dword ptr ds:[_S_StartSoundWithSecnum_addr]
+call  S_StartSoundWithSecnum_
+
    
 mov   ax, TF_VERTICALDOOR_HIGHBITS
 

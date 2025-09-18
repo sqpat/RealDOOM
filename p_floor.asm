@@ -19,6 +19,8 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
+EXTRN S_StartSound_:NEAR
+EXTRN S_StartSoundWithSecnum_:NEAR
 EXTRN P_RemoveThinker_:NEAR
 EXTRN P_CreateThinker_:NEAR
 EXTRN P_ChangeSector_:NEAR
@@ -266,7 +268,8 @@ test  byte ptr ds:[_leveltime], 7
 jne   dont_play_floor_sound
 mov   dx, SFX_STNMOV
 mov   ax, di
-call  dword ptr ds:[_S_StartSoundWithSecnum_addr]   
+call  S_StartSoundWithSecnum_
+
 dont_play_floor_sound:
 
 mov   ax, di
@@ -329,7 +332,8 @@ mov   dx, SFX_PSTOP
 call  P_RemoveThinker_
 xchg  ax, di
 
-call  dword ptr ds:[_S_StartSoundWithSecnum_addr]
+call  S_StartSoundWithSecnum_
+
    
 exit_move_floor:
 LEAVE_MACRO 

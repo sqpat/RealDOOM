@@ -30,6 +30,7 @@ EXTRN P_CrossSpecialLine_:NEAR
 EXTRN P_ShootSpecialLine_:NEAR
 EXTRN P_TouchSpecialThing_:NEAR
 EXTRN GetDamage_:NEAR
+EXTRN S_StartSound_:NEAR
 
 ; hack but oh well
 P_SIGHT_STARTMARKER_ = 0 
@@ -2910,10 +2911,8 @@ use_thru_wall:
 
 mov   ax, word ptr ds:[_playerMobj]
 mov   dl, SFX_NOWAY
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+
+call  S_StartSound_
 clc
 jmp   exit_usetraverse
 no_line_special:

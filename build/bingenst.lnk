@@ -45,7 +45,6 @@ file r_setup.obj
 file st_setup.obj
 file hu_setup.obj
 
-file s_sound.obj
 file s_sbsfx.obj
 file r_main.obj
 file f_file.obj
@@ -123,6 +122,7 @@ file p_tick.obj
 file p_user.obj
 file p_info.obj
 file am_map.obj
+file s_sound.obj
 
 #hack..
 NEWSEGMENT 

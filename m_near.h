@@ -422,7 +422,7 @@
 
 #define currentThinkerListHead  		(*((int16_t __near*)                 (_NULL_OFFSET + 0x03D2)))
 
-#define S_StartSoundWithSecnum_addr     (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03D4)))
+#define SFX_Playing_addr			    (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03D4)))
 #define G_SecretExitLevel_addr          (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03D8)))
 #define I_WaitVBL_addr                  (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03DC)))
 
@@ -452,7 +452,7 @@
 #define V_DrawPatch_addr                  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0454)))
 #define m_paninc                          (*((mpoint_t __near*)              (_NULL_OFFSET + 0x0458)))
 
-#define S_ChangeMusic_addr                (*((uint32_t  __near*)             (_NULL_OFFSET + 0x045C)))
+#define SFX_SetOrigin_addr                (*((uint32_t  __near*)             (_NULL_OFFSET + 0x045C)))
 #define V_DrawFullscreenPatch_addr        (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0460)))
 #define getStringByIndex_addr             (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0464)))
 #define ST_Start_addr 				      (*((uint32_t __near*)              (_NULL_OFFSET + 0x0468)))
@@ -463,8 +463,8 @@
 #define W_CacheLumpNameDirect_addr        (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0478)))
 #define W_CacheLumpNumDirectFragment_addr (*((uint32_t  __near*)             (_NULL_OFFSET + 0x047C)))
 #define W_GetNumForName_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0480)))
-#define S_StartSound_addr                 (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0484)))
-#define S_StartMusic_addr                 (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0488)))
+#define SFX_PlayPatch_addr  			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0484)))
+#define SFX_StopPatch_addr  			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0488)))
 // 13 bytes (12345678.123) fileame format incl . and null term
 #define filename_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x048C))
 #define rndindex                          (*(uint8_t __near *)               (_NULL_OFFSET + 0x0499))
@@ -489,7 +489,7 @@
 #define snd_SBirq		        		  (*((uint8_t __near*)               (_NULL_OFFSET + 0x04BE)))
 #define snd_SBdma		        		  (*((uint8_t __near*)               (_NULL_OFFSET + 0x04BF)))
 
-#define S_StopSoundMobjRef_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x04C0)))
+// #define S_StopSoundMobjRef_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x04C0)))
 
 #define R_DrawSkyPlaneDynamic_addr_Offset (*((int16_t __near*)               (_NULL_OFFSET + 0x04C4)))
 #define R_DrawSkyPlaneDynamic_addr    	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x04C4)))
@@ -721,13 +721,9 @@
 
 // ad8, adc unused
 
-#define SFX_Playing_addr  				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0AE0)))
-#define SFX_SetOrigin_addr  			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0AE4)))
-#define SFX_PlayPatch_addr  			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0AE8)))
-#define SFX_StopPatch_addr  			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0AEC)))
 
 
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0AF0)))
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0AE0)))
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
@@ -799,6 +795,8 @@ extern void					(__far* P_GivePower)();
 
 extern void (__far* AM_Ticker)();
 extern void (__far* AM_Drawer)();
+extern void (__far* S_UpdateSounds)();
+extern void (__far* S_Start	)();
 
 
 

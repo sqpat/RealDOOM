@@ -22,7 +22,8 @@ INSTRUCTION_SET_MACRO
 
 
 
-
+EXTRN S_StartSound_:NEAR
+EXTRN S_StartSoundWithSecnum_:NEAR
 EXTRN T_MovePlaneCeilingUp_:NEAR
 EXTRN T_MovePlaneCeilingDown_:NEAR
 EXTRN P_FindSectorsFromLineTag_:NEAR
@@ -107,7 +108,7 @@ je    dont_play_ceiling_sound
 mov   dx, SFX_STNMOV
 push  ax
 mov   ax, word ptr [bp - 2]
-call  dword ptr ds:[_S_StartSoundWithSecnum_addr]
+call  S_StartSoundWithSecnum_
 
 pop   ax
 
@@ -125,7 +126,7 @@ jbe   just_set_dir_negative ; 3, 4
 ; 5 fall thru
 mov   dx, SFX_PSTOP
 mov   ax, word ptr [bp - 2]
-call  dword ptr ds:[_S_StartSoundWithSecnum_addr]
+call  S_StartSoundWithSecnum_
 
 just_set_dir_negative:
 mov   byte ptr ds:[si + CEILING_T.ceiling_direction], -1
@@ -168,7 +169,8 @@ je    dont_play_ceiling_sound_2
 mov   dx, SFX_STNMOV
 push  ax ; backup
 mov   ax, word ptr [bp - 2]
-call  dword ptr ds:[_S_StartSoundWithSecnum_addr]
+call  S_StartSoundWithSecnum_
+
 pop   ax ; restore
 
 dont_play_ceiling_sound_2:
@@ -191,7 +193,8 @@ jb    switch_moveceiling_type_3 ; 4
 switch_moveceiling_type_4:
 mov   dx, SFX_PSTOP
 mov   ax, word ptr [bp - 2]
-call  dword ptr ds:[_S_StartSoundWithSecnum_addr]
+call  S_StartSoundWithSecnum_
+
 ; fall thru
 switch_moveceiling_type_2:
 mov   word ptr ds:[si + CEILING_T.ceiling_speed], CEILSPEED

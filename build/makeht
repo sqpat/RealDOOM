@@ -54,9 +54,6 @@ GLOBOBJS = &
  g_game.obj &
  m_misc.obj &
  p_init.obj &
- p_ceilng.obj &
- p_doors.obj &
- p_lights.obj &
  p_setup.obj &
  r_init.obj &
  r_setup.obj &
@@ -73,7 +70,6 @@ GLOBOBJS = &
  hu_setup.obj &
  hu_stuff.obj &
  hu_lib.obj &
- s_sound.obj &
  s_sbsfx.obj &
  d_dmx.obj &
  d_int.obj &

@@ -54,7 +54,7 @@ db  100, 78, 60, 64, 70, 70, 64, 60, 100, 100
 db  100, 32, 32, 60, 70, 70, 70, 70, 70, 70
 db  70, 70, 70, 70, 70, 70, 70, 70, 60
 
-
+COMMENT @
 
 PROC    S_ChangeMusic_ FAR
 PUBLIC  S_ChangeMusic_
@@ -74,6 +74,8 @@ mov   byte ptr ds:[_pendingmusicenumlooping], 0
 retf  
 
 ENDP
+
+@
 
 SIZEOF_CHANNEL_T = 6
 
@@ -346,53 +348,10 @@ ENDP
 
 
 
-PROC    S_PauseSound_ FAR
-PUBLIC  S_PauseSound_
-
-xor   ax, ax
-cmp   byte ptr ds:[_mus_playing], al ; 0
-je    exit_pause_sound
-cmp   byte ptr ds:[_mus_paused], al  ; todo put these adjacent. use a single word check
-jne   exit_pause_sound
-
-mov   byte ptr ds:[_playingstate], ST_PAUSED
-cmp   byte ptr ds:[_playingdriver+3], al  ; segment high byte shouldnt be 0 if its set.
-je    exit_pause_sound
-push  bx
-les   bx, dword ptr ds:[_playingdriver]
-call  es:[bx + MUSIC_DRIVER_T.md_pausemusic_func]
-pop   bx
-mov   byte ptr ds:[_mus_paused], 1
-exit_pause_sound:
-retf  
-
-ENDP
-
-PROC    S_ResumeSound_ FAR
-PUBLIC  S_ResumeSound_
-
-xor   ax, ax
-cmp   byte ptr ds:[_mus_playing], al
-je    exit_resume_sound
-cmp   byte ptr ds:[_mus_paused], al 
-je    exit_resume_sound
-mov   byte ptr ds:[_playingstate], ST_PLAYING
-
-cmp   byte ptr ds:[_playingdriver+3], al  ; segment high byte shouldnt be 0 if its set.
-je    exit_pause_sound
-push  bx
-les   bx, dword ptr ds:[_playingdriver]
-call  es:[bx + MUSIC_DRIVER_T.md_resumemusic_func]
-pop bx
-
-mov   byte ptr ds:[_mus_paused], al ; 0
-exit_resume_sound:
-retf  
-
-ENDP
 
 
-PROC    S_StopSound_ FAR ; has to be far for now because because S_StopSoundMobjRef_ jumps in.
+
+PROC    S_StopSound_ NEAR ; has to be far for now because because S_StopSoundMobjRef_ jumps in.
 PUBLIC  S_StopSound_
 
 ;void __far S_StopSound(mobj_t __near* origin, int16_t soundorg_secnum) {
@@ -443,7 +402,7 @@ call  S_StopChannel_
 pop   si
 pop   bx
 pop   dx
-retf  
+ret  
 iter_next_channel_stopsound:
 add   si, SIZEOF_CHANNEL_T
 inc   dx
@@ -453,11 +412,11 @@ exit_stopsound:
 pop   si
 pop   bx
 pop   dx
-retf  
+ret  
 
 ENDP
 
-PROC    S_StopSoundMobjRef_ FAR
+PROC    S_StopSoundMobjRef_ NEAR
 PUBLIC  S_StopSoundMobjRef_
 
 push  dx
@@ -783,7 +742,16 @@ jmp   successful_play
 
 ENDP
 
-PROC    S_StartSound_ FAR
+PROC    S_StartSoundFar_ FAR
+PUBLIC  S_StartSoundFar_
+
+call  S_StartSound_
+retf
+
+ENDP
+
+
+PROC    S_StartSound_ NEAR
 PUBLIC  S_StartSound_
 
 test  dl, dl
@@ -793,11 +761,11 @@ mov   bx, -1
 call  S_StartSoundWithPosition_
 pop   bx
 exit_startsound_sfxid_0:
-retf  
+ret  
 
 ENDP
 
-PROC    S_StartSoundWithSecnum_ FAR
+PROC    S_StartSoundWithSecnum_ NEAR
 PUBLIC  S_StartSoundWithSecnum_
 
 test  dl, dl
@@ -807,7 +775,7 @@ xchg  ax, bx
 xor   ax, ax
 call  S_StartSoundWithPosition_
 pop   bx
-retf  
+ret
 
 ENDP
 
@@ -992,8 +960,10 @@ add   al, dh
 do_changemusic_call:
 cbw
 ;  S_ChangeMusic(mnum, true);
-mov   dx, 1
-call  S_ChangeMusic_
+;call  S_ChangeMusic_
+mov   ah, 1  ; looping
+mov   word ptr ds:[_pendingmusicenum], ax
+;mov   byte ptr ds:[_pendingmusicenumlooping], dl
 
 
 exit_s_start:

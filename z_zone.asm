@@ -450,6 +450,7 @@ push  si
 
 task_num_9_jump:
 Z_QUICKMAPAI8 pageswapargs_menu_offset_size INDEXED_PAGE_5000_OFFSET
+Z_QUICKMAPAI4_NO_DX  pageswapargs_physics_code_offset_size INDEXED_PAGE_9000_OFFSET
 
 mov   byte ptr ds:[_currenttask], TASK_MENU
 pop   si

@@ -19,6 +19,7 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
+EXTRN S_StartSound_:NEAR
 EXTRN P_Random_:NEAR
 EXTRN GetPainChance_:NEAR
 EXTRN GetPainState_:NEAR
@@ -543,10 +544,7 @@ mov    dx, cx
 xor    ax, ax
 add    byte ptr ds:[_player + PLAYER_T.player_bonuscount], BONUSADD
 
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 exit_ptouchspecialthing:
 ;pop    di

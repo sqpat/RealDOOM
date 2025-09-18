@@ -371,7 +371,7 @@ _am_stopped = 						 _NULL_OFFSET + 003D0h
 _automapactive =                 	 _NULL_OFFSET + 003D1h
 _currentThinkerListHead = 			 _NULL_OFFSET + 003D2h
 
-_S_StartSoundWithSecnum_addr =       _NULL_OFFSET + 003D4h
+_SFX_Playing_addr = 			     _NULL_OFFSET + 003D4h
 _G_SecretExitLevel_addr =            _NULL_OFFSET + 003D8h
 _I_WaitVBL_addr =       		     _NULL_OFFSET + 003DCh
 
@@ -398,7 +398,7 @@ _V_DrawPatch_addr =              	 _NULL_OFFSET + 00454h
 _m_paninc = 				 	 	 _NULL_OFFSET + 00458h
 
 
-_S_ChangeMusic_addr =              	 _NULL_OFFSET + 0045Ch
+_SFX_SetOrigin_addr =              	 _NULL_OFFSET + 0045Ch
 _V_DrawFullscreenPatch_addr =        _NULL_OFFSET + 00460h
 _getStringByIndex_addr =             _NULL_OFFSET + 00464h
 _ST_Start_addr = 			 	 	 _NULL_OFFSET + 00468h
@@ -410,8 +410,8 @@ _R_PointToAngle2_addr =              _NULL_OFFSET + 00474h
 _W_CacheLumpNameDirect_addr =        _NULL_OFFSET + 00478h
 _W_CacheLumpNumDirectFragment_addr = _NULL_OFFSET + 0047Ch
 _W_GetNumForName_addr =              _NULL_OFFSET + 00480h
-_S_StartSound_addr =                 _NULL_OFFSET + 00484h
-_S_StartMusic_addr =             	 _NULL_OFFSET + 00488h
+_SFX_PlayPatch_addr =                 _NULL_OFFSET + 00484h
+_SFX_StopPatch_addr =             	 _NULL_OFFSET + 00488h
 
 ; 13 bytes in length
 _filename_argument = 				 _NULL_OFFSET + 0048Ch
@@ -441,7 +441,7 @@ _snd_SBirq =              			 _NULL_OFFSET + 004BEh
 _snd_SBdma =              			 _NULL_OFFSET + 004BFh
 
 
-_S_StopSoundMobjRef_addr =           _NULL_OFFSET + 004C0h
+;_S_StopSoundMobjRef_addr =           _NULL_OFFSET + 004C0h
 _R_DrawSkyPlaneDynamic_addr =  	     _NULL_OFFSET + 004C4h
 _snd_SBport =                        _NULL_OFFSET + 004C8h
 _snd_Mport =                         _NULL_OFFSET + 004CAh
@@ -647,12 +647,7 @@ _old_screen_viewport_height =	  	 _NULL_OFFSET + 00ACEh
 _FixedDivWholeA_addr =   		     _NULL_OFFSET + 00AD0h
 _cht_CheckCheat_Far_addr = 	 	     _NULL_OFFSET + 00AD4h
 
-_SFX_Playing_addr = 			 	 _NULL_OFFSET + 00AE0h
-_SFX_SetOrigin_addr = 		  		 _NULL_OFFSET + 00AE4h
-_SFX_PlayPatch_addr = 		  		 _NULL_OFFSET + 00AE8h
-_SFX_StopPatch_addr = 		  		 _NULL_OFFSET + 00AECh
-
-_flatcache_nodes =				     _NULL_OFFSET + 00AF0h
+_flatcache_nodes =				     _NULL_OFFSET + 00AE0h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + (SIZEOF_CACHE_NODE_T * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

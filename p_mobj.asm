@@ -37,7 +37,8 @@ EXTRN GetDeathState_:NEAR
 EXTRN GetSpawnHealth_:NEAR
 EXTRN FixedMul16u32_MapLocal_:NEAR
 EXTRN FastMul16u32u_MapLocal_:NEAR
-
+EXTRN S_StopSoundMobjRef_:NEAR
+EXTRN S_StartSound_:NEAR
 
 .DATA
 
@@ -987,10 +988,7 @@ call  P_UnsetThingPosition_
 
 mov       ax, cx ; restore div result (mobjref)
 
-;call      S_StopSoundMobjRef_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StopSoundMobjRef_addr
+call      S_StopSoundMobjRef_
 
        
 xchg      ax, cx  ; use div result (mobjref)
@@ -1950,10 +1948,7 @@ mov   word ptr ds:[_player + PLAYER_T.player_deltaviewheight+2], dx
 mov   dl, SFX_OOF
 mov   ax, si
 
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 ;	mo->momz.w = 0;
 
@@ -2043,10 +2038,7 @@ je    dont_do_deathsound
 do_deathsound:
 ; ax got si earlier
 
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 
 dont_do_deathsound:
@@ -2187,10 +2179,7 @@ call  P_SpawnMobj_
 mov   dl, SFX_TELEPT
 mov   ax, word ptr ds:[_setStateReturn]
 mov   cx, word ptr [bp - 0Eh]
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 mov   dx, word ptr [bp - 010h]
 xor   bx, bx
 xor   ax, ax
@@ -2226,10 +2215,7 @@ mov   dl, SFX_TELEPT
 mov   ax, word ptr ds:[_setStateReturn]
 mov   bx, word ptr [bp - 2]
 
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 xor   cx, cx
 mov   cl, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
@@ -2476,10 +2462,7 @@ test  al, al
 je    no_see_sound
 mov   dl, al
 mov   ax, di
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 no_see_sound:
 
@@ -2805,10 +2788,7 @@ je     no_see_sound_b
 mov    dl, al
 mov    ax, di
 
-;call  S_StartSound_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_StartSound_addr
+call  S_StartSound_
 
 no_see_sound_b:
 mov    ax, word ptr ds:[_playerMobjRef]

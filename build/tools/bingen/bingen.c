@@ -140,7 +140,7 @@ void __far P_ArchiveThinkers();
 void __far P_ArchiveSpecials();
 void __far WI_STARTMARKER();
 void __far WI_ENDMARKER();
-void __far AM_MAP_ENDMARKER();
+void __far S_SOUND_ENDMARKER();
 void __far SM_LOAD_STARTMARKER();
 void __far SM_LOAD_ENDMARKER();
 void __far S_ActuallyChangeMusic();
@@ -160,6 +160,9 @@ void __far P_ENEMY_ENDMARKER();
 void __far AM_Responder();
 void __far AM_Drawer();
 void __far AM_Ticker();
+void __far S_UpdateSounds();
+void __far S_Start();
+void __far S_StartSoundFar();
 
 
 void __far P_AproxDistance();
@@ -363,7 +366,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     locallib_far_fwrite((byte __far *)WI_STARTMARKER, codesize[5], fp);
 
 
-    codesize[6] = FP_OFF(AM_MAP_ENDMARKER) - FP_OFF(P_SIGHT_STARTMARKER);
+    codesize[6] = FP_OFF(S_SOUND_ENDMARKER) - FP_OFF(P_SIGHT_STARTMARKER);
     fwrite(&codesize[6], 2, 1, fp);
     locallib_far_fwrite((byte __far *)P_SIGHT_STARTMARKER, codesize[6], fp);
 
@@ -523,7 +526,11 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "#define P_SpawnSpecialsOffset                   0x%X\n", FP_OFF(P_SpawnSpecials)                   - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "#define AM_DrawerOffset                         0x%X\n", FP_OFF(AM_Drawer)                         - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "#define AM_TickerOffset                         0x%X\n", FP_OFF(AM_Ticker)                         - FP_OFF(P_SIGHT_STARTMARKER));
-
+    
+    fprintf(fp, "#define S_StartSoundFarOffset                   0x%X\n", FP_OFF(S_StartSoundFar)                   - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define S_UpdateSoundsOffset                    0x%X\n", FP_OFF(S_UpdateSounds)                    - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define S_StartOffset                           0x%X\n", FP_OFF(S_Start)                           - FP_OFF(P_SIGHT_STARTMARKER));
+    
 
     // menu  code offsets
     fprintf(fp, "#define M_InitOffset                            0x%X\n", FP_OFF(M_Init)                            - FP_OFF(M_MENU_STARTMARKER));
@@ -613,9 +620,12 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "GETPAINSTATEADDR      = 0%Xh\n",                   FP_OFF(GetPainState)                      - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "GETSPAWNHEALTHADDR    = 0%Xh\n",                   FP_OFF(GetSpawnHealth)                    - FP_OFF(P_SIGHT_STARTMARKER));
     
-    fprintf(fp, "AM_RESPONDER_OFFSET    = 0%Xh\n",                   FP_OFF(AM_Responder)                    - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "AM_DRAWER_OFFSET       = 0%Xh\n",                   FP_OFF(AM_Drawer)                       - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "AM_TICKER_OFFSET       = 0%Xh\n",                   FP_OFF(AM_Ticker)                       - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "AM_RESPONDER_OFFSET    = 0%Xh\n",                   FP_OFF(AM_Responder)                     - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "AM_DRAWER_OFFSET       = 0%Xh\n",                   FP_OFF(AM_Drawer)                        - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "AM_TICKER_OFFSET       = 0%Xh\n",                   FP_OFF(AM_Ticker)                        - FP_OFF(P_SIGHT_STARTMARKER));
+
+
+    fprintf(fp, "S_STARTSOUNDFAROFFSET      = 0%Xh\n",            FP_OFF(S_StartSoundFar)                     - FP_OFF(P_SIGHT_STARTMARKER));
 
     fprintf(fp, "M_STARTCONTROLPANELOFFSET  = 0%Xh\n",            FP_OFF(M_StartControlPanel)                 - FP_OFF(M_MENU_STARTMARKER));
     fprintf(fp, "M_DRAWEROFFSET             = 0%Xh\n",            FP_OFF(M_Drawer)                            - FP_OFF(M_MENU_STARTMARKER));
