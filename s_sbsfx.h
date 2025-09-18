@@ -5,7 +5,7 @@
 #include "m_near.h"
 
 
-int16_t __near SB_InitCard();
+
 void __near SB_Shutdown();
 void __near SB_StartInit();
 

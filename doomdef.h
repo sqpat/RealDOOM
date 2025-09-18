@@ -464,11 +464,14 @@ void __near locallib_strupr(char __far *str);
 void __near locallib_strlwr(char __far *str);
 
 
-
+// apparently this doesnt work. get rid of "old" once sbsfx in asm
 #pragma aux setvectparams \
                     __parm [al] [bx dx];
 #pragma aux (setvectparams)  locallib_dos_setvect;
 void __near locallib_dos_setvect(uint8_t interruptnumber, void __far*interrupt);
+
+void __near locallib_dos_setvect_old(uint8_t interruptnumber, void __far*interrupt);
+
 
 // todo how to declare this as a near func πroperly...?
 void (__interrupt __far * __near locallib_dos_getvect (uint8_t intnum))  (void);

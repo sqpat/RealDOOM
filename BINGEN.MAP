@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/17 21:48:07
+Created on:       25/09/17 22:11:47
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -56,11 +56,11 @@ HU_SETUP_TEXT          CODE           AUTO           0000:91c2       00000246
 R_MAIN_TEXT            CODE           AUTO           0000:9408       000003db
 p_setup_TEXT           CODE           AUTO           0000:97f0       000011e4
 S_SOUND_TEXT           CODE           AUTO           0000:a9d4       0000054d
-s_sbsfx_TEXT           CODE           AUTO           0000:af30       000017e5
-F_FILE_TEXT            CODE           AUTO           0000:c716       0000008d
-W_WAD_TEXT             CODE           AUTO           0000:c7a4       00000210
-V_VIDEO_TEXT           CODE           AUTO           0000:c9b4       00000601
-Z_ZONE_TEXT            CODE           AUTO           0000:cfb6       00000466
+s_sbsfx_TEXT           CODE           AUTO           0000:af30       000017e3
+F_FILE_TEXT            CODE           AUTO           0000:c714       0000008d
+W_WAD_TEXT             CODE           AUTO           0000:c7a2       00000210
+V_VIDEO_TEXT           CODE           AUTO           0000:c9b2       00000601
+Z_ZONE_TEXT            CODE           AUTO           0000:cfb4       00000466
 M_MENU_TEXT            CODE           AUTO           0d42:0000       000013df
 F_WIPE_TEXT            CODE           AUTO           0e80:0000       000005fc
 F_FINALE_TEXT          CODE           AUTO           0ee0:0000       00000bd8
@@ -582,37 +582,37 @@ Module: s_sbsfx.obj(C:\REALDOOM\s_sbsfx.c)
 0000:b34c+     SB_Service_Mix22Khz_
 0000:b84a+     SB_Service_Mix11Khz_
 0000:bb0e+     SB_ServiceInterrupt_
-0000:bb2a+     continuecall_
-0000:bc46+     SB_WriteDSP_
-0000:bc76+     SB_ReadDSP_
-0000:bca4+     SB_ResetDSP_
-0000:bd00+     SB_SetPlaybackRate_
-0000:bd1e*     SB_SetMixMode_
-0000:bd56+     SB_DSP1xx_BeginPlayback_
-0000:bd70+     SB_DSP2xx_BeginPlayback_
-0000:bd90+     SB_DSP4xx_BeginPlayback_
-0000:bdb0+     SB_DMA_VerifyChannel_
-0000:bdc2+     DMA_SetupTransfer_
-0000:beb8+     SB_SetupDMABuffer_
-0000:beee+     SB_EnableInterrupt_
-0000:bf34+     SB_DisableInterrupt_
-0000:bfb2+     SB_DMA_EndTransfer_
-0000:bfee*     SB_StopPlayback_
-0000:c00a+     SB_SetupPlayback_
-0000:c07c+     SB_ReadMixer_
-0000:c092+     SB_WriteMixer_
-0000:c0a8+     SB_SaveVoiceVolume_
-0000:c0d6+     SB_RestoreVoiceVolume_
-0000:c114      SB_Shutdown_
-0000:c13a+     SB_GetDSPVersion_
-0000:c184+     SB_InitCard_
-0000:c21e      S_InitSFXCache_
-0000:c286      SB_StartInit_
-0000:c2c4+     S_LoadSoundIntoCache_
-0000:c594      SFX_PlayPatch_
-0000:c6c0      SFX_StopPatch_
-0000:c6e0      SFX_Playing_
-0000:c6fc      SFX_SetOrigin_
+0000:bb28+     continuecall_
+0000:bc44+     SB_WriteDSP_
+0000:bc74+     SB_ReadDSP_
+0000:bca2+     SB_ResetDSP_
+0000:bcfe+     SB_SetPlaybackRate_
+0000:bd1c*     SB_SetMixMode_
+0000:bd54+     SB_DSP1xx_BeginPlayback_
+0000:bd6e+     SB_DSP2xx_BeginPlayback_
+0000:bd8e+     SB_DSP4xx_BeginPlayback_
+0000:bdae+     SB_DMA_VerifyChannel_
+0000:bdc0+     DMA_SetupTransfer_
+0000:beb6+     SB_SetupDMABuffer_
+0000:beec+     SB_EnableInterrupt_
+0000:bf32+     SB_DisableInterrupt_
+0000:bfb0+     SB_DMA_EndTransfer_
+0000:bfec*     SB_StopPlayback_
+0000:c008+     SB_SetupPlayback_
+0000:c07a+     SB_ReadMixer_
+0000:c090+     SB_WriteMixer_
+0000:c0a6+     SB_SaveVoiceVolume_
+0000:c0d4+     SB_RestoreVoiceVolume_
+0000:c112      SB_Shutdown_
+0000:c138+     SB_GetDSPVersion_
+0000:c182+     SB_InitCard_
+0000:c21c      S_InitSFXCache_
+0000:c284      SB_StartInit_
+0000:c2c2+     S_LoadSoundIntoCache_
+0000:c592      SFX_PlayPatch_
+0000:c6be      SFX_StopPatch_
+0000:c6de      SFX_Playing_
+0000:c6fa      SFX_SetOrigin_
 3a47:1eb5+     _change_sampling_to_22_next_int
 3a47:1eb6+     _change_sampling_to_11_next_int
 3a47:1eb7+     _in_first_buffer
@@ -621,63 +621,63 @@ Module: s_sbsfx.obj(C:\REALDOOM\s_sbsfx.c)
 3a47:1ec9+     _DMA_PortInfo
 3a47:216c+     _sfxcache_head
 Module: f_file.obj(f_file.ASM)
-0000:c757      locallib_far_fwrite_
-0000:c716      locallib_far_fread_
-0000:c716*     F_FILE_STARTMARKER_
-0000:c7a3*     F_FILE_ENDMARKER_
+0000:c755      locallib_far_fwrite_
+0000:c714      locallib_far_fread_
+0000:c714*     F_FILE_STARTMARKER_
+0000:c7a1*     F_FILE_ENDMARKER_
 Module: w_wad.obj(w_wad.ASM)
-0000:c969      W_CacheLumpNumDirect_
-0000:c8e9*     W_ReadLump_
-0000:c8a6      W_LumpLength_
-0000:c96d      W_CacheLumpNumDirectWithOffset_
-0000:c7a6      W_CheckNumForName_
-0000:c9b4*     W_WAD_ENDMARKER_
-0000:c897      W_GetNumForName_
-0000:c962      W_CacheLumpNameDirectFarString_
-0000:c985      W_CacheLumpNumDirectFragment_
-0000:c83a      SELFMODIFY_start_lump_for_search
-0000:c7a4*     W_WAD_STARTMARKER_
-0000:c85c      SELFMODIFY_end_lump_for_search
-0000:c7a4      W_CheckNumForNameFarString_
-0000:c95b      W_CacheLumpNameDirect_
+0000:c967      W_CacheLumpNumDirect_
+0000:c8e7*     W_ReadLump_
+0000:c8a4      W_LumpLength_
+0000:c96b      W_CacheLumpNumDirectWithOffset_
+0000:c7a4      W_CheckNumForName_
+0000:c9b2*     W_WAD_ENDMARKER_
+0000:c895      W_GetNumForName_
+0000:c960      W_CacheLumpNameDirectFarString_
+0000:c983      W_CacheLumpNumDirectFragment_
+0000:c838      SELFMODIFY_start_lump_for_search
+0000:c7a2*     W_WAD_STARTMARKER_
+0000:c85a      SELFMODIFY_end_lump_for_search
+0000:c7a2      W_CheckNumForNameFarString_
+0000:c959      W_CacheLumpNameDirect_
 Module: v_video.obj(v_video.ASM)
-0000:cc6c*     CopyString9_
-0000:cee2      V_DrawFullscreenPatch_
-0000:cce2      R_FillBackScreen_
-0000:ceab      V_CopyRect_
-0000:cb74      V_DrawPatchDirect_
-0000:ce91      V_MarkRect_
-0000:c9b4      V_DrawPatch_
-0000:caa7*     V_DrawPatch5000Screen0_
+0000:cc6a*     CopyString9_
+0000:cee0      V_DrawFullscreenPatch_
+0000:cce0      R_FillBackScreen_
+0000:cea9      V_CopyRect_
+0000:cb72      V_DrawPatchDirect_
+0000:ce8f      V_MarkRect_
+0000:c9b2      V_DrawPatch_
+0000:caa5*     V_DrawPatch5000Screen0_
 Module: z_zone.obj(z_zone.ASM)
-0000:d02e      Z_QuickMapPhysics_
-0000:cfce      Z_QuickMapMusicPageFrame_
-0000:d0b5      Z_QuickMapRender_4000To9000_
-0000:d30c      Z_QuickMapUnmapAll_
-0000:d0e3      Z_QuickMapRender_9000To6000_
-0000:d005      Z_QuickMapWADPageFrame_
-0000:d1ae      Z_QuickMapRenderPlanes_
-0000:cfe6      Z_QuickMapSFXPageFrame_
-0000:d10f      Z_QuickMapStatus_
-0000:d198*     Z_QuickMapScreen0_
-0000:d074      Z_QuickMapRender_
-0000:d16c      Z_QuickMapScratch_7000_
-0000:d140      Z_QuickMapScratch_5000_
-0000:d242      Z_QuickMapMenu_
-0000:d182      Z_QuickMapScratch_4000_
-0000:d3f0*     CopyString13_Zonelocal_
-0000:d156      Z_QuickMapScratch_8000_
-0000:d227      Z_QuickMapPalette_
-0000:d0f9      Z_QuickMapRender4000_
-0000:d211      Z_QuickMapMaskedExtraData_
-0000:d360      Z_SetOverlay_
-0000:d349      _doomcode_filename
-0000:d1da      Z_QuickMapUndoFlatCache_
-0000:d280      Z_QuickMapByTaskNum_
-0000:d059      Z_QuickMapDemo_
-0000:d25d      Z_QuickMapIntermission_
-0000:d09f*     Z_QuickMapRender_4000To9000_9000Only_
-0000:d28e      Z_QuickMapVisplanePage_
+0000:d02c      Z_QuickMapPhysics_
+0000:cfcc      Z_QuickMapMusicPageFrame_
+0000:d0b3      Z_QuickMapRender_4000To9000_
+0000:d30a      Z_QuickMapUnmapAll_
+0000:d0e1      Z_QuickMapRender_9000To6000_
+0000:d003      Z_QuickMapWADPageFrame_
+0000:d1ac      Z_QuickMapRenderPlanes_
+0000:cfe4      Z_QuickMapSFXPageFrame_
+0000:d10d      Z_QuickMapStatus_
+0000:d196*     Z_QuickMapScreen0_
+0000:d072      Z_QuickMapRender_
+0000:d16a      Z_QuickMapScratch_7000_
+0000:d13e      Z_QuickMapScratch_5000_
+0000:d240      Z_QuickMapMenu_
+0000:d180      Z_QuickMapScratch_4000_
+0000:d3ee*     CopyString13_Zonelocal_
+0000:d154      Z_QuickMapScratch_8000_
+0000:d225      Z_QuickMapPalette_
+0000:d0f7      Z_QuickMapRender4000_
+0000:d20f      Z_QuickMapMaskedExtraData_
+0000:d35e      Z_SetOverlay_
+0000:d347      _doomcode_filename
+0000:d1d8      Z_QuickMapUndoFlatCache_
+0000:d27e      Z_QuickMapByTaskNum_
+0000:d057      Z_QuickMapDemo_
+0000:d25b      Z_QuickMapIntermission_
+0000:d09d*     Z_QuickMapRender_4000To9000_9000Only_
+0000:d28c      Z_QuickMapVisplanePage_
 Module: m_menu.obj(m_menu.ASM)
 0d42:0ca7*     M_StringHeight_
 0d42:054b*     M_SaveSelect_
@@ -908,8 +908,8 @@ Module: r_mask24.obj(r_mask24.ASM)
 Module: r_mask16.obj(r_mask16.ASM)
 20fb:9256      R_DrawMasked16_
 20fb:976d      R_MASK16_ENDMARKER_
-20fb:9682      R_WriteBackViewConstantsMasked16_
 20fb:970f      R_WriteBackMaskedFrameConstants16_
+20fb:9682      R_WriteBackViewConstantsMasked16_
 20fb:7d7e      R_MASK16_STARTMARKER_
 Module: r_mask0.obj(r_mask0.ASM)
 20fb:afde      R_WriteBackViewConstantsMasked0_
@@ -1051,8 +1051,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2d9a:4c87*     A_HeadAttack_
 2d9a:5695*     A_Pain_
 2d9a:4f2d*     PIT_VileCheck_
-2d9a:52f2*     A_VileAttack_
 2d9a:570a*     A_BossDeath_
+2d9a:52f2*     A_VileAttack_
 2d9a:5c07*     P_ENEMY_ENDMARKER_
 2d9a:51b0*     A_Fire_
 2d9a:4a8b*     A_SPosAttack_
@@ -1501,4 +1501,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003d700 (251648.)
 Entry point address: 371d:0a84
-Link time: 00:00.50
+Link time: 00:00.04

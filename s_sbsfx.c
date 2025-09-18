@@ -1053,7 +1053,7 @@ void __near SB_Service_Mix11Khz(){
 
 void __near continuecall();
 
-void	resetDS();
+void __near resetDS();
 
 void __interrupt __far_func SB_ServiceInterrupt(void) {
     resetDS();  // interrupts need this...
@@ -1721,7 +1721,7 @@ void __near SB_Shutdown(){
     }
 
 
-    locallib_dos_setvect(IRQ_TO_INTERRUPT_MAP[sb_irq], SB_OldInt);
+    locallib_dos_setvect_old(IRQ_TO_INTERRUPT_MAP[sb_irq], SB_OldInt);
 
     // SB_CallBack = null;
     // SB_Installed = false;
@@ -1841,7 +1841,7 @@ int16_t __near  SB_InitCard(){
         if (sb_irq < 8) {
 			// 8 bit logic?
 
-            locallib_dos_setvect(sb_int, SB_ServiceInterrupt);
+            locallib_dos_setvect_old(sb_int, SB_ServiceInterrupt);
 
             // I_Error("%i %lx %lx %lx", sb_irq, SB_OldInt, locallib_dos_getvect(sb_int), SB_ServiceInterrupt);
 

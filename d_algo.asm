@@ -34,7 +34,7 @@ mov ds, ax
 pop ax
 
 ret
-endp
+ENDP
 
 
 PROC hackDS_ NEAR

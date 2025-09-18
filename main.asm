@@ -30,7 +30,6 @@ EXTRN Z_QuickMapMenu_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
 EXTRN Z_QuickMapIntermission_:FAR
 
-EXTRN resetDS_:FAR
 EXTRN I_ReadMouse_:NEAR
 EXTRN D_PostEvent_:NEAR
 EXTRN M_CheckParm_:NEAR
@@ -3050,6 +3049,21 @@ push  ds
 mov   ds, bx
 mov   ah, 025h
 int   021h
+pop   ds
+ret
+
+ENDP
+
+PROC    locallib_dos_setvect_old_ NEAR
+PUBLIC  locallib_dos_setvect_old_
+
+push  ds
+push  dx
+mov   ds, cx
+mov   dx, bx
+mov   ah, 025h
+int   021h
+pop   dx
 pop   ds
 ret
 
