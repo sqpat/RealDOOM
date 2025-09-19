@@ -797,6 +797,7 @@ extern void (__far* AM_Ticker)();
 extern void (__far* AM_Drawer)();
 extern void (__far* S_UpdateSounds)();
 extern void (__far* S_Start	)();
+extern void (__far* S_StartSound)();
 
 
 

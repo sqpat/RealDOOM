@@ -21,8 +21,9 @@ INSTRUCTION_SET_MACRO
 
 .DATA
 
-
+; TODO refactor this file, it sucks.
 ; TODO: could encode a lot of the wi stuff data in here instead of loaded via doomcode and thus reduce management code in the main binary
+
 ;WI_STARTMARKER_ = 0
 
 
@@ -254,8 +255,9 @@ PROC WI_GetPatch_ NEAR
 PUBLIC WI_GetPatch_
 
 push      bx
-mov       bx, ax
-add       bx, ax
+xor       ah, ah
+xchg      ax, bx
+sal       bx, 1
 mov       ax, WIOFFSETS_SEGMENT
 mov       es, ax
 mov       dx, WIGRAPHICSPAGE0_SEGMENT
@@ -268,7 +270,7 @@ ENDP
 PROC WI_GetPatchESBX_ NEAR
 PUBLIC WI_GetPatchESBX_
 
-mov       bx, ax
+xchg      ax, bx
 shl       bx, 1		; word lookup
 mov       ax, WIOFFSETS_SEGMENT
 mov       es, ax
@@ -308,41 +310,30 @@ PROC WI_slamBackground_ NEAR
 PUBLIC WI_slamBackground_
 
 
-push      bx
-push      cx
-push      dx
-push      si
-push      di
-mov       ax, SCREENWIDTH * SCREENHEIGHT
-mov       cx, SCREEN1_SEGMENT
-mov       dx, SCREEN0_SEGMENT
+PUSHA_NO_AX_OR_BP_MACRO
+mov       ax, SCREEN0_SEGMENT
+mov       es, ax
+mov       ah, (SCREEN1_SEGMENT SHR 8)
+mov       ds, ax
+
 xor       si, si
 xor       di, di
-mov       es, dx
-mov       bx, SCREENWIDTH
-push      ds
-push      di
-xchg      ax, cx
-mov       ds, ax
-shr       cx, 1
+mov       cx, (SCREENWIDTH * SCREENHEIGHT) / 2
 rep       movsw 
-adc       cx, cx
-rep       movsb 
-pop       di
+
+push      ss
 pop       ds
-mov       cx, SCREENHEIGHT
-xor       dx, dx
-xor       ax, ax
+
+mov       ax, SCREENHEIGHT
+xchg      ax, cx ; ax gets 0, cx gets screenheight
+cwd
+mov       bx, SCREENWIDTH
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _V_MarkRect_addr
 
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
+POPA_NO_AX_OR_BP_MACRO
 ret       
 
 ENDP
@@ -351,12 +342,8 @@ PROC WI_drawLF_ NEAR
 PUBLIC WI_drawLF_
 
 
-push      bx
-push      cx
-push      dx
-push      si
-push      di
 
+PUSHA_NO_AX_OR_BP_MACRO
 push      bp
 mov       bp, sp
 
@@ -391,7 +378,7 @@ dw _V_DrawPatch_addr
 mov       ax, WIOFFSETS_SEGMENT
 mov       es, ax
 
-mov       di, word ptr es:[5 * 2]
+mov       di, word ptr es:[5 * 2] ; todo constants
 
 mov       cx, WIGRAPHICSPAGE0_SEGMENT
 mov       es, cx
@@ -422,11 +409,7 @@ db 01Eh  ;
 dw _V_DrawPatch_addr
 
 LEAVE_MACRO     
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
+POPA_NO_AX_OR_BP_MACRO
 ret      
 
 ENDP
@@ -876,7 +859,6 @@ mov   di, ax                    ; di stores x
 mov   word ptr [bp - 2], dx     ; y
 mov   si, bx                    ; si holds n
 mov   al, byte ptr cs:[_numRef - OFFSET WI_STARTMARKER_]
-xor   ah, ah
 call  WI_GetPatch_
 mov   bx, ax
 mov   es, dx
@@ -908,7 +890,6 @@ mov   si, ax                ; si updated
 
 ; todo just add by 14?
 mov   al, byte ptr cs:[bx + _numRef - OFFSET WI_STARTMARKER_]
-xor   ah, ah
 sub   di, word ptr [bp - 4]     ; x -= fontwidth
 call  WI_GetPatch_
 xor   bx, bx
@@ -954,7 +935,7 @@ ret
 exit_digits_loop:
 cmp   word ptr [bp - 6], 0
 je    return_x_and_exit
-mov   ax, WIPATCH_MINUS
+mov   al, WIPATCH_MINUS
 call  WI_GetPatch_
 sub   di, 8
 xor   bx, bx
@@ -988,7 +969,7 @@ mov   cx, bx
 test  bx, bx
 jnge  exit_draw_percent
 
-mov   ax, WIPATCH_PERCENT
+mov   al, WIPATCH_PERCENT
 call  WI_GetPatch_
 push  dx
 xor   bx, bx
@@ -1028,7 +1009,7 @@ test  bx, bx
 jl    exit_wi_drawtime
 cmp   bx, (61*59)
 jg    draw_sucks
-mov   ax, WIPATCH_COLON
+mov   al, WIPATCH_COLON
 mov   si, 1
 call  WI_GetPatch_
 mov   word ptr [bp - 4], ax
@@ -1083,7 +1064,7 @@ test  ax, ax
 jne   do_draw_patch
 jmp   do_next_drawtime_iter
 draw_sucks:
-mov   ax, WIPATCH_SUCKS
+mov   al, WIPATCH_SUCKS
 call  WI_GetPatch_
 xor   bx, bx
 mov   si, ax
@@ -1287,10 +1268,8 @@ cwd
 idiv  cx
 mov   dl, SFX_BAREXP
 mov   word ptr cs:[_cnt_par - OFFSET WI_STARTMARKER_], ax
-xor   ax, ax
-;call  S_StartSound_
-db    09Ah
-dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+call  WI_StartSound_
 
 mov   word ptr cs:[_sp_state - OFFSET WI_STARTMARKER_], 10
 
@@ -1314,11 +1293,8 @@ add   word ptr cs:[_cnt_kills - OFFSET WI_STARTMARKER_], ax
 test  byte ptr cs:[_bcnt - OFFSET WI_STARTMARKER_], 3
 jne   do_update_kills
 mov   dl, SFX_PISTOL
-xor   ax, ax
 
-;call  S_StartSound_
-db    09Ah
-dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  WI_StartSound_
 
 do_update_kills:
 
@@ -1334,10 +1310,7 @@ jmp   play_barexp_sfx_inc_state_exit
 
 play_sgcock_sfx:
 mov   dl, SFX_SGCOCK
-xor   ax, ax
-;call  S_StartSound_
-db    09Ah
-dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  WI_StartSound_
 
 cmp   byte ptr ds:[_commercial], 0
 je    do_initshownextloc
@@ -1364,10 +1337,7 @@ add   word ptr cs:[_cnt_items - OFFSET WI_STARTMARKER_], 2
 test  byte ptr cs:[_bcnt - OFFSET WI_STARTMARKER_], 3
 jne   do_update_items
 mov   dl, sfx_pistol
-xor   ax, ax
-;call  S_StartSound_
-db    09Ah
-dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  WI_StartSound_
 
 do_update_items:
 mov   ax, 100
@@ -1380,11 +1350,7 @@ mov   word ptr cs:[_cnt_items - OFFSET WI_STARTMARKER_], ax
 play_barexp_sfx_inc_state_exit:
 
 mov   dl, SFX_BAREXP
-xor   ax, ax
-
-;call  S_StartSound_
-db    09Ah
-dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  WI_StartSound_
 
 inc   word ptr cs:[_sp_state - OFFSET WI_STARTMARKER_]
 exit_wi_updatestats_2:
@@ -1403,10 +1369,7 @@ add   word ptr cs:[_cnt_secret - OFFSET WI_STARTMARKER_], 2
 test  byte ptr cs:[_bcnt - OFFSET WI_STARTMARKER_], 3
 jne   do_update_secrets
 mov   dl, SFX_PISTOL
-xor   ax, ax
-;call  S_StartSound_
-db    09Ah
-dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  WI_StartSound_
 
 do_update_secrets:
 mov   ax, 100
@@ -1427,10 +1390,7 @@ jne   sp_state_not_8
 test  byte ptr cs:[_bcnt - OFFSET WI_STARTMARKER_], 3
 jne   dont_play_pistol_sfx_4
 mov   dl, SFX_PISTOL
-xor   ax, ax
-;call  S_StartSound_
-db    09Ah
-dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  WI_StartSound_
 
 dont_play_pistol_sfx_4:
 add   word ptr cs:[_cnt_time - OFFSET WI_STARTMARKER_], 3
@@ -1453,11 +1413,8 @@ mov   ax, word ptr cs:[_cnt_time - OFFSET WI_STARTMARKER_]
 cmp   ax, word ptr cs:[_plrs+7 - OFFSET WI_STARTMARKER_]
 jl    jump_to_exit_wi_updatestats_3
 mov   dl, SFX_BAREXP
-xor   ax, ax
 
-;call  S_StartSound_
-db    09Ah
-dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  WI_StartSound_
 
 inc   word ptr cs:[_sp_state - OFFSET WI_STARTMARKER_]
 pop   dx
@@ -1497,7 +1454,7 @@ push  cx
 push  dx
 push  si
 mov   al, byte ptr cs:[_numRef - OFFSET WI_STARTMARKER_]	; patch numref 0
-xor   ah, ah
+
 call  WI_GetPatch_
 mov   si, ax
 mov   es, dx
@@ -1512,7 +1469,7 @@ mov   si, ax
 call  WI_slamBackground_
 call  WI_drawAnimatedBack_
 call  WI_drawLF_
-mov   ax, WIPATCH_KILLS
+mov   al, WIPATCH_KILLS
 xor   bx, bx
 call  WI_GetPatch_
 push  dx
@@ -1526,7 +1483,7 @@ mov   dx, SP_STATSY
 mov   ax, SCREENWIDTH - SP_STATSX
 mov   bx, word ptr cs:[_cnt_kills - OFFSET WI_STARTMARKER_]
 call  WI_drawPercent_
-mov   ax, WIPATCH_ITEMS
+mov   al, WIPATCH_ITEMS
 lea   cx, [si + 032h]
 call  WI_GetPatch_
 push  dx
@@ -1541,7 +1498,7 @@ mov   ax, SCREENWIDTH - SP_STATSX
 mov   bx, word ptr cs:[_cnt_items - OFFSET WI_STARTMARKER_]
 mov   dx, cx
 call  WI_drawPercent_
-mov   ax, WIPATCH_SECRET
+mov   al, WIPATCH_SECRET
 call  WI_GetPatch_
 mov   cx, si
 xor   bx, bx
@@ -1558,7 +1515,7 @@ mov   ax, SCREENWIDTH - SP_STATSX
 mov   bx, word ptr cs:[_cnt_secret - OFFSET WI_STARTMARKER_]
 mov   dx, cx
 call  WI_drawPercent_
-mov   ax, WIPATCH_TIME
+mov   al, WIPATCH_TIME
 call  WI_GetPatch_
 xor   bx, bx
 push  dx
@@ -1581,7 +1538,7 @@ pop   cx
 pop   bx
 ret   
 done_exit_draw_stats:
-mov   ax, WIPATCH_PAR
+mov   al, WIPATCH_PAR
 call  WI_GetPatch_
 xor   bx, bx
 push  dx
@@ -2319,6 +2276,29 @@ retf
 
 ENDP
 
+PROC   WI_StartSound_ NEAR
+PUBLIC WI_StartSound_
+
+
+push   si
+push   cx
+push   dx
+
+Z_QUICKMAPAI3 pageswapargs_physics_code_offset_size INDEXED_PAGE_9000_OFFSET
+
+pop    dx
+xor    ax, ax
+
+db    09Ah
+dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+Z_QUICKMAPAI3 (pageswapargs_intermission_offset_size+12) INDEXED_PAGE_6000_OFFSET
+
+pop    cx
+pop    si
+
+ret
+ENDP
 
 
 PROC WI_ENDMARKER_ NEAR

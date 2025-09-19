@@ -230,6 +230,8 @@ void __near S_DecreaseRefCount(int8_t voice_index){
 
 }
 
+// todo inline this eventually..
+
 // contains logic for moving an element back one spot in the cache.
 // has to account for contiguous multipage allocations and has some ugly logic for that.
 void __near S_MoveCacheItemBackOne(int8_t currentpage){
@@ -1156,6 +1158,7 @@ void __near continuecall(){
 	last_sampling_rate = current_sampling_rate;
 
     if (current_sfx_page != currentpageframes[SFX_PAGE_FRAME_INDEX]){
+        // necessary because we might be mid-sfx load before the interrupt fired
         Z_QuickMapSFXPageFrame(current_sfx_page);
     }
 
@@ -1923,7 +1926,7 @@ void __near  SB_StartInit(){
     if (SB_InitCard() == SB_OK){
         if (SB_SetupPlayback() == SB_OK){
             DEBUG_PRINT_NOARG("Sound Blaster SFX Engine Initailized!..\n");
-
+            S_InitSFXCache();
         } else {
             DEBUG_PRINT_NOARG("\nSB INIT Error A\n");
             snd_SfxDevice = snd_none;
@@ -1938,7 +1941,7 @@ void __near  SB_StartInit(){
     // nodes, etc now initialized in S_InitSFXCache which is called by S_SetSfxVolume earlier in S_Init
 }
 
-void __far S_NormalizeSfxVolume(uint16_t offset, uint16_t length);
+void __near S_NormalizeSfxVolume(uint16_t offset, uint16_t length);
 // void S_NormalizeSfxVolume(uint16_t offset, uint16_t length){
 //     uint8_t __far* sfxbyte = MK_FP(SFX_PAGE_SEGMENT, offset);
 //     int8_t multvolume = snd_SfxVolume;
@@ -1983,22 +1986,15 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
         
         pagecount = sample_256_size >> 6;   // todo rol 2?
         // greater than 1 EMS page in size...
+
         for (i = sfxcache_head; i != -1; i = i = sfxcache_nodes[i].prev){
             int8_t currentpage = i;
             for (j = 0; j <= pagecount; j++){
                 if (currentpage == -1){
                     break;
                 } else {
-                    int8_t needed;
-
-
-                    if (j < pagecount){
-                        needed = 64;
-                    } else {
-                        needed = sample_256_size & 63;
-                    }
                     
-                    if (sfx_free_bytes[currentpage] >= needed){
+                    if (sfx_free_bytes[currentpage] == 64){
                         currentpage = sfxcache_nodes[currentpage].prev;
                         continue;
                     } else {
@@ -2124,7 +2120,6 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
         // }
         sfx_data[sfx_id].cache_position.bu.bytehigh = i;
         sfx_data[sfx_id].cache_position.bu.bytelow = 0;
-
         for (j = 0; j < pagecount; j++, offset += 16384){
             sfxcache_nodes[currentpage].pagecount = pagecount - j + 1;
             sfxcache_nodes[currentpage].numpages = pagecount + 1;
@@ -2250,7 +2245,7 @@ void __far SFX_StopPatch(int8_t handle){
 
     // }
 }
-
+//todo move high
 boolean __far SFX_Playing(int8_t handle){
     if (handle >= 0 && handle < NUM_SFX_TO_MIX){
         return (sb_voicelist[handle].sfx_id & PLAYING_FLAG);

@@ -656,6 +656,7 @@ void __far G_SecretExitLevel (void);
 void __far OutOfThinkers ();
 void __far S_InitSFXCache();
 void __far G_DeferedInitNew (skill_t skill, int8_t episode, int8_t map);
+void __far SFX_PlayFromWi(uint16_t ax, uint16_t dx);
 
 void __far MainLogger (uint16_t ax, uint16_t dx, uint16_t bx, uint16_t cx);
 

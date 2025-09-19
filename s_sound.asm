@@ -351,7 +351,7 @@ ENDP
 
 
 
-PROC    S_StopSound_ NEAR ; has to be far for now because because S_StopSoundMobjRef_ jumps in.
+PROC    S_StopSound_ NEAR 
 PUBLIC  S_StopSound_
 
 ;void __far S_StopSound(mobj_t __near* origin, int16_t soundorg_secnum) {

@@ -311,7 +311,7 @@ ENDP
 ; todo move to a sound asm file
 ;void S_NormalizeSfxVolume(uint16_t offset, uint16_t length){
 
-PROC S_NormalizeSfxVolume_ FAR
+PROC S_NormalizeSfxVolume_ NEAR
 PUBLIC S_NormalizeSfxVolume_
 
 push si
@@ -336,7 +336,7 @@ mov  ax, FIXED_DS_SEGMENT
 mov  ds, ax ; restore ds
 pop  cx
 pop  si
-retf 
+ret
 
 ENDP
 

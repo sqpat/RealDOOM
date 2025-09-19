@@ -410,7 +410,7 @@ _R_PointToAngle2_addr =              _NULL_OFFSET + 00474h
 _W_CacheLumpNameDirect_addr =        _NULL_OFFSET + 00478h
 _W_CacheLumpNumDirectFragment_addr = _NULL_OFFSET + 0047Ch
 _W_GetNumForName_addr =              _NULL_OFFSET + 00480h
-_SFX_PlayPatch_addr =                 _NULL_OFFSET + 00484h
+_SFX_PlayPatch_addr =                _NULL_OFFSET + 00484h
 _SFX_StopPatch_addr =             	 _NULL_OFFSET + 00488h
 
 ; 13 bytes in length
