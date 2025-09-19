@@ -82,11 +82,11 @@ int8_t   				in_first_buffer  = true;
 
 // uint8_t                 sfx_page_lru[NUM_SFX_PAGES];                // recency, lru 
 int8_t                  sfx_page_reference_count[NUM_SFX_PAGES];    // number of active sfx in this page. incremented/decremented as sounds start and stop playing
-int8_t                  sfx_page_multipage_count[NUM_SFX_PAGES];    // 0 if its a single page allocation or > 0 means its a multipage allocation where 1 is the last, etc
+// int8_t                  sfx_page_multipage_count[NUM_SFX_PAGES];    // 0 if its a single page allocation or > 0 means its a multipage allocation where 1 is the last, etc
 cache_node_page_count_t sfxcache_nodes[NUM_SFX_PAGES];
 int8_t                  sfxcache_tail;
 int8_t                  sfxcache_head;
-int8_t in_sound = false;
+// int8_t in_sound = false;
 
 // #define ENABLE_SFX_LOGGING 1
 #ifdef ENABLE_SFX_LOGGING
@@ -1069,7 +1069,7 @@ void __near continuecall(){
 
     // Z_SavePageFrameState();
 
-    in_sound = true;
+    // in_sound = true;
     if (in_first_buffer){
         in_first_buffer = false;
     } else {
@@ -1170,7 +1170,7 @@ void __near continuecall(){
     }
 
     outp(0x20, 0x20);
-    in_sound = false;
+    // in_sound = false;
 
 }
 
@@ -2230,19 +2230,8 @@ int8_t __far SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
     return -1;
 }
 
-void __far SFX_StopPatch(int8_t handle){
-    // if (handle >= 0 && handle < NUM_SFX_TO_MIX){
-        // disable interrupts... otherwise we might turn it off mid-interrupt and double dec ref count
-        _disable();
-        if (sb_voicelist[handle].sfx_id & PLAYING_FLAG){
-            sb_voicelist[handle].sfx_id &= SFX_ID_MASK;
-            logcacheevent('a', handle);
-            S_DecreaseRefCount(handle);
-            logcacheevent('b', handle);
-        }
-        _enable();
-
-
-    // }
+void __far S_DecreaseRefCountFar(int8_t handle){
+    S_DecreaseRefCount(handle);
 }
+
 

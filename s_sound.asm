@@ -118,9 +118,25 @@ jmp   dont_stop_sound
 stop_sb_patch:
 mov   al, byte ptr cs:[si + CHANNEL_T.channel_handle]
 ;call  SFX_StopPatch_
+; inlined only use
+
+cbw
+push    bx
+mov     bx, ax
+SHIFT_MACRO shl bx 3
+cli
+test    byte ptr ds:[_sb_voicelist + bx + SB_VOICEINFO_T.sbvi_sfx_id], PLAYING_FLAG
+pop     bx
+je      sfx_not_playing_for_stoppatch
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
-dw _SFX_StopPatch_addr
+dw _S_DecreaseRefCountFar_addr
+
+sfx_not_playing_for_stoppatch:
+
+sti
+
+
 
 
 dont_stop_sound:

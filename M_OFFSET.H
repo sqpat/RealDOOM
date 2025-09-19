@@ -65,9 +65,9 @@
 #define P_SpawnSpecialsOffset                   0x7DB0
 #define AM_DrawerOffset                         0x96EC
 #define AM_TickerOffset                         0x929C
-#define S_StartSoundFarOffset                   0x9BAA
-#define S_UpdateSoundsOffset                    0x9BC8
-#define S_StartOffset                           0x9C70
+#define S_StartSoundFarOffset                   0x9BBE
+#define S_UpdateSoundsOffset                    0x9BDC
+#define S_StartOffset                           0x9C84
 #define M_InitOffset                            0x11A0
 #define M_ResponderOffset                       0xD66
 #define M_DrawerOffset                          0x1060
@@ -99,7 +99,7 @@
 #define R_BSP0CodeSize                 0x36B5
 #define R_BSPFLCodeSize                0x365A
 #define WI_StuffCodeSize               0xFEB
-#define PSightCodeSize                 0x9D14
+#define PSightCodeSize                 0x9D28
 #define WipeCodeSize                   0x5FC
 #define FinaleCodeSize                 0xBCB
 #define SaveLoadCodeSize               0xB34

@@ -464,7 +464,7 @@
 #define W_CacheLumpNumDirectFragment_addr (*((uint32_t  __near*)             (_NULL_OFFSET + 0x047C)))
 #define W_GetNumForName_addr              (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0480)))
 #define SFX_PlayPatch_addr  			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0484)))
-#define SFX_StopPatch_addr  			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0488)))
+#define S_DecreaseRefCountFar_addr  	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0488)))
 // 13 bytes (12345678.123) fileame format incl . and null term
 #define filename_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x048C))
 #define rndindex                          (*(uint8_t __near *)               (_NULL_OFFSET + 0x0499))

@@ -657,6 +657,7 @@ void __far OutOfThinkers ();
 void __far S_InitSFXCache();
 void __far G_DeferedInitNew (skill_t skill, int8_t episode, int8_t map);
 void __far SFX_PlayFromWi(uint16_t ax, uint16_t dx);
+void __far S_DecreaseRefCountFar(int8_t handle);
 
 void __far MainLogger (uint16_t ax, uint16_t dx, uint16_t bx, uint16_t cx);
 
@@ -877,7 +878,7 @@ void __near Z_LoadBinaries() {
 
 
 	SFX_PlayPatch_addr = 				(uint32_t)(SFX_PlayPatch);
-	SFX_StopPatch_addr = 				(uint32_t)(SFX_StopPatch);
+	S_DecreaseRefCountFar_addr = 		(uint32_t)(S_DecreaseRefCountFar);
 
 
 	// MainLogger_addr =  					(uint32_t)(MainLogger);
