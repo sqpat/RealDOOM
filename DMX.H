@@ -37,7 +37,7 @@ void __near TS_Dispatch(void);
 
 int8_t __far SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol);
 void __far SFX_StopPatch(int8_t handle);
-boolean __far SFX_Playing(int8_t handle);
+// boolean __far SFX_Playing(int8_t handle);
 void __far SFX_SetOrigin(int8_t handle, uint8_t sep, uint8_t vol);
 
 

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/18 12:17:00
+Created on:       25/09/18 12:42:14
 Executable Image: codegen.exe
 creating a DOS executable
 
@@ -71,17 +71,17 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:bba8*     _wminfo
 02d1:bbbd*     _d_episode
 02d1:bbbe*     _secretexit
-02d1:bbbf*     _d_skill
-02d1:bbc0*     _d_map
-02d1:bbc1*     _TS_TimesInInterrupt
-02d1:bbc2*     _usemouse
-02d1:bbc3*     _mousebforward
-02d1:bbc4*     _key_speed
-02d1:bbc5*     _mousebfire
-02d1:bbc6*     _key_left
-02d1:bbc7*     _key_fire
-02d1:bbc8*     _key_strafe
-02d1:bbc9*     _turnheld
+02d1:bbbf*     _d_map
+02d1:bbc0*     _TS_TimesInInterrupt
+02d1:bbc1*     _usemouse
+02d1:bbc2*     _mousebforward
+02d1:bbc3*     _key_speed
+02d1:bbc4*     _mousebfire
+02d1:bbc5*     _key_left
+02d1:bbc6*     _key_fire
+02d1:bbc7*     _key_strafe
+02d1:bbc8*     _turnheld
+02d1:bbc9*     _d_skill
 02d1:bbca*     _key_straferight
 02d1:bbcb*     _key_up
 02d1:bbcc*     _mousebstrafe
@@ -126,8 +126,8 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:8ef8*     _lastpcspeakernotevalue
 02d1:bbd7*     _autostart
 02d1:bbd8*     _eventhead
-02d1:bbd9*     _startepisode
-02d1:bbda*     _startskill
+02d1:bbd9*     _startskill
+02d1:bbda*     _startepisode
 Module: codegen.obj(C:\REALDOOM\build\tools\codegen\codegen.c)
 0000:0000      main_
 02d1:8efa+     _CONSTANTS

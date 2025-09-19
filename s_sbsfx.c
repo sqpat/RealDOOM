@@ -2245,13 +2245,7 @@ void __far SFX_StopPatch(int8_t handle){
 
     // }
 }
-//todo move high
-boolean __far SFX_Playing(int8_t handle){
-    if (handle >= 0 && handle < NUM_SFX_TO_MIX){
-        return (sb_voicelist[handle].sfx_id & PLAYING_FLAG);
-    }
-    return false;
-}
+
 
 void __far SFX_SetOrigin(int8_t handle, uint8_t sep, uint8_t vol){
     if (sb_voicelist[handle].sfx_id & PLAYING_FLAG){

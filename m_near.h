@@ -422,7 +422,7 @@
 
 #define currentThinkerListHead  		(*((int16_t __near*)                 (_NULL_OFFSET + 0x03D2)))
 
-#define SFX_Playing_addr			    (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03D4)))
+// #define SFX_Playing_addr			    (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03D4)))
 #define G_SecretExitLevel_addr          (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03D8)))
 #define I_WaitVBL_addr                  (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03DC)))
 

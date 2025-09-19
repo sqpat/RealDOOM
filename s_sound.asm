@@ -54,6 +54,9 @@ db  100, 78, 60, 64, 70, 70, 64, 60, 100, 100
 db  100, 32, 32, 60, 70, 70, 70, 70, 70, 70
 db  70, 70, 70, 70, 70, 70, 70, 70, 60
 
+PLAYING_FLAG = 080h
+
+
 COMMENT @
 
 PROC    S_ChangeMusic_ FAR
@@ -99,10 +102,8 @@ cmp   byte ptr cs:[si + CHANNEL_T.channel_sfx_id], ah ; 0 or SFX_NONE
 je    exit_stop_channel
 mov   al, byte ptr cs:[si + CHANNEL_T.channel_handle]
 
-;call  SFX_Playing_  ; todo stc/clc
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _SFX_Playing_addr
+call  SFX_Playing_  ; todo stc/clc
+
 
 test  al, al
 je    dont_stop_sound
@@ -794,10 +795,8 @@ loop_next_channel_updatesounds:
 mov   cl, byte ptr cs:[si + CHANNEL_T.channel_sfx_id]
 test  cl, cl
 je    iter_next_channel_updatesounds
-;call  SFX_Playing_  ; todo stc/clc
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _SFX_Playing_addr
+call  SFX_Playing_  ; todo stc/clc
+
 test  al, al
 jne   handle_position_update
 do_stop_channel_and_iter:
@@ -1033,8 +1032,25 @@ ret
 ENDP
 
 
+PROC    SFX_Playing_ NEAR
+PUBLIC  SFX_Playing_
 
-
+cmp     al, NUM_SFX_TO_MIX
+jae     sfx_not_playing_bad_index
+cbw
+SHIFT_MACRO shl ax 3
+push    bx
+xchg    ax, bx
+test    byte ptr ds:[_sb_voicelist + bx + SB_VOICEINFO_T.sbvi_sfx_id], PLAYING_FLAG
+pop     bx
+je      sfx_not_playing
+stc
+ret
+sfx_not_playing_bad_index:
+sfx_not_playing:
+clc
+ret
+ENDP
 
 PROC    S_SOUND_ENDMARKER_ NEAR
 PUBLIC  S_SOUND_ENDMARKER_

@@ -371,7 +371,7 @@ _am_stopped = 						 _NULL_OFFSET + 003D0h
 _automapactive =                 	 _NULL_OFFSET + 003D1h
 _currentThinkerListHead = 			 _NULL_OFFSET + 003D2h
 
-_SFX_Playing_addr = 			     _NULL_OFFSET + 003D4h
+;_SFX_Playing_addr = 			     _NULL_OFFSET + 003D4h
 _G_SecretExitLevel_addr =            _NULL_OFFSET + 003D8h
 _I_WaitVBL_addr =       		     _NULL_OFFSET + 003DCh
 
