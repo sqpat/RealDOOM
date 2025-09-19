@@ -876,7 +876,6 @@ void __near Z_LoadBinaries() {
 	V_DrawFullscreenPatch_addr =		(uint32_t)(V_DrawFullscreenPatch);
 
 
-	SFX_SetOrigin_addr = 				(uint32_t)(SFX_SetOrigin);
 	SFX_PlayPatch_addr = 				(uint32_t)(SFX_PlayPatch);
 	SFX_StopPatch_addr = 				(uint32_t)(SFX_StopPatch);
 

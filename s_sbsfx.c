@@ -2246,10 +2246,3 @@ void __far SFX_StopPatch(int8_t handle){
     // }
 }
 
-
-void __far SFX_SetOrigin(int8_t handle, uint8_t sep, uint8_t vol){
-    if (sb_voicelist[handle].sfx_id & PLAYING_FLAG){
-        sb_voicelist[handle].sep = sep;
-        sb_voicelist[handle].volume = vol;
-    }
-}

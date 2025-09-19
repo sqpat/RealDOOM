@@ -398,7 +398,7 @@ _V_DrawPatch_addr =              	 _NULL_OFFSET + 00454h
 _m_paninc = 				 	 	 _NULL_OFFSET + 00458h
 
 
-_SFX_SetOrigin_addr =              	 _NULL_OFFSET + 0045Ch
+;_SFX_SetOrigin_addr =              	 _NULL_OFFSET + 0045Ch
 _V_DrawFullscreenPatch_addr =        _NULL_OFFSET + 00460h
 _getStringByIndex_addr =             _NULL_OFFSET + 00464h
 _ST_Start_addr = 			 	 	 _NULL_OFFSET + 00468h

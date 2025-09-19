@@ -452,7 +452,7 @@
 #define V_DrawPatch_addr                  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0454)))
 #define m_paninc                          (*((mpoint_t __near*)              (_NULL_OFFSET + 0x0458)))
 
-#define SFX_SetOrigin_addr                (*((uint32_t  __near*)             (_NULL_OFFSET + 0x045C)))
+// #define SFX_SetOrigin_addr                (*((uint32_t  __near*)             (_NULL_OFFSET + 0x045C)))
 #define V_DrawFullscreenPatch_addr        (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0460)))
 #define getStringByIndex_addr             (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0464)))
 #define ST_Start_addr 				      (*((uint32_t __near*)              (_NULL_OFFSET + 0x0468)))

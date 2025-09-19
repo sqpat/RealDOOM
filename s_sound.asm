@@ -104,9 +104,7 @@ mov   al, byte ptr cs:[si + CHANNEL_T.channel_handle]
 
 call  SFX_Playing_  ; todo stc/clc
 
-
-test  al, al
-je    dont_stop_sound
+jnc   dont_stop_sound
 
 mov   al, byte ptr ds:[_snd_SfxDevice]
 cmp   al, SND_SB
@@ -797,8 +795,7 @@ test  cl, cl
 je    iter_next_channel_updatesounds
 call  SFX_Playing_  ; todo stc/clc
 
-test  al, al
-jne   handle_position_update
+jc    handle_position_update
 do_stop_channel_and_iter:
 mov   al, dl
 cbw
@@ -844,13 +841,24 @@ pop   cx
 push  es
 call  S_AdjustSoundParamsSep_
 
-xchg  ax, dx
-pop   bx
+xchg  ax, bx
+pop   ax
+mov   bh, al ; bx gets vol lo sep  hi
+
 mov   al, byte ptr cs:[si + CHANNEL_T.channel_handle]
-;call  SFX_SetOrigin_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _SFX_SetOrigin_addr
+cbw
+;call  SFX_SetOrigin_ ; inlined
+
+cbw
+SHIFT_MACRO shl ax 3
+
+xchg    ax, bx
+test    byte ptr ds:[_sb_voicelist + bx + SB_VOICEINFO_T.sbvi_sfx_id], PLAYING_FLAG
+je      sfx_not_playing_for_setorigin
+mov     word ptr ds:[_sb_voicelist + bx + SB_VOICEINFO_T.sbvi_volume], ax
+
+sfx_not_playing_for_setorigin:
+
 
 
 mov   dx, di ; restore loop counters
