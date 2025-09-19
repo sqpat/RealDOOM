@@ -163,6 +163,6 @@ There are also a lot of hard caps on things like texture size and count, node co
 ### Speed
 
 Various performance benchmarks can be found in this spreadsheet:
-[https://docs.google.com/spreadsheets/d/1gt8gqvKrvJh5GH_xDKoZ98G4jY873s6zx_Y5EaFbb7M/](url)
+[RealDOOM Benchmark Results](https://docs.google.com/spreadsheets/d/1gt8gqvKrvJh5GH_xDKoZ98G4jY873s6zx_Y5EaFbb7M/)
 
 For the most part, a 386SX currently runs RealDOOM ~20% faster than (vanilla) DOOM 1.9. 32 bit bus cpus all generally run it 5-10% worse than vanilla. A very fast 286 achieves around 6-7 FPS in high quality, 9-10 in low, and 13-14 in potato quality. 5150/5160 class machines are sub 1 FPS.
