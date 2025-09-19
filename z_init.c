@@ -103,6 +103,7 @@ void __near Z_InitEMS() {
 void __near Z_GetEMSPageMap() {
 	int16_t i;
 
+
 	// force cache clear
 	currentpageframes[0] = 0xFF;
 	currentpageframes[1] = 0xFF;
@@ -111,7 +112,7 @@ void __near Z_GetEMSPageMap() {
 
 	for (i = 0; i <= ((numlumps-1) / LUMP_PER_EMS_PAGE); i++){
 		Z_QuickMapWADPageFrame(i*LUMP_PER_EMS_PAGE);
-		FAR_memcpy((byte __far *) lumpinfoD800, MK_FP(lumpinfoinitsegment,  i * 16384u), 16384u); // copy the wad lump stuff over. gross
+		FAR_memcpy((byte __far *) MK_FP(WAD_PAGE_FRAME_PTR, 0), MK_FP(lumpinfoinitsegment,  i * 16384u), 16384u); // copy the wad lump stuff over. gross
 	}
 
 	Z_QuickMapMusicPageFrame(0);
@@ -140,7 +141,7 @@ void __near Z_GetEMSPageMap() {
 
 	for (i = 0; i <= ((numlumps-1) / LUMP_PER_EMS_PAGE); i++){
 		Z_QuickMapWADPageFrame(i*LUMP_PER_EMS_PAGE);
-		FAR_memcpy((byte __far *) lumpinfoD800, MK_FP(lumpinfoinitsegment,  i * 16384u), 16384u); // copy the wad lump stuff over. gross
+		FAR_memcpy((byte __far *) MK_FP(WAD_PAGE_FRAME_PTR, 0), MK_FP(lumpinfoinitsegment,  i * 16384u), 16384u); // copy the wad lump stuff over. gross
 	}
 
 	Z_QuickMapMusicPageFrame(0);
@@ -179,6 +180,7 @@ void __near Z_InitEMS() {
 void __near Z_GetEMSPageMap() {
 	int16_t i;
 
+
 	// force cache clear
 	currentpageframes[0] = 0xFF;
 	currentpageframes[1] = 0xFF;
@@ -187,7 +189,7 @@ void __near Z_GetEMSPageMap() {
 
 	for (i = 0; i <= ((numlumps-1) / LUMP_PER_EMS_PAGE); i++){
 		Z_QuickMapWADPageFrame(i*LUMP_PER_EMS_PAGE);
-		FAR_memcpy((byte __far *) lumpinfoD800, MK_FP(lumpinfoinitsegment,  i * 16384u), 16384u); // copy the wad lump stuff over. gross
+		FAR_memcpy((byte __far *) MK_FP(WAD_PAGE_FRAME_PTR, 0), MK_FP(lumpinfoinitsegment,  i * 16384u), 16384u); // copy the wad lump stuff over. gross
 	}
 
 	Z_QuickMapMusicPageFrame(0);
@@ -440,7 +442,7 @@ found:
 	
 	for (i = 0; i <= ((numlumps-1) / LUMP_PER_EMS_PAGE); i++){
 		Z_QuickMapWADPageFrame(i*LUMP_PER_EMS_PAGE);
-		FAR_memcpy((byte __far *) lumpinfoD800, MK_FP(lumpinfoinitsegment,  i * 16384u), 16384u); // copy the wad lump stuff over. gross
+		FAR_memcpy((byte __far *) MK_FP(WAD_PAGE_FRAME_PTR, 0), MK_FP(lumpinfoinitsegment,  i * 16384u), 16384u); // copy the wad lump stuff over. gross
 	}
 
 	Z_QuickMapPhysics(); // map default page map

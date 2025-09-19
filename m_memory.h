@@ -1404,13 +1404,10 @@ compositetextureoffset  4F80:01AC
 */
 
 
-#define WAD_PAGE_FRAME ((byte __far*) 0xD8000000)
-#define WAD_PAGE_FRAME_SEGMENT ((segment_t)(((uint32_t) WAD_PAGE_FRAME) >> 16))
 
 
 // #define lumpinfo5000 ((lumpinfo_t __far*) 0x54000000)
 // #define lumpinfo9000 ((lumpinfo_t __far*) 0x94000000)
-#define lumpinfoD800 ((lumpinfo_t __far*) 0xD8000000)
 // todo change this to avoid clobbering title
 //20 segments or 512 higher.. to leave space for d_init title
 #define lumpinfoinit ((lumpinfo_t __far*) (lumpinfoinitsegment << 16)) 

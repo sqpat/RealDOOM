@@ -438,7 +438,7 @@
 #define LINEFLAGSLIST_SEGMENT_PTR	  	  (*((segment_t __near*)             (_NULL_OFFSET + 0x0436)))
 #define SEENLINES_6000_SEGMENT_PTR	      (*((segment_t __near*)             (_NULL_OFFSET + 0x0438)))
 #define SIDES_SEGMENT_PTR		          (*((segment_t __near*)             (_NULL_OFFSET + 0x043A)))
-#define LUMPINFO_SEGMENT_PTR		      (*((segment_t __near*)             (_NULL_OFFSET + 0x043C)))
+// #define LUMPINFO_SEGMENT_PTR		      (*((segment_t __near*)             (_NULL_OFFSET + 0x043C)))
 // 43e free
 // todo order all these for stosw chain
 #define EMS_PAGE                 	      (*((segment_t __near*)             (_NULL_OFFSET + 0x0440)))

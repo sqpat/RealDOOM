@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/19 01:18:07
+Created on:       25/09/19 01:28:18
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -30,8 +30,8 @@ ST_INIT_TEXT           CODE           AUTO           0000:092c       00000203
 R_INIT_TEXT            CODE           AUTO           0000:0b30       000007a5
 W_INIT_TEXT            CODE           AUTO           0000:12d6       0000017e
 I_INIT_TEXT            CODE           AUTO           0000:1454       000001a6
-z_init_TEXT            CODE           AUTO           0000:1600       00000a53
-p_init_TEXT            CODE           AUTO           0000:2060       0000049c
+z_init_TEXT            CODE           AUTO           0000:1600       00000a57
+p_init_TEXT            CODE           AUTO           0000:2060       00000498
 i_main_TEXT            CODE           AUTO           0000:2500       00000010
 I_QUIT_TEXT            CODE           AUTO           0000:2510       0000018a
 I_IBM_TEXT             CODE           AUTO           0000:269a       000000e5
@@ -188,18 +188,18 @@ Module: z_init.obj(C:\REALDOOM\z_init.c)
 0000:1600*     doerror_
 0000:1610      Z_InitEMS_
 0000:1736      Z_GetEMSPageMap_
-0000:1830*     SkipNextFileRegion_
-0000:1862+     ReadFileRegionWithIndex_
-0000:18dc+     Z_RemapRenderFunctions_
-0000:1a3e+     Z_DoRenderCodeLoad_
-0000:1af4      Z_LoadBinaries_
+0000:1834*     SkipNextFileRegion_
+0000:1866+     ReadFileRegionWithIndex_
+0000:18e0+     Z_RemapRenderFunctions_
+0000:1a42+     Z_DoRenderCodeLoad_
+0000:1af8      Z_LoadBinaries_
 Module: p_init.obj(C:\REALDOOM\p_init.c)
 0000:2060+     P_InitSwitchList_
 0000:212a+     P_InitPicAnims_
 0000:2206+     R_InstallSpriteLump_
 0000:2296+     R_InitSpriteDefs_
-0000:24a2*     R_InitSprites_
-0000:24c6      P_Init_
+0000:249e*     R_InitSprites_
+0000:24c2      P_Init_
 Module: i_main.obj(C:\REALDOOM\i_main.c)
 0000:2500      main_
 0c6d:0eaa      __amblksiz

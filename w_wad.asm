@@ -167,7 +167,7 @@ mov   ax, 01000h
 mov   si, ax
 call  Z_QuickMapWADPageFrame_
 
-mov   ds, word ptr ds:[_LUMPINFO_SEGMENT_PTR]
+mov   ds, word ptr ds:[_WAD_PAGE_FRAME_PTR]
 
 mov   ax, si
 xchg  ax, cx     ; cx gets numlumps and ax gets first word
@@ -239,7 +239,7 @@ pop   ds
 
 call  Z_QuickMapWADPageFrame_
 
-mov   ds, word ptr ds:[_LUMPINFO_SEGMENT_PTR]
+mov   ds, word ptr ds:[_WAD_PAGE_FRAME_PTR]
 
 xchg  ax, si ; restore
 
@@ -297,7 +297,7 @@ skip_loop_2:
 mov       ax, cx
 call      Z_QuickMapWADPageFrame_
 and       ch, 3     ;      ; (LUMP_PER_EMS_PAGE - 1 ) SHR 8
-mov       es, word ptr ds:[_LUMPINFO_SEGMENT_PTR]
+mov       es, word ptr ds:[_WAD_PAGE_FRAME_PTR]
 
 mov       bx, cx
 SHIFT_MACRO shl       bx 4
@@ -346,7 +346,7 @@ mov       bx, si
 ;	l = &(lumpinfoD800[lump & (LUMP_PER_EMS_PAGE-1)]);
 
 
-mov       es, word ptr ds:[_LUMPINFO_SEGMENT_PTR]
+mov       es, word ptr ds:[_WAD_PAGE_FRAME_PTR]
 
 and       bh, 3      ; (LUMP_PER_EMS_PAGE - 1 ) SHR 8
 SHIFT_MACRO shl       bx 4

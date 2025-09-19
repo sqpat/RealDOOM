@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/19 01:18:02
+Created on:       25/09/19 01:28:13
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -31,8 +31,8 @@ ST_INIT_TEXT           CODE           AUTO           0000:0e8c       00000203
 R_INIT_TEXT            CODE           AUTO           0000:1090       000007a5
 W_INIT_TEXT            CODE           AUTO           0000:1836       0000017e
 I_INIT_TEXT            CODE           AUTO           0000:19b4       000001a6
-z_init_TEXT            CODE           AUTO           0000:1b60       00000a53
-p_init_TEXT            CODE           AUTO           0000:25c0       0000049c
+z_init_TEXT            CODE           AUTO           0000:1b60       00000a57
+p_init_TEXT            CODE           AUTO           0000:25c0       00000498
 d_main_TEXT            CODE           AUTO           0000:2a60       000003ac
 I_QUIT_TEXT            CODE           AUTO           0000:2e0c       0000018a
 I_IBM_TEXT             CODE           AUTO           0000:2f96       000000e5
@@ -237,18 +237,18 @@ Module: z_init.obj(C:\REALDOOM\z_init.c)
 0000:1b60*     doerror_
 0000:1b70      Z_InitEMS_
 0000:1c96      Z_GetEMSPageMap_
-0000:1d90*     SkipNextFileRegion_
-0000:1dc2+     ReadFileRegionWithIndex_
-0000:1e3c+     Z_RemapRenderFunctions_
-0000:1f9e+     Z_DoRenderCodeLoad_
-0000:2054      Z_LoadBinaries_
+0000:1d94*     SkipNextFileRegion_
+0000:1dc6+     ReadFileRegionWithIndex_
+0000:1e40+     Z_RemapRenderFunctions_
+0000:1fa2+     Z_DoRenderCodeLoad_
+0000:2058      Z_LoadBinaries_
 Module: p_init.obj(C:\REALDOOM\p_init.c)
 0000:25c0+     P_InitSwitchList_
 0000:268a+     P_InitPicAnims_
 0000:2766+     R_InstallSpriteLump_
 0000:27f6+     R_InitSpriteDefs_
-0000:2a02*     R_InitSprites_
-0000:2a26      P_Init_
+0000:29fe*     R_InitSprites_
+0000:2a22      P_Init_
 Module: d_main.obj(C:\REALDOOM\d_main.c)
 0000:2a60      D_PostEvent_
 0000:2a94      D_ProcessEvents_

@@ -38,6 +38,7 @@
 #include "doomstat.h"
 #include "m_memory.h"
 #include "m_near.h"
+#include <dos.h>
 
 
   
@@ -343,6 +344,8 @@ void __near R_InitSpriteDefs() {
 	// todo make this far instead of near? use temporary space instead of stack maybe?
 	byte sprtempbytes[29 * sizeof(spriteframe_t)];
 	int8_t localname[8];
+	lumpinfo_t __far* lumpinfoInit = ((lumpinfo_t __far*) MK_FP(WAD_PAGE_FRAME_PTR, 0));
+
 	/*
 
 	int8_t *namelist[NUMSPRITES] = {
@@ -409,12 +412,12 @@ void __near R_InitSpriteDefs() {
 			int16_t lump = l & (LUMP_PER_EMS_PAGE - 1);
 			Z_QuickMapWADPageFrame(l);
 
-			if (*(int32_t  __far*)lumpinfoD800[lump].name == intname) {
-				frame = lumpinfoD800[lump].name[4] - 'A';
-				rotation = lumpinfoD800[lump].name[5] - '0';
+			if (*(int32_t  __far*)lumpinfoInit[lump].name == intname) {
+				frame = lumpinfoInit[lump].name[4] - 'A';
+				rotation = lumpinfoInit[lump].name[5] - '0';
 
 				if (modifiedgame) {
-					copystr8(localname, lumpinfoD800[lump].name);
+					copystr8(localname, lumpinfoInit[lump].name);
 					patched = W_GetNumForName(localname);
 				} else {
 					patched = l;
@@ -422,9 +425,9 @@ void __near R_InitSpriteDefs() {
 
 				R_InstallSpriteLump(patched, frame, rotation, false);
 
-				if (lumpinfoD800[lump].name[6]) {
-					frame = lumpinfoD800[lump].name[6] - 'A';
-					rotation = lumpinfoD800[lump].name[7] - '0';
+				if (lumpinfoInit[lump].name[6]) {
+					frame = lumpinfoInit[lump].name[6] - 'A';
+					rotation = lumpinfoInit[lump].name[7] - '0';
 					R_InstallSpriteLump(l, frame, rotation, true);
 				}
 			}

@@ -1534,7 +1534,7 @@ and       bh, 3      ; (LUMP_PER_EMS_PAGE - 1 ) SHR 8
 
 SHIFT_MACRO shl       bx 4
 
-mov       es, word ptr ds:[_LUMPINFO_SEGMENT_PTR]
+mov       es, word ptr ds:[_WAD_PAGE_FRAME_PTR]
 
 xor       dx, dx  ; SEEK_SET
 mov       ax, word ptr ds:[_wadfiles]
