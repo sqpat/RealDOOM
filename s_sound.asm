@@ -743,8 +743,8 @@ do_pc_speaker_sound:
 
 dec   ax
 xchg  ax, bx
-mov   ax, PC_SPEAKER_OFFSETS_SEGMENT
-mov   es, ax
+mov   es, word ptr ds:[_PC_SPEAKER_OFFSETS_SEGMENT_PTR]
+
 sal   bx, 1
 cli
 les   ax,  dword ptr es:[bx]

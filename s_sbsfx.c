@@ -647,7 +647,7 @@ void __near SB_Service_Mix22Khz(){
                     // stupid c89
                     {                
                         uint8_t __far * dma_buffer = MK_FP(sb_dmabuffer_segment, copy_offset);
-                        uint8_t __far * source  = (uint8_t __far *) MK_FP(SFX_PAGE_SEGMENT, cache_pos.hu + (sb_voicelist[i].currentsample & 16383));
+                        uint8_t __far * source  = (uint8_t __far *) MK_FP(SFX_PAGE_SEGMENT_PTR, cache_pos.hu + (sb_voicelist[i].currentsample & 16383));
 
                         uint16_t remaining_length = sb_voicelist[i].length - sb_voicelist[i].currentsample;
                         int8_t volume = sb_voicelist[i].volume;
@@ -912,7 +912,7 @@ void __near SB_Service_Mix11Khz(){
                     // stupid c89
                     {                
                         uint8_t __far * dma_buffer = MK_FP(sb_dmabuffer_segment, copy_offset);
-                        uint8_t __far * source  = (uint8_t __far *) MK_FP(SFX_PAGE_SEGMENT, cache_pos.hu + (sb_voicelist[i].currentsample & 16383));
+                        uint8_t __far * source  = (uint8_t __far *) MK_FP(SFX_PAGE_SEGMENT_PTR, cache_pos.hu + (sb_voicelist[i].currentsample & 16383));
                         uint16_t remaining_length = sb_voicelist[i].length - sb_voicelist[i].currentsample;
                         int8_t volume = sb_voicelist[i].volume;
                         // if (application_volume != MAX_APPLICATION_VOLUME){
@@ -1943,7 +1943,7 @@ void __near  SB_StartInit(){
 
 void __near S_NormalizeSfxVolume(uint16_t offset, uint16_t length);
 // void S_NormalizeSfxVolume(uint16_t offset, uint16_t length){
-//     uint8_t __far* sfxbyte = MK_FP(SFX_PAGE_SEGMENT, offset);
+//     uint8_t __far* sfxbyte = MK_FP(SFX_PAGE_SEGMENT_PTR, offset);
 //     int8_t multvolume = snd_SfxVolume;
 //     uint16_t j;
     
@@ -2067,7 +2067,7 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
     // back to where its supposed to go.
     W_CacheLumpNumDirectWithOffset(
         sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK, 
-        MK_FP(SFX_PAGE_SEGMENT, allocate_position.hu), 
+        MK_FP(SFX_PAGE_SEGMENT_PTR, allocate_position.hu), 
         0x18,           // skip header and padding.
         lumpsize.hu);   // num bytes..
 
@@ -2132,7 +2132,7 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
             // back to where its supposed to go.
             W_CacheLumpNumDirectWithOffset(
                 lump, 
-                SFX_PAGE_ADDRESS, 
+                MK_FP(SFX_PAGE_SEGMENT_PTR, 0), 
                 0x18u + offset,           // skip header and padding.
                 16384);   // num bytes..
             currentpage = sfxcache_nodes[currentpage].prev;
@@ -2153,7 +2153,7 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
         Z_QuickMapSFXPageFrame(currentpage);
         W_CacheLumpNumDirectWithOffset(
                 lump, 
-                SFX_PAGE_ADDRESS, 
+                MK_FP(SFX_PAGE_SEGMENT_PTR, 0), 
                 0x18u + offset,           // skip header and padding.
                 lumpsize.hu & 16383);   // num bytes..
 

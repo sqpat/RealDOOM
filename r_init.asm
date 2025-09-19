@@ -1369,7 +1369,8 @@ xor       bx, bx
 mov       cx, SCRATCH_SEGMENT_5000
 
 call      W_CacheLumpNumDirect_			; has column iteration, can't be small lump load...
-mov       ax, SPRITEWIDTHS_SEGMENT
+mov       ax, word ptr ds:[_BSP_CODE_SEGMENT_PTR]
+add       ax, (SPRITEWIDTHS_OFFSET SHR 4)
 mov       es, ax
 mov       ax, SCRATCH_SEGMENT_5000
 mov       ds, ax

@@ -221,8 +221,7 @@ jmp    done_adding_ticcount_high
 do_pc_speaker:
 ; NO INTERUPT FOR SPEAKER PLAY
 cli    
-mov    ax, PC_SPEAKER_SFX_DATA_SEGMENT  ; todo in memory
-mov    es, ax
+mov    es, ds:[_PC_SPEAKER_SFX_DATA_SEGMENT_PTR]
 mov    si, word ptr ds:[_pcspeaker_currentoffset]
 lods   word ptr es:[si]
 ;call   playpcspeakernote_ ; inlined

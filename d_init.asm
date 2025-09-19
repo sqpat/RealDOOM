@@ -805,6 +805,22 @@ not_nomusic:
 mov   ax, OFFSET str_z_init_ems
 call  DEBUG_PRINT_NOARG_CS_
 call  Z_InitEMS_
+; todo return value in ax.
+mov   di, OFFSET _EMS_PAGE
+push  ds
+pop   es
+mov   ax, word ptr ds:[di]
+stosw ; 0D000h / MUSIC_PAGE_SEGMENT_PTR
+add   ah, 4 
+stosw ;  _SFX_PAGE_SEGMENT_PTR               ; D400
+add   al, 0F0h  
+stosw ;  _PC_SPEAKER_OFFSETS_SEGMENT_PTR     ; D4F0
+add   ax, 010h  
+stosw ;  _PC_SPEAKER_SFX_DATA_SEGMENT_PTR    ; D500
+add   ah, 3
+stosw ;  _WAD_PAGE_FRAME_PTR                 ; D800
+add   ah, 4 
+stosw ;  _BSP_CODE_SEGMENT_PTR               ; DC00
 
 
 mov   ax, OFFSET str_w_init

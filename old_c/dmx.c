@@ -120,7 +120,8 @@ void __interrupt __far_func TS_ServiceScheduleIntEnabled(void){
 			// send next sample
 
 			_disable();
-			playpcspeakernote(*((uint16_t __far*)MK_FP(PC_SPEAKER_SFX_DATA_SEGMENT, pcspeaker_currentoffset)));
+
+			playpcspeakernote(*((uint16_t __far*)MK_FP(SFX_PAGE_SEGMENT_PTR + 0x100 , pcspeaker_currentoffset)));
 			
 			pcspeaker_currentoffset+=2;
 			if (pcspeaker_currentoffset >= pcspeaker_endoffset){

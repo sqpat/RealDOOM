@@ -56,7 +56,7 @@ void near doerror(int16_t errnum, int16_t errorreg) {
 
 #ifdef __SCAMP_BUILD
 
-byte __far *__near Z_InitEMS() {
+void __near Z_InitEMS() {
 	int8_t i;
 	EMS_PAGE = 0xD000; // hard coded
 	//. enable EMS and page D000 in chipset
@@ -97,7 +97,7 @@ byte __far *__near Z_InitEMS() {
 
 	//todo do we disable config after?
 
-	return MK_FP(EMS_PAGE, 0);
+
 }
 
 void __near Z_GetEMSPageMap() {
@@ -124,9 +124,9 @@ void __near Z_GetEMSPageMap() {
 #elif defined(__SCAT_BUILD)
 
 
-byte __far *__near Z_InitEMS() {
+void __near Z_InitEMS() {
 	EMS_PAGE = 0xD000; // hard coded
-	return MK_FP(EMS_PAGE, 0);
+
 }
 
 void __near Z_GetEMSPageMap() {
@@ -152,7 +152,7 @@ void __near Z_GetEMSPageMap() {
 }
 #elif defined(__HT18_BUILD)
 
-byte __far *__near Z_InitEMS() {
+void __near Z_InitEMS() {
 	
 	EMS_PAGE = 0xD000; // hard coded
 	
@@ -172,7 +172,7 @@ byte __far *__near Z_InitEMS() {
 	outp(0x1EC, 0x03F);
 	
 	
-	return MK_FP(EMS_PAGE, 0);
+
 
 }
 
@@ -200,12 +200,11 @@ void __near Z_GetEMSPageMap() {
 }
 
 #else
-byte __far *__near Z_InitEMS() {
+void __near Z_InitEMS() {
 
 	// 4 mb
 	// todo test 3, 2 MB, etc. i know we use less..
 	//int16_t numPagesToAllocate = NUM_EMS4_SWAP_PAGES; //256; //  (4 * 1024 * 1024) / PAGE_FRAME_SIZE;
-	int16_t pageframebase;
 	int8_t  i;
 	reg_return_4word regresult;
 
@@ -261,7 +260,8 @@ byte __far *__near Z_InitEMS() {
 	// regs.h.ah = 0x41;
 	regresult.qword = locallib_int86_67_1arg_return(0x4100);
 
-	pageframebase = regresult.w.bx;
+	// EMS Handle
+	EMS_PAGE = regresult.w.bx;
 	errorreg = regresult.h.ah;
 	if (errorreg != 0) {
 		doerror(89, errorreg);/// EMS Error 0x41
@@ -276,7 +276,7 @@ byte __far *__near Z_InitEMS() {
 	// result.hu = locallib_int86_67_1arg(0x4200);
 	pagesavail = regresult.w.bx;
 	pagestotal = regresult.w.dx;
-	DEBUG_PRINT("\n  %i pages total, %i pages available at frame %p", pagestotal, pagesavail, pageframebase);
+	DEBUG_PRINT("\n  %i pages total, %i pages available at frame %p", pagestotal, pagesavail, EMS_PAGE);
 
 	if (pagesavail < NUM_EMS4_SWAP_PAGES) {
 		I_Error("\nERROR: minimum of %i EMS pages required", NUM_EMS4_SWAP_PAGES);
@@ -333,9 +333,8 @@ byte __far *__near Z_InitEMS() {
 
 	//*size = numPagesToAllocate * PAGE_FRAME_SIZE;
 
-	// EMS Handle
-	EMS_PAGE = pageframebase;
-	return  MK_FP(pageframebase, 0);
+
+
 
 
 
@@ -502,7 +501,7 @@ void  __near ReadFileRegionWithIndex(FILE* fp, int16_t index, uint32_t target_ad
 
 void __near Z_RemapRenderFunctions(){
 
-
+	segment_t bsp_code_segment = BSP_CODE_SEGMENT_PTR;
 	#define  DRAWSPAN_AH_OFFSET  0x3F00
 	#define  DRAWSPAN_BX_OFFSET  0x0FC0
 	switch (columnquality){
@@ -541,7 +540,16 @@ void __near Z_RemapRenderFunctions(){
 			R_WriteBackViewConstantsMaskedCall = MK_FP(maskedconstants_funcarea_segment, R_WriteBackViewConstantsMasked16Offset);
 			R_WriteBackViewConstants = 			 MK_FP(bsp_code_segment,          		 R_WriteBackViewConstants16Offset);
 			break;
-
+		case 0:
+		default:
+			R_GetPatchTexture_addr =  			 (uint32_t) MK_FP(bsp_code_segment, R_GetPatchTexture24Offset);
+			R_GetCompositeTexture_addr =  		 (uint32_t) MK_FP(bsp_code_segment, R_GetCompositeTexture24Offset);
+			R_WriteBackMaskedFrameConstantsCallOffset  = R_WriteBackMaskedFrameConstants24Offset;
+			R_DrawMaskedCallOffset =			 R_DrawMasked24Offset;
+			R_RenderPlayerView = 				 MK_FP(bsp_code_segment,          		 R_RenderPlayerView24Offset);
+			R_WriteBackViewConstantsMaskedCall = MK_FP(maskedconstants_funcarea_segment,     R_WriteBackViewConstantsMasked24Offset);
+			R_WriteBackViewConstants = 			 MK_FP(bsp_code_segment,          		 R_WriteBackViewConstants24Offset);
+			break;
 
 
 		// remap... todo
@@ -561,33 +569,22 @@ void __near Z_RemapRenderFunctions(){
 
 	switch (spanquality){
 		case 3:
-
 			// remap this to the 16 bit version.
 			R_DrawPlanesCallOffset = R_DrawPlanesFLOffset;
 			R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_jump_lookup_segment, R_WriteBackViewConstantsSpanFLOffset);
 			ds_source_offset = DRAWSPAN_AH_OFFSET;
-
 			break;
 		case 2:
-
-
 			// remap this to the 16 bit version.
 			R_DrawPlanesCallOffset = R_DrawPlanes0Offset;
 			R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_jump_lookup_segment, R_WriteBackViewConstantsSpan0Offset);
 			ds_source_offset = DRAWSPAN_AH_OFFSET;
-
 			break;
-
 		case 1:
-
-
-
-
 			// remap this to the 16 bit version.
 			R_DrawPlanesCallOffset = R_DrawPlanes16Offset;
 			R_WriteBackViewConstantsSpanCall = MK_FP(spanfunc_jump_lookup_segment, R_WriteBackViewConstantsSpan16Offset);
 			ds_source_offset = DRAWSPAN_BX_OFFSET;
-
 			break;
 		case 0:
 		default:
@@ -613,6 +610,8 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 	int16_t usedcolumnvalue = 0x400;
 	int16_t usedspanvalue = 0x400;
 	int16_t usedskyvalue = 0x200;
+	
+
 	if (columnquality <= 3){
 		usedcolumnvalue += columnquality;		
 	}
@@ -648,7 +647,7 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 	ReadFileRegionWithIndex(fp, usedskyvalue, (uint32_t)drawskyplane_area);
 
 
-	ReadFileRegionWithIndex(fp, usedcolumnvalue, (uint32_t)bsp_code_area);
+	ReadFileRegionWithIndex(fp, usedcolumnvalue, (uint32_t)MK_FP(BSP_CODE_SEGMENT_PTR, 0));
 
 }
  

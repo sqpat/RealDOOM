@@ -46,9 +46,9 @@
 // ALLOCATION DEFINITIONS: UPPER MEMORY
 
 
-#define EMS_PAGE_SEGMENT  0xD000
-#define bsp_code_segment  EMS_PAGE_SEGMENT + 0x0C00
-#define bsp_code_area     ((byte __far*)(((uint32_t)bsp_code_segment) << 16))
+
+
+
 
 // todo generate this programatically
 #define baselowermemoryaddress    (0x22830000)
@@ -1103,7 +1103,7 @@ patchoffset                 83BD:01DC
 #define size_spritewidths      (sizeof(uint8_t) * MAX_SPRITE_LUMPS)
 
 // spritewidths at end of bsp
-#define spritewidths_segment   ((bsp_code_segment + 0x400) - ((size_spritewidths + 0xF) >> 4))
+// #define spritewidths_segment   ((bsp_code_segment + 0x400) - ((size_spritewidths + 0xF) >> 4))
 #define spritewidths_offset    (((0x400) - ((size_spritewidths + 0xF) >> 4)) << 4)
 
 // first element
@@ -1439,13 +1439,13 @@ compositetextureoffset  4F80:01AC
 
 // SOUND
 
-#define PC_SPEAKER_SFX_DATA_SEGMENT 0xD500
-#define PC_SPEAKER_OFFSETS_SEGMENT  0xD4F0
+// #define PC_SPEAKER_SFX_DATA_SEGMENT 0xD500
+// #define PC_SPEAKER_OFFSETS_SEGMENT  0xD4F0
 
 
 
-#define pc_speaker_offsets        ((uint16_t __far*)              MAKE_FULL_SEGMENT(PC_SPEAKER_OFFSETS_SEGMENT << 16,           0)) 
-#define pc_speaker_data           ((uint16_t __far*)              MAKE_FULL_SEGMENT(PC_SPEAKER_SFX_DATA_SEGMENT << 16,          0)) 
+// #define pc_speaker_offsets        ((uint16_t __far*)              MAKE_FULL_SEGMENT(PC_SPEAKER_OFFSETS_SEGMENT << 16,           0)) 
+// #define pc_speaker_data           ((uint16_t __far*)              MAKE_FULL_SEGMENT(PC_SPEAKER_SFX_DATA_SEGMENT << 16,          0)) 
 
 
 

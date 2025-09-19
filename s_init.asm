@@ -65,8 +65,7 @@ PUBLIC LoadSFXWadLumps_
 
     mov  di, 1
 
-    mov  bx, PC_SPEAKER_OFFSETS_SEGMENT
-    mov  es, bx
+    mov  es, word ptr ds:[_PC_SPEAKER_OFFSETS_SEGMENT_PTR]
 
     mov  bx, 2   ;lets start at offset 2
 
@@ -103,8 +102,7 @@ PUBLIC LoadSFXWadLumps_
     pop  bx
     pop  ds   ; ds gets PC_SPEAKER_SFX_DATA_TEMP_SEGMENT
     
-    mov  ax, PC_SPEAKER_SFX_DATA_SEGMENT
-    mov  es, ax
+    mov    es, ss:[_PC_SPEAKER_SFX_DATA_SEGMENT_PTR]
 
     ; si has size
 

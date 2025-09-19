@@ -155,7 +155,7 @@ _fastparm =	                        _NULL_OFFSET + 00100h
 _gameskill =	                    _NULL_OFFSET + 00101h
 
 
-_EMS_PAGE =                 	    _NULL_OFFSET + 00102h
+;_EMS_PAGE =                 	    _NULL_OFFSET + 00102h
 _viewangle_shiftright3 = 			_NULL_OFFSET + 00104h
 _dc_source_segment =	 			_NULL_OFFSET + 0010Ah
 _ds_y = 				    		_NULL_OFFSET + 0010Ch
@@ -365,13 +365,11 @@ _numChannels = 						 _NULL_OFFSET + 003CBh
 
 ; 3cb to 3cf free
 
-
-
 _am_stopped = 						 _NULL_OFFSET + 003D0h
 _automapactive =                 	 _NULL_OFFSET + 003D1h
 _currentThinkerListHead = 			 _NULL_OFFSET + 003D2h
 
-;_SFX_Playing_addr = 			     _NULL_OFFSET + 003D4h
+_FixedMulTrigSpeed_addr = 		     _NULL_OFFSET + 003D4h
 _G_SecretExitLevel_addr =            _NULL_OFFSET + 003D8h
 _I_WaitVBL_addr =       		     _NULL_OFFSET + 003DCh
 
@@ -386,10 +384,18 @@ _SEENLINES_6800_SEGMENT_PTR =        _NULL_OFFSET + 00438h
 _SIDES_SEGMENT_PTR =			     _NULL_OFFSET + 0043Ah
 _LUMPINFO_SEGMENT_PTR = 			 _NULL_OFFSET + 0043Ch
 ; 43e free
+_BSP_CODE_SEGMENT_PTR =		      	 _NULL_OFFSET + 00440h
+_SFX_PAGE_SEGMENT_PTR =		      	 _NULL_OFFSET + 00442h
+_PC_SPEAKER_SFX_DATA_SEGMENT_PTR =   _NULL_OFFSET + 00444h
 
-_G_PlayerReborn_addr =	 	 		 _NULL_OFFSET + 00440h
-_FixedMulTrigSpeedNoShift_addr =	 _NULL_OFFSET + 00444h
-_FixedMulTrigSpeed_addr =			 _NULL_OFFSET + 00448h
+_EMS_PAGE =							 _NULL_OFFSET + 00440h
+_MUSIC_PAGE_SEGMENT_PTR =			 _NULL_OFFSET + 00440h
+_SFX_PAGE_SEGMENT_PTR =				 _NULL_OFFSET + 00442h
+_PC_SPEAKER_OFFSETS_SEGMENT_PTR =	 _NULL_OFFSET + 00444h
+_PC_SPEAKER_SFX_DATA_SEGMENT_PTR =	 _NULL_OFFSET + 00446h
+_WAD_PAGE_FRAME_PTR =				 _NULL_OFFSET + 00448h
+_BSP_CODE_SEGMENT_PTR =				 _NULL_OFFSET + 0044Ah
+
 _FixedMulTrig_addr = 			 	 _NULL_OFFSET + 0044Ch
 _G_DeferedInitNew_addr = 			 _NULL_OFFSET + 00450h
 
@@ -398,7 +404,7 @@ _V_DrawPatch_addr =              	 _NULL_OFFSET + 00454h
 _m_paninc = 				 	 	 _NULL_OFFSET + 00458h
 
 
-;_SFX_SetOrigin_addr =              	 _NULL_OFFSET + 0045Ch
+_FixedMulTrigSpeedNoShift_addr =	 _NULL_OFFSET + 0045Ch
 _V_DrawFullscreenPatch_addr =        _NULL_OFFSET + 00460h
 _getStringByIndex_addr =             _NULL_OFFSET + 00464h
 _ST_Start_addr = 			 	 	 _NULL_OFFSET + 00468h
@@ -441,7 +447,7 @@ _snd_SBirq =              			 _NULL_OFFSET + 004BEh
 _snd_SBdma =              			 _NULL_OFFSET + 004BFh
 
 
-;_S_StopSoundMobjRef_addr =           _NULL_OFFSET + 004C0h
+_G_PlayerReborn_addr =	 	 		 _NULL_OFFSET + 004C0h
 _R_DrawSkyPlaneDynamic_addr =  	     _NULL_OFFSET + 004C4h
 _snd_SBport =                        _NULL_OFFSET + 004C8h
 _snd_Mport =                         _NULL_OFFSET + 004CAh
@@ -535,7 +541,7 @@ _fieldofview =				         _NULL_OFFSET + 0060Eh
 _solidsegs = 			         	 _NULL_OFFSET + 00610h
 _newend = 				         	 _NULL_OFFSET + 00690h
 _pspritescale = 		         	 _NULL_OFFSET + 00692h
-_spritewidths_segment =              _NULL_OFFSET + 00694h
+;_spritewidths_segment =              _NULL_OFFSET + 00694h
 _r_cachedplayerMobjsecnum = 		 _NULL_OFFSET + 00696h
 _scaledviewwidth = 					 _NULL_OFFSET + 00698h
 _viewwindowoffset = 				 _NULL_OFFSET + 0069Ah

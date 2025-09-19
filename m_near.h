@@ -199,7 +199,7 @@
 #define fastparm	                    (*((boolean __near*)                 (_NULL_OFFSET + 0x0100)))
 #define gameskill	                    (*((skill_t __near*)                 (_NULL_OFFSET + 0x0101)))
 
-#define EMS_PAGE                 	    (*((segment_t __near*)               (_NULL_OFFSET + 0x0102)))
+// #define EMS_PAGE                 	    (*((segment_t __near*)               (_NULL_OFFSET + 0x0102)))
 #define viewangle_shiftright3           (*((fineangle_t __near*)             (_NULL_OFFSET + 0x0104)))
 // 108 is constant
 #define dc_source_segment               (*((segment_t __near*)               (_NULL_OFFSET + 0x010A)))
@@ -422,7 +422,7 @@
 
 #define currentThinkerListHead  		(*((int16_t __near*)                 (_NULL_OFFSET + 0x03D2)))
 
-// #define SFX_Playing_addr			    (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03D4)))
+#define FixedMulTrigSpeed_addr	 	    (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03D4)))
 #define G_SecretExitLevel_addr          (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03D8)))
 #define I_WaitVBL_addr                  (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03DC)))
 
@@ -440,11 +440,16 @@
 #define SIDES_SEGMENT_PTR		          (*((segment_t __near*)             (_NULL_OFFSET + 0x043A)))
 #define LUMPINFO_SEGMENT_PTR		      (*((segment_t __near*)             (_NULL_OFFSET + 0x043C)))
 // 43e free
+// todo order all these for stosw chain
+#define EMS_PAGE                 	      (*((segment_t __near*)             (_NULL_OFFSET + 0x0440)))
+#define MUSIC_PAGE_SEGMENT_PTR            (*((segment_t __near*)             (_NULL_OFFSET + 0x0440)))
+#define SFX_PAGE_SEGMENT_PTR		      (*((segment_t __near*)             (_NULL_OFFSET + 0x0442)))
+#define PC_SPEAKER_OFFSETS_SEGMENT_PTR    (*((segment_t __near*)             (_NULL_OFFSET + 0x0444)))
+#define PC_SPEAKER_SFX_DATA_SEGMENT_PTR   (*((segment_t __near*)             (_NULL_OFFSET + 0x0446)))
+#define WAD_PAGE_FRAME_PTR		          (*((segment_t __near*)             (_NULL_OFFSET + 0x0448)))
+#define BSP_CODE_SEGMENT_PTR		      (*((segment_t __near*)             (_NULL_OFFSET + 0x044A)))
 
-#define G_PlayerReborn_addr     		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0440)))
 
-#define FixedMulTrigSpeedNoShift_addr	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0444)))
-#define FixedMulTrigSpeed_addr			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0448)))
 #define FixedMulTrig_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x044C)))
 #define G_DeferedInitNew_addr			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0450)))
 
@@ -452,7 +457,7 @@
 #define V_DrawPatch_addr                  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0454)))
 #define m_paninc                          (*((mpoint_t __near*)              (_NULL_OFFSET + 0x0458)))
 
-// #define SFX_SetOrigin_addr                (*((uint32_t  __near*)             (_NULL_OFFSET + 0x045C)))
+#define FixedMulTrigSpeedNoShift_addr	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x045C)))
 #define V_DrawFullscreenPatch_addr        (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0460)))
 #define getStringByIndex_addr             (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0464)))
 #define ST_Start_addr 				      (*((uint32_t __near*)              (_NULL_OFFSET + 0x0468)))
@@ -489,7 +494,7 @@
 #define snd_SBirq		        		  (*((uint8_t __near*)               (_NULL_OFFSET + 0x04BE)))
 #define snd_SBdma		        		  (*((uint8_t __near*)               (_NULL_OFFSET + 0x04BF)))
 
-// #define S_StopSoundMobjRef_addr           (*((uint32_t __near*)              (_NULL_OFFSET + 0x04C0)))
+#define G_PlayerReborn_addr     		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x04C0)))
 
 #define R_DrawSkyPlaneDynamic_addr_Offset (*((int16_t __near*)               (_NULL_OFFSET + 0x04C4)))
 #define R_DrawSkyPlaneDynamic_addr    	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x04C4)))
