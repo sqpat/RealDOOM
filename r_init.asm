@@ -1248,20 +1248,24 @@ PUSHA_NO_AX_MACRO
 call      Z_QuickMapRender_
 
 mov       cx, COLORMAPS_SEGMENT
-mov       ax, COLORMAP_LUMP
 xor       bx, bx
 
 mov     word ptr cs:[SELFMODIFY_set_currentlumpindex+1], bx   ; zero this
 mov     word ptr cs:[SELFMODIFY_set_currentpostoffset+1], bx  ; zero this
 mov     word ptr cs:[SELFMODIFY_set_currentpixeloffset+1], bx  ; zero this
 mov     word ptr cs:[SELFMODIFY_set_currentpostdataoffset+1], bx  ; zero this
+mov     ax, TEXTUREDEFS_BYTES_SEGMENT
+mov     es, ax
+mov     word ptr es:[TEXTUREDEFS_OFFSET_OFFSET], bx  ; zero this
 
 
 
+mov       ax, COLORMAP_LUMP
 
 call      W_CacheLumpNumDirect_
        
 ;call      R_InitData_
+
 
 ; inlined
 
