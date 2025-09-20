@@ -753,6 +753,7 @@ void __near D_PageTicker (void) {
 //
 // D_PageDrawer
 //
+/*
 void __near D_PageDrawer (void) {
 
 	// we dont have various screen buffers anymore, so we cant draw to buffer in 'read this'
@@ -764,7 +765,7 @@ void __near D_PageDrawer (void) {
 
 	 V_DrawFullscreenPatch(pagename, 0);
 }
-
+*/
  
 
 //

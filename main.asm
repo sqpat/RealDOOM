@@ -23,13 +23,15 @@ EXTRN HU_Drawer_:NEAR
 EXTRN HU_Erase_:NEAR
 EXTRN R_ExecuteSetViewSize_:NEAR
 EXTRN R_DrawViewBorder_:NEAR
-EXTRN D_PageDrawer_:NEAR
+
 EXTRN R_FillBackScreen_:NEAR
 EXTRN NetUpdate_:FAR
 EXTRN Z_QuickMapMenu_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
 EXTRN Z_QuickMapIntermission_:FAR
 EXTRN I_ReadMouse_:NEAR
+EXTRN V_DrawFullscreenPatch_:FAR
+
 
 EXTRN M_CheckParm_:NEAR
 EXTRN HU_Responder_:NEAR
@@ -74,7 +76,7 @@ EXTRN _turnheld:BYTE
 EXTRN _myargc:WORD
 EXTRN _myargv:BYTE
 EXTRN _novideo:BYTE
-
+EXTRN _pagename:WORD
 
 
 EXTRN _key_right:BYTE
@@ -3406,7 +3408,17 @@ dw F_DRAWEROFFSET, CODE_OVERLAY_SEGMENT
 call  Z_QuickmapPhysics_
 jmp   done_with_gs_level_case
 switch_case_4:
-call  D_PageDrawer_
+;call  D_PageDrawer_
+
+cmp   byte ptr ds:[_inhelpscreens], 0
+jne   jump_to_done_with_gs_level_case
+
+
+mov   ax, word ptr ds:[_pagename]
+xor   dx, dx ; screen 0
+call  V_DrawFullscreenPatch_ 
+
+jump_to_done_with_gs_level_case:
 jmp   done_with_gs_level_case
 
 
