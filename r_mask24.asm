@@ -3426,7 +3426,7 @@ inc   cl    ; inc startpage + i
 ;    currentpage = texturecache_nodes[currentpage].prev;
 mov   bx, es ; currentpage
 SHIFT_MACRO sal   bx 2
-mov   bl, byte ptr ds:[_spritecache_nodes]
+mov   bl, byte ptr ds:[bx + _spritecache_nodes]
 xor   bh, bh
 mov   es, bx
 dec   dl
