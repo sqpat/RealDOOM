@@ -68,12 +68,12 @@
 #define S_StartSoundFarOffset                   0x9BBD
 #define S_UpdateSoundsOffset                    0x9BDB
 #define S_StartOffset                           0x9C83
-#define M_InitOffset                            0x11A0
+#define M_InitOffset                            0x11AA
 #define M_ResponderOffset                       0xD66
-#define M_DrawerOffset                          0x1060
-#define M_LoadFromSaveGameOffset                0x12ED
-#define M_DrawPauseOffset                       0x1389
-#define M_StartControlPanelOffset               0x1042
+#define M_DrawerOffset                          0x106A
+#define M_LoadFromSaveGameOffset                0x12F7
+#define M_DrawPauseOffset                       0x1393
+#define M_StartControlPanelOffset               0x104C
 
 #define R_DrawColumn24CodeSize         0xE46
 #define R_DrawColumn16CodeSize         0xCB4
@@ -93,7 +93,7 @@
 #define R_MaskedConstantsFLCodeSize    0xEB
 #define R_DrawSkyColumnCodeSize        0xD86
 #define R_DrawSkyColumnFLCodeSize      0x303
-#define M_MenuCodeSize                 0x13E6
+#define M_MenuCodeSize                 0x13F0
 #define R_BSP24CodeSize                0x3783
 #define R_BSP16CodeSize                0x3783
 #define R_BSP0CodeSize                 0x36B5

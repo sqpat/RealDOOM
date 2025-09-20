@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/20 02:18:21
+Created on:       25/09/20 02:55:44
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -60,7 +60,7 @@ F_FILE_TEXT            CODE           AUTO           0000:c1c6       0000008d
 W_WAD_TEXT             CODE           AUTO           0000:c254       00000210
 V_VIDEO_TEXT           CODE           AUTO           0000:c464       00000601
 Z_ZONE_TEXT            CODE           AUTO           0000:ca66       00000471
-M_MENU_TEXT            CODE           AUTO           0cee:0000       000013e6
+M_MENU_TEXT            CODE           AUTO           0cee:0000       000013f0
 F_WIPE_TEXT            CODE           AUTO           0e2d:0000       000005fc
 F_FINALE_TEXT          CODE           AUTO           0e8d:0000       00000bcb
 P_SAVEG_TEXT           CODE           AUTO           0f4a:0000       00000b34
@@ -615,8 +615,8 @@ Module: w_wad.obj(w_wad.ASM)
 0000:c356      W_LumpLength_
 0000:c41d      W_CacheLumpNumDirectWithOffset_
 0000:c256      W_CheckNumForName_
-0000:c347      W_GetNumForName_
 0000:c464*     W_WAD_ENDMARKER_
+0000:c347      W_GetNumForName_
 0000:c412      W_CacheLumpNameDirectFarString_
 0000:c435      W_CacheLumpNumDirectFragment_
 0000:c2ea      SELFMODIFY_start_lump_for_search
@@ -666,7 +666,7 @@ Module: m_menu.obj(m_menu.ASM)
 0cee:0cac*     M_StringHeight_
 0cee:054b*     M_SaveSelect_
 0cee:0b7a*     M_ChangeDetail_
-0cee:12d3*     M_MakeSaveGameName_
+0cee:12dd*     M_MakeSaveGameName_
 0cee:0375*     M_DrawLoad_
 0cee:0438*     M_LoadGame_
 0cee:0c70*     M_StringWidth_
@@ -682,7 +682,7 @@ Module: m_menu.obj(m_menu.ASM)
 0cee:05a3*     M_SaveGame_
 0cee:0c30*     M_StartMessage_
 0cee:0761*     M_DrawReadThisRetail_
-0cee:1375*     M_strcpy_
+0cee:137f*     M_strcpy_
 0cee:0ae9*     M_QuitDOOM_
 0cee:0880*     M_NewGame_
 0cee:0b5c*     M_ChangeSensitivity_
@@ -693,9 +693,9 @@ Module: m_menu.obj(m_menu.ASM)
 0cee:05ee*     M_QuickSaveResponse_
 0cee:0857*     M_DrawNewGame_
 0cee:07aa*     M_Sound_
-0cee:1060      M_Drawer_
+0cee:106a      M_Drawer_
 0cee:0cdc*     M_WriteText_
-0cee:13b5*     M_Z_QuickmapStatus_
+0cee:13bf*     M_Z_QuickmapStatus_
 0cee:0a64*     M_ReadThis_
 0cee:0919*     M_Episode_
 0cee:0606*     M_QuickSave_
@@ -703,21 +703,21 @@ Module: m_menu.obj(m_menu.ASM)
 0cee:07bc*     M_SfxVol_
 0cee:0449*     M_ReadSaveStrings_
 0cee:0ba1*     M_SizeDisplay_
-0cee:11a0      M_Init_
-0cee:1042      M_StartControlPanel_
+0cee:11aa      M_Init_
+0cee:104c      M_StartControlPanel_
 0cee:0bcf*     M_DrawThermo_
 0cee:0405*     M_LoadSelect_
-0cee:13e6      M_MENU_ENDMARKER_
+0cee:13f0      M_MENU_ENDMARKER_
 0cee:0000      M_MENU_STARTMARKER_
 0cee:03b3*     M_DrawSaveLoadBorder_
-0cee:1389      M_DrawPause_
+0cee:1393      M_DrawPause_
 0cee:096e*     M_DrawOptions_
 0cee:0ab1*     M_QuitResponse_
 0cee:06aa*     M_QuickLoadResponse_
-0cee:1167*     CopyString13_menu_seg_
+0cee:1171*     CopyString13_menu_seg_
 0cee:04a9*     M_DrawSave_
-0cee:12ed      M_LoadFromSaveGame_
-0cee:1353*     M_Strcmp_
+0cee:12f7      M_LoadFromSaveGame_
+0cee:135d*     M_Strcmp_
 0cee:08b6*     M_VerifyNightmare_
 0cee:083f*     M_DrawMainMenu_
 0cee:073f*     M_DrawReadThis1_
@@ -1163,8 +1163,8 @@ Module: p_info.obj(p_info.ASM)
 2d46:8c2d      GetDeathState_
 2d46:8c09      GetSeeState_
 2d46:8b5f      GetXDeathState_
-2d46:8bfa      GetPainSound_
 2d46:8be9      GetActiveSound_
+2d46:8bfa      GetPainSound_
 2d46:8c3d      GetPainState_
 2d46:8bb5      GetRaiseState_
 2d46:8c1d      GetMissileState_

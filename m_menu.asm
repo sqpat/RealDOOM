@@ -2281,18 +2281,21 @@ je    no_message_to_print_mresponder
 cmp   byte ptr cs:[_messageNeedsInput], 1
 jne   no_input_needed
 cmp   al, 32
-je    not_response_char
+je    is_response_char
 
 cmp   al, 06Eh  ; 'n'
-je    not_response_char
+je    is_response_char
 cmp   al, 079h  ; 'y'
-je    not_response_char
+je    is_response_char
 cmp   al, KEY_ESCAPE
-je    not_response_char
+je    is_response_char
 jmp   exit_m_responder_return_0
 
+is_response_char:
+mov   byte ptr ds:[_hudneedsupdate], 6
+mov   byte ptr ds:[_borderdrawcount], 3
+
 no_input_needed:
-not_response_char:
 
 mov   dl, byte ptr cs:[_messageLastMenuActive]
 mov   byte ptr cs:[_messageToPrint], cl ; 0

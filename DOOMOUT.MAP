@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/20 02:18:24
+Created on:       25/09/20 02:55:47
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -533,8 +533,8 @@ Module: w_wad.obj(w_wad.ASM)
 0000:9882      W_LumpLength_
 0000:9949      W_CacheLumpNumDirectWithOffset_
 0000:9782      W_CheckNumForName_
-0000:9873      W_GetNumForName_
 0000:9990*     W_WAD_ENDMARKER_
+0000:9873      W_GetNumForName_
 0000:993e      W_CacheLumpNameDirectFarString_
 0000:9961      W_CacheLumpNumDirectFragment_
 0000:9816      SELFMODIFY_start_lump_for_search
