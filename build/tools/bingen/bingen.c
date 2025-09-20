@@ -535,8 +535,6 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     // menu  code offsets
     fprintf(fp, "#define M_InitOffset                            0x%X\n", FP_OFF(M_Init)                            - FP_OFF(M_MENU_STARTMARKER));
     fprintf(fp, "#define M_ResponderOffset                       0x%X\n", FP_OFF(M_Responder)                       - FP_OFF(M_MENU_STARTMARKER));
-    fprintf(fp, "#define M_DrawerOffset                          0x%X\n", FP_OFF(M_Drawer      )                    - FP_OFF(M_MENU_STARTMARKER));
-    fprintf(fp, "#define M_LoadFromSaveGameOffset                0x%X\n", FP_OFF(M_LoadFromSaveGame)                - FP_OFF(M_MENU_STARTMARKER));
     fprintf(fp, "#define M_DrawPauseOffset                       0x%X\n", FP_OFF(M_DrawPause)                       - FP_OFF(M_MENU_STARTMARKER));
     fprintf(fp, "#define M_StartControlPanelOffset               0x%X\n", FP_OFF(M_StartControlPanel)               - FP_OFF(M_MENU_STARTMARKER));
     
@@ -630,6 +628,8 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "M_STARTCONTROLPANELOFFSET  = 0%Xh\n",            FP_OFF(M_StartControlPanel)                 - FP_OFF(M_MENU_STARTMARKER));
     fprintf(fp, "M_DRAWEROFFSET             = 0%Xh\n",            FP_OFF(M_Drawer)                            - FP_OFF(M_MENU_STARTMARKER));
     fprintf(fp, "M_DRAWPAUSEOFFSET          = 0%Xh\n",            FP_OFF(M_DrawPause)                         - FP_OFF(M_MENU_STARTMARKER));
+    fprintf(fp, "M_RESPONDEROFFSET          = 0%Xh\n",            FP_OFF(M_Responder)                         - FP_OFF(M_MENU_STARTMARKER));
+    fprintf(fp, "M_LOADFROMSAVEGAMEOFFSET   = 0%Xh\n",            FP_OFF(M_LoadFromSaveGame)                  - FP_OFF(M_MENU_STARTMARKER));
 
 
     fprintf(fp, "WIPE_STARTSCREENOFFSET     = 0%Xh\n",            FP_OFF(wipe_StartScreen)                    - FP_OFF(F_WIPE_STARTMARKER));

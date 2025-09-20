@@ -29,7 +29,6 @@ EXTRN NetUpdate_:FAR
 EXTRN Z_QuickMapMenu_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
 EXTRN Z_QuickMapIntermission_:FAR
-
 EXTRN I_ReadMouse_:NEAR
 
 EXTRN M_CheckParm_:NEAR
@@ -75,7 +74,7 @@ EXTRN _turnheld:BYTE
 EXTRN _myargc:WORD
 EXTRN _myargv:BYTE
 EXTRN _novideo:BYTE
-EXTRN _eventhead:WORD
+
 
 
 EXTRN _key_right:BYTE
@@ -3482,6 +3481,166 @@ exit_resume_sound:
 ret
 
 ENDP
+
+_st_mapcheat_string1:
+db "ang=0x", 0
+_st_mapcheat_string2:
+db ";x,y=(0x", 0
+_st_mapcheat_string3:
+db ",0x", 0
+_st_mapcheat_string4:
+db ")", 0
+
+PROC    D_ProcessEvents_ NEAR
+PUBLIC  D_ProcessEvents_
+
+mov  ax, word ptr ds:[_eventtail] ; head in ah
+cmp  al, ah
+je   no_events_to_process
+
+PUSHA_NO_AX_MACRO
+xchg  ax, cx ; cx store these two
+xor   bx, bx
+mov   bl, byte ptr ds:[_currenttask];
+
+call Z_QuickMapMenu_
+
+mov   di, EVENTS_SEGMENT
+
+do_next_event:
+
+mov   dx, di
+mov   al, cl
+cbw
+SHIFT_MACRO sal ax 2
+mov   si, ax ; backup 
+
+;call  M_Responder_
+
+
+db    09Ah
+dw    M_RESPONDEROFFSET, MENU_CODE_AREA_SEGMENT
+
+
+jc    menu_ate_event
+xchg  ax, si
+mov   dx, di
+call  G_Responder_
+
+menu_ate_event:
+inc   cx
+and   cl, (MAXEVENTS-1)
+cmp   cl, ch
+jne   do_next_event
+
+mov   byte ptr ds:[_eventtail], cl ; put tail back
+
+
+xchg  ax, bx ; retrieve oldtask
+call  Z_QuickMapByTaskNum_
+
+cmp   byte ptr ds:[_domapcheatthisframe], 0
+jne    do_map_cheat_late
+dont_do_map_cheat_late:
+done_with_map_cheat:
+POPA_NO_AX_MACRO
+no_events_to_process:
+ret
+
+do_map_cheat_late:
+;call  ST_PrepareMapPosCheat_  ; inlined
+
+push  bp
+mov   bp, sp
+sub   sp, 0Ah
+
+mov   di, sp
+
+mov   si, OFFSET _player_message_string
+les   bx, dword ptr ds:[_playerMobj_pos]
+
+les   ax, dword ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
+mov   dx, es
+mov   cx, 1 ; isLong
+mov   bx, di
+call  locallib_printhex_
+
+push  ss
+push  di
+mov   cx, cs
+mov   bx, OFFSET _st_mapcheat_string1
+mov   dx, ds
+mov   ax, si
+call  combine_strings_
+
+push  cs
+mov   ax, OFFSET _st_mapcheat_string2
+push  ax
+
+mov   cx, ds
+mov   bx, si
+mov   dx, ds
+mov   ax, si
+call  combine_strings_
+
+les   bx, dword ptr ds:[_playerMobj_pos]
+les   ax, dword ptr es:[bx + MOBJ_POS_T.mp_x + 0]
+mov   dx, es
+mov   cx, 1 ; isLong
+mov   bx, di
+call  locallib_printhex_
+
+push  ss
+push  di
+mov   cx, ds
+mov   bx, si
+mov   dx, ds
+mov   ax, si
+call  combine_strings_
+
+push  cs
+mov   ax, OFFSET _st_mapcheat_string3
+push  ax
+
+mov   cx, ds
+mov   bx, si
+mov   dx, ds
+mov   ax, si
+call  combine_strings_
+
+les   bx, dword ptr ds:[_playerMobj_pos]
+les   ax, dword ptr es:[bx + MOBJ_POS_T.mp_y + 0]
+mov   dx, es
+mov   cx, 1 ; isLong
+mov   bx, di
+call  locallib_printhex_
+
+push  ss
+push  di
+mov   cx, ds
+mov   bx, si
+mov   dx, ds
+mov   ax, si
+call  combine_strings_
+
+push  cs
+mov   ax, OFFSET _st_mapcheat_string4  ; todo smart push ax macro for push immediate?
+push  ax
+
+mov   cx, ds
+mov   bx, si
+mov   dx, ds
+xchg  ax, si
+
+call  combine_strings_
+mov   byte ptr ds:[_domapcheatthisframe], 0
+
+LEAVE_MACRO
+POPA_NO_AX_MACRO
+ret
+
+ENDP
+
 
 PROC    D_MAIN_ENDMARKER_ NEAR
 PUBLIC  D_MAIN_ENDMARKER_

@@ -76,7 +76,6 @@ EXTRN _novideo:BYTE
 EXTRN _grmode:BYTE
 
 EXTRN _M_Init:DWORD
-EXTRN _M_LoadFromSaveGame:DWORD
 EXTRN _myargc:WORD
 EXTRN _myargv:WORD
 EXTRN _autostart:BYTE
@@ -1159,7 +1158,10 @@ jnl   skip_loadgame_param
     sal   ax, 1
     xchg  ax, si
     mov   ax, word ptr ds:[bx + si]
-    call  dword ptr ds:[_M_LoadFromSaveGame]
+    db    09Ah
+    dw    M_LOADFROMSAVEGAMEOFFSET, MENU_CODE_AREA_SEGMENT
+
+
     call  Z_QuickMapPhysics_
 
 skip_loadgame_param:

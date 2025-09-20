@@ -88,10 +88,11 @@
 #define maskedtexrepeat                   (*((int16_t __near*)               (_NULL_OFFSET + 0x0006)))
 #define segloopcachedsegment			  (((segment_t __near*)              (_NULL_OFFSET + 0x0008)))
 #define segloopheightvalcache			  (((uint8_t __near*)                (_NULL_OFFSET + 0x000C)))
+#define eventtail						  (*((int8_t __near*)                (_NULL_OFFSET + 0x000E)))
+#define eventhead						  (*((int8_t __near*)                (_NULL_OFFSET + 0x000F)))
 
 
 
-// 0E-0F free
 
 
 //spanfunc_prt[4]
@@ -783,8 +784,6 @@ extern uint16_t             renderplayermaskedtics;
 extern uint16_t             cachedrenderplayertics;
 #endif
 
-extern int8_t		        eventhead;
-extern int8_t		        eventtail;
 
 
 
@@ -803,12 +802,7 @@ extern void (__far* AM_Drawer)();
 extern void (__far* S_UpdateSounds)();
 extern void (__far* S_Start	)();
 extern void (__far* S_StartSound)();
-
-
-
 extern void (__far* M_Init)();
-extern boolean (__far* M_Responder)();
-extern void (__far* M_LoadFromSaveGame)();
 
 
 

@@ -130,14 +130,7 @@ _w_end:
 dw (OFFSET _w_end - OFFSET _w_ready) / 2
 
 
-_st_mapcheat_string1:
-db "ang=0x", 0
-_st_mapcheat_string2:
-db ";x,y=(0x", 0
-_st_mapcheat_string3:
-db ",0x", 0
-_st_mapcheat_string4:
-db ")", 0
+
 
 _st_face_priority:
 db 0
@@ -1417,102 +1410,6 @@ jmp   exit_st_responder_return
 
 ENDP
 
-PROC    ST_PrepareMapPosCheat_ NEAR
-PUBLIC  ST_PrepareMapPosCheat_
-; st_responder up above does not playermobjpos in memory. deferred calculation...
-
-PUSHA_NO_AX_OR_BP_MACRO
-push  bp
-mov   bp, sp
-sub   sp, 0Ah
-
-mov   di, sp
-
-mov   si, OFFSET _player_message_string
-les   bx, dword ptr ds:[_playerMobj_pos]
-
-les   ax, dword ptr es:[bx + MOBJ_POS_T.mp_angle + 0]
-mov   dx, es
-mov   cx, 1 ; isLong
-mov   bx, di
-call  locallib_printhex_
-
-push  ss
-push  di
-mov   cx, cs
-mov   bx, OFFSET _st_mapcheat_string1
-mov   dx, ds
-mov   ax, si
-call  combine_strings_
-
-push  cs
-mov   ax, OFFSET _st_mapcheat_string2
-push  ax
-
-mov   cx, ds
-mov   bx, si
-mov   dx, ds
-mov   ax, si
-call  combine_strings_
-
-les   bx, dword ptr ds:[_playerMobj_pos]
-les   ax, dword ptr es:[bx + MOBJ_POS_T.mp_x + 0]
-mov   dx, es
-mov   cx, 1 ; isLong
-mov   bx, di
-call  locallib_printhex_
-
-push  ss
-push  di
-mov   cx, ds
-mov   bx, si
-mov   dx, ds
-mov   ax, si
-call  combine_strings_
-
-push  cs
-mov   ax, OFFSET _st_mapcheat_string3
-push  ax
-
-mov   cx, ds
-mov   bx, si
-mov   dx, ds
-mov   ax, si
-call  combine_strings_
-
-les   bx, dword ptr ds:[_playerMobj_pos]
-les   ax, dword ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-mov   dx, es
-mov   cx, 1 ; isLong
-mov   bx, di
-call  locallib_printhex_
-
-push  ss
-push  di
-mov   cx, ds
-mov   bx, si
-mov   dx, ds
-mov   ax, si
-call  combine_strings_
-
-push  cs
-mov   ax, OFFSET _st_mapcheat_string4  ; todo smart push ax macro for push immediate?
-push  ax
-
-mov   cx, ds
-mov   bx, si
-mov   dx, ds
-xchg  ax, si
-
-call  combine_strings_
-mov   byte ptr ds:[_domapcheatthisframe], 0
-
-LEAVE_MACRO
-POPA_NO_AX_OR_BP_MACRO
-ret
-
-
-ENDP
 
 PROC    ST_Drawer_ NEAR
 PUBLIC  ST_Drawer_

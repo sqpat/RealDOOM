@@ -73,8 +73,6 @@ uint16_t renderplayermaskedtics = 0;
 uint16_t cachedrenderplayertics = 0;
 #endif
 
-int8_t		eventhead;
-int8_t		eventtail;
 
 void (__far* P_SpawnMapThing)() =            ((void (__far *)(mapthing_t mthing, int16_t key))        (MK_FP(physics_highcode_segment, 		   P_SpawnMapThingOffset)));
 void (__far* R_WriteBackViewConstantsSpanCall)()  =   				      	  ((void    (__far *)())  (MK_FP(spanfunc_jump_lookup_segment, 	   R_WriteBackViewConstantsSpan24Offset)));
@@ -89,8 +87,6 @@ void (__far* S_UpdateSounds)() =               ((void (__far *)())     	        
 void (__far* S_Start)() =                      ((void (__far *)())     	                              (MK_FP(physics_highcode_segment,         S_StartOffset)));
 void (__far* S_StartSound)() =                 ((void (__far *)(uint16_t ax, uint16_t dx))     	      (MK_FP(physics_highcode_segment,         S_StartSoundFarOffset)));
 void (__far* M_Init)() =                      ((void (__far *)())     	                              (MK_FP(menu_code_area_segment,           M_InitOffset)));
-boolean (__far* M_Responder)() =              ((boolean (__far *)(event_t __far* ev))     	          (MK_FP(menu_code_area_segment,           M_ResponderOffset)));
-void (__far* M_LoadFromSaveGame)() =          ((void (__far *)(int8_t i))     	                      (MK_FP(menu_code_area_segment,           M_LoadFromSaveGameOffset)));
 
 
 

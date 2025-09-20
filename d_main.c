@@ -86,7 +86,9 @@
 
 void __near G_BuildTiccmd(int8_t index);
 void __near D_DoAdvanceDemo (void);
-
+void __near G_BeginRecording (void);
+void __near D_ProcessEvents (void);
+void __near D_Display (void);
 
 
 
@@ -96,12 +98,13 @@ void __near D_DoAdvanceDemo (void);
 //
 
 
-boolean __near G_Responder (event_t __far* ev);
-void    __near ST_PrepareMapPosCheat();
+// boolean __near G_Responder (event_t __far* ev);
+// void    __near ST_PrepareMapPosCheat();
 //
 // D_ProcessEvents
 // Send all the events of the given timestamp down the responder chain
 //
+/*
 void __near D_ProcessEvents (void) {
 	if (eventtail != eventhead){
 	    
@@ -124,7 +127,7 @@ void __near D_ProcessEvents (void) {
 		}
 	}
 }
-
+*/
 
 
 

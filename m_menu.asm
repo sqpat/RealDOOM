@@ -2169,9 +2169,6 @@ jmp   loop_next_char_to_write
 
 ENDP
 
-exit_m_responder_return_false:
-xor   ax, ax
-jmp   exit_m_responder
 savestringenter_is_escape:
 mov   byte ptr cs:[_saveStringEnter], cl
 mov   di, bx
@@ -2201,16 +2198,13 @@ jmp   exit_m_responder_return_1
 PROC    M_Responder_ FAR
 PUBLIC  M_Responder_
 
-push  bx
-push  cx
-push  si
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
 xchg  ax, si
 mov   es, dx  ; events_segment
 xor   cx, cx
 mov   ax, word ptr es:[si + EVENT_T.event_data1]
 test  ah, ah  ; test for 0 for EV_KEYDOWN
-jne   exit_m_responder_return_false
+jne   exit_m_responder  ; carry reset by test, return false
 cmp   byte ptr cs:[_saveStringEnter], cl ; 0
 je    not_savestringenter
 xchg  ax, bx
@@ -2258,12 +2252,9 @@ cbw
 mov   word ptr cs:[di], ax
 
 exit_m_responder_return_1:
-mov   al, 1
+stc
 exit_m_responder:
-pop   di
-pop   si
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 retf  
 
 savestringenter_is_enter:
@@ -2439,12 +2430,8 @@ db    09Ah
 dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 
-mov   al, 1
-
-pop   di
-pop   si
-pop   cx
-pop   bx
+stc
+POPA_NO_AX_OR_BP_MACRO
 retf  
 menu_is_active:
 
@@ -2569,11 +2556,8 @@ dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 
 exit_m_responder_return_1_3:
-mov   al, 1
-pop   di
-pop   si
-pop   cx
-pop   bx
+stc
+POPA_NO_AX_OR_BP_MACRO
 retf  
 do_menu_key_default:
 
@@ -2613,11 +2597,8 @@ cmp   si, dx
 jl    check_next_alphakey_2
 
 exit_m_responder_return_0:
-xor   ax, ax
-pop   di
-pop   si
-pop   cx
-pop   bx
+clc
+POPA_NO_AX_OR_BP_MACRO
 retf  
 
 force_hud_update:
@@ -2669,6 +2650,10 @@ jmp   play_sound_and_exit_m_responder_return_1
 ENDP
 
 
+
+
+
+
 PROC    M_StartControlPanel_ FAR
 PUBLIC  M_StartControlPanel_
 
@@ -2686,7 +2671,6 @@ ENDP
 
 
 SKULLXOFF = 32
-
 
 
 PROC    M_Drawer_ FAR

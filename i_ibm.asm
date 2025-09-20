@@ -32,7 +32,7 @@ EXTRN I_SetPalette_:FAR
 .DATA
 
 EXTRN _novideo:BYTE
-EXTRN _eventhead:WORD
+
 
 ; TODO ENABLE_DISK_FLASH
 

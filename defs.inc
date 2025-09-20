@@ -57,7 +57,9 @@ _seglooptexrepeat    = 				_NULL_OFFSET + 00004h
 _maskedtexrepeat =                  _NULL_OFFSET + 00006h
 _segloopcachedsegment  = 			_NULL_OFFSET + 00008h
 _segloopheightvalcache = 			_NULL_OFFSET + 0000Ch
-;// 0E-0F free
+_eventtail =					  	_NULL_OFFSET + 0000Eh
+_eventhead =					  	_NULL_OFFSET + 0000Fh
+
 
 _spanfunc_prt = 					_NULL_OFFSET + 00010h
 _spanfunc_destview_offset = 		_NULL_OFFSET + 00018h
