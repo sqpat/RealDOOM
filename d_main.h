@@ -25,7 +25,7 @@
 void __near D_DoomMain (void);
 
 // Called by IO functions when input is detected.
-void __near D_PostEvent (event_t __far* ev);
+void __near D_PostEvent (int16_t data1, int16_t data2);
 
 
 //

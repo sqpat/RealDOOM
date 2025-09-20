@@ -94,8 +94,9 @@ void __near D_DoAdvanceDemo (void);
 // D_PostEvent
 // Called by the I/O functions when input is detected
 //
-void __near D_PostEvent (event_t __far* ev) {
-    events[eventhead] = *ev;
+void __near D_PostEvent (int16_t data1, int16_t data2) {
+    events[eventhead].data1 = data1;
+    events[eventhead].data2 = data2;
     eventhead = (++eventhead)&(MAXEVENTS-1);
 }
 

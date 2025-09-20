@@ -89,28 +89,32 @@ PUBLIC  I_ReadMouse_
 push    bx
 push    cx
 push    dx
-push    di
-push    bp
-mov     bp, sp
-sub     sp, SIZE EVENT_T
-mov     ax, 0Bh
+
+
+mov     ax, 03h
 int     033h
 
+; 03h
+;on return:
+;	CX = horizontal (X) position  (0..639)
+;	DX = vertical (Y) position  (0..199)
+;	BX = button status:
+
+mov     ax, 0Bh
+int     033h
+; 0Bh
+;on return:
+;	CX = horizontal mickey count (-32768 to 32767)
+;	DX = vertical mickey count (-32768 to 32767)
+;	- count values are 1/200 inch intervals (1/200 in. = 1 mickey)
+
 xchg    ax, bx
-lea     di, [bp - SIZE EVENT_T + EVENT_T.event_data1]
-push    ss
-pop     es
-mov     ah, EV_MOUSE
-stosw
-xchg    ax, cx 
-stosw   ; data 2
+mov     ah, EV_MOUSE  ; ax has data1: buttons in al and EV_MOUSE in ah
+mov     dx, cx        ; dx gets data2: horizontal count
 
-
-mov     ax, sp
 call    D_PostEvent_
 
-LEAVE_MACRO
-pop     di
+
 pop     dx
 pop     cx
 pop     bx

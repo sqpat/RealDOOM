@@ -266,7 +266,7 @@ void __near I_ReadMouse(void) {
 
 	ev.data2 = regresult.w.cx;
 	//ev.data3 = -out.x.dx; // dont use mouse forward/back movement
-	ev.data3 = 0;
+
 	D_PostEvent(&ev);
 
 

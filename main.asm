@@ -452,8 +452,8 @@ ENDP
 ; todo revisit and optimize a bit better.
 
 
-do_exit:
-LEAVE_MACRO
+do_starttic_exit:
+
 pop     dx
 pop     bx
 ret
@@ -463,9 +463,6 @@ PUBLIC I_StartTic_
 
 push bx
 push dx
-push bp
-mov  bp, sp
-sub  sp, SIZE EVENT_T ; built event stored in stack
 
 cmp  byte ptr ds:[_mousepresent], 0
 je   no_mouse
@@ -476,7 +473,7 @@ no_mouse:
 loop_next_char:
 mov  al, byte ptr cs:[_kbdtail]
 cmp  al, byte ptr cs:[_kbdhead]
-jae  do_exit
+jae  do_starttic_exit
 cmp  al, KBDQUESIZE
 jbe  kbpos_ready
 cmp  byte ptr cs:[_kbdhead], KBDQUESIZE
@@ -527,15 +524,13 @@ jne  not_c5_press
 cmp  byte ptr cs:[bx + _keyboardque], 09Dh
 je   is_9D_press
 not_c5_press:
-test al, 080h   ; keyup/down
-mov  ah, EV_KEYDOWN
-je   is_keydown
-mov  ah, EV_KEYUP
+cbw      ; ah gets bit 8 status.
+neg  ah  ; 0 -> 0, -1 -> 1 = KEYUP
 is_keydown:
-mov  byte ptr [bp - SIZE EVENT_T + EVENT_T.event_evtype], ah
+
 
 check_pressed_key:
-and  ax, 07Fh                            ; keycode
+and  al, 07Fh                            ; keycode
 
 cmp  al, SC_UPARROW
 je   case_uparrow
@@ -546,21 +541,23 @@ je   case_rightarrow
 cmp  al, SC_LEFTARROW
 je   case_leftarrow
 default_case_key:
-xchg ax, bx
+xor  bx, bx
+mov  bl, al
 mov  al, byte ptr cs:[bx + _scantokey]
+
 key_selected:
-mov  byte ptr [bp - SIZE EVENT_T + EVENT_T.event_data1], al
+; al has data1/key
+; ah has eventtype
 call_post_event:
-mov  ax, sp
-mov  dx, ds
+cwd  ; dx/data2 0 no matter what
 call D_PostEvent_
 jmp  loop_next_char
 case_uparrow:
 mov  al, KEY_UPARROW
 jmp  key_selected
 is_9D_press:
-mov  word ptr [bp - SIZE EVENT_T + EVENT_T.event_data1], KEY_PAUSE + (EV_KEYDOWN SHL 8)
-;mov  byte ptr [bp - SIZE EVENT_T + EVENT_T.event_evtype], EV_KEYDOWN
+mov  ax, KEY_PAUSE + (EV_KEYDOWN SHL 8)
+
 jmp  call_post_event
 case_downarrow:
 mov  al, KEY_DOWNARROW
@@ -1848,12 +1845,12 @@ jmp   exit_gresponder_return_al
 
 handle_game_mouse_event:
 mov   ah, al
-mov   bx, ax ; backup button
+mov   dx, ax ; backup button
 mov   si, word ptr ds:[_mousebuttons]
 and   ax, 00201h
 mov   word ptr ds:[si], ax ; write two buttons;
 
-xchg  ax, bx  ; get another copy of button
+xchg  ax, dx  ; get another copy of button
 and   ax, 4   ; zero ah
 mov   byte ptr ds:[si + 2], al
 mov   al, byte ptr ds:[_mouseSensitivity]
