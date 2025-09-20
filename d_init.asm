@@ -39,6 +39,7 @@ EXTRN Z_QuickMapPhysics_:FAR
 EXTRN Z_LoadBinaries_:NEAR
 EXTRN Z_SetOverlay_:FAR
 EXTRN Z_QuickMapStatus_:FAR
+EXTRN Z_QuickMapDemo_:FAR
 
 
 EXTRN I_Error_:FAR
@@ -63,11 +64,16 @@ EXTRN DEBUG_PRINT_NOARG_:NEAR
 EXTRN DEBUG_PRINT_:NEAR
 EXTRN M_CheckParm_CS_:NEAR
 EXTRN combine_strings_:NEAR
+EXTRN I_SetPalette_:FAR
 
 EXTRN locallib_strcpy_:NEAR
 
 
 .DATA
+
+EXTRN _demo_p:WORD
+EXTRN _novideo:BYTE
+EXTRN _grmode:BYTE
 
 EXTRN _M_Init:DWORD
 EXTRN _M_LoadFromSaveGame:DWORD
@@ -1339,6 +1345,149 @@ pop     bx
 
 ret
 ENDP
+
+
+PROC   I_InitGraphics_ NEAR
+PUBLIC I_InitGraphics_
+
+cmp     byte ptr ds:[_novideo], 0
+jne     return_early_near
+
+push   bx
+push   cx
+push   dx
+push   di
+
+
+mov    ax, 013h
+cwd
+xor    bx, bx
+int    010h
+mov    ax, 1
+cwd
+mov    byte ptr ds:[_grmode], al ; true
+mov    word ptr ds:[_currentscreen+0], dx 
+mov    cx, 0A000h
+mov    es, cx
+mov    word ptr ds:[_currentscreen+2], cx 
+mov    word ptr ds:[_destscreen+2], cx 
+mov    ch, 040h
+mov    word ptr ds:[_destscreen+0], cx 
+
+mov    dx, SC_INDEX  ; 03C4h
+mov    al, 4 ; SC_MEMMODE
+out    dx, al
+
+inc    dx
+in     al, dx
+and    al, NOT 8
+or     al, 4
+out    dx, al   ; outp(SC_INDEX + 1, (inp(SC_INDEX + 1)&~8) | 4);
+
+mov    dx, GC_INDEX ; 03Ceh
+mov    al, GC_MODE  ; 5
+out    dx, al
+
+inc    dx
+in     al, dx
+and    al, NOT 13
+out    dx, al   ; GC_INDEX + 1, inp(GC_INDEX + 1)&~0x13);
+
+dec    dx
+mov    al , 6; GC_MISCELLANEOUS
+out    dx, al
+
+inc    dx
+in     al, dx
+and    al, NOT 2
+out    dx, al   ; outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~2);
+
+mov    dx, SC_INDEX  ; 03C4h
+mov    ax, 0F02h
+out    dx, ax
+
+; cx still 04000
+shl    cx, 1
+xor    ax, ax
+mov    di, ax
+rep    stosw        ; FAR_memset(currentscreen, 0, 0xFFFFu);
+
+mov    dx, CRTC_INDEX
+mov    al, 20; CRTC_UNDERLINE
+out    dx, al
+
+inc    dx
+in     al, dx
+and    al, NOT 040h
+out    dx, al   ; inp(CRTC_INDEX + 1)&~0x40
+
+dec    dx
+mov    al, 23; CRTC_MODE
+out    dx, al
+
+inc    dx
+in     al, dx
+or     al, 040h
+out    dx, al   ; inp(CRTC_INDEX + 1) | 0x40)
+
+mov    dx, GC_INDEX
+mov    al, GC_READMAP
+out    dx, al
+
+xor    ax, ax
+call   I_SetPalette_
+
+; call I_InitDiskFlash_  ; todo
+
+pop    di
+pop    dx
+pop    cx
+pop    bx
+return_early_near:
+ret
+ENDP
+
+DEMO_SEGMENT = 05000h
+VERSION = 109 
+
+PROC   G_BeginRecording_ NEAR
+PUBLIC G_BeginRecording_
+
+push   di
+call   Z_QuickMapDemo_
+mov    ax, DEMO_SEGMENT
+mov    es, ax
+xor    di, di
+mov    al, VERSION
+stosb
+mov    al, byte ptr ds:[_gameskill]
+stosb
+mov    ax, word ptr ds:[_gameepisode]
+stosb
+mov    al, ah ; gamemap
+stosb
+xor    ax, ax
+stosb
+mov    al, byte ptr ds:[_respawnparm]
+stosb
+mov    al, byte ptr ds:[_fastparm]
+stosb
+mov    al, byte ptr ds:[_nomonsters]
+stosb
+mov    al, ah ; 0
+stosb
+inc    ax     ; true
+stosw   
+dec    ax     ; true
+stosw   
+mov    word ptr ds:[_demo_p], di
+call   Z_QuickMapPhysics_
+
+pop    di
+
+ret
+ENDP
+
 
 
 PROC    D_INIT_ENDMARKER_ NEAR

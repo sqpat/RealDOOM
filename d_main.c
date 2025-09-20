@@ -605,7 +605,6 @@ void __near D_Display (void) {
 	// fputc(c, stdout);
 	putchar(c);
  }
- */
 
 void __near G_BeginRecording (void)  { 
 	byte __far* demo_addr = (byte __far*)MK_FP(DEMO_SEGMENT, demo_p);
@@ -632,6 +631,7 @@ void __near G_BeginRecording (void)  {
 	Z_QuickMapPhysics();
 
 } 
+*/
 
 //
 //  D_DoomLoop
@@ -651,12 +651,6 @@ void __near D_DoomLoop (void) {
 #endif
 	void (__far* S_ActuallyChangeMusic)() = 									  ((void    (__far *)())     							(MK_FP(code_overlay_segment, 		 	 S_ActuallyChangeMusicOffset)));
 
-    if (demorecording){
-        G_BeginRecording ();
-	}
-
-
-    I_InitGraphics ();
 
     while (1) {
 		// process one or more tics
@@ -884,6 +878,7 @@ void __near Z_ClearDeadCode() {
 	//11470          - 08/26/25
 	//9798           - 09/12/25	   ; note 8196 is "max". or "min". there are probably some funcs that can be moved into init like wad or file funcs only used in init though.
 	//9398           - 09/13/25	
+	//9602           - 09/20/25	   - added some extra code into that region. still need to do z_init, p_init
 
 	uint16_t size = endaddr - startaddr-16;
 	FILE* fp;
@@ -916,6 +911,14 @@ void __near D_DoomMain2(void);
 #ifdef DETAILED_BENCH_STATS
 	 cachedtics = ticcount;
 #endif
+
+
+    if (demorecording){
+        G_BeginRecording ();
+	}
+
+    I_InitGraphics ();
+
 	 Z_ClearDeadCode();
 
 	 D_DoomLoop();  // never returns
