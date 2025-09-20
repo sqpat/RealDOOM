@@ -741,7 +741,7 @@ jnl   not_warp
 
     ; atoi on 1-2 numbers al/ah
         test  ah, ah        ; if null terminated 2nd char then handle a single digit
-        je    handle_two_digit
+        jne   handle_two_digit
         handle_single_digit:
         mov   ah, '0'
         handle_two_digit:

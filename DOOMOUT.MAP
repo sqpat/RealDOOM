@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/19 13:11:58
+Created on:       25/09/19 14:45:55
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -39,7 +39,7 @@ d_main_TEXT            CODE           AUTO           0000:2790       000003ac
 D_NET_TEXT             CODE           AUTO           0000:2b3c       000000b3
 g_game_TEXT            CODE           AUTO           0000:2bf0       00000999
 M_MISC_TEXT            CODE           AUTO           0000:358a       000000e7
-ST_STUFF_TEXT          CODE           AUTO           0000:3672       000009f1
+ST_STUFF_TEXT          CODE           AUTO           0000:3672       000009f2
 HU_STUFF_TEXT          CODE           AUTO           0000:4064       00000168
 HU_LIB_TEXT            CODE           AUTO           0000:41cc       00000141
 D_ALGO_TEXT            CODE           AUTO           0000:430e       0000002e
@@ -282,13 +282,13 @@ Module: st_stuff.obj(st_stuff.ASM)
 0000:3b3b*     STlib_updateMultIcon_
 0000:3ab7*     ST_doPaletteStuff_
 0000:3c81*     STlib_updatePercent_
-0000:4019      ST_Drawer_
+0000:401a      ST_Drawer_
 0000:3754      _w_arms
 0000:367a      _st_faceindex
 0000:381b      _st_palette
 0000:36c4      _armsbgarray
 0000:37d8      _w_maxammo
-0000:3f79      ST_PrepareMapPosCheat_
+0000:3f7a      ST_PrepareMapPosCheat_
 0000:36bc      _tallpercent
 0000:3740      _w_health
 0000:381f*     ST_refreshBackground_
@@ -304,7 +304,7 @@ Module: st_stuff.obj(st_stuff.ASM)
 0000:371a      _keys
 0000:3678      _st_oldhealth
 0000:3672*     ST_STUFF_STARTMARKER_
-0000:4063*     ST_STUFF_ENDMARKER_
+0000:4064*     ST_STUFF_ENDMARKER_
 0000:3784      _w_faces
 0000:374c      _w_armsbg
 0000:36c6      _faces
@@ -821,4 +821,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  e450 (58448.)
 Entry point address: 0000:ac7c
-Link time: 00:00.19
+Link time: 00:00.75

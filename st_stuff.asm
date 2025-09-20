@@ -1386,10 +1386,10 @@ dont_inc_max_epsd:
 ;        G_DeferedInitNew(gameskill, epsd, map);
 ;    }
 
-test  al, al
-jle   exit_st_responder_return
 cmp   byte ptr ds:[_commercial], 0
 jne   first_check_fail
+test  al, al
+jle   exit_st_responder_return
 cmp   al, cl
 jge   exit_st_responder_return
 test  ah, ah
@@ -1399,7 +1399,7 @@ jl    checks_passed
 
 first_check_fail:
 ; implied commercial is the other result
-cmp   al, 40
+cmp   ah, 40
 jg    exit_st_responder_return
 checks_passed:
 
