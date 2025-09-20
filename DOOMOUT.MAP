@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/20 07:50:36
+Created on:       25/09/20 08:05:24
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -38,6 +38,7 @@ I_IBM_TEXT             CODE           AUTO           0000:276a       0000006a
 d_main_TEXT            CODE           AUTO           0000:27e0       0000024b
 D_NET_TEXT             CODE           AUTO           0000:2a2c       000000b3
 g_game_TEXT            CODE           AUTO           0000:2ae0       00000999
+G_DEMO_TEXT            CODE           AUTO           0000:347a       00000000
 M_MISC_TEXT            CODE           AUTO           0000:347a       000000e7
 ST_STUFF_TEXT          CODE           AUTO           0000:3562       0000093c
 HU_STUFF_TEXT          CODE           AUTO           0000:3e9e       00000168
@@ -249,6 +250,9 @@ Module: g_game.obj(C:\REALDOOM\g_game.c)
 0000:3326+     G_DoPlayDemo_
 0000:33b4      G_CheckDemoStatus_
 0000:346c      OutOfThinkers_
+Module: g_demo.obj(g_demo.ASM)
+0000:347a*     G_DEMO_ENDMARKER_
+0000:347a*     G_DEMO_STARTMARKER_
 Module: m_misc.obj(m_misc.ASM)
 0000:34b3      M_WriteFile_
 0000:34e1      M_ReadFile_
@@ -282,9 +286,9 @@ Module: st_stuff.obj(st_stuff.ASM)
 0000:36c8      _w_maxammo
 0000:35ac      _tallpercent
 0000:3630      _w_health
+0000:36f9*     ST_refreshBackground_
 0000:35b0      _faceback
 0000:36f8      _st_stopped
-0000:36f9*     ST_refreshBackground_
 0000:356c      _shortnum
 0000:3626      _w_ready
 0000:36a0      _w_ammo
@@ -814,4 +818,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  e3b0 (58288.)
 Entry point address: 0000:abdc
-Link time: 00:00.20
+Link time: 00:00.75

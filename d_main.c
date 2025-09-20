@@ -898,9 +898,6 @@ void __near D_DoomMain2(void);
 
 	 D_DoomMain2();
 
-#ifdef DETAILED_BENCH_STATS
-	 cachedtics = ticcount;
-#endif
 
 
     if (demorecording){

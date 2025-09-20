@@ -55,6 +55,7 @@ GLOBOBJS = &
  d_net.obj &
  g_setup.obj &
  g_game.obj &
+ g_demo.obj &
  m_misc.obj &
  p_init.obj &
 
