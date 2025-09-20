@@ -93,41 +93,39 @@ call      dword ptr ds:[_OutOfThinkers_addr]
 found_thinker:
 mov       word ptr ds:[_currentThinkerListHead], ax
 
-add       si, word ptr ds:[_thinkerlist]
+xchg      ax, si  ; get ax back later from si...
+add       ax, word ptr ds:[_thinkerlist]
 
-; initalizae the associated MOBJPOS for this thinker.
-; i dont like this because in theory the thing creating the thinker doesnt have buggy assumptions of default 0 memory...
-; so todo: improve
+; initalize the associated MOBJPOS_T, MOBJ_T memory for this thinker.
 push      ds
 pop       es
+stosw       ;	thinkerlist[index].prevFunctype = temp + thinkfunc;
+xor       ax, ax
+stosw       ;	thinkerlist[index].next = 0;
 push      di
 push      cx
-push      ax
+
+mov       cx, ((SIZE MOBJ_T) - 4) / 2
+rep       stosw
 
 mov       dx, SIZE MOBJ_POS_T
 mul       dx
 mov       dx, MOBJPOSLIST_6800_SEGMENT
 mov       es, dx
 xchg      ax, di
-xor       ax, ax
-mov       cx, (SIZE MOBJ_POS_T) / 2
+mov       ax, (SIZE MOBJ_POS_T) / 2
+xchg      ax, cx  ; cx was zero after rep stosw above
 rep       stosw
 
 
-pop       ax ; retrieve
 pop       cx
 pop       di
 
-;	thinkerlist[index].next = 0;
-;	thinkerlist[index].prevFunctype = temp + thinkfunc;
+xchg      ax, si ; get orig ax back
 
-push      ds
-pop       es
-xchg      ax, si
-stosw
-xor       ax, ax
-stosw
-xchg      ax, si
+
+
+
 
 
 

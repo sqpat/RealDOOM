@@ -784,32 +784,13 @@ ELSE
     xchg      ax, di
 ENDIF
 
-;	memset(mobj, 0, sizeof(mobj_t));
-;	FAR_memset(mobj_pos, 0, sizeof (mobj_pos_t));
 
-
-
-xchg      si, di
-xor       ax, ax
-push      ds
-pop       es
-mov       cx, SIZEOF_MOBJ_T / 2
-rep stosw 
-
-xchg      si, di
-
-mov       cx, SIZEOF_MOBJ_POS_T / 2
 mov       dx, MOBJPOSLIST_6800_SEGMENT
 mov       es, dx
 
-rep stosw 
-
-sub       di, SIZEOF_MOBJ_POS_T
-sub       si, SIZEOF_MOBJ_T
-
 
 mov       cl, byte ptr [bp + 0Ch]  ; type
-mov       al, SIZEOF_MOBJINFO_T
+mov       al, SIZE MOBJINFO_T
 mul       cl
 
 add       ax, OFFSET _mobjinfo
