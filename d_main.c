@@ -127,7 +127,6 @@ void __near D_ProcessEvents (void) {
 		}
 	}
 }
-*/
 
 
 
@@ -135,23 +134,21 @@ void __far getStringByIndex(int16_t stringindex, int8_t __far* returndata) {
 
 	uint16_t stringoffset = stringoffsets[stringindex];
 	uint16_t length = stringoffsets[stringindex + 1] - stringoffset;
-	/*
-	if (stringindex > MAX_STRINGS) {
-		I_Error("bad string index! %li %i", gametic, stringindex);
-	}
-	*/
-	/*
-	int16_t index;
-
-	if (stringoffset < stringbuffersizes[0]) {
-		index = 0;
 	
-	} else {
-		// todo havent actually tested this..
-		index = 1;
-		stringoffset -= stringbuffersizes[0];
-	}
-		*/
+	// if (stringindex > MAX_STRINGS) {
+	// 	I_Error("bad string index! %li %i", gametic, stringindex);
+	// }
+	// int16_t index;
+
+	// if (stringoffset < stringbuffersizes[0]) {
+	// 	index = 0;
+	
+	// } else {
+	// 	// todo havent actually tested this..
+	// 	index = 1;
+	// 	stringoffset -= stringbuffersizes[0];
+	// }
+
 
 
  
@@ -165,7 +162,6 @@ void __far getStringByIndex(int16_t stringindex, int8_t __far* returndata) {
 
 
 
-/*
 
 fixed_t32 FixedDiv2 (fixed_t32	a, fixed_t32	b
 	//,int8_t* file, int32_t line

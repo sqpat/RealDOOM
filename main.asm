@@ -3641,6 +3641,55 @@ ret
 
 ENDP
 
+;void __far getStringByIndex(int16_t stringindex, int8_t __far* returndata) {
+
+; todo consider doubling the constants to be pre-shifted
+
+STRINGDATA_SEGMENT = 06000h
+STRINGOFFSETS_OFFSET = 03C40h
+
+
+PROC    getStringByIndex_ FAR
+PUBLIC  getStringByIndex_
+
+
+push  si
+push  di
+
+sal   ax, 1
+add   ax, STRINGOFFSETS_OFFSET
+xchg  ax, si
+
+mov   ax, STRINGDATA_SEGMENT
+mov   ds, ax
+
+mov   es, cx
+mov   di, bx
+
+lodsw ; stringoffset
+xchg  ax, cx
+lodsw ; length
+sub   ax, cx
+xchg  ax, cx  ; cx has length in bytes
+xchg  ax, si  ; si has offset
+
+shr   cx, 1
+rep   movsw
+adc   cx, cx
+rep   movsb
+xor   ax, ax
+stosb ; null term
+
+push  ss
+pop   ds
+
+pop   di
+pop   si
+
+retf
+ENDP
+
+
 
 PROC    D_MAIN_ENDMARKER_ NEAR
 PUBLIC  D_MAIN_ENDMARKER_
