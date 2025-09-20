@@ -56,7 +56,7 @@ PROC P_CreateThinker_ NEAR
 PUBLIC P_CreateThinker_
 
 
-push      bx
+push      di
 push      si
 mov       si, ax
 
@@ -70,21 +70,21 @@ inc       ax
 cmp       ax, dx
 je        error_no_thinker_found
 
-MUL_SIZEOF_THINKER_T bx ax
+MUL_SIZEOF_THINKER_T di ax
 
 
 
-add       bx, OFFSET _thinkerlist
+add       di, OFFSET _thinkerlist
 loop_check_next_thinker:
 cmp       ax, MAX_THINKERS
 jne       use_current_thinker_index
 xor       ax, ax
-mov       bx, OFFSET _thinkerlist
+mov       di, OFFSET _thinkerlist
 use_current_thinker_index: 
-cmp       word ptr ds:[bx], MAX_THINKERS
+cmp       word ptr ds:[di], MAX_THINKERS
 je        found_thinker
 inc       ax
-add       bx, SIZEOF_THINKER_T
+add       di, SIZEOF_THINKER_T
 cmp       ax, dx
 jne       loop_check_next_thinker
 error_no_thinker_found:
@@ -95,8 +95,40 @@ mov       word ptr ds:[_currentThinkerListHead], ax
 
 add       si, word ptr ds:[_thinkerlist]
 
-mov       word ptr ds:[bx], si
-mov       word ptr ds:[bx+2], 0
+; initalizae the associated MOBJPOS for this thinker.
+; i dont like this because in theory the thing creating the thinker doesnt have buggy assumptions of default 0 memory...
+; so todo: improve
+push      ds
+pop       es
+push      di
+push      cx
+push      ax
+
+mov       dx, SIZE MOBJ_POS_T
+mul       dx
+mov       dx, MOBJPOSLIST_6800_SEGMENT
+mov       es, dx
+xchg      ax, di
+xor       ax, ax
+mov       cx, (SIZE MOBJ_POS_T) / 2
+rep       stosw
+
+
+pop       ax ; retrieve
+pop       cx
+pop       di
+
+;	thinkerlist[index].next = 0;
+;	thinkerlist[index].prevFunctype = temp + thinkfunc;
+
+push      ds
+pop       es
+xchg      ax, si
+stosw
+xor       ax, ax
+stosw
+xchg      ax, si
+
 
 
 ;imul      si, word ptr ds:[_thinkerlist], SIZEOF_THINKER_T
@@ -108,8 +140,6 @@ MUL_SIZEOF_THINKER_T si, dx
 pop       dx
 
 
-;	thinkerlist[index].next = 0;
-;	thinkerlist[index].prevFunctype = temp + thinkfunc;
 ;	thinkerlist[temp].next = index;
 
 mov       word ptr ds:[si + _thinkerlist + THINKER_T.t_next], ax
@@ -118,10 +148,10 @@ mov       word ptr ds:[si + _thinkerlist + THINKER_T.t_next], ax
 
 mov       word ptr ds:[_thinkerlist], ax
 
-xchg      ax, bx
-add       ax, 4
+xchg      ax, di
+;add       ax, 4 ; stosw handled it
 pop       si
-pop       bx
+pop       di
 ret      
 
 ENDP

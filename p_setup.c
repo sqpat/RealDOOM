@@ -1016,6 +1016,7 @@ void __near Z_FreeConventionalAllocations() {
 	//FAR_memset(MK_FP(0x7000, 0), 0, 65535);
 
 	//reset texturee cache
+	// FAR_memset(mobjposlist_6800, 0x00, size_mobjposlist); // todo this fix better. this makes a martypc bug go away due to unitinitialized memory, but what wasnt written to?
 	FAR_memset(compositetexturepage, 0xFF, sizeof(uint8_t) * (MAX_TEXTURES));
 	FAR_memset(compositetextureoffset,0xFF, sizeof(uint8_t) * (MAX_TEXTURES));
 	memset(usedtexturepagemem, 00, sizeof(uint8_t) * NUM_TEXTURE_PAGES);
