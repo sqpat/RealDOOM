@@ -27,12 +27,12 @@ EXTRN locallib_printf_:NEAR
 EXTRN I_Shutdown_:NEAR
 EXTRN exit_:FAR
 EXTRN I_SetPalette_:FAR
-EXTRN D_PostEvent_:NEAR
+
 
 .DATA
 
-EXTRN _grmode:BYTE
 EXTRN _novideo:BYTE
+EXTRN _eventhead:WORD
 
 ; TODO ENABLE_DISK_FLASH
 
@@ -110,10 +110,24 @@ int     033h
 
 xchg    ax, bx
 mov     ah, EV_MOUSE  ; ax has data1: buttons in al and EV_MOUSE in ah
-mov     dx, cx        ; dx gets data2: horizontal count
+; cx has data2: horizontal count
 
-call    D_PostEvent_
+;call    D_PostEvent_
+push di
+mov  dx, EVENTS_SEGMENT
+mov  es, dx
+cwd  ; 0 no matter what
+mov  dl, byte ptr ds:[_eventhead];
+mov  di, dx
+SHIFT_MACRO sal  di 2
+stosw
+xchg ax, cx ; get data2/mouse
+stosw
+inc  dx
+and  dl, (MAXEVENTS-1)
 
+mov  byte ptr ds:[_eventhead], dl
+pop     di
 
 pop     dx
 pop     cx

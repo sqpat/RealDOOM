@@ -8,7 +8,7 @@
 #include "p_inter.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2577
+#define CONSTANTS_COUNT 2578
 #define LOCALS_COUNT 22
 
 
@@ -2666,7 +2666,8 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"CHEATID_MAPPOS",
 	"TEXTURECOLUMNLUMPS_BYTES_6000_SEGMENT",
 	"TEXTUREDEFS_BYTES_6000_SEGMENT",
-	"TEXTUREDEFS_OFFSET_6000_SEGMENT"
+	"TEXTUREDEFS_OFFSET_6000_SEGMENT",
+	"MAXEVENTS"
 
 
 
@@ -5334,7 +5335,8 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	CHEATID_MAPPOS,
 	texturecolumnlumps_bytes_6000_segment,
 	texturedefs_bytes_6000_segment,
-	texturedefs_offset_6000_segment
+	texturedefs_offset_6000_segment,
+	MAXEVENTS
 
 
 

@@ -31,7 +31,7 @@ EXTRN Z_QuickMapPhysics_:FAR
 EXTRN Z_QuickMapIntermission_:FAR
 
 EXTRN I_ReadMouse_:NEAR
-EXTRN D_PostEvent_:NEAR
+
 EXTRN M_CheckParm_:NEAR
 EXTRN HU_Responder_:NEAR
 EXTRN ST_Responder_:NEAR
@@ -75,6 +75,7 @@ EXTRN _turnheld:BYTE
 EXTRN _myargc:WORD
 EXTRN _myargv:BYTE
 EXTRN _novideo:BYTE
+EXTRN _eventhead:WORD
 
 
 EXTRN _key_right:BYTE
@@ -549,8 +550,25 @@ key_selected:
 ; al has data1/key
 ; ah has eventtype
 call_post_event:
-cwd  ; dx/data2 0 no matter what
-call D_PostEvent_
+
+;call D_PostEvent_
+push di
+mov  dx, EVENTS_SEGMENT
+mov  es, dx
+cwd  ; 0 no matter what
+mov  dl, byte ptr ds:[_eventhead];
+mov  di, dx
+SHIFT_MACRO sal  di 2
+stosw
+xor  ax, ax
+stosw
+inc  dx
+and  dl, (MAXEVENTS-1)
+
+mov  byte ptr ds:[_eventhead], dl
+pop  di
+
+
 jmp  loop_next_char
 case_uparrow:
 mov  al, KEY_UPARROW

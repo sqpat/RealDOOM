@@ -94,11 +94,6 @@ void __near D_DoAdvanceDemo (void);
 // D_PostEvent
 // Called by the I/O functions when input is detected
 //
-void __near D_PostEvent (int16_t data1, int16_t data2) {
-    events[eventhead].data1 = data1;
-    events[eventhead].data2 = data2;
-    eventhead = (++eventhead)&(MAXEVENTS-1);
-}
 
 
 boolean __near G_Responder (event_t __far* ev);
@@ -304,16 +299,12 @@ void __near locallib_printf (int8_t __far*str, va_list argptr){
 }
 */
 
-// not sure whats going on yet. pulling this unused function makes 86box crash.
-void __near locallib_printf2 (int8_t __far*str, va_list argptr){
-    locallib_printf(str, argptr);
-}
 
 
 
 
 
-void __near R_ExecuteSetViewSize (void);
+
 
 
 
@@ -342,7 +333,7 @@ void __far D_StartTitle(void){
 // I_UpdateNoBlit
 //
 // far because fwipe calls it. todo port local to fwipe
-void __near I_UpdateNoBlit(void) ;
+
 
 /*
 void __near I_UpdateNoBlit(void) {
@@ -413,12 +404,12 @@ void __near I_UpdateNoBlit(void) {
 }
 */
 
-void __near I_FinishUpdate(void);
 
 
 
 
-void __near D_Display (void);
+
+
 /*
 void __near D_Display (void) {
 	int16_t                         y;

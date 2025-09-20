@@ -1447,8 +1447,6 @@ return_early_near:
 ret
 ENDP
 
-DEMO_SEGMENT = 05000h
-VERSION = 109 
 
 PROC   G_BeginRecording_ NEAR
 PUBLIC G_BeginRecording_
