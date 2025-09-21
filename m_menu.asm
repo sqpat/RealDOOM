@@ -358,6 +358,13 @@ dw 80
 db 54
 dw 0
 
+_MENU_STRING_HELP2:
+db "HELP2", 0
+_MENU_STRING_HELP1:
+db "HELP1", 0
+_MENU_STRING_HELP:
+db "HELP", 0
+
 
 
 LOADDEF_X = 80
@@ -1019,12 +1026,16 @@ PROC    M_DrawReadThis1_ NEAR
 PUBLIC  M_DrawReadThis1_
 
 push  dx
-mov   ax, OFFSET _STRING_HELP2
-xor   dx, dx
+push  bx
+mov   ax, OFFSET _MENU_STRING_HELP2
+
+mov   dx, cs
+xor   bx, bx
 mov   byte ptr ds:[_inhelpscreens], 1
 
 call  dword ptr ds:[_V_DrawFullscreenPatch_addr]
 
+pop   bx
 pop   dx
 ret   
 
@@ -1036,12 +1047,16 @@ PUBLIC  M_DrawReadThis2_
 
 
 push  dx
-mov   ax, OFFSET _STRING_HELP1
-xor   dx, dx
+push  bx
+mov   ax, OFFSET _MENU_STRING_HELP1
+
+mov   dx, cs
+xor   bx, bx
 mov   byte ptr ds:[_inhelpscreens], 1
 
 call  dword ptr ds:[_V_DrawFullscreenPatch_addr]
 
+pop   bx
 pop   dx
 ret   
 
@@ -1052,12 +1067,16 @@ PROC    M_DrawReadThisRetail_ NEAR
 PUBLIC  M_DrawReadThisRetail_
 
 push  dx
-mov   ax, OFFSET _STRING_HELP
-xor   dx, dx
+push  bx
+mov   ax, OFFSET _MENU_STRING_HELP
+
+mov   dx, cs
+xor   bx, bx
 mov   byte ptr ds:[_inhelpscreens], 1
 
 call  dword ptr ds:[_V_DrawFullscreenPatch_addr]
 
+pop   bx
 pop   dx
 ret   
 

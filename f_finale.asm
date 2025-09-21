@@ -484,25 +484,20 @@ sub   sp, 068h
 les   bx, dword ptr ds:[_caststate]     ; state pointer
 mov   ax, word ptr es:[bx]              ; spritenum_t	sprite, spriteframenum_t	frame
 mov   word ptr [bp - 2], ax
-xor   dx, dx
-mov   ax, OFFSET _filename_argument
 
-
-; copy 9 bytes "BOSSBACK" to ds. gross...
-push  bx
-mov   bx, OFFSET str_bossback - OFFSET F_FINALE_STARTMARKER_
-call  F_CopyString9_
-pop   bx
+mov   ax, OFFSET str_bossback - OFFSET F_FINALE_STARTMARKER_
+mov   dx, cs
+xor   bx, bx
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _V_DrawFullscreenPatch_addr
 
 
+
+
 mov   al, byte ptr ds:[_castnum]
-;mov   bx, ax
-;add   bx, ax
-;mov   al, byte ptr cs:[bx + _CSDATA_castorder - OFFSET F_FINALE_STARTMARKER_]
+
 sal    ax, 1
 mov    bx, _CSDATA_castorder - OFFSET F_FINALE_STARTMARKER_
 xlat   byte ptr cs:[bx]
@@ -1761,11 +1756,11 @@ fdrawer_episode1:
 
 cmp   byte ptr ds:[_is_ultimate], 0
 jne   do_ultimate_fullscreenpatch
-mov   bx, OFFSET str_help2 - OFFSET F_FINALE_STARTMARKER_
-do_finaledraw:
-call  F_CopyString9_
 
-xor   dx, dx
+mov   ax, OFFSET str_help2 - OFFSET F_FINALE_STARTMARKER_
+do_finaledraw:
+mov   dx, cs
+xor   bx, bx
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _V_DrawFullscreenPatch_addr
@@ -1786,10 +1781,10 @@ pop   bx
 retf  
 
 do_ultimate_fullscreenpatch:
-mov   bx, OFFSET str_credit - OFFSET F_FINALE_STARTMARKER_
+mov   ax, OFFSET str_credit - OFFSET F_FINALE_STARTMARKER_
 jmp   do_finaledraw
 fdrawer_episode2:
-mov   bx, OFFSET str_victory2 - OFFSET F_FINALE_STARTMARKER_
+mov   ax, OFFSET str_victory2 - OFFSET F_FINALE_STARTMARKER_
 jmp   do_finaledraw
 fdrawer_episode3:
 call  F_BunnyScroll_
@@ -1797,7 +1792,7 @@ pop   dx
 pop   bx
 retf  
 fdrawer_episode4:
-mov   bx, OFFSET str_endpic - OFFSET F_FINALE_STARTMARKER_
+mov   ax, OFFSET str_endpic - OFFSET F_FINALE_STARTMARKER_
 jmp   do_finaledraw
 
 ENDP

@@ -48,7 +48,7 @@
 
 
 void  V_CopyRect ( uint16_t srcoffset, uint16_t destoffset, uint16_t width, uint16_t height);
-void  __far V_DrawFullscreenPatch ( int8_t __near* texname, int8_t screen) ;
+void  __far V_DrawFullscreenPatch ( int8_t __far* texname, int8_t screen) ;
 
 /*
 #pragma aux drawpatchparams \

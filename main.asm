@@ -3418,9 +3418,9 @@ switch_case_4:
 cmp   byte ptr ds:[_inhelpscreens], 0
 jne   jump_to_done_with_gs_level_case
 
-
 mov   ax, word ptr ds:[_pagename]
-xor   dx, dx ; screen 0
+mov   dx, cs
+xor   bx, bx ; screen 0  ; ok to wreck bl/bx here? bh seems to be expected to be 0, this doesnt change?
 call  V_DrawFullscreenPatch_ 
 
 jump_to_done_with_gs_level_case:
@@ -3729,9 +3729,9 @@ and   al, (BACKUPTICS-1)
 cbw
 call  G_BuildTiccmd_
 cmp   byte ptr ds:[_advancedemo], 0
-je    dont_advance_demo
-call  D_DoAdvanceDemo_
+jme   do_advance_demo
 dont_advance_demo:
+done_advancing_demo:
 call  M_Ticker_
 call  G_Ticker_
 
@@ -3767,6 +3767,9 @@ no_pending_music:
 call  D_Display_
 
 jmp   continue_doom_loop
+do_advance_demo:
+call  D_DoAdvanceDemo_
+jmp   done_advancing_demo
 
 
 ENDP

@@ -28,7 +28,7 @@ EXTRN M_AddToBox16_:NEAR
 .CODE
 EXTRN W_CacheLumpNameDirect_:FAR
 EXTRN Z_QuickMapScratch_5000_:FAR  
-EXTRN W_GetNumForName_:FAR  
+EXTRN W_CheckNumForNameFarString_:NEAR
 EXTRN W_CacheLumpNumDirectFragment_:PROC  
 EXTRN Z_QuickMapByTaskNum_:FAR
 
@@ -1149,7 +1149,7 @@ ENDP
 
 
 
-;void __far V_DrawFullscreenPatch ( int8_t __near* pagename, int8_t screen) {
+;void __far V_DrawFullscreenPatch ( int8_t __far* pagename, int8_t screen) {
 
 PROC V_DrawFullscreenPatch_ FAR
 PUBLIC V_DrawFullscreenPatch_
@@ -1167,16 +1167,16 @@ PUSHA_NO_AX_MACRO
 push      bp
 mov       bp, sp
 
-cmp       dl, 1
+cmp       bl, 1
 je        use_screen_1_for_fullscreendraw
-mov       dx, SCREEN0_SEGMENT 
+mov       bx, SCREEN0_SEGMENT 
 jmp       done_choosing_screen_for_fullscreendraw
 use_screen_1_for_fullscreendraw:
-mov       dx, SCREEN1_SEGMENT
+mov       bx, SCREEN1_SEGMENT
 done_choosing_screen_for_fullscreendraw:
 
 
-push      dx        ; bp - 2
+push      bx        ; bp - 2
 xor       si, si
 push      si  ; bp - 4
 push      si  ; bp - 6
@@ -1188,7 +1188,7 @@ push      di  ; bp - 0Ah
 
 
 ;	int16_t lump = W_GetNumForName(pagename);call      W_GetNumForName_
-call      W_GetNumForName_
+call      W_CheckNumForNameFarString_
 
 mov       word ptr cs:[SELFMODIFY_set_ax_to_lump+1], ax 
 mov       cx, di

@@ -1610,9 +1610,9 @@ cmp   byte ptr [bx], 3
 jne   dont_set_name1
 lea   di, [bp - 036h]
 dont_set_name1:
-mov   dx, 1
+mov   bx, 1
 mov   ax, di
-
+mov   dx, ds
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _V_DrawFullscreenPatch_addr
@@ -1639,9 +1639,7 @@ mov   al, byte ptr [bx]
 add   byte ptr [bp - 027h], al
 jmp   name_set
 load_assets:
-;mov   byte ptr cs:[_yahRef - OFFSET WI_STARTMARKER_], al
-;mov   byte ptr cs:[_yahRef+1 - OFFSET WI_STARTMARKER_], 1
-;mov   byte ptr cs:[_splatRef - OFFSET WI_STARTMARKER_], 2
+
 mov   bx, word ptr cs:[_wbs - OFFSET WI_STARTMARKER_]
 cmp   byte ptr [bx], 3
 jge   done_loading_assets

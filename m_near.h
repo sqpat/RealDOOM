@@ -689,9 +689,9 @@
 #define message_nottobefuckedwith         (*((boolean __near*)               (_NULL_OFFSET + 0x0A1F)))
 
 
-#define STRING_HELP1                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0A20))
-#define STRING_HELP2                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0A26))
-#define STRING_HELP                       ((int8_t __near *)                 (_NULL_OFFSET + 0x0A2C))
+// #define STRING_HELP1                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0A20))
+// #define STRING_HELP2                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0A26))
+// #define STRING_HELP                       ((int8_t __near *)                 (_NULL_OFFSET + 0x0A2C))
 
 #define demosequence	       		      (*((boolean __near*)               (_NULL_OFFSET + 0x0A31)))
 
@@ -931,7 +931,7 @@ extern int8_t**		myargv;
 extern uint8_t		usemouse;
 
 
-extern int8_t*   defdemoname; 
+extern int8_t __far*   defdemoname; 
 extern boolean         secretexit; 
 
 

@@ -617,9 +617,9 @@ _message_dontfuckwithme =            _NULL_OFFSET + 00A1Dh
 _message_on =     			         _NULL_OFFSET + 00A1Eh
 _message_nottobefuckedwith =         _NULL_OFFSET + 00A1Fh
 
-_STRING_HELP1   =      				 _NULL_OFFSET + 00A20h
-_STRING_HELP2   =      				 _NULL_OFFSET + 00A26h
-_STRING_HELP    =      				 _NULL_OFFSET + 00A2Ch
+;_STRING_HELP1   =      				 _NULL_OFFSET + 00A20h
+;_STRING_HELP2   =      				 _NULL_OFFSET + 00A26h
+;_STRING_HELP    =      				 _NULL_OFFSET + 00A2Ch
 
 _demosequence =	       		         _NULL_OFFSET + 00A31h
 

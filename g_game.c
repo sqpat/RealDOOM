@@ -996,12 +996,6 @@ void __near G_WriteDemoTiccmd (ticcmd_t __near* cmd)  {
 // G_PlayDemo 
 //
 
- 
-void __near G_DeferedPlayDemo (int8_t* name)  { 
-    defdemoname = name; 
-    gameaction = ga_playdemo; 
-} 
- 
 void __near G_DoPlayDemo (void)  { 
     skill_t skill; 
 	int8_t episode, map;
@@ -1010,7 +1004,7 @@ void __near G_DoPlayDemo (void)  {
 
 	gameaction = ga_nothing;
 
-	W_CacheLumpNameDirect(defdemoname, demobuffer);
+	W_CacheLumpNameDirectFarString(defdemoname, demobuffer);
 	demo_addr = (byte __far*)(demobuffer);
 	demo_p = 0;
 

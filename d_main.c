@@ -766,7 +766,6 @@ void __near D_PageDrawer (void) {
 
 	 V_DrawFullscreenPatch(pagename, 0);
 }
-*/
  
 
 //
@@ -849,6 +848,7 @@ void __near D_PageDrawer (void) {
 
 
 
+*/
 
 
 void D_INIT_STARTMARKER();

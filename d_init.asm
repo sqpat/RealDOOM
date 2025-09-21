@@ -83,7 +83,7 @@ EXTRN _singledemo:BYTE
 EXTRN _startskill:BYTE
 EXTRN _startepisode:BYTE
 EXTRN _startmap:BYTE
-EXTRN _defdemoname:BYTE
+EXTRN _defdemoname:DWORD
 EXTRN _noblit:BYTE
 EXTRN _timingdemo:BYTE
 EXTRN _singletics:BYTE
@@ -1130,7 +1130,8 @@ jnl   skip_timedemo_param
     mov   ax, word ptr ds:[bx + si]
     ;call  G_TimeDemo_ ; inlined
 
-    mov   word ptr ds:[_defdemoname], ax ; defdemoname = name; 
+    mov   word ptr ds:[_defdemoname+0], ax ; defdemoname = name; 
+    mov   word ptr ds:[_defdemoname+2], ds ; far ptr
     mov   ax, OFFSET str_noblit_param
     call  M_CheckParm_CS_
     mov   byte ptr ds:[_noblit], al     ; noblit = M_CheckParm ("-noblit"); 
