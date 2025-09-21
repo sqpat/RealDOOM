@@ -778,10 +778,10 @@ call  dword ptr ds:[_G_SecretExitLevel_addr]
 jmp       done_with_switch_block
 
 switch_case_52:
-;call  G_ExitLevel_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _G_ExitLevel_addr
+;call  G_ExitLevel_ ; inlined
+mov   byte ptr ds:[_secretexit], 0
+mov   byte ptr ds:[_gameaction], GA_COMPLETED
+
 jmp       done_with_switch_block
 
 
@@ -1218,10 +1218,10 @@ cmp       word ptr ds:[_player + PLAYER_T.player_health], 10
 jle       call_exit_level_and_exit
 jmp       exit_p_playerinspecialsector_2
 call_exit_level_and_exit:
-;call  G_ExitLevel_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _G_ExitLevel_addr
+;call  G_ExitLevel_ ; inlined
+mov   byte ptr ds:[_secretexit], 0
+mov   byte ptr ds:[_gameaction], GA_COMPLETED
+
 exit_p_playerinspecialsector_2:
 POPA_NO_AX_OR_BP_MACRO
 ret       
@@ -1245,10 +1245,10 @@ adc       word ptr ds:[_levelTimeCount+2], -1
 mov       ax, word ptr ds:[_levelTimeCount+0]
 or        ax, word ptr ds:[_levelTimeCount+2]
 jne       level_timer_check_ok
-;call  G_ExitLevel_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _G_ExitLevel_addr
+;call  G_ExitLevel_ ; inlined
+mov   byte ptr ds:[_secretexit], 0
+mov   byte ptr ds:[_gameaction], GA_COMPLETED
+
 jmp       level_timer_check_ok
 
 level_timer_check_ok:

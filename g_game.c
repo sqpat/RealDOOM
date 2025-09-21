@@ -563,11 +563,12 @@ void __far G_PlayerReborn () {
 //
 // G_DoCompleted 
 //
-  
+  /*
 void __far G_ExitLevel (void)  { 
     secretexit = false; 
     gameaction = ga_completed; 
 } 
+*/
 
 // Here's for the german edition.
 void __far G_SecretExitLevel (void) { 

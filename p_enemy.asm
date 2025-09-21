@@ -4587,11 +4587,9 @@ mov   dx, -1
 mov   ax, TAG_667
 jmp   do_floor_and_exit
 do_exit_level:
-;call  G_ExitLevel_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _G_ExitLevel_addr
-
+;call  G_ExitLevel_ ; inlined
+mov   byte ptr ds:[_secretexit], 0
+mov   byte ptr ds:[_gameaction], GA_COMPLETED
 exit_a_bossdeath:
 ret   
 
@@ -5520,9 +5518,10 @@ ENDP
 
 PROC      A_DoBrainDie_ NEAR
 ;call      G_ExitLevel_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _G_ExitLevel_addr
+;call  G_ExitLevel_ ; inlined
+mov   byte ptr ds:[_secretexit], 0
+mov   byte ptr ds:[_gameaction], GA_COMPLETED
+
 
 ret
 ENDP

@@ -642,7 +642,7 @@
 
 #define bulletslope     				  (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x0724)))
 #define weaponinfo 						  ((weaponinfo_t __near *)           (_NULL_OFFSET + 0x0728))
-#define G_ExitLevel_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x078C)))
+// #define G_ExitLevel_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x078C)))
 
 
 #define gametime 						  (*((ticcount_t __near*)            (_NULL_OFFSET + 0x0790)))

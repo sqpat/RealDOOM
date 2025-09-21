@@ -364,10 +364,10 @@ mov   cx, si
 pop   bx   ; bp - 2
 xor   di, di
 call  P_ChangeSwitchTexture_
-;call  G_ExitLevel_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _G_ExitLevel_addr
+;call  G_ExitLevel_ ; inlined
+mov   byte ptr ds:[_secretexit], 0
+mov   byte ptr ds:[_gameaction], GA_COMPLETED
+
 jmp   do_specialline_exit_1
 
 special_line_type_5:
