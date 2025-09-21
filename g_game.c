@@ -998,7 +998,7 @@ void __near G_WriteDemoTiccmd (ticcmd_t __near* cmd)  {
 //
 // G_PlayDemo 
 //
-
+/*
 void __near G_DoPlayDemo (void)  { 
     skill_t skill; 
 	int8_t episode, map;
@@ -1044,7 +1044,7 @@ void __near G_DoPlayDemo (void)  {
 	Z_QuickMapPhysics();
 
 } 
-
+*/
  
  
 /* 

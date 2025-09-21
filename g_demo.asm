@@ -22,8 +22,10 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN locallib_putchar_:NEAR
-
+EXTRN Z_QuickMapPhysics_:FAR
+EXTRN Z_QuickMapDemo_:FAR
+EXTRN W_CacheLumpNameDirectFarString_:FAR
+EXTRN G_InitNew_:NEAR
 
 .DATA
 
@@ -31,6 +33,7 @@ EXTRN _demo_p:WORD
 EXTRN _pagetic:WORD
 EXTRN _pagename:WORD
 EXTRN _defdemoname:DWORD
+EXTRN _precache:BYTE
 
 
 
@@ -184,6 +187,103 @@ pop     dx
 ret
 ENDP
 
+
+
+PROC   G_BeginRecording_ NEAR
+PUBLIC G_BeginRecording_
+
+push   di
+call   Z_QuickMapDemo_
+mov    ax, DEMO_SEGMENT
+mov    es, ax
+xor    di, di
+mov    al, VERSION
+stosb
+mov    al, byte ptr ds:[_gameskill]
+stosb
+mov    ax, word ptr ds:[_gameepisode]
+stosb
+mov    al, ah ; gamemap
+stosb
+xor    ax, ax
+stosb
+mov    al, byte ptr ds:[_respawnparm]
+stosb
+mov    al, byte ptr ds:[_fastparm]
+stosb
+mov    al, byte ptr ds:[_nomonsters]
+stosb
+mov    al, ah ; 0
+stosb
+inc    ax     ; true
+stosw   
+dec    ax     ; true
+stosw   
+mov    word ptr ds:[_demo_p], di
+call   Z_QuickMapPhysics_
+
+pop    di
+
+ret
+ENDP
+
+PROC   G_DoPlayDemo_ NEAR
+PUBLIC G_DoPlayDemo_
+
+call   Z_QuickMapDemo_
+xor    bx, bx
+mov    byte ptr ds:[_gameaction], bl ; 0 GA_NOTHING
+
+les    ax, dword ptr ds:[_defdemoname]
+mov    dx, es
+mov    cx, DEMO_SEGMENT
+mov    si, cx
+call   W_CacheLumpNameDirectFarString_ ; (defdemoname, demobuffer);
+
+mov    ds, si
+xor    si, si
+; ds:si is demo_addr
+lodsb
+cmp    al, VERSION
+jne    do_version_error
+do_version_error:  ; todo?
+
+lodsw
+xchg   ax, dx   ; dl = skill, dh = episode
+lodsw
+xchg   ax, bx   ; bl = map,   bh = deathmatch
+lodsw
+xchg   ax, cx   ; cl = respawn, ch = fastparm
+lodsb
+
+
+push   ss
+pop    ds
+mov    byte ptr ds:[_respawnparm], cl
+mov    byte ptr ds:[_fastparm], ch
+mov    byte ptr ds:[_nomonsters], al
+lea    ax, [si+ 5]
+mov    word ptr ds:[_demo_p], ax ; probably a constant actually
+
+xchg   ax, dx ; al = skill, ah = episode
+mov    dl, ah ; dl = episode
+mov    byte ptr ds:[_precache], 0  ; false
+call   G_InitNew_
+
+mov    ax, 1
+mov    byte ptr ds:[_precache], al      ; true
+mov    byte ptr ds:[_usergame], ah      ; false
+mov    byte ptr ds:[_demoplayback], al  ; true
+
+
+call   Z_QuickMapPhysics_
+
+
+ret
+ENDP
+
+
+ 
 
 
 PROC    G_DEMO_ENDMARKER_ NEAR

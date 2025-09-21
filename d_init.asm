@@ -1464,43 +1464,10 @@ ret
 ENDP
 
 
-PROC   G_BeginRecording_ NEAR
-PUBLIC G_BeginRecording_
 
-push   di
-call   Z_QuickMapDemo_
-mov    ax, DEMO_SEGMENT
-mov    es, ax
-xor    di, di
-mov    al, VERSION
-stosb
-mov    al, byte ptr ds:[_gameskill]
-stosb
-mov    ax, word ptr ds:[_gameepisode]
-stosb
-mov    al, ah ; gamemap
-stosb
-xor    ax, ax
-stosb
-mov    al, byte ptr ds:[_respawnparm]
-stosb
-mov    al, byte ptr ds:[_fastparm]
-stosb
-mov    al, byte ptr ds:[_nomonsters]
-stosb
-mov    al, ah ; 0
-stosb
-inc    ax     ; true
-stosw   
-dec    ax     ; true
-stosw   
-mov    word ptr ds:[_demo_p], di
-call   Z_QuickMapPhysics_
 
-pop    di
 
-ret
-ENDP
+
 
 
 
