@@ -621,7 +621,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 
     fprintf(fp, "S_UPDATESOUNDSOFFSET       = 0%Xh\n",            FP_OFF(S_UpdateSounds)                      - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "S_STARTSOUNDFAROFFSET      = 0%Xh\n",            FP_OFF(S_StartSoundFar)                     - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "S_ACTUALLYCHANGEMUSICOFFSET = 0%Xh\n",           FP_OFF(S_ActuallyChangeMusic)               - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "S_ACTUALLYCHANGEMUSICOFFSET = 0%Xh\n",           FP_OFF(S_ActuallyChangeMusic)               - FP_OFF(SM_LOAD_STARTMARKER));
 
 
 

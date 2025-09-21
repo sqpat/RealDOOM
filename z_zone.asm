@@ -779,10 +779,10 @@ push  bx
 push  cx
 push  dx
 push  si
-push  bp
-mov   bp, sp
-push  ax
-sub   sp, 2
+
+
+push  ax ; "bp - 2"
+push  ax ; "bp - 4" garbage value overwritten later
 
 mov   byte ptr ds:[_currentoverlay], al
 cbw
@@ -801,11 +801,11 @@ mov   si, ax
 call  fseek_
 mov   bx, 1
 mov   dx, 2
-lea   ax, [bp - 4]
+mov   ax, sp ; [bp - 4]
 mov   cx, si
 call  fread_
 
-mov   bx, word ptr [bp - 4]
+pop   bx;  [bp - 4]
 mov   dx, CODE_OVERLAY_SEGMENT
 mov   cx, si ; fp
 xor   ax, ax
@@ -814,8 +814,8 @@ call  locallib_far_fread_
 
 xchg  ax, si
 call  fclose_
-mov   al, byte ptr [bp - 2]
-dec   al
+pop   ax ; [bp - 2]
+dec   ax
 cmp   al, 4
 ja    exit_set_overlay
 xor   ah, ah
@@ -826,7 +826,7 @@ load_save_game_overlay_jump_target:
 mov   ax, CODE_OVERLAY_SEGMENT
 mov   es, ax
 ;mov   word ptr es:[0], OFFSET _playerMobjRef
-LEAVE_MACRO 
+
 pop   si
 pop   dx
 pop   cx
@@ -839,7 +839,7 @@ mov   ax, CODE_OVERLAY_SEGMENT
 mov   es, ax
 mov   word ptr es:[0], OFFSET _hu_font
 exit_set_overlay:
-LEAVE_MACRO 
+
 pop   si
 pop   dx
 pop   cx
