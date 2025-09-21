@@ -79,7 +79,6 @@ GLOBOBJS = $(GLOBOBJS) &
  m_near.obj &
  i_init.obj &
  i_quit.obj &
- d_main.obj &
  i_ibm.obj &
  sm_load.obj &
  f_finale.obj &

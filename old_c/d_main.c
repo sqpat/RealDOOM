@@ -104,7 +104,7 @@ void __near D_Display (void);
 // D_ProcessEvents
 // Send all the events of the given timestamp down the responder chain
 //
-/*
+
 void __near D_ProcessEvents (void) {
 	if (eventtail != eventhead){
 	    
@@ -206,7 +206,7 @@ fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b) {
 
 
 
-/*
+
 void __near locallib_printhex (uint32_t number, boolean islong);
 void __near locallib_printdecimal (int32_t number);
 void __near locallib_printstringfar (int8_t __far *str);
@@ -296,7 +296,7 @@ void __near locallib_printf (int8_t __far*str, va_list argptr){
 	
 
 }
-*/
+
 
 
 
@@ -312,14 +312,14 @@ void __near locallib_printf (int8_t __far*str, va_list argptr){
 //
 // D_StartTitle
 //
-/*
+
 void __far D_StartTitle(void){
 
 	gameaction = ga_nothing;
 	demosequence = -1;
     advancedemo = true;
 }
-*/
+
 
 //
 // D_Display
@@ -334,7 +334,7 @@ void __far D_StartTitle(void){
 // far because fwipe calls it. todo port local to fwipe
 
 
-/*
+
 void __near I_UpdateNoBlit(void) {
 	int16_t realdr[4];
 	int16_t x, y, w, h;
@@ -401,7 +401,6 @@ void __near I_UpdateNoBlit(void) {
 	dirtybox[BOXTOP] = dirtybox[BOXRIGHT] = MINSHORT;
 	dirtybox[BOXBOTTOM] = dirtybox[BOXLEFT] = MAXSHORT;
 }
-*/
 
 
 
@@ -409,7 +408,8 @@ void __near I_UpdateNoBlit(void) {
 
 
 
-/*
+
+
 void __near D_Display (void) {
 	int16_t                         y;
     boolean                     wipe = false;
@@ -588,9 +588,9 @@ void __near D_Display (void) {
 	wipe_WipeLoopCall();
 #endif
 }
-*/
 
- /*
+
+
  void __near locallib_putchar(int8_t c){
 	// fputc(c, stdout);
 	putchar(c);
@@ -719,7 +719,7 @@ void __near D_DoomLoop (void) {
 		
 	}
 }
-*/
+
 
 // int16_t counter = 0;
 // int16_t setval = 0;
@@ -743,7 +743,7 @@ void __near D_DoomLoop (void) {
 // D_PageTicker
 // Handles timing for warped projection
 //
-/*
+
 void __near D_PageTicker (void) {
     if (--pagetic < 0){
 	    advancedemo = true;
@@ -848,7 +848,6 @@ void __near D_PageDrawer (void) {
 
 
 
-*/
 
 
 void D_INIT_STARTMARKER();

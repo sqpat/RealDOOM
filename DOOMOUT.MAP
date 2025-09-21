@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/21 05:58:42
+Created on:       25/09/21 06:03:16
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -32,11 +32,10 @@ W_INIT_TEXT            CODE           AUTO           0000:13be       0000017e
 I_INIT_TEXT            CODE           AUTO           0000:153c       000001a6
 z_init_TEXT            CODE           AUTO           0000:16f0       00000a36
 p_init_TEXT            CODE           AUTO           0000:2130       00000498
-i_main_TEXT            CODE           AUTO           0000:25d0       00000010
-I_QUIT_TEXT            CODE           AUTO           0000:25e0       0000018a
-I_IBM_TEXT             CODE           AUTO           0000:276a       0000006a
-d_main_TEXT            CODE           AUTO           0000:27e0       00000069
-D_NET_TEXT             CODE           AUTO           0000:284a       000000b3
+i_main_TEXT            CODE           AUTO           0000:25d0       00000079
+I_QUIT_TEXT            CODE           AUTO           0000:264a       0000018a
+I_IBM_TEXT             CODE           AUTO           0000:27d4       0000006a
+D_NET_TEXT             CODE           AUTO           0000:283e       000000b3
 g_game_TEXT            CODE           AUTO           0000:2900       00000907
 G_GAMEA_TEXT           CODE           AUTO           0000:3208       00000023
 G_DEMO_TEXT            CODE           AUTO           0000:322c       00000104
@@ -197,32 +196,31 @@ Module: p_init.obj(C:\REALDOOM\p_init.c)
 0000:2592      P_Init_
 Module: i_main.obj(C:\REALDOOM\i_main.c)
 0000:25d0      main_
+0000:25e0+     Z_ClearDeadCode_
+0000:2624+     D_DoomMain_
 0c55:0e9e      __amblksiz
 Module: i_quit.obj(i_quit.ASM)
-0000:2623*     I_ShutdownMouse_
-0000:25e0*     I_QUIT_STARTMARKER_
-0000:276a*     I_QUIT_ENDMARKER_
-0000:26f1*     hackDSBack_
-0000:2680      I_Shutdown_
-0000:25e7*     I_ShutdownSound_
-0000:2747      I_Quit_
-0000:26aa*     zeroConventional_
-0000:262f*     Z_ShutdownEMS_
-0000:260b*     I_ShutdownGraphics_
+0000:268d*     I_ShutdownMouse_
+0000:264a*     I_QUIT_STARTMARKER_
+0000:27d4*     I_QUIT_ENDMARKER_
+0000:275b*     hackDSBack_
+0000:26ea      I_Shutdown_
+0000:2651*     I_ShutdownSound_
+0000:27b1      I_Quit_
+0000:2714*     zeroConventional_
+0000:2699*     Z_ShutdownEMS_
+0000:2675*     I_ShutdownGraphics_
 Module: i_ibm.obj(i_ibm.ASM)
-0000:276a*     I_IBM_STARTMARKER_
-0000:276a      I_WaitVBL_
-0000:27d4*     I_IBM_ENDMARKER_
-0000:278a      I_ReadMouse_
-0000:27bb      I_Error_
-Module: d_main.obj(C:\REALDOOM\d_main.c)
-0000:27e0+     Z_ClearDeadCode_
-0000:2824      D_DoomMain_
+0000:27d4*     I_IBM_STARTMARKER_
+0000:27d4      I_WaitVBL_
+0000:283e*     I_IBM_ENDMARKER_
+0000:27f4      I_ReadMouse_
+0000:2825      I_Error_
 Module: d_net.obj(d_net.ASM)
-0000:288b      TryRunTics_
-0000:284a*     D_NET_STARTMARKER_
-0000:28fd*     D_NET_ENDMARKER_
-0000:284a      NetUpdate_
+0000:287f      TryRunTics_
+0000:283e*     D_NET_STARTMARKER_
+0000:28f1*     D_NET_ENDMARKER_
+0000:283e      NetUpdate_
 Module: g_game.obj(C:\REALDOOM\g_game.c)
 0000:2900      R_FlatNumForName_
 0000:290c+     G_DoWorldDone_
@@ -812,4 +810,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  e280 (57984.)
 Entry point address: 0000:aaec
-Link time: 00:00.20
+Link time: 00:00.75

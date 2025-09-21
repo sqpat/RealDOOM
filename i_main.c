@@ -97,3 +97,70 @@ int16_t main ( int16_t argc, int8_t** argv ) {
 
     return 0;
 } 
+
+void D_INIT_STARTMARKER();
+void __near G_BeginRecording (void);
+void __near D_DoomLoop (void);
+
+void __near P_Init(void);
+
+
+// clears dead initialization code.
+void __near Z_ClearDeadCode() {
+	byte __far *startaddr =	(byte __far*)D_INIT_STARTMARKER;
+	byte __far *endaddr =		(byte __far*)P_Init;
+	
+	// accurate enough
+
+	//8830 bytes or so
+	//8978 currently - 05/29/24
+	//8342           - 06/01/24
+	//9350           - 10/07/24
+	//11222          - 01/18/25		at this point like 3000 bytes to save.
+	//11284          - 06/30/25   
+	//11470          - 08/26/25
+	//9798           - 09/12/25	   ; note 8196 is "max". or "min". there are probably some funcs that can be moved into init like wad or file funcs only used in init though.
+	//9398           - 09/13/25	
+	//9602           - 09/20/25	   - added some extra code into that region. still need to do z_init, p_init
+
+	uint16_t size = endaddr - startaddr-16;
+	FILE* fp;
+
+
+	angle_t __far*  dest;
+	
+	tantoangle_segment = FP_SEG(startaddr) + 1;
+	// I_Error("size: %i", size);
+	dest =  (angle_t __far* )MK_FP(tantoangle_segment, 0);
+	fp = fopen("DOOMDATA.BIN", "rb");
+	fseek(fp, TANTOA_DOOMDATA_OFFSET, SEEK_SET);
+	locallib_far_fread(dest, 4 * 2049, fp);
+	fclose(fp);
+
+}
+
+void __near D_DoomMain2(void);
+void __near I_InitGraphics(void);
+
+
+ void __near D_DoomMain(void) {
+
+	// FILE *fp = fopen("output9.bin", "wb");
+	// locallib_far_fwrite(M_Random, (byte __far *)ST_STUFF_STARTMARKER - (byte __far *)M_Random, 1, fp);
+	// fclose(fp);
+	// exit(0);
+
+	 D_DoomMain2();
+
+
+
+    if (demorecording){
+        G_BeginRecording ();
+	}
+
+    I_InitGraphics ();
+
+	 Z_ClearDeadCode();
+
+	 D_DoomLoop();  // never returns
+ }
