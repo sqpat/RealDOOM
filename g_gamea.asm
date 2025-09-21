@@ -1,0 +1,67 @@
+; Copyright (C) 1993-1996 Id Software, Inc.
+; Copyright (C) 1993-2008 Raven Software
+; Copyright (C) 2016-2017 Alexey Khokholov (Nuke.YKT)
+;
+; This program is free software; you can redistribute it and/or
+; modify it under the terms of the GNU General Public License
+; as published by the Free Software Foundation; either version 2
+; of the License, or (at your option) any later version.
+;
+; This program is distributed in the hope that it will be useful,
+; but WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+; GNU General Public License for more details.
+;
+; DESCRIPTION:
+;
+.MODEL  medium
+INCLUDE defs.inc
+INSTRUCTION_SET_MACRO
+
+
+
+
+.DATA
+
+
+.CODE
+
+
+PROC    G_GAME_STARTMARKER_ NEAR
+PUBLIC  G_GAME_STARTMARKER_
+ENDP
+
+PROC    G_PlayerFinishLevel_ NEAR
+PUBLIC  G_PlayerFinishLevel_
+
+push    di
+push    cx
+
+xor     ax, ax
+mov     word ptr ds:[_player + PLAYER_T.player_extralightvalue], ax ; 0        cancel invisibility 
+;mov     byte ptr ds:[_player + PLAYER_T.player_fixedcolormapvalue], al ; 0    cancel ir gogles 
+mov     word ptr ds:[_player + PLAYER_T.player_damagecount], ax ; 0            no palette changes 
+mov     byte ptr ds:[_player + PLAYER_T.player_bonuscount], al ; 0            
+les     di, dword ptr ds:[_playerMobj_pos]
+and     byte ptr es:[di + MOBJ_POS_T.mp_flags2], (NOT MF_SHADOW)
+mov     cx, (2 * NUMPOWERS + 1 * NUMCARDS) / 2  ; 18 or 012h / 2 = 9
+mov     di, OFFSET _player + PLAYER_T.player_powers
+push    ds
+pop     es
+rep     stosw
+    ;memset (player.powers, 0, sizeof (player.powers));
+    ;memset (player.cards, 0, sizeof (player.cards));
+
+pop    cx
+pop    di
+
+ret
+ENDP
+
+
+PROC    G_GAME_ENDMARKER_ NEAR
+PUBLIC  G_GAME_ENDMARKER_
+ENDP
+
+
+END

@@ -503,12 +503,14 @@ void __near G_Ticker (void)  {
 } 
  
  
+void __near G_PlayerFinishLevel ();
  
 
 //
 // G_PlayerFinishLevel
 // Can when a player completes a level.
 //
+/*
 void __near G_PlayerFinishLevel ()  { 
 
           
@@ -520,7 +522,7 @@ void __near G_PlayerFinishLevel ()  {
 	player.damagecount = 0;                 // no palette changes 
 	player.bonuscount = 0;
 } 
- 
+ */
 
 //
 // G_PlayerReborn
