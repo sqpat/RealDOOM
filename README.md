@@ -7,11 +7,11 @@ RealDOOM is an in progress port of the DOS version of DOOM (based on PCDOOMv2) t
 
 The current release supports Shareware and commercial DOOM/DOOM2 as well as Ultimate DOOM. TNT and Plutonia are not currently supported. Custom wads are not currently supported.
 
-The current development focus is on bugfixing and ASM rewrites of most of the codebase to reduce memory usage. 
+The current development focus is on bugfixing and ASM rewrites of the rest of the codebase to produce an entirely ASM application.
 
 ### Running RealDOOM
 
-RealDOOM is still in a pre-alpha state and so it does not cleanly support many hardware configurations yet. The easiest way to run it is to follow the instructions in the latest release notes.
+RealDOOM is still in a pre-alpha state and so it does not cleanly support many hardware configurations yet. The easiest way to run it is to use EMM386 with a page frame set and the pageable conventional memory enabled.
 
 Performance on 32-bit PCs is similar to Vanilla DOOM, so performance should generally be okay on a 486 or Pentium. Slower machines might want to turn detail level to low or potato for faster framerates.
 
@@ -137,24 +137,28 @@ There are also a lot of hard caps on things like texture size and count, node co
   - Improved span drawing fidelity to 24 bit (same as vanilla)
   - Added span/column/sky rendering fidelity options
   
+(Sep 20, 2025)      
+~~**v0.31** : Bugfixes, most code to ASM~~
+  - Major ASM rewrites of c code saving ~35-40k
+  - Movable EMS Page Frame
+  - Lots of bugfixing...
+  
 ### Future Roadmap:
 
 **Remaining Alpha Goals:**
- - reduce memory footprint
  - improved sfx code
- - All known bugs fixed
+ - A few more known bugs fixed
  
 **Beta Goals:**
- - Focus on improved compatibility with more machines
+ - Remove clib dependencies
+ - Entirely ASM application 
  - "More" feature complete
    - AWE32, Gravis SFX - etc
  - Improved custom WAD support
 
-
 **"1.0" Goals:**
- - Remove clib dependencies
- - Entirely ASM application
  - 386 Render path optimization (mainly for 386SX)
+ - General stability and architecture improvements
 **Post 1.0 Goals:**
  - EMS 3.2 compatible version
  - Remove MS-DOS dependencies, self boot version?
