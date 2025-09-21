@@ -858,7 +858,7 @@ void __near Z_LoadBinaries() {
 
 
 	// G_ExitLevel_addr =					(uint32_t)(G_ExitLevel);
-	G_SecretExitLevel_addr =			(uint32_t)(G_SecretExitLevel);
+	// G_SecretExitLevel_addr =			(uint32_t)(G_SecretExitLevel);
 	G_PlayerReborn_addr =				(uint32_t)(G_PlayerReborn);
 
 	OutOfThinkers_addr =				(uint32_t)(OutOfThinkers);

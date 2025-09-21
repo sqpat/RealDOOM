@@ -132,6 +132,8 @@
 
 
 #define maskedtexture                   (*((boolean __near*)                 (_NULL_OFFSET + 0x0088)))
+#define map31_exists                    (*((boolean __near*)                 (_NULL_OFFSET + 0x0089)))
+
 //#define MAXSPECIALCROSS		8
 //extern int16_t		spechit[MAXSPECIALCROSS];
 #define spechit                         (((int16_t  __near*)                 (_NULL_OFFSET + 0x008A)))
@@ -424,7 +426,7 @@
 #define currentThinkerListHead  		(*((int16_t __near*)                 (_NULL_OFFSET + 0x03D2)))
 
 #define FixedMulTrigSpeed_addr	 	    (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03D4)))
-#define G_SecretExitLevel_addr          (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03D8)))
+// #define G_SecretExitLevel_addr          (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03D8)))
 #define I_WaitVBL_addr                  (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03DC)))
 
 

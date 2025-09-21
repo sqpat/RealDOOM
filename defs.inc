@@ -91,7 +91,8 @@ _viewz_shortheight = 				_NULL_OFFSET + 0007Ch
 _screen_segments = 					_NULL_OFFSET + 0007Eh
 
 _maskedtexture = 					_NULL_OFFSET + 00088h
-; 89 free
+_map31_exists =                     _NULL_OFFSET + 00089h
+
 _spechit =       					_NULL_OFFSET + 0008Ah
 _bombsource =       				_NULL_OFFSET + 0009Ah
 _bombspot =       					_NULL_OFFSET + 0009Ch
@@ -365,14 +366,14 @@ _numChannels = 						 _NULL_OFFSET + 003CBh
 ;_MainLogger_addr =      	         _NULL_OFFSET + 003CCh
 
 
-; 3cb to 3cf free
+; 3cc to 3cf free
 
 _am_stopped = 						 _NULL_OFFSET + 003D0h
 _automapactive =                 	 _NULL_OFFSET + 003D1h
 _currentThinkerListHead = 			 _NULL_OFFSET + 003D2h
 
 _FixedMulTrigSpeed_addr = 		     _NULL_OFFSET + 003D4h
-_G_SecretExitLevel_addr =            _NULL_OFFSET + 003D8h
+;_G_SecretExitLevel_addr =            _NULL_OFFSET + 003D8h
 _I_WaitVBL_addr =       		     _NULL_OFFSET + 003DCh
 
 _braintargets =                      _NULL_OFFSET + 003E0h

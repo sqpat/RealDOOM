@@ -774,7 +774,12 @@ pop       di
 pop       si
 ret
 switch_case_124:
-call  dword ptr ds:[_G_SecretExitLevel_addr]
+;call  G_SecretExitLevel_ ; inlined
+mov    al, byte ptr ds:[_map31_exists]
+mov    byte ptr ds:[_secretexit], al
+mov    byte ptr ds:[_gameaction], GA_COMPLETED
+
+
 jmp       done_with_switch_block
 
 switch_case_52:

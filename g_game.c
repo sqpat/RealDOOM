@@ -568,7 +568,6 @@ void __far G_ExitLevel (void)  {
     secretexit = false; 
     gameaction = ga_completed; 
 } 
-*/
 
 // Here's for the german edition.
 void __far G_SecretExitLevel (void) { 
@@ -580,6 +579,7 @@ void __far G_SecretExitLevel (void) {
     }
     gameaction = ga_completed; 
 } 
+*/
  
 void __near G_DoCompleted (void)  { 
     void (__far* WI_Start)(wbstartstruct_t __near*, boolean) = 					  ((void    (__far *)(wbstartstruct_t __near*, boolean))(MK_FP(wianim_codespace_segment, 		 WI_StartOffset)));

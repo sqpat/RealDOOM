@@ -516,7 +516,12 @@ mov   cx, si
 pop   bx   ; bp - 2
 xor   di, di
 call  P_ChangeSwitchTexture_
-call  dword ptr ds:[_G_SecretExitLevel_addr]
+
+;call  G_SecretExitLevel_ ; inlined
+mov    al, byte ptr ds:[_map31_exists]
+mov    byte ptr ds:[_secretexit], al
+mov    byte ptr ds:[_gameaction], GA_COMPLETED
+
 jmp   do_specialline_exit_1
 
 

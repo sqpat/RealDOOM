@@ -141,6 +141,9 @@ db 0Ah, "W_Init: Init WADfiles.", 0
 str_hu_init_font_lump:
 db "STCFN033", 0
 
+str_map31:
+db "map31", 0
+
 COMMENT @
 str_title_plutonia:
 db "                   DOOM 2: Plutonia Experiment v", 0
@@ -940,6 +943,15 @@ mov   ax, HU_INIT_TEXT_STR
 call  DoPrintChain_
 ;call  HU_Init_
 ; inlined
+
+mov   ax, OFFSET str_map31
+mov   dx, cs
+call  W_CheckNumForNameFarString_
+test  ax, ax
+js    map31_doesnt_exist
+mov   byte ptr ds:[_map31_exists], 1
+map31_doesnt_exist:
+
 
 call  Z_QuickMapStatus_
 
