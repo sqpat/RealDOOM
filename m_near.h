@@ -452,7 +452,12 @@
 
 
 #define FixedMulTrig_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x044C)))
-#define G_DeferedInitNew_addr			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0450)))
+// #define G_DeferedInitNew_addr			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0450)))
+
+#define d_skill                           (*(skill_t __near *)                (_NULL_OFFSET + 0x0450))
+#define d_episode                         (*(int8_t  __near *)                (_NULL_OFFSET + 0x0451))
+#define d_map                             (*(int8_t  __near *)                (_NULL_OFFSET + 0x0452))
+#define secretexit                        (*(boolean __near *)                (_NULL_OFFSET + 0x0453))
 
 
 #define V_DrawPatch_addr                  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0454)))
@@ -921,9 +926,6 @@ extern boolean         mousearray[4];
 extern boolean*        mousebuttons;
 
 
-extern skill_t d_skill; 
-extern int8_t     d_episode;
-extern int8_t     d_map;
 
 
 extern int16_t		myargc;
@@ -932,7 +934,6 @@ extern uint8_t		usemouse;
 
 
 extern int8_t __far*   defdemoname; 
-extern boolean         secretexit; 
 
 
 // Now what?

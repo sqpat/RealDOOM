@@ -168,10 +168,6 @@ uint8_t		usemouse;
 
 
 int8_t __far*   defdemoname; 
-skill_t d_skill; 
-int8_t     d_episode;
-int8_t     d_map;
-boolean         secretexit; 
 
 
 

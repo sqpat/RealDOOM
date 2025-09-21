@@ -866,7 +866,7 @@ void __near Z_LoadBinaries() {
 
 
 	S_InitSFXCache_addr =			    (uint32_t)(S_InitSFXCache);
-	G_DeferedInitNew_addr =			    (uint32_t)(G_DeferedInitNew);
+
 	I_Quit_addr =					    (uint32_t)(I_Quit);
 	I_WaitVBL_addr =				    (uint32_t)(I_WaitVBL);
 	I_SetPalette_addr =				    (uint32_t)(I_SetPalette);

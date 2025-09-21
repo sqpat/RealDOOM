@@ -3729,7 +3729,7 @@ and   al, (BACKUPTICS-1)
 cbw
 call  G_BuildTiccmd_
 cmp   byte ptr ds:[_advancedemo], 0
-jme   do_advance_demo
+jne   do_advance_demo
 dont_advance_demo:
 done_advancing_demo:
 call  M_Ticker_

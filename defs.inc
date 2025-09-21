@@ -399,7 +399,10 @@ _WAD_PAGE_FRAME_PTR =				 _NULL_OFFSET + 00448h
 _BSP_CODE_SEGMENT_PTR =				 _NULL_OFFSET + 0044Ah
 
 _FixedMulTrig_addr = 			 	 _NULL_OFFSET + 0044Ch
-_G_DeferedInitNew_addr = 			 _NULL_OFFSET + 00450h
+_d_skill =                           _NULL_OFFSET + 00450h
+_d_episode =                         _NULL_OFFSET + 00451h
+_d_map =                             _NULL_OFFSET + 00452h
+_secretexit =                        _NULL_OFFSET + 00453h
 
 
 _V_DrawPatch_addr =              	 _NULL_OFFSET + 00454h

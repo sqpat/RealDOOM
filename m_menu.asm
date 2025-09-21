@@ -1341,17 +1341,21 @@ PUBLIC  M_VerifyNightmare_
 
 cmp   al, 'y' ; 079h
 jne   exit_verify_nightmare
-push  bx
-push  dx
-xor   dx, dx
-mov   dl, byte ptr cs:[_menu_epi]
-inc   dx
-mov   bx, 1
-mov   ax, SK_NIGHTMARE
-call  dword ptr ds:[_G_DeferedInitNew_addr]
-mov   byte ptr ds:[_menuactive], 0
-pop   dx
-pop   bx
+;call  dword ptr ds:[_G_DeferedInitNew_addr]
+
+xor   ax, ax
+mov   byte ptr ds:[_menuactive], al ; 0
+inc   ah
+add   al, byte ptr cs:[_menu_epi]
+;void __far G_DeferedInitNew (skill_t skill, int8_t episode, int8_t map);
+mov   word ptr ds:[_d_episode], ax 
+;mov   byte ptr ds:[_d_map], ah ; 1
+mov   byte ptr ds:[_d_skill], SK_NIGHTMARE
+mov   byte ptr ds:[_gameaction], GA_NEWGAME
+
+
+
+
 exit_verify_nightmare:
 ret   
 
@@ -1383,12 +1387,18 @@ lea   ax, [bp - 0100h]
 call  M_StartMessage_
 jmp   exit_choose_skill
 not_nightmare:
-xor   dx, dx
-mov   dl, byte ptr cs:[_menu_epi]
-inc   dx
+mov   ah, byte ptr cs:[_menu_epi]
+inc   ah
+
+;call  dword ptr ds:[_G_DeferedInitNew_addr]
 mov   bx, 1
-call  dword ptr ds:[_G_DeferedInitNew_addr]
-mov   byte ptr ds:[_menuactive], 0
+mov   word ptr ds:[_d_skill], ax
+;mov   byte ptr ds:[_d_episode], ah
+mov   byte ptr ds:[_d_map], bl ; 1
+mov   byte ptr ds:[_menuactive], bh ; 0
+mov   byte ptr ds:[_gameaction], GA_NEWGAME
+
+
 exit_choose_skill:
 LEAVE_MACRO 
 pop   dx

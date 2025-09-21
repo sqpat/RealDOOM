@@ -37,7 +37,6 @@ EXTRN V_DrawPatch_:FAR
 EXTRN cht_CheckCheat_:NEAR
 EXTRN cht_GetParam_:NEAR
 EXTRN locallib_printhex_:NEAR
-EXTRN G_DeferedInitNew_:FAR
 EXTRN R_PointToAngle2_:FAR
 EXTRN combine_strings_:NEAR
 EXTRN M_Random_:NEAR
@@ -1396,14 +1395,16 @@ cmp   ah, 40
 jg    exit_st_responder_return
 checks_passed:
 
-xor   dx, dx
-xor   bx, bx
-mov   dl, al
-mov   bl, ah
+;void __far G_DeferedInitNew ( skill_t skill, int8_t episode, int8_t map) { 
+;call  G_DeferedInitNew_
+
+mov   word ptr ds:[_d_episode], ax
+;mov   byte ptr ds:[_d_map], ah
 mov   word ptr ds:[_player + PLAYER_T.player_message], STSTR_CLEV
 mov   al, byte ptr ds:[_gameskill]
-xor   ah, ah
-call  G_DeferedInitNew_
+mov   byte ptr ds:[_d_skill], al
+mov   byte ptr ds:[_gameaction], GA_NEWGAME
+
 jmp   exit_st_responder_return
 
 

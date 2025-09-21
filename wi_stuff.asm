@@ -151,7 +151,7 @@ db 0, 1
 _splatRef:
 db 2
 
-_secretexit:
+_wi_secretexit:
 db 0
 
 
@@ -1813,7 +1813,7 @@ PROC G_WorldDone_ NEAR
 PUBLIC G_WorldDone_
 
 mov   byte ptr ds:[_gameaction], 8
-cmp   byte ptr cs:[_secretexit - OFFSET WI_STARTMARKER_], 0
+cmp   byte ptr cs:[_wi_secretexit - OFFSET WI_STARTMARKER_], 0
 je    continue_world_done
 
 did_secret_stuff:
@@ -1853,7 +1853,7 @@ ja    gamemap_a_15
 
 
 gamemap_31:
-cmp   byte ptr cs:[_secretexit - OFFSET WI_STARTMARKER_], 0
+cmp   byte ptr cs:[_wi_secretexit - OFFSET WI_STARTMARKER_], 0
 je    exit_worlddone
 gamemap_finalesetup:
 mov   ax, 2
@@ -2264,7 +2264,7 @@ PROC WI_Start_ FAR
 PUBLIC WI_Start_
 
 mov   byte ptr cs:[_unloaded - OFFSET WI_STARTMARKER_], 0
-mov   byte ptr cs:[_secretexit - OFFSET WI_STARTMARKER_], dl
+mov   byte ptr cs:[_wi_secretexit - OFFSET WI_STARTMARKER_], dl
 call  WI_initVariables_
 call  WI_Init_
 call  WI_loadData_
