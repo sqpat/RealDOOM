@@ -621,7 +621,7 @@ void __near G_BeginRecording (void)  {
 	Z_QuickMapPhysics();
 
 } 
-*/
+
 
 //
 //  D_DoomLoop
@@ -689,11 +689,11 @@ void __near D_DoomLoop (void) {
 		cachedtics = ticcount;
 #endif
    
-   /*
-if (gametic == 200){
-    I_Error("done");
-}
-*/
+   
+// if (gametic == 200){
+//     I_Error("done");
+// }
+
 
 				
 
@@ -719,6 +719,7 @@ if (gametic == 200){
 		
 	}
 }
+*/
 
 // int16_t counter = 0;
 // int16_t setval = 0;
@@ -742,6 +743,7 @@ if (gametic == 200){
 // D_PageTicker
 // Handles timing for warped projection
 //
+/*
 void __near D_PageTicker (void) {
     if (--pagetic < 0){
 	    advancedemo = true;
@@ -753,7 +755,6 @@ void __near D_PageTicker (void) {
 //
 // D_PageDrawer
 //
-/*
 void __near D_PageDrawer (void) {
 
 	// we dont have various screen buffers anymore, so we cant draw to buffer in 'read this'
@@ -888,6 +889,7 @@ void __near Z_ClearDeadCode() {
 }
 
 void __near D_DoomMain2(void);
+void __near I_InitGraphics(void);
 
 
  void __near D_DoomMain(void) {

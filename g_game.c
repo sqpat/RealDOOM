@@ -491,7 +491,12 @@ void __near G_Ticker (void)  {
 			break;
  
         case GS_DEMOSCREEN: 
-			D_PageTicker (); 
+			// D_PageTicker ();
+            // inline only use
+            if (--pagetic < 0){
+	            advancedemo = true;
+	        }
+ 
 			break;
     }        
 

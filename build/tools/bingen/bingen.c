@@ -516,8 +516,6 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     // s_init offsets
     fprintf(fp, "#define LoadSFXWadLumpsOffset                   0x%X\n", FP_OFF(LoadSFXWadLumps)                   - FP_OFF(S_INIT_STARTMARKER));
 
-    // musload offset
-    fprintf(fp, "#define S_ActuallyChangeMusicOffset             0x%X\n", FP_OFF(S_ActuallyChangeMusic)             - FP_OFF(SM_LOAD_STARTMARKER));
 
     // physics high code offsets
     fprintf(fp, "#define P_SetThingPositionFarOffset             0x%X\n", FP_OFF(P_SetThingPositionFar)             - FP_OFF(P_SIGHT_STARTMARKER));
@@ -528,7 +526,6 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "#define AM_TickerOffset                         0x%X\n", FP_OFF(AM_Ticker)                         - FP_OFF(P_SIGHT_STARTMARKER));
     
     fprintf(fp, "#define S_StartSoundFarOffset                   0x%X\n", FP_OFF(S_StartSoundFar)                   - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "#define S_UpdateSoundsOffset                    0x%X\n", FP_OFF(S_UpdateSounds)                    - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "#define S_StartOffset                           0x%X\n", FP_OFF(S_Start)                           - FP_OFF(P_SIGHT_STARTMARKER));
     
 
@@ -622,8 +619,11 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "AM_DRAWER_OFFSET       = 0%Xh\n",                   FP_OFF(AM_Drawer)                        - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "AM_TICKER_OFFSET       = 0%Xh\n",                   FP_OFF(AM_Ticker)                        - FP_OFF(P_SIGHT_STARTMARKER));
 
-
+    fprintf(fp, "S_UPDATESOUNDSOFFSET       = 0%Xh\n",            FP_OFF(S_UpdateSounds)                      - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "S_STARTSOUNDFAROFFSET      = 0%Xh\n",            FP_OFF(S_StartSoundFar)                     - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "S_ACTUALLYCHANGEMUSICOFFSET = 0%Xh\n",           FP_OFF(S_ActuallyChangeMusic)               - FP_OFF(P_SIGHT_STARTMARKER));
+
+
 
     fprintf(fp, "M_STARTCONTROLPANELOFFSET  = 0%Xh\n",            FP_OFF(M_StartControlPanel)                 - FP_OFF(M_MENU_STARTMARKER));
     fprintf(fp, "M_DRAWEROFFSET             = 0%Xh\n",            FP_OFF(M_Drawer)                            - FP_OFF(M_MENU_STARTMARKER));

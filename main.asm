@@ -37,6 +37,10 @@ EXTRN M_CheckParm_:NEAR
 EXTRN HU_Responder_:NEAR
 EXTRN ST_Responder_:NEAR
 
+EXTRN D_DoAdvanceDemo_:NEAR
+EXTRN G_Ticker_:NEAR
+EXTRN TryRunTics_:NEAR
+
 EXTRN FastDiv3216u_:FAR
 EXTRN Z_SetOverlay_:FAR
 EXTRN fopen_:FAR
@@ -69,6 +73,7 @@ EXTRN _mousebstrafe:BYTE
 EXTRN _mousebuttons:BYTE
 EXTRN _mousebfire:BYTE
 
+EXTRN _singletics:BYTE
 EXTRN _turnheld:BYTE
 
 
@@ -3700,6 +3705,72 @@ pop   si
 
 retf
 ENDP
+
+carry_gametic_inc:
+inc   word ptr ds:[_gametic+2]
+jmp   done_with_gametic_inc
+
+carry_maketic_inc:
+inc   word ptr ds:[_maketic+2]
+jmp   done_with_maketic_inc
+
+PROC    D_DoomLoop_ FAR
+PUBLIC  D_DoomLoop_
+
+continue_doom_loop:
+
+cmp   byte ptr ds:[_singletics], 0
+je    not_singletics
+
+call  I_StartTic_
+call  D_ProcessEvents_
+mov   al, byte ptr ds:[_maketic]
+and   al, (BACKUPTICS-1)
+cbw
+call  G_BuildTiccmd_
+cmp   byte ptr ds:[_advancedemo], 0
+je    dont_advance_demo
+call  D_DoAdvanceDemo_
+dont_advance_demo:
+call  M_Ticker_
+call  G_Ticker_
+
+inc   word ptr ds:[_gametic]
+jz    carry_gametic_inc
+done_with_gametic_inc:
+inc   word ptr ds:[_maketic]
+jz    carry_maketic_inc
+done_with_maketic_inc:
+jmp   continue_tic
+
+not_singletics:
+call  TryRunTics_
+
+continue_tic:
+
+;call  S_UpdateSounds_
+
+db    09Ah
+dw    S_UPDATESOUNDSOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+cmp   byte ptr ds:[_pendingmusicenum], 0
+je    no_pending_music
+mov   ax, OVERLAY_ID_MUS_LOADER
+call  Z_SetOverlay_
+db    09Ah
+dw    S_ACTUALLYCHANGEMUSICOFFSET, CODE_OVERLAY_SEGMENT
+
+
+no_pending_music:
+
+
+call  D_Display_
+
+jmp   continue_doom_loop
+
+
+ENDP
+
 
 
 

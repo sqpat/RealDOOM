@@ -58,7 +58,6 @@
 #define P_ArchiveThinkersOffset                 0x855
 #define P_ArchiveSpecialsOffset                 0x9ED
 #define LoadSFXWadLumpsOffset                   0x4
-#define S_ActuallyChangeMusicOffset             0x404
 #define P_SetThingPositionFarOffset             0x2A73
 #define P_SpawnMapThingOffset                   0x2BEE
 #define P_TickerOffset                          0x843A
@@ -66,7 +65,6 @@
 #define AM_DrawerOffset                         0x96EC
 #define AM_TickerOffset                         0x929C
 #define S_StartSoundFarOffset                   0x9BBD
-#define S_UpdateSoundsOffset                    0x9BDB
 #define S_StartOffset                           0x9C83
 #define M_InitOffset                            0x1192
 #define M_ResponderOffset                       0xD61
@@ -101,6 +99,6 @@
 #define WipeCodeSize                   0x5FC
 #define FinaleCodeSize                 0xBCB
 #define SaveLoadCodeSize               0xB34
-#define SMLoadCodeSize                 0x4CB
+#define SMLoadCodeSize                 0x4CA
 #define SInitCodeSize                  0x55F
 #define MaximumMusDriverSize           0x100E

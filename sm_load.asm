@@ -172,7 +172,8 @@ do_change_music_call_2:
 call      Z_QuickMapMusicPageFrame_SMLoad_
 jmp       done_with_changemusic_call_2
 
-PROC  I_LoadSong_
+; only use? inlined?
+PROC  I_LoadSong_ NEAR
 
 
 push      bx
@@ -427,14 +428,14 @@ retf
 ENDP
 
 
-PROC  S_ActuallyChangeMusic_
+PROC  S_ActuallyChangeMusic_ FAR
 PUBLIC  S_ActuallyChangeMusic_
 
 mov   al, byte ptr ds:[_pendingmusicenum]
 mov   byte ptr ds:[_pendingmusicenum], 0
 cmp   word ptr ds:[_playingdriver+2], 0
 jne   do_changemusic
-ret
+retf
 do_changemusic:
 
 

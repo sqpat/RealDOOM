@@ -25,18 +25,9 @@
 void __near D_DoomMain (void);
 
 // Called by IO functions when input is detected.
-void __near D_PostEvent (int16_t data1, int16_t data2);
-
-
 //
 // BASE LEVEL
 //
-void __near D_PageTicker (void);
-void __near D_PageDrawer (void);
-void __far D_StartTitle (void);
-
-
-
 
 void __near D_DoomLoop(void);
 
