@@ -40,6 +40,8 @@ EXTRN _precache:BYTE
 
 .CODE
 
+EXTRN _gamekeydown:BYTE
+
 
 PROC    G_DEMO_STARTMARKER_ NEAR
 PUBLIC  G_DEMO_STARTMARKER_
@@ -286,11 +288,50 @@ ENDP
 
 DEMOMARKER = 080h
 
+
+
+PROC   G_WriteDemoTiccmd_ NEAR
+PUBLIC G_WriteDemoTiccmd_
+
+push   di
+push   si
+xchg   ax, si
+
+call   Z_QuickMapDemo_
+
+mov  al, byte ptr cs:['q' + _gamekeydown]
+je   dont_end_demo_q
+call G_CheckDemoStatus_
+
+dont_end_demo_q:
+
+mov    di, word ptr ds:[_demo_p]
+mov    ax, DEMO_SEGMENT
+mov    es, ax
+movsw ; forwardmove, sidemove
+lodsw
+add    ax, 128
+mov    al, ah
+stosb
+inc    di
+inc    di
+inc    di
+movsb
+
+lea    ax, [di - SIZE TICCMD_T]
+
+;call   G_ReadDemoTiccmd_   ; internally calls z_quickmap etc
+jmp     do_readdemo_from_write
+
+ENDP
+
+
 PROC   G_ReadDemoTiccmd_ NEAR
 PUBLIC G_ReadDemoTiccmd_
 
 push   di
 push   si
+do_readdemo_from_write:
 xchg   ax, di
 
 call   Z_QuickMapDemo_
@@ -331,7 +372,7 @@ pop    si
 pop    di
 ret
 ENDP
- 
+
 
 
 PROC    G_DEMO_ENDMARKER_ NEAR

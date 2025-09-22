@@ -655,6 +655,7 @@ ENDP
 
 
 _gamekeydown:   ;  256 bytes.
+PUBLIC _gamekeydown
 db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -749,7 +750,6 @@ ret
 
 ENDP
 
-@
 ; todo inline later
 PROC G_GetGameKey_  NEAR
 PUBLIC G_GetGameKey_
@@ -761,6 +761,7 @@ mov  al, byte ptr cs:[bx + _gamekeydown]
 pop  bx
 ret
 
+@
 ENDP
 
 

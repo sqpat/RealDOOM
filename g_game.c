@@ -951,8 +951,6 @@ void __near G_ReadDemoTiccmd (ticcmd_t __near* cmd)  {
 	Z_QuickMapPhysics();
 
 }
-*/
-#define DEMOMARKER              0x80
 
 boolean __near G_GetGameKey(int8_t keyr);
 
@@ -986,8 +984,10 @@ void __near G_WriteDemoTiccmd (ticcmd_t __near* cmd)  {
 
 } 
  
+*/
  
  
+#define DEMOMARKER              0x80
  
 
  
