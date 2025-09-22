@@ -629,16 +629,14 @@ PUBLIC G_CopyCmd_
     
     push    ds              ; es:di is player.cmd
     pop     es
-    mov     di, ax
+    xchg    ax, di
 
     push    cs              ; ds:si is _localcmds struct
     pop     ds
 
     xor     dh, dh
     mov     si, dx
-    sal     si, 1
-    sal     si, 1
-    sal     si, 1      ; 8 bytes per
+    SHIFT_MACRO sal si 3 ; 8 bytes per
     add     si, OFFSET _localcmds
 
     movsw
@@ -646,8 +644,8 @@ PUBLIC G_CopyCmd_
     movsw
     movsw   ; copy one cmd
     
-    mov     ax, ss
-    mov     ds, ax
+    push    ss
+    pop     ds
     
     pop     di
     pop     si

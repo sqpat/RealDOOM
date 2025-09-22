@@ -895,3 +895,25 @@ MAPTEXTURE_T STRUC
 MAPTEXTURE_T ENDS
 
 
+
+
+WBPLAYERSTRUCT_T STRUC
+    wbos_in                db  ? ;  0
+    wbos_skills            dw  ? ;  1
+    wbos_sitems            dw  ? ;  3
+    wbos_ssecret           dw  ? ;  5
+    wbos_stime             dw  ? ;  7
+WBPLAYERSTRUCT_T ENDS
+
+WBSTARTSTRUCT_T STRUC
+    wbss_epsd              db  ? ;  0
+    wbss_didsecret         db  ? ;  1
+    wbss_last              db  ? ;  2
+    wbss_next              db  ? ;  3
+    wbss_maxkills          dw  ? ;  4
+    wbss_maxitems          dw  ? ;  6
+    wbss_maxsecret         dw  ? ;  8
+    wbss_partime           dw  ? ;  A
+    wbss_plyr              WBPLAYERSTRUCT_T  ? ;  C
+WBSTARTSTRUCT_T ENDS
+

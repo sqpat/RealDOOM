@@ -19,10 +19,11 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-
+EXTRN G_DoLoadLevel_:NEAR
 
 .DATA
 
+EXTRN _wminfo:WBSTARTSTRUCT_T
 
 .CODE
 
@@ -54,6 +55,45 @@ rep     stosw
 
 pop    cx
 pop    di
+
+ret
+ENDP
+
+
+PROC   G_DoNewGame_ NEAR
+PUBLIC G_DoNewGame_
+
+push   dx
+push   bx
+xor    ax, ax
+mov    byte ptr ds:[_demoplayback], al ; false
+mov    byte ptr ds:[_respawnparm], al ; false
+mov    byte ptr ds:[_fastparm], al ; false
+mov    byte ptr ds:[_nomonsters], al ; false
+mov    byte ptr ds:[_gameaction], al ; GA_NOTHING
+mov    ax, word ptr ds:[_d_skill]
+mov    dl, ah
+; mov    dl, byte ptr ds:[_d_episode]
+mov    bl, byte ptr ds:[_d_map]
+pop    bx
+pop    dx
+
+ret
+ENDP
+
+
+
+PROC   G_DoWorldDone_ NEAR
+PUBLIC G_DoWorldDone_
+
+mov    ax, 1
+mov    byte ptr ds:[_gamestate], ah ; GS_LEVEL
+mov    byte ptr ds:[_gameaction], ah ; GA_NOTHING
+mov    byte ptr ds:[_viewactive], al ; true
+mov    al, byte ptr ds:[_wminfo + WBSTARTSTRUCT_T.wbss_next]
+mov    byte ptr ds:[_gamemap], al ; true
+
+call   G_DoLoadLevel_
 
 ret
 ENDP

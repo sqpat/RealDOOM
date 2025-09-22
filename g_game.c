@@ -349,7 +349,6 @@ boolean __near G_Responder (event_t __far* ev)  {   // any other key pops up men
 
 	return false;
 } 
-*/
  
 void __near G_DoWorldDone(void) {
 	gamestate = GS_LEVEL;
@@ -360,7 +359,6 @@ void __near G_DoWorldDone(void) {
 
 }
 
-
 void __near G_DoNewGame(void) {
 	demoplayback = false;
 	//playeringame[1] = playeringame[2] = playeringame[3] = 0;
@@ -370,9 +368,11 @@ void __near G_DoNewGame(void) {
 	G_InitNew(d_skill, d_episode, d_map);
 	gameaction = ga_nothing;
 }
-
+*/
+void __near G_DoWorldDone(void);
 void __near G_CopyCmd(ticcmd_t __near * destcmd, int8_t srcindex);
- 
+void __near G_DoNewGame(void);
+
 // G_Ticker
 // Make ticcmd_ts for the players.
 //
