@@ -24,9 +24,12 @@ INSTRUCTION_SET_MACRO
 
 EXTRN Z_QuickMapPhysics_:FAR
 EXTRN Z_QuickMapDemo_:FAR
+EXTRN I_Error_:FAR
+EXTRN M_WriteFile_:NEAR
+EXTRN I_Quit_:FAR
 EXTRN W_CacheLumpNameDirectFarString_:FAR
 EXTRN G_InitNew_:NEAR
-EXTRN G_CheckDemoStatus_:NEAR
+
 
 .DATA
 
@@ -35,7 +38,8 @@ EXTRN _pagetic:WORD
 EXTRN _pagename:WORD
 EXTRN _defdemoname:DWORD
 EXTRN _precache:BYTE
-
+EXTRN _timingdemo:BYTE
+EXTRN _singledemo:BYTE
 
 
 .CODE
@@ -374,6 +378,82 @@ ret
 ENDP
 
 
+str_timed_tics:
+db 0Ah, "timed %li gametics in %li realtics ", 0Ah, " prnd index %i ", 0
+str_demo_recorded:
+db "Demo %s recorded", 0
+
+PROC   G_CheckDemoStatus_ NEAR
+PUBLIC G_CheckDemoStatus_
+
+
+xor    ax, ax
+cmp    byte ptr ds:[_timingdemo], al ; 0
+je     dont_end_playback
+les    ax, dword ptr ds:[_ticcount]
+mov    dx, es
+sub    ax, word ptr ds:[_starttime + 0]
+sbb    dx, word ptr ds:[_starttime + 2]
+push   word ptr ds:[_prndindex]
+push   dx
+push   ax
+push   word ptr ds:[_gametic+2]
+push   word ptr ds:[_gametic+0]
+
+
+push   cs
+mov    ax, OFFSET str_timed_tics
+push   ax
+call   I_Error_
+
+dont_end_playback:
+
+cmp    byte ptr ds:[_demoplayback], al ; 0
+je     skip_demo_playback_end_check
+cmp    byte ptr ds:[_singledemo], al
+je     dont_quit
+call   I_Quit_
+dont_quit:
+
+mov     byte ptr ds:[_demoplayback], al ; false                      
+mov     byte ptr ds:[_respawnparm], al ; false                      
+mov     byte ptr ds:[_fastparm], al ; false                      
+mov     byte ptr ds:[_nomonsters], al ; false                      
+mov     byte ptr ds:[_advancedemo], al ; false                      
+
+ret
+
+skip_demo_playback_end_check:
+cmp    byte ptr ds:[_demorecording], al ; 0
+je     just_exit
+call   Z_QuickMapDemo_
+
+mov    di, word ptr ds:[_demo_p]
+mov    ax, DEMO_SEGMENT
+mov    es, ax
+mov    al, DEMOMARKER
+stosb
+mov    word ptr ds:[_demo_p], di
+
+mov    ax, word ptr ds:[_demoname]
+xor    bx, bx
+mov    cx, DEMO_SEGMENT
+mov    dx, di
+push   ax ; for I_Error call
+call   M_WriteFile_
+
+; is this necessary? i guess so in i_quit?
+ mov    byte ptr ds:[_demorecording], 0
+
+push   cs
+mov    ax, OFFSET str_demo_recorded
+push   ax
+call   I_Error_
+
+just_exit:
+ret
+
+ENDP
 
 PROC    G_DEMO_ENDMARKER_ NEAR
 PUBLIC  G_DEMO_ENDMARKER_

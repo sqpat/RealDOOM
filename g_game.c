@@ -1052,9 +1052,8 @@ void __near G_DoPlayDemo (void)  {
 = Called after a death or level completion to allow demos to be cleaned up 
 = Returns true if a new demo loop action will take place 
 =================== 
-*/ 
 
-boolean __far G_CheckDemoStatus (void)  { 
+boolean __near G_CheckDemoStatus (void)  { 
 	ticcount_t             endtime;
 #ifdef DETAILED_BENCH_STATS
 	uint32_t fps, fps2;
@@ -1085,14 +1084,10 @@ boolean __far G_CheckDemoStatus (void)  {
 
 		I_Error("\ntimed %li gametics in %li realtics \n prnd index %i ", gametic, endtime - starttime,  prndindex );
 
-/*
 
-		I_Error("\ntimed %li gametics in %li realtics \n prnd index %i ", gametic , endtime - starttime,  prndindex,
-            
-                        spritecacheevictcount, flatcacheevictcount, patchcacheevictcount, compositecacheevictcount
-
-            );
-*/
+		// I_Error("\ntimed %li gametics in %li realtics \n prnd index %i ", gametic , endtime - starttime,  prndindex,
+        //                 spritecacheevictcount, flatcacheevictcount, patchcacheevictcount, compositecacheevictcount
+        //     );
 
 #endif
 
@@ -1123,6 +1118,7 @@ boolean __far G_CheckDemoStatus (void)  {
          
     return false; 
 } 
+*/ 
  
  
  
