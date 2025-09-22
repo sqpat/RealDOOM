@@ -24,6 +24,7 @@ EXTRN G_DoLoadLevel_:NEAR
 .DATA
 
 EXTRN _wminfo:WBSTARTSTRUCT_T
+EXTRN _maxammo:word
 
 .CODE
 
@@ -96,6 +97,50 @@ mov    byte ptr ds:[_gamemap], al ; true
 call   G_DoLoadLevel_
 
 ret
+ENDP
+
+
+PROC   G_PlayerReborn_ FAR
+PUBLIC G_PlayerReborn_
+
+push   cx
+push   di
+push   si
+
+push   word ptr ds:[_player + PLAYER_T.player_killcount]
+push   word ptr ds:[_player + PLAYER_T.player_itemcount]
+push   word ptr ds:[_player + PLAYER_T.player_secretcount]
+mov    cx, SIZE PLAYER_T
+mov    di, OFFSET _player
+xor    ax, ax
+rep    stosb
+pop    word ptr ds:[_player + PLAYER_T.player_secretcount]
+pop    word ptr ds:[_player + PLAYER_T.player_itemcount]
+pop    word ptr ds:[_player + PLAYER_T.player_killcount]
+
+inc    ax
+mov    byte ptr ds:[_player + PLAYER_T.player_attackdown], al    ; true, dont do anything immediately
+mov    byte ptr ds:[_player + PLAYER_T.player_usedown], al       ; true, dont do anything immediately
+;mov    byte ptr ds:[_player + PLAYER_T.player_playerstate], ah   ; PST_LIVE, 0
+mov    word ptr ds:[_player + PLAYER_T.player_health], MAXHEALTH
+mov    byte ptr ds:[_player + PLAYER_T.player_pendingweapon], al ; WP_PISTOL
+mov    byte ptr ds:[_player + PLAYER_T.player_readyweapon], al ; WP_PISTOL
+mov    byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_FIST], al ; true
+mov    byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_PISTOL], al ; true
+mov    word ptr ds:[_player + PLAYER_T.player_ammo + 2 * AM_CLIP], 50
+
+mov    di, OFFSET _player + PLAYER_T.player_ammo
+mov    si, OFFSET _maxammo
+movsw
+movsw
+movsw
+movsw
+
+pop    si
+pop    di
+pop    cx
+
+retf
 ENDP
 
 

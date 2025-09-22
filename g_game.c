@@ -522,7 +522,6 @@ void __near G_PlayerFinishLevel ()  {
 	player.damagecount = 0;                 // no palette changes 
 	player.bonuscount = 0;
 } 
- */
 
 //
 // G_PlayerReborn
@@ -565,7 +564,7 @@ void __far G_PlayerReborn () {
 //
 // G_DoCompleted 
 //
-  /*
+
 void __far G_ExitLevel (void)  { 
     secretexit = false; 
     gameaction = ga_completed; 
@@ -729,8 +728,6 @@ void __near G_DoCompleted (void)  {
 #define VERSIONSIZE             16 
 
 void __near R_ExecuteSetViewSize (void);
-
-void Z_QuickMapRender_4000To8000_8000Only();
 
 void __near G_DoLoadGame (void)  { 
 	
