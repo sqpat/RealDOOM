@@ -193,25 +193,52 @@ ENDP
 PROC P_SpawnPlayer_ NEAR
 PUBLIC P_SpawnPlayer_
 
-push      bx
-push      cx
-push      dx
-push      si
+PUSHA_NO_AX_OR_BP_MACRO
 
-mov       bx, ax
+xchg      ax, bx
 
 mov       dx, word ptr ds:[bx + MAPTHING_T.mapthing_x]
-mov       cx, word ptr ds:[bx + MAPTHING_T.mapthing_y]
 push      word ptr ds:[bx + MAPTHING_T.mapthing_angle]  ; for later
 
 cmp       byte ptr ds:[_player + PLAYER_T.player_playerstate], PST_REBORN
 jne       dont_player_reborn
-;call      G_PlayerReborn_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _G_PlayerReborn_addr
+call      G_PlayerReborn_
+
+; inlined
+push   word ptr ds:[_player + PLAYER_T.player_killcount]
+push   word ptr ds:[_player + PLAYER_T.player_itemcount]
+push   word ptr ds:[_player + PLAYER_T.player_secretcount]
+mov    cx, SIZE PLAYER_T
+mov    di, OFFSET _player
+xor    ax, ax
+push   ds
+pop    es
+rep    stosb
+pop    word ptr ds:[_player + PLAYER_T.player_secretcount]
+pop    word ptr ds:[_player + PLAYER_T.player_itemcount]
+pop    word ptr ds:[_player + PLAYER_T.player_killcount]
+
+inc    ax
+mov    byte ptr ds:[_player + PLAYER_T.player_attackdown], al    ; true, dont do anything immediately
+mov    byte ptr ds:[_player + PLAYER_T.player_usedown], al       ; true, dont do anything immediately
+;mov    byte ptr ds:[_player + PLAYER_T.player_playerstate], ah   ; PST_LIVE, 0
+mov    word ptr ds:[_player + PLAYER_T.player_health], MAXHEALTH
+mov    byte ptr ds:[_player + PLAYER_T.player_pendingweapon], al ; WP_PISTOL
+mov    byte ptr ds:[_player + PLAYER_T.player_readyweapon], al ; WP_PISTOL
+mov    byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_FIST], al ; true
+mov    byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_PISTOL], al ; true
+mov    word ptr ds:[_player + PLAYER_T.player_ammo + 2 * AM_CLIP], 50
+
+mov    di, OFFSET _player + PLAYER_T.player_ammo
+mov    si, OFFSET _maxammo
+movsw
+movsw
+movsw
+movsw
+
 dont_player_reborn:
 
+mov       cx, word ptr ds:[bx + MAPTHING_T.mapthing_y]
 xor       bx, bx
 
 IF COMPISA GE COMPILE_186
@@ -323,10 +350,7 @@ mov   byte ptr ds:[_currenttask], TASK_PHYSICS
 ;call     Z_QuickMapScratch_8000_   ; // gross, needed due to p_setup.... perhaps externalize.
 Z_QUICKMAPAI4 pageswapargs_scratch8000_offset_size INDEXED_PAGE_8000_OFFSET
 
-pop       si
-pop       dx
-pop       cx
-pop       bx
+POPA_NO_AX_OR_BP_MACRO
 ret       
 
 ENDP

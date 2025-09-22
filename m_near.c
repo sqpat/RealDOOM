@@ -240,7 +240,6 @@ volatile int8_t TS_InInterrupt = false;
 
 
 
-int16_t	maxammo[NUMAMMO] = {200, 50, 300, 50};
 
 
 

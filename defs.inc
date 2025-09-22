@@ -65,7 +65,7 @@ _spanfunc_prt = 					_NULL_OFFSET + 00010h
 _spanfunc_destview_offset = 		_NULL_OFFSET + 00018h
 _spanfunc_inner_loop_count =		_NULL_OFFSET + 00020h
 _spanfunc_outp = 					_NULL_OFFSET + 00024h
-; 28 -2F unused
+_maxammo = 	     					_NULL_OFFSET + 00028h
 
 _quality_port_lookup = 				_NULL_OFFSET + 00030h
 
@@ -453,7 +453,7 @@ _snd_SBirq =              			 _NULL_OFFSET + 004BEh
 _snd_SBdma =              			 _NULL_OFFSET + 004BFh
 
 
-_G_PlayerReborn_addr =	 	 		 _NULL_OFFSET + 004C0h
+;_G_PlayerReborn_addr =	 	 		 _NULL_OFFSET + 004C0h
 _R_DrawSkyPlaneDynamic_addr =  	     _NULL_OFFSET + 004C4h
 _snd_SBport =                        _NULL_OFFSET + 004C8h
 _snd_Mport =                         _NULL_OFFSET + 004CAh

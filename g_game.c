@@ -68,7 +68,6 @@
 boolean __far G_CheckDemoStatus (void); 
 void    __near G_ReadDemoTiccmd (ticcmd_t __near* cmd); 
 void    __near G_WriteDemoTiccmd (ticcmd_t __near* cmd); 
-void    __far G_PlayerReborn (); 
  
   
 void   __near G_DoLoadLevel (void); 

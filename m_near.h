@@ -103,8 +103,7 @@
 #define spanfunc_inner_loop_count       ((int8_t __near *)                   (_NULL_OFFSET + 0x0020))
 //spanfunc_outp[4]
 #define spanfunc_outp                   ((uint8_t __near *)                  (_NULL_OFFSET + 0x0024))
-
-// 28 to 39 unused
+#define maxammo                         ((int16_t __near *)                  (_NULL_OFFSET + 0x0028))
 
 #define quality_port_lookup             ((uint8_t __near *)                  (_NULL_OFFSET + 0x0030))
 // 3C to 47 free
@@ -502,7 +501,7 @@
 #define snd_SBirq		        		  (*((uint8_t __near*)               (_NULL_OFFSET + 0x04BE)))
 #define snd_SBdma		        		  (*((uint8_t __near*)               (_NULL_OFFSET + 0x04BF)))
 
-#define G_PlayerReborn_addr     		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x04C0)))
+// #define G_PlayerReborn_addr     		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x04C0)))
 
 #define R_DrawSkyPlaneDynamic_addr_Offset (*((int16_t __near*)               (_NULL_OFFSET + 0x04C4)))
 #define R_DrawSkyPlaneDynamic_addr    	  (*((uint32_t __near*)              (_NULL_OFFSET + 0x04C4)))
@@ -965,22 +964,6 @@ extern int8_t __far*   defdemoname;
 extern int8_t     st_stuff_buf[ST_MSGWIDTH];
 
 
-
-
-
-
-
-
-
-
-
-
- 
-
-
-
-
-
 extern task HeadTask;
 extern task MUSTask;
 
@@ -991,23 +974,8 @@ extern volatile int8_t TS_TimesInInterrupt;
 extern int8_t TS_Installed;
 extern volatile int8_t TS_InInterrupt;
 
-
-
-
 #define castorderoffset CC_ZOMBIE
  
-
- 
-
-
-
-
-extern int16_t	maxammo[NUMAMMO];
-
-
-
-   
-
 
 #define    DI_EAST 0
 #define    DI_NORTHEAST 1
@@ -1022,11 +990,6 @@ extern int16_t	maxammo[NUMAMMO];
  
 typedef int8_t dirtype_t;
 
-
- 
-
-
-
 typedef struct {
 
     boolean	istexture;
@@ -1035,16 +998,6 @@ typedef struct {
 	uint16_t		basepic;
     
 } p_spec_anim_t;
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1063,13 +1016,6 @@ typedef	struct {
 
 #define MAXSEGS		32
 #define MAX_WADFILES 4
-
-
-
-
-
-
-
 
 
 

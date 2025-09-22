@@ -550,7 +550,6 @@ void __near P_LoadNodes(int16_t lump) {
 
  
 
-void __far G_PlayerReborn();
  
 
 

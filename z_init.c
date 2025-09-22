@@ -464,7 +464,6 @@ void __near P_SetupLevel (int8_t episode, int8_t map, skill_t skill);
 segment_t __far R_GetPatchTexture(int16_t lump, uint8_t maskedlookup) ;
 segment_t __far R_GetCompositeTexture(int16_t tex_index) ;
 void __far ST_Start(void) ;
-void __far G_PlayerReborn ();
 
 
 
@@ -857,7 +856,7 @@ void __near Z_LoadBinaries() {
 	R_SetViewSize_addr =			    (uint32_t)(R_SetViewSize);
 
 
-	G_PlayerReborn_addr =				(uint32_t)(G_PlayerReborn);
+	// G_PlayerReborn_addr =				(uint32_t)(G_PlayerReborn);
 
 	OutOfThinkers_addr =				(uint32_t)(OutOfThinkers);
 
