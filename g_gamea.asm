@@ -20,7 +20,7 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN G_DoLoadLevel_:NEAR
-
+EXTRN G_InitNew_:NEAR
 .DATA
 
 EXTRN _wminfo:WBSTARTSTRUCT_T
@@ -75,6 +75,7 @@ mov    ax, word ptr ds:[_d_skill]
 mov    dl, ah
 ; mov    dl, byte ptr ds:[_d_episode]
 mov    bl, byte ptr ds:[_d_map]
+call   G_InitNew_
 pop    bx
 pop    dx
 
