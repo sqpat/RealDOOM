@@ -21,6 +21,7 @@ INSTRUCTION_SET_MACRO
 
 EXTRN G_DoLoadLevel_:NEAR
 EXTRN G_InitNew_:NEAR
+EXTRN I_Error_:FAR
 .DATA
 
 EXTRN _wminfo:WBSTARTSTRUCT_T
@@ -31,6 +32,9 @@ EXTRN _wminfo:WBSTARTSTRUCT_T
 PROC    G_GAME_STARTMARKER_ NEAR
 PUBLIC  G_GAME_STARTMARKER_
 ENDP
+
+str_outofthinkers:
+db "Out of thinkers!", 0
 
 PROC    G_PlayerFinishLevel_ NEAR
 PUBLIC  G_PlayerFinishLevel_
@@ -100,6 +104,14 @@ ret
 ENDP
 
 
+PROC    OutOfThinkers_ FAR
+PUBLIC  OutOfThinkers_
+
+push    cs
+mov     ax, OFFSET str_outofthinkers
+push    ax
+call    I_Error_
+ENDP
 
 
 

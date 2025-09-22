@@ -1118,6 +1118,13 @@ boolean __near G_CheckDemoStatus (void)  {
          
     return false; 
 } 
+
+
+void __far OutOfThinkers (){
+	I_Error("Out of thinkers!");
+}
+
+
 */ 
  
  
@@ -1125,7 +1132,3 @@ boolean __near G_CheckDemoStatus (void)  {
 
 
 
-
-void __far OutOfThinkers (){
-	I_Error("Out of thinkers!");
-}
