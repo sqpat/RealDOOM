@@ -19,6 +19,11 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
+EXTRN Z_QuickMapPhysics_:FAR
+EXTRN Z_QuickMapScratch_5000_:FAR
+EXTRN M_WriteFile_:NEAR
+EXTRN R_FillBackScreen_ForceBufferRedraw_:NEAR
+
 EXTRN G_DoLoadLevel_:NEAR
 EXTRN G_InitNew_:NEAR
 EXTRN I_Error_:FAR
@@ -112,6 +117,110 @@ mov     ax, OFFSET str_outofthinkers
 push    ax
 call    I_Error_
 ENDP
+
+SAVEGAMESIZE = 0F800h
+
+str_versionstring:
+db "version 109", 0
+
+
+PROC    G_DoSaveGame_ NEAR
+PUBLIC  G_DoSaveGame_
+
+PUSHA_NO_AX_OR_BP_MACRO
+
+; todo move this code into savegame stuff once its good to go. 
+
+call    Z_QuickMapScratch_5000_
+mov     al, '0'
+add     al, byte ptr ds:[_savegameslot];
+mov     byte ptr ds:[_doomsav0_string + 7], al
+mov     di, SCRATCH_SEGMENT_5000
+mov     es, di
+xor     di, di
+; es:di = save_p/savebuffer
+
+mov     si, OFFSET _savedescription
+mov     cx, SAVESTRINGSIZE / 2
+rep     movsw
+mov     si, OFFSET str_versionstring
+push    cs
+pop     ds
+mov     cl, 12 / 2
+rep     movsw
+xor     ax, ax
+stosw   ; // last 4 bytes of versionsize...
+stosw
+push    ss
+pop     ds
+mov     al, byte ptr ds:[_gameskill]
+stosb
+mov     ax, word ptr ds:[_gameepisode] ; get both...
+;mov     ah, byte ptr ds:[_gamemap]
+stosw
+mov     ax, 1
+stosw           ; true, false
+dec     dx
+stosw           ; false, false
+mov     al, byte ptr ds:[_leveltime+2]
+stosb
+mov     ax, word ptr ds:[_leveltime+0]
+xchg    al, ah
+stosb
+mov     al, ah
+stosb
+
+mov     word ptr ds:[_save_p], di
+;mov     word ptr ds:[_save_p+2], es
+
+
+db      09Ah
+dw      P_ARCHIVEPLAYERSOFFSET, CODE_OVERLAY_SEGMENT
+db      09Ah
+dw      P_ARCHIVEWORLDOFFSET, CODE_OVERLAY_SEGMENT
+db      09Ah
+dw      P_ARCHIVETHINKERSOFFSET, CODE_OVERLAY_SEGMENT
+db      09Ah
+dw      P_ARCHIVESPECIALSOFFSET, CODE_OVERLAY_SEGMENT
+
+les     di, dword ptr ds:[_save_p]
+mov     cx, es
+
+mov     al, 01Dh
+stosb   ; consistency marker.
+cmp     di, SAVEGAMESIZE
+ja      savegame_too_big
+
+mov     ax, OFFSET _doomsav0_string
+; cx already 5000
+xor     bx, bx
+mov     dx, di
+call    M_WriteFile_
+xor     ax, ax
+mov     byte ptr ds:[_gameaction], al ; GA_NOTHING
+mov     byte ptr ds:[_savedescription], al ; \0
+mov     word ptr ds:[_player + PLAYER_T.player_message], GGSAVED
+call    Z_QuickMapPhysics_
+call    R_FillBackScreen_ForceBufferRedraw_
+
+
+POPA_NO_AX_OR_BP_MACRO
+
+ret
+ENDP
+
+str_savegame_too_big:
+db "Savegame buffer overrun", 0
+
+savegame_too_big:
+push    cs
+mov     ax, OFFSET str_savegame_too_big
+push    ax
+call    I_Error_
+
+
+ 
+
 
 
 

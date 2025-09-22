@@ -827,7 +827,6 @@ void __far G_SaveGame(int8_t   slot, int8_t __far* description ) {
     
     sendsave = true; 
 } 
-*/
 
 void __near G_DoSaveGame (void)  { 
 	
@@ -907,6 +906,7 @@ void __near G_DoSaveGame (void)  {
     R_FillBackScreen ();        
 	
 } 
+*/
  
 
 //

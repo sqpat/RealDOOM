@@ -106,7 +106,7 @@
 #define maxammo                         ((int16_t __near *)                  (_NULL_OFFSET + 0x0028))
 
 #define quality_port_lookup             ((uint8_t __near *)                  (_NULL_OFFSET + 0x0030))
-// 3C to 47 free
+// 3C to 47 free 12 bytes
 #define jump_mult_table_3               ((uint8_t __near *)                  (_NULL_OFFSET + 0x0048))
 
 
@@ -660,10 +660,11 @@
 #define mousepresent     				  (*((boolean __near*)               (_NULL_OFFSET + 0x07BD)))
 #define respawnparm       				  (*((boolean __near*)               (_NULL_OFFSET + 0x07BE)))
 #define demorecording     				  (*((boolean __near*)               (_NULL_OFFSET + 0x07BF)))
+#define doomsav0_string                   ((uint8_t __near *)                (_NULL_OFFSET + 0x07C0))
 
 
 
-// 7C0 to 7DF empty
+// 7CD to 7DF empty
 #define screen_oldloc					  (*((mpoint_t __near*)              (_NULL_OFFSET + 0x07E0)))
 #define old_screen_botleft_x			  (*((int16_t __near*)               (_NULL_OFFSET + 0x07E4)))
 #define old_screen_botleft_y			  (*((int16_t __near*)               (_NULL_OFFSET + 0x07E6)))
@@ -750,6 +751,7 @@
 #define CURRENT_POSITION_6  			  (((uint16_t) usedtexturepagemem) + (sizeof(uint8_t) * NUM_TEXTURE_PAGES))
 #define pageswapargs				  	  (((uint16_t __near*) (CURRENT_POSITION_6)))
 #define CURRENT_POSITION_7  			  (((uint16_t) pageswapargs) + (sizeof(uint16_t) * total_pages))
+#define END_OF_FIXED_DATA  			 	  (((uint16_t __near*) (CURRENT_POSITION_7)))
 
 #define MUS_SIZE_PER_PAGE 16256
 

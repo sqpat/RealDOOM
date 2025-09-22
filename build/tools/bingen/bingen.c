@@ -508,10 +508,6 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "#define P_UnArchiveWorldOffset                  0x%X\n", FP_OFF(P_UnArchiveWorld)                  - FP_OFF(P_SAVEG_STARTMARKER));
     fprintf(fp, "#define P_UnArchiveThinkersOffset               0x%X\n", FP_OFF(P_UnArchiveThinkers)               - FP_OFF(P_SAVEG_STARTMARKER));
     fprintf(fp, "#define P_UnArchiveSpecialsOffset               0x%X\n", FP_OFF(P_UnArchiveSpecials)               - FP_OFF(P_SAVEG_STARTMARKER));
-    fprintf(fp, "#define P_ArchivePlayersOffset                  0x%X\n", FP_OFF(P_ArchivePlayers)                  - FP_OFF(P_SAVEG_STARTMARKER));
-    fprintf(fp, "#define P_ArchiveWorldOffset                    0x%X\n", FP_OFF(P_ArchiveWorld)                    - FP_OFF(P_SAVEG_STARTMARKER));
-    fprintf(fp, "#define P_ArchiveThinkersOffset                 0x%X\n", FP_OFF(P_ArchiveThinkers)                 - FP_OFF(P_SAVEG_STARTMARKER));
-    fprintf(fp, "#define P_ArchiveSpecialsOffset                 0x%X\n", FP_OFF(P_ArchiveSpecials)                 - FP_OFF(P_SAVEG_STARTMARKER));
 
     // s_init offsets
     fprintf(fp, "#define LoadSFXWadLumpsOffset                   0x%X\n", FP_OFF(LoadSFXWadLumps)                   - FP_OFF(S_INIT_STARTMARKER));
@@ -637,6 +633,18 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "WI_DRAWEROFFSET            = 0%Xh\n",            FP_OFF(WI_Drawer)                           - FP_OFF(WI_STARTMARKER));
     fprintf(fp, "F_DRAWEROFFSET             = 0%Xh\n",            FP_OFF(F_Drawer)                            - FP_OFF(F_FINALE_STARTMARKER));
     fprintf(fp, "LOADSFXWADLUMPSOFFSET      = 0%Xh\n",            FP_OFF(LoadSFXWadLumps)                     - FP_OFF(S_INIT_STARTMARKER));
+
+
+    fprintf(fp, "P_UNARCHIVEPLAYERSOFFSET    = 0%Xh\n",           FP_OFF(P_UnArchivePlayers)                  - FP_OFF(P_SAVEG_STARTMARKER));
+    fprintf(fp, "P_UNARCHIVEWORLDOFFSET      = 0%Xh\n",           FP_OFF(P_UnArchiveWorld)                    - FP_OFF(P_SAVEG_STARTMARKER));
+    fprintf(fp, "P_UNARCHIVETHINKERSOFFSET   = 0%Xh\n",           FP_OFF(P_UnArchiveThinkers)                 - FP_OFF(P_SAVEG_STARTMARKER));
+    fprintf(fp, "P_UNARCHIVESPECIALSOFFSET   = 0%Xh\n",           FP_OFF(P_UnArchiveSpecials)                 - FP_OFF(P_SAVEG_STARTMARKER));
+    fprintf(fp, "P_ARCHIVEPLAYERSOFFSET      = 0%Xh\n",           FP_OFF(P_ArchivePlayers)                    - FP_OFF(P_SAVEG_STARTMARKER));
+    fprintf(fp, "P_ARCHIVEWORLDOFFSET        = 0%Xh\n",           FP_OFF(P_ArchiveWorld)                      - FP_OFF(P_SAVEG_STARTMARKER));
+    fprintf(fp, "P_ARCHIVETHINKERSOFFSET     = 0%Xh\n",           FP_OFF(P_ArchiveThinkers)                   - FP_OFF(P_SAVEG_STARTMARKER));
+    fprintf(fp, "P_ARCHIVESPECIALSOFFSET     = 0%Xh\n",           FP_OFF(P_ArchiveSpecials)                   - FP_OFF(P_SAVEG_STARTMARKER));
+
+
 
 	// P_AddActiveCeiling_addr =		 	(uint32_t)(P_AddActiveCeiling);
 	// P_AddActivePlat_addr =		 		(uint32_t)(P_AddActivePlat);

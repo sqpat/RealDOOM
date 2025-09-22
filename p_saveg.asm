@@ -34,11 +34,7 @@ PROC P_UnArchivePlayers_  FAR
 PUBLIC P_UnArchivePlayers_
 
 
-push  bx
-push  cx
-push  si
-push  di
-
+PUSHA_NO_AX_OR_BP_MACRO
 mov   ax, word ptr ds:[_save_p]
 
 ;	PADSAVEP();
@@ -188,10 +184,7 @@ mov   word ptr ds:[di + 05Ch], ax
 
 mov   word ptr ds:[_playerMobjRef], ax
 
-pop   di
-pop   si
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 retf  
 set_psprite_statenum_null:
 mov   word ptr ds:[bx + _psprites], 0FFFFh
@@ -210,14 +203,10 @@ PROC P_UnArchiveWorld_  FAR
 PUBLIC P_UnArchiveWorld_
 
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
 
 ;PROC Z_QuickMapRender_4000To8000_8000Only_ NEAR
-Z_QUICKMAPAI4 pageswapargs_rend_other8000_size INDEXED_PAGE_8000_OFFSET
+Z_QUICKMAPAI4 PAGESWAPARGS_REND_OTHER8000_OFFSET_SIZE INDEXED_PAGE_8000_OFFSET
 
 
 mov   cx, SECTORS_SEGMENT
@@ -374,11 +363,10 @@ pop   ds
 
 mov   word ptr ds:[_save_p], si
 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+; put this back
+Z_QUICKMAPAI4 PAGESWAPARGS_SCREEN0_OFFSET_SIZE INDEXED_PAGE_8000_OFFSET
+
+POPA_NO_AX_OR_BP_MACRO
 retf  
 
 
@@ -398,11 +386,7 @@ PROC P_UnArchiveThinkers_  FAR
 PUBLIC P_UnArchiveThinkers_
 
 
-push      bx
-push      cx
-push      dx
-push      si
-push      di
+PUSHA_NO_AX_OR_BP_MACRO
 push      bp
 mov       bp, sp
 sub       sp, 6
@@ -445,11 +429,7 @@ pop       ds
 end_specials:           ; todo i guess this can piggyback on another exit.
 mov       word ptr ds:[_save_p], si
 
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
+POPA_NO_AX_OR_BP_MACRO
 retf      
 
 bad_thinkerclass:
@@ -458,7 +438,7 @@ pop       ds
 xor       ah, ah
 push      ax
 
-mov ax, OFFSET str_bad_tclass_1 - OFFSET P_SAVEG_STARTMARKER_
+mov ax, OFFSET str_bad_tclass_1
 push      cs
 push      ax
 ;call      I_Error_
@@ -699,14 +679,14 @@ SIZEOF_LIGHTFLASH_VANILLA_T = 024h
 SIZEOF_GLOW_VANILLA_T = 01Ch
 
 jump_table_unarchive_specials:
-dw  OFFSET  load_ceiling_special - OFFSET P_SAVEG_STARTMARKER_    ; 0
-dw  OFFSET  load_door_special - OFFSET P_SAVEG_STARTMARKER_       ; 1
-dw  OFFSET  load_movefloor_special - OFFSET P_SAVEG_STARTMARKER_  ; 2
-dw  OFFSET  load_platraise_special - OFFSET P_SAVEG_STARTMARKER_  ; 3
-dw  OFFSET  load_flash_special - OFFSET P_SAVEG_STARTMARKER_      ; 4
-dw  OFFSET  load_strobe_special - OFFSET P_SAVEG_STARTMARKER_     ; 5
-dw  OFFSET  load_glow_special - OFFSET P_SAVEG_STARTMARKER_       ; 6
-dw  OFFSET  end_specials - OFFSET P_SAVEG_STARTMARKER_            ; 7
+dw  OFFSET  load_ceiling_special    ; 0
+dw  OFFSET  load_door_special       ; 1
+dw  OFFSET  load_movefloor_special  ; 2
+dw  OFFSET  load_platraise_special  ; 3
+dw  OFFSET  load_flash_special      ; 4
+dw  OFFSET  load_strobe_special     ; 5
+dw  OFFSET  load_glow_special       ; 6
+dw  OFFSET  end_specials            ; 7
 
 PROC P_UnArchiveSpecials_  FAR
 PUBLIC P_UnArchiveSpecials_
@@ -740,13 +720,13 @@ and    cx, 3
 mov    di, SIZEOF_THINKER_T
 
 
-jmp    word ptr cs:[bx + OFFSET jump_table_unarchive_specials - OFFSET P_SAVEG_STARTMARKER_]
+jmp    word ptr cs:[bx + OFFSET jump_table_unarchive_specials]
 
 ; default case
 bad_special_thinkerclass:
 xor    ah, ah
 
-mov    ax, OFFSET str_bad_tclass_2 - OFFSET P_SAVEG_STARTMARKER_
+mov    ax, OFFSET str_bad_tclass_2
 push   cs
 push   ax
 ;call      I_Error_
@@ -1141,23 +1121,14 @@ PROC P_ArchivePlayers_ FAR
 PUBLIC P_ArchivePlayers_
 
 
-push      cx
-push      dx
-push      si
-push      di
+PUSHA_NO_AX_OR_BP_MACRO
+; todo should be a constant amount, get rid of this pad later
 
-;PROC Z_QuickMapRender_4000To8000_8000Only_ NEAR
-Z_QUICKMAPAI4 pageswapargs_rend_other8000_size INDEXED_PAGE_8000_OFFSET
+les       ax, dword ptr ds:[_save_p]
 
-
-les       di, dword ptr ds:[_save_p]
-
-mov       dx, di
-mov       ax, 4
-and       dx, 3
-sub       ax, dx
-and       ax, 3
-add       di, ax
+add       ax, 3
+and       al, 0FCh ; round up to next dword alignment?
+xchg      ax, di
 
 mov       cx, SIZEOF_PLAYER_VANILLA_T / 2
 
@@ -1332,11 +1303,8 @@ loop      loop_save_next_psprite
 add       di, 4         ; for didsecret
 mov       word ptr ds:[_save_p], di
 
-
-pop       di
-pop       si
-pop       dx
-pop       cx
+exit_archive_player:
+POPA_NO_AX_OR_BP_MACRO
 retf      
 skip_statenum_write:
 add       di, 4
@@ -1354,11 +1322,9 @@ PUBLIC P_ArchiveWorld_
 
 
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
+;PROC Z_QuickMapRender_4000To8000_8000Only_ NEAR
+Z_QUICKMAPAI4 PAGESWAPARGS_REND_OTHER8000_OFFSET_SIZE INDEXED_PAGE_8000_OFFSET
 
 
 mov   cx, word ptr ds:[_numsectors]
@@ -1508,11 +1474,10 @@ pop   ds
 
 mov   word ptr ds:[_save_p], di
 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+; put this back
+Z_QUICKMAPAI4 PAGESWAPARGS_SCREEN0_OFFSET_SIZE INDEXED_PAGE_8000_OFFSET
+
+POPA_NO_AX_OR_BP_MACRO
 retf  
 
 ENDP
@@ -1525,11 +1490,7 @@ PROC P_ArchiveThinkers_ FAR
 PUBLIC P_ArchiveThinkers_
 
 
-push      bx
-push      cx
-push      dx
-push      si
-push      di
+PUSHA_NO_AX_OR_BP_MACRO
 
 les       di, dword ptr ds:[_save_p]
 mov       dx, word ptr ds:[_thinkerlist + THINKER_T.t_next]
@@ -1562,11 +1523,7 @@ pop       ds
 
 mov       word ptr ds:[_save_p], di     ; write back _save_p
 
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
+POPA_NO_AX_OR_BP_MACRO
 retf      
 
 do_save_next_thinker:
@@ -1813,7 +1770,7 @@ sub   al, 56
 
 sal   ax, 1     ; word lookup
 xchg  ax, bx
-mov   bx, word ptr cs:[tag_conversions_to_vanilla + bx - OFFSET P_SAVEG_STARTMARKER_]
+mov   bx, word ptr cs:[tag_conversions_to_vanilla + bx]
 xchg  ax, bx
 
 use_tag:
@@ -1857,15 +1814,15 @@ db  -1, 3, 0, 1, 2, -1, 4, 5, 6
 
 jump_table_archive_specials:
 
-dw  OFFSET  iterate_to_next_special  - OFFSET P_SAVEG_STARTMARKER_ ; 1 mobj, skip
-dw  OFFSET  save_platraise_special   - OFFSET P_SAVEG_STARTMARKER_ ; 2
-dw  OFFSET  save_ceiling_special     - OFFSET P_SAVEG_STARTMARKER_ ; 3
-dw  OFFSET  save_door_special        - OFFSET P_SAVEG_STARTMARKER_ ; 4
-dw  OFFSET  save_movefloor_special   - OFFSET P_SAVEG_STARTMARKER_ ; 5
-dw  OFFSET  iterate_to_next_special  - OFFSET P_SAVEG_STARTMARKER_ ; 6 flicker?? not saved apparently, skip
-dw  OFFSET  save_flash_special       - OFFSET P_SAVEG_STARTMARKER_ ; 7
-dw  OFFSET  save_strobe_special      - OFFSET P_SAVEG_STARTMARKER_ ; 8
-dw  OFFSET  save_glow_special        - OFFSET P_SAVEG_STARTMARKER_ ; 9
+dw  OFFSET  iterate_to_next_special  ; 1 mobj, skip
+dw  OFFSET  save_platraise_special   ; 2
+dw  OFFSET  save_ceiling_special     ; 3
+dw  OFFSET  save_door_special        ; 4
+dw  OFFSET  save_movefloor_special   ; 5
+dw  OFFSET  iterate_to_next_special  ; 6 flicker?? not saved apparently, skip
+dw  OFFSET  save_flash_special       ; 7
+dw  OFFSET  save_strobe_special      ; 8
+dw  OFFSET  save_glow_special        ; 9
 
 erase_size_table:
 dw  0
@@ -1882,11 +1839,7 @@ dw  SIZEOF_GLOW_VANILLA_T       / 2
 PROC P_ArchiveSpecials_ FAR
 PUBLIC P_ArchiveSpecials_
 
-push      bx
-push      cx
-push      dx
-push      si
-push      di
+PUSHA_NO_AX_OR_BP_MACRO
 
 les       di, dword ptr ds:[_save_p]
 mov       cx, word ptr ds:[_thinkerlist + THINKER_T.t_next]
@@ -1930,7 +1883,7 @@ force_ceiling:          ; active ceilings jump here from null thinker case.
 add       si, OFFSET _thinkerlist + THINKER_T.t_data   ; data pointer
 
 xchg      ax, bx
-mov       al, byte ptr cs:[bx + OFFSET _tc_enum_lookup - OFFSET P_SAVEG_STARTMARKER_]
+mov       al, byte ptr cs:[bx + OFFSET _tc_enum_lookup]
 stosb     ; write tc_type  
 
 shl       bx, 1  ; word lookup
@@ -1951,7 +1904,7 @@ add       di, ax
 ; default the thinker memory area to 0.
 
 push      cx
-mov       dx, word ptr cs:[bx + OFFSET erase_size_table  - OFFSET P_SAVEG_STARTMARKER_]
+mov       dx, word ptr cs:[bx + OFFSET erase_size_table ]
 mov       cx, dx
 xor       ax, ax
 rep       stosw 
@@ -1964,7 +1917,7 @@ add       di, 12 ; skip 12 byte thinker field
 
 
 
-jmp       word ptr cs:[bx + OFFSET jump_table_archive_specials  - OFFSET P_SAVEG_STARTMARKER_]
+jmp       word ptr cs:[bx + OFFSET jump_table_archive_specials]
 
 iterate_to_next_special:
 
@@ -1981,11 +1934,7 @@ mov       al, 7
 stosb
 mov       word ptr ds:[_save_p], di
 
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
+POPA_NO_AX_OR_BP_MACRO
 retf      
 
 is_null_funcbits:

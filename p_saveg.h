@@ -67,8 +67,8 @@ typedef struct
     int32_t				readyweapon;
     int32_t				pendingweapon;
     int32_t				weaponowned[NUMWEAPONS];
-    int32_t				ammo[NUMAMMO];
-    int32_t				maxammo[NUMAMMO];
+    int32_t				player_ammo[NUMAMMO];
+    int32_t				player_maxammo[NUMAMMO];
     int32_t				attackdown;
     int32_t				usedown;
     int32_t				cheats;		

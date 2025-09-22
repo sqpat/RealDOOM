@@ -8,7 +8,7 @@
 #include "p_inter.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2578
+#define CONSTANTS_COUNT 2586
 #define LOCALS_COUNT 22
 
 
@@ -2667,7 +2667,19 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"TEXTURECOLUMNLUMPS_BYTES_6000_SEGMENT",
 	"TEXTUREDEFS_BYTES_6000_SEGMENT",
 	"TEXTUREDEFS_OFFSET_6000_SEGMENT",
-	"MAXEVENTS"
+	"MAXEVENTS",
+
+
+	"_flatcache_nodes",
+	"_spritecache_nodes",
+	"_texturecache_nodes",
+	"_allocatedflatsperpage",
+	"_usedspritepagemem",
+	"_usedtexturepagemem",
+
+	"_pageswapargs",
+	"_END_OF_FIXED_DATA"
+
 
 
 
@@ -5336,7 +5348,16 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	texturecolumnlumps_bytes_6000_segment,
 	texturedefs_bytes_6000_segment,
 	texturedefs_offset_6000_segment,
-	MAXEVENTS
+	MAXEVENTS,
+	flatcache_nodes,
+	spritecache_nodes,
+	texturecache_nodes,
+	allocatedflatsperpage,
+	usedspritepagemem,
+	usedtexturepagemem,
+	pageswapargs,
+	END_OF_FIXED_DATA
+
 
 
 
@@ -5444,7 +5465,7 @@ char* EMS_PAGE_STRINGS[EMS_PAGE_STUFF_COUNT] = {
 	"PAGESWAPARGS_REND_TEXTURE_SIZE",
 	"PAGESWAPARGS_REND_9000_SIZE",
 	"PAGESWAPARGS_REND_OTHER9000_SIZE",
-	"PAGESWAPARGS_REND_OTHER8000_SIZE",
+	"PAGESWAPARGS_REND_OTHER8000_OFFSET_SIZE",
 	"PAGESWAPARGS_STAT_OFFSET_SIZE",
 	"PAGESWAPARGS_DEMO_OFFSET_SIZE",
 	"PAGESWAPARGS_SCRATCH5000_OFFSET_SIZE",
@@ -5582,7 +5603,7 @@ void __near* EMS_PAGE_VALUES[EMS_PAGE_STUFF_COUNT] = {
 	pageswapargs_rend_texture_size,
 	pageswapargs_rend_9000_size,
 	pageswapargs_rend_other9000_size,
-	pageswapargs_rend_other8000_size,
+	pageswapargs_rend_other8000_offset_size,
 	pageswapargs_stat_offset_size,
 	pageswapargs_demo_offset_size,
 	pageswapargs_scratch5000_offset_size,

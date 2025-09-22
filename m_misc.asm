@@ -89,7 +89,10 @@ ret
 
 ENDP
 
-
+;boolean __near M_WriteFile (int8_t const* name, void __far* source,filelength_t length );
+; ax name
+; dx len
+; cx/bx source
 PROC    M_WriteFile_ NEAR
 PUBLIC  M_WriteFile_
 

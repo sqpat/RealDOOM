@@ -136,8 +136,8 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 dw  00, 00, 00, 00, 00, 00, 00, 00
 dw  00, 00, 00, 00, 00, 00, 00, 00
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 280
-dw  00, 00, 00, 00, 00, NULL_TEX_COL, 00, NULL_TEX_COL
+; 280 ; 284 save_p, 286 segment
+dw  00, 00, 00, DEMO_SEGMENT, 00, NULL_TEX_COL, 00, NULL_TEX_COL
 dw  00, 00, 0FFFFh, 0FFFFh, 0FFFFh, 0FFFFh, 00, DRAWSEGS_BASE_SEGMENT
 ; 2A0
 dw  00, 00, 00, 00, 00, 00, 00, 00
@@ -362,9 +362,11 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 7B0
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; 7C0
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; 7D0  
+; 7C0  
+db  "doomsav0.dsg", 0
+; 7CD
+db  0, 0, 0
+; 7D0
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 7E0 
 dw  00, 00, 00, 00, 00, 00, 00, 00
@@ -672,8 +674,8 @@ ENDM
 	_EPR SCREEN2_LOGICAL_PAGE+3 					PAGE_7C00_OFFSET 	; fwipe_ycolumns_segment here fwipe_mul160lookup_segment too
 	
 	_EPR EMS_VISPLANE_EXTRA_PAGE 				    PAGE_8400_OFFSET ;pageswapargs_visplanepage_offset_size
-	
-	_EPR 0					 						PAGE_8000_OFFSET ;pageswapargs_rend_other9000_size
+	; other 8000? render 4000 to 8000
+	_EPR 0					 						PAGE_8000_OFFSET ;pageswapargs_rend_other8000_size
 	_EPR 1					 						PAGE_8400_OFFSET 
 	_EPR 2					 						PAGE_8800_OFFSET 
 	_EPR 3				 							PAGE_8C00_OFFSET	

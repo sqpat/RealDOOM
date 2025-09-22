@@ -50,13 +50,9 @@
 #define F_TickerOffset                          0xA85
 #define F_DrawerOffset                          0xB4C
 #define P_UnArchivePlayersOffset                0x2
-#define P_UnArchiveWorldOffset                  0x176
-#define P_UnArchiveThinkersOffset               0x2BF
-#define P_UnArchiveSpecialsOffset               0x43B
-#define P_ArchivePlayersOffset                  0x689
-#define P_ArchiveWorldOffset                    0x791
-#define P_ArchiveThinkersOffset                 0x855
-#define P_ArchiveSpecialsOffset                 0x9ED
+#define P_UnArchiveWorldOffset                  0x170
+#define P_UnArchiveThinkersOffset               0x2C0
+#define P_UnArchiveSpecialsOffset               0x434
 #define LoadSFXWadLumpsOffset                   0x4
 #define P_SetThingPositionFarOffset             0x2A73
 #define P_SpawnMapThingOffset                   0x2C30
@@ -98,7 +94,7 @@
 #define PSightCodeSize                 0x9D9B
 #define WipeCodeSize                   0x5FC
 #define FinaleCodeSize                 0xBC4
-#define SaveLoadCodeSize               0xB34
+#define SaveLoadCodeSize               0xB15
 #define SMLoadCodeSize                 0x4CA
 #define SInitCodeSize                  0x55F
 #define MaximumMusDriverSize           0x100E

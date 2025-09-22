@@ -588,11 +588,12 @@ _currentloadedfileindex =       	 _NULL_OFFSET + 007BCh
 _mousepresent =				       	 _NULL_OFFSET + 007BDh
 _respawnparm =				       	 _NULL_OFFSET + 007BEh
 _demorecording =			       	 _NULL_OFFSET + 007BFh
+_doomsav0_string =  		       	 _NULL_OFFSET + 007C0h
 
 
 
 
-; 7c0 to 7DF free
+; 7CD to 7DF free
 _screen_oldloc =					 _NULL_OFFSET + 007E0h
 _old_screen_botleft_x =				 _NULL_OFFSET + 007E4h
 _old_screen_botleft_y =				 _NULL_OFFSET + 007E6h
@@ -676,18 +677,14 @@ CURRENT_POSITION_6 =   			   	  (_usedtexturepagemem + (1 * NUM_TEXTURE_PAGES))
 
 
 
-; 94E ?
-_pageswapargs = CURRENT_POSITION_6
+_pageswapargs = 					  CURRENT_POSITION_6
 
 CURRENT_POSITION_7 =   			   	  (_pageswapargs + (2 * TOTAL_PAGES))
+_END_OF_FIXED_DATA = CURRENT_POSITION_7
 
 
 
 
-
-
-
-;06CAh
 
 
 

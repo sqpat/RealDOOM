@@ -796,7 +796,14 @@ db "brdr_tr", 0
 str_brdr_br:
 db "brdr_br", 0
 
-PROC R_FillBackScreen_ NEAR
+PROC   R_FillBackScreen_ForceBufferRedraw_ NEAR
+PUBLIC R_FillBackScreen_ForceBufferRedraw_
+mov    byte ptr ds:[_hudneedsupdate], 6
+mov    byte ptr ds:[_borderdrawcount], 3
+
+ENDP
+; fall thru
+PROC   R_FillBackScreen_ NEAR
 PUBLIC R_FillBackScreen_
 
 
