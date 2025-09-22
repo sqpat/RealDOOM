@@ -856,8 +856,6 @@ void __near Z_LoadBinaries() {
 	R_SetViewSize_addr =			    (uint32_t)(R_SetViewSize);
 
 
-	// G_PlayerReborn_addr =				(uint32_t)(G_PlayerReborn);
-
 	OutOfThinkers_addr =				(uint32_t)(OutOfThinkers);
 
 

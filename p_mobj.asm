@@ -202,7 +202,7 @@ push      word ptr ds:[bx + MAPTHING_T.mapthing_angle]  ; for later
 
 cmp       byte ptr ds:[_player + PLAYER_T.player_playerstate], PST_REBORN
 jne       dont_player_reborn
-call      G_PlayerReborn_
+;call      G_PlayerReborn_
 
 ; inlined
 push   word ptr ds:[_player + PLAYER_T.player_killcount]
@@ -229,7 +229,7 @@ mov    byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_FIST], al ; true
 mov    byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_PISTOL], al ; true
 mov    word ptr ds:[_player + PLAYER_T.player_ammo + 2 * AM_CLIP], 50
 
-mov    di, OFFSET _player + PLAYER_T.player_ammo
+mov    di, OFFSET _player + PLAYER_T.player_maxammo
 mov    si, OFFSET _maxammo
 movsw
 movsw

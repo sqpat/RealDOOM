@@ -431,7 +431,7 @@ void __near G_Ticker (void)  {
 	buf = (gametic) & (BACKUPTICS-1);
 
 	cmd = &player.cmd;
-    G_CopyCmd(cmd, buf);   // get rid of this once this func in asm
+    G_CopyCmd(cmd, buf);   // get rid of this once this func in asm. use cs instead
 	
 
 	if (demoplayback) {
@@ -921,7 +921,6 @@ void __far G_DeferedInitNew ( skill_t skill, int8_t episode, int8_t map) {
     d_map = map; 
     gameaction = ga_newgame; 
 } 
-*/
 
 
 
@@ -952,6 +951,8 @@ void __near G_ReadDemoTiccmd (ticcmd_t __near* cmd)  {
 	Z_QuickMapPhysics();
 
 }
+*/
+#define DEMOMARKER              0x80
 
 boolean __near G_GetGameKey(int8_t keyr);
 

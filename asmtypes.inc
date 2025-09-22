@@ -917,3 +917,13 @@ WBSTARTSTRUCT_T STRUC
     wbss_plyr              WBPLAYERSTRUCT_T  ? ;  C
 WBSTARTSTRUCT_T ENDS
 
+TICCMD_T STRUC
+    ticcmd_forwardmove    db ? ; 0
+    ticcmd_sidemove       db ? ; 1
+    ticcmd_angleturn      dw ? ; 2
+    ticcmd_consistancy    dw ? ; 4
+    ticcmd_chatchar       db ? ; 6
+    ticcmd_buttons        db ? ; 7
+
+TICCMD_T ENDS
+

@@ -26,6 +26,7 @@ EXTRN Z_QuickMapPhysics_:FAR
 EXTRN Z_QuickMapDemo_:FAR
 EXTRN W_CacheLumpNameDirectFarString_:FAR
 EXTRN G_InitNew_:NEAR
+EXTRN G_CheckDemoStatus_:NEAR
 
 .DATA
 
@@ -283,6 +284,53 @@ ret
 ENDP
 
 
+DEMOMARKER = 080h
+
+PROC   G_ReadDemoTiccmd_ NEAR
+PUBLIC G_ReadDemoTiccmd_
+
+push   di
+push   si
+xchg   ax, di
+
+call   Z_QuickMapDemo_
+
+mov    si, word ptr ds:[_demo_p]
+mov    ax, DEMO_SEGMENT
+mov    ds, ax
+
+lodsb
+cmp   al, DEMOMARKER
+jne   dont_end_demo
+push  ss
+pop   ds
+call  G_CheckDemoStatus_
+jmp   exit_playdemo
+
+
+dont_end_demo:
+
+stosb ; forwardmove ; 0
+lodsw
+stosb ; sidemove    ; 1
+xor   al, al
+stosw ; ;           ; 2-3 cmd->angleturn = ((uint8_t)*demo_addr++)<<8; 
+inc   di ; 4
+inc   di ; 5
+inc   di ; 6
+movsb  
+
+push  ss
+pop   ds
+mov   word ptr ds:[_demo_p], si
+
+exit_playdemo:
+call   Z_QuickmapPhysics_
+
+pop    si
+pop    di
+ret
+ENDP
  
 
 
