@@ -25,12 +25,7 @@ PROC P_SAVEG_STARTMARKER_
 PUBLIC P_SAVEG_STARTMARKER_
 ENDP
 
-_CSDATA_unused:
-dw    0
-
-
-
-PROC P_UnArchivePlayers_  FAR
+PROC P_UnArchivePlayers_  NEAR
 PUBLIC P_UnArchivePlayers_
 
 
@@ -185,7 +180,7 @@ mov   word ptr ds:[di + 05Ch], ax
 mov   word ptr ds:[_playerMobjRef], ax
 
 POPA_NO_AX_OR_BP_MACRO
-retf  
+ret  
 set_psprite_statenum_null:
 mov   word ptr ds:[bx + _psprites], 0FFFFh
 jmp   done_with_psprite
@@ -199,7 +194,7 @@ ENDP
 
 
 
-PROC P_UnArchiveWorld_  FAR
+PROC P_UnArchiveWorld_  NEAR
 PUBLIC P_UnArchiveWorld_
 
 
@@ -367,7 +362,7 @@ mov   word ptr ds:[_save_p], si
 Z_QUICKMAPAI4 PAGESWAPARGS_SCREEN0_OFFSET_SIZE INDEXED_PAGE_8000_OFFSET
 
 POPA_NO_AX_OR_BP_MACRO
-retf  
+ret  
 
 
 
@@ -382,7 +377,7 @@ db "P_UnarchiveSpecials:Unknown tclass %i in savegame", 0
 SIZEOF_MOBJ_VANILLA_T = 09Ah
 SIZEOF_THINKER_VANILLA_T = 12
 
-PROC P_UnArchiveThinkers_  FAR
+PROC P_UnArchiveThinkers_  NEAR
 PUBLIC P_UnArchiveThinkers_
 
 
@@ -430,7 +425,7 @@ end_specials:           ; todo i guess this can piggyback on another exit.
 mov       word ptr ds:[_save_p], si
 
 POPA_NO_AX_OR_BP_MACRO
-retf      
+ret      
 
 bad_thinkerclass:
 push      ss
@@ -688,7 +683,7 @@ dw  OFFSET  load_strobe_special     ; 5
 dw  OFFSET  load_glow_special       ; 6
 dw  OFFSET  end_specials            ; 7
 
-PROC P_UnArchiveSpecials_  FAR
+PROC P_UnArchiveSpecials_  NEAR
 PUBLIC P_UnArchiveSpecials_
 
 
@@ -1111,6 +1106,58 @@ stosw
 ret
 
 ENDP
+
+PROC   G_ContinueLoadGame_ FAR
+PUBLIC G_ContinueLoadGame_
+
+; si has save_p...
+; di has 05000h
+mov     es, di
+lods    byte ptr es:[si]
+mov     byte ptr ds:[_leveltime+2], al
+lods    word ptr es:[si]
+xchg    al, ah
+mov     word ptr ds:[_leveltime], ax
+
+mov     word ptr ds:[_save_p], si
+
+; todo could clean up the push/pop and save_p maintenance... but we have free room in this overlay.
+
+call    P_UnArchivePlayers_
+call    P_UnArchiveWorld_
+call    P_UnArchiveThinkers_
+call    P_UnArchiveSpecials_
+
+les     si, dword ptr ds:[_save_p]
+cmp     byte ptr es:[si], 01Dh
+jne     bad_savegame_load
+
+; make playermobj
+; make playermobjpos
+
+mov     bx, word ptr ds:[_playerMobjRef]
+mov     ax, SIZE THINKER_T
+mul     bx
+add     ax, OFFSET _thinkerlist + THINKER_T.t_data
+mov     word ptr ds:[_playerMobj], ax
+mov     ax, SIZE MOBJ_POS_T
+mul     bx
+mov     word ptr ds:[_playerMobj_pos], ax
+
+
+retf
+ENDP
+
+bad_savegame_load:
+
+str_bad_savegame:
+db "Bad savegame %i", 0
+
+push    si ; save_p
+push    cs
+mov     ax, OFFSET str_bad_savegame
+push    ax
+call    dword ptr ds:[_I_Error_addr]
 
 
 PROC P_ArchivePlayers_ FAR

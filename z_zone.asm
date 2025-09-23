@@ -775,10 +775,7 @@ je   exit_overlay_early
 
 do_overlay_change:
 
-push  bx
-push  cx
-push  dx
-push  si
+PUSHA_NO_AX_OR_BP_MACRO
 
 
 push  ax ; "bp - 2"
@@ -822,15 +819,7 @@ xor   ah, ah
 mov   bx, ax
 sal   bx, 1
 jmp   word ptr cs:[bx + set_overlay_jump_table]
-load_save_game_overlay_jump_target:
-mov   ax, CODE_OVERLAY_SEGMENT
-mov   es, ax
-;mov   word ptr es:[0], OFFSET _playerMobjRef
 
-pop   si
-pop   dx
-pop   cx
-pop   bx
 exit_overlay_early:
 retf 
 
@@ -839,11 +828,9 @@ mov   ax, CODE_OVERLAY_SEGMENT
 mov   es, ax
 mov   word ptr es:[0], OFFSET _hu_font
 exit_set_overlay:
+load_save_game_overlay_jump_target:
 
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 retf
 ENDP
 

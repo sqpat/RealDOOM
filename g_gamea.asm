@@ -275,39 +275,11 @@ xor     bx, bx
 mov     ax, OFFSET _savename
 call    M_ReadFile_
 
-mov     es, di
-lods    byte ptr es:[si]
-mov     byte ptr ds:[_leveltime+2], al
-lods    word ptr es:[si]
-xchg    al, ah
-mov     word ptr ds:[_leveltime], ax
-
-mov     word ptr ds:[_save_p], si
-
+; here call into save code overlay to handle the rest.
 db      09Ah
-dw      P_UNARCHIVEPLAYERSOFFSET, CODE_OVERLAY_SEGMENT
-db      09Ah
-dw      P_UNARCHIVEWORLDOFFSET, CODE_OVERLAY_SEGMENT
-db      09Ah
-dw      P_UNARCHIVETHINKERSOFFSET, CODE_OVERLAY_SEGMENT
-db      09Ah
-dw      P_UNARCHIVESPECIALSOFFSET, CODE_OVERLAY_SEGMENT
+dw      G_CONTINUELOADGAMEOFFSET, CODE_OVERLAY_SEGMENT
+ 
 
-les     si, dword ptr ds:[_save_p]
-cmp     byte ptr es:[si], 01Dh
-jne     bad_savegame_load
-
-; make playermobj
-; make playermobjpos
-
-mov     bx, word ptr ds:[_playerMobjRef]
-mov     ax, SIZE THINKER_T
-mul     bx
-add     ax, OFFSET _thinkerlist + THINKER_T.t_data
-mov     word ptr ds:[_playerMobj], ax
-mov     ax, SIZE MOBJ_POS_T
-mul     bx
-mov     word ptr ds:[_playerMobj_pos], ax
 
 error_bad_version:
 call    Z_QuickMapPhysics_
@@ -325,16 +297,7 @@ POPA_NO_AX_OR_BP_MACRO
 ret
 ENDP
 
-bad_savegame_load:
 
-str_bad_savegame:
-db "Bad savegame %i", 0
-
-push    si ; save_p
-push    cs
-mov     ax, OFFSET str_bad_savegame
-push    ax
-call    I_Error_
 
 
 PROC    G_GAME_ENDMARKER_ NEAR
