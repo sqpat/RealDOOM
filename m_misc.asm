@@ -99,7 +99,7 @@ PUBLIC  M_WriteFile_
 push  di
 
 mov   di, dx ; backup dx
-mov   dx, _fopen_w_argument
+mov   dx, _fopen_wb_argument
 call  fopen_
 
 test  ax, ax

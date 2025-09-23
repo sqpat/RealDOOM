@@ -165,15 +165,13 @@ mov     ax, word ptr ds:[_gameepisode] ; get both...
 stosw
 mov     ax, 1
 stosw           ; true, false
-dec     dx
+dec     ax
 stosw           ; false, false
 mov     al, byte ptr ds:[_leveltime+2]
 stosb
 mov     ax, word ptr ds:[_leveltime+0]
 xchg    al, ah
-stosb
-mov     al, ah
-stosb
+stosw
 
 mov     word ptr ds:[_save_p], di
 ;mov     word ptr ds:[_save_p+2], es
@@ -189,7 +187,6 @@ db      09Ah
 dw      P_ARCHIVESPECIALSOFFSET, CODE_OVERLAY_SEGMENT
 
 les     di, dword ptr ds:[_save_p]
-mov     cx, es
 
 mov     al, 01Dh
 stosb   ; consistency marker.
@@ -197,7 +194,7 @@ cmp     di, SAVEGAMESIZE
 ja      savegame_too_big
 
 mov     ax, OFFSET _doomsav0_string
-; cx already 5000
+mov     cx, es
 xor     bx, bx
 mov     dx, di
 call    M_WriteFile_
