@@ -130,7 +130,7 @@ db " The Ultimate DOOM Startup v1.9", 0
 str_title_normal:
 db "  DOOM System Startup v1.9  ", 0
 str_title_doom2: 
-db "DOOM 2: Hell on Earth v1.9", 0
+db "DOOM 2: Hell on Earth v1.9"
 str_title_doom2_done:
 
 str_z_init_ems:

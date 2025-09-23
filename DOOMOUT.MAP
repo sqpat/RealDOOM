@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/23 02:20:31
+Created on:       25/09/23 02:27:41
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -25,7 +25,7 @@ Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
 m_near_TEXT            CODE           AUTO           0000:0000       00000000
-D_INIT_TEXT            CODE           AUTO           0000:0000       000009ce
+D_INIT_TEXT            CODE           AUTO           0000:0000       000009cd
 ST_INIT_TEXT           CODE           AUTO           0000:09ce       00000203
 R_INIT_TEXT            CODE           AUTO           0000:0bd2       000007af
 W_INIT_TEXT            CODE           AUTO           0000:1382       0000017e
@@ -151,10 +151,10 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 0c0e:1235      _startskill
 0c0e:1236      _startepisode
 Module: d_init.obj(d_init.ASM)
-0000:0947      I_InitGraphics_
-0000:09ce*     D_INIT_ENDMARKER_
+0000:0946      I_InitGraphics_
+0000:09cd*     D_INIT_ENDMARKER_
 0000:0000      D_INIT_STARTMARKER_
-0000:033d      D_DoomMain2_
+0000:033c      D_DoomMain2_
 Module: st_init.obj(st_init.ASM)
 0000:09ce*     ST_INIT_STARTMARKER_
 0000:0bd1*     ST_INIT_ENDMARKER_
@@ -386,8 +386,8 @@ Module: main.obj(main.ASM)
 0000:54e8      DEBUG_PRINT_NOARG_CS_
 0000:55a0      locallib_dos_setvect_
 0000:534b      locallib_strcmp_
-0000:5445*     locallib_printdecimal_
 0000:5596      locallib_dos_getvect_
+0000:5445*     locallib_printdecimal_
 0000:539e      copystr8_
 0000:46c8      _gamekeydown
 0000:5953      getStringByIndex_
@@ -805,4 +805,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  dd80 (56704.)
 Entry point address: 0000:a67c
-Link time: 00:00.74
+Link time: 00:00.19
