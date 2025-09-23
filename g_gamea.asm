@@ -19,10 +19,15 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
+EXTRN M_WriteFile_:NEAR
+EXTRN M_ReadFile_:NEAR
+
 EXTRN Z_QuickMapPhysics_:FAR
 EXTRN Z_QuickMapScratch_5000_:FAR
-EXTRN M_WriteFile_:NEAR
+
+EXTRN R_ExecuteSetViewSize_:NEAR
 EXTRN R_FillBackScreen_ForceBufferRedraw_:NEAR
+EXTRN locallib_strcmp_:NEAR
 
 EXTRN G_DoLoadLevel_:NEAR
 EXTRN G_InitNew_:NEAR
@@ -219,9 +224,117 @@ push    ax
 call    I_Error_
 
 
- 
 
 
+VERSIONSIZE = 16
+
+PROC    G_DoLoadGame_ NEAR
+PUBLIC  G_DoLoadGame_
+
+PUSHA_NO_AX_OR_BP_MACRO
+
+; todo move this code into savegame stuff once its good to go. 
+
+call    Z_QuickMapScratch_5000_
+
+mov     di, SCRATCH_SEGMENT_5000
+mov     cx, di
+xor     bx, bx
+mov     ax, OFFSET _savename
+call    M_ReadFile_
+
+mov     si, SAVESTRINGSIZE
+
+; es:di = save_p/savebuffer
+mov     ax, OFFSET str_versionstring
+mov     dx, cs
+mov     bx, si
+mov     cx, di
+call    locallib_strcmp_
+test    al, al
+jne     error_bad_version
+add     si, VERSIONSIZE
+mov     es, di
+
+lods    byte ptr es:[si]
+mov     byte ptr ds:[_gameskill], al
+xchg    ax, dx
+lods    word ptr es:[si]
+mov     word ptr ds:[_gameepisode], ax ; two at once
+mov     bl, ah
+xchg    ax, dx
+add     si, 4
+
+call    G_InitNew_
+; g_initnew_ may destroy a lot of these memory ranges...
+call    Z_QuickMapPhysics_
+call    Z_QuickMapScratch_5000_
+
+mov     cx, di
+xor     bx, bx
+mov     ax, OFFSET _savename
+call    M_ReadFile_
+
+mov     es, di
+lods    byte ptr es:[si]
+mov     byte ptr ds:[_leveltime+2], al
+lods    word ptr es:[si]
+xchg    al, ah
+mov     word ptr ds:[_leveltime], ax
+
+mov     word ptr ds:[_save_p], si
+
+db      09Ah
+dw      P_UNARCHIVEPLAYERSOFFSET, CODE_OVERLAY_SEGMENT
+db      09Ah
+dw      P_UNARCHIVEWORLDOFFSET, CODE_OVERLAY_SEGMENT
+db      09Ah
+dw      P_UNARCHIVETHINKERSOFFSET, CODE_OVERLAY_SEGMENT
+db      09Ah
+dw      P_UNARCHIVESPECIALSOFFSET, CODE_OVERLAY_SEGMENT
+
+les     si, dword ptr ds:[_save_p]
+cmp     byte ptr es:[si], 01Dh
+jne     bad_savegame_load
+
+; make playermobj
+; make playermobjpos
+
+mov     bx, word ptr ds:[_playerMobjRef]
+mov     ax, SIZE THINKER_T
+mul     bx
+add     ax, OFFSET _thinkerlist + THINKER_T.t_data
+mov     word ptr ds:[_playerMobj], ax
+mov     ax, SIZE MOBJ_POS_T
+mul     bx
+mov     word ptr ds:[_playerMobj_pos], ax
+
+error_bad_version:
+call    Z_QuickMapPhysics_
+
+cmp     byte ptr ds:[_setsizeneeded], 0
+je      skip_setviewsize
+call    R_ExecuteSetViewSize_
+skip_setviewsize:
+
+call    R_FillBackScreen_ForceBufferRedraw_
+
+
+POPA_NO_AX_OR_BP_MACRO
+
+ret
+ENDP
+
+bad_savegame_load:
+
+str_bad_savegame:
+db "Bad savegame %i", 0
+
+push    si ; save_p
+push    cs
+mov     ax, OFFSET str_bad_savegame
+push    ax
+call    I_Error_
 
 
 PROC    G_GAME_ENDMARKER_ NEAR

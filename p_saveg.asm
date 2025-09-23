@@ -692,11 +692,7 @@ PROC P_UnArchiveSpecials_  FAR
 PUBLIC P_UnArchiveSpecials_
 
 
-push   bx
-push   cx
-push   dx
-push   si
-push   di
+PUSHA_NO_AX_OR_BP_MACRO
 
 lds    si, dword ptr ds:[_save_p]
 load_next_special:
