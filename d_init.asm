@@ -690,7 +690,7 @@ inc   cx
 mov   byte ptr ds:[_startepisode], cl  ; 1
 mov   byte ptr ds:[_startmap], cl  ; 1
 inc   cx
-mov   byte ptr ds:[_startmap], cl  ; SK_MEDIUM/2
+mov   byte ptr ds:[_startskill], cl  ; SK_MEDIUM or 2
 dec   dx  ; 1
 
 mov   ax, OFFSET str_skill

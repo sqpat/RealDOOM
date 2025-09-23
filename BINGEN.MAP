@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/23 02:27:39
+Created on:       25/09/23 03:21:05
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -662,8 +662,8 @@ Module: m_menu.obj(m_menu.ASM)
 0c81:08bb*     M_DrawEpisode_
 0c81:0c51*     M_StartMessage_
 0c81:09fb*     M_Options_
-0c81:05b4*     M_SaveGame_
 0c81:077a*     M_DrawReadThisRetail_
+0c81:05b4*     M_SaveGame_
 0c81:1388*     M_strcpy_
 0c81:0b0a*     M_QuitDOOM_
 0c81:089d*     M_NewGame_
