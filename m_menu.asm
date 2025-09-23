@@ -2312,8 +2312,6 @@ je    is_response_char
 jmp   exit_m_responder_return_0
 
 is_response_char:
-mov   byte ptr ds:[_hudneedsupdate], 6
-mov   byte ptr ds:[_borderdrawcount], 3
 
 no_input_needed:
 
@@ -2326,6 +2324,9 @@ je    no_message_routine
 call  word ptr cs:[_messageRoutine]
 no_message_routine:
 mov   byte ptr ds:[_menuactive], cl  ; 0
+
+mov   byte ptr ds:[_borderdrawcount], 3
+mov   byte ptr ds:[_hudneedsupdate], 6
 
 mov   dx, SFX_SWTCHX
 jmp   play_sound_and_exit_m_responder_return_1

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/23 03:47:21
+Created on:       25/09/23 04:22:30
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -1193,8 +1193,8 @@ Module: s_sound.obj(s_sound.ASM)
 2ce3:99c9*     S_AdjustSoundParamsVol_
 2ce3:9d9b      S_SOUND_ENDMARKER_
 2ce3:9ab6      S_StopSoundMobjRef_
-2ce3:9c42      S_StartSoundWithSecnum_
 2ce3:995c*     S_AdjustSoundParamsSep_
+2ce3:9c42      S_StartSoundWithSecnum_
 2ce3:9b3b*     S_StartSoundWithPosition_
 2ce3:9c4f      S_UpdateSounds_
 2ce3:986c*     S_SOUND_STARTMARKER_
@@ -1486,4 +1486,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003cea0 (249504.)
 Entry point address: 36bc:0a84
-Link time: 00:00.49
+Link time: 00:00.04
