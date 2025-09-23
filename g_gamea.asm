@@ -24,6 +24,7 @@ EXTRN M_ReadFile_:NEAR
 
 EXTRN Z_QuickMapPhysics_:FAR
 EXTRN Z_QuickMapScratch_5000_:FAR
+EXTRN Z_QuickMapIntermission_:FAR
 
 EXTRN R_ExecuteSetViewSize_:NEAR
 EXTRN R_FillBackScreen_ForceBufferRedraw_:NEAR
@@ -33,9 +34,27 @@ EXTRN locallib_strcmp_:NEAR
 EXTRN G_DoLoadLevel_:NEAR
 EXTRN G_InitNew_:NEAR
 EXTRN I_Error_:FAR
+
+
+EXTRN ST_Ticker_:NEAR
+EXTRN Z_SetOverlay_:FAR
+EXTRN G_DoPlayDemo_:NEAR
+EXTRN G_DoPlayDemo_:NEAR
+EXTRN G_DoCompleted_:NEAR
+EXTRN G_ReadDemoTiccmd_:NEAR
+EXTRN G_WriteDemoTiccmd_:NEAR
+EXTRN S_ResumeSound_:NEAR
+EXTRN S_PauseSound_:NEAR
+EXTRN HU_Ticker_:NEAR
+EXTRN G_CopyCmd_:NEAR
+
+
+
+
 .DATA
 
 EXTRN _wminfo:WBSTARTSTRUCT_T
+EXTRN _pagetic:WORD
 
 .CODE
 
@@ -264,6 +283,165 @@ push     cs
 mov      ax, OFFSET str_error_flatnum
 push     ax
 call     I_Error_
+
+g_ticker_gameaction_table:
+dw OFFSET case_nothing
+dw OFFSET case_loadlevel
+dw OFFSET case_newgame
+dw OFFSET case_loadgame
+dw OFFSET case_savegame
+dw OFFSET case_playdemo
+dw OFFSET case_completed
+dw OFFSET case_victory
+dw OFFSET case_worlddone
+
+PROC    G_Ticker_ NEAR
+PUBLIC  G_Ticker_
+
+push    bx
+push    dx
+
+cmp     byte ptr ds:[_player + PLAYER_T.player_playerstate], PST_REBORN
+jne     dont_reborn
+mov     byte ptr ds:[_gameaction], GA_LOADLEVEL
+dont_reborn:
+
+continue_while_loop:
+xor     ax, ax
+xor     bx, bx
+mov     bl, byte ptr ds:[_gameaction]
+sal     bx, 1
+jmp     word ptr cs:[g_ticker_gameaction_table + bx]
+
+case_loadlevel:
+call    G_DoLoadLevel_
+jmp     continue_while_loop
+case_newgame:
+call    G_DoNewGame_
+jmp     continue_while_loop
+case_loadgame:
+mov     al, OVERLAY_ID_SAVELOADGAME
+call    Z_SetOverlay_
+call    G_DoLoadGame_
+jmp     continue_while_loop
+case_savegame:
+mov     al, OVERLAY_ID_SAVELOADGAME
+call    Z_SetOverlay_
+call    G_DoSaveGame_
+jmp     continue_while_loop
+case_playdemo:
+call    G_DoPlayDemo_
+jmp     continue_while_loop
+case_completed:
+call    G_DoCompleted_
+jmp     continue_while_loop
+case_victory:
+mov     al, OVERLAY_ID_FINALE
+call    Z_SetOverlay_
+db      09Ah
+dw      F_STARTFINALEOFFSET, CODE_OVERLAY_SEGMENT
+jmp     continue_while_loop
+
+case_worlddone:
+call    G_DoWorldDone_
+
+jmp     continue_while_loop
+
+
+case_nothing:
+xor     bx, bx
+mov     al, byte ptr ds:[_gametic]
+and     ax, (BACKUPTICS-1)
+xchg    ax, dx
+mov     ax, OFFSET [_player + PLAYER_T.player_cmd]
+call    G_CopyCmd_
+cmp     byte ptr ds:[_demoplayback], bl ; 0
+je      dont_do_demo_play
+mov     ax, OFFSET [_player + PLAYER_T.player_cmd]
+call    G_ReadDemoTiccmd_
+dont_do_demo_play:
+cmp     byte ptr ds:[_demorecording], bl ; 0
+je      dont_do_demo_write
+mov     ax, OFFSET [_player + PLAYER_T.player_cmd]
+call    G_WriteDemoTiccmd_
+dont_do_demo_write:
+mov     al, byte ptr ds:[_player + PLAYER_T.player_cmd_buttons]
+test    al, BT_SPECIAL
+je      skip_special_button
+mov     ah, al
+and     al, BT_SPECIALMASK
+cmp     al, BTS_PAUSE
+jne     not_pause
+xor     byte ptr ds:[_paused], 1
+jne     do_pause
+call    S_ResumeSound_
+jmp     done_with_special_buttons
+do_pause:
+call    S_PauseSound_
+jmp     done_with_special_buttons
+not_pause:
+cmp     al, BTS_SAVEGAME
+jne     not_savegame
+mov     al, ah
+and     al, BTS_SAVEMASK
+SHIFT_MACRO shr al BTS_SAVESHIFT
+mov     byte ptr ds:[_savegameslot], al
+mov     byte ptr ds:[_gameaction], GA_SAVEGAME
+
+not_savegame:
+done_with_special_buttons:
+skip_special_button:
+
+mov     al, byte ptr ds:[_gamestate]
+cmp     al, 1 ; GS_INTERMISSION
+je      do_intermission
+ja      check_2_3
+do_level:
+db      09Ah
+dw      P_TICKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+call    Z_QuickmapPhysics_
+call    ST_Ticker_
+cmp     byte ptr ds:[_automapactive], 0
+je      skip_automap
+db      09Ah
+dw      AM_TICKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+
+skip_automap:
+call    HU_Ticker_
+jmp     exit_g_ticker
+
+do_intermission:
+call    Z_QuickMapIntermission_
+db      09Ah
+dw      WI_TICKEROFFSET, WIANIM_CODESPACE_SEGMENT
+
+call    Z_QuickMapPhysics_
+
+
+
+jmp     exit_g_ticker
+check_2_3:
+jpo     do_demoscreen
+do_finale:
+mov     ax, OVERLAY_ID_FINALE
+call    Z_SetOverlay_
+db      09Ah
+dw      F_TICKEROFFSET, CODE_OVERLAY_SEGMENT
+
+
+jmp     exit_g_ticker
+
+do_demoscreen:
+dec     word ptr ds:[_pagetic]
+jnz     exit_g_ticker
+mov     byte ptr ds:[_advancedemo], 1
+exit_g_ticker:
+pop     dx
+pop     bx
+ret
+ENDP
 
 
 

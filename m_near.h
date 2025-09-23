@@ -799,11 +799,9 @@ extern void (__far* R_WriteBackViewConstantsMaskedCall)();
 extern void (__far* R_WriteBackViewConstants)();
 extern void 				(__far* R_WriteBackViewConstantsSpanCall)();
 extern void 				(__far* P_SpawnMapThing)();
-extern void					(__far* P_Ticker)();
 extern void					(__far* P_SpawnSpecials)();
 extern void					(__far* P_GivePower)();
 
-extern void (__far* AM_Ticker)();
 extern void (__far* AM_Drawer)();
 
 extern void (__far* S_Start	)();

@@ -16,7 +16,7 @@
 ;
 
 
-
+player_cmd = 0
 
 PLAYER_T STRUC 
 

@@ -37,7 +37,6 @@ file hu_lib.obj
 
 file d_dmx.obj
 file d_int.obj
-file wi_stuff.obj
 file math.obj
 file main.obj
 
@@ -55,6 +54,9 @@ file z_zone.obj
 file p_setup.obj
 
 file z_scat.obj
+
+NEWSEGMENT
+file wi_stuff.obj
 
 NEWSEGMENT
 file m_menu.obj

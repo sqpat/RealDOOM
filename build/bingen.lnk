@@ -36,7 +36,6 @@ file hu_stuff.obj
 file hu_lib.obj
 file d_dmx.obj
 file d_int.obj
-file wi_stuff.obj
 file math.obj
 file main.obj
 
@@ -53,6 +52,9 @@ file f_file.obj
 file w_wad.obj
 file v_video.obj
 file z_zone.obj
+
+NEWSEGMENT
+file wi_stuff.obj
 
 
 NEWSEGMENT

@@ -79,9 +79,8 @@ void (__far* R_WriteBackViewConstantsSpanCall)()  =   				      	  ((void    (__
 void (__far* R_WriteBackViewConstantsMaskedCall)() = 						  ((void    (__far *)())  (MK_FP(maskedconstants_funcarea_segment, R_WriteBackViewConstantsMasked24Offset)));
 void (__far* R_WriteBackViewConstants)() =    ((void (__far *)())     	                              (MK_FP(0000,          				   R_WriteBackViewConstants24Offset)));
 void (__far* R_RenderPlayerView)() =          ((void (__far *)())     	                              (MK_FP(0000,          				   R_RenderPlayerView24Offset)));
-void (__far* P_Ticker)() =                    ((void (__far *)())     	                              (MK_FP(physics_highcode_segment,         P_TickerOffset)));
+
 void (__far* P_SpawnSpecials)() =             ((void (__far *)())     	                              (MK_FP(physics_highcode_segment,         P_SpawnSpecialsOffset)));
-void (__far* AM_Ticker)() =                    ((void (__far *)())     	                              (MK_FP(physics_highcode_segment,         AM_TickerOffset)));
 void (__far* AM_Drawer)() =                    ((void (__far *)())     	                              (MK_FP(physics_highcode_segment,         AM_DrawerOffset)));
 void (__far* S_Start)() =                      ((void (__far *)())     	                              (MK_FP(physics_highcode_segment,         S_StartOffset)));
 void (__far* S_StartSound)() =                 ((void (__far *)(uint16_t ax, uint16_t dx))     	      (MK_FP(physics_highcode_segment,         S_StartSoundFarOffset)));

@@ -367,10 +367,11 @@ void __near G_DoNewGame(void) {
 	G_InitNew(d_skill, d_episode, d_map);
 	gameaction = ga_nothing;
 }
-*/
+
 void __near G_DoWorldDone(void);
 void __near G_CopyCmd(ticcmd_t __near * destcmd, int8_t srcindex);
 void __near G_DoNewGame(void);
+
 
 // G_Ticker
 // Make ticcmd_ts for the players.
@@ -580,6 +581,7 @@ void __far G_SecretExitLevel (void) {
     gameaction = ga_completed; 
 } 
 */
+void __near G_PlayerFinishLevel ();
  
 void __near G_DoCompleted (void)  { 
     void (__far* WI_Start)(wbstartstruct_t __near*, boolean) = 					  ((void    (__far *)(wbstartstruct_t __near*, boolean))(MK_FP(wianim_codespace_segment, 		 WI_StartOffset)));
