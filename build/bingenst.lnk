@@ -28,7 +28,6 @@ file sm_load.obj
 file bingen.obj
 file d_net.obj
 file g_game.obj
-file g_gamea.obj
 file g_demo.obj
 file m_misc.obj
 file st_stuff.obj

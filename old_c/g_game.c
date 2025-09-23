@@ -88,7 +88,7 @@ boolean __near AM_Responder (event_t __far* ev);
 
  
 
-/*
+
 
 
 
@@ -271,7 +271,7 @@ void __near G_BuildTiccmd (int8_t index) {
 } 
  
 
- */
+ 
  
 void __near G_SetGameKeyDown(int8_t key);
 void __near G_SetGameKeyUp(int8_t key);
@@ -281,7 +281,7 @@ boolean __near G_GetGameKey(int8_t keyr);
 // G_Responder  
 // Get info needed to make ticcmd_ts for the players.
 // 
-/*
+
 boolean __near G_Responder (event_t __far* ev)  {   // any other key pops up menu if in demos
 	if (gameaction == ga_nothing && !singledemo &&
 		(demoplayback || gamestate == GS_DEMOSCREEN)) {
@@ -510,7 +510,7 @@ void __near G_PlayerFinishLevel ();
 // G_PlayerFinishLevel
 // Can when a player completes a level.
 //
-/*
+
 void __near G_PlayerFinishLevel ()  { 
 
           
@@ -722,7 +722,7 @@ void __near G_DoCompleted (void)  {
 
 // todo make larger?
 
-/*
+
 
  
 #define VERSIONSIZE             16 
@@ -906,7 +906,7 @@ void __near G_DoSaveGame (void)  {
     R_FillBackScreen ();        
 	
 } 
-*/
+
  
 
 //
@@ -914,7 +914,7 @@ void __near G_DoSaveGame (void)  {
 // Can be called by the startup code or the menu task,
 // consoleplayer, displayplayer, playeringame[] should be set. 
 //
-/* 
+ 
 void __far G_DeferedInitNew ( skill_t skill, int8_t episode, int8_t map) { 
     d_skill = skill; 
     d_episode = episode; 
@@ -984,7 +984,7 @@ void __near G_WriteDemoTiccmd (ticcmd_t __near* cmd)  {
 
 } 
  
-*/
+
  
  
 #define DEMOMARKER              0x80
@@ -995,7 +995,7 @@ void __near G_WriteDemoTiccmd (ticcmd_t __near* cmd)  {
 //
 // G_PlayDemo 
 //
-/*
+
 void __near G_DoPlayDemo (void)  { 
     skill_t skill; 
 	int8_t episode, map;
@@ -1041,10 +1041,11 @@ void __near G_DoPlayDemo (void)  {
 	Z_QuickMapPhysics();
 
 } 
-*/
+
  
  
 /* 
+ 
 =================== 
 = 
 = G_CheckDemoStatus 
@@ -1052,7 +1053,7 @@ void __near G_DoPlayDemo (void)  {
 = Called after a death or level completion to allow demos to be cleaned up 
 = Returns true if a new demo loop action will take place 
 =================== 
-
+*/
 boolean __near G_CheckDemoStatus (void)  { 
 	ticcount_t             endtime;
 #ifdef DETAILED_BENCH_STATS
@@ -1125,7 +1126,7 @@ void __far OutOfThinkers (){
 }
 
 
-*/ 
+
  
  
  
