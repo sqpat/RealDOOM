@@ -29,6 +29,18 @@ ENDP
 str_versionstring:
 db "version 109", 0
 
+
+str_bad_tclass_1:
+db "Unknown tclass %i in savegame", 0
+str_bad_tclass_1_end:
+str_bad_tclass_2:
+db "P_UnarchiveSpecials:Unknown tclass %i in savegame", 0
+str_bad_tclass_2_end:
+str_savegame_too_big:
+db "Savegame buffer overrun", 0
+str_savegame_too_big_end:
+
+
 SAVEGAMESIZE = 0F800h
 
 
@@ -37,16 +49,8 @@ PUBLIC P_UnArchivePlayers_
 
 
 
-mov   ax, word ptr ds:[_save_p]
-
-;	PADSAVEP();
-and   ax, 3
-jz    dont_pad
-mov   cx, 4
-sub   cx, ax
-add   word ptr ds:[_save_p], cx
-dont_pad:
 les   bx, dword ptr ds:[_save_p]
+; PADSAVEP
 
 mov   al, byte ptr es:[bx + VANILLA_PLAYER_T.vanilla_player_playerstate]
 
@@ -298,9 +302,9 @@ or    byte ptr es:[bx], al
 mov   ax, LINES_PHYSICS_SEGMENT
 mov   es, ax
 lodsw
-mov   byte ptr es:[di + 0Fh], al
+mov   byte ptr es:[di + LINE_PHYSICS_T.lp_special], al
 lodsw
-mov   byte ptr es:[di + 0Eh], al
+mov   byte ptr es:[di + LINE_PHYSICS_T.lp_tag], al
 
 
 ; time to do sides...
@@ -375,10 +379,6 @@ ret
 
 ENDP
 
-str_bad_tclass_1:
-db "Unknown tclass %i in savegame", 0
-str_bad_tclass_2:
-db "P_UnarchiveSpecials:Unknown tclass %i in savegame", 0
 
 
 SIZEOF_MOBJ_VANILLA_T = 09Ah
@@ -438,19 +438,12 @@ bad_thinkerclass:
 push      ss
 pop       ds
 xor       ah, ah
-push      ax
+push      ax  ; tclass
 
-mov ax, OFFSET str_bad_tclass_1
-push      cs
-push      ax
-;call      I_Error_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _I_Error_addr
+mov       si, OFFSET str_bad_tclass_1
+mov       cx, OFFSET str_bad_tclass_1_end - OFFSET str_bad_tclass_1
+jmp       do_error_copy
 
-
-;add       sp, 4
-;jmp       load_next_thinker
 
 call_removemobj:
 mov       ax, di
@@ -485,14 +478,10 @@ lodsb
 cmp       al, 1
 jne       handle_load_non_thinker
 handle_load_thinker:
-; PADSAVEP();
-mov       ax, si
-and       ax, 3
-jz        dont_pad_2
-mov       dx, 4
-sub       dx, ax
-add       si, dx
-dont_pad_2:
+; PADSAVEP
+add       si, 3
+and       si, 0FFFCh
+
 mov       ax, TF_MOBJTHINKER_HIGHBITS
 xor       dx, dx
 push      ds                              ; store p_save seg
@@ -709,35 +698,27 @@ ja     bad_special_thinkerclass
 mov    bx, ax
 sal    bx, 1
 
-mov    ax, si
-mov    cx, 4
-and    ax, 3
-sub    cx, ax
-and    cx, 3
 
 mov    di, SIZEOF_THINKER_T
-
+mov    cx, dx
 
 jmp    word ptr cs:[bx + OFFSET jump_table_unarchive_specials]
 
 ; default case
 bad_special_thinkerclass:
 xor    ah, ah
-
-mov    ax, OFFSET str_bad_tclass_2
-push   cs
 push   ax
-;call      I_Error_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _I_Error_addr
+
+mov       si, OFFSET str_bad_tclass_2
+mov       cx, OFFSET str_bad_tclass_2_end - OFFSET str_bad_tclass_2
+jmp       do_error_copy
 
 ; thinker_type...
 
 load_ceiling_special:
-; PADSAVEP()
-add    si, cx
-mov    cx, dx
+; PADSAVEP
+add    si, 3
+and    si, 0FFFCh
 mov    ax, TF_MOVECEILING_HIGHBITS
 
 db 09Ah
@@ -787,9 +768,9 @@ mov    ds, cx
 jmp    load_next_special
 
 load_door_special:
-; PADSAVEP()
-add    si, cx
-mov    cx, dx
+; PADSAVEP
+add    si, 3
+and    si, 0FFFCh
 mov    ax, TF_VERTICALDOOR_HIGHBITS
 db 09Ah
 dw P_CREATETHINKERFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
@@ -824,10 +805,9 @@ mov    word ptr ss:[di + (_sectors_physics + 8)], bx  ; sectors_physics speciald
 jmp    load_next_special
 
 load_movefloor_special:
-
-; PADSAVEP()
-add    si, cx
-mov    cx, dx
+; PADSAVEP
+add    si, 3
+and    si, 0FFFCh
 mov    ax, TF_MOVEFLOOR_HIGHBITS
 db 09Ah
 dw P_CREATETHINKERFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
@@ -865,9 +845,9 @@ mov    word ptr ss:[di + (_sectors_physics + 8)], bx  ; sectors_physics speciald
 jmp    load_next_special
 
 load_platraise_special:
-; PADSAVEP()
-add    si, cx
-mov    cx, dx
+; PADSAVEP
+add    si, 3
+and    si, 0FFFCh
 mov    ax, TF_PLATRAISE_HIGHBITS
 
 db 09Ah
@@ -925,9 +905,9 @@ mov    ds, cx
 jmp    load_next_special
 
 load_flash_special:
-; PADSAVEP()
-add    si, cx
-mov    cx, dx
+; PADSAVEP
+add    si, 3
+and    si, 0FFFCh
 mov    ax, TF_LIGHTFLASH_HIGHBITS
 
 db 09Ah
@@ -950,9 +930,9 @@ call   LoadInt8_
 jmp    load_next_special
 
 load_strobe_special:
-; PADSAVEP()
-add    si, cx
-mov    cx, dx
+; PADSAVEP
+add    si, 3
+and    si, 0FFFCh
 mov    ax, TF_STROBEFLASH_HIGHBITS
 
 db 09Ah
@@ -975,9 +955,9 @@ call   LoadInt16_
 jmp    load_next_special
 
 load_glow_special:
-; PADSAVEP()
-add    si, cx
-mov    cx, dx
+; PADSAVEP
+add    si, 3
+and    si, 0FFFCh
 mov    ax, TF_GLOW_HIGHBITS
 
 db 09Ah
@@ -1125,7 +1105,8 @@ mov     byte ptr ds:[_leveltime+2], al
 lods    word ptr es:[si]
 xchg    al, ah
 mov     word ptr ds:[_leveltime], ax
-
+inc     si
+inc     si  ; align to 4
 mov     word ptr ds:[_save_p], si
 
 ; todo could clean up the push/pop and save_p maintenance... but we have free room in this overlay.
@@ -1171,13 +1152,8 @@ PROC   P_ArchivePlayers_ NEAR
 PUBLIC P_ArchivePlayers_
 
 
-; todo should be a constant amount, get rid of this pad later
+les       di, dword ptr ds:[_save_p] ; already dword aligned..
 
-les       ax, dword ptr ds:[_save_p]
-
-add       ax, 3
-and       al, 0FCh ; round up to next dword alignment?
-xchg      ax, di
 
 mov       cx, SIZEOF_PLAYER_VANILLA_T / 2
 
@@ -1380,7 +1356,7 @@ mov   cx, word ptr ds:[_numsectors]
 les   di, dword ptr ds:[_save_p]
 mov   ax, SECTORS_SEGMENT
 mov   ds, ax
-mov   bx, _sectors_physics + 14  ; offset to tags
+mov   bx, _sectors_physics + SECTOR_PHYSICS_T.secp_special  ; offset to tags
 
 
 xor   si, si
@@ -1391,15 +1367,15 @@ loop_save_next_sector:
 
 do_save_next_sector:
 
-lodsw                   ; todo shr?? can this be negative
+lodsw
 SHIFT_MACRO SAR AX 3
 stosw           ; floorheight
 
-lodsw                   ; todo shr?? can this be negative
+lodsw
 SHIFT_MACRO SAR AX 3
 stosw           ; ceilingheight
 
-xor   ah, ah    ; zero high bit for next 5 writes.
+xor   ax, ax    ; zero high bit for next 5 writes.
 
 lodsb           ; floorpic
 stosw
@@ -1407,7 +1383,7 @@ stosw
 lodsb           ; ceiling pic
 stosw
 
-mov   al, byte ptr ds:[si + 8]  ; si is 6, 0Dh is lightlevel
+mov   al, byte ptr ds:[si + (SECTOR_T.sec_lightlevel - SECTOR_T.sec_validcount)]  ; si is 6, 0Eh is lightlevel
 stosw
 
 mov   al, byte ptr ss:[bx]      ; special
@@ -1416,20 +1392,20 @@ stosw
 mov   al, byte ptr ss:[bx+1]    ; tag
 stosw
 
-add   si, (SIZEOF_SECTOR_T - 6)
-add   bx, SIZEOF_SECTOR_PHYSICS_T
+add   si, (SIZE SECTOR_T - 6)
+add   bx, SIZE SECTOR_PHYSICS_T
 loop  loop_save_next_sector
 
 done_saving_sectors:
 
 
 xor   dx, dx
-mov   si, 14
+mov   si, LINE_PHYSICS_T.lp_tag
 
 loop_save_next_line:
 
 
-mov   ds, word ptr ds:[_LINEFLAGSLIST_SEGMENT_PTR]
+mov   ds, word ptr ss:[_LINEFLAGSLIST_SEGMENT_PTR]
 mov   bx, dx
 mov   al, byte ptr ds:[bx]
 
@@ -1448,8 +1424,8 @@ stosw          ; write lineflags.
 mov   ax, LINES_PHYSICS_SEGMENT
 mov   ds, ax
 
+xor   ax, ax
 mov   cx, word ptr ds:[si]      ; special and tag, 0E and 0F offsets
-xor   ah, ah
 
 mov   al, ch                    ; swapped order
 stosw                           ; special       ; todo convert these tags to vanilla values
@@ -1463,7 +1439,7 @@ mov   ds, ax
 mov   bx, dx
 SHIFT_MACRO shl bx 2
 
-lds   ax, dword ptr ds:[bx]      ; side1
+lds   ax, dword ptr ds:[bx + LINE_T.l_sidenum]      ; side1
 mov   bx, ds    ; side2
 mov   cx, 2                     ; num sides
 push  si
@@ -1589,12 +1565,8 @@ stosb
 
 
 ; PADSAVEP
-mov       cx, di
-mov       ax, 4
-and       cx, 3
-sub       ax, cx
-and       ax, 3
-add       di, ax
+add       di, 3
+and       di, 0FFFCh
 
 push      dx
 
@@ -1938,13 +1910,9 @@ stosb     ; write tc_type
 shl       bx, 1  ; word lookup
 
 ; PADSAVEP
+add       di, 3
+and       di, 0FFFCh
 
-mov       dx, di
-mov       ax, 4
-and       dx, 3
-sub       ax, dx
-and       ax, 3
-add       di, ax
 
 ; going in:
 ; mobj is ds:si
@@ -2122,6 +2090,8 @@ mov     ax, word ptr ds:[_leveltime+0]
 xchg    al, ah
 stosw
 
+inc     di
+inc     di ; dword align to 0x34
 mov     word ptr ds:[_save_p], di
 ;mov     word ptr ds:[_save_p+2], es
 
@@ -2147,14 +2117,27 @@ retf
 ENDP
 
 
-str_savegame_too_big:
-db "Savegame buffer overrun", 0
-
 savegame_too_big:
-push    cs
-mov     ax, OFFSET str_savegame_too_big
-push    ax
-call    dword ptr ds:[_I_Error_addr]
+mov     si, OFFSET str_savegame_too_big
+mov     cx, OFFSET str_savegame_too_big_end - OFFSET str_savegame_too_big
+; fall thru
+
+do_error_copy:
+
+push      ss  ; for I_Error
+
+push      cs
+pop       ds
+push      ss
+pop       es
+
+mov       di, OFFSET _player_message_string
+push      di ; for I_Error
+rep       movsb
+
+push      ss
+pop       ds
+call      dword ptr ds:[_I_Error_addr]
 
 
 
