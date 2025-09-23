@@ -88,6 +88,7 @@ boolean __near AM_Responder (event_t __far* ev);
 
  
 
+/*
 
 
 
@@ -128,7 +129,6 @@ uint8_t __near R_FlatNumForName(int8_t __far* name) {
 // or reads it from the demo buffer. 
 // If recording a demo, write it out 
 // 
-/*
 void __near G_BuildTiccmd (int8_t index) { 
 	int8_t         i;
 	int8_t     strafe;

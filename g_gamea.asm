@@ -27,6 +27,7 @@ EXTRN Z_QuickMapScratch_5000_:FAR
 
 EXTRN R_ExecuteSetViewSize_:NEAR
 EXTRN R_FillBackScreen_ForceBufferRedraw_:NEAR
+EXTRN W_CheckNumForNameFarString_:NEAR
 EXTRN locallib_strcmp_:NEAR
 
 EXTRN G_DoLoadLevel_:NEAR
@@ -236,6 +237,33 @@ POPA_NO_AX_OR_BP_MACRO
 ret
 ENDP
 
+PROC    R_FlatNumForName_ NEAR
+PUBLIC  R_FlatNumForName_
+
+push    dx
+push    ax
+
+call    W_CheckNumForNameFarString_
+
+test    ax, ax
+js      do_flat_error
+
+sub     ax, word ptr ds:[_firstflat]
+
+add     sp, 4
+ret
+ENDP
+
+str_error_flatnum:
+db "\nR_FlatNumForName: %Fs not found", 0
+
+do_flat_error:
+
+; dx/ax already on stack?
+push     cs
+mov      ax, OFFSET str_error_flatnum
+push     ax
+call     I_Error_
 
 
 
