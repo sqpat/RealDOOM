@@ -40,8 +40,6 @@
 #define R_RenderPlayerViewFLOffset              0x319D
 #define R_GetCompositeTextureFLOffset           0x2E87
 #define R_GetPatchTextureFLOffset               0x2DEC
-#define WI_StartOffset                          0xFA9
-#define WI_DrawerOffset                         0xE3A
 #define wipe_StartScreenOffset                  0x4CC
 #define wipe_WipeLoopOffset                     0x517
 #define F_StartFinaleOffset                     0x1AE
@@ -82,7 +80,7 @@
 #define R_BSP16CodeSize                0x3783
 #define R_BSP0CodeSize                 0x36B5
 #define R_BSPFLCodeSize                0x365A
-#define WI_StuffCodeSize               0xFED
+#define WI_StuffCodeSize               0xFE5
 #define PSightCodeSize                 0x9D9B
 #define WipeCodeSize                   0x5FC
 #define FinaleCodeSize                 0xBC4

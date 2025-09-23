@@ -580,7 +580,6 @@ void __far G_SecretExitLevel (void) {
     }
     gameaction = ga_completed; 
 } 
-*/
 void __near G_PlayerFinishLevel ();
  
 void __near G_DoCompleted (void)  { 
@@ -683,7 +682,6 @@ void __near G_DoCompleted (void)  {
     Z_QuickMapPhysics();
 } 
 
-/*
  void __far dolog(int16_t a){
 
 	FILE* fp = fopen("log2.txt", "ab");

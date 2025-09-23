@@ -481,9 +481,6 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "#define R_GetPatchTextureFLOffset               0x%X\n", FP_OFF(R_GetPatchTexture_FarFL)           - FP_OFF(R_BSPFL_STARTMARKER));
 
 
-    // intermission/ wi stuff offsets
-    fprintf(fp, "#define WI_StartOffset                          0x%X\n", FP_OFF(WI_Start)                          - FP_OFF(WI_STARTMARKER));
-    fprintf(fp, "#define WI_DrawerOffset                         0x%X\n", FP_OFF(WI_Drawer)                         - FP_OFF(WI_STARTMARKER));
 
 
     // wipe offsets
@@ -616,7 +613,6 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 
     fprintf(fp, "WIPE_STARTSCREENOFFSET     = 0%Xh\n",            FP_OFF(wipe_StartScreen)                    - FP_OFF(F_WIPE_STARTMARKER));
     fprintf(fp, "WIPE_WIPELOOPOFFSET        = 0%Xh\n",            FP_OFF(wipe_WipeLoop)                       - FP_OFF(F_WIPE_STARTMARKER));
-    fprintf(fp, "WI_DRAWEROFFSET            = 0%Xh\n",            FP_OFF(WI_Drawer)                           - FP_OFF(WI_STARTMARKER));
     fprintf(fp, "F_DRAWEROFFSET             = 0%Xh\n",            FP_OFF(F_Drawer)                            - FP_OFF(F_FINALE_STARTMARKER));
     fprintf(fp, "LOADSFXWADLUMPSOFFSET      = 0%Xh\n",            FP_OFF(LoadSFXWadLumps)                     - FP_OFF(S_INIT_STARTMARKER));
 
@@ -625,7 +621,12 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "G_CONTINUELOADGAMEOFFSET    = 0%Xh\n",           FP_OFF(G_ContinueLoadGame)                  - FP_OFF(P_SAVEG_STARTMARKER));
     fprintf(fp, "G_CONTINUESAVEGAMEOFFSET    = 0%Xh\n",           FP_OFF(G_ContinueSaveGame)                  - FP_OFF(P_SAVEG_STARTMARKER));
 
+    // intermission/ wi stuff offsets
+
     fprintf(fp, "WI_TICKEROFFSET             = 0%Xh\n",           FP_OFF(WI_Ticker)                           - FP_OFF(WI_STARTMARKER));
+    fprintf(fp, "WI_STARTOFFSET              = 0%Xh\n",           FP_OFF(WI_Start)                            - FP_OFF(WI_STARTMARKER));
+    fprintf(fp, "WI_DRAWEROFFSET            = 0%Xh\n",            FP_OFF(WI_Drawer)                           - FP_OFF(WI_STARTMARKER));
+
     fprintf(fp, "F_TICKEROFFSET              = 0%Xh\n",           FP_OFF(F_Ticker)                            - FP_OFF(F_FINALE_STARTMARKER));
     fprintf(fp, "P_TICKEROFFSET              = 0%Xh\n",           FP_OFF(P_Ticker)                            - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "AM_TICKEROFFSET             = 0%Xh\n",           FP_OFF(AM_Ticker)                           - FP_OFF(P_SIGHT_STARTMARKER));

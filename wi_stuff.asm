@@ -1571,11 +1571,7 @@ db "WIMAP0", 0
 PROC WI_loadData_ NEAR
 PUBLIC WI_loadData_
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
 sub   sp, 036h
@@ -1625,11 +1621,7 @@ done_loading_assets:
 
 
 LEAVE_MACRO
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 ret   
 
 
