@@ -131,10 +131,7 @@ void __far F_FINALE_ENDMARKER();
 void __far P_SAVEG_STARTMARKER();
 void __far P_SAVEG_ENDMARKER();
 void __far G_ContinueLoadGame();
-void __far P_ArchivePlayers();
-void __far P_ArchiveWorld();
-void __far P_ArchiveThinkers();
-void __far P_ArchiveSpecials();
+void __far G_ContinueSaveGame();
 void __far WI_STARTMARKER();
 void __far WI_ENDMARKER();
 void __far S_SOUND_ENDMARKER();
@@ -629,10 +626,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 
     // load offsets
     fprintf(fp, "G_CONTINUELOADGAMEOFFSET    = 0%Xh\n",           FP_OFF(G_ContinueLoadGame)                  - FP_OFF(P_SAVEG_STARTMARKER));
-    fprintf(fp, "P_ARCHIVEPLAYERSOFFSET      = 0%Xh\n",           FP_OFF(P_ArchivePlayers)                    - FP_OFF(P_SAVEG_STARTMARKER));
-    fprintf(fp, "P_ARCHIVEWORLDOFFSET        = 0%Xh\n",           FP_OFF(P_ArchiveWorld)                      - FP_OFF(P_SAVEG_STARTMARKER));
-    fprintf(fp, "P_ARCHIVETHINKERSOFFSET     = 0%Xh\n",           FP_OFF(P_ArchiveThinkers)                   - FP_OFF(P_SAVEG_STARTMARKER));
-    fprintf(fp, "P_ARCHIVESPECIALSOFFSET     = 0%Xh\n",           FP_OFF(P_ArchiveSpecials)                   - FP_OFF(P_SAVEG_STARTMARKER));
+    fprintf(fp, "G_CONTINUESAVEGAMEOFFSET    = 0%Xh\n",           FP_OFF(G_ContinueSaveGame)                  - FP_OFF(P_SAVEG_STARTMARKER));
 
 
 

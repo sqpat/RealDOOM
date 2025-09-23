@@ -90,7 +90,7 @@
 #define PSightCodeSize                 0x9D9B
 #define WipeCodeSize                   0x5FC
 #define FinaleCodeSize                 0xBC4
-#define SaveLoadCodeSize               0xB69
+#define SaveLoadCodeSize               0xBDF
 #define SMLoadCodeSize                 0x4CA
 #define SInitCodeSize                  0x55F
 #define MaximumMusDriverSize           0x100E

@@ -25,11 +25,18 @@ PROC P_SAVEG_STARTMARKER_
 PUBLIC P_SAVEG_STARTMARKER_
 ENDP
 
+; known 0 offset..
+str_versionstring:
+db "version 109", 0
+
+SAVEGAMESIZE = 0F800h
+
+
 PROC P_UnArchivePlayers_  NEAR
 PUBLIC P_UnArchivePlayers_
 
 
-PUSHA_NO_AX_OR_BP_MACRO
+
 mov   ax, word ptr ds:[_save_p]
 
 ;	PADSAVEP();
@@ -179,7 +186,7 @@ mov   word ptr ds:[di + 05Ch], ax
 
 mov   word ptr ds:[_playerMobjRef], ax
 
-POPA_NO_AX_OR_BP_MACRO
+
 ret  
 set_psprite_statenum_null:
 mov   word ptr ds:[bx + _psprites], 0FFFFh
@@ -198,7 +205,7 @@ PROC P_UnArchiveWorld_  NEAR
 PUBLIC P_UnArchiveWorld_
 
 
-PUSHA_NO_AX_OR_BP_MACRO
+
 
 ;PROC Z_QuickMapRender_4000To8000_8000Only_ NEAR
 Z_QUICKMAPAI4 PAGESWAPARGS_REND_OTHER8000_OFFSET_SIZE INDEXED_PAGE_8000_OFFSET
@@ -361,7 +368,7 @@ mov   word ptr ds:[_save_p], si
 ; put this back
 Z_QUICKMAPAI4 PAGESWAPARGS_SCREEN0_OFFSET_SIZE INDEXED_PAGE_8000_OFFSET
 
-POPA_NO_AX_OR_BP_MACRO
+
 ret  
 
 
@@ -381,7 +388,7 @@ PROC P_UnArchiveThinkers_  NEAR
 PUBLIC P_UnArchiveThinkers_
 
 
-PUSHA_NO_AX_OR_BP_MACRO
+
 push      bp
 mov       bp, sp
 sub       sp, 6
@@ -424,7 +431,7 @@ pop       ds
 end_specials:           ; todo i guess this can piggyback on another exit.
 mov       word ptr ds:[_save_p], si
 
-POPA_NO_AX_OR_BP_MACRO
+
 ret      
 
 bad_thinkerclass:
@@ -687,7 +694,7 @@ PROC P_UnArchiveSpecials_  NEAR
 PUBLIC P_UnArchiveSpecials_
 
 
-PUSHA_NO_AX_OR_BP_MACRO
+
 
 lds    si, dword ptr ds:[_save_p]
 load_next_special:
@@ -1160,11 +1167,10 @@ push    ax
 call    dword ptr ds:[_I_Error_addr]
 
 
-PROC P_ArchivePlayers_ FAR
+PROC   P_ArchivePlayers_ NEAR
 PUBLIC P_ArchivePlayers_
 
 
-PUSHA_NO_AX_OR_BP_MACRO
 ; todo should be a constant amount, get rid of this pad later
 
 les       ax, dword ptr ds:[_save_p]
@@ -1347,8 +1353,8 @@ add       di, 4         ; for didsecret
 mov       word ptr ds:[_save_p], di
 
 exit_archive_player:
-POPA_NO_AX_OR_BP_MACRO
-retf      
+
+ret      
 skip_statenum_write:
 add       di, 4
 jmp       done_with_statenum_write
@@ -1360,12 +1366,12 @@ jmp       done_with_statenum_write
 ENDP
 
 
-PROC P_ArchiveWorld_ FAR
+PROC   P_ArchiveWorld_ NEAR
 PUBLIC P_ArchiveWorld_
 
 
 
-PUSHA_NO_AX_OR_BP_MACRO
+
 ;PROC Z_QuickMapRender_4000To8000_8000Only_ NEAR
 Z_QUICKMAPAI4 PAGESWAPARGS_REND_OTHER8000_OFFSET_SIZE INDEXED_PAGE_8000_OFFSET
 
@@ -1520,8 +1526,8 @@ mov   word ptr ds:[_save_p], di
 ; put this back
 Z_QUICKMAPAI4 PAGESWAPARGS_SCREEN0_OFFSET_SIZE INDEXED_PAGE_8000_OFFSET
 
-POPA_NO_AX_OR_BP_MACRO
-retf  
+
+ret  
 
 ENDP
 
@@ -1529,11 +1535,11 @@ ENDP
 
 VANILLA_FULLBRIGHT = 08000h
 
-PROC P_ArchiveThinkers_ FAR
+PROC   P_ArchiveThinkers_ NEAR
 PUBLIC P_ArchiveThinkers_
 
 
-PUSHA_NO_AX_OR_BP_MACRO
+
 
 les       di, dword ptr ds:[_save_p]
 mov       dx, word ptr ds:[_thinkerlist + THINKER_T.t_next]
@@ -1566,8 +1572,8 @@ pop       ds
 
 mov       word ptr ds:[_save_p], di     ; write back _save_p
 
-POPA_NO_AX_OR_BP_MACRO
-retf      
+
+ret      
 
 do_save_next_thinker:
 ; dx is index..
@@ -1879,10 +1885,10 @@ dw  SIZEOF_STROBE_VANILLA_T     / 2
 dw  SIZEOF_GLOW_VANILLA_T       / 2
 
 
-PROC P_ArchiveSpecials_ FAR
+PROC   P_ArchiveSpecials_ NEAR
 PUBLIC P_ArchiveSpecials_
 
-PUSHA_NO_AX_OR_BP_MACRO
+
 
 les       di, dword ptr ds:[_save_p]
 mov       cx, word ptr ds:[_thinkerlist + THINKER_T.t_next]
@@ -1977,8 +1983,8 @@ mov       al, 7
 stosb
 mov       word ptr ds:[_save_p], di
 
-POPA_NO_AX_OR_BP_MACRO
-retf      
+
+ret      
 
 is_null_funcbits:
 mov       bx, OFFSET _activeceilings
@@ -2077,6 +2083,79 @@ jmp       iterate_to_next_special
 
 
 ENDP
+
+
+
+PROC   G_ContinueSaveGame_
+PUBLIC G_ContinueSaveGame_
+
+mov     di, SCRATCH_SEGMENT_5000
+mov     es, di
+xor     di, di
+; es:di = save_p/savebuffer
+
+mov     si, OFFSET _savedescription
+mov     cx, SAVESTRINGSIZE / 2
+rep     movsw
+mov     si, OFFSET str_versionstring
+push    cs
+pop     ds
+mov     cl, 12 / 2
+rep     movsw
+xor     ax, ax
+stosw   ; // last 4 bytes of versionsize...
+stosw
+push    ss
+pop     ds
+mov     al, byte ptr ds:[_gameskill]
+stosb
+mov     ax, word ptr ds:[_gameepisode] ; get both...
+;mov     ah, byte ptr ds:[_gamemap]
+stosw
+mov     ax, 1
+stosw           ; true, false
+dec     ax
+stosw           ; false, false
+mov     al, byte ptr ds:[_leveltime+2]
+stosb
+mov     ax, word ptr ds:[_leveltime+0]
+xchg    al, ah
+stosw
+
+mov     word ptr ds:[_save_p], di
+;mov     word ptr ds:[_save_p+2], es
+
+call    P_ArchivePlayers_
+call    P_ArchiveWorld_
+call    P_ArchiveThinkers_
+call    P_ArchiveSpecials_
+
+
+les     di, dword ptr ds:[_save_p]
+
+mov     al, 01Dh
+stosb   ; consistency marker.
+
+inc     word ptr ds:[_save_p]
+
+cmp     di, SAVEGAMESIZE
+ja      savegame_too_big
+
+
+retf
+
+ENDP
+
+
+str_savegame_too_big:
+db "Savegame buffer overrun", 0
+
+savegame_too_big:
+push    cs
+mov     ax, OFFSET str_savegame_too_big
+push    ax
+call    dword ptr ds:[_I_Error_addr]
+
 
 
 PROC P_SAVEG_ENDMARKER_
