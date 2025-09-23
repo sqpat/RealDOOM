@@ -1713,7 +1713,7 @@ not_line_special_48_spawn:
 add       si, SIZEOF_LINE_PHYSICS_T
 inc       ax
 cmp       ax, word ptr ds:[_numlines]
-jge       loop_next_line_physics
+jl        loop_next_line_physics
 
 
 
