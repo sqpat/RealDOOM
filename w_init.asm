@@ -23,7 +23,6 @@ EXTRN fread_:FAR
 EXTRN fseek_:FAR
 EXTRN ftell_:FAR
 EXTRN fopen_:FAR
-EXTRN fclose_:FAR
 EXTRN setbuf_:FAR
 EXTRN exit_:FAR
 EXTRN locallib_far_fread_:FAR
@@ -48,7 +47,7 @@ PUBLIC  W_INIT_STARTMARKER_
 ENDP
 
 str_good_wad:
-db 0Ah, 09h, "adding %s", 0Ah, 0
+db 0Ah, 09h, "adding %s", 0
 str_bad_wad:
 db 09h, "couldn't open %s", 0Ah, 0
 handle_bad_file_couldnt_open:
@@ -65,9 +64,9 @@ PUBLIC  W_AddFile_
 PUSHA_NO_AX_MACRO
 push    bp
 mov     bp, sp
-sub     sp, 12
+
 xchg    ax, si 
-mov     bx, si ;backup
+mov     di, si ; backup addfile filename in di
 xor     cx, cx ; iswad
 do_next_char:
 lodsb
@@ -89,11 +88,12 @@ not_wad:
 
 ;usefp = wadfiles[currentloadedfileindex];
 
-mov    ax, bx
+ 
+mov    ax, di
 mov    dx, OFFSET _fopen_rb_argument
 call   fopen_
 
-push   bx
+push   di  ; filename
 push   cs  ; common DEBUG_PRINT args
 
 test   ax, ax
@@ -103,8 +103,9 @@ xchg   ax, si ; si gets fp
 mov    al, byte ptr ds:[_currentloadedfileindex]
 cbw
 sal    ax, 1
-xchg   ax, di
-mov    word ptr ds:[_wadfiles + di], si     ;wadfiles[currentloadedfileindex] = fopen(filename, "rb");
+xchg   ax, bx
+mov    word ptr ds:[_wadfiles + bx], si     ;wadfiles[currentloadedfileindex] = fopen(filename, "rb");
+
 
 mov    ax, OFFSET str_good_wad
 push   ax
@@ -163,9 +164,7 @@ jmp    done_processing_wad_file
 
 do_non_wad:
 
-
-
-xor    cx, cx
+;xor    cx, cx
 xor    bx, bx
 mov    ax, si
 mov    dx, 2 ; SEEKEND
@@ -173,35 +172,60 @@ call   fseek_  ; fseek(usefp, 0L, SEEK_END);
 mov    ax, si
 call   ftell_  ; singleinfo.size = ftell(usefp);
 
+xchg   dx, cx   ; cx:bx is result of ftell
+xchg   ax, bx   
 
 
-xchg   ax, di ; filename
-mov    si, ax
-xchg   dx, cx   ; cx:di is result of ftell
-call   locallib_strupr_
+mov    ax, di ; filename
+mov    dx, ds    
+call   locallib_strupr_  ; filename/wad lump name now uppercase.
 
 mov    ax, SCRATCH_SEGMENT_5000
 mov    es, ax
 
+mov    dx, si ; fp backup
+mov    si, di   ; filename
+
 xor    ax, ax
-mov    bx, di
-mov    di, ax 
+mov    di, 0
+
+;typedef struct {
+;	int32_t			filepos;
+;	int32_t			size;
+;	int8_t		name[8];
+    
+
 stosw          ; pos 0
 stosw          ; pos 0
-xchg   ax, bx
+xchg   ax, bx  ; size lo
 stosw
-xchg   ax, cx  ; size
+xchg   ax, cx  ; size hi
 stosw
-movsw ; name. si was still pointing at filename on stack.
-movsw ; name
-movsw ; name
-movsw ; name
 
 
 
+push   ax
+push   cx ; store size
+mov    cx, 8
 
-; now name...
 
+loop_copy_next_filename_char:
+lodsb
+cmp    al, '.'
+je     end_early
+stosb
+loop   loop_copy_next_filename_char
+
+end_early:
+xor    ax, ax
+rep    stosb 
+
+pop    cx
+pop    ax ; retrieve size
+
+
+; bx has size lo, ax has size hi
+mov    si, dx ; fp back in si
 
 xor    bx, bx
 mov    bl, byte ptr ds:[_currentloadedfileindex]
@@ -210,8 +234,8 @@ shl    bx, 1
 push   word ptr ds:[_numlumps]
 pop    word ptr ds:[bx + _filetolumpindex]  ; filetolumpindex[currentloadedfileindex-1] = numlumps;
 shl    bx, 1 ; dword lookup
-mov    word ptr ds:[bx + _filetolumpsize], ax
-mov    word ptr ds:[bx + _filetolumpsize + 2], dx ; filetolumpsize[currentloadedfileindex-1] = singleinfo.size;
+mov    word ptr ds:[bx + _filetolumpsize], cx
+mov    word ptr ds:[bx + _filetolumpsize + 2], ax ; filetolumpsize[currentloadedfileindex-1] = singleinfo.size;
 
 xor    cx, cx
 xor    bx, bx
@@ -228,10 +252,11 @@ inc    word ptr ds:[_numlumps]  ; numlumps++;
 
 done_processing_wad_file:
 
+
 inc    byte ptr ds:[_currentloadedfileindex] ; currentloadedfileindex++;
 
 ; ax has startlump
-xchg   ax, bx
+xchg   ax, bx ; now bx has it
 
 ;	for (i = startlump; i < numlumps; i++, lump_p++, fileinfo++) {
 
