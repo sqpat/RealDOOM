@@ -438,11 +438,13 @@ mov    al, DEMOMARKER
 stosb
 mov    word ptr ds:[_demo_p], di
 
-mov    ax, word ptr ds:[_demoname]
+mov    bx, OFFSET  _demoname
+push   bx  ; for I_Error
+mov    ax, word ptr ds:[bx]
 xor    bx, bx
 mov    cx, DEMO_SEGMENT
 mov    dx, di
-push   ax ; for I_Error call
+
 call   M_WriteFile_
 
 ; is this necessary? i guess so in i_quit?

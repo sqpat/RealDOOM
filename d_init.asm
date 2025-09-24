@@ -671,31 +671,25 @@ jnl   not_demo
     mov   dx, ss
     call  combine_strings_   ; result goes into bp - 276...
 
-    ;mov   word ptr [bp - 278], si
+
     pop   bx ; recover
 
     push  si
     push  cs
     mov   ax, OFFSET str_playing_demo
     push  ax
-    ;mov   dx, cs
     call  DEBUG_PRINT_                  ;		DEBUG_PRINT("Playing demo %s.lmp.\n", myargv[p + 1]);
-;		combine_strings(file, myargv[p + 1], ".lmp");
     ;add   sp, 6 probably fine to do via leave macro
-
-
 
 
 not_demo:
 
 
-xor   cx, cx
-mov   byte ptr ds:[_autostart], cl     ; 0/false
-inc   cx
+mov   cx, 1
+mov   byte ptr ds:[_autostart], ch     ; 0/false
 mov   byte ptr ds:[_startepisode], cl  ; 1
 mov   byte ptr ds:[_startmap], cl  ; 1
-inc   cx
-mov   byte ptr ds:[_startskill], cl  ; SK_MEDIUM or 2
+mov   byte ptr ds:[_startskill], SK_MEDIUM
 dec   dx  ; 1
 
 mov   ax, OFFSET str_skill
@@ -1079,7 +1073,7 @@ jnl   skip_record_param
     push  ax
 
     mov   bx, word ptr ds:[bx + si]
-    mov   cx, cs
+    mov   cx, ds
     mov   dx, ds
     mov   ax, OFFSET _demoname
     call  combine_strings_
