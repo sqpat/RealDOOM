@@ -231,14 +231,17 @@ ret
 
 do_non_wad:
 
-push   si ; fp
-
-mov    si, di ; filename
 
 mov    ax, LUMPINFO_INIT_SEGMENT
 mov    es, ax
-
 mov    ax, word ptr ds:[_numlumps]
+push   ax   ; numlumps [MATCH A]
+push   si   ; fp       [MATCH B]
+
+mov    si, di ; filename
+
+
+
 
 mov    dx, SIZE FILEINFO_T
 mul    dx
@@ -259,15 +262,15 @@ jb     go_loop_next_char_strupr
 cmp    al, 'z'
 ja     go_loop_next_char_strupr
 sub    al, 32
-stosb
 go_loop_next_char_strupr:
+stosb
 loop   loop_next_char_strupr
 end_early:
 xor    ax, ax
 rep    stosb 
 
 ; done copying upper filename
-pop    si  ; fp
+pop    si  ; fp  [MATCH B]
 
 mov    ax, cx ; 0
 stosw
@@ -289,6 +292,15 @@ stosw  ; size lo
 xchg   ax, dx
 stosw  ; size hi
 
+xor    bx, bx
+mov    bl, byte ptr ds:[_currentloadedfileindex]
+dec    bx
+shl    bx, 1
+
+pop    word ptr ds:[bx + _filetolumpindex]  ;  [MATCH A]        filetolumpindex[currentloadedfileindex-1] = numlumps;
+shl    bx, 1 ; dword lookup
+mov    word ptr ds:[bx + _filetolumpsize], dx
+mov    word ptr ds:[bx + _filetolumpsize + 2], ax ; filetolumpsize[currentloadedfileindex-1] = singleinfo.size;
 
 
 xor    cx, cx
@@ -296,6 +308,7 @@ xor    bx, bx
 xchg   ax, si
 xor    dx, dx ; SEEK_SET
 call   fseek_ ; ; fseek(usefp, 0L, SEEK_SET);
+
 
 inc    word ptr ds:[_numlumps]  ; numlumps++;
 inc    byte ptr ds:[_currentloadedfileindex] ; currentloadedfileindex++;
