@@ -641,18 +641,23 @@ skip_turbo:
 
 mov   ax, OFFSET str_playdemo_param
 call  M_CheckParm_CS_
-jne   is_playdemo
+test  ax, ax
+je    not_playdemodemo
+cmp   ax, di
+jl    is_playdemo
+not_playdemodemo:
 mov   ax, OFFSET str_timedemo_param
 call  M_CheckParm_CS_
 
-is_playdemo:
 
 test  ax, ax
-je   not_demo
+je    not_demo
 cmp   ax, di
 jnl   not_demo
 
+    is_playdemo:
     push  bx ; save
+
     sal   ax, 1
     xchg  ax, si
     push  cs
@@ -664,10 +669,11 @@ jnl   not_demo
 
     lea   ax, [bp - 276]
     mov   dx, ss
-    call  combine_strings_
+    call  combine_strings_   ; result goes into bp - 276...
 
-    mov   word ptr [bp - 278], si
-    ;lea   si, [bp - 278]
+    ;mov   word ptr [bp - 278], si
+    pop   bx ; recover
+
     push  si
     push  cs
     mov   ax, OFFSET str_playing_demo
@@ -678,7 +684,6 @@ jnl   not_demo
     ;add   sp, 6 probably fine to do via leave macro
 
 
-    pop   bx ; recover
 
 
 not_demo:
@@ -1101,7 +1106,7 @@ COMMENT @
 
     mov   byte ptr ds:[_demorecording], cl  ; 1
     mov   byte ptr ds:[_autostart], cl  ; 1
-
+    ; fall thru i guess
         
 
 skip_record_param:
@@ -1119,9 +1124,11 @@ jnl   skip_playdemo_param
     mov   byte ptr ds:[_singledemo], cl  ; 1
     sal   ax, 1
     xchg  ax, si
-    mov   ax, word ptr ds:[bx + si]
-    call  G_DeferedPlayDemo_
-    jmp   exit_doommain
+    
+    ;call  G_DeferedPlayDemo_
+    ; inlined
+
+    jmp   do_just_demo ; subset of -timedemo
 
 
 skip_playdemo_param:
@@ -1139,21 +1146,22 @@ jnl   skip_timedemo_param
 
     sal   ax, 1
     xchg  ax, si
-    mov   ax, word ptr ds:[bx + si]
-    ;call  G_TimeDemo_ ; inlined
 
-    mov   word ptr ds:[_defdemoname+0], ax ; defdemoname = name; 
-    mov   word ptr ds:[_defdemoname+2], ds ; far ptr
     mov   ax, OFFSET str_noblit_param
     call  M_CheckParm_CS_
     mov   byte ptr ds:[_noblit], al     ; noblit = M_CheckParm ("-noblit"); 
 
     mov   byte ptr ds:[_timingdemo], cl ; 1 ; timingdemo = true; 
     mov   byte ptr ds:[_singletics], cl ; 1 ; singletics = true; 
+    
+    ;call  G_TimeDemo_ ; inlined
+    do_just_demo:
+    mov   ax, word ptr ds:[bx + si]
+    mov   word ptr ds:[_defdemoname+0], ax ; defdemoname = name; 
+    mov   word ptr ds:[_defdemoname+2], ds ; far ptr
+
     mov   byte ptr ds:[_gameaction], GA_PLAYDEMO ; gameaction = ga_playdemo; 
     
-    
-
 
     jmp   exit_doommain
 

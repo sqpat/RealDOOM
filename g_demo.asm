@@ -237,6 +237,8 @@ ENDP
 PROC   G_DoPlayDemo_ NEAR
 PUBLIC G_DoPlayDemo_
 
+PUSHA_NO_AX_OR_BP_MACRO
+
 call   Z_QuickMapDemo_
 xor    bx, bx
 mov    byte ptr ds:[_gameaction], bl ; 0 GA_NOTHING
@@ -285,6 +287,7 @@ mov    byte ptr ds:[_demoplayback], al  ; true
 
 call   Z_QuickMapPhysics_
 
+POPA_NO_AX_OR_BP_MACRO
 
 ret
 ENDP
