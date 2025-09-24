@@ -71,7 +71,6 @@ EXTRN locallib_strcpy_:NEAR
 
 .DATA
 
-EXTRN _demo_p:WORD
 EXTRN _novideo:BYTE
 EXTRN _grmode:BYTE
 

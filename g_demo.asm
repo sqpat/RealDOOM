@@ -33,7 +33,6 @@ EXTRN G_InitNew_:NEAR
 
 .DATA
 
-EXTRN _demo_p:WORD
 EXTRN _pagetic:WORD
 EXTRN _pagename:WORD
 EXTRN _defdemoname:DWORD
@@ -201,8 +200,7 @@ PUBLIC G_BeginRecording_
 
 push   di
 call   Z_QuickMapDemo_
-mov    ax, DEMO_SEGMENT
-mov    es, ax
+mov    es, word ptr ds:[_DEMO_SEGMENT_PTR]
 xor    di, di
 mov    al, VERSION
 stosb
@@ -302,7 +300,7 @@ PUBLIC G_WriteDemoTiccmd_
 
 push   di
 push   si
-xchg   ax, si
+xchg   ax, si  ; si gets player ticcmd...
 
 call   Z_QuickMapDemo_
 
@@ -312,23 +310,19 @@ call G_CheckDemoStatus_
 
 dont_end_demo_q:
 
-mov    di, word ptr ds:[_demo_p]
-mov    ax, DEMO_SEGMENT
-mov    es, ax
+les    di, dword ptr ds:[_demo_p]
 movsw ; forwardmove, sidemove
 lodsw
 add    ax, 128
 mov    al, ah
 stosb
-inc    di
-inc    di
-inc    di
+inc    si
+inc    si
+inc    si
 movsb
 
-lea    ax, [di - SIZE TICCMD_T]
-
-;call   G_ReadDemoTiccmd_   ; internally calls z_quickmap etc
-jmp     do_readdemo_from_write
+mov    word ptr ds:[_demo_p], di
+jmp    exit_playdemo
 
 ENDP
 
@@ -338,14 +332,12 @@ PUBLIC G_ReadDemoTiccmd_
 
 push   di
 push   si
-do_readdemo_from_write:
 xchg   ax, di
 
 call   Z_QuickMapDemo_
+do_readdemo_from_write:
 
-mov    si, word ptr ds:[_demo_p]
-mov    ax, DEMO_SEGMENT
-mov    ds, ax
+lds    si, dword ptr ds:[_demo_p]
 
 lodsb
 cmp   al, DEMOMARKER
@@ -357,6 +349,9 @@ jmp   exit_playdemo
 
 
 dont_end_demo:
+
+push  ss
+pop   es
 
 stosb ; forwardmove ; 0
 lodsw
@@ -431,9 +426,7 @@ cmp    byte ptr ds:[_demorecording], al ; 0
 je     just_exit
 call   Z_QuickMapDemo_
 
-mov    di, word ptr ds:[_demo_p]
-mov    ax, DEMO_SEGMENT
-mov    es, ax
+les    di, dword ptr ds:[_demo_p]
 mov    al, DEMOMARKER
 stosb
 mov    word ptr ds:[_demo_p], di

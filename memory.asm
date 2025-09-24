@@ -189,8 +189,8 @@ db "SKY1", 0
 ; 3CB 
 db 00, 00, 00, 00, 00
 
-; 3D0 
-dw  00, 00, 00, 00, 00, 00, 00, 00
+; 3D0  ; 3d8 = demo_p, so 3da is its segment
+dw  00, 00, 00, 00, 00, DEMO_SEGMENT, 00, 00
 
 ; 3E0 braintargets[32]
 dw  00, 00, 00, 00, 00, 00, 00, 00

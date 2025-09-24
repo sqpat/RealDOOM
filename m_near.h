@@ -425,7 +425,8 @@
 #define currentThinkerListHead  		(*((int16_t __near*)                 (_NULL_OFFSET + 0x03D2)))
 
 #define FixedMulTrigSpeed_addr	 	    (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03D4)))
-// #define G_SecretExitLevel_addr          (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03D8)))
+#define demo_p					 	    (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03D8)))
+
 #define I_WaitVBL_addr                  (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03DC)))
 
 
@@ -896,7 +897,7 @@ extern boolean         	  noblit;                 // for comparative timing purp
 
 
 
-extern uint16_t           demo_p;				// buffer
+
 extern boolean         singledemo;             // quit after playing a demo from cmdline 
 extern boolean         precache;        // if true, load all graphics at start 
 extern wbstartstruct_t wminfo;                 // parms for world map / intermission 

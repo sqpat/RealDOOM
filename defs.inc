@@ -373,7 +373,8 @@ _automapactive =                 	 _NULL_OFFSET + 003D1h
 _currentThinkerListHead = 			 _NULL_OFFSET + 003D2h
 
 _FixedMulTrigSpeed_addr = 		     _NULL_OFFSET + 003D4h
-;_G_SecretExitLevel_addr =            _NULL_OFFSET + 003D8h
+_demo_p =            				 _NULL_OFFSET + 003D8h
+_DEMO_SEGMENT_PTR =  				 _NULL_OFFSET + 003DAh
 _I_WaitVBL_addr =       		     _NULL_OFFSET + 003DCh
 
 _braintargets =                      _NULL_OFFSET + 003E0h

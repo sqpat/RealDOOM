@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/23 06:34:24
+Created on:       25/09/23 09:44:09
 Executable Image: codegen.exe
 creating a DOS executable
 
@@ -40,7 +40,7 @@ YIB                    DATA           DGROUP         0e89:0008       00000000
 YI                     DATA           DGROUP         0e89:0008       00000012
 YIE                    DATA           DGROUP         0e8a:000a       00000000
 DATA                   DATA           DGROUP         0e8a:000a       00000000
-_BSS                   BSS            DGROUP         0e8b:0000       00000189
+_BSS                   BSS            DGROUP         0e8b:0000       00000187
 STACK                  STACK          DGROUP         0ea4:0000       00000c00
 
 
@@ -64,22 +64,22 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:bbcc*     _TaskServiceCount
 02d1:bbce*     _myargc
 02d1:bbd0*     _myargv
-02d1:bbd2*     _demo_p
-02d1:bbd4*     _p_init_maxframe
-02d1:bbd6*     _pagename
-02d1:bbd8*     _pagetic
-02d1:bbda*     _wminfo
-02d1:bbef*     _TS_TimesInInterrupt
-02d1:bbf0*     _mousebforward
-02d1:bbf1*     _key_speed
-02d1:bbf2*     _mousebfire
-02d1:bbf3*     _key_strafe
-02d1:bbf4*     _turnheld
-02d1:bbf5*     _mousebstrafe
-02d1:bbf6*     _key_use
-02d1:bbf7*     _usemouse
-02d1:bbf8*     _key_left
-02d1:bbf9*     _timingdemo
+02d1:bbd2*     _p_init_maxframe
+02d1:bbd4*     _pagename
+02d1:bbd6*     _pagetic
+02d1:bbd8*     _wminfo
+02d1:bbed*     _TS_TimesInInterrupt
+02d1:bbee*     _mousebforward
+02d1:bbef*     _key_speed
+02d1:bbf0*     _mousebfire
+02d1:bbf1*     _key_strafe
+02d1:bbf2*     _turnheld
+02d1:bbf3*     _mousebstrafe
+02d1:bbf4*     _usemouse
+02d1:bbf5*     _key_left
+02d1:bbf6*     _timingdemo
+02d1:bbf7*     _key_fire
+02d1:bbf8*     _noblit
 02d1:8ed0*     _singletics
 02d1:8ed4*     _P_SpawnMapThing
 02d1:8ed8*     _R_WriteBackViewConstantsSpanCall
@@ -103,19 +103,18 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:8f0e*     _versionstring
 02d1:8f1a*     _currentoverlay
 02d1:8f1c*     _lastpcspeakernotevalue
-02d1:bbfa*     _key_fire
-02d1:bbfb*     _noblit
-02d1:bbfc*     _key_straferight
-02d1:bbfd*     _key_up
-02d1:bbfe*     _singledemo
-02d1:bbff*     _key_down
-02d1:bc00*     _novideo
-02d1:bc01*     _key_right
-02d1:bc02*     _key_strafeleft
-02d1:bc03*     _startmap
-02d1:bc04*     _autostart
-02d1:bc05*     _startskill
-02d1:bc06*     _startepisode
+02d1:bbf9*     _key_straferight
+02d1:bbfa*     _key_up
+02d1:bbfb*     _singledemo
+02d1:bbfc*     _key_down
+02d1:bbfd*     _key_use
+02d1:bbfe*     _novideo
+02d1:bbff*     _key_right
+02d1:bc00*     _key_strafeleft
+02d1:bc01*     _startmap
+02d1:bc02*     _autostart
+02d1:bc03*     _startskill
+02d1:bc04*     _startepisode
 Module: codegen.obj(C:\REALDOOM\build\tools\codegen\codegen.c)
 0000:0000      main_
 02d1:8f1e+     _CONSTANTS
@@ -135,7 +134,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(fclose.c)
 0000:0362      __doclose_
 0000:03f8      __shutdown_stream_
 0000:040c      fclose_
-02d1:bc08+     ___RmTmpFileFn
+02d1:bc06+     ___RmTmpFileFn
 Module: C:\WATCOM2\lib286\dos\clibm.lib(printf.c)
 0000:042f      printf_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(cstart)
@@ -151,16 +150,16 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(cmodel.asm)
 0000:06fe      _big_code_
 0000:06fe*     CodeModelMismatch
 Module: C:\WATCOM2\lib286\dos\clibm.lib(argcv.c)
-02d1:bc0c      __argc
-02d1:bc0e      __argv
-02d1:bc10      ___argc
-02d1:bc12      ___argv
+02d1:bc0a      __argc
+02d1:bc0c      __argv
+02d1:bc0e      ___argc
+02d1:bc10      ___argv
 Module: C:\WATCOM2\lib286\dos\clibm.lib(comtflag.c)
 0000:06fe*     __set_commode_
 02d1:b9cc      __commode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(errno.c)
 0000:0705      __get_errno_ptr_
-02d1:bc14+     _errno
+02d1:bc12+     _errno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(textmode.c)
 02d1:b9ce      __fmode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(tolower.c)
@@ -179,8 +178,8 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(allocfp.c)
 0000:0af1      __allocfp_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(iob.c)
 02d1:b9d0      ___iob
-02d1:bc16      ___OpenStreams
-02d1:bc18      ___ClosedStreams
+02d1:bc14      ___OpenStreams
+02d1:bc16      ___ClosedStreams
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fprtf.c)
 0000:0b96      __fprtf_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(__lseek.c)
@@ -190,7 +189,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(_clse.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nfree.c)
 0000:0ca1      _nfree_
 0000:0ca1      free_
-02d1:bc1a+     ___MiniHeapFreeRover
+02d1:bc18+     ___MiniHeapFreeRover
 Module: C:\WATCOM2\lib286\dos\clibm.lib(flush.c)
 0000:0d66      __flush_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(xmsg.c)
@@ -243,7 +242,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(dosret.c)
 0000:11ed*     __set_errno_dos_reterr_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(doserrno.c)
 0000:11f8      __get_doserrno_ptr_
-02d1:bc1e+     __doserrno
+02d1:bc1c+     __doserrno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(umaskval.c)
 02d1:bb54      ___umaskval
 Module: C:\WATCOM2\lib286\dos\clibm.lib(creatdos.c)
@@ -285,8 +284,8 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(enterdb.c)
 0000:2436      __EnterWVIDEO_
 02d1:bb5c+     __WD_Present
 Module: C:\WATCOM2\lib286\dos\clibm.lib(___argc.c)
-02d1:bc22      ____Argv
-02d1:bc24      ____Argc
+02d1:bc20      ____Argv
+02d1:bc22      ____Argc
 Module: C:\WATCOM2\lib286\dos\clibm.lib(exit.c)
 0000:2452+     __null_int23_exit_
 0000:2453      exit_
@@ -299,7 +298,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(sgdef086)
 02d1:bb88      __Start_YI
 02d1:bb9a      __End_YI
 Module: C:\WATCOM2\lib286\dos\clibm.lib(histsplt.c)
-02d1:bc26      ___historical_splitparms
+02d1:bc24      ___historical_splitparms
 Module: C:\WATCOM2\lib286\dos\clibm.lib(error086.asm)
 0000:2482      __doserror_
 0000:2490*     __doserror1_
@@ -337,7 +336,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(mbisdbcs.c)
 02d1:bb6e      ___IsDBCS
 Module: C:\WATCOM2\lib286\dos\clibm.lib(mbislead.c)
 0000:2955*     _ismbblead_
-02d1:bc28      ___MBCSIsTable
+02d1:bc26      ___MBCSIsTable
 Module: C:\WATCOM2\lib286\dos\clibm.lib(filedos.c)
 0000:296c*     _dos_close_
 0000:297a      _dos_commit_

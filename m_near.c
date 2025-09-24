@@ -114,7 +114,6 @@ boolean         	noblit;                 // for comparative timing purposes
  
 
 
-uint16_t           demo_p;				// buffer
 //byte __far*           demoend; 
 boolean         singledemo;             // quit after playing a demo from cmdline 
  
