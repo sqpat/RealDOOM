@@ -2385,7 +2385,7 @@ LEAVE_MACRO
 
 pop  di
 pop  si
-ret
+ret  4
 
 ENDP
 

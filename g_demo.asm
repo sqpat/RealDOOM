@@ -306,7 +306,7 @@ xchg   ax, si
 
 call   Z_QuickMapDemo_
 
-mov  al, byte ptr cs:['q' + _gamekeydown]
+cmp  byte ptr cs:['q' + _gamekeydown], 0
 je   dont_end_demo_q
 call G_CheckDemoStatus_
 
@@ -438,9 +438,8 @@ mov    al, DEMOMARKER
 stosb
 mov    word ptr ds:[_demo_p], di
 
-mov    bx, OFFSET  _demoname
-push   bx  ; for I_Error
-mov    ax, word ptr ds:[bx]
+mov    ax, OFFSET  _demoname
+push   ax  ; for I_Error
 xor    bx, bx
 mov    cx, DEMO_SEGMENT
 mov    dx, di
