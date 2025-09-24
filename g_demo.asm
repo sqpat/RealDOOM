@@ -335,7 +335,6 @@ push   si
 xchg   ax, di
 
 call   Z_QuickMapDemo_
-do_readdemo_from_write:
 
 lds    si, dword ptr ds:[_demo_p]
 

@@ -36,6 +36,7 @@ EXTRN DEBUG_PRINT_:NEAR
 
 EXTRN _M_Init:DWORD
 
+; leave space for title text which is there
 LUMPINFO_INIT_SEGMENT = BASE_LOWER_MEMORY_SEGMENT + 020h
 
 .CODE
@@ -56,6 +57,8 @@ push    ax
 call    DEBUG_PRINT_
 jmp     exit_addfile
 
+jump_to_do_non_wad:
+jmp     do_non_wad
 
 
 PROC    W_AddFile_ NEAR
@@ -64,6 +67,7 @@ PUBLIC  W_AddFile_
 PUSHA_NO_AX_MACRO
 push    bp
 mov     bp, sp
+sub     sp, SIZE WADINFO_T ; see mov ax, sp
 
 xchg    ax, si 
 mov     di, si ; backup addfile filename in di
@@ -113,7 +117,7 @@ call   DEBUG_PRINT_
 ; this adds six to sp... just handle it later with leave_macro
  
 
-jcxz   do_non_wad
+jcxz   jump_to_do_non_wad
 
 
 mov    bx, SIZE WADINFO_T ; 12
@@ -158,96 +162,6 @@ call   locallib_far_fread_  ;locallib_far_fread(fileinfo, length, usefp);
 ;call   W_UpdateNumLumps_  ; inlineable?
 mov    ax, word ptr ds:[_numlumps]
 add    word ptr ds:[_numlumps], di ; numlumps += header.wad_numlumps;
-
-
-jmp    done_processing_wad_file
-
-do_non_wad:
-
-;xor    cx, cx
-xor    bx, bx
-mov    ax, si
-mov    dx, 2 ; SEEKEND
-call   fseek_  ; fseek(usefp, 0L, SEEK_END);
-mov    ax, si
-call   ftell_  ; singleinfo.size = ftell(usefp);
-
-xchg   dx, cx   ; cx:bx is result of ftell
-xchg   ax, bx   
-
-
-mov    ax, di ; filename
-mov    dx, ds    
-call   locallib_strupr_  ; filename/wad lump name now uppercase.
-
-mov    ax, SCRATCH_SEGMENT_5000
-mov    es, ax
-
-mov    dx, si ; fp backup
-mov    si, di   ; filename
-
-xor    ax, ax
-mov    di, 0
-
-;typedef struct {
-;	int32_t			filepos;
-;	int32_t			size;
-;	int8_t		name[8];
-    
-
-stosw          ; pos 0
-stosw          ; pos 0
-xchg   ax, bx  ; size lo
-stosw
-xchg   ax, cx  ; size hi
-stosw
-
-
-
-push   ax
-push   cx ; store size
-mov    cx, 8
-
-
-loop_copy_next_filename_char:
-lodsb
-cmp    al, '.'
-je     end_early
-stosb
-loop   loop_copy_next_filename_char
-
-end_early:
-xor    ax, ax
-rep    stosb 
-
-pop    cx
-pop    ax ; retrieve size
-
-
-; bx has size lo, ax has size hi
-mov    si, dx ; fp back in si
-
-xor    bx, bx
-mov    bl, byte ptr ds:[_currentloadedfileindex]
-dec    bx
-shl    bx, 1
-push   word ptr ds:[_numlumps]
-pop    word ptr ds:[bx + _filetolumpindex]  ; filetolumpindex[currentloadedfileindex-1] = numlumps;
-shl    bx, 1 ; dword lookup
-mov    word ptr ds:[bx + _filetolumpsize], cx
-mov    word ptr ds:[bx + _filetolumpsize + 2], ax ; filetolumpsize[currentloadedfileindex-1] = singleinfo.size;
-
-xor    cx, cx
-xor    bx, bx
-mov    ax, si
-xor    dx, dx ; SEEK_SET
-call   fseek_ ; ; fseek(usefp, 0L, SEEK_SET);
-
-mov    ax, word ptr ds:[_numlumps]
-inc    word ptr ds:[_numlumps]  ; numlumps++;
-
-; todo i dont think the filename extrace base thing is used...?
-; todo put it in 5000h
 
 
 done_processing_wad_file:
@@ -315,10 +229,86 @@ LEAVE_MACRO
 POPA_NO_AX_MACRO
 ret
 
+do_non_wad:
+
+push   si ; fp
+
+mov    si, di ; filename
+
+mov    ax, LUMPINFO_INIT_SEGMENT
+mov    es, ax
+
+mov    ax, word ptr ds:[_numlumps]
+
+mov    dx, SIZE FILEINFO_T
+mul    dx
+xchg   ax, di  ; es:di gets lump_p
+
+; inlined str_upper here
+; copy upper filename
+
+mov    cx, 8
+loop_next_char_strupr:
+lodsb
+test   al, al
+je     end_early
+cmp    al, '.'
+je     end_early
+cmp    al, 'a'
+jb     go_loop_next_char_strupr
+cmp    al, 'z'
+ja     go_loop_next_char_strupr
+sub    al, 32
+stosb
+go_loop_next_char_strupr:
+loop   loop_next_char_strupr
+end_early:
+xor    ax, ax
+rep    stosb 
+
+; done copying upper filename
+pop    si  ; fp
+
+mov    ax, cx ; 0
+stosw
+stosw  ; 0 offset dword
+
+;xor    cx, cx
+xor    bx, bx
+mov    ax, si
+mov    dx, 2 ; SEEKEND
+call   fseek_  ; fseek(usefp, 0L, SEEK_END);
+mov    ax, si
+call   ftell_  ; singleinfo.size = ftell(usefp);
+
+mov    cx, LUMPINFO_INIT_SEGMENT
+mov    es, cx
+
+
+stosw  ; size lo
+xchg   ax, dx
+stosw  ; size hi
+
+
+
+xor    cx, cx
+xor    bx, bx
+xchg   ax, si
+xor    dx, dx ; SEEK_SET
+call   fseek_ ; ; fseek(usefp, 0L, SEEK_SET);
+
+inc    word ptr ds:[_numlumps]  ; numlumps++;
+inc    byte ptr ds:[_currentloadedfileindex] ; currentloadedfileindex++;
+
+
+jmp    exit_addfile
+
+
 ENDP
  
-; used nowhere else?
-
+; used nowhere?
+; old impl
+COMMENT @ 
 PROC   locallib_strupr_ NEAR
 PUBLIC locallib_strupr_
 
@@ -343,6 +333,7 @@ pop    si
 
 ret
 ENDP
+@
 
 PROC    W_INIT_ENDMARKER_ NEAR
 PUBLIC  W_INIT_ENDMARKER_

@@ -22,10 +22,6 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN locallib_putchar_:NEAR
-EXTRN locallib_printf_:NEAR
-EXTRN I_Shutdown_:NEAR
-EXTRN exit_:FAR
 EXTRN I_SetPalette_:FAR
 
 
@@ -133,30 +129,6 @@ pop     dx
 pop     cx
 pop     bx
 ret
-
-ENDP
-
-
-
-
-; todo jump to instead of exit
-PROC   I_Error_ FAR
-PUBLIC I_Error_
-
-
-;doesnt work, figure it out..
-
-call I_Shutdown_
-pop  ax  ; ip
-pop  ax  ; cs
-pop  ax  ; str off
-pop  dx  ; str seg
-mov  bx, sp  ; args ptr
-call locallib_printf_
-mov  al, 0Ah  ; newline
-call locallib_putchar_
-mov  ax, 1
-jmp  exit_
 
 ENDP
 

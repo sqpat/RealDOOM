@@ -28,7 +28,8 @@ EXTRN M_SaveDefaults_:NEAR
 EXTRN W_CacheLumpNameDirectFarString_:FAR
 EXTRN I_ShutdownTimer_:NEAR
 EXTRN I_ShutdownKeyboard_:NEAR
-
+EXTRN locallib_putchar_:NEAR
+EXTRN locallib_printf_:NEAR
 
 EXTRN DEBUG_PRINT_:NEAR
 EXTRN exit_:FAR
@@ -168,43 +169,7 @@ ENDIF
 ENDP
 
 
-PROC    I_Shutdown_   NEAR
-PUBLIC  I_Shutdown_
-
-push bx
-push dx
-
-xor  bx, bx
-
-cmp   bl, byte ptr ds:[_currentloadedfileindex]
-jge   skip_wad_unload
-loop_wad_unload:
-shl   bx, 1   ; word lookup
-mov   ax, word ptr ds:[_wadfiles + bx]
-test  ax, ax
-je    skip_fclose_wadfile
-call  fclose_
-
-skip_fclose_wadfile:
-shr   bx, 1
-inc   bx
-cmp   bl, byte ptr ds:[_currentloadedfileindex]
-jl    loop_wad_unload
-
-skip_wad_unload:
-
-xor  dx, dx
-
-call CallQuitFunctions_
-
-pop dx
-pop bx
-ret
-	
-
-
 ENDP
-
 
 
 PROC zeroConventional_ NEAR
@@ -288,6 +253,42 @@ sti
 ret
 ENDP
 
+PROC   I_ShutdownWads_ NEAR
+PUBLIC I_ShutdownWads_
+
+
+push bx
+push dx
+
+xor  bx, bx
+
+cmp   bl, byte ptr ds:[_currentloadedfileindex]
+jge   skip_wad_unload
+loop_wad_unload:
+shl   bx, 1   ; word lookup
+mov   ax, word ptr ds:[_wadfiles + bx]
+test  ax, ax
+je    skip_fclose_wadfile
+call  fclose_
+
+skip_fclose_wadfile:
+shr   bx, 1
+inc   bx
+cmp   bl, byte ptr ds:[_currentloadedfileindex]
+jl    loop_wad_unload
+
+skip_wad_unload:
+
+xor  dx, dx
+pop dx
+pop bx
+
+
+
+ret
+ENDP
+
+
 PROC    CallQuitFunctions_  NEAR
 
 call  I_ShutdownGraphics_
@@ -315,8 +316,11 @@ je    skip_enddoom
     pop   cx
     pop   bx
 
+    call I_ShutdownWads_
 
 skip_enddoom:
+
+
 call  Z_ShutdownEMS_
 call  zeroConventional_; // zero conventional. clears various bugs that assume 0 in memory. kind of bad practice, the bugs shouldnt happen... todo fix
 call  hackDSBack_
@@ -345,14 +349,38 @@ call CallQuitFunctions_
 
 
 mov   ax, 1
-call  exit_
+jmp   exit_
 
-pop   dx
-
-
-retf
 
 ENDP
+
+
+
+; todo jump to instead of exit
+PROC   I_Error_ FAR
+PUBLIC I_Error_
+
+
+;call I_Shutdown_ inlined
+call I_ShutdownWads_
+call CallQuitFunctions_
+
+
+pop  ax  ; ip
+pop  ax  ; cs
+pop  ax  ; str off
+pop  dx  ; str seg
+mov  bx, sp  ; args ptr
+call locallib_printf_
+mov  al, 0Ah  ; newline
+call locallib_putchar_
+mov  ax, 1
+jmp  exit_
+
+ENDP
+
+
+
 
 PROC    I_QUIT_ENDMARKER_ NEAR
 PUBLIC  I_QUIT_ENDMARKER_
