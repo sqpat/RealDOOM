@@ -441,6 +441,7 @@ call   M_WriteFile_
 ; is this necessary? i guess so in i_quit?
  mov    byte ptr ds:[_demorecording], 0
 
+
 push   cs
 mov    ax, OFFSET str_demo_recorded
 push   ax

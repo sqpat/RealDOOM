@@ -363,6 +363,7 @@ PUBLIC I_Error_
 
 ;call I_Shutdown_ inlined
 call I_ShutdownWads_
+xor  dx, dx
 call CallQuitFunctions_
 
 
