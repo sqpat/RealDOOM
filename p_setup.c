@@ -1132,14 +1132,6 @@ void __near Z_FreeConventionalAllocations() {
 
 }
 
-int16_t countcount = 0;
-void __near ticcmdlogger(ticcmd_t* cmd){
-	FILE* fp = fopen("logger.txt", "ab");
-	fprintf(fp, "%li %i %x %x %lx\n", gametic, countcount, cmd->forwardmove, cmd->angleturn, playerMobj_pos->angle.w);
-	fclose(fp);
-	countcount ++;
-}
-
 
 void __near PSetupEndFunc(){}
 
