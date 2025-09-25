@@ -57,6 +57,9 @@ EXTRN _pagetic:WORD
 
 .CODE
 
+EXTRN _localcmds:WORD
+
+
 
 PROC    G_GAME_STARTMARKER_ NEAR
 PUBLIC  G_GAME_STARTMARKER_
@@ -352,8 +355,37 @@ xor     bx, bx
 mov     al, byte ptr ds:[_gametic]
 and     ax, (BACKUPTICS-1)
 xchg    ax, dx
-mov     ax, OFFSET [_player + PLAYER_T.player_cmd]
-call    G_CopyCmd_
+
+
+;call    G_CopyCmd_
+; inlined only use...
+
+    push    si
+    push    di
+    
+    push    ds              ; es:di is player.cmd
+    pop     es
+    mov     di, OFFSET [_player + PLAYER_T.player_cmd]
+
+    push    cs              ; ds:si is _localcmds struct
+    pop     ds
+
+    xor     dh, dh
+    mov     si, dx
+    SHIFT_MACRO sal si 3 ; 8 bytes per
+    add     si, OFFSET _localcmds
+
+    movsw
+    movsw
+    movsw
+    movsw   ; copy one cmd
+    
+    push    ss
+    pop     ds
+    
+    pop     di
+    pop     si
+
 cmp     byte ptr ds:[_demoplayback], bl ; 0
 je      dont_do_demo_play
 mov     ax, OFFSET [_player + PLAYER_T.player_cmd]

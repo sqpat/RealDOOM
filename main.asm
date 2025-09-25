@@ -602,6 +602,7 @@ ENDP
 
 
 _localcmds:
+PUBLIC _localcmds
 dw 0, 0, 0, 0
 dw 0, 0, 0, 0
 dw 0, 0, 0, 0
@@ -2886,6 +2887,7 @@ PROC    DEBUG_PRINT_NOARG_ NEAR
 PUBLIC  DEBUG_PRINT_NOARG_
 
 ENDP
+
 PROC    locallib_printf_ NEAR
 PUBLIC  locallib_printf_
 
