@@ -143,24 +143,4 @@ void __near D_DoomMain2(void);
 void __near I_InitGraphics(void);
 
 
- void __near D_DoomMain(void) {
-
-	// FILE *fp = fopen("output9.bin", "wb");
-	// locallib_far_fwrite(M_Random, (byte __far *)ST_STUFF_STARTMARKER - (byte __far *)M_Random, 1, fp);
-	// fclose(fp);
-	// exit(0);
-
-	 D_DoomMain2();
-
-
-
-    if (demorecording){
-        G_BeginRecording ();
-	}
-
-    I_InitGraphics ();
-
-	 Z_ClearDeadCode();
-
-	 D_DoomLoop();  // never returns
- }
+ 

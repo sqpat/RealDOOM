@@ -31,7 +31,10 @@ EXTRN Z_QuickMapPhysics_:FAR
 EXTRN Z_QuickMapIntermission_:FAR
 EXTRN I_ReadMouse_:NEAR
 EXTRN V_DrawFullscreenPatch_:FAR
-
+EXTRN G_BeginRecording_:NEAR
+EXTRN D_DoomMain2_:NEAR
+EXTRN I_InitGraphics_:NEAR
+EXTRN Z_ClearDeadCode_:NEAR
 
 EXTRN M_CheckParm_:NEAR
 EXTRN HU_Responder_:NEAR
@@ -3775,7 +3778,19 @@ jmp   done_advancing_demo
 
 ENDP
 
+PROC    D_DoomMain_ NEAR
+PUBLIC  D_DoomMain_
 
+call    D_DoomMain2_   ; init code, gets clobbered.
+cmp     byte ptr ds:[_demorecording], 0
+je      skip_recording
+call    G_BeginRecording_
+skip_recording:
+call    I_InitGraphics_
+call    Z_ClearDeadCode_
+jmp     D_DoomLoop_  ; never returns
+
+ENDP
 
 
 PROC    D_MAIN_ENDMARKER_ NEAR
