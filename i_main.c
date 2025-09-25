@@ -122,6 +122,7 @@ void __near Z_ClearDeadCode() {
 	//9798           - 09/12/25	   ; note 8196 is "max". or "min". there are probably some funcs that can be moved into init like wad or file funcs only used in init though.
 	//9398           - 09/13/25	
 	//9602           - 09/20/25	   - added some extra code into that region. still need to do z_init, p_init
+	//9570           - 09/25/25	   
 
 	uint16_t size = endaddr - startaddr-16;
 	FILE* fp;
@@ -143,4 +144,3 @@ void __near D_DoomMain2(void);
 void __near I_InitGraphics(void);
 
 
- 

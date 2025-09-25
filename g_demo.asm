@@ -44,6 +44,7 @@ EXTRN _singledemo:BYTE
 
 EXTRN _gamekeydown:BYTE
 
+MAX_DEMO_SIZE = 0FFE0h
 
 PROC    G_DEMO_STARTMARKER_ NEAR
 PUBLIC  G_DEMO_STARTMARKER_
@@ -64,6 +65,11 @@ db "CREDIT", 0
 str_HELP2:
 db "HELP2", 0
 
+
+str_timed_tics:
+db 0Ah, "timed %li gametics in %li realtics ", 0Ah, " prnd index %i ", 0
+str_demo_recorded:
+db "Demo %s recorded", 0
 
 
 
@@ -254,40 +260,6 @@ ENDP
 
 DEMOMARKER = 080h
 
-
-
-PROC   G_WriteDemoTiccmd_ NEAR
-PUBLIC G_WriteDemoTiccmd_
-
-push   di
-push   si
-xchg   ax, si  ; si gets player ticcmd...
-
-call   Z_QuickMapDemo_
-
-cmp  byte ptr cs:['q' + _gamekeydown], 0
-je   dont_end_demo_q
-call G_CheckDemoStatus_
-
-dont_end_demo_q:
-
-les    di, dword ptr ds:[_demo_p]
-movsw ; forwardmove, sidemove
-lodsw
-add    ax, 128
-mov    al, ah
-stosb
-inc    si
-inc    si
-inc    si
-movsb
-
-mov    word ptr ds:[_demo_p], di
-jmp    exit_playdemo
-
-ENDP
-
-
 PROC   G_ReadDemoTiccmd_ NEAR
 PUBLIC G_ReadDemoTiccmd_
 
@@ -335,11 +307,73 @@ pop    di
 ret
 ENDP
 
+PROC   G_WriteDemoTiccmd_ NEAR
+PUBLIC G_WriteDemoTiccmd_
 
-str_timed_tics:
-db 0Ah, "timed %li gametics in %li realtics ", 0Ah, " prnd index %i ", 0
-str_demo_recorded:
-db "Demo %s recorded", 0
+push   di
+push   si
+xchg   ax, si  ; si gets player ticcmd...
+
+call   Z_QuickMapDemo_
+
+cmp  byte ptr cs:['q' + _gamekeydown], 0
+je   dont_end_demo_q
+call G_CheckDemoStatus_
+
+dont_end_demo_q:
+
+les    di, dword ptr ds:[_demo_p]
+movsw ; forwardmove, sidemove
+lodsw
+add    ax, 128
+mov    al, ah
+stosb
+inc    si
+inc    si
+inc    si
+movsb
+cmp    di, MAX_DEMO_SIZE
+ja     force_exit_too_long
+mov    word ptr ds:[_demo_p], di
+
+jmp    exit_playdemo
+
+ENDP
+
+
+
+
+skip_demo_playback_end_check:
+cmp    byte ptr ds:[_demorecording], al ; 0
+je     just_exit
+call   Z_QuickMapDemo_
+
+les    di, dword ptr ds:[_demo_p]
+force_exit_too_long:
+
+mov    al, DEMOMARKER
+stosb
+mov    word ptr ds:[_demo_p], di
+
+mov    ax, OFFSET  _demoname
+push   ax  ; for I_Error
+xor    bx, bx
+mov    cx, DEMO_SEGMENT
+mov    dx, di
+
+call   M_WriteFile_
+
+; is this necessary? i guess so in i_quit?
+ mov    byte ptr ds:[_demorecording], 0
+
+
+push   cs
+mov    ax, OFFSET str_demo_recorded
+push   ax
+call   I_Error_
+
+just_exit:
+ret
 
 PROC   G_CheckDemoStatus_ NEAR
 PUBLIC G_CheckDemoStatus_
@@ -381,35 +415,7 @@ mov     byte ptr ds:[_advancedemo], al ; false
 
 ret
 
-skip_demo_playback_end_check:
-cmp    byte ptr ds:[_demorecording], al ; 0
-je     just_exit
-call   Z_QuickMapDemo_
 
-les    di, dword ptr ds:[_demo_p]
-mov    al, DEMOMARKER
-stosb
-mov    word ptr ds:[_demo_p], di
-
-mov    ax, OFFSET  _demoname
-push   ax  ; for I_Error
-xor    bx, bx
-mov    cx, DEMO_SEGMENT
-mov    dx, di
-
-call   M_WriteFile_
-
-; is this necessary? i guess so in i_quit?
- mov    byte ptr ds:[_demorecording], 0
-
-
-push   cs
-mov    ax, OFFSET str_demo_recorded
-push   ax
-call   I_Error_
-
-just_exit:
-ret
 
 ENDP
 
