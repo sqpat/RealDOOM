@@ -361,7 +361,13 @@ call    G_ReadDemoTiccmd_
 dont_do_demo_play:
 cmp     byte ptr ds:[_demorecording], bl ; 0
 je      dont_do_demo_write
-mov     ax, OFFSET [_player + PLAYER_T.player_cmd]
+mov     bx, OFFSET [_player + PLAYER_T.player_cmd]
+mov     ax, word ptr ds:[_player + PLAYER_T.player_cmd + TICCMD_T.ticcmd_angleturn]
+add     ax, 128
+;mov     ah, al
+xor     al, al
+mov     word ptr ds:[_player + PLAYER_T.player_cmd + TICCMD_T.ticcmd_angleturn], ax
+xchg    ax, bx
 call    G_WriteDemoTiccmd_
 dont_do_demo_write:
 mov     al, byte ptr ds:[_player + PLAYER_T.player_cmd_buttons]

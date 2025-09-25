@@ -29,7 +29,7 @@ EXTRN M_WriteFile_:NEAR
 EXTRN I_Quit_:FAR
 EXTRN W_CacheLumpNameDirectFarString_:FAR
 EXTRN G_InitNew_:NEAR
-
+EXTRN ticcmdlogger_:NEAR
 
 .DATA
 
