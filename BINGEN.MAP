@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/24 20:28:49
+Created on:       25/09/24 23:48:40
 Executable Image: bingen.exe
 creating a DOS executable
 Error! E2028: Z_ClearDeadCode_ is an undefined reference
@@ -285,7 +285,7 @@ Module: g_demo.obj(g_demo.ASM)
 0000:491f*     G_DEMO_ENDMARKER_
 0000:48d0      G_CheckDemoStatus_
 0000:4723      D_DoAdvanceDemo_
-0000:4708      G_DeferedPlayDemo_
+0000:4708*     G_DeferedPlayDemo_
 0000:483c      G_ReadDemoTiccmd_
 0000:4694*     G_DEMO_STARTMARKER_
 Module: m_misc.obj(m_misc.ASM)
@@ -1019,8 +1019,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2ce6:584e*     A_BrainScream_
 2ce6:4c96*     A_HeadAttack_
 2ce6:5698*     A_Pain_
-2ce6:4f39*     PIT_VileCheck_
 2ce6:52fa*     A_VileAttack_
+2ce6:4f39*     PIT_VileCheck_
 2ce6:570c*     A_BossDeath_
 2ce6:5c0b*     P_ENEMY_ENDMARKER_
 2ce6:51b8*     A_Fire_

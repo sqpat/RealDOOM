@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/24 20:28:52
+Created on:       25/09/25 00:01:17
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -232,7 +232,7 @@ Module: g_demo.obj(g_demo.ASM)
 0000:2ecf*     G_DEMO_ENDMARKER_
 0000:2e80      G_CheckDemoStatus_
 0000:2cd3      D_DoAdvanceDemo_
-0000:2cb8      G_DeferedPlayDemo_
+0000:2cb8*     G_DeferedPlayDemo_
 0000:2dec      G_ReadDemoTiccmd_
 0000:2c44*     G_DEMO_STARTMARKER_
 Module: m_misc.obj(m_misc.ASM)
@@ -804,4 +804,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  dd90 (56720.)
 Entry point address: 0000:a68c
-Link time: 00:00.75
+Link time: 00:00.20

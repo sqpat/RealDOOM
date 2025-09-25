@@ -39,7 +39,6 @@ EXTRN I_Error_:FAR
 EXTRN ST_Ticker_:NEAR
 EXTRN Z_SetOverlay_:FAR
 EXTRN G_DoPlayDemo_:NEAR
-EXTRN G_DoPlayDemo_:NEAR
 EXTRN G_ReadDemoTiccmd_:NEAR
 EXTRN G_WriteDemoTiccmd_:NEAR
 EXTRN S_ResumeSound_:NEAR
@@ -430,9 +429,10 @@ done_with_special_buttons:
 skip_special_button:
 
 mov     al, byte ptr ds:[_gamestate]
-cmp     al, 1 ; GS_INTERMISSION
-je      do_intermission
-ja      check_2_3
+cmp     al, GS_FINALE ; 2 
+je      do_finale
+ja      do_demoscreen
+jpe     do_intermission
 do_level:
 db      09Ah
 dw      P_TICKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
@@ -456,11 +456,7 @@ dw      WI_TICKEROFFSET, WIANIM_CODESPACE_SEGMENT
 
 call    Z_QuickMapPhysics_
 
-
-
 jmp     exit_g_ticker
-check_2_3:
-jpo     do_demoscreen
 do_finale:
 mov     ax, OVERLAY_ID_FINALE
 call    Z_SetOverlay_

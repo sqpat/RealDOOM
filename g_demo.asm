@@ -198,7 +198,7 @@ pop     dx
 ret
 ENDP
 
-
+; TODO_IMPROVEMENT - put the loader in init code
 PROC   G_DoPlayDemo_ NEAR
 PUBLIC G_DoPlayDemo_
 
@@ -212,6 +212,7 @@ les    ax, dword ptr ds:[_defdemoname]
 mov    dx, es
 mov    cx, DEMO_SEGMENT
 mov    si, cx
+; TODO_BUG ftell, detect longer than MAX_DEMO_SIZE?
 call   W_CacheLumpNameDirectFarString_ ; (defdemoname, demobuffer);
 
 mov    ds, si
@@ -220,7 +221,7 @@ xor    si, si
 lodsb
 cmp    al, VERSION
 jne    do_version_error
-do_version_error:  ; todo?
+do_version_error:  ; TODO_IMPROVEMENT implement bad version check?
 
 lodsw
 xchg   ax, dx   ; dl = skill, dh = episode
