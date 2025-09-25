@@ -43,8 +43,8 @@
 #define wipe_StartScreenOffset                  0x4CC
 #define wipe_WipeLoopOffset                     0x517
 #define F_StartFinaleOffset                     0x1AC
-#define F_ResponderOffset                       0xB16
-#define F_DrawerOffset                          0xB41
+#define F_ResponderOffset                       0xB1D
+#define F_DrawerOffset                          0xB48
 #define LoadSFXWadLumpsOffset                   0x4
 #define P_SetThingPositionFarOffset             0x2A73
 #define P_SpawnMapThingOffset                   0x2C30
@@ -83,7 +83,7 @@
 #define WI_StuffCodeSize               0xFE5
 #define PSightCodeSize                 0x9D9B
 #define WipeCodeSize                   0x5FC
-#define FinaleCodeSize                 0xBB6
+#define FinaleCodeSize                 0xBBD
 #define SaveLoadCodeSize               0xBC5
 #define SMLoadCodeSize                 0x4CA
 #define SInitCodeSize                  0x55F

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/25 02:27:37
+Created on:       25/09/25 03:07:21
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -62,7 +62,7 @@ Z_ZONE_TEXT            CODE           AUTO           0000:b43e       0000042e
 WI_STUFF_TEXT          CODE           AUTO           0b86:000c       00000fe5
 M_MENU_TEXT            CODE           AUTO           0c86:0000       000013f9
 F_WIPE_TEXT            CODE           AUTO           0dc6:0000       000005fc
-F_FINALE_TEXT          CODE           AUTO           0e26:0000       00000bb6
+F_FINALE_TEXT          CODE           AUTO           0e26:0000       00000bbd
 P_SAVEG_TEXT           CODE           AUTO           0ee2:0000       00000bc5
 SM_OPL2_TEXT           CODE           AUTO           0f9f:0000       00000f3c
 SM_OPL3_TEXT           CODE           AUTO           0f9f:0f3c       0000100e
@@ -720,21 +720,21 @@ Module: f_wipe.obj(f_wipe.ASM)
 0dc6:0000      F_WIPE_STARTMARKER_
 Module: f_finale.obj(f_finale.ASM)
 0e26:0289*     F_CastDrawer_
-0e26:0b16      F_Responder_
+0e26:0b1d      F_Responder_
 0e26:01ac      F_StartFinale_
-0e26:04e5*     F_BunnyScroll_
-0e26:0a74      F_Ticker_
-0e26:0bab*     F_locallib_toupper_
+0e26:04e2*     F_BunnyScroll_
+0e26:0a7b      F_Ticker_
+0e26:0bb2*     F_locallib_toupper_
 0e26:0022*     V_DrawPatchFlipped_
 0e26:00bd*     F_CastPrint_
-0e26:0362*     F_TextWrite_
-0e26:073e*     F_CastTicker_
-0e26:0b41      F_Drawer_
-0e26:0493*     F_DrawPatchCol_
-0e26:09fe*     F_CastResponder_
-0e26:0b99*     F_locallib_strlen_
-0e26:0bb6      F_FINALE_ENDMARKER_
-0e26:06ef*     F_StartCast_
+0e26:035f*     F_TextWrite_
+0e26:073b*     F_CastTicker_
+0e26:0b48      F_Drawer_
+0e26:0490*     F_DrawPatchCol_
+0e26:0a03*     F_CastResponder_
+0e26:0ba0*     F_locallib_strlen_
+0e26:0bbd      F_FINALE_ENDMARKER_
+0e26:06ec*     F_StartCast_
 0e26:0000      F_FINALE_STARTMARKER_
 Module: p_saveg.obj(p_saveg.ASM)
 0ee2:02cd*     P_UnArchiveThinkers_
@@ -1487,4 +1487,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003cef0 (249584.)
 Entry point address: 36c0:0a84
-Link time: 00:00.05
+Link time: 00:00.04
