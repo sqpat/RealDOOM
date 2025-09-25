@@ -30,10 +30,6 @@ ENDP
 
 ; vars and data..
 
-; todo swap orders then use immediate-less indexing to _CSDATA_castorder
-_CSDATA_hu_font_ptr:
-dw    0
-
 
 
 
@@ -62,7 +58,9 @@ db    CC_HERO-CASTORDEROFFSET,      MT_PLAYER
 
 MAX_CASTNUM = 017
 
-
+FINALE_STAGE_TEXT = 0
+FINALE_STAGE_BUNNY = 1
+FINALE_STAGE_CAST = 2
 
 PROC V_DrawPatchFlipped_ NEAR
 PUBLIC V_DrawPatchFlipped_
@@ -348,7 +346,7 @@ mov   word ptr ds:[_finaletext], cx
 mov   word ptr ds:[_pendingmusicenum], ax
 
 xor   ax, ax
-mov   word ptr ds:[_finalestage], ax
+mov   byte ptr ds:[_finalestage], al
 mov   word ptr ds:[_finalecount], ax
 pop   si
 pop   dx
@@ -1157,15 +1155,19 @@ PUBLIC F_StartCast_
 
 
 push  bx
-push  dx
 
-cmp   word ptr ds:[_finalestage], 2
-je    dont_force_screenwipe
-mov   byte ptr ds:[_wipegamestate], 0FFh  ; force screen wipe
-dont_force_screenwipe:
+xor   ax, ax 
+mov   byte ptr ds:[_castdeath], al      ; 0
+mov   byte ptr ds:[_castframes], al     ; 0
+mov   byte ptr ds:[_castonmelee], al    ; 0
+mov   byte ptr ds:[_castattacking], al  ; 0 
+mov   byte ptr ds:[_castnum], al        ; 0
+dec   ax
+mov   byte ptr ds:[_wipegamestate], al  ; 0FFh force screen wipe
+mov   byte ptr ds:[_finalestage], FINALE_STAGE_CAST
+inc   ax ; zero ah
+
 mov   al, byte ptr cs:[_CSDATA_castorder+1 - OFFSET F_FINALE_STARTMARKER_]     ;  castorder[castnum].type). castnum is 0.
-xor   ah, ah
-mov   byte ptr ds:[_castnum], 0
 ; call getSeeState
 db    09Ah
 dw    GETSEESTATEADDR, PHYSICS_HIGHCODE_SEGMENT
@@ -1173,28 +1175,25 @@ mov   bx, ax
 shl   bx, 1
 add   bx, ax
 shl   bx, 1
-mov   ax, STATES_SEGMENT
 
 mov   word ptr ds:[_caststate], bx
+mov   ax, STATES_SEGMENT
 mov   es, ax
-mov   al, byte ptr es:[bx + 2]
+mov   al, byte ptr es:[bx + STATE_T.state_tics]
 mov   byte ptr ds:[_casttics], al
-mov   byte ptr ds:[_castdeath], 0
-mov   byte ptr ds:[_castframes], al
-mov   byte ptr ds:[_castonmelee], al
-mov   byte ptr ds:[_castattacking], al
+
+
 mov   ax, MUS_EVIL + 0100h
 ;call  S_ChangeMusic_
 mov   word ptr ds:[_pendingmusicenum], ax
 
-pop   dx
 pop   bx
 ret   
 
 ENDP
 
 check_nextstate_for_null:
-cmp   word ptr es:[bx + 4], 0
+cmp   word ptr es:[bx + STATE_T.state_nextstate], S_NULL
 je    select_next_monster
 jmp   select_next_anim
 
@@ -1203,23 +1202,16 @@ PUBLIC F_CastTicker_
 
 ; lots of switch block shenanigans going on. 
 
+dec   byte ptr ds:[_casttics]
+jz    do_castticker
+ret
+
+do_castticker:
+
 push  bx
 push  dx
 push  si
 push  cx
-
-dec   byte ptr ds:[_casttics]
-cmp   byte ptr ds:[_casttics], 0
-jle   do_castticker
-exit_castticker:
-
-pop   cx
-pop   si
-pop   dx
-pop   bx
-ret   
-do_castticker:
-
 
 ;call  Z_QuickMapPhysics_ 
 Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
@@ -1227,7 +1219,7 @@ Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
 
 les   bx, dword ptr ds:[_caststate]    
 ; check caststate->tcis   
-cmp   byte ptr es:[bx + 2], 0FFh
+cmp   byte ptr es:[bx + STATE_T.state_tics], 0FFh
 je    select_next_monster
 jmp   check_nextstate_for_null
 select_next_monster:
@@ -1293,11 +1285,17 @@ add   ax, ax
 mov   word ptr ds:[_caststate], ax
 cast_not_attacking:
 les   bx, dword ptr ds:[_caststate]
-mov   al, byte ptr es:[bx + 2]
+mov   al, byte ptr es:[bx + STATE_T.state_tics]
 mov   byte ptr ds:[_casttics], al
 cmp   al, 0FFh
 je    set_casttics_to_15
-jmp   exit_castticker
+exit_castticker:
+
+pop   cx
+pop   si
+pop   dx
+pop   bx
+ret   
 set_casttics_to_15:
 mov   byte ptr ds:[_casttics], 15
 pop   cx
@@ -1326,13 +1324,13 @@ jmp   cast_not_attacking
 select_next_anim:
 ;		if (caststate == &states[S_PLAY_ATK1]){
 
-cmp   bx, (S_PLAY_ATK1 * 6)   ; 6 is sizeof state todo sizeof state constant
+cmp   bx, (S_PLAY_ATK1 * (SIZE STATE_T)) 
 jne   do_next_state
 jmp   stopattack
 
 
 do_next_state:
-mov   ax, word ptr es:[bx + 4]  ; nextstate
+mov   ax, word ptr es:[bx + STATE_T.state_nextstate]  ; nextstate
 mov   dx, ax
 SHIFT_MACRO shl dx 2
 sub   dx, ax
@@ -1596,7 +1594,7 @@ mov   ax, STATES_SEGMENT
 add   bx, bx
 mov   word ptr ds:[_caststate], bx
 mov   es, ax
-mov   al, byte ptr es:[bx + 2]
+mov   al, byte ptr es:[bx + STATE_T.state_tics]
 mov   byte ptr ds:[_casttics], al
 xor   al, al
 mov   byte ptr ds:[_castframes], al
@@ -1643,10 +1641,12 @@ cmp   byte ptr ds:[_player + PLAYER_T.player_cmd_buttons], 0
 je    done_checking_skipping
 cmp   byte ptr ds:[_gamemap], 30
 jne   do_worlddone
+cmp   byte ptr ds:[_finalestage], FINALE_STAGE_CAST
+je    done_checking_skipping
 call  F_StartCast_
 done_checking_skipping:
 inc   word ptr ds:[_finalecount]
-cmp   word ptr ds:[_finalestage], 2
+cmp   byte ptr ds:[_finalestage], FINALE_STAGE_CAST
 je    call_fcastticker
 cmp   byte ptr ds:[_commercial], 0
 je    do_noncommerical
@@ -1669,7 +1669,7 @@ mov   cx, ds
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _getStringByIndex_addr
-cmp   word ptr ds:[_finalestage], 0
+cmp   byte ptr ds:[_finalestage], FINALE_STAGE_TEXT
 jne   exit_fticker
 lea   ax, [bp - 029Ah]
 mov   dx, ds
@@ -1682,7 +1682,7 @@ sub   ax, dx
 add   ax, TEXTWAIT
 cmp   ax, word ptr ds:[_finalecount]
 jge   exit_fticker
-mov   word ptr ds:[_finalestage], 1
+mov   byte ptr ds:[_finalestage], FINALE_STAGE_BUNNY
 xor   ax, ax
 mov   byte ptr ds:[_wipegamestate], 0FFh
 mov   word ptr ds:[_finalecount], ax
@@ -1708,9 +1708,9 @@ ENDP
 PROC F_Responder_ FAR
 PUBLIC F_Responder_
 
-cmp  word ptr ds:[_finalestage], 2
+cmp  byte ptr ds:[_finalestage], FINALE_STAGE_CAST
 je   call_castresponder
-xor  al, al
+xor  ax, ax
 retf 
 call_castresponder:
 call F_CastResponder_
@@ -1731,14 +1731,13 @@ PROC F_Drawer_ FAR
 PUBLIC F_Drawer_
 
 
-
 push  bx
 push  dx
-mov   ax, word ptr ds:[_finalestage]
-cmp   ax, 2
-je    call_castdrawer
-test  ax, ax
-je    call_textwrite
+mov   al, byte ptr ds:[_finalestage]
+cmp   al, FINALE_STAGE_BUNNY ; 1
+ja    call_castdrawer ; 2
+jb    call_textwrite  ; 0
+; 0
 mov   bl, byte ptr ds:[_gameepisode]
 xor   bh, bh
 mov   ax, OFFSET _filename_argument

@@ -78,6 +78,7 @@ _dc_x = 							_NULL_OFFSET + 00050h
 _lastopening =                   	_NULL_OFFSET + 00052h
 _planezlight = 						_NULL_OFFSET + 00054h
 _caststate =                        _NULL_OFFSET + 00058h
+_STATES_SEGMENT_PTR =               _NULL_OFFSET + 0005Ah
 _basexscale = 						_NULL_OFFSET + 0005Ch
 _baseyscale = 						_NULL_OFFSET + 00060h
 _viewx = 							_NULL_OFFSET + 00064h
@@ -118,6 +119,7 @@ _firstspritelump = 					_NULL_OFFSET + 000B6h
 _finaletext =                    	_NULL_OFFSET + 000B8h
 _finalecount =                   	_NULL_OFFSET + 000BAh
 _finalestage =                   	_NULL_OFFSET + 000BCh
+; bd free
 _finale_laststage =              	_NULL_OFFSET + 000BEh
 _playingstate = 	                _NULL_OFFSET + 000BFh
 

@@ -117,6 +117,7 @@
 
 #define planezlight                     (*(uint8_t __far * __near *)         (_NULL_OFFSET + 0x0054))
 #define caststate                       (*((state_t __far* __near*)          (_NULL_OFFSET + 0x0058)))
+#define STATES_SEGMENT_PTR              (*(segment_t __near *)               (_NULL_OFFSET + 0x005A))
 #define basexscale                      (*((fixed_t __near *)                (_NULL_OFFSET + 0x005C)))
 #define baseyscale                      (*((fixed_t __near *)                (_NULL_OFFSET + 0x0060)))
 #define viewx                           (*((fixed_t_union __near *)          (_NULL_OFFSET + 0x0064)))
@@ -158,7 +159,8 @@
 #define firstspritelump                 (*(int16_t  __near *)                (_NULL_OFFSET + 0x00B6))
 #define finaletext                      (*((int16_t __near*)                 (_NULL_OFFSET + 0x00B8)))
 #define finalecount                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x00BA)))
-#define finalestage                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x00BC)))
+#define finalestage                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x00BC)))
+//bd free
 #define finale_laststage                (*((int8_t __near*)                  (_NULL_OFFSET + 0x00BE)))
 #define playingstate	                (*((uint8_t __near*)                 (_NULL_OFFSET + 0x00BF)))
 #define mfloorclip                      (*(int16_t __far * __near *)         (_NULL_OFFSET + 0x00C0))
