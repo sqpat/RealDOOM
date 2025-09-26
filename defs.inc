@@ -456,7 +456,9 @@ _snd_SBirq =              			 _NULL_OFFSET + 004BEh
 _snd_SBdma =              			 _NULL_OFFSET + 004BFh
 
 
-;_G_PlayerReborn_addr =	 	 		 _NULL_OFFSET + 004C0h
+_cached_playerMobj_x_highbits =      _NULL_OFFSET + 004C0h
+_cached_playerMobj_y_highbits =  	 _NULL_OFFSET + 004C2h
+
 _R_DrawSkyPlaneDynamic_addr =  	     _NULL_OFFSET + 004C4h
 _snd_SBport =                        _NULL_OFFSET + 004C8h
 _snd_Mport =                         _NULL_OFFSET + 004CAh
@@ -625,9 +627,7 @@ _message_dontfuckwithme =            _NULL_OFFSET + 00A1Dh
 _message_on =     			         _NULL_OFFSET + 00A1Eh
 _message_nottobefuckedwith =         _NULL_OFFSET + 00A1Fh
 
-;_STRING_HELP1   =      				 _NULL_OFFSET + 00A20h
-;_STRING_HELP2   =      				 _NULL_OFFSET + 00A26h
-;_STRING_HELP    =      				 _NULL_OFFSET + 00A2Ch
+; free A20-A30
 
 _demosequence =	       		         _NULL_OFFSET + 00A31h
 

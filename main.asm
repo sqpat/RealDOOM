@@ -1811,7 +1811,7 @@ call  ST_Responder_ ; never returns true
 ;jne   exit_gresponder_return_1
 mov   ax, bx
 mov   dx, cx
-
+; todo: playerx/y not ready. store somewhere?
 ;call  AM_Responder_
 db    09Ah
 dw    AM_RESPONDER_OFFSET, PHYSICS_HIGHCODE_SEGMENT
@@ -3521,8 +3521,18 @@ je   no_events_to_process
 
 PUSHA_NO_AX_MACRO
 xchg  ax, cx ; cx store these two
+
+; HACK ALERT - we may need player x/y high bits for automap, when mobjpos is not paged in.
+les   bx, dword ptr ds:[_playerMobj_pos]
+mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
+mov   word ptr ds:[_cached_playerMobj_x_highbits], ax    
+mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
+mov   word ptr ds:[_cached_playerMobj_y_highbits], ax
+
+
 xor   bx, bx
 mov   bl, byte ptr ds:[_currenttask];
+
 
 call Z_QuickMapMenu_
 

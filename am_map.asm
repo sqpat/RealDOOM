@@ -618,8 +618,8 @@ dw _FixedDiv_addr
 ; dx:ax is b
 
 cmp       dx, di
-jg        use_b
-jl        use_a
+jg        use_a
+jl        use_b
 cmp       ax, si
 jl        use_b
 use_a:
@@ -654,9 +654,17 @@ mov       word ptr ds:[_screen_oldloc + 0], MAXSHORT
 dont_cancel_follow_player:
 mov       dx, word ptr ds:[_screen_botleft_x]
 mov       bx, word ptr ds:[_screen_botleft_y]
-add       dx, ax
+add       dx, ax ;    screen_botleft_x += m_paninc.x;
 mov       ax, es
-add       bx, ax
+add       bx, ax ;    screen_botleft_y += m_paninc.y;
+
+; bounds check 
+; dx = botleftx
+; bx = botlefty
+;    if (screen_botleft_x + (screen_viewport_width >>1) > am_max_level_x){
+;		screen_botleft_x = am_max_level_x - (screen_viewport_width >>1);
+;	} else if (screen_botleft_x + (screen_viewport_width >>1) < am_min_level_x){
+;		screen_botleft_x = am_min_level_x - (screen_viewport_width >>1);
 
 mov       ax, word ptr ds:[_screen_viewport_width]
 mov       cx, dx
@@ -675,9 +683,10 @@ jmp       done_subtracting_x
 dont_subtract_x:
 xchg      ax, dx  ; just use this value
 done_subtracting_x:
+; ax is screen_botleft_x
 mov       word ptr ds:[_screen_botleft_x], ax
 add       ax, word ptr ds:[_screen_viewport_width]
-mov       word ptr ds:[_screen_topright_x], ax
+mov       word ptr ds:[_screen_topright_x], ax    ; screen_topright_x = screen_botleft_x + screen_viewport_width;
 
 mov       ax, word ptr ds:[_screen_viewport_height]
 mov       cx, bx
@@ -685,13 +694,13 @@ sar       ax, 1
 add       cx, ax
 neg       ax
 cmp       cx, word ptr cs:[_am_max_level_y]
-jle       use_minlevel7
-add       ax, word ptr cs:[_am_max_level_y]
-jmp       done_subtracting_y
-use_minlevel7:
+jge       use_maxlevely
 cmp       cx, word ptr cs:[_am_min_level_y]
 jge       dont_subtract_y
 add       ax, word ptr cs:[_am_min_level_y]
+jmp       done_subtracting_y
+use_maxlevely:
+add       ax, word ptr cs:[_am_max_level_y]
 jmp       done_subtracting_y
 dont_subtract_y:
 xchg      ax, bx
@@ -699,7 +708,7 @@ done_subtracting_y:
 
 mov       word ptr ds:[_screen_botleft_y], ax
 add       ax, word ptr ds:[_screen_viewport_height]
-mov       word ptr ds:[_screen_topright_y], ax
+mov       word ptr ds:[_screen_topright_y], ax   ; screen_topright_y = screen_botleft_y + screen_viewport_height;
 pop       dx
 pop       cx
 pop       bx
@@ -785,10 +794,11 @@ do_level_init:
 
 mov       word ptr ds:[_am_scale_mtof + 0], 03333h  ; 0x10000 / 5
 
+; 11e60000 / B333
 call      AM_clearMarks_
-mov       bx, 0B333h
-xor       cx, cx
 call      AM_findMinMaxBoundaries_
+mov       bx, 0B333h    ; 0.7*FRACUNIT
+xor       cx, cx
 mov       dx, word ptr ds:[_am_min_scale_mtof]
 xor       ax, ax
 db 0FFh  ; lcall[addr]
@@ -848,16 +858,14 @@ xchg      ax, si
 mov       ax, AUTOMAP_SCREENHEIGHT
 call      FixedMul1632_MapLocal_
 
-les       bx, dword ptr ds:[_playerMobj_pos]
-
 mov       word ptr ds:[_screen_viewport_height], ax
 
 sar       ax, 1
 neg       ax
-add       ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
+add       ax, word ptr ds:[_cached_playerMobj_y_highbits]
 mov       word ptr ds:[_screen_botleft_y], ax
 
-mov       ax, word ptr es:[si + MOBJ_POS_T.mp_x + 2]
+mov       ax, word ptr ds:[_cached_playerMobj_x_highbits]
 sub       ax, si
 mov       word ptr ds:[_screen_botleft_x], ax
 
