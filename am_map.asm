@@ -578,11 +578,11 @@ loop      loop_next_vertex
 
 push      ss
 pop       ds
-
 mov       word ptr cs:[_am_min_level_x], dx
 mov       word ptr cs:[_am_max_level_x], bx
 mov       word ptr cs:[_am_min_level_y], di
 mov       word ptr cs:[_am_max_level_y], bp
+sub       bp, di ; bp = max y - min y
 
 ;todo this in theory can be better. but whoe cares, runs once
 ;    max_w = am_max_level_x - am_min_level_x;
@@ -591,7 +591,8 @@ mov       word ptr cs:[_am_max_level_y], bp
 ;	a = FixedDiv(automap_screenwidth, max_w);
 ;	b = FixedDiv(automap_screenheight, max_h);
 
-
+; todo maybe just regular div since its 32 bit over 16 bit? or do overflows happen
+; ax to dx, ax is 0. then div over bx. 
 sub       bx, dx
 xor       cx, cx
 
@@ -604,7 +605,8 @@ dw _FixedDiv_addr
 
 xchg      ax, si ; store a
 mov       di, dx ; store a
-lea       bx, [bp - di] ; max y - min y
+mov       bx, bp
+xor       cx, cx
 mov       ax, AUTOMAP_SCREENHEIGHT
 cwd
 db 0FFh  ; lcall[addr]
@@ -619,7 +621,7 @@ cmp       dx, di
 jg        use_b
 jl        use_a
 cmp       ax, si
-jge       use_b
+jl        use_b
 use_a:
 xchg       ax, si
 use_b:
