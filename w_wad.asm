@@ -23,6 +23,7 @@ EXTRN Z_QuickMapWADPageFrame_:FAR
 EXTRN fread_:FAR
 EXTRN fseek_:FAR
 EXTRN locallib_far_fread_:FAR
+EXTRN I_Error_:FAR
 
 .DATA
 
@@ -39,10 +40,14 @@ PROC    W_WAD_STARTMARKER_ NEAR
 PUBLIC  W_WAD_STARTMARKER_
 ENDP
 
+
+
 PUBLIC  SELFMODIFY_end_lump_for_search
 PUBLIC  SELFMODIFY_start_lump_for_search
 
 
+str_wadlumpnotfound:
+db "W_GetNumForName: %Fs not found!", 0
 
 
 
@@ -249,11 +254,38 @@ jmp   return_to_lump_check
 
 ENDP
 
+PROC    W_GetNumForNameFarString_ NEAR
+PUBLIC  W_GetNumForNameFarString_
+
+push      dx ; in case error and we need to have the name available
+push      ax
+call      W_CheckNumForNameFarString_
+test      ax, ax
+js        error_wad_lump_not_found
+pop       es      ;  undo stack from bvoe
+pop       es      ;
+ret
+
+ENDP
+
+
+error_wad_lump_not_found:
+push    cs
+mov     ax, OFFSET str_wadlumpnotfound
+push    ax
+call    I_Error_
+
+
 PROC    W_GetNumForName_ FAR
 PUBLIC  W_GetNumForName_
 
-
+push      ds  ; in case error and we need to have the name available
+push      ax
 call      W_CheckNumForName_
+test      ax, ax
+js        error_wad_lump_not_found
+pop       es      ;  undo stack from bvoe
+pop       es      ;
 retf   
 
 ENDP
@@ -326,9 +358,6 @@ jmp       done_finding_lump_file
 
 PROC    W_ReadLump_ NEAR
 PUBLIC  W_ReadLump_
-
-; bp - 4 dest
-
 
 
 push      dx

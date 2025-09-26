@@ -27,7 +27,8 @@ EXTRN Z_QuickMapDemo_:FAR
 EXTRN I_Error_:FAR
 EXTRN M_WriteFile_:NEAR
 EXTRN I_Quit_:FAR
-EXTRN W_CacheLumpNameDirectFarString_:FAR
+EXTRN W_GetNumForNameFarString_:NEAR
+EXTRN W_ReadLump_:NEAR
 EXTRN G_InitNew_:NEAR
 
 .DATA
@@ -213,7 +214,11 @@ mov    dx, es
 mov    cx, DEMO_SEGMENT
 mov    si, cx
 ; TODO_BUG ftell, detect longer than MAX_DEMO_SIZE?
-call   W_CacheLumpNameDirectFarString_ ; (defdemoname, demobuffer);
+;call   W_CacheLumpNameDirectFarString_ ; (defdemoname, demobuffer);
+; inlined W_CacheLumpNameDirectFarString_
+call   W_GetNumForNameFarString_
+call   W_ReadLump_
+
 
 mov    ds, si
 xor    si, si
