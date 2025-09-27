@@ -1174,7 +1174,7 @@ void __near Z_ClearDeadCode() {
 
 // logging functions to assist in finding desyncs.
 
-/*
+
 
 void __near DoLog() {
 
@@ -1184,13 +1184,15 @@ void __near DoLog() {
     fclose(fp);
 
 
-	if (gametic == 100){
-		I_Error("done %i", gameskill);
+	// if (gametic == 100){
+	// 	I_Error("done %i", gameskill);
 
-	}
+	// }
 
 
 }
+
+/*
 int16_t counter = 0;
 int16_t setval = 0;
 boolean is_init = false;

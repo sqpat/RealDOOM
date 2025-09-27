@@ -3058,10 +3058,8 @@ PUBLIC  A_VileChase_
 ; bp - 2   ax arg
 ; bp - 4   bx arg
 ; bp - 6   mobjinfo pointer
+; bp - 8     xh
 ; bp - 0Ah   yl
-; bp - 8 xh
-; bp - 0Ch 
-; bp - 0Eh 
 
 push  bp
 mov   bp, sp
@@ -3073,9 +3071,9 @@ xchg  ax, si
 cmp   byte ptr ds:[si + MOBJ_T.m_movedir], DI_NODIR
 je    jump_to_do_chase_and_exit
 mov   al, SIZEOF_MOBJINFO_T
-mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
+mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]  ; 
 push  ax   ; bp - 6
-mov   di, ax
+xchg  ax, di
 xor   ax, ax
 
 
@@ -3095,6 +3093,16 @@ pop   word ptr ds:[_viletryy + 0]
 pop   word ptr ds:[_viletryx + 2]
 pop   word ptr ds:[_viletryx + 0]
 
+
+;fixed_t	xspeed[8] = {FRACUNIT,47000,0,-47000,-FRACUNIT,-47000,0,47000};
+;fixed_t yspeed[8] = {0,47000,FRACUNIT,47000,0,-47000,-FRACUNIT,-47000};
+
+;	viletryx =
+;	    actor->x + actor->info->speed*xspeed[actor->movedir];
+;	viletryy =
+;	    actor->y + actor->info->speed*yspeed[actor->movedir];
+
+
 ; would movsw save...?
 
 
@@ -3103,7 +3111,7 @@ mov   bl, byte ptr ds:[si + MOBJ_T.m_movedir]
 cmp   bl, 7
 ja    done_with_vile_switch_block
 
-
+; movedir 7
 
 test  bl, 1             ; diagonals are odd and use the 47000 mult in ax/dx
 je    skip_diag_mult2
@@ -3124,9 +3132,8 @@ add   word ptr ds:[si + 2], ax
 done_with_vile_switch_block:
 
 ; si is _viletryx
-
 lodsw
-xchg  ax, dx
+;xchg  ax, dx ; lo word not used!
 lodsw
 
 ; si is now _viletryy.
@@ -3139,58 +3146,56 @@ mov   di, (MAXRADIUSNONFRAC * 2)
 
 sub   ax, word ptr ds:[_bmaporgx]
 
+mov   bx, ax
+
+sub   ax, di
+add   bx, di
+
+; shift right 7 + 16
+rol   ax, 1
+and   al, 1
+xchg  al, ah
+xchg  ax, bx  ; bx gets xl, ax gets copy back
+
+rol   ax, 1
+and   al, 1
+xchg  al, ah
+
+
+; in theory can check xl vs xh, fail  early here
+push  ax  ; bp - 8 ; xh
+
+
+
+;		yl = (viletryy.w - coord.w - MAXRADIUS*2)>>MAPBLOCKSHIFT;
+;		yh = (viletryy.w - coord.w + MAXRADIUS*2)>>MAPBLOCKSHIFT;
+
+
+lodsw           ; viletryy
+lodsw
+mov   si, bx ; si gets xl now
+
+sub   ax, word ptr ds:[_bmaporgy]
+
 mov   cx, ax
-mov   bx, dx
 
 sub   ax, di
 add   cx, di
 
-; shift right 7
-sal   dx, 1
-rcl   ax, 1
-mov   dl, dh
-mov   dh, al  ; only needs 16 bits.
+; shift right 7 + 16
+rol   ax, 1
+and   al, 1
+xchg  al, ah
+xchg  ax, cx  ; cx gets yl, ax gets copy back
 
-sal   bx, 1
-rcl   cx, 1
-mov   bl, bh
-mov   bh, cl  ; only needs 16 bits.
-
-mov   si, dx  ; si gets xl.
-push  bx  ; bp - 8
-
-
-
-
-lodsw           ; viletryy
-xchg  ax, cx
-lodsw
-
-
-sub   cx, word ptr ds:[_bmaporgy]
-
-
-mov   dx, ax
-mov   bx, cx
-
-sub   ax, di
-add   dx, di
-
-; shift right 7
-sal   cx, 1
-rcl   ax, 1
-mov   cl, ch
-mov   ch, al  ; only needs 16 bits.
-
-sal   bx, 1
-rcl   dx, 1
-mov   bl, bh
-mov   bh, dl  ; only needs 16 bits.
+rol   ax, 1
+and   al, 1
+xchg  al, ah
 
 ; si has xl
 ; cx has yl
 
-mov   di, bx
+xchg  ax, di ; di gets yh
 
 push  cx   ; bp - 0Ah
 
@@ -3201,14 +3206,12 @@ push  cx   ; bp - 0Ah
 
 
 ;		for (bx=xl ; bx<=xh ; bx++)
-
-
 cmp   si, word ptr [bp - 8]
 jg    do_chase_and_exit
 loop_next_x_vile:
 mov   cx, word ptr [bp - 0Ah]  ; reset each loop iter!
-cmp   di, cx
-jl    done_with_vile_y_loop
+cmp   cx, di 
+jg    done_with_vile_y_loop
 loop_next_y_vile:
 mov   bx, OFFSET PIT_VileCheck_ - OFFSET P_SIGHT_STARTMARKER_
 mov   dx, cx   ; by

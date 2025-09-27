@@ -58,7 +58,7 @@ EXTRN I_WaitVBL_:FAR
 EXTRN Z_QuickMapPalette_:FAR
 EXTRN Z_QuickMapByTaskNum_:FAR
 
-;EXTRN DoLog_:NEAR
+EXTRN DoLog_:NEAR
 
 EXTRN _R_RenderPlayerView:DWORD
 EXTRN _oldgamestate:BYTE
@@ -3782,7 +3782,7 @@ no_pending_music:
 
 call  D_Display_
 
-; call DoLog_
+ call DoLog_
 
 jmp   continue_doom_loop
 do_advance_demo:
