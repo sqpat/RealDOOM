@@ -848,11 +848,17 @@ push      word ptr ds:[bx + MOBJINFO_T.mobjinfo_flags1]
 push      word ptr ds:[bx + MOBJINFO_T.mobjinfo_flags2]
 pop       word ptr es:[di + MOBJ_POS_T.mp_flags2]
 pop       word ptr es:[di + MOBJ_POS_T.mp_flags1]
+mov       ax, word ptr ds:[bx + MOBJINFO_T.mobjinfo_spawnstate]
+mov       word ptr es:[di + MOBJ_POS_T.mp_statenum], ax
+
+; ax has state
+xor       bx, bx
 
 ; MF_LASTLOOK_1 calculation.
 inc       byte ptr ds:[_prndindex]
-mov       al, byte ptr ds:[_prndindex]
-xlat      byte ptr cs:[bx]
+mov       bl, byte ptr ds:[_prndindex]
+mov       bl, byte ptr cs:[bx] ; prnd lookup
+xchg      ax, bx ; bx gets state, al gets prnd value...
 and       al, 3
 cmp       al, 1
 jne       dont_set_lastlook
@@ -872,15 +878,12 @@ mov       byte ptr ds:[si + MOBJ_T.m_reactiontime], 8
 skill_not_nightmare:
 
 
-mov       ax, MOBJPOSLIST_6800_SEGMENT
-mov       es, ax
-
-mov       ax, word ptr ds:[bx + MOBJINFO_T.mobjinfo_spawnstate]
-mov       word ptr es:[di + MOBJ_POS_T.mp_statenum], ax
 
 
-mov       bx, 6
-mul       bx
+
+
+mov       ax, SIZE STATE_T
+mul       bx ; statenum
 xchg      ax, bx
 
 mov       ax, STATES_SEGMENT

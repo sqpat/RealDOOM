@@ -2943,7 +2943,7 @@ mov   es, ax
 mov   al, byte ptr ds:[di + _mobjinfo + MOBJINFO_T.mobjinfo_radius]
 xor   ah, ah
 
-mov   cl, byte ptr ds:[_mobjinfo + (MT_VILE * SIZEOF_MOBJINFO_T) + MOBJINFO_T.mobjinfo_radius]
+mov   cl, byte ptr ds:[_mobjinfo + (MT_VILE * SIZEOF_MOBJINFO_T) + MOBJINFO_T.mobjinfo_radius] ; todo hardcode...?
 
 xor   ch, ch
 add   cx, ax
@@ -2951,20 +2951,21 @@ add   cx, ax
 ;	if (labs(thing_pos->x.w - viletryx.w) > maxdist.w || labs(thing_pos->y.w - viletryy.w) > maxdist.w) {
 
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
-mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
+mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
 sub   ax, word ptr ds:[_viletryx + 0]
 sbb   dx, word ptr ds:[_viletryx + 2]
 or    dx, dx
-jge   skip_x_Labs
+jge   skip_labs_x
 neg   ax
 adc   dx, 0
 neg   dx
-skip_x_Labs:
+skip_labs_x:
 cmp   dx, cx
 jg    exit_pit_vilecheck_return_1_pop3
 jne   check_vile_y
 test  ax, ax
 ja    exit_pit_vilecheck_return_1_pop3
+
 check_vile_y:
 mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 0]
 mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
