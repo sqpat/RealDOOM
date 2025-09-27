@@ -191,6 +191,17 @@ typedef enum {
     //  in death match mode (e.g. key cards).
     MF_NOTDMATCH    	= 0x200,
 
+    // Ok... lastlook is used in vanilla doom to keep track of who the mobj has looked for in that frame.
+    // It is initialized to P_Random() % MAX_PLAYERS. This is mostly irrelevant to RealDOOM which is single player
+    // EXCEPT! Monsters are designed to stop looking for the player after they've looked for two players (irrelevant to realdoom) OR when
+    // they reach 'lastlook - 1'. For realdoom's purposes, we just look once for the one player.  
+    // And lastlook always converges to 0 after a single call to P_LookForPlayers
+    // However there is this weird case where the first P_LookForPlayers, when lastlook was P_Random()ed to 1, that 
+    // the stop condition is 0, or the first player. So the player is not looked for for the very first call to P_LookForPlayers.
+    // In maps where the player is visible at the start, this can lead to desyncs with demos with vanilla.
+    // SO! when initializing the mobj, we take that result of the P_Random and if P_Random() & 3 == 1 then we turn this flag on.
+    // and P_LookForPlayers will basically return false if this flag is on then set it false.
+    MF_LASTLOOK_1    	= 0x400,
 
     // Hmm ???.
     MF_TRANSSHIFT	= 26

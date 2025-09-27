@@ -1171,3 +1171,56 @@ void __near Z_ClearDeadCode() {
 	fclose(fp);
 
 }
+
+// logging functions to assist in finding desyncs.
+
+/*
+
+void __near DoLog() {
+
+
+    FILE* fp = fopen("debuglog.txt", "ab");
+    fprintf(fp, "pos %li %i %lx %lx %lx\n", gametic, prndindex, playerMobj_pos->x, playerMobj_pos->y, playerMobj_pos->z);
+    fclose(fp);
+
+
+	if (gametic == 100){
+		I_Error("done %i", gameskill);
+
+	}
+
+
+}
+int16_t counter = 0;
+int16_t setval = 0;
+boolean is_init = false;
+
+
+void __far MainLogger (uint16_t ax, uint16_t dx, uint16_t bx, uint16_t cx){
+
+	if (gametic == 3){
+		FILE* fp;
+		if (is_init){
+			fp = fopen("tick.txt", "ab");
+		} else {
+			fp = fopen("tick.txt", "wb");
+			is_init = true;
+		}
+		fprintf(fp, "%li %i %i %x %i %x\n", gametic, prndindex, counter, ax & 0xFF, dx, bx);
+
+		counter++;
+		if (counter == 133){
+			// mobj_t* mobj = (mobj_t*) bx;
+			// I_Error("vals %i %i", mobj->secnum, mobj->type);
+			// 1 74
+			// mobj_pos_t __far* mobjpos = (mobj_pos_t __far*)MK_FP(mobjposlist_6800_segment, (bx / 44) * 24);
+			// I_Error("vals %lx %lx", mobjpos->x, mobjpos->y);
+			// I_Error("prnd %i", prndindex);
+			setval = 1;
+		}
+		fclose(fp);
+	}
+
+}
+
+*/

@@ -1102,9 +1102,11 @@ jmp   check_turnaround
 
 ENDP
 
+
+jump_to_exit_look_for_players_return_0:
+and     byte ptr es:[si + MOBJ_POS_T.mp_flags2+1], ((NOT MF_LASTLOOK_1) SHR 8) ; undo the byte
 player_dead_dont_look:
-clc
-ret
+jmp     exit_look_for_players_return_0
 
 PROC    P_LookForPlayers_ NEAR
 PUBLIC  P_LookForPlayers_
@@ -1112,10 +1114,7 @@ PUBLIC  P_LookForPlayers_
 ; boolean __near P_LookForPlayers (mobj_t __near*	actor, boolean	allaround ) {
 
 
-cmp   word ptr ds:[_player + PLAYER_T.player_health], 0
-jng   player_dead_dont_look  ; todo can this reach another exit for free code
 
-do_look_for_players:
 
 PUSHA_NO_AX_MACRO
 
@@ -1138,6 +1137,15 @@ ELSE
     mul  dx
     xchg ax, si
 ENDIF
+
+mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   es, ax
+; read about this hack in p_mobj.h MF_LASTLOOK_1 notes...
+test  byte ptr es:[si + MOBJ_POS_T.mp_flags2+1], (MF_LASTLOOK_1 SHR 8)
+jne   jump_to_exit_look_for_players_return_0
+
+cmp   word ptr ds:[_player + PLAYER_T.player_health], 0
+jng   player_dead_dont_look  
 
 mov   cx, word ptr ds:[_playerMobj_pos]
 

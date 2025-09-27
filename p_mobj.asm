@@ -845,10 +845,20 @@ mov       al, byte ptr ds:[bx + MOBJINFO_T.mobjinfo_height]
 mov       word ptr ds:[si + MOBJ_T.m_height + 2], ax
 
 push      word ptr ds:[bx + MOBJINFO_T.mobjinfo_flags1]
-pop       word ptr es:[di + MOBJ_POS_T.mp_flags1]
 push      word ptr ds:[bx + MOBJINFO_T.mobjinfo_flags2]
 pop       word ptr es:[di + MOBJ_POS_T.mp_flags2]
+pop       word ptr es:[di + MOBJ_POS_T.mp_flags1]
 
+; MF_LASTLOOK_1 calculation.
+inc       byte ptr ds:[_prndindex]
+mov       al, byte ptr ds:[_prndindex]
+xlat      byte ptr cs:[bx]
+and       al, 3
+cmp       al, 1
+jne       dont_set_lastlook
+or        byte ptr es:[di + MOBJINFO_T.mp_flags2+1], (MF_LASTLOOK_1 SHR 8)
+
+dont_set_lastlook:
 pop       ax
 
 push  cs
@@ -861,7 +871,6 @@ je        skill_not_nightmare
 mov       byte ptr ds:[si + MOBJ_T.m_reactiontime], 8
 skill_not_nightmare:
 
-inc       byte ptr ds:[_prndindex]
 
 mov       ax, MOBJPOSLIST_6800_SEGMENT
 mov       es, ax

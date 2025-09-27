@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/26 02:32:55
+Created on:       25/09/26 21:01:47
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -28,7 +28,7 @@ m_near_TEXT            CODE           AUTO           0000:0000       00000000
 D_INIT_TEXT            CODE           AUTO           0000:0000       00000a04
 ST_INIT_TEXT           CODE           AUTO           0000:0a04       00000203
 R_INIT_TEXT            CODE           AUTO           0000:0c08       000007af
-W_INIT_TEXT            CODE           AUTO           0000:13b8       0000017d
+W_INIT_TEXT            CODE           AUTO           0000:13b8       0000017e
 I_INIT_TEXT            CODE           AUTO           0000:1536       000001a6
 z_init_TEXT            CODE           AUTO           0000:16e0       00000a27
 p_init_TEXT            CODE           AUTO           0000:2110       00000498
@@ -166,8 +166,8 @@ Module: r_init.obj(r_init.ASM)
 0000:136c*     W_CacheLumpNumDirectSmall_
 Module: w_init.obj(w_init.ASM)
 0000:13b8*     W_INIT_STARTMARKER_
-0000:1535*     W_INIT_ENDMARKER_
-0000:13e4      W_AddFile_
+0000:1536*     W_INIT_ENDMARKER_
+0000:13e5      W_AddFile_
 Module: i_init.obj(i_init.ASM)
 0000:16dc*     I_INIT_ENDMARKER_
 0000:15b2      I_Init_
@@ -363,9 +363,9 @@ Module: main.obj(main.ASM)
 0000:5392      locallib_printhex_
 0000:4407*     D_MAIN_STARTMARKER_
 0000:5385      locallib_putchar_
+0000:548c*     locallib_printstringnear_
 0000:4da7      M_LoadDefaults_
 0000:55df*     D_Display_
-0000:548c*     locallib_printstringnear_
 0000:555d      locallib_dos_setvect_old_
 0000:517f*     I_UpdateBox_
 0000:44d1      I_KeyboardISR_
@@ -373,8 +373,8 @@ Module: main.obj(main.ASM)
 0000:594d*     D_DoomLoop_
 0000:4f4a      M_ScanTranslateDefaults_
 0000:5335*     locallib_strlen_
-0000:4b07      CopyString13_
 0000:4815      G_BuildTiccmd_
+0000:4b07      CopyString13_
 0000:4800      G_ResetGameKeys_
 0000:59a4      D_DoomMain_
 0000:441d      cht_CheckCheat_Far_
@@ -393,8 +393,8 @@ Module: main.obj(main.ASM)
 0000:4f7c      M_SaveDefaults_
 0000:536b*     locallib_createhexnibble_
 0000:5227*     I_FinishUpdate_
-0000:549e      locallib_printf_
 0000:57b8      S_PauseSound_
+0000:549e      locallib_printf_
 0000:44fb      I_StartTic_
 0000:57e1      S_ResumeSound_
 0000:546e      locallib_strlwr_
@@ -519,8 +519,8 @@ Module: w_wad.obj(w_wad.ASM)
 0000:941e*     W_WAD_ENDMARKER_
 0000:92f9      W_GetNumForName_
 0000:93cc      W_CacheLumpNameDirectFarString_
-0000:9286      SELFMODIFY_start_lump_for_search
 0000:93ef      W_CacheLumpNumDirectFragment_
+0000:9286      SELFMODIFY_start_lump_for_search
 0000:91d0*     W_WAD_STARTMARKER_
 0000:92a8      SELFMODIFY_end_lump_for_search
 0000:91f0      W_CheckNumForNameFarString_
@@ -805,4 +805,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  ddc0 (56768.)
 Entry point address: 0000:a6bc
-Link time: 00:00.75
+Link time: 00:00.20

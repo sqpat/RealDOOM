@@ -8,7 +8,7 @@
 #include "p_inter.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2586
+#define CONSTANTS_COUNT 2587
 #define LOCALS_COUNT 22
 
 
@@ -2107,6 +2107,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "MF_COUNTITEM",
     "MF_SKULLFLY",
     "MF_NOTDMATCH",
+    "MF_LASTLOOK_1",
     "MF_TRANSSHIFT",
 
 
@@ -4789,6 +4790,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     MF_COUNTITEM,
     MF_SKULLFLY,
     MF_NOTDMATCH,
+    MF_LASTLOOK_1,
     MF_TRANSSHIFT,
 
 	pw_invulnerability,
