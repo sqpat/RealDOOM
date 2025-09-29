@@ -49,7 +49,13 @@ PUBLIC  SELFMODIFY_start_lump_for_search
 str_wadlumpnotfound:
 db "W_GetNumForName: %Fs not found!", 0
 
+; ugh for s_init.
+PROC    W_CheckNumForNameFar_ FAR
+PUBLIC  W_CheckNumForNameFar_
 
+call    W_CheckNumForName_
+retf
+ENDP
 
 PROC    W_CheckNumForNameFarString_ NEAR
 PUBLIC  W_CheckNumForNameFarString_

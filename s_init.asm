@@ -470,7 +470,8 @@ PUBLIC I_GetSfxLumpNum_
     movsw
     movsw
     movsw
-    
+    xor ax, ax
+    stosb
 
     ; restore ds
     push ss
@@ -480,10 +481,10 @@ PUBLIC I_GetSfxLumpNum_
 
     db 0FFh  ; lcall[addr]
     db 01Eh  ;
-    dw _W_GetNumForName_addr
+    dw _W_CheckNumForNameFar_addr
 
 
-    ; call W_GetNumForName
+    ; call W_CheckNumForName
 
     pop  di
     pop  si

@@ -576,7 +576,7 @@ _am_max_scale_mtof =       		     _NULL_OFFSET + 0071Ch
 _FastDiv3216u_addr =				 _NULL_OFFSET + 00720h
 _bulletslope = 			 			 _NULL_OFFSET + 00724h
 _weaponinfo = 			 			 _NULL_OFFSET + 00728h
-;_G_ExitLevel_addr = 			 	 _NULL_OFFSET + 0078Ch
+_W_CheckNumForName_Far_addr =        _NULL_OFFSET + 0078Ch
 
 _gametime = 				         _NULL_OFFSET + 00790h
 _maketic = 				             _NULL_OFFSET + 00794h

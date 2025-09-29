@@ -467,7 +467,7 @@ void __far ST_Start(void) ;
 
 
 
-void __far G_ExitLevel (void);
+
 
  
 void  __near SkipNextFileRegion(FILE* fp){
@@ -658,7 +658,7 @@ void __far S_InitSFXCache();
 void __far G_DeferedInitNew (skill_t skill, int8_t episode, int8_t map);
 void __far SFX_PlayFromWi(uint16_t ax, uint16_t dx);
 void __far S_DecreaseRefCountFar(int8_t handle);
-
+void __far W_CheckNumForNameFar();
 void __far MainLogger (uint16_t ax, uint16_t dx, uint16_t bx, uint16_t cx);
 
 void __near Z_LoadBinaries() {
@@ -876,6 +876,7 @@ void __near Z_LoadBinaries() {
 	SFX_PlayPatch_addr = 				(uint32_t)(SFX_PlayPatch);
 	S_DecreaseRefCountFar_addr = 		(uint32_t)(S_DecreaseRefCountFar);
 
+	W_CheckNumForNameFar_addr =			(uint32_t)(W_CheckNumForNameFar);
 
 	// MainLogger_addr =  					(uint32_t)(MainLogger);
 
