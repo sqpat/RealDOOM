@@ -127,9 +127,25 @@ enum SB_ERRORS
 
 
 
+#define SB_MIXER_DSP4xxISR_Ack 0x82
+#define SB_MIXER_DSP4xxISR_Enable 0x83
+#define SB_MIXER_MPU401_INT 0x4
+#define SB_MIXER_16BITDMA_INT 0x2
+#define SB_MIXER_8BITDMA_INT 0x1
+#define SB_MIXER_DisableMPU401Interrupts 0xB
+#define SB_MIXER_SBProOutputSetting 0x0E
+#define SB_MIXER_SBProStereoFlag 0x02
+#define SB_MIXER_SBProVoice 0x04
+#define SB_MIXER_SBProMidi 0x26
+#define SB_MIXER_SB16VoiceLeft 0x32
+#define SB_SBProVoice 0x04
+#define SB_MIXER_SB16VoiceRight 0x33
+#define SB_MIXER_SB16MidiLeft 0x34
+#define SB_MIXER_SB16MidiRight 0x35
 
 
-
+void __near SB_WriteDSP(byte value);
+void __interrupt __far_func SB_ServiceInterrupt(void);
 
 
 
