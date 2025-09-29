@@ -48,7 +48,7 @@ PUBLIC  W_INIT_STARTMARKER_
 ENDP
 
 str_good_wad:
-db 0Ah, 09h, "adding %s", 0Ah, 0
+db 09h, "adding %s", 0Ah, 0
 str_bad_wad:
 db 09h, "couldn't open %s", 0Ah, 0
 handle_bad_file_couldnt_open:

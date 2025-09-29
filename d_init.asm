@@ -106,20 +106,20 @@ ENDP
 
 
 str_getemspagemap:
-db 0Ah, "Z_GetEMSPageMap: Init EMS 4.0 features.", 0
+db "Z_GetEMSPageMap: Init EMS 4.0 features.", 0Ah, 0
 str_loaddefaults:
-db 0Ah, "M_LoadDefaults	: Load system defaults.", 0
+db "M_LoadDefaults	: Load system defaults.", 0Ah, 0
 str_z_loadbinaries:
-db 0Ah, "Z_LoadBinaries: Load game code into memory", 0
+db "Z_LoadBinaries: Load game code into memory", 0
 str_initstrings:
-db 0Ah, "D_InitStrings: loading text.", 0
+db 0Ah, "D_InitStrings: loading text.", 0Ah, 0
 str_no_wad:
 db "Game mode indeterminate.", 0Ah, 0
 str_mem_param:
 db 0Ah, "BYTES LEFT: %i %x (DS : %x to %x BASEMEM : %x)", 0Ah, 0
 
 str_P_Init:
-db 0Ah, "P_Init: Checking cmd-line parameters...", 0
+db 0Ah, "P_Init: Checking cmd-line parameters...", 0Ah, 0
 str_turbo_scale:
 db "turbo scale: %i%%", 0Ah, 0
 
@@ -132,9 +132,9 @@ db "DOOM 2: Hell on Earth v1.9"
 str_title_doom2_done:
 
 str_z_init_ems:
-db 0Ah, "Z_InitEMS: Initialize EMS memory regions.", 0
+db "Z_InitEMS: Initialize EMS memory regions.", 0Ah, 0
 str_w_init:
-db 0Ah, "W_Init: Init WADfiles.", 0
+db "W_Init: Init WADfiles.", 0Ah, 0
 
 str_hu_init_font_lump:
 db "STCFN033", 0

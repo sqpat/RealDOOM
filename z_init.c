@@ -220,7 +220,7 @@ void __near Z_InitEMS() {
 	int16_t pagestotal, pagesavail;
 	int16_t errorreg;
 	uint8_t vernum;
-	DEBUG_PRINT_NOARG("  Checking EMS...");
+	DEBUG_PRINT_NOARG("\tChecking EMS...");
 
 	// used:
 	/*
@@ -278,7 +278,7 @@ void __near Z_InitEMS() {
 	// result.hu = locallib_int86_67_1arg(0x4200);
 	pagesavail = regresult.w.bx;
 	pagestotal = regresult.w.dx;
-	DEBUG_PRINT("\n  %i pages total, %i pages available at frame %p", pagestotal, pagesavail, EMS_PAGE);
+	DEBUG_PRINT("%i pages total, %i pages available at frame %p\n", pagestotal, pagesavail, EMS_PAGE);
 
 	if (pagesavail < NUM_EMS4_SWAP_PAGES) {
 		I_Error("\nERROR: minimum of %i EMS pages required", NUM_EMS4_SWAP_PAGES);
