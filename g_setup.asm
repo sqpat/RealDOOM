@@ -302,7 +302,7 @@ keep_respawn_off:
 
 mov   dx, STATES_SEGMENT
 mov   es, dx
-mov   bx, (S_SARG_RUN1 * SIZE STATE_T) + STATE_T.state_tics ; 6 bytes per
+mov   bx, (S_SARG_RUN1 * (SIZE STATE_T)) + STATE_T.state_tics ; 6 bytes per
 
 cmp   byte ptr ds:[_fastparm], ah
 jne   do_fastmonsters_on

@@ -1215,7 +1215,7 @@ xchg  ax, cx
 
 ; done with actorpos. can clobber si
 
-mov   si, word ptr ds:[_playerMobj_pos]
+mov   si, word ptr ss:[_playerMobj_pos]
 
 
 sub   ax, word ptr ds:[si + MOBJ_POS_T.mp_x + 0]

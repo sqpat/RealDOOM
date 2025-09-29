@@ -1174,55 +1174,73 @@ void __near Z_ClearDeadCode() {
 
 // logging functions to assist in finding desyncs.
 
+/*
 
-
+int16_t lastgametic = -1;
+int16_t thinkercount = 0;
 void __near DoLog() {
 
+	// mobj_t __near* mobj = (mobj_t __near*)(0x3CBC);
+	// mobj_pos_t __far* mobj_pos = (mobj_pos_t __far*)(MK_FP(mobjposlist_6800_segment, 0x6f0));
+    // FILE* fp = fopen("debuglog.txt", "ab");
 
-    FILE* fp = fopen("debuglog.txt", "ab");
-    fprintf(fp, "pos %li %i %lx %lx %lx\n", gametic, prndindex, playerMobj_pos->x, playerMobj_pos->y, playerMobj_pos->z);
-    fclose(fp);
+	
+	// fprintf(fp, "pos %li %i %i %lx %lx %lx %i %i %i\n", gametic, prndindex, thinkercount, playerMobj_pos->x, playerMobj_pos->y, playerMobj_pos->z, 
+	// mobj->tics, mobj_pos->stateNum, mobj->type);
+    
+	
+	
+	// fclose(fp);
 
 
-	// if (gametic == 100){
+	// if (gametic == 200){
 	// 	I_Error("done %i", gameskill);
-
 	// }
 
 
 }
 
-/*
+
 int16_t counter = 0;
 int16_t setval = 0;
 boolean is_init = false;
 
 
 void __far MainLogger (uint16_t ax, uint16_t dx, uint16_t bx, uint16_t cx){
+    // if (lastgametic != gametic){
+	// 	lastgametic = gametic;
+	// 	thinkercount = 0;
+	// }
+	// thinkercount++;
+	// if (gametic == 123){
+	// 	mobj_t __near* mobj = (mobj_t __near*) ax;
+	// 	mobj_pos_t __far* mobj_pos = (mobj_t __far*) (MK_FP(cx, bx));
+	// 	FILE* fp;
+	// 	if (is_init){
+	// 		fp = fopen("tick.txt", "ab");
+	// 	} else {
+	// 		fp = fopen("tick.txt", "wb");
+	// 		is_init = true;
+	// 	}
+	// 	fprintf(fp, "%li %i %i %x %x %x %i %i\n", gametic, prndindex, counter, ax, dx, bx,
+	// 		mobj->type, mobj->tics
+	// 	);
+	// 	fclose(fp);
 
-	if (gametic == 3){
-		FILE* fp;
-		if (is_init){
-			fp = fopen("tick.txt", "ab");
-		} else {
-			fp = fopen("tick.txt", "wb");
-			is_init = true;
-		}
-		fprintf(fp, "%li %i %i %x %i %x\n", gametic, prndindex, counter, ax & 0xFF, dx, bx);
+	// 	if (counter == 71){
+	// 		// mobj_t* mobj = (mobj_t*) bx;
+	// 		// I_Error("vals %i %i", mobj->secnum, mobj->type);
+	// 		// 1 74
+	// 		// mobj_pos_t __far* mobjpos = (mobj_pos_t __far*)MK_FP(mobjposlist_6800_segment, (bx / 44) * 24);
+	// 		// I_Error("vals %lx %lx", mobjpos->x, mobjpos->y);
+	// 		// I_Error("prnd %i", prndindex);
+	// 		setval = 1;
+	// 	}
 
-		counter++;
-		if (counter == 133){
-			// mobj_t* mobj = (mobj_t*) bx;
-			// I_Error("vals %i %i", mobj->secnum, mobj->type);
-			// 1 74
-			// mobj_pos_t __far* mobjpos = (mobj_pos_t __far*)MK_FP(mobjposlist_6800_segment, (bx / 44) * 24);
-			// I_Error("vals %lx %lx", mobjpos->x, mobjpos->y);
-			// I_Error("prnd %i", prndindex);
-			setval = 1;
-		}
-		fclose(fp);
-	}
+	// 	counter++;
+
+	// }
 
 }
-
 */
+

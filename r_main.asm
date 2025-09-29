@@ -148,12 +148,12 @@ ret
 inputs_not_zero:
 
 test  dx, dx
-jl   x_is_negative
+js   x_is_negative
 
 x_is_positive:
 test  cx, cx
 
-jl   y_is_negative
+js   y_is_negative
 y_is_positive:
 
 cmp   dx, cx
