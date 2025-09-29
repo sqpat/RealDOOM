@@ -142,13 +142,17 @@ There are also a lot of hard caps on things like texture size and count, node co
   - Major ASM rewrites of c code saving ~35-40k
   - Movable EMS Page Frame
   - Lots of bugfixing...
-  
+
+ (Sep 28, 2025)      
+~~**v0.32** : Bugfixes~~
+  - Lots more bugfixing...
+
 ### Future Roadmap:
 
 **Remaining Alpha Goals:**
  - improved sfx code
- - A few more known bugs fixed
- 
+ - helpful user facing diagnostics such as EMS/memory testing
+  
 **Beta Goals:**
  - Remove clib dependencies
  - Entirely ASM application 
@@ -159,6 +163,7 @@ There are also a lot of hard caps on things like texture size and count, node co
 **"1.0" Goals:**
  - 386 Render path optimization (mainly for 386SX)
  - General stability and architecture improvements
+ - Rewrite render path froms cratch
 **Post 1.0 Goals:**
  - EMS 3.2 compatible version
  - Remove MS-DOS dependencies, self boot version?
