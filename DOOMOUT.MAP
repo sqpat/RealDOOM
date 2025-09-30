@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/30 08:45:42
+Created on:       25/09/30 09:22:43
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -36,7 +36,7 @@ i_main_TEXT            CODE           AUTO           0000:25c0       00000010
 I_QUIT_TEXT            CODE           AUTO           0000:25d0       000001ab
 I_IBM_TEXT             CODE           AUTO           0000:277c       00000051
 D_NET_TEXT             CODE           AUTO           0000:27ce       000000b3
-G_GAME_TEXT            CODE           AUTO           0000:2882       00000393
+G_GAME_TEXT            CODE           AUTO           0000:2882       00000394
 G_DEMO_TEXT            CODE           AUTO           0000:2c16       0000028c
 M_MISC_TEXT            CODE           AUTO           0000:2ea2       000000e7
 ST_STUFF_TEXT          CODE           AUTO           0000:2f8a       00000939
@@ -217,15 +217,15 @@ Module: d_net.obj(d_net.ASM)
 Module: g_game.obj(g_game.ASM)
 0000:2893*     G_PlayerFinishLevel_
 0000:28d8*     G_DoWorldDone_
-0000:2934*     G_DoLoadGame_
-0000:29a1      R_FlatNumForName_
-0000:29f0      G_Ticker_
-0000:2c15*     G_GAME_ENDMARKER_
-0000:28f0      OutOfThinkers_
+0000:2935*     G_DoLoadGame_
+0000:29a2      R_FlatNumForName_
+0000:29f1      G_Ticker_
+0000:2c16*     G_GAME_ENDMARKER_
+0000:28f1      OutOfThinkers_
 0000:28b6*     G_DoNewGame_
-0000:28fa*     G_DoSaveGame_
+0000:28fb*     G_DoSaveGame_
 0000:2882*     G_GAME_STARTMARKER_
-0000:2b23*     G_DoCompleted_
+0000:2b24*     G_DoCompleted_
 Module: g_demo.obj(g_demo.ASM)
 0000:2df1      G_WriteDemoTiccmd_
 0000:2d60      G_DoPlayDemo_
@@ -808,4 +808,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  dde0 (56800.)
 Entry point address: 0000:a6dc
-Link time: 00:00.75
+Link time: 00:00.19

@@ -126,7 +126,7 @@ mov    ax, 1
 mov    byte ptr ds:[_gamestate], ah ; GS_LEVEL
 mov    byte ptr ds:[_gameaction], ah ; GA_NOTHING
 mov    byte ptr ds:[_viewactive], al ; true
-mov    al, byte ptr ds:[_wminfo + WBSTARTSTRUCT_T.wbss_next]
+add    al, byte ptr ds:[_wminfo + WBSTARTSTRUCT_T.wbss_next] ; one plus...
 mov    byte ptr ds:[_gamemap], al ; true
 
 call   G_DoLoadLevel_
