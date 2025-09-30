@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/09/29 20:06:31
+Created on:       25/09/30 08:45:40
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -33,9 +33,9 @@ W_INIT_TEXT            CODE           AUTO           0000:191c       0000017d
 I_INIT_TEXT            CODE           AUTO           0000:1a9a       000001a6
 z_init_TEXT            CODE           AUTO           0000:1c40       00000a36
 p_init_TEXT            CODE           AUTO           0000:2680       00000498
-I_QUIT_TEXT            CODE           AUTO           0000:2b18       000001a6
-I_IBM_TEXT             CODE           AUTO           0000:2cbe       00000051
-SM_LOAD_TEXT           CODE           AUTO           0000:2d10       000004ca
+I_QUIT_TEXT            CODE           AUTO           0000:2b18       000001ab
+I_IBM_TEXT             CODE           AUTO           0000:2cc4       00000051
+SM_LOAD_TEXT           CODE           AUTO           0000:2d16       000004ca
 bingen_TEXT            CODE           AUTO           0000:31e0       0000107b
 D_NET_TEXT             CODE           AUTO           0000:425c       000000b3
 G_GAME_TEXT            CODE           AUTO           0000:4310       00000393
@@ -47,8 +47,8 @@ HU_LIB_TEXT            CODE           AUTO           0000:54ba       00000141
 D_DMX_TEXT             CODE           AUTO           0000:55fc       00000124
 D_INT_TEXT             CODE           AUTO           0000:5720       00000175
 MATH_TEXT              CODE           AUTO           0000:5896       00000510
-MAIN_TEXT              CODE           AUTO           0000:5da6       00001689
-G_SETUP_TEXT           CODE           AUTO           0000:7430       0000020e
+MAIN_TEXT              CODE           AUTO           0000:5da6       00001688
+G_SETUP_TEXT           CODE           AUTO           0000:742e       0000020e
 r_setup_TEXT           CODE           AUTO           0000:7640       0000046c
 ST_SETUP_TEXT          CODE           AUTO           0000:7aac       00000125
 HU_SETUP_TEXT          CODE           AUTO           0000:7bd2       00000246
@@ -241,25 +241,25 @@ Module: p_init.obj(C:\REALDOOM\p_init.c)
 Module: i_quit.obj(i_quit.ASM)
 0000:2c1b*     I_ShutdownWads_
 0000:2b5b*     I_ShutdownMouse_
-0000:2cbe*     I_QUIT_ENDMARKER_
+0000:2cc3*     I_QUIT_ENDMARKER_
 0000:2b18*     I_QUIT_STARTMARKER_
 0000:2bff*     hackDSBack_
 0000:2b1f*     I_ShutdownSound_
-0000:2c7f      I_Quit_
+0000:2c84      I_Quit_
 0000:2bb8*     zeroConventional_
 0000:2b67*     Z_ShutdownEMS_
 0000:2b43*     I_ShutdownGraphics_
-0000:2ca0      I_Error_
+0000:2ca5      I_Error_
 Module: i_ibm.obj(i_ibm.ASM)
-0000:2cbe*     I_IBM_STARTMARKER_
-0000:2cbe      I_WaitVBL_
-0000:2d0f*     I_IBM_ENDMARKER_
-0000:2cde      I_ReadMouse_
+0000:2cc4*     I_IBM_STARTMARKER_
+0000:2cc4      I_WaitVBL_
+0000:2d15*     I_IBM_ENDMARKER_
+0000:2ce4      I_ReadMouse_
 Module: sm_load.obj(sm_load.ASM)
-0000:2d10      SM_LOAD_STARTMARKER_
-0000:31da      SM_LOAD_ENDMARKER_
-0000:31c2*     Z_QuickMapMusicPageFrame_SMLoad_
-0000:3114      S_ActuallyChangeMusic_
+0000:2d16      SM_LOAD_STARTMARKER_
+0000:31e0      SM_LOAD_ENDMARKER_
+0000:31c8*     Z_QuickMapMusicPageFrame_SMLoad_
+0000:311a      S_ActuallyChangeMusic_
 Module: bingen.obj(C:\REALDOOM\build\tools\bingen\bingen.c)
 0000:31e0      main_
 Module: d_net.obj(d_net.ASM)
@@ -395,66 +395,66 @@ Module: math.obj(math.ASM)
 0000:59da*     FixedMul16u32_
 0000:59c4      FixedMulTrigSpeedNoShift_
 Module: main.obj(main.ASM)
-0000:6f14      DEBUG_PRINT_NOARG_
+0000:6f16      DEBUG_PRINT_NOARG_
 0000:6d97      locallib_strcpy_
 0000:6dbd      locallib_toupper_
 0000:6ad0*     G_Responder_
-0000:6f00*     locallib_printstringfar_
-0000:7219      DEBUG_PRINT_
+0000:6f02*     locallib_printstringfar_
+0000:7218      DEBUG_PRINT_
 0000:60d2      G_CopyCmd_
 0000:6d51      combine_strings_
 0000:5e8f      _sidemove
 0000:6d3f      M_Ticker_
 0000:6cb7*     I_UpdateNoBlit_
-0000:742f*     D_MAIN_ENDMARKER_
+0000:742e*     D_MAIN_ENDMARKER_
 0000:5e8b      _forwardmove
-0000:6fe0      I_ShutdownTimer_
+0000:6fdf      I_ShutdownTimer_
 0000:6ba2      I_SetPalette_
 0000:6e08      locallib_printhex_
 0000:5e7d*     D_MAIN_STARTMARKER_
 0000:6dfb      locallib_putchar_
-0000:7055*     D_Display_
+0000:7054*     D_Display_
 0000:681d      M_LoadDefaults_
-0000:6f02*     locallib_printstringnear_
-0000:6fd3      locallib_dos_setvect_old_
+0000:6f04*     locallib_printstringnear_
+0000:6fd2      locallib_dos_setvect_old_
 0000:6bf5*     I_UpdateBox_
 0000:5f47      I_KeyboardISR_
-0000:7294      D_ProcessEvents_
-0000:73c3*     D_DoomLoop_
+0000:7293      D_ProcessEvents_
+0000:73c2*     D_DoomLoop_
 0000:69c0      M_ScanTranslateDefaults_
 0000:6dab*     locallib_strlen_
 0000:628b      G_BuildTiccmd_
 0000:657d      CopyString13_
 0000:6276      G_ResetGameKeys_
-0000:741a*     D_DoomMain_
+0000:7419*     D_DoomMain_
 0000:5e93      cht_CheckCheat_Far_
 0000:6052      _localcmds
-0000:7005      I_ShutdownKeyboard_
+0000:7004      I_ShutdownKeyboard_
 0000:5e97      cht_CheckCheat_
-0000:6f12      DEBUG_PRINT_NOARG_CS_
-0000:6fca      locallib_dos_setvect_
+0000:6f14      DEBUG_PRINT_NOARG_CS_
+0000:6fc9      locallib_dos_setvect_
 0000:6d75      locallib_strcmp_
-0000:6fc0      locallib_dos_getvect_
+0000:6fbf      locallib_dos_getvect_
 0000:6e6f*     locallib_printdecimal_
 0000:60f0      _gamekeydown
 0000:6dc8      copystr8_
-0000:738f      getStringByIndex_
+0000:738e      getStringByIndex_
 0000:5ef8      cht_GetParam_
 0000:69f2      M_SaveDefaults_
 0000:6de1*     locallib_createhexnibble_
 0000:6c9d*     I_FinishUpdate_
-0000:722e      S_PauseSound_
-0000:6f14      locallib_printf_
+0000:722d      S_PauseSound_
+0000:6f16      locallib_printf_
 0000:5f71      I_StartTic_
-0000:7257      S_ResumeSound_
-0000:6ee4      locallib_strlwr_
+0000:7256      S_ResumeSound_
+0000:6ee6      locallib_strlwr_
 Module: g_setup.obj(g_setup.ASM)
-0000:7453      R_CheckTextureNumForName_
-0000:763e*     G_SETUP_ENDMARKER_
-0000:7430*     G_SETUP_STARTMARKER_
-0000:7498      R_TextureNumForName_
-0000:7516      G_InitNew_
-0000:74b5      G_DoLoadLevel_
+0000:7451      R_CheckTextureNumForName_
+0000:763c*     G_SETUP_ENDMARKER_
+0000:742e*     G_SETUP_STARTMARKER_
+0000:7496      R_TextureNumForName_
+0000:7514      G_InitNew_
+0000:74b3      G_DoLoadLevel_
 Module: r_setup.obj(C:\REALDOOM\r_setup.c)
 0000:7640+     R_InitTextureMapping_
 0000:7938      R_ExecuteSetViewSize_
@@ -1011,8 +1011,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2ced:545d*     A_FatAttack2_
 2ced:4d4f*     A_SkelMissile_
 2ced:5442*     A_FatAttack1_
-2ced:53de*     A_FatAttack3_
 2ced:5806*     A_BabyMetal_
+2ced:53de*     A_FatAttack3_
 2ced:5a01*     A_SpawnSound_
 2ced:47f2*     A_Look_
 2ced:4d12*     A_BruisAttack_

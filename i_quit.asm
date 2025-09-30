@@ -313,6 +313,10 @@ je    skip_enddoom
     mov dx, 02300h
     int 010h        ; // Set text pos
 
+    mov  al, 0Ah  ; newline
+    call locallib_putchar_
+
+
     pop   cx
     pop   bx
 
