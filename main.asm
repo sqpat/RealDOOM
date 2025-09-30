@@ -2698,8 +2698,7 @@ xchg  ax, cx  ; print dx:cx
 test  dx, dx
 js    print_negative_long
 jne   print_long
-test  cx, cx
-je    print_last_int_digit
+jcxz  print_last_int_digit
 jmp   print_int
 print_negative_long:
 push  ax
@@ -2715,7 +2714,7 @@ mov   bx, 16
 print_next_digit_long:
 les   si, dword ptr cs:[_powers_of_ten_long + bx]
 mov   di, es
-xor   ax, ax  ; digit counter
+mov   al, '0'
 sub   cx, si
 sbb   dx, di
 jl    skip_digit
@@ -2724,13 +2723,12 @@ inc   ax
 inc   bp  ; printed at least one char
 sub   cx, si
 sbb   dx, di
-jge   sub_again
+jns   sub_again
 skip_digit:
 add   cx, si
 adc   dx, di
 test  bp, bp
 je    skip_print_char
-add   al, '0'
 call  locallib_putchar_
 
 skip_print_char:
@@ -2741,22 +2739,24 @@ jns   print_next_digit_long
 print_int:
 
 mov   bx, 6
-
+xor   di, di
 print_next_digit_int:
-mov   dx, word ptr cs:[_powers_of_ten_int + bx]
-xor   ax, ax  ; digit counter
-sub   cx, dx
+mov   si, word ptr cs:[_powers_of_ten_int + bx]
+mov   al, '0'
+sub   cx, si
+sbb   dx, di
 jl    skip_digit_int
 sub_again_int:
 inc   ax
 inc   bp  ; printed at least one char
-sub   cx, dx
+sub   cx, si
+sbb   dx, di
 jge   sub_again_int
 skip_digit_int:
-add   cx, dx
+add   cx, si
+adc   dx, di
 test  bp, bp
 je    skip_print_char_int
-add   al, '0'
 call  locallib_putchar_
 
 skip_print_char_int:
@@ -2994,18 +2994,18 @@ jmp   loop_next_arg_and_reset_params
 
 do_int:
 xor   dx, dx
+
+lodsw       
 jcxz  do_int_word
-
 do_int_long:
-lodsw       
 xchg  ax, dx
 lodsw       
 xchg  ax, dx
 
-jmp   do_int_call
+;jmp   do_int_call
 
 do_int_word:
-lodsw           ;  only word in ax or high word in ax and low word in dx.
+;           ;  only word in ax or high word in ax and low word in dx.
 
 do_int_call:
 xchg  bx, si   ; put string ptr back
