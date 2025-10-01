@@ -173,14 +173,9 @@ call      Z_QuickMapMusicPageFrame_SMLoad_
 jmp       done_with_changemusic_call_2
 
 ; only use? inlined?
+
 PROC  I_LoadSong_ NEAR
-
-
-push      bx
-push      cx
-push      dx
-push      si
-push      di
+PUSHA_NO_AX_OR_BP_MACRO
 push      bp
 mov       bp, sp
 push      ax        ; bp - 2 becomes lump
@@ -408,32 +403,31 @@ call      dword ptr ds:[_W_CacheLumpNumDirectFragment_addr]
 
 
 return_success:
-mov       ax, 1
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
-retf      
 return_failure:
-mov       ax, -1
+
+; we dont actually use the return value... if we did, use stc/clc
 LEAVE_MACRO     
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
-retf    
+POPA_NO_AX_OR_BP_MACRO
+ret
+
+COMMENT @
+;stc
+ret      
+LEAVE_MACRO     
+POPA_NO_AX_OR_BP_MACRO
+;clc
+ret    
+@
+
 ENDP
 
 
 PROC  S_ActuallyChangeMusic_ FAR
 PUBLIC  S_ActuallyChangeMusic_
 
-mov   al, byte ptr ds:[_pendingmusicenum]
-mov   byte ptr ds:[_pendingmusicenum], 0
-cmp   word ptr ds:[_playingdriver+2], 0
+xor   ax, ax
+cmp   word ptr ds:[_playingdriver+2], ax
+xchg  al, byte ptr ds:[_pendingmusicenum]
 jne   do_changemusic
 retf
 do_changemusic:
@@ -461,14 +455,8 @@ jmp   exit_changesong
 dont_exit_changesong:
 test  al, al
 je    dont_stop_song
-mov   ax, word ptr ds:[_playingdriver+2]
 mov   byte ptr ds:[_playingstate], 1
-mov   bx, word ptr ds:[_playingdriver]
-test  ax, ax
-jne   valid_playdriver
-jmp   null_playdriver
-valid_playdriver:
-mov   es, ax
+les   bx, dword ptr ds:[_playingdriver]
 call  dword ptr es:[bx + DRIVERBLOCK_STOPMUSIC_OFFSET]
 null_playdriver:
 mov   byte ptr ds:[_mus_playing], 0
@@ -483,28 +471,12 @@ mov   ax, OFFSET _filename_argument
 call  dword ptr ds:[_W_GetNumForName_addr]
 call  I_LoadSong_
 les   bx, dword ptr ds:[_playingdriver]
-mov   ax, bx
-test  ax, ax
-jne   do_call_playmusic
-test  bx, bx
-je    dont_call_playmusic    ; null driver
-do_call_playmusic:
-mov   es, ax
 call  dword ptr es:[bx + DRIVERBLOCK_PLAYMUSIC_OFFSET]
 dont_call_playmusic:
 mov   ax, di
 mov   byte ptr ds:[_loops_enabled], 1
 mov   byte ptr ds:[_mus_playing], al
 mov   byte ptr ds:[_playingstate], 2
-mov   ax, word ptr ds:[_playingdriver+2]
-test  ax, ax
-jne   call_stop_music_and_exit
-exit_changesong:
-pop   di
-pop   dx
-pop   cx
-pop   bx
-retf  
 not_adlib:
 mov   ax, di
 test  al, al
@@ -515,7 +487,12 @@ jmp   continue_loading_song
 call_stop_music_and_exit:
 les   bx, dword ptr ds:[_playingdriver]
 call  dword ptr es:[bx + DRIVERBLOCK_STOPMUSIC_OFFSET]
-jmp   exit_changesong
+exit_changesong:
+pop   di
+pop   dx
+pop   cx
+pop   bx
+retf  
 
 ENDP
 

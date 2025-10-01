@@ -24,7 +24,6 @@ file p_init.obj
 
 file i_quit.obj
 file i_ibm.obj
-file sm_load.obj
 file bingen.obj
 file d_net.obj
 file g_game.obj
@@ -52,6 +51,10 @@ file f_file.obj
 file w_wad.obj
 file v_video.obj
 file z_zone.obj
+
+NEWSEGMENT
+file sm_load.obj
+
 
 NEWSEGMENT
 file wi_stuff.obj
