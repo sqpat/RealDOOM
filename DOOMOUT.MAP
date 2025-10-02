@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/10/01 09:09:33
+Created on:       25/10/02 10:34:48
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -30,7 +30,7 @@ ST_INIT_TEXT           CODE           AUTO           0000:0a06       00000203
 R_INIT_TEXT            CODE           AUTO           0000:0c0a       000007af
 W_INIT_TEXT            CODE           AUTO           0000:13ba       0000017d
 I_INIT_TEXT            CODE           AUTO           0000:1538       000001a6
-z_init_TEXT            CODE           AUTO           0000:16e0       00000a36
+z_init_TEXT            CODE           AUTO           0000:16e0       00000a38
 p_init_TEXT            CODE           AUTO           0000:2120       00000498
 i_main_TEXT            CODE           AUTO           0000:25c0       00000010
 I_QUIT_TEXT            CODE           AUTO           0000:25d0       000001ab
@@ -66,15 +66,15 @@ _NULL                  BEGDATA        DGROUP         0c14:0000       00000020
 _AFTERNULL             BEGDATA        DGROUP         0c16:0000       00000002
 _FIXEDDATA             DATA           DGROUP         0c17:0000       00000e02
 _DATA                  DATA           DGROUP         0cf8:0000       0000022a
-CONST                  DATA           DGROUP         0d1a:000a       00000142
-CONST2                 DATA           DGROUP         0d2e:000c       00000000
-XIB                    DATA           DGROUP         0d2e:000c       00000000
-XI                     DATA           DGROUP         0d2e:000c       0000000c
-XIE                    DATA           DGROUP         0d2f:0008       00000000
-YIB                    DATA           DGROUP         0d2f:0008       00000000
-YI                     DATA           DGROUP         0d2f:0008       00000012
-YIE                    DATA           DGROUP         0d30:000a       00000000
-DATA                   DATA           DGROUP         0d30:000a       00000000
+CONST                  DATA           DGROUP         0d1a:000a       00000146
+CONST2                 DATA           DGROUP         0d2f:0000       00000000
+XIB                    DATA           DGROUP         0d2f:0000       00000000
+XI                     DATA           DGROUP         0d2f:0000       0000000c
+XIE                    DATA           DGROUP         0d2f:000c       00000000
+YIB                    DATA           DGROUP         0d2f:000c       00000000
+YI                     DATA           DGROUP         0d2f:000c       00000012
+YIE                    DATA           DGROUP         0d30:000e       00000000
+DATA                   DATA           DGROUP         0d30:000e       00000000
 _BSS                   BSS            DGROUP         0d31:0000       000000c6
 STACK                  STACK          DGROUP         0d3e:0000       00000a00
 
@@ -176,12 +176,12 @@ Module: i_init.obj(i_init.ASM)
 Module: z_init.obj(C:\REALDOOM\z_init.c)
 0000:16e0*     doerror_
 0000:16f0      Z_InitEMS_
-0000:1816      Z_GetEMSPageMap_
-0000:1914*     SkipNextFileRegion_
-0000:1946+     ReadFileRegionWithIndex_
-0000:19c0+     Z_RemapRenderFunctions_
-0000:1b22+     Z_DoRenderCodeLoad_
-0000:1bd8      Z_LoadBinaries_
+0000:1818      Z_GetEMSPageMap_
+0000:1916*     SkipNextFileRegion_
+0000:1948+     ReadFileRegionWithIndex_
+0000:19c2+     Z_RemapRenderFunctions_
+0000:1b24+     Z_DoRenderCodeLoad_
+0000:1bda      Z_LoadBinaries_
 Module: p_init.obj(C:\REALDOOM\p_init.c)
 0000:2120+     P_InitSwitchList_
 0000:21ea+     P_InitPicAnims_
@@ -747,10 +747,10 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(mem.c)
 0000:b9c0      __MemAllocator
 0000:ba88      __MemFree
 Module: C:\WATCOM2\lib286\dos\clibm.lib(sgdef086)
-0c14:11ac      __Start_XI
-0c14:11b8      __End_XI
-0c14:11b8      __Start_YI
-0c14:11ca      __End_YI
+0c14:11b0      __Start_XI
+0c14:11bc      __End_XI
+0c14:11bc      __Start_YI
+0c14:11ce      __End_YI
 Module: C:\WATCOM2\lib286\dos\clibm.lib(enterdb.c)
 0000:bc02      __EnterWVIDEO_
 0c14:1066+     __WD_Present
@@ -808,4 +808,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  dde0 (56800.)
 Entry point address: 0000:a6dc
-Link time: 00:00.75
+Link time: 00:00.20

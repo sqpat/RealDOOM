@@ -265,35 +265,41 @@ void __far Z_SetOverlay(int8_t wipeId);
 
 #define EMS_2_MB_BUILD_SETTING                      1
 #define EMS_4_MB_BUILD_SETTING                      2
+// Above board uses 384kb of its 2MB for conventional base memory. So it must fit in 1664 KB (104 pages), not 2048 KB (128 pages)
+#define EMS_ABOVEBOARD_BUILD_SETTING                3
 
 #define EMS_BUILD_SETTING                           EMS_2_MB_BUILD_SETTING
-//#define EMS_BUILD_SETTING                           EMS_4_MB_BUILD_SETTING
+// #define EMS_BUILD_SETTING                           EMS_4_MB_BUILD_SETTING
+// #define EMS_BUILD_SETTING                           EMS_ABOVEBOARD_BUILD_SETTING
 
 
-// THESE MUST BE HEX FOR CODEGEN
+
 #if EMS_BUILD_SETTING == EMS_2_MB_BUILD_SETTING  
-//#define NUM_FLAT_CACHE_PAGES                        6
-//#define NUM_SPRITE_CACHE_PAGES                      20
-//#define NUM_TEXTURE_PAGES                           24
-#define NUM_FLAT_CACHE_PAGES                        0x6
-#define NUM_SPRITE_CACHE_PAGES                      0x14
+#define NUM_FLAT_CACHE_PAGES                        6
+#define NUM_SPRITE_CACHE_PAGES                      20
 // dont do more than 63 pages. used as an index in a 4 byte thing. asm assumes one byte index
-#define NUM_TEXTURE_PAGES                           0x18
-#define NUM_MUSIC_PAGES                             0x4
-#define NUM_SFX_PAGES                               0x8
-#define NUM_WAD_PAGES                               0x3
-#define MUS_PAGE_FRAME_INDEX                        0x0
-#define SFX_PAGE_FRAME_INDEX                        0x1
-#define WAD_PAGE_FRAME_INDEX                        0x2
+#define NUM_TEXTURE_PAGES                           24
+#define NUM_MUSIC_PAGES                             4
+#define NUM_SFX_PAGES                               8
 #elif EMS_BUILD_SETTING == EMS_4_MB_BUILD_SETTING  
-// todo revisit these numbers? might want less, and then more for sound
-//#define NUM_FLAT_CACHE_PAGES                        16
-//#define NUM_SPRITE_CACHE_PAGES                      64
-//#define NUM_TEXTURE_PAGES                           64
-#define NUM_FLAT_CACHE_PAGES                        0x10
-#define NUM_SPRITE_CACHE_PAGES                      0x40
-#define NUM_TEXTURE_PAGES                           0x40
+// TODO
+#define NUM_FLAT_CACHE_PAGES                        16
+#define NUM_SPRITE_CACHE_PAGES                      64
+#define NUM_TEXTURE_PAGES                           64
+#define NUM_MUSIC_PAGES                             4
+#define NUM_SFX_PAGES                               16
+#elif EMS_BUILD_SETTING == EMS_ABOVEBOARD_BUILD_SETTING  
+#define NUM_FLAT_CACHE_PAGES                        6
+#define NUM_SPRITE_CACHE_PAGES                      20
+#define NUM_TEXTURE_PAGES                           24
+#define NUM_MUSIC_PAGES                             4
+#define NUM_SFX_PAGES                               7
 #endif
+
+#define NUM_WAD_PAGES                               3
+#define MUS_PAGE_FRAME_INDEX                        0
+#define SFX_PAGE_FRAME_INDEX                        1
+#define WAD_PAGE_FRAME_INDEX                        2
 
 
 // arg mult times size of int16
@@ -362,11 +368,11 @@ void __far Z_SetOverlay(int8_t wipeId);
 // 96
 #define SFX_DATA_PAGES                              (MUS_DATA_PAGES + NUM_MUSIC_PAGES)
 
-// 100
+// 104
 #define BSP_CODE_PAGE                               SFX_DATA_PAGES + NUM_SFX_PAGES
 
 
-// 101? (+1 for 0)
+// 105? (+1 for 0)
 #define NUM_EMS4_SWAP_PAGES                         (int16_t) BSP_CODE_PAGE + 1
 
 
