@@ -516,12 +516,13 @@ jmp    done_with_touchspecial_switch_block
 
 
 touchspecial_case_55:
-mov    word ptr ds:[di], GOTARMOR
+mov    bx, GOTARMOR
 mov    ax, 1
 do_givearmor_touchspecial:
 call   P_GiveArmor_
 
 jnc    exit_ptouchspecialthing
+mov    word ptr ds:[di], bx
 
 
 touchspecial_case_default:
@@ -550,7 +551,7 @@ exit_ptouchspecialthing:
 ret
 touchspecial_case_56:
 mov    ax, 2
-mov    word ptr ds:[di], GOTMEGA
+mov    bx, GOTMEGA
 jmp    do_givearmor_touchspecial
 
 touchspecial_case_60:
