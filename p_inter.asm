@@ -610,11 +610,11 @@ jmp    done_with_touchspecial_switch_block
 
 touchspecial_case_68:
 mov    ax, 10
-mov    word ptr ds:[di], GOTSTIM
 do_givebody:
 call   P_GiveBody_
-
-jc     done_with_touchspecial_switch_block
+jnc    exitptouchspecialthing_2
+mov    word ptr ds:[di], GOTSTIM
+jmp    done_with_touchspecial_switch_block
 exitptouchspecialthing_2:
 ;pop    di
 ret

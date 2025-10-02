@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/10/02 10:34:48
+Created on:       25/10/02 10:47:30
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -368,8 +368,8 @@ Module: main.obj(main.ASM)
 0000:4dbd      M_LoadDefaults_
 0000:54a4*     locallib_printstringnear_
 0000:5572      locallib_dos_setvect_old_
-0000:5195*     I_UpdateBox_
 0000:44e7      I_KeyboardISR_
+0000:5195*     I_UpdateBox_
 0000:5833      D_ProcessEvents_
 0000:5962*     D_DoomLoop_
 0000:4f60      M_ScanTranslateDefaults_
@@ -521,8 +521,8 @@ Module: w_wad.obj(w_wad.ASM)
 0000:943e*     W_WAD_ENDMARKER_
 0000:9319      W_GetNumForName_
 0000:93ec      W_CacheLumpNameDirectFarString_
-0000:940f      W_CacheLumpNumDirectFragment_
 0000:92a6      SELFMODIFY_start_lump_for_search
+0000:940f      W_CacheLumpNumDirectFragment_
 0000:91ec*     W_WAD_STARTMARKER_
 0000:92c8      SELFMODIFY_end_lump_for_search
 0000:9210      W_CheckNumForNameFarString_
@@ -547,8 +547,8 @@ Module: z_zone.obj(z_zone.ASM)
 0000:9a97      Z_QuickMapWADPageFrame_
 0000:9c40      Z_QuickMapRenderPlanes_
 0000:9a78      Z_QuickMapSFXPageFrame_
-0000:9ba1      Z_QuickMapStatus_
 0000:9c2a*     Z_QuickMapScreen0_
+0000:9ba1      Z_QuickMapStatus_
 0000:9b06      Z_QuickMapRender_
 0000:9bfe      Z_QuickMapScratch_7000_
 0000:9bd2      Z_QuickMapScratch_5000_
@@ -808,4 +808,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  dde0 (56800.)
 Entry point address: 0000:a6dc
-Link time: 00:00.20
+Link time: 00:00.75
