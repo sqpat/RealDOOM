@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/10/02 10:47:29
+Created on:       25/10/02 11:14:20
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -93,7 +93,7 @@ P_ENEMY_TEXT           CODE           AUTO           2ceb:420c       00001a14
 P_CEILNG_TEXT          CODE           AUTO           2ceb:5c20       00000286
 P_DOORS_TEXT           CODE           AUTO           2ceb:5ea6       000003bf
 P_FLOOR_TEXT           CODE           AUTO           2ceb:6266       000004af
-P_INTER_TEXT           CODE           AUTO           2ceb:6716       00000879
+P_INTER_TEXT           CODE           AUTO           2ceb:6716       0000087a
 P_LIGHTS_TEXT          CODE           AUTO           2ceb:6f90       00000298
 P_PLATS_TEXT           CODE           AUTO           2ceb:7228       00000280
 P_SPEC_TEXT            CODE           AUTO           2ceb:74a8       000009f9
@@ -1072,18 +1072,18 @@ Module: p_floor.obj(p_floor.ASM)
 2ceb:6266      T_MovePlaneCeilingDown_
 2ceb:6280      T_MovePlaneCeilingUp_
 Module: p_inter.obj(p_inter.ASM)
-2ceb:690a      P_TouchSpecialThing_
+2ceb:6909      P_TouchSpecialThing_
 2ceb:67da*     P_GiveWeapon_
 2ceb:6856*     P_GiveCard_
-2ceb:6cfe      P_DamageMobj_
+2ceb:6cff      P_DamageMobj_
 2ceb:6817*     P_GiveBody_
 2ceb:6839*     P_GiveArmor_
 2ceb:6716*     P_INTER_STARTMARKER_
-2ceb:6b3a*     P_KillMobj_
+2ceb:6b3b*     P_KillMobj_
 2ceb:6726*     P_GiveAmmo_
-2ceb:6870      P_GivePower_
-2ceb:6c9a*     getMassThrust_
-2ceb:6f8f*     P_INTER_ENDMARKER_
+2ceb:686f      P_GivePower_
+2ceb:6c9b*     getMassThrust_
+2ceb:6f90*     P_INTER_ENDMARKER_
 Module: p_lights.obj(p_lights.ASM)
 2ceb:70ea      EV_StartLightStrobing_
 2ceb:6ffb      T_LightFlash_

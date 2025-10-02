@@ -311,7 +311,6 @@ cbw
 mov    bx, ax
 cmp    byte ptr ds:[bx + _player + PLAYER_T.player_cards], 0
 je     add_card
-pop    si
 pop    bx
 ret    
 add_card:
@@ -610,10 +609,11 @@ jmp    done_with_touchspecial_switch_block
 
 touchspecial_case_68:
 mov    ax, 10
+mov    bx, GOTSTIM
 do_givebody:
 call   P_GiveBody_
 jnc    exitptouchspecialthing_2
-mov    word ptr ds:[di], GOTSTIM
+mov    word ptr ds:[di], bx
 jmp    done_with_touchspecial_switch_block
 exitptouchspecialthing_2:
 ;pop    di
@@ -628,18 +628,21 @@ ret
 ;76 029h 4
 ;77 02Ah 5
 
-touchspecial_case_75:
 touchspecial_case_76:
+dec    bx ; needs to decced 2 in this case?
+
+touchspecial_case_75:
 touchspecial_case_77:
 
 do_givepower_subtract_1_extra:
 dec    bx ; undo the extra one for the 74 offset being a nonpowerup... dec once enough for shr 
+dec    ax ; to offset the string?
 
 
 touchspecial_case_73:
 touchspecial_case_71:
 do_givepower:
-
+; 025h - 047h + 037h = 15h
 add    ax, (GOTINVUL - SPR_PINV + SPR_ARM1) ; renormalize 
 mov    word ptr ds:[di], ax
 sub    ax, GOTINVUL    ; set ax parameter to correct powerup.
@@ -656,6 +659,7 @@ touchspecial_case_88:
 ; dx carries dropped flag
 mov    ax, WP_CHAINGUN
 jmp    do_giveweapon_touchspecial
+
 
 
 touchspecial_case_89:
@@ -708,7 +712,7 @@ jmp    do_givepower
 
 touchspecial_case_69:
 mov    ax, 25
-mov    word ptr ds:[di], GOTMEDIKIT
+mov    bx, GOTMEDIKIT
 jmp    do_givebody
 
 
@@ -732,11 +736,11 @@ mov    ax, AM_CLIP + (5 SHL 8)
 do_giveammo_touchspecial:
 sar    bx, 1
 add    bx, (GOTCLIP - SPR_CLIP + SPR_ARM1)
-mov    word ptr ds:[di], bx
 mov    dl ,ah
 call   P_GiveAmmo_
 
 jnc     exitptouchspecialthing_2
+mov    word ptr ds:[di], bx
 
 jmp    done_with_touchspecial_switch_block
 
