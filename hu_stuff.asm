@@ -213,8 +213,13 @@ je    dont_reset_count
 dec   byte ptr ds:[_message_counter]
 jnz   dont_reset_count
 
-mov   byte ptr ds:[_message_counter], al ; 0
-mov   word ptr ds:[_message_on], ax      ; 0
+; already zero
+;mov   byte ptr ds:[_message_counter], al ; 0
+mov   word ptr ds:[_message_on], ax      ; 0   ; gets both
+; redraw hud ?
+mov   byte ptr ds:[_borderdrawcount], 3
+mov   byte ptr ds:[_hudneedsupdate], 6
+
 ; mov   byte ptr ds:[_message_nottobefuckedwith], al ; 0
 
 dont_reset_count:
