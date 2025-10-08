@@ -62,34 +62,6 @@ STATCOUNT = 0
 SHOWNEXTLOC = 1
 
 
-db "WIURH0"      , 0, 0, 0
-db "WIURH1"      , 0, 0, 0
-db "WISPLAT"        , 0, 0
-db "WIOSTK"      , 0, 0, 0
-db "WIOSTI"      , 0, 0, 0
-db "WIF", 0, 0, 0, 0, 0, 0
-db "WIMSTT"      , 0, 0, 0
-db "WIOSTS"      , 0, 0, 0
-db "WIOSTF"      , 0, 0, 0
-db "WITIME"      , 0, 0, 0
-db "WIPAR"    , 0, 0, 0, 0
-db "WIMSTAR"        , 0, 0
-db "WIMINUS"        , 0, 0
-db "WIPCNT"      , 0, 0, 0
-db "WINUM0"      , 0, 0, 0
-db "WINUM1"      , 0, 0, 0
-db "WINUM2"      , 0, 0, 0
-db "WINUM3"      , 0, 0, 0
-db "WINUM4"      , 0, 0, 0
-db "WINUM5"      , 0, 0, 0
-db "WINUM6"      , 0, 0, 0
-db "WINUM7"      , 0, 0, 0
-db "WINUM8"      , 0, 0, 0
-db "WINUM9"      , 0, 0, 0
-db "WICOLON"        , 0, 0
-db "WISUCKS"        , 0, 0
-db "WISCRT2"        , 0, 0
-db "WIENTER"        , 0, 0
 
 
 
