@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/10/09 13:18:42
+Created on:       25/10/09 13:35:36
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -60,7 +60,7 @@ W_WAD_TEXT             CODE           AUTO           0000:a7a0       00000252
 V_VIDEO_TEXT           CODE           AUTO           0000:a9f2       0000060a
 Z_ZONE_TEXT            CODE           AUTO           0000:affc       0000042e
 SM_LOAD_TEXT           CODE           AUTO           0b42:000a       00000492
-WI_STUFF_TEXT          CODE           AUTO           0b8b:000c       00000fe5
+WI_STUFF_TEXT          CODE           AUTO           0b8b:000c       00000ff1
 M_MENU_TEXT            CODE           AUTO           0c8b:0000       000013f9
 F_WIPE_TEXT            CODE           AUTO           0dcb:0000       000005fc
 F_FINALE_TEXT          CODE           AUTO           0e2b:0000       00000bbd
@@ -407,14 +407,14 @@ Module: main.obj(main.ASM)
 0000:66ea      I_SetPalette_
 0000:6950      locallib_printhex_
 0000:59c5*     D_MAIN_STARTMARKER_
-0000:6943      locallib_putchar_
 0000:6b9c*     D_Display_
 0000:6365      M_LoadDefaults_
+0000:6943      locallib_putchar_
 0000:6a4c*     locallib_printstringnear_
-0000:6b1a      locallib_dos_setvect_old_
 0000:5a8f      I_KeyboardISR_
 0000:673d*     I_UpdateBox_
 0000:6ddb      D_ProcessEvents_
+0000:6b1a      locallib_dos_setvect_old_
 0000:6f0a*     D_DoomLoop_
 0000:6508      M_ScanTranslateDefaults_
 0000:68f3*     locallib_strlen_
@@ -617,7 +617,7 @@ Module: sm_load.obj(sm_load.ASM)
 0b42:0484*     Z_QuickMapMusicPageFrame_SMLoad_
 0b42:03f9      S_ActuallyChangeMusic_
 Module: wi_stuff.obj(wi_stuff.ASM)
-0b8b:0ff1      WI_ENDMARKER_
+0b8b:0ffd      WI_ENDMARKER_
 0b8b:0903*     WI_initStats_
 0b8b:0776*     WI_drawPercent_
 0b8b:000c      WI_STARTMARKER_
@@ -633,7 +633,7 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 0b8b:0884*     WI_drawShowNextLoc_
 0b8b:03cf*     WI_GetPatch_
 0b8b:0beb*     WI_loadData_
-0b8b:0fc5*     WI_StartSound_
+0b8b:0fd1*     WI_StartSound_
 0b8b:0852*     WI_updateShowNextLoc_
 0b8b:0665*     WI_initAnimatedBack_
 0b8b:042f*     WI_drawLF_
@@ -641,7 +641,7 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 0b8b:0651*     WI_initShowNextLoc_
 0b8b:0933*     WI_updateStats_
 0b8b:05ef*     WI_drawAnimatedBack_
-0b8b:0fad      WI_Start_
+0b8b:0fb9      WI_Start_
 0b8b:0536*     WI_updateAnimatedBack_
 0b8b:0e3e      WI_Drawer_
 0b8b:0481*     WI_drawEL_
@@ -1013,8 +1013,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2cec:5442*     A_FatAttack1_
 2cec:53de*     A_FatAttack3_
 2cec:5806*     A_BabyMetal_
-2cec:47f2*     A_Look_
 2cec:5a01*     A_SpawnSound_
+2cec:47f2*     A_Look_
 2cec:4d12*     A_BruisAttack_
 2cec:56a7*     A_XScream_
 2cec:5b73      P_SetMobjState_

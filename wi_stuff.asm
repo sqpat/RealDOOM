@@ -179,6 +179,7 @@ _wigraphics:
 db "WIURH0"      , 0, 0, 0
 db "WIURH1"      , 0, 0, 0
 db "WISPLAT"        , 0, 0
+_wigraphics_commercial:
 db "WIOSTK"      , 0, 0, 0
 db "WIOSTI"      , 0, 0, 0
 db "WIF", 0, 0, 0, 0, 0, 0
@@ -2058,7 +2059,17 @@ sub   sp, 0Eh					   ; room for lump name string
 
 xor   dx, dx                       ; loop ctr
 mov   bx, dx 					   ; size/dst offset
+
 mov   si, OFFSET _wigraphics - OFFSET WI_STARTMARKER_
+
+cmp   byte ptr ds:[_commercial], bl ; 0
+je    skip_doom2_settings
+
+mov   dl, 6
+mov   bl, 6
+mov   si, OFFSET _wigraphics_commercial - OFFSET WI_STARTMARKER_
+
+skip_doom2_settings:
 
 loop_wi_items:
 
@@ -2136,7 +2147,7 @@ lea   di, [bp - 0Ah]
 
 
 
-cmp   byte ptr ds:[_commercial], 0
+cmp   byte ptr ds:[_commercial], bl ; 0
 je    do_nondoom2_wi_init
 ; doom2 case
 
