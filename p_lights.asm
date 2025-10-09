@@ -408,10 +408,10 @@ mov   cl, byte ptr es:[di + SECTOR_T.sec_lightlevel]
 got_light:
 
 ; could selfmodify this into a single jmp or nop from the outside if we had to make these loops smaller.
-test  dl, dl
-jne   find_surrounding_light
-test  dh, dh
-je    skip_finding_surrounding_light
+test  dl, dl  ; on
+je    find_surrounding_light
+test  dh, dh  ; bright
+jne   skip_finding_surrounding_light
 
 
 find_surrounding_light:
