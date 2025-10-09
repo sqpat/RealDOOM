@@ -284,16 +284,16 @@ void __far Z_SetOverlay(int8_t wipeId);
 #elif EMS_BUILD_SETTING == EMS_4_MB_BUILD_SETTING  
 // TODO
 #define NUM_FLAT_CACHE_PAGES                        16
-#define NUM_SPRITE_CACHE_PAGES                      80
+#define NUM_SPRITE_CACHE_PAGES                      64
 #define NUM_TEXTURE_PAGES                           64
 #define NUM_MUSIC_PAGES                             4
 #define NUM_SFX_PAGES                               32
 #elif EMS_BUILD_SETTING == EMS_ABOVEBOARD_BUILD_SETTING  
 #define NUM_FLAT_CACHE_PAGES                        6
 #define NUM_SPRITE_CACHE_PAGES                      20
-#define NUM_TEXTURE_PAGES                           22
+#define NUM_TEXTURE_PAGES                           24
 #define NUM_MUSIC_PAGES                             4
-#define NUM_SFX_PAGES                               1
+#define NUM_SFX_PAGES                               7
 #endif
 
 #define NUM_WAD_PAGES                               3
