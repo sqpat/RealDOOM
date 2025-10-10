@@ -78,8 +78,11 @@ file p_saveg.obj
 
 NEWSEGMENT
 file sm_opl2.obj
+NEWSEGMENT
 file sm_opl3.obj
+NEWSEGMENT
 file sm_sbmid.obj
+NEWSEGMENT
 file sm_mpumd.obj
 
 

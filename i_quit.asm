@@ -62,7 +62,7 @@ db "ENDOOM", 0
 PROC    I_ShutdownSound_   NEAR
 PUBLIC  I_ShutdownSound_
 
-cmp  word ptr ds:[_playingdriver], 0
+cmp  word ptr ds:[_playingdriver+2], 0
 je   skip_music_unload
 push bx
 les  bx, dword ptr ds:[_playingdriver]

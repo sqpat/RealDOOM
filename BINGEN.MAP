@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/10/10 11:47:36
+Created on:       25/10/10 12:08:41
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -66,9 +66,9 @@ F_WIPE_TEXT            CODE           AUTO           0dcb:0000       000005fc
 F_FINALE_TEXT          CODE           AUTO           0e2b:0000       00000bbd
 P_SAVEG_TEXT           CODE           AUTO           0ee7:0000       00000bc5
 SM_OPL2_TEXT           CODE           AUTO           0fa4:0000       00000f3c
-SM_OPL3_TEXT           CODE           AUTO           0fa4:0f3c       0000100e
-SM_SBMID_TEXT          CODE           AUTO           0fa4:1f4a       00000730
-SM_MPUMD_TEXT          CODE           AUTO           0fa4:267a       000007db
+SM_OPL3_TEXT           CODE           AUTO           1097:000c       0000100e
+SM_SBMID_TEXT          CODE           AUTO           1198:000a       00000730
+SM_MPUMD_TEXT          CODE           AUTO           120b:000a       000007db
 R_BSP_TEXT             CODE           AUTO           128a:0000       00006f13
 R_BSP0_TEXT            CODE           AUTO           197c:0000       00006d1a
 R_COL24_TEXT           CODE           AUTO           204d:000a       00000e46
@@ -770,27 +770,27 @@ Module: sm_opl2.obj(sm_opl2.ASM)
 0fa4:0000      SM_OPL2_STARTMARKER_
 0fa4:0e80*     OPLplayMusic_OPL2_
 Module: sm_opl3.obj(sm_opl3.ASM)
-0fa4:1931*     OPLpauseMusic_OPL3_
-0fa4:1f4a      SM_OPL3_ENDMARKER_
-0fa4:1ca0*     OPLreleaseNote_OPL3_
-0fa4:1902*     OPL3deinitHardware_OPL3_
-0fa4:1c1a*     OPLplayNote_OPL3_
-0fa4:180c*     OPL3initHardware_OPL3_
-0fa4:1d46*     OPLchangeControl_OPL3_
-0fa4:1f1b*     OPLinitDriver_OPL3_
-0fa4:1eb0*     OPLstopMusic_OPL3_
-0fa4:1cdd*     OPLpitchWheel_OPL3_
-0fa4:1ed1*     OPLchangeSystemVolume_OPL3_
-0fa4:1934*     OPLresumeMusic_OPL3_
-0fa4:1e91*     OPLplayMusic_OPL3_
-0fa4:0f3c      SM_OPL3_STARTMARKER_
-0fa4:18e6*     OPL3detectHardware_OPL3_
+1097:0a01*     OPLpauseMusic_OPL3_
+1097:101a      SM_OPL3_ENDMARKER_
+1097:0d70*     OPLreleaseNote_OPL3_
+1097:09d2*     OPL3deinitHardware_OPL3_
+1097:0cea*     OPLplayNote_OPL3_
+1097:08dc*     OPL3initHardware_OPL3_
+1097:0e16*     OPLchangeControl_OPL3_
+1097:0feb*     OPLinitDriver_OPL3_
+1097:0f80*     OPLstopMusic_OPL3_
+1097:0dad*     OPLpitchWheel_OPL3_
+1097:0fa1*     OPLchangeSystemVolume_OPL3_
+1097:0a04*     OPLresumeMusic_OPL3_
+1097:0f61*     OPLplayMusic_OPL3_
+1097:000c      SM_OPL3_STARTMARKER_
+1097:09b6*     OPL3detectHardware_OPL3_
 Module: sm_sbmid.obj(sm_sbmid.ASM)
-0fa4:267a      SM_SBMID_ENDMARKER_
-0fa4:1f4a      SM_SBMID_STARTMARKER_
+1198:073a      SM_SBMID_ENDMARKER_
+1198:000a      SM_SBMID_STARTMARKER_
 Module: sm_mpumd.obj(sm_mpumd.ASM)
-0fa4:267a      SM_MPUMD_STARTMARKER_
-0fa4:2e55      SM_MPUMD_ENDMARKER_
+120b:000a      SM_MPUMD_STARTMARKER_
+120b:07e5      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
 128a:3449      R_WriteBackViewConstants24_
 128a:3783      R_BSP24_ENDMARKER_
@@ -1491,4 +1491,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003ce50 (249424.)
 Entry point address: 36c7:0a74
-Link time: 00:00.04
+Link time: 00:00.49
