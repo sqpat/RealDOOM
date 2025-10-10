@@ -322,10 +322,10 @@ mov  si, ax       ; si gets offset
 mov  ds, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]   ; segment
 do_next_byte:
 lodsb
-sub  al, cl
+sub  al, ch
 imul cl
 sal  ax, 1
-add  ah, cl
+add  ah, ch
 mov  byte ptr ds:[si-1], ah
 cmp  si, dx
 jb   do_next_byte
