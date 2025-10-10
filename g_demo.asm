@@ -417,7 +417,8 @@ mov     byte ptr ds:[_demoplayback], al ; false
 mov     byte ptr ds:[_respawnparm], al ; false                      
 mov     byte ptr ds:[_fastparm], al ; false                      
 mov     byte ptr ds:[_nomonsters], al ; false                      
-mov     byte ptr ds:[_advancedemo], al ; false                      
+inc     ax
+mov     byte ptr ds:[_advancedemo], al ; true
 
 ret
 

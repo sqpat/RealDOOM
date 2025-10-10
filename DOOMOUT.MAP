@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/10/09 14:43:17
+Created on:       25/10/09 21:56:42
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -37,18 +37,18 @@ I_QUIT_TEXT            CODE           AUTO           0000:25d0       000001ab
 I_IBM_TEXT             CODE           AUTO           0000:277c       00000051
 D_NET_TEXT             CODE           AUTO           0000:27ce       000000b3
 G_GAME_TEXT            CODE           AUTO           0000:2882       00000394
-G_DEMO_TEXT            CODE           AUTO           0000:2c16       0000028c
-M_MISC_TEXT            CODE           AUTO           0000:2ea2       000000e7
-ST_STUFF_TEXT          CODE           AUTO           0000:2f8a       00000939
-HU_STUFF_TEXT          CODE           AUTO           0000:38c4       0000016f
-HU_LIB_TEXT            CODE           AUTO           0000:3a34       00000141
-D_ALGO_TEXT            CODE           AUTO           0000:3b76       0000002e
-D_DMX_TEXT             CODE           AUTO           0000:3ba4       00000124
-D_INT_TEXT             CODE           AUTO           0000:3cc8       00000175
-MEMORY_TEXT            CODE           AUTO           0000:3e3e       00000000
-MATH_TEXT              CODE           AUTO           0000:3e3e       00000510
-MAIN_TEXT              CODE           AUTO           0000:434e       00001688
-G_SETUP_TEXT           CODE           AUTO           0000:59d6       0000020e
+G_DEMO_TEXT            CODE           AUTO           0000:2c16       0000028d
+M_MISC_TEXT            CODE           AUTO           0000:2ea4       000000e7
+ST_STUFF_TEXT          CODE           AUTO           0000:2f8c       00000939
+HU_STUFF_TEXT          CODE           AUTO           0000:38c6       0000016f
+HU_LIB_TEXT            CODE           AUTO           0000:3a36       00000141
+D_ALGO_TEXT            CODE           AUTO           0000:3b78       0000002e
+D_DMX_TEXT             CODE           AUTO           0000:3ba6       00000124
+D_INT_TEXT             CODE           AUTO           0000:3cca       00000175
+MEMORY_TEXT            CODE           AUTO           0000:3e40       00000000
+MATH_TEXT              CODE           AUTO           0000:3e40       00000510
+MAIN_TEXT              CODE           AUTO           0000:4350       00001688
+G_SETUP_TEXT           CODE           AUTO           0000:59d8       0000020e
 r_setup_TEXT           CODE           AUTO           0000:5bf0       0000046c
 ST_SETUP_TEXT          CODE           AUTO           0000:605c       00000125
 HU_SETUP_TEXT          CODE           AUTO           0000:6182       00000246
@@ -229,183 +229,183 @@ Module: g_game.obj(g_game.ASM)
 Module: g_demo.obj(g_demo.ASM)
 0000:2df1      G_WriteDemoTiccmd_
 0000:2d60      G_DoPlayDemo_
-0000:2ea2*     G_DEMO_ENDMARKER_
+0000:2ea3*     G_DEMO_ENDMARKER_
 0000:2e53      G_CheckDemoStatus_
 0000:2ca5      D_DoAdvanceDemo_
 0000:2c8a*     G_DeferedPlayDemo_
 0000:2dbf      G_ReadDemoTiccmd_
 0000:2c16*     G_DEMO_STARTMARKER_
 Module: m_misc.obj(m_misc.ASM)
-0000:2edb      M_WriteFile_
-0000:2f09      M_ReadFile_
-0000:2f4a      M_CheckParm_CS_
-0000:2f89*     M_MISC_ENDMARKER_
-0000:2ea2*     M_MISC_STARTMARKER_
-0000:2eb9      M_AddToBox16_
-0000:2ea2      M_Random_
-0000:2f4c      M_CheckParm_
+0000:2edd      M_WriteFile_
+0000:2f0b      M_ReadFile_
+0000:2f4c      M_CheckParm_CS_
+0000:2f8b*     M_MISC_ENDMARKER_
+0000:2ea4*     M_MISC_STARTMARKER_
+0000:2ebb      M_AddToBox16_
+0000:2ea4      M_Random_
+0000:2f4e      M_CheckParm_
 Module: st_stuff.obj(st_stuff.ASM)
-0000:3198*     ST_updateFaceWidget_
-0000:34c8*     STlib_drawNum_
-0000:303f      _oldweaponsowned
-0000:30b0      _w_keyboxes
-0000:2fda      _armsbg
-0000:2fbc      _arms
-0000:3048      _keyboxes
-0000:35b3*     ST_drawWidgets_
-0000:2fd6      _sbar
-0000:30a4      _w_armor
-0000:337d*     ST_updateWidgets_
-0000:3118      _w_end
-0000:343e*     STlib_updateMultIcon_
-0000:33ba*     ST_doPaletteStuff_
-0000:3584*     STlib_updatePercent_
-0000:3879      ST_Drawer_
-0000:306c      _w_arms
-0000:2f92      _st_faceindex
-0000:311d      _st_palette
-0000:2fdc      _armsbgarray
-0000:30f0      _w_maxammo
-0000:2fd4      _tallpercent
-0000:3058      _w_health
-0000:3121*     ST_refreshBackground_
-0000:2fd8      _faceback
-0000:3120      _st_stopped
-0000:2f94      _shortnum
-0000:304e      _w_ready
-0000:30c8      _w_ammo
-0000:2fa8      _tallnum
-0000:365b      ST_Responder_
-0000:311f      _st_statusbaron
-0000:342b*     STlib_updateflag_
-0000:3032      _keys
-0000:2f90      _st_oldhealth
-0000:2f8a*     ST_STUFF_STARTMARKER_
-0000:38c3*     ST_STUFF_ENDMARKER_
-0000:309c      _w_faces
-0000:3064      _w_armsbg
-0000:2fde      _faces
-0000:33a8      ST_Ticker_
-0000:3163*     ST_calcPainOffset_
+0000:319a*     ST_updateFaceWidget_
+0000:34ca*     STlib_drawNum_
+0000:3041      _oldweaponsowned
+0000:30b2      _w_keyboxes
+0000:2fdc      _armsbg
+0000:2fbe      _arms
+0000:304a      _keyboxes
+0000:35b5*     ST_drawWidgets_
+0000:2fd8      _sbar
+0000:30a6      _w_armor
+0000:337f*     ST_updateWidgets_
+0000:311a      _w_end
+0000:3440*     STlib_updateMultIcon_
+0000:33bc*     ST_doPaletteStuff_
+0000:3586*     STlib_updatePercent_
+0000:387b      ST_Drawer_
+0000:306e      _w_arms
+0000:2f94      _st_faceindex
+0000:311f      _st_palette
+0000:2fde      _armsbgarray
+0000:30f2      _w_maxammo
+0000:2fd6      _tallpercent
+0000:305a      _w_health
+0000:3123*     ST_refreshBackground_
+0000:2fda      _faceback
+0000:3122      _st_stopped
+0000:2f96      _shortnum
+0000:3050      _w_ready
+0000:30ca      _w_ammo
+0000:2faa      _tallnum
+0000:365d      ST_Responder_
+0000:3121      _st_statusbaron
+0000:342d*     STlib_updateflag_
+0000:3034      _keys
+0000:2f92      _st_oldhealth
+0000:2f8c*     ST_STUFF_STARTMARKER_
+0000:38c5*     ST_STUFF_ENDMARKER_
+0000:309e      _w_faces
+0000:3066      _w_armsbg
+0000:2fe0      _faces
+0000:33aa      ST_Ticker_
+0000:3165*     ST_calcPainOffset_
 Module: hu_stuff.obj(hu_stuff.ASM)
-0000:3939      HU_Erase_
-0000:3a0f      HU_Responder_
-0000:38c4      HU_Drawer_
-0000:3a33*     HU_STUFF_ENDMARKER_
-0000:38c4*     HU_STUFF_STARTMARKER_
-0000:397b      HU_Ticker_
+0000:393b      HU_Erase_
+0000:3a11      HU_Responder_
+0000:38c6      HU_Drawer_
+0000:3a35*     HU_STUFF_ENDMARKER_
+0000:38c6*     HU_STUFF_STARTMARKER_
+0000:397d      HU_Ticker_
 Module: hu_lib.obj(hu_lib.ASM)
-0000:3a34*     HULIB_STARTMARKER_
-0000:3b22      HUlib_addMessageToSText_
-0000:3b75*     HULIB_ENDMARKER_
-0000:3a60      HUlib_drawTextLine_
-0000:3ab5      HUlib_eraseTextLine_
-0000:3a34      HUlib_addStringToTextLine_
+0000:3a36*     HULIB_STARTMARKER_
+0000:3b24      HUlib_addMessageToSText_
+0000:3b77*     HULIB_ENDMARKER_
+0000:3a62      HUlib_drawTextLine_
+0000:3ab7      HUlib_eraseTextLine_
+0000:3a36      HUlib_addStringToTextLine_
 Module: d_algo.obj(d_algo.ASM)
-0000:3ba4*     D_ALGO_END_
-0000:3b76      resetDS_
-0000:3b7e      hackDS_
+0000:3ba6*     D_ALGO_END_
+0000:3b78      resetDS_
+0000:3b80      hackDS_
 Module: d_dmx.obj(d_dmx.ASM)
-0000:3c72*     TS_Startup_
-0000:3bc4*     TS_ServiceScheduleIntEnabled_
-0000:3cb3      TS_Dispatch_
-0000:3ba4*     D_DMX_STARTMARKER_
-0000:3ca1      TS_ScheduleMainTask_
-0000:3cc8*     D_DMX_ENDMARKER_
+0000:3c74*     TS_Startup_
+0000:3bc6*     TS_ServiceScheduleIntEnabled_
+0000:3cb5      TS_Dispatch_
+0000:3ba6*     D_DMX_STARTMARKER_
+0000:3ca3      TS_ScheduleMainTask_
+0000:3cca*     D_DMX_ENDMARKER_
 Module: d_int.obj(d_int.ASM)
-0000:3cd8      MUS_ServiceRoutine_
-0000:3e0c      locallib_int86_67_
-0000:3e0c      locallib_int86_67_1arg_return_
-0000:3e3d*     D_INTERRUPT_ENDMARKER_
-0000:3e0c      locallib_int86_67_3arg_return_
-0000:3e0f*     locallib_int86_10_4args_
-0000:3cc8*     D_INTERRUPT_STARTMARKER_
-0000:3e0c      locallib_int86_67_1arg_
-0000:3e0c*     locallib_int86_67_2arg_
-0000:3e15      S_NormalizeSfxVolume_
-0000:3e0c      locallib_int86_67_esdi_
-0000:3e12*     locallib_int86_33_
-0000:3e0c*     locallib_int86_67_multiple_
-0000:3e0f*     locallib_int86_10_
+0000:3cda      MUS_ServiceRoutine_
+0000:3e0e      locallib_int86_67_
+0000:3e0e      locallib_int86_67_1arg_return_
+0000:3e3f*     D_INTERRUPT_ENDMARKER_
+0000:3e0e      locallib_int86_67_3arg_return_
+0000:3e11*     locallib_int86_10_4args_
+0000:3cca*     D_INTERRUPT_STARTMARKER_
+0000:3e0e      locallib_int86_67_1arg_
+0000:3e0e*     locallib_int86_67_2arg_
+0000:3e17      S_NormalizeSfxVolume_
+0000:3e0e      locallib_int86_67_esdi_
+0000:3e14*     locallib_int86_33_
+0000:3e0e*     locallib_int86_67_multiple_
+0000:3e11*     locallib_int86_10_
 Module: math.obj(math.ASM)
-0000:3f05      FixedMulTrigNoShift_
-0000:40ee      FixedDiv_
-0000:3f97*     FastMul16u32u_
-0000:3f50*     FixedMulTrig16_
-0000:3fab*     div48_32_
-0000:415b      FastDiv32u16u_
-0000:4220*     div48_32_whole_
-0000:3f68      FixedMulTrigSpeed_
-0000:4179      FastDiv3216u_
-0000:41b9      FixedDivWholeA_
-0000:3f01      FixedMulTrig_
-0000:3e80      FixedMul2432_
-0000:3e77*     FixedMulBig16u32_
-0000:3ec1*     FixedMul1632_
-0000:3e3e      FixedMul_
-0000:3f82*     FixedMul16u32_
-0000:3f6c      FixedMulTrigSpeedNoShift_
+0000:3f07      FixedMulTrigNoShift_
+0000:40f0      FixedDiv_
+0000:3f99*     FastMul16u32u_
+0000:3f52*     FixedMulTrig16_
+0000:3fad*     div48_32_
+0000:415d      FastDiv32u16u_
+0000:4222*     div48_32_whole_
+0000:3f6a      FixedMulTrigSpeed_
+0000:417b      FastDiv3216u_
+0000:41bb      FixedDivWholeA_
+0000:3f03      FixedMulTrig_
+0000:3e82      FixedMul2432_
+0000:3e79*     FixedMulBig16u32_
+0000:3ec3*     FixedMul1632_
+0000:3e40      FixedMul_
+0000:3f84*     FixedMul16u32_
+0000:3f6e      FixedMulTrigSpeedNoShift_
 Module: main.obj(main.ASM)
-0000:54be      DEBUG_PRINT_NOARG_
-0000:533f      locallib_strcpy_
-0000:5365      locallib_toupper_
-0000:5078*     G_Responder_
-0000:54aa*     locallib_printstringfar_
-0000:57c0      DEBUG_PRINT_
-0000:467a      G_CopyCmd_
-0000:52f9      combine_strings_
-0000:4437      _sidemove
-0000:52e7      M_Ticker_
-0000:525f*     I_UpdateNoBlit_
-0000:59d6*     D_MAIN_ENDMARKER_
-0000:4433      _forwardmove
-0000:5587      I_ShutdownTimer_
-0000:514a      I_SetPalette_
-0000:53b0      locallib_printhex_
-0000:4425*     D_MAIN_STARTMARKER_
-0000:55fc*     D_Display_
-0000:4dc5      M_LoadDefaults_
-0000:53a3      locallib_putchar_
-0000:54ac*     locallib_printstringnear_
-0000:44ef      I_KeyboardISR_
-0000:519d*     I_UpdateBox_
-0000:583b      D_ProcessEvents_
-0000:557a      locallib_dos_setvect_old_
-0000:596a*     D_DoomLoop_
-0000:4f68      M_ScanTranslateDefaults_
-0000:5353*     locallib_strlen_
-0000:4833      G_BuildTiccmd_
-0000:4b25      CopyString13_
-0000:481e      G_ResetGameKeys_
-0000:59c1      D_DoomMain_
-0000:443b      cht_CheckCheat_Far_
-0000:45fa      _localcmds
-0000:55ac      I_ShutdownKeyboard_
-0000:443f      cht_CheckCheat_
-0000:54bc      DEBUG_PRINT_NOARG_CS_
-0000:5571      locallib_dos_setvect_
-0000:531d      locallib_strcmp_
-0000:5567      locallib_dos_getvect_
-0000:5417*     locallib_printdecimal_
-0000:4698      _gamekeydown
-0000:5370      copystr8_
-0000:5936      getStringByIndex_
-0000:44a0      cht_GetParam_
-0000:4f9a      M_SaveDefaults_
-0000:5389*     locallib_createhexnibble_
-0000:5245*     I_FinishUpdate_
-0000:57d5      S_PauseSound_
-0000:54be      locallib_printf_
-0000:4519      I_StartTic_
-0000:57fe      S_ResumeSound_
-0000:548e      locallib_strlwr_
+0000:54c0      DEBUG_PRINT_NOARG_
+0000:5341      locallib_strcpy_
+0000:5367      locallib_toupper_
+0000:507a*     G_Responder_
+0000:54ac*     locallib_printstringfar_
+0000:57c2      DEBUG_PRINT_
+0000:467c      G_CopyCmd_
+0000:52fb      combine_strings_
+0000:4439      _sidemove
+0000:52e9      M_Ticker_
+0000:5261*     I_UpdateNoBlit_
+0000:59d8*     D_MAIN_ENDMARKER_
+0000:4435      _forwardmove
+0000:5589      I_ShutdownTimer_
+0000:514c      I_SetPalette_
+0000:53b2      locallib_printhex_
+0000:4427*     D_MAIN_STARTMARKER_
+0000:4dc7      M_LoadDefaults_
+0000:55fe*     D_Display_
+0000:53a5      locallib_putchar_
+0000:54ae*     locallib_printstringnear_
+0000:44f1      I_KeyboardISR_
+0000:519f*     I_UpdateBox_
+0000:583d      D_ProcessEvents_
+0000:557c      locallib_dos_setvect_old_
+0000:596c*     D_DoomLoop_
+0000:4f6a      M_ScanTranslateDefaults_
+0000:5355*     locallib_strlen_
+0000:4835      G_BuildTiccmd_
+0000:4b27      CopyString13_
+0000:4820      G_ResetGameKeys_
+0000:59c3      D_DoomMain_
+0000:443d      cht_CheckCheat_Far_
+0000:45fc      _localcmds
+0000:55ae      I_ShutdownKeyboard_
+0000:4441      cht_CheckCheat_
+0000:54be      DEBUG_PRINT_NOARG_CS_
+0000:5573      locallib_dos_setvect_
+0000:531f      locallib_strcmp_
+0000:5569      locallib_dos_getvect_
+0000:5419*     locallib_printdecimal_
+0000:469a      _gamekeydown
+0000:5372      copystr8_
+0000:5938      getStringByIndex_
+0000:44a2      cht_GetParam_
+0000:4f9c      M_SaveDefaults_
+0000:538b*     locallib_createhexnibble_
+0000:5247*     I_FinishUpdate_
+0000:57d7      S_PauseSound_
+0000:54c0      locallib_printf_
+0000:451b      I_StartTic_
+0000:5800      S_ResumeSound_
+0000:5490      locallib_strlwr_
 Module: g_setup.obj(g_setup.ASM)
-0000:59f9      R_CheckTextureNumForName_
-0000:5be4*     G_SETUP_ENDMARKER_
-0000:59d6*     G_SETUP_STARTMARKER_
-0000:5a3e      R_TextureNumForName_
-0000:5abc      G_InitNew_
-0000:5a5b      G_DoLoadLevel_
+0000:59fb      R_CheckTextureNumForName_
+0000:5be6*     G_SETUP_ENDMARKER_
+0000:59d8*     G_SETUP_STARTMARKER_
+0000:5a40      R_TextureNumForName_
+0000:5abe      G_InitNew_
+0000:5a5d      G_DoLoadLevel_
 Module: r_setup.obj(C:\REALDOOM\r_setup.c)
 0000:5bf0+     R_InitTextureMapping_
 0000:5ee8      R_ExecuteSetViewSize_
@@ -808,4 +808,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  ddf0 (56816.)
 Entry point address: 0000:a6ec
-Link time: 00:00.74
+Link time: 00:00.20
