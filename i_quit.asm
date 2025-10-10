@@ -75,7 +75,7 @@ pop  bx
 
 skip_music_unload:
 
-cmp   word ptr ds:[_snd_SfxDevice], snd_SB
+cmp   byte ptr ds:[_snd_SfxDevice], snd_SB
 jne   skip_sound_unload
 call  SB_Shutdown_
 skip_sound_unload:
