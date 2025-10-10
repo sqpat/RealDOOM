@@ -98,9 +98,9 @@ push  dx
 mov   ax, word ptr ds:[_ticcount]           ; ax is ticcount
 mov   dx, ax                                ; dx is ticcount
 mov   cx, ax ; entertic in cx               ; cx is ticcount (entertic)
+sub   dx, word ptr ds:[_oldentertics]       ; ax is realtics, dx is ticcount, cx is entertic
 mov   word ptr ds:[_oldentertics], ax
-sub   ax, word ptr ds:[_oldentertics]       ; ax is realtics, dx is ticcount, cx is entertic
-xchg  ax, dx                                ; dx is realtics, cx is entertic
+
 
 call  NetUpdate_
 

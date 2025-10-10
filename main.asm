@@ -566,7 +566,7 @@ call_post_event:
 push di
 mov  dx, EVENTS_SEGMENT
 mov  es, dx
-cwd  ; 0 no matter what
+xor  dx, dx
 mov  dl, byte ptr ds:[_eventhead];
 mov  di, dx
 SHIFT_MACRO sal  di 2
@@ -3526,10 +3526,10 @@ xchg  ax, cx ; cx store these two
 
 ; HACK ALERT - we may need player x/y high bits for automap, when mobjpos is not paged in.
 les   bx, dword ptr ds:[_playerMobj_pos]
-mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
-mov   word ptr ds:[_cached_playerMobj_x_highbits], ax    
-mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
-mov   word ptr ds:[_cached_playerMobj_y_highbits], ax
+push  word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
+pop   word ptr ds:[_cached_playerMobj_x_highbits]
+push  word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
+pop   word ptr ds:[_cached_playerMobj_y_highbits]
 
 
 xor   bx, bx
