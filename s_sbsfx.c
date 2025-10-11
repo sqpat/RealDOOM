@@ -537,8 +537,6 @@ void __near SB_Service_Mix22Khz(){
 	int8_t remaining_22khz = false;	
 
 	int8_t sound_played = 0;	// first sound copies. 2nd and more add. if no sounds played, clear buffer.
-    uint16_t extra_zero_length = 0;
-    uint8_t __far *extra_zero_copy_target;
 
 	for (i = 0; i < NUM_SFX_TO_MIX; i++){
 
@@ -627,10 +625,6 @@ void __near SB_Service_Mix22Khz(){
                         while (true){
 
                             if (remaining_length < copy_length){
-                                if (sound_played == 0){
-                                    extra_zero_length = copy_length - remaining_length;
-                                    extra_zero_copy_target = dma_buffer + remaining_length;
-                                }
                                 copy_length = remaining_length;
                             }
 
@@ -649,15 +643,12 @@ void __near SB_Service_Mix22Khz(){
                                         _fmemcpy(dma_buffer, source, copy_length);
                                     } else {
                                         int8_t j;
-                                        for (j = 0; j < copy_length/2; j++){
+                                        for (j = 0; j < copy_length>>1; j++){
                                             dma_buffer[2*j]   = source[j];
                                             dma_buffer[2*j+1] = source[j];
                                         }
                                     }
 
-                                    if (extra_zero_length){
-                                        _fmemset(dma_buffer + copy_length, 0x80, extra_zero_length);
-                                    }
 
 
                                 } else {
@@ -670,7 +661,7 @@ void __near SB_Service_Mix22Khz(){
                                             dma_buffer[j] = total >> 1;
                                         }
                                     } else {
-                                        for (j = 0; j < copy_length/2; j++){
+                                        for (j = 0; j < copy_length>>1; j++){
                                             int16_t total = dma_buffer[2*j] + source[j];
                                             dma_buffer[2*j] = total >> 1;
                                             total = dma_buffer[2*j+1] + source[j];
@@ -697,7 +688,7 @@ void __near SB_Service_Mix22Khz(){
                                             // dma_buffer[j] = 0x80 + total.bu.bytehigh;   // divide by 256 means take the high byte
                                         }
                                     } else {
-                                        for (j = 0; j < copy_length/2; j++){
+                                        for (j = 0; j < copy_length>>1; j++){
                                             int16_t_union total;
                                             int8_t intermediate = (source[j] - 0x80);
                                             uint8_t result;
@@ -726,7 +717,7 @@ void __near SB_Service_Mix22Khz(){
 
                                         }
                                     } else {
-                                        for (j = 0; j < copy_length/2; j++){
+                                        for (j = 0; j < copy_length>>1; j++){
                                             int16_t_union total;
                                             int8_t intermediate = (source[j] - 0x80);
                                             total.h = FastIMul8u8u(volume, intermediate) << 1;
@@ -779,22 +770,9 @@ void __near SB_Service_Mix22Khz(){
 
 	}	// end for loop
 
-    if (!sound_played){
-        // todo: keep track of if buffer is silent so we dont do this pointlessly over and over
-        _fmemset(sb_dmabuffer, 0x80, SB_TotalBufferSize);
-    } else if ( sound_played == 1){
-        if (extra_zero_length){
-
-            _fmemset(extra_zero_copy_target, 0x80, extra_zero_length);
-        }
-
-    }
-
 
 	if (!remaining_22khz){
 		change_sampling_to_11_next_int = true;
-
-
 	}
 
 }
@@ -803,8 +781,8 @@ void __near SB_Service_Mix22Khz(){
 void __near SB_Service_Mix11Khz(){
 	int8_t i;
 	int8_t sound_played = 0;	// first sound copies. 2nd and more add. if no sounds played, clear buffer.
-    uint16_t extra_zero_length = 0;
-    uint8_t __far *extra_zero_copy_target = NULL;
+
+
 	for (i = 0; i < NUM_SFX_TO_MIX; i++){
 
 		if (!(sb_voicelist[i].sfx_id & PLAYING_FLAG)){  
@@ -842,9 +820,6 @@ void __near SB_Service_Mix11Khz(){
                         // I_Error("page add %i %i", sb_voicelist[i].currentsample, page_add);
                     }
 
-                    // if (!sound_played){
-                    //     Z_SavePageFrameState();
-                    // }
                     
                     Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh + page_add);
                     
@@ -889,12 +864,9 @@ void __near SB_Service_Mix11Khz(){
                         //     volume = volume_result.bu.bytehigh;
                         // }
                         while (true){
+                            // what if multiple sounds end early?
 
                             if (remaining_length < copy_length){
-                                if (sound_played == 0){
-                                    extra_zero_length = copy_length - remaining_length;
-                                    extra_zero_copy_target = dma_buffer + remaining_length;
-                                }
                                 copy_length = remaining_length;
                             }
 
@@ -1002,20 +974,6 @@ void __near SB_Service_Mix11Khz(){
 
 	}	// end for loop
 
-    if (!sound_played){
-        // todo optimize and dont do this over and over...
-        _fmemset(sb_dmabuffer, 0x80, SB_TotalBufferSize);
-    } else if ( sound_played == 1){
-        // Z_RestorePageFrameState();
-        if (extra_zero_length){
-            // examine this addr..
-            _fmemset(extra_zero_copy_target, 0x80, extra_zero_length);
-        }
-
-    } else {
-        // Z_RestorePageFrameState();
-
-    }
 
 }
 
@@ -1102,6 +1060,15 @@ void __near continuecall(){
 
 
 
+    // initial zero buffer
+
+    if (in_first_buffer){
+        _fmemset(MK_FP(sb_dmabuffer_segment, SB_TransferLength), 0x80, SB_TransferLength);
+    } else {
+        _fmemset(MK_FP(sb_dmabuffer_segment, 0), 0x80, SB_TransferLength);
+    }
+
+    
 
 	
 
