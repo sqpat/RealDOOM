@@ -51,11 +51,13 @@ push cx
 push dx
 mov  si, ax
 mov  al, 04Ch     ; 040h for autoincrement enable. 0Ch for page 4000 index
+cli
 out  SCAMP_PAGE_SELECT_REGISTER, al
 mov  dx, SCAMP_PAGE_SET_REGISTER
 mov  cx, 24
 rep  outsw
 pop dx
+sti
 pop cx
 pop si
 ret
@@ -69,10 +71,12 @@ push cx
 push dx
 mov  si, ax
 mov  al, dl
+cli
 out  SCAMP_PAGE_SELECT_REGISTER, al
 mov  dx, SCAMP_PAGE_SET_REGISTER
 mov  cx, 16
 rep  outsw
+sti
 pop dx
 pop cx
 pop si
@@ -88,10 +92,12 @@ push cx
 push dx
 mov  si, ax
 mov  al, dl
+cli
 out  SCAMP_PAGE_SELECT_REGISTER, al
 mov  dx, SCAMP_PAGE_SET_REGISTER
 mov  cx, 8
 rep  outsw
+sti
 pop dx
 pop cx
 pop si
@@ -106,10 +112,12 @@ push cx
 push dx
 mov  si, ax
 mov  al, dl
+cli
 out  SCAMP_PAGE_SELECT_REGISTER, al
 mov  dx, SCAMP_PAGE_SET_REGISTER
 mov  cx, 6
 rep  outsw
+sti
 pop dx
 pop cx
 pop si
@@ -123,10 +131,12 @@ push cx
 push dx
 mov  si, ax
 mov  al, dl
+cli
 out  SCAMP_PAGE_SELECT_REGISTER, al
 mov  dx, SCAMP_PAGE_SET_REGISTER
 mov  cx, 5
 rep  outsw
+sti
 pop dx
 pop cx
 pop si
@@ -140,10 +150,12 @@ push cx
 push dx
 mov  si, ax
 mov  al, dl
+cli
 out  SCAMP_PAGE_SELECT_REGISTER, al
 mov  dx, SCAMP_PAGE_SET_REGISTER
 mov  cx, 4
 rep  outsw
+sti
 pop dx
 pop cx
 pop si
@@ -155,6 +167,7 @@ PUBLIC Z_QuickMap3AIC_
 push si
 mov  si, ax
 mov  al, dl
+cli
 out  SCAMP_PAGE_SELECT_REGISTER, al
 lodsw
 out SCAMP_PAGE_SET_REGISTER, ax
@@ -162,6 +175,7 @@ lodsw
 out SCAMP_PAGE_SET_REGISTER, ax
 lodsw
 out SCAMP_PAGE_SET_REGISTER, ax
+sti
 pop si
 ret
 ENDP
@@ -171,11 +185,13 @@ PUBLIC Z_QuickMap2AIC_
 push si
 mov  si, ax
 mov  al, dl
+cli
 out  SCAMP_PAGE_SELECT_REGISTER, al
 lodsw
 out SCAMP_PAGE_SET_REGISTER, ax
 lodsw
 out SCAMP_PAGE_SET_REGISTER, ax
+sti
 pop si
 ret
 ENDP
@@ -185,9 +201,11 @@ PUBLIC Z_QuickMap1AIC_
 push si
 mov  si, ax
 mov  al, dl
+cli
 out  SCAMP_PAGE_SELECT_REGISTER, al
 lodsw
 out SCAMP_PAGE_SET_REGISTER, ax
+sti
 pop si
 ret
 ENDP
@@ -222,6 +240,7 @@ je   exit_page_frame
 mov  ds:[_currentpageframes], al
 mov  ah, al
 mov  al, SCAMP_PAGE_FRAME_BASE_INDEX
+cli
 out  SCAMP_PAGE_SELECT_REGISTER, al
 mov  al, ah
 ; todo need xor ah/dh??
@@ -230,6 +249,7 @@ xor  ah, ah
 ; adding MUS_DATA_PAGES because this is only called for music/sound stuff, and thats the base page index for that.
 add  ax, (EMS_MEMORY_PAGE_OFFSET + MUS_DATA_PAGES)
 out  SCAMP_PAGE_SET_REGISTER, ax
+sti
 exit_page_frame:
 retf
 
@@ -246,6 +266,7 @@ mov  byte ptr ds:[_currentpageframes + 1], al
 
 mov  ah, al
 mov  al, SCAMP_PAGE_FRAME_BASE_INDEX + 1	; page D400
+cli
 out  SCAMP_PAGE_SELECT_REGISTER, al
 
 mov  al, ah
@@ -254,6 +275,7 @@ xor  ah, ah
 ; adding MUS_DATA_PAGES because this is only called for music/sound stuff, and thats the base page index for that.
 add  ax, (EMS_MEMORY_PAGE_OFFSET + SFX_DATA_PAGES)
 out  SCAMP_PAGE_SET_REGISTER, ax
+sti
 exit_sfx_pageframe:
 retf
 ENDP
@@ -271,6 +293,7 @@ je   exit_wad_pageframe
 mov  byte ptr ds:[_currentpageframes + WAD_PAGE_FRAME_INDEX], ah
 
 mov  al, SCAMP_PAGE_FRAME_BASE_INDEX + WAD_PAGE_FRAME_INDEX	; page D400
+cli
 out  SCAMP_PAGE_SELECT_REGISTER, al
 
 mov  al, ah
@@ -282,6 +305,7 @@ SHIFT_MACRO SHR AX 2
 ; adding MUS_DATA_PAGES because this is only called for music/sound stuff, and thats the base page index for that.
 add  ax, (EMS_MEMORY_PAGE_OFFSET + FIRST_LUMPINFO_LOGICAL_PAGE)
 out  SCAMP_PAGE_SET_REGISTER, ax
+sti
 exit_wad_pageframe:
 
 retf

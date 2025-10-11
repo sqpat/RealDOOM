@@ -590,20 +590,24 @@ IFDEF COMP_CH
         xchg    ax, si
         ; not necessary?
         ;or      al, EMS_AUTOINCREMENT_FLAG  
+        cli
         out  	dx, al
         mov     si,  (pageswapargs_visplanepage_offset * 2) + _pageswapargs
         mov  	dx, SCAT_PAGE_SET_REGISTER
         lodsw
         out 	dx, ax
+        sti
 
 	ELSEIF COMP_CH EQ CHIPSET_SCAMP
 
         xchg    ax, si
         ; not necessary?
         ;or      al, EMS_AUTOINCREMENT_FLAG  
+        cli
         out     SCAMP_PAGE_SELECT_REGISTER, al
         mov     ax, ds:[_pageswapargs + (2 * pageswapargs_visplanepage_offset)]
         out 	SCAMP_PAGE_SET_REGISTER, ax
+        sti
 
 	ELSEIF COMP_CH EQ CHIPSET_HT18
 
@@ -611,11 +615,13 @@ IFDEF COMP_CH
         xchg    ax, si
         ; not necessary?
         ;or      al, EMS_AUTOINCREMENT_FLAG  
+        cli
         out  	dx, al
         mov     si,  (pageswapargs_visplanepage_offset * 2) + _pageswapargs
         mov  	dx, HT18_PAGE_SET_REGISTER
         lodsw
         out 	dx, ax
+        sti
 
     ENDIF
 
@@ -659,6 +665,7 @@ IFDEF COMP_CH
 
         mov   dx, SCAT_PAGE_SELECT_REGISTER
         mov   al, EMS_AUTOINCREMENT_FLAG    ; page 0...
+        cli
         out   dx, al
         mov   dx, SCAT_PAGE_SET_REGISTER
         mov   ax, 03FFh
@@ -667,6 +674,7 @@ IFDEF COMP_CH
         do_next_unmap_scat:
         out   dx, ax
         loop do_next_unmap_scat
+        sti
 
         pop   cx
         pop   dx
@@ -708,6 +716,7 @@ IFDEF COMP_CH
 
         mov   dx, HT18_PAGE_SELECT_REGISTER
         mov   al, EMS_AUTOINCREMENT_FLAG    ; page 0...
+        cli
         out   dx, al
         mov   dx, HT18_PAGE_SET_REGISTER
         xor   ax, ax
@@ -716,7 +725,7 @@ IFDEF COMP_CH
         do_next_unmap_scat:
         out   dx, ax
         loop do_next_unmap_scat
-
+        sti
         pop   cx
         pop   dx
         ret 

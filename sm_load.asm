@@ -512,6 +512,7 @@ IFDEF COMP_CH
         mov  ah, al
         mov  al, SCAT_PAGE_D000	; page D000
         mov  dx, SCAT_PAGE_SELECT_REGISTER
+        cli
         out  dx, al
 
         mov  al, 0
@@ -520,6 +521,7 @@ IFDEF COMP_CH
         xchg al, ah	 ; ah becomes 0
         add  ax, (EMS_MEMORY_PAGE_OFFSET + MUS_DATA_PAGES)
         out  dx, ax
+        sti
 
         pop dx
         ret
@@ -528,6 +530,7 @@ IFDEF COMP_CH
         mov  ds:[_currentpageframes], al
         mov  ah, al
         mov  al, SCAMP_PAGE_FRAME_BASE_INDEX
+        cli
         out  SCAMP_PAGE_SELECT_REGISTER, al
         mov  al, ah
         ; todo need xor ah/dh??
@@ -536,6 +539,7 @@ IFDEF COMP_CH
         ; adding MUS_DATA_PAGES because this is only called for music/sound stuff, and thats the base page index for that.
         add  ax, (EMS_MEMORY_PAGE_OFFSET + MUS_DATA_PAGES)
         out  SCAMP_PAGE_SET_REGISTER, ax
+        sti
         ret
 
 	ELSEIF COMP_CH EQ CHIPSET_HT18
@@ -545,6 +549,7 @@ IFDEF COMP_CH
         mov  ah, al
         mov  al, HT18_PAGE_D000
         mov  dx, HT18_PAGE_SELECT_REGISTER
+        cli
         out  dx, al
 
         
@@ -553,6 +558,7 @@ IFDEF COMP_CH
         xchg al, ah	 ; ah becomes 0
         mov  ax, MUS_DATA_PAGES
         out  dx, ax
+        sti
         pop  dx
         ret
 

@@ -2636,19 +2636,23 @@ IFDEF COMP_CH
         xchg    ax, si
         ; not necessary?
         ;or      al, EMS_AUTOINCREMENT_FLAG  
+        cli
         out  	dx, al
         mov    ax,  ds:[(pageswapargs_visplanepage_offset * 2) + _pageswapargs]
         mov  	dx, SCAT_PAGE_SET_REGISTER
         out 	dx, ax
+        sti
 
 	ELSEIF COMP_CH EQ CHIPSET_SCAMP
 
         xchg    ax, si
         ; not necessary?
         ;or      al, EMS_AUTOINCREMENT_FLAG  
+        cli
         out     SCAMP_PAGE_SELECT_REGISTER, al
         mov     ax, ds:[_pageswapargs + (2 * pageswapargs_visplanepage_offset)]
         out 	 SCAMP_PAGE_SET_REGISTER, ax
+        sti
 
 	ELSEIF COMP_CH EQ CHIPSET_HT18
 
@@ -2656,10 +2660,12 @@ IFDEF COMP_CH
         xchg    ax, si
         ; not necessary?
         ;or      al, EMS_AUTOINCREMENT_FLAG  
+        cli
         out  	dx, al
         mov    ax,  ds:[(pageswapargs_visplanepage_offset * 2) + _pageswapargs]
         mov  	dx, HT18_PAGE_SET_REGISTER
         out 	dx, ax
+        sti
 
     ENDIF
 

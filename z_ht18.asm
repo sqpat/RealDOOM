@@ -43,10 +43,12 @@ push dx
 mov  si, ax
 mov  al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
 mov  dx, HT18_PAGE_SELECT_REGISTER
+cli
 out  dx, al
 mov  dx, HT18_PAGE_SET_REGISTER
 mov  cx, 24
 rep  outsw
+sti
 pop dx
 pop cx
 pop si
@@ -62,10 +64,12 @@ push dx
 mov  si, ax
 mov  al, dl
 mov  dx, HT18_PAGE_SELECT_REGISTER
+cli
 out  dx, al
 mov  dx, HT18_PAGE_SET_REGISTER
 mov  cx, 16
 rep  outsw
+sti
 pop dx
 pop cx
 pop si
@@ -80,10 +84,12 @@ mov  si, ax
 mov  al, dl
 
 mov  dx, HT18_PAGE_SELECT_REGISTER
+cli
 out  dx, al
 mov  dx, HT18_PAGE_SET_REGISTER
 mov  cx, 9
 rep  outsw
+sti
 pop dx
 pop cx
 pop si
@@ -97,10 +103,12 @@ push dx
 mov  si, ax
 mov  al, dl
 mov  dx, HT18_PAGE_SELECT_REGISTER
+cli
 out  dx, al
 mov  dx, HT18_PAGE_SET_REGISTER
 mov  cx, 8
 rep  outsw
+sti
 pop dx
 pop cx
 pop si
@@ -115,10 +123,12 @@ push dx
 mov  si, ax
 mov  al, dl
 mov  dx, HT18_PAGE_SELECT_REGISTER
+cli
 out  dx, al
 mov  dx, HT18_PAGE_SET_REGISTER
 mov  cx, 6
 rep  outsw
+sti
 pop dx
 pop cx
 pop si
@@ -133,10 +143,12 @@ push dx
 mov  si, ax
 mov  al, dl
 mov  dx, HT18_PAGE_SELECT_REGISTER
+cli
 out  dx, al
 mov  dx, HT18_PAGE_SET_REGISTER
 mov  cx, 5
 rep  outsw
+sti
 pop dx
 pop cx
 pop si
@@ -150,10 +162,12 @@ push dx
 mov  si, ax
 mov  al, dl
 mov  dx, HT18_PAGE_SELECT_REGISTER
+cli
 out  dx, al
 mov  dx, HT18_PAGE_SET_REGISTER
 mov  cx, 4
 rep  outsw
+sti
 pop dx
 pop cx
 pop si
@@ -166,6 +180,7 @@ push dx
 mov  si, ax
 mov  al, dl
 mov  dx, HT18_PAGE_SELECT_REGISTER
+cli
 out  dx, al
 mov  dx, HT18_PAGE_SET_REGISTER
 lodsw
@@ -174,6 +189,7 @@ lodsw
 out dx, ax
 lodsw
 out dx, ax
+sti
 pop dx
 pop si
 ret
@@ -185,12 +201,14 @@ push dx
 mov  si, ax
 mov  al, dl
 mov  dx, HT18_PAGE_SELECT_REGISTER
+cli
 out  dx, al
 mov  dx, HT18_PAGE_SET_REGISTER
 lodsw
 out dx, ax
 lodsw
 out dx, ax
+sti
 pop dx
 pop si
 ret
@@ -204,10 +222,12 @@ push dx
 mov  si, ax
 mov  al, dl
 mov  dx, HT18_PAGE_SELECT_REGISTER
+cli
 out  dx, al
 mov  dx, HT18_PAGE_SET_REGISTER
 lodsw
 out dx, ax
+sti
 pop dx
 pop si
 ret
@@ -232,11 +252,13 @@ mov  ds:[_currentpageframes+bx], dl
 
 mov  bx, dx
 mov  dx, HT18_PAGE_SELECT_REGISTER
+cli
 out  dx, al
 mov  dx, HT18_PAGE_SET_REGISTER
 xchg ax, bx
 add  ax, MUS_DATA_PAGES
 out dx, ax
+sti
 
 pop bx
 pop dx
@@ -255,6 +277,7 @@ PUBLIC Z_QuickMapMusicPageFrame_
 	mov  ah, al
 	mov  al, HT18_PAGE_D000
 	mov  dx, HT18_PAGE_SELECT_REGISTER
+	cli
 	out  dx, al
 
 	
@@ -263,6 +286,7 @@ PUBLIC Z_QuickMapMusicPageFrame_
 	xchg al, ah	 ; ah becomes 0
 	mov  ax, MUS_DATA_PAGES
 	out  dx, ax
+	sti
 	pop  dx
 	retf
 ENDP
@@ -284,6 +308,7 @@ mov  byte ptr ds:[_currentpageframes + WAD_PAGE_FRAME_INDEX], ah
 
 mov  dx, HT18_PAGE_SELECT_REGISTER
 mov  al, HT18_PAGE_D000 + WAD_PAGE_FRAME_INDEX	; page D800
+cli
 out  dx, al
 
 mov  dx, HT18_PAGE_SET_REGISTER
@@ -294,6 +319,7 @@ SHIFT_MACRO SHR AX 2
 
 add  ax, (EMS_MEMORY_PAGE_OFFSET_PLUS_ENABLE_BIT + FIRST_LUMPINFO_LOGICAL_PAGE)
 out  dx, ax
+sti
 
 pop  dx
 
