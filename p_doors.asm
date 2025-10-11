@@ -309,11 +309,12 @@ ret
 
 
 check_for_red_key:
+inc   bx ; red is index 2...
 inc   bx
 cmp   dx, 135
 jna   do_key_stuff
 check_for_yellow_key:
-inc   bx
+dec   bx ; and yellow index 1.
 cmp   dx, 137
 jna   do_key_stuff
 

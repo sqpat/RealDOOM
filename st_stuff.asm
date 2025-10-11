@@ -523,14 +523,19 @@ mov   si, OFFSET _player + PLAYER_T.player_cards
 mov   di, OFFSET _keyboxes
 
 do_next_cardcolor:
-xor   ax, ax
 lodsb
 ;        keyboxes[i] = player.cards[i] ? i : -1;
-test  ax, ax
+test  al, al
+lea   ax, [si - 1 - (_player + PLAYER_T.player_cards)]
 jnz   dont_set_minus_one
-mov   al, -1
+mov   ax, -1
 dont_set_minus_one:
-cbw
+
+
+;        if (player.cards[i + 3])
+;            keyboxes[i] = i + 3;
+
+
 cmp   byte ptr ds:[si+2],0 ;si has already been incremented.
 je    dont_set_iplus3
 lea   ax, [si + 2 - (_player + PLAYER_T.player_cards)]

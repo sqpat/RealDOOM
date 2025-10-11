@@ -306,18 +306,14 @@ BONUSADD = 6
 PROC    P_GiveCard_  NEAR
 PUBLIC  P_GiveCard_
 
-push   bx
-cbw
-mov    bx, ax
-cmp    byte ptr ds:[bx + _player + PLAYER_T.player_cards], 0
-je     add_card
-pop    bx
-ret    
-add_card:
-
+;push   bx
+xchg   ax, bx
+cmp    byte ptr ds:[bx + _player + PLAYER_T.player_cards], bh  ; known 0
+jne    dont_add_card
 mov    byte ptr ds:[_player + PLAYER_T.player_bonuscount], BONUSADD
-mov    byte ptr ds:[bx + _player + PLAYER_T.player_cards], 1
-pop    bx
+inc    byte ptr ds:[bx + _player + PLAYER_T.player_cards]
+dont_add_card:
+;pop    bx
 ret    
 ENDP
 
@@ -686,20 +682,20 @@ jmp    do_giveweapon_touchspecial
 
 
 
-touchspecial_case_64:
-mov    bl, IT_YELLOWCARD
-jmp    handle_give_card
 touchspecial_case_63:
 mov    bl, IT_REDCARD
+jmp    handle_give_card
+touchspecial_case_64:
+mov    bl, IT_YELLOWCARD
 jmp    handle_give_card
 touchspecial_case_65:
 mov    bl, IT_BLUESKULL
 jmp    handle_give_card
-touchspecial_case_67:
-mov    bl, IT_YELLOWSKULL
-jmp    handle_give_card
 touchspecial_case_66:
 mov    bl, IT_REDSKULL
+jmp    handle_give_card
+touchspecial_case_67:
+mov    bl, IT_YELLOWSKULL
 jmp    handle_give_card
 
 touchspecial_case_72:
