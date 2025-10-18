@@ -365,7 +365,7 @@ _pcspeaker_currentoffset = 			 _NULL_OFFSET + 003C2h
 _pcspeaker_endoffset = 			 	 _NULL_OFFSET + 003C4h
 _SKY_String = 					 	 _NULL_OFFSET + 003C6h
 _numChannels = 						 _NULL_OFFSET + 003CBh
-;_MainLogger_addr =      	         _NULL_OFFSET + 003CCh
+_MainLogger_addr =      	         _NULL_OFFSET + 003CCh
 
 
 ; 3cc to 3cf free

@@ -416,7 +416,7 @@
 #define SKY_String       	            (((int8_t    __near*)                (_NULL_OFFSET + 0x03C6)))
 #define numChannels  					(*((uint8_t __near*)                 (_NULL_OFFSET + 0x03CB)))
 
-// #define MainLogger_addr       	        (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03CC)))
+#define MainLogger_addr       	        (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03CC)))
 
 //33B to 3cf free
 

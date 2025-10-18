@@ -540,9 +540,7 @@ void __near SB_Service_Mix22Khz(){
 
 	for (i = 0; i < NUM_SFX_TO_MIX; i++){
 
-		if (!(sb_voicelist[i].sfx_id & PLAYING_FLAG)){
-
-		} else {
+		if (sb_voicelist[i].sfx_id & PLAYING_FLAG){
 
 			// Keep track of current buffer
 
@@ -785,10 +783,7 @@ void __near SB_Service_Mix11Khz(){
 
 	for (i = 0; i < NUM_SFX_TO_MIX; i++){
 
-		if (!(sb_voicelist[i].sfx_id & PLAYING_FLAG)){  
-            // not playing
-		} else {
-
+		if (sb_voicelist[i].sfx_id & PLAYING_FLAG){  
 			
 			// Keep track of current buffer
 
@@ -1294,6 +1289,10 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
         0x18,           // skip header and padding.
         lumpsize.hu);   // num bytes..
 
+
+    // pad zeroes
+    _fmemset(MK_FP(SFX_PAGE_SEGMENT_PTR, allocate_position.hu + lumpsize.hu), 0, (0x100 - (lumpsize.bu.bytelow)) & 0xFF);  // todo: just NEG instruction?
+
     // loop here to apply application volume to sfx 
     if (snd_SfxVolume != MAX_VOLUME_SFX){
         S_NormalizeSfxVolume(allocate_position.hu, lumpsize.h);
@@ -1384,7 +1383,9 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
             S_NormalizeSfxVolume(0, lumpsize.hu & 16383);
         }
 
-        
+        // pad zeroes
+        _fmemset(MK_FP(SFX_PAGE_SEGMENT_PTR, allocate_position.hu + lumpsize.hu), 0, (0x100 - (lumpsize.bu.bytelow)) & 0xFF);  // todo: just NEG instruction?
+
         return 0;
     }
 }
@@ -1397,6 +1398,7 @@ int8_t __far SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
     // vol should be 0-127
 
     if (vol > 127){
+        // shouldnt happen?
         I_Error("bad vol! %i %i %i", sfx_id, sep, vol);
     }
 
@@ -1413,6 +1415,9 @@ int8_t __far SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
                     return -1; 
                 }
             }
+
+            _disable();
+
             sb_voicelist[i].sfx_id = sfx_id;
             sb_voicelist[i].currentsample = 0;
             sb_voicelist[i].samplerate = (sfx_data[sfx_id].lumpandflags & SOUND_22_KHZ_FLAG) ? 1 : 0;
@@ -1446,6 +1451,7 @@ int8_t __far SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
 
                 // only do this at the very end.
                 sb_voicelist[i].sfx_id |= PLAYING_FLAG;
+                _enable();
                 return i;
             }
         }

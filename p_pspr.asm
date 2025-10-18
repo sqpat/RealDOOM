@@ -636,12 +636,12 @@ mov   bx, CHAINSAWRANGE
 call  P_LineAttack_
 
 cmp   word ptr ds:[_linetarget], 0
+mov   ax, word ptr ds:[_playerMobj]
 
 jne   have_linetarget_chainsaw
 
 
 mov   dl, SFX_SAWFUL
-mov   ax, word ptr ds:[_playerMobj]
 call  S_StartSound_
 ret   
 
@@ -649,7 +649,6 @@ ret
 
 have_linetarget_chainsaw:
 mov   dl, SFX_SAWHIT
-mov   ax, word ptr ds:[_playerMobj]
 call  S_StartSound_
 
 mov   si, word ptr ds:[_playerMobj_pos]

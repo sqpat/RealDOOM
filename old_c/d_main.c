@@ -724,18 +724,7 @@ void __near D_DoomLoop (void) {
 // int16_t counter = 0;
 // int16_t setval = 0;
 
-// void __far MainLogger (uint16_t ax, uint16_t dx, uint16_t bx, uint16_t cx){
-// 	if (gametic == 77){
-// 		// FILE* fp = fopen("tick.txt", "ab");
-// 		// fprintf(fp, "%li %i %i %x %i %x\n", gametic, prndindex, counter, ax & 0xFF, dx, bx);
-// 		// fclose(fp);
 
-// 		counter++;
-// 		if (counter == 91){
-// 			setval = 1;
-// 		}
-// 	}
-// }
 
 
 

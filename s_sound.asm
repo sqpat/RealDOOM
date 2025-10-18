@@ -30,6 +30,7 @@ PUBLIC  S_SOUND_STARTMARKER_
 ENDP
 
 _channels:
+PUBLIC _channels
 ;  channel_t	channels[MAX_SFX_CHANNELS];
 dw 0, 0, 0
 dw 0, 0, 0
@@ -82,13 +83,37 @@ ENDP
 
 SIZEOF_CHANNEL_T = 6
 
+COMMENT @
+PROC do_logger_ NEAR
+
+pusha
+mov  dx, cs
+mov  bx, OFFSET _channels
+
+xor   cx, cx
+mov   cl, byte ptr cs:[si + _channels + CHANNEL_T.channel_handle] 
+
+SHIFT_MACRO sal cx  3  
+mov   si, cx
+
+xor   ax, ax
+mov   al, byte ptr ds:[_sb_voicelist + si + SB_VOICEINFO_T.sbvi_sfx_id]
+
+; ax is 0
+; cx is 0xBX -> 0x17?
+
+call dword ptr ds:[_MainLogger_addr];
+popa
+
+ret
+ENDP
+
+@
+
 PROC    S_StopChannel_ NEAR
 PUBLIC  S_StopChannel_
 
-
-; dh gets cnum
-
-; dl will have i
+; al has cnum
 ; si will have channels[cnum]
 
 push  si
@@ -97,51 +122,45 @@ mov   si, ax
 sal   si, 1  ; 2
 add   si, ax ; 3
 sal   si, 1  ; 6
+
 add   si, OFFSET _channels
-cmp   byte ptr cs:[si + CHANNEL_T.channel_sfx_id], ah ; 0 or SFX_NONE
+cmp   byte ptr cs:[si + CHANNEL_T.channel_sfx_id], ah ; 0 or SFX_NONE  ; todo maybe not necessary? i think stopchannels is never called when this is 0...
+mov   byte ptr cs:[si + CHANNEL_T.channel_sfx_id], ah ; 0 or SFX_NONE  ; zero this out. some loops check for it
+
 je    exit_stop_channel
-mov   al, byte ptr cs:[si + CHANNEL_T.channel_handle]
+mov   al, byte ptr cs:[si + CHANNEL_T.channel_handle] 
 
-call  SFX_Playing_  ; todo stc/clc
+;inlined stop channel...
+; ah still 0
+mov   si, ax
+SHIFT_MACRO sal si  3    
 
-jnc   dont_stop_sound
+test  byte ptr ds:[_sb_voicelist + si + SB_VOICEINFO_T.sbvi_sfx_id], PLAYING_FLAG
+je    exit_stop_channel  ; wasnt playing
 
-mov   al, byte ptr ds:[_snd_SfxDevice]
-cmp   al, SND_SB
+cmp   byte ptr ds:[_snd_SfxDevice], SND_SB
 je    stop_sb_patch
-cmp   al, SND_PC
-jne   dont_stop_sound
+cmp   byte ptr ds:[_snd_SfxDevice], SND_PC
+jne   exit_stop_channel
 mov   word ptr ds:[_pcspeaker_currentoffset], 0
-jmp   dont_stop_sound
+pop   si
+ret  
+
 
 
 stop_sb_patch:
-mov   al, byte ptr cs:[si + CHANNEL_T.channel_handle]
-;call  SFX_StopPatch_
-; inlined only use
 
-cbw
-push    bx
-mov     bx, ax
-SHIFT_MACRO shl bx 3
+;call  SFX_StopPatch_ ; inlined only use
 cli
-test    byte ptr ds:[_sb_voicelist + bx + SB_VOICEINFO_T.sbvi_sfx_id], PLAYING_FLAG
-pop     bx
-je      sfx_not_playing_for_stoppatch
+
+
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _S_DecreaseRefCountFar_addr
 
-sfx_not_playing_for_stoppatch:
-
+mov   byte ptr ds:[_sb_voicelist + si + SB_VOICEINFO_T.sbvi_sfx_id], ah ; 0
 sti
 
-
-
-
-dont_stop_sound:
-
-mov   byte ptr cs:[si + CHANNEL_T.channel_sfx_id], SFX_NONE ; 0
 
 exit_stop_channel:
 pop   si
@@ -228,6 +247,8 @@ ret
 
 
 ENDP
+
+; todo return carry?
 
 PROC    S_AdjustSoundParamsVol_ NEAR
 PUBLIC  S_AdjustSoundParamsVol_
@@ -364,7 +385,7 @@ ENDP
 
 
 
-
+; todo inline only use?
 
 PROC    S_StopSound_ NEAR 
 PUBLIC  S_StopSound_
@@ -376,21 +397,22 @@ push  bx
 push  si
 
 cmp   dx, SECNUM_NULL
-je    check_for_origin
+je    check_for_mobjref
 ; check_for_secnum
+
 xchg  ax, dx       ; loop condition soundorg_secnum
 mov   bx, CHANNEL_T.channel_soundorg_secnum
 
 jmp   setup_stopsound_channel_loop
 
-check_for_origin:
+check_for_mobjref:
 
 xor   dx, dx
 mov   si, SIZEOF_THINKER_T
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 div   si ; loop condition originRef
 
-check_for_mobjref:
+
 mov   bx, CHANNEL_T.channel_originRef
 
 ; si + bx is comparison target
@@ -399,11 +421,11 @@ mov   bx, CHANNEL_T.channel_originRef
 ; dh is end condition for loop.
 
 setup_stopsound_channel_loop:
-cwd   ; zero dx. ax should be < 0x8000 in either case
+xor   dx, dx
 mov   si, OFFSET _channels
 mov   dh, byte ptr ds:[_numChannels]
-test  dh, dh
-je    exit_stopsound
+;test  dh, dh
+;je    exit_stopsound
 
 
 loop_next_channel_stopsound:
@@ -419,7 +441,7 @@ pop   bx
 pop   dx
 ret  
 iter_next_channel_stopsound:
-add   si, SIZEOF_CHANNEL_T
+add   si, SIZE CHANNEL_T
 inc   dx
 cmp   dl, dh
 jl    loop_next_channel_stopsound
@@ -443,7 +465,7 @@ jmp   check_for_mobjref
 
 ENDP
 
-NULL_THINKER_ORIGINREF = -1
+
 
 ;int8_t __near S_getChannel (mobj_t __near* origin, int16_t soundorg_secnum, sfxenum_t sfx_id ) {
 
@@ -454,7 +476,7 @@ push  cx
 push  si
 push  di
 
-mov   di, NULL_THINKER_ORIGINREF
+xor   di, di
 mov   cx, dx ; backup soundorg secnum..
 xor   dx, dx
 xor   bh, bh ; sfx_id is oft used as byte lookup.
@@ -462,17 +484,17 @@ xor   bh, bh ; sfx_id is oft used as byte lookup.
 test  ax, ax
 jz    dont_get_ref
 
-mov   si, SIZEOF_THINKER_T
+mov   di, SIZE THINKER_T
 sub   ax, (_thinkerlist + THINKER_T.t_data)
-div   si
+div   di
 xchg  ax, di  ; di has originref
+xor   ax, ax
 
 dont_get_ref:
 
 
 
-xor   ax, ax
-cwd
+cwd   ; ax zero already
 mov   ah, byte ptr ds:[_numChannels]
 mov   si, OFFSET _channels
 
@@ -481,7 +503,7 @@ mov   si, OFFSET _channels
 loop_next_channel_getchannel:
 cmp   word ptr cs:[si + CHANNEL_T.channel_sfx_id], dx ; 0
 je    foundchannel
-cmp   di, NULL_THINKER_ORIGINREF
+test  di, di
 je    check_secnum_instead
 cmp   word ptr cs:[si + CHANNEL_T.channel_originRef], di
 jne   iter_next_channel_getchannel
@@ -553,7 +575,7 @@ PUBLIC  S_StartSoundWithPosition_
 ;void S_StartSoundWithPosition ( mobj_t __near* origin, sfxenum_t sfx_id, int16_t soundorg_secnum ) {
 
 
-cmp   byte ptr ds:[_snd_SfxDevice], SFX_NONE ; 0
+cmp   byte ptr ds:[_snd_SfxDevice], SND_NONE ; 0
 je    exit_startsoundwithpositionearly
 
 push  cx
@@ -630,7 +652,7 @@ push  bx ; bp - 6
 push  dx ; bp - 8
 push  ax ; bp - 0Ah  ;store in reverse order for later cmpsw.
 
-call  S_AdjustSoundParamsVol_  ; todo inline only use?
+call  S_AdjustSoundParamsVol_  
 
 test  al, al
 je    exit_startsoundwithposition
@@ -664,6 +686,7 @@ xchg  ax, bx  ; bx has sep
 
 mov   dx, si
 mov   ax, di
+; todo inline only use?
 call  S_StopSound_  ;  S_StopSound(origin, soundorg_secnum);
 
 mov   dx, si
@@ -694,6 +717,8 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _SFX_PlayPatch_addr
 
+; todo inline only use?
+
 
 
 done_with_i_sound:
@@ -701,7 +726,7 @@ done_with_i_sound:
 cmp   al, -1
 je    exit_startsoundwithposition
 successful_play:
-mov   al, byte ptr [bp - 6]
+;    al is already handle!
 sal   si, 1  ; x2
 mov   bx, si ; x2
 sal   si, 1  ; x2 + x4 = 6
@@ -751,7 +776,7 @@ les   ax,  dword ptr es:[bx]
 mov   word ptr ds:[_pcspeaker_currentoffset], ax
 mov   word ptr ds:[_pcspeaker_endoffset], es
 sti
-jmp   successful_play
+jmp   successful_play  ; todo just exit maybe? handles not used for pc speaker?
 
 
 
@@ -769,10 +794,10 @@ ENDP
 PROC    S_StartSound_ NEAR
 PUBLIC  S_StartSound_
 
-test  dl, dl
+test  dl, dl   ; todo skip this check? dont play sound zero but do we ever call with sound zero? put an i_error and catch?
 je    exit_startsound_sfxid_0
 push  bx
-mov   bx, -1
+mov   bx, SECNUM_NULL
 call  S_StartSoundWithPosition_
 pop   bx
 exit_startsound_sfxid_0:
@@ -806,25 +831,66 @@ mov   dh, byte ptr ds:[_numChannels]
 test  dh, dh
 je    exit_s_updatesounds
 loop_next_channel_updatesounds:
-mov   cl, byte ptr cs:[si + CHANNEL_T.channel_sfx_id]
-test  cl, cl
+xor   ax, ax
+cmp   byte ptr cs:[si + CHANNEL_T.channel_sfx_id], al ; 0
 je    iter_next_channel_updatesounds
-call  SFX_Playing_  ; todo stc/clc
+mov   al, byte ptr cs:[si + CHANNEL_T.channel_handle]
+mov   bx, ax
+SHIFT_MACRO shl bx 3
+test  byte ptr ds:[_sb_voicelist + bx + SB_VOICEINFO_T.sbvi_sfx_id], PLAYING_FLAG
+jne   handle_position_update
 
-jc    handle_position_update
-do_stop_channel_and_iter:
-mov   al, dl
-cbw
-call  S_StopChannel_
-jmp   iter_next_channel_updatesounds
+; the interrupt will turn off the playing flag, but will not clean up channel info, so we do it here.
+mov   byte ptr cs:[si + CHANNEL_T.channel_sfx_id], ah ; 0   
+
+
+iter_next_channel_updatesounds:
+add   si, SIZEOF_CHANNEL_T
+inc   dx
+cmp   dl, dh
+jl    loop_next_channel_updatesounds
+
+exit_s_updatesounds:
+POPA_NO_AX_OR_BP_MACRO
+retf  
+
+
 handle_position_update:
 
-mov   di, dx ; back this up...
+les   bx, dword ptr cs:[si + CHANNEL_T.channel_soundorg_secnum]
+mov   ax, es ; es was originref
+cmp   ax, word ptr ds:[_playerMobjRef]
+je    iter_next_channel_updatesounds   ; dont adjust vol for player (listener) source sounds. theyre always full vol
 
-cmp   word ptr cs:[si + CHANNEL_T.channel_soundorg_secnum], SECNUM_NULL
-jne   update_sound_with_mobjpos
+
+mov   di, dx ; back this up...
+cmp   bx, SECNUM_NULL
+jne   update_sound_with_sector
+
+update_sound_with_mobjpos:
+; ax is originref
+test  ax, ax
+jz    iter_next_channel_updatesounds   ; null source.
+mov   bx, SIZEOF_MOBJ_POS_T
+mul   bx
+xchg  ax, bx
+mov   es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
+
+;    originX = originMobjPos->x;
+;    originY = originMobjPos->y;
+
+mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
+mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
+les   bx, dword ptr es:[bx + MOBJ_POS_T.mp_y + 0]
+mov   cx, es
+
+jmp   origins_ready
+
+
+
+
 update_sound_with_sector:
-mov   ax, SECTORS_SOUNDORGS_SEGMENT
+mov   ax, SECTORS_SOUNDORGS_SEGMENT ; todo ptr
 mov   es, ax
 SHIFT_MACRO shl   bx 2
 les   ax, dword ptr es:[bx + SECTOR_SOUNDORG_T.secso_soundorgX]
@@ -839,16 +905,12 @@ push  bx ; bp - 6
 push  dx ; bp - 8
 push  ax ; bp - 0Ah  ;store in reverse order for later cmpsw.
 
-call  S_AdjustSoundParamsVol_  ; todo inline only use?
+call  S_AdjustSoundParamsVol_
 
 test  al, al
-jne   update_sound_params
+je    vol_zero_end_sound
 
-mov   dx, di ; restore loop counters
-add   sp, 8  ; undo those four pushes.
-jmp   do_stop_channel_and_iter
 
-update_sound_params:
 mov   es, ax ; store volume
 pop   ax
 pop   dx
@@ -861,7 +923,7 @@ xchg  ax, bx
 pop   ax
 mov   bh, al ; bx gets vol lo sep  hi
 
-mov   al, byte ptr cs:[si + CHANNEL_T.channel_handle]
+mov   al, byte ptr cs:[si + CHANNEL_T.channel_handle]  ; known to be playing; tested above
 cbw
 ;call  SFX_SetOrigin_ ; inlined
 
@@ -869,42 +931,21 @@ cbw
 SHIFT_MACRO shl ax 3
 
 xchg    ax, bx
-test    byte ptr ds:[_sb_voicelist + bx + SB_VOICEINFO_T.sbvi_sfx_id], PLAYING_FLAG
-je      sfx_not_playing_for_setorigin
-mov     word ptr ds:[_sb_voicelist + bx + SB_VOICEINFO_T.sbvi_volume], ax
-
-sfx_not_playing_for_setorigin:
-
+mov     word ptr ds:[_sb_voicelist + bx + SB_VOICEINFO_T.sbvi_volume], ax  ; volume and sep
 
 
 mov   dx, di ; restore loop counters
+jmp   iter_next_channel_updatesounds
+vol_zero_end_sound:
+mov   dx, di ; restore loop counters
+add   sp, 8  ; undo those four pushes.
+mov   al, dl ; restore channel
+cbw
 
-iter_next_channel_updatesounds:
-add   si, SIZEOF_CHANNEL_T
-inc   dx
-cmp   dl, dh
-jl    loop_next_channel_updatesounds
+;call  S_StopChannel_
+jmp   iter_next_channel_updatesounds
 
-exit_s_updatesounds:
-POPA_NO_AX_OR_BP_MACRO
-retf  
 
-update_sound_with_mobjpos:
-mov   bx, word ptr cs:[si + CHANNEL_T.channel_originRef]
-mov   ax, SIZEOF_MOBJ_POS_T
-mul   bx
-xchg  ax, bx
-mov   es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
-
-;    originX = originMobjPos->x;
-;    originY = originMobjPos->y;
-
-mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
-mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
-les   bx, dword ptr es:[bx + MOBJ_POS_T.mp_y + 0]
-mov   cx, es
-
-jmp   origins_ready
 ENDP
 
 _sp_mus:			
@@ -1055,26 +1096,6 @@ ret
 
 ENDP
 
-
-PROC    SFX_Playing_ NEAR
-PUBLIC  SFX_Playing_
-
-cmp     al, NUM_SFX_TO_MIX
-jae     sfx_not_playing_bad_index
-cbw
-SHIFT_MACRO shl ax 3
-push    bx
-xchg    ax, bx
-test    byte ptr ds:[_sb_voicelist + bx + SB_VOICEINFO_T.sbvi_sfx_id], PLAYING_FLAG
-pop     bx
-je      sfx_not_playing
-stc
-ret
-sfx_not_playing_bad_index:
-sfx_not_playing:
-clc
-ret
-ENDP
 
 PROC    S_SOUND_ENDMARKER_ NEAR
 PUBLIC  S_SOUND_ENDMARKER_
