@@ -459,6 +459,8 @@ int8_t __near S_EvictSFXPage(int8_t numpages){
 	//prevmost is tail (LRU)
 	//nextmost is head (MRU)
 
+    // when we have a multipage: nextmost plays first, then prev page
+
 	// need to evict at least numpages pages
 	// we'll remove the tail, up to numpages...
 	// if thats part of a multipage allocation, we'll remove from that page until the end of the multipage allocaiton too.
@@ -570,13 +572,19 @@ void __near SB_Service_Mix22Khz(){
                     uint16_t copy_offset;
                     int8_t   do_second_copy = false;
                     int16_t_union  cache_pos = sfx_data[sb_voicelist[i].sfx_id & SFX_ID_MASK].cache_position;
-                    int8_t   page_add = 0;
+                    int8_t  use_page = cache_pos.bu.bytehigh;
                     if (sb_voicelist[i].currentsample >= 16384){
                         // todo rol 2 in asm
-                        page_add = sb_voicelist[i].currentsample >> 14;
+                        int8_t pageadd = sb_voicelist[i].currentsample >> 14;;
+                        while (pageadd){
+                            use_page = sfxcache_nodes[use_page].prev;
+                            pageadd--;
+                        }
+                        // I_Error("page add %i %i", sb_voicelist[i].currentsample, page_add);
                     }
+
                     
-                    Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh + page_add);
+                    Z_QuickMapSFXPageFrame(use_page); // todo not necers                    
                     // form the offset.
                     cache_pos.bu.bytehigh = cache_pos.bu.bytelow;
                     cache_pos.bu.bytelow = 0;
@@ -808,15 +816,19 @@ void __near SB_Service_Mix11Khz(){
                     uint16_t copy_offset;
                     int8_t   do_second_copy = false;
                     int16_t_union  cache_pos = sfx_data[sb_voicelist[i].sfx_id & SFX_ID_MASK].cache_position;
-                    int8_t   page_add = 0;
+                    int8_t  use_page = cache_pos.bu.bytehigh;
                     if (sb_voicelist[i].currentsample >= 16384){
-                        // todo rol 2 in asm
-                        page_add = sb_voicelist[i].currentsample >> 14;
+                        // todo rol 2 in asm and unroll while loop?
+                        int8_t pageadd = sb_voicelist[i].currentsample >> 14;;
+                        while (pageadd){
+                            use_page = sfxcache_nodes[use_page].prev;
+                            pageadd--;
+                        }
                         // I_Error("page add %i %i", sb_voicelist[i].currentsample, page_add);
                     }
 
                     
-                    Z_QuickMapSFXPageFrame(cache_pos.bu.bytehigh + page_add);
+                    Z_QuickMapSFXPageFrame(use_page); // todo not necers
                     
                     // logcacheevent(cache_pos.bu.bytehigh,  page_add);
 
@@ -1180,19 +1192,20 @@ void __near S_NormalizeSfxVolume(uint16_t offset, uint16_t length);
 
 
 int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
-    int8_t i;
+    int8_t sfx_page;
     int16_t_union lumpsize = sfx_data[sfx_id].lumpsize;
     uint8_t sample_256_size = lumpsize.bu.bytehigh + (lumpsize.bu.bytelow ? 1 : 0);
     int16_t_union allocate_position;
     int8_t pagecount;
+    allocate_position.hu = 0;
     logcacheevent('z', sample_256_size);
     if (sample_256_size <= 64) {
-        // todo go in head order?
-        for (i = 0; i < NUM_SFX_PAGES; i++){
-            if (sample_256_size <= sfx_free_bytes[i]){
-                allocate_position.bu.bytehigh = 64 - sfx_free_bytes[i];  // keep track of where to put the sound
-                allocate_position.bu.bytelow = 0;
-                sfx_free_bytes[i] -= sample_256_size;   // subtract...
+        // todo iterate in head order?
+        for (sfx_page = 0; sfx_page < NUM_SFX_PAGES; sfx_page++){
+            if (sample_256_size <= sfx_free_bytes[sfx_page]){
+                allocate_position.bu.bytehigh = 64 - sfx_free_bytes[sfx_page];  // keep track of where to put the sound
+                // allocate_position.bu.bytelow = 0;
+                sfx_free_bytes[sfx_page] -= sample_256_size;   // subtract...
                 goto found_page;
             }
         }
@@ -1203,10 +1216,13 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
         int8_t j = 0;
         
         pagecount = sample_256_size >> 6;   // todo rol 2?
+        // pagecount is full 16384 pages
+        pagecount += (sample_256_size & 0x63) ? 1 : 0;
+        
         // greater than 1 EMS page in size...
 
-        for (i = sfxcache_head; i != -1; i = i = sfxcache_nodes[i].prev){
-            int8_t currentpage = i;
+        for (sfx_page = sfxcache_head; sfx_page != -1; sfx_page = sfxcache_nodes[sfx_page].prev){
+            int8_t currentpage = sfx_page;
             for (j = 0; j <= pagecount; j++){
                 if (currentpage == -1){
                     break;
@@ -1225,15 +1241,14 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
                 continue;
             }
 
-            // page i works.
+            // page sfx_page works.
 
-            allocate_position.hu = 0;    // page aligned. addr is 0...
-            currentpage = i;
+            // allocate_position.hu = 0;    // page aligned. addr is 0...
+            currentpage = sfx_page;
             for (j = 0; j < pagecount; j++){
                 sfx_free_bytes[currentpage] = 0;
                 currentpage = sfxcache_nodes[currentpage].prev;
             }
-
             sfx_free_bytes[currentpage] -= sample_256_size & 63;
             goto found_page_multiple;
 
@@ -1250,35 +1265,30 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
     // lets locate a page to evict
 
     logcacheevent('v', 1);
-    i = S_EvictSFXPage(1);
+    sfx_page = S_EvictSFXPage(1);
     logcacheevent('w', i);
-    if (i == -1){
+    if (sfx_page == -1){
         return -1;
     } else {
-        sfx_free_bytes[i] -= sample_256_size & 63;
-        logcacheevent('x', i);
+        sfx_free_bytes[sfx_page] -= sample_256_size;
+        logcacheevent('x', sfx_page);
 
     }
-    allocate_position.hu = 0;
+    // allocate_position.hu = 0;
+
     // continue to found_page
-
-
-    // ! no location found! must evict.
-
-    // todo... eviction code. then fall thru.
-    // set position to FF.
-    // set freebytes to 64
-    // evict all in the page.
 
     found_page:
 
     // record page in high byte
     // record offset (multiplied by 256) in low byte.
-    sfx_data[sfx_id].cache_position.bu.bytehigh = i;
+    sfx_data[sfx_id].cache_position.bu.bytehigh = sfx_page;
     sfx_data[sfx_id].cache_position.bu.bytelow = allocate_position.bu.bytehigh;
 
     // I_Error("%lx %lx %i %i", sfx_data, sfx_data[sfx_id], sfx_data[sfx_id].cache_position.hu, sfx_id );
-    Z_QuickMapSFXPageFrame(i);
+    
+    // _disable();
+    Z_QuickMapSFXPageFrame(sfx_page);
     // Note - in theory an interrupt for an SFX can fire here during 
     // this transfer and blow up our current SFX ems page. However
     // we make absolutely sure in the interrupt  to page the SFX page 
@@ -1292,6 +1302,7 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
 
     // pad zeroes
     _fmemset(MK_FP(SFX_PAGE_SEGMENT_PTR, allocate_position.hu + lumpsize.hu), 0, (0x100 - (lumpsize.bu.bytelow)) & 0xFF);  // todo: just NEG instruction?
+    // _enable();
 
     // loop here to apply application volume to sfx 
     if (snd_SfxVolume != MAX_VOLUME_SFX){
@@ -1300,8 +1311,8 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
      
 
     // don't do this! it defaults to zero, and is reset to zero during eviction if necessary.
-    // sfxcache_nodes[i].pagecount = 0;
-    // sfxcache_nodes[i].numpages = 0;
+    // sfxcache_nodes[sfx_page].pagecount = 0;
+    // sfxcache_nodes[sfx_page].numpages = 0;
 
     return 0;
 
@@ -1309,21 +1320,21 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
     S_UpdateLRUCache();
 
     logcacheevent('s', pagecount+1);
-    i = S_EvictSFXPage(pagecount+1);
+    sfx_page = S_EvictSFXPage(pagecount+1); // get the headmost
     allocate_position.hu = 0;
 
-    logcacheevent('t', i);
-    if (i == -1){
+    logcacheevent('t', sfx_page);
+    if (sfx_page == -1){
         return -1;
     } else {
         int8_t j;
-        int8_t currentpage = i;
+        int8_t currentpage = sfx_page;
         for (j = 0; j < pagecount;j++){
             sfx_free_bytes[currentpage] = 0;
             currentpage = sfxcache_nodes[currentpage].prev;
         }
         sfx_free_bytes[currentpage] -= sample_256_size & 63;
-        logcacheevent('u', i);
+        logcacheevent('u', sfx_page);
 
 
     }
@@ -1336,17 +1347,17 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
         int8_t j;
         uint16_t offset = 0;
         int16_t lump = sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK;
-        int8_t currentpage = i;
+        int8_t currentpage = sfx_page;
         // if (sfx_id > NUMSFX){
         //     I_Error("bad sfx!?");
         // }
-        sfx_data[sfx_id].cache_position.bu.bytehigh = i;
+        sfx_data[sfx_id].cache_position.bu.bytehigh = sfx_page;
         sfx_data[sfx_id].cache_position.bu.bytelow = 0;
         for (j = 0; j < pagecount; j++, offset += 16384){
             sfxcache_nodes[currentpage].pagecount = pagecount - j + 1;
             sfxcache_nodes[currentpage].numpages = pagecount + 1;
 
-            // I_Error("%lx %lx %i %i", sfx_data, sfx_data[sfx_id], sfx_data[sfx_id].cache_position.hu, sfx_id );
+            // I_Error("%lx %lx %sfx_page %i", sfx_data, sfx_data[sfx_id], sfx_data[sfx_id].cache_position.hu, sfx_id );
             Z_QuickMapSFXPageFrame(currentpage);
             // Note - in theory an interrupt for an SFX can fire here during 
             // this transfer and blow up our current SFX ems page. However
