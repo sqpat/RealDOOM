@@ -52,6 +52,10 @@ extern int8_t  sfxcache_head;
 
 #define MAX_VOLUME_SFX 0x7F
 #define SFX_MAX_VOLUME		127
+// 64
+#define BUFFERS_PER_EMS_PAGE 16384 / 256
+// 63
+#define BUFFERS_PER_EMS_PAGE_MASK (BUFFERS_PER_EMS_PAGE - 1)
 
 
 
@@ -129,7 +133,7 @@ void __near logcacheevent(char a, char b){
             if (sfx_page_reference_count[i] < 0){
                 I_Error("bad refcount?");
             }
-            if (sfx_free_bytes[i] > 64){
+            if (sfx_free_bytes[i] > BUFFERS_PER_EMS_PAGE){
                 I_Error("bad freebytes?");
             }
         }
@@ -507,7 +511,7 @@ int8_t __near S_EvictSFXPage(int8_t numpages){
         // }
 
 
-		sfx_free_bytes[evictedpage] = 64;
+		sfx_free_bytes[evictedpage] = BUFFERS_PER_EMS_PAGE;
 		evictedpage = sfxcache_nodes[evictedpage].prev;
 	}	
 
@@ -1196,39 +1200,92 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
     int16_t_union lumpsize = sfx_data[sfx_id].lumpsize;
     uint8_t sample_256_size = lumpsize.bu.bytehigh + (lumpsize.bu.bytelow ? 1 : 0);
     int16_t_union allocate_position;
-    int8_t pagecount;
+    int8_t pagecount = sample_256_size >> 6;   // todo rol 2?
+    // round up
+    pagecount += (sample_256_size & BUFFERS_PER_EMS_PAGE_MASK) ? 1 : 0;
+
     allocate_position.hu = 0;
     logcacheevent('z', sample_256_size);
-    if (sample_256_size <= 64) {
+    if (pagecount == 1) {
         // todo iterate in head order?
-        for (sfx_page = 0; sfx_page < NUM_SFX_PAGES; sfx_page++){
+        for (sfx_page = sfxcache_head; sfx_page != -1; sfx_page = sfxcache_nodes[sfx_page].prev){
             if (sample_256_size <= sfx_free_bytes[sfx_page]){
-                allocate_position.bu.bytehigh = 64 - sfx_free_bytes[sfx_page];  // keep track of where to put the sound
+                allocate_position.bu.bytehigh = BUFFERS_PER_EMS_PAGE - sfx_free_bytes[sfx_page];  // keep track of where to put the sound
                 // allocate_position.bu.bytelow = 0;
                 sfx_free_bytes[sfx_page] -= sample_256_size;   // subtract...
                 goto found_page;
             }
         }
 
-        goto evict_one;
+        // evict_one:
+
+        S_UpdateLRUCache();
+        // lets locate a page to evict
+
+        logcacheevent('v', 1);
+        sfx_page = S_EvictSFXPage(1);
+        logcacheevent('w', i);
+        if (sfx_page == -1){
+            return -1;
+        } else {
+            sfx_free_bytes[sfx_page] -= sample_256_size;
+            logcacheevent('x', sfx_page);
+
+        }
+        // allocate_position.hu = 0;
+
+        // continue to found_page
+
+        found_page:
+
+        // record page in high byte
+        // record offset (multiplied by 256) in low byte.
+        sfx_data[sfx_id].cache_position.bu.bytehigh = sfx_page;
+        sfx_data[sfx_id].cache_position.bu.bytelow = allocate_position.bu.bytehigh;
+
+        // I_Error("%lx %lx %i %i", sfx_data, sfx_data[sfx_id], sfx_data[sfx_id].cache_position.hu, sfx_id );
+        
+        // _disable();
+        Z_QuickMapSFXPageFrame(sfx_page);
+        // Note - in theory an interrupt for an SFX can fire here during 
+        // this transfer and blow up our current SFX ems page. However
+        // we make absolutely sure in the interrupt  to page the SFX page 
+        // back to where its supposed to go.
+        W_CacheLumpNumDirectWithOffset(
+            sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK, 
+            MK_FP(SFX_PAGE_SEGMENT_PTR, allocate_position.hu), 
+            0x18,           // skip header and padding.
+            lumpsize.hu);   // num bytes..
+
+
+
+        // loop here to apply application volume to sfx 
+        if (snd_SfxVolume != MAX_VOLUME_SFX){
+            S_NormalizeSfxVolume(allocate_position.hu, lumpsize.h);
+        }
+
+        // pad zeroes? todo maybe 0x80 or dont do
+        _fmemset(MK_FP(SFX_PAGE_SEGMENT_PTR, allocate_position.hu + lumpsize.hu), 0, (0x100 - (lumpsize.bu.bytelow)) & 0xFF);  // todo: just NEG instruction?
+        // _enable();
+
+
+        // don't do this! it defaults to zero, and is reset to zero during eviction if necessary.
+        // sfxcache_nodes[sfx_page].pagecount = 0;
+        // sfxcache_nodes[sfx_page].numpages = 0;
+
+        return 0;
         
     } else {
-        int8_t j = 0;
-        
-        pagecount = sample_256_size >> 6;   // todo rol 2?
-        // pagecount is full 16384 pages
-        pagecount += (sample_256_size & 0x63) ? 1 : 0;
-        
+        int8_t j;
         // greater than 1 EMS page in size...
-
         for (sfx_page = sfxcache_head; sfx_page != -1; sfx_page = sfxcache_nodes[sfx_page].prev){
             int8_t currentpage = sfx_page;
-            for (j = 0; j <= pagecount; j++){
+            for (j = 0; j < pagecount; j++){
                 if (currentpage == -1){
                     break;
                 } else {
                     
-                    if (sfx_free_bytes[currentpage] == 64){
+                    if (sfx_free_bytes[currentpage] == BUFFERS_PER_EMS_PAGE){
                         currentpage = sfxcache_nodes[currentpage].prev;
                         continue;
                     } else {
@@ -1237,167 +1294,95 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
                 }
             }
             
-            if (j != (pagecount+1)){ // didnt find enough pages.
+            if (j < pagecount){ // didnt find enough pages.
                 continue;
             }
 
             // page sfx_page works.
 
             // allocate_position.hu = 0;    // page aligned. addr is 0...
-            currentpage = sfx_page;
-            for (j = 0; j < pagecount; j++){
-                sfx_free_bytes[currentpage] = 0;
-                currentpage = sfxcache_nodes[currentpage].prev;
-            }
-            sfx_free_bytes[currentpage] -= sample_256_size & 63;
+
             goto found_page_multiple;
 
         }
 
-        goto evict_multiple;
-    }
+        // evict_multiple:
+        S_UpdateLRUCache();
 
-    evict_one:
+        sfx_page = S_EvictSFXPage(pagecount); // get the headmost
+        allocate_position.hu = 0;
 
-//uint8_t                 sfx_page_lru[NUM_SFX_PAGES];    // recency
+        if (sfx_page == -1){
+            return -1;
+        } 
+        
+        found_page_multiple:
 
-    S_UpdateLRUCache();
-    // lets locate a page to evict
+        {
+            int8_t j;
+            uint16_t offset = 18;    // skip header and padding.
+            int16_t lump = sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK;
+            int8_t currentpage = sfx_page;
 
-    logcacheevent('v', 1);
-    sfx_page = S_EvictSFXPage(1);
-    logcacheevent('w', i);
-    if (sfx_page == -1){
-        return -1;
-    } else {
-        sfx_free_bytes[sfx_page] -= sample_256_size;
-        logcacheevent('x', sfx_page);
+            sfx_data[sfx_id].cache_position.bu.bytehigh = sfx_page;
+            sfx_data[sfx_id].cache_position.bu.bytelow = 0;
 
-    }
-    // allocate_position.hu = 0;
+            // iterate thru full pages
+            for (j = 0; j < (pagecount-1); j++){
+                sfxcache_nodes[currentpage].pagecount = pagecount - j;
+                sfxcache_nodes[currentpage].numpages  = pagecount;
 
-    // continue to found_page
+                // I_Error("%lx %lx %sfx_page %i", sfx_data, sfx_data[sfx_id], sfx_data[sfx_id].cache_position.hu, sfx_id );
+                Z_QuickMapSFXPageFrame(currentpage);
+                // Note - in theory an interrupt for an SFX can fire here during 
+                // this transfer and blow up our current SFX ems page. However
+                // we make absolutely sure in the interrupt  to page the SFX page 
+                // back to where its supposed to go.
+                W_CacheLumpNumDirectWithOffset(
+                    lump, 
+                    MK_FP(SFX_PAGE_SEGMENT_PTR, 0), 
+                    offset,   
+                    16384);   // num bytes..
+                sfx_free_bytes[currentpage] = 0;
 
-    found_page:
+                    // loop here to apply application volume to sfx 
+                
+                if (snd_SfxVolume != MAX_VOLUME_SFX){
+                    S_NormalizeSfxVolume(0, 16384);
+                }
 
-    // record page in high byte
-    // record offset (multiplied by 256) in low byte.
-    sfx_data[sfx_id].cache_position.bu.bytehigh = sfx_page;
-    sfx_data[sfx_id].cache_position.bu.bytelow = allocate_position.bu.bytehigh;
+                currentpage = sfxcache_nodes[currentpage].prev;
+                offset += 16384;
 
-    // I_Error("%lx %lx %i %i", sfx_data, sfx_data[sfx_id], sfx_data[sfx_id].cache_position.hu, sfx_id );
-    
-    // _disable();
-    Z_QuickMapSFXPageFrame(sfx_page);
-    // Note - in theory an interrupt for an SFX can fire here during 
-    // this transfer and blow up our current SFX ems page. However
-    // we make absolutely sure in the interrupt  to page the SFX page 
-    // back to where its supposed to go.
-    W_CacheLumpNumDirectWithOffset(
-        sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK, 
-        MK_FP(SFX_PAGE_SEGMENT_PTR, allocate_position.hu), 
-        0x18,           // skip header and padding.
-        lumpsize.hu);   // num bytes..
+            }
 
+            sfx_free_bytes[currentpage] -= sample_256_size & BUFFERS_PER_EMS_PAGE_MASK;
+            // mark last page
+            sfxcache_nodes[currentpage].pagecount = 1;
+            sfxcache_nodes[currentpage].numpages = pagecount;
 
-    // pad zeroes
-    _fmemset(MK_FP(SFX_PAGE_SEGMENT_PTR, allocate_position.hu + lumpsize.hu), 0, (0x100 - (lumpsize.bu.bytelow)) & 0xFF);  // todo: just NEG instruction?
-    // _enable();
-
-    // loop here to apply application volume to sfx 
-    if (snd_SfxVolume != MAX_VOLUME_SFX){
-        S_NormalizeSfxVolume(allocate_position.hu, lumpsize.h);
-    }
-     
-
-    // don't do this! it defaults to zero, and is reset to zero during eviction if necessary.
-    // sfxcache_nodes[sfx_page].pagecount = 0;
-    // sfxcache_nodes[sfx_page].numpages = 0;
-
-    return 0;
-
-    evict_multiple:
-    S_UpdateLRUCache();
-
-    logcacheevent('s', pagecount+1);
-    sfx_page = S_EvictSFXPage(pagecount+1); // get the headmost
-    allocate_position.hu = 0;
-
-    logcacheevent('t', sfx_page);
-    if (sfx_page == -1){
-        return -1;
-    } else {
-        int8_t j;
-        int8_t currentpage = sfx_page;
-        for (j = 0; j < pagecount;j++){
-            sfx_free_bytes[currentpage] = 0;
-            currentpage = sfxcache_nodes[currentpage].prev;
-        }
-        sfx_free_bytes[currentpage] -= sample_256_size & 63;
-        logcacheevent('u', sfx_page);
-
-
-    }
-
-    //. continue to found_page_multiple    
-    
-
-    found_page_multiple:
-    {
-        int8_t j;
-        uint16_t offset = 0;
-        int16_t lump = sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK;
-        int8_t currentpage = sfx_page;
-        // if (sfx_id > NUMSFX){
-        //     I_Error("bad sfx!?");
-        // }
-        sfx_data[sfx_id].cache_position.bu.bytehigh = sfx_page;
-        sfx_data[sfx_id].cache_position.bu.bytelow = 0;
-        for (j = 0; j < pagecount; j++, offset += 16384){
-            sfxcache_nodes[currentpage].pagecount = pagecount - j + 1;
-            sfxcache_nodes[currentpage].numpages = pagecount + 1;
-
-            // I_Error("%lx %lx %sfx_page %i", sfx_data, sfx_data[sfx_id], sfx_data[sfx_id].cache_position.hu, sfx_id );
+            // final case, leftover bytes...
             Z_QuickMapSFXPageFrame(currentpage);
-            // Note - in theory an interrupt for an SFX can fire here during 
-            // this transfer and blow up our current SFX ems page. However
-            // we make absolutely sure in the interrupt  to page the SFX page 
-            // back to where its supposed to go.
             W_CacheLumpNumDirectWithOffset(
-                lump, 
-                MK_FP(SFX_PAGE_SEGMENT_PTR, 0), 
-                0x18u + offset,           // skip header and padding.
-                16384);   // num bytes..
-            currentpage = sfxcache_nodes[currentpage].prev;
+                    lump, 
+                    MK_FP(SFX_PAGE_SEGMENT_PTR, 0), 
+                    offset,           // skip header and padding.
+                    lumpsize.hu & 16383);   // num bytes..
 
-                // loop here to apply application volume to sfx 
-            
+            // pad zeroes? todo maybe 0x80 or dont do
+            _fmemset(MK_FP(SFX_PAGE_SEGMENT_PTR, lumpsize.hu & 16383), 0, (0x100 - (lumpsize.bu.bytelow)) & 0xFF);  // todo: just NEG instruction?
+
             if (snd_SfxVolume != MAX_VOLUME_SFX){
-                S_NormalizeSfxVolume(0, 16384);
+                S_NormalizeSfxVolume(0, lumpsize.hu & 16383);
             }
 
 
-        }
-        // mark last page
-        sfxcache_nodes[currentpage].pagecount = 1;
-        sfxcache_nodes[currentpage].numpages = pagecount + 1;
-
-        // final case, leftover bytes...
-        Z_QuickMapSFXPageFrame(currentpage);
-        W_CacheLumpNumDirectWithOffset(
-                lump, 
-                MK_FP(SFX_PAGE_SEGMENT_PTR, 0), 
-                0x18u + offset,           // skip header and padding.
-                lumpsize.hu & 16383);   // num bytes..
-
-        if (snd_SfxVolume != MAX_VOLUME_SFX){
-            S_NormalizeSfxVolume(0, lumpsize.hu & 16383);
+            return 0;
         }
 
-        // pad zeroes
-        _fmemset(MK_FP(SFX_PAGE_SEGMENT_PTR, allocate_position.hu + lumpsize.hu), 0, (0x100 - (lumpsize.bu.bytelow)) & 0xFF);  // todo: just NEG instruction?
 
-        return 0;
+
+
     }
 }
 
