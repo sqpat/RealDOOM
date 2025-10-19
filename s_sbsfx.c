@@ -544,7 +544,7 @@ void __near SB_Service_Mix22Khz(){
 
 	int8_t sound_played = 0;	// first sound copies. 2nd and more add. if no sounds played, clear buffer.
 
-	for (i = 0; i < NUM_SFX_TO_MIX; i++){
+	for (i = 0; i < numChannels; i++){
 
 		if (sb_voicelist[i].sfx_id & PLAYING_FLAG){
 
@@ -793,7 +793,7 @@ void __near SB_Service_Mix11Khz(){
 	int8_t sound_played = 0;	// first sound copies. 2nd and more add. if no sounds played, clear buffer.
 
 
-	for (i = 0; i < NUM_SFX_TO_MIX; i++){
+	for (i = 0; i < numChannels; i++){
 
 		if (sb_voicelist[i].sfx_id & PLAYING_FLAG){  
 			
@@ -1400,7 +1400,7 @@ int8_t __far SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
 
 
     // I_Error("\n here %i %lx\n", W_LumpLength(110), lumpinfo9000[110].position);
-    for (i = 0; i < NUM_SFX_TO_MIX;i++){
+    for (i = 0; i < numChannels;i++){
         if (!(sb_voicelist[i].sfx_id & PLAYING_FLAG)){
             // check if sound already in cache (using map lookup)
             if (sfx_data[sfx_id].cache_position.bu.bytehigh == SOUND_NOT_IN_CACHE){
