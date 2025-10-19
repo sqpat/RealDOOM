@@ -585,8 +585,6 @@ push  bp
 mov   bp, sp
 xor   dh, dh
 push  dx  ; sfx_id is [bp - 2]
-mov   di, ax  ; di holds origin
-mov   si, bx  ; si holds soundorg_secnum
 
 
 ;	// Check to see if it is audible,
@@ -595,9 +593,11 @@ mov   si, bx  ; si holds soundorg_secnum
 
 
 
-cmp   si, SECNUM_NULL
+cmp   bx, SECNUM_NULL
 jne   location_good_adjust_sound_for_sector
 
+mov   si, bx  ; si holds soundorg_secnum
+mov   di, ax  ; di holds origin
 
 mov   cx, MAX_SOUND_VOLUME ; just in case we skip and dont calculate vol.
 
@@ -636,14 +636,14 @@ jmp   params_ready_for_sound_vol_adjust
 
 
 location_good_adjust_sound_for_sector:
-;mov   bx, si  ; bx already si
+
 mov   ax, SECTORS_SOUNDORGS_SEGMENT
 mov   es, ax
 SHIFT_MACRO shl   bx 2
-les   ax, dword ptr es:[bx + SECTOR_SOUNDORG_T.secso_soundorgX]
-mov   dx, es
-xor   cx, cx
-mov   bx, cx
+les   dx, dword ptr es:[bx + SECTOR_SOUNDORG_T.secso_soundorgX] ; x hibits
+mov   cx, es                                                    ; y hibits
+xor   ax, ax
+mov   bx, ax
 
 params_ready_for_sound_vol_adjust:
 
@@ -893,8 +893,8 @@ update_sound_with_sector:
 mov   ax, SECTORS_SOUNDORGS_SEGMENT ; todo ptr
 mov   es, ax
 SHIFT_MACRO shl   bx 2
-les   dx, dword ptr es:[bx + SECTOR_SOUNDORG_T.secso_soundorgX]
-mov   cx, es
+les   dx, dword ptr es:[bx + SECTOR_SOUNDORG_T.secso_soundorgX] ; x hibits
+mov   cx, es                                                    ; y hibits
 xor   ax, ax
 mov   bx, ax
 

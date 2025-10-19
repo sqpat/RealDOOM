@@ -48,6 +48,9 @@ extern cache_node_page_count_t sfxcache_nodes[NUM_SFX_PAGES];
 extern int8_t  sfxcache_tail;
 extern int8_t  sfxcache_head;
 
+extern uint8_t sfx_mix_table_2[512];
+
+
 
 
 #define MAX_VOLUME_SFX 0x7F
@@ -56,6 +59,7 @@ extern int8_t  sfxcache_head;
 #define BUFFERS_PER_EMS_PAGE 16384 / 256
 // 63
 #define BUFFERS_PER_EMS_PAGE_MASK (BUFFERS_PER_EMS_PAGE - 1)
+
 
 
 
@@ -668,14 +672,15 @@ void __near SB_Service_Mix22Khz(){
                                     if (sb_voicelist[i].samplerate){
                                         for (j = 0; j < copy_length; j++){
                                             int16_t total = dma_buffer[j] + source[j];
-                                            dma_buffer[j] = total >> 1;
+                                            dma_buffer[j] = sfx_mix_table_2[total];
                                         }
                                     } else {
                                         for (j = 0; j < copy_length>>1; j++){
                                             int16_t total = dma_buffer[2*j] + source[j];
-                                            dma_buffer[2*j] = total >> 1;
+                                            dma_buffer[2*j] = sfx_mix_table_2[total];
                                             total = dma_buffer[2*j+1] + source[j];
-                                            dma_buffer[2*j+1] = total >> 1;
+                                            dma_buffer[2*j+1] = sfx_mix_table_2[total];
+
                                         }
                                     }
                                 }
@@ -721,20 +726,25 @@ void __near SB_Service_Mix22Khz(){
                                             int8_t intermediate = (source[j] - 0x80);
                                             total.h = FastIMul8u8u(volume, intermediate) << 1;
                                             total.bu.bytehigh += 0x80;
+                                            total.hu = (dma_buffer[j] + total.bu.bytehigh);
+                                            dma_buffer[j] = sfx_mix_table_2[total.hu];
 
-                                            dma_buffer[j] = (dma_buffer[j] + total.bu.bytehigh) >> 1;
                                             
 
                                         }
                                     } else {
                                         for (j = 0; j < copy_length>>1; j++){
                                             int16_t_union total;
+                                            int16_t total2;
                                             int8_t intermediate = (source[j] - 0x80);
                                             total.h = FastIMul8u8u(volume, intermediate) << 1;
                                             total.bu.bytehigh += 0x80;
+                                            
+                                            total2 =   (dma_buffer[2*j+1] + total.bu.bytehigh);
+                                            total.hu = (dma_buffer[2*j]  + total.bu.bytehigh);
 
-                                            dma_buffer[2*j] = (dma_buffer[2*j]    + total.bu.bytehigh) >> 1;
-                                            dma_buffer[2*j+1] = (dma_buffer[2*j+1] + total.bu.bytehigh) >> 1;
+                                            dma_buffer[2*j+0] = sfx_mix_table_2[total.hu];
+                                            dma_buffer[2*j+1] = sfx_mix_table_2[total2];
                                             
 
                                         }
@@ -898,7 +908,7 @@ void __near SB_Service_Mix11Khz(){
                                     for (j = 0; j < copy_length; j++){
                                         // fast bad approx 
                                         int16_t total = dma_buffer[j] + source[j];
-                                        dma_buffer[j] = total >> 1;
+                                        dma_buffer[j] = sfx_mix_table_2[total];
 
                                         // more correct. more slow
                                         // int16_t total = FastMul8u8u(sound_played, dma_buffer[j]) + source[j];
@@ -932,7 +942,8 @@ void __near SB_Service_Mix11Khz(){
                                         total.h = FastIMul8u8u(volume, intermediate) << 1;
                                         total.bu.bytehigh += 0x80;
                                         // fast bad approx 
-                                        dma_buffer[j] = (dma_buffer[j] + total.bu.bytehigh) >> 1;
+                                        total.hu = (dma_buffer[j] + total.bu.bytehigh);
+                                        dma_buffer[j] = sfx_mix_table_2[total.hu];
 
                                         // more correct. more slow
                                         // total.hu = FastMul8u8u(sound_played, dma_buffer[j]) + total.bu.bytehigh;

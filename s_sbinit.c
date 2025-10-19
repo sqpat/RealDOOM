@@ -50,6 +50,7 @@ uint8_t SB_OriginalVoiceVolumeRight = 255;
 
 
 
+
 // uint16_t SB_MixMode = 0; //SB_STEREO;
 // uint16_t SB_MixMode = SB_STEREO | SB_SIXTEEN_BIT;
 // uint16_t SB_MixMode = SB_SIXTEEN_BIT;
@@ -708,6 +709,23 @@ int16_t __near  SB_InitCard(){
 
 }
 
+uint8_t sfx_mix_table_2[512];
+
+    
+
+void __near S_CreateVolumeTable(){
+    int16_t i;
+    memset(&sfx_mix_table_2[000], 0x00, 128);
+    memset(&sfx_mix_table_2[384], 0xFF, 128);
+
+    for (i = 128; i < 384; i++){
+        sfx_mix_table_2[i] = (i - 128);
+    }
+
+}
+
+
+
 void __far S_InitSFXCache(){
     // initialize sfx cache at app start
     int8_t i;
@@ -733,7 +751,7 @@ void __far S_InitSFXCache(){
 
     sfxcache_nodes[sfxcache_head].next = -1;
     sfxcache_nodes[sfxcache_tail].prev = -1;
-
+    S_CreateVolumeTable();
     
 
 
