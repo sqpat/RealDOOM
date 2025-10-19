@@ -893,10 +893,10 @@ update_sound_with_sector:
 mov   ax, SECTORS_SOUNDORGS_SEGMENT ; todo ptr
 mov   es, ax
 SHIFT_MACRO shl   bx 2
-les   ax, dword ptr es:[bx + SECTOR_SOUNDORG_T.secso_soundorgX]
-mov   dx, es
-xor   cx, cx
-mov   bx, cx
+les   dx, dword ptr es:[bx + SECTOR_SOUNDORG_T.secso_soundorgX]
+mov   cx, es
+xor   ax, ax
+mov   bx, ax
 
 origins_ready:
 
