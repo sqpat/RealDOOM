@@ -81,8 +81,7 @@ mov   si, SFX_SWTCHN
 SHIFT_MACRO shl   bx 3
 cmp   dl, 11  ; exit switch
 jne   not_exit_switch
-;mov   si, SFX_SWTCHX
-inc    si
+inc    si      ;mov   si, SFX_SWTCHX
 not_exit_switch:
 push  si  ; bp - 2 sfx
 push  bx  ; bp - 4 lineside 0 shifted 3
@@ -142,9 +141,10 @@ mov   di, SIDE_T.s_toptexture
 
 do_button_texture_stuff:
 
-xor   dx, dx
-mov   dl, byte ptr [bp - 2]
-mov   ax, word ptr ds:[_buttonlist + BUTTON_T.button_soundorg] ; jank. bug in original source?
+mov   dx, word ptr [bp - 2]  ; get sfx
+pop   ax ; word ptr [bp - 8]  ; get linefrontsecnum
+push  ax ; word ptr [bp - 8]  ; put back for later
+
 
 call  S_StartSoundWithSecnum_
 
