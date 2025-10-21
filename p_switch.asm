@@ -76,13 +76,20 @@ xchg  bx, dx
 
 mov   si, SIDES_SEGMENT
 mov   es, si
-mov   si, SFX_SWTCHN
 
+mov   si, SFX_SWTCHN
 SHIFT_MACRO shl   bx 3
+
+; i think people dont like change... lets not fix this bug, and lets use the 'original' switch sfx. uncomment to fix the bug in vanilla
+COMMENT  @
 cmp   dl, 11  ; exit switch
 jne   not_exit_switch
 inc    si      ;mov   si, SFX_SWTCHX
 not_exit_switch:
+
+@
+
+
 push  si  ; bp - 2 sfx
 push  bx  ; bp - 4 lineside 0 shifted 3
 push  ax  ; bp - 6 linenum
