@@ -525,7 +525,13 @@ xor   di, di
 call  P_ChangeSwitchTexture_
 
 ;call  G_SecretExitLevel_ ; inlined
-mov    al, byte ptr ds:[_map31_exists]
+
+mov    al, 1
+cmp    byte ptr ds:[_commercial], al
+jne    just_do_secret_exit
+;    // IF NO WOLF3D LEVELS, NO SECRET EXIT!
+mov    al, byte ptr ds:[_map31_exists]  ; secret exit only if map 31 exists in commecial game.
+just_do_secret_exit:
 mov    byte ptr ds:[_secretexit], al
 mov    byte ptr ds:[_gameaction], GA_COMPLETED
 
