@@ -351,20 +351,21 @@ mov   ax, S_CLIPPING_DIST_HIGH
 sbb   ax, dx
 mov   bx, S_ATTENUATOR
 
-; ax intermediate highbits
+; ax is intermediate highbits
+
 cmp   byte ptr ds:[_gamemap], 8
-je    is_map_8
+jne   is_not_map_8
 ; gamemap 8 case
 cmp   dx, S_CLIPPING_DIST_HIGH
 jl    dont_clip_map_8_high
-mov   al, 15
+mov   ax, 15
 ret
 
 clip_max_vol:
 mov   al, MAX_SOUND_VOLUME
 ret
 
-is_map_8:
+is_not_map_8:
 mov   dx, MAX_SOUND_VOLUME
 imul  dx
 db 0FFh  ; lcall[addr]
