@@ -570,20 +570,21 @@ jmp    done_with_touchspecial_switch_block
 
 
 touchspecial_case_87:
-mov    word ptr ds:[di], GOTBFG9000
 mov    ax, WP_BFG
 
 do_giveweapon_touchspecial_with_cwd:
 cwd
 do_giveweapon_touchspecial:
 
-shr    bx, 1
+shr    bx, 1 ; undo word lookup
 add    bx, (GOTCHAINGUN - SPR_MGUN + SPR_ARM1) ; renormalize 
-mov    word ptr ds:[di], bx
 
 
 call   P_GiveWeapon_
 jnc    exit_ptouchspecialthing
+
+; write message only if we picked it up...
+mov    word ptr ds:[di], bx
 
 mov    cx, SFX_WPNUP
 jmp    done_with_touchspecial_switch_block

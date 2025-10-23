@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/10/21 01:56:33
+Created on:       25/10/21 02:11:23
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -195,8 +195,8 @@ Module: i_main.obj(C:\REALDOOM\i_main.c)
 Module: i_quit.obj(i_quit.ASM)
 0000:26d3*     I_ShutdownWads_
 0000:2613*     I_ShutdownMouse_
-0000:277b*     I_QUIT_ENDMARKER_
 0000:25d0*     I_QUIT_STARTMARKER_
+0000:277b*     I_QUIT_ENDMARKER_
 0000:26b7*     hackDSBack_
 0000:25d7*     I_ShutdownSound_
 0000:273c      I_Quit_
@@ -277,8 +277,8 @@ Module: st_stuff.obj(st_stuff.ASM)
 0000:2fa2      _tallnum
 0000:364f      ST_Responder_
 0000:3119      _st_statusbaron
-0000:341f*     STlib_updateflag_
 0000:302c      _keys
+0000:341f*     STlib_updateflag_
 0000:2f8a      _st_oldhealth
 0000:2f84*     ST_STUFF_STARTMARKER_
 0000:38b7*     ST_STUFF_ENDMARKER_
@@ -349,8 +349,8 @@ Module: math386.obj(math386.ASM)
 Module: main.obj(main.ASM)
 0000:5468      DEBUG_PRINT_NOARG_
 0000:52e9      locallib_strcpy_
-0000:530f      locallib_toupper_
 0000:502d*     G_Responder_
+0000:530f      locallib_toupper_
 0000:5454*     locallib_printstringfar_
 0000:576c      DEBUG_PRINT_
 0000:463c      G_CopyCmd_
@@ -364,14 +364,14 @@ Module: main.obj(main.ASM)
 0000:50ff      I_SetPalette_
 0000:535a      locallib_printhex_
 0000:43e7*     D_MAIN_STARTMARKER_
-0000:534d      locallib_putchar_
-0000:55a6*     D_Display_
 0000:4d7a      M_LoadDefaults_
+0000:55a6*     D_Display_
+0000:534d      locallib_putchar_
 0000:5456*     locallib_printstringnear_
-0000:5524      locallib_dos_setvect_old_
 0000:5151*     I_UpdateBox_
 0000:44b1      I_KeyboardISR_
 0000:57e7      D_ProcessEvents_
+0000:5524      locallib_dos_setvect_old_
 0000:5917*     D_DoomLoop_
 0000:4f1d      M_ScanTranslateDefaults_
 0000:52fd*     locallib_strlen_
@@ -520,9 +520,9 @@ Module: w_wad.obj(w_wad.ASM)
 0000:9329      W_ReadLump_
 0000:92e6      W_LumpLength_
 0000:93ad      W_CacheLumpNumDirectWithOffset_
+0000:91c2      W_CheckNumForName_
 0000:93f4*     W_WAD_ENDMARKER_
 0000:92cf      W_GetNumForName_
-0000:91c2      W_CheckNumForName_
 0000:93a2      W_CacheLumpNameDirectFarString_
 0000:93c5      W_CacheLumpNumDirectFragment_
 0000:925c      SELFMODIFY_start_lump_for_search
@@ -811,4 +811,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  df90 (57232.)
 Entry point address: 0000:a68c
-Link time: 00:00.74
+Link time: 00:00.20
