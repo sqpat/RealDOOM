@@ -4570,19 +4570,19 @@ and   dx, TF_FUNCBITS
 cmp   dx, TF_MOBJTHINKER_HIGHBITS
 jne   not_live_boss_continue_scan
 
-add   bx, (_thinkerlist + THINKER_T.t_data)
 cmp   ax, si
 je    not_live_boss_continue_scan
 
-cmp   cl, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
+cmp   cl, byte ptr ds:[bx + _thinkerlist + THINKER_T.t_data + MOBJ_T.m_mobjtype]
 jne   not_live_boss_continue_scan
-cmp   word ptr ds:[bx + MOBJ_T.m_health], 0
-jnle  exit_a_bossdeath
+cmp   word ptr ds:[bx + _thinkerlist + THINKER_T.t_data + MOBJ_T.m_health], 0
+jnle  exit_a_bossdeath   ; 	    // other boss not dead
 
 not_live_boss_continue_scan:
 mov   ax, word ptr ds:[bx + _thinkerlist + THINKER_T.t_next]
 test  ax, ax
 jne   scan_next_mobj_for_bosscheck
+
 all_bosses_dead:
 
 cmp   byte ptr ds:[_commercial], 0
@@ -4612,7 +4612,7 @@ jne   do_exit_level
 do_lower_floor_to_lowest:
 mov   bx, FLOOR_LOWERFLOORTOLOWEST
 mov   dx, -1
-do_tag_66_and_door:
+do_tag_666_and_door:
 mov   ax, TAG_666
 jmp   do_floor_and_exit
 
@@ -4627,7 +4627,7 @@ je    do_lower_floor_to_lowest
 cmp   al, 6
 jne   do_exit_level
 mov   dx, DOOR_BLAZEOPEN
-jmp   do_tag_66_and_door
+jmp   do_tag_666_and_door
 
 
 
