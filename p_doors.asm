@@ -193,7 +193,7 @@ mov   dx, SFX_DOROPN
 jmp   set_dir_to_1_and_call_sound_and_exit
 
 
-
+    
 switch_case_verticaldoor_2_blazeraise:
 switch_case_verticaldoor_2_blazeclose:
 mov   bx, word ptr ds:[si + VLDOOR_T.vldoor_secnum]
@@ -517,19 +517,33 @@ jmp   switch_block_verticaldoor_case_default ; catch35+
 
 switch_block_verticaldoor_case_key:
 
-cbw
-xchg  ax, bx ; bx in ax
 
-cmp   dx, word ptr ds:[_playerMobjRef]
+
+cmp   dx, word ptr ds:[_playerMobjRef]  ; only player can open locked doors
 jne   exit_ev_verticaldoor
+
+
+; al is 0, 1, 2.
+; red key in powers lookup is 1, but its al = 2 in door logic
+; yellow in powers lookup is  2, but its al = 1 in door logic
+; 1/2 cases need to swap
+
+mov bl, al  ; backup
+neg al        ; al goes from 0,1,2 to 0,FF,FE
+sbb al, 0     ; al now 0,FE,FD
+and al, 3     ; al now 0, 2, 1
+cbw
+xchg ax, bx   ; al keeps old value!
+cbw           ; zero old value
+
 cmp   byte ptr ds:[_player + PLAYER_T.player_cards + bx], bh  
 jne   done_with_verticaldoor_switch_block
-cmp   byte ptr ds:[_player + PLAYER_T.player_cards + bx], bh 
+cmp   byte ptr ds:[_player + PLAYER_T.player_cards + 3 + bx], bh   ; check skull
 jne   done_with_verticaldoor_switch_block
 
 mov   dl, SFX_OOF
-add   bl, PD_BLUEK
-mov   word ptr ds:[_player + PLAYER_T.player_message], bx
+add   al, PD_BLUEK
+mov   word ptr ds:[_player + PLAYER_T.player_message], ax
 
 
 xor   ax, ax
