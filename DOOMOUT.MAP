@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/10/21 03:22:00
+Created on:       25/10/22 19:08:30
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -364,12 +364,12 @@ Module: main.obj(main.ASM)
 0000:53b3      locallib_printhex_
 0000:4427*     D_MAIN_STARTMARKER_
 0000:53a6      locallib_putchar_
-0000:4dc8      M_LoadDefaults_
 0000:55ff*     D_Display_
+0000:4dc8      M_LoadDefaults_
 0000:54af*     locallib_printstringnear_
 0000:557d      locallib_dos_setvect_old_
-0000:51a0*     I_UpdateBox_
 0000:44f1      I_KeyboardISR_
+0000:51a0*     I_UpdateBox_
 0000:583e      D_ProcessEvents_
 0000:596f*     D_DoomLoop_
 0000:4f6b      M_ScanTranslateDefaults_
@@ -394,8 +394,8 @@ Module: main.obj(main.ASM)
 0000:4f9d      M_SaveDefaults_
 0000:538c*     locallib_createhexnibble_
 0000:5248*     I_FinishUpdate_
-0000:54c1      locallib_printf_
 0000:57d8      S_PauseSound_
+0000:54c1      locallib_printf_
 0000:451b      I_StartTic_
 0000:5801      S_ResumeSound_
 0000:5491      locallib_strlwr_
@@ -549,8 +549,8 @@ Module: z_zone.obj(z_zone.ASM)
 0000:9aa1      Z_QuickMapWADPageFrame_
 0000:9c4a      Z_QuickMapRenderPlanes_
 0000:9a82      Z_QuickMapSFXPageFrame_
-0000:9bab      Z_QuickMapStatus_
 0000:9c34*     Z_QuickMapScreen0_
+0000:9bab      Z_QuickMapStatus_
 0000:9b10      Z_QuickMapRender_
 0000:9c08      Z_QuickMapScratch_7000_
 0000:9bdc      Z_QuickMapScratch_5000_

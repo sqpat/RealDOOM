@@ -620,15 +620,14 @@ cmp    al, MT_SERGEANT
 jae    attackabove12
 cmp    al, MT_POSSESSED
 jne    attack_sound_default
+; al already 1/sfx_pistol
 retf   
 attackabove12:
 cmp    al, MT_SHADOWS
 jbe    attack_sound_sgtatk
 cmp    al, MT_SKULL
-je     attack_sound_shotgun
-cmp    al, MT_KNIGHT
 jne    attack_sound_default
-mov    al, SFX_SKLATK
+mov    al, SFX_SKLATK  ; 033h
 retf   
 
 
@@ -689,7 +688,7 @@ retf
 ENDP
 
 attack_sound_sgtatk:
-mov    al, SFX_SGTATK
+mov    al, SFX_SGTATK  ; 034h
 retf   
 attack_sound_shotgun:
 mov    al, SFX_SHOTGN
