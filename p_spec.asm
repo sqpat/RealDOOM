@@ -1052,7 +1052,7 @@ mov       si, word ptr es:[si + LINE_T.l_sidenum] ; lineside0
 ; ax linetag
 ; dx garbage
 ; bx linespeical
-; cl frontsecnum
+; cx frontsecnum
 ; si lineside0
 ; di linenum
 
@@ -1076,10 +1076,17 @@ mov       dx, cx ; linefrontsecnum
 call      EV_DoFloor_
 do_change_switch_texture_call_pop_bx:
 pop       bx
+xor       ax, ax ; 5th arg 0
 
 do_change_switch_texture_call:
-xor       ax, ax
-push      ax
+
+; ax 5th arg to P_ChangeSwitchTexture_
+; dx garbage
+; bx linespeical
+; cx frontsecnum
+; si lineside0
+; di linenum
+
 mov       dx, si
 xchg      ax, di
 call      P_ChangeSwitchTexture_
@@ -1089,14 +1096,16 @@ POPA_NO_AX_OR_BP_MACRO
 ret      
 
 case_46:
+; bx not clobbered...
 mov       dx, DOOR_OPEN
 
 call      EV_DoDoor_
+mov       ax, 1 ; 5th arg 1
 jmp       do_change_switch_texture_call
 
 case_47:
 push      bx
-mov       dx, cx
+mov       dx, cx  ; linefrontsecnum to cx
 mov       bx, PLATFORM_RAISETONEARESTANDCHANGE
 push      cx
 xor       cx, cx
