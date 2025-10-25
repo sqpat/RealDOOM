@@ -742,9 +742,8 @@ void __far P_CrossSpecialLine( int16_t		linenum,int16_t		side,mobj_t __near*	thi
 //
 void __far P_ShootSpecialLine( mobj_t __near* thing,int16_t linenum ){
     int16_t		ok;
-	int16_t innerlinenum = linebuffer[linenum];
-	line_t __far* line = &lines[innerlinenum];
-	line_physics_t __far* line_physics = &lines_physics[innerlinenum];
+	line_t __far* line = &lines[linenum];
+	line_physics_t __far* line_physics = &lines_physics[linenum];
 	int16_t linespecial = line_physics->special;
 	uint8_t linetag = line_physics->tag;
 	int16_t linefrontsecnum = line_physics->frontsecnum;

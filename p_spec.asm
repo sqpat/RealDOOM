@@ -1029,10 +1029,9 @@ PUSHA_NO_AX_OR_BP_MACRO
 
 xchg      ax, si  ; si gets thing
 mov       di, dx  ; di gets linenum
-mov       bx, dx
-mov       dl, byte ptr ds:[si + MOBJ_T.m_mobjtype]  ; cl holds thing type.
+mov       bx, dx  ; bx/si will be line pointers
+mov       dl, byte ptr ds:[si + MOBJ_T.m_mobjtype]  ; dl holds thing type.
 
-mov       bx, word ptr ds:[bx + di + _linebuffer]
 mov       ax, LINES_PHYSICS_SEGMENT
 mov       es, ax
 SHIFT_MACRO shl       bx 2
