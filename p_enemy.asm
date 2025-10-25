@@ -4476,10 +4476,11 @@ jne   exit_a_bossdeath_3
 cmp   cl, MT_SPIDER
 jmp   generic_shared_jne_weird
 
-ultimate_episode_4:
+ultimate_episode_2:
+
 cmp   al, 8
-jne   map_not_8
-cmp   cl, MT_SPIDER
+jne   exit_a_bossdeath_3
+cmp   cl, MT_CYBORG
 jmp   generic_shared_jne_weird
 
 map_not_8:
@@ -4493,19 +4494,23 @@ is_ultimate_1:
 mov   al, byte ptr ds:[_gameepisode]
 cmp   al, 4
 ja    episode_above_4
+;       4   3   2   1
+;xor:   7   0   1   2
+;dec:  6   -1   0   1
 
-shr   al, 1
+xor   al, 3
+dec   ax
 mov   al, byte ptr ds:[_gamemap]
-ja    ultimate_episode_4 ; carry flag 0 and zero flag 0
-jnz   ultimate_episode_3 ; not zero
-jc    ultimate_episode_1 ; was odd, carried
+js    ultimate_episode_3 ; -1 case
+je    ultimate_episode_2 ;  0 case
+jpo   ultimate_episode_1 ; was odd
 ; fall thru
-ultimate_episode_2:
-
+ultimate_episode_4:
 cmp   al, 8
-jne   exit_a_bossdeath_3
-cmp   cl, MT_CYBORG
+jne   map_not_8
+cmp   cl, MT_SPIDER
 jmp   generic_shared_jne_weird
+
 
 
 
@@ -4524,13 +4529,13 @@ ret
 PROC    A_BossDeath_ NEAR
 PUBLIC  A_BossDeath_
 
-mov   bx, ax
+xchg  ax, bx
 mov   cl, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
-cmp   byte ptr ds:[_commercial], 0
-jne   is_commercial_1
+xor   ax, ax
+cmp   byte ptr ds:[_commercial], al
+jne   is_commercial_1 ; doom 2
 
-
-cmp   byte ptr ds:[_is_ultimate], 0
+cmp   byte ptr ds:[_is_ultimate], al
 jne   is_ultimate_1
 
 cmp   byte ptr ds:[_gamemap], 8
