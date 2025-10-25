@@ -364,7 +364,7 @@ jmp   done_with_doceiling_switch_block
 
 
 switch_doceiling_type_3:
-mov   byte ptr ds:[di + CEILING_T.ceiling_crush], 1
+mov   byte ptr es:[di + CEILING_T.ceiling_crush], 1
 mov   ax, word ptr es:[di + SECTOR_T.sec_ceilingheight]
 mov   word ptr ds:[bx + CEILING_T.ceiling_topheight], ax
 ;jmp   switch_doceiling_type_1 ; fall thru
