@@ -23,13 +23,6 @@ INSTRUCTION_SET_MACRO
 
 
 
-EXTRN P_FindHighestOrLowestFloorSurrounding_:NEAR
-EXTRN P_FindMinSurroundingLight_:NEAR
-EXTRN P_FindSectorsFromLineTag_:NEAR
-EXTRN P_FindNextHighestFloor_:NEAR
-EXTRN T_MovePlaneFloorUp_:NEAR
-EXTRN T_MovePlaneFloorDown_:NEAR
-EXTRN P_UpdateThinkerFunc_:NEAR
 EXTRN P_PlayerInSpecialSector_:NEAR
 EXTRN P_SetMobjState_:NEAR
 EXTRN P_MovePsprites_:NEAR

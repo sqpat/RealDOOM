@@ -166,8 +166,7 @@ sub       sp, 4 * MAX_ADJOINING_SECTORS  ; 400
 mov       cx, ax
 xchg      ax, bx
 SHIFT_MACRO shl       bx 4
-mov       ax, SECTORS_SEGMENT
-mov       es, ax
+mov       es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
 lea       di, [bp - 0400h]
 mov       si, word ptr es:[bx + SECTOR_T.sec_linesoffset]
@@ -210,8 +209,7 @@ mov       cx, ax
 jcxz      skip_loop
 lea       si, [bp - 0200h]
 
-mov       dx, SECTORS_SEGMENT
-mov       es, dx
+mov       es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
 
 loop_next_sector:
@@ -791,10 +789,10 @@ jmp       done_with_switch_block
 
 
 switch_case_91:
-mov       bx, FLOOR_RAISEFLOOR
+mov       bl, FLOOR_RAISEFLOOR
 jmp       call_do_floor_no_si_inc
 switch_case_5:
-mov       bx, FLOOR_RAISEFLOOR
+mov       bl, FLOOR_RAISEFLOOR
 call_do_floor_with_si_inc:
 inc       si ; si becomes 0
 call_do_floor_no_si_inc:
@@ -808,58 +806,58 @@ switch_case_83:
 xor       bx, bx ; FLOOR_LOWERFLOOR
 jmp       call_do_floor_no_si_inc
 switch_case_30:
-mov       bx, FLOOR_RAISETOTEXTURE
+mov       bl, FLOOR_RAISETOTEXTURE
 jmp       call_do_floor_with_si_inc
 switch_case_96:
-mov       bx, FLOOR_RAISETOTEXTURE
+mov       bl, FLOOR_RAISETOTEXTURE
 jmp       call_do_floor_no_si_inc
 switch_case_36:
-mov       bx, FLOOR_TURBOLOWER
+mov       bl, FLOOR_TURBOLOWER
 jmp       call_do_floor_with_si_inc
 switch_case_98:
-mov       bx, FLOOR_TURBOLOWER
+mov       bl, FLOOR_TURBOLOWER
 jmp       call_do_floor_no_si_inc
 switch_case_37:
-mov       bx, FLOOR_LOWERANDCHANGE
+mov       bl, FLOOR_LOWERANDCHANGE
 jmp       call_do_floor_with_si_inc
 switch_case_84:
-mov       bx, FLOOR_LOWERANDCHANGE
+mov       bl, FLOOR_LOWERANDCHANGE
 jmp       call_do_floor_no_si_inc
 switch_case_38:
-mov       bx, FLOOR_LOWERFLOORTOLOWEST
+mov       bl, FLOOR_LOWERFLOORTOLOWEST
 jmp       call_do_floor_with_si_inc
 switch_case_82:
-mov       bx, FLOOR_LOWERFLOORTOLOWEST
+mov       bl, FLOOR_LOWERFLOORTOLOWEST
 jmp       call_do_floor_no_si_inc
 switch_case_56:
-mov       bx, FLOOR_RAISEFLOORCRUSH
+mov       bl, FLOOR_RAISEFLOORCRUSH
 jmp       call_do_floor_with_si_inc
 switch_case_94:
-mov       bx, FLOOR_RAISEFLOORCRUSH
+mov       bl, FLOOR_RAISEFLOORCRUSH
 jmp       call_do_floor_no_si_inc
 switch_case_58:
-mov       bx, FLOOR_RAISEFLOOR24
+mov       bl, FLOOR_RAISEFLOOR24
 jmp       call_do_floor_with_si_inc
 switch_case_92:
-mov       bx, FLOOR_RAISEFLOOR24
+mov       bl, FLOOR_RAISEFLOOR24
 jmp       call_do_floor_no_si_inc
 switch_case_59:
-mov       bx, FLOOR_RAISEFLOOR24ANDCHANGE
+mov       bl, FLOOR_RAISEFLOOR24ANDCHANGE
 jmp       call_do_floor_with_si_inc
 switch_case_93:
-mov       bx, FLOOR_RAISEFLOOR24ANDCHANGE
+mov       bl, FLOOR_RAISEFLOOR24ANDCHANGE
 jmp       call_do_floor_no_si_inc
 switch_case_119:
-mov       bx, FLOOR_RAISEFLOORTONEAREST
+mov       bl, FLOOR_RAISEFLOORTONEAREST
 jmp       call_do_floor_with_si_inc
 switch_case_128:
-mov       bx, FLOOR_RAISEFLOORTONEAREST
+mov       bl, FLOOR_RAISEFLOORTONEAREST
 jmp       call_do_floor_no_si_inc
 switch_case_130:
-mov       bx, FLOOR_RAISEFLOORTURBO
+mov       bl, FLOOR_RAISEFLOORTURBO
 jmp       call_do_floor_with_si_inc
 switch_case_129:
-mov       bx, FLOOR_RAISEFLOORTURBO
+mov       bl, FLOOR_RAISEFLOORTURBO
 jmp       call_do_floor_no_si_inc
 
 switch_case_88:

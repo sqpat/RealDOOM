@@ -112,16 +112,16 @@ push  si
 push  di
 push  bp
 mov   bp, 1
-add   al, SECTOR_T.sec_floorheight  ; this is safe because they are 16 byte structs that are paragraph aligned. will never overflow.
+;NOTE: this is 0 anyway dont add
+; add   al, SECTOR_T.sec_floorheight  ; this is safe because they are 16 byte structs that are paragraph aligned. will never overflow.
 xchg  ax, si
-mov   ax, SECTORS_SEGMENT
-mov   es, ax
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
 ;	if (sector->floorheight - speed < dest) {
 
 
-mov   di, word ptr es:[si]
-mov   ax, di
+mov   ax, word ptr es:[si]
+mov   di, ax
 sub   ax, dx 
 
 cmp   ax, bx
@@ -278,9 +278,9 @@ push  ax  ; bp - 4
 cmp   byte ptr ds:[si + FLOORMOVE_T.floormove_direction], 0
 je    exit_move_floor
 
-mov   bx, word ptr ds:[si + FLOORMOVE_T.floormove_floordestheight]
-mov   dx, word ptr ds:[si + FLOORMOVE_T.floormove_speed]
-mov   cl, byte ptr ds:[si + FLOORMOVE_T.floormove_crush]
+mov   bx, word ptr ds:[si + FLOORMOVE_T.floormove_floordestheight]  ; fe00
+mov   dx, word ptr ds:[si + FLOORMOVE_T.floormove_speed]            ; 8
+mov   cl, byte ptr ds:[si + FLOORMOVE_T.floormove_crush]            ; 0
 ; ax already offset
 jl    floor_direction_down
 
@@ -304,8 +304,10 @@ mov   word ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef]
 
 cmp  byte ptr ds:[si + FLOORMOVE_T.floormove_direction], al
 mov  al, byte ptr ds:[si + FLOORMOVE_T.floormove_type]
-je   dont_change_specials
-jg   check_for_raising_donut
+je   dont_change_specials    ; dir was 0
+jg   check_for_raising_donut ; dir was 1
+
+;     dir is -1
 
 cmp   al, FLOOR_LOWERANDCHANGE
 jmp   do_type_compare
@@ -316,13 +318,10 @@ cmp   al, FLOOR_DONUTRAISE
 do_type_compare:
 jne   dont_change_specials
 
-mov   ax, SECTORS_SEGMENT
-mov   es, ax
-
-
-mov   al, byte ptr ds:[si + FLOORMOVE_T.floormove_texture]
-mov   byte ptr es:[bx + SECTOR_T.sec_floorpic], al
-mov   al, byte ptr ds:[si + FLOORMOVE_T.floormove_newspecial]
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+mov   ax, word ptr ds:[si + FLOORMOVE_T.floormove_newspecial] 
+;mov   al, byte ptr ds:[si + FLOORMOVE_T.floormove_texture] 
+mov   byte ptr es:[bx + SECTOR_T.sec_floorpic], ah
 mov   byte ptr ds:[bx + _sectors_physics + SECTOR_PHYSICS_T.secp_special], al
 
 dont_change_specials:
@@ -374,7 +373,6 @@ PUBLIC  EV_DoFloor_
 ; bp - 0204h secnumlist iter
 
 
-
 push  cx
 push  si
 push  di
@@ -383,9 +381,9 @@ mov   bp, sp
 
 mov   word ptr cs:[SELFMODIFY_set_frontsector+1], dx
 
-xor   bh, bh
+
 mov   byte ptr cs:[SELFMODIFY_set_dofloor_return], CLC_OPCODE
-mov   word ptr cs:[SELFMODIFY_set_dofloor_type + 1], bx
+mov   byte ptr cs:[SELFMODIFY_set_dofloor_type + 1], bl
 lea   dx, [bp - 0202h]
 sub   sp, 0200h
 push  dx
@@ -436,7 +434,7 @@ mov   word ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef]
 mov  ax, cx  ; ax gets secnum too
 ; set type 
 SELFMODIFY_set_dofloor_type:
-mov   bx, 01000h
+db 0BBh, 0FFh, 000h   ; mov bx, 000FFh
 
 mov   byte ptr ds:[si + FLOORMOVE_T.floormove_type], bl
 mov   byte ptr ds:[si + FLOORMOVE_T.floormove_crush], bh ; known 0
@@ -681,11 +679,11 @@ do_floor_switch_case_type_lowerAndChange:
 
 mov   word ptr ds:[si + FLOORMOVE_T.floormove_secnum], ax
 mov   word ptr ds:[si + FLOORMOVE_T.floormove_speed], FLOORSPEED
-mov   byte ptr ds:[si + FLOORMOVE_T.floormove_direction], dl ; 1
+mov   byte ptr ds:[si + FLOORMOVE_T.floormove_direction], -1 ; dir negative
 
 
-mov   word ptr cs:[selfmodify_check_secnum+4], ax
-cwd   ; secnum should be below 0x8000...
+mov   word ptr cs:[selfmodify_check_secnum+2], ax
+cwd   ; secnum should be below 0x8000... dx to 0
 call  P_FindHighestOrLowestFloorSurrounding_
 
 mov   word ptr ds:[si + FLOORMOVE_T.floormove_floordestheight], ax  ; STORE FLOORDESTHEIGHT FOR LATER
@@ -719,8 +717,9 @@ mov   es, ds:[_LINEFLAGSLIST_SEGMENT_PTR]
 test  byte ptr es:[bx], ML_TWOSIDED
 je    continue_secnum_lowerandchangeloop
 
+; found a sector to sue
+; get the line side secnum that isnt the same as the original sector 
 
-;	if (sideline_physics->frontsecnum == secnum) {
 
 mov   es, ds:[_LINES_PHYSICS_SEGMENT_PTR]
 
@@ -729,8 +728,9 @@ SHIFT_MACRO shl       bx 4
 
 
 mov   di, word ptr es:[bx + LINE_PHYSICS_T.lp_frontsecnum]
+
 selfmodify_check_secnum:
-cmp   word ptr es:[bx + LINE_PHYSICS_T.lp_frontsecnum], 01000h 
+cmp   di, 01000h 
 jne   set_sector_values_and_break_loop
 mov   di, word ptr es:[bx + LINE_PHYSICS_T.lp_backsecnum]
 set_sector_values_and_break_loop:
@@ -738,10 +738,17 @@ set_sector_values_and_break_loop:
 
 SHIFT_MACRO shl di 4
 mov   es, ds:[_SECTORS_SEGMENT_PTR]
-mov   al, byte ptr es:[di + SECTOR_T.sec_floorpic]
-mov   byte ptr ds:[si + FLOORMOVE_T.floormove_texture], al
-mov   al, byte ptr es:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_special]
-mov   byte ptr ds:[si + FLOORMOVE_T.floormove_newspecial], al
+; !! check the floor heights. 
+;			if (sec->floorheight == floor->floordestheight)
+mov   ax, word ptr es:[di + SECTOR_T.sec_floorheight]
+cmp   ax, word ptr ds:[si + FLOORMOVE_T.floormove_floordestheight]
+jne   continue_secnum_lowerandchangeloop
+
+mov   ah, byte ptr es:[di + SECTOR_T.sec_floorpic]
+mov   al, byte ptr ds:[di + _sectors_physics + SECTOR_PHYSICS_T.secp_special]
+mov   word ptr ds:[si + FLOORMOVE_T.floormove_newspecial], ax
+;mov   byte ptr ds:[si + FLOORMOVE_T.floormove_texture], al
+
 
 jmp   done_with_dofloor_switch_block
 
@@ -755,7 +762,7 @@ inc   bx
 inc   bx
 SELFMODIFY_set_lowerandchange_linecount:
 cmp   bx, 01000h
-jl    loop_next_secnum_lowerandchange
+jb    loop_next_secnum_lowerandchange
 
 
 

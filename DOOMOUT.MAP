@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/10/22 22:35:45
+Created on:       25/10/27 12:49:38
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -264,8 +264,8 @@ Module: st_stuff.obj(st_stuff.ASM)
 0000:306c      _w_arms
 0000:2f92      _st_faceindex
 0000:311d      _st_palette
-0000:2fdc      _armsbgarray
 0000:30f0      _w_maxammo
+0000:2fdc      _armsbgarray
 0000:2fd4      _tallpercent
 0000:3058      _w_health
 0000:3121*     ST_refreshBackground_
@@ -549,8 +549,8 @@ Module: z_zone.obj(z_zone.ASM)
 0000:9aa1      Z_QuickMapWADPageFrame_
 0000:9c4a      Z_QuickMapRenderPlanes_
 0000:9a82      Z_QuickMapSFXPageFrame_
-0000:9c34*     Z_QuickMapScreen0_
 0000:9bab      Z_QuickMapStatus_
+0000:9c34*     Z_QuickMapScreen0_
 0000:9b10      Z_QuickMapRender_
 0000:9c08      Z_QuickMapScratch_7000_
 0000:9bdc      Z_QuickMapScratch_5000_
