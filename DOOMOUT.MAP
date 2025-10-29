@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/10/27 12:49:38
+Created on:       25/10/27 13:12:42
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -264,8 +264,8 @@ Module: st_stuff.obj(st_stuff.ASM)
 0000:306c      _w_arms
 0000:2f92      _st_faceindex
 0000:311d      _st_palette
-0000:30f0      _w_maxammo
 0000:2fdc      _armsbgarray
+0000:30f0      _w_maxammo
 0000:2fd4      _tallpercent
 0000:3058      _w_health
 0000:3121*     ST_refreshBackground_
@@ -364,9 +364,9 @@ Module: main.obj(main.ASM)
 0000:53b3      locallib_printhex_
 0000:4427*     D_MAIN_STARTMARKER_
 0000:53a6      locallib_putchar_
+0000:4dc8      M_LoadDefaults_
 0000:55ff*     D_Display_
 0000:54af*     locallib_printstringnear_
-0000:4dc8      M_LoadDefaults_
 0000:557d      locallib_dos_setvect_old_
 0000:44f1      I_KeyboardISR_
 0000:51a0*     I_UpdateBox_
@@ -376,10 +376,10 @@ Module: main.obj(main.ASM)
 0000:5356*     locallib_strlen_
 0000:4836      G_BuildTiccmd_
 0000:4b28      CopyString13_
+0000:4821      G_ResetGameKeys_
 0000:59c6      D_DoomMain_
 0000:443d      cht_CheckCheat_Far_
 0000:45fd      _localcmds
-0000:4821      G_ResetGameKeys_
 0000:55af      I_ShutdownKeyboard_
 0000:4441      cht_CheckCheat_
 0000:54bf      DEBUG_PRINT_NOARG_CS_
@@ -810,4 +810,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  dfe0 (57312.)
 Entry point address: 0000:a6dc
-Link time: 00:00.74
+Link time: 00:00.19
