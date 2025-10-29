@@ -369,7 +369,7 @@ mov    ax, MAXHEALTH
 call   P_GiveBody_
 set_power_on_and_return:
 stc
-mov    word ptr ds:[bx + _player + PLAYER_T.player_powers], ax
+mov    word ptr ds:[bx + _player + PLAYER_T.player_powers], 1
 pop    bx
 ret
 ENDP

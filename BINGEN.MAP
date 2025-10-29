@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/10/27 13:12:41
+Created on:       25/10/27 13:34:26
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -93,18 +93,18 @@ P_ENEMY_TEXT           CODE           AUTO           2cec:4208       00001a12
 P_CEILNG_TEXT          CODE           AUTO           2cec:5c1a       00000287
 P_DOORS_TEXT           CODE           AUTO           2cec:5ea2       000003c7
 P_FLOOR_TEXT           CODE           AUTO           2cec:626a       000004a9
-P_INTER_TEXT           CODE           AUTO           2cec:6714       0000086e
-P_LIGHTS_TEXT          CODE           AUTO           2cec:6f82       00000298
-P_PLATS_TEXT           CODE           AUTO           2cec:721a       00000280
-P_SPEC_TEXT            CODE           AUTO           2cec:749a       000009e1
-P_SWITCH_TEXT          CODE           AUTO           2cec:7e7c       000003c0
-P_TELEPT_TEXT          CODE           AUTO           2cec:823c       0000017c
-P_TICK_TEXT            CODE           AUTO           2cec:83b8       000001fa
-P_USER_TEXT            CODE           AUTO           2cec:85b2       00000438
-P_INFO_TEXT            CODE           AUTO           2cec:89ea       00000345
-AM_MAP_TEXT            CODE           AUTO           2cec:8d30       00000b37
-S_SOUND_TEXT           CODE           AUTO           2cec:9868       0000051c
-D_ALGO_TEXT            CODE           AUTO           36c4:0004       0000002e
+P_INTER_TEXT           CODE           AUTO           2cec:6714       00000870
+P_LIGHTS_TEXT          CODE           AUTO           2cec:6f84       00000298
+P_PLATS_TEXT           CODE           AUTO           2cec:721c       00000280
+P_SPEC_TEXT            CODE           AUTO           2cec:749c       000009e1
+P_SWITCH_TEXT          CODE           AUTO           2cec:7e7e       000003c0
+P_TELEPT_TEXT          CODE           AUTO           2cec:823e       0000017c
+P_TICK_TEXT            CODE           AUTO           2cec:83ba       000001fa
+P_USER_TEXT            CODE           AUTO           2cec:85b4       00000439
+P_INFO_TEXT            CODE           AUTO           2cec:89ee       00000345
+AM_MAP_TEXT            CODE           AUTO           2cec:8d34       00000b37
+S_SOUND_TEXT           CODE           AUTO           2cec:986c       0000051c
+D_ALGO_TEXT            CODE           AUTO           36c4:0008       0000002e
 _TEXT                  CODE           AUTO           36c4:0040       0000325f
 FAR_DATA               FAR_DATA       AUTO           39ed:000f       00000000
 _NULL                  BEGDATA        DGROUP         39ee:0000       00000020
@@ -407,16 +407,16 @@ Module: main.obj(main.ASM)
 0000:66ed      I_SetPalette_
 0000:6953      locallib_printhex_
 0000:59c7*     D_MAIN_STARTMARKER_
-0000:6946      locallib_putchar_
-0000:6368      M_LoadDefaults_
 0000:6b9f*     D_Display_
+0000:6368      M_LoadDefaults_
+0000:6946      locallib_putchar_
+0000:6740*     I_UpdateBox_
+0000:5a91      I_KeyboardISR_
+0000:6dde      D_ProcessEvents_
 0000:6a4f*     locallib_printstringnear_
 0000:6b1d      locallib_dos_setvect_old_
-0000:5a91      I_KeyboardISR_
-0000:6740*     I_UpdateBox_
-0000:6dde      D_ProcessEvents_
-0000:6f0f*     D_DoomLoop_
 0000:650b      M_ScanTranslateDefaults_
+0000:6f0f*     D_DoomLoop_
 0000:68f6*     locallib_strlen_
 0000:5dd6      G_BuildTiccmd_
 0000:60c8      CopyString13_
@@ -424,9 +424,9 @@ Module: main.obj(main.ASM)
 0000:6f66*     D_DoomMain_
 0000:59dd      cht_CheckCheat_Far_
 0000:5b9d      _localcmds
-0000:6b4f      I_ShutdownKeyboard_
 0000:59e1      cht_CheckCheat_
 0000:6a5f      DEBUG_PRINT_NOARG_CS_
+0000:6b4f      I_ShutdownKeyboard_
 0000:6b14      locallib_dos_setvect_
 0000:68c0      locallib_strcmp_
 0000:6b0a      locallib_dos_getvect_
@@ -567,8 +567,8 @@ Module: w_wad.obj(w_wad.ASM)
 0000:a9ec*     W_WAD_ENDMARKER_
 0000:a8c7      W_GetNumForName_
 0000:a99a      W_CacheLumpNameDirectFarString_
-0000:a9bd      W_CacheLumpNumDirectFragment_
 0000:a854      SELFMODIFY_start_lump_for_search
+0000:a9bd      W_CacheLumpNumDirectFragment_
 0000:a79a*     W_WAD_STARTMARKER_
 0000:a876      SELFMODIFY_end_lump_for_search
 0000:a7be      W_CheckNumForNameFarString_
@@ -714,8 +714,8 @@ Module: m_menu.obj(m_menu.ASM)
 0c8b:0ab0*     M_FinishReadThis_
 Module: f_wipe.obj(f_wipe.ASM)
 0dcb:0132*     I_FinishUpdate_Fwipe_local_
-0dcb:01f4*     I_UpdateNoBlit_Fwipe_local_
 0dcb:0100*     I_ReadScreen_
+0dcb:01f4*     I_UpdateNoBlit_Fwipe_local_
 0dcb:0420*     wipe_initMelt_
 0dcb:04cc      wipe_StartScreen_
 0dcb:027c*     wipe_doMelt_
@@ -963,13 +963,13 @@ Module: p_pspr.obj(p_pspr.ASM)
 2cec:3c25*     A_ReFire_
 2cec:408b      A_BFGSpray_
 2cec:3e58*     A_FireMissile_
+2cec:4128      P_MovePsprites_
 2cec:3e6f*     A_FirePlasma_
 2cec:3e63*     A_FireBFG_
 2cec:4208*     P_PSPR_ENDMARKER_
 2cec:3ef5*     P_GunShot_
 2cec:411f*     A_BFGsound_
 2cec:3b6f*     A_WeaponReady_
-2cec:4128      P_MovePsprites_
 2cec:3a41*     A_CheckReload_
 2cec:3f74*     A_FireShotgun_
 2cec:3e8a*     P_BulletSlope_
@@ -1019,9 +1019,9 @@ Module: p_enemy.obj(p_enemy.ASM)
 2cec:47ee*     A_Look_
 2cec:4d0e*     A_BruisAttack_
 2cec:56a3*     A_XScream_
+2cec:5b6d      P_SetMobjState_
 2cec:57f7*     A_Metal_
 2cec:4561*     P_TryWalk_
-2cec:5b6d      P_SetMobjState_
 2cec:585d*     A_BrainScream_
 2cec:4cb5*     A_HeadAttack_
 2cec:56a9*     A_Pain_
@@ -1074,141 +1074,141 @@ Module: p_floor.obj(p_floor.ASM)
 2cec:626a      T_MovePlaneCeilingDown_
 2cec:6284      T_MovePlaneCeilingUp_
 Module: p_inter.obj(p_inter.ASM)
-2cec:68ff      P_TouchSpecialThing_
+2cec:6901      P_TouchSpecialThing_
 2cec:67d8*     P_GiveWeapon_
 2cec:6854*     P_GiveCard_
-2cec:6cf1      P_DamageMobj_
+2cec:6cf3      P_DamageMobj_
 2cec:6815*     P_GiveBody_
 2cec:6837*     P_GiveArmor_
 2cec:6714*     P_INTER_STARTMARKER_
-2cec:6b2d*     P_KillMobj_
+2cec:6b2f*     P_KillMobj_
 2cec:6724*     P_GiveAmmo_
 2cec:6865      P_GivePower_
-2cec:6c8d*     getMassThrust_
-2cec:6f82*     P_INTER_ENDMARKER_
+2cec:6c8f*     getMassThrust_
+2cec:6f84*     P_INTER_ENDMARKER_
 Module: p_lights.obj(p_lights.ASM)
-2cec:70dc      EV_StartLightStrobing_
-2cec:6fed      T_LightFlash_
-2cec:71ec      P_SpawnGlowingLight_
-2cec:7109      EV_LightChange_
-2cec:71b1      T_Glow_
-2cec:721a*     P_LIGHTS_ENDMARKER_
-2cec:7094      P_SpawnStrobeFlash_
-2cec:6fbd      P_SpawnFireFlicker_
-2cec:7029      P_SpawnLightFlash_
-2cec:6f82*     P_LIGHTS_STARTMARKER_
-2cec:7060      T_StrobeFlash_
-2cec:6f82      T_FireFlicker_
+2cec:70de      EV_StartLightStrobing_
+2cec:6fef      T_LightFlash_
+2cec:71ee      P_SpawnGlowingLight_
+2cec:710b      EV_LightChange_
+2cec:71b3      T_Glow_
+2cec:721c*     P_LIGHTS_ENDMARKER_
+2cec:7096      P_SpawnStrobeFlash_
+2cec:6fbf      P_SpawnFireFlicker_
+2cec:702b      P_SpawnLightFlash_
+2cec:6f84*     P_LIGHTS_STARTMARKER_
+2cec:7062      T_StrobeFlash_
+2cec:6f84      T_FireFlicker_
 Module: p_plats.obj(p_plats.ASM)
-2cec:72cc      EV_DoPlat_
-2cec:721a      T_PlatRaise_
-2cec:7452      P_AddActivePlat_
-2cec:746a*     P_RemoveActivePlat_
-2cec:749a*     P_PLATS_ENDMARKER_
-2cec:7408      EV_PlatFunc_
-2cec:721a*     P_PLATS_STARTMARKER_
+2cec:72ce      EV_DoPlat_
+2cec:721c      T_PlatRaise_
+2cec:7454      P_AddActivePlat_
+2cec:746c*     P_RemoveActivePlat_
+2cec:749c*     P_PLATS_ENDMARKER_
+2cec:740a      EV_PlatFunc_
+2cec:721c*     P_PLATS_STARTMARKER_
 Module: p_spec.obj(p_spec.ASM)
-2cec:7b56      P_UpdateSpecials_
-2cec:7564      P_FindNextHighestFloor_
-2cec:74f0      P_FindHighestOrLowestFloorSurrounding_
-2cec:749a*     P_SPEC_STARTMARKER_
-2cec:7a8e      P_PlayerInSpecialSector_
-2cec:7e7b*     P_SPEC_ENDMARKER_
-2cec:7c87      EV_DoDonut_
-2cec:75d5      P_FindLowestOrHighestCeilingSurrounding_
-2cec:7682      P_FindMinSurroundingLight_
-2cec:749a*     getNextSectorList_
-2cec:764b      P_FindSectorsFromLineTag_
-2cec:7a01      P_ShootSpecialLine_
-2cec:780a      P_CrossSpecialLine_
-2cec:7def      P_SpawnSpecials_
+2cec:7b58      P_UpdateSpecials_
+2cec:7566      P_FindNextHighestFloor_
+2cec:74f2      P_FindHighestOrLowestFloorSurrounding_
+2cec:749c*     P_SPEC_STARTMARKER_
+2cec:7a90      P_PlayerInSpecialSector_
+2cec:7e7d*     P_SPEC_ENDMARKER_
+2cec:7c89      EV_DoDonut_
+2cec:75d7      P_FindLowestOrHighestCeilingSurrounding_
+2cec:7684      P_FindMinSurroundingLight_
+2cec:749c*     getNextSectorList_
+2cec:764d      P_FindSectorsFromLineTag_
+2cec:7a03      P_ShootSpecialLine_
+2cec:780c      P_CrossSpecialLine_
+2cec:7df1      P_SpawnSpecials_
 Module: p_switch.obj(p_switch.ASM)
-2cec:7e7c*     P_SWITCH_STARTMARKER_
-2cec:823c*     P_SWITCH_ENDMARKER_
-2cec:7e7c      P_ChangeSwitchTexture_
-2cec:807a      P_UseSpecialLine_
+2cec:7e7e*     P_SWITCH_STARTMARKER_
+2cec:823e*     P_SWITCH_ENDMARKER_
+2cec:7e7e      P_ChangeSwitchTexture_
+2cec:807c      P_UseSpecialLine_
 Module: p_telept.obj(p_telept.ASM)
-2cec:83b8*     P_TELEPT_ENDMARKER_
-2cec:823c*     P_TELEPT_STARTMARKER_
-2cec:823c      EV_Teleport_
+2cec:83ba*     P_TELEPT_ENDMARKER_
+2cec:823e*     P_TELEPT_STARTMARKER_
+2cec:823e      EV_Teleport_
 Module: p_tick.obj(p_tick.ASM)
-2cec:8449      P_UpdateThinkerFunc_
-2cec:83b8*     P_TICK_STARTMARKER_
-2cec:83b8      P_CreateThinkerFar_
-2cec:85a2      P_Random_
-2cec:85b2*     P_TICK_ENDMARKER_
-2cec:846b      P_RemoveThinker_
-2cec:849e      P_Ticker_
-2cec:83bc      P_CreateThinker_
+2cec:844b      P_UpdateThinkerFunc_
+2cec:83ba*     P_TICK_STARTMARKER_
+2cec:83ba      P_CreateThinkerFar_
+2cec:85a4      P_Random_
+2cec:85b4*     P_TICK_ENDMARKER_
+2cec:846d      P_RemoveThinker_
+2cec:84a0      P_Ticker_
+2cec:83be      P_CreateThinker_
 Module: p_user.obj(p_user.ASM)
-2cec:89ea*     P_USER_ENDMARKER_
-2cec:85b3*     P_Thrust_
-2cec:85f3*     P_CalcHeight_
-2cec:87a3*     P_DeathThink_
-2cec:85b3*     P_USER_STARTMARKER_
-2cec:871f*     P_MovePlayer_
-2cec:889a      P_PlayerThink_
+2cec:89ed*     P_USER_ENDMARKER_
+2cec:85b5*     P_Thrust_
+2cec:85f5*     P_CalcHeight_
+2cec:87a5*     P_DeathThink_
+2cec:85b5*     P_USER_STARTMARKER_
+2cec:8721*     P_MovePlayer_
+2cec:889c      P_PlayerThink_
 Module: p_info.obj(p_info.ASM)
-2cec:8c12      GetPainChance_
-2cec:8cc1      GetAttackSound_
-2cec:8ca1      GetDeathState_
-2cec:8c7d      GetSeeState_
-2cec:8bd3      GetXDeathState_
-2cec:8c5d      GetActiveSound_
-2cec:8c6e      GetPainSound_
-2cec:8cb1      GetPainState_
-2cec:8c29      GetRaiseState_
-2cec:8c91      GetMissileState_
-2cec:8bf5      GetMeleeState_
-2cec:8cef      GetDamage_
-2cec:8d2f*     P_INFO_ENDMARKER_
-2cec:89ea*     P_INFO_STARTMARKER_
-2cec:8c3a      GetMobjMass_
-2cec:8d1b      GetSpawnHealth_
+2cec:8c16      GetPainChance_
+2cec:8cc5      GetAttackSound_
+2cec:8ca5      GetDeathState_
+2cec:8c81      GetSeeState_
+2cec:8bd7      GetXDeathState_
+2cec:8c61      GetActiveSound_
+2cec:8c72      GetPainSound_
+2cec:8cb5      GetPainState_
+2cec:8c2d      GetRaiseState_
+2cec:8c95      GetMissileState_
+2cec:8bf9      GetMeleeState_
+2cec:8cf3      GetDamage_
+2cec:8d33*     P_INFO_ENDMARKER_
+2cec:89ee*     P_INFO_STARTMARKER_
+2cec:8c3e      GetMobjMass_
+2cec:8d1f      GetSpawnHealth_
 Module: am_map.obj(am_map.ASM)
-2cec:9096*     AM_clearMarks_
-2cec:8ff1*     AM_changeWindowLoc_
-2cec:90ad*     AM_Start_
-2cec:8f6f*     AM_findMinMaxBoundaries_
-2cec:8d30*     AM_MAP_STARTMARKER_
-2cec:918d*     AM_minOutWindowScale_
-2cec:8e7a*     AM_activateNewScale_
-2cec:930b      AM_Ticker_
-2cec:940c*     AM_drawMline_
-2cec:9690*     AM_drawLineCharacter_
-2cec:964c*     AM_rotate_
-2cec:8e34*     FastMulTrig16_
-2cec:8e65*     CYMTOF16_
-2cec:975b      AM_Drawer_
-2cec:8f3a*     AM_addMark_
-2cec:8e55*     CXMTOF16_
-2cec:9867*     AM_MAP_ENDMARKER_
-2cec:96e5*     AM_drawPlayers_
-2cec:8ecf*     AM_restoreScaleAndLoc_
-2cec:91b1      AM_Responder_
-2cec:956a*     AM_drawWalls_
-2cec:93ea*     DOOUTCODE_
+2cec:909a*     AM_clearMarks_
+2cec:8ff5*     AM_changeWindowLoc_
+2cec:90b1*     AM_Start_
+2cec:8f73*     AM_findMinMaxBoundaries_
+2cec:8d34*     AM_MAP_STARTMARKER_
+2cec:9191*     AM_minOutWindowScale_
+2cec:8e7e*     AM_activateNewScale_
+2cec:930f      AM_Ticker_
+2cec:9410*     AM_drawMline_
+2cec:9694*     AM_drawLineCharacter_
+2cec:9650*     AM_rotate_
+2cec:8e38*     FastMulTrig16_
+2cec:8e69*     CYMTOF16_
+2cec:8e59*     CXMTOF16_
+2cec:975f      AM_Drawer_
+2cec:8f3e*     AM_addMark_
+2cec:986b*     AM_MAP_ENDMARKER_
+2cec:96e9*     AM_drawPlayers_
+2cec:8ed3*     AM_restoreScaleAndLoc_
+2cec:91b5      AM_Responder_
+2cec:956e*     AM_drawWalls_
+2cec:93ee*     DOOUTCODE_
 Module: s_sound.obj(s_sound.ASM)
-2cec:9868*     _channels
-2cec:9cf9      S_Start_
-2cec:9c20      S_StartSoundFar_
-2cec:9a66*     S_StopSound_
-2cec:9c24      S_StartSound_
-2cec:9905*     S_StopChannel_
-2cec:9aaf*     S_getChannel_
-2cec:9d58*     CopyString13_physics_seg_
-2cec:99bf*     S_AdjustSoundParamsVol_
-2cec:9d84      S_SOUND_ENDMARKER_
-2cec:9aaa      S_StopSoundMobjRef_
-2cec:9952*     S_AdjustSoundParamsSep_
-2cec:9c31      S_StartSoundWithSecnum_
-2cec:9b2d*     S_StartSoundWithPosition_
-2cec:9c3e      S_UpdateSounds_
-2cec:9868*     S_SOUND_STARTMARKER_
+2cec:986c*     _channels
+2cec:9cfd      S_Start_
+2cec:9c24      S_StartSoundFar_
+2cec:9a6a*     S_StopSound_
+2cec:9c28      S_StartSound_
+2cec:9909*     S_StopChannel_
+2cec:9ab3*     S_getChannel_
+2cec:9d5c*     CopyString13_physics_seg_
+2cec:99c3*     S_AdjustSoundParamsVol_
+2cec:9d88      S_SOUND_ENDMARKER_
+2cec:9aae      S_StopSoundMobjRef_
+2cec:9956*     S_AdjustSoundParamsSep_
+2cec:9c35      S_StartSoundWithSecnum_
+2cec:9b31*     S_StartSoundWithPosition_
+2cec:9c42      S_UpdateSounds_
+2cec:986c*     S_SOUND_STARTMARKER_
 Module: d_algo.obj(d_algo.ASM)
-36c4:0032*     D_ALGO_END_
-36c4:0004      resetDS_
-36c4:000c*     hackDS_
+36c4:0036*     D_ALGO_END_
+36c4:0008      resetDS_
+36c4:0010*     hackDS_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fread.c)
 36c4:0040      fread_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fseek.c)
@@ -1493,4 +1493,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003d030 (249904.)
 Entry point address: 36c4:0a84
-Link time: 00:00.04
+Link time: 00:00.49

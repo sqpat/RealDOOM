@@ -579,7 +579,7 @@ mov   dx, word ptr ds:[_player + PLAYER_T.player_powers + (2 * PW_STRENGTH)]
 test  dx, dx
 je    done_with_berz_check
 ; fade berserk out
-SHIFT_MACRO sar   dx 6
+SHIFT_MACRO shr   dx 6
 neg   dx
 add   dx, 12
 cmp   dx, ax
