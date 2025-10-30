@@ -323,7 +323,8 @@ switch_block_fall_thru:
 xchg  ax, dx  ; type to dx
 xchg  ax, cx  ; linetag restored
 
-; fall thru
+; fall thru and to ev_dodoor_ without call
+
 ;call  EV_DoDoor_
 ;ret   
 
@@ -509,32 +510,38 @@ jb    switch_block_verticaldoor_case_key ; catch 26-28
 sub   al, 6
 js    switch_block_verticaldoor_case_default ; catch 29-31
 cmp   al, 3
-jb    switch_block_verticaldoor_case_key ; catch 32-34
-jmp   switch_block_verticaldoor_case_default ; catch35+
+jnb   switch_block_verticaldoor_case_default ; catch35+
 
+; catch 32-34, fall thru
 
+switch_block_verticaldoor_case_key_skull:
+; in the case of skull, the logic is swapped for 33/34 or al = 1/2
 
+; al is 0, 1, 2.
+; red key in powers lookup is 2, but its al = 1 in skull door logic
+; yellow in powers lookup is  1, but its al = 2 in skull door logic
+; 1/2 cases need to swap
 
+test    al, al
+jz      dont_adjust_key
+
+dec     al  ; 2 becomes 1, 1 becomes 0
+jnz     set_up_bx
+inc     ax 
+inc     ax  ; 1 becomes 2, after having been 0
+
+set_up_bx:
+
+dont_adjust_key:
 switch_block_verticaldoor_case_key:
+
 
 
 
 cmp   dx, word ptr ds:[_playerMobjRef]  ; only player can open locked doors
 jne   exit_ev_verticaldoor
 
-
-; al is 0, 1, 2.
-; red key in powers lookup is 1, but its al = 2 in door logic
-; yellow in powers lookup is  2, but its al = 1 in door logic
-; 1/2 cases need to swap
-
-mov bl, al  ; backup
-neg al        ; al goes from 0,1,2 to 0,FF,FE
-sbb al, 0     ; al now 0,FE,FD
-and al, 3     ; al now 0, 2, 1
-cbw
-xchg ax, bx   ; al keeps old value!
-cbw           ; zero old value
+mov   bl, al  ; key index
 
 cmp   byte ptr ds:[_player + PLAYER_T.player_cards + bx], bh  
 jne   done_with_verticaldoor_switch_block
@@ -543,6 +550,7 @@ jne   done_with_verticaldoor_switch_block
 
 mov   dl, SFX_OOF
 add   al, PD_BLUEK
+cbw
 mov   word ptr ds:[_player + PLAYER_T.player_message], ax
 
 

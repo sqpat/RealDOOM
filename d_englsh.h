@@ -85,11 +85,11 @@ int16_t getStringLength(int16_t stringindex);
 #define GOTSHOTGUN	        58 
 #define GOTSHOTGUN2	        59 
 #define PD_BLUEO	        60 
-#define PD_REDO	            61 
-#define PD_YELLOWO	        62 
+#define PD_YELLOWO	        61
+#define PD_REDO	            62 
 #define PD_BLUEK	        63 
-#define PD_REDK	            64 
-#define PD_YELLOWK	        65 
+#define PD_YELLOWK	        64
+#define PD_REDK	            65 
 #define GGSAVED	            66 
 #define HUSTR_E1M1	        67 
 #define HUSTR_E1M2	        68 

@@ -59,11 +59,11 @@ You got the plasma gun!
 You got the shotgun!
 You got the super shotgun!
 You need a blue key to activate this object
-You need a red key to activate this object
 You need a yellow key to activate this object
+You need a red key to activate this object
 You need a blue key to open this door
-You need a red key to open this door
 You need a yellow key to open this door
+You need a red key to open this door
 game saved.
 E1M1: Hangar
 E1M2: Nuclear Plant
