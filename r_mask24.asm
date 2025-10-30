@@ -748,7 +748,7 @@ push  bp
 mov   bp, sp
 
 
-mov   al, byte ptr ds:[si + 1]
+mov   al, byte ptr ds:[si + VISSPRITE_T.vs_colormap]
 
 ; al is colormap. 
 
@@ -759,7 +759,7 @@ mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_MA
 
 
 
-les   ax, dword ptr ds:[si + 01Eh]   ; vis->xiscale
+les   ax, dword ptr ds:[si + VISSPRITE_T.vs_xiscale]   ; vis->xiscale
 mov   dx, es
 
 ; labs
@@ -796,13 +796,13 @@ mov   word ptr ds:[di], 0		; di is _sprtopscreen
 SELFMODIFY_MASKED_centery_1:
 mov   word ptr ds:[di + 2], 01000h
 
-les   ax, dword ptr [si + 01Ah]  ; vis->scale
+les   ax, dword ptr [si + VISSPRITE_T.vs_scale]  ; vis->scale
 mov   dx, es
 
 mov   word ptr ds:[_spryscale], ax
 mov   word ptr ds:[_spryscale + 2], dx
 
-les   bx, dword ptr [si + 022h] ; vis->texturemid
+les   bx, dword ptr [si + VISSPRITE_T.vs_texturemid] ; vis->texturemid
 mov   cx, es
 ; write this ahead
 mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1 + 1 - OFFSET R_MASK24_STARTMARKER_], bx
@@ -826,19 +826,19 @@ done_with_mul_vissprite:
 sub   word ptr ds:[di], ax
 sbb   word ptr ds:[di + 2], dx
 
-mov   ax, word ptr ds:[si + 026h]
+mov   ax, word ptr ds:[si + VISSPRITE_T.vs_patch]
 cmp   ax, word ptr ds:[_lastvisspritepatch]
 jne   sprite_not_first_cachedsegment
 mov   es, word ptr ds:[_lastvisspritesegment]
 spritesegment_ready:
 
 
-mov   di, word ptr ds:[si + 016h]  ; frac = vis->startfrac
-mov   ax, word ptr ds:[si + 018h]
+mov   di, word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0]  ; frac = vis->startfrac
+mov   ax, word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2]
 push  ax;  [bp - 2]
 push  di;  [bp - 4]
 
-mov   ax, word ptr ds:[si + 2]
+mov   ax, word ptr ds:[si + VISSPRITE_T.vs_x1]
 mov   dx, ax
 SELFMODIFY_MASKED_detailshiftandval_1:
 and   ax, 01000h
@@ -853,8 +853,8 @@ xchg  ax, dx
 
 ; xiscalestep_shift = vis->xiscale << detailshift2minus;
 ; es in use
-mov   bx, word ptr ds:[si + 01Eh] ; DX:BX = vis->xiscale
-mov   dx, word ptr ds:[si + 020h]
+mov   bx, word ptr ds:[si + VISSPRITE_T.vs_xiscale + 0] ; DX:BX = vis->xiscale
+mov   dx, word ptr ds:[si + VISSPRITE_T.vs_xiscale + 2]
 
 ; todo: proper shift jmp thing
 cmp byte ptr ds:[_detailshift2minus], 1
@@ -881,8 +881,8 @@ push bx;  [bp - 8]
 test  ax, ax
 je    base4diff_is_zero
 
-mov   dx, word ptr ds:[si + 01Eh] ; es in use. no LES
-mov   bx, word ptr ds:[si + 020h]
+mov   dx, word ptr ds:[si + VISSPRITE_T.vs_xiscale + 0] ; es in use. no LES
+mov   bx, word ptr ds:[si + VISSPRITE_T.vs_xiscale + 2]
 
 decrementbase4loop:
 sub   word ptr [bp - 4], dx
@@ -899,7 +899,7 @@ mov   byte ptr cs:[SELFMODIFY_MASKED_set_bx_to_xoffset_shadow+1 - OFFSET R_MASK2
 mov   cx, es
 
 
-cmp   byte ptr ds:[si + 1], COLORMAP_SHADOW
+cmp   byte ptr ds:[si + VISSPRITE_T.vs_colormap], COLORMAP_SHADOW
 je    jump_to_draw_shadow_sprite
 
 
@@ -941,7 +941,7 @@ call  R_GetSpriteTexture_
 
 mov   word ptr ds:[_lastvisspritesegment], ax
 mov   es, ax
-mov   ax, word ptr ds:[si + 026h]
+mov   ax, word ptr ds:[si + VISSPRITE_T.vs_patch]
 mov   word ptr ds:[_lastvisspritepatch], ax
 jmp   spritesegment_ready
 jump_to_draw_shadow_sprite:
@@ -966,12 +966,12 @@ mov   dx, word ptr [bp - 2]
 SELFMODIFY_MASKED_set_ax_to_dc_x_base4:
 mov   ax, 0
 mov   word ptr ds:[_dc_x], ax
-cmp   ax, word ptr ds:[si + 2]
+cmp   ax, word ptr ds:[si + VISSPRITE_T.vs_x1]
 jl    increment_by_shift
 
 draw_sprite_normal_innerloop:
 mov   ax, word ptr ds:[_dc_x]
-cmp   ax, word ptr ds:[si + 4]
+cmp   ax, word ptr ds:[si + VISSPRITE_T.vs_x2]
 jg    end_draw_sprite_normal_innerloop
 mov   bx, dx
 
@@ -1012,9 +1012,9 @@ jmp   draw_sprite_normal_innerloop
 end_draw_sprite_normal_innerloop:
 inc   word ptr cs:[SELFMODIFY_MASKED_set_ax_to_dc_x_base4+1 - OFFSET R_MASK24_STARTMARKER_]
 inc   byte ptr cs:[SELFMODIFY_MASKED_set_bx_to_xoffset+1 - OFFSET R_MASK24_STARTMARKER_]
-mov   ax, word ptr ds:[si + 01Eh]
+mov   ax, word ptr ds:[si + VISSPRITE_T.vs_xiscale + 0]
 add   word ptr [bp - 4], ax
-mov   ax, word ptr ds:[si + 020h]
+mov   ax, word ptr ds:[si + VISSPRITE_T.vs_xiscale + 2]
 adc   word ptr [bp - 2], ax
 jmp   loop_vga_plane_draw_normal
 draw_shadow_sprite:
@@ -1037,12 +1037,12 @@ SELFMODIFY_MASKED_set_ax_to_dc_x_base4_shadow:
 mov   ax, 0
 mov   word ptr ds:[_dc_x], ax
 
-cmp   ax, word ptr ds:[si + 2]
+cmp   ax, word ptr ds:[si + VISSPRITE_T.vs_x1]
 jle   increment_by_shift_shadow
 
 draw_sprite_shadow_innerloop:
 mov   ax, word ptr ds:[_dc_x]
-cmp   ax, word ptr ds:[si + 4]
+cmp   ax, word ptr ds:[si + VISSPRITE_T.vs_x2]
 jg    end_draw_sprite_shadow_innerloop
 mov   bx, dx
 
@@ -1067,9 +1067,9 @@ jmp   draw_sprite_shadow_innerloop
 end_draw_sprite_shadow_innerloop:
 inc   word ptr cs:[SELFMODIFY_MASKED_set_ax_to_dc_x_base4_shadow+1 - OFFSET R_MASK24_STARTMARKER_]
 inc   byte ptr cs:[SELFMODIFY_MASKED_set_bx_to_xoffset_shadow+1 - OFFSET R_MASK24_STARTMARKER_]
-mov   ax, word ptr ds:[si + 01Eh]
+mov   ax, word ptr ds:[si + VISSPRITE_T.vs_xiscale + 0]
 add   word ptr [bp - 4], ax
-mov   ax, word ptr ds:[si + 020h]
+mov   ax, word ptr ds:[si + VISSPRITE_T.vs_xiscale + 2]
 adc   word ptr [bp - 2], ax
 jmp   loop_vga_plane_draw_shadow
 

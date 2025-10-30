@@ -3489,8 +3489,8 @@ PROC R_ProjectSprite_ NEAR
 
 
 ; bp - 2:	 	thingframe (byte, with SIZEOF_SPRITEFRAME_T high)
-; bp - 4:    	
-; bp - 6:    	
+; bp - 4:    	; now unused?
+; bp - 6:    	; now unused?
 ; bp - 8:    	tr_y hi
 ; bp - 0Ah:    tr_y low
 ; bp - 0Ch:    tr_x hi
@@ -3511,18 +3511,18 @@ push  es
 push  bp
 mov   bp, sp
 mov   dx, es					   ; back this up...
-mov   bx, word ptr es:[si + 012h]  ; thing->stateNum
+mov   bx, word ptr es:[si + MOBJ_POS_T.mp_statenum]  ; thing->stateNum
 mov   ax, STATES_RENDER_SEGMENT
 mov   es, ax
 add   bx, bx
 
 ; todo clean all this up. do we need local copy?
 ; otherwise use ds and rep movsw
-mov   al, byte ptr es:[bx]		   ; states_render[thing->stateNum].sprite
+mov   al, byte ptr es:[bx + STATE_T.state_sprite]		   ; states_render[thing->stateNum].sprite
 mov   byte ptr cs:[SELFMODIFY_set_ax_to_spriteframe+1 - OFFSET R_BSP24_STARTMARKER_], al		   
-mov   al, byte ptr es:[bx + 1]	; states_render[thing->stateNum].frame
+mov   al, byte ptr es:[bx + STATE_T.state_frame]	; states_render[thing->stateNum].frame
 mov   ah, SIZEOF_SPRITEFRAME_T
-push   ax    ; bp - 2
+push  ax    ; bp - 2
 sub   sp, 01Eh
 
 
@@ -3887,8 +3887,8 @@ visscale_shift_done:
 ; si is vis
 ; todo clean this up too...
 
-mov   word ptr ds:[si  + 01Ah], ax
-mov   word ptr ds:[si  + 01Ch], di
+mov   word ptr ds:[si + VISSPRITE_T.vs_scale + 0], ax
+mov   word ptr ds:[si + VISSPRITE_T.vs_scale + 2], di
 
 mov   cx, 6
 lea   di, [si  + 006h]
@@ -3921,10 +3921,10 @@ cmp   ax, 0FF80h				; -128
 je   set_intbits_to_129
 intbits_ready:
 ;	vis->gzt.w = vis->gz.w + temp.w;
-mov   bx, word ptr ds:[si + 0Eh]
-add   ax, word ptr ds:[si + 010h]
-mov   word ptr ds:[si + 012h], bx
-mov   word ptr ds:[si + 014h], ax
+mov   bx, word ptr ds:[si + VISSPRITE_T.vs_gz + 0]
+add   ax, word ptr ds:[si + VISSPRITE_T.vs_gz + 2]
+mov   word ptr ds:[si + VISSPRITE_T.vs_gzt + 0], bx
+mov   word ptr ds:[si + VISSPRITE_T.vs_gzt + 2], ax
 
 ;    vis->texturemid = vis->gzt.w - viewz.w;
 
@@ -3932,8 +3932,8 @@ SELFMODIFY_BSP_viewz_lo_4:
 sub       bx, 01000h
 SELFMODIFY_BSP_viewz_hi_4:
 sbb       ax, 01000h
-mov   word ptr ds:[si + 022h], bx
-mov   word ptr ds:[si + 024h], ax
+mov   word ptr ds:[si + VISSPRITE_T.vs_texturemid + 0], bx
+mov   word ptr ds:[si + VISSPRITE_T.vs_texturemid + 2], ax
 SELFMODIFY_set_vis_x1:
 mov   ax, 01234h
 
@@ -3944,7 +3944,7 @@ jge   x1_positive
 xor   ax, ax
 
 x1_positive:
-mov   word ptr ds:[si + 2], ax
+mov   word ptr ds:[si + VISSPRITE_T.vs_x1], ax
 
 ;    vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;       
 
@@ -3960,7 +3960,7 @@ dec   ax
 x2_smaller_than_viewwidth:
 les   bx, dword ptr [bp - 01Eh]
 mov   cx, es
-mov   word ptr ds:[si + 4], ax
+mov   word ptr ds:[si + VISSPRITE_T.vs_x2], ax
 mov   ax, 1
 call FixedDivWholeA_BSPLocal_
 mov   bx, ax
@@ -3968,24 +3968,32 @@ SELFMODIFY_set_flip:
 mov   al, 00h
 cmp   al, 0
 jne   flip_not_zero
-jmp   flip_zero
+
+flip_zero: ; zero case
+cbw 
+mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], ax ; 0
+mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], ax ; 0
+mov   word ptr ds:[si + VISSPRITE_T.vs_xiscale + 0], bx
+mov   word ptr ds:[si + VISSPRITE_T.vs_xiscale + 2], dx
+jmp   flip_stuff_done
+
 set_intbits_to_129:
 mov   ax, 129
 jmp intbits_ready
 
 flip_not_zero:
-mov   word ptr ds:[si + 016h], -1
+mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], -1
 SELFMODIFY_set_ax_to_usedwidth:
 mov   ax, 01234h 
 dec   ax
-mov   word ptr ds:[si + 018h], ax
+mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], ax
 
 neg   dx
 neg   bx
 sbb   dx, 0
 
-mov   word ptr ds:[si + 01Eh], bx
-mov   word ptr ds:[si + 020h], dx
+mov   word ptr ds:[si + VISSPRITE_T.vs_xiscale + 0], bx
+mov   word ptr ds:[si + VISSPRITE_T.vs_xiscale + 2], dx
 
 flip_stuff_done:
 
@@ -3993,11 +4001,11 @@ flip_stuff_done:
 ;    if (vis->x1 > x1)
 ;        vis->startfrac += FastMul16u32u((vis->x1-x1),vis->xiscale);
 
-mov   ax, word ptr ds:[si + 2]
+mov   ax, word ptr ds:[si + VISSPRITE_T.vs_x1]
 SELFMODIFY_sub_x1:
 sub   ax, 01234h
 jle   vis_x1_greater_than_x1
-les   bx, dword ptr ds:[si + 01Eh]
+les   bx, dword ptr ds:[si + VISSPRITE_T.vs_xiscale + 0]
 mov   cx, es
 ; inlined FastMul16u32u
 
@@ -4026,12 +4034,12 @@ ELSE
    ADD  DX, CX    ; add 
 ENDIF
 
-add   word ptr ds:[si + 016h], ax
-adc   word ptr ds:[si + 018h], dx
+add   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], ax
+adc   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], dx
 
 vis_x1_greater_than_x1:
 mov   bx, word ptr [bp - 020h]
-mov   word ptr ds:[si + 026h], bx
+mov   word ptr ds:[si + VISSPRITE_T.vs_patch], bx
 
 ;    if (thingflags2 & MF_SHADOW) {
 
@@ -4074,14 +4082,14 @@ index_below_maxlightscale:
 SELFMODIFY_set_spritelights_1:
 mov   bx, 01000h
 mov   al, byte ptr ds:[_scalelight+bx+di]
-mov   byte ptr ds:[si + 1], al
+mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], al
 LEAVE_MACRO
 pop   es
 pop   si
 ret   
 
 exit_set_fullbright_colormap:
-mov   byte ptr ds:[si + 1], 0
+mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], 0
 LEAVE_MACRO
 pop   es
 pop   si
@@ -4090,21 +4098,16 @@ ret
 SELFMODIFY_BSP_fixedcolormap_2_TARGET:
 SELFMODIFY_BSP_fixedcolormap_1:
 exit_set_fixed_colormap:
-mov   byte ptr ds:[si + 1], 0
+mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], 0
 LEAVE_MACRO
 pop   es
 pop   si
 ret   
 
 
-flip_zero:
-mov   word ptr ds:[si + 016h], 0
-mov   word ptr ds:[si + 018h], 0
-mov   word ptr ds:[si + 01Eh], bx
-mov   word ptr ds:[si + 020h], dx
-jmp   flip_stuff_done
+
 exit_set_shadow:
-mov   byte ptr ds:[si + 1], COLORMAP_SHADOW
+mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], COLORMAP_SHADOW
 LEAVE_MACRO
 pop   es
 pop   si
@@ -8684,9 +8687,9 @@ sbb   cx, di
 sub   bx, ax
 mov   ax, BASEYCENTER
 sbb   ax, cx
-mov   word ptr ds:[si + 024h], ax
+mov   word ptr ds:[si + VISSPRITE_T.vs_texturemid + 2], ax
 mov   ax, word ptr [bp - 0Eh]
-mov   word ptr ds:[si + 022h], bx
+mov   word ptr ds:[si + VISSPRITE_T.vs_texturemid + 0], bx
 test  ax, ax
 
 ;    vis->x1 = x1 < 0 ? 0 : x1;
@@ -8697,7 +8700,7 @@ jge   x1_positive_2
 xor   ax, ax
 
 x1_positive_2:
-mov   word ptr ds:[si + 2], ax
+mov   word ptr ds:[si + VISSPRITE_T.vs_x1], ax
 
 SELFMODIFY_BSP_viewwidth_4:
 mov   ax, 01000h
@@ -8710,7 +8713,7 @@ jmp   vis_x2_set
 x2_smaller_than_viewwidth_2:
 dec   ax
 vis_x2_set:
-mov   word ptr ds:[si + 4], ax
+mov   word ptr ds:[si + VISSPRITE_T.vs_x2], ax
 SELFMODIFY_BSP_pspritescale_3:
 mov   ax, 01000h
 SELFMODIFY_BSP_pspritescale_3_AFTER = SELFMODIFY_BSP_pspritescale_3 + 2
@@ -8732,8 +8735,8 @@ rcl   dx, 1
 shl   ax, 1
 rcl   dx, 1
 
-mov   word ptr ds:[si + 01Ah], ax
-mov   word ptr ds:[si + 01Ch], dx
+mov   word ptr ds:[si + VISSPRITE_T.vs_scale + 0], ax
+mov   word ptr ds:[si + VISSPRITE_T.vs_scale + 2], dx
 
 SELFMODIFY_BSP_pspriteiscale_lo_1:
 mov   bx, 01000h
@@ -8744,9 +8747,9 @@ cmp   byte ptr [bp - 0Ah], 0       ; check flip
 jne   flip_on
 
 flip_off:
-
-mov   word ptr ds:[si + 016h], 0
-mov   word ptr ds:[si + 018h], 0
+xor   ax, ax
+mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], ax
+mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], ax
 jmp   vis_startfrac_set
 
 flip_on:
@@ -8760,14 +8763,14 @@ sbb   cx, 0
 
 mov   ax, word ptr [bp - 010h]
 dec   ax
-mov   word ptr ds:[si + 016h], -1
-mov   word ptr ds:[si + 018h], ax
+mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], -1
+mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], ax
 
 vis_startfrac_set:
-mov   word ptr ds:[si + 01Eh], bx
-mov   word ptr ds:[si + 020h], cx
+mov   word ptr ds:[si + VISSPRITE_T.vs_xiscale + 0], bx
+mov   word ptr ds:[si + VISSPRITE_T.vs_xiscale + 2], cx
 
-mov   ax, word ptr ds:[si + 2]
+mov   ax, word ptr ds:[si + VISSPRITE_T.vs_x1]
 cmp   ax, word ptr [bp - 0Eh]
 jle   vis_x1_greater_than_x1_2
 sub   ax, word ptr [bp - 0Eh]
@@ -8799,17 +8802,17 @@ ELSE
    ADD  DX, CX    ; add 
 ENDIF
 
-add   word ptr ds:[si + 016h], ax
-adc   word ptr ds:[si + 018h], dx
+add   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], ax
+adc   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], dx
 vis_x1_greater_than_x1_2:
 mov   bx, word ptr [bp - 0Ch]
-mov   word ptr ds:[si + 026h], bx
+mov   word ptr ds:[si + VISSPRITE_T.vs_patch], bx
 
 ;    if (player.powers[pw_invisibility] > 4*32
 
-cmp   word ptr ds:[_player + 01Eh + 2 * PW_INVISIBILITY], (4*32)
+cmp   word ptr ds:[_player + PLAYER_T.player_powers + 2 * PW_INVISIBILITY], (4*32)
 jg    mark_shadow_draw
-test  byte ptr ds:[_player + 01Eh + 2 * PW_INVISIBILITY], 8
+test  byte ptr ds:[_player + PLAYER_T.player_powers + 2 * PW_INVISIBILITY], 8
 jne   mark_shadow_draw
 
 SELFMODIFY_BSP_fixedcolormap_4:
@@ -8820,7 +8823,7 @@ je    set_vis_colormap
 SELFMODIFY_BSP_fixedcolormap_4_TARGET:
 use_fixedcolormap:
 SELFMODIFY_BSP_fixedcolormap_5:
-mov   byte ptr ds:[si + 1], 00h
+mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], 00h
 
 LEAVE_MACRO
 ret   
@@ -8829,7 +8832,7 @@ ret
 
 mark_shadow_draw:
 ; do shadow draw
-mov   byte ptr ds:[si + 1], COLORMAP_SHADOW
+mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], COLORMAP_SHADOW
 LEAVE_MACRO
 ret   
 
@@ -8838,7 +8841,7 @@ set_vis_colormap:
 SELFMODIFY_set_spritelights_2:
 mov   bx, 01000h
 mov   al, byte ptr ds:[bx + (MAXLIGHTSCALE-1) + _scalelight]  ;todo or is this supposed to be scalelightfixed...?
-mov   byte ptr ds:[si + 1], al
+mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], al
 LEAVE_MACRO
 ret   
 
@@ -12310,6 +12313,11 @@ mov      byte ptr ds:[SELFMODIFY_BSP_extralight2+1 - OFFSET R_BSP24_STARTMARKER_
 mov      byte ptr ds:[SELFMODIFY_BSP_extralight3+1 - OFFSET R_BSP24_STARTMARKER_], al
 
 mov      al, byte ptr ss:[_fixedcolormap]
+
+; zero these in either case.
+mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_1+3 - OFFSET R_BSP24_STARTMARKER_], al
+mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_5+3 - OFFSET R_BSP24_STARTMARKER_], al
+
 cmp      al, 0
 jne      do_bsp_fixedcolormap_selfmodify
 do_no_bsp_fixedcolormap_selfmodify:
@@ -12324,8 +12332,6 @@ mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_4 - OFFSET R_BSP24_STARTMARKE
 jmp      done_with_bsp_fixedcolormap_selfmodify
 do_bsp_fixedcolormap_selfmodify:
 
-mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_1+3 - OFFSET R_BSP24_STARTMARKER_], al
-mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_5+3 - OFFSET R_BSP24_STARTMARKER_], al
 
 ;mov   ah, al
 ;mov   al, 0b0h

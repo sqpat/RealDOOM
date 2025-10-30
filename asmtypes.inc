@@ -56,7 +56,7 @@ PLAYER_T STRUC
     player_attackerRef        dw ?                      ; 5C    ;072Ch  06FCh
     player_extralightvalue    db ?                      ; 5E    ;072Eh  06FEh
     player_fixedcolormapvalue db ?                      ; 5F    ;072Fh  06FFh
-    player_colormap	          db ?                      ; 60
+    player_colormap	          db ?                      ; 60    ;0730h  07000h
     player_didsecret	      db ?                      ; 61
     player_backpack           db ?                      ; 62
                                                         ; 63 or 99 dec
