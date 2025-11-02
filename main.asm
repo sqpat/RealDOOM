@@ -3536,7 +3536,7 @@ xor   bx, bx
 mov   bl, byte ptr ds:[_currenttask];
 
 
-call Z_QuickMapMenu_
+call  Z_QuickMapMenu_
 
 mov   di, EVENTS_SEGMENT
 
@@ -3572,13 +3572,20 @@ mov   byte ptr ds:[_eventtail], cl ; put tail back
 xchg  ax, bx ; retrieve oldtask
 call  Z_QuickMapByTaskNum_
 
-cmp   byte ptr ds:[_domapcheatthisframe], 0
-jne    do_map_cheat_late
+cmp   byte ptr ds:[_dodelayedcheatthisframe], DO_DELAYED_MAP_CHEAT
+je    do_map_cheat_late
+ja    do_invis_cheat_late
 dont_do_map_cheat_late:
 done_with_map_cheat:
 POPA_NO_AX_MACRO
 no_events_to_process:
 ret
+
+do_invis_cheat_late:
+les    bx, dword ptr ds:[_playerMobj_pos]
+or     byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_SHADOW
+mov   byte ptr ds:[_dodelayedcheatthisframe], 0
+jmp    done_with_map_cheat
 
 do_map_cheat_late:
 ;call  ST_PrepareMapPosCheat_  ; inlined
@@ -3666,7 +3673,7 @@ mov   dx, ds
 xchg  ax, si
 
 call  combine_strings_
-mov   byte ptr ds:[_domapcheatthisframe], 0
+mov   byte ptr ds:[_dodelayedcheatthisframe], 0
 
 LEAVE_MACRO
 POPA_NO_AX_MACRO

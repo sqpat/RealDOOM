@@ -36,6 +36,9 @@ CRTC_INDEX 			=   03D4h
 GC_READMAP      	=   4
 GC_MODE             =   5
 
+DO_DELAYED_MAP_CHEAT    = 1
+DO_DELAYED_INVIS_CHEAT  = 2
+CHECK_FOR_DELAYED_CHEAT = 4
 
 
 
@@ -652,7 +655,7 @@ _viewactivestate =	 	     	     _NULL_OFFSET + 00ABEh
 _menuactivestate =	 	     	     _NULL_OFFSET + 00ABFh
 _fopen_wb_argument =	 	     	 _NULL_OFFSET + 00AC0h
 
-_domapcheatthisframe =				 _NULL_OFFSET + 00AC3h
+_dodelayedcheatthisframe =			 _NULL_OFFSET + 00AC3h
 _st_gamestate =	  	  				 _NULL_OFFSET + 00AC4h
 _st_firsttime =	  	  				 _NULL_OFFSET + 00AC5h
 _am_min_scale_mtof =       	         _NULL_OFFSET + 00AC6h

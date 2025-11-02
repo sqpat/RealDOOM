@@ -793,16 +793,23 @@ lodsw
 test  ax, ax
 jz    skip_berserk
 inc   ax  ;    // Strength counts up to diminish fade.
-stosw
 skip_berserk:
+stosw
 
 
 ; invis
 lodsw
 dec   ax
-jz    turn_off_invis
-jns   write_invis
-inc   ax ; undo
+jz    turn_off_invis    ; sub 1 and turn off shadoe
+jns   write_invis       ; sub 1
+inc   ax                ; dont sub 1, turn off shadow
+turn_off_invis:
+
+push  bx
+les   bx, dword ptr ds:[_playerMobj_pos]
+and   byte ptr es:[bx + MOBJ_POS_T.mp_flags2], (NOT MF_SHADOW)
+pop   bx
+
 write_invis:
 stosw
 done_turning_off_invis:
@@ -860,13 +867,6 @@ mov   byte ptr ds:[bx + PLAYER_T.player_fixedcolormapvalue], INVERSECOLORMAP
 exit_player_think:
 POPA_NO_AX_OR_BP_MACRO
 ret   
-turn_off_invis:
-stosw
-les   ax, dword ptr ds:[_playerMobj_pos]
-xchg  ax, bx
-and   byte ptr es:[bx + MOBJ_POS_T.mp_flags2], (NOT MF_SHADOW)
-xchg  ax, bx
-jmp   done_turning_off_invis 
 
 
 

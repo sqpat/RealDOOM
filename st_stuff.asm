@@ -1261,29 +1261,41 @@ mov   si, _player + PLAYER_T.player_powers
 
 loop_next_behold_cheat:
 
+; bx is cheat index times 2...
+
 mov   dx, cx
-mov   ax, CHEATID_BEHOLDV
-add   ax, bx
-add   ax, bx
+mov   ax, bx  ; cheat index times two...
+sal   ax, 1   ; four
+
 call  cht_CheckCheat_
 jnc   skip_this_behold
 
 cmp   word ptr ds:[si + bx], 0  ; check powers
-jne   dont_give_power
+je    give_power
+
+dont_give_power:
+xor   ax, ax
+cmp   bl, (PW_STRENGTH * 2)
+jne   toggle_off_power
+; do strength
+inc   ax  ; write 1 instead of 0
+jmp   toggle_off_power 
+
+give_power:
 mov   ax, bx
-sar   ax, 1
+sar   ax, 1  
+
+or   byte ptr ds:[_dodelayedcheatthisframe], CHECK_FOR_DELAYED_CHEAT
 
 db    09Ah
 dw    P_GIVEPOWEROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
+and   byte ptr ds:[_dodelayedcheatthisframe], (NOT CHECK_FOR_DELAYED_CHEAT)
+
 jmp   done_applying_behold
-dont_give_power:
-cmp   bx, (PW_STRENGTH * 2)
-jne   do_non_strength
-mov   word ptr ds:[si + bx], 1
-jmp   done_applying_behold
-do_non_strength:
-mov   word ptr ds:[si + bx], 0
+
+toggle_off_power:
+mov   word ptr ds:[si + bx], ax
 done_applying_behold:
 mov   word ptr ds:[_player + PLAYER_T.player_message], STSTR_BEHOLDX
 
@@ -1291,7 +1303,7 @@ mov   word ptr ds:[_player + PLAYER_T.player_message], STSTR_BEHOLDX
 skip_this_behold:
 inc   bx
 inc   bx
-cmp   bx, (6 * 2)
+cmp   bl, (NUMPOWERS * 2)
 jl    loop_next_behold_cheat
 
 ; done with behold loop
@@ -1324,7 +1336,7 @@ jnc   done_checking_main_cheats
 do_mappos_cheat:
 ; set flag for deferred calculation
 
-mov   byte ptr ds:[_domapcheatthisframe], 1
+or   byte ptr ds:[_dodelayedcheatthisframe], DO_DELAYED_MAP_CHEAT
 
 
 

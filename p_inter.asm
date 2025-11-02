@@ -347,10 +347,21 @@ pop    bx
 ret   
 
 give_invisibility:
+; HACK ALERT: player may not be paged in right now...
+; if not, set a flag to edit later. 
+
+test    byte ptr ds:[_dodelayedcheatthisframe], CHECK_FOR_DELAYED_CHEAT
+je      just_give_inivisibility
+
+mov     byte ptr ds:[_dodelayedcheatthisframe], DO_DELAYED_INVIS_CHEAT ; overwrite the previous flag
+jmp     give_radsuit
+
+just_give_inivisibility:
 xchg   ax, bx
 les    bx, dword ptr ds:[_playerMobj_pos]
 or     byte ptr es:[bx + MOBJ_POS_T.mp_flags2], MF_SHADOW
 xchg   ax, bx
+
 give_radsuit:   ; IRONTICS == INVISTICS
 mov    ax, INVISTICS
 

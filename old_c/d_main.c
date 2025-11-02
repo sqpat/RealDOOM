@@ -122,7 +122,7 @@ void __near D_ProcessEvents (void) {
 		}
 
 		Z_QuickMapByTaskNum(oldtask);
-		if (domapcheatthisframe){
+		if (dodelayedcheatthisframe){
 			ST_PrepareMapPosCheat();
 		}
 	}

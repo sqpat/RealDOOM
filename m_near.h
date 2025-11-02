@@ -724,7 +724,7 @@
 #define viewactivestate   			      (*((boolean __near*)               (_NULL_OFFSET + 0x0ABE)))
 #define menuactivestate   			      (*((boolean __near*)               (_NULL_OFFSET + 0x0ABF)))
 #define fopen_wb_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x0AC0))
-#define domapcheatthisframe 		      (*((boolean __near*)               (_NULL_OFFSET + 0x0AC3)))
+#define dodelayedcheatthisframe		      (*((boolean __near*)               (_NULL_OFFSET + 0x0AC3)))
 #define st_gamestate 		      		  (*((st_stateenum_t __near*)        (_NULL_OFFSET + 0x0AC4)))
 #define st_firsttime 		      		  (*((boolean __near*)        		 (_NULL_OFFSET + 0x0AC5)))
 #define am_min_scale_mtof       	      (*((int16_t __near*)               (_NULL_OFFSET + 0x0AC6)))
