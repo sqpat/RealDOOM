@@ -77,6 +77,7 @@ void __near P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 	
 	//I_Error("level is %i %i", episode, map);
 
+    totalkills = totalitems = totalsecret = 0;
 	wminfo.partime = 180;
 	player.killcount = player.secretcount = player.itemcount = 0;
 

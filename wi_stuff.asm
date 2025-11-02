@@ -104,7 +104,7 @@ dw 0
 _snl_pointeron:
 dw 0
 
-_wbs:
+_wbs_ptr:
 dw 0
 
 
@@ -206,12 +206,13 @@ db "WISUCKS"        , 0, 0
 db "WISCRT2"        , 0, 0
 db "WIENTER"        , 0, 0
 
+;doom times
 _pars:
-dw 00000h, 00000h, 00000h, 00000h, 00000h, 00000h, 00000h, 00000h, 00000h, 00000h
-dw 00000h, 0041Ah, 00A41h, 01068h, 00C4Eh, 0168Fh, 0189Ch, 0189Ch, 0041Ah, 0168Fh
-dw 00000h, 00C4Eh, 00C4Eh, 00C4Eh, 01068h, 00C4Eh, 03138h, 020D0h, 0041Ah, 0173Eh
-dw 00000h, 00C4Eh, 00627h, 00C4Eh, 01482h, 00C4Eh, 00C4Eh, 0168Fh, 0041Ah, 01275h 
+dw 0041Ah, 00A41h, 01068h, 00C4Eh, 0168Fh, 0189Ch, 0189Ch, 0041Ah, 0168Fh
+dw 00C4Eh, 00C4Eh, 00C4Eh, 01068h, 00C4Eh, 03138h, 020D0h, 0041Ah, 0173Eh
+dw 00C4Eh, 00627h, 00C4Eh, 01482h, 00C4Eh, 00C4Eh, 0168Fh, 0041Ah, 01275h 
 
+;doom2 times
 _cpars:
 dw 0041Ah, 00C4Eh, 01068h, 01068h, 00C4Eh, 01482h, 01068h, 01068h
 dw 024EAh, 00C4Eh, 01CB6h, 01482h, 01482h, 01482h, 01CB6h, 01482h
@@ -452,10 +453,10 @@ push  di
 
 mov   si, dx					; store cref in si.
 
-mov   di, word ptr cs:[_wbs - OFFSET WI_STARTMARKER_]    ; 
+mov   di, word ptr cs:[_wbs_ptr - OFFSET WI_STARTMARKER_]    ; 
 xor   bx, bx
 xchg  ax, bx					; store n in bx
-mov   ah, byte ptr [di]	; wbs->epsd
+mov   ah, byte ptr [di + WBSTARTSTRUCT_T.wbss_epsd]	; wbs->epsd
 
 db    0D5h, 00Ah					; AAD to mul by 10
 
@@ -544,14 +545,14 @@ push  dx
 
 cmp   byte ptr ds:[_commercial], 0
 jne   exit_update_animated_back   ; not for doom2 
-mov   bx, word ptr cs:[_wbs - OFFSET WI_STARTMARKER_]    ; 
+mov   bx, word ptr cs:[_wbs_ptr - OFFSET WI_STARTMARKER_]    ; 
 
-mov   al, byte ptr [bx]         ; get epsd
+mov   al, byte ptr [bx + WBSTARTSTRUCT_T.wbss_epsd]         ; get epsd
 cmp   al, 2                     ; > epsd 2?
 jg    exit_update_animated_back
 cbw
 
-mov   dl, byte ptr [bx + 3]     ; cache wbs->next for loop
+mov   dl, byte ptr [bx + WBSTARTSTRUCT_T.wbss_next]     ; cache wbs->next for loop
 
 xor   cx, cx                    ; zero out ch..
 xchg  ax, bx                    ; bx gets epsd
@@ -657,9 +658,9 @@ push  dx
 push  di
 cmp   byte ptr ds:[_commercial], 0
 jne   exit_draw_animated_back   ; not for doom2 
-mov   bx, word ptr cs:[_wbs - OFFSET WI_STARTMARKER_]    ; 
+mov   bx, word ptr cs:[_wbs_ptr - OFFSET WI_STARTMARKER_]    ; 
 
-mov   al, byte ptr [bx]         ; get epsd
+mov   al, byte ptr [bx + WBSTARTSTRUCT_T.wbss_epsd]         ; get epsd
 cmp   al, 2                     ; > epsd 2?
 jg    exit_draw_animated_back
 cbw
@@ -747,9 +748,9 @@ push  cx
 push  dx
 cmp   byte ptr ds:[_commercial], 0
 jne   exit_init_animated_back   ; not for doom2 
-mov   bx, word ptr cs:[_wbs - OFFSET WI_STARTMARKER_]    ; 
+mov   bx, word ptr cs:[_wbs_ptr - OFFSET WI_STARTMARKER_]    ; 
 
-mov   al, byte ptr [bx]         ; get epsd
+mov   al, byte ptr [bx + WBSTARTSTRUCT_T.wbss_epsd]         ; get epsd
 cmp   al, 2                     ; > epsd 2?
 jg    exit_init_animated_back
 cbw
@@ -1114,17 +1115,17 @@ call  WI_slamBackground_
 call  WI_drawAnimatedBack_
 cmp   byte ptr ds:[_commercial], 0
 jne   skip_drawing_pointer
-mov   bx, word ptr cs:[_wbs - OFFSET WI_STARTMARKER_]
-cmp   byte ptr [bx], 2
+mov   bx, word ptr cs:[_wbs_ptr - OFFSET WI_STARTMARKER_]
+cmp   byte ptr [bx + WBSTARTSTRUCT_T.wbss_epsd], 2
 jg    drawel_and_exit
 
 ;		last = (wbs->last == 8) ? wbs->next - 1 : wbs->last;
 
 xor   ax, ax                ; zero out ah
-mov   al, byte ptr [bx + 2]
+mov   al, byte ptr [bx + WBSTARTSTRUCT_T.wbss_last]
 cmp   al, 8
 jne   set_last
-mov   al, byte ptr [bx + 3]
+mov   al, byte ptr [bx + WBSTARTSTRUCT_T.wbss_next]
 dec   ax
 set_last:
 mov   cx, ax
@@ -1142,8 +1143,8 @@ jle   loop_splat
 done_with_splat:
 
 ; check secret
-mov   bx, word ptr cs:[_wbs - OFFSET WI_STARTMARKER_]
-cmp   byte ptr [bx + 1], 0
+mov   bx, word ptr cs:[_wbs_ptr - OFFSET WI_STARTMARKER_]
+cmp   byte ptr [bx + WBSTARTSTRUCT_T.wbss_didsecret], 0
 je    skip_drawing_secret_splat
 mov   dx, OFFSET _splatRef - OFFSET WI_STARTMARKER_
 mov   ax, 8
@@ -1160,8 +1161,8 @@ call  WI_drawOnLnode_
 skip_drawing_pointer:
 cmp   byte ptr ds:[_commercial], 0
 je    drawel_and_exit
-mov   bx, word ptr cs:[_wbs - OFFSET WI_STARTMARKER_]
-cmp   byte ptr [bx + 3], 30 ; dont show for wolf level
+mov   bx, word ptr cs:[_wbs_ptr - OFFSET WI_STARTMARKER_]
+cmp   byte ptr [bx + WBSTARTSTRUCT_T.wbss_next], 30 ; dont show for wolf level
 jne   drawel_and_exit
 
 exit_this_func_todo:
@@ -1209,7 +1210,7 @@ push  cx
 push  dx
 
 call  WI_updateAnimatedBack_
-mov   bx, word ptr cs:[_wbs - OFFSET WI_STARTMARKER_]
+mov   bx, word ptr cs:[_wbs_ptr - OFFSET WI_STARTMARKER_]
 
 cmp   word ptr cs:[_acceleratestage - OFFSET WI_STARTMARKER_], 0
 je    skip_accelerate
@@ -1219,23 +1220,23 @@ xor   ax, ax
 mov   word ptr cs:[_acceleratestage - OFFSET WI_STARTMARKER_], ax
 
 mov   ax, 100
-mul   word ptr cs:[_plrs+1 - OFFSET WI_STARTMARKER_]
-idiv  word ptr [bx + 4]
+mul   word ptr cs:[_plrs + WBPLAYERSTRUCT_T.wbos_skills - OFFSET WI_STARTMARKER_]
+idiv  word ptr ds:[bx + WBSTARTSTRUCT_T.wbss_maxkills]
 mov   word ptr cs:[_cnt_kills - OFFSET WI_STARTMARKER_], ax
 
 mov   ax, 100
-mul   word ptr cs:[_plrs+3 - OFFSET WI_STARTMARKER_]
-idiv  word ptr [bx + 6]
+mul   word ptr cs:[_plrs + WBPLAYERSTRUCT_T.wbos_sitems - OFFSET WI_STARTMARKER_]
+idiv  word ptr ds:[bx + WBSTARTSTRUCT_T.wbss_maxitems]
 mov   word ptr cs:[_cnt_items - OFFSET WI_STARTMARKER_], ax
 
 mov   ax, 100
-mul   word ptr cs:[_plrs+5 - OFFSET WI_STARTMARKER_]
-idiv  word ptr [bx + 8]
+mul   word ptr cs:[_plrs + WBPLAYERSTRUCT_T.wbos_ssecret - OFFSET WI_STARTMARKER_]
+idiv  word ptr ds:[bx + WBSTARTSTRUCT_T.wbss_maxsecret]
 mov   word ptr cs:[_cnt_secret - OFFSET WI_STARTMARKER_], ax
 
-mov   ax, word ptr cs:[_plrs+7 - OFFSET WI_STARTMARKER_]
+mov   ax, word ptr cs:[_plrs + WBPLAYERSTRUCT_T.wbos_stime - OFFSET WI_STARTMARKER_]
 mov   word ptr cs:[_cnt_time - OFFSET WI_STARTMARKER_], ax
-mov   ax, word ptr [bx + 0Ah]
+mov   ax, word ptr ds:[bx + WBSTARTSTRUCT_T.wbss_partime]
 mov   cx, TICRATE
 cwd   
 idiv  cx
@@ -1272,8 +1273,8 @@ call  WI_StartSound_
 do_update_kills:
 
 mov   ax, 100
-mul   word ptr cs:[_plrs+1 - OFFSET WI_STARTMARKER_]
-idiv  word ptr [bx + 4]
+mul   word ptr cs:[_plrs + WBPLAYERSTRUCT_T.wbos_skills - OFFSET WI_STARTMARKER_]
+idiv  word ptr [bx + WBSTARTSTRUCT_T.wbss_maxkills]
 cmp   ax, word ptr cs:[_cnt_kills - OFFSET WI_STARTMARKER_]
 jg    exit_wi_updatestats
 mov   word ptr cs:[_cnt_kills - OFFSET WI_STARTMARKER_], ax
@@ -1314,8 +1315,8 @@ call  WI_StartSound_
 
 do_update_items:
 mov   ax, 100
-mul   word ptr cs:[_plrs+3 - OFFSET WI_STARTMARKER_]
-idiv  word ptr [bx + 6]
+mul   word ptr cs:[_plrs + WBPLAYERSTRUCT_T.wbos_sitems - OFFSET WI_STARTMARKER_]
+idiv  word ptr [bx + WBSTARTSTRUCT_T.wbss_maxitems]
 cmp   ax, word ptr cs:[_cnt_items - OFFSET WI_STARTMARKER_]
 jg    exit_wi_updatestats_2
 
@@ -1346,8 +1347,8 @@ call  WI_StartSound_
 
 do_update_secrets:
 mov   ax, 100
-mul   word ptr cs:[_plrs+5 - OFFSET WI_STARTMARKER_]
-idiv  word ptr [bx + 8]
+mul   word ptr cs:[_plrs + WBPLAYERSTRUCT_T.wbos_ssecret - OFFSET WI_STARTMARKER_]
+idiv  word ptr [bx + WBSTARTSTRUCT_T.wbss_maxsecret]
 cmp   ax, word ptr cs:[_cnt_secret - OFFSET WI_STARTMARKER_]
 jg    exit_wi_updatestats_2
 mov   word ptr cs:[_cnt_secret - OFFSET WI_STARTMARKER_], ax
@@ -1368,13 +1369,13 @@ call  WI_StartSound_
 dont_play_pistol_sfx_4:
 add   word ptr cs:[_cnt_time - OFFSET WI_STARTMARKER_], 3
 mov   ax, word ptr cs:[_cnt_time - OFFSET WI_STARTMARKER_]
-cmp   ax, word ptr cs:[_plrs+7 - OFFSET WI_STARTMARKER_]
+cmp   ax, word ptr cs:[_plrs + WBPLAYERSTRUCT_T.wbos_stime - OFFSET WI_STARTMARKER_]
 jl    dont_set_time
-mov   ax, word ptr cs:[_plrs+7 - OFFSET WI_STARTMARKER_]
+mov   ax, word ptr cs:[_plrs + WBPLAYERSTRUCT_T.wbos_stime - OFFSET WI_STARTMARKER_]
 mov   word ptr cs:[_cnt_time - OFFSET WI_STARTMARKER_], ax
 dont_set_time:
 
-mov   ax, word ptr [bx + 0Ah]
+mov   ax, word ptr [bx + WBSTARTSTRUCT_T.wbss_partime]
 cwd   
 mov   cx, TICRATE
 idiv  cx
@@ -1383,7 +1384,7 @@ cmp   ax, word ptr cs:[_cnt_par - OFFSET WI_STARTMARKER_]
 jg    jump_to_exit_wi_updatestats_3
 mov   word ptr cs:[_cnt_par - OFFSET WI_STARTMARKER_], ax
 mov   ax, word ptr cs:[_cnt_time - OFFSET WI_STARTMARKER_]
-cmp   ax, word ptr cs:[_plrs+7 - OFFSET WI_STARTMARKER_]
+cmp   ax, word ptr cs:[_plrs + WBPLAYERSTRUCT_T.wbos_stime - OFFSET WI_STARTMARKER_]
 jl    jump_to_exit_wi_updatestats_3
 mov   dl, SFX_BAREXP
 
@@ -1431,7 +1432,7 @@ mov   al, byte ptr cs:[_numRef - OFFSET WI_STARTMARKER_]	; patch numref 0
 call  WI_GetPatch_
 mov   si, ax
 mov   es, dx
-mov   dx, word ptr es:[si + 2]
+mov   dx, word ptr es:[si + PATCH_T.patch_height]  
 mov   ax, dx
 SHIFT_MACRO shl ax 2
 sub   ax, dx
@@ -1502,7 +1503,7 @@ mov   dx, SP_TIMEY
 mov   ax, SCREENWIDTH/2 - SP_TIMEX
 mov   bx, word ptr cs:[_cnt_time - OFFSET WI_STARTMARKER_]
 call  WI_drawTime_
-mov   bx, word ptr cs:[_wbs - OFFSET WI_STARTMARKER_]
+mov   bx, word ptr cs:[_wbs_ptr - OFFSET WI_STARTMARKER_]
 cmp   byte ptr [bx], 3
 jl    done_exit_draw_stats
 pop   si
@@ -1574,8 +1575,8 @@ cmp   byte ptr ds:[_commercial], 0
 je    add_episode_to_name
 lea   di, [bp - 036h]
 name_set:
-mov   bx, word ptr cs:[_wbs - OFFSET WI_STARTMARKER_]
-cmp   byte ptr [bx], 3
+mov   bx, word ptr cs:[_wbs_ptr - OFFSET WI_STARTMARKER_]
+cmp   byte ptr [bx + WBSTARTSTRUCT_T.wbss_epsd], 3
 jne   dont_set_name1
 lea   di, [bp - 036h]
 dont_set_name1:
@@ -1599,14 +1600,14 @@ ret
 
 
 add_episode_to_name:
-mov   bx, word ptr cs:[_wbs - OFFSET WI_STARTMARKER_]
-mov   al, byte ptr [bx]
+mov   bx, word ptr cs:[_wbs_ptr - OFFSET WI_STARTMARKER_]
+mov   al, byte ptr [bx + WBSTARTSTRUCT_T.wbss_epsd]
 add   byte ptr [bp - 027h], al
 jmp   name_set
 load_assets:
 
-mov   bx, word ptr cs:[_wbs - OFFSET WI_STARTMARKER_]
-cmp   byte ptr [bx], 3
+mov   bx, word ptr cs:[_wbs_ptr - OFFSET WI_STARTMARKER_]
+cmp   byte ptr [bx + WBSTARTSTRUCT_T.wbss_epsd], 3
 jge   done_loading_assets
 xor   ah, ah
 mov   word ptr [bp - 8], WIANIMSPAGE_SEGMENT
@@ -1617,8 +1618,8 @@ mov   word ptr [bp - 0Ah], ax
 mov   word ptr [bp - 014h], ax
 
 loop_load_anim:
-mov   bx, word ptr cs:[_wbs - OFFSET WI_STARTMARKER_]
-mov   al, byte ptr [bx]
+mov   bx, word ptr cs:[_wbs_ptr - OFFSET WI_STARTMARKER_]
+mov   al, byte ptr [bx + WBSTARTSTRUCT_T.wbss_epsd]
 cbw  
 mov   bx, ax
 mov   al, byte ptr cs:[bx + _NUMANIMS - OFFSET WI_STARTMARKER_]
@@ -1648,19 +1649,19 @@ add   word ptr [bp - 014h], SIZEOF_WIANIM_T
 inc   word ptr [bp - 0Ah]
 jmp   loop_load_anim
 check_for_load_hack:
-mov   bx, word ptr cs:[_wbs - OFFSET WI_STARTMARKER_]
-cmp   byte ptr [bx], 1
+mov   bx, word ptr cs:[_wbs_ptr - OFFSET WI_STARTMARKER_]
+cmp   byte ptr [bx + WBSTARTSTRUCT_T.wbss_epsd], 1
 jne   dont_do_load_hack
 jmp   continue_check_for_load_hack
 dont_do_load_hack:
-mov   bx, word ptr cs:[_wbs - OFFSET WI_STARTMARKER_]
+mov   bx, word ptr cs:[_wbs_ptr - OFFSET WI_STARTMARKER_]
 
 
 
 ; "WIA" 57 49 41
 
 mov   al, 041h					
-mov   ah, byte ptr [bx]			; wbs->epsd
+mov   ah, byte ptr [bx + WBSTARTSTRUCT_T.wbss_epsd]			; wbs->epsd
 add   ah, 030h					; '0' char
 
 mov   word ptr [bp - 022h], 04957h  ; "WI"
@@ -1970,7 +1971,7 @@ PUBLIC WI_initVariables_
 push  bx
 push  si
 push  di
-mov   word ptr cs:[_wbs - OFFSET WI_STARTMARKER_], ax
+mov   word ptr cs:[_wbs_ptr - OFFSET WI_STARTMARKER_], ax
 xchg  ax, bx
 xor   ax, ax
 mov   word ptr cs:[_acceleratestage - OFFSET WI_STARTMARKER_], ax
@@ -1979,13 +1980,13 @@ mov   word ptr cs:[_cnt - OFFSET WI_STARTMARKER_], ax
 push  cs
 pop   es
 mov   di, OFFSET _plrs - OFFSET WI_STARTMARKER_
-lea   si, [bx + 0Ch]
+lea   si, [bx + WBSTARTSTRUCT_T.wbss_plyr]
 
-movsw 
-movsw 
-movsw 
-movsw 
-movsb 
+movsb  ; wbos_in      
+movsw  ; wbos_skills  
+movsw  ; wbos_sitems  
+movsw  ; wbos_ssecret 
+movsw  ; wbos_stime   
 
 ; 	if ( commercial ){
 ;        wminfo.partime = cpars[gamemap-1]; 
@@ -1995,8 +1996,8 @@ movsb
 
 
 mov   al, byte ptr ds:[_gamemap]
-cbw
-cmp   byte ptr ds:[_commercial], 0
+; ah is known 0...
+cmp   byte ptr ds:[_commercial], ah ; 0
 je    use_pars
 
 use_cpars:
@@ -2008,28 +2009,32 @@ mov   ax, word ptr cs:[_cpars + si - OFFSET WI_STARTMARKER_]
 jmp done_getting_pars
 
 use_pars:
-xchg  ax, si
-mov   ah, byte ptr ds:[_gameepisode]
-db    0D5h, 00Ah					; AAD to mul by 10
+dec   ax      ; normalize gamemap to 0
+xchg  ax, si  ; si gets gamemap
+mov   al, 18
+mul   byte ptr ds:[_gameepisode]
+sub   al, 18    ; normalize episode to 0 not 1
 add   si, ax
-sal   si, 1
+;sal   si, 1 ; multed by 18 not 9
 mov   ax, word ptr cs:[_pars + si - OFFSET WI_STARTMARKER_]
 
 done_getting_pars:
-mov   word ptr [bx + 0Ah], ax        ; set partime
+mov   word ptr [bx + WBSTARTSTRUCT_T.wbss_partime], ax        ; set partime
 
+xor   si, si
+mov   ax, 1
 
-cmp   word ptr [bx + 4], 0
+cmp   word ptr [bx + WBSTARTSTRUCT_T.wbss_maxkills], si ; 0
 jne   dont_set_maxkills
-mov   word ptr [bx + 4], 1
+mov   word ptr [bx + WBSTARTSTRUCT_T.wbss_maxkills], ax ; 1
 dont_set_maxkills:
-cmp   word ptr [bx + 6], 0
+cmp   word ptr [bx + WBSTARTSTRUCT_T.wbss_maxitems], si ; 0
 jne   dont_set_maxitems
-mov   word ptr [bx + 6], 1
+mov   word ptr [bx + WBSTARTSTRUCT_T.wbss_maxitems], ax ; 1
 dont_set_maxitems:
-cmp   word ptr [bx + 8], 0
+cmp   word ptr [bx + WBSTARTSTRUCT_T.wbss_maxsecret], si ; 0
 jne   dont_set_maxsecret
-mov   word ptr [bx + 8], 1
+mov   word ptr [bx + WBSTARTSTRUCT_T.wbss_maxsecret], ax ; 1
 dont_set_maxsecret:
 pop   di
 pop   si
@@ -2142,7 +2147,7 @@ jl    loop_wi_items
 
 mov   cx, WIGRAPHICSLEVELNAME_SEGMENT
 xor   bx, bx
-mov   si, word ptr cs:[_wbs - OFFSET WI_STARTMARKER_]
+mov   si, word ptr cs:[_wbs_ptr - OFFSET WI_STARTMARKER_]
 lea   di, [bp - 0Ah]
 
 
@@ -2160,7 +2165,7 @@ mov   word ptr [di + 2], 04C49h ; "IL"
 mov   byte ptr [di + 4], 056h ; "V"
 
 
-mov   al, byte ptr [si+2]		; wbs ->last
+mov   al, byte ptr [si + WBSTARTSTRUCT_T.wbss_last]		; wbs ->last
 db    0D4h, 00Ah	    ; divide by 10 using AAM
 xchg  al, ah
 add   ax, 03030h				; add '0' to each character
@@ -2175,7 +2180,7 @@ db 01Eh  ;
 dw _W_CacheLumpNameDirect_addr
 
 
-mov   al, byte ptr [si+3]		; wbs ->next
+mov   al, byte ptr [si + WBSTARTSTRUCT_T.wbss_next]		; wbs ->next
 db    0D4h, 00Ah	    ; divide by 10 using AAM
 xchg  al, ah
 add   ax, 03030h				; add '0' to each character
@@ -2190,8 +2195,8 @@ do_nondoom2_wi_init:
 mov   word ptr [di + 0], 04957h ; "WI"
 mov   word ptr [di + 2], 0564Ch ; "LV"
 
-mov   al, byte ptr [si]			; wbs ->epsd
-mov   ah, byte ptr [si+2]		; wbs ->last
+mov   al, byte ptr [si + WBSTARTSTRUCT_T.wbss_epsd]			; wbs ->epsd
+mov   ah, byte ptr [si + WBSTARTSTRUCT_T.wbss_last]		; wbs ->last
 add   ax, 03030h				; add '0' to each character
 mov   word ptr [di + 4], ax  ; numbers for string
 mov   byte ptr [di + 6], 00h ; null terminator
@@ -2204,7 +2209,7 @@ db 01Eh  ;
 dw _W_CacheLumpNameDirect_addr
 
 
-mov   al, byte ptr [si+3]		; wbs ->next
+mov   al, byte ptr [si + WBSTARTSTRUCT_T.wbss_next]		; wbs ->next
 add   al, 030h	 				; add '0' to character
 mov   byte ptr [di + 5], al   ; update number for string
 

@@ -80,7 +80,7 @@
 #define R_BSP16CodeSize                0x3783
 #define R_BSP0CodeSize                 0x36B5
 #define R_BSPFLCodeSize                0x365A
-#define WI_StuffCodeSize               0xFF1
+#define WI_StuffCodeSize               0xFD2
 #define PSightCodeSize                 0x9D92
 #define WipeCodeSize                   0x5FC
 #define FinaleCodeSize                 0xBBD
