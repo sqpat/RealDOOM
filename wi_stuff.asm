@@ -2009,13 +2009,12 @@ mov   ax, word ptr cs:[_cpars + si - OFFSET WI_STARTMARKER_]
 jmp done_getting_pars
 
 use_pars:
-dec   ax      ; normalize gamemap to 0
 xchg  ax, si  ; si gets gamemap
-mov   al, 18
+mov   al, 9
 mul   byte ptr ds:[_gameepisode]
-sub   al, 18    ; normalize episode to 0 not 1
+sub   al, 10   ; normalize episode to 0 not 1, then sub one extra for game_map normalization
 add   si, ax
-;sal   si, 1 ; multed by 18 not 9
+sal   si, 1    ; word lookup
 mov   ax, word ptr cs:[_pars + si - OFFSET WI_STARTMARKER_]
 
 done_getting_pars:
