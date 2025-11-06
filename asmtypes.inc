@@ -942,3 +942,10 @@ CACHE_NODE_T STRUC
     cachenode_next       db ? ; 1
 CACHE_NODE_T ENDS
 
+
+SFXINFO_T STRUC
+    sfxinfo_lumpandflags    dw ? ; 0
+    sfxinfo_lumpsize        dw ? ; 2
+    sfxinfo_cache_position  dw ? ; 4
+SFXINFO_T ENDS
+

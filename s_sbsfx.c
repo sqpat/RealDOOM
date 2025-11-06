@@ -178,7 +178,9 @@ void __near S_IncreaseRefCount(uint8_t cachepage){
         sfx_page_reference_count[cachepage]++;
     }
 }*/
+void __near S_DecreaseRefCount(int8_t voice_index);
 
+/**/
 void __near S_DecreaseRefCount(int8_t voice_index){
     uint8_t cachepage = sfx_data[sb_voicelist[voice_index].sfx_id & SFX_ID_MASK].cache_position.bu.bytehigh; // if this is ever FF then something is wrong?
     uint8_t numpages =  sfxcache_nodes[cachepage].numpages; // number of pages of this allocation, or the page it is a part of

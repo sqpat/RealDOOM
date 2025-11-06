@@ -307,36 +307,6 @@ ENDP
 
 
 
-; todo move to a sound asm file
-;void S_NormalizeSfxVolume(uint16_t offset, uint16_t length){
-
-PROC S_NormalizeSfxVolume_ NEAR
-PUBLIC S_NormalizeSfxVolume_
-
-push si
-push cx
-mov  cl, byte ptr ds:[_snd_SfxVolume]
-mov  ch, 080h
-add  dx, ax       ; length+offset. end condition
-mov  si, ax       ; si gets offset
-mov  ds, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]   ; segment
-do_next_byte:
-lodsb
-sub  al, ch
-imul cl
-sal  ax, 1
-add  ah, ch
-mov  byte ptr ds:[si-1], ah
-cmp  si, dx
-jb   do_next_byte
-exit_loop:
-mov  ax, FIXED_DS_SEGMENT
-mov  ds, ax ; restore ds
-pop  cx
-pop  si
-ret
-
-ENDP
 
 
 PROC D_INTERRUPT_ENDMARKER_
