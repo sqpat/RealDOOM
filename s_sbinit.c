@@ -709,8 +709,9 @@ int16_t __near  SB_InitCard(){
 
 }
 
-uint8_t sfx_mix_table_2[512];
 
+// just 0 to linear rising n to 255..
+uint8_t sfx_mix_table_2[512];
     
 
 void __near S_CreateVolumeTable(){

@@ -43,7 +43,7 @@ EXTRN _tallpercent:BYTE
 EXTRN _armsbgarray:BYTE
 EXTRN _arms:BYTE
 EXTRN _faces:BYTE
-EXTRN _keys:BYTE
+EXTRN _keys:WORD
 EXTRN _keyboxes:BYTE
 EXTRN _shortnum:BYTE
 EXTRN _tallnum:BYTE

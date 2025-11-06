@@ -158,7 +158,8 @@ void __near logcacheevent(char a, char b){
 
 #endif
 
-
+void __near S_IncreaseRefCount(uint8_t cachepage);
+/*
 void __near S_IncreaseRefCount(uint8_t cachepage){
     if (sfxcache_nodes[cachepage].numpages){
         uint8_t currentpage = cachepage;
@@ -176,7 +177,7 @@ void __near S_IncreaseRefCount(uint8_t cachepage){
     } else {
         sfx_page_reference_count[cachepage]++;
     }
-}
+}*/
 
 void __near S_DecreaseRefCount(int8_t voice_index){
     uint8_t cachepage = sfx_data[sb_voicelist[voice_index].sfx_id & SFX_ID_MASK].cache_position.bu.bytehigh; // if this is ever FF then something is wrong?

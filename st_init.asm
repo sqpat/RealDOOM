@@ -40,7 +40,7 @@ EXTRN _arms:BYTE
 EXTRN _armsbg:BYTE
 EXTRN _armsbgarray:BYTE
 EXTRN _faces:BYTE
-EXTRN _keys:BYTE
+EXTRN _keys:WORD
 EXTRN _shortnum:BYTE
 EXTRN _tallnum:BYTE
 EXTRN _sbar:WORD

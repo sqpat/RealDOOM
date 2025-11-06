@@ -927,3 +927,18 @@ TICCMD_T STRUC
 
 TICCMD_T ENDS
 
+
+
+CACHE_NODE_PAGE_COUNT_T STRUC
+    cachenodecount_prev       db ? ; 0
+    cachenodecount_next       db ? ; 1
+    cachenodecount_pagecount  db ? ; 2
+    cachenodecount_numpages   db ? ; 3
+CACHE_NODE_PAGE_COUNT_T ENDS
+
+
+CACHE_NODE_T STRUC
+    cachenode_prev       db ? ; 0
+    cachenode_next       db ? ; 1
+CACHE_NODE_T ENDS
+
