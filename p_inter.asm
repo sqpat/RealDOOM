@@ -143,7 +143,7 @@ ret
 switch_to_pistol:
 
 mov    al, WP_PISTOL ; 1
-mov    byte ptr ds:[_player + PLAYER_T.player_readyweapon], al
+mov    byte ptr ds:[_player + PLAYER_T.player_pendingweapon], al
 pop    bx
 ret    
 
