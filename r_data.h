@@ -39,8 +39,9 @@ typedef struct {
   // 0 for single page allocations. for multipage, 1 is the the last page of multipage
   // allocation and count up prev from there. allows us to idenitify connected pages in the cache
   int8_t pagecount; 
+
   int8_t numpages; // number of the pages in a multi page allocation
-  //uint8_t value; // lump, value, etc
+
 } cache_node_page_count_t;
 
 typedef struct {

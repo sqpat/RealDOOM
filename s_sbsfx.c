@@ -181,10 +181,8 @@ void __near S_IncreaseRefCount(uint8_t cachepage){
 void __near S_DecreaseRefCount(int8_t voice_index){
     uint8_t cachepage = sfx_data[sb_voicelist[voice_index].sfx_id & SFX_ID_MASK].cache_position.bu.bytehigh; // if this is ever FF then something is wrong?
     uint8_t numpages =  sfxcache_nodes[cachepage].numpages; // number of pages of this allocation, or the page it is a part of
-    int8_t startnode = cachepage;
-    int8_t endnode   = startnode;
+
     logcacheevent('c', cachepage);
-    // uint8_t numpages  = sb_voicelist[i].length >> 14; // todo rol 2
     if (numpages){
         uint8_t currentpage = cachepage;
         logcacheevent('e', numpages);
@@ -196,13 +194,23 @@ void __near S_DecreaseRefCount(int8_t voice_index){
         while (sfxcache_nodes[currentpage].pagecount != sfxcache_nodes[currentpage].numpages){
             sfx_page_reference_count[currentpage]--;
             currentpage = sfxcache_nodes[currentpage].next;  // or prev?
+            // if (sfx_page_reference_count[currentpage] < 0){
+            //     I_Error ("bad a");
+            // }
         }
-        sfx_page_reference_count[currentpage]--;
+        sfx_page_reference_count[currentpage]--;  // do the last page too
+        // if (sfx_page_reference_count[currentpage] < 0){
+        //     I_Error ("bad b");
+        // }
 
 
     } else {
         sfx_page_reference_count[cachepage]--;
-    }
+        // if (sfx_page_reference_count[cachepage] < 0){
+        //     I_Error ("bad c");
+        // }
+
+    }           
 
 }
 
@@ -437,10 +445,9 @@ int8_t __near S_EvictSFXPage(int8_t numpages){
 
 	//todo revisit these vars.
 	int16_t evictedpage;
-	int8_t j;
 	int16_t currentpage;
-	int16_t k;
-	int16_t l = 0;
+	int8_t i;
+
 	int8_t previous_next;
 
     // if (numpages)
@@ -453,9 +460,8 @@ int8_t __near S_EvictSFXPage(int8_t numpages){
 	currentpage = sfxcache_tail;
 
 	// go back enough pages to allocate them all.
-	for (j = 0; j < numpages-1; j++){
+	for (i = 0; i < numpages-1; i++){
 		currentpage = sfxcache_nodes[currentpage].next;
-        l++;
 	}
 
 	evictedpage = currentpage;
@@ -478,19 +484,21 @@ int8_t __near S_EvictSFXPage(int8_t numpages){
 	// true if 0 page allocation or 1st page of a multi-page
 	while (sfxcache_nodes[evictedpage].numpages != sfxcache_nodes[evictedpage].pagecount){
 		evictedpage = sfxcache_nodes[evictedpage].next;
-        l++;
 	}
 
-    if (sfx_page_reference_count[evictedpage]){
-        // the minimum required pages to evict overlapped with an in use page!
-        // fail gracefully.
-
-        return -1;
+        // check all pages for ref count
+    {
+		int8_t checkpage = evictedpage;
+    	while (checkpage != -1){
+            if (sfx_page_reference_count[checkpage]){
+                // the minimum required pages to evict overlapped with an in use page!
+                // fail gracefully.
+                return -1;
+            }
+            checkpage = sfxcache_nodes[checkpage].prev;
+        }
     }
 
-    // if (l > 4){
-    //     I_Error("huge dealloc?");
-    // }
 
     // from evicted page back to tail.
 	while (evictedpage != -1){
@@ -504,14 +512,14 @@ int8_t __near S_EvictSFXPage(int8_t numpages){
 
 			//todo put these next to each other in memory and loop in one go!
 
-		for (k = 0; k < NUMSFX; k++){
-			if ((sfx_data[k].cache_position.bu.bytehigh) == evictedpage){
-				sfx_data[k].cache_position.bu.bytehigh = SOUND_NOT_IN_CACHE;
+		for (i = 0; i < NUMSFX; i++){
+			if ((sfx_data[i].cache_position.bu.bytehigh) == evictedpage){
+				sfx_data[i].cache_position.bu.bytehigh = SOUND_NOT_IN_CACHE;
 			}
 		}
 
         // if (sfx_page_reference_count[evictedpage]){
-        //     I_Error("shouldn't happen!");
+        //     I_Error("bad eviction!");
         // }
 
 
