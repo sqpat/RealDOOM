@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/11/07 11:08:58
+Created on:       25/11/07 12:09:00
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -53,8 +53,8 @@ r_setup_TEXT           CODE           AUTO           0000:5c10       0000046c
 ST_SETUP_TEXT          CODE           AUTO           0000:607c       00000125
 HU_SETUP_TEXT          CODE           AUTO           0000:61a2       00000246
 p_setup_TEXT           CODE           AUTO           0000:63f0       00001236
-s_sbsfx_TEXT           CODE           AUTO           0000:7630       00001043
-S_SBSFXA_TEXT          CODE           AUTO           0000:8674       000000ee
+s_sbsfx_TEXT           CODE           AUTO           0000:7630       00000f5b
+S_SBSFXA_TEXT          CODE           AUTO           0000:858c       000001d5
 s_sbinit_TEXT          CODE           AUTO           0000:8770       000006ab
 R_MAIN_TEXT            CODE           AUTO           0000:8e1c       000003db
 F_FILE_TEXT            CODE           AUTO           0000:91f8       0000008d
@@ -437,24 +437,24 @@ Module: p_setup.obj(C:\REALDOOM\p_setup.c)
 0000:75c6*     PSetupEndFunc_
 0000:75e2      Z_ClearDeadCode_
 Module: s_sbsfx.obj(C:\REALDOOM\s_sbsfx.c)
-0000:7630+     S_MoveCacheItemBackOne_
-0000:7718+     S_UpdateLRUCache_
-0000:7780+     S_MarkSFXPageMRU_
-0000:78a8+     S_EvictSFXPage_
-0000:79ba+     SB_Service_Mix22Khz_
-0000:7e36+     SB_Service_Mix11Khz_
-0000:80a4      SB_ServiceInterrupt_
-0000:80be+     continuecall_
-0000:8220      SB_WriteDSP_
-0000:8250+     S_LoadSoundIntoCache_
-0000:853a      SFX_PlayPatch_
-0000:866e      S_DecreaseRefCountFar_
+0000:7630+     S_UpdateLRUCache_
+0000:7698+     S_MarkSFXPageMRU_
+0000:77c0+     S_EvictSFXPage_
+0000:78d2+     SB_Service_Mix22Khz_
+0000:7d4e+     SB_Service_Mix11Khz_
+0000:7fbc      SB_ServiceInterrupt_
+0000:7fd6+     continuecall_
+0000:8138      SB_WriteDSP_
+0000:8168+     S_LoadSoundIntoCache_
+0000:8452      SFX_PlayPatch_
+0000:8586      S_DecreaseRefCountFar_
 Module: s_sbsfxa.obj(s_sbsfxa.ASM)
-0000:86c9      S_DecreaseRefCount_
-0000:873a      S_NormalizeSfxVolume_
-0000:8762*     S_SBFX_ENDMARKER_
-0000:8686      S_IncreaseRefCount_
-0000:8674*     S_SBFX_STARTMARKER_
+0000:85e1      S_DecreaseRefCount_
+0000:8739      S_NormalizeSfxVolume_
+0000:8761*     S_SBFX_ENDMARKER_
+0000:859e      S_IncreaseRefCount_
+0000:858c*     S_SBFX_STARTMARKER_
+0000:8652      S_MoveCacheItemBackOne_
 Module: s_sbinit.obj(C:\REALDOOM\s_sbinit.c)
 0c1d:0e90      _sb_port
 0c1d:0e92+     _sb_dma

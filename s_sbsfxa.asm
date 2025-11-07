@@ -30,7 +30,8 @@ EXTRN I_Error_:FAR
 
 EXTRN _sfxcache_nodes:CACHE_NODE_PAGE_COUNT_T
 EXTRN _sfx_page_reference_count:BYTE
-
+EXTRN _sfxcache_head:BYTE
+EXTRN _sfxcache_tail:BYTE
 
 
 .CODE
@@ -188,7 +189,119 @@ PUBLIC  S_DecreaseRefCount_
 
 ENDP
 
+PROC S_MoveCacheItemBackOne_ NEAR
+PUBLIC S_MoveCacheItemBackOne_
 
+
+push  bx
+push  cx
+push  dx
+push  si
+push  bp
+mov   bp, sp
+sub   sp, 2
+mov   dh, al
+mov   ch, al
+cbw  
+mov   bx, ax
+shl   bx, 2
+cmp   byte ptr [bx + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_numpages], 0
+je    label_1
+label_2:
+mov   al, dh
+cbw  
+mov   bx, ax
+shl   bx, 2
+cmp   byte ptr [bx + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], 1
+je    label_1
+mov   dh, byte ptr [bx + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+jmp   label_2
+label_1:
+mov   al, ch
+cbw  
+mov   bx, ax
+shl   bx, 2
+mov   cl, byte ptr [bx + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
+mov   dl, cl
+mov   al, dh
+cbw  
+mov   bx, ax
+shl   bx, 2
+mov   al, byte ptr [bx + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+mov   byte ptr [bp - 2], al
+mov   al, cl
+cbw  
+mov   bx, ax
+shl   bx, 2
+cmp   byte ptr [bx + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_numpages], 0
+je    label_3
+label_4:
+mov   al, dl
+cbw  
+mov   bx, ax
+shl   bx, 2
+mov   al, byte ptr [bx + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount]
+cmp   al, byte ptr [bx + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_numpages]
+je    label_3
+mov   dl, byte ptr [bx + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
+jmp   label_4
+label_3:
+mov   al, dl
+cbw  
+mov   bx, ax
+shl   bx, 2
+mov   bl, byte ptr [bx + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
+cmp   bl, 0FFh
+je    label_5
+mov   al, bl
+cbw  
+mov   si, ax
+shl   si, 2
+mov   byte ptr [si + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], ch
+label_7:
+mov   al, byte ptr [bp - 2]
+cmp   al, 0FFh
+je    label_6
+cbw  
+mov   si, ax
+shl   si, 2
+mov   byte ptr [si + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], cl
+label_8:
+mov   al, dl
+cbw  
+mov   si, ax
+mov   al, cl
+shl   si, 2
+cbw  
+mov   byte ptr [si + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], dh
+mov   si, ax
+shl   si, 2
+mov   al, byte ptr [bp - 2]
+mov   byte ptr [si + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], al
+mov   al, ch
+cbw  
+mov   si, ax
+mov   al, dh
+shl   si, 2
+cbw  
+mov   byte ptr [si + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], bl
+mov   bx, ax
+shl   bx, 2
+mov   byte ptr [bx + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], dl
+LEAVE_MACRO
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret   
+label_5:
+mov   byte ptr [_sfxcache_head], ch
+jmp   label_7
+label_6:
+mov   byte ptr [_sfxcache_tail], cl
+jmp   label_8
+
+ENDP
 
 ; todo move to a sound asm file
 ;void S_NormalizeSfxVolume(uint16_t offset, uint16_t length){

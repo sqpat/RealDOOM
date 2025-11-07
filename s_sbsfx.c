@@ -221,6 +221,9 @@ void __near S_DecreaseRefCount(int8_t voice_index){
 
 // contains logic for moving an element back one spot in the cache.
 // has to account for contiguous multipage allocations and has some ugly logic for that.
+void __near S_MoveCacheItemBackOne(int8_t currentpage);
+
+/*
 void __near S_MoveCacheItemBackOne(int8_t currentpage){
 
     // todo single item case but doesnt handle multi item case!
@@ -287,7 +290,7 @@ void __near S_MoveCacheItemBackOne(int8_t currentpage){
         sfxcache_nodes[prev_startpoint].prev = swap_head;
     }
 }
-            
+*/      
 void __near S_UpdateLRUCache(){
 
     // iterate thru the cache and make sure that all in-use (reference count nonzero)
