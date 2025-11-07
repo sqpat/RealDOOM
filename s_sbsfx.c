@@ -294,7 +294,7 @@ void __near S_MoveCacheItemBackOne(int8_t currentpage){
 
 void __near S_UpdateLRUCache();
 
-/**/
+/*
 void __near S_UpdateLRUCache(){
 
     // iterate thru the cache and make sure that all in-use (reference count nonzero)
@@ -334,6 +334,7 @@ void __near S_UpdateLRUCache(){
     
 
 }
+*/
 
 void __near S_MarkSFXPageMRU(int8_t index) {
 
