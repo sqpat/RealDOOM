@@ -20,12 +20,7 @@ INSTRUCTION_SET_MACRO
 
 
 
-EXTRN W_LumpLength_:FAR
-EXTRN W_CheckNumForNameFarString_:NEAR
-EXTRN W_CacheLumpNameDirectFarString_:FAR
-EXTRN Z_QuickMapPhysics_:FAR
-EXTRN Z_QuickMapPalette_:FAR
-EXTRN Z_QuickMapStatus_:FAR
+EXTRN I_Error_:FAR
 
 
 
@@ -46,6 +41,9 @@ EXTRN _sfx_page_reference_count:BYTE
 PROC    S_SBFX_STARTMARKER_ NEAR
 PUBLIC  S_SBFX_STARTMARKER_
 ENDP
+
+str_bad_sfx_refcount:
+db "Bad sfx ref count", 0
 
 PROC    S_IncreaseRefCount_ NEAR
 PUBLIC  S_IncreaseRefCount_
@@ -110,7 +108,6 @@ PROC    S_DecreaseRefCount_ NEAR
 PUBLIC  S_DecreaseRefCount_
 
     push  bx
-    push  dx
     cbw   ; clear ah
     ; note! al is voice index, not cachepage!
 
@@ -135,27 +132,30 @@ PUBLIC  S_DecreaseRefCount_
     ;uint8_t numpages =  sfxcache_nodes[cachepage].numpages; // number of pages of this allocation, or the page it is a part of
 
     SHIFT_MACRO sal   bx 2
-    mov   dx, word ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount]
-    test  dh, dh
+    cmp   byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_numpages], ah ; known 0
     jne   decreaserefcount_multipage
 
     decreaserefcount_singlepage:
     xchg  ax, bx ; restore byte ptr
     dec   byte ptr ds:[_sfx_page_reference_count + bx]
-    pop   dx
+    js    error_bad_ref_count
+
     pop   bx
     ret
 
     decreaserefcount_multipage:
+    push  dx
+    mov   dx, word ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount]
+    ; dh stores numpages
+    ; dl has page count. which should be linearly stored so we just decrease towards 1 as we go up the list.
+    loop_next_decreaserefcount_multipage:
     cmp   dl, 1
     je    done_with_decreaseref_multipage_loop
-    loop_next_decreaserefcount_multipage:
     mov   al, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
     mov   bl, al
     SHIFT_MACRO sal   bx 2
-    mov   dl, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount]
-    cmp   dl, 1
-    jne   loop_next_decreaserefcount_multipage
+    dec   dx   ; dl go towards 1
+    jmp   loop_next_decreaserefcount_multipage
 
     ; dl = pagecount
     ; dh = numpages
@@ -163,11 +163,11 @@ PUBLIC  S_DecreaseRefCount_
     ; al is unshifted currentpage
 
     done_with_decreaseref_multipage_loop:
-    cbw   ; clear ah
 
     loop_decrease_next_ref:
     xchg  ax, bx ; restore byte ptr
     dec   byte ptr ds:[_sfx_page_reference_count + bx]
+    js    error_bad_ref_count
     xchg  ax, bx ; restore dword ptr
     mov   al, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
     mov   bl, al
@@ -178,6 +178,12 @@ PUBLIC  S_DecreaseRefCount_
     pop   dx
     pop   bx
     ret
+
+    error_bad_ref_count:
+    push    cs
+    mov     ax, OFFSET str_bad_sfx_refcount
+    push    ax
+    call    I_Error_
 
 
 ENDP
