@@ -189,117 +189,182 @@ PUBLIC  S_DecreaseRefCount_
 
 ENDP
 
+    ;    while (sfxcache_nodes[prev_startpoint].pagecount != 1){
+    ;        prev_startpoint = sfxcache_nodes[prev_startpoint].prev;
+    ;    }
+
+
+find_prev_startpoint:
+    mov   cl, byte ptr ds:[_sfxcache_nodes + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount]
+    dec   cx
+    jz    done_with_prevstartpoint_loop
+    
+        loop_find_prev_startpoint:
+        mov   al, byte ptr ds:[_sfxcache_nodes + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+        mov   si, ax
+        SHIFT_MACRO sal   si 2
+        loop  loop_find_prev_startpoint    
+    mov   bx, ax  ; bx gets prev_startpoint unshifted
+    jmp done_with_prevstartpoint_loop
+
+
 PROC S_MoveCacheItemBackOne_ NEAR
 PUBLIC S_MoveCacheItemBackOne_
 
 
-push  bx
-push  cx
-push  dx
-push  si
-push  bp
-mov   bp, sp
-sub   sp, 2
-mov   dh, al
-mov   ch, al
-cbw  
-mov   bx, ax
-shl   bx, 2
-cmp   byte ptr [bx + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_numpages], 0
-je    label_1
-label_2:
-mov   al, dh
-cbw  
-mov   bx, ax
-shl   bx, 2
-cmp   byte ptr [bx + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], 1
-je    label_1
-mov   dh, byte ptr [bx + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
-jmp   label_2
-label_1:
-mov   al, ch
-cbw  
-mov   bx, ax
-shl   bx, 2
-mov   cl, byte ptr [bx + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
-mov   dl, cl
-mov   al, dh
-cbw  
-mov   bx, ax
-shl   bx, 2
-mov   al, byte ptr [bx + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
-mov   byte ptr [bp - 2], al
-mov   al, cl
-cbw  
-mov   bx, ax
-shl   bx, 2
-cmp   byte ptr [bx + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_numpages], 0
-je    label_3
-label_4:
-mov   al, dl
-cbw  
-mov   bx, ax
-shl   bx, 2
-mov   al, byte ptr [bx + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount]
-cmp   al, byte ptr [bx + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_numpages]
-je    label_3
-mov   dl, byte ptr [bx + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
-jmp   label_4
-label_3:
-mov   al, dl
-cbw  
-mov   bx, ax
-shl   bx, 2
-mov   bl, byte ptr [bx + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
-cmp   bl, 0FFh
-je    label_5
-mov   al, bl
-cbw  
-mov   si, ax
-shl   si, 2
-mov   byte ptr [si + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], ch
-label_7:
-mov   al, byte ptr [bp - 2]
-cmp   al, 0FFh
-je    label_6
-cbw  
-mov   si, ax
-shl   si, 2
-mov   byte ptr [si + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], cl
-label_8:
-mov   al, dl
-cbw  
-mov   si, ax
-mov   al, cl
-shl   si, 2
-cbw  
-mov   byte ptr [si + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], dh
-mov   si, ax
-shl   si, 2
-mov   al, byte ptr [bp - 2]
-mov   byte ptr [si + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], al
-mov   al, ch
-cbw  
-mov   si, ax
-mov   al, dh
-shl   si, 2
-cbw  
-mov   byte ptr [si + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], bl
-mov   bx, ax
-shl   bx, 2
-mov   byte ptr [bx + _sfxcache_nodes + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], dl
-LEAVE_MACRO
-pop   si
-pop   dx
-pop   cx
-pop   bx
+PUSHA_NO_AX_MACRO
+cbw
+mov   dx, ax  ; dl stores non dword ptr of next_startpoint (and zero dh)
+mov   bx, ax  ; bx gets prev_startpoint unshifted
+SHIFT_MACRO sal   ax 2
+mov   si, ax  ; si gets prev_startpoint
+mov   bp, ax  ; bp gets next_startpoint
+xor   cx, cx  ; zero cx
+
+
+    ; we are iterating from head to tail, going prev each step.
+    ; so we have an index that must be moved next towards head.
+    ; but we must move the contiguous pages in the allocations, so iterate prev until we find it's end.
+
+    ;if (sfxcache_nodes[prev_startpoint].numpages){
+
+    cmp   byte ptr ds:[_sfxcache_nodes + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_numpages],  ch ; known 0
+    jne   find_prev_startpoint
+
+    use_existing_prevstartpoint:
+    done_with_prevstartpoint_loop:
+
+
+;        int8_t swap_tail = sfxcache_nodes[next_startpoint].next; // D
+;        int8_t swap_head = swap_tail;
+
+    mov   al, byte ptr ds:[_sfxcache_nodes + bp + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
+    mov   di, ax 
+    SHIFT_MACRO sal   di 2  
+    mov   cl, al    ; cl stores swaptail
+    mov   ch, dl    ; now ch gets next_startpoint (unshifted)
+    mov   dl, al    ; dl stores swaphead
+
+;        int8_t prev = sfxcache_nodes[prev_startpoint].prev; // A
+
+    mov   ah, byte ptr ds:[_sfxcache_nodes + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+
+    ; ah is prev                (unshifted)
+    ; cl is swap_tail           (unshifted)        
+    ; bl is prev_startpoint     (unshifted)
+    ; si is prev_startpoint     (dword shift)
+    ; ch is next_startpoint     (unshifted)
+    ; bp is next_startpoint     (dword shift)
+    ; dl is swap_head           (unshifted)
+    ; di is swap_head           (dword shift)
+
+
+;        if (sfxcache_nodes[swap_head].numpages){
+;        }
+
+    mov   al, byte ptr ds:[_sfxcache_nodes + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_numpages]
+    test  al, al
+    jne   find_swap_head 
+    use_existing_swaphead:
+    found_swaphead:
+
+;    nextnext = sfxcache_nodes[swap_head].next;    // E
+    mov   al, byte ptr ds:[_sfxcache_nodes + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
+
+    mov   dh, bl ; now dh stores prev_startpoint
+
+    ; al is nextnext            (unshifted)
+    ; ah is prev                (unshifted)
+    ; cl is swap_tail           (unshifted)
+    ; ch is next_startpoint     (unshifted)
+    ; bp is next_startpoint     (dword shift)
+    ; dh is prev_startpoint     (unshifted)
+    ; si is prev_startpoint     (dword shift)
+    ; dl is swap_head           (unshifted)
+    ; di is swap_head           (dword shift)
+
+
+;        // update cache head if its been updated.
+;        if (nextnext != -1){
+;            sfxcache_nodes[nextnext].prev    = next_startpoint;
+;        } else {
+;            sfxcache_head = next_startpoint;
+;        }
+
+test  al, al
+js    update_cache_head
+
+mov   bl, al
+SHIFT_MACRO sal   bx 2  
+mov   byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], ch
+jmp   done_setting_nextstartpoint
+
+update_cache_head:
+mov   byte ptr ds:[_sfxcache_head], ch
+
+done_setting_nextstartpoint:
+
+
+    ; ah is prev                (unshifted)
+    ; al is nextnext            (unshifted)
+    ; cl is swaptail            (unshifted)
+    ; ch free
+    ; bx is free, bh is 0
+    ; dl is swaphead            (unshifted)
+    ; dh is prev_startpoint     (unshifted)
+    ; si is prev_startpoint     (dword shift)
+    ; bp is next_startpoint     (dword shift)
+    ; di is swap_head ptr       (dword shift)
+
+;        if (prev != -1){
+;            sfxcache_nodes[prev].next    = swap_tail;
+;        } else {
+;            // change tail?
+;            // presumably sfxcache_tail WAS prev_startpoint.
+;            sfxcache_tail = swap_tail;
+;        }
+
+test  ah, ah
+js    update_cache_tail
+mov   bl, ah
+SHIFT_MACRO sal   bx 2  
+mov   byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], cl
+jmp   done_setting_swaptail
+
+update_cache_tail:
+mov   byte ptr ds:[_sfxcache_tail], cl
+
+done_setting_swaptail:
+
+;        sfxcache_nodes[swap_head].next   = prev_startpoint;
+mov   byte ptr ds:[_sfxcache_nodes + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], dh
+;        sfxcache_nodes[swap_tail].prev        = prev;
+mov   bl, cl
+SHIFT_MACRO sal   bx 2  
+mov   byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], ah
+
+
+;        sfxcache_nodes[next_startpoint].next = nextnext;
+;        sfxcache_nodes[prev_startpoint].prev = swap_head;
+
+mov   byte ptr ds:[_sfxcache_nodes + bp + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], al
+mov   byte ptr ds:[_sfxcache_nodes + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], dl
+
+POPA_NO_AX_MACRO
 ret   
-label_5:
-mov   byte ptr [_sfxcache_head], ch
-jmp   label_7
-label_6:
-mov   byte ptr [_sfxcache_tail], cl
-jmp   label_8
+;            while (sfxcache_nodes[swap_head].pagecount != sfxcache_nodes[swap_head].numpages){
+;                swap_head = sfxcache_nodes[swap_head].next;
+;            }
+
+find_swap_head:
+
+    loop_check_next_swaphead:
+    cmp   al, byte ptr ds:[_sfxcache_nodes + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount]
+    je    found_swaphead
+    mov   dl, byte ptr ds:[_sfxcache_nodes + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
+    mov   di, dx 
+    SHIFT_MACRO sal   di 2  
+    jmp   loop_check_next_swaphead
 
 ENDP
 
