@@ -213,7 +213,6 @@ PUBLIC S_MoveCacheItemBackOne_
 
 
 PUSHA_NO_AX_MACRO
-cbw
 mov   dx, ax  ; dl stores non dword ptr of next_startpoint (and zero dh)
 mov   bx, ax  ; bx gets prev_startpoint unshifted
 SHIFT_MACRO sal   ax 2
@@ -368,7 +367,79 @@ find_swap_head:
 
 ENDP
 
-; todo move to a sound asm file
+PROC   S_UpdateLRUCache_ NEAR
+PUBLIC S_UpdateLRUCache_
+
+push  dx
+push  si
+
+mov   al, byte ptr ds:[_sfxcache_head]
+cbw
+cwd 
+
+; al =  currentpage
+; dh =  known zero
+; dl =  found_evictable
+
+loop_update_next:
+mov   si, ax   ; si =  currentpage lookup
+
+test  dl, dl
+je    do_found_evictable
+cmp   byte ptr ds:[_sfx_page_reference_count + si], dh
+je    dont_move_cache_back
+call  S_MoveCacheItemBackOne_
+
+
+jmp   done_moving_cache_back
+
+do_found_evictable:
+
+cmp   byte ptr ds:[_sfx_page_reference_count + si], dh
+jne   not_found_evictable
+inc   dx           ; found_evictable = true;
+
+not_found_evictable:
+dont_move_cache_back:
+done_moving_cache_back:
+
+SHIFT_MACRO  sal si  2
+
+;        if (sfxcache_nodes[currentpage].numpages){
+;            // get to the last page
+;            while (sfxcache_nodes[currentpage].pagecount != 1){
+;                currentpage = sfxcache_nodes[currentpage].prev;
+;            }
+;        }
+mov   ax, dx  ; zero ah
+
+cmp   byte ptr ds:[_sfxcache_nodes + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_numpages], dh ; known zero
+jne   find_last_page
+
+found_last_page:
+mov   al, byte ptr ds:[_sfxcache_nodes + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev] ; currentpage = sfxcache_nodes[currentpage].prev;
+
+
+test  al, al
+jns   loop_update_next
+
+pop   si
+pop   dx
+
+ret
+
+find_last_page:
+cmp   byte ptr ds:[_sfxcache_nodes + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], 1
+je    found_last_page
+mov   al, byte ptr ds:[_sfxcache_nodes + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev] ; currentpage = sfxcache_nodes[currentpage].prev;
+xchg  ax, si
+SHIFT_MACRO  sal si  2
+
+jmp   find_last_page
+
+
+ENDP
+
 ;void S_NormalizeSfxVolume(uint16_t offset, uint16_t length){
 
 PROC S_NormalizeSfxVolume_ NEAR

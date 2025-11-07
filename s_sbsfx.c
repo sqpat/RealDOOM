@@ -291,6 +291,10 @@ void __near S_MoveCacheItemBackOne(int8_t currentpage){
     }
 }
 */      
+
+void __near S_UpdateLRUCache();
+
+/**/
 void __near S_UpdateLRUCache(){
 
     // iterate thru the cache and make sure that all in-use (reference count nonzero)
@@ -302,16 +306,13 @@ void __near S_UpdateLRUCache(){
 
     // todo handle tail!
     while (currentpage != -1){
-        logcacheevent('f', currentpage);
         if (found_evictable){
             // everything from this point on should be count 0...
             if (sfx_page_reference_count[currentpage] != 0){
                 // problem! move this back to next
-                logcacheevent('%', currentpage);
                 // this breaks moving the two from a contiguous one.
                 // fix is to skip all pages of a multi page
                 S_MoveCacheItemBackOne(currentpage); 
-                logcacheevent('$', found_evictable);
 
             }
 
@@ -324,13 +325,10 @@ void __near S_UpdateLRUCache(){
         // if multipage...
         if (sfxcache_nodes[currentpage].numpages){
             // get to the last page
-            logcacheevent('g', sfxcache_nodes[currentpage].numpages);
             while (sfxcache_nodes[currentpage].pagecount != 1){
                 currentpage = sfxcache_nodes[currentpage].prev;
             }
         }
-        logcacheevent('h', currentpage);
-        logcacheevent('i', sfxcache_nodes[currentpage].prev);
         currentpage = sfxcache_nodes[currentpage].prev;
 	}
     
