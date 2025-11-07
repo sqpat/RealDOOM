@@ -103,9 +103,11 @@ PUBLIC  S_IncreaseRefCount_
 
 ENDP
 
+; todo put in constants
+SFX_ID_MASK = 07Fh
 
-PROC    S_DecreaseRefCount2_ NEAR
-PUBLIC  S_DecreaseRefCount2_
+PROC    S_DecreaseRefCount_ NEAR
+PUBLIC  S_DecreaseRefCount_
 
     push  bx
     push  dx
@@ -113,7 +115,6 @@ PUBLIC  S_DecreaseRefCount2_
     ; note! al is voice index, not cachepage!
 
     ;uint8_t cachepage = sfx_data[sb_voicelist[voice_index].sfx_id & SFX_ID_MASK].cache_position.bu.bytehigh; // if this is ever FF then something is wrong?
-    ;uint8_t numpages =  sfxcache_nodes[cachepage].numpages; // number of pages of this allocation, or the page it is a part of
 
     SHIFT_MACRO    sal ax  3
     xchg   ax, bx
@@ -121,14 +122,18 @@ PUBLIC  S_DecreaseRefCount2_
     mov    es, ax
 
     mov    al, byte ptr ds:[_sb_voicelist + bx + SB_VOICEINFO_T.sbvi_sfx_id]
-    sal    ax, 1
+    and    ax, SFX_ID_MASK
+    sal    ax, 1   ; x 2
     mov    bx, ax
-    sal    bx, 1
-    add    bx, ax  ; * 6
-    mov    bl, byte ptr es:[bx + SFXINFO_T.sfxinfo_cache_position + 1]
-
+    sal    bx, 1   ; x 4
+    add    bx, ax  ; x 6 (x4 + x2)
+    mov    al, byte ptr es:[bx + SFXINFO_T.sfxinfo_cache_position + 1] ; cachepage lookup. byte high!
+    cbw
+    mov    bx, ax
     ; bl finally cachepage.
     ; dword lookup
+    ;uint8_t numpages =  sfxcache_nodes[cachepage].numpages; // number of pages of this allocation, or the page it is a part of
+
     SHIFT_MACRO sal   bx 2
     mov   dx, word ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount]
     test  dh, dh
