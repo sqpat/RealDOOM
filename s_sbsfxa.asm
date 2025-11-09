@@ -21,8 +21,6 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN I_Error_:FAR
-EXTRN S_MarkSFXPageMRUMult_:NEAR
-EXTRN S_MarkSFXPageMRUSingle_:NEAR
 
 
 
@@ -560,12 +558,6 @@ je     return_no_change
 
 ; at this point we know its multipage..
 
-call   S_MarkSFXPageMRUMult_
-
-pop    bx
-ret
-
-COMMENT @
 
 push   dx
 push   si
@@ -659,7 +651,7 @@ pop    dx
 pop    bx
 ret
 
-@
+
 
 ENDP
 
