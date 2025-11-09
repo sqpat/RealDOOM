@@ -21,9 +21,7 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN I_Error_:FAR
-
-
-
+EXTRN S_EvictSFXPage3_:NEAR
 
 
 .DATA
@@ -670,9 +668,12 @@ SHIFT_MACRO  sal bx 2
 dec    ax
 jnz    loop_find_more_pages
 jmp    done_finding_nextmost
-
-PROC   S_EvictSFXPage2_ NEAR
-PUBLIC S_EvictSFXPage2_
+pages_in_use_exit:
+POPA_NO_AX_MACRO
+mov    ax, -1
+ret
+PROC   S_EvictSFXPage_ NEAR
+PUBLIC S_EvictSFXPage_
 
 PUSHA_NO_AX_MACRO
 
@@ -700,12 +701,54 @@ mov    cl, dh
 mov    ah, bl   ; evictedpage lookup
 
 ; al is 0
+; ah is currentpage lookup
+; dl holds sfx_cache_tail
+; cl is evictedpage
+; di holds sfx_cache_tail lookup
+; dh holds currentpage
+; bx holds evictedpage lookup (same as ah currently)
+
+loop_check_next_evictedpage:
+;	while (sfxcache_nodes[evictedpage].numpages != sfxcache_nodes[evictedpage].pagecount){
+;		evictedpage = sfxcache_nodes[evictedpage].next;
+;	}
+
+mov    al, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_numpages]
+cmp    al, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount]
+je     done_finding_evictedpage
+
+mov    cl, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
+mov    bl, cl
+SHIFT_MACRO  sal bx 2
+jmp    loop_check_next_evictedpage
+
+done_finding_evictedpage:
+
+xchg   bl, ah   ; reverse evictedpage/currentpage again
+
+; al is garbage
 ; ah is evictedpage lookup
 ; dl holds sfx_cache_tail
 ; cl is evictedpage
 ; di holds sfx_cache_tail lookup
 ; dh holds currentpage
 ; bx holds currentpage lookup
+
+
+
+;int8_t __near S_EvictSFXPage3(int8_t evictedpage, int8_t currentpage){
+xor   ax, ax
+mov   al, cl
+mov   dl, dh
+xor   dh, dh
+
+call  S_EvictSFXPage3_
+mov    es, ax
+POPA_NO_AX_MACRO
+mov    ax, es
+
+ret
+
 
 
 ;		int8_t checkpage = evictedpage;
@@ -838,15 +881,13 @@ mov    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecoun
 
 mov    al, dh 
 cbw
-
+mov    es, ax
 POPA_NO_AX_MACRO
+mov    ax, es
 
 ret
 
-pages_in_use_exit:
-mov    ax, -1
-POPA_NO_AX_MACRO
-ret
+
 
 erase_this_sfx:
 mov   byte ptr ds:[si], -1

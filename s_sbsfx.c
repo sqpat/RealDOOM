@@ -433,7 +433,7 @@ void __near S_MarkSFXPageMRU(int8_t index) {
 // the evicted pages are also moved to the front. numpages/pagecount are filled in by the code after this
 int8_t __near S_EvictSFXPage(int8_t numpages);
 
-int8_t __near S_EvictSFXPage(int8_t numpages){
+int8_t __near S_EvictSFXPage2(int8_t numpages){
 
 	//todo revisit these vars.
 	int16_t evictedpage;
@@ -477,6 +477,76 @@ int8_t __near S_EvictSFXPage(int8_t numpages){
 	while (sfxcache_nodes[evictedpage].numpages != sfxcache_nodes[evictedpage].pagecount){
 		evictedpage = sfxcache_nodes[evictedpage].next;
 	}
+
+        // check all pages for ref count
+    {
+		int8_t checkpage = evictedpage;
+    	while (checkpage != -1){
+            if (sfx_page_reference_count[checkpage]){
+                // the minimum required pages to evict overlapped with an in use page!
+                // fail gracefully.
+                return -1;
+            }
+            checkpage = sfxcache_nodes[checkpage].prev;
+        }
+    }
+
+
+    // from evicted page back to tail.
+	while (evictedpage != -1){
+
+    	// clear cache data that was pointing to the page
+        // zero these out..
+
+        //todo make this a word write
+		sfxcache_nodes[evictedpage].pagecount = 0;
+		sfxcache_nodes[evictedpage].numpages = 0;
+
+			//todo put these next to each other in memory and loop in one go!
+
+		for (i = 0; i < NUMSFX; i++){
+			if ((sfx_data[i].cache_position.bu.bytehigh) == evictedpage){
+				sfx_data[i].cache_position.bu.bytehigh = SOUND_NOT_IN_CACHE;
+			}
+		}
+
+        // if (sfx_page_reference_count[evictedpage]){
+        //     I_Error("bad eviction!");
+        // }
+
+
+		sfx_free_bytes[evictedpage] = BUFFERS_PER_EMS_PAGE;
+		evictedpage = sfxcache_nodes[evictedpage].prev;
+	}	
+
+
+	// connect old tail and old head.
+	sfxcache_nodes[sfxcache_tail].prev = sfxcache_head;
+	sfxcache_nodes[sfxcache_head].next = sfxcache_tail;
+
+
+	// current page is next head
+	//previous_head = sfxcache_head;
+	previous_next = sfxcache_nodes[currentpage].next;
+
+	sfxcache_head = currentpage;
+	sfxcache_nodes[currentpage].next = -1;
+
+
+	// new tail
+	sfxcache_nodes[previous_next].prev = -1;
+	sfxcache_tail = previous_next;
+
+	return currentpage; // sfxcache_head
+}
+
+
+int8_t __near S_EvictSFXPage3(int8_t evictedpage, int8_t currentpage){
+
+	//todo revisit these vars.
+	int8_t i;
+	int8_t previous_next;
+
 
         // check all pages for ref count
     {
