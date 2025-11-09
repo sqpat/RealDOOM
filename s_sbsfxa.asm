@@ -45,6 +45,9 @@ ENDP
 str_bad_sfx_refcount:
 db "Bad sfx ref count", 0
 
+; todo... constants 64
+BUFFERS_PER_EMS_PAGE = 16384 / 256
+
 PROC    S_IncreaseRefCount_ NEAR
 PUBLIC  S_IncreaseRefCount_
 
@@ -651,6 +654,203 @@ pop    dx
 pop    bx
 ret
 
+
+
+ENDP
+
+;for (i = 0; i < numpages-1; i++){
+;    currentpage = sfxcache_nodes[currentpage].next;
+;}
+
+
+loop_find_more_pages:
+mov    dh, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
+mov    bl, dh
+SHIFT_MACRO  sal bx 2
+dec    ax
+jnz    loop_find_more_pages
+jmp    done_finding_nextmost
+
+PROC   S_EvictSFXPage2_ NEAR
+PUBLIC S_EvictSFXPage2_
+
+PUSHA_NO_AX_MACRO
+
+cbw    ; zero ah...
+
+;	currentpage = sfxcache_tail;
+mov    dl, byte ptr ds:[_sfxcache_tail]   ; dl holds tail
+mov    dh, dl                             ; dh holds currentpage
+xor    cx, cx
+xor    bx, bx
+mov    bl, dh
+SHIFT_MACRO  sal bx 2  ; bx holds currentpage
+mov    di, bx
+  
+dec    ax      ; numpages - 1
+jnz    loop_find_more_pages
+
+
+
+done_finding_nextmost:
+
+
+;	evictedpage = currentpage;
+mov    cl, dh   
+mov    ah, bl   ; evictedpage lookup
+
+; al is 0
+; ah is evictedpage lookup
+; dl holds sfx_cache_tail
+; cl is evictedpage
+; di holds sfx_cache_tail lookup
+; dh holds currentpage
+; bx holds currentpage lookup
+
+
+;		int8_t checkpage = evictedpage;
+;    	while (checkpage != -1){
+;            if (sfx_page_reference_count[checkpage]){
+;                // the minimum required pages to evict overlapped with an in use page!
+;                // fail gracefully.
+;                return -1;
+;            }
+;            checkpage = sfxcache_nodes[checkpage].prev;
+;        }
+;    }
+
+mov    al, cl   ; checkpage
+check_next_page_in_use:
+test   al, al
+js     done_with_checkpage_loop
+xchg   al, bl
+cmp    byte ptr ds:[_sfx_page_reference_count + bx], bh ; known zero
+jne    pages_in_use_exit
+SHIFT_MACRO  sal bx 2
+mov    bl, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+xchg   al, bl ; juggle these back
+jmp    check_next_page_in_use
+
+done_with_checkpage_loop:
+
+xchg   ah, bl
+mov    al, cl  ; copy over evictedpage
+
+; al is evictedpage
+; ah is currentpage lookup
+; dl holds sfx_cache_tail
+; dh holds currentpage
+; bx holds evictedpage lookup
+; di holds sfx_cache_tail lookup
+
+
+;	while (evictedpage != -1){
+test   al, al
+js     done_with_evictedpageloop
+
+mov    bp, 4; for adding to si
+
+evict_next_page:
+;		sfxcache_nodes[evictedpage].pagecount = 0;
+;		sfxcache_nodes[evictedpage].numpages = 0;
+mov    word ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], 0
+
+;		for (i = 0; i < NUMSFX; i++){
+;			if ((sfx_data[i].cache_position.bu.bytehigh) == evictedpage){
+;				sfx_data[i].cache_position.bu.bytehigh = SOUND_NOT_IN_CACHE;
+;			}
+;		}
+
+
+mov   cx, SFX_DATA_SEGMENT
+mov   ds, cx
+mov   si, SFXINFO_T.sfxinfo_cache_position + 1   ; 3
+mov   cx, NUMSFX
+
+loop_check_next_cache_position:
+
+cmp   byte ptr ds:[si], al
+je    erase_this_sfx
+done_erasing_this_sfx:
+add   si, bp   ; 4
+loop  loop_check_next_cache_position
+
+mov   cx, ss
+mov   ds, cx
+
+;		sfx_free_bytes[evictedpage] = BUFFERS_PER_EMS_PAGE;
+xchg   al, bl
+mov    byte ptr ds:[_sfx_free_bytes + bx], BUFFERS_PER_EMS_PAGE
+xchg   al, bl
+
+;		evictedpage = sfxcache_nodes[evictedpage].prev;
+mov    al, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+mov    bl, al
+SHIFT_MACRO  sal bx 2
+test   al, al
+jns    evict_next_page
+
+done_with_evictedpageloop:
+
+; al is garbage
+; ah is currentpage lookup
+; dl holds sfx_cache_tail
+; dh holds currentpage
+; bx garbage
+; di holds sfx_cache_tail lookup
+; cx garbage
+mov cl, -1
+
+;	// connect old tail and old head.
+;	sfxcache_nodes[sfxcache_tail].prev = sfxcache_head;
+;	sfxcache_nodes[sfxcache_head].next = sfxcache_tail;
+
+mov    al, byte ptr ds:[_sfxcache_head]
+mov    byte ptr ds:[_sfxcache_nodes + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], al
+
+mov    bl, al
+SHIFT_MACRO sal bx 2
+mov    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], dl
+
+;	previous_next = sfxcache_nodes[currentpage].next;
+
+mov    bl, ah
+mov    al, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
+
+; al is previousnext
+; bx currentpagelookup
+
+;	sfxcache_head = currentpage;
+;	sfxcache_nodes[currentpage].next = -1;
+mov    byte ptr ds:[_sfxcache_head], dh
+mov    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], cl ; -1
+
+
+;	sfxcache_tail = previous_next;
+mov    byte ptr ds:[_sfxcache_tail], al
+
+;	sfxcache_nodes[previous_next].prev = -1;
+mov    bl, al
+SHIFT_MACRO sal bx 2
+mov    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], cl ; -1
+
+;	return currentpage; // sfxcache_head
+
+mov    al, dh 
+cbw
+
+POPA_NO_AX_MACRO
+
+ret
+
+pages_in_use_exit:
+mov    ax, -1
+POPA_NO_AX_MACRO
+ret
+
+erase_this_sfx:
+mov   byte ptr ds:[si], -1
+jmp   done_erasing_this_sfx
 
 
 ENDP

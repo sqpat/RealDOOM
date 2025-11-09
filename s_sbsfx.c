@@ -431,6 +431,8 @@ void __near S_MarkSFXPageMRU(int8_t index) {
 // multi-page allocation, then those now unused pages should be appropriately
 // put at the back of the queue so they will be the next loaded into.
 // the evicted pages are also moved to the front. numpages/pagecount are filled in by the code after this
+int8_t __near S_EvictSFXPage(int8_t numpages);
+
 int8_t __near S_EvictSFXPage(int8_t numpages){
 
 	//todo revisit these vars.
