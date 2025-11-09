@@ -21,6 +21,8 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN I_Error_:FAR
+EXTRN S_MarkSFXPageMRUMult_:NEAR
+EXTRN S_MarkSFXPageMRUSingle_:NEAR
 
 
 
@@ -32,7 +34,6 @@ EXTRN _sfxcache_nodes:CACHE_NODE_PAGE_COUNT_T
 EXTRN _sfx_page_reference_count:BYTE
 EXTRN _sfxcache_head:BYTE
 EXTRN _sfxcache_tail:BYTE
-
 
 .CODE
 
@@ -440,9 +441,231 @@ jmp   find_last_page
 
 ENDP
 
+PROC   S_MarkSFXPageMRU_ NEAR
+PUBLIC S_MarkSFXPageMRU_
+
+;	if (index == sfxcache_head) {
+;		return;
+;	}
+
+
+cmp    al, byte ptr ds:[_sfxcache_head]
+jne    continue_markmru
+ret
+continue_markmru:
+;	numpages = sfxcache_nodes[index].numpages;
+cbw
+push   bx
+mov    bx, ax
+SHIFT_MACRO   sal bx 2
+mov    ah, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_numpages]
+
+;	if (numpages){
+
+test   ah, ah
+jne    search_for_page_start_mru
+
+
+do_single_page_mru_update:
+
+call   S_MarkSFXPageMRUSingle_
+pop    bx
+ret
+
+COMMENT @
+
+push   dx
+
+mov    dx, word ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+mov    ah, dl
+; dl, ah prev
+; dh next
+
+cmp    al, byte ptr ds:[_sfxcache_tail]
+je     single_index_is_tail
+
+;sfxcache_nodes[prev].next = next; 
+
+xchg   bl, dl
+SHIFT_MACRO   sal bx 2
+mov    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], dh
+mov    bl, dl ; restore index
+jmp    done_setting_next_mru
+
+single_index_is_tail:
+mov    byte ptr ds:[_sfxcache_tail], dh     ; sfxcache_tail = next;
+
+done_setting_next_mru:
+
+;		sfxcache_nodes[next].prev = prev;  // works in either of the above cases. prev is -1 if tail.
+
+xchg   bl, dh
+SHIFT_MACRO   sal bx 2
+mov    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], ah
+mov    bl, dh  ; restore bl
+
+mov    dl, al  ; back up index
+
+;		sfxcache_head = index;
+xchg   al, byte ptr ds:[_sfxcache_head]   ; 
+
+;      al is _sfx_cachehead
+;      dl is index
+
+;		sfxcache_nodes[index].next = -1;
+;		sfxcache_nodes[index].prev = sfxcache_head;
+mov    ah, -1
+mov    word ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], ax  ; write botha t once
+
+;		sfxcache_nodes[sfxcache_head].next = index;
+
+
+mov    bl, al
+SHIFT_MACRO   sal bx 2
+
+mov    byte ptr ds:[_sfxcache_head], dl  ; backed up old index
+
+pop    dx
+return_no_change:
+pop    bx
+ret
+@
+
+search_for_page_start_mru:
+;	 	while (sfxcache_nodes[index].pagecount != numpages){
+;			index = sfxcache_nodes[index].next;
+;		}
+
+
+loop_find_allocation_start:
+cmp    ah, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount]
+je     found_allocation_start
+mov    al, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
+mov    bl, al
+SHIFT_MACRO   sal bx 2
+jmp    loop_find_allocation_start
+
+;		if (index == sfxcache_head) {
+;			return;
+;		}
+
+found_allocation_start:
+cmp    al, byte ptr ds:[_sfxcache_head]
+je     return_no_change
+
+; al is index
+; bx is index dword lookup
+; bh is 0
+; ah is numpages
+
+; at this point we know its multipage..
+
+call   S_MarkSFXPageMRUMult_
+return_no_change:
+pop    bx
+ret
+
+COMMENT @
+
+push   dx
+push   si
+push   cx
+mov    si, bx  ; si carries index now.. bx is lastindex
+
+mov    dx, ax  ; dl carries lastindex.. al is index
+
+; al is index
+; si is index dword lookup
+; dl is lastindex
+; bx is lastindex dword lookup
+; bh is 0
+; ah/dh/cx is garbage
+
+
+;		while (sfxcache_nodes[lastindex].pagecount != 1){
+;			lastindex = sfxcache_nodes[lastindex].prev;
+;		}
+
+loop_find_lastindex:
+cmp    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], 1
+je     found_lastindex
+mov    dl, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+mov    bl, dl
+SHIFT_MACRO   sal bx 2
+jmp    loop_find_lastindex
+
+found_lastindex:
+
+;		index_next = sfxcache_nodes[index].next;
+mov    ch, byte ptr ds:[_sfxcache_nodes + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
+mov    dh, ch
+SHIFT_MACRO   sal dh 2
+
+
+; al is index
+; si is index dword lookup
+; dl is lastindex
+; bx is lastindex dword lookup
+; bh is 0
+; ch is index_next
+; dh is index_next lookup sword
+
+;		if (sfxcache_tail == lastindex){
+cmp    dl, byte ptr ds:[_sfxcache_tail]
+je     tail_is_lastindex
+
+;		lastindex_prev = sfxcache_nodes[lastindex].prev;
+mov    cl, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+mov    ah, cl    ; ah backs up lastindex_prev
+xchg   cl, bl
+SHIFT_MACRO   sal bx 2
+;			sfxcache_nodes[lastindex_prev].next = index_next;
+mov    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], ch
+xchg   dh, bl
+;			sfxcache_nodes[index_next].prev = lastindex_prev;
+mov    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], ah
+xchg   cl, bl   ; restore bl to lastindex lookup
+jmp    done_with_tail_check
+
+
+tail_is_lastindex:
+;			sfxcache_tail = index_next;
+;			sfxcache_nodes[index_next].prev = -1;
+mov    byte ptr ds:[_sfxcache_tail], ch
+xchg   dh, bl
+mov    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], -1
+mov    bl, dh   ; restore bl to lastindex lookup
+
+done_with_tail_check:
+
+;		sfxcache_nodes[lastindex].prev = sfxcache_head;
+mov    cl, byte ptr ds:[_sfxcache_head]
+mov    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], cl
+
+;		sfxcache_nodes[sfxcache_head].next = lastindex;
+xchg   cl, bl
+SHIFT_MACRO   sal bx 2
+mov    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], dl
+
+;		sfxcache_nodes[index].next = -1;
+mov    byte ptr ds:[_sfxcache_nodes + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], -1
+;		sfxcache_head = index;
+mov    byte ptr ds:[_sfxcache_head], al
+
+
+pop    cx
+pop    si
+pop    dx
+pop    bx
+ret
+
+@
+
+ENDP
+
 ;void S_NormalizeSfxVolume(uint16_t offset, uint16_t length){
 
-PROC S_NormalizeSfxVolume_ NEAR
+PROC   S_NormalizeSfxVolume_ NEAR
 PUBLIC S_NormalizeSfxVolume_
 
 push si

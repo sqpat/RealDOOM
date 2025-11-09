@@ -336,11 +336,16 @@ void __near S_UpdateLRUCache(){
 }
 */
 
-void __near S_MarkSFXPageMRU(int8_t index) {
+void __near S_MarkSFXPageMRU(int8_t index);
+void __near S_MarkSFXPageMRUSingle(int8_t index);
+void __near S_MarkSFXPageMRUMult(int8_t index);
+
+
+void __near S_MarkSFXPageMRU2(int8_t index) {
 
 	int8_t prev;
 	int8_t next;
-	int8_t pagecount;
+	int8_t numpages;
 	int8_t previous_next;
 	int8_t lastindex;
 	int8_t lastindex_prev;
@@ -350,15 +355,15 @@ void __near S_MarkSFXPageMRU(int8_t index) {
 		return;
 	}
 
-	pagecount = sfxcache_nodes[index].pagecount;
+	numpages = sfxcache_nodes[index].numpages;
 	// if pagecount is nonzero, then this is a pre-existing allocation which is multipage.
 	// so we want to find the head of this allocation, and check if it's the head.
 
-	if (pagecount){
+	if (numpages){
 		// if this is multipage, then pagecount is nonzero.
 		
 		// could probably be unrolled in asm
-	 	while (sfxcache_nodes[index].numpages != sfxcache_nodes[index].pagecount){
+	 	while (sfxcache_nodes[index].pagecount != numpages){
 			index = sfxcache_nodes[index].next;
 		}
 
@@ -370,9 +375,12 @@ void __near S_MarkSFXPageMRU(int8_t index) {
 		// but the allocation is sharing a page with the last page of a
 		// multi-page allocation. in this case, we want to back up and update the
 		// whole multi-page allocation.
-		
-	}
+		S_MarkSFXPageMRUMult(index);
+	} else {
+		S_MarkSFXPageMRUSingle(index);
 
+    }
+/*
 	if (sfxcache_nodes[index].numpages){
 		// multipage  allocation being updated.
 		
@@ -435,6 +443,80 @@ void __near S_MarkSFXPageMRU(int8_t index) {
 		return;
 
 	}
+*/
+
+}
+
+
+
+void __near S_MarkSFXPageMRUSingle(int8_t index) {
+	
+    int8_t prev = sfxcache_nodes[index].prev;
+    int8_t next = sfxcache_nodes[index].next;
+
+    if (index == sfxcache_tail) {
+        sfxcache_tail = next;
+    } else {
+        sfxcache_nodes[prev].next = next; 
+    }
+
+    sfxcache_nodes[next].prev = prev;  // works in either of the above cases. prev is -1 if tail.
+
+    sfxcache_nodes[index].prev = sfxcache_head;
+    sfxcache_nodes[index].next = -1;
+
+    // pagecount/numpages dont have to be zeroed - either p_setup 
+    // sets it to 0 in the initial case, or EvictCache in later cases.
+    //sfxcache_nodes[index].pagecount = 0;
+    //sfxcache_nodes[index].numpages  = 0;
+
+    sfxcache_nodes[sfxcache_head].next = index;
+    
+    
+    sfxcache_head = index;
+
+
+}
+
+void __near S_MarkSFXPageMRUMult(int8_t index) {
+    int8_t lastindex_prev;
+    int8_t index_next;
+    int8_t lastindex;
+	
+	if (sfxcache_nodes[index].numpages){
+		// multipage  allocation being updated.
+		
+		// we know its pre-existing because numpages is set on the node;
+		// that means all the inner pages' next/prevs set and pagecount/numpages are also already set
+		// no need to set all that stuff, just the relevant outer allocations's prev/next.
+		// and update head/tail
+	
+
+		lastindex = index;
+		while (sfxcache_nodes[lastindex].pagecount != 1){
+			lastindex = sfxcache_nodes[lastindex].prev;
+		}
+		
+		lastindex_prev = sfxcache_nodes[lastindex].prev;
+		index_next = sfxcache_nodes[index].next;
+
+		if (sfxcache_tail == lastindex){
+			sfxcache_tail = index_next;
+			sfxcache_nodes[index_next].prev = -1;
+		} else {
+			sfxcache_nodes[lastindex_prev].next = index_next;
+			sfxcache_nodes[index_next].prev = lastindex_prev;
+		}
+
+		sfxcache_nodes[lastindex].prev = sfxcache_head;
+		sfxcache_nodes[sfxcache_head].next = lastindex;
+		// head's next doesnt change directly. it changes indirectly if index_prev changes.
+
+		sfxcache_nodes[index].next = -1;
+		sfxcache_head = index;
+
+		return;
+	} 
 
 
 }
