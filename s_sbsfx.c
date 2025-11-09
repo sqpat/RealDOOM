@@ -433,7 +433,8 @@ void __near S_MarkSFXPageMRU(int8_t index) {
 // the evicted pages are also moved to the front. numpages/pagecount are filled in by the code after this
 int8_t __near S_EvictSFXPage(int8_t numpages);
 
-int8_t __near S_EvictSFXPage2(int8_t numpages){
+/*
+int8_t __near S_EvictSFXPage(int8_t numpages){
 
 	//todo revisit these vars.
 	int16_t evictedpage;
@@ -539,31 +540,8 @@ int8_t __near S_EvictSFXPage2(int8_t numpages){
 
 	return currentpage; // sfxcache_head
 }
+*/
 
-
-int8_t __near S_EvictSFXPage3(int8_t currentpage){
-
-	//todo revisit these vars.
-	int8_t previous_next;
-
-
-
-
-
-	// current page is next head
-	//previous_head = sfxcache_head;
-	previous_next = sfxcache_nodes[currentpage].next;
-
-	sfxcache_head = currentpage;
-	sfxcache_nodes[currentpage].next = -1;
-
-
-	// new tail
-	sfxcache_nodes[previous_next].prev = -1;
-	sfxcache_tail = previous_next;
-
-	return currentpage; // sfxcache_head
-}
 
 
 void __near SB_Service_Mix22Khz(){
