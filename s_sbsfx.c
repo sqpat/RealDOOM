@@ -1400,7 +1400,8 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
     }
 }
 
-
+int8_t __far SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol);
+/*
 int8_t __far SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
     
     int8_t i;
@@ -1468,6 +1469,7 @@ int8_t __far SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
     }
     return -1;
 }
+*/
 
 void __far S_DecreaseRefCountFar(int8_t handle){
     S_DecreaseRefCount(handle);

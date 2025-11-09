@@ -21,7 +21,7 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN I_Error_:FAR
-
+EXTRN S_LoadSoundIntoCache_:NEAR
 
 .DATA
 
@@ -29,6 +29,8 @@ EXTRN _sfxcache_nodes:CACHE_NODE_PAGE_COUNT_T
 EXTRN _sfx_page_reference_count:BYTE
 EXTRN _sfxcache_head:BYTE
 EXTRN _sfxcache_tail:BYTE
+EXTRN _current_sampling_rate:BYTE
+EXTRN _change_sampling_to_22_next_int:BYTE
 
 .CODE
 
@@ -42,8 +44,14 @@ ENDP
 str_bad_sfx_refcount:
 db "Bad sfx ref count", 0
 
+str_bad_vol:
+db "bad vol! %i %i %i", 0
+
+
 ; todo... constants 64
 BUFFERS_PER_EMS_PAGE = 16384 / 256
+
+PLAYING_FLAG = 080h
 
 PROC    S_IncreaseRefCount_ NEAR
 PUBLIC  S_IncreaseRefCount_
@@ -886,6 +894,185 @@ jmp   done_erasing_this_sfx
 
 
 ENDP
+
+
+error_bad_vol:
+; todo params
+push    bx
+push    dx
+push    ax
+push    cs
+mov     ax, OFFSET str_bad_vol
+push    ax
+call    I_Error_
+
+; int8_t __far SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
+
+PROC   SFX_PlayPatch_ FAR
+PUBLIC SFX_PlayPatch_
+
+
+;    if (vol > 127){
+;        // shouldnt happen?
+;        I_Error("bad vol! %i %i %i", sfx_id, sep, vol);
+;    }
+
+test   bl, bl
+js     error_bad_vol
+
+mov   dh, bl
+; al sfx_id
+; dl sep
+; dh vol
+; bx garbage
+
+push   si
+push   cx
+
+mov    si, OFFSET _sb_voicelist
+xor    cx, cx
+mov    cl, byte ptr ds:[_numChannels]
+jcxz   done_checking_channels
+
+;    for (i = 0; i < numChannels;i++){
+
+
+loop_check_next_channel:
+
+;        if (!(sb_voicelist[i].sfx_id & PLAYING_FLAG)){
+
+test   byte ptr ds:[si + SB_VOICEINFO_T.sbvi_sfx_id], PLAYING_FLAG
+je     found_open_channel
+
+
+add    si, SIZE SB_VOICEINFO_T
+loop loop_check_next_channel
+
+done_checking_channels:
+
+return_error_no_space_in_cache:
+pop  cx
+pop  si
+mov  ax, -1
+
+retf
+
+
+found_open_channel:
+
+;            if (sfx_data[sfx_id].cache_position.bu.bytehigh == SOUND_NOT_IN_CACHE){
+
+; cx now free
+
+mov    bx, SFX_DATA_SEGMENT
+mov    es, bx
+xor    ah, ah
+mov    bx, ax
+sal    bx, 1   ; * 2
+add    bx, ax  ; * 3
+sal    bx, 1   ; * 6 foe SIZEOF 
+mov    cx, bx  ; store
+cmp    byte ptr es:[bx + SFXINFO_T.sfxinfo_cache_position + 1], SOUND_NOT_IN_CACHE
+jne    sound_in_cache
+
+;  int8_t result = S_LoadSoundIntoCache(sfx_id);
+;  if (result == -1){
+;  return -1; 
+
+mov    bh, al  ; back up sfxid
+call   S_LoadSoundIntoCache_
+cmp    al, -1
+je     return_error_no_space_in_cache
+mov    al, bh  ; restore sfxid
+
+sound_in_cache:
+
+; al sfx_id
+; dl sep
+; dh vol
+; bx garbage
+; cx sfxdata ptr
+; si _sb_voicelist ptr + offset
+
+
+mov    bx, SFX_DATA_SEGMENT
+mov    es, bx
+mov    bx, cx ; restore sfxdata ptr
+
+cli
+
+xor    cx, cx
+
+;    sb_voicelist[i].sfx_id = sfx_id;
+;    sb_voicelist[i].currentsample = 0;
+mov    byte ptr ds:[si + SB_VOICEINFO_T.sbvi_sfx_id], al
+mov    word ptr ds:[si + SB_VOICEINFO_T.sbvi_currentsample], 0
+
+test   byte ptr es:[bx + SFXINFO_T.sfxinfo_lumpandflags + 1], (SOUND_22_KHZ_FLAG SHR 8)
+je     use_11_khz
+inc    cx
+use_11_khz:
+
+;    sb_voicelist[i].samplerate = (sfx_data[sfx_id].lumpandflags & SOUND_22_KHZ_FLAG) ? 1 : 0;
+mov    byte ptr ds:[si + SB_VOICEINFO_T.sbvi_samplerate], cl
+
+;    sb_voicelist[i].length     = sfx_data[sfx_id].lumpsize.hu;
+mov    cx, word ptr es:[bx + SFXINFO_T.sfxinfo_lumpsize]
+mov    word ptr ds:[si + SB_VOICEINFO_T.sbvi_length], cx
+
+mov    cl, byte ptr es:[bx + SFXINFO_T.sfxinfo_cache_position + 1]
+
+; dl sep
+; dh vol
+; bx garbage
+; cl cachepage
+; ch is 0
+; si _sb_voicelist ptr + offset
+
+;  S_IncreaseRefCount(cachepage);
+;  S_MarkSFXPageMRU(cachepage);
+
+mov    ax, cx
+call   S_IncreaseRefCount_
+
+mov    ax, cx
+call   S_MarkSFXPageMRU_
+
+; todo sep not used?
+;  sb_voicelist[i].volume     = vol;
+mov    byte ptr ds:[si + SB_VOICEINFO_T.sbvi_volume], dh
+
+;    if (sb_voicelist[i].samplerate){
+;        if (!current_sampling_rate){
+;            change_sampling_to_22_next_int = 1;
+;
+;        }
+;    }
+
+cmp    byte ptr ds:[si + SB_VOICEINFO_T.sbvi_samplerate], ch ; known zero
+je     dont_change_sampling_rate
+cmp    byte ptr ds:[_current_sampling_rate], ch ; known 0
+jne    dont_change_sampling_rate
+mov    byte ptr ds:[_change_sampling_to_22_next_int], 1
+dont_change_sampling_rate:
+
+or    byte ptr ds:[si + SB_VOICEINFO_T.sbvi_sfx_id], PLAYING_FLAG
+
+sub    si, OFFSET _sb_voicelist
+xchg   ax, si
+mov    dl, 6
+div    dl
+xor    ah, ah
+
+sti
+pop  cx
+pop  si
+retf
+
+
+
+ENDP
+
 
 ;void S_NormalizeSfxVolume(uint16_t offset, uint16_t length){
 
