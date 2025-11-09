@@ -468,23 +468,20 @@ jne    search_for_page_start_mru
 
 do_single_page_mru_update:
 
-call   S_MarkSFXPageMRUSingle_
-pop    bx
-ret
 
-COMMENT @
 
 push   dx
 
 mov    dx, word ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
-mov    ah, dl
+mov    ah, dl  ; prev copied into ah..
 ; dl, ah prev
 ; dh next
+;    if (index == sfxcache_tail) {
 
 cmp    al, byte ptr ds:[_sfxcache_tail]
 je     single_index_is_tail
 
-;sfxcache_nodes[prev].next = next; 
+;   sfxcache_nodes[prev].next = next; 
 
 xchg   bl, dl
 SHIFT_MACRO   sal bx 2
@@ -492,8 +489,9 @@ mov    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecoun
 mov    bl, dl ; restore index
 jmp    done_setting_next_mru
 
+;      sfxcache_tail = next;
 single_index_is_tail:
-mov    byte ptr ds:[_sfxcache_tail], dh     ; sfxcache_tail = next;
+mov    byte ptr ds:[_sfxcache_tail], dh
 
 done_setting_next_mru:
 
@@ -501,7 +499,7 @@ done_setting_next_mru:
 
 xchg   bl, dh
 SHIFT_MACRO   sal bx 2
-mov    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], ah
+mov    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], ah
 mov    bl, dh  ; restore bl
 
 mov    dl, al  ; back up index
@@ -509,19 +507,21 @@ mov    dl, al  ; back up index
 ;		sfxcache_head = index;
 xchg   al, byte ptr ds:[_sfxcache_head]   ; 
 
-;      al is _sfx_cachehead
+;      al is (previous) _sfx_cachehead
 ;      dl is index
 
 ;		sfxcache_nodes[index].next = -1;
 ;		sfxcache_nodes[index].prev = sfxcache_head;
 mov    ah, -1
-mov    word ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], ax  ; write botha t once
+mov    word ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], ax  ; write both at once
 
 ;		sfxcache_nodes[sfxcache_head].next = index;
 
 
 mov    bl, al
 SHIFT_MACRO   sal bx 2
+;    sfxcache_nodes[sfxcache_head].next = index;
+mov    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], dl
 
 mov    byte ptr ds:[_sfxcache_head], dl  ; backed up old index
 
@@ -529,7 +529,7 @@ pop    dx
 return_no_change:
 pop    bx
 ret
-@
+
 
 search_for_page_start_mru:
 ;	 	while (sfxcache_nodes[index].pagecount != numpages){
@@ -561,7 +561,7 @@ je     return_no_change
 ; at this point we know its multipage..
 
 call   S_MarkSFXPageMRUMult_
-return_no_change:
+
 pop    bx
 ret
 
