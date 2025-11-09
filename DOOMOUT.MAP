@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/11/09 22:08:36
+Created on:       25/11/09 22:10:01
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -53,8 +53,8 @@ r_setup_TEXT           CODE           AUTO           0000:5c10       0000046c
 ST_SETUP_TEXT          CODE           AUTO           0000:607c       00000125
 HU_SETUP_TEXT          CODE           AUTO           0000:61a2       00000246
 p_setup_TEXT           CODE           AUTO           0000:63f0       00001236
-s_sbsfx_TEXT           CODE           AUTO           0000:7630       00000b85
-S_SBSFXA_TEXT          CODE           AUTO           0000:81b6       00000454
+s_sbsfx_TEXT           CODE           AUTO           0000:7630       00000b80
+S_SBSFXA_TEXT          CODE           AUTO           0000:81b0       00000458
 s_sbinit_TEXT          CODE           AUTO           0000:8610       000006ab
 R_MAIN_TEXT            CODE           AUTO           0000:8cbc       000003db
 F_FILE_TEXT            CODE           AUTO           0000:9098       0000008d
@@ -443,18 +443,18 @@ Module: s_sbsfx.obj(C:\REALDOOM\s_sbsfx.c)
 0000:7d34+     continuecall_
 0000:7e96      SB_WriteDSP_
 0000:7ec6      S_LoadSoundIntoCache_
-0000:81b0      S_DecreaseRefCountFar_
 Module: s_sbsfxa.obj(s_sbsfxa.ASM)
-0000:8546      SFX_PlayPatch_
-0000:8330      S_UpdateLRUCache_
-0000:821d      S_DecreaseRefCount_
-0000:85e2      S_NormalizeSfxVolume_
-0000:860a*     S_SBFX_ENDMARKER_
-0000:81da*     S_IncreaseRefCount_
-0000:81b6*     S_SBFX_STARTMARKER_
-0000:8473      S_EvictSFXPage_
-0000:82a5*     S_MoveCacheItemBackOne_
-0000:8378*     S_MarkSFXPageMRU_
+0000:8544      SFX_PlayPatch_
+0000:832e      S_UpdateLRUCache_
+0000:8217      S_DecreaseRefCountFar_
+0000:821b      S_DecreaseRefCount_
+0000:85e0      S_NormalizeSfxVolume_
+0000:8608*     S_SBFX_ENDMARKER_
+0000:81d4*     S_IncreaseRefCount_
+0000:81b0*     S_SBFX_STARTMARKER_
+0000:8471      S_EvictSFXPage_
+0000:82a3*     S_MoveCacheItemBackOne_
+0000:8376*     S_MarkSFXPageMRU_
 Module: s_sbinit.obj(C:\REALDOOM\s_sbinit.c)
 0c07:0e90      _sb_port
 0c07:0e92+     _sb_dma
@@ -814,4 +814,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  df00 (57088.)
 Entry point address: 0000:a60c
-Link time: 00:00.20
+Link time: 00:00.74

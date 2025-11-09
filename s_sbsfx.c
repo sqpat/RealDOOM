@@ -1471,8 +1471,9 @@ int8_t __far SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol){
 }
 */
 
+/*
 void __far S_DecreaseRefCountFar(int8_t handle){
     S_DecreaseRefCount(handle);
 }
-
+*/
 

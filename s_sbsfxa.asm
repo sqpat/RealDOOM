@@ -109,6 +109,15 @@ PUBLIC  S_IncreaseRefCount_
 
 ENDP
 
+
+PROC    S_DecreaseRefCountFar_ FAR
+PUBLIC  S_DecreaseRefCountFar_
+
+call    S_DecreaseRefCount_
+retf
+
+ENDP
+
 ; todo put in constants
 SFX_ID_MASK = 07Fh
 
