@@ -736,19 +736,6 @@ xchg   bl, ah   ; reverse evictedpage/currentpage again
 
 
 
-;int8_t __near S_EvictSFXPage3(int8_t evictedpage, int8_t currentpage){
-xor   ax, ax
-mov   al, cl
-mov   dl, dh
-xor   dh, dh
-
-call  S_EvictSFXPage3_
-mov    es, ax
-POPA_NO_AX_MACRO
-mov    ax, es
-
-ret
-
 
 
 ;		int8_t checkpage = evictedpage;
@@ -776,6 +763,25 @@ jmp    check_next_page_in_use
 
 done_with_checkpage_loop:
 
+
+
+
+
+;int8_t __near S_EvictSFXPage3(int8_t evictedpage, int8_t currentpage){
+xor   ax, ax
+mov   al, cl
+mov   dl, dh
+xor   dh, dh
+
+call  S_EvictSFXPage3_
+mov    es, ax
+POPA_NO_AX_MACRO
+mov    ax, es
+
+ret
+
+
+
 xchg   ah, bl
 mov    al, cl  ; copy over evictedpage
 
@@ -791,7 +797,7 @@ mov    al, cl  ; copy over evictedpage
 test   al, al
 js     done_with_evictedpageloop
 
-mov    bp, 4; for adding to si
+mov    bp, SIZE SFXINFO_T; for adding to si
 
 evict_next_page:
 ;		sfxcache_nodes[evictedpage].pagecount = 0;

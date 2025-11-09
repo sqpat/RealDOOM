@@ -548,19 +548,6 @@ int8_t __near S_EvictSFXPage3(int8_t evictedpage, int8_t currentpage){
 	int8_t previous_next;
 
 
-        // check all pages for ref count
-    {
-		int8_t checkpage = evictedpage;
-    	while (checkpage != -1){
-            if (sfx_page_reference_count[checkpage]){
-                // the minimum required pages to evict overlapped with an in use page!
-                // fail gracefully.
-                return -1;
-            }
-            checkpage = sfxcache_nodes[checkpage].prev;
-        }
-    }
-
 
     // from evicted page back to tail.
 	while (evictedpage != -1){
