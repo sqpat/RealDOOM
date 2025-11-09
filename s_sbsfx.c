@@ -541,45 +541,13 @@ int8_t __near S_EvictSFXPage2(int8_t numpages){
 }
 
 
-int8_t __near S_EvictSFXPage3(int8_t evictedpage, int8_t currentpage){
+int8_t __near S_EvictSFXPage3(int8_t currentpage){
 
 	//todo revisit these vars.
-	int8_t i;
 	int8_t previous_next;
 
 
 
-    // from evicted page back to tail.
-	while (evictedpage != -1){
-
-    	// clear cache data that was pointing to the page
-        // zero these out..
-
-        //todo make this a word write
-		sfxcache_nodes[evictedpage].pagecount = 0;
-		sfxcache_nodes[evictedpage].numpages = 0;
-
-			//todo put these next to each other in memory and loop in one go!
-
-		for (i = 0; i < NUMSFX; i++){
-			if ((sfx_data[i].cache_position.bu.bytehigh) == evictedpage){
-				sfx_data[i].cache_position.bu.bytehigh = SOUND_NOT_IN_CACHE;
-			}
-		}
-
-        // if (sfx_page_reference_count[evictedpage]){
-        //     I_Error("bad eviction!");
-        // }
-
-
-		sfx_free_bytes[evictedpage] = BUFFERS_PER_EMS_PAGE;
-		evictedpage = sfxcache_nodes[evictedpage].prev;
-	}	
-
-
-	// connect old tail and old head.
-	sfxcache_nodes[sfxcache_tail].prev = sfxcache_head;
-	sfxcache_nodes[sfxcache_head].next = sfxcache_tail;
 
 
 	// current page is next head

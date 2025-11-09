@@ -611,7 +611,7 @@ je     tail_is_lastindex
 mov    cl, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
 mov    ah, cl    ; ah backs up lastindex_prev
 xchg   cl, bl
-SHIFT_MACRO   sal bx 2
+SHIFT_MACRO   sal bl 2
 ;			sfxcache_nodes[lastindex_prev].next = index_next;
 mov    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], ch
 xchg   dh, bl
@@ -637,7 +637,7 @@ mov    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecoun
 
 ;		sfxcache_nodes[sfxcache_head].next = lastindex;
 xchg   cl, bl
-SHIFT_MACRO   sal bx 2
+SHIFT_MACRO   sal bl 2
 mov    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], dl
 
 ;		sfxcache_nodes[index].next = -1;
@@ -664,7 +664,7 @@ ENDP
 loop_find_more_pages:
 mov    dh, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
 mov    bl, dh
-SHIFT_MACRO  sal bx 2
+SHIFT_MACRO  sal bl 2
 dec    ax
 jnz    loop_find_more_pages
 jmp    done_finding_nextmost
@@ -682,10 +682,9 @@ cbw    ; zero ah...
 ;	currentpage = sfxcache_tail;
 mov    dl, byte ptr ds:[_sfxcache_tail]   ; dl holds tail
 mov    dh, dl                             ; dh holds currentpage
-xor    cx, cx
 xor    bx, bx
 mov    bl, dh
-SHIFT_MACRO  sal bx 2  ; bx holds currentpage
+SHIFT_MACRO  sal bl 2  ; bx holds currentpage/tail
 mov    di, bx
   
 dec    ax      ; numpages - 1
@@ -719,7 +718,7 @@ je     done_finding_evictedpage
 
 mov    cl, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
 mov    bl, cl
-SHIFT_MACRO  sal bx 2
+SHIFT_MACRO  sal bl 2
 jmp    loop_check_next_evictedpage
 
 done_finding_evictedpage:
@@ -756,7 +755,7 @@ js     done_with_checkpage_loop
 xchg   al, bl
 cmp    byte ptr ds:[_sfx_page_reference_count + bx], bh ; known zero
 jne    pages_in_use_exit
-SHIFT_MACRO  sal bx 2
+SHIFT_MACRO  sal bl 2
 mov    bl, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
 xchg   al, bl ; juggle these back
 jmp    check_next_page_in_use
@@ -766,19 +765,6 @@ done_with_checkpage_loop:
 
 
 
-
-;int8_t __near S_EvictSFXPage3(int8_t evictedpage, int8_t currentpage){
-xor   ax, ax
-mov   al, cl
-mov   dl, dh
-xor   dh, dh
-
-call  S_EvictSFXPage3_
-mov    es, ax
-POPA_NO_AX_MACRO
-mov    ax, es
-
-ret
 
 
 
@@ -835,7 +821,7 @@ xchg   al, bl
 ;		evictedpage = sfxcache_nodes[evictedpage].prev;
 mov    al, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
 mov    bl, al
-SHIFT_MACRO  sal bx 2
+SHIFT_MACRO  sal bl 2
 test   al, al
 jns    evict_next_page
 
@@ -852,13 +838,13 @@ mov cl, -1
 
 ;	// connect old tail and old head.
 ;	sfxcache_nodes[sfxcache_tail].prev = sfxcache_head;
-;	sfxcache_nodes[sfxcache_head].next = sfxcache_tail;
-
 mov    al, byte ptr ds:[_sfxcache_head]
 mov    byte ptr ds:[_sfxcache_nodes + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], al
 
+
+;	sfxcache_nodes[sfxcache_head].next = sfxcache_tail;
 mov    bl, al
-SHIFT_MACRO sal bx 2
+SHIFT_MACRO sal bl 2
 mov    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], dl
 
 ;	previous_next = sfxcache_nodes[currentpage].next;
@@ -875,17 +861,17 @@ mov    byte ptr ds:[_sfxcache_head], dh
 mov    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], cl ; -1
 
 
-;	sfxcache_tail = previous_next;
-mov    byte ptr ds:[_sfxcache_tail], al
 
 ;	sfxcache_nodes[previous_next].prev = -1;
 mov    bl, al
-SHIFT_MACRO sal bx 2
+SHIFT_MACRO sal bl 2
 mov    byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], cl ; -1
+;	sfxcache_tail = previous_next;
+mov    byte ptr ds:[_sfxcache_tail], al
 
 ;	return currentpage; // sfxcache_head
 
-mov    al, dh 
+mov    al, dh
 cbw
 mov    es, ax
 POPA_NO_AX_MACRO
