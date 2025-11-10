@@ -1209,6 +1209,8 @@ void __near S_NormalizeSfxVolume(uint16_t offset, uint16_t length);
 // }
 
 
+int8_t __near S_LoadSoundIntoCacheFoundSinglePage(sfxenum_t sfx_id, int8_t sfx_page, int16_t_union allocate_position, int16_t_union lumpsize);
+
 int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
     int8_t sfx_page;
     int16_t_union lumpsize = sfx_data[sfx_id].lumpsize;
@@ -1252,6 +1254,10 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
 
         found_page:
 
+        return S_LoadSoundIntoCacheFoundSinglePage(sfx_id, sfx_page, allocate_position, lumpsize);
+
+    /*
+
         // record page in high byte
         // record offset (multiplied by 256) in low byte.
         sfx_data[sfx_id].cache_position.bu.bytehigh = sfx_page;
@@ -1288,6 +1294,7 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
         // sfxcache_nodes[sfx_page].numpages = 0;
 
         return 0;
+        */
         
     } else {
         int8_t j;
