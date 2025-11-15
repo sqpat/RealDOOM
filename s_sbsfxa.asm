@@ -21,7 +21,6 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN I_Error_:FAR
-EXTRN S_LoadSoundIntoCache_:NEAR
 EXTRN Z_QuickMapSFXPageFrame_:FAR
 EXTRN W_CacheLumpNumDirectWithOffset_:FAR
 
@@ -995,8 +994,8 @@ jne    sound_in_cache
 
 mov    bh, al  ; back up sfxid
 call   S_LoadSoundIntoCache_
-cmp    al, -1
-je     return_error_no_space_in_cache
+test   ax, ax
+js     return_error_no_space_in_cache
 mov    al, bh  ; restore sfxid
 
 sound_in_cache:
@@ -1377,6 +1376,233 @@ pop    si
 ret
 
 ENDP
+
+;int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
+
+PROC   S_LoadSoundIntoCache_ NEAR
+PUBLIC S_LoadSoundIntoCache_
+
+PUSHA_NO_AX_MACRO
+
+xor   ah, ah
+mov   di, ax
+sal   di, 1
+add   di, ax
+sal   di, 1    ; * 6
+mov   bp, SFX_DATA_SEGMENT
+mov   es, bp
+;    int16_t_union lumpsize = sfx_data[sfx_id].lumpsize;
+mov   bp, word ptr es:[di + SFXINFO_T.sfxinfo_lumpsize]
+
+
+;   sample_256_size = lumpsize.bu.bytehigh + (lumpsize.bu.bytelow ? 1 : 0);
+mov   cx, bp
+add   cx, 0FFh   ; carry 1 to ch if al is nonzero... ch is sample_256_size
+
+; bp = lumpsize
+; ch = sample_256_size
+
+; int8_t pagecount = sample_256_size >> 6;  
+
+mov   dl, ch
+SHIFT_MACRO  rol dl 2
+and   dx, 3   ; pagecount in dl, 0 in dh
+
+; bp = lumpsize
+; ch = sample_256_size
+; dl = pagecount
+; dh = known zero
+
+;    pagecount += (sample_256_size & BUFFERS_PER_EMS_PAGE_MASK) ? 1 : 0;
+
+mov   cl, ch    ; backup
+and   ch, BUFFERS_PER_EMS_PAGE_MASK
+add   ch, 0FFh  ; carry if nonzero
+adc   dl, dh    ; dh is known zero. add carry flag
+
+
+; ax = sfx_id
+; bp = lumpsize
+; cl = sample_256_size
+; ch = garbage
+; dl = pagecount
+; dh = known zero
+
+xor     bx, bx  ; clear high byte
+mov     bl, byte ptr ds:[_sfxcache_head]
+
+
+cmp   dl, 1
+jne   handle_multipage_pagecount
+
+handle_singlepage_pagecount:
+
+mov  dx, cx  ; dl gets sample_256_size
+
+
+;    dl = sample_256_size
+;    bx = sfx_page
+;    bp = lumpsize
+;    ax = sfx_id
+
+loop_check_next_singlepage:
+
+;    for (sfx_page = sfxcache_head; sfx_page != -1; sfx_page = sfxcache_nodes[sfx_page].prev){
+;        if (sample_256_size <= sfx_free_bytes[sfx_page]){
+
+cmp   dl, byte ptr ds:[_sfx_free_bytes + bx] 
+jg    not_enough_room_single_check_next_page
+;            allocate_position.bu.bytehigh = BUFFERS_PER_EMS_PAGE - sfx_free_bytes[sfx_page];  // keep track of where to put the sound
+mov   si, bx
+mov   bx, (BUFFERS_PER_EMS_PAGE SHL 8)   ; bl is 0
+sub   bh, byte ptr ds:[_sfx_free_bytes + si]
+;            goto found_page;
+jmp   found_page   
+
+not_enough_room_single_check_next_page:
+SHIFT_MACRO  sal bl 2
+mov   bl, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+test  bl, bl
+jns   loop_check_next_singlepage
+
+; iterated thru everything, nothing found, try to evict.
+
+xchg  ax, cx  ; backup sfx_id
+call  S_UpdateLRUCache_   ;     S_UpdateLRUCache();
+mov   ax, 1
+call  S_EvictSFXPage_     ;     sfx_page = S_EvictSFXPage(1);
+
+;        if (sfx_page == -1){
+;            return -1;
+;        } else {
+;            sfx_free_bytes[sfx_page] -= sample_256_size;
+;        }
+
+test  ax, ax
+js    do_return_minus_1
+xor   ah, ah
+mov   si, ax  ; si gets sfx_page
+xchg  ax, cx  ; restore sfx_id to ax
+xor   bx, bx  ; allocate_position default 0
+
+found_page:
+
+;            sfx_free_bytes[sfx_page] -= sample_256_size;   // subtract...
+sub   byte ptr ds:[_sfx_free_bytes + si], dl
+
+
+; ax = sfx_id
+; bx = allocate_position
+; bp = lumpsize
+; dl = pagecount
+; dh = known zero
+; si = sfx_page
+
+;        return S_LoadSoundIntoCacheFoundSinglePage(sfx_id, sfx_page, allocate_position, lumpsize);
+
+mov      dx, si  ; sfx_page
+mov      cx, bp  ; lumpsize
+; bx already allocate_position
+call     S_LoadSoundIntoCacheFoundSinglePage_
+do_return_minus_1:
+do_return:
+mov      es, ax
+POPA_NO_AX_MACRO
+mov      ax, es
+ret
+
+
+handle_multipage_pagecount:
+
+mov     ch, dl  ; page count in ch
+
+; al = sfx_id
+; bp = lumpsize
+; cl = sample_256_size
+; ch = pagecount
+; bx = sfx_page
+; dx/si = current_page
+; ah = j
+
+
+loop_check_next_multipage:
+
+;   int8_t currentpage = sfx_page;
+mov     dx, bx
+;   for (j = 0; j < pagecount; j++){
+xor     ah, ah  ; j = 0, compare ah to ch
+
+loop_check_next_multipage_inner:
+
+;        if (currentpage == -1){
+;            break;
+
+test  dl, dl
+js    break_multipage_innerloop
+mov   si, dx  ; currentpage lookup
+
+;    if (sfx_free_bytes[currentpage] == BUFFERS_PER_EMS_PAGE){
+cmp     byte ptr ds:[_sfx_free_bytes + si], BUFFERS_PER_EMS_PAGE
+jne     break_multipage_innerloop
+;        currentpage = sfxcache_nodes[currentpage].prev;
+SHIFT_MACRO  sal si 2
+;        currentpage = sfxcache_nodes[currentpage].prev;
+
+mov   dl, byte ptr ds:[_sfxcache_nodes + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+inc   ah
+;  for (j = 0; j < pagecount; j++){
+cmp   ah, ch
+jl    loop_check_next_multipage_inner
+
+;   not a break; found enough
+jmp   found_page_multiple
+
+break_multipage_innerloop:
+SHIFT_MACRO  sal bl 2
+mov   bl, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+test  bl, bl
+jns   loop_check_next_multipage
+
+xchg  ax, dx  ; backup sfx_id
+call  S_UpdateLRUCache_   ;   S_UpdateLRUCache();
+
+mov   al, ch
+cbw
+call  S_EvictSFXPage_     ;    sfx_page = S_EvictSFXPage(pagecount); // get the headmost
+
+;   if (sfx_page == -1){
+;       return -1;
+;   } 
+
+test  ax, ax
+js    do_return_minus_1
+
+xchg  ax, bx ; bx gets sfx_page
+xchg  ax, dx ; retrieve sfx_id
+
+
+found_page_multiple:
+
+xor   ah, ah  
+; ch = pagecount
+; al = sfx_id
+; bl = sfx_page
+; bp = lumpsize
+
+;        return S_LoadSoundIntoCacheFoundMultiPage(sfx_id, sfx_page, lumpsize, pagecount);
+
+mov   dx, bx
+mov   bx, bp
+mov   cl, ch
+xor   ch, ch
+
+; todo inline , dont overwrite sample_256_size etc
+
+call  S_LoadSoundIntoCacheFoundMultiPage_
+jmp   do_return
+
+ENDP
+
 
 
 ; todo move W_CacheLumpNumDirectWithOffset here NEAR

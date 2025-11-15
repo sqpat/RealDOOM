@@ -1213,205 +1213,205 @@ int8_t __near S_LoadSoundIntoCacheFoundSinglePage(sfxenum_t sfx_id, int8_t sfx_p
 
 int8_t __near S_LoadSoundIntoCacheFoundMultiPage(sfxenum_t sfx_id, int8_t sfx_page, int16_t_union lumpsize, int8_t pagecount);
 
-int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
-    int8_t sfx_page;
-    int16_t_union lumpsize = sfx_data[sfx_id].lumpsize;
-    uint8_t sample_256_size = lumpsize.bu.bytehigh + (lumpsize.bu.bytelow ? 1 : 0);
-    int16_t_union allocate_position;
-    int8_t pagecount = sample_256_size >> 6;   // todo rol 2?
-    // round up
-    pagecount += (sample_256_size & BUFFERS_PER_EMS_PAGE_MASK) ? 1 : 0;
+// int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
+//     int8_t sfx_page;
+//     int16_t_union lumpsize = sfx_data[sfx_id].lumpsize;
+//     uint8_t sample_256_size = lumpsize.bu.bytehigh + (lumpsize.bu.bytelow ? 1 : 0);
+//     int16_t_union allocate_position;
+//     int8_t pagecount = sample_256_size >> 6;   // todo rol 2?
+//     // round up
+//     pagecount += (sample_256_size & BUFFERS_PER_EMS_PAGE_MASK) ? 1 : 0;
 
-    allocate_position.hu = 0;
-    logcacheevent('z', sample_256_size);
-    if (pagecount == 1) {
-        // todo iterate in head order?
-        for (sfx_page = sfxcache_head; sfx_page != -1; sfx_page = sfxcache_nodes[sfx_page].prev){
-            if (sample_256_size <= sfx_free_bytes[sfx_page]){
-                allocate_position.bu.bytehigh = BUFFERS_PER_EMS_PAGE - sfx_free_bytes[sfx_page];  // keep track of where to put the sound
-                // allocate_position.bu.bytelow = 0;
-                sfx_free_bytes[sfx_page] -= sample_256_size;   // subtract...
-                goto found_page;
-            }
-        }
+//     allocate_position.hu = 0;
+//     logcacheevent('z', sample_256_size);
+//     if (pagecount == 1) {
+//         // todo iterate in head order?
+//         for (sfx_page = sfxcache_head; sfx_page != -1; sfx_page = sfxcache_nodes[sfx_page].prev){
+//             if (sample_256_size <= sfx_free_bytes[sfx_page]){
+//                 allocate_position.bu.bytehigh = BUFFERS_PER_EMS_PAGE - sfx_free_bytes[sfx_page];  // keep track of where to put the sound
+//                 // allocate_position.bu.bytelow = 0;
+//                 sfx_free_bytes[sfx_page] -= sample_256_size;   // subtract...
+//                 goto found_page;
+//             }
+//         }
 
-        // evict_one:
+//         // evict_one:
 
-        S_UpdateLRUCache();
-        // lets locate a page to evict
+//         S_UpdateLRUCache();
+//         // lets locate a page to evict
 
-        logcacheevent('v', 1);
-        sfx_page = S_EvictSFXPage(1);
-        logcacheevent('w', i);
-        if (sfx_page == -1){
-            return -1;
-        } else {
-            sfx_free_bytes[sfx_page] -= sample_256_size;
-            logcacheevent('x', sfx_page);
+//         logcacheevent('v', 1);
+//         sfx_page = S_EvictSFXPage(1);
+//         logcacheevent('w', i);
+//         if (sfx_page == -1){
+//             return -1;
+//         } else {
+//             sfx_free_bytes[sfx_page] -= sample_256_size;
+//             logcacheevent('x', sfx_page);
 
-        }
-        // allocate_position.hu = 0;
+//         }
+//         // allocate_position.hu = 0;
 
-        // continue to found_page
+//         // continue to found_page
 
-        found_page:
+//         found_page:
 
-        return S_LoadSoundIntoCacheFoundSinglePage(sfx_id, sfx_page, allocate_position, lumpsize);
+//         return S_LoadSoundIntoCacheFoundSinglePage(sfx_id, sfx_page, allocate_position, lumpsize);
 
-    /*
+//     /*
 
-        // record page in high byte
-        // record offset (multiplied by 256) in low byte.
-        sfx_data[sfx_id].cache_position.bu.bytehigh = sfx_page;
-        sfx_data[sfx_id].cache_position.bu.bytelow = allocate_position.bu.bytehigh;
+//         // record page in high byte
+//         // record offset (multiplied by 256) in low byte.
+//         sfx_data[sfx_id].cache_position.bu.bytehigh = sfx_page;
+//         sfx_data[sfx_id].cache_position.bu.bytelow = allocate_position.bu.bytehigh;
 
-        // I_Error("%lx %lx %i %i", sfx_data, sfx_data[sfx_id], sfx_data[sfx_id].cache_position.hu, sfx_id );
+//         // I_Error("%lx %lx %i %i", sfx_data, sfx_data[sfx_id], sfx_data[sfx_id].cache_position.hu, sfx_id );
         
-        // _disable();
-        Z_QuickMapSFXPageFrame(sfx_page);
-        // Note - in theory an interrupt for an SFX can fire here during 
-        // this transfer and blow up our current SFX ems page. However
-        // we make absolutely sure in the interrupt  to page the SFX page 
-        // back to where its supposed to go.
-        W_CacheLumpNumDirectWithOffset(
-            sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK, 
-            MK_FP(SFX_PAGE_SEGMENT_PTR, allocate_position.hu), 
-            0x18,           // skip header and padding.
-            lumpsize.hu);   // num bytes..
+//         // _disable();
+//         Z_QuickMapSFXPageFrame(sfx_page);
+//         // Note - in theory an interrupt for an SFX can fire here during 
+//         // this transfer and blow up our current SFX ems page. However
+//         // we make absolutely sure in the interrupt  to page the SFX page 
+//         // back to where its supposed to go.
+//         W_CacheLumpNumDirectWithOffset(
+//             sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK, 
+//             MK_FP(SFX_PAGE_SEGMENT_PTR, allocate_position.hu), 
+//             0x18,           // skip header and padding.
+//             lumpsize.hu);   // num bytes..
 
 
 
-        // loop here to apply application volume to sfx 
-        if (snd_SfxVolume != MAX_VOLUME_SFX){
-            S_NormalizeSfxVolume(allocate_position.hu, lumpsize.h);
-        }
+//         // loop here to apply application volume to sfx 
+//         if (snd_SfxVolume != MAX_VOLUME_SFX){
+//             S_NormalizeSfxVolume(allocate_position.hu, lumpsize.h);
+//         }
 
-        // pad zeroes? todo maybe 0x80 or dont do
-        _fmemset(MK_FP(SFX_PAGE_SEGMENT_PTR, allocate_position.hu + lumpsize.hu), 0, (0x100 - (lumpsize.bu.bytelow)) & 0xFF);  // todo: just NEG instruction?
-        // _enable();
+//         // pad zeroes? todo maybe 0x80 or dont do
+//         _fmemset(MK_FP(SFX_PAGE_SEGMENT_PTR, allocate_position.hu + lumpsize.hu), 0, (0x100 - (lumpsize.bu.bytelow)) & 0xFF);  // todo: just NEG instruction?
+//         // _enable();
 
 
-        // don't do this! it defaults to zero, and is reset to zero during eviction if necessary.
-        // sfxcache_nodes[sfx_page].pagecount = 0;
-        // sfxcache_nodes[sfx_page].numpages = 0;
+//         // don't do this! it defaults to zero, and is reset to zero during eviction if necessary.
+//         // sfxcache_nodes[sfx_page].pagecount = 0;
+//         // sfxcache_nodes[sfx_page].numpages = 0;
 
-        return 0;
-        */
+//         return 0;
+//         */
         
-    } else {
-        int8_t j;
-        // greater than 1 EMS page in size...
-        for (sfx_page = sfxcache_head; sfx_page != -1; sfx_page = sfxcache_nodes[sfx_page].prev){
-            int8_t currentpage = sfx_page;
-            for (j = 0; j < pagecount; j++){
-                if (currentpage == -1){
-                    break;
-                } else {
+//     } else {
+//         int8_t j;
+//         // greater than 1 EMS page in size...
+//         for (sfx_page = sfxcache_head; sfx_page != -1; sfx_page = sfxcache_nodes[sfx_page].prev){
+//             int8_t currentpage = sfx_page;
+//             for (j = 0; j < pagecount; j++){
+//                 if (currentpage == -1){
+//                     break;
+//                 } else {
                     
-                    if (sfx_free_bytes[currentpage] == BUFFERS_PER_EMS_PAGE){
-                        currentpage = sfxcache_nodes[currentpage].prev;
-                        continue;
-                    } else {
-                        break;
-                    }
-                }
-            }
+//                     if (sfx_free_bytes[currentpage] == BUFFERS_PER_EMS_PAGE){
+//                         currentpage = sfxcache_nodes[currentpage].prev;
+//                         continue;
+//                     } else {
+//                         break;
+//                     }
+//                 }
+//             }
             
-            if (j < pagecount){ // didnt find enough pages.
-                continue;
-            }
+//             if (j < pagecount){ // didnt find enough pages.
+//                 continue;
+//             }
 
-            // page sfx_page works.
+//             // page sfx_page works.
 
-            // allocate_position.hu = 0;    // page aligned. addr is 0...
+//             // allocate_position.hu = 0;    // page aligned. addr is 0...
 
-            goto found_page_multiple;
+//             goto found_page_multiple;
 
-        }
+//         }
 
-        // evict_multiple:
-        S_UpdateLRUCache();
+//         // evict_multiple:
+//         S_UpdateLRUCache();
 
-        sfx_page = S_EvictSFXPage(pagecount); // get the headmost
-        allocate_position.hu = 0;
+//         sfx_page = S_EvictSFXPage(pagecount); // get the headmost
+//         allocate_position.hu = 0;
 
-        if (sfx_page == -1){
-            return -1;
-        } 
+//         if (sfx_page == -1){
+//             return -1;
+//         } 
         
-        found_page_multiple:
+//         found_page_multiple:
 
-        return S_LoadSoundIntoCacheFoundMultiPage(sfx_id, sfx_page, lumpsize, pagecount);
+//         return S_LoadSoundIntoCacheFoundMultiPage(sfx_id, sfx_page, lumpsize, pagecount);
 
-/*
-        {
-            int8_t j;
-            uint16_t offset = 18;    // skip header and padding.
-            int16_t lump = sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK;
-            int8_t currentpage = sfx_page;
+// /*
+//         {
+//             int8_t j;
+//             uint16_t offset = 18;    // skip header and padding.
+//             int16_t lump = sfx_data[sfx_id].lumpandflags & SOUND_LUMP_BITMASK;
+//             int8_t currentpage = sfx_page;
 
-            sfx_data[sfx_id].cache_position.bu.bytehigh = sfx_page;
-            sfx_data[sfx_id].cache_position.bu.bytelow = 0;
+//             sfx_data[sfx_id].cache_position.bu.bytehigh = sfx_page;
+//             sfx_data[sfx_id].cache_position.bu.bytelow = 0;
 
-            // iterate thru full pages
-            for (j = 0; j < (pagecount-1); j++){
-                sfxcache_nodes[currentpage].pagecount = pagecount - j;
-                sfxcache_nodes[currentpage].numpages  = pagecount;
+//             // iterate thru full pages
+//             for (j = 0; j < (pagecount-1); j++){
+//                 sfxcache_nodes[currentpage].pagecount = pagecount - j;
+//                 sfxcache_nodes[currentpage].numpages  = pagecount;
 
-                // I_Error("%lx %lx %sfx_page %i", sfx_data, sfx_data[sfx_id], sfx_data[sfx_id].cache_position.hu, sfx_id );
-                Z_QuickMapSFXPageFrame(currentpage);
-                // Note - in theory an interrupt for an SFX can fire here during 
-                // this transfer and blow up our current SFX ems page. However
-                // we make absolutely sure in the interrupt  to page the SFX page 
-                // back to where its supposed to go.
-                W_CacheLumpNumDirectWithOffset(
-                    lump, 
-                    MK_FP(SFX_PAGE_SEGMENT_PTR, 0), 
-                    offset,   
-                    16384);   // num bytes..
-                sfx_free_bytes[currentpage] = 0;
+//                 // I_Error("%lx %lx %sfx_page %i", sfx_data, sfx_data[sfx_id], sfx_data[sfx_id].cache_position.hu, sfx_id );
+//                 Z_QuickMapSFXPageFrame(currentpage);
+//                 // Note - in theory an interrupt for an SFX can fire here during 
+//                 // this transfer and blow up our current SFX ems page. However
+//                 // we make absolutely sure in the interrupt  to page the SFX page 
+//                 // back to where its supposed to go.
+//                 W_CacheLumpNumDirectWithOffset(
+//                     lump, 
+//                     MK_FP(SFX_PAGE_SEGMENT_PTR, 0), 
+//                     offset,   
+//                     16384);   // num bytes..
+//                 sfx_free_bytes[currentpage] = 0;
 
-                    // loop here to apply application volume to sfx 
+//                     // loop here to apply application volume to sfx 
                 
-                if (snd_SfxVolume != MAX_VOLUME_SFX){
-                    S_NormalizeSfxVolume(0, 16384);
-                }
+//                 if (snd_SfxVolume != MAX_VOLUME_SFX){
+//                     S_NormalizeSfxVolume(0, 16384);
+//                 }
 
-                currentpage = sfxcache_nodes[currentpage].prev;
-                offset += 16384;
+//                 currentpage = sfxcache_nodes[currentpage].prev;
+//                 offset += 16384;
 
-            }
+//             }
 
-            sfx_free_bytes[currentpage] -= sample_256_size & BUFFERS_PER_EMS_PAGE_MASK;
-            // mark last page
-            sfxcache_nodes[currentpage].pagecount = 1;
-            sfxcache_nodes[currentpage].numpages = pagecount;
+//             sfx_free_bytes[currentpage] -= sample_256_size & BUFFERS_PER_EMS_PAGE_MASK;
+//             // mark last page
+//             sfxcache_nodes[currentpage].pagecount = 1;
+//             sfxcache_nodes[currentpage].numpages = pagecount;
 
-            // final case, leftover bytes...
-            Z_QuickMapSFXPageFrame(currentpage);
-            W_CacheLumpNumDirectWithOffset(
-                    lump, 
-                    MK_FP(SFX_PAGE_SEGMENT_PTR, 0), 
-                    offset,           // skip header and padding.
-                    lumpsize.hu & 16383);   // num bytes..
+//             // final case, leftover bytes...
+//             Z_QuickMapSFXPageFrame(currentpage);
+//             W_CacheLumpNumDirectWithOffset(
+//                     lump, 
+//                     MK_FP(SFX_PAGE_SEGMENT_PTR, 0), 
+//                     offset,           // skip header and padding.
+//                     lumpsize.hu & 16383);   // num bytes..
 
-            // pad zeroes? todo maybe 0x80 or dont do
-            _fmemset(MK_FP(SFX_PAGE_SEGMENT_PTR, lumpsize.hu & 16383), 0, (0x100 - (lumpsize.bu.bytelow)) & 0xFF);  // todo: just NEG instruction?
+//             // pad zeroes? todo maybe 0x80 or dont do
+//             _fmemset(MK_FP(SFX_PAGE_SEGMENT_PTR, lumpsize.hu & 16383), 0, (0x100 - (lumpsize.bu.bytelow)) & 0xFF);  // todo: just NEG instruction?
 
-            if (snd_SfxVolume != MAX_VOLUME_SFX){
-                S_NormalizeSfxVolume(0, lumpsize.hu & 16383);
-            }
-
-
-            return 0;
-        }
-        */
+//             if (snd_SfxVolume != MAX_VOLUME_SFX){
+//                 S_NormalizeSfxVolume(0, lumpsize.hu & 16383);
+//             }
 
 
+//             return 0;
+//         }
+//         */
 
 
-    }
-}
+
+
+//     }
+// }
 
 int8_t __far SFX_PlayPatch(sfxenum_t sfx_id, uint8_t sep, uint8_t vol);
 /*
