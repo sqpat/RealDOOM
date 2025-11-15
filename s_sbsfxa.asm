@@ -52,6 +52,7 @@ db "bad vol! %i %i %i", 0
 
 ; todo... constants 64
 BUFFERS_PER_EMS_PAGE = 16384 / 256
+BUFFERS_PER_EMS_PAGE_MASK = BUFFERS_PER_EMS_PAGE - 1
 
 PLAYING_FLAG = 080h
 
@@ -1086,6 +1087,206 @@ retf
 
 ENDP
 
+;int8_t __near S_LoadSoundIntoCache(sfx_id, sfx_page, lumpsize);
+;int8_t __near S_LoadSoundIntoCacheFoundMultiPage(sfxenum_t sfx_id, int8_t sfx_page, int16_t_union lumpsize, int8_t pagecount);
+
+PROC   S_LoadSoundIntoCacheFoundMultiPage_ NEAR
+PUBLIC S_LoadSoundIntoCacheFoundMultiPage_
+
+push   di
+push   si
+push   bp
+xor    ah, ah
+
+mov    bp, SFX_DATA_SEGMENT
+mov    es, bp
+
+mov    bp, ax
+sal    bp, 1  ; * 2
+add    bp, ax ; * 3
+sal    bp, 1  ; * 6
+
+mov    word ptr cs:[_SELFMODIFY_lumpsize_leftover + 1], bx
+
+xchg   ax, dx   ; dl gets sfx_id... al gets sfx_page
+
+;     sfx_data[sfx_id].cache_position.bu.bytehigh = sfx_page;
+;     sfx_data[sfx_id].cache_position.bu.bytelow = 0;
+
+mov    byte ptr es:[bp + SFXINFO_T.sfxinfo_cache_position + 0], dh ; known 0
+mov    byte ptr es:[bp + SFXINFO_T.sfxinfo_cache_position + 1], al
+
+mov    bp, word ptr es:[bp + SFXINFO_T.sfxinfo_lumpandflags]
+and    bp, SOUND_LUMP_BITMASK ; store lump in bp for now.
+
+mov    ch, cl  ; pagecount
+xor    ah, ah
+
+mov    dx, 18  ; offset
+
+; bp lump
+; al current_page
+; ah 0
+; dx offset
+; bx allocate_position (0, xored as needed later)
+; cl pagecount - j
+; ch pagecount
+
+
+
+;    for (j = 0; j < (pagecount-1); j++){
+
+loop_load_sfx_data_into_next_page:
+
+mov    di, ax  ; backup page
+;    sfx_free_bytes[currentpage] = 0;
+mov    byte ptr ds:[_sfx_free_bytes + di], ah  ; known 0?
+
+;    sfxcache_nodes[currentpage].pagecount = pagecount - j;
+;    sfxcache_nodes[currentpage].numpages  = pagecount;
+SHIFT_MACRO sal    di, 2
+mov    word ptr ds:[_sfxcache_nodes + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], cx   ; cl is pagecount - j, ch is pagecount
+
+
+;        Z_QuickMapSFXPageFrame(currentpage);
+call   Z_QuickMapSFXPageFrame_   
+
+;                W_CacheLumpNumDirectWithOffset(
+;                    lump, 
+;                    MK_FP(SFX_PAGE_SEGMENT_PTR, 0), 
+;                    offset,   
+;                    16384);   // num bytes..
+
+push   cx   ; store pagecount
+push   dx   ; store offset
+
+; todo change this to be a single loop/call set
+
+mov    ax, bp
+; dx already offset
+mov    si, 16384 ; numbytes
+xor    bx, bx  ; 0
+mov    cx, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
+
+; todo inline and thrash args less.
+call   W_CacheLumpNumDirectWithOffset_       
+
+pop    dx ; restore offset
+pop    cx ; restore pagecount
+
+
+
+
+;    if (snd_SfxVolume != MAX_VOLUME_SFX){
+cmp  byte ptr ds:[_snd_SfxVolume], MAX_VOLUME_SFX
+je   dont_normalize_sfx_multi
+;    S_NormalizeSfxVolume(0, 16384);
+mov   bx, dx  ; store offset
+xor   ax, ax
+mov   dx, 16384
+call  S_NormalizeSfxVolume_
+mov   dx, bx  ; restore offset
+
+dont_normalize_sfx_multi:
+
+;   currentpage = sfxcache_nodes[currentpage].prev;
+mov    al, byte ptr ds:[_sfxcache_nodes + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+xor    ah, ah
+
+;   offset += 16384;
+add   dx, 16384
+
+dec   cx
+cmp   cl, 1
+jnz   loop_load_sfx_data_into_next_page
+
+; last page
+
+mov    di, ax  ; page offset..
+
+_SELFMODIFY_lumpsize_leftover:
+mov   ax, 01000h
+mov   si, ax  
+and   si, 16383   ; page size leftover
+
+
+;   sample_256_size = lumpsize.bu.bytehigh + (lumpsize.bu.bytelow ? 1 : 0);
+
+add   ax, 0FFh   ; carry 1 to ah if al is nonzero
+and   ah, BUFFERS_PER_EMS_PAGE_MASK
+
+;    sfx_free_bytes[currentpage] -= sample_256_size & BUFFERS_PER_EMS_PAGE_MASK;
+;    // mark last page
+sub    byte ptr ds:[_sfx_free_bytes + di], ah
+
+mov    ax, di  ; put currentpage back
+;    sfxcache_nodes[currentpage].pagecount = 1;       
+;    sfxcache_nodes[currentpage].numpages = pagecount;
+SHIFT_MACRO sal    di, 2
+; cl known 1
+mov    word ptr ds:[_sfxcache_nodes + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], cx   ; cl is pagecount - j, ch is pagecount
+
+;        Z_QuickMapSFXPageFrame(currentpage);
+call   Z_QuickMapSFXPageFrame_   
+
+
+;            W_CacheLumpNumDirectWithOffset(
+;                    lump, 
+;                    MK_FP(SFX_PAGE_SEGMENT_PTR, 0), 
+;                    offset,           // skip header and padding.
+;                    lumpsize.hu & 16383);   // num bytes..
+
+
+xchg   ax, bp ; last use of bp/lump
+xor    bx, bx  ; 0
+mov    cx, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
+; dx already offset
+; si already lumpsize & 16383
+mov    di, si ; backup lumpsize
+
+call   W_CacheLumpNumDirectWithOffset_       
+
+
+;    if (snd_SfxVolume != MAX_VOLUME_SFX){
+;        S_NormalizeSfxVolume(0, lumpsize.hu & 16383);
+;    }
+cmp  byte ptr ds:[_snd_SfxVolume], MAX_VOLUME_SFX
+je   dont_normalize_sfx_multi_last
+;    S_NormalizeSfxVolume(0, 16384);
+
+xor   ax, ax
+mov   dx, di   ; lumpsize..
+call  S_NormalizeSfxVolume_
+dont_normalize_sfx_multi_last:
+
+
+
+;   // pad zeroes? todo maybe 0x80 or dont do
+;   _fmemset(MK_FP(SFX_PAGE_SEGMENT_PTR, lumpsize.hu & 16383), 0, (0x100 - (lumpsize.bu.bytelow)) & 0xFF);  // todo: just NEG instruction?
+
+mov    es, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
+; di already lumpsize
+mov    cx, di   ; get lumpsize...
+xor    ax, ax   ; write zero
+xor    ch, ch   ; and FF
+neg    cl       ; 0x100 - cl  (cant be 0)
+shr    cx, 1
+rep    stosw
+adc    cx, cx
+rep    stosb 
+
+
+
+;xor    ax, ax        ;return 0;  ax already zero from fmemset above..
+pop    bp
+pop    si
+pop    di
+
+ret
+
+ENDP
+
+
 ;int8_t __near S_LoadSoundIntoCache(sfx_id, sfx_page, allocate_position, lumpsize);
 
 PROC   S_LoadSoundIntoCacheFoundSinglePage_ NEAR
@@ -1136,7 +1337,7 @@ mov    di, bx   ; backup allocate_position
 mov    ax, word ptr es:[si + SFXINFO_T.sfxinfo_lumpandflags]
 and    ax, SOUND_LUMP_BITMASK
 mov    si, cx  ; si gets lumpsize
-mov    dx, 018h  ; offset.skip header and padding
+mov    dx, 18  ; offset.skip header and padding
 ;mov    bx, bx  ; allocate_position already correct
 mov    cx, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
 

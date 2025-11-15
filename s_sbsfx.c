@@ -1211,6 +1211,8 @@ void __near S_NormalizeSfxVolume(uint16_t offset, uint16_t length);
 
 int8_t __near S_LoadSoundIntoCacheFoundSinglePage(sfxenum_t sfx_id, int8_t sfx_page, int16_t_union allocate_position, int16_t_union lumpsize);
 
+int8_t __near S_LoadSoundIntoCacheFoundMultiPage(sfxenum_t sfx_id, int8_t sfx_page, int16_t_union lumpsize, int8_t pagecount);
+
 int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
     int8_t sfx_page;
     int16_t_union lumpsize = sfx_data[sfx_id].lumpsize;
@@ -1339,6 +1341,9 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
         
         found_page_multiple:
 
+        return S_LoadSoundIntoCacheFoundMultiPage(sfx_id, sfx_page, lumpsize, pagecount);
+
+/*
         {
             int8_t j;
             uint16_t offset = 18;    // skip header and padding.
@@ -1400,6 +1405,7 @@ int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
 
             return 0;
         }
+        */
 
 
 
