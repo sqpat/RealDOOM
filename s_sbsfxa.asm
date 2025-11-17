@@ -1088,11 +1088,135 @@ ENDP
 
 
 
-;int8_t __near S_LoadSoundIntoCache(sfx_id, sfx_page, allocate_position, lumpsize);
 
-PROC   S_LoadSoundIntoCacheFoundSinglePage_ NEAR
-PUBLIC S_LoadSoundIntoCacheFoundSinglePage_
+;int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
 
+PROC   S_LoadSoundIntoCache_ NEAR
+PUBLIC S_LoadSoundIntoCache_
+
+PUSHA_NO_AX_MACRO
+
+xor   ah, ah
+mov   di, ax
+sal   di, 1
+add   di, ax
+sal   di, 1    ; * 6
+mov   bp, SFX_DATA_SEGMENT
+mov   es, bp
+;    int16_t_union lumpsize = sfx_data[sfx_id].lumpsize;
+mov   bp, word ptr es:[di + SFXINFO_T.sfxinfo_lumpsize]
+
+
+;   sample_256_size = lumpsize.bu.bytehigh + (lumpsize.bu.bytelow ? 1 : 0);
+mov   cx, bp
+add   cx, 0FFh   ; carry 1 to ch if al is nonzero... ch is sample_256_size
+
+; bp = lumpsize
+; ch = sample_256_size
+
+; int8_t pagecount = sample_256_size >> 6;  
+
+mov   dl, ch
+SHIFT_MACRO  rol dl 2
+and   dx, 3   ; pagecount in dl, 0 in dh
+
+; bp = lumpsize
+; ch = sample_256_size
+; dl = pagecount
+; dh = known zero
+
+;    pagecount += (sample_256_size & BUFFERS_PER_EMS_PAGE_MASK) ? 1 : 0;
+
+mov   cl, ch    ; backup
+and   ch, BUFFERS_PER_EMS_PAGE_MASK
+add   ch, 0FFh  ; carry if nonzero
+adc   dl, dh    ; dh is known zero. add carry flag
+
+
+; ax = sfx_id
+; bp = lumpsize
+; cl = sample_256_size
+; ch = garbage
+; dl = pagecount
+; dh = known zero
+
+xor     bx, bx  ; clear high byte
+mov     bl, byte ptr ds:[_sfxcache_head]
+
+
+cmp   dl, 1
+jne   jump_to_handle_multipage_pagecount
+
+handle_singlepage_pagecount:
+
+mov  dx, cx  ; dl gets sample_256_size
+
+
+;    dl = sample_256_size
+;    bx = sfx_page
+;    bp = lumpsize
+;    ax = sfx_id
+
+loop_check_next_singlepage:
+
+;    for (sfx_page = sfxcache_head; sfx_page != -1; sfx_page = sfxcache_nodes[sfx_page].prev){
+;        if (sample_256_size <= sfx_free_bytes[sfx_page]){
+
+cmp   dl, byte ptr ds:[_sfx_free_bytes + bx] 
+jg    not_enough_room_single_check_next_page
+;            allocate_position.bu.bytehigh = BUFFERS_PER_EMS_PAGE - sfx_free_bytes[sfx_page];  // keep track of where to put the sound
+mov   si, bx
+mov   bx, (BUFFERS_PER_EMS_PAGE SHL 8)   ; bl is 0
+sub   bh, byte ptr ds:[_sfx_free_bytes + si]
+;            goto found_page;
+jmp   found_page   
+jump_to_handle_multipage_pagecount:
+jmp   handle_multipage_pagecount
+
+not_enough_room_single_check_next_page:
+SHIFT_MACRO  sal bl 2
+mov   bl, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+test  bl, bl
+jns   loop_check_next_singlepage
+
+; iterated thru everything, nothing found, try to evict.
+
+xchg  ax, cx  ; backup sfx_id
+call  S_UpdateLRUCache_   ;     S_UpdateLRUCache();
+mov   ax, 1
+call  S_EvictSFXPage_     ;     sfx_page = S_EvictSFXPage(1);
+
+;        if (sfx_page == -1){
+;            return -1;
+;        } else {
+;            sfx_free_bytes[sfx_page] -= sample_256_size;
+;        }
+
+test  ax, ax
+js    do_return_minus_1
+xor   ah, ah
+mov   si, ax  ; si gets sfx_page
+xchg  ax, cx  ; restore sfx_id to ax
+xor   bx, bx  ; allocate_position default 0
+
+found_page:
+
+;            sfx_free_bytes[sfx_page] -= sample_256_size;   // subtract...
+sub   byte ptr ds:[_sfx_free_bytes + si], dl
+
+
+; ax = sfx_id
+; bx = allocate_position
+; bp = lumpsize
+; dl = pagecount
+; dh = known zero
+; si = sfx_page
+
+;        return S_LoadSoundIntoCacheFoundSinglePage(sfx_id, sfx_page, allocate_position, lumpsize);
+
+mov      dx, si  ; sfx_page
+mov      cx, bp  ; lumpsize
+; bx already allocate_position
 
 
 xchg   ax, dx   ; dl gets sfx_id... al gets sfx_page
@@ -1154,8 +1278,11 @@ dont_normalize_sfx:
     ; _fmemset(MK_FP(SFX_PAGE_SEGMENT_PTR, allocate_position.hu + lumpsize.hu), 0,
     ;  (0x100 - (lumpsize.bu.bytelow)) & 0xFF);  // todo: just NEG instruction?
 
-mov    es, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
 add    di, cx   ; allocate_position.hu + lumpsize.hu
+
+memset_and_exit:
+
+mov    es, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
 xor    ax, ax   ; write zero
 xor    ch, ch   ; and FF
 neg    cl       ; 0x100 - cl
@@ -1166,137 +1293,8 @@ rep    stosb
 
 ;xor    ax, ax        ;return 0;  ax already zero from fmemset above..
 
-ret
-
-ENDP
-
-;int8_t __near S_LoadSoundIntoCache(sfxenum_t sfx_id){
-
-PROC   S_LoadSoundIntoCache_ NEAR
-PUBLIC S_LoadSoundIntoCache_
-
-PUSHA_NO_AX_MACRO
-
-xor   ah, ah
-mov   di, ax
-sal   di, 1
-add   di, ax
-sal   di, 1    ; * 6
-mov   bp, SFX_DATA_SEGMENT
-mov   es, bp
-;    int16_t_union lumpsize = sfx_data[sfx_id].lumpsize;
-mov   bp, word ptr es:[di + SFXINFO_T.sfxinfo_lumpsize]
 
 
-;   sample_256_size = lumpsize.bu.bytehigh + (lumpsize.bu.bytelow ? 1 : 0);
-mov   cx, bp
-add   cx, 0FFh   ; carry 1 to ch if al is nonzero... ch is sample_256_size
-
-; bp = lumpsize
-; ch = sample_256_size
-
-; int8_t pagecount = sample_256_size >> 6;  
-
-mov   dl, ch
-SHIFT_MACRO  rol dl 2
-and   dx, 3   ; pagecount in dl, 0 in dh
-
-; bp = lumpsize
-; ch = sample_256_size
-; dl = pagecount
-; dh = known zero
-
-;    pagecount += (sample_256_size & BUFFERS_PER_EMS_PAGE_MASK) ? 1 : 0;
-
-mov   cl, ch    ; backup
-and   ch, BUFFERS_PER_EMS_PAGE_MASK
-add   ch, 0FFh  ; carry if nonzero
-adc   dl, dh    ; dh is known zero. add carry flag
-
-
-; ax = sfx_id
-; bp = lumpsize
-; cl = sample_256_size
-; ch = garbage
-; dl = pagecount
-; dh = known zero
-
-xor     bx, bx  ; clear high byte
-mov     bl, byte ptr ds:[_sfxcache_head]
-
-
-cmp   dl, 1
-jne   handle_multipage_pagecount
-
-handle_singlepage_pagecount:
-
-mov  dx, cx  ; dl gets sample_256_size
-
-
-;    dl = sample_256_size
-;    bx = sfx_page
-;    bp = lumpsize
-;    ax = sfx_id
-
-loop_check_next_singlepage:
-
-;    for (sfx_page = sfxcache_head; sfx_page != -1; sfx_page = sfxcache_nodes[sfx_page].prev){
-;        if (sample_256_size <= sfx_free_bytes[sfx_page]){
-
-cmp   dl, byte ptr ds:[_sfx_free_bytes + bx] 
-jg    not_enough_room_single_check_next_page
-;            allocate_position.bu.bytehigh = BUFFERS_PER_EMS_PAGE - sfx_free_bytes[sfx_page];  // keep track of where to put the sound
-mov   si, bx
-mov   bx, (BUFFERS_PER_EMS_PAGE SHL 8)   ; bl is 0
-sub   bh, byte ptr ds:[_sfx_free_bytes + si]
-;            goto found_page;
-jmp   found_page   
-
-not_enough_room_single_check_next_page:
-SHIFT_MACRO  sal bl 2
-mov   bl, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
-test  bl, bl
-jns   loop_check_next_singlepage
-
-; iterated thru everything, nothing found, try to evict.
-
-xchg  ax, cx  ; backup sfx_id
-call  S_UpdateLRUCache_   ;     S_UpdateLRUCache();
-mov   ax, 1
-call  S_EvictSFXPage_     ;     sfx_page = S_EvictSFXPage(1);
-
-;        if (sfx_page == -1){
-;            return -1;
-;        } else {
-;            sfx_free_bytes[sfx_page] -= sample_256_size;
-;        }
-
-test  ax, ax
-js    do_return_minus_1
-xor   ah, ah
-mov   si, ax  ; si gets sfx_page
-xchg  ax, cx  ; restore sfx_id to ax
-xor   bx, bx  ; allocate_position default 0
-
-found_page:
-
-;            sfx_free_bytes[sfx_page] -= sample_256_size;   // subtract...
-sub   byte ptr ds:[_sfx_free_bytes + si], dl
-
-
-; ax = sfx_id
-; bx = allocate_position
-; bp = lumpsize
-; dl = pagecount
-; dh = known zero
-; si = sfx_page
-
-;        return S_LoadSoundIntoCacheFoundSinglePage(sfx_id, sfx_page, allocate_position, lumpsize);
-
-mov      dx, si  ; sfx_page
-mov      cx, bp  ; lumpsize
-; bx already allocate_position
-call     S_LoadSoundIntoCacheFoundSinglePage_
 do_return_minus_1:
 do_return:
 mov      es, ax
@@ -1508,21 +1506,9 @@ mov   di, si
 ;   // pad zeroes? todo maybe 0x80 or dont do
 ;   _fmemset(MK_FP(SFX_PAGE_SEGMENT_PTR, lumpsize.hu & 16383), 0, (0x100 - (lumpsize.bu.bytelow)) & 0xFF);  // todo: just NEG instruction?
 
-mov    es, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
 ; di already lumpsize
 mov    cx, di   ; get lumpsize...
-xor    ax, ax   ; write zero
-xor    ch, ch   ; and FF
-neg    cl       ; 0x100 - cl  (cant be 0)
-shr    cx, 1
-rep    stosw
-adc    cx, cx
-rep    stosb 
-
-
-
-;xor    ax, ax        ;return 0;  ax already zero from fmemset above..
-jmp   do_return
+jmp   memset_and_exit
 
 
 
