@@ -1402,7 +1402,7 @@ xor    ah, ah
 ; todo inline , dont overwrite sample_256_size etc
 
 
-mov    word ptr cs:[_SELFMODIFY_lumpsize_leftover + 1], bp   ; lumpsize
+mov    si, bp   ; si gets lumpsize
 
 
 
@@ -1426,6 +1426,7 @@ mov    dx, 18  ; offset
 ; al current_page
 ; ah 0
 ; dx offset
+; si lumpsize/remaining size
 ; bx will be used as allocate_position (0, xored as needed later)
 ; cl pagecount - j
 ; ch pagecount
@@ -1456,18 +1457,23 @@ call   Z_QuickMapSFXPageFrame_
 
 push   cx   ; store pagecount
 push   dx   ; store offset
+push   si   ; store remaining size
 
 ; todo change this to be a single loop/call set
 
 mov    ax, bp
 ; dx already offset
+cmp    si, 16384
+jb     dont_cap_size
 mov    si, 16384 ; numbytes
+dont_cap_size:
 xor    bx, bx  ; 0
 mov    cx, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
 
 ; todo inline and thrash args less.
 call   W_CacheLumpNumDirectWithOffset_       
 
+pop    si ; restore remaning size
 pop    dx ; restore offset
 pop    cx ; restore pagecount
 
@@ -1480,7 +1486,12 @@ je   dont_normalize_sfx_multi
 ;    S_NormalizeSfxVolume(0, 16384);
 mov   bx, dx  ; store offset
 xor   ax, ax
-mov   dx, 16384
+mov   dx, si
+cmp    dx, 16384
+jb     dont_cap_size_2
+mov    dx, 16384 ; numbytes
+dont_cap_size_2:
+
 call  S_NormalizeSfxVolume_
 mov   dx, bx  ; restore offset
 
@@ -1491,71 +1502,16 @@ mov    al, byte ptr ds:[_sfxcache_nodes + di + CACHE_NODE_PAGE_COUNT_T.cachenode
 xor    ah, ah
 
 ;   offset += 16384;
-add   dx, 16384
+add   dh, 040h  ;  add   dx, 16384
+sub   si, 16384
 
-dec   cx
-cmp   cl, 1
+dec   cl
 jnz   loop_load_sfx_data_into_next_page
 
-; last page
-
-mov    di, ax  ; page offset..
-
-_SELFMODIFY_lumpsize_leftover:
-mov   ax, 01000h
-mov   si, ax  
-and   si, 16383   ; page size leftover
 
 
-;   sample_256_size = lumpsize.bu.bytehigh + (lumpsize.bu.bytelow ? 1 : 0);
-
-add   ax, 0FFh   ; carry 1 to ah if al is nonzero
-and   ah, BUFFERS_PER_EMS_PAGE_MASK
-
-;    sfx_free_bytes[currentpage] -= sample_256_size & BUFFERS_PER_EMS_PAGE_MASK;
-;    // mark last page
-sub    byte ptr ds:[_sfx_free_bytes + di], ah
-
-mov    ax, di  ; put currentpage back
-;    sfxcache_nodes[currentpage].pagecount = 1;       
-;    sfxcache_nodes[currentpage].numpages = pagecount;
-SHIFT_MACRO sal    di, 2
-; cl known 1
-mov    word ptr ds:[_sfxcache_nodes + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], cx   ; cl is pagecount - j, ch is pagecount
-
-;        Z_QuickMapSFXPageFrame(currentpage);
-call   Z_QuickMapSFXPageFrame_   
-
-
-;            W_CacheLumpNumDirectWithOffset(
-;                    lump, 
-;                    MK_FP(SFX_PAGE_SEGMENT_PTR, 0), 
-;                    offset,           // skip header and padding.
-;                    lumpsize.hu & 16383);   // num bytes..
-
-
-xchg   ax, bp ; last use of bp/lump
-xor    bx, bx  ; 0
-mov    cx, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
-; dx already offset
-; si already lumpsize & 16383
-mov    di, si ; backup lumpsize
-
-call   W_CacheLumpNumDirectWithOffset_       
-
-
-;    if (snd_SfxVolume != MAX_VOLUME_SFX){
-;        S_NormalizeSfxVolume(0, lumpsize.hu & 16383);
-;    }
-cmp  byte ptr ds:[_snd_SfxVolume], MAX_VOLUME_SFX
-je   dont_normalize_sfx_multi_last
-;    S_NormalizeSfxVolume(0, 16384);
-
-xor   ax, ax
-mov   dx, di   ; lumpsize..
-call  S_NormalizeSfxVolume_
-dont_normalize_sfx_multi_last:
-
+and   si, 16383   
+mov   di, si
 
 
 ;   // pad zeroes? todo maybe 0x80 or dont do
