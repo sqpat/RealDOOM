@@ -1093,21 +1093,14 @@ ENDP
 PROC   S_LoadSoundIntoCacheFoundSinglePage_ NEAR
 PUBLIC S_LoadSoundIntoCacheFoundSinglePage_
 
-push   si
-push   di
-xor    ah, ah
-mov    si, ax
 
-sal    si, 1  ; * 2
-add    si, ax ; * 3
-sal    si, 1  ; * 6
 
 xchg   ax, dx   ; dl gets sfx_id... al gets sfx_page
 
-mov    di, SFX_DATA_SEGMENT
-mov    es, di
+mov    si, SFX_DATA_SEGMENT
+mov    es, si
 
-; es:si sfx_data lookup
+; es:di sfx_data lookup
 ; al sfx_page
 ; dl sfx_id
 ; bx allocate_position
@@ -1116,8 +1109,9 @@ mov    es, di
 ;    sfx_data[sfx_id].cache_position.bu.bytelow = allocate_position.bu.bytehigh;
 ;    sfx_data[sfx_id].cache_position.bu.bytehigh = sfx_page;
 
-mov    byte ptr es:[si + SFXINFO_T.sfxinfo_cache_position + 0], bh
-mov    byte ptr es:[si + SFXINFO_T.sfxinfo_cache_position + 1], al
+mov    byte ptr es:[di + SFXINFO_T.sfxinfo_cache_position + 0], bh
+mov    byte ptr es:[di + SFXINFO_T.sfxinfo_cache_position + 1], al
+mov    di, word ptr es:[di + SFXINFO_T.sfxinfo_lumpandflags]  ; get nump
 
 
 ;  Z_QuickMapSFXPageFrame(sfx_page);
@@ -1132,10 +1126,9 @@ call   Z_QuickMapSFXPageFrame_
 ;            lumpsize.hu);   // num bytes..                       ; si
 
 push   cx  ; backup lumpsize
-mov    es, di   ; still SFX_DATA_SEGMENT
+xchg   ax, di   ; ax gets lump
 mov    di, bx   ; backup allocate_position
 
-mov    ax, word ptr es:[si + SFXINFO_T.sfxinfo_lumpandflags]
 and    ax, SOUND_LUMP_BITMASK
 mov    si, cx  ; si gets lumpsize
 mov    dx, 18  ; offset.skip header and padding
@@ -1172,8 +1165,6 @@ adc    cx, cx
 rep    stosb 
 
 ;xor    ax, ax        ;return 0;  ax already zero from fmemset above..
-pop    di
-pop    si
 
 ret
 
