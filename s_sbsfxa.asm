@@ -32,6 +32,7 @@ EXTRN _sfxcache_head:BYTE
 EXTRN _sfxcache_tail:BYTE
 EXTRN _current_sampling_rate:BYTE
 EXTRN _change_sampling_to_22_next_int:BYTE
+EXTRN _in_first_buffer:BYTE
 
 .CODE
 
@@ -56,6 +57,47 @@ BUFFERS_PER_EMS_PAGE_MASK = BUFFERS_PER_EMS_PAGE - 1
 PLAYING_FLAG = 080h
 
 MAX_VOLUME_SFX = 07Fh
+
+_sound_played:
+db  0
+
+_sfx_mix_table:
+db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+
+db  000h, 001h, 002h, 003h, 004h, 005h, 006h, 007h, 008h, 009h, 00Ah, 00Bh, 00Ch, 00Dh, 00Eh, 001h
+db  010h, 011h, 012h, 013h, 014h, 015h, 016h, 017h, 018h, 019h, 01Ah, 01Bh, 01Ch, 01Dh, 01Eh, 02Fh
+db  020h, 021h, 022h, 023h, 024h, 025h, 026h, 027h, 028h, 029h, 02Ah, 02Bh, 02Ch, 02Dh, 02Eh, 02Fh
+db  030h, 031h, 032h, 033h, 034h, 035h, 036h, 037h, 038h, 039h, 03Ah, 03Bh, 03Ch, 03Dh, 03Eh, 03Fh
+db  040h, 041h, 042h, 043h, 044h, 045h, 046h, 047h, 048h, 049h, 04Ah, 04Bh, 04Ch, 04Dh, 04Eh, 04Fh
+db  050h, 051h, 052h, 053h, 054h, 055h, 056h, 057h, 058h, 059h, 05Ah, 05Bh, 05Ch, 05Dh, 05Eh, 05Fh
+db  060h, 061h, 062h, 063h, 064h, 065h, 066h, 067h, 068h, 069h, 06Ah, 06Bh, 06Ch, 06Dh, 06Eh, 06Fh
+db  070h, 071h, 072h, 073h, 074h, 075h, 076h, 077h, 078h, 079h, 07Ah, 07Bh, 07Ch, 07Dh, 07Eh, 07Fh
+db  080h, 081h, 082h, 083h, 084h, 085h, 086h, 087h, 088h, 089h, 08Ah, 08Bh, 08Ch, 08Dh, 08Eh, 08Fh
+db  090h, 091h, 092h, 093h, 094h, 095h, 096h, 097h, 098h, 099h, 09Ah, 09Bh, 09Ch, 09Dh, 09Eh, 09Fh
+db  0A0h, 0A1h, 0A2h, 0A3h, 0A4h, 0A5h, 0A6h, 0A7h, 0A8h, 0A9h, 0AAh, 0ABh, 0ACh, 0ADh, 0AEh, 0AFh
+db  0B0h, 0B1h, 0B2h, 0B3h, 0B4h, 0B5h, 0B6h, 0B7h, 0B8h, 0B9h, 0BAh, 0BBh, 0BCh, 0BDh, 0BEh, 0BFh
+db  0C0h, 0C1h, 0C2h, 0C3h, 0C4h, 0C5h, 0C6h, 0C7h, 0C8h, 0C9h, 0CAh, 0CBh, 0CCh, 0CDh, 0CEh, 0CFh
+db  0D0h, 0D1h, 0D2h, 0D3h, 0D4h, 0D5h, 0D6h, 0D7h, 0D8h, 0D9h, 0DAh, 0DBh, 0DCh, 0DDh, 0DEh, 0DFh
+db  0E0h, 0E1h, 0E2h, 0E3h, 0E4h, 0E5h, 0E6h, 0E7h, 0E8h, 0E9h, 0EAh, 0EBh, 0ECh, 0EDh, 0EEh, 0EFh
+db  0F0h, 0F1h, 0F2h, 0F3h, 0F4h, 0F5h, 0F6h, 0F7h, 0F8h, 0F9h, 0FAh, 0FBh, 0FCh, 0FDh, 0FEh, 0FFh
+
+db  0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh
+db  0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh
+db  0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh
+db  0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh
+db  0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh
+db  0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh
+db  0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh
+db  0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh
+
+
 
 PROC    S_IncreaseRefCount_ NEAR
 PUBLIC  S_IncreaseRefCount_
@@ -1548,6 +1590,420 @@ pop  si
 ret
 
 ENDP
+
+; todo 
+SB_TRANSFERLENGTH = 256  
+
+; todo improvement list
+
+; implement remaining zeroing
+; use same ES, DI of 100 or 000 based on is_first_buffer into ch and then cx to di. then no math needed in the double buffer copy?
+; precalculate loop vars
+  ; and thus make the loop  if else loop, not loop if else.
+; _in_first_buffer in cs
+; _in_first_buffer becomes in_second_buffer
+; think about clipping without lookup table.
+
+;void __near SB_Service_Mix11Khz(){
+
+PROC   SB_Service_Mix11KhzASM_    NEAR
+PUBLIC SB_Service_Mix11KhzASM_
+
+PUSHA_NO_AX_MACRO
+mov    bp, OFFSET _sb_voicelist
+xor    cx, cx
+mov    byte ptr cs:[_sound_played], cl   ; sound_played = 0
+mov    ch, byte ptr ds:[_numChannels]
+
+loop_next_channel:
+
+; cl = i
+; ch = numchannels
+; bp = sbvoicelist[i]
+; ?? = sfx_played
+
+
+;	if (sb_voicelist[i].sfx_id & PLAYING_FLAG){  
+test   byte ptr ds:[bp + SB_VOICEINFO_T.sbvi_sfx_id], PLAYING_FLAG
+jne    play_this_sound
+
+
+check_next_sfx_loop:
+
+add    bp, SIZE SB_VOICEINFO_T
+inc    cx
+cmp    cl, ch
+jl     loop_next_channel
+
+POPA_NO_AX_MACRO
+ret
+
+finish_sound_effect:
+;                sb_voicelist[i].sfx_id &= SFX_ID_MASK; // turn off playing flag
+;                S_DecreaseRefCount(i);                    
+and   byte ptr ds:[bp + SB_VOICEINFO_T.sbvi_sfx_id], SFX_ID_MASK
+mov   al, cl
+;cbw  ; cleared internally?
+call  S_DecreaseRefCount_
+jmp   check_next_sfx_loop
+
+dont_use_page_0:
+
+; al is usepage
+; ah top 2 bits is num bits
+
+;    int8_t pageadd = sb_voicelist[i].currentsample >> 14;;
+;    while (pageadd){
+;        use_page = sfxcache_nodes[use_page].prev;
+;        pageadd--;
+;    }
+
+
+SHIFT_MACRO  rol ah 2   ; ah = pageadd
+mov   bl, al
+;xor   bh, bh  ; bh is known zero. was anded as sfx_id_mask earlier
+loop_next_pageadd:
+SHIFT_MACRO sal bl 2
+mov   bl, byte ptr ds:[_sfxcache_nodes + bx + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+dec   ah
+jnz   loop_next_pageadd
+xchg  ax, bx
+jmp   done_finding_sfx_page
+
+play_this_sound:
+
+;			if (sb_voicelist[i].currentsample >= sb_voicelist[i].length){
+les   di, dword ptr ds:[bp + SB_VOICEINFO_T.sbvi_length]
+mov   ax, es   ; currentsample
+cmp   ax, di
+jge   finish_sound_effect
+
+; ax is currentsample
+; di is length
+
+push   cx  ; unused, restore after playing sfx.
+
+;int16_t_union  cache_pos = sfx_data[sb_voicelist[i].sfx_id & SFX_ID_MASK].cache_position;
+mov    bx, SFX_DATA_SEGMENT
+mov    es, bx
+
+mov    bl, byte ptr ds:[bp + SB_VOICEINFO_T.sbvi_sfx_id]
+and    bx, SFX_ID_MASK
+mov    si, bx 
+sal    si, 1  ; * 2
+add    si, bx ; * 3
+sal    si, 1  ; * 6
+
+mov    cx, word ptr es:[si + SFXINFO_T.sfxinfo_cache_position] ; cachepage lookup. byte high!
+
+; figure out which page to page in.
+
+mov    dx, ax   ; backup
+and    ah, 0C0h ; keep high 2 bits
+mov    al, ch     ; int8_t  use_page = cache_pos.bu.bytehigh;
+jnz    dont_use_page_0    ; if (sb_voicelist[i].currentsample >= 16384){
+
+use_page_0:
+done_finding_sfx_page:
+
+; ax is usepage
+; dx is currentsample
+; cx is cacheposition
+; di is length
+
+
+; Z_QuickMapSFXPageFrame(use_page); // todo not necers
+
+call Z_QuickMapSFXPageFrame_   ; todo inline
+
+; cache_pos.bu.bytehigh = cache_pos.bu.bytelow;
+; cache_pos.bu.bytelow = 0;
+
+mov   ch, cl
+sub   cl, cl  ; cx is source pos for the sound effect
+
+; todo load from memory perhaps? then just xor the segment by 0x10h 
+
+mov   ax, SB_DMABUFFER_SEGMENT
+; if 1 then use 0
+cmp   byte ptr ds:[_in_first_buffer], cl   ; cl known zero... if (!in_first_buffer)
+jne   use_first_buffer
+add   ax, (SB_TRANSFERLENGTH SHR 4)  ; change segment by SB_TransferLength
+use_first_buffer:
+
+mov  es, ax   ; es:00 is copy target
+; es:00 is copy_segment (offset 0)
+; dx is currentsample
+; cx is cacheposition
+; di is length
+
+sub   di, dx      ;  uint16_t remaining_length = sb_voicelist[i].length - sb_voicelist[i].currentsample;
+and   dh, (16383 SHR 8)   ; sb_voicelist[i].currentsample & 16383)
+; uint8_t __far * source  = (uint8_t __far *) MK_FP(SFX_PAGE_SEGMENT_PTR, cache_pos.hu + (sb_voicelist[i].currentsample & 16383));
+mov   si, cx
+add   si, dx   ; source
+
+xchg  ax, di
+mov   bl, byte ptr ds:[_sb_voicelist + bx + SB_VOICEINFO_T.sbvi_volume]
+xor   di, di
+mov   ds, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
+
+; dx is currentsample
+; bl is volume
+; ax is remaining_length
+; bx is garbage
+; es:di is copy target
+; ds:si is sfx_source 
+
+; todo first copy test
+
+mov   ch, (SB_TRANSFERLENGTH SHR 8)  ; 256. cl is already 0 above
+cmp   bl, MAX_VOLUME_SFX  ; if (volume == MAX_VOLUME_SFX){
+
+jne   handle_volume_mix
+
+
+; todo compare to ax/remaining_length
+
+cmp   byte ptr cs:[_sound_played], cl  ; known 0
+jne   handle_sfx_mix
+
+test  dx, dx
+je    do_double_buffer_no_mix
+
+do_sfx_play_and_cleanup:
+rep   movsw   ;                     _fmemcpy(dma_buffer, source, copy_length);
+
+do_sfx_play_cleanup:
+
+inc   byte ptr cs:[_sound_played]
+push  ss
+pop   ds
+inc   byte ptr ds:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
+
+
+; done playing
+pop   cx   ; restore 
+
+jmp   check_next_sfx_loop
+
+do_double_buffer_no_mix:
+
+; TODO cs
+cmp   byte ptr ss:[_in_first_buffer], cl   ; known zero 
+jne    do_double_buffer_no_mix_single_copy
+rep   movsw
+mov   di, SB_DMABUFFER_SEGMENT
+mov   es, di  ; 2nd copy
+xor   di, di
+do_double_buffer_no_mix_single_copy:
+inc   ch   ; add 256 bytes to copy
+; add extra 
+inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
+
+jmp   do_sfx_play_and_cleanup
+
+
+handle_sfx_mix:
+
+;    for (j = 0; j < copy_length; j++){
+;        // fast bad approx 
+;        int16_t total = dma_buffer[j] + source[j];
+;        dma_buffer[j] = sfx_mix_table_2[total];
+;    }
+
+
+loop_handle_next_mix_sample:
+
+xor   ax, ax ; clear ah
+lodsb
+add   al, byte ptr es:[di]
+adc   ah, ah   ; ah known zero
+xchg  ax, bx
+mov   al, byte ptr cs:[bx + _sfx_mix_table]
+stosb
+
+loop   loop_handle_next_mix_sample
+
+jmp    do_sfx_play_cleanup
+
+handle_volume_mix:
+
+cmp   byte ptr cs:[_sound_played], cl  ; known 0, cx is 256
+jne   handle_sfx_and_volume_mix
+
+test  dx, dx
+je    do_double_buffer_with_vol_mix
+
+;   for (j = 0; j < copy_length; j++){
+;        int16_t_union total;
+;        int8_t intermediate = (source[j] - 0x80);
+;        total.h = FastIMul8u8u(volume, intermediate) << 1;
+;        dma_buffer[j] = 0x80 + total.bu.bytehigh; // divide by 256 means take the high byte
+;    }
+
+loop_handle_next_vol_mix_sample:
+
+lodsw
+
+xor   ax, 08080h  ; sub/add 080h  both samples
+mov   bh, ah ; backup
+
+;total.h = FastIMul8u8u(volume, intermediate) << 1;
+
+mul   bl     ; volume
+sal   ax, 1
+mov   al, bh  ; get 2nd sample again
+mov   bh, ah  ; back up first result
+mul   bl     ; volume
+sal   ax, 1  
+mov   al, bh ; restore first byte
+xor   ax, 08080h  ; sub/add 080h  both samples
+stosw  ; store both
+
+loop   loop_handle_next_vol_mix_sample
+
+
+
+jmp do_sfx_play_cleanup
+
+do_double_buffer_with_vol_mix:
+
+cmp   byte ptr ss:[_in_first_buffer], cl   ; known zero 
+jne   do_double_buffer_with_vol_mix_single_copy  ; check if we were copying to the first dma buffer
+
+    loop_handle_next_vol_mix_sample_double:
+    lodsw
+    xor   ax, 08080h  ; sub/add 080h  both samples
+    mov   bh, ah ; backup
+    mul   bl     ; volume
+    sal   ax, 1
+    mov   al, bh  ; get 2nd sample again
+    mov   bh, ah  ; back up first result
+    mul   bl     ; volume
+    sal   ax, 1  
+    mov   al, bh ; restore first byte
+    xor   ax, 08080h  ; sub/add 080h  both samples
+    stosw  ; store both
+    loop   loop_handle_next_vol_mix_sample_double
+
+
+mov   di, SB_DMABUFFER_SEGMENT
+mov   es, di  ; 2nd copy
+xor   di, di
+do_double_buffer_with_vol_mix_single_copy:
+inc   ch   ; add 256 bytes to copy
+; add extra 
+inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
+
+jmp   loop_handle_next_vol_mix_sample
+
+handle_sfx_and_volume_mix:
+
+test  dx, dx
+je    do_double_buffer_with_vol_and_sfx_mix
+
+;   for (j = 0; j < copy_length; j++){
+;       int16_t_union total;
+;       int8_t intermediate = (source[j] - 0x80);
+;       total.h = FastIMul8u8u(volume, intermediate) << 1;
+;       total.bu.bytehigh += 0x80;
+;       // fast bad approx 
+;       total.hu = (dma_buffer[j] + total.bu.bytehigh);
+;       dma_buffer[j] = sfx_mix_table_2[total.hu];
+;   }
+
+mov dl, bl  ; mul by dl insead
+
+; todo this loop kind of sucks.
+
+loop_handle_next_vol_sfx_mix_sample:
+
+lodsw
+
+xor   ax, 08080h  ; sub/add 080h  both samples
+mov   dh, ah ; backup
+mul   dl     ; volume
+xor   bx, bx  ; zero bh
+sal   ax, 1
+mov   al, dh  ; get 2nd sample again
+mov   dh, ah  ; back up first result
+mul   dl     ; volume
+sal   ax, 1  
+mov   al, dh ; restore first byte
+xor   ax, 08080h  ; sub/add 080h  both samples
+
+add   al, byte ptr es:[di]
+adc   bh, bh
+mov   bl, al
+mov   al, byte ptr cs:[bx + _sfx_mix_table]
+stosb
+xor   bh, bh
+add   ah, byte ptr es:[di]
+adc   bh, bh
+mov   bl, ah
+mov   al, byte ptr cs:[bx + _sfx_mix_table]
+stosb
+
+
+loop   loop_handle_next_vol_sfx_mix_sample
+
+
+
+jmp do_sfx_play_cleanup
+
+
+do_double_buffer_with_vol_and_sfx_mix:
+
+
+cmp   byte ptr ss:[_in_first_buffer], cl   ; known zero 
+mov   dl, bl  ; mul by dl insead
+
+jne   do_double_buffer_with_vol_and_sfx_mix_single_copy
+
+    loop_handle_next_vol_and_sfx_mix_sample_double:
+    lodsw
+    xor   ax, 08080h  ; sub/add 080h  both samples
+    mov   dh, ah ; backup
+    mul   dl     ; volume
+    xor   bx, bx  ; zero bh
+    sal   ax, 1
+    mov   al, dh  ; get 2nd sample again
+    mov   dh, ah  ; back up first result
+    mul   dl     ; volume
+    sal   ax, 1  
+    mov   al, dh ; restore first byte
+    xor   ax, 08080h  ; sub/add 080h  both samples
+
+    add   al, byte ptr es:[di]
+    adc   bh, bh
+    mov   bl, al
+    mov   al, byte ptr cs:[bx + _sfx_mix_table]
+    stosb
+    xor   bh, bh
+    add   ah, byte ptr es:[di]
+    adc   bh, bh
+    mov   bl, ah
+    mov   al, byte ptr cs:[bx + _sfx_mix_table]
+    stosb
+
+    loop   loop_handle_next_vol_and_sfx_mix_sample_double
+
+
+mov   di, SB_DMABUFFER_SEGMENT
+mov   es, di  ; 2nd copy
+xor   di, di
+do_double_buffer_with_vol_and_sfx_mix_single_copy:
+inc   ch   ; add 256 bytes to copy
+; add extra 
+inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
+
+jmp   loop_handle_next_vol_sfx_mix_sample
+
+
+ENDP
+
+
 
 
 PROC    S_SBFX_ENDMARKER_ NEAR

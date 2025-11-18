@@ -800,6 +800,7 @@ void __near SB_Service_Mix22Khz(){
 
 }
 
+void __near SB_Service_Mix11KhzASM();
 
 void __near SB_Service_Mix11Khz(){
 	int8_t i;
@@ -827,6 +828,7 @@ void __near SB_Service_Mix11Khz(){
 
                 if (sb_voicelist[i].volume == 0){
                     // dont play/mix sounds this low? 
+                    // todo this cant actually happen i think.
                     sb_voicelist[i].currentsample += SB_TransferLength;
                 } else {
                     uint16_t copy_length = SB_TransferLength;
@@ -1112,7 +1114,7 @@ void __near continuecall(){
 //  11 KHZ MODE LOOP
 
 
-		SB_Service_Mix11Khz();
+		SB_Service_Mix11KhzASM();
 	}
 
 	last_sampling_rate = current_sampling_rate;

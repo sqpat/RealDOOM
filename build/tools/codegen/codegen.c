@@ -8,7 +8,7 @@
 #include "p_inter.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2587
+#define CONSTANTS_COUNT 2588
 #define LOCALS_COUNT 22
 
 
@@ -2065,6 +2065,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"NUM_MUSIC_PAGES",
 	"NUM_SFX_PAGES",
 	"SFX_DATA_SEGMENT",
+	"SB_DMABUFFER_SEGMENT",
 
 	"SOUND_NOT_IN_CACHE",
 	"SOUND_SINGULARITY_FLAG",
@@ -4747,6 +4748,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	NUM_MUSIC_PAGES,
 	NUM_SFX_PAGES,
 	sfx_data_segment,
+	sb_dmabuffer_segment,
 
 	SOUND_NOT_IN_CACHE,
 	SOUND_SINGULARITY_FLAG,
