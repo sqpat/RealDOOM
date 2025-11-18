@@ -1243,7 +1243,7 @@ void __far MainLogger (uint16_t ax, uint16_t dx, uint16_t bx, uint16_t cx){
 	// }
 
 }
-*/
+
 void __far MainLogger (uint16_t ax, uint16_t dx, uint16_t bx, uint16_t cx){
 	// int16_t __far *loc = MK_FP(dx, bx);
 	// int16_t i;
@@ -1263,3 +1263,4 @@ void __far MainLogger (uint16_t ax, uint16_t dx, uint16_t bx, uint16_t cx){
 
 	I_Error("%x %x %x %x", ax, bx, cx, dx);
 }
+*/

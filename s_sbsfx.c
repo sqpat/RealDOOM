@@ -799,9 +799,9 @@ void __near SB_Service_Mix22Khz(){
 	}
 
 }
+void __near SB_Service_Mix11Khz();
 
-void __near SB_Service_Mix11KhzASM();
-
+/*
 void __near SB_Service_Mix11Khz(){
 	int8_t i;
 	int8_t sound_played = 0;	// first sound copies. 2nd and more add. if no sounds played, clear buffer.
@@ -1004,7 +1004,7 @@ void __near SB_Service_Mix11Khz(){
 
 }
 
-
+*/
 
 void __near continuecall();
 
@@ -1114,7 +1114,7 @@ void __near continuecall(){
 //  11 KHZ MODE LOOP
 
 
-		SB_Service_Mix11KhzASM();
+		SB_Service_Mix11Khz();
 	}
 
 	last_sampling_rate = current_sampling_rate;

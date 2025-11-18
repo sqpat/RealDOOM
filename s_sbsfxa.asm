@@ -23,7 +23,6 @@ INSTRUCTION_SET_MACRO
 EXTRN I_Error_:FAR
 EXTRN Z_QuickMapSFXPageFrame_:FAR
 EXTRN W_CacheLumpNumDirectWithOffset_:FAR
-EXTRN MainLogger_:NEAR
 .DATA
 
 EXTRN _sfxcache_nodes:CACHE_NODE_PAGE_COUNT_T
@@ -1605,8 +1604,8 @@ SB_TRANSFERLENGTH = 256
 
 ;void __near SB_Service_Mix11Khz(){
 
-PROC   SB_Service_Mix11KhzASM_    NEAR
-PUBLIC SB_Service_Mix11KhzASM_
+PROC   SB_Service_Mix11Khz_    NEAR
+PUBLIC SB_Service_Mix11Khz_
 
 PUSHA_NO_AX_MACRO
 mov    bp, OFFSET _sb_voicelist
