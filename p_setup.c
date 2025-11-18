@@ -1244,22 +1244,22 @@ void __far MainLogger (uint16_t ax, uint16_t dx, uint16_t bx, uint16_t cx){
 
 }
 */
-/*
 void __far MainLogger (uint16_t ax, uint16_t dx, uint16_t bx, uint16_t cx){
-	int16_t __far *loc = MK_FP(dx, bx);
-	int16_t i;
-	FILE* fp = fopen("sound.txt", "ab");
-	fprintf(fp, "%x %x:  ", ax, cx);
-	for (i = 0; i < 8; i ++){
-		fprintf(fp, "%x %x %x  ", loc[i*3], loc[i*3+1], loc[i*3+2]);
-	}
-	fprintf(fp, "\n"  );
+	// int16_t __far *loc = MK_FP(dx, bx);
+	// int16_t i;
+	// FILE* fp = fopen("sound.txt", "ab");
+	// fprintf(fp, "%x %x:  ", ax, cx);
+	// for (i = 0; i < 8; i ++){
+	// 	fprintf(fp, "%x %x %x  ", loc[i*3], loc[i*3+1], loc[i*3+2]);
+	// }
+	// fprintf(fp, "\n"  );
 
-	for (i = 0; i < NUM_SFX_TO_MIX; i++){
-		fprintf(fp, "%x  ", sb_voicelist[i].sfx_id);
-	}
-	fprintf(fp, "\n");
+	// for (i = 0; i < NUM_SFX_TO_MIX; i++){
+	// 	fprintf(fp, "%x  ", sb_voicelist[i].sfx_id);
+	// }
+	// fprintf(fp, "\n");
 
-	fclose(fp);
+	// fclose(fp);
+
+	I_Error("%x %x %x %x", ax, bx, cx, dx);
 }
-*/

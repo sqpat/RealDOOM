@@ -23,7 +23,7 @@ INSTRUCTION_SET_MACRO
 EXTRN I_Error_:FAR
 EXTRN Z_QuickMapSFXPageFrame_:FAR
 EXTRN W_CacheLumpNumDirectWithOffset_:FAR
-
+EXTRN MainLogger_:NEAR
 .DATA
 
 EXTRN _sfxcache_nodes:CACHE_NODE_PAGE_COUNT_T
@@ -33,6 +33,7 @@ EXTRN _sfxcache_tail:BYTE
 EXTRN _current_sampling_rate:BYTE
 EXTRN _change_sampling_to_22_next_int:BYTE
 EXTRN _in_first_buffer:BYTE
+
 
 .CODE
 
@@ -1738,7 +1739,7 @@ add   si, cx
 
 
 xchg  ax, di
-mov   bl, byte ptr ds:[_sb_voicelist + bx + SB_VOICEINFO_T.sbvi_volume]
+mov   bl, byte ptr ds:[bp + SB_VOICEINFO_T.sbvi_volume]
 
 mov   ch, byte ptr ds:[_in_first_buffer]
 xor   ch, 1
@@ -1767,7 +1768,7 @@ jne   handle_sfx_mix
 do_mixless_sfx_play:
 rep   movsw   ;                     _fmemcpy(dma_buffer, source, copy_length);
 
-test  dx, dx
+cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0
 jne   do_sfx_play_cleanup
   ; if current sample is 0, first play of the sfx must have both buffers copied to.
 do_double_buffer_no_mix:
@@ -1822,7 +1823,7 @@ stosb
 
 loop   loop_handle_next_mix_sample
 
-test  dx, dx
+cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0
   ; if current sample is 0, first play of the sfx must have both buffers copied to.
 jne   do_sfx_play_cleanup
 inc   dx  ; mark dirty
@@ -1850,24 +1851,24 @@ loop_handle_next_vol_mix_sample:
 
 lodsw
 
-xor   ax, 08080h  ; sub/add 080h  both samples
+xor   ax, 08080h  ; sub/add 080h  both samples        (source[j] - 0x80);
 mov   bh, ah ; backup
 
 ;total.h = FastIMul8u8u(volume, intermediate) << 1;
 
 mul   bl     ; volume
-sal   ax, 1
+sal   ax, 1  ; << 1
 mov   al, bh  ; get 2nd sample again
 mov   bh, ah  ; back up first result
 mul   bl     ; volume
 sal   ax, 1  
 mov   al, bh ; restore first byte
-xor   ax, 08080h  ; sub/add 080h  both samples
+xor   ax, 08080h  ; sub/add 080h  both samples       0x80 + total.bu.bytehigh
 stosw  ; store both
 
 loop   loop_handle_next_vol_mix_sample
 
-test  dx, dx
+cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0
 jne   do_sfx_play_cleanup
 inc   dx  ; mark dirty
 mov   cl, (SB_TRANSFERLENGTH SHR 1)  ; 128 word copies!
