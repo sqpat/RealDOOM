@@ -1725,12 +1725,6 @@ sub   cl, cl  ; cx is source pos for the sound effect
 ; todo load from memory perhaps? then just xor the segment by 0x10h 
 
 mov   ax, SB_DMABUFFER_SEGMENT
-; if 1 then use 0
-cmp   byte ptr ds:[_in_first_buffer], cl   ; cl known zero... if (!in_first_buffer)
-jne   use_first_buffer
-add   ax, (SB_TRANSFERLENGTH SHR 4)  ; change segment by SB_TransferLength
-use_first_buffer:
-
 mov  es, ax   ; es:00 is copy target
 ; es:00 is copy_segment (offset 0)
 ; dx is currentsample
@@ -1745,7 +1739,11 @@ add   si, dx   ; source
 
 xchg  ax, di
 mov   bl, byte ptr ds:[_sb_voicelist + bx + SB_VOICEINFO_T.sbvi_volume]
-xor   di, di
+
+mov   ch, byte ptr ds:[_in_first_buffer]
+xor   ch, 1
+mov   di, cx    ; ch is 0 if firstbuffer, 1 if second. cl is 0, so this works out to di being target buffer.
+
 mov   ds, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
 
 ; dx is currentsample
@@ -1755,13 +1753,11 @@ mov   ds, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
 ; es:di is copy target
 ; ds:si is sfx_source 
 
-; todo first copy test
 
 mov   ch, (SB_TRANSFERLENGTH SHR 8)  ; 256. cl is already 0 above
 cmp   bl, MAX_VOLUME_SFX  ; if (volume == MAX_VOLUME_SFX){
 
 jne   handle_volume_mix
-
 
 ; todo compare to ax/remaining_length
 
@@ -1769,7 +1765,7 @@ cmp   byte ptr cs:[_sound_played], cl  ; known 0
 jne   handle_sfx_mix
 
 test  dx, dx
-je    do_double_buffer_no_mix
+je    do_double_buffer_no_mix  ; if current sample is 0, first play of the sfx must have both buffers copied to.
 
 do_sfx_play_and_cleanup:
 rep   movsw   ;                     _fmemcpy(dma_buffer, source, copy_length);
@@ -1793,9 +1789,7 @@ do_double_buffer_no_mix:
 cmp   byte ptr ss:[_in_first_buffer], cl   ; known zero 
 jne    do_double_buffer_no_mix_single_copy
 rep   movsw
-mov   di, SB_DMABUFFER_SEGMENT
-mov   es, di  ; 2nd copy
-xor   di, di
+and   di, ((SB_TRANSFERLENGTH * 2) - 1) ; double buffer length
 do_double_buffer_no_mix_single_copy:
 inc   ch   ; add 256 bytes to copy
 ; add extra 
@@ -1888,9 +1882,7 @@ jne   do_double_buffer_with_vol_mix_single_copy  ; check if we were copying to t
     loop   loop_handle_next_vol_mix_sample_double
 
 
-mov   di, SB_DMABUFFER_SEGMENT
-mov   es, di  ; 2nd copy
-xor   di, di
+and   di, ((SB_TRANSFERLENGTH * 2) - 1) ; double buffer length
 do_double_buffer_with_vol_mix_single_copy:
 inc   ch   ; add 256 bytes to copy
 ; add extra 
@@ -1990,9 +1982,7 @@ jne   do_double_buffer_with_vol_and_sfx_mix_single_copy
     loop   loop_handle_next_vol_and_sfx_mix_sample_double
 
 
-mov   di, SB_DMABUFFER_SEGMENT
-mov   es, di  ; 2nd copy
-xor   di, di
+and   di, ((SB_TRANSFERLENGTH * 2) - 1) ; double buffer length
 do_double_buffer_with_vol_and_sfx_mix_single_copy:
 inc   ch   ; add 256 bytes to copy
 ; add extra 
