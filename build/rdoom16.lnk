@@ -51,7 +51,6 @@ file p_setup.obj
 
 
 file s_sbsfx.obj
-file s_sbsfxa.obj
 file s_sbinit.obj
 file r_main.obj
 file f_file.obj

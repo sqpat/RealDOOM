@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/11/19 15:35:34
+Created on:       25/11/19 15:39:14
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -53,8 +53,7 @@ ST_SETUP_TEXT          CODE           AUTO           0000:761c       00000125
 HU_SETUP_TEXT          CODE           AUTO           0000:7742       00000246
 R_MAIN_TEXT            CODE           AUTO           0000:7988       000003db
 p_setup_TEXT           CODE           AUTO           0000:7d70       00001236
-s_sbsfx_TEXT           CODE           AUTO           0000:8fb0       00000000
-S_SBSFXA_TEXT          CODE           AUTO           0000:8fb0       00000b3d
+S_SBSFX_TEXT           CODE           AUTO           0000:8fa6       00000b3d
 s_sbinit_TEXT          CODE           AUTO           0000:9af0       00000661
 F_FILE_TEXT            CODE           AUTO           0000:a152       0000008d
 W_WAD_TEXT             CODE           AUTO           0000:a1e0       00000252
@@ -486,23 +485,23 @@ Module: p_setup.obj(C:\REALDOOM\p_setup.c)
 0000:8c88+     Z_FreeConventionalAllocations_
 0000:8f46*     PSetupEndFunc_
 0000:8f62      Z_ClearDeadCode_
-Module: s_sbsfxa.obj(s_sbsfxa.ASM)
-0000:9545      SFX_PlayPatch_
-0000:932f*     S_UpdateLRUCache_
-0000:9a2c      SB_ServiceInterrupt_
-0000:9218      S_DecreaseRefCountFar_
-0000:98c3*     SB_Service_Mix11Khz_
-0000:9794*     SB_Service_Mix22Khz_
-0000:921c*     S_DecreaseRefCount_
-0000:976c*     S_NormalizeSfxVolume_
-0000:9aed*     S_SBFX_ENDMARKER_
-0000:91d5*     S_IncreaseRefCount_
-0000:9acf      SB_WriteDSP_
-0000:8fb0*     S_SBFX_STARTMARKER_
-0000:95df*     S_LoadSoundIntoCache_
-0000:9472*     S_EvictSFXPage_
-0000:92a4*     S_MoveCacheItemBackOne_
-0000:9377*     S_MarkSFXPageMRU_
+Module: s_sbsfx.obj(s_sbsfx.ASM)
+0000:953b      SFX_PlayPatch_
+0000:9325*     S_UpdateLRUCache_
+0000:9a22      SB_ServiceInterrupt_
+0000:920e      S_DecreaseRefCountFar_
+0000:98b9*     SB_Service_Mix11Khz_
+0000:978a*     SB_Service_Mix22Khz_
+0000:9212*     S_DecreaseRefCount_
+0000:9762*     S_NormalizeSfxVolume_
+0000:9ae3*     S_SBFX_ENDMARKER_
+0000:91cb*     S_IncreaseRefCount_
+0000:9ac5      SB_WriteDSP_
+0000:8fa6*     S_SBFX_STARTMARKER_
+0000:95d5*     S_LoadSoundIntoCache_
+0000:9468*     S_EvictSFXPage_
+0000:929a*     S_MoveCacheItemBackOne_
+0000:936d*     S_MarkSFXPageMRU_
 Module: s_sbinit.obj(C:\REALDOOM\s_sbinit.c)
 398d:1b5e      _sb_port
 398d:1b60+     _sb_dma
@@ -1030,8 +1029,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2c8d:5c1a*     P_ENEMY_ENDMARKER_
 2c8d:51c9*     A_Fire_
 2c8d:4abc*     A_SPosAttack_
-2c8d:4be2*     A_SpidRefire_
 2c8d:4b33*     A_CPosAttack_
+2c8d:4be2*     A_SpidRefire_
 2c8d:4570*     P_NewChaseDir_
 2c8d:51bd*     A_StartFire_
 2c8d:4d97*     A_Tracer_

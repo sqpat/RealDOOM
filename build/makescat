@@ -72,7 +72,6 @@ GLOBOBJS = &
  hu_stuff.obj &
  hu_lib.obj &
  s_sbsfx.obj &
- s_sbsfxa.obj &
  s_sbinit.obj &
  d_dmx.obj &
  d_int.obj &

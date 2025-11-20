@@ -50,7 +50,6 @@ file w_wad.obj
 file v_video.obj
 file z_zone.obj
 file s_sbsfx.obj
-file s_sbsfxa.obj
 file s_sbinit.obj
 file r_main.obj
 file p_setup.obj
