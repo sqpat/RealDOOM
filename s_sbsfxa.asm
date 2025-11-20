@@ -23,6 +23,10 @@ INSTRUCTION_SET_MACRO
 EXTRN I_Error_:FAR
 EXTRN Z_QuickMapSFXPageFrame_:FAR
 EXTRN W_CacheLumpNumDirectWithOffset_:FAR
+EXTRN SB_DSP1xx_BeginPlayback_:NEAR
+EXTRN SB_SetPlaybackRate_:NEAR
+EXTRN SB_Service_Mix22Khz_:NEAR
+
 .DATA
 
 EXTRN _sfxcache_nodes:CACHE_NODE_PAGE_COUNT_T
@@ -32,6 +36,12 @@ EXTRN _sfxcache_tail:BYTE
 EXTRN _current_sampling_rate:BYTE
 EXTRN _change_sampling_to_22_next_int:BYTE
 EXTRN _in_first_buffer:BYTE
+
+EXTRN _sb_port:BYTE
+EXTRN _sb_irq:BYTE
+EXTRN _SB_DSP_Version:BYTE
+EXTRN _SB_CardActive:BYTE
+EXTRN _SB_Mixer_Status:BYTE
 
 
 .CODE
@@ -57,6 +67,20 @@ BUFFERS_PER_EMS_PAGE_MASK = BUFFERS_PER_EMS_PAGE - 1
 PLAYING_FLAG = 080h
 
 MAX_VOLUME_SFX = 07Fh
+
+SB_DSP_VERSION1XX = 00100h
+SB_DSP_VERSION2XX = 00200h
+SB_DSP_VERSION201 = 00201h
+SB_DSP_VERSION3XX = 00300h
+SB_DSP_VERSION4XX = 00400h
+
+MIXER_8BITDMA_INT    = 01h
+SB_MIXERADDRESSPORT  = 04h
+SB_MIXERDATAPORT 	 = 05h
+SB_RESETPORT 		 = 06h
+SB_READPORT 		 = 0Ah
+SB_WRITEPORT 		 = 0Ch
+SB_DATAAVAILABLEPORT = 0Eh
 
 _sound_played:
 db  0
@@ -1068,7 +1092,7 @@ xor    cx, cx
 ;    sb_voicelist[i].sfx_id = sfx_id;
 ;    sb_voicelist[i].currentsample = 0;
 mov    byte ptr ds:[si + SB_VOICEINFO_T.sbvi_sfx_id], al
-mov    word ptr ds:[si + SB_VOICEINFO_T.sbvi_currentsample], 0
+mov    word ptr ds:[si + SB_VOICEINFO_T.sbvi_currentsample], cx ; 0
 
 test   byte ptr es:[bx + SFXINFO_T.sfxinfo_lumpandflags + 1], (SOUND_22_KHZ_FLAG SHR 8)
 je     use_11_khz
@@ -1927,6 +1951,170 @@ jmp   do_volume_mix_nonfirst_buffer  ; 2nd copy
 
 
 ENDP
+
+
+change_sampling_rate:
+cmp     byte ptr ds:[_change_sampling_to_22_next_int], al
+mov     word ptr ds:[_change_sampling_to_22_next_int], ax  ; zero it out
+jne     change_sampling_to_11
+change_sampling_to_22:
+inc     ax      ; ax = 1 = SOUND_22_KHZ_FLAG
+change_sampling_to_11:
+cmp     word ptr ds:[_current_sampling_rate], ax
+je      dont_update_sampling_rate
+mov     word ptr ds:[_current_sampling_rate], ax 
+
+call    SB_SetPlaybackRate_
+
+jmp     done_changing_sampling_rate
+
+not_our_interrupt_chain:
+;			// Wasn't our interrupt.  Call the old one.
+;			_chain_intr(SB_OldInt);
+
+; TODO NOT DONE AT ALL.
+; check dmx_asm and OLDINT8 chain code..
+
+jmp     done_acking_interrupt
+
+PROC    SB_ServiceInterrupt2_ NEAR
+PUBLIC  SB_ServiceInterrupt2_
+
+PUSHA_NO_AX_MACRO
+
+
+;uint8_t current_sfx_page = currentpageframes[SFX_PAGE_FRAME_INDEX];    // record current sfx page
+mov     bl, byte ptr ds:[_currentpageframes + (SFX_PAGE_FRAME_INDEX)]
+xor     byte ptr ds:[_in_first_buffer], 1
+xor     ax, ax
+cmp     word ptr ds:[_change_sampling_to_22_next_int], ax
+jne     change_sampling_rate
+dont_update_sampling_rate:
+done_changing_sampling_rate:
+
+;	sample_rate_this_instance = current_sampling_rate;
+mov     al, byte ptr ds:[_current_sampling_rate]
+cbw
+xchg    ax, si    ; si = sample_rate_this_instance
+
+;    // Acknowledge interrupt
+;    // Check if this is this an SB16 or newer
+
+mov   dx, word ptr ds:[_sb_port]
+
+cmp     word ptr ds:[_SB_DSP_Version], SB_DSP_VERSION4XX
+jge     handle_4xx_sb_interrupt
+
+;        // Older card - can't detect if an interrupt occurred.
+;        inp(sb_port + SB_DataAvailablePort);
+add   dl, SB_DATAAVAILABLEPORT
+in    al, dx
+
+jmp    done_acking_interrupt
+
+handle_dsp_1xx:
+cmp    byte ptr ds:[_SB_CardActive], 0
+je     done_with_dsp_1xx
+call   SB_DSP1xx_BeginPlayback_
+
+jmp    done_with_dsp_1xx
+
+handle_4xx_sb_interrupt:
+
+;        outp(sb_port + SB_MixerAddressPort, 0x82);  //  MIXER_DSP4xxISR_Ack);
+add   dl, SB_MIXERADDRESSPORT
+mov   al, 082h
+out   dx, al
+
+;        SB_Mixer_Status = inp(sb_port + SB_MixerDataPort);
+; add   dl, (SB_MIXERADDRESSPORT - SB_MIXERDATAPORT)
+inc   dx  ; increment port by one
+in    al, dx
+mov   byte ptr ds:[_SB_Mixer_Status], al
+; todo i dont think we ever do 16 bit...
+
+;         if (SB_Mixer_Status & MIXER_8BITDMA_INT) {
+;            inp(sb_port + SB_DataAvailablePort);
+
+test  al, MIXER_8BITDMA_INT
+je    not_our_interrupt_chain
+add   dl, (SB_DATAAVAILABLEPORT - SB_MIXERDATAPORT)
+in    al, dx
+
+done_acking_interrupt:
+
+;	if (SB_DSP_Version.hu < SB_DSP_Version2xx) {
+;        if (SB_CardActive){
+;            SB_DSP1xx_BeginPlayback();
+;        }
+;	}
+
+cmp     word ptr ds:[_SB_DSP_Version], SB_DSP_VERSION2XX
+jl      handle_dsp_1xx
+
+done_with_dsp_1xx:
+
+;    if (in_first_buffer){
+;        _fmemset(MK_FP(sb_dmabuffer_segment, SB_TransferLength), 0x80, SB_TransferLength);
+;    } else {
+;        _fmemset(MK_FP(sb_dmabuffer_segment, 0), 0x80, SB_TransferLength);
+;    }
+
+mov   ax, SB_DMABUFFER_SEGMENT
+mov   es, ax
+mov   ax, 08080h
+xor   cx, cx
+mov   ch, byte ptr ds:[_in_first_buffer] ; todo in_second_buffer
+xor   ch, 1
+mov   di, cx    ; ch is 0 if firstbuffer, 1 if second. cl is 0, so this works out to di being target buffer.
+
+; es:di is now dest
+
+mov   cx, (SB_TRANSFERLENGTH SHR 1) ; 128
+
+rep   stosw ; write 8080 128 times
+; si was sample_rate_this_instance
+cmp   si, cx ; known 0 . cx == 11 khz
+jne   do_22_khz_call
+
+call   SB_Service_Mix11Khz_
+
+done_with_mix:
+
+; bl still equal to current_sfx_page
+
+cmp   bl, byte ptr ds:[_currentpageframes + (SFX_PAGE_FRAME_INDEX)]
+jne   recover_sfx_page
+
+;    if (current_sfx_page != currentpageframes[SFX_PAGE_FRAME_INDEX]){
+;        Z_QuickMapSFXPageFrame(current_sfx_page);
+;    }
+done_with_remap:
+
+mov   al, 020h
+cmp   byte ptr ds:[_sb_irq], 7
+jg    out_port_7_plus
+done_with_port_7_plus_out:
+out    020h, al
+
+
+POPA_NO_AX_MACRO
+
+ret
+ENDP
+
+do_22_khz_call:
+call   SB_Service_Mix22Khz_
+jmp    done_with_mix
+recover_sfx_page:
+xor    bh, bh
+xchg   ax, bx
+call   Z_QuickMapSFXPageFrame_
+jmp    done_with_remap
+out_port_7_plus:
+out    0A0h, al
+jmp    done_with_port_7_plus_out
+
 
 
 

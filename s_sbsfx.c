@@ -39,7 +39,7 @@ extern uint8_t SB_OriginalVoiceVolumeLeft;
 extern uint8_t SB_OriginalVoiceVolumeRight;
 extern uint8_t SB_Mixer_Status;
 extern uint8_t current_sampling_rate;
-extern uint8_t last_sampling_rate;
+// extern uint8_t last_sampling_rate;
 extern int8_t  change_sampling_to_22_next_int;
 extern int8_t  change_sampling_to_11_next_int;
 extern int8_t  in_first_buffer;
@@ -1007,15 +1007,17 @@ void __near SB_Service_Mix11Khz(){
 */
 
 void __near continuecall();
+void __near SB_ServiceInterrupt2();
 
 void __near resetDS();
 
 void __interrupt __far_func SB_ServiceInterrupt(void) {
     resetDS();  // interrupts need this...
-    continuecall(); // note SS may be non FIXED_DS_SEGMENT!
+    // continuecall(); // note SS may be non FIXED_DS_SEGMENT!
+    SB_ServiceInterrupt2();
 }
 
-
+/*
 void __near continuecall(){
 	int8_t sample_rate_this_instance;
     uint8_t current_sfx_page = currentpageframes[SFX_PAGE_FRAME_INDEX];    // record current sfx page
@@ -1117,7 +1119,7 @@ void __near continuecall(){
 		SB_Service_Mix11Khz();
 	}
 
-	last_sampling_rate = current_sampling_rate;
+	// last_sampling_rate = current_sampling_rate;
 
     if (current_sfx_page != currentpageframes[SFX_PAGE_FRAME_INDEX]){
         // necessary because we might be mid-sfx load before the interrupt fired
@@ -1135,7 +1137,7 @@ void __near continuecall(){
     // in_sound = false;
 
 }
-
+*/
 
 
 void __near SB_WriteDSP(byte value) {
