@@ -42,7 +42,7 @@ EXTRN _sb_irq:BYTE
 EXTRN _SB_DSP_Version:BYTE
 EXTRN _SB_CardActive:BYTE
 EXTRN _SB_Mixer_Status:BYTE
-
+EXTRN _SB_OldInt:DWORD
 
 .CODE
 
@@ -2115,7 +2115,81 @@ out_port_7_plus:
 out    0A0h, al
 jmp    done_with_port_7_plus_out
 
+; todo test?
+do_chain:
+les    cx, dword ptr ds:[_SB_OldInt]
+mov    ax, es
+;jmp    locallib_chain_intr_
 
+; inlined chain_intr for now. todo: suck less
+
+
+;flags bp + 018h
+; cs   bp + 016h
+; ip   bp + 014h
+
+; ax   bp + 012h    ; replaced with cs:ip for retf
+; cx   bp + 010h    ; replaced with cs:ip for retf
+; dx   bp + 0Eh
+; bx   bp + 0Ch
+; sp   bp + 0Ah
+; bp   bp + 8
+; si   bp + 6
+; di   bp + 4
+; ds   bp + 2
+; es   bp + 0
+
+
+mov   sp, bp
+xchg  word ptr [bp + 010h], cx
+xchg  word ptr [bp + 012h], ax
+mov   bx, word ptr [bp + 018h]   ; get old flags
+and   bx, 0FCFFh
+push  bx ; push flags
+
+popf  ; pop flags   ; bp + 01Eh
+pop   es ; bp + 0
+pop   ds ; bp + 2
+pop   di ; bp + 4
+pop   si ; bp + 6
+pop   bp ; bp + 8
+pop   bx ; bp + 0Ah
+pop   bx ; bp + 0Ch
+pop   dx ; bp + 0Eh
+retf  
+
+
+
+PROC   SB_ServiceInterrupt_ FAR
+PUBLIC SB_ServiceInterrupt_
+
+; main interrupt
+
+PUSHA_MACRO_REAL 
+push   ds
+push   es
+mov    bp, sp
+
+cld    
+mov    ax, FIXED_DS_SEGMENT
+mov    ds, ax
+
+; todo detect chain
+
+call   SB_ServiceInterrupt2_
+
+
+
+
+
+pop    es
+pop    ds
+POPA_MACRO_REAL  
+iret   
+
+
+
+ENDP
 
 
 

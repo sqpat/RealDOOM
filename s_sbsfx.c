@@ -1007,17 +1007,18 @@ void __near SB_Service_Mix11Khz(){
 */
 
 void __near continuecall();
-void __near SB_ServiceInterrupt2();
+void __interrupt __far_func SB_ServiceInterrupt(void);
+
 
 void __near resetDS();
 
+/*
 void __interrupt __far_func SB_ServiceInterrupt(void) {
     resetDS();  // interrupts need this...
     // continuecall(); // note SS may be non FIXED_DS_SEGMENT!
     SB_ServiceInterrupt2();
 }
 
-/*
 void __near continuecall(){
 	int8_t sample_rate_this_instance;
     uint8_t current_sfx_page = currentpageframes[SFX_PAGE_FRAME_INDEX];    // record current sfx page
