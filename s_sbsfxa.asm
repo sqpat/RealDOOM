@@ -1662,7 +1662,7 @@ inc    cx
 cmp    cl, ch
 jl     loop_next_channel_22
 
-POPA_NO_AX_MACRO
+
 ret
 
 finish_sound_effect_22:
@@ -1956,7 +1956,7 @@ ENDP
 PROC   SB_Service_Mix11Khz_    NEAR
 PUBLIC SB_Service_Mix11Khz_
 
-PUSHA_NO_AX_MACRO
+
 mov    bp, OFFSET _sb_voicelist
 xor    cx, cx
 mov    byte ptr cs:[_sound_played], cl   ; sound_played = 0
@@ -1982,7 +1982,7 @@ inc    cx
 cmp    cl, ch
 jl     loop_next_channel
 
-POPA_NO_AX_MACRO
+
 ret
 
 finish_sound_effect:
@@ -2446,6 +2446,9 @@ mov   cx, (SB_TRANSFERLENGTH SHR 1) ; 128
 
 rep   stosw ; write 8080 128 times
 ; si was sample_rate_this_instance
+
+push  bx
+
 cmp   si, cx ; known 0 . cx == 11 khz
 jne   do_22_khz_call
 
@@ -2453,9 +2456,11 @@ call   SB_Service_Mix11Khz_
 
 done_with_mix:
 
-; bl still equal to current_sfx_page
+pop    ax
 
-cmp   bl, byte ptr ds:[_currentpageframes + (SFX_PAGE_FRAME_INDEX)]
+; al now equal to current_sfx_page
+
+cmp   al, byte ptr ds:[_currentpageframes + (SFX_PAGE_FRAME_INDEX)]
 jne   recover_sfx_page
 
 ;    if (current_sfx_page != currentpageframes[SFX_PAGE_FRAME_INDEX]){
