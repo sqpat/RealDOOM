@@ -1629,7 +1629,7 @@ loop_next_channel:
 
 
 ;	if (sb_voicelist[i].sfx_id & PLAYING_FLAG){  
-test   byte ptr ds:[bp + SB_VOICEINFO_T.sbvi_sfx_id], PLAYING_FLAG
+test   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_sfx_id], PLAYING_FLAG
 jne    play_this_sound
 
 
@@ -1646,7 +1646,7 @@ ret
 finish_sound_effect:
 ;                sb_voicelist[i].sfx_id &= SFX_ID_MASK; // turn off playing flag
 ;                S_DecreaseRefCount(i);                    
-and   byte ptr ds:[bp + SB_VOICEINFO_T.sbvi_sfx_id], SFX_ID_MASK
+and   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_sfx_id], SFX_ID_MASK
 mov   al, cl
 ;cbw  ; cleared internally?
 call  S_DecreaseRefCount_
@@ -1665,7 +1665,7 @@ dont_use_page_0:
 
 
 SHIFT_MACRO  rol ah 2   ; ah = pageadd
-mov   bl, al
+mov   bl, ch   ; cacheposition bytehigh
 ;xor   bh, bh  ; bh is known zero. was anded as sfx_id_mask earlier
 loop_next_pageadd:
 SHIFT_MACRO sal bl 2
@@ -1678,8 +1678,8 @@ jmp   done_finding_sfx_page
 do_double_buffer:
   ; if current sample is 0, first play of the sfx must have both buffers copied to.
 
-and   di, SB_TRANSFERLENGTH   ; 0100 or 0200 becomes 0100 or 0000
-inc   ch  ; 256
+inc   ch   ; add 256 bytes to copy
+and   di, cx   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
 ; add extra 
 inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
 jmp   do_mixless_sfx_play
@@ -1687,7 +1687,7 @@ jmp   do_mixless_sfx_play
 play_this_sound:
 
 ;			if (sb_voicelist[i].currentsample >= sb_voicelist[i].length){
-les   di, dword ptr ds:[bp + SB_VOICEINFO_T.sbvi_length]
+les   di, dword ptr ss:[bp + SB_VOICEINFO_T.sbvi_length]
 mov   ax, es   ; currentsample
 cmp   ax, di
 jge   finish_sound_effect
@@ -1701,7 +1701,7 @@ push   cx  ; unused, restore after playing sfx.
 mov    bx, SFX_DATA_SEGMENT
 mov    es, bx
 
-mov    bl, byte ptr ds:[bp + SB_VOICEINFO_T.sbvi_sfx_id]
+mov    bl, byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_sfx_id]
 and    bx, SFX_ID_MASK
 mov    si, bx 
 sal    si, 1  ; * 2
@@ -1718,16 +1718,16 @@ mov   si, ax      ; backup
 and    si, 16383    ; sb_voicelist[i].currentsample & 16383)
 sub    ax, si       ; check 2 high bits of currentsample
 
-mov    al, ch     ; int8_t  use_page = cache_pos.bu.bytehigh;
 jnz    dont_use_page_0    ; if (sb_voicelist[i].currentsample >= 16384){
-
 use_page_0:
+mov    al, ch     ; int8_t  use_page = cache_pos.bu.bytehigh;
+
 done_finding_sfx_page:
 
 ; ax is usepage
 ; dx is currentsample
 ; cx is cacheposition
-; di is length
+; di is remaining length
 
 
 ; Z_QuickMapSFXPageFrame(use_page); 
@@ -1742,7 +1742,7 @@ sub   cl, cl  ; cx is source pos for the sound effect
 
 ; si is currentsample
 ; cx is cacheposition
-; di is length
+; di is remaining length
 
 ; uint8_t __far * source  = (uint8_t __far *) MK_FP(SFX_PAGE_SEGMENT_PTR, cache_pos.hu + (sb_voicelist[i].currentsample & 16383));
 ;     si already ANDed by 16383 above
@@ -1750,16 +1750,17 @@ add   si, cx
 
 mov   dx, SB_DMABUFFER_SEGMENT  ; todo put in memory...
 mov   es, dx  
-; es:00 or es:100 is dest (to be determined)
+; es:00 or es:100 is dest 
 
 
 mov   ch, byte ptr ds:[_in_first_buffer] ; todo in_second_buffer
 xor   ch, 1
 xchg  cx, di    ; ch is 0 if firstbuffer, 1 if second. cl is 0, so this works out to di being target buffer.
 
+; es:di is now dest
 
-cmp   cx, SB_TRANSFERLENGTH
-jb    used_capped_length
+test  ch, ch  ; is cx at least 256?
+jz    used_capped_length
 mov   cx, SB_TRANSFERLENGTH
 used_capped_length:
 mov   al, byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_volume]
@@ -1792,9 +1793,9 @@ je    do_double_buffer
 do_sfx_play_cleanup:
 
 inc   byte ptr cs:[_sound_played]
+inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
 push  ss
 pop   ds
-inc   byte ptr ds:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
 
 
 ; done playing
@@ -1811,8 +1812,6 @@ handle_sfx_mix:
 ;        int16_t total = dma_buffer[j] + source[j];
 ;        dma_buffer[j] = sfx_mix_table_2[total];
 ;    }
-
-; ugly, two loop instances cause we are doing 128 instead of 256? change?
 
 loop_handle_next_mix_sample:
 
