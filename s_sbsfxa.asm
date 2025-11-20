@@ -61,6 +61,13 @@ MAX_VOLUME_SFX = 07Fh
 _sound_played:
 db  0
 
+
+; 0 to 128 are 0
+; 128 to 383 are 0 - 255
+; 384 + is 255
+; apparently this is how apogee/id did it?
+; todo: revisit for mixing > 2 sfx. maybe a different table is better.
+
 _sfx_mix_table:
 db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 db  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -1708,7 +1715,9 @@ mov    cx, word ptr es:[si + SFXINFO_T.sfxinfo_cache_position] ; cachepage looku
 sub   di, ax      ;  uint16_t remaining_length = sb_voicelist[i].length - sb_voicelist[i].currentsample;
 mov   si, ax      ; backup 
 
-and    ah, 0C0h ; keep high 2 bits
+and    si, 16383    ; sb_voicelist[i].currentsample & 16383)
+sub    ax, si       ; check 2 high bits of currentsample
+
 mov    al, ch     ; int8_t  use_page = cache_pos.bu.bytehigh;
 jnz    dont_use_page_0    ; if (sb_voicelist[i].currentsample >= 16384){
 
@@ -1721,8 +1730,7 @@ done_finding_sfx_page:
 ; di is length
 
 
-; Z_QuickMapSFXPageFrame(use_page); // todo not necers
-
+; Z_QuickMapSFXPageFrame(use_page); 
 call Z_QuickMapSFXPageFrame_   ; todo inline
 
 ; cache_pos.bu.bytehigh = cache_pos.bu.bytelow;
@@ -1731,14 +1739,13 @@ call Z_QuickMapSFXPageFrame_   ; todo inline
 mov   ch, cl
 sub   cl, cl  ; cx is source pos for the sound effect
 
-; todo load from memory perhaps? then just xor the segment by 0x10h 
 
 ; si is currentsample
 ; cx is cacheposition
 ; di is length
 
 ; uint8_t __far * source  = (uint8_t __far *) MK_FP(SFX_PAGE_SEGMENT_PTR, cache_pos.hu + (sb_voicelist[i].currentsample & 16383));
-and   si, 16383    ; sb_voicelist[i].currentsample & 16383)
+;     si already ANDed by 16383 above
 add   si, cx
 
 mov   dx, SB_DMABUFFER_SEGMENT  ; todo put in memory...
@@ -1751,17 +1758,17 @@ xor   ch, 1
 xchg  cx, di    ; ch is 0 if firstbuffer, 1 if second. cl is 0, so this works out to di being target buffer.
 
 
-
-
 cmp   cx, SB_TRANSFERLENGTH
 jb    used_capped_length
 mov   cx, SB_TRANSFERLENGTH
 used_capped_length:
-mov   dl, byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_volume]
-cmp   dl, MAX_VOLUME_SFX  ; if (volume == MAX_VOLUME_SFX){
+mov   al, byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_volume]
+cbw   ; ah is 0, max vol is 7F
+cmp   al, MAX_VOLUME_SFX  ; if (volume == MAX_VOLUME_SFX){
 mov   ds, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
 
-; dl is volume
+; al is volume
+; ah is 0
 ; cx is copy_length
 ; es:di is copy target
 ; ds:si is sfx_source 
@@ -1769,7 +1776,7 @@ mov   ds, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
 
 jne   handle_volume_mix
 
-cmp   byte ptr cs:[_sound_played], 0
+cmp   byte ptr cs:[_sound_played], ah ; known 0
 jne   handle_sfx_mix
 
 do_mixless_sfx_play:
@@ -1780,7 +1787,6 @@ rep   movsb
 
 cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0
 je    do_double_buffer
-
 
 
 do_sfx_play_cleanup:
@@ -1821,18 +1827,19 @@ stosb
 
 loop   loop_handle_next_mix_sample
 
-cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0
+cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0 after loop
   ; if current sample is 0, first play of the sfx must have both buffers copied to.
 jne   do_sfx_play_cleanup
 inc   ch   ; add 256 bytes to copy
-and   di, SB_TRANSFERLENGTH   ; 0100 or 0200 becomes 0100 or 0000
+and   di, cx   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
 ; add extra 
 inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
 jmp    loop_handle_next_mix_sample  ; 2nd copy
 
 handle_volume_mix:
 
-cmp   byte ptr cs:[_sound_played], 0
+cmp   byte ptr cs:[_sound_played], ah  ; known 0
+xchg  ax, dx  ; dl gets vol
 jne   handle_sfx_and_volume_mix
 
 
@@ -1848,25 +1855,24 @@ loop_handle_next_vol_mix_sample:
 
 lodsb
 
-xor   al, 080h  ; sub/add 080h  both samples        (source[j] - 0x80);
+xor   al, 080h  ; sub/add 080h          (source[j] - 0x80);
 
 
 ;total.h = FastIMul8u8u(volume, intermediate) << 1;
 
-mul   dl     ; volume
+imul  dl     ; volume
 sal   ax, 1  ; << 1
 
 mov   al, ah
 xor   al, 080h  ; sub/add 080h  
-stosb  ; store both
+stosb  ; store 
 
 loop   loop_handle_next_vol_mix_sample
 
-cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0
+cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0 after loop
 jne   do_sfx_play_cleanup
 inc   ch  ; 256 
-and   di, SB_TRANSFERLENGTH   ; 0100 or 0200 becomes 0100 or 0000
-; add extra 
+and   di, cx   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
 inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
 jmp   do_volume_mix_first_buffer  ; 2nd copy
 
@@ -1894,11 +1900,11 @@ loop_handle_next_vol_sfx_mix_sample:
 
 lodsb
 
+xor   al, 080h  ; sub/add 080h
+imul  dl     ; volume
 xor   bx, bx
-xor   al, 080h  ; sub/add 080h  both samples
-mul   dl     ; volume
 sal   ax, 1
-xor   ah, 080h  ; sub/add 080h  both samples
+xor   ah, 080h  ; sub/add 080h
 
 add   ah, byte ptr es:[di]
 adc   bh, bh
@@ -1909,13 +1915,12 @@ stosb
 loop   loop_handle_next_vol_sfx_mix_sample
 
 
-cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0
+cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0 after loop
 jne   do_sfx_play_cleanup
 
 inc   ch  ; 256 
 
-and   di, SB_TRANSFERLENGTH   ; 0100 or 0200 becomes 0100 or 0000
-; add extra 
+and   di, cx   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
 inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
 jmp   do_volume_mix_nonfirst_buffer  ; 2nd copy
 

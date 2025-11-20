@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/11/17 18:27:20
+Created on:       25/11/17 18:37:18
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -54,7 +54,7 @@ HU_SETUP_TEXT          CODE           AUTO           0000:7742       00000246
 R_MAIN_TEXT            CODE           AUTO           0000:7988       000003db
 p_setup_TEXT           CODE           AUTO           0000:7d70       00001236
 s_sbsfx_TEXT           CODE           AUTO           0000:8fb0       00000628
-S_SBSFXA_TEXT          CODE           AUTO           0000:95d8       00000928
+S_SBSFXA_TEXT          CODE           AUTO           0000:95d8       00000927
 s_sbinit_TEXT          CODE           AUTO           0000:9f00       000006ab
 F_FILE_TEXT            CODE           AUTO           0000:a5ac       0000008d
 W_WAD_TEXT             CODE           AUTO           0000:a63a       00000252
@@ -498,7 +498,7 @@ Module: s_sbsfxa.obj(s_sbsfxa.ASM)
 0000:9dbe      SB_Service_Mix11Khz_
 0000:9844      S_DecreaseRefCount_
 0000:9d96*     S_NormalizeSfxVolume_
-0000:9f00*     S_SBFX_ENDMARKER_
+0000:9eff*     S_SBFX_ENDMARKER_
 0000:97fd*     S_IncreaseRefCount_
 0000:95d8*     S_SBFX_STARTMARKER_
 0000:9c09*     S_LoadSoundIntoCache_
@@ -1016,10 +1016,10 @@ Module: p_enemy.obj(p_enemy.ASM)
 2cd3:4225*     P_RecursiveSound_
 2cd3:5459*     A_FatAttack2_
 2cd3:4d4b*     A_SkelMissile_
+2cd3:53da*     A_FatAttack3_
 2cd3:543e*     A_FatAttack1_
 2cd3:5800*     A_BabyMetal_
 2cd3:47ee*     A_Look_
-2cd3:53da*     A_FatAttack3_
 2cd3:59fb*     A_SpawnSound_
 2cd3:4d0e*     A_BruisAttack_
 2cd3:56a3*     A_XScream_
@@ -1497,4 +1497,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003ce90 (249488.)
 Entry point address: 36ac:0a74
-Link time: 00:00.05
+Link time: 00:00.49
