@@ -711,6 +711,7 @@ int16_t __near  SB_InitCard(){
 
 
 // just 0 to linear rising n to 255..
+/*
 uint8_t sfx_mix_table_2[512];
     
 
@@ -724,7 +725,7 @@ void __near S_CreateVolumeTable(){
     }
 
 }
-
+*/
 
 
 void __far S_InitSFXCache(){
@@ -752,7 +753,7 @@ void __far S_InitSFXCache(){
 
     sfxcache_nodes[sfxcache_head].next = -1;
     sfxcache_nodes[sfxcache_tail].prev = -1;
-    S_CreateVolumeTable();
+    // S_CreateVolumeTable();
     
 
 

@@ -542,7 +542,7 @@ int8_t __near S_EvictSFXPage(int8_t numpages){
 }
 */
 
-
+/*
 
 void __near SB_Service_Mix22Khz(){
 	
@@ -799,6 +799,7 @@ void __near SB_Service_Mix22Khz(){
 	}
 
 }
+*/
 void __near SB_Service_Mix11Khz();
 
 /*
