@@ -1953,6 +1953,49 @@ jmp   do_volume_mix_nonfirst_buffer  ; 2nd copy
 ENDP
 
 
+; todo test?
+do_chain:
+les    cx, dword ptr ds:[_SB_OldInt]
+mov    ax, es
+;jmp    locallib_chain_intr_
+
+; inlined chain_intr for now. todo: suck less
+
+
+;flags bp + 018h
+; cs   bp + 016h
+; ip   bp + 014h
+
+; ax   bp + 012h    ; replaced with cs:ip for retf
+; cx   bp + 010h    ; replaced with cs:ip for retf
+; dx   bp + 0Eh
+; bx   bp + 0Ch
+; sp   bp + 0Ah
+; bp   bp + 8
+; si   bp + 6
+; di   bp + 4
+; ds   bp + 2
+; es   bp + 0
+
+
+mov   sp, bp
+xchg  word ptr [bp + 010h], cx
+xchg  word ptr [bp + 012h], ax
+mov   bx, word ptr [bp + 018h]   ; get old flags
+and   bx, 0FCFFh
+push  bx ; push flags
+
+popf  ; pop flags   ; bp + 01Eh
+pop   es ; bp + 0
+pop   ds ; bp + 2
+pop   di ; bp + 4
+pop   si ; bp + 6
+pop   bp ; bp + 8
+pop   bx ; bp + 0Ah
+pop   bx ; bp + 0Ch
+pop   dx ; bp + 0Eh
+retf  
+
 change_sampling_rate:
 cmp     byte ptr ds:[_change_sampling_to_22_next_int], al
 mov     word ptr ds:[_change_sampling_to_22_next_int], ax  ; zero it out
@@ -1977,10 +2020,21 @@ not_our_interrupt_chain:
 
 jmp     done_acking_interrupt
 
-PROC    SB_ServiceInterrupt2_ NEAR
-PUBLIC  SB_ServiceInterrupt2_
+PROC   SB_ServiceInterrupt_ FAR
+PUBLIC SB_ServiceInterrupt_
 
-PUSHA_NO_AX_MACRO
+; main interrupt
+
+PUSHA_MACRO_REAL 
+push   ds
+push   es
+mov    bp, sp
+
+cld    
+mov    ax, FIXED_DS_SEGMENT
+mov    ds, ax
+
+; todo detect chain
 
 
 ;uint8_t current_sfx_page = currentpageframes[SFX_PAGE_FRAME_INDEX];    // record current sfx page
@@ -2098,10 +2152,10 @@ done_with_port_7_plus_out:
 out    020h, al
 
 
-POPA_NO_AX_MACRO
-
-ret
-ENDP
+pop    es
+pop    ds
+POPA_MACRO_REAL  
+iret   
 
 do_22_khz_call:
 call   SB_Service_Mix22Khz_
@@ -2114,80 +2168,6 @@ jmp    done_with_remap
 out_port_7_plus:
 out    0A0h, al
 jmp    done_with_port_7_plus_out
-
-; todo test?
-do_chain:
-les    cx, dword ptr ds:[_SB_OldInt]
-mov    ax, es
-;jmp    locallib_chain_intr_
-
-; inlined chain_intr for now. todo: suck less
-
-
-;flags bp + 018h
-; cs   bp + 016h
-; ip   bp + 014h
-
-; ax   bp + 012h    ; replaced with cs:ip for retf
-; cx   bp + 010h    ; replaced with cs:ip for retf
-; dx   bp + 0Eh
-; bx   bp + 0Ch
-; sp   bp + 0Ah
-; bp   bp + 8
-; si   bp + 6
-; di   bp + 4
-; ds   bp + 2
-; es   bp + 0
-
-
-mov   sp, bp
-xchg  word ptr [bp + 010h], cx
-xchg  word ptr [bp + 012h], ax
-mov   bx, word ptr [bp + 018h]   ; get old flags
-and   bx, 0FCFFh
-push  bx ; push flags
-
-popf  ; pop flags   ; bp + 01Eh
-pop   es ; bp + 0
-pop   ds ; bp + 2
-pop   di ; bp + 4
-pop   si ; bp + 6
-pop   bp ; bp + 8
-pop   bx ; bp + 0Ah
-pop   bx ; bp + 0Ch
-pop   dx ; bp + 0Eh
-retf  
-
-
-
-PROC   SB_ServiceInterrupt_ FAR
-PUBLIC SB_ServiceInterrupt_
-
-; main interrupt
-
-PUSHA_MACRO_REAL 
-push   ds
-push   es
-mov    bp, sp
-
-cld    
-mov    ax, FIXED_DS_SEGMENT
-mov    ds, ax
-
-; todo detect chain
-
-call   SB_ServiceInterrupt2_
-
-
-
-
-
-pop    es
-pop    ds
-POPA_MACRO_REAL  
-iret   
-
-
 
 ENDP
 
