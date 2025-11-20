@@ -1140,7 +1140,9 @@ void __near continuecall(){
 }
 */
 
+void __near SB_WriteDSP(byte value) ;
 
+/*
 void __near SB_WriteDSP(byte value) {
     int16_t port = sb_port + SB_WritePort;
     uint16_t count = 0xFFFF;
@@ -1155,7 +1157,7 @@ void __near SB_WriteDSP(byte value) {
 }
 
 
-
+*/
 
 
 

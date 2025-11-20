@@ -2173,6 +2173,37 @@ ENDP
 
 
 
+
+
+PROC    SB_WriteDSP_ NEAR
+PUBLIC  SB_WriteDSP_
+push dx
+push cx
+mov   ah, al ; backup value
+mov   dx, word ptr ds:[_sb_port]
+add   dl, SB_WRITEPORT
+mov   cx, 0FFFFh
+
+try_write_dsp_again:
+in    al, dx
+test  al, 080h
+jne   do_out
+loop try_write_dsp_again
+
+pop  cx
+pop  dx
+
+ret
+
+do_out:
+mov   al, ah
+out   dx, al
+pop   cx
+pop   dx
+ret
+
+ENDP
+
 PROC    S_SBFX_ENDMARKER_ NEAR
 PUBLIC  S_SBFX_ENDMARKER_
 ENDP
