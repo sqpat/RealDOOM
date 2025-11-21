@@ -63,7 +63,6 @@ uint8_t SB_Mixer_Status;
 
 // uint8_t 				last_sampling_rate	  = SAMPLE_RATE_11_KHZ_FLAG;
 
-int8_t   				in_first_buffer  = true;
                         // 240
 
 // sfx cache is done by updating lru array ordering on sound start and play.

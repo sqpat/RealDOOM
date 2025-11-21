@@ -33,7 +33,6 @@ EXTRN _sfxcache_nodes:CACHE_NODE_PAGE_COUNT_T
 EXTRN _sfx_page_reference_count:BYTE
 EXTRN _sfxcache_head:BYTE
 EXTRN _sfxcache_tail:BYTE
-EXTRN _in_first_buffer:BYTE
 
 EXTRN _sb_port:BYTE
 EXTRN _sb_irq:BYTE
@@ -92,6 +91,8 @@ db  0
 _current_sampling_rate:
 db 0
 
+_in_second_buffer:
+db 0
 
 ; 0 to 128 are 0
 ; 128 to 383 are 0 - 255
@@ -1636,8 +1637,6 @@ SB_TRANSFERLENGTH = 256
 
 ; precalculate loop vars
   ; and thus make the loop  if else loop, not loop if else.
-; _in_first_buffer in cs
-; _in_first_buffer becomes in_second_buffer
 ; think about clipping without lookup table.
 
 PROC   SB_Service_Mix22Khz_    NEAR
@@ -1784,8 +1783,7 @@ mov   es, dx
 ; es:00 or es:100 is dest 
 
 
-mov   ch, byte ptr ds:[_in_first_buffer] ; todo in_second_buffer
-xor   ch, 1
+mov   ch, byte ptr cs:[_in_second_buffer] 
 xchg  cx, di    ; ch is 0 if firstbuffer, 1 if second. cl is 0, so this works out to di being target buffer.
 
 ; es:di is now dest
@@ -2309,8 +2307,7 @@ mov   es, dx
 ; es:00 or es:100 is dest 
 
 
-mov   ch, byte ptr ds:[_in_first_buffer] ; todo in_second_buffer
-xor   ch, 1
+mov   ch, byte ptr cs:[_in_second_buffer] 
 xchg  cx, di    ; ch is 0 if firstbuffer, 1 if second. cl is 0, so this works out to di being target buffer.
 
 ; es:di is now dest
@@ -2574,7 +2571,7 @@ mov    ds, ax
 ;uint8_t current_sfx_page = currentpageframes[SFX_PAGE_FRAME_INDEX];    // record current sfx page
 mov     bl, byte ptr ds:[_currentpageframes + (SFX_PAGE_FRAME_INDEX)]
 xor     ax, ax
-xor     byte ptr ds:[_in_first_buffer], 1
+xor     byte ptr cs:[_in_second_buffer], 1
 cmp     word ptr cs:[_change_sampling_to_22_next_int], ax ; check both at once
 jne     check_change_sampling_rate
 dont_update_sampling_rate:
@@ -2652,8 +2649,7 @@ mov   ax, SB_DMABUFFER_SEGMENT
 mov   es, ax
 mov   ax, 08080h
 xor   cx, cx
-mov   ch, byte ptr ds:[_in_first_buffer] ; todo in_second_buffer
-xor   ch, 1
+mov   ch, byte ptr cs:[_in_second_buffer] ; todo in_second_buffer
 mov   di, cx    ; ch is 0 if firstbuffer, 1 if second. cl is 0, so this works out to di being target buffer.
 
 ; es:di is now dest
