@@ -33,9 +33,6 @@ EXTRN _sfxcache_nodes:CACHE_NODE_PAGE_COUNT_T
 EXTRN _sfx_page_reference_count:BYTE
 EXTRN _sfxcache_head:BYTE
 EXTRN _sfxcache_tail:BYTE
-EXTRN _current_sampling_rate:BYTE
-EXTRN _change_sampling_to_22_next_int:BYTE
-EXTRN _change_sampling_to_11_next_int:BYTE
 EXTRN _in_first_buffer:BYTE
 
 EXTRN _sb_port:BYTE
@@ -87,6 +84,13 @@ _sound_played:
 db  0
 _remaining_22khz:
 db  0
+
+_change_sampling_to_22_next_int:
+db  0
+_change_sampling_to_11_next_int:
+db  0
+_current_sampling_rate:
+db 0
 
 
 ; 0 to 128 are 0
@@ -1097,17 +1101,17 @@ xor    cx, cx
 mov    byte ptr ds:[si + SB_VOICEINFO_T.sbvi_sfx_id], al
 mov    word ptr ds:[si + SB_VOICEINFO_T.sbvi_currentsample], cx ; 0
 
+;    sb_voicelist[i].samplerate = (sfx_data[sfx_id].lumpandflags & SOUND_22_KHZ_FLAG) ? 1 : 0;
 test   byte ptr es:[bx + SFXINFO_T.sfxinfo_lumpandflags + 1], (SOUND_22_KHZ_FLAG SHR 8)
 je     use_11_khz
 inc    cx
 use_11_khz:
 
-;    sb_voicelist[i].samplerate = (sfx_data[sfx_id].lumpandflags & SOUND_22_KHZ_FLAG) ? 1 : 0;
 mov    byte ptr ds:[si + SB_VOICEINFO_T.sbvi_samplerate], cl
 
 ;    sb_voicelist[i].length     = sfx_data[sfx_id].lumpsize.hu;
-mov    cx, word ptr es:[bx + SFXINFO_T.sfxinfo_lumpsize]
-mov    word ptr ds:[si + SB_VOICEINFO_T.sbvi_length], cx
+push   word ptr es:[bx + SFXINFO_T.sfxinfo_lumpsize]
+pop    word ptr ds:[si + SB_VOICEINFO_T.sbvi_length]
 
 mov    cl, byte ptr es:[bx + SFXINFO_T.sfxinfo_cache_position + 1]
 
@@ -1140,9 +1144,9 @@ mov    byte ptr ds:[si + SB_VOICEINFO_T.sbvi_volume], dh
 
 cmp    byte ptr ds:[si + SB_VOICEINFO_T.sbvi_samplerate], ch ; known zero
 je     dont_change_sampling_rate
-cmp    byte ptr ds:[_current_sampling_rate], ch ; known 0
+cmp    byte ptr cs:[_current_sampling_rate], ch ; known 0
 jne    dont_change_sampling_rate
-mov    byte ptr ds:[_change_sampling_to_22_next_int], 1
+mov    byte ptr cs:[_change_sampling_to_22_next_int], 1
 dont_change_sampling_rate:
 
 or    byte ptr ds:[si + SB_VOICEINFO_T.sbvi_sfx_id], PLAYING_FLAG
@@ -1670,7 +1674,7 @@ jl     loop_next_channel_22
 cmp    byte ptr cs:[_remaining_22khz], 0   ; sound_played = 0
 jne    dont_set_11_khz_flag
 set_11_khz_flag:
-mov    byte ptr ds:[_change_sampling_to_11_next_int], 1
+mov    byte ptr cs:[_change_sampling_to_11_next_int], 1
 dont_set_11_khz_flag:
 
 ret
@@ -1786,16 +1790,24 @@ xchg  cx, di    ; ch is 0 if firstbuffer, 1 if second. cl is 0, so this works ou
 
 ; es:di is now dest
 
-test  ch, ch  ; is cx at least 256?
-jz    used_capped_length_22
-mov   cx, SB_TRANSFERLENGTH
-used_capped_length_22:
 mov   al, byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_volume]
 cbw   ; ah is 0, max vol is 7F
 cmp   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_samplerate], ah ; 0
 je    handle_11_khz_playback_in_22
 jmp   handle_22_khz_playback_in_22
+do_double_buffer_22_11:
+  ; if current sample is 0, first play of the sfx must have both buffers copied to.
+
+mov   cl, 128   ; add 128 bytes to copy
+and   di, 256   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
+add   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx  ; add 128
+jmp   do_mixless_sfx_play_22_11
 handle_11_khz_playback_in_22:
+cmp   cx, (SB_TRANSFERLENGTH SHR 1) ; 128
+jb    used_capped_length_22_11
+mov   cx, (SB_TRANSFERLENGTH SHR 1)
+used_capped_length_22_11:
+
 cmp   al, MAX_VOLUME_SFX  ; if (volume == MAX_VOLUME_SFX){
 mov   ds, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
 
@@ -1812,10 +1824,11 @@ cmp   byte ptr cs:[_sound_played], ah ; known 0
 jne   handle_sfx_mix_22_11
 
 do_mixless_sfx_play_22_11:
-shr   cx, 1
-rep   movsw   ;                     _fmemcpy(dma_buffer, source, copy_length);
-adc   cx, cx
-rep   movsb   
+loop_next_copy_22_11:
+lodsb
+stosb
+stosb
+loop  loop_next_copy_22_11
 
 cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0
 je    do_double_buffer_22_11
@@ -1824,7 +1837,7 @@ je    do_double_buffer_22_11
 do_sfx_play_cleanup_22_11:
 
 inc   byte ptr cs:[_sound_played]
-inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
+add   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], 128  ; add 128
 push  ss
 pop   ds
 
@@ -1834,14 +1847,7 @@ pop   cx   ; restore
 
 jmp   check_next_sfx_loop_22
 
-do_double_buffer_22_11:
-  ; if current sample is 0, first play of the sfx must have both buffers copied to.
 
-inc   ch   ; add 256 bytes to copy
-and   di, cx   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
-; add extra 
-inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
-jmp   do_mixless_sfx_play_22_11
 
 handle_sfx_mix_22_11:
 
@@ -1855,6 +1861,13 @@ loop_handle_next_mix_sample_22_11:
 
 xor   ax, ax ; clear ah
 lodsb
+mov   dx, ax
+add   al, byte ptr es:[di]
+adc   ah, ah   ; ah known zero
+xchg  ax, bx
+mov   al, byte ptr cs:[bx + _sfx_mix_table]
+stosb
+mov   ax, dx
 add   al, byte ptr es:[di]
 adc   ah, ah   ; ah known zero
 xchg  ax, bx
@@ -1867,10 +1880,9 @@ loop   loop_handle_next_mix_sample_22_11
 cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0 after loop
   ; if current sample is 0, first play of the sfx must have both buffers copied to.
 jne   do_sfx_play_cleanup_22_11
-inc   ch   ; add 256 bytes to copy
-and   di, cx   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
-; add extra 
-inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
+mov   cl, 128   ; add 128 bytes to copy
+and   di, 256   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
+add   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx  ; add 128
 jmp    loop_handle_next_mix_sample_22_11  ; 2nd copy
 
 handle_volume_mix_22_11:
@@ -1903,14 +1915,15 @@ sal   ax, 1  ; << 1
 mov   al, ah
 xor   al, 080h  ; sub/add 080h  
 stosb  ; store 
+stosb  ; store 
 
 loop   loop_handle_next_vol_mix_sample_22_11
 
 cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0 after loop
 jne   do_sfx_play_cleanup_22_11
-inc   ch  ; 256 
-and   di, cx   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
-inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
+mov   cl, 128   ; add 128 bytes to copy
+and   di, 256   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
+add   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx  ; add 128
 jmp   do_volume_mix_first_buffer_22_11  ; 2nd copy
 
 
@@ -1936,16 +1949,23 @@ do_volume_mix_nonfirst_buffer_22_11:
 loop_handle_next_vol_sfx_mix_sample_22_11:
 
 lodsb
-
 xor   al, 080h  ; sub/add 080h
 imul  dl     ; volume
 xor   bx, bx
 sal   ax, 1
 xor   ah, 080h  ; sub/add 080h
 
+mov   dh, ah ; backup
 add   ah, byte ptr es:[di]
 adc   bh, bh
 mov   bl, ah
+mov   al, byte ptr cs:[bx + _sfx_mix_table]
+stosb
+
+xor   bx, bx
+add   dh, byte ptr es:[di]
+adc   bh, bh
+mov   bl, dh
 mov   al, byte ptr cs:[bx + _sfx_mix_table]
 stosb
 
@@ -1953,18 +1973,24 @@ loop   loop_handle_next_vol_sfx_mix_sample_22_11
 
 
 cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0 after loop
-jne   do_sfx_play_cleanup_22_11
+jne   jump_to_do_sfx_play_cleanup_22_11
 
-inc   ch  ; 256 
-
-and   di, cx   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
-inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
+mov   cl, 128   ; add 128 bytes to copy
+and   di, 256   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
+add   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx  ; add 128
 jmp   do_volume_mix_nonfirst_buffer_22_11  ; 2nd copy
-
+jump_to_do_sfx_play_cleanup_22_11:
+jmp   do_sfx_play_cleanup_22_11
 
 ; ACTUALLY HANDLE 22 KHZ HERE
 
 handle_22_khz_playback_in_22:
+
+test  ch, ch  ; is cx at least 256?
+jz    used_capped_length_22_22
+mov   cx, SB_TRANSFERLENGTH
+used_capped_length_22_22:
+
 
 cmp   al, MAX_VOLUME_SFX  ; if (volume == MAX_VOLUME_SFX){
 mov   ds, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
@@ -2502,16 +2528,18 @@ pop   bx ; bp + 0Ch
 pop   dx ; bp + 0Eh
 retf  
 
-change_sampling_rate:
-cmp     byte ptr ds:[_change_sampling_to_22_next_int], al
-mov     word ptr ds:[_change_sampling_to_22_next_int], ax  ; zero it out
-jne     change_sampling_to_11
+check_change_sampling_rate:
+
+cmp     byte ptr cs:[_change_sampling_to_22_next_int], al ; known 0
+mov     word ptr cs:[_change_sampling_to_22_next_int], ax  ; zero it out
+je      change_sampling_to_11
 change_sampling_to_22:
-inc     ax      ; ax = 1 = SOUND_22_KHZ_FLAG
+inc     ax      ; ax = 1 = 22 khz flag,
 change_sampling_to_11:
-cmp     word ptr ds:[_current_sampling_rate], ax
+cmp     byte ptr cs:[_current_sampling_rate], al
 je      dont_update_sampling_rate
-mov     word ptr ds:[_current_sampling_rate], ax 
+mov     byte ptr cs:[_current_sampling_rate], al 
+
 
 call    SB_SetPlaybackRate_
 
@@ -2545,15 +2573,15 @@ mov    ds, ax
 
 ;uint8_t current_sfx_page = currentpageframes[SFX_PAGE_FRAME_INDEX];    // record current sfx page
 mov     bl, byte ptr ds:[_currentpageframes + (SFX_PAGE_FRAME_INDEX)]
-xor     byte ptr ds:[_in_first_buffer], 1
 xor     ax, ax
-cmp     word ptr ds:[_change_sampling_to_22_next_int], ax
-jne     change_sampling_rate
+xor     byte ptr ds:[_in_first_buffer], 1
+cmp     word ptr cs:[_change_sampling_to_22_next_int], ax ; check both at once
+jne     check_change_sampling_rate
 dont_update_sampling_rate:
 done_changing_sampling_rate:
 
 ;	sample_rate_this_instance = current_sampling_rate;
-mov     al, byte ptr ds:[_current_sampling_rate]
+mov     al, byte ptr cs:[_current_sampling_rate]
 cbw
 xchg    ax, si    ; si = sample_rate_this_instance
 

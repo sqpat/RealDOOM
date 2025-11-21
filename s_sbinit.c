@@ -61,10 +61,7 @@ uint8_t SB_Mixer_Status;
 
 
 
-uint8_t 				current_sampling_rate = SAMPLE_RATE_11_KHZ_FLAG;
 // uint8_t 				last_sampling_rate	  = SAMPLE_RATE_11_KHZ_FLAG;
-int8_t 					change_sampling_to_22_next_int = 0;
-int8_t 					change_sampling_to_11_next_int = 0;
 
 int8_t   				in_first_buffer  = true;
                         // 240

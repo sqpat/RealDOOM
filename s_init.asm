@@ -221,7 +221,7 @@ PUBLIC LoadSFXWadLumps_
     mov  ax,  word ptr ds:[2]       ; get sample rate
     cmp  ax,  SAMPLE_RATE_22_KHZ_UINT
     je   write_22_khz_sample_bit
-    and   byte ptr es:[di + 1], (NOT_SOUND_22_KHZ_FLAG SHR 8)
+    and   byte ptr es:[di + 1], (SOUND_LUMP_BITMASK SHR 8)
     jmp  done_with_sample_bit
     write_22_khz_sample_bit:
     or   byte ptr es:[di + 1], (SOUND_22_KHZ_FLAG SHR 8)
