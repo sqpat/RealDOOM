@@ -1147,7 +1147,7 @@ cmp    byte ptr ds:[si + SB_VOICEINFO_T.sbvi_samplerate], ch ; known zero
 je     dont_change_sampling_rate
 cmp    byte ptr cs:[_current_sampling_rate], ch ; known 0
 jne    dont_change_sampling_rate
-mov    byte ptr cs:[_change_sampling_to_22_next_int], 1
+inc    byte ptr cs:[_change_sampling_to_22_next_int]
 dont_change_sampling_rate:
 
 or    byte ptr ds:[si + SB_VOICEINFO_T.sbvi_sfx_id], PLAYING_FLAG
@@ -1645,8 +1645,9 @@ PUBLIC SB_Service_Mix22Khz_
 
 mov    bp, OFFSET _sb_voicelist
 xor    cx, cx
-mov    byte ptr cs:[_sound_played], cl   ; sound_played = 0
-mov    byte ptr cs:[_remaining_22khz], cl   ; sound_played = 0
+; both at once
+mov    word ptr cs:[_sound_played], cx      ; sound_played = 0
+;mov    byte ptr cs:[_remaining_22khz], cl   ; remaining_22khz = false
 
 mov    ch, byte ptr ds:[_numChannels]
 
@@ -1673,7 +1674,9 @@ jl     loop_next_channel_22
 cmp    byte ptr cs:[_remaining_22khz], 0   ; sound_played = 0
 jne    dont_set_11_khz_flag
 set_11_khz_flag:
-mov    byte ptr cs:[_change_sampling_to_11_next_int], 1
+; never runs
+
+inc    byte ptr cs:[_change_sampling_to_11_next_int]
 dont_set_11_khz_flag:
 
 ret
@@ -1729,9 +1732,7 @@ push   cx  ; unused, restore after playing sfx.
 mov    bx, SFX_DATA_SEGMENT
 mov    es, bx
 
-mov    bx, word ptr ss:[bp + SB_VOICEINFO_T.sbvi_sfx_id]
-add    byte ptr cs:[_remaining_22khz], bh ; bh is equal to samplerate bit
-
+mov    bl, byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_sfx_id]
 and    bx, SFX_ID_MASK
 mov    si, bx 
 sal    si, 1  ; * 2
@@ -1791,15 +1792,17 @@ xchg  cx, di    ; ch is 0 if firstbuffer, 1 if second. cl is 0, so this works ou
 mov   al, byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_volume]
 cbw   ; ah is 0, max vol is 7F
 cmp   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_samplerate], ah ; 0
+mov   ds, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
 je    handle_11_khz_playback_in_22
 jmp   handle_22_khz_playback_in_22
+
 do_double_buffer_22_11:
   ; if current sample is 0, first play of the sfx must have both buffers copied to.
-
 mov   cl, 128   ; add 128 bytes to copy
 and   di, 256   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
 add   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx  ; add 128
 jmp   do_mixless_sfx_play_22_11
+
 handle_11_khz_playback_in_22:
 cmp   cx, (SB_TRANSFERLENGTH SHR 1) ; 128
 jb    used_capped_length_22_11
@@ -1807,7 +1810,6 @@ mov   cx, (SB_TRANSFERLENGTH SHR 1)
 used_capped_length_22_11:
 
 cmp   al, MAX_VOLUME_SFX  ; if (volume == MAX_VOLUME_SFX){
-mov   ds, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
 
 ; al is volume
 ; ah is 0
@@ -1984,6 +1986,9 @@ jmp   do_sfx_play_cleanup_22_11
 
 handle_22_khz_playback_in_22:
 
+inc    byte ptr cs:[_remaining_22khz]   ; mark that a 22 khz sound was still played...
+
+
 test  ch, ch  ; is cx at least 256?
 jz    used_capped_length_22_22
 mov   cx, SB_TRANSFERLENGTH
@@ -1991,7 +1996,7 @@ used_capped_length_22_22:
 
 
 cmp   al, MAX_VOLUME_SFX  ; if (volume == MAX_VOLUME_SFX){
-mov   ds, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
+
 
 ; al is volume
 ; ah is 0
@@ -2526,18 +2531,24 @@ pop   dx ; bp + 0Eh
 retf  
 
 check_change_sampling_rate:
-
-cmp     byte ptr cs:[_change_sampling_to_22_next_int], al ; known 0
-mov     word ptr cs:[_change_sampling_to_22_next_int], ax  ; zero it out
-je      change_sampling_to_11
+; either change to 22 or 11 this interrupt
+cmp     byte ptr cs:[_change_sampling_to_22_next_int], al ; known 0. check 22 case
+mov     word ptr cs:[_change_sampling_to_22_next_int], ax ; zero out both
+je      change_sampling_to_11 
 change_sampling_to_22:
-inc     ax      ; ax = 1 = 22 khz flag,
+inc     ax
 change_sampling_to_11:
-cmp     byte ptr cs:[_current_sampling_rate], al
+cmp     byte ptr cs:[_current_sampling_rate], al  ; dont change if already set..
 je      dont_update_sampling_rate
 mov     byte ptr cs:[_current_sampling_rate], al 
 
-
+test    al, al
+mov     ax, SAMPLE_RATE_11_KHZ_UINT
+je      use_11_playbackrate
+use_22_playbackrate:
+mov     ax, SAMPLE_RATE_22_KHZ_UINT
+use_11_playbackrate:
+; messy... whatever, rare
 call    SB_SetPlaybackRate_
 
 jmp     done_changing_sampling_rate
