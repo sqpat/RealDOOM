@@ -337,7 +337,7 @@ test  ax, ax
 je    skip_clip_dist_check
 exit_s_adjustsoundparams_ret_0:
 xor   ax, ax
-exit_s_adjustsoundparams:
+
 ret   
 
 skip_clip_dist_check:
@@ -371,6 +371,7 @@ imul  dx
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FastDiv3216u_addr
+and   al, MAX_SOUND_VOLUME
 ret
 dont_clip_map_8_high:
 mov   dx, (MAX_SOUND_VOLUME - 15)
@@ -379,6 +380,7 @@ db 0FFh  ; lcall[addr]
 db 01Eh  ;
 dw _FastDiv3216u_addr
 add   al, 15
+and   al, MAX_SOUND_VOLUME
 ret
 
 ENDP
@@ -917,18 +919,17 @@ pop   ax
 pop   dx
 pop   bx
 pop   cx
-push  es
+push  es   ; push vol
 call  S_AdjustSoundParamsSep_
 
-xchg  ax, bx
-pop   ax
+pop   bx  ; vol into bl
 mov   bh, al ; bx gets vol lo sep  hi
 
 mov   al, byte ptr cs:[si + CHANNEL_T.channel_handle]  ; known to be playing; tested above
 cbw
 ;call  SFX_SetOrigin_ ; inlined
 
-cbw
+;cbw
 SHIFT_MACRO shl ax 3
 
 xchg    ax, bx

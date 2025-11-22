@@ -1861,13 +1861,13 @@ loop_handle_next_mix_sample_22_11:
 
 xor   ax, ax ; clear ah
 lodsb
-mov   dx, ax
+mov   dx, ax  ; back up for 2nd write
 add   al, byte ptr es:[di]
 adc   ah, ah   ; ah known zero
 xchg  ax, bx
 mov   al, byte ptr cs:[bx + _sfx_mix_table]
 stosb
-mov   ax, dx
+xchg  ax, dx  ; restore, mix to 2nd existing sample.
 add   al, byte ptr es:[di]
 adc   ah, ah   ; ah known zero
 xchg  ax, bx
@@ -1905,10 +1905,7 @@ loop_handle_next_vol_mix_sample_22_11:
 lodsb
 
 xor   al, 080h  ; sub/add 080h          (source[j] - 0x80);
-
-
 ;total.h = FastIMul8u8u(volume, intermediate) << 1;
-
 imul  dl     ; volume
 sal   ax, 1  ; << 1
 
@@ -1963,9 +1960,9 @@ mov   al, byte ptr cs:[bx + _sfx_mix_table]
 stosb
 
 xor   bx, bx
-add   dh, byte ptr es:[di]
-adc   bh, bh
 mov   bl, dh
+add   bl, byte ptr es:[di]
+adc   bh, bh
 mov   al, byte ptr cs:[bx + _sfx_mix_table]
 stosb
 
@@ -1973,15 +1970,14 @@ loop   loop_handle_next_vol_sfx_mix_sample_22_11
 
 
 cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0 after loop
-jne   jump_to_do_sfx_play_cleanup_22_11
+je    setup_second_mix_nonfirst_buffer_22_11
+jmp   do_sfx_play_cleanup_22_11
 
+setup_second_mix_nonfirst_buffer_22_11:
 mov   cl, 128   ; add 128 bytes to copy
 and   di, 256   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
 add   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx  ; add 128
 jmp   do_volume_mix_nonfirst_buffer_22_11  ; 2nd copy
-jump_to_do_sfx_play_cleanup_22_11:
-jmp   do_sfx_play_cleanup_22_11
-
 ; ACTUALLY HANDLE 22 KHZ HERE
 
 handle_22_khz_playback_in_22:
@@ -2703,9 +2699,6 @@ pop    ds
 POPA_MACRO_REAL  
 iret   
 
-do_22_khz_call:
-call   SB_Service_Mix22Khz_
-jmp    done_with_mix
 recover_sfx_page:
 xor    bh, bh
 xchg   ax, bx
@@ -2714,6 +2707,10 @@ jmp    done_with_remap
 out_port_7_plus:
 out    0A0h, al
 jmp    done_with_port_7_plus_out
+do_22_khz_call:
+; todo inline?
+call   SB_Service_Mix22Khz_
+jmp    done_with_mix
 
 ENDP
 
