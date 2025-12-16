@@ -1644,12 +1644,6 @@ PUBLIC SB_Service_Mix22Khz_
 
 
 mov    bp, OFFSET _sb_voicelist
-xor    cx, cx
-; both at once
-mov    word ptr cs:[_sound_played], cx      ; sound_played = 0
-;mov    byte ptr cs:[_remaining_22khz], cl   ; remaining_22khz = false
-
-mov    ch, byte ptr ds:[_numChannels]
 
 loop_next_channel_22:
 
@@ -1756,7 +1750,7 @@ mov    al, ch     ; int8_t  use_page = cache_pos.bu.bytehigh;
 done_finding_sfx_page_22:
 
 ; ax is usepage
-; dx is currentsample
+; si is currentsample
 ; cx is cacheposition
 ; di is remaining length
 
@@ -1796,12 +1790,6 @@ mov   ds, word ptr ds:[_SFX_PAGE_SEGMENT_PTR]
 je    handle_11_khz_playback_in_22
 jmp   handle_22_khz_playback_in_22
 
-do_double_buffer_22_11:
-  ; if current sample is 0, first play of the sfx must have both buffers copied to.
-mov   cl, 128   ; add 128 bytes to copy
-and   di, 256   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
-add   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx  ; add 128
-jmp   do_mixless_sfx_play_22_11
 
 handle_11_khz_playback_in_22:
 cmp   cx, (SB_TRANSFERLENGTH SHR 1) ; 128
@@ -1830,8 +1818,6 @@ stosb
 stosb
 loop  loop_next_copy_22_11
 
-cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0
-je    do_double_buffer_22_11
 
 
 do_sfx_play_cleanup_22_11:
@@ -1877,13 +1863,7 @@ stosb
 
 loop   loop_handle_next_mix_sample_22_11
 
-cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0 after loop
-  ; if current sample is 0, first play of the sfx must have both buffers copied to.
-jne   do_sfx_play_cleanup_22_11
-mov   cl, 128   ; add 128 bytes to copy
-and   di, 256   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
-add   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx  ; add 128
-jmp    loop_handle_next_mix_sample_22_11  ; 2nd copy
+jmp   do_sfx_play_cleanup_22_11
 
 handle_volume_mix_22_11:
 
@@ -1916,12 +1896,7 @@ stosb  ; store
 
 loop   loop_handle_next_vol_mix_sample_22_11
 
-cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0 after loop
-jne   do_sfx_play_cleanup_22_11
-mov   cl, 128   ; add 128 bytes to copy
-and   di, 256   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
-add   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx  ; add 128
-jmp   do_volume_mix_first_buffer_22_11  ; 2nd copy
+jmp   do_sfx_play_cleanup_22_11
 
 
 
@@ -1969,15 +1944,8 @@ stosb
 loop   loop_handle_next_vol_sfx_mix_sample_22_11
 
 
-cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0 after loop
-je    setup_second_mix_nonfirst_buffer_22_11
 jmp   do_sfx_play_cleanup_22_11
 
-setup_second_mix_nonfirst_buffer_22_11:
-mov   cl, 128   ; add 128 bytes to copy
-and   di, 256   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
-add   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx  ; add 128
-jmp   do_volume_mix_nonfirst_buffer_22_11  ; 2nd copy
 ; ACTUALLY HANDLE 22 KHZ HERE
 
 handle_22_khz_playback_in_22:
@@ -2012,8 +1980,6 @@ rep   movsw   ;                     _fmemcpy(dma_buffer, source, copy_length);
 adc   cx, cx
 rep   movsb   
 
-cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0
-je    do_double_buffer_22_22
 
 
 do_sfx_play_cleanup_22_22:
@@ -2029,14 +1995,6 @@ pop   cx   ; restore
 
 jmp   check_next_sfx_loop_22
 
-do_double_buffer_22_22:
-  ; if current sample is 0, first play of the sfx must have both buffers copied to.
-
-inc   ch   ; add 256 bytes to copy
-and   di, cx   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
-; add extra 
-inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
-jmp   do_mixless_sfx_play_22_22
 
 
 handle_sfx_mix_22_22:
@@ -2060,14 +2018,7 @@ stosb
 
 loop   loop_handle_next_mix_sample_22_22
 
-cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0 after loop
-  ; if current sample is 0, first play of the sfx must have both buffers copied to.
-jne   do_sfx_play_cleanup_22_22
-inc   ch   ; add 256 bytes to copy
-and   di, cx   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
-; add extra 
-inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
-jmp    loop_handle_next_mix_sample_22_22  ; 2nd copy
+jmp   do_sfx_play_cleanup_22_22
 
 handle_volume_mix_22_22:
 
@@ -2102,12 +2053,7 @@ stosb  ; store
 
 loop   loop_handle_next_vol_mix_sample_22_22
 
-cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0 after loop
-jne   do_sfx_play_cleanup_22_22
-inc   ch  ; 256 
-and   di, cx   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
-inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
-jmp   do_volume_mix_first_buffer_22_22  ; 2nd copy
+jmp   do_sfx_play_cleanup_22_22
 
 
 
@@ -2148,14 +2094,8 @@ stosb
 loop   loop_handle_next_vol_sfx_mix_sample_22_22
 
 
-cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0 after loop
-jne   do_sfx_play_cleanup_22_22
+jmp   do_sfx_play_cleanup_22_22
 
-inc   ch  ; 256 
-
-and   di, cx   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
-inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
-jmp   do_volume_mix_nonfirst_buffer_22_22  ; 2nd copy
 
 
 
@@ -2169,11 +2109,7 @@ ENDP
 PROC   SB_Service_Mix11Khz_    NEAR
 PUBLIC SB_Service_Mix11Khz_
 
-
 mov    bp, OFFSET _sb_voicelist
-xor    cx, cx
-mov    byte ptr cs:[_sound_played], cl   ; sound_played = 0
-mov    ch, byte ptr ds:[_numChannels]
 
 loop_next_channel:
 
@@ -2230,14 +2166,6 @@ jnz   loop_next_pageadd
 xchg  ax, bx
 jmp   done_finding_sfx_page
 
-do_double_buffer:
-  ; if current sample is 0, first play of the sfx must have both buffers copied to.
-
-inc   ch   ; add 256 bytes to copy
-and   di, cx   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
-; add extra 
-inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
-jmp   do_mixless_sfx_play
 
 play_this_sound:
 
@@ -2280,7 +2208,7 @@ mov    al, ch     ; int8_t  use_page = cache_pos.bu.bytehigh;
 done_finding_sfx_page:
 
 ; ax is usepage
-; dx is currentsample
+; si is currentsample & 16383
 ; cx is cacheposition
 ; di is remaining length
 
@@ -2340,8 +2268,6 @@ rep   movsw   ;                     _fmemcpy(dma_buffer, source, copy_length);
 adc   cx, cx
 rep   movsb   
 
-cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0
-je    do_double_buffer
 
 
 do_sfx_play_cleanup:
@@ -2380,14 +2306,7 @@ stosb
 
 loop   loop_handle_next_mix_sample
 
-cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0 after loop
-  ; if current sample is 0, first play of the sfx must have both buffers copied to.
-jne   do_sfx_play_cleanup
-inc   ch   ; add 256 bytes to copy
-and   di, cx   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
-; add extra 
-inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
-jmp    loop_handle_next_mix_sample  ; 2nd copy
+jmp    do_sfx_play_cleanup
 
 handle_volume_mix:
 
@@ -2422,12 +2341,7 @@ stosb  ; store
 
 loop   loop_handle_next_vol_mix_sample
 
-cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0 after loop
-jne   do_sfx_play_cleanup
-inc   ch  ; 256 
-and   di, cx   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
-inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
-jmp   do_volume_mix_first_buffer  ; 2nd copy
+jmp   do_sfx_play_cleanup  
 
 
 
@@ -2469,13 +2383,8 @@ loop   loop_handle_next_vol_sfx_mix_sample
 
 
 cmp   word ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample], cx ; known 0 after loop
-jne   do_sfx_play_cleanup
+jmp   do_sfx_play_cleanup
 
-inc   ch  ; 256 
-
-and   di, cx   ; SB_TRANSFERLENGTH, 0100 or 0200 becomes 0100 or 0000
-inc   byte ptr ss:[bp + SB_VOICEINFO_T.sbvi_currentsample+1]  ; add 256 with an inc to the high byte
-jmp   do_volume_mix_nonfirst_buffer  ; 2nd copy
 
 
 
@@ -2669,6 +2578,12 @@ rep   stosw ; write 8080 128 times
 push  bx
 
 cmp   si, cx ; known 0 . cx == 11 khz
+
+; common code for both SB_Service call types
+mov    cx, 0    ; dont mess with flag.
+mov    word ptr cs:[_sound_played], cx      ; sound_played = 0, remaining_22khz = 0
+mov    ch, byte ptr ds:[_numChannels]
+
 jne   do_22_khz_call
 
 call   SB_Service_Mix11Khz_
