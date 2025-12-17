@@ -50,27 +50,11 @@ uint8_t SB_OriginalVoiceVolumeRight = 255;
 
 
 
-
-// uint16_t SB_MixMode = 0; //SB_STEREO;
-// uint16_t SB_MixMode = SB_STEREO | SB_SIXTEEN_BIT;
-// uint16_t SB_MixMode = SB_SIXTEEN_BIT;
-
-
-
 uint8_t SB_Mixer_Status;
-
-
-
-// uint8_t 				last_sampling_rate	  = SAMPLE_RATE_11_KHZ_FLAG;
-
-                        // 240
-
 // sfx cache is done by updating lru array ordering on sound start and play.
 // anything with an >0 reference count cannot be deallocated, as it means an sfx is currently playing in that page.
 
-// uint8_t                 sfx_page_lru[NUM_SFX_PAGES];                // recency, lru 
 int8_t                  sfx_page_reference_count[NUM_SFX_PAGES];    // number of active sfx in this page. incremented/decremented as sounds start and stop playing
-// int8_t                  sfx_page_multipage_count[NUM_SFX_PAGES];    // 0 if its a single page allocation or > 0 means its a multipage allocation where 1 is the last, etc
 cache_node_page_count_t sfxcache_nodes[NUM_SFX_PAGES];
 int8_t                  sfxcache_tail;
 int8_t                  sfxcache_head;
@@ -723,7 +707,9 @@ void __near S_CreateVolumeTable(){
 }
 */
 
+void __far S_InitSFXCache();
 
+/*
 void __far S_InitSFXCache(){
     // initialize sfx cache at app start
     int8_t i;
@@ -754,7 +740,7 @@ void __far S_InitSFXCache(){
 
 
 }
-
+*/
 void __near  SB_StartInit(){
     // todo move this crap into asm. dump the 
     // uint8_t i;

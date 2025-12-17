@@ -1773,7 +1773,7 @@ sub   cl, cl  ; cx is source pos for the sound effect
 ;     si already ANDed by 16383 above
 add   si, cx
 
-mov   dx, SB_DMABUFFER_SEGMENT  ; todo put in memory...
+mov   dx, SB_DMABUFFER_SEGMENT
 mov   es, dx  
 ; es:00 or es:100 is dest 
 
@@ -2231,7 +2231,7 @@ sub   cl, cl  ; cx is source pos for the sound effect
 ;     si already ANDed by 16383 above
 add   si, cx
 
-mov   dx, SB_DMABUFFER_SEGMENT  ; todo put in memory...
+mov   dx, SB_DMABUFFER_SEGMENT
 mov   es, dx  
 ; es:00 or es:100 is dest 
 
@@ -2659,6 +2659,92 @@ out   dx, al
 pop   cx
 pop   dx
 ret
+
+ENDP
+
+
+
+PROC    S_InitSFXCache_ FAR
+PUBLIC  S_InitSFXCache_
+
+    push di
+    push cx
+    push dx
+
+
+    mov  di, OFFSET _sfxcache_nodes
+    mov  ax, ds
+    mov  es, ax
+    mov  cx, NUM_SFX_PAGES
+    mov  ax, 0FF01h;    ; prev low, next high
+    xor  dx, dx  ; dx = 0
+
+    ;for ( i = 0; i < NUM_SFX_PAGES; i++) {
+    ;    sfxcache_nodes[i].prev = i+1; // Mark unused entries
+    ;    sfxcache_nodes[i].next = i-1; // Mark unused entries
+    ;    sfxcache_nodes[i].pagecount = 0;
+    ;    sfxcache_nodes[i].numpages = 0;
+	;	 sfx_free_bytes[i] = 64;
+    ;    sfx_page_reference_count[i] = 0;
+    ;}  
+
+
+    init_next_cache_node:
+    stosw
+    add  ax, 0101h  ; inc prev and next
+    xchg ax, dx
+    stosw
+    xchg ax, dx
+    loop init_next_cache_node
+
+
+    ; sfxcache_head = 0;
+    ; sfxcache_tail = NUM_SFX_PAGES-1;
+    
+    ; todo single write
+    mov  byte ptr ds:[_sfxcache_head], ch ; 0
+    mov  byte ptr ds:[_sfxcache_tail], NUM_SFX_PAGES - 1
+
+;    sfxcache_nodes[sfxcache_head].next = -1; ; next already set in loop with first instance
+;    sfxcache_nodes[sfxcache_tail].prev = -1;
+
+    mov  byte ptr es:[di - 4], -1  ;    ; equivalent to [sfxcache_tail].prev location
+
+    
+    mov  di, OFFSET _sfx_free_bytes
+    mov  al, 64                             ; todo constant
+    mov  cl, NUM_SFX_PAGES
+    rep  stosb
+
+
+      ; todo make this stuff one after the other in memory
+    mov  di, OFFSET _sfx_page_reference_count
+    xor  ax, ax
+    mov  cl, NUM_SFX_PAGES
+    rep  stosb
+
+    
+    ;for (i = 0; i < NUMSFX; i++){
+    ;    sfx_data[i].cache_position.bu.bytehigh = SOUND_NOT_IN_CACHE;
+    ;}
+
+    mov  di, SFX_DATA_SEGMENT
+    mov  es, di
+    mov  di, SFXINFO_T.sfxinfo_cache_position + 1 ; bytehigh
+    mov  al, SOUND_NOT_IN_CACHE
+    mov  cl, NUMSFX
+    
+    mov  dx, (SIZE SFXINFO_T) - 1
+
+    mark_next_sound_not_in_cache:
+    stosb
+    add  di, dx
+    loop mark_next_sound_not_in_cache
+
+    pop dx
+    pop cx
+    pop di
+    retf
 
 ENDP
 
