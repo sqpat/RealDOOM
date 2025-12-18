@@ -497,29 +497,6 @@ ENDP
 
 
 
-
-;	if (snd_SfxDevice == snd_PC){
-;		// todo move this to an overlay?
-;		uint16_t currentoffset = 0;
-;		sfxenum_t i = 0;
-;		pc_speaker_offsets[i] = 4;
-;
-;
-;		for (i=1 ; i < NUMSFX ; i++){
-;			int16_t lumpnum = I_GetSfxLumpNum(i);
-;			int16_t lumpsize = W_LumpLength(lumpnum);
-;			W_CacheLumpNumDirect(lumpnum, MK_FP(PC_SPEAKER_SFX_DATA_SEGMENT, currentoffset));
-;			
-;			// todo can preprocess the sfx here.
-;
-;			currentoffset += lumpsize;
-;			pc_speaker_offsets[i] = currentoffset+4;
-;		}
-;
-;	}
-
-
-
 PROC  S_INIT_ENDMARKER_
 PUBLIC  S_INIT_ENDMARKER_
 

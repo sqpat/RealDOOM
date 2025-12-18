@@ -79,7 +79,8 @@ uint8_t IRQ_TO_INTERRUPT_MAP[16] =
 
 
 
-
+uint8_t __near SB_ReadDSP();
+/*
 uint8_t __near SB_ReadDSP() {
     int16_t port = sb_port + SB_DataAvailablePort;
     uint8_t count = 0xFF;
@@ -93,7 +94,7 @@ uint8_t __near SB_ReadDSP() {
 
     return SB_Error;
 }
-
+*/
 
 
 int16_t __near SB_ResetDSP(){
