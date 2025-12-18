@@ -107,6 +107,18 @@ SB_CARDNOTREADY      = 5
 ; todo programattically determine?
 RETRY_COUNT = 000FFh   
 
+; page, address, length
+
+_DMA_PORTINFO:
+db 087h, 000h, 001h
+db 083h, 002h, 003h
+db 081h, 004h, 005h
+db 082h, 006h, 007h
+db 08Fh, 0C0h, 0C2h
+db 08Bh, 0C4h, 0C6h
+db 089h, 0C8h, 0CAh
+db 08Ah, 0CCh, 0CEh
+
 
 PROC   SB_ReadDSP_ NEAR
 PUBLIC SB_ReadDSP_
@@ -301,6 +313,8 @@ DMA_ERROR = 0
 DMA_OK    = 1
 DMA_MAXCHANNEL_16_BIT = 7
 
+; todo optimize to carry flag once all uses in asm
+
 PROC   SB_DMA_VerifyChannel_ NEAR
 PUBLIC SB_DMA_VerifyChannel_
 
@@ -318,7 +332,120 @@ ret
 
 ENDP
 
+; int16_t __near DMA_SetupTransfer(uint8_t channel, uint16_t length) {
 
+PROC    DMA_SetupTransfer_ NEAR
+PUBLIC  DMA_SetupTransfer_
+
+push    bx
+push    cx
+mov     bx, ax  ; backup channel
+
+;if (SB_DMA_VerifyChannel(channel) == DMA_OK) {
+call    SB_DMA_VerifyChannel_   ; todo carry flag
+test    al, al
+je      dma_return_error
+mov     ax, bx  ; channel
+shl     bx, 1
+add     bx, ax  ; channel x3
+add     bx, OFFSET _DMA_PORTINFO ; port = &DMA_PortInfo[channel];
+mov     ah, al  ; store channel...
+
+
+cmp     al, 3
+mov     cx, 00A0Ch 
+mov     al, 0B8h
+jng     done_with_port_stuff
+do_16_bit_port_stuff:
+mov     cx, 0D4D8h
+mov     al, 0D6h
+;       transfer_length = (length + 1) >> 1;
+inc     dx
+shr     dx, 1
+
+
+done_with_port_stuff:
+
+mov    byte ptr cs:[OFFSET SELFMODIFY_set_dma_channel_2 + 1], ch
+mov    byte ptr cs:[OFFSET SELFMODIFY_set_dma_channel_1 + 1], ch
+mov    byte ptr cs:[OFFSET SELFMODIFY_clear_flipflop_port + 1], cl
+mov    byte ptr cs:[OFFSET SELFMODIFY_set_dma_mode_port + 1], al  ; TODO
+
+mov    al, ah
+and    al, 3  ; channel_select
+push   ax   ; store channel select for later
+
+
+dec    dx  ; 		transfer_length--;
+mov    es, dx ; store transfer length
+xor    dx, dx ; clear high bit. cwd maybe safe?
+
+mov    cx, ((SB_DMABUFFER_SEGMENT SHL 4) AND 0FFFFh)
+cmp    ah, 3
+jle    skip_addr_shift
+shr    cx, 1
+skip_addr_shift:
+
+
+
+
+SELFMODIFY_set_dma_channel_1:
+mov    dl, 00h   
+mov    ah, al ; backup channel_select
+or     al, 4
+out    dx, al  ; outp(channel < 4 ? 	0x0A: 0xD4, 4 | channel_select);
+xor    al, al
+SELFMODIFY_clear_flipflop_port:
+mov    dl, 00h   
+out    dx, al  ; outp(channel < 4 ? 	0x0C: 0xD8, 0);
+
+mov    al, ah
+SELFMODIFY_set_dma_mode_port:
+mov    dl, 00h   
+or     al, 058h
+out    dx, al  ; outp(channel < 4 ? 	0x0B: 0xD6, 0x58 | channel_select);
+
+; es stores transfer length
+; bx has port arrray pointer
+; cx has addr low bits
+
+xchg   ax, cx
+
+
+xor    dx, dx  ; clear high bits
+mov    dl, byte ptr cs:[bx + 1]
+out    dx, al    ; outp(port->address, addr.bu.fracbytelow);
+mov    al, ah
+out    dx, al    ; outp(port->address, addr.bu.fracbytehigh);
+
+; Send page
+mov    dl, byte ptr cs:[bx + 0]
+mov    al, ((SB_DMABUFFER_SEGMENT SHR 12) AND 0FFh)
+out    dx, al    ; outp(port->page, addr.bu.intbytehigh);
+
+; Send length
+mov    dl, byte ptr cs:[bx + 2]
+mov    ax, es
+out    dx, al    ; outp(port->length, transfer_length);		    // lo
+mov    al, ah
+out    dx, al    ; outp(port->length, transfer_length >> 8);	// hi
+
+; enable DMA channel
+SELFMODIFY_set_dma_channel_2:
+mov    dl, 00h 
+pop    ax     ; recover channel_sellect
+out    dx, al       ;  outp(channel < 4 ? 	0x0A: 0xD4, channel_select);
+
+        
+mov    al, DMA_OK ; return DMA_OK        
+
+
+
+dma_return_error:
+pop     cx
+pop     bx
+ret
+ENDP
 
 
 PROC    S_SBINIT_ENDMARKER_
