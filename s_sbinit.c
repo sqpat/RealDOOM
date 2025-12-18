@@ -96,7 +96,8 @@ uint8_t __near SB_ReadDSP() {
 }
 */
 
-
+int16_t __near SB_ResetDSP();
+/*
 int16_t __near SB_ResetDSP(){
     volatile uint8_t count;
     int16_t port = sb_port + SB_ResetPort;
@@ -121,7 +122,7 @@ int16_t __near SB_ResetDSP(){
 
     return SB_CardNotReady;
 }
-
+*/
 uint8_t __near SB_ReadMixer(uint8_t reg) {
     outp(sb_port + SB_MixerAddressPort, reg);
     return inp(sb_port + SB_MixerDataPort);
