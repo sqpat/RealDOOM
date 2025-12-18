@@ -30,7 +30,9 @@ PC_SPEAKER_SFX_DATA_TEMP_SEGMENT = 0D7E0h
 EXTRN _sb_port:WORD
 EXTRN _SB_MixerType:BYTE
 EXTRN _sb_dma:BYTE
-EXTRN _sb_irq:BYTE  ; todo clean up
+EXTRN _sb_irq:BYTE 
+EXTRN _SB_IntController1Mask:BYTE 
+EXTRN _SB_IntController2Mask:BYTE 
 EXTRN _sb_dma_8:BYTE  ; todo clean up
 EXTRN _SB_OriginalVoiceVolumeLeft:BYTE
 EXTRN _SB_OriginalVoiceVolumeRight:BYTE
@@ -452,37 +454,34 @@ ret
 ENDP
 
 
-PROC    SB_SetupDMABuffer_ NEAR
-PUBLIC  SB_SetupDMABuffer_  ; todo carry
+PROC    SB_SetupDMABuffer2_ NEAR
+PUBLIC  SB_SetupDMABuffer2_  ; todo carry
 
 push    dx
 
-mov     dx, ax  ; dx gets buffer_size
+xchg    ax, dx  ; dx gets buffer_size
 mov     al, byte ptr ds:[_sb_dma_8]
 call    DMA_SetupTransfer_
+pop     dx
 test    al, al
-mov     al, SB_ERROR
 jz      dma_buffer_error
 mov     al, byte ptr ds:[_sb_dma_8]
 mov     byte ptr ds:[_sb_dma], al
 ; carry flag still on
 xor     ax, ax  ; SB_OK
+ret
 dma_buffer_error:
-
-
-pop     dx
+mov     al, SB_ERROR
 ret
 
 ENDP
 
 
 
-; void __near SB_EnableInterrupt() {
 
 PROC    SB_EnableInterrupt_ NEAR
 PUBLIC  SB_EnableInterrupt_ 
 
-push    dx
 push    cx
 
 mov     al, byte ptr ds:[_sb_irq]
@@ -490,21 +489,19 @@ mov     ah, 1
 mov     cl, al
 and     cl, 7
 sal     ah, cl
-not     ah     ; ah = 1 << cl
+not     ah     ; ah = ~ (1 << cl)
 cmp     al, 8
-jl      enable_irq_gte_8
+jl      enable_irq_lt_8
 
-mov     dx, 0A1h
-in      al, dx
+in      al, 0A1h
 and     al, ah
-out     dx, al
+out     0A1h, al
 
 mov     ah, (NOT 4)   ; & ~(1 << 2);
 
 
 jmp     out_21_and_exit
-
-enable_irq_gte_8:
+enable_irq_lt_8:
 ;        mask = inp(0x21) & ~(1 << sb_irq);
 ;        outp(0x21, mask);
 
@@ -513,14 +510,66 @@ enable_irq_gte_8:
 out_21_and_exit:
 ; mask in ah
 ;        outp(0x21, mask);
-mov     dx, 021h
-in      al, dx
-and     al, ah
-out     dx, al
 
+in      al, 021h
+and     al, ah
+out     021h, al
 
 pop     cx
-pop     dx
+ret
+
+ENDP
+
+
+
+PROC    SB_DisableInterrupt_ NEAR
+PUBLIC  SB_DisableInterrupt_ 
+
+push    cx
+
+mov     al, byte ptr ds:[_sb_irq]
+mov     ch, byte ptr ds:[_SB_IntController1Mask]
+
+
+mov     ah, 1
+mov     cl, al
+and     cl, 7
+sal     ah, cl
+not     ah     ; ah = 1 << cl
+cmp     al, 8
+in      al, 021h
+
+jl      disable_irq_gte_8
+
+
+and     al, ah
+and     ch, ah
+or      al, ch
+out     021h, al
+jmp     done_disabling
+
+mov     ah, (NOT 4)   ; & ~(1 << 2);
+
+
+jmp     out_21_and_exit
+
+disable_irq_gte_8:
+
+and     al, (NOT 4)
+and     ch, (NOT 4)
+or      al, ch   ; mask |= SB_IntController1Mask & (1 << sb_irq);
+out     021h, al
+
+
+in      al, 0A1h
+and     al, ah
+and     ah, byte ptr ds:[_SB_IntController2Mask]
+or      al, ah
+out     0A1h, al
+
+done_disabling:
+
+pop     cx
 ret
 
 
