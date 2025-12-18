@@ -36,6 +36,7 @@ EXTRN _SB_IntController2Mask:BYTE
 EXTRN _sb_dma_8:BYTE  ; todo clean up
 EXTRN _SB_OriginalVoiceVolumeLeft:BYTE
 EXTRN _SB_OriginalVoiceVolumeRight:BYTE
+EXTRN _SB_DSP_Version:WORD
 
 .CODE
 
@@ -84,6 +85,9 @@ SB_SBProVoice                       = 004h
 SB_MIXER_SB16VoiceRight             = 033h
 SB_MIXER_SB16MidiLeft               = 034h
 SB_MIXER_SB16MidiRight              = 035h
+
+SB_DSP_SET_DA_RATE   = 041h
+SB_DSP_SET_AD_RATE   = 042h
 
 
 PLAYING_FLAG = 080h
@@ -614,7 +618,53 @@ return_dma_error_endtransfer:
 pop   dx
 ret
 
+ENDP
 
+PROC    SB_SetPlaybackRate_ NEAR
+PUBLIC  SB_SetPlaybackRate_
+
+push   dx
+
+cmp    byte ptr ds:[_SB_DSP_Version+1], (SB_DSP_VERSION4XX SHR 8)
+jl     do_lower_version_set_playback_rate
+xchg   ax, dx
+
+; set playback rate
+mov    al, SB_DSP_SET_DA_RATE
+call   SB_WriteDSP_
+mov    al, dh
+call   SB_WriteDSP_
+mov    al, dl
+call   SB_WriteDSP_
+
+; set recording rate
+mov    al, SB_DSP_SET_AD_RATE
+call   SB_WriteDSP_
+mov    al, dh
+call   SB_WriteDSP_
+mov    al, dl
+call   SB_WriteDSP_
+
+pop    dx
+ret
+
+
+do_lower_version_set_playback_rate:
+
+cmp    ax, SAMPLE_RATE_22_KHZ_UINT
+mov    dl, 0D2h
+je     do_22_khz_setup
+do_11_khz_setup:
+mov    dl, 0A5h
+do_22_khz_setup:
+mov    al, 040h
+call   SB_WriteDSP_
+xchg   ax, dx
+call   SB_WriteDSP_
+pop    dx
+ret
+
+ENDP
 
 
 PROC    S_SBINIT_ENDMARKER_

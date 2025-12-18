@@ -463,6 +463,9 @@ void __near SB_SetMixMode(){
 
 
 }
+void __near SB_SetPlaybackRate(int16_t sample_rate);
+
+/*
 
 void __near SB_SetPlaybackRate(int16_t sample_rate){
  
@@ -495,7 +498,7 @@ void __near SB_SetPlaybackRate(int16_t sample_rate){
     }
 }
 
-
+*/
 
 void __near SB_StopPlayback(){
 
