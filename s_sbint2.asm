@@ -22,7 +22,6 @@ INSTRUCTION_SET_MACRO
 ;=================================
 
 EXTRN SB_WriteDSP_:NEAR
-EXTRN DMA_SetupTransfer_:NEAR
 
 .DATA
 
@@ -337,8 +336,8 @@ ENDP
 
 ; int16_t __near DMA_SetupTransfer(uint8_t channel, uint16_t length) {
 
-PROC    DMA_SetupTransfer2_ NEAR
-PUBLIC  DMA_SetupTransfer2_
+PROC    DMA_SetupTransfer_ NEAR
+PUBLIC  DMA_SetupTransfer_
 
 push    bx
 push    cx
@@ -357,8 +356,9 @@ mov     ah, al  ; store channel...
 
 cmp     al, 3
 mov     cx, 00A0Ch 
-mov     al, 0B8h
-jng     done_with_port_stuff
+mov     al, 00Bh
+jle     done_with_port_stuff
+; greater than 3
 do_16_bit_port_stuff:
 mov     cx, 0D4D8h
 mov     al, 0D6h

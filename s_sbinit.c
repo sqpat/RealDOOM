@@ -283,6 +283,7 @@ int8_t __near SB_DMA_VerifyChannel(uint8_t channel) {
 
 int16_t __near DMA_SetupTransfer(uint8_t channel, uint16_t length) ;
 
+/*
 int16_t __near DMA_SetupTransfer(uint8_t channel, uint16_t length) {
     
     if (SB_DMA_VerifyChannel(channel) == DMA_OK) {
@@ -360,7 +361,7 @@ int16_t __near DMA_SetupTransfer(uint8_t channel, uint16_t length) {
 	}
 
 }
-
+*/
 int8_t __near SB_SetupDMABuffer(uint16_t buffer_size);
 
 /*
