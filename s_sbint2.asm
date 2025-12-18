@@ -208,6 +208,35 @@ ret
 
 ENDP
 
+PROC   SB_RestoreVoiceVolume_ NEAR
+PUBLIC SB_RestoreVoiceVolume_
+push   dx
+mov    al, byte ptr ds:[_SB_MixerType]
+cmp    al, SB_TYPE_SB16
+je     restore_both_voice_volume
+mov    ah, SB_MIXER_SBPROVOICE
+cmp    al, SB_TYPE_SBPRO
+je     restore_one_voice_volumne
+cmp    al, SB_TYPE_SBPRO2
+je     restore_one_voice_volumne
+pop    dx
+ret
+restore_both_voice_volume:
+mov    dl, byte ptr ds:[_SB_OriginalVoiceVolumeRight]
+call   SB_WriteMixer_
+
+mov    ah, SB_MIXER_SB16VOICELEFT
+restore_one_voice_volumne:
+mov    al, ah
+mov    dl, byte ptr ds:[_SB_OriginalVoiceVolumeLeft]
+call   SB_WriteMixer_
+pop    dx
+ret
+
+ENDP
+
+
+
 
 PROC    S_SBINIT_ENDMARKER_
 PUBLIC  S_SBINIT_ENDMARKER_

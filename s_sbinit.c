@@ -138,6 +138,7 @@ void __near SB_WriteMixer(uint8_t reg,uint8_t data) {
 }
 */
 void __near SB_SaveVoiceVolume();
+void __near SB_RestoreVoiceVolume() ;
 
 /*
 void __near SB_SaveVoiceVolume() {
@@ -153,7 +154,6 @@ void __near SB_SaveVoiceVolume() {
 			break;
 		}
 }
-*/
 
 void __near SB_RestoreVoiceVolume() {
     switch (SB_MixerType) {
@@ -168,6 +168,7 @@ void __near SB_RestoreVoiceVolume() {
 			break;
     }
 }
+*/
 
 
 
