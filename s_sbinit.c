@@ -418,7 +418,8 @@ void __near SB_DisableInterrupt(){
 }
 
 */
-
+int8_t __near SB_DMA_EndTransfer(int8_t channel);
+/*
 int8_t __near SB_DMA_EndTransfer(int8_t channel) {
 
     if (SB_DMA_VerifyChannel(channel) == DMA_OK) {
@@ -439,7 +440,7 @@ int8_t __near SB_DMA_EndTransfer(int8_t channel) {
     return DMA_ERROR;
 }
 
-
+*/
 
 
 

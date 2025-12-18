@@ -575,6 +575,47 @@ ret
 
 ENDP
 
+PROC    SB_DMA_EndTransfer_ NEAR
+PUBLIC  SB_DMA_EndTransfer_  ; todo carry
+
+
+push  dx
+mov   dx, ax
+
+call  SB_DMA_VerifyChannel_
+cmp   al, DMA_OK
+jne   return_dma_error_endtransfer
+
+mov   al, dl
+and   al, 3
+cmp   al, dl
+mov   dx, 0Ah
+jne   use_high_channel_values; channel >= 4
+jmp   do_end_transfer_write
+use_high_channel_values:
+inc   dx
+inc   dx ; 0xA -> 0xC
+do_end_transfer_write:
+or    al, 4
+
+; Mask off DMA channel
+out   dx, al    ; outp(channel < 4 ? 	0x0A: 0xD4, 4 | (channel & 0x3));
+
+; Clear flip-flop to lower byte with any data
+shl   dl, 1
+add   dl, 0C0h  ; 0A/0C have become D4/D8
+xor   ax, ax
+out   dx, al    ; outp(channel < 4 ? 	0x0C: 0xD8, 0);
+
+mov   al, DMA_OK
+
+return_dma_error_endtransfer:
+
+pop   dx
+ret
+
+
+
 
 PROC    S_SBINIT_ENDMARKER_
 PUBLIC  S_SBINIT_ENDMARKER_
