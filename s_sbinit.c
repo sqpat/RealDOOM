@@ -500,6 +500,9 @@ void __near SB_SetPlaybackRate(int16_t sample_rate){
 
 */
 
+void __near SB_StopPlayback();
+
+/*
 void __near SB_StopPlayback(){
 
 	SB_DisableInterrupt();
@@ -519,7 +522,7 @@ void __near SB_StopPlayback(){
     SB_CardActive = false;
 
 }
-
+*/
 int8_t __near SB_SetupPlayback(){
 	// todo double?
     byte __far * sbbuffer;

@@ -37,6 +37,7 @@ EXTRN _sb_dma_8:BYTE  ; todo clean up
 EXTRN _SB_OriginalVoiceVolumeLeft:BYTE
 EXTRN _SB_OriginalVoiceVolumeRight:BYTE
 EXTRN _SB_DSP_Version:WORD
+EXTRN _SB_CardActive:BYTE
 
 .CODE
 
@@ -665,6 +666,24 @@ pop    dx
 ret
 
 ENDP
+
+PROC    SB_StopPlayback_ NEAR
+PUBLIC  SB_StopPlayback_
+
+call    SB_DisableInterrupt_
+mov     al, SB_DSP_HALT8BITTRANSFER
+call    SB_WriteDSP_  ; halt command
+mov     al, byte ptr ds:[_sb_dma_8]
+call    SB_DMA_EndTransfer_  ; Disable the DMA channel
+mov     al, 0D3h
+call    SB_WriteDSP_  ; speaker off
+mov     byte ptr ds:[_SB_CardActive], 0
+ret
+
+ENDP
+
+
+
 
 
 PROC    S_SBINIT_ENDMARKER_
