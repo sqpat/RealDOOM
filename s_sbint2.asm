@@ -20,6 +20,9 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 ;=================================
+
+EXTRN SB_WriteDSP_:NEAR
+
 .DATA
 
 PC_SPEAKER_SFX_DATA_TEMP_SEGMENT = 0D7E0h
@@ -45,6 +48,21 @@ SB_TYPE_SB20 	= 3
 SB_TYPE_SBPRO2 	= 4
 SB_TYPE_SB16 	= 6
 
+SB_MIXBUFFERSIZE = 256
+
+SB_DSP_SignedBit = 010h
+SB_DSP_StereoBit = 020h
+
+SB_DSP_UNSIGNEDMONODATA = 	    000h
+SB_DSP_SIGNEDMONODATA = 		(SB_DSP_SIGNEDBIT)
+SB_DSP_UNSIGNEDSTEREODATA = 	(SB_DSP_STEREOBIT)
+SB_DSP_SIGNEDSTEREODATA = 	    (SB_DSP_SIGNEDBIT OR SB_DSP_STEREOBIT)
+
+SB_DSP_HALT8BITTRANSFER = 		0D0h
+SB_DSP_CONTINUE8BITTRANSFER = 	0D4h
+SB_DSP_HALT16BITTRANSFER = 		0D5h
+SB_DSP_CONTINUE16BITTRANSFER = 	0D6h
+SB_DSP_RESET = 					0FFFFh
 
 SB_MIXER_DSP4xxISR_Ack              = 082h
 SB_MIXER_DSP4xxISR_Enable           = 083h
@@ -210,6 +228,7 @@ ENDP
 
 PROC   SB_RestoreVoiceVolume_ NEAR
 PUBLIC SB_RestoreVoiceVolume_
+
 push   dx
 mov    al, byte ptr ds:[_SB_MixerType]
 cmp    al, SB_TYPE_SB16
@@ -234,6 +253,45 @@ pop    dx
 ret
 
 ENDP
+
+PROC   SB_DSP1xx_BeginPlayback_ NEAR
+PUBLIC SB_DSP1xx_BeginPlayback_
+
+;Program DSP to play sound
+mov    al, 014h                 ; SB DAC 8 bit init, no autoinit
+call   SB_WriteDSP_
+jmp    write_size_to_dsp
+
+
+PROC   SB_DSP2xx_BeginPlayback_ NEAR
+PUBLIC SB_DSP2xx_BeginPlayback_
+
+;Program DSP to play sound
+mov    al, 048h                 ; set block length
+call   SB_WriteDSP_
+mov    al, ((SB_MIXBUFFERSIZE - 1 ) AND 0FFh)  ; 0FFh
+call   SB_WriteDSP_
+mov    al, ((SB_MIXBUFFERSIZE - 1 ) SHR 8)     ; 0 
+call   SB_WriteDSP_
+mov    al, 01Ch                 ; SB DAC init, 8 bit auto init
+call   SB_WriteDSP_
+ret
+
+PROC   SB_DSP4xx_BeginPlayback_ NEAR
+PUBLIC SB_DSP4xx_BeginPlayback_
+
+mov    al, 0C6h                 ; 8 bit dac
+call   SB_WriteDSP_
+mov    al, SB_DSP_UNSIGNEDMONODATA ; transfer mode
+call   SB_WriteDSP_
+
+write_size_to_dsp:
+mov    al, ((SB_MIXBUFFERSIZE - 1 ) AND 0FFh)  ; 0FFh
+call   SB_WriteDSP_
+mov    al, ((SB_MIXBUFFERSIZE - 1 ) SHR 8)     ; 0 
+call   SB_WriteDSP_
+ret
+
 
 
 

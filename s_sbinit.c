@@ -189,6 +189,10 @@ void __near SB_RestoreVoiceVolume() {
 
 
 // todo hardcode these params, writes
+void __near SB_DSP1xx_BeginPlayback();
+void __near SB_DSP2xx_BeginPlayback();
+void __near SB_DSP4xx_BeginPlayback();
+/*
 void __near SB_DSP1xx_BeginPlayback() {
     int16_t_union sample_length;
 	sample_length.hu = SB_MixBufferSize - 1;
@@ -232,7 +236,7 @@ void __near SB_DSP4xx_BeginPlayback() {
 
 
 }
-
+*/
 typedef struct
 {
     //int valid;	// 2 and 4 invalid
