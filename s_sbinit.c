@@ -251,6 +251,7 @@ typedef struct
 #define DMA_MaxChannel_16_BIT 7
 
 // todo do we need 16bit ports...? 
+/*
 DMA_PORT DMA_PortInfo[8] =
     {
         {0x87, 0x00, 0x01},
@@ -262,10 +263,10 @@ DMA_PORT DMA_PortInfo[8] =
         {0x89, 0xC8, 0xCA},
         {0x8A, 0xCC, 0xCE},
 };
+*/
 
 #define DMA_ERROR 0
 #define DMA_OK 1
-
 int8_t __near SB_DMA_VerifyChannel(uint8_t channel);
 
 /*
@@ -379,8 +380,10 @@ int8_t __near SB_SetupDMABuffer(uint16_t buffer_size) {
 }
 */
 
+void __near SB_EnableInterrupt() ;
+void __near SB_DisableInterrupt();
 
-
+/*
 void __near SB_EnableInterrupt() {
     uint8_t mask;
 
@@ -397,6 +400,7 @@ void __near SB_EnableInterrupt() {
         outp(0x21, mask);
     }
 }
+*/
 
 void __near SB_DisableInterrupt(){
     int mask;

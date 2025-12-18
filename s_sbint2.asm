@@ -30,6 +30,7 @@ PC_SPEAKER_SFX_DATA_TEMP_SEGMENT = 0D7E0h
 EXTRN _sb_port:WORD
 EXTRN _SB_MixerType:BYTE
 EXTRN _sb_dma:BYTE
+EXTRN _sb_irq:BYTE  ; todo clean up
 EXTRN _sb_dma_8:BYTE  ; todo clean up
 EXTRN _SB_OriginalVoiceVolumeLeft:BYTE
 EXTRN _SB_OriginalVoiceVolumeRight:BYTE
@@ -474,6 +475,56 @@ ret
 
 ENDP
 
+
+
+; void __near SB_EnableInterrupt() {
+
+PROC    SB_EnableInterrupt_ NEAR
+PUBLIC  SB_EnableInterrupt_ 
+
+push    dx
+push    cx
+
+mov     al, byte ptr ds:[_sb_irq]
+mov     ah, 1
+mov     cl, al
+and     cl, 7
+sal     ah, cl
+not     ah     ; ah = 1 << cl
+cmp     al, 8
+jl      enable_irq_gte_8
+
+mov     dx, 0A1h
+in      al, dx
+and     al, ah
+out     dx, al
+
+mov     ah, (NOT 4)   ; & ~(1 << 2);
+
+
+jmp     out_21_and_exit
+
+enable_irq_gte_8:
+;        mask = inp(0x21) & ~(1 << sb_irq);
+;        outp(0x21, mask);
+
+
+
+out_21_and_exit:
+; mask in ah
+;        outp(0x21, mask);
+mov     dx, 021h
+in      al, dx
+and     al, ah
+out     dx, al
+
+
+pop     cx
+pop     dx
+ret
+
+
+ENDP
 
 
 PROC    S_SBINIT_ENDMARKER_
