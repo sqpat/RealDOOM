@@ -261,6 +261,7 @@ PUBLIC SB_DSP1xx_BeginPlayback_
 mov    al, 014h                 ; SB DAC 8 bit init, no autoinit
 call   SB_WriteDSP_
 jmp    write_size_to_dsp
+ENDP
 
 
 PROC   SB_DSP2xx_BeginPlayback_ NEAR
@@ -277,6 +278,8 @@ mov    al, 01Ch                 ; SB DAC init, 8 bit auto init
 call   SB_WriteDSP_
 ret
 
+ENDP
+
 PROC   SB_DSP4xx_BeginPlayback_ NEAR
 PUBLIC SB_DSP4xx_BeginPlayback_
 
@@ -292,6 +295,28 @@ mov    al, ((SB_MIXBUFFERSIZE - 1 ) SHR 8)     ; 0
 call   SB_WriteDSP_
 ret
 
+ENDP
+
+DMA_ERROR = 0
+DMA_OK    = 1
+DMA_MAXCHANNEL_16_BIT = 7
+
+PROC   SB_DMA_VerifyChannel_ NEAR
+PUBLIC SB_DMA_VerifyChannel_
+
+cmp    al, DMA_MAXCHANNEL_16_BIT
+jg     return_dma_error
+cmp    al, 2            ; invalid dma channel i guess
+je     return_dma_error
+cmp    al, 6            ; invalid dma channel i guess
+je     return_dma_error
+mov    al, DMA_OK
+ret
+return_dma_error:
+mov    al, DMA_ERROR
+ret
+
+ENDP
 
 
 

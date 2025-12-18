@@ -266,6 +266,9 @@ DMA_PORT DMA_PortInfo[8] =
 #define DMA_ERROR 0
 #define DMA_OK 1
 
+int8_t __near SB_DMA_VerifyChannel(uint8_t channel);
+
+/*
 int8_t __near SB_DMA_VerifyChannel(uint8_t channel) {
 
 	if (channel > DMA_MaxChannel_16_BIT) {
@@ -276,7 +279,7 @@ int8_t __near SB_DMA_VerifyChannel(uint8_t channel) {
 
     return DMA_OK;
 }
-
+*/
 
 
 int16_t __near DMA_SetupTransfer(uint8_t channel, uint16_t length) {

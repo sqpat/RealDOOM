@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/12/15 01:20:23
+Created on:       25/12/15 01:25:09
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -54,8 +54,8 @@ ST_SETUP_TEXT          CODE           AUTO           0000:607c       00000125
 HU_SETUP_TEXT          CODE           AUTO           0000:61a2       00000246
 p_setup_TEXT           CODE           AUTO           0000:63f0       00001236
 S_SBSFX_TEXT           CODE           AUTO           0000:7626       00000be2
-s_sbinit_TEXT          CODE           AUTO           0000:8210       0000047e
-S_SBINT2_TEXT          CODE           AUTO           0000:868e       000000e1
+s_sbinit_TEXT          CODE           AUTO           0000:8210       0000046c
+S_SBINT2_TEXT          CODE           AUTO           0000:867c       000000f3
 R_MAIN_TEXT            CODE           AUTO           0000:8770       000003db
 F_FILE_TEXT            CODE           AUTO           0000:8b4c       0000008d
 W_WAD_TEXT             CODE           AUTO           0000:8bda       00000252
@@ -455,20 +455,19 @@ Module: s_sbsfx.obj(s_sbsfx.ASM)
 0000:791f*     S_MoveCacheItemBackOne_
 0000:79f2*     S_MarkSFXPageMRU_
 Module: s_sbinit.obj(C:\REALDOOM\s_sbinit.c)
-0000:8210+     SB_DMA_VerifyChannel_
-0000:8222+     DMA_SetupTransfer_
-0000:8318+     SB_SetupDMABuffer_
-0000:834e+     SB_EnableInterrupt_
-0000:8394+     SB_DisableInterrupt_
-0000:8412+     SB_DMA_EndTransfer_
-0000:843e*     SB_SetMixMode_
-0000:844e      SB_SetPlaybackRate_
-0000:84a2*     SB_StopPlayback_
-0000:84be+     SB_SetupPlayback_
-0000:8530+     SB_GetDSPVersion_
-0000:857a      SB_Shutdown_
-0000:85a0+     SB_InitCard_
-0000:864c      SB_StartInit_
+0000:8210+     DMA_SetupTransfer_
+0000:8306+     SB_SetupDMABuffer_
+0000:833c+     SB_EnableInterrupt_
+0000:8382+     SB_DisableInterrupt_
+0000:8400+     SB_DMA_EndTransfer_
+0000:842c*     SB_SetMixMode_
+0000:843c      SB_SetPlaybackRate_
+0000:8490*     SB_StopPlayback_
+0000:84ac+     SB_SetupPlayback_
+0000:851e+     SB_GetDSPVersion_
+0000:8568      SB_Shutdown_
+0000:858e+     SB_InitCard_
+0000:863a      SB_StartInit_
 0bb1:0e90      _sb_port
 0bb1:0e92+     _sb_dma
 0bb1:0e94      _sb_irq
@@ -489,17 +488,18 @@ Module: s_sbinit.obj(C:\REALDOOM\s_sbinit.c)
 0bb1:1263      _sfxcache_head
 0bb1:1264      _SB_Mixer_Status
 Module: s_sbint2.obj(s_sbint2.ASM)
-0000:86e0*     SB_WriteMixer_
+0000:86ce*     SB_WriteMixer_
 0000:876f*     S_SBINIT_ENDMARKER_
-0000:8716      SB_RestoreVoiceVolume_
-0000:86ac      SB_ResetDSP_
-0000:868e*     S_SBINIT_STARTMARKER_
-0000:86f1      SB_SaveVoiceVolume_
-0000:86d1*     SB_ReadMixer_
-0000:8745      SB_DSP2xx_BeginPlayback_
-0000:873e      SB_DSP1xx_BeginPlayback_
-0000:875a      SB_DSP4xx_BeginPlayback_
-0000:868e      SB_ReadDSP_
+0000:8704      SB_RestoreVoiceVolume_
+0000:869a      SB_ResetDSP_
+0000:867c*     S_SBINIT_STARTMARKER_
+0000:86df      SB_SaveVoiceVolume_
+0000:875d      SB_DMA_VerifyChannel_
+0000:86bf*     SB_ReadMixer_
+0000:8733      SB_DSP2xx_BeginPlayback_
+0000:872c      SB_DSP1xx_BeginPlayback_
+0000:8748      SB_DSP4xx_BeginPlayback_
+0000:867c      SB_ReadDSP_
 Module: r_main.obj(r_main.ASM)
 0000:8ab0      R_VideoErase_
 0000:8a92      R_PointToAngle2_16_
