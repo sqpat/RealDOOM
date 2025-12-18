@@ -25,7 +25,9 @@ INSTRUCTION_SET_MACRO
 PC_SPEAKER_SFX_DATA_TEMP_SEGMENT = 0D7E0h
 
 EXTRN _sb_port:WORD
-
+EXTRN _SB_MixerType:BYTE
+EXTRN _SB_OriginalVoiceVolumeLeft:BYTE
+EXTRN _SB_OriginalVoiceVolumeRight:BYTE
 
 .CODE
 
@@ -36,6 +38,29 @@ ENDP
 
 
 
+SB_TYPE_NONE 	= 0
+SB_TYPE_SB 		= 1
+SB_TYPE_SBPRO 	= 2
+SB_TYPE_SB20 	= 3
+SB_TYPE_SBPRO2 	= 4
+SB_TYPE_SB16 	= 6
+
+
+SB_MIXER_DSP4xxISR_Ack              = 082h
+SB_MIXER_DSP4xxISR_Enable           = 083h
+SB_MIXER_MPU401_INT                 = 04h
+SB_MIXER_16BITDMA_INT               = 02h
+SB_MIXER_8BITDMA_INT                = 01h
+SB_MIXER_DisableMPU401Interrupts    = 0Bh
+SB_MIXER_SBProOutputSetting         = 00Eh
+SB_MIXER_SBProStereoFlag            = 002h
+SB_MIXER_SBProVoice                 = 004h
+SB_MIXER_SBProMidi                  = 026h
+SB_MIXER_SB16VoiceLeft              = 032h
+SB_SBProVoice                       = 004h
+SB_MIXER_SB16VoiceRight             = 033h
+SB_MIXER_SB16MidiLeft               = 034h
+SB_MIXER_SB16MidiRight              = 035h
 
 
 PLAYING_FLAG = 080h
@@ -157,7 +182,31 @@ ret
 ENDP
 
 
+PROC   SB_SaveVoiceVolume_ NEAR
+PUBLIC SB_SaveVoiceVolume_
 
+mov    al, byte ptr ds:[_SB_MixerType]
+cmp    al, SB_TYPE_SB16
+je     save_both_voice_volume
+mov    ah, SB_MIXER_SBPROVOICE
+cmp    al, SB_TYPE_SBPRO
+je     save_one_voice_volumne
+cmp    al, SB_TYPE_SBPRO2
+je     save_one_voice_volumne
+ret
+save_both_voice_volume:
+mov    al, SB_MIXER_SB16VOICELEFT
+call   SB_ReadMixer_
+mov    byte ptr ds:[_SB_OriginalVoiceVolumeRight], al
+
+mov    ah, SB_MIXER_SB16VOICELEFT
+save_one_voice_volumne:
+mov    al, ah
+call   SB_ReadMixer_
+mov    byte ptr ds:[_SB_OriginalVoiceVolumeLeft], al
+ret
+
+ENDP
 
 
 PROC    S_SBINIT_ENDMARKER_

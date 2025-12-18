@@ -137,7 +137,9 @@ void __near SB_WriteMixer(uint8_t reg,uint8_t data) {
     outp(sb_port + SB_MixerDataPort, data);
 }
 */
+void __near SB_SaveVoiceVolume();
 
+/*
 void __near SB_SaveVoiceVolume() {
     switch (SB_MixerType) {
 		case SB_TYPE_SBPro:
@@ -151,6 +153,7 @@ void __near SB_SaveVoiceVolume() {
 			break;
 		}
 }
+*/
 
 void __near SB_RestoreVoiceVolume() {
     switch (SB_MixerType) {
