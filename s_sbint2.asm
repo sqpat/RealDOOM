@@ -132,6 +132,31 @@ pop    dx
 ret
 ENDP
 
+PROC   SB_ReadMixer_ NEAR
+PUBLIC SB_ReadMixer_
+push   dx
+mov    dx, word ptr ds:[_sb_port]                   ; outp(sb_port + SB_MixerAddressPort, reg);
+add    dx, SB_MIXERADDRESSPORT
+out    dx, al
+add    dl, (SB_MIXERDATAPORT - SB_MIXERADDRESSPORT) ; return inp(sb_port + SB_MixerDataPort);
+in     al, dx
+pop    dx
+ret
+ENDP
+
+PROC   SB_WriteMixer_ NEAR
+PUBLIC SB_WriteMixer_
+mov    ah, dl    ; data in ah
+mov    dx, word ptr ds:[_sb_port]                   ; outp(sb_port + SB_MixerAddressPort, reg);
+add    dx, SB_MIXERADDRESSPORT
+out    dx, al
+add    dl, (SB_MIXERDATAPORT - SB_MIXERADDRESSPORT) ; outp(sb_port + SB_MixerDataPort, data);
+mov    al, ah
+out    dx, al
+ret
+ENDP
+
+
 
 
 

@@ -123,6 +123,10 @@ int16_t __near SB_ResetDSP(){
     return SB_CardNotReady;
 }
 */
+uint8_t __near SB_ReadMixer(uint8_t reg);
+void __near SB_WriteMixer(uint8_t reg,uint8_t data);
+
+/*
 uint8_t __near SB_ReadMixer(uint8_t reg) {
     outp(sb_port + SB_MixerAddressPort, reg);
     return inp(sb_port + SB_MixerDataPort);
@@ -132,6 +136,7 @@ void __near SB_WriteMixer(uint8_t reg,uint8_t data) {
     outp(sb_port + SB_MixerAddressPort, reg);
     outp(sb_port + SB_MixerDataPort, data);
 }
+*/
 
 void __near SB_SaveVoiceVolume() {
     switch (SB_MixerType) {
