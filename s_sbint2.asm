@@ -22,6 +22,7 @@ INSTRUCTION_SET_MACRO
 ;=================================
 
 EXTRN SB_WriteDSP_:NEAR
+EXTRN DMA_SetupTransfer_:NEAR
 
 .DATA
 
@@ -29,6 +30,8 @@ PC_SPEAKER_SFX_DATA_TEMP_SEGMENT = 0D7E0h
 
 EXTRN _sb_port:WORD
 EXTRN _SB_MixerType:BYTE
+EXTRN _sb_dma:BYTE
+EXTRN _sb_dma_8:BYTE  ; todo clean up
 EXTRN _SB_OriginalVoiceVolumeLeft:BYTE
 EXTRN _SB_OriginalVoiceVolumeRight:BYTE
 
@@ -334,8 +337,8 @@ ENDP
 
 ; int16_t __near DMA_SetupTransfer(uint8_t channel, uint16_t length) {
 
-PROC    DMA_SetupTransfer_ NEAR
-PUBLIC  DMA_SetupTransfer_
+PROC    DMA_SetupTransfer2_ NEAR
+PUBLIC  DMA_SetupTransfer2_
 
 push    bx
 push    cx
@@ -344,7 +347,7 @@ mov     bx, ax  ; backup channel
 ;if (SB_DMA_VerifyChannel(channel) == DMA_OK) {
 call    SB_DMA_VerifyChannel_   ; todo carry flag
 test    al, al
-je      dma_return_error
+jz      dma_return_error
 mov     ax, bx  ; channel
 shl     bx, 1
 add     bx, ax  ; channel x3
@@ -446,6 +449,31 @@ pop     cx
 pop     bx
 ret
 ENDP
+
+
+PROC    SB_SetupDMABuffer_ NEAR
+PUBLIC  SB_SetupDMABuffer_  ; todo carry
+
+push    dx
+
+mov     dx, ax  ; dx gets buffer_size
+mov     al, byte ptr ds:[_sb_dma_8]
+call    DMA_SetupTransfer_
+test    al, al
+mov     al, SB_ERROR
+jz      dma_buffer_error
+mov     al, byte ptr ds:[_sb_dma_8]
+mov     byte ptr ds:[_sb_dma], al
+; carry flag still on
+xor     ax, ax  ; SB_OK
+dma_buffer_error:
+
+
+pop     dx
+ret
+
+ENDP
+
 
 
 PROC    S_SBINIT_ENDMARKER_

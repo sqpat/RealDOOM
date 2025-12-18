@@ -283,7 +283,6 @@ int8_t __near SB_DMA_VerifyChannel(uint8_t channel) {
 
 int16_t __near DMA_SetupTransfer(uint8_t channel, uint16_t length) ;
 
-/*
 int16_t __near DMA_SetupTransfer(uint8_t channel, uint16_t length) {
     
     if (SB_DMA_VerifyChannel(channel) == DMA_OK) {
@@ -361,22 +360,12 @@ int16_t __near DMA_SetupTransfer(uint8_t channel, uint16_t length) {
 	}
 
 }
-*/
 
+int8_t __near SB_SetupDMABuffer(uint16_t buffer_size);
 
+/*
 int8_t __near SB_SetupDMABuffer(uint16_t buffer_size) {
-    int8_t dma_channel;
-    int8_t dma_status;
-
-    // if (SB_MixMode & SB_SIXTEEN_BIT) {
-        // dma_channel = sb_dma_16;
-    // } else {
-        dma_channel = sb_dma_8;
-    // }
-
-    if (dma_channel == UNDEFINED_DMA) {
-        return SB_Error;
-    }
+    int8_t dma_channel = sb_dma_8;
 
     if (DMA_SetupTransfer(dma_channel, buffer_size) == DMA_ERROR) {
         return SB_Error;
@@ -387,6 +376,7 @@ int8_t __near SB_SetupDMABuffer(uint16_t buffer_size) {
     
     return SB_OK;
 }
+*/
 
 
 
