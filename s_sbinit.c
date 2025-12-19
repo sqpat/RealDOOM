@@ -576,7 +576,9 @@ int8_t __near SB_SetupPlayback(){
 
 
 
+uint16_t __near SB_GetDSPVersion();
 
+/*
 uint16_t __near SB_GetDSPVersion() {
 
     SB_WriteDSP(0xE1);	// get version
@@ -604,6 +606,7 @@ uint16_t __near SB_GetDSPVersion() {
 
     return SB_DSP_Version.hu;
 }
+*/
 
 void __near SB_Shutdown(){
     // sfx_playing = false;

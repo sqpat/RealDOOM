@@ -747,6 +747,42 @@ ret
 ENDP
 
 
+PROC    SB_GetDSPVersion_ NEAR
+PUBLIC  SB_GetDSPVersion_
+
+mov     al, 0E1h
+call    SB_WriteDSP_  ; get version
+
+call    SB_ReadDSP_
+cmp     al, SB_ERROR
+je      failed_getdspversion
+mov     byte ptr ds:[_SB_DSP_Version+1], al
+call    SB_ReadDSP_
+cmp     al, SB_ERROR
+je      failed_getdspversion
+mov     byte ptr ds:[_SB_DSP_Version+0], al
+
+mov     ah, byte ptr ds:[_SB_DSP_Version+1]
+cmp     ah, 4
+jge     set_ver_4
+cmp     ah, 2
+jg      set_ver_3
+
+mov     byte ptr ds:[_SB_MixerType], SB_TYPE_NONE
+
+failed_getdspversion:
+
+ret
+set_ver_4:
+mov     byte ptr ds:[_SB_MixerType], SB_TYPE_SB16
+ret
+set_ver_3:
+mov     byte ptr ds:[_SB_MixerType], SB_TYPE_SBPRO
+ret
+
+ENDP
+
+
 
 PROC    S_SBINIT_ENDMARKER_
 PUBLIC  S_SBINIT_ENDMARKER_
