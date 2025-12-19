@@ -22,6 +22,7 @@ INSTRUCTION_SET_MACRO
 ;=================================
 
 EXTRN SB_WriteDSP_:NEAR
+EXTRN SB_SetupDMABuffer_:NEAR
 
 .DATA
 
@@ -112,6 +113,12 @@ SB_ERROR             = -1
 SB_OK                = 0
 SB_READY 			 = 0AAh
 SB_CARDNOTREADY      = 5
+
+SB_MIXBUFFERSIZE      = 256
+SB_TOTALBUFFERSIZE    = (SB_MIXBUFFERSIZE * 2)
+SB_TRANSFERLENGTH     = SB_MIXBUFFERSIZE
+SB_DOUBLEBUFFERLENGTH = SB_TRANSFERLENGTH * 2
+
 
 
 ; todo programattically determine?
@@ -682,7 +689,62 @@ ret
 
 ENDP
 
+PROC   SB_SetupPlayback_ NEAR
+PUBLIC SB_SetupPlayback_
 
+call   SB_StopPlayback_
+;call   SB_SetMixMode_
+mov    ax, SB_TOTALBUFFERSIZE
+call   SB_SetupDMABuffer_
+cmp    al, SB_ERROR
+je     failed_setup_playback
+
+push   cx
+push   di
+
+; _fmemset(sb_dmabuffer, 0x80, SB_TotalBufferSize);
+mov    ax, 08080h
+mov    cx, SB_TOTALBUFFERSIZE / 2
+mov    di, SB_DMABUFFER_SEGMENT
+mov    es, di
+xor    di, di
+rep    stosw
+
+pop    di
+pop    cx
+
+mov    ax, SAMPLE_RATE_11_KHZ_UINT
+call   SB_SetPlaybackRate_
+call   SB_EnableInterrupt_
+mov    al, 0D1h
+call   SB_WriteDSP_   ; turn on speaker
+
+;  Program the sound card to start the transfer.
+mov     al, byte ptr ds:[_SB_DSP_Version+1]
+cmp     al, 2
+jl      do_1xx_setup
+cmp     al, 4
+jl      do_2xx_setup
+
+do_4xx_setup:
+call    SB_DSP4xx_BeginPlayback_
+jmp     done_with_setup
+do_2xx_setup:
+call    SB_DSP2xx_BeginPlayback_
+jmp     done_with_setup
+do_1xx_setup:
+call    SB_DSP1xx_BeginPlayback_
+done_with_setup:
+mov     byte ptr ds:[_SB_CardActive], 1
+mov     al, SB_OK
+
+failed_setup_playback:
+ret
+
+
+
+
+ENDP
 
 
 

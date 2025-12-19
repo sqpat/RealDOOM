@@ -445,7 +445,7 @@ int8_t __near SB_DMA_EndTransfer(int8_t channel) {
 
 
 
-void __near SB_SetMixMode(){
+// void __near SB_SetMixMode(){
     // todo is this even needed?
 /*
     //todo sb pro check
@@ -460,9 +460,8 @@ void __near SB_SetMixMode(){
     outp(sb_port+SB_MixerDataPort, 0x0E);
     SB_SetPlaybackRate(SAMPLE_RATE_11_KHZ_UINT);
     */
+// }
 
-
-}
 void __near SB_SetPlaybackRate(int16_t sample_rate);
 
 /*
@@ -523,6 +522,8 @@ void __near SB_StopPlayback(){
 
 }
 */
+int8_t __near SB_SetupPlayback();
+/*
 int8_t __near SB_SetupPlayback(){
 	// todo double?
     byte __far * sbbuffer;
@@ -560,7 +561,7 @@ int8_t __near SB_SetupPlayback(){
 
 
 }
-
+*/
 
 // void __near SB_SetVolume(uint8_t volume){
 //     if (SB_MixerType == SB_TYPE_SB16) {
@@ -655,7 +656,7 @@ int16_t __near  SB_InitCard(){
         SB_SaveVoiceVolume();
 
         SB_SetPlaybackRate(SAMPLE_RATE_11_KHZ_UINT);
-        SB_SetMixMode();
+        // SB_SetMixMode();
 
         // if (SB_Config.Dma16 != UNDEFINED)
         // {
