@@ -608,6 +608,8 @@ uint16_t __near SB_GetDSPVersion() {
 }
 */
 
+void __near SB_Shutdown();
+/*
 void __near SB_Shutdown(){
     // sfx_playing = false;
 
@@ -628,6 +630,7 @@ void __near SB_Shutdown(){
 
 
 }
+*/
 
 int16_t __near  SB_InitCard(){
 	int8_t status;

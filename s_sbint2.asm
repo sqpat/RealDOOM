@@ -23,6 +23,7 @@ INSTRUCTION_SET_MACRO
 
 EXTRN SB_WriteDSP_:NEAR
 EXTRN SB_SetupDMABuffer_:NEAR
+EXTRN locallib_dos_setvect_old_:NEAR
 
 .DATA
 
@@ -39,7 +40,7 @@ EXTRN _SB_OriginalVoiceVolumeLeft:BYTE
 EXTRN _SB_OriginalVoiceVolumeRight:BYTE
 EXTRN _SB_DSP_Version:WORD
 EXTRN _SB_CardActive:BYTE
-
+EXTRN _SB_OldInt:DWORD
 .CODE
 
 
@@ -135,6 +136,15 @@ db 08Fh, 0C0h, 0C2h
 db 08Bh, 0C4h, 0C6h
 db 089h, 0C8h, 0CAh
 db 08Ah, 0CCh, 0CEh
+
+INVALID_IRQ = 0FFh
+
+_IRQ_TO_INTERRUPT_MAP:
+db    INVALID_IRQ, INVALID_IRQ, 00Ah, 	     00B
+db    INVALID_IRQ, 00Dh, 	    INVALID_IRQ, 00Fh
+db    INVALID_IRQ, INVALID_IRQ, 072h, 	     073h
+db    074h, 	   INVALID_IRQ, INVALID_IRQ, 077h
+
 
 
 PROC   SB_ReadDSP_ NEAR
@@ -782,6 +792,36 @@ ret
 
 ENDP
 
+
+
+
+PROC    SB_Shutdown_ NEAR
+PUBLIC  SB_Shutdown_
+
+
+call    SB_StopPlayback_
+call    SB_RestoreVoiceVolume_
+call    SB_ResetDSP_
+
+push    bx
+push    cx
+
+xor     bx, bx
+mov     bl, byte ptr ds:[_sb_irq]
+mov     al, byte ptr cs:[_IRQ_TO_INTERRUPT_MAP + bx]
+les     bx, dword ptr ds:[_SB_OldInt]
+mov     cx, es
+;locallib_dos_setvect_old(IRQ_TO_INTERRUPT_MAP[sb_irq], SB_OldInt);
+
+call    locallib_dos_setvect_old_
+pop     cx
+pop     bx
+
+
+
+ret
+
+ENDP
 
 
 PROC    S_SBINIT_ENDMARKER_
