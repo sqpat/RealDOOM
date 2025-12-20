@@ -24,6 +24,9 @@ INSTRUCTION_SET_MACRO
 EXTRN SB_WriteDSP_:NEAR
 EXTRN SB_SetupDMABuffer_:NEAR
 EXTRN locallib_dos_setvect_old_:NEAR
+EXTRN locallib_dos_getvect_:NEAR
+EXTRN SB_ServiceInterrupt_:FAR
+EXTRN I_Error_:FAR
 
 .DATA
 
@@ -32,7 +35,7 @@ PC_SPEAKER_SFX_DATA_TEMP_SEGMENT = 0D7E0h
 EXTRN _sb_port:WORD
 EXTRN _SB_MixerType:BYTE
 EXTRN _sb_dma:BYTE
-EXTRN _sb_irq:BYTE 
+EXTRN _sb_irq:BYTE
 EXTRN _SB_IntController1Mask:BYTE 
 EXTRN _SB_IntController2Mask:BYTE 
 EXTRN _sb_dma_8:BYTE  ; todo clean up
@@ -485,6 +488,7 @@ xchg    ax, dx  ; dx gets buffer_size
 mov     al, byte ptr ds:[_sb_dma_8]
 call    DMA_SetupTransfer_
 pop     dx
+
 test    al, al
 jz      dma_buffer_error
 mov     al, byte ptr ds:[_sb_dma_8]
@@ -493,7 +497,7 @@ mov     byte ptr ds:[_sb_dma], al
 xor     ax, ax  ; SB_OK
 ret
 dma_buffer_error:
-mov     al, SB_ERROR
+mov     ax, SB_ERROR
 ret
 
 ENDP
@@ -817,8 +821,97 @@ call    locallib_dos_setvect_old_
 pop     cx
 pop     bx
 
+ret
+
+ENDP
 
 
+
+PROC    SB_InitCard_ NEAR
+PUBLIC  SB_InitCard_
+
+;	sb_irq      = snd_SBirq;
+;	sb_dma_8    = snd_SBdma;
+;	sb_port 	= snd_SBport;  ; todo LES and get all of this.
+
+mov     ax, word ptr ds:[_snd_SBirq]  ; sbdma in ah
+mov     byte ptr ds:[_sb_irq], al
+mov     byte ptr ds:[_sb_dma_8], ah   ; todo combine...
+mov     ax, word ptr ds:[_snd_SBport]
+mov     word ptr ds:[_sb_port], ax
+
+; SB_IntController1Mask = inp(0x21);
+; SB_IntController2Mask = inp(0xA1);
+; status = SB_ResetDSP();
+; todo combine in 1
+in     al, 021h
+mov    byte ptr ds:[_SB_IntController1Mask], al
+in     al, 0A1h
+mov    byte ptr ds:[_SB_IntController2Mask], al
+call   SB_ResetDSP_
+
+cmp    al, SB_OK
+jne    return_status
+
+call   SB_GetDSPVersion_            ;    SB_GetDSPVersion();
+call   SB_SaveVoiceVolume_          ;    SB_SaveVoiceVolume();
+mov    ax, SAMPLE_RATE_11_KHZ_UINT
+call   SB_SetPlaybackRate_          ;    SB_SetPlaybackRate(SAMPLE_RATE_11_KHZ_UINT);
+
+
+;    used_dma = sb_dma_8;
+mov    al, byte ptr ds:[_sb_dma_8]
+push   ax  ; store dma_8
+call   SB_DMA_VerifyChannel_
+cmp    al, DMA_ERROR
+pop    ax  ; retrieve dma_8
+je     return_sb_error
+
+mov    byte ptr ds:[_sb_dma], al        ;    sb_dma = used_dma;
+
+;    if (!VALID_IRQ(sb_irq)) {
+;        return (SB_Error);
+;    }
+
+mov    al, byte ptr ds:[_sb_irq]
+test   al, 0F0h  ; between 0 and 15
+jne    return_sb_error
+
+; sb_int = IRQ_TO_INTERRUPT_MAP[sb_irq];
+cbw    ; zero ah. we know al is 0-15 anyway
+xchg   ax, bx  ; bx temporarily dirty 
+mov    bl, byte ptr cs:[_IRQ_TO_INTERRUPT_MAP + bx]  ; sb_int
+xchg   ax, bx  ; restore bx
+
+;    SB_OldInt = locallib_dos_getvect(sb_int);
+push   dx   ; going to get clobbered by dword return
+push   ax   ; store sb_int
+call   locallib_dos_getvect_
+
+mov    word ptr ds:[_SB_OldInt + 0], ax
+mov    word ptr ds:[_SB_OldInt + 2], dx
+
+pop    ax  ; sb_int
+
+; locallib_dos_setvect_old(sb_int, SB_ServiceInterrupt);
+
+
+
+push  ds
+mov   dx, SEG SB_ServiceInterrupt_
+mov   ds, dx
+mov   dx, OFFSET SB_ServiceInterrupt_
+mov   ah, 025h
+int   021h
+pop   ds
+pop   dx  ; restore dx from earlier
+
+
+mov    ax, SB_OK
+return_status:
+ret
+return_sb_error:
+mov     al, SB_ERROR
 ret
 
 ENDP

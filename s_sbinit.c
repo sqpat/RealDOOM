@@ -36,8 +36,8 @@ int16_t sb_irq  = -1;
 // int8_t sb_dma_16 = UNDEFINED_DMA;
 int8_t sb_dma_8  = UNDEFINED_DMA;
 
-int16_t     SB_IntController1Mask;
-int16_t     SB_IntController2Mask;
+uint8_t     SB_IntController1Mask;
+uint8_t     SB_IntController2Mask;
 
 
 
@@ -632,22 +632,14 @@ void __near SB_Shutdown(){
 }
 */
 
+int16_t __near  SB_InitCard();
+/*
 int16_t __near  SB_InitCard(){
 	int8_t status;
-
-	//todo get these from environment variables or config file.
-	// sb_irq      = FIXED_SB_IRQ;
-	// sb_dma_8    = FIXED_SB_DMA_8;
-	// sb_dma_16   = FIXED_SB_DMA_16;
-	// sb_port 	= FIXED_SB_PORT;
-	// SB_MixerType = SB_TYPE_SB16;
 
 	sb_irq      = snd_SBirq;
 	sb_dma_8    = snd_SBdma;
 	sb_port 	= snd_SBport;
-
-
-
 
     // Save the interrupt masks
     SB_IntController1Mask = inp(0x21);
@@ -663,21 +655,8 @@ int16_t __near  SB_InitCard(){
 
         SB_SetPlaybackRate(SAMPLE_RATE_11_KHZ_UINT);
         // SB_SetMixMode();
-
-        // if (SB_Config.Dma16 != UNDEFINED)
-        // {
-        //     status = SB_DMA_VerifyChannel(SB_Config.Dma16);
-        //     if (status == DMA_Error)
-        //     {
-        //         return (SB_Error);
-        //     }
-        // }
 		
-		// if (SB_MixMode & SB_SIXTEEN_BIT) {
-			// used_dma = sb_dma_16;
-		// } else {
-			used_dma = sb_dma_8;
-		// }
+        used_dma = sb_dma_8;
 
 		if (SB_DMA_VerifyChannel(used_dma) == DMA_ERROR) {
 			return SB_Error;
@@ -697,17 +676,7 @@ int16_t __near  SB_InitCard(){
 
 
         SB_OldInt = locallib_dos_getvect(sb_int);
-        if (sb_irq < 8) {
-			// 8 bit logic?
-
-            locallib_dos_setvect_old(sb_int, SB_ServiceInterrupt);
-
-            // I_Error("%i %lx %lx %lx", sb_irq, SB_OldInt, locallib_dos_getvect(sb_int), SB_ServiceInterrupt);
-
-        } else {
-			// 16 bit logic?
-            // status = IRQ_SetVector(Interrupt, SB_ServiceInterrupt);
-        }
+        locallib_dos_setvect_old(sb_int, SB_ServiceInterrupt);
 
         return  SB_OK;
     }
@@ -716,7 +685,7 @@ int16_t __near  SB_InitCard(){
 	return status;
 
 }
-
+*/
 
 // just 0 to linear rising n to 255..
 /*
