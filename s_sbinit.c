@@ -738,36 +738,10 @@ void __far S_InitSFXCache(){
 
 }
 */
+void __near  SB_StartInit();
+/*
 void __near  SB_StartInit(){
-    // todo move this crap into asm. dump the 
-    // uint8_t i;
-    // char lumpname[9];
-    // uint16_t __far* scratch_lumplocation = (uint16_t __far*)0x50000000;
-    // Z_QuickMapScratch_5000();
-    // for (i = 1; i < NUMSFX; i++){
-    //     combine_strings(lumpname, "DS", sfx_data[i].name);
-    //     sfx_data[i].lumpandflags = (W_GetNumForName(lumpname) & SOUND_LUMP_BITMASK);
-    //     sfx_data[i].lumpsize.hu  = W_LumpLength(sfx_data[i].lumpandflags & SOUND_LUMP_BITMASK) - 32;;
-    //     sfx_data[i].cache_position.hu = 0xFFFF;
-        
-    //     if (sfx_data[i].lumpandflags == -1){
-    //         // nonexistent in the wad
-    //         sfx_data[i].lumpandflags = 0xFFFF;
-    //         continue;
-    //     }
-        
-    //     // DEBUG_PRINT("%i %i\n", i, sfx_data[i].lumpandflags & SOUND_LUMP_BITMASK);
 
-    //     W_CacheLumpNumDirect(sfx_data[i].lumpandflags & SOUND_LUMP_BITMASK, (byte __far*)scratch_lumplocation);
-
-    //     if ((scratch_lumplocation[1] == SAMPLE_RATE_22_KHZ_UINT)){
-    //         sfx_data[i].lumpandflags |= SOUND_22_KHZ_FLAG;
-    //     }
-
-
-    // }
-
-    // Z_QuickMapPhysics();
 
     if (SB_InitCard() == SB_OK){
         if (SB_SetupPlayback() == SB_OK){
@@ -786,3 +760,4 @@ void __near  SB_StartInit(){
 
     // nodes, etc now initialized in S_InitSFXCache which is called by S_SetSfxVolume earlier in S_Init
 }
+*/

@@ -27,6 +27,9 @@ EXTRN locallib_dos_setvect_old_:NEAR
 EXTRN locallib_dos_getvect_:NEAR
 EXTRN SB_ServiceInterrupt_:FAR
 EXTRN I_Error_:FAR
+EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
+EXTRN S_InitSFXCache_:FAR
+
 
 .DATA
 
@@ -148,6 +151,14 @@ db    INVALID_IRQ, 00Dh, 	    INVALID_IRQ, 00Fh
 db    INVALID_IRQ, INVALID_IRQ, 072h, 	     073h
 db    074h, 	   INVALID_IRQ, INVALID_IRQ, 077h
 
+str_SB_OK:
+db "Sound Blaster SFX Engine Initailized!..", 0Ah, 00
+
+str_SB_ERROR_A:
+db 0Ah, "SB INIT Error A", 0Ah, 00
+
+str_SB_ERROR_B:
+db 0Ah, "SB INIT Error B", 0Ah, 00
 
 
 PROC   SB_ReadDSP_ NEAR
@@ -913,6 +924,37 @@ ret
 return_sb_error:
 mov     al, SB_ERROR
 ret
+
+ENDP
+
+
+
+PROC    SB_StartInit_ NEAR
+PUBLIC  SB_StartInit_
+
+call   SB_InitCard_
+cmp    al, SB_OK
+jne    show_error_b
+
+call   SB_SetupPlayback_
+cmp    al, SB_OK
+jne    show_error_a
+
+call   S_InitSFXCache_
+mov    ax, OFFSET str_SB_OK
+jmp    print_exit
+
+show_error_b:
+mov   ax, OFFSET str_SB_ERROR_B
+jmp   print_error
+show_error_a:
+mov   ax, OFFSET str_SB_ERROR_A
+print_error:
+mov   byte ptr ds:[_snd_SfxDevice], SND_NONE   ; 0
+print_exit:
+call  DEBUG_PRINT_NOARG_CS_
+ret
+
 
 ENDP
 
