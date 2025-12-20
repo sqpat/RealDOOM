@@ -41,7 +41,7 @@
 // round up a segment if necessary. convert size to segments
 #define MAKE_FULL_SEGMENT(a, b)  ((int32_t)a + ((((int32_t)b + 0x0F) >> 4) << 16))
 
-#define FIXED_DS_SEGMENT  0x3D80
+#define FIXED_DS_SEGMENT  0x3DC0
 
 // ALLOCATION DEFINITIONS: UPPER MEMORY
 

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/12/17 00:04:44
+Created on:       26/01/18 00:08:35
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -219,8 +219,8 @@ Module: g_game.obj(g_game.ASM)
 0000:2906*     G_DoWorldDone_
 0000:2963*     G_DoLoadGame_
 0000:29d0      R_FlatNumForName_
-0000:2a1f      G_Ticker_
 0000:2c44*     G_GAME_ENDMARKER_
+0000:2a1f      G_Ticker_
 0000:291f      OutOfThinkers_
 0000:28e4*     G_DoNewGame_
 0000:2929*     G_DoSaveGame_
@@ -277,8 +277,8 @@ Module: st_stuff.obj(st_stuff.ASM)
 0000:2fd8      _tallnum
 0000:368d      ST_Responder_
 0000:314f      _st_statusbaron
-0000:3062      _keys
 0000:345d*     STlib_updateflag_
+0000:3062      _keys
 0000:2fc0      _st_oldhealth
 0000:2fba*     ST_STUFF_STARTMARKER_
 0000:38f9*     ST_STUFF_ENDMARKER_
@@ -361,16 +361,16 @@ Module: main.obj(main.ASM)
 0000:5596      I_ShutdownTimer_
 0000:5159      I_SetPalette_
 0000:53bf      locallib_printhex_
-0000:4433*     D_MAIN_STARTMARKER_
 0000:53b2      locallib_putchar_
 0000:54bb*     locallib_printstringnear_
-0000:4dd4      M_LoadDefaults_
-0000:560b*     D_Display_
 0000:5589      locallib_dos_setvect_old_
+0000:4dd4      M_LoadDefaults_
+0000:4433*     D_MAIN_STARTMARKER_
+0000:560b*     D_Display_
 0000:51ac*     I_UpdateBox_
+0000:598d*     D_DoomLoop_
 0000:44fd      I_KeyboardISR_
 0000:584a      D_ProcessEvents_
-0000:598d*     D_DoomLoop_
 0000:4f77      M_ScanTranslateDefaults_
 0000:5362*     locallib_strlen_
 0000:4842      G_BuildTiccmd_
@@ -528,8 +528,8 @@ Module: z_zone.obj(z_zone.ASM)
 0000:9500      Z_QuickMapRenderPlanes_
 0000:9338      Z_QuickMapSFXPageFrame_
 0000:9461      Z_QuickMapStatus_
-0000:94ea*     Z_QuickMapScreen0_
 0000:93c6      Z_QuickMapRender_
+0000:94ea*     Z_QuickMapScreen0_
 0000:94be      Z_QuickMapScratch_7000_
 0000:9492      Z_QuickMapScratch_5000_
 0000:9594      Z_QuickMapMenu_
@@ -786,4 +786,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  d5d0 (54736.)
 Entry point address: 0000:9f9c
-Link time: 00:00.74
+Link time: 00:00.75

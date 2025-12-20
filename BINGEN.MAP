@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/12/17 00:04:43
+Created on:       26/01/18 00:08:34
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -267,8 +267,8 @@ Module: g_game.obj(g_game.ASM)
 0000:3ed4*     G_DoWorldDone_
 0000:3f31*     G_DoLoadGame_
 0000:3f9e      R_FlatNumForName_
-0000:3fed      G_Ticker_
 0000:4212*     G_GAME_ENDMARKER_
+0000:3fed      G_Ticker_
 0000:3eed      OutOfThinkers_
 0000:3eb2*     G_DoNewGame_
 0000:3ef7*     G_DoSaveGame_
@@ -325,8 +325,8 @@ Module: st_stuff.obj(st_stuff.ASM)
 0000:45a6      _tallnum
 0000:4c5b      ST_Responder_
 0000:471d      _st_statusbaron
-0000:4630      _keys
 0000:4a2b*     STlib_updateflag_
+0000:4630      _keys
 0000:458e      _st_oldhealth
 0000:4588*     ST_STUFF_STARTMARKER_
 0000:4ec7*     ST_STUFF_ENDMARKER_
@@ -405,16 +405,16 @@ Module: main.obj(main.ASM)
 0000:6b36      I_ShutdownTimer_
 0000:66f9      I_SetPalette_
 0000:695f      locallib_printhex_
-0000:59d3*     D_MAIN_STARTMARKER_
 0000:6952      locallib_putchar_
 0000:6a5b*     locallib_printstringnear_
-0000:6374      M_LoadDefaults_
-0000:6bab*     D_Display_
 0000:6b29      locallib_dos_setvect_old_
+0000:6374      M_LoadDefaults_
+0000:59d3*     D_MAIN_STARTMARKER_
+0000:6bab*     D_Display_
 0000:674c*     I_UpdateBox_
+0000:6f2d*     D_DoomLoop_
 0000:5a9d      I_KeyboardISR_
 0000:6dea      D_ProcessEvents_
-0000:6f2d*     D_DoomLoop_
 0000:6517      M_ScanTranslateDefaults_
 0000:6902*     locallib_strlen_
 0000:5de2      G_BuildTiccmd_
@@ -572,8 +572,8 @@ Module: z_zone.obj(z_zone.ASM)
 0000:aaa4      Z_QuickMapRenderPlanes_
 0000:a8dc      Z_QuickMapSFXPageFrame_
 0000:aa05      Z_QuickMapStatus_
-0000:aa8e*     Z_QuickMapScreen0_
 0000:a96a      Z_QuickMapRender_
+0000:aa8e*     Z_QuickMapScreen0_
 0000:aa62      Z_QuickMapScratch_7000_
 0000:aa36      Z_QuickMapScratch_5000_
 0000:ab38      Z_QuickMapMenu_
@@ -602,8 +602,8 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 0b16:075c*     WI_drawPercent_
 0b16:000c      WI_STARTMARKER_
 0b16:06b1*     WI_drawNum_
-0b16:0864*     WI_drawNoState_
 0b16:03d9*     WI_MRandomLocal_
+0b16:0864*     WI_drawNoState_
 0b16:03f2*     WI_slamBackground_
 0b16:0d46*     WI_updateNoState_
 0b16:0da4      WI_Ticker_
@@ -622,8 +622,8 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 0b16:0919*     WI_updateStats_
 0b16:05d5*     WI_drawAnimatedBack_
 0b16:0f9b      WI_Start_
-0b16:051c*     WI_updateAnimatedBack_
 0b16:0e24      WI_Drawer_
+0b16:051c*     WI_updateAnimatedBack_
 0b16:0467*     WI_drawEL_
 0b16:04ba*     WI_drawOnLnode_
 0b16:0eb8*     WI_Init_
@@ -639,8 +639,8 @@ Module: m_menu.obj(m_menu.ASM)
 0c14:0c91*     M_StringWidth_
 0c14:052b*     M_DoSave_
 0c14:0d82      M_Responder_
-0c14:078f*     M_DrawSound_
 0c14:07f4*     S_SetSfxVolume_
+0c14:078f*     M_DrawSound_
 0c14:0a9e*     M_ReadThis2_
 0c14:083d*     S_SetMusicVolume_
 0c14:08f1*     M_ChooseSkill_
@@ -959,7 +959,6 @@ Module: p_pspr.obj(p_pspr.ASM)
 2c74:407d*     A_CloseShotgun2_
 2c74:39fe      P_BringUpWeapon_
 Module: p_enemy.obj(p_enemy.ASM)
-2c74:4cf5*     A_CyberAttack_
 2c74:56c2*     A_Explode_
 2c74:53d0*     A_FatRaise_
 2c74:42d7      P_NoiseAlert_
@@ -991,10 +990,10 @@ Module: p_enemy.obj(p_enemy.ASM)
 2c74:4225*     P_RecursiveSound_
 2c74:5459*     A_FatAttack2_
 2c74:4d4b*     A_SkelMissile_
-2c74:53da*     A_FatAttack3_
 2c74:543e*     A_FatAttack1_
 2c74:5800*     A_BabyMetal_
 2c74:47ee*     A_Look_
+2c74:53da*     A_FatAttack3_
 2c74:59fb*     A_SpawnSound_
 2c74:4d0e*     A_BruisAttack_
 2c74:56a3*     A_XScream_
@@ -1023,6 +1022,7 @@ Module: p_enemy.obj(p_enemy.ASM)
 2c74:5641*     A_PainAttack_
 2c74:5aea*     A_PlayerScream_
 2c74:4799*     A_KeenDie_
+2c74:4cf5*     A_CyberAttack_
 Module: p_ceilng.obj(p_ceilng.ASM)
 2c74:5ddc      P_AddActiveCeiling_
 2c74:5c1a*     P_CEILNG_STARTMARKER_
