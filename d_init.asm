@@ -78,9 +78,6 @@ EXTRN _myargc:WORD
 EXTRN _myargv:WORD
 EXTRN _autostart:BYTE
 EXTRN _singledemo:BYTE
-EXTRN _startskill:BYTE
-EXTRN _startepisode:BYTE
-EXTRN _startmap:BYTE
 EXTRN _defdemoname:DWORD
 EXTRN _noblit:BYTE
 EXTRN _timingdemo:BYTE

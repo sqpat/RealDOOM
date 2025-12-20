@@ -26,13 +26,12 @@ EXTRN MUS_ServiceRoutine_:NEAR
 .DATA
 
 EXTRN _TS_InInterrupt:BYTE
-EXTRN _lastpcspeakernotevalue:WORD
 EXTRN _TS_Installed:BYTE
 EXTRN _TaskServiceCount:WORD
 EXTRN _TS_TimesInInterrupt:BYTE
 EXTRN _OldInt8:DWORD
 EXTRN _HeadTask:TASK_T
-EXTRN _MUSTask:TASK_T
+
 
 .CODE
 
@@ -48,64 +47,10 @@ PROC    D_DMX_STARTMARKER_ NEAR
 PUBLIC  D_DMX_STARTMARKER_
 ENDP
 
-; unused
-COMMENT @
 
-PROC TS_SetTimerToMaxTaskRate_ NEAR
-PUBLIC TS_SetTimerToMaxTaskRate_
+_lastpcspeakernotevalue:
+dw 0
 
-cli    
-mov    al, 036h
-out    043h, al
-xor    ax, ax
-out    040h, al
-out    040h, al
-sti    
-ret   
-
-ENDP
-
-
-; note inlined and thus commented out
-PROC   playpcspeakernote_ NEAR
-PUBLIC playpcspeakernote_
-
-test   ax, ax
-je     no_note
-cmp    ax, word ptr ds:[_lastpcspeakernotevalue]
-je     exit_play_pc_speaker_note
-
-mov    word ptr ds:[_lastpcspeakernotevalue], ax
-
-;	outp (0x43, 0xB6);
-;	outp (0x42, value &0xFF);
-;	outp (0x42, value >> 8);
-
-push   ax
-mov    al, 0B6h
-out    043h, al
-pop    ax
-out    042h, al
-mov    al, ah
-out    042h, al
-in     al, 061h
-or     al, 3
-out    061h, al
-ret
-
-no_note:
-
-in     al, 061h
-and    al, 0FCh
-out    061h, al
-exit_play_pc_speaker_note:
-ret
-
-
-
-ENDP
-
-@ 
 
 
 do_chain:
@@ -190,8 +135,8 @@ jz     add_second_ticcount
 
 done_adding_ticcount_high:
 done_with_headtask:
-cmp    byte ptr ds:[_MUSTask + TASK_T.task_active], 0
-je     skip_mus_task
+SELFMODIFY_enable_mus_task:
+jmp    skip_mus_task
 call   MUS_ServiceRoutine_
 skip_mus_task:
 
@@ -232,10 +177,10 @@ mov    word ptr ds:[_pcspeaker_currentoffset], si
 
     test   ax, ax
     je     no_note
-    cmp    ax, word ptr ds:[_lastpcspeakernotevalue]
+    cmp    ax, word ptr cs:[_lastpcspeakernotevalue]
     je     done_with_pcspeaker
 
-    mov    word ptr ds:[_lastpcspeakernotevalue], ax
+    mov    word ptr cs:[_lastpcspeakernotevalue], ax
 
     ;	outp (0x43, 0xB6);
     ;	outp (0x42, value &0xFF);
@@ -333,7 +278,7 @@ mov    word ptr ds:[_HeadTask], (1 SHL 8 + HZ_INTERRUPTS_PER_TICK)
 ;mov    word ptr ds:[_HeadTask], (1 SHL 8 + 0)
 cmp    word ptr ds:[_playingdriver + 2], 0
 je     dont_set_mustask_active
-mov    byte ptr ds:[_MUSTask + TASK_T.task_active], 1
+mov    word ptr cs:[SELFMODIFY_enable_mus_task+0], 0C089h  ; two byte nop
 dont_set_mustask_active:
 sti    
 ret   

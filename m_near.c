@@ -44,9 +44,6 @@
 
 
 boolean         singletics = false; // debug flag to cancel adaptiveness
-skill_t         startskill;
-int8_t          startepisode;
-int8_t          startmap;
 boolean         autostart;
 
 //
@@ -224,7 +221,6 @@ int8_t __far*   defdemoname;
 
 
 task HeadTask = {0, false};
-task MUSTask = {0, false};
 
 void( __interrupt __far_func *OldInt8)(void);
 volatile uint16_t TaskServiceCount;
@@ -295,7 +291,6 @@ boolean    					tnt = false;
 #endif
 
 
-int8_t versionstring[12] = "version 109";  // hardcoded from VERSION. todo dynamically generate?
 
 int8_t  currentoverlay = OVERLAY_ID_UNMAPPED;
 int32_t codestartposition[NUM_OVERLAYS];
@@ -380,4 +375,3 @@ int32_t musdriverstartposition;
 
 
 
-uint16_t lastpcspeakernotevalue = 0;

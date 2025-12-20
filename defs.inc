@@ -146,7 +146,9 @@ _spanfunc_jump_segment_storage = 	_NULL_OFFSET + 000EAh
 _totalkills = 						_NULL_OFFSET + 000ECh
 _totalitems = 						_NULL_OFFSET + 000EEh
 _totalsecret = 						_NULL_OFFSET + 000F0h
-; f2-f3 free
+;_TS_TimesInInterrupt = 				_NULL_OFFSET + 000F2h
+;_TS_InInterrupt = 					_NULL_OFFSET + 000F3h
+
 
 
 _validcount_global =				_NULL_OFFSET + 000F4h
@@ -162,7 +164,8 @@ _vileobj = 							_NULL_OFFSET + 00100h
 _fastparm =	                        _NULL_OFFSET + 00100h
 _gameskill =	                    _NULL_OFFSET + 00101h
 
-;102-103 unused
+;_TaskServiceCount =	                _NULL_OFFSET + 00102h
+
 
 _viewangle_shiftright3 = 			_NULL_OFFSET + 00104h
 _dc_source_segment =	 			_NULL_OFFSET + 0010Ah
@@ -606,8 +609,9 @@ _doomsav0_string =  		       	 _NULL_OFFSET + 007C0h
 
 
 
-
-; 7CD to 7DF free
+_startskill = 						 _NULL_OFFSET + 007CDh
+_startepisode = 					 _NULL_OFFSET + 007CEh
+_startmap = 						 _NULL_OFFSET + 007CFh
 _screen_oldloc =					 _NULL_OFFSET + 007E0h
 _old_screen_botleft_x =				 _NULL_OFFSET + 007E4h
 _old_screen_botleft_y =				 _NULL_OFFSET + 007E6h
@@ -636,7 +640,11 @@ _message_dontfuckwithme =            _NULL_OFFSET + 00A1Dh
 _message_on =     			         _NULL_OFFSET + 00A1Eh
 _message_nottobefuckedwith =         _NULL_OFFSET + 00A1Fh
 
-; free A20-A30
+;_HeadTask =					         _NULL_OFFSET + 00A20h
+;_pagetic = 							 _NULL_OFFSET + 00A22h
+
+
+; free A26-A30
 
 _demosequence =	       		         _NULL_OFFSET + 00A31h
 

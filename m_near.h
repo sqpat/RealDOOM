@@ -187,7 +187,13 @@
 #define totalkills 			            (*(int16_t __near *)                 (_NULL_OFFSET + 0x00EC))
 #define totalitems 			            (*(int16_t __near *)                 (_NULL_OFFSET + 0x00EE))
 #define totalsecret 		            (*(int16_t __near *)                 (_NULL_OFFSET + 0x00F0))
-//f2 unused
+
+// #define TS_TimesInInterrupt	            (*(int8_t __near *)                  (_NULL_OFFSET + 0x00F2))
+// #define TS_InInterrupt		            (*(int8_t __near *)                  (_NULL_OFFSET + 0x00F3))
+
+
+
+
 
 #define validcount_global	            (*(int16_t __near *)                 (_NULL_OFFSET + 0x00F4))
 #define firstpatch                      (*(int16_t  __near *)                (_NULL_OFFSET + 0x00F6))
@@ -203,7 +209,8 @@
 #define fastparm	                    (*((boolean __near*)                 (_NULL_OFFSET + 0x0100)))
 #define gameskill	                    (*((skill_t __near*)                 (_NULL_OFFSET + 0x0101)))
 
-// #define EMS_PAGE                 	    (*((segment_t __near*)               (_NULL_OFFSET + 0x0102)))
+// #define TaskServiceCount	            (*(uint16_t __near *)                (_NULL_OFFSET + 0x0102))
+
 #define viewangle_shiftright3           (*((fineangle_t __near*)             (_NULL_OFFSET + 0x0104)))
 // 108 is constant
 #define dc_source_segment               (*((segment_t __near*)               (_NULL_OFFSET + 0x010A)))
@@ -232,7 +239,7 @@
 #define sfxcache_tail                   (*((int8_t   __near*)                (_NULL_OFFSET + 0x0135)))
 
 
-// 134-137 unused
+// 136-137 unused
 #define visplanelookupsegments          (((segment_t   __near*)              (_NULL_OFFSET + 0x0138)))
 
 #define firstflat                       (*((int16_t    __near*)              (_NULL_OFFSET + 0x013E)))
@@ -392,8 +399,6 @@
 
 
 
-// 33d to 33F free
-
 
 
 // 12 bytes each. two for 24.
@@ -426,7 +431,6 @@
 
 #define MainLogger_addr       	        (*((uint32_t  __near*)               (_NULL_OFFSET + 0x03CC)))
 
-//33B to 3cf free
 
 #define am_stopped						(*((boolean __near*)                 (_NULL_OFFSET + 0x03D0)))
 #define automapactive					(*((boolean __near*)                 (_NULL_OFFSET + 0x03D1)))
@@ -665,7 +669,7 @@
 #define fullscreen						  (*((boolean __near*)               (_NULL_OFFSET + 0x079F)))
 
 // todo put wad fields somewhere with roof to grow should the constant grow?
-#define wadfiles 						  ((FILE* __near *)           	 (_NULL_OFFSET + 0x07A0))
+#define wadfiles 						  ((FILE* __near *)         	  	 (_NULL_OFFSET + 0x07A0))
 #define filetolumpindex 				  ((int16_t __near *)           	 (_NULL_OFFSET + 0x07A8))
 #define numlumps						  (*((uint16_t __near*)              (_NULL_OFFSET + 0x07AE)))
 #define filetolumpsize 					  ((int32_t __near *)            	 (_NULL_OFFSET + 0x07B0))
@@ -676,8 +680,13 @@
 #define doomsav0_string                   ((uint8_t __near *)                (_NULL_OFFSET + 0x07C0))
 
 
+#define startskill       				  (*((skill_t __near*)               (_NULL_OFFSET + 0x07CD)))
+#define startepisode       				  (*((int8_t __near*)                (_NULL_OFFSET + 0x07CE)))
+#define startmap	       				  (*((int8_t __near*)                (_NULL_OFFSET + 0x07CF)))
 
-// 7CD to 7DF empty
+
+
+// 7D0 to 7DF empty
 #define screen_oldloc					  (*((mpoint_t __near*)              (_NULL_OFFSET + 0x07E0)))
 #define old_screen_botleft_x			  (*((int16_t __near*)               (_NULL_OFFSET + 0x07E4)))
 #define old_screen_botleft_y			  (*((int16_t __near*)               (_NULL_OFFSET + 0x07E6)))
@@ -706,6 +715,9 @@
 #define message_on     				      (*((boolean __near*)               (_NULL_OFFSET + 0x0A1E)))
 #define message_nottobefuckedwith         (*((boolean __near*)               (_NULL_OFFSET + 0x0A1F)))
 
+// #define HeadTask  		   				  (*((task __near*)                  (_NULL_OFFSET + 0x0A20)))
+// #define pagetic					 		  (*((int16_t __near*)               (_NULL_OFFSET + 0x0A22)))
+// #define MUSTask  		   				  (*((task __near*)                  (_NULL_OFFSET + 0x0A22)))
 
 // #define STRING_HELP1                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0A20))
 // #define STRING_HELP2                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0A26))
@@ -780,13 +792,9 @@
 extern boolean              singletics;
 
 
-extern skill_t              startskill;
-extern int8_t               startepisode;
-extern int8_t               startmap;
 extern boolean              autostart;
 
 
-extern int16_t              pagetic;
 extern int8_t               *pagename;
 
 
@@ -979,15 +987,6 @@ extern int8_t __far*   defdemoname;
 extern int8_t     st_stuff_buf[ST_MSGWIDTH];
 
 
-extern task HeadTask;
-extern task MUSTask;
-
-extern void( __interrupt __far_func *OldInt8)(void);
-extern volatile uint16_t TaskServiceCount;
-
-extern volatile int8_t TS_TimesInInterrupt;
-extern int8_t TS_Installed;
-extern volatile int8_t TS_InInterrupt;
 
 #define castorderoffset CC_ZOMBIE
  
@@ -1055,7 +1054,6 @@ extern int32_t visplaneswitchcount;
 
 
 
-extern int8_t versionstring[12];
 
 extern int8_t  currentoverlay;
 extern int32_t codestartposition[NUM_OVERLAYS];
@@ -1268,4 +1266,3 @@ typedef struct {
 
 #endif
 
-extern uint16_t lastpcspeakernotevalue;
