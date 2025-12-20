@@ -365,6 +365,7 @@ int16_t __near DMA_SetupTransfer(uint8_t channel, uint16_t length) {
 */      
 int8_t __near SB_SetupDMABuffer(uint16_t buffer_size);
 
+/*
 int8_t __near SB_SetupDMABuffer(uint16_t buffer_size) {
     int8_t dma_channel = sb_dma_8;
 
@@ -377,6 +378,7 @@ int8_t __near SB_SetupDMABuffer(uint16_t buffer_size) {
     
     return SB_OK;
 }
+*/
 
 void __near SB_EnableInterrupt() ;
 void __near SB_DisableInterrupt();

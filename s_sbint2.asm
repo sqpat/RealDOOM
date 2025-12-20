@@ -22,7 +22,6 @@ INSTRUCTION_SET_MACRO
 ;=================================
 
 EXTRN SB_WriteDSP_:NEAR
-EXTRN SB_SetupDMABuffer_:NEAR
 EXTRN locallib_dos_setvect_old_:NEAR
 EXTRN locallib_dos_getvect_:NEAR
 EXTRN SB_ServiceInterrupt_:FAR
@@ -490,13 +489,14 @@ ret
 ENDP
 
 
-PROC    SB_SetupDMABuffer2_ NEAR
-PUBLIC  SB_SetupDMABuffer2_  ; todo carry
+PROC    SB_SetupDMABuffer_ NEAR
+PUBLIC  SB_SetupDMABuffer_  ; todo carry
 
 push    dx
 
 xchg    ax, dx  ; dx gets buffer_size
 mov     al, byte ptr ds:[_sb_dma_8]
+cbw  ; zero ah
 call    DMA_SetupTransfer_
 pop     dx
 
