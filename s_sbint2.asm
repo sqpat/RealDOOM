@@ -353,7 +353,8 @@ DMA_ERROR = 0
 DMA_OK    = 1
 DMA_MAXCHANNEL_16_BIT = 7
 
-; todo optimize to carry flag once all uses in asm
+; carry flag = ok
+; does not change ax
 
 PROC   SB_DMA_VerifyChannel_ NEAR
 PUBLIC SB_DMA_VerifyChannel_
@@ -364,28 +365,29 @@ cmp    al, 2            ; invalid dma channel i guess
 je     return_dma_error
 cmp    al, 6            ; invalid dma channel i guess
 je     return_dma_error
-mov    al, DMA_OK
+stc
 ret
 return_dma_error:
-mov    al, DMA_ERROR
+clc
 ret
 
 ENDP
 
 ; int16_t __near DMA_SetupTransfer(uint8_t channel, uint16_t length) {
 
-PROC    DMA_SetupTransfer_ NEAR
+PROC    DMA_SetupTransfer_ NEAR  ; todo carry flag
 PUBLIC  DMA_SetupTransfer_
+
+; carry flag = ok
 
 push    bx
 push    cx
-mov     bx, ax  ; backup channel
 
 ;if (SB_DMA_VerifyChannel(channel) == DMA_OK) {
-call    SB_DMA_VerifyChannel_   ; todo carry flag
-test    al, al
-jz      dma_return_error
-mov     ax, bx  ; channel
+call    SB_DMA_VerifyChannel_
+jnc     dma_return_error
+
+mov     bx, ax  
 shl     bx, 1
 add     bx, ax  ; channel x3
 add     bx, OFFSET _DMA_PORTINFO ; port = &DMA_PortInfo[channel];
@@ -478,7 +480,7 @@ pop    ax     ; recover channel_sellect
 out    dx, al       ;  outp(channel < 4 ? 	0x0A: 0xD4, channel_select);
 
         
-mov    al, DMA_OK ; return DMA_OK        
+stc
 
 
 
@@ -489,29 +491,6 @@ ret
 ENDP
 
 
-PROC    SB_SetupDMABuffer_ NEAR
-PUBLIC  SB_SetupDMABuffer_  ; todo carry
-
-push    dx
-
-xchg    ax, dx  ; dx gets buffer_size
-mov     al, byte ptr ds:[_sb_dma_8]
-cbw  ; zero ah
-call    DMA_SetupTransfer_
-pop     dx
-
-test    al, al
-jz      dma_buffer_error
-mov     al, byte ptr ds:[_sb_dma_8]
-mov     byte ptr ds:[_sb_dma], al
-; carry flag still on
-xor     ax, ax  ; SB_OK
-ret
-dma_buffer_error:
-mov     ax, SB_ERROR
-ret
-
-ENDP
 
 
 
@@ -620,8 +599,7 @@ push  dx
 mov   dx, ax
 
 call  SB_DMA_VerifyChannel_
-cmp   al, DMA_OK
-jne   return_dma_error_endtransfer
+jnc   return_dma_error_endtransfer
 
 mov   al, dl
 and   al, 3
@@ -720,9 +698,22 @@ PUBLIC SB_SetupPlayback_
 call   SB_StopPlayback_
 ;call   SB_SetMixMode_
 mov    ax, SB_TOTALBUFFERSIZE
-call   SB_SetupDMABuffer_
-cmp    al, SB_ERROR
-je     failed_setup_playback
+;call   SB_SetupDMABuffer_
+; INLINED
+
+
+push    dx
+
+xchg    ax, dx  ; dx gets buffer_size
+mov     al, byte ptr ds:[_sb_dma_8]
+cbw  ; zero ah
+call    DMA_SetupTransfer_
+pop     dx
+
+jnc     failed_setup_playback
+mov     al, byte ptr ds:[_sb_dma_8]
+mov     byte ptr ds:[_sb_dma], al
+
 
 push   cx
 push   di
@@ -872,11 +863,11 @@ call   SB_SetPlaybackRate_          ;    SB_SetPlaybackRate(SAMPLE_RATE_11_KHZ_U
 
 ;    used_dma = sb_dma_8;
 mov    al, byte ptr ds:[_sb_dma_8]
-push   ax  ; store dma_8
+
 call   SB_DMA_VerifyChannel_
-cmp    al, DMA_ERROR
-pop    ax  ; retrieve dma_8
-je     return_sb_error
+
+
+jnc    return_sb_error
 
 mov    byte ptr ds:[_sb_dma], al        ;    sb_dma = used_dma;
 
