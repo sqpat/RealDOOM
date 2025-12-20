@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/12/16 22:59:02
+Created on:       25/12/17 00:01:04
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -13,7 +13,7 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          3976:0000            00002ea0
+DGROUP                          3976:0000            00002e80
 
 
 
@@ -120,8 +120,8 @@ YIB                    DATA           DGROUP         3b43:0000       00000000
 YI                     DATA           DGROUP         3b43:0000       00000012
 YIE                    DATA           DGROUP         3b44:0002       00000000
 DATA                   DATA           DGROUP         3b44:0002       00000000
-_BSS                   BSS            DGROUP         3b45:0000       000001af
-STACK                  STACK          DGROUP         3b60:0000       00001000
+_BSS                   BSS            DGROUP         3b45:0000       00000187
+STACK                  STACK          DGROUP         3b5e:0000       00001000
 
 
                         +----------------+
@@ -242,8 +242,8 @@ Module: p_init.obj(C:\REALDOOM\p_init.c)
 Module: i_quit.obj(i_quit.ASM)
 0000:2c4b*     I_ShutdownWads_
 0000:2b8b*     I_ShutdownMouse_
-0000:2cf3*     I_QUIT_ENDMARKER_
 0000:2b48*     I_QUIT_STARTMARKER_
+0000:2cf3*     I_QUIT_ENDMARKER_
 0000:2c2f*     hackDSBack_
 0000:2b4f*     I_ShutdownSound_
 0000:2cb4      I_Quit_
@@ -504,9 +504,6 @@ Module: s_sbsfx.obj(s_sbsfx.ASM)
 0000:9b3a      S_InitSFXCache_
 0000:92a3*     S_MoveCacheItemBackOne_
 0000:9376*     S_MarkSFXPageMRU_
-Module: s_sbinit.obj(C:\REALDOOM\s_sbinit.c)
-3976:1d56      _sfxcache_nodes
-3976:1d76      _sfx_page_reference_count
 Module: s_sbint2.obj(s_sbint2.ASM)
 0000:9e15      SB_SetPlaybackRate_
 0000:9f9b      SB_StartInit_
@@ -659,8 +656,8 @@ Module: m_menu.obj(m_menu.ASM)
 0c15:0b7d*     M_ChangeSensitivity_
 0c15:0a0d*     M_ChangeMessages_
 0c15:06d3*     M_QuickLoad_
-0c15:0822*     M_MusicVol_
 0c15:0a4a*     M_EndGame_
+0c15:0822*     M_MusicVol_
 0c15:05ff*     M_QuickSaveResponse_
 0c15:0874*     M_DrawNewGame_
 0c15:07c7*     M_Sound_
@@ -863,8 +860,8 @@ Module: r_mask24.obj(r_mask24.ASM)
 1fd6:7d7d      R_MASK24_ENDMARKER_
 1fd6:638e      R_MASK24_STARTMARKER_
 Module: r_mask16.obj(r_mask16.ASM)
-1fd6:976d      R_MASK16_ENDMARKER_
 1fd6:9256      R_DrawMasked16_
+1fd6:976d      R_MASK16_ENDMARKER_
 1fd6:970f      R_WriteBackMaskedFrameConstants16_
 1fd6:9682      R_WriteBackViewConstantsMasked16_
 1fd6:7d7e      R_MASK16_STARTMARKER_
@@ -963,6 +960,7 @@ Module: p_pspr.obj(p_pspr.ASM)
 2c75:407d*     A_CloseShotgun2_
 2c75:39fe      P_BringUpWeapon_
 Module: p_enemy.obj(p_enemy.ASM)
+2c75:4cf5*     A_CyberAttack_
 2c75:56c2*     A_Explode_
 2c75:53d0*     A_FatRaise_
 2c75:42d7      P_NoiseAlert_
@@ -1026,7 +1024,6 @@ Module: p_enemy.obj(p_enemy.ASM)
 2c75:5641*     A_PainAttack_
 2c75:5aea*     A_PlayerScream_
 2c75:4799*     A_KeenDie_
-2c75:4cf5*     A_CyberAttack_
 Module: p_ceilng.obj(p_ceilng.ASM)
 2c75:5ddc      P_AddActiveCeiling_
 2c75:5c1a*     P_CEILNG_STARTMARKER_
@@ -1082,8 +1079,8 @@ Module: p_lights.obj(p_lights.ASM)
 2c75:7070      T_StrobeFlash_
 2c75:6f92      T_FireFlicker_
 Module: p_plats.obj(p_plats.ASM)
-2c75:72dc      EV_DoPlat_
 2c75:722a      T_PlatRaise_
+2c75:72dc      EV_DoPlat_
 2c75:7462      P_AddActivePlat_
 2c75:747a*     P_RemoveActivePlat_
 2c75:74aa*     P_PLATS_ENDMARKER_
@@ -1204,7 +1201,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(fclose.c)
 364e:05f4      __doclose_
 364e:068a      __shutdown_stream_
 364e:069e      fclose_
-3976:1d7e+     ___RmTmpFileFn
+3976:1d56+     ___RmTmpFileFn
 Module: C:\WATCOM2\lib286\dos\clibm.lib(setbuf.c)
 364e:06c1      setbuf_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(exit.c)
@@ -1218,8 +1215,8 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(fgetc.c)
 364e:07c5      fgetc_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(iob.c)
 3976:1b16      ___iob
-3976:1d82      ___OpenStreams
-3976:1d84      ___ClosedStreams
+3976:1d5a      ___OpenStreams
+3976:1d5c      ___ClosedStreams
 Module: C:\WATCOM2\lib286\dos\clibm.lib(ftell.c)
 364e:0849      ftell_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(cmodel.asm)
@@ -1241,17 +1238,17 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(cstart)
 364e:0c52      __do_exit_with_msg_
 364e:0d31      __GETDS
 Module: C:\WATCOM2\lib286\dos\clibm.lib(argcv.c)
-3976:1d86      __argc
-3976:1d88      __argv
-3976:1d8a      ___argc
-3976:1d8c      ___argv
+3976:1d5e      __argc
+3976:1d60      __argv
+3976:1d62      ___argc
+3976:1d64      ___argv
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fputc.c)
 364e:0d3b      fputc_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(qread.c)
 364e:0dec      __qread_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(errno.c)
 364e:0e04      __get_errno_ptr_
-3976:1d8e+     _errno
+3976:1d66+     _errno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(ioalloc.c)
 364e:0e08      __ioalloc_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(lseek.c)
@@ -1284,7 +1281,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(_clse.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nfree.c)
 364e:132d      _nfree_
 364e:132d      free_
-3976:1d90+     ___MiniHeapFreeRover
+3976:1d68+     ___MiniHeapFreeRover
 Module: C:\WATCOM2\lib286\dos\clibm.lib(setvbuf.c)
 364e:13f2      setvbuf_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(initrtns.c)
@@ -1361,7 +1358,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(isatt.c)
 364e:1aee      isatty_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(doserrno.c)
 364e:1b0a      __get_doserrno_ptr_
-3976:1d94+     __doserrno
+3976:1d6c+     __doserrno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(umaskval.c)
 3976:1caa      ___umaskval
 Module: C:\WATCOM2\lib286\dos\clibm.lib(creatdos.c)
@@ -1385,10 +1382,10 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(enterdb.c)
 364e:29df      __EnterWVIDEO_
 3976:1cac+     __WD_Present
 Module: C:\WATCOM2\lib286\dos\clibm.lib(___argc.c)
-3976:1d98      ____Argv
-3976:1d9a      ____Argc
+3976:1d70      ____Argv
+3976:1d72      ____Argc
 Module: C:\WATCOM2\lib286\dos\clibm.lib(histsplt.c)
-3976:1d9c      ___historical_splitparms
+3976:1d74      ___historical_splitparms
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nmemneed.c)
 364e:29fb      __nmemneed_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(grownear.c)
@@ -1429,7 +1426,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(mbisdbcs.c)
 3976:1cb6      ___IsDBCS
 Module: C:\WATCOM2\lib286\dos\clibm.lib(mbislead.c)
 364e:2eeb*     _ismbblead_
-3976:1d9e      ___MBCSIsTable
+3976:1d76      ___MBCSIsTable
 Module: C:\WATCOM2\lib286\dos\clibm.lib(amblksiz.c)
 3976:1cb8      __amblksiz
 Module: C:\WATCOM2\lib286\dos\clibm.lib(heapen.c)
@@ -1471,6 +1468,6 @@ C:\WATCOM2\lib286\dos\clibm.lib
                         +-----------------------+
 
 Stack size:  1000 (4096.)
-Memory size:  0003c600 (247296.)
+Memory size:  0003c5e0 (247264.)
 Entry point address: 364e:0a84
-Link time: 00:00.05
+Link time: 00:00.04

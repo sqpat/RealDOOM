@@ -26,17 +26,15 @@ EXTRN W_CacheLumpNumDirectWithOffset_:FAR
 EXTRN SB_DSP1xx_BeginPlayback_:NEAR
 EXTRN SB_SetPlaybackRate_:NEAR
 EXTRN _SB_DSP_Version:BYTE
-
-
-.DATA
-
-EXTRN _sfxcache_nodes:CACHE_NODE_PAGE_COUNT_T
-EXTRN _sfx_page_reference_count:BYTE
-
 EXTRN _SB_CardActive:BYTE
 EXTRN _SB_OldInt:DWORD
 
+.DATA
+
+
+
 .CODE
+
 
 
 

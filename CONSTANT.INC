@@ -2584,8 +2584,17 @@ _texturecache_nodes = 0B6Ch
 _allocatedflatsperpage = 0BCCh
 _usedspritepagemem = 0BD2h
 _usedtexturepagemem = 0BE6h
-_pageswapargs = 0BFEh
-_END_OF_FIXED_DATA = 0E32h
+_pageswapargs = 0C26h
+CURRENT_POSITION_1 = 0B1Ch
+CURRENT_POSITION_2 = 0B6Ch
+CURRENT_POSITION_3 = 0BCCh
+CURRENT_POSITION_4 = 0BD2h
+CURRENT_POSITION_5 = 0BE6h
+CURRENT_POSITION_6 = 0BFEh
+CURRENT_POSITION_7 = 0C06h
+CURRENT_POSITION_8 = 0C26h
+CURRENT_POSITION_9 = 0E5Ah
+_END_OF_FIXED_DATA = 0E5Ah
 
 ; Near vars as constants. Note these are all hex
 _segs_render = 02800h

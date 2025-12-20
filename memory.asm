@@ -499,6 +499,15 @@ REPT NUM_TEXTURE_PAGES
 	db  00
 ENDM
 
+REPT NUM_SFX_PAGES
+	db  00
+ENDM
+
+REPT NUM_SFX_PAGES
+	dw  00, 00
+ENDM
+
+
 ;pageswapargs
 
 

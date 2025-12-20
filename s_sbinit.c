@@ -50,8 +50,8 @@
 // sfx cache is done by updating lru array ordering on sound start and play.
 // anything with an >0 reference count cannot be deallocated, as it means an sfx is currently playing in that page.
 
-int8_t                  sfx_page_reference_count[NUM_SFX_PAGES];    // number of active sfx in this page. incremented/decremented as sounds start and stop playing
-cache_node_page_count_t sfxcache_nodes[NUM_SFX_PAGES];
+// int8_t                  sfx_page_reference_count[NUM_SFX_PAGES];    // number of active sfx in this page. incremented/decremented as sounds start and stop playing
+// cache_node_page_count_t sfxcache_nodes[NUM_SFX_PAGES];
 // int8_t                  sfxcache_tail;
 // int8_t                  sfxcache_head;
 // int8_t in_sound = false;

@@ -762,9 +762,13 @@
 #define CURRENT_POSITION_5  			  (((uint16_t) usedspritepagemem) + (sizeof(uint8_t) * NUM_SPRITE_CACHE_PAGES))
 #define usedtexturepagemem				  (((uint8_t __near*) (CURRENT_POSITION_5)))
 #define CURRENT_POSITION_6  			  (((uint16_t) usedtexturepagemem) + (sizeof(uint8_t) * NUM_TEXTURE_PAGES))
-#define pageswapargs				  	  (((uint16_t __near*) (CURRENT_POSITION_6)))
-#define CURRENT_POSITION_7  			  (((uint16_t) pageswapargs) + (sizeof(uint16_t) * total_pages))
-#define END_OF_FIXED_DATA  			 	  (((uint16_t __near*) (CURRENT_POSITION_7)))
+#define sfx_page_reference_count	  	  (((int8_t __near*) (CURRENT_POSITION_6)))
+#define CURRENT_POSITION_7  			  (((uint16_t) sfx_page_reference_count) + (sizeof(int8_t) * NUM_SFX_PAGES))
+#define sfxcache_nodes	 			 	  (((int8_t __near*) (CURRENT_POSITION_7)))
+#define CURRENT_POSITION_8  			  (((uint16_t) sfxcache_nodes) + (sizeof(cache_node_page_count_t) * NUM_SFX_PAGES))
+#define pageswapargs				  	  (((uint16_t __near*) (CURRENT_POSITION_8)))
+#define CURRENT_POSITION_9  			  (((uint16_t) pageswapargs) + (sizeof(uint16_t) * total_pages))
+#define END_OF_FIXED_DATA  			 	  (((uint16_t __near*) (CURRENT_POSITION_9)))
 
 #define MUS_SIZE_PER_PAGE 16256
 

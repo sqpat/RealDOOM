@@ -689,10 +689,15 @@ CURRENT_POSITION_6 =   			   	  (_usedtexturepagemem + (1 * NUM_TEXTURE_PAGES))
 
 
 
-_pageswapargs = 					  CURRENT_POSITION_6
+_sfx_page_reference_count =   		  CURRENT_POSITION_6
+CURRENT_POSITION_7 =   			   	  (_sfx_page_reference_count + (1 * NUM_SFX_PAGES))
+_sfxcache_nodes =   		  		  CURRENT_POSITION_7
+CURRENT_POSITION_8 =   			   	  (_sfxcache_nodes + ((SIZE CACHE_NODE_PAGE_COUNT_T) * NUM_SFX_PAGES))
 
-CURRENT_POSITION_7 =   			   	  (_pageswapargs + (2 * TOTAL_PAGES))
-_END_OF_FIXED_DATA = CURRENT_POSITION_7
+_pageswapargs = 					  CURRENT_POSITION_8
+CURRENT_POSITION_9 =   			   	  (_pageswapargs + (2 * TOTAL_PAGES))
+
+_END_OF_FIXED_DATA = CURRENT_POSITION_9
 
 
 
