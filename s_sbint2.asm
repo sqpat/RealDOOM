@@ -35,16 +35,12 @@ EXTRN S_InitSFXCache_:FAR
 PC_SPEAKER_SFX_DATA_TEMP_SEGMENT = 0D7E0h
 
 EXTRN _sb_port:WORD
-EXTRN _SB_MixerType:BYTE
 EXTRN _sb_dma:BYTE
 EXTRN _sb_irq:BYTE
 EXTRN _SB_IntController1Mask:BYTE 
 EXTRN _SB_IntController2Mask:BYTE 
 EXTRN _sb_dma_8:BYTE  ; todo clean up
-EXTRN _SB_OriginalVoiceVolumeLeft:BYTE
-EXTRN _SB_OriginalVoiceVolumeRight:BYTE
-EXTRN _SB_DSP_Version:WORD
-EXTRN _SB_CardActive:BYTE
+
 EXTRN _SB_OldInt:DWORD
 .CODE
 
@@ -160,6 +156,24 @@ str_SB_ERROR_B:
 db 0Ah, "SB INIT Error B", 0Ah, 00
 
 
+_SB_MixerType:
+db SB_TYPE_NONE
+
+_SB_OriginalVoiceVolumeLeft:
+db 255
+_SB_OriginalVoiceVolumeRight:
+db 255
+
+_SB_DSP_Version:
+dw 0
+
+PUBLIC _SB_DSP_Version
+
+_SB_CardActive:
+db 0
+
+PUBLIC _SB_CardActive
+
 PROC   SB_ReadDSP_ NEAR
 PUBLIC SB_ReadDSP_
 
@@ -255,7 +269,7 @@ ENDP
 PROC   SB_SaveVoiceVolume_ NEAR
 PUBLIC SB_SaveVoiceVolume_
 
-mov    al, byte ptr ds:[_SB_MixerType]
+mov    al, byte ptr cs:[_SB_MixerType]
 cmp    al, SB_TYPE_SB16
 je     save_both_voice_volume
 mov    ah, SB_MIXER_SBPROVOICE
@@ -267,13 +281,13 @@ ret
 save_both_voice_volume:
 mov    al, SB_MIXER_SB16VOICELEFT
 call   SB_ReadMixer_
-mov    byte ptr ds:[_SB_OriginalVoiceVolumeRight], al
+mov    byte ptr cs:[_SB_OriginalVoiceVolumeRight], al
 
 mov    ah, SB_MIXER_SB16VOICELEFT
 save_one_voice_volumne:
 mov    al, ah
 call   SB_ReadMixer_
-mov    byte ptr ds:[_SB_OriginalVoiceVolumeLeft], al
+mov    byte ptr cs:[_SB_OriginalVoiceVolumeLeft], al
 ret
 
 ENDP
@@ -282,7 +296,7 @@ PROC   SB_RestoreVoiceVolume_ NEAR
 PUBLIC SB_RestoreVoiceVolume_
 
 push   dx
-mov    al, byte ptr ds:[_SB_MixerType]
+mov    al, byte ptr cs:[_SB_MixerType]
 cmp    al, SB_TYPE_SB16
 je     restore_both_voice_volume
 mov    ah, SB_MIXER_SBPROVOICE
@@ -293,13 +307,13 @@ je     restore_one_voice_volumne
 pop    dx
 ret
 restore_both_voice_volume:
-mov    dl, byte ptr ds:[_SB_OriginalVoiceVolumeRight]
+mov    dl, byte ptr cs:[_SB_OriginalVoiceVolumeRight]
 call   SB_WriteMixer_
 
 mov    ah, SB_MIXER_SB16VOICELEFT
 restore_one_voice_volumne:
 mov    al, ah
-mov    dl, byte ptr ds:[_SB_OriginalVoiceVolumeLeft]
+mov    dl, byte ptr cs:[_SB_OriginalVoiceVolumeLeft]
 call   SB_WriteMixer_
 pop    dx
 ret
@@ -636,7 +650,7 @@ PUBLIC  SB_SetPlaybackRate_
 
 push   dx
 
-cmp    byte ptr ds:[_SB_DSP_Version+1], (SB_DSP_VERSION4XX SHR 8)
+cmp    byte ptr cs:[_SB_DSP_Version+1], (SB_DSP_VERSION4XX SHR 8)
 jl     do_lower_version_set_playback_rate
 xchg   ax, dx
 
@@ -687,7 +701,7 @@ mov     al, byte ptr ds:[_sb_dma_8]
 call    SB_DMA_EndTransfer_  ; Disable the DMA channel
 mov     al, 0D3h
 call    SB_WriteDSP_  ; speaker off
-mov     byte ptr ds:[_SB_CardActive], 0
+mov     byte ptr cs:[_SB_CardActive], 0
 ret
 
 ENDP
@@ -736,7 +750,7 @@ mov    al, 0D1h
 call   SB_WriteDSP_   ; turn on speaker
 
 ;  Program the sound card to start the transfer.
-mov     al, byte ptr ds:[_SB_DSP_Version+1]
+mov     al, byte ptr cs:[_SB_DSP_Version+1]
 cmp     al, 2
 jl      do_1xx_setup
 cmp     al, 4
@@ -751,7 +765,7 @@ jmp     done_with_setup
 do_1xx_setup:
 call    SB_DSP1xx_BeginPlayback_
 done_with_setup:
-mov     byte ptr ds:[_SB_CardActive], 1
+mov     byte ptr cs:[_SB_CardActive], 1
 mov     al, SB_OK
 
 failed_setup_playback:
@@ -772,28 +786,28 @@ call    SB_WriteDSP_  ; get version
 call    SB_ReadDSP_
 cmp     al, SB_ERROR
 je      failed_getdspversion
-mov     byte ptr ds:[_SB_DSP_Version+1], al
+mov     byte ptr cs:[_SB_DSP_Version+1], al
 call    SB_ReadDSP_
 cmp     al, SB_ERROR
 je      failed_getdspversion
-mov     byte ptr ds:[_SB_DSP_Version+0], al
+mov     byte ptr cs:[_SB_DSP_Version+0], al
 
-mov     ah, byte ptr ds:[_SB_DSP_Version+1]
+mov     ah, byte ptr cs:[_SB_DSP_Version+1]
 cmp     ah, 4
 jge     set_ver_4
 cmp     ah, 2
 jg      set_ver_3
 
-mov     byte ptr ds:[_SB_MixerType], SB_TYPE_NONE
+mov     byte ptr cs:[_SB_MixerType], SB_TYPE_NONE
 
 failed_getdspversion:
 
 ret
 set_ver_4:
-mov     byte ptr ds:[_SB_MixerType], SB_TYPE_SB16
+mov     byte ptr cs:[_SB_MixerType], SB_TYPE_SB16
 ret
 set_ver_3:
-mov     byte ptr ds:[_SB_MixerType], SB_TYPE_SBPRO
+mov     byte ptr cs:[_SB_MixerType], SB_TYPE_SBPRO
 ret
 
 ENDP

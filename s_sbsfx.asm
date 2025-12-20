@@ -25,6 +25,7 @@ EXTRN Z_QuickMapSFXPageFrame_:FAR
 EXTRN W_CacheLumpNumDirectWithOffset_:FAR
 EXTRN SB_DSP1xx_BeginPlayback_:NEAR
 EXTRN SB_SetPlaybackRate_:NEAR
+EXTRN _SB_DSP_Version:BYTE
 
 
 .DATA
@@ -36,9 +37,7 @@ EXTRN _sfxcache_tail:BYTE
 
 EXTRN _sb_port:BYTE
 EXTRN _sb_irq:BYTE
-EXTRN _SB_DSP_Version:BYTE
 EXTRN _SB_CardActive:BYTE
-EXTRN _SB_Mixer_Status:BYTE
 EXTRN _SB_OldInt:DWORD
 
 .CODE
@@ -2503,7 +2502,7 @@ xchg    ax, si    ; si = sample_rate_this_instance
 
 mov   dx, word ptr ds:[_sb_port]
 
-cmp     word ptr ds:[_SB_DSP_Version], SB_DSP_VERSION4XX
+cmp     word ptr cs:[_SB_DSP_Version], SB_DSP_VERSION4XX
 jge     handle_4xx_sb_interrupt
 
 ;        // Older card - can't detect if an interrupt occurred.
@@ -2514,7 +2513,7 @@ in    al, dx
 jmp    done_acking_interrupt
 
 handle_dsp_1xx:
-cmp    byte ptr ds:[_SB_CardActive], 0
+cmp    byte ptr cs:[_SB_CardActive], 0
 je     done_with_dsp_1xx
 call   SB_DSP1xx_BeginPlayback_
 
@@ -2531,7 +2530,7 @@ out   dx, al
 ; add   dl, (SB_MIXERADDRESSPORT - SB_MIXERDATAPORT)
 inc   dx  ; increment port by one
 in    al, dx
-mov   byte ptr ds:[_SB_Mixer_Status], al
+
 ; todo i dont think we ever do 16 bit...
 
 ;         if (SB_Mixer_Status & MIXER_8BITDMA_INT) {
@@ -2550,7 +2549,7 @@ done_acking_interrupt:
 ;        }
 ;	}
 
-cmp     word ptr ds:[_SB_DSP_Version], SB_DSP_VERSION2XX
+cmp     word ptr cs:[_SB_DSP_Version], SB_DSP_VERSION2XX
 jl      handle_dsp_1xx
 
 done_with_dsp_1xx:

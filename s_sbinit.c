@@ -42,15 +42,13 @@ uint8_t     SB_IntController2Mask;
 
 
 
-int8_t  SB_CardActive = false;
-int16_t_union SB_DSP_Version;
-uint8_t SB_MixerType = SB_TYPE_NONE;
-uint8_t SB_OriginalVoiceVolumeLeft = 255;
-uint8_t SB_OriginalVoiceVolumeRight = 255;
+// int8_t  SB_CardActive = false;
+// int16_t_union SB_DSP_Version;
+// uint8_t SB_MixerType = SB_TYPE_NONE;
+// uint8_t SB_OriginalVoiceVolumeLeft = 255;
+// uint8_t SB_OriginalVoiceVolumeRight = 255;
 
 
-
-uint8_t SB_Mixer_Status;
 // sfx cache is done by updating lru array ordering on sound start and play.
 // anything with an >0 reference count cannot be deallocated, as it means an sfx is currently playing in that page.
 
@@ -68,15 +66,14 @@ int8_t                  sfxcache_head;
 
 
 
-// todo this is 16 bit 
-// need to handle 8 bit case too...
+/*
 uint8_t IRQ_TO_INTERRUPT_MAP[16] =
     {
         INVALID_IRQ, INVALID_IRQ, 0x0A, 	   0x0B,
         INVALID_IRQ, 0x0D, 		  INVALID_IRQ, 0x0F,
         INVALID_IRQ, INVALID_IRQ, 0x72, 	   0x73,
         0x74, 		 INVALID_IRQ, INVALID_IRQ, 0x77};
-
+*/
 
 
 uint8_t __near SB_ReadDSP();
