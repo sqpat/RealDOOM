@@ -24,20 +24,18 @@
 
 
 
-void( __interrupt __far *SB_OldInt)(void);
 
 
 // actual variables that get set.
-// todo: set from environment variable.
-int16_t sb_port = -1;
-int16_t sb_dma  = -1;
-int16_t sb_irq  = -1;
+// int16_t sb_port = -1;
+// uint8_t sb_dma  = -1;
+// uint8_t sb_irq  = -1;
 
 // int8_t sb_dma_16 = UNDEFINED_DMA;
-int8_t sb_dma_8  = UNDEFINED_DMA;
+// int8_t sb_dma_8  = UNDEFINED_DMA;
 
-uint8_t     SB_IntController1Mask;
-uint8_t     SB_IntController2Mask;
+// uint8_t     SB_IntController1Mask;
+// uint8_t     SB_IntController2Mask;
 
 
 
@@ -54,8 +52,8 @@ uint8_t     SB_IntController2Mask;
 
 int8_t                  sfx_page_reference_count[NUM_SFX_PAGES];    // number of active sfx in this page. incremented/decremented as sounds start and stop playing
 cache_node_page_count_t sfxcache_nodes[NUM_SFX_PAGES];
-int8_t                  sfxcache_tail;
-int8_t                  sfxcache_head;
+// int8_t                  sfxcache_tail;
+// int8_t                  sfxcache_head;
 // int8_t in_sound = false;
 
 

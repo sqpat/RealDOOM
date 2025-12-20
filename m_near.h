@@ -185,7 +185,7 @@
 #define spanfunc_jump_segment_storage   (*((segment_t __near*)               (_NULL_OFFSET + 0x00EA)))
 
 #define totalkills 			            (*(int16_t __near *)                 (_NULL_OFFSET + 0x00EC))
-#define totalitems 			            (*(int16_t __near *)                 (_NULL_OFFSET + 0x00EC))
+#define totalitems 			            (*(int16_t __near *)                 (_NULL_OFFSET + 0x00EE))
 #define totalsecret 		            (*(int16_t __near *)                 (_NULL_OFFSET + 0x00F0))
 //f2 unused
 
@@ -224,7 +224,15 @@
 #define tmdropoffz                      (*((short_height_t __near*)          (_NULL_OFFSET + 0x0126)))
 
 #define MULT_4096                       (((uint16_t   __near*)               (_NULL_OFFSET + 0x0128)))
-#define FLAT_CACHE_PAGE                 (((uint16_t   __near*)               (_NULL_OFFSET + 0x0130)))
+
+#define sb_port                         (*((uint16_t   __near*)              (_NULL_OFFSET + 0x0130)))
+#define sb_dma                          (*((uint8_t   __near*)               (_NULL_OFFSET + 0x0132)))
+#define sb_irq                          (*((uint8_t   __near*)               (_NULL_OFFSET + 0x0133)))
+#define sfxcache_head                   (*((int8_t   __near*)                (_NULL_OFFSET + 0x0134)))
+#define sfxcache_tail                   (*((int8_t   __near*)                (_NULL_OFFSET + 0x0135)))
+
+
+// 134-137 unused
 #define visplanelookupsegments          (((segment_t   __near*)              (_NULL_OFFSET + 0x0138)))
 
 #define firstflat                       (*((int16_t    __near*)              (_NULL_OFFSET + 0x013E)))

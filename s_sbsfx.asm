@@ -32,11 +32,7 @@ EXTRN _SB_DSP_Version:BYTE
 
 EXTRN _sfxcache_nodes:CACHE_NODE_PAGE_COUNT_T
 EXTRN _sfx_page_reference_count:BYTE
-EXTRN _sfxcache_head:BYTE
-EXTRN _sfxcache_tail:BYTE
 
-EXTRN _sb_port:BYTE
-EXTRN _sb_irq:BYTE
 EXTRN _SB_CardActive:BYTE
 EXTRN _SB_OldInt:DWORD
 
@@ -2393,7 +2389,7 @@ ENDP
 
 ; todo test?
 do_chain:
-les    cx, dword ptr ds:[_SB_OldInt]
+les    cx, dword ptr cs:[_SB_OldInt]
 mov    ax, es
 ;jmp    locallib_chain_intr_
 

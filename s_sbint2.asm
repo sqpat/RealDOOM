@@ -34,14 +34,8 @@ EXTRN S_InitSFXCache_:FAR
 
 PC_SPEAKER_SFX_DATA_TEMP_SEGMENT = 0D7E0h
 
-EXTRN _sb_port:WORD
-EXTRN _sb_dma:BYTE
-EXTRN _sb_irq:BYTE
-EXTRN _SB_IntController1Mask:BYTE 
-EXTRN _SB_IntController2Mask:BYTE 
-EXTRN _sb_dma_8:BYTE  ; todo clean up
 
-EXTRN _SB_OldInt:DWORD
+
 .CODE
 
 
@@ -166,13 +160,26 @@ db 255
 
 _SB_DSP_Version:
 dw 0
-
 PUBLIC _SB_DSP_Version
 
 _SB_CardActive:
 db 0
-
 PUBLIC _SB_CardActive
+
+_SB_OldInt:
+dw 0,_SB_OldInt
+PUBLIC _SB_OldInt
+
+_SB_IntController2Mask:
+db 0
+_SB_IntController1Mask:
+db 0
+
+UNDEFINED_DMA = -1
+
+_sb_dma_8:
+db UNDEFINED_DMA
+
 
 PROC   SB_ReadDSP_ NEAR
 PUBLIC SB_ReadDSP_
@@ -558,7 +565,7 @@ PUBLIC  SB_DisableInterrupt_
 push    cx
 
 mov     al, byte ptr ds:[_sb_irq]
-mov     ch, byte ptr ds:[_SB_IntController1Mask]
+mov     ch, byte ptr cs:[_SB_IntController1Mask]
 
 
 mov     ah, 1
@@ -593,7 +600,7 @@ out     021h, al
 
 in      al, 0A1h
 and     al, ah
-and     ah, byte ptr ds:[_SB_IntController2Mask]
+and     ah, byte ptr cs:[_SB_IntController2Mask]
 or      al, ah
 out     0A1h, al
 
@@ -697,7 +704,7 @@ PUBLIC  SB_StopPlayback_
 call    SB_DisableInterrupt_
 mov     al, SB_DSP_HALT8BITTRANSFER
 call    SB_WriteDSP_  ; halt command
-mov     al, byte ptr ds:[_sb_dma_8]
+mov     al, byte ptr cs:[_sb_dma_8]
 call    SB_DMA_EndTransfer_  ; Disable the DMA channel
 mov     al, 0D3h
 call    SB_WriteDSP_  ; speaker off
@@ -719,13 +726,13 @@ mov    ax, SB_TOTALBUFFERSIZE
 push    dx
 
 xchg    ax, dx  ; dx gets buffer_size
-mov     al, byte ptr ds:[_sb_dma_8]
+mov     al, byte ptr cs:[_sb_dma_8]
 cbw  ; zero ah
 call    DMA_SetupTransfer_
 pop     dx
 
 jnc     failed_setup_playback
-mov     al, byte ptr ds:[_sb_dma_8]
+mov     al, byte ptr cs:[_sb_dma_8]
 mov     byte ptr ds:[_sb_dma], al
 
 
@@ -829,7 +836,7 @@ push    cx
 xor     bx, bx
 mov     bl, byte ptr ds:[_sb_irq]
 mov     al, byte ptr cs:[_IRQ_TO_INTERRUPT_MAP + bx]
-les     bx, dword ptr ds:[_SB_OldInt]
+les     bx, dword ptr cs:[_SB_OldInt]
 mov     cx, es
 ;locallib_dos_setvect_old(IRQ_TO_INTERRUPT_MAP[sb_irq], SB_OldInt);
 
@@ -852,18 +859,17 @@ PUBLIC  SB_InitCard_
 
 mov     ax, word ptr ds:[_snd_SBirq]  ; sbdma in ah
 mov     byte ptr ds:[_sb_irq], al
-mov     byte ptr ds:[_sb_dma_8], ah   ; todo combine...
+mov     byte ptr cs:[_sb_dma_8], ah   ; todo combine...
 mov     ax, word ptr ds:[_snd_SBport]
 mov     word ptr ds:[_sb_port], ax
 
 ; SB_IntController1Mask = inp(0x21);
 ; SB_IntController2Mask = inp(0xA1);
 ; status = SB_ResetDSP();
-; todo combine in 1
 in     al, 021h
-mov    byte ptr ds:[_SB_IntController1Mask], al
+mov    ah, al
 in     al, 0A1h
-mov    byte ptr ds:[_SB_IntController2Mask], al
+mov    word ptr cs:[_SB_IntController2Mask], ax
 call   SB_ResetDSP_
 
 cmp    al, SB_OK
@@ -876,7 +882,7 @@ call   SB_SetPlaybackRate_          ;    SB_SetPlaybackRate(SAMPLE_RATE_11_KHZ_U
 
 
 ;    used_dma = sb_dma_8;
-mov    al, byte ptr ds:[_sb_dma_8]
+mov    al, byte ptr cs:[_sb_dma_8]
 
 call   SB_DMA_VerifyChannel_
 
@@ -904,8 +910,8 @@ push   dx   ; going to get clobbered by dword return
 push   ax   ; store sb_int
 call   locallib_dos_getvect_
 
-mov    word ptr ds:[_SB_OldInt + 0], ax
-mov    word ptr ds:[_SB_OldInt + 2], dx
+mov    word ptr cs:[_SB_OldInt + 0], ax
+mov    word ptr cs:[_SB_OldInt + 2], dx
 
 pop    ax  ; sb_int
 

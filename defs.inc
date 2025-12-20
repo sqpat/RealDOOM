@@ -143,10 +143,10 @@ _destscreen    = 					_NULL_OFFSET + 000E4h
 _tantoangle_segment  = 				_NULL_OFFSET + 000E8h
 _spanfunc_jump_segment_storage = 	_NULL_OFFSET + 000EAh
 
-; ec-f4 free
 _totalkills = 						_NULL_OFFSET + 000ECh
 _totalitems = 						_NULL_OFFSET + 000EEh
 _totalsecret = 						_NULL_OFFSET + 000F0h
+; f2-f3 free
 
 
 _validcount_global =				_NULL_OFFSET + 000F4h
@@ -162,8 +162,8 @@ _vileobj = 							_NULL_OFFSET + 00100h
 _fastparm =	                        _NULL_OFFSET + 00100h
 _gameskill =	                    _NULL_OFFSET + 00101h
 
+;102-103 unused
 
-;_EMS_PAGE =                 	    _NULL_OFFSET + 00102h
 _viewangle_shiftright3 = 			_NULL_OFFSET + 00104h
 _dc_source_segment =	 			_NULL_OFFSET + 0010Ah
 _ds_y = 				    		_NULL_OFFSET + 0010Ch
@@ -187,8 +187,14 @@ _tmdropoffz =                       _NULL_OFFSET + 00126h
 
 
 _MULT_4096 =                    	_NULL_OFFSET + 00128h
-; todo unused
-_FLAT_CACHE_PAGE =                  _NULL_OFFSET + 00130h
+_sb_port =              	      	_NULL_OFFSET + 00130h
+_sb_dma =           	         	_NULL_OFFSET + 00132h
+_sb_irq =                       	_NULL_OFFSET + 00133h
+_sfxcache_head =                    _NULL_OFFSET + 00134h
+_sfxcache_tail =                    _NULL_OFFSET + 00135h
+
+; todo 136 to 137 unused
+
 _visplanelookupsegments =           _NULL_OFFSET + 00138h
 _firstflat =                  		_NULL_OFFSET + 0013Eh
 ; 140h
