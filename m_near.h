@@ -188,8 +188,8 @@
 #define totalitems 			            (*(int16_t __near *)                 (_NULL_OFFSET + 0x00EE))
 #define totalsecret 		            (*(int16_t __near *)                 (_NULL_OFFSET + 0x00F0))
 
-// #define TS_TimesInInterrupt	            (*(int8_t __near *)                  (_NULL_OFFSET + 0x00F2))
-// #define TS_InInterrupt		            (*(int8_t __near *)                  (_NULL_OFFSET + 0x00F3))
+#define TS_TimesInInterrupt	            (*(int8_t __near *)                  (_NULL_OFFSET + 0x00F2))
+#define TS_InInterrupt		            (*(int8_t __near *)                  (_NULL_OFFSET + 0x00F3))
 
 
 
@@ -209,7 +209,7 @@
 #define fastparm	                    (*((boolean __near*)                 (_NULL_OFFSET + 0x0100)))
 #define gameskill	                    (*((skill_t __near*)                 (_NULL_OFFSET + 0x0101)))
 
-// #define TaskServiceCount	            (*(uint16_t __near *)                (_NULL_OFFSET + 0x0102))
+#define TaskServiceCount	            (*(uint16_t __near *)                (_NULL_OFFSET + 0x0102))
 
 #define viewangle_shiftright3           (*((fineangle_t __near*)             (_NULL_OFFSET + 0x0104)))
 // 108 is constant
@@ -717,9 +717,7 @@
 
 #define HeadTask  		   				  (*((task __near*)                  (_NULL_OFFSET + 0x0A20)))
 #define pagetic					 		  (*((int16_t __near*)               (_NULL_OFFSET + 0x0A22)))
-// #define MUSTask  		   				  (*((task __near*)                  (_NULL_OFFSET + 0x0A22)))
 
-// #define oldkeyboardisr                    ((uint32_t __near *)                 (_NULL_OFFSET + 0x0A24))
 
 // #define STRING_HELP2                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0A26))
 // #define STRING_HELP                       ((int8_t __near *)                 (_NULL_OFFSET + 0x0A2C))

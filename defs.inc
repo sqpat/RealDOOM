@@ -146,8 +146,8 @@ _spanfunc_jump_segment_storage = 	_NULL_OFFSET + 000EAh
 _totalkills = 						_NULL_OFFSET + 000ECh
 _totalitems = 						_NULL_OFFSET + 000EEh
 _totalsecret = 						_NULL_OFFSET + 000F0h
-;_TS_TimesInInterrupt = 				_NULL_OFFSET + 000F2h
-;_TS_InInterrupt = 					_NULL_OFFSET + 000F3h
+_TS_TimesInInterrupt = 				_NULL_OFFSET + 000F2h
+_TS_InInterrupt = 					_NULL_OFFSET + 000F3h
 
 
 
@@ -164,7 +164,7 @@ _vileobj = 							_NULL_OFFSET + 00100h
 _fastparm =	                        _NULL_OFFSET + 00100h
 _gameskill =	                    _NULL_OFFSET + 00101h
 
-;_TaskServiceCount =	                _NULL_OFFSET + 00102h
+_TaskServiceCount =	                _NULL_OFFSET + 00102h
 
 
 _viewangle_shiftright3 = 			_NULL_OFFSET + 00104h

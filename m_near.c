@@ -49,7 +49,6 @@ boolean         autostart;
 //
 //  DEMO LOOP
 //
-int16_t             pageticREMOVEME;
 int8_t                    *pagename;
 
 
@@ -100,7 +99,6 @@ boolean grmode = 0;
 boolean novideo; // if true, stay in text mode for debugging
 
 
-void (__interrupt __far_func *oldkeyboardisrREMOVEME) (void) = NULL;
 gamestate_t         oldgamestate = -1;
  
  
@@ -220,14 +218,6 @@ int8_t __far*   defdemoname;
 
 
 
-task HeadTaskREMOVEME = {0, false};
-
-void( __interrupt __far_func *OldInt8)(void);
-volatile uint16_t TaskServiceCount;
-
-volatile int8_t TS_TimesInInterrupt;
-int8_t TS_Installed = false;
-volatile int8_t TS_InInterrupt = false;
 
 
 
@@ -375,3 +365,12 @@ int32_t musdriverstartposition;
 
 
 
+
+int16_t             pageticREMOVEME;
+void (__interrupt __far_func *oldkeyboardisrREMOVEME) (void) = NULL;
+task HeadTaskREMOVEME = {0, false};
+void( __interrupt __far_func *OldInt8REMOVEME)(void);
+volatile uint16_t TaskServiceCountREMOVEME;
+volatile int8_t TS_TimesInInterruptREMOVEME;
+int8_t TS_InstalledREMOVEME = false;
+volatile int8_t TS_InInterruptREMOVEME = false;

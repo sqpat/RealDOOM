@@ -103,11 +103,11 @@ EXTRN _mousebfire:BYTE
 EXTRN _mousebstrafe:BYTE
 EXTRN _mousebforward:BYTE
 EXTRN ___iob:WORD
-EXTRN _OldInt8:DWORD
-EXTRN _TS_Installed:BYTE
 
 
 .CODE
+EXTRN _OldInt8:DWORD
+EXTRN _TS_Installed:BYTE
 
 SIZEOF_FILE = 0Eh
 STDOUT = OFFSET ___iob + SIZEOF_FILE
@@ -3115,13 +3115,13 @@ xor   ax, ax
 out   040h, al
 out   040h, al
 sti
-cmp   byte ptr ds:[_TS_Installed], al ; 0 
+cmp   byte ptr cs:[_TS_Installed], al ; 0 
 je    exit_shutdown_timer
 push  bx
 push  dx
-les   dx, dword ptr ds:[_OldInt8]
+les   dx, dword ptr cs:[_OldInt8]
 mov   bx, es
-mov   byte ptr ds:[_TS_Installed], al ; 0 
+mov   byte ptr cs:[_TS_Installed], al ; 0 
 mov   al, 8
 call  locallib_dos_setvect_
 pop   dx
