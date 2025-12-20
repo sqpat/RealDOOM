@@ -715,11 +715,12 @@
 #define message_on     				      (*((boolean __near*)               (_NULL_OFFSET + 0x0A1E)))
 #define message_nottobefuckedwith         (*((boolean __near*)               (_NULL_OFFSET + 0x0A1F)))
 
-// #define HeadTask  		   				  (*((task __near*)                  (_NULL_OFFSET + 0x0A20)))
-// #define pagetic					 		  (*((int16_t __near*)               (_NULL_OFFSET + 0x0A22)))
+#define HeadTask  		   				  (*((task __near*)                  (_NULL_OFFSET + 0x0A20)))
+#define pagetic					 		  (*((int16_t __near*)               (_NULL_OFFSET + 0x0A22)))
 // #define MUSTask  		   				  (*((task __near*)                  (_NULL_OFFSET + 0x0A22)))
 
-// #define STRING_HELP1                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0A20))
+// #define oldkeyboardisr                    ((uint32_t __near *)                 (_NULL_OFFSET + 0x0A24))
+
 // #define STRING_HELP2                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0A26))
 // #define STRING_HELP                       ((int8_t __near *)                 (_NULL_OFFSET + 0x0A2C))
 
@@ -904,7 +905,6 @@ extern boolean grmode;
 extern boolean novideo; // if true, stay in text mode for debugging
 #define KBDQUESIZE 32
 
-extern void (__interrupt __far_func *oldkeyboardisr) (void);
 extern gamestate_t         oldgamestate;
 
 

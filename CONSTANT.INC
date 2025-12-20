@@ -1,5 +1,5 @@
 ; Far Segments and other constants 
-FIXED_DS_SEGMENT = 03DC0h
+FIXED_DS_SEGMENT = 03D80h
 SECTORS_SEGMENT = 02283h
 VERTEXES_SEGMENT = 023DFh
 SIDES_SEGMENT = 02576h
@@ -2597,21 +2597,21 @@ CURRENT_POSITION_9 = 0E5Ah
 _END_OF_FIXED_DATA = 0E5Ah
 
 ; Near vars as constants. Note these are all hex
-_segs_render = 02400h
-_seg_normalangles = 07C00h
-_sides_render = 09200h
-_vissprites = 0BA70h
-_player_vissprites = 0CEA0h
-_texturepatchlump_offset = 0CEF0h
-_visplaneheaders = 0D250h
-_visplanepiclights = 0D640h
-_scalelightfixed = 0D740h
-_scalelight = 0D770h
-_patch_sizes = 0DA70h
-_thinkerlist = 02400h
-_mobjinfo = 0B460h
-_linebuffer = 0BA50h
-_sectors_physics = 0CE30h
+_segs_render = 02800h
+_seg_normalangles = 08000h
+_sides_render = 09600h
+_vissprites = 0BE70h
+_player_vissprites = 0D2A0h
+_texturepatchlump_offset = 0D2F0h
+_visplaneheaders = 0D650h
+_visplanepiclights = 0DA40h
+_scalelightfixed = 0DB40h
+_scalelight = 0DB70h
+_patch_sizes = 0DE70h
+_thinkerlist = 02800h
+_mobjinfo = 0B860h
+_linebuffer = 0BE50h
+_sectors_physics = 0D230h
 NUM_FLAT_CACHE_PAGES = 06h
 NUM_SPRITE_CACHE_PAGES = 014h
 NUM_TEXTURE_PAGES = 018h

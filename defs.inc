@@ -640,9 +640,11 @@ _message_dontfuckwithme =            _NULL_OFFSET + 00A1Dh
 _message_on =     			         _NULL_OFFSET + 00A1Eh
 _message_nottobefuckedwith =         _NULL_OFFSET + 00A1Fh
 
-;_HeadTask =					         _NULL_OFFSET + 00A20h
-;_pagetic = 							 _NULL_OFFSET + 00A22h
 
+_HeadTask =					         _NULL_OFFSET + 00A20h
+_pagetic = 							 _NULL_OFFSET + 00A22h
+
+;_oldkeyboardisr =					 _NULL_OFFSET + 00A24h
 
 ; free A26-A30
 

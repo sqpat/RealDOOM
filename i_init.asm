@@ -135,8 +135,8 @@ call DEBUG_PRINT_NOARG_CS_
 
 mov   al, KEYBOARDINT
 call  locallib_dos_getvect_
-mov   word ptr ds:[_oldkeyboardisr + 0], ax
-mov   word ptr ds:[_oldkeyboardisr + 2], es  
+mov   word ptr cs:[_oldkeyboardisr + 0], ax
+mov   word ptr cs:[_oldkeyboardisr + 2], es  
 mov   al, KEYBOARDINT
 mov   bx, cs
 mov   dx, OFFSET I_KeyboardISR_

@@ -33,7 +33,6 @@ EXTRN G_InitNew_:NEAR
 
 .DATA
 
-EXTRN _pagetic:WORD
 EXTRN _pagename:WORD
 EXTRN _defdemoname:DWORD
 EXTRN _precache:BYTE

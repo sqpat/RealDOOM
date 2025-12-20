@@ -30,7 +30,6 @@ EXTRN _TS_Installed:BYTE
 EXTRN _TaskServiceCount:WORD
 EXTRN _TS_TimesInInterrupt:BYTE
 EXTRN _OldInt8:DWORD
-EXTRN _HeadTask:TASK_T
 
 
 .CODE

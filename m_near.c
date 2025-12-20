@@ -49,7 +49,7 @@ boolean         autostart;
 //
 //  DEMO LOOP
 //
-int16_t             pagetic;
+int16_t             pageticREMOVEME;
 int8_t                    *pagename;
 
 
@@ -100,7 +100,7 @@ boolean grmode = 0;
 boolean novideo; // if true, stay in text mode for debugging
 
 
-void (__interrupt __far_func *oldkeyboardisr) (void) = NULL;
+void (__interrupt __far_func *oldkeyboardisrREMOVEME) (void) = NULL;
 gamestate_t         oldgamestate = -1;
  
  
@@ -220,7 +220,7 @@ int8_t __far*   defdemoname;
 
 
 
-task HeadTask = {0, false};
+task HeadTaskREMOVEME = {0, false};
 
 void( __interrupt __far_func *OldInt8)(void);
 volatile uint16_t TaskServiceCount;

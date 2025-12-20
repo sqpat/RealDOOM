@@ -103,7 +103,6 @@ EXTRN _mousebfire:BYTE
 EXTRN _mousebstrafe:BYTE
 EXTRN _mousebforward:BYTE
 EXTRN ___iob:WORD
-EXTRN _oldkeyboardisr:DWORD
 EXTRN _OldInt8:DWORD
 EXTRN _TS_Installed:BYTE
 
@@ -228,6 +227,10 @@ dw  019h, 032h
 _sidemove:
 dw  018h, 028h
 
+_oldkeyboardisr:
+dw 0, 0
+
+PUBLIC _oldkeyboardisr
 PUBLIC _forwardmove
 PUBLIC _sidemove
 
@@ -3132,13 +3135,13 @@ PROC    I_ShutdownKeyboard_ NEAR
 PUBLIC  I_ShutdownKeyboard_
 
 xor   ax, ax
-cmp   word ptr ds:[_oldkeyboardisr], ax
+cmp   word ptr cs:[_oldkeyboardisr], ax
 je    exit_shutdown_keyboard
 push  bx
 push  dx
-les   dx, dword ptr ds:[_oldkeyboardisr]
+les   dx, dword ptr cs:[_oldkeyboardisr]
 mov   bx, es
-mov   byte ptr ds:[_oldkeyboardisr], al ; 0 
+;mov   byte ptr cs:[_oldkeyboardisr], al ; 0 
 mov   al, KEYBOARDINT
 call  locallib_dos_setvect_
 pop   dx

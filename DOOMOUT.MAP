@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/12/20 15:56:55
+Created on:       25/12/20 16:18:57
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -29,7 +29,7 @@ D_INIT_TEXT            CODE           AUTO           0000:0000       00000a05
 ST_INIT_TEXT           CODE           AUTO           0000:0a06       00000203
 R_INIT_TEXT            CODE           AUTO           0000:0c0a       000007af
 W_INIT_TEXT            CODE           AUTO           0000:13ba       0000017d
-I_INIT_TEXT            CODE           AUTO           0000:1538       000001a6
+I_INIT_TEXT            CODE           AUTO           0000:1538       000001a8
 z_init_TEXT            CODE           AUTO           0000:16e0       00000a64
 p_init_TEXT            CODE           AUTO           0000:2150       00000498
 i_main_TEXT            CODE           AUTO           0000:25f0       00000010
@@ -47,8 +47,8 @@ D_DMX_TEXT             CODE           AUTO           0000:3bda       00000125
 D_INT_TEXT             CODE           AUTO           0000:3d00       0000014d
 MEMORY_TEXT            CODE           AUTO           0000:3e4e       00000000
 MATH_TEXT              CODE           AUTO           0000:3e4e       00000510
-MAIN_TEXT              CODE           AUTO           0000:435e       0000169d
-G_SETUP_TEXT           CODE           AUTO           0000:59fc       0000020e
+MAIN_TEXT              CODE           AUTO           0000:435e       000016a0
+G_SETUP_TEXT           CODE           AUTO           0000:59fe       0000020e
 r_setup_TEXT           CODE           AUTO           0000:5c10       0000046a
 ST_SETUP_TEXT          CODE           AUTO           0000:607a       00000125
 HU_SETUP_TEXT          CODE           AUTO           0000:61a0       00000246
@@ -97,24 +97,23 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 0b9e:1174      _defdemoname
 0b9e:1178      _p_init_sprtemp
 0b9e:117c      _TaskServiceCount
-0b9e:117e      _pagetic
+0b9e:117e*     _pageticREMOVEME
 0b9e:1180      _myargc
 0b9e:1182      _myargv
 0b9e:1184      _p_init_maxframe
 0b9e:1186      _pagename
 0b9e:1188      _wminfo
 0b9e:119d      _TS_TimesInInterrupt
-0b9e:119e      _mousebforward
-0b9e:119f      _turnheld
-0b9e:11a0      _usemouse
+0b9e:119e      _turnheld
+0b9e:119f      _usemouse
+0b9e:11a0      _mousebforward
 0b9e:11a1      _key_speed
 0b9e:11a2      _mousebfire
 0b9e:11a3      _key_left
-0b9e:11a4      _timingdemo
-0b9e:11a5      _key_fire
-0b9e:11a6      _key_strafe
-0b9e:11a7      _noblit
-0b9e:11a8      _key_straferight
+0b9e:11a4      _key_fire
+0b9e:11a5      _key_strafe
+0b9e:11a6      _noblit
+0b9e:11a7      _key_straferight
 0b9e:0e60      _singletics
 0b9e:0e64      _P_SpawnMapThing
 0b9e:0e68      _R_WriteBackViewConstantsSpanCall
@@ -127,21 +126,22 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 0b9e:0e84*     _S_StartSound
 0b9e:0e88      _M_Init
 0b9e:0e8c      _grmode
-0b9e:0e90      _oldkeyboardisr
+0b9e:0e90*     _oldkeyboardisrREMOVEME
 0b9e:0e94      _oldgamestate
 0b9e:0e95      _precache
 0b9e:0e96      _mousebuttons
-0b9e:0e98      _HeadTask
+0b9e:0e98*     _HeadTaskREMOVEME
 0b9e:0e9a      _TS_Installed
 0b9e:0e9b      _TS_InInterrupt
 0b9e:0e9c      _currentoverlay
-0b9e:11a9      _key_up
-0b9e:11aa      _mousebstrafe
-0b9e:11ab      _singledemo
-0b9e:11ac      _key_down
-0b9e:11ad      _key_use
-0b9e:11ae      _key_right
-0b9e:11af      _key_strafeleft
+0b9e:11a8      _key_up
+0b9e:11a9      _mousebstrafe
+0b9e:11aa      _singledemo
+0b9e:11ab      _key_down
+0b9e:11ac      _key_use
+0b9e:11ad      _key_right
+0b9e:11ae      _key_strafeleft
+0b9e:11af      _timingdemo
 0b9e:11b0      _novideo
 0b9e:11b1      _autostart
 Module: d_init.obj(d_init.ASM)
@@ -164,7 +164,7 @@ Module: w_init.obj(w_init.ASM)
 0000:1537*     W_INIT_ENDMARKER_
 0000:13e6      W_AddFile_
 Module: i_init.obj(i_init.ASM)
-0000:16de*     I_INIT_ENDMARKER_
+0000:16e0*     I_INIT_ENDMARKER_
 0000:15b4      I_Init_
 0000:1538*     I_INIT_STARTMARKER_
 Module: z_init.obj(C:\REALDOOM\z_init.c)
@@ -213,8 +213,8 @@ Module: g_game.obj(g_game.ASM)
 0000:2906*     G_DoWorldDone_
 0000:2963*     G_DoLoadGame_
 0000:29d0      R_FlatNumForName_
-0000:2c44*     G_GAME_ENDMARKER_
 0000:2a1f      G_Ticker_
+0000:2c44*     G_GAME_ENDMARKER_
 0000:291f      OutOfThinkers_
 0000:28e4*     G_DoNewGame_
 0000:2929*     G_DoSaveGame_
@@ -339,66 +339,67 @@ Module: math.obj(math.ASM)
 0000:3f92*     FixedMul16u32_
 0000:3f7c      FixedMulTrigSpeedNoShift_
 Module: main.obj(main.ASM)
-0000:54cf      DEBUG_PRINT_NOARG_
-0000:5350      locallib_strcpy_
-0000:5376      locallib_toupper_
-0000:5089*     G_Responder_
-0000:54bb*     locallib_printstringfar_
-0000:57d1      DEBUG_PRINT_
-0000:468b      G_CopyCmd_
-0000:530a      combine_strings_
+0000:54d3      DEBUG_PRINT_NOARG_
+0000:5354      locallib_strcpy_
+0000:537a      locallib_toupper_
+0000:508d*     G_Responder_
+0000:54bf*     locallib_printstringfar_
+0000:57d4      DEBUG_PRINT_
+0000:468f      G_CopyCmd_
+0000:530e      combine_strings_
 0000:4447      _sidemove
-0000:52f8      M_Ticker_
-0000:5270*     I_UpdateNoBlit_
-0000:59fb*     D_MAIN_ENDMARKER_
+0000:444b      _oldkeyboardisr
+0000:52fc      M_Ticker_
+0000:5274*     I_UpdateNoBlit_
+0000:59fe*     D_MAIN_ENDMARKER_
 0000:4443      _forwardmove
-0000:5598      I_ShutdownTimer_
-0000:515b      I_SetPalette_
-0000:53c1      locallib_printhex_
-0000:53b4      locallib_putchar_
-0000:54bd*     locallib_printstringnear_
-0000:558b      locallib_dos_setvect_old_
-0000:4dd6      M_LoadDefaults_
+0000:559c      I_ShutdownTimer_
+0000:515f      I_SetPalette_
+0000:53c5      locallib_printhex_
 0000:4435*     D_MAIN_STARTMARKER_
-0000:560d*     D_Display_
-0000:51ae*     I_UpdateBox_
-0000:598f*     D_DoomLoop_
-0000:44ff      I_KeyboardISR_
-0000:584c      D_ProcessEvents_
-0000:4f79      M_ScanTranslateDefaults_
-0000:5364*     locallib_strlen_
-0000:4844      G_BuildTiccmd_
-0000:4b36      CopyString13_
-0000:59e6      D_DoomMain_
-0000:444b      cht_CheckCheat_Far_
-0000:460b      _localcmds
-0000:482f      G_ResetGameKeys_
-0000:55bd      I_ShutdownKeyboard_
-0000:444f      cht_CheckCheat_
-0000:54cd      DEBUG_PRINT_NOARG_CS_
-0000:5582      locallib_dos_setvect_
-0000:532e      locallib_strcmp_
-0000:5428*     locallib_printdecimal_
-0000:5578      locallib_dos_getvect_
-0000:46a9      _gamekeydown
-0000:5381      copystr8_
-0000:595b      getStringByIndex_
-0000:44b0      cht_GetParam_
-0000:4fab      M_SaveDefaults_
-0000:539a*     locallib_createhexnibble_
-0000:5256*     I_FinishUpdate_
-0000:54cf      locallib_printf_
-0000:57e6      S_PauseSound_
-0000:4529      I_StartTic_
-0000:580f      S_ResumeSound_
-0000:549f      locallib_strlwr_
+0000:53b8      locallib_putchar_
+0000:54c1*     locallib_printstringnear_
+0000:4dda      M_LoadDefaults_
+0000:5610*     D_Display_
+0000:558f      locallib_dos_setvect_old_
+0000:51b2*     I_UpdateBox_
+0000:4503      I_KeyboardISR_
+0000:584f      D_ProcessEvents_
+0000:5992*     D_DoomLoop_
+0000:4f7d      M_ScanTranslateDefaults_
+0000:5368*     locallib_strlen_
+0000:4848      G_BuildTiccmd_
+0000:4b3a      CopyString13_
+0000:59e9      D_DoomMain_
+0000:444f      cht_CheckCheat_Far_
+0000:460f      _localcmds
+0000:4833      G_ResetGameKeys_
+0000:55c1      I_ShutdownKeyboard_
+0000:4453      cht_CheckCheat_
+0000:54d1      DEBUG_PRINT_NOARG_CS_
+0000:5586      locallib_dos_setvect_
+0000:5332      locallib_strcmp_
+0000:542c*     locallib_printdecimal_
+0000:557c      locallib_dos_getvect_
+0000:46ad      _gamekeydown
+0000:5385      copystr8_
+0000:595e      getStringByIndex_
+0000:44b4      cht_GetParam_
+0000:4faf      M_SaveDefaults_
+0000:539e*     locallib_createhexnibble_
+0000:525a*     I_FinishUpdate_
+0000:54d3      locallib_printf_
+0000:57e9      S_PauseSound_
+0000:452d      I_StartTic_
+0000:5812      S_ResumeSound_
+0000:54a3      locallib_strlwr_
 Module: g_setup.obj(g_setup.ASM)
-0000:5a1f      R_CheckTextureNumForName_
-0000:5c0a*     G_SETUP_ENDMARKER_
-0000:59fc*     G_SETUP_STARTMARKER_
-0000:5a64      R_TextureNumForName_
-0000:5ae2      G_InitNew_
-0000:5a81      G_DoLoadLevel_
+0000:5a21      R_CheckTextureNumForName_
+0000:5c0c*     G_SETUP_ENDMARKER_
+0000:59fe*     G_SETUP_STARTMARKER_
+0000:5a66      R_TextureNumForName_
+0000:5ae4      G_InitNew_
+0000:5a83      G_DoLoadLevel_
 Module: r_setup.obj(C:\REALDOOM\r_setup.c)
 0000:5c10+     R_InitTextureMapping_
 0000:5f06      R_ExecuteSetViewSize_
@@ -522,8 +523,8 @@ Module: z_zone.obj(z_zone.ASM)
 0000:9500      Z_QuickMapRenderPlanes_
 0000:9338      Z_QuickMapSFXPageFrame_
 0000:9461      Z_QuickMapStatus_
-0000:93c6      Z_QuickMapRender_
 0000:94ea*     Z_QuickMapScreen0_
+0000:93c6      Z_QuickMapRender_
 0000:94be      Z_QuickMapScratch_7000_
 0000:9492      Z_QuickMapScratch_5000_
 0000:9594      Z_QuickMapMenu_
@@ -780,4 +781,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  d5c0 (54720.)
 Entry point address: 0000:9f9c
-Link time: 00:00.75
+Link time: 00:00.20

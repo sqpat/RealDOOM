@@ -52,7 +52,6 @@ EXTRN FastDiv32u16u_:FAR
 .DATA
 
 EXTRN _wminfo:WBSTARTSTRUCT_T
-EXTRN _pagetic:WORD
 
 .CODE
 
