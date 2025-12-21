@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/12/21 12:35:21
+Created on:       25/12/21 13:31:25
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -211,8 +211,8 @@ Module: st_stuff.obj(st_stuff.ASM)
 0000:2fee      _arms
 0000:307a      _keyboxes
 0000:35e7*     ST_drawWidgets_
-0000:30d6      _w_armor
 0000:3008      _sbar
+0000:30d6      _w_armor
 0000:33af*     ST_updateWidgets_
 0000:314a      _w_end
 0000:3472*     STlib_updateMultIcon_
@@ -326,10 +326,10 @@ Module: main.obj(main.ASM)
 0000:54cd*     locallib_printstringnear_
 0000:559b      locallib_dos_setvect_old_
 0000:4de5      M_LoadDefaults_
-0000:443f*     D_MAIN_STARTMARKER_
 0000:5620*     D_Display_
-0000:51be*     I_UpdateBox_
+0000:443f*     D_MAIN_STARTMARKER_
 0000:59a5*     D_DoomLoop_
+0000:51be*     I_UpdateBox_
 0000:450e      I_KeyboardISR_
 0000:5862      D_ProcessEvents_
 0000:4f88      M_ScanTranslateDefaults_
@@ -425,8 +425,8 @@ Module: s_sbinit.obj(s_sbinit.ASM)
 0000:832d*     SB_RestoreVoiceVolume_
 0000:85bd*     SB_InitCard_
 0000:82c0*     SB_ResetDSP_
-0000:8220*     S_SBINIT_STARTMARKER_
 0000:84e3*     SB_StopPlayback_
+0000:8220*     S_SBINIT_STARTMARKER_
 0000:8305*     SB_SaveVoiceVolume_
 0000:847f*     SB_DMA_EndTransfer_
 0000:8389*     SB_DMA_VerifyChannel_
@@ -747,4 +747,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  d590 (54672.)
 Entry point address: 0000:9fbc
-Link time: 00:00.75
+Link time: 00:00.19

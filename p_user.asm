@@ -793,8 +793,8 @@ lodsw
 test  ax, ax
 jz    skip_berserk
 inc   ax  ;    // Strength counts up to diminish fade.
-skip_berserk:
 stosw
+skip_berserk:
 
 
 ; invis
@@ -806,8 +806,10 @@ inc   ax                ; dont sub 1, turn off shadow
 turn_off_invis:
 
 push  bx
-les   bx, dword ptr ds:[_playerMobj_pos]
-and   byte ptr es:[bx + MOBJ_POS_T.mp_flags2], (NOT MF_SHADOW)
+lds   bx, dword ptr ds:[_playerMobj_pos]
+and   byte ptr ds:[bx + MOBJ_POS_T.mp_flags2], (NOT MF_SHADOW)
+push  ss
+pop   ds
 pop   bx
 
 write_invis:

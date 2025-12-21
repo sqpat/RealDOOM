@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/12/21 12:35:20
+Created on:       25/12/21 13:31:24
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -100,11 +100,11 @@ P_SPEC_TEXT            CODE           AUTO           2c76:74aa       000009e1
 P_SWITCH_TEXT          CODE           AUTO           2c76:7e8c       000003c0
 P_TELEPT_TEXT          CODE           AUTO           2c76:824c       0000017c
 P_TICK_TEXT            CODE           AUTO           2c76:83c8       000001fa
-P_USER_TEXT            CODE           AUTO           2c76:85c2       00000436
-P_INFO_TEXT            CODE           AUTO           2c76:89f8       00000345
-AM_MAP_TEXT            CODE           AUTO           2c76:8d3e       00000b37
-S_SOUND_TEXT           CODE           AUTO           2c76:9876       0000051e
-D_ALGO_TEXT            CODE           AUTO           364f:0004       0000002e
+P_USER_TEXT            CODE           AUTO           2c76:85c2       00000437
+P_INFO_TEXT            CODE           AUTO           2c76:89fa       00000345
+AM_MAP_TEXT            CODE           AUTO           2c76:8d40       00000b37
+S_SOUND_TEXT           CODE           AUTO           2c76:9878       0000051e
+D_ALGO_TEXT            CODE           AUTO           364f:0006       0000002e
 _TEXT                  CODE           AUTO           364f:0040       0000323f
 FAR_DATA               FAR_DATA       AUTO           3976:000f       00000000
 _NULL                  BEGDATA        DGROUP         3977:0000       00000020
@@ -259,8 +259,8 @@ Module: st_stuff.obj(st_stuff.ASM)
 0000:45bc      _arms
 0000:4648      _keyboxes
 0000:4bb5*     ST_drawWidgets_
-0000:46a4      _w_armor
 0000:45d6      _sbar
+0000:46a4      _w_armor
 0000:497d*     ST_updateWidgets_
 0000:4718      _w_end
 0000:4a40*     STlib_updateMultIcon_
@@ -370,10 +370,10 @@ Module: main.obj(main.ASM)
 0000:6a6d*     locallib_printstringnear_
 0000:6b3b      locallib_dos_setvect_old_
 0000:6385      M_LoadDefaults_
-0000:59df*     D_MAIN_STARTMARKER_
 0000:6bc0*     D_Display_
-0000:675e*     I_UpdateBox_
+0000:59df*     D_MAIN_STARTMARKER_
 0000:6f45*     D_DoomLoop_
+0000:675e*     I_UpdateBox_
 0000:5aae      I_KeyboardISR_
 0000:6e02      D_ProcessEvents_
 0000:6528      M_ScanTranslateDefaults_
@@ -475,8 +475,8 @@ Module: s_sbinit.obj(s_sbinit.ASM)
 0000:9cad*     SB_RestoreVoiceVolume_
 0000:9f3d*     SB_InitCard_
 0000:9c40*     SB_ResetDSP_
-0000:9ba0*     S_SBINIT_STARTMARKER_
 0000:9e63*     SB_StopPlayback_
+0000:9ba0*     S_SBINIT_STARTMARKER_
 0000:9c85*     SB_SaveVoiceVolume_
 0000:9dff*     SB_DMA_EndTransfer_
 0000:9d09*     SB_DMA_VerifyChannel_
@@ -571,8 +571,8 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 0b18:0e49*     WI_initVariables_
 0b18:03c6*     WI_GetPatchESBX_
 0b18:0821*     WI_initNoState_
-0b18:0868*     WI_drawShowNextLoc_
 0b18:03b3*     WI_GetPatch_
+0b18:0868*     WI_drawShowNextLoc_
 0b18:0bcf*     WI_loadData_
 0b18:0fb1*     WI_StartSound_
 0b18:0836*     WI_updateShowNextLoc_
@@ -612,8 +612,8 @@ Module: m_menu.obj(m_menu.ASM)
 0c16:05b4*     M_SaveGame_
 0c16:1388*     M_strcpy_
 0c16:089d*     M_NewGame_
-0c16:0b0a*     M_QuitDOOM_
 0c16:0b7d*     M_ChangeSensitivity_
+0c16:0b0a*     M_QuitDOOM_
 0c16:0a0d*     M_ChangeMessages_
 0c16:06d3*     M_QuickLoad_
 0c16:0a4a*     M_EndGame_
@@ -625,8 +625,8 @@ Module: m_menu.obj(m_menu.ASM)
 0c16:13c8*     M_Z_QuickmapStatus_
 0c16:0a85*     M_ReadThis_
 0c16:0cfd*     M_WriteText_
-0c16:0617*     M_QuickSave_
 0c16:093a*     M_Episode_
+0c16:0617*     M_QuickSave_
 0c16:0a21*     M_EndGameResponse_
 0c16:045a*     M_ReadSaveStrings_
 0c16:07d9*     M_SfxVol_
@@ -896,8 +896,8 @@ Module: p_pspr.obj(p_pspr.ASM)
 2c76:41a9*     P_SetPsprite_
 2c76:4059*     A_Light0_
 2c76:3d60*     A_Saw_
-2c76:406b*     A_OpenShotgun2_
 2c76:3a41*     P_CheckAmmo_
+2c76:406b*     A_OpenShotgun2_
 2c76:3f45*     A_FirePistol_
 2c76:3c25*     A_ReFire_
 2c76:408b      A_BFGSpray_
@@ -1080,7 +1080,7 @@ Module: p_tick.obj(p_tick.ASM)
 2c76:84ae      P_Ticker_
 2c76:83cc      P_CreateThinker_
 Module: p_user.obj(p_user.ASM)
-2c76:89f8*     P_USER_ENDMARKER_
+2c76:89f9*     P_USER_ENDMARKER_
 2c76:85c3*     P_Thrust_
 2c76:8603*     P_CalcHeight_
 2c76:87b3*     P_DeathThink_
@@ -1088,66 +1088,66 @@ Module: p_user.obj(p_user.ASM)
 2c76:872f*     P_MovePlayer_
 2c76:88aa      P_PlayerThink_
 Module: p_info.obj(p_info.ASM)
-2c76:8c20      GetPainChance_
-2c76:8ccf      GetAttackSound_
-2c76:8caf      GetDeathState_
-2c76:8c8b      GetSeeState_
-2c76:8be1      GetXDeathState_
-2c76:8c6b      GetActiveSound_
-2c76:8c7c      GetPainSound_
-2c76:8cbf      GetPainState_
-2c76:8c37      GetRaiseState_
-2c76:8c9f      GetMissileState_
-2c76:8c03      GetMeleeState_
-2c76:8cfd      GetDamage_
-2c76:8d3d*     P_INFO_ENDMARKER_
-2c76:89f8*     P_INFO_STARTMARKER_
-2c76:8c48      GetMobjMass_
-2c76:8d29      GetSpawnHealth_
+2c76:8c22      GetPainChance_
+2c76:8cd1      GetAttackSound_
+2c76:8cb1      GetDeathState_
+2c76:8c8d      GetSeeState_
+2c76:8be3      GetXDeathState_
+2c76:8c6d      GetActiveSound_
+2c76:8c7e      GetPainSound_
+2c76:8cc1      GetPainState_
+2c76:8c39      GetRaiseState_
+2c76:8ca1      GetMissileState_
+2c76:8c05      GetMeleeState_
+2c76:8cff      GetDamage_
+2c76:8d3f*     P_INFO_ENDMARKER_
+2c76:89fa*     P_INFO_STARTMARKER_
+2c76:8c4a      GetMobjMass_
+2c76:8d2b      GetSpawnHealth_
 Module: am_map.obj(am_map.ASM)
-2c76:90a4*     AM_clearMarks_
-2c76:8fff*     AM_changeWindowLoc_
-2c76:90bb*     AM_Start_
-2c76:8f7d*     AM_findMinMaxBoundaries_
-2c76:8d3e*     AM_MAP_STARTMARKER_
-2c76:919b*     AM_minOutWindowScale_
-2c76:8e88*     AM_activateNewScale_
-2c76:9319      AM_Ticker_
-2c76:941a*     AM_drawMline_
-2c76:969e*     AM_drawLineCharacter_
-2c76:965a*     AM_rotate_
-2c76:8e42*     FastMulTrig16_
-2c76:8e73*     CYMTOF16_
-2c76:8e63*     CXMTOF16_
-2c76:9769      AM_Drawer_
-2c76:8f48*     AM_addMark_
-2c76:9875*     AM_MAP_ENDMARKER_
-2c76:96f3*     AM_drawPlayers_
-2c76:8edd*     AM_restoreScaleAndLoc_
-2c76:91bf      AM_Responder_
-2c76:9578*     AM_drawWalls_
-2c76:93f8*     DOOUTCODE_
+2c76:90a6*     AM_clearMarks_
+2c76:9001*     AM_changeWindowLoc_
+2c76:90bd*     AM_Start_
+2c76:8f7f*     AM_findMinMaxBoundaries_
+2c76:8d40*     AM_MAP_STARTMARKER_
+2c76:919d*     AM_minOutWindowScale_
+2c76:8e8a*     AM_activateNewScale_
+2c76:931b      AM_Ticker_
+2c76:941c*     AM_drawMline_
+2c76:96a0*     AM_drawLineCharacter_
+2c76:965c*     AM_rotate_
+2c76:8e44*     FastMulTrig16_
+2c76:8e75*     CYMTOF16_
+2c76:8e65*     CXMTOF16_
+2c76:976b      AM_Drawer_
+2c76:8f4a*     AM_addMark_
+2c76:9877*     AM_MAP_ENDMARKER_
+2c76:96f5*     AM_drawPlayers_
+2c76:8edf*     AM_restoreScaleAndLoc_
+2c76:91c1      AM_Responder_
+2c76:957a*     AM_drawWalls_
+2c76:93fa*     DOOUTCODE_
 Module: s_sound.obj(s_sound.ASM)
-2c76:9876*     _channels
-2c76:9d09      S_Start_
-2c76:9c32      S_StartSoundFar_
-2c76:9a78*     S_StopSound_
-2c76:9c36      S_StartSound_
-2c76:9913*     S_StopChannel_
-2c76:9ac1*     S_getChannel_
-2c76:9d68*     CopyString13_physics_seg_
-2c76:99cd*     S_AdjustSoundParamsVol_
-2c76:9d94      S_SOUND_ENDMARKER_
-2c76:9abc      S_StopSoundMobjRef_
-2c76:9960*     S_AdjustSoundParamsSep_
-2c76:9c43      S_StartSoundWithSecnum_
-2c76:9b3f*     S_StartSoundWithPosition_
-2c76:9c50      S_UpdateSounds_
-2c76:9876*     S_SOUND_STARTMARKER_
+2c76:9878*     _channels
+2c76:9d0b      S_Start_
+2c76:9c34      S_StartSoundFar_
+2c76:9a7a*     S_StopSound_
+2c76:9c38      S_StartSound_
+2c76:9915*     S_StopChannel_
+2c76:9ac3*     S_getChannel_
+2c76:9d6a*     CopyString13_physics_seg_
+2c76:99cf*     S_AdjustSoundParamsVol_
+2c76:9d96      S_SOUND_ENDMARKER_
+2c76:9abe      S_StopSoundMobjRef_
+2c76:9962*     S_AdjustSoundParamsSep_
+2c76:9c45      S_StartSoundWithSecnum_
+2c76:9b41*     S_StartSoundWithPosition_
+2c76:9c52      S_UpdateSounds_
+2c76:9878*     S_SOUND_STARTMARKER_
 Module: d_algo.obj(d_algo.ASM)
-364f:0032*     D_ALGO_END_
-364f:0004*     resetDS_
-364f:000c*     hackDS_
+364f:0034*     D_ALGO_END_
+364f:0006*     resetDS_
+364f:000e*     hackDS_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fread.c)
 364f:0040      fread_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fseek.c)
@@ -1430,4 +1430,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003c580 (247168.)
 Entry point address: 364f:0a84
-Link time: 00:00.04
+Link time: 00:00.50
