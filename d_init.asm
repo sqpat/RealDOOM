@@ -76,7 +76,7 @@ EXTRN _grmode:BYTE
 EXTRN _M_Init:DWORD
 EXTRN _myargc:WORD
 EXTRN _myargv:WORD
-EXTRN _noblit:BYTE
+;EXTRN _noblit:BYTE
 EXTRN ___iob:WORD
 
 
@@ -171,8 +171,8 @@ str_nomusic:
 db "-nomusic", 0
 str_mem:
 db "-mem", 0
-str_noblit_param:
-db "-noblit", 0
+;str_noblit_param:
+;db "-noblit", 0
 
 str_nomonsters:
 db "-nomonsters", 0
@@ -1137,9 +1137,9 @@ jnl   skip_timedemo_param
     sal   ax, 1
     xchg  ax, si
 
-    mov   ax, OFFSET str_noblit_param
-    call  M_CheckParm_CS_
-    mov   byte ptr ds:[_noblit], al     ; noblit = M_CheckParm ("-noblit"); 
+    ;mov   ax, OFFSET str_noblit_param
+    ;call  M_CheckParm_CS_
+    ;mov   byte ptr ds:[_noblit], al     ; noblit = M_CheckParm ("-noblit"); 
 
     mov   byte ptr ds:[_timingdemo], cl ; 1 ; timingdemo = true; 
     mov   byte ptr ds:[_singletics], cl ; 1 ; singletics = true; 
