@@ -106,7 +106,6 @@ int16_t             p_init_maxframe;
  
 boolean         precache = true;        // if true, load all graphics at start 
  
-wbstartstruct_t wminfo;                 // parms for world map / intermission 
  
   
  

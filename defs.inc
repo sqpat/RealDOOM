@@ -71,8 +71,10 @@ _spanfunc_outp = 					_NULL_OFFSET + 00024h
 _maxammo = 	     					_NULL_OFFSET + 00028h
 
 _quality_port_lookup = 				_NULL_OFFSET + 00030h
+; 20 bytes
+; todo move to cs once p_setup's usage is gone.
+_wminfo =			                _NULL_OFFSET + 0003Ch
 
-; 48 to 4f unused?
  
 _dc_x = 							_NULL_OFFSET + 00050h
 _lastopening =                   	_NULL_OFFSET + 00052h

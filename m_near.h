@@ -106,8 +106,8 @@
 #define maxammo                         ((int16_t __near *)                  (_NULL_OFFSET + 0x0028))
 
 #define quality_port_lookup             ((uint8_t __near *)                  (_NULL_OFFSET + 0x0030))
-// 3C to 47 free 12 bytes unused
-// 48 to 4F free 8 bytes unused
+// 20 bytes. todo replace this with more often used arrays, because ds:[bx + index] type addressing is small when bx < 127. wminfo is not used enough to matter.
+#define wminfo			                (*(wbstartstruct_t __near *)         (_NULL_OFFSET + 0x003C))
 
 
 
@@ -937,7 +937,6 @@ extern int16_t              p_init_maxframe;
 
 extern boolean         	  noblit;                 // for comparative timing purposes 
 extern boolean         precache;        // if true, load all graphics at start 
-extern wbstartstruct_t wminfo;                 // parms for world map / intermission 
  
   
  
