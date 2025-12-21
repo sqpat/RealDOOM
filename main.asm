@@ -781,7 +781,7 @@ cmp       byte ptr cs:[bx + _gamekeydown], bh  ; 0
 jne       strafe_is_on
 ; ax already 0
 mov       al, byte ptr ds:[_mousebstrafe]
-mov       bx, word ptr ds:[_mousebuttons]
+mov       bx, OFFSET _mousebuttons
 
 add       bx, ax
 mov       al, byte ptr ds:[bx]
@@ -909,7 +909,7 @@ jne       fire_pressed
 ; check mouse fire
 mov       al, byte ptr ds:[_mousebfire]
 cbw
-mov       bx, word ptr ds:[_mousebuttons]
+mov       bx, OFFSET _mousebuttons
 add       bx, ax
 cmp       byte ptr ds:[bx], ah ; 0
 je        done_handling_fire
@@ -948,7 +948,7 @@ SHIFT_MACRO shl al 3
 or        byte ptr cs:[si + 7], al
 done_checking_weapons:
 mov       al, byte ptr ds:[_mousebforward]
-mov       bx, word ptr ds:[_mousebuttons]
+mov       bx, OFFSET _mousebuttons
 xor       ah, ah
 add       bx, ax
 cmp       byte ptr ds:[bx], 0
@@ -964,7 +964,7 @@ mouse_forward_not_pressed:
 
 ; check mouse strafe double click?
 mov       al, byte ptr ds:[_mousebstrafe]
-mov       bx, word ptr ds:[_mousebuttons]
+mov       bx, OFFSET _mousebuttons
 xor       ah, ah
 add       bx, ax
 mov       al, byte ptr ds:[bx]
@@ -1746,7 +1746,6 @@ PUBLIC G_Responder_
 
 push  bx
 push  cx
-push  si
 mov   bx, ax
 mov   cx, dx
 cmp   byte ptr ds:[_gameaction], 0
@@ -1768,7 +1767,6 @@ test  al, al
 jne   call_startcontrolpanel    ; any mousebutton down?
 exit_gresponder_return_0:
 xor   ax, ax
-pop   si
 pop   cx
 pop   bx
 ret   
@@ -1829,7 +1827,6 @@ mov   byte ptr ds:[_sendpause], 1
 exit_gresponder_return_1_2:
 mov   al, 1
 exit_gresponder_return_al:
-pop   si
 pop   cx
 pop   bx
 ret   
@@ -1848,13 +1845,11 @@ jmp   exit_gresponder_return_al
 handle_game_mouse_event:
 mov   ah, al
 mov   dx, ax ; backup button
-mov   si, word ptr ds:[_mousebuttons]
 and   ax, 00201h
-mov   word ptr ds:[si], ax ; write two buttons;
-
+mov   word ptr ds:[_mousebuttons], ax ; write two buttons;
 xchg  ax, dx  ; get another copy of button
 and   ax, 4   ; zero ah
-mov   byte ptr ds:[si + 2], al
+mov   byte ptr ds:[_mousebuttons + 2], al
 mov   al, byte ptr ds:[_mouseSensitivity]
 
 mov   dx, word ptr es:[bx + EVENT_T.event_data2]
@@ -1864,7 +1859,6 @@ imul  dx
 call  FastDiv3216u_
 mov   word ptr cs:[_mousex], ax
 mov   al, 1
-pop   si
 pop   cx
 pop   bx
 ret   

@@ -204,9 +204,8 @@ xor     ax, ax
 mov     byte ptr ds:[_paused], al ; 0
 mov     byte ptr ds:[_sendsave], al ; 0
 mov     byte ptr ds:[_sendpause], al ; 0
-mov     bx, word ptr ds:[_mousebuttons]
-mov     word ptr ds:[bx], ax
-mov     byte ptr ds:[bx+2], al ; i guess 3 bytes...?
+mov     word ptr ds:[_mousebuttons], ax
+mov     byte ptr ds:[_mousebuttons+2], al ; i guess 3 bytes...?
 
 
 pop    dx

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/12/21 15:00:37
+Created on:       25/12/21 15:43:10
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -32,7 +32,7 @@ R_INIT_TEXT            CODE           AUTO           0000:1162       000007af
 W_INIT_TEXT            CODE           AUTO           0000:1912       0000017d
 I_INIT_TEXT            CODE           AUTO           0000:1a90       000001a8
 z_init_TEXT            CODE           AUTO           0000:1c40       00000a64
-S_SBINIT_TEXT          CODE           AUTO           0000:26a4       000002e2
+S_SBINIT_TEXT          CODE           AUTO           0000:26a4       000002e5
 p_init_TEXT            CODE           AUTO           0000:2990       00000498
 I_QUIT_TEXT            CODE           AUTO           0000:2e28       000001ab
 I_IBM_TEXT             CODE           AUTO           0000:2fd4       00000051
@@ -47,8 +47,8 @@ HU_LIB_TEXT            CODE           AUTO           0000:531a       00000141
 D_DMX_TEXT             CODE           AUTO           0000:545c       0000012e
 D_INT_TEXT             CODE           AUTO           0000:558a       0000014d
 MATH_TEXT              CODE           AUTO           0000:56d8       00000510
-MAIN_TEXT              CODE           AUTO           0000:5be8       000016a9
-G_SETUP_TEXT           CODE           AUTO           0000:7292       0000020e
+MAIN_TEXT              CODE           AUTO           0000:5be8       0000169e
+G_SETUP_TEXT           CODE           AUTO           0000:7286       0000020b
 r_setup_TEXT           CODE           AUTO           0000:74a0       0000046a
 ST_SETUP_TEXT          CODE           AUTO           0000:790a       00000125
 HU_SETUP_TEXT          CODE           AUTO           0000:7a30       00000246
@@ -189,20 +189,20 @@ Module: z_init.obj(C:\REALDOOM\z_init.c)
 0000:20b0+     Z_DoRenderCodeLoad_
 0000:2166      Z_LoadBinaries_
 Module: s_sbinit.obj(s_sbinit.ASM)
-0000:2815      SB_SetPlaybackRate_
-0000:295d      SB_StartInit_
+0000:2818      SB_SetPlaybackRate_
+0000:2960      SB_StartInit_
 0000:2709      _SB_DSP_Version
-0000:2986*     S_SBINIT_ENDMARKER_
-0000:28ef*     SB_InitCard_
+0000:2989*     S_SBINIT_ENDMARKER_
+0000:28f2*     SB_InitCard_
 0000:26a4*     S_SBINIT_STARTMARKER_
 0000:271b*     SB_SaveVoiceVolume_
 0000:270c*     SB_ReadMixer_
-0000:28b0*     SB_GetDSPVersion_
+0000:28b3*     SB_GetDSPVersion_
 0000:274a*     SB_DSP2xx_BeginPlayback_
 0000:2743      SB_DSP1xx_BeginPlayback_
 0000:275f*     SB_DSP4xx_BeginPlayback_
 0000:270b      _SB_CardActive
-0000:2853*     SB_SetupPlayback_
+0000:2856*     SB_SetupPlayback_
 0000:2774*     DMA_SetupTransfer_
 0000:27f5*     SB_EnableInterrupt_
 Module: p_init.obj(C:\REALDOOM\p_init.c)
@@ -366,67 +366,67 @@ Module: math.obj(math.ASM)
 0000:581c*     FixedMul16u32_
 0000:5806      FixedMulTrigSpeedNoShift_
 Module: main.obj(main.ASM)
-0000:6d5f      DEBUG_PRINT_NOARG_
-0000:6be0      locallib_strcpy_
-0000:6918*     G_Responder_
-0000:6d4b*     locallib_printstringfar_
-0000:6c06      locallib_toupper_
-0000:7067      DEBUG_PRINT_
+0000:6d54      DEBUG_PRINT_NOARG_
+0000:6bd5      locallib_strcpy_
+0000:6914*     G_Responder_
+0000:6d40*     locallib_printstringfar_
+0000:6bfb      locallib_toupper_
+0000:705c      DEBUG_PRINT_
 0000:5f1a      G_CopyCmd_
-0000:6b9a      combine_strings_
+0000:6b8f      combine_strings_
 0000:5cd1      _sidemove
 0000:5cd5      _oldkeyboardisr
-0000:6b88      M_Ticker_
-0000:6b00*     I_UpdateNoBlit_
-0000:7291*     D_MAIN_ENDMARKER_
+0000:6b7d      M_Ticker_
+0000:6af5*     I_UpdateNoBlit_
+0000:7286*     D_MAIN_ENDMARKER_
 0000:5ccd      _forwardmove
-0000:6e28      I_ShutdownTimer_
-0000:69eb      I_SetPalette_
-0000:6c51      locallib_printhex_
-0000:6c44      locallib_putchar_
-0000:6d4d*     locallib_printstringnear_
-0000:6e1b      locallib_dos_setvect_old_
-0000:6665      M_LoadDefaults_
-0000:6ea0*     D_Display_
+0000:6e1d      I_ShutdownTimer_
+0000:69e0      I_SetPalette_
+0000:6c46      locallib_printhex_
+0000:6c39      locallib_putchar_
+0000:6d42*     locallib_printstringnear_
+0000:6e10      locallib_dos_setvect_old_
+0000:6661      M_LoadDefaults_
+0000:6e95*     D_Display_
 0000:5cbf*     D_MAIN_STARTMARKER_
-0000:7225*     D_DoomLoop_
-0000:6a3e*     I_UpdateBox_
+0000:721a*     D_DoomLoop_
+0000:6a33*     I_UpdateBox_
 0000:5d8e      I_KeyboardISR_
-0000:70e2      D_ProcessEvents_
-0000:6808      M_ScanTranslateDefaults_
-0000:6bf4*     locallib_strlen_
+0000:70d7      D_ProcessEvents_
+0000:6804      M_ScanTranslateDefaults_
+0000:6be9*     locallib_strlen_
 0000:60d3      G_BuildTiccmd_
-0000:63c5      CopyString13_
-0000:727c*     D_DoomMain_
+0000:63c1      CopyString13_
+0000:7271*     D_DoomMain_
 0000:5e9a      _localcmds
 0000:60be      G_ResetGameKeys_
 0000:5cda      cht_CheckCheat_Far_
-0000:6e50      I_ShutdownKeyboard_
+0000:6e45      I_ShutdownKeyboard_
 0000:5cde      cht_CheckCheat_
-0000:6d5d      DEBUG_PRINT_NOARG_CS_
-0000:6e12      locallib_dos_setvect_
-0000:6bbe      locallib_strcmp_
-0000:6cb8*     locallib_printdecimal_
-0000:6e08      locallib_dos_getvect_
+0000:6d52      DEBUG_PRINT_NOARG_CS_
+0000:6e07      locallib_dos_setvect_
+0000:6bb3      locallib_strcmp_
+0000:6cad*     locallib_printdecimal_
+0000:6dfd      locallib_dos_getvect_
 0000:5f38      _gamekeydown
-0000:6c11      copystr8_
-0000:71f1      getStringByIndex_
+0000:6c06      copystr8_
+0000:71e6      getStringByIndex_
 0000:5d3f      cht_GetParam_
-0000:683a      M_SaveDefaults_
-0000:6c2a*     locallib_createhexnibble_
-0000:6ae6*     I_FinishUpdate_
-0000:6d5f      locallib_printf_
-0000:707c      S_PauseSound_
+0000:6836      M_SaveDefaults_
+0000:6c1f*     locallib_createhexnibble_
+0000:6adb*     I_FinishUpdate_
+0000:6d54      locallib_printf_
+0000:7071      S_PauseSound_
 0000:5db8      I_StartTic_
-0000:70a5      S_ResumeSound_
-0000:6d2f      locallib_strlwr_
+0000:709a      S_ResumeSound_
+0000:6d24      locallib_strlwr_
 Module: g_setup.obj(g_setup.ASM)
-0000:72b5      R_CheckTextureNumForName_
-0000:74a0*     G_SETUP_ENDMARKER_
-0000:7292*     G_SETUP_STARTMARKER_
-0000:72fa      R_TextureNumForName_
-0000:7378      G_InitNew_
-0000:7317      G_DoLoadLevel_
+0000:72a9      R_CheckTextureNumForName_
+0000:7491*     G_SETUP_ENDMARKER_
+0000:7286*     G_SETUP_STARTMARKER_
+0000:72ee      R_TextureNumForName_
+0000:7369      G_InitNew_
+0000:730b      G_DoLoadLevel_
 Module: r_setup.obj(C:\REALDOOM\r_setup.c)
 0000:74a0+     R_InitTextureMapping_
 0000:7796      R_ExecuteSetViewSize_
@@ -468,7 +468,7 @@ Module: s_sbsfx.obj(s_sbsfx.ASM)
 0000:9f73*     SB_WriteMixer_
 0000:92c1      _SB_OldInt
 0000:92c8      _SB_OriginalVoiceVolumeLeft
-0000:9ef7      out_21_and_exit
+0000:9ef7*     out_21_and_exit
 0000:963a*     S_UpdateLRUCache_
 0000:9d78      SB_ServiceInterrupt_
 0000:9523      S_DecreaseRefCountFar_
