@@ -22,12 +22,15 @@ INSTRUCTION_SET_MACRO
 ;=================================
 
 EXTRN SB_WriteDSP_:NEAR
-EXTRN locallib_dos_setvect_old_:NEAR
 EXTRN locallib_dos_getvect_:NEAR
 EXTRN SB_ServiceInterrupt_:FAR
 EXTRN I_Error_:FAR
 EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
 EXTRN S_InitSFXCache_:FAR
+EXTRN SB_StopPlayback_:NEAR
+EXTRN SB_ResetDSP_:NEAR
+EXTRN   SB_DMA_VerifyChannel_:NEAR
+EXTRN   SB_ReadDSP_:NEAR
 
 
 .DATA
@@ -38,11 +41,22 @@ PC_SPEAKER_SFX_DATA_TEMP_SEGMENT = 0D7E0h
 
 .CODE
 
+;EXTRN   out_21_and_exit
+EXTRN   _SB_OldInt:DWORD
+EXTRN   _sb_dma_8:BYTE
+EXTRN   _SB_MixerType:BYTE
+EXTRN   _SB_OriginalVoiceVolumeLeft:BYTE
+EXTRN   _SB_OriginalVoiceVolumeRight:BYTE
+EXTRN   _SB_IntController2Mask:BYTE
+EXTRN   _IRQ_TO_INTERRUPT_MAP:BYTE
 
 PROC    S_SBINIT_STARTMARKER_
 PUBLIC  S_SBINIT_STARTMARKER_
 ENDP
 
+DMA_ERROR = 0
+DMA_OK    = 1
+DMA_MAXCHANNEL_16_BIT = 7
 
 
 SB_TYPE_NONE 	= 0
@@ -132,13 +146,6 @@ db 08Bh, 0C4h, 0C6h
 db 089h, 0C8h, 0CAh
 db 08Ah, 0CCh, 0CEh
 
-INVALID_IRQ = 0FFh
-
-_IRQ_TO_INTERRUPT_MAP:
-db    INVALID_IRQ, INVALID_IRQ, 00Ah, 	     00B
-db    INVALID_IRQ, 00Dh, 	    INVALID_IRQ, 00Fh
-db    INVALID_IRQ, INVALID_IRQ, 072h, 	     073h
-db    074h, 	   INVALID_IRQ, INVALID_IRQ, 077h
 
 str_SB_OK:
 db "Sound Blaster SFX Engine Initailized!..", 0Ah, 00
@@ -150,13 +157,6 @@ str_SB_ERROR_B:
 db 0Ah, "SB INIT Error B", 0Ah, 00
 
 
-_SB_MixerType:
-db SB_TYPE_NONE
-
-_SB_OriginalVoiceVolumeLeft:
-db 255
-_SB_OriginalVoiceVolumeRight:
-db 255
 
 _SB_DSP_Version:
 dw 0
@@ -166,87 +166,9 @@ _SB_CardActive:
 db 0
 PUBLIC _SB_CardActive
 
-_SB_OldInt:
-dw 0,_SB_OldInt
-PUBLIC _SB_OldInt
-
-_SB_IntController2Mask:
-db 0
-_SB_IntController1Mask:
-db 0
-
-UNDEFINED_DMA = -1
-
-_sb_dma_8:
-db UNDEFINED_DMA
 
 
-PROC   SB_ReadDSP_ NEAR
-PUBLIC SB_ReadDSP_
 
-push   dx
-push   cx
-mov    dx, word ptr ds:[_sb_port] ;    int16_t port = sb_port + SB_DataAvailablePort;
-add    dx, SB_DATAAVAILABLEPORT
-mov    cx, RETRY_COUNT            ;     uint8_t count = 0xFF;
-loop_try_read_dsp_again:
-in     al, dx
-test   al, 080h
-
-jne    got_read_dsp_result        ;     if (inp(port) & 0x80) {
-
-loop   loop_try_read_dsp_again
-mov    al, SB_ERROR               ; return SB_Error;
-jmp    do_read_dsp_return
-
-
-got_read_dsp_result:
-; return inp(sb_port + SB_ReadPort);
-add    dl, (SB_READPORT - SB_DATAAVAILABLEPORT)  ; dx was previously SB_DATAAVAILABLEPORT
-in     al, dx
-
-do_read_dsp_return:
-pop    cx
-pop    dx
-ret
-
-ENDP
-
-PROC   SB_ResetDSP_ NEAR
-PUBLIC SB_ResetDSP_
-
-push   dx
-push   cx
-mov    dx, word ptr ds:[_sb_port] ;    int16_t port = sb_port + SB_ResetPort;
-add    dx, SB_ResetPort
-mov    cx, RETRY_COUNT            ;     uint8_t count = 0xFF;
-
-mov    al, 1
-out    dx, al                     ;     outp(port, 0);
-
-loop_reset_pause_loop:
-loop   loop_reset_pause_loop
-
-dec    ax
-out    dx, al                     ;     outp(port, 0);
-
-mov    cl, RETRY_COUNT            ;     count = 0xFF;
-
-loop_try_reset_dsp:
-call   SB_ReadDSP_
-cmp    al, SB_READY               ;     if (SB_ReadDSP() == SB_Ready) {
-mov    al, SB_OK
-je     return_reset_result
-
-loop   loop_try_reset_dsp
-mov    al, SB_CARDNOTREADY
-return_reset_result:
-
-pop    cx
-pop    dx
-
-ret
-ENDP
 
 PROC   SB_ReadMixer_ NEAR
 PUBLIC SB_ReadMixer_
@@ -260,17 +182,7 @@ pop    dx
 ret
 ENDP
 
-PROC   SB_WriteMixer_ NEAR
-PUBLIC SB_WriteMixer_
-mov    ah, dl    ; data in ah
-mov    dx, word ptr ds:[_sb_port]                   ; outp(sb_port + SB_MixerAddressPort, reg);
-add    dx, SB_MIXERADDRESSPORT
-out    dx, al
-add    dl, (SB_MIXERDATAPORT - SB_MIXERADDRESSPORT) ; outp(sb_port + SB_MixerDataPort, data);
-mov    al, ah
-out    dx, al
-ret
-ENDP
+
 
 
 PROC   SB_SaveVoiceVolume_ NEAR
@@ -299,33 +211,7 @@ ret
 
 ENDP
 
-PROC   SB_RestoreVoiceVolume_ NEAR
-PUBLIC SB_RestoreVoiceVolume_
 
-push   dx
-mov    al, byte ptr cs:[_SB_MixerType]
-cmp    al, SB_TYPE_SB16
-je     restore_both_voice_volume
-mov    ah, SB_MIXER_SBPROVOICE
-cmp    al, SB_TYPE_SBPRO
-je     restore_one_voice_volumne
-cmp    al, SB_TYPE_SBPRO2
-je     restore_one_voice_volumne
-pop    dx
-ret
-restore_both_voice_volume:
-mov    dl, byte ptr cs:[_SB_OriginalVoiceVolumeRight]
-call   SB_WriteMixer_
-
-mov    ah, SB_MIXER_SB16VOICELEFT
-restore_one_voice_volumne:
-mov    al, ah
-mov    dl, byte ptr cs:[_SB_OriginalVoiceVolumeLeft]
-call   SB_WriteMixer_
-pop    dx
-ret
-
-ENDP
 
 PROC   SB_DSP1xx_BeginPlayback_ NEAR
 PUBLIC SB_DSP1xx_BeginPlayback_
@@ -370,29 +256,10 @@ ret
 
 ENDP
 
-DMA_ERROR = 0
-DMA_OK    = 1
-DMA_MAXCHANNEL_16_BIT = 7
 
 ; carry flag = ok
 ; does not change ax
 
-PROC   SB_DMA_VerifyChannel_ NEAR
-PUBLIC SB_DMA_VerifyChannel_
-
-cmp    al, DMA_MAXCHANNEL_16_BIT
-jg     return_dma_error
-cmp    al, 2            ; invalid dma channel i guess
-je     return_dma_error
-cmp    al, 6            ; invalid dma channel i guess
-je     return_dma_error
-stc
-ret
-return_dma_error:
-clc
-ret
-
-ENDP
 
 ; int16_t __near DMA_SetupTransfer(uint8_t channel, uint16_t length) {
 
@@ -537,13 +404,10 @@ out     0A1h, al
 mov     ah, (NOT 4)   ; & ~(1 << 2);
 
 
-jmp     out_21_and_exit
+;jmp     out_21_and_exit
 enable_irq_lt_8:
 ;        mask = inp(0x21) & ~(1 << sb_irq);
 ;        outp(0x21, mask);
-
-
-
 out_21_and_exit:
 ; mask in ah
 ;        outp(0x21, mask);
@@ -558,99 +422,6 @@ ret
 ENDP
 
 
-
-PROC    SB_DisableInterrupt_ NEAR
-PUBLIC  SB_DisableInterrupt_ 
-
-push    cx
-
-mov     al, byte ptr ds:[_sb_irq]
-mov     ch, byte ptr cs:[_SB_IntController1Mask]
-
-
-mov     ah, 1
-mov     cl, al
-and     cl, 7
-sal     ah, cl
-not     ah     ; ah = 1 << cl
-cmp     al, 8
-in      al, 021h
-
-jl      disable_irq_gte_8
-
-
-and     al, ah
-and     ch, ah
-or      al, ch
-out     021h, al
-jmp     done_disabling
-
-mov     ah, (NOT 4)   ; & ~(1 << 2);
-
-
-jmp     out_21_and_exit
-
-disable_irq_gte_8:
-
-and     al, (NOT 4)
-and     ch, (NOT 4)
-or      al, ch   ; mask |= SB_IntController1Mask & (1 << sb_irq);
-out     021h, al
-
-
-in      al, 0A1h
-and     al, ah
-and     ah, byte ptr cs:[_SB_IntController2Mask]
-or      al, ah
-out     0A1h, al
-
-done_disabling:
-
-pop     cx
-ret
-
-
-ENDP
-
-PROC    SB_DMA_EndTransfer_ NEAR
-PUBLIC  SB_DMA_EndTransfer_  ; todo carry
-
-
-push  dx
-mov   dx, ax
-
-call  SB_DMA_VerifyChannel_
-jnc   return_dma_error_endtransfer
-
-mov   al, dl
-and   al, 3
-cmp   al, dl
-mov   dx, 0Ah
-jne   use_high_channel_values; channel >= 4
-jmp   do_end_transfer_write
-use_high_channel_values:
-inc   dx
-inc   dx ; 0xA -> 0xC
-do_end_transfer_write:
-or    al, 4
-
-; Mask off DMA channel
-out   dx, al    ; outp(channel < 4 ? 	0x0A: 0xD4, 4 | (channel & 0x3));
-
-; Clear flip-flop to lower byte with any data
-shl   dl, 1
-add   dl, 0C0h  ; 0A/0C have become D4/D8
-xor   ax, ax
-out   dx, al    ; outp(channel < 4 ? 	0x0C: 0xD8, 0);
-
-mov   al, DMA_OK
-
-return_dma_error_endtransfer:
-
-pop   dx
-ret
-
-ENDP
 
 PROC    SB_SetPlaybackRate_ NEAR
 PUBLIC  SB_SetPlaybackRate_
@@ -698,20 +469,7 @@ ret
 
 ENDP
 
-PROC    SB_StopPlayback_ NEAR
-PUBLIC  SB_StopPlayback_
 
-call    SB_DisableInterrupt_
-mov     al, SB_DSP_HALT8BITTRANSFER
-call    SB_WriteDSP_  ; halt command
-mov     al, byte ptr cs:[_sb_dma_8]
-call    SB_DMA_EndTransfer_  ; Disable the DMA channel
-mov     al, 0D3h
-call    SB_WriteDSP_  ; speaker off
-mov     byte ptr cs:[_SB_CardActive], 0
-ret
-
-ENDP
 
 PROC   SB_SetupPlayback_ NEAR
 PUBLIC SB_SetupPlayback_
@@ -822,31 +580,7 @@ ENDP
 
 
 
-PROC    SB_Shutdown_ NEAR
-PUBLIC  SB_Shutdown_
 
-
-call    SB_StopPlayback_
-call    SB_RestoreVoiceVolume_
-call    SB_ResetDSP_
-
-push    bx
-push    cx
-
-xor     bx, bx
-mov     bl, byte ptr ds:[_sb_irq]
-mov     al, byte ptr cs:[_IRQ_TO_INTERRUPT_MAP + bx]
-les     bx, dword ptr cs:[_SB_OldInt]
-mov     cx, es
-;locallib_dos_setvect_old(IRQ_TO_INTERRUPT_MAP[sb_irq], SB_OldInt);
-
-call    locallib_dos_setvect_old_
-pop     cx
-pop     bx
-
-ret
-
-ENDP
 
 
 

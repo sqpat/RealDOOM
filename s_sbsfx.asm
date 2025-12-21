@@ -27,7 +27,7 @@ EXTRN SB_DSP1xx_BeginPlayback_:NEAR
 EXTRN SB_SetPlaybackRate_:NEAR
 EXTRN _SB_DSP_Version:BYTE
 EXTRN _SB_CardActive:BYTE
-EXTRN _SB_OldInt:DWORD
+EXTRN locallib_dos_setvect_old_:NEAR
 
 .DATA
 
@@ -71,6 +71,114 @@ SB_RESETPORT 		 = 06h
 SB_READPORT 		 = 0Ah
 SB_WRITEPORT 		 = 0Ch
 SB_DATAAVAILABLEPORT = 0Eh
+
+
+SB_TYPE_NONE 	= 0
+SB_TYPE_SB 		= 1
+SB_TYPE_SBPRO 	= 2
+SB_TYPE_SB20 	= 3
+SB_TYPE_SBPRO2 	= 4
+SB_TYPE_SB16 	= 6
+
+SB_MIXBUFFERSIZE = 256
+
+SB_DSP_SignedBit = 010h
+SB_DSP_StereoBit = 020h
+
+SB_DSP_UNSIGNEDMONODATA = 	    000h
+SB_DSP_SIGNEDMONODATA = 		(SB_DSP_SIGNEDBIT)
+SB_DSP_UNSIGNEDSTEREODATA = 	(SB_DSP_STEREOBIT)
+SB_DSP_SIGNEDSTEREODATA = 	    (SB_DSP_SIGNEDBIT OR SB_DSP_STEREOBIT)
+
+SB_DSP_HALT8BITTRANSFER = 		0D0h
+SB_DSP_CONTINUE8BITTRANSFER = 	0D4h
+SB_DSP_HALT16BITTRANSFER = 		0D5h
+SB_DSP_CONTINUE16BITTRANSFER = 	0D6h
+SB_DSP_RESET = 					0FFFFh
+
+SB_MIXER_DSP4xxISR_Ack              = 082h
+SB_MIXER_DSP4xxISR_Enable           = 083h
+SB_MIXER_MPU401_INT                 = 04h
+SB_MIXER_16BITDMA_INT               = 02h
+SB_MIXER_8BITDMA_INT                = 01h
+SB_MIXER_DisableMPU401Interrupts    = 0Bh
+SB_MIXER_SBProOutputSetting         = 00Eh
+SB_MIXER_SBProStereoFlag            = 002h
+SB_MIXER_SBProVoice                 = 004h
+SB_MIXER_SBProMidi                  = 026h
+SB_MIXER_SB16VoiceLeft              = 032h
+SB_SBProVoice                       = 004h
+SB_MIXER_SB16VoiceRight             = 033h
+SB_MIXER_SB16MidiLeft               = 034h
+SB_MIXER_SB16MidiRight              = 035h
+
+SB_DSP_SET_DA_RATE   = 041h
+SB_DSP_SET_AD_RATE   = 042h
+
+
+PLAYING_FLAG = 080h
+
+MAX_VOLUME_SFX = 07Fh
+
+SB_DSP_VERSION1XX = 00100h
+SB_DSP_VERSION2XX = 00200h
+SB_DSP_VERSION201 = 00201h
+SB_DSP_VERSION3XX = 00300h
+SB_DSP_VERSION4XX = 00400h
+
+MIXER_8BITDMA_INT    = 01h
+SB_MIXERADDRESSPORT  = 04h
+SB_MIXERDATAPORT 	 = 05h
+SB_RESETPORT 		 = 06h
+SB_READPORT 		 = 0Ah
+SB_WRITEPORT 		 = 0Ch
+SB_DATAAVAILABLEPORT = 0Eh
+SB_ERROR             = -1
+SB_OK                = 0
+SB_READY 			 = 0AAh
+SB_CARDNOTREADY      = 5
+
+SB_MIXBUFFERSIZE      = 256
+SB_TOTALBUFFERSIZE    = (SB_MIXBUFFERSIZE * 2)
+SB_TRANSFERLENGTH     = SB_MIXBUFFERSIZE
+SB_DOUBLEBUFFERLENGTH = SB_TRANSFERLENGTH * 2
+
+DMA_ERROR = 0
+DMA_OK    = 1
+DMA_MAXCHANNEL_16_BIT = 7
+
+; todo programattically determine?
+RETRY_COUNT = 000FFh   
+
+UNDEFINED_DMA = -1
+
+_sb_dma_8:
+db UNDEFINED_DMA
+
+_SB_OldInt:
+dw 0,_SB_OldInt
+
+_SB_IntController2Mask:
+db 0
+_SB_IntController1Mask:
+db 0
+
+_SB_MixerType:
+db SB_TYPE_NONE
+
+_SB_OriginalVoiceVolumeLeft:
+db 255
+_SB_OriginalVoiceVolumeRight:
+db 255
+
+PUBLIC _SB_OldInt
+PUBLIC _sb_dma_8
+PUBLIC _SB_OriginalVoiceVolumeLeft
+PUBLIC _SB_OriginalVoiceVolumeRight
+PUBLIC _SB_MixerType
+PUBLIC _SB_IntController1Mask
+PUBLIC _SB_IntController2Mask
+
 
 _sound_played:
 db  0
@@ -129,6 +237,15 @@ db  0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh
 db  0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh
 db  0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh
 
+INVALID_IRQ = 0FFh
+
+_IRQ_TO_INTERRUPT_MAP:
+db    INVALID_IRQ, INVALID_IRQ, 00Ah, 	     00B
+db    INVALID_IRQ, 00Dh, 	    INVALID_IRQ, 00Fh
+db    INVALID_IRQ, INVALID_IRQ, 072h, 	     073h
+db    074h, 	   INVALID_IRQ, INVALID_IRQ, 077h
+
+PUBLIC _IRQ_TO_INTERRUPT_MAP
 
 
 PROC    S_IncreaseRefCount_ NEAR
@@ -2626,6 +2743,39 @@ ENDP
 
 
 
+PROC   SB_ReadDSP_ NEAR
+PUBLIC SB_ReadDSP_
+
+push   dx
+push   cx
+mov    dx, word ptr ds:[_sb_port] ;    int16_t port = sb_port + SB_DataAvailablePort;
+add    dx, SB_DATAAVAILABLEPORT
+mov    cx, RETRY_COUNT            ;     uint8_t count = 0xFF;
+loop_try_read_dsp_again:
+in     al, dx
+test   al, 080h
+
+jne    got_read_dsp_result        ;     if (inp(port) & 0x80) {
+
+loop   loop_try_read_dsp_again
+mov    al, SB_ERROR               ; return SB_Error;
+jmp    do_read_dsp_return
+
+
+got_read_dsp_result:
+; return inp(sb_port + SB_ReadPort);
+add    dl, (SB_READPORT - SB_DATAAVAILABLEPORT)  ; dx was previously SB_DATAAVAILABLEPORT
+in     al, dx
+
+do_read_dsp_return:
+pop    cx
+pop    dx
+ret
+
+ENDP
+
+
+
 PROC    SB_WriteDSP_ NEAR
 PUBLIC  SB_WriteDSP_
 push dx
@@ -2740,6 +2890,251 @@ PUBLIC  S_InitSFXCache_
     retf
 
 ENDP
+
+
+
+PROC    SB_DisableInterrupt_ NEAR
+PUBLIC  SB_DisableInterrupt_ 
+
+push    cx
+
+mov     al, byte ptr ds:[_sb_irq]
+mov     ch, byte ptr cs:[_SB_IntController1Mask]
+
+
+mov     ah, 1
+mov     cl, al
+and     cl, 7
+sal     ah, cl
+not     ah     ; ah = 1 << cl
+cmp     al, 8
+in      al, 021h
+
+jl      disable_irq_gte_8
+
+
+and     al, ah
+and     ch, ah
+or      al, ch
+out     021h, al
+jmp     done_disabling
+
+mov     ah, (NOT 4)   ; & ~(1 << 2);
+
+
+jmp     out_21_and_exit
+
+disable_irq_gte_8:
+
+and     al, (NOT 4)
+and     ch, (NOT 4)
+or      al, ch   ; mask |= SB_IntController1Mask & (1 << sb_irq);
+out     021h, al
+
+
+in      al, 0A1h
+and     al, ah
+and     ah, byte ptr cs:[_SB_IntController2Mask]
+or      al, ah
+out     0A1h, al
+
+done_disabling:
+
+pop     cx
+ret
+out_21_and_exit:
+; mask in ah
+;        outp(0x21, mask);
+
+in      al, 021h
+and     al, ah
+out     021h, al
+
+pop     cx
+ret
+
+
+ENDP
+
+PUBLIC out_21_and_exit
+
+PROC   SB_DMA_VerifyChannel_ NEAR
+PUBLIC SB_DMA_VerifyChannel_
+
+cmp    al, DMA_MAXCHANNEL_16_BIT
+jg     return_dma_error
+cmp    al, 2            ; invalid dma channel i guess
+je     return_dma_error
+cmp    al, 6            ; invalid dma channel i guess
+je     return_dma_error
+stc
+ret
+return_dma_error:
+clc
+ret
+
+ENDP
+
+
+PROC    SB_DMA_EndTransfer_ NEAR
+PUBLIC  SB_DMA_EndTransfer_ 
+
+
+push  dx
+mov   dx, ax
+
+call  SB_DMA_VerifyChannel_
+jnc   return_dma_error_endtransfer
+
+mov   al, dl
+and   al, 3
+cmp   al, dl
+mov   dx, 0Ah
+jne   use_high_channel_values; channel >= 4
+jmp   do_end_transfer_write
+use_high_channel_values:
+inc   dx
+inc   dx ; 0xA -> 0xC
+do_end_transfer_write:
+or    al, 4
+
+; Mask off DMA channel
+out   dx, al    ; outp(channel < 4 ? 	0x0A: 0xD4, 4 | (channel & 0x3));
+
+; Clear flip-flop to lower byte with any data
+shl   dl, 1
+add   dl, 0C0h  ; 0A/0C have become D4/D8
+xor   ax, ax
+out   dx, al    ; outp(channel < 4 ? 	0x0C: 0xD8, 0);
+
+
+return_dma_error_endtransfer:
+
+pop   dx
+ret
+
+ENDP
+
+
+PROC    SB_StopPlayback_ NEAR
+PUBLIC  SB_StopPlayback_
+
+call    SB_DisableInterrupt_
+mov     al, SB_DSP_HALT8BITTRANSFER
+call    SB_WriteDSP_  ; halt command
+mov     al, byte ptr cs:[_sb_dma_8]
+call    SB_DMA_EndTransfer_  ; Disable the DMA channel
+mov     al, 0D3h
+call    SB_WriteDSP_  ; speaker off
+mov     byte ptr cs:[_SB_CardActive], 0
+ret
+
+ENDP
+
+PROC   SB_ResetDSP_ NEAR
+PUBLIC SB_ResetDSP_
+
+push   dx
+push   cx
+mov    dx, word ptr ds:[_sb_port] ;    int16_t port = sb_port + SB_ResetPort;
+add    dx, SB_ResetPort
+mov    cx, RETRY_COUNT            ;     uint8_t count = 0xFF;
+
+mov    al, 1
+out    dx, al                     ;     outp(port, 0);
+
+loop_reset_pause_loop:
+loop   loop_reset_pause_loop
+
+dec    ax
+out    dx, al                     ;     outp(port, 0);
+
+mov    cl, RETRY_COUNT            ;     count = 0xFF;
+
+loop_try_reset_dsp:
+call   SB_ReadDSP_
+cmp    al, SB_READY               ;     if (SB_ReadDSP() == SB_Ready) {
+mov    al, SB_OK
+je     return_reset_result
+
+loop   loop_try_reset_dsp
+mov    al, SB_CARDNOTREADY
+return_reset_result:
+
+pop    cx
+pop    dx
+
+ret
+ENDP
+
+PROC   SB_WriteMixer_ NEAR
+PUBLIC SB_WriteMixer_
+mov    ah, dl    ; data in ah
+mov    dx, word ptr ds:[_sb_port]                   ; outp(sb_port + SB_MixerAddressPort, reg);
+add    dx, SB_MIXERADDRESSPORT
+out    dx, al
+add    dl, (SB_MIXERDATAPORT - SB_MIXERADDRESSPORT) ; outp(sb_port + SB_MixerDataPort, data);
+mov    al, ah
+out    dx, al
+ret
+ENDP
+
+PROC   SB_RestoreVoiceVolume_ NEAR
+PUBLIC SB_RestoreVoiceVolume_
+
+push   dx
+mov    al, byte ptr cs:[_SB_MixerType]
+cmp    al, SB_TYPE_SB16
+je     restore_both_voice_volume
+mov    ah, SB_MIXER_SBPROVOICE
+cmp    al, SB_TYPE_SBPRO
+je     restore_one_voice_volumne
+cmp    al, SB_TYPE_SBPRO2
+je     restore_one_voice_volumne
+pop    dx
+ret
+restore_both_voice_volume:
+mov    al, SB_MIXER_SB16VOICERIGHT
+mov    dl, byte ptr cs:[_SB_OriginalVoiceVolumeRight]
+call   SB_WriteMixer_
+
+mov    ah, SB_MIXER_SB16VOICELEFT
+restore_one_voice_volumne:
+mov    al, ah
+mov    dl, byte ptr cs:[_SB_OriginalVoiceVolumeLeft]
+call   SB_WriteMixer_
+pop    dx
+ret
+
+ENDP
+
+PROC    SB_Shutdown_ NEAR
+PUBLIC  SB_Shutdown_
+
+
+call    SB_StopPlayback_
+call    SB_RestoreVoiceVolume_
+call    SB_ResetDSP_
+
+push    bx
+push    cx
+
+xor     bx, bx
+mov     bl, byte ptr ds:[_sb_irq]
+mov     al, byte ptr cs:[_IRQ_TO_INTERRUPT_MAP + bx]
+les     bx, dword ptr cs:[_SB_OldInt]
+mov     cx, es
+;locallib_dos_setvect_old(IRQ_TO_INTERRUPT_MAP[sb_irq], SB_OldInt);
+
+call    locallib_dos_setvect_old_
+pop     cx
+pop     bx
+
+ret
+
+ENDP
+
+
 
 PROC    S_SBFX_ENDMARKER_ NEAR
 PUBLIC  S_SBFX_ENDMARKER_
