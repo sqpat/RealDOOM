@@ -1156,6 +1156,8 @@ void __near Z_ClearDeadCode() {
 	//9398           - 09/13/25	
 	//9602           - 09/20/25	   - added some extra code into that region. still need to do z_init, p_init
 	//9570           - 09/25/25	   
+	//9634           - 12/21/25    - sb_init not yet added. needs to go soon.
+	//10706          - 12/21/25    - sb_init asm added
 
 	uint16_t size = endaddr - startaddr-16;
 	FILE* fp;
@@ -1164,7 +1166,7 @@ void __near Z_ClearDeadCode() {
 	angle_t __far*  dest;
 	
 	tantoangle_segment = FP_SEG(startaddr) + 1;
-	// I_Error("size: %i", size);
+	//I_Error("size: %i", size);
 	dest =  (angle_t __far* )MK_FP(tantoangle_segment, 0);
 	fp = fopen("DOOMDATA.BIN", "rb");
 	fseek(fp, TANTOA_DOOMDATA_OFFSET, SEEK_SET);

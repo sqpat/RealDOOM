@@ -21,6 +21,7 @@ file r_init.obj
 file w_init.obj
 file i_init.obj
 file z_init.obj
+file s_sbinit.obj
 file p_init.obj
 
 
@@ -51,7 +52,6 @@ file p_setup.obj
 
 
 file s_sbsfx.obj
-file s_sbinit.obj
 file r_main.obj
 file f_file.obj
 file w_wad.obj

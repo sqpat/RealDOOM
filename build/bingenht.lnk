@@ -20,6 +20,7 @@ file r_init.obj
 file w_init.obj
 file i_init.obj
 file z_init.obj
+file s_sbinit.obj
 file p_init.obj
 
 file i_quit.obj
@@ -50,7 +51,6 @@ file w_wad.obj
 file v_video.obj
 file z_zone.obj
 file s_sbsfx.obj
-file s_sbinit.obj
 file r_main.obj
 file p_setup.obj
 file z_ht18.obj
