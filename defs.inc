@@ -72,10 +72,7 @@ _maxammo = 	     					_NULL_OFFSET + 00028h
 
 _quality_port_lookup = 				_NULL_OFFSET + 00030h
 
-
-; todo move to cs
-_jump_mult_table_3 = 				_NULL_OFFSET + 00048h
-
+; 48 to 4f unused?
  
 _dc_x = 							_NULL_OFFSET + 00050h
 _lastopening =                   	_NULL_OFFSET + 00052h
@@ -740,7 +737,7 @@ _END_OF_FIXED_DATA = CURRENT_POSITION_9
 
 
 
-
+; TODO fix now that i know how to use CS indexed labels 
 
 ; EXTERNAL CODE OFFSETS FOR SELF MODIFYING CODE
 ; We use a 2 step build process. Some code is exported to a binary in the first build,

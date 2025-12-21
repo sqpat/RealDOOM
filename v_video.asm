@@ -33,6 +33,8 @@ EXTRN W_CacheLumpNumDirectFragment_:PROC
 EXTRN Z_QuickMapByTaskNum_:FAR
 
 
+_jump_mult_table_3:
+db 19, 18, 15, 12,  9,  6,  3, 0
 
 PROC V_DrawPatch_ FAR
 PUBLIC V_DrawPatch_
@@ -194,7 +196,7 @@ add   si, 3
 ; figure out loop counts
 mov   bl, cl
 and   bx, 0007h
-mov   al, byte ptr ss:[_jump_mult_table_3 + bx]
+mov   al, byte ptr cs:[_jump_mult_table_3 + bx]
 mov   byte ptr cs:[SELFMODIFY_offset_draw_remaining_pixels + 1], al
 SHIFT_MACRO shr cx 3
 je    done_drawing_8_pixels
@@ -448,7 +450,7 @@ add   si, 3
 ; figure out loop counts
 mov   bl, cl
 and   bx, 0007h
-mov   al, byte ptr ss:[_jump_mult_table_3 + bx]
+mov   al, byte ptr cs:[_jump_mult_table_3 + bx]
 mov   byte ptr cs:[SELFMODIFY_offset_draw_remaining_pixels5000Screen0_ + 1], al
 SHIFT_MACRO shr cx 3
 je    done_drawing_8_pixels5000Screen0_
@@ -633,7 +635,7 @@ mov   cl, byte ptr ds:[bx + 1]  ; get col length
 xor   ch, ch
 mov   si, cx
 and   si, 0007h
-mov   al, byte ptr ss:[_jump_mult_table_3 + si]
+mov   al, byte ptr cs:[_jump_mult_table_3 + si]
 mov   byte ptr cs:[SELFMODIFY_offset_draw_remaining_pixels_direct + 1], al
 mov   ax,  ((SCREENWIDTH / 4) - 1)
 lea   si, [bx + 3]

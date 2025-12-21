@@ -107,6 +107,7 @@
 
 #define quality_port_lookup             ((uint8_t __near *)                  (_NULL_OFFSET + 0x0030))
 // 3C to 47 free 12 bytes unused
+// 48 to 4F free 8 bytes unused
 
 
 

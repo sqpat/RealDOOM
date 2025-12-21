@@ -37,8 +37,8 @@ dw                                       00, 00
 
 
 
-;0x40    48: jump_mult_table_3 
-db 0,  0,  0,  0,  0,  0,  0, 0, 19, 18, 15, 12,  9,  6,  3, 0
+;0x40   
+dw  00, 00, 00, 00, 00, 00, 00, 00
 ;0x50   0x54 = _planezlight (dword, so segment in 56)	 0x58 caststate (0x5A is STATES_SEGMENT) 
 dw 0,  0,  0,  ZLIGHT_SEGMENT,  0,  STATES_SEGMENT,  0,  0
 ;0x60
