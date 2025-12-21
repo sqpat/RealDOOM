@@ -26,7 +26,6 @@ EXTRN fseek_:FAR
 EXTRN locallib_far_fread_:FAR
 .DATA
 
-EXTRN _currentoverlay:BYTE
 EXTRN _codestartposition:DWORD
 
 

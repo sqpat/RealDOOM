@@ -27,7 +27,6 @@ EXTRN I_SetPalette_:FAR
 
 .DATA
 
-EXTRN _novideo:BYTE
 
 
 ; TODO ENABLE_DISK_FLASH

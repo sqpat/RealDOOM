@@ -70,8 +70,6 @@ EXTRN locallib_strcpy_:NEAR
 
 .DATA
 
-EXTRN _novideo:BYTE
-EXTRN _grmode:BYTE
 
 EXTRN _M_Init:DWORD
 EXTRN _myargc:WORD

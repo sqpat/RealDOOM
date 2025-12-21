@@ -92,15 +92,13 @@ void (__far* M_Init)() =                      ((void (__far *)())     	         
 spriteframe_t __far* p_init_sprtemp;
 int16_t             p_init_maxframe;
 
-boolean grmode = 0;
-boolean novideo; // if true, stay in text mode for debugging
 
 
-gamestate_t         oldgamestate = -1;
+
  
  
 //boolean         	nodrawers;              // for comparative timing purposes 
-boolean         	noblit;                 // for comparative timing purposes 
+// boolean         	noblit;                 // for comparative timing purposes 
 
  
 
@@ -132,7 +130,6 @@ uint8_t             mousebforward;
 
 
 
-int8_t             turnheld;                               // for accelerative turning 
  
 
 // mouse values are used once 
@@ -270,7 +267,6 @@ boolean    					tnt = false;
 
 
 
-int8_t  currentoverlay = OVERLAY_ID_UNMAPPED;
 int32_t codestartposition[NUM_OVERLAYS];
 
  

@@ -196,7 +196,9 @@ _sb_irq =                       	_NULL_OFFSET + 00133h
 _sfxcache_head =                    _NULL_OFFSET + 00134h
 _sfxcache_tail =                    _NULL_OFFSET + 00135h
 
-; todo 136 to 137 unused
+_grmode =                    		_NULL_OFFSET + 00136h
+_novideo =                    		_NULL_OFFSET + 00137h
+
 
 _visplanelookupsegments =           _NULL_OFFSET + 00138h
 _firstflat =                  		_NULL_OFFSET + 0013Eh
@@ -564,7 +566,10 @@ _fieldofview =				         _NULL_OFFSET + 0060Eh
 _solidsegs = 			         	 _NULL_OFFSET + 00610h
 _newend = 				         	 _NULL_OFFSET + 00690h
 _pspritescale = 		         	 _NULL_OFFSET + 00692h
-;_spritewidths_segment =              _NULL_OFFSET + 00694h
+_currentoverlay = 		         	 _NULL_OFFSET + 00694h
+_turnheld = 		         	 	 _NULL_OFFSET + 00695h
+
+
 _r_cachedplayerMobjsecnum = 		 _NULL_OFFSET + 00696h
 _scaledviewwidth = 					 _NULL_OFFSET + 00698h
 _viewwindowoffset = 				 _NULL_OFFSET + 0069Ah

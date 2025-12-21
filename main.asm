@@ -61,30 +61,13 @@ EXTRN Z_QuickMapByTaskNum_:FAR
 ;EXTRN DoLog_:NEAR
 
 EXTRN _R_RenderPlayerView:DWORD
-EXTRN _oldgamestate:BYTE
-EXTRN _key_strafe:BYTE
-EXTRN _key_straferight:BYTE
-EXTRN _key_strafeleft:BYTE
-EXTRN _key_speed:BYTE
-EXTRN _key_right:BYTE
-EXTRN _key_left:BYTE
-EXTRN _key_up:BYTE
-EXTRN _key_down:BYTE
-EXTRN _key_fire:BYTE
-EXTRN _key_use:BYTE
-EXTRN _mousebforward:BYTE
-EXTRN _mousebstrafe:BYTE
-EXTRN _mousebfire:BYTE
-
-EXTRN _turnheld:BYTE
-
-
 
 EXTRN _myargc:WORD
 EXTRN _myargv:BYTE
-EXTRN _novideo:BYTE
 
 
+
+EXTRN _key_speed:BYTE
 EXTRN _key_right:BYTE
 EXTRN _key_left:BYTE
 EXTRN _key_up:BYTE
@@ -225,6 +208,9 @@ dw  018h, 028h
 
 _oldkeyboardisr:
 dw 0, 0
+
+_oldgamestate:
+db -1
 
 PUBLIC _oldkeyboardisr
 PUBLIC _forwardmove
@@ -3160,7 +3146,7 @@ dw switch_case_4
 
 do_execute_setviewsize:
 call  R_ExecuteSetViewSize_
-mov   byte ptr ds:[_oldgamestate], -1
+mov   byte ptr cs:[_oldgamestate], -1
 mov   byte ptr ds:[_borderdrawcount], 3
 jmp   done_with_execute_viewsize
 
@@ -3297,7 +3283,7 @@ call  HU_Drawer_
 skip_hu_drawer:
 
 
-cmp   cl, byte ptr ds:[_oldgamestate]
+cmp   cl, byte ptr cs:[_oldgamestate]
 je    skip_set_palette
 
 jcxz  skip_set_palette
@@ -3309,7 +3295,7 @@ skip_set_palette:
 
 cmp   cl, bh ; 0
 jne   skip_fillbackscreen
-cmp   byte ptr ds:[_oldgamestate], bh ; 0
+cmp   byte ptr cs:[_oldgamestate], bh ; 0
 je    skip_fillbackscreen
 mov   byte ptr ds:[_viewactivestate], bh ; 0
 
@@ -3358,7 +3344,7 @@ mov   al, byte ptr ds:[_inhelpscreens]
 mov   byte ptr ds:[_inhelpscreensstate], al
 
 mov   byte ptr ds:[_wipegamestate], cl
-mov   byte ptr ds:[_oldgamestate], cl
+mov   byte ptr cs:[_oldgamestate], cl
 
 call  Z_QuickMapMenu_
 cmp   byte ptr ds:[_paused], bh ; 0

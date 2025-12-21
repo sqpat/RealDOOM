@@ -106,7 +106,7 @@
 #define maxammo                         ((int16_t __near *)                  (_NULL_OFFSET + 0x0028))
 
 #define quality_port_lookup             ((uint8_t __near *)                  (_NULL_OFFSET + 0x0030))
-// 3C to 47 free 12 bytes
+// 3C to 47 free 12 bytes unused
 #define jump_mult_table_3               ((uint8_t __near *)                  (_NULL_OFFSET + 0x0048))
 
 
@@ -238,8 +238,10 @@
 #define sfxcache_head                   (*((int8_t   __near*)                (_NULL_OFFSET + 0x0134)))
 #define sfxcache_tail                   (*((int8_t   __near*)                (_NULL_OFFSET + 0x0135)))
 
+#define grmode 		                    (*((boolean   __near*)               (_NULL_OFFSET + 0x0136)))
+#define novideo 		                (*((boolean   __near*)               (_NULL_OFFSET + 0x0137)))
 
-// 136-137 unused
+
 #define visplanelookupsegments          (((segment_t   __near*)              (_NULL_OFFSET + 0x0138)))
 
 #define firstflat                       (*((int16_t    __near*)              (_NULL_OFFSET + 0x013E)))
@@ -626,6 +628,9 @@
 #define solidsegs                 		  ((cliprange_t __near *)            (_NULL_OFFSET + 0x0610))
 #define newend	     		    		  (*((cliprange_t  __near* __near*)  (_NULL_OFFSET + 0x0690)))
 #define pspritescale       		  	      (*((uint16_t __near*)              (_NULL_OFFSET + 0x0692)))
+#define currentoverlay					  (*((int8_t   __near*)              (_NULL_OFFSET + 0x0694)))
+#define turnheld						  (*((int8_t   __near*)              (_NULL_OFFSET + 0x0695)))
+
 // #define SPRITEWIDTHS_SEGMENT_PTR   		  (*((segment_t __near*)             (_NULL_OFFSET + 0x0694)))
 #define r_cachedplayerMobjsecnum 		  (*((int16_t __near*)               (_NULL_OFFSET + 0x0696)))
 #define scaledviewwidth 		 		  (*((int16_t __near*)               (_NULL_OFFSET + 0x0698)))
@@ -900,13 +905,8 @@ extern int16_t              p_init_maxframe;
 #define SC_RSHIFT       0x36
 #define SC_LSHIFT       0x2a
 
-extern boolean grmode;
-// REGS stuff used for int calls
-
-extern boolean novideo; // if true, stay in text mode for debugging
 #define KBDQUESIZE 32
 
-extern gamestate_t         oldgamestate;
 
 
 
@@ -939,7 +939,6 @@ extern uint8_t             mousebfire;
 extern uint8_t             mousebstrafe;
 extern uint8_t             mousebforward;
 
-extern int8_t             turnheld;
 
 
 
@@ -1045,7 +1044,6 @@ extern int32_t visplaneswitchcount;
 
 
 
-extern int8_t  currentoverlay;
 extern int32_t codestartposition[NUM_OVERLAYS];
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)

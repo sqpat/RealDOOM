@@ -36,13 +36,12 @@ EXTRN locallib_dos_setvect_:NEAR
 
 .DATA
 
-EXTRN _oldkeyboardisr:DWORD
-EXTRN _novideo:BYTE
 EXTRN _musdriverstartposition:BYTE
 
 
 .CODE
 
+EXTRN _oldkeyboardisr:DWORD
 EXTRN _doomcode_filename:BYTE
 
 KEYBOARDINT = 9
