@@ -69,7 +69,7 @@ db "Demo %s recorded", 0
 
 
 _singledemo:
-db 1  ; default true
+db 0
 PUBLIC _singledemo
 
 
