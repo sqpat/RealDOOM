@@ -113,20 +113,6 @@ wbstartstruct_t wminfo;                 // parms for world map / intermission
 // 
 // controls (have defaults) 
 // 
-uint8_t             key_right;
-uint8_t             key_left;
-uint8_t             key_up;
-uint8_t             key_down;
-uint8_t             key_strafeleft;
-uint8_t             key_straferight;
-uint8_t             key_fire;
-uint8_t             key_use;
-uint8_t             key_strafe;
-uint8_t             key_speed;
- 
-uint8_t             mousebfire;
-uint8_t             mousebstrafe;
-uint8_t             mousebforward;
 
 
 

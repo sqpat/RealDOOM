@@ -107,7 +107,10 @@
 
 #define quality_port_lookup             ((uint8_t __near *)                  (_NULL_OFFSET + 0x0030))
 // 3C to 47 free 12 bytes unused
-#define jump_mult_table_3               ((uint8_t __near *)                  (_NULL_OFFSET + 0x0048))
+
+
+
+
 
 
 #define dc_x                            (*((int16_t __near*)                 (_NULL_OFFSET + 0x0050)))
@@ -418,7 +421,7 @@
 //todo this is big???
 #define demoname                        (((int8_t    __near*)                (_NULL_OFFSET + 0x0398)))
 
-// #define ems_backfill_page_order         (((int8_t    __near*)                (_NULL_OFFSET + 0x03B8)))
+
 
 #define skytexture 						(*((uint16_t __near*)                (_NULL_OFFSET + 0x03B8)))
 #define numflats  						(*((int16_t __near*)                 (_NULL_OFFSET + 0x03BA)))
@@ -690,8 +693,23 @@
 #define startmap	       				  (*((int8_t __near*)                (_NULL_OFFSET + 0x07CF)))
 
 
+#define key_right	       				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x07D0)))
+#define key_left	       				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x07D1)))
+#define key_up	      	 				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x07D2)))
+#define key_down	       				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x07D3)))
+#define key_strafeleft     				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x07D4)))
+#define key_straferight    				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x07D5)))
+#define key_fire	       				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x07D6)))
+#define key_use 	       				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x07D7)))
+#define key_strafe	       				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x07D8)))
+#define key_speed	       				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x07D9)))
+#define mousebfire	       				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x07DA)))
+#define mousebstrafe       				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x07DB)))
+#define mousebforward      				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x07DC)))
 
-// 7D0 to 7DF empty
+
+
+// 7DD to 7DF empty
 #define screen_oldloc					  (*((mpoint_t __near*)              (_NULL_OFFSET + 0x07E0)))
 #define old_screen_botleft_x			  (*((int16_t __near*)               (_NULL_OFFSET + 0x07E4)))
 #define old_screen_botleft_y			  (*((int16_t __near*)               (_NULL_OFFSET + 0x07E6)))
@@ -922,22 +940,7 @@ extern wbstartstruct_t wminfo;                 // parms for world map / intermis
  
   
  
-// 
-// controls (have defaults) 
-// 
-extern uint8_t             key_right;
-extern uint8_t             key_left;
-extern uint8_t             key_up;
-extern uint8_t             key_down;
-extern uint8_t             key_strafeleft;
-extern uint8_t             key_straferight;
-extern uint8_t             key_fire;
-extern uint8_t             key_use;
-extern uint8_t             key_strafe;
-extern uint8_t             key_speed;
-extern uint8_t             mousebfire;
-extern uint8_t             mousebstrafe;
-extern uint8_t             mousebforward;
+
 
 
 

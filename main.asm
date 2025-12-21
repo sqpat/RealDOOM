@@ -67,19 +67,7 @@ EXTRN _myargv:BYTE
 
 
 
-EXTRN _key_speed:BYTE
-EXTRN _key_right:BYTE
-EXTRN _key_left:BYTE
-EXTRN _key_up:BYTE
-EXTRN _key_down:BYTE
-EXTRN _key_strafeleft:BYTE
-EXTRN _key_straferight:BYTE
-EXTRN _key_fire:BYTE
-EXTRN _key_use:BYTE
-EXTRN _key_strafe:BYTE
-EXTRN _mousebfire:BYTE
-EXTRN _mousebstrafe:BYTE
-EXTRN _mousebforward:BYTE
+
 EXTRN ___iob:WORD
 
 

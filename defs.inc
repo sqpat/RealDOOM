@@ -381,9 +381,6 @@ _SKY_String = 					 	 _NULL_OFFSET + 003C6h
 _numChannels = 						 _NULL_OFFSET + 003CBh
 _MainLogger_addr =      	         _NULL_OFFSET + 003CCh
 
-
-; 3cc to 3cf free
-
 _am_stopped = 						 _NULL_OFFSET + 003D0h
 _automapactive =                 	 _NULL_OFFSET + 003D1h
 _currentThinkerListHead = 			 _NULL_OFFSET + 003D2h
@@ -617,6 +614,24 @@ _doomsav0_string =  		       	 _NULL_OFFSET + 007C0h
 _startskill = 						 _NULL_OFFSET + 007CDh
 _startepisode = 					 _NULL_OFFSET + 007CEh
 _startmap = 						 _NULL_OFFSET + 007CFh
+
+
+_key_right =						 _NULL_OFFSET + 007D0h
+_key_left =							 _NULL_OFFSET + 007D1h
+_key_up =							 _NULL_OFFSET + 007D2h
+_key_down =							 _NULL_OFFSET + 007D3h
+_key_strafeleft = 					 _NULL_OFFSET + 007D4h
+_key_straferight = 					 _NULL_OFFSET + 007D5h
+_key_fire =							 _NULL_OFFSET + 007D6h
+_key_use = 							 _NULL_OFFSET + 007D7h
+_key_strafe =						 _NULL_OFFSET + 007D8h
+_key_speed =						 _NULL_OFFSET + 007D9h
+_mousebfire =						 _NULL_OFFSET + 007DAh
+_mousebstrafe = 					 _NULL_OFFSET + 007DBh
+_mousebforward = 					 _NULL_OFFSET + 007DCh
+
+
+; 7dd to 7df unused
 _screen_oldloc =					 _NULL_OFFSET + 007E0h
 _old_screen_botleft_x =				 _NULL_OFFSET + 007E4h
 _old_screen_botleft_y =				 _NULL_OFFSET + 007E6h
