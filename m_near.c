@@ -43,13 +43,10 @@
 // DEFINE ALL LOCALS HERE. EXTERN IN m_near.h
 
 
-boolean         singletics = false; // debug flag to cancel adaptiveness
-boolean         autostart;
 
 //
 //  DEMO LOOP
 //
-int8_t                    *pagename;
 
 
 #ifdef DETAILED_BENCH_STATS
@@ -102,15 +99,12 @@ boolean novideo; // if true, stay in text mode for debugging
 gamestate_t         oldgamestate = -1;
  
  
-boolean         	timingdemo;             // if true, exit with report on completion 
 //boolean         	nodrawers;              // for comparative timing purposes 
 boolean         	noblit;                 // for comparative timing purposes 
 
  
 
 
-//byte __far*           demoend; 
-boolean         singledemo;             // quit after playing a demo from cmdline 
  
 boolean         precache = true;        // if true, load all graphics at start 
  
@@ -140,10 +134,6 @@ uint8_t             mousebforward;
 
 int8_t             turnheld;                               // for accelerative turning 
  
-boolean         mousearray[4]; 
-// note: i think the -1 array thing  might be causing 16 bit binary to act up - not 100% sure - sq
-// todo this is jank in asm just use an offset.
-boolean*        mousebuttons = &mousearray[1];          // allow [-1]
 
 // mouse values are used once 
 
@@ -155,12 +145,10 @@ boolean*        mousebuttons = &mousearray[1];          // allow [-1]
 int16_t		myargc;
 int8_t**		myargv;
 
-uint8_t		usemouse;
 
 
 
 
-int8_t __far*   defdemoname; 
 
 
 
@@ -362,15 +350,3 @@ driverBlock OPL3driver = {
 
 int32_t musdriverstartposition;
 
-
-
-
-
-int16_t             pageticREMOVEME;
-void (__interrupt __far_func *oldkeyboardisrREMOVEME) (void) = NULL;
-task HeadTaskREMOVEME = {0, false};
-void( __interrupt __far_func *OldInt8REMOVEME)(void);
-volatile uint16_t TaskServiceCountREMOVEME;
-volatile int8_t TS_TimesInInterruptREMOVEME;
-int8_t TS_InstalledREMOVEME = false;
-volatile int8_t TS_InInterruptREMOVEME = false;

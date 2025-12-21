@@ -33,11 +33,7 @@ EXTRN G_InitNew_:NEAR
 
 .DATA
 
-EXTRN _pagename:WORD
-EXTRN _defdemoname:DWORD
 EXTRN _precache:BYTE
-EXTRN _timingdemo:BYTE
-EXTRN _singledemo:BYTE
 
 
 .CODE
@@ -71,6 +67,10 @@ db 0Ah, "timed %li gametics in %li realtics ", 0Ah, " prnd index %i ", 0
 str_demo_recorded:
 db "Demo %s recorded", 0
 
+
+_singledemo:
+db 1  ; default true
+PUBLIC _singledemo
 
 
 PROC    G_DeferedPlayDemo_ NEAR
@@ -407,7 +407,7 @@ dont_end_playback:
 
 cmp    byte ptr ds:[_demoplayback], al ; 0
 je     skip_demo_playback_end_check
-cmp    byte ptr ds:[_singledemo], al
+cmp    byte ptr cs:[_singledemo], al
 je     dont_quit
 call   I_Quit_
 dont_quit:

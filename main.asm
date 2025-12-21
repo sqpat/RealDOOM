@@ -62,7 +62,6 @@ EXTRN Z_QuickMapByTaskNum_:FAR
 
 EXTRN _R_RenderPlayerView:DWORD
 EXTRN _oldgamestate:BYTE
-EXTRN _singledemo:BYTE
 EXTRN _key_strafe:BYTE
 EXTRN _key_straferight:BYTE
 EXTRN _key_strafeleft:BYTE
@@ -75,10 +74,8 @@ EXTRN _key_fire:BYTE
 EXTRN _key_use:BYTE
 EXTRN _mousebforward:BYTE
 EXTRN _mousebstrafe:BYTE
-EXTRN _mousebuttons:BYTE
 EXTRN _mousebfire:BYTE
 
-EXTRN _singletics:BYTE
 EXTRN _turnheld:BYTE
 
 
@@ -86,7 +83,6 @@ EXTRN _turnheld:BYTE
 EXTRN _myargc:WORD
 EXTRN _myargv:BYTE
 EXTRN _novideo:BYTE
-EXTRN _pagename:WORD
 
 
 EXTRN _key_right:BYTE
@@ -98,7 +94,6 @@ EXTRN _key_straferight:BYTE
 EXTRN _key_fire:BYTE
 EXTRN _key_use:BYTE
 EXTRN _key_strafe:BYTE
-EXTRN _usemouse:BYTE
 EXTRN _mousebfire:BYTE
 EXTRN _mousebstrafe:BYTE
 EXTRN _mousebforward:BYTE
@@ -108,6 +103,7 @@ EXTRN ___iob:WORD
 .CODE
 EXTRN _OldInt8:DWORD
 EXTRN _TS_Installed:BYTE
+EXTRN _singledemo:BYTE
 
 SIZEOF_FILE = 0Eh
 STDOUT = OFFSET ___iob + SIZEOF_FILE
@@ -1781,7 +1777,7 @@ mov   bx, ax
 mov   cx, dx
 cmp   byte ptr ds:[_gameaction], 0
 jne   not_starting_controlpanel
-cmp   byte ptr ds:[_singledemo], 0
+cmp   byte ptr cs:[_singledemo], 0
 jne   not_starting_controlpanel
 cmp   byte ptr ds:[_demoplayback], 0
 jne   check_key_for_controlpanel

@@ -173,6 +173,7 @@ typedef struct{
   
 } wbplayerstruct_t;
 
+// 12 + 8 bytes = 20 bytes?
 typedef struct{
 
     int8_t		epsd;	// episode # (0-2)

@@ -643,10 +643,15 @@ _message_nottobefuckedwith =         _NULL_OFFSET + 00A1Fh
 
 _HeadTask =					         _NULL_OFFSET + 00A20h
 _pagetic = 							 _NULL_OFFSET + 00A22h
+_pagename = 						 _NULL_OFFSET + 00A24h
+_singletics = 						 _NULL_OFFSET + 00A26h
+_timingdemo = 						 _NULL_OFFSET + 00A27h
+_defdemoname = 						 _NULL_OFFSET + 00A28h
+_mousearray = 						 _NULL_OFFSET + 00A2Ch
+_mousebuttons = 					 _NULL_OFFSET + 00A2Dh
+_usemouse = 						 _NULL_OFFSET + 00A30h
 
-;_oldkeyboardisr =					 _NULL_OFFSET + 00A24h
 
-; free A26-A30
 
 _demosequence =	       		         _NULL_OFFSET + 00A31h
 

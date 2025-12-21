@@ -34,7 +34,6 @@ EXTRN DEBUG_PRINT_:NEAR
 
 .DATA
 
-EXTRN _M_Init:DWORD
 
 ; leave space for title text which is there
 LUMPINFO_INIT_SEGMENT = BASE_LOWER_MEMORY_SEGMENT + 020h

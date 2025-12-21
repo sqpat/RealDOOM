@@ -76,12 +76,7 @@ EXTRN _grmode:BYTE
 EXTRN _M_Init:DWORD
 EXTRN _myargc:WORD
 EXTRN _myargv:WORD
-EXTRN _autostart:BYTE
-EXTRN _singledemo:BYTE
-EXTRN _defdemoname:DWORD
 EXTRN _noblit:BYTE
-EXTRN _timingdemo:BYTE
-EXTRN _singletics:BYTE
 EXTRN ___iob:WORD
 
 
@@ -92,6 +87,7 @@ EXTRN ___iob:WORD
 
 EXTRN _forwardmove:WORD
 EXTRN _sidemove:WORD
+EXTRN _singledemo:BYTE
 
 
 DEMO_MAX_SIZE = 0F800h
@@ -200,6 +196,11 @@ str_lmp_file_ext:
 db ".lmp", 0
 str_playing_demo:
 db "Playing demo %s.lmp.", 0Ah, 0
+
+
+_autostart:
+db 0
+
 
 COMMENT @
 str_plutoniafilename_:
@@ -681,7 +682,7 @@ not_demo:
 
 
 mov   cx, 1
-mov   byte ptr ds:[_autostart], ch     ; 0/false
+mov   byte ptr cs:[_autostart], ch     ; 0/false
 mov   byte ptr ds:[_startepisode], cl  ; 1
 mov   byte ptr ds:[_startmap], cl  ; 1
 mov   byte ptr ds:[_startskill], SK_MEDIUM
@@ -701,7 +702,7 @@ jnl   not_skill
     lodsb 
     sub   al, '1'
     mov   byte ptr ds:[_startskill], al    ;    startskill = myargv[p + 1][0] - '1';
-    mov   byte ptr ds:[_autostart], cl     ;    autostart = true;
+    mov   byte ptr cs:[_autostart], cl     ;    autostart = true;
 
 not_skill:
 
@@ -720,7 +721,7 @@ jnl   not_episode
     
     mov   byte ptr ds:[_startepisode], al  ;    startepisode = myargv[p + 1][0] - '0';
     mov   byte ptr ds:[_startmap], cl      ;    startmap = 1;
-    mov   byte ptr ds:[_autostart], cl     ;    autostart = true;
+    mov   byte ptr cs:[_autostart], cl     ;    autostart = true;
 
 not_episode:
 
@@ -769,7 +770,7 @@ jnl   not_warp
     set_start_map:
     mov   byte ptr ds:[_startmap], al      ;    startmap = 1;
 
-    mov   byte ptr ds:[_autostart], cl     ;    autostart = true;
+    mov   byte ptr cs:[_autostart], cl     ;    autostart = true;
 
 skip_warp_bad_param:
 not_warp:
@@ -1094,7 +1095,7 @@ COMMENT @
 @
 
     mov   byte ptr ds:[_demorecording], cl  ; 1
-    mov   byte ptr ds:[_autostart], cl  ; 1
+    mov   byte ptr cs:[_autostart], cl  ; 1
     ; fall thru i guess
         
 
@@ -1110,7 +1111,7 @@ je    skip_playdemo_param
 cmp   ax, di
 jnl   skip_playdemo_param
 
-    mov   byte ptr ds:[_singledemo], cl  ; 1
+    mov   byte ptr cs:[_singledemo], cl  ; 1
     sal   ax, 1
     xchg  ax, si
     
@@ -1179,7 +1180,7 @@ skip_loadgame_param:
 
 cmp  byte ptr ds:[_gameaction], GA_LOADGAME
 je   skip_loadgame
-cmp  byte ptr ds:[_autostart], 0
+cmp  byte ptr cs:[_autostart], 0
 je   not_autostart
 autostart:
 xor  ax, ax

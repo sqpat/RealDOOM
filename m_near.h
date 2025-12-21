@@ -717,10 +717,16 @@
 
 #define HeadTask  		   				  (*((task __near*)                  (_NULL_OFFSET + 0x0A20)))
 #define pagetic					 		  (*((int16_t __near*)               (_NULL_OFFSET + 0x0A22)))
+#define pagename					 	  (((int8_t __near*)                 (_NULL_OFFSET + 0x0A24)))
+#define singletics	 		      		  (*((boolean __near*)        		 (_NULL_OFFSET + 0x0A26)))
+#define timingdemo	 		      		  (*((boolean __near*)        		 (_NULL_OFFSET + 0x0A27)))
+#define defdemoname					 	  (((int8_t __far __near*)           (_NULL_OFFSET + 0x0A28)))
+//boolean         mousearray[4]; 
+//boolean*        mousebuttons = &mousearray[1];          // allow [-1]
+#define mousearray		 	     		  (((boolean __near*)        		 (_NULL_OFFSET + 0x0A2C)))
+#define mousebuttons	 	     		  (((boolean __near*)        		 (_NULL_OFFSET + 0x0A2D)))
+#define usemouse		 	     		  (*((boolean __near*)        		 (_NULL_OFFSET + 0x0A30)))
 
-
-// #define STRING_HELP2                      ((int8_t __near *)                 (_NULL_OFFSET + 0x0A26))
-// #define STRING_HELP                       ((int8_t __near *)                 (_NULL_OFFSET + 0x0A2C))
 
 #define demosequence	       		      (*((boolean __near*)               (_NULL_OFFSET + 0x0A31)))
 
@@ -788,13 +794,10 @@
 
 #define MAXWADFILES             3
 
-extern boolean              singletics;
 
 
-extern boolean              autostart;
 
 
-extern int8_t               *pagename;
 
 
 #ifdef DETAILED_BENCH_STATS
@@ -913,14 +916,7 @@ extern gamestate_t         oldgamestate;
 
  
 
-extern boolean         	  timingdemo;             // if true, exit with report on completion 
 extern boolean         	  noblit;                 // for comparative timing purposes 
-
-
-
-
-
-extern boolean         singledemo;             // quit after playing a demo from cmdline 
 extern boolean         precache;        // if true, load all graphics at start 
 extern wbstartstruct_t wminfo;                 // parms for world map / intermission 
  
@@ -944,18 +940,14 @@ extern uint8_t             mousebstrafe;
 extern uint8_t             mousebforward;
 
 extern int8_t             turnheld;
-extern boolean         mousearray[4]; 
-extern boolean*        mousebuttons;
 
 
 
 
 extern int16_t		myargc;
 extern int8_t**		myargv;
-extern uint8_t		usemouse;
 
 
-extern int8_t __far*   defdemoname; 
 
 
 // Now what?
