@@ -80,52 +80,13 @@ void (__far* S_StartSound)() =                 ((void (__far *)(uint16_t ax, uin
 void (__far* M_Init)() =                      ((void (__far *)())     	                              (MK_FP(menu_code_area_segment,           M_InitOffset)));
 
 
-
-
-
-// todo p_map stuff goes here....
-
-
-
-
-
 spriteframe_t __far* p_init_sprtemp;
 int16_t             p_init_maxframe;
-
-
-
-
- 
- 
-//boolean         	nodrawers;              // for comparative timing purposes 
-// boolean         	noblit;                 // for comparative timing purposes 
-
- 
-
-
- 
 boolean         precache = true;        // if true, load all graphics at start 
- 
- 
-  
- 
-// 
-// controls (have defaults) 
-// 
-
-
-
- 
-
-// mouse values are used once 
-
-
-
-
-
-
 int16_t		myargc;
 int8_t**		myargv;
+int32_t codestartposition[NUM_OVERLAYS];
+int32_t musdriverstartposition;
 
 
 
@@ -252,7 +213,6 @@ boolean    					tnt = false;
 
 
 
-int32_t codestartposition[NUM_OVERLAYS];
 
  
 //
@@ -329,5 +289,4 @@ driverBlock OPL3driver = {
 
 
 
-int32_t musdriverstartposition;
 

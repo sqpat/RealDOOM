@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/12/21 15:43:10
+Created on:       25/12/21 15:49:42
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -383,15 +383,15 @@ Module: main.obj(main.ASM)
 0000:6e1d      I_ShutdownTimer_
 0000:69e0      I_SetPalette_
 0000:6c46      locallib_printhex_
+0000:5cbf*     D_MAIN_STARTMARKER_
 0000:6c39      locallib_putchar_
 0000:6d42*     locallib_printstringnear_
 0000:6e10      locallib_dos_setvect_old_
-0000:6661      M_LoadDefaults_
 0000:6e95*     D_Display_
-0000:5cbf*     D_MAIN_STARTMARKER_
+0000:6661      M_LoadDefaults_
 0000:721a*     D_DoomLoop_
-0000:6a33*     I_UpdateBox_
 0000:5d8e      I_KeyboardISR_
+0000:6a33*     I_UpdateBox_
 0000:70d7      D_ProcessEvents_
 0000:6804      M_ScanTranslateDefaults_
 0000:6be9*     locallib_strlen_
@@ -554,8 +554,8 @@ Module: z_zone.obj(z_zone.ASM)
 0000:ab25      Z_QuickMapMaskedExtraData_
 0000:ac75      Z_SetOverlay_
 0000:ac68      _doomcode_filename
-0000:aaee      Z_QuickMapUndoFlatCache_
 0000:ab9f      Z_QuickMapByTaskNum_
+0000:aaee      Z_QuickMapUndoFlatCache_
 0000:a96d      Z_QuickMapDemo_
 0000:ab7c      Z_QuickMapIntermission_
 0000:a9b3*     Z_QuickMapRender_4000To9000_9000Only_
@@ -613,9 +613,9 @@ Module: m_menu.obj(m_menu.ASM)
 0c16:0a9e*     M_ReadThis2_
 0c16:083d*     S_SetMusicVolume_
 0c16:08f1*     M_ChooseSkill_
+0c16:077a*     M_DrawReadThisRetail_
 0c16:08bb*     M_DrawEpisode_
 0c16:0c51*     M_StartMessage_
-0c16:077a*     M_DrawReadThisRetail_
 0c16:09fb*     M_Options_
 0c16:05b4*     M_SaveGame_
 0c16:1388*     M_strcpy_
@@ -855,9 +855,9 @@ Module: p_sight.obj(p_sight.ASM)
 2c76:06eb*     P_SIGHT_ENDMARKER_
 2c76:03d4*     P_CrossSubsector_
 Module: p_map.obj(p_map.ASM)
+2c76:0b54      P_SetThingPosition_
 2c76:0c32      R_PointInSubsector_
 2c76:06ec*     P_MAP_STARTMARKER_
-2c76:0b54      P_SetThingPosition_
 2c76:2419      P_AimLineAttack_
 2c76:18b9      P_CheckPosition_
 2c76:2a33      FixedMul1632_MapLocal_
@@ -905,9 +905,9 @@ Module: p_pspr.obj(p_pspr.ASM)
 2c76:4059*     A_Light0_
 2c76:3d60*     A_Saw_
 2c76:3a41*     P_CheckAmmo_
-2c76:406b*     A_OpenShotgun2_
 2c76:3f45*     A_FirePistol_
 2c76:3c25*     A_ReFire_
+2c76:406b*     A_OpenShotgun2_
 2c76:408b      A_BFGSpray_
 2c76:3e58*     A_FireMissile_
 2c76:3e6f*     A_FirePlasma_
@@ -960,8 +960,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2c76:5459*     A_FatAttack2_
 2c76:4d4b*     A_SkelMissile_
 2c76:543e*     A_FatAttack1_
-2c76:5800*     A_BabyMetal_
 2c76:47ee*     A_Look_
+2c76:5800*     A_BabyMetal_
 2c76:53da*     A_FatAttack3_
 2c76:59fb*     A_SpawnSound_
 2c76:4d0e*     A_BruisAttack_
@@ -1138,8 +1138,8 @@ Module: am_map.obj(am_map.ASM)
 Module: s_sound.obj(s_sound.ASM)
 2c76:9878*     _channels
 2c76:9d0b      S_Start_
-2c76:9c34      S_StartSoundFar_
 2c76:9a7a*     S_StopSound_
+2c76:9c34      S_StartSoundFar_
 2c76:9c38      S_StartSound_
 2c76:9915*     S_StopChannel_
 2c76:9ac3*     S_getChannel_
@@ -1438,4 +1438,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003c580 (247168.)
 Entry point address: 364f:0a84
-Link time: 00:00.04
+Link time: 00:00.49

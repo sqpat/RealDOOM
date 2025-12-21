@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/12/21 15:43:11
+Created on:       25/12/21 15:49:43
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -339,15 +339,15 @@ Module: main.obj(main.ASM)
 0000:587d      I_ShutdownTimer_
 0000:5440      I_SetPalette_
 0000:56a6      locallib_printhex_
+0000:471f*     D_MAIN_STARTMARKER_
 0000:5699      locallib_putchar_
 0000:57a2*     locallib_printstringnear_
 0000:5870      locallib_dos_setvect_old_
-0000:50c1      M_LoadDefaults_
 0000:58f5*     D_Display_
-0000:471f*     D_MAIN_STARTMARKER_
+0000:50c1      M_LoadDefaults_
 0000:5c7a*     D_DoomLoop_
-0000:5493*     I_UpdateBox_
 0000:47ee      I_KeyboardISR_
+0000:5493*     I_UpdateBox_
 0000:5b37      D_ProcessEvents_
 0000:5264      M_ScanTranslateDefaults_
 0000:5649*     locallib_strlen_
@@ -510,8 +510,8 @@ Module: z_zone.obj(z_zone.ASM)
 0000:9581      Z_QuickMapMaskedExtraData_
 0000:96d1      Z_SetOverlay_
 0000:96c4      _doomcode_filename
-0000:954a      Z_QuickMapUndoFlatCache_
 0000:95fb      Z_QuickMapByTaskNum_
+0000:954a      Z_QuickMapUndoFlatCache_
 0000:93c9      Z_QuickMapDemo_
 0000:95d8      Z_QuickMapIntermission_
 0000:940f*     Z_QuickMapRender_4000To9000_9000Only_

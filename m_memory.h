@@ -51,7 +51,7 @@
 
 
 // todo generate this programatically
-#define baselowermemoryaddress    (0x22830000)
+#define baselowermemoryaddress    (0x22C30000)
 // MaximumMusDriverSize
 
 #define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
