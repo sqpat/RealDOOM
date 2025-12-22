@@ -187,6 +187,10 @@ mov   ax, bx ; al holds w
 
 mov   bx, _buttonlist
 
+;	if (buttonlist[i].btimer && buttonlist[i].linenum == linenum)
+;	    return;
+
+
 do_next_button_check:
 cmp   word ptr ds:[bx + BUTTON_T.button_btimer], 0
 je    timer_0_skip
@@ -197,28 +201,27 @@ add   bx, SIZEOF_BUTTON_T
 cmp   bx, (_buttonlist + MAXBUTTONS * SIZEOF_BUTTON_T)
 jl    do_next_button_check
 
-mov   bx, _buttonlist + BUTTON_T.button_btimer
+mov   bx, _buttonlist
 
-loop_check_next_bitton:
+loop_check_next_button:
 
 
-cmp   word ptr ds:[bx], 0
+cmp   word ptr ds:[bx + BUTTON_T.button_btimer], 0
 jne   button_already_active
 
-mov   word ptr ds:[bx + _buttonlist + BUTTON_T.button_linenum], si
-mov   byte ptr ds:[bx + _buttonlist + BUTTON_T.button_where], al
-mov   word ptr ds:[bx + _buttonlist + BUTTON_T.button_btexture], cx
-mov   word ptr ds:[bx + _buttonlist + BUTTON_T.button_soundorg], dx
-mov   ax, BUTTONTIME
-mov   word ptr ds:[bx + _buttonlist + BUTTON_T.button_btimer], ax
+mov   word ptr ds:[bx + BUTTON_T.button_linenum], si
+mov   byte ptr ds:[bx + BUTTON_T.button_where], al
+mov   word ptr ds:[bx + BUTTON_T.button_btexture], cx
+mov   word ptr ds:[bx + BUTTON_T.button_soundorg], dx
+mov   word ptr ds:[bx + BUTTON_T.button_btimer], BUTTONTIME
 
-;ret   
+
 jmp   exit_p_changeswitchtexture
 
 button_already_active:
-add   bx, SIZEOF_BUTTON_T
-cmp   bx, (_buttonlist + BUTTON_T.button_btimer + MAXBUTTONS * SIZEOF_BUTTON_T)
-jl    loop_check_next_bitton
+add   bx, (SIZE BUTTON_T)
+cmp   bx, (_buttonlist + (MAXBUTTONS * (SIZE BUTTON_T)))
+jl    loop_check_next_button
 
 button_already_exists:
 
