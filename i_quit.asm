@@ -49,6 +49,7 @@ LUMP_PER_EMS_PAGE = 1024
 
 .CODE
 
+EXTRN __GETDS:WORD
 
 PROC    I_QUIT_STARTMARKER_ NEAR
 PUBLIC  I_QUIT_STARTMARKER_
@@ -239,6 +240,8 @@ rep movsw
 mov cx, es
 mov ds, cx
 mov ss, cx
+
+mov word ptr cs:[__GETDS+2], es ; put old ds back
 
 
 pop di

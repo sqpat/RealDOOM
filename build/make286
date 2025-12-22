@@ -50,7 +50,7 @@ GLOBOBJS = &
  i_quit.obj &
  i_main.obj &
  i_ibm.obj &
-  d_init.obj &
+ d_init.obj &
  d_net.obj &
  g_setup.obj &
  g_game.obj &
