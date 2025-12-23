@@ -202,6 +202,9 @@ void __near Z_GetEMSPageMap() {
 }
 
 #else
+
+boolean __near Z_CheckEMSDriverPresence();
+
 void __near Z_InitEMS() {
 
 	// 4 mb
@@ -239,6 +242,10 @@ void __near Z_InitEMS() {
 	5801		Get Mappable Physical Address Array Entries    5801h     
 	
 	*/
+
+	if (!Z_CheckEMSDriverPresence()){
+		I_Error("\n ERROR: EMS Driver not installed!");
+	}
 
 	result.hu = locallib_int86_67_1arg(0x4000);
 	errorreg = result.bu.bytehigh;
@@ -356,6 +363,11 @@ void __near Z_GetEMSPageMap() {
 	regresult.qword = locallib_int86_67_1arg_return(0x5801);
 	
 	numentries = regresult.w.cx;
+
+	if (numentries < 28){
+		I_Error("\nInsufficient mappable pages found! 28 pages total (24 conventional and 4 page frame pages) required! EMS 4.0 conventional features unsupported?\n");
+	}
+
 	if (regresult.h.ah != 0) {
 		doerror(84, regresult.h.ah);// Call 5801 failed with value %i!\n
 	}
@@ -384,7 +396,7 @@ void __near Z_GetEMSPageMap() {
 		}
 	}
 
-	//I_Error("\nMappable page for segment 0x9000 NOT FOUND! EMS 4.0 features unsupported?\n");
+	I_Error("\nMappable page for segment 0x9000 NOT FOUND! EMS 4.0 conventional features unsupported?\n");
 
 found:
 
