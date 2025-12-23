@@ -1728,19 +1728,9 @@ jmp   print_last_digit
 
 
 ENDP
-call_startcontrolpanel:
-; should already be in menu task?
-db    09Ah
-dw    M_STARTCONTROLPANELOFFSET, MENU_CODE_AREA_SEGMENT
 
-exit_gresponder_return_1:
-mov   al, 1
-pop   si
-pop   cx
-pop   bx
-ret   
 
-; todo return carry
+; return was never used. single case could be inlined?
 PROC G_Responder_  NEAR
 PUBLIC G_Responder_
 
@@ -1759,14 +1749,18 @@ jne   not_starting_controlpanel
 check_key_for_controlpanel:
 mov   es, cx
 mov   ax, word ptr es:[bx + EVENT_T.event_data1]
-test  ah, ah ; EV_KEYDOWN
+test  ah, ah ; EV_KEYDOWN, check if 0
 je    call_startcontrolpanel    ; keydown?
 cmp   ah, EV_MOUSE              ; mouse?
-jne   exit_gresponder_return_0
+jne   exit_gresponder
 test  al, al
-jne   call_startcontrolpanel    ; any mousebutton down?
-exit_gresponder_return_0:
-xor   ax, ax
+je    exit_gresponder    ; any mousebutton down?
+call_startcontrolpanel:
+; should already be in menu task?
+db    09Ah
+dw    M_STARTCONTROLPANELOFFSET, MENU_CODE_AREA_SEGMENT
+exit_gresponder:
+
 pop   cx
 pop   bx
 ret   
@@ -1776,12 +1770,12 @@ jne   not_gamestate_level
 mov   ax, bx
 mov   dx, cx
 call  HU_Responder_
-; jc    exit_gresponder_return_1  ; always false. i think only netcode/chat stuff could eat the key
+; jc    exit_gresponder  ; always false. i think only netcode/chat stuff could eat the key
 mov   ax, bx
 mov   dx, cx
 call  ST_Responder_ ; never returns true
 ;test  al, al
-;jne   exit_gresponder_return_1
+;jne   exit_gresponder
 mov   ax, bx
 mov   dx, cx
 ; todo: playerx/y not ready. store somewhere?
@@ -1789,7 +1783,7 @@ mov   dx, cx
 db    09Ah
 dw    AM_RESPONDER_OFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-jc    exit_gresponder_return_1
+jc    exit_gresponder
 
 not_gamestate_level:
 cmp   byte ptr ds:[_gamestate], GS_FINALE
@@ -1804,7 +1798,7 @@ db 09Ah
 dw F_RESPONDEROFFSET, CODE_OVERLAY_SEGMENT
 
 test  al, al
-jne   exit_gresponder_return_1_2
+jne   exit_gresponder_2
 
 not_gamestate_finale:
 
@@ -1824,8 +1818,8 @@ cmp   bl, KEY_PAUSE
 jne   handle_nonpause_game_keydown_event
 
 mov   byte ptr ds:[_sendpause], 1
-exit_gresponder_return_1_2:
-mov   al, 1
+exit_gresponder_2:
+; mov   al, 1  return not used
 exit_gresponder_return_al:
 pop   cx
 pop   bx
@@ -1858,7 +1852,7 @@ mov   bx, 10
 imul  dx
 call  FastDiv3216u_
 mov   word ptr cs:[_mousex], ax
-mov   al, 1
+; mov   al, 1  return not used
 pop   cx
 pop   bx
 ret   
