@@ -121,7 +121,8 @@ _firstspritelump = 					_NULL_OFFSET + 000B6h
 _finaletext =                    	_NULL_OFFSET + 000B8h
 _finalecount =                   	_NULL_OFFSET + 000BAh
 _finalestage =                   	_NULL_OFFSET + 000BCh
-; bd free
+_emsconventional =                  _NULL_OFFSET + 000BDh
+
 _finale_laststage =              	_NULL_OFFSET + 000BEh
 _playingstate = 	                _NULL_OFFSET + 000BFh
 

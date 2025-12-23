@@ -164,7 +164,8 @@
 #define finaletext                      (*((int16_t __near*)                 (_NULL_OFFSET + 0x00B8)))
 #define finalecount                     (*((int16_t __near*)                 (_NULL_OFFSET + 0x00BA)))
 #define finalestage                     (*((int8_t __near*)                  (_NULL_OFFSET + 0x00BC)))
-//bd free
+#define emsconventional   				(*((boolean __near*)               	 (_NULL_OFFSET + 0x00BD)))
+
 #define finale_laststage                (*((int8_t __near*)                  (_NULL_OFFSET + 0x00BE)))
 #define playingstate	                (*((uint8_t __near*)                 (_NULL_OFFSET + 0x00BF)))
 #define mfloorclip                      (*(int16_t __far * __near *)         (_NULL_OFFSET + 0x00C0))
@@ -462,7 +463,7 @@
 #define SEENLINES_6000_SEGMENT_PTR	      (*((segment_t __near*)             (_NULL_OFFSET + 0x0438)))
 #define SIDES_SEGMENT_PTR		          (*((segment_t __near*)             (_NULL_OFFSET + 0x043A)))
 // #define LUMPINFO_SEGMENT_PTR		      (*((segment_t __near*)             (_NULL_OFFSET + 0x043C)))
-// 43e free
+// 43c-43f free
 // todo order all these for stosw chain
 #define EMS_PAGE                 	      (*((segment_t __near*)             (_NULL_OFFSET + 0x0440)))
 #define MUSIC_PAGE_SEGMENT_PTR            (*((segment_t __near*)             (_NULL_OFFSET + 0x0440)))
@@ -707,7 +708,6 @@
 #define mousebfire	       				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x07DA)))
 #define mousebstrafe       				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x07DB)))
 #define mousebforward      				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x07DC)))
-
 
 
 // 7DD to 7DF empty

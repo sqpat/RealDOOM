@@ -365,7 +365,7 @@ void __near Z_GetEMSPageMap() {
 	numentries = regresult.w.cx;
 
 	if (numentries < 28){
-		I_Error("\nInsufficient mappable pages found! 28 pages total (24 conventional and 4 page frame pages) required! EMS 4.0 conventional features unsupported?\n");
+		I_Error("\nInsufficient mappable pages! \n28 pages required (24 conventional and 4 page frame pages)! Only %i found.\n EMS 4.0 conventional features unsupported", numentries);
 	}
 
 	if (regresult.h.ah != 0) {
@@ -400,6 +400,7 @@ void __near Z_GetEMSPageMap() {
 
 found:
 
+	emsconventional = 1;
 	 
 
 	// todo this is old and out of date, but instructive.

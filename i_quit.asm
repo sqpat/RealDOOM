@@ -133,6 +133,8 @@ IFDEF COMP_CH
 ELSE
     cmp   word ptr ds:[_emshandle], 0
     je    skip_unmap
+    cmp   byte ptr ds:[_emsconventional], 0
+    je    skip_unmap
         push  dx
         call  Z_QuickMapUnmapAll_
         mov   ax, 04500h
