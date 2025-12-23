@@ -204,150 +204,151 @@ void __near Z_GetEMSPageMap() {
 #else
 
 boolean __near Z_CheckEMSDriverPresence();
+void __near Z_InitEMS();
 
-void __near Z_InitEMS() {
+// void __near Z_InitEMS() {
 
-	// 4 mb
-	// todo test 3, 2 MB, etc. i know we use less..
-	//int16_t numPagesToAllocate = NUM_EMS4_SWAP_PAGES; //256; //  (4 * 1024 * 1024) / PAGE_FRAME_SIZE;
-	int8_t  i;
-	reg_return_4word regresult;
-
-
-	// todo check for device...
-	// char	emmname[9] = "EMMXXXX0";
+// 	// 4 mb
+// 	// todo test 3, 2 MB, etc. i know we use less..
+// 	//int16_t numPagesToAllocate = NUM_EMS4_SWAP_PAGES; //256; //  (4 * 1024 * 1024) / PAGE_FRAME_SIZE;
+// 	int8_t  i;
+// 	reg_return_4word regresult;
 
 
-	int16_t_union result;
+// 	// todo check for device...
+// 	// char	emmname[9] = "EMMXXXX0";
 
-	int16_t pagestotal, pagesavail;
-	int16_t errorreg;
-	uint8_t vernum;
-	DEBUG_PRINT_NOARG("\tChecking EMS...");
 
-	// used:
-	/*
-	40		1  Get Status                                     40h      
-	41		2  Get Page Frame Segment Address                 41h       
-	42		3  Get Unallocated Page Count                     42h       
-	43		4  Allocate Pages                                 43h      
-	44		removed 5  Map/Unmap Handle Page                          44h      
-	45		6  Deallocate Pages                               45h       
-	46		7  Get Version                                    46h       
+// 	int16_t_union result;
 
-          17 Map/Unmap Multiple Handle Pages
-	5000	(Physical page number mode)                    5000h     
-	          25 
-	5800		Get Mappable Physical Address Array            5800h     
-	5801		Get Mappable Physical Address Array Entries    5801h     
+// 	int16_t pagestotal, pagesavail;
+// 	int16_t errorreg;
+// 	uint8_t vernum;
+// 	DEBUG_PRINT_NOARG("\tChecking EMS...");
+
+// 	// used:
+// 	/*
+// 	40		1  Get Status                                     40h      
+// 	41		2  Get Page Frame Segment Address                 41h       
+// 	42		3  Get Unallocated Page Count                     42h       
+// 	43		4  Allocate Pages                                 43h      
+// 	44		removed 5  Map/Unmap Handle Page                          44h      
+// 	45		6  Deallocate Pages                               45h       
+// 	46		7  Get Version                                    46h       
+
+//           17 Map/Unmap Multiple Handle Pages
+// 	5000	(Physical page number mode)                    5000h     
+// 	          25 
+// 	5800		Get Mappable Physical Address Array            5800h     
+// 	5801		Get Mappable Physical Address Array Entries    5801h     
 	
-	*/
+// 	*/
 
-	if (!Z_CheckEMSDriverPresence()){
-		I_Error("\n ERROR: EMS Driver not installed!");
-	}
+// 	if (!Z_CheckEMSDriverPresence()){
+// 		I_Error("\n ERROR: EMS Driver not installed!");
+// 	}
 
-	result.hu = locallib_int86_67_1arg(0x4000);
-	errorreg = result.bu.bytehigh;
-	if (errorreg) {
-		doerror(91, errorreg);
-	}
-
-
-	result.hu = locallib_int86_67_1arg(0x4600);
-	vernum = result.bu.bytelow;
-	errorreg = result.bu.bytehigh;
-	if (errorreg != 0) {
-		doerror(90, errorreg); // EMS Error 0x46
-	}
-	//DEBUG_PRINT("Version %i", vernum);
-	if (vernum < 40) {
-		doerror(92, vernum);
-	}
-
-	// get page frame address
-	// regs.h.ah = 0x41;
-	regresult.qword = locallib_int86_67_1arg_return(0x4100);
-
-	// EMS Handle
-	EMS_PAGE = regresult.w.bx;
-	errorreg = regresult.h.ah;
-	if (errorreg != 0) {
-		doerror(89, errorreg);/// EMS Error 0x41
-	}
+// 	result.hu = locallib_int86_67_1arg(0x4000);
+// 	errorreg = result.bu.bytehigh;
+// 	if (errorreg) {
+// 		doerror(91, errorreg);
+// 	}
 
 
+// 	result.hu = locallib_int86_67_1arg(0x4600);
+// 	vernum = result.bu.bytelow;
+// 	errorreg = result.bu.bytehigh;
+// 	if (errorreg != 0) {
+// 		doerror(90, errorreg); // EMS Error 0x46
+// 	}
+// 	//DEBUG_PRINT("Version %i", vernum);
+// 	if (vernum < 40) {
+// 		doerror(92, vernum);
+// 	}
 
+// 	// get page frame address
+// 	// regs.h.ah = 0x41;
+// 	regresult.qword = locallib_int86_67_1arg_return(0x4100);
 
-	// regs.h.ah = 0x42;
-	// intx86(EMS_INT, &regs, &regs);
-	regresult.qword = locallib_int86_67_1arg_return(0x4200);
-	// result.hu = locallib_int86_67_1arg(0x4200);
-	pagesavail = regresult.w.bx;
-	pagestotal = regresult.w.dx;
-	DEBUG_PRINT("%i pages required, %i pages available at frame %p\n", NUM_EMS4_SWAP_PAGES, pagesavail, EMS_PAGE);
-
-	if (pagesavail < NUM_EMS4_SWAP_PAGES) {
-		I_Error("\nERROR: minimum of %i EMS pages required", NUM_EMS4_SWAP_PAGES);
-	}
-
-
-	// regs.w.bx = NUM_EMS4_SWAP_PAGES; //numPagesToAllocate;
-	// regs.h.ah = 0x43;
-	// result.hu = locallib_int86_67_1arg(0x4300);
-	// intx86(EMS_INT, &regs, &regs);
-	regresult.qword = locallib_int86_67_3arg_return(0x4300, 0, NUM_EMS4_SWAP_PAGES);
-
-	emshandle = regresult.w.dx;
-	errorreg = regresult.h.ah;
-	if (errorreg != 0) {
-		// Error 0 = 0x00 = no error
-		// Error 137 = 0x89 = zero pages
-		// Error 136 = 0x88 = OUT_OF_LOG
-		doerror(88, errorreg);// EMS Error 0x43
-	}
-
-
-	// do initial page remapping for ems page frame
-	// regs.w.ax = 0x4400;  
-	// regs.w.bx = MUS_DATA_PAGES;
-	// regs.w.dx = emshandle; // handle
-	// intx86(EMS_INT, &regs, &regs);
-	locallib_int86_67(0x4400, emshandle, MUS_DATA_PAGES);
-
-	// regs.w.ax = 0x4401;  
-	// regs.w.bx = SFX_DATA_PAGES;
-	// regs.w.dx = emshandle; // handle
-	locallib_int86_67(0x4401, emshandle, SFX_DATA_PAGES);
-
-	// regs.w.ax = 0x4402;
-	// regs.w.bx = SFX_DATA_PAGES+1;
-	// regs.w.dx = emshandle; // handle
-	locallib_int86_67(0x4402, emshandle, FIRST_LUMPINFO_LOGICAL_PAGE);
-	// intx86(EMS_INT, &regs, &regs);
-
-	// DC00 bsp code setup
-	// regs.w.ax = 0x4403;  
-	// regs.w.bx = BSP_CODE_PAGE;
-	// regs.w.dx = emshandle; // handle
-	locallib_int86_67(0x4403, emshandle, BSP_CODE_PAGE);
-
-	currentpageframes[0] = 0;
-	currentpageframes[1] = NUM_MUSIC_PAGES;
-	currentpageframes[2] = NUM_MUSIC_PAGES+1;	// todo
-	currentpageframes[3] = NUM_MUSIC_PAGES+NUM_SFX_PAGES;
-
-	// intx86(EMS_INT, &regs, &regs);
-
-
-	//*size = numPagesToAllocate * PAGE_FRAME_SIZE;
+// 	// EMS Handle
+// 	EMS_PAGE = regresult.w.bx;
+// 	errorreg = regresult.h.ah;
+// 	if (errorreg != 0) {
+// 		doerror(89, errorreg);/// EMS Error 0x41
+// 	}
 
 
 
 
+// 	// regs.h.ah = 0x42;
+// 	// intx86(EMS_INT, &regs, &regs);
+// 	regresult.qword = locallib_int86_67_1arg_return(0x4200);
+// 	// result.hu = locallib_int86_67_1arg(0x4200);
+// 	pagesavail = regresult.w.bx;
+// 	pagestotal = regresult.w.dx;
+// 	DEBUG_PRINT("%i pages required, %i pages available at frame %p\n", NUM_EMS4_SWAP_PAGES, pagesavail, EMS_PAGE);
+
+// 	if (pagesavail < NUM_EMS4_SWAP_PAGES) {
+// 		I_Error("\nERROR: minimum of %i EMS pages required", NUM_EMS4_SWAP_PAGES);
+// 	}
 
 
-}
+// 	// regs.w.bx = NUM_EMS4_SWAP_PAGES; //numPagesToAllocate;
+// 	// regs.h.ah = 0x43;
+// 	// result.hu = locallib_int86_67_1arg(0x4300);
+// 	// intx86(EMS_INT, &regs, &regs);
+// 	regresult.qword = locallib_int86_67_3arg_return(0x4300, 0, NUM_EMS4_SWAP_PAGES);
+
+// 	emshandle = regresult.w.dx;
+// 	errorreg = regresult.h.ah;
+// 	if (errorreg != 0) {
+// 		// Error 0 = 0x00 = no error
+// 		// Error 137 = 0x89 = zero pages
+// 		// Error 136 = 0x88 = OUT_OF_LOG
+// 		doerror(88, errorreg);// EMS Error 0x43
+// 	}
+
+
+// 	// do initial page remapping for ems page frame
+// 	// regs.w.ax = 0x4400;  
+// 	// regs.w.bx = MUS_DATA_PAGES;
+// 	// regs.w.dx = emshandle; // handle
+// 	// intx86(EMS_INT, &regs, &regs);
+// 	locallib_int86_67(0x4400, emshandle, MUS_DATA_PAGES);
+
+// 	// regs.w.ax = 0x4401;  
+// 	// regs.w.bx = SFX_DATA_PAGES;
+// 	// regs.w.dx = emshandle; // handle
+// 	locallib_int86_67(0x4401, emshandle, SFX_DATA_PAGES);
+
+// 	// regs.w.ax = 0x4402;
+// 	// regs.w.bx = SFX_DATA_PAGES+1;
+// 	// regs.w.dx = emshandle; // handle
+// 	locallib_int86_67(0x4402, emshandle, FIRST_LUMPINFO_LOGICAL_PAGE);
+// 	// intx86(EMS_INT, &regs, &regs);
+
+// 	// DC00 bsp code setup
+// 	// regs.w.ax = 0x4403;  
+// 	// regs.w.bx = BSP_CODE_PAGE;
+// 	// regs.w.dx = emshandle; // handle
+// 	locallib_int86_67(0x4403, emshandle, BSP_CODE_PAGE);
+
+// 	currentpageframes[0] = 0;
+// 	currentpageframes[1] = NUM_MUSIC_PAGES;
+// 	currentpageframes[2] = NUM_MUSIC_PAGES+1;	// todo
+// 	currentpageframes[3] = NUM_MUSIC_PAGES+NUM_SFX_PAGES;
+
+// 	// intx86(EMS_INT, &regs, &regs);
+
+
+// 	//*size = numPagesToAllocate * PAGE_FRAME_SIZE;
+
+
+
+
+
+
+// }
 
 void __near Z_GetEMSPageMap() {
 	int16_t pagedata[256]; // i dont think it can get this big...

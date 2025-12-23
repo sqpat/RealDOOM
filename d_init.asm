@@ -1212,65 +1212,7 @@ ret
 
 ENDP
 
-; todo move to z_init asm
-; todo increment error code in cx and return for error print when in asm?
 
-_EMM_DRIVER_NAME:
-db "EMMXXXX0", 0
-
-PROC   Z_CheckEMSDriverPresence_ NEAR
-PUBLIC Z_CheckEMSDriverPresence_
-
-push   dx
-push   bx
-push   cs
-pop    ds
-
-; open file
-mov    ax, 03D00h
-mov    dx, OFFSET _EMM_DRIVER_NAME
-int    021h ; try to open EMMXXXX0 file
-xchg   ax, bx   ; bx stores handle
-mov    ax, 0
-jc     return_no_ems_driver_found  ; EMMXXXX0 file not found
-
-; check device status
-mov    ax, 04400h
-; bx already set
-int    021h   ; check driver device status
-mov    ax, 0
-jc     return_no_ems_driver_found  ; error checking status?
-
-test    dl, 080h  ; confirm its a character device (does block ems device even exist)
-je      return_no_ems_driver_found
-
-; check io
-mov    ax, 04407h
-; bx already set
-int    021h ; check driver output status readiness
-jc     return_no_ems_driver_found  ; 
-test   al, al
-je     return_no_ems_driver_found
-
-; close file
-mov    ah, 03Eh
-; bx already set
-int    021h ; close EMMXXXX0 file
-
-
-mov    ax, 1
-jmp    return_ems_driver_found
-
-return_no_ems_driver_found:
-mov    ax, 0
-return_ems_driver_found:
-push   ss
-pop    ds
-pop    bx
-pop    dx
-ret
-
-ENDP
 
 
 PROC  D_DrawTitle_ NEAR
