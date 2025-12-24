@@ -50,9 +50,9 @@
 
 // EMS STUFF
 
-void near doerror(int16_t errnum, int16_t errorreg) {
-	I_Error("\n\n%d %d", errnum, errorreg); // Couldn't init EMS, error %d
-}
+// void near doerror(int16_t errnum, int16_t errorreg) {
+// 	I_Error("\n\n%d %d", errnum, errorreg); // Couldn't init EMS, error %d
+// }
 
 #ifdef __SCAMP_BUILD
 
