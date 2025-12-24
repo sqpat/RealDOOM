@@ -37,8 +37,6 @@ EXTRN Z_QuickMapPalette_:FAR
 EXTRN Z_QuickMapMaskedExtraData_:FAR
 
 
-EXTRN _R_WriteBackViewConstantsSpanCall:DWORD
-
 EXTRN _P_SpawnMapThing:DWORD
 EXTRN _R_WriteBackViewConstantsSpanCall:DWORD
 EXTRN _R_WriteBackViewConstantsMaskedCall:DWORD
@@ -830,14 +828,12 @@ mov     word ptr ds:[_R_RenderPlayerView], si
 mov     word ptr ds:[_R_WriteBackViewConstantsMaskedCall], di
 mov     word ptr ds:[_R_WriteBackViewConstants], bp
 
-; TODO hardcode this stuff in the data!
+; this cant be hardcoded because _BSP_CODE_SEGMENT_PTR is dependent on the page frame value which is not known at build time.
 mov     ax, word ptr ds:[_BSP_CODE_SEGMENT_PTR]
 mov     word ptr ds:[_R_GetPatchTexture_addr + 2], ax
 mov     word ptr ds:[_R_GetCompositeTexture_addr + 2], ax
 mov     word ptr ds:[_R_RenderPlayerView + 2], ax
 mov     word ptr ds:[_R_WriteBackViewConstants + 2], ax
-
-mov     word ptr ds:[_R_WriteBackViewConstantsMaskedCall + 2], MASKEDCONSTANTS_FUNCAREA_SEGMENT
 
 mov     al, byte ptr ds:[_skyquality]
 cmp     al, 1
@@ -861,7 +857,6 @@ span_qual_default:
 mov     ax, R_DRAWPLANES24OFFSET
 mov     dx, R_WRITEBACKVIEWCONSTANTSSPAN24OFFSET
 mov     bx, DRAWSPAN_AH_OFFSET
-
 
 jmp     gotspanvars
 
@@ -889,7 +884,6 @@ mov     word ptr ds:[_R_DrawPlanesCallOffset], ax
 mov     word ptr ds:[_R_WriteBackViewConstantsSpanCall], dx
 mov     word ptr ds:[_ds_source_offset], bx
 
-mov     word ptr ds:[_R_WriteBackViewConstantsSpanCall + 2], SPANFUNC_JUMP_LOOKUP_SEGMENT
 
 
 POPA_NO_AX_MACRO
