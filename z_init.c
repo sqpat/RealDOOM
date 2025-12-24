@@ -349,7 +349,9 @@ void __near Z_InitEMS();
 
 
 // }
+void __near Z_GetEMSPageMap();
 
+/*
 void __near Z_GetEMSPageMap() {
 	int16_t pagedata[256]; // i dont think it can get this big...
 	int16_t_union errorreg;
@@ -462,7 +464,7 @@ found:
 	Z_QuickMapPhysics(); // map default page map
 }
 
-
+*/
 
 
 #endif

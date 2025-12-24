@@ -25,6 +25,10 @@ INSTRUCTION_SET_MACRO
 EXTRN locallib_dos_getvect_:NEAR
 EXTRN I_Error_:FAR
 EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
+EXTRN Z_QuickMapWADPageFrame_:FAR
+EXTRN Z_QuickMapMusicPageFrame_:FAR
+EXTRN Z_QuickMapSFXPageFrame_:FAR
+EXTRN Z_QuickMapPhysics_:FAR
 
 SCAMP_PAGE_SELECT_REGISTER = 0E8h
 SCAMP_PAGE_SET_REGISTER = 0EAh
@@ -105,6 +109,77 @@ IFDEF COMP_CH
     sub    al, 3     ; undo plus 4, inc ax 1    
 
     ret
+
+    ENDP
+
+    ; todo test and copy to scat ht18 etc
+
+    PROC    Z_GetEMSPageMap_ NEAR
+    PUBLIC  Z_GetEMSPageMap_
+
+
+    push    si
+    push    di
+    push    cx
+    push    dx
+
+	;currentpageframes[0] = 0xFF;
+	;currentpageframes[1] = 0xFF;
+	;currentpageframes[2] = 0xFF;
+	;currentpageframes[3] = 0xFF;
+    ; two word writes
+    mov     word ptr ds:[_currentpageframes + 0], 0FFFFh
+    mov     word ptr ds:[_currentpageframes + 2], 0FFFFh
+
+	;for (i = 0; i <= ((numlumps-1) / LUMP_PER_EMS_PAGE); i++){
+	;	Z_QuickMapWADPageFrame(i*LUMP_PER_EMS_PAGE);
+	;	FAR_memcpy((byte __far *) MK_FP(WAD_PAGE_FRAME_PTR, 0), MK_FP(lumpinfoinitsegment,  i * 16384u), 16384u); // copy the wad lump stuff over. gross
+	;}
+
+    xor   si, si
+    mov   ax, word ptr ds:[_numlumps]
+    dec   ax   ; numlumps - 1
+    ; divide by 1024.
+    SHIFT_MACRO shr ax 10
+    xchg   ax, dx   ; dl stores max. dh = i = 0 now.
+
+    loop_next_wad_page_frame_copy:
+    
+    mov   ah, dh    ; i * 1024
+    SHIFT_MACRO shl ah 2
+    xor   al, al    ; i * 1024 = i*LUMP_PER_EMS_PAGE
+    call  Z_QuickMapWADPageFrame_   
+
+    mov   es, word ptr ds:[_WAD_PAGE_FRAME_PTR]
+    xor   di, di
+    mov   cx, (16384 / 2)
+
+    mov   ax, LUMPINFOINITSEGMENT
+    mov   ds, ax
+    rep   movsw
+    push  ss
+    pop   ds
+
+    inc   dh
+    cmp   dh, dl
+    jle   loop_next_wad_page_frame_copy
+
+    xor ax, ax
+	call  Z_QuickMapMusicPageFrame_
+    xor ax, ax
+	call  Z_QuickMapSFXPageFrame_
+    xor ax, ax
+	call  Z_QuickMapWADPageFrame_
+	; todo music driver?
+
+	call  Z_QuickMapPhysics_  ;  map default page map
+
+
+    pop     dx
+    pop     cx
+    pop     di
+    pop     si
+    ret  
 
     ENDP
 
@@ -197,7 +272,11 @@ db 020h, "ERROR: EMS Driver version below 4.0!", 0
 str_ems_page_count:
 db 020h, "ERROR: minimum of %i EMS pages required", 0
 
+str_ems_mappable_page_count:
+db 020h, "Insufficient mappable pages! ", 020h, "28 pages required (24 conventional and 4 page frame pages)! Only %i found.", 020h, " EMS 4.0 conventional features unsupported", 0
 
+str_page_9000_not_found:
+db 020h, "Mappable page for segment 0x9000 NOT FOUND! EMS 4.0 conventional features unsupported?", 020h, 0
 
 ; todo move to z_init asm
 ; todo increment error code in cx and return for error print when in asm?
@@ -385,6 +464,124 @@ db 020h, "ERROR: minimum of %i EMS pages required", 0
     ret
     ENDP
 
+
+    do_5801_error:
+    mov    cx, 05801h
+    jmp    handle_ems_error
+    do_5800_error:
+    mov    cx, 05800h
+    jmp    handle_ems_error
+
+    insufficient_page_count:
+    mov    ax, OFFSET str_ems_mappable_page_count
+    push   cx
+    jmp    print_ems_error
+
+    PROC    Z_GetEMSPageMap_ NEAR
+    PUBLIC  Z_GetEMSPageMap_
+
+
+    PUSHA_NO_AX_OR_BP_MACRO
+    push    bp
+    mov     bp, sp
+    sub     sp, 256
+
+
+    mov     ax, 05801h
+    int     067h
+
+    cmp     cx, 28  ; minimum number of pages necessary
+    jl      insufficient_page_count
+    or      ah, ah
+    jnz     do_5801_error
+
+    mov     ax, 05800h
+    push    ss
+    pop     es
+    mov     di, sp  ; mappable_phys_page = es:di
+    int     067h
+
+    or      ah, ah
+    jnz     do_5800_error
+
+    mov     si, sp
+    
+    mov     ax, 09000h   ; find the 09000h page
+
+
+    ; complicated to repne scasw because its a list of pairs...
+
+    check_next_mappable_page:
+    cmp     ds:[si], ax
+    je      found_9000_page
+    add     si, 4
+    loop    check_next_mappable_page
+
+    ; fall thru = error
+    mov    ax, OFFSET str_page_9000_not_found
+    jmp    print_ems_error
+
+    
+    found_9000_page:
+    mov     ax, word ptr ds:[si + 2]
+    mov     word ptr ds:[_pagenum9000], ax       ; pagedata[(i << 1) + 1]
+    inc     byte ptr ds:[_emsconventional]   ; mappable conventional okay.
+
+	;for (i = 1; i < total_pages; i+= 2) {
+	;	pageswapargs[i] += pagenum9000;
+	;}
+    
+    mov     si, OFFSET _pageswapargs + 2
+    mov     cx, (TOTAL_PAGES / 2)
+
+    increment_next_pageswaparg:
+    add     ds:[si], ax
+    add     si, 4
+    loop    increment_next_pageswaparg
+
+
+
+	;for (i = 0; i <= ((numlumps-1) / LUMP_PER_EMS_PAGE); i++){
+	;	Z_QuickMapWADPageFrame(i*LUMP_PER_EMS_PAGE);
+	;	FAR_memcpy((byte __far *) MK_FP(WAD_PAGE_FRAME_PTR, 0), MK_FP(lumpinfoinitsegment,  i * 16384u), 16384u); // copy the wad lump stuff over. gross
+	;}
+
+    xor   si, si
+    mov   ax, word ptr ds:[_numlumps]
+    dec   ax   ; numlumps - 1
+    ; divide by 1024.
+    SHIFT_MACRO shr ax 10
+
+    xchg   ax, dx   ; dl stores max. dh = i = 0 now.
+    
+    loop_next_wad_page_frame_copy:
+    
+    mov   ah, dh    ; i * 1024
+    SHIFT_MACRO shl ah 2
+    xor   al, al    ; i * 1024 = i*LUMP_PER_EMS_PAGE
+    call  Z_QuickMapWADPageFrame_   
+
+    mov   es, word ptr ds:[_WAD_PAGE_FRAME_PTR]
+    xor   di, di
+    mov   cx, (16384 / 2)
+
+    mov   ax, LUMPINFOINITSEGMENT
+    mov   ds, ax
+    rep   movsw
+    push  ss
+    pop   ds
+
+    inc   dh
+    cmp   dh, dl
+    jle   loop_next_wad_page_frame_copy
+
+	call  Z_QuickMapPhysics_  ;  map default page map
+
+    LEAVE_MACRO
+    POPA_NO_AX_OR_BP_MACRO
+    ret  
+
+    ENDP
 
 ENDIF
 

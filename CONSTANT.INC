@@ -2585,6 +2585,7 @@ _allocatedflatsperpage = 0BCCh
 _usedspritepagemem = 0BD2h
 _usedtexturepagemem = 0BE6h
 _pageswapargs = 0C26h
+LUMPINFOINITSEGMENT = 022E3h
 CURRENT_POSITION_1 = 0B1Ch
 CURRENT_POSITION_2 = 0B6Ch
 CURRENT_POSITION_3 = 0BCCh

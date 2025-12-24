@@ -8,7 +8,7 @@
 #include "p_inter.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2596
+#define CONSTANTS_COUNT 2597
 #define LOCALS_COUNT 22
 
 
@@ -2679,6 +2679,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"_usedtexturepagemem",
 
 	"_pageswapargs",
+	"LUMPINFOINITSEGMENT",
 	"CURRENT_POSITION_1",
 	"CURRENT_POSITION_2",
 	"CURRENT_POSITION_3",
@@ -5367,6 +5368,8 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	usedspritepagemem,
 	usedtexturepagemem,
 	pageswapargs,
+	lumpinfoinitsegment,
+
 	CURRENT_POSITION_1,
 	CURRENT_POSITION_2,
 	CURRENT_POSITION_3,
