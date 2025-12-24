@@ -617,7 +617,7 @@ void __near Z_RemapRenderFunctions(){
 }
 void  __far cht_CheckCheat_Far();
 
-
+/*
 void __near Z_DoRenderCodeLoad(FILE* fp){
 
 	// todo reorder so only two or three switches?
@@ -669,6 +669,7 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 	Z_ReadFileRegionWithIndex(fp, usedcolumnvalue, (uint32_t)MK_FP(BSP_CODE_SEGMENT_PTR, 0));
 
 }
+*/
  
 void __far G_SecretExitLevel (void);
 void __far OutOfThinkers ();

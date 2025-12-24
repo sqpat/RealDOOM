@@ -32,6 +32,10 @@ EXTRN Z_QuickMapPhysics_:FAR
 EXTRN fread_:FAR
 EXTRN fseek_:FAR
 EXTRN locallib_far_fread_:FAR
+EXTRN Z_QuickMapRenderPlanes_:FAR
+EXTRN Z_QuickMapPalette_:FAR
+EXTRN Z_QuickMapMaskedExtraData_:FAR
+EXTRN Z_RemapRenderFunctions_:NEAR
 
 
 SCAMP_PAGE_SELECT_REGISTER = 0E8h
@@ -655,9 +659,101 @@ pop   di
 pop   si
 ret    
 
+ENDP
 
+
+SPANFUNC_JUMP_LOOKUP_9000_SEGMENT =  SPANFUNC_JUMP_LOOKUP_SEGMENT - 09C00h + 09000h
+
+
+PROC    Z_DoRenderCodeLoad_ NEAR
+PUBLIC  Z_DoRenderCodeLoad_
+
+PUSHA_NO_AX_OR_BP_MACRO
+
+mov    di, ax   ; fp storage
+mov    si, 0400h  ; usedcolumnvalue
+
+	;int16_t usedcolumnvalue = 0x400;
+	;int16_t usedspanvalue = 0x400;
+	;int16_t usedskyvalue = 0x200;
+
+	;if (columnquality <= 3) usedcolumnvalue += columnquality;		
+mov    al, byte ptr ds:[_columnquality]
+cmp    al, 3
+ja     skip_col_quality
+cbw
+add    si, ax
+skip_col_quality:
+
+call   Z_RemapRenderFunctions_
+mov    ax, di  ; fp
+mov    dx, si  ; usedcolumnvalue
+mov    cx, COLFUNC_JUMP_LOOKUP_6800_SEGMENT
+xor    bx, bx
+call   Z_ReadFileRegionWithIndex_  ; (fp, usedcolumnvalue, (uint32_t)colfunc_jump_lookup_6800);
+
+call   Z_QuickMapPalette_
+
+;if (spanquality <= 3) usedspanvalue += spanquality;
+
+mov    dx, 0400h
+mov    al, byte ptr ds:[_spanquality]
+cmp    al, 3
+ja     skip_span_quality
+add    dl, al
+skip_span_quality:
+mov    ax, di  ; fp
+mov    cx, SPANFUNC_JUMP_LOOKUP_9000_SEGMENT
+xor    bx, bx
+
+call   Z_ReadFileRegionWithIndex_   ; (fp, usedspanvalue, (uint32_t)spanfunc_jump_lookup_9000);
+
+call   Z_QuickMapMaskedExtraData_
+
+
+mov    ax, di  ; fp
+mov    dx, si  ; usedcolumnvalue
+mov    cx, DRAWFUZZCOL_AREA_SEGMENT
+xor    bx, bx
+call   Z_ReadFileRegionWithIndex_   ;(fp, usedcolumnvalue, (uint32_t)drawfuzzcol_area);
+mov    ax, di  ; fp
+mov    dx, si  ; usedcolumnvalue
+mov    cx, MASKEDCONSTANTS_FUNCAREA_SEGMENT
+xor    bx, bx
+call   Z_ReadFileRegionWithIndex_   ;(fp, usedcolumnvalue, (uint32_t)maskedconstants_funcarea);
+
+call   Z_QuickMapRenderPlanes_
+
+	;if (skyquality <= 1) usedskyvalue += skyquality;
+mov    dx, 0200h
+mov    al, byte ptr ds:[_skyquality]
+cmp    al, 1
+ja     skip_sky_quality
+add    dl, al
+skip_sky_quality:
+mov    ax, di  ; fp
+mov    cx, DRAWSKYPLANE_AREA_SEGMENT
+xor    bx, bx
+
+call   Z_ReadFileRegionWithIndex_   ; (fp, usedskyvalue, (uint32_t)drawskyplane_area);
+
+
+mov    ax, di  ; fp
+mov    dx, si  ; usedcolumnvalue
+mov    cx, word ptr ds:[_BSP_CODE_SEGMENT_PTR]
+xor    bx, bx
+
+call   Z_ReadFileRegionWithIndex_   ;(fp, usedcolumnvalue, (uint32_t)MK_FP(BSP_CODE_SEGMENT_PTR, 0));
+
+	
+
+
+
+POPA_NO_AX_OR_BP_MACRO
+ret
 
 ENDP
+
 
 
 PROC    Z_INIT_ENDMARKER_
