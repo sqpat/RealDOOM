@@ -29,6 +29,10 @@ EXTRN Z_QuickMapWADPageFrame_:FAR
 EXTRN Z_QuickMapMusicPageFrame_:FAR
 EXTRN Z_QuickMapSFXPageFrame_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
+EXTRN fread_:FAR
+EXTRN fseek_:FAR
+EXTRN locallib_far_fread_:FAR
+
 
 SCAMP_PAGE_SELECT_REGISTER = 0E8h
 SCAMP_PAGE_SET_REGISTER = 0EAh
@@ -585,8 +589,75 @@ db 020h, "Mappable page for segment 0x9000 NOT FOUND! EMS 4.0 conventional featu
 
 ENDIF
 
+;void  __near ReadFileRegionWithIndex(FILE* fp, int16_t index, uint32_t target_addr){
 
 
+PROC    Z_ReadFileRegionWithIndex_ NEAR
+PUBLIC  Z_ReadFileRegionWithIndex_
+
+; ax = fp
+; dx = index
+; cx:bx = target_addr
+
+
+push  si
+push  di
+push  bp
+mov   bp, sp
+push  cx      ; bp - 2
+push  bx      ; bp - 4
+push  bx      ; codesize ptr (sp = bp - 6)
+mov   si, dx  ; index
+mov   di, ax  ; fp
+
+do_next_index:
+
+
+;   fread(&codesize, 2, 1, fp);
+mov    ax, sp  ; bp - 6
+mov    dx, 2   ; read 2 bytes
+mov    bx, 1
+mov    cx, di  ; fp
+call   fread_
+
+
+test   si, 00FFh
+jne    just_fseek
+;	locallib_far_fread((byte __far*) target_addr, codesize, fp);
+les    ax, dword ptr ss:[bp - 4]  ; target_addr
+mov    dx, es   
+mov    bx, word ptr ss:[bp - 6]  ; codesize
+mov    cx, di   ; fp
+call   locallib_far_fread_
+
+jmp    continue_readfile_loop
+
+just_fseek:
+
+
+;    fseek(fp, codesize, SEEK_CUR);
+mov    ax, di   ; fp
+mov    bx, word ptr ss:[bp - 6]
+xor    cx, cx
+mov    dx, 1    ; SEEK_CUR
+
+call   fseek_
+
+
+
+continue_readfile_loop:
+sub   si, 0101h     ;   index -= 0x101;
+jge   do_next_index
+
+LEAVE_MACRO
+
+pop   di
+pop   si
+ret    
+
+
+
+ENDP
 
 
 PROC    Z_INIT_ENDMARKER_

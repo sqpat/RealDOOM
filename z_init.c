@@ -492,7 +492,9 @@ void __far ST_Start(void) ;
 // 	fseek(fp, codesize, SEEK_CUR);
 // }
 
-void  __near ReadFileRegionWithIndex(FILE* fp, int16_t index, uint32_t target_addr){
+void  __near Z_ReadFileRegionWithIndex(FILE* fp, int16_t index, uint32_t target_addr);
+/*
+void  __near Z_ReadFileRegionWithIndex(FILE* fp, int16_t index, uint32_t target_addr){
 	uint16_t codesize;
 
 	// low 8 bits of index is 
@@ -515,7 +517,7 @@ void  __near ReadFileRegionWithIndex(FILE* fp, int16_t index, uint32_t target_ad
 
 
 }
-
+*/
 void __near Z_RemapRenderFunctions(){
 
 	segment_t bsp_code_segment = BSP_CODE_SEGMENT_PTR;
@@ -641,7 +643,7 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 
 	Z_RemapRenderFunctions();
 
-	ReadFileRegionWithIndex(fp, usedcolumnvalue, (uint32_t)colfunc_jump_lookup_6800);
+	Z_ReadFileRegionWithIndex(fp, usedcolumnvalue, (uint32_t)colfunc_jump_lookup_6800);
 
 
 
@@ -650,21 +652,21 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 	Z_QuickMapPalette();
 	
 		// dont love this defined here, but this will all be ASM soon enough anyway...
-	ReadFileRegionWithIndex(fp, usedspanvalue, (uint32_t)spanfunc_jump_lookup_9000);
+	Z_ReadFileRegionWithIndex(fp, usedspanvalue, (uint32_t)spanfunc_jump_lookup_9000);
 
 
 	// masked stuff
 	Z_QuickMapMaskedExtraData();
 
-	ReadFileRegionWithIndex(fp, usedcolumnvalue, (uint32_t)drawfuzzcol_area);
-	ReadFileRegionWithIndex(fp, usedcolumnvalue, (uint32_t)maskedconstants_funcarea);
+	Z_ReadFileRegionWithIndex(fp, usedcolumnvalue, (uint32_t)drawfuzzcol_area);
+	Z_ReadFileRegionWithIndex(fp, usedcolumnvalue, (uint32_t)maskedconstants_funcarea);
 
 	Z_QuickMapRenderPlanes();
 
-	ReadFileRegionWithIndex(fp, usedskyvalue, (uint32_t)drawskyplane_area);
+	Z_ReadFileRegionWithIndex(fp, usedskyvalue, (uint32_t)drawskyplane_area);
 
 
-	ReadFileRegionWithIndex(fp, usedcolumnvalue, (uint32_t)MK_FP(BSP_CODE_SEGMENT_PTR, 0));
+	Z_ReadFileRegionWithIndex(fp, usedcolumnvalue, (uint32_t)MK_FP(BSP_CODE_SEGMENT_PTR, 0));
 
 }
  
