@@ -486,11 +486,11 @@ void __far ST_Start(void) ;
 
 
  
-void  __near SkipNextFileRegion(FILE* fp){
-	uint16_t codesize;
-	fread(&codesize, 2, 1, fp);
-	fseek(fp, codesize, SEEK_CUR);
-}
+// void  __near SkipNextFileRegion(FILE* fp){
+// 	uint16_t codesize;
+// 	fread(&codesize, 2, 1, fp);
+// 	fseek(fp, codesize, SEEK_CUR);
+// }
 
 void  __near ReadFileRegionWithIndex(FILE* fp, int16_t index, uint32_t target_addr){
 	uint16_t codesize;
