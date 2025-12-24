@@ -684,6 +684,7 @@ void __far S_DecreaseRefCountFar(int8_t handle);
 void __far W_CheckNumForNameFar();
 
 void __far MainLogger (uint16_t ax, uint16_t dx, uint16_t bx, uint16_t cx);
+void __near Z_LinkFunctions();
 
 void __near Z_LoadBinaries() {
 	int16_t i;
@@ -830,6 +831,11 @@ void __near Z_LoadBinaries() {
 
 
 	DEBUG_PRINT_NOARG("..");
+	Z_LinkFunctions();
+}
+
+/*
+void __near Z_LinkFunctions() {
 
 	// manual runtime linking. these are all called from other segments in externalized code and need their addresses in constant variable locatioons
  
@@ -907,6 +913,6 @@ void __near Z_LoadBinaries() {
 
 
 }
-
+*/
 
 

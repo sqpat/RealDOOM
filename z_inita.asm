@@ -36,6 +36,50 @@ EXTRN Z_QuickMapRenderPlanes_:FAR
 EXTRN Z_QuickMapPalette_:FAR
 EXTRN Z_QuickMapMaskedExtraData_:FAR
 
+EXTRN W_CacheLumpNumDirect_:FAR
+EXTRN W_LumpLength_:FAR
+EXTRN W_CacheLumpNameDirect_:FAR
+EXTRN W_CacheLumpNumDirectFragment_:FAR
+EXTRN W_GetNumForName_:FAR
+EXTRN NetUpdate_:FAR
+EXTRN fopen_:FAR
+EXTRN fseek_:FAR
+EXTRN fread_:FAR
+EXTRN fclose_:FAR
+EXTRN locallib_far_fread_:FAR
+EXTRN getStringByIndex_:FAR
+EXTRN I_Error_:FAR
+EXTRN P_InitThinkers_:FAR
+EXTRN ST_Start_:FAR
+EXTRN Z_SetOverlay_:FAR
+EXTRN Z_QuickMapMusicPageFrame_:FAR
+EXTRN FixedMul_:FAR
+EXTRN FixedMul2432_:FAR
+EXTRN FixedDiv_:FAR
+EXTRN FixedMulTrigNoShift_:FAR
+EXTRN FastDiv32u16u_:FAR
+EXTRN FixedDivWholeA_:FAR
+EXTRN cht_CheckCheat_Far_:FAR
+EXTRN FastDiv3216u_:FAR
+EXTRN FixedMulTrigSpeedNoShift_:FAR
+EXTRN FixedMulTrigSpeed_:FAR
+EXTRN FixedMulTrig_:FAR
+EXTRN R_PointToAngle2_16_:FAR
+EXTRN R_PointToAngle2_:FAR
+EXTRN R_SetViewSize_:FAR
+EXTRN OutOfThinkers_:FAR
+EXTRN S_InitSFXCache_:FAR
+EXTRN I_Quit_:FAR
+EXTRN I_WaitVBL_:FAR
+EXTRN I_SetPalette_:FAR
+EXTRN V_MarkRect_:FAR
+EXTRN V_DrawPatchDirect_:FAR
+EXTRN V_DrawPatch_:FAR
+EXTRN V_DrawFullscreenPatch_:FAR
+EXTRN SFX_PlayPatch_:FAR
+EXTRN S_DecreaseRefCountFar_:FAR
+EXTRN W_CheckNumForNameFar_:FAR
+
 
 EXTRN _P_SpawnMapThing:DWORD
 EXTRN _R_WriteBackViewConstantsSpanCall:DWORD
@@ -890,6 +934,116 @@ POPA_NO_AX_MACRO
 
 ret
 ENDP
+
+
+PROC    Z_LinkFunctions_ NEAR
+PUBLIC  Z_LinkFunctions_
+
+	; manual runtime linking. these are all called from other segments in externalized code and need their addresses in constant variable locatioons
+ 
+	; set some function addresses for asm calls. 
+	; as these move to asm and EMS memory space themselves, these references can go away
+
+	; todo think of a better solution for dynamic linking of func locations for overlaid code.
+
+	mov   word ptr ds:[_W_CacheLumpNumDirect_addr],             OFFSET W_CacheLumpNumDirect_
+	mov   word ptr ds:[_W_LumpLength_addr],                     OFFSET W_LumpLength_
+	mov   word ptr ds:[_W_CacheLumpNameDirect_addr],            OFFSET W_CacheLumpNameDirect_
+	mov   word ptr ds:[_W_CacheLumpNumDirectFragment_addr],     OFFSET W_CacheLumpNumDirectFragment_
+	mov   word ptr ds:[_W_GetNumForName_addr],                  OFFSET W_GetNumForName_
+	mov   word ptr ds:[_NetUpdate_addr],                        OFFSET NetUpdate_
+	mov   word ptr ds:[_fopen_addr],                            OFFSET fopen_
+	mov   word ptr ds:[_fseek_addr],                            OFFSET fseek_
+	mov   word ptr ds:[_fread_addr],                            OFFSET fread_
+	mov   word ptr ds:[_fclose_addr],                           OFFSET fclose_
+	mov   word ptr ds:[_locallib_far_fread_addr],               OFFSET locallib_far_fread_
+	mov   word ptr ds:[_getStringByIndex_addr],                 OFFSET getStringByIndex_
+	mov   word ptr ds:[_I_Error_addr],                          OFFSET I_Error_
+	mov   word ptr ds:[_P_InitThinkers_addr],                   OFFSET P_InitThinkers_
+	mov   word ptr ds:[_ST_Start_addr],                         OFFSET ST_Start_
+	mov   word ptr ds:[_Z_SetOverlay_addr],                     OFFSET Z_SetOverlay_
+	mov   word ptr ds:[_Z_QuickMapMusicPageFrame_addr],         OFFSET Z_QuickMapMusicPageFrame_
+	mov   word ptr ds:[_FixedMul_addr],                         OFFSET FixedMul_
+	mov   word ptr ds:[_FixedMul2432_addr],                     OFFSET FixedMul2432_
+	mov   word ptr ds:[_FixedDiv_addr],                         OFFSET FixedDiv_
+	mov   word ptr ds:[_FixedMulTrigNoShift_addr],              OFFSET FixedMulTrigNoShift_
+	mov   word ptr ds:[_FastDiv32u16u_addr],                    OFFSET FastDiv32u16u_
+	mov   word ptr ds:[_FixedDivWholeA_addr],                   OFFSET FixedDivWholeA_
+	mov   word ptr ds:[_cht_CheckCheat_Far_addr],               OFFSET cht_CheckCheat_Far_
+	mov   word ptr ds:[_FastDiv3216u_addr],                     OFFSET FastDiv3216u_
+	mov   word ptr ds:[_FixedMulTrigSpeedNoShift_addr],         OFFSET FixedMulTrigSpeedNoShift_
+	mov   word ptr ds:[_FixedMulTrigSpeed_addr],                OFFSET FixedMulTrigSpeed_
+	mov   word ptr ds:[_FixedMulTrig_addr],                     OFFSET FixedMulTrig_
+	mov   word ptr ds:[_R_PointToAngle2_16_addr],               OFFSET R_PointToAngle2_16_
+	mov   word ptr ds:[_R_PointToAngle2_addr],                  OFFSET R_PointToAngle2_
+	mov   word ptr ds:[_R_SetViewSize_addr],                    OFFSET R_SetViewSize_
+	mov   word ptr ds:[_OutOfThinkers_addr],                    OFFSET OutOfThinkers_
+	mov   word ptr ds:[_S_InitSFXCache_addr],                   OFFSET S_InitSFXCache_
+	mov   word ptr ds:[_I_Quit_addr],                           OFFSET I_Quit_
+	mov   word ptr ds:[_I_WaitVBL_addr],                        OFFSET I_WaitVBL_
+	mov   word ptr ds:[_I_SetPalette_addr],                     OFFSET I_SetPalette_
+	mov   word ptr ds:[_V_MarkRect_addr],                       OFFSET V_MarkRect_
+	mov   word ptr ds:[_V_DrawPatchDirect_addr],                OFFSET V_DrawPatchDirect_
+	mov   word ptr ds:[_V_DrawPatch_addr],                      OFFSET V_DrawPatch_
+	mov   word ptr ds:[_V_DrawFullscreenPatch_addr],            OFFSET V_DrawFullscreenPatch_
+	mov   word ptr ds:[_SFX_PlayPatch_addr],                    OFFSET SFX_PlayPatch_
+	mov   word ptr ds:[_S_DecreaseRefCountFar_addr],            OFFSET S_DecreaseRefCountFar_
+	mov   word ptr ds:[_W_CheckNumForNameFar_addr],             OFFSET W_CheckNumForNameFar_
+
+    mov   ax, cs
+	mov   word ptr ds:[_W_CacheLumpNumDirect_addr + 2],             ax
+	mov   word ptr ds:[_W_LumpLength_addr + 2],                     ax
+	mov   word ptr ds:[_W_CacheLumpNameDirect_addr + 2],            ax
+	mov   word ptr ds:[_W_CacheLumpNumDirectFragment_addr + 2],     ax
+	mov   word ptr ds:[_W_GetNumForName_addr + 2],                  ax
+	mov   word ptr ds:[_NetUpdate_addr + 2],                        ax
+	mov   word ptr ds:[_fopen_addr + 2],                            ax
+	mov   word ptr ds:[_fseek_addr + 2],                            ax
+	mov   word ptr ds:[_fread_addr + 2],                            ax
+	mov   word ptr ds:[_fclose_addr + 2],                           ax
+	mov   word ptr ds:[_locallib_far_fread_addr + 2],               ax
+	mov   word ptr ds:[_getStringByIndex_addr + 2],                 ax
+	mov   word ptr ds:[_I_Error_addr + 2],                          ax
+	mov   word ptr ds:[_P_InitThinkers_addr + 2],                   ax
+	mov   word ptr ds:[_ST_Start_addr + 2],                         ax
+	mov   word ptr ds:[_Z_SetOverlay_addr + 2],                     ax
+	mov   word ptr ds:[_Z_QuickMapMusicPageFrame_addr + 2],         ax
+	mov   word ptr ds:[_FixedMul_addr + 2],                         ax
+	mov   word ptr ds:[_FixedMul2432_addr + 2],                     ax
+	mov   word ptr ds:[_FixedDiv_addr + 2],                         ax
+	mov   word ptr ds:[_FixedMulTrigNoShift_addr + 2],              ax
+	mov   word ptr ds:[_FastDiv32u16u_addr + 2],                    ax
+	mov   word ptr ds:[_FixedDivWholeA_addr + 2],                   ax
+	mov   word ptr ds:[_cht_CheckCheat_Far_addr + 2],               ax
+	mov   word ptr ds:[_FastDiv3216u_addr + 2],                     ax
+	mov   word ptr ds:[_FixedMulTrigSpeedNoShift_addr + 2],         ax
+	mov   word ptr ds:[_FixedMulTrigSpeed_addr + 2],                ax
+	mov   word ptr ds:[_FixedMulTrig_addr + 2],                     ax
+	mov   word ptr ds:[_R_PointToAngle2_16_addr + 2],               ax
+	mov   word ptr ds:[_R_PointToAngle2_addr + 2],                  ax
+	mov   word ptr ds:[_R_SetViewSize_addr + 2],                    ax
+	mov   word ptr ds:[_OutOfThinkers_addr + 2],                    ax
+	mov   word ptr ds:[_S_InitSFXCache_addr + 2],                   ax
+	mov   word ptr ds:[_I_Quit_addr + 2],                           ax
+	mov   word ptr ds:[_I_WaitVBL_addr + 2],                        ax
+	mov   word ptr ds:[_I_SetPalette_addr + 2],                     ax
+	mov   word ptr ds:[_V_MarkRect_addr + 2],                       ax
+	mov   word ptr ds:[_V_DrawPatchDirect_addr + 2],                ax
+	mov   word ptr ds:[_V_DrawPatch_addr + 2],                      ax
+	mov   word ptr ds:[_V_DrawFullscreenPatch_addr + 2],            ax
+	mov   word ptr ds:[_SFX_PlayPatch_addr + 2],                    ax
+	mov   word ptr ds:[_S_DecreaseRefCountFar_addr + 2],            ax
+	mov   word ptr ds:[_W_CheckNumForNameFar_addr + 2],             ax
+
+
+
+	; MainLogger_addr =  					(uint32_t)(MainLogger);
+    ret
+
+ENDP
+
+
+
 
 PROC    Z_INIT_ENDMARKER_
 PUBLIC  Z_INIT_ENDMARKER_
