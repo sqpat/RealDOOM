@@ -35,7 +35,20 @@ EXTRN locallib_far_fread_:FAR
 EXTRN Z_QuickMapRenderPlanes_:FAR
 EXTRN Z_QuickMapPalette_:FAR
 EXTRN Z_QuickMapMaskedExtraData_:FAR
-EXTRN Z_RemapRenderFunctions_:NEAR
+
+
+EXTRN _R_WriteBackViewConstantsSpanCall:DWORD
+
+EXTRN _P_SpawnMapThing:DWORD
+EXTRN _R_WriteBackViewConstantsSpanCall:DWORD
+EXTRN _R_WriteBackViewConstantsMaskedCall:DWORD
+EXTRN _R_WriteBackViewConstants:DWORD
+EXTRN _R_RenderPlayerView:DWORD
+EXTRN _P_SpawnSpecials:DWORD
+EXTRN _AM_Drawer:DWORD
+EXTRN _S_Start:DWORD
+EXTRN _S_StartSound:DWORD
+EXTRN _M_Init:DWORD
 
 
 SCAMP_PAGE_SELECT_REGISTER = 0E8h
@@ -755,6 +768,134 @@ ret
 ENDP
 
 
+PROC    Z_RemapRenderFunctions_ NEAR
+
+PUSHA_NO_AX_MACRO
+
+mov     al, byte ptr ds:[_columnquality]
+cmp     al, 3
+je      col_qual_3
+ja      col_qual_default
+cmp     al, 1
+je      col_qual_1
+ja      col_qual_2
+col_qual_0:
+col_qual_default:
+mov     ax, R_GETPATCHTEXTURE24OFFSET
+mov     dx, R_GETCOMPOSITETEXTURE24OFFSET
+mov     bx, R_WRITEBACKMASKEDFRAMECONSTANTS24OFFSET
+mov     cx, R_DRAWMASKED24OFFSET
+mov     si, R_RENDERPLAYERVIEW24OFFSET
+mov     di, R_WRITEBACKVIEWCONSTANTSMASKED24OFFSET
+mov     bp, R_WRITEBACKVIEWCONSTANTS24OFFSET
+
+jmp     gotcolvars
+
+col_qual_1:
+mov     ax, R_GETPATCHTEXTURE16OFFSET
+mov     dx, R_GETCOMPOSITETEXTURE16OFFSET
+mov     bx, R_WRITEBACKMASKEDFRAMECONSTANTS16OFFSET
+mov     cx, R_DRAWMASKED16OFFSET
+mov     si, R_RENDERPLAYERVIEW16OFFSET
+mov     di, R_WRITEBACKVIEWCONSTANTSMASKED16OFFSET
+mov     bp, R_WRITEBACKVIEWCONSTANTS16OFFSET
+
+jmp     gotcolvars
+
+col_qual_2:
+mov     ax, R_GETPATCHTEXTURE0OFFSET
+mov     dx, R_GETCOMPOSITETEXTURE0OFFSET
+mov     bx, R_WRITEBACKMASKEDFRAMECONSTANTS0OFFSET
+mov     cx, R_DRAWMASKED0OFFSET
+mov     si, R_RENDERPLAYERVIEW0OFFSET
+mov     di, R_WRITEBACKVIEWCONSTANTSMASKED0OFFSET
+mov     bp, R_WRITEBACKVIEWCONSTANTS0OFFSET
+
+jmp     gotcolvars
+col_qual_3:
+mov     ax, R_GETPATCHTEXTUREFLOFFSET
+mov     dx, R_GETCOMPOSITETEXTUREFLOFFSET
+mov     bx, R_WRITEBACKMASKEDFRAMECONSTANTSFLOFFSET
+mov     cx, R_DRAWMASKEDFLOFFSET
+mov     si, R_RENDERPLAYERVIEWFLOFFSET
+mov     di, R_WRITEBACKVIEWCONSTANTSMASKEDFLOFFSET
+mov     bp, R_WRITEBACKVIEWCONSTANTSFLOFFSET
+
+gotcolvars:
+mov     word ptr ds:[_R_GetPatchTexture_addr], ax
+mov     word ptr ds:[_R_GetCompositeTexture_addr], dx
+mov     word ptr ds:[_R_WriteBackMaskedFrameConstantsCallOffset], bx
+mov     word ptr ds:[_R_DrawMaskedCallOffset], cx
+mov     word ptr ds:[_R_RenderPlayerView], si
+mov     word ptr ds:[_R_WriteBackViewConstantsMaskedCall], di
+mov     word ptr ds:[_R_WriteBackViewConstants], bp
+
+; TODO hardcode this stuff in the data!
+mov     ax, word ptr ds:[_BSP_CODE_SEGMENT_PTR]
+mov     word ptr ds:[_R_GetPatchTexture_addr + 2], ax
+mov     word ptr ds:[_R_GetCompositeTexture_addr + 2], ax
+mov     word ptr ds:[_R_RenderPlayerView + 2], ax
+mov     word ptr ds:[_R_WriteBackViewConstants + 2], ax
+
+mov     word ptr ds:[_R_WriteBackViewConstantsMaskedCall + 2], MASKEDCONSTANTS_FUNCAREA_SEGMENT
+
+mov     al, byte ptr ds:[_skyquality]
+cmp     al, 1
+jne     dont_change_sky
+
+mov     word ptr ds:[_R_DrawSkyPlane_addr_Offset], R_DRAWSKYPLANEFLOFFSET
+mov     word ptr ds:[_R_DrawSkyPlaneDynamic_addr_Offset], R_DRAWSKYPLANEDYNAMICFLOFFSET
+
+dont_change_sky:
+
+
+mov     al, byte ptr ds:[_spanquality]
+cmp     al, 3
+je      span_qual_3
+ja      span_qual_default
+cmp     al, 1
+je      span_qual_1
+ja      span_qual_2
+span_qual_0:
+span_qual_default:
+mov     ax, R_DRAWPLANES24OFFSET
+mov     dx, R_WRITEBACKVIEWCONSTANTSSPAN24OFFSET
+mov     bx, DRAWSPAN_AH_OFFSET
+
+
+jmp     gotspanvars
+
+span_qual_1:
+mov     ax, R_DRAWPLANES16OFFSET
+mov     dx, R_WRITEBACKVIEWCONSTANTSSPAN16OFFSET
+mov     bx, DRAWSPAN_BX_OFFSET
+
+
+jmp     gotspanvars
+
+span_qual_2:
+mov     ax, R_DRAWPLANES0OFFSET
+mov     dx, R_WRITEBACKVIEWCONSTANTSSPAN0OFFSET
+mov     bx, DRAWSPAN_AH_OFFSET
+
+jmp     gotspanvars
+span_qual_3:
+mov     ax, R_DRAWPLANESFLOFFSET
+mov     dx, R_WRITEBACKVIEWCONSTANTSSPANFLOFFSET
+mov     bx, DRAWSPAN_AH_OFFSET
+
+gotspanvars:
+mov     word ptr ds:[_R_DrawPlanesCallOffset], ax
+mov     word ptr ds:[_R_WriteBackViewConstantsSpanCall], dx
+mov     word ptr ds:[_ds_source_offset], bx
+
+mov     word ptr ds:[_R_WriteBackViewConstantsSpanCall + 2], SPANFUNC_JUMP_LOOKUP_SEGMENT
+
+
+POPA_NO_AX_MACRO
+
+ret
+ENDP
 
 PROC    Z_INIT_ENDMARKER_
 PUBLIC  Z_INIT_ENDMARKER_

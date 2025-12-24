@@ -632,6 +632,47 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "AM_TICKEROFFSET             = 0%Xh\n",           FP_OFF(AM_Ticker)                           - FP_OFF(P_SIGHT_STARTMARKER));
 
 
+    fprintf(fp, "R_WRITEBACKVIEWCONSTANTSMASKED24OFFSET  = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsMasked24)  - FP_OFF(R_WriteBackViewConstantsMasked24));
+    fprintf(fp, "R_WRITEBACKMASKEDFRAMECONSTANTS24OFFSET = 0%Xh\n", FP_OFF(R_WriteBackMaskedFrameConstants24) - FP_OFF(R_WriteBackViewConstantsMasked24));
+    fprintf(fp, "R_WRITEBACKVIEWCONSTANTSMASKED16OFFSET  = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsMasked16)  - FP_OFF(R_WriteBackViewConstantsMasked16));
+    fprintf(fp, "R_WRITEBACKMASKEDFRAMECONSTANTS16OFFSET = 0%Xh\n", FP_OFF(R_WriteBackMaskedFrameConstants16) - FP_OFF(R_WriteBackViewConstantsMasked16));
+    fprintf(fp, "R_WRITEBACKVIEWCONSTANTSMASKED0OFFSET   = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsMasked0)   - FP_OFF(R_WriteBackViewConstantsMasked0));
+    fprintf(fp, "R_WRITEBACKMASKEDFRAMECONSTANTS0OFFSET  = 0%Xh\n", FP_OFF(R_WriteBackMaskedFrameConstants0)  - FP_OFF(R_WriteBackViewConstantsMasked0));
+    fprintf(fp, "R_WRITEBACKVIEWCONSTANTSMASKEDFLOFFSET  = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsMaskedFL)  - FP_OFF(R_WriteBackViewConstantsMaskedFL));
+    fprintf(fp, "R_WRITEBACKMASKEDFRAMECONSTANTSFLOFFSET = 0%Xh\n", FP_OFF(R_WriteBackMaskedFrameConstantsFL) - FP_OFF(R_WriteBackViewConstantsMaskedFL));
+    fprintf(fp, "R_DRAWPLANES24OFFSET                   = 0%Xh\n", FP_OFF(R_DrawPlanes24)                    - FP_OFF(R_SPAN24_STARTMARKER));
+	fprintf(fp, "R_WRITEBACKVIEWCONSTANTSSPAN24OFFSET   = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsSpan24)    - FP_OFF(R_SPAN24_STARTMARKER));
+	fprintf(fp, "R_DRAWPLANES16OFFSET                   = 0%Xh\n", FP_OFF(R_DrawPlanes16)                    - FP_OFF(R_SPAN16_STARTMARKER));
+	fprintf(fp, "R_WRITEBACKVIEWCONSTANTSSPAN16OFFSET   = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsSpan16)    - FP_OFF(R_SPAN16_STARTMARKER));
+	fprintf(fp, "R_DRAWPLANES0OFFSET                    = 0%Xh\n", FP_OFF(R_DrawPlanes0)                     - FP_OFF(R_SPAN0_STARTMARKER));
+	fprintf(fp, "R_WRITEBACKVIEWCONSTANTSSPAN0OFFSET    = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsSpan0)     - FP_OFF(R_SPAN0_STARTMARKER));
+	fprintf(fp, "R_DRAWPLANESFLOFFSET                   = 0%Xh\n", FP_OFF(R_DrawPlanesFL)                    - FP_OFF(R_SPANFL_STARTMARKER));
+	fprintf(fp, "R_WRITEBACKVIEWCONSTANTSSPANFLOFFSET   = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsSpanFL)    - FP_OFF(R_SPANFL_STARTMARKER));
+	fprintf(fp, "R_DRAWSKYCOLUMNOFFSET                  = 0%Xh\n", FP_OFF(R_DrawSkyColumn)                   - FP_OFF(R_SKY_STARTMARKER));
+	fprintf(fp, "R_DRAWSKYPLANEOFFSET                   = 0%Xh\n", FP_OFF(R_DrawSkyPlane)                    - FP_OFF(R_SKY_STARTMARKER));
+	fprintf(fp, "R_DRAWSKYPLANEDYNAMICOFFSET            = 0%Xh\n", FP_OFF(R_DrawSkyPlaneDynamic)             - FP_OFF(R_SKY_STARTMARKER));
+	fprintf(fp, "R_DRAWSKYCOLUMNFLOFFSET                = 0%Xh\n", FP_OFF(R_DrawSkyColumnFL)                 - FP_OFF(R_SKYFL_STARTMARKER));
+	fprintf(fp, "R_DRAWSKYPLANEFLOFFSET                 = 0%Xh\n", FP_OFF(R_DrawSkyPlaneFL)                  - FP_OFF(R_SKYFL_STARTMARKER));
+	fprintf(fp, "R_DRAWSKYPLANEDYNAMICFLOFFSET          = 0%Xh\n", FP_OFF(R_DrawSkyPlaneDynamicFL)           - FP_OFF(R_SKYFL_STARTMARKER));
+	fprintf(fp, "R_WRITEBACKVIEWCONSTANTS24OFFSET       = 0%Xh\n", FP_OFF(R_WriteBackViewConstants24)        - FP_OFF(R_BSP24_STARTMARKER));
+	fprintf(fp, "R_RENDERPLAYERVIEW24OFFSET             = 0%Xh\n", FP_OFF(R_RenderPlayerView24)              - FP_OFF(R_BSP24_STARTMARKER));
+	fprintf(fp, "R_GETCOMPOSITETEXTURE24OFFSET          = 0%Xh\n", FP_OFF(R_GetCompositeTexture_Far24)       - FP_OFF(R_BSP24_STARTMARKER));
+	fprintf(fp, "R_GETPATCHTEXTURE24OFFSET              = 0%Xh\n", FP_OFF(R_GetPatchTexture_Far24)           - FP_OFF(R_BSP24_STARTMARKER));
+	fprintf(fp, "R_WRITEBACKVIEWCONSTANTS16OFFSET       = 0%Xh\n", FP_OFF(R_WriteBackViewConstants16)        - FP_OFF(R_BSP16_STARTMARKER));
+	fprintf(fp, "R_RENDERPLAYERVIEW16OFFSET             = 0%Xh\n", FP_OFF(R_RenderPlayerView16)              - FP_OFF(R_BSP16_STARTMARKER));
+	fprintf(fp, "R_GETCOMPOSITETEXTURE16OFFSET          = 0%Xh\n", FP_OFF(R_GetCompositeTexture_Far16)       - FP_OFF(R_BSP16_STARTMARKER));
+	fprintf(fp, "R_GETPATCHTEXTURE16OFFSET              = 0%Xh\n", FP_OFF(R_GetPatchTexture_Far16)           - FP_OFF(R_BSP16_STARTMARKER));
+	fprintf(fp, "R_WRITEBACKVIEWCONSTANTS0OFFSET        = 0%Xh\n", FP_OFF(R_WriteBackViewConstants0)         - FP_OFF(R_BSP0_STARTMARKER));
+	fprintf(fp, "R_RENDERPLAYERVIEW0OFFSET              = 0%Xh\n", FP_OFF(R_RenderPlayerView0)               - FP_OFF(R_BSP0_STARTMARKER));
+	fprintf(fp, "R_GETCOMPOSITETEXTURE0OFFSET           = 0%Xh\n", FP_OFF(R_GetCompositeTexture_Far0)        - FP_OFF(R_BSP0_STARTMARKER));
+	fprintf(fp, "R_GETPATCHTEXTURE0OFFSET               = 0%Xh\n", FP_OFF(R_GetPatchTexture_Far0)            - FP_OFF(R_BSP0_STARTMARKER));
+	fprintf(fp, "R_WRITEBACKVIEWCONSTANTSFLOFFSET       = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsFL)        - FP_OFF(R_BSPFL_STARTMARKER));
+	fprintf(fp, "R_RENDERPLAYERVIEWFLOFFSET             = 0%Xh\n", FP_OFF(R_RenderPlayerViewFL)              - FP_OFF(R_BSPFL_STARTMARKER));
+	fprintf(fp, "R_GETCOMPOSITETEXTUREFLOFFSET          = 0%Xh\n", FP_OFF(R_GetCompositeTexture_FarFL)       - FP_OFF(R_BSPFL_STARTMARKER));
+	fprintf(fp, "R_GETPATCHTEXTUREFLOFFSET              = 0%Xh\n", FP_OFF(R_GetPatchTexture_FarFL)           - FP_OFF(R_BSPFL_STARTMARKER));
+
+
+
 
 	// P_AddActiveCeiling_addr =		 	(uint32_t)(P_AddActiveCeiling);
 	// P_AddActivePlat_addr =		 		(uint32_t)(P_AddActivePlat);

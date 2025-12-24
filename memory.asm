@@ -56,7 +56,7 @@ dw 0, 0, 0, 0, 0, 0, 0, 0
 ; 0xC0
 dw 0,  OPENINGS_SEGMENT,  0,  OPENINGS_SEGMENT,  0,  0,  0,  0
 ; 0xD0
-; _ds_source_segment  0xD8 
+; _ds_source_segment  0xDA
 dw 00, 00, 00, 00, 00, 00, 00, 00
 ; 0xE0    spanfunc_segment_storage EAh
 dw 0, 0, 0, 0, 0, SPANFUNC_JUMP_LOOKUP_SEGMENT, 0, 0

@@ -303,7 +303,7 @@ mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
 
 ; yfrac16 already in cx
 
-lds   bx, dword ptr ds:[_ds_source_segment] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
+lds   bx, dword ptr ds:[_ds_source_offset] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
 
 
 
@@ -1436,7 +1436,7 @@ SHIFT_MACRO sal   al 2
 add   al, byte ptr [bp - 3]
 add   al, 070h
 
-mov   byte ptr ds:[_ds_source_segment+3], al            ; low byte always zero!
+mov   byte ptr ds:[_ds_source_offset+3], al            ; low byte always zero!
 les   ax, dword ptr ds:[si]
 mov   dx, es
 SELFMODIFY_SPAN_viewz_lo_1:

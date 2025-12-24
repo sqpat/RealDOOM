@@ -86,7 +86,7 @@ sal   si, 1
 
 mov   di, word ptr ds:[_spanfunc_destview_offset + si]  ; destview offset precalculated..
 ; todo move this out of the loop
-mov   es, word ptr ds:[_ds_source_segment+2]
+mov   es, word ptr ds:[_ds_source_segment]
 
 mov   al, byte ptr es:[0] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
 xlat  byte ptr cs:[bx]          ; bx is colormaps ptr. cs:0 is colormaps 0
@@ -805,7 +805,7 @@ SHIFT_MACRO sal   al 2
 add   al, byte ptr [bp - 3]
 add   al, 070h
 
-mov   byte ptr ds:[_ds_source_segment+3], al            ; low byte always zero!
+mov   byte ptr ds:[_ds_source_offset+3], al            ; low byte always zero!
 les   ax, dword ptr ds:[si]
 mov   dx, es
 SELFMODIFY_SPAN_viewz_lo_1:

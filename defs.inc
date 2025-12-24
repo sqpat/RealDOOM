@@ -135,8 +135,9 @@ _viewangle_shiftright1 = 			_NULL_OFFSET + 000D4h
 _snd_SfxDevice = 					_NULL_OFFSET + 000D6h
 _snd_MusicDevice =				    _NULL_OFFSET + 000D7h
 
-_ds_source_segment = 				_NULL_OFFSET + 000D8h
-
+_ds_source_offset = 				_NULL_OFFSET + 000D8h
+_ds_source_segment = 				_NULL_OFFSET + 000DAh
+; DA is technically segment and D8 is OFFSET
 _currentscreen    = 				_NULL_OFFSET + 000DCh
 _destview    = 						_NULL_OFFSET + 000E0h
 _destscreen    = 					_NULL_OFFSET + 000E4h
@@ -467,6 +468,7 @@ _cached_playerMobj_x_highbits =      _NULL_OFFSET + 004C0h
 _cached_playerMobj_y_highbits =  	 _NULL_OFFSET + 004C2h
 
 _R_DrawSkyPlaneDynamic_addr =  	     _NULL_OFFSET + 004C4h
+_R_DrawSkyPlaneDynamic_addr_OFfset = _NULL_OFFSET + 004C4h
 _snd_SBport =                        _NULL_OFFSET + 004C8h
 _snd_Mport =                         _NULL_OFFSET + 004CAh
 _I_Quit_addr = 			             _NULL_OFFSET + 004CCh
@@ -545,6 +547,7 @@ _fopen_rb_argument =                 _NULL_OFFSET + 005F0h
 _currenttask =            		     _NULL_OFFSET + 005F3h
 
 _R_DrawSkyPlane_addr =               _NULL_OFFSET + 005F4h
+_R_DrawSkyPlane_addr_Offset =        _NULL_OFFSET + 005F4h
 _OutOfThinkers_addr =                _NULL_OFFSET + 005F8h
 _FastDiv32u16u_addr =                _NULL_OFFSET + 005FCh
 
@@ -574,9 +577,14 @@ _skyquality =  					 	 _NULL_OFFSET + 00703h
 _viewwindowx = 					 	 _NULL_OFFSET + 00704h
 _viewwindowy = 					 	 _NULL_OFFSET + 00706h
 _R_DrawPlanesCall = 	    	 	 _NULL_OFFSET + 00708h
+_R_DrawPlanesCallOffset = 	    	 _NULL_OFFSET + 00708h
 _R_DrawMaskedCall = 			 	 _NULL_OFFSET + 0070Ch
+_R_DrawMaskedCallOffset = 			 _NULL_OFFSET + 0070Ch
 _R_WriteBackMaskedFrameConstantsCall =  _NULL_OFFSET + 00710h
+_R_WriteBackMaskedFrameConstantsCallOffset =  _NULL_OFFSET + 00710h
 _NetUpdate_addr =					 _NULL_OFFSET + 00714h
+
+
 
 
 _mtof_zoommul =        			     _NULL_OFFSET + 00718h

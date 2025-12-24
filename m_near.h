@@ -180,8 +180,8 @@
 #define viewangle_shiftright1           (*((uint16_t __near *)               (_NULL_OFFSET + 0x00D4)))
 #define snd_SfxDevice                   (*(uint8_t __near *)                 (_NULL_OFFSET + 0x00D6))
 #define snd_MusicDevice				    (*((uint8_t __near*)                 (_NULL_OFFSET + 0x00D7)))
-#define ds_source_segment               (*((byte __far* __near*)             (_NULL_OFFSET + 0x00D8)))
 #define ds_source_offset                (*((int16_t __near*)                 (_NULL_OFFSET + 0x00D8)))
+#define ds_source_segment               (*((byte __far* __near*)             (_NULL_OFFSET + 0x00DA)))
 
 #define currentscreen                   (*(byte __far * __near *)            (_NULL_OFFSET + 0x00DC))
 #define destview                        (*(byte __far * __near *)            (_NULL_OFFSET + 0x00E0))

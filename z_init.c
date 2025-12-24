@@ -518,6 +518,8 @@ void  __near Z_ReadFileRegionWithIndex(FILE* fp, int16_t index, uint32_t target_
 
 }
 */
+
+/*
 void __near Z_RemapRenderFunctions(){
 
 	segment_t bsp_code_segment = BSP_CODE_SEGMENT_PTR;
@@ -615,7 +617,9 @@ void __near Z_RemapRenderFunctions(){
 
 
 }
+*/
 void  __far cht_CheckCheat_Far();
+void __near Z_DoRenderCodeLoad(FILE* fp);
 
 /*
 void __near Z_DoRenderCodeLoad(FILE* fp){
