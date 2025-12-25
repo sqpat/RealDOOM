@@ -62,7 +62,8 @@
 //
 // R_InitTextureMapping
 //
-void __near R_InitAngles(void);	
+void __near R_InitTextureMapping(void);
+/*
 void __near R_InitTextureMapping(void) {
 	int16_t			x;
 	fixed_t_union	t;
@@ -85,9 +86,6 @@ void __near R_InitTextureMapping(void) {
 	// Calc focallength
 	//  so FIELDOFVIEW angles covers SCREENWIDTH.
 	
-	R_InitAngles();
-	
-/*
 	focallength = FixedDivWholeA(centerx, FIXED_FINE_TAN);
 
 	for (i = 0; i < FINEANGLES / 2; i++) {
@@ -212,12 +210,12 @@ void __near R_InitTextureMapping(void) {
 			scalelight[i2*MAXLIGHTSCALE+j] =  level << 2;// * 256;
 		}
 	}
-	*/
+	
 
 
 
 }
-
+*/
 
 //
 // R_ExecuteSetViewSize

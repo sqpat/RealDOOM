@@ -22,7 +22,6 @@ EXTRN  Z_QuickMapPhysics_:FAR
 EXTRN  Z_QuickMapRender_:FAR
 EXTRN  Z_QuickMapRenderPlanes_:FAR
 EXTRN  Z_QuickMapUndoFlatCache_:FAR
-EXTRN  R_InitTextureMapping_:NEAR
 EXTRN  FixedDivWholeA_:FAR
 EXTRN  FixedMul_:FAR
 EXTRN  FastDiv32u16u_:FAR
@@ -63,8 +62,8 @@ mov     ax, 01000h
 jmp     set_value_and_continue_loop
 
 
-PROC    R_InitAngles_ NEAR
-PUBLIC  R_InitAngles_
+PROC    R_InitTextureMapping_ NEAR
+PUBLIC  R_InitTextureMapping_
 
 PUSHA_NO_AX_MACRO
 
