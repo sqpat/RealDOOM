@@ -26,10 +26,20 @@ EXTRN fseek_:FAR
 EXTRN locallib_far_fread_:FAR
 .DATA
 
-EXTRN _codestartposition:DWORD
-
-
 .CODE
+
+_codestartposition:
+dd NUM_OVERLAYS DUP(0)
+
+_codestartposition_END:
+
+_musdriverstartposition:
+dd 0
+
+PUBLIC _musdriverstartposition
+PUBLIC _codestartposition
+PUBLIC _codestartposition_END
+
 quickmap_by_taskjump_jump_table:
 dw task_num_0_jump
 dw task_num_1_jump
@@ -797,9 +807,9 @@ SHIFT_MACRO shl   si 2
 
 mov   ax, OFFSET _doomcode_filename
 call  CopyString13_Zonelocal_
-; todo les
-mov   bx, word ptr ds:[si + _codestartposition-4]
-mov   cx, word ptr ds:[si + _codestartposition-2]
+
+les   bx, dword ptr cs:[si + _codestartposition-4]
+mov   cx, es
 call  fopen_
 xor   dx, dx ; SEEK_SET
 mov   si, ax

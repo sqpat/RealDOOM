@@ -36,11 +36,11 @@ EXTRN locallib_dos_setvect_:NEAR
 
 .DATA
 
-EXTRN _musdriverstartposition:BYTE
 
 
 .CODE
 
+EXTRN _musdriverstartposition:BYTE
 EXTRN _oldkeyboardisr:DWORD
 EXTRN _doomcode_filename:BYTE
 
@@ -226,7 +226,7 @@ mov   dx, OFFSET  _fopen_rb_argument
 call  fopen_        ; fopen("DOOMCODE.BIN", "rb"); 
 mov   di, ax ; di stores fp
 
-les   bx, dword ptr ds:[_musdriverstartposition]
+les   bx, dword ptr cs:[_musdriverstartposition]
 mov   cx, es
 xor   dx, dx  ; SEEK_SET  ; 0?
 call  fseek_        ; fseek(fp, musdriverstartposition[driverindex-1], SEEK_SET);

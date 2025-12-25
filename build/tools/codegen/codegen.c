@@ -8,7 +8,7 @@
 #include "p_inter.h"
 #include "s_sbsfx.h"
 
-#define CONSTANTS_COUNT 2597
+#define CONSTANTS_COUNT 2600
 #define LOCALS_COUNT 22
 
 
@@ -2680,6 +2680,12 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 
 	"_pageswapargs",
 	"LUMPINFOINITSEGMENT",
+
+	"VISPLANES_8400_SEGMENT",
+	"VISPLANES_8800_SEGMENT",
+	"MUS_DRIVER_COUNT",
+
+
 	"CURRENT_POSITION_1",
 	"CURRENT_POSITION_2",
 	"CURRENT_POSITION_3",
@@ -5369,6 +5375,10 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	usedtexturepagemem,
 	pageswapargs,
 	lumpinfoinitsegment,
+
+	visplanes_8400_segment,
+	visplanes_8800_segment,
+	MUS_DRIVER_COUNT,
 
 	CURRENT_POSITION_1,
 	CURRENT_POSITION_2,

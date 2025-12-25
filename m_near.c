@@ -85,8 +85,8 @@ int16_t             p_init_maxframe;
 boolean         precache = true;        // if true, load all graphics at start 
 int16_t		myargc;
 int8_t**		myargv;
-int32_t codestartposition[NUM_OVERLAYS];
-int32_t musdriverstartposition;
+// int32_t codestartposition[NUM_OVERLAYS];
+// int32_t musdriverstartposition;
 
 
 

@@ -29,6 +29,11 @@ EXTRN Z_QuickMapWADPageFrame_:FAR
 EXTRN Z_QuickMapMusicPageFrame_:FAR
 EXTRN Z_QuickMapSFXPageFrame_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
+EXTRN Z_QuickMapRender_:FAR
+EXTRN Z_QuickMapRender4000_:FAR
+EXTRN Z_QuickMapVisplanePage_:FAR
+EXTRN Z_QuickMapIntermission_:FAR
+EXTRN Z_QuickMapMenu_:FAR
 EXTRN fread_:FAR
 EXTRN fseek_:FAR
 EXTRN locallib_far_fread_:FAR
@@ -46,6 +51,7 @@ EXTRN fopen_:FAR
 EXTRN fseek_:FAR
 EXTRN fread_:FAR
 EXTRN fclose_:FAR
+EXTRN ftell_:FAR
 EXTRN locallib_far_fread_:FAR
 EXTRN getStringByIndex_:FAR
 EXTRN I_Error_:FAR
@@ -80,6 +86,8 @@ EXTRN SFX_PlayPatch_:FAR
 EXTRN S_DecreaseRefCountFar_:FAR
 EXTRN W_CheckNumForNameFar_:FAR
 
+EXTRN CopyString13_:NEAR
+
 
 EXTRN _P_SpawnMapThing:DWORD
 EXTRN _R_WriteBackViewConstantsSpanCall:DWORD
@@ -108,15 +116,27 @@ HT18_PAGE_SET_REGISTER = 01ECh
 
 
 
-
 .CODE
 
+EXTRN _musdriverstartposition:DWORD
+EXTRN _codestartposition:DWORD
+EXTRN _codestartposition_END:BYTE
 
+
+EXTRN _doomcode_filename:BYTE
 
 PROC    Z_INIT_STARTMARKER_
 PUBLIC  Z_INIT_STARTMARKER_
 ENDP
 
+
+_doomdata_bin_string:
+db "DOOMDATA.BIN", 0
+
+str_two_dot:
+db "."
+str_dot:
+db ".", 0
 
 
 IFDEF COMP_CH
@@ -984,7 +1004,7 @@ dw OFFSET _W_CheckNumForNameFar_addr           , OFFSET W_CheckNumForNameFar_
 
 
 PROC    Z_LinkFunctions_ NEAR
-PUBLIC  Z_LinkFunctions_
+
 
 	; manual runtime linking. these are all called from other segments in externalized code and need their addresses in constant variable locatioons
  
@@ -1016,7 +1036,319 @@ PUBLIC  Z_LinkFunctions_
 
 ENDP
 
+PROC    GetCodeSize_   NEAR
+;    fread(&codesize, 2, 1, fp);
+; return result in bx for fread
+; fp in si
+push  ax
+mov   ax, sp 
+mov   dx, 2
+mov   bx, 1
+mov   cx, si
+call  fread_
+pop   bx
+ret
 
+
+ENDP
+
+_music_driver_lookup:
+db MUS_DRIVER_TYPE_NONE
+db MUS_DRIVER_TYPE_NONE
+db MUS_DRIVER_TYPE_OPL2
+db MUS_DRIVER_TYPE_OPL3
+db MUS_DRIVER_TYPE_NONE
+db MUS_DRIVER_TYPE_NONE
+db MUS_DRIVER_TYPE_SBMIDI
+db MUS_DRIVER_TYPE_MPU401
+db MUS_DRIVER_TYPE_MPU401
+
+
+PROC    Z_LoadBinaries_ NEAR
+PUBLIC  Z_LoadBinaries_
+
+PUSHA_NO_AX_MACRO
+
+
+
+mov   ax, OFFSET _doomdata_bin_string
+
+call  CopyString13_
+mov   dx, OFFSET  _fopen_rb_argument
+call  fopen_        ; fopen("DOOMDATA.BIN", "rb"); 
+mov   di, ax ; di stores fp
+
+;	fseek(fp, DATA_DOOMDATA_OFFSET, SEEK_SET);
+xor   dx, dx ; SEEK_SET
+mov   bx, DATA_DOOMDATA_OFFSET
+xor   cx, cx
+call  fseek_
+
+;	locallib_far_fread(rndtable, 256, fp);
+xor   ax, ax
+mov   dx, RNDTABLE_SEGMENT
+mov   bx, 256
+mov   cx, di
+call  locallib_far_fread_
+
+; fread(mobjinfo, sizeof(mobjinfo_t), NUMMOBJTYPES, fp);
+mov   ax, OFFSET _mobjinfo
+mov   dx, SIZE MOBJINFO_T
+mov   bx, NUMMOBJTYPES
+mov   cx, di
+call  fread_
+
+mov     ax, OFFSET str_dot
+call    DEBUG_PRINT_NOARG_CS_
+
+;	locallib_far_fread(states, sizeof(state_t) * NUMSTATES, fp);
+xor   ax, ax
+mov   dx, word ptr ds:[_STATES_SEGMENT_PTR]
+mov   bx, (SIZE STATE_T) * NUMSTATES
+mov   cx, di
+call  locallib_far_fread_
+
+mov     ax, OFFSET str_dot
+call    DEBUG_PRINT_NOARG_CS_
+
+;	locallib_far_fread(gammatable, 5 * 256, fp);
+xor   ax, ax
+mov   dx, GAMMATABLE_SEGMENT
+mov   bx, 5 * 256
+mov   cx, di
+call  locallib_far_fread_
+
+mov     ax, OFFSET str_dot
+call    DEBUG_PRINT_NOARG_CS_
+
+
+;	locallib_far_fread(finesine, 4 * 10240u, fp);
+xor   ax, ax
+mov   dx, FINESINE_SEGMENT
+mov   bx, 4 * 10240
+mov   cx, di
+call  locallib_far_fread_
+
+mov     ax, OFFSET str_dot
+call    DEBUG_PRINT_NOARG_CS_
+
+
+call    Z_QuickMapRender_
+
+;	locallib_far_fread(finetangentinner, 4 * 2048, fp);
+xor   ax, ax
+mov   dx, FINETANGENTINNER_SEGMENT
+mov   bx, 4 * 2048
+mov   cx, di
+call  locallib_far_fread_
+
+
+;	FAR_memset(visplanes_8400, 0x00,   0xC000);
+mov   cx, 0C000h / 2
+mov   ax, VISPLANES_8400_SEGMENT
+mov   es, ax
+xor   ax, ax
+cwd
+xchg  dx, di  ; store fp
+rep   stosw
+xchg  dx, di  ; put fp back
+
+;	Z_QuickMapVisplanePage(3, 1);
+;	Z_QuickMapVisplanePage(4, 2);
+mov   ax, 3
+mov   dx, 1
+call  Z_QuickMapVisplanePage_
+mov   ax, 4
+mov   dx, 2
+call  Z_QuickMapVisplanePage_
+
+;	FAR_memset(visplanes_8800, 0x00,   0x8000);
+mov   cx, 08000h / 2
+mov   ax, VISPLANES_8800_SEGMENT
+mov   es, ax
+xor   ax, ax
+cwd
+xchg  dx, di  ; store fp
+rep   stosw
+xchg  dx, di  ; put fp back
+
+
+mov     ax, OFFSET str_dot
+call    DEBUG_PRINT_NOARG_CS_
+
+call    Z_QuickMapPhysics_
+
+;	locallib_far_fread(doomednum_far, 2 * NUMMOBJTYPES, fp);
+xor   ax, ax
+mov   dx, DOOMEDNUM_SEGMENT
+mov   bx, 2 * NUMMOBJTYPES
+mov   cx, di
+call  locallib_far_fread_
+
+call  Z_QuickMapRender4000_
+
+
+;	for (i = 0; i < NUMSTATES; i++){
+;		states_render[i].sprite = states[i].sprite;
+;		states_render[i].frame  = states[i].frame;
+;	}
+
+xchg  dx, di  ; store fp
+mov   ax, STATES_RENDER_SEGMENT
+mov   es, ax
+mov   ax, STATES_SEGMENT
+mov   ds, ax
+xor   si, si   ; sprite, frame are bytes 0, 1
+mov   di, si   ; same for state_render
+mov   cx, NUMSTATES
+
+
+loop_copy_state_spriteframes:
+movsw
+add    si, (SIZE STATE_T) - 2
+loop   loop_copy_state_spriteframes
+
+xchg   dx, di  ; put fp back
+push   ss
+pop    ds
+
+call   Z_QuickMapRender_
+
+;	locallib_far_fread(zlight, 2048, fp);
+xor   ax, ax
+mov   dx, ZLIGHT_SEGMENT
+mov   bx, 2048
+mov   cx, di
+call  locallib_far_fread_
+
+xchg  ax, di
+call  fclose_
+
+call  Z_QuickMapPhysics_
+
+mov   ax, OFFSET _doomcode_filename
+call  CopyString13_
+mov   dx, OFFSET  _fopen_rb_argument
+call  fopen_        ; fopen("DOOMDATA.BIN", "rb"); 
+mov   si, ax ; si stores fp
+call  Z_DoRenderCodeLoad_
+
+call  Z_QuickMapIntermission_
+
+call  GetCodeSize_
+;	locallib_far_fread(wianim_codespace, codesize, fp);
+xor   ax, ax
+mov   dx, WIANIM_CODESPACE_SEGMENT
+mov   cx, si
+call  locallib_far_fread_
+
+call  Z_QuickMapPhysics_
+
+call  GetCodeSize_
+;    locallib_far_fread(psight_codespace, codesize, fp);
+xor   ax, ax
+mov   dx, PHYSICS_HIGHCODE_SEGMENT
+mov   cx, si
+call  locallib_far_fread_
+
+call  Z_QuickMapMenu_
+
+call  GetCodeSize_
+;    locallib_far_fread(menu_code_area, codesize, fp);
+xor   ax, ax
+mov   dx, MENU_CODE_AREA_SEGMENT
+mov   cx, si
+call  locallib_far_fread_
+
+call  Z_QuickMapPhysics_
+
+
+mov   di, OFFSET _codestartposition
+
+loop_write_next_codestart_position:
+
+mov   ax, si
+call  ftell_
+push  cs
+pop   es
+stosw
+xchg  ax, dx
+stosw
+
+cmp   di, OFFSET _codestartposition_END
+jge   done_writing_codestart
+
+
+call  GetCodeSize_
+; bx is codesize
+;	fseek(fp, codesize, SEEK_CUR);
+mov   ax, si
+mov   dx, 1  ; SEEK_CUR
+xor   cx, cx
+call  fseek_
+
+jmp    loop_write_next_codestart_position
+done_writing_codestart:
+
+xor     ax, ax
+mov     bx, ax
+mov     bl, byte ptr ds:[_snd_DesiredMusicDevice]
+cmp     bl, 8
+ja      use_none
+mov     al, byte ptr cs:[_music_driver_lookup + bx]
+
+
+use_none:
+dec     ax
+xchg    ax, bp    ; bp holds driver index
+
+;	for (i = 0; i < MUS_DRIVER_COUNT-1; i++){
+;		fread(&codesize, 2, 1, fp);
+;		fseek(fp, codesize, SEEK_CUR);
+;		if (i == index){
+;			musdriverstartposition  = ftell(fp);
+;		}
+;	}
+
+xor   di, di   ; di holds i
+
+loop_next_mus_driver:
+
+call  GetCodeSize_
+;	fseek(fp, codesize, SEEK_CUR);
+mov   ax, si
+mov   dx, 1  ; SEEK_CUR
+xor   cx, cx
+call  fseek_
+cmp   di, bp
+jne   iter_loop_next_mus_driver
+mov   ax, si
+call  ftell_
+mov   word ptr cs:[_musdriverstartposition+0], ax
+mov   word ptr cs:[_musdriverstartposition+2], dx
+
+iter_loop_next_mus_driver:
+inc     di
+cmp     di, MUS_DRIVER_COUNT-1
+jl      loop_next_mus_driver
+
+
+
+xchg    ax, si
+call    fclose_
+
+
+
+mov     ax, OFFSET str_two_dot
+call    DEBUG_PRINT_NOARG_CS_
+call    Z_LinkFunctions_
+
+POPA_NO_AX_MACRO
+
+
+ret
+
+ENDP
 
 
 PROC    Z_INIT_ENDMARKER_

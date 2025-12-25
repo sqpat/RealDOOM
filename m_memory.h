@@ -1041,6 +1041,10 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define visplanes_8400          ((visplane_t __far*)      (0x84000000 ))
 #define visplanes_8800          ((visplane_t __far*)      (0x88000000 ))
 #define visplanes_8C00          ((visplane_t __far*)      (0x8C000000 ))
+
+#define visplanes_8400_segment       ((segment_t) ((int32_t)visplanes_8400 >> 16))
+#define visplanes_8800_segment       ((segment_t) ((int32_t)visplanes_8800 >> 16))
+
 /*
   
 texturewidthmasks           82A2:0000

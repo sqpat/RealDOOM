@@ -684,8 +684,9 @@ void __far S_DecreaseRefCountFar(int8_t handle);
 void __far W_CheckNumForNameFar();
 
 void __far MainLogger (uint16_t ax, uint16_t dx, uint16_t bx, uint16_t cx);
-void __near Z_LinkFunctions();
+void __near Z_LoadBinaries();
 
+/*
 void __near Z_LoadBinaries() {
 	int16_t i;
 	int16_t index;
@@ -779,6 +780,7 @@ void __near Z_LoadBinaries() {
 
 	fread(&codesize, 2, 1, fp);
 	fseek(fp, codesize, SEEK_CUR);
+
 	codestartposition[1] = ftell(fp);
 
 	fread(&codesize, 2, 1, fp);
@@ -833,7 +835,7 @@ void __near Z_LoadBinaries() {
 	DEBUG_PRINT_NOARG("..");
 	Z_LinkFunctions();
 }
-
+*/
 /*
 void __near Z_LinkFunctions() {
 

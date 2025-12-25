@@ -1229,7 +1229,6 @@ int8_t SBMIDIdeinitHardware(void);
 #define  MUS_DRIVER_TYPE_MPU401 3
 #define  MUS_DRIVER_TYPE_SBMIDI 4
 #define  MUS_DRIVER_COUNT 5
-extern int32_t musdriverstartposition;
 
 #define NUMSFX      109
 
