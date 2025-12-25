@@ -157,7 +157,7 @@ add     si, bp
 cmp     si, (FINEANGLES / 4) * 4  ; 8192
 jb      loop_next_fineangle   ; for the 2nd loop, we end when this loops over to ff.
 ;test    si, si  ; can this be skipped with jnc?
-jnc      cleanup_and_exit_function
+js      cleanup_and_exit_function
 
 ; SET UP SECOND LOOP!
 
@@ -429,7 +429,7 @@ mov     word ptr ds:[_spanfunc_outp + 2], 0804h ; technically this never has to 
 cmp   byte ptr ds:[_detailshift], 1
 jb    detail_0
 ja    detail_2
-detail  :
+detail_1:
 mov   ax, 3 + (12 SHL 8)
 jmp   done_checking_detail
 detail_2:
