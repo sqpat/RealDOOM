@@ -841,6 +841,9 @@ ja      col_qual_default
 cmp     al, 1
 je      col_qual_1
 ja      col_qual_2
+
+; todo turn into a data table in cs, save a few dozen bytes..
+
 col_qual_0:
 col_qual_default:
 mov     ax, R_GETPATCHTEXTURE24OFFSET
@@ -1001,40 +1004,9 @@ dw OFFSET _SFX_PlayPatch_addr                  , OFFSET SFX_PlayPatch_
 dw OFFSET _S_DecreaseRefCountFar_addr          , OFFSET S_DecreaseRefCountFar_
 dw OFFSET _W_CheckNumForNameFar_addr           , OFFSET W_CheckNumForNameFar_
 
+_linkfunclist_END:
 
 
-PROC    Z_LinkFunctions_ NEAR
-
-
-	; manual runtime linking. these are all called from other segments in externalized code and need their addresses in constant variable locatioons
- 
-	; set some function addresses for asm calls. 
-	; as these move to asm and EMS memory space themselves, these references can go away
-
-	; todo think of a better solution for dynamic linking of func locations for overlaid code.
-    push  si
-    push  di
-
-    push  ds
-    pop   es
-    mov   si, OFFSET _linkfunclist
-    loop_next_function:
-    lods  word ptr cs:[si]
-    xchg  ax, di
-    movs  word ptr es:[di], word ptr cs:[si]
-    mov   word ptr es:[di], cs          ; segment for far call
-    cmp   si, OFFSET Z_LinkFunctions_
-    jl    loop_next_function
-
-    pop   di
-    pop   si
-
-	
-
-	; MainLogger_addr =  					(uint32_t)(MainLogger);
-    ret
-
-ENDP
 
 PROC    GetCodeSize_   NEAR
 ;    fread(&codesize, 2, 1, fp);
@@ -1341,7 +1313,29 @@ call    fclose_
 
 mov     ax, OFFSET str_two_dot
 call    DEBUG_PRINT_NOARG_CS_
-call    Z_LinkFunctions_
+;call    Z_LinkFunctions_
+; inline
+
+; manual runtime linking. these are all called from other segments in externalized code and need their addresses in constant variable locatioons
+
+; set some function addresses for asm calls. 
+; as these move to asm and EMS memory space themselves, these references can go away
+
+push  ds
+pop   es
+mov   si, OFFSET _linkfunclist
+loop_next_function:
+lods  word ptr cs:[si]
+xchg  ax, di
+movs  word ptr es:[di], word ptr cs:[si]
+mov   word ptr es:[di], cs          ; segment for far call
+cmp   si, OFFSET _linkfunclist_END
+jl    loop_next_function
+
+
+; MainLogger_addr =  					(uint32_t)(MainLogger);
+
+
 
 POPA_NO_AX_MACRO
 

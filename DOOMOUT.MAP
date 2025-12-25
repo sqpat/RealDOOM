@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/12/24 20:29:10
+Created on:       25/12/24 20:32:07
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -30,8 +30,8 @@ ST_INIT_TEXT           CODE           AUTO           0000:09fc       00000203
 R_INIT_TEXT            CODE           AUTO           0000:0c00       000007af
 W_INIT_TEXT            CODE           AUTO           0000:13b0       0000017d
 I_INIT_TEXT            CODE           AUTO           0000:152e       000001a9
-Z_INIT_TEXT            CODE           AUTO           0000:16d8       000007ec
-S_SBINIT_TEXT          CODE           AUTO           0000:1ec4       000002e5
+Z_INIT_TEXT            CODE           AUTO           0000:16d8       000007e4
+S_SBINIT_TEXT          CODE           AUTO           0000:1ebc       000002e5
 p_init_TEXT            CODE           AUTO           0000:21b0       00000498
 i_main_TEXT            CODE           AUTO           0000:2650       00000010
 I_QUIT_TEXT            CODE           AUTO           0000:2660       000001b7
@@ -129,30 +129,30 @@ Module: i_init.obj(i_init.ASM)
 0000:15aa      I_Init_
 0000:152e*     I_INIT_STARTMARKER_
 Module: z_init.obj(z_init.ASM)
-0000:1ec4*     Z_INIT_ENDMARKER_
+0000:1ebc*     Z_INIT_ENDMARKER_
 0000:1a39*     Z_ReadFileRegionWithIndex_
 0000:19b4      Z_GetEMSPageMap_
-0000:1cd1      Z_LoadBinaries_
+0000:1cb9      Z_LoadBinaries_
 0000:1a84*     Z_DoRenderCodeLoad_
 0000:16d8*     Z_INIT_STARTMARKER_
 0000:190e      Z_InitEMS_
 Module: s_sbinit.obj(s_sbinit.ASM)
-0000:2038      SB_SetPlaybackRate_
-0000:2180      SB_StartInit_
-0000:1f29      _SB_DSP_Version
-0000:21a9*     S_SBINIT_ENDMARKER_
-0000:2112*     SB_InitCard_
-0000:1ec4*     S_SBINIT_STARTMARKER_
-0000:1f3b*     SB_SaveVoiceVolume_
-0000:1f2c*     SB_ReadMixer_
-0000:20d3*     SB_GetDSPVersion_
-0000:1f6a*     SB_DSP2xx_BeginPlayback_
-0000:1f63      SB_DSP1xx_BeginPlayback_
-0000:1f7f*     SB_DSP4xx_BeginPlayback_
-0000:1f2b      _SB_CardActive
-0000:2076*     SB_SetupPlayback_
-0000:1f94*     DMA_SetupTransfer_
-0000:2015*     SB_EnableInterrupt_
+0000:2030      SB_SetPlaybackRate_
+0000:2178      SB_StartInit_
+0000:1f21      _SB_DSP_Version
+0000:21a1*     S_SBINIT_ENDMARKER_
+0000:210a*     SB_InitCard_
+0000:1ebc*     S_SBINIT_STARTMARKER_
+0000:1f33*     SB_SaveVoiceVolume_
+0000:1f24*     SB_ReadMixer_
+0000:20cb*     SB_GetDSPVersion_
+0000:1f62*     SB_DSP2xx_BeginPlayback_
+0000:1f5b      SB_DSP1xx_BeginPlayback_
+0000:1f77*     SB_DSP4xx_BeginPlayback_
+0000:1f23      _SB_CardActive
+0000:206e*     SB_SetupPlayback_
+0000:1f8c*     DMA_SetupTransfer_
+0000:200d*     SB_EnableInterrupt_
 Module: p_init.obj(C:\REALDOOM\p_init.c)
 0000:21b0+     P_InitSwitchList_
 0000:227a+     P_InitPicAnims_
@@ -755,4 +755,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  d260 (53856.)
 Entry point address: 0000:9d4c
-Link time: 00:00.75
+Link time: 00:00.20
