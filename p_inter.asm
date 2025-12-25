@@ -16,6 +16,7 @@
 ;
 .MODEL  medium
 INCLUDE defs.inc
+INCLUDE sprites.inc
 INSTRUCTION_SET_MACRO
 
 

@@ -16,6 +16,7 @@
 ;
 .MODEL  medium
 INCLUDE defs.inc
+INCLUDE states.inc
 INSTRUCTION_SET_MACRO
 
 
