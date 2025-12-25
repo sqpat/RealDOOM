@@ -25,6 +25,7 @@ EXTRN  Z_QuickMapUndoFlatCache_:FAR
 EXTRN  R_InitTextureMapping_:NEAR
 EXTRN  FixedDivWholeA_:FAR
 EXTRN  FixedMul_:FAR
+EXTRN  FastDiv32u16u_:FAR
 
  
 .DATA
@@ -166,6 +167,16 @@ mov     bp, -8   ; we're now iterating backwards thru the finetan table. neg 8 a
 sub     si, 4    ; undo last read..
 jmp     loop_next_fineangle
 
+set_value_to_min:
+mov    word ptr ds:[si - 2], 0
+jmp    continue_fencepost_checks
+set_value_to_max:
+_SELFMODIFY_set_viewwidth:
+mov    word ptr ds:[si - 2], 01000h
+jmp    continue_fencepost_checks
+
+
+
 cleanup_and_exit_function:
 
 ; restore jmp
@@ -251,6 +262,101 @@ shl     ax, 1
 mov     word ptr ds:[_fieldofview], ax
 
 
+xor     ax, ax
+mov     cx, word ptr ds:[_viewwidth]
+mov     bx, SCREENWIDTH
+cmp     cx, bx
+jne     calculate_spritescales
+
+;		pspritescale = 0;
+;		pspriteiscale = FRACUNIT;
+
+mov     word ptr ds:[_pspritescale], ax
+mov     word ptr ds:[_pspriteiscale+0], ax
+inc     ax
+mov     word ptr ds:[_pspriteiscale+2], ax
+jmp     done_calculating_spritescale
+calculate_spritescales:
+
+;		pspritescale = FastDiv32u16u(FRACUNIT * viewwidth, SCREENWIDTH);
+;		pspriteiscale = FastDiv32u16u(FRACUNIT * SCREENWIDTH, viewwidth);
+;		// 			10000	11C71	14000	16DB6	1AAAA	20000	28000	35555	50000	A0000 
+;		//detail    10-11,   9		 8		 7		 6		 5		 4		 3		 2		 1
+; todo hardcode in table smaller?
+
+mov     dx, cx
+call    FastDiv32u16u_
+mov     word ptr ds:[_pspriteiscale+0], ax
+xor     ax, ax
+mov     word ptr ds:[_pspriteiscale+2], ax
+mov     dx, SCREENWIDTH
+mov     bx, cx
+call    FastDiv32u16u_
+mov     word ptr ds:[_pspriteiscale+0], ax
+mov     word ptr ds:[_pspriteiscale+2], 0  ; todo always 0?
+
+done_calculating_spritescale:		
+; cx still view width
+;	for (i = 0; i < viewwidth; i++) {
+;		screenheightarray[i] = viewheight;
+;	}
+xor    di, di
+mov    ax, (SCREENHEIGHTARRAY_SEGMENT + OFFSET_SCREENHEIGHTARRAY SHR 4)
+mov    es, ax
+mov    ax, word ptr ds:[_viewheight]
+rep    stosw
+
+; prep the following loop.
+
+mov    si, ax   ; si gets viewheight
+shr    ax, 1
+mov    word ptr cs:[_SELFMODIFY_sub_viewheight_shr_1+2], ax
+mov    ax, word ptr ds:[_viewwidth]
+mov    cl, byte ptr ds:[_detailshift]
+shl    ax, cl
+shr    ax, 1
+mov    word ptr cs:[_SELFMODIFY_viewwidth_precalculate+1], ax
+
+call   Z_QuickMapRenderPlanes_
+
+; si has viewheight..
+
+;	for (i = 0; i < viewheight; i++) {
+;		temp.h.intbits = (i - (viewheight >> 1));
+;		dy = (temp.w) + 0x8000u;
+;		dy = labs(dy);
+;		temp.h.intbits = (viewwidth << detailshift.b.bytelow) >> 1;
+;		yslope[i] = FixedDivWholeA(temp.h.intbits, dy);
+;	}
+
+xor   bp, bp
+xor   di, di
+
+
+loop_next_yslope:
+mov   cx, bp
+_SELFMODIFY_sub_viewheight_shr_1:
+sub   cx, 01000h
+jns   skip_labs
+neg   cx
+inc   cx
+skip_labs:
+mov   bx, 08000h
+_SELFMODIFY_viewwidth_precalculate:
+mov   ax, 01000h
+call  FixedDivWholeA_
+mov   bx, YSLOPE_SEGMENT
+mov   es, bx
+stosw
+xchg  ax, dx
+stosw
+inc   bp
+cmp   bp, si
+jl    loop_next_yslope
+
+
+
+
 
 POPA_NO_AX_MACRO
 
@@ -258,14 +364,6 @@ POPA_NO_AX_MACRO
 
 ret
 
-
-set_value_to_min:
-mov    word ptr ds:[si - 2], 0
-jmp    continue_fencepost_checks
-set_value_to_max:
-_SELFMODIFY_set_viewwidth:
-mov    word ptr ds:[si - 2], 01000h
-jmp    continue_fencepost_checks
 
 
 

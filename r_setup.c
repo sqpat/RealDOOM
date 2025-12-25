@@ -111,6 +111,14 @@ void __near R_InitTextureMapping(void) {
 			}
 		}
 		viewangletox[i] = t.h.intbits;
+
+		// if (viewangletox[i] != t.h.intbits){
+		// 	I_Error("issue %i %i %i %li %i %li %i", i, viewangletox[i], t.h.intbits, FixedMul(finetan_i.w, focallength), centerx,
+		// 	(temp.w - FixedMul(finetan_i.w, focallength) + 0xFFFFu), viewwidth
+		// 	);
+		// }
+
+
 	}
 
 	// Scan viewangletox[] to generate xtoviewangle[]:
@@ -138,7 +146,6 @@ void __near R_InitTextureMapping(void) {
 	clipangle = xtoviewangle[0] << 3;
 	fieldofview = clipangle << 1;
 
-	*/
 
 	// psprite scales
 	if (viewwidth == SCREENWIDTH) {
@@ -173,6 +180,8 @@ void __near R_InitTextureMapping(void) {
 		temp.h.intbits = (viewwidth << detailshift.b.bytelow) >> 1;
 		yslope[i] = FixedDivWholeA(temp.h.intbits, dy);
 	}
+	*/
+
 	// 320 viewwidth
 
 	for (i = 0; i < viewwidth; i++) {
