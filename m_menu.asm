@@ -17,6 +17,8 @@
 ;.MODEL  medium
 
 INCLUDE defs.inc
+INCLUDE sound.inc
+INCLUDE strings.inc
 INSTRUCTION_SET_MACRO_NO_MEDIUM
 
 LINEHEIGHT = 16

@@ -16,6 +16,8 @@
 ;
 .MODEL  medium
 INCLUDE defs.inc
+INCLUDE sound.inc
+INCLUDE strings.inc
 INSTRUCTION_SET_MACRO
 
 

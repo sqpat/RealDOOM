@@ -16,6 +16,8 @@
 ;
 INCLUDE defs.inc
 INCLUDE states.inc
+INCLUDE sound.inc
+INCLUDE strings.inc
 INSTRUCTION_SET_MACRO_NO_MEDIUM
 
 

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/12/25 00:50:38
+Created on:       25/12/25 01:03:34
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -140,8 +140,8 @@ Module: sm_load.obj(sm_load.ASM)
 0000:03ef      S_ActuallyChangeMusic_
 Module: wi_stuff.obj(wi_stuff.ASM)
 0049:0fd5      WI_ENDMARKER_
-0049:08df*     WI_initStats_
 0049:03e8*     WI_slamBackground_
+0049:08df*     WI_initStats_
 0049:0d3c*     WI_updateNoState_
 0049:0e41*     WI_initVariables_
 0049:0752*     WI_drawPercent_
@@ -154,8 +154,8 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 0049:03be*     WI_GetPatchESBX_
 0049:0860*     WI_drawShowNextLoc_
 0049:03ab*     WI_GetPatch_
-0049:0fa9*     WI_StartSound_
 0049:082e*     WI_updateShowNextLoc_
+0049:0fa9*     WI_StartSound_
 0049:0bc7*     WI_loadData_
 0049:0641*     WI_initAnimatedBack_
 0049:062d*     WI_initShowNextLoc_
@@ -286,8 +286,8 @@ Module: sm_opl2.obj(sm_opl2.ASM)
 0460:0f0b*     OPLinitDriver_OPL2_
 0460:0e9f*     OPLstopMusic_OPL2_
 0460:0cd2*     OPLpitchWheel_OPL2_
-0460:0ec0*     OPLchangeSystemVolume_OPL2_
 0460:0929*     OPLresumeMusic_OPL2_
+0460:0ec0*     OPLchangeSystemVolume_OPL2_
 0460:089d*     OPL2detectHardware_OPL2_
 0460:0e80*     OPLplayMusic_OPL2_
 0460:0000      SM_OPL2_STARTMARKER_
@@ -302,8 +302,8 @@ Module: sm_opl3.obj(sm_opl3.ASM)
 0553:0feb*     OPLinitDriver_OPL3_
 0553:0f80*     OPLstopMusic_OPL3_
 0553:0dad*     OPLpitchWheel_OPL3_
-0553:0fa1*     OPLchangeSystemVolume_OPL3_
 0553:0a04*     OPLresumeMusic_OPL3_
+0553:0fa1*     OPLchangeSystemVolume_OPL3_
 0553:0f61*     OPLplayMusic_OPL3_
 0553:09b6*     OPL3detectHardware_OPL3_
 0553:000c      SM_OPL3_STARTMARKER_
@@ -371,9 +371,9 @@ Module: r_span16.obj(r_span16.ASM)
 1508:41b3      R_DrawPlanes16_
 Module: r_span0.obj(r_span0.ASM)
 1508:4730*     R_DrawSpan0_
+1508:4cd2      R_WriteBackViewConstantsSpan0_
 1508:4d6e      R_SPAN0_ENDMARKER_
 1508:4875      R_DrawPlanes0_
-1508:4cd2      R_WriteBackViewConstantsSpan0_
 1508:4730      R_SPAN0_STARTMARKER_
 Module: r_spanfl.obj(r_spanfl.ASM)
 1508:5303      R_SPANFL_ENDMARKER_
@@ -435,8 +435,8 @@ Module: p_map.obj(p_map.ASM)
 21a7:18b9      P_CheckPosition_
 21a7:2a33      FixedMul1632_MapLocal_
 21a7:2a2a      FastMul16u32u_MapLocal_
-21a7:256e      P_LineAttack_
 21a7:27a9      P_RadiusAttack_
+21a7:256e      P_LineAttack_
 21a7:0a54      P_LineOpening_
 21a7:2a73      P_SetThingPositionFar_
 21a7:0a88      P_UnsetThingPosition_
@@ -478,13 +478,13 @@ Module: p_pspr.obj(p_pspr.ASM)
 21a7:4059*     A_Light0_
 21a7:3d60*     A_Saw_
 21a7:406b*     A_OpenShotgun2_
+21a7:3f45*     A_FirePistol_
 21a7:3a41*     P_CheckAmmo_
 21a7:3c25*     A_ReFire_
 21a7:408b      A_BFGSpray_
-21a7:3f45*     A_FirePistol_
 21a7:3e58*     A_FireMissile_
-21a7:4128      P_MovePsprites_
 21a7:3e63*     A_FireBFG_
+21a7:4128      P_MovePsprites_
 21a7:3e6f*     A_FirePlasma_
 21a7:4208*     P_PSPR_ENDMARKER_
 21a7:3ef5*     P_GunShot_
@@ -515,6 +515,7 @@ Module: p_enemy.obj(p_enemy.ASM)
 21a7:4c84*     A_SargAttack_
 21a7:52df*     GetVileMomz_
 21a7:4f0f*     A_SkelWhoosh_
+21a7:5538*     A_PainDie_
 21a7:525a*     A_VileTarget_
 21a7:46eb*     P_LookForPlayers_
 21a7:5959*     A_BrainSpit_
@@ -522,21 +523,20 @@ Module: p_enemy.obj(p_enemy.ASM)
 21a7:58e3*     A_BrainExplode_
 21a7:51b7*     A_VileStart_
 21a7:51c4*     A_FireCrackle_
-21a7:5538*     A_PainDie_
-21a7:503a*     A_VileChase_
 21a7:4f20*     A_SkelFist_
+21a7:503a*     A_VileChase_
 21a7:5564*     A_PainShootSkull_
 21a7:5658*     A_Scream_
+21a7:4225*     P_RecursiveSound_
 21a7:42e8*     P_CheckMeleeRange_
 21a7:57ee*     A_Hoof_
-21a7:4225*     P_RecursiveSound_
 21a7:5459*     A_FatAttack2_
+21a7:53da*     A_FatAttack3_
+21a7:59fb*     A_SpawnSound_
 21a7:4d4b*     A_SkelMissile_
 21a7:543e*     A_FatAttack1_
-21a7:47ee*     A_Look_
-21a7:53da*     A_FatAttack3_
 21a7:5800*     A_BabyMetal_
-21a7:59fb*     A_SpawnSound_
+21a7:47ee*     A_Look_
 21a7:4d0e*     A_BruisAttack_
 21a7:56a3*     A_XScream_
 21a7:5b6d      P_SetMobjState_
@@ -556,12 +556,12 @@ Module: p_enemy.obj(p_enemy.ASM)
 21a7:4570*     P_NewChaseDir_
 21a7:51bd*     A_StartFire_
 21a7:4d97*     A_Tracer_
+21a7:4b9c*     A_CPosRefire_
 21a7:5474*     A_SkullAttack_
 21a7:4208*     P_ENEMY_STARTMARKER_
-21a7:4b9c*     A_CPosRefire_
 21a7:4c40*     A_TroopAttack_
-21a7:5809*     A_BrainAwake_
 21a7:5641*     A_PainAttack_
+21a7:5809*     A_BrainAwake_
 21a7:5aea*     A_PlayerScream_
 21a7:4799*     A_KeenDie_
 21a7:4cf5*     A_CyberAttack_
@@ -630,8 +630,8 @@ Module: p_plats.obj(p_plats.ASM)
 Module: p_spec.obj(p_spec.ASM)
 21a7:7b66      P_UpdateSpecials_
 21a7:7574      P_FindNextHighestFloor_
-21a7:7500      P_FindHighestOrLowestFloorSurrounding_
 21a7:7a9e      P_PlayerInSpecialSector_
+21a7:7500      P_FindHighestOrLowestFloorSurrounding_
 21a7:7e8b*     P_SPEC_ENDMARKER_
 21a7:74aa*     P_SPEC_STARTMARKER_
 21a7:7c97      EV_DoDonut_
@@ -682,9 +682,9 @@ Module: p_info.obj(p_info.ASM)
 21a7:8bff      GetMeleeState_
 21a7:8cf9      GetDamage_
 21a7:8d39*     P_INFO_ENDMARKER_
-21a7:89f4*     P_INFO_STARTMARKER_
 21a7:8c44      GetMobjMass_
 21a7:8d25      GetSpawnHealth_
+21a7:89f4*     P_INFO_STARTMARKER_
 Module: am_map.obj(am_map.ASM)
 21a7:90a0*     AM_clearMarks_
 21a7:8f79*     AM_findMinMaxBoundaries_
@@ -787,8 +787,8 @@ Module: s_sbinit.obj(s_sbinit.ASM)
 2b80:241e*     S_SBINIT_STARTMARKER_
 2b80:2486*     SB_ReadMixer_
 2b80:262d*     SB_GetDSPVersion_
-2b80:24c4*     SB_DSP2xx_BeginPlayback_
 2b80:24bd      SB_DSP1xx_BeginPlayback_
+2b80:24c4*     SB_DSP2xx_BeginPlayback_
 2b80:24d9*     SB_DSP4xx_BeginPlayback_
 2b80:2485      _SB_CardActive
 2b80:25d0*     SB_SetupPlayback_
@@ -918,8 +918,8 @@ Module: d_dmx.obj(d_dmx.ASM)
 2b80:5591*     TS_Startup_
 2b80:54be*     D_DMX_STARTMARKER_
 2b80:54e6*     TS_ServiceScheduleIntEnabled_
-2b80:55d5      TS_Dispatch_
 2b80:54c1      _OldInt8
+2b80:55d5      TS_Dispatch_
 2b80:55c3      TS_ScheduleMainTask_
 2b80:55ec*     D_DMX_ENDMARKER_
 Module: d_int.obj(d_int.ASM)
@@ -971,9 +971,9 @@ Module: main.obj(main.ASM)
 2b80:5d2f      _forwardmove
 2b80:6e73      I_ShutdownTimer_
 2b80:6a36      I_SetPalette_
-2b80:66c3      M_LoadDefaults_
 2b80:6a89*     I_UpdateBox_
 2b80:6e66      locallib_dos_setvect_old_
+2b80:66c3      M_LoadDefaults_
 2b80:6d98*     locallib_printstringnear_
 2b80:7270*     D_DoomLoop_
 2b80:5d21*     D_MAIN_STARTMARKER_
@@ -995,8 +995,8 @@ Module: main.obj(main.ASM)
 2b80:6da8      DEBUG_PRINT_NOARG_CS_
 2b80:6e5d      locallib_dos_setvect_
 2b80:6c09      locallib_strcmp_
-2b80:6d03*     locallib_printdecimal_
 2b80:6e53      locallib_dos_getvect_
+2b80:6d03*     locallib_printdecimal_
 2b80:5f9a      _gamekeydown
 2b80:6c5c      copystr8_
 2b80:6898      M_SaveDefaults_
@@ -1116,8 +1116,8 @@ Module: v_video.obj(v_video.ASM)
 2b80:a647      R_FillBackScreen_
 2b80:a810      V_CopyRect_
 2b80:a4ce      V_DrawPatchDirect_
-2b80:a7f6      V_MarkRect_
 2b80:a30c      V_DrawPatch_
+2b80:a7f6      V_MarkRect_
 2b80:a63d      R_FillBackScreen_ForceBufferRedraw_
 2b80:a400*     V_DrawPatch5000Screen0_
 Module: z_zone.obj(z_zone.ASM)
