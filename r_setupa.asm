@@ -45,18 +45,20 @@ PROC    R_SETUP_STARTMARKER_ NEAR
 PUBLIC  R_SETUP_STARTMARKER_
 ENDP
 
-use_min_1:
-test    ax, ax
-jz      dont_use_min_1
+use_min:
+test    dx, dx
+jz      dont_use_min
+use_min_skip_check:
 mov     ax, -1
-jmp     set_value_and_continue_loop_1
+jmp     set_value_and_continue_loop
 
-use_max_1:
-test    ax, ax
-jz      dont_use_max_1
-_SELFMODIFY_set_viewwidthplusone_1:
+use_max:
+test    dx, dx
+jz      dont_use_max
+use_max_skip_check:
+_SELFMODIFY_set_viewwidthplusone:
 mov     ax, 01000h
-jmp     set_value_and_continue_loop_1
+jmp     set_value_and_continue_loop
 
 
 PROC    R_InitAngles_ NEAR
@@ -68,49 +70,64 @@ PUSHA_NO_AX_MACRO
 ;	focallength = FixedDivWholeA(centerx, FIXED_FINE_TAN);
 mov     ax, word ptr ds:[_viewwidth]
 inc     ax
-mov     word ptr cs:[_SELFMODIFY_compare_viewwidthplusone_1+1], ax
-mov     word ptr cs:[_SELFMODIFY_set_viewwidthplusone_1+1], ax
-mov     word ptr cs:[_SELFMODIFY_compare_viewwidthplusone_2+1], ax
-mov     word ptr cs:[_SELFMODIFY_set_viewwidthplusone_2+1], ax
+mov     word ptr cs:[_SELFMODIFY_compare_viewwidthplusone+1], ax
+mov     word ptr cs:[_SELFMODIFY_set_viewwidthplusone+1], ax
 mov     ax, word ptr ds:[_centerx]
-mov     word ptr cs:[_SELFMODIFY_add_center_x_1+1], ax
-mov     word ptr cs:[_SELFMODIFY_add_center_x_2+1], ax
+mov     word ptr cs:[_SELFMODIFY_add_center_x+1], ax
 mov     bx, FIXED_FINE_TAN AND 0FFFFh
 mov     cx, FIXED_FINE_TAN SHR 16
 call    FixedDivWholeA_
-xchg    ax, si
-mov     di, dx   ; di:si holds focallength
-xor     bp, bp  ; bp = i for loop
+mov     word ptr cs:[_SELFMODIFY_set_focallength_hi + 1], dx
+mov     word ptr cs:[_SELFMODIFY_set_focallength_low + 1], ax
+
+xor     si, si ; loop read in
+mov     di, si ; loop write out
+xor     bp, bp  ; bp = backwards toggle for si reads...
 
 
-; actually we break this into 2 separate loops. one for i < 2048, one for larger due to finetangentinner logic
+; we break this into 2 loop variants that are self modified in between, due to finetangentinner logic
 ;	for (i = 0; i < FINEANGLES / 2; i++) {
 
 
-;todo use si, lodsw. not bp.
 
-loop_next_fineangle_1:
+
+loop_next_fineangle:
 
 mov     ax, FINETANGENTINNER_SEGMENT
 mov     ds, ax
-les     ax, dword ptr ds:[bp]  ; finetan_i.w = finetangent(i);
-mov     dx, es
-cmp     dx, 2
-jge     use_min_1
+lodsw
+xchg    ax, dx
+lodsw
+
+; becomes  f7 d8 f7 da 83 d8 00 for 2nd loop
+;  neg  ax -> neg  dx -> sbb ax, 0
+_SELFMODIFY_toggle_32_bit_neg:
+jmp   SHORT  skip_neg
+_SELFMODIFY_toggle_32_bit_neg_jmp_AFTER:
+neg     dx
+sbb     ax, 0
+_SELFMODIFY_toggle_32_bit_neg_jmp_TARGET:
+
+skip_neg:
+cmp     ax, 2
+jge     use_min
 ; bad news. 131072 and -131072 do exist in finetangent table. we must check ax.
-dont_use_min_1:
-cmp     dx, -2
-jle     use_max_1
-dont_use_max_1:
-mov     cx, di
-mov     bx, si
+dont_use_min:
+cmp     ax, -2
+jle     use_max
+dont_use_max:
+xchg    ax, dx
+_SELFMODIFY_set_focallength_hi:
+mov     cx, 01000h
+_SELFMODIFY_set_focallength_low:
+mov     bx, 01000h
 ; this undoes DS! todo improve?
 call    FixedMul_     ; t.w = FixedMul(finetan_i.w, focallength);
 
 ;			t.w = (temp.w - t.w + 0xFFFFu);
 xchg   ax, dx
 neg    ax  ; neg sbb cancels out FFFFu add
-_SELFMODIFY_add_center_x_1:
+_SELFMODIFY_add_center_x:
 add     ax, 01000h
 
 ;   if (t.h.intbits < -1){
@@ -121,88 +138,38 @@ add     ax, 01000h
 
 
 cmp     ax, -1
-jl      use_min_1
-_SELFMODIFY_compare_viewwidthplusone_1:
+jl      use_min_skip_check
+_SELFMODIFY_compare_viewwidthplusone:
 cmp     ax, 01000h
-jg      use_max_1
+jg      use_max_skip_check
 
  
 
-set_value_and_continue_loop_1:
+set_value_and_continue_loop:
 
 ; viewangletox[i] = t.h.intbits;
-shr     bp, 1
 mov     dx, VIEWANGLETOX_SEGMENT
 mov     es, dx
-mov     word ptr es:[bp], ax
-shl     bp, 1
+stosw
+add     si, bp
+cmp     si, (FINEANGLES / 4) * 4  ; 8192
+jb      loop_next_fineangle   ; for the 2nd loop, we end when this loops over to ff.
+;test    si, si  ; can this be skipped with jnc?
+jnc      cleanup_and_exit_function
 
-add     bp, 4
-cmp     bp, (FINEANGLES / 2) * 2
-jb      loop_next_fineangle_1
+; SET UP SECOND LOOP!
 
+mov     word ptr cs:[_SELFMODIFY_toggle_32_bit_neg], 0D8F7h   ; neg ax
+mov     bp, -8   ; we're now iterating backwards thru the finetan table. neg 8 after each plus 4
+sub     si, 4    ; undo last read..
+jmp     loop_next_fineangle
 
+cleanup_and_exit_function:
 
-; 2nd loop. now loop down to zero.
-
-; todo: rather than looping and checking finetan which is static
-;  use fixed i start points
-
-loop_next_fineangle_2:
-mov     bx, bp
-neg     bx
-mov     ax, FINETANGENTINNER_SEGMENT
-mov     ds, ax
-les     ax, dword ptr ds:[bx + 4095 SHL 2]  ; finetan_i.w = finetangentinner[(-x+4095)]
-mov     dx, es
-neg     dx         ; need the negative...
-neg     ax
-sbb     dx, 0
-cmp     dx, 2
-jge     use_min_2
-; bad news. 131072 and -131072 do exist in finetangent table. we must check ax.
-dont_use_min_2:
-cmp     dx, -2
-jle     use_max_2
-dont_use_max_2:
-mov     cx, di
-mov     bx, si
-; this undoes DS! todo improve?
-call    FixedMul_     ; t.w = FixedMul(finetan_i.w, focallength);
-
-;			t.w = (temp.w - t.w + 0xFFFFu);
-xchg   ax, dx
-neg    ax  ; neg sbb cancels out FFFFu add
-_SELFMODIFY_add_center_x_2:
-add     ax, 01000h
-
-;   if (t.h.intbits < -1){
-;       t.h.intbits = -1;
-;   } else if (t.h.intbits > viewwidth + 1){
-;       t.h.intbits = viewwidth + 1;
-;   }
+; restore jmp
+mov   word ptr cs:[_SELFMODIFY_toggle_32_bit_neg], ((_SELFMODIFY_toggle_32_bit_neg_jmp_TARGET - _SELFMODIFY_toggle_32_bit_neg_jmp_AFTER) SHL 8) + 0EBh
 
 
-cmp     ax, -1
-jl      use_min_2
-_SELFMODIFY_compare_viewwidthplusone_2:
-cmp     ax, 01000h
-jg      use_max_2
-
- 
-
-set_value_and_continue_loop_2:
-
-; viewangletox[i] = t.h.intbits;
-shr     bp, 1
-mov     dx, VIEWANGLETOX_SEGMENT
-mov     es, dx
-mov     word ptr es:[bp], ax
-shl     bp, 1
-
-add     bp, 4
-cmp     bp, (FINEANGLES / 2) * 4
-jb      loop_next_fineangle_2
 
 push    ss
 pop     ds
@@ -214,18 +181,6 @@ POPA_NO_AX_MACRO
 ret
 ENDP
 
-use_min_2:
-test    ax, ax
-jz      dont_use_min_2
-mov     ax, -1
-jmp     set_value_and_continue_loop_2
-
-use_max_2:
-test    ax, ax
-jz      dont_use_max_2
-_SELFMODIFY_set_viewwidthplusone_2:
-mov     ax, 01000h
-jmp     set_value_and_continue_loop_2
 
 
 PROC    R_ExecuteSetViewSize_ NEAR
@@ -378,7 +333,7 @@ mov     word ptr ds:[_spanfunc_outp + 2], 0804h ; technically this never has to 
 cmp   byte ptr ds:[_detailshift], 1
 jb    detail_0
 ja    detail_2
-detail_1:
+detail  :
 mov   ax, 3 + (12 SHL 8)
 jmp   done_checking_detail
 detail_2:
