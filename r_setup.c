@@ -180,7 +180,6 @@ void __near R_InitTextureMapping(void) {
 		temp.h.intbits = (viewwidth << detailshift.b.bytelow) >> 1;
 		yslope[i] = FixedDivWholeA(temp.h.intbits, dy);
 	}
-	*/
 
 	// 320 viewwidth
 
@@ -190,7 +189,9 @@ void __near R_InitTextureMapping(void) {
 		cosadj = labs(finecosine[an]);
 		distscale[i] = FixedDivWholeA(1, cosadj);
 	}
+
 	Z_QuickMapRender();
+	*/
 
 	// Calculate the light levels to use
 	//  for each level / scale combination.

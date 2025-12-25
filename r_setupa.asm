@@ -355,6 +355,53 @@ cmp   bp, si
 jl    loop_next_yslope
 
 
+;	for (i = 0; i < viewwidth; i++) {
+;		an = xtoviewangle[i];
+;		cosadj = labs(finecosine[an]);
+;		distscale[i] = FixedDivWholeA(1, cosadj);
+;	}
+
+
+xor   si, si
+mov   di, si
+mov   bp, word ptr ds:[_viewwidth]
+shl   bp, 1  ; word compare with si index as i
+
+loop_next_distscale_calc:
+mov   ax, XTOVIEWANGLE_SEGMENT
+mov   ds, ax
+
+lodsw
+xchg  ax, bx
+; dword lookup
+SHIFT_MACRO shl bx 2
+mov   ax, FINECOSINE_SEGMENT
+mov   ds, ax
+les   bx, dword ptr ds:[bx]
+mov   cx, es
+test  cx, cx
+
+; cosine is 17 bit in a 32 bit storage... we can probably figure out a way to do this without labs.
+
+jns   dont_do_labs
+neg   cx
+neg   bx
+sbb   bx, 0
+dont_do_labs:
+mov   ax, 1
+call  FixedDivWholeA_
+
+mov   bx, DISTSCALE_SEGMENT
+mov   es, bx
+stosw
+xchg  ax, dx
+stosw
+cmp   si, bp
+jl    loop_next_distscale_calc
+
+
+call  Z_QuickMapRender_
+
 
 
 
