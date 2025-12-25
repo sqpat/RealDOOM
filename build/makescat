@@ -63,7 +63,6 @@ GLOBOBJS = &
  f_file.obj &
  w_wad.obj &
  z_init.obj &
- z_inita.obj &
  z_zone.obj &
  z_scat.obj &
  st_init.obj &

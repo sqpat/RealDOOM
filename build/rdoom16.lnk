@@ -21,7 +21,6 @@ file r_init.obj
 file w_init.obj
 file i_init.obj
 file z_init.obj
-file z_inita.obj
 file s_sbinit.obj
 file p_init.obj
 
