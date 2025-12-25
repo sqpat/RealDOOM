@@ -124,7 +124,6 @@ file main.obj
 
 file g_setup.obj
 file r_setup.obj
-file r_setupa.obj
 file st_setup.obj
 file hu_setup.obj
 
