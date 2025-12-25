@@ -62,6 +62,7 @@
 //
 // R_InitTextureMapping
 //
+void __near R_InitAngles(void);	
 void __near R_InitTextureMapping(void) {
 	int16_t			x;
 	fixed_t_union	t;
@@ -83,9 +84,12 @@ void __near R_InitTextureMapping(void) {
 	//
 	// Calc focallength
 	//  so FIELDOFVIEW angles covers SCREENWIDTH.
+	
+	R_InitAngles();
+	
 	focallength = FixedDivWholeA(centerx, FIXED_FINE_TAN);
 
-
+/*
 	for (i = 0; i < FINEANGLES / 2; i++) {
 		finetan_i.w = finetangent(i);
 		if (finetan_i.w > FRACUNIT * 2){
@@ -108,6 +112,7 @@ void __near R_InitTextureMapping(void) {
 		}
 		viewangletox[i] = t.h.intbits;
 	}
+	*/
 
 	// Scan viewangletox[] to generate xtoviewangle[]:
 	//  xtoviewangle will give the smallest view angle

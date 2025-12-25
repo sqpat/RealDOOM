@@ -23,8 +23,10 @@ EXTRN  Z_QuickMapRender_:FAR
 EXTRN  Z_QuickMapRenderPlanes_:FAR
 EXTRN  Z_QuickMapUndoFlatCache_:FAR
 EXTRN  R_InitTextureMapping_:NEAR
+EXTRN  FixedDivWholeA_:FAR
+EXTRN  FixedMul_:FAR
 
-
+ 
 .DATA
 
 EXTRN _R_WriteBackViewConstants:DWORD
@@ -34,11 +36,196 @@ EXTRN _R_WriteBackViewConstantsMaskedCall:DWORD
 
 .CODE
 
+FIXED_FINE_TAN = 010032H
+
+;  #define finetangent(x) (x < 2048 ? finetangentinner[x] : -(finetangentinner[(-x+4095)]) )
 
 
 PROC    R_SETUP_STARTMARKER_ NEAR
 PUBLIC  R_SETUP_STARTMARKER_
 ENDP
+
+use_min_1:
+test    ax, ax
+jz      dont_use_min_1
+mov     ax, -1
+jmp     set_value_and_continue_loop_1
+
+use_max_1:
+test    ax, ax
+jz      dont_use_max_1
+_SELFMODIFY_set_viewwidthplusone_1:
+mov     ax, 01000h
+jmp     set_value_and_continue_loop_1
+
+
+PROC    R_InitAngles_ NEAR
+PUBLIC  R_InitAngles_
+
+PUSHA_NO_AX_MACRO
+
+
+;	focallength = FixedDivWholeA(centerx, FIXED_FINE_TAN);
+mov     ax, word ptr ds:[_viewwidth]
+inc     ax
+mov     word ptr cs:[_SELFMODIFY_compare_viewwidthplusone_1+1], ax
+mov     word ptr cs:[_SELFMODIFY_set_viewwidthplusone_1+1], ax
+mov     word ptr cs:[_SELFMODIFY_compare_viewwidthplusone_2+1], ax
+mov     word ptr cs:[_SELFMODIFY_set_viewwidthplusone_2+1], ax
+mov     ax, word ptr ds:[_centerx]
+mov     word ptr cs:[_SELFMODIFY_add_center_x_1+1], ax
+mov     word ptr cs:[_SELFMODIFY_add_center_x_2+1], ax
+mov     bx, FIXED_FINE_TAN AND 0FFFFh
+mov     cx, FIXED_FINE_TAN SHR 16
+call    FixedDivWholeA_
+xchg    ax, si
+mov     di, dx   ; di:si holds focallength
+xor     bp, bp  ; bp = i for loop
+
+
+; actually we break this into 2 separate loops. one for i < 2048, one for larger due to finetangentinner logic
+;	for (i = 0; i < FINEANGLES / 2; i++) {
+
+
+;todo use si, lodsw. not bp.
+
+loop_next_fineangle_1:
+
+mov     ax, FINETANGENTINNER_SEGMENT
+mov     ds, ax
+les     ax, dword ptr ds:[bp]  ; finetan_i.w = finetangent(i);
+mov     dx, es
+cmp     dx, 2
+jge     use_min_1
+; bad news. 131072 and -131072 do exist in finetangent table. we must check ax.
+dont_use_min_1:
+cmp     dx, -2
+jle     use_max_1
+dont_use_max_1:
+mov     cx, di
+mov     bx, si
+; this undoes DS! todo improve?
+call    FixedMul_     ; t.w = FixedMul(finetan_i.w, focallength);
+
+;			t.w = (temp.w - t.w + 0xFFFFu);
+xchg   ax, dx
+neg    ax  ; neg sbb cancels out FFFFu add
+_SELFMODIFY_add_center_x_1:
+add     ax, 01000h
+
+;   if (t.h.intbits < -1){
+;       t.h.intbits = -1;
+;   } else if (t.h.intbits > viewwidth + 1){
+;       t.h.intbits = viewwidth + 1;
+;   }
+
+
+cmp     ax, -1
+jl      use_min_1
+_SELFMODIFY_compare_viewwidthplusone_1:
+cmp     ax, 01000h
+jg      use_max_1
+
+ 
+
+set_value_and_continue_loop_1:
+
+; viewangletox[i] = t.h.intbits;
+shr     bp, 1
+mov     dx, VIEWANGLETOX_SEGMENT
+mov     es, dx
+mov     word ptr es:[bp], ax
+shl     bp, 1
+
+add     bp, 4
+cmp     bp, (FINEANGLES / 2) * 2
+jb      loop_next_fineangle_1
+
+
+
+; 2nd loop. now loop down to zero.
+
+; todo: rather than looping and checking finetan which is static
+;  use fixed i start points
+
+loop_next_fineangle_2:
+mov     bx, bp
+neg     bx
+mov     ax, FINETANGENTINNER_SEGMENT
+mov     ds, ax
+les     ax, dword ptr ds:[bx + 4095 SHL 2]  ; finetan_i.w = finetangentinner[(-x+4095)]
+mov     dx, es
+neg     dx         ; need the negative...
+neg     ax
+sbb     dx, 0
+cmp     dx, 2
+jge     use_min_2
+; bad news. 131072 and -131072 do exist in finetangent table. we must check ax.
+dont_use_min_2:
+cmp     dx, -2
+jle     use_max_2
+dont_use_max_2:
+mov     cx, di
+mov     bx, si
+; this undoes DS! todo improve?
+call    FixedMul_     ; t.w = FixedMul(finetan_i.w, focallength);
+
+;			t.w = (temp.w - t.w + 0xFFFFu);
+xchg   ax, dx
+neg    ax  ; neg sbb cancels out FFFFu add
+_SELFMODIFY_add_center_x_2:
+add     ax, 01000h
+
+;   if (t.h.intbits < -1){
+;       t.h.intbits = -1;
+;   } else if (t.h.intbits > viewwidth + 1){
+;       t.h.intbits = viewwidth + 1;
+;   }
+
+
+cmp     ax, -1
+jl      use_min_2
+_SELFMODIFY_compare_viewwidthplusone_2:
+cmp     ax, 01000h
+jg      use_max_2
+
+ 
+
+set_value_and_continue_loop_2:
+
+; viewangletox[i] = t.h.intbits;
+shr     bp, 1
+mov     dx, VIEWANGLETOX_SEGMENT
+mov     es, dx
+mov     word ptr es:[bp], ax
+shl     bp, 1
+
+add     bp, 4
+cmp     bp, (FINEANGLES / 2) * 4
+jb      loop_next_fineangle_2
+
+push    ss
+pop     ds
+
+POPA_NO_AX_MACRO
+
+
+
+ret
+ENDP
+
+use_min_2:
+test    ax, ax
+jz      dont_use_min_2
+mov     ax, -1
+jmp     set_value_and_continue_loop_2
+
+use_max_2:
+test    ax, ax
+jz      dont_use_max_2
+_SELFMODIFY_set_viewwidthplusone_2:
+mov     ax, 01000h
+jmp     set_value_and_continue_loop_2
 
 
 PROC    R_ExecuteSetViewSize_ NEAR

@@ -1686,7 +1686,7 @@ ENDP
 
 
 
-PROC FixedDivWholeA_
+PROC FixedDivWholeA_  FAR
 PUBLIC FixedDivWholeA_
 
 
