@@ -286,14 +286,13 @@ calculate_spritescales:
 
 mov     dx, cx
 call    FastDiv32u16u_
-mov     word ptr ds:[_pspriteiscale+0], ax
+mov     word ptr ds:[_pspritescale+0], ax
 xor     ax, ax
-mov     word ptr ds:[_pspriteiscale+2], ax
 mov     dx, SCREENWIDTH
 mov     bx, cx
 call    FastDiv32u16u_
 mov     word ptr ds:[_pspriteiscale+0], ax
-mov     word ptr ds:[_pspriteiscale+2], 0  ; todo always 0?
+mov     word ptr ds:[_pspriteiscale+2], dx  ; todo always 0?
 
 done_calculating_spritescale:		
 ; cx still view width
@@ -470,9 +469,6 @@ jb    inner_lightscale_loop
 inc   bp
 cmp   bp, LIGHTLEVELS
 jb    outer_lightscale_loop
-
-
-
 
 
 

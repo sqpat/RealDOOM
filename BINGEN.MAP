@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/12/25 16:50:11
+Created on:       25/12/25 16:56:49
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -94,10 +94,10 @@ D_INT_TEXT             CODE           AUTO           2b80:55ec       0000014d
 MATH_TEXT              CODE           AUTO           2b80:573a       00000510
 MAIN_TEXT              CODE           AUTO           2b80:5c4a       00001692
 G_SETUP_TEXT           CODE           AUTO           2b80:72dc       0000020b
-R_SETUP_TEXT           CODE           AUTO           2b80:74e8       0000032e
-ST_SETUP_TEXT          CODE           AUTO           2b80:7816       00000125
-HU_SETUP_TEXT          CODE           AUTO           2b80:793c       00000246
-R_MAIN_TEXT            CODE           AUTO           2b80:7b82       000003db
+R_SETUP_TEXT           CODE           AUTO           2b80:74e8       00000329
+ST_SETUP_TEXT          CODE           AUTO           2b80:7812       00000125
+HU_SETUP_TEXT          CODE           AUTO           2b80:7938       00000246
+R_MAIN_TEXT            CODE           AUTO           2b80:7b7e       000003db
 p_setup_TEXT           CODE           AUTO           2b80:7f60       0000123c
 S_SBSFX_TEXT           CODE           AUTO           2b80:919c       00000d38
 F_FILE_TEXT            CODE           AUTO           2b80:9ed4       0000008d
@@ -1016,25 +1016,25 @@ Module: g_setup.obj(g_setup.ASM)
 2b80:7361      G_DoLoadLevel_
 Module: r_setup.obj(r_setup.ASM)
 2b80:74fa*     R_InitTextureMapping_
-2b80:7816*     R_SETUP_ENDMARKER_
-2b80:770d      R_ExecuteSetViewSize_
+2b80:7811*     R_SETUP_ENDMARKER_
+2b80:7708      R_ExecuteSetViewSize_
 2b80:74e8*     R_SETUP_STARTMARKER_
 Module: st_setup.obj(st_setup.ASM)
-2b80:793b*     ST_SETUP_ENDMARKER_
-2b80:78e0      ST_Start_
-2b80:7816*     ST_SETUP_STARTMARKER_
+2b80:7937*     ST_SETUP_ENDMARKER_
+2b80:78dc      ST_Start_
+2b80:7812*     ST_SETUP_STARTMARKER_
 Module: hu_setup.obj(hu_setup.ASM)
-2b80:7aa1      _w_title
-2b80:7af9      HU_Start_
-2b80:7b82*     HU_SETUP_ENDMARKER_
-2b80:793c*     HU_SETUP_STARTMARKER_
-2b80:793c      _w_message
+2b80:7a9d      _w_title
+2b80:7af5      HU_Start_
+2b80:7b7e*     HU_SETUP_ENDMARKER_
+2b80:7938*     HU_SETUP_STARTMARKER_
+2b80:7938      _w_message
 Module: r_main.obj(r_main.ASM)
-2b80:7ec2      R_VideoErase_
-2b80:7ea4      R_PointToAngle2_16_
-2b80:7eb3      R_SetViewSize_
-2b80:7e7f      R_PointToAngle2_
-2b80:7f01      R_DrawViewBorder_
+2b80:7ebe      R_VideoErase_
+2b80:7ea0      R_PointToAngle2_16_
+2b80:7eaf      R_SetViewSize_
+2b80:7e7b      R_PointToAngle2_
+2b80:7efd      R_DrawViewBorder_
 Module: p_setup.obj(C:\REALDOOM\p_setup.c)
 2b80:7f60      P_SetupLevel_
 2b80:80de+     R_LoadPatchColumnsColormap0_
@@ -1438,4 +1438,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003cab0 (248496.)
 Entry point address: 2b80:b49c
-Link time: 00:00.49
+Link time: 00:00.04
