@@ -62,8 +62,6 @@ EXTRN Z_QuickMapByTaskNum_:FAR
 
 EXTRN _R_RenderPlayerView:DWORD
 
-EXTRN _myargc:WORD
-EXTRN _myargv:BYTE
 
 
 

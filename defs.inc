@@ -710,6 +710,8 @@ _old_screen_viewport_width =	  	 _NULL_OFFSET + 00ACCh
 _old_screen_viewport_height =	  	 _NULL_OFFSET + 00ACEh
 _FixedDivWholeA_addr =   		     _NULL_OFFSET + 00AD0h
 _cht_CheckCheat_Far_addr = 	 	     _NULL_OFFSET + 00AD4h
+_myargc =				 	 	     _NULL_OFFSET + 00AD8h
+_myargv = 	 	     				 _NULL_OFFSET + 00ADAh
 
 _flatcache_nodes =				     _NULL_OFFSET + 00AE0h
 

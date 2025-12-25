@@ -73,8 +73,6 @@ EXTRN locallib_strcpy_:NEAR
 
 
 EXTRN _M_Init:DWORD
-EXTRN _myargc:WORD
-EXTRN _myargv:WORD
 ;EXTRN _noblit:BYTE
 EXTRN ___iob:WORD
 

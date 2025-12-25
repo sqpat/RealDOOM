@@ -475,8 +475,6 @@
 
 
 #define FixedMulTrig_addr 				  (*((uint32_t __near*)              (_NULL_OFFSET + 0x044C)))
-// #define G_DeferedInitNew_addr			  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0450)))
-
 #define d_skill                           (*(skill_t __near *)                (_NULL_OFFSET + 0x0450))
 #define d_episode                         (*(int8_t  __near *)                (_NULL_OFFSET + 0x0451))
 #define d_map                             (*(int8_t  __near *)                (_NULL_OFFSET + 0x0452))
@@ -783,6 +781,9 @@
 #define old_screen_viewport_height 		  (*((int16_t __near*)        		 (_NULL_OFFSET + 0x0ACE)))
 #define FixedDivWholeA_addr	  		      (*((uint32_t __near*)              (_NULL_OFFSET + 0x0AD0)))
 #define cht_CheckCheat_Far_addr	 	      (*((uint32_t __near*)              (_NULL_OFFSET + 0x0AD4)))
+#define myargc				 		      (*((int16_t __near*)        		 (_NULL_OFFSET + 0x0AD8)))
+#define myargv				 		      (*((int8_t __near**)        		 (_NULL_OFFSET + 0x0ADA)))
+
 
 // ad8, adc unused
 
@@ -946,8 +947,6 @@ extern boolean         precache;        // if true, load all graphics at start
 
 
 
-extern int16_t		myargc;
-extern int8_t**		myargv;
 
 
 

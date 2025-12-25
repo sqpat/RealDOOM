@@ -31,8 +31,6 @@ EXTRN locallib_strlwr_:NEAR
 
 .DATA
 
-EXTRN _myargc:WORD
-EXTRN _myargv:WORD
 
 .CODE
 
