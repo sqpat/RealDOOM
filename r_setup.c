@@ -87,9 +87,9 @@ void __near R_InitTextureMapping(void) {
 	
 	R_InitAngles();
 	
+/*
 	focallength = FixedDivWholeA(centerx, FIXED_FINE_TAN);
 
-/*
 	for (i = 0; i < FINEANGLES / 2; i++) {
 		finetan_i.w = finetangent(i);
 		if (finetan_i.w > FRACUNIT * 2){
@@ -191,7 +191,6 @@ void __near R_InitTextureMapping(void) {
 	}
 
 	Z_QuickMapRender();
-	*/
 
 	// Calculate the light levels to use
 	//  for each level / scale combination.
@@ -213,6 +212,8 @@ void __near R_InitTextureMapping(void) {
 			scalelight[i2*MAXLIGHTSCALE+j] =  level << 2;// * 256;
 		}
 	}
+	*/
+
 
 
 }

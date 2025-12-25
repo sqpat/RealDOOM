@@ -38,6 +38,7 @@ EXTRN _R_WriteBackViewConstantsMaskedCall:DWORD
 .CODE
 
 FIXED_FINE_TAN = 010032H
+NUMCOLORMAPS = 32
 
 ;  #define finetangent(x) (x < 2048 ? finetangentinner[x] : -(finetangentinner[(-x+4095)]) )
 
@@ -399,8 +400,79 @@ stosw
 cmp   si, bp
 jl    loop_next_distscale_calc
 
+push  ss
+pop   ds
 
 call  Z_QuickMapRender_
+
+
+;	// Calculate the light levels to use
+;	//  for each level / scale combination.
+;	for (i2 = 0; i2 < LIGHTLEVELS; i2++) {
+;		startmap = ((LIGHTLEVELS - 1 - i2) << 2);
+;		for (j = 0; j < MAXLIGHTSCALE; j++) {
+;			level = startmap - ((j * SCREENWIDTH / (viewwidth << detailshift.b.bytelow)) >> 1);
+;			if (level < 0) {
+;				level = 0;
+;			}
+;			if (level >= NUMCOLORMAPS) {
+;				level = NUMCOLORMAPS - 1;
+;			}
+;			// pre shift by 2 here, since its ultimately shifted by 2 for the colfunc lookup addr..
+;			scalelight[i2*MAXLIGHTSCALE+j] =  level << 2;// * 256;
+;		}
+;	}
+
+xor   di, di
+mov   ax, SCALELIGHT_SEGMENT
+mov   es, ax
+mov   ax, word ptr ds:[_viewwidth]
+mov   cl, byte ptr ds:[_detailshift]
+shl   ax, cl
+xchg  ax, cx   ; cx = viewwidth << detailshift.b.bytelow for division
+
+xor   bp, bp   ; i2
+
+outer_lightscale_loop:
+mov   ax, LIGHTLEVELS - 1
+xor   bx, bx
+sub   ax, bp
+SHIFT_MACRO shl ax 2
+xchg  ax, si    ; si = startmap
+; si = startmap
+; bx = j * SCREENWIDTH
+; cx = viewwidth << detailshift
+
+inner_lightscale_loop:
+
+mov   ax, bx
+cwd
+div   cx
+mov   dx, si
+shr   ax, 1
+sub   dx, ax  
+xchg  ax, dx
+js    use_level_0
+cmp   ax, NUMCOLORMAPS
+jge   use_max_colormaps
+jmp   set_value
+
+use_max_colormaps:
+mov   al, NUMCOLORMAPS - 1
+jmp   set_value
+use_level_0:
+xor   ax, ax
+set_value:
+SHIFT_MACRO sal ax 2
+stosb
+add   bx, SCREENWIDTH
+cmp   bx, (SCREENWIDTH * MAXLIGHTSCALE)  ; 0x3C00
+jb    inner_lightscale_loop
+inc   bp
+cmp   bp, LIGHTLEVELS
+jb    outer_lightscale_loop
+
+
 
 
 
