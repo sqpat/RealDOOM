@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/12/25 01:03:23
+Created on:       25/12/25 11:16:16
 Executable Image: codegen.exe
 creating a DOS executable
 
@@ -40,7 +40,7 @@ YIB                    DATA           DGROUP         08c9:000c       00000000
 YI                     DATA           DGROUP         08c9:000c       00000012
 YIE                    DATA           DGROUP         08ca:000e       00000000
 DATA                   DATA           DGROUP         08ca:000e       00000000
-_BSS                   BSS            DGROUP         08cb:0000       0000012b
+_BSS                   BSS            DGROUP         08cb:0000       00000127
 STACK                  STACK          DGROUP         08de:0000       00000c00
 
 
@@ -68,8 +68,6 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02d1:4bb8*     _precache
 02d1:5fa0*     _p_init_sprtemp
 02d1:5fa4*     _p_init_maxframe
-02d1:5fa6*     _myargc
-02d1:5fa8*     _myargv
 Module: codegen.obj(C:\REALDOOM\build\tools\codegen\codegen.c)
 0000:0000      main_
 02d1:4bba+     _CONSTANTS
@@ -89,7 +87,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(fclose.c)
 0000:0362      __doclose_
 0000:03f8      __shutdown_stream_
 0000:040c      fclose_
-02d1:5faa+     ___RmTmpFileFn
+02d1:5fa6+     ___RmTmpFileFn
 Module: C:\WATCOM2\lib286\dos\clibm.lib(printf.c)
 0000:042f      printf_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(cstart)
@@ -105,16 +103,16 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(cmodel.asm)
 0000:06fe      _big_code_
 0000:06fe*     CodeModelMismatch
 Module: C:\WATCOM2\lib286\dos\clibm.lib(argcv.c)
-02d1:5fae      __argc
-02d1:5fb0      __argv
-02d1:5fb2      ___argc
-02d1:5fb4      ___argv
+02d1:5faa      __argc
+02d1:5fac      __argv
+02d1:5fae      ___argc
+02d1:5fb0      ___argv
 Module: C:\WATCOM2\lib286\dos\clibm.lib(comtflag.c)
 0000:06fe*     __set_commode_
 02d1:5dd0      __commode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(errno.c)
 0000:0705      __get_errno_ptr_
-02d1:5fb6+     _errno
+02d1:5fb2+     _errno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(textmode.c)
 02d1:5dd2      __fmode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(tolower.c)
@@ -133,8 +131,8 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(allocfp.c)
 0000:0af1      __allocfp_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(iob.c)
 02d1:5dd4      ___iob
-02d1:5fb8      ___OpenStreams
-02d1:5fba      ___ClosedStreams
+02d1:5fb4      ___OpenStreams
+02d1:5fb6      ___ClosedStreams
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fprtf.c)
 0000:0b96      __fprtf_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(__lseek.c)
@@ -144,7 +142,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(_clse.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nfree.c)
 0000:0ca1      _nfree_
 0000:0ca1      free_
-02d1:5fbc+     ___MiniHeapFreeRover
+02d1:5fb8+     ___MiniHeapFreeRover
 Module: C:\WATCOM2\lib286\dos\clibm.lib(flush.c)
 0000:0d66      __flush_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(xmsg.c)
@@ -197,7 +195,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(dosret.c)
 0000:11ed*     __set_errno_dos_reterr_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(doserrno.c)
 0000:11f8      __get_doserrno_ptr_
-02d1:5fc0+     __doserrno
+02d1:5fbc+     __doserrno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(umaskval.c)
 02d1:5f58      ___umaskval
 Module: C:\WATCOM2\lib286\dos\clibm.lib(creatdos.c)
@@ -239,8 +237,8 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(enterdb.c)
 0000:2436      __EnterWVIDEO_
 02d1:5f60+     __WD_Present
 Module: C:\WATCOM2\lib286\dos\clibm.lib(___argc.c)
-02d1:5fc4      ____Argv
-02d1:5fc6      ____Argc
+02d1:5fc0      ____Argv
+02d1:5fc2      ____Argc
 Module: C:\WATCOM2\lib286\dos\clibm.lib(exit.c)
 0000:2452+     __null_int23_exit_
 0000:2453      exit_
@@ -253,7 +251,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(sgdef086)
 02d1:5f8c      __Start_YI
 02d1:5f9e      __End_YI
 Module: C:\WATCOM2\lib286\dos\clibm.lib(histsplt.c)
-02d1:5fc8      ___historical_splitparms
+02d1:5fc4      ___historical_splitparms
 Module: C:\WATCOM2\lib286\dos\clibm.lib(error086.asm)
 0000:2482      __doserror_
 0000:2490*     __doserror1_
@@ -291,7 +289,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(mbisdbcs.c)
 02d1:5f72      ___IsDBCS
 Module: C:\WATCOM2\lib286\dos\clibm.lib(mbislead.c)
 0000:2955*     _ismbblead_
-02d1:5fca      ___MBCSIsTable
+02d1:5fc6      ___MBCSIsTable
 Module: C:\WATCOM2\lib286\dos\clibm.lib(filedos.c)
 0000:296c*     _dos_close_
 0000:297a      _dos_commit_
@@ -338,4 +336,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  99e0 (39392.)
 Entry point address: 0000:0446
-Link time: 00:00.10
+Link time: 00:00.65
