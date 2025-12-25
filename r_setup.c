@@ -112,7 +112,6 @@ void __near R_InitTextureMapping(void) {
 		}
 		viewangletox[i] = t.h.intbits;
 	}
-	*/
 
 	// Scan viewangletox[] to generate xtoviewangle[]:
 	//  xtoviewangle will give the smallest view angle
@@ -135,9 +134,11 @@ void __near R_InitTextureMapping(void) {
 		}
 	}
 
+
 	clipangle = xtoviewangle[0] << 3;
 	fieldofview = clipangle << 1;
 
+	*/
 
 	// psprite scales
 	if (viewwidth == SCREENWIDTH) {

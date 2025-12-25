@@ -69,9 +69,11 @@ PUSHA_NO_AX_MACRO
 
 ;	focallength = FixedDivWholeA(centerx, FIXED_FINE_TAN);
 mov     ax, word ptr ds:[_viewwidth]
+mov     word ptr cs:[_SELFMODIFY_set_viewwidth+3], ax
 inc     ax
 mov     word ptr cs:[_SELFMODIFY_compare_viewwidthplusone+1], ax
 mov     word ptr cs:[_SELFMODIFY_set_viewwidthplusone+1], ax
+mov     word ptr cs:[_SELFMODIFY_check_viewwidth_plus_1+1], ax
 mov     ax, word ptr ds:[_centerx]
 mov     word ptr cs:[_SELFMODIFY_add_center_x+1], ax
 mov     bx, FIXED_FINE_TAN AND 0FFFFh
@@ -171,14 +173,108 @@ mov   word ptr cs:[_SELFMODIFY_toggle_32_bit_neg], ((_SELFMODIFY_toggle_32_bit_n
 
 
 
+
+
+;	for (x = 0; x <= viewwidth; x++) {
+;		i = 0;
+;		while (viewangletox[i] > x){
+;			i++;
+;		}
+;		xtoviewangle[x] = MOD_FINE_ANGLE((i)-FINE_ANG90);
+;	}
+
+xor   di, di
+mov   ax, XTOVIEWANGLE_SEGMENT
+mov   es, ax
+mov   ax, VIEWANGLETOX_SEGMENT
+mov   ds, ax
+mov   dx, FINEMASK
+mov   cx, word ptr ss:[_viewwidth]
+mov   bx, FINE_ANG90
+
+loop_next_x_to_viewwidth:
+xor   ax, ax
+xor   si, si
+
+repeat_scan:
+lodsw
+cmp   ax, di
+jg    repeat_scan
+
+xchg  ax, si
+shr   ax, 1  ; undo word scan. ax = i 
+dec   ax     ; undo last read
+sub   ax, bx  ; - FINE_ANG90
+and   ax, dx  ; MOD_FINE_ANGLE
+shl   di, 1   ; for word write
+stosw
+shr   di, 1   ; undo word write
+
+loop  loop_next_x_to_viewwidth
+
+
+;	// Take out the fencepost cases from viewangletox.
+;	for (i = 0; i < FINEANGLES / 2; i++) {
+;
+;		if (viewangletox[i] == -1){
+;			viewangletox[i] = 0;
+;		} else if (viewangletox[i] == viewwidth + 1){
+;			viewangletox[i] = viewwidth;
+;		}
+;	}
+
+xor   si, si
+mov   cx, FINEANGLES / 2
+
+loop_check_next_for_fenceposts:
+lodsw
+cmp    ax, -1
+je     set_value_to_min
+_SELFMODIFY_check_viewwidth_plus_1:
+cmp    ax, 01000h
+je     set_value_to_max
+
+continue_fencepost_checks:
+loop   loop_check_next_for_fenceposts
+
+;	clipangle = xtoviewangle[0] << 3;
+;	fieldofview = clipangle << 1;
+
+mov     ax, word ptr es:[0]   ; still xtoviewangle segment
+SHIFT_MACRO shl ax 3
+
 push    ss
 pop     ds
+
+mov     word ptr ds:[_clipangle], ax
+shl     ax, 1
+mov     word ptr ds:[_fieldofview], ax
+
+
 
 POPA_NO_AX_MACRO
 
 
 
 ret
+
+
+set_value_to_min:
+mov    word ptr ds:[si - 2], 0
+jmp    continue_fencepost_checks
+set_value_to_max:
+_SELFMODIFY_set_viewwidth:
+mov    word ptr ds:[si - 2], 01000h
+jmp    continue_fencepost_checks
+
+
+
+
+
+
+
+
+
 ENDP
 
 
