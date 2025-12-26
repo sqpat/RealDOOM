@@ -633,9 +633,9 @@ _key_speed =						 _NULL_OFFSET + 007D9h
 _mousebfire =						 _NULL_OFFSET + 007DAh
 _mousebstrafe = 					 _NULL_OFFSET + 007DBh
 _mousebforward = 					 _NULL_OFFSET + 007DCh
+_precache = 						 _NULL_OFFSET + 007DDh
 
-
-; 7dd to 7df unused
+; 7de to 7df unused
 _screen_oldloc =					 _NULL_OFFSET + 007E0h
 _old_screen_botleft_x =				 _NULL_OFFSET + 007E4h
 _old_screen_botleft_y =				 _NULL_OFFSET + 007E6h

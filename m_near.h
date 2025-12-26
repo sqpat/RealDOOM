@@ -707,8 +707,9 @@
 #define mousebstrafe       				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x07DB)))
 #define mousebforward      				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x07DC)))
 
+#define precache        				  (*((boolean __near*)               (_NULL_OFFSET + 0x07DD)))
 
-// 7DD to 7DF empty
+// 7DE to 7DF empty
 #define screen_oldloc					  (*((mpoint_t __near*)              (_NULL_OFFSET + 0x07E0)))
 #define old_screen_botleft_x			  (*((int16_t __near*)               (_NULL_OFFSET + 0x07E4)))
 #define old_screen_botleft_y			  (*((int16_t __near*)               (_NULL_OFFSET + 0x07E6)))
@@ -934,8 +935,6 @@ extern void (__far* M_Init)();
 
  
 
-extern boolean         	  noblit;                 // for comparative timing purposes 
-extern boolean         precache;        // if true, load all graphics at start 
  
   
  

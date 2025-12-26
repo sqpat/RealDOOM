@@ -35,7 +35,6 @@ EXTRN G_InitNew_:NEAR
 
 .DATA
 
-EXTRN _precache:BYTE
 
 
 .CODE
