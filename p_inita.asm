@@ -38,14 +38,12 @@ EXTRN R_TextureNumForName_:NEAR
 EXTRN R_CheckTextureNumForName_:NEAR
 EXTRN R_FlatNumForName_:NEAR
 EXTRN W_CheckNumForName_:NEAR
-EXTRN R_InstallSpriteLump_:NEAR
 EXTRN W_GetNumForName_:FAR
 EXTRN Z_QuickMapRender_9000To6000_:NEAR
  
 .DATA
 
-EXTRN _p_init_maxframe:WORD
-EXTRN _p_init_sprtemp:DWORD
+
 .CODE
 
 EXTRN  _doomdata_bin_string:NEAR
@@ -59,6 +57,10 @@ NUMSWITCHDEFS = 41
 BAD_TEXTURE = 0FFFFh
 NUMANIMDEFS = 23
 NUMSSPRITEDEFS = 29
+
+_p_init_maxframe:
+db  0FFh
+
 
 PROC    P_InitSwitchList_ NEAR
 PUBLIC  P_InitSwitchList_
@@ -287,6 +289,75 @@ SIZE_SPR_TEMP = (NUMSSPRITEDEFS * (SIZE SPRITEFRAME_T)) + (5 * NUMSPRITES) + 8 +
 ; 
 
 
+;void __near R_InstallSpriteLump (int16_t lump, uint16_t frame, uint16_t rotation, boolean flipped) {
+
+; dl = frame
+; dh = rotation
+; bl = flipped
+
+PROC    R_InstallSpriteLump_ NEAR
+PUBLIC  R_InstallSpriteLump_
+
+;	if ((int16_t)frame > p_init_maxframe){
+;		p_init_maxframe = frame;
+;	}
+
+push  di
+push  ds
+pop   es
+
+; todo self modify into constant etc?
+sub   ax, word ptr ds:[_firstspritelump]  ; ax never used, only lump - firstspritelump
+xchg  ax, cx
+mov   al, SIZE SPRITEFRAME_T
+mul   dl  ; ax = [frame] offset
+lea   di, [bp - SIZE_SPR_TEMP]  ; base of stack array
+add   di, ax   ; es:di pts to p_init_sprtemp[frame]
+
+xchg  ax, cx   ; get ax = lump - firstspritelump back
+; rotate = rotate
+mov   byte ptr ds:[di + SPRITEFRAME_T.spriteframe_rotate], dh
+
+cmp   dl, byte ptr cs:[_p_init_maxframe]
+jg    dont_overwrite
+mov   byte ptr cs:[_p_init_maxframe], dl
+dont_overwrite:
+test  dh, dh
+jne   skip_rot_0
+
+;	for (r = 0; r < 8; r++) {
+;		p_init_sprtemp[frame].lump[r] = lump - firstspritelump;
+;		p_init_sprtemp[frame].flip[r] = (byte)flipped;
+;	}
+;	return;
+
+mov   cx, 8
+rep   stosw
+mov   cl, 4
+xchg  ax, bx
+rep   stosw 
+pop   di
+ret
+
+
+skip_rot_0:
+
+;	// make 0 based
+;	rotation--;
+mov  dl, dh
+xor  dh, dh
+dec  dx
+xchg dx, bx ; dx gets flipped, bx gets 
+mov  byte ptr es:[di + bx + SPRITEFRAME_T.spriteframe_flip], dl ; set flipped
+shl  bx, 1
+mov  word ptr es:[di + bx], ax
+
+pop   di
+ret
+
+ENDP
+
+
 
 PROC    R_InitSprites_ NEAR
 PUBLIC  R_InitSprites_
@@ -334,8 +405,7 @@ call  fclose_
 
 
 ;	p_init_sprtemp = (spriteframe_t __far *) &sprtempbytes;
-mov   word ptr ds:[_p_init_sprtemp+0], sp   ; equal to [bp - SIZE_SPR_TEMP]
-mov   word ptr ds:[_p_init_sprtemp+2], ss
+
 ;	lumpinfo_t __far* lumpinfoInit = ((lumpinfo_t __far*) MK_FP(WAD_PAGE_FRAME_PTR, 0));
 ; localname is bp - SIZE_SPRITE_NAMES - 8
 
@@ -351,12 +421,16 @@ mov   word ptr cs:[_SELFMODIFY_set_end + 2], ax
 lea   si, [bp - SIZE_SPRITE_NAMES]  ; namelist
 
 loop_next_sprite:
-les   di, dword ptr ds:[_p_init_sprtemp]
+; ss:sp is p_init_sprtemp here. set to es:di for rep stosw
+mov   di, ss
+mov   es, di
+mov   di, sp
+
 ;		FAR_memset(p_init_sprtemp, -1, sizeof(p_init_sprtemp));
 mov   ax, -1
 mov   cx, ((NUMSSPRITEDEFS * (SIZE SPRITEFRAME_T)) / 2) + 1  ; round up... we added an extra byte anyway.
 rep   stosw
-mov   word ptr ds:[_p_init_maxframe], ax
+mov   byte ptr cs:[_p_init_maxframe], al
 
 lodsw
 xchg  ax, dx
@@ -425,16 +499,16 @@ shl   bx, 1
 add   bx, ax
 
 
-cmp   byte ptr ds:[_p_init_maxframe], ah ; known zero
+cmp   byte ptr cs:[_p_init_maxframe], ah ; known zero
 jl    set_no_frames  ; less than 0 means -1 in this case
 
 ; p_init_maxframe++
-inc   word ptr ds:[_p_init_maxframe]
+inc   word ptr cs:[_p_init_maxframe]
 
 ; NOTE this whole loop only error checks. Remove?
 
 COMMENT @
-mov   cx, word ptr ds:[_p_init_maxframe]
+mov   cx, word ptr cs:[_p_init_maxframe]
 
 ;    for (frame = 0; frame < p_init_maxframe; frame++) {
 lea   bx, [bp - SIZE_SPR_TEMP]
@@ -450,7 +524,7 @@ loop   loop_spriteframe_rotation_check
 ;	currentspritememoryoffset += (p_init_maxframe * sizeof(spriteframe_t));
 
 
-mov   al, byte ptr ds:[_p_init_maxframe]
+mov   al, byte ptr cs:[_p_init_maxframe]
 mov   byte ptr es:[bx + SPRITEDEF_T.spritedef_numframes], al
 mov   ah, SIZE SPRITEFRAME_T
 mul   ah

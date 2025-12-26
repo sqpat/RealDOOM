@@ -268,6 +268,8 @@ void __near P_InitPicAnims(void) {
 // R_InstallSpriteLump
 // Local function for R_InitSprites.
 //
+/*
+
 void __near R_InstallSpriteLump (int16_t lump, uint16_t frame, uint16_t rotation, boolean flipped) {
 	int16_t         r;
 
@@ -319,7 +321,7 @@ void __near R_InstallSpriteLump (int16_t lump, uint16_t frame, uint16_t rotation
 	p_init_sprtemp[frame].lump[rotation] = lump - firstspritelump;
 	p_init_sprtemp[frame].flip[rotation] = (byte)flipped;
 }
-
+*/
  
 
 
@@ -506,7 +508,6 @@ void __near R_InitSpriteDefs() {
 // R_InitSprites
 // Called at program start.
 //
-void __near R_InitSprites();
 
 /*
 void __near R_InitSprites(){
