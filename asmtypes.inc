@@ -949,3 +949,9 @@ SFXINFO_T STRUC
     sfxinfo_cache_position  dw ? ; 4
 SFXINFO_T ENDS
 
+
+SWITCHLIST_T STRUC
+    switchlist_name1        db 9  DUP(?) ; 0
+    switchlist_name2        db 9  DUP(?) ; 9
+    switchlist_episode      dw ?         ; 012h
+SWITCHLIST_T ENDS

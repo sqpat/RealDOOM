@@ -132,6 +132,7 @@ ENDP
 
 _doomdata_bin_string:
 db "DOOMDATA.BIN", 0
+PUBLIC _doomdata_bin_string
 
 str_two_dot:
 db "."
