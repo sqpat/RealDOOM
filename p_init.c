@@ -506,6 +506,9 @@ void __near R_InitSpriteDefs() {
 // R_InitSprites
 // Called at program start.
 //
+void __near R_InitSprites();
+
+/*
 void __near R_InitSprites(){
 	
 	int		i;
@@ -516,7 +519,7 @@ void __near R_InitSprites(){
 	FAR_memset(negonearray, -1, SCREENWIDTH);
 
 	R_InitSpriteDefs();
-}
+}*/
 
 //
 // P_Init

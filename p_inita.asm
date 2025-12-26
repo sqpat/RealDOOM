@@ -287,14 +287,29 @@ SIZE_SPR_TEMP = (NUMSSPRITEDEFS * (SIZE SPRITEFRAME_T)) + (5 * NUMSPRITES) + 8 +
 ; 
 
 
-PROC    R_InitSpriteDefs_ NEAR
-PUBLIC  R_InitSpriteDefs_
+
+PROC    R_InitSprites_ NEAR
+PUBLIC  R_InitSprites_
+
+
 
 PUSHA_NO_AX_OR_BP_MACRO
 push   bp
 mov    bp, sp
 ; 690 + 725 + 8 + 1 = 1424
 sub    sp, SIZE_SPR_TEMP
+
+;FAR_memset(negonearray, -1, SCREENWIDTH);
+mov   ax, NEGONEARRAY_SEGMENT + (OFFSET_NEGONEARRAY SHR 4)
+mov   es, ax
+xor   di, di
+mov   ax, 0FFFFh
+mov   cx, SCREENWIDTH / 2
+rep   stosw
+
+; inlined now
+; R_InitSpriteDefs();
+
 
 mov   ax, OFFSET _doomdata_bin_string
 call  CopyString13_
