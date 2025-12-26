@@ -862,8 +862,6 @@ extern void (__far* M_Init)();
 
 
 
-extern spriteframe_t __far* p_init_sprtemp;
-extern int16_t              p_init_maxframe;
 
 #define SC_UPARROW              0x48
 #define SC_DOWNARROW            0x50

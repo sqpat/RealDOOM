@@ -303,11 +303,10 @@ PUBLIC  R_InstallSpriteLump_
 ;	}
 
 push  di
-push  ds
-pop   es
 
-; todo self modify into constant etc?
-sub   ax, word ptr ds:[_firstspritelump]  ; ax never used, only lump - firstspritelump
+
+_SELFMODIFY_sub_first:
+sub   ax, 01000h  ; ax never used, only lump - firstspritelump
 xchg  ax, cx
 mov   al, SIZE SPRITEFRAME_T
 mul   dl  ; ax = [frame] offset
@@ -319,38 +318,41 @@ xchg  ax, cx   ; get ax = lump - firstspritelump back
 mov   byte ptr ds:[di + SPRITEFRAME_T.spriteframe_rotate], dh
 
 cmp   dl, byte ptr cs:[_p_init_maxframe]
-jg    dont_overwrite
+jl    dont_overwrite
 mov   byte ptr cs:[_p_init_maxframe], dl
 dont_overwrite:
 test  dh, dh
 jne   skip_rot_0
-
+; use for all rotations 
 ;	for (r = 0; r < 8; r++) {
 ;		p_init_sprtemp[frame].lump[r] = lump - firstspritelump;
 ;		p_init_sprtemp[frame].flip[r] = (byte)flipped;
 ;	}
 ;	return;
 
+push  ds  ; stos too good
+pop   es
+
 mov   cx, 8
 rep   stosw
 mov   cl, 4
-xchg  ax, bx
+xchg  ax, bx  ; bx was doubled before pass in
 rep   stosw 
 pop   di
 ret
 
 
 skip_rot_0:
+;lump used for only one rotation
 
 ;	// make 0 based
 ;	rotation--;
-mov  dl, dh
-xor  dh, dh
-dec  dx
-xchg dx, bx ; dx gets flipped, bx gets 
-mov  byte ptr es:[di + bx + SPRITEFRAME_T.spriteframe_flip], dl ; set flipped
-shl  bx, 1
-mov  word ptr es:[di + bx], ax
+xchg dh, bl    ; dh gets flipped
+xor  bh, bh
+dec  bx
+mov  byte ptr ds:[di + bx + SPRITEFRAME_T.spriteframe_flip], dh ; set flipped
+shl  bx, 1 ; word array
+mov  word ptr ds:[di + bx + SPRITEFRAME_T.spriteframe_lump], ax
 
 pop   di
 ret
@@ -415,6 +417,7 @@ call  fclose_
 
 mov   ax, word ptr ds:[_firstspritelump]	
 mov   word ptr cs:[_SELFMODIFY_setstart + 1], ax
+mov   word ptr cs:[_SELFMODIFY_sub_first + 1], ax
 add   ax, word ptr ds:[_numspritelumps]
 mov   word ptr cs:[_SELFMODIFY_set_end + 2], ax
 
@@ -503,12 +506,12 @@ cmp   byte ptr cs:[_p_init_maxframe], ah ; known zero
 jl    set_no_frames  ; less than 0 means -1 in this case
 
 ; p_init_maxframe++
-inc   word ptr cs:[_p_init_maxframe]
+inc   byte ptr cs:[_p_init_maxframe]
 
 ; NOTE this whole loop only error checks. Remove?
 
 COMMENT @
-mov   cx, word ptr cs:[_p_init_maxframe]
+mov   cl, byte ptr cs:[_p_init_maxframe]
 
 ;    for (frame = 0; frame < p_init_maxframe; frame++) {
 lea   bx, [bp - SIZE_SPR_TEMP]
@@ -591,16 +594,18 @@ not_modified:
 ;    patched = l;
 mov   ax, si
 done_checking_patched:
+
+; dl = frame
+; dh = rotation
+; bl = flipped
+
 ; R_InstallSpriteLump(patched, frame, rotation, false);
 ;    frame = lumpinfoInit[lump].name[4] - 'A';
 ;    rotation = lumpinfoInit[lump].name[5] - '0';
 mov   es, word ptr ds:[_WAD_PAGE_FRAME_PTR]
 mov   dx, word ptr es:[di + 4]
 sub   dx, 'A' + ('0' SHL 8)
-mov   bl, dh
-xor   dh, dh
-xor   bh, bh
-xor   cx, cx
+xor   bx, bx ; false low and high
 call  R_InstallSpriteLump_
 
 mov   es, word ptr ds:[_WAD_PAGE_FRAME_PTR]
@@ -613,10 +618,7 @@ je    skip_flip
 
 sub   dx, 'A' + ('0' SHL 8)
 mov   ax, si
-mov   bl, dh
-xor   dh, dh
-xor   bh, bh
-mov   cx, 1
+mov   bx, 0101h ; true low and high
 call  R_InstallSpriteLump_
 
 skip_flip:

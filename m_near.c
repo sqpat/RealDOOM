@@ -80,7 +80,6 @@ void (__far* S_StartSound)() =                 ((void (__far *)(uint16_t ax, uin
 void (__far* M_Init)() =                      ((void (__far *)())     	                              (MK_FP(menu_code_area_segment,           M_InitOffset)));
 
 
-int16_t             p_init_maxframe;
 boolean         precache = true;        // if true, load all graphics at start 
 // int32_t codestartposition[NUM_OVERLAYS];
 // int32_t musdriverstartposition;
