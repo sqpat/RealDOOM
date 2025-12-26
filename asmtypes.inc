@@ -348,9 +348,9 @@ VISSPRITE_T ENDS
 
 
 SPRITEFRAME_T STRUC 
-    spriteframe_lump                dw 8
-    spriteframe_flip                db 8
-    spriteframe_rotate              db ?
+    spriteframe_lump                dw 8  DUP(?) ; 0h
+    spriteframe_flip                db 8  DUP(?) ; 010h
+    spriteframe_rotate              db ?         ; 018h
 
 SPRITEFRAME_T ENDS
 

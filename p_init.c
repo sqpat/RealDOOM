@@ -341,6 +341,28 @@ void __near R_InstallSpriteLump (int16_t lump, uint16_t frame, uint16_t rotation
 //
 
 
+/*
+
+int8_t *namelist[NUMSPRITES] = {
+	"TROO","SHTG","PUNG","PISG","PISF","SHTF","SHT2","CHGG","CHGF","MISG",
+	"MISF","SAWG","PLSG","PLSF","BFGG","BFGF","BLUD","PUFF","BAL1","BAL2",
+	"PLSS","PLSE","MISL","BFS1","BFE1","BFE2","TFOG","IFOG","PLAY","POSS",
+	"SPOS","VILE","FIRE","FATB","FBXP","SKEL","MANF","FATT","CPOS","SARG",
+	"HEAD","BAL7","BOSS","BOS2","SKUL","SPID","BSPI","APLS","APBX","CYBR",
+	"PAIN","SSWV","KEEN","BBRN","BOSF","ARM1","ARM2","BAR1","BEXP","FCAN",
+	"BON1","BON2","BKEY","RKEY","YKEY","BSKU","RSKU","YSKU","STIM","MEDI",
+	"SOUL","PINV","PSTR","PINS","MEGA","SUIT","PMAP","PVIS","CLIP","AMMO",
+	"ROCK","BROK","CELL","CELP","SHEL","SBOX","BPAK","BFUG","MGUN","CSAW",
+	"LAUN","PLAS","SHOT","SGN2","COLU","SMT2","GOR1","POL2","POL5","POL4",
+	"POL3","POL1","POL6","GOR2","GOR3","GOR4","GOR5","SMIT","COL1","COL2",
+	"COL3","COL4","CAND","CBRA","COL6","TRE1","TRE2","ELEC","CEYE","FSKU",
+	"COL5","TBLU","TGRN","TRED","SMBT","SMGT","SMRT","HDB1","HDB2","HDB3",
+	"HDB4","HDB5","HDB6","POB1","POB2","BRS1","TLMP","TLP2"
+};
+*/
+
+void __near R_InitSpriteDefs() ;
+/*
 void __near R_InitSpriteDefs() {
 	int16_t         i;
 	int16_t         l;
@@ -358,32 +380,13 @@ void __near R_InitSpriteDefs() {
 	int8_t localname[8];
 	lumpinfo_t __far* lumpinfoInit = ((lumpinfo_t __far*) MK_FP(WAD_PAGE_FRAME_PTR, 0));
 
-	/*
-
-	int8_t *namelist[NUMSPRITES] = {
-		"TROO","SHTG","PUNG","PISG","PISF","SHTF","SHT2","CHGG","CHGF","MISG",
-		"MISF","SAWG","PLSG","PLSF","BFGG","BFGF","BLUD","PUFF","BAL1","BAL2",
-		"PLSS","PLSE","MISL","BFS1","BFE1","BFE2","TFOG","IFOG","PLAY","POSS",
-		"SPOS","VILE","FIRE","FATB","FBXP","SKEL","MANF","FATT","CPOS","SARG",
-		"HEAD","BAL7","BOSS","BOS2","SKUL","SPID","BSPI","APLS","APBX","CYBR",
-		"PAIN","SSWV","KEEN","BBRN","BOSF","ARM1","ARM2","BAR1","BEXP","FCAN",
-		"BON1","BON2","BKEY","RKEY","YKEY","BSKU","RSKU","YSKU","STIM","MEDI",
-		"SOUL","PINV","PSTR","PINS","MEGA","SUIT","PMAP","PVIS","CLIP","AMMO",
-		"ROCK","BROK","CELL","CELP","SHEL","SBOX","BPAK","BFUG","MGUN","CSAW",
-		"LAUN","PLAS","SHOT","SGN2","COLU","SMT2","GOR1","POL2","POL5","POL4",
-		"POL3","POL1","POL6","GOR2","GOR3","GOR4","GOR5","SMIT","COL1","COL2",
-		"COL3","COL4","CAND","CBRA","COL6","TRE1","TRE2","ELEC","CEYE","FSKU",
-		"COL5","TBLU","TGRN","TRED","SMBT","SMGT","SMRT","HDB1","HDB2","HDB3",
-		"HDB4","HDB5","HDB6","POB1","POB2","BRS1","TLMP","TLP2"
-	};
-	*/
 	int8_t namelist[NUMSPRITES][5];
 	FILE * fp = fopen("DOOMDATA.BIN", "rb"); // clear old file
 	fseek(fp, SPLIST_DOOMDATA_OFFSET, SEEK_SET);
 	fread(namelist,  5, NUMSPRITES, fp);
 	fclose(fp);
+	
 	//I_Error("\nvalanim %s %s %s", namelist[0], namelist[1], namelist[2]);
-
 	// count the number of sprite names
 
 
@@ -395,7 +398,7 @@ void __near R_InitSpriteDefs() {
 	//if (!numsprites)
 	//	return;
 
-	
+	// SPRITES:SEGMENT:0193
 	currentspritememoryoffset = sprites[0].spriteframesOffset = NUMSPRITES * sizeof(spritedef_t);
 
 	//totalsize = numsprites * sizeof(spritedef_t);
@@ -496,7 +499,7 @@ void __near R_InitSpriteDefs() {
 	}
 	//I_Error("\n%u %x", currentspritememoryoffset, currentspritememoryoffset)
 }
-
+*/
 
 
 //
