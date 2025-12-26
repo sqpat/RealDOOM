@@ -67,10 +67,83 @@ SIZE_LOCALNAME =    (5 * NUMSPRITES) + 8
 SIZE_SPR_TEMP = (NUMSSPRITEDEFS * (SIZE SPRITEFRAME_T)) + (5 * NUMSPRITES) + 8 + 1
 
 
-
-
 _p_init_maxframe:
 db  0FFh
+
+
+
+
+;void __near R_InstallSpriteLump (int16_t lump, uint16_t frame, uint16_t rotation, boolean flipped) {
+
+; dl = frame
+; dh = rotation
+; bl = flipped
+
+PROC    R_InstallSpriteLump_ NEAR
+PUBLIC  R_InstallSpriteLump_
+
+;	if ((int16_t)frame > p_init_maxframe){
+;		p_init_maxframe = frame;
+;	}
+
+push  di
+
+
+_SELFMODIFY_sub_first:
+sub   ax, 01000h  ; ax never used, only lump - firstspritelump
+xchg  ax, cx
+mov   al, SIZE SPRITEFRAME_T
+mul   dl  ; ax = [frame] offset
+lea   di, [bp - SIZE_SPR_TEMP]  ; base of stack array
+add   di, ax   ; es:di pts to p_init_sprtemp[frame]
+
+xchg  ax, cx   ; get ax = lump - firstspritelump back
+; rotate = rotate
+mov   byte ptr ds:[di + SPRITEFRAME_T.spriteframe_rotate], dh
+
+cmp   dl, byte ptr cs:[_p_init_maxframe]
+jl    dont_overwrite
+mov   byte ptr cs:[_p_init_maxframe], dl
+dont_overwrite:
+test  dh, dh
+jne   skip_rot_0
+; use for all rotations 
+;	for (r = 0; r < 8; r++) {
+;		p_init_sprtemp[frame].lump[r] = lump - firstspritelump;
+;		p_init_sprtemp[frame].flip[r] = (byte)flipped;
+;	}
+;	return;
+
+push  ds  ; stos too good
+pop   es
+
+mov   cx, 8
+rep   stosw
+mov   cl, 4
+xchg  ax, bx  ; bx was doubled before pass in
+rep   stosw 
+pop   di
+ret
+
+
+skip_rot_0:
+;lump used for only one rotation
+
+;	// make 0 based
+;	rotation--;
+xchg dh, bl    ; dh gets flipped
+xor  bh, bh
+dec  bx
+mov  byte ptr ds:[di + bx + SPRITEFRAME_T.spriteframe_flip], dh ; set flipped
+shl  bx, 1 ; word array
+mov  word ptr ds:[di + bx + SPRITEFRAME_T.spriteframe_lump], ax
+
+pop   di
+ret
+
+ENDP
+
+
 
 episode_undefined:
 mov   ds:[di], BAD_TEXTURE
@@ -79,18 +152,32 @@ SHIFT_MACRO shr       di 2
 mov   word ptr ds:[_numswitches], di
 jmp   done_with_switches
 
-PROC    P_InitSwitchesAnimsSprites_ NEAR
-PUBLIC  P_InitSwitchesAnimsSprites_
 
 
-;PROC    P_InitSwitchList_ NEAR
-;PUBLIC  P_InitSwitchList_
+PROC    P_Init_ NEAR
+PUBLIC  P_Init_
 
 PUSHA_NO_AX_OR_BP_MACRO
 push   bp
 mov    bp, sp
 ;sub    sp, (NUMSWITCHDEFS * (SIZE SWITCHLIST_T))
 sub    sp, SIZE_SPR_TEMP   ; largest of the three stack frames. lets only make one.
+
+
+call   Z_QuickMapRender_  
+call   Z_QuickMapRender_9000To6000_  ; for R_TextureNumForName
+
+; fall thru
+
+
+
+;PROC    P_InitSwitchList_ NEAR
+;PUBLIC  P_InitSwitchList_
+
+;PUSHA_NO_AX_OR_BP_MACRO
+;push   bp
+;mov    bp, sp
+;sub    sp, (NUMSWITCHDEFS * (SIZE SWITCHLIST_T))
 
 mov   ax, OFFSET _doomdata_bin_string
 call  CopyString13_
@@ -559,84 +646,18 @@ pop   cx
 
 jmp   done_processing_sprite_lump
 exit_initspritedefs:
+
+; END OF P_INIT 
+
+
+call   Z_QuickMapPhysics_  
+
 LEAVE_MACRO
 POPA_NO_AX_OR_BP_MACRO
 ret
 
 
-ENDP
 
-
-
-
-
-;void __near R_InstallSpriteLump (int16_t lump, uint16_t frame, uint16_t rotation, boolean flipped) {
-
-; dl = frame
-; dh = rotation
-; bl = flipped
-
-PROC    R_InstallSpriteLump_ NEAR
-PUBLIC  R_InstallSpriteLump_
-
-;	if ((int16_t)frame > p_init_maxframe){
-;		p_init_maxframe = frame;
-;	}
-
-push  di
-
-
-_SELFMODIFY_sub_first:
-sub   ax, 01000h  ; ax never used, only lump - firstspritelump
-xchg  ax, cx
-mov   al, SIZE SPRITEFRAME_T
-mul   dl  ; ax = [frame] offset
-lea   di, [bp - SIZE_SPR_TEMP]  ; base of stack array
-add   di, ax   ; es:di pts to p_init_sprtemp[frame]
-
-xchg  ax, cx   ; get ax = lump - firstspritelump back
-; rotate = rotate
-mov   byte ptr ds:[di + SPRITEFRAME_T.spriteframe_rotate], dh
-
-cmp   dl, byte ptr cs:[_p_init_maxframe]
-jl    dont_overwrite
-mov   byte ptr cs:[_p_init_maxframe], dl
-dont_overwrite:
-test  dh, dh
-jne   skip_rot_0
-; use for all rotations 
-;	for (r = 0; r < 8; r++) {
-;		p_init_sprtemp[frame].lump[r] = lump - firstspritelump;
-;		p_init_sprtemp[frame].flip[r] = (byte)flipped;
-;	}
-;	return;
-
-push  ds  ; stos too good
-pop   es
-
-mov   cx, 8
-rep   stosw
-mov   cl, 4
-xchg  ax, bx  ; bx was doubled before pass in
-rep   stosw 
-pop   di
-ret
-
-
-skip_rot_0:
-;lump used for only one rotation
-
-;	// make 0 based
-;	rotation--;
-xchg dh, bl    ; dh gets flipped
-xor  bh, bh
-dec  bx
-mov  byte ptr ds:[di + bx + SPRITEFRAME_T.spriteframe_flip], dh ; set flipped
-shl  bx, 1 ; word array
-mov  word ptr ds:[di + bx + SPRITEFRAME_T.spriteframe_lump], ax
-
-pop   di
-ret
 
 ENDP
 
@@ -645,22 +666,9 @@ ENDP
 
 
 
-PROC    P_Init_ NEAR
-PUBLIC  P_Init_
 
-call   Z_QuickMapRender_  
-call   Z_QuickMapRender_9000To6000_  ; for R_TextureNumForName
-;call   P_InitSwitchList_  
-;call   P_InitPicAnims_  
-;call   R_InitSprites_     ; todo fall thru
 
-call   P_InitSwitchesAnimsSprites_
 
-call   Z_QuickMapPhysics_  
-
-ret
-
-ENDP
 
 
 PROC    P_INIT_ENDMARKER_ NEAR

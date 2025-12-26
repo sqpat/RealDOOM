@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/12/26 14:18:59
+Created on:       25/12/26 14:21:11
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -32,7 +32,7 @@ W_INIT_TEXT            CODE           AUTO           0000:13b0       0000017d
 I_INIT_TEXT            CODE           AUTO           0000:152e       000001a9
 Z_INIT_TEXT            CODE           AUTO           0000:16d8       000007e4
 S_SBINIT_TEXT          CODE           AUTO           0000:1ebc       000002e5
-P_INIT_TEXT            CODE           AUTO           0000:21a2       0000029a
+P_INIT_TEXT            CODE           AUTO           0000:21a2       00000297
 i_main_TEXT            CODE           AUTO           0000:2440       00000015
 I_QUIT_TEXT            CODE           AUTO           0000:2456       000001b7
 I_IBM_TEXT             CODE           AUTO           0000:260e       00000051
@@ -151,11 +151,10 @@ Module: s_sbinit.obj(s_sbinit.ASM)
 0000:1f8c*     DMA_SetupTransfer_
 0000:200d*     SB_EnableInterrupt_
 Module: p_init.obj(p_init.ASM)
-0000:21b5*     P_InitSwitchesAnimsSprites_
-0000:243c*     P_INIT_ENDMARKER_
-0000:242b      P_Init_
+0000:2439*     P_INIT_ENDMARKER_
+0000:21f5      P_Init_
 0000:21a2*     P_INIT_STARTMARKER_
-0000:23ec*     R_InstallSpriteLump_
+0000:21a3*     R_InstallSpriteLump_
 Module: i_main.obj(C:\REALDOOM\i_main.c)
 0000:2440      main_
 0b43:0e8a      __amblksiz
@@ -753,4 +752,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  cee0 (52960.)
 Entry point address: 0000:99ec
-Link time: 00:00.74
+Link time: 00:00.20
