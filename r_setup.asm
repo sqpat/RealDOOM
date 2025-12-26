@@ -29,12 +29,14 @@ EXTRN  FastDiv32u16u_:FAR
  
 .DATA
 
-EXTRN _R_WriteBackViewConstants:DWORD
-EXTRN _R_WriteBackViewConstantsSpanCall:DWORD
-EXTRN _R_WriteBackViewConstantsMaskedCall:DWORD
 
 
 .CODE
+
+PUBLIC _SELFMODIFY_R_WRITEBACKVIEWCONSTANTSSPANCALL
+PUBLIC _SELFMODIFY_R_WRITEBACKVIEWCONSTANTSMASKEDCALL
+PUBLIC _SELFMODIFY_R_WRITEBACKVIEWCONSTANTS
+
 
 FIXED_FINE_TAN = 010032H
 NUMCOLORMAPS = 32
@@ -612,14 +614,26 @@ add   ax, cx
 mov   word ptr ds:[_viewwindowoffset], ax
 
 
+
 call	Z_QuickMapRender_
 call	R_InitTextureMapping_
-call	dword ptr ds:[_R_WriteBackViewConstants]
+;call	dword ptr ds:[_R_WriteBackViewConstants]
+db    09Ah
+_SELFMODIFY_R_WRITEBACKVIEWCONSTANTS:
+dw    R_WRITEBACKVIEWCONSTANTS24OFFSET, 0
 call	Z_QuickMapRenderPlanes_
-call	dword ptr ds:[_R_WriteBackViewConstantsSpanCall]
+;call	dword ptr ds:[_R_WriteBackViewConstantsSpanCall]
+db    09Ah
+_SELFMODIFY_R_WRITEBACKVIEWCONSTANTSSPANCALL:
+dw    R_WRITEBACKVIEWCONSTANTSSPAN24OFFSET, SPANFUNC_JUMP_LOOKUP_SEGMENT
 call	Z_QuickMapUndoFlatCache_
-call	dword ptr ds:[_R_WriteBackViewConstantsMaskedCall]
+;call	dword ptr ds:[_R_WriteBackViewConstantsMaskedCall]
+db    09Ah
+_SELFMODIFY_R_WRITEBACKVIEWCONSTANTSMASKEDCALL:
+dw    R_WRITEBACKVIEWCONSTANTSMASKED24OFFSET, MASKEDCONSTANTS_FUNCAREA_SEGMENT
 call	Z_QuickMapPhysics_
+
+
 
 ;	spanfunc_outp[0] = 1;
 ;	spanfunc_outp[1] = 2;
