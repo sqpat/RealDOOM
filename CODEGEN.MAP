@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/12/26 15:18:05
+Created on:       25/12/26 15:20:53
 Executable Image: codegen.exe
 creating a DOS executable
 
@@ -24,7 +24,6 @@ DGROUP                          02d1:0000            00006c90
 Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
-m_near_TEXT            CODE           AUTO           0000:0000       00000000
 codegen_TEXT           CODE           AUTO           0000:0000       000000a1
 _TEXT                  CODE           AUTO           0000:00b0       00002c56
 FAR_DATA               FAR_DATA       AUTO           02d0:0006       00000000

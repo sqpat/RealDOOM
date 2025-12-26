@@ -41,7 +41,6 @@ CCOPTS = -zp1 -oaxet -oi -zq -j -mm -s -zdp -0
 ASMOPTS =  /dCOMPISA=0
 
 GLOBOBJS = &
- m_near.obj &
  i_init.obj &
  i_quit.obj &
  i_main.obj &

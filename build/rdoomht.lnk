@@ -13,7 +13,6 @@ format dos
 name doomout
 
  
-file m_near.obj
 file d_init.obj
 file st_init.obj
 file r_init.obj

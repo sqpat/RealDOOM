@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/12/26 15:18:17
+Created on:       25/12/26 15:21:04
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -24,7 +24,6 @@ DGROUP                          0b46:0000            00001a80
 Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
-m_near_TEXT            CODE           AUTO           0000:0000       00000000
 D_INIT_TEXT            CODE           AUTO           0000:0000       000009fd
 ST_INIT_TEXT           CODE           AUTO           0000:09fe       00000203
 R_INIT_TEXT            CODE           AUTO           0000:0c02       000007af

@@ -95,7 +95,6 @@ file s_sound.obj
 
 #hack..
 NEWSEGMENT 
-file m_near.obj
 file d_init.obj
 file s_init.obj
 file st_init.obj

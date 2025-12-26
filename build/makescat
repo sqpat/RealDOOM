@@ -41,7 +41,6 @@ CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s -zdp -d__SCAT_BUILD=1 -d__CH_BLD=1
 #ASMOPTS =  /dCOMPISA=2 /dCOMP_CH=2
 
 GLOBOBJS = &
- m_near.obj &
  i_init.obj &
  i_quit.obj &
  i_main.obj &

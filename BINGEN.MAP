@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/12/26 15:18:15
+Created on:       25/12/26 15:21:03
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -69,7 +69,6 @@ P_USER_TEXT            CODE           AUTO           21a7:85bc       00000437
 P_INFO_TEXT            CODE           AUTO           21a7:89f4       00000345
 AM_MAP_TEXT            CODE           AUTO           21a7:8d3a       00000b37
 S_SOUND_TEXT           CODE           AUTO           21a7:9872       0000051e
-m_near_TEXT            CODE           AUTO           2b80:0000       00000000
 D_INIT_TEXT            CODE           AUTO           2b80:0000       000009fd
 S_INIT_TEXT            CODE           AUTO           2b80:09fe       00000562
 ST_INIT_TEXT           CODE           AUTO           2b80:0f60       00000203

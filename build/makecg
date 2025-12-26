@@ -51,7 +51,6 @@ CCOPTS = -zp1 -oaxet -oi -zq -j -mm -0 -s $(COPT)
 !endif
 
 GLOBOBJS = &
- m_near.obj &
  codegen.obj
 
 
@@ -68,7 +67,6 @@ codegen.exe : $(GLOBOBJS)
  tasm /mx /m2 /w2 /q /zi $(ASMOPTS) $[*
 
 clean : .SYMBOLIC
- del m_near.obj
  del codegen.obj
  del *.err
  

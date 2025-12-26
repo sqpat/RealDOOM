@@ -12,6 +12,5 @@ format dos
 name codegen
 
 
-file m_near.obj
 file codegen.obj
 
