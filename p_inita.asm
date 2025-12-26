@@ -240,16 +240,23 @@ done_with_anim_picnames:
 ;    lastanim->istexture = animdefs[i].istexture;
 ;	 lastanim->numpics = lastanim->picnum - lastanim->basepic + 1;
 
-mov   word ptr ds:[di + P_SPEC_ANIM_T.pspecanim_picnum], ax
-mov   word ptr ds:[di + P_SPEC_ANIM_T.pspecanim_basepic], bx
 
-sub   ax, bx  ; lastanim->picnum - lastanim->basepic
+push  ds
+pop   es
+movsb ; 
+push  ax  ; store for math...
+sub   ax, bx
 inc   ax
-mov   byte ptr ds:[di + P_SPEC_ANIM_T.pspecanim_numpics], al
+stosb ; lastanim->numpics
+pop   ax  ; recover original
+stosw ; lastanim->picnum
+xchg  ax, bx
+stosw ; lastanim->basepic
 
-mov   al, byte ptr ds:[si + ANIMDEF_T.animdef_istexture]
-mov   byte ptr ds:[di + P_SPEC_ANIM_T.pspecanim_istexture], al
-add   di, SIZE P_SPEC_ANIM_T
+; advanced via stos 
+;add   di, SIZE P_SPEC_ANIM_T
+
+dec    si  ; undo that movsb..
 
 continue_animdef_loop:
 
