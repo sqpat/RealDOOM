@@ -524,6 +524,7 @@ void __near R_InitSprites(){
 //
 // P_Init
 //
+/*
 void __near P_Init(void) {
 
 	Z_QuickMapRender();
@@ -538,3 +539,4 @@ void __near P_Init(void) {
 }
 
 
+*/

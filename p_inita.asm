@@ -40,7 +40,7 @@ EXTRN R_FlatNumForName_:NEAR
 EXTRN W_CheckNumForName_:NEAR
 EXTRN R_InstallSpriteLump_:NEAR
 EXTRN W_GetNumForName_:FAR
-
+EXTRN Z_QuickMapRender_9000To6000_:NEAR
  
 .DATA
 
@@ -558,6 +558,21 @@ ret
 
 ENDP
 
+; todo turn this into inlines, single stack frame, one func, etc.
+
+PROC    P_Init_ NEAR
+PUBLIC  P_Init_
+
+call   Z_QuickMapRender_  
+call   Z_QuickMapRender_9000To6000_  ; for R_TextureNumForName
+call   P_InitSwitchList_  
+call   P_InitPicAnims_  
+call   R_InitSprites_  
+call   Z_QuickMapPhysics_  
+
+ret
+
+ENDP
 
 
 PROC    P_INIT_ENDMARKER_ NEAR
