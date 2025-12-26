@@ -23,7 +23,6 @@ file i_init.obj
 file z_init.obj
 file s_sbinit.obj
 file p_init.obj
-file p_inita.obj
 
 
 file i_main.obj
