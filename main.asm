@@ -60,7 +60,7 @@ EXTRN Z_QuickMapByTaskNum_:FAR
 
 ;EXTRN DoLog_:NEAR
 
-EXTRN _R_RenderPlayerView:DWORD
+
 
 
 
@@ -73,6 +73,9 @@ EXTRN ___iob:WORD
 EXTRN _OldInt8:DWORD
 EXTRN _TS_Installed:BYTE
 EXTRN _singledemo:BYTE
+
+PUBLIC _SELFMODIFY_R_RENDERPLAYERVIEW_CALL
+
 
 SIZEOF_FILE = 0Eh
 STDOUT = OFFSET ___iob + SIZEOF_FILE
@@ -3241,7 +3244,11 @@ je    skip_render_player_view
 
 cmp   byte ptr ds:[_inhelpscreens], bh ; 0
 jne   skip_render_player_view
-call  dword ptr ds:[_R_RenderPlayerView]
+;call  dword ptr ds:[_R_RenderPlayerView]
+db    09Ah
+_SELFMODIFY_R_RENDERPLAYERVIEW_CALL:
+dw    0, 0
+
 skip_render_player_view:
 
 cmp   cl, bh ; 0

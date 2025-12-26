@@ -93,7 +93,6 @@ EXTRN CopyString13_:NEAR
 EXTRN _R_WriteBackViewConstantsSpanCall:DWORD
 EXTRN _R_WriteBackViewConstantsMaskedCall:DWORD
 EXTRN _R_WriteBackViewConstants:DWORD
-EXTRN _R_RenderPlayerView:DWORD
 
 
 SCAMP_PAGE_SELECT_REGISTER = 0E8h
@@ -113,6 +112,7 @@ HT18_PAGE_SET_REGISTER = 01ECh
 
 .CODE
 
+EXTRN _SELFMODIFY_R_RENDERPLAYERVIEW_CALL:DWORD
 EXTRN _musdriverstartposition:DWORD
 EXTRN _codestartposition:DWORD
 EXTRN _codestartposition_END:BYTE
@@ -887,7 +887,7 @@ mov     word ptr ds:[_R_GetPatchTexture_addr], ax
 mov     word ptr ds:[_R_GetCompositeTexture_addr], dx
 mov     word ptr ds:[_R_WriteBackMaskedFrameConstantsCallOffset], bx
 mov     word ptr ds:[_R_DrawMaskedCallOffset], cx
-mov     word ptr ds:[_R_RenderPlayerView], si
+mov     word ptr cs:[_SELFMODIFY_R_RENDERPLAYERVIEW_CALL+0], si
 mov     word ptr ds:[_R_WriteBackViewConstantsMaskedCall], di
 mov     word ptr ds:[_R_WriteBackViewConstants], bp
 
@@ -895,7 +895,7 @@ mov     word ptr ds:[_R_WriteBackViewConstants], bp
 mov     ax, word ptr ds:[_BSP_CODE_SEGMENT_PTR]
 mov     word ptr ds:[_R_GetPatchTexture_addr + 2], ax
 mov     word ptr ds:[_R_GetCompositeTexture_addr + 2], ax
-mov     word ptr ds:[_R_RenderPlayerView + 2], ax
+mov     word ptr cs:[_SELFMODIFY_R_RENDERPLAYERVIEW_CALL+2], ax
 mov     word ptr ds:[_R_WriteBackViewConstants + 2], ax
 
 mov     al, byte ptr ds:[_skyquality]

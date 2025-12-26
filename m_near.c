@@ -70,7 +70,7 @@ uint16_t cachedrenderplayertics = 0;
 void (__far* R_WriteBackViewConstantsSpanCall)()  =   				      	  ((void    (__far *)())  (MK_FP(spanfunc_jump_lookup_segment, 	   R_WriteBackViewConstantsSpan24Offset)));
 void (__far* R_WriteBackViewConstantsMaskedCall)() = 						  ((void    (__far *)())  (MK_FP(maskedconstants_funcarea_segment, R_WriteBackViewConstantsMasked24Offset)));
 void (__far* R_WriteBackViewConstants)() =    ((void (__far *)())     	                              (MK_FP(0000,          				   R_WriteBackViewConstants24Offset)));
-void (__far* R_RenderPlayerView)() =          ((void (__far *)())     	                              (MK_FP(0000,          				   R_RenderPlayerView24Offset)));
+// void (__far* R_RenderPlayerView)() =          ((void (__far *)())     	                              (MK_FP(0000,          				   R_RenderPlayerView24Offset)));
 
 
 
