@@ -89,7 +89,7 @@ EXTRN W_CheckNumForNameFar_:FAR
 EXTRN CopyString13_:NEAR
 
 
-EXTRN _P_SpawnMapThing:DWORD
+
 EXTRN _R_WriteBackViewConstantsSpanCall:DWORD
 EXTRN _R_WriteBackViewConstantsMaskedCall:DWORD
 EXTRN _R_WriteBackViewConstants:DWORD

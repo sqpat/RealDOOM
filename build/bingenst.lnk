@@ -51,6 +51,7 @@ file w_wad.obj
 file v_video.obj
 file z_zone.obj
 file p_setup.obj
+file p_setupa.obj
 
 file z_scat.obj
 

@@ -557,7 +557,7 @@ void __near P_LoadNodes(int16_t lump) {
 
 
 
-
+void __far P_SpawnMapThingCallThrough(mapthing_t mthing, int16_t key);
 
 
 //
@@ -612,7 +612,7 @@ void __near P_LoadThings(int16_t lump) {
 		}
 		// Do spawn all other stuff. 
 	
-		P_SpawnMapThing(mt, i);
+		P_SpawnMapThingCallThrough(mt, i);
 	
 
 

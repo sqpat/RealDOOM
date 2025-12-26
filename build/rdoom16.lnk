@@ -48,6 +48,7 @@ file r_setup.obj
 file st_setup.obj
 file hu_setup.obj
 file p_setup.obj
+file p_setupa.obj
 
 
 

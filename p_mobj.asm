@@ -367,7 +367,7 @@ PUBLIC P_SpawnMapThing_
     
 ; ugh. big params. NOTE if moved near this will all shift 2.
 
-
+; todo pusha?
 
 push      bx
 push      cx

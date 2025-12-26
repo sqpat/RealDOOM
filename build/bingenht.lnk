@@ -134,5 +134,6 @@ file z_zone.obj
 file s_sbsfx.obj
 file r_main.obj
 file p_setup.obj
+file p_setupa.obj
 file z_ht18.obj
 

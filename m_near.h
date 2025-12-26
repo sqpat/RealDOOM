@@ -851,7 +851,7 @@ extern void (__far* R_RenderPlayerView)();
 extern void (__far* R_WriteBackViewConstantsMaskedCall)();
 extern void (__far* R_WriteBackViewConstants)();
 extern void 				(__far* R_WriteBackViewConstantsSpanCall)();
-extern void 				(__far* P_SpawnMapThing)();
+// extern void 				(__far* P_SpawnMapThing)();
 extern void					(__far* P_SpawnSpecials)();
 extern void					(__far* P_GivePower)();
 

@@ -129,6 +129,7 @@ file v_video.obj
 file z_zone.obj
 file s_sbsfx.obj
 file p_setup.obj
+file p_setupa.obj
 file z_scamp.obj
 
 

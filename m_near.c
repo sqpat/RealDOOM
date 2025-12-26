@@ -67,17 +67,20 @@ uint16_t cachedrenderplayertics = 0;
 #endif
 
 
-void (__far* P_SpawnMapThing)() =            ((void (__far *)(mapthing_t mthing, int16_t key))        (MK_FP(physics_highcode_segment, 		   P_SpawnMapThingOffset)));
-void (__far* R_WriteBackViewConstantsSpanCall)()  =   				      	  ((void    (__far *)())  (MK_FP(spanfunc_jump_lookup_segment, 	   R_WriteBackViewConstantsSpan24Offset)));
-void (__far* R_WriteBackViewConstantsMaskedCall)() = 						  ((void    (__far *)())  (MK_FP(maskedconstants_funcarea_segment, R_WriteBackViewConstantsMasked24Offset)));
-void (__far* R_WriteBackViewConstants)() =    ((void (__far *)())     	                              (MK_FP(0000,          				   R_WriteBackViewConstants24Offset)));
-void (__far* R_RenderPlayerView)() =          ((void (__far *)())     	                              (MK_FP(0000,          				   R_RenderPlayerView24Offset)));
-
+// void (__far* P_SpawnMapThing)() =            ((void (__far *)(mapthing_t mthing, int16_t key))        (MK_FP(physics_highcode_segment, 		   P_SpawnMapThingOffset)));
 void (__far* P_SpawnSpecials)() =             ((void (__far *)())     	                              (MK_FP(physics_highcode_segment,         P_SpawnSpecialsOffset)));
 void (__far* AM_Drawer)() =                    ((void (__far *)())     	                              (MK_FP(physics_highcode_segment,         AM_DrawerOffset)));
 void (__far* S_Start)() =                      ((void (__far *)())     	                              (MK_FP(physics_highcode_segment,         S_StartOffset)));
 void (__far* S_StartSound)() =                 ((void (__far *)(uint16_t ax, uint16_t dx))     	      (MK_FP(physics_highcode_segment,         S_StartSoundFarOffset)));
 void (__far* M_Init)() =                      ((void (__far *)())     	                              (MK_FP(menu_code_area_segment,           M_InitOffset)));
+
+
+
+void (__far* R_WriteBackViewConstantsSpanCall)()  =   				      	  ((void    (__far *)())  (MK_FP(spanfunc_jump_lookup_segment, 	   R_WriteBackViewConstantsSpan24Offset)));
+void (__far* R_WriteBackViewConstantsMaskedCall)() = 						  ((void    (__far *)())  (MK_FP(maskedconstants_funcarea_segment, R_WriteBackViewConstantsMasked24Offset)));
+void (__far* R_WriteBackViewConstants)() =    ((void (__far *)())     	                              (MK_FP(0000,          				   R_WriteBackViewConstants24Offset)));
+void (__far* R_RenderPlayerView)() =          ((void (__far *)())     	                              (MK_FP(0000,          				   R_RenderPlayerView24Offset)));
+
 
 
 // int32_t codestartposition[NUM_OVERLAYS];
