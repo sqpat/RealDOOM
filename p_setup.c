@@ -1159,6 +1159,7 @@ void __near Z_ClearDeadCode() {
 	//9634           - 12/21/25    - sb_init not yet added. needs to go soon.
 	//10706          - 12/21/25    - sb_init asm added
 	//10370          - 12/21/25    - sb_init asm fixed
+	//9528           - 12/25/25    - r_init asm, some p_init work
 
 	uint16_t size = endaddr - startaddr-16;
 	FILE* fp;

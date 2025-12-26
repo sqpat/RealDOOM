@@ -955,3 +955,12 @@ SWITCHLIST_T STRUC
     switchlist_name2        db 9  DUP(?) ; 9
     switchlist_episode      dw ?         ; 012h
 SWITCHLIST_T ENDS
+
+
+ANIMDEF_T STRUC
+    animdef_istexture      db ?         ; 0
+    animdef_endname        db 9  DUP(?) ; 1
+    animdef_startname      db 9  DUP(?) ; 0A
+ANIMDEF_T ENDS
+
+

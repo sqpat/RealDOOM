@@ -33,6 +33,9 @@ EXTRN fclose_:FAR
 EXTRN locallib_far_fread_:FAR
 EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
 EXTRN R_TextureNumForName_:NEAR
+EXTRN R_CheckTextureNumForName_:NEAR
+EXTRN R_FlatNumForName_:NEAR
+EXTRN W_CheckNumForName_:NEAR
  
 .DATA
 
@@ -49,7 +52,7 @@ ENDP
 
 NUMSWITCHDEFS = 41
 BAD_TEXTURE = 0FFFFh
-
+NUMANIMDEFS = 23
 PROC    P_InitSwitchList_ NEAR
 PUBLIC  P_InitSwitchList_
 
@@ -159,8 +162,106 @@ SHIFT_MACRO shr       di 2
 mov   word ptr ds:[_numswitches], di
 jmp   done_with_switches
 
+ENDP
 
 
+PROC    P_InitPicAnims_ NEAR
+PUBLIC  P_InitPicAnims_
+
+PUSHA_NO_AX_OR_BP_MACRO
+push   bp
+mov    bp, sp
+sub    sp, (NUMANIMDEFS * (SIZE ANIMDEF_T)) +1   ; +1 because its odd... i think odd SP is bad
+
+
+mov   ax, OFFSET _doomdata_bin_string
+call  CopyString13_
+mov   dx, OFFSET  _fopen_rb_argument
+call  fopen_        ; fopen("DOOMDATA.BIN", "rb"); 
+mov   di, ax ; di stores fp
+
+; no fseek? at the start of the file i guess
+
+;fread(animdefs, sizeof(animdef_t), NUMANIMDEFS, fp);
+mov   ax, sp
+mov   cx, di ; fp
+mov   dx, SIZE ANIMDEF_T
+mov   bx, NUMANIMDEFS
+call  fread_
+
+xchg  ax, di
+call  fclose_
+
+mov   di, OFFSET _anims
+mov   si, sp
+mov   cx, NUMANIMDEFS
+
+
+; di = anims/lastanim
+; si = animdefs
+
+
+loop_next_animdef:
+lea   ax, [si + ANIMDEF_T.animdef_startname]
+lea   bx, [si + ANIMDEF_T.animdef_endname]
+
+cmp   byte ptr ds:[si + ANIMDEF_T.animdef_istexture], ch ; known zero
+je    not_texture
+is_texture:
+; different episode?
+;			if (R_CheckTextureNumForName(animdefs[i].startname) == BAD_TEXTURE)
+;				continue;
+call  R_CheckTextureNumForName_
+cmp   ax, BAD_TEXTURE
+je    continue_animdef_loop
+
+;    lastanim->picnum = R_TextureNumForName(animdefs[i].endname);
+;    lastanim->basepic = R_TextureNumForName(animdefs[i].startname);
+xchg  ax, bx    ; bx stores startname result, ax gets endname ptr
+call  R_TextureNumForName_
+jmp   done_with_anim_picnames
+not_texture:
+;			if (W_CheckNumForName(animdefs[i].startname) == -1)
+;				continue;
+call  W_CheckNumForName_
+cmp   ax, -1
+je    continue_animdef_loop
+lea   ax, [si + ANIMDEF_T.animdef_startname]
+mov   dx, ss
+call  R_FlatNumForName_
+xchg  ax, bx    ; bx stores startname result, ax gets endname ptr
+mov   dx, ss
+call  R_FlatNumForName_
+
+done_with_anim_picnames:
+
+; todo reorder to make this easier to stosb? 0 2 4 5
+
+;    lastanim->istexture = animdefs[i].istexture;
+;	 lastanim->numpics = lastanim->picnum - lastanim->basepic + 1;
+
+mov   word ptr ds:[di + P_SPEC_ANIM_T.pspecanim_picnum], ax
+mov   word ptr ds:[di + P_SPEC_ANIM_T.pspecanim_basepic], bx
+
+sub   ax, bx  ; lastanim->picnum - lastanim->basepic
+inc   ax
+mov   byte ptr ds:[di + P_SPEC_ANIM_T.pspecanim_numpics], al
+
+mov   al, byte ptr ds:[si + ANIMDEF_T.animdef_istexture]
+mov   byte ptr ds:[di + P_SPEC_ANIM_T.pspecanim_istexture], al
+add   di, SIZE P_SPEC_ANIM_T
+
+continue_animdef_loop:
+
+add   si, SIZE ANIMDEF_T
+
+loop  loop_next_animdef
+
+mov   word ptr ds:[_lastanim], di
+
+LEAVE_MACRO
+POPA_NO_AX_OR_BP_MACRO
+ret
 
 
 ENDP
