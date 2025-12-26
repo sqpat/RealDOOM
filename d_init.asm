@@ -72,7 +72,6 @@ EXTRN locallib_strcpy_:NEAR
 .DATA
 
 
-EXTRN _M_Init:DWORD
 ;EXTRN _noblit:BYTE
 EXTRN ___iob:WORD
 
@@ -891,7 +890,8 @@ call  DoPrintChain_
 
 
 call  Z_QuickMapMenu_
-call  dword ptr ds:[_M_Init]
+db    09Ah
+dw    M_INITOFFSET, MENU_CODE_AREA_SEGMENT
 call  Z_QuickMapPhysics_
 
 

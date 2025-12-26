@@ -45,8 +45,10 @@
 
 
 
- 
- 
+void __far P_SpawnMapThingCallThrough(mapthing_t mthing, int16_t key);
+void __far P_SpawnSpecialsCallThrough();
+void __far S_StartCallThrough();
+
 uint16_t   __near  R_TextureNumForName(int8_t* __near name);
 uint8_t __near R_FlatNumForName(int8_t __far* name);
 
@@ -85,7 +87,7 @@ void __near P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 	// will be set by player think.
 	player.viewzvalue.w = 1;
 	
-	S_Start();
+	S_StartCallThrough();
 	Z_FreeConventionalAllocations();
 
 	// TODO reset 32 bit counters to start values here..
@@ -144,7 +146,7 @@ void __near P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
  
 
 	// set up world state
-	P_SpawnSpecials();
+	P_SpawnSpecialsCallThrough();
 	
 	Z_QuickMapRender();
 	Z_QuickMapRenderPlanes();
@@ -557,7 +559,6 @@ void __near P_LoadNodes(int16_t lump) {
 
 
 
-void __far P_SpawnMapThingCallThrough(mapthing_t mthing, int16_t key);
 
 
 //

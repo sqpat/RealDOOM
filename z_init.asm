@@ -94,11 +94,6 @@ EXTRN _R_WriteBackViewConstantsSpanCall:DWORD
 EXTRN _R_WriteBackViewConstantsMaskedCall:DWORD
 EXTRN _R_WriteBackViewConstants:DWORD
 EXTRN _R_RenderPlayerView:DWORD
-EXTRN _P_SpawnSpecials:DWORD
-EXTRN _AM_Drawer:DWORD
-EXTRN _S_Start:DWORD
-EXTRN _S_StartSound:DWORD
-EXTRN _M_Init:DWORD
 
 
 SCAMP_PAGE_SELECT_REGISTER = 0E8h

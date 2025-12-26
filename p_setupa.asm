@@ -49,7 +49,22 @@ PUBLIC  P_SpawnMapThingCallThrough_
 ;db    09Ah  ; call
 db    0EAh   ; jump
 dw    P_SPAWNMAPTHINGOFFSET, PHYSICS_HIGHCODE_SEGMENT
-ret
+; ret   ; ret unused..
+ENDP
+
+
+PROC    P_SpawnSpecialsCallThrough_ FAR
+PUBLIC  P_SpawnSpecialsCallThrough_
+db    0EAh   ; jump
+dw    P_SPAWNSPECIALSOFFSET, PHYSICS_HIGHCODE_SEGMENT
+; ret   ; ret unused..
+ENDP
+
+PROC    S_StartCallThrough_ FAR
+PUBLIC  S_StartCallThrough_
+db    0EAh   ; jump
+dw    S_STARTOFFSET, PHYSICS_HIGHCODE_SEGMENT
+; ret   ; ret unused..
 ENDP
 
 

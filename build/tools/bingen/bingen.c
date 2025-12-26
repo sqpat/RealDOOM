@@ -670,7 +670,9 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "R_RENDERPLAYERVIEWFLOFFSET             = 0%Xh\n", FP_OFF(R_RenderPlayerViewFL)              - FP_OFF(R_BSPFL_STARTMARKER));
 	fprintf(fp, "R_GETCOMPOSITETEXTUREFLOFFSET          = 0%Xh\n", FP_OFF(R_GetCompositeTexture_FarFL)       - FP_OFF(R_BSPFL_STARTMARKER));
 	fprintf(fp, "R_GETPATCHTEXTUREFLOFFSET              = 0%Xh\n", FP_OFF(R_GetPatchTexture_FarFL)           - FP_OFF(R_BSPFL_STARTMARKER));
-
+    fprintf(fp, "M_INITOFFSET                           = 0%Xh\n", FP_OFF(M_Init)                            - FP_OFF(M_MENU_STARTMARKER));
+    fprintf(fp, "P_SPAWNSPECIALSOFFSET                  = 0%Xh\n", FP_OFF(P_SpawnSpecials)                   - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "S_STARTOFFSET                          = 0%Xh\n", FP_OFF(S_Start)                           - FP_OFF(P_SIGHT_STARTMARKER));
 
 
 
