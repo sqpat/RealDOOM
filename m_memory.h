@@ -16,12 +16,21 @@
 //  hardcoded memory locations
 //
 
-#include "r_data.h"
-#include "r_defs.h"
 #include "m_offset.h"
 
 #ifndef __MEMORY_H__
 #define __MEMORY_H__
+
+
+#define LIGHTLEVELS	        16
+#define LIGHTSEGSHIFT	         4
+
+#define MAXLIGHTSCALE		48
+#define LIGHTSCALESHIFT		12
+#define MAXLIGHTZ	       128
+#define LIGHTZSHIFT		20
+#define NUMCOLORMAPS		32
+
 
 /*
  LAYOUT OF FILE
@@ -44,7 +53,6 @@
 #define FIXED_DS_SEGMENT  0x3DC0
 
 // ALLOCATION DEFINITIONS: UPPER MEMORY
-
 
 
 

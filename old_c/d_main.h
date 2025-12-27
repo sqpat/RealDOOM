@@ -19,7 +19,6 @@
 #ifndef __D_MAIN__
 #define __D_MAIN__
 
-#include "d_event.h"
 
 
 void __near D_DoomMain (void);

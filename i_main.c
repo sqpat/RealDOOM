@@ -20,7 +20,7 @@
 #include "doomdef.h"
 
 //#include "m_misc.h"
-#include "i_system.h"
+// #include "i_system.h"
 #include <dos.h>
 #include "m_near.h"
 

@@ -18,31 +18,29 @@
 //
 
 #include "doomdef.h"
+#include "doomdata.h"
 
 #include <math.h>
 
 #include "z_zone.h"
-
-#include "m_misc.h"
-
-#include "g_game.h"
-
-#include "i_system.h"
 #include "w_wad.h"
+#include "r_defs.h"
+#include "r_state.h"
 
-#include "p_local.h"
 #include "p_setup.h"
 
-#include "s_sound.h"
 
-#include "v_video.h"
 
-#include "doomstat.h"
+
 #include <dos.h>
 #include "m_memory.h"
 #include "m_near.h"
 
 
+
+void __near M_AddToBox16 ( int16_t	x, int16_t	y, int16_t __near*	box  );
+
+ 
 
 
 void __far P_SpawnMapThingCallThrough(mapthing_t mthing, int16_t key);

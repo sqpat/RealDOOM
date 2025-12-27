@@ -12,28 +12,40 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// DESCRIPTION:
-//   All the global variables that store the internal state.
-//   Theoretically speaking, the internal state of the engine
-//    should be found by looking at the variables collected
-//    here, and every relevant module will have to include
-//    this header file.
-//   In practice, things are a bit messy.
+// DESCRIPTION:  Head up display
 //
 
+#ifndef __HU_STUFF_H__
+#define __HU_STUFF_H__
 
-#ifndef __D_STATE__
-#define __D_STATE__
-
-// We need globally shared data structures,
-//  for defining the global state variables.
-#include "doomdata.h"
-#include "d_net.h"
-
-// We need the playr data structure as well.
-#include "d_player.h"
+#include "r_defs.h"
 
 
+
+
+#define HU_BROADCAST	5
+
+#define HU_MSGREFRESH	KEY_ENTER
+#define HU_MSGX		0
+#define HU_MSGY		0
+#define HU_MSGWIDTH	64	// in characters
+#define HU_MSGHEIGHT	1	// in lines
+#define HU_INPUTY HU_MSGY + HUD_FONTHEIGHT
+#define HU_MSGTIMEOUT	(4*TICRATE)
+
+//
+// HEADS UP TEXT
+//
+
+void __near HU_Init(void);
+void __far HU_Start(void);
+
+boolean __near HU_Responder(event_t __far* ev);
+
+void __near HU_Ticker(void);
+void __near HU_Drawer(void);
+void __near HU_Erase(void);
+ 
 
 
 #endif

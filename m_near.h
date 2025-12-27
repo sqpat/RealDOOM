@@ -25,26 +25,149 @@
 
 #include "dutils.h"
 
-#include "am_map.h"
 #include "m_memory.h"
-#include "m_misc.h"
-#include "d_event.h"
-#include "d_ticcmd.h"
-#include "st_lib.h"
-#include "st_stuff.h"
-#include "hu_lib.h"
-#include "dmx.h"
-#include "m_menu.h"
-#include "wi_stuff.h"
-#include "p_spec.h"
-#include "p_local.h"
 #include "z_zone.h"
-#include "d_englsh.h"
-#include "sounds.h"
-#include "s_sound.h"
+//#include "d_englsh.h"
+
+typedef uint8_t playerstate_t;
+typedef uint8_t sfxenum_t;
+
+typedef struct {
+	int8_t  forwardmove;	// *2048 for move
+	int8_t  sidemove;	// *2048 for move
+    int16_t angleturn;	// <<16 for angle delta
+    int16_t consistancy;	// checks for net game
+    byte    chatchar;
+    byte    buttons;
+} ticcmd_t;
+
+
+typedef struct player_s{
+
+    ticcmd_t		cmd;  // 8 bytes
+
+    // Determine POV,
+    //  including viewpoint bobbing during movement.
+    // Focal origin above r.z
+    fixed_t_union		viewzvalue;             // 08
+    // Base height above floor for viewz.
+	fixed_t_union		viewheightvalue;        // 0C
+    // Bob/squat speed.
+	fixed_t_union     deltaviewheight;          // 10
+    // bounded/scaled total momentum.
+	fixed_t_union     bob;                      // 14
+    // This is only used between levels,
+    // mo->health is used during levels.
+    int16_t		health;	                        // 18
+
+    int16_t		armorpoints;                    // 1A
+    // Armor type is 0-2.
+    int8_t			armortype;	                // 1C
+    playerstate_t	playerstate;                // 1D
+
+    // Power ups. invinc and invis are tic counters.
+    int16_t		powers[NUMPOWERS];              // 1E
+    boolean		cards[NUMCARDS];
+    
+    weapontype_t	readyweapon;
+    
+    // Is wp_nochange if not changing.
+    weapontype_t	pendingweapon;
+
+    boolean			weaponowned[NUMWEAPONS];
+    // Bit flags, for cheats and debug.
+    // See cheat_t, above.
+    int8_t			cheats;		
+
+
+
+    int16_t			ammo[NUMAMMO];
+    int16_t			maxammo[NUMAMMO];
+
+
+    // True if button down last tic.
+    int8_t			attackdown;
+    int8_t			usedown;
+
+    
+
+     // For intermission stats.
+    int16_t			killcount;
+    int16_t			itemcount;
+    int16_t			secretcount;
+
+    // Hint messages.
+    int16_t		message;
+	//int8_t		messagestring[40];
+	int8_t*		messagestring;  // note unused now. 
+
+    // For screen flashing (red or bright).
+    int16_t			damagecount;
+    int8_t			bonuscount;
+    // Refired shots are less accurate.
+    int8_t			refire;		
+
+
+    // Who did damage (NULL for floors/ceilings).
+    THINKERREF		attackerRef;
+    
+    // So gun flashes light up areas.
+    int8_t			extralightvalue;
+
+    // Current PLAYPAL, ???
+    //  can be set to REDCOLORMAP for pain, etc.
+    uint8_t			fixedcolormapvalue;
+
+    // Player skin colorshift,
+    //  0-3 for which color to draw player.
+    int8_t			colormap;	
+    // True if secret level has been done.
+    boolean		didsecret;	
+
+    // Overlay view sprites (gun, etc).
+    boolean		backpack;
+
+
+} player_t;
+
+typedef struct{
+
+    boolean	in;	// whether the player is in game
+    
+    // Player stats, kills, collected items etc.
+    int16_t		skills;
+    int16_t		sitems;
+    int16_t		ssecret;
+    int16_t		stime; 
+  
+} wbplayerstruct_t;
+
+typedef struct{
+
+    int8_t		epsd;	// episode # (0-2)
+
+    // if true, splash the secret level
+    boolean	didsecret;
+    
+    // previous and next levels, origin 0
+    int8_t		last;
+    int8_t		next;	
+    
+    int16_t		maxkills;
+    int16_t		maxitems;
+    int16_t		maxsecret;
+
+    // the par time
+    int16_t		partime;
+    
+    // index of this player in game
+    //int16_t		pnum;	
+
+	wbplayerstruct_t	plyr;
+
+} wbstartstruct_t;
 
 #define SAVESTRINGSIZE        24u
-
 
 
 #define NUM_CACHE_LUMPS 4
@@ -972,7 +1095,6 @@ extern void (__far* M_Init)();
 
 
 
-extern int8_t     st_stuff_buf[ST_MSGWIDTH];
 
 
 

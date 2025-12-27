@@ -1,26 +1,15 @@
 #include "z_zone.h"
-#include "i_system.h"
 #include "doomdef.h"
 
 #include "m_menu.h"
 #include "w_wad.h"
-#include "r_data.h"
 
-#include "doomstat.h"
-#include "r_bsp.h"
-#include "r_local.h"
-#include "p_local.h"
-#include "v_video.h"
-#include "st_stuff.h"
-#include "hu_stuff.h"
-#include "wi_stuff.h"
 
 #include <dos.h>
 #include <conio.h>
 
 #include <stdlib.h>
 #include "m_memory.h"
-//#include "m_near.h"
 
 void __far R_SPAN16_STARTMARKER();
 void __far R_SPAN16_ENDMARKER();
@@ -111,14 +100,17 @@ void __far D_ALGO_END();
 void __far R_SKY_STARTMARKER();
 void __far R_SKY_ENDMARKER();
 void __far R_DrawSkyColumn(int16_t arg_dc_yh, int16_t arg_dc_yl);
-void __far R_DrawSkyPlane(int16_t minx, int16_t maxx, visplane_t __far*		pl);
-void __far R_DrawSkyPlaneDynamic(int16_t minx, int16_t maxx, visplane_t __far*		pl);
+void __far R_DrawSkyPlane();
+void __far R_DrawSkyPlaneDynamic();
 
 void __far R_SKYFL_STARTMARKER();
 void __far R_SKYFL_ENDMARKER();
 void __far R_DrawSkyColumnFL(int16_t arg_dc_yh, int16_t arg_dc_yl);
-void __far R_DrawSkyPlaneFL(int16_t minx, int16_t maxx, visplane_t __far*		pl);
-void __far R_DrawSkyPlaneDynamicFL(int16_t minx, int16_t maxx, visplane_t __far*		pl);
+void __far R_DrawSkyPlaneFL();
+void __far R_DrawSkyPlaneDynamicFL();
+
+void __far P_AddActivePlat();
+void __far P_AddActiveCeiling();
 
 void __far R_WriteBackViewConstantsSpan();
 void __far V_DrawPatchFlipped();
@@ -219,7 +211,7 @@ void __far P_CreateThinkerFar();
 void __far M_MENU_STARTMARKER();
 void __far M_MENU_ENDMARKER();
 void __far M_Init();
-void __far M_Responder (event_t __far* ev);
+void __far M_Responder ();
 void __far M_StartControlPanel();
 
 void __far M_Drawer();

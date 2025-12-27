@@ -26,7 +26,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "doomtype.h" 
-#include "d_math.h" 
 
 
 

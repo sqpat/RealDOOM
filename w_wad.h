@@ -19,7 +19,6 @@
 
 #ifndef __W_WAD__
 #define __W_WAD__
-#include "r_defs.h"
 
 
 //
