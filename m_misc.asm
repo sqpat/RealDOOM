@@ -19,7 +19,7 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN fopen_:FAR
+EXTRN locallib_fopen_:NEAR
 EXTRN fclose_:FAR
 EXTRN fseek_:FAR
 EXTRN ftell_:FAR
@@ -98,7 +98,7 @@ push  di
 
 mov   di, dx ; backup dx
 mov   dx, _fopen_wb_argument
-call  fopen_
+call  locallib_fopen_
 
 test  ax, ax
 je    exit_writefile_return_0
@@ -142,7 +142,7 @@ PUBLIC  M_ReadFile_
 PUSHA_NO_AX_OR_BP_MACRO
 
 mov   dx, _fopen_rb_argument
-call  fopen_
+call  locallib_fopen_
 
 push  bx
 push  cx

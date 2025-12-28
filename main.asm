@@ -46,7 +46,7 @@ EXTRN TryRunTics_:NEAR
 
 EXTRN FastDiv3216u_:FAR
 EXTRN Z_SetOverlay_:FAR
-EXTRN fopen_:FAR
+EXTRN locallib_fopen_:NEAR
 EXTRN fgetc_:FAR
 EXTRN fputc_:FAR
 EXTRN fclose_:FAR
@@ -398,7 +398,7 @@ mov   ax, OFFSET _used_dumpfile
 call  CopyString13_
 
 mov   dx, OFFSET _fopen_w_argument
-call  fopen_
+call  locallib_fopen_
 mov   bx, ax    ; store 
 xor   di, di
 
@@ -1394,7 +1394,7 @@ call  CopyString13_
 
 mov   dx, OFFSET _fopen_r_argument
 ;mov   ax, OFFSET _filename_argument    ; already set above
-call  fopen_
+call  locallib_fopen_
 
 mov   bx, ax
 mov   word ptr [bp + 076h], ax          ; store fopen fp file handle
@@ -1620,7 +1620,7 @@ call  CopyString13_
 
 mov   dx, OFFSET  _fopen_w_argument
 ;mov   ax, OFFSET _filename_argument  ; already set above
-call  fopen_
+call  locallib_fopen_
 
 
 mov   cx, ax

@@ -20,7 +20,7 @@ INSTRUCTION_SET_MACRO
 
  
 EXTRN locallib_fread_:NEAR
-EXTRN fopen_:FAR
+EXTRN locallib_fopen_:NEAR
 EXTRN fclose_:FAR
 EXTRN fseek_:FAR
 EXTRN locallib_far_fread_:FAR
@@ -810,7 +810,7 @@ call  CopyString13_Zonelocal_
 
 les   bx, dword ptr cs:[si + _codestartposition-4]
 mov   cx, es
-call  fopen_
+call  locallib_fopen_
 xor   dx, dx ; SEEK_SET
 mov   si, ax
 call  fseek_

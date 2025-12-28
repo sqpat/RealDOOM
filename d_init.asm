@@ -22,7 +22,7 @@ INSTRUCTION_SET_MACRO
 
 EXTRN locallib_fread_:NEAR
 EXTRN fseek_:FAR
-EXTRN fopen_:FAR
+EXTRN locallib_fopen_:NEAR
 EXTRN fclose_:FAR
 EXTRN setbuf_:FAR
 EXTRN exit_:FAR
@@ -239,7 +239,7 @@ push    ss
 pop     ds
 
 mov     dx, OFFSET _fopen_rb_argument
-call    fopen_
+call    locallib_fopen_
 test    ax, ax
 je      do_string_error
 
@@ -1347,7 +1347,7 @@ movsb
 push    ss
 pop     ds
 mov     dx, OFFSET _fopen_rb_argument
-call    fopen_
+call    locallib_fopen_
 push    ax
 xchg    cx, ax
 lea     ax, [bp - 6]

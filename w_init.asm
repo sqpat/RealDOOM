@@ -22,7 +22,7 @@ INSTRUCTION_SET_MACRO
 EXTRN locallib_fread_:NEAR
 EXTRN fseek_:FAR
 EXTRN ftell_:FAR
-EXTRN fopen_:FAR
+EXTRN locallib_fopen_:NEAR
 EXTRN setbuf_:FAR
 EXTRN exit_:FAR
 EXTRN locallib_far_fread_:FAR
@@ -94,7 +94,7 @@ not_wad:
  
 mov    ax, di
 mov    dx, OFFSET _fopen_rb_argument
-call   fopen_
+call   locallib_fopen_
 
 push   di  ; filename
 push   cs  ; common DEBUG_PRINT args

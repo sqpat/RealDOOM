@@ -19,6 +19,7 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
+EXTRN fopen_:FAR
 EXTRN fread_:FAR
 EXTRN fwrite_:FAR
 
@@ -52,6 +53,20 @@ ENDP
 PROC    locallib_fread_   NEAR
 PUBLIC  locallib_fread_
 call    fread_
+ret
+ENDP
+
+
+PROC    locallib_fopenfromfar_   FAR
+PUBLIC  locallib_fopenfromfar_
+call    fopen_
+retf
+ENDP
+
+
+PROC    locallib_fopen_   NEAR
+PUBLIC  locallib_fopen_
+call    fopen_
 ret
 ENDP
 

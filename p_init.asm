@@ -30,7 +30,7 @@ EXTRN FixedMul_:FAR
 EXTRN CopyString13_:NEAR
 EXTRN locallib_fread_:NEAR
 EXTRN fseek_:FAR
-EXTRN fopen_:FAR
+EXTRN locallib_fopen_:NEAR
 EXTRN fclose_:FAR
 EXTRN locallib_far_fread_:FAR
 EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
@@ -182,7 +182,7 @@ call   Z_QuickMapRender_9000To6000_  ; for R_TextureNumForName
 mov   ax, OFFSET _doomdata_bin_string
 call  CopyString13_
 mov   dx, OFFSET  _fopen_rb_argument
-call  fopen_        ; fopen("DOOMDATA.BIN", "rb"); 
+call  locallib_fopen_        ; fopen("DOOMDATA.BIN", "rb"); 
 mov   di, ax ; di stores fp
 
 xor   dx, dx  ; SEEK_SET
@@ -285,7 +285,7 @@ done_with_switches:
 mov   ax, OFFSET _doomdata_bin_string
 call  CopyString13_
 mov   dx, OFFSET  _fopen_rb_argument
-call  fopen_        ; fopen("DOOMDATA.BIN", "rb"); 
+call  locallib_fopen_        ; fopen("DOOMDATA.BIN", "rb"); 
 mov   di, ax ; di stores fp
 
 ; no fseek? at the start of the file i guess
@@ -406,7 +406,7 @@ rep   stosw
 mov   ax, OFFSET _doomdata_bin_string
 call  CopyString13_
 mov   dx, OFFSET  _fopen_rb_argument
-call  fopen_        ; fopen("DOOMDATA.BIN", "rb"); 
+call  locallib_fopen_        ; fopen("DOOMDATA.BIN", "rb"); 
 mov   di, ax ; di stores fp
 
 xor   dx, dx  ; SEEK_SET
