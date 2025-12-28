@@ -67,6 +67,49 @@ dw    S_STARTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 ret
 ENDP
 
+PROC    P_InitThinkersCallThrough_ NEAR
+PUBLIC  P_InitThinkersCallThrough_
+call    P_InitThinkers_
+ret
+ENDP
+
+
+PROC    P_InitThinkers_ FAR
+PUBLIC  P_InitThinkers_
+
+push    di
+push    cx
+push    dx
+
+mov     di, OFFSET _thinkerlist
+mov     dx, 1
+mov     word ptr ds:[di + THINKER_T.t_next], dx
+mov     word ptr ds:[di + THINKER_T.t_prevFunctype], dx
+mov     ax, MAX_THINKERS  ; technically MAX_THINKERS | TF_NULL_HIGHBITS
+mov     cx, ax
+; dh already 0
+mov     dl, (SIZE THINKER_T) - 2  ; account for stosw
+
+push    ds
+pop     es
+
+;add    di, THINKER_T.t_prevFunctype    ; unncessary, equals 0.
+
+loop_init_next_thinker:
+stosw
+add     di, dx
+loop    loop_init_next_thinker
+
+mov     word ptr ds:[_currentThinkerListHead], cx   ; cx is 0 after loop
+
+pop     dx
+pop     cx
+pop     di
+
+retf
+ENDP
+
+
 
 
 PROC    P_SETUP_ENDMARKER_ NEAR

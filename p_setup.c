@@ -980,6 +980,9 @@ void __near P_GroupLines(void) {
 //
 // P_InitThinkers
 //
+void __near P_InitThinkersCallThrough();
+
+/*
 void  __far P_InitThinkers (void) {
 	int16_t i;
 	thinkerlist[0].next = 1;
@@ -993,7 +996,7 @@ void  __far P_InitThinkers (void) {
 	currentThinkerListHead = 0;
 
 }
- 
+ */
  
 
 
