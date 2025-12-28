@@ -265,12 +265,9 @@ void __far Z_SetOverlay(int8_t wipeId);
 
 #define EMS_2_MB_BUILD_SETTING                      1
 #define EMS_4_MB_BUILD_SETTING                      2
-// Above board uses 384kb of its 2MB for conventional base memory. So it must fit in 1664 KB (104 pages), not 2048 KB (128 pages)
-#define EMS_ABOVEBOARD_BUILD_SETTING                3
 
 #define EMS_BUILD_SETTING                           EMS_2_MB_BUILD_SETTING
 // #define EMS_BUILD_SETTING                           EMS_4_MB_BUILD_SETTING
-// #define EMS_BUILD_SETTING                           EMS_ABOVEBOARD_BUILD_SETTING
 
 
 
@@ -278,9 +275,10 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define NUM_FLAT_CACHE_PAGES                        6
 #define NUM_SPRITE_CACHE_PAGES                      20
 // dont do more than 63 pages. used as an index in a 4 byte thing. asm assumes one byte index
+// todo get this to 29, maybe 30...
 #define NUM_TEXTURE_PAGES                           24
 #define NUM_MUSIC_PAGES                             4
-#define NUM_SFX_PAGES                               8
+#define NUM_SFX_PAGES                               7
 #elif EMS_BUILD_SETTING == EMS_4_MB_BUILD_SETTING  
 // TODO
 #define NUM_FLAT_CACHE_PAGES                        16
@@ -288,12 +286,6 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define NUM_TEXTURE_PAGES                           64
 #define NUM_MUSIC_PAGES                             4
 #define NUM_SFX_PAGES                               32
-#elif EMS_BUILD_SETTING == EMS_ABOVEBOARD_BUILD_SETTING  
-#define NUM_FLAT_CACHE_PAGES                        6
-#define NUM_SPRITE_CACHE_PAGES                      20
-#define NUM_TEXTURE_PAGES                           24
-#define NUM_MUSIC_PAGES                             4
-#define NUM_SFX_PAGES                               7
 #endif
 
 #define NUM_WAD_PAGES                               3

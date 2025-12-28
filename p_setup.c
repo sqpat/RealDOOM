@@ -39,14 +39,17 @@
 
 
 
-void __near M_AddToBox16 ( int16_t	x, int16_t	y, int16_t __near*	box  );
 
  
 
 
+void __far P_InitThinkers (void);
 void __far P_SpawnMapThingCallThrough(mapthing_t mthing, int16_t key);
-void __far P_SpawnSpecialsCallThrough();
-void __far S_StartCallThrough();
+// void __far I_Error (int8_t __far *error, ...);
+
+void __near P_SpawnSpecialsCallThrough();
+void __near S_StartCallThrough();
+void __near M_AddToBox16 ( int16_t	x, int16_t	y, int16_t __near*	box  );
 
 uint16_t   __near  R_TextureNumForName(int8_t* __near name);
 uint8_t __near R_FlatNumForName(int8_t __far* name);
@@ -60,12 +63,11 @@ void __near P_LoadLineDefs(int16_t lump);
 void __near P_LoadBlockMap(int16_t lump);
 void __near P_LoadThings(int16_t lump);
 void __near P_LoadSegs(int16_t lump);	
-void __far P_InitThinkers (void);
 void __near Z_FreeConventionalAllocations();
 void __near P_GroupLines();
 
-void R_LoadPatchColumnsColormap0(uint16_t lump, segment_t texlocation_segment, boolean ismasked);
-void GAMEKEYDOWNTHING();
+void __near R_LoadPatchColumnsColormap0(uint16_t lump, segment_t texlocation_segment, boolean ismasked);
+// void GAMEKEYDOWNTHING();
 
 
 //
@@ -247,7 +249,7 @@ void __far S_Start(void) {
 // bypass the colofs cache stuff, store just raw pixel data at texlocation. 
 //void R_LoadPatchColumns(uint16_t lump, byte __far * texlocation, boolean ismasked){
 //todo remove texlocation_segment param if its hardcoded?
-void R_LoadPatchColumnsColormap0(uint16_t lump, segment_t texlocation_segment, boolean ismasked){
+void __near R_LoadPatchColumnsColormap0(uint16_t lump, segment_t texlocation_segment, boolean ismasked){
 	patch_t __far *patch = (patch_t __far *)SCRATCH_ADDRESS_4000;
 	int16_t col;
 	uint16_t destoffset = 0;
@@ -1135,9 +1137,8 @@ void __near Z_FreeConventionalAllocations() {
 
 
 void __near PSetupEndFunc(){}
-void D_INIT_STARTMARKER();
+void __near D_INIT_STARTMARKER();
 
-void __far I_Error (int8_t __far *error, ...);
 
 // clears dead initialization code.
 void __near Z_ClearDeadCode() {

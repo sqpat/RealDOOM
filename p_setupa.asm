@@ -53,18 +53,18 @@ dw    P_SPAWNMAPTHINGOFFSET, PHYSICS_HIGHCODE_SEGMENT
 ENDP
 
 
-PROC    P_SpawnSpecialsCallThrough_ FAR
+PROC    P_SpawnSpecialsCallThrough_ NEAR
 PUBLIC  P_SpawnSpecialsCallThrough_
-db    0EAh   ; jump
+db    09Ah  ; call
 dw    P_SPAWNSPECIALSOFFSET, PHYSICS_HIGHCODE_SEGMENT
-; ret   ; ret unused..
+ret
 ENDP
 
-PROC    S_StartCallThrough_ FAR
+PROC    S_StartCallThrough_ NEAR
 PUBLIC  S_StartCallThrough_
-db    0EAh   ; jump
+db    09Ah  ; call
 dw    S_STARTOFFSET, PHYSICS_HIGHCODE_SEGMENT
-; ret   ; ret unused..
+ret
 ENDP
 
 
