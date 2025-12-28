@@ -82,7 +82,7 @@ ENDP
 
 @
 
-(SIZE CHANNEL_T) = 6
+
 
 COMMENT @
 PROC do_logger_ NEAR

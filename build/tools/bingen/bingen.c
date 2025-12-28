@@ -1,7 +1,6 @@
+#include "constant.h"
 #include "z_zone.h"
-#include "doomdef.h"
 
-#include "m_menu.h"
 #include "w_wad.h"
 
 

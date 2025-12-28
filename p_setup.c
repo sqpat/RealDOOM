@@ -21,6 +21,7 @@
 #include "doomdata.h"
 
 #include <math.h>
+#include "constant.h"
 
 #include "z_zone.h"
 #include "w_wad.h"
@@ -28,7 +29,6 @@
 #include "r_state.h"
 
 #include "p_setup.h"
-#include "constant.h"
 
 
 

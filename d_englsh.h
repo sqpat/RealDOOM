@@ -21,8 +21,8 @@
 #define __D_ENGLSH__
 
 
-void __far getStringByIndex(int16_t stringindex, int8_t __far* returndata);
-int16_t getStringLength(int16_t stringindex);
+// void __far getStringByIndex(int16_t stringindex, int8_t __far* returndata);
+// int16_t getStringLength(int16_t stringindex);
 
 #define D_DEVSTR		    0  
 #define D_CDROM	            1  

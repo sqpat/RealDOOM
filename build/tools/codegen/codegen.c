@@ -1,17 +1,12 @@
 #include "doomdef.h"
+#include "constant.h"
 #include "m_offset.h"
 #include "m_memory.h"
 #include "m_near.h"
 #include "sounds.h"
-#include "i_sound.h"
-#include "g_game.h"
-#include "p_pspr.h"
-#include "p_inter.h"
-#include "s_sbsfx.h"
 #include "r_defs.h"
 #include "r_state.h"
 #include "p_setup.h"
-#include "constant.h"
 
 #define CONSTANTS_COUNT 976
 #define LOCALS_COUNT 22

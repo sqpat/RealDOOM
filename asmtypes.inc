@@ -964,3 +964,30 @@ ANIMDEF_T STRUC
 ANIMDEF_T ENDS
 
 
+
+WIPOINT_T STRUC
+    wipoint_x                db ? ; 0
+    wipoint_y                db ? ; 1
+WIPOINT_T ENDS
+
+
+
+
+WIANIM_T STRUC
+    wianim_type          db ?         ; 0
+    wianim_period        db ?         ; 1
+    wianim_nanims        db ?         ; 2
+    wianim_point         WIPOINT_T ?  ; 3
+    wianim_data1         db ?         ; 5
+    wianim_pRef          dw 3 DUP(?)  ; 6
+    wianim_nexttic       dw ?         ; 0Ch
+    wianim_ctr           db ?         ; 0Eh
+    wianim_state         db ?         ; 0Fh
+WIANIM_T ENDS
+
+
+CLIPRANGE_T STRUC
+    cliprange_first                dw ? ; 0
+    cliprange_last                 dw ? ; 2
+CLIPRANGE_T ENDS
+

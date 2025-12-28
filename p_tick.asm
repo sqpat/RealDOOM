@@ -70,7 +70,7 @@ inc       ax
 cmp       ax, dx
 je        error_no_thinker_found
 
-MUL_(SIZE THINKER_T) di ax
+MUL_SIZEOF_THINKER_T di ax
 
 
 
@@ -84,7 +84,7 @@ use_current_thinker_index:
 cmp       word ptr ds:[di], MAX_THINKERS
 je        found_thinker
 inc       ax
-add       di, (SIZE THINKER_T)
+add       di, SIZE THINKER_T
 cmp       ax, dx
 jne       loop_check_next_thinker
 error_no_thinker_found:
@@ -129,11 +129,11 @@ xchg      ax, si ; get orig ax back
 
 
 
-;imul      si, word ptr ds:[_thinkerlist], (SIZE THINKER_T)
+;imul      si, word ptr ds:[_thinkerlist], SIZE THINKER_T
 
 mov   dx, word ptr ds:[_thinkerlist]
 
-MUL_(SIZE THINKER_T) si, dx
+MUL_SIZEOF_THINKER_T si, dx
 
 pop       dx
 
@@ -161,7 +161,7 @@ PUBLIC P_UpdateThinkerFunc_
 
 push      bx
 
-MUL_(SIZE THINKER_T) bx ax
+MUL_SIZEOF_THINKER_T bx ax
 
 
 
@@ -182,7 +182,7 @@ PUBLIC P_RemoveThinker_
 
 push      bx
 
-MUL_(SIZE THINKER_T) bx, ax
+MUL_SIZEOF_THINKER_T bx, ax
 add       bx, _thinkerlist
 
 mov       ax, word ptr ds:[bx]
@@ -265,8 +265,8 @@ mov       si, word ptr ds:[_thinkerlist + THINKER_T.t_next]
 ;je        exit_run_thinkers  ; 0 thinkers ought to be impossible?
 do_next_thinker:
 
-;    imul  bx, si, (SIZE THINKER_T)  ; todo test shift vs mul...
-MUL_(SIZE THINKER_T) bx, si
+;    imul  bx, si, SIZE THINKER_T  ; todo test shift vs mul...
+MUL_SIZEOF_THINKER_T bx, si
 
 
 ; consider inc bx?
@@ -342,8 +342,8 @@ do_delete_me:
 les       ax, dword ptr ds:[bx + _thinkerlist]  ; prevref
 mov       cx, es                                ; nectref
 
-;imul      di, cx, (SIZE THINKER_T)
-MUL_(SIZE THINKER_T) di cx
+;imul      di, cx, SIZE THINKER_T
+MUL_SIZEOF_THINKER_T di cx
 
 mov       byte ptr ds:[di + _thinkerlist + THINKER_T.t_prevFunctype], 0
 and       ah, (TF_PREVBITS SHR 8)
@@ -354,7 +354,7 @@ add       word ptr ds:[di + _thinkerlist + THINKER_T.t_prevFunctype], ax
 
 
 
-MUL_(SIZE THINKER_T) di ax
+MUL_SIZEOF_THINKER_T di ax
 
 
 

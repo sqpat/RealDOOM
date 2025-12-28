@@ -22,10 +22,10 @@
 
 // Basics.
 #include "doomdef.h"
-#include "tables.h"
+// #include "tables.h"
 
 // We need the thinker_t stuff.
-#include "d_think.h"
+// #include "d_think.h"
 
 // We need the WAD data structure for Map things,
 // from the THINGS lump.

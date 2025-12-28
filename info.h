@@ -22,7 +22,8 @@
 #define __INFO__
 
 // Needed for action function pointer handling.
-#include "d_think.h"
+// #include "d_think.h"
+typedef uint8_t  ENEMYTHINKFUNCTION;
 
 #define STATENUM_NULL -1
 #define SPR_TROO 0

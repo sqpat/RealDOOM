@@ -42,7 +42,8 @@ str_savegame_too_big_end:
 
 
 SAVEGAMESIZE = 0F800h
-
+SIZEOF_PSPDEF_VANILLA_T = 010h
+SIZEOF_PLAYER_VANILLA_T = 0118h
 
 PROC P_UnArchivePlayers_  NEAR
 PUBLIC P_UnArchivePlayers_
@@ -178,13 +179,13 @@ mov   ax, word ptr es:[si + VANILLA_PLAYER_T.vanilla_player_psprites_field + 0Ch
 mov   word ptr ds:[bx + _psprites + 8], ax
 mov   ax, word ptr es:[si + VANILLA_PLAYER_T.vanilla_player_psprites_field + 0Eh]
 mov   word ptr ds:[bx + _psprites + 0Ah], ax
-add   si, (SIZE PSPDEF_VANILLA_T)
+add   si, SIZEOF_PSPDEF_VANILLA_T
 add   bx, (SIZE PSPDEF_T)
 cmp   bx, (SIZE PSPDEF_T) * NUMPSPRITES
 jne   load_next_sprite
 mov   word ptr ds:[di + 056h], 0FFFFh
 xor   ax, ax
-add   word ptr ds:[_save_p], (SIZE PLAYER_VANILLA_T) 
+add   word ptr ds:[_save_p], SIZEOF_PLAYER_VANILLA_T 
 
 mov   word ptr ds:[di + 05Ch], ax
 
@@ -381,8 +382,8 @@ ENDP
 
 
 
-(SIZE MOBJ_VANILLA_T) = 09Ah
-(SIZE THINKER_VANILLA_T) = 12
+SIZEOF_MOBJ_VANILLA_T = 09Ah
+
 
 PROC P_UnArchiveThinkers_  NEAR
 PUBLIC P_UnArchiveThinkers_
@@ -511,7 +512,7 @@ mov       ax, MOBJPOSLIST_6800_SEGMENT
 mov       es, ax
 
 
-add       si, (SIZE THINKER_VANILLA_T)      ; si + 0Ch skip this section
+add       si, (SIZE THINKER_T)      ; si + 0Ch skip this section
 
 mov       word ptr es:[di + 12], 0     ; snextRef
 
@@ -652,7 +653,7 @@ mov       ax, word ptr es:[bx + 2]
 mov       word ptr ds:[di + 8], ax              ; ceilingz
 
 
-add       si, ((SIZE MOBJ_VANILLA_T) - 096h) ; add 4 (for tracer)
+add       si, (SIZEOF_MOBJ_VANILLA_T - 096h) ; add 4 (for tracer)
 jmp       load_next_thinker
 
 
@@ -661,13 +662,13 @@ jmp       load_next_thinker
 
 ENDP
 
-(SIZE CEILING_VANILLA_T) = 030h
-(SIZE FLOORMOVE_VANILLA_T) = 02Ah
-(SIZE VLDOOR_VANILLA_T) = 028h
-(SIZE PLAT_VANILLA_T) = 038h
-(SIZE STROBE_VANILLA_T) = 024h
-(SIZE LIGHTFLASH_VANILLA_T) = 024h
-(SIZE GLOW_VANILLA_T) = 01Ch
+SIZEOF_CEILING_VANILLA_T = 030h
+SIZEOF_FLOORMOVE_VANILLA_T = 02Ah
+SIZEOF_VLDOOR_VANILLA_T = 028h
+SIZEOF_PLAT_VANILLA_T = 038h
+SIZEOF_STROBE_VANILLA_T = 024h
+SIZEOF_LIGHTFLASH_VANILLA_T = 024h
+SIZEOF_GLOW_VANILLA_T = 01Ch
 
 jump_table_unarchive_specials:
 dw  OFFSET  load_ceiling_special    ; 0
@@ -1155,7 +1156,7 @@ PUBLIC P_ArchivePlayers_
 les       di, dword ptr ds:[_save_p] ; already dword aligned..
 
 
-mov       cx, (SIZE PLAYER_VANILLA_T) / 2
+mov       cx, SIZEOF_PLAYER_VANILLA_T / 2
 
 
 mov       dx, di
@@ -1577,12 +1578,12 @@ mov       ax, MOBJPOSLIST_6800_SEGMENT
 mov       ds, ax
 
 
-mov       cx, (SIZE MOBJ_VANILLA_T) / 2
+mov       cx, SIZEOF_MOBJ_VANILLA_T / 2
 xor       ax, ax
 rep       stosw 
 
 
-lea       di, ds:[di + 0Ch - (SIZE MOBJ_VANILLA_T)] ; skip thinker fields and undo rep stosw
+lea       di, ds:[di + 0Ch - SIZEOF_MOBJ_VANILLA_T] ; skip thinker fields and undo rep stosw
 
 movsw   ; x
 movsw
@@ -1731,7 +1732,7 @@ movsw  ; options
 ; di now 096h
 
 
-add       di, ((SIZE MOBJ_VANILLA_T) - 096h)        
+add       di, (SIZEOF_MOBJ_VANILLA_T - 096h)        
 jmp       iterate_to_next_thinker
 
 
@@ -1819,13 +1820,13 @@ stosw
 ret
 ENDP
 
-(SIZE CEILING_VANILLA_T) = 030h
-(SIZE FLOORMOVE_VANILLA_T) = 02Ah
-(SIZE VLDOOR_VANILLA_T) = 028h
-(SIZE PLAT_VANILLA_T) = 038h
-(SIZE STROBE_VANILLA_T) = 024h
-(SIZE LIGHTFLASH_VANILLA_T) = 024h
-(SIZE GLOW_VANILLA_T) = 01Ch
+SIZEOF_CEILING_VANILLA_T = 030h
+SIZEOF_FLOORMOVE_VANILLA_T = 02Ah
+SIZEOF_VLDOOR_VANILLA_T = 028h
+SIZEOF_PLAT_VANILLA_T = 038h
+SIZEOF_STROBE_VANILLA_T = 024h
+SIZEOF_LIGHTFLASH_VANILLA_T = 024h
+SIZEOF_GLOW_VANILLA_T = 01Ch
 
 MAXCEILINGS = 30
 
@@ -1847,14 +1848,14 @@ dw  OFFSET  save_glow_special        ; 9
 
 erase_size_table:
 dw  0
-dw  (SIZE PLAT_VANILLA_T)       / 2
-dw  (SIZE CEILING_VANILLA_T)    / 2
-dw  (SIZE VLDOOR_VANILLA_T)     / 2
-dw  (SIZE FLOORMOVE_VANILLA_T)  / 2
+dw  SIZEOF_PLAT_VANILLA_T       / 2
+dw  SIZEOF_CEILING_VANILLA_T    / 2
+dw  SIZEOF_VLDOOR_VANILLA_T     / 2
+dw  SIZEOF_FLOORMOVE_VANILLA_T  / 2
 dw  0
-dw  (SIZE LIGHTFLASH_VANILLA_T) / 2
-dw  (SIZE STROBE_VANILLA_T)     / 2
-dw  (SIZE GLOW_VANILLA_T)       / 2
+dw  SIZEOF_LIGHTFLASH_VANILLA_T / 2
+dw  SIZEOF_STROBE_VANILLA_T     / 2
+dw  SIZEOF_GLOW_VANILLA_T       / 2
 
 
 PROC   P_ArchiveSpecials_ NEAR
