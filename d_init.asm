@@ -95,7 +95,7 @@ ENDP
 
 
 str_getemspagemap:
-db "Z_GetEMSPageMap: Init EMS 4.0 features.", 0Ah, 0
+db "Z_GetEMSPageMap: Init EMS Conventional Mappings.", 0Ah, 0
 str_loaddefaults:
 db "M_LoadDefaults	: Load system defaults.", 0Ah, 0
 str_z_loadbinaries:
@@ -121,7 +121,7 @@ db "DOOM 2: Hell on Earth v1.9"
 str_title_doom2_done:
 
 str_z_init_ems:
-db "Z_InitEMS: Initialize EMS memory regions.", 0Ah, 0
+db "Z_InitEMS: Initialize EMS memory.", 0Ah, 0
 str_w_init:
 db "W_Init: Init WADfiles.", 0Ah, 0
 

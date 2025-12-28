@@ -338,25 +338,29 @@ _EMM_DRIVER_NAME:
 db "EMMXXXX0", 0
 
 str_required_ems_pages:
-db  "%i pages required, %i pages available at frame %x", 020h, 0
+db  "%i pages required, %i pages available at frame %x", 0Ah, 0
 
 str_no_ems_driver:
-db 020h, " ERROR: EMS Driver not installed!", 0
+db 0Ah, " ERROR: EMS Driver not installed!", 0
 
 str_generic_ems_error:
-db 020h, 020h, "EMS Error: Call %x Error %x", 0
+db 0Ah, 0Ah, "EMS Error: Call %x Error %x", 0
 
 str_ems_ver_low:
-db 020h, "ERROR: EMS Driver version below 4.0!", 0
+db 0Ah, "ERROR: EMS Driver version below 4.0!", 0
 
 str_ems_page_count:
-db 020h, "ERROR: minimum of %i EMS pages required", 0
+db 0Ah, "ERROR: minimum of %i EMS pages required", 0
 
 str_ems_mappable_page_count:
-db 020h, "Insufficient mappable pages! ", 020h, "28 pages required (24 conventional and 4 page frame pages)! Only %i found.", 020h, " EMS 4.0 conventional features unsupported", 0
+db 0Ah, "Insufficient mappable pages! ", 0Ah, "28 pages required (24 conventional and 4 page frame pages)! Only %i found.", 0Ah, " EMS 4.0 conventional features unsupported", 0
 
 str_page_9000_not_found:
-db 020h, "Mappable page for segment 0x9000 NOT FOUND! EMS 4.0 conventional features unsupported?", 020h, 0
+db 0Ah, "Mappable page for segment 0x9000 NOT FOUND! EMS 4.0 conventional features unsupported?", 0Ah, 0
+
+str_ems_successfully_initialized:
+db "EMS Iniitaliation Successful!", 0Ah, 0
+
 
 ; todo move to z_init asm
 ; todo increment error code in cx and return for error print when in asm?
@@ -534,6 +538,10 @@ db 020h, "Mappable page for segment 0x9000 NOT FOUND! EMS 4.0 conventional featu
     ; two word writes
     mov     word ptr ds:[_currentpageframes], (NUM_MUSIC_PAGES SHL 8) + 00
     mov     word ptr ds:[_currentpageframes + 2], ((NUM_MUSIC_PAGES+NUM_SFX_PAGES) SHL 8) + (NUM_MUSIC_PAGES+1)
+
+
+    mov     ax, OFFSET str_ems_successfully_initialized
+    call    DEBUG_PRINT_NOARG_CS_
 
 
     

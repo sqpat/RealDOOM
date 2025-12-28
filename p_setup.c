@@ -1137,6 +1137,7 @@ void __near Z_FreeConventionalAllocations() {
 void __near PSetupEndFunc(){}
 void D_INIT_STARTMARKER();
 
+void __far I_Error (int8_t __far *error, ...);
 
 // clears dead initialization code.
 void __near Z_ClearDeadCode() {
@@ -1160,6 +1161,7 @@ void __near Z_ClearDeadCode() {
 	//10706          - 12/21/25    - sb_init asm added
 	//10370          - 12/21/25    - sb_init asm fixed
 	//9528           - 12/25/25    - r_init asm, some p_init work
+	//8723           - 12/27/25    - p_init done
 
 	uint16_t size = endaddr - startaddr-16;
 	FILE* fp;
