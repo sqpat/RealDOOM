@@ -415,7 +415,7 @@ call  P_CreateThinker_
 mov   si, ax  ;  si is floor
 
 sub   ax, (_thinkerlist + THINKER_T.t_data)
-mov   di, SIZEOF_THINKER_T
+mov   di, (SIZE THINKER_T)
 div   di
 
 mov   di, SECTORS_SEGMENT
@@ -825,7 +825,7 @@ call  P_CreateThinker_
 
 mov   si, ax  ; si is floor..
 sub   ax, (_thinkerlist + THINKER_T.t_data)
-mov   di, SIZEOF_THINKER_T
+mov   di, (SIZE THINKER_T)
 div   di
 
 mov   es, ds:[_SECTORS_SEGMENT_PTR]
@@ -1008,7 +1008,7 @@ mov   word ptr ds:[si + FLOORMOVE_T.floormove_floordestheight], dx
 push  dx ; store height...
 xor   dx, dx
 sub   ax, (_thinkerlist + THINKER_T.t_data)
-mov   bx, SIZEOF_THINKER_T
+mov   bx, (SIZE THINKER_T)
 div   bx  ; wrecks dx of course...
 pop   dx ; recover height
 

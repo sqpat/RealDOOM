@@ -113,15 +113,15 @@ _w_ready:
 _w_health:
  ST_PERCENT_T ?
 _w_armsbg:
- ST_MULTIICON_T ?
+ ST_MULTICON_T ?
 _w_arms:
- ST_MULTIICON_T 6 DUP (?)
+ ST_MULTICON_T 6 DUP (?)
 _w_faces:
- ST_MULTIICON_T ?
+ ST_MULTICON_T ?
 _w_armor:
  ST_PERCENT_T ?
 _w_keyboxes:
- ST_MULTIICON_T 3 DUP (?)
+ ST_MULTICON_T 3 DUP (?)
 _w_ammo:
  ST_NUMBER_T 4 DUP (?)
 _w_maxammo:
@@ -443,7 +443,7 @@ ret
 
 look_at_attacker:
 mov   byte ptr cs:[_st_face_priority], cl
-mov   ax, SIZEOF_MOBJ_POS_T
+mov   ax, (SIZE MOBJ_POS_T)
 mul   word ptr ds:[_player + PLAYER_T.player_attackerRef]
 xchg  ax, di
 mov   ax, MOBJPOSLIST_6800_SEGMENT
@@ -663,7 +663,7 @@ cmp   dx, -1
 je    exit_updatemulticon_no_pop  ; test once.
 PUSHA_NO_AX_OR_BP_MACRO
 xchg  ax, si
-mov   cx, word ptr cs:[si + ST_MULTIICON_T.st_multicon_oldinum]
+mov   cx, word ptr cs:[si + ST_MULTICON_T.st_multicon_oldinum]
 cmp   cx, dx
 jne   do_draw
 cmp   byte ptr cs:[_do_st_refresh], 0
@@ -677,7 +677,7 @@ ret
 do_draw:
 call  STlib_updateflag_
 
-mov   word ptr cs:[si + ST_MULTIICON_T.st_multicon_oldinum], dx ; update oldinum, dont need dx anymore
+mov   word ptr cs:[si + ST_MULTICON_T.st_multicon_oldinum], dx ; update oldinum, dont need dx anymore
 sub   dx, bx   ; calculate  "inum-is_binicon" lookup
 sal   dx, 1
 push  dx       ; store inum-is_binicon lookup
@@ -687,13 +687,13 @@ je    skip_rect
 test  bl, bl                ; !is_binicon
 jne   skip_rect
 
-les   ax, dword ptr cs:[si + ST_MULTIICON_T.st_multicon_x]
+les   ax, dword ptr cs:[si + ST_MULTICON_T.st_multicon_x]
 mov   dx, es  ; st_multicon_y
 
 mov   di, ST_GRAPHICS_SEGMENT   ; todo load from mem?
 mov   es, di
 
-mov   di, word ptr  cs:[si + ST_MULTIICON_T.st_multicon_patch_offset] ; mi->patch_offset
+mov   di, word ptr  cs:[si + ST_MULTICON_T.st_multicon_patch_offset] ; mi->patch_offset
 
 sal   cx, 1     ; word lookup
 add   di, cx    ; mi->patch_offset[mi->oldinum]
@@ -994,10 +994,10 @@ lea   ax, [bx + OFFSET _w_maxammo]
 ASSUME DS:DGROUP
 call  STlib_drawNum_
 
-add   bx, SIZEOF_ST_NUMBER_T
+add   bx, (SIZE ST_NUMBER_T)
 loop  update_next_ammo
 
-mov   al, SIZEOF_WEAPONINFO_T
+mov   al, (SIZE WEAPONINFO_T)
 mul   byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 xchg  ax, bx
 
@@ -1047,7 +1047,7 @@ xchg  ax, dx
 mov   ax, di
 xor   bx, bx
 call  STlib_updateMultIcon_
-add   di, SIZEOF_ST_MULTICON_T
+add   di, (SIZE ST_MULTICON_T)
 loop  update_next_weapon
 
 ;        STlib_updateMultIcon(&w_faces, st_faceindex, false);
@@ -1068,7 +1068,7 @@ xchg  ax, dx
 mov   ax, di
 xor   bx, bx
 call  STlib_updateMultIcon_
-add   di, SIZEOF_ST_MULTICON_T
+add   di, (SIZE ST_MULTICON_T)
 loop  update_next_keybox
 
 exit_st_drawwidgets:

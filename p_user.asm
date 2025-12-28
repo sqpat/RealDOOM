@@ -519,7 +519,7 @@ jne   use_dead_attackerref
 
 dont_use_dead_attackerref:
 
-mov   bx, SIZEOF_MOBJ_POS_T
+mov   bx, (SIZE MOBJ_POS_T)
 mul   bx  ; ax has attacker ref.
 xchg  ax, si
 mov   ds, word ptr ds:[_playerMobj_pos+2]

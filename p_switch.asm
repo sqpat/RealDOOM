@@ -198,8 +198,8 @@ je    timer_0_skip
 cmp   si, word ptr ds:[bx + BUTTON_T.button_linenum]
 je    button_already_exists
 timer_0_skip:
-add   bx, SIZEOF_BUTTON_T
-cmp   bx, (_buttonlist + MAXBUTTONS * SIZEOF_BUTTON_T)
+add   bx, (SIZE BUTTON_T)
+cmp   bx, (_buttonlist + MAXBUTTONS * (SIZE BUTTON_T))
 jl    do_next_button_check
 
 mov   bx, _buttonlist

@@ -204,7 +204,7 @@ PUBLIC  P_GiveWeapon_
 push   bx
 cbw   ; clear ah for later.
 xchg   ax, bx
-mov    al, SIZEOF_WEAPONINFO_T
+mov    al, (SIZE WEAPONINFO_T)
 mul    bl
 xchg   ax, bx
 ; al has weapontype again
@@ -901,7 +901,7 @@ no_corpse:
 ; this hack has to do with fixing a timedemo bug by keeping track of the thing to kill the player if dies and it has no corpse
 ; not sure if i care about keeping long term.
 xchg   ax, di
-mov    cx, SIZEOF_THINKER_T
+mov    cx, (SIZE THINKER_T)
 lea    ax, [si - (_thinkerlist + THINKER_T.t_data)]
 xor    dx, dx
 div    cx
@@ -1165,12 +1165,12 @@ push   cx   ; bp - 2
 push   bx   ; bp - 4
 push   dx   ; bp - 6
 mov    si, ax
-mov    bx, SIZEOF_THINKER_T
+mov    bx, (SIZE THINKER_T)
 sub    ax, (_thinkerlist + THINKER_T.t_data)
 xor    dx, dx
 
 div    bx
-mov    dx, SIZEOF_MOBJ_POS_T
+mov    dx, (SIZE MOBJ_POS_T)
 mul    dx
 xchg   ax, bx
 
@@ -1253,11 +1253,11 @@ push   word ptr es:[bx + MOBJ_POS_T.mp_x + 0]
 
 mov    ax, word ptr [bp - 6]
 xor    dx, dx
-mov    bx, SIZEOF_THINKER_T
+mov    bx, (SIZE THINKER_T)
 sub    ax, (_thinkerlist + THINKER_T.t_data)
 div    bx
 
-mov    dx, SIZEOF_MOBJ_POS_T
+mov    dx, (SIZE MOBJ_POS_T)
 mul    dx
 xchg   ax, di
 
@@ -1439,7 +1439,7 @@ cwd    ; zero in jump case...
 test   ax, ax
 je     dont_do_dead_attackerref_stuff
 mov    di, ax
-mov    bx, SIZEOF_THINKER_T
+mov    bx, (SIZE THINKER_T)
 xor    dx, dx
 sub    ax, (_thinkerlist + THINKER_T.t_data)
 div    bx
@@ -1516,7 +1516,7 @@ jmp    exit_p_damagemobj
 
 do_dead_attackerref_stuff:
 ; ax has attackerref..
-mov    bx, SIZEOF_MOBJ_POS_T
+mov    bx, (SIZE MOBJ_POS_T)
 mul    bx
 xchg   ax, si
 push   ds
@@ -1543,13 +1543,13 @@ je     exit_p_damagemobj
 mov    bx, ax
 cmp    byte ptr ds:[bx + MOBJ_T.m_mobjtype], MT_VILE
 je     exit_p_damagemobj
-mov    bx, SIZEOF_THINKER_T
+mov    bx, (SIZE THINKER_T)
 sub    ax, (_thinkerlist + THINKER_T.t_data)
 xor    dx, dx
 div    bx
 mov    word ptr ds:[si + MOBJ_T.m_targetRef], ax
 
-mov    al, SIZEOF_MOBJINFO_T
+mov    al, (SIZE MOBJINFO_T)
 mul    byte ptr ds:[si + MOBJ_T.m_mobjtype]
 ;mov    di, word ptr [bp - 8]
 pop    di

@@ -166,7 +166,7 @@ PUBLIC LoadSFXWadLumps_
     mov  di, SFX_DATA_SEGMENT
     mov  es, di
 
-    mov  di, SIZEOF_SFX_INFO    ; skip first element.
+    mov  di, (SIZE SFXINFO_T)    ; skip first element.
 
     loop_load_sb_sfx:
 
@@ -236,9 +236,9 @@ PUBLIC LoadSFXWadLumps_
 
 
 
-    add  di, SIZEOF_SFX_INFO
+    add  di, (SIZE SFXINFO_T)
 
-    cmp  di, (NUMSFX * SIZEOF_SFX_INFO)
+    cmp  di, (NUMSFX * (SIZE SFXINFO_T))
     jne  loop_load_sb_sfx
 
     ; restore 

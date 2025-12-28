@@ -581,7 +581,7 @@ call  dword ptr ds:[_fclose_addr]
 mov   byte ptr cs:[di], 1
 iter_next_savestring:
 inc   si
-add   di, SIZEOF_MENUITEM_T
+add   di, (SIZE MENUITEM_T)
 cmp   si, LOAD_END
 jl    loop_next_savestring
 
@@ -1186,8 +1186,8 @@ mov   bx, OFFSET _sb_voicelist
 
 loop_next_voiceinfo_setsfxvol:
 mov   byte ptr ds:[bx + SB_VOICEINFO_T.sbvi_sfx_id], ah
-add   bx, SIZEOF_SB_VOICEINFO_T
-cmp   bx, (OFFSET _sb_voicelist + (NUM_SFX_TO_MIX * SIZEOF_SB_VOICEINFO_T))
+add   bx, (SIZE SB_VOICEINFO_T)
+cmp   bx, (OFFSET _sb_voicelist + (NUM_SFX_TO_MIX * (SIZE SB_VOICEINFO_T)))
 jl    loop_next_voiceinfo_setsfxvol
 
 call  dword ptr ds:[_S_InitSFXCache_addr]
@@ -2469,7 +2469,7 @@ menu_is_active:
 
 mov   dx, word ptr cs:[_itemOn]
 xchg  ax, si
-mov   al, SIZEOF_MENUITEM_T
+mov   al, (SIZE MENUITEM_T)
 mul   dl
 xchg  ax, si
 mov   bx, word ptr cs:[_currentMenu]
@@ -2515,7 +2515,7 @@ jne   just_dec_itemon
 mov   dl, byte ptr cs:[bx + MENU_T.menu_numitems]
 just_dec_itemon:
 dec   dx
-mov   al, SIZEOF_MENUITEM_T
+mov   al, (SIZE MENUITEM_T)
 mul   dl
 xchg  ax, si
 add   si, di
@@ -2556,7 +2556,7 @@ jmp   just_play_sound
 do_menu_key_downarrow:
 loop_next_down:
 inc   dx
-add   si, SIZEOF_MENUITEM_T
+add   si, (SIZE MENUITEM_T)
 cmp   dl, byte ptr cs:[bx + MENU_T.menu_numitems]
 jne   dont_reset_itemon
 mov   dx, cx
@@ -2602,7 +2602,7 @@ do_menu_key_default:
 
 
 mov   cl, byte ptr cs:[bx + MENU_T.menu_numitems]
-lea   bx, [si + SIZEOF_MENUITEM_T] ; add one
+lea   bx, [si + (SIZE MENUITEM_T)] ; add one
 mov   si, dx
 inc   si
 
@@ -2613,7 +2613,7 @@ check_next_alphakey:
 
 cmp   al, byte ptr cs:[bx + MENUITEM_T.menuitem_alphakey]
 je    found_key_stop
-add   bx, SIZEOF_MENUITEM_T
+add   bx, (SIZE MENUITEM_T)
 inc   si
 cmp   si, cx
 jl    check_next_alphakey
@@ -2623,7 +2623,7 @@ xor   si, si
 check_next_alphakey_2:
 cmp   al, byte ptr cs:[di + MENUITEM_T.menuitem_alphakey]
 je    found_key_stop
-add   di, SIZEOF_MENUITEM_T
+add   di, (SIZE MENUITEM_T)
 inc   si
 cmp   si, dx
 jl    check_next_alphakey_2
@@ -2833,7 +2833,7 @@ mov   al, byte ptr cs:[bx + MENU_T.menu_y]
 cbw
 xchg  ax, si
 mov   al, byte ptr cs:[bx + MENU_T.menu_numitems]
-mov   ah, SIZEOF_MENUITEM_T
+mov   ah, (SIZE MENUITEM_T)
 mul   ah
 mov   bx, word ptr cs:[bx + MENU_T.menu_menuitems]
 add   ax, bx
@@ -2857,7 +2857,7 @@ call  dword ptr ds:[_V_DrawPatchDirect_addr]
 pop   bx
 
 dont_draw_this_item:
-add   bx, SIZEOF_MENUITEM_T
+add   bx, (SIZE MENUITEM_T)
 add   si, LINEHEIGHT
 SELFMODIFY_lastmenuitem:
 cmp   bx, 01000h
@@ -3109,9 +3109,9 @@ push cs
 pop  ds
 push cs
 pop  es
-lea  di, [_MainMenu + (SIZEOF_MENUITEM_T * MENUITEM_MAIN_READTHIS)]
-lea  si, [_MainMenu + (SIZEOF_MENUITEM_T * MENUITEM_MAIN_QUITDOOM)]
-mov  cx, SIZEOF_MENUITEM_T
+lea  di, [_MainMenu + ((SIZE MENUITEM_T) * MENUITEM_MAIN_READTHIS)]
+lea  si, [_MainMenu + ((SIZE MENUITEM_T) * MENUITEM_MAIN_QUITDOOM)]
+mov  cx, (SIZE MENUITEM_T)
 rep  movsb
 
 push ss

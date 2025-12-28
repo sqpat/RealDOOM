@@ -462,7 +462,7 @@ je        check_special
 SELFMODIFY_checkspecial_AFTER:
 
 iter_next_sector:
-add       bx, SIZEOF_SECTOR_PHYSICS_T
+add       bx, (SIZE SECTOR_PHYSICS_T)
 inc       ax
 jmp       loop_next_sector_linetag
 
@@ -1310,7 +1310,7 @@ mov       byte ptr es:[bx], al
 jmp       iter_next_anim_inner
 
 iter_next_anim_outer:
-add       di, SIZEOF_P_SPEC_ANIM_T
+add       di, (SIZE P_SPEC_ANIM_T)
 cmp       di, word ptr ds:[_lastanim]
 jb        loop_next_anim_outer
 
@@ -1394,14 +1394,14 @@ call      S_StartSoundWithSecnum_
 
 mov       di, si
 xor       al, al
-mov       cx, SIZEOF_BUTTON_T
+mov       cx, (SIZE BUTTON_T)
 push      ds
 pop       es
 rep stosb 
 iter_next_button:
-add       si, SIZEOF_BUTTON_T
+add       si, (SIZE BUTTON_T)
 
-cmp       si, OFFSET _buttonlist (4 * SIZEOF_BUTTON_T)
+cmp       si, OFFSET _buttonlist (4 * (SIZE BUTTON_T))
 jl        loop_anim_next_button
 pop       bp
 POPA_NO_AX_OR_BP_MACRO
@@ -1543,7 +1543,7 @@ call      P_CreateThinker_
 ;			floorRef = GETTHINKERREF(floor);
 push      ax ; store thinker
 sub       ax, (_thinkerlist + THINKER_T.t_data)
-mov       di, SIZEOF_THINKER_T
+mov       di, (SIZE THINKER_T)
 xor       dx, dx
 div       di
 pop       di  ; restore thinker
@@ -1576,7 +1576,7 @@ call      P_CreateThinker_
 ;			floorRef = GETTHINKERREF(floor);
 push      ax ; store thinker
 sub       ax, (_thinkerlist + THINKER_T.t_data)
-mov       di, SIZEOF_THINKER_T
+mov       di, (SIZE THINKER_T)
 xor       dx, dx
 div       di
 pop       di  ; restore thinker
@@ -1691,7 +1691,7 @@ inc       word ptr ds:[_totalsecret]
 
 spawnspecial_switch_case_default:
 done_with_spawnspecial_switch_block:
-add       di, SIZEOF_SECTOR_PHYSICS_T
+add       di, (SIZE SECTOR_PHYSICS_T)
 inc       cx
 jmp       loop_next_sector_special
 
@@ -1717,7 +1717,7 @@ inc       word ptr ds:[_numlinespecials]
 
 not_line_special_48_spawn:
 
-add       si, SIZEOF_LINE_PHYSICS_T
+add       si, (SIZE LINE_PHYSICS_T)
 inc       ax
 cmp       ax, word ptr ds:[_numlines]
 jl        loop_next_line_physics
@@ -1729,7 +1729,7 @@ jl        loop_next_line_physics
 done_with_lines:
 ; todo put these in fixeddata and make them all adajcent?
 
-mov       cx, MAXCEILINGS + MAXPLATS +  (MAXBUTTONS * SIZEOF_BUTTON_T) / 2   ; *2, 0x3C + 0x3c + 0x24
+mov       cx, MAXCEILINGS + MAXPLATS +  (MAXBUTTONS * (SIZE BUTTON_T)) / 2   ; *2, 0x3C + 0x3c + 0x24
 mov       di, OFFSET _activeceilings
 xor       ax, ax
 push      ds

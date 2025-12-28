@@ -2269,9 +2269,9 @@ test      si, si
 je        done_with_sector
 
 IF COMPISA GE COMPILE_186
-    imul      si, si, SIZEOF_MOBJ_POS_T
+    imul      si, si, (SIZE MOBJ_POS_T)
 ELSE
-    mov       ax, SIZEOF_MOBJ_POS_T
+    mov       ax, (SIZE MOBJ_POS_T)
     mul       si
     xchg      ax, si
 ENDIF

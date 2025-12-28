@@ -276,7 +276,7 @@ call  P_CreateThinker_
 
 mov   bx, ax ; bx gets thinker
 sub   ax, (_thinkerlist + THINKER_T.t_data)
-mov   di, SIZEOF_THINKER_T
+mov   di, (SIZE THINKER_T)
 div   di    ; calculate ceilingref
 
 
@@ -468,7 +468,7 @@ mov   bl, cl
 mov   bx, word ptr ds:[bx + _activeceilings]
 test  bx, bx
 je    continue_statis_ceiling_loop
-mov   ax, SIZEOF_THINKER_T
+mov   ax, (SIZE THINKER_T)
 mul   bx
 xchg  ax, bx ; ax gets activeceiling
 xchg  ax, dx ; now dx gets activeceiling.
@@ -519,7 +519,7 @@ mov   bl, cl
 mov   bx, word ptr ds:[bx + _activeceilings]
 test  bx, bx
 je    continue_ceiling_crush_stop_loop
-mov   ax, SIZEOF_THINKER_T
+mov   ax, (SIZE THINKER_T)
 mul   bx
 xchg  ax, bx ; ax gets activeceiling. bx gets thinkerlist offset.
 xchg  ax, dx ; now dx gets activeceiling. ax has nothing.

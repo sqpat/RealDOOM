@@ -1059,7 +1059,7 @@ ENDP
 PROC P_UnsetThingPosition_ NEAR
 PUBLIC P_UnsetThingPosition_ 
 
-; #define GETTHINKERREF(a) ((((uint16_t)((byte __near*)a - (byte __near*)thinkerlist))-4)/SIZEOF_THINKER_T)
+; #define GETTHINKERREF(a) ((((uint16_t)((byte __near*)a - (byte __near*)thinkerlist))-4)/(SIZE THINKER_T))
 
 ; ax = thing
 ; dx = thingpos offset
@@ -1112,7 +1112,7 @@ je    no_next_ref
 IF COMPISA GE COMPILE_186
 
 	xchg  ax, si ; store si in ax
-	imul  si, di, SIZEOF_THINKER_T
+	imul  si, di, (SIZE THINKER_T)
 	mov   word ptr ds:[si + (_thinkerlist + THINKER_T.t_data)], dx
 	xchg  ax, si  ; restore si
 
@@ -1120,7 +1120,7 @@ ELSE
 
 	push  dx
 
-	mov   ax, SIZEOF_THINKER_T
+	mov   ax, (SIZE THINKER_T)
 	mul   di
 	xchg  ax, si 
 
@@ -1175,7 +1175,7 @@ has_prev_ref:
 
 IF COMPISA GE COMPILE_186
 
-	imul  si, dx, SIZEOF_MOBJ_POS_T
+	imul  si, dx, (SIZE MOBJ_POS_T)
 
 ELSE
 
@@ -1284,7 +1284,7 @@ je    exit_unset_position_and_pop_once
 ; only do the div to calculate thisref at the end if very necessary
 xor   dx, dx
 xchg  ax, cx
-mov   di, SIZEOF_THINKER_T
+mov   di, (SIZE THINKER_T)
 div   di					; calculate thisref. todo move this way later. usually not used.
 xchg  cx, ax			    ; cx gets thisref. ax restored.
 
@@ -1300,12 +1300,12 @@ do_next_check_nextref_loop_iter:
 
 IF COMPISA GE COMPILE_186
 
-	imul  si, ax, SIZEOF_THINKER_T
+	imul  si, ax, (SIZE THINKER_T)
 
 ELSE
 
 	xchg ax, si
-	mov  ax, SIZEOF_THINKER_T
+	mov  ax, (SIZE THINKER_T)
 	mul  si
 	xchg ax, si  ; maintain ax
 
@@ -1377,7 +1377,7 @@ mov   si, dx  ; thing_pos offset
 
 ;	THINKERREF thingRef = GETTHINKERREF(thing);
 
-mov   bx, SIZEOF_THINKER_T
+mov   bx, (SIZE THINKER_T)
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
@@ -1444,12 +1444,12 @@ xchg  ax, word ptr es:[bx + SECTOR_T.sec_thinglistRef]
 
 
 IF COMPISA GE COMPILE_186
-	imul  di, dx, SIZEOF_THINKER_T
+	imul  di, dx, (SIZE THINKER_T)
 ELSE
 	push  ax
 	push  dx
 
-	mov   ax, SIZEOF_THINKER_T
+	mov   ax, (SIZE THINKER_T)
 	mul   dx
 	xchg  ax, di
 
@@ -1463,12 +1463,12 @@ mov   es, si
 
 
 IF COMPISA GE COMPILE_186
-	imul  si, dx, SIZEOF_MOBJ_POS_T
+	imul  si, dx, (SIZE MOBJ_POS_T)
 ELSE
 	push  ax
 	push  dx
 
-	mov   ax, SIZEOF_MOBJ_POS_T
+	mov   ax, (SIZE MOBJ_POS_T)
 	mul   dx
 	xchg  ax, si
 
@@ -1491,11 +1491,11 @@ je    done_setting_sector_stuff
 
 
 IF COMPISA GE COMPILE_186
-	imul  bx, ax, SIZEOF_THINKER_T
+	imul  bx, ax, (SIZE THINKER_T)
 ELSE
 	push  dx
 
-	mov   bx, SIZEOF_THINKER_T
+	mov   bx, (SIZE THINKER_T)
 	mul   bx
 	xchg  ax, bx
 
@@ -1816,18 +1816,18 @@ loop_check_next_block_thing:
 
 IF COMPISA GE COMPILE_186
 
-	imul bx, si, SIZEOF_MOBJ_POS_T
+	imul bx, si, (SIZE MOBJ_POS_T)
 	mov  ax, si
-	imul si, si, SIZEOF_THINKER_T
+	imul si, si, (SIZE THINKER_T)
 
 ELSE
 
 
-	mov  ax, SIZEOF_MOBJ_POS_T
+	mov  ax, (SIZE MOBJ_POS_T)
 	mul  si
 	mov  bx, ax
 
-	mov  ax, SIZEOF_THINKER_T
+	mov  ax, (SIZE THINKER_T)
 	mul  si
 	xchg ax, si	; si gets ptr, ax gets index
 
@@ -4339,10 +4339,10 @@ test  ax, ax  ; NULL_THINKERREF check
 je    good_missile_target  
 
 IF COMPISA GE COMPILE_186
-	imul  bx, ax, SIZEOF_THINKER_T
+	imul  bx, ax, (SIZE THINKER_T)
 	add   bx, (_thinkerlist + THINKER_T.t_data)
 ELSE
-	mov   bx, SIZEOF_THINKER_T
+	mov   bx, (SIZE THINKER_T)
 	mul   bx
 	add   ax, (_thinkerlist + THINKER_T.t_data)
 	xchg  ax, bx
@@ -4424,7 +4424,7 @@ rep   stosw
 ;mov   word ptr ds:[bx + 0Eh], ax
 
 mov   al, byte ptr ds:[di]  ; bx + 01Ah
-mov   dl, SIZEOF_MOBJINFO_T
+mov   dl, (SIZE MOBJINFO_T)
 mul   dl
 
 ;		P_SetMobjState (tmthing, mobjinfo[tmthing->type].spawnstate);
@@ -4507,7 +4507,7 @@ push  dx  ; bp - 2
 push  bx  ; bp - 4
 mov   si, ax ; thing ptr
 mov   di, cx
-mov   bx, SIZEOF_THINKER_T
+mov   bx, (SIZE THINKER_T)
 mov   word ptr ds:[_tmthing], ax
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx  ; cwd seems bad??? are we passing in -1?
@@ -4515,9 +4515,9 @@ div   bx
 
 
 IF COMPISA GE COMPILE_186
-	imul  bx, ax, SIZEOF_MOBJ_POS_T
+	imul  bx, ax, (SIZE MOBJ_POS_T)
 ELSE
-	mov   bx, SIZEOF_MOBJ_POS_T
+	mov   bx, (SIZE MOBJ_POS_T)
 	mul   bx
 	xchg  ax, bx
 ENDIF
@@ -5723,9 +5723,9 @@ is_not_a_line:
 
 
 IF COMPISA GE COMPILE_186
-	imul  dx, bx, SIZEOF_THINKER_T
+	imul  dx, bx, (SIZE THINKER_T)
 ELSE
-	mov   ax, SIZEOF_THINKER_T
+	mov   ax, (SIZE THINKER_T)
 	mul   bx
 	xchg  ax, dx
 
@@ -5736,10 +5736,10 @@ cmp   dx, word ptr ds:[_shootthing]
 je    exit_shoottraverse_return_1
 
 IF COMPISA GE COMPILE_186
-	imul  bx, bx, SIZEOF_MOBJ_POS_T
+	imul  bx, bx, (SIZE MOBJ_POS_T)
 ELSE
 	push  dx
-	mov   ax, SIZEOF_MOBJ_POS_T
+	mov   ax, (SIZE MOBJ_POS_T)
 	mul   bx
 	xchg  ax, bx
 	pop   dx
@@ -6250,11 +6250,11 @@ aimtraverse_is_not_a_line:
 
 IF COMPISA GE COMPILE_186
 
-	imul  ax, bx, SIZEOF_THINKER_T
+	imul  ax, bx, (SIZE THINKER_T)
 
 ELSE
     push  dx
-	mov   ax, SIZEOF_THINKER_T
+	mov   ax, (SIZE THINKER_T)
 	mul   bx
 	pop   dx
 
@@ -6267,11 +6267,11 @@ push  ax  ; thing ptr
 
 IF COMPISA GE COMPILE_186
 
-	imul  di, bx, SIZEOF_MOBJ_POS_T
+	imul  di, bx, (SIZE MOBJ_POS_T)
 
 ELSE
     push  dx
-	mov   ax, SIZEOF_MOBJ_POS_T
+	mov   ax, (SIZE MOBJ_POS_T)
 	mul   bx
 	xchg  ax, di
 	pop   dx
@@ -6784,17 +6784,17 @@ mov   word ptr ds:[_attackrange16], bx
 mov   cx, dx		; distance
 mov   si, bx
 
-mov   bx, SIZEOF_THINKER_T
+mov   bx, (SIZE THINKER_T)
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
 
 IF COMPISA GE COMPILE_186
 
-	imul  bx, ax, SIZEOF_MOBJ_POS_T
+	imul  bx, ax, (SIZE MOBJ_POS_T)
 
 ELSE
-	mov   bx, SIZEOF_MOBJ_POS_T
+	mov   bx, (SIZE MOBJ_POS_T)
 	mul   bx
 	xchg  ax, bx
 
@@ -7065,17 +7065,17 @@ mov   word ptr ds:[_attackrange16], bx
 mov   si, bx			; si gets distance..
 mov   cx, ax
 mov   word ptr ds:[_shootthing], ax
-mov   bx, SIZEOF_THINKER_T
+mov   bx, (SIZE THINKER_T)
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
 
 IF COMPISA GE COMPILE_186
 
-	imul  bx, ax, SIZEOF_MOBJ_POS_T
+	imul  bx, ax, (SIZE MOBJ_POS_T)
 
 ELSE
-	mov   bx, SIZEOF_MOBJ_POS_T
+	mov   bx, (SIZE MOBJ_POS_T)
 	mul   bx
 	xchg  ax, bx
 

@@ -87,7 +87,7 @@ cmp   byte ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_tag], 010h
 je    line_tag_match
 
 continue_sector_loop:
-add   si, SIZEOF_SECTOR_PHYSICS_T
+add   si, (SIZE SECTOR_PHYSICS_T)
 inc   cx
 SELFMODIFY_telept_numsectors:
 cmp   cx, 01000h
@@ -106,7 +106,7 @@ xor   ax, ax
 
 
 loop_next_thinker:
-mov   bx, SIZEOF_THINKER_T
+mov   bx, (SIZE THINKER_T)
 mul   bx
 xchg  ax, bx
 mov   ax, word ptr ds:[bx + _thinkerlist + THINKER_T.t_next]
@@ -116,7 +116,7 @@ je    continue_sector_loop
 
 
 
-mov   bx, SIZEOF_THINKER_T
+mov   bx, (SIZE THINKER_T)
 xchg  ax, bx
 mul   bx
 xchg  ax, bx ; preserve ax/counter.
@@ -132,7 +132,7 @@ jne   loop_next_thinker
 ; point of no return... si free to use again
 
 ; bx free now
-mov   dx, SIZEOF_MOBJ_POS_T
+mov   dx, (SIZE MOBJ_POS_T)
 mul   dx
 xchg  ax, dx
 

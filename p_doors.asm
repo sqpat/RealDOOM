@@ -377,7 +377,7 @@ cwd   ; zero dx
 call  P_CreateThinker_
 
 mov   bx, ax   ; bx gets door ptr
-mov   di, SIZEOF_THINKER_T
+mov   di, (SIZE THINKER_T)
 
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 div   di  ; get doorref in ax
@@ -581,7 +581,7 @@ test  ax, ax
 jz    door_special_data_ref_block_done
 
 
-mov   dx, SIZEOF_THINKER_T
+mov   dx, (SIZE THINKER_T)
 mul   dx
 xchg  ax, si
 add   si, (_thinkerlist + THINKER_T.t_data) ; si is door ptr.
@@ -636,7 +636,7 @@ mov   si, ax
 
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 push  di
-mov   di, SIZEOF_THINKER_T
+mov   di, (SIZE THINKER_T)
 div   di
 pop   di ; no other registers free now..?
 
@@ -733,7 +733,7 @@ mov   word ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_special], dx
 
 
 sub   ax, (_thinkerlist + THINKER_T.t_data)
-mov   bx, SIZEOF_THINKER_T
+mov   bx, (SIZE THINKER_T)
 div   bx
 mov   word ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
 
@@ -782,7 +782,7 @@ SHIFT_MACRO SHL si 4
 xor   dx, dx
 mov   word ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_special], dx
 sub   ax, (_thinkerlist + THINKER_T.t_data)
-mov   bx, SIZEOF_THINKER_T
+mov   bx, (SIZE THINKER_T)
 div   bx
 mov   word ptr ds:[si + _sectors_physics + SECTOR_PHYSICS_T.secp_specialdataRef], ax
 

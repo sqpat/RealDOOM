@@ -1,14 +1,19 @@
+#include "doomdef.h"
 #include "m_offset.h"
 #include "m_memory.h"
 #include "m_near.h"
 #include "sounds.h"
 #include "i_sound.h"
 #include "g_game.h"
-#include "p_saveg.h"
+#include "p_pspr.h"
 #include "p_inter.h"
 #include "s_sbsfx.h"
+#include "r_defs.h"
+#include "r_state.h"
+#include "p_setup.h"
+#include "constant.h"
 
-#define CONSTANTS_COUNT 1012
+#define CONSTANTS_COUNT 976
 #define LOCALS_COUNT 22
 
 
@@ -208,44 +213,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "OFFSET_SCREENHEIGHTARRAY",
     "OFFSET_FLOORCLIP",
     "OFFSET_CEILINGCLIP",
-    "SIZEOF_VISSPRITE_T",
-    "SIZEOF_DRAWSEG_T",
-    "SIZEOF_MOBJ_POS_T",
-    "SIZEOF_MOBJINFO_T",
-    "SIZEOF_SPRITEFRAME_T",
-	"SIZEOF_DEFAULT_T",
-	"SIZEOF_PLAYER_VANILLA_T",
-	"SIZEOF_PSPDEF_VANILLA_T",
-	"SIZEOF_PSPDEF_T",
-	"SIZEOF_WIANIM_T",
 	"SIZEOF_OP2INSTRENTRY",
-	"SIZEOF_SFX_INFO",
-	"SIZEOF_THINKER_T",
-	"SIZEOF_MOBJ_T",
-	"SIZEOF_STATE_T",
-	"SIZEOF_CLIPRANGE_T",
-	"SIZEOF_CACHE_NODE_T",
-	"SIZEOF_CACHE_NODE_PAGE_COUNT_T",
-	"SIZEOF_WEAPONINFO_T",
-	"SIZEOF_MAPTHING_T",
-
-	"SIZEOF_SECTOR_T",
-	"SIZEOF_SECTOR_PHYSICS_T",
-	"SIZEOF_LINE_PHYSICS_T",
-	"SIZEOF_LINE_T",
-	"SIZEOF_P_SPEC_ANIM_T",
-	"SIZEOF_BUTTON_T",
-	"SIZEOF_FLOORMOVE_T",
-	"SIZEOF_VLDOOR_T",
-	"SIZEOF_CHANNEL_T",
-	"SIZEOF_SB_VOICEINFO_T",
-	"SIZEOF_MENUITEM_T",
-	"SIZEOF_MENU_T",
-	"SIZEOF_HUTEXTLINE_T",
-	"SIZEOF_HUSTEXT_T",
-	"SIZEOF_ST_PERCENT_T",
-	"SIZEOF_ST_NUMBER_T",
-	"SIZEOF_ST_MULTICON_T",
 
     "SPRITES_SEGMENT",
     "MAXVISSPRITES",
@@ -1319,43 +1287,8 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     offset_screenheightarray,
     offset_floorclip,
     offset_ceilingclip,
-    sizeof(vissprite_t),
-    sizeof(drawseg_t),
-    sizeof(mobj_pos_t),
-    sizeof(mobjinfo_t),
-    sizeof(spriteframe_t),
-	sizeof(default_t),
-	sizeof(player_vanilla_t),
-	sizeof(pspdef_vanilla_t),
-	sizeof(pspdef_t),
-	sizeof(wianim_t),
 	sizeof(OP2instrEntry),
-	sizeof(sfxinfo_t),
-	sizeof(thinker_t),
-	sizeof(mobj_t),
-	sizeof(state_t),
-	sizeof(cliprange_t),
-	sizeof(cache_node_t),
-	sizeof(cache_node_page_count_t),
-	sizeof(weaponinfo_t),
-	sizeof(mapthing_t),
-	sizeof(sector_t),
-	sizeof(sector_physics_t),
-	sizeof(line_physics_t),
-	sizeof(line_t),
-	sizeof(p_spec_anim_t),
-	sizeof(button_t),
-	sizeof(floormove_t),
-	sizeof(vldoor_t),
-	sizeof(channel_t),
-	sizeof(SB_VoiceInfo),
-	sizeof(menuitem_t),
-	sizeof(menu_t),
-	sizeof(hu_textline_t),
-	sizeof(hu_stext_t),
-	sizeof(st_percent_t),
-	sizeof(st_number_t),
-	sizeof(st_multicon_t),
+
 
 	sprites_segment,
     MAXVISSPRITES,

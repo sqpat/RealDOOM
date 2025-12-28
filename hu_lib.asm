@@ -277,7 +277,7 @@ cmp   al, byte ptr ds:[si + HU_STEXT_T.hu_stext_currentline]
 jne   dont_set_line_to_0
 mov   byte ptr ds:[si + HU_STEXT_T.hu_stext_currentline], 0
 dont_set_line_to_0:
-mov   al, SIZEOF_HUTEXTLINE_T
+mov   al, (SIZE HU_TEXTLINE_T)
 mul   byte ptr ds:[si + HU_STEXT_T.hu_stext_currentline]
 add   si, ax
 push  si  ; store this one
@@ -295,7 +295,7 @@ cmp   al, 010h
 jge   updated_all_lines
 inc   ax
 mov   byte ptr ds:[si + HU_TEXTLINE_T.hu_textline_needsupdate], 4
-add   si, SIZEOF_HUTEXTLINE_T
+add   si, (SIZE HU_TEXTLINE_T)
 jmp   loop_update_next_line
 
 updated_all_lines:

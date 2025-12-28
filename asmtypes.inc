@@ -798,12 +798,12 @@ ST_PERCENT_T ENDS
 
 
 
-ST_MULTIICON_T STRUC
+ST_MULTICON_T STRUC
     st_multicon_x                dw ? ; 0
     st_multicon_y                dw ? ; 2
     st_multicon_oldinum          dw ? ; 4
     st_multicon_patch_offset     dw ? ; 6
-ST_MULTIICON_T ENDS
+ST_MULTICON_T ENDS
 
 
 TASK_T STRUC

@@ -82,7 +82,7 @@ ENDP
 
 @
 
-SIZEOF_CHANNEL_T = 6
+(SIZE CHANNEL_T) = 6
 
 COMMENT @
 PROC do_logger_ NEAR
@@ -412,7 +412,7 @@ jmp   setup_stopsound_channel_loop
 check_for_mobjref:
 
 xor   dx, dx
-mov   si, SIZEOF_THINKER_T
+mov   si, (SIZE THINKER_T)
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 div   si ; loop condition originRef
 
@@ -537,7 +537,7 @@ check_secnum_instead:
 cmp   word ptr cs:[si + CHANNEL_T.channel_soundorg_secnum], cx
 je    found_channel_to_boot
 iter_next_channel_getchannel:
-add   si, SIZEOF_CHANNEL_T
+add   si, (SIZE CHANNEL_T)
 inc   ax
 cmp   al, ah
 jl    loop_next_channel_getchannel
@@ -559,7 +559,7 @@ jge   found_channel_to_boot
 
 
 iter_next_channel_getchannel_priority:
-add   si, SIZEOF_CHANNEL_T
+add   si, (SIZE CHANNEL_T)
 inc   ax
 cmp   al, ah
 jl    loop_next_channel_getchannel_priority
@@ -610,7 +610,7 @@ je    skip_vol_adjustment_use_norm_setp
 
 ; div to get mobjref.
 
-mov   bx, SIZEOF_THINKER_T
+mov   bx, (SIZE THINKER_T)
 sub   ax, (_thinkerlist + THINKER_T.t_data) ; ax still origin
 xor   dx, dx
 div   bx
@@ -623,7 +623,7 @@ location_good_adjust_sound_for_mobj:
 
 
 xchg  bx, ax
-mov   ax, SIZEOF_MOBJ_POS_T
+mov   ax, (SIZE MOBJ_POS_T)
 mul   bx
 xchg  ax, bx
 mov   es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
@@ -849,7 +849,7 @@ mov   byte ptr cs:[si + CHANNEL_T.channel_sfx_id], ah ; 0
 
 
 iter_next_channel_updatesounds:
-add   si, SIZEOF_CHANNEL_T
+add   si, (SIZE CHANNEL_T)
 inc   dx
 cmp   dl, dh
 jl    loop_next_channel_updatesounds
@@ -875,7 +875,7 @@ update_sound_with_mobjpos:
 ; ax is originref
 test  ax, ax
 jz    iter_next_channel_updatesounds   ; null source.
-mov   bx, SIZEOF_MOBJ_POS_T
+mov   bx, (SIZE MOBJ_POS_T)
 mul   bx
 xchg  ax, bx
 mov   es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
@@ -983,7 +983,7 @@ cbw
 call  S_StopChannel_
 
 iter_next_channel_s_start:
-add   si, SIZEOF_CHANNEL_T
+add   si, (SIZE CHANNEL_T)
 inc   dx
 cmp   dl, dh
 jl    loop_next_channel_s_start

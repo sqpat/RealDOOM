@@ -579,7 +579,7 @@ je    update_anim_level
 
 ; fall thru
 finish_update_anim_loop_iter:
-add   bx, SIZEOF_WIANIM_T
+add   bx, (SIZE WIANIM_T)
 loop  loop_update_animated_back
 
 exit_update_animated_back:
@@ -712,7 +712,7 @@ dw _V_DrawPatch_addr
 
 
 finish_draw_anim_loop_iter:
-add   di, SIZEOF_WIANIM_T
+add   di, (SIZE WIANIM_T)
 loop  loop_draw_animated_back
 
 
@@ -774,7 +774,7 @@ je    init_anim_random
 cmp   al, ANIM_LEVEL
 je    init_anim_level
 finish_init_anim_loop_iter:
-add   bx, SIZEOF_WIANIM_T               ; bx is next wi_anim
+add   bx, (SIZE WIANIM_T)               ; bx is next wi_anim
 
 
 loop  loop_init_animated_back
@@ -1646,7 +1646,7 @@ mov   al, byte ptr es:[bx + 2]
 cbw  
 cmp   ax, word ptr [bp - 2] ; check count
 jg    check_for_load_hack
-add   word ptr [bp - 014h], SIZEOF_WIANIM_T
+add   word ptr [bp - 014h], (SIZE WIANIM_T)
 inc   word ptr [bp - 0Ah]
 jmp   loop_load_anim
 check_for_load_hack:

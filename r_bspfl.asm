@@ -2335,7 +2335,7 @@ mov  word ptr ds:[_solidsegs+2], 0FFFFh
 mov  ax, word ptr ds:[_viewwidth]
 mov  word ptr ds:[_solidsegs+4], ax
 mov  word ptr ds:[_solidsegs+6], 07FFFh
-mov  word ptr ds:[_newend], OFFSET _solidsegs + 2 * SIZEOF_CLIPRANGE_T
+mov  word ptr ds:[_newend], OFFSET _solidsegs + 2 * (SIZE CLIPRANGE_T)
 ret  
 
 
@@ -3489,7 +3489,7 @@ PROC R_ProjectSprite_ NEAR
 
 
 
-; bp - 2:	 	thingframe (byte, with SIZEOF_SPRITEFRAME_T high)
+; bp - 2:	 	thingframe (byte, with (SIZE SPRITEFRAME_T) high)
 ; bp - 4:    	
 ; bp - 6:    	
 ; bp - 8:    	tr_y hi
@@ -3522,7 +3522,7 @@ add   bx, bx
 mov   al, byte ptr es:[bx]		   ; states_render[thing->stateNum].sprite
 mov   byte ptr cs:[SELFMODIFY_set_ax_to_spriteframe+1 - OFFSET R_BSPFL_STARTMARKER_], al		   
 mov   al, byte ptr es:[bx + 1]	; states_render[thing->stateNum].frame
-mov   ah, SIZEOF_SPRITEFRAME_T
+mov   ah, (SIZE SPRITEFRAME_T)
 push   ax    ; bp - 2
 sub   sp, 01Eh
 
@@ -3860,7 +3860,7 @@ je   got_vissprite
 ; don't increment vissprite if its the max index. reuse this index.
 inc   word ptr ds:[_vissprite_p]
 got_vissprite:
-; mul by 28h or 40. SIZEOF_VISSPRITE_T
+; mul by 28h or 40. (SIZE VISSPRITE_T)
 
 SHIFT_MACRO shl si 3
 
@@ -4157,8 +4157,8 @@ mov   si, MOBJPOSLIST_SEGMENT
 mov   es, si
 
 loop_things_in_thinglist:
-; multiply by 18h (SIZEOF_MOBJ_POS_T), AX maxes at MAX_THINKERS - 1 (839), cant 8 bit mul
-; tested, imul si, ax, SIZEOF_MOBJ_POS_T  still slower
+; multiply by 18h ((SIZE MOBJ_POS_T)), AX maxes at MAX_THINKERS - 1 (839), cant 8 bit mul
+; tested, imul si, ax, (SIZE MOBJ_POS_T)  still slower
 
 
 SHIFT_MACRO sal ax 3
@@ -4347,7 +4347,7 @@ mov       word ptr cs:[SELFMODIFY_BSP_v2y+1 - OFFSET R_BSPFL_STARTMARKER_], ax
 mov       ds, cx  ; restore ds..
 
 mov       bx, word ptr ds:[_ds_p]
-cmp       bx, (MAXDRAWSEGS * SIZEOF_DRAWSEG_T)
+cmp       bx, (MAXDRAWSEGS * (SIZE DRAWSEG_T))
 je        out_of_drawsegs
 
 mov       ax, LINEFLAGSLIST_SEGMENT ; we will also index seg_linedefs off this.
@@ -7040,7 +7040,7 @@ jne       skip_bot_silhouette
 or        byte ptr es:[bx + 01ch], SIL_BOTTOM
 mov       word ptr es:[bx + 012h], MAXSHORT
 skip_bot_silhouette:
-add       word ptr ds:[_ds_p], SIZEOF_DRAWSEG_T
+add       word ptr ds:[_ds_p], (SIZE DRAWSEG_T)
 LEAVE_MACRO
 pop       di
 pop       si
@@ -8200,13 +8200,13 @@ and   cx, FF_FRAMEMASK
 
 
 IF COMPISA GE COMPILE_186
-imul  bx, cx, SIZEOF_SPRITEFRAME_T
+imul  bx, cx, (SIZE SPRITEFRAME_T)
 mov   di, word ptr es:[di]       ; get spriteframesOffset from spritedef_t
 push  word ptr es:[bx + di + 010h]    ; 0Ah
 mov   bx, word ptr es:[di + bx]       ; get spriteindex
 
 ELSE
-mov   al, SIZEOF_SPRITEFRAME_T
+mov   al, (SIZE SPRITEFRAME_T)
 mul   cl
 mov   di, word ptr es:[di]       ; get spriteframesOffset from spritedef_t
 add   di, ax
@@ -11535,7 +11535,7 @@ mov       word ptr ds:[_destview + 2], es
 call      R_WriteBackFrameConstants_
 call      R_ClearClipSegs_
 
-mov       word ptr ds:[_ds_p],     SIZEOF_DRAWSEG_T             ; drawsegs_PLUSONE
+mov       word ptr ds:[_ds_p],     (SIZE DRAWSEG_T)             ; drawsegs_PLUSONE
 mov       word ptr ds:[_ds_p + 2], DRAWSEGS_BASE_SEGMENT        ; nseed to be written because masked subs 02000h from it due to remapping...
 call      R_ClearPlanes_
 xor       ax, ax

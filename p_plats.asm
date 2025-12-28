@@ -228,7 +228,7 @@ call        P_CreateThinker_
 mov         bx, ax ; bx gets plat. todo swap bx/si used for consistency with other funcs like this?
 
 sub         ax, (_thinkerlist + THINKER_T.t_data)
-mov         di, SIZEOF_THINKER_T
+mov         di, (SIZE THINKER_T)
 div         di
 
 mov         es, word ptr ds:[_SECTORS_SEGMENT_PTR]
@@ -391,7 +391,7 @@ lodsw
 test        ax, ax
 je          iter_next_active_plat
 xchg        bx, ax ; store ref
-mov         ax, SIZEOF_THINKER_T
+mov         ax, (SIZE THINKER_T)
 mul         bx
 xchg        ax, bx ; bx gets ptr, ax gets ref. dx is 0 
 SELFMODIFY_platfunc_linetag:
@@ -478,7 +478,7 @@ found_plat_to_remove:
 
 push        si  ; store activeplats[si] ptr
 xchg        ax, si  ; si gets platref
-mov         ax, SIZEOF_THINKER_T
+mov         ax, (SIZE THINKER_T)
 mul         si ; dx zeroed.
 xchg        ax, si  ; si gets ptr. ax gets platref back. dx is zeroed from mul
 

@@ -180,8 +180,8 @@ COMMENT @
 PROC P_SetupPsprites_ NEAR
 PUBLIC P_SetupPsprites_
 
-mov       word ptr ds:[_psprites + (0 * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_statenum], STATENUM_NULL
-mov       word ptr ds:[_psprites + (1 * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_statenum], STATENUM_NULL
+mov       word ptr ds:[_psprites + (0 * (SIZE PSPDEF_T) + PSPDEF_T).pspdef_statenum], STATENUM_NULL
+mov       word ptr ds:[_psprites + (1 * (SIZE PSPDEF_T) + PSPDEF_T).pspdef_statenum], STATENUM_NULL
 mov       al, byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 mov       byte ptr ds:[_player + PLAYER_T.player_pendingweapon], al
 call      P_BringUpWeapon_
@@ -261,13 +261,13 @@ mov       ax, bx
 call      P_SpawnMobj_
 
 mov       word ptr ds:[_playerMobjRef], ax
-mov       dx, SIZEOF_THINKER_T
+mov       dx, (SIZE THINKER_T)
 mul       dx
 add       ax, (_thinkerlist + THINKER_T.t_data)
 
 mov       word ptr ds:[_playerMobj], ax
 
-mov       ax, SIZEOF_MOBJ_POS_T
+mov       ax, (SIZE MOBJ_POS_T)
 mul       word ptr ds:[_playerMobjRef]
 
 mov       word ptr ds:[_playerMobj_pos], ax
@@ -311,8 +311,8 @@ dec       ax
 mov       word ptr ds:[_player + PLAYER_T.player_message], ax
 
 ; inlined
-mov       word ptr ds:[_psprites + (0 * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_statenum], ax
-mov       word ptr ds:[_psprites + (1 * SIZEOF_PSPDEF_T) + PSPDEF_T.pspdef_statenum], ax
+mov       word ptr ds:[_psprites + (0 * (SIZE PSPDEF_T) + PSPDEF_T).pspdef_statenum], ax
+mov       word ptr ds:[_psprites + (1 * (SIZE PSPDEF_T) + PSPDEF_T).pspdef_statenum], ax
 mov       al, byte ptr ds:[_player + PLAYER_T.player_readyweapon]
 mov       byte ptr ds:[_player + PLAYER_T.player_pendingweapon], al
 
@@ -457,10 +457,10 @@ je        do_spawn_monster
 cmp       ax, MT_SKULL
 je        exit_spawnmapthing_2
 IF COMPISA GE COMPILE_186
-    imul  bx, ax, SIZEOF_MOBJINFO_T ; todo 8 bit mul
+    imul  bx, ax, (SIZE MOBJINFO_T) ; todo 8 bit mul
 ELSE
     xchg  ax, bx
-    mov   ax, SIZEOF_MOBJINFO_T
+    mov   ax, (SIZE MOBJINFO_T)
     mul   bx
     xchg  ax, bx
 ENDIF
@@ -470,7 +470,7 @@ jne       exit_spawnmapthing_2
 do_spawn_monster:
 
 xchg      ax, bx
-mov       al, SIZEOF_MOBJINFO_T
+mov       al, (SIZE MOBJINFO_T)
 mul       bl
 xchg      ax, bx
 
@@ -524,7 +524,7 @@ mov       cx, word ptr [bp + 010h + MAPTHING_T.mapthing_y]
 
 call      P_SpawnMobj_
 
-mov       di, SIZEOF_MAPTHING_T
+mov       di, (SIZE MAPTHING_T)
 mul       di
 xchg      ax, di 
 
@@ -652,7 +652,7 @@ dec       byte ptr ds:[si + MOBJ_T.m_tics]
 jne       exit_p_mobjthinker
 
 mov       di, word ptr es:[di + MOBJ_POS_T.mp_statenum]
-mov       ax, SIZEOF_STATE_T
+mov       ax, (SIZE STATE_T)
 mul       di
 xchg      ax, di
 mov       cx, es 
@@ -682,10 +682,10 @@ call      P_ZMovement_
 
 
 IF COMPISA GE COMPILE_186
-    imul  bx, dx, SIZEOF_THINKER_T
+    imul  bx, dx, (SIZE THINKER_T)
 ELSE
     push  dx
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   dx
     xchg  ax, bx
     pop   dx
@@ -710,10 +710,10 @@ call  P_XYMovement_
 
 
 IF COMPISA GE COMPILE_186
-    imul  bx, dx, SIZEOF_THINKER_T
+    imul  bx, dx, (SIZE THINKER_T)
 ELSE
     push  dx
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   dx
     xchg  ax, bx
     pop   dx
@@ -797,15 +797,15 @@ call      P_CreateThinker_
 mov       si, ax
 sub       ax, (_thinkerlist + THINKER_T.t_data)
 xor       dx, dx
-mov       cx, SIZEOF_THINKER_T
+mov       cx, (SIZE THINKER_T)
 div       cx
 
 mov       word ptr [bp - 2], ax
 
 IF COMPISA GE COMPILE_186
-    imul      di, ax, SIZEOF_MOBJ_POS_T
+    imul      di, ax, (SIZE MOBJ_POS_T)
 ELSE
-    mov       di, SIZEOF_MOBJ_POS_T
+    mov       di, (SIZE MOBJ_POS_T)
     mul       di
     xchg      ax, di
 ENDIF
@@ -985,7 +985,7 @@ push      dx
 
 push      ax  ; store mobj
 
-mov       cx, SIZEOF_THINKER_T
+mov       cx, (SIZE THINKER_T)
 sub       ax, (_thinkerlist + THINKER_T.t_data)
 xor       dx, dx
 div       cx  ; get mobjref
@@ -994,9 +994,9 @@ mov       cx, ax ; store mobjref for later
 
 
 IF COMPISA GE COMPILE_186
-    imul  dx, ax, SIZEOF_MOBJ_POS_T
+    imul  dx, ax, (SIZE MOBJ_POS_T)
 ELSE
-    mov   dx, SIZEOF_MOBJ_POS_T
+    mov   dx, (SIZE MOBJ_POS_T)
     mul   dx
     xchg  ax, dx
 ENDIF
@@ -1655,9 +1655,9 @@ jne   jump_to_done_with_floating_with_target
 ;    moTarget_pos = &mobjposlist_6800[mo->targetRef];
 
 IF COMPISA GE COMPILE_186
-    imul  bx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_MOBJ_POS_T
+    imul  bx, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE MOBJ_POS_T)
 ELSE
-    mov   ax, SIZEOF_MOBJ_POS_T
+    mov   ax, (SIZE MOBJ_POS_T)
     mul   word ptr ds:[si + MOBJ_T.m_targetRef]
     mov   bx, ax
 ENDIF
@@ -2045,7 +2045,7 @@ dont_set_tics_to_1_b:
 
 pop   es  ; was bp - 2, only use...
 and   byte ptr es:[bx + MOBJ_POS_T.mp_flags2], (NOT MF_MISSILE)
-mov   al, SIZEOF_MOBJINFO_T
+mov   al, (SIZE MOBJINFO_T)
 mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
 
 xchg  ax, si
@@ -2090,7 +2090,7 @@ push  bx    ; bp - 4
 push  cx    ; bp - 6
 sub   sp, 0Ah
 
-mov   bx, SIZEOF_THINKER_T
+mov   bx, (SIZE THINKER_T)
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
@@ -2431,12 +2431,12 @@ mov   si, bx
 xchg  ax, di
 
 mov   ax, dx
-mov   bx, SIZEOF_THINKER_T
+mov   bx, (SIZE THINKER_T)
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
 
-mov   dx, SIZEOF_MOBJ_POS_T
+mov   dx, (SIZE MOBJ_POS_T)
 mul   dx
 
 push  ax  ; bp - 6
@@ -2469,7 +2469,7 @@ push  word ptr ds:[_setStateReturn_pos] ; bp - 0Ah
 ;sub   sp, 0Eh
 
 
-mov   al, SIZEOF_MOBJINFO_T
+mov   al, (SIZE MOBJINFO_T)
 mul   byte ptr [bp + 8]   ; type
 
 mov   di, word ptr ds:[_setStateReturn]
@@ -2489,7 +2489,7 @@ no_see_sound:
 
 
 mov   ax, word ptr [bp - 2]
-mov   bx, SIZEOF_THINKER_T
+mov   bx, (SIZE THINKER_T)
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
@@ -2588,7 +2588,7 @@ pop   ds
 call  P_AproxDistance_
 
 
-mov   al, SIZEOF_MOBJINFO_T
+mov   al, (SIZE MOBJINFO_T)
 mul   byte ptr [bp + 8]
 xchg  ax, bx
 xchg  ax, dx
@@ -2792,7 +2792,7 @@ call  P_SpawnMobj_
 push   word ptr ds:[_setStateReturn_pos]   ; bp - 8
 
 
-mov    al, SIZEOF_MOBJINFO_T
+mov    al, (SIZE MOBJINFO_T)
 mul    byte ptr [bp - 2]
 
 
@@ -2813,7 +2813,7 @@ no_see_sound_b:
 mov    ax, word ptr ds:[_playerMobjRef]
 mov    word ptr ds:[di + MOBJ_T.m_targetRef], ax
 
-mov    al, SIZEOF_MOBJINFO_T
+mov    al, (SIZE MOBJINFO_T)
 mul    byte ptr [bp - 2]
 
 mov    bx, MOBJPOSLIST_6800_SEGMENT

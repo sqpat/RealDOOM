@@ -307,15 +307,15 @@ mov   es, cx
 mov   si, word ptr ds:[si + MOBJ_T.m_targetRef]
 
 IF COMPISA GE COMPILE_186
-    imul  bx, si, SIZEOF_THINKER_T
+    imul  bx, si, (SIZE THINKER_T)
     add   bx, (_thinkerlist + THINKER_T.t_data)
-    imul  si, si, SIZEOF_MOBJ_POS_T
+    imul  si, si, (SIZE MOBJ_POS_T)
 ELSE
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   si
     add   ax, (_thinkerlist + THINKER_T.t_data)
     xchg  ax, bx
-    mov   ax, SIZEOF_MOBJ_POS_T
+    mov   ax, (SIZE MOBJ_POS_T)
     mul   si
     xchg  ax, si
 
@@ -325,7 +325,7 @@ ENDIF
 push  bx  ; bp - 4
 
 
-mov   al, SIZEOF_MOBJINFO_T
+mov   al, (SIZE MOBJINFO_T)
 mul   byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 xchg  ax, bx
 add   bx, (_mobjinfo + MOBJINFO_T.mobjinfo_radius)
@@ -388,14 +388,14 @@ PUSHA_NO_AX_MACRO
 xchg  di, si
 
 IF COMPISA GE COMPILE_186
-    imul  bx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    imul  bx, word ptr ds:[di + MOBJ_T.m_targetRef], (SIZE THINKER_T)
 ELSE
-    mov   ax, SIZEOF_THINKER_T 
+    mov   ax, (SIZE THINKER_T) 
     mul   word ptr ds:[di + MOBJ_T.m_targetRef]
     xchg  ax, bx
 ENDIF
 
-mov   cx, SIZEOF_THINKER_T
+mov   cx, (SIZE THINKER_T)
 
 ; di is actor mobj
 ; si is actorpos
@@ -407,9 +407,9 @@ div   cx
 ; ax has index...
 
 IF COMPISA GE COMPILE_186
-    imul  cx, ax, SIZEOF_MOBJ_POS_T
+    imul  cx, ax, (SIZE MOBJ_POS_T)
 ELSE
-    mov   dx, SIZEOF_MOBJ_POS_T
+    mov   dx, (SIZE MOBJ_POS_T)
     mul   dx
     xchg  ax, cx
 ENDIF
@@ -574,7 +574,7 @@ mov   bp, sp
 
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   es, cx
-mov   al, SIZEOF_MOBJINFO_T 
+mov   al, (SIZE MOBJINFO_T) 
 mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xchg  ax, bx
 xor   ax, ax
@@ -683,7 +683,7 @@ clc
 jmp   exit_p_move
 specials_hit:
 ; specials hit..
-mov   bx, SIZEOF_THINKER_T
+mov   bx, (SIZE THINKER_T)
 lea   ax, ds:[si - (_thinkerlist + THINKER_T.t_data)]
 xor   dx, dx
 ;mov   bp, dx   ; bp is "good" boolean var (default to false)
@@ -806,9 +806,9 @@ push  ax  ; garbage push instead of sub sp 2 to hold d[1] d[2]
 mov   es, si  ; backup si
 
 IF COMPISA GE COMPILE_186
-    imul  si, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_MOBJ_POS_T
+    imul  si, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE MOBJ_POS_T)
 ELSE
-    mov  ax, SIZEOF_MOBJ_POS_T
+    mov  ax, (SIZE MOBJ_POS_T)
     mul  word ptr ds:[si + MOBJ_T.m_targetRef]
     xchg  ax, si
 ENDIF
@@ -1125,7 +1125,7 @@ mov   di, ax
 
 
 
-mov   bx, SIZEOF_THINKER_T
+mov   bx, (SIZE THINKER_T)
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
@@ -1133,9 +1133,9 @@ div   bx
 
 
 IF COMPISA GE COMPILE_186
-    imul  si, ax, SIZEOF_MOBJ_POS_T
+    imul  si, ax, (SIZE MOBJ_POS_T)
 ELSE
-    mov  dx, SIZEOF_MOBJ_POS_T
+    mov  dx, (SIZE MOBJ_POS_T)
     mul  dx
     xchg ax, si
 ENDIF
@@ -1255,7 +1255,7 @@ mov   bp, sp
 push  word ptr ds:[si + MOBJ_T.m_mobjtype]
 
 mov   es, cx
-mov   cx, SIZEOF_THINKER_T
+mov   cx, (SIZE THINKER_T)
 xor   dx, dx
 lea   ax, ds:[si - (_thinkerlist + THINKER_T.t_data)]
 div   cx
@@ -1270,9 +1270,9 @@ mov   ax, word ptr ds:[_thinkerlist + THINKER_T.t_next]
 loop_next_thinker_keendie:
 
 IF COMPISA GE COMPILE_186
-    imul  bx, ax, SIZEOF_THINKER_T
+    imul  bx, ax, (SIZE THINKER_T)
 ELSE
-    mov  dx, SIZEOF_THINKER_T
+    mov  dx, (SIZE THINKER_T)
     mul  dx
     xchg ax, bx
 ENDIF
@@ -1356,7 +1356,7 @@ see_you:
 ; bl is mobjtype
 
 mov   bl, byte ptr ds:[si + MOBJ_T.m_mobjtype]
-mov   al, SIZEOF_MOBJINFO_T
+mov   al, (SIZE MOBJINFO_T)
 mul   bl
 
 xchg  ax, di
@@ -1437,14 +1437,14 @@ mov   di, bx
 
 IF COMPISA GE COMPILE_186
     mov   ax, word ptr ds:[si + MOBJ_T.m_targetRef]
-    imul  dx, ax, SIZEOF_THINKER_T
-    imul  cx, ax, SIZEOF_MOBJ_POS_T
+    imul  dx, ax, (SIZE THINKER_T)
+    imul  cx, ax, (SIZE MOBJ_POS_T)
 ELSE
     mov   bx, word ptr ds:[si + MOBJ_T.m_targetRef]
-    mov   ax, SIZEOF_MOBJ_POS_T
+    mov   ax, (SIZE MOBJ_POS_T)
     mul   bx
     xchg  ax, cx
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   bx
     xchg  ax, dx
     xchg  ax, bx
@@ -1527,7 +1527,7 @@ mov   ax, si
 call  P_LookForPlayers_
 
 jc    exit_a_chase
-mov   al, SIZEOF_MOBJINFO_T
+mov   al, (SIZE MOBJINFO_T)
 mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xchg  ax, si
 mov   dx, word ptr ds:[si + _mobjinfo]
@@ -1663,24 +1663,24 @@ PUSHA_NO_AX_OR_BP_MACRO
 mov   bx, ax
 cmp   word ptr ds:[bx + MOBJ_T.m_targetRef], 0
 je    exit_a_facetarget
-mov   cx, SIZEOF_THINKER_T
+mov   cx, (SIZE THINKER_T)
 sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   cx
 
 IF COMPISA GE COMPILE_186
-    imul  si, ax, SIZEOF_MOBJ_POS_T
+    imul  si, ax, (SIZE MOBJ_POS_T)
 ELSE
-    mov  dx, SIZEOF_MOBJ_POS_T
+    mov  dx, (SIZE MOBJ_POS_T)
     mul  dx
     xchg ax, si
 ENDIF
 
 
 IF COMPISA GE COMPILE_186
-    imul  di, word ptr ds:[bx + MOBJ_T.m_targetRef], SIZEOF_MOBJ_POS_T
+    imul  di, word ptr ds:[bx + MOBJ_T.m_targetRef], (SIZE MOBJ_POS_T)
 ELSE
-    mov  ax, SIZEOF_MOBJ_POS_T
+    mov  ax, (SIZE MOBJ_POS_T)
     mul  word ptr ds:[bx + MOBJ_T.m_targetRef]
     xchg ax, di
 ENDIF
@@ -1759,15 +1759,15 @@ je    exit_a_posattack
 
 do_a_posattack:
 
-mov   bx, SIZEOF_THINKER_T
+mov   bx, (SIZE THINKER_T)
 sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
 
 IF COMPISA GE COMPILE_186
-    imul  bx, ax, SIZEOF_MOBJ_POS_T
+    imul  bx, ax, (SIZE MOBJ_POS_T)
 ELSE
-    mov  dx, SIZEOF_MOBJ_POS_T
+    mov  dx, (SIZE MOBJ_POS_T)
     mul  dx
     xchg ax, bx
 ENDIF
@@ -1844,15 +1844,15 @@ je    exit_a_sposattack
 
 
 do_a_sposattack:
-mov   si, SIZEOF_THINKER_T
+mov   si, (SIZE THINKER_T)
 sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   si
 
 IF COMPISA GE COMPILE_186
-    imul  si, ax, SIZEOF_MOBJ_POS_T
+    imul  si, ax, (SIZE MOBJ_POS_T)
 ELSE
-    mov  dx, SIZEOF_MOBJ_POS_T
+    mov  dx, (SIZE MOBJ_POS_T)
     mul  dx
     xchg ax, si
 ENDIF
@@ -1937,15 +1937,15 @@ je    exit_a_cposattack
 
 do_cposattack:
 
-mov   bx, SIZEOF_THINKER_T
+mov   bx, (SIZE THINKER_T)
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
 
 IF COMPISA GE COMPILE_186
-    imul  bx, ax, SIZEOF_MOBJ_POS_T
+    imul  bx, ax, (SIZE MOBJ_POS_T)
 ELSE
-    mov  dx, SIZEOF_MOBJ_POS_T
+    mov  dx, (SIZE MOBJ_POS_T)
     mul  dx
     xchg ax, bx
 ENDIF
@@ -2019,9 +2019,9 @@ je    exit_a_cposrefire
 
 
 IF COMPISA GE COMPILE_186
-    imul  di, dx, SIZEOF_THINKER_T
+    imul  di, dx, (SIZE THINKER_T)
 ELSE
-    mov  ax, SIZEOF_THINKER_T
+    mov  ax, (SIZE THINKER_T)
     mul  dx
     xchg ax, di
 ENDIF
@@ -2029,15 +2029,15 @@ ENDIF
 add   di, (_thinkerlist + THINKER_T.t_data)
 cmp   word ptr ds:[di + MOBJ_T.m_health], 0
 jle   set_cgunner_seestate
-mov   cx, SIZEOF_THINKER_T
+mov   cx, (SIZE THINKER_T)
 lea   ax, ds:[di - (_thinkerlist + THINKER_T.t_data)]
 xor   dx, dx
 div   cx
 
 IF COMPISA GE COMPILE_186
-    imul  cx, ax, SIZEOF_MOBJ_POS_T
+    imul  cx, ax, (SIZE MOBJ_POS_T)
 ELSE
-    mov  dx, SIZEOF_MOBJ_POS_T
+    mov  dx, (SIZE MOBJ_POS_T)
     mul  dx
     xchg ax, cx
 ENDIF
@@ -2081,9 +2081,9 @@ test  dx, dx
 je    exit_a_spidrefire
 
 IF COMPISA GE COMPILE_186
-    imul  di, dx, SIZEOF_THINKER_T
+    imul  di, dx, (SIZE THINKER_T)
 ELSE
-    mov  ax, SIZEOF_THINKER_T
+    mov  ax, (SIZE THINKER_T)
     mul  dx
     xchg ax, di
 ENDIF
@@ -2092,15 +2092,15 @@ add   di, (_thinkerlist + THINKER_T.t_data)
 
 cmp   word ptr ds:[di + MOBJ_T.m_health], 0
 jle   set_spid_seestate
-mov   cx, SIZEOF_THINKER_T
+mov   cx, (SIZE THINKER_T)
 lea   ax, ds:[di - (_thinkerlist + THINKER_T.t_data)]
 xor   dx, dx
 div   cx
 
 IF COMPISA GE COMPILE_186
-    imul  cx, ax, SIZEOF_MOBJ_POS_T
+    imul  cx, ax, (SIZE MOBJ_POS_T)
 ELSE
-    mov  dx, SIZEOF_MOBJ_POS_T
+    mov  dx, (SIZE MOBJ_POS_T)
     mul  dx
     xchg ax, cx
 ENDIF
@@ -2139,10 +2139,10 @@ call  A_FaceTarget_
 
 
 IF COMPISA GE COMPILE_186
-    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
     push  MT_ARACHPLAZ  
 ELSE
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   word ptr ds:[si + MOBJ_T.m_targetRef]
     xchg  ax, dx
     mov   ax, MT_ARACHPLAZ
@@ -2188,9 +2188,9 @@ sal   ax, 1
 add   cx, ax  ; cx is damage.
 
 IF COMPISA GE COMPILE_186
-    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
 ELSE
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   word ptr ds:[si + MOBJ_T.m_targetRef]
 ENDIF
 
@@ -2205,10 +2205,10 @@ ret
 do_troop_missile:
 
 IF COMPISA GE COMPILE_186
-    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
     push  MT_TROOPSHOT 
 ELSE
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   word ptr ds:[si + MOBJ_T.m_targetRef]
     xchg  ax, dx
     mov   ax, MT_TROOPSHOT
@@ -2253,9 +2253,9 @@ xchg  ax, cx
 
 
 IF COMPISA GE COMPILE_186
-    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
 ELSE
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   word ptr ds:[si + MOBJ_T.m_targetRef]
 ENDIF
 
@@ -2300,9 +2300,9 @@ xchg  ax, cx
 
 
 IF COMPISA GE COMPILE_186
-    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
 ELSE
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   word ptr ds:[si + MOBJ_T.m_targetRef]
 ENDIF
 
@@ -2317,10 +2317,10 @@ ret
 do_head_missile:
 
 IF COMPISA GE COMPILE_186
-    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
     push  MT_HEADSHOT
 ELSE
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   word ptr ds:[si + MOBJ_T.m_targetRef]
     xchg  ax, dx
     mov   ax, MT_HEADSHOT
@@ -2347,10 +2347,10 @@ je    exit_cyber_attack
 call  A_FaceTarget_
 
 IF COMPISA GE COMPILE_186
-    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
     push  MT_ROCKET
 ELSE
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   word ptr ds:[si + MOBJ_T.m_targetRef]
     xchg  ax, dx
     mov   ax, MT_ROCKET
@@ -2393,9 +2393,9 @@ mov   ah, 10
 mul   ah
 mov   cx, ax
 IF COMPISA GE COMPILE_186
-    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
 ELSE
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   word ptr ds:[si + MOBJ_T.m_targetRef]
 ENDIF
 
@@ -2409,10 +2409,10 @@ ret
 do_bruis_missile:
 
 IF COMPISA GE COMPILE_186
-    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
     push  MT_BRUISERSHOT
 ELSE
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   word ptr ds:[si + MOBJ_T.m_targetRef]
     xchg  ax, dx
     mov   ax, MT_BRUISERSHOT
@@ -2445,10 +2445,10 @@ mov   es, cx
 add   word ptr es:[di + MOBJ_POS_T.mp_z + 2], 16
 
 IF COMPISA GE COMPILE_186
-    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
     push  MT_TRACER
 ELSE
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   word ptr ds:[si + MOBJ_T.m_targetRef] 
     xchg  ax, dx
     mov   ax, MT_TRACER
@@ -2614,10 +2614,10 @@ jmp   exit_a_tracer
 valid_tracerref:
 
 IF COMPISA GE COMPILE_186
-    imul  bx, ax, SIZEOF_THINKER_T
+    imul  bx, ax, (SIZE THINKER_T)
 ELSE
     xchg ax, bx
-    mov  ax, SIZEOF_THINKER_T
+    mov  ax, (SIZE THINKER_T)
     mul  bx
     xchg ax, bx
 ENDIF
@@ -2627,9 +2627,9 @@ cmp   word ptr ds:[bx + _thinkerlist + THINKER_T.t_data + MOBJ_T.m_health], 0
 jle   jump_to_exit_a_tracer
 
 IF COMPISA GE COMPILE_186
-    imul  bx, ax, SIZEOF_MOBJ_POS_T
+    imul  bx, ax, (SIZE MOBJ_POS_T)
 ELSE
-    mov  dx, SIZEOF_MOBJ_POS_T
+    mov  dx, (SIZE MOBJ_POS_T)
     mul  dx
     xchg ax, bx
 ENDIF
@@ -2741,7 +2741,7 @@ call   P_AproxDistance_
 
 mov   bx, word ptr [bp - 2]
 
-mov   al, SIZEOF_MOBJINFO_T
+mov   al, (SIZE MOBJINFO_T)
 mul   byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 xchg  ax, bx
 
@@ -2877,9 +2877,9 @@ mov   dl, SFX_SKEPCH
 call  S_StartSound_
 
 IF COMPISA GE COMPILE_186
-    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
 ELSE
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   word ptr ds:[si + MOBJ_T.m_targetRef]
 ENDIF
 
@@ -2935,7 +2935,7 @@ call  GetRaiseState_
 
 test  ax, ax
 je    exit_pit_vilecheck_return_1_pop3
-mov   al, SIZEOF_MOBJINFO_T
+mov   al, (SIZE MOBJINFO_T)
 mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xchg  ax, di
 
@@ -2945,7 +2945,7 @@ mov   es, ax
 mov   al, byte ptr ds:[di + _mobjinfo + MOBJINFO_T.mobjinfo_radius]
 xor   ah, ah
 
-mov   cl, byte ptr ds:[_mobjinfo + (MT_VILE * SIZEOF_MOBJINFO_T) + MOBJINFO_T.mobjinfo_radius] ; todo hardcode...?
+mov   cl, byte ptr ds:[_mobjinfo + (MT_VILE * (SIZE MOBJINFO_T)) + MOBJINFO_T.mobjinfo_radius] ; todo hardcode...?
 
 xor   ch, ch
 add   cx, ax
@@ -3072,7 +3072,7 @@ push  bx ; bp - 4
 xchg  ax, si
 cmp   byte ptr ds:[si + MOBJ_T.m_movedir], DI_NODIR
 je    jump_to_do_chase_and_exit
-mov   al, SIZEOF_MOBJINFO_T
+mov   al, (SIZE MOBJINFO_T)
 mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]  ; 
 push  ax   ; bp - 6
 xchg  ax, di
@@ -3257,14 +3257,14 @@ call  P_SetMobjState_
 
 
 IF COMPISA GE COMPILE_186
-    imul  si, word ptr ds:[_corpsehitRef], SIZEOF_THINKER_T
-    imul  bx, word ptr ds:[_corpsehitRef], SIZEOF_MOBJ_POS_T
+    imul  si, word ptr ds:[_corpsehitRef], (SIZE THINKER_T)
+    imul  bx, word ptr ds:[_corpsehitRef], (SIZE MOBJ_POS_T)
 ELSE
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mov   cx, word ptr ds:[_corpsehitRef]
     mul   cx
     xchg  ax, si
-    mov   ax, SIZEOF_MOBJ_POS_T
+    mov   ax, (SIZE MOBJ_POS_T)
     mul   cx
     xchg  ax, bx
 
@@ -3418,23 +3418,23 @@ mov   di, bx
 
 IF COMPISA GE COMPILE_186
     
-    imul  dx, ax, SIZEOF_THINKER_T
-    imul  cx, ax, SIZEOF_MOBJ_POS_T
-    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
-    imul  bx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_MOBJ_POS_T
+    imul  dx, ax, (SIZE THINKER_T)
+    imul  cx, ax, (SIZE MOBJ_POS_T)
+    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
+    imul  bx, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE MOBJ_POS_T)
 
 ELSE
     xchg  ax, cx   ; cx stores index
-    mov   ax, SIZEOF_MOBJ_POS_T
+    mov   ax, (SIZE MOBJ_POS_T)
     mul   word ptr ds:[si + MOBJ_T.m_targetRef]
     xchg  ax, bx  ; bx has what it needs
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   word ptr ds:[si + MOBJ_T.m_targetRef]
     xchg  ax, si   ; si has ax's contents
-    mov   ax, SIZEOF_MOBJ_POS_T
+    mov   ax, (SIZE MOBJ_POS_T)
     mul   cx
     xchg  ax, cx   ; cx has what it needs, ax has index for next mult
-    mov   dx, SIZEOF_THINKER_T
+    mov   dx, (SIZE THINKER_T)
     mul   dx
     xchg  ax, dx   ; dx has what it needs
     xchg  ax, si   ; ax has what it needs
@@ -3527,13 +3527,13 @@ call  A_FaceTarget_
 
 IF COMPISA GE COMPILE_186
     mov   ax, word ptr ds:[si + MOBJ_T.m_targetRef]
-    imul  di, ax, SIZEOF_THINKER_T
-    imul  bx, ax, SIZEOF_MOBJ_POS_T
+    imul  di, ax, (SIZE THINKER_T)
+    imul  bx, ax, (SIZE MOBJ_POS_T)
 ELSE
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   word ptr ds:[si + MOBJ_T.m_targetRef]
     xchg  ax, di
-    mov   ax, SIZEOF_MOBJ_POS_T
+    mov   ax, (SIZE MOBJ_POS_T)
     mul   word ptr ds:[si + MOBJ_T.m_targetRef]
     xchg  ax, bx
 
@@ -3566,7 +3566,7 @@ call  P_SpawnMobj_
 
 mov   word ptr ds:[si + MOBJ_T.m_tracerRef], ax
 
-mov   cx, SIZEOF_THINKER_T
+mov   cx, (SIZE THINKER_T)
 xor   dx, dx
 lea   ax, ds:[si - (_thinkerlist + THINKER_T.t_data)]
 div   cx
@@ -3679,18 +3679,18 @@ ret
 do_vile_attack:
 
 IF COMPISA GE COMPILE_186
-    imul  cx, ax, SIZEOF_MOBJ_POS_T
+    imul  cx, ax, (SIZE MOBJ_POS_T)
 ELSE
-    mov   cx, SIZEOF_MOBJ_POS_T
+    mov   cx, (SIZE MOBJ_POS_T)
     mul   cx
     xchg  ax, cx
 ENDIF
 mov   ax, si
 call  A_FaceTarget_
 IF COMPISA GE COMPILE_186
-    imul  di, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    imul  di, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
 ELSE
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   word ptr ds:[si + MOBJ_T.m_targetRef]
     xchg  ax, di
 ENDIF
@@ -3733,13 +3733,13 @@ test  cx, cx
 je    exit_vile_attack
 
 IF COMPISA GE COMPILE_186
-    imul  ax, cx, SIZEOF_THINKER_T
-    imul  di, cx, SIZEOF_MOBJ_POS_T
+    imul  ax, cx, (SIZE THINKER_T)
+    imul  di, cx, (SIZE MOBJ_POS_T)
 ELSE
-    mov   ax, SIZEOF_MOBJ_POS_T
+    mov   ax, (SIZE MOBJ_POS_T)
     mul   cx
     xchg  ax, di
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   cx
 ENDIF
 
@@ -3840,11 +3840,11 @@ PROC    A_DoFatShot_ NEAR
 
 
 IF COMPISA GE COMPILE_186
-    imul  dx, word ptr ds:[di + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    imul  dx, word ptr ds:[di + MOBJ_T.m_targetRef], (SIZE THINKER_T)
     add   dx, (_thinkerlist + THINKER_T.t_data)
 ELSE
     
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   word ptr ds:[di + MOBJ_T.m_targetRef]
     xchg  ax, dx
     add   dx, (_thinkerlist + THINKER_T.t_data)
@@ -3880,7 +3880,7 @@ PROC  A_SetMomxMomyFromAngleAndGetSpeedAngle_ NEAR
 ; es:bx is thing
 ; si is mobj ptr
 
-mov   al, SIZEOF_MOBJINFO_T
+mov   al, (SIZE MOBJINFO_T)
 mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
 
 
@@ -4013,13 +4013,13 @@ call  A_FaceTarget_
 
 IF COMPISA GE COMPILE_186
     mov   cx, word ptr ds:[si + MOBJ_T.m_targetRef]
-    imul  ax, cx, SIZEOF_THINKER_T
-    imul  bx, cx, SIZEOF_MOBJ_POS_T
+    imul  ax, cx, (SIZE THINKER_T)
+    imul  bx, cx, (SIZE MOBJ_POS_T)
 ELSE
-    mov   ax, SIZEOF_MOBJ_POS_T
+    mov   ax, (SIZE MOBJ_POS_T)
     mul   word ptr ds:[si + MOBJ_T.m_targetRef]
     xchg  ax, bx
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   word ptr ds:[si + MOBJ_T.m_targetRef]
 ENDIF
 
@@ -4171,9 +4171,9 @@ xor   cx, cx  ; count = 0
 continue_checking_thinkers_for_skulls:
 
 IF COMPISA GE COMPILE_186
-    imul  bx, ax, SIZEOF_THINKER_T
+    imul  bx, ax, (SIZE THINKER_T)
 ELSE
-    mov   bx, SIZEOF_THINKER_T
+    mov   bx, (SIZE THINKER_T)
     mul   bx
     xchg  ax, bx
 ENDIF
@@ -4212,14 +4212,14 @@ push  word ptr ds:[di + MOBJ_T.m_targetRef] ; bp - 4
 
 lea   ax, ds:[di - (_thinkerlist + THINKER_T.t_data)]
 cwd
-mov   bx, SIZEOF_THINKER_T
+mov   bx, (SIZE THINKER_T)
 div   bx
 
 
 IF COMPISA GE COMPILE_186
-    imul  si, ax, SIZEOF_MOBJ_POS_T
+    imul  si, ax, (SIZE MOBJ_POS_T)
 ELSE
-    mov   si, SIZEOF_MOBJ_POS_T
+    mov   si, (SIZE MOBJ_POS_T)
     mul   si
     xchg  ax, si
 ENDIF
@@ -4344,7 +4344,7 @@ PROC    A_Scream_ NEAR
 PUBLIC  A_Scream_
 
 mov   bx, ax
-mov   al, SIZEOF_MOBJINFO_T
+mov   al, (SIZE MOBJINFO_T)
 mul   byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 mov   si, ax
 mov   al, byte ptr ds:[si + _mobjinfo + MOBJINFO_T.mobjinfo_deathsound]
@@ -4446,10 +4446,10 @@ PUBLIC  A_Explode_
 
 IF COMPISA GE COMPILE_186
     mov   dx, bx
-    imul  bx, word ptr ds:[si + MOBJ_T.m_targetRef], SIZEOF_THINKER_T
+    imul  bx, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
 ELSE
     push  ax
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   word ptr ds:[si + MOBJ_T.m_targetRef]
     xchg  ax, bx  ; product to bx
     xchg  ax, dx  ; dx gets bx
@@ -4562,14 +4562,14 @@ cmp   word ptr ds:[_player + PLAYER_T.player_health], 0
 jle   exit_a_bossdeath
 lea   ax, ds:[bx - (_thinkerlist + THINKER_T.t_data)]
 cwd
-mov   si, SIZEOF_THINKER_T
+mov   si, (SIZE THINKER_T)
 div   si
 xchg  ax, si
 mov   ax, word ptr ds:[_thinkerlist + THINKER_T.t_next]
 
 je    all_bosses_dead
 scan_next_mobj_for_bosscheck:
-mov   bx, SIZEOF_THINKER_T
+mov   bx, (SIZE THINKER_T)
 mul   bx
 xchg  ax, bx
 mov   dx, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
@@ -4696,10 +4696,10 @@ mov   ax, word ptr ds:[_thinkerlist + THINKER_T.t_next]
 loop_next_brainawake:
 
 IF COMPISA GE COMPILE_186
-    imul  bx, ax, SIZEOF_THINKER_T
+    imul  bx, ax, (SIZE THINKER_T)
 ELSE
     xchg  ax, bx
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   bx
     xchg  ax, bx
 ENDIF
@@ -4723,9 +4723,9 @@ inc   word ptr ds:[_numbraintargets]
 mobj_not_braintarget:
 
 IF COMPISA GE COMPILE_186
-    imul  bx, ax, SIZEOF_THINKER_T
+    imul  bx, ax, (SIZE THINKER_T)
 ELSE
-    mov   bx, SIZEOF_THINKER_T
+    mov   bx, (SIZE THINKER_T)
     mul   bx
     xchg  ax, bx
 ENDIF
@@ -4992,16 +4992,16 @@ mov   word ptr ds:[_braintargeton], ax
 
 
 IF COMPISA GE COMPILE_186
-    imul  dx, cx, SIZEOF_THINKER_T
-    imul  bx, cx, SIZEOF_MOBJ_POS_T
+    imul  dx, cx, (SIZE THINKER_T)
+    imul  bx, cx, (SIZE MOBJ_POS_T)
     push  bx   ; bp - 4
     push  MT_SPAWNSHOT ; todo 186
 ELSE
-    mov   ax, SIZEOF_MOBJ_POS_T
+    mov   ax, (SIZE MOBJ_POS_T)
     mul   cx
     xchg  ax, bx
 
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   cx
     xchg  ax, dx
 
@@ -5076,7 +5076,7 @@ jns   loop_subtract_to_divide_like_a_moron
 
 les   di, dword ptr ds:[_setStateReturn_pos]
 
-mov   ax, SIZEOF_STATE_T
+mov   ax, (SIZE STATE_T)
 
 mul   word ptr es:[di + MOBJ_POS_T.mp_statenum]
 mov   dx, STATES_SEGMENT
@@ -5131,13 +5131,13 @@ do_spawnfly:
 
 mov   di, word ptr ds:[si + MOBJ_T.m_targetRef]
 IF COMPISA GE COMPILE_186
-    imul  bx, di, SIZEOF_THINKER_T
-    imul  di, di, SIZEOF_MOBJ_POS_T
+    imul  bx, di, (SIZE THINKER_T)
+    imul  di, di, (SIZE MOBJ_POS_T)
 ELSE
-    mov   ax, SIZEOF_MOBJ_POS_T
+    mov   ax, (SIZE MOBJ_POS_T)
     mul   di
     xchg  ax, di
-    mov   bx, SIZEOF_THINKER_T
+    mov   bx, (SIZE THINKER_T)
     mul   bx
     xchg  ax, bx
 ENDIF
@@ -5257,16 +5257,16 @@ call  P_SpawnMobj_
 
 
 IF COMPISA GE COMPILE_186
-    imul  di, ax, SIZEOF_THINKER_T
+    imul  di, ax, (SIZE THINKER_T)
     add   di, (OFFSET _thinkerlist + THINKER_T.t_data)
-    imul  bx, ax, SIZEOF_MOBJ_POS_T
+    imul  bx, ax, (SIZE MOBJ_POS_T)
 ELSE
     xchg  ax, bx
-    mov   ax, SIZEOF_THINKER_T
+    mov   ax, (SIZE THINKER_T)
     mul   bx
     xchg  ax, di
     add   di, (OFFSET _thinkerlist + THINKER_T.t_data)
-    mov   ax, SIZEOF_MOBJ_POS_T
+    mov   ax, (SIZE MOBJ_POS_T)
     mul   bx
     xchg  ax, bx
 
@@ -5413,15 +5413,15 @@ mov       si, ax
 mov       cx, dx
 
 mov       word ptr ds:[_setStateReturn], ax
-mov       bx, SIZEOF_THINKER_T
+mov       bx, (SIZE THINKER_T)
 sub       ax, (_thinkerlist + THINKER_T.t_data)
 xor       dx, dx
 div       bx
 
 IF COMPISA GE COMPILE_186
-    imul  ax, ax, SIZEOF_MOBJ_POS_T
+    imul  ax, ax, (SIZE MOBJ_POS_T)
 ELSE
-    mov   di, SIZEOF_MOBJ_POS_T
+    mov   di, (SIZE MOBJ_POS_T)
     mul   di
 ENDIF
 
@@ -5503,14 +5503,14 @@ call      P_RemoveMobj_
 
 mov       word ptr ds:[_setStateReturn], si
 lea       ax, [si - (_thinkerlist + THINKER_T.t_data)]
-mov       bx, SIZEOF_THINKER_T
+mov       bx, (SIZE THINKER_T)
 div       bx
 
 
 IF COMPISA GE COMPILE_186
-    imul  ax, ax, SIZEOF_MOBJ_POS_T
+    imul  ax, ax, (SIZE MOBJ_POS_T)
 ELSE
-    mov   di, SIZEOF_MOBJ_POS_T
+    mov   di, (SIZE MOBJ_POS_T)
     mul   di
 ENDIF
 

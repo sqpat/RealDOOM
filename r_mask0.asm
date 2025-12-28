@@ -1029,7 +1029,7 @@ call R_DrawVisSprite_
 check_next_player_sprite:
 cmp  word ptr ds:[_psprites + 0Ch], -1  ; STATENUM_NULL
 je  exit_drawplayersprites
-mov  si, _player_vissprites + SIZEOF_VISSPRITE_T
+mov  si, _player_vissprites + (SIZE VISSPRITE_T)
 call R_DrawVisSprite_
 
 exit_drawplayersprites:
@@ -4575,7 +4575,7 @@ mov  al, byte ptr ds:[_vsprsortedheadfirst]
 cmp  al, VISSPRITE_SORTED_HEAD_INDEX
 je   done_drawing_sprites
 draw_next_sprite:
-mov  ah, SIZEOF_VISSPRITE_T
+mov  ah, (SIZE VISSPRITE_T)
 mul  ah
 add  ax, OFFSET _vissprites
 mov  bx, ax
@@ -4589,7 +4589,7 @@ done_drawing_sprites:
 
 les  di, dword ptr ds:[_ds_p]
 
-sub  di, SIZEOF_DRAWSEG_T
+sub  di, (SIZE DRAWSEG_T)
 
 jle  done_rendering_masked_segranges
 mov  si, es
@@ -4603,7 +4603,7 @@ mov  cx, word ptr es:[di + 4]
 call R_RenderMaskedSegRange_
 mov  es, si
 not_masked:
-sub  di, SIZEOF_DRAWSEG_T
+sub  di, (SIZE DRAWSEG_T)
 
 ja   check_next_seg
 done_rendering_masked_segranges:
@@ -5378,13 +5378,13 @@ loop_set_vissprite_next:
 
 inc       al
 mov       byte ptr ds:[bx], al
-add       bx, SIZEOF_VISSPRITE_T  
+add       bx, (SIZE VISSPRITE_T)  
 cmp       ax, dx
 jl        loop_set_vissprite_next
 
 done_setting_vissprite_next:
 
-sub        bx, SIZEOF_VISSPRITE_T
+sub        bx, (SIZE VISSPRITE_T)
 mov       byte ptr cs:[SELFMODIFY_MASKED_set_al_to_loop_counter+1 - OFFSET R_MASK0_STARTMARKER_], 0  ; zero loop counter
 
 mov       al, VISSPRITE_SORTED_HEAD_INDEX
@@ -5412,7 +5412,7 @@ mov       al, byte ptr [bp - 034h]  ; ds=unsorted.next
 cmp       al, VISSPRITE_UNSORTED_INDEX ; ds!= VISSPRITE_UNSORTED_INDEX
 je        done_with_sort_subloop
 loop_sort_subloop:
-mov       ah, SIZEOF_VISSPRITE_T
+mov       ah, (SIZE VISSPRITE_T)
 mov       bx, ax
 mul       ah
 xchg      ax, bx
@@ -5433,7 +5433,7 @@ mov       word ptr [bp - 4], bx   ; todo dont add vissprites to this?
 
 prepare_find_best_index_subloop:
 
-mul       ah	  ; still 028h (SIZEOF_VISSPRITE_T )
+mul       ah	  ; still 028h ((SIZE VISSPRITE_T) )
 mov       bx, ax
 
 mov       al, byte ptr ds:[bx+si]
@@ -5445,7 +5445,7 @@ mov       al, byte ptr [bp - 034h]
 
 cmp       al, dh
 je        done_with_find_best_index_loop
-mov       dl, SIZEOF_VISSPRITE_T
+mov       dl, (SIZE VISSPRITE_T)
 loop_find_best_index:
 mul       dl
 mov       word ptr [bp - 0Ah], 0  ; some unsorted field
@@ -5501,7 +5501,7 @@ set_next_to_best_index:
 ;            vissprites[vsprsortedheadprev].next = bestindex;
 
 mov       al, byte ptr [bp - 2]
-mov	      ah, SIZEOF_VISSPRITE_T
+mov	      ah, (SIZE VISSPRITE_T)
 mul       ah
 mov       bx, ax
 

@@ -84,7 +84,7 @@ sub   al, dl
 jge   dont_add_height
 add   al, bl
 dont_add_height:
-mov   ah, SIZEOF_HUTEXTLINE_T
+mov   ah, (SIZE HU_TEXTLINE_T)
 mul   ah
 xchg  ax, bx
 
@@ -170,7 +170,7 @@ call  HUlib_eraseTextLine_
 
 
 inc   bx
-add   dx, SIZEOF_HUTEXTLINE_T
+add   dx, (SIZE HU_TEXTLINE_T)
 jmp   loop_hu_erase_next_line
 
 

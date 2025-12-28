@@ -178,13 +178,13 @@ mov   ax, word ptr es:[si + VANILLA_PLAYER_T.vanilla_player_psprites_field + 0Ch
 mov   word ptr ds:[bx + _psprites + 8], ax
 mov   ax, word ptr es:[si + VANILLA_PLAYER_T.vanilla_player_psprites_field + 0Eh]
 mov   word ptr ds:[bx + _psprites + 0Ah], ax
-add   si, SIZEOF_PSPDEF_VANILLA_T
-add   bx, SIZEOF_PSPDEF_T
-cmp   bx, SIZEOF_PSPDEF_T * NUMPSPRITES
+add   si, (SIZE PSPDEF_VANILLA_T)
+add   bx, (SIZE PSPDEF_T)
+cmp   bx, (SIZE PSPDEF_T) * NUMPSPRITES
 jne   load_next_sprite
 mov   word ptr ds:[di + 056h], 0FFFFh
 xor   ax, ax
-add   word ptr ds:[_save_p], SIZEOF_PLAYER_VANILLA_T 
+add   word ptr ds:[_save_p], (SIZE PLAYER_VANILLA_T) 
 
 mov   word ptr ds:[di + 05Ch], ax
 
@@ -258,8 +258,8 @@ lodsw
 mov   byte ptr ss:[bx + 0Fh], al
 mov   word ptr ss:[bx + 8], 0
 
-add   di, (SIZEOF_SECTOR_T - 9)
-add   bx, SIZEOF_SECTOR_PHYSICS_T
+add   di, ((SIZE SECTOR_T) - 9)
+add   bx, (SIZE SECTOR_PHYSICS_T)
 
 loop  load_next_sector
 
@@ -356,7 +356,7 @@ jnge  load_next_side
 
 finish_line_iteration:
 inc   dx
-add   di, SIZEOF_LINE_PHYSICS_T
+add   di, (SIZE LINE_PHYSICS_T)
 cmp   dx, word ptr ss:[_numlines]
 jge   done_loading_lines
 jmp   load_next_line
@@ -381,8 +381,8 @@ ENDP
 
 
 
-SIZEOF_MOBJ_VANILLA_T = 09Ah
-SIZEOF_THINKER_VANILLA_T = 12
+(SIZE MOBJ_VANILLA_T) = 09Ah
+(SIZE THINKER_VANILLA_T) = 12
 
 PROC P_UnArchiveThinkers_  NEAR
 PUBLIC P_UnArchiveThinkers_
@@ -397,7 +397,7 @@ mov       si, word ptr ds:[_thinkerlist + THINKER_T.t_next]       ; currentthink
 
 
 loop_zeroing_thinkers:
-mov       ax, SIZEOF_THINKER_T
+mov       ax, (SIZE THINKER_T)
 mul       si
 
 mov       di, ax                               ; thinker_t offset
@@ -409,7 +409,7 @@ and       ax, TF_FUNCBITS
 cmp       ax, TF_MOBJTHINKER_HIGHBITS
 je        call_removemobj
 ; zero out thinker
-mov       cx, SIZEOF_MOBJ_T / 2
+mov       cx, (SIZE MOBJ_T) / 2
 push      ds
 pop       es    ; for rep stosw in loop
 xor       ax, ax
@@ -497,11 +497,11 @@ mov       bx, ax                          ; mobj pointer to bx
 mov       word ptr [bp - 6], ax           ; store mobj pointer              ; alternatively, push/pop
 sub       ax, ((_thinkerlist + THINKER_T.t_data))        ; get thinkerlist offset
 xor       dx, dx
-mov       cx, SIZEOF_THINKER_T
+mov       cx, (SIZE THINKER_T)
 div       cx
 mov       cx, ax                          ; cx = thinkerref
 
-mov       dx, SIZEOF_MOBJ_POS_T
+mov       dx, (SIZE MOBJ_POS_T)
 mul       dx
 mov       di, ax                          ; di has mobjpos_t offset
 xchg      ax, dx                          ; dx also holds on to mobjpos_t base 
@@ -511,7 +511,7 @@ mov       ax, MOBJPOSLIST_6800_SEGMENT
 mov       es, ax
 
 
-add       si, SIZEOF_THINKER_VANILLA_T      ; si + 0Ch skip this section
+add       si, (SIZE THINKER_VANILLA_T)      ; si + 0Ch skip this section
 
 mov       word ptr es:[di + 12], 0     ; snextRef
 
@@ -605,7 +605,7 @@ add       si, 0Bh   ; si + 08Ch
 mov       ax, NIGHTMARESPAWNS_SEGMENT
 mov       es, ax
 
-mov       ax, SIZEOF_MAPTHING_T
+mov       ax, (SIZE MAPTHING_T)
 xchg      cx, dx                    ; dx will be clobbered..
 mul       dx
 
@@ -652,7 +652,7 @@ mov       ax, word ptr es:[bx + 2]
 mov       word ptr ds:[di + 8], ax              ; ceilingz
 
 
-add       si, (SIZEOF_MOBJ_VANILLA_T - 096h) ; add 4 (for tracer)
+add       si, ((SIZE MOBJ_VANILLA_T) - 096h) ; add 4 (for tracer)
 jmp       load_next_thinker
 
 
@@ -661,13 +661,13 @@ jmp       load_next_thinker
 
 ENDP
 
-SIZEOF_CEILING_VANILLA_T = 030h
-SIZEOF_FLOORMOVE_VANILLA_T = 02Ah
-SIZEOF_VLDOOR_VANILLA_T = 028h
-SIZEOF_PLAT_VANILLA_T = 038h
-SIZEOF_STROBE_VANILLA_T = 024h
-SIZEOF_LIGHTFLASH_VANILLA_T = 024h
-SIZEOF_GLOW_VANILLA_T = 01Ch
+(SIZE CEILING_VANILLA_T) = 030h
+(SIZE FLOORMOVE_VANILLA_T) = 02Ah
+(SIZE VLDOOR_VANILLA_T) = 028h
+(SIZE PLAT_VANILLA_T) = 038h
+(SIZE STROBE_VANILLA_T) = 024h
+(SIZE LIGHTFLASH_VANILLA_T) = 024h
+(SIZE GLOW_VANILLA_T) = 01Ch
 
 jump_table_unarchive_specials:
 dw  OFFSET  load_ceiling_special    ; 0
@@ -699,7 +699,7 @@ mov    bx, ax
 sal    bx, 1
 
 
-mov    di, SIZEOF_THINKER_T
+mov    di, (SIZE THINKER_T)
 mov    cx, dx
 
 jmp    word ptr cs:[bx + OFFSET jump_table_unarchive_specials]
@@ -1155,7 +1155,7 @@ PUBLIC P_ArchivePlayers_
 les       di, dword ptr ds:[_save_p] ; already dword aligned..
 
 
-mov       cx, SIZEOF_PLAYER_VANILLA_T / 2
+mov       cx, (SIZE PLAYER_VANILLA_T) / 2
 
 
 mov       dx, di
@@ -1482,7 +1482,7 @@ loop   check_next_side
 pop    si
 
 
-add   si, SIZEOF_LINE_PHYSICS_T
+add   si, (SIZE LINE_PHYSICS_T)
 
 inc   dx                                ; increment line
 cmp   dx, word ptr ss:[_numlines]
@@ -1522,7 +1522,7 @@ mov       dx, word ptr ds:[_thinkerlist + THINKER_T.t_next]
 test      dx, dx
 je        exit_archivethinkers
 loop_check_next_thinker:
-mov       ax, SIZEOF_THINKER_T
+mov       ax, (SIZE THINKER_T)
 push      dx    ; backup  th
 mul       dx
 pop       dx    ; restore th
@@ -1534,7 +1534,7 @@ cmp       ax, TF_MOBJTHINKER_HIGHBITS
 je        do_save_next_thinker
 mov       dx, bx
 iterate_to_next_thinker:
-mov       ax, SIZEOF_THINKER_T
+mov       ax, (SIZE THINKER_T)
 mul       dx
 xchg      ax, bx
 mov       dx, word ptr ss:[bx + OFFSET _thinkerlist + THINKER_T.t_next] ; next th
@@ -1553,7 +1553,7 @@ ret
 
 do_save_next_thinker:
 ; dx is index..
-mov       ax, SIZEOF_MOBJ_POS_T
+mov       ax, (SIZE MOBJ_POS_T)
 push      dx
 mul       dx         ; dx is thinker index.
 pop       dx
@@ -1577,12 +1577,12 @@ mov       ax, MOBJPOSLIST_6800_SEGMENT
 mov       ds, ax
 
 
-mov       cx, SIZEOF_MOBJ_VANILLA_T / 2
+mov       cx, (SIZE MOBJ_VANILLA_T) / 2
 xor       ax, ax
 rep       stosw 
 
 
-lea       di, ds:[di + 0Ch - SIZEOF_MOBJ_VANILLA_T] ; skip thinker fields and undo rep stosw
+lea       di, ds:[di + 0Ch - (SIZE MOBJ_VANILLA_T)] ; skip thinker fields and undo rep stosw
 
 movsw   ; x
 movsw
@@ -1715,7 +1715,7 @@ mov       ds, ax
 ; get index
 
 pop       dx    ; restore th index. dx was used for cwds above...
-mov       ax, SIZEOF_MAPTHING_T
+mov       ax, (SIZE MAPTHING_T)
 push      dx
 mul       dx
 pop       dx
@@ -1731,7 +1731,7 @@ movsw  ; options
 ; di now 096h
 
 
-add       di, (SIZEOF_MOBJ_VANILLA_T - 096h)        
+add       di, ((SIZE MOBJ_VANILLA_T) - 096h)        
 jmp       iterate_to_next_thinker
 
 
@@ -1819,13 +1819,13 @@ stosw
 ret
 ENDP
 
-SIZEOF_CEILING_VANILLA_T = 030h
-SIZEOF_FLOORMOVE_VANILLA_T = 02Ah
-SIZEOF_VLDOOR_VANILLA_T = 028h
-SIZEOF_PLAT_VANILLA_T = 038h
-SIZEOF_STROBE_VANILLA_T = 024h
-SIZEOF_LIGHTFLASH_VANILLA_T = 024h
-SIZEOF_GLOW_VANILLA_T = 01Ch
+(SIZE CEILING_VANILLA_T) = 030h
+(SIZE FLOORMOVE_VANILLA_T) = 02Ah
+(SIZE VLDOOR_VANILLA_T) = 028h
+(SIZE PLAT_VANILLA_T) = 038h
+(SIZE STROBE_VANILLA_T) = 024h
+(SIZE LIGHTFLASH_VANILLA_T) = 024h
+(SIZE GLOW_VANILLA_T) = 01Ch
 
 MAXCEILINGS = 30
 
@@ -1847,14 +1847,14 @@ dw  OFFSET  save_glow_special        ; 9
 
 erase_size_table:
 dw  0
-dw  SIZEOF_PLAT_VANILLA_T       / 2
-dw  SIZEOF_CEILING_VANILLA_T    / 2
-dw  SIZEOF_VLDOOR_VANILLA_T     / 2
-dw  SIZEOF_FLOORMOVE_VANILLA_T  / 2
+dw  (SIZE PLAT_VANILLA_T)       / 2
+dw  (SIZE CEILING_VANILLA_T)    / 2
+dw  (SIZE VLDOOR_VANILLA_T)     / 2
+dw  (SIZE FLOORMOVE_VANILLA_T)  / 2
 dw  0
-dw  SIZEOF_LIGHTFLASH_VANILLA_T / 2
-dw  SIZEOF_STROBE_VANILLA_T     / 2
-dw  SIZEOF_GLOW_VANILLA_T       / 2
+dw  (SIZE LIGHTFLASH_VANILLA_T) / 2
+dw  (SIZE STROBE_VANILLA_T)     / 2
+dw  (SIZE GLOW_VANILLA_T)       / 2
 
 
 PROC   P_ArchiveSpecials_ NEAR
@@ -1867,7 +1867,7 @@ mov       cx, word ptr ds:[_thinkerlist + THINKER_T.t_next]
 test      cx, cx
 je        exit_archive_specials
 save_next_special:
-mov       ax, SIZEOF_THINKER_T
+mov       ax, (SIZE THINKER_T)
 mul       cx
 xchg      ax, si
 
@@ -1938,7 +1938,7 @@ jmp       word ptr cs:[bx + OFFSET jump_table_archive_specials]
 
 iterate_to_next_special:
 
-mov       ax, SIZEOF_THINKER_T
+mov       ax, (SIZE THINKER_T)
 mul       cx
 xchg      ax, bx
 

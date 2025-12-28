@@ -1557,7 +1557,7 @@ mov   word ptr ds:[bx], ax
 jmp   character_finished_handling
 no_match_increment_default:
 inc   di
-add   si, SIZEOF_DEFAULT_T
+add   si, (SIZE DEFAULT_T)
 cmp   di, NUM_DEFAULTS
 jl    scan_next_default_name_for_match
 jmp   character_finished_handling
@@ -1592,8 +1592,8 @@ mov   di, word ptr cs:[bx + _defaults + DEFAULT_T.default_loc_ptr]
 mov   al, byte ptr cs:[si + _scantokey]
 mov   byte ptr ds:[di], al                     ; written here 4
 no_pointer_load_next_defaults_value:
-add   bx, SIZEOF_DEFAULT_T
-cmp   bx, NUM_DEFAULTS * SIZEOF_DEFAULT_T
+add   bx, (SIZE DEFAULT_T)
+cmp   bx, NUM_DEFAULTS * (SIZE DEFAULT_T)
 jne   loop_defaults_to_set_initial_values
 
 POPA_NO_AX_MACRO
@@ -1629,7 +1629,7 @@ je    exit_msavedefaults
 xor   bh, bh
 cld   
 loop_next_default:
-mov   al, SIZEOF_DEFAULT_T
+mov   al, (SIZE DEFAULT_T)
 mul   bh
 mov   si, ax
 cmp   byte ptr cs:[si + _defaults + DEFAULT_T.default_scantranslate], 0
