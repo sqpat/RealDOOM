@@ -29,7 +29,7 @@ EXTRN M_AddToBox16_:NEAR
 EXTRN W_CacheLumpNameDirect_:FAR
 EXTRN Z_QuickMapScratch_5000_:FAR  
 EXTRN W_CheckNumForNameFarString_:NEAR
-EXTRN W_CacheLumpNumDirectFragment_:PROC  
+EXTRN W_CacheLumpNumDirectFragment_:FAR
 EXTRN Z_QuickMapByTaskNum_:FAR
 
 

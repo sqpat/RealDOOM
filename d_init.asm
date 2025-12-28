@@ -105,7 +105,9 @@ db 0Ah, "D_InitStrings: loading text.", 0Ah, 0
 str_no_wad:
 db "Game mode indeterminate.", 0Ah, 0
 str_mem_param:
-db 0Ah, "BYTES LEFT: %i %x (DS : %x to %x BASEMEM : %x)", 0Ah, 0
+db 0Ah, "BYTES LEFT: %li (DS : %x to %x BASEMEM : %x)", 0Ah, 0
+str_not_enough_mem:
+db 0Ah, "ERROR! Not enough conventioal memory free! Need %li more bytes free!", 0Ah, 0
 
 str_P_Init:
 db 0Ah, "P_Init: Checking cmd-line parameters...", 0Ah, 0
@@ -407,6 +409,18 @@ mov     dx, ss
 lea     ax, [bp - 20]
 call    locallib_strcpy_
 jmp     foundfile
+
+not_enough_memory:
+mov     dx, 16
+mul     dx
+push    dx
+push    ax  ; bytes needed
+
+mov     ax, OFFSET str_not_enough_mem
+push    cs
+push    ax
+call    I_Error_
+
 no_doom1_present:
 
 mov     ax, OFFSET str_no_wad
@@ -428,6 +442,12 @@ mov   ax, OFFSET str_mem
 call  M_CheckParm_CS_
 test  ax, ax
 jne   do_mem_thing
+
+mov     dx, BASE_LOWER_MEMORY_SEGMENT ; base_lower_memory_segment
+mov     ax, word ptr ds:[_stored_ds]
+add     ax, ((DGROUP_SIZE + STACK_SIZE) SHR 4 );
+sub     ax, dx
+ja      not_enough_memory
 
 
 
@@ -480,6 +500,10 @@ call  PrintSpaces_
 
 
 jmp   got_title
+
+;; todo any way to ge this dynamically?
+STACK_SIZE = 0A00h
+DGROUP_SIZE = 01A80h
 do_mem_thing:
 
 
@@ -487,18 +511,21 @@ do_mem_thing:
 mov     dx, BASE_LOWER_MEMORY_SEGMENT ; base_lower_memory_segment
 push    dx
 mov     bx, word ptr ds:[_stored_ds]
-lea     ax, [bx + 0100h]
-push    ax              ; stored_ds + 0x100, 
+lea     ax, [bx + ((DGROUP_SIZE + STACK_SIZE) SHR 4 )]  ;
+push    ax              ; end of binary
 push    bx              ; stored_ds
-sub     dx, bx
+sub     dx, ax          ; segments free
+; push    dx
 mov     ax, 16
 mul     dx
-sub     ax, 0100h       ; 16 * (base_lower_memory_segment - stored_ds )- 0x100, 
+; DX:AX = bytes free
+push    dx
 push    ax
 push    cs
 mov     ax, OFFSET str_mem_param
 push    ax
 call    I_Error_
+
 
 commercial_title:
 push  cs
