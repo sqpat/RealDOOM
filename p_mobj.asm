@@ -363,7 +363,7 @@ PUBLIC P_SpawnMapThing_
 
 
 
-;void __far P_SpawnMapThing(mapthing_t mthing, int16_t key) {
+;void __far P_SpawnMapThing(mapthing_t mthing) {
     
 ; ugh. big params. NOTE if moved near this will all shift 2.
 
@@ -401,7 +401,7 @@ pop       si
 pop       dx
 pop       cx
 pop       bx
-retf      0Ch
+retf      0Ah
 
 spawn_not_player:
 

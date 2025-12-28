@@ -42,9 +42,9 @@
 
  
 
+void __near P_InitThinkersCallThrough();
 
-void __far P_InitThinkers (void);
-void __far P_SpawnMapThingCallThrough(mapthing_t mthing, int16_t key);
+void __near P_SpawnMapThingCallThrough(mapthing_t __far*	 mthing);
 // void __far I_Error (int8_t __far *error, ...);
 
 void __near P_SpawnSpecialsCallThrough();
@@ -94,7 +94,7 @@ void __near P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 	// TODO reset 32 bit counters to start values here..
 	validcount_global = 1;
 
-	P_InitThinkers();
+	P_InitThinkersCallThrough();
 
 
 	// find map name
@@ -566,9 +566,9 @@ void __near P_LoadNodes(int16_t lump) {
 // P_LoadThings
 //
 void __near P_LoadThings(int16_t lump) {
-	mapthing_t  __far*		data;
+	mapthing_t  __far*		data = (mapthing_t __far*)SCRATCH_ADDRESS_8000;
 	uint16_t                 i;
-	mapthing_t         mt;
+
 	uint16_t                 numthings;
 	boolean             spawn;
 	
@@ -576,17 +576,16 @@ void __near P_LoadThings(int16_t lump) {
 	Z_QuickMapScratch_8000();
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_8000);
-	data = (mapthing_t __far*)SCRATCH_ADDRESS_8000;
 
 	numthings = FastDiv32u16u(W_LumpLength(lump), sizeof(mapthing_t));
 
 
-	for (i = 0; i < numthings; i++) {
-		mt = data[i];
+	for (i = 0; i < numthings; i++, data++) {
+
 		spawn = true;
 
 		// skip player1
-		if (mt.type == 1) {
+		if (data->type == 1) {
 			playerMobjRef = i;
 			playerMobj 		= playerMobjMakerExpression;
 		    playerMobj_pos  = playerMobj_posMakerExpression;
@@ -594,7 +593,7 @@ void __near P_LoadThings(int16_t lump) {
 
 		// Do not spawn cool, new monsters if !commercial
 		if (!commercial) {
-			switch (mt.type) {
+			switch (data->type) {
 				case 68:  // Arachnotron
 				case 64:  // Archvile
 				case 88:  // Boss Brain
@@ -614,7 +613,7 @@ void __near P_LoadThings(int16_t lump) {
 		}
 		// Do spawn all other stuff. 
 	
-		P_SpawnMapThingCallThrough(mt, i);
+		P_SpawnMapThingCallThrough(data);
 	
 
 
@@ -980,7 +979,6 @@ void __near P_GroupLines(void) {
 //
 // P_InitThinkers
 //
-void __near P_InitThinkersCallThrough();
 
 /*
 void  __far P_InitThinkers (void) {

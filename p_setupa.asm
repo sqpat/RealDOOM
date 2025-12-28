@@ -38,7 +38,8 @@ PUBLIC  P_SETUP_STARTMARKER_
 ENDP
 
 
-PROC    P_SpawnMapThingCallThrough_ FAR
+
+PROC    P_SpawnMapThingCallThrough_ NEAR
 PUBLIC  P_SpawnMapThingCallThrough_
 
 ; ugly for now. so this is passed in a struct, not a pointer to a struct. 
@@ -46,10 +47,25 @@ PUBLIC  P_SpawnMapThingCallThrough_
 ; for now this is just a trampoline/placeholder func until p_setup is in asm
 ; we far jump to our func instead of calling. so it returns to the other place
 
-;db    09Ah  ; call
-db    0EAh   ; jump
+; dx:ax is mapthing to push
+
+
+xchg  ax, bx ; put ptr in bx to push struct
+mov   ds, dx
+
+; push 10 byte struct
+push  ds:[bx+8]
+push  ds:[bx+6]
+push  ds:[bx+4]
+push  ds:[bx+2]
+push  ds:[bx+0]
+push  ss
+pop   ds
+xchg  ax, bx ; put bx back.
+
+db    09Ah  ; call
 dw    P_SPAWNMAPTHINGOFFSET, PHYSICS_HIGHCODE_SEGMENT
-; ret   ; ret unused..
+ret
 ENDP
 
 
