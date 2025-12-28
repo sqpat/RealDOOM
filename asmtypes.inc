@@ -114,6 +114,7 @@ THINKER_T STRUC
     t_prevFunctype  dw ?       ; 0
     t_next          dw ?       ; 2
     t_data          MOBJ_T ?   ; 4
+                               ; 02Ch
     
 THINKER_T ENDS
 
@@ -144,13 +145,14 @@ LINE_PHYSICS_T STRUC
     lp_backsecnum  dw ?     ; C
     lp_tag         db ?     ; E
     lp_special     db ?     ; F
-
+                            ; 010h
 LINE_PHYSICS_T ENDS
 
 
 VERTEX_T STRUC 
-    v_x        dw ?
-    v_y        dw ?
+    v_x        dw ? ; 0
+    v_y        dw ? ; 2
+                    ; 4
 VERTEX_T ENDS
 
 
@@ -166,7 +168,7 @@ SECTOR_T STRUC
     sec_linesoffset          dw ?   ; C
     sec_lightlevel           db ?   ; E
     sec_unused_padding       db ?   ; F
-
+                                    ; 010h
 SECTOR_T ENDS
 
  
@@ -179,6 +181,7 @@ SECTOR_PHYSICS_T STRUC
     secp_linesoffset          dw ?   ; C
     secp_special              db ?   ; E
     secp_tag                  db ?   ; F
+                                     ; 010h
 SECTOR_PHYSICS_T ENDS
 
 
@@ -200,67 +203,76 @@ SIDE_T ENDS
 
 
 SIDE_RENDER_T  STRUC 
-    sr_rowoffset        dw ?
-    sr_secnum           dw ?
+    sr_rowoffset        dw ? ; 0
+    sr_secnum           dw ? ; 2
+                             ; 4
 SIDE_RENDER_T ENDS
 
 
 
 LINE_T STRUC 
     l_sidenum       dw 2
+                            ; 4
 LINE_T ENDS
 
 
 
 LINE_OPENING_T STRUC 
-    lo_opentop       dw ?
-    lo_openbottom    dw ?
-    lo_lowfloor      dw ?
+    lo_opentop       dw ? ; 0
+    lo_openbottom    dw ? ; 2
+    lo_lowfloor      dw ? ; 4
+                          ; 6
 LINE_OPENING_T ENDS
 
 
 
 
 SUBSECTOR_T STRUC 
-    ss_secnum           dw ?
-    ss_firstline        dw ?
+    ss_secnum           dw ? ; 0
+    ss_firstline        dw ? ; 2
+                             ; 4
 SUBSECTOR_T ENDS
 
 
 
 SEG_PHYSICS_T STRUC 
-    sp_frontsecnum           dw ?
-    sp_backsecnum            dw ?
+    sp_frontsecnum           dw ? ; 0
+    sp_backsecnum            dw ? ; 2
+                                  ; 4
 SEG_PHYSICS_T ENDS
 
 
 
 SEG_RENDER_T STRUC 
-    sr_v1Offset           dw ?
-    sr_v2Offset           dw ?
-    sr_offset             dw ?
-    sr_sidedefOffset      dw ?
+    sr_v1Offset           dw ? ; 0
+    sr_v2Offset           dw ? ; 2
+    sr_offset             dw ? ; 4
+    sr_sidedefOffset      dw ? ; 6
+                               ; 8
 SEG_RENDER_T ENDS
 
 
 
 
 NODE_T STRUC 
-    n_x           dw ?
-    n_y           dw ?
-    n_dx          dw ?
-    n_dy          dw ?
+    n_x           dw ? ; 0
+    n_y           dw ? ; 2
+    n_dx          dw ? ; 4
+    n_dy          dw ? ; 6
+                       ; 8
 NODE_T ENDS
 
 
 NODE_CHILDREN_T STRUC 
-    nc_children           dw 2
+    nc_children           dw 2 ; 0
+                               ; 4
 NODE_CHILDREN_T ENDS
 
 
 
 NODE_RENDER_T STRUC 
-    nr_bbox           dw 8
+    nr_bbox           dw 8   ; 0
+                             ; 010h
 NODE_RENDER_T ENDS
 
 
@@ -269,6 +281,7 @@ NODE_RENDER_T ENDS
 POST_T STRUC 
     post_topdelta           db ?  ; 0
     post_length             db ?  ; 1
+                                  ; 2
 POST_T ENDS
 
 
@@ -433,6 +446,7 @@ MOBJINFO_T STRUC
     mobjinfo_height         db ?  ; 6
     mobjinfo_flags1         dw ?  ; 7
     mobjinfo_flags2         dw ?  ; 9
+                                  ; 0Bh
 
 MOBJINFO_T ENDS
 
@@ -444,7 +458,7 @@ MAPTHING_T STRUC
     mapthing_angle        dw ?  ; 4
     mapthing_type         dw ?  ; 6
     mapthing_options      dw ?  ; 8
-
+                                ; 0Ah
 MAPTHING_T ENDS
 
 
@@ -455,7 +469,7 @@ DEFAULT_T STRUC
     default_defaultvalue  db ?  ; 4
     default_scantranslate db ?  ; 5
     default_untranslated  db ?  ; 6
-
+                                ; 7
 DEFAULT_T ENDS
     
 BUTTON_T STRUC

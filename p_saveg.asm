@@ -383,7 +383,7 @@ ENDP
 
 
 SIZEOF_MOBJ_VANILLA_T = 09Ah
-
+SIZEOF_THINKER_VANILLA_T = 12
 
 PROC P_UnArchiveThinkers_  NEAR
 PUBLIC P_UnArchiveThinkers_
@@ -512,7 +512,7 @@ mov       ax, MOBJPOSLIST_6800_SEGMENT
 mov       es, ax
 
 
-add       si, (SIZE THINKER_T)      ; si + 0Ch skip this section
+add       si, SIZEOF_THINKER_VANILLA_T      ; si + 0Ch skip this section
 
 mov       word ptr es:[di + 12], 0     ; snextRef
 
