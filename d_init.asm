@@ -20,7 +20,7 @@ INCLUDE strings.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN fread_:FAR
+EXTRN locallib_fread_:NEAR
 EXTRN fseek_:FAR
 EXTRN fopen_:FAR
 EXTRN fclose_:FAR
@@ -1353,7 +1353,7 @@ xchg    cx, ax
 lea     ax, [bp - 6]
 mov     dx, 6
 mov     bx, 1
-call    fread_
+call    locallib_fread_
 pop     ax  ; fp
 call    fclose_
 cmp     word ptr [bp - 2], 0902h

@@ -23,6 +23,7 @@ INSTRUCTION_SET_MACRO
 ;=================================
 
 EXTRN locallib_dos_getvect_:NEAR
+EXTRN locallib_freadfromfar_:FAR
 EXTRN I_Error_:FAR
 EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
 EXTRN Z_QuickMapWADPageFrame_:FAR
@@ -34,7 +35,7 @@ EXTRN Z_QuickMapRender4000_:FAR
 EXTRN Z_QuickMapVisplanePage_:FAR
 EXTRN Z_QuickMapIntermission_:FAR
 EXTRN Z_QuickMapMenu_:FAR
-EXTRN fread_:FAR
+EXTRN locallib_fread_:NEAR
 EXTRN fseek_:FAR
 EXTRN locallib_far_fread_:FAR
 EXTRN Z_QuickMapRenderPlanes_:FAR
@@ -49,7 +50,6 @@ EXTRN W_GetNumForName_:FAR
 EXTRN NetUpdate_:FAR
 EXTRN fopen_:FAR
 EXTRN fseek_:FAR
-EXTRN fread_:FAR
 EXTRN fclose_:FAR
 EXTRN ftell_:FAR
 EXTRN locallib_far_fread_:FAR
@@ -702,7 +702,7 @@ mov    ax, sp  ; bp - 6
 mov    dx, 2   ; read 2 bytes
 mov    bx, 1
 mov    cx, di  ; fp
-call   fread_
+call   locallib_fread_
 
 
 test   si, 00FFh
@@ -973,7 +973,7 @@ dw OFFSET _W_GetNumForName_addr                , OFFSET W_GetNumForName_
 dw OFFSET _NetUpdate_addr                      , OFFSET NetUpdate_
 dw OFFSET _fopen_addr                          , OFFSET fopen_
 dw OFFSET _fseek_addr                          , OFFSET fseek_
-dw OFFSET _fread_addr                          , OFFSET fread_
+dw OFFSET _fread_addr                          , OFFSET locallib_freadfromfar_
 dw OFFSET _fclose_addr                         , OFFSET fclose_
 dw OFFSET _locallib_far_fread_addr             , OFFSET locallib_far_fread_
 dw OFFSET _getStringByIndex_addr               , OFFSET getStringByIndex_
@@ -1022,7 +1022,7 @@ mov   ax, sp
 mov   dx, 2
 mov   bx, 1
 mov   cx, si
-call  fread_
+call  locallib_fread_
 pop   bx
 ret
 
@@ -1073,7 +1073,7 @@ mov   ax, OFFSET _mobjinfo
 mov   dx, SIZE MOBJINFO_T
 mov   bx, NUMMOBJTYPES
 mov   cx, di
-call  fread_
+call  locallib_fread_
 
 mov     ax, OFFSET str_dot
 call    DEBUG_PRINT_NOARG_CS_

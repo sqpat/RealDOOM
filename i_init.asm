@@ -19,7 +19,7 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN fread_:FAR
+EXTRN locallib_fread_:NEAR
 EXTRN fseek_:FAR
 EXTRN fopen_:FAR
 EXTRN fclose_:FAR
@@ -236,7 +236,7 @@ mov   bx, 1
 mov   dx, 2
 lea   ax, [bp - 4] 
 mov   cx, di
-call  fread_        ; fread(&codesize, 2, 1, fp);
+call  locallib_fread_        ; fread(&codesize, 2, 1, fp);
 
 
 mov   cx, di                  ; fp

@@ -35,7 +35,7 @@ EXTRN Z_QuickMapScratch_7000_:FAR
 EXTRN R_FlatNumForName_:NEAR
 EXTRN Z_QuickMapWADPageFrame_:FAR
 EXTRN fseek_:FAR
-EXTRN fread_:FAR
+EXTRN locallib_fread_:NEAR
 
 .DATA
 
@@ -1554,7 +1554,7 @@ mov       dx, 8
 lea       ax, [bp - 8]
 pop       cx  ; fp
 push      ax  ; src
-call      fread_   ;	fread(stackbuffer, 4, 2, usedfile);
+call      locallib_fread_   ;	fread(stackbuffer, 4, 2, usedfile);
 
 
 mov       es, si   ; dest seg

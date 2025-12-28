@@ -28,7 +28,7 @@ EXTRN FixedDivWholeA_:FAR
 EXTRN FixedMul_:FAR
 EXTRN FixedMul_:FAR
 EXTRN CopyString13_:NEAR
-EXTRN fread_:FAR
+EXTRN locallib_fread_:NEAR
 EXTRN fseek_:FAR
 EXTRN fopen_:FAR
 EXTRN fclose_:FAR
@@ -195,7 +195,7 @@ mov   ax, sp
 mov   cx, di ; fp
 mov   dx, SIZE SWITCHLIST_T
 mov   bx, NUMSWITCHDEFS
-call  fread_
+call  locallib_fread_
 
 xchg  ax, di
 call  fclose_
@@ -295,7 +295,7 @@ mov   ax, sp
 mov   cx, di ; fp
 mov   dx, SIZE ANIMDEF_T
 mov   bx, NUMANIMDEFS
-call  fread_
+call  locallib_fread_
 
 xchg  ax, di
 call  fclose_
@@ -419,7 +419,7 @@ lea   ax, [bp - SIZE_SPRITE_NAMES]
 mov   cx, di ; fp
 mov   dx, 5
 mov   bx, NUMSPRITES
-call  fread_
+call  locallib_fread_
 
 xchg  ax, di
 call  fclose_

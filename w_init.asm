@@ -19,7 +19,7 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN fread_:FAR
+EXTRN locallib_fread_:NEAR
 EXTRN fseek_:FAR
 EXTRN ftell_:FAR
 EXTRN fopen_:FAR

@@ -23,7 +23,7 @@ EXTRN fopen_:FAR
 EXTRN fclose_:FAR
 EXTRN fseek_:FAR
 EXTRN ftell_:FAR
-EXTRN locallib_far_fwrite_:FAR
+EXTRN locallib_far_fwrite_:NEAR
 EXTRN locallib_far_fread_:FAR
 EXTRN locallib_strcmp_:NEAR
 EXTRN locallib_strlwr_:NEAR

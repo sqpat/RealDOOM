@@ -42,6 +42,20 @@ FREAD_BUFFER_SIZE = 512
 ;void  __far locallib_far_fread(void __far* dest, uint16_t size, FILE * fp) {
 
 
+PROC    locallib_freadfromfar_   FAR
+PUBLIC  locallib_freadfromfar_
+call    fread_
+retf
+ENDP
+
+
+PROC    locallib_fread_   NEAR
+PUBLIC  locallib_fread_
+call    fread_
+ret
+ENDP
+
+
 
 PROC    locallib_far_fread_   FAR
 PUBLIC  locallib_far_fread_
@@ -109,7 +123,7 @@ ENDP
 
 
 
-PROC    locallib_far_fwrite_ FAR
+PROC    locallib_far_fwrite_ NEAR
 PUBLIC  locallib_far_fwrite_
 ;filelength_t  __far locallib_far_fwrite(void __far* src, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
 
@@ -175,7 +189,7 @@ LEAVE_MACRO
 pop       di
 pop       si
 pop       cx
-retf
+ret
 
 ENDP
 
