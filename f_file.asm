@@ -27,17 +27,17 @@ EXTRN fgetc_:FAR
 EXTRN fputc_:FAR
 EXTRN setbuf_:FAR
 EXTRN exit_:FAR
-EXTRN __flush_:FAR
-
-EXTRN flushall_:FAR
 EXTRN __SetIOMode_nogrow_:FAR
 EXTRN __GetIOMode_:FAR
 EXTRN __get_errno_ptr_:FAR
 EXTRN __set_errno_dos_:FAR
+EXTRN fsync_:FAR
+EXTRN __qwrite_:FAR
 
 .DATA
 
 EXTRN _errno:WORD
+EXTRN ___OpenStreams:WORD
 
 COLORMAPS_SIZE = 33 * 256
 LUMP_PER_EMS_PAGE = 1024 
@@ -185,8 +185,168 @@ SEEK_SET = 0
 SEEK_CUR = 1
 SEEK_END = 2
 
-; bp - 2 = seek type
+; bp - 2 = ret
 ; si holds fp
+
+
+PROC    locallib_flush_   NEAR
+
+push bx
+push cx
+push dx
+push si
+push di
+push bp
+mov  bp, sp
+sub  sp, 2
+mov  si, ax
+mov  word ptr [bp - 2], 0  ; ret
+test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
+je   file_not_dirty
+jmp  file_is_dirty
+file_not_dirty:
+mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+cmp  word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
+je   finish_handling_flush
+and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], (NOT _EOF)
+test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_ISTTY SHR 8)
+jne  finish_handling_flush
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+cwd  
+mov  bx, dx
+or   bx, ax
+je   skip_seek
+mov  cx, dx
+mov  bx, ax
+mov  dx, 1
+neg  cx
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+neg  bx
+sbb  cx, 0
+
+call locallib_inner_lseek_
+
+skip_seek:
+cmp  dx, -1
+jne  finish_handling_flush
+cmp  ax, 0FFFFh
+jne  finish_handling_flush
+mov  word ptr [bp - 2], 0FFFFh
+or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
+
+finish_handling_flush:
+mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+mov  ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
+mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
+mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
+cmp  word ptr [bp - 2], 0
+jne  label_6
+mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+test byte ptr ds:[bx + 8], 1
+jne  label_7
+label_6:
+mov  ax, word ptr [bp - 2]
+mov  sp, bp
+pop  bp
+pop  di
+pop  si
+pop  dx
+pop  cx
+pop  bx
+ret
+
+file_is_dirty:
+and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], ((NOT _DIRTY) SHR 8)  ; mark not dirty?
+test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], _WRITE
+je   finish_handling_flush
+mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+mov  ax, word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base]
+test ax, ax
+je   finish_handling_flush
+mov  di, ax
+mov  cx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+flush_more_to_file:
+test cx, cx
+je   finish_handling_flush
+cmp  word ptr [bp - 2], 0
+jne  finish_handling_flush
+mov  bx, cx
+mov  dx, di
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+call __qwrite_
+nop  
+mov  dx, ax
+cmp  ax, 0FFFFh
+jne  label_9
+mov  word ptr [bp - 2], ax
+label_8:
+or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
+label_11:
+add  di, dx
+sub  cx, dx
+jmp  flush_more_to_file
+label_9:
+test ax, ax
+jne  label_11
+call __get_errno_ptr_
+mov  bx, ax
+mov  word ptr ds:[bx], 0Ch
+mov  word ptr [bp - 2], 0FFFFh
+jmp  label_8
+label_7:
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+call fsync_
+cmp  ax, 0FFFFh
+jne  label_6
+mov  word ptr [bp - 2], ax
+jmp  label_6
+
+
+ENDP
+
+PROC   locallib_flushall_  NEAR
+
+mov  ax, 0FFFFh
+; fallthru?
+ENDP
+
+
+PROC   locallib_flushall_inner_ NEAR
+
+push bx
+push cx
+push dx
+push si
+mov  cx, ax
+mov  si, word ptr [___OpenStreams]
+xor  dx, dx
+loop_flushall_more_bytes:
+test si, si
+je   exit_flushall_inner_return
+mov  bx, word ptr ds:[si + WATCOM_STREAM_LINK.watcom_streamlink_stream]
+test word ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], cx
+jne  label_14
+label_15:
+mov  si, word ptr ds:[si]
+jmp  loop_flushall_more_bytes
+label_14:
+inc  dx
+test byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
+je   label_15
+mov  ax, bx
+call locallib_flush_
+jmp  label_15
+
+exit_flushall_inner_return:
+mov  ax, dx
+pop  si
+pop  dx
+pop  cx
+pop  bx
+ret
+
+ENDP
+
 
 
 
@@ -241,7 +401,7 @@ pop  si
 ret 
 do_flush:
 
-call __flush_
+call locallib_flush_
 
 test ax, ax
 je   file_ready_for_seek
@@ -362,6 +522,7 @@ jmp  exit_inner_lseek
 ENDP
 
 
+
 PROC    locallib_lseek_ NEAR
 
 push si
@@ -412,12 +573,12 @@ PROC    locallib_fflush_ NEAR
 
 test ax, ax
 jne  do_ref_flush
-call flushall_
+call locallib_flushall_
 xor  ax, ax
 ret 
 
 do_ref_flush:
-call  __flush_
+call  locallib_flush_
 ret
 
 ENDP
