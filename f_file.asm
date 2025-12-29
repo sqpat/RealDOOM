@@ -199,12 +199,12 @@ push di
 push bp  ; bp is ret
 mov  si, ax
 xor  bp, bp  ; ret
+mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
 je   file_not_dirty
 jmp  file_is_dirty
 file_not_dirty:
-mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
-cmp  word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
+cmp  word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
 je   finish_handling_flush
 and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], (NOT _EOF)
 test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_ISTTY SHR 8)
@@ -214,13 +214,13 @@ cwd
 mov  bx, dx
 or   bx, ax
 je   skip_seek
-mov  cx, dx
-mov  bx, ax
-mov  dx, 1
+xchg ax, dx  ; low word into dx
+xchg ax, cx  ; hi word into cx
+mov  al, 1
 neg  cx
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
-neg  bx
+neg  dx
 sbb  cx, 0
+mov  bx, di
 
 call locallib_inner_lseek_
 
@@ -233,14 +233,14 @@ mov  bp, 0FFFFh
 or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
 
 finish_handling_flush:
-mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
-mov  ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
+
+mov  ax, word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base]
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
 test bp, bp
 jne  exit_flush
-mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
-test byte ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_extflags], _COMMIT
+
+test byte ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_extflags], _COMMIT
 jne  do_file_sync
 exit_flush:
 xchg ax, bp
@@ -257,7 +257,7 @@ file_is_dirty:
 and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], ((NOT _DIRTY) SHR 8)  ; mark not dirty?
 test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], _WRITE
 je   finish_handling_flush
-mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+
 mov  ax, word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base]
 test ax, ax
 je   finish_handling_flush
@@ -387,7 +387,7 @@ mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
 file_ready_for_seek:
 mov  dx, word ptr [bp - 2] ; retrieve seek type
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+
 and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT (_EOF OR _UNGET))       ; turn off the flags.
 ; lseek( int handle, off_t offset, int origin );
 do_call_lseek:
@@ -430,7 +430,7 @@ ja   reset_buffer
 ; no invlaid param checking.
 ; SEEK_SET case
 
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+
 call locallib_tell_
 mov  di, ax    ; low bytes temporarily
 mov  es, dx
@@ -453,7 +453,7 @@ jnc  status_ok_good_lseek_result
 
 pop  dx  ; bp - 2. seek type
 
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+
 
 do_call_lseek2:
 call locallib_lseek_
@@ -488,7 +488,7 @@ sub  bx, ax
 pop  ax
 sbb  cx, ax
 pop  dx  ; bp - 2. seek type
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+
 jmp  do_call_lseek2
 
 
@@ -505,7 +505,9 @@ ENDP
 PROC    locallib_inner_lseek_   NEAR
 PUBLIC  locallib_inner_lseek_
 
-; todo change this to use better params.
+; al is passed in with the file type
+; cx:dx the size
+; bx the file handle... ready to go
 
 ;    AL = origin of move:
 ;	     00 = beginning of file plus offset  (SEEK_SET)
@@ -515,8 +517,10 @@ PUBLIC  locallib_inner_lseek_
 ;	CX = high order word of number of bytes to move
 ;	DX = low order word of number of bytes to move
 
-xchg  bx, ax  ; bx gets file handle. ax gets low order
-xchg  ax, dx  ; dx gets low order. al gets seek_whatever
+; pass in seek type in al instead of dx.
+; pass in handle in bx 
+
+
 mov  ah, 042h   ; Move file pointer using handle
 int  021h 
 jc   do_errno_inner_lseek
@@ -532,10 +536,11 @@ ENDP
 
 PROC    locallib_lseek_ NEAR
 
+; si is file, not file handle...
 push si
-push di
-mov  si, ax
-mov  di, dx
+push dx  ; seek type to retrieve later
+mov  si, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+
 call __GetIOMode_
 test cx, cx
 jg   positive_size
@@ -551,24 +556,24 @@ mov  ax, si
 call __SetIOMode_nogrow_
 
 do_inner_lseek:
-mov  dx, di
-mov  ax, si
+pop  ax ; retrieve seek type
+mov  dx, bx  ; low size word
+mov  bx, si  ; file
 call locallib_inner_lseek_
-pop  di
-pop  si
+pop  si ; retireve file
 ret 
-
-mov  ax, OFFSET _errno
-ret
 
 ENDP
 
 PROC    locallib_tell_ NEAR
 
+; si = file handle
+
 push bx
 push cx
-mov  dx, 1
-xor  bx, bx
+mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]  ; si is always file handle here
+mov  al, 1
+xor  dx, dx
 xor  cx, cx
 call locallib_inner_lseek_
 pop  cx
@@ -610,7 +615,7 @@ je   skip_flush
 mov  ax, si
 call locallib_fflush_
 skip_flush:
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+
 call locallib_tell_
 cmp  dx, 0FFFFh
 jne  good_location
