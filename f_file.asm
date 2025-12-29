@@ -28,13 +28,15 @@ EXTRN fputc_:FAR
 EXTRN setbuf_:FAR
 EXTRN exit_:FAR
 EXTRN __flush_:FAR
-EXTRN lseek_:FAR
+EXTRN __lseek_:FAR
+EXTRN flushall_:FAR
+EXTRN __SetIOMode_nogrow_:FAR
+EXTRN __GetIOMode_:FAR
 EXTRN __get_errno_ptr_:FAR
-EXTRN _tell_:FAR
-EXTRN fflush_:FAR
 
 .DATA
 
+EXTRN _errno:WORD
 
 COLORMAPS_SIZE = 33 * 256
 LUMP_PER_EMS_PAGE = 1024 
@@ -221,7 +223,7 @@ mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
 and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT (_EOF OR _UNGET))       ; turn off the flags.
 ; lseek( int handle, off_t offset, int origin );
 do_call_lseek:
-call lseek_
+call locallib_lseek_
 
 cmp  dx, 0FFFFh
 jne  status_ok_good_lseek_result
@@ -261,7 +263,7 @@ ja   reset_buffer
 ; SEEK_SET case
 
 mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
-call _tell_
+call locallib_tell_
 mov  di, ax    ; low bytes temporarily
 mov  es, dx
 mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
@@ -286,7 +288,7 @@ pop  dx  ; bp - 2. seek type
 mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
 
 do_call_lseek2:
-call lseek_
+call locallib_lseek_
 cmp  dx, 0FFFFh
 jne  not_lseek_error_2
 cmp  ax, 0FFFFh
@@ -331,6 +333,68 @@ call    locallib_fseek_
 retf
 ENDP
 
+PROC    locallib_lseek_ NEAR
+
+push si
+push di
+mov  si, ax
+mov  di, dx
+call __GetIOMode_
+test cx, cx
+jg   positive_size
+jne  do_inner_lseek
+test bx, bx
+jbe  do_inner_lseek
+positive_size:
+test al, 080h
+jne  do_inner_lseek
+or   ah, 080h
+mov  dx, ax
+mov  ax, si
+call __SetIOMode_nogrow_
+
+do_inner_lseek:
+mov  dx, di
+mov  ax, si
+call __lseek_
+pop  di
+pop  si
+ret 
+
+mov  ax, OFFSET _errno
+ret
+
+ENDP
+
+PROC    locallib_tell_ NEAR
+
+push bx
+push cx
+mov  dx, 1
+xor  bx, bx
+xor  cx, cx
+call __lseek_
+pop  cx
+pop  bx
+ret 
+ENDP
+
+PROC    locallib_fflush_ NEAR
+
+test ax, ax
+jne  do_ref_flush
+call flushall_
+xor  ax, ax
+ret 
+
+do_ref_flush:
+call  __flush_
+ret
+
+ENDP
+
+ENDP
+
 PROC    locallib_ftell_   NEAR
 PUBLIC  locallib_ftell_
 
@@ -347,17 +411,17 @@ je   skip_flush
 test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], _DIRTY SHR 8
 je   skip_flush
 mov  ax, si
-call fflush_
+call locallib_fflush_
 skip_flush:
 mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
-call _tell_
+call locallib_tell_
 cmp  dx, 0FFFFh
 jne  good_location
 cmp  ax, 0FFFFh
-je   exit_lseek
+je   exit_ftell
 good_location:
 cmp  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
-je   exit_lseek
+je   exit_ftell
 xchg ax, bx
 mov  cx, dx
 mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
@@ -374,7 +438,7 @@ sbb  dx, 0
 do_add_and_exit:
 add  ax, bx
 adc  dx, cx
-exit_lseek:
+exit_ftell:
 pop  si
 pop  bx
 pop  cx
