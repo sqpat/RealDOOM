@@ -28,11 +28,12 @@ EXTRN fputc_:FAR
 EXTRN setbuf_:FAR
 EXTRN exit_:FAR
 EXTRN __flush_:FAR
-EXTRN __lseek_:FAR
+
 EXTRN flushall_:FAR
 EXTRN __SetIOMode_nogrow_:FAR
 EXTRN __GetIOMode_:FAR
 EXTRN __get_errno_ptr_:FAR
+EXTRN __set_errno_dos_:FAR
 
 .DATA
 
@@ -333,6 +334,34 @@ call    locallib_fseek_
 retf
 ENDP
 
+
+PROC    locallib_inner_lseek_   NEAR
+PUBLIC  locallib_inner_lseek_
+
+; todo change this to use better params.
+
+;    AL = origin of move:
+;	     00 = beginning of file plus offset  (SEEK_SET)
+;	     01 = current location plus offset	(SEEK_CUR)
+;	     02 = end of file plus offset  (SEEK_END)
+;	BX = file handle
+;	CX = high order word of number of bytes to move
+;	DX = low order word of number of bytes to move
+
+xchg  bx, ax  ; bx gets file handle. ax gets low order
+xchg  ax, dx  ; dx gets low order. al gets seek_whatever
+mov  ah, 042h   ; Move file pointer using handle
+int  021h 
+jc   do_errno_inner_lseek
+exit_inner_lseek:
+ret
+do_errno_inner_lseek:
+call __set_errno_dos_
+jmp  exit_inner_lseek
+
+ENDP
+
+
 PROC    locallib_lseek_ NEAR
 
 push si
@@ -356,7 +385,7 @@ call __SetIOMode_nogrow_
 do_inner_lseek:
 mov  dx, di
 mov  ax, si
-call __lseek_
+call locallib_inner_lseek_
 pop  di
 pop  si
 ret 
@@ -373,7 +402,7 @@ push cx
 mov  dx, 1
 xor  bx, bx
 xor  cx, cx
-call __lseek_
+call locallib_inner_lseek_
 pop  cx
 pop  bx
 ret 
