@@ -113,49 +113,43 @@ call    fclose_
 ret
 ENDP
 
-; dx:ax = diff, bx = file
 
 PROC    localib_update_buffer_ NEAR
 PUBLIC  localib_update_buffer_
 
-; si is file buffer
+; cx:di = diff, si = file
+; return in carry
 
-push cx
-push bx
-push di
 
-xchg ax, cx
-mov  bx, dx
+
 mov  ax, word ptr [si + WATCOM_C_FILE.watcom_file_cnt]
 cwd  
-cmp  bx, dx
-jl   size_check_ook
+cmp  cx, dx
+jl   size_check_ok
 jne  outside_of_buffer
-cmp  cx, ax
+cmp  di, ax
 ja   outside_of_buffer
-size_check_ook:
-mov  di, word ptr [si + WATCOM_C_FILE.watcom_file_link]
-mov  ax, word ptr [di + WATCOM_STREAM_LINK.watcom_streamlink_base]
+size_check_ok:
+mov  bx, word ptr [si + WATCOM_C_FILE.watcom_file_link]
+mov  ax, word ptr [bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
 sub  ax, word ptr [si + WATCOM_C_FILE.watcom_file_ptr]
 cwd  
-cmp  bx, dx
+cmp  cx, dx
 jg   update_file
 jne  outside_of_buffer
-cmp  cx, ax
+cmp  di, ax
 jae  update_file
 outside_of_buffer:
-mov  ax, 1
+stc
 return_update_buffer:
-pop  di
-pop  bx
-pop  cx
+
 ret  
 
 update_file:
 and  byte ptr [si + WATCOM_C_FILE.watcom_file_flag], (NOT _EOF)
-add  word ptr [si + WATCOM_C_FILE.watcom_file_ptr], cx
-xor  ax, ax
-sub  word ptr [si + WATCOM_C_FILE.watcom_file_cnt], cx
+add  word ptr [si + WATCOM_C_FILE.watcom_file_ptr], di
+sub  word ptr [si + WATCOM_C_FILE.watcom_file_cnt], di
+clc
 jmp  return_update_buffer
 
 ENDP
@@ -190,6 +184,8 @@ SEEK_END = 2
 
 ; bp - 2 = seek type
 ; si holds fp
+
+; todo keep things in cx:bx not cx:di
 
 PROC    locallib_fseek_   NEAR
 PUBLIC  locallib_fseek_
@@ -274,19 +270,19 @@ mov  ax, word ptr [si + WATCOM_C_FILE.watcom_file_cnt]
 mov  bx, dx
 cwd  
 mov  word ptr [bp - 8], dx
-mov  dx, word ptr [bp - 0Ah]
-sub  dx, ax
-mov  ax, dx
-mov  dx, di
+sub  ax, word ptr [bp - 0Ah]
+neg  ax
 sbb  bx, word ptr [bp - 8]
-sub  dx, ax
-mov  ax, dx
-mov  dx, cx
-sbb  dx, bx
+push cx
+push di
+sub  di, ax
+sbb  cx, bx
 
 call localib_update_buffer_
-test ax, ax
-je   status_ok_good_lseek_result
+pop  di
+pop  cx
+jnc  status_ok_good_lseek_result
+
 mov  dx, word ptr [bp - 2]
 mov  bx, di
 mov  ax, word ptr [si + WATCOM_C_FILE.watcom_file_handle]
@@ -322,11 +318,8 @@ cwd
 
 mov  word ptr [bp - 6], ax
 mov  word ptr [bp - 4], dx
-mov  ax, di
-mov  dx, cx
 call localib_update_buffer_
-test ax, ax
-je   status_ok_good_lseek_result
+jnc  status_ok_good_lseek_result
 mov  dx, word ptr [bp - 2]
 mov  bx, di
 mov  ax, word ptr [si + WATCOM_C_FILE.watcom_file_handle]
