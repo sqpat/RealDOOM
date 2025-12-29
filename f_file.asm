@@ -25,6 +25,10 @@ EXTRN fseek_:FAR
 EXTRN fread_:FAR
 EXTRN ftell_:FAR
 EXTRN fwrite_:FAR
+EXTRN fgetc_:FAR
+EXTRN fputc_:FAR
+EXTRN setbuf_:FAR
+EXTRN exit_:FAR
 
 .DATA
 
@@ -103,7 +107,31 @@ ret
 ENDP
 
 
+PROC    locallib_setbuf_   NEAR
+PUBLIC  locallib_setbuf_
+call    setbuf_
+ret
+ENDP
 
+PROC    locallib_fgetc_   NEAR
+PUBLIC  locallib_fgetc_
+call    fgetc_
+ret
+ENDP
+
+
+PROC    locallib_fputc_   NEAR
+PUBLIC  locallib_fputc_
+call    fputc_
+ret
+ENDP
+
+
+PROC    locallib_exit_   NEAR
+PUBLIC  locallib_exit_
+jmp     exit_
+
+ENDP
 
 
 

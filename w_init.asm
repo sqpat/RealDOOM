@@ -23,7 +23,6 @@ EXTRN locallib_fread_:NEAR
 EXTRN locallib_fseek_:NEAR
 EXTRN locallib_ftell_:NEAR
 EXTRN locallib_fopen_:NEAR
-EXTRN exit_:FAR
 EXTRN locallib_far_fread_:FAR
 
 

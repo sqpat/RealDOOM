@@ -23,9 +23,9 @@ INSTRUCTION_SET_MACRO
 EXTRN locallib_fread_:NEAR
 EXTRN locallib_fopen_:NEAR
 EXTRN locallib_fclose_:NEAR
-EXTRN setbuf_:FAR
-EXTRN exit_:FAR
-EXTRN fgetc_:FAR
+EXTRN locallib_setbuf_:NEAR
+EXTRN locallib_exit_:NEAR
+EXTRN locallib_fgetc_:NEAR
 
 EXTRN W_LumpLength_:FAR
 EXTRN W_CacheLumpNumDirect_:FAR
@@ -250,7 +250,7 @@ mov     bx, STRINGOFFSETS_OFFSET
 
 loop_next_stringfile_char:
 mov     ax, si
-call    fgetc_
+call    locallib_fgetc_
 
 test    ax, ax
 js      done_parsing_string_file  ; 0FFFFh = EOF
@@ -425,13 +425,13 @@ no_doom1_present:
 mov     ax, OFFSET str_no_wad
 call    DEBUG_PRINT_NOARG_CS_
 mov     ax, 1
-call    exit_
+jmp     locallib_exit_
 
 foundfile:
 
 mov     ax, STDOUT
 xor     dx, dx ; NULL
-call    setbuf_
+call    locallib_setbuf_
 
 xor     ax, ax
 mov     byte ptr ds:[_modifiedgame], al

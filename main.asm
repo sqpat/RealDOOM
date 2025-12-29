@@ -47,8 +47,8 @@ EXTRN TryRunTics_:NEAR
 EXTRN FastDiv3216u_:FAR
 EXTRN Z_SetOverlay_:FAR
 EXTRN locallib_fopen_:NEAR
-EXTRN fgetc_:FAR
-EXTRN fputc_:FAR
+EXTRN locallib_fgetc_:NEAR
+EXTRN locallib_fputc_:NEAR
 EXTRN locallib_fclose_:NEAR
 ;EXTRN locallib_putchar_:NEAR
 
@@ -407,7 +407,7 @@ mov   cx, 256
 nextbyte:
 mov   dx, bx
 mov   al, byte ptr ss:[bp + di]
-call  fputc_
+call  locallib_fputc_
 inc   di
 loop  nextbyte
 
@@ -1425,7 +1425,7 @@ test  byte ptr ds:[bx + 6], 010h    ; check feof
 jne   end_loop_close_file
 handle_next_char:
 mov   ax, word ptr [bp + 076h]
-call  fgetc_
+call  locallib_fgetc_
 mov   dl, al
 cmp   al, 020h                    ; space charcater
 jne   not_space
@@ -1657,17 +1657,17 @@ test  al, al
 je    done_writing_default_name
 cbw  
 mov   dx, cx    ; get fp
-call  fputc_
+call  locallib_fputc_
 jmp   write_next_default_name_character
 
 print_last_digit:
 mov   al, bl
 mov   dx, cx    ; get fp
 add   al, 030h       ;  add '0' char to digit
-call  fputc_
+call  locallib_fputc_
 mov   ax, 0Ah  ; line feed character \n
 mov   dx, cx    ; get fp
-call  fputc_
+call  locallib_fputc_
 inc   bh
 cmp   bh, NUM_DEFAULTS
 jl    loop_next_default
@@ -1686,10 +1686,10 @@ jmp   got_value_to_write
 done_writing_default_name:
 mov   dx, cx    ; fp
 mov   ax, 9     ; tab char
-call  fputc_
+call  locallib_fputc_
 mov   dx, cx    ; fp
 mov   ax, 9     ; tab char
-call  fputc_
+call  locallib_fputc_
 
 mov   si, 0             ; if nonzero then we have printed a 100s digit and thus a zero 10s digit must be printed.
 
@@ -1709,7 +1709,7 @@ je    handle_tens_number
 mov   si, ax
 mov   dx, cx         ; fp
 add   al, 030h       ;   '0' char
-call  fputc_
+call  locallib_fputc_
 
 mov   ax, si
 
@@ -1723,7 +1723,7 @@ force_print_tens_digit:
 mov   al, ah
 mov   dx, cx         ; fp
 add   al, 030h       ;   '0' char
-call  fputc_
+call  locallib_fputc_
 
 jmp   print_last_digit
 
@@ -2526,7 +2526,7 @@ PUBLIC locallib_putchar_
 push  dx
 mov   dx, STDOUT
 cbw
-call  fputc_
+call  locallib_fputc_
 pop   dx
 ret
 
@@ -2552,7 +2552,7 @@ ret
 just_putchar:
 mov   dx, STDOUT
 cbw
-call  fputc_
+call  locallib_fputc_
 pop   dx
 @
 ret
