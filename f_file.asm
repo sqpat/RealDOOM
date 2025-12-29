@@ -196,11 +196,9 @@ push cx
 push dx
 push si
 push di
-push bp
-mov  bp, sp
-sub  sp, 2
+push bp  ; bp is ret
 mov  si, ax
-mov  word ptr [bp - 2], 0  ; ret
+xor  bp, bp  ; ret
 test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
 je   file_not_dirty
 jmp  file_is_dirty
@@ -227,11 +225,11 @@ sbb  cx, 0
 call locallib_inner_lseek_
 
 skip_seek:
-cmp  dx, -1
+cmp  dx, 0FFFFh
 jne  finish_handling_flush
 cmp  ax, 0FFFFh
 jne  finish_handling_flush
-mov  word ptr [bp - 2], 0FFFFh
+mov  bp, 0FFFFh
 or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
 
 finish_handling_flush:
@@ -239,14 +237,14 @@ mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 mov  ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
-cmp  word ptr [bp - 2], 0
-jne  label_6
+test bp, bp
+jne  exit_flush
 mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
-test byte ptr ds:[bx + 8], 1
-jne  label_7
-label_6:
-mov  ax, word ptr [bp - 2]
-mov  sp, bp
+test byte ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_extflags], _COMMIT
+jne  do_file_sync
+exit_flush:
+xchg ax, bp
+exit_flush_skip_bp:
 pop  bp
 pop  di
 pop  si
@@ -265,41 +263,47 @@ test ax, ax
 je   finish_handling_flush
 mov  di, ax
 mov  cx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
-flush_more_to_file:
+
+
 test cx, cx
+flush_more_to_file:
 je   finish_handling_flush
-cmp  word ptr [bp - 2], 0
+test bp, bp
 jne  finish_handling_flush
 mov  bx, cx
 mov  dx, di
 mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
 call __qwrite_
-nop  
+
 mov  dx, ax
 cmp  ax, 0FFFFh
-jne  label_9
-mov  word ptr [bp - 2], ax
-label_8:
-or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
-label_11:
+je  handle_error_len_case
+test ax, ax
+je   zero_flushed_error
+not_error_flush_more:
 add  di, dx
 sub  cx, dx
 jmp  flush_more_to_file
-label_9:
-test ax, ax
-jne  label_11
+zero_flushed_error:
 call __get_errno_ptr_
 mov  bx, ax
 mov  word ptr ds:[bx], 0Ch
-mov  word ptr [bp - 2], 0FFFFh
-jmp  label_8
-label_7:
+mov  bp, 0FFFFh
+jmp  set_err_flag
+
+handle_error_len_case:
+mov  bp, ax
+set_err_flag:
+or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
+jmp  not_error_flush_more
+
+
+do_file_sync:
 mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
 call fsync_
 cmp  ax, 0FFFFh
-jne  label_6
-mov  word ptr [bp - 2], ax
-jmp  label_6
+jne  exit_flush
+jmp  exit_flush_skip_bp
 
 
 ENDP
@@ -307,35 +311,38 @@ ENDP
 PROC   locallib_flushall_  NEAR
 
 mov  ax, 0FFFFh
-; fallthru?
+; fallthru? flush any flags.
 ENDP
 
 
+; ax is flags to flush/
 PROC   locallib_flushall_inner_ NEAR
 
 push bx
 push cx
 push dx
 push si
+
 mov  cx, ax
 mov  si, word ptr [___OpenStreams]
-xor  dx, dx
+xor  dx, dx  ; return value, flushed count?
 loop_flushall_more_bytes:
 test si, si
-je   exit_flushall_inner_return
+je   exit_flushall_inner_return ; end of the list?
 mov  bx, word ptr ds:[si + WATCOM_STREAM_LINK.watcom_streamlink_stream]
 test word ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], cx
-jne  label_14
-label_15:
-mov  si, word ptr ds:[si]
+jne  flag_is_match
+increment_and_check_next_stream_for_flush:
+increment_and_check_next_stream_for_flush:
+mov  si, word ptr ds:[si + WATCOM_STREAM_LINK.watcom_streamlink_next]  ; check next stream
 jmp  loop_flushall_more_bytes
-label_14:
+flag_is_match:
 inc  dx
 test byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
-je   label_15
+je   increment_and_check_next_stream_for_flush ; not dirty, skip
 mov  ax, bx
 call locallib_flush_
-jmp  label_15
+jmp  increment_and_check_next_stream_for_flush
 
 exit_flushall_inner_return:
 mov  ax, dx
