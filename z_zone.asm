@@ -22,7 +22,7 @@ INSTRUCTION_SET_MACRO
 EXTRN locallib_fread_:NEAR
 EXTRN locallib_fopen_:NEAR
 EXTRN fclose_:FAR
-EXTRN fseek_:FAR
+EXTRN locallib_fseek_:NEAR
 EXTRN locallib_far_fread_:FAR
 .DATA
 
@@ -813,7 +813,7 @@ mov   cx, es
 call  locallib_fopen_
 xor   dx, dx ; SEEK_SET
 mov   si, ax
-call  fseek_
+call  locallib_fseek_
 mov   bx, 1
 mov   dx, 2
 mov   ax, sp ; [bp - 4]

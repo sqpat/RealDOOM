@@ -36,7 +36,8 @@ EXTRN Z_QuickMapVisplanePage_:FAR
 EXTRN Z_QuickMapIntermission_:FAR
 EXTRN Z_QuickMapMenu_:FAR
 EXTRN locallib_fread_:NEAR
-EXTRN fseek_:FAR
+EXTRN locallib_fseek_:NEAR
+EXTRN locallib_fseekfromfar_:FAR
 EXTRN locallib_far_fread_:FAR
 EXTRN Z_QuickMapRenderPlanes_:FAR
 EXTRN Z_QuickMapPalette_:FAR
@@ -50,9 +51,8 @@ EXTRN W_GetNumForName_:FAR
 EXTRN NetUpdate_:FAR
 EXTRN locallib_fopen_:NEAR
 EXTRN locallib_fopenfromfar_:FAR
-EXTRN fseek_:FAR
 EXTRN fclose_:FAR
-EXTRN ftell_:FAR
+EXTRN locallib_ftell_:NEAR
 EXTRN locallib_far_fread_:FAR
 EXTRN getStringByIndex_:FAR
 EXTRN I_Error_:FAR
@@ -726,7 +726,7 @@ mov    bx, word ptr ss:[bp - 6]
 xor    cx, cx
 mov    dx, 1    ; SEEK_CUR
 
-call   fseek_
+call   locallib_fseek_
 
 
 
@@ -973,7 +973,7 @@ dw OFFSET _W_CacheLumpNumDirectFragment_addr   , OFFSET W_CacheLumpNumDirectFrag
 dw OFFSET _W_GetNumForName_addr                , OFFSET W_GetNumForName_
 dw OFFSET _NetUpdate_addr                      , OFFSET NetUpdate_
 dw OFFSET _fopen_addr                          , OFFSET locallib_fopenfromfar_
-dw OFFSET _fseek_addr                          , OFFSET fseek_
+dw OFFSET _fseek_addr                          , OFFSET locallib_fseekfromfar_
 dw OFFSET _fread_addr                          , OFFSET locallib_freadfromfar_
 dw OFFSET _fclose_addr                         , OFFSET fclose_
 dw OFFSET _locallib_far_fread_addr             , OFFSET locallib_far_fread_
@@ -1060,7 +1060,7 @@ mov   di, ax ; di stores fp
 xor   dx, dx ; SEEK_SET
 mov   bx, DATA_DOOMDATA_OFFSET
 xor   cx, cx
-call  fseek_
+call  locallib_fseek_
 
 ;	locallib_far_fread(rndtable, 256, fp);
 xor   ax, ax
@@ -1246,7 +1246,7 @@ mov   di, OFFSET _codestartposition
 loop_write_next_codestart_position:
 
 mov   ax, si
-call  ftell_
+call  locallib_ftell_
 push  cs
 pop   es
 stosw
@@ -1263,7 +1263,7 @@ call  GetCodeSize_
 mov   ax, si
 mov   dx, 1  ; SEEK_CUR
 xor   cx, cx
-call  fseek_
+call  locallib_fseek_
 
 jmp    loop_write_next_codestart_position
 done_writing_codestart:
@@ -1297,11 +1297,11 @@ call  GetCodeSize_
 mov   ax, si
 mov   dx, 1  ; SEEK_CUR
 xor   cx, cx
-call  fseek_
+call  locallib_fseek_
 cmp   di, bp
 jne   iter_loop_next_mus_driver
 mov   ax, si
-call  ftell_
+call  locallib_ftell_
 mov   word ptr cs:[_musdriverstartposition+0], ax
 mov   word ptr cs:[_musdriverstartposition+2], dx
 

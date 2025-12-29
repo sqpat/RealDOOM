@@ -34,7 +34,7 @@ EXTRN Z_QuickMapMaskedExtraData_:FAR
 EXTRN Z_QuickMapScratch_7000_:FAR
 EXTRN R_FlatNumForName_:NEAR
 EXTRN Z_QuickMapWADPageFrame_:FAR
-EXTRN fseek_:FAR
+EXTRN locallib_fseek_:NEAR
 EXTRN locallib_fread_:NEAR
 
 .DATA
@@ -1545,7 +1545,7 @@ mov       ax, word ptr ds:[_wadfiles]
 les       bx, dword ptr es:[bx + LUMPINFO_T.lumpinfo_position]
 mov       cx, es
 push      ax   ; fp
-call      fseek_  ;    fseek(usedfile, l->position, SEEK_SET);
+call      locallib_fseek_  ;    fseek(usedfile, l->position, SEEK_SET);
 
 
 

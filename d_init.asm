@@ -21,7 +21,6 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN locallib_fread_:NEAR
-EXTRN fseek_:FAR
 EXTRN locallib_fopen_:NEAR
 EXTRN fclose_:FAR
 EXTRN setbuf_:FAR

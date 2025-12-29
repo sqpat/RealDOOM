@@ -29,7 +29,7 @@ EXTRN FixedMul_:FAR
 EXTRN FixedMul_:FAR
 EXTRN CopyString13_:NEAR
 EXTRN locallib_fread_:NEAR
-EXTRN fseek_:FAR
+EXTRN locallib_fseek_:NEAR
 EXTRN locallib_fopen_:NEAR
 EXTRN fclose_:FAR
 EXTRN locallib_far_fread_:FAR
@@ -188,7 +188,7 @@ mov   di, ax ; di stores fp
 xor   dx, dx  ; SEEK_SET
 mov   bx, SWITCH_DOOMDATA_OFFSET AND 0FFFFh
 mov   cx, SWITCH_DOOMDATA_OFFSET SHR 16
-call  fseek_  ;    fseek(fp, SWITCH_DOOMDATA_OFFSET, SEEK_SET);
+call  locallib_fseek_  ;    fseek(fp, SWITCH_DOOMDATA_OFFSET, SEEK_SET);
 
 ;fread(alphSwitchList, sizeof(switchlist_t), NUMSWITCHDEFS, fp);
 mov   ax, sp
@@ -412,7 +412,7 @@ mov   di, ax ; di stores fp
 xor   dx, dx  ; SEEK_SET
 mov   bx, SPLIST_DOOMDATA_OFFSET AND 0FFFFh
 mov   cx, SPLIST_DOOMDATA_OFFSET SHR 16
-call  fseek_  ;    fseek(fp, SWITCH_DOOMDATA_OFFSET, SEEK_SET);
+call  locallib_fseek_  ;    fseek(fp, SWITCH_DOOMDATA_OFFSET, SEEK_SET);
 
 ;fread(namelist,  5, NUMSPRITES, fp);
 lea   ax, [bp - SIZE_SPRITE_NAMES]

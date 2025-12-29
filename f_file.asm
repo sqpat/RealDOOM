@@ -20,7 +20,9 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN fopen_:FAR
+EXTRN fseek_:FAR
 EXTRN fread_:FAR
+EXTRN ftell_:FAR
 EXTRN fwrite_:FAR
 
 .DATA
@@ -63,12 +65,33 @@ call    fopen_
 retf
 ENDP
 
-
 PROC    locallib_fopen_   NEAR
 PUBLIC  locallib_fopen_
 call    fopen_
 ret
 ENDP
+
+PROC    locallib_fseek_   NEAR
+PUBLIC  locallib_fseek_
+call    fseek_
+ret
+ENDP
+
+PROC    locallib_fseekfromfar_   FAR
+PUBLIC  locallib_fseekfromfar_
+call    fseek_
+retf
+ENDP
+
+PROC    locallib_ftell_   NEAR
+PUBLIC  locallib_ftell_
+call    ftell_
+ret
+ENDP
+
+
+
+
 
 
 

@@ -21,8 +21,8 @@ INSTRUCTION_SET_MACRO
 
 EXTRN locallib_fopen_:NEAR
 EXTRN fclose_:FAR
-EXTRN fseek_:FAR
-EXTRN ftell_:FAR
+EXTRN locallib_fseek_:NEAR
+EXTRN locallib_ftell_:NEAR
 EXTRN locallib_far_fwrite_:NEAR
 EXTRN locallib_far_fread_:FAR
 EXTRN locallib_strcmp_:NEAR
@@ -151,10 +151,10 @@ xor   bx, bx
 xor   cx, cx
 mov   dx, 2     ; SEEK_END
 mov   si, ax    ; store fp
-call  fseek_
+call  locallib_fseek_
 
 mov   ax, si    ; fp
-call  ftell_
+call  locallib_ftell_
 
 xchg  ax, di    ; store length
 
@@ -164,7 +164,7 @@ xor   dx, dx    ; SEEK_SET
 
 
 mov   ax, si    ; fp
-call  fseek_
+call  locallib_fseek_
 
 mov   bx, di  ; bx gets len
 

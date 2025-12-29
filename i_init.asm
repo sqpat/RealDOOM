@@ -20,7 +20,7 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN locallib_fread_:NEAR
-EXTRN fseek_:FAR
+EXTRN locallib_fseek_:NEAR
 EXTRN locallib_fopen_:NEAR
 EXTRN fclose_:FAR
 EXTRN locallib_far_fread_:FAR
@@ -229,7 +229,7 @@ mov   di, ax ; di stores fp
 les   bx, dword ptr cs:[_musdriverstartposition]
 mov   cx, es
 xor   dx, dx  ; SEEK_SET  ; 0?
-call  fseek_        ; fseek(fp, musdriverstartposition[driverindex-1], SEEK_SET);
+call  locallib_fseek_        ; fseek(fp, musdriverstartposition[driverindex-1], SEEK_SET);
 
 
 mov   bx, 1

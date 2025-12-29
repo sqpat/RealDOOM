@@ -20,8 +20,8 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN locallib_fread_:NEAR
-EXTRN fseek_:FAR
-EXTRN ftell_:FAR
+EXTRN locallib_fseek_:NEAR
+EXTRN locallib_ftell_:NEAR
 EXTRN locallib_fopen_:NEAR
 EXTRN setbuf_:FAR
 EXTRN exit_:FAR
@@ -140,7 +140,7 @@ pop    bx
 pop    bx	; infotableofs
 pop    cx   ; infotableofs
 xor    dx, dx ; SEEKSET
-call   fseek_   ; fseek(usefp, header.infotableofs, SEEK_SET);
+call   locallib_fseek_   ; fseek(usefp, header.infotableofs, SEEK_SET);
 		
 
 	
@@ -279,9 +279,9 @@ stosw  ; 0 offset dword
 xor    bx, bx
 mov    ax, si
 mov    dx, 2 ; SEEKEND
-call   fseek_  ; fseek(usefp, 0L, SEEK_END);
+call   locallib_fseek_  ; fseek(usefp, 0L, SEEK_END);
 mov    ax, si
-call   ftell_  ; singleinfo.size = ftell(usefp);
+call   locallib_ftell_  ; singleinfo.size = ftell(usefp);
 
 mov    cx, LUMPINFO_INIT_SEGMENT
 mov    es, cx
@@ -306,7 +306,7 @@ xor    cx, cx
 xor    bx, bx
 xchg   ax, si
 xor    dx, dx ; SEEK_SET
-call   fseek_ ; ; fseek(usefp, 0L, SEEK_SET);
+call   locallib_fseek_ ; ; fseek(usefp, 0L, SEEK_SET);
 
 
 inc    word ptr ds:[_numlumps]  ; numlumps++;
