@@ -31,7 +31,7 @@ EXTRN CopyString13_:NEAR
 EXTRN locallib_fread_:NEAR
 EXTRN locallib_fseek_:NEAR
 EXTRN locallib_fopen_:NEAR
-EXTRN fclose_:FAR
+EXTRN locallib_fclose_:NEAR
 EXTRN locallib_far_fread_:FAR
 EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
 EXTRN R_TextureNumForName_:NEAR
@@ -198,7 +198,7 @@ mov   bx, NUMSWITCHDEFS
 call  locallib_fread_
 
 xchg  ax, di
-call  fclose_
+call  locallib_fclose_
 
 ;	if (registered){
 ;		episode = 2;
@@ -298,7 +298,7 @@ mov   bx, NUMANIMDEFS
 call  locallib_fread_
 
 xchg  ax, di
-call  fclose_
+call  locallib_fclose_
 
 mov   di, OFFSET _anims
 mov   si, sp
@@ -422,7 +422,7 @@ mov   bx, NUMSPRITES
 call  locallib_fread_
 
 xchg  ax, di
-call  fclose_
+call  locallib_fclose_
 
 
 ;	p_init_sprtemp = (spriteframe_t __far *) &sprtempbytes;

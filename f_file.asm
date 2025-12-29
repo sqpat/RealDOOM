@@ -20,6 +20,7 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN fopen_:FAR
+EXTRN fclose_:FAR
 EXTRN fseek_:FAR
 EXTRN fread_:FAR
 EXTRN ftell_:FAR
@@ -68,6 +69,18 @@ ENDP
 PROC    locallib_fopen_   NEAR
 PUBLIC  locallib_fopen_
 call    fopen_
+ret
+ENDP
+
+PROC    locallib_fclosefromfar_   FAR
+PUBLIC  locallib_fclosefromfar_
+call    fclose_
+retf
+ENDP
+
+PROC    locallib_fclose_   NEAR
+PUBLIC  locallib_fclose_
+call    fclose_
 ret
 ENDP
 

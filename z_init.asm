@@ -51,7 +51,9 @@ EXTRN W_GetNumForName_:FAR
 EXTRN NetUpdate_:FAR
 EXTRN locallib_fopen_:NEAR
 EXTRN locallib_fopenfromfar_:FAR
-EXTRN fclose_:FAR
+EXTRN locallib_fclose_:NEAR
+EXTRN locallib_fclosefromfar_:NEAR
+
 EXTRN locallib_ftell_:NEAR
 EXTRN locallib_far_fread_:FAR
 EXTRN getStringByIndex_:FAR
@@ -975,7 +977,7 @@ dw OFFSET _NetUpdate_addr                      , OFFSET NetUpdate_
 dw OFFSET _fopen_addr                          , OFFSET locallib_fopenfromfar_
 dw OFFSET _fseek_addr                          , OFFSET locallib_fseekfromfar_
 dw OFFSET _fread_addr                          , OFFSET locallib_freadfromfar_
-dw OFFSET _fclose_addr                         , OFFSET fclose_
+dw OFFSET _fclose_addr                         , OFFSET locallib_fclosefromfar_
 dw OFFSET _locallib_far_fread_addr             , OFFSET locallib_far_fread_
 dw OFFSET _getStringByIndex_addr               , OFFSET getStringByIndex_
 dw OFFSET _I_Error_addr                        , OFFSET I_Error_
@@ -1200,7 +1202,7 @@ mov   cx, di
 call  locallib_far_fread_
 
 xchg  ax, di
-call  fclose_
+call  locallib_fclose_
 
 call  Z_QuickMapPhysics_
 
@@ -1313,7 +1315,7 @@ jl      loop_next_mus_driver
 
 
 xchg    ax, si
-call    fclose_
+call    locallib_fclose_
 
 
 

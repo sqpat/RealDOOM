@@ -19,7 +19,7 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN fclose_:FAR
+EXTRN locallib_fclose_:NEAR
 EXTRN SB_Shutdown_:NEAR
 EXTRN Z_QuickMapUnmapAll_:NEAR
 EXTRN Z_QuickMapPhysics_:FAR
@@ -274,7 +274,7 @@ shl   bx, 1   ; word lookup
 mov   ax, word ptr ds:[_wadfiles + bx]
 test  ax, ax
 je    skip_fclose_wadfile
-call  fclose_
+call  locallib_fclose_
 
 skip_fclose_wadfile:
 shr   bx, 1

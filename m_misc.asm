@@ -20,7 +20,7 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN locallib_fopen_:NEAR
-EXTRN fclose_:FAR
+EXTRN locallib_fclose_:NEAR
 EXTRN locallib_fseek_:NEAR
 EXTRN locallib_ftell_:NEAR
 EXTRN locallib_far_fwrite_:NEAR
@@ -117,7 +117,7 @@ call  locallib_far_fwrite_
 xchg  ax, dx   ; store result
 
 pop   ax       ; retrieve fp
-call  fclose_
+call  locallib_fclose_
 
 cmp   dx, di
 jb    exit_writefile_return_0
@@ -179,7 +179,7 @@ call  locallib_far_fread_
 
 xchg  ax, si  ; fp
 
-call  fclose_
+call  locallib_fclose_
 
 POPA_NO_AX_OR_BP_MACRO
 

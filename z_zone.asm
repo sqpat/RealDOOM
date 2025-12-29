@@ -21,7 +21,7 @@ INSTRUCTION_SET_MACRO
  
 EXTRN locallib_fread_:NEAR
 EXTRN locallib_fopen_:NEAR
-EXTRN fclose_:FAR
+EXTRN locallib_fclose_:NEAR
 EXTRN locallib_fseek_:NEAR
 EXTRN locallib_far_fread_:FAR
 .DATA
@@ -828,7 +828,7 @@ xor   ax, ax
 call  locallib_far_fread_
 
 xchg  ax, si
-call  fclose_
+call  locallib_fclose_
 pop   ax ; [bp - 2]
 ;dec   ax
 ;cmp   al, 4

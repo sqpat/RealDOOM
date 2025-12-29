@@ -70,7 +70,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(printf.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fclose.c)
 0000:07eb      __doclose_
 0000:0881      __shutdown_stream_
-0000:0895      fclose_
+0000:0895      locallib_fclose_
 031c:0390+     ___RmTmpFileFn
 Module: C:\WATCOM2\lib286\dos\clibm.lib(cstart)
 031c:0000*     __nullarea

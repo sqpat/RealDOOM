@@ -49,7 +49,7 @@ EXTRN Z_SetOverlay_:FAR
 EXTRN locallib_fopen_:NEAR
 EXTRN fgetc_:FAR
 EXTRN fputc_:FAR
-EXTRN fclose_:FAR
+EXTRN locallib_fclose_:NEAR
 ;EXTRN locallib_putchar_:NEAR
 
 
@@ -412,7 +412,7 @@ inc   di
 loop  nextbyte
 
 mov   ax, bx
-call  fclose_
+call  locallib_fclose_
 
 LEAVE_MACRO
 pop   ax  ; sp
@@ -1458,7 +1458,7 @@ test  byte ptr ds:[bx + 6], 010h        ; test feof
 je    handle_next_char      
 end_loop_close_file:
 mov   ax, word ptr [bp + 076h]      ; retrieve FP
-call  fclose_
+call  locallib_fclose_
 jmp   defaults_file_closed
 not_space:
 cmp   al, 9                           ; tab characters \t
@@ -1672,7 +1672,7 @@ inc   bh
 cmp   bh, NUM_DEFAULTS
 jl    loop_next_default
 mov   ax, cx
-call  fclose_
+call  locallib_fclose_
 exit_msavedefaults:
 pop   di
 pop   si

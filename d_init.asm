@@ -22,7 +22,7 @@ INSTRUCTION_SET_MACRO
 
 EXTRN locallib_fread_:NEAR
 EXTRN locallib_fopen_:NEAR
-EXTRN fclose_:FAR
+EXTRN locallib_fclose_:NEAR
 EXTRN setbuf_:FAR
 EXTRN exit_:FAR
 EXTRN fgetc_:FAR
@@ -289,7 +289,7 @@ xor     dx, dx
 jmp     loop_next_stringfile_char
 done_parsing_string_file:
 xchg    ax, si
-call    fclose_
+call    locallib_fclose_
 LEAVE_MACRO
 
 ret
@@ -1354,7 +1354,7 @@ mov     dx, 6
 mov     bx, 1
 call    locallib_fread_
 pop     ax  ; fp
-call    fclose_
+call    locallib_fclose_
 cmp     word ptr [bp - 2], 0902h
 jne     dont_set_ultimate_true
 mov     byte ptr ds:[_is_ultimate], 1
