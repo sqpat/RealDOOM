@@ -22,7 +22,6 @@ INSTRUCTION_SET_MACRO
 EXTRN fopen_:FAR
 EXTRN fclose_:FAR
 EXTRN fread_:FAR
-EXTRN ftell_:FAR
 EXTRN fwrite_:FAR
 EXTRN fgetc_:FAR
 EXTRN fputc_:FAR
@@ -32,6 +31,7 @@ EXTRN __flush_:FAR
 EXTRN lseek_:FAR
 EXTRN __get_errno_ptr_:FAR
 EXTRN _tell_:FAR
+EXTRN fflush_:FAR
 
 .DATA
 
@@ -333,7 +333,55 @@ ENDP
 
 PROC    locallib_ftell_   NEAR
 PUBLIC  locallib_ftell_
-call    ftell_
+
+; si is file
+
+push cx
+push bx
+push si
+
+mov  si, ax
+
+test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], _APPEND
+je   skip_flush
+test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], _DIRTY SHR 8
+je   skip_flush
+mov  ax, si
+call fflush_
+skip_flush:
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+call _tell_
+cmp  dx, 0FFFFh
+jne  good_location
+cmp  ax, 0FFFFh
+je   exit_lseek
+good_location:
+cmp  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
+je   exit_lseek
+xchg ax, bx
+mov  cx, dx
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+cwd  
+test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
+jne  do_add_and_exit
+; dx:ax is file_cnt
+
+; cx:bx - dx:ax is equal to -dx:ax + cx:bx
+neg  dx
+neg  ax
+sbb  dx, 0   
+
+do_add_and_exit:
+add  ax, bx
+adc  dx, cx
+exit_lseek:
+pop  si
+pop  bx
+pop  cx
+
+ret
+
+
 ret
 ENDP
 
