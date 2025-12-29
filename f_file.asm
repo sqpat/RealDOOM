@@ -31,8 +31,8 @@ EXTRN __SetIOMode_nogrow_:FAR
 EXTRN __GetIOMode_:FAR
 EXTRN __get_errno_ptr_:FAR
 EXTRN __set_errno_dos_:FAR
-EXTRN fsync_:FAR
 EXTRN __qwrite_:FAR
+EXTRN __doserror_:FAR
 
 .DATA
 
@@ -185,7 +185,32 @@ SEEK_SET = 0
 SEEK_CUR = 1
 SEEK_END = 2
 
-; bp - 2 = ret
+;todo what uses this
+PROC    locallib_fclose_inner   NEAR
+
+push  bx
+mov   bx, ax
+mov   ah, 03Eh
+int   021h
+call  __doserror_  ; check carry flag etc
+pop   bx
+ret
+
+ENDP
+
+
+PROC    locallib_fsync_   NEAR
+
+;  bx already had file handle
+mov   ah, 068h  ; INT 21,68 - Flush Buffer Using Handle (DOS 3.3+)
+clc   
+int   021h
+call  __doserror_  ; check carry flag etc
+ret
+
+ENDP
+
+
 ; si holds fp
 
 
@@ -299,8 +324,8 @@ jmp  not_error_flush_more
 
 
 do_file_sync:
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
-call fsync_
+mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+call locallib_fsync_
 cmp  ax, 0FFFFh
 jne  exit_flush
 jmp  exit_flush_skip_bp
