@@ -117,27 +117,27 @@ ENDP
 PROC    localib_update_buffer_ NEAR
 PUBLIC  localib_update_buffer_
 
-; cx:di = diff, si = file
+; cx:bx = diff, si = file
 ; return in carry
 
 
 
-mov  ax, word ptr [si + WATCOM_C_FILE.watcom_file_cnt]
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
 cwd  
 cmp  cx, dx
 jl   size_check_ok
 jne  outside_of_buffer
-cmp  di, ax
+cmp  bx, ax
 ja   outside_of_buffer
 size_check_ok:
-mov  bx, word ptr [si + WATCOM_C_FILE.watcom_file_link]
-mov  ax, word ptr [bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
-sub  ax, word ptr [si + WATCOM_C_FILE.watcom_file_ptr]
+mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+mov  ax, word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base]
+sub  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
 cwd  
 cmp  cx, dx
 jg   update_file
 jne  outside_of_buffer
-cmp  di, ax
+cmp  bx, ax
 jae  update_file
 outside_of_buffer:
 stc
@@ -146,9 +146,9 @@ return_update_buffer:
 ret  
 
 update_file:
-and  byte ptr [si + WATCOM_C_FILE.watcom_file_flag], (NOT _EOF)
-add  word ptr [si + WATCOM_C_FILE.watcom_file_ptr], di
-sub  word ptr [si + WATCOM_C_FILE.watcom_file_cnt], di
+and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT _EOF)
+add  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], bx
+sub  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], bx
 clc
 jmp  return_update_buffer
 
@@ -160,11 +160,11 @@ PUBLIC  localib_reset_buffer_
 
 ; si is file
 push bx
-mov  bx, word ptr [si + WATCOM_C_FILE.watcom_file_link]
-and  byte ptr [si + WATCOM_C_FILE.watcom_file_flag], (NOT _EOF)
-mov  bx, word ptr [bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
-mov  word ptr [si + WATCOM_C_FILE.watcom_file_cnt], 0
-mov  word ptr [si + WATCOM_C_FILE.watcom_file_ptr], bx
+mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT _EOF)
+mov  bx, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
+mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
+mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], bx
 
 pop  bx
 ret  
@@ -185,7 +185,7 @@ SEEK_END = 2
 ; bp - 2 = seek type
 ; si holds fp
 
-; todo keep things in cx:bx not cx:di
+
 
 PROC    locallib_fseek_   NEAR
 PUBLIC  locallib_fseek_
@@ -194,42 +194,42 @@ push si
 push di
 push bp
 mov  bp, sp
-sub  sp, 0Ah
+
 mov  si, ax
-mov  di, bx   ; cx:di position now
-mov  word ptr [bp - 2], dx   ; store seek type.
-test byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 0], (_UNGET OR _WRITE)
+
+push dx   ; bp - 2. store seek type.
+
+test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], (_UNGET OR _WRITE)
 je   check_for_seek_end
-test byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
+test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
 jne  do_flush
 cmp  dx, SEEK_CUR
 jne  dont_subtract_offset
 subtract_offset:
-mov  ax, word ptr [si + WATCOM_C_FILE.watcom_file_cnt]
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
 cwd  
-sub  di, ax
+sub  bx, ax
 sbb  cx, dx
 dont_subtract_offset:
-mov  bx, word ptr [si + WATCOM_C_FILE.watcom_file_link] ; get link
-mov  ax, word ptr [bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
-mov  word ptr [si + WATCOM_C_FILE.watcom_file_cnt], 0
-mov  word ptr [si + WATCOM_C_FILE.watcom_file_ptr], ax
+mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link] ; get link
+mov  ax, word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base]
+mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
+mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
 file_ready_for_seek:
 mov  dx, word ptr [bp - 2] ; retrieve seek type
-mov  bx, di
-mov  ax, word ptr [si + WATCOM_C_FILE.watcom_file_handle]
-and  byte ptr [si + WATCOM_C_FILE.watcom_file_flag], (NOT (_EOF OR _UNGET))       ; turn off the flags.
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT (_EOF OR _UNGET))       ; turn off the flags.
 ; lseek( int handle, off_t offset, int origin );
 do_call_lseek:
 call lseek_
 
 cmp  dx, 0FFFFh
-jne  jump_to_status_ok_good_lseek_result
+jne  status_ok_good_lseek_result
 
 cmp  ax, 0FFFFh
-jne  jump_to_status_ok_good_lseek_result
+jne  status_ok_good_lseek_result
 exit_return_fseek_error:
-mov  ax, 0FFFFh
+mov  ax, 0FFFFh     ; a little silly, the fallthru is already 0FFFFh from above.
 exit_return_fseek:
 mov  sp, bp
 pop  bp
@@ -247,45 +247,43 @@ jne  exit_return_fseek_error
 test cx, cx
 jge  exit_return_fseek_error
 
+invalid_param:
 call __get_errno_ptr_
 mov  si, ax
-mov  word ptr [si + WATCOM_C_FILE.watcom_file_ptr], 9
+mov  word ptr ds:[si], 9
 jmp  exit_return_fseek_error
-jump_to_status_ok_good_lseek_result:
-jmp  status_ok_good_lseek_result
+
 check_for_seek_end:
-cmp  dx, SEEK_END
-je   reset_buffer
 cmp  dx, SEEK_CUR
 je   handle_seek_cur
-test dx, dx
-jne  invalid_param
-
+ja   reset_buffer
+; no invlaid param checking.
 ; SEEK_SET case
 
-mov  ax, word ptr [si + WATCOM_C_FILE.watcom_file_handle]
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
 call _tell_
-mov  word ptr [bp - 0Ah], ax    ; low bytes temporarily
-mov  ax, word ptr [si + WATCOM_C_FILE.watcom_file_cnt]
-mov  bx, dx
+mov  di, ax    ; low bytes temporarily
+mov  es, dx
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
 cwd  
-mov  word ptr [bp - 8], dx
-sub  ax, word ptr [bp - 0Ah]
-neg  ax
-sbb  bx, word ptr [bp - 8]
-push cx
-push di
+
 sub  di, ax
-sbb  cx, bx
+xchg ax, di  ; low result in ax
+mov  di, es
+sbb  di, dx
+push cx
+push bx
+sub  bx, ax
+sbb  cx, di
 
 call localib_update_buffer_
-pop  di
+pop  bx
 pop  cx
 jnc  status_ok_good_lseek_result
 
-mov  dx, word ptr [bp - 2]
-mov  bx, di
-mov  ax, word ptr [si + WATCOM_C_FILE.watcom_file_handle]
+pop  dx  ; bp - 2. seek type
+
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
 
 do_call_lseek2:
 call lseek_
@@ -301,30 +299,26 @@ xor  ax, ax
 jmp  exit_return_fseek
 reset_buffer:
 call localib_reset_buffer_
-mov  ax, word ptr [si + WATCOM_C_FILE.watcom_file_handle]
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
 jmp  do_call_lseek
-invalid_param:
-call __get_errno_ptr_
 
-mov  si, ax
-mov  word ptr [si + WATCOM_C_FILE.watcom_file_ptr], 9
-jmp  exit_return_fseek_error
 
 
 
 handle_seek_cur:
-mov  ax, word ptr [si + WATCOM_C_FILE.watcom_file_cnt]
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
 cwd  
 
-mov  word ptr [bp - 6], ax
-mov  word ptr [bp - 4], dx
+push dx
+push ax
 call localib_update_buffer_
 jnc  status_ok_good_lseek_result
-mov  dx, word ptr [bp - 2]
-mov  bx, di
-mov  ax, word ptr [si + WATCOM_C_FILE.watcom_file_handle]
-sub  bx, word ptr [bp - 6]
-sbb  cx, word ptr [bp - 4]
+pop  ax
+sub  bx, ax
+pop  ax
+sbb  cx, ax
+pop  dx  ; bp - 2. seek type
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
 jmp  do_call_lseek2
 
 
