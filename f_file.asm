@@ -689,50 +689,38 @@ ENDP
 
 PROC    locallib_ioalloc_ NEAR
 
+; si fas file already
 
 push  bx
-push  si
-mov   bx, ax
 call  __chktty_
-cmp   word ptr [bx + WATCOM_C_FILE.watcom_file_bufsize], 0
-jne   label_6
-mov   al, byte ptr [bx + WATCOM_C_FILE.watcom_file_flag + 1]
-test  al, 2
-je    label_7
-mov   word ptr [bx + WATCOM_C_FILE.watcom_file_bufsize], 134  ; default buffer is 134 apparently! todo revisit
-label_6:
-mov   ax, word ptr [bx + WATCOM_C_FILE.watcom_file_bufsize]
-call  malloc_
-mov   si, word ptr [bx + WATCOM_C_FILE.watcom_file_link]
-mov   word ptr [si + WATCOM_STREAM_LINK.watcom_streamlink_base], ax
-mov   si, word ptr [bx + WATCOM_C_FILE.watcom_file_link]
-cmp   word ptr [si + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
-jne   label_8
-and   byte ptr [bx + WATCOM_C_FILE.watcom_file_flag + 1], ((NOT (_IONBF OR _IOLBF OR _IOFBF)) SHR 8)  ; 0F8h
-lea   ax, [bx + WATCOM_C_FILE.watcom_file_ungotten]
-mov   si, word ptr [bx + WATCOM_C_FILE.watcom_file_link]
-or    byte ptr [bx + WATCOM_C_FILE.watcom_file_flag + 1], 4
-mov   word ptr [si + WATCOM_STREAM_LINK.watcom_streamlink_base], ax
-mov   word ptr [bx + WATCOM_C_FILE.watcom_file_bufsize], 1
-label_10:
-mov   si, word ptr [bx + WATCOM_C_FILE.watcom_file_link]
-mov   ax, word ptr [si + WATCOM_STREAM_LINK.watcom_streamlink_base]
-mov   word ptr [bx + WATCOM_C_FILE.watcom_file_cnt], 0
-mov   word ptr [bx + WATCOM_C_FILE.watcom_file_ptr], ax
-pop   si
+mov   ax, word ptr [si + WATCOM_C_FILE.watcom_file_bufsize]
+test  ax, ax
+jne   bufsize_set
+mov   ax, FILE_BUFFER_SIZE  ; lets just use FILE_BUFFER_SIZE = 512 for everything for now
+mov   word ptr [si + WATCOM_C_FILE.watcom_file_bufsize], ax  ; default buffer is 134 apparently! todo revisit
+bufsize_set:
+call  malloc_  ; near malloc
+; ax gets file buffer
+mov   bx, word ptr [si + WATCOM_C_FILE.watcom_file_link]
+mov   word ptr [bx + WATCOM_STREAM_LINK.watcom_streamlink_base], ax ; ptr to the file buf...
+test  ax, ax
+jne   set_bigbuf
+and   byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 1], ((NOT (_IONBF OR _IOLBF OR _IOFBF)) SHR 8)  ; 0F8h
+lea   ax, [si + WATCOM_C_FILE.watcom_file_ungotten]
+mov   bx, word ptr [si + WATCOM_C_FILE.watcom_file_link]
+or    byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 1], (_IONBF SHR 8)
+mov   word ptr [bx + WATCOM_STREAM_LINK.watcom_streamlink_base], ax
+mov   word ptr [si + WATCOM_C_FILE.watcom_file_bufsize], 1
+finish_and_exit_ioalloc:
+mov   bx, word ptr [si + WATCOM_C_FILE.watcom_file_link]
+mov   ax, word ptr [bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
+mov   word ptr [si + WATCOM_C_FILE.watcom_file_cnt], 0
+mov   word ptr [si + WATCOM_C_FILE.watcom_file_ptr], ax
 pop   bx
 ret  
-label_7:
-test  al, 4
-je    label_9
-mov   word ptr [bx + WATCOM_C_FILE.watcom_file_bufsize], 64
-jmp   label_6
-label_9:
-mov   word ptr [bx + WATCOM_C_FILE.watcom_file_bufsize], 512
-jmp   label_6
-label_8:
-or    byte ptr [bx + WATCOM_C_FILE.watcom_file_flag + 0], 8
-jmp   label_10
+set_bigbuf:
+or    byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 0], _BIGBUF
+jmp   finish_and_exit_ioalloc
 
 ENDP
 
@@ -927,7 +915,7 @@ and  byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 1], ((NOT (_IONBF OR _IOLBF
 or   word ptr [si + WATCOM_C_FILE.watcom_file_flag + 0], bx  ; mode
 test dx, dx
 jne  exit_setvbuf_return_0
-mov  ax, si
+
 call locallib_ioalloc_
 exit_setvbuf_return_0:
 xor  ax, ax
@@ -1029,7 +1017,7 @@ jne  buff_not_null
 mov  bx, _IONBF
 buff_not_null:
 mov  cx, FILE_BUFFER_SIZE
-call locallib_setvbuf_  ;     setvbuf( fp, buf, mode, BUFSIZ );
+call locallib_setvbuf_  ;     setvbuf( fp, buf, mode, FILE_BUFFER_SIZE );
 pop  cx
 pop  bx
 ret
@@ -1350,7 +1338,7 @@ test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _WRITE
 je   handle_fputc_error   ; not open for writing!
 cmp  word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
 jne  have_buffer_location
-mov  ax, si
+
 call locallib_ioalloc_
 
 have_buffer_location:
