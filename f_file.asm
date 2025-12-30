@@ -23,14 +23,15 @@ EXTRN fopen_:FAR
 EXTRN fclose_:FAR
 EXTRN fread_:FAR
 EXTRN fwrite_:FAR
-EXTRN __chktty_:FAR
+
 
 EXTRN __exit_:NEAR
 
 
-EXTRN __doserror_:FAR
 EXTRN malloc_:FAR
 EXTRN __GETDS:NEAR
+
+
 
 .DATA
 
@@ -202,7 +203,7 @@ push  bx
 mov   bx, ax
 mov   ah, 03Eh
 int   021h
-call  __doserror_  ; check carry flag etc
+call  locallib_doserror_  ; check carry flag etc
 pop   bx
 ret
 
@@ -215,7 +216,7 @@ PROC    locallib_fsync_   NEAR
 mov   ah, 068h  ; INT 21,68 - Flush Buffer Using Handle (DOS 3.3+)
 clc   
 int   021h
-call  __doserror_  ; check carry flag etc
+call  locallib_doserror_  ; check carry flag etc
 ret
 
 ENDP
@@ -687,12 +688,78 @@ ret
 ret
 ENDP
 
+PROC    locallib_isatty_ NEAR
+
+
+push bx
+push cx
+push dx
+xchg ax, bx
+mov  ax, 04400h  ;  I/O Control for Devices (IOCTL):  IOCTL,0 - Get Device Information
+int  021h
+test dl, 080h   ; if flag on then character device.
+mov  ax, 0
+je   exit_is_atty
+inc  ax
+exit_is_atty:
+pop  dx
+pop  cx
+pop  bx
+ret
+
+ENDP
+
+PROC    locallib_chktty_ NEAR
+
+; si has file already
+
+test byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 1], (_ISTTY SHR 8)
+je   continue_chktty_check
+exit_chktty:
+ret
+continue_chktty_check:
+mov  ax, word ptr [si + WATCOM_C_FILE.watcom_file_handle]
+call locallib_isatty_
+test ax, ax
+je   exit_chktty
+or   byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 1], (_ISTTY SHR 8)
+test byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 1], ((_IOFBF OR _IOLBF OR _IONBF) SHR 8)
+jne  exit_chktty
+or   byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 1], (_IOLBF SHR 8)
+ret
+
+ENDP
+
+PROC   locallib_doserror_ NEAR
+
+jnc  exit_doserror_ret_0
+push ax
+call locallib_set_errno_ptr_
+pop  ax
+jmp  exit_doserror
+exit_doserror_ret_0:
+sub  ax, ax
+exit_doserror:
+ret
+
+ENDP
+
+PROC   locallib_doserror1_ NEAR
+
+jnc  exit_doserror_ret_0
+call locallib_set_errno_ptr_
+jmp  exit_doserror
+
+ENDP
+
+
+
 PROC    locallib_ioalloc_ NEAR
 
 ; si fas file already
 
 push  bx
-call  __chktty_
+call  locallib_chktty_
 mov   ax, word ptr [si + WATCOM_C_FILE.watcom_file_bufsize]
 test  ax, ax
 jne   bufsize_set
@@ -766,7 +833,9 @@ jmp   do_call
 
 ENDP
 
-PROC locallib_InitRtns NEAR
+; this runs initailization routines (init file structures and argv) during c program init. but we will skip this generic step and call the couple of necessary functions in hardcoded manner.
+
+PROC locallib_InitRtns_ NEAR
 
 push  bx
 push  cx
@@ -778,10 +847,10 @@ mov   bp, sp
 mov   cx, ax
 push  ds
 call  __GETDS
-mov   di, __End_XI
+mov   di, OFFSET __End_XI
 mov   dx, di
 label_20:
-mov   bx, __Start_XI
+mov   bx, OFFSET __Start_XI
 mov   si, di
 mov   al, cl
 label_16:
@@ -824,6 +893,8 @@ ret
 
 ENDP
 
+; this runs shutdown routines during c program exit. but we will skip this generic step and call the couple of necessary functions in hardcoded manner.
+
 PROC locallib_FiniRtns_ NEAR
 
 push  bx
@@ -836,10 +907,10 @@ mov   cx, ax
 push  ds
 call  __GETDS
 mov   ch, dl
-mov   di, __END_YI
+mov   di, OFFSET __END_YI
 mov   dx, di
 label_26:
-mov   bx, __START_YI
+mov   bx, OFFSET __START_YI
 mov   si, di
 mov   al, cl
 label_24:
@@ -902,8 +973,8 @@ je   label_4
 test cx, cx
 je   exit_setvbuf_return_error
 label_4:
-mov  ax, si
-call __chktty_
+
+call locallib_chktty_
 test cx, cx
 je   label_5
 mov  word ptr [si + WATCOM_C_FILE.watcom_file_bufsize], cx
