@@ -29,7 +29,7 @@ EXTRN __exit_:NEAR
 EXTRN free_:FAR
 EXTRN malloc_:FAR
 EXTRN __GETDS:NEAR
-
+EXTRN __FiniRtns:FAR
 
 
 .DATA
@@ -875,18 +875,23 @@ PROC    locallib_isatty_ NEAR
 
 
 push bx
-push cx
 push dx
-xchg ax, bx
+; si is file
+mov  bx, word ptr [si + WATCOM_C_FILE.watcom_file_handle]
 mov  ax, 04400h  ;  I/O Control for Devices (IOCTL):  IOCTL,0 - Get Device Information
 int  021h
+
+;- BIT 7 of register DX can be used to detect if STDIN/STDOUT is
+;	  redirected to/from disk; if a call to this function has DX BIT 7
+;	  set it's not redirected from/to disk; if it's clear then it is
+;	  redirected to/from disk
+
 test dl, 080h   ; if flag on then character device.
 mov  ax, 0
 je   exit_is_atty
-inc  ax
+inc  ax ; zero flag undone
 exit_is_atty:
 pop  dx
-pop  cx
 pop  bx
 ret
 
@@ -896,19 +901,17 @@ PROC    locallib_chktty_ NEAR
 
 ; si has file already
 
-test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_ISTTY SHR 8)
-je   continue_chktty_check
-exit_chktty:
-ret
-continue_chktty_check:
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
-call locallib_isatty_
-test ax, ax
-je   exit_chktty
-or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_ISTTY SHR 8)
-test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], ((_IOFBF OR _IOLBF OR _IONBF) SHR 8)
+test byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 1], (_ISTTY SHR 8)
 jne  exit_chktty
-or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_IOLBF SHR 8)
+continue_chktty_check:
+
+call locallib_isatty_
+je   exit_chktty
+or   byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 1], (_ISTTY SHR 8)
+test byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 1], ((_IOFBF OR _IOLBF OR _IONBF) SHR 8)
+jne  exit_chktty
+or   byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 1], (_IOLBF SHR 8)
+exit_chktty:
 ret
 
 ENDP
@@ -1082,7 +1085,6 @@ ret
 
 ENDP
 
-@
 
 ; this runs shutdown routines during c program exit. but we will skip this generic step and call the couple of necessary functions in hardcoded manner.
 
@@ -1146,6 +1148,7 @@ pop   bx
 ret  
 
 ENDP
+@
 
 
 PROC    locallib_setvbuf_ NEAR
@@ -1314,7 +1317,9 @@ call  dword ptr ds:[___int23_exit]
 mov   dx, 0FFh
 mov   ax, 010h
 
-call  locallib_FiniRtns_
+;todo still buggy
+;call  locallib_FiniRtns_
+call  __FiniRtns
 call  dword ptr ds:[___int23_exit]
 call  dword ptr ds:[___FPE_handler_exit]
 mov   ax, bx
