@@ -710,12 +710,12 @@ push bx
 push dx
 push si
 mov  si, ax
-mov  bx, word ptr [si + WATCOM_C_FILE.watcom_file_link]
-cmp  word ptr [bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
+mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+cmp  word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
 jne  dont_ioalloc
 call __ioalloc_
 dont_ioalloc:
-mov  al, byte ptr [si + WATCOM_C_FILE.watcom_file_flag+1]
+mov  al, byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag+1]
 test al, (_ISTTY SHR 8)
 je   dont_flush
 test al, 6
@@ -723,18 +723,18 @@ je   dont_flush
 mov  ax, _ISTTY
 call locallib_flushall_inner_
 dont_flush:
-mov  bx, word ptr [si + WATCOM_C_FILE.watcom_file_link]
-and  byte ptr [si + WATCOM_C_FILE.watcom_file_flag], (NOT _UNGET)
-mov  ax, word ptr [bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
-mov  word ptr [si + WATCOM_C_FILE.watcom_file_ptr], ax
-mov  ax, word ptr [si + WATCOM_C_FILE.watcom_file_flag]
+mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT _UNGET)
+mov  ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
+mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag]
 and  ax, (_ISTTY OR _IONBF)
 cmp  ax, (_ISTTY OR _IONBF)
 jne  label_8
-mov  ax, word ptr [si + WATCOM_C_FILE.watcom_file_handle]
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
 test ax, ax
 jne  label_8
-mov  word ptr [si + WATCOM_C_FILE.watcom_file_cnt], ax
+mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], ax
 
 call getche_
 
@@ -743,37 +743,37 @@ cmp  ax, 0FFFFh
 jne  label_9
 
 label_3:
-mov  ax, word ptr [si + WATCOM_C_FILE.watcom_file_cnt]
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
 test ax, ax
 jnle label_6
 jne  label_5
-or   byte ptr [si + WATCOM_C_FILE.watcom_file_flag], _EOF
+or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _EOF
 jmp  label_6
 label_5:
-mov  word ptr [si + WATCOM_C_FILE.watcom_file_cnt], 0
-or   byte ptr [si + WATCOM_C_FILE.watcom_file_flag], _SFERR
+mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
+or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
 label_6:
-mov  ax, word ptr [si + WATCOM_C_FILE.watcom_file_cnt]
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
 pop  si
 pop  dx
 pop  bx
 ret 
 label_9:
-mov  bx, word ptr [si + WATCOM_C_FILE.watcom_file_ptr]
-mov  byte ptr [bx], al
-mov  word ptr [si + WATCOM_C_FILE.watcom_file_cnt], 1
+mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
+mov  byte ptr ds:[bx], al
+mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 1
 jmp  label_6
 
 label_8:
-test byte ptr [si + WATCOM_C_FILE.watcom_file_flag+1], (_IONBF SHR 8)
+test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag+1], (_IONBF SHR 8)
 mov  bx, 1
 jne  label_4
-mov  bx, word ptr [si + WATCOM_C_FILE.watcom_file_bufsize]
+mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize]
 label_4:
-mov  dx, word ptr [si + WATCOM_C_FILE.watcom_file_ptr]
-mov  ax, word ptr [si + WATCOM_C_FILE.watcom_file_handle]
+mov  dx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
 call __qread_
-mov  word ptr [si + WATCOM_C_FILE.watcom_file_cnt], ax
+mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], ax
 jmp  label_3
 
 ENDP
@@ -789,10 +789,10 @@ mov  ax, 0FFFFh
 pop  si
 ret  
 label_2:
-dec  word ptr [si + 2]
-inc  word ptr [si]
-mov  si, word ptr [si]
-mov  al, byte ptr [si - 1]
+dec  word ptr ds:[si + 2]
+inc  word ptr ds:[si]
+mov  si, word ptr ds:[si]
+mov  al, byte ptr ds:[si - 1]
 xor  ah, ah
 pop  si
 ret  
@@ -804,67 +804,74 @@ PUBLIC  locallib_fgetc_
 
 push bx
 push si
-mov  bx, ax
-mov  si, word ptr [bx + 4]
-mov  ax, word ptr [si + 6]
-cmp  ax, 1
-je   label_10
-test ax, ax
-jne  exit_fgetc_return_error
-mov  word ptr [si + 6], 1
-label_10:
-test byte ptr [bx + 6], 1
-jne  label_11
-call __get_errno_ptr_
 mov  si, ax
-mov  word ptr [si], 4
-mov  ax, 0FFFFh
-or   byte ptr [bx + 6], _SFERR
-label_13:
-test byte ptr [bx + 6], _BINARY
+;mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+;mov  ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_orientation]
+;cmp  ax, 1
+;je   getc_set_byte_orientation
+;test ax, ax
+;jne  exit_fgetc_return_error
+;mov  word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_orientation], 1
+;getc_set_byte_orientation:
+;test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], 1
+;je  fgetc_error_handler
+
+actually_get_char:
+dec  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+jl   increase_buffer
+mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
+xor  ax, ax
+mov  al, byte ptr ds:[bx]
+inc  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
+
+check_if_2nd_get_necessary:
+;test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _BINARY
+;jne  exit_fgetc
+;cmp  al, 0Dh
+;jne  skip_newline_garbage_getc
+;dec  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+;jl   increase_buffer_newline
+;xor  ax, ax
+;mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
+;mov  al, byte ptr ds:[bx]
+;inc  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
+;
+;skip_newline_garbage_getc:
+cmp  al, 01Ah    ; todo?
 jne  exit_fgetc
-cmp  ax, 0Dh
-jne  skip_newline_garbage_getc
-dec  word ptr [bx + 2]
-cmp  word ptr [bx + 2], 0
-jl   label_12
-mov  si, word ptr [bx]
-mov  al, byte ptr [si]
-inc  si
-xor  ah, ah
-mov  word ptr [bx], si
-skip_newline_garbage_getc:
-cmp  ax, 01Ah    ; todo?
-jne  exit_fgetc
 mov  ax, 0FFFFh
-or   byte ptr [bx + 6], _EOF
+or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _EOF
+
+
+
 exit_fgetc:
 pop  si
 pop  bx
 ret 
+
 exit_fgetc_return_error:
 mov  ax, 0FFFFh
 pop  si
 pop  bx
 ret 
-label_11:
-dec  word ptr [bx + 2]
-cmp  word ptr [bx + 2], 0
-jl   label_14
-mov  si, word ptr [bx]
-mov  al, byte ptr [si]
-inc  si
-xor  ah, ah
-mov  word ptr [bx], si
-jmp  label_13
-label_14:
-mov  ax, bx
+increase_buffer:
+;mov  ax, si  ; never removed from ax.
 call locallib_filbuf_
-jmp  label_13
-label_12:
-mov  ax, bx
-call locallib_filbuf_
-jmp  skip_newline_garbage_getc
+jmp  check_if_2nd_get_necessary
+
+fgetc_error_handler:
+call __get_errno_ptr_
+mov  bx, ax
+mov  word ptr ds:[bx], 4
+mov  ax, 0FFFFh
+or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
+jmp  exit_fgetc
+;increase_buffer_newline:
+;mov  ax, si
+;call locallib_filbuf_
+;jmp  skip_newline_garbage_getc
+
+
 
 ret
 ENDP
