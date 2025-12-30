@@ -22,12 +22,12 @@ INSTRUCTION_SET_MACRO
 EXTRN fopen_:FAR
 EXTRN fread_:FAR
 EXTRN fwrite_:FAR
+EXTRN free_:FAR
+EXTRN malloc_:FAR
 
 EXTRN __exit_:NEAR
 
 
-EXTRN free_:FAR
-EXTRN malloc_:FAR
 EXTRN __GETDS:NEAR
 EXTRN __FiniRtns:FAR
 
@@ -1027,6 +1027,10 @@ COMMENT @
 
 ; this runs initailization routines (init file structures and argv) during c program init. but we will skip this generic step and call the couple of necessary functions in hardcoded manner.
 
+PNEAR = 0
+PFAR = 1
+PDONE = 2
+
 PROC locallib_InitRtns_ NEAR
 
 push  bx
@@ -1041,38 +1045,39 @@ push  ds
 call  __GETDS
 mov   di, OFFSET __End_XI
 mov   dx, di
-label_20:
+loop_next_init_func_outer:
 mov   bx, OFFSET __Start_XI
 mov   si, di
 mov   al, cl
-label_16:
+loop_next_init_func_inner:
 cmp   bx, di
-jae   label_14
-cmp   byte ptr ds:[bx], 2
-jne   label_15
-label_17:
-add   bx, 6
-jmp   label_16
-label_15:
-cmp   al, byte ptr ds:[bx + 1]
-jb    label_17
+jae   found_init_func
+cmp   byte ptr ds:[bx + C_INIT_STRUCT.cinitstruc_rtntype], PDONE
+je    continue_next_init_func
+cmp   al, byte ptr ds:[bx + C_INIT_STRUCT.cinitstruc_priority]
+jb    continue_next_init_func
 mov   si, bx
-mov   al, byte ptr ds:[bx + 1]
-jmp   label_17
-label_14:
+mov   al, byte ptr ds:[bx + C_INIT_STRUCT.cinitstruc_priority]
+
+
+continue_next_init_func:
+add   bx, SIZE C_INIT_STRUCT
+jmp   loop_next_init_func_inner
+
+found_init_func:
 cmp   si, di
-je    label_18
-lea   ax, [si + 2]
-cmp   byte ptr ds:[si], 0
-jne   label_19
+je    exit_initrtns
+lea   ax, [si + C_INIT_STRUCT.cinitstruc_funcptr]
+cmp   byte ptr ds:[si + C_INIT_STRUCT.cinitstruc_rtntype], PNEAR
+jne   do_far_call
 call  locallib_callit_near_
-label_21:
-mov   byte ptr ds:[si], 2
-jmp   label_20
-label_19:
+finished_call:
+mov   byte ptr ds:[si + C_INIT_STRUCT.cinitstruc_rtntype], PDONE
+jmp   loop_next_init_func_outer
+do_far_call:
 call  locallib_callit_far_
-jmp   label_21
-label_18:
+jmp   finished_call
+exit_initrtns:
 pop   ds
 mov   sp, bp
 pop   bp
@@ -1102,41 +1107,41 @@ call  __GETDS
 mov   ch, dl
 mov   di, OFFSET __END_YI
 mov   dx, di
-label_26:
+
+loop_next_finish_func_outer:
 mov   bx, OFFSET __START_YI
 mov   si, di
 mov   al, cl
-label_24:
+loop_next_finish_func_inner:
 cmp   bx, di
-jae   label_22
-cmp   byte ptr ds:[bx], 2
-jne   label_23
-label_25:
-add   bx, 6
-jmp   label_24
-label_23:
-cmp   al, byte ptr ds:[bx + 1]
-ja    label_25
+jae   found_finish_func
+cmp   byte ptr ds:[bx + C_INIT_STRUCT.cinitstruc_rtntype], PDONE
+je    continue_next_finish_func
+cmp   al, byte ptr ds:[bx + C_INIT_STRUCT.cinitstruc_priority]
+ja    continue_next_finish_func
 mov   si, bx
-mov   al, byte ptr ds:[bx + 1]
-jmp   label_25
-label_22:
+mov   al, byte ptr ds:[bx + C_INIT_STRUCT.cinitstruc_priority]
+continue_next_finish_func:
+add   bx, SIZE C_INIT_STRUCT
+jmp   loop_next_finish_func_inner
+found_finish_func:
 cmp   si, di
 je    exit_finiRtns
-cmp   ch, byte ptr ds:[si + 1]
-jae   label_27
-label_29:
-mov   byte ptr ds:[si], 2
-jmp   label_26
-label_27:
-lea   ax, [si + 2]
-cmp   byte ptr ds:[si], 0
-jne   label_28
+cmp   ch, byte ptr ds:[si + C_INIT_STRUCT.cinitstruc_priority]
+jnae  done_with_call_finish
+
+lea   ax, [si + C_INIT_STRUCT.cinitstruc_funcptr]
+cmp   byte ptr ds:[si + C_INIT_STRUCT.cinitstruc_rtntype], PNEAR
+jne   do_far_call_finish
 call  locallib_callit_near_
-jmp   label_29
-label_28:
+jmp   done_with_call_finish
+do_far_call_finish:
 call  locallib_callit_far_
-jmp   label_29
+
+done_with_call_finish:
+mov   byte ptr ds:[si + C_INIT_STRUCT.cinitstruc_rtntype], PDONE
+jmp   loop_next_finish_func_outer
+
 exit_finiRtns:
 pop   ds
 mov   sp, bp
@@ -1156,23 +1161,22 @@ PROC    locallib_setvbuf_ NEAR
 push si
 push di
 mov  si, ax
-cmp  cx, 07FFFh
-ja   exit_setvbuf_return_error
-cmp  bx, _IONBF
-jne  not_unbuffered
+; cx always inferred 512. skip check.
+;cmp  bx, _IONBF
+;jne  not_unbuffered
 ; todo remove type validity check.
 valid_setvbuf_type:
-test dx, dx
-je   label_4
-test cx, cx
-je   exit_setvbuf_return_error
-label_4:
+;test dx, dx
+;je   null_stream
+;test cx, cx
+;je   exit_setvbuf_return_error
+;null_stream:
 
 call locallib_chktty_
-test cx, cx
-je   label_5
-mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize], cx
-label_5:
+;test cx, cx
+;je   size_zero_vbuf
+mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize], FILE_BUFFER_SIZE
+;size_zero_vbuf:
 mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 mov  word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base], dx
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], dx
@@ -1187,17 +1191,15 @@ xor  ax, ax
 pop  di
 pop  si
 ret
-exit_setvbuf_return_error:
-mov  ax, 0FFFFh
-pop  di
-pop  si
-ret 
-not_unbuffered:
-cmp  bx, _IOLBF
-je   valid_setvbuf_type
-cmp  bx, _IOFBF
-je   valid_setvbuf_type
-jmp  exit_setvbuf_return_error
+;not_unbuffered:
+;cmp  bx, _IOLBF
+;je   valid_setvbuf_type
+;cmp  bx, _IOFBF
+;je   valid_setvbuf_type
+;mov  ax, 0FFFFh
+;pop  di
+;pop  si
+;ret 
 
 ENDP
 
@@ -1270,6 +1272,7 @@ ret
 
 ENDP
 
+; only used for STDOUT? revisit...
 
 PROC    locallib_setbuf_   NEAR
 PUBLIC  locallib_setbuf_
@@ -1281,7 +1284,7 @@ test dx, dx
 jne  buff_not_null
 mov  bx, _IONBF
 buff_not_null:
-mov  cx, FILE_BUFFER_SIZE
+;mov  cx, FILE_BUFFER_SIZE
 call locallib_setvbuf_  ;     setvbuf( fp, buf, mode, FILE_BUFFER_SIZE );
 pop  cx
 pop  bx
@@ -1337,11 +1340,11 @@ PROC locallib_GetIOMode_ NEAR
 
 push  bx
 cmp   ax, word ptr ds:[___NFiles]
-jb    label_1
+jb    good_handle
 xor   ax, ax
 pop   bx
 ret
-label_1:
+good_handle:
 mov   bx, word ptr ds:[___io_mode]
 shl   ax, 1
 add   bx, ax
@@ -1354,12 +1357,12 @@ PROC locallib__SetIOMode_nogrow_ NEAR
 
 push  bx
 cmp   ax, word ptr ds:[___NFiles]
-jnb   label_2
+jnb   bad_handle_set
 mov   bx, word ptr ds:[___io_mode]
 shl   ax, 1
 add   bx, ax
 mov   word ptr ds:[bx], dx
-label_2:
+bad_handle_set:
 pop   bx
 ret  
 ENDP

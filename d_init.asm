@@ -326,24 +326,6 @@ ret
 ENDP
 
 
-COMMENT @
-PROC  locallib_setbuf_
-
-push bx
-push cx
-mov  bx, 256
-test dx, dx
-jne  label_5
-mov  bx, 1024
-label_5
-mov  cx, 512
-push cs
-call setvbuf_
-pop  cx
-pop  bx
-retf 
-@
-
 PROC    PrintSpaces_
 
 mov   ax, 02020h
