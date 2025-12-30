@@ -29,12 +29,15 @@ EXTRN __exit_:NEAR
 
 
 EXTRN __doserror_:FAR
-EXTRN __ioalloc_:FAR
-EXTRN __FiniRtns:FAR
-
+EXTRN malloc_:FAR
+EXTRN __GETDS:NEAR
 
 .DATA
 
+EXTRN __Start_XI:WORD
+EXTRN __End_XI:WORD
+EXTRN __Start_YI:WORD
+EXTRN __End_YI:WORD
 EXTRN _errno:WORD
 EXTRN ___OpenStreams:WORD
 EXTRN ___io_mode:WORD
@@ -684,6 +687,217 @@ ret
 ret
 ENDP
 
+PROC    locallib_ioalloc_ NEAR
+
+
+push  bx
+push  si
+mov   bx, ax
+call  __chktty_
+cmp   word ptr [bx + WATCOM_C_FILE.watcom_file_bufsize], 0
+jne   label_6
+mov   al, byte ptr [bx + WATCOM_C_FILE.watcom_file_flag + 1]
+test  al, 2
+je    label_7
+mov   word ptr [bx + WATCOM_C_FILE.watcom_file_bufsize], 134  ; default buffer is 134 apparently! todo revisit
+label_6:
+mov   ax, word ptr [bx + WATCOM_C_FILE.watcom_file_bufsize]
+call  malloc_
+mov   si, word ptr [bx + WATCOM_C_FILE.watcom_file_link]
+mov   word ptr [si + WATCOM_STREAM_LINK.watcom_streamlink_base], ax
+mov   si, word ptr [bx + WATCOM_C_FILE.watcom_file_link]
+cmp   word ptr [si + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
+jne   label_8
+and   byte ptr [bx + WATCOM_C_FILE.watcom_file_flag + 1], ((NOT (_IONBF OR _IOLBF OR _IOFBF)) SHR 8)  ; 0F8h
+lea   ax, [bx + WATCOM_C_FILE.watcom_file_ungotten]
+mov   si, word ptr [bx + WATCOM_C_FILE.watcom_file_link]
+or    byte ptr [bx + WATCOM_C_FILE.watcom_file_flag + 1], 4
+mov   word ptr [si + WATCOM_STREAM_LINK.watcom_streamlink_base], ax
+mov   word ptr [bx + WATCOM_C_FILE.watcom_file_bufsize], 1
+label_10:
+mov   si, word ptr [bx + WATCOM_C_FILE.watcom_file_link]
+mov   ax, word ptr [si + WATCOM_STREAM_LINK.watcom_streamlink_base]
+mov   word ptr [bx + WATCOM_C_FILE.watcom_file_cnt], 0
+mov   word ptr [bx + WATCOM_C_FILE.watcom_file_ptr], ax
+pop   si
+pop   bx
+ret  
+label_7:
+test  al, 4
+je    label_9
+mov   word ptr [bx + WATCOM_C_FILE.watcom_file_bufsize], 64
+jmp   label_6
+label_9:
+mov   word ptr [bx + WATCOM_C_FILE.watcom_file_bufsize], 512
+jmp   label_6
+label_8:
+or    byte ptr [bx + WATCOM_C_FILE.watcom_file_flag + 0], 8
+jmp   label_10
+
+ENDP
+
+PROC   locallib_callit_near_ NEAR
+
+push  bx
+push  dx
+push  bp
+mov   bp, sp
+mov   bx, ax
+cmp   word ptr [bx], 0 ; dont call null
+je    skip_call
+do_call:
+push  ds
+call  word ptr [bx]
+pop   ds
+done_with_call:
+skip_call:
+mov   sp, bp
+pop   bp
+pop   dx
+pop   bx
+ret   
+
+
+ENDP
+
+PROC   locallib_callit_far_ NEAR
+
+
+push  bx
+push  dx
+push  bp
+mov   bp, sp
+mov   bx, ax
+mov   ax, word ptr [bx + 2]
+mov   dx, word ptr [bx]
+test  ax, ax
+jne   do_call    ; todo this seems to not actually do a far call. whatever.
+test  dx, dx
+je    skip_call
+jmp   do_call
+
+ENDP
+
+PROC locallib_InitRtns NEAR
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+mov   cx, ax
+push  ds
+call  __GETDS
+mov   di, __End_XI
+mov   dx, di
+label_20:
+mov   bx, __Start_XI
+mov   si, di
+mov   al, cl
+label_16:
+cmp   bx, di
+jae   label_14
+cmp   byte ptr [bx], 2
+jne   label_15
+label_17:
+add   bx, 6
+jmp   label_16
+label_15:
+cmp   al, byte ptr [bx + 1]
+jb    label_17
+mov   si, bx
+mov   al, byte ptr [bx + 1]
+jmp   label_17
+label_14:
+cmp   si, di
+je    label_18
+lea   ax, [si + 2]
+cmp   byte ptr [si], 0
+jne   label_19
+call  locallib_callit_near_
+label_21:
+mov   byte ptr [si], 2
+jmp   label_20
+label_19:
+call  locallib_callit_far_
+jmp   label_21
+label_18:
+pop   ds
+mov   sp, bp
+pop   bp
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret  
+
+ENDP
+
+PROC locallib_FiniRtns_ NEAR
+
+push  bx
+push  cx
+push  si
+push  di
+push  bp
+mov   bp, sp
+mov   cx, ax
+push  ds
+call  __GETDS
+mov   ch, dl
+mov   di, __END_YI
+mov   dx, di
+label_26:
+mov   bx, __START_YI
+mov   si, di
+mov   al, cl
+label_24:
+cmp   bx, di
+jae   label_22
+cmp   byte ptr [bx], 2
+jne   label_23
+label_25:
+add   bx, 6
+jmp   label_24
+label_23:
+cmp   al, byte ptr [bx + 1]
+ja    label_25
+mov   si, bx
+mov   al, byte ptr [bx + 1]
+jmp   label_25
+label_22:
+cmp   si, di
+je    exit_finiRtns
+cmp   ch, byte ptr [si + 1]
+jae   label_27
+label_29:
+mov   byte ptr [si], 2
+jmp   label_26
+label_27:
+lea   ax, [si + 2]
+cmp   byte ptr [si], 0
+jne   label_28
+call  locallib_callit_near_
+jmp   label_29
+label_28:
+call  locallib_callit_far_
+jmp   label_29
+exit_finiRtns:
+pop   ds
+mov   sp, bp
+pop   bp
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret  
+
+ENDP
+
+
 PROC    locallib_setvbuf_ NEAR
 
 push si
@@ -714,7 +928,7 @@ or   word ptr [si + WATCOM_C_FILE.watcom_file_flag + 0], bx  ; mode
 test dx, dx
 jne  exit_setvbuf_return_0
 mov  ax, si
-call __ioalloc_
+call locallib_ioalloc_
 exit_setvbuf_return_0:
 xor  ax, ax
 pop  di
@@ -850,7 +1064,7 @@ call  dword ptr ds:[___int23_exit]
 mov   dx, 0FFh
 mov   ax, 010h
 
-call  __FiniRtns
+call  locallib_FiniRtns_
 call  dword ptr ds:[___int23_exit]
 call  dword ptr ds:[___FPE_handler_exit]
 mov   ax, bx
@@ -941,7 +1155,7 @@ push dx
 mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 cmp  word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
 jne  dont_ioalloc
-call __ioalloc_
+call locallib_ioalloc_
 dont_ioalloc:
 mov  al, byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag+1]
 test al, (_ISTTY SHR 8)
@@ -1137,7 +1351,7 @@ je   handle_fputc_error   ; not open for writing!
 cmp  word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
 jne  have_buffer_location
 mov  ax, si
-call __ioalloc_
+call locallib_ioalloc_
 
 have_buffer_location:
 
