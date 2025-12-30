@@ -1139,6 +1139,7 @@ void __near Z_FreeConventionalAllocations() {
 
 void __near PSetupEndFunc(){}
 void __near D_INIT_STARTMARKER();
+void  __near locallib_fclose(FILE * stream);
 
 
 // clears dead initialization code.
@@ -1177,7 +1178,7 @@ void __near Z_ClearDeadCode() {
 	fp = fopen("DOOMDATA.BIN", "rb");
 	fseek(fp, TANTOA_DOOMDATA_OFFSET, SEEK_SET);
 	locallib_far_fread(dest, 4 * 2049, fp);
-	fclose(fp);
+	locallib_fclose(fp);
 
 }
 

@@ -20,14 +20,16 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN fopen_:FAR
-EXTRN fclose_:FAR
+
 EXTRN fread_:FAR
 EXTRN fwrite_:FAR
-
+EXTRN __close_:FAR
+EXTRN __freefp_:FAR
 
 EXTRN __exit_:NEAR
 
 
+EXTRN free_:FAR
 EXTRN malloc_:FAR
 EXTRN __GETDS:NEAR
 
@@ -35,6 +37,7 @@ EXTRN __GETDS:NEAR
 
 .DATA
 
+EXTRN ___RmTmpFileFn:DWORD
 EXTRN __Start_XI:WORD
 EXTRN __End_XI:WORD
 EXTRN __Start_YI:WORD
@@ -117,13 +120,115 @@ ENDP
 
 PROC    locallib_fclosefromfar_   FAR
 PUBLIC  locallib_fclosefromfar_
-call    fclose_
+call    locallib_fclose_
 retf
+ENDP
+
+PROC    locallib_doclose_  NEAR
+
+push  bx
+push  cx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 2
+mov   si, ax
+mov   word ptr [bp - 2], dx  ; handle
+test  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (_READ OR _WRITE)
+je    error_and_exit_doclose
+xor   di, di ; error code.
+test  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
+je    file_not_dirty_skip_flush
+call  locallib_flush_
+test  ax, ax
+je    flush_no_error
+mov   di, 0FFFFh
+flush_no_error:
+file_not_dirty_skip_flush:
+mov   ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+test  ax, ax
+je    skip_seek_on_close
+neg   ax
+mov   bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+cwd   
+mov   cx, dx
+xchg  ax, bx
+mov   dx, 1
+call  locallib_lseek_
+skip_seek_on_close:
+cmp   word ptr [bp - 2], 0  ; handle
+je    skip_close_null_handle
+mov   ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+call  __close_
+or    di, ax
+skip_close_null_handle:
+test  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _BIGBUF
+je    skip_bigbuf  ; todo do we get rid of this check?
+mov   bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+mov   ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
+call  free_
+mov   bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+mov   word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
+skip_bigbuf:
+test  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_TMPFIL SHR 8)
+je    skip_temp_file_cleanup   ; todo get rid of this check?
+mov   ax, si
+call  dword ptr ds:[___RmTmpFileFn]
+skip_temp_file_cleanup:
+and   word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], _DYNAMIC
+exit_doclose:
+xchg  ax, di
+mov   sp, bp
+pop   bp
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret  
+error_and_exit_doclose:
+mov   di, 0FFFFh
+jmp   exit_doclose
+
+ENDP
+
+PROC locallib_shutdown_stream_ NEAR
+push  ax
+call  locallib_doclose_
+xchg  ax, dx
+pop   ax
+call  __freefp_
+mov   ax, dx
+ret
+
 ENDP
 
 PROC    locallib_fclose_   NEAR
 PUBLIC  locallib_fclose_
-call    fclose_
+
+
+push  bx
+push  dx
+mov   bx, word ptr ds:[___OpenStreams] ; todo right?
+loop_check_next_stream:
+test  bx, bx
+je    fclose_return_failure
+cmp   ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_stream]
+je    found_stream_do_fclose
+mov   bx, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_next]
+jmp   loop_check_next_stream
+found_stream_do_fclose:
+mov   dx, 1
+call  locallib_shutdown_stream_   ; todo inline?
+pop   dx
+pop   bx
+ret  
+fclose_return_failure:
+mov   ax, 0FFFFh
+pop   dx
+pop   bx
+ret
+
 ret
 ENDP
 
@@ -713,19 +818,19 @@ PROC    locallib_chktty_ NEAR
 
 ; si has file already
 
-test byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 1], (_ISTTY SHR 8)
+test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_ISTTY SHR 8)
 je   continue_chktty_check
 exit_chktty:
 ret
 continue_chktty_check:
-mov  ax, word ptr [si + WATCOM_C_FILE.watcom_file_handle]
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
 call locallib_isatty_
 test ax, ax
 je   exit_chktty
-or   byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 1], (_ISTTY SHR 8)
-test byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 1], ((_IOFBF OR _IOLBF OR _IONBF) SHR 8)
+or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_ISTTY SHR 8)
+test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], ((_IOFBF OR _IOLBF OR _IONBF) SHR 8)
 jne  exit_chktty
-or   byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 1], (_IOLBF SHR 8)
+or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_IOLBF SHR 8)
 ret
 
 ENDP
@@ -760,33 +865,33 @@ PROC    locallib_ioalloc_ NEAR
 
 push  bx
 call  locallib_chktty_
-mov   ax, word ptr [si + WATCOM_C_FILE.watcom_file_bufsize]
+mov   ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize]
 test  ax, ax
 jne   bufsize_set
 mov   ax, FILE_BUFFER_SIZE  ; lets just use FILE_BUFFER_SIZE = 512 for everything for now
-mov   word ptr [si + WATCOM_C_FILE.watcom_file_bufsize], ax  ; default buffer is 134 apparently! todo revisit
+mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize], ax  ; default buffer is 134 apparently! todo revisit
 bufsize_set:
 call  malloc_  ; near malloc
 ; ax gets file buffer
-mov   bx, word ptr [si + WATCOM_C_FILE.watcom_file_link]
-mov   word ptr [bx + WATCOM_STREAM_LINK.watcom_streamlink_base], ax ; ptr to the file buf...
+mov   bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+mov   word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], ax ; ptr to the file buf...
 test  ax, ax
 jne   set_bigbuf
-and   byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 1], ((NOT (_IONBF OR _IOLBF OR _IOFBF)) SHR 8)  ; 0F8h
+and   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], ((NOT (_IONBF OR _IOLBF OR _IOFBF)) SHR 8)  ; 0F8h
 lea   ax, [si + WATCOM_C_FILE.watcom_file_ungotten]
-mov   bx, word ptr [si + WATCOM_C_FILE.watcom_file_link]
-or    byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 1], (_IONBF SHR 8)
-mov   word ptr [bx + WATCOM_STREAM_LINK.watcom_streamlink_base], ax
-mov   word ptr [si + WATCOM_C_FILE.watcom_file_bufsize], 1
+mov   bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+or    byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_IONBF SHR 8)
+mov   word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], ax
+mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize], 1
 finish_and_exit_ioalloc:
-mov   bx, word ptr [si + WATCOM_C_FILE.watcom_file_link]
-mov   ax, word ptr [bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
-mov   word ptr [si + WATCOM_C_FILE.watcom_file_cnt], 0
-mov   word ptr [si + WATCOM_C_FILE.watcom_file_ptr], ax
+mov   bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+mov   ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
+mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
+mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
 pop   bx
 ret  
 set_bigbuf:
-or    byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 0], _BIGBUF
+or    byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], _BIGBUF
 jmp   finish_and_exit_ioalloc
 
 ENDP
@@ -798,11 +903,11 @@ push  dx
 push  bp
 mov   bp, sp
 mov   bx, ax
-cmp   word ptr [bx], 0 ; dont call null
+cmp   word ptr ds:[bx], 0 ; dont call null
 je    skip_call
 do_call:
 push  ds
-call  word ptr [bx]
+call  word ptr ds:[bx]
 pop   ds
 done_with_call:
 skip_call:
@@ -823,15 +928,21 @@ push  dx
 push  bp
 mov   bp, sp
 mov   bx, ax
-mov   ax, word ptr [bx + 2]
-mov   dx, word ptr [bx]
+mov   ax, word ptr ds:[bx + 2]
+mov   dx, word ptr ds:[bx]
 test  ax, ax
-jne   do_call    ; todo this seems to not actually do a far call. whatever.
+jne   do_far_call
 test  dx, dx
 je    skip_call
+do_far_call:
+push  ds
+call  dword ptr ds:[bx]
+pop   ds
 jmp   do_call
 
 ENDP
+
+COMMENT @
 
 ; this runs initailization routines (init file structures and argv) during c program init. but we will skip this generic step and call the couple of necessary functions in hardcoded manner.
 
@@ -856,26 +967,26 @@ mov   al, cl
 label_16:
 cmp   bx, di
 jae   label_14
-cmp   byte ptr [bx], 2
+cmp   byte ptr ds:[bx], 2
 jne   label_15
 label_17:
 add   bx, 6
 jmp   label_16
 label_15:
-cmp   al, byte ptr [bx + 1]
+cmp   al, byte ptr ds:[bx + 1]
 jb    label_17
 mov   si, bx
-mov   al, byte ptr [bx + 1]
+mov   al, byte ptr ds:[bx + 1]
 jmp   label_17
 label_14:
 cmp   si, di
 je    label_18
 lea   ax, [si + 2]
-cmp   byte ptr [si], 0
+cmp   byte ptr ds:[si], 0
 jne   label_19
 call  locallib_callit_near_
 label_21:
-mov   byte ptr [si], 2
+mov   byte ptr ds:[si], 2
 jmp   label_20
 label_19:
 call  locallib_callit_far_
@@ -892,6 +1003,8 @@ pop   bx
 ret  
 
 ENDP
+
+@
 
 ; this runs shutdown routines during c program exit. but we will skip this generic step and call the couple of necessary functions in hardcoded manner.
 
@@ -916,28 +1029,28 @@ mov   al, cl
 label_24:
 cmp   bx, di
 jae   label_22
-cmp   byte ptr [bx], 2
+cmp   byte ptr ds:[bx], 2
 jne   label_23
 label_25:
 add   bx, 6
 jmp   label_24
 label_23:
-cmp   al, byte ptr [bx + 1]
+cmp   al, byte ptr ds:[bx + 1]
 ja    label_25
 mov   si, bx
-mov   al, byte ptr [bx + 1]
+mov   al, byte ptr ds:[bx + 1]
 jmp   label_25
 label_22:
 cmp   si, di
 je    exit_finiRtns
-cmp   ch, byte ptr [si + 1]
+cmp   ch, byte ptr ds:[si + 1]
 jae   label_27
 label_29:
-mov   byte ptr [si], 2
+mov   byte ptr ds:[si], 2
 jmp   label_26
 label_27:
 lea   ax, [si + 2]
-cmp   byte ptr [si], 0
+cmp   byte ptr ds:[si], 0
 jne   label_28
 call  locallib_callit_near_
 jmp   label_29
@@ -977,13 +1090,13 @@ label_4:
 call locallib_chktty_
 test cx, cx
 je   label_5
-mov  word ptr [si + WATCOM_C_FILE.watcom_file_bufsize], cx
+mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize], cx
 label_5:
-mov  di, word ptr [si + WATCOM_C_FILE.watcom_file_link]
-mov  word ptr [di + WATCOM_STREAM_LINK.watcom_streamlink_base], dx
-mov  word ptr [si + WATCOM_C_FILE.watcom_file_ptr], dx
-and  byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 1], ((NOT (_IONBF OR _IOLBF OR _IOFBF)) SHR 8)  ; 0F8h
-or   word ptr [si + WATCOM_C_FILE.watcom_file_flag + 0], bx  ; mode
+mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+mov  word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base], dx
+mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], dx
+and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], ((NOT (_IONBF OR _IOLBF OR _IOFBF)) SHR 8)  ; 0F8h
+or   word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], bx  ; mode
 test dx, dx
 jne  exit_setvbuf_return_0
 
@@ -1053,7 +1166,7 @@ jmp  exit_qwrite
 get_qwrite_errno:
 call locallib_get_errno_ptr_
 mov  si, ax
-mov  word ptr [si], 0Ch
+mov  word ptr ds:[si], 0Ch
 jmp  skip_qwrite_errno
 
 
