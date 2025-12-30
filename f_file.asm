@@ -20,11 +20,8 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN fopen_:FAR
-
 EXTRN fread_:FAR
 EXTRN fwrite_:FAR
-EXTRN __close_:FAR
-EXTRN __freefp_:FAR
 
 EXTRN __exit_:NEAR
 
@@ -44,6 +41,7 @@ EXTRN __Start_YI:WORD
 EXTRN __End_YI:WORD
 EXTRN _errno:WORD
 EXTRN ___OpenStreams:WORD
+EXTRN ___ClosedStreams:WORD
 EXTRN ___io_mode:WORD
 EXTRN __cbyte:WORD
 EXTRN ___NFiles:WORD
@@ -124,6 +122,86 @@ call    locallib_fclose_
 retf
 ENDP
 
+PROC    locallib_close_  NEAR
+
+push bx
+push cx
+push dx
+push si
+mov  cx, ax
+mov  bx, ax
+mov  ah, 03Eh  ; Close File Using Handle
+int  021h
+jc   close_is_error
+xor  si, si ; 0/success return val
+
+continue_close:
+
+mov  ax, cx
+xor  dx, dx
+call locallib__SetIOMode_nogrow_
+xchg ax, si  ; ax gets return val
+pop  si
+pop  dx
+pop  cx
+pop  bx
+ret
+close_is_error:
+call locallib_get_errno_ptr_
+xchg ax, si
+mov  word ptr ds:[si], 4
+mov  si, 0FFFFh
+jmp  continue_close
+
+
+ENDP
+
+PROC    locallib_freefp_  NEAR
+
+push bx
+push si
+mov  si, OFFSET ___OpenStreams   ; si keeps last stream link
+loop_check_next_fp_for_free:
+mov  bx, word ptr ds:[si + WATCOM_STREAM_LINK.watcom_streamlink_next]
+test bx, bx
+je   exit_freefp  ; end of list
+cmp  ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_stream]
+je   found_fp_to_free
+mov  si, bx  ; iterate next.
+jmp  loop_check_next_fp_for_free
+found_fp_to_free:
+mov  ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_next]
+mov  word ptr ds:[si + WATCOM_STREAM_LINK.watcom_streamlink_next], ax  ; link the linked list gap
+mov  ax, word ptr ds:[___ClosedStreams]
+mov  word ptr ds:[___ClosedStreams], bx
+mov  word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_next], ax
+exit_freefp:
+pop  si
+pop  bx
+ret
+
+ENDP
+
+PROC    locallib_purgefp_  NEAR
+
+push bx
+loop_check_next_fp_for_purge:
+mov  bx, word ptr ds:[___ClosedStreams]
+test bx, bx
+je   exit_purge_fp
+mov  ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_next]
+mov  word ptr ds:[___ClosedStreams], ax
+mov  ax, bx
+call free_
+jmp  loop_check_next_fp_for_purge
+exit_purge_fp:
+pop  bx
+ret 
+
+
+ENDP
+
+
 PROC    locallib_doclose_  NEAR
 
 push  bx
@@ -160,7 +238,7 @@ skip_seek_on_close:
 cmp   word ptr [bp - 2], 0  ; handle
 je    skip_close_null_handle
 mov   ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
-call  __close_
+call  locallib_close_
 or    di, ax
 skip_close_null_handle:
 test  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _BIGBUF
@@ -197,7 +275,7 @@ push  ax
 call  locallib_doclose_
 xchg  ax, dx
 pop   ax
-call  __freefp_
+call  locallib_freefp_
 mov   ax, dx
 ret
 
