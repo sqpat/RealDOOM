@@ -23,13 +23,11 @@ EXTRN fopen_:FAR
 EXTRN fclose_:FAR
 EXTRN fread_:FAR
 EXTRN fwrite_:FAR
-EXTRN setvbuf_:FAR
+EXTRN __chktty_:FAR
+
 EXTRN __exit_:NEAR
 
 
-
-EXTRN __qwrite_:FAR
-EXTRN __qread_:FAR
 EXTRN __doserror_:FAR
 EXTRN __ioalloc_:FAR
 EXTRN __FiniRtns:FAR
@@ -126,8 +124,8 @@ ret
 ENDP
 
 
-PROC    localib_update_buffer_ NEAR
-PUBLIC  localib_update_buffer_
+PROC    locallib_update_buffer_ NEAR
+PUBLIC  locallib_update_buffer_
 
 ; cx:bx = diff, si = file
 ; return in carry
@@ -167,8 +165,8 @@ jmp  return_update_buffer
 ENDP
 
 
-PROC    localib_reset_buffer_ NEAR
-PUBLIC  localib_reset_buffer_
+PROC    locallib_reset_buffer_ NEAR
+PUBLIC  locallib_reset_buffer_
 
 ; si is file
 push bx
@@ -308,7 +306,7 @@ jne  finish_handling_flush
 mov  bx, cx
 mov  dx, di
 mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
-call __qwrite_
+call locallib_qwrite_
 
 mov  dx, ax
 cmp  ax, 0FFFFh
@@ -320,7 +318,7 @@ add  di, dx
 sub  cx, dx
 jmp  flush_more_to_file
 zero_flushed_error:
-call localib_get_errno_ptr_
+call locallib_get_errno_ptr_
 mov  bx, ax
 mov  word ptr ds:[bx], 0Ch
 mov  bp, 0FFFFh
@@ -453,7 +451,7 @@ test cx, cx
 jge  exit_return_fseek_error
 
 invalid_param:
-call localib_get_errno_ptr_
+call locallib_get_errno_ptr_
 mov  si, ax
 mov  word ptr ds:[si], 9
 jmp  exit_return_fseek_error
@@ -481,7 +479,7 @@ push bx
 sub  bx, ax
 sbb  cx, di
 
-call localib_update_buffer_
+call locallib_update_buffer_
 pop  bx
 pop  cx
 jnc  status_ok_good_lseek_result
@@ -498,12 +496,12 @@ cmp  ax, 0FFFFh
 je   exit_return_fseek_error
 not_lseek_error_2:
 
-call localib_reset_buffer_
+call locallib_reset_buffer_
 status_ok_good_lseek_result:
 xor  ax, ax
 jmp  exit_return_fseek
 reset_buffer:
-call localib_reset_buffer_
+call locallib_reset_buffer_
 mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
 jmp  do_call_lseek
 
@@ -516,7 +514,7 @@ cwd
 
 push dx
 push ax
-call localib_update_buffer_
+call locallib_update_buffer_
 jnc  status_ok_good_lseek_result
 pop  ax
 sub  bx, ax
@@ -686,6 +684,125 @@ ret
 ret
 ENDP
 
+PROC    locallib_setvbuf_ NEAR
+
+push si
+push di
+mov  si, ax
+cmp  cx, 07FFFh
+ja   exit_setvbuf_return_error
+cmp  bx, _IONBF
+jne  not_unbuffered
+; todo remove type validity check.
+valid_setvbuf_type:
+test dx, dx
+je   label_4
+test cx, cx
+je   exit_setvbuf_return_error
+label_4:
+mov  ax, si
+call __chktty_
+test cx, cx
+je   label_5
+mov  word ptr [si + WATCOM_C_FILE.watcom_file_bufsize], cx
+label_5:
+mov  di, word ptr [si + WATCOM_C_FILE.watcom_file_link]
+mov  word ptr [di + WATCOM_STREAM_LINK.watcom_streamlink_base], dx
+mov  word ptr [si + WATCOM_C_FILE.watcom_file_ptr], dx
+and  byte ptr [si + WATCOM_C_FILE.watcom_file_flag + 1], ((NOT (_IONBF OR _IOLBF OR _IOFBF)) SHR 8)  ; 0F8h
+or   word ptr [si + WATCOM_C_FILE.watcom_file_flag + 0], bx  ; mode
+test dx, dx
+jne  exit_setvbuf_return_0
+mov  ax, si
+call __ioalloc_
+exit_setvbuf_return_0:
+xor  ax, ax
+pop  di
+pop  si
+ret
+exit_setvbuf_return_error:
+mov  ax, 0FFFFh
+pop  di
+pop  si
+ret 
+not_unbuffered:
+cmp  bx, _IOLBF
+je   valid_setvbuf_type
+cmp  bx, _IOFBF
+je   valid_setvbuf_type
+jmp  exit_setvbuf_return_error
+
+ENDP
+
+PROC  locallib_qwrite_ NEAR
+
+push cx
+push si
+push di
+push bp
+mov  bp, sp
+sub  sp, 2
+mov  si, ax
+mov  word ptr [bp - 2], dx
+mov  di, bx
+call locallib_GetIOMode_
+test al, _APPEND
+je   skip_move_file_ptr
+mov  al, SEEK_END
+mov  bx, si
+xor  dx, dx
+xor  cx, cx
+mov  ah, 042h  ; Move file pointer using handle
+int  021h
+jc   do_qwrite_error
+skip_move_file_ptr:
+mov  dx, word ptr [bp - 2]
+mov  cx, di
+mov  bx, si
+mov  ah, 040h  ; Write file or device using handle
+int  021h
+jc   do_qwrite_error
+mov  dx, ax
+cmp  ax, di
+jne  get_qwrite_errno
+skip_qwrite_errno:
+mov  ax, dx
+exit_qwrite:
+mov  sp, bp
+pop  bp
+pop  di
+pop  si
+pop  cx
+ret
+do_qwrite_error:
+call locallib_set_errno_ptr_
+jmp  exit_qwrite
+get_qwrite_errno:
+call locallib_get_errno_ptr_
+mov  si, ax
+mov  word ptr [si], 0Ch
+jmp  skip_qwrite_errno
+
+
+ENDP
+
+PROC  locallib_qread_ NEAR
+
+
+push cx
+mov  cx, bx
+mov  bx, ax
+mov  ah, 03Fh  ; Read file or device using handle
+int  021h
+pop  cx
+jc   do_qread_error
+ret
+do_qread_error:
+call locallib_set_errno_ptr_
+ret
+
+ENDP
+
 
 PROC    locallib_setbuf_   NEAR
 PUBLIC  locallib_setbuf_
@@ -698,7 +815,7 @@ jne  buff_not_null
 mov  bx, _IONBF
 buff_not_null:
 mov  cx, FILE_BUFFER_SIZE
-call setvbuf_  ;     setvbuf( fp, buf, mode, BUFSIZ );
+call locallib_setvbuf_  ;     setvbuf( fp, buf, mode, BUFSIZ );
 pop  cx
 pop  bx
 ret
@@ -778,7 +895,8 @@ pop   bx
 ret  
 ENDP
 
-PROC localib_get_errno_ptr_ NEAR
+PROC   locallib_get_errno_ptr_ NEAR
+PUBLIC locallib_get_errno_ptr_
 
 mov   ax, OFFSET _errno
 ret
@@ -792,7 +910,7 @@ PROC locallib_set_errno_ptr_ NEAR
 
 push  si
 mov   si, ax
-call  localib_get_errno_ptr_
+call  locallib_get_errno_ptr_
 xchg  ax, si
 mov   word ptr ds:[si], ax
 mov   ax, 0FFFFh
@@ -875,7 +993,7 @@ mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize]
 dont_use_bufsize:
 mov  dx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
 mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
-call __qread_
+call locallib_qread_
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], ax
 file_is_eof_dont_set_data:
 mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
@@ -976,7 +1094,7 @@ call locallib_filbuf_
 jmp  check_if_2nd_get_necessary
 
 fgetc_error_handler:
-call localib_get_errno_ptr_
+call locallib_get_errno_ptr_
 mov  bx, ax
 mov  word ptr ds:[bx], 4
 mov  ax, 0FFFFh
@@ -1077,7 +1195,7 @@ je   prepare_to_put_char
 jmp  exit_fputc_return_error
 
 handle_fputc_error:
-call localib_get_errno_ptr_
+call locallib_get_errno_ptr_
 mov  di, ax
 mov  word ptr ds:[di], 4
 or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
