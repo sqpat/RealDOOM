@@ -24,6 +24,7 @@ EXTRN fclose_:FAR
 EXTRN fread_:FAR
 EXTRN fwrite_:FAR
 EXTRN setvbuf_:FAR
+EXTRN getche_:FAR
 
 EXTRN exit_:FAR
 EXTRN __SetIOMode_nogrow_:FAR
@@ -34,7 +35,6 @@ EXTRN __qwrite_:FAR
 EXTRN __qread_:FAR
 EXTRN __doserror_:FAR
 EXTRN __ioalloc_:FAR
-EXTRN getche_:FAR
 
 
 .DATA
@@ -691,9 +691,9 @@ push bx
 push cx
 mov  bx, _IOFBF
 test dx, dx
-jne  label_1
+jne  buff_not_null
 mov  bx, _IONBF
-label_1:
+buff_not_null:
 mov  cx, FILE_BUFFER_SIZE
 call setvbuf_  ;     setvbuf( fp, buf, mode, BUFSIZ );
 pop  cx
@@ -708,8 +708,9 @@ PROC    locallib_fill_buffer_   NEAR
 
 push bx
 push dx
-push si
-mov  si, ax
+
+; si has file
+
 mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 cmp  word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
 jne  dont_ioalloc
@@ -718,83 +719,89 @@ dont_ioalloc:
 mov  al, byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag+1]
 test al, (_ISTTY SHR 8)
 je   dont_flush
-test al, 6
+test al, ((_IOLBF OR _IONBF) SHR 8)
 je   dont_flush
 mov  ax, _ISTTY
 call locallib_flushall_inner_
 dont_flush:
-mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+;mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT _UNGET)
 mov  ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
 mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag]
+
+; todo try getting rid of this whole section if its really doing a stdin check.
 and  ax, (_ISTTY OR _IONBF)
 cmp  ax, (_ISTTY OR _IONBF)
-jne  label_8
+jne  not_std_in
 mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
 test ax, ax
-jne  label_8
+jne  not_std_in
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], ax
 
 call getche_
 
 mov  dx, ax
 cmp  ax, 0FFFFh
-jne  label_9
+je   file_is_eof_dont_set_data
 
-label_3:
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
-test ax, ax
-jnle label_6
-jne  label_5
-or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _EOF
-jmp  label_6
-label_5:
-mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
-or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
-label_6:
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
-pop  si
-pop  dx
-pop  bx
-ret 
-label_9:
 mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
 mov  byte ptr ds:[bx], al
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 1
-jmp  label_6
 
-label_8:
+done_with_eof_check:
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+
+pop  dx
+pop  bx
+ret 
+
+
+
+not_std_in:
 test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag+1], (_IONBF SHR 8)
 mov  bx, 1
-jne  label_4
+jne  dont_use_bufsize
 mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize]
-label_4:
+dont_use_bufsize:
 mov  dx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
 mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
 call __qread_
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], ax
-jmp  label_3
+file_is_eof_dont_set_data:
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+test ax, ax
+jg   done_with_eof_check
+jne  handle_fill_buffer_error  ; negtive
+or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _EOF
+jmp  done_with_eof_check
+
+
+handle_fill_buffer_error:
+mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
+or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
+jmp  done_with_eof_check
 
 ENDP
 
 PROC    locallib_filbuf_   NEAR
 
-push si
-mov  si, ax
+; si has file
+
 call locallib_fill_buffer_
 test ax, ax
-jne  label_2
-mov  ax, 0FFFFh
-pop  si
+je   return_eof
+push bx
+mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
+xor  ax, ax
+mov  al, byte ptr ds:[bx] ; get this before incrementing file_ptr.
+pop  bx
+dec  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+inc  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
 ret  
-label_2:
-dec  word ptr ds:[si + 2]
-inc  word ptr ds:[si]
-mov  si, word ptr ds:[si]
-mov  al, byte ptr ds:[si - 1]
-xor  ah, ah
-pop  si
+return_eof:
+dec ax  ; since ax is 0 dec is -1 
+;mov  ax, 0FFFFh
 ret  
 
 ENDP
@@ -855,7 +862,7 @@ pop  si
 pop  bx
 ret 
 increase_buffer:
-;mov  ax, si  ; never removed from ax.
+
 call locallib_filbuf_
 jmp  check_if_2nd_get_necessary
 
@@ -867,7 +874,6 @@ mov  ax, 0FFFFh
 or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
 jmp  exit_fgetc
 ;increase_buffer_newline:
-;mov  ax, si
 ;call locallib_filbuf_
 ;jmp  skip_newline_garbage_getc
 
