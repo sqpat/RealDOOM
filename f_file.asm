@@ -1209,10 +1209,8 @@ push cx
 push si
 push di
 push bp
-mov  bp, sp
-sub  sp, 2
 mov  si, ax
-mov  word ptr [bp - 2], dx
+mov  bp, dx
 mov  di, bx
 call locallib_GetIOMode_
 test al, _APPEND
@@ -1225,7 +1223,7 @@ mov  ah, 042h  ; Move file pointer using handle
 int  021h
 jc   do_qwrite_error
 skip_move_file_ptr:
-mov  dx, word ptr [bp - 2]
+mov  dx, bp
 mov  cx, di
 mov  bx, si
 mov  ah, 040h  ; Write file or device using handle
@@ -1237,7 +1235,6 @@ jne  get_qwrite_errno
 skip_qwrite_errno:
 mov  ax, dx
 exit_qwrite:
-mov  sp, bp
 pop  bp
 pop  di
 pop  si
@@ -1295,6 +1292,7 @@ ret
 ENDP
 
 ; todo removable?
+COMMENT @
 
 PROC    locallib_getche_  NEAR
 
@@ -1309,6 +1307,7 @@ exit_getche_:
 locallib_int23_exit_:
 ret  
 ENDP
+@
 
 
 PROC    locallib_exit_   NEAR
@@ -1427,33 +1426,7 @@ dont_flush:
 and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT _UNGET)
 mov  ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag]
 
-; todo try getting rid of this whole section if its really doing a stdin check.
-and  ax, (_ISTTY OR _IONBF)
-cmp  ax, (_ISTTY OR _IONBF)
-jne  not_std_in
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
-test ax, ax
-jne  not_std_in
-mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], ax
-
-call locallib_getche_
-
-mov  dx, ax
-cmp  ax, 0FFFFh
-je   file_is_eof_dont_set_data
-
-;mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
-mov  byte ptr ds:[bx], al
-mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 1
-
-done_with_eof_check:
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
-
-pop  dx
-pop  bx
-ret 
 
 
 
@@ -1471,9 +1444,14 @@ file_is_eof_dont_set_data:
 mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
 test ax, ax
 jg   done_with_eof_check
-jne  handle_fill_buffer_error  ; negtive
+jne  handle_fill_buffer_error  ; negative
 or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _EOF
-jmp  done_with_eof_check
+
+done_with_eof_check:
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+pop  dx
+pop  bx
+ret 
 
 
 handle_fill_buffer_error:
@@ -1547,8 +1525,6 @@ cmp  al, 01Ah    ; todo?
 jne  exit_fgetc
 mov  ax, 0FFFFh
 or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _EOF
-
-
 
 exit_fgetc:
 pop  si
