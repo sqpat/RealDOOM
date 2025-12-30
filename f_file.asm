@@ -24,23 +24,26 @@ EXTRN fclose_:FAR
 EXTRN fread_:FAR
 EXTRN fwrite_:FAR
 EXTRN setvbuf_:FAR
-EXTRN getche_:FAR
+EXTRN __exit_:NEAR
 
-EXTRN exit_:FAR
-EXTRN __SetIOMode_nogrow_:FAR
-EXTRN __GetIOMode_:FAR
-EXTRN __get_errno_ptr_:FAR
-EXTRN __set_errno_dos_:FAR
+
+
 EXTRN __qwrite_:FAR
 EXTRN __qread_:FAR
 EXTRN __doserror_:FAR
 EXTRN __ioalloc_:FAR
+EXTRN __FiniRtns:FAR
 
 
 .DATA
 
 EXTRN _errno:WORD
 EXTRN ___OpenStreams:WORD
+EXTRN ___io_mode:WORD
+EXTRN __cbyte:WORD
+EXTRN ___NFiles:WORD
+EXTRN ___int23_exit:DWORD
+EXTRN ___FPE_handler_exit:DWORD
 
 COLORMAPS_SIZE = 33 * 256
 LUMP_PER_EMS_PAGE = 1024 
@@ -317,7 +320,7 @@ add  di, dx
 sub  cx, dx
 jmp  flush_more_to_file
 zero_flushed_error:
-call __get_errno_ptr_
+call localib_get_errno_ptr_
 mov  bx, ax
 mov  word ptr ds:[bx], 0Ch
 mov  bp, 0FFFFh
@@ -450,7 +453,7 @@ test cx, cx
 jge  exit_return_fseek_error
 
 invalid_param:
-call __get_errno_ptr_
+call localib_get_errno_ptr_
 mov  si, ax
 mov  word ptr ds:[si], 9
 jmp  exit_return_fseek_error
@@ -559,7 +562,7 @@ jc   do_errno_inner_lseek
 exit_inner_lseek:
 ret
 do_errno_inner_lseek:
-call __set_errno_dos_
+call locallib_set_errno_ptr_
 jmp  exit_inner_lseek
 
 ENDP
@@ -573,7 +576,7 @@ push si
 push dx  ; seek type to retrieve later
 mov  si, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
 
-call __GetIOMode_
+call locallib_GetIOMode_
 test cx, cx
 jg   positive_size
 jne  do_inner_lseek
@@ -585,7 +588,7 @@ jne  do_inner_lseek
 or   ah, 080h
 mov  dx, ax
 mov  ax, si
-call __SetIOMode_nogrow_
+call locallib__SetIOMode_nogrow_
 
 do_inner_lseek:
 pop  ax ; retrieve seek type
@@ -704,6 +707,112 @@ ret
 ret
 ENDP
 
+; todo removable?
+
+PROC    locallib_getche_  NEAR
+
+mov   ax, word ptr ds:[__cbyte]
+mov   word ptr ds:[__cbyte], 0
+test  ax, ax
+jne   exit_getche_
+mov   ah, 1
+int   021h  ; Keyboard input with echo
+xor   ah, ah
+exit_getche_:
+locallib_int23_exit_:
+ret  
+ENDP
+
+
+PROC    locallib_exit_   NEAR
+PUBLIC  locallib_exit_
+
+
+mov   bx, ax
+call  dword ptr ds:[___int23_exit]
+mov   dx, 0FFh
+mov   ax, 010h
+
+call  __FiniRtns
+call  dword ptr ds:[___int23_exit]
+call  dword ptr ds:[___FPE_handler_exit]
+mov   ax, bx
+jump_to_exit:
+jmp   __exit_
+mov   ax, ax
+mov   dx, ax
+call  dword ptr ds:[___int23_exit]
+call  dword ptr ds:[___FPE_handler_exit]
+mov   ax, dx
+jmp   jump_to_exit
+ENDP
+
+PROC locallib_GetIOMode_ NEAR
+
+push  bx
+cmp   ax, word ptr ds:[___NFiles]
+jb    label_1
+xor   ax, ax
+pop   bx
+ret
+label_1:
+mov   bx, word ptr ds:[___io_mode]
+shl   ax, 1
+add   bx, ax
+mov   ax, word ptr ds:[bx]
+pop   bx
+ret
+ENDP
+
+PROC locallib__SetIOMode_nogrow_ NEAR
+
+push  bx
+cmp   ax, word ptr ds:[___NFiles]
+jnb   label_2
+mov   bx, word ptr ds:[___io_mode]
+shl   ax, 1
+add   bx, ax
+mov   word ptr ds:[bx], dx
+label_2:
+pop   bx
+ret  
+ENDP
+
+PROC localib_get_errno_ptr_ NEAR
+
+mov   ax, OFFSET _errno
+ret
+
+ENDP
+
+
+; lets just assume its a valid error passed in.
+
+PROC locallib_set_errno_ptr_ NEAR
+
+push  si
+mov   si, ax
+call  localib_get_errno_ptr_
+xchg  ax, si
+mov   word ptr ds:[si], ax
+mov   ax, 0FFFFh
+pop   si
+ret 
+
+ENDP
+
+
+PROC locallib_set_errno_dos_reterr_ NEAR
+
+push  dx
+mov   dx, ax
+call  locallib_set_errno_ptr_
+mov   ax, dx
+pop   dx
+ret
+
+ENDP
+
 PROC    locallib_fill_buffer_   NEAR
 
 push bx
@@ -739,13 +848,13 @@ test ax, ax
 jne  not_std_in
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], ax
 
-call getche_
+call locallib_getche_
 
 mov  dx, ax
 cmp  ax, 0FFFFh
 je   file_is_eof_dont_set_data
 
-mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
+;mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
 mov  byte ptr ds:[bx], al
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 1
 
@@ -867,7 +976,7 @@ call locallib_filbuf_
 jmp  check_if_2nd_get_necessary
 
 fgetc_error_handler:
-call __get_errno_ptr_
+call localib_get_errno_ptr_
 mov  bx, ax
 mov  word ptr ds:[bx], 4
 mov  ax, 0FFFFh
@@ -968,7 +1077,7 @@ je   prepare_to_put_char
 jmp  exit_fputc_return_error
 
 handle_fputc_error:
-call __get_errno_ptr_
+call localib_get_errno_ptr_
 mov  di, ax
 mov  word ptr ds:[di], 4
 or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
@@ -980,12 +1089,6 @@ jmp  exit_fputc
 ret
 ENDP
 
-
-PROC    locallib_exit_   NEAR
-PUBLIC  locallib_exit_
-jmp     exit_
-
-ENDP
 
 
 
