@@ -30,7 +30,7 @@ EXTRN __exit_:NEAR
 
 
 EXTRN __allocfp_:FAR
-EXTRN _dos_creat_:FAR
+
 
 EXTRN __GETDS:NEAR
 EXTRN __FiniRtns:FAR
@@ -131,6 +131,25 @@ call    locallib_fopen_
 retf
 ENDP
 
+PROC    locallib_doscreate_  NEAR
+
+; di is handle ptr
+
+push  cx
+mov   cx, dx
+mov   dx, ax
+mov   ah, 03Ch  ; Create file using handle
+int   021h
+jb    bad_create_do_dos_error
+mov   di, ax   ; set file handle in di
+bad_create_do_dos_error:
+call  locallib_doserror_  ; check carry flag etc
+
+pop   cx
+ret
+
+ENDP
+
 PROC    locallib_dosopen_  NEAR
 
 ; di is handle ptr
@@ -142,7 +161,7 @@ mov   al, cl
 mov   ah, 03Dh  ; Open file using handle
 int   021h
 jc    bad_open_do_dos_error
-mov   di, ax
+mov   di, ax   ; set file handle in di
 bad_open_do_dos_error:
 call  locallib_doserror_  ; check carry flag etc
 pop   cx
@@ -254,9 +273,8 @@ not       dx
 and       ax, dx
 xor       dx, dx    ; attr = 0
 file_is_writable:
-lea       bx, [bp - 0Ah]
 mov       ax, si        ; filename
-call      _dos_creat_
+call      locallib_doscreate_
 test      ax, ax
 jne       exit_sopen_return_bad_handle
 
