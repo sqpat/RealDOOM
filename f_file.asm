@@ -29,8 +29,10 @@ EXTRN malloc_:FAR
 EXTRN __exit_:NEAR
 
 
-EXTRN _sopen_:FAR
+
 EXTRN __allocfp_:FAR
+EXTRN _dos_open_:FAR
+EXTRN _dos_creat_:FAR
 
 EXTRN __GETDS:NEAR
 EXTRN __FiniRtns:FAR
@@ -39,6 +41,7 @@ EXTRN locallib_tolower_:NEAR
 
 .DATA
 
+EXTRN ___umaskval:WORD
 EXTRN __fmode:WORD
 EXTRN __commode:WORD
 EXTRN ___RmTmpFileFn:DWORD
@@ -96,6 +99,9 @@ _O_CREAT         = 00020h ;  create new file
 _O_TRUNC         = 00040h ;  truncate existing file 
 _O_TEXT          = 00100h ;  text file 
 _O_BINARY        = 00200h ;  binary file 
+; todo remove
+_O_EXCL          = 00400h ;  exclusive open 
+_O_NOINHERIT     = 00080h ;  file is not inherited by child process
 
 
 PROC    F_FILE_STARTMARKER_ NEAR
@@ -127,28 +133,221 @@ call    locallib_fopen_
 retf
 ENDP
 
-COMMENT @
-
-PROC locallib_sopen_ NEAR
 
 
-0x000000000000a336:  53          push bx
-0x000000000000a337:  51          push cx
-0x000000000000a338:  52          push dx
-0x000000000000a339:  55          push bp
-0x000000000000a33a:  89 E5       mov  bp, sp
-0x000000000000a33c:  8B 46 0C    mov  ax, word ptr [bp + 0xc]
-0x000000000000a33f:  8D 4E 12    lea  cx, [bp + 0x12]
-0x000000000000a342:  8B 5E 10    mov  bx, word ptr [bp + 0x10]
-0x000000000000a345:  8B 56 0E    mov  dx, word ptr [bp + 0xe]
-0x000000000000a348:  E8 01 FE    call 0xa14c
-0x000000000000a34b:  5D          pop  bp
-0x000000000000a34c:  5A          pop  dx
-0x000000000000a34d:  59          pop  cx
-0x000000000000a34e:  5B          pop  bx
-0x000000000000a34f:  CB          ret
 
-@
+
+
+PROC   locallib_sopen_   NEAR
+
+; bp - 2 = dummy todo remove
+; bp - 4 = open_mode (flags)
+; bp - 8 = bx copy (shflag always 0 todo remove)
+; bp - 0Ah = handle (?)
+
+push      bx
+push      cx
+push      dx
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 0Ah
+mov       si, ax  ; filename ptr
+mov       word ptr [bp - 4], dx   
+mov       word ptr [bp - 8], 0          ; todo remove
+push      bx                            ;  bp - 0Ch is permissions
+mov       word ptr [bp - 0Ah], 0FFFFh   ; handle
+; remove trailing spaces?
+loop_check_for_space:
+lodsb
+cmp       al, ' '
+jne       found_space
+jmp       loop_check_for_space
+
+
+close_file_and_error:
+mov       bx, ax
+close_file_and_error_bx_set:
+mov       ah, 03Eh   ; Close file using handle
+int       021h
+sbb       dx, dx
+mov       cx, 0Bh   ; EMFILE?
+
+call      locallib_get_errno_ptr_
+mov       bx, ax
+mov       ax, 0FFFFh
+mov       word ptr ds:[bx], cx
+jmp       exit_sopen
+handle_sopen_error_7:
+mov       bx, word ptr [bp - 0Ah]
+mov       cx, 7   ; O_EXCL?
+jmp       close_file_and_error_bx_set
+
+handle_sopen_seterrno:
+mov       bx, word ptr [bp - 0Ah]
+mov       ah, 03Eh   ; Close file using handle
+int       021h
+sbb       dx, dx
+mov       ax, cx
+call      locallib_set_errno_dos_reterr_
+jmp       exit_sopen
+
+
+found_space:
+dec       si  ; roll back lodsb
+mov       ax, word ptr [bp - 4]
+and       ax, ( _O_RDONLY OR _O_WRONLY OR _O_RDWR OR _O_NOINHERIT ) ; 083h
+lea       bx, [bp - 0Ah]
+mov       dx, ax
+mov       word ptr [bp - 6], ax
+or        dx, word ptr [bp - 8]
+mov       ax, si
+call      _dos_open_
+test      ax, ax
+jne       sopen_handle_good
+mov       ax, word ptr [bp - 0Ah]
+cmp       ax, word ptr ds:[___NFiles]
+jae       close_file_and_error
+sopen_handle_good:
+test      byte ptr [bp - 4], (_O_WRONLY OR _O_RDWR) 
+je        sopen_access_check_ok    ; readonly, access/write is ok
+mov       ax, word ptr [bp - 0Ah]
+cmp       ax, 0FFFFh
+je        sopen_access_check_ok
+call      locallib_isatty_            ; todo double check if necessary
+test      ax, ax
+jne       sopen_access_check_ok
+test      byte ptr [bp - 4], _O_TRUNC ; if not append then we are truncating the file
+je        sopen_access_check_ok
+lea       dx, [bp - 4]            ; dummy ptr
+mov       bx, word ptr [bp - 0Ah] ; handle
+xor       cx, cx                  ; len
+mov       ah, 040h   ; Write file or device using handle
+int       021h
+mov       cx, ax
+jc        handle_sopen_seterrno
+
+sopen_access_check_ok:
+cmp       word ptr [bp - 0Ah], 0FFFFh
+jne       process_iomode_flags
+test      byte ptr [bp - 4], _O_CREAT
+je        exit_sopen_return_bad_handle
+
+call      locallib_get_errno_ptr_
+xchg      ax, bx
+cmp       word ptr ds:[bx], 2 ; E_NOFILE
+jne       exit_sopen_return_bad_handle
+
+; gotta create file..
+mov       ax, word ptr [bp - 0Ch]                ; permissions vararg, is it always 0180h?
+mov       dx, word ptr ds:[___umaskval]         ; todo i think this can be all removed
+not       dx
+and       ax, dx
+xor       dx, dx    ; attr = 0
+;test      al, 080h  ; S_IWRITE
+;jne       file_is_writable
+;inc       dx   ; dx = 1 , access readonly
+file_is_writable:
+lea       bx, [bp - 0Ah]
+mov       ax, si
+call      _dos_creat_
+test      ax, ax
+jne       exit_sopen_return_bad_handle
+mov       ax, word ptr [bp - 0Ah]
+cmp       ax, word ptr ds:[___NFiles]
+jnb       jump_to_close_file_and_error    ; out of files
+
+process_iomode_flags:
+mov       ax, word ptr [bp - 0Ah]
+call      locallib_GetIOMode_
+and       al, (NOT (_READ OR _WRITE OR _APPEND OR _BINARY))
+xchg      ax, dx
+mov       ax, word ptr [bp - 0Ah]
+call      locallib_isatty_
+test      ax, ax
+je        not_atty
+or        dh, (_ISTTY SHR 8)
+not_atty:
+and       byte ptr [bp - 6], (NOT _O_NOINHERIT)
+cmp       word ptr [bp - 6], _O_RDWR
+jne       not_rw
+or        dl, (_READ OR _WRITE)
+not_rw:
+cmp       word ptr [bp - 6], _O_RDONLY
+jne       not_readonly
+or        dl, _READ
+not_readonly:
+cmp       word ptr [bp - 6], _O_WRONLY
+jne       not_writeonly
+or        dl, _WRITE
+not_writeonly:
+test      byte ptr [bp - 4], _O_APPEND
+je        not_append
+or        dl, _APPEND
+not_append:
+mov       ax, dx
+or        al, _BINARY
+;test      byte ptr [bp - 3], ((_O_BINARY OR _O_TEXT) SHR 8)
+;je        check_fmode_binary
+;test      byte ptr [bp - 3], 2
+;je        finished_with_flags
+update_flags:
+mov       dx, ax
+finished_with_flags:
+mov       ax, word ptr [bp - 0Ah]
+call      locallib__SetIOMode_nogrow_  ; todo same as nogrow?
+mov       ax, word ptr [bp - 0Ah]
+jmp       exit_sopen
+check_fmode_binary:
+;cmp       word ptr ds:[__fmode], _O_BINARY
+;jne       finished_with_flags
+;jmp       update_flags
+
+
+exit_sopen_return_bad_handle:
+mov       ax, 0FFFFh
+exit_sopen:
+mov       sp, bp
+pop       bp
+pop       di
+pop       si
+pop       dx
+pop       cx
+pop       bx
+
+ret       
+jump_to_close_file_and_error:
+jmp       close_file_and_error
+
+
+
+ENDP
+
+PROC locallib_something_ NEAR
+
+
+push      bx
+push      bp
+mov       bp, sp
+lea       bx, [bp + 0Ch]
+mov       ax, word ptr ds:[bx]
+push      ax
+xor       ax, ax
+push      ax
+push      word ptr [bp + 0Ah]
+push      word ptr [bp + 8]
+add       bx, 2
+call      locallib_sopen_
+add       sp, 8
+pop       bp
+pop       bx
+ret
+
+ENDP
+
+
+; todo change params
 
 ; ax has flags
 ; si has fp
@@ -198,14 +397,15 @@ or   dl, cl
 ; ?? why var args...
 
 label_27:
-; param 1 set earlier.
-xor  cx, cx
-push cx  ; share flag always 0. todo remove?
-push dx ; open_mode
-push bx ; filename
-xchg ax, cx  ; back up flags.
-call _sopen_
-add  sp, 8
+
+xchg ax, cx ; cx stores flags.
+
+xchg ax, bx ; ax = filename
+            ; dx = flags already
+pop  bx     ; bx gets file permissions
+
+call locallib_sopen_
+
 
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle], ax
 cmp  ax, 0FFFFh
@@ -268,7 +468,6 @@ xor  ah, ah
 ; bx has filename ptr
 call locallib_doopen_   ; si has filename, bx has flags
 
-
 null_fp:
 
 exit_fopen:
@@ -281,6 +480,9 @@ ret
 ENDP
 
 COMMENT @
+
+; todo if we have to use this again, then it needs work.
+
 PROC  locallib_freopen_ NEAR
 
 push bx
@@ -300,9 +502,9 @@ test ax, ax
 je   exit_fopen
 mov  ax, bx
 call locallib_openclose_file_
-mov  bx, ax
+
 test ax, ax
-je   label_40
+je   exit_fopen
 push ax
 xor  ax, ax
 push ax
@@ -313,9 +515,6 @@ mov  bx, dx
 mov  dx, ax
 mov  ax, di
 call locallib_doopen_
-mov  bx, ax
-label_40:
-mov  ax, bx
 jmp  exit_fopen
 
 ENDP
@@ -1641,6 +1840,7 @@ ret
 ENDP
 
 
+
 ; lets just assume its a valid error passed in.
 
 PROC locallib_set_errno_ptr_ NEAR
@@ -1655,6 +1855,7 @@ pop   si
 ret 
 
 ENDP
+
 
 
 PROC locallib_set_errno_dos_reterr_ NEAR
