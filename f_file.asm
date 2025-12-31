@@ -28,17 +28,13 @@ EXTRN malloc_:FAR
 
 EXTRN __exit_:NEAR
 
-
-EXTRN __allocfp_:FAR
-
-
 EXTRN __GETDS:NEAR
 EXTRN __FiniRtns:FAR
 
-EXTRN locallib_tolower_:NEAR
-
 .DATA
 
+EXTRN ___iob:WORD
+EXTRN __ovlflag:WORD
 EXTRN ___umaskval:WORD
 EXTRN __fmode:WORD
 EXTRN __commode:WORD
@@ -451,6 +447,86 @@ jmp  exit_doopen
 
 ENDP
 
+
+; todo inline???
+
+PROC    locallib_allocfp_ NEAR
+
+push      bx
+push      cx
+push      dx
+push      si
+push      di
+mov       si, word ptr ds:[___ClosedStreams]
+test      si, si
+jne       label_1
+mov       bx, OFFSET ___iob
+label_3:
+cmp       bx, OFFSET __ovlflag
+jae       label_2
+test      byte ptr ds:[bx + 6], 3
+je        label_4
+add       bx, 0Eh
+jmp       label_3
+label_1:
+mov       ax, word ptr ds:[si]
+mov       bx, word ptr ds:[si + 2]
+mov       word ptr ds:[___ClosedStreams], ax
+mov       dx, word ptr ds:[bx + 6]
+fp_allocated:
+mov       cx, 0Eh
+mov       di, bx
+xor       al, al
+push      di
+push      ds
+pop       es
+mov       ah, al
+shr       cx, 1
+rep       stosw
+adc       cx, cx
+rep       stosb
+pop       di
+mov       word ptr ds:[bx + 6], dx
+mov       word ptr ds:[si + 2], bx
+mov       ax, word ptr ds:[___OpenStreams]
+mov       word ptr ds:[bx + 4], si
+mov       word ptr ds:[___OpenStreams], si
+mov       word ptr ds:[si], ax
+do_allocfp_exit:
+mov       ax, bx
+pop       di
+pop       si
+pop       dx
+pop       cx
+pop       bx
+ret
+label_4:
+mov       ax, 0Ch
+call      malloc_
+nop       
+mov       si, ax
+test      ax, ax
+je        do_allocfp_error
+xor       dx, dx
+jmp       fp_allocated
+label_2:
+mov       ax, 01Ah
+call      malloc_
+nop       
+mov       si, ax
+test      ax, ax
+je        do_allocfp_error
+mov       dx, 04000h
+lea       bx, [si + 0Ch]
+jmp       fp_allocated
+do_allocfp_error:
+mov       word ptr [_errno], 5
+xor       bx, ax
+jmp       do_allocfp_exit
+
+ENDP
+
+
 ; dx = mode
 ; ax = filename
 
@@ -462,7 +538,7 @@ push bx
 push si
 
 xchg ax, bx  ; bx has filename ptr
-call __allocfp_  ; no args. returns file ptr
+call locallib_allocfp_  ; no args. returns file ptr
 
 test ax, ax
 je   exit_fopen
