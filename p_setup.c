@@ -1141,6 +1141,7 @@ void __near PSetupEndFunc(){}
 void __near D_INIT_STARTMARKER();
 void  __near locallib_fclose(FILE * stream);
 FILE *  __near locallib_fopen(const char *filename, const char *mode);
+int32_t __near locallib_fseek(FILE *fp, int32_t offset, int8_t where );
 
 // clears dead initialization code.
 void __near Z_ClearDeadCode() {
@@ -1176,7 +1177,7 @@ void __near Z_ClearDeadCode() {
 	// I_Error("size: %i", size);
 	dest =  (angle_t __far* )MK_FP(tantoangle_segment, 0);
 	fp = locallib_fopen("DOOMDATA.BIN", "rb");
-	fseek(fp, TANTOA_DOOMDATA_OFFSET, SEEK_SET);
+	locallib_fseek(fp, TANTOA_DOOMDATA_OFFSET, SEEK_SET);
 	locallib_far_fread(dest, 4 * 2049, fp);
 	locallib_fclose(fp);
 
