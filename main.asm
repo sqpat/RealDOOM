@@ -2444,6 +2444,19 @@ ENDP
 
 
 
+PROC   locallib_tolower_ NEAR
+PUBLIC locallib_tolower_
+
+cmp   al, 05Ah
+ja    exit_m_to_lower
+cmp   al, 041h
+jb    exit_m_to_lower
+add   al, 020h
+exit_m_to_lower:
+ret
+
+ENDP
+
 PROC   locallib_toupper_ NEAR
 PUBLIC locallib_toupper_
 

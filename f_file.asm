@@ -28,12 +28,13 @@ EXTRN malloc_:FAR
 
 EXTRN __exit_:NEAR
 
-EXTRN tolower_:FAR
+
 EXTRN _sopen_:FAR
 EXTRN __allocfp_:FAR
 EXTRN __GETDS:NEAR
 EXTRN __FiniRtns:FAR
 
+EXTRN locallib_tolower_:NEAR
 
 .DATA
 
@@ -273,7 +274,7 @@ mov  si, word ptr [bp + 0Ah]  ; todo figure out..
 mov  di, ax
 mov  al, dl
 xor  ah, ah
-call tolower_
+call locallib_tolower_
 cmp  al, 'r'
 jne  jump_to_label_19
 xor  ax, ax
