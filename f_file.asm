@@ -463,22 +463,12 @@ jne       found_file  ; recently closed ok?
 mov       di, OFFSET ___iob
 loop_next_static_file:
 cmp       di, OFFSET __ovlflag
-jae       out_of_mem_alloc_fp
+jae       do_allocfp_out_of_memory_error
 test      byte ptr ds:[di + WATCOM_C_FILE.watcom_file_flag], (_READ OR _WRITE)
 je        create_streamlink
 add       di, SIZE WATCOM_C_FILE
 jmp       loop_next_static_file
 
-
-out_of_mem_alloc_fp:
-mov       ax, (SIZE WATCOM_C_FILE + SIZE WATCOM_STREAM_LINK)
-call      malloc_
-mov       si, ax
-test      ax, ax
-je        do_allocfp_out_of_memory_error
-mov       dx, _DYNAMIC  
-lea       di, [si + 0Ch]
-jmp       fp_allocated
 
 found_file:
 
@@ -495,24 +485,28 @@ xor       ax, ax
 push      ds
 pop       es
 
-stosw  ; 7 * 2 bytes = SIZE WATCOM_STREAM_LINK = 0Eh
-stosw
-stosw
-stosw
-stosw
-stosw
-stosw
-
-sub       di, SIZE WATCOM_STREAM_LINK
-
-mov       word ptr ds:[di + WATCOM_C_FILE.watcom_file_flag], dx
 mov       word ptr ds:[si + WATCOM_STREAM_LINK.watcom_streamlink_stream], di
+
 mov       ax, word ptr ds:[___OpenStreams]
-mov       word ptr ds:[di + WATCOM_C_FILE.watcom_file_link], si
 mov       word ptr ds:[___OpenStreams], si
 mov       word ptr ds:[si], ax
+
+; zero out the streamlink.
+
+stosw  ; 7 * 2 bytes = SIZE WATCOM_STREAM_LINK = 0Eh
+stosw
+xchg      ax, si
+stosw  ;  + WATCOM_C_FILE.watcom_file_link
+xchg      ax, dx
+stosw  ;  + WATCOM_C_FILE.watcom_file_flag
+xchg      ax, si ; retrieve 0
+stosw
+stosw
+stosw
+
+
+lea       ax, [di - SIZE WATCOM_STREAM_LINK]
 do_allocfp_exit:
-mov       ax, di
 pop       di
 pop       si
 pop       dx
@@ -526,6 +520,7 @@ test      ax, ax
 je        do_allocfp_out_of_memory_error
 xor       dx, dx
 jmp       fp_allocated
+
 do_allocfp_out_of_memory_error:
 mov       word ptr [_errno], 5  ; ENOMEM
 xor       di, di
