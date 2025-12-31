@@ -735,7 +735,14 @@ WATCOM_STREAM_LINK STRUC
 WATCOM_STREAM_LINK ENDS
 ; 0Dh
 
+C_INIT_STRUCT STRUC
+
+    cinitstruc_rtntype       db ? ; 00h
+    cinitstruc_priority      db ? ; 01h
+    cinitstruc_funcptr       dw ? ; 02h
+    cinitstruc_funcptr_far   dw ? ; 04h
     
+C_INIT_STRUCT ENDS
     
     
 COMMENT @

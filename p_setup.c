@@ -1140,7 +1140,7 @@ void __near Z_FreeConventionalAllocations() {
 void __near PSetupEndFunc(){}
 void __near D_INIT_STARTMARKER();
 void  __near locallib_fclose(FILE * stream);
-
+FILE *  __near locallib_fopen(const char *filename, const char *mode);
 
 // clears dead initialization code.
 void __near Z_ClearDeadCode() {
@@ -1175,7 +1175,7 @@ void __near Z_ClearDeadCode() {
 	tantoangle_segment = FP_SEG(startaddr) + 1;
 	// I_Error("size: %i", size);
 	dest =  (angle_t __far* )MK_FP(tantoangle_segment, 0);
-	fp = fopen("DOOMDATA.BIN", "rb");
+	fp = locallib_fopen("DOOMDATA.BIN", "rb");
 	fseek(fp, TANTOA_DOOMDATA_OFFSET, SEEK_SET);
 	locallib_far_fread(dest, 4 * 2049, fp);
 	locallib_fclose(fp);
