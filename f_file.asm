@@ -20,7 +20,7 @@ INSTRUCTION_SET_MACRO
 
 
 
-EXTRN fread_:FAR
+
 EXTRN fwrite_:FAR
 EXTRN free_:FAR
 EXTRN malloc_:FAR
@@ -96,6 +96,9 @@ _O_EXCL          = 00400h ;  exclusive open
 _O_NOINHERIT     = 00080h ;  file is not inherited by child process
 
 
+DOS_EOF_CHAR = 01Ah
+CARRIAGE_RETURN = 0Dh;
+
 PROC    F_FILE_STARTMARKER_ NEAR
 PUBLIC  F_FILE_STARTMARKER_
 ENDP
@@ -104,18 +107,225 @@ FREAD_BUFFER_SIZE = 512
 
 ;void  __far locallib_far_fread(void __far* dest, uint16_t size, FILE * fp) {
 
+; todo use and link up, or avoid completely
+
+PROC    locallib_GETDS_   NEAR
+PUBLIC  locallib_GETDS_
+
+push      ax
+mov       ax, DGROUP
+mov       ds, ax
+pop       ax
+ret       
+
+ENDP
+
 
 PROC    locallib_freadfromfar_   FAR
 PUBLIC  locallib_freadfromfar_
-call    fread_
+call    locallib_fread_
 retf
 ENDP
+
+SECTOR_SIZE = 512
+
+file_not_readable:
+mov       word ptr [_errno], 4
+xor       ax, ax
+or        byte ptr [si + WATCOM_C_FILE.watcom_file_flag], _SFERR
+jump_to_exit_fread:
+jmp       exit_fread
 
 
 PROC    locallib_fread_   NEAR
 PUBLIC  locallib_fread_
-call    fread_
-ret
+
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 8
+push      dx        ; bp - 0Ah  ; size part 1
+push      cx        ; bp - 0Ch  ; fp
+mov       dx, bx
+mov       si, cx
+mov       word ptr [bp - 4], ax ; dest
+test      byte ptr [si + WATCOM_C_FILE.watcom_file_flag], _READ  ; todo necessary?
+je        file_not_readable
+
+; todo get rid of this and just pass it in... dumb
+mov       ax, dx
+mul       word ptr [bp - 0Ah]
+mov       dx, ax
+test      ax, ax
+je        jump_to_exit_fread
+
+mov       bx, word ptr [si + WATCOM_C_FILE.watcom_file_link]
+cmp       word ptr [bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
+jne       label_4
+
+
+mov       ax, cx
+call      locallib_ioalloc_
+
+label_4:
+mov       bx, word ptr [bp - 0Ch]
+mov       word ptr [bp - 6], 0
+test      byte ptr [bx + WATCOM_C_FILE.watcom_file_flag], _BINARY
+jne       label_6
+jmp       label_7
+label_6:
+mov       word ptr [bp - 2], dx  
+label_12:
+mov       bx, word ptr [bp - 0Ch]
+mov       ax, word ptr [bx + WATCOM_C_FILE.watcom_file_cnt]
+test      ax, ax
+je        label_8
+mov       dx, ax
+mov       ax, word ptr [bp - 2]
+cmp       dx, ax
+jbe       label_9
+mov       dx, ax
+label_9:
+mov       si, word ptr [bp - 0Ch]
+mov       di, word ptr [bp - 4]
+mov       bx, word ptr [bp - 0Ch]
+mov       cx, dx
+sub       word ptr [bp - 2], dx
+mov       si, word ptr [si]
+add       word ptr [bp - 6], dx
+push      di
+mov       ax, ds
+mov       es, ax
+shr       cx, 1
+rep       movsw
+adc       cx, cx
+rep       movsb
+pop       di
+add       word ptr [bx], dx
+add       word ptr [bp - 4], dx
+sub       word ptr [bx + WATCOM_C_FILE.watcom_file_cnt], dx
+label_8:
+mov       ax, word ptr [bp - 2]
+test      ax, ax
+je        label_10
+
+mov       si, word ptr [bp - 0Ch]
+cmp       ax, word ptr [si + WATCOM_C_FILE.watcom_file_bufsize]
+jnb       label_11
+test      byte ptr [bx + WATCOM_C_FILE.watcom_file_flag + 1], (_IONBF SHR 8)
+je        label_19
+label_11:
+mov       si, word ptr [bp - 0Ch]
+mov       si, word ptr [si + 4]
+mov       ax, word ptr [si + 4]
+mov       si, word ptr [bp - 0Ch]
+mov       word ptr [si + 2], 0
+mov       word ptr [si], ax
+mov       bx, word ptr [bp - 2]
+test      byte ptr [si + 7], 4
+jne       label_18
+cmp       bx, SECTOR_SIZE    ; /* if more than a sector, set to multiple of sector size*/
+jbe       label_18
+xor       bl, bl
+and       bh, 0FEh   ; 0FE00h = -SECTOR_SIZE.
+label_18:
+mov       si, word ptr [bp - 0Ch]
+mov       dx, word ptr [bp - 4]
+mov       ax, word ptr [si + 8]
+call      locallib_qread_
+cmp       ax, 0FFFFh
+jne       label_20
+or        byte ptr [si + 6], _SFERR
+label_10:
+mov       ax, word ptr [bp - 6]
+xor       dx, dx
+div       word ptr [bp - 0Ah]
+exit_fread:
+mov       sp, bp
+pop       bp
+pop       di
+pop       si
+ret      
+label_19:
+mov       ax, bx
+
+mov       si, bx  ; todo clean
+call      locallib_fill_buffer_
+
+test      ax, ax
+je        label_10
+jmp       label_12
+label_20:
+test      ax, ax
+je        label_21
+add       word ptr [bp - 4], ax
+sub       word ptr [bp - 2], ax
+add       word ptr [bp - 6], ax
+jmp       label_12
+label_21:
+or        byte ptr [si + WATCOM_C_FILE.watcom_file_flag], _EOF
+jmp       label_10
+label_7:
+mov       bx, word ptr [bp - 4]
+mov       si, bx
+add       si, dx
+mov       word ptr [bp - 8], si
+label_17:
+mov       si, word ptr [bp - 0Ch]
+cmp       word ptr [si + WATCOM_C_FILE.watcom_file_cnt], 0
+je        label_13
+label_25:
+mov       si, word ptr [bp - 0Ch]
+dec       word ptr [si + WATCOM_C_FILE.watcom_file_cnt]
+mov       si, word ptr [si]
+mov       dl, byte ptr [si]
+mov       di, word ptr [bp - 0Ch]
+xor       dh, dh
+inc       si
+mov       ax, dx
+mov       word ptr [di], si
+cmp       dx, CARRIAGE_RETURN
+jne       label_14
+cmp       word ptr [di + 2], 0
+je        label_15
+label_16:
+mov       si, word ptr [bp - 0Ch]
+dec       word ptr [si + WATCOM_C_FILE.watcom_file_cnt]
+mov       si, word ptr [si]
+mov       di, word ptr [bp - 0Ch]
+mov       al, byte ptr [si]
+inc       si
+xor       ah, ah
+mov       word ptr [di], si
+label_14:
+cmp       ax, DOS_EOF_CHAR
+jne       label_22
+mov       bx, word ptr [bp - 0Ch]
+or        byte ptr [bx + WATCOM_C_FILE.watcom_file_flag], _EOF
+jmp       label_10
+label_13:
+mov       ax, si
+call      locallib_fill_buffer_
+test      ax, ax
+jne       label_25
+jmp       label_10
+label_15:
+mov       ax, di
+mov       si, di ; todo clean
+call      locallib_fill_buffer_
+test      ax, ax
+jne       label_16
+jmp       label_10
+label_22:
+mov       byte ptr [bx], al
+inc       bx
+inc       word ptr [bp - 6]
+cmp       bx, word ptr [bp - 8]
+jne       label_17
+jmp       label_10
+
+
 ENDP
 
 
@@ -1927,7 +2137,7 @@ inc  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
 check_if_2nd_get_necessary:
 ;test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _BINARY
 ;jne  exit_fgetc
-;cmp  al, 0Dh
+;cmp  al, CARRIAGE_RETURN
 ;jne  skip_newline_garbage_getc
 ;dec  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
 ;jl   increase_buffer_newline
@@ -1937,7 +2147,7 @@ check_if_2nd_get_necessary:
 ;inc  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
 ;
 ;skip_newline_garbage_getc:
-cmp  al, 01Ah    ; todo?
+cmp  al, DOS_EOF_CHAR    ; todo?
 jne  exit_fgetc
 mov  ax, 0FFFFh
 or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _EOF
@@ -2043,7 +2253,7 @@ jne  prepare_to_put_char    ; handle like a regular char
 ; really do newline shenanigans.
 mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
 or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag+1], (_DIRTY SHR 8)
-mov  byte ptr ds:[di], 0Dh
+mov  byte ptr ds:[di], CARRIAGE_RETURN
 inc  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
 inc  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
 mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
@@ -2104,7 +2314,7 @@ push      dx  ; [MATCH C]  size to read this time
 lea       ax, [bp - FREAD_BUFFER_SIZE]
 mov       bx, 1
 push      ax  ; [MATCH D]  buffer pos
-call      fread_   ;fread(stackbuffer, copysize, 1, fp);
+call      locallib_fread_   ;fread(stackbuffer, copysize, 1, fp);
 
 mov       es, si ; dest segment in es
 pop       si     ; [MATCH D]  buffer pos
