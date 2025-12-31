@@ -449,79 +449,86 @@ ENDP
 
 
 ; todo inline???
+; todo get rid of dynamic allocation?
 
 PROC    locallib_allocfp_ NEAR
 
-push      bx
-push      cx
+
 push      dx
 push      si
 push      di
 mov       si, word ptr ds:[___ClosedStreams]
 test      si, si
-jne       label_1
-mov       bx, OFFSET ___iob
-label_3:
-cmp       bx, OFFSET __ovlflag
-jae       label_2
-test      byte ptr ds:[bx + 6], 3
-je        label_4
-add       bx, 0Eh
-jmp       label_3
-label_1:
-mov       ax, word ptr ds:[si]
-mov       bx, word ptr ds:[si + 2]
-mov       word ptr ds:[___ClosedStreams], ax
-mov       dx, word ptr ds:[bx + 6]
+jne       found_file  ; recently closed ok?
+mov       di, OFFSET ___iob
+loop_next_static_file:
+cmp       di, OFFSET __ovlflag
+jae       out_of_mem_alloc_fp
+test      byte ptr ds:[di + WATCOM_C_FILE.watcom_file_flag], (_READ OR _WRITE)
+je        create_streamlink
+add       di, SIZE WATCOM_C_FILE
+jmp       loop_next_static_file
+
+
+out_of_mem_alloc_fp:
+mov       ax, (SIZE WATCOM_C_FILE + SIZE WATCOM_STREAM_LINK)
+call      malloc_
+mov       si, ax
+test      ax, ax
+je        do_allocfp_out_of_memory_error
+mov       dx, _DYNAMIC  
+lea       di, [si + 0Ch]
+jmp       fp_allocated
+
+found_file:
+
+; si is streamlink
+
+mov       ax, word ptr ds:[si + WATCOM_STREAM_LINK.watcom_streamlink_next]
+mov       di, word ptr ds:[si + WATCOM_STREAM_LINK.watcom_streamlink_stream]
+mov       word ptr ds:[___ClosedStreams], ax ; set last file in linekd list.
+mov       dx, word ptr ds:[di + WATCOM_C_FILE.watcom_file_flag]
+
 fp_allocated:
-mov       cx, 0Eh
-mov       di, bx
-xor       al, al
-push      di
+
+xor       ax, ax
 push      ds
 pop       es
-mov       ah, al
-shr       cx, 1
-rep       stosw
-adc       cx, cx
-rep       stosb
-pop       di
-mov       word ptr ds:[bx + 6], dx
-mov       word ptr ds:[si + 2], bx
+
+stosw  ; 7 * 2 bytes = SIZE WATCOM_STREAM_LINK = 0Eh
+stosw
+stosw
+stosw
+stosw
+stosw
+stosw
+
+sub       di, SIZE WATCOM_STREAM_LINK
+
+mov       word ptr ds:[di + WATCOM_C_FILE.watcom_file_flag], dx
+mov       word ptr ds:[si + WATCOM_STREAM_LINK.watcom_streamlink_stream], di
 mov       ax, word ptr ds:[___OpenStreams]
-mov       word ptr ds:[bx + 4], si
+mov       word ptr ds:[di + WATCOM_C_FILE.watcom_file_link], si
 mov       word ptr ds:[___OpenStreams], si
 mov       word ptr ds:[si], ax
 do_allocfp_exit:
-mov       ax, bx
+mov       ax, di
 pop       di
 pop       si
 pop       dx
-pop       cx
-pop       bx
 ret
-label_4:
-mov       ax, 0Ch
+
+create_streamlink:
+mov       ax, SIZE WATCOM_STREAM_LINK
 call      malloc_
-nop       
 mov       si, ax
 test      ax, ax
-je        do_allocfp_error
+je        do_allocfp_out_of_memory_error
 xor       dx, dx
 jmp       fp_allocated
-label_2:
-mov       ax, 01Ah
-call      malloc_
-nop       
-mov       si, ax
-test      ax, ax
-je        do_allocfp_error
-mov       dx, 04000h
-lea       bx, [si + 0Ch]
-jmp       fp_allocated
-do_allocfp_error:
-mov       word ptr [_errno], 5
-xor       bx, ax
+do_allocfp_out_of_memory_error:
+mov       word ptr [_errno], 5  ; ENOMEM
+xor       di, di
 jmp       do_allocfp_exit
 
 ENDP
