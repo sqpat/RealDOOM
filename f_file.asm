@@ -173,8 +173,12 @@ PROC   locallib_sopen_   NEAR
 PUBLIC locallib_sopen_   
 
 
+; ax = filename
+; dx = flags
+; bx = file permissions
+
 ; bp - 2 = open_mode (flags)
-; bp - 4 = rwmode
+
 ; bp - 6 = access permissions
 
 
@@ -188,8 +192,8 @@ push      bp
 mov       bp, sp
 xchg      ax, si        ; si gets filename ptr
 push      dx            ; bp - 2 = flags
-push      bx            ;  bp - 4 rwmode garbage for now
-push      bx            ;  bp - 6 is permissions
+push      bx            ; bp - 4 is permissions
+                        ; bp - 6 is temporarily filename later
 mov       di, 0FFFFh    ; handle
 
 ; remove trailing spaces? todo remove? do i ever do this? maybe command line params will hit this.
@@ -222,16 +226,16 @@ mov       word ptr ds:[bx], cx
 jmp       exit_sopen
 
 
-
-
 found_space:
 dec       si  ; roll back lodsb
+
 mov       ax, word ptr [bp - 2]
 and       ax, ( _O_RDONLY OR _O_WRONLY OR _O_RDWR OR _O_NOINHERIT ) ; 083h
 
-mov       dx, ax
-mov       word ptr [bp - 4], ax
-mov       ax, si
+mov       dx, ax   ; todo can we use si inside as flags
+push      si     ; [bp - 6] = filename.
+
+xchg      ax, si ;   ax gets filename. si gets rwmode for later
 call      locallib_dosopen_ 
 test      ax, ax
 jne       sopen_handle_good
@@ -241,10 +245,7 @@ sopen_handle_good:
 test      byte ptr [bp - 2], (_O_WRONLY OR _O_RDWR) 
 je        sopen_access_check_ok    ; readonly, access/write is ok
 cmp       di, 0FFFFh               ; file does not exist, dont need to do access check, will try to create later
-je        sopen_access_check_ok
-; call      locallib_isatty_            ; todo double check if necessary
-; test      ax, ax
-; jne       sopen_access_check_ok
+je        do_create_file
 test      byte ptr [bp - 2], _O_TRUNC ; if not append then we are truncating the file
 je        sopen_access_check_ok
 lea       dx, [bp - 2]            ; dummy ptr
@@ -257,23 +258,23 @@ jc        handle_sopen_seterrno
 
 sopen_access_check_ok:
 cmp       di, 0FFFFh
-jne       process_iomode_flags
-test      byte ptr [bp - 2], _O_CREAT
+jne       process_iomode_flags        ; file handle is valid so we dsont have to create it.
+
+do_create_file:
+test      byte ptr [bp - 2], _O_CREAT ; we didnt ask to create it....
 je        exit_sopen_return_bad_handle
 
 call      locallib_get_errno_ptr_
 xchg      ax, bx
-cmp       word ptr ds:[bx], 2 ; E_NOFILE
+cmp       word ptr ds:[bx], 2 ; E_NOFILE    ; todo hazy on details. i guess errno was set earlier and we check it to see we had the 'correct error' of no file exists.
 jne       exit_sopen_return_bad_handle
 
 ; gotta create file..
-pop       ax                                   ; bp - 6, permissions vararg, is it always 0180h?
-mov       dx, word ptr ds:[___umaskval]         ; todo i think this can be all removed
-not       dx
-and       ax, dx
-xor       dx, dx    ; attr = 0
-file_is_writable:
-mov       ax, si        ; filename
+
+; todo put vars directly where theyre supposed to go for less juggling.
+pop       ax     ; [bp - 6], filename
+pop       dx     ; [bp - 4], permissions vararg, 1 for readonly 0 for not
+
 call      locallib_doscreate_
 test      ax, ax
 jne       exit_sopen_return_bad_handle
@@ -285,17 +286,17 @@ process_iomode_flags:
 mov       ax, di
 call      locallib_GetIOMode_
 and       al, (NOT (_READ OR _WRITE OR _APPEND OR _BINARY))
-
-and       byte ptr [bp - 4], (NOT _O_NOINHERIT)
-cmp       word ptr [bp - 4], _O_RDWR
+; si has rwmode
+and       si, (NOT _O_NOINHERIT)
+cmp       si, _O_RDWR
 jne       not_rw
 or        al, (_READ OR _WRITE)
 not_rw:
-cmp       word ptr [bp - 4], _O_RDONLY
+cmp       si, _O_RDONLY
 jne       not_readonly
 or        al, _READ
 not_readonly:
-cmp       word ptr [bp - 4], _O_WRONLY
+cmp       si, _O_WRONLY
 jne       not_writeonly
 or        al, _WRITE
 not_writeonly:
@@ -362,7 +363,8 @@ ENDP
 ; bx has filename ptr
 
 
-
+PERMISSION_READONLY = 1
+PERMISSION_WRITABLE = 0
 PMODE = 0180h ;  ?? ; (S_IREAD | S_IWRITE)
 
 
@@ -375,11 +377,11 @@ push di
 
 
 xor  dx, dx ; equal to _O_RDONLY. default to read
-mov  cx, dx ; zero cx..
+mov  cx, PERMISSION_READONLY 
 
 test al, FILEFLAG_WRITE
 je   not_write_flag
-mov  cx, PMODE ; todo i think this inernally is reapplied anyway.
+dec  cx ; PERMISSION_READONLY ; todo i think this inernally is reapplied anyway.
 or   dl, (_O_WRONLY OR _O_CREAT)
 not_write_flag:
 
