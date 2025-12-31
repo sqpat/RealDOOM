@@ -22,10 +22,8 @@ INSTRUCTION_SET_MACRO
 
 EXTRN fread_:FAR
 EXTRN fwrite_:FAR
-
 EXTRN free_:FAR
 EXTRN malloc_:FAR
-
 EXTRN __exit_:NEAR
 
 EXTRN __GETDS:NEAR
@@ -130,37 +128,32 @@ ENDP
 PROC    locallib_doscreate_  NEAR
 
 ; di is handle ptr
+; dx is filename
+; cx is permissions
 
-push  cx
-mov   cx, dx
-mov   dx, ax
 mov   ah, 03Ch  ; Create file using handle
 int   021h
 jb    bad_create_do_dos_error
 mov   di, ax   ; set file handle in di
 bad_create_do_dos_error:
 call  locallib_doserror_  ; check carry flag etc
-
-pop   cx
 ret
 
 ENDP
 
 PROC    locallib_dosopen_  NEAR
 
-; di is handle ptr
+; di is handle register
+; dx has filename
+; si has flags
 
-push  cx
-mov   cx, dx
-mov   dx, ax
-mov   al, cl
+mov   ax, si   ; si had flags
 mov   ah, 03Dh  ; Open file using handle
 int   021h
 jc    bad_open_do_dos_error
 mov   di, ax   ; set file handle in di
 bad_open_do_dos_error:
 call  locallib_doserror_  ; check carry flag etc
-pop   cx
 ret
 
 ENDP
@@ -226,10 +219,9 @@ dec       si  ; roll back lodsb
 mov       ax, word ptr [bp - 2]
 and       ax, ( _O_RDONLY OR _O_WRONLY OR _O_RDWR OR _O_NOINHERIT ) ; 083h
 
-mov       dx, ax   ; todo can we use si inside as flags
 push      si     ; [bp - 6] = filename.
-
 xchg      ax, si ;   ax gets filename. si gets rwmode for later
+xchg      ax, dx ;   dx gets filename
 call      locallib_dosopen_ 
 test      ax, ax
 jne       sopen_handle_good
@@ -258,14 +250,13 @@ do_create_file:
 test      byte ptr [bp - 2], _O_CREAT ; we didnt ask to create it....
 je        exit_sopen_return_bad_handle
 
-cmp       word ptr ds:[_errno], 2 ; E_NOFILE    ; todo hazy on details. i guess errno was set earlier and we check it to see we had the 'correct error' of no file exists.
+cmp       word ptr ds:[_errno], 2 ; E_NOFILE    ; i guess errno was set earlier and we check it to see we had the 'correct error' of no file exists.
 jne       exit_sopen_return_bad_handle
 
 ; gotta create file..
 
-; todo put vars directly where theyre supposed to go for less juggling.
-pop       ax     ; [bp - 6], filename
-pop       dx     ; [bp - 4], permissions vararg, 1 for readonly 0 for not
+pop       dx     ; [bp - 6], filename
+pop       cx     ; [bp - 4], permissions vararg, 1 for readonly 0 for not
 
 call      locallib_doscreate_
 test      ax, ax
@@ -348,7 +339,6 @@ ret
 ENDP
 
 
-; todo change params
 
 ; ax has flags
 ; si has fp
@@ -373,7 +363,7 @@ mov  cx, PERMISSION_READONLY
 
 test al, FILEFLAG_WRITE
 je   not_write_flag
-dec  cx ; PERMISSION_READONLY ; todo i think this inernally is reapplied anyway.
+dec  cx ; PERMISSION_READONLY 
 or   dl, (_O_WRONLY OR _O_CREAT)
 not_write_flag:
 
@@ -397,8 +387,6 @@ or   dl, cl
 
 ;    fp->_handle = __F_NAME(_sopen,_wsopen)( name, open_mode, shflag, p_mode );
 ; ?? why var args...
-
-label_27:
 
 xchg ax, cx ; cx stores flags.
 
@@ -449,13 +437,12 @@ ENDP
 
 
 ; todo inline???
-; todo get rid of dynamic allocation?
+; outer frame push/pops si. so its safe to wreck here
 
 PROC    locallib_allocfp_ NEAR
 
 
 push      dx
-push      si
 push      di
 mov       si, word ptr ds:[___ClosedStreams]
 test      si, si
@@ -508,7 +495,6 @@ stosw
 lea       ax, [di - SIZE WATCOM_STREAM_LINK]
 do_allocfp_exit:
 pop       di
-pop       si
 pop       dx
 ret
 
@@ -563,105 +549,6 @@ ret
 
 ENDP
 
-COMMENT @
-
-; todo if we have to use this again, then it needs work.
-
-PROC  locallib_freopen_ NEAR
-
-push bx
-push cx
-push si
-push di
-push bp
-mov  bp, sp
-sub  sp, 2
-mov  di, ax
-mov  si, dx
-lea  dx, [bp - 2]
-mov  ax, si
-;call locallib_openflags_
-mov  dx, ax
-test ax, ax
-je   exit_fopen
-mov  ax, bx
-call locallib_openclose_file_
-
-test ax, ax
-je   exit_fopen
-push ax
-xor  ax, ax
-push ax
-mov  al, byte ptr ds:[si]
-mov  cx, word ptr [bp - 2]
-cbw 
-mov  bx, dx
-mov  dx, ax
-mov  ax, di
-call locallib_doopen_
-jmp  exit_fopen
-
-ENDP
-
-
-
-
-
-;todo why does this exist exactly
-
-PROC locallib_openclose_file_ NEAR
-
-push bx
-push cx
-push dx
-push si
-mov  cx, ax
-mov  bx, word ptr ds:[___OpenStreams]
-label_37:
-test bx, bx
-jne  label_32
-mov  si, OFFSET ___ClosedStreams
-label_35:
-mov  bx, word ptr ds:[si]
-test bx, bx
-je   label_33
-cmp  cx, word ptr ds:[bx + 2]
-je   label_34
-mov  si, bx
-jmp  label_35
-label_32:
-mov  ax, word ptr ds:[bx + 2]
-cmp  cx, ax
-je   label_36
-mov  bx, word ptr ds:[bx]
-jmp  label_37
-label_36:
-mov  dx, 1
-call locallib_doclose_
-label_39:
-mov  bx, cx
-exit_openclose_file:
-mov  ax, bx
-pop  si
-pop  dx
-pop  cx
-pop  bx
-ret  
-
-label_34:
-mov  ax, word ptr ds:[bx]
-mov  word ptr ds:[si], ax
-mov  si, word ptr ds:[___OpenStreams]
-mov  word ptr ds:[___OpenStreams], bx
-mov  word ptr ds:[bx], si
-jmp  label_39
-label_33:
-mov  word ptr ds:[_errno], 4
-xor  bx, ax
-jmp  exit_openclose_file
-
-ENDP
-@
 
 PROC    locallib_fclosefromfar_   FAR
 PUBLIC  locallib_fclosefromfar_
