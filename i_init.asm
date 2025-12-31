@@ -222,7 +222,7 @@ setup_mus_driver:
 
 mov   ax, OFFSET _doomcode_filename
 call  CopyString13_
-mov   dx, OFFSET  _fopen_rb_argument
+mov   dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
 call  locallib_fopen_        ; fopen("DOOMCODE.BIN", "rb"); 
 mov   di, ax ; di stores fp
 

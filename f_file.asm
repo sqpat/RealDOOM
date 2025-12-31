@@ -31,6 +31,7 @@ EXTRN __exit_:NEAR
 
 EXTRN _sopen_:FAR
 EXTRN __allocfp_:FAR
+
 EXTRN __GETDS:NEAR
 EXTRN __FiniRtns:FAR
 
@@ -93,10 +94,8 @@ _O_RDWR          = 00002h ;  open for read and write
 _O_APPEND        = 00010h ;  writes done at end of file 
 _O_CREAT         = 00020h ;  create new file 
 _O_TRUNC         = 00040h ;  truncate existing file 
-_O_NOINHERIT     = 00080h ;  file is not inherited by child process 
 _O_TEXT          = 00100h ;  text file 
 _O_BINARY        = 00200h ;  binary file 
-_O_EXCL          = 00400h ;  exclusive open 
 
 
 PROC    F_FILE_STARTMARKER_ NEAR
@@ -128,191 +127,101 @@ call    locallib_fopen_
 retf
 ENDP
 
+COMMENT @
+
+PROC locallib_sopen_ NEAR
 
 
-PROC    locallib_openflags_  NEAR
+0x000000000000a336:  53          push bx
+0x000000000000a337:  51          push cx
+0x000000000000a338:  52          push dx
+0x000000000000a339:  55          push bp
+0x000000000000a33a:  89 E5       mov  bp, sp
+0x000000000000a33c:  8B 46 0C    mov  ax, word ptr [bp + 0xc]
+0x000000000000a33f:  8D 4E 12    lea  cx, [bp + 0x12]
+0x000000000000a342:  8B 5E 10    mov  bx, word ptr [bp + 0x10]
+0x000000000000a345:  8B 56 0E    mov  dx, word ptr [bp + 0xe]
+0x000000000000a348:  E8 01 FE    call 0xa14c
+0x000000000000a34b:  5D          pop  bp
+0x000000000000a34c:  5A          pop  dx
+0x000000000000a34d:  59          pop  cx
+0x000000000000a34e:  5B          pop  bx
+0x000000000000a34f:  CB          ret
 
-push bx
+@
+
+; ax has flags
+; si has fp
+; bx has filename ptr
+
+
+
+PMODE = 0180h ;  ?? ; (S_IREAD | S_IWRITE)
+
+
+PROC   locallib_doopen_ NEAR
+PUBLIC locallib_doopen_ 
 push cx
-push si
 push di
-push bp
-mov  bp, sp
-sub  sp, 4
-mov  si, ax
-mov  bx, dx
-mov  dx, 1
-xor  ax, ax
-xor  di, di
-xor  cx, cx
-mov  word ptr [bp - 4], ax
-mov  word ptr [bp - 2], ax
-test bx, bx
-je   label_1
-cmp  dx, word ptr [__commode]
-jne  label_2
-mov  word ptr ds:[bx], dx
-label_1:
-mov  al, byte ptr ds:[si]
-cmp  al, 'w'
-jne  label_3
-or   cl, _WRITE
-label_9:
-inc  si
-mov  al, byte ptr ds:[si]
-test al, al
-je   label_4
-test dx, dx
-je   label_4
-cmp  al, 'c'
-jae  label_5
-cmp  al, 'b'
-jne  label_10
-test di, di
-je   jump_to_label_11
-label_8:
-xor  dx, dx
-jmp  label_9
-label_2:
-mov  word ptr ds:[bx], ax
-jmp  label_1
-label_3:
-cmp  al, 'r'
-jne  label_17
-or   cl, _READ
-jmp  label_9
-label_17:
-cmp  al, 'a'
-jne  label_18
-or   cl, (_APPEND OR _WRITE)
-jmp  label_9
-label_18:
-call locallib_get_errno_ptr_
-mov  bx, ax
-xor  dx, dx
-mov  word ptr ds:[bx], 9
-exit_openflags:
-mov  ax, dx
-mov  sp, bp
-pop  bp
-pop  di
-pop  si
-pop  cx
-pop  bx
-ret 
-label_5:
-ja   label_6
-cmp  word ptr [bp - 2], 0
-je   label_7
-jmp  label_8
-label_6:
-cmp  al, 't'
-jne  label_12
-test di, di
-je   label_13
-jmp  label_8
-label_4:
-jmp  label_14
-label_12:
-cmp  al, 'n'
-jne  label_9
-cmp  word ptr [bp - 2], 0
-je   label_15
-jmp  label_8
-jump_to_label_11:
-jmp  label_11
-label_10:
-cmp  al, '+'
-jne  label_9
-cmp  word ptr [bp - 4], 0
-jne  label_8
-mov  word ptr [bp - 4], 1
-or   cl, (_READ OR _WRITE)
-jmp  label_9
-label_13:
-mov  di, 1
-jmp  label_9
-label_11:
-mov  di, 1
-or   cl, _BINARY
-jmp  label_9
-label_7:
-mov  word ptr [bp - 2], 1
-or   byte ptr ds:[bx], 1
-jmp  label_9
-label_15:
-mov  word ptr [bp - 2], 1
-and  byte ptr ds:[bx], (NOT _COMMIT)
-jmp  label_9
-label_14:
-test di, di
-jne  label_16
-cmp  word ptr ds:[__fmode], _IOLBF
-jne  label_16
-or   cl, _BINARY
-label_16:
-mov  dx, cx
-jmp  exit_openflags
 
-ENDP
+; si is already fp.
 
-; todo greatly simplify.
-;static FILE * _WCNEAR __F_NAME(__doopen,__wdoopen)( const CHAR_TYPE *name,
-;                       CHAR_TYPE    mode,
-;                       unsigned     file_flags,
-;                       int          extflags,
-;                       int          shflag,     /* sharing flag */
-;                       FILE *       fp )
 
-PROC locallib_doopen_ NEAR
+xor  dx, dx ; equal to _O_RDONLY. default to read
+mov  cx, dx ; zero cx..
 
-push si
-push di
-push bp
-mov  bp, sp
-mov  si, word ptr [bp + 0Ah]  ; todo figure out..
-mov  di, ax
-mov  al, dl
-xor  ah, ah
-call locallib_tolower_
-cmp  al, 'r'
-jne  jump_to_label_19
-xor  ax, ax
-test bl, _WRITE
-je   label_20
-mov  ax, 2
-label_20:
-test bl, _BINARY
-je   label_21
-or   ah, 2
-jmp   label_23
-label_21:
-or   ah, 1
+test al, FILEFLAG_WRITE
+je   not_write_flag
+mov  cx, PMODE ; todo i think this inernally is reapplied anyway.
+or   dl, (_O_WRONLY OR _O_CREAT)
+not_write_flag:
 
-label_23:
-xor  dx, dx
+push cx  ; p_mode (permissions) param is 0 or P_MODE based on write flag.
+
+mov  cl, (_O_TEXT SHR 8)
+test al, FILEFLAG_BINARY
+je   not_binary_flag
+mov  cl, (_O_BINARY SHR 8)
+not_binary_flag:
+or   dh, cl
+
+mov  cl, _O_TRUNC
+test al, FILEFLAG_APPEND
+je   not_append_flag
+mov  cl, _O_APPEND
+not_append_flag:
+or   dl, cl
+
+; flags set.
+
+;    fp->_handle = __F_NAME(_sopen,_wsopen)( name, open_mode, shflag, p_mode );
+; ?? why var args...
+
 label_27:
-push dx
-push word ptr [bp + 8]
-push ax
-push di
+; param 1 set earlier.
+xor  cx, cx
+push cx  ; share flag always 0. todo remove?
+push dx ; open_mode
+push bx ; filename
+xchg ax, cx  ; back up flags.
 call _sopen_
 add  sp, 8
-mov  word ptr ds:[si + 8], ax
+
+mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle], ax
 cmp  ax, 0FFFFh
-je   jump_to_label_22
-mov  word ptr ds:[si + 2], 0
-mov  word ptr ds:[si + 0Ah], 0
-mov  di, word ptr ds:[si + 4]
-or   word ptr ds:[si + 6], bx
-mov  word ptr ds:[di + 6], 0
-mov  di, word ptr ds:[si + 4]
-mov  word ptr ds:[di + 8], cx
-mov  di, word ptr ds:[si + 4]
-mov  word ptr ds:[di + 4], 0
-test bl, _APPEND
+je   bad_handle_dofree
+xor  dx, dx
+mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], dx ; 0
+mov  word ptr ds:[si + 0Ah], dx ; 0
+or   word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], cx  ; flags
+
+mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+mov  word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_orientation], dx ; 0
+mov  word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_extflags], dx ; 0
+mov  word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base], dx ; 0
+test cl, _APPEND
 je   do_open_skip_fseek
-mov  dx, 2
+mov  dx, SEEK_END
 mov  ax, si
 xor  bx, bx
 xor  cx, cx
@@ -321,93 +230,60 @@ do_open_skip_fseek:
 call locallib_chktty_
 mov  ax, si
 exit_doopen:
-pop  bp
-pop  di
-pop  si
-ret  4
-jump_to_label_19:
-jmp  label_19
 
-label_19:
-test bl, _READ
-je   label_24
-mov  ax, (_O_CREAT OR _O_RDWR)
-label_28:
-test bl, _APPEND
-je   label_25
-or   al, (_O_APPEND)
-label_29:
-test bl, _BINARY
-je   label_26
-or   ah, (_O_BINARY SHR 8)
-label_30:
-mov  dx, 0180h   ; todo what
-jmp  label_27
-label_24:
-mov  ax, (_O_CREAT OR _O_WRONLY)
-jmp  label_28
-jump_to_label_22:
-jmp  label_22
-label_25:
-or   al, (_O_TRUNC)
-jmp  label_29
-label_26:
-or   ah, (_O_TEXT SHR 8)
-jmp  label_30
-label_22:
-mov  ax, si
+pop  di
+pop  cx
+ret
+
+
+
+bad_handle_dofree:
+xchg ax, si
 call locallib_freefp_
 xor  ax, ax
 jmp  exit_doopen
 
 ENDP
 
-PROC    locallib_fsopen_  NEAR
+; dx = mode
+; ax = filename
 
-push cx
+PROC    locallib_fopen_   NEAR
+PUBLIC  locallib_fopen_
+
+
+push bx
 push si
-push di
-push bp
-mov  bp, sp
-sub  sp, 2
-mov  di, ax
-mov  si, dx
-mov  cx, bx
-lea  dx, [bp - 2]
-mov  ax, si
-call locallib_openflags_
-mov  bx, ax
+
+xchg ax, bx  ; bx has filename ptr
+call __allocfp_  ; no args. returns file ptr
+
 test ax, ax
-jne  fsopen_do_allocfp
-exit_fsopen:
-mov  sp, bp
-pop  bp
-pop  di
+je   exit_fopen
+
+xchg ax, si  ; si gets fp
+xchg ax, dx  ; ax gets flags
+xor  ah, ah  
+; si has fp
+; bx has filename ptr
+call locallib_doopen_   ; si has filename, bx has flags
+
+
+null_fp:
+
+exit_fopen:
+
 pop  si
-pop  cx
+pop  bx
 ret 
-fsopen_do_allocfp:
-call __allocfp_
-mov  dx, ax
-test ax, ax
-je   label_31
-push ax
-mov  al, byte ptr ds:[si]
-push cx
-cbw 
-mov  cx, word ptr [bp - 2]
-mov  dx, ax
-mov  ax, di
-call locallib_doopen_
-mov  dx, ax
-label_31:
-mov  ax, dx
-jmp  exit_fsopen
+
 
 ENDP
 
+COMMENT @
 PROC  locallib_freopen_ NEAR
 
+push bx
 push cx
 push si
 push di
@@ -418,10 +294,10 @@ mov  di, ax
 mov  si, dx
 lea  dx, [bp - 2]
 mov  ax, si
-call locallib_openflags_
+;call locallib_openflags_
 mov  dx, ax
 test ax, ax
-je   exit_fsopen
+je   exit_fopen
 mov  ax, bx
 call locallib_openclose_file_
 mov  bx, ax
@@ -440,22 +316,15 @@ call locallib_doopen_
 mov  bx, ax
 label_40:
 mov  ax, bx
-jmp  exit_fsopen
+jmp  exit_fopen
 
 ENDP
 
 
-PROC    locallib_fopen_   NEAR
-PUBLIC  locallib_fopen_
 
 
-push bx
-xor  bx, bx
-call locallib_fsopen_   ; todo inline
-pop  bx
-ret 
 
-;todo why does this file exist exactly
+;todo why does this exist exactly
 
 PROC locallib_openclose_file_ NEAR
 
@@ -511,6 +380,7 @@ xor  bx, ax
 jmp  exit_openclose_file
 
 ENDP
+@
 
 PROC    locallib_fclosefromfar_   FAR
 PUBLIC  locallib_fclosefromfar_

@@ -440,8 +440,8 @@ _S_DecreaseRefCountFar_addr =      	 _NULL_OFFSET + 00488h
 _filename_argument = 				 _NULL_OFFSET + 0048Ch
 
 _rndindex = 						 _NULL_OFFSET + 00499h
-_fopen_r_argument = 				 _NULL_OFFSET + 0049Ah
-_fopen_w_argument = 				 _NULL_OFFSET + 0049Ch
+;_fopen_r_argument = 				 _NULL_OFFSET + 0049Ah
+;_fopen_w_argument = 				 _NULL_OFFSET + 0049Ch
 
 _numsectors =						 _NULL_OFFSET + 0049Eh
 _numlines =						     _NULL_OFFSET + 004A0h
@@ -543,7 +543,7 @@ _attackrange16 = 		   			 _NULL_OFFSET + 005E8h
 _usergame =		   		         	 _NULL_OFFSET + 005EAh
 _crushchange = 		   			 	 _NULL_OFFSET + 005EBh
 _leveltime =     		   			 _NULL_OFFSET + 005ECh
-_fopen_rb_argument =                 _NULL_OFFSET + 005F0h
+;_fopen_rb_argument =                 _NULL_OFFSET + 005F0h
 _currenttask =            		     _NULL_OFFSET + 005F3h
 
 _R_DrawSkyPlane_addr =               _NULL_OFFSET + 005F4h
@@ -698,7 +698,7 @@ _hu_font =	 	      			     _NULL_OFFSET + 00A40h
 
 _viewactivestate =	 	     	     _NULL_OFFSET + 00ABEh
 _menuactivestate =	 	     	     _NULL_OFFSET + 00ABFh
-_fopen_wb_argument =	 	     	 _NULL_OFFSET + 00AC0h
+;_fopen_wb_argument =	 	     	 _NULL_OFFSET + 00AC0h
 
 _dodelayedcheatthisframe =			 _NULL_OFFSET + 00AC3h
 _st_gamestate =	  	  				 _NULL_OFFSET + 00AC4h

@@ -1054,7 +1054,7 @@ PUSHA_NO_AX_MACRO
 mov   ax, OFFSET _doomdata_bin_string
 
 call  CopyString13_
-mov   dx, OFFSET  _fopen_rb_argument
+mov   dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
 call  locallib_fopen_        ; fopen("DOOMDATA.BIN", "rb"); 
 mov   di, ax ; di stores fp
 
@@ -1208,7 +1208,7 @@ call  Z_QuickMapPhysics_
 
 mov   ax, OFFSET _doomcode_filename
 call  CopyString13_
-mov   dx, OFFSET  _fopen_rb_argument
+mov   dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
 call  locallib_fopen_        ; fopen("DOOMDATA.BIN", "rb"); 
 mov   si, ax ; si stores fp
 call  Z_DoRenderCodeLoad_

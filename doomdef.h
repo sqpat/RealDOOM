@@ -589,6 +589,10 @@ void  __far locallib_far_fread(void __far* dest, uint16_t size, FILE * stream);
 filelength_t __far locallib_far_fwrite(void __far* dest, uint16_t size, FILE * stream);
 
 
+#define FILEFLAG_READ   0x01
+#define FILEFLAG_WRITE  0x02
+#define FILEFLAG_BINARY 0x40
+#define FILEFLAG_APPEND 0x80
 
 
 #define SAVEGAMESIZE    0xF800

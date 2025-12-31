@@ -181,7 +181,7 @@ call   Z_QuickMapRender_9000To6000_  ; for R_TextureNumForName
 
 mov   ax, OFFSET _doomdata_bin_string
 call  CopyString13_
-mov   dx, OFFSET  _fopen_rb_argument
+mov   dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
 call  locallib_fopen_        ; fopen("DOOMDATA.BIN", "rb"); 
 mov   di, ax ; di stores fp
 
@@ -284,7 +284,7 @@ done_with_switches:
 
 mov   ax, OFFSET _doomdata_bin_string
 call  CopyString13_
-mov   dx, OFFSET  _fopen_rb_argument
+mov   dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
 call  locallib_fopen_        ; fopen("DOOMDATA.BIN", "rb"); 
 mov   di, ax ; di stores fp
 
@@ -405,7 +405,7 @@ rep   stosw
 
 mov   ax, OFFSET _doomdata_bin_string
 call  CopyString13_
-mov   dx, OFFSET  _fopen_rb_argument
+mov   dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
 call  locallib_fopen_        ; fopen("DOOMDATA.BIN", "rb"); 
 mov   di, ax ; di stores fp
 

@@ -91,7 +91,7 @@ not_wad:
 
  
 mov    ax, di
-mov    dx, OFFSET _fopen_rb_argument
+mov    dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
 call   locallib_fopen_
 
 push   di  ; filename

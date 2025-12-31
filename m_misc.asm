@@ -97,7 +97,7 @@ PUBLIC  M_WriteFile_
 push  di
 
 mov   di, dx ; backup dx
-mov   dx, _fopen_wb_argument
+mov   dl, (FILEFLAG_WRITE OR FILEFLAG_BINARY)
 call  locallib_fopen_
 
 test  ax, ax
@@ -141,7 +141,7 @@ PUBLIC  M_ReadFile_
 
 PUSHA_NO_AX_OR_BP_MACRO
 
-mov   dx, _fopen_rb_argument
+mov   dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
 call  locallib_fopen_
 
 push  bx

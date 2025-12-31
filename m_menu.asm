@@ -535,7 +535,7 @@ mov   bx, si
 mov   dx, ss
 lea   ax, [bp - 0100h]
 call  M_MakeSaveGameName_
-mov   dx, OFFSET _fopen_rb_argument
+mov   dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
 lea   ax, [bp - 0100h]
 call  dword ptr ds:[_fopen_addr]
 
@@ -2988,7 +2988,7 @@ sub   sp, MENUGRAPHICS_STR_SIZE
 
 mov   ax, OFFSET _doomdata_bin_string
 call  CopyString13_menu_seg_
-mov   dx, OFFSET  _fopen_rb_argument
+mov   dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
 call  dword ptr ds:[_fopen_addr]        ; fopen("DOOMDATA.BIN", "rb"); 
 mov   di, ax ; store fp
 mov   bx, MENUDATA_DOOMDATA_OFFSET

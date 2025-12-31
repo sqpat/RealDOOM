@@ -237,7 +237,7 @@ rep     movsb
 push    ss
 pop     ds
 
-mov     dx, OFFSET _fopen_rb_argument
+mov     dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
 call    locallib_fopen_
 test    ax, ax
 je      do_string_error
@@ -1327,7 +1327,7 @@ movsw
 movsb
 push    ss
 pop     ds
-mov     dx, OFFSET _fopen_rb_argument
+mov     dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
 call    locallib_fopen_
 push    ax
 xchg    cx, ax

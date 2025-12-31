@@ -370,68 +370,6 @@ iret
 
 ENDP
 
-COMMENT @
-_used_dumpfile:
-
-db "dumpdump.bin", 0
-
-; old ax, bx on the stack already!
-
-PROC dumpstacktrace_ NEAR
-PUBLIC dumpstacktrace_
-
-push  ax
-push  bx
-push  cx
-push  dx
-push  di
-push  si
-push  es
-push  ds
-push  ss
-push  cs
-push  sp
-push  bp
-mov   bp, sp
-
-mov   ax, OFFSET _used_dumpfile
-call  CopyString13_
-
-mov   dx, OFFSET _fopen_w_argument
-call  locallib_fopen_
-mov   bx, ax    ; store 
-xor   di, di
-
-mov   cx, 256
-
-nextbyte:
-mov   dx, bx
-mov   al, byte ptr ss:[bp + di]
-call  locallib_fputc_
-inc   di
-loop  nextbyte
-
-mov   ax, bx
-call  locallib_fclose_
-
-LEAVE_MACRO
-pop   ax  ; sp
-pop   ax  ; cs
-pop   ax  ; ss
-pop   ax  ; ds
-pop   es
-pop   si
-pop   di
-pop   dx
-pop   cx
-pop   bx
-pop   ax
-
-ret
-
-ENDP
-
-@
 
 
 
@@ -1392,7 +1330,7 @@ call  CopyString13_
 
 
 
-mov   dx, OFFSET _fopen_r_argument
+mov   dl, (FILEFLAG_READ)
 ;mov   ax, OFFSET _filename_argument    ; already set above
 call  locallib_fopen_
 
@@ -1618,7 +1556,7 @@ mov   ax, OFFSET _used_defaultfile
 call  CopyString13_
 
 
-mov   dx, OFFSET  _fopen_w_argument
+mov   dl, (FILEFLAG_WRITE)
 ;mov   ax, OFFSET _filename_argument  ; already set above
 call  locallib_fopen_
 

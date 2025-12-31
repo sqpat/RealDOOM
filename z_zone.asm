@@ -802,7 +802,7 @@ push  ax ; "bp - 4" garbage value overwritten later
 mov   byte ptr ds:[_currentoverlay], al
 cbw
 mov   si, ax
-mov   dx, _fopen_rb_argument
+mov   dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
 SHIFT_MACRO shl   si 2
 
 mov   ax, OFFSET _doomcode_filename

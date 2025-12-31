@@ -1178,6 +1178,7 @@ spritedefs_bytes    73BB:0000
 
 // size_texturedefs_bytes 0x6184... 0x6674
 
+// todo: move this to near memory? 31000 bytes but more like 23000 free.
 // this is 9000-9800 for bsp/plane
 //. then   7000-7800 for sprite.
 
