@@ -219,11 +219,9 @@ int       021h
 sbb       dx, dx
 mov       cx, 0Bh   ; EMFILE?
 
-call      locallib_get_errno_ptr_
-mov       bx, ax
-mov       ax, 0FFFFh
-mov       word ptr ds:[bx], cx
-jmp       exit_sopen
+mov       word ptr ds:[_errno], cx
+
+jmp       exit_sopen_return_bad_handle
 
 
 found_space:
@@ -264,9 +262,7 @@ do_create_file:
 test      byte ptr [bp - 2], _O_CREAT ; we didnt ask to create it....
 je        exit_sopen_return_bad_handle
 
-call      locallib_get_errno_ptr_
-xchg      ax, bx
-cmp       word ptr ds:[bx], 2 ; E_NOFILE    ; todo hazy on details. i guess errno was set earlier and we check it to see we had the 'correct error' of no file exists.
+cmp       word ptr ds:[_errno], 2 ; E_NOFILE    ; todo hazy on details. i guess errno was set earlier and we check it to see we had the 'correct error' of no file exists.
 jne       exit_sopen_return_bad_handle
 
 ; gotta create file..
@@ -582,9 +578,7 @@ mov  word ptr ds:[___OpenStreams], bx
 mov  word ptr ds:[bx], si
 jmp  label_39
 label_33:
-call locallib_get_errno_ptr_
-mov  bx, ax
-mov  word ptr ds:[bx], 4
+mov  word ptr ds:[_errno], 4
 xor  bx, ax
 jmp  exit_openclose_file
 
@@ -622,9 +616,7 @@ pop  cx
 pop  bx
 ret
 close_is_error:
-call locallib_get_errno_ptr_
-xchg ax, si
-mov  word ptr ds:[si], 4
+mov  word ptr ds:[_errno], 4
 mov  si, 0FFFFh
 jmp  continue_close
 
@@ -980,9 +972,7 @@ add  di, dx
 sub  cx, dx
 jmp  flush_more_to_file
 zero_flushed_error:
-call locallib_get_errno_ptr_
-mov  bx, ax
-mov  word ptr ds:[bx], 0Ch
+mov  word ptr ds:[_errno], 0Ch
 mov  bp, 0FFFFh
 jmp  set_err_flag
 
@@ -1113,9 +1103,7 @@ test cx, cx
 jge  exit_return_fseek_error
 
 invalid_param:
-call locallib_get_errno_ptr_
-mov  si, ax
-mov  word ptr ds:[si], 9
+mov  word ptr ds:[_errno], 9
 jmp  exit_return_fseek_error
 
 check_for_seek_end:
@@ -1719,9 +1707,7 @@ do_qwrite_error:
 call locallib_set_errno_ptr_
 jmp  exit_qwrite
 get_qwrite_errno:
-call locallib_get_errno_ptr_
-mov  si, ax
-mov  word ptr ds:[si], 0Ch
+mov  word ptr ds:[_errno], 0Ch
 jmp  skip_qwrite_errno
 
 
@@ -1841,28 +1827,15 @@ pop   bx
 ret  
 ENDP
 
-; todo refactor out
-PROC   locallib_get_errno_ptr_ NEAR
-PUBLIC locallib_get_errno_ptr_
-
-mov   ax, OFFSET _errno
-ret
-
-ENDP
-
 
 
 ; lets just assume its a valid error passed in.
 
 PROC locallib_set_errno_ptr_ NEAR
 
-push  si
-mov   si, ax
-call  locallib_get_errno_ptr_
-xchg  ax, si
-mov   word ptr ds:[si], ax
+mov   word ptr ds:[_errno], ax
 mov   ax, 0FFFFh
-pop   si
+
 ret 
 
 ENDP
@@ -2020,9 +1993,7 @@ call locallib_filbuf_
 jmp  check_if_2nd_get_necessary
 
 fgetc_error_handler:
-call locallib_get_errno_ptr_
-mov  bx, ax
-mov  word ptr ds:[bx], 4
+mov  word ptr ds:[_errno], 4
 mov  ax, 0FFFFh
 or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
 jmp  exit_fgetc
@@ -2121,9 +2092,7 @@ je   prepare_to_put_char
 jmp  exit_fputc_return_error
 
 handle_fputc_error:
-call locallib_get_errno_ptr_
-mov  di, ax
-mov  word ptr ds:[di], 4
+mov  word ptr ds:[_errno], 4
 or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
 exit_fputc_return_error:
 mov  ax, 0FFFFh
