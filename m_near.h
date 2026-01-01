@@ -514,7 +514,7 @@ typedef struct{
 #define fseek_addr     			          (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0324)))
 #define fread_addr     			          (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0328)))
 #define fclose_addr    			          (*((uint32_t  __near*)             (_NULL_OFFSET + 0x032C)))
-#define locallib_far_fread_addr    		  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0330)))
+//#define locallib_far_fread_addr    		  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0330)))
 #define S_InitSFXCache_addr     		  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0334)))
 
 

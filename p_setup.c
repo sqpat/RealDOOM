@@ -1178,7 +1178,7 @@ void __near Z_ClearDeadCode() {
 	dest =  (angle_t __far* )MK_FP(tantoangle_segment, 0);
 	fp = locallib_fopen("DOOMDATA.BIN", FILEFLAG_READ | FILEFLAG_BINARY);
 	locallib_fseek(fp, TANTOA_DOOMDATA_OFFSET, SEEK_SET);
-	locallib_far_fread(dest, 4 * 2049, fp);
+	locallib_fread(dest, 4 * 2049, fp);
 	locallib_fclose(fp);
 
 }

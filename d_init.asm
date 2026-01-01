@@ -20,7 +20,7 @@ INCLUDE strings.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN locallib_fread_:NEAR
+EXTRN locallib_fread_nearsegment_:NEAR
 EXTRN locallib_fopen_:NEAR
 EXTRN locallib_fclose_:NEAR
 EXTRN locallib_setbuf_:NEAR
@@ -1333,7 +1333,7 @@ push    ax
 xchg    cx, ax
 lea     ax, [bp - 6]
 mov     bx, 6 * 1
-call    locallib_fread_
+call    locallib_fread_nearsegment_
 pop     ax  ; fp
 call    locallib_fclose_
 cmp     word ptr [bp - 2], 0902h

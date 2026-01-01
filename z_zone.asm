@@ -19,11 +19,11 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
  
-EXTRN locallib_fread_:NEAR
+EXTRN locallib_fread_nearsegment_:NEAR
 EXTRN locallib_fopen_:NEAR
 EXTRN locallib_fclose_:NEAR
 EXTRN locallib_fseek_:NEAR
-EXTRN locallib_far_fread_:FAR
+EXTRN locallib_far_fread_:NEAR
 .DATA
 
 .CODE
@@ -817,7 +817,7 @@ call  locallib_fseek_
 mov   bx, 1 * 2
 mov   ax, sp ; [bp - 4]
 mov   cx, si
-call  locallib_fread_
+call  locallib_fread_nearsegment_
 
 pop   bx;  [bp - 4]
 mov   dx, CODE_OVERLAY_SEGMENT

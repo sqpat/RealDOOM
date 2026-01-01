@@ -35,10 +35,10 @@ EXTRN Z_QuickMapRender4000_:FAR
 EXTRN Z_QuickMapVisplanePage_:FAR
 EXTRN Z_QuickMapIntermission_:FAR
 EXTRN Z_QuickMapMenu_:FAR
-EXTRN locallib_fread_:NEAR
+EXTRN locallib_fread_nearsegment_:NEAR
 EXTRN locallib_fseek_:NEAR
 EXTRN locallib_fseekfromfar_:FAR
-EXTRN locallib_far_fread_:FAR
+EXTRN locallib_far_fread_:NEAR
 EXTRN Z_QuickMapRenderPlanes_:FAR
 EXTRN Z_QuickMapPalette_:FAR
 EXTRN Z_QuickMapMaskedExtraData_:FAR
@@ -55,7 +55,6 @@ EXTRN locallib_fclose_:NEAR
 EXTRN locallib_fclosefromfar_:NEAR
 
 EXTRN locallib_ftell_:NEAR
-EXTRN locallib_far_fread_:FAR
 EXTRN getStringByIndex_:FAR
 EXTRN I_Error_:FAR
 EXTRN P_InitThinkers_:FAR
@@ -704,7 +703,7 @@ do_next_index:
 mov    ax, sp  ; bp - 6
 mov    bx, 1 * 2 ; read 2 bytes
 mov    cx, di  ; fp
-call   locallib_fread_
+call   locallib_fread_nearsegment_
 
 
 test   si, 00FFh
@@ -977,7 +976,6 @@ dw OFFSET _fopen_addr                          , OFFSET locallib_fopenfromfar_
 dw OFFSET _fseek_addr                          , OFFSET locallib_fseekfromfar_
 dw OFFSET _fread_addr                          , OFFSET locallib_freadfromfar_
 dw OFFSET _fclose_addr                         , OFFSET locallib_fclosefromfar_
-dw OFFSET _locallib_far_fread_addr             , OFFSET locallib_far_fread_
 dw OFFSET _getStringByIndex_addr               , OFFSET getStringByIndex_
 dw OFFSET _I_Error_addr                        , OFFSET I_Error_
 dw OFFSET _P_InitThinkers_addr                 , OFFSET P_InitThinkers_
@@ -1023,7 +1021,7 @@ push  ax
 mov   ax, sp 
 mov   bx, 1 * 2
 mov   cx, si
-call  locallib_fread_
+call  locallib_fread_nearsegment_
 pop   bx
 ret
 
@@ -1073,7 +1071,7 @@ call  locallib_far_fread_
 mov   ax, OFFSET _mobjinfo
 mov   bx, (SIZE MOBJINFO_T) * NUMMOBJTYPES
 mov   cx, di
-call  locallib_fread_
+call  locallib_fread_nearsegment_
 
 mov     ax, OFFSET str_dot
 call    DEBUG_PRINT_NOARG_CS_

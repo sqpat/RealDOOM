@@ -28,11 +28,11 @@ EXTRN FixedDivWholeA_:FAR
 EXTRN FixedMul_:FAR
 EXTRN FixedMul_:FAR
 EXTRN CopyString13_:NEAR
-EXTRN locallib_fread_:NEAR
+EXTRN locallib_fread_nearsegment_:NEAR
 EXTRN locallib_fseek_:NEAR
 EXTRN locallib_fopen_:NEAR
 EXTRN locallib_fclose_:NEAR
-EXTRN locallib_far_fread_:FAR
+EXTRN locallib_far_fread_:NEAR
 EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
 EXTRN R_TextureNumForName_:NEAR
 EXTRN R_CheckTextureNumForName_:NEAR
@@ -194,7 +194,7 @@ call  locallib_fseek_  ;    fseek(fp, SWITCH_DOOMDATA_OFFSET, SEEK_SET);
 mov   ax, sp
 mov   cx, di ; fp
 mov   bx, (SIZE SWITCHLIST_T) * NUMSWITCHDEFS
-call  locallib_fread_
+call  locallib_fread_nearsegment_
 
 xchg  ax, di
 call  locallib_fclose_
@@ -293,7 +293,7 @@ mov   di, ax ; di stores fp
 mov   ax, sp
 mov   cx, di ; fp
 mov   bx, (SIZE ANIMDEF_T) * NUMANIMDEFS
-call  locallib_fread_
+call  locallib_fread_nearsegment_
 
 xchg  ax, di
 call  locallib_fclose_
@@ -416,7 +416,7 @@ call  locallib_fseek_  ;    fseek(fp, SWITCH_DOOMDATA_OFFSET, SEEK_SET);
 lea   ax, [bp - SIZE_SPRITE_NAMES]
 mov   cx, di ; fp
 mov   bx, 5 * NUMSPRITES
-call  locallib_fread_
+call  locallib_fread_nearsegment_
 
 xchg  ax, di
 call  locallib_fclose_

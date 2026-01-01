@@ -573,7 +573,7 @@ good_savegame_file:
 push  bx ; fp. 2nd time for later pop
 
 xchg  bx, cx  ; reverse arg order..
-call  dword ptr ds:[_locallib_far_fread_addr]
+call  dword ptr ds:[_fread_addr]
 
 pop   ax  ; recover fp
 call  dword ptr ds:[_fclose_addr]
@@ -3000,6 +3000,7 @@ lea   ax, [bp - MENUGRAPHICS_STR_SIZE]
 mov   si, ax
 mov   bx, NUM_MENU_ITEMS * SIZEOF_LUMP_NAME
 mov   cx, di
+mov   dx, ds
 call  dword ptr ds:[_fread_addr]	;fread(menugraphics, 9, NUM_MENU_ITEMS, fp);
 
 xchg  ax, di

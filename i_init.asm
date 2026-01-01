@@ -19,11 +19,11 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN locallib_fread_:NEAR
+EXTRN locallib_fread_nearsegment_:NEAR
 EXTRN locallib_fseek_:NEAR
 EXTRN locallib_fopen_:NEAR
 EXTRN locallib_fclose_:NEAR
-EXTRN locallib_far_fread_:FAR
+EXTRN locallib_far_fread_:NEAR
 EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
 EXTRN M_CheckParm_:NEAR
 EXTRN TS_Dispatch_:NEAR
@@ -235,7 +235,7 @@ call  locallib_fseek_        ; fseek(fp, musdriverstartposition[driverindex-1], 
 mov   bx, 1 * 2
 lea   ax, [bp - 4] 
 mov   cx, di
-call  locallib_fread_        ; fread(&codesize, 2, 1, fp);
+call  locallib_fread_nearsegment_        ; fread(&codesize, 2, 1, fp);
 
 
 mov   cx, di                  ; fp

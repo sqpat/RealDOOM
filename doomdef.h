@@ -585,7 +585,7 @@ void __far  _fstrncpy(char __far *dst, const char __far *src, size_t n);
 
 #pragma aux (locallib_far_fread_params)  locallib_far_freads;
 
-void  __far locallib_far_fread(void __far* dest, uint16_t size, FILE * stream);
+void  __near locallib_fread(void __far* dest, uint16_t size, FILE * stream);
 filelength_t __far locallib_far_fwrite(void __far* dest, uint16_t size, FILE * stream);
 
 

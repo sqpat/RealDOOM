@@ -341,7 +341,8 @@ _fopen_addr =     			         _NULL_OFFSET + 00320h
 _fseek_addr =     			         _NULL_OFFSET + 00324h
 _fread_addr =     			         _NULL_OFFSET + 00328h
 _fclose_addr =    			         _NULL_OFFSET + 0032Ch
-_locallib_far_fread_addr =    		 _NULL_OFFSET + 00330h
+; unused..
+;_locallib_far_fread_addr =    		 _NULL_OFFSET + 00330h
 _S_InitSFXCache_addr =     	    	 _NULL_OFFSET + 00334h
 
 

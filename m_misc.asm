@@ -24,7 +24,7 @@ EXTRN locallib_fclose_:NEAR
 EXTRN locallib_fseek_:NEAR
 EXTRN locallib_ftell_:NEAR
 EXTRN locallib_far_fwrite_:NEAR
-EXTRN locallib_far_fread_:FAR
+EXTRN locallib_far_fread_:NEAR
 EXTRN locallib_strcmp_:NEAR
 EXTRN locallib_strlwr_:NEAR
 

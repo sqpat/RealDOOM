@@ -21,7 +21,7 @@ INSTRUCTION_SET_MACRO
 
 EXTRN Z_QuickMapWADPageFrame_:FAR
 EXTRN locallib_fseek_:NEAR
-EXTRN locallib_far_fread_:FAR
+EXTRN locallib_far_fread_:NEAR
 EXTRN I_Error_:FAR
 
 .DATA
