@@ -175,11 +175,9 @@ mov       word ptr [bp - 8], ax
 xor       ax, ax
 and       byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT (_SFERR OR _EOF))
 mov       word ptr [bp - 6], ax
-test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _BINARY
-jne       do_binary_fwrite
-jmp       do_text_fwrite
+
 do_binary_fwrite:
-label_13:
+continue_fwrite_loop:
 
 cmp       word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
 jne       do_copy_from_buffer_fwrite
@@ -208,12 +206,12 @@ label_15:
 or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
 iterate_and_continue_next_fwrite_cycle:
 add       word ptr [bp - 0Ch], dx
-;add       word ptr [bp - 6], dx
 sub       word ptr [bp - 4], dx
 je        label_12
 
 test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
-je        label_13
+je        continue_fwrite_loop
+
 label_12:
 mov       dx, 1
 test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
@@ -270,51 +268,7 @@ mov       ax, si
 call      locallib_flush_
 jmp       iterate_and_continue_next_fwrite_cycle
 
-do_text_fwrite:
-xor       cx, cx
-test      byte ptr ds:[si+ WATCOM_C_FILE.watcom_file_flag + 1], (_IOFBF SHR 8)
-je        label_21
 
-and       byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], 0FAh   ;  ((NOT IONBF) SHR 8?)
-mov       cx, 1
-or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_IOFBF SHR 8)
-
-label_21:
-
-mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
-mov       ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_orientation]
-
-mov       word ptr [bp - 0Ah], ax
-mov       word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _READ
-mov       bx, word ptr [bp - 0Ch]
-look_next_character_fwrite_text:
-mov       al, byte ptr ds:[bx]
-mov       dx, di
-cbw      
-inc       bx
-call      locallib_fputc_
-test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (_SFERR OR _EOF)
-jne       fput_had_error_or_eof_in_fwrite
-
-inc       word ptr [bp - 6]
-cmp       di, word ptr [bp - 6]
-jne       look_next_character_fwrite_text
-
-fput_had_error_or_eof_in_fwrite:
-
-mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
-mov       ax, word ptr [bp - 0Ah]
-mov       word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_orientation], ax
-test      cx, cx
-jne       label_23
-jmp       label_12
-label_23:
-
-and       byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], 0FAh   ;  ((NOT IONBF) SHR 8?)
-mov       ax, bx
-or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_IOFBF SHR 8)
-call      locallib_flush_
-jmp       label_12
 
 ENDP
 
