@@ -138,9 +138,9 @@ jmp       exit_fread
 
 
 ; bp - 2 = bytes to copy
-; bp - 4 = dest
+; bp - 4 = unused
 ; bp - 6 = bytes copied
-; bp - 8 = ???
+; bp - 8 = unused
 ; bp - 0Ah = size part 1/record count
 ; bp - 0Ch = fp
 
@@ -152,13 +152,15 @@ push      di
 push      bp
 mov       bp, sp
 mov       es, dx  ; copy size todo remove
-xchg      ax, bx
+xchg      ax, di  ; di gets dest
+xchg      ax, bx  ; ax gets thing to mult by
 mul       dx
 test      ax, ax
 je        jump_to_exit_fread
 
 push      ax   ; bp - 2 bytes to copy
-push      bx   ; bp - 4 dest
+push      di   ; bp - 4 dest
+
 
 xchg      ax, dx    ; dx gets mul result
 mov       si, cx    ; si gets fp
@@ -185,15 +187,7 @@ call      locallib_ioalloc_
 
 dont_allocate_buffer:
 
-; already done
-; mov       word ptr [bp - 6], cx ; still 0
-test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _BINARY
-jne       do_binary_fread
-jmp       do_text_fread
 
-bad_read_do_error:
-or        byte ptr ds:[si + 6], _SFERR
-jmp       finished_fread
 
 do_binary_fread:
 ; bp - 2 = bytes to copy
@@ -210,7 +204,7 @@ jbe       dont_cap_bytesleft
 mov       cx, ax
 dont_cap_bytesleft:
 
-mov       di, word ptr [bp - 4]
+; di carries dest already.
 mov       bx, si
 
 sub       word ptr ds:[bx + WATCOM_C_FILE.watcom_file_cnt], cx
@@ -228,7 +222,7 @@ adc       cx, cx
 rep       movsb
 
 mov       word ptr ds:[bx + WATCOM_C_FILE.watcom_file_ptr], si
-mov       word ptr [bp - 4], di
+
 mov       si, bx ;unbackup
 
 out_of_buffer:
@@ -257,15 +251,16 @@ cmp       bx, SECTOR_SIZE    ; /* if more than a sector, set to multiple of sect
 jbe       skip_buffer_modify
 xor       bl, bl
 and       bh, 0FEh   ; 0FE00h = -SECTOR_SIZE.
+
 skip_buffer_modify:
-mov       dx, word ptr [bp - 4]
+mov       dx, di
 mov       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
 call      locallib_qread_
 cmp       ax, 0FFFFh
 je        bad_read_do_error
 test      ax, ax
 je        hit_end_of_file
-add       word ptr [bp - 4], ax
+add       di, ax
 sub       word ptr [bp - 2], ax
 add       word ptr [bp - 6], ax
 jmp       continue_fread_until_done
@@ -292,67 +287,10 @@ test      ax, ax
 je        finished_fread
 jmp       continue_fread_until_done
 
+bad_read_do_error:
+or        byte ptr ds:[si + 6], _SFERR
 
-;todo optimize out?
-do_text_fread:
-mov       bx, word ptr [bp - 4]
-add       bx, dx
-mov       word ptr [bp - 8], bx
 
-continue_fread_until_done_text:
-
-cmp       word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
-jne       continue_bufferred_fread_text
-just_fill_buffer_text:
-
-call      locallib_fill_buffer_
-test      ax, ax
-je        finished_fread
-
-continue_bufferred_fread_text:
-
-dec       word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
-mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
-mov       dl, byte ptr ds:[bx]
-
-xor       dh, dh
-inc       bx
-mov       ax, dx
-mov       word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], bx
-cmp       dx, CARRIAGE_RETURN
-jne       not_carriage_return
-cmp       word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
-je        label_15
-label_16:
-
-dec       word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
-mov       bx, word ptr ds:[si]
-
-mov       al, byte ptr ds:[bx]
-inc       bx
-xor       ah, ah
-mov       word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], bx
-not_carriage_return:
-cmp       ax, DOS_EOF_CHAR
-jne       not_eof
-
-or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _EOF
-jmp       finished_fread
-
-label_15:
-mov       ax, di
-mov       si, di ; todo clean
-call      locallib_fill_buffer_
-test      ax, ax
-jne       label_16
-jmp       finished_fread
-not_eof:
-mov       byte ptr ds:[bx], al
-inc       bx
-inc       word ptr [bp - 6]
-cmp       bx, word ptr [bp - 8]
-jne       continue_fread_until_done_text
-jmp       finished_fread
 
 
 ENDP
