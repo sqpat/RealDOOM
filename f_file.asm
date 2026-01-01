@@ -120,198 +120,201 @@ ret
 
 ENDP
 
+
+; todo remove.
+
+error_fwrite_readonly:
+mov       word ptr [_errno], 4
+mov       bx, cx
+xor       ax, ax
+or        byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], _SFERR
+jmp       exit_fwrite
+
+
 PROC    locallib_fwrite_ NEAR
 PUBLIC  locallib_fwrite_ 
 
 ; bp - 2 = fp
-; bp - 0Ch = source
-; bp - 0Eh = ptr
+; bp - 4 = bytes left to copy
+; bp - 6 = bytes copied (?)
+; bp - 8 = some sort of flag
+; bp - 0Ah = old orientation
+; bp - 0Ch = copy source
+
 
 push      si
 push      di
 push      bp
 mov       bp, sp
-sub       sp, 0Ah
-push      ax
-push      dx
+push      cx    ; fp - bp - 2
+sub       sp, 08h
+push      ax    ; bp - 0Ch
 mov       di, bx
-mov       word ptr [bp - 2], cx  ; fp
-mov       bx, cx
-test      byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], _WRITE
-jne       label_1
-jmp       label_2
-label_1:
-mov       ax, di
+mov       si, cx   ; fp
+test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _WRITE
+je        error_fwrite_readonly
+xchg      ax, di
 mul       dx
-mov       di, ax
+mov       word ptr [bp - 4], ax
+
 test      ax, ax
-jne       label_3
-jmp       exit_fwrite
-label_3:
-mov       bx, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_link]
-cmp       word ptr ds:[bx + WATCOM_C_FILE.watcom_file_link], 0
-jne       label_4
-jmp       label_5
-label_4:
-mov       bx, word ptr [bp - 2]
-mov       ax, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag]
+je        exit_fwrite
+
+mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+cmp       word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
+jne       skip_ioalloc_fwrite
+
+mov       ax, si
+call      locallib_ioalloc_
+
+skip_ioalloc_fwrite:
+
+mov       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag]
 and       ax, (_SFERR OR _EOF)
 mov       word ptr [bp - 8], ax
-xor       al, al
-and       byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], (NOT (_SFERR OR _EOF))
+xor       ax, ax
+and       byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT (_SFERR OR _EOF))
 mov       word ptr [bp - 6], ax
-test      byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], _BINARY
-jne       label_6
-jmp       label_7
-label_6:
-mov       word ptr [bp - 4], di
+test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _BINARY
+jne       do_binary_fwrite
+jmp       do_text_fwrite
+do_binary_fwrite:
 label_13:
-mov       bx, word ptr [bp - 2]
-cmp       word ptr ds:[bx + 2], 0
-jne       jump_to_label_11
+
+cmp       word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
+jne       do_copy_from_buffer_fwrite
 mov       ax, word ptr [bp - 4]
-cmp       ax, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_bufsize]
-jb        jump_to_label_11
+cmp       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize]
+jb        do_copy_from_buffer_fwrite
 mov       bx, ax
-xor       bl, al
-and       bh, 0FEh   ; -512 or sector size...
-test      bx, bx
-jne       label_10
-mov       bx, ax
-label_10:
-mov       si, word ptr [bp - 2]
+and       bx, 0FE00h   ; -512 or sector size...
+jne       not_less_than_one_sector_fwrite
+xchg      ax, bx
+
+not_less_than_one_sector_fwrite:
+
 mov       dx, word ptr [bp - 0Ch]
 mov       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
 call      locallib_qwrite_
 mov       dx, ax
 cmp       ax, 0FFFFh
-jne       label_9
+je        label_15
+test      ax, ax
+jne       iterate_and_continue_next_fwrite_cycle
+mov       word ptr [_errno], 0Ch
+
+
 label_15:
 or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
-label_8:
+iterate_and_continue_next_fwrite_cycle:
 add       word ptr [bp - 0Ch], dx
-add       word ptr [bp - 6], dx
+;add       word ptr [bp - 6], dx
 sub       word ptr [bp - 4], dx
 je        label_12
-mov       bx, word ptr [bp - 2]
-test      byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], _SFERR
+
+test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
 je        label_13
 label_12:
-mov       bx, word ptr [bp - 2]
-test      byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], _SFERR
+mov       dx, 1
+test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
 je        label_14
-mov       word ptr [bp - 6], 0
+dec       dx  ; 0 byte copied? error case.
 label_14:
 mov       ax, word ptr [bp - 8]
-mov       bx, word ptr [bp - 2]
-xor       dx, dx
-or        word ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], ax
-mov       ax, word ptr [bp - 6]
-div       word ptr [bp - 0Eh]
+or        word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], ax
+
+
+xchg      ax, dx ; dx had bytes copied.
+
 exit_fwrite:
 mov       sp, bp
 pop       bp
 pop       di
 pop       si
 ret      
-jump_to_label_11:
-jmp       label_11
-label_2:
-mov       word ptr [_errno], 4
-mov       bx, cx
-xor       ax, ax
-or        byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], _SFERR
-jmp       exit_fwrite
-label_5:
-mov       ax, cx
-mov       si, word ptr [bp - 2]
-call      locallib_ioalloc_
-jmp       label_4
-label_9:
-test      ax, ax
-jne       label_8
-mov       word ptr [_errno], 0Ch
-jmp       label_15
-label_11:
-mov       bx, word ptr [bp - 2]
-mov       ax, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_bufsize]
-sub       ax, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_cnt]
-mov       dx, ax
-cmp       ax, word ptr [bp - 4]
-jbe       label_16
+
+
+do_copy_from_buffer_fwrite:
+
+mov       dx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize]
+sub       dx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+cmp       dx, word ptr [bp - 4]
+jbe       dont_cap_bytesleft_fwrite
 mov       dx, word ptr [bp - 4]
-label_16:
-mov       di, word ptr [bp - 2]
+
+dont_cap_bytesleft_fwrite:
+
+mov       di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
+mov       bx, si
 mov       si, word ptr [bp - 0Ch]
 mov       cx, dx
-mov       di, word ptr ds:[di]
-mov       bx, word ptr [bp - 2]
-push      di
+
 mov       ax, ds
 mov       es, ax
 shr       cx, 1
 rep       movsw
 adc       cx, cx
 rep       movsb
-pop       di
-or        byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
-add       word ptr ds:[bx], dx
-add       word ptr ds:[bx + WATCOM_C_FILE.watcom_file_cnt], dx
-mov       ax, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_cnt]
-cmp       ax, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_bufsize]
+
+mov       si, bx
+or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
+mov       word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], di
+add       word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], dx
+mov       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+cmp       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize]
 je        label_17
-test      byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag + 1], (_IOFBF SHR 8)
-jne       label_17
-jmp       label_8
+test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_IOFBF SHR 8)
+je        iterate_and_continue_next_fwrite_cycle
 label_17:
-mov       ax, word ptr [bp - 2]
+mov       ax, si
 call      locallib_flush_
-jmp       label_8
-label_7:
+jmp       iterate_and_continue_next_fwrite_cycle
+
+do_text_fwrite:
 xor       cx, cx
-test      byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag + 1], (_IOFBF SHR 8)
-jne       label_22
+test      byte ptr ds:[si+ WATCOM_C_FILE.watcom_file_flag + 1], (_IOFBF SHR 8)
+je        label_21
+
+and       byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], 0FAh   ;  ((NOT IONBF) SHR 8?)
+mov       cx, 1
+or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_IOFBF SHR 8)
+
 label_21:
-mov       bx, word ptr [bp - 2]
-mov       bx, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_link]
-mov       ax, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag]
-mov       si, word ptr [bp - 2]
+
+mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+mov       ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_orientation]
+
 mov       word ptr [bp - 0Ah], ax
-mov       word ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], _READ
+mov       word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _READ
 mov       bx, word ptr [bp - 0Ch]
-label_19:
+look_next_character_fwrite_text:
 mov       al, byte ptr ds:[bx]
-mov       dx, word ptr [bp - 2]
+mov       dx, di
 cbw      
 inc       bx
 call      locallib_fputc_
 test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (_SFERR OR _EOF)
-je        label_18
-label_20:
-mov       bx, word ptr [bp - 2]
-mov       bx, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_link]
+jne       fput_had_error_or_eof_in_fwrite
+
+inc       word ptr [bp - 6]
+cmp       di, word ptr [bp - 6]
+jne       look_next_character_fwrite_text
+
+fput_had_error_or_eof_in_fwrite:
+
+mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 mov       ax, word ptr [bp - 0Ah]
-mov       word ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], ax
+mov       word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_orientation], ax
 test      cx, cx
 jne       label_23
 jmp       label_12
 label_23:
-mov       bx, word ptr [bp - 2]
-and       byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag + 1], 0FAh   ;  ((NOT IONBF) SHR 8?)
+
+and       byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], 0FAh   ;  ((NOT IONBF) SHR 8?)
 mov       ax, bx
-or        byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag + 1], (_IOFBF SHR 8)
+or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_IOFBF SHR 8)
 call      locallib_flush_
 jmp       label_12
-label_22:
-and       byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag + 1], 0FAh   ;  ((NOT IONBF) SHR 8?)
-mov       cx, 1
-or        byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag + 1], (_IOFBF SHR 8)
-jmp       label_21
-label_18:
-inc       word ptr [bp - 6]
-cmp       di, word ptr [bp - 6]
-jne       label_19
-jmp       label_20
 
 ENDP
 
