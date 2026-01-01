@@ -23,7 +23,7 @@ EXTRN locallib_fread_nearsegment_:NEAR
 EXTRN locallib_fopen_:NEAR
 EXTRN locallib_fclose_:NEAR
 EXTRN locallib_fseek_:NEAR
-EXTRN locallib_far_fread_:NEAR
+EXTRN locallib_fread_:NEAR
 .DATA
 
 .CODE
@@ -824,7 +824,7 @@ mov   dx, CODE_OVERLAY_SEGMENT
 mov   cx, si ; fp
 xor   ax, ax
 
-call  locallib_far_fread_
+call  locallib_fread_
 
 xchg  ax, si
 call  locallib_fclose_

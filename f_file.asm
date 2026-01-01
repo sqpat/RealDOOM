@@ -123,7 +123,7 @@ ENDP
 
 PROC    locallib_freadfromfar_   FAR
 PUBLIC  locallib_freadfromfar_
-call    locallib_far_fread_
+call    locallib_fread_
 retf
 ENDP
 
@@ -145,10 +145,6 @@ mov       dx, ds  ; implied near.
 
 PROC    locallib_fread_   NEAR
 PUBLIC  locallib_fread_ 
-ENDP
-
-PROC    locallib_far_fread_   NEAR
-PUBLIC  locallib_far_fread_ 
 
 push      si
 push      di
@@ -2244,8 +2240,8 @@ ENDP
 
 
 COMMENT @
-PROC    locallib_far_fread_   FAR
-PUBLIC  locallib_far_fread_
+PROC    locallib_fread_   FAR
+PUBLIC  locallib_fread_
 
 
 push      si

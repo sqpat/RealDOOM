@@ -24,7 +24,7 @@ EXTRN locallib_fclose_:NEAR
 EXTRN locallib_fseek_:NEAR
 EXTRN locallib_ftell_:NEAR
 EXTRN locallib_far_fwrite_:NEAR
-EXTRN locallib_far_fread_:NEAR
+EXTRN locallib_fread_:NEAR
 EXTRN locallib_strcmp_:NEAR
 EXTRN locallib_strlwr_:NEAR
 
@@ -175,7 +175,7 @@ pop   ax  ; off
 
 mov   cx, si    ; fp
 
-call  locallib_far_fread_
+call  locallib_fread_
 
 xchg  ax, si  ; fp
 

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/01 15:25:24
+Created on:       26/01/01 15:27:25
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -461,14 +461,13 @@ Module: f_file.obj(f_file.ASM)
 0000:8426      locallib_fread_nearsegment_
 0000:87f1*     locallib_update_buffer_
 0000:8422      locallib_freadfromfar_
-0000:8428      locallib_far_fread_
 0000:8503*     locallib_sopen_
 0000:84e5      locallib_fopenfromfar_
 0000:8bd2      locallib_setbuf_
 0000:8cf9      locallib_fputc_
 0000:841a*     locallib_GETDS_
-0000:8cbf      locallib_fgetc_
 0000:841a*     F_FILE_STARTMARKER_
+0000:8cbf      locallib_fgetc_
 0000:8a57      locallib_ftell_
 0000:86c2      locallib_fopen_
 0000:89fe      locallib_fseekfromfar_

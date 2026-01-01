@@ -21,7 +21,7 @@ INSTRUCTION_SET_MACRO
 
 EXTRN Z_QuickMapWADPageFrame_:FAR
 EXTRN locallib_fseek_:NEAR
-EXTRN locallib_far_fread_:NEAR
+EXTRN locallib_fread_:NEAR
 EXTRN I_Error_:FAR
 
 .DATA
@@ -464,7 +464,7 @@ push      cx  ;
 mov       cx, si   ; fp
 
 
-call      locallib_far_fread_ ; FAR_fread(dest, size ? size : (lumpsize - start), 1, wadfiles[fileindex]);
+call      locallib_fread_ ; FAR_fread(dest, size ? size : (lumpsize - start), 1, wadfiles[fileindex]);
 
 pop       cx ; todo why is this necessary ? bad things happen.. 
 

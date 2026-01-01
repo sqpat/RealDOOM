@@ -38,7 +38,7 @@ EXTRN Z_QuickMapMenu_:FAR
 EXTRN locallib_fread_nearsegment_:NEAR
 EXTRN locallib_fseek_:NEAR
 EXTRN locallib_fseekfromfar_:FAR
-EXTRN locallib_far_fread_:NEAR
+EXTRN locallib_fread_:NEAR
 EXTRN Z_QuickMapRenderPlanes_:FAR
 EXTRN Z_QuickMapPalette_:FAR
 EXTRN Z_QuickMapMaskedExtraData_:FAR
@@ -713,7 +713,7 @@ les    ax, dword ptr ss:[bp - 4]  ; target_addr
 mov    dx, es   
 mov    bx, word ptr ss:[bp - 6]  ; codesize
 mov    cx, di   ; fp
-call   locallib_far_fread_
+call   locallib_fread_
 
 jmp    continue_readfile_loop
 
@@ -1065,7 +1065,7 @@ xor   ax, ax
 mov   dx, RNDTABLE_SEGMENT
 mov   bx, 256
 mov   cx, di
-call  locallib_far_fread_
+call  locallib_fread_
 
 ; fread(mobjinfo, sizeof(mobjinfo_t), NUMMOBJTYPES, fp);
 mov   ax, OFFSET _mobjinfo
@@ -1081,7 +1081,7 @@ xor   ax, ax
 mov   dx, word ptr ds:[_STATES_SEGMENT_PTR]
 mov   bx, (SIZE STATE_T) * NUMSTATES
 mov   cx, di
-call  locallib_far_fread_
+call  locallib_fread_
 
 mov     ax, OFFSET str_dot
 call    DEBUG_PRINT_NOARG_CS_
@@ -1091,7 +1091,7 @@ xor   ax, ax
 mov   dx, GAMMATABLE_SEGMENT
 mov   bx, 5 * 256
 mov   cx, di
-call  locallib_far_fread_
+call  locallib_fread_
 
 mov     ax, OFFSET str_dot
 call    DEBUG_PRINT_NOARG_CS_
@@ -1102,7 +1102,7 @@ xor   ax, ax
 mov   dx, FINESINE_SEGMENT
 mov   bx, 4 * 10240
 mov   cx, di
-call  locallib_far_fread_
+call  locallib_fread_
 
 mov     ax, OFFSET str_dot
 call    DEBUG_PRINT_NOARG_CS_
@@ -1115,7 +1115,7 @@ xor   ax, ax
 mov   dx, FINETANGENTINNER_SEGMENT
 mov   bx, 4 * 2048
 mov   cx, di
-call  locallib_far_fread_
+call  locallib_fread_
 
 
 ;	FAR_memset(visplanes_8400, 0x00,   0xC000);
@@ -1158,7 +1158,7 @@ xor   ax, ax
 mov   dx, DOOMEDNUM_SEGMENT
 mov   bx, 2 * NUMMOBJTYPES
 mov   cx, di
-call  locallib_far_fread_
+call  locallib_fread_
 
 call  Z_QuickMapRender4000_
 
@@ -1194,7 +1194,7 @@ xor   ax, ax
 mov   dx, ZLIGHT_SEGMENT
 mov   bx, 2048
 mov   cx, di
-call  locallib_far_fread_
+call  locallib_fread_
 
 xchg  ax, di
 call  locallib_fclose_
@@ -1215,7 +1215,7 @@ call  GetCodeSize_
 xor   ax, ax
 mov   dx, WIANIM_CODESPACE_SEGMENT
 mov   cx, si
-call  locallib_far_fread_
+call  locallib_fread_
 
 call  Z_QuickMapPhysics_
 
@@ -1224,7 +1224,7 @@ call  GetCodeSize_
 xor   ax, ax
 mov   dx, PHYSICS_HIGHCODE_SEGMENT
 mov   cx, si
-call  locallib_far_fread_
+call  locallib_fread_
 
 call  Z_QuickMapMenu_
 
@@ -1233,7 +1233,7 @@ call  GetCodeSize_
 xor   ax, ax
 mov   dx, MENU_CODE_AREA_SEGMENT
 mov   cx, si
-call  locallib_far_fread_
+call  locallib_fread_
 
 call  Z_QuickMapPhysics_
 

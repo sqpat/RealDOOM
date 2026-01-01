@@ -22,7 +22,7 @@ INSTRUCTION_SET_MACRO
 EXTRN locallib_fseek_:NEAR
 EXTRN locallib_ftell_:NEAR
 EXTRN locallib_fopen_:NEAR
-EXTRN locallib_far_fread_:NEAR
+EXTRN locallib_fread_:NEAR
 
 
 EXTRN DEBUG_PRINT_:NEAR
@@ -120,7 +120,7 @@ mov    bx, SIZE WADINFO_T ; 12
 mov    ax, sp
 mov    dx, ss
 mov    cx, si
-call   locallib_far_fread_
+call   locallib_fread_
 pop    ax
 cmp    ax,  ('W' SHL 8) + 'I'  ; "IW"
 pop    ax
@@ -153,7 +153,7 @@ mov    dx, SCRATCH_SEGMENT_5000
 		
 
 
-call   locallib_far_fread_  ;locallib_far_fread(fileinfo, length, usefp);
+call   locallib_fread_  ;locallib_far_fread(fileinfo, length, usefp);
 
 ;call   W_UpdateNumLumps_  ; inlineable?
 mov    ax, word ptr ds:[_numlumps]

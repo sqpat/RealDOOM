@@ -23,7 +23,7 @@ EXTRN locallib_fread_nearsegment_:NEAR
 EXTRN locallib_fseek_:NEAR
 EXTRN locallib_fopen_:NEAR
 EXTRN locallib_fclose_:NEAR
-EXTRN locallib_far_fread_:NEAR
+EXTRN locallib_fread_:NEAR
 EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
 EXTRN M_CheckParm_:NEAR
 EXTRN TS_Dispatch_:NEAR
@@ -244,7 +244,7 @@ mov   dx, MUSIC_DRIVER_CODE_SEGMENT
 
 xor   ax, ax        ; offset
 
-call  locallib_far_fread_       ; locallib_far_fread(playingdriver, codesize, 1, fp);
+call  locallib_fread_       ; locallib_far_fread(playingdriver, codesize, 1, fp);
 xchg  ax, di
 call  locallib_fclose_                   ; fclose(fp);
 

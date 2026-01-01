@@ -32,7 +32,7 @@ EXTRN locallib_fread_nearsegment_:NEAR
 EXTRN locallib_fseek_:NEAR
 EXTRN locallib_fopen_:NEAR
 EXTRN locallib_fclose_:NEAR
-EXTRN locallib_far_fread_:NEAR
+EXTRN locallib_fread_:NEAR
 EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
 EXTRN R_TextureNumForName_:NEAR
 EXTRN R_CheckTextureNumForName_:NEAR
