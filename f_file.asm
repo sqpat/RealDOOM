@@ -149,22 +149,20 @@ PUBLIC  locallib_fread_
 push      si
 push      di
 push      bp
-mov       bp, sp
+
 
 xchg      ax, di  ; di gets dest
-push      bx   ; bp - 2 bytes to copy
-push      dx   ; bp - 4 dest segment
+mov       bp, dx  ; bp stores target segment
 
 mov       dx, bx    ; dx gets bytes to copy
 mov       si, cx    ; si gets fp
-xor       cx, cx
-push      cx        ; bytes copied
+
 
 
 
 
 mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
-cmp       word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], cx ; still 0
+cmp       word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
 jne       dont_allocate_buffer
 
 ; TODO possible get rid of buffered reads?
@@ -174,11 +172,11 @@ call      locallib_ioalloc_
 dont_allocate_buffer:
 
 do_binary_fread:
-; bp - 2 = bytes to copy
+
 
 continue_fread_until_done:
 
-mov       ax, word ptr [bp - 2] ; get bytes_left
+mov       ax, dx ; get bytes_left
 mov       cx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
 test      cx, cx
 je        out_of_buffer
@@ -193,10 +191,9 @@ mov       bx, si
 
 sub       word ptr ds:[bx + WATCOM_C_FILE.watcom_file_cnt], cx
 
-sub       word ptr [bp - 2], cx
+sub       dx, cx
 mov       si, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
-add       word ptr [bp - 6], cx
-mov       es, word ptr [bp - 4] ; get dest segment.
+mov       es, bp ; get dest segment.
 
 ; es already set...?
 
@@ -210,7 +207,7 @@ mov       word ptr ds:[bx + WATCOM_C_FILE.watcom_file_ptr], si
 mov       si, bx ;unbackup
 
 out_of_buffer:
-mov       ax, word ptr [bp - 2]
+mov       ax, dx
 test      ax, ax
 je        finished_fread
 
@@ -227,7 +224,7 @@ mov       ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
 
 mov       word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
 mov       word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
-mov       cx, word ptr [bp - 2]  ; may still be dx in this case.
+mov       cx, dx  
 test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_IONBF SHR 8)
 ; todo do we ever use unbuffered...?
 jne       skip_buffer_modify
@@ -237,14 +234,16 @@ xor       cl, cl
 and       ch, 0FEh   ; 0FE00h = -SECTOR_SIZE.
 
 skip_buffer_modify:
+push      dx
 mov       dx, di
 mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
-mov       ds, word ptr [bp - 4] ; set target segment for dos api call...
+mov       ds, bp ; set target segment for dos api call...
 ;inlined locallib_qread_
 mov  ah, 03Fh  ; Read file or device using handle
 int  021h
 push      ss
 pop       ds
+pop       dx
 jc        do_qread_fread_error
 
 cmp       ax, 0FFFFh
@@ -252,8 +251,7 @@ je        bad_read_do_error
 test      ax, ax
 je        hit_end_of_file
 add       di, ax
-sub       word ptr [bp - 2], ax
-add       word ptr [bp - 6], ax
+sub       dx, ax
 jmp       continue_fread_until_done
 
 
@@ -261,11 +259,11 @@ hit_end_of_file:
 or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _EOF
 
 finished_fread:
-mov       ax, word ptr [bp - 6]  ; bytes copied
+
+mov       al, 1   ; i never actually use this return value do i?
 
 
 exit_fread:
-mov       sp, bp
 pop       bp
 pop       di
 pop       si
@@ -283,7 +281,7 @@ jmp       continue_fread_until_done
 do_qread_fread_error:
 call      locallib_set_errno_ptr_
 bad_read_do_error:
-or        byte ptr ds:[si + 6], _SFERR
+or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
 
 jmp       exit_fread
 
@@ -2046,6 +2044,7 @@ jmp  done_with_eof_check
 
 ENDP
 
+
 PROC    locallib_filbuf_   NEAR
 
 ; si has file
@@ -2074,17 +2073,6 @@ PUBLIC  locallib_fgetc_
 push bx
 push si
 mov  si, ax
-;mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
-;mov  ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_orientation]
-;cmp  ax, 1
-;je   getc_set_byte_orientation
-;test ax, ax
-;jne  exit_fgetc_return_error
-;mov  word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_orientation], 1
-;getc_set_byte_orientation:
-;test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], 1
-;je  fgetc_error_handler
-
 actually_get_char:
 dec  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
 jl   increase_buffer
@@ -2094,18 +2082,6 @@ mov  al, byte ptr ds:[bx]
 inc  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
 
 check_if_2nd_get_necessary:
-;test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _BINARY
-;jne  exit_fgetc
-;cmp  al, CARRIAGE_RETURN
-;jne  skip_newline_garbage_getc
-;dec  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
-;jl   increase_buffer_newline
-;xor  ax, ax
-;mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
-;mov  al, byte ptr ds:[bx]
-;inc  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
-;
-;skip_newline_garbage_getc:
 cmp  al, DOS_EOF_CHAR    ; todo?
 jne  exit_fgetc
 mov  ax, 0FFFFh
@@ -2131,9 +2107,6 @@ mov  word ptr ds:[_errno], 4
 mov  ax, 0FFFFh
 or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
 jmp  exit_fgetc
-;increase_buffer_newline:
-;call locallib_filbuf_
-;jmp  skip_newline_garbage_getc
 
 
 
