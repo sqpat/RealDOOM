@@ -131,13 +131,6 @@ SECTOR_SIZE = 512
 
 
 
-; bp - 2 = bytes to copy
-; bp - 4 = target segment
-; bp - 6 = bytes copied
-
-
-
-
 PROC    locallib_fread_nearsegment_   NEAR
 PUBLIC  locallib_fread_nearsegment_
 
@@ -148,17 +141,14 @@ PUBLIC  locallib_fread_
 
 push      si
 push      di
-push      bp
+
 
 
 xchg      ax, di  ; di gets dest
-mov       bp, dx  ; bp stores target segment
+mov       es, dx  ; es stores target segment
 
 mov       dx, bx    ; dx gets bytes to copy
 mov       si, cx    ; si gets fp
-
-
-
 
 
 mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
@@ -193,7 +183,6 @@ sub       word ptr ds:[bx + WATCOM_C_FILE.watcom_file_cnt], cx
 
 sub       dx, cx
 mov       si, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
-mov       es, bp ; get dest segment.
 
 ; es already set...?
 
@@ -237,8 +226,11 @@ skip_buffer_modify:
 push      dx
 mov       dx, di
 mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
-mov       ds, bp ; set target segment for dos api call...
+push      es
+pop       ds ; set target segment for dos api call...
+
 ;inlined locallib_qread_
+
 mov  ah, 03Fh  ; Read file or device using handle
 int  021h
 push      ss
@@ -264,7 +256,7 @@ mov       al, 1   ; i never actually use this return value do i?
 
 
 exit_fread:
-pop       bp
+
 pop       di
 pop       si
 ret    
@@ -334,11 +326,6 @@ PUBLIC locallib_sopen_
 ; ax = filename
 ; dx = flags
 ; bx = file permissions
-
-; bp - 2 = open_mode (flags)
-
-; bp - 6 = access permissions
-
 
 
 push      bx
