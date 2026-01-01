@@ -2998,8 +2998,7 @@ call  dword ptr ds:[_fseek_addr]   ;	fseek(fp, MENUDATA_DOOMDATA_OFFSET, SEEK_SE
 
 lea   ax, [bp - MENUGRAPHICS_STR_SIZE]
 mov   si, ax
-mov   dx, SIZEOF_LUMP_NAME
-mov   bx, NUM_MENU_ITEMS
+mov   bx, NUM_MENU_ITEMS * SIZEOF_LUMP_NAME
 mov   cx, di
 call  dword ptr ds:[_fread_addr]	;fread(menugraphics, 9, NUM_MENU_ITEMS, fp);
 

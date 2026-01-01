@@ -814,8 +814,7 @@ call  locallib_fopen_
 xor   dx, dx ; SEEK_SET
 mov   si, ax
 call  locallib_fseek_
-mov   bx, 1
-mov   dx, 2
+mov   bx, 1 * 2
 mov   ax, sp ; [bp - 4]
 mov   cx, si
 call  locallib_fread_

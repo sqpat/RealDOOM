@@ -232,8 +232,7 @@ xor   dx, dx  ; SEEK_SET  ; 0?
 call  locallib_fseek_        ; fseek(fp, musdriverstartposition[driverindex-1], SEEK_SET);
 
 
-mov   bx, 1
-mov   dx, 2
+mov   bx, 1 * 2
 lea   ax, [bp - 4] 
 mov   cx, di
 call  locallib_fread_        ; fread(&codesize, 2, 1, fp);

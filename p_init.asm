@@ -193,8 +193,7 @@ call  locallib_fseek_  ;    fseek(fp, SWITCH_DOOMDATA_OFFSET, SEEK_SET);
 ;fread(alphSwitchList, sizeof(switchlist_t), NUMSWITCHDEFS, fp);
 mov   ax, sp
 mov   cx, di ; fp
-mov   dx, SIZE SWITCHLIST_T
-mov   bx, NUMSWITCHDEFS
+mov   bx, (SIZE SWITCHLIST_T) * NUMSWITCHDEFS
 call  locallib_fread_
 
 xchg  ax, di
@@ -293,8 +292,7 @@ mov   di, ax ; di stores fp
 ;fread(animdefs, sizeof(animdef_t), NUMANIMDEFS, fp);
 mov   ax, sp
 mov   cx, di ; fp
-mov   dx, SIZE ANIMDEF_T
-mov   bx, NUMANIMDEFS
+mov   bx, (SIZE ANIMDEF_T) * NUMANIMDEFS
 call  locallib_fread_
 
 xchg  ax, di
@@ -417,8 +415,7 @@ call  locallib_fseek_  ;    fseek(fp, SWITCH_DOOMDATA_OFFSET, SEEK_SET);
 ;fread(namelist,  5, NUMSPRITES, fp);
 lea   ax, [bp - SIZE_SPRITE_NAMES]
 mov   cx, di ; fp
-mov   dx, 5
-mov   bx, NUMSPRITES
+mov   bx, 5 * NUMSPRITES
 call  locallib_fread_
 
 xchg  ax, di

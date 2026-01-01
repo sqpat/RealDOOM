@@ -1332,8 +1332,7 @@ call    locallib_fopen_
 push    ax
 xchg    cx, ax
 lea     ax, [bp - 6]
-mov     dx, 6
-mov     bx, 1
+mov     bx, 6 * 1
 call    locallib_fread_
 pop     ax  ; fp
 call    locallib_fclose_

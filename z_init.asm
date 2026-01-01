@@ -702,8 +702,7 @@ do_next_index:
 
 ;   fread(&codesize, 2, 1, fp);
 mov    ax, sp  ; bp - 6
-mov    dx, 2   ; read 2 bytes
-mov    bx, 1
+mov    bx, 1 * 2 ; read 2 bytes
 mov    cx, di  ; fp
 call   locallib_fread_
 
@@ -1022,8 +1021,7 @@ PROC    GetCodeSize_   NEAR
 ; fp in si
 push  ax
 mov   ax, sp 
-mov   dx, 2
-mov   bx, 1
+mov   bx, 1 * 2
 mov   cx, si
 call  locallib_fread_
 pop   bx
@@ -1073,8 +1071,7 @@ call  locallib_far_fread_
 
 ; fread(mobjinfo, sizeof(mobjinfo_t), NUMMOBJTYPES, fp);
 mov   ax, OFFSET _mobjinfo
-mov   dx, SIZE MOBJINFO_T
-mov   bx, NUMMOBJTYPES
+mov   bx, (SIZE MOBJINFO_T) * NUMMOBJTYPES
 mov   cx, di
 call  locallib_fread_
 

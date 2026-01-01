@@ -1549,8 +1549,7 @@ call      locallib_fseek_  ;    fseek(usedfile, l->position, SEEK_SET);
 
 
 
-mov       bx, 1
-mov       dx, 8
+mov       bx, 1 * 8
 lea       ax, [bp - 8]
 pop       cx  ; fp
 push      ax  ; src

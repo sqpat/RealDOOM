@@ -129,65 +129,54 @@ ENDP
 
 SECTOR_SIZE = 512
 
-error_file_not_readable:
-mov       word ptr [_errno], 4
-xor       ax, ax
-or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
-jump_to_exit_fread:
-jmp       exit_fread
 
 
 ; bp - 2 = bytes to copy
-; bp - 4 = unused
+; bp - 4 = target segment
 ; bp - 6 = bytes copied
-; bp - 8 = unused
-; bp - 0Ah = size part 1/record count
-; bp - 0Ch = fp
+
+PROC    locallib_far_fread_   FAR
+PUBLIC  locallib_far_fread_ 
+call    locallib_fread_inner_   ; skip setting ds.
+retf
+ENDP
+
+
 
 PROC    locallib_fread_   NEAR
 PUBLIC  locallib_fread_
+
+mov       dx, ds  ; implied near.
+
+PROC   locallib_fread_inner_ NEAR  ; implied dx set as copy target.
+PUBLIC locallib_fread_inner_ 
 
 push      si
 push      di
 push      bp
 mov       bp, sp
-mov       es, dx  ; copy size todo remove
+
 xchg      ax, di  ; di gets dest
-xchg      ax, bx  ; ax gets thing to mult by
-mul       dx
-test      ax, ax
-je        jump_to_exit_fread
+push      bx   ; bp - 2 bytes to copy
+push      dx   ; bp - 4 dest segment
 
-push      ax   ; bp - 2 bytes to copy
-push      di   ; bp - 4 dest
-
-
-xchg      ax, dx    ; dx gets mul result
+mov       dx, bx    ; dx gets bytes to copy
 mov       si, cx    ; si gets fp
-
 xor       cx, cx
-push      cx   ; bp - 6 bytes to copy
-push      cx   ; bp - 8 ???
-push      es   ; bp - 0Ah   size part 1
-push      si   ; bp - 0Ch  ; fp
+push      cx        ; bytes copied
 
-test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _READ  ; todo necessary?
-je        error_file_not_readable  ; todo remove
 
-; todo get rid of this and just pass it in... dumb
 
 
 mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 cmp       word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], cx ; still 0
 jne       dont_allocate_buffer
 
-
+; TODO possible get rid of buffered reads?
 ; si already fp
 call      locallib_ioalloc_
 
 dont_allocate_buffer:
-
-
 
 do_binary_fread:
 ; bp - 2 = bytes to copy
@@ -212,9 +201,9 @@ sub       word ptr ds:[bx + WATCOM_C_FILE.watcom_file_cnt], cx
 sub       word ptr [bp - 2], cx
 mov       si, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
 add       word ptr [bp - 6], cx
+mov       es, word ptr [bp - 4] ; get dest segment.
 
-push      ds
-pop       es   ; todo pass in segment
+; es already set...?
 
 shr       cx, 1
 rep       movsw
@@ -243,19 +232,26 @@ mov       ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
 
 mov       word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
 mov       word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
-mov       bx, word ptr [bp - 2]
+mov       cx, word ptr [bp - 2]  ; may still be dx in this case.
 test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_IONBF SHR 8)
 ; todo do we ever use unbuffered...?
 jne       skip_buffer_modify
-cmp       bx, SECTOR_SIZE    ; /* if more than a sector, set to multiple of sector size*/
+cmp       cx, SECTOR_SIZE    ; /* if more than a sector, set to multiple of sector size*/
 jbe       skip_buffer_modify
-xor       bl, bl
-and       bh, 0FEh   ; 0FE00h = -SECTOR_SIZE.
+xor       cl, cl
+and       ch, 0FEh   ; 0FE00h = -SECTOR_SIZE.
 
 skip_buffer_modify:
 mov       dx, di
-mov       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
-call      locallib_qread_
+mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+mov       ds, word ptr [bp - 4] ; set target segment for dos api call...
+;inlined locallib_qread_
+mov  ah, 03Fh  ; Read file or device using handle
+int  021h
+push      ss
+pop       ds
+jc        do_qread_fread_error
+
 cmp       ax, 0FFFFh
 je        bad_read_do_error
 test      ax, ax
@@ -271,14 +267,15 @@ or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _EOF
 
 finished_fread:
 mov       ax, word ptr [bp - 6]  ; bytes copied
-xor       dx, dx
-div       word ptr [bp - 0Ah]    ; records copied (...?) todo change
+
+
 exit_fread:
 mov       sp, bp
 pop       bp
 pop       di
 pop       si
-ret      
+ret    
+
 just_fill_buffer_binary:
 ; buffer empty, so load bytes then recontinue loop and next time copy from buffer.
 call      locallib_fill_buffer_
@@ -287,11 +284,13 @@ test      ax, ax
 je        finished_fread
 jmp       continue_fread_until_done
 
+
+do_qread_fread_error:
+call      locallib_set_errno_ptr_
 bad_read_do_error:
 or        byte ptr ds:[si + 6], _SFERR
 
-
-
+jmp       exit_fread
 
 ENDP
 
@@ -2245,7 +2244,7 @@ ENDP
 
 
 
-
+COMMENT @
 PROC    locallib_far_fread_   FAR
 PUBLIC  locallib_far_fread_
 
@@ -2279,7 +2278,7 @@ push      dx  ; [MATCH C]  size to read this time
 lea       ax, [bp - FREAD_BUFFER_SIZE]
 mov       bx, 1
 push      ax  ; [MATCH D]  buffer pos
-call      locallib_fread_   ;fread(stackbuffer, copysize, 1, fp);
+call      locallib_fread_translate_   ;fread(stackbuffer, copysize, 1, fp);
 
 mov       es, si ; dest segment in es
 pop       si     ; [MATCH D]  buffer pos
@@ -2310,7 +2309,7 @@ retf
 
 ENDP
 
-
+@
 
 PROC    locallib_far_fwrite_ NEAR
 PUBLIC  locallib_far_fwrite_
