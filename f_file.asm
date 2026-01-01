@@ -1051,10 +1051,9 @@ push  cx
 push  si
 push  di
 push  bp
-mov   bp, sp
-sub   sp, 2
-mov   si, ax
-mov   word ptr [bp - 2], dx  ; handle
+
+xchg  ax, si
+mov   bp, dx  ; handle
 test  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (_READ OR _WRITE)
 je    error_and_exit_doclose
 xor   di, di ; error code.
@@ -1070,14 +1069,14 @@ mov   ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
 test  ax, ax
 je    skip_seek_on_close
 neg   ax
-mov   bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
 cwd   
-mov   cx, dx
+mov   bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
 xchg  ax, bx
-mov   dx, 1
+mov   cx, dx
+mov   dx, 1  ; SEEK_CUR
 call  locallib_lseek_
 skip_seek_on_close:
-cmp   word ptr [bp - 2], 0  ; handle
+test  bp, bp  ; handle
 je    skip_close_null_handle
 mov   ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
 call  locallib_close_
@@ -1088,18 +1087,12 @@ je    skip_bigbuf  ; todo do we get rid of this check?
 mov   bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 mov   ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
 call  free_
-mov   bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+
 mov   word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
 skip_bigbuf:
-test  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_TMPFIL SHR 8)
-je    skip_temp_file_cleanup   ; todo get rid of this check?
-mov   ax, si
-call  dword ptr ds:[___RmTmpFileFn]
-skip_temp_file_cleanup:
 and   word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], _DYNAMIC
 exit_doclose:
 xchg  ax, di
-mov   sp, bp
 pop   bp
 pop   di
 pop   si
@@ -1112,7 +1105,7 @@ jmp   exit_doclose
 
 ENDP
 
-PROC locallib_shutdown_stream_ NEAR
+PROC  locallib_shutdown_stream_ NEAR
 push  ax
 call  locallib_doclose_
 xchg  ax, dx
@@ -1247,9 +1240,7 @@ ret
 ENDP
 
 
-; si holds fp
-
-
+; todo make si hold fp
 PROC    locallib_flush_   NEAR
 
 push bx
