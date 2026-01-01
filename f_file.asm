@@ -21,7 +21,7 @@ INSTRUCTION_SET_MACRO
 
 
 
-EXTRN fwrite_:FAR
+
 EXTRN free_:FAR
 EXTRN malloc_:FAR
 EXTRN __exit_:NEAR
@@ -119,6 +119,199 @@ pop       ax
 ret       
 
 ENDP
+
+PROC    locallib_fwrite_ NEAR
+PUBLIC  locallib_fwrite_ 
+
+; bp - 2 = fp
+
+push      si
+push      di
+push      bp
+mov       bp, sp
+sub       sp, 0Ah
+push      ax
+push      dx
+mov       di, bx
+mov       word ptr [bp - 2], cx  ; fp
+mov       bx, cx
+test      byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], _WRITE
+jne       label_1
+jmp       label_2
+label_1:
+mov       ax, di
+mul       dx
+mov       di, ax
+test      ax, ax
+jne       label_3
+jmp       exit_fwrite
+label_3:
+mov       bx, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_link]
+cmp       word ptr ds:[bx + WATCOM_C_FILE.watcom_file_link], 0
+jne       label_4
+jmp       label_5
+label_4:
+mov       bx, word ptr [bp - 2]
+mov       ax, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag]
+and       ax, (_SFERR OR _EOF)
+mov       word ptr [bp - 8], ax
+xor       al, al
+and       byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], (NOT (_SFERR OR _EOF))
+mov       word ptr [bp - 6], ax
+test      byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], _BINARY
+jne       label_6
+jmp       label_7
+label_6:
+mov       word ptr [bp - 4], di
+label_13:
+mov       bx, word ptr [bp - 2]
+cmp       word ptr ds:[bx + 2], 0
+jne       jump_to_label_11
+mov       ax, word ptr [bp - 4]
+cmp       ax, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_bufsize]
+jb        jump_to_label_11
+mov       bx, ax
+xor       bl, al
+and       bh, 0FEh   ; -512 or sector size...
+test      bx, bx
+jne       label_10
+mov       bx, ax
+label_10:
+mov       si, word ptr [bp - 2]
+mov       dx, word ptr [bp - 0Ch]
+mov       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+call      locallib_qwrite_
+mov       dx, ax
+cmp       ax, 0FFFFh
+jne       label_9
+label_15:
+or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
+label_8:
+add       word ptr [bp - 0Ch], dx
+add       word ptr [bp - 6], dx
+sub       word ptr [bp - 4], dx
+je        label_12
+mov       bx, word ptr [bp - 2]
+test      byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], _SFERR
+je        label_13
+label_12:
+mov       bx, word ptr [bp - 2]
+test      byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], _SFERR
+je        label_14
+mov       word ptr [bp - 6], 0
+label_14:
+mov       ax, word ptr [bp - 8]
+mov       bx, word ptr [bp - 2]
+xor       dx, dx
+or        word ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], ax
+mov       ax, word ptr [bp - 6]
+div       word ptr [bp - 0Eh]
+exit_fwrite:
+mov       sp, bp
+pop       bp
+pop       di
+pop       si
+retf      
+jump_to_label_11:
+jmp       label_11
+label_2:
+mov       word ptr [_errno], 4
+mov       bx, cx
+xor       ax, ax
+or        byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], _SFERR
+jmp       exit_fwrite
+label_5:
+mov       ax, cx
+call      locallib_ioalloc_
+jmp       label_4
+label_9:
+test      ax, ax
+jne       label_8
+mov       word ptr [_errno], 0Ch
+jmp       label_15
+label_11:
+mov       bx, word ptr [bp - 2]
+mov       ax, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_bufsize]
+sub       ax, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_cnt]
+mov       dx, ax
+cmp       ax, word ptr [bp - 4]
+jbe       label_16
+mov       dx, word ptr [bp - 4]
+label_16:
+mov       di, word ptr [bp - 2]
+mov       si, word ptr [bp - 0Ch]
+mov       cx, dx
+mov       di, word ptr ds:[di]
+mov       bx, word ptr [bp - 2]
+push      di
+mov       ax, ds
+mov       es, ax
+shr       cx, 1
+rep       movsw
+adc       cx, cx
+rep       movsb
+pop       di
+or        byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
+add       word ptr ds:[bx], dx
+add       word ptr ds:[bx + WATCOM_C_FILE.watcom_file_cnt], dx
+mov       ax, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_cnt]
+cmp       ax, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_bufsize]
+je        label_17
+test      byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag + 1], (_IOFBF SHR 8)
+jne       label_17
+jmp       label_8
+label_17:
+mov       ax, word ptr [bp - 2]
+call      locallib_flush_
+jmp       label_8
+label_7:
+xor       cx, cx
+test      byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag + 1], (_IOFBF SHR 8)
+jne       label_22
+label_21:
+mov       bx, word ptr [bp - 2]
+mov       bx, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_link]
+mov       ax, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag]
+mov       si, word ptr [bp - 2]
+mov       word ptr [bp - 0Ah], ax
+mov       word ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], _READ
+mov       bx, word ptr [bp - 0Ch]
+label_19:
+mov       al, byte ptr ds:[bx]
+mov       dx, word ptr [bp - 2]
+cbw      
+inc       bx
+call      locallib_fputc_
+test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (_SFERR OR _EOF)
+je        label_18
+label_20:
+mov       bx, word ptr [bp - 2]
+mov       bx, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_link]
+mov       ax, word ptr [bp - 0Ah]
+mov       word ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], ax
+test      cx, cx
+jne       label_23
+jmp       label_12
+label_23:
+mov       bx, word ptr [bp - 2]
+and       byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag + 1], 0FAh   ;  ((NOT IONBF) SHR 8?)
+mov       ax, bx
+or        byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag + 1], (_IOFBF SHR 8)
+call      locallib_flush_
+jmp       label_12
+label_22:
+and       byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag + 1], 0FAh   ;  ((NOT IONBF) SHR 8?)
+mov       cx, 1
+or        byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag + 1], (_IOFBF SHR 8)
+jmp       label_21
+label_18:
+inc       word ptr [bp - 6]
+cmp       di, word ptr [bp - 6]
+jne       label_19
+jmp       label_20
+
+ENDP
+
 
 
 PROC    locallib_freadfromfar_   FAR
@@ -2378,7 +2571,7 @@ mov       bx, 1
 mov       cx, word ptr [bp + 6]   ; fp
 
 
-call      fwrite_   ;fwrite(stackbuffer, copysize, 1, fp);
+call      locallib_fwrite_   ;fwrite(stackbuffer, copysize, 1, fp);
 
 
 		
