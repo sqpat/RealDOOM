@@ -124,6 +124,8 @@ PROC    locallib_fwrite_ NEAR
 PUBLIC  locallib_fwrite_ 
 
 ; bp - 2 = fp
+; bp - 0Ch = source
+; bp - 0Eh = ptr
 
 push      si
 push      di
@@ -211,7 +213,7 @@ mov       sp, bp
 pop       bp
 pop       di
 pop       si
-retf      
+ret      
 jump_to_label_11:
 jmp       label_11
 label_2:
@@ -222,6 +224,7 @@ or        byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], _SFERR
 jmp       exit_fwrite
 label_5:
 mov       ax, cx
+mov       si, word ptr [bp - 2]
 call      locallib_ioalloc_
 jmp       label_4
 label_9:
@@ -1052,7 +1055,7 @@ push  si
 push  di
 push  bp
 
-xchg  ax, si
+mov   si, ax
 mov   bp, dx  ; handle
 test  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (_READ OR _WRITE)
 je    error_and_exit_doclose
@@ -1242,6 +1245,7 @@ ENDP
 
 ; todo make si hold fp
 PROC    locallib_flush_   NEAR
+PUBLIC  locallib_flush_   
 
 push bx
 push cx
@@ -2358,16 +2362,7 @@ xchg ax, cx  ; char in cx
 mov  si, dx
 mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 
-; mov  ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_orientation]
-; cmp  ax, 1
-; je   use_byte_orientation    ; todo not necessary check?
-; test ax, ax
-; je   set_byte_orientation
-; jmp  exit_fputc_return_error
-; set_byte_orientation:
-; mov  word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_orientation], 1
-; use_byte_orientation:
-
+; todo remove...
 test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _WRITE
 je   handle_fputc_error   ; not open for writing!
 cmp  word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
