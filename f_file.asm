@@ -143,7 +143,6 @@ push      si
 push      di
 
 
-
 xchg      ax, di  ; di gets dest
 mov       es, dx  ; es stores target segment
 
@@ -155,7 +154,6 @@ mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 cmp       word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
 jne       dont_allocate_buffer
 
-; TODO possible get rid of buffered reads?
 ; si already fp
 call      locallib_ioalloc_
 
@@ -201,12 +199,11 @@ test      ax, ax
 je        finished_fread
 
 
-cmp       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize]
-jnb       skip_buffer_modify_binary
-; todo do we ever use unbuffered...?
-test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_IONBF SHR 8)
-je        just_fill_buffer_binary
-skip_buffer_modify_binary:
+cmp       ax, SECTOR_SIZE  ;  always same? ;  word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize]
+jb        just_fill_buffer_binary
+
+
+skip_buffer_modify:
 
 mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 mov       ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
@@ -214,15 +211,8 @@ mov       ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
 mov       word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
 mov       word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
 mov       cx, dx  
-test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_IONBF SHR 8)
-; todo do we ever use unbuffered...?
-jne       skip_buffer_modify
-cmp       cx, SECTOR_SIZE    ; /* if more than a sector, set to multiple of sector size*/
-jbe       skip_buffer_modify
-xor       cl, cl
-and       ch, 0FEh   ; 0FE00h = -SECTOR_SIZE.
 
-skip_buffer_modify:
+
 push      dx
 mov       dx, di
 mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
@@ -231,8 +221,8 @@ pop       ds ; set target segment for dos api call...
 
 ;inlined locallib_qread_
 
-mov  ah, 03Fh  ; Read file or device using handle
-int  021h
+mov       ah, 03Fh  ; Read file or device using handle
+int       021h
 push      ss
 pop       ds
 pop       dx
@@ -242,18 +232,90 @@ cmp       ax, 0FFFFh
 je        bad_read_do_error
 test      ax, ax
 je        hit_end_of_file
-add       di, ax
-sub       dx, ax
-jmp       continue_fread_until_done
+exit_fread:
+
+pop       di
+pop       si
+ret    
+
+
+hit_end_of_file:
+or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _EOF
+pop       di
+pop       si
+ret    
+
+
+do_qread_fread_error:
+call      locallib_set_errno_ptr_
+bad_read_do_error:
+or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
+
+jmp       exit_fread
+
+just_fill_buffer_binary:
+; buffer empty, so load bytes then recontinue loop and next time copy from buffer.
+call      locallib_fill_buffer_
+
+test      ax, ax
+
+jne       continue_fread_until_done
+
+finished_fread:
+mov       al, 1   ; i never actually use this return value do i?
+pop       di
+pop       si
+ret    
+
+
+ENDP
+
+
+COMMENT @
+
+; small version!
+
+PROC    locallib_fread_nearsegment_   NEAR
+PUBLIC  locallib_fread_nearsegment_
+
+mov       dx, ds  ; implied near.
+
+PROC    locallib_fread_   NEAR
+PUBLIC  locallib_fread_ 
+
+push      si
+push      di
+xchg      ax, dx  ; dx gets dest, ax gets segment..
+mov       si, cx    ; si gets fp
+mov       cx, bx    ; cx gets bytes to copy
+
+
+mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+
+
+mov       es, ax  ; es stores target segment ; todo things crash without this es line???
+mov       ds, ax  ; ds stores target segment
+
+;inlined locallib_qread_
+
+mov       ah, 03Fh  ; Read file or device using handle
+int       021h
+push      ss
+pop       ds
+jc        do_qread_fread_error
+
+cmp       ax, 0FFFFh
+je        bad_read_do_error
+test      ax, ax
+jne       exit_fread
 
 
 hit_end_of_file:
 or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _EOF
 
-finished_fread:
+continue_fread_until_done:
 
 mov       al, 1   ; i never actually use this return value do i?
-
 
 exit_fread:
 
@@ -261,13 +323,6 @@ pop       di
 pop       si
 ret    
 
-just_fill_buffer_binary:
-; buffer empty, so load bytes then recontinue loop and next time copy from buffer.
-call      locallib_fill_buffer_
-
-test      ax, ax
-je        finished_fread
-jmp       continue_fread_until_done
 
 
 do_qread_fread_error:
@@ -279,6 +334,7 @@ jmp       exit_fread
 
 ENDP
 
+@
 
 PROC    locallib_fopenfromfar_   FAR
 PUBLIC  locallib_fopenfromfar_
@@ -472,6 +528,11 @@ jmp       exit_sopen
 
 ENDP
 
+
+
+
+COMMENT @
+
 PROC locallib_something_ NEAR
 
 
@@ -494,7 +555,7 @@ ret
 
 ENDP
 
-
+@
 
 ; ax has flags
 ; si has fp
