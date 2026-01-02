@@ -22,15 +22,14 @@ INSTRUCTION_SET_MACRO
 
 
 
-EXTRN __exit_:NEAR
+
+EXTRN __fatal_runtime_error_:NEAR
+
 EXTRN __GETDS:NEAR
 EXTRN doclose_:NEAR
 EXTRN freefp_:NEAR
 EXTRN malloc_:FAR
 EXTRN free_:FAR
- 
-
-EXTRN __fatal_runtime_error_:NEAR
 EXTRN purgefp_:NEAR
 
 .DATA
@@ -578,6 +577,131 @@ mov       bx, 1
 mov       ax, 01002h  ; todo put some string here? or ignore the error
 mov       dx, ds
 jmp       __fatal_runtime_error_
+
+ENDP
+
+; todo rename
+
+PROC    locallib_exit_   NEAR
+PUBLIC  locallib_exit_
+
+
+mov   bx, ax
+call  dword ptr ds:[___int23_exit]
+mov   dx, 0FFh
+mov   ax, 010h
+
+;todo still buggy
+;call  locallib_FiniRtns_
+call  __FiniRtns
+call  dword ptr ds:[___int23_exit]
+call  dword ptr ds:[___FPE_handler_exit]
+mov   ax, bx
+jump_to_exit:
+jmp   __exit_
+mov   ax, ax
+mov   dx, ax
+call  dword ptr ds:[___int23_exit]
+call  dword ptr ds:[___FPE_handler_exit]
+mov   ax, dx
+jmp   jump_to_exit
+ENDP
+
+
+PROC    __InitRtns NEAR
+PUBLIC  __InitRtns
+
+push  ds
+call  __GETDS
+
+call  __InitFiles_
+call  __Init_Argv_
+
+pop   ds
+ret  
+
+
+ENDP
+
+
+PROC    __FiniRtns NEAR
+PUBLIC  __FiniRtns
+
+push  ds
+call  __GETDS
+
+call  __full_io_exit_
+call  __Fini_Argv_
+
+pop   ds
+ret  
+
+ENDP
+
+_NULL_AREA_STR:
+db "!!", 020h, "NULL area write detected"
+
+_NEWLINE_STR:
+db "0Dh", "0Ah"
+
+_CON_STR:
+db "con", 0
+
+PROC    __exit_ NEAR
+PUBLIC  __exit_
+
+push       ax
+mov        dx, DGROUP  ; worst case call getds
+mov        ds, dx
+cld        
+xor        di, di   ; di = null area
+mov        es, dx
+mov        cx, 010h
+mov        ax, 0101h
+repe       scasw
+je         null_check_ok
+
+
+pop        bx
+mov        ax, OFFSET _NULL_AREA_STR
+
+mov        dx, cs
+; todo what if i dont do this
+;mov        sp, offset DGROUP:_end+80h
+push       bx
+push       ax
+push       dx
+mov        di, cs
+mov        ds, di
+mov        dx, OFFSET _CON_STR
+mov        ax, 03D01h        ; get console file handle into bx
+int        021h
+mov        bx, ax
+pop        ds
+pop        dx
+mov        si, dx
+cld        
+loop_find_end_of_string:
+lodsb      
+test       al, al
+jne        loop_find_end_of_string
+mov        cx, si
+sub        cx, dx
+dec        cx
+mov        ah, 040h  ; Write file or device using handle
+int        021h
+mov        ds, di   ; cs
+mov        dx, OFFSET _NEWLINE_STR
+mov        cx, 2
+mov        ah, 040h  ; Write file or device using handle
+int        021h
+
+null_check_ok:
+mov        dx, 0Fh   ; FINI_PRIORITY_EXIT-1
+call       __FiniRtns
+pop        ax
+mov        ah, 04Ch  ; Terminate process with return code
+int        021h
 
 ENDP
 

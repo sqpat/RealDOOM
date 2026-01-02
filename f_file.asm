@@ -21,10 +21,6 @@ INSTRUCTION_SET_MACRO
 
 EXTRN __exit_:NEAR
 EXTRN __GETDS:NEAR
-EXTRN __full_io_exit_:NEAR
-EXTRN __Fini_Argv_:NEAR
-EXTRN __InitFiles_:NEAR
-EXTRN __Init_Argv_:NEAR
 
 
 .DATA
@@ -2599,52 +2595,6 @@ jmp   finish_and_exit_ioalloc
 ENDP
 
 
-PNEAR = 0
-PFAR = 1
-PDONE = 2
-
-
-
-; this runs initailization routines (init file structures and argv) during c program init. but we will skip this generic step and call the couple of necessary functions in hardcoded manner.
-
-; __InitFiles_
-; __Init_Argv_
-
-PROC    __InitRtns FAR
-PUBLIC  __InitRtns
-
-push  ds
-call  __GETDS
-
-call  __InitFiles_
-call  __Init_Argv_
-
-pop   ds
-ret  
-
-
-ENDP
-
-
-; this runs shutdown routines during c program exit. but we will skip this generic step and call the couple of necessary functions in hardcoded manner.
-
-
-; __full_io_exit_
-; __Fini_Argv_
-
-PROC    __FiniRtns FAR
-PUBLIC  __FiniRtns
-
-push  ds
-call  __GETDS
-
-call  __full_io_exit_
-call  __Fini_Argv_
-
-pop   ds
-ret  
-
-ENDP
 
 
 PROC    locallib_setvbuf_ NEAR
@@ -2777,32 +2727,7 @@ ret
 ENDP
 @
 
-; note: this actually seems to work so far.
 
-PROC    locallib_exit_   NEAR
-PUBLIC  locallib_exit_
-
-
-mov   bx, ax
-call  dword ptr ds:[___int23_exit]
-mov   dx, 0FFh
-mov   ax, 010h
-
-;todo still buggy
-;call  locallib_FiniRtns_
-call  __FiniRtns
-call  dword ptr ds:[___int23_exit]
-call  dword ptr ds:[___FPE_handler_exit]
-mov   ax, bx
-jump_to_exit:
-jmp   __exit_
-mov   ax, ax
-mov   dx, ax
-call  dword ptr ds:[___int23_exit]
-call  dword ptr ds:[___FPE_handler_exit]
-mov   ax, dx
-jmp   jump_to_exit
-ENDP
 
 
 PROC locallib_GetIOMode_ NEAR
