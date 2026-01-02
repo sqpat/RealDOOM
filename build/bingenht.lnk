@@ -113,7 +113,7 @@ file m_misc.obj
 file st_stuff.obj
 file hu_stuff.obj
 file hu_lib.obj
-file d_algo.obj
+
 file d_dmx.obj
 file d_int.obj
 file math.obj

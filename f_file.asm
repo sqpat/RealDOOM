@@ -19,9 +19,6 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-
-
-
 EXTRN __exit_:NEAR
 EXTRN __GETDS:NEAR
 EXTRN __full_io_exit_:NEAR
@@ -120,18 +117,6 @@ FREAD_BUFFER_SIZE = 512
 
 ;void  __far locallib_far_fread(void __far* dest, uint16_t size, FILE * fp) {
 
-; todo use and link up, or avoid completely
-
-PROC    locallib_GETDS_   NEAR
-PUBLIC  locallib_GETDS_
-
-push      ax
-mov       ax, DGROUP
-mov       ds, ax
-pop       ax
-ret       
-
-ENDP
 
 PROC    locallib_memallocator_ NEAR
 PUBLIC  locallib_memallocator_

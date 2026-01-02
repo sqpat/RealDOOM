@@ -79,7 +79,6 @@ GLOBOBJS = &
  memory.obj &
  math.obj &
  main.obj &
- d_algo.obj &
  v_video.obj
 
 doomout.exe : $(GLOBOBJS) i_ibm.obj
