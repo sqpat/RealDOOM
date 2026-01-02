@@ -1882,23 +1882,19 @@ ENDP
 IF COMPISA GE COMPILE_386
 
 PROC FixedMulBSPLocal_ NEAR
+; thanks zero318 from discord for improved algorithm  
 
 ; DX:AX  *  CX:BX
 ;  0  1      2  3
 
-; set up ecx
-db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
-db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
-
-; set up eax
-db 066h, 0C1h, 0E0h, 010h        ; shl  eax, 0x10
-db 066h, 00Fh, 0ACh, 0D0h, 010h  ; shrd eax, edx, 0x10
-
-; actual mul
-db 066h, 0F7h, 0E9h              ; imul ecx
-; set up return
-db 066h, 0C1h, 0E8h, 010h        ; shr  eax, 0x10
-db 0C3h                          ; ret
+  shl  ecx, 16
+  mov  cx, bx
+  xchg ax, dx
+  shl  eax, 16
+  xchg ax, dx
+  imul  ecx
+  shr  eax, 16
+  ret
 
 
 
@@ -1911,81 +1907,36 @@ PROC FixedMulBSPLocal_ NEAR
 ; DX:AX  *  CX:BX
 ;  0  1      2  3
 
-; with sign extend for byte 3:
-; S0:DX:AX    *   S1:CX:BX
-; S0 = DX sign extend
-; S1 = CX sign extend
+; thanks zero318 from discord for improved algorithm  
 
-;
-; 
-;BYTE
-; RETURN VALUE
-;                3       2       1		0
-;                DONTUSE USE     USE    DONTUSE
+MOV  ES, SI
+MOV  SI, DX
+MOV  word ptr cs:[_selfmodify_restore_original_ax+1], AX
+MUL  BX
+MOV  word ptr cs:[_selfmodify_restore_dx+1], DX
+MOV  AX, SI
+MUL  CX
+XCHG AX, SI
+CWD
+AND  DX, BX
+SUB  SI, DX
+MUL  BX
+_selfmodify_restore_dx:
+mov  BX, 01000h
+ADD  BX, AX
+ADC  SI, DX
+mov  AX, CX
+CWD
+_selfmodify_restore_original_ax:
+mov CX, 01000h
+AND DX, CX
+SUB SI, DX
+MUL CX
+ADD AX, BX
+ADC DX, SI
+MOV SI, ES
 
-
-;                               AXBXhi	 AXBXlo
-;                       DXBXhi  DXBXlo          
-;               S0BXhi  S0BXlo                          
-;
-;                       AXCXhi  AXCXlo
-;               DXCXhi  DXCXlo  
-;                       
-;               AXS1hi  AXS1lo
-;                               
-;                       
-;       
-
-
-
-
-; need to get the sign-extends for DX and CX
-
-push  si
-
-mov   es, ax	; store ax in es
-mov   ds, dx    ; store dx in ds
-mov   ax, dx	; ax holds dx
-CWD				; S0 in DX
-
-AND   DX, BX	; S0*BX
-NEG   DX
-mov   SI, DX	; DI stores hi word return
-
-; AX still stores DX
-MUL  CX         ; DX*CX
-add  SI, AX    ; low word result into high word return
-
-mov  AX, DS    ; restore DX from ds
-MUL  BX         ; DX*BX
-XCHG BX, AX    ; BX will hold low word return. store bx in ax
-add  SI, DX    ; add high word to result
-
-mov  DX, ES    ; restore AX from ES
-mul  DX        ; BX*AX  
-add  BX, DX    ; high word result into low word return
-ADC  SI, 0
-
-mov  AX, CX   ; AX holds CX
-CWD           ; S1 in DX
-
-mov  CX, ES   ; AX from ES
-AND  DX, CX   ; S1*AX
-NEG  DX
-ADD  SI, DX   ; result into high word return
-
-MUL  CX       ; AX*CX
-
-ADD  AX, BX	  ; set up final return value
-ADC  DX, SI
-
-mov  CX, SS   ; restore DS
-mov  DS, CX
-
-pop   si
 ret
-
-
 
 ENDP
 ENDIF

@@ -67,7 +67,7 @@ PUBLIC FixedMul_
 
 ; need to get the sign-extends for DX and CX
 
-
+; thanks zero318 from discord for improved algorithm  
 
 MOV  ES, SI
 MOV  SI, DX

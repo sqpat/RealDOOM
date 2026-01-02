@@ -6,6 +6,7 @@
 
 #include <dos.h>
 #include <conio.h>
+#include <stdio.h>
 
 #include <stdlib.h>
 #include "m_memory.h"
@@ -216,6 +217,7 @@ void __far M_StartControlPanel();
 void __far M_Drawer();
 void __far M_LoadFromSaveGame();
 void __far M_DrawPause();
+filelength_t  __near locallib_far_fwrite(void __far* src, uint16_t elementsizetimeselementcount, FILE * fp);
 
 
 /*
@@ -402,6 +404,11 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 
 
     fclose(fp);
+
+    // for (i = 0; i < 30; i++){
+    //     printf ("codeside %i: %i\n", i, codesize[i]);
+    // }
+
     
     printf("Generated doomcode.bin file\n");
 
