@@ -22,31 +22,39 @@ INSTRUCTION_SET_MACRO
 
 
 
-EXTRN free_:FAR
-EXTRN malloc_:FAR
 EXTRN __exit_:NEAR
 
 EXTRN __GETDS:NEAR
 EXTRN __FiniRtns:FAR
+EXTRN __MemFree:FAR
+EXTRN __MemAllocator:FAR
+EXTRN __nmemneed_:FAR
+EXTRN __ExpandDGROUP_:FAR
 
 .DATA
 
-EXTRN ___iob:WORD
-EXTRN __ovlflag:WORD
-EXTRN ___umaskval:WORD
-EXTRN __fmode:WORD
-EXTRN __commode:WORD
-EXTRN ___RmTmpFileFn:DWORD
-EXTRN __Start_XI:WORD
-EXTRN __End_XI:WORD
-EXTRN __Start_YI:WORD
-EXTRN __End_YI:WORD
+EXTRN ___LargestSizeB4MiniHeapRover:WORD
+EXTRN ___MiniHeapFreeRover:WORD
+EXTRN ___MiniHeapRover:WORD
+EXTRN ___nheapbeg:WORD
+
+
+
+; not sure if word or what
+EXTRN ___iob:BYTE
+EXTRN __ovlflag:BYTE
+EXTRN __Start_XI:BYTE
+EXTRN __End_XI:BYTE
+EXTRN __Start_YI:BYTE
+EXTRN __End_YI:BYTE
+
 EXTRN _errno:WORD
 EXTRN ___OpenStreams:WORD
 EXTRN ___ClosedStreams:WORD
 EXTRN ___io_mode:WORD
 EXTRN __cbyte:WORD
 EXTRN ___NFiles:WORD
+
 EXTRN ___int23_exit:DWORD
 EXTRN ___FPE_handler_exit:DWORD
 
@@ -120,6 +128,252 @@ ret
 
 ENDP
 
+
+PROC    locallib_free_ NEAR
+PUBLIC  locallib_free_
+
+
+push  bx
+push  dx
+push  si
+test  ax, ax
+je    label_1
+mov   si, word ptr ds:[___MiniHeapFreeRover]
+test  si, si
+je    label_2
+cmp   si, ax
+ja    label_3
+mov   dx, word ptr ds:[si]
+add   dx, si
+cmp   ax, dx
+jb    label_4
+label_3:
+mov   bx, si
+mov   si, word ptr ds:[si + 2]
+test  si, si
+je    label_1
+cmp   si, ax
+ja    label_1
+mov   dx, word ptr ds:[si]
+add   dx, si
+cmp   ax, dx
+jb    label_4
+label_1:
+mov   si, word ptr ds:[bx + 4]
+test  si, si
+je    label_2
+cmp   si, ax
+ja    label_2
+mov   dx, word ptr ds:[si]
+add   dx, si
+cmp   ax, dx
+jb    label_5
+label_2:
+mov   si, word ptr ds:[___MiniHeapRover]
+test  si, si
+jne   label_6
+label_12:
+mov   si, word ptr ds:[___nheapbeg]
+label_9:
+test  si, si
+je    jump_to_exit_free
+cmp   si, ax
+jbe   label_7
+label_8:
+mov   si, word ptr ds:[si + 4]
+jmp   label_9
+jump_to_exit_free:
+jmp   exit_free
+label_4:
+jmp   label_5
+label_6:
+cmp   si, ax
+ja    label_10
+mov   dx, word ptr ds:[si]
+add   dx, si
+cmp   ax, dx
+jb    label_5
+label_10:
+mov   bx, si
+mov   si, word ptr ds:[si + 2]
+test  si, si
+je    label_11
+cmp   si, ax
+ja    label_11
+mov   dx, word ptr ds:[si]
+add   dx, si
+cmp   ax, dx
+jb    label_5
+label_11:
+mov   si, word ptr ds:[bx + 4]
+test  si, si
+je    label_12
+cmp   si, ax
+ja    label_12
+mov   dx, word ptr ds:[si]
+add   dx, si
+cmp   ax, dx
+jae   label_12
+label_5:
+mov   dx, ds
+mov   bx, si
+call  __MemFree
+mov   word ptr ds:[___MiniHeapFreeRover], si
+cmp   si, word ptr ds:[___MiniHeapRover]
+jae   exit_free
+mov   ax, word ptr ds:[___LargestSizeB4MiniHeapRover]
+cmp   ax, word ptr ds:[si + 0Ah]
+jb    label_13
+exit_free:
+pop   si
+pop   dx
+pop   bx
+ret
+label_7:
+mov   dx, word ptr ds:[si]
+add   dx, si
+cmp   ax, dx
+jb    label_5
+jmp   label_8
+label_13:
+mov   ax, word ptr ds:[si + 0Ah]
+mov   word ptr ds:[___LargestSizeB4MiniHeapRover], ax
+jmp   exit_free
+
+ENDP
+
+PROC    locallib_malloc_ NEAR
+PUBLIC  locallib_malloc_
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 4
+mov   di, ax
+test  ax, ax
+je    exit_malloc_return_0
+cmp   ax, 0FFEAh  ; todo
+ja    exit_malloc_return_0
+add   ax, 3
+and   al, 0FEh  ; todo
+mov   word ptr [bp - 4], ax
+cmp   ax, 6
+jb    label_14
+label_22:
+mov   byte ptr [bp - 2], 0
+xor   dx, dx
+label_20:
+mov   ax, word ptr [bp - 4]
+cmp   ax, word ptr ds:[___LargestSizeB4MiniHeapRover]
+jbe   label_15
+mov   si, word ptr ds:[___MiniHeapRover]
+test  si, si
+je    label_16
+label_24:
+test  si, si
+je    label_17
+mov   cx, word ptr ds:[si + 0Ah]
+mov   word ptr ds:[___MiniHeapRover], si
+cmp   cx, di
+jb    label_18
+mov   dx, ds
+mov   bx, si
+mov   ax, di
+call  __MemAllocator
+mov   dx, ax
+test  ax, ax
+jne   label_19
+label_18:
+cmp   cx, word ptr ds:[___LargestSizeB4MiniHeapRover]
+ja    label_23
+label_28:
+mov   si, word ptr ds:[si + 4]
+jmp   label_24
+exit_malloc_return_0:
+xor   ax, ax
+exit_malloc:
+mov   sp, bp
+pop   bp
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+ret  
+label_14:
+mov   word ptr [bp - 4], 6
+jmp   label_22
+label_16:
+mov   word ptr ds:[___LargestSizeB4MiniHeapRover], si
+mov   si, word ptr ds:[___nheapbeg]
+jmp   label_24
+label_15:
+xor   ax, ax
+mov   si, word ptr ds:[___nheapbeg]
+mov   word ptr ds:[___LargestSizeB4MiniHeapRover], ax
+jmp   label_24
+label_23:
+mov   word ptr ds:[___LargestSizeB4MiniHeapRover], cx
+jmp   label_28
+label_17:
+cmp   byte ptr [bp - 2], 0
+je    label_29
+label_21:
+mov   ax, di
+call  __nmemneed_
+test  ax, ax
+je    label_19
+mov   byte ptr [bp - 2], 0
+jmp   label_20
+label_29:
+mov   ax, di
+call  __ExpandDGROUP_
+test  ax, ax
+je    label_21
+mov   byte ptr [bp - 2], 1
+jmp   label_20
+label_19:
+mov   ax, dx
+jmp   exit_malloc
+push  bx
+push  dx
+push  bp
+mov   bp, sp
+mov   bx, ax
+cmp   word ptr ds:[bx], 0
+jne   label_25
+label_26:
+mov   sp, bp
+pop   bp
+pop   dx
+pop   bx
+ret   
+label_25:
+push  ds
+call  word ptr ds:[bx]
+pop   ds
+jmp   label_26
+
+push  bx
+push  dx
+push  bp
+mov   bp, sp
+mov   bx, ax
+mov   ax, word ptr ds:[bx + 2]
+mov   dx, word ptr ds:[bx]
+test  ax, ax
+jne   label_27
+test  dx, dx
+je    label_26
+label_27:
+push  ds
+call  dword ptr ds:[bx]
+pop   ds
+jmp   label_26
 
 
 
@@ -903,7 +1157,7 @@ ret
 
 create_streamlink:
 mov       ax, SIZE WATCOM_STREAM_LINK
-call      malloc_
+call      locallib_malloc_
 mov       si, ax
 test      ax, ax
 je        do_allocfp_out_of_memory_error
@@ -1027,7 +1281,7 @@ je   exit_purge_fp
 mov  ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_next]
 mov  word ptr ds:[___ClosedStreams], ax
 mov  ax, bx
-call free_
+call locallib_free_
 jmp  loop_check_next_fp_for_purge
 exit_purge_fp:
 pop  bx
@@ -1079,7 +1333,7 @@ test  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _BIGBUF
 je    skip_bigbuf  ; todo do we get rid of this check?
 mov   bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 mov   ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
-call  free_
+call  locallib_free_
 
 mov   word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
 skip_bigbuf:
@@ -1770,7 +2024,7 @@ jne   bufsize_set
 mov   ax, FILE_BUFFER_SIZE  ; lets just use FILE_BUFFER_SIZE = 512 for everything for now
 mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize], ax  ; default buffer is 134 apparently! todo revisit
 bufsize_set:
-call  malloc_  ; near malloc
+call  locallib_malloc_  ; near malloc
 ; ax gets file buffer
 mov   bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 mov   word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], ax ; ptr to the file buf...
