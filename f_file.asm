@@ -23,9 +23,12 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN __exit_:NEAR
-
 EXTRN __GETDS:NEAR
-EXTRN __FiniRtns:FAR
+EXTRN __full_io_exit_:FAR
+EXTRN __Fini_Argv_:FAR
+EXTRN __InitFiles_:FAR
+EXTRN __Init_Argv_:FAR
+
 
 .DATA
 
@@ -2607,186 +2610,53 @@ jmp   finish_and_exit_ioalloc
 
 ENDP
 
-COMMENT @
-
-PROC   locallib_callit_near_ NEAR
-
-push  bx
-push  dx
-push  bp
-mov   bp, sp
-mov   bx, ax
-cmp   word ptr ds:[bx], 0 ; dont call null
-je    skip_call
-do_call:
-push  ds
-call  word ptr ds:[bx]
-pop   ds
-done_with_call:
-skip_call:
-mov   sp, bp
-pop   bp
-pop   dx
-pop   bx
-ret   
-
-
-ENDP
-
-PROC   locallib_callit_far_ NEAR
-
-
-push  bx
-push  dx
-push  bp
-mov   bp, sp
-mov   bx, ax
-mov   ax, word ptr ds:[bx + 2]
-mov   dx, word ptr ds:[bx]
-test  ax, ax
-jne   do_far_call
-test  dx, dx
-je    skip_call
-do_far_call:
-push  ds
-call  dword ptr ds:[bx]
-pop   ds
-jmp   do_call
-
-ENDP
-
-@
-COMMENT @
-
-; this runs initailization routines (init file structures and argv) during c program init. but we will skip this generic step and call the couple of necessary functions in hardcoded manner.
 
 PNEAR = 0
 PFAR = 1
 PDONE = 2
 
-PROC locallib_InitRtns_ NEAR
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
-push  bp
-mov   bp, sp
-mov   cx, ax
+
+; this runs initailization routines (init file structures and argv) during c program init. but we will skip this generic step and call the couple of necessary functions in hardcoded manner.
+
+; __InitFiles_
+; __Init_Argv_
+
+PROC    __InitRtns FAR
+PUBLIC  __InitRtns
+
 push  ds
 call  __GETDS
-mov   di, OFFSET __End_XI
-mov   dx, di
-loop_next_init_func_outer:
-mov   bx, OFFSET __Start_XI
-mov   si, di
-mov   al, cl
-loop_next_init_func_inner:
-cmp   bx, di
-jae   found_init_func
-cmp   byte ptr ds:[bx + C_INIT_STRUCT.cinitstruc_rtntype], PDONE
-je    continue_next_init_func
-cmp   al, byte ptr ds:[bx + C_INIT_STRUCT.cinitstruc_priority]
-jb    continue_next_init_func
-mov   si, bx
-mov   al, byte ptr ds:[bx + C_INIT_STRUCT.cinitstruc_priority]
 
+call  __InitFiles_
+call  __Init_Argv_
 
-continue_next_init_func:
-add   bx, SIZE C_INIT_STRUCT
-jmp   loop_next_init_func_inner
-
-found_init_func:
-cmp   si, di
-je    exit_initrtns
-lea   ax, [si + C_INIT_STRUCT.cinitstruc_funcptr]
-cmp   byte ptr ds:[si + C_INIT_STRUCT.cinitstruc_rtntype], PNEAR
-jne   do_far_call
-call  locallib_callit_near_
-finished_call:
-mov   byte ptr ds:[si + C_INIT_STRUCT.cinitstruc_rtntype], PDONE
-jmp   loop_next_init_func_outer
-do_far_call:
-call  locallib_callit_far_
-jmp   finished_call
-exit_initrtns:
 pop   ds
-mov   sp, bp
-pop   bp
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
 ret  
+
 
 ENDP
 
 
 ; this runs shutdown routines during c program exit. but we will skip this generic step and call the couple of necessary functions in hardcoded manner.
 
-PROC locallib_FiniRtns_ NEAR
 
-push  bx
-push  cx
-push  si
-push  di
-push  bp
-mov   bp, sp
-mov   cx, ax
+; __full_io_exit_
+; __Fini_Argv_
+
+PROC    __FiniRtns FAR
+PUBLIC  __FiniRtns
+
 push  ds
 call  __GETDS
-mov   ch, dl
-mov   di, OFFSET __END_YI
-mov   dx, di
 
-loop_next_finish_func_outer:
-mov   bx, OFFSET __START_YI
-mov   si, di
-mov   al, cl
-loop_next_finish_func_inner:
-cmp   bx, di
-jae   found_finish_func
-cmp   byte ptr ds:[bx + C_INIT_STRUCT.cinitstruc_rtntype], PDONE
-je    continue_next_finish_func
-cmp   al, byte ptr ds:[bx + C_INIT_STRUCT.cinitstruc_priority]
-ja    continue_next_finish_func
-mov   si, bx
-mov   al, byte ptr ds:[bx + C_INIT_STRUCT.cinitstruc_priority]
-continue_next_finish_func:
-add   bx, SIZE C_INIT_STRUCT
-jmp   loop_next_finish_func_inner
-found_finish_func:
-cmp   si, di
-je    exit_finiRtns
-cmp   ch, byte ptr ds:[si + C_INIT_STRUCT.cinitstruc_priority]
-jnae  done_with_call_finish
+call  __full_io_exit_
+call  __Fini_Argv_
 
-lea   ax, [si + C_INIT_STRUCT.cinitstruc_funcptr]
-cmp   byte ptr ds:[si + C_INIT_STRUCT.cinitstruc_rtntype], PNEAR
-jne   do_far_call_finish
-call  locallib_callit_near_
-jmp   done_with_call_finish
-do_far_call_finish:
-call  locallib_callit_far_
-
-done_with_call_finish:
-mov   byte ptr ds:[si + C_INIT_STRUCT.cinitstruc_rtntype], PDONE
-jmp   loop_next_finish_func_outer
-
-exit_finiRtns:
 pop   ds
-mov   sp, bp
-pop   bp
-pop   di
-pop   si
-pop   cx
-pop   bx
 ret  
 
 ENDP
-@
 
 
 PROC    locallib_setvbuf_ NEAR
