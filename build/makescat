@@ -45,7 +45,6 @@ GLOBOBJS = &
  i_quit.obj &
  i_main.obj &
  i_ibm.obj &
- f_finale.obj &
  d_init.obj &
  d_net.obj &
  g_setup.obj &
@@ -55,7 +54,6 @@ GLOBOBJS = &
  p_init.obj &
  p_setup.obj &
  p_setupa.obj &
- p_mobj.obj &
  r_init.obj &
  r_setup.obj &
  r_main.obj &

@@ -140,60 +140,6 @@ db ".", 0
 
 IFDEF COMP_CH
 
-
-
-  IF COMP_CH EQ CHIPSET_SCAMP
-
-    PROC    Z_InitEMS_ NEAR
-    PUBLIC  Z_InitEMS_
-
-    mov    word ptr ds:[_EMS_PAGE], 0D000h   ; TODO unhardcode
-    mov    al, 000h
-    out    0FBh, al  ;  dummy write configuration enable
-	
-    mov    al, 00Bh
-    out    SCAMP_PAGE_CHIPSET_SELECT_REGISTER, al
-    mov    al, 0C0h
-    out    SCAMP_PAGE_CHIPSET_SET_REGISTER, al  ; enable EMS and backfill
-	
-    mov    al, 00Ch
-    out    SCAMP_PAGE_CHIPSET_SELECT_REGISTER, al
-    mov    al, 0F0h
-    out    SCAMP_PAGE_CHIPSET_SET_REGISTER, al  ; enabled page D000 as page frame
-
-
-    ;mov    al, 010h
-    ;out    SCAMP_PAGE_CHIPSET_SELECT_REGISTER, al
-    ;mov    al, 0FFh
-    ;out    SCAMP_PAGE_CHIPSET_SET_REGISTER, al  ; enable page D000 UMBs
-
-    ;mov    al, 011h
-    ;out    SCAMP_PAGE_CHIPSET_SELECT_REGISTER, al
-    ;mov    al, 0AFh
-    ;out    SCAMP_PAGE_CHIPSET_SET_REGISTER, al  ; enable page E000 UMBs. F000 read only.
-
-    ; set default pages
-    loop_next_page_setup:
-    mov     ax, 0Ch
-
-    out    SCAMP_PAGE_SELECT_REGISTER, al
-    add    al, 4
-    out    SCAMP_PAGE_SET_REGISTER, ax  ; set default EMS pages for global stuff...
-    sub    al, 3     ; undo plus 4, inc ax 1    
-    cmp     al, 024h
-    jl      loop_next_page_setup
-
-
-    mov    al, 7
-    out    SCAMP_PAGE_SELECT_REGISTER, al
-    mov    ax, EMS_MEMORY_PAGE_OFFSET + BSP_CODE_PAGE
-    out    SCAMP_PAGE_SET_REGISTER, ax  ; set default EMS page for bsp code?
-    sub    al, 3     ; undo plus 4, inc ax 1    
-
-    ret
-
-    ENDP
-
     ; todo test and copy to scat ht18 etc
 
     PROC    Z_GetEMSPageMap_ NEAR
@@ -264,6 +210,61 @@ IFDEF COMP_CH
     ret  
 
     ENDP
+
+
+  IF COMP_CH EQ CHIPSET_SCAMP
+
+    PROC    Z_InitEMS_ NEAR
+    PUBLIC  Z_InitEMS_
+
+    mov    word ptr ds:[_EMS_PAGE], 0D000h   ; TODO unhardcode
+    mov    al, 000h
+    out    0FBh, al  ;  dummy write configuration enable
+	
+    mov    al, 00Bh
+    out    SCAMP_PAGE_CHIPSET_SELECT_REGISTER, al
+    mov    al, 0C0h
+    out    SCAMP_PAGE_CHIPSET_SET_REGISTER, al  ; enable EMS and backfill
+	
+    mov    al, 00Ch
+    out    SCAMP_PAGE_CHIPSET_SELECT_REGISTER, al
+    mov    al, 0F0h
+    out    SCAMP_PAGE_CHIPSET_SET_REGISTER, al  ; enabled page D000 as page frame
+
+
+    ;mov    al, 010h
+    ;out    SCAMP_PAGE_CHIPSET_SELECT_REGISTER, al
+    ;mov    al, 0FFh
+    ;out    SCAMP_PAGE_CHIPSET_SET_REGISTER, al  ; enable page D000 UMBs
+
+    ;mov    al, 011h
+    ;out    SCAMP_PAGE_CHIPSET_SELECT_REGISTER, al
+    ;mov    al, 0AFh
+    ;out    SCAMP_PAGE_CHIPSET_SET_REGISTER, al  ; enable page E000 UMBs. F000 read only.
+
+    ; set default pages
+    loop_next_page_setup:
+    mov     ax, 0Ch
+
+    out    SCAMP_PAGE_SELECT_REGISTER, al
+    add    al, 4
+    out    SCAMP_PAGE_SET_REGISTER, ax  ; set default EMS pages for global stuff...
+    sub    al, 3     ; undo plus 4, inc ax 1    
+    cmp     al, 024h
+    jl      loop_next_page_setup
+
+
+    mov    al, 7
+    out    SCAMP_PAGE_SELECT_REGISTER, al
+    mov    ax, EMS_MEMORY_PAGE_OFFSET + BSP_CODE_PAGE
+    out    SCAMP_PAGE_SET_REGISTER, ax  ; set default EMS page for bsp code?
+    sub    al, 3     ; undo plus 4, inc ax 1    
+
+    ret
+
+    ENDP
+
+
 
   ELSEIF COMP_CH EQ CHIPSET_SCAT
 
@@ -364,7 +365,6 @@ str_ems_successfully_initialized:
 db "EMS Iniitaliation Successful!", 0Ah, 0
 
 
-; todo move to z_init asm
 ; todo increment error code in cx and return for error print when in asm?
 
 

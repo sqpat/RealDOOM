@@ -12,60 +12,21 @@ format dos
 name bingen
 
 
-file d_init.obj
-file s_init.obj
-file st_init.obj
-file r_init.obj
-file w_init.obj
-file i_init.obj
-file z_init.obj
-file s_sbinit.obj
-file p_init.obj
 
-file i_quit.obj
-file i_ibm.obj
-file bingen.obj
-file d_net.obj
-file g_game.obj
-file g_demo.obj
-file m_misc.obj
-file st_stuff.obj
-file hu_stuff.obj
-file hu_lib.obj
 
-file d_dmx.obj
-file d_int.obj
-file math.obj
-file main.obj
-
-file g_setup.obj
-file r_setup.obj
-file st_setup.obj
-file hu_setup.obj
-
-file s_sbsfx.obj
-file r_main.obj
-file binfile.obj
-file w_wad.obj
-file v_video.obj
-file z_zone.obj
-file p_setup.obj
-file p_setupa.obj
-
-file z_scat.obj
-
-NEWSEGMENT
 file sm_load.obj
 
 
 NEWSEGMENT
 file wi_stuff.obj
 
+
 NEWSEGMENT
 file m_menu.obj
 
 NEWSEGMENT
 file f_wipe.obj
+
 
 NEWSEGMENT
 file f_finale.obj
@@ -84,7 +45,6 @@ NEWSEGMENT
 file sm_sbmid.obj
 NEWSEGMENT
 file sm_mpumd.obj
-
 
 
 NEWSEGMENT
@@ -135,5 +95,47 @@ file am_map.obj
 file s_sound.obj
 
 #hack..
-NEWSEGMENT 
+NEWSEGMENT
+file d_init.obj
+file s_init.obj
+file st_init.obj
+file r_init.obj
+file w_init.obj
+file i_init.obj
+file z_init.obj
+file s_sbinit.obj
+file p_init.obj
+
+file i_quit.obj
+file i_ibm.obj
+file bingen.obj
+file d_net.obj
+file g_game.obj
+file g_demo.obj
+file m_misc.obj
+file st_stuff.obj
+file hu_stuff.obj
+file hu_lib.obj
+file d_dmx.obj
+file d_int.obj
+file math.obj
+file main.obj
+
+
+file g_setup.obj
+file r_setup.obj
+file st_setup.obj
+file hu_setup.obj
+
+file r_main.obj
+file p_setup.obj
+file p_setupa.obj
+file s_sbsfx.obj
+file binfile.obj
+file w_wad.obj
+file v_video.obj
+file z_zone.obj
+
+file z_scat.obj
+
 
