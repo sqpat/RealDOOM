@@ -31,21 +31,16 @@ PUBLIC FixedMul_
 ; DX:AX  *  CX:BX
 ;  0  1      2  3
 
-; need to get this out of DX:AX  CX:BX and into
-; EAX and EBX (or something)
-; todo improve
-  sal  ebx, 16
-  shrd ebx, ecx, 16
-
-  sal  eax, 16
-  shrd eax, edx, 16
-
-  ; actual mult and shrd..
-  imul ebx
-  ; put results in the expected spots
-  ; edx low 16 bits already contains bits 32-48 of result
-  ; need to move eax's high 16 bits low.
+; thanks zero318 for xchg improvement ideas
+  
+  shl  ecx, 16
+  mov  cx, bx
+  xchg ax, dx
+  shl  eax, 16
+  xchg ax, dx
+  imul  ecx
   shr  eax, 16
+
 
 ret
 
