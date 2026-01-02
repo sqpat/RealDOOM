@@ -123,8 +123,8 @@ ENDP
 
 
 
-PROC    locallib_fwrite_ NEAR
-PUBLIC  locallib_fwrite_ 
+PROC    locallib_far_fwrite_ NEAR
+PUBLIC  locallib_far_fwrite_
 
 ; bp - 2 = some sort of flag
 
@@ -2470,7 +2470,7 @@ retf
 
 ENDP
 
-@
+
 
 PROC    locallib_far_fwrite_ NEAR
 PUBLIC  locallib_far_fwrite_
@@ -2541,7 +2541,7 @@ pop       cx
 ret
 
 ENDP
-
+@
 PROC    F_FILE_ENDMARKER_ NEAR
 PUBLIC  F_FILE_ENDMARKER_
 ENDP
