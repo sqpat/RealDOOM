@@ -157,6 +157,8 @@ skip_ioalloc_fwrite:
 mov       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag]
 and       ax, (_SFERR OR _EOF)
 push      ax  ; bp - 2 restore error/eof flags upon exit.
+push      dx  ; bp - 4 target segment
+
 and       byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT (_SFERR OR _EOF))
 
 do_binary_fwrite:
@@ -168,11 +170,44 @@ jne       do_copy_from_buffer_fwrite ; stuff left in buffer, copy that out first
 cmp       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize]
 jb        do_copy_from_buffer_fwrite
 
-mov       dx, di
+
+;call      locallib_qwrite_
+; inlined
+
 mov       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
-mov       cx, bx
-call      locallib_qwrite_
-mov       bx, cx   ; restore
+call      locallib_GetIOMode_
+test      al, _APPEND
+
+je        skip_move_file_ptr_fwrite
+push      bx
+mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+xor       dx, dx
+xor       cx, cx
+mov       ax, 04200h + SEEK_END ; 042h  ; Move file pointer using handle
+int       021h
+pop       bx
+jc        do_qwrite_fwrite_error
+
+skip_move_file_ptr_fwrite:
+push      bx
+
+mov       dx, di   ; ds:dx is pointer for writing.
+mov       cx, bx   ; num bytes to write
+mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+mov       ds, word ptr [bp - 4]
+mov       ah, 040h  ; Write file or device using handle
+int       021h
+push      ss
+pop       ds
+pop       bx
+
+jc        do_qwrite_fwrite_error
+
+cmp       ax, bx   ; did we write all the bytes?
+jne       get_qwrite_errno_fwrite
+
+skip_qwrite_errno_fwrite:
+
 mov       dx, ax
 cmp       ax, 0FFFFh
 je        failed_qwrite_fwrite
@@ -211,7 +246,14 @@ pop       bp
 pop       di
 pop       si
 ret      
+; todo maybe remove?
+do_qwrite_fwrite_error:
+call locallib_set_errno_ptr_
+jmp  exit_fwrite
 
+get_qwrite_errno_fwrite:
+mov  word ptr ds:[_errno], 0Ch
+jmp  skip_qwrite_errno_fwrite
 
 do_copy_from_buffer_fwrite:
 
@@ -1973,11 +2015,10 @@ mov  di, bx
 call locallib_GetIOMode_
 test al, _APPEND
 je   skip_move_file_ptr
-mov  al, SEEK_END
 mov  bx, si
 xor  dx, dx
 xor  cx, cx
-mov  ah, 042h  ; Move file pointer using handle
+mov  ax, 04200h + SEEK_END ; 042h  ; Move file pointer using handle
 int  021h
 jc   do_qwrite_error
 skip_move_file_ptr:
