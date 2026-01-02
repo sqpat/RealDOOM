@@ -296,7 +296,7 @@ je        hit_end_of_buffer_do_flush
 test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_IOFBF SHR 8)
 je        iterate_and_continue_next_fwrite_cycle
 hit_end_of_buffer_do_flush:
-mov       ax, si
+
 call      locallib_flush_
 jmp       iterate_and_continue_next_fwrite_cycle
 
@@ -1036,7 +1036,7 @@ ret
 
 ENDP
 
-
+; todo inline?
 PROC    locallib_doclose_  NEAR
 
 push  bx
@@ -1098,14 +1098,6 @@ jmp   exit_doclose
 
 ENDP
 
-PROC  locallib_shutdown_stream_ NEAR
-push  ax
-call  locallib_doclose_
-xchg  ax, dx
-pop   ax
-call  locallib_freefp_
-mov   ax, dx
-ret
 
 ENDP
 
@@ -1125,7 +1117,16 @@ mov   bx, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_next]
 jmp   loop_check_next_stream
 found_stream_do_fclose:
 mov   dx, 1
-call  locallib_shutdown_stream_   ; todo inline?
+; call  locallib_shutdown_stream_   ; inlined
+
+push  ax
+call  locallib_doclose_
+xchg  ax, dx
+pop   ax
+call  locallib_freefp_
+mov   ax, dx
+
+
 pop   dx
 pop   bx
 ret  
@@ -1233,7 +1234,7 @@ ret
 ENDP
 
 
-; todo make si hold fp
+; si holds fp
 PROC    locallib_flush_   NEAR
 PUBLIC  locallib_flush_   
 
@@ -1243,7 +1244,7 @@ push dx
 push si
 push di
 push bp  ; bp is ret
-mov  si, ax
+
 xor  bp, bp  ; ret
 mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
@@ -1385,7 +1386,7 @@ flag_is_match:
 inc  dx
 test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
 je   increment_and_check_next_stream_for_flush ; not dirty, skip
-mov  ax, si
+
 call locallib_flush_
 jmp  increment_and_check_next_stream_for_flush
 
@@ -2104,6 +2105,7 @@ ret
 ENDP
 @
 
+; note: this actually seems to work so far.
 
 PROC    locallib_exit_   NEAR
 PUBLIC  locallib_exit_
@@ -2129,6 +2131,7 @@ call  dword ptr ds:[___FPE_handler_exit]
 mov   ax, dx
 jmp   jump_to_exit
 ENDP
+
 
 PROC locallib_GetIOMode_ NEAR
 
@@ -2246,27 +2249,7 @@ jmp  done_with_eof_check
 ENDP
 
 
-PROC    locallib_filbuf_   NEAR
 
-; si has file
-
-call locallib_fill_buffer_
-test ax, ax
-je   return_eof
-push bx
-mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
-xor  ax, ax
-mov  al, byte ptr ds:[bx] ; get this before incrementing file_ptr.
-pop  bx
-dec  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
-inc  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
-ret  
-return_eof:
-dec ax  ; since ax is 0 dec is -1 
-;mov  ax, 0FFFFh
-ret  
-
-ENDP
 
 PROC    locallib_fgetc_   NEAR
 PUBLIC  locallib_fgetc_
@@ -2300,8 +2283,22 @@ pop  bx
 ret 
 increase_buffer:
 
-call locallib_filbuf_
+;call locallib_filbuf_
+; inlined
+
+call locallib_fill_buffer_
+test ax, ax
+je   return_eof
+mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
+xor  ax, ax
+mov  al, byte ptr ds:[bx] ; get this before incrementing file_ptr.
+dec  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+inc  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
 jmp  check_if_2nd_get_necessary
+
+return_eof:
+dec ax  ; since ax is 0 dec is -1 
+jmp  exit_fgetc
 
 fgetc_error_handler:
 mov  word ptr ds:[_errno], 4
@@ -2327,9 +2324,6 @@ xchg ax, cx  ; char in cx
 mov  si, dx
 mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 
-; todo remove...
-test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _WRITE
-je   handle_fputc_error   ; not open for writing!
 cmp  word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
 jne  have_buffer_location
 
@@ -2353,13 +2347,13 @@ mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
 cmp  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize]
 jne  record_written_char
 flush_character:
-mov  ax, si
+
 call locallib_flush_
 test ax, ax
 jne  exit_fputc_return_error
 
 record_written_char:
-mov  al, cl
+xchg ax, cx
 xor  ah, ah
 
 
@@ -2372,8 +2366,8 @@ ret
 
 handle_newline_crap:
 or   dh, (_IOLBF SHR 8)
-test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag+0], _BINARY
-jne  prepare_to_put_char    ; handle like a regular char
+
+; note we never call putc on on nonstdout so its always necessary...
 ; really do newline shenanigans.
 mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
 or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag+1], (_DIRTY SHR 8)
@@ -2383,16 +2377,11 @@ inc  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
 mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
 cmp  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize]
 jne  prepare_to_put_char
-mov  ax, si
+
 
 call locallib_flush_
 test ax, ax
 je   prepare_to_put_char
-jmp  exit_fputc_return_error
-
-handle_fputc_error:
-mov  word ptr ds:[_errno], 4
-or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
 exit_fputc_return_error:
 mov  ax, 0FFFFh
 jmp  exit_fputc
