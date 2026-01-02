@@ -73,9 +73,6 @@ ENDP
 PROC    locallib_setbuf_ NEAR
 PUBLIC  locallib_setbuf_
 ENDP
-PROC    exit_ NEAR
-PUBLIC  exit_
-ENDP
 
 ret
 

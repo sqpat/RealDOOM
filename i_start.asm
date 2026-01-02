@@ -21,6 +21,8 @@ INSTRUCTION_SET_MACRO
 
 
 
+EXTRN hackDS_:NEAR
+EXTRN D_DoomMain_:NEAR
 
 EXTRN __GETDS:NEAR
 EXTRN doclose_:NEAR
@@ -34,15 +36,12 @@ EXTRN main_:NEAR
 
 .DATA
 
-EXTRN __WD_Present:BYTE
 EXTRN ___LargestSizeB4MiniHeapRover:WORD
 EXTRN ___MiniHeapFreeRover:WORD
 EXTRN ___MiniHeapRover:WORD
 EXTRN ___nheapbeg:WORD
 EXTRN __STACKLOW:WORD
 EXTRN __STACKTOP:WORD
-EXTRN __no87:WORD
-EXTRN ___uselfn:WORD
 EXTRN ___FPE_handler:WORD
 
 
@@ -85,6 +84,8 @@ EXTRN ____Argc:WORD
 EXTRN ____Argv:WORD
 
 
+
+
 COLORMAPS_SIZE = 33 * 256
 LUMP_PER_EMS_PAGE = 1024 
 
@@ -103,8 +104,8 @@ DATA    ends
 
 _BSS    segment word public 'BSS'
 
-        extrn   _edata                  : byte  ; end of DATA (start of BSS)
-        extrn   _end                    : byte  ; end of BSS (start of STACK)
+        EXTRN   _edata                  : byte  ; end of DATA (start of BSS)
+        EXTRN   _end                    : byte  ; end of BSS (start of STACK)
 
 _BSS    ends
 
@@ -753,10 +754,22 @@ jmp  exit_
 ENDP
 
 
+COMMENT @
+PROC    main_     NEAR
+PUBLIC  main_
 
-ret
+mov   word ptr ds:[_myargc], ax
+mov   word ptr ds:[_myargv+0], bx
+mov   word ptr ds:[_myargv+2], cx
 
+call  hackDS_
+call  D_DoomMain_
+
+xor   ax, ax 
+ret             ; return 0
 ENDP
+@
+
 
 PROC   _exit_ NEAR
 PUBLIC _exit_
@@ -814,13 +827,8 @@ and        bl, 0F0h  ; round up a segment
 mov        ss, cx
 mov        sp, bx
 mov        word ptr es:[__STACKTOP], bx
-mov        dx, bx
-shr        dx, 1
-shr        dx, 1
-shr        dx, 1
-shr        dx, 1
 
-; skip protected mode checks.
+; skip protected mode checks, x87 checks, lfn stuff
 
 mov        di, ds
 mov        es, di  ; es gets PSP
@@ -849,8 +857,8 @@ mov        word ptr ds:[__LpPgmName+0], si
 mov        word ptr ds:[__LpPgmName+2], es
 mov        bx, sp
 mov        ax, bp
-mov        byte ptr ds:[__no87], al
-and        byte ptr ds:[___uselfn], ah
+;mov        byte ptr ds:[__no87], al
+;and        byte ptr ds:[___uselfn], ah
 mov        word ptr ds:[__STACKLOW], di
 mov        cx, offset DGROUP:_end
 mov        di, offset DGROUP:_edata

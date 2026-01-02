@@ -7,7 +7,7 @@ option map
 option stack=2560
 #option stack=3072
 debug all
-libpath %WATCOM%\lib286
+#libpath %WATCOM%\lib286
 libpath %WATCOM%\lib286\dos
 format dos
 name doomout
