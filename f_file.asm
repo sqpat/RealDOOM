@@ -26,10 +26,7 @@ EXTRN __exit_:NEAR
 
 EXTRN __GETDS:NEAR
 EXTRN __FiniRtns:FAR
-EXTRN __MemFree:FAR
-EXTRN __MemAllocator:FAR
-EXTRN __nmemneed_:FAR
-EXTRN __ExpandDGROUP_:FAR
+EXTRN __brk_:FAR
 
 .DATA
 
@@ -48,6 +45,9 @@ EXTRN __End_XI:BYTE
 EXTRN __Start_YI:BYTE
 EXTRN __End_YI:BYTE
 
+EXTRN ___heap_enabled:WORD
+EXTRN __amblksiz:WORD
+EXTRN __curbrk:WORD
 EXTRN _errno:WORD
 EXTRN ___OpenStreams:WORD
 EXTRN ___ClosedStreams:WORD
@@ -128,6 +128,549 @@ ret
 
 ENDP
 
+PROC    locallib_memallocator_ NEAR
+PUBLIC  locallib_memallocator_
+
+push cx
+push si
+push di
+push ds
+push bp
+mov  bp, sp
+sub  sp, 2
+mov  si, bx
+mov  word ptr [bp - 2], 0
+test ax, ax
+jne  label_30
+jmp  exit_memallocator
+label_30:
+mov  di, ax
+add  di, 3
+and  di, 0FFFEh
+cmp  di, ax
+jb   exit_memallocator
+mov  ds, dx
+mov  ax, word ptr ds:[si + 0Ah]
+cmp  di, 6
+jae  label_31
+mov  di, 6
+label_31:
+cmp  di, ax
+ja   exit_memallocator
+mov  ds, dx
+mov  cx, word ptr ds:[si + 8]
+mov  bx, word ptr ds:[si + 6]
+cmp  di, cx
+jbe  label_32
+label_36:
+mov  ds, dx
+mov  ax, word ptr ds:[bx]
+cmp  di, ax
+ja   label_33
+mov  word ptr ds:[si + 8], cx
+sub  ax, di
+inc  word ptr ds:[si + 0Ch]
+cmp  ax, 6
+jb   label_34
+mov  cx, bx
+add  cx, di
+mov  word ptr ds:[si + 6], cx
+mov  si, cx
+mov  word ptr ds:[si], ax
+mov  word ptr ds:[bx], di
+mov  di, cx
+mov  si, word ptr ds:[bx + 2]
+mov  word ptr ds:[di + 2], si
+mov  ax, word ptr ds:[bx + 4]
+mov  word ptr ds:[di + 4], ax
+mov  word ptr ds:[si + 4], cx
+mov  si, ax
+mov  word ptr ds:[si + 2], cx
+label_37:
+mov  ds, dx
+or   byte ptr ds:[bx], 1
+add  bx, 2
+mov  word ptr [bp - 2], bx
+exit_memallocator:
+mov  dx, word ptr [bp - 2]
+exit_memallocator_return_as_is:
+mov  ax, dx
+mov  sp, bp
+pop  bp
+pop  ds
+pop  di
+pop  si
+pop  cx
+ret 
+label_32:
+mov  bx, word ptr ds:[si + 014h]
+xor  cx, cx
+jmp  label_36
+label_33:
+cmp  cx, ax
+jae  label_35
+mov  cx, ax
+label_35:
+mov  ax, si
+mov  ds, dx
+add  ax, 010h
+mov  bx, word ptr ds:[bx + 4]
+cmp  bx, ax
+jne  label_36
+mov  dx, word ptr [bp - 2]
+mov  word ptr ds:[si + 0Ah], cx
+jmp  exit_memallocator_return_as_is
+label_34:
+dec  word ptr ds:[si + 0Eh]
+mov  di, word ptr ds:[bx + 2]
+mov  word ptr ds:[si + 6], di
+mov  si, word ptr ds:[bx + 4]
+mov  word ptr ds:[di + 4], si
+mov  word ptr ds:[si + 2], di
+jmp  label_37
+
+
+ENDP
+
+PROC    locallib_memfree_ NEAR
+PUBLIC  locallib_memfree_
+
+
+
+push cx
+push si
+push di
+push ds
+push bp
+mov  bp, sp
+sub  sp, 6
+mov  cx, dx
+mov  word ptr [bp - 2], bx
+test ax, ax
+jne  label_40
+jump_to_exit_memfree:
+jmp  exit_memfree
+label_40:
+mov  si, ax
+mov  ds, dx
+sub  si, 2
+test byte ptr ds:[si], 1
+je   jump_to_exit_memfree
+mov  ax, word ptr ds:[si]
+mov  bx, si
+and  al, 0FEh
+add  bx, ax
+test byte ptr ds:[bx], 1
+je   label_41
+jmp  label_42
+label_41:
+add  ax, word ptr ds:[bx]
+mov  di, word ptr [bp - 2]
+mov  word ptr ds:[si], ax
+cmp  bx, word ptr ds:[di + 6]
+jne  label_43
+mov  word ptr ds:[di + 6], si
+label_43:
+mov  ds, cx
+mov  di, word ptr ds:[bx + 2]
+mov  bx, word ptr ds:[bx + 4]
+mov  word ptr ds:[di + 4], bx
+mov  word ptr ds:[bx + 2], di
+mov  di, word ptr [bp - 2]
+dec  word ptr ds:[di + 0Eh]
+label_49:
+mov  ds, cx
+mov  di, word ptr ds:[bx + 2]
+mov  dx, di
+mov  ax, word ptr ds:[si]
+add  dx, word ptr ds:[di]
+mov  word ptr [bp - 4], di
+cmp  si, dx
+jne  jump_to_label_44
+mov  bx, di
+add  ax, word ptr ds:[bx]
+mov  word ptr ds:[bx], ax
+mov  bx, word ptr [bp - 2]
+cmp  dx, word ptr ds:[bx + 6]
+jne  label_45
+mov  word ptr ds:[bx + 6], di
+label_45:
+mov  si, word ptr [bp - 4]
+label_59:
+mov  bx, word ptr [bp - 2]
+mov  ds, cx
+dec  word ptr ds:[bx + 0Ch]
+cmp  si, word ptr ds:[bx + 6]
+jae  label_46
+cmp  ax, word ptr ds:[bx + 8]
+jbe  label_46
+mov  word ptr ds:[bx + 8], ax
+label_46:
+mov  bx, word ptr [bp - 2]
+mov  ds, cx
+cmp  ax, word ptr ds:[bx + 0Ah]
+ja   record_and_exit_memfree
+exit_memfree:
+mov  sp, bp
+pop  bp
+pop  ds
+pop  di
+pop  si
+pop  cx
+ret 
+jump_to_label_44:
+jmp  label_44
+record_and_exit_memfree:
+mov  word ptr ds:[bx + 0Ah], ax
+mov  sp, bp
+pop  bp
+pop  ds
+pop  di
+pop  si
+pop  cx
+ret 
+label_42:
+mov  bx, word ptr [bp - 2]
+mov  word ptr ds:[si], ax
+mov  bx, word ptr ds:[bx + 6]
+cmp  si, bx
+jb   label_47
+jmp  label_48
+label_47:
+cmp  si, word ptr ds:[bx + 2]
+ja   label_49
+mov  bx, word ptr [bp - 2]
+mov  bx, word ptr ds:[bx + 014h]
+cmp  si, bx
+jb   label_49
+label_54:
+mov  bx, word ptr [bp - 2]
+mov  ds, cx
+mov  bx, word ptr ds:[bx + 0Eh]
+mov  ax, bx
+mov  di, word ptr [bp - 2]
+inc  ax
+xor  dx, dx
+mov  word ptr [bp - 6], ax
+mov  ax, word ptr ds:[di + 0Ch]
+div  word ptr [bp - 6]
+cmp  ax, bx
+jae  label_50
+mov  dx, word ptr ds:[di + 0Ch]
+sub  dx, bx
+shl  ax, 1
+cmp  bx, dx
+jae  label_52
+label_58:
+mov  ds, cx
+mov  bx, word ptr ds:[si]
+mov  ds, cx
+add  bx, si
+label_61:
+cmp  word ptr ds:[bx], -1
+jne  label_51
+label_50:
+mov  bx, word ptr [bp - 2]
+mov  ds, cx
+mov  bx, word ptr ds:[bx + 6]
+cmp  si, bx
+jb   label_55
+label_56:
+mov  ds, cx
+label_60:
+cmp  si, bx
+jae  label_57
+label_53:
+jmp  label_49
+label_57:
+mov  bx, word ptr ds:[bx + 4]
+cmp  si, bx
+jb   label_53
+mov  bx, word ptr ds:[bx + 4]
+cmp  si, bx
+jb   label_53
+mov  bx, word ptr ds:[bx + 4]
+jmp  label_60
+label_48:
+mov  bx, word ptr ds:[bx + 4]
+cmp  si, bx
+jb   label_53
+mov  di, word ptr [bp - 2]
+add  di, 010h
+mov  ax, word ptr ds:[di + 2]
+mov  bx, di
+cmp  si, ax
+jbe  label_54
+jmp  label_49
+label_52:
+mov  ax, 0FFFFh
+jmp  label_58
+label_51:
+test byte ptr ds:[bx], 1
+je   label_53
+mov  dx, word ptr ds:[bx]
+and  dl, 0FEh
+add  bx, dx
+dec  ax
+je   label_50
+jmp  label_61
+label_55:
+mov  bx, word ptr [bp - 2]
+mov  bx, word ptr ds:[bx + 014h]
+jmp  label_56
+label_44:
+mov  di, word ptr [bp - 2]
+inc  word ptr ds:[di + 0Eh]
+mov  di, word ptr [bp - 4]
+mov  word ptr ds:[si + 4], bx
+mov  word ptr ds:[si + 2], di
+mov  word ptr ds:[di + 4], si
+mov  word ptr ds:[bx + 2], si
+jmp  label_59
+
+ENDP
+
+PROC    locallib_nmemneed_ NEAR
+PUBLIC  locallib_nmemneed_
+
+
+xor  ax, ax
+ret 
+
+ENDP
+
+PROC    locallib_linkupnewnearheap_ NEAR
+PUBLIC  locallib_linkupnewnearheap_
+
+
+push bx
+push si
+push di
+mov  si, ax
+mov  bx, word ptr ds:[___nheapbeg]
+xor  di, di
+label_64:
+test bx, bx
+je   label_62
+cmp  si, bx
+jb   label_63
+mov  di, bx
+mov  bx, word ptr ds:[bx + 4]
+jmp  label_64
+label_63:
+mov  word ptr ds:[bx + 2], si
+label_62:
+mov  word ptr ds:[si + 2], di
+mov  word ptr ds:[si + 4], bx
+test di, di
+je   label_65
+mov  word ptr ds:[di + 4], si
+label_66:
+mov  word ptr ds:[si + 010h], 0
+mov  word ptr ds:[si + 8], 0
+mov  word ptr ds:[si + 0Ch], 0
+lea  ax, [si + 010h]
+mov  word ptr ds:[si + 0Eh], 0
+mov  word ptr ds:[si + 012h], ax
+mov  bx, word ptr ds:[si]
+mov  word ptr ds:[si + 014h], ax
+sub  bx, 016h
+mov  word ptr ds:[si + 6], ax
+mov  word ptr ds:[si + 016h], bx
+add  bx, si
+lea  ax, [si + 016h]
+mov  word ptr ds:[bx + 016h], 0FFFFh
+pop  di
+pop  si
+pop  bx
+ret  
+label_65:
+mov  word ptr ds:[___nheapbeg], si
+jmp  label_66
+
+
+ENDP
+
+PROC    locallib_lastfree_ NEAR
+PUBLIC  locallib_lastfree_
+
+push bx
+mov  ax, word ptr ds:[___nheapbeg]
+test ax, ax
+je   label_67
+mov  bx, ax
+mov  bx, word ptr ds:[bx + 012h]
+mov  ax, word ptr ds:[bx]
+add  ax, bx
+add  ax, 2
+cmp  ax, word ptr ds:[__curbrk]
+jne  label_68
+mov  ax, word ptr ds:[bx]
+label_67:
+pop  bx
+ret 
+label_68:
+xor  ax, ax
+pop  bx
+ret 
+
+ENDP
+
+PROC    locallib_adjustamount_ NEAR
+PUBLIC  locallib_adjustamount_
+
+
+push bx
+push dx
+mov  bx, ax
+mov  ax, word ptr ds:[bx]
+mov  dx, ax
+add  dx, 3
+and  dl, 0FEh  ; todo
+cmp  dx, ax
+jae  label_69
+exit_adjustmaount_return_0:
+xor  ax, ax
+pop  dx
+pop  bx
+ret  
+label_69:
+call locallib_lastfree_
+cmp  ax, dx
+jb   label_70
+xor  dx, dx
+label_72:
+mov  ax, dx
+add  dx, 01Eh
+cmp  dx, ax
+jb   exit_adjustmaount_return_0
+mov  ax, word ptr ds:[__amblksiz]
+cmp  dx, ax
+jae  label_71
+mov  dx, ax
+and  dl, 0FEh
+label_71:
+mov  word ptr ds:[bx], dx
+test dx, dx
+je   exit_adjustmaount_return_0
+mov  ax, 1
+pop  dx
+pop  bx
+ret  
+label_70:
+sub  dx, ax
+jmp  label_72
+
+
+ENDP
+
+PROC    locallib_expanddgroup_ NEAR
+PUBLIC  locallib_expanddgroup_
+
+
+push bx
+push si
+push di
+push bp
+mov  bp, sp
+push ax
+mov  ax, word ptr ds:[___heap_enabled]
+test ax, ax
+je   exit_expanddgroup
+cmp  word ptr ds:[__curbrk], -2
+jne  label_73
+exit_expanddgroup_return_0:
+xor  ax, ax
+exit_expanddgroup:
+mov  sp, bp
+pop  bp
+pop  di
+pop  si
+pop  bx
+ret
+label_73:
+lea  ax, [bp - 2]
+call locallib_adjustamount_
+test ax, ax
+je   exit_expanddgroup
+mov  bx, word ptr [bp - 2]
+add  bx, word ptr ds:[__curbrk]
+cmp  bx, word ptr ds:[__curbrk]
+jae  label_74
+mov  bx, 0FFFEh
+label_74:
+mov  ax, bx
+call __brk_
+mov  si, ax
+cmp  ax, 0FFFFh
+je   exit_expanddgroup_return_0
+cmp  ax, 0FFF8h
+ja   exit_expanddgroup_return_0
+cmp  bx, ax
+jbe  exit_expanddgroup_return_0
+sub  bx, ax
+mov  word ptr [bp - 2], bx
+lea  ax, [bx - 2]
+cmp  ax, bx
+ja   exit_expanddgroup_return_0
+mov  bx, word ptr ds:[___nheapbeg]
+mov  word ptr [bp - 2], ax
+label_78:
+test bx, bx
+je   label_75
+cmp  word ptr ds:[bx + 4], 0
+jne  label_82
+label_75:
+test bx, bx
+je   label_76
+mov  ax, word ptr ds:[bx]
+lea  di, [si - 2]
+add  ax, bx
+cmp  di, ax
+jne  label_76
+add  word ptr [bp - 2], 2
+mov  ax, word ptr [bp - 2]
+add  word ptr ds:[bx], ax
+mov  ax, word ptr [bp - 2]
+mov  si, ax
+add  si, di
+mov  word ptr ds:[di], ax
+mov  word ptr ds:[si], 0FFFFh
+label_81:
+or   byte ptr ds:[di], 1
+mov  word ptr ds:[bx + 0Ah], 0FFFFh
+lea  ax, [di + 2]
+inc  word ptr ds:[bx + 0Ch]
+call locallib_free_  
+mov  ax, 1
+jmp  exit_expanddgroup
+label_82:
+cmp  bx, si
+jbe  label_77
+label_79:
+mov  bx, word ptr ds:[bx + 4]
+jmp  label_78
+label_77:
+mov  ax, word ptr ds:[bx]
+add  ax, bx
+add  ax, 2
+cmp  ax, si
+jae  label_75
+jmp  label_79
+label_76:
+mov  ax, word ptr [bp - 2]
+cmp  ax, 01Ch
+jae  label_80
+jmp  exit_expanddgroup_return_0
+label_80:
+mov  word ptr ds:[si], ax
+mov  ax, si
+mov  bx, si
+call locallib_linkupnewnearheap_
+mov  di, ax
+jmp  label_81
+
+ENDP
 
 PROC    locallib_free_ NEAR
 PUBLIC  locallib_free_
@@ -217,7 +760,7 @@ jae   label_12
 label_5:
 mov   dx, ds
 mov   bx, si
-call  __MemFree
+call  locallib_memfree_
 mov   word ptr ds:[___MiniHeapFreeRover], si
 cmp   si, word ptr ds:[___MiniHeapRover]
 jae   exit_free
@@ -283,7 +826,7 @@ jb    label_18
 mov   dx, ds
 mov   bx, si
 mov   ax, di
-call  __MemAllocator
+call  locallib_memallocator_
 mov   dx, ax
 test  ax, ax
 jne   label_19
@@ -324,14 +867,14 @@ cmp   byte ptr [bp - 2], 0
 je    label_29
 label_21:
 mov   ax, di
-call  __nmemneed_
+call  locallib_nmemneed_
 test  ax, ax
 je    label_19
 mov   byte ptr [bp - 2], 0
 jmp   label_20
 label_29:
 mov   ax, di
-call  __ExpandDGROUP_
+call  locallib_expanddgroup_
 test  ax, ax
 je    label_21
 mov   byte ptr [bp - 2], 1
@@ -339,41 +882,7 @@ jmp   label_20
 label_19:
 mov   ax, dx
 jmp   exit_malloc
-push  bx
-push  dx
-push  bp
-mov   bp, sp
-mov   bx, ax
-cmp   word ptr ds:[bx], 0
-jne   label_25
-label_26:
-mov   sp, bp
-pop   bp
-pop   dx
-pop   bx
-ret   
-label_25:
-push  ds
-call  word ptr ds:[bx]
-pop   ds
-jmp   label_26
 
-push  bx
-push  dx
-push  bp
-mov   bp, sp
-mov   bx, ax
-mov   ax, word ptr ds:[bx + 2]
-mov   dx, word ptr ds:[bx]
-test  ax, ax
-jne   label_27
-test  dx, dx
-je    label_26
-label_27:
-push  ds
-call  dword ptr ds:[bx]
-pop   ds
-jmp   label_26
 
 
 
@@ -469,7 +978,7 @@ cmp       ax, 0FFFFh
 je        failed_qwrite_fwrite
 test      ax, ax
 jne       iterate_and_continue_next_fwrite_cycle_also_add_to_di
-mov       word ptr [_errno], 0Ch
+mov       word ptr ds:[_errno], 0Ch
 
 
 failed_qwrite_fwrite:
@@ -1165,7 +1674,7 @@ xor       dx, dx
 jmp       fp_allocated
 
 do_allocfp_out_of_memory_error:
-mov       word ptr [_errno], 5  ; ENOMEM
+mov       word ptr ds:[_errno], 5  ; ENOMEM
 xor       di, di
 jmp       do_allocfp_exit
 
