@@ -67,48 +67,36 @@ PUBLIC FixedMul_
 
 ; need to get the sign-extends for DX and CX
 
-push  si
 
-mov   es, ax	; store ax in es
-mov   ds, dx    ; store dx in ds
-mov   ax, dx	; ax holds dx
-CWD				; S0 in DX
 
-AND   DX, BX	; S0*BX
-NEG   DX
-mov   SI, DX	; DI stores hi word return
+MOV  ES, SI
+MOV  SI, DX
+MOV  word ptr cs:[_selfmodify_restore_original_ax_5+1], AX
+MUL  BX
+MOV  word ptr cs:[_selfmodify_restore_dx_5+1], DX
+MOV  AX, SI
+MUL  CX
+XCHG AX, SI
+CWD
+AND  DX, BX
+SUB  SI, DX
+MUL  BX
+_selfmodify_restore_dx_5:
+mov  BX, 01000h
+ADD  BX, AX
+ADC  SI, DX
+mov  AX, CX
+CWD
+_selfmodify_restore_original_ax_5:
+mov CX, 01000h
+AND DX, CX
+SUB SI, DX
+MUL CX
+ADD AX, BX
+ADC DX, SI
+MOV SI, ES
 
-; AX still stores DX
-MUL  CX         ; DX*CX
-add  SI, AX    ; low word result into high word return
 
-mov  AX, DS    ; restore DX from ds
-MUL  BX         ; DX*BX
-XCHG BX, AX    ; BX will hold low word return. store bx in ax
-add  SI, DX    ; add high word to result
-
-mov  DX, ES    ; restore AX from ES
-mul  DX        ; BX*AX  
-add  BX, DX    ; high word result into low word return
-ADC  SI, 0
-
-mov  AX, CX   ; AX holds CX
-CWD           ; S1 in DX
-
-mov  CX, ES   ; AX from ES
-AND  DX, CX   ; S1*AX
-NEG  DX
-ADD  SI, DX   ; result into high word return
-
-MUL  CX       ; AX*CX
-
-ADD  AX, BX	  ; set up final return value
-ADC  DX, SI
-
-mov  CX, SS   ; restore DS
-mov  DS, CX
-
-pop   si
 ret
 
 
