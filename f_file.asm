@@ -24,7 +24,7 @@ EXTRN __GETDS:NEAR
 EXTRN __full_io_exit_:NEAR
 EXTRN __Fini_Argv_:NEAR
 EXTRN __InitFiles_:NEAR
-EXTRN __Init_Argv_:FAR
+EXTRN __Init_Argv_:NEAR
 
 
 .DATA

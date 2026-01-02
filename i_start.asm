@@ -253,7 +253,7 @@ PUBLIC  __full_io_exit_
 
 ENDP
 
-COMMENT @
+
 
 
 PROC    splitparms_ NEAR
@@ -473,10 +473,13 @@ jmp       label_140
 
 ENDP
 
+; ptr to cmd line to free
+____CmdLineStatic:
+dw 0
 
 
-PROC   __Init_Argv2_ NEAR
-PUBLIC __Init_Argv2_ 
+PROC   __Init_Argv_ NEAR
+PUBLIC __Init_Argv_ 
 
 inc       bp
 push      bp
@@ -491,13 +494,14 @@ mov       dx, word ptr ds:[__LpPgmName]
 push      ax
 mov       ax, word ptr ds:[___historical_splitparms]
 call      getargv_
-mov       word ptr [___argv + 2], ax
-mov       ax, word ptr [__argc]
-mov       word ptr ds:[____argc], ax
-mov       word ptr [____Argv + 2], ax
-mov       ax, word ptr [__argv]
+mov       word ptr cs:[____CmdLineStatic], ax
+mov       ax, word ptr ds:[__argc]
+mov       word ptr ds:[___argc], ax
+mov       word ptr ds:[____Argc], ax
+
+mov       ax, word ptr ds:[__argv]
 mov       word ptr ds:[___argv], ax
-mov       word ptr [____Argv], ax
+mov       word ptr ds:[____Argv], ax
 pop       dx
 pop       cx
 pop       bx
@@ -506,7 +510,7 @@ dec       bp
 ret      
 
 ENDP
-@
+
 
 
 PROC   __Fini_Argv_ NEAR
@@ -515,7 +519,7 @@ PUBLIC __Fini_Argv_
 inc       bp
 push      bp
 mov       bp, sp
-mov       ax, word ptr [___argv+2]
+mov       ax, word ptr cs:[____CmdLineStatic]
 test      ax, ax
 je        skip_free_argv
 call      free_
