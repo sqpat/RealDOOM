@@ -132,6 +132,7 @@ file p_setup.obj
 file p_setupa.obj
 file s_sbsfx.obj
 file f_file.obj
+file i_start.obj
 file w_wad.obj
 file v_video.obj
 file z_zone.obj

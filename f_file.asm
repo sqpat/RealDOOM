@@ -24,9 +24,9 @@ INSTRUCTION_SET_MACRO
 
 EXTRN __exit_:NEAR
 EXTRN __GETDS:NEAR
-EXTRN __full_io_exit_:FAR
-EXTRN __Fini_Argv_:FAR
-EXTRN __InitFiles_:FAR
+EXTRN __full_io_exit_:NEAR
+EXTRN __Fini_Argv_:NEAR
+EXTRN __InitFiles_:NEAR
 EXTRN __Init_Argv_:FAR
 
 
@@ -695,7 +695,7 @@ or   byte ptr ds:[di], 1
 mov  word ptr ds:[bx + 0Ah], 0FFFFh
 lea  ax, [di + 2]
 inc  word ptr ds:[bx + 0Ch]
-call locallib_free_  
+call free_  
 mov  ax, 1
 jmp  exit_expanddgroup
 label_82:
@@ -726,8 +726,9 @@ jmp  label_81
 
 ENDP
 
-PROC    locallib_free_ NEAR
-PUBLIC  locallib_free_
+; todo near
+PROC    free_ FAR
+PUBLIC  free_
 
 
 push  bx
@@ -839,8 +840,9 @@ jmp   exit_free
 
 ENDP
 
-PROC    locallib_malloc_ NEAR
-PUBLIC  locallib_malloc_
+; todo near
+PROC    malloc_ FAR
+PUBLIC  malloc_
 
 push  bx
 push  cx
@@ -900,7 +902,7 @@ pop   si
 pop   dx
 pop   cx
 pop   bx
-ret  
+ret
 label_14:
 mov   word ptr [bp - 4], 6
 jmp   label_22
@@ -1649,7 +1651,7 @@ ret
 
 bad_handle_dofree:
 xchg ax, si
-call locallib_freefp_
+call freefp_
 xor  ax, ax
 jmp  exit_doopen
 
@@ -1720,7 +1722,7 @@ ret
 
 create_streamlink:
 mov       ax, SIZE WATCOM_STREAM_LINK
-call      locallib_malloc_
+call      malloc_
 mov       si, ax
 test      ax, ax
 je        do_allocfp_out_of_memory_error
@@ -1808,7 +1810,8 @@ jmp  continue_close
 
 ENDP
 
-PROC    locallib_freefp_  NEAR
+PROC    freefp_  NEAR
+PUBLIC  freefp_  
 
 push bx
 push si
@@ -1834,8 +1837,8 @@ ret
 
 ENDP
 
-PROC    locallib_purgefp_  NEAR
-
+PROC    purgefp_  NEAR
+PUBLIC  purgefp_  
 push bx
 loop_check_next_fp_for_purge:
 mov  bx, word ptr ds:[___ClosedStreams]
@@ -1844,7 +1847,7 @@ je   exit_purge_fp
 mov  ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_next]
 mov  word ptr ds:[___ClosedStreams], ax
 mov  ax, bx
-call locallib_free_
+call free_
 jmp  loop_check_next_fp_for_purge
 exit_purge_fp:
 pop  bx
@@ -1854,8 +1857,8 @@ ret
 ENDP
 
 ; todo inline?
-PROC    locallib_doclose_  NEAR
-
+PROC    doclose_  NEAR
+PUBLIC  doclose_  
 push  bx
 push  cx
 push  si
@@ -1896,7 +1899,7 @@ test  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _BIGBUF
 je    skip_bigbuf  ; todo do we get rid of this check?
 mov   bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 mov   ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
-call  locallib_free_
+call  free_
 
 mov   word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
 skip_bigbuf:
@@ -1937,10 +1940,10 @@ mov   dx, 1
 ; call  locallib_shutdown_stream_   ; inlined
 
 push  ax
-call  locallib_doclose_
+call  doclose_
 xchg  ax, dx
 pop   ax
-call  locallib_freefp_
+call  freefp_
 mov   ax, dx
 
 
@@ -2587,7 +2590,7 @@ jne   bufsize_set
 mov   ax, FILE_BUFFER_SIZE  ; lets just use FILE_BUFFER_SIZE = 512 for everything for now
 mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize], ax  ; default buffer is 134 apparently! todo revisit
 bufsize_set:
-call  locallib_malloc_  ; near malloc
+call  malloc_  ; near malloc
 ; ax gets file buffer
 mov   bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 mov   word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], ax ; ptr to the file buf...
