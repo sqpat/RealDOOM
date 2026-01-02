@@ -121,21 +121,12 @@ ret
 ENDP
 
 
-; todo remove.
-
-error_fwrite_readonly:
-mov       word ptr [_errno], 4
-mov       bx, cx
-xor       ax, ax
-or        byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag], _SFERR
-jmp       exit_fwrite
 
 
 PROC    locallib_fwrite_ NEAR
 PUBLIC  locallib_fwrite_ 
 
-; bp - 2 = bytes left to copy
-; bp - 4 = some sort of flag
+; bp - 2 = some sort of flag
 
 
 
@@ -146,30 +137,26 @@ push      bp
 mov       bp, sp
 
 
-xchg      ax, di   ; di gets copy source
 mov       si, cx   ; fp
-test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _WRITE
-je        error_fwrite_readonly
-xchg      ax, dx
-mul       bx
 
+; bx has size
+; dx has segment
 
-test      ax, ax
-je        exit_fwrite
+mov       di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+cmp       word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
 
-mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
-cmp       word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
-xchg      ax, bx   ; bx gets bytes to copy.
+xchg      ax, di   ; di gets copy source
+
 jne       skip_ioalloc_fwrite
 
-mov       ax, si
+; si already fp
 call      locallib_ioalloc_
 
 skip_ioalloc_fwrite:
 
 mov       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag]
 and       ax, (_SFERR OR _EOF)
-push      ax  ; bp - 2 some sort of flag
+push      ax  ; bp - 2 restore error/eof flags upon exit.
 and       byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT (_SFERR OR _EOF))
 
 do_binary_fwrite:
@@ -1951,22 +1938,12 @@ PROC    locallib_setvbuf_ NEAR
 push si
 push di
 mov  si, ax
-; cx always inferred 512. skip check.
-;cmp  bx, _IONBF
-;jne  not_unbuffered
-; todo remove type validity check.
-valid_setvbuf_type:
-;test dx, dx
-;je   null_stream
-;test cx, cx
-;je   exit_setvbuf_return_error
-;null_stream:
+
 
 call locallib_chktty_
-;test cx, cx
-;je   size_zero_vbuf
+
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize], FILE_BUFFER_SIZE
-;size_zero_vbuf:
+
 mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 mov  word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base], dx
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], dx
@@ -1981,15 +1958,6 @@ xor  ax, ax
 pop  di
 pop  si
 ret
-;not_unbuffered:
-;cmp  bx, _IOLBF
-;je   valid_setvbuf_type
-;cmp  bx, _IOFBF
-;je   valid_setvbuf_type
-;mov  ax, 0FFFFh
-;pop  di
-;pop  si
-;ret 
 
 ENDP
 
@@ -2069,7 +2037,6 @@ test dx, dx
 jne  buff_not_null
 mov  bx, _IONBF
 buff_not_null:
-;mov  cx, FILE_BUFFER_SIZE
 call locallib_setvbuf_  ;     setvbuf( fp, buf, mode, FILE_BUFFER_SIZE );
 pop  cx
 pop  bx
@@ -2493,10 +2460,10 @@ mov       cx, FREAD_BUFFER_SIZE
 use_remaining_read_size:
 
 push      cx  ; [MATCH B]  size to write this time
-mov       dx, cx
 
-mov       bx, ds
-mov       es, bx
+mov       dx, ds
+mov       es, dx
+mov       bx, cx
 
 mov       ds, di
 lea       di, [bp - FREAD_BUFFER_SIZE] ; todo mov sp?
@@ -2509,9 +2476,9 @@ rep movsb
 
 mov       di, ds   ; restore backup segment...
 
-mov       ds, bx   ; restore ds
+mov       ds, dx   ; restore ds
 
-mov       bx, 1
+mov       dx, ds
 mov       cx, word ptr [bp + 6]   ; fp
 
 
