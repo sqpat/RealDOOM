@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/01 19:56:36
+Created on:       26/01/01 20:11:57
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -13,7 +13,7 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          0ab0:0000            00001a70
+DGROUP                          0aac:0000            00001a70
 
 
 
@@ -56,27 +56,27 @@ p_setup_TEXT           CODE           AUTO           0000:60d0       000011e6
 P_SETUPA_TEXT          CODE           AUTO           0000:72b6       0000004f
 S_SBSFX_TEXT           CODE           AUTO           0000:7306       00000d38
 R_MAIN_TEXT            CODE           AUTO           0000:803e       000003db
-F_FILE_TEXT            CODE           AUTO           0000:841a       000009e0
-W_WAD_TEXT             CODE           AUTO           0000:8dfa       0000024e
-V_VIDEO_TEXT           CODE           AUTO           0000:9048       00000615
-Z_ZONE_TEXT            CODE           AUTO           0000:965e       00000437
-_TEXT                  CODE           AUTO           0000:9aa0       0000105e
-FAR_DATA               FAR_DATA       AUTO           0aaf:000e       00000000
-_NULL                  BEGDATA        DGROUP         0ab0:0000       00000020
-_AFTERNULL             BEGDATA        DGROUP         0ab2:0000       00000002
-_FIXEDDATA             DATA           DGROUP         0ab3:0000       00000e25
-_DATA                  DATA           DGROUP         0b95:0006       000001a4
-CONST                  DATA           DGROUP         0baf:000a       0000003c
-CONST2                 DATA           DGROUP         0bb3:0006       00000000
-XIB                    DATA           DGROUP         0bb3:0006       00000000
-XI                     DATA           DGROUP         0bb3:0006       0000000c
-XIE                    DATA           DGROUP         0bb4:0002       00000000
-YIB                    DATA           DGROUP         0bb4:0002       00000000
-YI                     DATA           DGROUP         0bb4:0002       0000000c
-YIE                    DATA           DGROUP         0bb4:000e       00000000
-DATA                   DATA           DGROUP         0bb4:000e       00000000
-_BSS                   BSS            DGROUP         0bb4:000e       0000001e
-STACK                  STACK          DGROUP         0bb7:0000       00000a00
+F_FILE_TEXT            CODE           AUTO           0000:841a       000009a4
+W_WAD_TEXT             CODE           AUTO           0000:8dbe       0000024e
+V_VIDEO_TEXT           CODE           AUTO           0000:900c       00000615
+Z_ZONE_TEXT            CODE           AUTO           0000:9622       00000437
+_TEXT                  CODE           AUTO           0000:9a60       0000105e
+FAR_DATA               FAR_DATA       AUTO           0aab:000e       00000000
+_NULL                  BEGDATA        DGROUP         0aac:0000       00000020
+_AFTERNULL             BEGDATA        DGROUP         0aae:0000       00000002
+_FIXEDDATA             DATA           DGROUP         0aaf:0000       00000e25
+_DATA                  DATA           DGROUP         0b91:0006       000001a4
+CONST                  DATA           DGROUP         0bab:000a       0000003c
+CONST2                 DATA           DGROUP         0baf:0006       00000000
+XIB                    DATA           DGROUP         0baf:0006       00000000
+XI                     DATA           DGROUP         0baf:0006       0000000c
+XIE                    DATA           DGROUP         0bb0:0002       00000000
+YIB                    DATA           DGROUP         0bb0:0002       00000000
+YI                     DATA           DGROUP         0bb0:0002       0000000c
+YIE                    DATA           DGROUP         0bb0:000e       00000000
+DATA                   DATA           DGROUP         0bb0:000e       00000000
+_BSS                   BSS            DGROUP         0bb0:000e       0000001e
+STACK                  STACK          DGROUP         0bb3:0000       00000a00
 
 
                         +----------------+
@@ -145,7 +145,7 @@ Module: p_init.obj(p_init.ASM)
 0000:21b7*     R_InstallSpriteLump_
 Module: i_main.obj(C:\REALDOOM\i_main.c)
 0000:2430      main_
-0ab0:0e56      __amblksiz
+0aac:0e56      __amblksiz
 Module: i_quit.obj(i_quit.ASM)
 0000:2555*     I_ShutdownWads_
 0000:25f7*     I_QUIT_ENDMARKER_
@@ -450,239 +450,239 @@ Module: r_main.obj(r_main.ASM)
 0000:833b      R_PointToAngle2_
 0000:83bd      R_DrawViewBorder_
 Module: f_file.obj(f_file.ASM)
-0000:876a      locallib_fclosefromfar_
-0000:8a7d*     locallib_inner_lseek_
-0000:8849      locallib_fclose_
-0000:8687*     locallib_doopen_
-0000:88c4*     locallib_flush_
-0000:8422      locallib_far_fwrite_
-0000:8c5f      locallib_exit_
-0000:889b*     locallib_reset_buffer_
+0000:8766      locallib_fclosefromfar_
+0000:8a79*     locallib_inner_lseek_
+0000:8845      locallib_fclose_
+0000:8683*     locallib_doopen_
+0000:88c0*     locallib_flush_
+0000:8c23      locallib_exit_
+0000:8897*     locallib_reset_buffer_
 0000:850c      locallib_fread_
 0000:850a      locallib_fread_nearsegment_
-0000:886c*     locallib_update_buffer_
+0000:8868*     locallib_update_buffer_
 0000:8506      locallib_freadfromfar_
-0000:85b6*     locallib_sopen_
+0000:85aa*     locallib_sopen_
 0000:8598      locallib_fopenfromfar_
-0000:8c4c      locallib_setbuf_
-0000:8d73      locallib_fputc_
+0000:8422      locallib_fwrite_
+0000:8c10      locallib_setbuf_
+0000:8d37      locallib_fputc_
 0000:841a*     locallib_GETDS_
-0000:8d39      locallib_fgetc_
+0000:8cfd      locallib_fgetc_
 0000:841a*     F_FILE_STARTMARKER_
-0000:8ad2      locallib_ftell_
-0000:8756      locallib_fopen_
-0000:8a79      locallib_fseekfromfar_
-0000:89c0      locallib_fseek_
-0000:8dfa*     F_FILE_ENDMARKER_
+0000:8ace      locallib_ftell_
+0000:8752      locallib_fopen_
+0000:8a75      locallib_fseekfromfar_
+0000:89bc      locallib_fseek_
+0000:8dbe*     F_FILE_ENDMARKER_
 Module: w_wad.obj(w_wad.ASM)
-0000:8ffd      W_CacheLumpNumDirect_
-0000:8f11      W_GetNumForNameFarString_
-0000:8f81      W_ReadLump_
-0000:8f3e      W_LumpLength_
-0000:9001      W_CacheLumpNumDirectWithOffset_
-0000:8e20      W_CheckNumForName_
-0000:8f27      W_GetNumForName_
-0000:9048*     W_WAD_ENDMARKER_
-0000:8ff6      W_CacheLumpNameDirectFarString_
-0000:9019      W_CacheLumpNumDirectFragment_
-0000:8eb4      SELFMODIFY_start_lump_for_search
-0000:8dfa*     W_WAD_STARTMARKER_
-0000:8ed6      SELFMODIFY_end_lump_for_search
-0000:8e1e      W_CheckNumForNameFarString_
-0000:8fef      W_CacheLumpNameDirect_
-0000:8e1a      W_CheckNumForNameFar_
+0000:8fc1      W_CacheLumpNumDirect_
+0000:8ed5      W_GetNumForNameFarString_
+0000:8f45      W_ReadLump_
+0000:8f02      W_LumpLength_
+0000:8fc5      W_CacheLumpNumDirectWithOffset_
+0000:8de4      W_CheckNumForName_
+0000:8eeb      W_GetNumForName_
+0000:900c*     W_WAD_ENDMARKER_
+0000:8fba      W_CacheLumpNameDirectFarString_
+0000:8fdd      W_CacheLumpNumDirectFragment_
+0000:8e78      SELFMODIFY_start_lump_for_search
+0000:8dbe*     W_WAD_STARTMARKER_
+0000:8e9a      SELFMODIFY_end_lump_for_search
+0000:8de2      W_CheckNumForNameFarString_
+0000:8fb3      W_CacheLumpNameDirect_
+0000:8dde      W_CheckNumForNameFar_
 Module: v_video.obj(v_video.ASM)
-0000:930b*     CopyString9_
-0000:958b      V_DrawFullscreenPatch_
-0000:938b      R_FillBackScreen_
-0000:9554      V_CopyRect_
-0000:9212      V_DrawPatchDirect_
-0000:9050      V_DrawPatch_
-0000:953a      V_MarkRect_
-0000:9381      R_FillBackScreen_ForceBufferRedraw_
-0000:9144*     V_DrawPatch5000Screen0_
+0000:92cf*     CopyString9_
+0000:954f      V_DrawFullscreenPatch_
+0000:934f      R_FillBackScreen_
+0000:9518      V_CopyRect_
+0000:91d6      V_DrawPatchDirect_
+0000:9014      V_DrawPatch_
+0000:94fe      V_MarkRect_
+0000:9345      R_FillBackScreen_ForceBufferRedraw_
+0000:9108*     V_DrawPatch5000Screen0_
 Module: z_zone.obj(z_zone.ASM)
-0000:965e      _codestartposition
-0000:96ee      Z_QuickMapPhysics_
-0000:968e      Z_QuickMapMusicPageFrame_
-0000:9672      _musdriverstartposition
-0000:9775      Z_QuickMapRender_4000To9000_
-0000:99d7      Z_QuickMapUnmapAll_
-0000:97a3      Z_QuickMapRender_9000To6000_
-0000:96c5      Z_QuickMapWADPageFrame_
-0000:986e      Z_QuickMapRenderPlanes_
-0000:96a6      Z_QuickMapSFXPageFrame_
-0000:97cf      Z_QuickMapStatus_
-0000:9858*     Z_QuickMapScreen0_
-0000:9734      Z_QuickMapRender_
-0000:982c      Z_QuickMapScratch_7000_
-0000:9842      Z_QuickMapScratch_4000_
-0000:9800      Z_QuickMapScratch_5000_
-0000:9a69*     CopyString13_Zonelocal_
-0000:9816      Z_QuickMapScratch_8000_
-0000:9902      Z_QuickMapMenu_
-0000:98e7      Z_QuickMapPalette_
-0000:97b9      Z_QuickMapRender4000_
-0000:9672      _codestartposition_END
-0000:98d1      Z_QuickMapMaskedExtraData_
-0000:9a21      Z_SetOverlay_
-0000:9a14      _doomcode_filename
-0000:994b      Z_QuickMapByTaskNum_
-0000:989a      Z_QuickMapUndoFlatCache_
-0000:9719      Z_QuickMapDemo_
-0000:9928      Z_QuickMapIntermission_
-0000:975f*     Z_QuickMapRender_4000To9000_9000Only_
-0000:9959      Z_QuickMapVisplanePage_
+0000:9622      _codestartposition
+0000:96b2      Z_QuickMapPhysics_
+0000:9652      Z_QuickMapMusicPageFrame_
+0000:9636      _musdriverstartposition
+0000:9739      Z_QuickMapRender_4000To9000_
+0000:999b      Z_QuickMapUnmapAll_
+0000:9767      Z_QuickMapRender_9000To6000_
+0000:9689      Z_QuickMapWADPageFrame_
+0000:9832      Z_QuickMapRenderPlanes_
+0000:966a      Z_QuickMapSFXPageFrame_
+0000:9793      Z_QuickMapStatus_
+0000:981c*     Z_QuickMapScreen0_
+0000:96f8      Z_QuickMapRender_
+0000:97f0      Z_QuickMapScratch_7000_
+0000:9806      Z_QuickMapScratch_4000_
+0000:97c4      Z_QuickMapScratch_5000_
+0000:9a2d*     CopyString13_Zonelocal_
+0000:97da      Z_QuickMapScratch_8000_
+0000:98c6      Z_QuickMapMenu_
+0000:98ab      Z_QuickMapPalette_
+0000:977d      Z_QuickMapRender4000_
+0000:9636      _codestartposition_END
+0000:9895      Z_QuickMapMaskedExtraData_
+0000:99e5      Z_SetOverlay_
+0000:99d8      _doomcode_filename
+0000:990f      Z_QuickMapByTaskNum_
+0000:985e      Z_QuickMapUndoFlatCache_
+0000:96dd      Z_QuickMapDemo_
+0000:98ec      Z_QuickMapIntermission_
+0000:9723*     Z_QuickMapRender_4000To9000_9000Only_
+0000:991d      Z_QuickMapVisplanePage_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(iob.c)
-0ab0:0e58      ___iob
-0ab0:104e      ___OpenStreams
-0ab0:1050      ___ClosedStreams
+0aac:0e58      ___iob
+0aac:104e      ___OpenStreams
+0aac:1050      ___ClosedStreams
 Module: C:\WATCOM2\lib286\dos\clibm.lib(cstart)
-0ab0:0000*     __nullarea
-0ab0:0f70      __ovlflag
-0ab0:0f71*     __intno
-0ab0:0f72*     __ovlvec
-0000:9aa0      _cstart_
-0000:9c51      __exit_
-0000:9c6e      __do_exit_with_msg_
-0000:9d4d      __GETDS
+0aac:0000*     __nullarea
+0aac:0f70      __ovlflag
+0aac:0f71*     __intno
+0aac:0f72*     __ovlvec
+0000:9a60      _cstart_
+0000:9c11      __exit_
+0000:9c2e      __do_exit_with_msg_
+0000:9d0d      __GETDS
 Module: C:\WATCOM2\lib286\dos\clibm.lib(cmodel.asm)
-0000:9d58      _big_code_
-0000:9d58*     CodeModelMismatch
+0000:9d18      _big_code_
+0000:9d18*     CodeModelMismatch
 Module: C:\WATCOM2\lib286\dos\clibm.lib(argcv.c)
-0ab0:1052      __argc
-0ab0:1054      __argv
-0ab0:1056      ___argc
-0ab0:1058      ___argv
+0aac:1052      __argc
+0aac:1054      __argv
+0aac:1056      ___argc
+0aac:1058      ___argv
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nfree.c)
-0000:9d58      _nfree_
-0000:9d58      free_
-0ab0:105a+     ___MiniHeapFreeRover
+0000:9d18      _nfree_
+0000:9d18      free_
+0aac:105a+     ___MiniHeapFreeRover
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nmalloc.c)
-0000:9e1d      _nmalloc_
-0000:9e1d      malloc_
-0ab0:0f76      ___nheapbeg
-0ab0:0f78      ___MiniHeapRover
-0ab0:0f7a      ___LargestSizeB4MiniHeapRover
+0000:9ddd      _nmalloc_
+0000:9ddd      malloc_
+0aac:0f76      ___nheapbeg
+0aac:0f78      ___MiniHeapRover
+0aac:0f7a      ___LargestSizeB4MiniHeapRover
 Module: C:\WATCOM2\lib286\dos\clibm.lib(initrtns.c)
-0000:9f0e      __InitRtns
-0000:9f0e*     __FInitRtns
-0000:9f65      __FiniRtns
-0000:9f65*     __FFiniRtns
+0000:9ece      __InitRtns
+0000:9ece*     __FInitRtns
+0000:9f25      __FiniRtns
+0000:9f25*     __FFiniRtns
 Module: C:\WATCOM2\lib286\dos\clibm.lib(umaskval.c)
-0ab0:0f7c      ___umaskval
+0aac:0f7c      ___umaskval
 Module: C:\WATCOM2\lib286\dos\clibm.lib(textmode.c)
-0ab0:0f7e      __fmode
+0aac:0f7e      __fmode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(comtflag.c)
-0000:9fc3*     __set_commode_
-0ab0:0f80      __commode
+0000:9f83*     __set_commode_
+0aac:0f80      __commode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fclose.c)
-0000:9fca+     __doclose_
-0000:a060      __shutdown_stream_
-0000:a074*     fclose_
-0ab0:105c      ___RmTmpFileFn
+0000:9f8a+     __doclose_
+0000:a020      __shutdown_stream_
+0000:a034*     fclose_
+0aac:105c      ___RmTmpFileFn
 Module: C:\WATCOM2\lib286\dos\clibm.lib(sgdef086)
-0ab0:1036      __Start_XI
-0ab0:1042      __End_XI
-0ab0:1042      __Start_YI
-0ab0:104e      __End_YI
+0aac:1036      __Start_XI
+0aac:1042      __End_XI
+0aac:1042      __Start_YI
+0aac:104e      __End_YI
 Module: C:\WATCOM2\lib286\dos\clibm.lib(errno.c)
-0000:a098      __get_errno_ptr_
-0ab0:1060      _errno
+0000:a058      __get_errno_ptr_
+0aac:1060      _errno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(iomode.c)
-0000:a09c      __GetIOMode_
-0000:a0b3      __SetIOMode_nogrow_
-0ab0:0f82      ___NFiles
-0ab0:0f84+     ___init_mode
-0ab0:0fac      ___io_mode
+0000:a05c      __GetIOMode_
+0000:a073      __SetIOMode_nogrow_
+0aac:0f82      ___NFiles
+0aac:0f84+     ___init_mode
+0aac:0fac      ___io_mode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(crwdata)
-0ab0:0fae      __curbrk
-0ab0:0fb6      __STACKLOW
-0ab0:0fb8      __STACKTOP
-0ab0:0fba      __cbyte
-0ab0:0fbc      __child
-0ab0:0fbe      __no87
-0ab0:0fcb      ___FPE_handler
-0ab0:0fb0      __psp
-0ab0:0fbf      __get_ovl_stack
-0ab0:0fc3      __restore_ovl_stack
-0ab0:0fc7      __close_ovl_file
-0ab0:0fcf      __LpCmdLine
-0ab0:0fd3      __LpPgmName
-0ab0:0fb2      __osmajor
-0ab0:0fb3      __osminor
-0ab0:0fb4      __osmode
-0ab0:0fb5      __HShift
+0aac:0fae      __curbrk
+0aac:0fb6      __STACKLOW
+0aac:0fb8      __STACKTOP
+0aac:0fba      __cbyte
+0aac:0fbc      __child
+0aac:0fbe      __no87
+0aac:0fcb      ___FPE_handler
+0aac:0fb0      __psp
+0aac:0fbf      __get_ovl_stack
+0aac:0fc3      __restore_ovl_stack
+0aac:0fc7      __close_ovl_file
+0aac:0fcf      __LpCmdLine
+0aac:0fd3      __LpPgmName
+0aac:0fb2      __osmajor
+0aac:0fb3      __osminor
+0aac:0fb4      __osmode
+0aac:0fb5      __HShift
 Module: C:\WATCOM2\lib286\dos\clibm.lib(exit.c)
-0000:a0c8+     __null_int23_exit_
-0000:a0c9      exit_
-0000:a0e9*     _exit_
-0ab0:0fd8      ___int23_exit
-0ab0:0fdc      ___FPE_handler_exit
+0000:a088+     __null_int23_exit_
+0000:a089      exit_
+0000:a0a9*     _exit_
+0aac:0fd8      ___int23_exit
+0aac:0fdc      ___FPE_handler_exit
 Module: C:\WATCOM2\lib286\dos\clibm.lib(initfile.c)
-0000:a0f7      __InitFiles_
+0000:a0b7      __InitFiles_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(ioexit.c)
-0000:a1d7*     fcloseall_
-0000:a1de      __full_io_exit_
+0000:a197*     fcloseall_
+0000:a19e      __full_io_exit_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(xmsg.c)
-0000:a1e8*     __exit_with_msg_
-0000:a1ed      __fatal_runtime_error_
+0000:a1a8*     __exit_with_msg_
+0000:a1ad      __fatal_runtime_error_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(cmain086.c)
-0000:a207      __CMain
+0000:a1c7      __CMain
 Module: C:\WATCOM2\lib286\dos\clibm.lib(uselfn.c)
-0ab0:0fe0      ___uselfn
+0aac:0fe0      ___uselfn
 Module: C:\WATCOM2\lib286\dos\clibm.lib(dosseg)
-0000:a21e      __DOSseg__
+0000:a1de      __DOSseg__
 Module: C:\WATCOM2\lib286\dos\clibm.lib(initargv.c)
-0000:a386      __Init_Argv_
-0000:a3bd      __Fini_Argv_
+0000:a346      __Init_Argv_
+0000:a37d      __Fini_Argv_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(mem.c)
-0000:a3e0      __MemAllocator
-0000:a4a8      __MemFree
+0000:a3a0      __MemAllocator
+0000:a468      __MemFree
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nmemneed.c)
-0000:a622      __nmemneed_
+0000:a5e2      __nmemneed_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(grownear.c)
-0000:a68b+     __LastFree_
-0000:a6f3      __ExpandDGROUP_
+0000:a64b+     __LastFree_
+0000:a6b3      __ExpandDGROUP_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(__lseek.c)
-0000:a7cb      __lseek_
+0000:a78b      __lseek_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(_clse.c)
-0000:a805      __close_
+0000:a7c5      __close_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(flush.c)
-0000:a83b      __flush_
+0000:a7fb      __flush_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(freefp.c)
-0000:a92f      __freefp_
-0000:a953      __purgefp_
+0000:a8ef      __freefp_
+0000:a913      __purgefp_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(enterdb.c)
-0000:a96c      __EnterWVIDEO_
-0ab0:0fe2+     __WD_Present
+0000:a92c      __EnterWVIDEO_
+0aac:0fe2+     __WD_Present
 Module: C:\WATCOM2\lib286\dos\clibm.lib(___argc.c)
-0ab0:1064      ____Argv
-0ab0:1066      ____Argc
+0aac:1064      ____Argv
+0aac:1066      ____Argc
 Module: C:\WATCOM2\lib286\dos\clibm.lib(histsplt.c)
-0ab0:1068      ___historical_splitparms
+0aac:1068      ___historical_splitparms
 Module: C:\WATCOM2\lib286\dos\clibm.lib(heapen.c)
-0000:a988*     _heapenable_
-0ab0:0fe4      ___heap_enabled
+0000:a948*     _heapenable_
+0aac:0fe4      ___heap_enabled
 Module: C:\WATCOM2\lib286\dos\clibm.lib(sbrk.c)
-0000:a994      __brk_
-0000:a9ea*     sbrk_
+0000:a954      __brk_
+0000:a9aa*     sbrk_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(dosret.c)
-0000:a9f0      __set_errno_dos_
-0000:aa54*     __set_errno_dos_reterr_
+0000:a9b0      __set_errno_dos_
+0000:aa14*     __set_errno_dos_reterr_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(qwrit.c)
-0000:aa5f      __qwrite_
+0000:aa1f      __qwrite_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fsync.c)
-0000:aabe      fsync_
+0000:aa7e      fsync_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(doserrno.c)
-0000:aac3      __get_doserrno_ptr_
-0ab0:106a+     __doserrno
+0000:aa83      __get_doserrno_ptr_
+0aac:106a+     __doserrno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(filedos.c)
-0000:aac7*     _dos_close_
-0000:aad5      _dos_commit_
+0000:aa87*     _dos_close_
+0000:aa95      _dos_commit_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(error086.asm)
-0000:aae4      __doserror_
-0000:aaf2*     __doserror1_
+0000:aaa4      __doserror_
+0000:aab2*     __doserror1_
 
 
                         +--------------------+
@@ -697,6 +697,6 @@ C:\WATCOM2\lib286\dos\clibm.lib
                         +-----------------------+
 
 Stack size:  0a00 (2560.)
-Memory size:  c570 (50544.)
-Entry point address: 0000:9aa0
-Link time: 00:00.19
+Memory size:  c530 (50480.)
+Entry point address: 0000:9a60
+Link time: 00:00.20

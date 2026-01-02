@@ -123,8 +123,10 @@ ENDP
 
 
 
-PROC    locallib_far_fwrite_ NEAR
-PUBLIC  locallib_far_fwrite_
+PROC    locallib_fwrite_ NEAR
+PUBLIC  locallib_fwrite_
+
+; dx:ax = far source, bx = num bytes, cx = fp
 
 ; bp - 2 = some sort of flag
 
@@ -525,21 +527,6 @@ call    locallib_fopen_
 retf
 ENDP
 
-PROC    locallib_doscreate_  NEAR
-
-; di is handle ptr
-; dx is filename
-; cx is permissions
-
-mov   ah, 03Ch  ; Create file using handle
-int   021h
-jb    bad_create_do_dos_error
-mov   di, ax   ; set file handle in di
-bad_create_do_dos_error:
-call  locallib_doserror_  ; check carry flag etc
-ret
-
-ENDP
 
 PROC    locallib_dosopen_  NEAR
 
@@ -653,7 +640,23 @@ jne       exit_sopen_return_bad_handle
 pop       dx     ; [bp - 6], filename
 pop       cx     ; [bp - 4], permissions vararg, 1 for readonly 0 for not
 
-call      locallib_doscreate_
+;call      locallib_doscreate_
+; inlined
+
+
+; di is handle ptr
+; dx is filename
+; cx is permissions
+
+mov   ah, 03Ch  ; Create file using handle
+int   021h
+jb    bad_create_do_dos_error
+mov   di, ax   ; set file handle in di
+bad_create_do_dos_error:
+call  locallib_doserror_  ; check carry flag etc
+
+
+
 test      ax, ax
 jne       exit_sopen_return_bad_handle
 
@@ -1688,7 +1691,6 @@ pop  cx
 ret
 
 
-ret
 ENDP
 
 PROC    locallib_isatty_ NEAR
@@ -1750,13 +1752,7 @@ ret
 
 ENDP
 
-PROC   locallib_doserror1_ NEAR
 
-jnc  exit_doserror_ret_0
-call locallib_set_errno_ptr_
-jmp  exit_doserror
-
-ENDP
 
 
 
@@ -1795,6 +1791,8 @@ or    byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], _BIGBUF
 jmp   finish_and_exit_ioalloc
 
 ENDP
+
+COMMENT @
 
 PROC   locallib_callit_near_ NEAR
 
@@ -1842,6 +1840,7 @@ jmp   do_call
 
 ENDP
 
+@
 COMMENT @
 
 ; this runs initailization routines (init file structures and argv) during c program init. but we will skip this generic step and call the couple of necessary functions in hardcoded manner.

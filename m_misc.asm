@@ -23,7 +23,7 @@ EXTRN locallib_fopen_:NEAR
 EXTRN locallib_fclose_:NEAR
 EXTRN locallib_fseek_:NEAR
 EXTRN locallib_ftell_:NEAR
-EXTRN locallib_far_fwrite_:NEAR
+EXTRN locallib_fwrite_:NEAR
 EXTRN locallib_fread_:NEAR
 EXTRN locallib_strcmp_:NEAR
 EXTRN locallib_strlwr_:NEAR
@@ -112,7 +112,7 @@ xchg  ax, bx  ; dest offset to ax
 mov   bx, di  ; len to bx
 
 
-call  locallib_far_fwrite_
+call  locallib_fwrite_
 
 xchg  ax, dx   ; store result
 
