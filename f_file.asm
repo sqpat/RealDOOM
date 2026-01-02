@@ -114,8 +114,8 @@ FREAD_BUFFER_SIZE = 512
 ;void  __far locallib_far_fread(void __far* dest, uint16_t size, FILE * fp) {
 
 
-PROC    locallib_memallocator_ NEAR
-PUBLIC  locallib_memallocator_
+PROC    __MemAllocator NEAR
+PUBLIC  __MemAllocator
 
 push cx
 push si
@@ -218,8 +218,8 @@ jmp  label_37
 
 ENDP
 
-PROC    locallib_memfree_ NEAR
-PUBLIC  locallib_memfree_
+PROC    __MemFree NEAR
+PUBLIC  __MemFree
 
 
 
@@ -416,8 +416,8 @@ jmp  label_59
 
 ENDP
 
-PROC    locallib_nmemneed_ NEAR
-PUBLIC  locallib_nmemneed_
+PROC    __nmemneed_ NEAR
+PUBLIC  __nmemneed_
 
 
 xor  ax, ax
@@ -477,8 +477,8 @@ jmp  label_66
 
 ENDP
 
-PROC    locallib_lastfree_ NEAR
-PUBLIC  locallib_lastfree_
+PROC    __LastFree_ NEAR
+PUBLIC  __LastFree_
 
 push bx
 mov  ax, word ptr ds:[___nheapbeg]
@@ -521,7 +521,7 @@ pop  dx
 pop  bx
 ret  
 label_69:
-call locallib_lastfree_
+call __LastFree_
 cmp  ax, dx
 jb   label_70
 xor  dx, dx
@@ -550,7 +550,8 @@ jmp  label_72
 
 ENDP
 
-PROC    locallib_brk_ NEAR
+PROC    __brk_ NEAR
+PUBLIC  __brk_ 
 
 push bx
 push cx
@@ -592,15 +593,16 @@ jmp  exit_brk
 
 ENDP
 
-PROC    locallib_sbrk_ NEAR
+PROC    sbrk_ NEAR
+PUBLIC  sbrk_ 
 
 add  ax, word ptr ds:[__curbrk]
-jmp  locallib_brk_
+jmp  __brk_
 
 ENDP
 
-PROC    locallib_expanddgroup_ NEAR
-PUBLIC  locallib_expanddgroup_
+PROC    __ExpandDGROUP_ NEAR
+PUBLIC  __ExpandDGROUP_
 
 
 push bx
@@ -635,7 +637,7 @@ jae  label_74
 mov  bx, 0FFFEh
 label_74:
 mov  ax, bx
-call locallib_brk_
+call __brk_
 mov  si, ax
 cmp  ax, 0FFFFh
 je   exit_expanddgroup_return_0
@@ -708,7 +710,10 @@ jmp  label_81
 ENDP
 
 ; todo near
-PROC    free_ FAR
+PROC    _nfree_ NEAR
+PUBLIC  _nfree_
+ENDP
+PROC    free_ NEAR
 PUBLIC  free_
 
 
@@ -796,7 +801,7 @@ jae   label_12
 label_5:
 mov   dx, ds
 mov   bx, si
-call  locallib_memfree_
+call  __MemFree
 mov   word ptr ds:[___MiniHeapFreeRover], si
 cmp   si, word ptr ds:[___MiniHeapRover]
 jae   exit_free
@@ -822,7 +827,10 @@ jmp   exit_free
 ENDP
 
 ; todo near
-PROC    malloc_ FAR
+PROC    _nmalloc_ NEAR
+PUBLIC  _nmalloc_
+ENDP
+PROC    malloc_ NEAR
 PUBLIC  malloc_
 
 push  bx
@@ -863,7 +871,7 @@ jb    label_18
 mov   dx, ds
 mov   bx, si
 mov   ax, di
-call  locallib_memallocator_
+call  __MemAllocator
 mov   dx, ax
 test  ax, ax
 jne   label_19
@@ -904,14 +912,14 @@ cmp   byte ptr [bp - 2], 0
 je    label_29
 label_21:
 mov   ax, di
-call  locallib_nmemneed_
+call  __nmemneed_
 test  ax, ax
 je    label_19
 mov   byte ptr [bp - 2], 0
 jmp   label_20
 label_29:
 mov   ax, di
-call  locallib_expanddgroup_
+call  __ExpandDGROUP_
 test  ax, ax
 je    label_21
 mov   byte ptr [bp - 2], 1

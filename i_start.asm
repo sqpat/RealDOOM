@@ -28,8 +28,8 @@ EXTRN __fatal_runtime_error_:NEAR
 EXTRN __GETDS:NEAR
 EXTRN doclose_:NEAR
 EXTRN freefp_:NEAR
-EXTRN malloc_:FAR
-EXTRN free_:FAR
+EXTRN malloc_:NEAR
+EXTRN free_:NEAR
 EXTRN purgefp_:NEAR
 
 .DATA
