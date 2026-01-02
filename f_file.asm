@@ -136,7 +136,6 @@ PUBLIC  locallib_fwrite_
 
 ; bp - 2 = bytes left to copy
 ; bp - 4 = some sort of flag
-; bp - 6 = bytes copied (?)
 
 
 
@@ -153,13 +152,14 @@ test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _WRITE
 je        error_fwrite_readonly
 xchg      ax, dx
 mul       bx
-push      ax   ; bp - 2 bytes left to copy
+
 
 test      ax, ax
 je        exit_fwrite
 
 mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 cmp       word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
+xchg      ax, bx   ; bx gets bytes to copy.
 jne       skip_ioalloc_fwrite
 
 mov       ax, si
@@ -169,9 +169,7 @@ skip_ioalloc_fwrite:
 
 mov       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag]
 and       ax, (_SFERR OR _EOF)
-push      ax  ; bp - 4 some sort of flag
-xor       ax, ax
-push      ax  ; bp - 6 bytes copied
+push      ax  ; bp - 2 some sort of flag
 and       byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT (_SFERR OR _EOF))
 
 do_binary_fwrite:
@@ -179,13 +177,15 @@ continue_fwrite_loop:
 
 cmp       word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
 jne       do_copy_from_buffer_fwrite ; stuff left in buffer, copy that out first.
-mov       bx, word ptr [bp - 2]
+; bx is bytes left
 cmp       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize]
 jb        do_copy_from_buffer_fwrite
 
 mov       dx, di
 mov       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+mov       cx, bx
 call      locallib_qwrite_
+mov       bx, cx   ; restore
 mov       dx, ax
 cmp       ax, 0FFFFh
 je        failed_qwrite_fwrite
@@ -200,7 +200,7 @@ or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
 iterate_and_continue_next_fwrite_cycle_also_add_to_di:
 add       di, dx
 iterate_and_continue_next_fwrite_cycle:
-sub       word ptr [bp - 2], dx
+sub       bx, dx
 je        fwrote_everything
 
 test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
@@ -212,7 +212,7 @@ test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
 je        non_error_fwrite
 xor       dx, dx
 non_error_fwrite:
-mov       ax, word ptr [bp - 4]
+mov       ax, word ptr [bp - 2]
 or        word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], ax
 
 
@@ -230,11 +230,15 @@ do_copy_from_buffer_fwrite:
 
 mov       dx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize]
 sub       dx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
-cmp       dx, word ptr [bp - 2]
+cmp       dx, bx
 jbe       dont_cap_bytesleft_fwrite
-mov       dx, word ptr [bp - 2]
+mov       dx, bx
 
 dont_cap_bytesleft_fwrite:
+
+mov       ax, ds
+mov       es, ax
+xchg      ax, bx  ; ax holds bytes to copy.
 
 mov       bx, si
 mov       si, di
@@ -242,8 +246,6 @@ mov       si, di
 mov       di, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_ptr]
 mov       cx, dx
 
-mov       ax, ds
-mov       es, ax
 shr       cx, 1
 rep       movsw
 adc       cx, cx
@@ -252,6 +254,9 @@ rep       movsb
 mov       word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], di
 mov       di, si
 mov       si, bx
+
+xchg      ax, bx  ; bx holds bytes to copy.
+
 or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
 add       word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], dx
 mov       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
