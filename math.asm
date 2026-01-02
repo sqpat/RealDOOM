@@ -71,9 +71,9 @@ PUBLIC FixedMul_
 
 MOV  ES, SI
 MOV  SI, DX
-MOV  word ptr cs:[_selfmodify_restore_original_ax_5+1], AX
+MOV  word ptr cs:[_selfmodify_restore_original_ax+1], AX
 MUL  BX
-MOV  word ptr cs:[_selfmodify_restore_dx_5+1], DX
+MOV  word ptr cs:[_selfmodify_restore_dx+1], DX
 MOV  AX, SI
 MUL  CX
 XCHG AX, SI
@@ -81,13 +81,13 @@ CWD
 AND  DX, BX
 SUB  SI, DX
 MUL  BX
-_selfmodify_restore_dx_5:
+_selfmodify_restore_dx:
 mov  BX, 01000h
 ADD  BX, AX
 ADC  SI, DX
 mov  AX, CX
 CWD
-_selfmodify_restore_original_ax_5:
+_selfmodify_restore_original_ax:
 mov CX, 01000h
 AND DX, CX
 SUB SI, DX
@@ -300,57 +300,40 @@ PUBLIC FixedMul1632_
 
 
 push  si
-
 CWD				; DX/S0
-
 mov   es, ax    ; store ax in es
 AND   DX, BX	; S0*BX
 NEG   DX
 mov   SI, DX	; DI stores hi word return
-
 CWD 
-
 AND  DX, CX    ; DX*CX
 NEG  DX
 add  SI, DX    ; low word result into high word return
-
 CWD
-
 ; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
 ; UNLESS BX is 0. then its also 0!
-
 ; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
 MOV  AX, BX    ; create BX copy
 SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
 ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
-
 AND  AX, DX    ; 0 or BX - 1
 ADD  SI, AX    ; add DX * BX high word. 
-
-
 AND  DX, BX    ; DX * BX low bits
 NEG  DX
 XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
-
 mov  AX, ES    ; grab AX from ES
 mul  DX        ; BX*AX  
 add  BX, DX    ; high word result into low word return
 ADC  SI, 0
-
 mov  AX, CX   ; AX holds CX
 CWD           ; S1 in DX
-
 mov  CX, ES   ; AX from ES
 AND  DX, CX   ; S1*AX
 NEG  DX
 ADD  SI, DX   ; result into high word return
-
 MUL  CX       ; AX*CX
-
 ADD  AX, BX	  ; set up final return value
 ADC  DX, SI
- 
-
 pop   si
 ret
 
