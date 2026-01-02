@@ -39,6 +39,11 @@ EXTRN ___LargestSizeB4MiniHeapRover:WORD
 EXTRN ___MiniHeapFreeRover:WORD
 EXTRN ___MiniHeapRover:WORD
 EXTRN ___nheapbeg:WORD
+EXTRN __STACKLOW:WORD
+EXTRN __STACKTOP:WORD
+EXTRN __no87:WORD
+EXTRN ___uselfn:WORD
+EXTRN ___FPE_handler:WORD
 
 
 
@@ -85,10 +90,25 @@ LUMP_PER_EMS_PAGE = 1024
 
 FILE_BUFFER_SIZE = 512
 
+;_end = OFFSET ____Argc + 2  ; todo
+
 
 ; TODO ENABLE_DISK_FLASH
 
 .CODE
+
+
+DATA    segment word public 'DATA'
+DATA    ends
+
+_BSS    segment word public 'BSS'
+
+        extrn   _edata                  : byte  ; end of DATA (start of BSS)
+        extrn   _end                    : byte  ; end of BSS (start of STACK)
+
+_BSS    ends
+
+
 
 ; todo: get rid of UNGET stuff. we dont use this.
 
@@ -749,6 +769,12 @@ jmp   __exit_
 
 ENDP
 
+PROC   __null_ovl_rtn FAR
+PUBLIC __null_ovl_rtn
+ENDP
+PROC   __null_FPE_rtn FAR
+PUBLIC __null_FPE_rtn
+ENDP
 PROC   __null_int23_exit_ FAR
 PUBLIC __null_int23_exit_
 retf
@@ -759,6 +785,89 @@ PUBLIC __EnterWVIDEO_
 
 xor  ax, ax
 ret
+
+ENDP
+
+
+; PSP offsets
+MEMTOP      equ 2
+ENVIRON     equ 2Ch
+CMDLDATA    equ 81h
+FLG_NO87    equ 1
+FLG_LFN     equ 100h
+
+PROC   _cstart_ NEAR
+PUBLIC _cstart_
+
+
+sti        
+mov        cx, DGROUP
+mov        es, cx
+mov        bx, offset DGROUP:_end 
+add        bx, 00Fh
+and        bl, 0F0h ; round up a segment
+mov        word ptr es:[__STACKLOW], bx
+mov        word ptr es:[__psp], ds
+add        bx, sp
+add        bx, 00Fh
+and        bl, 0F0h  ; round up a segment
+mov        ss, cx
+mov        sp, bx
+mov        word ptr es:[__STACKTOP], bx
+mov        dx, bx
+shr        dx, 1
+shr        dx, 1
+shr        dx, 1
+shr        dx, 1
+
+; skip protected mode checks.
+
+mov        di, ds
+mov        es, di  ; es gets PSP
+mov        di, CMDLDATA
+mov        cl, byte ptr [di - 1]
+xor        ch, ch
+cld        
+mov        al, ' ' ; 020h
+repe       scasb
+lea        si, [di - 1]
+mov        dx, DGROUP
+mov        es, dx
+mov        di, word ptr es:[__STACKLOW]
+mov        word ptr es:[__LpCmdLine+0], di
+mov        word ptr es:[__LpCmdLine+2], es
+je         noparameters
+inc        cx
+rep        movsb
+noparameters:
+
+
+done_with_program_name:
+mov        ds, dx
+mov        si, cx
+mov        word ptr ds:[__LpPgmName+0], si
+mov        word ptr ds:[__LpPgmName+2], es
+mov        bx, sp
+mov        ax, bp
+mov        byte ptr ds:[__no87], al
+and        byte ptr ds:[___uselfn], ah
+mov        word ptr ds:[__STACKLOW], di
+mov        cx, offset DGROUP:_end
+mov        di, offset DGROUP:_edata
+sub        cx, di
+xor        al, al
+rep        stosb  ; zero  BSS segment
+xor        bp, bp
+push       bp
+mov        bp, sp
+mov        ax, OFFSET __null_FPE_rtn
+mov        word ptr ds:[___FPE_handler+0], ax
+mov        word ptr ds:[___FPE_handler+2], cs
+mov        ax, 0FFh
+call       __InitRtns
+jmp        __CMain
+
+ENDP
 
 PROC    I_END_STARTMARKER_ NEAR
 PUBLIC  I_END_STARTMARKER_
