@@ -26,7 +26,6 @@ EXTRN __exit_:NEAR
 
 EXTRN __GETDS:NEAR
 EXTRN __FiniRtns:FAR
-EXTRN __brk_:FAR
 
 .DATA
 
@@ -45,6 +44,9 @@ EXTRN __End_XI:BYTE
 EXTRN __Start_YI:BYTE
 EXTRN __End_YI:BYTE
 
+EXTRN __psp:WORD
+EXTRN __STACKTOP:WORD
+EXTRN __osmode:BYTE
 EXTRN ___heap_enabled:WORD
 EXTRN __amblksiz:WORD
 EXTRN __curbrk:WORD
@@ -564,6 +566,55 @@ jmp  label_72
 
 ENDP
 
+PROC    locallib_brk_ NEAR
+
+push bx
+push cx
+push dx
+mov  dx, ax
+cmp  ax, word ptr ds:[__STACKTOP]
+jb   label_83
+mov  bx, dx
+mov  cl, 4
+add  bx, 0Fh
+shr  bx, cl
+mov  ax, ds
+test bx, bx
+jne  label_84
+mov  bx, 01000h
+label_84:
+cmp  byte ptr ds:[__osmode], 0
+jne  label_85
+mov  ax, ss
+sub  ax, word ptr ds:[__psp]
+add  bx, ax
+mov  ax, word ptr ds:[__psp]
+label_85:
+mov  es, ax
+mov  ah, 04Ah ; Modify Allocated Memory Block (SETBLOCK)
+int  021h
+jc   label_83
+mov  ax, word ptr ds:[__curbrk]
+mov  word ptr ds:[__curbrk], dx
+exit_brk:
+pop  dx
+pop  cx
+pop  bx
+ret
+label_83:
+mov  ax, 0FFFFh
+mov  word ptr ds:[_errno], 5
+jmp  exit_brk
+
+ENDP
+
+PROC    locallib_sbrk_ NEAR
+
+add  ax, word ptr ds:[__curbrk]
+jmp  locallib_brk_
+
+ENDP
+
 PROC    locallib_expanddgroup_ NEAR
 PUBLIC  locallib_expanddgroup_
 
@@ -600,7 +651,7 @@ jae  label_74
 mov  bx, 0FFFEh
 label_74:
 mov  ax, bx
-call __brk_
+call locallib_brk_
 mov  si, ax
 cmp  ax, 0FFFFh
 je   exit_expanddgroup_return_0
