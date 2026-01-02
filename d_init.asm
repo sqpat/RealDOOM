@@ -24,7 +24,7 @@ EXTRN locallib_fread_nearsegment_:NEAR
 EXTRN locallib_fopen_:NEAR
 EXTRN locallib_fclose_:NEAR
 EXTRN locallib_setbuf_:NEAR
-EXTRN locallib_exit_:NEAR
+EXTRN exit_:NEAR
 EXTRN locallib_fgetc_:NEAR
 
 EXTRN W_LumpLength_:FAR
@@ -407,7 +407,7 @@ no_doom1_present:
 mov     ax, OFFSET str_no_wad
 call    DEBUG_PRINT_NOARG_CS_
 mov     ax, 1
-jmp     locallib_exit_
+jmp     exit_
 
 foundfile:
 

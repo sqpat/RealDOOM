@@ -32,7 +32,7 @@ EXTRN locallib_putchar_:NEAR
 EXTRN locallib_printf_:NEAR
 
 EXTRN DEBUG_PRINT_:NEAR
-EXTRN locallib_exit_:NEAR
+EXTRN exit_:NEAR
 
 
 .DATA
@@ -358,7 +358,7 @@ call CallQuitFunctions_
 
 
 mov   ax, 1
-jmp   locallib_exit_
+jmp   exit_
 
 
 ENDP
@@ -385,7 +385,7 @@ call locallib_printf_
 mov  al, 0Ah  ; newline
 call locallib_putchar_
 mov  ax, 1
-jmp  locallib_exit_
+jmp  exit_
 
 ENDP
 

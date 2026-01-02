@@ -22,9 +22,6 @@ INSTRUCTION_SET_MACRO
 
 
 
-
-EXTRN __fatal_runtime_error_:NEAR
-
 EXTRN __GETDS:NEAR
 EXTRN doclose_:NEAR
 EXTRN freefp_:NEAR
@@ -32,8 +29,12 @@ EXTRN malloc_:NEAR
 EXTRN free_:NEAR
 EXTRN purgefp_:NEAR
 
+EXTRN main_:NEAR
+
+
 .DATA
 
+EXTRN __WD_Present:BYTE
 EXTRN ___LargestSizeB4MiniHeapRover:WORD
 EXTRN ___MiniHeapFreeRover:WORD
 EXTRN ___MiniHeapRover:WORD
@@ -582,8 +583,8 @@ ENDP
 
 ; todo rename
 
-PROC    locallib_exit_   NEAR
-PUBLIC  locallib_exit_
+PROC    exit_   NEAR
+PUBLIC  exit_
 
 
 mov   bx, ax
@@ -666,7 +667,11 @@ pop        bx
 mov        ax, OFFSET _NULL_AREA_STR
 
 mov        dx, cs
-; todo what if i dont do this
+
+__do_exit_with_msg_:
+__exit_with_msg_:
+PUBLIC __do_exit_with_msg_
+PUBLIC __exit_with_msg_
 ;mov        sp, offset DGROUP:_end+80h
 push       bx
 push       ax
@@ -702,6 +707,75 @@ call       __FiniRtns
 pop        ax
 mov        ah, 04Ch  ; Terminate process with return code
 int        021h
+
+ENDP
+
+__fatal_runtime_error_:
+PUBLIC __fatal_runtime_error_
+mov  ax, ax
+mov  cx, ax
+mov  si, dx
+push cs
+call __EnterWVIDEO_
+nop  
+test ax, ax
+jne  wvideo_not_0
+mov  ax, cx
+mov  dx, si
+jmp  __do_exit_with_msg_
+wvideo_not_0:
+mov  ax, bx
+jmp  __exit_
+
+ENDP
+
+PROC    __CMain NEAR
+PUBLIC  __CMain
+
+inc  bp
+push bp
+mov  bp, sp
+push dx
+mov  dx, word ptr ds:[____Argv]
+mov  ax, word ptr ds:[____Argc]
+call main_
+jmp  exit_
+
+ENDP
+
+PROC   __EnterWVIDEO_ NEAR
+PUBLIC __EnterWVIDEO_
+
+cmp  byte ptr ds:[__WD_Present], 0
+jne  cleanup_wvideo
+xor  ax, ax
+ret
+cleanup_wvideo:
+push dx
+push ax
+int  3 
+jmp  undo_stack_return
+push di
+push si
+dec  cx
+inc  sp
+inc  bp
+dec  di
+undo_stack_return:
+mov  ax, 1
+add  sp, 4
+ret
+
+ENDP
+
+PROC   _exit_ NEAR
+PUBLIC _exit_
+
+mov   dx, ax
+call  dword ptr ds:[___int23_exit]
+call  dword ptr ds:[___FPE_handler_exit]
+mov   ax, dx
+jmp   __exit_
 
 ENDP
 
