@@ -126,8 +126,7 @@ file r_setup.obj
 file st_setup.obj
 file hu_setup.obj
 
-file f_file.obj
-file i_start.obj
+file binfile.obj
 file w_wad.obj
 file v_video.obj
 file z_zone.obj
