@@ -642,7 +642,7 @@ _NULL_AREA_STR:
 db "!!", 020h, "NULL area write detected"
 
 _NEWLINE_STR:
-db "0Dh", "0Ah"
+db 0Dh, 0Ah , 0
 
 _CON_STR:
 db "con", 0
