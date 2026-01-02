@@ -714,18 +714,7 @@ __fatal_runtime_error_:
 PUBLIC __fatal_runtime_error_
 mov  ax, ax
 mov  cx, ax
-mov  si, dx
-push cs
-call __EnterWVIDEO_
-nop  
-test ax, ax
-jne  wvideo_not_0
-mov  ax, cx
-mov  dx, si
 jmp  __do_exit_with_msg_
-wvideo_not_0:
-mov  ax, bx
-jmp  __exit_
 
 ENDP
 
@@ -743,27 +732,8 @@ jmp  exit_
 
 ENDP
 
-PROC   __EnterWVIDEO_ NEAR
-PUBLIC __EnterWVIDEO_
 
-cmp  byte ptr ds:[__WD_Present], 0
-jne  cleanup_wvideo
-xor  ax, ax
-ret
-cleanup_wvideo:
-push dx
-push ax
-int  3 
-jmp  undo_stack_return
-push di
-push si
-dec  cx
-inc  sp
-inc  bp
-dec  di
-undo_stack_return:
-mov  ax, 1
-add  sp, 4
+
 ret
 
 ENDP
@@ -778,6 +748,17 @@ mov   ax, dx
 jmp   __exit_
 
 ENDP
+
+PROC   __null_int23_exit_ FAR
+PUBLIC __null_int23_exit_
+retf
+ENDP
+
+PROC   __EnterWVIDEO_ NEAR
+PUBLIC __EnterWVIDEO_
+
+xor  ax, ax
+ret
 
 PROC    I_END_STARTMARKER_ NEAR
 PUBLIC  I_END_STARTMARKER_

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/02 14:59:40
+Created on:       26/01/02 15:16:29
 Warning! W1027: file clibm.lib(cstart): redefinition of __GETDS ignored
 Executable Image: bingen.exe
 creating a DOS executable
@@ -14,7 +14,7 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          381b:0000            000013f0
+DGROUP                          3819:0000            000013e0
 
 
 
@@ -105,22 +105,22 @@ BINFILE_TEXT           CODE           AUTO           2b7f:8ece       0000004d
 W_WAD_TEXT             CODE           AUTO           2b7f:8f1c       0000024e
 V_VIDEO_TEXT           CODE           AUTO           2b7f:916a       00000615
 Z_ZONE_TEXT            CODE           AUTO           2b7f:9780       00000437
-_TEXT                  CODE           AUTO           2b7f:9bc0       00002dff
-FAR_DATA               FAR_DATA       AUTO           381a:000f       00000000
-_NULL                  BEGDATA        DGROUP         381b:0000       00000020
-_AFTERNULL             BEGDATA        DGROUP         381d:0000       00000002
-_DATA                  DATA           DGROUP         381d:0002       000001b0
-CONST                  DATA           DGROUP         3838:0002       000000a8
-CONST2                 DATA           DGROUP         3842:000a       00000025
-XIB                    DATA           DGROUP         3845:0000       00000000
-XI                     DATA           DGROUP         3845:0000       00000012
-XIE                    DATA           DGROUP         3846:0002       00000000
-YIB                    DATA           DGROUP         3846:0002       00000000
-YI                     DATA           DGROUP         3846:0002       00000012
-YIE                    DATA           DGROUP         3847:0004       00000000
-DATA                   DATA           DGROUP         3847:0004       00000000
-_BSS                   BSS            DGROUP         3847:0004       00000121
-STACK                  STACK          DGROUP         385a:0000       00001000
+_TEXT                  CODE           AUTO           2b7f:9bc0       00002dd1
+FAR_DATA               FAR_DATA       AUTO           3818:0001       00000000
+_NULL                  BEGDATA        DGROUP         3819:0000       00000020
+_AFTERNULL             BEGDATA        DGROUP         381b:0000       00000002
+_DATA                  DATA           DGROUP         381b:0002       000001a8
+CONST                  DATA           DGROUP         3835:000a       000000a8
+CONST2                 DATA           DGROUP         3840:0002       00000025
+XIB                    DATA           DGROUP         3842:0008       00000000
+XI                     DATA           DGROUP         3842:0008       00000012
+XIE                    DATA           DGROUP         3843:000a       00000000
+YIB                    DATA           DGROUP         3843:000a       00000000
+YI                     DATA           DGROUP         3843:000a       00000012
+YIE                    DATA           DGROUP         3844:000c       00000000
+DATA                   DATA           DGROUP         3844:000c       00000000
+_BSS                   BSS            DGROUP         3844:000c       00000121
+STACK                  STACK          DGROUP         3857:0000       00001000
 
 
                         +----------------+
@@ -1082,7 +1082,7 @@ Module: binfile.obj(binfile.ASM)
 2b7f:8ece      locallib_fclosefromfar_
 2b7f:8ece      locallib_fclose_
 2b7f:8ecf      locallib_far_fwrite_
-2b7f:8ece      locallib_exit_
+2b7f:8ece      exit_
 2b7f:8ece      locallib_fread_
 2b7f:8ece      locallib_fread_nearsegment_
 2b7f:8ece      locallib_freadfromfar_
@@ -1155,9 +1155,9 @@ Module: z_zone.obj(z_zone.ASM)
 2b7f:9881*     Z_QuickMapRender_4000To9000_9000Only_
 2b7f:9a7b      Z_QuickMapVisplanePage_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(iob.c)
-381b:0022      ___iob
-381b:02c4      ___OpenStreams
-381b:02c6      ___ClosedStreams
+3819:0022      ___iob
+3819:02bc      ___OpenStreams
+3819:02be      ___ClosedStreams
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fopen.c)
 2b7f:9bc0+     __open_flags_
 2b7f:9d6e+     _fsopen_
@@ -1169,14 +1169,14 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(fclose.c)
 2b7f:a014      __doclose_
 2b7f:a0aa      __shutdown_stream_
 2b7f:a0be      fclose_
-381b:02c8+     ___RmTmpFileFn
+3819:02c0+     ___RmTmpFileFn
 Module: C:\WATCOM2\lib286\dos\clibm.lib(printf.c)
 2b7f:a0e1      printf_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(cstart)
-381b:0000*     __nullarea
-381b:013a*     __ovlflag
-381b:013b*     __intno
-381b:013c*     __ovlvec
+3819:0000*     __nullarea
+3819:013a*     __ovlflag
+3819:013b*     __intno
+3819:013c*     __ovlvec
 2b7f:a0f8      _cstart_
 2b7f:a2a9      __exit_
 2b7f:a2c6      __do_exit_with_msg_
@@ -1184,10 +1184,10 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(cmodel.asm)
 2b7f:a3b0      _big_code_
 2b7f:a3b0*     CodeModelMismatch
 Module: C:\WATCOM2\lib286\dos\clibm.lib(argcv.c)
-381b:02cc      __argc
-381b:02ce      __argv
-381b:02d0      ___argc
-381b:02d2      ___argv
+3819:02c4      __argc
+3819:02c6      __argv
+3819:02c8      ___argc
+3819:02ca      ___argv
 Module: C:\WATCOM2\lib286\dos\clibm.lib(initfile.c)
 2b7f:a3b0      __InitFiles_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(ioexit.c)
@@ -1195,12 +1195,12 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(ioexit.c)
 2b7f:a497      __full_io_exit_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(comtflag.c)
 2b7f:a4a1*     __set_commode_
-381b:0140      __commode
+3819:0140      __commode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(errno.c)
 2b7f:a4a8      __get_errno_ptr_
-381b:02d4+     _errno
+3819:02cc+     _errno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(textmode.c)
-381b:0142      __fmode
+3819:0142      __fmode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(tolower.c)
 2b7f:a4ac      tolower_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(open.c)
@@ -1230,7 +1230,7 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(_clse.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nfree.c)
 2b7f:ac0a      _nfree_
 2b7f:ac0a      free_
-381b:02d6+     ___MiniHeapFreeRover
+3819:02ce+     ___MiniHeapFreeRover
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fprtf.c)
 2b7f:ace2      __fprtf_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(xmsg.c)
@@ -1244,25 +1244,25 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(initrtns.c)
 2b7f:ae3b      __FiniRtns
 2b7f:ae3b*     __FFiniRtns
 Module: C:\WATCOM2\lib286\dos\clibm.lib(crwdata)
-381b:0144      __curbrk
-381b:014c      __STACKLOW
-381b:014e      __STACKTOP
-381b:0150      __cbyte
-381b:0152      __child
-381b:0154      __no87
-381b:0161      ___FPE_handler
-381b:0146      __psp
-381b:0155      __get_ovl_stack
-381b:0159      __restore_ovl_stack
-381b:015d      __close_ovl_file
-381b:0165      __LpCmdLine
-381b:0169      __LpPgmName
-381b:0148      __osmajor
-381b:0149      __osminor
-381b:014a      __osmode
-381b:014b      __HShift
+3819:0144      __curbrk
+3819:014c      __STACKLOW
+3819:014e      __STACKTOP
+3819:0150      __cbyte
+3819:0152      __child
+3819:0154      __no87
+3819:0161      ___FPE_handler
+3819:0146      __psp
+3819:0155      __get_ovl_stack
+3819:0159      __restore_ovl_stack
+3819:015d      __close_ovl_file
+3819:0165      __LpCmdLine
+3819:0169      __LpPgmName
+3819:0148      __osmajor
+3819:0149      __osminor
+3819:014a      __osmode
+3819:014b      __HShift
 Module: C:\WATCOM2\lib286\dos\clibm.lib(uselfn.c)
-381b:016e      ___uselfn
+3819:016e      ___uselfn
 Module: C:\WATCOM2\lib286\dos\clibm.lib(dosseg)
 2b7f:ae9a      __DOSseg__
 Module: C:\WATCOM2\lib286\dos\clibm.lib(initargv.c)
@@ -1271,17 +1271,17 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(initargv.c)
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nmalloc.c)
 2b7f:b04f      _nmalloc_
 2b7f:b04f      malloc_
-381b:0170      ___nheapbeg
-381b:0172      ___MiniHeapRover
-381b:0174      ___LargestSizeB4MiniHeapRover
+3819:0170      ___nheapbeg
+3819:0172      ___MiniHeapRover
+3819:0174      ___LargestSizeB4MiniHeapRover
 Module: C:\WATCOM2\lib286\dos\clibm.lib(opendos.c)
 2b7f:b10e      _dos_open_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(iomode.c)
 2b7f:b124      __GetIOMode_
 2b7f:b13b      __SetIOMode_nogrow_
-381b:0176      ___NFiles
-381b:0178      ___init_mode
-381b:01a0      ___io_mode
+3819:0176      ___NFiles
+3819:0178      ___init_mode
+3819:01a0      ___io_mode
 Module: C:\WATCOM2\lib286\dos\clibm.lib(isatt.c)
 2b7f:b150      isatty_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(dosret.c)
@@ -1289,9 +1289,9 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(dosret.c)
 2b7f:b1d0*     __set_errno_dos_reterr_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(doserrno.c)
 2b7f:b1db      __get_doserrno_ptr_
-381b:02da+     __doserrno
+3819:02d2+     __doserrno
 Module: C:\WATCOM2\lib286\dos\clibm.lib(umaskval.c)
-381b:01b6      ___umaskval
+3819:01b6      ___umaskval
 Module: C:\WATCOM2\lib286\dos\clibm.lib(creatdos.c)
 2b7f:b1df      _dos_creat_
 2b7f:b1f3*     _dos_creatnew_
@@ -1312,91 +1312,85 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(prtf.c)
 2b7f:bee6      __prtf_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(enterdb.c)
 2b7f:c0ef      __EnterWVIDEO_
-381b:01b8+     __WD_Present
+3819:01b8+     __WD_Present
 Module: C:\WATCOM2\lib286\dos\clibm.lib(___argc.c)
-381b:02de      ____Argv
-381b:02e0      ____Argc
-Module: C:\WATCOM2\lib286\dos\clibm.lib(exit.c)
-2b7f:c10b+     __null_int23_exit_
-2b7f:c10c      exit_
-2b7f:c12c*     _exit_
-381b:01ba+     ___int23_exit
-381b:01be+     ___FPE_handler_exit
+3819:02d6      ____Argv
+3819:02d8      ____Argc
 Module: C:\WATCOM2\lib286\dos\clibm.lib(sgdef086)
-381b:02a0      __Start_XI
-381b:02b2      __End_XI
-381b:02b2      __Start_YI
-381b:02c4      __End_YI
+3819:0298      __Start_XI
+3819:02aa      __End_XI
+3819:02aa      __Start_YI
+3819:02bc      __End_YI
 Module: C:\WATCOM2\lib286\dos\clibm.lib(histsplt.c)
-381b:02e2      ___historical_splitparms
+3819:02da      ___historical_splitparms
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nmemneed.c)
-2b7f:c13a      __nmemneed_
+2b7f:c10c      __nmemneed_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(grownear.c)
-2b7f:c1a3+     __LastFree_
-2b7f:c20b      __ExpandDGROUP_
+2b7f:c175+     __LastFree_
+2b7f:c1dd      __ExpandDGROUP_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(error086.asm)
-2b7f:c2e4      __doserror_
-2b7f:c2f2*     __doserror1_
+2b7f:c2b6      __doserror_
+2b7f:c2c4*     __doserror1_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nrealloc.c)
-2b7f:c2fe*     _nrealloc_
-2b7f:c2fe      realloc_
+2b7f:c2d0*     _nrealloc_
+2b7f:c2d0      realloc_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(iomodtty.c)
-2b7f:c378      __ChkTTYIOMode_
-2b7f:c3ac*     __IOMode_
+2b7f:c34a      __ChkTTYIOMode_
+2b7f:c37e*     __IOMode_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(filedos.c)
-2b7f:c3bc*     _dos_close_
-2b7f:c3ca      _dos_commit_
+2b7f:c38e*     _dos_close_
+2b7f:c39c      _dos_commit_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(wctomb.c)
-2b7f:c3d9      wctomb_
+2b7f:c3ab      wctomb_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(itoa.c)
-2b7f:c3f6+     utoa_
-2b7f:c43b      itoa_
+2b7f:c3c8+     utoa_
+2b7f:c40d      itoa_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(i4m.asm)
-2b7f:c458*     __I4M
-2b7f:c458      __U4M
+2b7f:c42a*     __I4M
+2b7f:c42a      __U4M
 Module: C:\WATCOM2\lib286\dos\clibm.lib(noefgfmt.c)
-381b:01c2      ___EFG_printf
-381b:01c6*     ___EFG_scanf
+3819:01ba      ___EFG_printf
+3819:01be*     ___EFG_scanf
 Module: C:\WATCOM2\lib286\dos\clibm.lib(lltoa.c)
-2b7f:c47f      ulltoa_
-2b7f:c543*     lltoa_
+2b7f:c451      ulltoa_
+2b7f:c515*     lltoa_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(strupr.c)
-2b7f:c597      _strupr_
+2b7f:c569      _strupr_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(ltoa.c)
-2b7f:c5b7      ultoa_
-2b7f:c60a*     ltoa_
+2b7f:c589      ultoa_
+2b7f:c5dc*     ltoa_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(mbisdbcs.c)
-381b:01ca      ___IsDBCS
+3819:01c2      ___IsDBCS
 Module: C:\WATCOM2\lib286\dos\clibm.lib(mbislead.c)
-2b7f:c62b*     _ismbblead_
-381b:02e4      ___MBCSIsTable
+2b7f:c5fd*     _ismbblead_
+3819:02dc      ___MBCSIsTable
 Module: C:\WATCOM2\lib286\dos\clibm.lib(amblksiz.c)
-381b:01cc      __amblksiz
+3819:01c4      __amblksiz
 Module: C:\WATCOM2\lib286\dos\clibm.lib(heapen.c)
-2b7f:c642*     _heapenable_
-381b:01ce      ___heap_enabled
+2b7f:c614*     _heapenable_
+3819:01c6      ___heap_enabled
 Module: C:\WATCOM2\lib286\dos\clibm.lib(sbrk.c)
-2b7f:c64e      __brk_
-2b7f:c6a4*     sbrk_
+2b7f:c620      __brk_
+2b7f:c676*     sbrk_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nmsize.c)
-2b7f:c6aa*     _msize_
-2b7f:c6aa      _nmsize_
+2b7f:c67c*     _msize_
+2b7f:c67c      _nmsize_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(nexpand.c)
-2b7f:c6b9      _nexpand_
-2b7f:c6b9*     _expand_
+2b7f:c68b      _nexpand_
+2b7f:c68b*     _expand_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(alphabet.c)
-381b:027a      ___Alphabet
+3819:0272      ___Alphabet
 Module: C:\WATCOM2\lib286\dos\clibm.lib(mbinit.c)
-2b7f:c765      __mbinit_
-381b:01d0+     ___MBCodePage
+2b7f:c737      __mbinit_
+3819:01c8+     ___MBCodePage
 Module: C:\WATCOM2\lib286\dos\clibm.lib(_expand.c)
-2b7f:c7d0      __HeapManager_expand_
+2b7f:c7a2      __HeapManager_expand_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(getltdos.c)
-2b7f:c961      dos_get_dbcs_lead_table_
+2b7f:c933      dos_get_dbcs_lead_table_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(getcpdos.c)
-2b7f:c98a      dos_get_code_page_
+2b7f:c95c      dos_get_code_page_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(bfree.c)
-2b7f:c99a      _bfree_
+2b7f:c96c      _bfree_
 
 
                         +--------------------+
@@ -1411,6 +1405,6 @@ C:\WATCOM2\lib286\dos\clibm.lib
                         +-----------------------+
 
 Stack size:  1000 (4096.)
-Memory size:  000395a0 (234912.)
+Memory size:  00039570 (234864.)
 Entry point address: 2b7f:a0f8
-Link time: 00:00.04
+Link time: 00:00.49

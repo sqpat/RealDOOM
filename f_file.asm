@@ -985,7 +985,7 @@ jb        do_copy_from_buffer_fwrite
 ; inlined
 
 mov       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
-call      locallib_GetIOMode_
+call      __GetIOMode_
 test      al, _APPEND
 
 je        skip_move_file_ptr_fwrite
@@ -1473,7 +1473,7 @@ jnb       jump_to_close_file_and_error    ; out of files
 
 process_iomode_flags:
 mov       ax, di
-call      locallib_GetIOMode_
+call      __GetIOMode_
 and       al, (NOT (_READ OR _WRITE OR _APPEND OR _BINARY))
 ; si has rwmode
 and       si, (NOT _O_NOINHERIT)
@@ -1499,7 +1499,7 @@ xchg      ax, dx   ; dx get flags
 ; finished with flags
 
 mov       ax, di
-call      locallib__SetIOMode_nogrow_  ; todo same as nogrow?
+call      __SetIOMode_nogrow_  ; todo same as nogrow?
 
 xchg      ax, di  ; last use of di
 exit_sopen:
@@ -1784,7 +1784,7 @@ continue_close:
 
 mov  ax, cx
 xor  dx, dx
-call locallib__SetIOMode_nogrow_
+call __SetIOMode_nogrow_
 xchg ax, si  ; ax gets return val
 pop  si
 pop  dx
@@ -2394,7 +2394,7 @@ push si
 push dx  ; seek type to retrieve later
 mov  si, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
 
-call locallib_GetIOMode_
+call __GetIOMode_
 test cx, cx
 jg   positive_size
 jne  do_inner_lseek
@@ -2406,7 +2406,7 @@ jne  do_inner_lseek
 or   ah, 080h
 mov  dx, ax
 mov  ax, si
-call locallib__SetIOMode_nogrow_
+call __SetIOMode_nogrow_
 
 do_inner_lseek:
 pop  ax ; retrieve seek type
@@ -2642,7 +2642,7 @@ push bp
 mov  si, ax
 mov  bp, dx
 mov  di, bx
-call locallib_GetIOMode_
+call __GetIOMode_
 test al, _APPEND
 je   skip_move_file_ptr
 mov  bx, si
@@ -2738,7 +2738,7 @@ ENDP
 
 
 
-PROC locallib_GetIOMode_ NEAR
+PROC __GetIOMode_ NEAR
 
 push  bx
 cmp   ax, word ptr ds:[___NFiles]
@@ -2755,7 +2755,7 @@ pop   bx
 ret
 ENDP
 
-PROC locallib__SetIOMode_nogrow_ NEAR
+PROC __SetIOMode_nogrow_ NEAR
 
 push  bx
 cmp   ax, word ptr ds:[___NFiles]
