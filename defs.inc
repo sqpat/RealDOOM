@@ -50,6 +50,7 @@ ELSE
     PAGE_SWAP_ARG_MULT = 2
 ENDIF
 
+__nullarea =						 0
 
 
 _NULL_OFFSET = 0030h
@@ -721,13 +722,20 @@ ___historical_splitparms =           _NULL_OFFSET + 00AE6h
 ___LargestSizeB4MiniHeapRover =      _NULL_OFFSET + 00AE8h
 _errno =      						 _NULL_OFFSET + 00AEAh
 
-; unused
-___uselfn =							 _NULL_OFFSET + 00AECh
 ; same
 ___int23_exit =						 _NULL_OFFSET + 00AECh
 ___FPE_handler_exit =				 _NULL_OFFSET + 00AECh
 
-_flatcache_nodes =				     _NULL_OFFSET + 00AF0h
+;___argv =         				     _NULL_OFFSET + 00AF0h 
+;___argc =         				     _NULL_OFFSET + 00AF2h 
+;__argc =          				     _NULL_OFFSET + 00AF4h
+;__argv =          				     _NULL_OFFSET + 00AF6h
+____Argc =        				     _NULL_OFFSET + 00AF8h  
+____Argv =        				     _NULL_OFFSET + 00AFAh  
+___NFiles = 						 _NULL_OFFSET + 00AFCh
+
+
+_flatcache_nodes =				     _NULL_OFFSET + 00B00h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + ((SIZE CACHE_NODE_T) * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

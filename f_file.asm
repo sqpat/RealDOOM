@@ -44,9 +44,7 @@ EXTRN __amblksiz:WORD
 EXTRN __curbrk:WORD
 EXTRN ___OpenStreams:WORD
 EXTRN ___ClosedStreams:WORD
-EXTRN ___io_mode:WORD
 EXTRN __cbyte:WORD
-EXTRN ___NFiles:WORD
 
 
 COLORMAPS_SIZE = 33 * 256
@@ -2728,10 +2726,19 @@ ret
 ENDP
 @
 
+; 20 files
+_io_mode:
+;   stdin  stdout  stderr  stdaux         stdprn
+dw _READ, _WRITE, _WRITE, _READ OR _WRITE, _WRITE
+; room to grow
+dw 0, 0, 0, 0, 0
+dw 0, 0, 0, 0, 0
+dw 0, 0, 0, 0, 0
 
 
 
-PROC __GetIOMode_ NEAR
+PROC   __GetIOMode_ NEAR
+PUBLIC __GetIOMode_
 
 push  bx
 cmp   ax, word ptr ds:[___NFiles]
@@ -2740,23 +2747,22 @@ xor   ax, ax
 pop   bx
 ret
 good_handle:
-mov   bx, word ptr ds:[___io_mode]
 shl   ax, 1
-add   bx, ax
-mov   ax, word ptr ds:[bx]
+xchg  ax, bx
+mov   ax, word ptr cs:[bx + _io_mode]
 pop   bx
 ret
 ENDP
 
-PROC __SetIOMode_nogrow_ NEAR
+PROC   __SetIOMode_nogrow_ NEAR
+PUBLIC __SetIOMode_nogrow_ 
 
 push  bx
 cmp   ax, word ptr ds:[___NFiles]
 jnb   bad_handle_set
-mov   bx, word ptr ds:[___io_mode]
 shl   ax, 1
-add   bx, ax
-mov   word ptr ds:[bx], dx
+xchg  ax, bx
+mov   word ptr cs:[bx + _io_mode], dx
 bad_handle_set:
 pop   bx
 ret  

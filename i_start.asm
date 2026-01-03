@@ -60,9 +60,7 @@ EXTRN __amblksiz:WORD
 EXTRN __curbrk:WORD
 EXTRN ___OpenStreams:WORD
 EXTRN ___ClosedStreams:WORD
-EXTRN ___io_mode:WORD
 EXTRN __cbyte:WORD
-EXTRN ___NFiles:WORD
 
 
 EXTRN __LpCmdLine:WORD
@@ -72,8 +70,6 @@ EXTRN ___argv:WORD
 EXTRN ___argc:WORD
 EXTRN __argc:WORD
 EXTRN __argv:WORD
-EXTRN ____Argc:WORD
-EXTRN ____Argv:WORD
 
 
 
@@ -83,10 +79,7 @@ LUMP_PER_EMS_PAGE = 1024
 
 FILE_BUFFER_SIZE = 512
 
-;_end = OFFSET ____Argc + 2  ; todo
 
-
-; TODO ENABLE_DISK_FLASH
 
 .CODE
 
