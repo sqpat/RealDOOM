@@ -243,6 +243,10 @@ ENDP
 
 ;int historical, CHAR_TYPE *p, CHAR_TYPE **argv, CHAR_TYPE **endptr )
 
+
+
+
+
 PROC    splitparms_ NEAR
 PUBLIC  splitparms_
 
@@ -251,29 +255,27 @@ PUBLIC  splitparms_
 ; bp - 2 = cx (endptr)
 ; bp = 4 = start
 
+; todo mega rewrite with lods etc.
 
 push      si
 push      di
 
 
 ; ax parm unused
+; si has p ptr
 
-mov       si, dx
 
 mov       dx, bx
 xor       cx, cx
-label_101:
+check_next_character:
 mov       al, byte ptr ds:[si]
 cmp       al, ' '  ; space 020h
-jne       label_100
-label_102:
-inc       si
-jmp       label_101
-label_100:
-cmp       al, 9
-je        label_102
+je        found_space_delimiter
+
+cmp       al, 9   ; tab
+je        found_space_delimiter
 test      al, al
-je        jump_to_label_103
+je        found_end_of_params
 xor       al, al
 cmp       byte ptr ds:[si], 022h ; double-quoute "
 je        label_104
@@ -286,16 +288,14 @@ jne       label_105
 
 inc       si
 test      al, al
-jne       label_107
+mov       al, 0
+jne       label_108
 mov       al, 2
 jmp       label_108
 label_104:
 mov       al, 1
 inc       si
 jmp       label_109
-label_107:
-xor       al, al
-jmp       label_108
 label_120:
 test      dx, dx
 je        label_110
@@ -307,18 +307,19 @@ mov       word ptr ds:[di], ax
 mov       al, byte ptr ds:[si]
 inc       cx
 test      al, al
-je        label_118
-inc       si
+je        label_112
 mov       byte ptr ds:[bx], 0
-jmp       label_101
-jump_to_label_103:
-jmp       label_103
+found_space_delimiter:
+inc       si
+jmp       check_next_character
+
 label_105:
 cmp       byte ptr ds:[si], ' '  ; space 020h
 jne       label_119
 label_114:
 test      al, al
 je        label_120
+
 label_115:
 cmp       byte ptr ds:[si], 0
 je        label_120
@@ -330,9 +331,14 @@ jne       label_113
 inc       si
 cmp       byte ptr ds:[si - 2], 05Ch; backslash '\' 
 je        label_108
+
 label_113:
 test      dx, dx
-jne       label_122
+je        label_123
+label_122:
+mov       ah, byte ptr ds:[si]
+mov       byte ptr ds:[bx], ah
+inc       bx
 label_123:
 inc       si
 jmp       label_108
@@ -341,28 +347,15 @@ cmp       byte ptr ds:[si], 9
 je        label_114
 jmp       label_115
 
-label_117:
-inc       si
-jmp       label_113
 label_110:
-jmp       label_111
-label_118:
-jmp       label_112
-label_116:
-cmp       byte ptr ds:[si + 1], 05Ch; backslash '\' 
-jne       label_113
-cmp       al, 1
-je        label_117
-jmp       label_113
-label_122:
-mov       ah, byte ptr ds:[si]
-mov       byte ptr ds:[bx], ah
-inc       bx
-jmp       label_123
+inc       cx
+cmp       byte ptr ds:[si], 0
+je        found_end_of_params
+jmp       found_space_delimiter
+
 label_112:
 mov       byte ptr ds:[bx], al
-
-label_103:
+found_end_of_params:
 
 xchg      ax, cx
 mov       dx, si  ; this return endptr value goes in dx
@@ -370,11 +363,7 @@ mov       dx, si  ; this return endptr value goes in dx
 pop       di
 pop       si
 ret       
-label_111:
-inc       cx
-cmp       byte ptr ds:[si], 0
-je        label_103
-jmp       label_102
+
 
 ENDP
 
@@ -392,7 +381,7 @@ PUBLIC __Init_Argv_
 
 mov       si, word ptr cs:[__LpCmdLine]
 
-mov       dx, si
+
 xor       bx, bx
 call      splitparms_
 
@@ -437,7 +426,7 @@ mov       bx, di
 stosw
 xchg      bx, di
 
-;xor      ax, ax
+mov       si, dx
 call      splitparms_
 inc       ax
 mov       bx, ax

@@ -67,7 +67,7 @@ file z_zone.obj
 
 ORDER      clname CODE 
            clname BEGDATA segment _NULL 
-           clname DATA  segment _FIXEDDATA segment _DATA segment DATA segment XIB segment XI segment XIE segment YIB segment YI segment YIE
+           clname DATA  segment _FIXEDDATA segment _DATA segment DATA
            clname BSS
            clname STACK
            clname START 
