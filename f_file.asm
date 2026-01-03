@@ -25,10 +25,6 @@ EXTRN __GETDS:NEAR
 
 .DATA
 
-EXTRN ___LargestSizeB4MiniHeapRover:WORD
-EXTRN ___MiniHeapFreeRover:WORD
-EXTRN ___MiniHeapRover:WORD
-EXTRN ___nheapbeg:WORD
 
 
 
@@ -46,15 +42,12 @@ EXTRN __osmode:BYTE
 EXTRN ___heap_enabled:WORD
 EXTRN __amblksiz:WORD
 EXTRN __curbrk:WORD
-EXTRN _errno:WORD
 EXTRN ___OpenStreams:WORD
 EXTRN ___ClosedStreams:WORD
 EXTRN ___io_mode:WORD
 EXTRN __cbyte:WORD
 EXTRN ___NFiles:WORD
 
-EXTRN ___int23_exit:DWORD
-EXTRN ___FPE_handler_exit:DWORD
 
 COLORMAPS_SIZE = 33 * 256
 LUMP_PER_EMS_PAGE = 1024 

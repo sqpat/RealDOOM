@@ -714,7 +714,20 @@ _cht_CheckCheat_Far_addr = 	 	     _NULL_OFFSET + 00AD4h
 _myargc =				 	 	     _NULL_OFFSET + 00AD8h
 _myargv = 	 	     				 _NULL_OFFSET + 00ADAh
 
-_flatcache_nodes =				     _NULL_OFFSET + 00AE0h
+___MiniHeapRover =                   _NULL_OFFSET + 00AE0h
+___MiniHeapFreeRover =               _NULL_OFFSET + 00AE2h
+___nheapbeg =      					 _NULL_OFFSET + 00AE4h
+___historical_splitparms =           _NULL_OFFSET + 00AE6h
+___LargestSizeB4MiniHeapRover =      _NULL_OFFSET + 00AE8h
+_errno =      						 _NULL_OFFSET + 00AEAh
+
+; unused
+___uselfn =							 _NULL_OFFSET + 00AECh
+; same
+___int23_exit =						 _NULL_OFFSET + 00AECh
+___FPE_handler_exit =				 _NULL_OFFSET + 00AECh
+
+_flatcache_nodes =				     _NULL_OFFSET + 00AF0h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + ((SIZE CACHE_NODE_T) * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

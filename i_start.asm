@@ -36,10 +36,6 @@ EXTRN main_:NEAR
 
 .DATA
 
-EXTRN ___LargestSizeB4MiniHeapRover:WORD
-EXTRN ___MiniHeapFreeRover:WORD
-EXTRN ___MiniHeapRover:WORD
-EXTRN ___nheapbeg:WORD
 EXTRN __STACKLOW:WORD
 EXTRN __STACKTOP:WORD
 EXTRN ___FPE_handler:WORD
@@ -62,20 +58,16 @@ EXTRN __osmode:BYTE
 EXTRN ___heap_enabled:WORD
 EXTRN __amblksiz:WORD
 EXTRN __curbrk:WORD
-EXTRN _errno:WORD
 EXTRN ___OpenStreams:WORD
 EXTRN ___ClosedStreams:WORD
 EXTRN ___io_mode:WORD
 EXTRN __cbyte:WORD
 EXTRN ___NFiles:WORD
 
-EXTRN ___int23_exit:DWORD
-EXTRN ___FPE_handler_exit:DWORD
 
 EXTRN __LpCmdLine:WORD
 EXTRN __LpPgmName:WORD
 
-EXTRN ___historical_splitparms:WORD
 EXTRN ___argv:WORD
 EXTRN ___argc:WORD
 EXTRN __argc:WORD
