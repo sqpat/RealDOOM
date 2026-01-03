@@ -30,7 +30,7 @@ EXTRN freefp_:NEAR
 EXTRN malloc_:NEAR
 EXTRN free_:NEAR
 EXTRN purgefp_:NEAR
-
+EXTRN get_new_streamlink_:NEAR
 
 
 
@@ -546,38 +546,40 @@ or        byte ptr ds:[___iob + (STD_ERR_STREAM_INDEX * (SIZE WATCOM_C_FILE) + W
 check_next_file_for_init:
 mov       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag]
 test      ax, ax
-jne       stdin_has_flags
-mov       word ptr ds:[___ClosedStreams], ax
-pop       di
-pop       si
-pop       dx
-pop       bx
-ret
+je        exit_initfiles
 stdin_has_flags:
-mov       ax, SIZE WATCOM_STREAM_LINK
-
-call      malloc_
+call      get_new_streamlink_
 test      ax, ax
-je        malloc_steamlink_failed
+je        malloc_streamlink_failed
 mov       di, ax
-malloc_worked_this_time:
+
 mov       ax, word ptr ds:[___OpenStreams]
 mov       word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_stream], si
 mov       word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_next], ax
 mov       word ptr ds:[si + WATCOM_C_FILE.watcom_file_link], di
 mov       word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
 mov       word ptr ds:[___OpenStreams], di
-mov       byte ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_tmpfchar], 0
 add       si, SIZE WATCOM_C_FILE
 mov       word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_orientation], 0
 jmp       check_next_file_for_init
-malloc_steamlink_failed:
+
+exit_initfiles:
+mov       word ptr ds:[___ClosedStreams], ax
+pop       di
+pop       si
+pop       dx
+pop       bx
+ret
+
+
+malloc_streamlink_failed:
 
 mov       bx, 1
 ; __fatal_runtime_error( "Not enough memory to allocate file structures", 1 );
 mov       ax, 01002h  ; todo put some string here? or ignore the error
 mov       dx, ds
 jmp       __fatal_runtime_error_
+
 
 ENDP
 

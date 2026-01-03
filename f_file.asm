@@ -674,10 +674,8 @@ jmp  label_81
 
 ENDP
 
-; todo near
-PROC    _nfree_ NEAR
-PUBLIC  _nfree_
-ENDP
+
+
 PROC    free_ NEAR
 PUBLIC  free_
 
@@ -791,10 +789,7 @@ jmp   exit_free
 
 ENDP
 
-; todo near
-PROC    _nmalloc_ NEAR
-PUBLIC  _nmalloc_
-ENDP
+
 PROC    malloc_ NEAR
 PUBLIC  malloc_
 
@@ -1628,7 +1623,9 @@ jmp       loop_next_static_file
 
 found_file:
 
+; di is its file
 ; si is streamlink
+inc       word ptr ds:[si - 2] ; mark used
 
 mov       ax, word ptr ds:[si + WATCOM_STREAM_LINK.watcom_streamlink_next]
 mov       di, word ptr ds:[si + WATCOM_STREAM_LINK.watcom_streamlink_stream]
@@ -1637,7 +1634,6 @@ mov       dx, word ptr ds:[di + WATCOM_C_FILE.watcom_file_flag]
 
 fp_allocated:
 
-xor       ax, ax
 push      ds
 pop       es
 
@@ -1657,8 +1653,6 @@ xchg      ax, dx
 stosw  ;  + WATCOM_C_FILE.watcom_file_flag
 xchg      ax, si ; retrieve 0
 stosw
-stosw
-stosw
 
 
 lea       ax, [di - SIZE WATCOM_STREAM_LINK]
@@ -1668,8 +1662,7 @@ pop       dx
 ret
 
 create_streamlink:
-mov       ax, SIZE WATCOM_STREAM_LINK
-call      malloc_
+call      get_new_streamlink_
 mov       si, ax
 test      ax, ax
 je        do_allocfp_out_of_memory_error
@@ -1794,7 +1787,7 @@ je   exit_purge_fp
 mov  ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_next]
 mov  word ptr ds:[___ClosedStreams], ax
 mov  ax, bx
-call free_
+call free_streamlink_
 jmp  loop_check_next_fp_for_purge
 exit_purge_fp:
 pop  bx
@@ -2520,6 +2513,46 @@ ret
 
 ENDP
 
+SIZE_OF_STREAM_LOOKUP = 2 + SIZE WATCOM_STREAM_LINK
+NUM_STATIC_STREAMS = 10
+
+PROC    get_new_streamlink_ NEAR
+PUBLIC  get_new_streamlink_
+
+xchg    ax, bx                      ; instead of push
+mov     bx, OFFSET ___streamlinks
+
+loop_next_streamlink_check:
+cmp     word ptr ds:[bx], 0
+je      found_streamlink
+
+add     bx, SIZE_OF_STREAM_LOOKUP
+cmp     bx, (OFFSET ___streamlinks) + (NUM_STATIC_STREAMS * SIZE_OF_STREAM_LOOKUP)
+jl      loop_next_streamlink_check
+
+xchg    ax, bx
+xor     ax, ax
+ret
+
+found_streamlink:
+inc     word ptr ds:[bx]  ; mark dirty
+xchg    ax, bx            ; instead of pop
+inc     ax
+inc     ax  ; plus two for the lookup
+ret
+
+ENDP
+
+
+PROC    free_streamlink_ NEAR
+PUBLIC  free_streamlink_
+
+xchg    ax, bx
+dec     word ptr ds:[bx-2] ; mark clean
+xchg    ax, bx
+ret
+
+ENDP
 
 
 

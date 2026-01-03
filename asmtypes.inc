@@ -729,11 +729,11 @@ WATCOM_STREAM_LINK STRUC
     watcom_streamlink_base             dw ? ; 04h  unsigned char *                   /* location of buffer */
     watcom_streamlink_orientation      dw ? ; 06h  int                        /* wide/byte/not oriented */
     watcom_streamlink_extflags         dw ? ; 08h  int                           /* extended flags */
-    watcom_streamlink_tmpfchar         dw ? ; 0Ah  unsigned char                 /* tmpfile number */
-    watcom_streamlink_filler           dw ? ; 0Ch  unsigned char           sizeof(int)-1];/* explicit padding */
+    ;watcom_streamlink_tmpfchar         db ? ; 0Ah  unsigned char                 /* tmpfile number */
+    ;watcom_streamlink_filler           db ? ; 0Bh  unsigned char           sizeof(int)-1];/* explicit padding */
 
 WATCOM_STREAM_LINK ENDS
-; 0Dh
+
 
 C_INIT_STRUCT STRUC
 

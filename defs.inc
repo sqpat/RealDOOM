@@ -747,7 +747,10 @@ __curbrk =							 _NULL_OFFSET + 00B06h
 ___iob = 							 _NULL_OFFSET + 00B08h
 ; NFILES * SIZE WATCOM_C_FILE bytes = 20 * 14 = 280 = 118h
 
-_flatcache_nodes =				     _NULL_OFFSET + 00C20h
+
+___streamlinks = 				 	 _NULL_OFFSET + 00C20h
+
+_flatcache_nodes =				     _NULL_OFFSET + 00C98h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + ((SIZE CACHE_NODE_T) * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1
