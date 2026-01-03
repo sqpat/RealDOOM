@@ -20,9 +20,6 @@ INSTRUCTION_SET_MACRO
 
 .CODE
 
-EXTRN __GETDS:WORD
-
-
 
 
 ; nice for debug... 

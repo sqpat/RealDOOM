@@ -21,10 +21,9 @@ INSTRUCTION_SET_MACRO
 
 
 
-EXTRN hackDS_:NEAR
+
 EXTRN D_DoomMain_:NEAR
 
-EXTRN __GETDS:NEAR
 EXTRN doclose_:NEAR
 EXTRN freefp_:NEAR
 EXTRN malloc_:NEAR
@@ -246,121 +245,171 @@ ENDP
 
 
 
+ret
+
+PROC    __GETDS   NEAR
+PUBLIC  __GETDS
+
+push      ax
+mov       ax, DGROUP
+mov       ds, ax
+pop       ax
+ret       
+
+ENDP
+
+
+PROC hackDS_ NEAR
+PUBLIC hackDS_
+
+;todo: make cli held for less time
+
+cli
+push cx
+push si
+push di
+
+mov ds:[_stored_ds], ds
+xor di, di
+mov si, di
+mov cx, FIXED_DS_SEGMENT
+
+;mov cx, ds
+;add cx, 400h
+mov es, cx
+
+mov CX, 2000h    ; 4000h bytes
+rep movsw
+
+mov cx, es
+mov ds, cx
+mov ss, cx
+
+mov word ptr cs:[__GETDS+2], cx
+
+;extern uint16_t __near* _GETDS;
+;	((uint16_t __near*)(&_GETDS))[1] = FIXED_DS_SEGMENT;
+
+
+pop di
+pop si
+pop cx
+sti
+ret
+
+ENDP
+
 
 PROC    splitparms_ NEAR
 PUBLIC  splitparms_
 
-; ax = unused
 ; dx gets return endptr in return result
-
-
 
 ; todo mega rewrite with lods etc.
 
 push      si
 push      di
+push      bp
 
 
 ; ax parm unused
 ; si has p ptr
+; dx basically unused in the func...
 
-
-mov       dx, bx
+mov       bp, bx
 xor       cx, cx
-check_next_character:
-mov       al, byte ptr ds:[si]
+check_next_character_in_param_name:
+lodsb     
 cmp       al, ' '  ; space 020h
-je        found_space_delimiter
+je        found_space_delimiter_in_param_name
 
 cmp       al, 9   ; tab
-je        found_space_delimiter
+je        found_space_delimiter_in_param_name
 test      al, al
 je        found_end_of_params
-xor       al, al
-cmp       byte ptr ds:[si], 022h ; double-quoute "
+xor       ah, ah  ; ah 0 (quote state none)
+dec       si
+cmp       al, 022h ; double-quoute "
 jne       first_letter_not_quote
-mov       al, 1
+mov       ah, 1 ; quote is open
 inc       si
 first_letter_not_quote:
 mov       es, si   ; store start of word in es
 mov       bx, si   ; store start of word in bx
 get_next_word_character:
-cmp       byte ptr ds:[si], 022h ; double-quoute "
+lodsb
+cmp       al, 022h ; double-quoute "
 jne       this_character_not_quote
 
-inc       si
-test      al, al
-mov       al, 0
+
+test      ah, ah
+mov       ah, 0
 jne       get_next_word_character
-mov       al, 2
+mov       ah, 2
 jmp       get_next_word_character
 
-foudn_end_of_word:
-test      dx, dx  ; todo store this in something else.
+found_end_of_word:
+test      bp, bp
 je        argv_0
 
 ; 2nd call, we store argv values.
 mov       di, cx
 shl       di, 1
-add       di, dx
 
-mov       word ptr ds:[di], es  ; write start
-mov       al, byte ptr ds:[si]
+mov       word ptr ss:[bp+di], es  ; write start
 
-inc       cx
+
+inc       cx ; arg complete
 test      al, al
-je        found_end_of_params_write_zero
 mov       byte ptr ds:[bx], 0
-found_space_delimiter:
-inc       si
-jmp       check_next_character
+je        found_end_of_params
+
+found_space_delimiter_in_param_name:
+
+jmp       check_next_character_in_param_name
 
 this_character_not_quote:
-cmp       byte ptr ds:[si], ' '  ; space 020h
+cmp       al, ' '  ; space 020h
 je        this_character_is_space_delimiter
-cmp       byte ptr ds:[si], 9    ; tab
+cmp       al, 9    ; tab
 jne       this_character_not_space
 this_character_is_space_delimiter:
-test      al, al
-je        foudn_end_of_word
+test      ah, ah
+je        found_end_of_word
 
 this_character_not_space:
-cmp       byte ptr ds:[si], 0
-je        foudn_end_of_word
+cmp       al, 0
+je        found_end_of_word
 
-cmp       byte ptr ds:[si], 05Ch; backslash '\' 
+cmp       al, 05Ch; backslash '\' 
+jne       this_character_not_special
+; si already incremented.
+cmp       byte ptr ds:[si], 022h ; double-quoute "
 jne       this_character_not_special
 
-cmp       byte ptr ds:[si + 1], 022h ; double-quoute "
-jne       this_character_not_special
-inc       si
-cmp       byte ptr ds:[si - 2], 05Ch; backslash '\' 
+cmp       byte ptr ds:[si - 3], 05Ch; backslash '\' 
 je        get_next_word_character
 
 this_character_not_special:
-test      dx, dx
-je        dont_update_argv
+test      bp, bp
+je        get_next_word_character
 
-mov       ah, byte ptr ds:[si]
-mov       byte ptr ds:[bx], ah
+
+mov       byte ptr ds:[bx], al
 inc       bx
-dont_update_argv:
-inc       si
 jmp       get_next_word_character
 
 argv_0:
 inc       cx
-cmp       byte ptr ds:[si], 0
-je        found_end_of_params
-jmp       found_space_delimiter
+test      al, al
+jne       found_space_delimiter_in_param_name
 
-found_end_of_params_write_zero:
-mov       byte ptr ds:[bx], al
 found_end_of_params:
 
-xchg      ax, cx
+xchg      ax, cx  ; arg count
 mov       dx, si  ; this return endptr value goes in dx
 
+pop       bp
 pop       di
 pop       si
 ret       
@@ -436,13 +485,8 @@ shl       bx, 1
 mov       word ptr ds:[bx + di], 0
 
 done_parsing_argv:
-mov       word ptr ds:[__argc], ax
-mov       word ptr ds:[___argc], ax
-mov       word ptr ds:[____Argc], ax
-mov       word ptr ds:[__argv], di
-
-mov       word ptr ds:[___argv], di
-mov       word ptr ds:[____Argv], di
+mov       word ptr ds:[_myargc], ax
+mov       word ptr ds:[_myargv], di
 ret      
 
 ENDP
@@ -767,33 +811,19 @@ mov  bp, sp
 main_:
 PUBLIC main_
 call  hackDS_
-
-
-mov  ax, word ptr ds:[____Argc]
-
-mov   word ptr ds:[_myargc], ax
-mov   ax, word ptr ds:[____Argv]
-
-; main functions
-mov   word ptr ds:[_myargv+0], ax
-mov   word ptr ds:[_myargv+2], ds
-
 call  D_DoomMain_
+
 
 ENDP
 
 
 _big_code_:
 PUBLIC _big_code_
-CodeModelMismatch:
-PUBLIC CodeModelMismatch
-__DOSseg__:
-PUBLIC __DOSseg__
 ret
 
 
-PROC    I_END_STARTMARKER_ NEAR
-PUBLIC  I_END_STARTMARKER_
+PROC    I_START_ENDMARKER_ NEAR
+PUBLIC  I_START_ENDMARKER_
 ENDP
 
 END

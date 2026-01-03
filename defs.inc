@@ -728,15 +728,15 @@ ___FPE_handler_exit =				 _NULL_OFFSET + 00AECh
 
 ___OpenStreams =					 _NULL_OFFSET + 00AF0h
 ___ClosedStreams = 					 _NULL_OFFSET + 00AF2h
-____Argc =        				     _NULL_OFFSET + 00AF4h  
-____Argv =        				     _NULL_OFFSET + 00AF6h  
+;____Argc =        				     _NULL_OFFSET + 00AF4h  
+;____Argv =        				     _NULL_OFFSET + 00AF6h  
 
 
 
-___argv =         				     _NULL_OFFSET + 00AF8h 
-___argc =         				     _NULL_OFFSET + 00AFAh 
-__argc =          				     _NULL_OFFSET + 00AFCh
-__argv =          				     _NULL_OFFSET + 00AFEh
+;___argv =         				     _NULL_OFFSET + 00AF8h 
+;___argc =         				     _NULL_OFFSET + 00AFAh 
+;__argc =          				     _NULL_OFFSET + 00AFCh
+;__argv =          				     _NULL_OFFSET + 00AFEh
 
 __STACKLOW =          				 _NULL_OFFSET + 00B00h
 __STACKTOP =          				 _NULL_OFFSET + 00B02h

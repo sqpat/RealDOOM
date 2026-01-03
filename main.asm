@@ -3735,56 +3735,6 @@ ret
 ENDP
 
 
-PROC hackDS_ NEAR
-PUBLIC hackDS_
-
-;todo: make cli held for less time
-
-cli
-push cx
-push si
-push di
-
-mov ds:[_stored_ds], ds
-xor di, di
-mov si, di
-mov cx, FIXED_DS_SEGMENT
-
-;mov cx, ds
-;add cx, 400h
-mov es, cx
-
-mov CX, 2000h    ; 4000h bytes
-rep movsw
-
-mov cx, es
-mov ds, cx
-mov ss, cx
-
-mov word ptr cs:[__GETDS+2], cx
-
-;extern uint16_t __near* _GETDS;
-;	((uint16_t __near*)(&_GETDS))[1] = FIXED_DS_SEGMENT;
-
-
-pop di
-pop si
-pop cx
-sti
-ret
-
-ENDP
-
-PROC    __GETDS   NEAR
-PUBLIC  __GETDS
-
-push      ax
-mov       ax, DGROUP
-mov       ds, ax
-pop       ax
-ret       
-
-ENDP
 
 PROC    D_MAIN_ENDMARKER_ NEAR
 PUBLIC  D_MAIN_ENDMARKER_
