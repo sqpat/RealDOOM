@@ -203,7 +203,7 @@ typedef struct{
 #define ST_NUMFACES \
           (ST_FACESTRIDE*ST_NUMPAINFACES+ST_NUMEXTRAFACES)
 
-#define _NULL_OFFSET 0x30
+#define _NULL_OFFSET 0x20
  
 
 #define segloopnextlookup				  (((int16_t __near*)                (_NULL_OFFSET + 0x0000)))

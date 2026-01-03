@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/03 16:58:28
+Created on:       26/01/03 17:03:50
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -13,7 +13,7 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          0a34:0000            00001a90
+DGROUP                          0a34:0000            00001a80
 
 
 
@@ -60,14 +60,13 @@ W_WAD_TEXT             CODE           AUTO           0000:969a       0000024e
 V_VIDEO_TEXT           CODE           AUTO           0000:98e8       00000615
 Z_ZONE_TEXT            CODE           AUTO           0000:9efe       00000437
 _NULL                  BEGDATA        DGROUP         0a34:0000       00000020
-_AFTERNULL             BEGDATA        DGROUP         0a36:0000       00000002
-_FIXEDDATA             DATA           DGROUP         0a37:0000       00001045
-_DATA                  DATA           DGROUP         0b3b:0006       00000000
-CONST                  DATA           DGROUP         0b3b:0006       0000000d
-CONST2                 DATA           DGROUP         0b3c:0004       00000000
-DATA                   DATA           DGROUP         0b3c:0004       00000000
-_BSS                   BSS            DGROUP         0b3c:0004       00000008
-STACK                  STACK          DGROUP         0b3d:0000       00000a00
+_FIXEDDATA             DATA           DGROUP         0a36:0000       00001045
+_DATA                  DATA           DGROUP         0b3a:0006       00000000
+CONST                  DATA           DGROUP         0b3a:0006       0000000d
+CONST2                 DATA           DGROUP         0b3b:0004       00000000
+DATA                   DATA           DGROUP         0b3b:0004       00000000
+_BSS                   BSS            DGROUP         0b3b:0004       00000008
+STACK                  STACK          DGROUP         0b3c:0000       00000a00
 
 
                         +----------------+
@@ -564,6 +563,6 @@ Module: z_zone.obj(z_zone.ASM)
                         +-----------------------+
 
 Stack size:  0a00 (2560.)
-Memory size:  bdd0 (48592.)
+Memory size:  bdc0 (48576.)
 Entry point address: 0000:95ac
 Link time: 00:00.09

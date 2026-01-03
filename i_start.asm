@@ -59,7 +59,7 @@ FILE_BUFFER_SIZE = 512
 STACK_SIZE = 0A00h
 
 
-DGROUP group _NULL,_AFTERNULL,CONST,_DATA,DATA,_BSS,STACK
+DGROUP group _NULL,CONST,_DATA,DATA,_BSS,STACK
 
 
 
@@ -69,10 +69,6 @@ _NULL   segment para public 'BEGDATA'
         public  __nullarea
 _NULL   ends
 
-
-_AFTERNULL segment word public 'BEGDATA'
-        dw      0                       ; nullchar for string at address 0
-_AFTERNULL ends
 
 CONST   segment word public 'DATA'
 CONST   ends

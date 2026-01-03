@@ -53,7 +53,7 @@ ENDIF
 ;__nullarea =						 0
 
 
-_NULL_OFFSET = 0030h
+_NULL_OFFSET = 020h
 
 
 _segloopnextlookup    = 			_NULL_OFFSET + 00000h
