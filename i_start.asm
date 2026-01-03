@@ -46,7 +46,6 @@ EXTRN ___FPE_handler:WORD
 
 
 
-EXTRN __ovlflag:BYTE
 
 
 EXTRN __psp:WORD
@@ -149,17 +148,7 @@ STD_PRN_STREAM_INDEX = 4
 
 SIZE_STD_STREAMS = NUM_STD_STREAMS * (SIZE WATCOM_C_FILE)
 
-PROC    locallib_shutdown_stream_ NEAR
 
-push  ax
-call  doclose_
-xchg  ax, dx
-pop   ax
-call  freefp_
-mov   ax, dx
-ret
-
-ENDP
 
 PROC   docloseall_ NEAR
 PUBLIC docloseall_
@@ -195,7 +184,14 @@ je   label_131
 label_132:
 mov  ax, bx
 
-call locallib_shutdown_stream_
+
+
+call  doclose_
+xchg  ax, dx
+mov   ax, bx
+call  freefp_
+mov   ax, dx
+
 
 inc  cx
 or   si, ax
@@ -774,10 +770,10 @@ PUBLIC __null_int23_exit_
 retf
 ENDP
 
-PROC   __EnterWVIDEO_ NEAR
-PUBLIC __EnterWVIDEO_
-
-xor  ax, ax
+_big_code_:
+PUBLIC _big_code_
+CodeModelMismatch:
+PUBLIC CodeModelMismatch
 ret
 
 ENDP

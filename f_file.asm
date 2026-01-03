@@ -30,7 +30,6 @@ EXTRN __GETDS:NEAR
 
 ; not sure if word or what
 
-EXTRN __ovlflag:BYTE
 
 EXTRN __psp:WORD
 EXTRN __STACKTOP:WORD
@@ -1635,7 +1634,6 @@ ENDP
 
 PROC    locallib_allocfp_ NEAR
 
-
 push      dx
 push      di
 mov       si, word ptr ds:[___ClosedStreams]
@@ -1643,8 +1641,6 @@ test      si, si
 jne       found_file  ; recently closed ok?
 mov       di, OFFSET ___iob
 loop_next_static_file:
-cmp       di, OFFSET __ovlflag
-jae       do_allocfp_out_of_memory_error
 test      byte ptr ds:[di + WATCOM_C_FILE.watcom_file_flag], (_READ OR _WRITE)
 je        create_streamlink
 add       di, SIZE WATCOM_C_FILE
@@ -1828,7 +1824,7 @@ ret
 
 ENDP
 
-; todo inline?
+
 PROC    doclose_  NEAR
 PUBLIC  doclose_  
 push  bx
