@@ -35,7 +35,6 @@ EXTRN __ovlflag:BYTE
 EXTRN __psp:WORD
 EXTRN __STACKTOP:WORD
 EXTRN __osmode:BYTE
-EXTRN ___heap_enabled:WORD
 EXTRN __amblksiz:WORD
 EXTRN __curbrk:WORD
 EXTRN ___OpenStreams:WORD
@@ -598,7 +597,8 @@ push di
 push bp
 mov  bp, sp
 push ax
-mov  ax, word ptr ds:[___heap_enabled]
+;mov  ax, word ptr ds:[___heap_enabled]
+mov  ax, 1
 test ax, ax
 je   exit_expanddgroup
 cmp  word ptr ds:[__curbrk], -2

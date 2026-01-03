@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/03 01:14:28
+Created on:       26/01/03 01:16:56
 Warning! W1008: cannot open math87m.lib : file not found
 Warning! W1027: file clibm.lib(cstart): redefinition of __exit_ ignored
 Warning! W1027: file clibm.lib(cstart): redefinition of __do_exit_with_msg_ ignored
@@ -64,22 +64,22 @@ I_START_TEXT           CODE           AUTO           0000:931a       00000464
 W_WAD_TEXT             CODE           AUTO           0000:977e       0000024e
 V_VIDEO_TEXT           CODE           AUTO           0000:99cc       00000615
 Z_ZONE_TEXT            CODE           AUTO           0000:9fe2       00000437
-_TEXT                  CODE           AUTO           0000:a41a       000002c5
-FAR_DATA               FAR_DATA       AUTO           0a6d:000f       00000000
+_TEXT                  CODE           AUTO           0000:a41a       000002b9
+FAR_DATA               FAR_DATA       AUTO           0a6d:0003       00000000
 _NULL                  BEGDATA        DGROUP         0a6e:0000       00000020
 _AFTERNULL             BEGDATA        DGROUP         0a70:0000       00000002
 _FIXEDDATA             DATA           DGROUP         0a71:0000       00000e45
-_DATA                  DATA           DGROUP         0b55:0006       0000014d
-CONST                  DATA           DGROUP         0b6a:0004       0000000d
-CONST2                 DATA           DGROUP         0b6b:0002       00000000
-DATA                   DATA           DGROUP         0b6b:0002       00000000
-XIB                    DATA           DGROUP         0b6b:0002       00000000
-XI                     DATA           DGROUP         0b6b:0002       0000000c
-XIE                    DATA           DGROUP         0b6b:000e       00000000
-YIB                    DATA           DGROUP         0b6b:000e       00000000
-YI                     DATA           DGROUP         0b6b:000e       0000000c
-YIE                    DATA           DGROUP         0b6c:000a       00000000
-_BSS                   BSS            DGROUP         0b6c:000a       0000000c
+_DATA                  DATA           DGROUP         0b55:0006       0000014b
+CONST                  DATA           DGROUP         0b6a:0002       0000000d
+CONST2                 DATA           DGROUP         0b6b:0000       00000000
+DATA                   DATA           DGROUP         0b6b:0000       00000000
+XIB                    DATA           DGROUP         0b6b:0000       00000000
+XI                     DATA           DGROUP         0b6b:0000       0000000c
+XIE                    DATA           DGROUP         0b6b:000c       00000000
+YIB                    DATA           DGROUP         0b6b:000c       00000000
+YI                     DATA           DGROUP         0b6b:000c       0000000c
+YIE                    DATA           DGROUP         0b6c:0008       00000000
+_BSS                   BSS            DGROUP         0b6c:0008       0000000c
 STACK                  STACK          DGROUP         0b6e:0000       00000a00
 
 
@@ -568,8 +568,8 @@ Module: z_zone.obj(z_zone.ASM)
 0000:a2dd      Z_QuickMapVisplanePage_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(iob.c)
 0a6e:0e78      ___iob
-0a6e:0fea      ___OpenStreams
-0a6e:0fec      ___ClosedStreams
+0a6e:0fe8      ___OpenStreams
+0a6e:0fea      ___ClosedStreams
 Module: C:\WATCOM2\lib286\dos\clibm.lib(cstart)
 0a6e:0000*     __nullarea
 0a6e:0f90      __ovlflag
@@ -580,10 +580,10 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(cmodel.asm)
 0000:a6d2      _big_code_
 0000:a6d2*     CodeModelMismatch
 Module: C:\WATCOM2\lib286\dos\clibm.lib(argcv.c)
-0a6e:0fee      __argc
-0a6e:0ff0      __argv
-0a6e:0ff2      ___argc
-0a6e:0ff4      ___argv
+0a6e:0fec      __argc
+0a6e:0fee      __argv
+0a6e:0ff0      ___argc
+0a6e:0ff2      ___argv
 Module: C:\WATCOM2\lib286\dos\clibm.lib(crwdata)
 0a6e:0f96      __curbrk
 0a6e:0f9e      __STACKLOW
@@ -602,13 +602,10 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(crwdata)
 0a6e:0f9b      __osminor
 0a6e:0f9c      __osmode
 0a6e:0f9d      __HShift
-Module: C:\WATCOM2\lib286\dos\clibm.lib(heapen.c)
-0000:a6d2*     _heapenable_
-0a6e:0fc0      ___heap_enabled
 Module: C:\WATCOM2\lib286\dos\clibm.lib(uselfn.c)
-0a6e:0fc2      ___uselfn
+0a6e:0fc0      ___uselfn
 Module: C:\WATCOM2\lib286\dos\clibm.lib(dosseg)
-0000:a6de      __DOSseg__
+0000:a6d2      __DOSseg__
 
 
                         +--------------------+
@@ -625,4 +622,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  c0e0 (49376.)
 Entry point address: 0000:96a5
-Link time: 00:00.64
+Link time: 00:00.65
