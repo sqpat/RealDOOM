@@ -718,7 +718,7 @@ _myargv = 	 	     				 _NULL_OFFSET + 00ADAh
 ___MiniHeapRover =                   _NULL_OFFSET + 00AE0h
 ___MiniHeapFreeRover =               _NULL_OFFSET + 00AE2h
 ___nheapbeg =      					 _NULL_OFFSET + 00AE4h
-___historical_splitparms =           _NULL_OFFSET + 00AE6h
+;___historical_splitparms =           _NULL_OFFSET + 00AE6h
 ___LargestSizeB4MiniHeapRover =      _NULL_OFFSET + 00AE8h
 _errno =      						 _NULL_OFFSET + 00AEAh
 

@@ -249,23 +249,26 @@ ENDP
 
 
 
+;int historical, CHAR_TYPE *p, CHAR_TYPE **argv, CHAR_TYPE **endptr )
 
 PROC    splitparms_ NEAR
 PUBLIC  splitparms_
 
 ; ax = ??
-; bp - 2 = 
-; bp = 4 = 
-; bp - 6 = ax
+; bp - 2 = cx (endptr)
+; bp = 4 = start
+
 
 push      si
 push      di
 push      bp
-mov       bp, sp
-sub       sp, 4
-push      ax         ; bp - 6 = 5 
+
+; ax parm unused
+; store endptr in bp
+mov       bp, cx
+
 mov       si, dx
-mov       word ptr [bp - 2], cx
+
 mov       dx, bx
 xor       cx, cx
 label_101:
@@ -284,13 +287,12 @@ xor       al, al
 cmp       byte ptr ds:[si], 022h ; double-quoute "
 je        label_104
 label_109:
-mov       word ptr [bp - 4], si
+mov       es, si   ; store start in es
 mov       bx, si
 label_108:
 cmp       byte ptr ds:[si], 022h ; double-quoute "
 jne       label_105
-cmp       word ptr [bp - 6], 0
-jne       label_106
+
 inc       si
 test      al, al
 jne       label_107
@@ -303,16 +305,13 @@ jmp       label_109
 label_107:
 xor       al, al
 jmp       label_108
-label_106:
-cmp       al, 1
-jne       label_105
 label_120:
 test      dx, dx
 je        label_110
 mov       di, cx
 shl       di, 1
 add       di, dx
-mov       ax, word ptr [bp - 4]
+mov       ax, es  ; retrieve start
 mov       word ptr ds:[di], ax
 mov       al, byte ptr ds:[si]
 inc       cx
@@ -334,8 +333,7 @@ cmp       byte ptr ds:[si], 0
 je        label_120
 cmp       byte ptr ds:[si], 05Ch; backslash '\' 
 jne       label_113
-cmp       word ptr [bp - 6], 0
-jne       label_121
+
 cmp       byte ptr ds:[si + 1], 022h ; double-quoute "
 jne       label_113
 inc       si
@@ -351,9 +349,7 @@ label_119:
 cmp       byte ptr ds:[si], 9
 je        label_114
 jmp       label_115
-label_121:
-cmp       byte ptr ds:[si + 1], 022h ; double-quoute "
-jne       label_116
+
 label_117:
 inc       si
 jmp       label_113
@@ -374,11 +370,11 @@ inc       bx
 jmp       label_123
 label_112:
 mov       byte ptr ds:[bx], al
+
 label_103:
-mov       bx, word ptr [bp - 2]
-mov       ax, cx
-mov       word ptr ds:[bx], si
-mov       sp, bp
+
+xchg      ax, cx
+mov       word ptr ds:[bp], si  ; endptr = p
 pop       bp
 pop       di
 pop       si
@@ -393,19 +389,22 @@ ENDP
 
 
 
+; int historical, CHAR_TYPE *exe, CHAR_TYPE *cmd, int *pargc, CHAR_TYPE ***pargv )
+
+
+
 PROC    getargv_ NEAR
 
-
+; bp - 8 unused
 
 push      bp
 mov       bp, sp
-push      si
-push      di
-sub       sp, 6
-push      ax
-push      dx
-mov       si, bx
-mov       word ptr [bp - 8], cx
+push      si ; bp - 2
+push      di ; bp - 4
+sub       sp, 6 ; bp - A
+
+mov       si, word ptr cs:[__LpCmdLine]
+
 lea       cx, [bp - 0Ah]
 mov       dx, si
 xor       bx, bx
@@ -431,7 +430,7 @@ xor       ax, ax
 test      dx, dx
 jne       label_141
 label_140:
-mov       bx, word ptr [bp - 8]
+mov       bx, OFFSET __argc
 mov       word ptr ds:[bx], ax
 mov       bx, word ptr [bp + 4]
 mov       ax, word ptr [bp - 6]
@@ -451,12 +450,12 @@ rep       movsw
 adc       cx, cx
 rep       movsb
 pop       di
-mov       ax, word ptr [bp - 0Eh]
+mov       ax, word ptr cs:[__LpPgmName]
 add       di, bx
+mov       word ptr ds:[bx+di], ax
 lea       cx, [bp - 0Ah]
 lea       bx, [di + 2]
-mov       word ptr ds:[di], ax
-mov       ax, word ptr [bp - 0Ch]
+;xor      ax, ax
 call      splitparms_
 inc       ax
 mov       bx, ax
@@ -488,11 +487,11 @@ push      bx
 push      cx
 push      dx
 mov       ax, OFFSET __argv
-mov       cx, OFFSET __argc
-mov       bx, word ptr cs:[__LpCmdLine]
-mov       dx, word ptr cs:[__LpPgmName]
+;mov       cx, OFFSET __argc
+;mov       bx, word ptr cs:[__LpCmdLine]
+;mov       dx, word ptr cs:[__LpPgmName]
 push      ax
-mov       ax, word ptr ds:[___historical_splitparms]
+xor       ax, ax
 call      getargv_
 mov       word ptr cs:[____CmdLineStatic], ax
 mov       ax, word ptr ds:[__argc]
