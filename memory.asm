@@ -474,8 +474,41 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 ; AE0 
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; AF0 
-dw  00, 00, 00, 00, 00, 00, 20, 00
-; B00
+dw  00, 00, 00, 00
+
+_READ    = 00001h    ; file opened for reading 
+_WRITE   = 00002h    ; file opened for writing 
+STDIN_FILENO = 0
+STDOUT_FILENO = 1
+STDERR_FILENO = 2
+STDAUX_FILENO = 3
+STDPRN_FILENO = 4
+; AF8 ; file 0
+dw 00, 00, 00, _READ,  STDIN_FILENO, 0, 0
+dw 00, 00, 00, _WRITE, STDOUT_FILENO, 0, 0
+dw 00, 00, 00, _WRITE, STDERR_FILENO, 0, 0
+dw 00, 00, 00, _READ OR _WRITE, STDAUX_FILENO, 0, 0
+dw 00, 00, 00, _WRITE, STDPRN_FILENO, 0, 0
+
+dw 00, 00, 00, 00, 00, 0, 0
+dw 00, 00, 00, 00, 00, 0, 0
+dw 00, 00, 00, 00, 00, 0, 0
+dw 00, 00, 00, 00, 00, 0, 0
+dw 00, 00, 00, 00, 00, 0, 0
+
+dw 00, 00, 00, 00, 00, 0, 0
+dw 00, 00, 00, 00, 00, 0, 0
+dw 00, 00, 00, 00, 00, 0, 0
+dw 00, 00, 00, 00, 00, 0, 0
+dw 00, 00, 00, 00, 00, 0, 0
+
+dw 00, 00, 00, 00, 00, 0, 0
+dw 00, 00, 00, 00, 00, 0, 0
+dw 00, 00, 00, 00, 00, 0, 0
+dw 00, 00, 00, 00, 00, 0, 0
+dw 00, 00, 00, 00, 00, 0, 0
+
+; C10
 
 
 

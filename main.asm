@@ -50,23 +50,12 @@ EXTRN locallib_fopen_:NEAR
 EXTRN locallib_fgetc_:NEAR
 EXTRN locallib_fputc_:NEAR
 EXTRN locallib_fclose_:NEAR
-;EXTRN locallib_putchar_:NEAR
-
 
 
 EXTRN I_WaitVBL_:FAR
 EXTRN Z_QuickMapPalette_:FAR
 EXTRN Z_QuickMapByTaskNum_:FAR
 
-;EXTRN DoLog_:NEAR
-
-
-
-
-
-
-
-EXTRN ___iob:WORD
 
 
 .CODE

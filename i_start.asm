@@ -43,7 +43,7 @@ EXTRN ___FPE_handler:WORD
 
 
 ; static c file struct array
-EXTRN ___iob:WATCOM_C_FILE
+
 
 
 EXTRN __ovlflag:BYTE
@@ -54,8 +54,6 @@ EXTRN __STACKTOP:WORD
 
 EXTRN __amblksiz:WORD
 EXTRN __curbrk:WORD
-EXTRN ___OpenStreams:WORD
-EXTRN ___ClosedStreams:WORD
 
 
 EXTRN __LpCmdLine:WORD

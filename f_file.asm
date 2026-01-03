@@ -29,7 +29,7 @@ EXTRN __GETDS:NEAR
 
 
 ; not sure if word or what
-EXTRN ___iob:BYTE
+
 EXTRN __ovlflag:BYTE
 
 EXTRN __psp:WORD
@@ -37,8 +37,6 @@ EXTRN __STACKTOP:WORD
 EXTRN __osmode:BYTE
 EXTRN __amblksiz:WORD
 EXTRN __curbrk:WORD
-EXTRN ___OpenStreams:WORD
-EXTRN ___ClosedStreams:WORD
 
 
 
@@ -48,10 +46,11 @@ LUMP_PER_EMS_PAGE = 1024
 FILE_BUFFER_SIZE = 512
 
 
-; TODO ENABLE_DISK_FLASH
 
 .CODE
 
+; todo change?
+MAX_FILES = 20
 
 
 ; todo: get rid of UNGET stuff. we dont use this.
@@ -597,10 +596,7 @@ push di
 push bp
 mov  bp, sp
 push ax
-;mov  ax, word ptr ds:[___heap_enabled]
-mov  ax, 1
-test ax, ax
-je   exit_expanddgroup
+
 cmp  word ptr ds:[__curbrk], -2
 jne  label_73
 exit_expanddgroup_return_0:
@@ -1402,7 +1398,7 @@ xchg      ax, dx ;   dx gets filename
 call      locallib_dosopen_ 
 test      ax, ax
 jne       sopen_handle_good
-cmp       di, word ptr ds:[___NFiles]
+cmp       di, MAX_FILES
 jae       close_file_and_error
 sopen_handle_good:
 test      byte ptr [bp - 2], (_O_WRONLY OR _O_RDWR) 
@@ -1455,7 +1451,7 @@ call  locallib_doserror_  ; check carry flag etc
 test      ax, ax
 jne       exit_sopen_return_bad_handle
 
-cmp       di, word ptr ds:[___NFiles]
+cmp       di, MAX_FILES
 jnb       jump_to_close_file_and_error    ; out of files
 
 process_iomode_flags:
@@ -2720,7 +2716,7 @@ PROC   __GetIOMode_ NEAR
 PUBLIC __GetIOMode_
 
 push  bx
-cmp   ax, word ptr ds:[___NFiles]
+cmp   ax, MAX_FILES
 jb    good_handle
 xor   ax, ax
 pop   bx
@@ -2737,7 +2733,7 @@ PROC   __SetIOMode_nogrow_ NEAR
 PUBLIC __SetIOMode_nogrow_ 
 
 push  bx
-cmp   ax, word ptr ds:[___NFiles]
+cmp   ax, MAX_FILES
 jnb   bad_handle_set
 shl   ax, 1
 xchg  ax, bx

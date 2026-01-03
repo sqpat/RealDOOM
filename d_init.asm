@@ -66,7 +66,7 @@ EXTRN locallib_strcpy_:NEAR
 
 .DATA
 
-EXTRN ___iob:WORD
+
 
 
 .CODE

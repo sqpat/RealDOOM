@@ -730,12 +730,15 @@ ___FPE_handler_exit =				 _NULL_OFFSET + 00AECh
 ;___argc =         				     _NULL_OFFSET + 00AF2h 
 ;__argc =          				     _NULL_OFFSET + 00AF4h
 ;__argv =          				     _NULL_OFFSET + 00AF6h
-____Argc =        				     _NULL_OFFSET + 00AF8h  
-____Argv =        				     _NULL_OFFSET + 00AFAh  
-___NFiles = 						 _NULL_OFFSET + 00AFCh
+___OpenStreams =					 _NULL_OFFSET + 00AF0h
+___ClosedStreams = 					 _NULL_OFFSET + 00AF2h
+____Argc =        				     _NULL_OFFSET + 00AF4h  
+____Argv =        				     _NULL_OFFSET + 00AF6h  
 
+___iob = 							 _NULL_OFFSET + 00AF8h
+; NFILES * SIZE WATCOM_C_FILE bytes = 20 * 14 = 280 = 118h
 
-_flatcache_nodes =				     _NULL_OFFSET + 00B00h
+_flatcache_nodes =				     _NULL_OFFSET + 00C10h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + ((SIZE CACHE_NODE_T) * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1
