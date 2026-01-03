@@ -583,24 +583,14 @@ PUBLIC  exit_
 
 
 mov   bx, ax
-call  dword ptr ds:[___int23_exit]
 mov   dx, 0FFh
 mov   ax, 010h
-
-;todo still buggy
-;call  locallib_FiniRtns_
 call  __FiniRtns
-call  dword ptr ds:[___int23_exit]
-call  dword ptr ds:[___FPE_handler_exit]
+
 mov   ax, bx
-jump_to_exit:
 jmp   __exit_
-mov   ax, ax
-mov   dx, ax
-call  dword ptr ds:[___int23_exit]
-call  dword ptr ds:[___FPE_handler_exit]
-mov   ax, dx
-jmp   jump_to_exit
+
+
 ENDP
 
 
@@ -722,30 +712,23 @@ PUBLIC  __CMain
 inc  bp
 push bp
 mov  bp, sp
-push dx
-mov  dx, word ptr ds:[____Argv]
-mov  ax, word ptr ds:[____Argc]
-call main_
-jmp  exit_
-
-ENDP
-
-
-COMMENT @
-PROC    main_     NEAR
-PUBLIC  main_
-
-mov   word ptr ds:[_myargc], ax
-mov   word ptr ds:[_myargv+0], bx
-mov   word ptr ds:[_myargv+2], cx
 
 call  hackDS_
+
+
+mov  ax, word ptr ds:[____Argc]
+
+mov   word ptr ds:[_myargc], ax
+mov   ax, word ptr ds:[____Argv]
+
+; main functions
+mov   word ptr ds:[_myargv+0], ax
+mov   word ptr ds:[_myargv+2], ds
+
 call  D_DoomMain_
 
-xor   ax, ax 
-ret             ; return 0
 ENDP
-@
+
 
 
 PROC   _exit_ NEAR
@@ -770,11 +753,6 @@ PUBLIC __null_int23_exit_
 retf
 ENDP
 
-_big_code_:
-PUBLIC _big_code_
-CodeModelMismatch:
-PUBLIC CodeModelMismatch
-ret
 
 ENDP
 
@@ -893,6 +871,15 @@ call       __InitRtns
 jmp        __CMain
 
 ENDP
+
+_big_code_:
+PUBLIC _big_code_
+CodeModelMismatch:
+PUBLIC CodeModelMismatch
+__DOSseg__:
+PUBLIC __DOSseg__
+ret
+
 
 PROC    I_END_STARTMARKER_ NEAR
 PUBLIC  I_END_STARTMARKER_
