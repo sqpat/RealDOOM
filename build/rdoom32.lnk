@@ -24,7 +24,6 @@ file z_init.obj
 file s_sbinit.obj
 file p_init.obj
 
-file i_main.obj
 file i_quit.obj
 file i_ibm.obj
 file d_net.obj
