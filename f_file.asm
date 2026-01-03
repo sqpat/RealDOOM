@@ -912,7 +912,7 @@ cmp   byte ptr [bp - 2], 0
 je    label_29
 label_21:
 mov   ax, di
-call  __nmemneed_
+call  __nmemneed_  ; todo always 0?
 test  ax, ax
 je    label_19
 mov   byte ptr [bp - 2], 0

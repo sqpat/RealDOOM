@@ -660,6 +660,9 @@ ret
 
 ENDP
 
+_NO_MEMORY_STR:
+db "!!", 020h, "Not Enough Memory", 0
+
 _NULL_AREA_STR:
 db "!!", 020h, "NULL area write detected"
 
@@ -809,8 +812,8 @@ CMDLDATA    equ 81h
 FLG_NO87    equ 1
 FLG_LFN     equ 100h
 
-PROC   _cstart_ NEAR
-PUBLIC _cstart_
+PROC   _cstart2_ NEAR
+PUBLIC _cstart2_
 
 
 sti        
@@ -828,12 +831,48 @@ mov        ss, cx
 mov        sp, bx
 mov        word ptr es:[__STACKTOP], bx
 
-; skip protected mode checks, x87 checks, lfn stuff
+mov        dx, bx
+shr        dx, 1 ; seg count
+shr        dx, 1
+shr        dx, 1
+shr        dx, 1
+
+; set up heap
+
+mov        cx, ds:[MEMTOP] ; 2   ; 0A000h
+mov        ax, es                
+sub        cx, ax                ; ; 85EA
+cmp        dx, cx                ; (f7d)
+jb         enuf_mem
+mov        bx, 1
+mov        ax, OFFSET _NO_MEMORY_STR
+mov        dx, cs
+jmp        __fatal_runtime_error_
+
+enuf_mem:
+mov        ax, es               
+mov        bx, dx
+shl        bx, 1
+shl        bx, 1
+shl        bx, 1
+shl        bx, 1            ; ; F7D0
+jne        not64k
+mov        bx, 0FFFEh
+not64k:
+mov        word ptr es:[__curbrk],bx  ; 2120
+mov        bx, dx
+add        bx, ax       ; 2993
+mov        ax, word ptr es:[__psp]
+mov        es, ax
+sub        bx, ax
+mov        ah, 4Ah      ;  Modify allocated memory blocks
+int        21h
+
 
 mov        di, ds
 mov        es, di  ; es gets PSP
 mov        di, CMDLDATA
-mov        cl, byte ptr [di - 1]
+mov        cl, byte ptr ds:[di - 1]
 xor        ch, ch
 cld        
 mov        al, ' ' ; 020h
@@ -849,11 +888,15 @@ inc        cx
 rep        movsb
 noparameters:
 
+xor        ax, ax ; null terminate parameters
+stosw
+dec        di
+
+mov        cx, di
 
 done_with_program_name:
 mov        ds, dx
-mov        si, cx
-mov        word ptr ds:[__LpPgmName+0], si
+mov        word ptr ds:[__LpPgmName+0], cx
 mov        word ptr ds:[__LpPgmName+2], es
 mov        bx, sp
 mov        ax, bp
