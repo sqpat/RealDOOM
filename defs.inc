@@ -50,7 +50,7 @@ ELSE
     PAGE_SWAP_ARG_MULT = 2
 ENDIF
 
-__nullarea =						 0
+;__nullarea =						 0
 
 
 _NULL_OFFSET = 0030h
@@ -726,19 +726,28 @@ _errno =      						 _NULL_OFFSET + 00AEAh
 ___int23_exit =						 _NULL_OFFSET + 00AECh
 ___FPE_handler_exit =				 _NULL_OFFSET + 00AECh
 
-;___argv =         				     _NULL_OFFSET + 00AF0h 
-;___argc =         				     _NULL_OFFSET + 00AF2h 
-;__argc =          				     _NULL_OFFSET + 00AF4h
-;__argv =          				     _NULL_OFFSET + 00AF6h
 ___OpenStreams =					 _NULL_OFFSET + 00AF0h
 ___ClosedStreams = 					 _NULL_OFFSET + 00AF2h
 ____Argc =        				     _NULL_OFFSET + 00AF4h  
 ____Argv =        				     _NULL_OFFSET + 00AF6h  
 
-___iob = 							 _NULL_OFFSET + 00AF8h
+
+
+___argv =         				     _NULL_OFFSET + 00AF8h 
+___argc =         				     _NULL_OFFSET + 00AFAh 
+__argc =          				     _NULL_OFFSET + 00AFCh
+__argv =          				     _NULL_OFFSET + 00AFEh
+
+__STACKLOW =          				 _NULL_OFFSET + 00B00h
+__STACKTOP =          				 _NULL_OFFSET + 00B02h
+__psp =								 _NULL_OFFSET + 00B04h
+__curbrk =							 _NULL_OFFSET + 00B06h
+
+
+___iob = 							 _NULL_OFFSET + 00B08h
 ; NFILES * SIZE WATCOM_C_FILE bytes = 20 * 14 = 280 = 118h
 
-_flatcache_nodes =				     _NULL_OFFSET + 00C10h
+_flatcache_nodes =				     _NULL_OFFSET + 00C20h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + ((SIZE CACHE_NODE_T) * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

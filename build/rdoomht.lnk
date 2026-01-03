@@ -2,7 +2,7 @@
 
 option quiet
 option map
-option start=_cstart2_
+option start=_realdoomstart_
 # 2560 (0xA00) seems to work (?)
 #option stack=2048
 option stack=2560

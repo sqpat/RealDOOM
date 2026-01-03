@@ -80,14 +80,14 @@ void checkDS(int16_t a) {
 
 // seems to be all we need ? mostly fread buffers now.
 // _WCRTDATA unsigned _WCDATA _amblksiz = 0x100;
-_WCRTDATA unsigned _WCDATA _amblksiz = 0x700;
+// _WCRTDATA unsigned _WCDATA _amblksiz = 0x700;
 
 
 void __near hackDS();
 
 
 
-int16_t main ( int16_t argc, int8_t** argv ) { 
+int16_t fakemain ( int16_t argc, int8_t** argv ) { 
     myargc = argc; 
     myargv = argv; 
 

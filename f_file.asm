@@ -31,12 +31,6 @@ EXTRN __GETDS:NEAR
 ; not sure if word or what
 
 
-EXTRN __psp:WORD
-EXTRN __STACKTOP:WORD
-EXTRN __osmode:BYTE
-EXTRN __amblksiz:WORD
-EXTRN __curbrk:WORD
-
 
 
 COLORMAPS_SIZE = 33 * 256
@@ -94,8 +88,6 @@ PUBLIC  F_FILE_STARTMARKER_
 ENDP
 
 FREAD_BUFFER_SIZE = 512
-
-;void  __far locallib_far_fread(void __far* dest, uint16_t size, FILE * fp) {
 
 
 PROC    __MemAllocator NEAR
@@ -514,12 +506,12 @@ mov  ax, dx
 add  dx, 01Eh
 cmp  dx, ax
 jb   exit_adjustmaount_return_0
-mov  ax, word ptr ds:[__amblksiz]
+mov  ax, 0700h  ; amblksiz
 cmp  dx, ax
-jae  label_71
+jae  already_larger_than_amblksiz
 mov  dx, ax
 and  dl, 0FEh
-label_71:
+already_larger_than_amblksiz:
 mov  word ptr ds:[bx], dx
 test dx, dx
 je   exit_adjustmaount_return_0
@@ -549,17 +541,15 @@ add  bx, 0Fh
 shr  bx, cl
 mov  ax, ds
 test bx, bx
-jne  label_84
+jne  request_not_0
 mov  bx, 01000h
-label_84:
-cmp  byte ptr ds:[__osmode], 0
-jne  label_85
+request_not_0:
+
 mov  ax, ss
 sub  ax, word ptr ds:[__psp]
 add  bx, ax
-mov  ax, word ptr ds:[__psp]
-label_85:
-mov  es, ax
+
+mov  es, word ptr ds:[__psp]
 mov  ah, 04Ah ; Modify Allocated Memory Block (SETBLOCK)
 int  021h
 jc   label_83
@@ -577,13 +567,6 @@ jmp  exit_brk
 
 ENDP
 
-PROC    sbrk_ NEAR
-PUBLIC  sbrk_ 
-
-add  ax, word ptr ds:[__curbrk]
-jmp  __brk_
-
-ENDP
 
 PROC    __ExpandDGROUP_ NEAR
 PUBLIC  __ExpandDGROUP_
@@ -594,7 +577,7 @@ push si
 push di
 push bp
 mov  bp, sp
-push ax
+push ax    ; bp - 2 amount to allocate
 
 cmp  word ptr ds:[__curbrk], -2
 jne  label_73
@@ -608,11 +591,11 @@ pop  si
 pop  bx
 ret
 label_73:
-lea  ax, [bp - 2]
+lea  ax, [bp - 2]  ; 
 call locallib_adjustamount_
 test ax, ax
 je   exit_expanddgroup
-mov  bx, word ptr [bp - 2]
+mov  bx, word ptr [bp - 2]          ; amount to allocate
 add  bx, word ptr ds:[__curbrk]
 cmp  bx, word ptr ds:[__curbrk]
 jae  label_74
@@ -824,14 +807,10 @@ push  bp
 mov   bp, sp
 sub   sp, 4
 mov   di, ax
-test  ax, ax
-je    exit_malloc_return_0
-cmp   ax, 0FFEAh  ; todo
-ja    exit_malloc_return_0
 add   ax, 3
 and   al, 0FEh  ; todo
 mov   word ptr [bp - 4], ax
-cmp   ax, 6
+cmp   ax, 6  ; min size 6 allocation
 jb    label_14
 label_22:
 mov   byte ptr [bp - 2], 0
@@ -842,7 +821,7 @@ cmp   ax, word ptr ds:[___LargestSizeB4MiniHeapRover]
 jbe   label_15
 mov   si, word ptr ds:[___MiniHeapRover]
 test  si, si
-je    label_16
+je    set_up_miniheaprover
 label_24:
 test  si, si
 je    label_17
@@ -877,7 +856,7 @@ ret
 label_14:
 mov   word ptr [bp - 4], 6
 jmp   label_22
-label_16:
+set_up_miniheaprover:
 mov   word ptr ds:[___LargestSizeB4MiniHeapRover], si
 mov   si, word ptr ds:[___nheapbeg]
 jmp   label_24

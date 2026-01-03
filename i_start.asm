@@ -31,14 +31,11 @@ EXTRN malloc_:NEAR
 EXTRN free_:NEAR
 EXTRN purgefp_:NEAR
 
-EXTRN main_:NEAR
 
 
-.DATA
 
-EXTRN __STACKLOW:WORD
-EXTRN __STACKTOP:WORD
-EXTRN ___FPE_handler:WORD
+
+
 
 
 
@@ -48,20 +45,8 @@ EXTRN ___FPE_handler:WORD
 
 
 
-EXTRN __psp:WORD
-EXTRN __STACKTOP:WORD
-
-EXTRN __amblksiz:WORD
-EXTRN __curbrk:WORD
 
 
-EXTRN __LpCmdLine:WORD
-EXTRN __LpPgmName:WORD
-
-EXTRN ___argv:WORD
-EXTRN ___argc:WORD
-EXTRN __argc:WORD
-EXTRN __argv:WORD
 
 
 
@@ -71,21 +56,47 @@ LUMP_PER_EMS_PAGE = 1024
 
 FILE_BUFFER_SIZE = 512
 
+STACK_SIZE = 0A00h
 
 
-.CODE
+DGROUP group _NULL,_AFTERNULL,CONST,_DATA,DATA,_BSS,STACK
 
+
+
+_NULL   segment para public 'BEGDATA'
+        __nullarea label word
+        dw      16 dup(00101h)
+        public  __nullarea
+_NULL   ends
+
+
+_AFTERNULL segment word public 'BEGDATA'
+        dw      0                       ; nullchar for string at address 0
+_AFTERNULL ends
+
+CONST   segment word public 'DATA'
+CONST   ends
+
+
+_DATA   segment word public 'DATA'
+_DATA   ends
 
 DATA    segment word public 'DATA'
 DATA    ends
 
 _BSS    segment word public 'BSS'
-
-        EXTRN   _edata                  : byte  ; end of DATA (start of BSS)
-        EXTRN   _end                    : byte  ; end of BSS (start of STACK)
+        _edata label byte  ; end of DATA (start of BSS)
+        db 0, 0, 0, 0, 0, 0, 0, 0
+        _end   label byte  ; byte  ; end of BSS (start of STACK)
+                     
 
 _BSS    ends
 
+STACK   segment para stack 'STACK'
+        db      (STACK_SIZE) dup(?)
+STACK   ends
+
+.CODE
 
 
 ; todo: get rid of UNGET stuff. we dont use this.
@@ -120,18 +131,6 @@ _O_BINARY        = 00200h ;  binary file
 ; todo remove
 _O_EXCL          = 00400h ;  exclusive open 
 _O_NOINHERIT     = 00080h ;  file is not inherited by child process
-
-COMMENT @
-_WCRTDATA FILE _WCDATA ___iob[_NFILES] = {
-    { NULL, 0, NULL, _READ,         STDIN_FILENO,  0, 0  }  /* stdin */
-   ,{ NULL, 0, NULL, _WRITE,        STDOUT_FILENO, 0, 0  }  /* stdout */
-   ,{ NULL, 0, NULL, _WRITE,        STDERR_FILENO, 0, 0  }  /* stderr */
-#if defined( __DOS__ ) || defined( __WINDOWS__ )
-   ,{ NULL, 0, NULL, _READ|_WRITE,  STDAUX_FILENO, 0, 0  }  /* stdaux */
-   ,{ NULL, 0, NULL, _WRITE,        STDPRN_FILENO, 0, 0  }  /* stdprn */
-#endif
-};
-@
 
 
 
@@ -473,6 +472,12 @@ ____CmdLineStatic:
 dw 0
 
 
+__LpCmdLine:
+dw 0, 0
+__LpPgmName:
+dw 0, 0
+
+
 PROC   __Init_Argv_ NEAR
 PUBLIC __Init_Argv_ 
 
@@ -484,8 +489,8 @@ push      cx
 push      dx
 mov       ax, OFFSET __argv
 mov       cx, OFFSET __argc
-mov       bx, word ptr ds:[__LpCmdLine]
-mov       dx, word ptr ds:[__LpPgmName]
+mov       bx, word ptr cs:[__LpCmdLine]
+mov       dx, word ptr cs:[__LpPgmName]
 push      ax
 mov       ax, word ptr ds:[___historical_splitparms]
 call      getargv_
@@ -594,22 +599,6 @@ jmp   __exit_
 ENDP
 
 
-PROC    __InitRtns NEAR
-PUBLIC  __InitRtns
-
-push  ds
-call  __GETDS
-
-call  __InitFiles_
-call  __Init_Argv_
-
-pop   ds
-ret  
-
-
-ENDP
-
-
 PROC    __FiniRtns NEAR
 PUBLIC  __FiniRtns
 
@@ -706,37 +695,12 @@ jmp  __do_exit_with_msg_
 
 ENDP
 
-PROC    __CMain NEAR
-PUBLIC  __CMain
-
-inc  bp
-push bp
-mov  bp, sp
-
-call  hackDS_
-
-
-mov  ax, word ptr ds:[____Argc]
-
-mov   word ptr ds:[_myargc], ax
-mov   ax, word ptr ds:[____Argv]
-
-; main functions
-mov   word ptr ds:[_myargv+0], ax
-mov   word ptr ds:[_myargv+2], ds
-
-call  D_DoomMain_
-
-ENDP
-
 
 
 PROC   _exit_ NEAR
 PUBLIC _exit_
 
 mov   dx, ax
-call  dword ptr ds:[___int23_exit]
-call  dword ptr ds:[___FPE_handler_exit]
 mov   ax, dx
 jmp   __exit_
 
@@ -758,14 +722,12 @@ ENDP
 
 
 ; PSP offsets
-MEMTOP      equ 2
-ENVIRON     equ 2Ch
-CMDLDATA    equ 81h
-FLG_NO87    equ 1
-FLG_LFN     equ 100h
+MEMTOP    = 2
+CMDLDATA  = 81h
 
-PROC   _cstart2_ NEAR
-PUBLIC _cstart2_
+
+PROC   _realdoomstart_ NEAR
+PUBLIC _realdoomstart_
 
 
 sti        
@@ -833,8 +795,8 @@ lea        si, [di - 1]
 mov        dx, DGROUP
 mov        es, dx
 mov        di, word ptr es:[__STACKLOW]
-mov        word ptr es:[__LpCmdLine+0], di
-mov        word ptr es:[__LpCmdLine+2], es
+mov        word ptr cs:[__LpCmdLine+0], di
+mov        word ptr cs:[__LpCmdLine+2], es
 je         noparameters
 inc        cx
 rep        movsb
@@ -848,12 +810,10 @@ mov        cx, di
 
 done_with_program_name:
 mov        ds, dx
-mov        word ptr ds:[__LpPgmName+0], cx
-mov        word ptr ds:[__LpPgmName+2], es
+mov        word ptr cs:[__LpPgmName+0], cx
+mov        word ptr cs:[__LpPgmName+2], es
 mov        bx, sp
 mov        ax, bp
-;mov        byte ptr ds:[__no87], al
-;and        byte ptr ds:[___uselfn], ah
 mov        word ptr ds:[__STACKLOW], di
 mov        cx, offset DGROUP:_end
 mov        di, offset DGROUP:_edata
@@ -863,14 +823,41 @@ rep        stosb  ; zero  BSS segment
 xor        bp, bp
 push       bp
 mov        bp, sp
-mov        ax, OFFSET __null_FPE_rtn
-mov        word ptr ds:[___FPE_handler+0], ax
-mov        word ptr ds:[___FPE_handler+2], cs
 mov        ax, 0FFh
-call       __InitRtns
-jmp        __CMain
+;call       __InitRtns
+call  __GETDS
+call  __InitFiles_
+call  __Init_Argv_
+
+;jmp        __CMain
 
 ENDP
+
+PROC    __CMain NEAR
+PUBLIC  __CMain
+
+inc  bp
+push bp
+mov  bp, sp
+
+main_:
+PUBLIC main_
+call  hackDS_
+
+
+mov  ax, word ptr ds:[____Argc]
+
+mov   word ptr ds:[_myargc], ax
+mov   ax, word ptr ds:[____Argv]
+
+; main functions
+mov   word ptr ds:[_myargv+0], ax
+mov   word ptr ds:[_myargv+2], ds
+
+call  D_DoomMain_
+
+ENDP
+
 
 _big_code_:
 PUBLIC _big_code_

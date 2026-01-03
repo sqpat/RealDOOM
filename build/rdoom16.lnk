@@ -2,14 +2,14 @@
 
 option quiet
 option map
-option start=_cstart2_
+option start=_realdoomstart_
 # 2560 (0xA00) seems to work (?)
 #option stack=2048
 option stack=2560
 #option stack=3072
 debug all
 #libpath %WATCOM%\lib286
-libpath %WATCOM%\lib286\dos
+#libpath %WATCOM%\lib286\dos
 format dos
 name doomout
 
@@ -67,9 +67,9 @@ file z_zone.obj
 
 # here we move _DATA before CONST and CONST2.
 ORDER      clname CODE 
-           clname FAR_DATA #segaddr=22FD
+           clname FAR_DATA 
            clname BEGDATA segment _NULL segment _AFTERNULL 
-           clname DATA  segment _FIXEDDATA segment _DATA
+           clname DATA  segment _FIXEDDATA segment _DATA segment CONST segment CONST2 segment DATA segment XIB segment XI segment XIE segment YIB segment YI segment YIE
            clname BSS
            clname STACK
            clname START 
