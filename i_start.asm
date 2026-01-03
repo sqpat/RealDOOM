@@ -59,7 +59,7 @@ FILE_BUFFER_SIZE = 512
 STACK_SIZE = 0A00h
 
 
-DGROUP group _NULL,CONST,_DATA,DATA,_BSS,STACK
+DGROUP group _NULL,_DATA,DATA,_BSS,STACK
 
 
 
@@ -70,10 +70,6 @@ _NULL   segment para public 'BEGDATA'
 _NULL   ends
 
 
-CONST   segment word public 'DATA'
-CONST   ends
-
-
 _DATA   segment word public 'DATA'
 _DATA   ends
 
@@ -82,7 +78,7 @@ DATA    ends
 
 _BSS    segment word public 'BSS'
         _edata label byte  ; end of DATA (start of BSS)
-        db 0, 0, 0, 0, 0, 0, 0, 0
+        db 0, 0
         _end   label byte  ; byte  ; end of BSS (start of STACK)
                      
 

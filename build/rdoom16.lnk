@@ -64,11 +64,10 @@ file z_zone.obj
 
 
 
-# here we move _DATA before CONST and CONST2.
+
 ORDER      clname CODE 
-           clname FAR_DATA 
            clname BEGDATA segment _NULL 
-           clname DATA  segment _FIXEDDATA segment _DATA segment CONST segment CONST2 segment DATA segment XIB segment XI segment XIE segment YIB segment YI segment YIE
+           clname DATA  segment _FIXEDDATA segment _DATA segment DATA segment XIB segment XI segment XIE segment YIB segment YI segment YIE
            clname BSS
            clname STACK
            clname START 
