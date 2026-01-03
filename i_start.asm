@@ -251,9 +251,9 @@ PROC    splitparms_ NEAR
 PUBLIC  splitparms_
 
 ; ax = unused
-; dx gets return endptr. 
-; bp - 2 = cx (endptr)
-; bp = 4 = start
+; dx gets return endptr in return result
+
+
 
 ; todo mega rewrite with lods etc.
 
@@ -278,82 +278,83 @@ test      al, al
 je        found_end_of_params
 xor       al, al
 cmp       byte ptr ds:[si], 022h ; double-quoute "
-je        label_104
-label_109:
-mov       es, si   ; store start in es
-mov       bx, si
-label_108:
+jne       first_letter_not_quote
+mov       al, 1
+inc       si
+first_letter_not_quote:
+mov       es, si   ; store start of word in es
+mov       bx, si   ; store start of word in bx
+get_next_word_character:
 cmp       byte ptr ds:[si], 022h ; double-quoute "
-jne       label_105
+jne       this_character_not_quote
 
 inc       si
 test      al, al
 mov       al, 0
-jne       label_108
+jne       get_next_word_character
 mov       al, 2
-jmp       label_108
-label_104:
-mov       al, 1
-inc       si
-jmp       label_109
-label_120:
-test      dx, dx
-je        label_110
+jmp       get_next_word_character
+
+foudn_end_of_word:
+test      dx, dx  ; todo store this in something else.
+je        argv_0
+
+; 2nd call, we store argv values.
 mov       di, cx
 shl       di, 1
 add       di, dx
-mov       ax, es  ; retrieve start
-mov       word ptr ds:[di], ax
+
+mov       word ptr ds:[di], es  ; write start
 mov       al, byte ptr ds:[si]
+
 inc       cx
 test      al, al
-je        label_112
+je        found_end_of_params_write_zero
 mov       byte ptr ds:[bx], 0
 found_space_delimiter:
 inc       si
 jmp       check_next_character
 
-label_105:
+this_character_not_quote:
 cmp       byte ptr ds:[si], ' '  ; space 020h
-jne       label_119
-label_114:
+je        this_character_is_space_delimiter
+cmp       byte ptr ds:[si], 9    ; tab
+jne       this_character_not_space
+this_character_is_space_delimiter:
 test      al, al
-je        label_120
+je        foudn_end_of_word
 
-label_115:
+this_character_not_space:
 cmp       byte ptr ds:[si], 0
-je        label_120
+je        foudn_end_of_word
+
 cmp       byte ptr ds:[si], 05Ch; backslash '\' 
-jne       label_113
+jne       this_character_not_special
 
 cmp       byte ptr ds:[si + 1], 022h ; double-quoute "
-jne       label_113
+jne       this_character_not_special
 inc       si
 cmp       byte ptr ds:[si - 2], 05Ch; backslash '\' 
-je        label_108
+je        get_next_word_character
 
-label_113:
+this_character_not_special:
 test      dx, dx
-je        label_123
-label_122:
+je        dont_update_argv
+
 mov       ah, byte ptr ds:[si]
 mov       byte ptr ds:[bx], ah
 inc       bx
-label_123:
+dont_update_argv:
 inc       si
-jmp       label_108
-label_119:
-cmp       byte ptr ds:[si], 9
-je        label_114
-jmp       label_115
+jmp       get_next_word_character
 
-label_110:
+argv_0:
 inc       cx
 cmp       byte ptr ds:[si], 0
 je        found_end_of_params
 jmp       found_space_delimiter
 
-label_112:
+found_end_of_params_write_zero:
 mov       byte ptr ds:[bx], al
 found_end_of_params:
 
