@@ -31,10 +31,6 @@ EXTRN __GETDS:NEAR
 ; not sure if word or what
 EXTRN ___iob:BYTE
 EXTRN __ovlflag:BYTE
-EXTRN __Start_XI:BYTE
-EXTRN __End_XI:BYTE
-EXTRN __Start_YI:BYTE
-EXTRN __End_YI:BYTE
 
 EXTRN __psp:WORD
 EXTRN __STACKTOP:WORD
@@ -44,7 +40,7 @@ EXTRN __amblksiz:WORD
 EXTRN __curbrk:WORD
 EXTRN ___OpenStreams:WORD
 EXTRN ___ClosedStreams:WORD
-EXTRN __cbyte:WORD
+
 
 
 COLORMAPS_SIZE = 33 * 256
@@ -2708,23 +2704,6 @@ ret
 ret
 ENDP
 
-; todo removable?
-COMMENT @
-
-PROC    locallib_getche_  NEAR
-
-mov   ax, word ptr ds:[__cbyte]
-mov   word ptr ds:[__cbyte], 0
-test  ax, ax
-jne   exit_getche_
-mov   ah, 1
-int   021h  ; Keyboard input with echo
-xor   ah, ah
-exit_getche_:
-locallib_int23_exit_:
-ret  
-ENDP
-@
 
 ; 20 files
 _io_mode:

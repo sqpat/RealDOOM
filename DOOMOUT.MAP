@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/03 01:04:03
+Created on:       26/01/03 01:14:28
 Warning! W1008: cannot open math87m.lib : file not found
 Warning! W1027: file clibm.lib(cstart): redefinition of __exit_ ignored
 Warning! W1027: file clibm.lib(cstart): redefinition of __do_exit_with_msg_ ignored
@@ -584,11 +584,6 @@ Module: C:\WATCOM2\lib286\dos\clibm.lib(argcv.c)
 0a6e:0ff0      __argv
 0a6e:0ff2      ___argc
 0a6e:0ff4      ___argv
-Module: C:\WATCOM2\lib286\dos\clibm.lib(sgdef086)
-0a6e:0fd2      __Start_XI
-0a6e:0fde      __End_XI
-0a6e:0fde      __Start_YI
-0a6e:0fea      __End_YI
 Module: C:\WATCOM2\lib286\dos\clibm.lib(crwdata)
 0a6e:0f96      __curbrk
 0a6e:0f9e      __STACKLOW
@@ -630,4 +625,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  0a00 (2560.)
 Memory size:  c0e0 (49376.)
 Entry point address: 0000:96a5
-Link time: 00:00.65
+Link time: 00:00.64

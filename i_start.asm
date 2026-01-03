@@ -47,20 +47,15 @@ EXTRN ___iob:WATCOM_C_FILE
 
 
 EXTRN __ovlflag:BYTE
-EXTRN __Start_XI:BYTE
-EXTRN __End_XI:BYTE
-EXTRN __Start_YI:BYTE
-EXTRN __End_YI:BYTE
+
 
 EXTRN __psp:WORD
 EXTRN __STACKTOP:WORD
-EXTRN __osmode:BYTE
-EXTRN ___heap_enabled:WORD
+
 EXTRN __amblksiz:WORD
 EXTRN __curbrk:WORD
 EXTRN ___OpenStreams:WORD
 EXTRN ___ClosedStreams:WORD
-EXTRN __cbyte:WORD
 
 
 EXTRN __LpCmdLine:WORD

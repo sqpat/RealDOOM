@@ -54,9 +54,6 @@ EXTRN R_Init_:NEAR
 EXTRN ST_Init_:NEAR
 EXTRN SB_StartInit_:NEAR
 
-
-
-
 EXTRN G_InitNew_:NEAR
 EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
 EXTRN DEBUG_PRINT_NOARG_:NEAR
@@ -64,18 +61,12 @@ EXTRN DEBUG_PRINT_:NEAR
 EXTRN M_CheckParm_CS_:NEAR
 EXTRN combine_strings_:NEAR
 EXTRN I_SetPalette_:FAR
-
 EXTRN locallib_strcpy_:NEAR
 
 
 .DATA
 
-
-;EXTRN _noblit:BYTE
 EXTRN ___iob:WORD
-
-
-
 
 
 .CODE
