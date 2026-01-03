@@ -254,18 +254,17 @@ ENDP
 PROC    splitparms_ NEAR
 PUBLIC  splitparms_
 
-; ax = ??
+; ax = unused
+; dx gets return endptr. 
 ; bp - 2 = cx (endptr)
 ; bp = 4 = start
 
 
 push      si
 push      di
-push      bp
+
 
 ; ax parm unused
-; store endptr in bp
-mov       bp, cx
 
 mov       si, dx
 
@@ -374,8 +373,8 @@ mov       byte ptr ds:[bx], al
 label_103:
 
 xchg      ax, cx
-mov       word ptr ds:[bp], si  ; endptr = p
-pop       bp
+mov       dx, si  ; this return endptr value goes in dx
+
 pop       di
 pop       si
 ret       
@@ -391,25 +390,23 @@ ENDP
 
 ; int historical, CHAR_TYPE *exe, CHAR_TYPE *cmd, int *pargc, CHAR_TYPE ***pargv )
 
-
+; creates a list of pointers to words/params
 
 PROC    getargv_ NEAR
 
-; bp - 8 unused
 
-push      bp
-mov       bp, sp
-push      si ; bp - 2
-push      di ; bp - 4
-sub       sp, 6 ; bp - A
+
 
 mov       si, word ptr cs:[__LpCmdLine]
 
-lea       cx, [bp - 0Ah]
+
 mov       dx, si
 xor       bx, bx
 call      splitparms_
-mov       dx, word ptr [bp - 0Ah]
+
+;  dx has endptr already
+
+; todo clean this up...
 inc       ax
 sub       dx, si
 shl       ax, 1
@@ -421,48 +418,47 @@ add       ax, dx
 xor       di, di
 inc       ax
 inc       cx
-and       al, 0FEh ; make it even?
+and       al, 0FEh ; max size of command line
 mov       bx, dx
 call      malloc_
-mov       dx, ax
-mov       word ptr [bp - 6], ax
+
+mov       word ptr cs:[____CmdLineStatic], ax  ; store this ptr.
+
+xchg      ax, dx
 xor       ax, ax
 test      dx, dx
-jne       label_141
-label_140:
-mov       bx, OFFSET __argc
-mov       word ptr ds:[bx], ax
-mov       bx, word ptr [bp + 4]
-mov       ax, word ptr [bp - 6]
-mov       word ptr ds:[bx], di
-lea       sp, [bp - 4]
-pop       di
-pop       si
-pop       bp
-ret       2
-label_141:
+je        done_parsing_argv
+
 mov       di, dx
-push      di
-mov       ax, ds
-mov       es, ax
+
+push      ds
+pop       es
 shr       cx, 1
 rep       movsw
 adc       cx, cx
 rep       movsb
-pop       di
+mov       di, dx
 mov       ax, word ptr cs:[__LpPgmName]
 add       di, bx
-mov       word ptr ds:[bx+di], ax
-lea       cx, [bp - 0Ah]
-lea       bx, [di + 2]
+mov       bx, di
+stosw
+xchg      bx, di
+
 ;xor      ax, ax
 call      splitparms_
 inc       ax
 mov       bx, ax
 shl       bx, 1
-add       bx, di
-mov       word ptr ds:[bx], 0
-jmp       label_140
+
+mov       word ptr ds:[bx + di], 0
+
+done_parsing_argv:
+mov       word ptr ds:[__argc], ax
+mov       word ptr ds:[__argv], di
+
+
+ret
+
 
 ENDP
 
@@ -486,14 +482,11 @@ mov       bp, sp
 push      bx
 push      cx
 push      dx
-mov       ax, OFFSET __argv
-;mov       cx, OFFSET __argc
-;mov       bx, word ptr cs:[__LpCmdLine]
-;mov       dx, word ptr cs:[__LpPgmName]
-push      ax
-xor       ax, ax
-call      getargv_
-mov       word ptr cs:[____CmdLineStatic], ax
+
+
+call      getargv_  ; all the params were hardcoded, just generate them inside.
+
+
 mov       ax, word ptr ds:[__argc]
 mov       word ptr ds:[___argc], ax
 mov       word ptr ds:[____Argc], ax
