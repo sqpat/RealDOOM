@@ -750,7 +750,9 @@ ___iob = 							 _NULL_OFFSET + 00B08h
 
 ___streamlinks = 				 	 _NULL_OFFSET + 00C20h
 
-_flatcache_nodes =				     _NULL_OFFSET + 00C98h
+___commandline_copy = 				 _NULL_OFFSET + 00C98h
+
+_flatcache_nodes =				     _NULL_OFFSET + 00D00h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + ((SIZE CACHE_NODE_T) * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

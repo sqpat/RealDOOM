@@ -388,17 +388,17 @@ ENDP
 
 
 
-; int historical, CHAR_TYPE *exe, CHAR_TYPE *cmd, int *pargc, CHAR_TYPE ***pargv )
+__LpCmdLine:
+dw 0, 0
+__LpPgmName:
+dw 0, 0
 
 ; creates a list of pointers to words/params
 
-PROC    getargv_ NEAR
-
-
-
+PROC   __Init_Argv_ NEAR
+PUBLIC __Init_Argv_ 
 
 mov       si, word ptr cs:[__LpCmdLine]
-
 
 mov       dx, si
 xor       bx, bx
@@ -420,9 +420,10 @@ inc       ax
 inc       cx
 and       al, 0FEh ; max size of command line
 mov       bx, dx
-call      malloc_
 
-mov       word ptr cs:[____CmdLineStatic], ax  ; store this ptr.
+; todo check size
+mov       ax, OFFSET ___commandline_copy
+
 
 xchg      ax, dx
 xor       ax, ax
@@ -454,72 +455,19 @@ mov       word ptr ds:[bx + di], 0
 
 done_parsing_argv:
 mov       word ptr ds:[__argc], ax
-mov       word ptr ds:[__argv], di
-
-
-ret
-
-
-ENDP
-
-; ptr to cmd line to free
-____CmdLineStatic:
-dw 0
-
-
-__LpCmdLine:
-dw 0, 0
-__LpPgmName:
-dw 0, 0
-
-
-PROC   __Init_Argv_ NEAR
-PUBLIC __Init_Argv_ 
-
-inc       bp
-push      bp
-mov       bp, sp
-push      bx
-push      cx
-push      dx
-
-
-call      getargv_  ; all the params were hardcoded, just generate them inside.
-
-
-mov       ax, word ptr ds:[__argc]
 mov       word ptr ds:[___argc], ax
 mov       word ptr ds:[____Argc], ax
+mov       word ptr ds:[__argv], di
 
-mov       ax, word ptr ds:[__argv]
-mov       word ptr ds:[___argv], ax
-mov       word ptr ds:[____Argv], ax
-pop       dx
-pop       cx
-pop       bx
-pop       bp
-dec       bp
+mov       word ptr ds:[___argv], di
+mov       word ptr ds:[____Argv], di
 ret      
 
 ENDP
 
 
 
-PROC   __Fini_Argv_ NEAR
-PUBLIC __Fini_Argv_ 
 
-inc       bp
-push      bp
-mov       bp, sp
-mov       ax, word ptr cs:[____CmdLineStatic]
-test      ax, ax
-je        skip_free_argv
-call      free_
-skip_free_argv:
-pop       bp
-dec       bp
-ret      
-   
 
 ENDP
 
@@ -600,7 +548,7 @@ push  ds
 call  __GETDS
 
 call  __full_io_exit_
-call  __Fini_Argv_
+
 
 pop   ds
 ret  
@@ -830,7 +778,7 @@ ENDP
 PROC    __CMain NEAR
 PUBLIC  __CMain
 
-inc  bp
+
 push bp
 mov  bp, sp
 
