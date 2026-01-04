@@ -523,37 +523,11 @@ ret
 
 ENDP
 
-; todo rename
-
-PROC    exit_   NEAR
-PUBLIC  exit_
-
-
-mov   bx, ax
-mov   dx, 0FFh
-mov   ax, 010h
-call  __FiniRtns
-
-mov   ax, bx
-jmp   __exit_
 
 
 ENDP
 
 
-PROC    __FiniRtns NEAR
-PUBLIC  __FiniRtns
-
-push  ds
-call  __GETDS
-
-xor       ax, ax
-call      docloseall_
-
-pop        ds
-ret  
-
-ENDP
 
 _NO_MEMORY_STR:
 db "!!", 020h, "Not Enough Memory", 0
@@ -567,10 +541,32 @@ db 0Dh, 0Ah , 0
 _CON_STR:
 db "con", 0
 
-PROC    __exit_ NEAR
-PUBLIC  __exit_
 
-push       ax
+
+PROC    __FiniRtns NEAR
+PUBLIC  __FiniRtns
+
+push      ds
+call      __GETDS
+xor       ax, ax
+call      docloseall_
+pop       ds
+ret  
+
+ENDP
+
+; todo clean up triple exit function stuff..
+
+PROC    exit_   NEAR
+PUBLIC  exit_
+
+
+push  ax                        ; al = return code.
+call  __FiniRtns
+
+; fall thru
+
+
 mov        dx, DGROUP  ; worst case call getds
 mov        ds, dx
 cld        
@@ -579,12 +575,19 @@ mov        es, dx
 mov        cx, 010h
 mov        ax, 0101h
 repe       scasw
-je         null_check_ok
+jne        null_check_fail
+
+null_check_ok:
+
+call       __FiniRtns
+pop        ax
+mov        ah, 04Ch  ; Terminate process with return code
+int        021h
 
 
+null_check_fail:
 pop        bx
 mov        ax, OFFSET _NULL_AREA_STR
-
 mov        dx, cs
 
 __do_exit_with_msg_:
@@ -620,17 +623,8 @@ mov        cx, 2
 mov        ah, 040h  ; Write file or device using handle
 int        021h
 
-null_check_ok:
-mov        dx, 0Fh   ; FINI_PRIORITY_EXIT-1
-call       __FiniRtns
-pop        ax
-mov        ah, 04Ch  ; Terminate process with return code
-int        021h
 
 ENDP
-
-
-
 
 
 
