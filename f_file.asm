@@ -1188,12 +1188,24 @@ ENDP
 
 @
 
-PROC    locallib_fopenfromfar_   FAR
-PUBLIC  locallib_fopenfromfar_
-call    locallib_fopen_
+PROC    locallib_fopenfromfar_nobuffer_   FAR
+PUBLIC  locallib_fopenfromfar_nobuffer_
+call    fopen_nobuffering_
 retf
 ENDP
 
+
+PROC    fopen_nobuffering_  NEAR
+PUBLIC  fopen_nobuffering_
+
+call    locallib_fopen_
+xchg    ax, bx
+or      byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag + 1], _IONBF SHR 8
+and     byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag + 1], (NOT (_IOFBF OR _IOLBF)) SHR 8
+xchg    ax, bx
+ret
+
+ENDP
 
 PROC    locallib_dosopen_  NEAR
 

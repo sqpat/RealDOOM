@@ -49,8 +49,8 @@ EXTRN W_CacheLumpNameDirect_:FAR
 EXTRN W_CacheLumpNumDirectFragment_:FAR
 EXTRN W_GetNumForName_:FAR
 EXTRN NetUpdate_:FAR
-EXTRN locallib_fopen_:NEAR
-EXTRN locallib_fopenfromfar_:FAR
+EXTRN fopen_nobuffering_:NEAR
+EXTRN locallib_fopenfromfar_nobuffer_:FAR
 EXTRN locallib_fclose_:NEAR
 EXTRN locallib_fclosefromfar_:NEAR
 
@@ -972,7 +972,7 @@ dw OFFSET _W_CacheLumpNameDirect_addr          , OFFSET W_CacheLumpNameDirect_
 dw OFFSET _W_CacheLumpNumDirectFragment_addr   , OFFSET W_CacheLumpNumDirectFragment_
 dw OFFSET _W_GetNumForName_addr                , OFFSET W_GetNumForName_
 dw OFFSET _NetUpdate_addr                      , OFFSET NetUpdate_
-dw OFFSET _fopen_addr                          , OFFSET locallib_fopenfromfar_
+dw OFFSET _fopen_addr                          , OFFSET locallib_fopenfromfar_nobuffer_
 dw OFFSET _fseek_addr                          , OFFSET locallib_fseekfromfar_
 dw OFFSET _fread_addr                          , OFFSET locallib_freadfromfar_
 dw OFFSET _fclose_addr                         , OFFSET locallib_fclosefromfar_
@@ -1051,7 +1051,7 @@ mov   ax, OFFSET _doomdata_bin_string
 
 call  CopyString13_
 mov   dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
-call  locallib_fopen_        ; fopen("DOOMDATA.BIN", "rb"); 
+call  fopen_nobuffering_        ; fopen("DOOMDATA.BIN", "rb"); 
 mov   di, ax ; di stores fp
 
 ;	fseek(fp, DATA_DOOMDATA_OFFSET, SEEK_SET);
@@ -1204,7 +1204,7 @@ call  Z_QuickMapPhysics_
 mov   ax, OFFSET _doomcode_filename
 call  CopyString13_
 mov   dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
-call  locallib_fopen_        ; fopen("DOOMDATA.BIN", "rb"); 
+call  fopen_nobuffering_        ; fopen("DOOMDATA.BIN", "rb"); 
 mov   si, ax ; si stores fp
 call  Z_DoRenderCodeLoad_
 

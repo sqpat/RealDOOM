@@ -22,6 +22,7 @@ INSTRUCTION_SET_MACRO
 
 EXTRN locallib_fread_nearsegment_:NEAR
 EXTRN locallib_fopen_:NEAR
+EXTRN fopen_nobuffering_:NEAR
 EXTRN locallib_fclose_:NEAR
 EXTRN locallib_setbuf_:NEAR
 EXTRN exit_:NEAR
@@ -1315,7 +1316,7 @@ movsb
 push    ss
 pop     ds
 mov     dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
-call    locallib_fopen_
+call    fopen_nobuffering_
 push    ax
 xchg    cx, ax
 lea     ax, [bp - 6]

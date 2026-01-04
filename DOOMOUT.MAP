@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/04 17:14:58
+Created on:       26/01/04 17:36:26
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -13,7 +13,7 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          0a17:0000            00001a40
+DGROUP                          0a18:0000            00001a40
 
 
 
@@ -54,19 +54,19 @@ p_setup_TEXT           CODE           AUTO           0000:6070       000011e6
 P_SETUPA_TEXT          CODE           AUTO           0000:7256       0000004f
 S_SBSFX_TEXT           CODE           AUTO           0000:72a6       00000d38
 R_MAIN_TEXT            CODE           AUTO           0000:7fde       000003db
-F_FILE_TEXT            CODE           AUTO           0000:83ba       00000e4d
-I_START_TEXT           CODE           AUTO           0000:9208       000002c4
-W_WAD_TEXT             CODE           AUTO           0000:94cc       0000024e
-V_VIDEO_TEXT           CODE           AUTO           0000:971a       00000615
-Z_ZONE_TEXT            CODE           AUTO           0000:9d30       00000437
-_NULL                  BEGDATA        DGROUP         0a17:0000       00000020
-_FIXEDDATA             DATA           DGROUP         0a19:0000       00001005
-_DATA                  DATA           DGROUP         0b19:0006       00000000
-DATA                   DATA           DGROUP         0b19:0006       00000000
-CONST                  DATA           DGROUP         0b19:0006       0000000d
-CONST2                 DATA           DGROUP         0b1a:0004       00000000
-_BSS                   BSS            DGROUP         0b1a:0004       00000002
-STACK                  STACK          DGROUP         0b1b:0000       00000a00
+F_FILE_TEXT            CODE           AUTO           0000:83ba       00000e5b
+I_START_TEXT           CODE           AUTO           0000:9216       000002c4
+W_WAD_TEXT             CODE           AUTO           0000:94da       0000024e
+V_VIDEO_TEXT           CODE           AUTO           0000:9728       00000615
+Z_ZONE_TEXT            CODE           AUTO           0000:9d3e       00000437
+_NULL                  BEGDATA        DGROUP         0a18:0000       00000020
+_FIXEDDATA             DATA           DGROUP         0a1a:0000       00001005
+_DATA                  DATA           DGROUP         0b1a:0006       00000000
+DATA                   DATA           DGROUP         0b1a:0006       00000000
+CONST                  DATA           DGROUP         0b1a:0006       0000000d
+CONST2                 DATA           DGROUP         0b1b:0004       00000000
+_BSS                   BSS            DGROUP         0b1b:0004       00000002
+STACK                  STACK          DGROUP         0b1c:0000       00000a00
 
 
                         +----------------+
@@ -424,118 +424,119 @@ Module: r_main.obj(r_main.ASM)
 0000:82db      R_PointToAngle2_
 0000:835d      R_DrawViewBorder_
 Module: f_file.obj(f_file.ASM)
-0000:8be0      locallib_fclosefromfar_
-0000:8ed0*     locallib_inner_lseek_
-0000:8c98      locallib_fclose_
-0000:8b09*     locallib_doopen_
-0000:8c30      doclose_
-0000:8d1b*     locallib_flush_
-0000:8fc2*     free_streamlink_
+0000:8bee      locallib_fclosefromfar_
+0000:8ede*     locallib_inner_lseek_
+0000:8ca6      locallib_fclose_
+0000:8a20      locallib_fopenfromfar_nobuffer_
+0000:8b17*     locallib_doopen_
+0000:8c3e      doclose_
+0000:8d29*     locallib_flush_
+0000:8fd0*     free_streamlink_
 0000:8684*     locallib_adjustamount_
-0000:90c2*     __GetIOMode_
-0000:8cf2*     locallib_reset_buffer_
+0000:8a24      fopen_nobuffering_
+0000:90d0*     __GetIOMode_
+0000:8d00*     locallib_reset_buffer_
 0000:8994      locallib_fread_
 0000:8992      locallib_fread_nearsegment_
 0000:85f9*     __nmemneed_
 0000:85fc*     locallib_linkupnewnearheap_
-0000:8cc3*     locallib_update_buffer_
-0000:8c0c      freefp_
+0000:8cd1*     locallib_update_buffer_
+0000:8c1a      freefp_
 0000:889e      malloc_
 0000:870e*     __ExpandDGROUP_
 0000:8481*     __MemFree
 0000:898e      locallib_freadfromfar_
-0000:8a32*     locallib_sopen_
-0000:90d6*     __SetIOMode_nogrow_
-0000:8a20      locallib_fopenfromfar_
+0000:8a40*     locallib_sopen_
+0000:90e4*     __SetIOMode_nogrow_
 0000:894e      locallib_fwrite_
-0000:9087      locallib_setbuf_
+0000:9095      locallib_setbuf_
 0000:83ba*     __MemAllocator
-0000:919d      locallib_fputc_
+0000:91ab      locallib_fputc_
 0000:87db      free_
-0000:9151      locallib_fgetc_
+0000:915f      locallib_fgetc_
 0000:83ba*     F_FILE_STARTMARKER_
-0000:8f25      locallib_ftell_
+0000:8f33      locallib_ftell_
 0000:86c9*     __brk_
-0000:8bcc      locallib_fopen_
-0000:8ecc      locallib_fseekfromfar_
-0000:8e13      locallib_fseek_
-0000:8fa6      get_new_streamlink_
-0000:9207*     F_FILE_ENDMARKER_
+0000:8bda      locallib_fopen_
+0000:8eda      locallib_fseekfromfar_
+0000:8e21      locallib_fseek_
+0000:8fb4      get_new_streamlink_
+0000:9215*     F_FILE_ENDMARKER_
 0000:8662*     __LastFree_
 Module: i_start.obj(i_start.ASM)
-0a17:0000*     __nullarea
-0000:927e      __GETDS
-0000:94cb      _big_code_
-0000:93f9      _realdoomstart_
-0000:93a3      exit_
-0000:92ac*     __Init_Argv_
-0000:93c9*     __exit_with_msg_
-0000:931e*     __InitFiles_
-0000:93c9*     __do_exit_with_msg_
-0000:94cc*     I_START_ENDMARKER_
-0000:9208*     I_START_STARTMARKER_
-0000:9208*     docloseall_
-0000:9398*     __FiniRtns
-0000:9286*     hackDS_
+0a18:0000*     __nullarea
+0000:928c      __GETDS
+0000:94d9      _big_code_
+0000:9407      _realdoomstart_
+0000:93b1      exit_
+0000:92ba*     __Init_Argv_
+0000:93d7*     __exit_with_msg_
+0000:932c*     __InitFiles_
+0000:93d7*     __do_exit_with_msg_
+0000:94da*     I_START_ENDMARKER_
+0000:9216*     I_START_STARTMARKER_
+0000:9216*     docloseall_
+0000:93a6*     __FiniRtns
+0000:9294*     hackDS_
 Module: w_wad.obj(w_wad.ASM)
-0000:96cf      W_CacheLumpNumDirect_
-0000:95e3      W_GetNumForNameFarString_
-0000:9653      W_ReadLump_
-0000:9610      W_LumpLength_
-0000:96d3      W_CacheLumpNumDirectWithOffset_
-0000:94f2      W_CheckNumForName_
-0000:95f9      W_GetNumForName_
-0000:971a*     W_WAD_ENDMARKER_
-0000:96c8      W_CacheLumpNameDirectFarString_
-0000:96eb      W_CacheLumpNumDirectFragment_
-0000:9586      SELFMODIFY_start_lump_for_search
-0000:94cc*     W_WAD_STARTMARKER_
-0000:95a8      SELFMODIFY_end_lump_for_search
-0000:94f0      W_CheckNumForNameFarString_
-0000:96c1      W_CacheLumpNameDirect_
-0000:94ec      W_CheckNumForNameFar_
+0000:96dd      W_CacheLumpNumDirect_
+0000:95f1      W_GetNumForNameFarString_
+0000:9661      W_ReadLump_
+0000:961e      W_LumpLength_
+0000:96e1      W_CacheLumpNumDirectWithOffset_
+0000:9500      W_CheckNumForName_
+0000:9607      W_GetNumForName_
+0000:9728*     W_WAD_ENDMARKER_
+0000:96d6      W_CacheLumpNameDirectFarString_
+0000:96f9      W_CacheLumpNumDirectFragment_
+0000:9594      SELFMODIFY_start_lump_for_search
+0000:94da*     W_WAD_STARTMARKER_
+0000:95b6      SELFMODIFY_end_lump_for_search
+0000:94fe      W_CheckNumForNameFarString_
+0000:96cf      W_CacheLumpNameDirect_
+0000:94fa      W_CheckNumForNameFar_
 Module: v_video.obj(v_video.ASM)
-0000:99dd*     CopyString9_
-0000:9c5d      V_DrawFullscreenPatch_
-0000:9a5d      R_FillBackScreen_
-0000:9c26      V_CopyRect_
-0000:98e4      V_DrawPatchDirect_
-0000:9722      V_DrawPatch_
-0000:9c0c      V_MarkRect_
-0000:9a53      R_FillBackScreen_ForceBufferRedraw_
-0000:9816*     V_DrawPatch5000Screen0_
+0000:99eb*     CopyString9_
+0000:9c6b      V_DrawFullscreenPatch_
+0000:9a6b      R_FillBackScreen_
+0000:9c34      V_CopyRect_
+0000:98f2      V_DrawPatchDirect_
+0000:9730      V_DrawPatch_
+0000:9c1a      V_MarkRect_
+0000:9a61      R_FillBackScreen_ForceBufferRedraw_
+0000:9824*     V_DrawPatch5000Screen0_
 Module: z_zone.obj(z_zone.ASM)
-0000:9d30      _codestartposition
-0000:9dc0      Z_QuickMapPhysics_
-0000:9d60      Z_QuickMapMusicPageFrame_
-0000:9d44      _musdriverstartposition
-0000:9e47      Z_QuickMapRender_4000To9000_
-0000:a0a9      Z_QuickMapUnmapAll_
-0000:9e75      Z_QuickMapRender_9000To6000_
-0000:9d97      Z_QuickMapWADPageFrame_
-0000:9f40      Z_QuickMapRenderPlanes_
-0000:9d78      Z_QuickMapSFXPageFrame_
-0000:9ea1      Z_QuickMapStatus_
-0000:9f2a*     Z_QuickMapScreen0_
-0000:9e06      Z_QuickMapRender_
-0000:9efe      Z_QuickMapScratch_7000_
-0000:9f14      Z_QuickMapScratch_4000_
-0000:9ed2      Z_QuickMapScratch_5000_
-0000:a13b*     CopyString13_Zonelocal_
-0000:9ee8      Z_QuickMapScratch_8000_
-0000:9fd4      Z_QuickMapMenu_
-0000:9fb9      Z_QuickMapPalette_
-0000:9e8b      Z_QuickMapRender4000_
-0000:9d44      _codestartposition_END
-0000:9fa3      Z_QuickMapMaskedExtraData_
-0000:a0f3      Z_SetOverlay_
-0000:a0e6      _doomcode_filename
-0000:a01d      Z_QuickMapByTaskNum_
-0000:9f6c      Z_QuickMapUndoFlatCache_
-0000:9deb      Z_QuickMapDemo_
-0000:9ffa      Z_QuickMapIntermission_
-0000:9e31*     Z_QuickMapRender_4000To9000_9000Only_
-0000:a02b      Z_QuickMapVisplanePage_
+0000:9d3e      _codestartposition
+0000:9dce      Z_QuickMapPhysics_
+0000:9d6e      Z_QuickMapMusicPageFrame_
+0000:9d52      _musdriverstartposition
+0000:9e55      Z_QuickMapRender_4000To9000_
+0000:a0b7      Z_QuickMapUnmapAll_
+0000:9e83      Z_QuickMapRender_9000To6000_
+0000:9da5      Z_QuickMapWADPageFrame_
+0000:9f4e      Z_QuickMapRenderPlanes_
+0000:9d86      Z_QuickMapSFXPageFrame_
+0000:9eaf      Z_QuickMapStatus_
+0000:9f38*     Z_QuickMapScreen0_
+0000:9e14      Z_QuickMapRender_
+0000:9f0c      Z_QuickMapScratch_7000_
+0000:9f22      Z_QuickMapScratch_4000_
+0000:9ee0      Z_QuickMapScratch_5000_
+0000:a149*     CopyString13_Zonelocal_
+0000:9ef6      Z_QuickMapScratch_8000_
+0000:9fe2      Z_QuickMapMenu_
+0000:9fc7      Z_QuickMapPalette_
+0000:9e99      Z_QuickMapRender4000_
+0000:9d52      _codestartposition_END
+0000:9fb1      Z_QuickMapMaskedExtraData_
+0000:a101      Z_SetOverlay_
+0000:a0f4      _doomcode_filename
+0000:a02b      Z_QuickMapByTaskNum_
+0000:9f7a      Z_QuickMapUndoFlatCache_
+0000:9df9      Z_QuickMapDemo_
+0000:a008      Z_QuickMapIntermission_
+0000:9e3f*     Z_QuickMapRender_4000To9000_9000Only_
+0000:a039      Z_QuickMapVisplanePage_
 
 
                         +--------------------+
@@ -549,6 +550,6 @@ Module: z_zone.obj(z_zone.ASM)
                         +-----------------------+
 
 Stack size:  0a00 (2560.)
-Memory size:  bbb0 (48048.)
-Entry point address: 0000:93f9
-Link time: 00:00.65
+Memory size:  bbc0 (48064.)
+Entry point address: 0000:9407
+Link time: 00:00.64
