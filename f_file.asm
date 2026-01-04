@@ -885,16 +885,13 @@ jmp   exit_malloc
 
 
 
+; NOTE: realdoom fwrites do not use buffer. they dump the whole file at once
+
 
 PROC    locallib_fwrite_ NEAR
 PUBLIC  locallib_fwrite_
 
 ; dx:ax = far source, bx = num bytes, cx = fp
-
-; bp - 2 = some sort of flag
-
-
-
 
 push      si
 push      di
@@ -903,107 +900,58 @@ mov       bp, sp
 
 
 mov       si, cx   ; fp
+mov       cx, bx   ; numbytes
 
 ; bx has size
 ; dx has segment
 
-mov       di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
-cmp       word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
+xchg      ax, dx   ; dx gets copy source ptr
+push      ax       ; push target segment
 
-xchg      ax, di   ; di gets copy source
 
-jne       skip_ioalloc_fwrite
-
-; si already fp
-call      locallib_ioalloc_
-
-skip_ioalloc_fwrite:
-
-mov       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag]
-and       ax, (_SFERR OR _EOF)
-push      ax  ; bp - 2 restore error/eof flags upon exit.
-push      dx  ; bp - 4 target segment
+mov       di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag]
+and       di, (_SFERR OR _EOF)
 
 and       byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT (_SFERR OR _EOF))
 
 do_binary_fwrite:
-continue_fwrite_loop:
 
-cmp       word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
-jne       do_copy_from_buffer_fwrite ; stuff left in buffer, copy that out first.
-; bx is bytes left
-cmp       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize]
-jb        do_copy_from_buffer_fwrite
 
 
 ;call      locallib_qwrite_
 ; inlined
 
-mov       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
-call      __GetIOMode_
-test      al, _APPEND
+; never do appends. always a whole write.
 
-je        skip_move_file_ptr_fwrite
-push      bx
 mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
-xor       dx, dx
-xor       cx, cx
-mov       ax, 04200h + SEEK_END ; 042h  ; Move file pointer using handle
-int       021h
-pop       bx
-jc        do_qwrite_fwrite_error
-
-skip_move_file_ptr_fwrite:
-push      bx
-
-mov       dx, di   ; ds:dx is pointer for writing.
-mov       cx, bx   ; num bytes to write
-mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
-mov       ds, word ptr [bp - 4]
+pop       ds  ; get target segment
+; DS:DX is now fwrite source
 mov       ah, 040h  ; Write file or device using handle
 int       021h
+
 push      ss
-pop       ds
-pop       bx
+pop       ds     ; restore ds
+
 
 jc        do_qwrite_fwrite_error
 
-cmp       ax, bx   ; did we write all the bytes?
-jne       get_qwrite_errno_fwrite
-
-skip_qwrite_errno_fwrite:
-
-mov       dx, ax
-cmp       ax, 0FFFFh
-je        failed_qwrite_fwrite
-test      ax, ax
-jne       iterate_and_continue_next_fwrite_cycle_also_add_to_di
-mov       word ptr ds:[_errno], 0Ch
-
-
-failed_qwrite_fwrite:
-or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
-
-iterate_and_continue_next_fwrite_cycle_also_add_to_di:
-add       di, dx
-iterate_and_continue_next_fwrite_cycle:
-sub       bx, dx
+cmp       ax, cx   ; did we write all the bytes?
 je        fwrote_everything
 
-test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
-je        continue_fwrite_loop
+bad_fwrite:
+; partial write??? how does this happen
+mov       word ptr ds:[_errno], 0Ch
+
+or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
+xor       cx, cx
 
 fwrote_everything:
-; dx known nonzero
-test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
-je        non_error_fwrite
-xor       dx, dx
-non_error_fwrite:
-mov       ax, word ptr [bp - 2]
-or        word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], ax
+; cx has bytes written 
+
+or        word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], di
 
 
-xchg      ax, dx ; dx had bytes copied.
+xchg      ax, cx ; cx had bytes copied.
 
 exit_fwrite:
 mov       sp, bp
@@ -1014,54 +962,10 @@ ret
 ; todo maybe remove?
 do_qwrite_fwrite_error:
 call locallib_set_errno_ptr_
-jmp  exit_fwrite
+jmp  bad_fwrite
 
-get_qwrite_errno_fwrite:
-mov  word ptr ds:[_errno], 0Ch
-jmp  skip_qwrite_errno_fwrite
 
-do_copy_from_buffer_fwrite:
 
-mov       dx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize]
-sub       dx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
-cmp       dx, bx
-jbe       dont_cap_bytesleft_fwrite
-mov       dx, bx
-
-dont_cap_bytesleft_fwrite:
-
-mov       ax, ds
-mov       es, ax
-xchg      ax, bx  ; ax holds bytes to copy.
-
-mov       bx, si
-mov       si, di
-
-mov       di, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_ptr]
-mov       cx, dx
-
-shr       cx, 1
-rep       movsw
-adc       cx, cx
-rep       movsb
-
-mov       word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], di
-mov       di, si
-mov       si, bx
-
-xchg      ax, bx  ; bx holds bytes to copy.
-
-or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
-add       word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], dx
-mov       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
-cmp       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize]
-je        hit_end_of_buffer_do_flush
-test      byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_IOFBF SHR 8)
-je        iterate_and_continue_next_fwrite_cycle
-hit_end_of_buffer_do_flush:
-
-call      locallib_flush_
-jmp       iterate_and_continue_next_fwrite_cycle
 
 
 
