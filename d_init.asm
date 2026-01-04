@@ -21,12 +21,13 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN locallib_fread_nearsegment_:NEAR
-EXTRN locallib_fopen_:NEAR
 EXTRN fopen_nobuffering_:NEAR
 EXTRN locallib_fclose_:NEAR
+EXTRN locallib_ftell_:NEAR
+EXTRN locallib_fseek_:NEAR
+EXTRN locallib_fread_:NEAR
 EXTRN locallib_setbuf_:NEAR
 EXTRN exit_:NEAR
-EXTRN locallib_fgetc_:NEAR
 
 EXTRN W_LumpLength_:FAR
 EXTRN W_CacheLumpNumDirect_:FAR
@@ -230,33 +231,66 @@ push    ss
 pop     ds
 
 mov     dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
-call    locallib_fopen_
+call    fopen_nobuffering_
 test    ax, ax
 je      do_string_error
 
 xchg    ax, si   ; si gets fp
-mov     cx, STRINGDATA_SEGMENT
+
+mov     ax, si
+mov     dx, 2   ; SEEK_END
+xor     cx, cx
+mov     bx, cx
+call    locallib_fseek_
+
+mov     ax, si
+call    locallib_ftell_   ; get filesize
+
+xchg    ax, di  ; di gets size
+
+mov     ax, si
+xor     dx, dx ; 0 SEEK_SET
+xor     cx, cx
+mov     bx, cx
+call    locallib_fseek_   ; back to start
+
+; dump it all to memory then process?
+xor     ax, ax
+mov     cx, si  ; fp
+mov     dx, STRINGDATA_SEGMENT
+mov     bx, di
+call    locallib_fread_
+
+xchg    ax, si           ; get fp back
+call    locallib_fclose_
+
+; now we want to modify in place...
+
+mov     cx, di  ; count
+xor     si, si
 xor     di, di
-mov     dx, di ; previous char
-mov     bx, STRINGOFFSETS_OFFSET
+mov     ax, STRINGDATA_SEGMENT
+mov     ds, ax
+mov     es, ax
+xor     ax, ax
+mov     bx, STRINGOFFSETS_OFFSET  ; target
+
+mov     word ptr ds:[bx], di;  ; make sure to write zero for the first one.
+
+; ds:bx is where the string pointers go
+; ds:si is where we are reasing
+; es:di is where we are writing to (getting rid of escapes etc)
 
 loop_next_stringfile_char:
-mov     ax, si
-call    locallib_fgetc_
-
-test    ax, ax
-js      done_parsing_string_file  ; 0FFFFh = EOF
+lodsb
 
 cmp     al, 0Dh   ; carriage return
 je      skip_write
-
-mov     es, cx
 
 cmp     al, 0Ah   ; newline
 je      terminate_string
 
 not_real_newline:
-
 
 cmp     al, 'n';
 jne     not_fake_newline
@@ -267,24 +301,27 @@ dec     di
 not_fake_newline:
 
 stosb
-xchg    ax, dx ; store prev char in dx
+xchg    ax, dx ; store prev char in dx (for prev-char stuff)
 
 
+continue_loop:
+loop    loop_next_stringfile_char
 
-jmp     loop_next_stringfile_char
-terminate_string:
-inc     bx
-inc     bx
-mov     word ptr es:[bx], di;  stringoffsets[j] = i;// +(page * 16384);
-skip_write:
-xor     dx, dx
-jmp     loop_next_stringfile_char
 done_parsing_string_file:
-xchg    ax, si
-call    locallib_fclose_
+push    ss
+pop     ds
 LEAVE_MACRO
 
 ret
+terminate_string:
+inc     bx
+inc     bx
+mov     word ptr ds:[bx], di;  stringoffsets[j] = i;// +(page * 16384);
+skip_write:
+xor     dx, dx
+jmp     continue_loop
+
+
 ENDP
 
 
