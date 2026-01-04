@@ -417,7 +417,7 @@ push      si
 push      di
 and       byte ptr ds:[___iob + (STD_ERR_STREAM_INDEX * (SIZE WATCOM_C_FILE) + WATCOM_C_FILE.watcom_file_flag + 1)], (NOT _TMPFIL) SHR 8 ; 0F8h
 mov       si, OFFSET ___iob
-or        byte ptr ds:[___iob + (STD_ERR_STREAM_INDEX * (SIZE WATCOM_C_FILE) + WATCOM_C_FILE.watcom_file_flag + 1)], 4
+or        byte ptr ds:[___iob + (STD_ERR_STREAM_INDEX * (SIZE WATCOM_C_FILE) + WATCOM_C_FILE.watcom_file_flag + 1)], (_IONBF SHR 8)
 
 check_next_file_for_init:
 mov       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag]

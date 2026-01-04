@@ -2497,34 +2497,6 @@ ENDP
 
 
 
-PROC    locallib_setvbuf_ NEAR
-
-push si
-push di
-mov  si, ax
-
-
-call locallib_chktty_
-
-mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize], FILE_BUFFER_SIZE
-
-mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
-mov  word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base], dx
-mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], dx
-and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], ((NOT (_IONBF OR _IOLBF OR _IOFBF)) SHR 8)  ; 0F8h
-or   word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], bx  ; mode
-test dx, dx
-jne  exit_setvbuf_return_0
-
-call locallib_ioalloc_
-exit_setvbuf_return_0:
-xor  ax, ax
-pop  di
-pop  si
-ret
-
-ENDP
-
 PROC  locallib_qwrite_ NEAR
 
 push cx
@@ -2586,27 +2558,6 @@ do_qread_error:
 call locallib_set_errno_ptr_
 ret
 
-ENDP
-
-; only used for STDOUT? revisit...
-
-PROC    locallib_setbuf_   NEAR
-PUBLIC  locallib_setbuf_
-
-push bx
-push cx
-mov  bx, _IOFBF
-test dx, dx
-jne  buff_not_null
-mov  bx, _IONBF
-buff_not_null:
-call locallib_setvbuf_  ;     setvbuf( fp, buf, mode, FILE_BUFFER_SIZE );
-pop  cx
-pop  bx
-ret
-
-
-ret
 ENDP
 
 

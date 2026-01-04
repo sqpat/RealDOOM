@@ -26,7 +26,6 @@ EXTRN locallib_fclose_:NEAR
 EXTRN locallib_ftell_:NEAR
 EXTRN locallib_fseek_:NEAR
 EXTRN locallib_fread_:NEAR
-EXTRN locallib_setbuf_:NEAR
 EXTRN exit_:NEAR
 
 EXTRN W_LumpLength_:FAR
@@ -786,9 +785,6 @@ jmp     exit_
 
 foundfile:
 
-mov     ax, STDOUT
-xor     dx, dx ; NULL
-call    locallib_setbuf_
 
 xor     ax, ax
 mov     byte ptr ds:[_modifiedgame], al
