@@ -28,7 +28,7 @@ EXTRN doclose_:NEAR
 EXTRN freefp_:NEAR
 EXTRN malloc_:NEAR
 EXTRN free_:NEAR
-EXTRN purgefp_:NEAR
+
 EXTRN get_new_streamlink_:NEAR
 
 
@@ -138,7 +138,7 @@ STD_PRN_STREAM_INDEX = 4
 
 SIZE_STD_STREAMS = NUM_STD_STREAMS * (SIZE WATCOM_C_FILE)
 
-
+; todo get rid of this once file buffers out of heap.
 
 PROC   docloseall_ NEAR
 PUBLIC docloseall_
@@ -217,26 +217,6 @@ jmp  label_136
 
 ENDP
 
-
-
-
-PROC    fcloseall_ NEAR
-PUBLIC  fcloseall_
-
-   mov       ax, NUM_STD_STREAMS
-   call      docloseall_
-   ret
-
-ENDP
-
-PROC    __full_io_exit_ NEAR
-PUBLIC  __full_io_exit_ 
-
-   xor       ax, ax
-   call      docloseall_
-   jmp       purgefp_
-
-ENDP
 
 
 
@@ -515,8 +495,9 @@ test      ax, ax
 je        exit_initfiles
 stdin_has_flags:
 call      get_new_streamlink_
-test      ax, ax
-je        malloc_streamlink_failed
+; i dont think we can run out of 10 streamlinks??
+; test      ax, ax
+; je        malloc_streamlink_failed
 mov       di, ax
 
 mov       ax, word ptr ds:[___OpenStreams]
@@ -538,13 +519,6 @@ pop       bx
 ret
 
 
-malloc_streamlink_failed:
-
-mov       bx, 1
-; __fatal_runtime_error( "Not enough memory to allocate file structures", 1 );
-mov       ax, 01002h  ; todo put some string here? or ignore the error
-mov       dx, ds
-jmp       __fatal_runtime_error_
 
 
 ENDP
@@ -573,10 +547,10 @@ PUBLIC  __FiniRtns
 push  ds
 call  __GETDS
 
-call  __full_io_exit_
+xor       ax, ax
+call      docloseall_
 
-
-pop   ds
+pop        ds
 ret  
 
 ENDP
@@ -655,44 +629,16 @@ int        021h
 
 ENDP
 
-__fatal_runtime_error_:
-PUBLIC __fatal_runtime_error_
-mov  ax, ax
-mov  cx, ax
-jmp  __do_exit_with_msg_
-
-ENDP
 
 
 
-PROC   _exit_ NEAR
-PUBLIC _exit_
-
-mov   dx, ax
-mov   ax, dx
-jmp   __exit_
-
-ENDP
-
-PROC   __null_ovl_rtn FAR
-PUBLIC __null_ovl_rtn
-ENDP
-PROC   __null_FPE_rtn FAR
-PUBLIC __null_FPE_rtn
-ENDP
-PROC   __null_int23_exit_ FAR
-PUBLIC __null_int23_exit_
-retf
-ENDP
-
-
-ENDP
 
 
 ; PSP offsets
 MEMTOP    = 2
 CMDLDATA  = 81h
 
+; PROGRAM ENTRY POINT FROM MS-DOS!!!
 
 PROC   _realdoomstart_ NEAR
 PUBLIC _realdoomstart_
@@ -729,7 +675,12 @@ jb         enuf_mem
 mov        bx, 1
 mov        ax, OFFSET _NO_MEMORY_STR
 mov        dx, cs
-jmp        __fatal_runtime_error_
+; __fatal_runtime_error_
+mov  cx, ax
+jmp  __do_exit_with_msg_
+
+
+ENDP
 
 enuf_mem:
 mov        ax, es               
@@ -796,22 +747,8 @@ mov        ax, 0FFh
 call  __GETDS
 call  __InitFiles_
 call  __Init_Argv_
-
-;jmp        __CMain
-
-ENDP
-
-PROC    __CMain NEAR
-PUBLIC  __CMain
-
-
-push bp
-mov  bp, sp
-
-main_:
-PUBLIC main_
 call  hackDS_
-call  D_DoomMain_
+jmp   D_DoomMain_
 
 
 ENDP

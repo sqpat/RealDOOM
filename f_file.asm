@@ -1777,24 +1777,10 @@ ret
 
 ENDP
 
-PROC    purgefp_  NEAR
-PUBLIC  purgefp_  
-push bx
-loop_check_next_fp_for_purge:
-mov  bx, word ptr ds:[___ClosedStreams]
-test bx, bx
-je   exit_purge_fp
-mov  ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_next]
-mov  word ptr ds:[___ClosedStreams], ax
-mov  ax, bx
-call free_streamlink_
-jmp  loop_check_next_fp_for_purge
-exit_purge_fp:
-pop  bx
-ret 
 
 
-ENDP
+
+
 
 
 PROC    doclose_  NEAR
