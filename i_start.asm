@@ -283,7 +283,7 @@ ENDP
 PROC    splitparms_ NEAR
 PUBLIC  splitparms_
 
-; dx gets return endptr in return result
+; bx gets return endptr in return result
 
 ; todo mega rewrite with lods etc.
 
@@ -386,8 +386,9 @@ jne       found_space_delimiter_in_param_name
 
 found_end_of_params:
 
-xchg      ax, cx  ; arg count
-mov       dx, si  ; this return endptr value goes in dx
+
+xchg      ax, cx  ; arg count ; dont need count.
+mov       bx, si  ; this return endptr value goes in bx
 
 pop       bp
 pop       di
@@ -415,34 +416,26 @@ mov       si, word ptr cs:[__LpCmdLine]
 xor       bx, bx
 call      splitparms_
 
-;  dx has endptr already
 
-; todo clean this up...
-inc       ax
-sub       dx, si
-shl       ax, 1
-mov       cx, dx
-add       dx, 2
-add       ax, 2
-and       dl, 0FEh ; make it even?
-add       ax, dx
-xor       di, di
-inc       ax
-inc       cx
-and       al, 0FEh ; max size of command line
-mov       bx, dx
+; ax has arg count
+; vx has endptr 
+
+; argc was used for size which was used for malloc which we dont do anymore.
+
+
+sub       bx, si   ; bx has command line end, si has start. get length by subtracting start.
+inc       bx
+mov       cx, bx
+
+; round up to even 
+inc       bx  
+and       bl, 0FEh 
 
 ; todo check size
-mov       ax, OFFSET ___commandline_copy
+mov       dx, OFFSET ___commandline_copy
 
-
-xchg      ax, dx
-xor       ax, ax
-test      dx, dx
-je        done_parsing_argv
 
 mov       di, dx
-
 push      ds
 pop       es
 shr       cx, 1
