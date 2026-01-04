@@ -47,9 +47,13 @@ EXTRN TryRunTics_:NEAR
 EXTRN FastDiv3216u_:FAR
 EXTRN Z_SetOverlay_:FAR
 EXTRN locallib_fopen_:NEAR
-EXTRN locallib_fgetc_:NEAR
+EXTRN fopen_nobuffering_:NEAR
 EXTRN locallib_fputc_:NEAR
 EXTRN locallib_fclose_:NEAR
+EXTRN locallib_fread_:NEAR
+EXTRN locallib_fseek_:NEAR
+EXTRN locallib_ftell_:NEAR
+
 
 
 EXTRN I_WaitVBL_:FAR
@@ -1238,7 +1242,8 @@ db  0, 0, 0
 
 
 
-
+TEMP_AREA_SEGMENT = 04000h
+; just load deafults into this space to avoid a file buffer 
 
 PROC M_LoadDefaults_  NEAR
 PUBLIC M_LoadDefaults_
@@ -1319,49 +1324,92 @@ call  CopyString13_
 
 
 
-mov   dl, (FILEFLAG_READ)
-;mov   ax, OFFSET _filename_argument    ; already set above
-call  locallib_fopen_
+mov     dl, (FILEFLAG_READ)
+;mov    ax, OFFSET _filename_argument    ; already set above
+call    fopen_nobuffering_
 
-mov   bx, ax
-mov   word ptr [bp + 076h], ax          ; store fopen fp file handle
-test  ax, ax
-jne   defaults_file_loaded
-; fall thru to bad file
-defaults_file_closed:
+test    ax, ax
+je      exit_mloaddefaults
 
-exit_mloaddefaults:
-lea   sp, [bp + 080h]
-pop   bp
-POPA_NO_AX_MACRO
 
-ret
+xchg    ax, si   ; si gets fp
+
+mov     ax, si
+mov     dx, 2   ; SEEK_END
+xor     cx, cx
+mov     bx, cx
+call    locallib_fseek_
+
+mov     ax, si
+call    locallib_ftell_   ; get filesize
+
+xchg    ax, di  ; di gets size
+
+mov     ax, si
+xor     dx, dx ; 0 SEEK_SET
+xor     cx, cx
+mov     bx, cx
+call    locallib_fseek_   ; back to start
+
+; dump it all to memory then process?
+xor     ax, ax
+mov     cx, si  ; fp
+mov     dx, TEMP_AREA_SEGMENT
+mov     bx, di
+call    locallib_fread_
+
+xchg    ax, si           ; get fp back
+call    locallib_fclose_
+
+
+
+
+
+
 
 
 defaults_file_loaded:
 
+; cx has length
+mov     cx, di  ; size for loop
+xor     si, si
+
+
+
+
+
 ; bx is file pointer..
-xor   al, al
+xor   ax, ax
 ;		int8_t readphase = 0; // getting param 0
 ;		int8_t defindex = 0;
 ;		int8_t strparmindex = 0;
+
+; todo make these flags in a single byte (bl/bh?)
+
 mov   byte ptr [bp + 07Ah], al          ; readphase
 mov   byte ptr [bp + 07Ch], al
 mov   byte ptr [bp + 07Eh], al          ; strparmindex
-test  byte ptr ds:[bx + 6], 010h    ; check feof
-jne   end_loop_close_file
-handle_next_char:
-mov   ax, word ptr [bp + 076h]
-call  locallib_fgetc_
-mov   dl, al
+
+
+loop_handle_next_char:
+push    cx
+mov     ax, TEMP_AREA_SEGMENT
+mov     es, ax                  ; todo make not necessary
+
+lods  byte ptr es:[si]
+mov   dl, al    ; todo  dont do this
+xor   ah, ah
 cmp   al, 020h                    ; space charcater
-jne   not_space
+je    is_tab_or_space
+cmp   al, 9                           ; tab characters \t
+jne   is_not_tab_or_space
+
 is_tab_or_space:
-mov   ah, 1
-checked_for_tab_or_space:
+inc   ah
+is_not_tab_or_space:
 ; ah = 1 if whitespace.
 ; dl is copy of char...
-cmp   dl, 0Ah                     ; line feed character \n
+cmp   al, 0Ah                     ; line feed character \n
 jne   not_linefeed
 is_linefeed_or_carriage_return:
 mov   al, 1
@@ -1376,24 +1424,29 @@ test  al, al
 jne   readphase_0_whitespace_or_newline
 mov   al, byte ptr [bp + 07Ch]
 cbw  
-mov   si, ax
+mov   di, ax
 inc   byte ptr [bp + 07Ch]
-mov   byte ptr [bp + si - 02Ah], dl
+mov   byte ptr [bp + di - 02Ah], dl
 character_finished_handling:
-mov   bx, word ptr [bp + 076h]
-test  byte ptr ds:[bx + 6], 010h        ; test feof
-je    handle_next_char      
+
+pop   cx
+loop  loop_handle_next_char
+
 end_loop_close_file:
-mov   ax, word ptr [bp + 076h]      ; retrieve FP
-call  locallib_fclose_
-jmp   defaults_file_closed
-not_space:
-cmp   al, 9                           ; tab characters \t
-je    is_tab_or_space
-xor   ah, ah
-jmp   checked_for_tab_or_space
+
+; fall thru to bad file
+defaults_file_closed:
+
+exit_mloaddefaults:
+lea   sp, [bp + 080h]
+pop   bp
+POPA_NO_AX_MACRO
+
+ret
+
+
 not_linefeed:
-cmp   dl, 0Dh                         ; carriage return characters \r
+cmp   al, 0Dh                         ; carriage return characters \r
 je    is_linefeed_or_carriage_return
 xor   al, al
 jmp   checked_for_endline
@@ -1402,9 +1455,9 @@ test  ah, ah
 je    readphase_0_whitespace
 mov   al, byte ptr [bp + 07Ch]
 cbw  
-mov   si, ax
+mov   di, ax
 mov   byte ptr [bp + 07Ah], 1
-mov   byte ptr [bp + si - 02Ah], 0
+mov   byte ptr [bp + di - 02Ah], 0
 jmp   character_finished_handling
 readphase_0_whitespace:
 mov   byte ptr [bp + 07Ah], ah
@@ -1420,56 +1473,52 @@ test  al, al
 jne   hit_newline
 mov   al, byte ptr [bp + 07Eh]
 cbw  
-mov   si, ax
+mov   di, ax
 inc   byte ptr [bp + 07Eh]
-mov   byte ptr [bp + si + 026h], dl
+mov   byte ptr [bp + di + 026h], dl
 jmp   character_finished_handling
 hit_newline:
 mov   al, byte ptr [bp + 07Eh]      ; get strparmindex
 cbw  
-mov   si, ax
+mov   di, ax
 xor   al, al
 mov   byte ptr [bp + 07Ah], al
 mov   byte ptr [bp + 07Ch], al
-mov   byte ptr [bp + si + 026h], al
+mov   byte ptr [bp + di + 026h], al
 cmp   byte ptr [bp + 07Eh], 0
 je    character_finished_handling
 ; prepare to get param...
 mov   byte ptr [bp + 07Eh], al
 xor   ax, ax
 mov   di, ax
-mov   si, ax
 mov   cx, ax
-
-;lea   ax, [bp + 026h]
-;call  sscanf_uint8_                 ; todo inline this
 
 
 read_next_digit:
 mov   cl, 10
 mul   cl         ; mul by 10
-mov   cl, byte ptr [bp + si + 026h];
+mov   cl, byte ptr [bp + di + 026h];
 add   ax, cx     ; add next char
 sub   ax, 030h   ; but sub '0' from char
-inc   si
-cmp   byte ptr [bp + si + 026h], 0 ; check for null term
+inc   di
+cmp   byte ptr [bp + di + 026h], 0 ; check for null term
 jne   read_next_digit
 
 
 
 mov   word ptr [bp + 078h], ax
-xor   si, si
+xor   di, di
 
 scan_next_default_name_for_match:
 lea   ax, [bp - 02Ah]
 mov   cx, cs
 mov   dx, ds
-mov   bx, word ptr cs:[si + _defaults + DEFAULT_T.default_name_ptr]
+mov   bx, word ptr cs:[di + _defaults + DEFAULT_T.default_name_ptr]
 
 call  locallib_strcmp_
 test  ax, ax
 jne   no_match_increment_default
-mov   bx, word ptr cs:[si + _defaults + DEFAULT_T.default_loc_ptr]
+mov   bx, word ptr cs:[di + _defaults + DEFAULT_T.default_loc_ptr]
 mov   ax, word ptr [bp + 078h]
 ; if one of the 16 bit ones then write word..
 cmp   bx, OFFSET _snd_SBport
@@ -1483,10 +1532,11 @@ do_word_write:
 mov   word ptr ds:[bx], ax
 jmp   character_finished_handling
 no_match_increment_default:
-inc   di
-add   si, (SIZE DEFAULT_T)
-cmp   di, NUM_DEFAULTS
+
+add   di, (SIZE DEFAULT_T)
+cmp   di, OFFSET _defaults +(NUM_DEFAULTS * (SIZE DEFAULT_T))
 jl    scan_next_default_name_for_match
+
 jmp   character_finished_handling
 
 
