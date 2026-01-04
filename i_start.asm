@@ -329,8 +329,8 @@ mov       ah, 2
 jmp       get_next_word_character
 
 found_end_of_word:
-test      bp, bp
-je        argv_0
+
+
 
 ; 2nd call, we store argv values.
 mov       di, cx
@@ -371,18 +371,11 @@ cmp       byte ptr ds:[si - 3], 05Ch; backslash '\'
 je        get_next_word_character
 
 this_character_not_special:
-test      bp, bp
-je        get_next_word_character
 
-
-mov       byte ptr ds:[bx], al
+mov       byte ptr ds:[bx], al   ; write character having removed quotes etc.
 inc       bx
 jmp       get_next_word_character
 
-argv_0:
-inc       cx
-test      al, al
-jne       found_space_delimiter_in_param_name
 
 found_end_of_params:
 
@@ -411,46 +404,45 @@ PROC   __Init_Argv_ NEAR
 PUBLIC __Init_Argv_ 
 
 mov       si, word ptr cs:[__LpCmdLine]
+mov       di, si
+push      ds
+pop       es
+mov       cx, 0FEh  ; max len of cmd line?
+xor       ax, ax
+repne     scasb
 
+mov       bx, di    ; bx has endptr
 
-xor       bx, bx
-call      splitparms_
-
-
-; ax has arg count
-; vx has endptr 
-
-; argc was used for size which was used for malloc which we dont do anymore.
 
 
 sub       bx, si   ; bx has command line end, si has start. get length by subtracting start.
-inc       bx
-mov       cx, bx
 
+inc       bx       ; add one extra byte
 ; round up to even 
 inc       bx  
 and       bl, 0FEh 
 
-; todo check size
+mov       cx, bx  ; cx known even too. can rep movsw
+shr       cx, 1
+
+; bx is offset to start of argv
+
 mov       dx, OFFSET ___commandline_copy
 
 
 mov       di, dx
-push      ds
-pop       es
-shr       cx, 1
 rep       movsw
-adc       cx, cx
-rep       movsb
+
 mov       di, dx
 mov       ax, word ptr cs:[__LpPgmName]
-add       di, bx
+add       di, bx  ; offset to argv
 mov       bx, di
 stosw
-xchg      bx, di
+xchg      bx, di  ; bx is argv[1], di is argv[0]
 
-mov       si, dx
-call      splitparms_
+mov       si, word ptr cs:[__LpCmdLine] ; restore this.
+
+call      splitparms_  ; record argv
 inc       ax
 mov       bx, ax
 shl       bx, 1
