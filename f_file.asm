@@ -2738,68 +2738,6 @@ ENDP
 
 
 
-
-PROC    locallib_fgetc_   NEAR
-PUBLIC  locallib_fgetc_
-
-push bx
-push si
-mov  si, ax
-actually_get_char:
-dec  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
-jl   increase_buffer
-mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
-xor  ax, ax
-mov  al, byte ptr ds:[bx]
-inc  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
-
-check_if_2nd_get_necessary:
-cmp  al, DOS_EOF_CHAR    ; todo?
-jne  exit_fgetc
-mov  ax, 0FFFFh
-or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _EOF
-
-exit_fgetc:
-pop  si
-pop  bx
-ret 
-
-exit_fgetc_return_error:
-mov  ax, 0FFFFh
-pop  si
-pop  bx
-ret 
-increase_buffer:
-
-;call locallib_filbuf_
-; inlined
-
-call locallib_fill_buffer_
-test ax, ax
-je   return_eof
-mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
-xor  ax, ax
-mov  al, byte ptr ds:[bx] ; get this before incrementing file_ptr.
-dec  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
-inc  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
-jmp  check_if_2nd_get_necessary
-
-return_eof:
-dec ax  ; since ax is 0 dec is -1 
-jmp  exit_fgetc
-
-fgetc_error_handler:
-mov  word ptr ds:[_errno], 4
-mov  ax, 0FFFFh
-or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
-jmp  exit_fgetc
-
-
-
-ret
-ENDP
-
-
 PROC    locallib_fputc_   NEAR
 PUBLIC  locallib_fputc_
 
@@ -3018,6 +2956,71 @@ ret
 
 ENDP
 @
+
+
+COMMENT @
+
+PROC    locallib_fgetc_   NEAR
+PUBLIC  locallib_fgetc_
+
+push bx
+push si
+mov  si, ax
+actually_get_char:
+dec  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+jl   increase_buffer
+mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
+xor  ax, ax
+mov  al, byte ptr ds:[bx]
+inc  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
+
+check_if_2nd_get_necessary:
+cmp  al, DOS_EOF_CHAR    ; todo?
+jne  exit_fgetc
+mov  ax, 0FFFFh
+or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _EOF
+
+exit_fgetc:
+pop  si
+pop  bx
+ret 
+
+exit_fgetc_return_error:
+mov  ax, 0FFFFh
+pop  si
+pop  bx
+ret 
+increase_buffer:
+
+;call locallib_filbuf_
+; inlined
+
+call locallib_fill_buffer_
+test ax, ax
+je   return_eof
+mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
+xor  ax, ax
+mov  al, byte ptr ds:[bx] ; get this before incrementing file_ptr.
+dec  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+inc  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
+jmp  check_if_2nd_get_necessary
+
+return_eof:
+dec ax  ; since ax is 0 dec is -1 
+jmp  exit_fgetc
+
+fgetc_error_handler:
+mov  word ptr ds:[_errno], 4
+mov  ax, 0FFFFh
+or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
+jmp  exit_fgetc
+
+
+
+ret
+ENDP
+@
+
 PROC    F_FILE_ENDMARKER_ NEAR
 PUBLIC  F_FILE_ENDMARKER_
 ENDP
