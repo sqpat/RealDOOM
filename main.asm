@@ -1283,7 +1283,7 @@ mov   dx, word ptr ds:[_myargc]
 dec   dx
 cmp   ax, dx
 jge   set_default_defaultsfilename
-mov   si, word ptr ds:[_myargv]
+mov   si, OFFSET _myargv
 add   ax, ax
 add   si, ax
 mov   si, word ptr ds:[si + 2]   ; pointer to myargv for default filename

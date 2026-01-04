@@ -212,14 +212,13 @@ jge  exit_check_parm_return_0
 
 loop_check_next_parm:
 sal  si, 1
-mov  bx, word ptr ds:[_myargv] ; myargv
-mov  ax, word ptr ds:[bx + si] ; myargv[i]
+mov  ax, word ptr ds:[_myargv + si] ; myargv[i]
 mov  dx, ds
 call locallib_strlwr_   ;  locallib_strlwr(myargv[i]);
 
 mov  ax, di
 mov  dx, bp
-mov  bx, word ptr ds:[bx + si] ; myargv[i]
+mov  bx, word ptr ds:[_myargv + si] ; myargv[i]
 mov  cx, ds
 
 call locallib_strcmp_ ; todo carry return?      ; if ( !locallib_strcmp(check, myargv[i]) )

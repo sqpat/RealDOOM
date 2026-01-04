@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/04 11:31:34
+Created on:       26/01/04 13:27:06
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -69,17 +69,17 @@ P_USER_TEXT            CODE           AUTO           21a6:85bc       00000437
 P_INFO_TEXT            CODE           AUTO           21a6:89f4       00000345
 AM_MAP_TEXT            CODE           AUTO           21a6:8d3a       00000b37
 S_SOUND_TEXT           CODE           AUTO           21a6:9872       0000051e
-D_INIT_TEXT            CODE           AUTO           2b7f:0000       00000a4a
-S_INIT_TEXT            CODE           AUTO           2b7f:0a4a       00000562
-ST_INIT_TEXT           CODE           AUTO           2b7f:0fac       00000203
-R_INIT_TEXT            CODE           AUTO           2b7f:11b0       000007a8
-W_INIT_TEXT            CODE           AUTO           2b7f:1958       0000016e
-I_INIT_TEXT            CODE           AUTO           2b7f:1ac6       0000019b
-Z_INIT_TEXT            CODE           AUTO           2b7f:1c62       000007d0
-S_SBINIT_TEXT          CODE           AUTO           2b7f:2432       000002e5
-P_INIT_TEXT            CODE           AUTO           2b7f:2718       00000274
-I_QUIT_TEXT            CODE           AUTO           2b7f:298c       000001b1
-I_IBM_TEXT             CODE           AUTO           2b7f:2b3e       00000051
+D_INIT_TEXT            CODE           AUTO           2b7f:0000       00000a44
+S_INIT_TEXT            CODE           AUTO           2b7f:0a44       00000562
+ST_INIT_TEXT           CODE           AUTO           2b7f:0fa6       00000203
+R_INIT_TEXT            CODE           AUTO           2b7f:11aa       000007a8
+W_INIT_TEXT            CODE           AUTO           2b7f:1952       0000016e
+I_INIT_TEXT            CODE           AUTO           2b7f:1ac0       0000019b
+Z_INIT_TEXT            CODE           AUTO           2b7f:1c5c       000007d0
+S_SBINIT_TEXT          CODE           AUTO           2b7f:242c       000002e5
+P_INIT_TEXT            CODE           AUTO           2b7f:2712       00000274
+I_QUIT_TEXT            CODE           AUTO           2b7f:2986       000001b1
+I_IBM_TEXT             CODE           AUTO           2b7f:2b38       00000051
 bingen_TEXT            CODE           AUTO           2b7f:2b90       00000570
 D_NET_TEXT             CODE           AUTO           2b7f:3100       000000b2
 G_GAME_TEXT            CODE           AUTO           2b7f:31b2       00000394
@@ -91,7 +91,7 @@ HU_LIB_TEXT            CODE           AUTO           2b7f:435a       00000141
 D_DMX_TEXT             CODE           AUTO           2b7f:449c       0000012e
 D_INT_TEXT             CODE           AUTO           2b7f:45ca       00000144
 MATH_TEXT              CODE           AUTO           2b7f:470e       0000050c
-MAIN_TEXT              CODE           AUTO           2b7f:4c1a       0000168a
+MAIN_TEXT              CODE           AUTO           2b7f:4c1a       00001689
 G_SETUP_TEXT           CODE           AUTO           2b7f:62a4       0000020b
 R_SETUP_TEXT           CODE           AUTO           2b7f:64b0       0000032c
 ST_SETUP_TEXT          CODE           AUTO           2b7f:67dc       00000125
@@ -725,81 +725,81 @@ Module: s_sound.obj(s_sound.ASM)
 21a6:9c4c*     S_UpdateSounds_
 21a6:9872*     S_SOUND_STARTMARKER_
 Module: d_init.obj(d_init.ASM)
-2b7f:0988      I_InitGraphics_
-2b7f:0a4a*     D_INIT_ENDMARKER_
+2b7f:0982      I_InitGraphics_
+2b7f:0a44*     D_INIT_ENDMARKER_
 2b7f:0000      D_INIT_STARTMARKER_
-2b7f:0a0f      G_BeginRecording_
+2b7f:0a09      G_BeginRecording_
 2b7f:0375      D_DoomMain2_
 Module: s_init.obj(s_init.ASM)
-2b7f:0fac      S_INIT_ENDMARKER_
-2b7f:0a4a      S_INIT_STARTMARKER_
-2b7f:0a4e*     LoadSFXWadLumps_
-2b7f:0f7e*     I_GetSfxLumpNum_
+2b7f:0fa6      S_INIT_ENDMARKER_
+2b7f:0a44      S_INIT_STARTMARKER_
+2b7f:0a48*     LoadSFXWadLumps_
+2b7f:0f78*     I_GetSfxLumpNum_
 Module: st_init.obj(st_init.ASM)
-2b7f:0fac*     ST_INIT_STARTMARKER_
-2b7f:11af*     ST_INIT_ENDMARKER_
-2b7f:104f      ST_Init_
+2b7f:0fa6*     ST_INIT_STARTMARKER_
+2b7f:11a9*     ST_INIT_ENDMARKER_
+2b7f:1049      ST_Init_
 Module: r_init.obj(r_init.ASM)
-2b7f:1519*     R_InitTextures_
-2b7f:17a1      R_Init_
-2b7f:123a*     R_GenerateLookup_
-2b7f:1914*     W_CacheLumpNumDirectSmall_
+2b7f:1513*     R_InitTextures_
+2b7f:179b      R_Init_
+2b7f:1234*     R_GenerateLookup_
+2b7f:190e*     W_CacheLumpNumDirectSmall_
 Module: w_init.obj(w_init.ASM)
-2b7f:1958*     W_INIT_STARTMARKER_
-2b7f:1ac6*     W_INIT_ENDMARKER_
-2b7f:1984      W_AddFile_
+2b7f:1952*     W_INIT_STARTMARKER_
+2b7f:1ac0*     W_INIT_ENDMARKER_
+2b7f:197e      W_AddFile_
 Module: i_init.obj(i_init.ASM)
-2b7f:1c61*     I_INIT_ENDMARKER_
-2b7f:1b42      I_Init_
-2b7f:1ac6*     I_INIT_STARTMARKER_
+2b7f:1c5b*     I_INIT_ENDMARKER_
+2b7f:1b3c      I_Init_
+2b7f:1ac0*     I_INIT_STARTMARKER_
 Module: z_init.obj(z_init.ASM)
-2b7f:1fe8*     Z_ReadFileRegionWithIndex_
-2b7f:1c62      _doomdata_bin_string
-2b7f:2432*     Z_INIT_ENDMARKER_
-2b7f:225c      Z_LoadBinaries_
-2b7f:1f63      Z_GetEMSPageMap_
-2b7f:202a*     Z_DoRenderCodeLoad_
-2b7f:1c62*     Z_INIT_STARTMARKER_
-2b7f:1eb7      Z_InitEMS_
+2b7f:1fe2*     Z_ReadFileRegionWithIndex_
+2b7f:1c5c      _doomdata_bin_string
+2b7f:242c*     Z_INIT_ENDMARKER_
+2b7f:2256      Z_LoadBinaries_
+2b7f:1f5d      Z_GetEMSPageMap_
+2b7f:2024*     Z_DoRenderCodeLoad_
+2b7f:1c5c*     Z_INIT_STARTMARKER_
+2b7f:1eb1      Z_InitEMS_
 Module: s_sbinit.obj(s_sbinit.ASM)
-2b7f:25a6      SB_SetPlaybackRate_
-2b7f:26ee      SB_StartInit_
-2b7f:2497      _SB_DSP_Version
-2b7f:2717*     S_SBINIT_ENDMARKER_
-2b7f:2680*     SB_InitCard_
-2b7f:24a9*     SB_SaveVoiceVolume_
-2b7f:2432*     S_SBINIT_STARTMARKER_
-2b7f:249a*     SB_ReadMixer_
-2b7f:2641*     SB_GetDSPVersion_
-2b7f:24d1      SB_DSP1xx_BeginPlayback_
-2b7f:24d8*     SB_DSP2xx_BeginPlayback_
-2b7f:24ed*     SB_DSP4xx_BeginPlayback_
-2b7f:2499      _SB_CardActive
-2b7f:25e4*     SB_SetupPlayback_
-2b7f:2502*     DMA_SetupTransfer_
-2b7f:2583*     SB_EnableInterrupt_
+2b7f:25a0      SB_SetPlaybackRate_
+2b7f:26e8      SB_StartInit_
+2b7f:2491      _SB_DSP_Version
+2b7f:2711*     S_SBINIT_ENDMARKER_
+2b7f:267a*     SB_InitCard_
+2b7f:24a3*     SB_SaveVoiceVolume_
+2b7f:242c*     S_SBINIT_STARTMARKER_
+2b7f:2494*     SB_ReadMixer_
+2b7f:263b*     SB_GetDSPVersion_
+2b7f:24cb      SB_DSP1xx_BeginPlayback_
+2b7f:24d2*     SB_DSP2xx_BeginPlayback_
+2b7f:24e7*     SB_DSP4xx_BeginPlayback_
+2b7f:2493      _SB_CardActive
+2b7f:25de*     SB_SetupPlayback_
+2b7f:24fc*     DMA_SetupTransfer_
+2b7f:257d*     SB_EnableInterrupt_
 Module: p_init.obj(p_init.ASM)
-2b7f:298c*     P_INIT_ENDMARKER_
-2b7f:276a      P_Init_
-2b7f:2718*     P_INIT_STARTMARKER_
-2b7f:2719*     R_InstallSpriteLump_
+2b7f:2986*     P_INIT_ENDMARKER_
+2b7f:2764      P_Init_
+2b7f:2712*     P_INIT_STARTMARKER_
+2b7f:2713*     R_InstallSpriteLump_
 Module: i_quit.obj(i_quit.ASM)
-2b7f:2a9b*     I_ShutdownWads_
-2b7f:2b3d*     I_QUIT_ENDMARKER_
-2b7f:29cf*     I_ShutdownMouse_
-2b7f:298c*     I_QUIT_STARTMARKER_
-2b7f:2a7a*     hackDSBack_
-2b7f:2993*     I_ShutdownSound_
-2b7f:2b02      I_Quit_
-2b7f:2a33*     zeroConventional_
-2b7f:29db*     Z_ShutdownEMS_
-2b7f:2b21      I_Error_
-2b7f:29b7*     I_ShutdownGraphics_
+2b7f:2a95*     I_ShutdownWads_
+2b7f:2b37*     I_QUIT_ENDMARKER_
+2b7f:29c9*     I_ShutdownMouse_
+2b7f:2986*     I_QUIT_STARTMARKER_
+2b7f:2a74*     hackDSBack_
+2b7f:298d*     I_ShutdownSound_
+2b7f:2afc      I_Quit_
+2b7f:2a2d*     zeroConventional_
+2b7f:29d5*     Z_ShutdownEMS_
+2b7f:2b1b      I_Error_
+2b7f:29b1*     I_ShutdownGraphics_
 Module: i_ibm.obj(i_ibm.ASM)
-2b7f:2b3e*     I_IBM_STARTMARKER_
-2b7f:2b3e      I_WaitVBL_
-2b7f:2b8f*     I_IBM_ENDMARKER_
-2b7f:2b5e      I_ReadMouse_
+2b7f:2b38*     I_IBM_STARTMARKER_
+2b7f:2b38      I_WaitVBL_
+2b7f:2b89*     I_IBM_ENDMARKER_
+2b7f:2b58      I_ReadMouse_
 Module: bingen.obj(C:\REALDOOM\build\tools\bingen\bingen.c)
 2b7f:2b90      main_
 Module: d_net.obj(d_net.ASM)
@@ -927,63 +927,63 @@ Module: math.obj(math.ASM)
 2b7f:484e*     FixedMul16u32_
 2b7f:4838      FixedMulTrigSpeedNoShift_
 Module: main.obj(main.ASM)
-2b7f:5d69      DEBUG_PRINT_NOARG_
-2b7f:5921*     G_Responder_
-2b7f:5be1      locallib_strcpy_
-2b7f:5d55*     locallib_printstringfar_
-2b7f:5c12      locallib_toupper_
-2b7f:6072      DEBUG_PRINT_
+2b7f:5d68      DEBUG_PRINT_NOARG_
+2b7f:5920*     G_Responder_
+2b7f:5be0      locallib_strcpy_
+2b7f:5d54*     locallib_printstringfar_
+2b7f:5c11      locallib_toupper_
+2b7f:6071      DEBUG_PRINT_
 2b7f:4f4c      G_CopyCmd_
-2b7f:5b9b      combine_strings_
+2b7f:5b9a      combine_strings_
 2b7f:4d07      _oldkeyboardisr
 2b7f:4d03      _sidemove
-2b7f:5b89      M_Ticker_
-2b7f:5b01*     I_UpdateNoBlit_
-2b7f:62a4*     D_MAIN_ENDMARKER_
+2b7f:5b88      M_Ticker_
+2b7f:5b00*     I_UpdateNoBlit_
+2b7f:62a3*     D_MAIN_ENDMARKER_
 2b7f:4cff      _forwardmove
-2b7f:5e32      I_ShutdownTimer_
-2b7f:59ec      I_SetPalette_
-2b7f:5a3f*     I_UpdateBox_
-2b7f:5e25      locallib_dos_setvect_old_
+2b7f:5e31      I_ShutdownTimer_
+2b7f:59eb      I_SetPalette_
+2b7f:5a3e*     I_UpdateBox_
+2b7f:5e24      locallib_dos_setvect_old_
 2b7f:5693      M_LoadDefaults_
-2b7f:5d57*     locallib_printstringnear_
-2b7f:5f62      _SELFMODIFY_R_RENDERPLAYERVIEW_CALL
-2b7f:6230*     D_DoomLoop_
+2b7f:5d56*     locallib_printstringnear_
+2b7f:5f61      _SELFMODIFY_R_RENDERPLAYERVIEW_CALL
+2b7f:622f*     D_DoomLoop_
 2b7f:4cf1*     D_MAIN_STARTMARKER_
-2b7f:5c5b      locallib_printhex_
-2b7f:5c07*     locallib_tolower_
-2b7f:5c50      locallib_putchar_
-2b7f:5eaa*     D_Display_
+2b7f:5c5a      locallib_printhex_
+2b7f:5c06*     locallib_tolower_
+2b7f:5c4f      locallib_putchar_
+2b7f:5ea9*     D_Display_
 2b7f:4dc0      I_KeyboardISR_
-2b7f:60ed      D_ProcessEvents_
+2b7f:60ec      D_ProcessEvents_
 2b7f:50f0      G_ResetGameKeys_
-2b7f:582f      M_ScanTranslateDefaults_
+2b7f:582e      M_ScanTranslateDefaults_
 2b7f:53f3      CopyString13_
-2b7f:5bf5*     locallib_strlen_
-2b7f:6287*     D_DoomMain_
+2b7f:5bf4*     locallib_strlen_
+2b7f:6286*     D_DoomMain_
 2b7f:5105      G_BuildTiccmd_
 2b7f:4ecc      _localcmds
 2b7f:4d0c      cht_CheckCheat_Far_
-2b7f:5e5a      I_ShutdownKeyboard_
+2b7f:5e59      I_ShutdownKeyboard_
 2b7f:4d10      cht_CheckCheat_
-2b7f:5d67      DEBUG_PRINT_NOARG_CS_
-2b7f:5e1c      locallib_dos_setvect_
-2b7f:5bbf      locallib_strcmp_
-2b7f:5e12      locallib_dos_getvect_
-2b7f:5cc2*     locallib_printdecimal_
+2b7f:5d66      DEBUG_PRINT_NOARG_CS_
+2b7f:5e1b      locallib_dos_setvect_
+2b7f:5bbe      locallib_strcmp_
+2b7f:5e11      locallib_dos_getvect_
+2b7f:5cc1*     locallib_printdecimal_
 2b7f:4f6a      _gamekeydown
-2b7f:5c1d      copystr8_
-2b7f:5861      M_SaveDefaults_
-2b7f:61fc      getStringByIndex_
+2b7f:5c1c      copystr8_
+2b7f:5860      M_SaveDefaults_
+2b7f:61fb      getStringByIndex_
 2b7f:4d71      cht_GetParam_
-2b7f:5ae7*     I_FinishUpdate_
-2b7f:5c36*     locallib_createhexnibble_
-2b7f:629c*     resetDS_
-2b7f:6087      S_PauseSound_
-2b7f:5d69      locallib_printf_
+2b7f:5ae6*     I_FinishUpdate_
+2b7f:5c35*     locallib_createhexnibble_
+2b7f:629b*     resetDS_
+2b7f:6086      S_PauseSound_
+2b7f:5d68      locallib_printf_
 2b7f:4dea      I_StartTic_
-2b7f:60b0      S_ResumeSound_
-2b7f:5d39      locallib_strlwr_
+2b7f:60af      S_ResumeSound_
+2b7f:5d38      locallib_strlwr_
 Module: g_setup.obj(g_setup.ASM)
 2b7f:62c7      R_CheckTextureNumForName_
 2b7f:64af*     G_SETUP_ENDMARKER_
@@ -1410,4 +1410,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00039580 (234880.)
 Entry point address: 2b7f:9bc0
-Link time: 00:00.49
+Link time: 00:00.04

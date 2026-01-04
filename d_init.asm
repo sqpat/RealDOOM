@@ -528,9 +528,7 @@ call  DEBUG_PRINT_NOARG_CS_
 
 mov   di, word ptr ds:[_myargc]
 dec   di                        ; myargc - 1
-mov   bx, word ptr ds:[_myargv]
-inc   bx
-inc   bx                        ; myargv[n + 1]
+mov   bx, OFFSET _myargv + 2  ; skip program name
 
 mov   ax, OFFSET str_turbo
 call  M_CheckParm_CS_
@@ -1038,9 +1036,7 @@ jbe   do_next_patch
 mov   di, word ptr ds:[_myargc]
 dec   di                        ; myargc - 1
 mov   cl, 1
-mov   bx, word ptr ds:[_myargv]
-inc   bx
-inc   bx                        ; myargv[n + 1]
+mov   bx, OFFSET _myargv + 2    ; myargv[n + 1]
 
 mov   ax, OFFSET str_record_param
 call  M_CheckParm_CS_

@@ -280,24 +280,35 @@ ret
 ENDP
 
 
-PROC    splitparms_ NEAR
-PUBLIC  splitparms_
+; creates a list of pointers to words/params (argv), unescaped
 
-; bx gets return endptr in return result
+PROC   __Init_Argv_ NEAR
+PUBLIC __Init_Argv_ 
 
-; todo mega rewrite with lods etc.
+push      ds
+pop       es
+mov       di, OFFSET _myargv
 
-push      si
-push      di
-push      bp
+; todo selfmodify?
+SELFMODIFY_set_program_name_ptr:
+mov       ax, 01000h  
+stosw
+; di is argv[1] now
+
+SELFMODIFY_set_command_line_ptr:
+mov       si, 01000h
 
 
-; ax parm unused
-; si has p ptr
-; dx basically unused in the func...
+; inlined  splitparams
 
-mov       bp, bx
-xor       cx, cx
+
+; unescapes cmd line and creates argv array
+; si has current command line ptr
+; di has argv ptr
+
+
+mov       cx, 1  ; argc plus one for pgm name
+
 check_next_character_in_param_name:
 lodsb     
 cmp       al, ' '  ; space 020h
@@ -314,8 +325,11 @@ jne       first_letter_not_quote
 mov       ah, 1 ; quote is open
 inc       si
 first_letter_not_quote:
-mov       es, si   ; store start of word in es
-mov       bx, si   ; store start of word in bx
+
+; new word. store start offsets..
+
+mov       dx, si   ; store start of word in dx
+mov       bx, si   ; store start of word in bx for unescaping as we write
 get_next_word_character:
 lodsb
 cmp       al, 022h ; double-quoute "
@@ -333,15 +347,15 @@ found_end_of_word:
 
 
 ; 2nd call, we store argv values.
-mov       di, cx
-shl       di, 1
-
-mov       word ptr ss:[bp+di], es  ; write start
 
 
-inc       cx ; arg complete
+inc       cx
+xchg      ax, dx
+stosw                   ; write start (argv ptr)
+xchg      ax, dx        ; restore ah
+
+mov       byte ptr ds:[bx], 0   ; null terminate escaped word string
 test      al, al
-mov       byte ptr ds:[bx], 0
 je        found_end_of_params
 
 found_space_delimiter_in_param_name:
@@ -379,79 +393,10 @@ jmp       get_next_word_character
 
 found_end_of_params:
 
-
-xchg      ax, cx  ; arg count ; dont need count.
-mov       bx, si  ; this return endptr value goes in bx
-
-pop       bp
-pop       di
-pop       si
-ret       
-
-
-ENDP
-
-
-
-__LpCmdLine:
-dw 0, 0
-__LpPgmName:
-dw 0, 0
-
-; creates a list of pointers to words/params
-
-PROC   __Init_Argv_ NEAR
-PUBLIC __Init_Argv_ 
-
-mov       si, word ptr cs:[__LpCmdLine]
-mov       di, si
-push      ds
-pop       es
-mov       cx, 0FEh  ; max len of cmd line?
 xor       ax, ax
-repne     scasb
+stosw     ; null term argv
+mov       word ptr ds:[_myargc], cx ;
 
-mov       bx, di    ; bx has endptr
-
-
-
-sub       bx, si   ; bx has command line end, si has start. get length by subtracting start.
-
-inc       bx       ; add one extra byte
-; round up to even 
-inc       bx  
-and       bl, 0FEh 
-
-mov       cx, bx  ; cx known even too. can rep movsw
-shr       cx, 1
-
-; bx is offset to start of argv
-
-mov       dx, OFFSET ___commandline_copy
-
-
-mov       di, dx
-rep       movsw
-
-mov       di, dx
-mov       ax, word ptr cs:[__LpPgmName]
-add       di, bx  ; offset to argv
-mov       bx, di
-stosw
-xchg      bx, di  ; bx is argv[1], di is argv[0]
-
-mov       si, word ptr cs:[__LpCmdLine] ; restore this.
-
-call      splitparms_  ; record argv
-inc       ax
-mov       bx, ax
-shl       bx, 1
-
-mov       word ptr ds:[bx + di], 0
-
-done_parsing_argv:
-mov       word ptr ds:[_myargc], ax
-mov       word ptr ds:[_myargv], di
 ret      
 
 ENDP
@@ -693,8 +638,8 @@ lea        si, [di - 1]
 mov        dx, DGROUP
 mov        es, dx
 mov        di, word ptr es:[__STACKLOW]
-mov        word ptr cs:[__LpCmdLine+0], di
-mov        word ptr cs:[__LpCmdLine+2], es
+mov        word ptr cs:[SELFMODIFY_set_command_line_ptr+1], di
+
 je         noparameters
 inc        cx
 rep        movsb
@@ -708,8 +653,8 @@ mov        cx, di
 
 done_with_program_name:
 mov        ds, dx
-mov        word ptr cs:[__LpPgmName+0], cx
-mov        word ptr cs:[__LpPgmName+2], es
+mov        word ptr cs:[SELFMODIFY_set_program_name_ptr+1], cx
+
 mov        bx, sp
 mov        ax, bp
 mov        word ptr ds:[__STACKLOW], di

@@ -713,7 +713,7 @@ _old_screen_viewport_height =	  	 _NULL_OFFSET + 00ACEh
 _FixedDivWholeA_addr =   		     _NULL_OFFSET + 00AD0h
 _cht_CheckCheat_Far_addr = 	 	     _NULL_OFFSET + 00AD4h
 _myargc =				 	 	     _NULL_OFFSET + 00AD8h
-_myargv = 	 	     				 _NULL_OFFSET + 00ADAh
+;_myargv = 	 	     				 _NULL_OFFSET + 00ADAh
 
 ___MiniHeapRover =                   _NULL_OFFSET + 00AE0h
 ___MiniHeapFreeRover =               _NULL_OFFSET + 00AE2h
@@ -750,9 +750,9 @@ ___iob = 							 _NULL_OFFSET + 00B08h
 
 ___streamlinks = 				 	 _NULL_OFFSET + 00C20h
 
-___commandline_copy = 				 _NULL_OFFSET + 00C98h
-
-_flatcache_nodes =				     _NULL_OFFSET + 00D00h
+_myargv = 	   	  					 _NULL_OFFSET + 00C98h
+; max args = 20 including program name i guess. should be enough?
+_flatcache_nodes =				     _NULL_OFFSET + 00CC0h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + ((SIZE CACHE_NODE_T) * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1
