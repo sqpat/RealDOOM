@@ -35,7 +35,7 @@ COLORMAPS_SIZE = 33 * 256
 LUMP_PER_EMS_PAGE = 1024 
 
 FILE_BUFFER_SIZE = 512
-
+NUM_CONSOLE_FILES = 2
 
 
 .CODE
@@ -654,33 +654,6 @@ ENDP
 
 
 
-
-COMMENT @
-
-PROC locallib_something_ NEAR
-
-
-push      bx
-push      bp
-mov       bp, sp
-lea       bx, [bp + 0Ch]
-mov       ax, word ptr ds:[bx]
-push      ax
-xor       ax, ax
-push      ax
-push      word ptr [bp + 0Ah]
-push      word ptr [bp + 8]
-add       bx, 2
-call      locallib_sopen_
-add       sp, 8
-pop       bp
-pop       bx
-ret
-
-ENDP
-
-@
-
 ; ax has flags
 ; si has fp
 ; bx has filename ptr
@@ -758,7 +731,7 @@ xor  bx, bx
 xor  cx, cx
 call locallib_fseek_
 do_open_skip_fseek:
-call locallib_chktty_
+
 mov  ax, si
 exit_doopen:
 
@@ -1274,53 +1247,6 @@ jmp  exit_flush_skip_bp
 
 ENDP
 
-PROC   locallib_flushall_  NEAR
-
-mov  ax, 0FFFFh
-; fallthru? flush any flags.
-ENDP
-
-
-; ax is flags to flush/
-PROC   locallib_flushall_inner_ NEAR
-
-push bx
-push cx
-push dx
-push si
-
-mov  cx, ax
-mov  bx, word ptr ds:[___OpenStreams]
-xor  dx, dx  ; return value, flushed count?
-loop_flushall_more_bytes:
-test bx, bx
-je   exit_flushall_inner_return ; end of the list?
-mov  si, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_stream]
-test word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], cx
-jne  flag_is_match
-increment_and_check_next_stream_for_flush:
-increment_and_check_next_stream_for_flush:
-mov  bx, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_next]  ; check next stream
-jmp  loop_flushall_more_bytes
-flag_is_match:
-inc  dx
-test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
-je   increment_and_check_next_stream_for_flush ; not dirty, skip
-
-call locallib_flush_
-jmp  increment_and_check_next_stream_for_flush
-
-exit_flushall_inner_return:
-mov  ax, dx
-pop  si
-pop  dx
-pop  cx
-pop  bx
-ret
-
-ENDP
-
-
 
 
 PROC    locallib_fseek_   NEAR
@@ -1545,17 +1471,6 @@ pop  bx
 ret 
 ENDP
 
-PROC    locallib_fflush_ NEAR
-
-test ax, ax
-jne  do_ref_flush
-call locallib_flushall_
-xor  ax, ax
-ret 
-
-do_ref_flush:
-call  locallib_flush_
-ret
 
 ENDP
 
@@ -1577,7 +1492,7 @@ je   skip_flush
 test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], _DIRTY SHR 8
 je   skip_flush
 mov  ax, si
-call locallib_fflush_
+;call locallib_fflush_
 skip_flush:
 
 call locallib_tell_
@@ -1614,50 +1529,8 @@ ret
 
 ENDP
 
-PROC    locallib_isatty_ NEAR
 
 
-push bx
-push dx
-; si is file
-mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
-mov  ax, 04400h  ;  I/O Control for Devices (IOCTL):  IOCTL,0 - Get Device Information
-int  021h
-
-;- BIT 7 of register DX can be used to detect if STDIN/STDOUT is
-;	  redirected to/from disk; if a call to this function has DX BIT 7
-;	  set it's not redirected from/to disk; if it's clear then it is
-;	  redirected to/from disk
-
-test dl, 080h   ; if flag on then character device.
-mov  ax, 0
-je   exit_is_atty
-inc  ax ; zero flag undone
-exit_is_atty:
-pop  dx
-pop  bx
-ret
-
-ENDP
-
-PROC    locallib_chktty_ NEAR
-
-; si has file already
-
-test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_ISTTY SHR 8)
-jne  exit_chktty
-continue_chktty_check:
-
-call locallib_isatty_
-je   exit_chktty
-or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_ISTTY SHR 8)
-test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], ((_IOFBF OR _IOLBF OR _IONBF) SHR 8)
-jne  exit_chktty
-or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_IOLBF SHR 8)
-exit_chktty:
-ret
-
-ENDP
 
 PROC   locallib_doserror_ NEAR
 
@@ -1724,7 +1597,7 @@ PROC    locallib_ioalloc_ NEAR
 ; todo revisit if bx is safely link?
 
 push  bx
-call  locallib_chktty_
+
 mov   ax, FILE_BUFFER_SIZE
 cmp   si, STDOUT
 jne   use_normal_buffer
@@ -1736,22 +1609,13 @@ call  malloc_  ; near malloc
 ; ax gets file buffer
 mov   bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 mov   word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], ax ; ptr to the file buf...
-test  ax, ax
-jne   set_bigbuf
-and   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], ((NOT (_IONBF OR _IOLBF OR _IOFBF)) SHR 8)  ; 0F8h
-lea   ax, [si + WATCOM_C_FILE.watcom_file_ungotten]
-or    byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_IONBF SHR 8)
-mov   word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], ax
-mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize], 1
-finish_and_exit_ioalloc:
-mov   ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
+or    byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], _BIGBUF
+
+
 mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
 mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
 pop   bx
 ret  
-set_bigbuf:
-or    byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], _BIGBUF
-jmp   finish_and_exit_ioalloc
 
 ENDP
 
@@ -1836,31 +1700,20 @@ dw 0, 0, 0, 0, 0
 PROC   __GetIOMode_ NEAR
 PUBLIC __GetIOMode_
 
-push  bx
-cmp   ax, MAX_FILES
-jb    good_handle
-xor   ax, ax
-pop   bx
-ret
-good_handle:
 shl   ax, 1
 xchg  ax, bx
-mov   ax, word ptr cs:[bx + _io_mode]
-pop   bx
+mov   bx, word ptr cs:[bx + _io_mode]
+xchg  ax, bx
 ret
 ENDP
 
 PROC   __SetIOMode_nogrow_ NEAR
 PUBLIC __SetIOMode_nogrow_ 
 
-push  bx
-cmp   ax, MAX_FILES
-jnb   bad_handle_set
 shl   ax, 1
 xchg  ax, bx
 mov   word ptr cs:[bx + _io_mode], dx
-bad_handle_set:
-pop   bx
+xchg  ax, bx
 ret  
 ENDP
 
@@ -1903,14 +1756,13 @@ cmp  word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
 jne  dont_ioalloc
 call locallib_ioalloc_
 dont_ioalloc:
-mov  al, byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag+1]
-test al, (_ISTTY SHR 8)
-je   dont_flush
-test al, ((_IOLBF OR _IONBF) SHR 8)
-je   dont_flush
-mov  ax, _ISTTY
-call locallib_flushall_inner_
-dont_flush:
+;cmp  si, ___iob + (NUM_CONSOLE_FILES * (SIZE WATCOM_C_FILE))
+;jb   dont_flush
+;test al, ((_IOLBF OR _IONBF) SHR 8)
+;je   dont_flush
+;mov  ax, _ISTTY
+;call locallib_flushall_inner_
+;dont_flush:
 
 and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT _UNGET)
 mov  ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
