@@ -2945,22 +2945,22 @@ done_checking_right:
 
 ; seg in view angle but not necessarily visible
 add   bh, (ANG90_HIGHBITS SHR 8)
-mov   ax, VIEWANGLETOX_SEGMENT
-
-SHIFT_MACRO shr bx 3
 
 
+SHIFT_MACRO shr bx 2
 
-mov   es, ax
-add   bx, bx
+
+
+
+and   bl, 0FEh  ; low bit removal
 add   dh, (ANG90_HIGHBITS SHR 8)
-mov   ax, word ptr es:[bx]
+mov   ax, word ptr ds:[bx + _viewangletox]
 mov   bx, dx
-SHIFT_MACRO shr bx 3
+SHIFT_MACRO shr bx 2
 
 
-add   bx, bx
-mov   dx, word ptr es:[bx]
+and   bl, 0FEh  ; low bit removal
+mov   dx, word ptr ds:[bx + _viewangletox]
 cmp   ax, dx
 je    exit_addline
 ;	if (!(lineflagslist[curseglinedef] & ML_TWOSIDED)) {
@@ -9182,8 +9182,7 @@ neg   cx
 
 done_with_second_tspan_adjustment:
 
-mov   dx, VIEWANGLETOX_SEGMENT
-mov   es, dx
+
 lea   si, [di + ANG90_HIGHBITS]
 add   ch, (ANG90_HIGHBITS SHR 8)
 SHIFT_MACRO shr si 2
@@ -9191,8 +9190,8 @@ mov   bx, cx
 SHIFT_MACRO shr bx 2
 and   si, 0FFFEh  ; need to and out the last bit. (is there a faster way?)
 and   bl, 0FEh    ; need to and out the last bit. (is there a faster way?)
-mov   si, word ptr es:[si]
-mov   ax, word ptr es:[bx]
+mov   si, word ptr ds:[si + _viewangletox]
+mov   ax, word ptr ds:[bx + _viewangletox]
 cmp   si, ax
 je    also_return_0
 dec   ax

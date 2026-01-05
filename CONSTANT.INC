@@ -992,6 +992,7 @@ _visplanepiclights = 0D240h
 _scalelightfixed = 0D340h
 _scalelight = 0D370h
 _patch_sizes = 0D670h
+_viewangletox = 0E000h
 _thinkerlist = 02000h
 _mobjinfo = 0B060h
 _linebuffer = 0B650h

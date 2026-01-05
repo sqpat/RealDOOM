@@ -1338,7 +1338,7 @@ spritedefs_bytes    73BB:0000
 #define scalelightfixed_segment           ((segment_t) ((int32_t)scalelightfixed_far >> 16))
 #define scalelight_segment                ((segment_t) ((int32_t)scalelight_far >> 16))
 #define patch_sizes_segment               ((segment_t) ((int32_t)patch_sizes_far >> 16))
-#define viewangletox_segment              ((segment_t) ((int32_t)viewangletox >> 16))
+#define viewangletox_segment              ((segment_t) ((int32_t)viewangletox_far >> 16))
 #define states_render_segment             ((segment_t) ((int32_t)states_render >> 16))
 #define flatindex_segment                 ((segment_t) ((int32_t)flatindex >> 16))
 #define spritepage_segment                ((segment_t) ((int32_t)spritepage >> 16))
@@ -1359,7 +1359,7 @@ spritedefs_bytes    73BB:0000
 #define scalelightfixed         ((uint8_t __near*)            ((scalelightfixed_segment         - FIXED_DS_SEGMENT) << 4))
 #define scalelight              ((uint8_t __near*)            ((scalelight_segment              - FIXED_DS_SEGMENT) << 4))
 #define patch_sizes             ((uint16_t __near*)           ((patch_sizes_segment             - FIXED_DS_SEGMENT) << 4))
-#define viewangletox            ((int16_t __near*)            ((viewangletox_segment             - FIXED_DS_SEGMENT) << 4))
+#define viewangletox            ((int16_t __near*)            ((viewangletox_segment            - FIXED_DS_SEGMENT) << 4))
 
 
 #define SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT (16 * (scalelight_segment - scalelightfixed_segment))
@@ -1388,19 +1388,20 @@ spritedefs_bytes    73BB:0000
 
 /*
 
-segs_render             4000:0000   3000
-seg_normalangles        4580:0000   8800
-sides_render            46E0:0000   9E00
-vissprites              4967:0000   C670
-player_vissprites       4AAA:0000   DAA0
-texturepatchlump_offset 4AAF:0000   DAF0
-visplaneheaders         4AE5:0000   DE50
-visplanepiclights       4B24:0000   E240
-scalelightfixed         4B3D:0000   E340
-scalelight              4B40:0000   E370
-patch_sizes             4B70:0000   E670
-viewangletox            4C00:0000   F000
-// 1392 bytes here?
+segs_render             4000:0000   2000
+seg_normalangles        4580:0000   7800
+sides_render            46E0:0000   8E00
+vissprites              4967:0000   B670
+player_vissprites       4AAA:0000   CAA0
+texturepatchlump_offset 4AAF:0000   CAF0
+visplaneheaders         4AE5:0000   CE50
+visplanepiclights       4B24:0000   D240
+scalelightfixed         4B3D:0000   D340
+scalelight              4B40:0000   D370
+patch_sizes             4B70:0000   D670
+viewangletox            4C00:0000   E000
+
+
 [near range over]       
 // todo move viewangletox to later. the other stuff can all fit below
 states_render           4E00:0000

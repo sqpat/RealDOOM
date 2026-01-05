@@ -1377,6 +1377,43 @@ xor   si, cx  ; si now stores signedness via test operator...
 
 ; here we abs the numbers before unsigned division algo
 
+
+;xchg  ax, di
+;xchg  ax, dx
+;cwd
+;xor   di, dx
+;xor   ax, dx
+;sub   di, dx
+;sbb   ax, dx
+;
+;xchg  ax, cx
+;cwd
+;
+;xor   bx, dx
+;xor   ax, dx
+;sub   bx, dx
+;sbb   ax, dx
+;
+;xchg  ax, cx
+;xchg  ax, dx
+;xchg  ax, di
+
+;mov   di, dx
+;add   di, dx
+;sbb   di, dx
+;xor   ax, di
+;xor   dx, di
+;sub   ax, di
+;sbb   dx, di
+;
+;mov   di, cx
+;add   di, cx
+;sbb   di, cx
+;xor   bx, di
+;xor   cx, di
+;sub   bx, di
+;sbb   cx, di
+
 or    cx, cx
 jge   b_is_positive
 neg   cx
