@@ -37,9 +37,6 @@ LUMP_PER_EMS_PAGE = 1024
 FILE_BUFFER_SIZE = 512
 
 MAX_FILES = 10
-SIZE_OF_STREAM_LOOKUP = 2 + SIZE WATCOM_STREAM_LINK
-NUM_STATIC_STREAMS = MAX_FILES
-
 
 
 .CODE
@@ -720,10 +717,9 @@ je   bad_handle_dofree
 xor  dx, dx
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], dx ; 0
 mov  word ptr ds:[si + 0Ah], dx ; 0
+mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_base], dx ; 0
 or   word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], cx  ; flags
 
-
-mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_base], dx ; 0
 test cl, _APPEND
 je   do_open_skip_fseek
 mov  dx, SEEK_END
@@ -782,7 +778,7 @@ pop       es
 
 
 ; zero out the streamlink.
-
+xor       ax, ax
 stosw  ; 7 * 2 bytes = SIZE WATCOM_C_FILE = 0Eh
 stosw
 stosw  ;  + WATCOM_C_FILE.watcom_file_base
@@ -893,6 +889,8 @@ ENDP
 
 ; todo pass in si?
 
+; todo revisit the lseek stuff.
+
 PROC    doclose_  NEAR
 PUBLIC  doclose_  
 push  bx
@@ -903,9 +901,9 @@ push  di
 
 mov   si, ax
 
+xor   di, di ; error code.
 test  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (_READ OR _WRITE)
 je    error_and_exit_doclose  ; not readable or writable? todo get rid of error check
-xor   di, di ; error code.
 test  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
 je    file_not_dirty_skip_flush
 call  locallib_flush_
@@ -948,8 +946,8 @@ pop   dx
 pop   cx
 pop   bx
 ret  
-error_and_exit_doclose:
-mov   di, 0FFFFh
+error_and_exit_doclose: 
+dec   di  ; 0FFFFh    ; not open file?
 jmp   exit_doclose
 
 ENDP
@@ -1065,8 +1063,7 @@ push bp  ; bp is ret
 xor  bp, bp  ; ret
 
 test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
-je   file_not_dirty
-jmp  file_is_dirty
+jne  file_is_dirty
 file_not_dirty:
 cmp  word ptr ds:[si + WATCOM_C_FILE.watcom_file_base], 0
 je   finish_handling_flush
@@ -1465,12 +1462,11 @@ ENDP
 
 STDOUT = OFFSET ___iob   ; file index 0
 
+; if base is nonzero then you have a buffer.
 
 PROC    locallib_ioalloc_ NEAR
 
 ; si fas file already
-
-
 
 
 mov   ax, FILE_BUFFER_SIZE

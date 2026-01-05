@@ -711,35 +711,17 @@ VANILLA_PLAYER_T ENDS
 
 WATCOM_C_FILE STRUC
 
-    watcom_file_ptr        dw ? ; 00h      unsigned char        *   /* next character position */
-    watcom_file_cnt        dw ? ; 02h      int                      /* number of characters left */
-    watcom_file_base       dw ? ; 04h      struct __stream_link *   /* location of buffer */
-    watcom_file_flag       dw ? ; 06h      unsigned                 /* mode of file access */
-    watcom_file_handle     dw ? ; 08h      int                      /* file handle */
-    watcom_file_bufsize    dw ? ; 0Ah      unsigned                 /* size of buffer */
+    watcom_file_ptr        dw ? ; 00h      ptr             ; next character position
+    watcom_file_cnt        dw ? ; 02h      int             ; number of characters left
+    watcom_file_base       dw ? ; 04h      ptr             ; location of buffer
+    watcom_file_flag       dw ? ; 06h      unsigned        ; mode of file access
+    watcom_file_handle     dw ? ; 08h      int             ; file handle
+    watcom_file_bufsize    dw ? ; 0Ah      unsigned        ; size of buffer
 
 
 WATCOM_C_FILE ENDS
 
-WATCOM_STREAM_LINK STRUC
 
-  ; watcom_streamlink_next             dw ? ; 00h  struct __stream_link *  
-  ; watcom_streamlink_stream           dw ? ; 02h  struct __iobuf *        
-  ; watcom_streamlink_base             dw ? ; 04h  unsigned char *                   
-    
-    
-WATCOM_STREAM_LINK ENDS
-
-
-C_INIT_STRUCT STRUC
-
-    cinitstruc_rtntype       db ? ; 00h
-    cinitstruc_priority      db ? ; 01h
-    cinitstruc_funcptr       dw ? ; 02h
-    cinitstruc_funcptr_far   dw ? ; 04h
-    
-C_INIT_STRUCT ENDS
-    
     
 COMMENT @
 #define _READ   0x0001  /* file opened for reading */

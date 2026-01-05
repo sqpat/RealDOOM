@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/05 12:24:21
+Created on:       26/01/05 12:47:09
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -492,8 +492,8 @@ Module: p_pspr.obj(p_pspr.ASM)
 21a3:3a41*     A_CheckReload_
 21a3:3f74*     A_FireShotgun_
 21a3:3e8a*     P_BulletSlope_
-21a3:3fa5*     A_FireShotgun2_
 21a3:4074*     A_LoadShotgun2_
+21a3:3fa5*     A_FireShotgun2_
 21a3:39fe*     P_PSPR_STARTMARKER_
 21a3:401c*     A_FireCGun_
 21a3:3b5a      P_DropWeapon_
@@ -1418,4 +1418,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003c3e0 (246752.)
 Entry point address: 2b7c:a9c0
-Link time: 00:00.05
+Link time: 00:00.04

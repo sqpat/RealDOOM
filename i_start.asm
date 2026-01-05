@@ -109,8 +109,8 @@ push bx
 mov  bx, OFFSET ___iob + SIZE WATCOM_C_FILE  ; start after stdout
 
 iterate_next_stream:
-;cmp  word ptr ds:[bx + WATCOM_C_FILE.watcom], 0
-;je   skip_this_stream
+cmp  word ptr ds:[bx + WATCOM_C_FILE.watcom_file_base], 0
+je   skip_this_stream
 
 call doclose_
 
@@ -305,33 +305,6 @@ ENDP
 
 ENDP
 
-PROC   __InitFiles_ NEAR
-PUBLIC __InitFiles_ 
-
-; init stdout basically
-
-; todo make this a statically allocated link? get rid of the function.
-
-
-STDOUT_FILE =  OFFSET ___iob
-;mov       word ptr ds:[STDOUT_FILE + WATCOM_C_FILE.watcom_file_link], STDOUT_STREAMLINK     ; set streamlink
-;mov       word ptr ds:[STDOUT_FILE + WATCOM_C_FILE.watcom_file_base], 0
-
-;inc       word ptr ds:[STDOUT_STREAMLINK - 2]  ; mark allocated
-;mov       word ptr ds:[STDOUT_STREAMLINK + WATCOM_STREAM_LINK.watcom_streamlink_stream], ___iob  ; stdout offset is first file
-;mov       word ptr ds:[STDOUT_STREAMLINK + WATCOM_C_FILE.watcom_file_base], 0
-
-
-ret
-
-
-
-
-ENDP
-
-
-
-ENDP
 
 
 
@@ -490,9 +463,8 @@ xor        bp, bp
 push       bp
 mov        bp, sp
 mov        ax, 0FFh
-;call       __InitRtns
+
 call  __GETDS
-call  __InitFiles_
 call  __Init_Argv_
 call  hackDS_
 jmp   D_DoomMain_
