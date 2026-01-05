@@ -448,13 +448,13 @@ ENDP
 
 PROC    locallib_fopenfromfar_nobuffer_   FAR
 PUBLIC  locallib_fopenfromfar_nobuffer_
-call    fopen_nobuffering_
+call    locallib_fopen_nobuffering_
 retf
 ENDP
 
 
-PROC    fopen_nobuffering_  NEAR
-PUBLIC  fopen_nobuffering_
+PROC    locallib_fopen_nobuffering_  NEAR
+PUBLIC  locallib_fopen_nobuffering_
 
 call    locallib_fopen_
 xchg    ax, bx

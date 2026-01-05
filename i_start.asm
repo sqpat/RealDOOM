@@ -138,94 +138,45 @@ STD_PRN_STREAM_INDEX = 4
 
 SIZE_STD_STREAMS = NUM_STD_STREAMS * (SIZE WATCOM_C_FILE)
 
-; todo get rid of this once file buffers out of heap.
 
 PROC   docloseall_ NEAR
 PUBLIC docloseall_
 
 push bx
-push cx
-push dx
-push si
 push di
-push bp
-mov  bp, sp
-sub  sp, 2
-shl  ax, 1
-mov  cl, 3
-mov  dx, ax
-shl  ax, cl
+
+
+
+
+
 mov  bx, word ptr ds:[___OpenStreams]
-sub  ax, dx
-mov  dx, OFFSET ___iob
-xor  si, si
-add  dx, ax
-xor  cx, cx
-mov  word ptr [bp - 2], dx
-label_134:
+
+
+
+iterate_next_stream:
 test bx, bx
-je   label_130
-mov  di, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_ptr]
-mov  bx, word ptr ds:[bx + WATCOM_C_FILE.watcom_file_cnt]
+je   done_closing_streams
+mov  di, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_next]
+mov  bx, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_stream]
 mov  al, byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag + 1]
-mov  dx, 1
-test al, (_DYNAMIC SHR 8)
-je   label_131
-label_132:
+
+
+cmp  bx, OFFSET ___iob + SIZE_STD_STREAMS
+jb   go_to_next_stream  ; ignore STD file streams
 mov  ax, bx
+call doclose_
 
-
-
-call  doclose_
-xchg  ax, dx
-mov   ax, bx
-call  freefp_
-mov   ax, dx
-
-
-inc  cx
-or   si, ax
-label_133:
+go_to_next_stream:
 mov  bx, di
-jmp  label_134
-label_131:
-test al, 8
-jne  label_132
-cmp  bx, word ptr [bp - 2]
-jb   label_133
-cmp  bx, (OFFSET ___iob + SIZE_STD_STREAMS)
-jae  label_132
-xor  dx, dx
-jmp  label_132
-label_130:
-test si, si
-je   label_135
-mov  bx, 0FFFFh
-label_136:
-mov  ax, bx
-mov  sp, bp
-pop  bp
+jmp  iterate_next_stream
+
+
+done_closing_streams:
+
 pop  di
-pop  si
-pop  dx
-pop  cx
 pop  bx
 ret  
-label_135:
-mov  bx, cx
-jmp  label_136
 
-ENDP
-
-
-
-
-;int historical, CHAR_TYPE *p, CHAR_TYPE **argv, CHAR_TYPE **endptr )
-
-
-
-
-ret
 
 PROC    __GETDS   NEAR
 PUBLIC  __GETDS
@@ -258,7 +209,7 @@ mov cx, FIXED_DS_SEGMENT
 ;add cx, 400h
 mov es, cx
 
-mov CX, 2000h    ; 4000h bytes
+mov CX, 1000h    ; 4000h bytes
 rep movsw
 
 mov cx, es
@@ -473,17 +424,6 @@ db "con", 0
 
 
 
-PROC    __FiniRtns NEAR
-PUBLIC  __FiniRtns
-
-push      ds
-call      __GETDS
-xor       ax, ax
-call      docloseall_
-pop       ds
-ret  
-
-ENDP
 
 ; todo clean up triple exit function stuff..
 
@@ -492,13 +432,13 @@ PUBLIC  exit_
 
 
 push  ax                        ; al = return code.
-call  __FiniRtns
+mov   dx, DGROUP  ; worst case call getds
+mov   ds, dx
+call  docloseall_
 
 ; fall thru
 
 
-mov        dx, DGROUP  ; worst case call getds
-mov        ds, dx
 cld        
 xor        di, di   ; di = null area
 mov        es, dx
@@ -509,7 +449,6 @@ jne        null_check_fail
 
 null_check_ok:
 
-call       __FiniRtns
 pop        ax
 mov        ah, 04Ch  ; Terminate process with return code
 int        021h

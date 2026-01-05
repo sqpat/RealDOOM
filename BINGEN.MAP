@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/04 20:46:59
+Created on:       26/01/04 21:45:14
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -1083,7 +1083,7 @@ Module: binfile.obj(binfile.ASM)
 2b7f:8ece      locallib_fclosefromfar_
 2b7f:8ece      locallib_fclose_
 2b7f:8ece      locallib_fopenfromfar_nobuffer_
-2b7f:8ece      fopen_nobuffering_
+2b7f:8ece      locallib_fopen_nobuffering_
 2b7f:8ecf      locallib_far_fwrite_
 2b7f:8ece      locallib_fread_
 2b7f:8ece      locallib_fread_nearsegment_
@@ -1416,4 +1416,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  000395b0 (234928.)
 Entry point address: 2b7f:9bf0
-Link time: 00:00.49
+Link time: 00:00.04

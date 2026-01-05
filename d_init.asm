@@ -21,7 +21,7 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN locallib_fread_nearsegment_:NEAR
-EXTRN fopen_nobuffering_:NEAR
+EXTRN locallib_fopen_nobuffering_:NEAR
 EXTRN locallib_fclose_:NEAR
 EXTRN locallib_ftell_:NEAR
 EXTRN locallib_fseek_:NEAR
@@ -290,7 +290,7 @@ call  CopyString13_
 
 mov     dl, (FILEFLAG_READ)
 ;mov    ax, OFFSET _filename_argument    ; already set above
-call    fopen_nobuffering_
+call    locallib_fopen_nobuffering_
 
 test    ax, ax
 je      exit_mloaddefaults
@@ -576,7 +576,7 @@ push    ss
 pop     ds
 
 mov     dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
-call    fopen_nobuffering_
+call    locallib_fopen_nobuffering_
 test    ax, ax
 je      do_string_error
 
@@ -1695,7 +1695,7 @@ movsb
 push    ss
 pop     ds
 mov     dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
-call    fopen_nobuffering_
+call    locallib_fopen_nobuffering_
 push    ax
 xchg    cx, ax
 lea     ax, [bp - 6]

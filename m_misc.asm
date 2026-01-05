@@ -19,7 +19,7 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN fopen_nobuffering_:NEAR
+EXTRN locallib_fopen_nobuffering_:NEAR
 EXTRN locallib_fclose_:NEAR
 EXTRN locallib_fseek_:NEAR
 EXTRN locallib_ftell_:NEAR
@@ -98,7 +98,7 @@ push  di
 
 mov   di, dx ; backup dx
 mov   dl, (FILEFLAG_WRITE OR FILEFLAG_BINARY)
-call  fopen_nobuffering_
+call  locallib_fopen_nobuffering_
 
 test  ax, ax
 je    exit_writefile_return_0
@@ -142,7 +142,7 @@ PUBLIC  M_ReadFile_
 PUSHA_NO_AX_OR_BP_MACRO
 
 mov   dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
-call  fopen_nobuffering_
+call  locallib_fopen_nobuffering_
 
 push  bx
 push  cx

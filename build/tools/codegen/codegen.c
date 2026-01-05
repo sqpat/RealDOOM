@@ -9,7 +9,7 @@
 #include "p_setup.h"
 
 #define CONSTANTS_COUNT 980
-#define LOCALS_COUNT 22
+#define LOCALS_COUNT 23
 
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -2184,6 +2184,7 @@ char* LOCALS[LOCALS_COUNT] = {
     "_scalelightfixed",
     "_scalelight",	// do not use i guess
     "_patch_sizes",
+    "_viewangletox",
 
 
     "_thinkerlist",
@@ -2220,6 +2221,7 @@ void __near* VALUES[LOCALS_COUNT] = {
 
     scalelight,
     patch_sizes,
+    viewangletox,
 
     thinkerlist,
     mobjinfo,

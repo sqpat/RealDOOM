@@ -823,7 +823,7 @@ cachedystep    50C8:0000
 spanstart      50FA:0000
 distscale      5113:0000
 drawskyplane_area  5163:0000
-
+// 7232 bytes
 //FREEBYTES
 // 8000+ bytes free? PLANES ONLY. could be fast unrolled draw sky code, 
 // and fast unrolled drawspan no tex code.
@@ -1311,10 +1311,10 @@ spritedefs_bytes    73BB:0000
 
 // 4BfB - 4c00 free
 
-#define viewangletox                ((int16_t __far*)            MAKE_FULL_SEGMENT(0x4C000000                  , 0))
+#define viewangletox_far             ((int16_t __far*)            MAKE_FULL_SEGMENT(0x4C000000                  , 0))
 //#define viewangletox                ((int16_t __far*)            MAKE_FULL_SEGMENT(patch_sizes_far             , size_patch_sizes))
 // offset of a drawseg so we can subtract drawseg from drawsegs for a certain potential loop condition...
-#define states_render               ((state_render_t __far*)     MAKE_FULL_SEGMENT(viewangletox            , size_viewangletox))
+#define states_render               ((state_render_t __far*)     MAKE_FULL_SEGMENT(viewangletox_far            , size_viewangletox))
 #define flatindex                   ((uint8_t __far*)            MAKE_FULL_SEGMENT(states_render           , size_states_render))
 #define spritepage                  ((uint8_t __far*)            MAKE_FULL_SEGMENT(flatindex               , size_flatindex))
 #define spriteoffset                ((uint8_t __far*)            (((int32_t)spritepage)                    + size_spritepage))
@@ -1359,6 +1359,7 @@ spritedefs_bytes    73BB:0000
 #define scalelightfixed         ((uint8_t __near*)            ((scalelightfixed_segment         - FIXED_DS_SEGMENT) << 4))
 #define scalelight              ((uint8_t __near*)            ((scalelight_segment              - FIXED_DS_SEGMENT) << 4))
 #define patch_sizes             ((uint16_t __near*)           ((patch_sizes_segment             - FIXED_DS_SEGMENT) << 4))
+#define viewangletox            ((int16_t __near*)            ((viewangletox_segment             - FIXED_DS_SEGMENT) << 4))
 
 
 #define SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT (16 * (scalelight_segment - scalelightfixed_segment))

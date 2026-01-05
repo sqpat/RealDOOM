@@ -21,7 +21,7 @@ INSTRUCTION_SET_MACRO
 
 EXTRN locallib_fread_nearsegment_:NEAR
 EXTRN locallib_fseek_:NEAR
-EXTRN fopen_nobuffering_:NEAR
+EXTRN locallib_fopen_nobuffering_:NEAR
 EXTRN locallib_fclose_:NEAR
 EXTRN locallib_fread_:NEAR
 EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
@@ -223,7 +223,7 @@ setup_mus_driver:
 mov   ax, OFFSET _doomcode_filename
 call  CopyString13_
 mov   dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
-call  fopen_nobuffering_        ; fopen("DOOMCODE.BIN", "rb"); 
+call  locallib_fopen_nobuffering_        ; fopen("DOOMCODE.BIN", "rb"); 
 mov   di, ax ; di stores fp
 
 les   bx, dword ptr cs:[_musdriverstartposition]

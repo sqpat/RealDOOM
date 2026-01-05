@@ -237,7 +237,7 @@ mov es, ds:[_stored_ds]
 
 xor di, di
 mov si, di
-mov CX, 2000h   ; 4000h bytes
+mov CX, 1000h   ; 2000h bytes
 rep movsw
 mov cx, es
 mov ds, cx

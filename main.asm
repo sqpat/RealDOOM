@@ -47,7 +47,7 @@ EXTRN TryRunTics_:NEAR
 EXTRN FastDiv3216u_:FAR
 EXTRN Z_SetOverlay_:FAR
 EXTRN locallib_fopen_:NEAR
-EXTRN fopen_nobuffering_:NEAR
+EXTRN locallib_fopen_nobuffering_:NEAR
 EXTRN locallib_fputc_:NEAR
 EXTRN locallib_fclose_:NEAR
 EXTRN locallib_fread_:NEAR

@@ -55,8 +55,8 @@ ENDP
 PROC    locallib_fopenfromfar_nobuffer_ NEAR
 PUBLIC  locallib_fopenfromfar_nobuffer_
 ENDP
-PROC    fopen_nobuffering_ NEAR
-PUBLIC  fopen_nobuffering_
+PROC    locallib_fopen_nobuffering_ NEAR
+PUBLIC  locallib_fopen_nobuffering_
 ENDP
 PROC    locallib_fseekfromfar_ NEAR
 PUBLIC  locallib_fseekfromfar_
