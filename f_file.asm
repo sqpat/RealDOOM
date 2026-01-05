@@ -2456,6 +2456,7 @@ ret
 ENDP
 
 
+STDOUT = OFFSET ___iob + SIZE WATCOM_C_FILE  ; file index 1
 
 
 PROC    locallib_ioalloc_ NEAR
@@ -2465,10 +2466,11 @@ PROC    locallib_ioalloc_ NEAR
 
 push  bx
 call  locallib_chktty_
-mov   ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize]
-test  ax, ax
-jne   bufsize_set
-mov   ax, FILE_BUFFER_SIZE  ; lets just use FILE_BUFFER_SIZE = 512 for everything for now
+mov   ax, FILE_BUFFER_SIZE
+cmp   si, STDOUT
+jne   use_normal_buffer
+mov   ax, 16
+use_normal_buffer:
 mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize], ax  ; default buffer is 134 apparently! todo revisit
 bufsize_set:
 call  malloc_  ; near malloc
