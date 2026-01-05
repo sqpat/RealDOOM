@@ -44,11 +44,10 @@ NUM_CONSOLE_FILES = 2
 MAX_FILES = 20
 
 
-; todo: get rid of UNGET stuff. we dont use this.
+; todo: get rid of unused stuff
 
 _READ    = 00001h    ; file opened for reading 
 _WRITE   = 00002h    ; file opened for writing 
-_UNGET   = 00004h    ; ungetc has been done 
 _BIGBUF  = 00008h    ; big buffer allocated 
 _EOF     = 00010h    ; EOF has occurred 
 _SFERR   = 00020h    ; error has occurred on this file 
@@ -57,12 +56,12 @@ _BINARY  = 00040h    ; file is binary, skip CRLF processing
 _IOFBF   = 00100h    ; full buffering 
 _IOLBF   = 00200h    ; line buffering 
 _IONBF   = 00400h    ; no buffering 
-_TMPFIL  = 00800h    ; this is a temporary file 
+
 _DIRTY   = 01000h    ; buffer has been modified 
 _ISTTY   = 02000h    ; is console device 
-_DYNAMIC = 04000h   ; FILE is dynamically allocated   
-_FILEEXT = 08000h   ; lseek with positive offset has been done 
-_COMMIT  = 00001h    ; extended flag: commit OS buffers on flush 
+
+
+
 
 
 _O_RDONLY        = 00000h ;  open for read only 
@@ -976,7 +975,7 @@ call  free_
 
 mov   word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
 skip_bigbuf:
-and   word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], _DYNAMIC
+
 exit_doclose:
 xchg  ax, di
 pop   bp
@@ -1115,17 +1114,6 @@ ret
 ENDP
 
 
-PROC    locallib_fsync_   NEAR
-
-;  bx already had file handle
-mov   ah, 068h  ; INT 21,68 - Flush Buffer Using Handle (DOS 3.3+)
-clc   
-int   021h
-call  locallib_doserror_  ; check carry flag etc
-ret
-
-ENDP
-
 
 ; si holds fp
 PROC    locallib_flush_   NEAR
@@ -1178,11 +1166,6 @@ mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 mov  ax, word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base]
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
-test bp, bp
-jne  exit_flush
-
-test byte ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_extflags], _COMMIT
-jne  do_file_sync
 exit_flush:
 xchg ax, bp
 exit_flush_skip_bp:
@@ -1237,13 +1220,6 @@ or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
 jmp  not_error_flush_more
 
 
-do_file_sync:
-mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
-call locallib_fsync_
-cmp  ax, 0FFFFh
-jne  exit_flush
-jmp  exit_flush_skip_bp
-
 
 ENDP
 
@@ -1261,7 +1237,7 @@ mov  si, ax
 
 push dx   ; bp - 2. store seek type.
 
-test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], (_UNGET OR _WRITE)
+test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], (_WRITE)
 je   check_for_seek_end
 test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
 jne  do_flush
@@ -1280,7 +1256,7 @@ mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
 file_ready_for_seek:
 mov  dx, word ptr [bp - 2] ; retrieve seek type
 
-and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT (_EOF OR _UNGET))       ; turn off the flags.
+and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT (_EOF))       ; turn off the flags.
 ; lseek( int handle, off_t offset, int origin );
 do_call_lseek:
 call locallib_lseek_
@@ -1610,8 +1586,6 @@ call  malloc_  ; near malloc
 mov   bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 mov   word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], ax ; ptr to the file buf...
 or    byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], _BIGBUF
-
-
 mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
 mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
 pop   bx
@@ -1764,7 +1738,6 @@ dont_ioalloc:
 ;call locallib_flushall_inner_
 ;dont_flush:
 
-and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT _UNGET)
 mov  ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
 
@@ -1805,16 +1778,17 @@ ENDP
 PROC    locallib_fputc_   NEAR
 PUBLIC  locallib_fputc_
 
-push bx
+
 push cx
 push si
 push di
 
 xchg ax, cx  ; char in cx
 mov  si, dx
-mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 
-cmp  word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
+mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+
+cmp  word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
 jne  have_buffer_location
 
 call locallib_ioalloc_
@@ -1839,8 +1813,6 @@ jne  record_written_char
 flush_character:
 
 call locallib_flush_
-test ax, ax
-jne  exit_fputc_return_error
 
 record_written_char:
 xchg ax, cx
@@ -1851,7 +1823,6 @@ exit_fputc:
 pop  di
 pop  si
 pop  cx
-pop  bx
 ret
 
 handle_newline_crap:
@@ -1870,14 +1841,8 @@ jne  prepare_to_put_char
 
 
 call locallib_flush_
-test ax, ax
-je   prepare_to_put_char
-exit_fputc_return_error:
-mov  ax, 0FFFFh
-jmp  exit_fputc
+jmp  prepare_to_put_char
 
-
-ret
 ENDP
 
 
