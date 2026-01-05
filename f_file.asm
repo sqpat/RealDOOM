@@ -40,8 +40,7 @@ NUM_CONSOLE_FILES = 2
 
 .CODE
 
-; todo change?
-MAX_FILES = 20
+MAX_FILES = 10
 
 
 ; todo: get rid of unused stuff

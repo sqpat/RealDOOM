@@ -33,26 +33,6 @@ EXTRN get_new_streamlink_:NEAR
 
 
 
-
-
-
-
-
-; static c file struct array
-
-
-
-
-
-
-
-
-
-
-
-COLORMAPS_SIZE = 33 * 256
-LUMP_PER_EMS_PAGE = 1024 
-
 STACK_SIZE = 0A00h
 
 
@@ -127,12 +107,9 @@ PROC    I_START_STARTMARKER_ NEAR
 PUBLIC  I_START_STARTMARKER_
 ENDP
 
-NUM_STD_STREAMS = 5
+NUM_STD_STREAMS = 2
 STD_IN_STREAM_INDEX  = 0
 STD_OUT_STREAM_INDEX = 1
-STD_ERR_STREAM_INDEX = 2
-STD_AUX_STREAM_INDEX = 3
-STD_PRN_STREAM_INDEX = 4
 
 SIZE_STD_STREAMS = NUM_STD_STREAMS * (SIZE WATCOM_C_FILE)
 
@@ -143,13 +120,7 @@ PUBLIC docloseall_
 push bx
 push di
 
-
-
-
-
 mov  bx, word ptr ds:[___OpenStreams]
-
-
 
 iterate_next_stream:
 test bx, bx
@@ -364,9 +335,7 @@ push      bx
 push      dx
 push      si
 push      di
-and       byte ptr ds:[___iob + (STD_ERR_STREAM_INDEX * (SIZE WATCOM_C_FILE) + WATCOM_C_FILE.watcom_file_flag + 1)], (NOT _TMPFIL) SHR 8 ; 0F8h
 mov       si, OFFSET ___iob
-or        byte ptr ds:[___iob + (STD_ERR_STREAM_INDEX * (SIZE WATCOM_C_FILE) + WATCOM_C_FILE.watcom_file_flag + 1)], (_IONBF SHR 8)
 
 check_next_file_for_init:
 mov       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag]
