@@ -713,50 +713,28 @@ _old_screen_viewport_height =	  	 _NULL_OFFSET + 00ACEh
 _FixedDivWholeA_addr =   		     _NULL_OFFSET + 00AD0h
 _cht_CheckCheat_Far_addr = 	 	     _NULL_OFFSET + 00AD4h
 _myargc =				 	 	     _NULL_OFFSET + 00AD8h
-;_myargv = 	 	     				 _NULL_OFFSET + 00ADAh
+_errno =      						 _NULL_OFFSET + 00ADAh
 
-;___MiniHeapRover =                   _NULL_OFFSET + 00AE0h
-;___MiniHeapFreeRover =               _NULL_OFFSET + 00AE2h
-;___nheapbeg =      					 _NULL_OFFSET + 00AE4h
-;___historical_splitparms =           _NULL_OFFSET + 00AE6h
-;___LargestSizeB4MiniHeapRover =      _NULL_OFFSET + 00AE8h
-_errno =      						 _NULL_OFFSET + 00AEAh
-
-; same
-;___int23_exit =						 _NULL_OFFSET + 00AECh
-;___FPE_handler_exit =				 _NULL_OFFSET + 00AECh
-
-___OpenStreams =					 _NULL_OFFSET + 00AF0h
-___ClosedStreams = 					 _NULL_OFFSET + 00AF2h
-;____Argc =        				     _NULL_OFFSET + 00AF4h  
-;____Argv =        				     _NULL_OFFSET + 00AF6h  
+__STACKLOW =          				 _NULL_OFFSET + 00AE0h
+__STACKTOP =          				 _NULL_OFFSET + 00AE2h
+___OpenStreams =					 _NULL_OFFSET + 00AE4h
+___ClosedStreams = 					 _NULL_OFFSET + 00AE6h
 
 
 
-;___argv =         				     _NULL_OFFSET + 00AF8h 
-;___argc =         				     _NULL_OFFSET + 00AFAh 
-;__argc =          				     _NULL_OFFSET + 00AFCh
-;__argv =          				     _NULL_OFFSET + 00AFEh
-
-__STACKLOW =          				 _NULL_OFFSET + 00B00h
-__STACKTOP =          				 _NULL_OFFSET + 00B02h
-__psp =								 _NULL_OFFSET + 00B04h
-;__curbrk =							 _NULL_OFFSET + 00B06h
-
-
-___iob = 							 _NULL_OFFSET + 00B08h
+___iob = 							 _NULL_OFFSET + 00AE8h
 ; NFILES * SIZE WATCOM_C_FILE bytes = 20 * 14 = 280 = 118h
 
 
-___streamlinks = 				 	 _NULL_OFFSET + 00C20h
+___streamlinks = 				 	 _NULL_OFFSET + 00C00h
 
-_myargv = 	   	  					 _NULL_OFFSET + 00C98h
+_myargv = 	   	  					 _NULL_OFFSET + 00C78h
 ; max args = 20 including program name i guess. should be enough?
-_stdout_buffer =				     _NULL_OFFSET + 00CC0h
-_filebufferstart =				     _NULL_OFFSET + 00CD0h
-;_alternate_buffer =				     _NULL_OFFSET + 00ED0h
+_stdout_buffer =				     _NULL_OFFSET + 00CA0h
+_filebufferstart =				     _NULL_OFFSET + 00CB0h
+;_alternate_buffer =				     _NULL_OFFSET + 00EB0h
 
-_flatcache_nodes =				     _NULL_OFFSET + 010D0h
+_flatcache_nodes =				     _NULL_OFFSET + 010B0h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + ((SIZE CACHE_NODE_T) * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

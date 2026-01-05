@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/04 20:36:45
+Created on:       26/01/04 20:46:59
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -182,8 +182,8 @@ Module: m_menu.obj(m_menu.ASM)
 0147:09fa*     M_Options_
 0147:052a*     M_DoSave_
 0147:0d81*     M_Responder_
-0147:078e*     M_DrawSound_
 0147:07f3*     S_SetSfxVolume_
+0147:078e*     M_DrawSound_
 0147:0a9d*     M_ReadThis2_
 0147:083c*     S_SetMusicVolume_
 0147:08f0*     M_ChooseSkill_
@@ -516,8 +516,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 21a6:52df*     GetVileMomz_
 21a6:4f0f*     A_SkelWhoosh_
 21a6:5538*     A_PainDie_
-21a6:525a*     A_VileTarget_
 21a6:46eb*     P_LookForPlayers_
+21a6:525a*     A_VileTarget_
 21a6:5959*     A_BrainSpit_
 21a6:58e3*     A_BrainExplode_
 21a6:4415*     P_Move_
@@ -1416,4 +1416,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  000395b0 (234928.)
 Entry point address: 2b7f:9bf0
-Link time: 00:00.04
+Link time: 00:00.49

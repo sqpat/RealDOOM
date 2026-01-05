@@ -575,13 +575,13 @@ mov        bx, offset DGROUP:_end
 add        bx, 00Fh
 and        bl, 0F0h ; round up a segment
 mov        word ptr es:[__STACKLOW], bx
-mov        word ptr es:[__psp], ds
+;mov        word ptr es:[__psp], ds
 add        bx, sp
 add        bx, 00Fh
 and        bl, 0F0h  ; round up a segment
 mov        ss, cx
 mov        sp, bx
-mov        word ptr es:[__STACKTOP], bx
+;mov        word ptr es:[__STACKTOP], bx
 
 
 

@@ -471,11 +471,7 @@ db 0
 dw  00, 00, 00, 00, 00, 00
 ; AD0 
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; AE0 
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; AF0 
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; B00
+; AE0
 dw  00, 00, 00, 00
 
 
@@ -489,7 +485,7 @@ STDOUT_FILENO = 1
 STDERR_FILENO = 2
 STDAUX_FILENO = 3
 STDPRN_FILENO = 4
-; B08 ; file 0
+; AE8 ; file 0
 dw 00, 00, 00, _READ,  STDIN_FILENO, 0, 0
 dw 00, 00, 00, _WRITE OR _IONBF, STDOUT_FILENO, 0, 0
 dw 00, 00, 00, _WRITE, STDERR_FILENO, 0, 0
@@ -514,7 +510,7 @@ dw 00, 00, 00, 00, 00, 0, 0
 dw 00, 00, 00, 00, 00, 0, 0
 dw 00, 00, 00, 00, 00, 0, 0
 
-; C20 ; streamlink static array
+; C00 ; streamlink static array
 
 dw 0, 0, 0, 0, 0, 0
 dw 0, 0, 0, 0, 0, 0
@@ -528,25 +524,25 @@ dw 0, 0, 0, 0, 0, 0
 dw 0, 0, 0, 0, 0, 0
 
 ; command line copy
-; C98
+; C78
 dw  00, 00, 00, 00
-; CA0
+; C80
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; C90
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; CA0  stdout buffer
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; CB0
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; CC0  stdout buffer
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; CD0
 FILE_BUFFER_SIZE = 512
 
 REPT FILE_BUFFER_SIZE
 	db  0
 ENDM
-; ED0
+; EB0
 REPT FILE_BUFFER_SIZE
 	db  0
 ENDM
-; 10D0
+; 10B0
 
 REPT NUM_FLAT_CACHE_PAGES
 	dw  00
