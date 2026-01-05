@@ -512,37 +512,37 @@ dw 00, 00, 00, 00, 00, 0, 0
 
 ; C00 ; streamlink static array
 
-dw 0, 0, 0, 0, 0, 0
-dw 0, 0, 0, 0, 0, 0
-dw 0, 0, 0, 0, 0, 0
-dw 0, 0, 0, 0, 0, 0
-dw 0, 0, 0, 0, 0, 0
-dw 0, 0, 0, 0, 0, 0
-dw 0, 0, 0, 0, 0, 0
-dw 0, 0, 0, 0, 0, 0
-dw 0, 0, 0, 0, 0, 0
-dw 0, 0, 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
 
 ; command line copy
-; C78
-dw  00, 00, 00, 00
-; C80
+; C50
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; C60
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; C70
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; C80  stdout buffer
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; C90
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; CA0  stdout buffer
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; CB0
 FILE_BUFFER_SIZE = 512
 
 REPT FILE_BUFFER_SIZE
 	db  0
 ENDM
-; EB0
+; E90
 REPT FILE_BUFFER_SIZE
 	db  0
 ENDM
-; 10B0
+; 1090
 
 REPT NUM_FLAT_CACHE_PAGES
 	dw  00

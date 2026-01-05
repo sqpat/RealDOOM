@@ -53,8 +53,6 @@ EXTRN get_new_streamlink_:NEAR
 COLORMAPS_SIZE = 33 * 256
 LUMP_PER_EMS_PAGE = 1024 
 
-FILE_BUFFER_SIZE = 512
-
 STACK_SIZE = 0A00h
 
 
@@ -388,7 +386,6 @@ mov       word ptr ds:[si + WATCOM_C_FILE.watcom_file_link], di
 mov       word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
 mov       word ptr ds:[___OpenStreams], di
 add       si, SIZE WATCOM_C_FILE
-mov       word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_orientation], 0
 jmp       check_next_file_for_init
 
 exit_initfiles:

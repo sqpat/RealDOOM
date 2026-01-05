@@ -719,8 +719,6 @@ mov  word ptr ds:[si + 0Ah], dx ; 0
 or   word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], cx  ; flags
 
 mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
-mov  word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_orientation], dx ; 0
-mov  word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_extflags], dx ; 0
 mov  word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base], dx ; 0
 test cl, _APPEND
 je   do_open_skip_fseek
@@ -791,7 +789,7 @@ mov       word ptr ds:[si], ax
 
 ; zero out the streamlink.
 
-stosw  ; 7 * 2 bytes = SIZE WATCOM_STREAM_LINK = 0Eh
+stosw  ; 7 * 2 bytes = SIZE WATCOM_C_FILE = 0Eh
 stosw
 xchg      ax, si
 stosw  ;  + WATCOM_C_FILE.watcom_file_link
@@ -799,9 +797,11 @@ xchg      ax, dx
 stosw  ;  + WATCOM_C_FILE.watcom_file_flag
 xchg      ax, si ; retrieve 0
 stosw
+stosw
+stosw
 
 
-lea       ax, [di - SIZE WATCOM_STREAM_LINK]
+lea       ax, [di - SIZE WATCOM_C_FILE]
 do_allocfp_exit:
 pop       di
 pop       dx
