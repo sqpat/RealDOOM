@@ -534,7 +534,19 @@ dw  00, 00, 00, 00
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; CB0
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; CC0
+; CC0  stdout buffer
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; CD0
+FILE_BUFFER_SIZE = 512
+
+REPT FILE_BUFFER_SIZE
+	db  0
+ENDM
+; ED0
+REPT FILE_BUFFER_SIZE
+	db  0
+ENDM
+; 10D0
 
 REPT NUM_FLAT_CACHE_PAGES
 	dw  00

@@ -752,7 +752,11 @@ ___streamlinks = 				 	 _NULL_OFFSET + 00C20h
 
 _myargv = 	   	  					 _NULL_OFFSET + 00C98h
 ; max args = 20 including program name i guess. should be enough?
-_flatcache_nodes =				     _NULL_OFFSET + 00CC0h
+_stdout_buffer =				     _NULL_OFFSET + 00CC0h
+_filebufferstart =				     _NULL_OFFSET + 00CD0h
+_alternate_buffer =				     _NULL_OFFSET + 00ED0h
+
+_flatcache_nodes =				     _NULL_OFFSET + 010D0h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + ((SIZE CACHE_NODE_T) * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1
