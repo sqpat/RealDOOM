@@ -583,47 +583,6 @@ mov        ss, cx
 mov        sp, bx
 mov        word ptr es:[__STACKTOP], bx
 
-mov        dx, bx
-shr        dx, 1 ; seg count
-shr        dx, 1
-shr        dx, 1
-shr        dx, 1
-
-; set up heap
-
-mov        cx, ds:[MEMTOP] ; 2   ; 0A000h
-mov        ax, es                
-sub        cx, ax                ; ; 85EA
-cmp        dx, cx                ; (f7d)
-jb         enuf_mem
-mov        bx, 1
-mov        ax, OFFSET _NO_MEMORY_STR
-mov        dx, cs
-; __fatal_runtime_error_
-mov  cx, ax
-jmp  __do_exit_with_msg_
-
-
-ENDP
-
-enuf_mem:
-mov        ax, es               
-mov        bx, dx
-shl        bx, 1
-shl        bx, 1
-shl        bx, 1
-shl        bx, 1            ; ; F7D0
-jne        not64k
-mov        bx, 0FFFEh
-not64k:
-mov        word ptr es:[__curbrk],bx  ; 2120
-mov        bx, dx
-add        bx, ax       ; 2993
-mov        ax, word ptr es:[__psp]
-mov        es, ax
-sub        bx, ax
-mov        ah, 4Ah      ;  Modify allocated memory blocks
-int        21h
 
 
 mov        di, ds

@@ -715,16 +715,16 @@ _cht_CheckCheat_Far_addr = 	 	     _NULL_OFFSET + 00AD4h
 _myargc =				 	 	     _NULL_OFFSET + 00AD8h
 ;_myargv = 	 	     				 _NULL_OFFSET + 00ADAh
 
-___MiniHeapRover =                   _NULL_OFFSET + 00AE0h
-___MiniHeapFreeRover =               _NULL_OFFSET + 00AE2h
-___nheapbeg =      					 _NULL_OFFSET + 00AE4h
+;___MiniHeapRover =                   _NULL_OFFSET + 00AE0h
+;___MiniHeapFreeRover =               _NULL_OFFSET + 00AE2h
+;___nheapbeg =      					 _NULL_OFFSET + 00AE4h
 ;___historical_splitparms =           _NULL_OFFSET + 00AE6h
-___LargestSizeB4MiniHeapRover =      _NULL_OFFSET + 00AE8h
+;___LargestSizeB4MiniHeapRover =      _NULL_OFFSET + 00AE8h
 _errno =      						 _NULL_OFFSET + 00AEAh
 
 ; same
-___int23_exit =						 _NULL_OFFSET + 00AECh
-___FPE_handler_exit =				 _NULL_OFFSET + 00AECh
+;___int23_exit =						 _NULL_OFFSET + 00AECh
+;___FPE_handler_exit =				 _NULL_OFFSET + 00AECh
 
 ___OpenStreams =					 _NULL_OFFSET + 00AF0h
 ___ClosedStreams = 					 _NULL_OFFSET + 00AF2h
@@ -741,7 +741,7 @@ ___ClosedStreams = 					 _NULL_OFFSET + 00AF2h
 __STACKLOW =          				 _NULL_OFFSET + 00B00h
 __STACKTOP =          				 _NULL_OFFSET + 00B02h
 __psp =								 _NULL_OFFSET + 00B04h
-__curbrk =							 _NULL_OFFSET + 00B06h
+;__curbrk =							 _NULL_OFFSET + 00B06h
 
 
 ___iob = 							 _NULL_OFFSET + 00B08h
@@ -754,7 +754,7 @@ _myargv = 	   	  					 _NULL_OFFSET + 00C98h
 ; max args = 20 including program name i guess. should be enough?
 _stdout_buffer =				     _NULL_OFFSET + 00CC0h
 _filebufferstart =				     _NULL_OFFSET + 00CD0h
-_alternate_buffer =				     _NULL_OFFSET + 00ED0h
+;_alternate_buffer =				     _NULL_OFFSET + 00ED0h
 
 _flatcache_nodes =				     _NULL_OFFSET + 010D0h
 

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/04 19:15:49
+Created on:       26/01/04 19:51:33
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -516,8 +516,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 21a6:52df*     GetVileMomz_
 21a6:4f0f*     A_SkelWhoosh_
 21a6:5538*     A_PainDie_
-21a6:46eb*     P_LookForPlayers_
 21a6:525a*     A_VileTarget_
+21a6:46eb*     P_LookForPlayers_
 21a6:5959*     A_BrainSpit_
 21a6:4415*     P_Move_
 21a6:58e3*     A_BrainExplode_
