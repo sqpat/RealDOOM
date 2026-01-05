@@ -1,4 +1,4 @@
-CCOPTS = -zp1 -oaxet -oi -zq -j -mm -0 -s -zdp -d__COMPILER_WATCOM
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -0 -s -zdp 
 
 GLOBOBJS = &
  dumprint.obj 

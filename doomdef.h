@@ -543,39 +543,7 @@ uint16_t __near locallib_int86_67_esdi( uint16_t ax, uint16_t di, uint16_t es);
 #define FAR_strcpy _fstrcpy
 #define FAR_memmove _fmemmove
 
-#define __COMPILER_WATCOM 1
-
-#ifdef __COMPILER_WATCOM
-// open watcom defines
-#define __far_func __far
-#else
-// gccia16 defines
-
-#define __far_func  
-#define __DEMO_ONLY_BINARY
-#ifndef __near
-#define __near
-#endif
-#ifndef __interrupt
-#define __interrupt 
-#endif
-#ifndef O_BINARY
-#define O_BINARY 0 
-#define SKIPWIPE
-//#define PRECALCULATE_OPENINGS
-
-
-#define _chain_intr(func) func()
-
-// only used in practice for b = 3, then & 0x07...
-#define _rotl(a, b) (a>>13)
-
-#endif
-
-void __far  _fstrncpy(char __far *dst, const char __far *src, size_t n);
-
-
-#endif
+ 
 
 #pragma aux locallib_far_fread_params \
         __parm [dx ax] [bx] [cx] \
@@ -601,7 +569,6 @@ void  __near locallib_fread(void __far* dest, uint16_t size, FILE * stream);
 
 //#define locallib_far_fread fread
 //#define FAR_read read
-
 
 
 

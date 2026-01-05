@@ -796,7 +796,7 @@ test  ax, ax
 jne   do_mem_thing
 
 mov     dx, BASE_LOWER_MEMORY_SEGMENT ; base_lower_memory_segment
-mov     ax, word ptr ds:[_stored_ds]
+mov     ax, DGROUP
 add     ax, ((DGROUP_SIZE + STACK_SIZE) SHR 4 );
 sub     ax, dx
 ja      not_enough_memory
@@ -862,7 +862,7 @@ do_mem_thing:
 
 mov     dx, BASE_LOWER_MEMORY_SEGMENT ; base_lower_memory_segment
 push    dx
-mov     bx, word ptr ds:[_stored_ds]
+mov     bx, DGROUP
 lea     ax, [bx + ((DGROUP_SIZE + STACK_SIZE) SHR 4 )]  ;
 push    ax              ; end of binary
 push    bx              ; stored_ds

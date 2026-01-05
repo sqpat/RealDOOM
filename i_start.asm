@@ -106,17 +106,17 @@ PUBLIC docloseall_
 
 push bx
 
-mov  bx, OFFSET ___iob + SIZE WATCOM_C_FILE  ; start after stdout
+mov  bx, OFFSET ___iob + SIZE FILE_INFO_T  ; start after stdout
 
 iterate_next_stream:
-cmp  word ptr ds:[bx + WATCOM_C_FILE.watcom_file_base], 0
+cmp  word ptr ds:[bx + FILE_INFO_T.fileinto_base], 0
 je   skip_this_stream
 
 call doclose_
 
 skip_this_stream:
-add  bx, SIZE WATCOM_C_FILE
-cmp  bx, (OFFSET ___iob + (MAX_FILES * SIZE WATCOM_C_FILE))
+add  bx, SIZE FILE_INFO_T
+cmp  bx, (OFFSET ___iob + (MAX_FILES * SIZE FILE_INFO_T))
 jb   iterate_next_stream
 
 done_closing_streams:
@@ -125,57 +125,6 @@ pop  bx
 ret  
 
 
-PROC    __GETDS   NEAR
-PUBLIC  __GETDS
-
-push      ax
-mov       ax, DGROUP
-mov       ds, ax
-pop       ax
-ret       
-
-ENDP
-
-
-PROC hackDS_ NEAR
-PUBLIC hackDS_
-
-;todo: make cli held for less time
-
-cli
-push cx
-push si
-push di
-
-mov ds:[_stored_ds], ds
-xor di, di
-mov si, di
-mov cx, FIXED_DS_SEGMENT
-
-;mov cx, ds
-;add cx, 400h
-mov es, cx
-
-mov CX, 1000h    ; 4000h bytes
-rep movsw
-
-mov cx, es
-mov ds, cx
-mov ss, cx
-
-mov word ptr cs:[__GETDS+2], cx
-
-;extern uint16_t __near* _GETDS;
-;	((uint16_t __near*)(&_GETDS))[1] = FIXED_DS_SEGMENT;
-
-
-pop di
-pop si
-pop cx
-sti
-ret
-
-ENDP
 
 
 ; creates a list of pointers to words/params (argv), unescaped
@@ -418,7 +367,7 @@ add        bx, 00Fh
 and        bl, 0F0h  ; round up a segment
 mov        ss, cx
 mov        sp, bx
-;mov        word ptr es:[__STACKTOP], bx
+mov        word ptr es:[__STACKTOP], bx
 
 
 
@@ -462,11 +411,39 @@ rep        stosb  ; zero  BSS segment
 xor        bp, bp
 push       bp
 mov        bp, sp
-mov        ax, 0FFh
 
-call  __GETDS
+
+
 call  __Init_Argv_
-call  hackDS_
+;call  hackDS_
+
+; inlined hackDS_
+
+
+cli
+
+xor di, di
+mov si, di
+mov cx, FIXED_DS_SEGMENT
+
+;mov cx, ds
+;add cx, 400h
+mov es, cx
+
+mov CX, 1000h    ; 4000h bytes
+rep movsw
+
+mov cx, es
+mov ds, cx
+mov ss, cx
+
+
+;extern uint16_t __near* _GETDS;
+;	((uint16_t __near*)(&_GETDS))[1] = FIXED_DS_SEGMENT;
+
+
+sti
+
 jmp   D_DoomMain_
 
 

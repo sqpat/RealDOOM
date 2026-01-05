@@ -49,7 +49,6 @@ LUMP_PER_EMS_PAGE = 1024
 
 .CODE
 
-EXTRN __GETDS:WORD
 
 PROC    I_QUIT_STARTMARKER_ NEAR
 PUBLIC  I_QUIT_STARTMARKER_
@@ -225,39 +224,6 @@ ret
 
 ENDP
 
-PROC hackDSBack_ NEAR
-PUBLIC hackDSBack_
-
-cli
-push cx
-push si
-push di
-
-mov es, ds:[_stored_ds]
-
-xor di, di
-mov si, di
-mov CX, 1000h   ; 2000h bytes
-rep movsw
-mov cx, es
-mov ds, cx
-mov ss, cx
-
-mov word ptr cs:[__GETDS+2], es ; put old ds back
-
-
-pop di
-pop si
-pop cx
-
-
-sti
-
-
-
-ret
-ENDP
-
 PROC   I_ShutdownWads_ NEAR
 PUBLIC I_ShutdownWads_
 
@@ -332,7 +298,30 @@ skip_enddoom:
 
 call  Z_ShutdownEMS_
 call  zeroConventional_; // zero conventional. clears various bugs that assume 0 in memory. kind of bad practice, the bugs shouldnt happen... todo fix
-call  hackDSBack_
+;call  hackDSBack_ 
+; inlined
+
+cli
+push cx
+push si
+push di
+
+mov cx, DGROUP
+mov es, cx
+
+xor di, di
+mov si, di
+mov CX, 1000h   ; 2000h bytes
+rep movsw
+mov cx, es
+mov ds, cx
+mov ss, cx
+
+pop di
+pop si
+pop cx
+
+sti
 
 ret
 

@@ -169,10 +169,10 @@ xchg      ax, dx   ; dx gets copy source ptr
 push      ax       ; push target segment
 
 
-mov       di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag]
+mov       di, word ptr ds:[si + FILE_INFO_T.fileinto_flag]
 and       di, (_SFERR OR _EOF)
 
-and       byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT (_SFERR OR _EOF))
+and       byte ptr ds:[si + FILE_INFO_T.fileinto_flag], (NOT (_SFERR OR _EOF))
 
 do_binary_fwrite:
 
@@ -183,7 +183,7 @@ do_binary_fwrite:
 
 ; never do appends. always a whole write.
 
-mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+mov       bx, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
 pop       ds  ; get target segment
 ; DS:DX is now fwrite source
 mov       ah, 040h  ; Write file or device using handle
@@ -202,13 +202,13 @@ bad_fwrite:
 ; partial write??? how does this happen
 mov       word ptr ds:[_errno], 0Ch
 
-or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
+or        byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _SFERR
 xor       cx, cx
 
 fwrote_everything:
 ; cx has bytes written 
 
-or        word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], di
+or        word ptr ds:[si + FILE_INFO_T.fileinto_flag], di
 
 
 xchg      ax, cx ; cx had bytes copied.
@@ -262,7 +262,7 @@ mov       dx, bx    ; dx gets bytes to copy
 mov       si, cx    ; si gets fp
 
 
-cmp       word ptr ds:[si + WATCOM_C_FILE.watcom_file_base], 0
+cmp       word ptr ds:[si + FILE_INFO_T.fileinto_base], 0
 jne       dont_allocate_buffer
 
 ; si already fp
@@ -276,7 +276,7 @@ do_binary_fread:
 continue_fread_until_done:
 
 mov       ax, dx ; get bytes_left
-mov       cx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+mov       cx, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
 test      cx, cx
 je        out_of_buffer
 
@@ -288,10 +288,10 @@ dont_cap_bytesleft:
 ; di carries dest already.
 mov       bx, si
 
-sub       word ptr ds:[bx + WATCOM_C_FILE.watcom_file_cnt], cx
+sub       word ptr ds:[bx + FILE_INFO_T.fileinto_cnt], cx
 
 sub       dx, cx
-mov       si, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
+mov       si, word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
 
 ; es already set...?
 
@@ -300,7 +300,7 @@ rep       movsw
 adc       cx, cx
 rep       movsb
 
-mov       word ptr ds:[bx + WATCOM_C_FILE.watcom_file_ptr], si
+mov       word ptr ds:[bx + FILE_INFO_T.fileinto_ptr], si
 
 mov       si, bx ;unbackup
 
@@ -310,23 +310,23 @@ test      ax, ax
 je        finished_fread
 
 
-cmp       ax, SECTOR_SIZE  ;  always same? ;  word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize]
+cmp       ax, SECTOR_SIZE  ;  always same? ;  word ptr ds:[si + FILE_INFO_T.fileinto_bufsize]
 jb        just_fill_buffer_binary
 
 
 skip_buffer_modify:
 
 
-mov       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_base]
+mov       ax, word ptr ds:[si + FILE_INFO_T.fileinto_base]
 
-mov       word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
-mov       word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
+mov       word ptr ds:[si + FILE_INFO_T.fileinto_cnt], 0
+mov       word ptr ds:[si + FILE_INFO_T.fileinto_ptr], ax
 mov       cx, dx  
 
 
 push      dx
 mov       dx, di
-mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+mov       bx, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
 push      es
 pop       ds ; set target segment for dos api call...
 
@@ -351,7 +351,7 @@ ret
 
 
 hit_end_of_file:
-or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _EOF
+or        byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _EOF
 pop       di
 pop       si
 ret    
@@ -360,7 +360,7 @@ ret
 do_qread_fread_error:
 call      locallib_set_errno_ptr_
 bad_read_do_error:
-or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
+or        byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _SFERR
 
 jmp       exit_fread
 
@@ -401,7 +401,7 @@ mov       si, cx    ; si gets fp
 mov       cx, bx    ; cx gets bytes to copy
 
 
-mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+mov       bx, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
 
 
 mov       es, ax  ; es stores target segment ; todo things crash without this es line???
@@ -422,7 +422,7 @@ jne       exit_fread
 
 
 hit_end_of_file:
-or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _EOF
+or        byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _EOF
 
 continue_fread_until_done:
 
@@ -439,7 +439,7 @@ ret
 do_qread_fread_error:
 call      locallib_set_errno_ptr_
 bad_read_do_error:
-or        byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
+or        byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _SFERR
 
 jmp       exit_fread
 
@@ -459,8 +459,8 @@ PUBLIC  locallib_fopen_nobuffering_
 
 call    locallib_fopen_
 xchg    ax, bx
-or      byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag + 1], _IONBF SHR 8
-and     byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag + 1], (NOT (_IOFBF OR _IOLBF)) SHR 8
+or      byte ptr ds:[bx + FILE_INFO_T.fileinto_flag + 1], _IONBF SHR 8
+and     byte ptr ds:[bx + FILE_INFO_T.fileinto_flag + 1], (NOT (_IOFBF OR _IOLBF)) SHR 8
 xchg    ax, bx
 ret
 
@@ -711,14 +711,14 @@ pop  bx     ; bx gets file permissions
 call locallib_sopen_
 
 
-mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle], ax
+mov  word ptr ds:[si + FILE_INFO_T.fileinto_handle], ax
 cmp  ax, 0FFFFh
 je   bad_handle_dofree
 xor  dx, dx
-mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], dx ; 0
+mov  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], dx ; 0
 mov  word ptr ds:[si + 0Ah], dx ; 0
-mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_base], dx ; 0
-or   word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], cx  ; flags
+mov  word ptr ds:[si + FILE_INFO_T.fileinto_base], dx ; 0
+or   word ptr ds:[si + FILE_INFO_T.fileinto_flag], cx  ; flags
 
 test cl, _APPEND
 je   do_open_skip_fseek
@@ -739,8 +739,6 @@ ret
 
 
 bad_handle_dofree:
-xchg ax, si
-call freefp_
 xor  ax, ax
 jmp  exit_doopen
 
@@ -757,10 +755,10 @@ push      di
 
 mov       di, OFFSET ___iob
 loop_next_static_file:
-test      byte ptr ds:[di + WATCOM_C_FILE.watcom_file_flag], (_READ OR _WRITE)
+test      byte ptr ds:[di + FILE_INFO_T.fileinto_flag], (_READ OR _WRITE)
 je        create_streamlink      ; found an empty FP
-add       di, SIZE WATCOM_C_FILE
-cmp       di, (OFFSET ___iob + (MAX_FILES * SIZE WATCOM_C_FILE))
+add       di, SIZE FILE_INFO_T
+cmp       di, (OFFSET ___iob + (MAX_FILES * SIZE FILE_INFO_T))
 jb        loop_next_static_file
 jmp       error_out_of_files
 
@@ -779,15 +777,15 @@ pop       es
 
 ; zero out the streamlink.
 xor       ax, ax
-stosw  ; 7 * 2 bytes = SIZE WATCOM_C_FILE = 0Eh
+stosw  ; 7 * 2 bytes = SIZE FILE_INFO_T = 0Eh
 stosw
-stosw  ;  + WATCOM_C_FILE.watcom_file_base
+stosw  ;  + FILE_INFO_T.fileinto_base
 stosw  
 stosw
 stosw   ; todo set buffer at alloc time?
 
 
-lea       ax, [di - SIZE WATCOM_C_FILE]
+lea       ax, [di - SIZE FILE_INFO_T]
 do_allocfp_exit:
 pop       di
 pop       dx
@@ -876,15 +874,6 @@ jmp  continue_close
 
 ENDP
 
-PROC    freefp_  NEAR
-PUBLIC  freefp_  
-; todo doesnt do anything anymore, remove
-ret
-
-ENDP
-
-
-
 
 
 ; todo pass in si?
@@ -902,9 +891,9 @@ push  di
 mov   si, ax
 
 xor   di, di ; error code.
-test  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (_READ OR _WRITE)
+test  byte ptr ds:[si + FILE_INFO_T.fileinto_flag], (_READ OR _WRITE)
 je    error_and_exit_doclose  ; not readable or writable? todo get rid of error check
-test  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
+test  byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 1], (_DIRTY SHR 8)
 je    file_not_dirty_skip_flush
 call  locallib_flush_
 test  ax, ax
@@ -912,30 +901,30 @@ je    flush_no_error
 mov   di, 0FFFFh
 flush_no_error:
 file_not_dirty_skip_flush:
-mov   ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+mov   ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
 test  ax, ax
 je    skip_seek_on_close
 neg   ax
 cwd   
-mov   bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+mov   bx, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
 xchg  ax, bx
 mov   cx, dx
 mov   dx, 1  ; SEEK_CUR
 call  locallib_lseek_
 skip_seek_on_close:
 
-mov   ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+mov   ax, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
 call  locallib_close_  ; close ms-dos file
 or    di, ax
 skip_close_null_handle:
-test  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _BIGBUF
+test  byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _BIGBUF
 je    skip_bigbuf  ; todo do we get rid of this check?
 
-mov   ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_base]
+mov   ax, word ptr ds:[si + FILE_INFO_T.fileinto_base]
 call  free_
-mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_base], 0
+mov   word ptr ds:[si + FILE_INFO_T.fileinto_base], 0
 skip_bigbuf:
-mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], 0  ; not open for read or write anymore.
+mov   word ptr ds:[si + FILE_INFO_T.fileinto_flag], 0  ; not open for read or write anymore.
 
 exit_doclose:
 xchg  ax, di
@@ -976,7 +965,7 @@ PUBLIC  locallib_update_buffer_
 
 
 
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
 cwd  
 cmp  cx, dx
 jl   size_check_ok
@@ -985,8 +974,8 @@ cmp  bx, ax
 ja   outside_of_buffer
 size_check_ok:
 
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_base]
-sub  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
+mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_base]
+sub  ax, word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
 cwd  
 cmp  cx, dx
 jg   update_file
@@ -1000,9 +989,9 @@ return_update_buffer:
 ret  
 
 update_file:
-and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT _EOF)
-add  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], bx
-sub  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], bx
+and  byte ptr ds:[si + FILE_INFO_T.fileinto_flag], (NOT _EOF)
+add  word ptr ds:[si + FILE_INFO_T.fileinto_ptr], bx
+sub  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], bx
 clc
 jmp  return_update_buffer
 
@@ -1014,10 +1003,10 @@ PUBLIC  locallib_reset_buffer_
 
 ; si is file
 
-and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT _EOF)
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_base]
-mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
-mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
+and  byte ptr ds:[si + FILE_INFO_T.fileinto_flag], (NOT _EOF)
+mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_base]
+mov  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], 0
+mov  word ptr ds:[si + FILE_INFO_T.fileinto_ptr], ax
 
 ret  
 
@@ -1062,15 +1051,15 @@ push bp  ; bp is ret
 
 xor  bp, bp  ; ret
 
-test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
+test byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 1], (_DIRTY SHR 8)
 jne  file_is_dirty
 file_not_dirty:
-cmp  word ptr ds:[si + WATCOM_C_FILE.watcom_file_base], 0
+cmp  word ptr ds:[si + FILE_INFO_T.fileinto_base], 0
 je   finish_handling_flush
-and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], (NOT _EOF)
-test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_ISTTY SHR 8)
+and  byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 0], (NOT _EOF)
+test byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 1], (_ISTTY SHR 8)
 jne  finish_handling_flush
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
 cwd  
 mov  bx, dx
 or   bx, ax
@@ -1081,7 +1070,7 @@ mov  al, 1
 neg  cx
 neg  dx
 sbb  cx, 0
-mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+mov  bx, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
 
 call locallib_inner_lseek_
 
@@ -1091,14 +1080,14 @@ jne  finish_handling_flush
 cmp  ax, 0FFFFh
 jne  finish_handling_flush
 mov  bp, 0FFFFh
-or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
+or   byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _SFERR
 
 finish_handling_flush:
 
 
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_base]
-mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
-mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
+mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_base]
+mov  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], 0
+mov  word ptr ds:[si + FILE_INFO_T.fileinto_ptr], ax
 exit_flush:
 xchg ax, bp
 exit_flush_skip_bp:
@@ -1111,15 +1100,15 @@ pop  bx
 ret
 
 file_is_dirty:
-and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], ((NOT _DIRTY) SHR 8)  ; mark not dirty?
-test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], _WRITE
+and  byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 1], ((NOT _DIRTY) SHR 8)  ; mark not dirty?
+test byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 0], _WRITE
 je   finish_handling_flush
 
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_base]
+mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_base]
 test ax, ax
 je   finish_handling_flush
 mov  di, ax
-mov  cx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+mov  cx, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
 
 
 test cx, cx
@@ -1129,7 +1118,7 @@ test bp, bp
 jne  finish_handling_flush
 mov  bx, cx
 mov  dx, di
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
 call locallib_qwrite_
 
 mov  dx, ax
@@ -1149,7 +1138,7 @@ jmp  set_err_flag
 handle_error_len_case:
 mov  bp, ax
 set_err_flag:
-or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
+or   byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _SFERR
 jmp  not_error_flush_more
 
 
@@ -1170,26 +1159,26 @@ mov  si, ax
 
 push dx   ; bp - 2. store seek type.
 
-test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], (_WRITE)
+test byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 0], (_WRITE)
 je   check_for_seek_end
-test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
+test byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 1], (_DIRTY SHR 8)
 jne  do_flush
 cmp  dx, SEEK_CUR   
 jne  dont_subtract_offset
 subtract_offset:
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
 cwd  
 sub  bx, ax
 sbb  cx, dx
 dont_subtract_offset:
 
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_base]
-mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
-mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
+mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_base]
+mov  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], 0
+mov  word ptr ds:[si + FILE_INFO_T.fileinto_ptr], ax
 file_ready_for_seek:
 mov  dx, word ptr [bp - 2] ; retrieve seek type
 
-and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT (_EOF))       ; turn off the flags.
+and  byte ptr ds:[si + FILE_INFO_T.fileinto_flag], (NOT (_EOF))       ; turn off the flags.
 ; lseek( int handle, off_t offset, int origin );
 do_call_lseek:
 call locallib_lseek_
@@ -1233,7 +1222,7 @@ ja   reset_buffer
 call locallib_tell_
 mov  di, ax    ; low bytes temporarily
 mov  es, dx
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
 cwd  
 
 sub  di, ax
@@ -1268,14 +1257,14 @@ xor  ax, ax
 jmp  exit_return_fseek
 reset_buffer:
 call locallib_reset_buffer_
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
 jmp  do_call_lseek
 
 
 
 
 handle_seek_cur:
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
 cwd  
 
 push dx
@@ -1338,7 +1327,7 @@ PROC    locallib_lseek_ NEAR
 ; si is file, not file handle...
 push si
 push dx  ; seek type to retrieve later
-mov  si, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+mov  si, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
 
 call __GetIOMode_
 test cx, cx
@@ -1350,7 +1339,7 @@ positive_size:
 test al, 080h
 jne  do_inner_lseek
 or   ah, 080h
-mov  dx, ax
+xchg ax, dx
 mov  ax, si
 call __SetIOMode_nogrow_
 
@@ -1370,7 +1359,7 @@ PROC    locallib_tell_ NEAR
 
 push bx
 push cx
-mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]  ; si is always file handle here
+mov  bx, word ptr ds:[si + FILE_INFO_T.fileinto_handle]  ; si is always file handle here
 mov  al, 1
 xor  dx, dx
 xor  cx, cx
@@ -1396,9 +1385,9 @@ push si
 
 mov  si, ax
 
-test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], _APPEND
+test byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 0], _APPEND
 je   skip_flush
-test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], _DIRTY SHR 8
+test byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 1], _DIRTY SHR 8
 je   skip_flush
 mov  ax, si
 ;call locallib_fflush_
@@ -1410,13 +1399,13 @@ jne  good_location
 cmp  ax, 0FFFFh
 je   exit_ftell
 good_location:
-cmp  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
+cmp  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], 0
 je   exit_ftell
 xchg ax, bx
 mov  cx, dx
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
 cwd  
-test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
+test byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 1], (_DIRTY SHR 8)
 jne  do_add_and_exit
 ; dx:ax is file_cnt
 
@@ -1474,15 +1463,15 @@ cmp   si, STDOUT
 jne   use_normal_buffer
 mov   ax, 16
 use_normal_buffer:
-mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize], ax  ; default buffer is 134 apparently! todo revisit
+mov   word ptr ds:[si + FILE_INFO_T.fileinto_bufsize], ax  ; default buffer is 134 apparently! todo revisit
 bufsize_set:
 call  malloc_  ; near malloc
 ; ax gets file buffer
 
-mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_base], ax ; ptr to the file buf...
-or    byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], _BIGBUF
-mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
-mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax  ; current pointer.
+mov   word ptr ds:[si + FILE_INFO_T.fileinto_base], ax ; ptr to the file buf...
+or    byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 0], _BIGBUF
+mov   word ptr ds:[si + FILE_INFO_T.fileinto_cnt], 0
+mov   word ptr ds:[si + FILE_INFO_T.fileinto_ptr], ax  ; current pointer.
 
 ret  
 
@@ -1558,17 +1547,16 @@ ENDP
 ; 10 files
 _io_mode:
 ;  stdout 
-dw _WRITE, 0, 0, 0, 0
-dw 0, 0, 0, 0, 0
+db _WRITE, 0, 0, 0, 0
+db 0, 0, 0, 0, 0
 
 
 
 PROC   __GetIOMode_ NEAR
 PUBLIC __GetIOMode_
 
-shl   ax, 1
 xchg  ax, bx
-mov   bx, word ptr cs:[bx + _io_mode]
+mov   bl, byte ptr cs:[bx + _io_mode]
 xchg  ax, bx
 ret
 ENDP
@@ -1576,9 +1564,8 @@ ENDP
 PROC   __SetIOMode_nogrow_ NEAR
 PUBLIC __SetIOMode_nogrow_ 
 
-shl   ax, 1
 xchg  ax, bx
-mov   word ptr cs:[bx + _io_mode], dx
+mov   byte ptr cs:[bx + _io_mode], dl
 xchg  ax, bx
 ret  
 ENDP
@@ -1618,40 +1605,40 @@ push dx
 ; todo does bx already have link?
 
 
-cmp  word ptr ds:[si + WATCOM_C_FILE.watcom_file_base], 0
+cmp  word ptr ds:[si + FILE_INFO_T.fileinto_base], 0
 jne  dont_ioalloc
 call locallib_ioalloc_
 dont_ioalloc:
 
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_base]
-mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax   ; point to start of buffer
+mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_base]
+mov  word ptr ds:[si + FILE_INFO_T.fileinto_ptr], ax   ; point to start of buffer
 
 
 
-test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag+1], (_IONBF SHR 8)
+test byte ptr ds:[si + FILE_INFO_T.fileinto_flag+1], (_IONBF SHR 8)
 mov  bx, 1
 jne  dont_use_bufsize
-mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize]
+mov  bx, word ptr ds:[si + FILE_INFO_T.fileinto_bufsize]
 dont_use_bufsize:
-mov  dx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
+mov  dx, word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
+mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
 call locallib_qread_
-mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], ax
+mov  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], ax
 test ax, ax
 jg   done_with_eof_check
 jne  handle_fill_buffer_error  ; negative
-or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _EOF
+or   byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _EOF
 
 done_with_eof_check:
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
 pop  dx
 pop  bx
 ret 
 
 
 handle_fill_buffer_error:
-mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
-or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
+mov  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], 0
+or   byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _SFERR
 jmp  done_with_eof_check
 
 ENDP
@@ -1669,7 +1656,7 @@ push di
 xchg ax, cx  ; char in cx
 mov  si, dx
 
-cmp  word ptr ds:[si + WATCOM_C_FILE.watcom_file_base], 0
+cmp  word ptr ds:[si + FILE_INFO_T.fileinto_base], 0
 jne  have_buffer_location
 
 call locallib_ioalloc_
@@ -1681,15 +1668,15 @@ cmp  cl, 0Ah   ; newline char check
 je   handle_newline_crap
 
 prepare_to_put_char:
-mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
-or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag+1], (_DIRTY SHR 8)
+mov  di, word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
+or   byte ptr ds:[si + FILE_INFO_T.fileinto_flag+1], (_DIRTY SHR 8)
 mov  byte ptr ds:[di], cl   ; write the char.
-inc  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
-inc  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
-test word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag+0], dx
+inc  word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
+inc  word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
+test word ptr ds:[si + FILE_INFO_T.fileinto_flag+0], dx
 jne  flush_character
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
-cmp  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize]
+mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
+cmp  ax, word ptr ds:[si + FILE_INFO_T.fileinto_bufsize]
 jne  record_written_char
 flush_character:
 
@@ -1711,13 +1698,13 @@ or   dh, (_IOLBF SHR 8)
 
 ; note we never call putc on on nonstdout so its always necessary...
 ; really do newline shenanigans.
-mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
-or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag+1], (_DIRTY SHR 8)
+mov  di, word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
+or   byte ptr ds:[si + FILE_INFO_T.fileinto_flag+1], (_DIRTY SHR 8)
 mov  byte ptr ds:[di], CARRIAGE_RETURN
-inc  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
-inc  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
-mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
-cmp  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize]
+inc  word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
+inc  word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
+mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
+cmp  ax, word ptr ds:[si + FILE_INFO_T.fileinto_bufsize]
 jne  prepare_to_put_char
 
 
@@ -1877,18 +1864,18 @@ push bx
 push si
 mov  si, ax
 actually_get_char:
-dec  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
+dec  word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
 jl   increase_buffer
-mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
+mov  bx, word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
 xor  ax, ax
 mov  al, byte ptr ds:[bx]
-inc  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
+inc  word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
 
 check_if_2nd_get_necessary:
 cmp  al, DOS_EOF_CHAR    ; todo?
 jne  exit_fgetc
 mov  ax, 0FFFFh
-or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _EOF
+or   byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _EOF
 
 exit_fgetc:
 pop  si
@@ -1908,11 +1895,11 @@ increase_buffer:
 call locallib_fill_buffer_
 test ax, ax
 je   return_eof
-mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
+mov  bx, word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
 xor  ax, ax
 mov  al, byte ptr ds:[bx] ; get this before incrementing file_ptr.
-dec  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
-inc  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
+dec  word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
+inc  word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
 jmp  check_if_2nd_get_necessary
 
 return_eof:
@@ -1922,7 +1909,7 @@ jmp  exit_fgetc
 fgetc_error_handler:
 mov  word ptr ds:[_errno], 4
 mov  ax, 0FFFFh
-or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
+or   byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _SFERR
 jmp  exit_fgetc
 
 

@@ -172,7 +172,7 @@ _TaskServiceCount =	                _NULL_OFFSET + 00102h
 _viewangle_shiftright3 = 			_NULL_OFFSET + 00104h
 _dc_source_segment =	 			_NULL_OFFSET + 0010Ah
 _ds_y = 				    		_NULL_OFFSET + 0010Ch
-_stored_ds = 				    	_NULL_OFFSET + 00110h
+;_stored_ds = 				    	_NULL_OFFSET + 00110h
 
 
 _cachedheight_segment_storage =    	_NULL_OFFSET + 00112h
@@ -723,7 +723,7 @@ __STACKTOP =          				 _NULL_OFFSET + 00AE2h
 
 
 ___iob = 							 _NULL_OFFSET + 00AE8h
-; NFILES * SIZE WATCOM_C_FILE bytes = 10 * 12 = 120 = 078h
+; NFILES * SIZE FILE_INFO_T bytes = 10 * 12 = 120 = 078h
 
 _myargv = 	   	  					 _NULL_OFFSET + 00B60h
 ; max args = 24 including program name i guess. should be enough? maybe too much.

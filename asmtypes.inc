@@ -709,17 +709,17 @@ VANILLA_PLAYER_T STRUC
 VANILLA_PLAYER_T ENDS
 
 
-WATCOM_C_FILE STRUC
+FILE_INFO_T STRUC
 
-    watcom_file_ptr        dw ? ; 00h      ptr             ; next character position
-    watcom_file_cnt        dw ? ; 02h      int             ; number of characters left
-    watcom_file_base       dw ? ; 04h      ptr             ; location of buffer
-    watcom_file_flag       dw ? ; 06h      unsigned        ; mode of file access
-    watcom_file_handle     dw ? ; 08h      int             ; file handle
-    watcom_file_bufsize    dw ? ; 0Ah      unsigned        ; size of buffer
+    fileinto_ptr        dw ? ; 00h      ptr             ; next character position
+    fileinto_cnt        dw ? ; 02h      int             ; number of characters left
+    fileinto_base       dw ? ; 04h      ptr             ; location of buffer
+    fileinto_flag       dw ? ; 06h      unsigned        ; mode of file access
+    fileinto_handle     dw ? ; 08h      int             ; file handle
+    fileinto_bufsize    dw ? ; 0Ah      unsigned        ; size of buffer
 
 
-WATCOM_C_FILE ENDS
+FILE_INFO_T ENDS
 
 
     
