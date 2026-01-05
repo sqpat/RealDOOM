@@ -226,13 +226,13 @@ PUBLIC  EV_DoCeiling_
 
 
 ; bp - 2 type
-; bp - 0202h  ; secnumlist
+; bp - (2 + (2 * MAX_ADJOINING_SECTORS))  ; secnumlist
 
 PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
 push  dx  ; bp - 2
-sub   sp, 0200h
+sub   sp, 2 * MAX_ADJOINING_SECTORS
 xchg  ax, bx ; bx gets linetag
 xor   ax, ax
 mov   byte ptr cs:[OFFSET SELFMODIFY_doceiling_return], CLC_OPCODE
@@ -249,7 +249,7 @@ mov   ax, bx
 call  P_ActivateInStasisCeiling_
 not_stasis_ceiling:
 
-lea   dx, [bp - 0202h]
+lea   dx, [bp - (2 + (2 * MAX_ADJOINING_SECTORS))]
 
 xchg  ax, bx    ; last use of linetag
 

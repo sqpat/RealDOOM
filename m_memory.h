@@ -265,7 +265,7 @@ scantokey            3194:0000
 #define physics_9000_end      ((byte __far*)             MAKE_FULL_SEGMENT(psight_codespace, PSightCodeSize))
 // A384 codesize in 8088? physics_9000_end_segment = 9A39
 // perhaps 2k sized data struct can be tossed in here around 9A80
-
+// 8800 bytes?
 
 
 // 0x93E9
@@ -298,6 +298,7 @@ scantokey            3194:0000
 
 #define NUMMOBJTYPES 137
 
+#define MAX_ADJOINING_SECTORS    32
 #define MAXEVENTS           64
 #define MAXINTERCEPTS       128
 

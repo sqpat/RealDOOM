@@ -191,7 +191,7 @@ mov         si, dx
 SHIFT_MACRO shl         si 4
 add         si, SECTOR_T.sec_floorpic
 mov         word ptr cs:[SELFMODIFY_read_floorpic_hardcoded_offset+2], si
-sub         sp, 0200h
+sub         sp, 2 * MAX_ADJOINING_SECTORS
 SHIFT_MACRO shl         cx SHORTFLOORBITS
 mov         word ptr cs:[OFFSET SELFMODIFY_set_amount + 1], cx
 xor         ax, ax
@@ -206,7 +206,7 @@ call        EV_PlatFunc_
 not_perpetualRaise:
 
 mov         al, bh  ; linetag
-lea         dx, [bp - 0202h]
+lea         dx, [bp - (2 + (2 * MAX_ADJOINING_SECTORS))]
 mov         si, dx
 xor         bx, bx
 call        P_FindSectorsFromLineTag_

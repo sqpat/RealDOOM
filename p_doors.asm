@@ -26,7 +26,6 @@ EXTRN P_CreateThinker_:NEAR
 
 EXTRN S_StartSound_:NEAR
 EXTRN S_StartSoundWithSecnum_:NEAR
-EXTRN P_FindHighestOrLowestFloorSurrounding_:NEAR
 EXTRN P_FindLowestOrHighestCeilingSurrounding_:NEAR
 EXTRN P_FindSectorsFromLineTag_:NEAR
 EXTRN P_FindNextHighestFloor_:NEAR
@@ -344,7 +343,7 @@ PUBLIC  EV_DoDoor_
 PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
-sub   sp, 0200h
+sub   sp, (2 * MAX_ADJOINING_SECTORS)
 xor   dh, dh
 mov   byte ptr cs:[SELFMODIFY_evdoordoor_settype+2], dl  ; + 2 because offset is 0
 
@@ -354,7 +353,7 @@ push  word ptr cs:[_jump_table_do_door+si]
 pop   word ptr cs:[SELFMODIFY_evdoordoor_do_jmp+1]
 
 mov   byte ptr cs:[SELFMODIFY_evdoordoor_rtn], CLC_OPCODE
-lea   dx, [bp - 0200h]
+lea   dx, [bp - (2 * MAX_ADJOINING_SECTORS)]
 mov   si, dx
 
 xor   bx, bx ; false

@@ -54,7 +54,6 @@ EXTRN P_SpawnDoorRaiseIn5Mins_:NEAR
 .CODE
 
 
-MAX_ADJOINING_SECTORS = 256
 
 
 
@@ -153,8 +152,8 @@ JLE_OPCODE = 07Eh
 PROC    P_FindHighestOrLowestFloorSurrounding_  NEAR
 PUBLIC  P_FindHighestOrLowestFloorSurrounding_
 
-; bp - 0200h secnumlist
-; bp - 0400h linebufferlines
+; bp - (2 * MAX_ADJOINING_SECTORS) secnumlist
+; bp - (4 * MAX_ADJOINING_SECTORS) linebufferlines
 
 push      bx
 push      cx
@@ -162,14 +161,14 @@ push      si
 push      di
 push      bp
 mov       bp, sp
-sub       sp, 4 * MAX_ADJOINING_SECTORS  ; 400
+sub       sp, 4 * MAX_ADJOINING_SECTORS 
 
 mov       cx, ax
 xchg      ax, bx
 SHIFT_MACRO shl       bx 4
 mov       es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
-lea       di, [bp - 0400h]
+lea       di, [bp - (4 * MAX_ADJOINING_SECTORS)]
 mov       si, word ptr es:[bx + SECTOR_T.sec_linesoffset]
 mov       ax, word ptr es:[bx + SECTOR_T.sec_floorheight]
 mov       dh, JGE_OPCODE
@@ -198,8 +197,8 @@ xchg      ax, di   ; di stores floorheight
 
 ; dx already has secnum...
 mov       cx, bx
-lea       bx, [bp - 0200h]
-lea       ax, [bp - 0400h]
+lea       bx, [bp - (2 * MAX_ADJOINING_SECTORS)]
+lea       ax, [bp - (4 * MAX_ADJOINING_SECTORS)]
 
 ;	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
 
@@ -208,7 +207,7 @@ call      getNextSectorList_
 
 mov       cx, ax
 jcxz      skip_loop
-lea       si, [bp - 0200h]
+lea       si, [bp - (2 * MAX_ADJOINING_SECTORS)]
 
 mov       es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
@@ -246,8 +245,8 @@ PROC    P_FindNextHighestFloor_  NEAR
 PUBLIC  P_FindNextHighestFloor_
 ;short_height_t __near P_FindNextHighestFloor( int16_t	secnum,short_height_t		currentheight ){
 
-; bp - 0200h linebufferlines
-; bp - 0400h
+; (2 * MAX_ADJOINING_SECTORS) linebufferlines
+; (4 * MAX_ADJOINING_SECTORS)
 
 push      bx
 push      cx
@@ -256,7 +255,7 @@ push      di
 
 push      bp
 mov       bp, sp
-sub       sp, 0400h
+sub       sp, (4 * MAX_ADJOINING_SECTORS)
 mov       cx, SECTORS_SEGMENT
 mov       es, cx
 
@@ -266,7 +265,7 @@ SHIFT_MACRO shl       bx 4
 mov       si, word ptr es:[bx + SECTOR_T.sec_linesoffset]
 sal       si, 1
 add       si, OFFSET _linebuffer
-lea       di, [bp - 0200h]
+lea       di, [bp - (2 * MAX_ADJOINING_SECTORS)]
 
 mov       bx, word ptr es:[bx + SECTOR_T.sec_linecount]
 mov       cx, bx
@@ -282,8 +281,8 @@ xchg      ax, dx ; dx gets secnum
 xchg      ax, di ; di gets currentheight
 mov       cx, bx ; cx gets linecount
 
-lea       bx, [bp - 0400h]
-lea       ax, [bp - 0200h]
+lea       bx, [bp - (4 * MAX_ADJOINING_SECTORS)]
+lea       ax, [bp - (2 * MAX_ADJOINING_SECTORS)]
 ;	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
 call      getNextSectorList_
 
@@ -299,7 +298,7 @@ mov       ax, SECTORS_SEGMENT
 mov       es, ax
 ; for this loop ds is sectors for lodsw and es is ds for stosw to stack.    
 
-lea       si, [bp - 0400h]
+lea       si, [bp - (4 * MAX_ADJOINING_SECTORS)]
 xor       ch, ch
 
 
@@ -341,8 +340,8 @@ ENDP
 PROC    P_FindLowestOrHighestCeilingSurrounding_  NEAR
 PUBLIC  P_FindLowestOrHighestCeilingSurrounding_
 
-; bp - 0200h secnumlist
-; bp - 0400h linebufferlines
+; bp - (2 * MAX_ADJOINING_SECTORS) secnumlist
+; bp - (4 * MAX_ADJOINING_SECTORS) linebufferlines
 
 push      bx
 push      cx
@@ -358,7 +357,7 @@ SHIFT_MACRO shl       bx 4
 mov       ax, SECTORS_SEGMENT
 mov       es, ax
 
-lea       di, [bp - 0400h]
+lea       di, [bp - (4 * MAX_ADJOINING_SECTORS)]
 mov       si, word ptr es:[bx + SECTOR_T.sec_linesoffset]
 mov       ax, 07FFFh        ; MAXSHORT
 mov       dh, JGE_OPCODE
@@ -387,8 +386,8 @@ xchg      ax, di   ; di stores floorheight
 
 ; dx already has secnum...
 mov       cx, bx
-lea       bx, [bp - 0200h]
-lea       ax, [bp - 0400h]
+lea       bx, [bp - (2 * MAX_ADJOINING_SECTORS)]
+lea       ax, [bp - (4 * MAX_ADJOINING_SECTORS)]
 
 ;	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
 
@@ -397,7 +396,7 @@ call      getNextSectorList_
 
 mov       cx, ax
 jcxz      skip_loop_ceiling
-lea       si, [bp - 0200h]
+lea       si, [bp - (2 * MAX_ADJOINING_SECTORS)]
 
 mov       dx, SECTORS_SEGMENT
 mov       es, dx
@@ -490,8 +489,8 @@ ENDP
 PROC    P_FindMinSurroundingLight_  NEAR
 PUBLIC  P_FindMinSurroundingLight_
 
-; bp - 0200h secnumlist
-; bp - 0400h linebufferlines
+; bp - (2 * MAX_ADJOINING_SECTORS) secnumlist
+; bp - (4 * MAX_ADJOINING_SECTORS) linebufferlines
 
 push      bx
 push      cx
@@ -507,7 +506,7 @@ SHIFT_MACRO shl       bx 4
 mov       es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 push      dx
 
-lea       di, [bp - 0400h]
+lea       di, [bp - (4 * MAX_ADJOINING_SECTORS)]
 mov       si, word ptr es:[bx + SECTOR_T.sec_linesoffset]
 
 
@@ -527,8 +526,8 @@ rep movsw
 
 ; dx already has secnum...
 mov       cx, bx
-lea       bx, [bp - 0200h]
-lea       ax, [bp - 0400h]
+lea       bx, [bp - (2 * MAX_ADJOINING_SECTORS)]
+lea       ax, [bp - (4 * MAX_ADJOINING_SECTORS)]
 
 ;	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
 
@@ -540,7 +539,7 @@ pop       dx  ; retrieve max
 xor       dh, dh
 
 jcxz      skip_loop_light
-lea       si, [bp - 0200h]
+lea       si, [bp - (2 * MAX_ADJOINING_SECTORS)]
 
 mov       es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 
@@ -1433,8 +1432,8 @@ PUBLIC  EV_DoDonut_
 PUSHA_NO_AX_OR_BP_MACRO
 push      bp
 mov       bp, sp
-sub       sp, 020Ah
-lea       dx, [bp - 020Ah]
+sub       sp, (2 * MAX_ADJOINING_SECTORS) + 0Ah
+lea       dx, [bp - (0Ah + (2 * MAX_ADJOINING_SECTORS)]
 cbw      
 xor       bx, bx
 

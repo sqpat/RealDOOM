@@ -323,8 +323,8 @@ push  dx
 push  si
 push  bp
 mov   bp, sp
-sub   sp, 0200h
-lea   dx, [bp - 0200h]
+sub   sp, (2 * MAX_ADJOINING_SECTORS)
+lea   dx, [bp - (2 * MAX_ADJOINING_SECTORS)]
 mov   si, dx
 xor   bx, bx
 call  P_CreateThinker_
@@ -370,11 +370,11 @@ mov   dl, 076h   ; jna opcode
 use_off_smc:
 mov   byte ptr cs:[SELFMODIFY_set_on_off_branch], dl
 
-sub   sp, 0206h
+sub   sp, (6 + (2 * MAX_ADJOINING_SECTORS))
 mov   ch, dl
 mov   cl, bl
 mov   bx, 1
-lea   dx, [bp - 0206h]
+lea   dx, [bp - (6 + (2 * MAX_ADJOINING_SECTORS))]
 mov   si, dx
 
 

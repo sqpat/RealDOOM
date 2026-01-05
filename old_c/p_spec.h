@@ -34,7 +34,7 @@
 #define MAX_LINE_COUNT			256
 
 // 32 adjoining sectors max!
-#define MAX_ADJOINING_SECTORS    256
+#define MAX_ADJOINING_SECTORS    32
 
 
 // at game start

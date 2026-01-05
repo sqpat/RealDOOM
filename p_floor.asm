@@ -370,8 +370,8 @@ PUBLIC  EV_DoFloor_
 ;int16_t __far EV_DoFloor ( uint8_t linetag,int16_t linefrontsecnum,floor_e	floortype ){
 
 ; bp - 2    floortype
-; bp - 0202h secnumlist
-; bp - 0204h secnumlist iter
+; bp - (2 + (2 * MAX_ADJOINING_SECTORS)) secnumlist
+; bp - (2 + (2 * MAX_ADJOINING_SECTORS) + 2) secnumlist iter
 
 
 push  cx
@@ -385,8 +385,8 @@ mov   word ptr cs:[SELFMODIFY_set_frontsector+1], dx
 
 mov   byte ptr cs:[SELFMODIFY_set_dofloor_return], CLC_OPCODE
 mov   byte ptr cs:[SELFMODIFY_set_dofloor_type + 1], bl
-lea   dx, [bp - 0202h]
-sub   sp, 0200h
+lea   dx, [bp - (2 + (2 * MAX_ADJOINING_SECTORS))]
+sub   sp, (2 * MAX_ADJOINING_SECTORS)
 push  dx
 
 mov   si, dx
@@ -406,7 +406,7 @@ loop_next_secnum_dofloor:
 lodsw 
 xchg  ax, cx
 
-push  si ; bp - 0202h. pop at end of loop...
+push  si ; bp - (2 + (2 * MAX_ADJOINING_SECTORS)). pop at end of loop...
 
 mov   ax, TF_MOVEFLOOR_HIGHBITS
 cwd   ; zero dx
@@ -786,7 +786,7 @@ PUBLIC  EV_BuildStairs_
 PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
-sub   sp, 0210h
+sub   sp, (010h + (2 * MAX_ADJOINING_SECTORS))
 
 ; bp - 2  current secnum in innermost loop
 ; bp - 4  stairheight in innermost loop
@@ -802,7 +802,7 @@ mov   word ptr cs:[SELFMODIFY_check_stairtype], dx
 mov   byte ptr cs:[SELFMODIFY_set_buildstairs_return], CLC_OPCODE
 
 
-lea   dx, [bp - 0200h]
+lea   dx, [bp - (2 * MAX_ADJOINING_SECTORS)]
 cbw  
 xor   bx, bx
 mov   si, dx
