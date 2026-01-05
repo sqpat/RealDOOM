@@ -413,282 +413,282 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     printf("Generated doomcode.bin file\n");
 
     // todo many of these not used? clean up?
-    // fp = fopen("m_offset.h", "wb");
-	// // bsp offsets
+    fp = fopen("m_offset.h", "wb");
+	// bsp offsets
 
-    // // masked offsets
-	// fprintf(fp, "#define R_DrawMasked24Offset                    0x%X\n", FP_OFF(R_DrawMasked24)                    - FP_OFF(R_MASK24_STARTMARKER));
-	// fprintf(fp, "#define R_DrawMasked16Offset                    0x%X\n", FP_OFF(R_DrawMasked16)                    - FP_OFF(R_MASK16_STARTMARKER));
-	// fprintf(fp, "#define R_DrawMasked0Offset                     0x%X\n", FP_OFF(R_DrawMasked0)                     - FP_OFF(R_MASK0_STARTMARKER));
-	// fprintf(fp, "#define R_DrawMaskedFLOffset                    0x%X\n", FP_OFF(R_DrawMaskedFL)                    - FP_OFF(R_MASKFL_STARTMARKER));
+    // masked offsets
+	fprintf(fp, "#define R_DrawMasked24Offset                    0x%X\n", FP_OFF(R_DrawMasked24)                    - FP_OFF(R_MASK24_STARTMARKER));
+	fprintf(fp, "#define R_DrawMasked16Offset                    0x%X\n", FP_OFF(R_DrawMasked16)                    - FP_OFF(R_MASK16_STARTMARKER));
+	fprintf(fp, "#define R_DrawMasked0Offset                     0x%X\n", FP_OFF(R_DrawMasked0)                     - FP_OFF(R_MASK0_STARTMARKER));
+	fprintf(fp, "#define R_DrawMaskedFLOffset                    0x%X\n", FP_OFF(R_DrawMaskedFL)                    - FP_OFF(R_MASKFL_STARTMARKER));
 
-    // // masked selfmodifying code offsets
-    // fprintf(fp, "#define R_WriteBackViewConstantsMasked24Offset  0x%X\n", FP_OFF(R_WriteBackViewConstantsMasked24)  - FP_OFF(R_WriteBackViewConstantsMasked24));
-    // fprintf(fp, "#define R_WriteBackMaskedFrameConstants24Offset 0x%X\n", FP_OFF(R_WriteBackMaskedFrameConstants24) - FP_OFF(R_WriteBackViewConstantsMasked24));
-    // fprintf(fp, "#define R_WriteBackViewConstantsMasked16Offset  0x%X\n", FP_OFF(R_WriteBackViewConstantsMasked16)  - FP_OFF(R_WriteBackViewConstantsMasked16));
-    // fprintf(fp, "#define R_WriteBackMaskedFrameConstants16Offset 0x%X\n", FP_OFF(R_WriteBackMaskedFrameConstants16) - FP_OFF(R_WriteBackViewConstantsMasked16));
-    // fprintf(fp, "#define R_WriteBackViewConstantsMasked0Offset   0x%X\n", FP_OFF(R_WriteBackViewConstantsMasked0)   - FP_OFF(R_WriteBackViewConstantsMasked0));
-    // fprintf(fp, "#define R_WriteBackMaskedFrameConstants0Offset  0x%X\n", FP_OFF(R_WriteBackMaskedFrameConstants0)  - FP_OFF(R_WriteBackViewConstantsMasked0));
-    // fprintf(fp, "#define R_WriteBackViewConstantsMaskedFLOffset  0x%X\n", FP_OFF(R_WriteBackViewConstantsMaskedFL)  - FP_OFF(R_WriteBackViewConstantsMaskedFL));
-    // fprintf(fp, "#define R_WriteBackMaskedFrameConstantsFLOffset 0x%X\n", FP_OFF(R_WriteBackMaskedFrameConstantsFL) - FP_OFF(R_WriteBackViewConstantsMaskedFL));
+    // masked selfmodifying code offsets
+    fprintf(fp, "#define R_WriteBackViewConstantsMasked24Offset  0x%X\n", FP_OFF(R_WriteBackViewConstantsMasked24)  - FP_OFF(R_WriteBackViewConstantsMasked24));
+    fprintf(fp, "#define R_WriteBackMaskedFrameConstants24Offset 0x%X\n", FP_OFF(R_WriteBackMaskedFrameConstants24) - FP_OFF(R_WriteBackViewConstantsMasked24));
+    fprintf(fp, "#define R_WriteBackViewConstantsMasked16Offset  0x%X\n", FP_OFF(R_WriteBackViewConstantsMasked16)  - FP_OFF(R_WriteBackViewConstantsMasked16));
+    fprintf(fp, "#define R_WriteBackMaskedFrameConstants16Offset 0x%X\n", FP_OFF(R_WriteBackMaskedFrameConstants16) - FP_OFF(R_WriteBackViewConstantsMasked16));
+    fprintf(fp, "#define R_WriteBackViewConstantsMasked0Offset   0x%X\n", FP_OFF(R_WriteBackViewConstantsMasked0)   - FP_OFF(R_WriteBackViewConstantsMasked0));
+    fprintf(fp, "#define R_WriteBackMaskedFrameConstants0Offset  0x%X\n", FP_OFF(R_WriteBackMaskedFrameConstants0)  - FP_OFF(R_WriteBackViewConstantsMasked0));
+    fprintf(fp, "#define R_WriteBackViewConstantsMaskedFLOffset  0x%X\n", FP_OFF(R_WriteBackViewConstantsMaskedFL)  - FP_OFF(R_WriteBackViewConstantsMaskedFL));
+    fprintf(fp, "#define R_WriteBackMaskedFrameConstantsFLOffset 0x%X\n", FP_OFF(R_WriteBackMaskedFrameConstantsFL) - FP_OFF(R_WriteBackViewConstantsMaskedFL));
     
 
-    // // span offsets
-	// fprintf(fp, "#define R_DrawPlanes24Offset                    0x%X\n", FP_OFF(R_DrawPlanes24)                    - FP_OFF(R_SPAN24_STARTMARKER));
-	// fprintf(fp, "#define R_WriteBackViewConstantsSpan24Offset    0x%X\n", FP_OFF(R_WriteBackViewConstantsSpan24)    - FP_OFF(R_SPAN24_STARTMARKER));
+    // span offsets
+	fprintf(fp, "#define R_DrawPlanes24Offset                    0x%X\n", FP_OFF(R_DrawPlanes24)                    - FP_OFF(R_SPAN24_STARTMARKER));
+	fprintf(fp, "#define R_WriteBackViewConstantsSpan24Offset    0x%X\n", FP_OFF(R_WriteBackViewConstantsSpan24)    - FP_OFF(R_SPAN24_STARTMARKER));
 
-	// fprintf(fp, "#define R_DrawPlanes16Offset                    0x%X\n", FP_OFF(R_DrawPlanes16)                    - FP_OFF(R_SPAN16_STARTMARKER));
-	// fprintf(fp, "#define R_WriteBackViewConstantsSpan16Offset    0x%X\n", FP_OFF(R_WriteBackViewConstantsSpan16)    - FP_OFF(R_SPAN16_STARTMARKER));
+	fprintf(fp, "#define R_DrawPlanes16Offset                    0x%X\n", FP_OFF(R_DrawPlanes16)                    - FP_OFF(R_SPAN16_STARTMARKER));
+	fprintf(fp, "#define R_WriteBackViewConstantsSpan16Offset    0x%X\n", FP_OFF(R_WriteBackViewConstantsSpan16)    - FP_OFF(R_SPAN16_STARTMARKER));
 
-	// fprintf(fp, "#define R_DrawPlanes0Offset                     0x%X\n", FP_OFF(R_DrawPlanes0)                     - FP_OFF(R_SPAN0_STARTMARKER));
-	// fprintf(fp, "#define R_WriteBackViewConstantsSpan0Offset     0x%X\n", FP_OFF(R_WriteBackViewConstantsSpan0)     - FP_OFF(R_SPAN0_STARTMARKER));
+	fprintf(fp, "#define R_DrawPlanes0Offset                     0x%X\n", FP_OFF(R_DrawPlanes0)                     - FP_OFF(R_SPAN0_STARTMARKER));
+	fprintf(fp, "#define R_WriteBackViewConstantsSpan0Offset     0x%X\n", FP_OFF(R_WriteBackViewConstantsSpan0)     - FP_OFF(R_SPAN0_STARTMARKER));
 
-	// fprintf(fp, "#define R_DrawPlanesFLOffset                    0x%X\n", FP_OFF(R_DrawPlanesFL)                    - FP_OFF(R_SPANFL_STARTMARKER));
-	// fprintf(fp, "#define R_WriteBackViewConstantsSpanFLOffset    0x%X\n", FP_OFF(R_WriteBackViewConstantsSpanFL)    - FP_OFF(R_SPANFL_STARTMARKER));
+	fprintf(fp, "#define R_DrawPlanesFLOffset                    0x%X\n", FP_OFF(R_DrawPlanesFL)                    - FP_OFF(R_SPANFL_STARTMARKER));
+	fprintf(fp, "#define R_WriteBackViewConstantsSpanFLOffset    0x%X\n", FP_OFF(R_WriteBackViewConstantsSpanFL)    - FP_OFF(R_SPANFL_STARTMARKER));
 
-    // // sky offsets
-	// fprintf(fp, "#define R_DrawSkyColumnOffset                   0x%X\n", FP_OFF(R_DrawSkyColumn)                   - FP_OFF(R_SKY_STARTMARKER));
-	// fprintf(fp, "#define R_DrawSkyPlaneOffset                    0x%X\n", FP_OFF(R_DrawSkyPlane)                    - FP_OFF(R_SKY_STARTMARKER));
-	// fprintf(fp, "#define R_DrawSkyPlaneDynamicOffset             0x%X\n", FP_OFF(R_DrawSkyPlaneDynamic)             - FP_OFF(R_SKY_STARTMARKER));
-	// fprintf(fp, "#define R_DrawSkyColumnFLOffset                 0x%X\n", FP_OFF(R_DrawSkyColumnFL)                 - FP_OFF(R_SKYFL_STARTMARKER));
-	// fprintf(fp, "#define R_DrawSkyPlaneFLOffset                  0x%X\n", FP_OFF(R_DrawSkyPlaneFL)                  - FP_OFF(R_SKYFL_STARTMARKER));
-	// fprintf(fp, "#define R_DrawSkyPlaneDynamicFLOffset           0x%X\n", FP_OFF(R_DrawSkyPlaneDynamicFL)           - FP_OFF(R_SKYFL_STARTMARKER));
-
-
-
-    // // BSP offsets
-	// fprintf(fp, "#define R_WriteBackViewConstants24Offset        0x%X\n", FP_OFF(R_WriteBackViewConstants24)        - FP_OFF(R_BSP24_STARTMARKER));
-	// fprintf(fp, "#define R_RenderPlayerView24Offset              0x%X\n", FP_OFF(R_RenderPlayerView24)              - FP_OFF(R_BSP24_STARTMARKER));
-	// fprintf(fp, "#define R_GetCompositeTexture24Offset           0x%X\n", FP_OFF(R_GetCompositeTexture_Far24)       - FP_OFF(R_BSP24_STARTMARKER));
-	// fprintf(fp, "#define R_GetPatchTexture24Offset               0x%X\n", FP_OFF(R_GetPatchTexture_Far24)           - FP_OFF(R_BSP24_STARTMARKER));
-
-
-	// fprintf(fp, "#define R_WriteBackViewConstants16Offset        0x%X\n", FP_OFF(R_WriteBackViewConstants16)        - FP_OFF(R_BSP16_STARTMARKER));
-	// fprintf(fp, "#define R_RenderPlayerView16Offset              0x%X\n", FP_OFF(R_RenderPlayerView16)              - FP_OFF(R_BSP16_STARTMARKER));
-	// fprintf(fp, "#define R_GetCompositeTexture16Offset           0x%X\n", FP_OFF(R_GetCompositeTexture_Far16)       - FP_OFF(R_BSP16_STARTMARKER));
-	// fprintf(fp, "#define R_GetPatchTexture16Offset               0x%X\n", FP_OFF(R_GetPatchTexture_Far16)           - FP_OFF(R_BSP16_STARTMARKER));
-
-	// fprintf(fp, "#define R_WriteBackViewConstants0Offset         0x%X\n", FP_OFF(R_WriteBackViewConstants0)         - FP_OFF(R_BSP0_STARTMARKER));
-	// fprintf(fp, "#define R_RenderPlayerView0Offset               0x%X\n", FP_OFF(R_RenderPlayerView0)               - FP_OFF(R_BSP0_STARTMARKER));
-	// fprintf(fp, "#define R_GetCompositeTexture0Offset            0x%X\n", FP_OFF(R_GetCompositeTexture_Far0)        - FP_OFF(R_BSP0_STARTMARKER));
-	// fprintf(fp, "#define R_GetPatchTexture0Offset                0x%X\n", FP_OFF(R_GetPatchTexture_Far0)            - FP_OFF(R_BSP0_STARTMARKER));
-
-	// fprintf(fp, "#define R_WriteBackViewConstantsFLOffset        0x%X\n", FP_OFF(R_WriteBackViewConstantsFL)        - FP_OFF(R_BSPFL_STARTMARKER));
-	// fprintf(fp, "#define R_RenderPlayerViewFLOffset              0x%X\n", FP_OFF(R_RenderPlayerViewFL)              - FP_OFF(R_BSPFL_STARTMARKER));
-	// fprintf(fp, "#define R_GetCompositeTextureFLOffset           0x%X\n", FP_OFF(R_GetCompositeTexture_FarFL)       - FP_OFF(R_BSPFL_STARTMARKER));
-	// fprintf(fp, "#define R_GetPatchTextureFLOffset               0x%X\n", FP_OFF(R_GetPatchTexture_FarFL)           - FP_OFF(R_BSPFL_STARTMARKER));
+    // sky offsets
+	fprintf(fp, "#define R_DrawSkyColumnOffset                   0x%X\n", FP_OFF(R_DrawSkyColumn)                   - FP_OFF(R_SKY_STARTMARKER));
+	fprintf(fp, "#define R_DrawSkyPlaneOffset                    0x%X\n", FP_OFF(R_DrawSkyPlane)                    - FP_OFF(R_SKY_STARTMARKER));
+	fprintf(fp, "#define R_DrawSkyPlaneDynamicOffset             0x%X\n", FP_OFF(R_DrawSkyPlaneDynamic)             - FP_OFF(R_SKY_STARTMARKER));
+	fprintf(fp, "#define R_DrawSkyColumnFLOffset                 0x%X\n", FP_OFF(R_DrawSkyColumnFL)                 - FP_OFF(R_SKYFL_STARTMARKER));
+	fprintf(fp, "#define R_DrawSkyPlaneFLOffset                  0x%X\n", FP_OFF(R_DrawSkyPlaneFL)                  - FP_OFF(R_SKYFL_STARTMARKER));
+	fprintf(fp, "#define R_DrawSkyPlaneDynamicFLOffset           0x%X\n", FP_OFF(R_DrawSkyPlaneDynamicFL)           - FP_OFF(R_SKYFL_STARTMARKER));
 
 
 
-
-    // // wipe offsets
-    // fprintf(fp, "#define wipe_StartScreenOffset                  0x%X\n", FP_OFF(wipe_StartScreen)                  - FP_OFF(F_WIPE_STARTMARKER));
-	// fprintf(fp, "#define wipe_WipeLoopOffset                     0x%X\n", FP_OFF(wipe_WipeLoop)                     - FP_OFF(F_WIPE_STARTMARKER));
-
-    // // finale offsets
-    // fprintf(fp, "#define F_StartFinaleOffset                     0x%X\n", FP_OFF(F_StartFinale)                     - FP_OFF(F_FINALE_STARTMARKER));
-    // fprintf(fp, "#define F_ResponderOffset                       0x%X\n", FP_OFF(F_Responder)                       - FP_OFF(F_FINALE_STARTMARKER));
-    // fprintf(fp, "#define F_DrawerOffset                          0x%X\n", FP_OFF(F_Drawer)                          - FP_OFF(F_FINALE_STARTMARKER));
+    // BSP offsets
+	fprintf(fp, "#define R_WriteBackViewConstants24Offset        0x%X\n", FP_OFF(R_WriteBackViewConstants24)        - FP_OFF(R_BSP24_STARTMARKER));
+	fprintf(fp, "#define R_RenderPlayerView24Offset              0x%X\n", FP_OFF(R_RenderPlayerView24)              - FP_OFF(R_BSP24_STARTMARKER));
+	fprintf(fp, "#define R_GetCompositeTexture24Offset           0x%X\n", FP_OFF(R_GetCompositeTexture_Far24)       - FP_OFF(R_BSP24_STARTMARKER));
+	fprintf(fp, "#define R_GetPatchTexture24Offset               0x%X\n", FP_OFF(R_GetPatchTexture_Far24)           - FP_OFF(R_BSP24_STARTMARKER));
 
 
-    // // s_init offsets
-    // fprintf(fp, "#define LoadSFXWadLumpsOffset                   0x%X\n", FP_OFF(LoadSFXWadLumps)                   - FP_OFF(S_INIT_STARTMARKER));
+	fprintf(fp, "#define R_WriteBackViewConstants16Offset        0x%X\n", FP_OFF(R_WriteBackViewConstants16)        - FP_OFF(R_BSP16_STARTMARKER));
+	fprintf(fp, "#define R_RenderPlayerView16Offset              0x%X\n", FP_OFF(R_RenderPlayerView16)              - FP_OFF(R_BSP16_STARTMARKER));
+	fprintf(fp, "#define R_GetCompositeTexture16Offset           0x%X\n", FP_OFF(R_GetCompositeTexture_Far16)       - FP_OFF(R_BSP16_STARTMARKER));
+	fprintf(fp, "#define R_GetPatchTexture16Offset               0x%X\n", FP_OFF(R_GetPatchTexture_Far16)           - FP_OFF(R_BSP16_STARTMARKER));
+
+	fprintf(fp, "#define R_WriteBackViewConstants0Offset         0x%X\n", FP_OFF(R_WriteBackViewConstants0)         - FP_OFF(R_BSP0_STARTMARKER));
+	fprintf(fp, "#define R_RenderPlayerView0Offset               0x%X\n", FP_OFF(R_RenderPlayerView0)               - FP_OFF(R_BSP0_STARTMARKER));
+	fprintf(fp, "#define R_GetCompositeTexture0Offset            0x%X\n", FP_OFF(R_GetCompositeTexture_Far0)        - FP_OFF(R_BSP0_STARTMARKER));
+	fprintf(fp, "#define R_GetPatchTexture0Offset                0x%X\n", FP_OFF(R_GetPatchTexture_Far0)            - FP_OFF(R_BSP0_STARTMARKER));
+
+	fprintf(fp, "#define R_WriteBackViewConstantsFLOffset        0x%X\n", FP_OFF(R_WriteBackViewConstantsFL)        - FP_OFF(R_BSPFL_STARTMARKER));
+	fprintf(fp, "#define R_RenderPlayerViewFLOffset              0x%X\n", FP_OFF(R_RenderPlayerViewFL)              - FP_OFF(R_BSPFL_STARTMARKER));
+	fprintf(fp, "#define R_GetCompositeTextureFLOffset           0x%X\n", FP_OFF(R_GetCompositeTexture_FarFL)       - FP_OFF(R_BSPFL_STARTMARKER));
+	fprintf(fp, "#define R_GetPatchTextureFLOffset               0x%X\n", FP_OFF(R_GetPatchTexture_FarFL)           - FP_OFF(R_BSPFL_STARTMARKER));
 
 
-    // // physics high code offsets
-    // fprintf(fp, "#define P_SetThingPositionFarOffset             0x%X\n", FP_OFF(P_SetThingPositionFar)             - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "#define P_SpawnMapThingOffset                   0x%X\n", FP_OFF(P_SpawnMapThing)                   - FP_OFF(P_SIGHT_STARTMARKER));
+
+
+    // wipe offsets
+    fprintf(fp, "#define wipe_StartScreenOffset                  0x%X\n", FP_OFF(wipe_StartScreen)                  - FP_OFF(F_WIPE_STARTMARKER));
+	fprintf(fp, "#define wipe_WipeLoopOffset                     0x%X\n", FP_OFF(wipe_WipeLoop)                     - FP_OFF(F_WIPE_STARTMARKER));
+
+    // finale offsets
+    fprintf(fp, "#define F_StartFinaleOffset                     0x%X\n", FP_OFF(F_StartFinale)                     - FP_OFF(F_FINALE_STARTMARKER));
+    fprintf(fp, "#define F_ResponderOffset                       0x%X\n", FP_OFF(F_Responder)                       - FP_OFF(F_FINALE_STARTMARKER));
+    fprintf(fp, "#define F_DrawerOffset                          0x%X\n", FP_OFF(F_Drawer)                          - FP_OFF(F_FINALE_STARTMARKER));
+
+
+    // s_init offsets
+    fprintf(fp, "#define LoadSFXWadLumpsOffset                   0x%X\n", FP_OFF(LoadSFXWadLumps)                   - FP_OFF(S_INIT_STARTMARKER));
+
+
+    // physics high code offsets
+    fprintf(fp, "#define P_SetThingPositionFarOffset             0x%X\n", FP_OFF(P_SetThingPositionFar)             - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_SpawnMapThingOffset                   0x%X\n", FP_OFF(P_SpawnMapThing)                   - FP_OFF(P_SIGHT_STARTMARKER));
     
-    // fprintf(fp, "#define P_SpawnSpecialsOffset                   0x%X\n", FP_OFF(P_SpawnSpecials)                   - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "#define AM_DrawerOffset                         0x%X\n", FP_OFF(AM_Drawer)                         - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define P_SpawnSpecialsOffset                   0x%X\n", FP_OFF(P_SpawnSpecials)                   - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define AM_DrawerOffset                         0x%X\n", FP_OFF(AM_Drawer)                         - FP_OFF(P_SIGHT_STARTMARKER));
 
-    // fprintf(fp, "#define S_StartSoundFarOffset                   0x%X\n", FP_OFF(S_StartSoundFar)                   - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "#define S_StartOffset                           0x%X\n", FP_OFF(S_Start)                           - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define S_StartSoundFarOffset                   0x%X\n", FP_OFF(S_StartSoundFar)                   - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "#define S_StartOffset                           0x%X\n", FP_OFF(S_Start)                           - FP_OFF(P_SIGHT_STARTMARKER));
     
 
-    // // menu  code offsets
-    // fprintf(fp, "#define M_InitOffset                            0x%X\n", FP_OFF(M_Init)                            - FP_OFF(M_MENU_STARTMARKER));
-    // fprintf(fp, "#define M_ResponderOffset                       0x%X\n", FP_OFF(M_Responder)                       - FP_OFF(M_MENU_STARTMARKER));
-    // fprintf(fp, "#define M_DrawPauseOffset                       0x%X\n", FP_OFF(M_DrawPause)                       - FP_OFF(M_MENU_STARTMARKER));
-    // fprintf(fp, "#define M_StartControlPanelOffset               0x%X\n", FP_OFF(M_StartControlPanel)               - FP_OFF(M_MENU_STARTMARKER));
+    // menu  code offsets
+    fprintf(fp, "#define M_InitOffset                            0x%X\n", FP_OFF(M_Init)                            - FP_OFF(M_MENU_STARTMARKER));
+    fprintf(fp, "#define M_ResponderOffset                       0x%X\n", FP_OFF(M_Responder)                       - FP_OFF(M_MENU_STARTMARKER));
+    fprintf(fp, "#define M_DrawPauseOffset                       0x%X\n", FP_OFF(M_DrawPause)                       - FP_OFF(M_MENU_STARTMARKER));
+    fprintf(fp, "#define M_StartControlPanelOffset               0x%X\n", FP_OFF(M_StartControlPanel)               - FP_OFF(M_MENU_STARTMARKER));
     
     
-	// fprintf(fp, "\n");
+	fprintf(fp, "\n");
  
-	// fprintf(fp, "#define R_DrawColumn24CodeSize         0x%X\n", codesize[0]);
-	// fprintf(fp, "#define R_DrawColumn16CodeSize         0x%X\n", codesize[19]);
-	// fprintf(fp, "#define R_DrawColumn0CodeSize          0x%X\n", codesize[15]);
-	// fprintf(fp, "#define R_DrawColumnFLCodeSize         0x%X\n", codesize[24]);
-    // fprintf(fp, "#define R_DrawSpan24CodeSize           0x%X\n", codesize[1]);
-    // fprintf(fp, "#define R_DrawSpan16CodeSize           0x%X\n", codesize[13]);
-    // fprintf(fp, "#define R_DrawSpan0CodeSize            0x%X\n", codesize[14]);
-    // fprintf(fp, "#define R_DrawSpanFLCodeSize           0x%X\n", codesize[23]);
-	// fprintf(fp, "#define R_DrawFuzzColumn24CodeSize     0x%X\n", codesize[2]);
-	// fprintf(fp, "#define R_DrawFuzzColumn16CodeSize     0x%X\n", codesize[20]);
-	// fprintf(fp, "#define R_DrawFuzzColumn0CodeSize      0x%X\n", codesize[17]);
-	// fprintf(fp, "#define R_DrawFuzzColumnFLCodeSize     0x%X\n", codesize[25]);
-	// fprintf(fp, "#define R_MaskedConstants24CodeSize    0x%X\n", codesize[3]);
-	// fprintf(fp, "#define R_MaskedConstants16CodeSize    0x%X\n", codesize[21]);
-	// fprintf(fp, "#define R_MaskedConstants0CodeSize     0x%X\n", codesize[18]);
-	// fprintf(fp, "#define R_MaskedConstantsFLCodeSize    0x%X\n", codesize[26]);
-	// fprintf(fp, "#define R_DrawSkyColumnCodeSize        0x%X\n", codesize[4]);
-	// fprintf(fp, "#define R_DrawSkyColumnFLCodeSize      0x%X\n", codesize[28]);
-	// fprintf(fp, "#define M_MenuCodeSize                 0x%X\n", codesize[29]);
-	// fprintf(fp, "#define R_BSP24CodeSize                0x%X\n", codesize[12]);
-	// fprintf(fp, "#define R_BSP16CodeSize                0x%X\n", codesize[22]);
-	// fprintf(fp, "#define R_BSP0CodeSize                 0x%X\n", codesize[16]);
-	// fprintf(fp, "#define R_BSPFLCodeSize                0x%X\n", codesize[27]);
+	fprintf(fp, "#define R_DrawColumn24CodeSize         0x%X\n", codesize[0]);
+	fprintf(fp, "#define R_DrawColumn16CodeSize         0x%X\n", codesize[19]);
+	fprintf(fp, "#define R_DrawColumn0CodeSize          0x%X\n", codesize[15]);
+	fprintf(fp, "#define R_DrawColumnFLCodeSize         0x%X\n", codesize[24]);
+    fprintf(fp, "#define R_DrawSpan24CodeSize           0x%X\n", codesize[1]);
+    fprintf(fp, "#define R_DrawSpan16CodeSize           0x%X\n", codesize[13]);
+    fprintf(fp, "#define R_DrawSpan0CodeSize            0x%X\n", codesize[14]);
+    fprintf(fp, "#define R_DrawSpanFLCodeSize           0x%X\n", codesize[23]);
+	fprintf(fp, "#define R_DrawFuzzColumn24CodeSize     0x%X\n", codesize[2]);
+	fprintf(fp, "#define R_DrawFuzzColumn16CodeSize     0x%X\n", codesize[20]);
+	fprintf(fp, "#define R_DrawFuzzColumn0CodeSize      0x%X\n", codesize[17]);
+	fprintf(fp, "#define R_DrawFuzzColumnFLCodeSize     0x%X\n", codesize[25]);
+	fprintf(fp, "#define R_MaskedConstants24CodeSize    0x%X\n", codesize[3]);
+	fprintf(fp, "#define R_MaskedConstants16CodeSize    0x%X\n", codesize[21]);
+	fprintf(fp, "#define R_MaskedConstants0CodeSize     0x%X\n", codesize[18]);
+	fprintf(fp, "#define R_MaskedConstantsFLCodeSize    0x%X\n", codesize[26]);
+	fprintf(fp, "#define R_DrawSkyColumnCodeSize        0x%X\n", codesize[4]);
+	fprintf(fp, "#define R_DrawSkyColumnFLCodeSize      0x%X\n", codesize[28]);
+	fprintf(fp, "#define M_MenuCodeSize                 0x%X\n", codesize[29]);
+	fprintf(fp, "#define R_BSP24CodeSize                0x%X\n", codesize[12]);
+	fprintf(fp, "#define R_BSP16CodeSize                0x%X\n", codesize[22]);
+	fprintf(fp, "#define R_BSP0CodeSize                 0x%X\n", codesize[16]);
+	fprintf(fp, "#define R_BSPFLCodeSize                0x%X\n", codesize[27]);
 
-	// fprintf(fp, "#define WI_StuffCodeSize               0x%X\n", codesize[5]);
-	// fprintf(fp, "#define PSightCodeSize                 0x%X\n", codesize[6]);
-	// fprintf(fp, "#define WipeCodeSize                   0x%X\n", codesize[7]);
-	// fprintf(fp, "#define FinaleCodeSize                 0x%X\n", codesize[8]);
-	// fprintf(fp, "#define SaveLoadCodeSize               0x%X\n", codesize[9]);
-	// fprintf(fp, "#define SMLoadCodeSize                 0x%X\n", codesize[10]);
-	// fprintf(fp, "#define SInitCodeSize                  0x%X\n", codesize[11]);
-	// fprintf(fp, "#define MaximumMusDriverSize           0x%X\n", maxmuscodesize);
-    // fclose(fp);
+	fprintf(fp, "#define WI_StuffCodeSize               0x%X\n", codesize[5]);
+	fprintf(fp, "#define PSightCodeSize                 0x%X\n", codesize[6]);
+	fprintf(fp, "#define WipeCodeSize                   0x%X\n", codesize[7]);
+	fprintf(fp, "#define FinaleCodeSize                 0x%X\n", codesize[8]);
+	fprintf(fp, "#define SaveLoadCodeSize               0x%X\n", codesize[9]);
+	fprintf(fp, "#define SMLoadCodeSize                 0x%X\n", codesize[10]);
+	fprintf(fp, "#define SInitCodeSize                  0x%X\n", codesize[11]);
+	fprintf(fp, "#define MaximumMusDriverSize           0x%X\n", maxmuscodesize);
+    fclose(fp);
 
 
-    // printf("Generated m_offset.h file\n");
+    printf("Generated m_offset.h file\n");
 
-    // fp = fopen("m_offset.inc", "wb");
-	// fprintf(fp, "R_DRAWPLANES24OFFSET = 0%Xh\n",                    FP_OFF(R_DrawPlanes24)                    - FP_OFF(R_SPAN24_STARTMARKER));
-	// fprintf(fp, "R_DRAWPLANES16OFFSET = 0%Xh\n",                    FP_OFF(R_DrawPlanes16)                    - FP_OFF(R_SPAN16_STARTMARKER));
-	// fprintf(fp, "R_DRAWPLANES0OFFSET = 0%Xh\n",                     FP_OFF(R_DrawPlanes0)                     - FP_OFF(R_SPAN0_STARTMARKER));
-	// fprintf(fp, "R_DRAWPLANESFLOFFSET = 0%Xh\n",                    FP_OFF(R_DrawPlanesFL)                    - FP_OFF(R_SPANFL_STARTMARKER));
-	// fprintf(fp, "R_GETCOMPOSITETEXTURE24OFFSET = 0%Xh\n",           FP_OFF(R_GetCompositeTexture_Far24)       - FP_OFF(R_BSP24_STARTMARKER));
-	// fprintf(fp, "R_GETPATCHTEXTURE24OFFSET = 0%Xh\n",               FP_OFF(R_GetPatchTexture_Far24)           - FP_OFF(R_BSP24_STARTMARKER));
-	// fprintf(fp, "R_DRAWMASKED24OFFSET = 0%Xh\n",                    FP_OFF(R_DrawMasked24)                    - FP_OFF(R_MASK24_STARTMARKER));
-	// fprintf(fp, "R_DRAWMASKED16OFFSET = 0%Xh\n",                    FP_OFF(R_DrawMasked16)                   - FP_OFF(R_MASK16_STARTMARKER));
-	// fprintf(fp, "R_DRAWMASKED0OFFSET = 0%Xh\n",                     FP_OFF(R_DrawMasked0)                     - FP_OFF(R_MASK0_STARTMARKER));
-	// fprintf(fp, "R_DRAWMASKEDFLOFFSET = 0%Xh\n",                    FP_OFF(R_DrawMaskedFL)                    - FP_OFF(R_MASKFL_STARTMARKER));
-    // fprintf(fp, "R_WRITEBACKMASKEDFRAMECONSTANTS24OFFSET = 0%Xh\n", FP_OFF(R_WriteBackMaskedFrameConstants24) - FP_OFF(R_WriteBackViewConstantsMasked24));
+    fp = fopen("m_offset.inc", "wb");
+	fprintf(fp, "R_DRAWPLANES24OFFSET = 0%Xh\n",                    FP_OFF(R_DrawPlanes24)                    - FP_OFF(R_SPAN24_STARTMARKER));
+	fprintf(fp, "R_DRAWPLANES16OFFSET = 0%Xh\n",                    FP_OFF(R_DrawPlanes16)                    - FP_OFF(R_SPAN16_STARTMARKER));
+	fprintf(fp, "R_DRAWPLANES0OFFSET = 0%Xh\n",                     FP_OFF(R_DrawPlanes0)                     - FP_OFF(R_SPAN0_STARTMARKER));
+	fprintf(fp, "R_DRAWPLANESFLOFFSET = 0%Xh\n",                    FP_OFF(R_DrawPlanesFL)                    - FP_OFF(R_SPANFL_STARTMARKER));
+	fprintf(fp, "R_GETCOMPOSITETEXTURE24OFFSET = 0%Xh\n",           FP_OFF(R_GetCompositeTexture_Far24)       - FP_OFF(R_BSP24_STARTMARKER));
+	fprintf(fp, "R_GETPATCHTEXTURE24OFFSET = 0%Xh\n",               FP_OFF(R_GetPatchTexture_Far24)           - FP_OFF(R_BSP24_STARTMARKER));
+	fprintf(fp, "R_DRAWMASKED24OFFSET = 0%Xh\n",                    FP_OFF(R_DrawMasked24)                    - FP_OFF(R_MASK24_STARTMARKER));
+	fprintf(fp, "R_DRAWMASKED16OFFSET = 0%Xh\n",                    FP_OFF(R_DrawMasked16)                   - FP_OFF(R_MASK16_STARTMARKER));
+	fprintf(fp, "R_DRAWMASKED0OFFSET = 0%Xh\n",                     FP_OFF(R_DrawMasked0)                     - FP_OFF(R_MASK0_STARTMARKER));
+	fprintf(fp, "R_DRAWMASKEDFLOFFSET = 0%Xh\n",                    FP_OFF(R_DrawMaskedFL)                    - FP_OFF(R_MASKFL_STARTMARKER));
+    fprintf(fp, "R_WRITEBACKMASKEDFRAMECONSTANTS24OFFSET = 0%Xh\n", FP_OFF(R_WriteBackMaskedFrameConstants24) - FP_OFF(R_WriteBackViewConstantsMasked24));
     
-    // fprintf(fp, "F_RESPONDEROFFSET = 0%Xh\n",                       FP_OFF(F_Responder)                       - FP_OFF(F_FINALE_STARTMARKER));
-    // fprintf(fp, "P_SETTHINGPOSITIONFAROFFSET = 0%Xh\n",             FP_OFF(P_SetThingPositionFar)             - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "F_RESPONDEROFFSET = 0%Xh\n",                       FP_OFF(F_Responder)                       - FP_OFF(F_FINALE_STARTMARKER));
+    fprintf(fp, "P_SETTHINGPOSITIONFAROFFSET = 0%Xh\n",             FP_OFF(P_SetThingPositionFar)             - FP_OFF(P_SIGHT_STARTMARKER));
 
-    // fprintf(fp, "P_REMOVEMOBJFAROFFSET = 0%Xh\n",                   FP_OFF(P_RemoveMobjFar)                   - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "P_SPAWNMAPTHINGOFFSET = 0%Xh\n",                   FP_OFF(P_SpawnMapThing)                   - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "P_CREATETHINKERFAROFFSET = 0%Xh\n",                FP_OFF(P_CreateThinkerFar)                - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "P_ADDACTIVECEILINGOFFSET = 0%Xh\n",                FP_OFF(P_AddActiveCeiling)                - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "P_ADDACTIVEPLATOFFSET = 0%Xh\n",                   FP_OFF(P_AddActivePlat)                   - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_REMOVEMOBJFAROFFSET = 0%Xh\n",                   FP_OFF(P_RemoveMobjFar)                   - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_SPAWNMAPTHINGOFFSET = 0%Xh\n",                   FP_OFF(P_SpawnMapThing)                   - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_CREATETHINKERFAROFFSET = 0%Xh\n",                FP_OFF(P_CreateThinkerFar)                - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_ADDACTIVECEILINGOFFSET = 0%Xh\n",                FP_OFF(P_AddActiveCeiling)                - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_ADDACTIVEPLATOFFSET = 0%Xh\n",                   FP_OFF(P_AddActivePlat)                   - FP_OFF(P_SIGHT_STARTMARKER));
     
-    // fprintf(fp, "P_REMOVETHINKEROFFSET = 0%Xh\n",                   FP_OFF(P_RemoveThinker)                   - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "P_GIVEPOWEROFFSET     = 0%Xh\n",                   FP_OFF(P_GivePower)                       - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_REMOVETHINKEROFFSET = 0%Xh\n",                   FP_OFF(P_RemoveThinker)                   - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "P_GIVEPOWEROFFSET     = 0%Xh\n",                   FP_OFF(P_GivePower)                       - FP_OFF(P_SIGHT_STARTMARKER));
 
-    // fprintf(fp, "GETPAINCHANCEADDR     = 0%Xh\n",                   FP_OFF(GetPainChance)                     - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "GETRAISESTATEADDR     = 0%Xh\n",                   FP_OFF(GetRaiseState)                     - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "GETXDEATHSTATEADDR    = 0%Xh\n",                   FP_OFF(GetXDeathState)                    - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "GETMELEESTATEADDR     = 0%Xh\n",                   FP_OFF(GetMeleeState)                     - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "GETMOBJMASSADDR       = 0%Xh\n",                   FP_OFF(GetMobjMass)                       - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "GETACTIVESOUNDADDR    = 0%Xh\n",                   FP_OFF(GetActiveSound)                    - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "GETPAINSOUNDADDR      = 0%Xh\n",                   FP_OFF(GetPainSound)                      - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "GETATTACKSOUNDADDR    = 0%Xh\n",                   FP_OFF(GetAttackSound)                    - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "GETDAMAGEADDR         = 0%Xh\n",                   FP_OFF(GetDamage)                         - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "GETSEESTATEADDR       = 0%Xh\n",                   FP_OFF(GetSeeState)                       - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "GETMISSILESTATEADDR   = 0%Xh\n",                   FP_OFF(GetMissileState)                   - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "GETDEATHSTATEADDR     = 0%Xh\n",                   FP_OFF(GetDeathState)                     - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "GETPAINSTATEADDR      = 0%Xh\n",                   FP_OFF(GetPainState)                      - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "GETSPAWNHEALTHADDR    = 0%Xh\n",                   FP_OFF(GetSpawnHealth)                    - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETPAINCHANCEADDR     = 0%Xh\n",                   FP_OFF(GetPainChance)                     - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETRAISESTATEADDR     = 0%Xh\n",                   FP_OFF(GetRaiseState)                     - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETXDEATHSTATEADDR    = 0%Xh\n",                   FP_OFF(GetXDeathState)                    - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETMELEESTATEADDR     = 0%Xh\n",                   FP_OFF(GetMeleeState)                     - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETMOBJMASSADDR       = 0%Xh\n",                   FP_OFF(GetMobjMass)                       - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETACTIVESOUNDADDR    = 0%Xh\n",                   FP_OFF(GetActiveSound)                    - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETPAINSOUNDADDR      = 0%Xh\n",                   FP_OFF(GetPainSound)                      - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETATTACKSOUNDADDR    = 0%Xh\n",                   FP_OFF(GetAttackSound)                    - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETDAMAGEADDR         = 0%Xh\n",                   FP_OFF(GetDamage)                         - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETSEESTATEADDR       = 0%Xh\n",                   FP_OFF(GetSeeState)                       - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETMISSILESTATEADDR   = 0%Xh\n",                   FP_OFF(GetMissileState)                   - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETDEATHSTATEADDR     = 0%Xh\n",                   FP_OFF(GetDeathState)                     - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETPAINSTATEADDR      = 0%Xh\n",                   FP_OFF(GetPainState)                      - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "GETSPAWNHEALTHADDR    = 0%Xh\n",                   FP_OFF(GetSpawnHealth)                    - FP_OFF(P_SIGHT_STARTMARKER));
     
-    // fprintf(fp, "AM_RESPONDER_OFFSET    = 0%Xh\n",                   FP_OFF(AM_Responder)                     - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "AM_DRAWER_OFFSET       = 0%Xh\n",                   FP_OFF(AM_Drawer)                        - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "AM_TICKER_OFFSET       = 0%Xh\n",                   FP_OFF(AM_Ticker)                        - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "AM_RESPONDER_OFFSET    = 0%Xh\n",                   FP_OFF(AM_Responder)                     - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "AM_DRAWER_OFFSET       = 0%Xh\n",                   FP_OFF(AM_Drawer)                        - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "AM_TICKER_OFFSET       = 0%Xh\n",                   FP_OFF(AM_Ticker)                        - FP_OFF(P_SIGHT_STARTMARKER));
 
-    // fprintf(fp, "S_UPDATESOUNDSOFFSET       = 0%Xh\n",            FP_OFF(S_UpdateSounds)                      - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "S_STARTSOUNDFAROFFSET      = 0%Xh\n",            FP_OFF(S_StartSoundFar)                     - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "S_ACTUALLYCHANGEMUSICOFFSET = 0%Xh\n",           FP_OFF(S_ActuallyChangeMusic)               - FP_OFF(SM_LOAD_STARTMARKER));
-
-
-
-    // fprintf(fp, "M_STARTCONTROLPANELOFFSET  = 0%Xh\n",            FP_OFF(M_StartControlPanel)                 - FP_OFF(M_MENU_STARTMARKER));
-    // fprintf(fp, "M_DRAWEROFFSET             = 0%Xh\n",            FP_OFF(M_Drawer)                            - FP_OFF(M_MENU_STARTMARKER));
-    // fprintf(fp, "M_DRAWPAUSEOFFSET          = 0%Xh\n",            FP_OFF(M_DrawPause)                         - FP_OFF(M_MENU_STARTMARKER));
-    // fprintf(fp, "M_RESPONDEROFFSET          = 0%Xh\n",            FP_OFF(M_Responder)                         - FP_OFF(M_MENU_STARTMARKER));
-    // fprintf(fp, "M_LOADFROMSAVEGAMEOFFSET   = 0%Xh\n",            FP_OFF(M_LoadFromSaveGame)                  - FP_OFF(M_MENU_STARTMARKER));
-
-
-    // fprintf(fp, "WIPE_STARTSCREENOFFSET     = 0%Xh\n",            FP_OFF(wipe_StartScreen)                    - FP_OFF(F_WIPE_STARTMARKER));
-    // fprintf(fp, "WIPE_WIPELOOPOFFSET        = 0%Xh\n",            FP_OFF(wipe_WipeLoop)                       - FP_OFF(F_WIPE_STARTMARKER));
-    // fprintf(fp, "F_DRAWEROFFSET             = 0%Xh\n",            FP_OFF(F_Drawer)                            - FP_OFF(F_FINALE_STARTMARKER));
-    // fprintf(fp, "LOADSFXWADLUMPSOFFSET      = 0%Xh\n",            FP_OFF(LoadSFXWadLumps)                     - FP_OFF(S_INIT_STARTMARKER));
-
-
-    // // load offsets
-    // fprintf(fp, "G_CONTINUELOADGAMEOFFSET    = 0%Xh\n",           FP_OFF(G_ContinueLoadGame)                  - FP_OFF(P_SAVEG_STARTMARKER));
-    // fprintf(fp, "G_CONTINUESAVEGAMEOFFSET    = 0%Xh\n",           FP_OFF(G_ContinueSaveGame)                  - FP_OFF(P_SAVEG_STARTMARKER));
-
-    // // intermission/ wi stuff offsets
-
-    // fprintf(fp, "WI_TICKEROFFSET             = 0%Xh\n",           FP_OFF(WI_Ticker)                           - FP_OFF(WI_STARTMARKER));
-    // fprintf(fp, "WI_STARTOFFSET              = 0%Xh\n",           FP_OFF(WI_Start)                            - FP_OFF(WI_STARTMARKER));
-    // fprintf(fp, "WI_DRAWEROFFSET            = 0%Xh\n",            FP_OFF(WI_Drawer)                           - FP_OFF(WI_STARTMARKER));
-
-    // fprintf(fp, "F_TICKEROFFSET              = 0%Xh\n",           FP_OFF(F_Ticker)                            - FP_OFF(F_FINALE_STARTMARKER));
-    // fprintf(fp, "P_TICKEROFFSET              = 0%Xh\n",           FP_OFF(P_Ticker)                            - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "AM_TICKEROFFSET             = 0%Xh\n",           FP_OFF(AM_Ticker)                           - FP_OFF(P_SIGHT_STARTMARKER));
-
-
-    // fprintf(fp, "R_WRITEBACKVIEWCONSTANTSMASKED24OFFSET  = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsMasked24)  - FP_OFF(R_WriteBackViewConstantsMasked24));
-    // fprintf(fp, "R_WRITEBACKMASKEDFRAMECONSTANTS24OFFSET = 0%Xh\n", FP_OFF(R_WriteBackMaskedFrameConstants24) - FP_OFF(R_WriteBackViewConstantsMasked24));
-    // fprintf(fp, "R_WRITEBACKVIEWCONSTANTSMASKED16OFFSET  = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsMasked16)  - FP_OFF(R_WriteBackViewConstantsMasked16));
-    // fprintf(fp, "R_WRITEBACKMASKEDFRAMECONSTANTS16OFFSET = 0%Xh\n", FP_OFF(R_WriteBackMaskedFrameConstants16) - FP_OFF(R_WriteBackViewConstantsMasked16));
-    // fprintf(fp, "R_WRITEBACKVIEWCONSTANTSMASKED0OFFSET   = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsMasked0)   - FP_OFF(R_WriteBackViewConstantsMasked0));
-    // fprintf(fp, "R_WRITEBACKMASKEDFRAMECONSTANTS0OFFSET  = 0%Xh\n", FP_OFF(R_WriteBackMaskedFrameConstants0)  - FP_OFF(R_WriteBackViewConstantsMasked0));
-    // fprintf(fp, "R_WRITEBACKVIEWCONSTANTSMASKEDFLOFFSET  = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsMaskedFL)  - FP_OFF(R_WriteBackViewConstantsMaskedFL));
-    // fprintf(fp, "R_WRITEBACKMASKEDFRAMECONSTANTSFLOFFSET = 0%Xh\n", FP_OFF(R_WriteBackMaskedFrameConstantsFL) - FP_OFF(R_WriteBackViewConstantsMaskedFL));
-    // fprintf(fp, "R_DRAWPLANES24OFFSET                   = 0%Xh\n", FP_OFF(R_DrawPlanes24)                    - FP_OFF(R_SPAN24_STARTMARKER));
-	// fprintf(fp, "R_WRITEBACKVIEWCONSTANTSSPAN24OFFSET   = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsSpan24)    - FP_OFF(R_SPAN24_STARTMARKER));
-	// fprintf(fp, "R_DRAWPLANES16OFFSET                   = 0%Xh\n", FP_OFF(R_DrawPlanes16)                    - FP_OFF(R_SPAN16_STARTMARKER));
-	// fprintf(fp, "R_WRITEBACKVIEWCONSTANTSSPAN16OFFSET   = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsSpan16)    - FP_OFF(R_SPAN16_STARTMARKER));
-	// fprintf(fp, "R_DRAWPLANES0OFFSET                    = 0%Xh\n", FP_OFF(R_DrawPlanes0)                     - FP_OFF(R_SPAN0_STARTMARKER));
-	// fprintf(fp, "R_WRITEBACKVIEWCONSTANTSSPAN0OFFSET    = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsSpan0)     - FP_OFF(R_SPAN0_STARTMARKER));
-	// fprintf(fp, "R_DRAWPLANESFLOFFSET                   = 0%Xh\n", FP_OFF(R_DrawPlanesFL)                    - FP_OFF(R_SPANFL_STARTMARKER));
-	// fprintf(fp, "R_WRITEBACKVIEWCONSTANTSSPANFLOFFSET   = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsSpanFL)    - FP_OFF(R_SPANFL_STARTMARKER));
-	// fprintf(fp, "R_DRAWSKYCOLUMNOFFSET                  = 0%Xh\n", FP_OFF(R_DrawSkyColumn)                   - FP_OFF(R_SKY_STARTMARKER));
-	// fprintf(fp, "R_DRAWSKYPLANEOFFSET                   = 0%Xh\n", FP_OFF(R_DrawSkyPlane)                    - FP_OFF(R_SKY_STARTMARKER));
-	// fprintf(fp, "R_DRAWSKYPLANEDYNAMICOFFSET            = 0%Xh\n", FP_OFF(R_DrawSkyPlaneDynamic)             - FP_OFF(R_SKY_STARTMARKER));
-	// fprintf(fp, "R_DRAWSKYCOLUMNFLOFFSET                = 0%Xh\n", FP_OFF(R_DrawSkyColumnFL)                 - FP_OFF(R_SKYFL_STARTMARKER));
-	// fprintf(fp, "R_DRAWSKYPLANEFLOFFSET                 = 0%Xh\n", FP_OFF(R_DrawSkyPlaneFL)                  - FP_OFF(R_SKYFL_STARTMARKER));
-	// fprintf(fp, "R_DRAWSKYPLANEDYNAMICFLOFFSET          = 0%Xh\n", FP_OFF(R_DrawSkyPlaneDynamicFL)           - FP_OFF(R_SKYFL_STARTMARKER));
-	// fprintf(fp, "R_WRITEBACKVIEWCONSTANTS24OFFSET       = 0%Xh\n", FP_OFF(R_WriteBackViewConstants24)        - FP_OFF(R_BSP24_STARTMARKER));
-	// fprintf(fp, "R_RENDERPLAYERVIEW24OFFSET             = 0%Xh\n", FP_OFF(R_RenderPlayerView24)              - FP_OFF(R_BSP24_STARTMARKER));
-	// fprintf(fp, "R_GETCOMPOSITETEXTURE24OFFSET          = 0%Xh\n", FP_OFF(R_GetCompositeTexture_Far24)       - FP_OFF(R_BSP24_STARTMARKER));
-	// fprintf(fp, "R_GETPATCHTEXTURE24OFFSET              = 0%Xh\n", FP_OFF(R_GetPatchTexture_Far24)           - FP_OFF(R_BSP24_STARTMARKER));
-	// fprintf(fp, "R_WRITEBACKVIEWCONSTANTS16OFFSET       = 0%Xh\n", FP_OFF(R_WriteBackViewConstants16)        - FP_OFF(R_BSP16_STARTMARKER));
-	// fprintf(fp, "R_RENDERPLAYERVIEW16OFFSET             = 0%Xh\n", FP_OFF(R_RenderPlayerView16)              - FP_OFF(R_BSP16_STARTMARKER));
-	// fprintf(fp, "R_GETCOMPOSITETEXTURE16OFFSET          = 0%Xh\n", FP_OFF(R_GetCompositeTexture_Far16)       - FP_OFF(R_BSP16_STARTMARKER));
-	// fprintf(fp, "R_GETPATCHTEXTURE16OFFSET              = 0%Xh\n", FP_OFF(R_GetPatchTexture_Far16)           - FP_OFF(R_BSP16_STARTMARKER));
-	// fprintf(fp, "R_WRITEBACKVIEWCONSTANTS0OFFSET        = 0%Xh\n", FP_OFF(R_WriteBackViewConstants0)         - FP_OFF(R_BSP0_STARTMARKER));
-	// fprintf(fp, "R_RENDERPLAYERVIEW0OFFSET              = 0%Xh\n", FP_OFF(R_RenderPlayerView0)               - FP_OFF(R_BSP0_STARTMARKER));
-	// fprintf(fp, "R_GETCOMPOSITETEXTURE0OFFSET           = 0%Xh\n", FP_OFF(R_GetCompositeTexture_Far0)        - FP_OFF(R_BSP0_STARTMARKER));
-	// fprintf(fp, "R_GETPATCHTEXTURE0OFFSET               = 0%Xh\n", FP_OFF(R_GetPatchTexture_Far0)            - FP_OFF(R_BSP0_STARTMARKER));
-	// fprintf(fp, "R_WRITEBACKVIEWCONSTANTSFLOFFSET       = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsFL)        - FP_OFF(R_BSPFL_STARTMARKER));
-	// fprintf(fp, "R_RENDERPLAYERVIEWFLOFFSET             = 0%Xh\n", FP_OFF(R_RenderPlayerViewFL)              - FP_OFF(R_BSPFL_STARTMARKER));
-	// fprintf(fp, "R_GETCOMPOSITETEXTUREFLOFFSET          = 0%Xh\n", FP_OFF(R_GetCompositeTexture_FarFL)       - FP_OFF(R_BSPFL_STARTMARKER));
-	// fprintf(fp, "R_GETPATCHTEXTUREFLOFFSET              = 0%Xh\n", FP_OFF(R_GetPatchTexture_FarFL)           - FP_OFF(R_BSPFL_STARTMARKER));
-    // fprintf(fp, "M_INITOFFSET                           = 0%Xh\n", FP_OFF(M_Init)                            - FP_OFF(M_MENU_STARTMARKER));
-    // fprintf(fp, "P_SPAWNSPECIALSOFFSET                  = 0%Xh\n", FP_OFF(P_SpawnSpecials)                   - FP_OFF(P_SIGHT_STARTMARKER));
-    // fprintf(fp, "S_STARTOFFSET                          = 0%Xh\n", FP_OFF(S_Start)                           - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "S_UPDATESOUNDSOFFSET       = 0%Xh\n",            FP_OFF(S_UpdateSounds)                      - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "S_STARTSOUNDFAROFFSET      = 0%Xh\n",            FP_OFF(S_StartSoundFar)                     - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "S_ACTUALLYCHANGEMUSICOFFSET = 0%Xh\n",           FP_OFF(S_ActuallyChangeMusic)               - FP_OFF(SM_LOAD_STARTMARKER));
 
 
 
-	// // P_AddActiveCeiling_addr =		 	(uint32_t)(P_AddActiveCeiling);
-	// // P_AddActivePlat_addr =		 		(uint32_t)(P_AddActivePlat);
-    // // P_UseSpecialLine_addr =				(uint32_t)(P_UseSpecialLine);
-	// // P_DamageMobj_addr =					(uint32_t)(P_DamageMobj);
+    fprintf(fp, "M_STARTCONTROLPANELOFFSET  = 0%Xh\n",            FP_OFF(M_StartControlPanel)                 - FP_OFF(M_MENU_STARTMARKER));
+    fprintf(fp, "M_DRAWEROFFSET             = 0%Xh\n",            FP_OFF(M_Drawer)                            - FP_OFF(M_MENU_STARTMARKER));
+    fprintf(fp, "M_DRAWPAUSEOFFSET          = 0%Xh\n",            FP_OFF(M_DrawPause)                         - FP_OFF(M_MENU_STARTMARKER));
+    fprintf(fp, "M_RESPONDEROFFSET          = 0%Xh\n",            FP_OFF(M_Responder)                         - FP_OFF(M_MENU_STARTMARKER));
+    fprintf(fp, "M_LOADFROMSAVEGAMEOFFSET   = 0%Xh\n",            FP_OFF(M_LoadFromSaveGame)                  - FP_OFF(M_MENU_STARTMARKER));
+
+
+    fprintf(fp, "WIPE_STARTSCREENOFFSET     = 0%Xh\n",            FP_OFF(wipe_StartScreen)                    - FP_OFF(F_WIPE_STARTMARKER));
+    fprintf(fp, "WIPE_WIPELOOPOFFSET        = 0%Xh\n",            FP_OFF(wipe_WipeLoop)                       - FP_OFF(F_WIPE_STARTMARKER));
+    fprintf(fp, "F_DRAWEROFFSET             = 0%Xh\n",            FP_OFF(F_Drawer)                            - FP_OFF(F_FINALE_STARTMARKER));
+    fprintf(fp, "LOADSFXWADLUMPSOFFSET      = 0%Xh\n",            FP_OFF(LoadSFXWadLumps)                     - FP_OFF(S_INIT_STARTMARKER));
+
+
+    // load offsets
+    fprintf(fp, "G_CONTINUELOADGAMEOFFSET    = 0%Xh\n",           FP_OFF(G_ContinueLoadGame)                  - FP_OFF(P_SAVEG_STARTMARKER));
+    fprintf(fp, "G_CONTINUESAVEGAMEOFFSET    = 0%Xh\n",           FP_OFF(G_ContinueSaveGame)                  - FP_OFF(P_SAVEG_STARTMARKER));
+
+    // intermission/ wi stuff offsets
+
+    fprintf(fp, "WI_TICKEROFFSET             = 0%Xh\n",           FP_OFF(WI_Ticker)                           - FP_OFF(WI_STARTMARKER));
+    fprintf(fp, "WI_STARTOFFSET              = 0%Xh\n",           FP_OFF(WI_Start)                            - FP_OFF(WI_STARTMARKER));
+    fprintf(fp, "WI_DRAWEROFFSET            = 0%Xh\n",            FP_OFF(WI_Drawer)                           - FP_OFF(WI_STARTMARKER));
+
+    fprintf(fp, "F_TICKEROFFSET              = 0%Xh\n",           FP_OFF(F_Ticker)                            - FP_OFF(F_FINALE_STARTMARKER));
+    fprintf(fp, "P_TICKEROFFSET              = 0%Xh\n",           FP_OFF(P_Ticker)                            - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "AM_TICKEROFFSET             = 0%Xh\n",           FP_OFF(AM_Ticker)                           - FP_OFF(P_SIGHT_STARTMARKER));
+
+
+    fprintf(fp, "R_WRITEBACKVIEWCONSTANTSMASKED24OFFSET  = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsMasked24)  - FP_OFF(R_WriteBackViewConstantsMasked24));
+    fprintf(fp, "R_WRITEBACKMASKEDFRAMECONSTANTS24OFFSET = 0%Xh\n", FP_OFF(R_WriteBackMaskedFrameConstants24) - FP_OFF(R_WriteBackViewConstantsMasked24));
+    fprintf(fp, "R_WRITEBACKVIEWCONSTANTSMASKED16OFFSET  = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsMasked16)  - FP_OFF(R_WriteBackViewConstantsMasked16));
+    fprintf(fp, "R_WRITEBACKMASKEDFRAMECONSTANTS16OFFSET = 0%Xh\n", FP_OFF(R_WriteBackMaskedFrameConstants16) - FP_OFF(R_WriteBackViewConstantsMasked16));
+    fprintf(fp, "R_WRITEBACKVIEWCONSTANTSMASKED0OFFSET   = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsMasked0)   - FP_OFF(R_WriteBackViewConstantsMasked0));
+    fprintf(fp, "R_WRITEBACKMASKEDFRAMECONSTANTS0OFFSET  = 0%Xh\n", FP_OFF(R_WriteBackMaskedFrameConstants0)  - FP_OFF(R_WriteBackViewConstantsMasked0));
+    fprintf(fp, "R_WRITEBACKVIEWCONSTANTSMASKEDFLOFFSET  = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsMaskedFL)  - FP_OFF(R_WriteBackViewConstantsMaskedFL));
+    fprintf(fp, "R_WRITEBACKMASKEDFRAMECONSTANTSFLOFFSET = 0%Xh\n", FP_OFF(R_WriteBackMaskedFrameConstantsFL) - FP_OFF(R_WriteBackViewConstantsMaskedFL));
+    fprintf(fp, "R_DRAWPLANES24OFFSET                   = 0%Xh\n", FP_OFF(R_DrawPlanes24)                    - FP_OFF(R_SPAN24_STARTMARKER));
+	fprintf(fp, "R_WRITEBACKVIEWCONSTANTSSPAN24OFFSET   = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsSpan24)    - FP_OFF(R_SPAN24_STARTMARKER));
+	fprintf(fp, "R_DRAWPLANES16OFFSET                   = 0%Xh\n", FP_OFF(R_DrawPlanes16)                    - FP_OFF(R_SPAN16_STARTMARKER));
+	fprintf(fp, "R_WRITEBACKVIEWCONSTANTSSPAN16OFFSET   = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsSpan16)    - FP_OFF(R_SPAN16_STARTMARKER));
+	fprintf(fp, "R_DRAWPLANES0OFFSET                    = 0%Xh\n", FP_OFF(R_DrawPlanes0)                     - FP_OFF(R_SPAN0_STARTMARKER));
+	fprintf(fp, "R_WRITEBACKVIEWCONSTANTSSPAN0OFFSET    = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsSpan0)     - FP_OFF(R_SPAN0_STARTMARKER));
+	fprintf(fp, "R_DRAWPLANESFLOFFSET                   = 0%Xh\n", FP_OFF(R_DrawPlanesFL)                    - FP_OFF(R_SPANFL_STARTMARKER));
+	fprintf(fp, "R_WRITEBACKVIEWCONSTANTSSPANFLOFFSET   = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsSpanFL)    - FP_OFF(R_SPANFL_STARTMARKER));
+	fprintf(fp, "R_DRAWSKYCOLUMNOFFSET                  = 0%Xh\n", FP_OFF(R_DrawSkyColumn)                   - FP_OFF(R_SKY_STARTMARKER));
+	fprintf(fp, "R_DRAWSKYPLANEOFFSET                   = 0%Xh\n", FP_OFF(R_DrawSkyPlane)                    - FP_OFF(R_SKY_STARTMARKER));
+	fprintf(fp, "R_DRAWSKYPLANEDYNAMICOFFSET            = 0%Xh\n", FP_OFF(R_DrawSkyPlaneDynamic)             - FP_OFF(R_SKY_STARTMARKER));
+	fprintf(fp, "R_DRAWSKYCOLUMNFLOFFSET                = 0%Xh\n", FP_OFF(R_DrawSkyColumnFL)                 - FP_OFF(R_SKYFL_STARTMARKER));
+	fprintf(fp, "R_DRAWSKYPLANEFLOFFSET                 = 0%Xh\n", FP_OFF(R_DrawSkyPlaneFL)                  - FP_OFF(R_SKYFL_STARTMARKER));
+	fprintf(fp, "R_DRAWSKYPLANEDYNAMICFLOFFSET          = 0%Xh\n", FP_OFF(R_DrawSkyPlaneDynamicFL)           - FP_OFF(R_SKYFL_STARTMARKER));
+	fprintf(fp, "R_WRITEBACKVIEWCONSTANTS24OFFSET       = 0%Xh\n", FP_OFF(R_WriteBackViewConstants24)        - FP_OFF(R_BSP24_STARTMARKER));
+	fprintf(fp, "R_RENDERPLAYERVIEW24OFFSET             = 0%Xh\n", FP_OFF(R_RenderPlayerView24)              - FP_OFF(R_BSP24_STARTMARKER));
+	fprintf(fp, "R_GETCOMPOSITETEXTURE24OFFSET          = 0%Xh\n", FP_OFF(R_GetCompositeTexture_Far24)       - FP_OFF(R_BSP24_STARTMARKER));
+	fprintf(fp, "R_GETPATCHTEXTURE24OFFSET              = 0%Xh\n", FP_OFF(R_GetPatchTexture_Far24)           - FP_OFF(R_BSP24_STARTMARKER));
+	fprintf(fp, "R_WRITEBACKVIEWCONSTANTS16OFFSET       = 0%Xh\n", FP_OFF(R_WriteBackViewConstants16)        - FP_OFF(R_BSP16_STARTMARKER));
+	fprintf(fp, "R_RENDERPLAYERVIEW16OFFSET             = 0%Xh\n", FP_OFF(R_RenderPlayerView16)              - FP_OFF(R_BSP16_STARTMARKER));
+	fprintf(fp, "R_GETCOMPOSITETEXTURE16OFFSET          = 0%Xh\n", FP_OFF(R_GetCompositeTexture_Far16)       - FP_OFF(R_BSP16_STARTMARKER));
+	fprintf(fp, "R_GETPATCHTEXTURE16OFFSET              = 0%Xh\n", FP_OFF(R_GetPatchTexture_Far16)           - FP_OFF(R_BSP16_STARTMARKER));
+	fprintf(fp, "R_WRITEBACKVIEWCONSTANTS0OFFSET        = 0%Xh\n", FP_OFF(R_WriteBackViewConstants0)         - FP_OFF(R_BSP0_STARTMARKER));
+	fprintf(fp, "R_RENDERPLAYERVIEW0OFFSET              = 0%Xh\n", FP_OFF(R_RenderPlayerView0)               - FP_OFF(R_BSP0_STARTMARKER));
+	fprintf(fp, "R_GETCOMPOSITETEXTURE0OFFSET           = 0%Xh\n", FP_OFF(R_GetCompositeTexture_Far0)        - FP_OFF(R_BSP0_STARTMARKER));
+	fprintf(fp, "R_GETPATCHTEXTURE0OFFSET               = 0%Xh\n", FP_OFF(R_GetPatchTexture_Far0)            - FP_OFF(R_BSP0_STARTMARKER));
+	fprintf(fp, "R_WRITEBACKVIEWCONSTANTSFLOFFSET       = 0%Xh\n", FP_OFF(R_WriteBackViewConstantsFL)        - FP_OFF(R_BSPFL_STARTMARKER));
+	fprintf(fp, "R_RENDERPLAYERVIEWFLOFFSET             = 0%Xh\n", FP_OFF(R_RenderPlayerViewFL)              - FP_OFF(R_BSPFL_STARTMARKER));
+	fprintf(fp, "R_GETCOMPOSITETEXTUREFLOFFSET          = 0%Xh\n", FP_OFF(R_GetCompositeTexture_FarFL)       - FP_OFF(R_BSPFL_STARTMARKER));
+	fprintf(fp, "R_GETPATCHTEXTUREFLOFFSET              = 0%Xh\n", FP_OFF(R_GetPatchTexture_FarFL)           - FP_OFF(R_BSPFL_STARTMARKER));
+    fprintf(fp, "M_INITOFFSET                           = 0%Xh\n", FP_OFF(M_Init)                            - FP_OFF(M_MENU_STARTMARKER));
+    fprintf(fp, "P_SPAWNSPECIALSOFFSET                  = 0%Xh\n", FP_OFF(P_SpawnSpecials)                   - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "S_STARTOFFSET                          = 0%Xh\n", FP_OFF(S_Start)                           - FP_OFF(P_SIGHT_STARTMARKER));
+
+
+
+	// P_AddActiveCeiling_addr =		 	(uint32_t)(P_AddActiveCeiling);
+	// P_AddActivePlat_addr =		 		(uint32_t)(P_AddActivePlat);
+    // P_UseSpecialLine_addr =				(uint32_t)(P_UseSpecialLine);
+	// P_DamageMobj_addr =					(uint32_t)(P_DamageMobj);
 	
-    // // P_CrossSpecialLine_addr =			(uint32_t)(P_CrossSpecialLine);
-	// // P_ShootSpecialLine_addr =			(uint32_t)(P_ShootSpecialLine);
-	// // P_TouchSpecialThing_addr =			(uint32_t)(P_TouchSpecialThing);
-	// // P_RemoveThinker_addr =				(uint32_t)(P_RemoveThinker);
-	// // EV_DoDoor_addr =					(uint32_t)(EV_DoDoor);
- 	// // EV_DoFloor_addr =					(uint32_t)(EV_DoFloor);
+    // P_CrossSpecialLine_addr =			(uint32_t)(P_CrossSpecialLine);
+	// P_ShootSpecialLine_addr =			(uint32_t)(P_ShootSpecialLine);
+	// P_TouchSpecialThing_addr =			(uint32_t)(P_TouchSpecialThing);
+	// P_RemoveThinker_addr =				(uint32_t)(P_RemoveThinker);
+	// EV_DoDoor_addr =					(uint32_t)(EV_DoDoor);
+ 	// EV_DoFloor_addr =					(uint32_t)(EV_DoFloor);
 
 
 
-    // fclose(fp);
+    fclose(fp);
     printf("Generated m_offset.inc file\n");
  
     return 0;
