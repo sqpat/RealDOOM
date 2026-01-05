@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/04 19:51:33
+Created on:       26/01/04 20:05:48
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -519,8 +519,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 21a6:525a*     A_VileTarget_
 21a6:46eb*     P_LookForPlayers_
 21a6:5959*     A_BrainSpit_
-21a6:4415*     P_Move_
 21a6:58e3*     A_BrainExplode_
+21a6:4415*     P_Move_
 21a6:51b7*     A_VileStart_
 21a6:51c4*     A_FireCrackle_
 21a6:4f20*     A_SkelFist_
@@ -561,8 +561,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 21a6:4208*     P_ENEMY_STARTMARKER_
 21a6:4c40*     A_TroopAttack_
 21a6:5641*     A_PainAttack_
-21a6:5809*     A_BrainAwake_
 21a6:5aea*     A_PlayerScream_
+21a6:5809*     A_BrainAwake_
 21a6:4799*     A_KeenDie_
 Module: p_ceilng.obj(p_ceilng.ASM)
 21a6:5ddc*     P_AddActiveCeiling_
@@ -630,8 +630,8 @@ Module: p_spec.obj(p_spec.ASM)
 21a6:7b66      P_UpdateSpecials_
 21a6:7574      P_FindNextHighestFloor_
 21a6:7a9e      P_PlayerInSpecialSector_
-21a6:7500      P_FindHighestOrLowestFloorSurrounding_
 21a6:7e8b*     P_SPEC_ENDMARKER_
+21a6:7500      P_FindHighestOrLowestFloorSurrounding_
 21a6:74aa*     P_SPEC_STARTMARKER_
 21a6:7c97      EV_DoDonut_
 21a6:75e5      P_FindLowestOrHighestCeilingSurrounding_
@@ -1416,4 +1416,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  000395b0 (234928.)
 Entry point address: 2b7f:9bf0
-Link time: 00:00.04
+Link time: 00:00.49
