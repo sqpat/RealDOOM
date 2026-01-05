@@ -71,7 +71,7 @@ PUBLIC _SELFMODIFY_R_RENDERPLAYERVIEW_CALL
 
 
 
-STDOUT = OFFSET ___iob + SIZE WATCOM_C_FILE
+STDOUT = OFFSET ___iob
 
 
 ; ALL THE CHEAT DATA inlined here in CS rather than in DGROUP.
@@ -2187,34 +2187,9 @@ call  locallib_fputc_
 pop   dx
 ret
 
-COMMENT @
-push  dx
-test  byte ptr ds:[STDOUT + WATCOM_C_FILE.watcom_file_flag+1], (0400h SHR 8) ; IONBF  0x0400  /* no buffering */
-jne   just_putchar
-mov   dx, word ptr ds:[STDOUT + WATCOM_C_FILE.watcom_file_bufsize]
-sub   dx, word ptr ds:[STDOUT + WATCOM_C_FILE.watcom_file_cnt]
-cmp   dx, 1         ; dec dx jnge?
-jbe   just_putchar
-push  bx
-mov   bx, word ptr ds:[STDOUT + WATCOM_C_FILE.watcom_file_ptr]
-mov   byte ptr ds:[bx], al
-pop   bx
-cmp   al, 0Ah  ; '\n'
-je    just_putchar
-or    byte ptr ds:[STDOUT + WATCOM_C_FILE.watcom_file_flag+1], (01000h SHR 8)  ; _DIRTY  0x1000  /* buffer has been modified */
-inc   byte ptr ds:[STDOUT + WATCOM_C_FILE.watcom_file_cnt]
-inc   byte ptr ds:[STDOUT + WATCOM_C_FILE.watcom_file_ptr]
-pop   dx
-ret
-just_putchar:
-mov   dx, STDOUT
-cbw
-call  locallib_fputc_
-pop   dx
-@
-ret
-
 ENDP
+
+
 PROC   locallib_printhex_ NEAR
 PUBLIC locallib_printhex_
 ;void __far locallib_printhex (uint32_t number, boolean islong){

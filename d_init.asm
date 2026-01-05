@@ -546,7 +546,7 @@ ENDP
 
 
 SIZEOF_FILE = 0Eh
-STDOUT = OFFSET ___iob + SIZEOF_FILE
+STDOUT = OFFSET ___iob 
 ; todo constants
 
 STRINGDATA_SEGMENT = 06000h

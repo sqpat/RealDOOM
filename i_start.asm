@@ -72,7 +72,7 @@ STACK   ends
 
 _READ    = 00001h    ; file opened for reading 
 _WRITE   = 00002h    ; file opened for writing 
-_UNGET   = 00004h    ; ungetc has been done 
+
 _BIGBUF  = 00008h    ; big buffer allocated 
 _EOF     = 00010h    ; EOF has occurred 
 _SFERR   = 00020h    ; error has occurred on this file 
@@ -81,12 +81,8 @@ _BINARY  = 00040h    ; file is binary, skip CRLF processing
 _IOFBF   = 00100h    ; full buffering 
 _IOLBF   = 00200h    ; line buffering 
 _IONBF   = 00400h    ; no buffering 
-_TMPFIL  = 00800h    ; this is a temporary file 
 _DIRTY   = 01000h    ; buffer has been modified 
 _ISTTY   = 02000h    ; is console device 
-_DYNAMIC = 04000h   ; FILE is dynamically allocated   
-_FILEEXT = 08000h   ; lseek with positive offset has been done 
-_COMMIT  = 00001h    ; extended flag: commit OS buffers on flush 
 
 
 _O_RDONLY        = 00000h ;  open for read only 
@@ -108,8 +104,7 @@ PUBLIC  I_START_STARTMARKER_
 ENDP
 
 NUM_STD_STREAMS = 2
-STD_IN_STREAM_INDEX  = 0
-STD_OUT_STREAM_INDEX = 1
+STD_OUT_STREAM_INDEX = 0
 
 SIZE_STD_STREAMS = NUM_STD_STREAMS * (SIZE WATCOM_C_FILE)
 
@@ -331,21 +326,12 @@ PROC   __InitFiles_ NEAR
 PUBLIC __InitFiles_ 
 
 
-push      bx
-push      dx
 push      si
 push      di
-mov       si, OFFSET ___iob
+mov       si, OFFSET ___iob  ; std_out
 
-check_next_file_for_init:
-mov       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag]
-test      ax, ax
-je        exit_initfiles
-stdin_has_flags:
 call      get_new_streamlink_
-; i dont think we can run out of 10 streamlinks??
-; test      ax, ax
-; je        malloc_streamlink_failed
+
 mov       di, ax
 
 mov       ax, word ptr ds:[___OpenStreams]
@@ -354,15 +340,12 @@ mov       word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_next], ax
 mov       word ptr ds:[si + WATCOM_C_FILE.watcom_file_link], di
 mov       word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
 mov       word ptr ds:[___OpenStreams], di
-add       si, SIZE WATCOM_C_FILE
-jmp       check_next_file_for_init
 
-exit_initfiles:
+
 mov       word ptr ds:[___ClosedStreams], ax
 pop       di
 pop       si
-pop       dx
-pop       bx
+
 ret
 
 

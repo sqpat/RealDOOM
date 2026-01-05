@@ -744,7 +744,7 @@ C_INIT_STRUCT ENDS
 COMMENT @
 #define _READ   0x0001  /* file opened for reading */
 #define _WRITE  0x0002  /* file opened for writing */
-#define _UNGET  0x0004  /* ungetc has been done */
+
 #define _BIGBUF 0x0008  /* big buffer allocated */
 #define _EOF    0x0010  /* EOF has occurred */
 #define _SFERR  0x0020  /* error has occurred on this file */
@@ -753,12 +753,8 @@ COMMENT @
 #define _IOFBF  0x0100  /* full buffering */
 #define _IOLBF  0x0200  /* line buffering */
 #define _IONBF  0x0400  /* no buffering */
-#define _TMPFIL 0x0800  /* this is a temporary file */
 #define _DIRTY  0x1000  /* buffer has been modified */
 #define _ISTTY  0x2000  /* is console device */
-#define _DYNAMIC 0x4000 /* FILE is dynamically allocated   */
-#define _FILEEXT 0x8000 /* lseek with positive offset has been done */
-#define _COMMIT 0x0001  /* extended flag: commit OS buffers on flush */
 @
 
 

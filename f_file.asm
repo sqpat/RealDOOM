@@ -1562,7 +1562,7 @@ ret
 ENDP
 
 
-STDOUT = OFFSET ___iob + SIZE WATCOM_C_FILE  ; file index 1
+STDOUT = OFFSET ___iob   ; file index 0
 
 
 PROC    locallib_ioalloc_ NEAR
@@ -1658,13 +1658,10 @@ ret
 ENDP
 
 
-; 20 files
+; 10 files
 _io_mode:
-;   stdin  stdout  stderr  stdaux         stdprn
-dw _READ, _WRITE, _WRITE, _READ OR _WRITE, _WRITE
-; room to grow
-dw 0, 0, 0, 0, 0
-dw 0, 0, 0, 0, 0
+;  stdout 
+dw _WRITE, 0, 0, 0, 0
 dw 0, 0, 0, 0, 0
 
 
