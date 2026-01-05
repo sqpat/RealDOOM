@@ -481,53 +481,39 @@ _IONBF   = 00400h    ; no buffering
 STDOUT_FILENO = 1
 
 ; AE8 ; file 0
-dw 00, 00, 00, _WRITE OR _IONBF, STDOUT_FILENO, 0
-dw 00, 00, 00, 00, 00, 0
-dw 00, 00, 00, 00, 00, 0
-dw 00, 00, 00, 00, 00, 0
-dw 00, 00, 00, 00, 00, 0
+dw 00, 00, 00, _WRITE OR _IONBF, STDOUT_FILENO, 00
+dw 00, 00, 00, 00, 00, 00
+dw 00, 00, 00, 00, 00, 00
+dw 00, 00, 00, 00, 00, 00
+dw 00, 00, 00, 00, 00, 00
 
-dw 00, 00, 00, 00, 00, 0
-dw 00, 00, 00, 00, 00, 0
-dw 00, 00, 00, 00, 00, 0
-dw 00, 00, 00, 00, 00, 0
-dw 00, 00, 00, 00, 00, 0
+dw 00, 00, 00, 00, 00, 00
+dw 00, 00, 00, 00, 00, 00
+dw 00, 00, 00, 00, 00, 00
+dw 00, 00, 00, 00, 00, 00
+dw 00, 00, 00, 00, 00, 00
 
-
-
-; B60 ; streamlink static array
-
-dw 0, 0, 0, 0
-dw 0, 0, 0, 0
-dw 0, 0, 0, 0
-dw 0, 0, 0, 0
-dw 0, 0, 0, 0
-dw 0, 0, 0, 0
-dw 0, 0, 0, 0
-dw 0, 0, 0, 0
-dw 0, 0, 0, 0
-dw 0, 0, 0, 0
 
 ; command line copy
-; BB0
+; B60
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; BC0
+; B70
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; BD0
+; B80
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; BE0  stdout buffer
+; B90  stdout buffer
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; BF0
+; BA0
 FILE_BUFFER_SIZE = 512
 
 REPT FILE_BUFFER_SIZE
 	db  0
 ENDM
-; DF0
+; DA0
 REPT FILE_BUFFER_SIZE
 	db  0
 ENDM
-; FF0
+; FA0
 
 REPT NUM_FLAT_CACHE_PAGES
 	dw  00

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/05 01:40:54
+Created on:       26/01/05 12:24:21
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -91,7 +91,7 @@ HU_LIB_TEXT            CODE           AUTO           2b7c:532c       00000141
 D_DMX_TEXT             CODE           AUTO           2b7c:546e       0000012e
 D_INT_TEXT             CODE           AUTO           2b7c:559c       00000144
 MATH_TEXT              CODE           AUTO           2b7c:56e0       0000050c
-MAIN_TEXT              CODE           AUTO           2b7c:5bec       000014bc
+MAIN_TEXT              CODE           AUTO           2b7c:5bec       000014bb
 G_SETUP_TEXT           CODE           AUTO           2b7c:70a8       0000020b
 R_SETUP_TEXT           CODE           AUTO           2b7c:72b4       0000032c
 ST_SETUP_TEXT          CODE           AUTO           2b7c:75e0       00000125
@@ -176,8 +176,8 @@ Module: m_menu.obj(m_menu.ASM)
 0147:0b9a*     M_ChangeDetail_
 0147:0ccc*     M_StringHeight_
 0147:0386*     M_DrawLoad_
-0147:055b*     M_SaveSelect_
 0147:05b3*     M_SaveGame_
+0147:055b*     M_SaveSelect_
 0147:12e3*     M_MakeSaveGameName_
 0147:09fa*     M_Options_
 0147:052a*     M_DoSave_
@@ -247,8 +247,8 @@ Module: f_finale.obj(f_finale.ASM)
 02e7:0000      F_FINALE_STARTMARKER_
 02e7:0289*     F_CastDrawer_
 02e7:0b1d      F_Responder_
-02e7:01ac      F_StartFinale_
 02e7:04e2*     F_BunnyScroll_
+02e7:01ac      F_StartFinale_
 02e7:0a7b      F_Ticker_
 02e7:0bb2*     F_locallib_toupper_
 02e7:0022*     V_DrawPatchFlipped_
@@ -492,8 +492,8 @@ Module: p_pspr.obj(p_pspr.ASM)
 21a3:3a41*     A_CheckReload_
 21a3:3f74*     A_FireShotgun_
 21a3:3e8a*     P_BulletSlope_
-21a3:4074*     A_LoadShotgun2_
 21a3:3fa5*     A_FireShotgun2_
+21a3:4074*     A_LoadShotgun2_
 21a3:39fe*     P_PSPR_STARTMARKER_
 21a3:401c*     A_FireCGun_
 21a3:3b5a      P_DropWeapon_
@@ -516,8 +516,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 21a3:4f0f*     A_SkelWhoosh_
 21a3:5538*     A_PainDie_
 21a3:525a*     A_VileTarget_
-21a3:46eb*     P_LookForPlayers_
 21a3:5959*     A_BrainSpit_
+21a3:46eb*     P_LookForPlayers_
 21a3:58e3*     A_BrainExplode_
 21a3:4415*     P_Move_
 21a3:51b7*     A_VileStart_
@@ -929,12 +929,12 @@ Module: math.obj(math.ASM)
 2b7c:5820*     FixedMul16u32_
 2b7c:580a      FixedMulTrigSpeedNoShift_
 Module: main.obj(main.ASM)
-2b7c:6b6d      DEBUG_PRINT_NOARG_
+2b7c:6b6c      DEBUG_PRINT_NOARG_
 2b7c:6725*     G_Responder_
 2b7c:69e5      locallib_strcpy_
-2b7c:6b59*     locallib_printstringfar_
+2b7c:6b58*     locallib_printstringfar_
 2b7c:6a16      locallib_toupper_
-2b7c:6e76      DEBUG_PRINT_
+2b7c:6e75      DEBUG_PRINT_
 2b7c:63f1      _str_config
 2b7c:5f1e      G_CopyCmd_
 2b7c:699f      combine_strings_
@@ -943,51 +943,51 @@ Module: main.obj(main.ASM)
 2b7c:5cd5      _sidemove
 2b7c:698d      M_Ticker_
 2b7c:6905*     I_UpdateNoBlit_
-2b7c:70a8*     D_MAIN_ENDMARKER_
+2b7c:70a7*     D_MAIN_ENDMARKER_
 2b7c:5cd1      _forwardmove
-2b7c:6c36      I_ShutdownTimer_
+2b7c:6c35      I_ShutdownTimer_
 2b7c:6042      _scantokey
 2b7c:67f0      I_SetPalette_
 2b7c:6843*     I_UpdateBox_
-2b7c:6c29      locallib_dos_setvect_old_
-2b7c:6b5b*     locallib_printstringnear_
-2b7c:6d66      _SELFMODIFY_R_RENDERPLAYERVIEW_CALL
-2b7c:7034*     D_DoomLoop_
+2b7c:6c28      locallib_dos_setvect_old_
+2b7c:6b5a*     locallib_printstringnear_
+2b7c:6d65      _SELFMODIFY_R_RENDERPLAYERVIEW_CALL
+2b7c:7033*     D_DoomLoop_
 2b7c:658c      _defaults
 2b7c:5cc3*     D_MAIN_STARTMARKER_
-2b7c:6a5f      locallib_printhex_
+2b7c:6a5e      locallib_printhex_
 2b7c:6a0b*     locallib_tolower_
 2b7c:6a54      locallib_putchar_
-2b7c:6cae*     D_Display_
+2b7c:6cad*     D_Display_
 2b7c:5d92      I_KeyboardISR_
-2b7c:6ef1      D_ProcessEvents_
+2b7c:6ef0      D_ProcessEvents_
 2b7c:60c2      G_ResetGameKeys_
 2b7c:63c5      CopyString13_
 2b7c:69f9*     locallib_strlen_
-2b7c:708b*     D_DoomMain_
+2b7c:708a*     D_DoomMain_
 2b7c:60d7      G_BuildTiccmd_
 2b7c:5e9e      _localcmds
 2b7c:5cde      cht_CheckCheat_Far_
-2b7c:6c5e      I_ShutdownKeyboard_
+2b7c:6c5d      I_ShutdownKeyboard_
 2b7c:5ce2      cht_CheckCheat_
-2b7c:6b6b      DEBUG_PRINT_NOARG_CS_
-2b7c:6c20      locallib_dos_setvect_
+2b7c:6b6a      DEBUG_PRINT_NOARG_CS_
+2b7c:6c1f      locallib_dos_setvect_
 2b7c:69c3      locallib_strcmp_
-2b7c:6c16      locallib_dos_getvect_
-2b7c:6ac6*     locallib_printdecimal_
+2b7c:6c15      locallib_dos_getvect_
+2b7c:6ac5*     locallib_printdecimal_
 2b7c:5f3c      _gamekeydown
 2b7c:6a21      copystr8_
 2b7c:6665      M_SaveDefaults_
-2b7c:7000      getStringByIndex_
+2b7c:6fff      getStringByIndex_
 2b7c:5d43      cht_GetParam_
 2b7c:68eb*     I_FinishUpdate_
 2b7c:6a3a*     locallib_createhexnibble_
-2b7c:70a0*     resetDS_
-2b7c:6e8b      S_PauseSound_
-2b7c:6b6d      locallib_printf_
+2b7c:709f*     resetDS_
+2b7c:6e8a      S_PauseSound_
+2b7c:6b6c      locallib_printf_
 2b7c:5dbc      I_StartTic_
-2b7c:6eb4      S_ResumeSound_
-2b7c:6b3d      locallib_strlwr_
+2b7c:6eb3      S_ResumeSound_
+2b7c:6b3c      locallib_strlwr_
 Module: g_setup.obj(g_setup.ASM)
 2b7c:70cb      R_CheckTextureNumForName_
 2b7c:72b3*     G_SETUP_ENDMARKER_
@@ -1418,4 +1418,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003c3e0 (246752.)
 Entry point address: 2b7c:a9c0
-Link time: 00:00.04
+Link time: 00:00.05

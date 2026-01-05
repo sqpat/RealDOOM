@@ -25,12 +25,6 @@ INSTRUCTION_SET_MACRO
 EXTRN D_DoomMain_:NEAR
 
 EXTRN doclose_:NEAR
-EXTRN freefp_:NEAR
-EXTRN malloc_:NEAR
-EXTRN free_:NEAR
-
-EXTRN get_new_streamlink_:NEAR
-
 
 
 STACK_SIZE = 0A00h
@@ -103,41 +97,30 @@ PROC    I_START_STARTMARKER_ NEAR
 PUBLIC  I_START_STARTMARKER_
 ENDP
 
-NUM_STD_STREAMS = 2
 STD_OUT_STREAM_INDEX = 0
 
-SIZE_STD_STREAMS = NUM_STD_STREAMS * (SIZE WATCOM_C_FILE)
-
+MAX_FILES = 10
 
 PROC   docloseall_ NEAR
 PUBLIC docloseall_
 
 push bx
-push di
 
-mov  bx, word ptr ds:[___OpenStreams]
+mov  bx, OFFSET ___iob + SIZE WATCOM_C_FILE  ; start after stdout
 
 iterate_next_stream:
-test bx, bx
-je   done_closing_streams
-mov  di, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_next]
-mov  bx, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_stream]
-mov  al, byte ptr ds:[bx + WATCOM_C_FILE.watcom_file_flag + 1]
+;cmp  word ptr ds:[bx + WATCOM_C_FILE.watcom], 0
+;je   skip_this_stream
 
-
-cmp  bx, OFFSET ___iob + SIZE_STD_STREAMS
-jb   go_to_next_stream  ; ignore STD file streams
-mov  ax, bx
 call doclose_
 
-go_to_next_stream:
-mov  bx, di
-jmp  iterate_next_stream
-
+skip_this_stream:
+add  bx, SIZE WATCOM_C_FILE
+cmp  bx, (OFFSET ___iob + (MAX_FILES * SIZE WATCOM_C_FILE))
+jb   iterate_next_stream
 
 done_closing_streams:
 
-pop  di
 pop  bx
 ret  
 
@@ -325,26 +308,19 @@ ENDP
 PROC   __InitFiles_ NEAR
 PUBLIC __InitFiles_ 
 
+; init stdout basically
 
-push      si
-push      di
-mov       si, OFFSET ___iob  ; std_out
-
-call      get_new_streamlink_
-
-mov       di, ax
-
-mov       ax, word ptr ds:[___OpenStreams]
-mov       word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_stream], si
-mov       word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_next], ax
-mov       word ptr ds:[si + WATCOM_C_FILE.watcom_file_link], di
-mov       word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
-mov       word ptr ds:[___OpenStreams], di
+; todo make this a statically allocated link? get rid of the function.
 
 
-mov       word ptr ds:[___ClosedStreams], ax
-pop       di
-pop       si
+STDOUT_FILE =  OFFSET ___iob
+;mov       word ptr ds:[STDOUT_FILE + WATCOM_C_FILE.watcom_file_link], STDOUT_STREAMLINK     ; set streamlink
+;mov       word ptr ds:[STDOUT_FILE + WATCOM_C_FILE.watcom_file_base], 0
+
+;inc       word ptr ds:[STDOUT_STREAMLINK - 2]  ; mark allocated
+;mov       word ptr ds:[STDOUT_STREAMLINK + WATCOM_STREAM_LINK.watcom_streamlink_stream], ___iob  ; stdout offset is first file
+;mov       word ptr ds:[STDOUT_STREAMLINK + WATCOM_C_FILE.watcom_file_base], 0
+
 
 ret
 

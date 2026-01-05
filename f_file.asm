@@ -35,12 +35,15 @@ COLORMAPS_SIZE = 33 * 256
 LUMP_PER_EMS_PAGE = 1024 
 
 FILE_BUFFER_SIZE = 512
-NUM_CONSOLE_FILES = 2
+
+MAX_FILES = 10
+SIZE_OF_STREAM_LOOKUP = 2 + SIZE WATCOM_STREAM_LINK
+NUM_STATIC_STREAMS = MAX_FILES
+
 
 
 .CODE
 
-MAX_FILES = 10
 
 
 ; todo: get rid of unused stuff
@@ -90,7 +93,8 @@ FREAD_BUFFER_SIZE = 512
 _buffercount:
 db  0
 
-
+_OUTOFFILES_STR:
+db "!! Out of static files!", 0Ah, 0
 _OVERALLOCATED_STR:
 db "!! Overallocated file buffers!", 0Ah, 0
 
@@ -139,7 +143,9 @@ got_error_str:
 push    cs
 push    ax
 call    I_Error_
-
+error_out_of_files:
+mov     ax, OFFSET _OUTOFFILES_STR
+jmp     got_error_str
 
 
 ; NOTE: realdoom fwrites do not use buffer. they dump the whole file at once
@@ -259,8 +265,7 @@ mov       dx, bx    ; dx gets bytes to copy
 mov       si, cx    ; si gets fp
 
 
-mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
-cmp       word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
+cmp       word ptr ds:[si + WATCOM_C_FILE.watcom_file_base], 0
 jne       dont_allocate_buffer
 
 ; si already fp
@@ -314,8 +319,8 @@ jb        just_fill_buffer_binary
 
 skip_buffer_modify:
 
-mov       bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
-mov       ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
+
+mov       ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_base]
 
 mov       word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
 mov       word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
@@ -684,7 +689,7 @@ push cx  ; p_mode (permissions) param is 0 or P_MODE based on write flag.
 mov  cl, (_O_TEXT SHR 8)
 test al, FILEFLAG_BINARY
 je   not_binary_flag
-mov  cl, (_O_BINARY SHR 8)
+inc  cx   ;  increment by one same as:  mov  cl, (_O_BINARY SHR 8)
 not_binary_flag:
 or   dh, cl
 
@@ -717,8 +722,8 @@ mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], dx ; 0
 mov  word ptr ds:[si + 0Ah], dx ; 0
 or   word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], cx  ; flags
 
-mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
-mov  word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base], dx ; 0
+
+mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_base], dx ; 0
 test cl, _APPEND
 je   do_open_skip_fseek
 mov  dx, SEEK_END
@@ -753,50 +758,37 @@ PROC    locallib_allocfp_ NEAR
 
 push      dx
 push      di
-mov       si, word ptr ds:[___ClosedStreams]
-test      si, si
-jne       found_file  ; recently closed ok?
+
 mov       di, OFFSET ___iob
 loop_next_static_file:
 test      byte ptr ds:[di + WATCOM_C_FILE.watcom_file_flag], (_READ OR _WRITE)
-je        create_streamlink
+je        create_streamlink      ; found an empty FP
 add       di, SIZE WATCOM_C_FILE
-jmp       loop_next_static_file
+cmp       di, (OFFSET ___iob + (MAX_FILES * SIZE WATCOM_C_FILE))
+jb        loop_next_static_file
+jmp       error_out_of_files
 
 
-found_file:
+create_streamlink:
 
-; di is its file
-; si is streamlink
-inc       word ptr ds:[si - 2] ; mark used
+; si has streamlink ptr  todo reverse for consistency? si is usually FILE.
+; ax has 0
 
-mov       ax, word ptr ds:[si + WATCOM_STREAM_LINK.watcom_streamlink_next]
-mov       di, word ptr ds:[si + WATCOM_STREAM_LINK.watcom_streamlink_stream]
-mov       word ptr ds:[___ClosedStreams], ax ; set last file in linekd list.
-mov       dx, word ptr ds:[di + WATCOM_C_FILE.watcom_file_flag]
 
-fp_allocated:
 
 push      ds
 pop       es
 
-mov       word ptr ds:[si + WATCOM_STREAM_LINK.watcom_streamlink_stream], di
 
-mov       ax, word ptr ds:[___OpenStreams]
-mov       word ptr ds:[___OpenStreams], si
-mov       word ptr ds:[si], ax
 
 ; zero out the streamlink.
 
 stosw  ; 7 * 2 bytes = SIZE WATCOM_C_FILE = 0Eh
 stosw
-xchg      ax, si
-stosw  ;  + WATCOM_C_FILE.watcom_file_link
-xchg      ax, dx
-stosw  ;  + WATCOM_C_FILE.watcom_file_flag
-xchg      ax, si ; retrieve 0
+stosw  ;  + WATCOM_C_FILE.watcom_file_base
+stosw  
 stosw
-stosw
+stosw   ; todo set buffer at alloc time?
 
 
 lea       ax, [di - SIZE WATCOM_C_FILE]
@@ -805,13 +797,6 @@ pop       di
 pop       dx
 ret
 
-create_streamlink:
-call      get_new_streamlink_
-mov       si, ax
-test      ax, ax
-je        do_allocfp_out_of_memory_error
-xor       dx, dx
-jmp       fp_allocated
 
 do_allocfp_out_of_memory_error:
 mov       word ptr ds:[_errno], 5  ; ENOMEM
@@ -842,7 +827,8 @@ xchg ax, dx  ; ax gets flags
 xor  ah, ah  
 ; si has fp
 ; bx has filename ptr
-call locallib_doopen_   ; si has filename, bx has flags
+; todo inline
+call locallib_doopen_   ; si has filename, al has flags
 
 null_fp:
 
@@ -896,27 +882,7 @@ ENDP
 
 PROC    freefp_  NEAR
 PUBLIC  freefp_  
-
-push bx
-push si
-mov  si, OFFSET ___OpenStreams   ; si keeps last stream link
-loop_check_next_fp_for_free:
-mov  bx, word ptr ds:[si + WATCOM_STREAM_LINK.watcom_streamlink_next]
-test bx, bx
-je   exit_freefp  ; end of list
-cmp  ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_stream]
-je   found_fp_to_free
-mov  si, bx  ; iterate next.
-jmp  loop_check_next_fp_for_free
-found_fp_to_free:
-mov  ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_next]
-mov  word ptr ds:[si + WATCOM_STREAM_LINK.watcom_streamlink_next], ax  ; link the linked list gap
-mov  ax, word ptr ds:[___ClosedStreams]
-mov  word ptr ds:[___ClosedStreams], bx
-mov  word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_next], ax
-exit_freefp:
-pop  si
-pop  bx
+; todo doesnt do anything anymore, remove
 ret
 
 ENDP
@@ -925,20 +891,20 @@ ENDP
 
 
 
-
+; todo pass in si?
 
 PROC    doclose_  NEAR
 PUBLIC  doclose_  
 push  bx
 push  cx
+push  dx
 push  si
 push  di
-push  bp
 
 mov   si, ax
-mov   bp, dx  ; handle
+
 test  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (_READ OR _WRITE)
-je    error_and_exit_doclose
+je    error_and_exit_doclose  ; not readable or writable? todo get rid of error check
 xor   di, di ; error code.
 test  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
 je    file_not_dirty_skip_flush
@@ -959,26 +925,26 @@ mov   cx, dx
 mov   dx, 1  ; SEEK_CUR
 call  locallib_lseek_
 skip_seek_on_close:
-test  bp, bp  ; handle
-je    skip_close_null_handle
+
 mov   ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
-call  locallib_close_
+call  locallib_close_  ; close ms-dos file
 or    di, ax
 skip_close_null_handle:
 test  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _BIGBUF
 je    skip_bigbuf  ; todo do we get rid of this check?
-mov   bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
-mov   ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
-call  free_
 
-mov   word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
+mov   ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_base]
+call  free_
+mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_base], 0
 skip_bigbuf:
+mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], 0  ; not open for read or write anymore.
 
 exit_doclose:
 xchg  ax, di
-pop   bp
+
 pop   di
 pop   si
+pop   dx
 pop   cx
 pop   bx
 ret  
@@ -995,38 +961,12 @@ PROC    locallib_fclose_   NEAR
 PUBLIC  locallib_fclose_
 
 
-push  bx
-push  dx
-mov   bx, word ptr ds:[___OpenStreams] ; todo right?
-loop_check_next_stream:
-test  bx, bx
-je    fclose_return_failure
-cmp   ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_stream]
-je    found_stream_do_fclose
-mov   bx, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_next]
-jmp   loop_check_next_stream
-found_stream_do_fclose:
-mov   dx, 1
-; call  locallib_shutdown_stream_   ; inlined
 
-push  ax
 call  doclose_
-xchg  ax, dx
-pop   ax
-call  freefp_
-mov   ax, dx
-
-
-pop   dx
-pop   bx
+mov   ax, 1
 ret  
-fclose_return_failure:
-mov   ax, 0FFFFh
-pop   dx
-pop   bx
-ret
 
-ret
+
 ENDP
 
 
@@ -1046,8 +986,8 @@ jne  outside_of_buffer
 cmp  bx, ax
 ja   outside_of_buffer
 size_check_ok:
-mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
-mov  ax, word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base]
+
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_base]
 sub  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr]
 cwd  
 cmp  cx, dx
@@ -1075,14 +1015,12 @@ PROC    locallib_reset_buffer_ NEAR
 PUBLIC  locallib_reset_buffer_
 
 ; si is file
-push bx
-mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
-and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT _EOF)
-mov  bx, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
-mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
-mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], bx
 
-pop  bx
+and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], (NOT _EOF)
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_base]
+mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
+mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
+
 ret  
 
 
@@ -1125,12 +1063,12 @@ push di
 push bp  ; bp is ret
 
 xor  bp, bp  ; ret
-mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
+
 test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
 je   file_not_dirty
 jmp  file_is_dirty
 file_not_dirty:
-cmp  word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
+cmp  word ptr ds:[si + WATCOM_C_FILE.watcom_file_base], 0
 je   finish_handling_flush
 and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], (NOT _EOF)
 test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_ISTTY SHR 8)
@@ -1146,7 +1084,7 @@ mov  al, 1
 neg  cx
 neg  dx
 sbb  cx, 0
-mov  bx, di
+mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_handle]
 
 call locallib_inner_lseek_
 
@@ -1159,9 +1097,9 @@ mov  bp, 0FFFFh
 or   byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag], _SFERR
 
 finish_handling_flush:
-mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
 
-mov  ax, word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base]
+
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_base]
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
 exit_flush:
@@ -1180,7 +1118,7 @@ and  byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], ((NOT _DIRTY) SHR 8)
 test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], _WRITE
 je   finish_handling_flush
 
-mov  ax, word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base]
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_base]
 test ax, ax
 je   finish_handling_flush
 mov  di, ax
@@ -1239,7 +1177,7 @@ test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], (_WRITE)
 je   check_for_seek_end
 test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 1], (_DIRTY SHR 8)
 jne  do_flush
-cmp  dx, SEEK_CUR
+cmp  dx, SEEK_CUR   
 jne  dont_subtract_offset
 subtract_offset:
 mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt]
@@ -1247,8 +1185,8 @@ cwd
 sub  bx, ax
 sbb  cx, dx
 dont_subtract_offset:
-mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link] ; get link
-mov  ax, word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base]
+
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_base]
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
 mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
 file_ready_for_seek:
@@ -1520,46 +1458,9 @@ ret
 
 ENDP
 
-SIZE_OF_STREAM_LOOKUP = 2 + SIZE WATCOM_STREAM_LINK
-NUM_STATIC_STREAMS = 10
-
-PROC    get_new_streamlink_ NEAR
-PUBLIC  get_new_streamlink_
-
-xchg    ax, bx                      ; instead of push
-mov     bx, OFFSET ___streamlinks
-
-loop_next_streamlink_check:
-cmp     word ptr ds:[bx], 0
-je      found_streamlink
-
-add     bx, SIZE_OF_STREAM_LOOKUP
-cmp     bx, (OFFSET ___streamlinks) + (NUM_STATIC_STREAMS * SIZE_OF_STREAM_LOOKUP)
-jl      loop_next_streamlink_check
-
-xchg    ax, bx
-xor     ax, ax
-ret
-
-found_streamlink:
-inc     word ptr ds:[bx]  ; mark dirty
-xchg    ax, bx            ; instead of pop
-inc     ax
-inc     ax  ; plus two for the lookup
-ret
-
-ENDP
 
 
-PROC    free_streamlink_ NEAR
-PUBLIC  free_streamlink_
 
-xchg    ax, bx
-dec     word ptr ds:[bx-2] ; mark clean
-xchg    ax, bx
-ret
-
-ENDP
 
 
 STDOUT = OFFSET ___iob   ; file index 0
@@ -1568,9 +1469,9 @@ STDOUT = OFFSET ___iob   ; file index 0
 PROC    locallib_ioalloc_ NEAR
 
 ; si fas file already
-; todo revisit if bx is safely link?
 
-push  bx
+
+
 
 mov   ax, FILE_BUFFER_SIZE
 cmp   si, STDOUT
@@ -1581,12 +1482,12 @@ mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_bufsize], ax  ; default buffer
 bufsize_set:
 call  malloc_  ; near malloc
 ; ax gets file buffer
-mov   bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
-mov   word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], ax ; ptr to the file buf...
+
+mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_base], ax ; ptr to the file buf...
 or    byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag + 0], _BIGBUF
 mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_cnt], 0
-mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
-pop   bx
+mov   word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax  ; current pointer.
+
 ret  
 
 ENDP
@@ -1720,26 +1621,17 @@ push dx
 ; si has file
 ; todo does bx already have link?
 
-mov  bx, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
-cmp  word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
+
+cmp  word ptr ds:[si + WATCOM_C_FILE.watcom_file_base], 0
 jne  dont_ioalloc
 call locallib_ioalloc_
 dont_ioalloc:
-;cmp  si, ___iob + (NUM_CONSOLE_FILES * (SIZE WATCOM_C_FILE))
-;jb   dont_flush
-;test al, ((_IOLBF OR _IONBF) SHR 8)
-;je   dont_flush
-;mov  ax, _ISTTY
-;call locallib_flushall_inner_
-;dont_flush:
 
-mov  ax, word ptr ds:[bx + WATCOM_STREAM_LINK.watcom_streamlink_base]
-mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax
+mov  ax, word ptr ds:[si + WATCOM_C_FILE.watcom_file_base]
+mov  word ptr ds:[si + WATCOM_C_FILE.watcom_file_ptr], ax   ; point to start of buffer
 
 
 
-
-not_std_in:
 test byte ptr ds:[si + WATCOM_C_FILE.watcom_file_flag+1], (_IONBF SHR 8)
 mov  bx, 1
 jne  dont_use_bufsize
@@ -1781,9 +1673,7 @@ push di
 xchg ax, cx  ; char in cx
 mov  si, dx
 
-mov  di, word ptr ds:[si + WATCOM_C_FILE.watcom_file_link]
-
-cmp  word ptr ds:[di + WATCOM_STREAM_LINK.watcom_streamlink_base], 0
+cmp  word ptr ds:[si + WATCOM_C_FILE.watcom_file_base], 0
 jne  have_buffer_location
 
 call locallib_ioalloc_

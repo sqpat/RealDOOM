@@ -717,22 +717,20 @@ _errno =      						 _NULL_OFFSET + 00ADAh
 
 __STACKLOW =          				 _NULL_OFFSET + 00AE0h
 __STACKTOP =          				 _NULL_OFFSET + 00AE2h
-___OpenStreams =					 _NULL_OFFSET + 00AE4h
-___ClosedStreams = 					 _NULL_OFFSET + 00AE6h
+;___OpenStreams =					 _NULL_OFFSET + 00AE4h
+;___ClosedStreams = 					 _NULL_OFFSET + 00AE6h
 
 
 
 ___iob = 							 _NULL_OFFSET + 00AE8h
-; NFILES * SIZE WATCOM_C_FILE bytes = 20 * 14 = 280 = 118h
+; NFILES * SIZE WATCOM_C_FILE bytes = 10 * 12 = 120 = 078h
 
-___streamlinks = 				 	 _NULL_OFFSET + 00B60h
+_myargv = 	   	  					 _NULL_OFFSET + 00B60h
+; max args = 24 including program name i guess. should be enough? maybe too much.
+_stdout_buffer =				     _NULL_OFFSET + 00B90h
+_filebufferstart =				     _NULL_OFFSET + 00BA0h
 
-_myargv = 	   	  					 _NULL_OFFSET + 00BB0h
-; max args = 24 including program name i guess. should be enough?
-_stdout_buffer =				     _NULL_OFFSET + 00BE0h
-_filebufferstart =				     _NULL_OFFSET + 00BF0h
-
-_flatcache_nodes =				     _NULL_OFFSET + 00FF0h
+_flatcache_nodes =				     _NULL_OFFSET + 00FA0h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + ((SIZE CACHE_NODE_T) * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1
