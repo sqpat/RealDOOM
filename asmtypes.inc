@@ -717,7 +717,6 @@ WATCOM_C_FILE STRUC
     watcom_file_flag       dw ? ; 06h      unsigned                 /* mode of file access */
     watcom_file_handle     dw ? ; 08h      int                      /* file handle */
     watcom_file_bufsize    dw ? ; 0Ah      unsigned                 /* size of buffer */
-    watcom_file_ungotten   dw ? ; 0Ch      unsigned short           /* used by ungetc and ungetwc */
 
 
 WATCOM_C_FILE ENDS
@@ -727,11 +726,8 @@ WATCOM_STREAM_LINK STRUC
     watcom_streamlink_next             dw ? ; 00h  struct __stream_link *  
     watcom_streamlink_stream           dw ? ; 02h  struct __iobuf *        
     watcom_streamlink_base             dw ? ; 04h  unsigned char *                   /* location of buffer */
-    ;watcom_streamlink_orientation      dw ? ; 06h  int                        /* wide/byte/not oriented */
-    ;watcom_streamlink_extflags         dw ? ; 08h  int                           /* extended flags */
-    ;watcom_streamlink_tmpfchar         db ? ; 0Ah  unsigned char                 /* tmpfile number */
-    ;watcom_streamlink_filler           db ? ; 0Bh  unsigned char           sizeof(int)-1];/* explicit padding */
-
+    
+    
 WATCOM_STREAM_LINK ENDS
 
 

@@ -798,7 +798,6 @@ stosw  ;  + WATCOM_C_FILE.watcom_file_flag
 xchg      ax, si ; retrieve 0
 stosw
 stosw
-stosw
 
 
 lea       ax, [di - SIZE WATCOM_C_FILE]

@@ -725,14 +725,14 @@ ___ClosedStreams = 					 _NULL_OFFSET + 00AE6h
 ___iob = 							 _NULL_OFFSET + 00AE8h
 ; NFILES * SIZE WATCOM_C_FILE bytes = 20 * 14 = 280 = 118h
 
-___streamlinks = 				 	 _NULL_OFFSET + 00C00h
+___streamlinks = 				 	 _NULL_OFFSET + 00BD8h
 
-_myargv = 	   	  					 _NULL_OFFSET + 00C50h
+_myargv = 	   	  					 _NULL_OFFSET + 00C28h
 ; max args = 24 including program name i guess. should be enough?
-_stdout_buffer =				     _NULL_OFFSET + 00C80h
-_filebufferstart =				     _NULL_OFFSET + 00C90h
+_stdout_buffer =				     _NULL_OFFSET + 00C50h
+_filebufferstart =				     _NULL_OFFSET + 00C60h
 
-_flatcache_nodes =				     _NULL_OFFSET + 01090h
+_flatcache_nodes =				     _NULL_OFFSET + 01060h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + ((SIZE CACHE_NODE_T) * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

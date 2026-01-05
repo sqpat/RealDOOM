@@ -486,31 +486,31 @@ STDERR_FILENO = 2
 STDAUX_FILENO = 3
 STDPRN_FILENO = 4
 ; AE8 ; file 0
-dw 00, 00, 00, _READ,  STDIN_FILENO, 0, 0
-dw 00, 00, 00, _WRITE OR _IONBF, STDOUT_FILENO, 0, 0
-dw 00, 00, 00, _WRITE, STDERR_FILENO, 0, 0
-dw 00, 00, 00, _READ OR _WRITE, STDAUX_FILENO, 0, 0
-dw 00, 00, 00, _WRITE, STDPRN_FILENO, 0, 0
+dw 00, 00, 00, _READ,  STDIN_FILENO, 0
+dw 00, 00, 00, _WRITE OR _IONBF, STDOUT_FILENO, 0
+dw 00, 00, 00, _WRITE, STDERR_FILENO, 0
+dw 00, 00, 00, _READ OR _WRITE, STDAUX_FILENO, 0
+dw 00, 00, 00, _WRITE, STDPRN_FILENO, 0
 
-dw 00, 00, 00, 00, 00, 0, 0
-dw 00, 00, 00, 00, 00, 0, 0
-dw 00, 00, 00, 00, 00, 0, 0
-dw 00, 00, 00, 00, 00, 0, 0
-dw 00, 00, 00, 00, 00, 0, 0
+dw 00, 00, 00, 00, 00, 0
+dw 00, 00, 00, 00, 00, 0
+dw 00, 00, 00, 00, 00, 0
+dw 00, 00, 00, 00, 00, 0
+dw 00, 00, 00, 00, 00, 0
 
-dw 00, 00, 00, 00, 00, 0, 0
-dw 00, 00, 00, 00, 00, 0, 0
-dw 00, 00, 00, 00, 00, 0, 0
-dw 00, 00, 00, 00, 00, 0, 0
-dw 00, 00, 00, 00, 00, 0, 0
+dw 00, 00, 00, 00, 00, 0
+dw 00, 00, 00, 00, 00, 0
+dw 00, 00, 00, 00, 00, 0
+dw 00, 00, 00, 00, 00, 0
+dw 00, 00, 00, 00, 00, 0
 
-dw 00, 00, 00, 00, 00, 0, 0
-dw 00, 00, 00, 00, 00, 0, 0
-dw 00, 00, 00, 00, 00, 0, 0
-dw 00, 00, 00, 00, 00, 0, 0
-dw 00, 00, 00, 00, 00, 0, 0
+dw 00, 00, 00, 00, 00, 0
+dw 00, 00, 00, 00, 00, 0
+dw 00, 00, 00, 00, 00, 0
+dw 00, 00, 00, 00, 00, 0
+dw 00, 00, 00, 00, 00, 0
 
-; C00 ; streamlink static array
+; BD8 ; streamlink static array
 
 dw 0, 0, 0, 0
 dw 0, 0, 0, 0
@@ -524,25 +524,25 @@ dw 0, 0, 0, 0
 dw 0, 0, 0, 0
 
 ; command line copy
-; C50
+; C28
+dw  00, 00, 00, 00
+; C30
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; C40
+dw  00, 00, 00, 00, 00, 00, 00, 00
+; C50  stdout buffer
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; C60
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; C70
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; C80  stdout buffer
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; C90
 FILE_BUFFER_SIZE = 512
 
 REPT FILE_BUFFER_SIZE
 	db  0
 ENDM
-; E90
+; E60
 REPT FILE_BUFFER_SIZE
 	db  0
 ENDM
-; 1090
+; 1060
 
 REPT NUM_FLAT_CACHE_PAGES
 	dw  00
