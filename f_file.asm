@@ -1330,51 +1330,7 @@ ENDP
 
 
 
-PROC  locallib_qwrite_ NEAR
 
-push cx
-push si
-push di
-push bp
-mov  si, ax
-mov  bp, dx
-mov  di, bx
-call __GetIOMode_
-test al, _APPEND
-je   skip_move_file_ptr
-mov  bx, si
-xor  dx, dx
-xor  cx, cx
-mov  ax, 04200h + SEEK_END ; 042h  ; Move file pointer using handle
-int  021h
-jc   do_qwrite_error
-skip_move_file_ptr:
-mov  dx, bp
-mov  cx, di
-mov  bx, si
-mov  ah, 040h  ; Write file or device using handle
-int  021h
-jc   do_qwrite_error
-mov  dx, ax
-cmp  ax, di
-jne  get_qwrite_errno
-skip_qwrite_errno:
-mov  ax, dx
-exit_qwrite:
-pop  bp
-pop  di
-pop  si
-pop  cx
-ret
-do_qwrite_error:
-call locallib_set_errno_ptr_
-jmp  exit_qwrite
-get_qwrite_errno:
-mov  word ptr ds:[_errno], 0Ch
-jmp  skip_qwrite_errno
-
-
-ENDP
 
 PROC  locallib_qread_ NEAR
 
@@ -1498,6 +1454,54 @@ ENDP
 
 
 COMMENT @
+
+
+PROC  locallib_qwrite_ NEAR
+
+push cx
+push si
+push di
+push bp
+mov  si, ax
+mov  bp, dx
+mov  di, bx
+call __GetIOMode_
+test al, _APPEND
+je   skip_move_file_ptr
+mov  bx, si
+xor  dx, dx
+xor  cx, cx
+mov  ax, 04200h + SEEK_END ; 042h  ; Move file pointer using handle
+int  021h
+jc   do_qwrite_error
+skip_move_file_ptr:
+mov  dx, bp
+mov  cx, di
+mov  bx, si
+mov  ah, 040h  ; Write file or device using handle
+int  021h
+jc   do_qwrite_error
+mov  dx, ax
+cmp  ax, di
+jne  get_qwrite_errno
+skip_qwrite_errno:
+mov  ax, dx
+exit_qwrite:
+pop  bp
+pop  di
+pop  si
+pop  cx
+ret
+do_qwrite_error:
+call locallib_set_errno_ptr_
+jmp  exit_qwrite
+get_qwrite_errno:
+mov  word ptr ds:[_errno], 0Ch
+jmp  skip_qwrite_errno
+
+
+ENDP
+
 PROC    locallib_fread_   FAR
 PUBLIC  locallib_fread_
 
