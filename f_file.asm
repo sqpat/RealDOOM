@@ -58,7 +58,7 @@ _IOFBF   = 00100h    ; full buffering
 _IOLBF   = 00200h    ; line buffering 
 _IONBF   = 00400h    ; no buffering 
 
-_DIRTY   = 01000h    ; buffer has been modified 
+
 _ISTTY   = 02000h    ; is console device 
 
 
@@ -538,7 +538,7 @@ found_space:
 dec       si  ; roll back lodsb
 
 mov       ax, word ptr [bp - 2]
-and       ax, ( _O_RDONLY OR _O_WRONLY OR _O_RDWR ) ; 083h
+and       ax, ( _O_RDONLY OR _O_WRONLY OR _O_RDWR OR _O_NOINHERIT ) ; 083h
 
 push      si     ; [bp - 6] = filename.
 xchg      ax, si ;   ax gets filename. si gets rwmode for later
@@ -899,14 +899,8 @@ mov   si, ax
 xor   di, di ; error code.
 test  byte ptr ds:[si + FILE_INFO_T.fileinto_flag], (_READ OR _WRITE)
 je    error_and_exit_doclose  ; not readable or writable? todo get rid of error check
-test  byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 1], (_DIRTY SHR 8)
-je    file_not_dirty_skip_flush
-call  locallib_flush_
-test  ax, ax
-je    flush_no_error
-mov   di, 0FFFFh
-flush_no_error:
-file_not_dirty_skip_flush:
+
+
 mov   ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
 test  ax, ax
 je    skip_seek_on_close
@@ -1044,114 +1038,6 @@ ENDP
 
 
 
-; si holds fp
-PROC    locallib_flush_   NEAR
-PUBLIC  locallib_flush_   
-
-push bx
-push cx
-push dx
-push si
-push di
-push bp  ; bp is ret
-
-xor  bp, bp  ; ret
-
-test byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 1], (_DIRTY SHR 8)
-jne  file_is_dirty
-file_not_dirty:
-cmp  word ptr ds:[si + FILE_INFO_T.fileinto_base], 0
-je   finish_handling_flush
-and  byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 0], (NOT _EOF)
-test byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 1], (_ISTTY SHR 8)
-jne  finish_handling_flush
-mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
-cwd  
-mov  bx, dx
-or   bx, ax
-je   skip_seek
-xchg ax, dx  ; low word into dx
-xchg ax, cx  ; hi word into cx
-mov  al, 1
-neg  cx
-neg  dx
-sbb  cx, 0
-mov  bx, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
-
-call locallib_inner_lseek_
-
-skip_seek:
-cmp  dx, 0FFFFh
-jne  finish_handling_flush
-cmp  ax, 0FFFFh
-jne  finish_handling_flush
-mov  bp, 0FFFFh
-or   byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _SFERR
-
-finish_handling_flush:
-
-
-mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_base]
-mov  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], 0
-mov  word ptr ds:[si + FILE_INFO_T.fileinto_ptr], ax
-exit_flush:
-xchg ax, bp
-exit_flush_skip_bp:
-pop  bp
-pop  di
-pop  si
-pop  dx
-pop  cx
-pop  bx
-ret
-
-file_is_dirty:
-and  byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 1], ((NOT _DIRTY) SHR 8)  ; mark not dirty?
-test byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 0], _WRITE
-je   finish_handling_flush
-
-mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_base]
-test ax, ax
-je   finish_handling_flush
-mov  di, ax
-mov  cx, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
-
-
-test cx, cx
-flush_more_to_file:
-je   finish_handling_flush
-test bp, bp
-jne  finish_handling_flush
-mov  bx, cx
-mov  dx, di
-mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
-call locallib_qwrite_
-
-mov  dx, ax
-cmp  ax, 0FFFFh
-je  handle_error_len_case
-test ax, ax
-je   zero_flushed_error
-not_error_flush_more:
-add  di, dx
-sub  cx, dx
-jmp  flush_more_to_file
-zero_flushed_error:
-mov  word ptr ds:[_errno], 0Ch
-mov  bp, 0FFFFh
-jmp  set_err_flag
-
-handle_error_len_case:
-mov  bp, ax
-set_err_flag:
-or   byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _SFERR
-jmp  not_error_flush_more
-
-
-
-ENDP
-
-
 
 PROC    locallib_fseek_   NEAR
 PUBLIC  locallib_fseek_
@@ -1167,8 +1053,6 @@ push dx   ; bp - 2. store seek type.
 
 test byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 0], (_WRITE)
 je   check_for_seek_end
-test byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 1], (_DIRTY SHR 8)
-jne  do_flush
 cmp  dx, SEEK_CUR   
 jne  dont_subtract_offset
 subtract_offset:
@@ -1202,20 +1086,8 @@ pop  bp
 pop  di
 pop  si
 ret 
-do_flush:
 
-call locallib_flush_
 
-test ax, ax
-je   file_ready_for_seek
-test dx, dx
-jne  exit_return_fseek_error
-test cx, cx
-jge  exit_return_fseek_error
-
-invalid_param:
-mov  word ptr ds:[_errno], 9
-jmp  exit_return_fseek_error
 
 check_for_seek_end:
 cmp  dx, SEEK_CUR
@@ -1391,13 +1263,7 @@ push si
 
 mov  si, ax
 
-test byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 0], _APPEND
-je   skip_flush
-test byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 1], _DIRTY SHR 8
-je   skip_flush
-mov  ax, si
-;call locallib_fflush_
-skip_flush:
+
 
 call locallib_tell_
 cmp  dx, 0FFFFh
@@ -1411,8 +1277,7 @@ xchg ax, bx
 mov  cx, dx
 mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
 cwd  
-test byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 1], (_DIRTY SHR 8)
-jne  do_add_and_exit
+
 ; dx:ax is file_cnt
 
 ; cx:bx - dx:ax is equal to -dx:ax + cx:bx
@@ -1621,8 +1486,6 @@ dont_ioalloc:
 mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_base]
 mov  word ptr ds:[si + FILE_INFO_T.fileinto_ptr], ax   ; point to start of buffer
 
-
-
 test byte ptr ds:[si + FILE_INFO_T.fileinto_flag+1], (_IONBF SHR 8)
 mov  bx, 1
 jne  dont_use_bufsize
@@ -1651,75 +1514,6 @@ jmp  done_with_eof_check
 
 ENDP
 
-
-
-PROC    locallib_fputc_   NEAR
-PUBLIC  locallib_fputc_
-
-
-push cx
-push si
-push di
-
-xchg ax, cx  ; char in cx
-mov  si, dx
-
-cmp  word ptr ds:[si + FILE_INFO_T.fileinto_base], 0
-jne  have_buffer_location
-
-call locallib_ioalloc_
-
-have_buffer_location:
-
-mov  dx, _IONBF
-cmp  cl, 0Ah   ; newline char check
-je   handle_newline_crap
-
-prepare_to_put_char:
-mov  di, word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
-or   byte ptr ds:[si + FILE_INFO_T.fileinto_flag+1], (_DIRTY SHR 8)
-mov  byte ptr ds:[di], cl   ; write the char.
-inc  word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
-inc  word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
-test word ptr ds:[si + FILE_INFO_T.fileinto_flag+0], dx
-jne  flush_character
-mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
-cmp  ax, word ptr ds:[si + FILE_INFO_T.fileinto_bufsize]
-jne  record_written_char
-flush_character:
-
-call locallib_flush_
-
-record_written_char:
-xchg ax, cx
-xor  ah, ah
-
-
-exit_fputc:
-pop  di
-pop  si
-pop  cx
-ret
-
-handle_newline_crap:
-or   dh, (_IOLBF SHR 8)
-
-; note we never call putc on on nonstdout so its always necessary...
-; really do newline shenanigans.
-mov  di, word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
-or   byte ptr ds:[si + FILE_INFO_T.fileinto_flag+1], (_DIRTY SHR 8)
-mov  byte ptr ds:[di], CARRIAGE_RETURN
-inc  word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
-inc  word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
-mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
-cmp  ax, word ptr ds:[si + FILE_INFO_T.fileinto_bufsize]
-jne  prepare_to_put_char
-
-
-call locallib_flush_
-jmp  prepare_to_put_char
-
-ENDP
 
 
 
