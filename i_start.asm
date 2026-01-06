@@ -97,7 +97,7 @@ PROC    I_START_STARTMARKER_ NEAR
 PUBLIC  I_START_STARTMARKER_
 ENDP
 
-STD_OUT_STREAM_INDEX = 0
+
 
 MAX_FILES = 6
 
@@ -106,7 +106,7 @@ PUBLIC docloseall_
 
 push bx
 
-mov  bx, OFFSET ___iob + SIZE FILE_INFO_T  ; start after stdout
+mov  bx, OFFSET ___iob  
 
 iterate_next_stream:
 cmp  word ptr ds:[bx + FILE_INFO_T.fileinto_base], 0
@@ -116,7 +116,7 @@ call doclose_
 
 skip_this_stream:
 add  bx, SIZE FILE_INFO_T
-cmp  bx, (OFFSET ___iob + (MAX_FILES * SIZE FILE_INFO_T))
+cmp  bx, (OFFSET ___iob + (MAX_FILES * (SIZE FILE_INFO_T)))
 jb   iterate_next_stream
 
 done_closing_streams:

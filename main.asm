@@ -71,7 +71,7 @@ PUBLIC _SELFMODIFY_R_RENDERPLAYERVIEW_CALL
 
 
 
-STDOUT = OFFSET ___iob
+
 
 
 ; ALL THE CHEAT DATA inlined here in CS rather than in DGROUP.
@@ -2181,8 +2181,7 @@ ret
 ENDP
 
 CARRIAGE_RETURN = 0Dh;
-STDOUT = OFFSET ___iob
-
+STDOUT_HANDLE = 1
 
 PROC   putchar_stdout_ NEAR
 PUBLIC putchar_stdout_ 
@@ -2194,7 +2193,7 @@ push  dx
 mov   ah, 040h  ; Write file or device using handle
 
 push  ax  ; character to print in sp
-mov   bx, word ptr ds:[STDOUT + FILE_INFO_T.fileinto_handle]
+mov   bx, STDOUT_HANDLE
 mov   cx, 1
 
 cmp   al, 0Ah

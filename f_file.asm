@@ -35,7 +35,7 @@ COLORMAPS_SIZE = 33 * 256
 LUMP_PER_EMS_PAGE = 1024 
 
 FILE_BUFFER_SIZE = 512
-STDOUT_BUFFER_SIZE = 4
+
 MAX_FILE_BUFFERS = 2
 
 MAX_FILES = 6
@@ -59,7 +59,6 @@ _IOLBF   = 00200h    ; line buffering
 _IONBF   = 00400h    ; no buffering 
 
 
-_ISTTY   = 02000h    ; is console device 
 
 
 
@@ -76,8 +75,7 @@ _O_BINARY        = 00200h ;  binary file
 _O_NOINHERIT     = 00080h ;  file is not inherited by child process
 
 
-DOS_EOF_CHAR = 01Ah
-CARRIAGE_RETURN = 0Dh;
+
 
 PROC    F_FILE_STARTMARKER_ NEAR
 PUBLIC  F_FILE_STARTMARKER_
@@ -103,11 +101,8 @@ db "!! Underallocated file buffers!", 0Ah, 0
 PROC    free_ NEAR
 PUBLIC  free_
 
-cmp     ax, _stdout_buffer
-je      free_done
 dec     byte ptr cs:[_buffercount]
 js      error_underallocated
-free_done:
 ret
 
 ENDP
@@ -116,9 +111,6 @@ ENDP
 PROC    malloc_ NEAR
 PUBLIC  malloc_
 
-cmp     ax, STDOUT_BUFFER_SIZE
-mov     ax, _stdout_buffer
-je      return_stdout
 xor     ax, ax
 mov     ah, byte ptr cs:[_buffercount]
 cmp     ah, MAX_FILE_BUFFERS
@@ -127,7 +119,6 @@ shl     ah, 1  ; 512 times buffer count
 add     ax, OFFSET _filebufferstart
 inc     byte ptr cs:[_buffercount]
 
-return_stdout:
 ret
 
 error_overallocated:
@@ -139,9 +130,6 @@ got_error_str:
 push    cs
 push    ax
 call    I_Error_
-error_out_of_files:
-mov     ax, OFFSET _OUTOFFILES_STR
-jmp     got_error_str
 
 
 ; NOTE: realdoom fwrites do not use buffer. they dump the whole file at once
@@ -763,7 +751,9 @@ je        create_streamlink      ; found an empty FP
 add       di, SIZE FILE_INFO_T
 cmp       di, (OFFSET ___iob + (MAX_FILES * SIZE FILE_INFO_T))
 jb        loop_next_static_file
-jmp       error_out_of_files
+mov       ax, OFFSET _OUTOFFILES_STR
+jmp       got_error_str
+
 
 
 create_streamlink:
@@ -775,8 +765,6 @@ create_streamlink:
 
 push      ds
 pop       es
-
-
 
 ; zero out the streamlink.
 xor       ax, ax
@@ -900,6 +888,7 @@ xor   di, di ; error code.
 test  byte ptr ds:[si + FILE_INFO_T.fileinto_flag], (_READ OR _WRITE)
 je    error_and_exit_doclose  ; not readable or writable? todo get rid of error check
 
+; todo do we need this seek on close thing? is it for making sure files get saved?
 
 mov   ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
 test  ax, ax
@@ -1320,7 +1309,7 @@ ENDP
 
 
 
-STDOUT = OFFSET ___iob   ; file index 0
+
 
 ; if base is nonzero then you have a buffer.
 
@@ -1328,19 +1317,14 @@ PROC    locallib_ioalloc_ NEAR
 
 ; si fas file already
 
-
 mov   ax, FILE_BUFFER_SIZE
-cmp   si, STDOUT
-jne   use_normal_buffer
-mov   ax, STDOUT_BUFFER_SIZE
-use_normal_buffer:
 mov   word ptr ds:[si + FILE_INFO_T.fileinto_bufsize], ax
 bufsize_set:
 call  malloc_  ; near malloc
 ; ax gets file buffer
 
 mov   word ptr ds:[si + FILE_INFO_T.fileinto_base], ax ; ptr to the file buf...
-or    byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 0], _BIGBUF
+or    byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _BIGBUF
 mov   word ptr ds:[si + FILE_INFO_T.fileinto_cnt], 0
 mov   word ptr ds:[si + FILE_INFO_T.fileinto_ptr], ax  ; current pointer.
 
@@ -1418,8 +1402,8 @@ ENDP
 
 ; 6 files, but indexed by a bit of an offset... weird, leave extra space.
 _io_mode:
-;  stdout 
-db _WRITE, 0, 0, 0, 0, 0
+
+db 0, 0, 0, 0, 0, 0
 db 0, 0, 0, 0, 0
 db 0, 0, 0, 0, 0
 
@@ -1658,6 +1642,8 @@ ENDP
 
 
 COMMENT @
+
+DOS_EOF_CHAR = 01Ah
 
 PROC    locallib_fgetc_   NEAR
 PUBLIC  locallib_fgetc_

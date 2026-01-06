@@ -469,21 +469,11 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; AD0 
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; AE0
-dw  00, 00, 00, 00  ; stdoutbuffer ae4
 
 
-_READ    = 00001h    ; file opened for reading 
-_WRITE   = 00002h    ; file opened for writing 
-_IOFBF   = 00100h    ; full buffering 
-_IOLBF   = 00200h    ; line buffering 
-_IONBF   = 00400h    ; no buffering 
-STDOUT_FILENO = 1
 
-; todo static stdout alloc with bufsize and ptr set
-
-; AE8 ; file 0
-dw 00, 00, 00, _WRITE OR _IONBF, STDOUT_FILENO, 00
+; AE0 ; file 0
+dw 00, 00, 00, 00, 00, 00
 dw 00, 00, 00, 00, 00, 00
 dw 00, 00, 00, 00, 00, 00
 dw 00, 00, 00, 00, 00, 00
@@ -493,23 +483,23 @@ dw 00, 00, 00, 00, 00, 00
 
 
 ; command line copy
+; B28
+dw  00, 00, 00, 00
 ; B30
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; B40
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; B50
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; B60 ; file buffer
+; B50 ; file buffer
 FILE_BUFFER_SIZE = 512
 
 REPT FILE_BUFFER_SIZE
 	db  0
 ENDM
-; D60
+; D50
 REPT FILE_BUFFER_SIZE
 	db  0
 ENDM
-; F60
+; F50
 
 REPT NUM_FLAT_CACHE_PAGES
 	dw  00
