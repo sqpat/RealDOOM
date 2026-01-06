@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/05 15:40:37
+Created on:       26/01/06 10:46:25
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -492,8 +492,8 @@ Module: p_pspr.obj(p_pspr.ASM)
 21a3:3a41*     A_CheckReload_
 21a3:3f74*     A_FireShotgun_
 21a3:3e8a*     P_BulletSlope_
-21a3:4074*     A_LoadShotgun2_
 21a3:3fa5*     A_FireShotgun2_
+21a3:4074*     A_LoadShotgun2_
 21a3:39fe*     P_PSPR_STARTMARKER_
 21a3:401c*     A_FireCGun_
 21a3:3b5a      P_DropWeapon_
@@ -516,10 +516,10 @@ Module: p_enemy.obj(p_enemy.ASM)
 21a3:4f0f*     A_SkelWhoosh_
 21a3:5538*     A_PainDie_
 21a3:525a*     A_VileTarget_
-21a3:46eb*     P_LookForPlayers_
 21a3:5959*     A_BrainSpit_
-21a3:58e3*     A_BrainExplode_
+21a3:46eb*     P_LookForPlayers_
 21a3:4415*     P_Move_
+21a3:58e3*     A_BrainExplode_
 21a3:51b7*     A_VileStart_
 21a3:51c4*     A_FireCrackle_
 21a3:4f20*     A_SkelFist_
@@ -936,8 +936,8 @@ Module: main.obj(main.ASM)
 2b7a:6e75      DEBUG_PRINT_
 2b7a:63f1      _str_config
 2b7a:5f1e      G_CopyCmd_
-2b7a:699f      combine_strings_
 2b7a:640e      _used_defaultfile
+2b7a:699f      combine_strings_
 2b7a:5cd9      _oldkeyboardisr
 2b7a:5cd5      _sidemove
 2b7a:698d      M_Ticker_
@@ -1417,4 +1417,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003c3b0 (246704.)
 Entry point address: 2b7a:af0e
-Link time: 00:00.50
+Link time: 00:00.05

@@ -50,7 +50,7 @@
 // round up a segment if necessary. convert size to segments
 #define MAKE_FULL_SEGMENT(a, b)  ((int32_t)a + ((((int32_t)b + 0x0F) >> 4) << 16))
 
-#define FIXED_DS_SEGMENT  0x3E00
+#define FIXED_DS_SEGMENT  0x3E40
 
 // ALLOCATION DEFINITIONS: UPPER MEMORY
 
@@ -59,7 +59,7 @@
 
 
 // todo generate this programatically
-#define baselowermemoryaddress    (0x230B0000)
+#define baselowermemoryaddress    (0x234B0000)
 // MaximumMusDriverSize
 
 #define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
