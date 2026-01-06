@@ -1433,7 +1433,7 @@ PUSHA_NO_AX_OR_BP_MACRO
 push      bp
 mov       bp, sp
 sub       sp, (2 * MAX_ADJOINING_SECTORS) + 0Ah
-lea       dx, [bp - (0Ah + (2 * MAX_ADJOINING_SECTORS)]
+lea       dx, [bp - (0Ah + (2 * MAX_ADJOINING_SECTORS))]
 cbw      
 xor       bx, bx
 
