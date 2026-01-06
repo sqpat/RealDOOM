@@ -88,6 +88,19 @@ FREAD_BUFFER_SIZE = 512
 _buffercount:
 db  0
 
+_BAD_FCLOSE_STR:
+db "!! Bad FClose!", 0Ah, 0
+_BAD_FSEEK_STR:
+db "!! Bad FSeek!", 0Ah, 0
+_BAD_SOPEN_STR:
+db "!! Bad SOpen!", 0Ah, 0
+
+_BAD_QWRITE_STR:
+db "!! Bad QWrite!", 0Ah, 0
+
+_BAD_QREAD_STR:
+db "!! Bad QRead!", 0Ah, 0
+
 _OUTOFFILES_STR:
 db "!! Out of static files!", 0Ah, 0
 _OVERALLOCATED_STR:
@@ -185,12 +198,11 @@ jc        do_qwrite_fwrite_error
 cmp       ax, cx   ; did we write all the bytes?
 je        fwrote_everything
 
-bad_fwrite:
-; partial write??? how does this happen
-mov       word ptr ds:[_errno], 0Ch
+do_qwrite_fwrite_error:
 
-or        byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _SFERR
-xor       cx, cx
+mov     ax, OFFSET _BAD_QWRITE_STR
+jmp     got_error_str
+
 
 fwrote_everything:
 ; cx has bytes written 
@@ -206,10 +218,10 @@ pop       bp
 pop       di
 pop       si
 ret      
-; todo maybe remove?
-do_qwrite_fwrite_error:
-call locallib_set_errno_ptr_
-jmp  bad_fwrite
+
+
+
+
 
 
 
@@ -343,13 +355,14 @@ pop       di
 pop       si
 ret    
 
-
 do_qread_fread_error:
-call      locallib_set_errno_ptr_
-bad_read_do_error:
-or        byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _SFERR
 
-jmp       exit_fread
+bad_read_do_error:
+
+
+mov     ax, OFFSET _BAD_QREAD_STR
+jmp     got_error_str
+
 
 just_fill_buffer_binary:
 ; buffer empty, so load bytes then recontinue loop and next time copy from buffer.
@@ -369,70 +382,7 @@ ret
 ENDP
 
 
-COMMENT @
 
-; small version!
-
-PROC    locallib_fread_nearsegment_   NEAR
-PUBLIC  locallib_fread_nearsegment_
-
-mov       dx, ds  ; implied near.
-
-PROC    locallib_fread_   NEAR
-PUBLIC  locallib_fread_ 
-
-push      si
-push      di
-xchg      ax, dx  ; dx gets dest, ax gets segment..
-mov       si, cx    ; si gets fp
-mov       cx, bx    ; cx gets bytes to copy
-
-
-mov       bx, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
-
-
-mov       es, ax  ; es stores target segment ; todo things crash without this es line???
-mov       ds, ax  ; ds stores target segment
-
-;inlined locallib_qread_
-
-mov       ah, 03Fh  ; Read file or device using handle
-int       021h
-push      ss
-pop       ds
-jc        do_qread_fread_error
-
-cmp       ax, 0FFFFh
-je        bad_read_do_error
-test      ax, ax
-jne       exit_fread
-
-
-hit_end_of_file:
-or        byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _EOF
-
-continue_fread_until_done:
-
-mov       al, 1   ; i never actually use this return value do i?
-
-exit_fread:
-
-pop       di
-pop       si
-ret    
-
-
-
-do_qread_fread_error:
-call      locallib_set_errno_ptr_
-bad_read_do_error:
-or        byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _SFERR
-
-jmp       exit_fread
-
-ENDP
-
-@
 
 PROC    locallib_fopenfromfar_nobuffer_   FAR
 PUBLIC  locallib_fopenfromfar_nobuffer_
@@ -507,7 +457,6 @@ mov       ah, 03Eh   ; Close file using handle
 int       021h
 sbb       dx, dx
 mov       ax, cx
-call      locallib_set_errno_dos_reterr_
 jmp       exit_sopen
 
 close_file_and_error:
@@ -584,11 +533,9 @@ call  locallib_doserror_  ; check carry flag etc
 
 
 
-test      ax, ax
-jne       exit_sopen_return_bad_handle
+jc        exit_sopen_return_bad_handle
 
-;cmp       di, MAX_FILES
-;jnb       jump_to_close_file_and_error    ; out of files
+
 
 process_iomode_flags:
 mov       ax, di
@@ -631,11 +578,11 @@ pop       cx
 pop       bx
 
 ret       
-jump_to_close_file_and_error:
-jmp       close_file_and_error
+
 exit_sopen_return_bad_handle:
 mov       ax, 0FFFFh
 jmp       exit_sopen
+
 
 
 
@@ -740,7 +687,7 @@ ENDP
 
 PROC    locallib_allocfp_ NEAR
 
-push      dx
+
 push      di
 
 mov       di, OFFSET ___iob
@@ -773,18 +720,12 @@ stosw
 stosw  
 stosw
 
-
 lea       ax, [di - SIZE FILE_INFO_T]
 do_allocfp_exit:
 pop       di
-pop       dx
+
 ret
 
-
-do_allocfp_out_of_memory_error:
-mov       word ptr ds:[_errno], 5  ; ENOMEM
-xor       di, di
-jmp       do_allocfp_exit
 
 ENDP
 
@@ -858,9 +799,8 @@ pop  cx
 pop  bx
 ret
 close_is_error:
-mov  word ptr ds:[_errno], 4
-mov  si, 0FFFFh
-jmp  continue_close
+mov     ax, OFFSET _BAD_FCLOSE_STR
+jmp     got_error_str
 
 
 ENDP
@@ -1176,12 +1116,13 @@ PUBLIC  locallib_inner_lseek_
 
 mov  ah, 042h   ; Move file pointer using handle
 int  021h 
-jc   do_errno_inner_lseek
+jc   do_bad_inner_lseek
 exit_inner_lseek:
 ret
-do_errno_inner_lseek:
-call locallib_set_errno_ptr_
-jmp  exit_inner_lseek
+
+do_bad_inner_lseek:
+mov     ax, OFFSET _BAD_FSEEK_STR
+jmp     got_error_str
 
 ENDP
 
@@ -1291,9 +1232,7 @@ ENDP
 PROC   locallib_doserror_ NEAR
 
 jnc  exit_doserror_ret_0
-push ax
-call locallib_set_errno_ptr_
-pop  ax
+mov   word ptr ds:[_errno], ax
 jmp  exit_doserror
 exit_doserror_ret_0:
 sub  ax, ax
@@ -1332,23 +1271,6 @@ ENDP
 
 
 
-PROC  locallib_qread_ NEAR
-
-
-push cx
-mov  cx, bx
-mov  bx, ax
-mov  ah, 03Fh  ; Read file or device using handle
-int  021h
-pop  cx
-jc   do_qread_error
-ret
-do_qread_error:
-call locallib_set_errno_ptr_
-ret
-
-ENDP
-
 ; TODO put this in file field.
 
 ; 6 files, but indexed by a bit of an offset... weird, leave extra space.
@@ -1380,33 +1302,10 @@ ENDP
 
 
 
-; lets just assume its a valid error passed in.
-
-PROC locallib_set_errno_ptr_ NEAR
-
-mov   word ptr ds:[_errno], ax
-mov   ax, 0FFFFh
-
-ret 
-
-ENDP
-
-
-
-PROC locallib_set_errno_dos_reterr_ NEAR
-
-push  dx
-mov   dx, ax
-call  locallib_set_errno_ptr_
-mov   ax, dx
-pop   dx
-ret
-
-ENDP
-
 PROC    locallib_fill_buffer_   NEAR
 
 push bx
+push cx
 push dx
 
 ; si has file
@@ -1422,13 +1321,18 @@ mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_base]
 mov  word ptr ds:[si + FILE_INFO_T.fileinto_ptr], ax   ; point to start of buffer
 
 test word ptr ds:[si + FILE_INFO_T.fileinto_flag+1], (_IONBF SHR 8)
-mov  bx, 1              ; todo breakpoint this.
+mov  cx, 1              ; todo breakpoint this.
 jne  dont_use_bufsize
-mov  bx, FILE_BUFFER_SIZE
+mov  cx, FILE_BUFFER_SIZE
 dont_use_bufsize:
 mov  dx, word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
-mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
-call locallib_qread_
+mov  bx, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
+
+mov  ah, 03Fh  ; Read file or device using handle
+int  021h
+
+jc   do_qread_error
+
 mov  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], ax
 test ax, ax
 jg   done_with_eof_check
@@ -1438,6 +1342,7 @@ or   byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _EOF
 done_with_eof_check:
 mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
 pop  dx
+pop  cx
 pop  bx
 ret 
 
@@ -1446,6 +1351,11 @@ handle_fill_buffer_error:
 mov  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], 0
 or   byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _SFERR
 jmp  done_with_eof_check
+
+do_qread_error:
+
+mov     ax, OFFSET _BAD_QREAD_STR
+jmp     got_error_str
 
 ENDP
 
