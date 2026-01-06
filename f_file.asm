@@ -73,8 +73,6 @@ _O_CREAT         = 00020h ;  create new file
 _O_TRUNC         = 00040h ;  truncate existing file 
 _O_TEXT          = 00100h ;  text file 
 _O_BINARY        = 00200h ;  binary file 
-; todo remove
-_O_EXCL          = 00400h ;  exclusive open 
 _O_NOINHERIT     = 00080h ;  file is not inherited by child process
 
 
@@ -540,7 +538,7 @@ found_space:
 dec       si  ; roll back lodsb
 
 mov       ax, word ptr [bp - 2]
-and       ax, ( _O_RDONLY OR _O_WRONLY OR _O_RDWR OR _O_NOINHERIT ) ; 083h
+and       ax, ( _O_RDONLY OR _O_WRONLY OR _O_RDWR ) ; 083h
 
 push      si     ; [bp - 6] = filename.
 xchg      ax, si ;   ax gets filename. si gets rwmode for later

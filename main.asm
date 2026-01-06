@@ -50,6 +50,7 @@ EXTRN locallib_fopen_:NEAR
 EXTRN locallib_fopen_nobuffering_:NEAR
 EXTRN locallib_fputc_:NEAR
 EXTRN locallib_fclose_:NEAR
+EXTRN locallib_fwrite_:NEAR
 EXTRN locallib_fread_:NEAR
 EXTRN locallib_fseek_:NEAR
 EXTRN locallib_ftell_:NEAR
@@ -1246,6 +1247,8 @@ PUBLIC _used_defaultfile
 PUBLIC _scantokey
 
 
+TEMP_SEGMENT = 04000h
+
 
 PROC M_SaveDefaults_  NEAR
 PUBLIC M_SaveDefaults_
@@ -1258,40 +1261,29 @@ push  si
 push  di
 
 
-mov   ax, OFFSET _used_defaultfile
-call  CopyString13_
+xor   di, di
+mov   ax, TEMP_SEGMENT
+mov   es, ax
 
-
-mov   dl, (FILEFLAG_WRITE)
-;mov   ax, OFFSET _filename_argument  ; already set above
-call  locallib_fopen_
-
-
-mov   cx, ax
-test  ax, ax
-je    exit_msavedefaults
-xor   bh, bh
-cld   
+xor   cx, cx
 loop_next_default:
-mov   al, (SIZE DEFAULT_T)
-mul   bh
-mov   si, ax
+mov   si, cx
+
 cmp   byte ptr cs:[si + _defaults + DEFAULT_T.default_scantranslate], 0
 jne   get_untranslated_value
-mov   di, word ptr cs:[si + _defaults + DEFAULT_T.default_loc_ptr]
-cmp   di, OFFSET _snd_Mport
-je    get_16_bit
-cmp   di, OFFSET _snd_SBport
-je    get_16_bit
+mov   bx, word ptr cs:[si + _defaults + DEFAULT_T.default_loc_ptr]
+mov   ax, word ptr ds:[bx]
+cmp   bx, OFFSET _snd_Mport
+je    got_16_bit
+cmp   bx, OFFSET _snd_SBport
+je    got_16_bit
+got_scantranslate_value:
 xor   ah, ah
-mov   al, byte ptr ds:[di]
-jmp   got_value_to_write
-get_16_bit:
-mov   ax, word ptr ds:[di]
+got_16_bit:
 
 got_value_to_write:         ; if we got untranslated value we skip here with value in al.
 
-mov   di, ax             ; store the value.
+xchg  ax, bx ; bx stores value to write..
 mov   si, word ptr cs:[si + _defaults + DEFAULT_T.default_name_ptr]  ; string ptr
 
 write_next_default_name_character:
@@ -1299,24 +1291,42 @@ write_next_default_name_character:
 lods  byte ptr cs:[si]
 test  al, al
 je    done_writing_default_name
-cbw  
-mov   dx, cx    ; get fp
-call  locallib_fputc_
+stosb
 jmp   write_next_default_name_character
 
 print_last_digit:
 mov   al, bl
-mov   dx, cx    ; get fp
 add   al, 030h       ;  add '0' char to digit
-call  locallib_fputc_
-mov   ax, 0Ah  ; line feed character \n
-mov   dx, cx    ; get fp
-call  locallib_fputc_
-inc   bh
-cmp   bh, NUM_DEFAULTS
-jl    loop_next_default
-mov   ax, cx
+mov   ah, 0Ah        ; line feed character \n
+stosw
+
+add   cx, SIZE DEFAULT_T
+cmp   cx, (NUM_DEFAULTS * (SIZE DEFAULT_T))
+jb    loop_next_default
+
+
+mov   ax, OFFSET _used_defaultfile
+call  CopyString13_
+
+
+mov   dl, (FILEFLAG_WRITE)
+
+
+call  locallib_fopen_nobuffering_
+
+; dx:ax = far source, bx = num bytes, cx = fp
+
+mov   si, ax  ; si fp
+xchg  ax, cx
+
+xor   ax, ax
+mov   dx, TEMP_SEGMENT
+mov   bx, di
+call  locallib_fwrite_
+
+xchg  ax, si
 call  locallib_fclose_
+
 exit_msavedefaults:
 pop   di
 pop   si
@@ -1326,18 +1336,14 @@ pop   bx
 ret   
 get_untranslated_value:        ; this is pointing pointer to cs value instead of ds value. BAD
 mov   al, byte ptr cs:[si + _defaults + DEFAULT_T.default_untranslated]  ; get the untranslated value
-jmp   got_value_to_write
+jmp   got_scantranslate_value
 done_writing_default_name:
-mov   dx, cx    ; fp
-mov   ax, 9     ; tab char
-call  locallib_fputc_
-mov   dx, cx    ; fp
-mov   ax, 9     ; tab char
-call  locallib_fputc_
+mov   ax, 0909h     ; tab char x 2
+stosw
 
-mov   si, 0             ; if nonzero then we have printed a 100s digit and thus a zero 10s digit must be printed.
+xor   si, si             ; if nonzero then we have printed a 100s digit and thus a zero 10s digit must be printed.
 
-mov   ax, di
+xchg  ax, bx  ; bx gets this back...
 ; note: AH gets divide result and AL gets mod!
 mov   dl, 10
 div   dl
@@ -1351,9 +1357,8 @@ div   dl
 test  al, al
 je    handle_tens_number
 mov   si, ax
-mov   dx, cx         ; fp
 add   al, 030h       ;   '0' char
-call  locallib_fputc_
+stosb
 
 mov   ax, si
 
@@ -1365,9 +1370,8 @@ je    print_last_digit
 force_print_tens_digit:
 
 mov   al, ah
-mov   dx, cx         ; fp
 add   al, 030h       ;   '0' char
-call  locallib_fputc_
+stosb
 
 jmp   print_last_digit
 
