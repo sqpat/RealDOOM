@@ -92,8 +92,6 @@ _BAD_FCLOSE_STR:
 db "!! Bad FClose!", 0Ah, 0
 _BAD_FSEEK_STR:
 db "!! Bad FSeek!", 0Ah, 0
-_BAD_SOPEN_STR:
-db "!! Bad SOpen!", 0Ah, 0
 
 _BAD_QWRITE_STR:
 db "!! Bad QWrite!", 0Ah, 0
@@ -403,22 +401,6 @@ ret
 
 ENDP
 
-PROC    locallib_dosopen_  NEAR
-
-; di is handle register
-; dx has filename
-; si has flags
-
-mov   ax, si   ; si had flags
-mov   ah, 03Dh  ; Open file using handle
-int   021h
-jc    bad_open_do_dos_error
-mov   di, ax   ; set file handle in di
-bad_open_do_dos_error:
-call  locallib_doserror_  ; check carry flag etc
-ret
-
-ENDP
 
 ; todo inline
 
@@ -478,13 +460,20 @@ mov       ax, word ptr [bp - 2]
 and       ax, ( _O_RDONLY OR _O_WRONLY OR _O_RDWR OR _O_NOINHERIT ) ; 083h
 
 push      si     ; [bp - 6] = filename.
-xchg      ax, si ;   ax gets filename. si gets rwmode for later
-xchg      ax, dx ;   dx gets filename
-call      locallib_dosopen_ 
-test      ax, ax
-jne       sopen_handle_good
-;cmp       di, MAX_FILES
-;jae       close_file_and_error
+mov       dx, si
+mov       di, ax ;   si gets rwmode for later
+
+;call      locallib_dosopen_  ; inlined
+
+; di gets handle 
+
+mov       ah, 03Dh  ; Open file using handle
+int       021h
+mov       di, 0FFFFh
+jc        bad_open_do_dos_error
+mov       di, ax   ; set file handle in di
+bad_open_do_dos_error:
+
 sopen_handle_good:
 test      byte ptr [bp - 2], (_O_WRONLY OR _O_RDWR) 
 je        sopen_access_check_ok    ; readonly, access/write is ok
@@ -526,14 +515,12 @@ pop       cx     ; [bp - 4], permissions vararg, 1 for readonly 0 for not
 
 mov   ah, 03Ch  ; Create file using handle
 int   021h
-jb    bad_create_do_dos_error
+jb    exit_sopen_return_bad_handle
 mov   di, ax   ; set file handle in di
-bad_create_do_dos_error:
-call  locallib_doserror_  ; check carry flag etc
 
 
 
-jc        exit_sopen_return_bad_handle
+
 
 
 
@@ -942,26 +929,10 @@ ENDP
 
 
 
-; ax = FILE*
-; dx = seek type
-; cx:bx = position
-
 SEEK_SET = 0
 SEEK_CUR = 1
 SEEK_END = 2
 
-;todo what uses this
-PROC    locallib_fclose_inner   NEAR
-
-push  bx
-mov   bx, ax
-mov   ah, 03Eh
-int   021h
-call  locallib_doserror_  ; check carry flag etc
-pop   bx
-ret
-
-ENDP
 
 
 
@@ -1229,17 +1200,6 @@ ENDP
 
 
 
-PROC   locallib_doserror_ NEAR
-
-jnc  exit_doserror_ret_0
-mov   word ptr ds:[_errno], ax
-jmp  exit_doserror
-exit_doserror_ret_0:
-sub  ax, ax
-exit_doserror:
-ret
-
-ENDP
 
 
 
