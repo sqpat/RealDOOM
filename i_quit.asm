@@ -28,7 +28,7 @@ EXTRN M_SaveDefaults_:NEAR
 EXTRN W_CacheLumpNameDirectFarString_:FAR
 EXTRN I_ShutdownTimer_:NEAR
 EXTRN I_ShutdownKeyboard_:NEAR
-EXTRN locallib_putchar_:NEAR
+EXTRN putchar_stdout_:NEAR
 EXTRN locallib_printf_:NEAR
 
 EXTRN DEBUG_PRINT_:NEAR
@@ -285,7 +285,7 @@ je    skip_enddoom
     int 010h        ; // Set text pos
 
     mov  al, 0Ah  ; newline
-    call locallib_putchar_
+    call putchar_stdout_
 
 
     pop   cx
@@ -372,7 +372,7 @@ pop  dx  ; str seg
 mov  bx, sp  ; args ptr
 call locallib_printf_
 mov  al, 0Ah  ; newline
-call locallib_putchar_
+call putchar_stdout_
 mov  ax, 1
 jmp  exit_
 

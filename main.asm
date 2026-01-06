@@ -48,7 +48,6 @@ EXTRN FastDiv3216u_:FAR
 EXTRN Z_SetOverlay_:FAR
 EXTRN locallib_fopen_:NEAR
 EXTRN locallib_fopen_nobuffering_:NEAR
-EXTRN locallib_fputc_:NEAR
 EXTRN locallib_fclose_:NEAR
 EXTRN locallib_fwrite_:NEAR
 EXTRN locallib_fread_:NEAR
@@ -2173,7 +2172,7 @@ ENDP
 
 PROC   locallib_putchar_check_di NEAR
 test   di, di
-je     locallib_putchar_
+je     putchar_stdout_
 push   ds
 pop    es
 stosb
@@ -2181,14 +2180,39 @@ stosb
 ret
 ENDP
 
-PROC   locallib_putchar_ NEAR
-PUBLIC locallib_putchar_ 
+CARRIAGE_RETURN = 0Dh;
+STDOUT = OFFSET ___iob
 
+
+PROC   putchar_stdout_ NEAR
+PUBLIC putchar_stdout_ 
+
+push  bx
+push  cx
 push  dx
-mov   dx, STDOUT
-cbw
-call  locallib_fputc_
+
+mov   ah, 040h  ; Write file or device using handle
+
+push  ax  ; character to print in sp
+mov   bx, word ptr ds:[STDOUT + FILE_INFO_T.fileinto_handle]
+mov   cx, 1
+
+cmp   al, 0Ah
+jne   not_newline
+mov   al, CARRIAGE_RETURN  ; Write file or device using handle
+push  ax
+mov   dx, sp
+int   021h
+pop   ax
+not_newline:    
+mov   dx, sp
+int   021h
+
+pop   ax ; undo sp
+
 pop   dx
+pop   cx
+pop   bx
 ret
 
 ENDP
@@ -2301,7 +2325,7 @@ jmp   print_int
 print_negative_long:
 push  ax
 mov   al, '-'
-call  locallib_putchar_
+call  putchar_stdout_
 pop   ax
 neg   dx
 neg   ax
@@ -2327,7 +2351,7 @@ add   cx, si
 adc   dx, di
 test  bp, bp
 je    skip_print_char
-call  locallib_putchar_
+call  putchar_stdout_
 
 skip_print_char:
 sub   bx, 4
@@ -2355,7 +2379,7 @@ add   cx, si
 adc   dx, di
 test  bp, bp
 je    skip_print_char_int
-call  locallib_putchar_
+call  putchar_stdout_
 
 skip_print_char_int:
 dec   bx
@@ -2366,7 +2390,7 @@ jns   print_next_digit_int
 print_last_int_digit:
 xchg  ax, cx
 add   al, '0'
-call  locallib_putchar_
+call  putchar_stdout_
 
 POPA_NO_AX_MACRO
 ret
@@ -2468,7 +2492,7 @@ print_next_string_char:
 lodsb
 test  al, al
 je    done_printing
-call  locallib_putchar_
+call  putchar_stdout_
 jmp   print_next_string_char
 done_printing:
 
@@ -2519,7 +2543,7 @@ je    handle_percent
 
 just_print_char:
 print_percent:
-call  locallib_putchar_
+call  putchar_stdout_
 jmp   loop_next_arg_and_reset_params
 
 done_with_printf_loop:
