@@ -301,6 +301,8 @@ void __near R_LoadPatchColumnsColormap0(uint16_t lump, segment_t texlocation_seg
 //
 // P_LoadVertexes
 //
+void __near P_LoadVertexes(int16_t lump) ;
+/*
 void __near P_LoadVertexes(int16_t lump) {
 	//mapvertex_t __far*			data;
 	//mapvertex_t			ml;
@@ -322,7 +324,7 @@ void __near P_LoadVertexes(int16_t lump) {
 
 	// Free buffer memory.
  }
-
+*/
 
 //
 // P_LoadSegs

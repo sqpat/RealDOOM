@@ -23,6 +23,10 @@ EXTRN Z_QuickMapRender_:FAR
 EXTRN Z_QuickMapRenderPlanes_:FAR
 EXTRN Z_QuickMapUndoFlatCache_:FAR
 EXTRN Z_QuickMapWADPageFrame_:FAR
+EXTRN W_LumpLength_:FAR
+EXTRN Z_QuickMapScratch_5000_:FAR
+EXTRN W_CacheLumpNumDirect_:FAR
+EXTRN W_ReadLump_:NEAR
 EXTRN copystr8_:NEAR
 
  
@@ -124,6 +128,38 @@ pop     di
 
 retf
 ENDP
+
+PROC   P_LoadVertexes_ NEAR
+PUBLIC P_LoadVertexes_
+
+
+push   dx
+push   cx
+push   bx
+
+push   ax  ; backup lump
+call   W_LumpLength_
+
+SHIFT_MACRO  shr ax 2   ; div by 4 size of numvertexes
+mov    word ptr ds:[_numvertexes], ax  
+
+call   Z_QuickMapScratch_5000_  ; todo remove ?? unused
+
+pop    ax  ; get lump back
+mov    cx, VERTEXES_SEGMENT
+xor    bx, bx
+
+call   W_ReadLump_
+
+
+pop    bx
+pop    cx
+pop    dx
+
+
+ret
+ENDP
+
 
 
 
