@@ -715,18 +715,18 @@ _FixedDivWholeA_addr =   		     _NULL_OFFSET + 00AD0h
 _cht_CheckCheat_Far_addr = 	 	     _NULL_OFFSET + 00AD4h
 _myargc =				 	 	     _NULL_OFFSET + 00AD8h
 _errno =      						 _NULL_OFFSET + 00ADAh
-; 4 bytes free?
 
 
 
-___iob = 							 _NULL_OFFSET + 00AE0h
-; NFILES * SIZE FILE_INFO_T bytes = 6 * 12 = 120 = 048h
 
-_myargv = 	   	  					 _NULL_OFFSET + 00B28h
+___iob = 							 _NULL_OFFSET + 00ADCh
+; NFILES * SIZE FILE_INFO_T bytes = 6 * 10 = 60 = 03Ch
+
+_myargv = 	   	  					 _NULL_OFFSET + 00B18h
 ; max args = 20 including program name i guess. should be enough? maybe too much.
-_filebufferstart =				     _NULL_OFFSET + 00B50h
+_filebufferstart =				     _NULL_OFFSET + 00B40h
 
-_flatcache_nodes =				     _NULL_OFFSET + 00F50h
+_flatcache_nodes =				     _NULL_OFFSET + 00F40h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + ((SIZE CACHE_NODE_T) * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

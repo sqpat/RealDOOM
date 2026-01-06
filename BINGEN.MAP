@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/06 14:16:29
+Created on:       26/01/06 14:33:25
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -247,8 +247,8 @@ Module: f_finale.obj(f_finale.ASM)
 02e7:0000      F_FINALE_STARTMARKER_
 02e7:0289*     F_CastDrawer_
 02e7:0b1d      F_Responder_
-02e7:04e2*     F_BunnyScroll_
 02e7:01ac      F_StartFinale_
+02e7:04e2*     F_BunnyScroll_
 02e7:0a7b      F_Ticker_
 02e7:0bb2*     F_locallib_toupper_
 02e7:0022*     V_DrawPatchFlipped_
@@ -1417,4 +1417,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003c3a0 (246688.)
 Entry point address: 2b7a:aefe
-Link time: 00:00.49
+Link time: 00:00.04

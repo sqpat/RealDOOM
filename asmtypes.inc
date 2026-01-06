@@ -719,7 +719,6 @@ FILE_INFO_T STRUC
     fileinto_base       dw ? ; 04h      ptr             ; location of buffer
     fileinto_flag       dw ? ; 06h      unsigned        ; mode of file access
     fileinto_handle     dw ? ; 08h      int             ; file handle
-    fileinto_bufsize    dw ? ; 0Ah      unsigned        ; size of buffer
 
 
 FILE_INFO_T ENDS

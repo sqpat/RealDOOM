@@ -297,7 +297,7 @@ test      ax, ax
 je        finished_fread
 
 
-cmp       ax, SECTOR_SIZE  ;  always same? ;  word ptr ds:[si + FILE_INFO_T.fileinto_bufsize]
+cmp       ax, SECTOR_SIZE 
 jb        just_fill_buffer_binary
 
 
@@ -707,7 +707,6 @@ cmp  ax, 0FFFFh
 je   bad_handle_dofree
 xor  dx, dx
 mov  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], dx ; 0
-mov  word ptr ds:[si + FILE_INFO_T.fileinto_bufsize], dx ; 0
 mov  word ptr ds:[si + FILE_INFO_T.fileinto_base], dx ; 0
 or   word ptr ds:[si + FILE_INFO_T.fileinto_flag], cx  ; flags
 
@@ -768,12 +767,11 @@ pop       es
 
 ; zero out the streamlink.
 xor       ax, ax
-stosw  ; 7 * 2 bytes = SIZE FILE_INFO_T = 0Eh
+stosw  ; 5 * 2 bytes = SIZE FILE_INFO_T = 0Ah
 stosw
-stosw  ;  + FILE_INFO_T.fileinto_base
+stosw  
 stosw  
 stosw
-stosw   ; todo set buffer at alloc time?
 
 
 lea       ax, [di - SIZE FILE_INFO_T]
@@ -1317,9 +1315,6 @@ PROC    locallib_ioalloc_ NEAR
 
 ; si fas file already
 
-mov   ax, FILE_BUFFER_SIZE
-mov   word ptr ds:[si + FILE_INFO_T.fileinto_bufsize], ax
-bufsize_set:
 call  malloc_  ; near malloc
 ; ax gets file buffer
 
@@ -1470,10 +1465,10 @@ dont_ioalloc:
 mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_base]
 mov  word ptr ds:[si + FILE_INFO_T.fileinto_ptr], ax   ; point to start of buffer
 
-test byte ptr ds:[si + FILE_INFO_T.fileinto_flag+1], (_IONBF SHR 8)
-mov  bx, 1
+test word ptr ds:[si + FILE_INFO_T.fileinto_flag+1], (_IONBF SHR 8)
+mov  bx, 1              ; todo breakpoint this.
 jne  dont_use_bufsize
-mov  bx, word ptr ds:[si + FILE_INFO_T.fileinto_bufsize]
+mov  bx, FILE_BUFFER_SIZE
 dont_use_bufsize:
 mov  dx, word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
 mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_handle]

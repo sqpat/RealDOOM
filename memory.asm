@@ -468,38 +468,37 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 ; AC0  
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; AD0 
-dw  00, 00, 00, 00, 00, 00, 00, 00
+dw  00, 00, 00, 00, 00, 00
 
 
 
-; AE0 ; file 0
-dw 00, 00, 00, 00, 00, 00
-dw 00, 00, 00, 00, 00, 00
-dw 00, 00, 00, 00, 00, 00
-dw 00, 00, 00, 00, 00, 00
-dw 00, 00, 00, 00, 00, 00
-
-dw 00, 00, 00, 00, 00, 00
+; ADC ; file 0
+dw 00, 00, 00, 00, 00 ; file 0
+dw 00, 00, 00, 00, 00 ; file 1
+dw 00, 00, 00, 00, 00 ; file 2
+dw 00, 00, 00, 00, 00 ; file 3
+dw 00, 00, 00, 00, 00 ; file 4
+dw 00, 00, 00, 00, 00 ; file 5
 
 
 ; command line copy
-; B28
+; B18
 dw  00, 00, 00, 00
+; B20
+dw  00, 00, 00, 00, 00, 00, 00, 00
 ; B30
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; B40
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; B50 ; file buffer
+; B40 ; file buffer
 FILE_BUFFER_SIZE = 512
 
 REPT FILE_BUFFER_SIZE
 	db  0
 ENDM
-; D50
+; D40
 REPT FILE_BUFFER_SIZE
 	db  0
 ENDM
-; F50
+; F40
 
 REPT NUM_FLAT_CACHE_PAGES
 	dw  00

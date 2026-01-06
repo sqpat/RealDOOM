@@ -911,11 +911,11 @@ typedef struct{
 #define myargc				 		      (*((int16_t __near*)        		 (_NULL_OFFSET + 0x0AD8)))
 // #define myargv				 		      (*((int8_t __near***)        		 (_NULL_OFFSET + 0x0ADA)))
 
-#define myargv				 		      (*((int8_t __near***)        		 (_NULL_OFFSET + 0x0B28)))
+#define myargv				 		      (*((int8_t __near***)        		 (_NULL_OFFSET + 0x0B18)))
 
 // some c vars here
 
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0F50)))
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0F40)))
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
