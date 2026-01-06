@@ -261,14 +261,14 @@ typedef struct subsector_s {
 //
 
 // original seg_t replaced with other arrays
-/*typedef struct seg_s {
+typedef struct seg_s {
  
     int16_t	linedefOffset;
 	uint8_t side;
 
     
 } seg_t;
-*/
+
 
 // 4, great
 typedef struct seg_physics_s {

@@ -25,6 +25,7 @@
 // #include "z_zone.h"
 
 
+
 #define SECNUM_NULL -1
 #define LINENUM_NULL -1
 #define SBARHEIGHT		32

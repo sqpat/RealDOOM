@@ -25,9 +25,11 @@ EXTRN Z_QuickMapUndoFlatCache_:FAR
 EXTRN Z_QuickMapWADPageFrame_:FAR
 EXTRN W_LumpLength_:FAR
 EXTRN Z_QuickMapScratch_5000_:FAR
+EXTRN Z_QuickMapScratch_8000_:FAR
 EXTRN W_CacheLumpNumDirect_:FAR
 EXTRN W_ReadLump_:NEAR
 EXTRN copystr8_:NEAR
+EXTRN R_FlatNumForName_:NEAR
 
  
 .DATA
@@ -143,7 +145,6 @@ call   W_LumpLength_
 SHIFT_MACRO  shr ax 2   ; div by 4 size of numvertexes
 mov    word ptr ds:[_numvertexes], ax  
 
-call   Z_QuickMapScratch_5000_  ; todo remove ?? unused
 
 pop    ax  ; get lump back
 mov    cx, VERTEXES_SEGMENT
@@ -158,6 +159,171 @@ pop    dx
 
 
 ret
+ENDP
+
+SCRATCH_SEGMENT_8000 = 08000h
+
+PROC   P_LoadSectors_ NEAR
+PUBLIC P_LoadSectors_
+
+
+PUSHA_NO_AX_OR_BP_MACRO
+
+mov    si, ax  ; back up lump
+call   W_LumpLength_
+
+; dx should be zeroed...
+
+
+mov    bx, SIZE MAPSECTOR_T
+div    bx
+
+mov    word ptr ds:[_numsectors], ax  
+
+
+
+xor    ax, ax
+mov    dx, SECTORS_SEGMENT
+mov    es, dx
+xor    di, di
+mov    cx, MAX_SECTORS_SIZE / 2
+rep    stosw
+
+mov    dx, SECTORS_SOUNDORGS_SEGMENT
+mov    es, dx
+xor    di, di
+mov    cx, MAX_SECTORS_SOUNDORGS_SIZE / 2
+rep    stosw
+
+mov    dx, SECTOR_SOUNDTRAVERSED_SEGMENT
+mov    es, dx
+xor    di, di
+mov    cx, MAX_SECTORS_SOUNDTRAVERSED_SIZE / 2
+rep    stosw
+
+push   ds
+pop    es
+mov    di, OFFSET _sectors_physics
+mov    cx, MAX_SECTORS_PHYSICS_SIZE / 2
+rep    stosw
+
+
+call   Z_QuickMapScratch_8000_  ; todo remove ?? unused
+
+xchg   ax, si ; restore lump
+
+xor    bx, bx
+mov    cx, SCRATCH_SEGMENT_8000
+call   W_ReadLump_
+
+mov    cx, word ptr ds:[_numsectors]
+xor    si, si
+mov    bx, OFFSET _sectors_physics
+xor    di, di
+
+loop_next_sector:
+
+mov    es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+mov    dx, SCRATCH_SEGMENT_8000
+mov    ds, dx
+
+lodsw
+SHIFT_MACRO shl ax 3
+stosw  ; floorheight
+lodsw
+SHIFT_MACRO shl ax 3
+stosw  ; ceilingheight
+
+push   ss
+pop    ds
+mov    ax, si
+call   R_FlatNumForName_
+
+mov    es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+stosb 
+mov    dx, SCRATCH_SEGMENT_8000
+lea    ax, [si + 8]
+call   R_FlatNumForName_
+
+add    si, 16
+mov    es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+stosb 
+mov    dx, SCRATCH_SEGMENT_8000
+mov    ds, dx
+
+lodsw
+mov    byte ptr es:[di + SECTOR_T.sec_lightlevel - SECTOR_T.sec_validcount], al
+
+
+
+
+lodsw ; special
+xchg   ax, dx
+lodsw
+
+cmp    ax, 666
+je     set_666
+cmp    ax, 667
+je     set_667
+cmp    ax, 999
+je     set_999
+cmp    ax, 99
+je     set_99
+cmp    ax, 77
+je     set_77
+cmp    ax, 1323
+je     set_1323
+cmp    ax, 1044
+je     set_1044
+cmp    ax, 86
+je     set_86
+
+got_tag:
+push   ss
+pop    ds
+
+mov    ah, al
+mov    al, dl
+mov    word ptr ds:[bx + SECTOR_PHYSICS_T.secp_special], ax
+add    bx, SIZE SECTOR_PHYSICS_T
+add    di, (SIZE SECTOR_T - SECTOR_T.sec_validcount)
+
+
+loop   loop_next_sector
+
+
+
+POPA_NO_AX_OR_BP_MACRO
+
+
+ret
+
+set_666:
+mov ax, TAG_666
+jmp got_tag
+set_667:
+mov ax, TAG_667
+jmp got_tag
+set_999:
+mov ax, TAG_999
+jmp got_tag
+set_99:
+mov ax, TAG_99
+jmp got_tag
+set_77:
+mov ax, TAG_77
+jmp got_tag
+set_1323:
+mov ax, TAG_1323
+jmp got_tag
+set_1044:
+mov ax, TAG_1044
+jmp got_tag
+set_86:
+mov ax, TAG_86
+jmp got_tag
+
+
 ENDP
 
 

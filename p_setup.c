@@ -448,6 +448,7 @@ void __near P_LoadSubsectors(int16_t lump) {
 //
 // P_LoadSectors
 //
+/*
 void __near P_LoadSectors(int16_t lump) {
 	mapsector_t __far*        data;
 	uint16_t                 i;
@@ -511,7 +512,7 @@ void __near P_LoadSectors(int16_t lump) {
 	}
 
 }
-
+*/
 
 //
 // P_LoadNodes

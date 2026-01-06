@@ -988,3 +988,12 @@ CLIPRANGE_T STRUC
     cliprange_last                 dw ? ; 2
 CLIPRANGE_T ENDS
 
+MAPSECTOR_T STRUC
+    mapsector_floorheight    dw ?         ; 09h
+    mapsector_ceilingheight  dw ?         ; 02h
+    mapsector_floorpic       db 8 DUP(?)  ; 04h
+    mapsector_ceilingpic     db 8 DUP(?)  ; 0Ch
+    mapsector_lightlevel     dw ?         ; 14h
+    mapsector_special        dw ?         ; 16h
+    mapsector_tag            dw ?         ; 18h
+MAPSECTOR_T ENDS                          ; 1Ah
