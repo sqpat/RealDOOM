@@ -173,7 +173,7 @@ mov     byte ptr ds:[_gameaction], al ; GA_NOTHING
 mov     byte ptr ds:[_savedescription], al ; \0
 mov     word ptr ds:[_player + PLAYER_T.player_message], GGSAVED
 call    Z_QuickMapPhysics_
-call    R_FillBackScreen_ForceBufferRedraw_
+call    R_FillBackScreen_ForceBufferRedraw_   ; force screen draw for save message
 
 
 POPA_NO_AX_OR_BP_MACRO

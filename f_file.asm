@@ -35,8 +35,10 @@ COLORMAPS_SIZE = 33 * 256
 LUMP_PER_EMS_PAGE = 1024 
 
 FILE_BUFFER_SIZE = 512
+STDOUT_BUFFER_SIZE = 4
+MAX_FILE_BUFFERS = 2
 
-MAX_FILES = 10
+MAX_FILES = 6
 
 
 .CODE
@@ -98,8 +100,7 @@ db "!! Overallocated file buffers!", 0Ah, 0
 _UNDERALLOCATED_STR:
 db "!! Underallocated file buffers!", 0Ah, 0
 
-MAX_FILE_BUFFERS = 2
-STDOUT_BUFFER_SIZE = 010h
+
 
 PROC    free_ NEAR
 PUBLIC  free_
@@ -125,7 +126,7 @@ mov     ah, byte ptr cs:[_buffercount]
 cmp     ah, MAX_FILE_BUFFERS
 jae     error_overallocated
 shl     ah, 1  ; 512 times buffer count
-add     ax, _filebufferstart
+add     ax, OFFSET _filebufferstart
 inc     byte ptr cs:[_buffercount]
 
 return_stdout:
@@ -483,6 +484,8 @@ ret
 
 ENDP
 
+; todo inline
+
 PROC   locallib_sopen_   NEAR
 PUBLIC locallib_sopen_   
 
@@ -545,8 +548,8 @@ xchg      ax, dx ;   dx gets filename
 call      locallib_dosopen_ 
 test      ax, ax
 jne       sopen_handle_good
-cmp       di, MAX_FILES
-jae       close_file_and_error
+;cmp       di, MAX_FILES
+;jae       close_file_and_error
 sopen_handle_good:
 test      byte ptr [bp - 2], (_O_WRONLY OR _O_RDWR) 
 je        sopen_access_check_ok    ; readonly, access/write is ok
@@ -598,8 +601,8 @@ call  locallib_doserror_  ; check carry flag etc
 test      ax, ax
 jne       exit_sopen_return_bad_handle
 
-cmp       di, MAX_FILES
-jnb       jump_to_close_file_and_error    ; out of files
+;cmp       di, MAX_FILES
+;jnb       jump_to_close_file_and_error    ; out of files
 
 process_iomode_flags:
 mov       ax, di
@@ -664,6 +667,8 @@ PERMISSION_WRITABLE = 0
 PMODE = 0180h ;  ?? ; (S_IREAD | S_IWRITE)
 
 
+; todo inline
+
 PROC   locallib_doopen_ NEAR
 PUBLIC locallib_doopen_ 
 push cx
@@ -671,24 +676,24 @@ push di
 
 ; si is already fp.
 
+; todo clean this logic up.
 
-xor  dx, dx ; equal to _O_RDONLY. default to read
+cwd  ; dx = 0. ah known 0 ; equal to _O_RDONLY. default to read
 mov  cx, PERMISSION_READONLY 
 
 test al, FILEFLAG_WRITE
 je   not_write_flag
-dec  cx ; PERMISSION_READONLY 
+dec  cx ; PERMISSION_WRITABLE = 0 
 or   dl, (_O_WRONLY OR _O_CREAT)
 not_write_flag:
 
 push cx  ; p_mode (permissions) param is 0 or P_MODE based on write flag.
 
-mov  cl, (_O_TEXT SHR 8)
+mov  dh, (_O_TEXT SHR 8)
 test al, FILEFLAG_BINARY
 je   not_binary_flag
-inc  cx   ;  increment by one same as:  mov  cl, (_O_BINARY SHR 8)
+inc  dh   ;  increment by one same as:  mov  cl, (_O_BINARY SHR 8)
 not_binary_flag:
-or   dh, cl
 
 mov  cl, _O_TRUNC
 test al, FILEFLAG_APPEND
@@ -716,7 +721,7 @@ cmp  ax, 0FFFFh
 je   bad_handle_dofree
 xor  dx, dx
 mov  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], dx ; 0
-mov  word ptr ds:[si + 0Ah], dx ; 0
+mov  word ptr ds:[si + FILE_INFO_T.fileinto_bufsize], dx ; 0
 mov  word ptr ds:[si + FILE_INFO_T.fileinto_base], dx ; 0
 or   word ptr ds:[si + FILE_INFO_T.fileinto_flag], cx  ; flags
 
@@ -842,6 +847,8 @@ call    locallib_fclose_
 retf
 ENDP
 
+; todo inline
+
 PROC    locallib_close_  NEAR
 
 push bx
@@ -879,6 +886,7 @@ ENDP
 ; todo pass in si?
 
 ; todo revisit the lseek stuff.
+; todo inline
 
 PROC    doclose_  NEAR
 PUBLIC  doclose_  
@@ -948,7 +956,7 @@ PROC    locallib_fclose_   NEAR
 PUBLIC  locallib_fclose_
 
 
-
+; todo inline
 call  doclose_
 mov   ax, 1
 ret  
@@ -1324,7 +1332,7 @@ ENDP
 
 PROC    locallib_lseek_ NEAR
 
-; si is file, not file handle...
+; si is file
 push si
 push dx  ; seek type to retrieve later
 mov  si, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
@@ -1461,9 +1469,9 @@ PROC    locallib_ioalloc_ NEAR
 mov   ax, FILE_BUFFER_SIZE
 cmp   si, STDOUT
 jne   use_normal_buffer
-mov   ax, 16
+mov   ax, STDOUT_BUFFER_SIZE
 use_normal_buffer:
-mov   word ptr ds:[si + FILE_INFO_T.fileinto_bufsize], ax  ; default buffer is 134 apparently! todo revisit
+mov   word ptr ds:[si + FILE_INFO_T.fileinto_bufsize], ax
 bufsize_set:
 call  malloc_  ; near malloc
 ; ax gets file buffer
@@ -1543,11 +1551,13 @@ ret
 
 ENDP
 
+; TODO put this in file field.
 
-; 10 files
+; 6 files, but indexed by a bit of an offset... weird, leave extra space.
 _io_mode:
 ;  stdout 
-db _WRITE, 0, 0, 0, 0
+db _WRITE, 0, 0, 0, 0, 0
+db 0, 0, 0, 0, 0
 db 0, 0, 0, 0, 0
 
 

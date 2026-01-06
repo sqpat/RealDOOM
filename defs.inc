@@ -546,6 +546,7 @@ _usergame =		   		         	 _NULL_OFFSET + 005EAh
 _crushchange = 		   			 	 _NULL_OFFSET + 005EBh
 _leveltime =     		   			 _NULL_OFFSET + 005ECh
 ;_fopen_rb_argument =                 _NULL_OFFSET + 005F0h
+_dodelayedcheatthisframe =			 _NULL_OFFSET + 005F2h
 _currenttask =            		     _NULL_OFFSET + 005F3h
 
 _R_DrawSkyPlane_addr =               _NULL_OFFSET + 005F4h
@@ -700,9 +701,9 @@ _hu_font =	 	      			     _NULL_OFFSET + 00A40h
 
 _viewactivestate =	 	     	     _NULL_OFFSET + 00ABEh
 _menuactivestate =	 	     	     _NULL_OFFSET + 00ABFh
-;_fopen_wb_argument =	 	     	 _NULL_OFFSET + 00AC0h
+__STACKLOW =          				 _NULL_OFFSET + 00AC0h
+__STACKTOP =          				 _NULL_OFFSET + 00AC2h
 
-_dodelayedcheatthisframe =			 _NULL_OFFSET + 00AC3h
 _st_gamestate =	  	  				 _NULL_OFFSET + 00AC4h
 _st_firsttime =	  	  				 _NULL_OFFSET + 00AC5h
 _am_min_scale_mtof =       	         _NULL_OFFSET + 00AC6h
@@ -715,22 +716,18 @@ _cht_CheckCheat_Far_addr = 	 	     _NULL_OFFSET + 00AD4h
 _myargc =				 	 	     _NULL_OFFSET + 00AD8h
 _errno =      						 _NULL_OFFSET + 00ADAh
 
-__STACKLOW =          				 _NULL_OFFSET + 00AE0h
-__STACKTOP =          				 _NULL_OFFSET + 00AE2h
-;___OpenStreams =					 _NULL_OFFSET + 00AE4h
-;___ClosedStreams = 					 _NULL_OFFSET + 00AE6h
+_stdout_buffer =				     _NULL_OFFSET + 00AE0h ; 8 bytes.
 
 
 
 ___iob = 							 _NULL_OFFSET + 00AE8h
-; NFILES * SIZE FILE_INFO_T bytes = 10 * 12 = 120 = 078h
+; NFILES * SIZE FILE_INFO_T bytes = 6 * 12 = 120 = 048h
 
-_myargv = 	   	  					 _NULL_OFFSET + 00B60h
+_myargv = 	   	  					 _NULL_OFFSET + 00B30h
 ; max args = 24 including program name i guess. should be enough? maybe too much.
-_stdout_buffer =				     _NULL_OFFSET + 00B90h
-_filebufferstart =				     _NULL_OFFSET + 00BA0h
+_filebufferstart =				     _NULL_OFFSET + 00B60h
 
-_flatcache_nodes =				     _NULL_OFFSET + 00FA0h
+_flatcache_nodes =				     _NULL_OFFSET + 00F60h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + ((SIZE CACHE_NODE_T) * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

@@ -709,6 +709,9 @@ VANILLA_PLAYER_T STRUC
 VANILLA_PLAYER_T ENDS
 
 
+; todo rename
+; todo combine buffer into flags. Smallbuf and largebuf flags?
+
 FILE_INFO_T STRUC
 
     fileinto_ptr        dw ? ; 00h      ptr             ; next character position

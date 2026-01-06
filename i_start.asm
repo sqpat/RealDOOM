@@ -99,7 +99,7 @@ ENDP
 
 STD_OUT_STREAM_INDEX = 0
 
-MAX_FILES = 10
+MAX_FILES = 6
 
 PROC   docloseall_ NEAR
 PUBLIC docloseall_

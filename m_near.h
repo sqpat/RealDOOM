@@ -738,6 +738,7 @@ typedef struct{
 #define crushchange		   		          (*((boolean __near*)               (_NULL_OFFSET + 0x05EB)))
 #define leveltime     				      (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x05EC)))
 #define fopen_rb_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x05F0))
+#define dodelayedcheatthisframe		      (*((boolean __near*)               (_NULL_OFFSET + 0x05F2)))
 #define currenttask                       (*(int8_t __near *)                (_NULL_OFFSET + 0x05F3))
 
 #define R_DrawSkyPlane_addr_Offset        (*((int16_t __near*)               (_NULL_OFFSET + 0x05F4)))
@@ -894,8 +895,10 @@ typedef struct{
 
 #define viewactivestate   			      (*((boolean __near*)               (_NULL_OFFSET + 0x0ABE)))
 #define menuactivestate   			      (*((boolean __near*)               (_NULL_OFFSET + 0x0ABF)))
-#define fopen_wb_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x0AC0))
-#define dodelayedcheatthisframe		      (*((boolean __near*)               (_NULL_OFFSET + 0x0AC3)))
+// #define fopen_wb_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x0AC0))
+#define __STACKLOW						  (*((uint16_t __near*)              (_NULL_OFFSET + 0x0AC0)))
+#define __STACKTOP						  (*((uint16_t __near*)              (_NULL_OFFSET + 0x0AC2)))
+
 #define st_gamestate 		      		  (*((st_stateenum_t __near*)        (_NULL_OFFSET + 0x0AC4)))
 #define st_firsttime 		      		  (*((boolean __near*)        		 (_NULL_OFFSET + 0x0AC5)))
 #define am_min_scale_mtof       	      (*((int16_t __near*)               (_NULL_OFFSET + 0x0AC6)))
@@ -908,11 +911,11 @@ typedef struct{
 #define myargc				 		      (*((int16_t __near*)        		 (_NULL_OFFSET + 0x0AD8)))
 // #define myargv				 		      (*((int8_t __near***)        		 (_NULL_OFFSET + 0x0ADA)))
 
-#define myargv				 		      (*((int8_t __near***)        		 (_NULL_OFFSET + 0x0B60)))
+#define myargv				 		      (*((int8_t __near***)        		 (_NULL_OFFSET + 0x0B30)))
 
 // some c vars here
 
-#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0FA0)))
+#define flatcache_nodes				      (((cache_node_t __near*)           (_NULL_OFFSET + 0x0F60)))
 
 // based on size of NUM_FLAT_CACHE_PAGES, this will move back...
 #define CURRENT_POSITION_1  			  (((uint16_t) flatcache_nodes) + (sizeof(cache_node_t) * NUM_FLAT_CACHE_PAGES))
