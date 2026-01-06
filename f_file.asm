@@ -306,7 +306,10 @@ mov       ax, dx
 test      ax, ax
 je        finished_fread
 
-
+test      byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _BIGBUF
+je        skip_buffer
+test      word ptr ds:[si + FILE_INFO_T.fileinto_flag+1], (_IONBF SHR 8)
+jne       skip_buffer
 cmp       ax, SECTOR_SIZE 
 jb        just_fill_buffer_binary
 
@@ -315,11 +318,11 @@ skip_buffer_modify:
 
 
 mov       ax, word ptr ds:[si + FILE_INFO_T.fileinto_base]
-
 mov       word ptr ds:[si + FILE_INFO_T.fileinto_cnt], 0
 mov       word ptr ds:[si + FILE_INFO_T.fileinto_ptr], ax
-mov       cx, dx  
 
+skip_buffer:
+mov       cx, dx  
 
 push      dx
 mov       dx, di
@@ -339,7 +342,10 @@ jc        do_qread_fread_error
 cmp       ax, 0FFFFh
 je        bad_read_do_error
 test      ax, ax
-je        hit_end_of_file
+jne       exit_fread
+hit_end_of_file:
+or        byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _EOF
+finished_fread:
 exit_fread:
 
 pop       di
@@ -347,11 +353,6 @@ pop       si
 ret    
 
 
-hit_end_of_file:
-or        byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _EOF
-pop       di
-pop       si
-ret    
 
 do_qread_fread_error:
 
@@ -364,17 +365,13 @@ jmp     got_error_str
 
 just_fill_buffer_binary:
 ; buffer empty, so load bytes then recontinue loop and next time copy from buffer.
+; todo inline
 call      locallib_fill_buffer_
 
 test      ax, ax
 
 jne       continue_fread_until_done
-
-finished_fread:
-mov       al, 1   ; i never actually use this return value do i?
-pop       di
-pop       si
-ret    
+jmp       exit_fread
 
 
 ENDP
@@ -470,9 +467,9 @@ mov       di, ax ;   si gets rwmode for later
 mov       ah, 03Dh  ; Open file using handle
 int       021h
 mov       di, 0FFFFh
-jc        bad_open_do_dos_error
+jc        bad_open_dont_set_handle
 xchg      ax, di   ; set file handle in di
-bad_open_do_dos_error:
+bad_open_dont_set_handle:
 
 sopen_handle_good:
 test      byte ptr [bp - 2], (_O_WRONLY OR _O_RDWR) 
@@ -1271,11 +1268,7 @@ push dx
 ; si has file
 ; todo does bx already have link?
 
-
-cmp  word ptr ds:[si + FILE_INFO_T.fileinto_base], 0
-jne  dont_ioalloc
-call locallib_ioalloc_
-dont_ioalloc:
+; dont need ioalloc check. only call already did it
 
 mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_base]
 mov  word ptr ds:[si + FILE_INFO_T.fileinto_ptr], ax   ; point to start of buffer
