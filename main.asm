@@ -1307,10 +1307,7 @@ jb    loop_next_default
 mov   ax, OFFSET _used_defaultfile
 call  CopyString13_
 
-
 mov   dl, (FILEFLAG_WRITE)
-
-
 call  locallib_fopen_nobuffering_
 
 ; dx:ax = far source, bx = num bytes, cx = fp

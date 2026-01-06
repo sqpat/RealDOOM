@@ -471,7 +471,7 @@ mov       ah, 03Dh  ; Open file using handle
 int       021h
 mov       di, 0FFFFh
 jc        bad_open_do_dos_error
-mov       di, ax   ; set file handle in di
+xchg      ax, di   ; set file handle in di
 bad_open_do_dos_error:
 
 sopen_handle_good:
@@ -496,8 +496,8 @@ jne       process_iomode_flags        ; file handle is valid so we dsont have to
 do_create_file:
 test      byte ptr [bp - 2], _O_CREAT ; we didnt ask to create it....
 je        exit_sopen_return_bad_handle
-
-cmp       word ptr ds:[_errno], 2 ; E_NOFILE    ; i guess errno was set earlier and we check it to see we had the 'correct error' of no file exists.
+; al still has error
+cmp       al, 2 ; E_NOFILE    ; i guess errno was set earlier and we check it to see we had the 'correct error' of no file exists.
 jne       exit_sopen_return_bad_handle
 
 ; gotta create file..
