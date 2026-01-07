@@ -890,8 +890,8 @@ void __near P_GroupLines(void) {
 	int16_t				linebufferindex;
 	int16_t				sidesecnum;
 	// int16_t				sectorlinecount;
-	fixed_t_union		tempv1;
-	fixed_t_union		tempv2;
+	// fixed_t_union		tempv1;
+	// fixed_t_union		tempv2;
 	// uint16_t                 total;
 	
 	Z_QuickMapRender_4000To9000();
@@ -907,6 +907,7 @@ void __near P_GroupLines(void) {
 	}
 
 	Z_QuickMapPhysics();
+
 	// count number of lines in each sector
 	// total = 0;
 	for (i = 0; i < numlines; i++) {
@@ -926,8 +927,8 @@ void __near P_GroupLines(void) {
 
 	linebufferindex = 0;
 
-	tempv1.h.fracbits = 0;
-	tempv2.h.fracbits = 0;
+	// tempv1.h.fracbits = 0;
+	// tempv2.h.fracbits = 0;
 
 
 	for (i = 0; i < numsectors; i++) {

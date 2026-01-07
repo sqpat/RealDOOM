@@ -1141,6 +1141,7 @@ pop    ds
 call   Z_QuickMapPhysics_
 
 
+
 mov    cx, word ptr ds:[_numlines]
 
 mov    di, SECTORS_SEGMENT
@@ -1175,6 +1176,7 @@ loop   loop_next_line_count_lookup
 
 push   ss
 pop    ds
+
 
 
 
@@ -1279,12 +1281,13 @@ ret
 
 add_this_line:
 
+mov    di, cx
+shl    di, 1   ; word ptr
+mov    word ptr ds:[_linebuffer + di], dx       ; linebuffer[linebufferindex] = j;
+
+inc    cx   ; linebufferindex++
 mov    di, sp  ; store stack pointer/bbox ptr..
 
-shl    si, 1   ; word ptr
-mov    word ptr ds:[_linebuffer + si], dx       ; linebuffer[linebufferindex] = j;
-inc    cx   ; linebufferindex++
-shr    si, 1   ; byte
 
 
 push   bx
@@ -1329,19 +1332,20 @@ PROC    set_blockbox_high_ NEAR
 
 ;		block = (bbox[BOXTOP] - bmaporgy + MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
 ;		block = block >= bmapheight ? bmapheight - 1 : block;
+;		sectors_physics[i].blockbox[BOXTOP] = block;
 
 
 sub    ax, cx
 add    ax, MAXRADIUSNONFRAC
 SHIFT_MACRO sar ax 7
 cmp    ax, si
-jnge   dont_cap_high
+jl     dont_cap_high
 xchg   ax, si   ; only can happen once, xchg is fine
 dec    ax
 dont_cap_high:
 dont_cap_low:
 do_write_and_ret:
-mov    word ptr ss:[bp + _sectors_physics], ax
+mov    word ptr ss:[bp + _sectors_physics + SECTOR_PHYSICS_T.secp_blockbox], ax
 
 inc    bp
 inc    bp
@@ -1365,7 +1369,6 @@ cap_low:
 xor    ax, ax
 jmp    do_write_and_ret
 
-ret
 
 ENDP
 
