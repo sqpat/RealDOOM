@@ -500,6 +500,52 @@ ENDP
 
 
 
+PROC   P_LoadBlockMap_ NEAR
+PUBLIC P_LoadBlockMap_
+
+push   si
+push   di
+push   cx
+push   bx
+
+xchg   ax, bx   ; store lump
+
+call   Z_QuickMapPhysics_
+
+xchg   ax, bx   ; retrieve lump
+
+xor    bx, bx
+mov    cx, BLOCKMAPLUMP_SEGMENT
+call   W_ReadLump_
+
+mov    cx, BLOCKMAPLUMP_SEGMENT
+mov    es, cx
+xor    si, si
+lods   word ptr es:[si]
+mov    word ptr ds:[_bmaporgx], ax
+lods   word ptr es:[si]
+mov    word ptr ds:[_bmaporgy], ax
+lods   word ptr es:[si]
+mov    word ptr ds:[_bmapwidth], ax
+lods   word ptr es:[si]
+mov    word ptr ds:[_bmapheight], ax
+
+xor    ax, ax
+mov    cx, BLOCKLINKS_SEGMENT
+mov    es, cx
+xor    di, di
+mov    cx, MAX_BLOCKLINKS_SIZE / 2
+
+rep    stosw
+
+pop    bx
+pop    cx
+pop    di
+pop    si
+ret
+
+ENDP
+
 
 PROC    P_SETUP_ENDMARKER_ NEAR
 PUBLIC  P_SETUP_ENDMARKER_

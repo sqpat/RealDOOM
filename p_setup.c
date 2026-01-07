@@ -838,6 +838,7 @@ void __near P_LoadSideDefs(int16_t lump) {
 //
 // P_LoadBlockMap
 //
+/*
 void __near P_LoadBlockMap(int16_t lump) {
 	uint16_t         count;
 	Z_QuickMapPhysics();
@@ -860,7 +861,7 @@ void __near P_LoadBlockMap(int16_t lump) {
 	FAR_memset(blocklinks, 0, MAX_BLOCKLINKS_SIZE);
 }
 
-
+*/
 
 //
 // P_GroupLines
