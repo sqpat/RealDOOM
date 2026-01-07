@@ -329,6 +329,7 @@ void __near P_LoadVertexes(int16_t lump) {
 //
 // P_LoadSegs
 //
+/*
 void __near P_LoadSegs(int16_t lump) {
  	mapseg_t  __far*          data;
 	uint16_t                 i;
@@ -414,7 +415,7 @@ void __near P_LoadSegs(int16_t lump) {
 
 
 }
-
+*/
 
 
 //

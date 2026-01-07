@@ -921,6 +921,188 @@ ret
 
 ENDP
 
+FINE_ANGLE_HIGH_BYTE = 01Fh
+
+TEMPSECNUMS_OFFSET = 0C000h
+
+PROC    P_LoadSegs_ NEAR
+PUBLIC  P_LoadSegs_
+
+PUSHA_NO_AX_OR_BP_MACRO
+
+mov    si, ax  ; back up lump
+call   W_LumpLength_
+
+mov    bx, SIZE MAPSEG_T
+div    bx
+
+mov    word ptr ds:[_numsegs], ax
+
+call   Z_QuickMapRender_4000To9000_
+call   Z_QuickMapScratch_5000_
+
+; shouldnt be necessary.
+
+;	FAR_memset(seg_linedefs, 0xff, size_seg_linedefs + size_seg_sides);
+;xor    di, di
+;mov    cx, (SIZE_SEG_LINEDEFS + SIZE_SEG_SIDES + 1) / 2   ; may be odd?
+;mov    ax, SEG_LINEDEFS_SEGMENT
+;mov    es, ax
+;mov    ax, 0FFFFh
+;rep    stosw
+
+xchg   ax, si   ; get lump
+mov    cx, SCRATCH_SEGMENT_5000
+xor    bx, bx
+
+call   W_ReadLump_
+
+
+mov    cx, word ptr ds:[_numsegs]
+
+xor    di, di  ; side_render
+mov    si, di
+mov    bx, di
+
+mov    ax, SCRATCH_SEGMENT_5000
+mov    ds, ax
+mov    ax, SEGS_RENDER_9000_SEGMENT  ; default es value, use push/pops to make loop small enough for relative loop jmp
+mov    es, ax
+
+
+
+loop_next_seg:
+
+push   cx
+push   es
+movsw  ; v1
+movsw  ; v2
+
+mov    ax, SEG_NORMALANGLES_9000_SEGMENT
+mov    es, ax
+
+
+; seg_normalangles_9000[i] = MOD_FINE_ANGLE((mlangle >> SHORTTOFINESHIFT) + FINE_ANG90);
+lodsw  ; angle
+SHIFT_MACRO shr ax 3   
+add    ax, FINE_ANG90
+and    ah, FINE_ANGLE_HIGH_BYTE
+mov    word ptr es:[bx], ax
+
+mov    ax, SEG_LINEDEFS_SEGMENT
+mov    es, ax
+
+lodsw  ; linedef
+mov    word ptr es:[bx], ax
+
+;		ldefflags = lineflagslist[mllinedef];
+xchg   ax, bp   ; linedef in bp
+
+lodsw  ; side
+shr    bx, 1  ; byte ptr 
+mov    byte ptr es:[bx + seg_sides_offset_in_seglines], al
+
+mov    es, word ptr ss:[_LINEFLAGSLIST_SEGMENT_PTR]
+mov    dl, byte ptr es:[bp]  ; get flags
+SHIFT_MACRO shl bp 2
+
+
+mov    es, word ptr ss:[_LINES_SEGMENT_PTR]
+les    bp, dword ptr es:[bp]
+test   ax, ax
+; bp has side 0, es has side 1. ax has side 0/1 designator
+mov    ax, es
+je     skip_swap
+xchg   ax, bp
+skip_swap:
+; bp has ldefsidenum
+; ax has ldefothersidenum
+
+pop    es  ;  ; base pointer for di
+
+movsw   ; offset
+xchg   ax, bp
+stosw   ; ldefsidenum
+
+; ax has ldefsidenum
+; bp has ldefothersidenum
+
+;    sidesecnum = sides_render_9000[ldefsidenum].secnum;
+;    othersidesecnum = sides_render_9000[ldefothersidenum].secnum;
+
+SHIFT_MACRO  shl bx 2   ; for tempsecnums dword offset
+
+SHIFT_MACRO  shl ax 2
+xchg   ax, bp
+
+push   es
+
+mov    cx, SIDES_RENDER_9000_SEGMENT
+mov    es, cx
+
+mov    bp, word ptr es:[bp + SIDE_RENDER_T.sr_secnum]
+xchg   ax, bp   ; ax gets sidesecnum value. bp gets ldefothersidenum
+
+test   dl, ML_TWOSIDED
+mov    dx, SECNUM_NULL   ;-1
+jne    calc_second_secnum
+
+got_second_secnum:
+
+pop    es
+
+mov    word ptr ds:[bx + TEMPSECNUMS_OFFSET + 0], ax  ; 5000 segment
+mov    word ptr ds:[bx + TEMPSECNUMS_OFFSET + 2], dx  ; 5000 segment
+
+SHIFT_MACRO  shr bx 1  ; word ptr again
+
+inc    bx   ; increment word offset
+inc    bx
+pop    cx
+loop   loop_next_seg
+
+
+push   ss
+pop    ds
+
+call   Z_QuickMapPhysics_
+call   Z_QuickMapScratch_5000_
+
+;	FAR_memcpy(segs_physics, MK_FP(0x5000, 0xc000), numsegs*4);
+
+mov   cx, word ptr ds:[_numsegs]
+shl   cx, 1 ; x4 bytes = x2 words
+
+mov   ax, SCRATCH_SEGMENT_5000
+mov   ds, ax
+mov   si, TEMPSECNUMS_OFFSET
+mov   ax, SEGS_PHYSICS_SEGMENT
+mov   es, ax
+xor   di, di
+
+rep   movsw
+
+
+push  ss
+pop   ds
+
+
+POPA_NO_AX_OR_BP_MACRO
+
+ret
+
+calc_second_secnum:
+
+SHIFT_MACRO  shl bp 2
+mov    dx, word ptr es:[bp + SIDE_RENDER_T.sr_secnum]
+
+
+jmp  got_second_secnum
+
+
+ENDP
+
+
 
 PROC    P_SETUP_ENDMARKER_ NEAR
 PUBLIC  P_SETUP_ENDMARKER_
