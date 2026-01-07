@@ -45,7 +45,7 @@
 void __near P_InitThinkersCallThrough();
 
 void __near P_SpawnMapThingCallThrough(mapthing_t __far*	 mthing);
-// void __far I_Error (int8_t __far *error, ...);
+void __far I_Error (int8_t __far *error, ...);
 
 void __near P_SpawnSpecialsCallThrough();
 void __near S_StartCallThrough();
@@ -629,6 +629,7 @@ void __near P_LoadThings(int16_t lump) {
 // P_LoadLineDefs
 // Also counts secret lines for intermissions.
 //
+/*
 void __near P_LoadLineDefs(int16_t lump) {
 	maplinedef_t  __far*		data;
 	uint16_t                 i;
@@ -726,7 +727,7 @@ void __near P_LoadLineDefs(int16_t lump) {
 		} else if (!ld_physics->dy) {
 			ld_physics->v2Offset |= (ST_HORIZONTAL_HIGH);
 		} else {
-			if (FixedDiv(ld_physics->dy, ld_physics->dx) > 0) {
+			if ((ld_physics->dy ^ ld_physics->dx) >= 0) {
 				ld_physics->v2Offset |= (ST_POSITIVE_HIGH);
 			} else {
 				ld_physics->v2Offset |= (ST_NEGATIVE_HIGH);
@@ -755,6 +756,7 @@ void __near P_LoadLineDefs(int16_t lump) {
 	Z_QuickMapPhysics();
 }
 
+*/
 
 //
 // P_LoadSideDefs

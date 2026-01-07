@@ -1008,3 +1008,27 @@ MAPSIDEDEF_T STRUC
 MAPSIDEDEF_T ENDS                            ; 1Eh
 
 
+
+
+MAPLINEDEF_T STRUC
+    maplinedef_v1       dw ?         ; 00h
+    maplinedef_v2       dw ?         ; 02h
+    maplinedef_flags    dw ?         ; 04h
+    maplinedef_special  dw ?         ; 06h
+    maplinedef_tag      dw ?         ; 08h
+    maplinedef_sidenum  dw 2 DUP(?)  ; 0Ah
+MAPLINEDEF_T ENDS                    ; 0Eh
+
+
+
+
+
+
+MAPSEG_T STRUC
+    mapseg_v1         dw ?         ; 00h
+    mapseg_v2         dw ?         ; 02h
+    mapseg_angle      dw ?         ; 04h
+    mapseg_linedef    dw ?         ; 06h
+    mapseg_side       dw ?         ; 08h
+    mapseg_offset     dw ?         ; 0Ah
+MAPSEG_T ENDS                      ; 0Ch

@@ -26,8 +26,8 @@ EXTRN Z_QuickMapWADPageFrame_:FAR
 EXTRN W_LumpLength_:FAR
 EXTRN Z_QuickMapScratch_5000_:FAR
 EXTRN Z_QuickMapScratch_8000_:FAR
-EXTRN W_CacheLumpNumDirect_:FAR
 EXTRN W_ReadLump_:NEAR
+EXTRN Z_QuickMapRender4000_:FAR
 EXTRN copystr8_:NEAR
 EXTRN R_FlatNumForName_:NEAR
 EXTRN W_CacheLumpNumDirectFragment_:FAR ; todo can this be near?
@@ -277,22 +277,8 @@ lodsw ; special
 xchg   ax, dx
 lodsw
 
-cmp    ax, 666
-je     set_666
-cmp    ax, 667
-je     set_667
-cmp    ax, 999
-je     set_999
-cmp    ax, 99
-je     set_99
-cmp    ax, 77
-je     set_77
-cmp    ax, 1323
-je     set_1323
-cmp    ax, 1044
-je     set_1044
-cmp    ax, 86
-je     set_86
+call   gettag_
+
 
 got_tag:
 push   ss
@@ -310,31 +296,57 @@ loop   loop_next_sector
 POPA_NO_AX_OR_BP_MACRO
 
 ret
+ENDP
+
+; processes 2 byte special case tags into single byte
+
+
+PROC   gettag_  NEAR
+
+; we could make this 20 bytes smaller but it'd be significntly slower..
+
+cmp    ax, 666
+je     set_666
+cmp    ax, 667
+je     set_667
+cmp    ax, 999
+je     set_999
+cmp    ax, 99
+je     set_99
+cmp    ax, 77
+je     set_77
+cmp    ax, 1323
+je     set_1323
+cmp    ax, 1044
+je     set_1044
+cmp    ax, 86
+je     set_86
+ret
 
 set_666:
 mov ax, TAG_666
-jmp got_tag
+ret
 set_667:
 mov ax, TAG_667
-jmp got_tag
+ret
 set_999:
 mov ax, TAG_999
-jmp got_tag
+ret
 set_99:
-mov ax, TAG_99
-jmp got_tag
+mov al, TAG_99
+ret
 set_77:
-mov ax, TAG_77
-jmp got_tag
+mov al, TAG_77
+ret
 set_1323:
 mov ax, TAG_1323
-jmp got_tag
+ret
 set_1044:
 mov ax, TAG_1044
-jmp got_tag
+ret
 set_86:
-mov ax, TAG_86
-jmp got_tag
+mov al, TAG_86
+ret
 
 ENDP
 
@@ -350,23 +362,21 @@ mov     bp, sp
 sub     sp, 24  ; tex strings...
 
 mov    si, ax  ; back up lump
-call Z_QuickMapRender_4000To9000_
-call Z_QuickMapRender_9000To6000_  ; for R_TextureNumForName
 
-mov    ax, si  ; get lump 
 
 call   W_LumpLength_
-
 ; dx may be non zero
 
 mov    bx, SIZE MAPSIDEDEF_T
 div    bx
 
-; dx should be 0 now
 
 mov    word ptr ds:[_numsides], ax  
-mov    word ptr ds:[_cached_psetup_lump_offset+0], dx  ; write 0
-mov    word ptr ds:[_cached_psetup_lump_offset+2], dx  ; write 0
+
+call Z_QuickMapRender_4000To9000_
+call Z_QuickMapRender_9000To6000_  ; for R_TextureNumForName
+
+
 
 
 
@@ -376,6 +386,8 @@ call   Z_QuickMapScratch_5000_
 xchg   ax, si   ; get lump back
 mov    cx, SCRATCH_SEGMENT_5000
 xor    bx, bx
+mov    word ptr ds:[_cached_psetup_lump_offset+0], dx  ; write 0
+mov    word ptr ds:[_cached_psetup_lump_offset+2], dx  ; write 0
 
 push   bx
 push   bx
@@ -543,6 +555,209 @@ pop    cx
 pop    di
 pop    si
 ret
+
+ENDP
+
+
+PROC   P_LoadLineDefs_ NEAR
+PUBLIC P_LoadLineDefs_
+
+PUSHA_NO_AX_OR_BP_MACRO
+
+
+mov    si, ax  ; back up lump
+
+call   W_LumpLength_
+
+mov    bx, SIZE MAPLINEDEF_T
+div    bx
+
+mov    word ptr ds:[_numlines], ax  
+
+
+
+;	FAR_memset(lines, 0, MAX_LINES_SIZE);
+;	FAR_memset(lines_physics, 0, MAX_LINES_PHYSICS_SIZE);
+;	FAR_memset(seenlines_6800, 0, MAX_SEENLINES_SIZE);
+
+xor  ax, ax
+
+mov  es, word ptr ds:[_LINES_SEGMENT_PTR]
+xor  di, di
+mov  cx, MAX_LINES_SIZE /2 
+rep  stosw
+
+mov  es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
+xor  di, di
+mov  cx, MAX_LINES_PHYSICS_SIZE /2 
+rep  stosw
+
+mov  es, word ptr ds:[_SEENLINES_6800_SEGMENT_PTR]
+xor  di, di
+mov  cx, (MAX_SEENLINES_SIZE /2) + 1   ; could be odd?
+rep  stosw
+
+
+call Z_QuickMapScratch_5000_
+
+xchg ax, si   ; get lump
+mov  cx, SCRATCH_SEGMENT_5000
+xor  bx, bx
+
+call W_ReadLump_
+
+call Z_QuickMapRender4000_
+
+
+mov  cx, word ptr ds:[_numlines]
+
+xor  si, si  ; maplinedefs
+mov  di, si  ; line physics_t
+mov  bp, si  ; lineflagslist
+
+
+mov  es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
+mov  ax, SCRATCH_SEGMENT_5000
+mov  ds, ax
+loop_next_linedef:
+
+push cx
+
+
+lodsw           ; maplinedef_v1
+stosw
+xchg ax, dx
+lodsw           ; maplinedef_v2
+stosw
+xchg ax, bx
+
+
+
+SHIFT_MACRO shl bx 2
+mov  ds, word ptr ss:[_VERTEXES_SEGMENT_PTR]
+mov  ax, word ptr ds:[bx + 0]
+mov  bx, word ptr ds:[bx + 2]
+xchg bx, dx
+SHIFT_MACRO shl bx 2
+
+xor  cx, cx ; flags to OR to v2Offset
+
+sub  ax, word ptr ds:[bx + 0] ; calculate dx
+jne  dont_set_v2_flag_vertical
+mov  ch, (ST_VERTICAL_HIGH SHR 8)
+dont_set_v2_flag_vertical:
+sub  dx, word ptr ds:[bx + 2] ; dy
+
+stosw   ; dx
+xchg ax, dx
+stosw   ; dy
+
+; if zero flag is set then ST_HORIZONTAL_HIGH is set, which is actually 0 
+; and falls thru fine without further check. but ST_VERTICAL_HIGH takes
+; precedence and thats fine too.
+je   done_checking_flags  
+jcxz calculate_flags      ; also not ST_VERTICAL_HIGH, check other cases
+
+done_checking_flags:
+
+or   byte ptr es:[di - 5], ch  ; v2Offset |= flag
+
+mov  ax, SCRATCH_SEGMENT_5000
+mov  ds, ax
+
+lodsw       ; flags
+
+mov  es, word ptr ss:[_LINEFLAGSLIST_SEGMENT_PTR]
+mov  byte ptr es:[bp], al
+inc  bp
+
+lodsw       ; special
+mov  dh, al
+lodsw       ; tag
+
+call gettag_
+
+mov  dl, al ; dx = tag low special high
+
+
+; line is 4 bytes long
+; line_physics is 16 bytes long, current at index 8
+; we want to determine line offset from line_physics.
+; line offset = (line_physics >> 2) - 2
+; shift 2 to get the line index for a given line_physics
+mov   cx, di   ; back up
+SHIFT_MACRO shr di 2
+
+; di was offset by 8, or 2 after 2 shifts. so undo that..
+dec   di
+dec   di
+
+mov   es, word ptr ss:[_LINES_SEGMENT_PTR]
+lodsw
+stosw
+xchg  ax, bx  ; store side 0
+lodsw
+stosw
+mov   di, cx  ; restore di
+
+
+
+xchg  ax, cx  ; store side 1
+xor   ax, ax
+mov   es, word ptr ss:[_LINES_PHYSICS_SEGMENT_PTR]
+stosw     ; validcount
+
+xchg  ax, bx  ; side 0
+test  ax, ax  
+jns   calc_secnum_0
+store_secnum_0:
+stosw      ; secnum0
+
+xchg  ax, cx ; side 1
+test  ax, ax  
+jns   calc_secnum_1
+store_secnum_1:
+stosw      ; secnum1
+
+xchg ax, dx
+stosw      ; special, tag
+
+
+pop  cx
+
+loop loop_next_linedef
+
+push ss
+pop  ds
+
+
+POPA_NO_AX_OR_BP_MACRO
+
+call Z_QuickMapPhysics_
+
+
+ret
+
+calculate_flags:
+; already checked for st_vertical_high
+; zero flag set if v2offset is 0
+mov   ch, (ST_POSITIVE_HIGH SHR 8)
+xor   ax, dx
+jns   done_checking_flags   ; or jge?
+mov   ch, (ST_NEGATIVE_HIGH SHR 8)
+jmp   done_checking_flags
+
+calc_secnum_0:
+xchg ax, bx
+SHIFT_MACRO shl bx 2
+mov  ax, word ptr ss:[_sides_render + bx + SIDE_RENDER_T.sr_secnum]
+jmp  store_secnum_0
+
+calc_secnum_1:
+xchg ax, bx
+SHIFT_MACRO shl bx 2
+mov  ax, word ptr ss:[_sides_render + bx + SIDE_RENDER_T.sr_secnum]
+jmp  store_secnum_1
 
 ENDP
 
