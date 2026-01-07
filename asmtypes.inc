@@ -996,4 +996,15 @@ MAPSECTOR_T STRUC
     mapsector_lightlevel     dw ?         ; 14h
     mapsector_special        dw ?         ; 16h
     mapsector_tag            dw ?         ; 18h
-MAPSECTOR_T ENDS                          ; 1Ah
+MAPSECTOR_T ENDS           
+
+MAPSIDEDEF_T STRUC
+    mapsidedef_textureoffset    dw ?         ; 00h
+    mapsidedef_rowoffset        dw ?         ; 02h
+    mapsidedef_toptexture       db 8 DUP(?)  ; 04h
+    mapsidedef_bottomtexture    db 8 DUP(?)  ; 0Ch
+    mapsidedef_midtexture       db 8 DUP(?)  ; 14h
+    mapsidedef_sector           dw ?         ; 1Ch
+MAPSIDEDEF_T ENDS                            ; 1Eh
+
+

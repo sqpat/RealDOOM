@@ -30,14 +30,30 @@ EXTRN W_CacheLumpNumDirect_:FAR
 EXTRN W_ReadLump_:NEAR
 EXTRN copystr8_:NEAR
 EXTRN R_FlatNumForName_:NEAR
-
+EXTRN W_CacheLumpNumDirectFragment_:FAR ; todo can this be near?
+EXTRN Z_QuickMapRender_4000To9000_:FAR  ; todo inline
+EXTRN Z_QuickMapRender_9000To6000_:NEAR  ; todo inline
+EXTRN R_TextureNumForName_:NEAR
  
 .DATA
 
 
 .CODE
 
-EXTRN  _doomdata_bin_string:NEAR
+
+
+  ML_LABEL    = 0 ; 
+  ML_THINGS   = 1 ; 
+  ML_LINEDEFS = 2 ; 
+  ML_SIDEDEFS = 3 ; 
+  ML_VERTEXES = 4 ; 
+  ML_SEGS     = 5 ; 
+  ML_SSECTORS = 6 ; 
+  ML_NODES    = 7 ; 
+  ML_SECTORS  = 8 ; 
+  ML_REJECT   = 9 ; 
+  ML_BLOCKMAP = 10 ; 
+
 
 PROC    P_SETUP_STARTMARKER_ NEAR
 PUBLIC  P_SETUP_STARTMARKER_
@@ -291,10 +307,7 @@ add    di, (SIZE SECTOR_T - SECTOR_T.sec_validcount)
 
 loop   loop_next_sector
 
-
-
 POPA_NO_AX_OR_BP_MACRO
-
 
 ret
 
@@ -322,6 +335,164 @@ jmp got_tag
 set_86:
 mov ax, TAG_86
 jmp got_tag
+
+ENDP
+
+
+
+PROC   P_LoadSideDefs_ NEAR
+PUBLIC P_LoadSideDefs_
+
+PUSHA_NO_AX_OR_BP_MACRO
+
+push    bp
+mov     bp, sp
+sub     sp, 24  ; tex strings...
+
+mov    si, ax  ; back up lump
+call Z_QuickMapRender_4000To9000_
+call Z_QuickMapRender_9000To6000_  ; for R_TextureNumForName
+
+mov    ax, si  ; get lump 
+
+call   W_LumpLength_
+
+; dx may be non zero
+
+mov    bx, SIZE MAPSIDEDEF_T
+div    bx
+
+; dx should be 0 now
+
+mov    word ptr ds:[_numsides], ax  
+mov    word ptr ds:[_cached_psetup_lump_offset+0], dx  ; write 0
+mov    word ptr ds:[_cached_psetup_lump_offset+2], dx  ; write 0
+
+
+
+call   Z_QuickMapScratch_5000_
+
+
+xchg   ax, si   ; get lump back
+mov    cx, SCRATCH_SEGMENT_5000
+xor    bx, bx
+
+push   bx
+push   bx
+
+call   W_CacheLumpNumDirectFragment_
+
+mov    cx, word ptr ds:[_numsides]
+xor    si, si
+mov    di, si
+mov    bx, si
+
+loop_next_sidedef:
+
+push   cx  ; store loop ptr
+
+cmp    si, 16380 
+jae    do_repage
+
+done_repaging:
+
+mov    dx, SIDES_RENDER_9000_SEGMENT
+mov    es, dx
+
+mov    dx, SCRATCH_SEGMENT_5000
+mov    ds, dx
+
+
+;    mapsidedef_textureoffset    dw ?         ; 00h
+;    mapsidedef_rowoffset        dw ?         ; 02h
+;    mapsidedef_toptexture       db 8 DUP(?)  ; 04h
+;    mapsidedef_bottomtexture    db 8 DUP(?)  ; 0Ch
+;    mapsidedef_midtexture       db 8 DUP(?)  ; 14h
+;    mapsidedef_sector           dw ?         ; 1Ch
+
+xchg   bx, di
+
+lodsw
+xchg   ax, dx ; dx stores textureoffset
+movsw   ; siderender_t rowoffset
+mov    ax, word ptr ds:[si + (MAPSIDEDEF_T.mapsidedef_sector - MAPSIDEDEF_T.mapsidedef_toptexture)]  ; + 24, read ahead..
+stosw   ; siderender_t secnum, done
+
+xchg   bx, di
+
+mov    cx, 24 / 2  ;
+lea    ax, [bp - 24]
+xchg   ax, di
+push   ss
+pop    es
+rep    movsw  ; copy all 3 tex strings!
+xchg   ax, di
+
+;		toptex = R_TextureNumForName(texnametop);
+;		bottex = R_TextureNumForName(texnamebot);
+;		midtex = R_TextureNumForName(texnamemid);
+
+push   ss
+pop    ds
+
+mov    cx, word ptr ds:[_SIDES_SEGMENT_PTR]
+
+lea    ax, [bp - 24]
+call   R_TextureNumForName_
+mov    es, cx
+stosw
+
+lea    ax, [bp - 16]
+call   R_TextureNumForName_
+mov    es, cx
+stosw
+
+lea    ax, [bp - 8]
+call   R_TextureNumForName_
+mov    es, cx
+stosw
+
+xchg   ax, dx ; get textureoffset back
+stosw
+
+inc    si
+inc    si  ; add for the sector read
+
+pop    cx  ; recover loop ptr
+
+loop   loop_next_sidedef
+
+LEAVE_MACRO
+
+POPA_NO_AX_OR_BP_MACRO
+
+ret
+
+do_repage:
+
+; TODO THIS
+
+add    word ptr ds:[_cached_psetup_lump_offset+0], si  ; 16380
+adc    word ptr ds:[_cached_psetup_lump_offset+2], 0
+
+push   bx
+
+push   word ptr ds:[_cached_psetup_lump_offset+2]
+push   word ptr ds:[_cached_psetup_lump_offset+0]
+
+
+xor    si, si
+
+mov    ax, word ptr ds:[_cached_psetup_level_lump]
+add    ax, ML_SIDEDEFS
+mov    cx, SCRATCH_SEGMENT_5000
+xor    bx, bx
+
+call   W_CacheLumpNumDirectFragment_
+
+pop    bx  ; restore ptr
+
+jmp    done_repaging
 
 
 ENDP

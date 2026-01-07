@@ -120,7 +120,7 @@ void __near P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 	lumpname[8] = 0;
 
 	lumpnum = W_GetNumForName(lumpname);
-
+	cached_psetup_level_lump = lumpnum;
 	leveltime.w = 0;
 	
 	// note: most of this ordering is important 
@@ -759,6 +759,7 @@ void __near P_LoadLineDefs(int16_t lump) {
 //
 // P_LoadSideDefs
 //
+/*
 void __near P_LoadSideDefs(int16_t lump) {
 	mapsidedef_t __far*               data;
 	uint16_t                 i;
@@ -832,7 +833,7 @@ void __near P_LoadSideDefs(int16_t lump) {
 	Z_QuickMapPhysics();
 
 }
-
+*/	
 
 //
 // P_LoadBlockMap

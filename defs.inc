@@ -343,7 +343,7 @@ _fseek_addr =     			         _NULL_OFFSET + 00324h
 _fread_addr =     			         _NULL_OFFSET + 00328h
 _fclose_addr =    			         _NULL_OFFSET + 0032Ch
 ; unused..
-;_locallib_far_fread_addr =    		 _NULL_OFFSET + 00330h
+_cached_psetup_lump_offset =		 _NULL_OFFSET + 00330h
 _S_InitSFXCache_addr =     	    	 _NULL_OFFSET + 00334h
 
 
@@ -545,7 +545,7 @@ _attackrange16 = 		   			 _NULL_OFFSET + 005E8h
 _usergame =		   		         	 _NULL_OFFSET + 005EAh
 _crushchange = 		   			 	 _NULL_OFFSET + 005EBh
 _leveltime =     		   			 _NULL_OFFSET + 005ECh
-;_fopen_rb_argument =                 _NULL_OFFSET + 005F0h
+; 5F0 unused
 _dodelayedcheatthisframe =			 _NULL_OFFSET + 005F2h
 _currenttask =            		     _NULL_OFFSET + 005F3h
 
@@ -637,8 +637,8 @@ _mousebfire =						 _NULL_OFFSET + 007DAh
 _mousebstrafe = 					 _NULL_OFFSET + 007DBh
 _mousebforward = 					 _NULL_OFFSET + 007DCh
 _precache = 						 _NULL_OFFSET + 007DDh
+_cached_psetup_level_lump =		     _NULL_OFFSET + 007DEh
 
-; 7de to 7df unused
 _screen_oldloc =					 _NULL_OFFSET + 007E0h
 _old_screen_botleft_x =				 _NULL_OFFSET + 007E4h
 _old_screen_botleft_y =				 _NULL_OFFSET + 007E6h

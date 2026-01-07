@@ -514,7 +514,7 @@ typedef struct{
 #define fseek_addr     			          (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0324)))
 #define fread_addr     			          (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0328)))
 #define fclose_addr    			          (*((uint32_t  __near*)             (_NULL_OFFSET + 0x032C)))
-//#define locallib_far_fread_addr    		  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0330)))
+#define cached_psetup_lump_offset		  (*((uint32_t __near*)              (_NULL_OFFSET + 0x0330)))
 #define S_InitSFXCache_addr     		  (*((uint32_t  __near*)             (_NULL_OFFSET + 0x0334)))
 
 
@@ -737,7 +737,7 @@ typedef struct{
 #define usergame		   		          (*((boolean __near*)               (_NULL_OFFSET + 0x05EA)))
 #define crushchange		   		          (*((boolean __near*)               (_NULL_OFFSET + 0x05EB)))
 #define leveltime     				      (*((fixed_t_union  __near*)   	 (_NULL_OFFSET + 0x05EC)))
-#define fopen_rb_argument                 ((int8_t __near *)                 (_NULL_OFFSET + 0x05F0))
+
 #define dodelayedcheatthisframe		      (*((boolean __near*)               (_NULL_OFFSET + 0x05F2)))
 #define currenttask                       (*(int8_t __near *)                (_NULL_OFFSET + 0x05F3))
 
@@ -832,8 +832,8 @@ typedef struct{
 #define mousebforward      				  (*((uint8_t __near*)               (_NULL_OFFSET + 0x07DC)))
 
 #define precache        				  (*((boolean __near*)               (_NULL_OFFSET + 0x07DD)))
+#define cached_psetup_level_lump		  (*((int16_t __near*)               (_NULL_OFFSET + 0x07DE)))
 
-// 7DE to 7DF empty
 #define screen_oldloc					  (*((mpoint_t __near*)              (_NULL_OFFSET + 0x07E0)))
 #define old_screen_botleft_x			  (*((int16_t __near*)               (_NULL_OFFSET + 0x07E4)))
 #define old_screen_botleft_y			  (*((int16_t __near*)               (_NULL_OFFSET + 0x07E6)))
