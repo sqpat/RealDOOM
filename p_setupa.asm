@@ -461,11 +461,11 @@ inc    si  ; add for the sector read
 pop    cx  ; recover loop ptr
 
 loop   loop_next_sidedef
+call   Z_QuickMapPhysics_
 
 LEAVE_MACRO
 
 POPA_NO_AX_OR_BP_MACRO
-
 ret
 
 do_repage:
