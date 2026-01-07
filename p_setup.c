@@ -873,13 +873,14 @@ void __near P_LoadBlockMap(int16_t lump) {
 // Builds sector line lists and subsector sector numbers.
 // Finds block bounding boxes for sectors.
 //
+/*
 void __near P_GroupLines(void) {
 	uint16_t                 i;
 	uint16_t                 j;
 	line_physics_t __far*     li_physics;
 	int16_t             bbox[4];
 	int16_t             block;
-	int16_t				previouslinebufferindex;
+	// int16_t				previouslinebufferindex;
 	int16_t				firstlinenum;
 	int16_t				sidedefOffset;
 	int16_t				linev1Offset;
@@ -888,10 +889,10 @@ void __near P_GroupLines(void) {
 	int16_t				linefrontsecnum;
 	int16_t				linebufferindex;
 	int16_t				sidesecnum;
-	int16_t				sectorlinecount;
+	// int16_t				sectorlinecount;
 	fixed_t_union		tempv1;
 	fixed_t_union		tempv2;
-	uint16_t                 total;
+	// uint16_t                 total;
 	
 	Z_QuickMapRender_4000To9000();
 
@@ -907,17 +908,17 @@ void __near P_GroupLines(void) {
 
 	Z_QuickMapPhysics();
 	// count number of lines in each sector
-	total = 0;
+	// total = 0;
 	for (i = 0; i < numlines; i++) {
 		li_physics = &lines_physics[i];
 		linebacksecnum = li_physics->backsecnum;
 		linefrontsecnum = li_physics->frontsecnum;
-		total++;
+		// total++;
 		sectors[linefrontsecnum].linecount++;
 
 		if (linebacksecnum != -1 && linebacksecnum != linefrontsecnum) {
 			sectors[linebacksecnum].linecount++;
-			total++;
+			// total++;
 		}
 	}
 
@@ -934,10 +935,10 @@ void __near P_GroupLines(void) {
 		bbox[BOXTOP] = bbox[BOXRIGHT] = MINSHORT;
 		bbox[BOXBOTTOM] = bbox[BOXLEFT] = MAXSHORT;
 
-		sectorlinecount = sectors[i].linecount;
+		// sectorlinecount = sectors[i].linecount;
 
 		sectors[i].linesoffset = linebufferindex;
-		previouslinebufferindex = linebufferindex;
+		// previouslinebufferindex = linebufferindex;
 	 
 		for (j = 0; j < numlines; j++) {
 			li_physics = &lines_physics[j];
@@ -984,6 +985,7 @@ void __near P_GroupLines(void) {
 
 
 }
+*/
 
 
 //

@@ -34,6 +34,7 @@ EXTRN W_CacheLumpNumDirectFragment_:FAR ; todo can this be near?
 EXTRN Z_QuickMapRender_4000To9000_:FAR  ; todo inline
 EXTRN Z_QuickMapRender_9000To6000_:NEAR  ; todo inline
 EXTRN R_TextureNumForName_:NEAR
+EXTRN M_AddToBox16_:NEAR
  
 .DATA
 
@@ -562,7 +563,7 @@ ENDP
 PROC   P_LoadLineDefs_ NEAR
 PUBLIC P_LoadLineDefs_
 
-PUSHA_NO_AX_OR_BP_MACRO
+PUSHA_NO_AX_MACRO
 
 
 mov    si, ax  ; back up lump
@@ -731,7 +732,7 @@ push ss
 pop  ds
 
 
-POPA_NO_AX_OR_BP_MACRO
+POPA_NO_AX_MACRO
 
 call Z_QuickMapPhysics_
 
@@ -843,7 +844,7 @@ ENDP
 PROC    P_LoadNodes_ NEAR
 PUBLIC  P_LoadNodes_
 
-PUSHA_NO_AX_OR_BP_MACRO
+PUSHA_NO_AX_MACRO
 
 mov    si, ax  ; back up lump
 
@@ -1087,7 +1088,7 @@ push  ss
 pop   ds
 
 
-POPA_NO_AX_OR_BP_MACRO
+POPA_NO_AX_MACRO
 
 ret
 
@@ -1099,6 +1100,272 @@ mov    dx, word ptr es:[bp + SIDE_RENDER_T.sr_secnum]
 
 jmp  got_second_secnum
 
+
+ENDP
+
+PROC    P_GroupLines_ NEAR
+PUBLIC  P_GroupLines_
+
+PUSHA_NO_AX_MACRO
+
+call   Z_QuickMapRender_4000To9000_
+
+mov    cx, word ptr ds:[_numsubsectors]
+mov    dx, SUBSECTORS_SEGMENT
+mov    ds, dx
+mov    dx, SEGS_RENDER_9000_SEGMENT
+mov    di, SIDES_RENDER_9000_SEGMENT
+
+mov    si, OFFSET SUBSECTOR_T.ss_firstline
+
+loop_next_line_lookup:
+
+lodsw
+xchg   ax, bx
+SHIFT_MACRO shl bx 3
+mov    es, dx ; SEGS_RENDER_9000_SEGMENT
+mov    bx, word ptr es:[bx + SEG_RENDER_T.sr_sidedefOffset] ; size 8 per
+
+SHIFT_MACRO shl bx 2
+mov    es, di ; SIDES_RENDER_9000_SEGMENT
+push   word ptr es:[bx + SIDE_RENDER_T.sr_secnum] ; get secnum  ; size 4 per
+pop    word ptr ds:[si - 4]                       ; write secnum
+inc    si
+inc    si ; skip other param
+
+loop   loop_next_line_lookup
+
+push   ss
+pop    ds
+
+call   Z_QuickMapPhysics_
+
+
+mov    cx, word ptr ds:[_numlines]
+
+mov    di, SECTORS_SEGMENT
+mov    es, di
+mov    ds, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
+mov    si, LINE_PHYSICS_T.lp_frontsecnum
+mov    di, SECTOR_T.sec_linecount
+
+loop_next_line_count_lookup:
+
+lodsw
+mov    dx, ax  ; unshifted copy
+xchg   ax, bx  ; linefrontsecnum in bx
+lodsw          ; linebacksecnum  in ax
+SHIFT_MACRO  shl bx 4
+inc    word ptr es:[bx + di]
+
+test   ax, ax
+js     dont_count_backsecnum
+cmp    ax, dx
+je     dont_count_backsecnum
+
+xchg   ax, bx  ; linebacksecnum
+SHIFT_MACRO  shl bx 4
+inc    word ptr es:[bx + di]
+
+
+dont_count_backsecnum:
+add    si, (SIZE LINE_PHYSICS_T) - 4 
+
+loop   loop_next_line_count_lookup
+
+push   ss
+pop    ds
+
+
+
+xor    cx, cx   ; linebufferindex
+xor    si, si   ; sector ptr
+mov    bp, si
+
+loop_next_sector_bbox:
+
+;	bbox[BOXTOP] = bbox[BOXRIGHT] = MINSHORT;
+;	bbox[BOXBOTTOM] = bbox[BOXLEFT] = MAXSHORT;
+
+push   si ; store sector[i] ptr so we can modify it
+
+mov    ax, MINSHORT  ; 08000h
+push   ax  ; sp + 6 = BOXRIGHT  = MINSHORT = 08000h
+dec    ax 
+push   ax  ; sp + 4 = BOXLEFT   = MAXSHORT = 07FFFh
+push   ax  ; sp + 2 = BOXBOTTOM = MAXSHORT = 07FFFh
+inc    ax
+push   ax  ; sp + 0 = BOXTOP    = MINSHORT = 08000h
+
+mov    es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+mov    word ptr es:[bp + SECTOR_T.sec_linesoffset], cx
+
+xor    dx, dx
+mov    bx, dx
+mov    es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
+
+loop_next_sector_line:
+
+; if (li_physics->frontsecnum == i || li_physics->backsecnum == i) {
+
+cmp    si, word ptr es:[bx + LINE_PHYSICS_T.lp_frontsecnum]
+je     add_this_line
+cmp    si, word ptr es:[bx + LINE_PHYSICS_T.lp_backsecnum]
+je     add_this_line
+continue_line_physics_iteration:
+add    bx, SIZE LINE_PHYSICS_T
+inc    dx
+cmp    dx, word ptr ds:[_numlines]
+jb     loop_next_sector_line
+
+mov    ax, SECTORS_SOUNDORGS_SEGMENT
+mov    es, ax
+
+SHIFT_MACRO shl si 2  ; dword ptr
+
+pop    ax ; BOXTOP
+pop    dx ; BOXBOTTOM
+pop    di ; BOXLEFT
+pop    bx ; BOXRIGHT
+
+push   cx
+
+;		sectors_soundorgs[i].soundorgX = (bbox[BOXRIGHT] + bbox[BOXLEFT]) >> 1;
+;		sectors_soundorgs[i].soundorgY = (bbox[BOXTOP] + bbox[BOXBOTTOM]) >> 1;
+
+lea    cx, [bx + di]
+;add    cx, bx
+sar    cx, 1
+mov    word ptr es:[si + SECTOR_SOUNDORG_T.secso_soundorgX], cx
+
+mov    cx, ax
+add    cx, dx
+sar    cx, 1
+mov    word ptr es:[si + SECTOR_SOUNDORG_T.secso_soundorgY], cx
+
+
+; bp still 16 byte struct ptr
+
+mov    cx, word ptr ds:[_bmaporgy]
+mov    si, word ptr ds:[_bmapheight]
+
+call   set_blockbox_high_  ; top
+xchg   ax, dx
+call   set_blockbox_low_   ; bottom
+
+mov    cx, word ptr ds:[_bmaporgx]
+mov    si, word ptr ds:[_bmapwidth]
+
+xchg   ax, di
+call   set_blockbox_low_   ; left
+xchg   ax, bx
+call   set_blockbox_high_  ; right
+
+
+pop    cx
+pop    si
+
+inc   si
+add   bp, 8  ; add the other 8 bytes of 16 for next iter
+cmp   si, word ptr ds:[_numsectors]
+jb    loop_next_sector_bbox
+
+push  ss
+pop   ds
+
+POPA_NO_AX_MACRO
+
+ret
+
+add_this_line:
+
+mov    di, sp  ; store stack pointer/bbox ptr..
+
+shl    si, 1   ; word ptr
+mov    word ptr ds:[_linebuffer + si], dx       ; linebuffer[linebufferindex] = j;
+inc    cx   ; linebufferindex++
+shr    si, 1   ; byte
+
+
+push   bx
+push   es
+push   dx
+
+; es already line physics..
+
+les    bx, dword ptr es:[bx + LINE_PHYSICS_T.lp_v1Offset]
+mov    ax, es
+and    ax, VERTEX_OFFSET_MASK   ; v2
+mov    es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
+SHIFT_MACRO shl bx 2
+
+push   ax                     ; v2
+les    ax, dword ptr es:[bx]  ; v1.x
+mov    dx, es                 ; v1.y
+mov    bx, di                 ; bbox
+
+
+call   M_AddToBox16_
+
+pop    bx                     ; v2
+SHIFT_MACRO shl bx 2
+mov    es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
+les    ax, dword ptr es:[bx]  ; v2.x
+mov    dx, es                 ; v2.y
+mov    bx, di                 ; bbox     
+
+call   M_AddToBox16_
+
+pop    dx
+pop    es
+pop    bx
+
+
+jmp    continue_line_physics_iteration
+
+ENDP
+
+PROC    set_blockbox_high_ NEAR
+
+;		block = (bbox[BOXTOP] - bmaporgy + MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
+;		block = block >= bmapheight ? bmapheight - 1 : block;
+
+
+sub    ax, cx
+add    ax, MAXRADIUSNONFRAC
+SHIFT_MACRO sar ax 7
+cmp    ax, si
+jnge   dont_cap_high
+xchg   ax, si   ; only can happen once, xchg is fine
+dec    ax
+dont_cap_high:
+dont_cap_low:
+do_write_and_ret:
+mov    word ptr ss:[bp + _sectors_physics], ax
+
+inc    bp
+inc    bp
+
+ret
+
+ENDP
+
+PROC    set_blockbox_low_ NEAR
+
+;		block = (bbox[BOXBOTTOM] - bmaporgy - MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
+;		block = block < 0 ? 0 : block;
+
+sub    ax, cx
+sub    ax, MAXRADIUSNONFRAC
+js     cap_low
+SHIFT_MACRO sar ax 7
+jmp    dont_cap_low
+
+cap_low:
+xor    ax, ax
+jmp    do_write_and_ret
+
+ret
 
 ENDP
 

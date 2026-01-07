@@ -65,24 +65,24 @@ ENDP
 PROC    M_AddToBox16_ NEAR
 PUBLIC  M_AddToBox16_
 
-cmp   ax, word ptr [bx + (2 * BOXLEFT)]
+cmp   ax, word ptr ds:[bx + (2 * BOXLEFT)]
 jl    write_x_to_left
-cmp   ax, word ptr [bx + (2 * BOXRIGHT)]
+cmp   ax, word ptr ds:[bx + (2 * BOXRIGHT)]
 jle   do_y_compare
-mov   word ptr [bx + (2 * BOXRIGHT)], ax
+mov   word ptr ds:[bx + (2 * BOXRIGHT)], ax
 do_y_compare:
-cmp   dx, word ptr [bx + (2 * BOXBOTTOM)]
+cmp   dx, word ptr ds:[bx + (2 * BOXBOTTOM)]
 jl    write_y_to_bottom
-cmp   dx, word ptr [bx + (2 * BOXTOP)]
+cmp   dx, word ptr ds:[bx + (2 * BOXTOP)]
 jng   exit_m_addtobox16
-mov   word ptr [bx + (2 * BOXTOP)], dx
+mov   word ptr ds:[bx + (2 * BOXTOP)], dx
 exit_m_addtobox16:
 ret   
 write_x_to_left:
-mov   word ptr [bx + (2 * BOXLEFT)], ax
+mov   word ptr ds:[bx + (2 * BOXLEFT)], ax
 jmp   do_y_compare
 write_y_to_bottom:
-mov   word ptr [bx + (2 * BOXBOTTOM)], dx
+mov   word ptr ds:[bx + (2 * BOXBOTTOM)], dx
 ret   
 
 ENDP
