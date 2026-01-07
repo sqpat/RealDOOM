@@ -771,6 +771,7 @@ mov    si, ax  ; back up lump
 
 call   W_LumpLength_
 
+
 SHIFT_MACRO  shr ax 2   ; SIZE MAPSUBSECTOR_T
 mov    word ptr ds:[_numsubsectors], ax      ; todo is this field ever actually used? 
 ;	FAR_memset(subsectors, 0, MAX_SUBSECTORS_SIZE);
@@ -829,6 +830,89 @@ loop   loop_next_subsector
 push   ss
 pop    ds
 
+
+POPA_NO_AX_OR_BP_MACRO
+
+ret
+
+ENDP
+
+
+
+
+PROC    P_LoadNodes_ NEAR
+PUBLIC  P_LoadNodes_
+
+PUSHA_NO_AX_OR_BP_MACRO
+
+mov    si, ax  ; back up lump
+
+call   W_LumpLength_
+
+mov    bx, SIZE MAPNODE_T
+div    bx
+
+mov    word ptr ds:[_numnodes], ax
+
+call   Z_QuickMapRender_4000To9000_
+call   Z_QuickMapScratch_5000_
+
+xchg   ax, si   ; get lump
+mov    cx, SCRATCH_SEGMENT_5000
+xor    bx, bx
+
+call   W_ReadLump_
+
+
+mov    cx, word ptr ds:[_numnodes]
+
+xor    di, di
+mov    si, di
+
+mov    dx, NODES_SEGMENT
+mov    bp, NODE_CHILDREN_SEGMENT
+mov    bx, NODES_RENDER_SEGMENT
+
+mov    ax, SCRATCH_SEGMENT_5000
+mov    ds, ax
+
+mov    ax, 8
+
+
+loop_next_node:
+
+push   cx
+
+mov    cx, ax  ; 8
+
+mov    es, dx  ; NODES_SEGMENT   ; 8 bytes each
+rep    movsb
+
+
+mov    es, bx   ; NODES_RENDER_SEGMENT ; 16 bytes each
+sub    di, ax  ; 8
+shl    di, 1
+mov    cx, ax
+rep    movsw
+
+shr   di, 1
+sub   di, ax
+shr   di, 1
+
+mov    es, bp   ; NODE_CHILDREN_SEGMENT ; 4 bytes each
+movsw
+movsw
+
+shl    di, 1
+
+pop    cx
+
+loop   loop_next_node
+
+push   ss
+pop    ds
+
+call   Z_QuickMapPhysics_
 
 POPA_NO_AX_OR_BP_MACRO
 

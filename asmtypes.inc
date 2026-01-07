@@ -1037,3 +1037,13 @@ MAPSUBSECTOR_T STRUC
     mapss_nummapsectorsegs  dw ?         ; 00h
     mapss_firstseg          dw ?         ; 02h
 MAPSUBSECTOR_T ENDS                      ; 04h
+
+MAPNODE_T STRUC
+    mapnode_x             dw ?         ; 00h   ; Partition line from (x,y) to x+dx,y+dy)
+    mapnode_y             dw ?         ; 02h
+    mapnode_dx            dw ?         ; 04h
+    mapnode_dy            dw ?         ; 06h
+    mapnode_bbox          dw 8 DUP(?)  ; 08h   ; Bounding box for each child,clip against view frustum.
+    mapnode_children      dw 2 DUP(?)  ; 010h  ; If NF_SUBSECTOR its a subsector, else it's a node of another subtree.
+MAPNODE_T ENDS                         ; 014h
+
