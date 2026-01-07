@@ -762,6 +762,82 @@ jmp  store_secnum_1
 ENDP
 
 
+PROC    P_LoadSubsectors_ NEAR
+PUBLIC  P_LoadSubsectors_
+
+PUSHA_NO_AX_OR_BP_MACRO
+
+mov    si, ax  ; back up lump
+
+call   W_LumpLength_
+
+SHIFT_MACRO  shr ax 2   ; SIZE MAPSUBSECTOR_T
+mov    word ptr ds:[_numsubsectors], ax      ; todo is this field ever actually used? 
+;	FAR_memset(subsectors, 0, MAX_SUBSECTORS_SIZE);
+
+
+mov    ax, SUBSECTORS_SEGMENT
+mov    es, ax
+xor    di, di
+mov    cx, MAX_SUBSECTORS_SIZE / 2
+xor    ax, ax
+rep    stosw
+
+call   Z_QuickMapScratch_5000_
+
+xchg   ax, si   ; get lump
+mov    cx, SCRATCH_SEGMENT_5000
+xor    bx, bx
+
+call   W_ReadLump_
+
+mov    cx, word ptr ds:[_numsubsectors]
+
+xor    di, di
+mov    si, di
+
+mov    dx, SUBSECTOR_LINES_SEGMENT
+mov    bx, SUBSECTORS_SEGMENT
+mov    ax, SCRATCH_SEGMENT_5000
+mov    ds, ax
+
+loop_next_subsector:
+
+; we write to a byte in a byte array
+; then we write to word 2 in a 4-byte array
+
+;  stosb  shl dec shl  stosw    shr 2
+; 0 -> 1    -> 2       -> 4   -> 1
+;  stosb  shl dec shl  stosw    shr 2
+; 1 ->  2   -> 6       -> 8   -> 2
+
+lodsw   ; mapss_nummapsectorsegs
+mov    es, dx
+stosb                   ;		subsector_lines[i]  = (ms->nummapsectorsegs);
+lodsw   ; mapss_firstseg
+mov    es, bx
+
+shl    di, 1
+dec    di
+shl    di, 1   ; gets us offset 2 in the previous dword index
+stosw                   ; 		subsectors[i].firstline = (ms->firstseg);
+SHIFT_MACRO  shr di 2
+
+
+loop   loop_next_subsector
+
+push   ss
+pop    ds
+
+
+POPA_NO_AX_OR_BP_MACRO
+
+ret
+
+
+ENDP
+
+
 PROC    P_SETUP_ENDMARKER_ NEAR
 PUBLIC  P_SETUP_ENDMARKER_
 ENDP

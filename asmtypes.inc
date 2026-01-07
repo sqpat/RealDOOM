@@ -1032,3 +1032,8 @@ MAPSEG_T STRUC
     mapseg_side       dw ?         ; 08h
     mapseg_offset     dw ?         ; 0Ah
 MAPSEG_T ENDS                      ; 0Ch
+
+MAPSUBSECTOR_T STRUC
+    mapss_nummapsectorsegs  dw ?         ; 00h
+    mapss_firstseg          dw ?         ; 02h
+MAPSUBSECTOR_T ENDS                      ; 04h
