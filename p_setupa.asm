@@ -1850,6 +1850,75 @@ loop  loop_inc_next_tex_translation
 call  Z_QuickMapPhysics_
 
 
+
+;	// reset ems cache settings
+;	for (i = 0; i < NUM_FLAT_L1_CACHE_PAGES; i ++){
+;		pageswapargs[pageswapargs_flatcache_offset + i * PAGE_SWAP_ARG_MULT] = _EPR(FIRST_FLAT_CACHE_LOGICAL_PAGE+i);
+;	}	
+
+mov   cx, NUM_FLAT_L1_CACHE_PAGES
+mov   dx, FIRST_FLAT_CACHE_LOGICAL_PAGE
+mov   di, OFFSET _pageswapargs + PAGESWAPARGS_FLATCACHE_OFFSET * 2
+push  ds
+pop   es
+
+loop_next_flatcache_ems_setup:
+mov   ax, dx
+EPR_MACRO ax
+stosw
+
+add   di, (2 * PAGE_SWAP_ARG_MULT) - 2  ; might be zero...
+inc   dx
+loop loop_next_flatcache_ems_setup
+
+
+; these following two loops could probably be combined into one but i dont think we need the space 
+
+
+mov   cx, NUM_TEXTURE_L1_CACHE_PAGES
+mov   dx, FIRST_TEXTURE_LOGICAL_PAGE
+xor   bx, bx  ; i
+mov   di, OFFSET _pageswapargs + PAGESWAPARGS_REND_TEXTURE_OFFSET * 2
+
+loop_next_texcache_ems_setup:
+
+mov   ax, dx
+EPR_MACRO ax
+stosw
+
+
+;    activetexturepages[i] = FIRST_TEXTURE_LOGICAL_PAGE + i;
+mov   byte ptr ds:[_activetexturepages + bx], dl
+mov   byte ptr ds:[_textureL1LRU + bx], bl
+mov   byte ptr ds:[_activenumpages + bx], bh ; 0
+
+add   di, (2 * PAGE_SWAP_ARG_MULT) - 2  ; might be zero...
+inc   dx
+inc   bx
+loop loop_next_texcache_ems_setup
+
+
+mov   cx, NUM_SPRITE_L1_CACHE_PAGES
+mov   dx, FIRST_SPRITE_CACHE_LOGICAL_PAGE
+xor   bx, bx  ; i
+mov   di, OFFSET _pageswapargs + PAGESWAPARGS_SPRITECACHE_OFFSET * 2
+
+loop_next_spritecache_ems_setup:
+
+mov   ax, dx
+EPR_MACRO ax
+stosw
+
+mov   byte ptr ds:[_activespritepages + bx], dl
+mov   byte ptr ds:[_spriteL1LRU + bx], bl
+mov   byte ptr ds:[_activespritenumpages + bx], bh ; 0
+
+add   di, (2 * PAGE_SWAP_ARG_MULT) - 2  ; might be zero...
+inc   dx
+inc   bx
+loop loop_next_spritecache_ems_setup
+
+
 POPA_NO_AX_OR_BP_MACRO
 ret
 
