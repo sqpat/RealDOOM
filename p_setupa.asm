@@ -41,6 +41,7 @@ EXTRN locallib_fopen_nobuffering_:NEAR
 EXTRN locallib_fclose_:NEAR
 EXTRN locallib_fread_:NEAR
 EXTRN CopyString13_:NEAR
+EXTRN W_GetNumForName_:FAR
 
 .DATA
 
@@ -1580,6 +1581,9 @@ ret
 
 ENDP
 
+_local_doomdata_bin_string:
+db "DOOMDATA.BIN", 0
+
 ; todo add another 1500 bytes or so of data to this clobbered region
 
 PROC    Z_ClearDeadCode_ NEAR
@@ -1590,7 +1594,7 @@ jne   skip_clear_dead_code
 
 PUSHA_NO_AX_OR_BP_MACRO
 
-mov   ax, OFFSET _doomdata_bin_string  ; technically this string is about to get clobbered! but its ok. we check above and dont re-run the func.
+mov   ax, OFFSET _local_doomdata_bin_string  ; technically this string is about to get clobbered! but its ok. we check above and dont re-run the func.
 call  CopyString13_
 mov   dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
 call  locallib_fopen_nobuffering_        ; fopen("DOOMDATA.BIN", "rb"); 
@@ -1924,7 +1928,198 @@ ret
 
 ENDP
 
+;void __near P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 	
+
+PROC   P_SetupLevel_  NEAR
+PUBLIC P_SetupLevel_  
+
+PUSHA_NO_AX_OR_BP_MACRO
+
+push    bp
+mov     bp, sp
+;sub     sp, SIZE wbstartstruct_t + 10
+
+; bp - 10 is wbstartstruct_t
+
+mov   ah, dl
+xchg  ax, cx   ; cx has low episode high map bl has skill
+
+;	wminfo.partime = 180; // // todo once this function in asm, move wminfo to cs
+mov   word ptr ds:[_wminfo + WBSTARTSTRUCT_T.wbss_partime], 180
+
+xor   ax, ax
+push  ds
+pop   es
+mov   di, OFFSET _totalkills
+
+
+
+; totalkills = totalitems = totalsecret = 0;
+stosw
+stosw
+stosw
+
+;	player.killcount = player.secretcount = player.itemcount = 0;
+mov   di, OFFSET _player + PLAYER_T.player_killcount
+stosw
+stosw
+stosw
+
+;	// Initial height of PointOfView
+;	// will be set by player think.
+;	player.viewzvalue.w = 1;
+
+mov   word ptr ds:[_player + PLAYER_T.player_viewzvalue+2], ax
+inc   ax
+mov   word ptr ds:[_player + PLAYER_T.player_viewzvalue+0], ax
+
+mov   word ptr ds:[_validcount_global], 1
+
+call  S_StartCallThrough_
+call  Z_FreeConventionalAllocations_
+call  P_InitThinkersCallThrough_
+
+
+; cx has low episode high map bl has skill
+
+; need to push map name backwards.
+xor   ax, ax
+push  ax ; lumpname[8], lumpname[9]
+push  ax ; lumpname[6], lumpname[7]
+
+
+cmp   byte ptr ds:[_commercial], al
+
+je    not_doom2
+
+; is doom2
+
+;	lumpname[0] = 'm';
+;	lumpname[1] = 'a';
+;	lumpname[2] = 'p';
+;	lumpname[3] = '0' + map / 10;
+;	lumpname[4] = '0' + map % 10;
+
+mov   al, ch  ; map
+mov   dl, 10
+div   dl
+xchg  ax, dx
+
+mov   ax, '0'
+add   al, dl  ; 0 + map % 10
+push  ax  ; lumpname[4], lumpname[5]
+
+mov   ax, 'p' + ('0' SHL 8)
+add   ah, dl  ; 0 + map / 10
+push  ax  ; lumpname[2], lumpname[3]
+
+mov   ax, 'm' + ('a' SHL 8)
+push  ax  ; lumpname[0], lumpname[1]
+jmp   finished_lump_chars
+
+not_doom2:
+
+;	lumpname[0] = 'E';
+;	lumpname[1] = '0' + episode;
+;	lumpname[2] = 'M';
+;	lumpname[3] = '0' + map;
+;	lumpname[4] = 0;
+
+push  ax  ; lumpname[4], lumpname[5]
+
+mov   ax, 'M' + ('0' SHL 8)
+add   ah, ch  ; 0 + map
+push  ax  ; lumpname[2], lumpname[3]
+
+mov   ax, 'E' + ('0' SHL 8)
+add   ah, cl  ; 0 + episode
+push  ax  ; lumpname[0], lumpname[1]
+
+
+finished_lump_chars:
+
+mov   ax, sp
+call  W_GetNumForName_
+
+mov   word ptr ds:[_cached_psetup_level_lump], ax
+
+xchg  ax, si   ; si has lump num
+xor   ax, ax
+mov   word ptr ds:[_leveltime+0], ax
+mov   word ptr ds:[_leveltime+2], ax
+
+lea   ax, [si + ML_VERTEXES]
+call  P_LoadVertexes_ 
+
+lea   ax, [si + ML_SECTORS]
+call  P_LoadSectors_ 
+
+lea   ax, [si + ML_SIDEDEFS]
+call  P_LoadSideDefs_ 
+
+lea   ax, [si + ML_LINEDEFS]
+call  P_LoadLineDefs_
+
+lea   ax, [si + ML_SSECTORS]
+call  P_LoadSubsectors_
+
+lea   ax, [si + ML_NODES]
+call  P_LoadNodes_
+
+lea   ax, [si + ML_SEGS]
+call  P_LoadSegs_ 
+
+lea   ax, [si + ML_BLOCKMAP]
+call  P_LoadBlockMap_ 
+
+lea   ax, [si + ML_REJECT]
+mov   cx, REJECTMATRIX_SEGMENT
+xor   bx, bx
+call  W_ReadLump_ 
+
+call  P_GroupLines_
+
+lea   ax, [si + ML_THINGS]
+call  P_LoadThings_
+
+call  P_SpawnSpecialsCallThrough_
+
+call  Z_QuickMapRender_
+call  Z_QuickMapRenderPlanes_
+
+
+mov   ax, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
+mov   es, ax
+mov   bx, word ptr ds:[_skytexture]  ; texnum
+shl   bx, 1
+mov   bx, word ptr ds:[_texturepatchlump_offset + bx]
+shl   bx, 1
+mov   ax, es:[bx]  ; got sky lump
+call  R_LoadPatchColumnsColormap0_
+
+call  Z_QuickMapPhysics_
+
+mov   ax, 0FFFFh
+mov   word ptr ds:[_lastvisspritepatch], ax
+mov   word ptr ds:[_lastvisspritepatch2], ax
+mov   word ptr ds:[_cachedtex], ax
+mov   word ptr ds:[_cachedtex + 2], ax
+
+mov   cx, NUM_CACHE_LUMPS
+mov   di, OFFSET _cachedlumps
+push  ds
+pop   es
+rep   stosw
+
+LEAVE_MACRO
+
+POPA_NO_AX_OR_BP_MACRO
+
+ret
+
+ENDP
+
 
 
 

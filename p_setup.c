@@ -73,6 +73,7 @@ void __near R_LoadPatchColumnsColormap0(uint16_t lump, segment_t texlocation_seg
 //
 // P_SetupLevel
 //
+/*
 // stick this at top so entry point is always xxxx:0000
 void __near P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 	int8_t        lumpname[9];
@@ -177,13 +178,12 @@ void __near P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 
 	// preload graphics
 	
-	/*
-	if (precache)
-		R_PrecacheLevel();
-*/
+	// if (precache)
+	// 	R_PrecacheLevel();
 
 
 }
+*/
 //void __far S_StopChannel(int8_t cnum);
 
 //
@@ -1151,7 +1151,7 @@ void __near Z_FreeConventionalAllocations() {
 */
 
 
-void __near PSetupEndFunc(){}
+// void __near PSetupEndFunc(){}
 void __near D_INIT_STARTMARKER();
 void __near P_INIT_ENDMARKER();
 void  __near locallib_fclose(FILE * stream);
