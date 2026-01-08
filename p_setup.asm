@@ -70,55 +70,8 @@ ENDP
 
 
 
-PROC    P_SpawnMapThingCallThrough_ NEAR
-PUBLIC  P_SpawnMapThingCallThrough_
-
-; ugly for now. so this is passed in a struct, not a pointer to a struct. 
-; so theres a billion (or so) bytes on stack
-; for now this is just a trampoline/placeholder func until p_setup is in asm
-; we far jump to our func instead of calling. so it returns to the other place
-
-; dx:ax is mapthing to push
 
 
-xchg  ax, bx ; put ptr in bx to push struct
-mov   ds, dx
-
-; push 10 byte struct
-push  ds:[bx+8]
-push  ds:[bx+6]
-push  ds:[bx+4]
-push  ds:[bx+2]
-push  ds:[bx+0]
-push  ss
-pop   ds
-xchg  ax, bx ; put bx back.
-
-db    09Ah  ; call
-dw    P_SPAWNMAPTHINGOFFSET, PHYSICS_HIGHCODE_SEGMENT
-ret
-ENDP
-
-
-PROC    P_SpawnSpecialsCallThrough_ NEAR
-PUBLIC  P_SpawnSpecialsCallThrough_
-db    09Ah  ; call
-dw    P_SPAWNSPECIALSOFFSET, PHYSICS_HIGHCODE_SEGMENT
-ret
-ENDP
-
-PROC    S_StartCallThrough_ NEAR
-PUBLIC  S_StartCallThrough_
-db    09Ah  ; call
-dw    S_STARTOFFSET, PHYSICS_HIGHCODE_SEGMENT
-ret
-ENDP
-
-PROC    P_InitThinkersCallThrough_ NEAR
-PUBLIC  P_InitThinkersCallThrough_
-call    P_InitThinkers_
-ret
-ENDP
 
 
 PROC    P_InitThinkers_ FAR
@@ -1976,9 +1929,12 @@ mov   word ptr ds:[_player + PLAYER_T.player_viewzvalue+0], ax
 
 mov   word ptr ds:[_validcount_global], 1
 
-call  S_StartCallThrough_
+db    09Ah  ; call
+dw    S_STARTOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+
 call  Z_FreeConventionalAllocations_
-call  P_InitThinkersCallThrough_
+call  P_InitThinkers_
 
 
 ; cx has low episode high map bl has skill
@@ -2083,7 +2039,9 @@ call  P_GroupLines_
 lea   ax, [si + ML_THINGS]
 call  P_LoadThings_
 
-call  P_SpawnSpecialsCallThrough_
+db    09Ah  ; call
+dw    P_SPAWNSPECIALSOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 
 call  Z_QuickMapRender_
 call  Z_QuickMapRenderPlanes_
