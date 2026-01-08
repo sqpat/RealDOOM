@@ -1373,6 +1373,124 @@ jmp    do_write_and_ret
 ENDP
 
 
+PROC    P_LoadThings_ NEAR
+PUBLIC  P_LoadThings_
+
+PUSHA_NO_AX_OR_BP_MACRO
+
+mov    si, ax  ; store lump
+
+call   W_LumpLength_
+
+mov    bx, SIZE MAPTHING_T
+div    bx
+push   ax ; num things
+
+
+
+mov     cx, ((SIZE MAPTHING_T) * MAX_THINKERS) / 2
+mov     ax, NIGHTMARESPAWNS_SEGMENT
+mov     es, ax
+xor     ax, ax
+mov     di, ax
+rep     stosw
+
+call    Z_QuickMapScratch_8000_
+
+xchg    ax, si  ; get lump back
+mov     cx, SCRATCH_SEGMENT_8000
+xor     bx, bx
+
+call   W_ReadLump_
+
+
+
+
+pop     cx  ; numthings
+
+xor     si, si
+mov     di, si
+mov     bl, byte ptr ds:[_commercial]
+
+loop_next_thing:
+
+mov     ax, SCRATCH_SEGMENT_8000
+mov     es, ax
+cmp     word ptr es:[si + MAPTHING_T.mapthing_type], 1
+je      set_player_stuff
+
+
+test    bl, bl
+jne     just_do_spawn
+
+mov     ax, word ptr es:[si + MAPTHING_T.mapthing_type]
+
+cmp     ax, 68           ; Arachnotron
+je      end_spawns_early
+cmp     ax, 64           ; Archvile
+je      end_spawns_early
+cmp     ax, 88           ; Boss Brain
+je      end_spawns_early
+cmp     ax, 89           ; Boss Shooter
+je      end_spawns_early
+cmp     ax, 69           ; Hell Knight
+je      end_spawns_early
+cmp     ax, 67           ; Mancubus
+je      end_spawns_early
+cmp     ax, 71           ; Pain Elemental
+je      end_spawns_early
+cmp     ax, 65           ; Former Human Commando
+je      end_spawns_early
+cmp     ax, 66           ; Revenant
+je      end_spawns_early
+cmp     ax, 84           ; Wolf SS
+je      end_spawns_early
+
+
+done_with_player_setup:
+just_do_spawn:
+
+
+; todo clean up
+push    word ptr es:[si+8]
+push    word ptr es:[si+6]
+push    word ptr es:[si+4]
+push    word ptr es:[si+2]
+push    word ptr es:[si+0]
+mov     ax, sp
+call    P_SpawnMapThingCallThrough_
+
+db      09Ah  ; call
+dw      P_SPAWNMAPTHINGOFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+
+inc     di
+add     si, SIZE MAPTHING_T
+loop    loop_next_thing
+
+
+end_spawns_early:
+
+POPA_NO_AX_OR_BP_MACRO
+ret
+set_player_stuff:
+mov     word ptr ds:[_playerMobjRef], di
+
+; #define playerMobjMakerExpression		((mobj_t __near *) (((byte __far*)thinkerlist) + (playerMobjRef*sizeof(thinker_t) + 2 * sizeof(THINKERREF))))
+mov     ax, SIZE THINKER_T
+mul     di
+add     ax, OFFSET _thinkerlist + (2 * 2)
+mov     word ptr ds:[_playerMobjRef], di
+mov     word ptr ds:[_playerMobj], ax
+mov     ax, SIZE MOBJ_POS_T
+mul     di
+mov     word ptr ds:[_playerMobj_pos+0], ax
+mov     word ptr ds:[_playerMobj_pos+2], MOBJPOSLIST_6800_SEGMENT   ; todo necessary?
+jmp     done_with_player_setup
+
+ENDP
+
+
 
 PROC    P_SETUP_ENDMARKER_ NEAR
 PUBLIC  P_SETUP_ENDMARKER_

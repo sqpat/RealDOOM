@@ -571,6 +571,7 @@ void __near P_LoadNodes(int16_t lump) {
 //
 // P_LoadThings
 //
+/*
 void __near P_LoadThings(int16_t lump) {
 	mapthing_t  __far*		data = (mapthing_t __far*)SCRATCH_ADDRESS_8000;
 	uint16_t                 i;
@@ -626,7 +627,7 @@ void __near P_LoadThings(int16_t lump) {
 	}
 
 }
-
+*/
 
 //
 // P_LoadLineDefs
