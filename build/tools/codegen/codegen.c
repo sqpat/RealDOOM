@@ -8,7 +8,7 @@
 #include "r_state.h"
 #include "p_setup.h"
 
-#define CONSTANTS_COUNT 1007
+#define CONSTANTS_COUNT 1008
 #define LOCALS_COUNT 23
 
 
@@ -1050,6 +1050,9 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"MAXEVENTS",
 
 	"MAX_ADJOINING_SECTORS",
+	"MAX_ADJOINING_SECTORS_IN_WORDS",
+	"MAX_LINES_IN_SECTOR",
+	"MAX_LINES_IN_SECTOR_IN_WORDS",
 
 
 	"_flatcache_nodes",
@@ -2157,7 +2160,9 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	texturedefs_offset_6000_segment,
 	MAXEVENTS,
 	MAX_ADJOINING_SECTORS,
-	flatcache_nodes,
+	2 * MAX_ADJOINING_SECTORS,
+	MAX_LINES_IN_SECTOR,
+	2 * MAX_LINES_IN_SECTORflatcache_nodes,
 	spritecache_nodes,
 	texturecache_nodes,
 	allocatedflatsperpage,

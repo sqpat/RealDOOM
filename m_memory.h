@@ -298,10 +298,10 @@ scantokey            3194:0000
 
 
 #define NUMMOBJTYPES 137
-
+#define MAX_LINES_IN_SECTOR     256
 #define MAX_ADJOINING_SECTORS    32
-#define MAXEVENTS           64
-#define MAXINTERCEPTS       128
+#define MAXEVENTS                64
+#define MAXINTERCEPTS           128
 
 #define size_thinkerlist           (sizeof(thinker_t) * MAX_THINKERS)
 #define size_linebuffer            (MAX_LINEBUFFER_SIZE)

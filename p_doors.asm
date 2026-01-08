@@ -343,7 +343,7 @@ PUBLIC  EV_DoDoor_
 PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
-sub   sp, (2 * MAX_ADJOINING_SECTORS)
+sub   sp, (MAX_ADJOINING_SECTORS_IN_WORDS)
 xor   dh, dh
 mov   byte ptr cs:[SELFMODIFY_evdoordoor_settype+2], dl  ; + 2 because offset is 0
 
@@ -353,7 +353,7 @@ push  word ptr cs:[_jump_table_do_door+si]
 pop   word ptr cs:[SELFMODIFY_evdoordoor_do_jmp+1]
 
 mov   byte ptr cs:[SELFMODIFY_evdoordoor_rtn], CLC_OPCODE
-lea   dx, [bp - (2 * MAX_ADJOINING_SECTORS)]
+lea   dx, [bp - (MAX_ADJOINING_SECTORS_IN_WORDS)]
 mov   si, dx
 
 xor   bx, bx ; false
