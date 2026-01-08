@@ -129,7 +129,6 @@ file hu_setup.obj
 
 file r_main.obj
 file p_setup.obj
-file p_setupa.obj
 file s_sbsfx.obj
 file binfile.obj
 file w_wad.obj
