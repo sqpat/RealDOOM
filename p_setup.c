@@ -249,6 +249,7 @@ void __far S_Start(void) {
 // bypass the colofs cache stuff, store just raw pixel data at texlocation. 
 //void R_LoadPatchColumns(uint16_t lump, byte __far * texlocation, boolean ismasked){
 //todo remove texlocation_segment param if its hardcoded?
+/*
 void __near R_LoadPatchColumnsColormap0(uint16_t lump, segment_t texlocation_segment, boolean ismasked){
 	patch_t __far *patch = (patch_t __far *)SCRATCH_ADDRESS_4000;
 	int16_t col;
@@ -296,12 +297,11 @@ void __near R_LoadPatchColumnsColormap0(uint16_t lump, segment_t texlocation_seg
 	Z_QuickMapRender4000(); // put render info back
 
 }
-
+*/
 
 //
 // P_LoadVertexes
 //
-void __near P_LoadVertexes(int16_t lump) ;
 /*
 void __near P_LoadVertexes(int16_t lump) {
 	//mapvertex_t __far*			data;

@@ -24,6 +24,7 @@ EXTRN Z_QuickMapRenderPlanes_:FAR
 EXTRN Z_QuickMapUndoFlatCache_:FAR
 EXTRN Z_QuickMapWADPageFrame_:FAR
 EXTRN W_LumpLength_:FAR
+EXTRN Z_QuickMapScratch_4000_:FAR
 EXTRN Z_QuickMapScratch_5000_:FAR
 EXTRN Z_QuickMapScratch_8000_:FAR
 EXTRN W_ReadLump_:NEAR
@@ -179,6 +180,7 @@ ret
 ENDP
 
 SCRATCH_SEGMENT_8000 = 08000h
+SCRATCH_SEGMENT_4000 = 04000h
 
 PROC   P_LoadSectors_ NEAR
 PUBLIC P_LoadSectors_
@@ -1458,7 +1460,6 @@ push    word ptr es:[si+4]
 push    word ptr es:[si+2]
 push    word ptr es:[si+0]
 mov     ax, sp
-call    P_SpawnMapThingCallThrough_
 
 db      09Ah  ; call
 dw      P_SPAWNMAPTHINGOFFSET, PHYSICS_HIGHCODE_SEGMENT
@@ -1491,6 +1492,83 @@ jmp     done_with_player_setup
 ENDP
 
 
+PROC   R_LoadPatchColumnsColormap0_ NEAR
+PUBLIC R_LoadPatchColumnsColormap0_
+
+PUSHA_NO_AX_OR_BP_MACRO
+
+xchg   ax, si  ; store lump
+
+call   Z_QuickMapScratch_4000_  ; render col info has been paged out..
+
+
+xchg   ax, si
+mov    cx, SCRATCH_SEGMENT_4000
+xor    bx, bx
+
+call   W_ReadLump_
+
+mov    dx, SCRATCH_SEGMENT_4000
+mov    ds, dx
+xor    bx, bx
+mov    di, bx
+mov    dx, SKYTEXTURE_TEXTURE_SEGMENT
+mov    es, dx
+mov    dx, word ptr ds:[bx + PATCH_T.patch_width]
+add    bl, OFFSET PATCH_T.patch_columnofs
+xor    ax, ax ; zero ah
+
+loop_next_sky_column:
+
+;column_t __far * column = (column_t __far *)(SCRATCH_ADDRESS_4000 + patch->columnofs[col]);
+
+mov    si, word ptr ds:[bx]  ; get column
+
+loop_until_last_post:
+
+lodsb  ; topdelta al   length ah
+cmp    al, 0FFh  ; todo reg
+je     done_with_column_posts
+
+do_another_post:
+
+lodsb      ; get length
+inc    si  ; source tex addr is col + 3...
+
+do_another_pixel:
+
+; COLORMAPS_SEGMENT
+
+mov    cx, ax  ; ah known zero, thus ch known zero
+shr    cx, 1
+rep    movsw
+adc    cx, cx  ; todo necessary?
+rep    stosb   
+
+; todo inc si or not?
+inc    si
+
+lodsb  ; topdelta al   length ah
+cmp    al, 0FFh  ; todo reg
+jne    do_another_post
+
+
+done_with_column_posts:
+
+add    bx, 4
+dec    dx
+jns    loop_next_sky_column
+
+push   ss
+pop    ds
+
+call   Z_QuickMapRender4000_
+
+POPA_NO_AX_OR_BP_MACRO
+ret
+
+
+ENDP
 
 PROC    P_SETUP_ENDMARKER_ NEAR
 PUBLIC  P_SETUP_ENDMARKER_
