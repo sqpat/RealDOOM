@@ -1495,7 +1495,7 @@ ENDP
 PROC   R_LoadPatchColumnsColormap0_ NEAR
 PUBLIC R_LoadPatchColumnsColormap0_
 
-PUSHA_NO_AX_OR_BP_MACRO
+PUSHA_NO_AX_MACRO
 
 xchg   ax, si  ; store lump
 
@@ -1508,63 +1508,68 @@ xor    bx, bx
 
 call   W_ReadLump_
 
-mov    dx, SCRATCH_SEGMENT_4000
+
+OFFSET_SEG_4000_IN_SS = (SCRATCH_SEGMENT_4000 - FIXED_DS_SEGMENT) SHL 4
+
+mov    dx, COLORMAPS_SEGMENT
 mov    ds, dx
-xor    bx, bx
+xor    bx, bx  ; colormap 0 xlat
 mov    di, bx
 mov    dx, SKYTEXTURE_TEXTURE_SEGMENT
 mov    es, dx
-mov    dx, word ptr ds:[bx + PATCH_T.patch_width]
-add    bl, OFFSET PATCH_T.patch_columnofs
+mov    bp, OFFSET_SEG_4000_IN_SS
+mov    dx, word ptr ss:[bp + PATCH_T.patch_width]
+add    bp, OFFSET PATCH_T.patch_columnofs
 xor    ax, ax ; zero ah
+xor    cx, cx ; zero cx
 
 loop_next_sky_column:
 
 ;column_t __far * column = (column_t __far *)(SCRATCH_ADDRESS_4000 + patch->columnofs[col]);
 
-mov    si, word ptr ds:[bx]  ; get column
-
+mov    si, word ptr ss:[bp]  ; get column
+add    si, OFFSET_SEG_4000_IN_SS
 loop_until_last_post:
 
-lodsb  ; topdelta al   length ah
-cmp    al, 0FFh  ; todo reg
+lods   byte ptr ss:[si]           ; topdelta al   length ah
+cmp    al, 0FFh                   ; todo reg
 je     done_with_column_posts
 
 do_another_post:
 
-lodsb      ; get length
-inc    si  ; source tex addr is col + 3...
+lods   byte ptr ss:[si]           ; get length
+xchg   ax, cx                     ; ah known zero, thus ch known zero. cx known zero so ah continues as zero
+inc    si                         ; source tex addr is col + 3...
 
 do_another_pixel:
 
-; COLORMAPS_SEGMENT
+lods   byte ptr ss:[si]           ; get source pixel
+xlat   byte ptr ds:[bx]           ; colormap zero lookup
+stosb                             ; store the pixel
 
-mov    cx, ax  ; ah known zero, thus ch known zero
-shr    cx, 1
-rep    movsw
-adc    cx, cx  ; todo necessary?
-rep    stosb   
+loop   do_another_pixel
 
-; todo inc si or not?
+; post done
+
 inc    si
 
-lodsb  ; topdelta al   length ah
+lods   byte ptr ss:[si]           ; topdelta al   length ah
 cmp    al, 0FFh  ; todo reg
 jne    do_another_post
 
 
 done_with_column_posts:
 
-add    bx, 4
+add    bp, 4
 dec    dx
-jns    loop_next_sky_column
+jne    loop_next_sky_column
 
 push   ss
 pop    ds
 
 call   Z_QuickMapRender4000_
 
-POPA_NO_AX_OR_BP_MACRO
+POPA_NO_AX_MACRO
 ret
 
 
