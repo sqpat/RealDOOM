@@ -1159,6 +1159,8 @@ FILE *  __near locallib_fopen(const char *filename, byte modeflags);
 int32_t __near locallib_fseek(FILE *fp, int32_t offset, int8_t where );
 
 // clears dead initialization code.
+void __near Z_ClearDeadCode();
+/*
 void __near Z_ClearDeadCode() {
 	byte __far *startaddr =	(byte __far*)D_INIT_STARTMARKER;
 	byte __far *endaddr =		(byte __far*)P_INIT_ENDMARKER;
@@ -1182,7 +1184,8 @@ void __near Z_ClearDeadCode() {
 	//9528           - 12/25/25    - r_init asm, some p_init work
 	//8723           - 12/27/25    - p_init done
 	//9768           - 01/04/26    - miscounted earlier. can probably still move some i_start code into here. probably should also move another table or two into init.
-
+    ; from now on just look at P_INIT_ENDMARKER_
+	// 
 	uint16_t size = endaddr - startaddr-16;
 	FILE* fp;
 
@@ -1198,7 +1201,7 @@ void __near Z_ClearDeadCode() {
 	locallib_fclose(fp);
 
 }
-
+*/
 // logging functions to assist in finding desyncs.
 
 /*

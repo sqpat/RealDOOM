@@ -36,12 +36,18 @@ EXTRN Z_QuickMapRender_4000To9000_:FAR  ; todo inline
 EXTRN Z_QuickMapRender_9000To6000_:NEAR  ; todo inline
 EXTRN R_TextureNumForName_:NEAR
 EXTRN M_AddToBox16_:NEAR
- 
+EXTRN locallib_fseek_:NEAR
+EXTRN locallib_fopen_nobuffering_:NEAR
+EXTRN locallib_fclose_:NEAR
+EXTRN locallib_fread_:NEAR
+EXTRN CopyString13_:NEAR
+
 .DATA
 
 
 .CODE
 
+EXTRN _doomdata_bin_string
 
 
   ML_LABEL    = 0 ; 
@@ -1572,8 +1578,50 @@ call   Z_QuickMapRender4000_
 POPA_NO_AX_MACRO
 ret
 
-
 ENDP
+
+
+PROC    Z_ClearDeadCode_ NEAR
+PUBLIC  Z_ClearDeadCode_
+
+cmp   word ptr ds:[_tantoangle_segment], 0
+jne   skip_clear_dead_code
+
+PUSHA_NO_AX_OR_BP_MACRO
+
+mov   ax, OFFSET _doomdata_bin_string  ; technically this string is about to get clobbered! but its ok. we check above and dont re-run the func.
+call  CopyString13_
+mov   dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
+call  locallib_fopen_nobuffering_        ; fopen("DOOMDATA.BIN", "rb"); 
+mov   di, ax ; di stores fp
+
+xor   dx, dx  ; SEEK_SET
+mov   bx, TANTOA_DOOMDATA_OFFSET AND 0FFFFh
+mov   cx, TANTOA_DOOMDATA_OFFSET SHR 16
+call  locallib_fseek_  ;    fseek(fp, SWITCH_DOOMDATA_OFFSET, SEEK_SET);
+
+xor   ax, ax
+mov   dx, cs
+mov   word ptr ds:[_tantoangle_segment], dx
+mov   cx, di ; fp
+mov   bx, 4 * 2049
+call  locallib_fread_
+
+xchg  ax, di
+call  locallib_fclose_
+
+POPA_NO_AX_OR_BP_MACRO
+
+
+; size of code to clobber
+;mov   cx, (P_INIT_ENDMARKER - D_INIT_STARTMARKER) AND 0FFF0H  
+
+skip_clear_dead_code:  ; already has been done
+
+ret
+ENDP
+
+
 
 PROC    P_SETUP_ENDMARKER_ NEAR
 PUBLIC  P_SETUP_ENDMARKER_
