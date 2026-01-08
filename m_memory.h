@@ -97,7 +97,7 @@ struct sfxinfo_struct{
 
 
 
-
+// NOTE!   BELOW level data sequential for clearing in a single pass
 #define sectors           ((sector_t __far*)        MAKE_FULL_SEGMENT(baselowermemoryaddress , 0))
 #define vertexes          ((vertex_t __far*)        MAKE_FULL_SEGMENT(sectors          , size_sectors))
 #define sides             ((side_t __far*)          MAKE_FULL_SEGMENT(vertexes         , size_vertexes))
@@ -108,6 +108,7 @@ struct sfxinfo_struct{
 #define node_children     ((node_children_t __far*) MAKE_FULL_SEGMENT(nodes            , size_nodes))
 #define seg_linedefs      ((int16_t __far*)         MAKE_FULL_SEGMENT(node_children    , size_node_children))
 #define seg_sides         ((uint8_t __far*)         MAKE_FULL_SEGMENT(seg_linedefs     , size_seg_linedefs))
+// NOTE!   ABOVE level data sequential for clearing in a single pass
 
 
 #define sfx_data           ((sfxinfo_t __far*)          MAKE_FULL_SEGMENT(seg_sides        , size_seg_sides))

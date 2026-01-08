@@ -1580,6 +1580,7 @@ ret
 
 ENDP
 
+; todo add another 1500 bytes or so of data to this clobbered region
 
 PROC    Z_ClearDeadCode_ NEAR
 PUBLIC  Z_ClearDeadCode_
@@ -1620,6 +1621,241 @@ skip_clear_dead_code:  ; already has been done
 
 ret
 ENDP
+
+
+PROC    Z_FreeConventionalAllocations_  NEAR
+PUBLIC  Z_FreeConventionalAllocations_
+
+PUSHA_NO_AX_OR_BP_MACRO
+
+	; we should be paged to physics now - should be ok
+
+; clear thinkers 
+; memset(thinkerlist, 0, MAX_THINKERS * sizeof(thinker_t));
+xor   ax, ax
+cwd   ; dx zero for later
+mov   cx, (MAX_THINKERS * (SIZE THINKER_T)) / 2
+mov   di, _thinkerlist
+push  ds
+pop   es
+rep   stosw
+
+; consecutive. do both
+;	memset(usedtexturepagemem, 00, sizeof(uint8_t) * NUM_TEXTURE_PAGES);
+;	memset(usedspritepagemem, 00, sizeof(uint8_t) * NUM_SPRITE_CACHE_PAGES);
+mov   di, _usedspritepagemem
+mov   cx, (_sfx_page_reference_count - _usedspritepagemem) / 2
+rep   stosw
+
+
+;	for ( i = 0; i < NUM_FLAT_CACHE_PAGES; i++) {
+;		allocatedflatsperpage[i] = 0;
+;	}  
+
+mov   cl, NUM_FLAT_CACHE_PAGES / 2
+mov   di, _allocatedflatsperpage
+rep   stosw
+
+
+;	// L2 cache stuff
+
+; adjacent values
+;	flatcache_l2_head = 0;
+;	flatcache_l2_tail = NUM_FLAT_CACHE_PAGES-1;
+;	spritecache_l2_head = 0;
+;	spritecache_l2_tail = NUM_SPRITE_CACHE_PAGES-1;
+;	texturecache_l2_head = 0;
+;	texturecache_l2_tail = NUM_TEXTURE_PAGES-1;
+
+mov   word ptr ds:[_flatcache_l2_head], (NUM_FLAT_CACHE_PAGES - 1) SHL 8
+mov   word ptr ds:[_spritecache_l2_head], (NUM_SPRITE_CACHE_PAGES - 1) SHL 8
+mov   word ptr ds:[_texturecache_l2_head], (NUM_TEXTURE_PAGES - 1) SHL 8
+
+mov   cl, NUM_FLAT_CACHE_PAGES
+mov   ax, 0FF01h
+mov   di, _flatcache_nodes
+
+loop_next_flatcache_page:
+stosw
+add    ax, 0101h
+loop   loop_next_flatcache_page
+
+mov    ax, 0FF01h
+mov    byte ptr ds:[di-2], ah   ; 0FFh,  flatcache_nodes[flatcache_l2_tail].prev = -1;
+
+; dx is zero
+
+mov   cl, NUM_SPRITE_CACHE_PAGES
+mov   di, _spritecache_nodes
+mov   ax, 0FF01h
+
+loop_next_spritecache_page:
+stosw
+xchg  ax, dx
+stosw
+xchg  ax, dx
+
+add   ax, 0101h
+loop  loop_next_spritecache_page
+
+mov   ax, 0FF01h
+mov   byte ptr ds:[di-4], ah  ; spritecache_nodes[spritecache_l2_tail].prev = -1;
+
+mov   cl, NUM_TEXTURE_PAGES
+;mov   di, _texturecache_nodes     ; should be equivalent to this already.
+
+loop_next_texturecache_page:
+stosw
+xchg  ax, dx
+stosw
+xchg  ax, dx
+
+add   ax, 0101h
+loop  loop_next_texturecache_page
+
+
+mov   byte ptr ds:[di-4], 0FFh   ; 0FFh,  texturecache_nodes[texturecache_l2_tail].prev = -1;
+
+
+
+;	currentflatpage[0] = 0;
+;	currentflatpage[1] = 1;
+;	currentflatpage[2] = 2;
+;	currentflatpage[3] = 3;
+;
+;	lastflatcacheindicesused[0]= 0;
+;	lastflatcacheindicesused[1]= 1;
+;	lastflatcacheindicesused[2]= 2;
+;	lastflatcacheindicesused[3]= 3;
+
+mov   ax, 0100h
+mov   word ptr ds:[_currentflatpage+0], ax
+mov   word ptr ds:[_lastflatcacheindicesused+0], ax
+mov   ax, 0302h
+mov   word ptr ds:[_currentflatpage+2], ax
+mov   word ptr ds:[_lastflatcacheindicesused+2], ax
+	
+
+
+
+xor   ax, ax
+
+
+;; ES no longer DS
+
+;erase the level data region
+; FAR_memset(((byte __far*) baselowermemoryaddress), 0, (sfx_data_segment - base_lower_memory_segment) << 4);
+mov   dx, BASE_LOWER_MEMORY_SEGMENT
+mov   es, dx
+xor   di, di
+mov   cx, (SFX_DATA_SEGMENT - BASE_LOWER_MEMORY_SEGMENT) SHL 3  ; 3 not 4 because stosw
+rep   stosw
+
+
+; todo make this area less jank. We want to free all the ems 4.0 region level data...
+;  handles blockmaps and lines_physics...
+;  do we really have to do this anyway?
+; FAR_memset(MK_FP(0x7000, 0), 0, (states_segment - lines_physics_segment) << 4);
+
+mov   dx, LINES_PHYSICS_SEGMENT
+mov   es, dx
+xor   di, di
+mov   cx, (STATES_SEGMENT - LINES_PHYSICS_SEGMENT) SHL 3  ; 3 not 4 because stosw
+rep   stosw
+
+call  Z_QuickMapRender_
+
+	;reset texture cache
+
+
+mov   ax, 0FFFFh
+
+; these two are consecutive in memory
+;	FAR_memset(compositetexturepage, 0xFF, sizeof(uint8_t) * (MAX_TEXTURES));
+;	FAR_memset(compositetextureoffset,0xFF, sizeof(uint8_t) * (MAX_TEXTURES));
+
+mov   dx, COMPOSITETEXTUREPAGE_SEGMENT
+mov   es, dx
+xor   di, di
+mov   cx, (2 * MAX_TEXTURES) / 2
+rep   stosw
+
+	
+; these two are consecutive in memory
+;	FAR_memset(patchpage, 0xFF, sizeof(uint8_t) * (MAX_PATCHES));
+;	FAR_memset(patchoffset, 0xFF, sizeof(uint8_t) * (MAX_PATCHES));
+
+mov   dx, PATCHPAGE_SEGMENT
+mov   es, dx
+xor   di, di
+mov   cx, (2 * MAX_PATCHES) / 2
+rep   stosw
+
+; these two are consecutive in memory
+;	FAR_memset(spritepage, 0xFF, sizeof(uint8_t) * (MAX_SPRITE_LUMPS));
+;	FAR_memset(spriteoffset, 0xFF, sizeof(uint8_t) * (MAX_SPRITE_LUMPS));
+
+mov   dx, SPRITEPAGE_SEGMENT
+mov   es, dx
+xor   di, di
+mov   cx, (2 * MAX_SPRITE_LUMPS) / 2
+rep   stosw
+
+
+;	FAR_memset(flatindex, 0xFF, size_flatindex);
+
+
+mov   dx, FLATINDEX_SEGMENT
+mov   es, dx
+xor   di, di
+mov   cx, (MAX_FLATS)
+rep   stosb
+
+
+;	for (i = 0; i < MAX_FLATS; i++){
+;		flattranslation[i] = i;
+;	}
+
+mov   cx, MAX_FLATS
+mov   dx, FLATTRANSLATION_SEGMENT
+mov   es, dx
+xor   ax, ax
+xor   di, di
+
+; BYTES
+loop_inc_next_flat_translation:
+stosb
+inc   ax
+loop  loop_inc_next_flat_translation
+
+
+;	for (i = 0; i < MAX_TEXTURES; i++){
+;		texturetranslation[i] = i;
+;	}
+
+
+mov   cx, MAX_TEXTURES
+mov   dx, TEXTURETRANSLATION_SEGMENT
+mov   es, dx
+xor   ax, ax
+xor   di, di
+
+; WORDS
+loop_inc_next_tex_translation:
+stosw
+inc   ax
+loop  loop_inc_next_tex_translation
+
+
+call  Z_QuickMapPhysics_
+
+
+POPA_NO_AX_OR_BP_MACRO
+ret
+
+ENDP
+
+	
 
 
 

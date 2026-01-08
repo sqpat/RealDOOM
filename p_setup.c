@@ -64,6 +64,7 @@ void __near P_LoadBlockMap(int16_t lump);
 void __near P_LoadThings(int16_t lump);
 void __near P_LoadSegs(int16_t lump);	
 void __near Z_FreeConventionalAllocations();
+void __near Z_FreeConventionalAllocations2();
 void __near P_GroupLines();
 
 void __near R_LoadPatchColumnsColormap0(uint16_t lump, segment_t texlocation_segment, boolean ismasked);
@@ -90,6 +91,7 @@ void __near P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 	
 	S_StartCallThrough();
 	Z_FreeConventionalAllocations();
+	Z_FreeConventionalAllocations2();
 
 	// TODO reset 32 bit counters to start values here..
 	validcount_global = 1;
@@ -1013,9 +1015,9 @@ void  __far P_InitThinkers (void) {
 
 
  // called in between levels, frees level stuff like sectors, frees thinkers, etc.
-void __near Z_FreeConventionalAllocations() {
+void __near Z_FreeConventionalAllocations2() {
 	int16_t i;
-
+/*
 	// we should be paged to physics now - should be ok
 	memset(thinkerlist, 0, MAX_THINKERS * sizeof(thinker_t));
 
@@ -1128,7 +1130,7 @@ void __near Z_FreeConventionalAllocations() {
 
 
 	Z_QuickMapPhysics();
-
+*/
 	// reset ems cache settings
 	for (i = 0; i < NUM_FLAT_L1_CACHE_PAGES; i ++){
 		pageswapargs[pageswapargs_flatcache_offset + i * PAGE_SWAP_ARG_MULT] = _EPR(FIRST_FLAT_CACHE_LOGICAL_PAGE+i);
