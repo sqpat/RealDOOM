@@ -22,7 +22,7 @@ INSTRUCTION_SET_MACRO
 
 EXTRN R_VideoErase_:NEAR
 EXTRN _w_message:NEAR
-
+EXTRn V_DrawPatchDirect_:FAR
 SHORTFLOORBITS = 3
 
 .DATA
@@ -142,7 +142,7 @@ jg    exit_hulib_drawtextline
 
 
 mov   dx, word ptr cs:[si + HU_TEXTLINE_T.hu_textline_y]
-call  dword ptr ds:[_V_DrawPatchDirect_addr]
+call  V_DrawPatchDirect_
 
 xchg  ax, di
 

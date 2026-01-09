@@ -62,22 +62,16 @@ EXTRN ST_Start_:FAR
 EXTRN Z_SetOverlay_:FAR
 EXTRN Z_QuickMapMusicPageFrame_:FAR
 EXTRN FixedMul_:FAR
-;EXTRN FixedMul2432_:FAR
-;EXTRN FixedDiv_:FAR
 EXTRN FastDiv32u16u_:FAR
 EXTRN cht_CheckCheat_Far_:FAR
 EXTRN FastDiv3216u_:FAR
 
-;EXTRN R_PointToAngle2_16_:FAR
-;EXTRN R_PointToAngle2_:FAR
-;EXTRN R_SetViewSize_:FAR
-;EXTRN OutOfThinkers_:FAR
 EXTRN S_InitSFXCache_:FAR
 EXTRN I_Quit_:FAR
 EXTRN I_WaitVBL_:FAR
 EXTRN I_SetPalette_:FAR
 EXTRN V_MarkRect_:FAR
-EXTRN V_DrawPatchDirect_:FAR
+;EXTRN V_DrawPatchDirect_:FAR
 EXTRN V_DrawPatch_:FAR
 EXTRN V_DrawFullscreenPatch_:FAR
 EXTRN SFX_PlayPatch_:FAR
@@ -998,7 +992,7 @@ dw OFFSET _I_Quit_addr                         , OFFSET I_Quit_
 dw OFFSET _I_WaitVBL_addr                      , OFFSET I_WaitVBL_
 dw OFFSET _I_SetPalette_addr                   , OFFSET I_SetPalette_
 dw OFFSET _V_MarkRect_addr                     , OFFSET V_MarkRect_
-dw OFFSET _V_DrawPatchDirect_addr              , OFFSET V_DrawPatchDirect_
+;dw OFFSET _V_DrawPatchDirect_addr              , OFFSET V_DrawPatchDirect_
 dw OFFSET _V_DrawPatch_addr                    , OFFSET V_DrawPatch_
 dw OFFSET _V_DrawFullscreenPatch_addr          , OFFSET V_DrawFullscreenPatch_
 dw OFFSET _SFX_PlayPatch_addr                  , OFFSET SFX_PlayPatch_

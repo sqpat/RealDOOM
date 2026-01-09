@@ -393,7 +393,10 @@ mov   di, LOADDEF_Y
 mov   dx, 28
 mov   ax, 72
 
-call  dword ptr ds:[_V_DrawPatchDirect_addr]
+
+db    09Ah
+dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 
 loop_draw_next_load_bar:
 
@@ -442,7 +445,8 @@ mov   ax, si
 mov   dx, di
 sub   ax, 8
 
-call  dword ptr ds:[_V_DrawPatchDirect_addr]
+db    09Ah
+dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 
 
@@ -454,7 +458,8 @@ SELFMODIFY_set_saveloadborder_offset:
 mov   bx, 01000h
 SELFMODIFY_set_saveloadborder_segment:
 mov   cx, 01000h
-call  dword ptr ds:[_V_DrawPatchDirect_addr]
+db    09Ah
+dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
 add   si, 8
 inc   bp
 cmp   bp, 24
@@ -465,7 +470,8 @@ mov   cx, es
 
 mov   dx, di
 mov   ax, si
-call  dword ptr ds:[_V_DrawPatchDirect_addr]
+db    09Ah
+dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
 POPA_NO_AX_MACRO
 ret   
 
@@ -608,7 +614,8 @@ mov   di, LOADDEF_Y
 mov   dx, 28
 mov   ax, 72
 
-call  dword ptr ds:[_V_DrawPatchDirect_addr]
+db    09Ah
+dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 xor   si, si
 
@@ -1100,7 +1107,8 @@ mov   cx, es
 
 mov   dx, 38
 mov   ax, 60
-call  dword ptr ds:[_V_DrawPatchDirect_addr]
+db    09Ah
+dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
 mov   bx, 16
 mov   ax, SOUNDDEF_X
 mov   dx, SOUNDDEF_Y  + LINEHEIGHT*(SOUND_E_SFX_VOL+1)
@@ -1255,7 +1263,8 @@ les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_DOOM)]
 mov   cx, es
 mov   dx, 2
 mov   ax, 94
-call  dword ptr ds:[_V_DrawPatchDirect_addr]
+db    09Ah
+dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
 pop   dx
 pop   cx
 pop   bx
@@ -1278,7 +1287,8 @@ mov   cx, es
 
 mov   dx, 14
 mov   ax, 96
-call  dword ptr ds:[_V_DrawPatchDirect_addr]
+db    09Ah
+dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 
 les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_SKILL)]
@@ -1286,7 +1296,8 @@ mov   cx, es
 
 mov   dx, 38
 mov   ax, 54
-call  dword ptr ds:[_V_DrawPatchDirect_addr]
+db    09Ah
+dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 pop   dx
 pop   cx
@@ -1328,7 +1339,8 @@ mov   cx, es
 
 mov   dx, 38
 mov   ax, 54
-call  dword ptr ds:[_V_DrawPatchDirect_addr]
+db    09Ah
+dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
 pop   dx
 pop   cx
 pop   bx
@@ -1469,7 +1481,8 @@ mov   cx, es
 
 mov   dx, 15
 mov   ax, 108
-call  dword ptr ds:[_V_DrawPatchDirect_addr]
+db    09Ah
+dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 xor   bx, bx
 mov   bl, byte ptr ds:[_detailLevel]
@@ -1479,7 +1492,8 @@ les   bx, dword ptr cs:[_menupatches + bx]
 mov   cx, es
 mov   dx, OPTIONSDEF_Y + LINEHEIGHT*OPTIONS_E_DETAIL
 mov   ax, OPTIONSDEF_X + 175
-call  dword ptr ds:[_V_DrawPatchDirect_addr]
+db    09Ah
+dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 xor   bx, bx
 mov   bl, byte ptr ds:[_showMessages]
@@ -1490,7 +1504,8 @@ mov   cx, es
 mov   dx, OPTIONSDEF_Y + LINEHEIGHT*OPTIONS_E_MESSAGES
 mov   ax, OPTIONSDEF_X + 120
 
-call  dword ptr ds:[_V_DrawPatchDirect_addr]
+db    09Ah
+dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 mov   bx, 10
 mov   cl, byte ptr ds:[_mouseSensitivity]
@@ -1918,7 +1933,8 @@ mov   cx, es
 
 mov   dx, di
 
-call  dword ptr ds:[_V_DrawPatchDirect_addr]
+db    09Ah
+dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 
 loop_next_thermo:
@@ -1927,7 +1943,8 @@ les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_THERMM)]
 mov   cx, es
 mov   dx, di
 mov   ax, si
-call  dword ptr ds:[_V_DrawPatchDirect_addr]
+db    09Ah
+dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 add   si, 8
 dec   bp
@@ -1940,7 +1957,9 @@ mov   cx, es
 mov   dx, di
 mov   ax, si
 
-call  dword ptr ds:[_V_DrawPatchDirect_addr]
+db    09Ah
+dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 
 les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_THERMO)]
 mov   cx, es
@@ -1949,7 +1968,9 @@ mov   cx, es
 mov   dx, di
 SELFMODIFY_thermDot:
 mov   ax, 01000h
-call  dword ptr ds:[_V_DrawPatchDirect_addr]
+db    09Ah
+dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 
 pop   bp
 pop   di
@@ -2188,7 +2209,9 @@ sal   bx, 1
 mov   bx, word ptr ds:[bx + _hu_font]
 xchg  ax, si
 mov   dx, di
-call  dword ptr ds:[_V_DrawPatchDirect_addr]
+db    09Ah
+dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 jmp   loop_next_char_to_write
 exit_m_writetext:
 
@@ -2861,7 +2884,9 @@ les   bx, dword ptr cs:[_menupatches + bx]
 mov   cx, es
 mov   ax, di
 mov   dx, si
-call  dword ptr ds:[_V_DrawPatchDirect_addr]
+db    09Ah
+dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 pop   bx
 
 dont_draw_this_item:
@@ -2886,7 +2911,9 @@ mul   byte ptr cs:[_itemOn]
 add   dx, ax
 sub   dx, 5
 lea   ax, [di - SKULLXOFF]
-call  dword ptr ds:[_V_DrawPatchDirect_addr]
+db    09Ah
+dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 do_exit_check:
 ; actually we quickmap on exit...
 do_m_drawer_exit:
@@ -3388,7 +3415,9 @@ add    ax, word ptr ds:[_viewwindowx]
 les    bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_PAUSE)]
 mov    cx, es
 
-call  dword ptr ds:[_V_DrawPatchDirect_addr]
+db    09Ah
+dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 
 pop    dx
 pop    cx

@@ -97,6 +97,7 @@ file hu_setup.obj
 file hu_lib.obj
 file hu_stuff.obj
 file r_main.obj
+file p_video.obj
 file s_sound.obj
 
 #hack..
