@@ -693,10 +693,10 @@ loop loop_next_linedef
 push ss
 pop  ds
 
+call Z_QuickMapPhysics_
 
 POPA_NO_AX_MACRO
 
-call Z_QuickMapPhysics_
 
 
 ret
