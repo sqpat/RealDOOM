@@ -24,8 +24,6 @@ EXTRN Z_QuickMapRenderPlanes_:FAR
 EXTRN Z_QuickMapUndoFlatCache_:FAR
 EXTRN Z_QuickMapWADPageFrame_:FAR
 EXTRN copystr8_:NEAR
-EXTRN FixedMul_:FAR
-EXTRN FixedMul_:FAR
 EXTRN CopyString13_:NEAR
 EXTRN locallib_fread_nearsegment_:NEAR
 EXTRN locallib_fseek_:NEAR

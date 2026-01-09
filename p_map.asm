@@ -37,6 +37,7 @@ EXTRN FixedMul1632_MapLocal_:NEAR
 EXTRN FixedMul16u32_MapLocal_:NEAR
 EXTRN FixedMul2424_:NEAR
 EXTRN FixedDiv_MapLocal_:NEAR
+EXTRN FixedMul_MapLocal_:NEAR 
 
 ; hack but oh well
 P_SIGHT_STARTMARKER_ = 0 
@@ -5102,10 +5103,7 @@ mov   di, word ptr ds:[_playerMobj]
 les   ax, dword ptr ds:[di + 0Eh]
 mov   dx, es
 
-;call FixedMul_ ; todo make a near one?
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul_addr
+call  FixedMul_MapLocal_
 ;newx.w += playerMobj_pos->x.w;
 
 les   si, dword ptr ds:[_playerMobj_pos]
@@ -5125,10 +5123,7 @@ mov   di, bx  ; di:si is newx
 les   bx, dword ptr ds:[_bestslidefrac]
 mov   cx, es
 
-;call FixedMul_ ; todo make a near one?
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul_addr
+call  FixedMul_MapLocal_
 ; newy.w += playerMobj_pos->y.w;
 
 les   bx, dword ptr ds:[_playerMobj_pos]
@@ -5483,10 +5478,7 @@ mov   cx, si
 mov   ax, DIVLINE_T ptr ds:[_trace.dl_dx]
 mov   dx, DIVLINE_T ptr ds:[_trace.dl_dx+2]
 mov   di, bx   ; backup...
-;call FixedMul_ ; todo make a near one?
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul_addr
+call  FixedMul_MapLocal_
 add   ax, DIVLINE_T ptr ds:[_trace.dl_x]
 adc   dx, DIVLINE_T ptr ds:[_trace.dl_x+2]
 push  dx ; x hi
@@ -5499,10 +5491,7 @@ mov   bx, di ; frac lo
 
 les   ax, DIVLINE_T ptr ds:[_trace.dl_dy]
 mov   dx, es
-;call FixedMul_ ; todo make a near one?
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul_addr
+call  FixedMul_MapLocal_
 
 add   ax, DIVLINE_T ptr ds:[_trace.dl_y]
 adc   dx, DIVLINE_T ptr ds:[_trace.dl_y+2]
@@ -5521,10 +5510,7 @@ xchg  ax, bx
 mov   cx, dx
 les   ax, dword ptr ds:[_aimslope+0]
 mov   dx, es
-;call FixedMul_ ; todo make a near one?
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul_addr
+call  FixedMul_MapLocal_
 
 les   si, dword ptr ds:[_shootz+0]
 mov   di, es
@@ -5843,10 +5829,7 @@ les   ax, DIVLINE_T ptr ds:[_trace.dl_dx]
 mov   dx, es
 push  cx       ; backup frac hi
 mov   di, bx   ; backup
-;call FixedMul_ ; todo make a near one?
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul_addr
+call  FixedMul_MapLocal_
 
 add   ax, DIVLINE_T ptr ds:[_trace.dl_x]
 adc   dx, DIVLINE_T ptr ds:[_trace.dl_x+2]
@@ -5861,10 +5844,7 @@ push  ax
 ;    y = trace.y.w + FixedMul (trace.dy.w, frac);
 les   ax, DIVLINE_T ptr ds:[_trace.dl_dy]
 mov   dx, es
-;call FixedMul_ ; todo make a near one?
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul_addr
+call  FixedMul_MapLocal_
 
 
 add   ax, DIVLINE_T ptr ds:[_trace.dl_y]
@@ -5886,10 +5866,7 @@ mov   cx, dx
 les   ax, dword ptr ds:[_aimslope+0]
 mov   dx, es
 
-;call FixedMul_ ; todo make a near one?
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul_addr
+call  FixedMul_MapLocal_
 
 add   ax, word ptr ds:[_shootz+0]
 adc   dx, word ptr ds:[_shootz+2]

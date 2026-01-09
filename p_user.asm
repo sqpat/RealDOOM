@@ -28,6 +28,7 @@ EXTRN P_PlayerInSpecialSector_:NEAR
 EXTRN P_SetMobjState_:NEAR
 EXTRN P_MovePsprites_:NEAR
 EXTRN P_UseLines_:NEAR
+EXTRN FixedMul_MapLocal_:NEAR
 
 .DATA
 
@@ -142,10 +143,7 @@ les   ax, dword ptr ds:[si + MOBJ_T.m_momx + 0]
 mov   dx, es
 mov   bx, ax
 mov   cx, es
-;call FixedMul_ ; todo make a near one?
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul_addr
+call  FixedMul_MapLocal_
 
 
 xchg  ax, di
@@ -154,10 +152,7 @@ mov   si, dx ; backip in si
 mov   cx, es
 mov   dx, es
 mov   ax, bx
-;call FixedMul_ ; todo make a near one?
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul_addr
+call  FixedMul_MapLocal_
 
 
 add   ax, di
