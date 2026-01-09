@@ -43,6 +43,7 @@ EXTRN S_StopSoundMobjRef_:NEAR
 EXTRN S_StartSound_:NEAR
 EXTRN FixedMulTrigSpeed_MapLocal_:NEAR
 EXTRN FixedMulTrigSpeedNoShift_MapLocal_:NEAR
+EXTRN FastDiv3216u_MapLocal_:NEAR
 
 .DATA
 
@@ -2613,10 +2614,8 @@ sub   cx, word ptr es:[si + MOBJ_POS_T.mp_z + 0]
 mov   ax, cx
 mov   dx, word ptr [bp - 0Ch]
 sbb   dx, word ptr es:[si + MOBJ_POS_T.mp_z + 2]
-;call   FastDiv3216u_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FastDiv3216u_addr
+call  FastDiv3216u_MapLocal_
+
 mov   word ptr ds:[di + MOBJ_T.m_momz + 0], ax
 mov   word ptr ds:[di + MOBJ_T.m_momz + 2], dx
 

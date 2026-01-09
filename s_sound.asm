@@ -20,6 +20,7 @@ INCLUDE sound.inc
 INSTRUCTION_SET_MACRO
 
 
+EXTRN  FastDiv3216u_MapLocal_:NEAR
 
 .DATA
 
@@ -369,17 +370,14 @@ ret
 is_not_map_8:
 mov   dx, MAX_SOUND_VOLUME
 imul  dx
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FastDiv3216u_addr
+call  FastDiv3216u_MapLocal_
+
 and   al, MAX_SOUND_VOLUME
 ret
 dont_clip_map_8_high:
 mov   dx, (MAX_SOUND_VOLUME - 15)
 imul  dx
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FastDiv3216u_addr
+call  FastDiv3216u_MapLocal_
 add   al, 15
 and   al, MAX_SOUND_VOLUME
 ret

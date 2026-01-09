@@ -39,6 +39,7 @@ EXTRN FixedMul2424_:NEAR
 EXTRN FixedDiv_MapLocal_:NEAR
 EXTRN FixedMul_MapLocal_:NEAR 
 EXTRN FixedMulTrigNoShift_MapLocal_:NEAR
+EXTRN FixedMul2432_MapLocal_:NEAR
 
 ; hack but oh well
 P_SIGHT_STARTMARKER_ = 0 
@@ -874,10 +875,7 @@ les   bx, DIVLINE_T ptr ds:[_trace.dl_dx]
 mov   cx, es
 les   ax, dword ptr ds:[si + 0Ch]
 mov   dx, es
-;call  FixedMul2432_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul2432_addr
+call  FixedMul2432_MapLocal_
 
 les   bx, DIVLINE_T ptr ds:[_trace.dl_dy]
 mov   cx, es
@@ -886,10 +884,7 @@ mov   di, dx
 
 les   ax, dword ptr ds:[si + 8]
 mov   dx, es
-;call  FixedMul2432_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul2432_addr
+call  FixedMul2432_MapLocal_
 
 sub   word ptr [bp - 2], ax
 sbb   di, dx		; den = ax:di 
@@ -919,10 +914,7 @@ les   ax, dword ptr ds:[si]
 mov   dx, es
 sub   ax, DIVLINE_T ptr ds:[_trace.dl_x]
 sbb   dx, DIVLINE_T ptr ds:[_trace.dl_x+2]
-;call  FixedMul2432_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul2432_addr
+call  FixedMul2432_MapLocal_
 
 mov   bx, si  ; bx gets  v1
 xchg  si, ax  ;  di:si = first half
@@ -937,10 +929,7 @@ sbb   dx, word ptr ds:[bx + 6]
 les   bx, dword ptr ds:[bx + 8]
 mov   cx, es
 
-;call  FixedMul2432_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul2432_addr
+call  FixedMul2432_MapLocal_
 
 ;    frac = FixedDiv (num , den);
 ;    return frac

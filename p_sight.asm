@@ -23,6 +23,8 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO_NO_MEDIUM
 ;.CODE PARA
 EXTRN FixedDiv_MapLocal_:NEAR
+EXTRN FixedMul2432_MapLocal_:NEAR
+
 
 SEGMENT P_SIGHT_TEXT USE16 PARA PUBLIC 'CODE'
 ASSUME  CS:P_SIGHT_TEXT
@@ -794,9 +796,7 @@ mov   cx, word ptr ds:[di + 0Ah]
 mov   ax, word ptr ds:[si + 0Ch]
 mov   dx, word ptr ds:[si + 0Eh]
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul2432_addr
+call  FixedMul2432_MapLocal_
 
 mov   word ptr [bp - 022h], ax
 mov   word ptr [bp - 020h], dx
@@ -805,9 +805,7 @@ mov   cx, word ptr ds:[di + 0Eh]
 mov   ax, word ptr ds:[si + 8]
 mov   dx, word ptr ds:[si + 0Ah]
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul2432_addr
+call  FixedMul2432_MapLocal_
 
 mov   bx, word ptr [bp - 022h]
 sub   bx, ax
@@ -824,9 +822,7 @@ mov   dx, word ptr ds:[si + 2]
 sub   ax, word ptr ds:[di]
 sbb   dx, word ptr ds:[di + 2]
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul2432_addr
+call  FixedMul2432_MapLocal_
 
 mov   word ptr [bp - 022h], ax
 mov   word ptr [bp - 020h], dx
@@ -837,9 +833,7 @@ mov   dx, word ptr ds:[di + 6]
 sub   ax, word ptr ds:[si + 4]
 sbb   dx, word ptr ds:[si + 6]
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul2432_addr
+call  FixedMul2432_MapLocal_
 
 mov   bx, word ptr [bp - 01Eh]
 mov   cx, word ptr [bp - 01Ch]

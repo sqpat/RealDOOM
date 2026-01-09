@@ -57,6 +57,7 @@ EXTRN GetRaiseState_:NEAR
 EXTRN GetAttackSound_:NEAR
 EXTRN FixedMulTrigNoShift_MapLocal_:NEAR
 EXTRN FixedMulTrigSpeedNoShift_MapLocal_:NEAR
+EXTRN FastDiv3216u_MapLocal_:NEAR
 
 .DATA
 
@@ -2777,10 +2778,8 @@ sbb   dx, word ptr ds:[di + MOBJ_POS_T.mp_z + 2]
 push  ss
 pop   ds
 
-;call   FastDiv3216u_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FastDiv3216u_addr
+call  FastDiv3216u_MapLocal_
+
 
 ;    if (slope < actor->momz.w)
 ;		actor->momz.w -= FRACUNIT/8;
@@ -4083,10 +4082,7 @@ adc   dx, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
 
 mov   bx, cx
 
-;call   FastDiv3216u_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FastDiv3216u_addr
+call  FastDiv3216u_MapLocal_
 mov   word ptr ds:[si + MOBJ_T.m_momz + 0], ax
 mov   word ptr ds:[si + MOBJ_T.m_momz + 2], dx
 

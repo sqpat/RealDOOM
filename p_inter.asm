@@ -38,7 +38,7 @@ EXTRN P_SpawnMobj_:NEAR
 EXTRN P_SetMobjState_:NEAR
 EXTRN FastMul16u32u_MapLocal_:NEAR
 EXTRN FixedMulTrigNoShift_MapLocal_:NEAR
-
+EXTRN FastDiv32u16u_MapLocal_:NEAR
 
 
 .DATA
@@ -1097,7 +1097,8 @@ call  FastMul16u32u_MapLocal_
 
 mov    bx, 500
 do_mass_thrust_div:
-call   dword ptr ds:[_FastDiv32u16u_addr]
+call   FastDiv32u16u_MapLocal_
+
 pop    cx
 pop    bx
 ret    

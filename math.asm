@@ -107,6 +107,7 @@ ENDP
 
 ENDIF
 
+COMMENT @
 
 PROC FixedMulBig16u32_ FAR
 PUBLIC FixedMulBig16u32_
@@ -153,7 +154,6 @@ ret
 
 
 ENDP
-
 
 
 
@@ -262,8 +262,6 @@ ENDP
 
 
 
-
-
 PROC FixedMul1632_  NEAR
 PUBLIC FixedMul1632_
 
@@ -341,6 +339,7 @@ ret
 
 ENDP
 
+@
 
 ; unused
 COMMENT @
@@ -648,7 +647,6 @@ ADD  DX, CX    ; add high bits back
 
 retf
 
-@
 
 ENDP
 
@@ -700,7 +698,6 @@ retf
 ENDP
 
 
-COMMENT @
 ; unused??
 ; both params unsigned. drop all sign extensions..
 PROC FixedMul16u32u_
@@ -740,7 +737,6 @@ ADC DX, 0      ; add carry bit
 ret
 
 ENDP
-@
 
 ; both params unsigned. drop all sign extensions.. and dont shift by 16 like fixed algos!
 PROC FastMul16u32u_  NEAR
@@ -779,7 +775,6 @@ ret
 
 ENDP
 
-COMMENT @
 shift_word:
 mov si, dx
 xchg  ax, dx
