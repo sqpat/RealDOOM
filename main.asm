@@ -21,7 +21,6 @@ INSTRUCTION_SET_MACRO
 EXTRN ST_Drawer_:NEAR
 EXTRN R_ExecuteSetViewSize_:NEAR
 EXTRN Z_QuickMapPhysics_FunctionAreaOnly_:NEAR
-EXTRN R_FillBackScreen_:NEAR
 EXTRN NetUpdate_:FAR
 EXTRN Z_QuickMapMenu_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
@@ -2945,8 +2944,9 @@ cmp   byte ptr cs:[_oldgamestate], bh ; 0
 je    skip_fillbackscreen
 mov   byte ptr ds:[_viewactivestate], bh ; 0
 
-call  R_FillBackScreen_
-
+;call  R_FillBackScreen_
+db      09Ah
+dw      R_FILLBACKSCREEN_OFFSET, PHYSICS_HIGHCODE_SEGMENT
 skip_fillbackscreen:
 
 cmp   cl, bh ; 0

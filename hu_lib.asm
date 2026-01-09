@@ -22,7 +22,7 @@ INSTRUCTION_SET_MACRO
 
 EXTRN R_VideoErase_:NEAR
 EXTRN _w_message:NEAR
-EXTRn V_DrawPatchDirect_:FAR
+EXTRN V_DrawPatchDirect_:FAR
 SHORTFLOORBITS = 3
 
 .DATA
