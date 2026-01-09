@@ -1051,8 +1051,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 
 	"MAX_ADJOINING_SECTORS",
 	"MAX_ADJOINING_SECTORS_IN_WORDS",
-	"MAX_LINES_IN_SECTOR",
-	"MAX_LINES_IN_SECTOR_IN_WORDS",
 
 
 	"_flatcache_nodes",
@@ -2161,8 +2159,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	MAXEVENTS,
 	MAX_ADJOINING_SECTORS,
 	2 * MAX_ADJOINING_SECTORS,
-	MAX_LINES_IN_SECTOR,
-	2 * MAX_LINES_IN_SECTORflatcache_nodes,
+	flatcache_nodes,
 	spritecache_nodes,
 	texturecache_nodes,
 	allocatedflatsperpage,
