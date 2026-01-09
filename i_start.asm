@@ -450,9 +450,6 @@ jmp   D_DoomMain_
 ENDP
 
 
-_big_code_:
-PUBLIC _big_code_
-ret
 
 
 PROC    I_START_ENDMARKER_ NEAR

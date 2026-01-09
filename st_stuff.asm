@@ -33,7 +33,6 @@ ST_Y =		(SCREENHEIGHT - ST_HEIGHT)
 EXTRN Z_QuickMapPhysics_:FAR
 EXTRN Z_QuickMapStatus_:FAR
 EXTRN I_SetPalette_:FAR
-EXTRN V_CopyRect_:FAR
 EXTRN V_MarkRect_:FAR
 EXTRN V_DrawPatch_:FAR
 EXTRN cht_CheckCheat_:NEAR
@@ -213,7 +212,11 @@ mov   cx, ST_HEIGHT
 mov   bx, SCREENWIDTH
 mov   dx, ST_Y * SCREENWIDTH ;0D200h
 xor   ax, ax
-call  V_CopyRect_
+
+db    09Ah
+dw    V_COPYRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+
 
 exit_st_refresh_background:
 pop   dx
@@ -751,7 +754,8 @@ pop   cx    ; height
 pop   ax    ; offset minus stuff
 pop   dx    ; offset
 
-call  V_CopyRect_
+db    09Ah
+dw    V_COPYRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 skip_rect:
 
@@ -853,7 +857,8 @@ xchg  ax, dx
 mov   ax, es
 pop   cx ; restore these args
 pop   bx ; restore these args
-call  V_CopyRect_
+db    09Ah
+dw    V_COPYRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 pop   cx  ; get w
 

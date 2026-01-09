@@ -805,6 +805,68 @@ ret
 ENDP
 
 
+
+
+;void __far V_CopyRect ( uint16_t srcoffset, uint16_t destoffset, uint16_t width, uint16_t height) { 
+
+PROC V_CopyRect_ FAR
+PUBLIC V_CopyRect_
+
+
+;	if (skipdirectdraws) {
+;		return;
+;	}
+
+cmp       byte ptr ds:[_skipdirectdraws], 0
+jne       exit_v_copyrect
+
+
+
+jcxz      exit_v_copyrect    ; todo necessary? ever called with 0 height?
+
+push      si
+push      di
+
+xchg      ax, si ; set src offset
+mov       di, dx ; set dst offset
+
+mov       ax, SCREEN0_SEGMENT
+mov       es, ax
+mov       ax, SCREEN4_SEGMENT
+mov       ds, ax
+
+mov       ax, SCREENWIDTH
+sub       ax, bx        ; screenwidth minus width
+
+mov       dx, cx  ; outer loop counter (height)
+
+
+; bx holds width, refreshes cs
+
+copy_next_rect_line:
+mov       cx, bx
+
+shr       cx, 1
+rep movsw 
+adc       cx, cx
+rep movsb 
+
+add       si, ax
+add       di, ax
+
+dec       dx
+jnz       copy_next_rect_line
+mov       ax, ss
+mov       ds, ax 
+pop       di
+pop       si
+exit_v_copyrect:
+retf      
+
+ENDP
+
+
+
 PROC   P_VIDEO_ENDMARKER_ NEAR
 PUBLIC P_VIDEO_ENDMARKER_ 
 ENDP

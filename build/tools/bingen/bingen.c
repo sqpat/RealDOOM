@@ -227,6 +227,7 @@ void __far HU_Erase();
 void __far R_DrawViewBorder();
 void __far V_DrawPatchDirect();
 void __far R_FillBackScreen();
+void __far V_CopyRect();
 
 
 filelength_t  __near locallib_far_fwrite(void __far* src, uint16_t elementsizetimeselementcount, FILE * fp);
@@ -599,7 +600,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "R_DRAWVIEWBORDER_OFFSET  = 0%Xh\n",                   FP_OFF(R_DrawViewBorder)                   - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "V_DRAWPATCHDIRECT_OFFSET = 0%Xh\n",                   FP_OFF(V_DrawPatchDirect)                  - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "R_FILLBACKSCREEN_OFFSET  = 0%Xh\n",                   FP_OFF(R_FillBackScreen)                   - FP_OFF(P_SIGHT_STARTMARKER));
-
+    fprintf(fp, "V_COPYRECT_OFFSET        = 0%Xh\n",                   FP_OFF(V_CopyRect)                         - FP_OFF(P_SIGHT_STARTMARKER));
 
 
 
