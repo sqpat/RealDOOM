@@ -58,6 +58,7 @@ EXTRN GetAttackSound_:NEAR
 EXTRN FixedMulTrigNoShift_MapLocal_:NEAR
 EXTRN FixedMulTrigSpeedNoShift_MapLocal_:NEAR
 EXTRN FastDiv3216u_MapLocal_:NEAR
+EXTRN R_PointToAngle2_MapLocal_:NEAR
 
 .DATA
 
@@ -1190,10 +1191,7 @@ lea   si, [si - 8]  ; restore actor pos
 push  ss
 pop   ds
 
-;call  R_PointToAngle2_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _R_PointToAngle2_addr
+call  R_PointToAngle2_MapLocal_
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   ds, cx
 
@@ -1722,10 +1720,7 @@ push  ss
 pop   ds
 
 
-;call  R_PointToAngle2_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _R_PointToAngle2_addr
+call  R_PointToAngle2_MapLocal_
 
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   es, cx
@@ -2659,10 +2654,8 @@ xchg  ax, cx
 push  ss
 pop   ds
 
-;call  R_PointToAngle2_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _R_PointToAngle2_addr
+call  R_PointToAngle2_MapLocal_
+
 
 lds   si, dword ptr [bp - 6]
 

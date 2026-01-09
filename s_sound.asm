@@ -21,6 +21,7 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN  FastDiv3216u_MapLocal_:NEAR
+EXTRN R_PointToAngle2_MapLocal_:NEAR
 
 .DATA
 
@@ -186,10 +187,8 @@ mov   dx, word ptr es:[bx + MOBJ_POS_T.mp_x + 2]
 les   bx, dword ptr es:[bx + MOBJ_POS_T.mp_y + 0]
 mov   cx, es
 
+call  R_PointToAngle2_MapLocal_
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _R_PointToAngle2_addr
 
 les   bx, dword ptr ds:[_playerMobj_pos]
 les   bx, dword ptr es:[bx + MOBJ_POS_T.mp_angle + 0]

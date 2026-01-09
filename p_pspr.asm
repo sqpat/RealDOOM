@@ -36,6 +36,7 @@ EXTRN P_SpawnMobj_:NEAR
 EXTRN P_DamageMobj_:NEAR
 EXTRN S_StartSound_:NEAR
 EXTRN FixedMulTrig_MapLocal_:NEAR
+EXTRN R_PointToAngle2_MapLocal_:NEAR
 
 .DATA
 
@@ -566,10 +567,8 @@ mov   dx, es
 push  ss
 pop   ds
 
-;call  R_PointToAngle2_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _R_PointToAngle2_addr
+call  R_PointToAngle2_MapLocal_
+
 
 les   di, dword ptr ds:[_playerMobj_pos]
 mov   word ptr es:[di + MOBJ_POS_T.mp_angle+0], ax
@@ -662,10 +661,7 @@ mov   dx, es
 push  ss
 pop   ds
 
-;call  R_PointToAngle2_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _R_PointToAngle2_addr
+call  R_PointToAngle2_MapLocal_
 
 les   si, dword ptr ds:[_playerMobj_pos]
 mov   bx, ax

@@ -39,9 +39,9 @@ EXTRN V_DrawPatch_:FAR
 EXTRN cht_CheckCheat_:NEAR
 EXTRN cht_GetParam_:NEAR
 EXTRN locallib_printhex_:NEAR
-EXTRN R_PointToAngle2_:FAR
 EXTRN combine_strings_:NEAR
 EXTRN M_Random_:NEAR
+EXTRN Z_QuickMapPhysics_FunctionAreaOnly_:NEAR
 
 .DATA
 
@@ -465,7 +465,13 @@ mov   cx, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
 les   ax, dword ptr es:[si + MOBJ_POS_T.mp_x + 0]
 mov   dx, es
 
-call  R_PointToAngle2_
+
+;call  R_PointToAngle2_
+; TODO! call high
+db    09Ah
+dw    R_POINTTOANGLE2_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+
 xor   bx, bx ; zero bx...
 les   si, dword ptr ds:[_playerMobj_pos]
 cmp   dx, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
@@ -1450,6 +1456,7 @@ mov   byte ptr cs:[_updatedthisframe], ah ; 1
 mov   byte ptr cs:[_do_st_refresh], ah ; 1
 
 call  Z_QuickMapStatus_
+;call  Z_QuickMapPhysics_FunctionAreaOnly_
 call  ST_refreshBackground_
 call  ST_drawWidgets_
 jmp   do_quickmapphysics_and_exit

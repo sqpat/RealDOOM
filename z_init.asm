@@ -68,8 +68,8 @@ EXTRN FastDiv32u16u_:FAR
 EXTRN cht_CheckCheat_Far_:FAR
 EXTRN FastDiv3216u_:FAR
 
-EXTRN R_PointToAngle2_16_:FAR
-EXTRN R_PointToAngle2_:FAR
+;EXTRN R_PointToAngle2_16_:FAR
+;EXTRN R_PointToAngle2_:FAR
 EXTRN R_SetViewSize_:FAR
 EXTRN OutOfThinkers_:FAR
 EXTRN S_InitSFXCache_:FAR
@@ -989,8 +989,8 @@ dw OFFSET _cht_CheckCheat_Far_addr             , OFFSET cht_CheckCheat_Far_
 ;dw OFFSET _FixedMulTrigSpeedNoShift_addr       , OFFSET FixedMulTrigSpeedNoShift_
 ;dw OFFSET _FixedMulTrigSpeed_addr              , OFFSET FixedMulTrigSpeed_
 ;dw OFFSET _FixedMulTrig_addr                   , OFFSET FixedMulTrig_
-dw OFFSET _R_PointToAngle2_16_addr             , OFFSET R_PointToAngle2_16_
-dw OFFSET _R_PointToAngle2_addr                , OFFSET R_PointToAngle2_
+;dw OFFSET _R_PointToAngle2_16_addr             , OFFSET R_PointToAngle2_16_
+;dw OFFSET _R_PointToAngle2_addr                , OFFSET R_PointToAngle2_
 dw OFFSET _R_SetViewSize_addr                  , OFFSET R_SetViewSize_
 dw OFFSET _OutOfThinkers_addr                  , OFFSET OutOfThinkers_
 dw OFFSET _S_InitSFXCache_addr                 , OFFSET S_InitSFXCache_

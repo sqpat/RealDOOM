@@ -40,7 +40,8 @@ EXTRN FixedDiv_MapLocal_:NEAR
 EXTRN FixedMul_MapLocal_:NEAR 
 EXTRN FixedMulTrigNoShift_MapLocal_:NEAR
 EXTRN FixedMul2432_MapLocal_:NEAR
-
+EXTRN R_PointToAngle2_16_MapLocal_:NEAR
+EXTRN R_PointToAngle2_MapLocal_:NEAR
 ; hack but oh well
 P_SIGHT_STARTMARKER_ = 0 
 
@@ -3684,10 +3685,7 @@ mov   es, di   ; lines_physics
 les   ax, dword ptr es:[si + 4]
 mov   dx, es
 
-;call  R_PointToAngle2_16_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _R_PointToAngle2_16_addr
+call  R_PointToAngle2_16_MapLocal_
 
 
 ;    if (side == 1)
@@ -3711,9 +3709,8 @@ mov   bx, ax
 mov   cx, ax
 
 ;call  R_PointToAngle2_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _R_PointToAngle2_addr
+call  R_PointToAngle2_MapLocal_
+
 
 sub   ax, si
 sbb   dx, di

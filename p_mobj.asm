@@ -44,6 +44,7 @@ EXTRN S_StartSound_:NEAR
 EXTRN FixedMulTrigSpeed_MapLocal_:NEAR
 EXTRN FixedMulTrigSpeedNoShift_MapLocal_:NEAR
 EXTRN FastDiv3216u_MapLocal_:NEAR
+EXTRN R_PointToAngle2_MapLocal_:NEAR
 
 .DATA
 
@@ -2525,10 +2526,8 @@ push  ss
 pop   ds
 lea   si, [si - 8]
 
-;call  R_PointToAngle2_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _R_PointToAngle2_addr
+call  R_PointToAngle2_MapLocal_
+
 
 les   bx, dword ptr [bp - 6]
 push  ax  ; bp - 010h

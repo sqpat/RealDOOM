@@ -30,6 +30,7 @@ EXTRN P_MovePsprites_:NEAR
 EXTRN P_UseLines_:NEAR
 EXTRN FixedMul_MapLocal_:NEAR
 EXTRN FixedMulTrig_MapLocal_:NEAR
+EXTRN R_PointToAngle2_MapLocal_:NEAR
 
 .DATA
 
@@ -533,10 +534,8 @@ pop   ds
 
 call_point_to_angle:
 
-;call  R_PointToAngle2_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _R_PointToAngle2_addr
+call  R_PointToAngle2_MapLocal_
+
 
 ;		delta.wu = angle.wu - playerMobj_pos->angle.wu;
 les   di, dword ptr ds:[_playerMobj_pos]

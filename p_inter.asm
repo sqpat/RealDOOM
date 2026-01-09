@@ -39,6 +39,7 @@ EXTRN P_SetMobjState_:NEAR
 EXTRN FastMul16u32u_MapLocal_:NEAR
 EXTRN FixedMulTrigNoShift_MapLocal_:NEAR
 EXTRN FastDiv32u16u_MapLocal_:NEAR
+EXTRN R_PointToAngle2_MapLocal_:NEAR
 
 
 .DATA
@@ -1269,10 +1270,8 @@ mov    dx, word ptr es:[di + MOBJ_POS_T.mp_x + 2]
 les    bx, dword ptr es:[di + MOBJ_POS_T.mp_y + 0]
 mov    cx, es
 
-;call   R_PointToAngle2_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _R_PointToAngle2_addr
+call  R_PointToAngle2_MapLocal_
+
 
 ; only intbits are used, currently in dx.
 
