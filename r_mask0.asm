@@ -844,10 +844,7 @@ jz    do_16_bit_mul_after_all_vissprite
 dec   dx
 do_32_bit_mul_after_all_vissprite:
 
-;call FixedMul_ ; todo make a near one?
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul_addr
+call FixedMulMaskedLocal_
 
 jmp done_with_mul_vissprite
 
@@ -1531,10 +1528,8 @@ SELFMODIFY_MASKED_dc_texturemid_lo_2:
 mov   bx, 01000h
 SELFMODIFY_MASKED_dc_texturemid_hi_2:
 mov   cx, 01000h
-;call  FixedMul_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul_addr
+call FixedMulMaskedLocal_
+
 
 mov   word ptr cs:[SELFMODIFY_MASKED_sprtopscreen_lo+4 - OFFSET R_MASK0_STARTMARKER_], ax	  ; sprtopscreen_step
 mov   word ptr cs:[SELFMODIFY_MASKED_sprtopscreen_hi+4 - OFFSET R_MASK0_STARTMARKER_], dx	  ; sprtopscreen_step
@@ -1707,10 +1702,8 @@ jz    do_16_bit_mul_after_all
 dec   dx
 do_32_bit_mul_after_all:
 
-;call FixedMul_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMul_addr
+call FixedMulMaskedLocal_
+
 
 
 jmp done_with_mul
@@ -5516,7 +5509,67 @@ ENDP
 
 
 
+IF COMPISA GE COMPILE_386
 
+PROC FixedMulMaskedLocal_ NEAR
+; thanks zero318 from discord for improved algorithm  
+
+; DX:AX  *  CX:BX
+;  0  1      2  3
+
+  shl  ecx, 16
+  mov  cx, bx
+  xchg ax, dx
+  shl  eax, 16
+  xchg ax, dx
+  imul  ecx
+  shr  eax, 16
+  ret
+
+
+
+ENDP
+ELSE
+
+
+PROC FixedMulMaskedLocal_ NEAR
+
+; DX:AX  *  CX:BX
+;  0  1      2  3
+
+; thanks zero318 from discord for improved algorithm  
+
+MOV  ES, SI
+MOV  SI, DX
+MOV  word ptr cs:[_selfmodify_restore_original_ax- OFFSET R_MASK0_STARTMARKER_+1], AX
+MUL  BX
+MOV  word ptr cs:[_selfmodify_restore_dx- OFFSET R_MASK0_STARTMARKER_+1], DX
+MOV  AX, SI
+MUL  CX
+XCHG AX, SI
+CWD
+AND  DX, BX
+SUB  SI, DX
+MUL  BX
+_selfmodify_restore_dx:
+mov  BX, 01000h
+ADD  BX, AX
+ADC  SI, DX
+mov  AX, CX
+CWD
+_selfmodify_restore_original_ax:
+mov CX, 01000h
+AND DX, CX
+SUB SI, DX
+MUL CX
+ADD AX, BX
+ADC DX, SI
+MOV SI, ES
+
+ret
+
+ENDP
+ENDIF
 
 
 

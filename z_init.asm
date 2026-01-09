@@ -978,7 +978,7 @@ dw OFFSET _P_InitThinkers_addr                 , OFFSET P_InitThinkers_
 dw OFFSET _ST_Start_addr                       , OFFSET ST_Start_
 dw OFFSET _Z_SetOverlay_addr                   , OFFSET Z_SetOverlay_
 dw OFFSET _Z_QuickMapMusicPageFrame_addr       , OFFSET Z_QuickMapMusicPageFrame_
-dw OFFSET _FixedMul_addr                       , OFFSET FixedMul_
+;dw OFFSET _FixedMul_addr                       , OFFSET FixedMul_
 ;dw OFFSET _FixedMul2432_addr                   , OFFSET FixedMul2432_
 ;dw OFFSET _FixedDiv_addr                       , OFFSET FixedDiv_
 ;dw OFFSET _FixedMulTrigNoShift_addr            , OFFSET FixedMulTrigNoShift_
