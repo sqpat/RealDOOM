@@ -1963,7 +1963,7 @@ div   dl
 xchg  ax, dx
 
 mov   ax, '0'
-add   al, dl  ; 0 + map % 10
+add   al, dh  ; 0 + map % 10
 push  ax  ; lumpname[4], lumpname[5]
 
 mov   ax, 'p' + ('0' SHL 8)
