@@ -21,7 +21,7 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN HUlib_addStringToTextLine_:NEAR
-EXTRN getStringByIndex_:FAR
+
 
 .DATA
 
@@ -64,7 +64,6 @@ ENDM
 
 PROC    HU_Start_ NEAR
 PUBLIC  HU_Start_
-; todo no push/pop because last func did?
 
 push    cx
 push    bx
@@ -144,7 +143,8 @@ add   ax, TITLE_STRING_OFFSET
 lea   bx, [bp - 0100h]
 mov   cx, ss
 push  bx
-call  getStringByIndex_
+call  dword ptr ds:[_getStringByIndex_addr]
+
 
 pop   dx  ;bp - 0100h
 

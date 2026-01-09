@@ -93,6 +93,9 @@ file p_user.obj
 file p_info.obj
 file am_map.obj
 file p_math.obj
+file hu_setup.obj
+file hu_lib.obj
+file hu_stuff.obj
 file s_sound.obj
 
 #hack..
@@ -115,8 +118,6 @@ file g_game.obj
 file g_demo.obj
 file m_misc.obj
 file st_stuff.obj
-file hu_stuff.obj
-file hu_lib.obj
 file d_dmx.obj
 file d_int.obj
 file math.obj
@@ -126,7 +127,6 @@ file main.obj
 file g_setup.obj
 file r_setup.obj
 file st_setup.obj
-file hu_setup.obj
 
 file r_main.obj
 file p_setup.obj

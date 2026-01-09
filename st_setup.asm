@@ -55,7 +55,6 @@ EXTRN _oldweaponsowned:BYTE
 
 EXTRN _st_stopped:BYTE
 EXTRN _st_statusbaron:BYTE
-EXTRN HU_Start_:NEAR
 
 
 
@@ -236,8 +235,8 @@ pop   ds
 ; hardcoded in
 ;mov   word ptr cs:[_w_armsbg + ST_MULTICON_T.st_multicon_oldinum], 0
 
-call  Z_QuickMapPhysics_
-call  HU_Start_
+call  Z_QuickMapPhysics_  ; returns to physics region, must be done.
+
 
 
 POPA_NO_AX_MACRO

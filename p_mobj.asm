@@ -45,6 +45,7 @@ EXTRN FixedMulTrigSpeed_MapLocal_:NEAR
 EXTRN FixedMulTrigSpeedNoShift_MapLocal_:NEAR
 EXTRN FastDiv3216u_MapLocal_:NEAR
 EXTRN R_PointToAngle2_MapLocal_:NEAR
+EXTRN HU_Start_:NEAR
 
 .DATA
 
@@ -339,17 +340,15 @@ dw _ST_Start_addr
 
 ; st start calls hustart when its done.
 
-;call      HU_Start_
+
+call      HU_Start_
 
 
-
+; todo really necessary?
 
 ;call      Z_QuickMapPhysics_
-
 ; ST_Start internally ran I_SetPalette_ which clobbers 8000 to 9400.
-
-
-Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
+;Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
 
 
 mov   byte ptr ds:[_currenttask], TASK_PHYSICS

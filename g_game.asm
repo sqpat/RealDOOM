@@ -44,7 +44,6 @@ EXTRN G_ReadDemoTiccmd_:NEAR
 EXTRN G_WriteDemoTiccmd_:NEAR
 EXTRN S_ResumeSound_:NEAR
 EXTRN S_PauseSound_:NEAR
-EXTRN HU_Ticker_:NEAR
 EXTRN G_CopyCmd_:NEAR
 
 EXTRN FastDiv32u16u_:FAR
@@ -433,7 +432,9 @@ dw      AM_TICKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 
 skip_automap:
-call    HU_Ticker_
+db      09Ah
+dw      HU_TICKER_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 jmp     exit_g_ticker
 
 do_intermission:

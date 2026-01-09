@@ -19,8 +19,6 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN ST_Drawer_:NEAR
-EXTRN HU_Drawer_:NEAR
-EXTRN HU_Erase_:NEAR
 EXTRN R_ExecuteSetViewSize_:NEAR
 EXTRN R_DrawViewBorder_:NEAR
 
@@ -37,7 +35,6 @@ EXTRN I_InitGraphics_:NEAR
 EXTRN Z_ClearDeadCode_:NEAR
 
 EXTRN M_CheckParm_:NEAR
-EXTRN HU_Responder_:NEAR
 EXTRN ST_Responder_:NEAR
 
 EXTRN D_DoAdvanceDemo_:NEAR
@@ -1414,7 +1411,12 @@ cmp   byte ptr ds:[_gamestate], GS_LEVEL
 jne   not_gamestate_level
 mov   ax, bx
 mov   dx, cx
-call  HU_Responder_
+
+;call     Z_QuickMapPhysics_
+db      09Ah
+dw      HU_RESPONDER_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+
 ; jc    exit_gresponder  ; always false. i think only netcode/chat stuff could eat the key
 mov   ax, bx
 mov   dx, cx
@@ -2822,7 +2824,11 @@ jne   dont_erase_hud
 mov   ax, word ptr ds:[_gametic + 2]
 or    ax, word ptr ds:[_gametic + 0]
 je    dont_erase_hud
-call  HU_Erase_
+
+;call    Z_QuickMapPhysics_
+db      09Ah
+dw      HU_ERASE_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 dont_erase_hud:
 cmp   cl, 3
 ja    done_with_gs_level_case
@@ -2916,7 +2922,11 @@ je    skip_hu_drawer
 
 cmp   byte ptr ds:[_inhelpscreens], bh ; 0
 jne   skip_hu_drawer
-call  HU_Drawer_
+
+;call    Z_QuickMapPhysics_
+db      09Ah
+dw      HU_DRAWER_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 skip_hu_drawer:
 
 

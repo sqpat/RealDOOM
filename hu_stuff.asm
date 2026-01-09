@@ -24,9 +24,9 @@ INSTRUCTION_SET_MACRO
 EXTRN HUlib_drawTextLine_:NEAR
 EXTRN HUlib_eraseTextLine_:NEAR
 EXTRN HUlib_addMessageToSText_:NEAR
-EXTRN Z_QuickMapStatus_:FAR
-EXTRN Z_QuickMapPhysics_:FAR
-EXTRN getStringByIndex_:FAR
+
+
+
 EXTRN _w_message:NEAR
 EXTRN _w_title:NEAR
 .DATA
@@ -45,9 +45,14 @@ PROC    HU_STUFF_STARTMARKER_ NEAR
 PUBLIC  HU_STUFF_STARTMARKER_
 ENDP
 
+exit_hu_drawer_early:
+pop   si
+pop   dx
+pop   cx
+pop   bx
+retf   
 
-
-PROC    HU_Drawer_ NEAR
+PROC    HU_Drawer_ FAR
 PUBLIC  HU_Drawer_
 
 push  bx
@@ -61,7 +66,7 @@ cwd
 mov   si, OFFSET _w_message
 mov   bx, word ptr cs:[si + HU_STEXT_T.hu_stext_onptr]
 cmp   byte ptr ds:[bx], al ; 0
-je    exit_hu_drawer
+je    exit_hu_drawer_early
 
 cmp   byte ptr ds:[_hudneedsupdate],al ; 0
 jne   draw_everything
@@ -104,24 +109,36 @@ done_drawing_everything:
 cmp   byte ptr ds:[_automapactive], ch ; 0
 je    check_if_mapped
 inc   cx
-call  Z_QuickMapStatus_
+;call      Z_QuickmapStatus_
+Z_QUICKMAPAI1 pageswapargs_stat_offset_size INDEXED_PAGE_9C00_OFFSET
+Z_QUICKMAPAI4_NO_DX (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
+Z_QUICKMAPAI1_NO_DX (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
+
+
 mov   ax, OFFSET _w_title
 call  HUlib_drawTextLine_
 
 check_if_mapped:
 jcxz  exit_hu_drawer
 
-call  Z_QuickmapPhysics_
+Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
+
 exit_hu_drawer:
 pop   si
 pop   dx
 pop   cx
 pop   bx
-ret   
+retf   
 
 do_quickmap:
 inc   cx    ; mark mapped
-call  Z_QuickMapStatus_
+;call      Z_QuickmapStatus_
+push  si
+Z_QUICKMAPAI1 pageswapargs_stat_offset_size INDEXED_PAGE_9C00_OFFSET
+Z_QUICKMAPAI4_NO_DX (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
+Z_QUICKMAPAI1_NO_DX (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
+pop   si
+
 jmp   done_mapping
 
 
@@ -132,7 +149,7 @@ ENDP
 
 
 
-PROC    HU_Erase_ NEAR
+PROC    HU_Erase_ FAR
 PUBLIC  HU_Erase_
 
 
@@ -189,14 +206,14 @@ ASSUME DS:DGROUP
 pop   si
 pop   dx
 pop   bx
-ret   
+retf
 
 
 ENDP
 
 
 
-PROC    HU_Ticker_ NEAR
+PROC    HU_Ticker_ FAR
 PUBLIC  HU_Ticker_
 
 
@@ -266,7 +283,8 @@ go_get_string:
 lea   bx, [bp - 0100h]
 mov   cx, ss
 push  bx
-call  getStringByIndex_
+
+call  dword ptr ds:[_getStringByIndex_addr]
 
 pop   ax  ;bp - 0100h
 call  HUlib_addMessageToSText_
@@ -284,7 +302,7 @@ exit_hu_ticker:
 LEAVE_MACRO 
 pop   cx
 pop   bx
-ret   
+retf   
 
 
 
@@ -292,7 +310,7 @@ ret
 
 ENDP
 
-PROC    HU_Responder_ NEAR
+PROC    HU_Responder_ FAR
 PUBLIC  HU_Responder_
 
 push  bx
@@ -313,7 +331,7 @@ mov   byte ptr ds:[_message_on], 1
 mov   byte ptr ds:[_message_counter], HU_MSGTIMEOUT
 exit_hu_responder:
 pop   bx
-ret   
+retf   
 
 
 
