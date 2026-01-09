@@ -1827,13 +1827,16 @@ jne   dont_cap_detail
 xor   ax, ax
 dont_cap_detail:
 cbw
+; inlined setviewsize
+
 mov   byte ptr ds:[_detailLevel], al
-xchg  ax, dx
-mov   bx, dx
+mov   byte ptr ds:[_pendingdetail], al
+xchg  ax, bx
 shl   bx, 1
 mov   al, byte ptr ds:[_screenblocks]
+mov   byte ptr ds:[_setblocks], al
+mov   byte ptr ds:[_setsizeneeded], 1
 
-call  dword ptr ds:[_R_SetViewSize_addr]
 
 mov   ax, word ptr cs:[bx + _detaillevel_lookup]
 mov   word ptr ds:[_player + PLAYER_T.player_message], ax
@@ -1863,10 +1866,15 @@ inc   ax
 inc   byte ptr ds:[_screenblocks]
 update_size_display:
 mov   byte ptr ds:[_screenSize], al
-mov   dl, byte ptr ds:[_detailLevel]
 mov   al, byte ptr ds:[_screenblocks]
 
-call  dword ptr ds:[_R_SetViewSize_addr]
+;call  dword ptr ds:[_R_SetViewSize_addr]
+
+mov       byte ptr ds:[_setblocks], al
+mov       al, byte ptr ds:[_detailLevel]
+mov       byte ptr ds:[_setsizeneeded], 1
+mov       byte ptr ds:[_pendingdetail], al
+
 
 pop   dx
 ret   

@@ -33,29 +33,6 @@ INSTRUCTION_SET_MACRO
 
 
 
-;R_SetViewSize_
-
-PROC R_SetViewSize_ FAR
-PUBLIC R_SetViewSize_ 
-
-
-;void __far R_SetViewSize ( uint8_t		blocks, uint8_t		detail ) {
-;    setsizeneeded = true;
-;    setblocks = blocks;
-;    pendingdetail = detail;
-;}
-
-; todo inline and move vars to fixeddata
-
-mov       byte ptr ds:[_setblocks], al
-xor       dh, dh
-mov       byte ptr ds:[_setsizeneeded], 1
-mov       word ptr ds:[_pendingdetail], dx
-retf      
-
-ENDP
-
-
 
 ;void __far R_VideoErase (uint16_t ofs, int16_t count ) 
 ;R_VideoErase_

@@ -28,7 +28,6 @@ EXTRN W_CacheLumpNumDirect_:FAR
 EXTRN W_CacheLumpNameDirectFarString_:FAR
 
 EXTRN W_CheckNumForNameFarString_:NEAR
-EXTRN R_SetViewSize_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
 EXTRN Z_QuickMapMaskedExtraData_:FAR
 EXTRN Z_QuickMapScratch_7000_:FAR
@@ -1489,9 +1488,15 @@ call      DEBUG_PRINT_NOARG_CS_
 mov       ax, OFFSET str_double_dot
 call      DEBUG_PRINT_NOARG_CS_
 
-mov       dl, byte ptr ds:[_detailLevel]
+
+;call      R_SetViewSize_
+
 mov       al, byte ptr ds:[_screenblocks]
-call      R_SetViewSize_
+mov       byte ptr ds:[_setblocks], al
+mov       al, byte ptr ds:[_detailLevel]
+mov       byte ptr ds:[_setsizeneeded], 1
+mov       byte ptr ds:[_pendingdetail], al
+
 
 mov       ax, OFFSET str_triple_dot
 call      DEBUG_PRINT_NOARG_CS_
