@@ -877,7 +877,7 @@ pop    ds
 
 call   Z_QuickMapPhysics_
 
-POPA_NO_AX_OR_BP_MACRO
+POPA_NO_AX_MACRO
 
 ret
 
@@ -891,7 +891,7 @@ TEMPSECNUMS_OFFSET = 0C000h
 PROC    P_LoadSegs_ NEAR
 PUBLIC  P_LoadSegs_
 
-PUSHA_NO_AX_OR_BP_MACRO
+PUSHA_NO_AX_MACRO
 
 mov    si, ax  ; back up lump
 call   W_LumpLength_
