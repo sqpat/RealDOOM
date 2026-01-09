@@ -22,6 +22,7 @@ INCLUDE CONSTANT.INC
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO_NO_MEDIUM
 ;.CODE PARA
+EXTRN FixedDiv_MapLocal_:NEAR
 
 SEGMENT P_SIGHT_TEXT USE16 PARA PUBLIC 'CODE'
 ASSUME  CS:P_SIGHT_TEXT
@@ -845,9 +846,8 @@ mov   cx, word ptr [bp - 01Ch]
 add   ax, word ptr [bp - 022h]
 adc   dx, word ptr [bp - 020h]
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedDiv_addr
+call  FixedDiv_MapLocal_
+
 
 jmp done_with_intercept_vector
 
@@ -887,9 +887,8 @@ xchg dx, bx
 sbb   dx, word ptr ds:[_sightzstart + 2]
 xchg cx, bx			;  frac into cx:bx
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedDiv_addr
+call  FixedDiv_MapLocal_
+
 
 
 mov   bx, OFFSET _bottomslope
@@ -925,9 +924,8 @@ sbb   dx, word ptr ds:[_sightzstart + 2]
 les   bx, dword ptr [bp - 8]	; load frac into cx:bx
 mov   cx, es
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedDiv_addr
+call  FixedDiv_MapLocal_
+
 
 mov   bx, OFFSET _topslope
 cmp   dx, word ptr ds:[bx + 2]

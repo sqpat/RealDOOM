@@ -21,7 +21,8 @@ INSTRUCTION_SET_MACRO
 
 
 
-
+EXTRN FixedDivWholeA_MapLocal_:NEAR
+EXTRN FixedDiv_MapLocal_:NEAR
 EXTRN FixedMul1632_MapLocal_:NEAR
 
 
@@ -464,18 +465,15 @@ add       dx, word ptr ds:[_screen_viewport_height]
 mov       word ptr ds:[_screen_topright_y], dx
 xor       bx, bx
 mov       ax, AUTOMAP_SCREENWIDTH
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedDivWholeA_addr
+call      FixedDivWholeA_MapLocal_
 
 mov       word ptr ds:[_am_scale_mtof + 0], ax
 xchg      ax, bx
 mov       ax, 1
 mov       word ptr ds:[_am_scale_mtof + 2], dx
 mov       cx, dx
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedDivWholeA_addr
+call      FixedDivWholeA_MapLocal_
+
 
 mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx
@@ -600,9 +598,8 @@ xor       cx, cx
 
 mov       ax, AUTOMAP_SCREENWIDTH
 cwd
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedDiv_addr
+call  FixedDiv_MapLocal_
+
 
 xchg      ax, si ; store a
 mov       di, dx ; store a
@@ -610,9 +607,8 @@ mov       bx, bp
 xor       cx, cx
 mov       ax, AUTOMAP_SCREENHEIGHT
 cwd
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedDiv_addr
+call  FixedDiv_MapLocal_
+
 
 
 ;    am_min_scale_mtof = a < b ? a : b;
@@ -823,9 +819,7 @@ dont_set_to_minscale:
 xchg      ax, bx
 mov       cx, dx
 mov       ax, 1
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedDivWholeA_addr
+call      FixedDivWholeA_MapLocal_
 
 mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx
@@ -898,9 +892,8 @@ xor       ax, ax
 mov       word ptr ds:[_am_scale_mtof + 2], ax
 mov       cx, ax
 inc       ax ; 1
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedDivWholeA_addr
+call      FixedDivWholeA_MapLocal_
+
 
 mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx
@@ -1289,9 +1282,8 @@ xchg      ax, bx
 mov       cx, dx
 mov       ax, 1
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedDivWholeA_addr
+call      FixedDivWholeA_MapLocal_
+
 mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx
 pop       ax ; ax gets high
@@ -1316,9 +1308,8 @@ les       bx, dword ptr ds:[_am_max_scale_mtof + 0]
 mov       cx, es
 mov       word ptr ds:[_am_scale_mtof + 0], bx
 mov       word ptr ds:[_am_scale_mtof + 2], cx
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedDivWholeA_addr
+call      FixedDivWholeA_MapLocal_
+
 
 mov       word ptr ds:[_am_scale_ftom + 0], ax
 mov       word ptr ds:[_am_scale_ftom + 2], dx

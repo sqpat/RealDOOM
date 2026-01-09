@@ -18,21 +18,21 @@ INCLUDE defs.inc
 
 INSTRUCTION_SET_MACRO
 
-IF COMPISA LE COMPILE_286
-GLOBAL FixedMul_:FAR
-GLOBAL FixedDiv_:FAR
-ENDIF
 
 
 
 .CODE
 
+PROC   P_MATH_STARTMARKER_ 
+PUBLIC P_MATH_STARTMARKER_
+ENDP
+
 IF COMPISA LE COMPILE_286
 
 
 
-PROC FixedMul_ FAR
-PUBLIC FixedMul_
+PROC   FixedMul_MapLocal_ NEAR
+PUBLIC FixedMul_MapLocal_
 
 ; DX:AX  *  CX:BX
 ;  0  1      2  3
@@ -108,8 +108,8 @@ ENDP
 ENDIF
 
 
-PROC FixedMulBig16u32_ FAR
-PUBLIC FixedMulBig16u32_
+PROC   FixedMulBig16u32_MapLocal_ NEAR
+PUBLIC FixedMulBig16u32_MapLocal_
 
 ; AX:00  *  CX:BX
 ; 1          2  3
@@ -158,8 +158,8 @@ ENDP
 
 
 
-PROC FixedMul2432_ FAR
-PUBLIC FixedMul2432_
+PROC   FixedMul2432_MapLocal_ NEAR
+PUBLIC FixedMul2432_MapLocal_
 
 ; we are being passed two numbers that should be shifted right 8 bits before multiplication
 ; this should lead to a couple fewer 16-bit multiplications if we do things right.
@@ -264,8 +264,8 @@ ENDP
 
 
 
-PROC FixedMul1632_  NEAR
-PUBLIC FixedMul1632_
+PROC   FixedMul1632_MapLocal_  NEAR
+PUBLIC FixedMul1632_MapLocal_
 
 ; AX  *  CX:BX
 ;  0  1   2  3
@@ -342,119 +342,18 @@ ret
 ENDP
 
 
-; unused
-COMMENT @
-
-
-PROC FixedMulTrigOld_
-PUBLIC FixedMulTrigOld_
-
-; DX:AX  *  CX:BX
-;  0  1   2  3
-
-; AX * CX:BX
-; The difference between FixedMulTrig and FixedMul1632:
-; fine sine/cosine lookup tables are -65535 to 65535, so 17 bits. 
-; technically, this resembles 16 * 32 with sign extend, except we cannot use CWD to generate the high 16 bits.
-; So those sign bits which contain bit 17, sign extended must be stored somewhere cannot be regenerated via CWD
-; we basically take the above function and shove sign bits in DS for storage and regenerate DS from SS upon return
-;
-; 
-;BYTE
-; RETURN VALUE
-;                3       2       1		0
-;                DONTUSE USE     USE    DONTUSE
-
-
-;                               AXBXhi	 AXBXlo
-;                       DXBXhi  DXBXlo          
-;               S0BXhi  S0BXlo                          
-;
-;                       AXCXhi  AXCXlo
-;               DXCXhi  DXCXlo  
-;                       
-;               AXS1hi  AXS1lo
-;                               
-;                       
-;       
-
-
-
-push  si
-
-
-mov   es, ax    ; store ax in es
-mov   DS, DX    ; store sign bits in DS
-AND   DX, BX	; S0*BX
-NEG   DX
-mov   SI, DX	; DI stores hi word return
-
-mov   DX, DS    ; restore sign bits from DS
-
-AND  DX, CX    ; DX*CX
-NEG  DX
-add  SI, DX    ; low word result into high word return
-
-mov   DX, DS    ; restore sign bits from DS
-
-; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
-; UNLESS BX is 0. then its also 0!
-
-; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
-MOV  AX, BX    ; create BX copy
-SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
-ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
-
-AND  AX, DX    ; 0 or BX - 1
-ADD  SI, AX    ; add DX * BX high word. 
-
-
-AND  DX, BX    ; DX * BX low bits
-NEG  DX
-XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
-
-mov  AX, ES    ; grab AX from ES
-mul  DX        ; BX*AX  
-add  BX, DX    ; high word result into low word return
-ADC  SI, 0
-
-mov  AX, CX   ; AX holds CX
-
-CWD           ; S1 in DX
-
-mov  CX, ES   ; AX from ES
-AND  DX, CX   ; S1*AX
-NEG  DX
-ADD  SI, DX   ; result into high word return
-
-MUL  CX       ; AX*CX
-
-ADD  AX, BX	  ; set up final return value
-ADC  DX, SI
- 
-MOV CX, SS
-MOV DS, CX    ; put DS back from SS
-
-pop   si
-ret
-
-
-
-ENDP
-
-@ 
 
 
 IF COMPISA GE COMPILE_386
 
-    PROC FixedMulTrig_
-    PUBLIC FixedMulTrig_
+    PROC   FixedMulTrig_MapLocal_
+    PUBLIC FixedMulTrig_MapLocal_
     sal dx, 1
     sal dx, 1   ; DWORD lookup index
     ENDP
 
-    PROC FixedMulTrigNoShift_
-    PUBLIC FixedMulTrigNoShift_
+    PROC   FixedMulTrigNoShift_MapLocal_
+    PUBLIC FixedMulTrigNoShift_MapLocal_
     ; pass in the index already shifted to be a dword lookup..
 
 
@@ -481,8 +380,8 @@ IF COMPISA GE COMPILE_386
 
 ELSE
 
-    PROC FixedMulTrig_
-    PUBLIC FixedMulTrig_
+    PROC   FixedMulTrig_MapLocal_
+    PUBLIC FixedMulTrig_MapLocal_
 
     ; DX:AX  *  CX:BX
     ;  0  1   2  3
@@ -521,8 +420,8 @@ ELSE
     sal dx, 1   ; DWORD lookup index
 
     ENDP
-    PROC FixedMulTrigNoShift_
-    PUBLIC FixedMulTrigNoShift_
+    PROC   FixedMulTrigNoShift_MapLocal_
+    PUBLIC FixedMulTrigNoShift_MapLocal_
     ; pass in the index already shifted to be a dword lookup..
 
     push  si
@@ -599,8 +498,8 @@ ENDIF
 
 IF COMPISA GE COMPILE_386
 
-    PROC FixedMulTrig16_
-    PUBLIC FixedMulTrig16_
+    PROC   FixedMulTrig16_MapLocal_
+    PUBLIC FixedMulTrig16_MapLocal_
 
     ; lookup the fine angle
     mov es, ax
@@ -622,8 +521,8 @@ IF COMPISA GE COMPILE_386
     ENDP
 ELSE
 
-    PROC FixedMulTrig16_
-    PUBLIC FixedMulTrig16_
+    PROC   FixedMulTrig16_MapLocal_
+    PUBLIC FixedMulTrig16_MapLocal_
 
     ; DX:AX  *  CX:00
     ;  0  1   2  
@@ -694,52 +593,6 @@ ENDIF
 
 
 
-COMMENT @
-
-PROC FastMulFriction_
-PUBLIC FastMulFriction_
-
-; hardcoded multiply by E800:0000 
-; this is equivalent to multiply by 13/16 so i tried to subtract 1/16th 3 times via shift
-; however the rounding errors make this not work. could not deterministically
-; figure out rounding errors either. but maybe its possible
-
-; Param is DX:AX
-
-push cx
-push bx
-
-mov cx, dx
-mov bx, ax
-sar cx, 1
-rcr bx, 1
-sar cx, 1
-rcr bx, 1
-sar cx, 1
-rcr bx, 1
-sar cx, 1
-rcr bx, 1
- 
-; shift right to get cx:bx = dx:ax >> 5
-
-; subtract three times (dx:ax >> 5)
-sub ax, bx
-sbb dx, cx
-
-sar cx, 1
-rcr bx, 1
-
-sub ax, bx
-sbb dx, cx
-
-
-pop bx
-pop cx
- 
-ret
-ENDP
-
-@
 
 
 ; todo: hardcode 10, 15, 20, 25 versions on switch case
@@ -752,14 +605,14 @@ ENDP
 
 ; equivalent to an unsigned mult even though it is signed.
 
-PROC FixedMulTrigSpeed_  FAR
-PUBLIC FixedMulTrigSpeed_
+PROC   FixedMulTrigSpeed_MapLocal_  NEAR
+PUBLIC FixedMulTrigSpeed_MapLocal_
 
 SHIFT_MACRO shl dx 2
 
 ENDP
-PROC FixedMulTrigSpeedNoShift_
-PUBLIC FixedMulTrigSpeedNoShift_
+PROC   FixedMulTrigSpeedNoShift_MapLocal_
+PUBLIC FixedMulTrigSpeedNoShift_MapLocal_
 
 ; todo pass this in via ES
 
@@ -782,75 +635,15 @@ ADD  DX, BX    ; add
 
 ; ax * cx:bx
 
-retf
+ret
 
 ENDP
 
-COMMENT @
-PROC FixedMulBig1632_ NEAR
-PUBLIC FixedMulBig1632_
 
-; AX  *  CX:BX
-;  0  1   2  3
-
-; AX:00 * CX:BX
-
-; BUT we are going to "alias" AX to DX and 00 to AX for the function to keep things consistent with above
-
-; DX:00 * CX:BX
-
-;
-; 
-;BYTE
-; RETURN VALUE
-;                3       2       1		0
-;                DONTUSE USE     USE    DONTUSE
-
-
-;                               00BXhi	 00BXlo
-;                       00CXhi  00CXlo
-;               00S1hi  00S1lo
-
-;               S0BXhi  S0BXlo                          
-;                       DXBXhi  DXBXlo          
-;               DXCXhi  DXCXlo  
-;                       
-;                               
-;                       
-;       
-
-
-
-; need to get the sign-extends for DX and CX
-
-
-
-
-
-CWD				; DX/S0
-AND   DX, BX	; S0*BX
-NEG   DX
-XCHG  CX, DX	; CX into DX, CX stores hi result
-
-MOV   ES, AX    ; store DX into ES
-
-MUL   DX        ; CX * DX
-ADD   CX, AX    ; low word result into high word return
-
-MOV  AX, ES    ; grab DX again
-MUL  BX        ; BX * DX
-ADD  DX, CX    ; add high bits back
- 
-
-retf
-
-@
-
-ENDP
 
 ; first param is unsigned so DX and sign can be skipped
-PROC FixedMul16u32_   FAR
-PUBLIC FixedMul16u32_
+PROC   FixedMul16u32_MapLocal_   NEAR
+PUBLIC FixedMul16u32_MapLocal_
 
 ; AX  *  CX:BX
 ;  0  1   2  3
@@ -889,58 +682,18 @@ ADC DX, BX     ; add high word
 
 
 
-retf
-
-
-
-ENDP
-
-
-COMMENT @
-; unused??
-; both params unsigned. drop all sign extensions..
-PROC FixedMul16u32u_
-PUBLIC FixedMul16u32u_
-
-; AX  *  CX:BX
-;  0  1   2  3
-
-; AX * CX:BX
-
-;
-; 
-;BYTE
-; RETURN VALUE
-;                3       2       1		0
-;                DONTUSE USE     USE    DONTUSE
-
-
-;                               AXBXhi	 AXBXlo
-;                       AXCXhi  AXCXlo
-;       
-
-
-
-; need to get the sign-extends for DX and CX
-
-
-XCHG BX, AX    ; AX stored in BX
-MUL  BX        ; AX * BX
-MOV AX, BX     ; AX to AX again. DX has high product, low word result
-MOV BX, DX     ; high word to bx (as low word result)
-MUL  CX        ; AX * CX
-ADD AX, BX     ; add low word
-ADC DX, 0      ; add carry bit
-
-
 ret
 
+
+
 ENDP
-@
+
+
+
 
 ; both params unsigned. drop all sign extensions.. and dont shift by 16 like fixed algos!
-PROC FastMul16u32u_  NEAR
-PUBLIC FastMul16u32u_
+PROC   FastMul16u32u_MapLocal_  NEAR
+PUBLIC FastMul16u32u_MapLocal_
 
 ; AX  *  CX:BX
 ;  0  1   2  3
@@ -975,7 +728,7 @@ ret
 
 ENDP
 
-COMMENT @
+
 shift_word:
 mov si, dx
 xchg  ax, dx
@@ -989,8 +742,8 @@ jmp shift_bits
 ; basically, shift numerator left 16 and divide
 ; DX:AX:00 / CX:BX
 
-PROC div48_32_    NEAR
-PUBLIC div48_32_
+PROC   div48_32_MapLocal_    NEAR
+PUBLIC div48_32_MapLocal_
 
 
 ; di:si get shifted cx:bx
@@ -1343,10 +1096,13 @@ endp
 
 
 
+
+
+
 IF COMPISA LE COMPILE_286
 
-PROC FixedDiv_   FAR
-PUBLIC FixedDiv_
+PROC   FixedDiv_MapLocal_   NEAR
+PUBLIC FixedDiv_MapLocal_
 
 
 ;fixed_t32 FixedDivinner(fixed_t32	a, fixed_t32 b int8_t* file, int32_t line)
@@ -1500,7 +1256,7 @@ SHIFT_MACRO ror dx 2
 do_full_divide:
 
 
-call div48_32_
+call div48_32_MapLocal_
 
 ; set negative if need be...
 
@@ -1529,10 +1285,8 @@ ENDP
 
 ENDIF
 
-@
-
-PROC FastDiv32u16u_   FAR
-PUBLIC FastDiv32u16u_
+PROC   FastDiv32u16u_MapLocal_   NEAR
+PUBLIC FastDiv32u16u_MapLocal_
 
 ;DX:AX / BX (?)
 
@@ -1556,15 +1310,15 @@ mov dx, ds  ; retrieve q1
             ; q0 already in ax
 mov bx, ss
 mov ds, bx  ; restored ds
-retf
+ret
 
 
 
 
 ENDP
 
-PROC FastDiv3216u_    FAR
-PUBLIC FastDiv3216u_
+PROC   FastDiv3216u_MapLocal_    NEAR
+PUBLIC FastDiv3216u_MapLocal_
 
 ;DX:AX / BX (?)
 
@@ -1613,7 +1367,7 @@ neg dx
 
 mov bx, ss
 mov ds, bx  ; restored ds
-retf
+ret
 
 
 
@@ -1621,12 +1375,15 @@ retf
 ENDP
 
 
-COMMENT @
 
+PROC   FixedDivWholeA_MapLocal_FAR_  FAR
+PUBLIC FixedDivWholeA_MapLocal_FAR_
+call   FixedDivWholeA_MapLocal_
+retf
+ENDP
 
-
-PROC FixedDivWholeA_  FAR
-PUBLIC FixedDivWholeA_
+PROC   FixedDivWholeA_MapLocal_  NEAR
+PUBLIC FixedDivWholeA_MapLocal_
 
 
 ; AX:00 / CX:BX
@@ -1708,7 +1465,7 @@ jl do_negative_whole
 
 
 
-call div48_32_whole_
+call div48_32_whole_MapLocal_
 
 
 
@@ -1718,7 +1475,7 @@ do_negative_whole:
 
 
 
-call div48_32_whole_
+call div48_32_whole_MapLocal_
 
 
 
@@ -1753,9 +1510,8 @@ jmp shift_bits_whole
 ; basically, shift numerator left 16 and divide
 ; AX:00:00 / CX:BX
 
-
-PROC div48_32_whole_
-PUBLIC div48_32_whole_
+PROC   div48_32_whole_MapLocal_
+PUBLIC div48_32_whole_MapLocal_
 
 ; di:si get shifted cx:bx
 
@@ -2091,9 +1847,117 @@ ret
 
 endp
 
-@
 
 
+PROC   FixedMul2424_ NEAR
+PUBLIC FixedMul2424_ 
+
+; we are being passed two numbers that should be shifted right 8 bits before multiplication
+; this should lead to a couple fewer 16-bit multiplications if we do things right.
+; CWD becomes a little complicated
+
+; DX:AX  *  CX:BX
+;  0  1      2  3
+
+; with sign extend for byte 3:
+; S0:DX:AX    *   S1:CX:BX
+; S0 = DX sign extend
+; S1 = CX sign extend
+;
+; 
+;BYTE
+; RETURN VALUE
+;                3       2       1		0
+;                DONTUSE USE     USE    DONTUSE
+
+
+;                               AXBXhi	 AXBXlo
+;                       DXBXhi  DXBXlo          
+;               S0BXhi  S0BXlo                          
+;
+;                       AXCXhi  AXCXlo
+;               DXCXhi  DXCXlo  
+;                       
+;               AXS1hi  AXS1lo
+;                               
+;                       
+;       
+
+
+; need to get the sign-extends for DX and CX
+
+push  si
+
+; DX:AX  is   43 21
+; we want:    S4 32  (s = sign bit)
+
+MOV   al, dh ; 43 24
+MOV   dh, ah ; 23 24
+CBW          ; 23 S4
+XCHG AX, DX  ; S4 23
+XCHG AL, AH  ; S4 32
+
+mov   es, ax	; store ax in es
+mov   ds, dx    ; store dx in ds
+
+mov  al, ch     
+CBW
+mov  bl, bh
+mov  bh, cl
+mov  cx, AX
+
+; registers have been prepped. 20-25ish cycles. This is way faster than four 8 bit shifts...
+
+; TODO: actually make the mult faster
+
+mov   ax, ds	; ax holds dx now
+CWD				; S0 in DX
+
+AND   DX, BX	; S0*BX
+NEG   DX
+mov   SI, DX	; DI stores hi word return
+
+; AX still stores DX
+MUL  CX         ; DX*CX
+add  SI, AX    ; low word result into high word return
+
+mov  AX, DS    ; restore DX from ds
+MUL  BX         ; DX*BX
+XCHG BX, AX    ; BX will hold low word return. store bx in ax
+add  SI, DX    ; add high word to result
+
+mov  DX, ES    ; restore AX from ES
+mul  DX        ; BX*AX  
+add  BX, DX    ; high word result into low word return
+ADC  SI, 0
+
+mov  AX, CX   ; AX holds CX
+CWD           ; S1 in DX
+
+mov  CX, ES   ; AX from ES
+AND  DX, CX   ; S1*AX
+NEG  DX
+ADD  SI, DX   ; result into high word return
+
+MUL  CX       ; AX*CX
+
+ADD  AX, BX	  ; set up final return value
+ADC  DX, SI
+
+mov  CX, SS   ; restore DS
+mov  DS, CX
+
+pop   si
+ret
+
+
+
+ENDP
+
+
+PROC   P_MATH_ENDMARKER_ 
+PUBLIC P_MATH_ENDMARKER_
+ENDP
 
 
 END

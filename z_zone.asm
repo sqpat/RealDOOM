@@ -162,6 +162,23 @@ retf
 
 ENDP
 
+PROC   Z_QuickMapPhysics_FunctionAreaOnly_ NEAR
+PUBLIC Z_QuickMapPhysics_FunctionAreaOnly_
+
+push  dx
+push  cx
+push  si
+
+Z_QUICKMAPAI3 pageswapargs_physics_code_offset_size INDEXED_PAGE_9000_OFFSET
+
+pop   si
+pop   cx
+pop   dx
+ret
+
+ENDP
+
+
 PROC Z_QuickMapDemo_ FAR
 PUBLIC Z_QuickMapDemo_
 

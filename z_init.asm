@@ -63,10 +63,10 @@ EXTRN Z_SetOverlay_:FAR
 EXTRN Z_QuickMapMusicPageFrame_:FAR
 EXTRN FixedMul_:FAR
 EXTRN FixedMul2432_:FAR
-EXTRN FixedDiv_:FAR
+;EXTRN FixedDiv_:FAR
 EXTRN FixedMulTrigNoShift_:FAR
 EXTRN FastDiv32u16u_:FAR
-EXTRN FixedDivWholeA_:FAR
+;EXTRN FixedDivWholeA_:FAR
 EXTRN cht_CheckCheat_Far_:FAR
 EXTRN FastDiv3216u_:FAR
 EXTRN FixedMulTrigSpeedNoShift_:FAR
@@ -984,10 +984,10 @@ dw OFFSET _Z_SetOverlay_addr                   , OFFSET Z_SetOverlay_
 dw OFFSET _Z_QuickMapMusicPageFrame_addr       , OFFSET Z_QuickMapMusicPageFrame_
 dw OFFSET _FixedMul_addr                       , OFFSET FixedMul_
 dw OFFSET _FixedMul2432_addr                   , OFFSET FixedMul2432_
-dw OFFSET _FixedDiv_addr                       , OFFSET FixedDiv_
+;dw OFFSET _FixedDiv_addr                       , OFFSET FixedDiv_
 dw OFFSET _FixedMulTrigNoShift_addr            , OFFSET FixedMulTrigNoShift_
 dw OFFSET _FastDiv32u16u_addr                  , OFFSET FastDiv32u16u_
-dw OFFSET _FixedDivWholeA_addr                 , OFFSET FixedDivWholeA_
+;dw OFFSET _FixedDivWholeA_addr                 , OFFSET FixedDivWholeA_
 dw OFFSET _cht_CheckCheat_Far_addr             , OFFSET cht_CheckCheat_Far_
 dw OFFSET _FastDiv3216u_addr                   , OFFSET FastDiv3216u_
 dw OFFSET _FixedMulTrigSpeedNoShift_addr       , OFFSET FixedMulTrigSpeedNoShift_

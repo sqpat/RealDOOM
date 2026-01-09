@@ -22,7 +22,7 @@ EXTRN  Z_QuickMapPhysics_:FAR
 EXTRN  Z_QuickMapRender_:FAR
 EXTRN  Z_QuickMapRenderPlanes_:FAR
 EXTRN  Z_QuickMapUndoFlatCache_:FAR
-EXTRN  FixedDivWholeA_:FAR
+EXTRN  Z_QuickMapPhysics_FunctionAreaOnly_:NEAR
 EXTRN  FixedMul_:FAR
 EXTRN  FastDiv32u16u_:FAR
 
@@ -81,7 +81,11 @@ mov     ax, word ptr ds:[_centerx]
 mov     word ptr cs:[_SELFMODIFY_add_center_x+1], ax
 mov     bx, FIXED_FINE_TAN AND 0FFFFh
 mov     cx, FIXED_FINE_TAN SHR 16
-call    FixedDivWholeA_
+
+; no paging needed, already in this code segment.
+db    09Ah
+dw    FIXEDDIVWHOLEA_ML, PHYSICS_HIGHCODE_SEGMENT
+
 mov     word ptr cs:[_SELFMODIFY_set_focallength_hi + 1], dx
 mov     word ptr cs:[_SELFMODIFY_set_focallength_low + 1], ax
 
@@ -90,10 +94,10 @@ mov     di, si ; loop write out
 xor     bp, bp  ; bp = backwards toggle for si reads...
 
 
+call	Z_QuickMapRender_
+
 ; we break this into 2 loop variants that are self modified in between, due to finetangentinner logic
 ;	for (i = 0; i < FINEANGLES / 2; i++) {
-
-
 
 
 loop_next_fineangle:
@@ -319,6 +323,7 @@ shr    ax, 1
 mov    word ptr cs:[_SELFMODIFY_viewwidth_precalculate+1], ax
 
 call   Z_QuickMapRenderPlanes_
+call   Z_QuickMapPhysics_FunctionAreaOnly_
 
 ; si has viewheight..
 
@@ -345,7 +350,9 @@ skip_labs:
 mov   bx, 08000h
 _SELFMODIFY_viewwidth_precalculate:
 mov   ax, 01000h
-call  FixedDivWholeA_
+db    09Ah
+dw    FIXEDDIVWHOLEA_ML, PHYSICS_HIGHCODE_SEGMENT
+
 mov   bx, YSLOPE_SEGMENT
 mov   es, bx
 stosw
@@ -390,7 +397,9 @@ neg   bx
 sbb   bx, 0
 dont_do_labs:
 mov   ax, 1
-call  FixedDivWholeA_
+db    09Ah
+dw    FIXEDDIVWHOLEA_ML, PHYSICS_HIGHCODE_SEGMENT
+
 
 mov   bx, DISTSCALE_SEGMENT
 mov   es, bx
@@ -615,7 +624,6 @@ mov   word ptr ds:[_viewwindowoffset], ax
 
 
 
-call	Z_QuickMapRender_
 call	R_InitTextureMapping_
 ;call	dword ptr ds:[_R_WriteBackViewConstants]
 db    09Ah
