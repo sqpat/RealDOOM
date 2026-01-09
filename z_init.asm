@@ -71,7 +71,7 @@ EXTRN FastDiv3216u_:FAR
 ;EXTRN R_PointToAngle2_16_:FAR
 ;EXTRN R_PointToAngle2_:FAR
 EXTRN R_SetViewSize_:FAR
-EXTRN OutOfThinkers_:FAR
+;EXTRN OutOfThinkers_:FAR
 EXTRN S_InitSFXCache_:FAR
 EXTRN I_Quit_:FAR
 EXTRN I_WaitVBL_:FAR
@@ -992,7 +992,7 @@ dw OFFSET _cht_CheckCheat_Far_addr             , OFFSET cht_CheckCheat_Far_
 ;dw OFFSET _R_PointToAngle2_16_addr             , OFFSET R_PointToAngle2_16_
 ;dw OFFSET _R_PointToAngle2_addr                , OFFSET R_PointToAngle2_
 dw OFFSET _R_SetViewSize_addr                  , OFFSET R_SetViewSize_
-dw OFFSET _OutOfThinkers_addr                  , OFFSET OutOfThinkers_
+;dw OFFSET _OutOfThinkers_addr                  , OFFSET OutOfThinkers_
 dw OFFSET _S_InitSFXCache_addr                 , OFFSET S_InitSFXCache_
 dw OFFSET _I_Quit_addr                         , OFFSET I_Quit_
 dw OFFSET _I_WaitVBL_addr                      , OFFSET I_WaitVBL_

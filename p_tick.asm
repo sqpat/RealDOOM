@@ -42,6 +42,10 @@ PROC    P_TICK_STARTMARKER_ NEAR
 PUBLIC  P_TICK_STARTMARKER_
 ENDP
 
+
+str_outofthinkers:
+db "Out of thinkers!", 0
+
 ; THINKERREF __near P_GetNextThinkerRef(void) 
 
 PROC P_CreateThinkerFar_ FAR
@@ -88,7 +92,15 @@ add       di, SIZE THINKER_T
 cmp       ax, dx
 jne       loop_check_next_thinker
 error_no_thinker_found:
-call      dword ptr ds:[_OutOfThinkers_addr]
+
+
+push    cs
+mov     ax, OFFSET str_outofthinkers
+push    ax
+call    dword ptr ds:[_I_Error_addr]
+ENDP
+
+
 
 found_thinker:
 mov       word ptr ds:[_currentThinkerListHead], ax

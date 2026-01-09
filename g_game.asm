@@ -63,8 +63,7 @@ PROC    G_GAME_STARTMARKER_ NEAR
 PUBLIC  G_GAME_STARTMARKER_
 ENDP
 
-str_outofthinkers:
-db "Out of thinkers!", 0
+
 
 PROC    G_PlayerFinishLevel_ NEAR
 PUBLIC  G_PlayerFinishLevel_
@@ -132,17 +131,6 @@ call   G_DoLoadLevel_
 
 ret
 ENDP
-
-
-PROC    OutOfThinkers_ FAR
-PUBLIC  OutOfThinkers_
-
-push    cs
-mov     ax, OFFSET str_outofthinkers
-push    ax
-call    I_Error_
-ENDP
-
 
 
 
