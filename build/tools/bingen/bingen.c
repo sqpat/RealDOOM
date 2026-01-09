@@ -224,6 +224,7 @@ void __far HU_Ticker();
 void __far HU_Responder();
 void __far HU_Drawer();
 void __far HU_Erase();
+void __far R_DrawViewBorder();
 
 
 filelength_t  __near locallib_far_fwrite(void __far* src, uint16_t elementsizetimeselementcount, FILE * fp);
@@ -593,6 +594,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "HU_DRAWER_OFFSET      = 0%Xh\n",                   FP_OFF(HU_Drawer)                          - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "HU_ERASE_OFFSET       = 0%Xh\n",                   FP_OFF(HU_Erase)                           - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "HU_RESPONDER_OFFSET   = 0%Xh\n",                   FP_OFF(HU_Responder)                       - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "R_DRAWVIEWBORDER_OFFSET = 0%Xh\n",                 FP_OFF(R_DrawViewBorder)                   - FP_OFF(P_SIGHT_STARTMARKER));
 
 
 

@@ -45,7 +45,6 @@ file p_setup.obj
 
 
 file s_sbsfx.obj
-file r_main.obj
 file f_file.obj
 file i_start.obj
 file w_wad.obj

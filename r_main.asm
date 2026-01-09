@@ -119,7 +119,7 @@ ENDP
 ; could probably be improved a small amount wrt screenwidth constants and viewheight
 ; but dont care much
 
-PROC R_DrawViewBorder_ NEAR
+PROC R_DrawViewBorder_ FAR
 PUBLIC R_DrawViewBorder_ 
 
 
@@ -182,7 +182,7 @@ call  R_VideoErase_
 add   si, bx
 loop  loop_erase_border
 POPA_NO_AX_OR_BP_MACRO
-ret
+retf
 
 
 

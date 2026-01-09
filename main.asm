@@ -20,8 +20,7 @@ INSTRUCTION_SET_MACRO
 
 EXTRN ST_Drawer_:NEAR
 EXTRN R_ExecuteSetViewSize_:NEAR
-EXTRN R_DrawViewBorder_:NEAR
-
+EXTRN Z_QuickMapPhysics_FunctionAreaOnly_:NEAR
 EXTRN R_FillBackScreen_:NEAR
 EXTRN NetUpdate_:FAR
 EXTRN Z_QuickMapMenu_:FAR
@@ -2975,7 +2974,11 @@ je    skip_border_checks
 
 cmp   byte ptr ds:[_inhelpscreens], bh ; 0
 jne   dont_draw_border
-call  R_DrawViewBorder_ 
+;call  R_DrawViewBorder_ 
+db 09Ah
+dw R_DRAWVIEWBORDER_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+
 dont_draw_border:
 dec   byte ptr ds:[_borderdrawcount]
 cmp   byte ptr ds:[_hudneedsupdate], bh ; 0

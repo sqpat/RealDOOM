@@ -54,7 +54,6 @@ GLOBOBJS = &
  p_setup.obj &
  r_init.obj &
  r_setup.obj &
- r_main.obj &
  w_init.obj &
  f_file.obj &
  i_start.obj &

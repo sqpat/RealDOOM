@@ -20,7 +20,7 @@
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
-
+EXTRN R_VideoErase_:NEAR
 EXTRN _w_message:NEAR
 
 SHORTFLOORBITS = 3
@@ -222,7 +222,7 @@ jae   skip_first_videoerase
 mov   ax, bx
 mov   dx, word ptr ds:[_viewwindowx]
 
-call  R_VideoEraseMapLocal_
+call  R_VideoErase_
 
 mov   ax, word ptr ds:[_viewwindowx]
 mov   dx, ax
@@ -237,7 +237,7 @@ mov   ax, bx
 
 do_final_erase:
 
-call  R_VideoEraseMapLocal_
+call  R_VideoErase_
 inc   cx
 add   bx, SCREENWIDTH
 jmp   loop_next_textline_erase
@@ -324,85 +324,6 @@ ret
 
 ENDP
 
-
-;void __far R_VideoErase (uint16_t ofs, int16_t count ) 
-;R_VideoEraseMapLocal_
-
-PROC R_VideoEraseMapLocal_ NEAR
-PUBLIC R_VideoEraseMapLocal_
-
-
-
-PUSHA_NO_AX_OR_BP_MACRO
-SHIFT_MACRO shr   ax 2 ; ofs >> 2
-SHIFT_MACRO shr   dx 2 ; count = count / 4
-;dec   dx          ; offset/di/si by one starting
-;add   ax, dx      ; for backwards iteration starting from count
-;inc   dx
-xchg  ax, si
-mov   cx, dx
-
-;	outp(SC_INDEX, SC_MAPMASK);
-mov   dx, SC_INDEX
-mov   al, SC_MAPMASK
-out   dx, al
-
-;    outp(SC_INDEX + 1, 15);
-inc   dx
-mov   al, 00Fh
-out   dx, al
-
-;    outp(GC_INDEX, GC_MODE);
-mov   dx, GC_INDEX
-mov   al, GC_MODE
-out   dx, al
-
-;    outp(GC_INDEX + 1, inp(GC_INDEX + 1) | 1);
-inc   dx
-in    al, dx
-or    al, 1
-out   dx, al
-
-;    dest = (byte __far*)(destscreen.w + (ofs >> 2));
-;	source = (byte __far*)0xac000000 + (ofs >> 2);
-
-
-les   di, dword ptr ds:[_destscreen]
-add   di, si    ; es:di = destscreen + ofs>>2
-
-;    while (--countp >= 0) {
-;		dest[countp] = source[countp];
-;    }
-
-
-mov   ax, 0AC00h;
-mov   ds, ax        ; ds:si is AC00:ofs>>2
-; es set above
-
-; movsw does not seem to work
-;shr   cx, 1
-;rep movsw 
-;adc   cx, cx
-rep movsb 
-
-mov   ax, ss
-mov   ds, ax
-
-;	outp(GC_INDEX, GC_MODE);
-mov   dx, GC_INDEX
-mov   al, GC_MODE
-out   dx, al
-
-;    outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~1);
-inc   dx
-in    al, dx
-and   al, 0FEh
-out   dx, al
-
-POPA_NO_AX_OR_BP_MACRO
-ret  
-
-ENDP
 
 
 

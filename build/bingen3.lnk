@@ -96,6 +96,7 @@ file p_math.obj
 file hu_setup.obj
 file hu_lib.obj
 file hu_stuff.obj
+file r_main.obj
 file s_sound.obj
 
 #hack..
@@ -131,7 +132,6 @@ file r_setup.obj
 file st_setup.obj
 
 file s_sbsfx.obj
-file r_main.obj
 file binfile.obj
 file w_wad.obj
 file v_video.obj
