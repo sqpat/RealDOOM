@@ -41,6 +41,8 @@ EXTRN FixedMul16u32_MapLocal_:NEAR
 EXTRN FastMul16u32u_MapLocal_:NEAR
 EXTRN S_StopSoundMobjRef_:NEAR
 EXTRN S_StartSound_:NEAR
+EXTRN FixedMulTrigSpeed_MapLocal_:NEAR
+EXTRN FixedMulTrigSpeedNoShift_MapLocal_:NEAR
 
 .DATA
 
@@ -2633,10 +2635,7 @@ and   si, 0FFFCh
 mov   dx, si
 mov   bx, word ptr [bp - 014h]
 mov   ax, FINECOSINE_SEGMENT
-;call FixedMulTrigSpeedNoShift_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigSpeedNoShift_addr
+call  FixedMulTrigSpeedNoShift_MapLocal_
 
 mov   word ptr ds:[di + MOBJ_T.m_momx + 0], ax
 mov   word ptr ds:[di + MOBJ_T.m_momx + 2], dx
@@ -2647,10 +2646,7 @@ mov   dx, si
 ;mov   bx, word ptr [bp - 014h]
 pop   bx
 mov   ax, FINESINE_SEGMENT
-;call FixedMulTrigSpeedNoShift_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigSpeedNoShift_addr
+call  FixedMulTrigSpeedNoShift_MapLocal_
 
 
 mov   word ptr ds:[di + MOBJ_T.m_momy + 0], ax
@@ -2831,10 +2827,8 @@ mov    bl, byte ptr ds:[bx + _mobjinfo + MOBJINFO_T.mobjinfo_speed]
 xor    bh, bh
 push   bx  ; bp - 0Ah
 mov    ax, FINECOSINE_SEGMENT
-;call   FixedMulTrigSpeed_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigSpeed_addr
+call   FixedMulTrigSpeed_MapLocal_
+
 
 mov    word ptr ds:[di + MOBJ_T.m_momx + 0], ax
 mov    word ptr ds:[di + MOBJ_T.m_momx + 2], dx
@@ -2842,10 +2836,8 @@ mov    word ptr ds:[di + MOBJ_T.m_momx + 2], dx
 mov    bx, word ptr [bp - 0Ah]
 mov    dx, si
 mov    ax, FINESINE_SEGMENT
-;call   FixedMulTrigSpeed_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigSpeed_addr
+call   FixedMulTrigSpeed_MapLocal_
+
 
 mov    word ptr ds:[di + MOBJ_T.m_momy + 0], ax
 mov    word ptr ds:[di + MOBJ_T.m_momy + 2], dx

@@ -35,7 +35,7 @@ EXTRN P_NoiseAlert_:NEAR         ; except this is really far
 EXTRN P_SpawnMobj_:NEAR          
 EXTRN P_DamageMobj_:NEAR
 EXTRN S_StartSound_:NEAR
-
+EXTRN FixedMulTrig_MapLocal_:NEAR
 
 .DATA
 
@@ -345,10 +345,7 @@ les   bx, dword ptr ds:[_player + PLAYER_T.player_bob + 0]
 mov   cx, es
 mov   ax, FINECOSINE_SEGMENT
 
-;call  FixedMulTrig_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrig_addr
+call  FixedMulTrig_MapLocal_
 
 
 inc   dx
@@ -361,10 +358,7 @@ and   dh, 0Fh
 les   bx, dword ptr ds:[_player + PLAYER_T.player_bob + 0]
 mov   cx, es
 mov   ax, FINESINE_SEGMENT
-;call  FixedMulTrig_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrig_addr
+call  FixedMulTrig_MapLocal_
 
 add   dx, WEAPONTOP_HIGH
 mov   word ptr ds:[si + 8], ax

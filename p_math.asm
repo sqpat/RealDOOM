@@ -346,13 +346,13 @@ ENDP
 
 IF COMPISA GE COMPILE_386
 
-    PROC   FixedMulTrig_MapLocal_
+    PROC   FixedMulTrig_MapLocal_ NEAR
     PUBLIC FixedMulTrig_MapLocal_
     sal dx, 1
     sal dx, 1   ; DWORD lookup index
     ENDP
 
-    PROC   FixedMulTrigNoShift_MapLocal_
+    PROC   FixedMulTrigNoShift_MapLocal_ NEAR
     PUBLIC FixedMulTrigNoShift_MapLocal_
     ; pass in the index already shifted to be a dword lookup..
 
@@ -380,7 +380,7 @@ IF COMPISA GE COMPILE_386
 
 ELSE
 
-    PROC   FixedMulTrig_MapLocal_
+    PROC   FixedMulTrig_MapLocal_ NEAR
     PUBLIC FixedMulTrig_MapLocal_
 
     ; DX:AX  *  CX:BX
@@ -420,7 +420,7 @@ ELSE
     sal dx, 1   ; DWORD lookup index
 
     ENDP
-    PROC   FixedMulTrigNoShift_MapLocal_
+    PROC   FixedMulTrigNoShift_MapLocal_ NEAR
     PUBLIC FixedMulTrigNoShift_MapLocal_
     ; pass in the index already shifted to be a dword lookup..
 
@@ -498,7 +498,7 @@ ENDIF
 
 IF COMPISA GE COMPILE_386
 
-    PROC   FixedMulTrig16_MapLocal_
+    PROC   FixedMulTrig16_MapLocal_ NEAR
     PUBLIC FixedMulTrig16_MapLocal_
 
     ; lookup the fine angle
@@ -521,7 +521,7 @@ IF COMPISA GE COMPILE_386
     ENDP
 ELSE
 
-    PROC   FixedMulTrig16_MapLocal_
+    PROC   FixedMulTrig16_MapLocal_ NEAR
     PUBLIC FixedMulTrig16_MapLocal_
 
     ; DX:AX  *  CX:00
@@ -611,7 +611,7 @@ PUBLIC FixedMulTrigSpeed_MapLocal_
 SHIFT_MACRO shl dx 2
 
 ENDP
-PROC   FixedMulTrigSpeedNoShift_MapLocal_
+PROC   FixedMulTrigSpeedNoShift_MapLocal_ NEAR
 PUBLIC FixedMulTrigSpeedNoShift_MapLocal_
 
 ; todo pass this in via ES
@@ -1510,7 +1510,7 @@ jmp shift_bits_whole
 ; basically, shift numerator left 16 and divide
 ; AX:00:00 / CX:BX
 
-PROC   div48_32_whole_MapLocal_
+PROC   div48_32_whole_MapLocal_ NEAR
 PUBLIC div48_32_whole_MapLocal_
 
 ; di:si get shifted cx:bx

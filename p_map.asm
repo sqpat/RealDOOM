@@ -38,6 +38,7 @@ EXTRN FixedMul16u32_MapLocal_:NEAR
 EXTRN FixedMul2424_:NEAR
 EXTRN FixedDiv_MapLocal_:NEAR
 EXTRN FixedMul_MapLocal_:NEAR 
+EXTRN FixedMulTrigNoShift_MapLocal_:NEAR
 
 ; hack but oh well
 P_SIGHT_STARTMARKER_ = 0 
@@ -3763,10 +3764,7 @@ mov   cx, dx
 
 mov   dx, si     ; si is now free
 mov   ax, FINECOSINE_SEGMENT
-;call  FixedMulTrigNoShift_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigNoShift_addr
+call  FixedMulTrigNoShift_MapLocal_
 
 
 ;    tmxmove.w = FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, lineangle.hu.intbits, newlen);
@@ -3780,20 +3778,14 @@ push  dx        ; need this once more
 mov   bx, si
 mov   cx, di
 mov   ax, FINECOSINE_SEGMENT
-;call  FixedMulTrigNoShift_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigNoShift_addr
+call  FixedMulTrigNoShift_MapLocal_
 mov   word ptr ds:[_tmxmove+0], ax
 mov   word ptr ds:[_tmxmove+2], dx
 mov   bx, si
 mov   cx, di
 pop   dx
 mov   ax, FINESINE_SEGMENT
-;call  FixedMulTrigNoShift_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigNoShift_addr
+call  FixedMulTrigNoShift_MapLocal_
 mov   word ptr ds:[_tmymove+0], ax
 mov   word ptr ds:[_tmymove+2], dx
 POPA_NO_AX_MACRO

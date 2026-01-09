@@ -37,6 +37,7 @@ EXTRN P_DropWeapon_:NEAR
 EXTRN P_SpawnMobj_:NEAR
 EXTRN P_SetMobjState_:NEAR
 EXTRN FastMul16u32u_MapLocal_:NEAR
+EXTRN FixedMulTrigNoShift_MapLocal_:NEAR
 
 
 
@@ -1339,10 +1340,7 @@ push   dx
 push   cx
 push   bx
 mov    ax, FINECOSINE_SEGMENT
-;call  FixedMulTrigNoShift_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigNoShift_addr
+call  FixedMulTrigNoShift_MapLocal_
 
 add    word ptr ds:[si + MOBJ_T.m_momx + 0], ax
 adc    word ptr ds:[si + MOBJ_T.m_momx + 2], dx
@@ -1353,10 +1351,7 @@ pop    bx
 pop    cx
 pop    dx
 
-;call  FixedMulTrigNoShift_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigNoShift_addr
+call  FixedMulTrigNoShift_MapLocal_
 add    word ptr ds:[si + MOBJ_T.m_momy + 0], ax
 adc    word ptr ds:[si + MOBJ_T.m_momy + 2], dx
 

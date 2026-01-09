@@ -55,6 +55,8 @@ EXTRN GetSpawnHealth_:NEAR
 EXTRN GetSeeState_:NEAR
 EXTRN GetRaiseState_:NEAR
 EXTRN GetAttackSound_:NEAR
+EXTRN FixedMulTrigNoShift_MapLocal_:NEAR
+EXTRN FixedMulTrigSpeedNoShift_MapLocal_:NEAR
 
 .DATA
 
@@ -3461,10 +3463,7 @@ mov   cx, 24
 xor   bx, bx
 mov   dx, word ptr [bp - 6]
 mov   ax, FINECOSINE_SEGMENT
-;call  FixedMulTrigNoShift_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigNoShift_addr
+call  FixedMulTrigNoShift_MapLocal_
 mov   ds, word ptr [bp - 2]
 
 add   ax, word ptr ds:[si + MOBJ_POS_T.mp_x + 0]
@@ -3480,10 +3479,7 @@ xor   bx, bx
 mov   ax, FINESINE_SEGMENT
 pop   dx  ; bp - 6
 
-;call  FixedMulTrigNoShift_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigNoShift_addr
+call  FixedMulTrigNoShift_MapLocal_
 mov   ds, word ptr [bp - 2]
 
 add   ax, word ptr ds:[si + MOBJ_POS_T.mp_y + 0]
@@ -3750,10 +3746,7 @@ push  ax  ; bp - 0Ah
 mov   ax, FINECOSINE_SEGMENT
 xor   bx, bx
 
-;call  FixedMulTrigNoShift_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigNoShift_addr
+call  FixedMulTrigNoShift_MapLocal_
 les   bx, dword ptr [bp - 6]
 
 xchg  ax, cx
@@ -3769,10 +3762,7 @@ mov   cx, 24
 mov   dx, word ptr [bp - 8]
 xor   bx, bx
 mov   ax, FINESINE_SEGMENT
-;call  FixedMulTrigNoShift_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigNoShift_addr
+call  FixedMulTrigNoShift_MapLocal_
 les   bx, dword ptr [bp - 6]
 
 xchg  ax, cx
@@ -3905,10 +3895,8 @@ push  dx  ; angle
 push  bx  ; speed
 mov   ax, FINECOSINE_SEGMENT
 
-;call FixedMulTrigSpeedNoShift_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigSpeedNoShift_addr
+call FixedMulTrigSpeedNoShift_MapLocal_
+
 mov   word ptr ds:[si + MOBJ_T.m_momx + 0], ax
 mov   word ptr ds:[si + MOBJ_T.m_momx + 2], dx
 
@@ -3917,10 +3905,7 @@ pop   bx  ; speed
 pop   dx  ; angle
 mov   ax, FINESINE_SEGMENT
 
-;call FixedMulTrigSpeedNoShift_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigSpeedNoShift_addr
+call FixedMulTrigSpeedNoShift_MapLocal_
 mov   word ptr ds:[si + MOBJ_T.m_momy + 0], ax
 mov   word ptr ds:[si + MOBJ_T.m_momy + 2], dx
 
@@ -4037,10 +4022,7 @@ push  dx  ; bp - 4
 
 mov   ax, FINECOSINE_SEGMENT
 mov   bx, SKULLSPEED_SMALL
-;call FixedMulTrigSpeedNoShift_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigSpeedNoShift_addr
+call FixedMulTrigSpeedNoShift_MapLocal_
 
 mov   word ptr ds:[si + MOBJ_T.m_momx + 0], ax
 mov   word ptr ds:[si + MOBJ_T.m_momx + 2], dx
@@ -4048,10 +4030,7 @@ mov   word ptr ds:[si + MOBJ_T.m_momx + 2], dx
 mov   bx, SKULLSPEED_SMALL
 pop   dx ; bp - 4
 mov   ax, FINESINE_SEGMENT
-;call FixedMulTrigSpeedNoShift_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigSpeedNoShift_addr
+call FixedMulTrigSpeedNoShift_MapLocal_
 
 mov   word ptr ds:[si + MOBJ_T.m_momy + 0], ax
 mov   word ptr ds:[si + MOBJ_T.m_momy + 2], dx
@@ -4232,10 +4211,7 @@ mov   bx, 08000h
 mov   dx, word ptr [bp - 2]
 mov   ax, FINECOSINE_SEGMENT
 
-;call  FixedMulTrigNoShift_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigNoShift_addr
+call  FixedMulTrigNoShift_MapLocal_
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   es, cx
 add   ax, word ptr es:[si + MOBJ_POS_T.mp_x + 0]
@@ -4246,10 +4222,7 @@ mov   cx, 0004Ah
 mov   bx, 08000h
 mov   dx, word ptr [bp - 2]
 mov   ax, FINESINE_SEGMENT
-;call  FixedMulTrigNoShift_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrigNoShift_addr
+call  FixedMulTrigNoShift_MapLocal_
 
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   es, cx

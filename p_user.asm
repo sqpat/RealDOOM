@@ -29,6 +29,7 @@ EXTRN P_SetMobjState_:NEAR
 EXTRN P_MovePsprites_:NEAR
 EXTRN P_UseLines_:NEAR
 EXTRN FixedMul_MapLocal_:NEAR
+EXTRN FixedMulTrig_MapLocal_:NEAR
 
 .DATA
 
@@ -85,10 +86,8 @@ push  cx  ; store for second call
 push  dx  
 
 mov   ax, FINECOSINE_SEGMENT
-;call  FixedMulTrig_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrig_addr
+call  FixedMulTrig_MapLocal_
+
 
 
 mov   bx, word ptr ds:[_playerMobj]
@@ -98,11 +97,8 @@ pop   dx
 pop   cx
 pop   bx
 mov   ax, FINESINE_SEGMENT
+call  FixedMulTrig_MapLocal_
 
-;call  FixedMulTrig_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrig_addr
 
 
 mov   bx, word ptr ds:[_playerMobj]
@@ -231,10 +227,8 @@ sar   cx, 1
 rcr   bx, 1
 mov   ax, FINESINE_SEGMENT
 
-;call  FixedMulTrig_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FixedMulTrig_addr
+call  FixedMulTrig_MapLocal_
+
 
 
 xchg  ax, bx
