@@ -21,7 +21,6 @@ INSTRUCTION_SET_MACRO
 ; NOTE i think a lot of this function is an optimization candidate
 ; todo move jump mult table to cs...
 
-EXTRN M_AddToBox16_:NEAR
 .DATA
 
 

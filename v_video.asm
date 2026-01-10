@@ -21,7 +21,7 @@ INSTRUCTION_SET_MACRO
 ; NOTE i think a lot of this function is an optimization candidate
 ; todo move jump mult table to cs...
 
-EXTRN M_AddToBox16_:NEAR
+
 .DATA
 
 
@@ -31,9 +31,7 @@ EXTRN Z_QuickMapScratch_5000_:FAR
 EXTRN W_CheckNumForNameFarString_:NEAR
 EXTRN W_CacheLumpNumDirectFragment_:FAR
 EXTRN Z_QuickMapByTaskNum_:FAR
-EXTRN Z_QuickMapPhysics_FunctionAreaOnly_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
-EXTRN Z_QuickMapPalette_:FAR
 
 
 _jump_mult_table_3:
@@ -331,25 +329,53 @@ PUBLIC V_MarkRect_
 ;    M_AddToBox16 (dirtybox, x+width-1, y+height-1); 
 
 push      di
+mov       di, OFFSET _dirtybox
 
 add       cx, dx   
 dec       cx      ; y + height - 1
 add       bx, ax
 dec       bx      ; x + width - 1
-mov       di, bx
 
-mov       bx, OFFSET _dirtybox
+push      bx
 
 call      M_AddToBox16_
 
-xchg      ax, di
+pop       ax  ; restore bx
 mov       dx, cx
-mov       bx, OFFSET _dirtybox
 call      M_AddToBox16_
 
 pop       di
 
 retf      
+
+ENDP
+
+;void __near M_AddToBox16 ( int16_t	x, int16_t	y, int16_t __near*	box  );
+
+PROC    M_AddToBox16_ NEAR
+PUBLIC  M_AddToBox16_
+
+mov   bx, (2 * BOXLEFT)
+cmp   ax, word ptr ds:[di + bx]
+jl    write_x_to_left
+mov   bl, (2 * BOXRIGHT)
+cmp   ax, word ptr ds:[di + bx]
+jle   do_y_compare
+write_x_to_left:
+mov   word ptr ds:[di + bx], ax
+do_y_compare:
+xchg  ax, dx
+mov   bl, 2 * BOXBOTTOM
+cmp   ax, word ptr ds:[di + bx]
+jl    write_y_to_bottom
+mov   bl, 2 * BOXTOP
+cmp   ax, word ptr ds:[di + bx]
+jng   exit_m_addtobox16
+write_y_to_bottom:
+mov   word ptr ds:[di + bx], ax
+exit_m_addtobox16:
+ret   
+
 
 ENDP
 

@@ -875,8 +875,9 @@ skytexture         5400:0000
 // [empty]            5000:FFE0 
 // menugraphicspage4  6400:0000
 // [empty]            6D32:0000 ?
-//FREEBYTES 11488 in menu page 4. Eventually move menu code here?
-// note: less room with ultimate due to extra EPI4 patch
+//FREEBYTES 6144 in menu page 4. Eventually move menu code here?
+// note: possibly less room with ultimate due to extra EPI4 patch ? 
+
 
 
 #define NUM_WI_ITEMS 28

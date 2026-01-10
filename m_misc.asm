@@ -26,7 +26,6 @@ EXTRN locallib_ftell_:NEAR
 EXTRN locallib_fwrite_:NEAR
 EXTRN locallib_fread_:NEAR
 EXTRN locallib_strcmp_:NEAR
-EXTRN locallib_strlwr_:NEAR
 
 
 .DATA
@@ -40,52 +39,9 @@ PROC    M_MISC_STARTMARKER_ NEAR
 PUBLIC  M_MISC_STARTMARKER_
 ENDP
 
-; M_Random preserving es:bx
-PROC M_Random_ NEAR
-PUBLIC M_Random_
 
-;    rndindex = (rndindex+1)&0xff;
-;    return rndtable[rndindex];
 
-push     bx
-mov      ax, RNDTABLE_SEGMENT
-mov      es, ax
-xor      ax, ax
-mov      bx, ax
-inc      byte ptr ds:[_rndindex]
-mov      bl, byte ptr ds:[_rndindex]
-mov      al, byte ptr es:[bx]
-pop      bx
-ret
 
-ENDP
-
-;void __near M_AddToBox16 ( int16_t	x, int16_t	y, int16_t __near*	box  );
-
-PROC    M_AddToBox16_ NEAR
-PUBLIC  M_AddToBox16_
-
-cmp   ax, word ptr ds:[bx + (2 * BOXLEFT)]
-jl    write_x_to_left
-cmp   ax, word ptr ds:[bx + (2 * BOXRIGHT)]
-jle   do_y_compare
-mov   word ptr ds:[bx + (2 * BOXRIGHT)], ax
-do_y_compare:
-cmp   dx, word ptr ds:[bx + (2 * BOXBOTTOM)]
-jl    write_y_to_bottom
-cmp   dx, word ptr ds:[bx + (2 * BOXTOP)]
-jng   exit_m_addtobox16
-mov   word ptr ds:[bx + (2 * BOXTOP)], dx
-exit_m_addtobox16:
-ret   
-write_x_to_left:
-mov   word ptr ds:[bx + (2 * BOXLEFT)], ax
-jmp   do_y_compare
-write_y_to_bottom:
-mov   word ptr ds:[bx + (2 * BOXBOTTOM)], dx
-ret   
-
-ENDP
 
 ;boolean __near M_WriteFile (int8_t const* name, void __far* source,filelength_t length );
 ; ax name
@@ -191,63 +147,6 @@ ENDP
 ; int16_t __near M_CheckParm (int8_t *__far check) {
 
 
-
-PROC    M_CheckParm_CS_   NEAR
-PUBLIC  M_CheckParm_CS_
-mov     dx, cs
-ENDP
-PROC    M_CheckParm_   NEAR
-PUBLIC  M_CheckParm_
-
-
-PUSHA_NO_AX_MACRO
-
-
-xchg ax, di   ; di stores arg offset
-mov  bp, dx   ; bp stores arg segment
-
-mov  si, 1
-cmp  si, word ptr ds:[_myargc]
-jge  exit_check_parm_return_0
-
-loop_check_next_parm:
-sal  si, 1
-mov  ax, word ptr ds:[_myargv + si] ; myargv[i]
-mov  dx, ds
-call locallib_strlwr_   ;  locallib_strlwr(myargv[i]);
-
-mov  ax, di
-mov  dx, bp
-mov  bx, word ptr ds:[_myargv + si] ; myargv[i]
-mov  cx, ds
-
-call locallib_strcmp_ ; todo carry return?      ; if ( !locallib_strcmp(check, myargv[i]) )
-
-shr  si, 1
-
-test ax, ax
-mov  ax, si
-je   exit_check_parm_return
-
-xchg ax, bx ; retrieve check
-
-
-inc  si
-cmp  si, word ptr ds:[_myargc]
-jl   loop_check_next_parm
-
-
-exit_check_parm_return_0:
-xor  ax, ax
-exit_check_parm_return:
-
-mov  es, ax
-POPA_NO_AX_MACRO
-mov  ax, es
-
-ret
-
-ENDP
 
 PROC    M_MISC_ENDMARKER_ NEAR
 PUBLIC  M_MISC_ENDMARKER_

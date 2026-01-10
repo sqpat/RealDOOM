@@ -37,10 +37,6 @@ EXTRN V_MarkRect_:FAR
 EXTRN V_DrawPatch_:FAR
 EXTRN cht_CheckCheat_:NEAR
 EXTRN cht_GetParam_:NEAR
-EXTRN locallib_printhex_:NEAR
-EXTRN combine_strings_:NEAR
-EXTRN M_Random_:NEAR
-EXTRN Z_QuickMapPhysics_FunctionAreaOnly_:NEAR
 
 .DATA
 
@@ -564,10 +560,23 @@ ret
 ENDP
 
 
+ENDP
+
 PROC    ST_Ticker_ NEAR
 PUBLIC  ST_Ticker_
 
-call  M_Random_
+;call  M_Random_
+; inline
+
+mov      ax, RNDTABLE_SEGMENT
+mov      es, ax
+inc      byte ptr ds:[_rndindex]
+mov      al, byte ptr ds:[_rndindex]
+xor      ah, ah
+xchg     ax, bx
+mov      bl, byte ptr es:[bx]
+xchg     ax, bx
+
 mov   byte ptr cs:[_st_randomnumber], al
 call  ST_updateWidgets_
 mov   ax, word ptr ds:[_player + PLAYER_T.player_health]
@@ -1461,7 +1470,6 @@ mov   byte ptr cs:[_updatedthisframe], ah ; 1
 mov   byte ptr cs:[_do_st_refresh], ah ; 1
 
 call  Z_QuickMapStatus_
-;call  Z_QuickMapPhysics_FunctionAreaOnly_
 call  ST_refreshBackground_
 call  ST_drawWidgets_
 jmp   do_quickmapphysics_and_exit

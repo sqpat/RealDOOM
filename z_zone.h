@@ -360,11 +360,11 @@ void __far Z_SetOverlay(int8_t wipeId);
 // 96
 #define SFX_DATA_PAGES                              (MUS_DATA_PAGES + NUM_MUSIC_PAGES)
 
-// 104
+// 103
 #define BSP_CODE_PAGE                               SFX_DATA_PAGES + NUM_SFX_PAGES
 
 
-// 105? (+1 for 0)
+// 10? (+1 for 0)
 #define NUM_EMS4_SWAP_PAGES                         (int16_t) BSP_CODE_PAGE + 1
 
 

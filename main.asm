@@ -32,7 +32,6 @@ EXTRN D_DoomMain2_:NEAR
 EXTRN I_InitGraphics_:NEAR
 
 
-EXTRN M_CheckParm_:NEAR
 EXTRN ST_Responder_:NEAR
 
 EXTRN D_DoAdvanceDemo_:NEAR
@@ -2377,31 +2376,6 @@ ENDP
 
 
 
-
-PROC   locallib_strlwr_ NEAR
-PUBLIC locallib_strlwr_
-
-push   si
-xchg   ax, si
-mov    ds, dx
-loop_next_char_strlwr:
-lodsb
-test   al, al
-je     done_with_strlwr
-cmp    al, 'A'
-jb     loop_next_char_strlwr
-cmp    al, 'Z'
-ja     loop_next_char_strlwr
-add    al, 32
-mov    byte ptr ds:[si-1], al
-jmp    loop_next_char_strlwr
-done_with_strlwr:
-push   ss
-pop    ds
-pop    si
-
-ret
-ENDP
 
 ; old version, now used optimized in the single use case in g_setup
 COMMENT @

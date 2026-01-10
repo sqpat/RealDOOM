@@ -57,13 +57,11 @@ EXTRN G_InitNew_:NEAR
 EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
 EXTRN DEBUG_PRINT_NOARG_:NEAR
 EXTRN DEBUG_PRINT_:NEAR
-EXTRN M_CheckParm_CS_:NEAR
 EXTRN combine_strings_:NEAR
 EXTRN I_SetPalette_:FAR
 EXTRN locallib_strcpy_:NEAR
 
 EXTRN CopyString13_:NEAR
-EXTRN M_CheckParm_:NEAR
 EXTRN _defaults:NEAR
 EXTRN _scantokey:NEAR
 EXTRN _used_defaultfile:NEAR
@@ -1893,6 +1891,89 @@ ENDP
 
 
 
+; todo inline only use?
+
+PROC   locallib_strlwr_ NEAR
+PUBLIC locallib_strlwr_
+
+push   si
+xchg   ax, si
+mov    ds, dx
+loop_next_char_strlwr:
+lodsb
+test   al, al
+je     done_with_strlwr
+cmp    al, 'A'
+jb     loop_next_char_strlwr
+cmp    al, 'Z'
+ja     loop_next_char_strlwr
+add    al, 32
+mov    byte ptr ds:[si-1], al
+jmp    loop_next_char_strlwr
+done_with_strlwr:
+push   ss
+pop    ds
+pop    si
+
+ret
+ENDP
+
+PROC    M_CheckParm_CS_   NEAR
+PUBLIC  M_CheckParm_CS_
+mov     dx, cs
+ENDP
+PROC    M_CheckParm_   NEAR
+PUBLIC  M_CheckParm_
+
+
+PUSHA_NO_AX_MACRO
+
+
+xchg ax, di   ; di stores arg offset
+mov  bp, dx   ; bp stores arg segment
+
+mov  si, 1
+cmp  si, word ptr ds:[_myargc]
+jge  exit_check_parm_return_0
+
+loop_check_next_parm:
+sal  si, 1
+mov  ax, word ptr ds:[_myargv + si] ; myargv[i]
+mov  dx, ds
+call locallib_strlwr_   ;  locallib_strlwr(myargv[i]);
+
+mov  ax, di
+mov  dx, bp
+mov  bx, word ptr ds:[_myargv + si] ; myargv[i]
+mov  cx, ds
+
+call locallib_strcmp_ ; todo carry return?      ; if ( !locallib_strcmp(check, myargv[i]) )
+
+shr  si, 1
+
+test ax, ax
+mov  ax, si
+je   exit_check_parm_return
+
+xchg ax, bx ; retrieve check
+
+
+inc  si
+cmp  si, word ptr ds:[_myargc]
+jl   loop_check_next_parm
+
+
+exit_check_parm_return_0:
+xor  ax, ax
+exit_check_parm_return:
+
+mov  es, ax
+POPA_NO_AX_MACRO
+mov  ax, es
+
+ret
+
+ENDP
 
 PROC    D_INIT_ENDMARKER_ NEAR
 PUBLIC  D_INIT_ENDMARKER_
