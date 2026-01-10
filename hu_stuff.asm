@@ -154,29 +154,31 @@ PUBLIC  HU_Erase_
 
 
 push  bx
+push  cx
 push  dx
 push  si
 
+
 push  cs
 pop   ds
-ASSUME DS:HU_STUFF_TEXT
 
-mov   dx, OFFSET _w_message
-xor   bx, bx
-mov   si, word ptr ds:[OFFSET _w_message + HU_STEXT_T.hu_stext_onptr]
+mov   bx, OFFSET _w_message
+mov   dx, bx
+
+xor   cx, cx
+mov   si, word ptr ds:[bx + HU_STEXT_T.hu_stext_onptr]
 
 loop_hu_erase_next_line:
-cmp   bl, byte ptr ds:[OFFSET _w_message + HU_STEXT_T.hu_stext_height]
+cmp   cl, byte ptr ds:[bx + HU_STEXT_T.hu_stext_height]
 jge   end_erase_loop_erase_last_line
-cmp   byte ptr ds:[OFFSET _w_message + HU_STEXT_T.hu_stext_laston], bh   ; known 0
+cmp   byte ptr ds:[bx + HU_STEXT_T.hu_stext_laston], ch   ; known 0
 je    dont_mark_line_for_update
 
 
-cmp   byte ptr ds:[si], bh ; known 0
+cmp   byte ptr ds:[si], ch ; known 0
 jne   dont_mark_line_for_update
-xchg  dx, si
-mov   byte ptr ds:[si + OFFSET _w_message + HU_TEXTLINE_T.hu_textline_needsupdate], 4
-xchg  dx, si
+
+mov   byte ptr ds:[si + bx + HU_TEXTLINE_T.hu_textline_needsupdate], 4
 
 
 dont_mark_line_for_update:
@@ -186,25 +188,25 @@ mov   ax, dx
 call  HUlib_eraseTextLine_
 
 
-inc   bx
+inc   cx
 add   dx, (SIZE HU_TEXTLINE_T)
 jmp   loop_hu_erase_next_line
 
 
 end_erase_loop_erase_last_line:
 lodsb ; word ptr ds:[OFFSET _w_message + HU_STEXT_T.hu_stext_onptr]
-mov   byte ptr ds:[OFFSET _w_message + HU_STEXT_T.hu_stext_laston], al
+mov   byte ptr ds:[bx + HU_STEXT_T.hu_stext_laston], al
 mov   ax, OFFSET _w_title
 
 call  HUlib_eraseTextLine_
 
 push  ss
 pop   ds
-ASSUME DS:DGROUP
 
 
 pop   si
 pop   dx
+pop   cx
 pop   bx
 retf
 

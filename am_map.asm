@@ -798,6 +798,7 @@ mov       bx, 0B333h    ; 0.7*FRACUNIT
 xor       cx, cx
 mov       dx, word ptr ds:[_am_min_scale_mtof]
 xor       ax, ax
+; todo magic number multiply possible?
 call      FastDiv3216u_MapLocal_
 
 mov       word ptr ds:[_am_scale_mtof + 0], ax

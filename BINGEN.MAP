@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/10 11:01:04
+Created on:       26/01/10 13:30:17
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -70,23 +70,23 @@ P_USER_TEXT            CODE           AUTO           225d:847a       00000431
 P_INFO_TEXT            CODE           AUTO           225d:88ac       00000345
 AM_MAP_TEXT            CODE           AUTO           225d:8bf2       00000b2e
 P_MATH_TEXT            CODE           AUTO           225d:9720       0000089a
-HU_SETUP_TEXT          CODE           AUTO           225d:9fba       00000245
-HU_LIB_TEXT            CODE           AUTO           225d:a200       0000014c
-HU_STUFF_TEXT          CODE           AUTO           225d:a34c       000001d0
-R_MAIN_TEXT            CODE           AUTO           225d:a51c       0000009b
-P_VIDEO_TEXT           CODE           AUTO           225d:a5b8       00000432
-S_SOUND_TEXT           CODE           AUTO           225d:a9ea       0000051b
-D_INIT_TEXT            CODE           AUTO           2d4d:0006       00000cb0
-S_INIT_TEXT            CODE           AUTO           2d4d:0cb6       00000562
-ST_INIT_TEXT           CODE           AUTO           2d4d:1218       00000203
-R_INIT_TEXT            CODE           AUTO           2d4d:141c       000007ad
-W_INIT_TEXT            CODE           AUTO           2d4d:1bca       0000016e
-I_INIT_TEXT            CODE           AUTO           2d4d:1d38       0000019b
-Z_INIT_TEXT            CODE           AUTO           2d4d:1ed4       00000794
-S_SBINIT_TEXT          CODE           AUTO           2d4d:2668       000002e5
-P_INIT_TEXT            CODE           AUTO           2d4d:294e       00000274
-I_QUIT_TEXT            CODE           AUTO           2d4d:2bc2       000001a9
-I_IBM_TEXT             CODE           AUTO           2d4d:2d6c       00000051
+HU_SETUP_TEXT          CODE           AUTO           225d:9fba       00000247
+HU_LIB_TEXT            CODE           AUTO           225d:a202       0000014c
+HU_STUFF_TEXT          CODE           AUTO           225d:a34e       000001d0
+R_MAIN_TEXT            CODE           AUTO           225d:a51e       0000009b
+P_VIDEO_TEXT           CODE           AUTO           225d:a5ba       00000432
+S_SOUND_TEXT           CODE           AUTO           225d:a9ec       0000051b
+D_INIT_TEXT            CODE           AUTO           2d4d:0008       00000cb0
+S_INIT_TEXT            CODE           AUTO           2d4d:0cb8       00000562
+ST_INIT_TEXT           CODE           AUTO           2d4d:121a       00000203
+R_INIT_TEXT            CODE           AUTO           2d4d:141e       000007ad
+W_INIT_TEXT            CODE           AUTO           2d4d:1bcc       0000016e
+I_INIT_TEXT            CODE           AUTO           2d4d:1d3a       0000019b
+Z_INIT_TEXT            CODE           AUTO           2d4d:1ed6       00000794
+S_SBINIT_TEXT          CODE           AUTO           2d4d:266a       000002e5
+P_INIT_TEXT            CODE           AUTO           2d4d:2950       00000274
+I_QUIT_TEXT            CODE           AUTO           2d4d:2bc4       000001a9
+I_IBM_TEXT             CODE           AUTO           2d4d:2d6e       00000051
 bingen_TEXT            CODE           AUTO           2d4d:2dc0       00001449
 D_NET_TEXT             CODE           AUTO           2d4d:420a       000000b2
 G_GAME_TEXT            CODE           AUTO           2d4d:42bc       0000037a
@@ -751,132 +751,132 @@ Module: p_math.obj(p_math.ASM)
 Module: hu_setup.obj(hu_setup.ASM)
 225d:a11f      _w_title
 225d:a177      HU_Start_
-225d:a1ff*     HU_SETUP_ENDMARKER_
+225d:a201*     HU_SETUP_ENDMARKER_
 225d:9fba*     HU_SETUP_STARTMARKER_
 225d:9fba      _w_message
 Module: hu_lib.obj(hu_lib.ASM)
-225d:a200*     locallib_toupper_MapLocal_
-225d:a200*     HULIB_STARTMARKER_
-225d:a2f9      HUlib_addMessageToSText_
-225d:a34c*     HULIB_ENDMARKER_
-225d:a237      HUlib_drawTextLine_
-225d:a28c      HUlib_eraseTextLine_
-225d:a20b      HUlib_addStringToTextLine_
+225d:a202*     locallib_toupper_MapLocal_
+225d:a202*     HULIB_STARTMARKER_
+225d:a2fb      HUlib_addMessageToSText_
+225d:a34e*     HULIB_ENDMARKER_
+225d:a239      HUlib_drawTextLine_
+225d:a28e      HUlib_eraseTextLine_
+225d:a20d      HUlib_addStringToTextLine_
 Module: hu_stuff.obj(hu_stuff.ASM)
-225d:a423      HU_Erase_
-225d:a4f8      HU_Responder_
-225d:a351      HU_Drawer_
-225d:a51c*     HU_STUFF_ENDMARKER_
-225d:a34c*     HU_STUFF_STARTMARKER_
-225d:a465      HU_Ticker_
+225d:a425      HU_Erase_
+225d:a4fa      HU_Responder_
+225d:a353      HU_Drawer_
+225d:a51e*     HU_STUFF_ENDMARKER_
+225d:a34e*     HU_STUFF_STARTMARKER_
+225d:a467      HU_Ticker_
 Module: r_main.obj(r_main.ASM)
-225d:a51c      R_VideoErase_
-225d:a55b      R_DrawViewBorder_
+225d:a51e      R_VideoErase_
+225d:a55d      R_DrawViewBorder_
 Module: p_video.obj(p_video.ASM)
-225d:a9ea*     P_VIDEO_ENDMARKER_
-225d:a7d5      R_FillBackScreen_
-225d:a9b3      V_CopyRect_
-225d:a5b8*     P_VIDEO_STARTMARKER_
-225d:a5c3      V_DrawPatchDirect_
-225d:a709*     V_DrawPatch5000Screen0_
+225d:a9ec*     P_VIDEO_ENDMARKER_
+225d:a7d7      R_FillBackScreen_
+225d:a9b5      V_CopyRect_
+225d:a5ba*     P_VIDEO_STARTMARKER_
+225d:a5c5      V_DrawPatchDirect_
+225d:a70b*     V_DrawPatch5000Screen0_
 Module: s_sound.obj(s_sound.ASM)
-225d:ae7a      S_Start_
-225d:a9ea*     _channels
-225d:ada3      S_StartSoundFar_
-225d:abe9*     S_StopSound_
-225d:ada7      S_StartSound_
-225d:aa87*     S_StopChannel_
-225d:ac32*     S_getChannel_
-225d:ab40*     S_AdjustSoundParamsVol_
-225d:aed9*     CopyString13_physics_seg_
-225d:af05      S_SOUND_ENDMARKER_
-225d:ac2d      S_StopSoundMobjRef_
-225d:aad4*     S_AdjustSoundParamsSep_
-225d:adb4      S_StartSoundWithSecnum_
-225d:acb0*     S_StartSoundWithPosition_
-225d:adc1      S_UpdateSounds_
-225d:a9ea*     S_SOUND_STARTMARKER_
+225d:ae7c      S_Start_
+225d:a9ec*     _channels
+225d:ada5      S_StartSoundFar_
+225d:abeb*     S_StopSound_
+225d:ada9      S_StartSound_
+225d:aa89*     S_StopChannel_
+225d:ac34*     S_getChannel_
+225d:ab42*     S_AdjustSoundParamsVol_
+225d:aedb*     CopyString13_physics_seg_
+225d:af07      S_SOUND_ENDMARKER_
+225d:ac2f      S_StopSoundMobjRef_
+225d:aad6*     S_AdjustSoundParamsSep_
+225d:adb6      S_StartSoundWithSecnum_
+225d:acb2*     S_StartSoundWithPosition_
+225d:adc3      S_UpdateSounds_
+225d:a9ec*     S_SOUND_STARTMARKER_
 Module: d_init.obj(d_init.ASM)
-2d4d:0b86      I_InitGraphics_
-2d4d:0cb6*     D_INIT_ENDMARKER_
-2d4d:0006*     D_INIT_STARTMARKER_
-2d4d:0c77*     M_CheckParm_CS_
-2d4d:0c0d      G_BeginRecording_
-2d4d:0582      D_DoomMain2_
-2d4d:02f8*     M_LoadDefaults_
-2d4d:04a8*     M_ScanTranslateDefaults_
-2d4d:0c48*     D_DoomMain_
-2d4d:0c79      M_CheckParm_
-2d4d:0c5b*     locallib_strlwr_
+2d4d:0b88      I_InitGraphics_
+2d4d:0cb8*     D_INIT_ENDMARKER_
+2d4d:0008*     D_INIT_STARTMARKER_
+2d4d:0c79*     M_CheckParm_CS_
+2d4d:0c0f      G_BeginRecording_
+2d4d:0584      D_DoomMain2_
+2d4d:02fa*     M_LoadDefaults_
+2d4d:04aa*     M_ScanTranslateDefaults_
+2d4d:0c4a*     D_DoomMain_
+2d4d:0c7b      M_CheckParm_
+2d4d:0c5d*     locallib_strlwr_
 Module: s_init.obj(s_init.ASM)
-2d4d:1218      S_INIT_ENDMARKER_
-2d4d:0cb6      S_INIT_STARTMARKER_
-2d4d:0cba      LoadSFXWadLumps_
-2d4d:11ea*     I_GetSfxLumpNum_
+2d4d:121a      S_INIT_ENDMARKER_
+2d4d:0cb8      S_INIT_STARTMARKER_
+2d4d:0cbc      LoadSFXWadLumps_
+2d4d:11ec*     I_GetSfxLumpNum_
 Module: st_init.obj(st_init.ASM)
-2d4d:1218*     ST_INIT_STARTMARKER_
-2d4d:141b*     ST_INIT_ENDMARKER_
-2d4d:12bb      ST_Init_
+2d4d:121a*     ST_INIT_STARTMARKER_
+2d4d:141d*     ST_INIT_ENDMARKER_
+2d4d:12bd      ST_Init_
 Module: r_init.obj(r_init.ASM)
-2d4d:1785*     R_InitTextures_
-2d4d:1a0d      R_Init_
-2d4d:14a6*     R_GenerateLookup_
-2d4d:1b85*     W_CacheLumpNumDirectSmall_
+2d4d:1787*     R_InitTextures_
+2d4d:1a0f      R_Init_
+2d4d:14a8*     R_GenerateLookup_
+2d4d:1b87*     W_CacheLumpNumDirectSmall_
 Module: w_init.obj(w_init.ASM)
-2d4d:1bca*     W_INIT_STARTMARKER_
-2d4d:1d38*     W_INIT_ENDMARKER_
-2d4d:1bf6      W_AddFile_
+2d4d:1bcc*     W_INIT_STARTMARKER_
+2d4d:1d3a*     W_INIT_ENDMARKER_
+2d4d:1bf8      W_AddFile_
 Module: i_init.obj(i_init.ASM)
-2d4d:1ed3*     I_INIT_ENDMARKER_
-2d4d:1db4      I_Init_
-2d4d:1d38*     I_INIT_STARTMARKER_
+2d4d:1ed5*     I_INIT_ENDMARKER_
+2d4d:1db6      I_Init_
+2d4d:1d3a*     I_INIT_STARTMARKER_
 Module: z_init.obj(z_init.ASM)
-2d4d:225a*     Z_ReadFileRegionWithIndex_
-2d4d:1ed4      _doomdata_bin_string
-2d4d:2668*     Z_INIT_ENDMARKER_
-2d4d:2492      Z_LoadBinaries_
-2d4d:21d5      Z_GetEMSPageMap_
-2d4d:229c*     Z_DoRenderCodeLoad_
-2d4d:1ed4*     Z_INIT_STARTMARKER_
-2d4d:2129      Z_InitEMS_
+2d4d:225c*     Z_ReadFileRegionWithIndex_
+2d4d:1ed6      _doomdata_bin_string
+2d4d:266a*     Z_INIT_ENDMARKER_
+2d4d:2494      Z_LoadBinaries_
+2d4d:21d7      Z_GetEMSPageMap_
+2d4d:229e*     Z_DoRenderCodeLoad_
+2d4d:1ed6*     Z_INIT_STARTMARKER_
+2d4d:212b      Z_InitEMS_
 Module: s_sbinit.obj(s_sbinit.ASM)
-2d4d:27dc      SB_SetPlaybackRate_
-2d4d:2924      SB_StartInit_
-2d4d:26cd      _SB_DSP_Version
-2d4d:294d*     S_SBINIT_ENDMARKER_
-2d4d:28b6*     SB_InitCard_
-2d4d:2668*     S_SBINIT_STARTMARKER_
-2d4d:26df*     SB_SaveVoiceVolume_
-2d4d:26d0*     SB_ReadMixer_
-2d4d:2877*     SB_GetDSPVersion_
-2d4d:2707      SB_DSP1xx_BeginPlayback_
-2d4d:270e*     SB_DSP2xx_BeginPlayback_
-2d4d:2723*     SB_DSP4xx_BeginPlayback_
-2d4d:26cf      _SB_CardActive
-2d4d:281a*     SB_SetupPlayback_
-2d4d:2738*     DMA_SetupTransfer_
-2d4d:27b9*     SB_EnableInterrupt_
+2d4d:27de      SB_SetPlaybackRate_
+2d4d:2926      SB_StartInit_
+2d4d:26cf      _SB_DSP_Version
+2d4d:294f*     S_SBINIT_ENDMARKER_
+2d4d:28b8*     SB_InitCard_
+2d4d:266a*     S_SBINIT_STARTMARKER_
+2d4d:26e1*     SB_SaveVoiceVolume_
+2d4d:26d2*     SB_ReadMixer_
+2d4d:2879*     SB_GetDSPVersion_
+2d4d:2709      SB_DSP1xx_BeginPlayback_
+2d4d:2710*     SB_DSP2xx_BeginPlayback_
+2d4d:2725*     SB_DSP4xx_BeginPlayback_
+2d4d:26d1      _SB_CardActive
+2d4d:281c*     SB_SetupPlayback_
+2d4d:273a*     DMA_SetupTransfer_
+2d4d:27bb*     SB_EnableInterrupt_
 Module: p_init.obj(p_init.ASM)
-2d4d:2bc2*     P_INIT_ENDMARKER_
-2d4d:29a0      P_Init_
-2d4d:294e*     P_INIT_STARTMARKER_
-2d4d:294f*     R_InstallSpriteLump_
+2d4d:2bc4*     P_INIT_ENDMARKER_
+2d4d:29a2      P_Init_
+2d4d:2950*     P_INIT_STARTMARKER_
+2d4d:2951*     R_InstallSpriteLump_
 Module: i_quit.obj(i_quit.ASM)
-2d4d:2cb0*     I_ShutdownWads_
-2d4d:2d6b*     I_QUIT_ENDMARKER_
-2d4d:2c05*     I_ShutdownMouse_
-2d4d:2bc2*     I_QUIT_STARTMARKER_
-2d4d:2bc9*     I_ShutdownSound_
-2d4d:2d30      I_Quit_
-2d4d:2c69*     zeroConventional_
-2d4d:2c11*     Z_ShutdownEMS_
-2d4d:2d4f      I_Error_
-2d4d:2bed*     I_ShutdownGraphics_
+2d4d:2cb2*     I_ShutdownWads_
+2d4d:2d6d*     I_QUIT_ENDMARKER_
+2d4d:2c07*     I_ShutdownMouse_
+2d4d:2bc4*     I_QUIT_STARTMARKER_
+2d4d:2bcb*     I_ShutdownSound_
+2d4d:2d32      I_Quit_
+2d4d:2c6b*     zeroConventional_
+2d4d:2c13*     Z_ShutdownEMS_
+2d4d:2d51      I_Error_
+2d4d:2bef*     I_ShutdownGraphics_
 Module: i_ibm.obj(i_ibm.ASM)
-2d4d:2d6c*     I_IBM_STARTMARKER_
-2d4d:2d6c      I_WaitVBL_
-2d4d:2dbd*     I_IBM_ENDMARKER_
-2d4d:2d8c      I_ReadMouse_
+2d4d:2d6e*     I_IBM_STARTMARKER_
+2d4d:2d6e      I_WaitVBL_
+2d4d:2dbf*     I_IBM_ENDMARKER_
+2d4d:2d8e      I_ReadMouse_
 Module: bingen.obj(C:\REALDOOM\build\tools\bingen\bingen.c)
 2d4d:2dc0      main_
 Module: d_net.obj(d_net.ASM)

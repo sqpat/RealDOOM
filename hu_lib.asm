@@ -60,7 +60,7 @@ PUBLIC  HUlib_addStringToTextLine_
 ; DS = CS when called
 ;void __near HUlib_addStringToTextLine(hu_textline_t  __near*textline, int8_t* __near str){	
 
-ASSUME DS:HU_LIB_TEXT
+
 
 push  bx
 push  si
@@ -96,7 +96,7 @@ pop   si
 pop   bx
 ret   
 
-ASSUME DS:DGROUP
+
 
 
 ENDP
@@ -172,13 +172,13 @@ ENDP
 PROC    HUlib_eraseTextLine_ NEAR
 PUBLIC  HUlib_eraseTextLine_
 
-ASSUME DS:HU_LIB_TEXT
+
 PUSHA_NO_AX_OR_BP_MACRO
+xchg  ax, si
 cmp   byte ptr ss:[_automapactive], 0
 jne   skip_erase
 cmp   word ptr ss:[_viewwindowx], 0
 je    skip_erase
-xchg  ax, si
 cmp   byte ptr ds:[si + HU_TEXTLINE_T.hu_textline_needsupdate], 0
 je    skip_erase
 mov   cx, word ptr ds:[si + HU_TEXTLINE_T.hu_textline_y]
@@ -190,7 +190,7 @@ xchg  ax, bx
 
 push  ss
 pop   ds
-ASSUME DS:DGROUP
+
 
 
 ; bx =  yoffset
@@ -246,7 +246,6 @@ done_with_erase:
 
 push  cs
 pop   ds
-ASSUME DS:HU_LIB_TEXT
 
 
 skip_erase:
@@ -256,7 +255,7 @@ je    exit_HUlib_eraseTextLine_
 dec   byte ptr ds:[si + HU_TEXTLINE_T.hu_textline_needsupdate]
 exit_HUlib_eraseTextLine_:
 POPA_NO_AX_OR_BP_MACRO
-ASSUME DS:DGROUP
+
 ret
 
 ENDP
@@ -276,7 +275,6 @@ push  si
 xchg  ax, dx  ; dx holds ptr
 push  cs
 pop   ds
-ASSUME DS:HU_LIB_TEXT
 mov   si, OFFSET _w_message
 inc   byte ptr ds:[si + HU_STEXT_T.hu_stext_currentline]
 mov   al, byte ptr ds:[si + HU_STEXT_T.hu_stext_height]
@@ -315,7 +313,6 @@ call  HUlib_addStringToTextLine_
 push  ss
 pop   ds
 
-ASSUME DS:DGROUP
 mov   byte ptr ds:[_hudneedsupdate], 4
 
 pop   si
