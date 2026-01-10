@@ -52,7 +52,7 @@ _WRITE   = 00002h    ; file opened for writing
 _BIGBUF  = 00008h    ; big buffer allocated 
 _EOF     = 00010h    ; EOF has occurred 
 _SFERR   = 00020h    ; error has occurred on this file 
-_APPEND  = 00080h    ; file opened for append 
+
 _BINARY  = 00040h    ; file is binary, skip CRLF processing 
 _IOFBF   = 00100h    ; full buffering 
 _IOLBF   = 00200h    ; line buffering 
@@ -67,7 +67,7 @@ _IONBF   = 00400h    ; no buffering
 _O_RDONLY        = 00000h ;  open for read only 
 _O_WRONLY        = 00001h ;  open for write only 
 _O_RDWR          = 00002h ;  open for read and write 
-_O_APPEND        = 00010h ;  writes done at end of file 
+
 _O_CREAT         = 00020h ;  create new file 
 _O_TRUNC         = 00040h ;  truncate existing file 
 _O_TEXT          = 00100h ;  text file 
@@ -109,16 +109,6 @@ db "!! Underallocated file buffers!", 0Ah, 0
 
 
 
-PROC    free_ NEAR
-PUBLIC  free_
-
-dec     byte ptr cs:[_buffercount]
-js      error_underallocated
-ret
-
-ENDP
-
-
 PROC    malloc_ NEAR
 PUBLIC  malloc_
 
@@ -132,15 +122,7 @@ inc     byte ptr cs:[_buffercount]
 
 ret
 
-error_overallocated:
-mov     ax, OFFSET _OVERALLOCATED_STR
-jmp     got_error_str
-error_underallocated:
-mov     ax, OFFSET _UNDERALLOCATED_STR
-got_error_str:
-push    cs
-push    ax
-call    I_Error_
+
 
 
 ; NOTE: realdoom fwrites do not use buffer. they dump the whole file at once
@@ -238,6 +220,12 @@ ENDP
 
 SECTOR_SIZE = 512
 
+error_overallocated:
+mov     ax, OFFSET _OVERALLOCATED_STR
+got_error_str:
+push    cs
+push    ax
+jmp     I_Error_
 
 
 PROC    locallib_fread_nearsegment_   NEAR
@@ -266,8 +254,6 @@ jne       dont_allocate_buffer
 call      locallib_ioalloc_
 
 dont_allocate_buffer:
-
-do_binary_fread:
 
 
 continue_fread_until_done:
@@ -353,7 +339,6 @@ pop       si
 ret    
 
 
-
 do_qread_fread_error:
 
 bad_read_do_error:
@@ -402,7 +387,7 @@ ENDP
 ; todo inline
 
 PROC   locallib_sopen_   NEAR
-PUBLIC locallib_sopen_   
+PUBLIC locallib_sopen_
 
 
 ; ax = filename
@@ -476,8 +461,8 @@ test      byte ptr [bp - 2], (_O_WRONLY OR _O_RDWR)
 je        sopen_access_check_ok    ; readonly, access/write is ok
 cmp       di, 0FFFFh               ; file does not exist, dont need to do access check, will try to create later
 je        do_create_file
-test      byte ptr [bp - 2], _O_TRUNC ; if not append then we are truncating the file
-je        sopen_access_check_ok
+
+; open a file for writing is always delete file, not append
 lea       dx, [bp - 2]            ; dummy ptr
 mov       bx, di ; handle
 xor       cx, cx                  ; len
@@ -522,36 +507,13 @@ mov   di, ax   ; set file handle in di
 
 
 process_iomode_flags:
-mov       ax, di
-call      __GetIOMode_
-and       al, (NOT (_READ OR _WRITE OR _APPEND OR _BINARY))
-; si has rwmode
-and       si, (NOT _O_NOINHERIT)
-cmp       si, _O_RDWR
-jne       not_rw
-or        al, (_READ OR _WRITE)
-not_rw:
-cmp       si, _O_RDONLY
-jne       not_readonly
-or        al, _READ
-not_readonly:
-cmp       si, _O_WRONLY
-jne       not_writeonly
-or        al, _WRITE
-not_writeonly:
-test      byte ptr [bp - 2], _O_APPEND
-je        not_append
-or        al, _APPEND
-not_append:
-or        al, _BINARY
-xchg      ax, dx   ; dx get flags
+
 
 ; finished with flags
 
-mov       ax, di
-call      __SetIOMode_nogrow_  ; todo same as nogrow?
-
 xchg      ax, di  ; last use of di
+
+
 exit_sopen:
 mov       sp, bp
 pop       bp
@@ -596,7 +558,7 @@ push di
 ; todo clean this logic up.
 
 cwd  ; dx = 0. ah known 0 ; equal to _O_RDONLY. default to read
-mov  cx, PERMISSION_READONLY 
+mov  cx, PERMISSION_READONLY OR _O_TRUNC
 
 test al, FILEFLAG_WRITE
 je   not_write_flag
@@ -612,12 +574,6 @@ je   not_binary_flag
 inc  dh   ;  increment by one same as:  mov  cl, (_O_BINARY SHR 8)
 not_binary_flag:
 
-mov  cl, _O_TRUNC
-test al, FILEFLAG_APPEND
-je   not_append_flag
-mov  cl, _O_APPEND
-not_append_flag:
-or   dl, cl
 
 ; flags set.
 
@@ -641,13 +597,6 @@ mov  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], dx ; 0
 mov  word ptr ds:[si + FILE_INFO_T.fileinto_base], dx ; 0
 or   word ptr ds:[si + FILE_INFO_T.fileinto_flag], cx  ; flags
 
-test cl, _APPEND
-je   do_open_skip_fseek
-mov  dx, SEEK_END
-mov  ax, si
-xor  bx, bx
-xor  cx, cx
-call locallib_fseek_
 do_open_skip_fseek:
 
 mov  ax, si
@@ -773,9 +722,7 @@ xor  si, si ; 0/success return val
 
 continue_close:
 
-mov  ax, cx
-xor  dx, dx
-call __SetIOMode_nogrow_
+
 xchg ax, si  ; ax gets return val
 pop  si
 pop  dx
@@ -790,11 +737,20 @@ jmp     got_error_str
 ENDP
 
 
+error_underallocated:
+mov     ax, OFFSET _UNDERALLOCATED_STR
+jmp     got_error_str
 
+
+PROC    locallib_fclose_   NEAR
+PUBLIC  locallib_fclose_
+ENDP
+; fall thru
 ; todo pass in si?
 
 ; todo revisit the lseek stuff.
 ; todo inline
+
 
 PROC    doclose_  NEAR
 PUBLIC  doclose_  
@@ -832,7 +788,10 @@ test  byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _BIGBUF
 je    skip_bigbuf  ; todo do we get rid of this check?
 
 mov   ax, word ptr ds:[si + FILE_INFO_T.fileinto_base]
-call  free_
+;call  free_
+dec     byte ptr cs:[_buffercount]
+js      error_underallocated
+
 mov   word ptr ds:[si + FILE_INFO_T.fileinto_base], 0
 skip_bigbuf:
 mov   word ptr ds:[si + FILE_INFO_T.fileinto_flag], 0  ; not open for read or write anymore.
@@ -855,17 +814,6 @@ ENDP
 
 ENDP
 
-PROC    locallib_fclose_   NEAR
-PUBLIC  locallib_fclose_
-
-
-; todo inline
-call  doclose_
-mov   ax, 1
-ret  
-
-
-ENDP
 
 
 PROC    locallib_update_buffer_ NEAR
@@ -1063,6 +1011,19 @@ retf
 ENDP
 
 
+PROC    locallib_lseek_ NEAR
+
+; si is file
+
+
+xchg ax, bx  ; low size into ax
+xchg ax, dx  ; size cx:dx, ax gets type
+
+mov  bx, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
+
+; fall thru
+
+
 PROC    locallib_inner_lseek_   NEAR
 PUBLIC  locallib_inner_lseek_
 
@@ -1096,34 +1057,7 @@ ENDP
 
 
 
-PROC    locallib_lseek_ NEAR
 
-; si is file
-push si
-push dx  ; seek type to retrieve later
-mov  si, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
-
-call __GetIOMode_
-test cx, cx
-jg   positive_size
-jne  do_inner_lseek
-test bx, bx
-jbe  do_inner_lseek
-positive_size:
-test al, 080h
-jne  do_inner_lseek
-or   ah, 080h
-xchg ax, dx
-mov  ax, si
-call __SetIOMode_nogrow_
-
-do_inner_lseek:
-pop  ax ; retrieve seek type
-mov  dx, bx  ; low size word
-mov  bx, si  ; file
-call locallib_inner_lseek_
-pop  si ; retireve file
-ret 
 
 ENDP
 
@@ -1228,36 +1162,6 @@ ENDP
 
 
 
-; TODO put this in file field.
-
-; 6 files, but indexed by a bit of an offset... weird, leave extra space.
-_io_mode:
-
-db 0, 0, 0, 0, 0, 0
-db 0, 0, 0, 0, 0
-db 0, 0, 0, 0, 0
-
-
-
-PROC   __GetIOMode_ NEAR
-PUBLIC __GetIOMode_
-
-xchg  ax, bx
-mov   bl, byte ptr cs:[bx + _io_mode]
-xchg  ax, bx
-ret
-ENDP
-
-PROC   __SetIOMode_nogrow_ NEAR
-PUBLIC __SetIOMode_nogrow_ 
-
-xchg  ax, bx
-mov   byte ptr cs:[bx + _io_mode], dl
-xchg  ax, bx
-ret  
-ENDP
-
-
 
 PROC    locallib_fill_buffer_   NEAR
 
@@ -1328,16 +1232,7 @@ push bp
 mov  si, ax
 mov  bp, dx
 mov  di, bx
-call __GetIOMode_
-test al, _APPEND
-je   skip_move_file_ptr
-mov  bx, si
-xor  dx, dx
-xor  cx, cx
-mov  ax, 04200h + SEEK_END ; 042h  ; Move file pointer using handle
-int  021h
-jc   do_qwrite_error
-skip_move_file_ptr:
+
 mov  dx, bp
 mov  cx, di
 mov  bx, si
