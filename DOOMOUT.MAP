@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/09 21:51:15
+Created on:       26/01/10 11:01:05
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -13,7 +13,7 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          0730:0000            00001ab0
+DGROUP                          0730:0000            00001ac0
 
 
 
@@ -54,11 +54,11 @@ W_WAD_TEXT             CODE           AUTO           0000:6a52       0000024e
 V_VIDEO_TEXT           CODE           AUTO           0000:6ca0       00000217
 Z_ZONE_TEXT            CODE           AUTO           0000:6eb8       0000043b
 _NULL                  BEGDATA        DGROUP         0730:0000       00000020
-_FIXEDDATA             DATA           DGROUP         0732:0000       00001285
-_DATA                  DATA           DGROUP         085a:0006       00000000
-DATA                   DATA           DGROUP         085a:0006       00000000
-_BSS                   BSS            DGROUP         085a:0006       00000002
-STACK                  STACK          DGROUP         085b:0000       00000800
+_FIXEDDATA             DATA           DGROUP         0732:0000       0000129e
+_DATA                  DATA           DGROUP         085b:000e       00000000
+DATA                   DATA           DGROUP         085b:000e       00000000
+_BSS                   BSS            DGROUP         085b:000e       00000002
+STACK                  STACK          DGROUP         085c:0000       00000800
 
 
                         +----------------+
@@ -448,6 +448,6 @@ Module: z_zone.obj(z_zone.ASM)
                         +-----------------------+
 
 Stack size:  0800 (2048.)
-Memory size:  8db0 (36272.)
+Memory size:  8dc0 (36288.)
 Entry point address: 0000:69c2
-Link time: 00:00.10
+Link time: 00:00.64

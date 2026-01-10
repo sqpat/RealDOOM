@@ -20,7 +20,6 @@ INSTRUCTION_SET_MACRO
 
 EXTRN ST_Drawer_:NEAR
 EXTRN R_ExecuteSetViewSize_:NEAR
-EXTRN Z_QuickMapPhysics_FunctionAreaOnly_:NEAR
 EXTRN NetUpdate_:FAR
 EXTRN Z_QuickMapMenu_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
