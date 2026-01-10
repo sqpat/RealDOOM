@@ -976,7 +976,7 @@ dw OFFSET _Z_SetOverlay_addr                   , OFFSET Z_SetOverlay_
 dw OFFSET _cht_CheckCheat_Far_addr             , OFFSET cht_CheckCheat_Far_
 dw OFFSET _S_InitSFXCache_addr                 , OFFSET S_InitSFXCache_
 dw OFFSET _I_Quit_addr                         , OFFSET I_Quit_
-dw OFFSET _I_WaitVBL_addr                      , OFFSET I_WaitVBL_
+;dw OFFSET _I_WaitVBL_addr                      , OFFSET I_WaitVBL_
 dw OFFSET _I_SetPalette_addr                   , OFFSET I_SetPalette_
 dw OFFSET _V_MarkRect_addr                     , OFFSET V_MarkRect_
 dw OFFSET _V_DrawPatch_addr                    , OFFSET V_DrawPatch_

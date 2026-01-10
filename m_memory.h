@@ -277,7 +277,7 @@ scantokey            3194:0000
 
 
 // 11264
-// segs_physics     9000:0000
+
 // diskgraphicbytes 92C0:0000
 // D_INFO           92D9:0000
 // [empty]          9343:0000
@@ -954,7 +954,8 @@ This area used during intermission task
 7509:0000  wianim_codespace
 75D9?:0000  [empty]
 // still 8816 bytes free. not much to use it on?
-
+FREEBYTES
+; todo split palette stuff here and somewhere else
 
 */
 

@@ -1355,7 +1355,7 @@ PUBLIC  M_VerifyNightmare_
 
 cmp   al, 'y' ; 079h
 jne   exit_verify_nightmare
-;call  dword ptr ds:[_G_DeferedInitNew_addr]
+; _G_DeferedInitNew
 
 xor   ax, ax
 mov   byte ptr ds:[_menuactive], al ; 0
@@ -1404,7 +1404,7 @@ not_nightmare:
 mov   ah, byte ptr cs:[_menu_epi]
 inc   ah
 
-;call  dword ptr ds:[_G_DeferedInitNew_addr]
+; _G_DeferedInitNew
 mov   bx, 1
 mov   word ptr ds:[_d_skill], ax
 ;mov   byte ptr ds:[_d_episode], ah
@@ -1720,7 +1720,8 @@ dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 mov   ax, 105
 
-call  dword ptr ds:[_I_WaitVBL_addr]
+;call  dword ptr ds:[_I_WaitVBL_addr]
+call  I_WaitVBL_Menu_
 call  dword ptr ds:[_I_Quit_addr]
 
 exit_m_quitresponse:
@@ -1732,6 +1733,44 @@ ret
 
 ENDP
 
+STATUS_REGISTER_1  = 03DAh
+
+PROC    I_WaitVBL_Menu_ NEAR
+PUBLIC  I_WaitVBL_Menu_
+
+cmp     byte ptr ds:[_novideo], 0
+jne     return_early
+push    dx
+push    cx
+xchg    ax, cx ; cx gets count
+mov     dx, STATUS_REGISTER_1
+
+loop_next_vbl:
+in      al, dx
+test    al, 8
+jne     got_flag_8
+jmp     loop_next_vbl
+
+got_flag_8:
+
+loop_next_vbl_2:
+in      al, dx
+test    al, 8
+je      cleared_flag_8
+jmp     loop_next_vbl_2
+
+cleared_flag_8:
+
+
+loop    loop_next_vbl
+
+
+pop     cx
+pop     dx
+return_early:
+ret
+
+ENDP
 
 PROC    M_QuitDOOM_ NEAR
 PUBLIC  M_QuitDOOM_

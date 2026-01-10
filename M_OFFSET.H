@@ -52,10 +52,10 @@
 #define AM_DrawerOffset                         0x9614
 #define S_StartSoundFarOffset                   0xADA3
 #define S_StartOffset                           0xAE7A
-#define M_InitOffset                            0x11D1
-#define M_ResponderOffset                       0xD9E
-#define M_DrawPauseOffset                       0x13B8
-#define M_StartControlPanelOffset               0x1071
+#define M_InitOffset                            0x11F0
+#define M_ResponderOffset                       0xDBD
+#define M_DrawPauseOffset                       0x13D7
+#define M_StartControlPanelOffset               0x1090
 
 #define R_DrawColumn24CodeSize         0xE46
 #define R_DrawColumn16CodeSize         0xCB4
@@ -75,7 +75,7 @@
 #define R_MaskedConstantsFLCodeSize    0xEB
 #define R_DrawSkyColumnCodeSize        0xD86
 #define R_DrawSkyColumnFLCodeSize      0x303
-#define M_MenuCodeSize                 0x1416
+#define M_MenuCodeSize                 0x1435
 #define R_BSP24CodeSize                0x376F
 #define R_BSP16CodeSize                0x3777
 #define R_BSP0CodeSize                 0x36A9
