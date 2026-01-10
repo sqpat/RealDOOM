@@ -178,7 +178,7 @@ dw 0
 
 _mousex:
 dw 0
-
+PUBLIC _mousex
 _forwardmove:
 dw  019h, 032h
 _sidemove:
@@ -454,9 +454,11 @@ je   case_rightarrow
 cmp  al, SC_LEFTARROW
 je   case_leftarrow
 default_case_key:
-xor  bx, bx
-mov  bl, al
-mov  al, byte ptr cs:[bx + _scantokey]
+mov  bx, OFFSET _scantokey
+
+xlat byte ptr cs:[bx]
+
+;mov  al, byte ptr cs:[bx + _scantokey]
 
 key_selected:
 ; al has data1/key
@@ -606,28 +608,6 @@ db 0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0
 
 
 
-PROC G_ResetGameKeys_  NEAR
-PUBLIC G_ResetGameKeys_
-
-push cx
-push di
-
-push cs
-pop  es
-
-xor  ax, ax
-mov  cx, 128
-mov  di, OFFSET _gamekeydown
-
-rep  stosw
-
-mov  word ptr cs:[_mousex], ax
-
-pop  di
-pop  cx
-ret
-
-ENDP
 
 ; inlined
 COMMENT @
@@ -3373,7 +3353,7 @@ carry_maketic_inc:
 inc   word ptr ds:[_maketic+2]
 jmp   done_with_maketic_inc
 
-PROC    D_DoomLoop_ FAR
+PROC    D_DoomLoop_ NEAR
 PUBLIC  D_DoomLoop_
 
 continue_doom_loop:
@@ -3435,20 +3415,6 @@ jmp   done_advancing_demo
 
 ENDP
 
-PROC    D_DoomMain_ NEAR
-PUBLIC  D_DoomMain_
-
-call    D_DoomMain2_   ; init code, gets clobbered.
-cmp     byte ptr ds:[_demorecording], 0
-je      skip_recording
-call    G_BeginRecording_
-skip_recording:
-call    I_InitGraphics_
-call    Z_ClearDeadCode_
-jmp     D_DoomLoop_  ; never returns
-
-ENDP
-
 
 
 ; todo add another 1500 bytes or so of data to this clobbered region
@@ -3456,10 +3422,7 @@ ENDP
 PROC    Z_ClearDeadCode_ NEAR
 PUBLIC  Z_ClearDeadCode_
 
-cmp   word ptr ds:[_tantoangle_segment], 0
-jne   skip_clear_dead_code
 
-PUSHA_NO_AX_OR_BP_MACRO
 
 mov   ax, OFFSET _doomdata_bin_string  ; technically this string is about to get clobbered! but its ok. we check above and dont re-run the func.
 call  CopyString13_
@@ -3482,15 +3445,16 @@ call  locallib_fread_
 xchg  ax, di
 call  locallib_fclose_
 
-POPA_NO_AX_OR_BP_MACRO
+
 
 
 ; size of code to clobber
 ;mov   cx, (P_INIT_ENDMARKER - D_INIT_STARTMARKER) AND 0FFF0H  
 
-skip_clear_dead_code:  ; already has been done
+jmp     D_DoomLoop_  ; never returns
 
-ret
+
+
 ENDP
 
 PROC    P_InitThinkers_ FAR
@@ -3527,22 +3491,6 @@ pop     di
 
 retf
 ENDP
-
-
-
-
-PROC resetDS_ NEAR
-PUBLIC resetDS_
-
-;todo is ax necessary? if 286+ can push immediate.
-push ax
-mov ax, FIXED_DS_SEGMENT
-mov ds, ax
-pop ax
-
-ret
-ENDP
-
 
 
 PROC    D_MAIN_ENDMARKER_ NEAR

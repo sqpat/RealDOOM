@@ -41,7 +41,7 @@ EXTRN Z_LoadBinaries_:NEAR
 EXTRN Z_SetOverlay_:FAR
 EXTRN Z_QuickMapStatus_:FAR
 EXTRN Z_QuickMapDemo_:FAR
-
+EXTRN Z_ClearDeadCode_:NEAR
 
 EXTRN I_Error_:FAR
 EXTRN getStringByIndex_:FAR
@@ -511,7 +511,7 @@ PUBLIC M_ScanTranslateDefaults_
 
 PUSHA_NO_AX_MACRO
 
-xor   bx, bx
+xor   di, di
 
 ;	for (i = 0; i < NUM_DEFAULTS; i++) {
 ;		if (defaults[i].scantranslate) {
@@ -520,21 +520,23 @@ xor   bx, bx
 ;			*defaults[i].location = scantokey[parm];
 ;		}
 ;	}
+mov   bx, OFFSET _scantokey
 
 loop_defaults_to_set_initial_values:
-cmp   byte ptr cs:[bx + _defaults + DEFAULT_T.default_scantranslate], 0
+cmp   byte ptr cs:[di + _defaults + DEFAULT_T.default_scantranslate], 0
 je    no_pointer_load_next_defaults_value
-mov   si, word ptr cs:[bx + _defaults + DEFAULT_T.default_loc_ptr]
-mov   al, byte ptr ds:[si]
-mov   byte ptr cs:[bx + _defaults + DEFAULT_T.default_untranslated], al  ; written here 3
-xor   ah, ah
-mov   si, ax
-mov   di, word ptr cs:[bx + _defaults + DEFAULT_T.default_loc_ptr]
-mov   al, byte ptr cs:[si + _scantokey]
-mov   byte ptr ds:[di], al                     ; written here 4
+mov   si, word ptr cs:[di + _defaults + DEFAULT_T.default_loc_ptr]
+lodsb 
+mov   byte ptr cs:[di + _defaults + DEFAULT_T.default_untranslated], al  ; written here 3
+
+mov   si, word ptr cs:[di + _defaults + DEFAULT_T.default_loc_ptr]
+
+;mov   al, byte ptr cs:[bx + _scantokey]
+xlat  byte ptr cs:[bx]
+mov   byte ptr ds:[si], al                     ; written here 4
 no_pointer_load_next_defaults_value:
-add   bx, (SIZE DEFAULT_T)
-cmp   bx, NUM_DEFAULTS * (SIZE DEFAULT_T)
+add   di, (SIZE DEFAULT_T)
+cmp   di, NUM_DEFAULTS * (SIZE DEFAULT_T)
 jne   loop_defaults_to_set_initial_values
 
 POPA_NO_AX_MACRO
@@ -1875,6 +1877,19 @@ pop    di
 ret
 ENDP
 
+
+PROC    D_DoomMain_ NEAR
+PUBLIC  D_DoomMain_
+
+call    D_DoomMain2_   ; init code, gets clobbered.
+cmp     byte ptr ds:[_demorecording], 0
+je      skip_recording
+call    G_BeginRecording_
+skip_recording:
+call    I_InitGraphics_
+jmp     Z_ClearDeadCode_
+
+ENDP
 
 
 

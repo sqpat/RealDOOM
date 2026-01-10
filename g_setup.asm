@@ -26,12 +26,11 @@ EXTRN I_Error_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
 
 EXTRN locallib_toupper_:NEAR
-EXTRN G_ResetGameKeys_:NEAR
+
 EXTRN S_ResumeSound_:NEAR
 EXTRN Z_QuickMapRender_:FAR
 EXTRN Z_QuickMapRender_9000To6000_:NEAR
 EXTRN Z_SetOverlay_:FAR
-
 .DATA
 
 
@@ -42,6 +41,8 @@ LUMP_PER_EMS_PAGE = 1024
 
 .CODE
 
+EXTRN _gamekeydown:BYTE
+EXTRN _mousex:BYTE
 
 PROC    G_SETUP_STARTMARKER_ NEAR
 PUBLIC  G_SETUP_STARTMARKER_
@@ -169,65 +170,7 @@ call    I_Error_
 ENDP
 
 
-PROC    G_DoLoadLevel_ NEAR
-PUBLIC  G_DoLoadLevel_
 
-push    bx
-push    dx
-
-call	Z_QuickMapPhysics_
-
-cmp     byte ptr ds:[_wipegamestate], GS_LEVEL
-jne     dont_force_wipe
-mov     byte ptr ds:[_wipegamestate], -1
-dont_force_wipe:
-mov     byte ptr ds:[_gamestate], GS_LEVEL
-
-cmp     byte ptr ds:[_player + PLAYER_T.player_playerstate], PST_DEAD
-jne     dont_do_reborn_player
-mov     byte ptr ds:[_player + PLAYER_T.player_playerstate], PST_REBORN
-
-dont_do_reborn_player:
-
-xor     ax, ax
-cwd
-mov     bx, ax
-
-mov     al, OVERLAY_ID_P_SETUP
-call    Z_SetOverlay_
-
-mov     al, byte ptr ds:[_gameepisode]
-mov     dl, byte ptr ds:[_gamemap]
-mov     bl, byte ptr ds:[_gameskill]
-;call    P_SetupLevel_
-
-;call  dword ptr ds:[_F_Responder]
-db 09Ah
-dw P_SETUPLEVEL_OFFSET, CODE_OVERLAY_SEGMENT
-
-les     ax, dword ptr ds:[_ticcount]
-mov     word ptr ds:[_starttime+0], ax
-mov     word ptr ds:[_starttime+2], es
-
-mov     byte ptr ds:[_gameaction], GA_NOTHING
-
-call    G_ResetGameKeys_
-
-xor     ax, ax
-mov     byte ptr ds:[_paused], al ; 0
-mov     byte ptr ds:[_sendsave], al ; 0
-mov     byte ptr ds:[_sendpause], al ; 0
-mov     word ptr ds:[_mousebuttons], ax
-mov     byte ptr ds:[_mousebuttons+2], al ; i guess 3 bytes...?
-
-
-pop    dx
-pop    bx
-
-
-
-ret
-ENDP
 
 HIGHBIT = 080h
 
@@ -418,13 +361,92 @@ mov     ax, OFFSET _SKY_String
 call    R_TextureNumForName_
 mov     word ptr ds:[_skytexture], ax
 
+; fall thru
+;call	G_DoLoadLevel_  ; todo do a fall thru 
+
+;ret
+
+
+ENDP
+
+PROC    G_DoLoadLevel_ NEAR
+PUBLIC  G_DoLoadLevel_
+
+push    bx
+push    dx
 
 call	Z_QuickMapPhysics_
-call	G_DoLoadLevel_  ; todo do a fall thru 
+
+cmp     byte ptr ds:[_wipegamestate], GS_LEVEL
+jne     dont_force_wipe
+mov     byte ptr ds:[_wipegamestate], -1
+dont_force_wipe:
+mov     byte ptr ds:[_gamestate], GS_LEVEL
+
+cmp     byte ptr ds:[_player + PLAYER_T.player_playerstate], PST_DEAD
+jne     dont_do_reborn_player
+mov     byte ptr ds:[_player + PLAYER_T.player_playerstate], PST_REBORN
+
+dont_do_reborn_player:
+
+xor     ax, ax
+cwd
+mov     bx, ax
+
+mov     al, OVERLAY_ID_P_SETUP
+call    Z_SetOverlay_
+
+mov     ax, word ptr ds:[_gameepisode]
+;mov     dl, byte ptr ds:[_gamemap]
+xchg    ah, dl
+mov     bl, byte ptr ds:[_gameskill]
+;call    P_SetupLevel_
+
+;call  dword ptr ds:[_F_Responder]
+db 09Ah
+dw P_SETUPLEVEL_OFFSET, CODE_OVERLAY_SEGMENT
+
+les     ax, dword ptr ds:[_ticcount]
+mov     word ptr ds:[_starttime+0], ax
+mov     word ptr ds:[_starttime+2], es
+
+mov     byte ptr ds:[_gameaction], GA_NOTHING
+
+;call    G_ResetGameKeys_
+
+; inline
+
+push cx
+push di
+
+push cs
+pop  es
+
+xor  ax, ax
+mov  cx, 128
+mov  di, OFFSET _gamekeydown
+
+rep  stosw
+
+mov  word ptr cs:[_mousex], ax
+
+pop  di
+pop  cx
+
+xor     ax, ax
+mov     byte ptr ds:[_paused], al ; 0
+mov     byte ptr ds:[_sendsave], al ; 0
+mov     byte ptr ds:[_sendpause], al ; 0
+mov     word ptr ds:[_mousebuttons], ax
+mov     byte ptr ds:[_mousebuttons+2], al ; i guess 3 bytes...?
+
+
+pop    dx
+pop    bx
+
+
 
 ret
-
-
 ENDP
 
  
