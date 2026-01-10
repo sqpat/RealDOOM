@@ -8,7 +8,7 @@
 #include "r_state.h"
 #include "p_setup.h"
 
-#define CONSTANTS_COUNT 1008
+#define CONSTANTS_COUNT 1009
 #define LOCALS_COUNT 23
 
 
@@ -708,6 +708,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"OVERLAY_ID_SAVELOADGAME",
 	"OVERLAY_ID_MUS_LOADER",
 	"OVERLAY_ID_SOUND_INIT",
+	"OVERLAY_ID_P_SETUP",
 	"NUM_OVERLAYS",
 	"STATENUM_NULL",
 
@@ -1818,6 +1819,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	OVERLAY_ID_SAVELOADGAME,
 	OVERLAY_ID_MUS_LOADER,
 	OVERLAY_ID_SOUND_INIT,
+	OVERLAY_ID_P_SETUP,
 	NUM_OVERLAYS,
 	STATENUM_NULL,
 	
@@ -2296,7 +2298,7 @@ void __near* VALUES[LOCALS_COUNT] = {
 
 };
 
-#define EMS_PAGE_STUFF_COUNT 122
+#define EMS_PAGE_STUFF_COUNT 123
 
 char* EMS_PAGE_STRINGS[EMS_PAGE_STUFF_COUNT] = {
 
@@ -2326,6 +2328,7 @@ char* EMS_PAGE_STRINGS[EMS_PAGE_STUFF_COUNT] = {
 	"PAGESWAPARGS_REND_OFFSET_SIZE",
 	"PAGESWAPARGS_REND_TEXTURE_SIZE",
 	"PAGESWAPARGS_REND_9000_SIZE",
+	"PAGESWAPARGS_REND_8000_SIZE",
 	"PAGESWAPARGS_REND_OTHER9000_SIZE",
 	"PAGESWAPARGS_REND_OTHER8000_OFFSET_SIZE",
 	"PAGESWAPARGS_STAT_OFFSET_SIZE",
@@ -2464,6 +2467,7 @@ void __near* EMS_PAGE_VALUES[EMS_PAGE_STUFF_COUNT] = {
 	pageswapargs_rend_offset_size,
 	pageswapargs_rend_texture_size,
 	pageswapargs_rend_9000_size,
+	pageswapargs_rend_8000_size,
 	pageswapargs_rend_other9000_size,
 	pageswapargs_rend_other8000_offset_size,
 	pageswapargs_stat_offset_size,

@@ -351,7 +351,7 @@ void __near Z_InitEMS();
 // }
 void __near Z_GetEMSPageMap();
 
-/*
+
 void __near Z_GetEMSPageMap() {
 	int16_t pagedata[256]; // i dont think it can get this big...
 	int16_t_union errorreg;
@@ -464,7 +464,7 @@ found:
 	Z_QuickMapPhysics(); // map default page map
 }
 
-*/
+
 
 
 #endif
@@ -493,7 +493,7 @@ void __far ST_Start(void) ;
 // }
 
 void  __near Z_ReadFileRegionWithIndex(FILE* fp, int16_t index, uint32_t target_addr);
-/*
+
 void  __near Z_ReadFileRegionWithIndex(FILE* fp, int16_t index, uint32_t target_addr){
 	uint16_t codesize;
 
@@ -517,9 +517,8 @@ void  __near Z_ReadFileRegionWithIndex(FILE* fp, int16_t index, uint32_t target_
 
 
 }
-*/
 
-/*
+
 void __near Z_RemapRenderFunctions(){
 
 	segment_t bsp_code_segment = BSP_CODE_SEGMENT_PTR;
@@ -621,7 +620,7 @@ void __near Z_RemapRenderFunctions(){
 void  __far cht_CheckCheat_Far();
 void __near Z_DoRenderCodeLoad(FILE* fp);
 
-/*
+
 void __near Z_DoRenderCodeLoad(FILE* fp){
 
 	// todo reorder so only two or three switches?
@@ -673,7 +672,7 @@ void __near Z_DoRenderCodeLoad(FILE* fp){
 	Z_ReadFileRegionWithIndex(fp, usedcolumnvalue, (uint32_t)MK_FP(BSP_CODE_SEGMENT_PTR, 0));
 
 }
-*/
+
  
 void __far G_SecretExitLevel (void);
 void __far OutOfThinkers ();
@@ -686,7 +685,7 @@ void __far W_CheckNumForNameFar();
 void __far MainLogger (uint16_t ax, uint16_t dx, uint16_t bx, uint16_t cx);
 void __near Z_LoadBinaries();
 
-/*
+
 void __near Z_LoadBinaries() {
 	int16_t i;
 	int16_t index;
@@ -835,8 +834,7 @@ void __near Z_LoadBinaries() {
 	DEBUG_PRINT_NOARG("..");
 	Z_LinkFunctions();
 }
-*/
-/*
+
 void __near Z_LinkFunctions() {
 
 	// manual runtime linking. these are all called from other segments in externalized code and need their addresses in constant variable locatioons
@@ -915,6 +913,5 @@ void __near Z_LinkFunctions() {
 
 
 }
-*/
 
 

@@ -356,22 +356,6 @@ retf
 
 ENDP
 
-PROC Z_QuickMapScratch_4000_ FAR
-PUBLIC Z_QuickMapScratch_4000_
-
-push  dx
-push  cx
-push  si
-
-Z_QUICKMAPAI4 pageswapargs_scratch4000_offset_size INDEXED_PAGE_4000_OFFSET
-
-pop   si
-pop   cx
-pop   dx
-retf  
-
-ENDP
-
 PROC Z_QuickMapScreen0_ FAR
 PUBLIC Z_QuickMapScreen0_
 

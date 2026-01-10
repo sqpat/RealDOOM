@@ -131,6 +131,8 @@ void __far SM_LOAD_STARTMARKER();
 void __far SM_LOAD_ENDMARKER();
 void __far S_ActuallyChangeMusic();
 
+void __far P_SETUP_STARTMARKER();
+void __far P_SETUP_ENDMARKER();
 void __far S_INIT_STARTMARKER();
 void __far S_INIT_ENDMARKER();
 void __far P_SIGHT_STARTMARKER();
@@ -228,6 +230,7 @@ void __far R_DrawViewBorder();
 void __far V_DrawPatchDirect();
 void __far R_FillBackScreen();
 void __far V_CopyRect();
+void __far P_SetupLevel();
 
 
 filelength_t  __near locallib_far_fwrite(void __far* src, uint16_t elementsizetimeselementcount, FILE * fp);
@@ -259,7 +262,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     // Export .inc file with segment values, etc from the c coe
     FILE*  fp = fopen("doomcode.bin", "wb");
     //FILE*  fp2 = fopen("doomcod2.bin", "wb");
-	uint16_t codesize[30];
+	uint16_t codesize[31];
 	uint16_t muscodesize[4];
 	uint16_t maxmuscodesize = 0;
     int8_t i;
@@ -393,6 +396,10 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     codesize[11] = FP_OFF(S_INIT_ENDMARKER) - FP_OFF(S_INIT_STARTMARKER);
     fwrite(&codesize[11], 2, 1, fp);
     locallib_far_fwrite((byte __far *)S_INIT_STARTMARKER, codesize[11], fp);
+
+    codesize[30] = FP_OFF(P_SETUP_ENDMARKER) - FP_OFF(P_SETUP_STARTMARKER);
+    fwrite(&codesize[30], 2, 1, fp);
+    locallib_far_fwrite((byte __far *)P_SETUP_STARTMARKER, codesize[30], fp);
 
 
     muscodesize[0] = FP_OFF(SM_OPL2_ENDMARKER) - FP_OFF(SM_OPL2_STARTMARKER);
@@ -559,6 +566,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "#define SaveLoadCodeSize               0x%X\n", codesize[9]);
 	fprintf(fp, "#define SMLoadCodeSize                 0x%X\n", codesize[10]);
 	fprintf(fp, "#define SInitCodeSize                  0x%X\n", codesize[11]);
+	fprintf(fp, "#define PSetupCodeSize                 0x%X\n", codesize[30]);
 	fprintf(fp, "#define MaximumMusDriverSize           0x%X\n", maxmuscodesize);
     fclose(fp);
 
@@ -644,6 +652,8 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "WIPE_WIPELOOPOFFSET        = 0%Xh\n",            FP_OFF(wipe_WipeLoop)                       - FP_OFF(F_WIPE_STARTMARKER));
     fprintf(fp, "F_DRAWEROFFSET             = 0%Xh\n",            FP_OFF(F_Drawer)                            - FP_OFF(F_FINALE_STARTMARKER));
     fprintf(fp, "LOADSFXWADLUMPSOFFSET      = 0%Xh\n",            FP_OFF(LoadSFXWadLumps)                     - FP_OFF(S_INIT_STARTMARKER));
+
+    fprintf(fp, "P_SETUPLEVEL_OFFSET        = 0%Xh\n",            FP_OFF(P_SetupLevel)                        - FP_OFF(P_SETUP_STARTMARKER));
 
 
     // load offsets

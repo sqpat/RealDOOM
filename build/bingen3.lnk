@@ -33,6 +33,8 @@ file f_finale.obj
 NEWSEGMENT
 file p_saveg.obj
 
+NEWSEGMENT
+file p_setup.obj
 
 
 
@@ -137,5 +139,4 @@ file binfile.obj
 file w_wad.obj
 file v_video.obj
 file z_zone.obj
-file p_setup.obj
 

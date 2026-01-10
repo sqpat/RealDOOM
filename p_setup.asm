@@ -18,37 +18,19 @@
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
-EXTRN Z_QuickMapPhysics_:FAR
-EXTRN Z_QuickMapRender_:FAR
-EXTRN Z_QuickMapRenderPlanes_:FAR
-EXTRN Z_QuickMapUndoFlatCache_:FAR
-EXTRN Z_QuickMapWADPageFrame_:FAR
-EXTRN W_LumpLength_:FAR
-EXTRN Z_QuickMapScratch_4000_:FAR
-EXTRN Z_QuickMapScratch_5000_:FAR
-EXTRN Z_QuickMapScratch_8000_:FAR
-EXTRN W_ReadLump_:NEAR
-EXTRN Z_QuickMapRender4000_:FAR
-EXTRN copystr8_:NEAR
-EXTRN R_FlatNumForName_:NEAR
-EXTRN W_CacheLumpNumDirectFragment_:FAR ; todo can this be near?
-EXTRN Z_QuickMapRender_4000To9000_:FAR  ; todo inline
-EXTRN Z_QuickMapRender_9000To6000_:NEAR  ; todo inline
-EXTRN R_TextureNumForName_:NEAR
-EXTRN M_AddToBox16_:NEAR
-EXTRN locallib_fseek_:NEAR
-EXTRN locallib_fopen_nobuffering_:NEAR
-EXTRN locallib_fclose_:NEAR
-EXTRN locallib_fread_:NEAR
-EXTRN CopyString13_:NEAR
-EXTRN W_GetNumForName_:FAR
+
+
+
+
+
+
 
 .DATA
 
 
 .CODE
 
-EXTRN _doomdata_bin_string
+
 
 
   ML_LABEL    = 0 ; 
@@ -74,40 +56,6 @@ ENDP
 
 
 
-PROC    P_InitThinkers_ FAR
-PUBLIC  P_InitThinkers_
-
-push    di
-push    cx
-push    dx
-
-mov     di, OFFSET _thinkerlist
-mov     dx, 1
-mov     word ptr ds:[di + THINKER_T.t_next], dx
-mov     word ptr ds:[di + THINKER_T.t_prevFunctype], dx
-mov     ax, MAX_THINKERS  ; technically MAX_THINKERS | TF_NULL_HIGHBITS
-mov     cx, ax
-; dh already 0
-mov     dl, (SIZE THINKER_T) - 2  ; account for stosw
-
-push    ds
-pop     es
-
-;add    di, THINKER_T.t_prevFunctype    ; unncessary, equals 0.
-
-loop_init_next_thinker:
-stosw
-add     di, dx
-loop    loop_init_next_thinker
-
-mov     word ptr ds:[_currentThinkerListHead], cx   ; cx is 0 after loop
-
-pop     dx
-pop     cx
-pop     di
-
-retf
-ENDP
 
 PROC   P_LoadVertexes_ NEAR
 PUBLIC P_LoadVertexes_
@@ -118,7 +66,7 @@ push   cx
 push   bx
 
 push   ax  ; backup lump
-call   W_LumpLength_
+call   dword ptr ds:[_W_LumpLength_addr]
 
 SHIFT_MACRO  shr ax 2   ; div by 4 size of numvertexes
 mov    word ptr ds:[_numvertexes], ax  
@@ -128,7 +76,8 @@ pop    ax  ; get lump back
 mov    cx, VERTEXES_SEGMENT
 xor    bx, bx
 
-call   W_ReadLump_
+call   dword ptr ds:[_W_CacheLumpNumDirect_addr]
+
 
 
 pop    bx
@@ -149,7 +98,8 @@ PUBLIC P_LoadSectors_
 PUSHA_NO_AX_OR_BP_MACRO
 
 mov    si, ax  ; back up lump
-call   W_LumpLength_
+call   dword ptr ds:[_W_LumpLength_addr]
+
 
 ; dx should be zeroed...
 
@@ -187,13 +137,14 @@ mov    cx, MAX_SECTORS_PHYSICS_SIZE / 2
 rep    stosw
 
 
-call   Z_QuickMapScratch_8000_  ; todo remove ?? unused
+call   Z_QuickMapScratch_8000_PSetup_  ; todo remove ?? unused
 
 xchg   ax, si ; restore lump
 
 xor    bx, bx
 mov    cx, SCRATCH_SEGMENT_8000
-call   W_ReadLump_
+call   dword ptr ds:[_W_CacheLumpNumDirect_addr]
+
 
 mov    cx, word ptr ds:[_numsectors]
 xor    si, si
@@ -216,13 +167,14 @@ stosw  ; ceilingheight
 push   ss
 pop    ds
 mov    ax, si
-call   R_FlatNumForName_
+call   dword ptr ds:[_R_FlatNumForName_addr]
 
 mov    es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 stosb 
 mov    dx, SCRATCH_SEGMENT_8000
 lea    ax, [si + 8]
-call   R_FlatNumForName_
+call   dword ptr ds:[_R_FlatNumForName_addr]
+
 
 add    si, 16
 mov    es, word ptr ds:[_SECTORS_SEGMENT_PTR]
@@ -327,7 +279,8 @@ sub     sp, 24  ; tex strings...
 mov    si, ax  ; back up lump
 
 
-call   W_LumpLength_
+call   dword ptr ds:[_W_LumpLength_addr]
+
 ; dx may be non zero
 
 mov    bx, SIZE MAPSIDEDEF_T
@@ -336,26 +289,21 @@ div    bx
 
 mov    word ptr ds:[_numsides], ax  
 
-call Z_QuickMapRender_4000To9000_
-call Z_QuickMapRender_9000To6000_  ; for R_TextureNumForName
-
-
-
-
-
-call   Z_QuickMapScratch_5000_
+call Z_QuickMapRender_4000To9000_PSetup_
+call Z_QuickMapRender_9000To6000_PSetup_  ; for R_TextureNumForName
+call   Z_QuickMapScratch_5000_PSetup_
 
 
 xchg   ax, si   ; get lump back
 mov    cx, SCRATCH_SEGMENT_5000
-xor    bx, bx
+xor    bx, bx   
 mov    word ptr ds:[_cached_psetup_lump_offset+0], dx  ; write 0
 mov    word ptr ds:[_cached_psetup_lump_offset+2], dx  ; write 0
 
 push   bx
 push   bx
 
-call   W_CacheLumpNumDirectFragment_
+call   dword ptr ds:[_W_CacheLumpNumDirectFragment_addr]
 
 mov    cx, word ptr ds:[_numsides]
 xor    si, si
@@ -413,17 +361,18 @@ pop    ds
 mov    cx, word ptr ds:[_SIDES_SEGMENT_PTR]
 
 lea    ax, [bp - 24]
-call   R_TextureNumForName_
+; todo check for '-' here.
+call   dword ptr ds:[_R_TextureNumForName_addr]
 mov    es, cx
 stosw
 
 lea    ax, [bp - 16]
-call   R_TextureNumForName_
+call   dword ptr ds:[_R_TextureNumForName_addr]
 mov    es, cx
 stosw
 
 lea    ax, [bp - 8]
-call   R_TextureNumForName_
+call   dword ptr ds:[_R_TextureNumForName_addr]
 mov    es, cx
 stosw
 
@@ -436,7 +385,7 @@ inc    si  ; add for the sector read
 pop    cx  ; recover loop ptr
 
 loop   loop_next_sidedef
-call   Z_QuickMapPhysics_
+call   Z_QuickMapPhysics_PSetup_
 
 LEAVE_MACRO
 
@@ -445,7 +394,6 @@ ret
 
 do_repage:
 
-; TODO THIS
 
 add    word ptr ds:[_cached_psetup_lump_offset+0], si  ; 16380
 adc    word ptr ds:[_cached_psetup_lump_offset+2], 0
@@ -463,7 +411,8 @@ add    ax, ML_SIDEDEFS
 mov    cx, SCRATCH_SEGMENT_5000
 xor    bx, bx
 
-call   W_CacheLumpNumDirectFragment_
+call   dword ptr ds:[_W_CacheLumpNumDirectFragment_addr]
+
 
 pop    bx  ; restore ptr
 
@@ -485,13 +434,14 @@ push   bx
 
 xchg   ax, bx   ; store lump
 
-call   Z_QuickMapPhysics_
+call   Z_QuickMapPhysics_PSetup_
 
 xchg   ax, bx   ; retrieve lump
 
 xor    bx, bx
 mov    cx, BLOCKMAPLUMP_SEGMENT
-call   W_ReadLump_
+call   dword ptr ds:[_W_CacheLumpNumDirect_addr]
+
 
 mov    cx, BLOCKMAPLUMP_SEGMENT
 mov    es, cx
@@ -530,7 +480,8 @@ PUSHA_NO_AX_MACRO
 
 mov    si, ax  ; back up lump
 
-call   W_LumpLength_
+call   dword ptr ds:[_W_LumpLength_addr]
+
 
 mov    bx, SIZE MAPLINEDEF_T
 div    bx
@@ -561,15 +512,15 @@ mov  cx, (MAX_SEENLINES_SIZE /2) + 1   ; could be odd?
 rep  stosw
 
 
-call Z_QuickMapScratch_5000_
+call Z_QuickMapRender_4000To9000_4000Only_PSetup_
+call Z_QuickMapScratch_5000_PSetup_
 
 xchg ax, si   ; get lump
 mov  cx, SCRATCH_SEGMENT_5000
 xor  bx, bx
 
-call W_ReadLump_
+call dword ptr ds:[_W_CacheLumpNumDirect_addr]
 
-call Z_QuickMapRender4000_
 
 
 mov  cx, word ptr ds:[_numlines]
@@ -693,7 +644,7 @@ loop loop_next_linedef
 push ss
 pop  ds
 
-call Z_QuickMapPhysics_
+call Z_QuickMapPhysics_PSetup_
 
 POPA_NO_AX_MACRO
 
@@ -713,13 +664,21 @@ jmp   done_checking_flags
 calc_secnum_0:
 xchg ax, bx
 SHIFT_MACRO shl bx 2
-mov  ax, word ptr ss:[_sides_render + bx + SIDE_RENDER_T.sr_secnum]
+push es
+mov  ax, SIDES_RENDER_9000_SEGMENT
+mov  es, ax
+mov  ax, word ptr es:[bx + SIDE_RENDER_T.sr_secnum]
+pop  es
 jmp  store_secnum_0
 
 calc_secnum_1:
 xchg ax, bx
 SHIFT_MACRO shl bx 2
-mov  ax, word ptr ss:[_sides_render + bx + SIDE_RENDER_T.sr_secnum]
+push es
+mov  ax, SIDES_RENDER_9000_SEGMENT
+mov  es, ax
+mov  ax, word ptr es:[bx + SIDE_RENDER_T.sr_secnum]
+pop  es
 jmp  store_secnum_1
 
 ENDP
@@ -732,7 +691,7 @@ PUSHA_NO_AX_OR_BP_MACRO
 
 mov    si, ax  ; back up lump
 
-call   W_LumpLength_
+call   dword ptr ds:[_W_LumpLength_addr]
 
 
 SHIFT_MACRO  shr ax 2   ; SIZE MAPSUBSECTOR_T
@@ -747,13 +706,13 @@ mov    cx, MAX_SUBSECTORS_SIZE / 2
 xor    ax, ax
 rep    stosw
 
-call   Z_QuickMapScratch_5000_
+call   Z_QuickMapScratch_5000_PSetup_
 
 xchg   ax, si   ; get lump
 mov    cx, SCRATCH_SEGMENT_5000
 xor    bx, bx
 
-call   W_ReadLump_
+call   dword ptr ds:[_W_CacheLumpNumDirect_addr]
 
 mov    cx, word ptr ds:[_numsubsectors]
 
@@ -810,21 +769,21 @@ PUSHA_NO_AX_MACRO
 
 mov    si, ax  ; back up lump
 
-call   W_LumpLength_
+call   dword ptr ds:[_W_LumpLength_addr]
 
 mov    bx, SIZE MAPNODE_T
 div    bx
 
 mov    word ptr ds:[_numnodes], ax
 
-call   Z_QuickMapRender_4000To9000_
-call   Z_QuickMapScratch_5000_
+call   Z_QuickMapRender_4000To9000_PSetup_
+call   Z_QuickMapScratch_5000_PSetup_
 
 xchg   ax, si   ; get lump
 mov    cx, SCRATCH_SEGMENT_5000
 xor    bx, bx
 
-call   W_ReadLump_
+call   dword ptr ds:[_W_CacheLumpNumDirect_addr]
 
 
 mov    cx, word ptr ds:[_numnodes]
@@ -875,7 +834,7 @@ loop   loop_next_node
 push   ss
 pop    ds
 
-call   Z_QuickMapPhysics_
+call   Z_QuickMapPhysics_PSetup_
 
 POPA_NO_AX_MACRO
 
@@ -894,15 +853,15 @@ PUBLIC  P_LoadSegs_
 PUSHA_NO_AX_MACRO
 
 mov    si, ax  ; back up lump
-call   W_LumpLength_
+call   dword ptr ds:[_W_LumpLength_addr]
 
 mov    bx, SIZE MAPSEG_T
 div    bx
 
 mov    word ptr ds:[_numsegs], ax
 
-call   Z_QuickMapRender_4000To9000_
-call   Z_QuickMapScratch_5000_
+call   Z_QuickMapRender_4000To9000_PSetup_
+call   Z_QuickMapScratch_5000_PSetup_
 
 ; shouldnt be necessary.
 
@@ -918,7 +877,7 @@ xchg   ax, si   ; get lump
 mov    cx, SCRATCH_SEGMENT_5000
 xor    bx, bx
 
-call   W_ReadLump_
+call   dword ptr ds:[_W_CacheLumpNumDirect_addr]
 
 
 mov    cx, word ptr ds:[_numsegs]
@@ -1028,8 +987,8 @@ loop   loop_next_seg
 push   ss
 pop    ds
 
-call   Z_QuickMapPhysics_
-call   Z_QuickMapScratch_5000_
+call   Z_QuickMapPhysics_PSetup_
+call   Z_QuickMapScratch_5000_PSetup_
 
 ;	FAR_memcpy(segs_physics, MK_FP(0x5000, 0xc000), numsegs*4);
 
@@ -1070,7 +1029,7 @@ PUBLIC  P_GroupLines_
 
 PUSHA_NO_AX_MACRO
 
-call   Z_QuickMapRender_4000To9000_
+call   Z_QuickMapRender_4000To9000_PSetup_
 
 mov    cx, word ptr ds:[_numsubsectors]
 mov    dx, SUBSECTORS_SEGMENT
@@ -1100,7 +1059,7 @@ loop   loop_next_line_lookup
 push   ss
 pop    ds
 
-call   Z_QuickMapPhysics_
+call   Z_QuickMapPhysics_PSetup_
 
 
 
@@ -1270,7 +1229,7 @@ mov    dx, es                 ; v1.y
 mov    bx, di                 ; bbox
 
 
-call   M_AddToBox16_
+call   M_AddToBox16_PSetup_
 
 pop    bx                     ; v2
 SHIFT_MACRO shl bx 2
@@ -1279,7 +1238,7 @@ les    ax, dword ptr es:[bx]  ; v2.x
 mov    dx, es                 ; v2.y
 mov    bx, di                 ; bbox     
 
-call   M_AddToBox16_
+call   M_AddToBox16_PSetup_
 
 pop    dx
 pop    es
@@ -1342,7 +1301,8 @@ PUSHA_NO_AX_OR_BP_MACRO
 
 mov    si, ax  ; store lump
 
-call   W_LumpLength_
+call   dword ptr ds:[_W_LumpLength_addr]
+
 
 mov    bx, SIZE MAPTHING_T
 div    bx
@@ -1357,13 +1317,14 @@ xor     ax, ax
 mov     di, ax
 rep     stosw
 
-call    Z_QuickMapScratch_8000_
+call    Z_QuickMapScratch_8000_PSetup_
 
 xchg    ax, si  ; get lump back
 mov     cx, SCRATCH_SEGMENT_8000
 xor     bx, bx
 
-call   W_ReadLump_
+call    dword ptr ds:[_W_CacheLumpNumDirect_addr]
+
 
 
 
@@ -1451,6 +1412,10 @@ jmp     done_with_player_setup
 
 ENDP
 
+; hack to not clobber code... use scratch 4000-4C00 and skytex 6400
+
+
+
 
 PROC   R_LoadPatchColumnsColormap0_ NEAR
 PUBLIC R_LoadPatchColumnsColormap0_
@@ -1459,14 +1424,16 @@ PUSHA_NO_AX_MACRO
 
 xchg   ax, si  ; store lump
 
-call   Z_QuickMapScratch_4000_  ; render col info has been paged out..
+; only pages 3 actually... this keeps us from nuking 4c77 code segment, stops at 4c00
+call   Z_QuickMapScratch_4000_PSetup_  ; render col info has been paged out..
+
 
 
 xchg   ax, si
 mov    cx, SCRATCH_SEGMENT_4000
 xor    bx, bx
 
-call   W_ReadLump_
+call   dword ptr ds:[_W_CacheLumpNumDirect_addr]
 
 
 OFFSET_SEG_4000_IN_SS = (SCRATCH_SEGMENT_4000 - FIXED_DS_SEGMENT) SHL 4
@@ -1527,56 +1494,10 @@ jne    loop_next_sky_column
 push   ss
 pop    ds
 
-call   Z_QuickMapRender4000_
 
 POPA_NO_AX_MACRO
 ret
 
-ENDP
-
-_local_doomdata_bin_string:
-db "DOOMDATA.BIN", 0
-
-; todo add another 1500 bytes or so of data to this clobbered region
-
-PROC    Z_ClearDeadCode_ NEAR
-PUBLIC  Z_ClearDeadCode_
-
-cmp   word ptr ds:[_tantoangle_segment], 0
-jne   skip_clear_dead_code
-
-PUSHA_NO_AX_OR_BP_MACRO
-
-mov   ax, OFFSET _local_doomdata_bin_string  ; technically this string is about to get clobbered! but its ok. we check above and dont re-run the func.
-call  CopyString13_
-mov   dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
-call  locallib_fopen_nobuffering_        ; fopen("DOOMDATA.BIN", "rb"); 
-mov   di, ax ; di stores fp
-
-xor   dx, dx  ; SEEK_SET
-mov   bx, TANTOA_DOOMDATA_OFFSET AND 0FFFFh
-mov   cx, TANTOA_DOOMDATA_OFFSET SHR 16
-call  locallib_fseek_  ;    fseek(fp, SWITCH_DOOMDATA_OFFSET, SEEK_SET);
-
-xor   ax, ax
-mov   dx, cs
-mov   word ptr ds:[_tantoangle_segment], dx
-mov   cx, di ; fp
-mov   bx, 4 * 2049
-call  locallib_fread_
-
-xchg  ax, di
-call  locallib_fclose_
-
-POPA_NO_AX_OR_BP_MACRO
-
-
-; size of code to clobber
-;mov   cx, (P_INIT_ENDMARKER - D_INIT_STARTMARKER) AND 0FFF0H  
-
-skip_clear_dead_code:  ; already has been done
-
-ret
 ENDP
 
 
@@ -1720,7 +1641,8 @@ xor   di, di
 mov   cx, (STATES_SEGMENT - LINES_PHYSICS_SEGMENT) SHL 3  ; 3 not 4 because stosw
 rep   stosw
 
-call  Z_QuickMapRender_
+call  Z_QuickMapRender_4000To9000_PSetup_
+
 
 	;reset texture cache
 
@@ -1731,7 +1653,11 @@ mov   ax, 0FFFFh
 ;	FAR_memset(compositetexturepage, 0xFF, sizeof(uint8_t) * (MAX_TEXTURES));
 ;	FAR_memset(compositetextureoffset,0xFF, sizeof(uint8_t) * (MAX_TEXTURES));
 
-mov   dx, COMPOSITETEXTUREPAGE_SEGMENT
+COMPOSITETEXTUREPAGE_SEGMENT_9000 = 05000h + COMPOSITETEXTUREPAGE_SEGMENT
+SPRITEPAGE_SEGMENT_9000           = 05000h + SPRITEPAGE_SEGMENT
+FLATINDEX_SEGMENT_9000            = 05000h + FLATINDEX_SEGMENT
+
+mov   dx, COMPOSITETEXTUREPAGE_SEGMENT_9000
 mov   es, dx
 xor   di, di
 mov   cx, (2 * MAX_TEXTURES) / 2
@@ -1752,7 +1678,7 @@ rep   stosw
 ;	FAR_memset(spritepage, 0xFF, sizeof(uint8_t) * (MAX_SPRITE_LUMPS));
 ;	FAR_memset(spriteoffset, 0xFF, sizeof(uint8_t) * (MAX_SPRITE_LUMPS));
 
-mov   dx, SPRITEPAGE_SEGMENT
+mov   dx, SPRITEPAGE_SEGMENT_9000
 mov   es, dx
 xor   di, di
 mov   cx, (2 * MAX_SPRITE_LUMPS) / 2
@@ -1762,7 +1688,7 @@ rep   stosw
 ;	FAR_memset(flatindex, 0xFF, size_flatindex);
 
 
-mov   dx, FLATINDEX_SEGMENT
+mov   dx, FLATINDEX_SEGMENT_9000
 mov   es, dx
 xor   di, di
 mov   cx, (MAX_FLATS)
@@ -1804,7 +1730,7 @@ inc   ax
 loop  loop_inc_next_tex_translation
 
 
-call  Z_QuickMapPhysics_
+call  Z_QuickMapPhysics_PSetup_
 
 
 
@@ -1884,7 +1810,7 @@ ENDP
 ;void __near P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 	
 
-PROC   P_SetupLevel_  NEAR
+PROC   P_SetupLevel_  FAR
 PUBLIC P_SetupLevel_  
 
 PUSHA_NO_AX_OR_BP_MACRO
@@ -1933,8 +1859,8 @@ db    09Ah  ; call
 dw    S_STARTOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 
-call  Z_FreeConventionalAllocations_
-call  P_InitThinkers_
+call  Z_FreeConventionalAllocations_  ; TODO fix for sure.
+call  P_InitThinkers_PSetup_
 
 
 ; cx has low episode high map bl has skill
@@ -1996,7 +1922,7 @@ push  ax  ; lumpname[0], lumpname[1]
 finished_lump_chars:
 
 mov   ax, sp
-call  W_GetNumForName_
+call  dword ptr ds:[_W_GetNumForName_addr]
 
 mov   word ptr ds:[_cached_psetup_level_lump], ax
 
@@ -2032,9 +1958,10 @@ call  P_LoadBlockMap_
 lea   ax, [si + ML_REJECT]
 mov   cx, REJECTMATRIX_SEGMENT
 xor   bx, bx
-call  W_ReadLump_ 
+call  dword ptr ds:[_W_CacheLumpNumDirect_addr]
 
-call  P_GroupLines_
+
+call  P_GroupLines_ ; worked apparently!
 
 lea   ax, [si + ML_THINGS]
 call  P_LoadThings_
@@ -2043,20 +1970,37 @@ db    09Ah  ; call
 dw    P_SPAWNSPECIALSOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 
-call  Z_QuickMapRender_
-call  Z_QuickMapRenderPlanes_
+
+
+mov   bx, word ptr ds:[_skytexture]  ; texnum
+shl   bx, 1
+
+; cant put this in 4000, it will clobber code.
+; so load it in 09000h to look up the sky texture.
+
+call  Z_QuickMapRender_4000To9000_PSetup_
+
+TEXTUREPATCHLUMP_OFFSET_SEGMENT_9000 = 05000h + TEXTUREPATCHLUMP_OFFSET_SEGMENT
+
+mov   ax, TEXTUREPATCHLUMP_OFFSET_SEGMENT_9000
+mov   es, ax
+mov   bx, word ptr es:[bx] ; get the tex patch lump (RLE thing)
+shl   bx, 1
+
+call  Z_QuickMapSkyTexture_PSetup_
 
 
 mov   ax, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
 mov   es, ax
-mov   bx, word ptr ds:[_skytexture]  ; texnum
-shl   bx, 1
-mov   bx, word ptr ds:[_texturepatchlump_offset + bx]
-shl   bx, 1
+
+
 mov   ax, es:[bx]  ; got sky lump
+
+
+
 call  R_LoadPatchColumnsColormap0_
 
-call  Z_QuickMapPhysics_
+call  Z_QuickMapPhysics_PSetup_
 
 mov   ax, 0FFFFh
 mov   word ptr ds:[_lastvisspritepatch], ax
@@ -2074,9 +2018,234 @@ LEAVE_MACRO
 
 POPA_NO_AX_OR_BP_MACRO
 
+retf
+
+ENDP
+
+
+PROC Z_QuickMapPhysics_PSetup_ NEAR
+
+
+push  dx
+push  cx
+push  si
+
+
+Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
+mov   byte ptr ds:[_currenttask], TASK_PHYSICS
+
+pop   si
+pop   cx
+pop   dx
 ret
 
 ENDP
+
+
+PROC Z_QuickMapScratch_5000_PSetup_ NEAR
+
+push  dx
+push  cx
+push  si
+
+Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
+
+pop   si
+pop   cx
+pop   dx
+ret
+
+ENDP
+
+PROC Z_QuickMapScratch_8000_PSetup_ NEAR
+
+
+push  dx
+push  cx
+push  si
+
+Z_QUICKMAPAI4 pageswapargs_scratch8000_offset_size INDEXED_PAGE_8000_OFFSET
+
+pop   si
+pop   cx
+pop   dx
+ret
+
+ENDP
+
+
+
+
+PROC   Z_QuickMapRender_4000To9000_PSetup_ NEAR
+
+
+push  dx
+push  cx
+push  si
+
+Z_QUICKMAPAI16 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
+Z_QUICKMAPAI4_NO_DX pageswapargs_rend_other9000_size INDEXED_PAGE_9000_OFFSET
+
+mov   byte ptr ds:[_currenttask], TASK_RENDER  ; i dont think these are necessary in p_setup
+pop   si
+pop   cx
+pop   dx
+ret
+
+ENDP
+
+PROC   Z_QuickMapRender_4000To9000_4000Only_PSetup_ NEAR
+
+
+push  dx
+push  cx
+push  si
+
+Z_QUICKMAPAI4 pageswapargs_rend_other9000_size INDEXED_PAGE_9000_OFFSET
+
+pop   si
+pop   cx
+pop   dx
+ret
+
+ENDP
+
+
+
+PROC   Z_QuickMapRender_9000To6000_PSetup_ NEAR
+
+
+push  dx
+push  cx
+push  si
+
+Z_QUICKMAPAI2 pageswapargs_render_to_6000_size INDEXED_PAGE_6000_OFFSET
+
+pop   si
+pop   cx
+pop   dx
+ret
+
+ENDP
+
+
+
+PROC   Z_QuickMapSkyTexture_PSetup_ NEAR
+
+push  dx
+push  cx
+push  si
+
+
+
+Z_QUICKMAPAI3 pageswapargs_renderplane_offset_size INDEXED_PAGE_5000_OFFSET
+; colormaps
+Z_QUICKMAPAI4_NO_DX pageswapargs_rend_9000_size INDEXED_PAGE_9000_OFFSET
+
+
+pop   si
+pop   cx
+pop   dx
+
+ret
+
+ENDP
+
+PROC Z_QuickMapRender4000_PSetup_ NEAR
+
+
+
+push  dx
+push  cx
+push  si
+
+Z_QUICKMAPAI4 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
+
+pop   si
+pop   cx
+pop   dx
+ret
+
+ENDP
+
+
+PROC Z_QuickMapScratch_4000_PSetup_ NEAR
+
+
+push  dx
+push  cx
+push  si
+
+Z_QUICKMAPAI3 pageswapargs_scratch4000_offset_size INDEXED_PAGE_4000_OFFSET
+
+pop   si
+pop   cx
+pop   dx
+ret
+
+ENDP
+
+
+PROC    M_AddToBox16_PSetup_ NEAR
+
+cmp   ax, word ptr ds:[bx + (2 * BOXLEFT)]
+jl    write_x_to_left
+cmp   ax, word ptr ds:[bx + (2 * BOXRIGHT)]
+jle   do_y_compare
+mov   word ptr ds:[bx + (2 * BOXRIGHT)], ax
+do_y_compare:
+cmp   dx, word ptr ds:[bx + (2 * BOXBOTTOM)]
+jl    write_y_to_bottom
+cmp   dx, word ptr ds:[bx + (2 * BOXTOP)]
+jng   exit_m_addtobox16
+mov   word ptr ds:[bx + (2 * BOXTOP)], dx
+exit_m_addtobox16:
+ret   
+write_x_to_left:
+mov   word ptr ds:[bx + (2 * BOXLEFT)], ax
+jmp   do_y_compare
+write_y_to_bottom:
+mov   word ptr ds:[bx + (2 * BOXBOTTOM)], dx
+ret   
+
+ENDP
+
+
+PROC    P_InitThinkers_PSetup_ NEAR
+
+push    di
+push    cx
+push    dx
+
+mov     di, OFFSET _thinkerlist
+mov     dx, 1
+mov     word ptr ds:[di + THINKER_T.t_next], dx
+mov     word ptr ds:[di + THINKER_T.t_prevFunctype], dx
+mov     ax, MAX_THINKERS  ; technically MAX_THINKERS | TF_NULL_HIGHBITS
+mov     cx, ax
+; dh already 0
+mov     dl, (SIZE THINKER_T) - 2  ; account for stosw
+
+push    ds
+pop     es
+
+;add    di, THINKER_T.t_prevFunctype    ; unncessary, equals 0.
+
+loop_init_next_thinker:
+stosw
+add     di, dx
+loop    loop_init_next_thinker
+
+mov     word ptr ds:[_currentThinkerListHead], cx   ; cx is 0 after loop
+
+pop     dx
+pop     cx
+pop     di
+
+ret
+
+ENDP
+
 
 
 

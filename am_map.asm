@@ -24,7 +24,7 @@ INSTRUCTION_SET_MACRO
 EXTRN FixedDivWholeA_MapLocal_:NEAR
 EXTRN FixedDiv_MapLocal_:NEAR
 EXTRN FixedMul1632_MapLocal_:NEAR
-
+EXTRN FastDiv3216u_MapLocal_:NEAR
 
 
 
@@ -798,9 +798,7 @@ mov       bx, 0B333h    ; 0.7*FRACUNIT
 xor       cx, cx
 mov       dx, word ptr ds:[_am_min_scale_mtof]
 xor       ax, ax
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _FastDiv3216u_addr
+call      FastDiv3216u_MapLocal_
 
 mov       word ptr ds:[_am_scale_mtof + 0], ax
 mov       word ptr ds:[_am_scale_mtof + 2], dx

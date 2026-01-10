@@ -212,7 +212,7 @@ _castframes =                    	_NULL_OFFSET + 00143h
 _casttics =                      	_NULL_OFFSET + 00144h
 _castnum =                       	_NULL_OFFSET + 00145h
 _finaleflat =                   	_NULL_OFFSET + 00146h
-_FixedMul2432_addr =                _NULL_OFFSET + 00148h
+_R_TextureNumForName_addr =         _NULL_OFFSET + 00148h
 _tmthing_pos =                      _NULL_OFFSET + 0014Ch
 
 _trace =                            _NULL_OFFSET + 00150h
@@ -277,7 +277,7 @@ _ticcount =			              	_NULL_OFFSET + 001F0h
 
 
 
-_V_DrawPatchDirect_addr =            _NULL_OFFSET + 001F4h
+_R_FlatNumForName_addr =             _NULL_OFFSET + 001F4h
 
 _deadAttackerX =                     _NULL_OFFSET + 001F8h
 _deadAttackerY =                     _NULL_OFFSET + 001FCh
@@ -288,7 +288,6 @@ _I_SetPalette_addr = 	        	 _NULL_OFFSET + 00208h
 
 
 _V_MarkRect_addr =                   _NULL_OFFSET + 0020Ch
-_R_SetViewSize_addr =     	    	 _NULL_OFFSET + 00210h
 
 
 _wipeduration =                      _NULL_OFFSET + 00214h
@@ -327,7 +326,7 @@ _registered =                 		 _NULL_OFFSET + 002BCh
 _shareware =                 		 _NULL_OFFSET + 002BDh
 _ds_colormap_index = 				 _NULL_OFFSET + 002BEh
 _fixedcolormap = 					 _NULL_OFFSET + 002BFh
-_FixedMul_addr =               		 _NULL_OFFSET + 002C0h
+;_FixedMul_addr =               		 _NULL_OFFSET + 002C0h
 ;_FixedDiv_addr =                     _NULL_OFFSET + 002C4h
 _mus_playing =    			     	 _NULL_OFFSET + 002C8h
 _mus_paused =    			     	 _NULL_OFFSET + 002C9h
@@ -388,7 +387,7 @@ _am_stopped = 						 _NULL_OFFSET + 003D0h
 _automapactive =                 	 _NULL_OFFSET + 003D1h
 _currentThinkerListHead = 			 _NULL_OFFSET + 003D2h
 
-_FixedMulTrigSpeed_addr = 		     _NULL_OFFSET + 003D4h
+;_FixedMulTrigSpeed_addr = 		     _NULL_OFFSET + 003D4h
 _demo_p =            				 _NULL_OFFSET + 003D8h
 _DEMO_SEGMENT_PTR =  				 _NULL_OFFSET + 003DAh
 _I_WaitVBL_addr =       		     _NULL_OFFSET + 003DCh
@@ -412,7 +411,7 @@ _PC_SPEAKER_SFX_DATA_SEGMENT_PTR =	 _NULL_OFFSET + 00446h
 _WAD_PAGE_FRAME_PTR =				 _NULL_OFFSET + 00448h
 _BSP_CODE_SEGMENT_PTR =				 _NULL_OFFSET + 0044Ah
 
-_FixedMulTrig_addr = 			 	 _NULL_OFFSET + 0044Ch
+;_FixedMulTrig_addr = 			 	 _NULL_OFFSET + 0044Ch
 _d_skill =                           _NULL_OFFSET + 00450h
 _d_episode =                         _NULL_OFFSET + 00451h
 _d_map =                             _NULL_OFFSET + 00452h
@@ -423,13 +422,13 @@ _V_DrawPatch_addr =              	 _NULL_OFFSET + 00454h
 _m_paninc = 				 	 	 _NULL_OFFSET + 00458h
 
 
-_FixedMulTrigSpeedNoShift_addr =	 _NULL_OFFSET + 0045Ch
+;_FixedMulTrigSpeedNoShift_addr =	 _NULL_OFFSET + 0045Ch
 _V_DrawFullscreenPatch_addr =        _NULL_OFFSET + 00460h
 _getStringByIndex_addr =             _NULL_OFFSET + 00464h
 _ST_Start_addr = 			 	 	 _NULL_OFFSET + 00468h
-_FixedMulTrigNoShift_addr =          _NULL_OFFSET + 0046Ch
-_R_PointToAngle2_16_addr =           _NULL_OFFSET + 00470h
-_R_PointToAngle2_addr =              _NULL_OFFSET + 00474h
+;_FixedMulTrigNoShift_addr =          _NULL_OFFSET + 0046Ch
+;_R_PointToAngle2_16_addr =           _NULL_OFFSET + 00470h
+;_R_PointToAngle2_addr =              _NULL_OFFSET + 00474h
 
 
 _W_CacheLumpNameDirect_addr =        _NULL_OFFSET + 00478h
@@ -492,7 +491,6 @@ _currentsong_playing_offset =        _NULL_OFFSET + 0051Ah
 _currentsong_ticks_to_process =      _NULL_OFFSET + 0051Ch
 _loops_enabled =    			     _NULL_OFFSET + 0051Eh
 _inhelpscreens =    			     _NULL_OFFSET + 0051Fh
-_Z_QuickMapMusicPageFrame_addr = 	 _NULL_OFFSET + 00520h
 
 _sightzstart =				         _NULL_OFFSET + 00524h
 _topslope =				         	 _NULL_OFFSET + 00528h
@@ -551,8 +549,8 @@ _currenttask =            		     _NULL_OFFSET + 005F3h
 
 _R_DrawSkyPlane_addr =               _NULL_OFFSET + 005F4h
 _R_DrawSkyPlane_addr_Offset =        _NULL_OFFSET + 005F4h
-_OutOfThinkers_addr =                _NULL_OFFSET + 005F8h
-_FastDiv32u16u_addr =                _NULL_OFFSET + 005FCh
+;_OutOfThinkers_addr =                _NULL_OFFSET + 005F8h
+;_FastDiv32u16u_addr =                _NULL_OFFSET + 005FCh
 
 
 _playerMobj_pos =		         	 _NULL_OFFSET + 00600h
@@ -594,7 +592,7 @@ _mtof_zoommul =        			     _NULL_OFFSET + 00718h
 _ftom_zoommul =        			     _NULL_OFFSET + 0071Ah
 _am_max_scale_mtof =       		     _NULL_OFFSET + 0071Ch
 
-_FastDiv3216u_addr =				 _NULL_OFFSET + 00720h
+;_FastDiv3216u_addr =				 _NULL_OFFSET + 00720h
 _bulletslope = 			 			 _NULL_OFFSET + 00724h
 _weaponinfo = 			 			 _NULL_OFFSET + 00728h
 _W_CheckNumForNameFar_addr =         _NULL_OFFSET + 0078Ch

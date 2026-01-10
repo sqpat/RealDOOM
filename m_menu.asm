@@ -1883,7 +1883,7 @@ update_size_display:
 mov   byte ptr ds:[_screenSize], al
 mov   al, byte ptr ds:[_screenblocks]
 
-;call  dword ptr ds:[_R_SetViewSize_addr]
+;call  R_SetViewSize_
 
 mov       byte ptr ds:[_setblocks], al
 mov       al, byte ptr ds:[_detailLevel]

@@ -42,6 +42,8 @@ EXTRN locallib_fread_:NEAR
 EXTRN Z_QuickMapRenderPlanes_:FAR
 EXTRN Z_QuickMapPalette_:FAR
 EXTRN Z_QuickMapMaskedExtraData_:FAR
+EXTRN R_TextureNumForName_FAR_:FAR
+EXTRN R_FlatNumForName_FAR_:FAR
 
 EXTRN W_CacheLumpNumDirect_:FAR
 EXTRN W_LumpLength_:FAR
@@ -971,33 +973,20 @@ dw OFFSET _I_Error_addr                        , OFFSET I_Error_
 dw OFFSET _P_InitThinkers_addr                 , OFFSET P_InitThinkers_
 dw OFFSET _ST_Start_addr                       , OFFSET ST_Start_
 dw OFFSET _Z_SetOverlay_addr                   , OFFSET Z_SetOverlay_
-;dw OFFSET _Z_QuickMapMusicPageFrame_addr       , OFFSET Z_QuickMapMusicPageFrame_
-;dw OFFSET _FixedMul_addr                       , OFFSET FixedMul_
-;dw OFFSET _FixedMul2432_addr                   , OFFSET FixedMul2432_
-;dw OFFSET _FixedDiv_addr                       , OFFSET FixedDiv_
-;dw OFFSET _FixedMulTrigNoShift_addr            , OFFSET FixedMulTrigNoShift_
-;dw OFFSET _FastDiv32u16u_addr                  , OFFSET FastDiv32u16u_
-;dw OFFSET _FixedDivWholeA_addr                 , OFFSET FixedDivWholeA_
 dw OFFSET _cht_CheckCheat_Far_addr             , OFFSET cht_CheckCheat_Far_
-;dw OFFSET _FastDiv3216u_addr                   , OFFSET FastDiv3216u_
-;dw OFFSET _FixedMulTrigSpeedNoShift_addr       , OFFSET FixedMulTrigSpeedNoShift_
-;dw OFFSET _FixedMulTrigSpeed_addr              , OFFSET FixedMulTrigSpeed_
-;dw OFFSET _FixedMulTrig_addr                   , OFFSET FixedMulTrig_
-;dw OFFSET _R_PointToAngle2_16_addr             , OFFSET R_PointToAngle2_16_
-;dw OFFSET _R_PointToAngle2_addr                , OFFSET R_PointToAngle2_
-;dw OFFSET _R_SetViewSize_addr                  , OFFSET R_SetViewSize_
-;dw OFFSET _OutOfThinkers_addr                  , OFFSET OutOfThinkers_
 dw OFFSET _S_InitSFXCache_addr                 , OFFSET S_InitSFXCache_
 dw OFFSET _I_Quit_addr                         , OFFSET I_Quit_
 dw OFFSET _I_WaitVBL_addr                      , OFFSET I_WaitVBL_
 dw OFFSET _I_SetPalette_addr                   , OFFSET I_SetPalette_
 dw OFFSET _V_MarkRect_addr                     , OFFSET V_MarkRect_
-;dw OFFSET _V_DrawPatchDirect_addr              , OFFSET V_DrawPatchDirect_
 dw OFFSET _V_DrawPatch_addr                    , OFFSET V_DrawPatch_
 dw OFFSET _V_DrawFullscreenPatch_addr          , OFFSET V_DrawFullscreenPatch_
 dw OFFSET _SFX_PlayPatch_addr                  , OFFSET SFX_PlayPatch_
 dw OFFSET _S_DecreaseRefCountFar_addr          , OFFSET S_DecreaseRefCountFar_
 dw OFFSET _W_CheckNumForNameFar_addr           , OFFSET W_CheckNumForNameFar_
+dw OFFSET _R_TextureNumForName_addr            , OFFSET R_TextureNumForName_FAR_
+dw OFFSET _R_FlatNumForName_addr               , OFFSET R_FlatNumForName_FAR_
+
 
 _linkfunclist_END:
 

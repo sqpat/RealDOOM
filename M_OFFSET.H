@@ -49,9 +49,9 @@
 #define P_SetThingPositionFarOffset             0x29A7
 #define P_SpawnMapThingOffset                   0x2B48
 #define P_SpawnSpecialsOffset                   0x7CA7
-#define AM_DrawerOffset                         0x9615
-#define S_StartSoundFarOffset                   0xADA5
-#define S_StartOffset                           0xAE7C
+#define AM_DrawerOffset                         0x9614
+#define S_StartSoundFarOffset                   0xADA3
+#define S_StartOffset                           0xAE7A
 #define M_InitOffset                            0x11D1
 #define M_ResponderOffset                       0xD9E
 #define M_DrawPauseOffset                       0x13B8
@@ -81,10 +81,11 @@
 #define R_BSP0CodeSize                 0x36A9
 #define R_BSPFLCodeSize                0x364E
 #define WI_StuffCodeSize               0xFD3
-#define PSightCodeSize                 0xAF07
+#define PSightCodeSize                 0xAF05
 #define WipeCodeSize                   0x5FC
 #define FinaleCodeSize                 0xBBD
 #define SaveLoadCodeSize               0xBC5
 #define SMLoadCodeSize                 0x492
 #define SInitCodeSize                  0x562
+#define PSetupCodeSize                 0xA8E
 #define MaximumMusDriverSize           0x100E

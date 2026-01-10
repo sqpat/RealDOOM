@@ -30,7 +30,7 @@ EXTRN V_DrawFullscreenPatch_:FAR
 EXTRN G_BeginRecording_:NEAR
 EXTRN D_DoomMain2_:NEAR
 EXTRN I_InitGraphics_:NEAR
-EXTRN Z_ClearDeadCode_:NEAR
+
 
 EXTRN M_CheckParm_:NEAR
 EXTRN ST_Responder_:NEAR
@@ -61,6 +61,7 @@ EXTRN Z_QuickMapByTaskNum_:FAR
 EXTRN _OldInt8:DWORD
 EXTRN _TS_Installed:BYTE
 EXTRN _singledemo:BYTE
+EXTRN _doomdata_bin_string
 
 PUBLIC _SELFMODIFY_R_RENDERPLAYERVIEW_CALL
 
@@ -3446,6 +3447,85 @@ call    I_InitGraphics_
 call    Z_ClearDeadCode_
 jmp     D_DoomLoop_  ; never returns
 
+ENDP
+
+
+
+; todo add another 1500 bytes or so of data to this clobbered region
+
+PROC    Z_ClearDeadCode_ NEAR
+PUBLIC  Z_ClearDeadCode_
+
+cmp   word ptr ds:[_tantoangle_segment], 0
+jne   skip_clear_dead_code
+
+PUSHA_NO_AX_OR_BP_MACRO
+
+mov   ax, OFFSET _doomdata_bin_string  ; technically this string is about to get clobbered! but its ok. we check above and dont re-run the func.
+call  CopyString13_
+mov   dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
+call  locallib_fopen_nobuffering_        ; fopen("DOOMDATA.BIN", "rb"); 
+mov   di, ax ; di stores fp
+
+xor   dx, dx  ; SEEK_SET
+mov   bx, TANTOA_DOOMDATA_OFFSET AND 0FFFFh
+mov   cx, TANTOA_DOOMDATA_OFFSET SHR 16
+call  locallib_fseek_  ;    fseek(fp, SWITCH_DOOMDATA_OFFSET, SEEK_SET);
+
+xor   ax, ax
+mov   dx, cs
+mov   word ptr ds:[_tantoangle_segment], dx
+mov   cx, di ; fp
+mov   bx, 4 * 2049
+call  locallib_fread_
+
+xchg  ax, di
+call  locallib_fclose_
+
+POPA_NO_AX_OR_BP_MACRO
+
+
+; size of code to clobber
+;mov   cx, (P_INIT_ENDMARKER - D_INIT_STARTMARKER) AND 0FFF0H  
+
+skip_clear_dead_code:  ; already has been done
+
+ret
+ENDP
+
+PROC    P_InitThinkers_ FAR
+PUBLIC  P_InitThinkers_
+
+push    di
+push    cx
+push    dx
+
+mov     di, OFFSET _thinkerlist
+mov     dx, 1
+mov     word ptr ds:[di + THINKER_T.t_next], dx
+mov     word ptr ds:[di + THINKER_T.t_prevFunctype], dx
+mov     ax, MAX_THINKERS  ; technically MAX_THINKERS | TF_NULL_HIGHBITS
+mov     cx, ax
+; dh already 0
+mov     dl, (SIZE THINKER_T) - 2  ; account for stosw
+
+push    ds
+pop     es
+
+;add    di, THINKER_T.t_prevFunctype    ; unncessary, equals 0.
+
+loop_init_next_thinker:
+stosw
+add     di, dx
+loop    loop_init_next_thinker
+
+mov     word ptr ds:[_currentThinkerListHead], cx   ; cx is 0 after loop
+
+pop     dx
+pop     cx
+pop     di
+
+retf
 ENDP
 
 

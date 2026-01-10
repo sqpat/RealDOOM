@@ -380,8 +380,10 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define OVERLAY_ID_SAVELOADGAME 3
 #define OVERLAY_ID_MUS_LOADER 4
 #define OVERLAY_ID_SOUND_INIT 5
+#define OVERLAY_ID_P_SETUP 6
 
-#define NUM_OVERLAYS 5
+
+#define NUM_OVERLAYS 6
 
 
 #define TASK_PHYSICS 0
@@ -439,6 +441,7 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define pageswapargs_rend_offset_size                (num_phys_params)
 
 #define pageswapargs_rend_texture_size                (pageswapargs_rend_offset_size + 4)
+#define pageswapargs_rend_8000_size                   (pageswapargs_rend_offset_size + 16)
 #define pageswapargs_rend_9000_size                   (pageswapargs_rend_offset_size + 20)
 #define pageswapargs_rend_other9000_size              (pageswapargs_rend_offset_size + 24)
 

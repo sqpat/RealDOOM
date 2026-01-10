@@ -40,7 +40,6 @@ file main.obj
 file g_setup.obj
 file r_setup.obj
 file st_setup.obj
-file p_setup.obj
 
 file s_sbsfx.obj
 file f_file.obj

@@ -242,6 +242,11 @@ POPA_NO_AX_OR_BP_MACRO
 ret
 ENDP
 
+PROC    R_FlatNumForName_FAR_ FAR
+PUBLIC  R_FlatNumForName_FAR_
+call    R_FlatNumForName_
+retf
+
 PROC    R_FlatNumForName_ NEAR
 PUBLIC  R_FlatNumForName_
 

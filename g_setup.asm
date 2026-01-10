@@ -27,10 +27,10 @@ EXTRN Z_QuickMapPhysics_:FAR
 
 EXTRN locallib_toupper_:NEAR
 EXTRN G_ResetGameKeys_:NEAR
-EXTRN P_SetupLevel_:NEAR
 EXTRN S_ResumeSound_:NEAR
 EXTRN Z_QuickMapRender_:FAR
 EXTRN Z_QuickMapRender_9000To6000_:NEAR
+EXTRN Z_SetOverlay_:FAR
 
 .DATA
 
@@ -130,6 +130,11 @@ jmp     didnt_find_tex
 
 ENDP
 
+PROC    R_TextureNumForName_FAR_ FAR
+PUBLIC  R_TextureNumForName_FAR_
+call    R_TextureNumForName_
+retf
+ENDP
 
 PROC    R_TextureNumForName_ NEAR
 PUBLIC  R_TextureNumForName_
@@ -188,10 +193,17 @@ xor     ax, ax
 cwd
 mov     bx, ax
 
+mov     al, OVERLAY_ID_P_SETUP
+call    Z_SetOverlay_
+
 mov     al, byte ptr ds:[_gameepisode]
 mov     dl, byte ptr ds:[_gamemap]
 mov     bl, byte ptr ds:[_gameskill]
-call    P_SetupLevel_
+;call    P_SetupLevel_
+
+;call  dword ptr ds:[_F_Responder]
+db 09Ah
+dw P_SETUPLEVEL_OFFSET, CODE_OVERLAY_SEGMENT
 
 les     ax, dword ptr ds:[_ticcount]
 mov     word ptr ds:[_starttime+0], ax
