@@ -405,8 +405,6 @@ PMODE = 0180h ;  ?? ; (S_IREAD | S_IWRITE)
 ; dx = mode
 ; ax = filename
 
-jump_to_exit_fopen:
-jmp    exit_fopen
 
 PROC    locallib_fopen_   NEAR
 PUBLIC  locallib_fopen_
@@ -471,6 +469,7 @@ not_write_flag:
 
 ; bx has permissions.
 
+or   word ptr ds:[si + FILE_INFO_T.fileinto_flag], ax  ; flags
 
 
 ; flags set.
@@ -479,7 +478,6 @@ not_write_flag:
 ; ?? why var args...
 
 
-xchg ax, cx ; filename back in ax
 
 
 
@@ -487,16 +485,11 @@ xchg ax, cx ; filename back in ax
 ; dx = flags
 ; bx = file permissions
 
-; todo get rid of this frame.
-push      si
-push      cx
-push      bp
-mov       bp, sp
-xchg      ax, si        ; si gets filename ptr
+xchg      si, cx        ; filename in si, fp in cx
+
 push      dx            ; bp - 2 = flags
 push      bx            ; bp - 4 is permissions
                         ; bp - 6 is temporarily filename later
-mov       di, 0FFFFh    ; handle
 
 ; remove trailing spaces? todo remove? do i ever do this? maybe command line params will hit this.
 loop_check_for_space:
@@ -509,16 +502,14 @@ je        loop_check_for_space
 found_space:
 dec       si  ; roll back lodsb
 
-mov       ax, word ptr [bp - 2]
-and       ax, ( _O_RDONLY OR _O_WRONLY OR _O_RDWR OR _O_NOINHERIT ) ; 083h
+xchg      ax, dx ; get flags
+and       al, ( _O_RDONLY OR _O_WRONLY OR _O_RDWR OR _O_NOINHERIT ) ; 083h
 
 push      si     ; [bp - 6] = filename.
-mov       dx, si
-mov       di, ax ;   si gets rwmode for later
+mov       dx, si  ; dx gets filename
+mov       si, cx  ; si gets fp back
 
-;call      locallib_dosopen_  ; inlined
 
-; di gets handle 
 
 mov       ah, 03Dh  ; Open file using handle
 int       021h
@@ -544,7 +535,7 @@ jc        handle_sopen_seterrno
 
 sopen_access_check_ok:
 cmp       di, 0FFFFh
-jne       process_iomode_flags        ; file handle is valid so we dsont have to create it.
+jne       done_with_sopen        ; file handle is valid so we dsont have to create it.
 
 do_create_file:
 test      byte ptr [bp - 2], _O_CREAT ; we didnt ask to create it....
@@ -569,44 +560,21 @@ pop       cx     ; [bp - 4], permissions vararg, 1 for readonly 0 for not
 mov   ah, 03Ch  ; Create file using handle
 int   021h
 jb    exit_sopen_return_bad_handle
-mov   di, ax   ; set file handle in di
+xchg  ax, di
+
+done_with_sopen:
 
 
+; finished, di is handle
 
+inc  di
+jz   bad_handle_exit
+dec  di
 
-
-
-
-process_iomode_flags:
-
-
-; finished with flags
-
-xchg      ax, di  ; last use of di
-
-
-exit_sopen:
-LEAVE_MACRO
-pop       cx
-pop       si
-
-
-
-
-mov  word ptr ds:[si + FILE_INFO_T.fileinto_handle], ax
-cmp  ax, 0FFFFh
-je   bad_handle_dofree
-xor  dx, dx
-mov  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], dx ; 0
-mov  word ptr ds:[si + FILE_INFO_T.fileinto_base], dx ; 0
-or   word ptr ds:[si + FILE_INFO_T.fileinto_flag], cx  ; flags
-
-do_open_skip_fseek:
+mov  word ptr ds:[si + FILE_INFO_T.fileinto_handle], di
 
 xchg  ax, si
 exit_doopen:
-
-
 
 
 exit_fopen:
@@ -618,21 +586,16 @@ mov   ax, es
 ret 
 
 exit_sopen_return_bad_handle:
-mov       ax, 0FFFFh
-jmp       exit_sopen
-
-
-bad_handle_dofree:
-xor  ax, ax
-jmp  exit_doopen
 
 handle_sopen_seterrno:
 mov       bx, di
 mov       ah, 03Eh   ; Close file using handle
 int       021h
-sbb       dx, dx
-mov       ax, cx
-jmp       exit_sopen
+
+bad_handle_exit:
+xor  ax, ax
+jmp  exit_doopen
+
 
 ENDP
 
