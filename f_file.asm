@@ -549,65 +549,6 @@ PERMISSION_WRITABLE = 0
 PMODE = 0180h ;  ?? ; (S_IREAD | S_IWRITE)
 
 
-; todo inline
-
-PROC   locallib_doopen_ NEAR
-PUBLIC locallib_doopen_ 
-push cx
-push di
-
-; si is already fp.
-
-; todo clean this logic up.
-
-cwd  ; dx = 0. ah known 0 ; equal to _O_RDONLY. default to read
-mov  cx, PERMISSION_READONLY 
-
-test al, FILEFLAG_WRITE
-je   not_write_flag
-dec  cx ; PERMISSION_WRITABLE = 0 
-or   dl, (_O_WRONLY OR _O_CREAT)
-not_write_flag:
-
-push cx  ; p_mode (permissions) param is 0 or P_MODE based on write flag.
-
-mov  dh, (_O_TEXT SHR 8)
-test al, FILEFLAG_BINARY
-je   not_binary_flag
-inc  dh   ;  increment by one same as:  mov  cl, (_O_BINARY SHR 8)
-not_binary_flag:
-
-
-; flags set.
-
-;    fp->_handle = __F_NAME(_sopen,_wsopen)( name, open_mode, shflag, p_mode );
-; ?? why var args...
-
-xchg ax, cx ; cx stores flags.
-
-xchg ax, bx ; ax = filename
-            ; dx = flags already
-pop  bx     ; bx gets file permissions
-
-call locallib_sopen_
-
-
-mov  word ptr ds:[si + FILE_INFO_T.fileinto_handle], ax
-cmp  ax, 0FFFFh
-je   bad_handle_dofree
-xor  dx, dx
-mov  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], dx ; 0
-mov  word ptr ds:[si + FILE_INFO_T.fileinto_base], dx ; 0
-or   word ptr ds:[si + FILE_INFO_T.fileinto_flag], cx  ; flags
-
-do_open_skip_fseek:
-
-mov  ax, si
-exit_doopen:
-
-pop  di
-pop  cx
-ret
 
 
 
@@ -674,7 +615,9 @@ PUBLIC  locallib_fopen_
 
 
 push bx
+push cx
 push si
+push di
 
 xchg ax, bx  ; bx has filename ptr
 call locallib_allocfp_  ; no args. returns file ptr
@@ -687,12 +630,68 @@ xchg ax, dx  ; ax gets flags
 xor  ah, ah  
 ; si has fp
 ; bx has filename ptr
+
+
+
+
+; si is already fp.
+
+; todo clean this logic up.
+
+cwd  ; dx = 0. ah known 0 ; equal to _O_RDONLY. default to read
+mov  cx, PERMISSION_READONLY 
+
+test al, FILEFLAG_WRITE
+je   not_write_flag
+dec  cx ; PERMISSION_WRITABLE = 0 
+or   dl, (_O_WRONLY OR _O_CREAT)
+not_write_flag:
+
+push cx  ; p_mode (permissions) param is 0 or P_MODE based on write flag.
+
+mov  dh, (_O_TEXT SHR 8)
+test al, FILEFLAG_BINARY
+je   not_binary_flag
+inc  dh   ;  increment by one same as:  mov  cl, (_O_BINARY SHR 8)
+not_binary_flag:
+
+
+; flags set.
+
+;    fp->_handle = __F_NAME(_sopen,_wsopen)( name, open_mode, shflag, p_mode );
+; ?? why var args...
+
+xchg ax, cx ; cx stores flags.
+
+xchg ax, bx ; ax = filename
+            ; dx = flags already
+pop  bx     ; bx gets file permissions
+
 ; todo inline
-call locallib_doopen_   ; si has filename, al has flags
+call locallib_sopen_
+
+
+mov  word ptr ds:[si + FILE_INFO_T.fileinto_handle], ax
+cmp  ax, 0FFFFh
+je   bad_handle_dofree
+xor  dx, dx
+mov  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], dx ; 0
+mov  word ptr ds:[si + FILE_INFO_T.fileinto_base], dx ; 0
+or   word ptr ds:[si + FILE_INFO_T.fileinto_flag], cx  ; flags
+
+do_open_skip_fseek:
+
+mov  ax, si
+exit_doopen:
+
+
+
 
 exit_fopen:
 
+pop  di
 pop  si
+pop  cx
 pop  bx
 ret 
 
