@@ -389,17 +389,17 @@ VISPLANEPICLIGHT_T STRUC
 VISPLANEPICLIGHT_T ENDS
 
 VISPLANE_T STRUC 
-    vp_pad0     db ?
-    vp_pad1     db ?
-    vp_top      db SCREENWIDTH DUP(?)
+    vp_pad0     db ?                    ; 0
+    vp_pad1     db ?                    ; 1
+    vp_top      db SCREENWIDTH DUP(?)   ; 2
 
-    vp_pad2     db ?
-    vp_pad3     db ? 
-    vp_bottom   db SCREENWIDTH DUP(?)
+    vp_pad2     db ?                    ; 0142h
+    vp_pad3     db ?                    ; 0143h
+    vp_bottom   db SCREENWIDTH DUP(?)   ; 0144h
 
-    vp_pad4     db ?
-    vp_pad5     db ?
-
+    vp_pad4     db ?                    ; 0284h
+    vp_pad5     db ?                    ; 0285h
+                                        ; 0286h (644)
 
 VISPLANE_T ENDS
  

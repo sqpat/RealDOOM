@@ -375,10 +375,13 @@ PROC    locallib_fopen_nobuffering_  NEAR
 PUBLIC  locallib_fopen_nobuffering_
 
 call    locallib_fopen_
+test    ax, ax
+je      dont_modify_values_bad_file  ; todo carry flag
 xchg    ax, bx
 or      byte ptr ds:[bx + FILE_INFO_T.fileinto_flag + 1], _IONBF SHR 8
 and     byte ptr ds:[bx + FILE_INFO_T.fileinto_flag + 1], (NOT (_IOFBF OR _IOLBF)) SHR 8
 xchg    ax, bx
+dont_modify_values_bad_file:
 ret
 
 ENDP
@@ -558,7 +561,7 @@ push di
 ; todo clean this logic up.
 
 cwd  ; dx = 0. ah known 0 ; equal to _O_RDONLY. default to read
-mov  cx, PERMISSION_READONLY OR _O_TRUNC
+mov  cx, PERMISSION_READONLY 
 
 test al, FILEFLAG_WRITE
 je   not_write_flag
@@ -686,8 +689,6 @@ xor  ah, ah
 ; bx has filename ptr
 ; todo inline
 call locallib_doopen_   ; si has filename, al has flags
-
-null_fp:
 
 exit_fopen:
 
