@@ -70,8 +70,6 @@ _O_RDWR          = 00002h ;  open for read and write
 
 _O_CREAT         = 00020h ;  create new file 
 _O_TRUNC         = 00040h ;  truncate existing file 
-_O_TEXT          = 00100h ;  text file 
-_O_BINARY        = 00200h ;  binary file 
 _O_NOINHERIT     = 00080h ;  file is not inherited by child process
 
 
@@ -387,10 +385,127 @@ ret
 ENDP
 
 
-; todo inline
 
-PROC   locallib_sopen_   NEAR
-PUBLIC locallib_sopen_
+
+
+; ax has flags
+; si has fp
+; bx has filename ptr
+
+
+PERMISSION_READONLY = 1
+PERMISSION_WRITABLE = 0
+PMODE = 0180h ;  ?? ; (S_IREAD | S_IWRITE)
+
+
+
+
+
+
+
+; todo inline???
+; outer frame push/pops si. so its safe to wreck here
+
+PROC    locallib_allocfp_ NEAR
+
+
+push      di
+
+mov       di, OFFSET ___iob
+loop_next_static_file:
+test      byte ptr ds:[di + FILE_INFO_T.fileinto_flag], (_READ OR _WRITE)
+je        create_streamlink      ; found an empty FP
+add       di, SIZE FILE_INFO_T
+cmp       di, (OFFSET ___iob + (MAX_FILES * SIZE FILE_INFO_T))
+jb        loop_next_static_file
+mov       ax, OFFSET _OUTOFFILES_STR
+jmp       got_error_str
+
+
+
+create_streamlink:
+
+; si has streamlink ptr  todo reverse for consistency? si is usually FILE.
+; ax has 0
+
+
+
+push      ds
+pop       es
+
+; zero out the streamlink.
+xor       ax, ax
+stosw  ; 5 * 2 bytes = SIZE FILE_INFO_T = 0Ah
+stosw
+stosw  
+stosw  
+stosw
+
+lea       ax, [di - SIZE FILE_INFO_T]
+do_allocfp_exit:
+pop       di
+
+ret
+
+
+ENDP
+
+
+; dx = mode
+; ax = filename
+
+jump_to_exit_fopen:
+jmp    exit_fopen
+
+PROC    locallib_fopen_   NEAR
+PUBLIC  locallib_fopen_
+
+
+push bx
+push cx
+push si
+push di
+
+xchg ax, bx  ; bx has filename ptr
+call locallib_allocfp_  ; no args. returns file ptr
+
+test ax, ax
+je   jump_to_exit_fopen
+
+xchg ax, si  ; si gets fp
+xchg ax, dx  ; ax gets flags
+xor  ah, ah  
+; si has fp
+; bx has filename ptr
+
+
+cwd  ; dx = 0. ah known 0 ; equal to _O_RDONLY. default to read
+mov  cx, PERMISSION_READONLY 
+
+test al, FILEFLAG_WRITE
+je   not_write_flag
+dec  cx ; PERMISSION_WRITABLE = 0 
+or   dl, (_O_WRONLY OR _O_CREAT)
+not_write_flag:
+
+push cx  ; p_mode (permissions) param is 0 or P_MODE based on write flag.
+
+
+
+; flags set.
+
+;    fp->_handle = __F_NAME(_sopen,_wsopen)( name, open_mode, shflag, p_mode );
+; ?? why var args...
+
+xchg ax, cx ; cx stores flags.
+
+xchg ax, bx ; ax = filename
+            ; dx = flags already
+pop  bx     ; bx gets file permissions
+
+; todo inline
+;call locallib_sopen_
+
 
 
 ; ax = filename
@@ -526,149 +641,7 @@ pop       dx
 pop       cx
 pop       bx
 
-ret       
 
-exit_sopen_return_bad_handle:
-mov       ax, 0FFFFh
-jmp       exit_sopen
-
-
-
-
-ENDP
-
-
-
-; ax has flags
-; si has fp
-; bx has filename ptr
-
-
-PERMISSION_READONLY = 1
-PERMISSION_WRITABLE = 0
-PMODE = 0180h ;  ?? ; (S_IREAD | S_IWRITE)
-
-
-
-
-
-bad_handle_dofree:
-xor  ax, ax
-jmp  exit_doopen
-
-ENDP
-
-
-; todo inline???
-; outer frame push/pops si. so its safe to wreck here
-
-PROC    locallib_allocfp_ NEAR
-
-
-push      di
-
-mov       di, OFFSET ___iob
-loop_next_static_file:
-test      byte ptr ds:[di + FILE_INFO_T.fileinto_flag], (_READ OR _WRITE)
-je        create_streamlink      ; found an empty FP
-add       di, SIZE FILE_INFO_T
-cmp       di, (OFFSET ___iob + (MAX_FILES * SIZE FILE_INFO_T))
-jb        loop_next_static_file
-mov       ax, OFFSET _OUTOFFILES_STR
-jmp       got_error_str
-
-
-
-create_streamlink:
-
-; si has streamlink ptr  todo reverse for consistency? si is usually FILE.
-; ax has 0
-
-
-
-push      ds
-pop       es
-
-; zero out the streamlink.
-xor       ax, ax
-stosw  ; 5 * 2 bytes = SIZE FILE_INFO_T = 0Ah
-stosw
-stosw  
-stosw  
-stosw
-
-lea       ax, [di - SIZE FILE_INFO_T]
-do_allocfp_exit:
-pop       di
-
-ret
-
-
-ENDP
-
-
-; dx = mode
-; ax = filename
-
-PROC    locallib_fopen_   NEAR
-PUBLIC  locallib_fopen_
-
-
-push bx
-push cx
-push si
-push di
-
-xchg ax, bx  ; bx has filename ptr
-call locallib_allocfp_  ; no args. returns file ptr
-
-test ax, ax
-je   exit_fopen
-
-xchg ax, si  ; si gets fp
-xchg ax, dx  ; ax gets flags
-xor  ah, ah  
-; si has fp
-; bx has filename ptr
-
-
-
-
-; si is already fp.
-
-; todo clean this logic up.
-
-cwd  ; dx = 0. ah known 0 ; equal to _O_RDONLY. default to read
-mov  cx, PERMISSION_READONLY 
-
-test al, FILEFLAG_WRITE
-je   not_write_flag
-dec  cx ; PERMISSION_WRITABLE = 0 
-or   dl, (_O_WRONLY OR _O_CREAT)
-not_write_flag:
-
-push cx  ; p_mode (permissions) param is 0 or P_MODE based on write flag.
-
-mov  dh, (_O_TEXT SHR 8)
-test al, FILEFLAG_BINARY
-je   not_binary_flag
-inc  dh   ;  increment by one same as:  mov  cl, (_O_BINARY SHR 8)
-not_binary_flag:
-
-
-; flags set.
-
-;    fp->_handle = __F_NAME(_sopen,_wsopen)( name, open_mode, shflag, p_mode );
-; ?? why var args...
-
-xchg ax, cx ; cx stores flags.
-
-xchg ax, bx ; ax = filename
-            ; dx = flags already
-pop  bx     ; bx gets file permissions
-
-; todo inline
-call locallib_sopen_
 
 
 mov  word ptr ds:[si + FILE_INFO_T.fileinto_handle], ax
@@ -695,8 +668,18 @@ pop  cx
 pop  bx
 ret 
 
+exit_sopen_return_bad_handle:
+mov       ax, 0FFFFh
+jmp       exit_sopen
+
+
+bad_handle_dofree:
+xor  ax, ax
+jmp  exit_doopen
 
 ENDP
+
+
 
 
 PROC    locallib_fclosefromfar_   FAR
