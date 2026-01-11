@@ -403,13 +403,29 @@ PMODE = 0180h ;  ?? ; (S_IREAD | S_IWRITE)
 
 
 
-; todo inline???
-; outer frame push/pops si. so its safe to wreck here
-
-PROC    locallib_allocfp_ NEAR
 
 
-push      di
+
+; dx = mode
+; ax = filename
+
+jump_to_exit_fopen:
+jmp    exit_fopen
+
+PROC    locallib_fopen_   NEAR
+PUBLIC  locallib_fopen_
+
+
+push bx
+push cx
+push si
+push di
+
+xchg ax, bx  ; bx has filename ptr
+;call locallib_allocfp_  ; no args. returns file ptr
+
+
+
 
 mov       di, OFFSET ___iob
 loop_next_static_file:
@@ -441,38 +457,9 @@ stosw
 stosw  
 stosw
 
-lea       ax, [di - SIZE FILE_INFO_T]
-do_allocfp_exit:
-pop       di
+lea       si, [di - SIZE FILE_INFO_T]
 
-ret
-
-
-ENDP
-
-
-; dx = mode
-; ax = filename
-
-jump_to_exit_fopen:
-jmp    exit_fopen
-
-PROC    locallib_fopen_   NEAR
-PUBLIC  locallib_fopen_
-
-
-push bx
-push cx
-push si
-push di
-
-xchg ax, bx  ; bx has filename ptr
-call locallib_allocfp_  ; no args. returns file ptr
-
-test ax, ax
-je   jump_to_exit_fopen
-
-xchg ax, si  ; si gets fp
+; si has fp
 xchg ax, dx  ; ax gets flags
 xor  ah, ah  
 ; si has fp
