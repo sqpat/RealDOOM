@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/11 11:50:56
+Created on:       26/01/11 11:54:14
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -48,7 +48,7 @@ G_SETUP_TEXT           CODE           AUTO           0000:5080       0000021e
 R_SETUP_TEXT           CODE           AUTO           0000:529e       0000032f
 ST_SETUP_TEXT          CODE           AUTO           0000:55ce       00000122
 S_SBSFX_TEXT           CODE           AUTO           0000:56f0       00000d38
-F_FILE_TEXT            CODE           AUTO           0000:6428       0000042d
+F_FILE_TEXT            CODE           AUTO           0000:6428       0000042e
 I_START_TEXT           CODE           AUTO           0000:6856       000001a3
 W_WAD_TEXT             CODE           AUTO           0000:69fa       0000024e
 V_VIDEO_TEXT           CODE           AUTO           0000:6c48       00000217
@@ -356,7 +356,6 @@ Module: s_sbsfx.obj(s_sbsfx.ASM)
 0000:630b*     SB_DisableInterrupt_
 Module: f_file.obj(f_file.ASM)
 0000:665e      locallib_fclosefromfar_
-0000:67b2*     locallib_inner_lseek_
 0000:6684      locallib_fclose_
 0000:65a6      locallib_fopenfromfar_nobuffer_
 0000:6684      doclose_
@@ -369,11 +368,11 @@ Module: f_file.obj(f_file.ASM)
 0000:650c      locallib_freadfromfar_
 0000:64d8      locallib_fwrite_
 0000:6428*     F_FILE_STARTMARKER_
-0000:67d0      locallib_ftell_
+0000:67d1      locallib_ftell_
 0000:65bc      locallib_fopen_
 0000:67a9      locallib_fseekfromfar_
 0000:6710      locallib_fseek_
-0000:6855*     F_FILE_ENDMARKER_
+0000:6856*     F_FILE_ENDMARKER_
 Module: i_start.obj(i_start.ASM)
 072a:0000*     __nullarea
 0000:696a      _realdoomstart_
@@ -448,4 +447,4 @@ Module: z_zone.obj(z_zone.ASM)
 Stack size:  0800 (2048.)
 Memory size:  8d60 (36192.)
 Entry point address: 0000:696a
-Link time: 00:00.65
+Link time: 00:00.09

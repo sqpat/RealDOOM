@@ -927,8 +927,6 @@ mov  bx, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
 ; fall thru
 
 
-PROC    locallib_inner_lseek_   NEAR
-PUBLIC  locallib_inner_lseek_
 
 ; al is passed in with the file type
 ; cx:dx the size
@@ -971,10 +969,13 @@ PROC    locallib_tell_ NEAR
 push bx
 push cx
 mov  bx, word ptr ds:[si + FILE_INFO_T.fileinto_handle]  ; si is always file handle here
-mov  al, 1
-xor  dx, dx
-xor  cx, cx
-call locallib_inner_lseek_
+
+mov  ax, 04201h   ; Move file pointer using handle
+cwd         ; dx 0
+mov  cx, dx ; cx 0
+int  021h 
+jc   do_bad_inner_lseek
+
 pop  cx
 pop  bx
 ret 
@@ -1122,249 +1123,6 @@ ENDP
 
 
 
-
-COMMENT @
-
-
-PROC  locallib_qwrite_ NEAR
-
-push cx
-push si
-push di
-push bp
-mov  si, ax
-mov  bp, dx
-mov  di, bx
-
-mov  dx, bp
-mov  cx, di
-mov  bx, si
-mov  ah, 040h  ; Write file or device using handle
-int  021h
-jc   do_qwrite_error
-mov  dx, ax
-cmp  ax, di
-jne  get_qwrite_errno
-skip_qwrite_errno:
-mov  ax, dx
-exit_qwrite:
-pop  bp
-pop  di
-pop  si
-pop  cx
-ret
-do_qwrite_error:
-call locallib_set_errno_ptr_
-jmp  exit_qwrite
-get_qwrite_errno:
-mov  word ptr ds:[_errno], 0Ch
-jmp  skip_qwrite_errno
-
-
-ENDP
-
-PROC    locallib_fread_   FAR
-PUBLIC  locallib_fread_
-
-
-push      si
-push      di
-push      bp
-mov       bp, sp
-sub       sp, FREAD_BUFFER_SIZE
-xchg      ax, di  ; di = dest offset
-mov       si, dx  ; si = dest segment
-mov       dx, bx ; dx gets size to read
-
-; si has dest segment
-; di has dest offset
-; dx has size to read...
-; cx has fp
-
-loop_fread_next_chunk:
-
-push      dx  ; [MATCH A]  size left to read
-
-cmp       dx, FREAD_BUFFER_SIZE
-jb        use_remaining_write_size     ; unsigned compare
-mov       dx, FREAD_BUFFER_SIZE
-use_remaining_write_size:
-
-
-push      cx  ; [MATCH B]  fp
-push      dx  ; [MATCH C]  size to read this time
-lea       ax, [bp - FREAD_BUFFER_SIZE]
-mov       bx, 1
-push      ax  ; [MATCH D]  buffer pos
-call      locallib_fread_translate_   ;fread(stackbuffer, copysize, 1, fp);
-
-mov       es, si ; dest segment in es
-pop       si     ; [MATCH D]  buffer pos
-		
-pop       cx     ; [MATCH C]  size to read this time
-mov       bx, cx ; len copy 
-
-
-                ; ds = ss
-                ; di updates as we go set
-
-shr       cx, 1         ;FAR_memcpy(destloc, stackbufferfar, copysize);
-rep movsw 
-adc       cx, cx
-rep movsb 
-
-mov       si, es   ; restore segment...
-pop       cx     ; [MATCH B]  fp
-pop       dx     ; [MATCH A]  size left to read
-sub       dx, bx
-jne       loop_fread_next_chunk
-skip_read_zero:
-
-LEAVE_MACRO
-pop       di
-pop       si
-retf
-
-ENDP
-
-
-
-PROC    locallib_far_fwrite_ NEAR
-PUBLIC  locallib_far_fwrite_
-;filelength_t  __far locallib_far_fwrite(void __far* src, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
-
-push      cx      ; fp = bp + 6
-push      si      ; bp + 4
-push      di      ; bp + 2
-push      bp      ; bp + 0
-mov       bp, sp
-sub       sp, FREAD_BUFFER_SIZE
-xchg      ax, si  ; si = src offset
-mov       di, dx  ; di = src segment
-mov       cx, bx
-
-; cx has size 
-; si has dest segment
-; di has dest offset
-; dx has size to write...
-
-loop_fwrite_next_chunk:
-
-push      cx  ; [MATCH A]  size left to write
-mov       dx, cx
-cmp       cx, FREAD_BUFFER_SIZE
-jb        use_remaining_read_size     ; unsigned compare
-mov       cx, FREAD_BUFFER_SIZE
-use_remaining_read_size:
-
-push      cx  ; [MATCH B]  size to write this time
-
-mov       dx, ds
-mov       es, dx
-mov       bx, cx
-
-mov       ds, di
-lea       di, [bp - FREAD_BUFFER_SIZE] ; todo mov sp?
-mov       ax, di
-
-shr       cx, 1         ;FAR_memcpy(destloc, stackbufferfar, copysize);
-rep movsw 
-adc       cx, cx
-rep movsb 
-
-mov       di, ds   ; restore backup segment...
-
-mov       ds, dx   ; restore ds
-
-mov       dx, ds
-mov       cx, word ptr [bp + 6]   ; fp
-
-
-call      locallib_fwrite_   ;fwrite(stackbuffer, copysize, 1, fp);
-
-
-		
-pop       bx     ; [MATCH B]  size to write this time
-pop       cx     ; [MATCH A]  size left to write
-sub       cx, bx
-jne       loop_fwrite_next_chunk
-
-skip_write_zero:
-
-LEAVE_MACRO
-pop       di
-pop       si
-pop       cx
-ret
-
-ENDP
-@
-
-
-COMMENT @
-
-DOS_EOF_CHAR = 01Ah
-
-PROC    locallib_fgetc_   NEAR
-PUBLIC  locallib_fgetc_
-
-push bx
-push si
-mov  si, ax
-actually_get_char:
-dec  word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
-jl   increase_buffer
-mov  bx, word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
-xor  ax, ax
-mov  al, byte ptr ds:[bx]
-inc  word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
-
-check_if_2nd_get_necessary:
-cmp  al, DOS_EOF_CHAR    ; todo?
-jne  exit_fgetc
-mov  ax, 0FFFFh
-or   byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _EOF
-
-exit_fgetc:
-pop  si
-pop  bx
-ret 
-
-exit_fgetc_return_error:
-mov  ax, 0FFFFh
-pop  si
-pop  bx
-ret 
-increase_buffer:
-
-;call locallib_filbuf_
-; inlined
-
-call locallib_fill_buffer_
-test ax, ax
-je   return_eof
-mov  bx, word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
-xor  ax, ax
-mov  al, byte ptr ds:[bx] ; get this before incrementing file_ptr.
-dec  word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
-inc  word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
-jmp  check_if_2nd_get_necessary
-
-return_eof:
-dec ax  ; since ax is 0 dec is -1 
-jmp  exit_fgetc
-
-fgetc_error_handler:
-mov  word ptr ds:[_errno], 4
-mov  ax, 0FFFFh
-or   byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _SFERR
-jmp  exit_fgetc
-
-
-
-ret
-ENDP
-@
 
 PROC    F_FILE_ENDMARKER_ NEAR
 PUBLIC  F_FILE_ENDMARKER_
