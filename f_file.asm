@@ -412,10 +412,10 @@ PROC    locallib_fopen_   NEAR
 PUBLIC  locallib_fopen_
 
 
-push bx
-push cx
-push si
-push di
+PUSHA_NO_AX_OR_BP_MACRO
+push  bp
+mov   bp, sp
+
 
 xchg ax, cx  ; cx holds onto filename
 
@@ -487,12 +487,9 @@ xchg ax, cx ; filename back in ax
 ; dx = flags
 ; bx = file permissions
 
-
-push      bx
-push      cx
-push      dx
+; todo get rid of this frame.
 push      si
-push      di
+push      cx
 push      bp
 mov       bp, sp
 xchg      ax, si        ; si gets filename ptr
@@ -505,27 +502,8 @@ mov       di, 0FFFFh    ; handle
 loop_check_for_space:
 lodsb
 cmp       al, ' '
-jne       found_space
-jmp       loop_check_for_space
+je        loop_check_for_space
 
-handle_sopen_seterrno:
-mov       bx, di
-mov       ah, 03Eh   ; Close file using handle
-int       021h
-sbb       dx, dx
-mov       ax, cx
-jmp       exit_sopen
-
-close_file_and_error:
-mov       bx, di
-mov       ah, 03Eh   ; Close file using handle
-int       021h
-sbb       dx, dx
-mov       cx, 0Bh   ; EMFILE?
-
-mov       word ptr ds:[_errno], cx
-
-jmp       exit_sopen_return_bad_handle
 
 
 found_space:
@@ -608,13 +586,9 @@ xchg      ax, di  ; last use of di
 
 
 exit_sopen:
-mov       sp, bp
-pop       bp
-pop       di
-pop       si
-pop       dx
+LEAVE_MACRO
 pop       cx
-pop       bx
+pop       si
 
 
 
@@ -629,7 +603,7 @@ or   word ptr ds:[si + FILE_INFO_T.fileinto_flag], cx  ; flags
 
 do_open_skip_fseek:
 
-mov  ax, si
+xchg  ax, si
 exit_doopen:
 
 
@@ -637,10 +611,10 @@ exit_doopen:
 
 exit_fopen:
 
-pop  di
-pop  si
-pop  cx
-pop  bx
+mov   es, ax
+LEAVE_MACRO
+POPA_NO_AX_OR_BP_MACRO
+mov   ax, es
 ret 
 
 exit_sopen_return_bad_handle:
@@ -651,6 +625,14 @@ jmp       exit_sopen
 bad_handle_dofree:
 xor  ax, ax
 jmp  exit_doopen
+
+handle_sopen_seterrno:
+mov       bx, di
+mov       ah, 03Eh   ; Close file using handle
+int       021h
+sbb       dx, dx
+mov       ax, cx
+jmp       exit_sopen
 
 ENDP
 
