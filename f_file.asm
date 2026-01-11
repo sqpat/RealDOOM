@@ -402,10 +402,6 @@ PMODE = 0180h ;  ?? ; (S_IREAD | S_IWRITE)
 
 
 
-
-
-
-
 ; dx = mode
 ; ax = filename
 
@@ -421,9 +417,7 @@ push cx
 push si
 push di
 
-xchg ax, bx  ; bx has filename ptr
-;call locallib_allocfp_  ; no args. returns file ptr
-
+xchg ax, cx  ; cx holds onto filename
 
 
 
@@ -467,15 +461,15 @@ xor  ah, ah
 
 
 cwd  ; dx = 0. ah known 0 ; equal to _O_RDONLY. default to read
-mov  cx, PERMISSION_READONLY 
+mov  bx, PERMISSION_READONLY 
 
 test al, FILEFLAG_WRITE
 je   not_write_flag
-dec  cx ; PERMISSION_WRITABLE = 0 
+dec  bx ; PERMISSION_WRITABLE = 0 
 or   dl, (_O_WRONLY OR _O_CREAT)
 not_write_flag:
 
-push cx  ; p_mode (permissions) param is 0 or P_MODE based on write flag.
+; bx has permissions.
 
 
 
@@ -484,14 +478,8 @@ push cx  ; p_mode (permissions) param is 0 or P_MODE based on write flag.
 ;    fp->_handle = __F_NAME(_sopen,_wsopen)( name, open_mode, shflag, p_mode );
 ; ?? why var args...
 
-xchg ax, cx ; cx stores flags.
 
-xchg ax, bx ; ax = filename
-            ; dx = flags already
-pop  bx     ; bx gets file permissions
-
-; todo inline
-;call locallib_sopen_
+xchg ax, cx ; filename back in ax
 
 
 
