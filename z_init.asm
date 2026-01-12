@@ -59,7 +59,6 @@ EXTRN locallib_fclosefromfar_:NEAR
 EXTRN locallib_ftell_:NEAR
 EXTRN getStringByIndex_:FAR
 EXTRN I_Error_:FAR
-EXTRN P_InitThinkers_:FAR
 EXTRN ST_Start_:FAR
 EXTRN Z_SetOverlay_:FAR
 EXTRN Z_QuickMapMusicPageFrame_:FAR
@@ -970,7 +969,7 @@ dw OFFSET _fread_addr                          , OFFSET locallib_freadfromfar_
 dw OFFSET _fclose_addr                         , OFFSET locallib_fclosefromfar_
 dw OFFSET _getStringByIndex_addr               , OFFSET getStringByIndex_
 dw OFFSET _I_Error_addr                        , OFFSET I_Error_
-dw OFFSET _P_InitThinkers_addr                 , OFFSET P_InitThinkers_
+;dw OFFSET _P_InitThinkers_addr                 , OFFSET P_InitThinkers_
 dw OFFSET _ST_Start_addr                       , OFFSET ST_Start_
 dw OFFSET _Z_SetOverlay_addr                   , OFFSET Z_SetOverlay_
 dw OFFSET _cht_CheckCheat_Far_addr             , OFFSET cht_CheckCheat_Far_

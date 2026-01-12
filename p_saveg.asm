@@ -419,8 +419,10 @@ rep stosw
 jmp       check_next_thinker_to_zero
 
 handle_load_non_thinker:
-test      al, al                ; test for end marker
-jne       bad_thinkerclass
+; pending cmp al 1. al is known not equal to 1
+; now we want to check for 0 so piggy back on that:
+;test      al, al                ; test for end marker
+ja         bad_thinkerclass
 
 exit_unarchivethinkers:
 
@@ -457,10 +459,7 @@ check_next_thinker_to_zero:
 test      si, si
 jne       loop_zeroing_thinkers
 
-;call      P_InitThinkers_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _P_InitThinkers_addr
+call      P_InitThinkers_SaveG_
 
 ; zero blocklinks.
 mov       cx, MAX_BLOCKLINKS_SIZE / 2
@@ -680,6 +679,56 @@ dw  OFFSET  load_strobe_special     ; 5
 dw  OFFSET  load_glow_special       ; 6
 dw  OFFSET  end_specials            ; 7
 
+PROC    P_InitThinkers_SaveG_ NEAR
+
+push    di
+push    cx
+push    dx
+
+mov     di, OFFSET _thinkerlist
+mov     dx, 1
+mov     word ptr ds:[di + THINKER_T.t_next], dx
+mov     word ptr ds:[di + THINKER_T.t_prevFunctype], dx
+mov     ax, MAX_THINKERS  ; technically MAX_THINKERS | TF_NULL_HIGHBITS
+mov     cx, ax
+; dh already 0
+mov     dl, (SIZE THINKER_T) - 2  ; account for stosw
+
+push    ds
+pop     es
+
+;add    di, THINKER_T.t_prevFunctype    ; unncessary, equals 0.
+
+loop_init_next_thinker:
+stosw
+add     di, dx
+loop    loop_init_next_thinker
+
+mov     word ptr ds:[_currentThinkerListHead], cx   ; cx is 0 after loop
+
+pop     dx
+pop     cx
+pop     di
+
+ret
+ENDP
+
+
+PROC  CreateThinkerLocal_ NEAR
+
+xor    ah, ah ; clear 0 bits..;
+
+db 09Ah
+dw P_CREATETHINKERFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+push   ds
+pop    es
+mov    ds, cx
+
+ret
+
+ENDP
+
 PROC P_UnArchiveSpecials_  NEAR
 PUBLIC P_UnArchiveSpecials_
 
@@ -720,15 +769,10 @@ load_ceiling_special:
 ; PADSAVEP
 add    si, 3
 and    si, 0FFFCh
-mov    ax, TF_MOVECEILING_HIGHBITS
+mov    ah, (TF_MOVECEILING_HIGHBITS SHR 8)
 
-db 09Ah
-dw P_CREATETHINKERFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+call   CreateThinkerLocal_
 
-
-push   ds
-pop    es
-mov    ds, cx
 
 mov    bx, ax
 sub    ax, (_thinkerlist + THINKER_T.t_data)
@@ -772,13 +816,9 @@ load_door_special:
 ; PADSAVEP
 add    si, 3
 and    si, 0FFFCh
-mov    ax, TF_VERTICALDOOR_HIGHBITS
-db 09Ah
-dw P_CREATETHINKERFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+mov    ah, (TF_VERTICALDOOR_HIGHBITS SHR 8)
+call   CreateThinkerLocal_
 
-push   ds
-pop    es
-mov    ds, cx
 
 mov    bx, ax
 sub    ax, (_thinkerlist + THINKER_T.t_data)
@@ -809,12 +849,10 @@ load_movefloor_special:
 ; PADSAVEP
 add    si, 3
 and    si, 0FFFCh
-mov    ax, TF_MOVEFLOOR_HIGHBITS
-db 09Ah
-dw P_CREATETHINKERFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+mov    ah, (TF_MOVEFLOOR_HIGHBITS SHR 8)
+call   CreateThinkerLocal_
 push   ds
 pop    es
-mov    ds, cx
 
 mov    bx, ax
 sub    ax, (_thinkerlist + THINKER_T.t_data)
@@ -849,14 +887,9 @@ load_platraise_special:
 ; PADSAVEP
 add    si, 3
 and    si, 0FFFCh
-mov    ax, TF_PLATRAISE_HIGHBITS
+mov    ah, (TF_PLATRAISE_HIGHBITS SHR 8)
 
-db 09Ah
-dw P_CREATETHINKERFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
-
-push   ds
-pop    es
-mov    ds, cx
+call   CreateThinkerLocal_
 
 mov    bx, ax
 sub    ax, (_thinkerlist + THINKER_T.t_data)
@@ -909,14 +942,9 @@ load_flash_special:
 ; PADSAVEP
 add    si, 3
 and    si, 0FFFCh
-mov    ax, TF_LIGHTFLASH_HIGHBITS
+mov    ah, (TF_LIGHTFLASH_HIGHBITS SHR 8)
 
-db 09Ah
-dw P_CREATETHINKERFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
-
-push   ds
-pop    es
-mov    ds, cx
+call   CreateThinkerLocal_
 
 mov    di, ax
 
@@ -934,14 +962,9 @@ load_strobe_special:
 ; PADSAVEP
 add    si, 3
 and    si, 0FFFCh
-mov    ax, TF_STROBEFLASH_HIGHBITS
+mov    ah, (TF_STROBEFLASH_HIGHBITS SHR 8)
 
-db 09Ah
-dw P_CREATETHINKERFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
-
-push   ds
-pop    es
-mov    ds, cx
+call   CreateThinkerLocal_
 
 mov    di, ax
 
@@ -959,14 +982,9 @@ load_glow_special:
 ; PADSAVEP
 add    si, 3
 and    si, 0FFFCh
-mov    ax, TF_GLOW_HIGHBITS
+mov    ah, (TF_GLOW_HIGHBITS SHR 8)
 
-db 09Ah
-dw P_CREATETHINKERFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
-
-push   ds
-pop    es
-mov    ds, cx
+call   CreateThinkerLocal_
 
 mov    di, ax
 

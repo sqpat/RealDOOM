@@ -188,6 +188,9 @@ xor     bx, bx
 mov     ax, OFFSET _savename
 call    M_ReadFile_
 
+mov     al, OVERLAY_ID_SAVELOADGAME
+call    Z_SetOverlay_
+
 mov     si, SAVESTRINGSIZE
 
 ; es:di = save_p/savebuffer
@@ -219,6 +222,9 @@ mov     cx, di
 xor     bx, bx
 mov     ax, OFFSET _savename
 call    M_ReadFile_
+
+mov     al, OVERLAY_ID_SAVELOADGAME
+call    Z_SetOverlay_
 
 ; here call into save code overlay to handle the rest.
 db      09Ah
@@ -311,8 +317,6 @@ case_newgame:
 call    G_DoNewGame_
 jmp     continue_while_loop
 case_loadgame:
-mov     al, OVERLAY_ID_SAVELOADGAME
-call    Z_SetOverlay_
 call    G_DoLoadGame_
 jmp     continue_while_loop
 case_savegame:
