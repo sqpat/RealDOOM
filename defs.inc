@@ -72,16 +72,17 @@ _spanfunc_outp = 					_NULL_OFFSET + 00024h
 _maxammo = 	     					_NULL_OFFSET + 00028h
 
 _quality_port_lookup = 				_NULL_OFFSET + 00030h
-; 20 bytes
-; todo move to cs once p_setup's usage is gone.
-_wminfo =			                _NULL_OFFSET + 0003Ch
+
+_cachedsegmentlumps =              _NULL_OFFSET + 0003Ch
+_cachedlumps =                 	   _NULL_OFFSET + 00044h
+_cachedtex =                 	   _NULL_OFFSET + 0004Ch
+_cachedcollength =                 _NULL_OFFSET + 00050h
 
  
-_dc_x = 							_NULL_OFFSET + 00050h
 _lastopening =                   	_NULL_OFFSET + 00052h
 _planezlight = 						_NULL_OFFSET + 00054h
 _caststate =                        _NULL_OFFSET + 00058h
-_STATES_SEGMENT_PTR =               _NULL_OFFSET + 0005Ah
+_dc_x = 							_NULL_OFFSET + 0005Ah
 _basexscale = 						_NULL_OFFSET + 0005Ch
 _baseyscale = 						_NULL_OFFSET + 00060h
 _viewx = 							_NULL_OFFSET + 00064h
@@ -326,8 +327,10 @@ _registered =                 		 _NULL_OFFSET + 002BCh
 _shareware =                 		 _NULL_OFFSET + 002BDh
 _ds_colormap_index = 				 _NULL_OFFSET + 002BEh
 _fixedcolormap = 					 _NULL_OFFSET + 002BFh
-;_FixedMul_addr =               		 _NULL_OFFSET + 002C0h
-;_FixedDiv_addr =                     _NULL_OFFSET + 002C4h
+_R_DrawSkyPlane_addr =               _NULL_OFFSET + 002C0h
+_R_DrawSkyPlane_addr_Offset =        _NULL_OFFSET + 002C0h
+_Z_SetOverlay_addr =                 _NULL_OFFSET + 002C4h
+
 _mus_playing =    			     	 _NULL_OFFSET + 002C8h
 _mus_paused =    			     	 _NULL_OFFSET + 002C9h
 _sendpause =    			    	 _NULL_OFFSET + 002CAh
@@ -387,7 +390,7 @@ _am_stopped = 						 _NULL_OFFSET + 003D0h
 _automapactive =                 	 _NULL_OFFSET + 003D1h
 _currentThinkerListHead = 			 _NULL_OFFSET + 003D2h
 
-;_FixedMulTrigSpeed_addr = 		     _NULL_OFFSET + 003D4h
+_W_LumpLength_addr =                 _NULL_OFFSET + 003D4h
 _demo_p =            				 _NULL_OFFSET + 003D8h
 _DEMO_SEGMENT_PTR =  				 _NULL_OFFSET + 003DAh
 _I_WaitVBL_addr =       		     _NULL_OFFSET + 003DCh
@@ -411,7 +414,7 @@ _PC_SPEAKER_SFX_DATA_SEGMENT_PTR =	 _NULL_OFFSET + 00446h
 _WAD_PAGE_FRAME_PTR =				 _NULL_OFFSET + 00448h
 _BSP_CODE_SEGMENT_PTR =				 _NULL_OFFSET + 0044Ah
 
-;_FixedMulTrig_addr = 			 	 _NULL_OFFSET + 0044Ch
+_ST_Start_addr = 			 	 	 _NULL_OFFSET + 0044Ch
 _d_skill =                           _NULL_OFFSET + 00450h
 _d_episode =                         _NULL_OFFSET + 00451h
 _d_map =                             _NULL_OFFSET + 00452h
@@ -421,14 +424,10 @@ _secretexit =                        _NULL_OFFSET + 00453h
 _V_DrawPatch_addr =              	 _NULL_OFFSET + 00454h
 _m_paninc = 				 	 	 _NULL_OFFSET + 00458h
 
-
-;_FixedMulTrigSpeedNoShift_addr =	 _NULL_OFFSET + 0045Ch
-_V_DrawFullscreenPatch_addr =        _NULL_OFFSET + 00460h
-_getStringByIndex_addr =             _NULL_OFFSET + 00464h
-_ST_Start_addr = 			 	 	 _NULL_OFFSET + 00468h
-;_FixedMulTrigNoShift_addr =          _NULL_OFFSET + 0046Ch
-;_R_PointToAngle2_16_addr =           _NULL_OFFSET + 00470h
-;_R_PointToAngle2_addr =              _NULL_OFFSET + 00474h
+; 20 bytes
+_wminfo =			                 _NULL_OFFSET + 0045Ch
+_V_DrawFullscreenPatch_addr =        _NULL_OFFSET + 00470h
+_getStringByIndex_addr =             _NULL_OFFSET + 00474h
 
 
 _W_CacheLumpNameDirect_addr =        _NULL_OFFSET + 00478h
@@ -441,8 +440,7 @@ _S_DecreaseRefCountFar_addr =      	 _NULL_OFFSET + 00488h
 _filename_argument = 				 _NULL_OFFSET + 0048Ch
 
 _rndindex = 						 _NULL_OFFSET + 00499h
-;_fopen_r_argument = 				 _NULL_OFFSET + 0049Ah
-;_fopen_w_argument = 				 _NULL_OFFSET + 0049Ch
+; 49a-49d unused
 
 _numsectors =						 _NULL_OFFSET + 0049Eh
 _numlines =						     _NULL_OFFSET + 004A0h
@@ -482,8 +480,8 @@ _screen_botleft_y =				     _NULL_OFFSET + 00506h
 _screen_topright_x =				 _NULL_OFFSET + 00508h
 _screen_topright_y =			     _NULL_OFFSET + 0050Ah
 
-_Z_SetOverlay_addr =                 _NULL_OFFSET + 0050Ch
-_W_LumpLength_addr =                 _NULL_OFFSET + 00510h
+;_Z_SetOverlay_addr =                 _NULL_OFFSET + 0050Ch
+;_W_LumpLength_addr =                 _NULL_OFFSET + 00510h
 
 _playingdriver =                     _NULL_OFFSET + 00514h
 _currentsong_start_offset =          _NULL_OFFSET + 00518h
@@ -511,10 +509,7 @@ _texturecache_l2_tail =              _NULL_OFFSET + 0057Fh
 _activetexturepages =                _NULL_OFFSET + 00580h
 _activenumpages =                 	 _NULL_OFFSET + 00588h
 _textureL1LRU =                 	 _NULL_OFFSET + 00590h
-_cachedsegmentlumps =                _NULL_OFFSET + 00598h
-_cachedlumps =                 	     _NULL_OFFSET + 005A0h
-_cachedtex =                 		 _NULL_OFFSET + 005A8h
-_cachedcollength =                   _NULL_OFFSET + 005ACh
+;598 to 5ad free
 _flatcache_l2_head =                 _NULL_OFFSET + 005AEh
 _flatcache_l2_tail =                 _NULL_OFFSET + 005AFh
 _segloopprevlookup =                 _NULL_OFFSET + 005B0h
@@ -547,8 +542,7 @@ _leveltime =     		   			 _NULL_OFFSET + 005ECh
 _dodelayedcheatthisframe =			 _NULL_OFFSET + 005F2h
 _currenttask =            		     _NULL_OFFSET + 005F3h
 
-_R_DrawSkyPlane_addr =               _NULL_OFFSET + 005F4h
-_R_DrawSkyPlane_addr_Offset =        _NULL_OFFSET + 005F4h
+; 5f4 unused
 ;_OutOfThinkers_addr =                _NULL_OFFSET + 005F8h
 ;_FastDiv32u16u_addr =                _NULL_OFFSET + 005FCh
 

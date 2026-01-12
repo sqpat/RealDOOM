@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/12 13:52:30
+Created on:       26/01/12 14:04:30
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -29,7 +29,7 @@ ST_INIT_TEXT           CODE           AUTO           0000:0cb0       00000203
 R_INIT_TEXT            CODE           AUTO           0000:0eb4       000007ad
 W_INIT_TEXT            CODE           AUTO           0000:1662       0000016e
 I_INIT_TEXT            CODE           AUTO           0000:17d0       0000019b
-Z_INIT_TEXT            CODE           AUTO           0000:196c       00000790
+Z_INIT_TEXT            CODE           AUTO           0000:196c       0000078f
 S_SBINIT_TEXT          CODE           AUTO           0000:20fc       000002e5
 P_INIT_TEXT            CODE           AUTO           0000:23e2       00000275
 I_QUIT_TEXT            CODE           AUTO           0000:2658       000001a9
@@ -101,7 +101,7 @@ Module: i_init.obj(i_init.ASM)
 Module: z_init.obj(z_init.ASM)
 0000:1cf2*     Z_ReadFileRegionWithIndex_
 0000:196c      _doomdata_bin_string
-0000:20fc*     Z_INIT_ENDMARKER_
+0000:20fb*     Z_INIT_ENDMARKER_
 0000:1f26      Z_LoadBinaries_
 0000:1c6d      Z_GetEMSPageMap_
 0000:1d34*     Z_DoRenderCodeLoad_

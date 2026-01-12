@@ -1055,8 +1055,8 @@ mov     ax, OFFSET str_dot
 call    DEBUG_PRINT_NOARG_CS_
 
 ;	locallib_far_fread(states, sizeof(state_t) * NUMSTATES, fp);
+mov   dx, STATES_SEGMENT
 xor   ax, ax
-mov   dx, word ptr ds:[_STATES_SEGMENT_PTR]
 mov   bx, (SIZE STATE_T) * NUMSTATES
 mov   cx, di
 call  locallib_fread_
