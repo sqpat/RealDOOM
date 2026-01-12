@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/12 13:07:11
+Created on:       26/01/12 13:39:48
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -13,7 +13,7 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          0722:0000            00001690
+DGROUP                          0722:0000            00001490
 
 
 
@@ -43,7 +43,7 @@ D_DMX_TEXT             CODE           AUTO           0000:38c4       0000012e
 D_INT_TEXT             CODE           AUTO           0000:39f2       00000142
 MEMORY_TEXT            CODE           AUTO           0000:3b34       00000000
 MATH_TEXT              CODE           AUTO           0000:3b34       00000093
-MAIN_TEXT              CODE           AUTO           0000:3bc8       0000149c
+MAIN_TEXT              CODE           AUTO           0000:3bc8       0000149b
 G_SETUP_TEXT           CODE           AUTO           0000:5064       0000021e
 R_SETUP_TEXT           CODE           AUTO           0000:5282       0000032f
 ST_SETUP_TEXT          CODE           AUTO           0000:55b2       00000122
@@ -56,7 +56,7 @@ Z_ZONE_TEXT            CODE           AUTO           0000:6dd8       0000043b
 _NULL                  BEGDATA        DGROUP         0722:0000       00000010
 _FIXEDDATA             DATA           DGROUP         0723:0000       00000e7e
 _DATA                  DATA           DGROUP         080a:000e       00000000
-STACK                  STACK          DGROUP         080b:0000       00000800
+STACK                  STACK          DGROUP         080b:0000       00000600
 
 
                         +----------------+
@@ -238,63 +238,63 @@ Module: math.obj(math.ASM)
 0000:3b87      FastDiv3216u_
 0000:3b34      FixedMul_
 Module: main.obj(main.ASM)
-0000:4b0c      DEBUG_PRINT_NOARG_
+0000:4b0b      DEBUG_PRINT_NOARG_
 0000:46c8*     G_Responder_
-0000:498a      locallib_strcpy_
-0000:4af8*     locallib_printstringfar_
-0000:49bb      locallib_toupper_
-0000:4e1d      DEBUG_PRINT_
+0000:4989      locallib_strcpy_
+0000:4af7*     locallib_printstringfar_
+0000:49ba      locallib_toupper_
+0000:4e1c      DEBUG_PRINT_
 0000:43b4      _str_config
 0000:3ef6      G_CopyCmd_
 0000:43d1      _used_defaultfile
-0000:4944      combine_strings_
+0000:4943      combine_strings_
 0000:3cb5      _oldkeyboardisr
 0000:3cb1      _sidemove
-0000:4932      M_Ticker_
-0000:48aa*     I_UpdateNoBlit_
+0000:4931      M_Ticker_
+0000:48a9*     I_UpdateNoBlit_
 0000:3cad      _forwardmove
-0000:5064*     D_MAIN_ENDMARKER_
-0000:4bd5      I_ShutdownTimer_
+0000:5063*     D_MAIN_ENDMARKER_
+0000:4bd4      I_ShutdownTimer_
 0000:401a      _scantokey
 0000:4795      I_SetPalette_
-0000:47e8*     I_UpdateBox_
-0000:4bc8      locallib_dos_setvect_old_
-0000:4afa*     locallib_printstringnear_
-0000:4d07      _SELFMODIFY_R_RENDERPLAYERVIEW_CALL
-0000:4fdb*     D_DoomLoop_
+0000:47e7*     I_UpdateBox_
+0000:4bc7      locallib_dos_setvect_old_
+0000:4af9*     locallib_printstringnear_
+0000:4d06      _SELFMODIFY_R_RENDERPLAYERVIEW_CALL
+0000:4fda*     D_DoomLoop_
 0000:454f      _defaults
 0000:3c9f*     D_MAIN_STARTMARKER_
-0000:4a1a*     locallib_printhex_
-0000:49b0*     locallib_tolower_
-0000:4c4d*     D_Display_
+0000:4a19*     locallib_printhex_
+0000:49af*     locallib_tolower_
+0000:4c4c*     D_Display_
 0000:3d6e      I_KeyboardISR_
-0000:4e98      D_ProcessEvents_
+0000:4e97      D_ProcessEvents_
 0000:4388      CopyString13_
-0000:499e*     locallib_strlen_
+0000:499d*     locallib_strlen_
 0000:409a      G_BuildTiccmd_
 0000:3e76      _localcmds
 0000:3cba      cht_CheckCheat_Far_
-0000:4bfd      I_ShutdownKeyboard_
+0000:4bfc      I_ShutdownKeyboard_
 0000:3cbe      cht_CheckCheat_
-0000:5032      Z_ClearDeadCode_
-0000:49f9      putchar_stdout_
-0000:4b0a      DEBUG_PRINT_NOARG_CS_
-0000:4bbf      locallib_dos_setvect_
-0000:4968      locallib_strcmp_
-0000:4bb5      locallib_dos_getvect_
-0000:4a81*     locallib_printdecimal_
+0000:5031      Z_ClearDeadCode_
+0000:49f8      putchar_stdout_
+0000:4b09      DEBUG_PRINT_NOARG_CS_
+0000:4bbe      locallib_dos_setvect_
+0000:4967      locallib_strcmp_
+0000:4bb4      locallib_dos_getvect_
+0000:4a80*     locallib_printdecimal_
 0000:3f14      _gamekeydown
-0000:49c6      copystr8_
+0000:49c5      copystr8_
 0000:4628      M_SaveDefaults_
-0000:4fa7      getStringByIndex_
+0000:4fa6      getStringByIndex_
 0000:3d1f      cht_GetParam_
 0000:3cab      _mousex
-0000:4890*     I_FinishUpdate_
-0000:49df*     locallib_createhexnibble_
-0000:4e32      S_PauseSound_
-0000:4b0c      locallib_printf_
+0000:488f*     I_FinishUpdate_
+0000:49de*     locallib_createhexnibble_
+0000:4e31      S_PauseSound_
+0000:4b0b      locallib_printf_
 0000:3d98      I_StartTic_
-0000:4e5b      S_ResumeSound_
+0000:4e5a      S_ResumeSound_
 Module: g_setup.obj(g_setup.ASM)
 0000:5087      R_CheckTextureNumForName_
 0000:5282*     G_SETUP_ENDMARKER_
@@ -439,7 +439,7 @@ Module: z_zone.obj(z_zone.ASM)
                         |   Linker Statistics   |
                         +-----------------------+
 
-Stack size:  0800 (2048.)
-Memory size:  88b0 (34992.)
+Stack size:  0600 (1536.)
+Memory size:  86b0 (34480.)
 Entry point address: 0000:68f7
 Link time: 00:00.65

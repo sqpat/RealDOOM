@@ -3,7 +3,7 @@
 option quiet
 option map
 option start=_realdoomstart_
-option stack=2048
+option stack=1536
 
 debug all
 libpath %WATCOM%\lib286

@@ -27,7 +27,7 @@ EXTRN D_DoomMain_:NEAR
 EXTRN doclose_:NEAR
 
 
-STACK_SIZE = 0800h
+STACK_SIZE = 0600h
 
 
 DGROUP group _NULL,STACK
@@ -49,36 +49,6 @@ STACK   segment para stack 'STACK'
 STACK   ends
 
 .CODE
-
-
-; todo: get rid of UNGET stuff. we dont use this.
-
-_READ    = 00001h    ; file opened for reading 
-_WRITE   = 00002h    ; file opened for writing 
-
-_BIGBUF  = 00008h    ; big buffer allocated 
-_EOF     = 00010h    ; EOF has occurred 
-_SFERR   = 00020h    ; error has occurred on this file 
-_APPEND  = 00080h    ; file opened for append 
-_BINARY  = 00040h    ; file is binary, skip CRLF processing 
-_IOFBF   = 00100h    ; full buffering 
-_IOLBF   = 00200h    ; line buffering 
-_IONBF   = 00400h    ; no buffering 
-_DIRTY   = 01000h    ; buffer has been modified 
-_ISTTY   = 02000h    ; is console device 
-
-
-_O_RDONLY        = 00000h ;  open for read only 
-_O_WRONLY        = 00001h ;  open for write only 
-_O_RDWR          = 00002h ;  open for read and write 
-_O_APPEND        = 00010h ;  writes done at end of file 
-_O_CREAT         = 00020h ;  create new file 
-_O_TRUNC         = 00040h ;  truncate existing file 
-_O_TEXT          = 00100h ;  text file 
-_O_BINARY        = 00200h ;  binary file 
-; todo remove
-_O_EXCL          = 00400h ;  exclusive open 
-_O_NOINHERIT     = 00080h ;  file is not inherited by child process
 
 
 

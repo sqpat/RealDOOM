@@ -1499,7 +1499,7 @@ mov   ah, al
 add   ah, al  ; times 0x200..
 add   ah, al  ; times 0x300..
 xor   al, al
-mov   si, ax  ; si = al * 768
+xchg  ax, si  ; si = al * 768
 
 ;mov   di, word ptr ds:[_currenttask] ; get this before quickmap
 push  word ptr ds:[_currenttask] ; get this before quickmap
