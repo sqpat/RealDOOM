@@ -37,7 +37,7 @@ EXTRN G_InitNew_:NEAR
 EXTRN I_Error_:FAR
 
 
-EXTRN ST_Ticker_:NEAR
+
 EXTRN Z_SetOverlay_:FAR
 EXTRN G_DoPlayDemo_:NEAR
 EXTRN G_ReadDemoTiccmd_:NEAR
@@ -432,7 +432,9 @@ db      09Ah
 dw      P_TICKEROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 call    Z_QuickmapPhysics_
-call    ST_Ticker_
+db      09Ah
+dw      ST_TICKER_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
 cmp     byte ptr ds:[_automapactive], 0
 je      skip_automap
 db      09Ah

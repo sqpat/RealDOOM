@@ -18,7 +18,7 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN ST_Drawer_:NEAR
+
 EXTRN R_ExecuteSetViewSize_:NEAR
 EXTRN NetUpdate_:FAR
 EXTRN Z_QuickMapMenu_:FAR
@@ -31,7 +31,6 @@ EXTRN D_DoomMain2_:NEAR
 EXTRN I_InitGraphics_:NEAR
 
 
-EXTRN ST_Responder_:NEAR
 
 EXTRN D_DoAdvanceDemo_:NEAR
 EXTRN G_Ticker_:NEAR
@@ -120,6 +119,7 @@ db "iddt", 0FFh
 
 
 BASE_CHEAT_ADDRESS:
+PUBLIC BASE_CHEAT_ADDRESS
 cheat_powerup0:
 dw  OFFSET cheat_powerup_seq0, 0
 cheat_powerup1:
@@ -270,40 +270,6 @@ ret
 ENDP
 
 
-; get custom param for change level, change music type cheats.
-; pass in via di not dx
-; pass in via bx not ax
-PROC cht_GetParam_ NEAR
-PUBLIC cht_GetParam_
-
-push ds
-pop  es
-; argument is preshifted by 2 (as the struct offset should be)
-mov  bx, word ptr cs:[bx + OFFSET BASE_CHEAT_ADDRESS]        ; get str addr
-loop_find_param_marker:
-inc  bx
-cmp  byte ptr cs:[bx-1], 1       ; 1 is marker for custom params position in cheat
-jne  loop_find_param_marker
-
-check_next_cheat_char:
-mov  al, byte ptr cs:[bx]
-;mov  byte ptr ds:[di], al
-;inc  di
-stosb
-mov  byte ptr cs:[bx], 0
-inc  bx
-test al, al
-je   end_of_custom_param
-cmp  byte ptr cs:[bx], 0FFh
-jne  check_next_cheat_char
-end_of_custom_param:
-cmp  byte ptr cs:[bx], 0FFh
-je   getparam_return_0
-getparam_return_1:
-ret  
-getparam_return_0:
-mov  byte ptr ds:[di], 0
-ret  
 
 ENDP
 ; 32 bytes
@@ -1397,7 +1363,10 @@ dw      HU_RESPONDER_OFFSET, PHYSICS_HIGHCODE_SEGMENT
 ; jc    exit_gresponder  ; always false. i think only netcode/chat stuff could eat the key
 mov   ax, bx
 mov   dx, cx
-call  ST_Responder_ ; never returns true
+;call     Z_QuickMapPhysics_
+db      09Ah
+dw      ST_RESPONDER_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+ ; never returns true
 ;test  al, al
 ;jne   exit_gresponder
 mov   ax, bx
@@ -2834,7 +2803,11 @@ jne   screen_too_small_for_statusbar ; ax already 0
 inc   ax  ; ax is 1
 
 screen_too_small_for_statusbar:
-call  ST_Drawer_
+;call    Z_QuickMapPhysics_
+db      09Ah
+dw      ST_DRAWER_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+
 xor   ax, ax
 mov   byte ptr ds:[_skipdirectdraws], al
 cmp   byte ptr ds:[_viewheight], SCREENHEIGHT

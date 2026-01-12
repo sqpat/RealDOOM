@@ -404,7 +404,7 @@ _LINEFLAGSLIST_SEGMENT_PTR =         _NULL_OFFSET + 00436h
 _SEENLINES_6800_SEGMENT_PTR =        _NULL_OFFSET + 00438h
 _SIDES_SEGMENT_PTR =			     _NULL_OFFSET + 0043Ah
 _LINES_SEGMENT_PTR = 				 _NULL_OFFSET + 0043Ch
-; 43e free
+_ORIGINAL_CS_SEGMENT_PTR =           _NULL_OFFSET + 0043Eh
 
 _EMS_PAGE =							 _NULL_OFFSET + 00440h
 _SFX_PAGE_SEGMENT_PTR =				 _NULL_OFFSET + 00442h
@@ -413,7 +413,7 @@ _PC_SPEAKER_SFX_DATA_SEGMENT_PTR =	 _NULL_OFFSET + 00446h
 _WAD_PAGE_FRAME_PTR =				 _NULL_OFFSET + 00448h
 _BSP_CODE_SEGMENT_PTR =				 _NULL_OFFSET + 0044Ah
 
-_ST_Start_addr = 			 	 	 _NULL_OFFSET + 0044Ch
+;_ST_Start_addr = 			 	 	 _NULL_OFFSET + 0044Ch
 _d_skill =                           _NULL_OFFSET + 00450h
 _d_episode =                         _NULL_OFFSET + 00451h
 _d_map =                             _NULL_OFFSET + 00452h
@@ -508,7 +508,8 @@ _texturecache_l2_tail =              _NULL_OFFSET + 0057Fh
 _activetexturepages =                _NULL_OFFSET + 00580h
 _activenumpages =                 	 _NULL_OFFSET + 00588h
 _textureL1LRU =                 	 _NULL_OFFSET + 00590h
-;598 to 5ad free
+_BASE_CHEAT_ADDRESS_OFFSET_PTR =     _NULL_OFFSET + 00598h
+; 59a to 5ad free
 _flatcache_l2_head =                 _NULL_OFFSET + 005AEh
 _flatcache_l2_tail =                 _NULL_OFFSET + 005AFh
 _segloopprevlookup =                 _NULL_OFFSET + 005B0h

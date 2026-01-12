@@ -60,8 +60,6 @@ GLOBOBJS = &
  z_init.obj &
  z_zone.obj &
  st_init.obj &
- st_setup.obj &
- st_stuff.obj &
  s_sbsfx.obj &
  s_sbinit.obj &
  d_dmx.obj &

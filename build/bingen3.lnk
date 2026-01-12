@@ -100,6 +100,8 @@ file hu_lib.obj
 file hu_stuff.obj
 file r_main.obj
 file p_video.obj
+file st_stuff.obj
+file st_setup.obj
 file s_sound.obj
 
 #hack..
@@ -121,7 +123,6 @@ file d_net.obj
 file g_game.obj
 file g_demo.obj
 file m_misc.obj
-file st_stuff.obj
 
 file d_dmx.obj
 file d_int.obj
@@ -132,7 +133,6 @@ file main.obj
 
 file g_setup.obj
 file r_setup.obj
-file st_setup.obj
 
 file s_sbsfx.obj
 file binfile.obj

@@ -56,6 +56,11 @@ call    W_CheckNumForName_
 retf
 ENDP
 
+PROC    W_CheckNumForNameFarString_FAR_ FAR
+PUBLIC  W_CheckNumForNameFarString_FAR_
+call    W_CheckNumForNameFarString_
+retf
+
 PROC    W_CheckNumForNameFarString_ NEAR
 PUBLIC  W_CheckNumForNameFarString_
 

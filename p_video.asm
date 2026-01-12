@@ -808,7 +808,7 @@ ENDP
 
 ;void __far V_CopyRect ( uint16_t srcoffset, uint16_t destoffset, uint16_t width, uint16_t height) { 
 
-PROC V_CopyRect_ FAR
+PROC V_CopyRect_ NEAR
 PUBLIC V_CopyRect_
 
 
@@ -860,7 +860,7 @@ mov       ds, ax
 pop       di
 pop       si
 exit_v_copyrect:
-retf      
+ret      
 
 ENDP
 

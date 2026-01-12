@@ -55,6 +55,12 @@ BAD_TEXTURE = 0FFFFh
 NUMANIMDEFS = 23
 NUMSSPRITEDEFS = 29
 
+; we use segment 0x4000 (addressable via ss/ds) as our scratch area rather than stack.
+; this is because this bit of code would need a large amount of stack (almost 1 kb) 
+; which is the greatest usage of stack in the whole application, and makes the app
+; require larger stack and thus dgroup and thus makes the binary larger.
+
+; segment 0x4000 conveniently doesn't have anything useful in there at the time this runs
 
 SEGMENT_4000_OFFSET = (04000h - FIXED_DS_SEGMENT) SHL 4
 

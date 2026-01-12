@@ -232,6 +232,27 @@ void __far R_FillBackScreen();
 void __far V_CopyRect();
 void __far P_SetupLevel();
 
+void __far ST_Start();
+void __far ST_Init();
+void __far ST_Ticker();
+void __far ST_Drawer();
+void __far ST_Responder();
+
+
+void __far _arms();
+void __far _armsbg();
+void __far _armsbgarray();
+void __far _faces();
+void __far _keys();
+void __far _shortnum();
+void __far _tallnum();
+void __far _sbar();
+void __far _faceback();
+void __far _tallpercent();
+
+
+
+
 
 filelength_t  __near locallib_far_fwrite(void __far* src, uint16_t elementsizetimeselementcount, FILE * fp);
 
@@ -596,7 +617,6 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "P_ADDACTIVEPLATOFFSET = 0%Xh\n",                   FP_OFF(P_AddActivePlat)                   - FP_OFF(P_SIGHT_STARTMARKER));
     
     fprintf(fp, "P_REMOVETHINKEROFFSET  = 0%Xh\n",                   FP_OFF(P_RemoveThinker)                   - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "P_GIVEPOWEROFFSET      = 0%Xh\n",                   FP_OFF(P_GivePower)                       - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "FIXEDDIVWHOLEA_ML      = 0%Xh\n",                   FP_OFF(FixedDivWholeA_MapLocal_FAR)       - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "R_POINTTOANGLE2_OFFSET = 0%Xh\n",                   FP_OFF(R_PointToAngle2_FAR)               - FP_OFF(P_SIGHT_STARTMARKER));
 
@@ -608,7 +628,6 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "R_DRAWVIEWBORDER_OFFSET  = 0%Xh\n",                   FP_OFF(R_DrawViewBorder)                   - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "V_DRAWPATCHDIRECT_OFFSET = 0%Xh\n",                   FP_OFF(V_DrawPatchDirect)                  - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "R_FILLBACKSCREEN_OFFSET  = 0%Xh\n",                   FP_OFF(R_FillBackScreen)                   - FP_OFF(P_SIGHT_STARTMARKER));
-    fprintf(fp, "V_COPYRECT_OFFSET        = 0%Xh\n",                   FP_OFF(V_CopyRect)                         - FP_OFF(P_SIGHT_STARTMARKER));
 
 
 
@@ -712,6 +731,23 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "M_INITOFFSET                           = 0%Xh\n", FP_OFF(M_Init)                            - FP_OFF(M_MENU_STARTMARKER));
     fprintf(fp, "P_SPAWNSPECIALSOFFSET                  = 0%Xh\n", FP_OFF(P_SpawnSpecials)                   - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "S_STARTOFFSET                          = 0%Xh\n", FP_OFF(S_Start)                           - FP_OFF(P_SIGHT_STARTMARKER));
+
+    fprintf(fp, "ST_START_OFFSET                         = 0%Xh\n", FP_OFF(ST_Start)                          - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "ST_TICKER_OFFSET                        = 0%Xh\n", FP_OFF(ST_Ticker)                         - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "ST_DRAWER_OFFSET                        = 0%Xh\n", FP_OFF(ST_Drawer)                         - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "ST_RESPONDER_OFFSET                     = 0%Xh\n", FP_OFF(ST_Responder)                      - FP_OFF(P_SIGHT_STARTMARKER));
+
+    fprintf(fp, "ARMS_CS_OFFSET                          = 0%Xh\n", FP_OFF(_arms)                             - FP_OFF(P_SIGHT_STARTMARKER));               
+    fprintf(fp, "ARMSBG_CS_OFFSET                        = 0%Xh\n", FP_OFF(_armsbg)                           - FP_OFF(P_SIGHT_STARTMARKER));               
+    fprintf(fp, "ARMSBGARRAY_CS_OFFSET                   = 0%Xh\n", FP_OFF(_armsbgarray)                      - FP_OFF(P_SIGHT_STARTMARKER));                       
+    fprintf(fp, "FACES_CS_OFFSET                         = 0%Xh\n", FP_OFF(_faces)                            - FP_OFF(P_SIGHT_STARTMARKER));               
+    fprintf(fp, "KEYS_CS_OFFSET                          = 0%Xh\n", FP_OFF(_keys)                             - FP_OFF(P_SIGHT_STARTMARKER));               
+    fprintf(fp, "SHORTNUM_CS_OFFSET                      = 0%Xh\n", FP_OFF(_shortnum)                         - FP_OFF(P_SIGHT_STARTMARKER));                   
+    fprintf(fp, "TALLNUM_CS_OFFSET                       = 0%Xh\n", FP_OFF(_tallnum)                          - FP_OFF(P_SIGHT_STARTMARKER));                   
+    fprintf(fp, "SBAR_CS_OFFSET                          = 0%Xh\n", FP_OFF(_sbar)                             - FP_OFF(P_SIGHT_STARTMARKER));               
+    fprintf(fp, "FACEBACK_CS_OFFSET                      = 0%Xh\n", FP_OFF(_faceback)                         - FP_OFF(P_SIGHT_STARTMARKER));                   
+    fprintf(fp, "TALLPERCENT_CS_OFFSET                   = 0%Xh\n", FP_OFF(_tallpercent)                      - FP_OFF(P_SIGHT_STARTMARKER));                       
+
 
 
 

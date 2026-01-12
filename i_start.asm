@@ -21,7 +21,6 @@ INSTRUCTION_SET_MACRO
 
 
 
-
 EXTRN D_DoomMain_:NEAR
 
 EXTRN doclose_:NEAR
@@ -49,6 +48,7 @@ STACK   segment para stack 'STACK'
 STACK   ends
 
 .CODE
+EXTRN BASE_CHEAT_ADDRESS
 
 
 
@@ -335,7 +335,8 @@ mov        word ptr cs:[SELFMODIFY_set_program_name_ptr+1], cx
 mov        bx, sp
 mov        ax, bp
 mov        word ptr ds:[__STACKLOW], di
-
+mov        word ptr ds:[_ORIGINAL_CS_SEGMENT_PTR], cs
+mov        word ptr ds:[_BASE_CHEAT_ADDRESS_OFFSET_PTR], OFFSET BASE_CHEAT_ADDRESS
 push       bp
 mov        bp, sp
 

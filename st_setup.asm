@@ -19,8 +19,8 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN Z_QuickMapPhysics_:FAR
-EXTRN I_SetPalette_:FAR
+
+
 
 .DATA
 
@@ -39,14 +39,16 @@ EXTRN _w_ammo:BYTE
 EXTRN _w_maxammo:BYTE
 EXTRN _w_end:BYTE
 
-EXTRN _tallpercent:BYTE
-EXTRN _armsbgarray:BYTE
-EXTRN _arms:BYTE
-EXTRN _faces:BYTE
-EXTRN _keys:WORD
 EXTRN _keyboxes:BYTE
-EXTRN _shortnum:BYTE
-EXTRN _tallnum:BYTE
+
+EXTRN _tallpercent_:BYTE
+EXTRN _armsbgarray_:BYTE
+EXTRN _arms_:BYTE
+EXTRN _faces_:BYTE
+EXTRN _keys_:WORD
+EXTRN _shortnum_:BYTE
+EXTRN _tallnum_:BYTE
+
 
 EXTRN _st_palette:BYTE
 EXTRN _st_faceindex:BYTE
@@ -117,43 +119,43 @@ ST_AMMO0X =                      288
 ST_AMMO0Y =                      173
 
 _ammobgdata:
-dw ST_AMMOX, ST_AMMOY, ST_AMMOWIDTH, 0, OFFSET _tallnum
+dw ST_AMMOX, ST_AMMOY, ST_AMMOWIDTH, 0, OFFSET _tallnum_
 
 _healthdata:
-dw ST_HEALTHX, ST_HEALTHY, 3, 0, OFFSET _tallnum, OFFSET _tallpercent
+dw ST_HEALTHX, ST_HEALTHY, 3, 0, OFFSET _tallnum_, OFFSET _tallpercent_
 
 _armsbgdata:
-dw ST_ARMSBGX, ST_ARMSBGY, 0,  OFFSET _armsbgarray
+dw ST_ARMSBGX, ST_ARMSBGY, 0,  OFFSET _armsbgarray_
 
 _weapondata:
-dw ST_ARMSX + 0 * ST_ARMSXSPACE,  ST_ARMSY + 0 * ST_ARMSYSPACE, -1, OFFSET _arms + 0 * 4
-dw ST_ARMSX + 1 * ST_ARMSXSPACE,  ST_ARMSY + 0 * ST_ARMSYSPACE, -1, OFFSET _arms + 1 * 4
-dw ST_ARMSX + 2 * ST_ARMSXSPACE,  ST_ARMSY + 0 * ST_ARMSYSPACE, -1, OFFSET _arms + 2 * 4
-dw ST_ARMSX + 0 * ST_ARMSXSPACE,  ST_ARMSY + 1 * ST_ARMSYSPACE, -1, OFFSET _arms + 3 * 4
-dw ST_ARMSX + 1 * ST_ARMSXSPACE,  ST_ARMSY + 1 * ST_ARMSYSPACE, -1, OFFSET _arms + 4 * 4
-dw ST_ARMSX + 2 * ST_ARMSXSPACE,  ST_ARMSY + 1 * ST_ARMSYSPACE, -1, OFFSET _arms + 5 * 4
+dw ST_ARMSX + 0 * ST_ARMSXSPACE,  ST_ARMSY + 0 * ST_ARMSYSPACE, -1, OFFSET _arms_ + 0 * 4
+dw ST_ARMSX + 1 * ST_ARMSXSPACE,  ST_ARMSY + 0 * ST_ARMSYSPACE, -1, OFFSET _arms_ + 1 * 4
+dw ST_ARMSX + 2 * ST_ARMSXSPACE,  ST_ARMSY + 0 * ST_ARMSYSPACE, -1, OFFSET _arms_ + 2 * 4
+dw ST_ARMSX + 0 * ST_ARMSXSPACE,  ST_ARMSY + 1 * ST_ARMSYSPACE, -1, OFFSET _arms_ + 3 * 4
+dw ST_ARMSX + 1 * ST_ARMSXSPACE,  ST_ARMSY + 1 * ST_ARMSYSPACE, -1, OFFSET _arms_ + 4 * 4
+dw ST_ARMSX + 2 * ST_ARMSXSPACE,  ST_ARMSY + 1 * ST_ARMSYSPACE, -1, OFFSET _arms_ + 5 * 4
 
 _facedata:
-dw ST_FACESX, ST_FACESY, -1,  OFFSET _faces
+dw ST_FACESX, ST_FACESY, -1,  OFFSET _faces_
 
 _armordata:
-dw ST_ARMORX, ST_ARMORY, 3, 0, OFFSET _tallnum, OFFSET _tallpercent
+dw ST_ARMORX, ST_ARMORY, 3, 0, OFFSET _tallnum_, OFFSET _tallpercent_
 
 _keyboxdata:
-dw ST_KEY0X,  ST_KEY0Y, -1, OFFSET _keys
-dw ST_KEY1X,  ST_KEY1Y, -1, OFFSET _keys
-dw ST_KEY2X,  ST_KEY2Y, -1, OFFSET _keys
+dw ST_KEY0X,  ST_KEY0Y, -1, OFFSET _keys_
+dw ST_KEY1X,  ST_KEY1Y, -1, OFFSET _keys_
+dw ST_KEY2X,  ST_KEY2Y, -1, OFFSET _keys_
 
 _ammodata:
-dw ST_AMMO0X, ST_MAXAMMO0Y, ST_AMMOWIDTH, 0, OFFSET _shortnum
-dw ST_AMMO0X, ST_MAXAMMO1Y, ST_AMMOWIDTH, 0, OFFSET _shortnum
-dw ST_AMMO0X, ST_MAXAMMO2Y, ST_AMMOWIDTH, 0, OFFSET _shortnum
-dw ST_AMMO0X, ST_MAXAMMO3Y, ST_AMMOWIDTH, 0, OFFSET _shortnum
+dw ST_AMMO0X, ST_MAXAMMO0Y, ST_AMMOWIDTH, 0, OFFSET _shortnum_
+dw ST_AMMO0X, ST_MAXAMMO1Y, ST_AMMOWIDTH, 0, OFFSET _shortnum_
+dw ST_AMMO0X, ST_MAXAMMO2Y, ST_AMMOWIDTH, 0, OFFSET _shortnum_
+dw ST_AMMO0X, ST_MAXAMMO3Y, ST_AMMOWIDTH, 0, OFFSET _shortnum_
 _maxammodata:
-dw ST_MAXAMMO0X, ST_MAXAMMO0Y, ST_MAXAMMO0WIDTH, 0, OFFSET _shortnum
-dw ST_MAXAMMO0X, ST_MAXAMMO1Y, ST_MAXAMMO0WIDTH, 0, OFFSET _shortnum
-dw ST_MAXAMMO0X, ST_MAXAMMO2Y, ST_MAXAMMO0WIDTH, 0, OFFSET _shortnum
-dw ST_MAXAMMO0X, ST_MAXAMMO3Y, ST_MAXAMMO0WIDTH, 0, OFFSET _shortnum
+dw ST_MAXAMMO0X, ST_MAXAMMO0Y, ST_MAXAMMO0WIDTH, 0, OFFSET _shortnum_
+dw ST_MAXAMMO0X, ST_MAXAMMO1Y, ST_MAXAMMO0WIDTH, 0, OFFSET _shortnum_
+dw ST_MAXAMMO0X, ST_MAXAMMO2Y, ST_MAXAMMO0WIDTH, 0, OFFSET _shortnum_
+dw ST_MAXAMMO0X, ST_MAXAMMO3Y, ST_MAXAMMO0WIDTH, 0, OFFSET _shortnum_
 
 
 
@@ -168,9 +170,8 @@ dw ST_MAXAMMO0X, ST_MAXAMMO3Y, ST_MAXAMMO0WIDTH, 0, OFFSET _shortnum
 
 
 
-ENDP
 
-PROC    ST_Start_ FAR
+PROC    ST_Start_ NEAR
 PUBLIC  ST_Start_
 
 PUSHA_NO_AX_MACRO
@@ -179,17 +180,13 @@ xor   ax, ax
 cmp   byte ptr cs:[_st_stopped], al
 jne   dont_call_st_stop
 ; inlined st_stop only use
-call  I_SetPalette_
+call  dword ptr ds:[_I_SetPalette_addr]
 mov   byte ptr cs:[_st_stopped], 1
 
 dont_call_st_stop:
 mov   ax, 1
 mov   byte ptr ds:[_st_firsttime], al   ; 1
 mov   byte ptr ds:[_st_gamestate], al   ; 1
-mov   byte ptr cs:[_st_statusbaron], al ; 1
-neg   ax
-mov   byte ptr cs:[_st_palette], al   ; -1
-mov   word ptr cs:[_st_oldhealth], ax ; -1
 
 push  cs
 pop   es
@@ -202,28 +199,34 @@ rep   movsb
 push  cs
 pop   ds
 
+ASSUME DS:ST_SETUP_TEXT
+
+mov   byte ptr cs:[_st_statusbaron], al ; 1
+neg   ax
+mov   byte ptr cs:[_st_palette], al   ; -1
+mov   word ptr cs:[_st_oldhealth], ax ; -1
+
+
 ;mov   di, OFFSET _keyboxes
 stosw ; mov   word ptr cs:[_keyboxes + 0], ax  ; -1
 stosw ; mov   word ptr cs:[_keyboxes + 2], ax  ; -1
 stosw ; mov   word ptr cs:[_keyboxes + 4], ax  ; -1
 
-inc   ax ; 0
-ASSUME DS:ST_SETUP_TEXT
-mov   word ptr ds:[_st_faceindex], ax ; 0  ; actually cs
-mov   byte ptr ds:[_st_stopped], al   ; 0  ; actually cs
-ASSUME DS:DGROUP
+
+mov   word ptr ds:[_st_faceindex], cx ; 0  ; actually cs
+mov   byte ptr ds:[_st_stopped], cl   ; 0  ; actually cs
 
 
 
 ;call  ST_createWidgets_  ; inlined
 
 
-; todo align these targets all in memory. one rep movsw.
-; further todo: source data in file. read from file. less persistent ram usage.
+; aligned these targets all in memory. one rep movsw.
 
 mov   si, OFFSET _ammobgdata
 ;mov   di, OFFSET _w_ready
-mov   cx, word ptr cs:[_w_end] ; todo should be constant but borland wont let me
+mov   cx, word ptr ds:[_w_end] ; todo should be constant but borland wont let me
+ASSUME DS:DGROUP
 
 rep   movsw
 
@@ -232,16 +235,34 @@ rep   movsw
 push  ss
 pop   ds
 
-; hardcoded in
-;mov   word ptr cs:[_w_armsbg + ST_MULTICON_T.st_multicon_oldinum], 0
 
-call  Z_QuickMapPhysics_  ; returns to physics region, must be done.
+call  Z_QuickMapPhysics_Physics_  ; returns to physics region, must be done.
 
 
 
 POPA_NO_AX_MACRO
-retf  
+ret
 
+
+ENDP
+
+
+
+PROC   Z_QuickMapPhysics_Physics_ NEAR
+PUBLIC Z_QuickMapPhysics_Physics_
+
+push  dx
+push  cx
+push  si
+
+
+Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
+mov   byte ptr ds:[_currenttask], TASK_PHYSICS
+
+pop   si
+pop   cx
+pop   dx
+ret
 
 ENDP
 

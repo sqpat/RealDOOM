@@ -30,13 +30,12 @@ ST_WIDTH =	SCREENWIDTH
 ST_Y =		(SCREENHEIGHT - ST_HEIGHT)
 
 
-EXTRN Z_QuickMapPhysics_:FAR
-EXTRN Z_QuickMapStatus_:FAR
-EXTRN I_SetPalette_:FAR
-EXTRN V_MarkRect_:FAR
-EXTRN V_DrawPatch_:FAR
-EXTRN cht_CheckCheat_:NEAR
-EXTRN cht_GetParam_:NEAR
+EXTRN V_CopyRect_:NEAR
+EXTRN P_GivePower_:NEAR
+EXTRN R_PointToAngle2_MapLocal_:NEAR
+EXTRN Z_QuickMapPhysics_Physics_:NEAR
+
+
 
 .DATA
 
@@ -74,25 +73,25 @@ dw 0
 _st_faceindex:
 dw 0
 
-_shortnum:
+_shortnum_:
 dw 10 DUP(0)
-_tallnum:
+_tallnum_:
 dw 10 DUP(0)
-_arms:
+_arms_:
 dw 12 DUP(0)
-_tallpercent:
+_tallpercent_:
 dw 0
-_sbar:
+_sbar_:
 dw 0
-_faceback:
+_faceback_:
 dw 0
-_armsbg:
+_armsbg_:
 dw 0
-_armsbgarray:
+_armsbgarray_:
 dw 0
-_faces:
+_faces_:
 dw ST_NUMFACES DUP(0)
-_keys:
+_keys_:
 dw NUMCARDS DUP(0)
 
 ; even number of bytes for word alignment. matches order of stosw in init..
@@ -152,21 +151,22 @@ PUBLIC _st_oldhealth
 PUBLIC _st_faceindex
 PUBLIC _oldweaponsowned
 PUBLIC _st_stopped
-PUBLIC _tallpercent
-PUBLIC _armsbgarray
-PUBLIC _arms
-PUBLIC _armsbg
-PUBLIC _faces
-PUBLIC _keys
+PUBLIC _tallpercent_
 PUBLIC _keyboxes
-PUBLIC _shortnum
-PUBLIC _tallnum
-PUBLIC _faceback
-PUBLIC _sbar
+PUBLIC _armsbgarray_
+PUBLIC _arms_
+PUBLIC _armsbg_
+PUBLIC _faces_
+PUBLIC _keys_
+PUBLIC _shortnum_
+PUBLIC _tallnum_
+PUBLIC _faceback_
+PUBLIC _sbar_
 PUBLIC _st_statusbaron
 
 PUBLIC _w_ready
 PUBLIC _w_health
+
 PUBLIC _w_armsbg
 PUBLIC _w_arms
 PUBLIC _w_faces
@@ -193,25 +193,25 @@ je    exit_st_refresh_background
 mov   dx, ST_GRAPHICS_SEGMENT
 push  dx
 mov   bx, 4
-push  word ptr cs:[_sbar]
+push  word ptr cs:[_sbar_]
 ; ax already 0
 cwd
 mov   cx, ST_HEIGHT
-call  V_DrawPatch_
+call  dword ptr ds:[_V_DrawPatch_addr]
+
 
 mov   bx, SCREENWIDTH
 mov   dx, ST_Y
 xor   ax, ax
-call  V_MarkRect_
+call  dword ptr ds:[_V_MarkRect_addr]
+
 
 mov   cx, ST_HEIGHT
 mov   bx, SCREENWIDTH
 mov   dx, ST_Y * SCREENWIDTH ;0D200h
 xor   ax, ax
 
-db    09Ah
-dw    V_COPYRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
-
+call  V_CopyRect_
 
 
 exit_st_refresh_background:
@@ -445,8 +445,7 @@ mov   byte ptr cs:[_st_face_priority], cl
 mov   ax, (SIZE MOBJ_POS_T)
 mul   word ptr ds:[_player + PLAYER_T.player_attackerRef]
 xchg  ax, di
-mov   ax, MOBJPOSLIST_6800_SEGMENT
-mov   es, ax
+mov   es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
 
 ;   badguyangle.wu = R_PointToAngle2(playerMobj_pos->x,
 ;       playerMobj_pos->y,
@@ -465,10 +464,7 @@ les   ax, dword ptr es:[si + MOBJ_POS_T.mp_x + 0]
 mov   dx, es
 
 
-;call  R_PointToAngle2_
-; TODO! call high
-db    09Ah
-dw    R_POINTTOANGLE2_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call   R_PointToAngle2_MapLocal_
 
 
 xor   bx, bx ; zero bx...
@@ -562,7 +558,7 @@ ENDP
 
 ENDP
 
-PROC    ST_Ticker_ NEAR
+PROC    ST_Ticker_ FAR
 PUBLIC  ST_Ticker_
 
 ;call  M_Random_
@@ -581,7 +577,7 @@ mov   byte ptr cs:[_st_randomnumber], al
 call  ST_updateWidgets_
 mov   ax, word ptr ds:[_player + PLAYER_T.player_health]
 mov   word ptr cs:[_st_oldhealth], ax
-ret   
+retf
 
 ENDP
 
@@ -649,7 +645,8 @@ je    dont_set_palette_and_exit
 set_palette_and_exit:
 mov   byte ptr cs:[_st_palette], al
 cbw  
-call  I_SetPalette_
+call  dword ptr ds:[_I_SetPalette_addr]
+
 dont_set_palette_and_exit:
 pop   dx
 ret   
@@ -662,7 +659,7 @@ PUBLIC  STlib_updateflag_
 
 cmp   byte ptr cs:[_updatedthisframe], 0
 jne   exit_updateflag
-call  Z_QuickMapStatus_
+call  Z_QuickMapStatus_Physics_
 inc   byte ptr cs:[_updatedthisframe]
 exit_updateflag:
 ret   
@@ -756,15 +753,15 @@ mov   cx, es  ;  height
 push  cx
 push  bx  ; for the next call..
 
-call  V_MarkRect_
+call  dword ptr ds:[_V_MarkRect_addr]
+
 
 pop   bx    ; width
 pop   cx    ; height
 pop   ax    ; offset minus stuff
 pop   dx    ; offset
 
-db    09Ah
-dw    V_COPYRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  V_CopyRect_
 
 skip_rect:
 
@@ -786,7 +783,8 @@ xor   ax, ax
 xchg  ax, bx    ; ax gets x. bx gets FG == 0
 
 
-call  V_DrawPatch_
+call  dword ptr ds:[_V_DrawPatch_addr]
+
 jmp   exit_updatemulticon
 
 
@@ -847,7 +845,8 @@ push  ax    ; x
 push  dx    ; number->y
 
 
-call  V_MarkRect_
+call  dword ptr ds:[_V_MarkRect_addr]
+
 
 ;    V_CopyRect (x + SCREENWIDTH*(number->y - ST_Y), x + SCREENWIDTH*number->y, digitwidth, h);
 
@@ -866,8 +865,8 @@ xchg  ax, dx
 mov   ax, es
 pop   cx ; restore these args
 pop   bx ; restore these args
-db    09Ah
-dw    V_COPYRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  V_CopyRect_
+
 
 pop   cx  ; get w
 
@@ -915,7 +914,8 @@ sal   bx, 1   ; word lookup
 push  word ptr cs:[si+bx]
 xor   bx, bx ; FG
 
-call  V_DrawPatch_
+call  dword ptr ds:[_V_DrawPatch_addr]
+
 
 pop   dx
 pop   ax
@@ -934,7 +934,8 @@ push  bx
 xor   bx, bx
 push  word ptr cs:[si] ; first offset is 0
 sub   ax, cx
-call  V_DrawPatch_
+call  dword ptr ds:[_V_DrawPatch_addr]
+
 jmp   exit_stlib_drawnum
 ENDP
 
@@ -965,7 +966,8 @@ mov   dx, es
 mov   si, word ptr cs:[si + ST_PERCENT_T.st_percent_patch_offset]
 push  word ptr cs:[si]
 xor   bx, bx
-call  V_DrawPatch_
+call  dword ptr ds:[_V_DrawPatch_addr]
+
 
 pop   ax
 pop   dx
@@ -1092,15 +1094,18 @@ add   di, (SIZE ST_MULTICON_T)
 loop  update_next_keybox
 
 exit_st_drawwidgets:
-exit_st_responder_early:
 POPA_NO_AX_OR_BP_MACRO
 ret   
 
 
 ENDP
 
+jump_to_exit_st_responder_early:
+jmp  exit_st_responder_early
 
-PROC    ST_Responder_ NEAR
+
+
+PROC    ST_Responder_ FAR
 PUBLIC  ST_Responder_
 
 
@@ -1111,7 +1116,7 @@ xor   ax, ax
 mov   es, dx
 mov   si, _player + PLAYER_T.player_cheats
 cmp   byte ptr es:[di + EVENT_T.event_evtype], al ; EV_KEYDOWN
-jne   exit_st_responder_early
+jne   jump_to_exit_st_responder_early
 
 push  bp
 mov   bp, sp
@@ -1127,7 +1132,7 @@ cbw
 mov   cx, ax        ; cx holds event?
 xchg  ax, dx
 mov   al, CHEATID_GODMODE
-call  cht_CheckCheat_
+call  cht_CheckCheat_Local_
 jnc   is_not_godmode
 
 is_godmode:
@@ -1150,13 +1155,13 @@ jmp   check_behold_cheats
 is_not_godmode:
 mov   dx, cx ; data1
 mov   al, CHEATID_AMMONOKEYS
-call  cht_CheckCheat_
+call  cht_CheckCheat_Local_
 jc    do_ammo_no_keys
 
 not_ammonokeys:
 mov   dx, cx
 mov   al, CHEATID_AMMOANDKEYS
-call  cht_CheckCheat_
+call  cht_CheckCheat_Local_
 jnc   not_ammoandkeys
 
 do_ammo_and_keys:
@@ -1198,7 +1203,7 @@ jmp   check_behold_cheats
 not_ammoandkeys:
 mov   dx, cx
 mov   al, CHEATID_MUSIC
-call  cht_CheckCheat_
+call  cht_CheckCheat_Local_
 jnc    is_not_music
 
 is_music:
@@ -1255,7 +1260,7 @@ jne   notclip_doom1_commercial_set
 
 mov   dx, cx
 mov   al, CHEATID_NOCLIP
-call  cht_CheckCheat_
+call  cht_CheckCheat_Local_
 
 jnc   check_behold_cheats
 do_clip_doom1_or_doom2:
@@ -1271,7 +1276,7 @@ jmp   check_behold_cheats
 notclip_doom1_commercial_set:
 mov   dx, cx
 mov   al, CHEATID_NOCLIPDOOM2
-call  cht_CheckCheat_
+call  cht_CheckCheat_Local_
 jc    do_clip_doom1_or_doom2
 
 ; fall thru..
@@ -1289,7 +1294,7 @@ mov   dx, cx
 mov   ax, bx  ; cheat index times two...
 sal   ax, 1   ; four
 
-call  cht_CheckCheat_
+call  cht_CheckCheat_Local_
 jnc   skip_this_behold
 
 cmp   word ptr ds:[si + bx], 0  ; check powers
@@ -1309,9 +1314,7 @@ sar   ax, 1
 
 or   byte ptr ds:[_dodelayedcheatthisframe], CHECK_FOR_DELAYED_CHEAT
 
-db    09Ah
-dw    P_GIVEPOWEROFFSET, PHYSICS_HIGHCODE_SEGMENT
-
+call  P_GivePower_
 and   byte ptr ds:[_dodelayedcheatthisframe], (NOT CHECK_FOR_DELAYED_CHEAT)
 
 jmp   done_applying_behold
@@ -1332,7 +1335,7 @@ jl    loop_next_behold_cheat
 
 mov   dx, cx
 mov   al, CHEATID_BEHOLD
-call  cht_CheckCheat_
+call  cht_CheckCheat_Local_
 jnc   not_single_behold
 mov   word ptr ds:[_player + PLAYER_T.player_message], STSTR_BEHOLD
 jmp   done_checking_main_cheats
@@ -1341,7 +1344,7 @@ not_single_behold:
 
 mov   dx, cx
 mov   al, CHEATID_CHOPPERS
-call  cht_CheckCheat_
+call  cht_CheckCheat_Local_
 
 jnc   not_choppers
 mov   byte ptr ds:[_player + PLAYER_T.player_weaponowned + WP_CHAINSAW], 1
@@ -1352,7 +1355,7 @@ jmp   done_checking_main_cheats
 not_choppers:
 mov   dx, cx
 mov   al, CHEATID_MAPPOS
-call  cht_CheckCheat_
+call  cht_CheckCheat_Local_
 jnc   done_checking_main_cheats
 
 do_mappos_cheat:
@@ -1367,12 +1370,13 @@ or   byte ptr ds:[_dodelayedcheatthisframe], DO_DELAYED_MAP_CHEAT
 done_checking_main_cheats:
 mov   dx, cx
 mov   al, CHEATID_CHANGE_LEVEL
-call  cht_CheckCheat_
+call  cht_CheckCheat_Local_
 jc    do_change_level_cheat
 exit_st_responder_return:
 LEAVE_MACRO 
+exit_st_responder_early:
 POPA_NO_AX_OR_BP_MACRO
-ret   
+retf   
 
 do_change_level_cheat:
 
@@ -1451,7 +1455,7 @@ jmp   exit_st_responder_return
 ENDP
 
 
-PROC    ST_Drawer_ NEAR
+PROC    ST_Drawer_ FAR
 PUBLIC  ST_Drawer_
 
 dec   ax
@@ -1469,8 +1473,8 @@ mov   byte ptr ds:[_st_firsttime], al ; 0
 mov   byte ptr cs:[_updatedthisframe], ah ; 1
 mov   byte ptr cs:[_do_st_refresh], ah ; 1
 
-call  Z_QuickMapStatus_
-call  ST_refreshBackground_
+call  Z_QuickMapStatus_Physics_
+call  ST_refreshBackground_  ; todo inline
 call  ST_drawWidgets_
 jmp   do_quickmapphysics_and_exit
 
@@ -1484,10 +1488,79 @@ je    just_exit
 
 do_quickmapphysics_and_exit:
 
-call  Z_QuickMapPhysics_
+call  Z_QuickMapPhysics_Physics_
 just_exit:
-ret   
+retf   
 ENDP
+
+PROC    cht_CheckCheat_Local_
+call    dword ptr ds:[_cht_CheckCheat_Far_addr]
+ret
+
+
+; get custom param for change level, change music type cheats.
+; pass in via di not dx
+; pass in via bx not ax
+PROC   cht_GetParam_ NEAR
+PUBLIC cht_GetParam_
+
+push ds
+pop  es
+add  bx, word ptr ds:[_BASE_CHEAT_ADDRESS_OFFSET_PTR]
+mov  ds, word ptr ds:[_ORIGINAL_CS_SEGMENT_PTR]
+; argument is preshifted by 2 (as the struct offset should be)
+mov  bx, word ptr ds:[bx]        ; get str addr
+loop_find_param_marker:
+inc  bx
+cmp  byte ptr ds:[bx-1], 1       ; 1 is marker for custom params position in cheat
+jne  loop_find_param_marker
+
+check_next_cheat_char:
+mov  al, byte ptr ds:[bx]
+
+stosb
+mov  byte ptr ds:[bx], 0
+inc  bx
+test al, al
+je   end_of_custom_param
+cmp  byte ptr ds:[bx], 0FFh
+jne  check_next_cheat_char
+end_of_custom_param:
+cmp  byte ptr ds:[bx], 0FFh
+je   getparam_return_0
+getparam_return_1:
+push ss
+pop  ds
+ret  
+getparam_return_0:
+push ss
+pop  ds
+mov  byte ptr ds:[di], 0
+ret  
+
+ENDP
+
+
+PROC   Z_QuickMapStatus_Physics_ NEAR
+PUBLIC Z_QuickMapStatus_Physics_
+
+push  dx
+push  cx
+push  si
+
+Z_QUICKMAPAI1 pageswapargs_stat_offset_size INDEXED_PAGE_9C00_OFFSET
+Z_QUICKMAPAI4_NO_DX (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
+Z_QUICKMAPAI1_NO_DX (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
+
+mov   byte ptr ds:[_currenttask], TASK_STATUS
+pop   si
+pop   cx
+pop   dx
+ret
+
+ENDP
+
+
 
 PROC    ST_STUFF_ENDMARKER_ NEAR
 PUBLIC  ST_STUFF_ENDMARKER_

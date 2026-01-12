@@ -46,6 +46,7 @@ EXTRN FixedMulTrigSpeedNoShift_MapLocal_:NEAR
 EXTRN FastDiv3216u_MapLocal_:NEAR
 EXTRN R_PointToAngle2_MapLocal_:NEAR
 EXTRN HU_Start_:NEAR
+EXTRN ST_Start_:NEAR
 
 .DATA
 
@@ -332,9 +333,8 @@ Z_QUICKMAPAI4_NO_DX (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
 Z_QUICKMAPAI1_NO_DX (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
 mov   byte ptr ds:[_currenttask], TASK_STATUS
 
-; todo abtch call these
-;call      ST_Start_
-call  dword ptr ds:[_ST_Start_addr]
+
+call       ST_Start_
 
 ; st start calls hustart when its done.
 
