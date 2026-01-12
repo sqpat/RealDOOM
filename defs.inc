@@ -724,7 +724,7 @@ _myargv = 	   	  					 _NULL_OFFSET + 00B18h
 ; max args = 20 including program name i guess. should be enough? maybe too much.
 _filebufferstart =				     _NULL_OFFSET + 00B40h
 
-_flatcache_nodes =				     _NULL_OFFSET + 00F40h
+_flatcache_nodes =				     _NULL_OFFSET + 00D40h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + ((SIZE CACHE_NODE_T) * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

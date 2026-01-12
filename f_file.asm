@@ -107,20 +107,6 @@ db "!! Underallocated file buffers!", 0Ah, 0
 
 
 
-PROC    malloc_ NEAR
-PUBLIC  malloc_
-
-xor     ax, ax
-mov     ah, byte ptr cs:[_buffercount]
-cmp     ah, MAX_FILE_BUFFERS
-jae     error_overallocated
-shl     ah, 1  ; 512 times buffer count
-add     ax, OFFSET _filebufferstart
-inc     byte ptr cs:[_buffercount]
-
-ret
-
-
 
 
 ; NOTE: realdoom fwrites do not use buffer. they dump the whole file at once
@@ -218,12 +204,7 @@ ENDP
 
 SECTOR_SIZE = 512
 
-error_overallocated:
-mov     ax, OFFSET _OVERALLOCATED_STR
-got_error_str:
-push    cs
-push    ax
-jmp     I_Error_
+
 
 
 PROC    locallib_fread_nearsegment_   NEAR
@@ -1040,16 +1021,27 @@ ENDP
 
 
 
+error_overallocated:
+mov     ax, OFFSET _OVERALLOCATED_STR
+got_error_str:
+push    cs
+push    ax
+jmp     I_Error_
 
-
-
+; todo inline
 ; if base is nonzero then you have a buffer.
 
 PROC    locallib_ioalloc_ NEAR
 
 ; si fas file already
 
-call  malloc_  ; near malloc
+;call  malloc_   ; near malloc
+; inlined malloc
+cmp     byte ptr cs:[_buffercount], MAX_FILE_BUFFERS
+jae     error_overallocated
+mov     ax, OFFSET _filebufferstart
+inc     byte ptr cs:[_buffercount]
+
 ; ax gets file buffer
 
 mov   word ptr ds:[si + FILE_INFO_T.fileinto_base], ax ; ptr to the file buf...
