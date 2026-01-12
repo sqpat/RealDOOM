@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/12 12:20:28
+Created on:       26/01/12 12:31:44
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -249,8 +249,8 @@ Module: f_finale.obj(f_finale.ASM)
 02eb:0000      F_FINALE_STARTMARKER_
 02eb:0289*     F_CastDrawer_
 02eb:0b1d      F_Responder_
-02eb:04e2*     F_BunnyScroll_
 02eb:01ac      F_StartFinale_
+02eb:04e2*     F_BunnyScroll_
 02eb:0a7b      F_Ticker_
 02eb:0bb2*     F_locallib_toupper_
 02eb:0022*     V_DrawPatchFlipped_
@@ -532,8 +532,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 225c:5439*     A_PainDie_
 225c:5162*     A_VileTarget_
 225c:5858*     A_BrainSpit_
-225c:4323*     P_Move_
 225c:45f9*     P_LookForPlayers_
+225c:4323*     P_Move_
 225c:57e2*     A_BrainExplode_
 225c:50c1*     A_VileStart_
 225c:50ce*     A_FireCrackle_
@@ -802,9 +802,9 @@ Module: d_init.obj(d_init.ASM)
 2d4c:0008*     D_INIT_STARTMARKER_
 2d4c:0c79*     M_CheckParm_CS_
 2d4c:0c0f      G_BeginRecording_
-2d4c:0584      D_DoomMain2_
-2d4c:02fa*     M_LoadDefaults_
-2d4c:04aa*     M_ScanTranslateDefaults_
+2d4c:0060      D_DoomMain2_
+2d4c:0883*     M_LoadDefaults_
+2d4c:0a33*     M_ScanTranslateDefaults_
 2d4c:0c4a*     D_DoomMain_
 2d4c:0c7b      M_CheckParm_
 2d4c:0c5d*     locallib_strlwr_
@@ -917,8 +917,8 @@ Module: st_stuff.obj(st_stuff.ASM)
 2d4c:49df      _oldweaponsowned
 2d4c:4a50      _w_keyboxes
 2d4c:497a      _armsbg
-2d4c:49e8      _keyboxes
 2d4c:495c      _arms
+2d4c:49e8      _keyboxes
 2d4c:4f65*     ST_drawWidgets_
 2d4c:4a44      _w_armor
 2d4c:4976      _sbar
@@ -986,8 +986,8 @@ Module: main.obj(main.ASM)
 2d4c:5667      _sidemove
 2d4c:62e8      M_Ticker_
 2d4c:6260*     I_UpdateNoBlit_
-2d4c:6a1a*     D_MAIN_ENDMARKER_
 2d4c:5663      _forwardmove
+2d4c:6a1a*     D_MAIN_ENDMARKER_
 2d4c:658b      I_ShutdownTimer_
 2d4c:59d0      _scantokey
 2d4c:614b      I_SetPalette_
@@ -1420,4 +1420,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003bf80 (245632.)
 Entry point address: 2d4c:8c3e
-Link time: 00:00.04
+Link time: 00:00.05

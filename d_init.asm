@@ -88,625 +88,53 @@ PUBLIC  D_INIT_STARTMARKER_
 ENDP
 
 
-str_getemspagemap:
-db "Z_GetEMSPageMap: Init EMS Conventional Mappings.", 0Ah, 0
-str_loaddefaults:
-db "M_LoadDefaults	: Load system defaults.", 0Ah, 0
-str_z_loadbinaries:
-db "Z_LoadBinaries: Load game code into memory", 0
-str_initstrings:
-db 0Ah, "D_InitStrings: loading text.", 0Ah, 0
-str_no_wad:
-db "Game mode indeterminate.", 0Ah, 0
-str_mem_param:
-db 0Ah, "BYTES LEFT: %li (DS : %x to %x BASEMEM : %x)", 0Ah, 0
-str_not_enough_mem:
-db 0Ah, "ERROR! Not enough conventioal memory free! Need %li more bytes free!", 0Ah, 0
-
-str_P_Init:
-db 0Ah, "P_Init: Checking cmd-line parameters...", 0Ah, 0
-str_turbo_scale:
-db "turbo scale: %i%%", 0Ah, 0
-
-str_title_ultimate:
-db " The Ultimate DOOM Startup v1.9", 0
-str_title_normal:
-db "  DOOM System Startup v1.9  ", 0
-str_title_doom2: 
-db "DOOM 2: Hell on Earth v1.9"
-str_title_doom2_done:
-
-str_z_init_ems:
-db "Z_InitEMS: Initialize EMS memory.", 0Ah, 0
-str_w_init:
-db "W_Init: Init WADfiles.", 0Ah, 0
-
-str_hu_init_font_lump:
-db "STCFN033", 0
-
-str_map31:
-db "map31", 0
-
-COMMENT @
-str_title_plutonia:
-db "                   DOOM 2: Plutonia Experiment v", 0
-str_title_tnt:
-db "                     DOOM 2: TNT - Evilution v", 0
-str_title_doom2other:
-db "                         DOOM 2: Hell on Earth v", 0
-@
-
- str_ammonamebuf:
- db "AMMNUM0", 0
-
-str_record_param:
-db "-record", 0
-str_playdemo_param:
-db "-playdemo", 0
-str_timedemo_param:
-db "-timedemo", 0
-str_loadgame_param:
-db "-loadgame", 0
-str_turbo:
-db "-turbo", 0
-str_skill:
-db "-skill", 0
-str_episode:
-db "-episode", 0
-str_warp:
-db "-warp", 0
-str_nosound:
-db "-nosound", 0
-str_nosfx:
-db "-nosfx", 0
-str_nomusic:
-db "-nomusic", 0
-str_mem:
-db "-mem", 0
-;str_noblit_param:
-;db "-noblit", 0
-
-str_nomonsters:
-db "-nomonsters", 0
-str_respawn:
-db "-respawn", 0
-str_fast:
-db "-fast", 0
-
 str_doom2filename_:
 db "doom2.wad", 0
 str_doomfilename_:
 db "doom.wad", 0
 str_doom1filename_:
 db "doom1.wad", 0
-str_dstrings_filename_:
-db "dstrings.txt", 0
-str_dstrings_missing:
-db "dstrings.txt missing?", 0
 
-str_lmp_file_ext:
-db ".lmp", 0
-str_playing_demo:
-db "Playing demo %s.lmp.", 0Ah, 0
+; first 512 bytes of the binary will almost immediately be replaced with a 512 byte file cache for the wad once the wad is loaded. so 512 bytes are frontloaded with code that runs super early.
 
 
-_autostart:
-db 0
 
-
-COMMENT @
-str_plutoniafilename_:
-db "plutonia.wad", 0
-str_tntfilename_:
-db "tnt.wad", 0
-@
-
-
-
-
-TEMP_AREA_SEGMENT = 04000h
-
-
-PROC M_LoadDefaults_  NEAR
-PUBLIC M_LoadDefaults_
-
-PUSHA_NO_AX_MACRO
-push  bp
-
-mov   bp, sp
-sub   sp, 0AAh
-sub   bp, 080h
-xor   bx, bx
-
-mov   cx, NUM_DEFAULTS
-loop_set_default_values:
-xor   ax, ax
-mov   si, word ptr cs:[bx + _defaults + DEFAULT_T.default_loc_ptr]
-mov   al, byte ptr cs:[bx + _defaults + DEFAULT_T.default_defaultvalue] ; default...
-add   bx, 7               ; 
-cmp   si, OFFSET _snd_SBport    ; 16 bit value special case
-je    shift4_write_word
-cmp   si, OFFSET _snd_Mport    ; 16 bit value special case
-je    shift4_write_word
-mov   byte ptr ds:[si], al         ; written here 1
-jmp   wrote_byte
-shift4_write_word:
-SHIFT_MACRO shl ax 4
-mov   word ptr ds:[si], ax
-wrote_byte:
-loop  loop_set_default_values
-
-
-mov   ax, OFFSET _str_config
-call  CopyString13_
-mov   dx, ds
-call  M_CheckParm_
-
-
-
-test  ax, ax
-je    set_default_defaultsfilename
-mov   dx, word ptr ds:[_myargc]
-dec   dx
-cmp   ax, dx
-jge   set_default_defaultsfilename
-mov   si, OFFSET _myargv
-add   ax, ax
-add   si, ax
-mov   si, word ptr ds:[si + 2]   ; pointer to myargv for default filename
-push  si
-mov   bx, si  ; cache
-
-; copy updated filename locally
-
-mov   di, OFFSET _used_defaultfile
-push  cs
-pop   es
-mov   cx, 12        ; 12 chars max for 8.3 filename 
-
-loop_copy_new_defaults_filename:
-lodsb
-stosb
-cmp   al, 0
-je    done_copying_new_defaults_filename
-loop loop_copy_new_defaults_filename
-done_copying_new_defaults_filename:
-
-;mov   ax, OFFSET _str_default_file
-;call  DEBUG_PRINT_
-;add   sp, 4
-
-
-
-
-set_default_defaultsfilename:
-mov   ax, OFFSET _used_defaultfile
-call  CopyString13_
-
-
-
-
-mov     dl, (FILEFLAG_READ)
-;mov    ax, OFFSET _filename_argument    ; already set above
-call    locallib_fopen_nobuffering_
-
-test    ax, ax
-je      exit_mloaddefaults
-
-
-xchg    ax, si   ; si gets fp
-
-mov     ax, si
-mov     dx, 2   ; SEEK_END
-xor     cx, cx
-mov     bx, cx
-call    locallib_fseek_
-
-mov     ax, si
-call    locallib_ftell_   ; get filesize
-
-xchg    ax, di  ; di gets size
-
-mov     ax, si
-xor     dx, dx ; 0 SEEK_SET
-xor     cx, cx
-mov     bx, cx
-call    locallib_fseek_   ; back to start
-
-; dump it all to memory then process?
-xor     ax, ax
-mov     cx, si  ; fp
-mov     dx, TEMP_AREA_SEGMENT
-mov     bx, di
-call    locallib_fread_
-
-xchg    ax, si           ; get fp back
-call    locallib_fclose_
-
-
-
-
-
-
-
-
-defaults_file_loaded:
-
-; cx has length
-mov     cx, di  ; size for loop
-xor     si, si
-
-
-
-
-
-; bx is file pointer..
-xor   ax, ax
-;		int8_t readphase = 0; // getting param 0
-;		int8_t defindex = 0;
-;		int8_t strparmindex = 0;
-
-; todo make these flags in a single byte (bl/bh?)
-
-mov   byte ptr [bp + 07Ah], al          ; readphase
-mov   byte ptr [bp + 07Ch], al
-mov   byte ptr [bp + 07Eh], al          ; strparmindex
-
-
-loop_handle_next_char:
-push    cx
-mov     ax, TEMP_AREA_SEGMENT
-mov     es, ax                  ; todo make not necessary
-
-lods  byte ptr es:[si]
-mov   dl, al    ; todo  dont do this
-xor   ah, ah
-cmp   al, 020h                    ; space charcater
-je    is_tab_or_space
-cmp   al, 9                           ; tab characters \t
-jne   is_not_tab_or_space
-
-is_tab_or_space:
-inc   ah
-is_not_tab_or_space:
-; ah = 1 if whitespace.
-; dl is copy of char...
-cmp   al, 0Ah                     ; line feed character \n
-jne   not_linefeed
-is_linefeed_or_carriage_return:
-mov   al, 1
-checked_for_endline:
-; ah = 1 if whiteespace, al = 1 if newline
-cmp   byte ptr [bp + 07Ah], 0       ; check readphase
-jne   readphase_not_0
-; readphase is 0
-test  ah, ah
-jne   readphase_0_whitespace_or_newline
-test  al, al
-jne   readphase_0_whitespace_or_newline
-mov   al, byte ptr [bp + 07Ch]
-cbw  
-mov   di, ax
-inc   byte ptr [bp + 07Ch]
-mov   byte ptr [bp + di - 02Ah], dl
-character_finished_handling:
-
-pop   cx
-loop  loop_handle_next_char
-
-end_loop_close_file:
-
-; fall thru to bad file
-defaults_file_closed:
-
-exit_mloaddefaults:
-lea   sp, [bp + 080h]
-pop   bp
-POPA_NO_AX_MACRO
-
-ret
-
-
-not_linefeed:
-cmp   al, 0Dh                         ; carriage return characters \r
-je    is_linefeed_or_carriage_return
-xor   al, al
-jmp   checked_for_endline
-readphase_0_whitespace_or_newline:
-test  ah, ah
-je    readphase_0_whitespace
-mov   al, byte ptr [bp + 07Ch]
-cbw  
-mov   di, ax
-mov   byte ptr [bp + 07Ah], 1
-mov   byte ptr [bp + di - 02Ah], 0
-jmp   character_finished_handling
-readphase_0_whitespace:
-mov   byte ptr [bp + 07Ah], ah
-mov   byte ptr [bp + 07Ch], ah
-mov   byte ptr [bp + 07Eh], ah
-jmp   character_finished_handling
-readphase_not_0:
-cmp   byte ptr [bp + 07Ah], 1
-jne   character_finished_handling
-test  ah, ah
-jne   character_finished_handling
-test  al, al
-jne   hit_newline
-mov   al, byte ptr [bp + 07Eh]
-cbw  
-mov   di, ax
-inc   byte ptr [bp + 07Eh]
-mov   byte ptr [bp + di + 026h], dl
-jmp   character_finished_handling
-hit_newline:
-mov   al, byte ptr [bp + 07Eh]      ; get strparmindex
-cbw  
-mov   di, ax
-xor   al, al
-mov   byte ptr [bp + 07Ah], al
-mov   byte ptr [bp + 07Ch], al
-mov   byte ptr [bp + di + 026h], al
-cmp   byte ptr [bp + 07Eh], 0
-je    character_finished_handling
-; prepare to get param...
-mov   byte ptr [bp + 07Eh], al
-xor   ax, ax
-mov   di, ax
-mov   cx, ax
-
-
-read_next_digit:
-mov   cl, 10
-mul   cl         ; mul by 10
-mov   cl, byte ptr [bp + di + 026h];
-add   ax, cx     ; add next char
-sub   ax, 030h   ; but sub '0' from char
-inc   di
-cmp   byte ptr [bp + di + 026h], 0 ; check for null term
-jne   read_next_digit
-
-
-
-mov   word ptr [bp + 078h], ax
-xor   di, di
-
-scan_next_default_name_for_match:
-lea   ax, [bp - 02Ah]
-mov   cx, cs
-mov   dx, ds
-mov   bx, word ptr cs:[di + _defaults + DEFAULT_T.default_name_ptr]
-
-call  locallib_strcmp_
-test  ax, ax
-jne   no_match_increment_default
-mov   bx, word ptr cs:[di + _defaults + DEFAULT_T.default_loc_ptr]
-mov   ax, word ptr [bp + 078h]
-; if one of the 16 bit ones then write word..
-cmp   bx, OFFSET _snd_SBport
-je    do_word_write
-cmp   bx, OFFSET _snd_Mport
-je    do_word_write
-do_byte_write:
-mov   byte ptr ds:[bx], al                             ; written here 2 
-jmp   character_finished_handling      
-do_word_write:
-mov   word ptr ds:[bx], ax
-jmp   character_finished_handling
-no_match_increment_default:
-
-add   di, (SIZE DEFAULT_T)
-cmp   di, OFFSET _defaults +(NUM_DEFAULTS * (SIZE DEFAULT_T))
-jl    scan_next_default_name_for_match
-
-jmp   character_finished_handling
-
-
-ENDP
-
-PROC M_ScanTranslateDefaults_ NEAR
-PUBLIC M_ScanTranslateDefaults_
-
-PUSHA_NO_AX_MACRO
-
-xor   di, di
-
-;	for (i = 0; i < NUM_DEFAULTS; i++) {
-;		if (defaults[i].scantranslate) {
-;			parm = *defaults[i].location;
-;			defaults[i].untranslated = parm;
-;			*defaults[i].location = scantokey[parm];
-;		}
-;	}
-mov   bx, OFFSET _scantokey
-
-loop_defaults_to_set_initial_values:
-cmp   byte ptr cs:[di + _defaults + DEFAULT_T.default_scantranslate], 0
-je    no_pointer_load_next_defaults_value
-mov   si, word ptr cs:[di + _defaults + DEFAULT_T.default_loc_ptr]
-lodsb 
-mov   byte ptr cs:[di + _defaults + DEFAULT_T.default_untranslated], al  ; written here 3
-
-mov   si, word ptr cs:[di + _defaults + DEFAULT_T.default_loc_ptr]
-
-;mov   al, byte ptr cs:[bx + _scantokey]
-xlat  byte ptr cs:[bx]
-mov   byte ptr ds:[si], al                     ; written here 4
-no_pointer_load_next_defaults_value:
-add   di, (SIZE DEFAULT_T)
-cmp   di, NUM_DEFAULTS * (SIZE DEFAULT_T)
-jne   loop_defaults_to_set_initial_values
-
-POPA_NO_AX_MACRO
-ret
-
-
-
-ENDP
-
-
-
-; todo constants
-
-STRINGDATA_SEGMENT = 06000h
-STRINGOFFSETS_OFFSET = 03C40h
-
-do_string_error:
-push    cs
-mov     ax, OFFSET str_dstrings_missing
-push    ax
-call    I_Error_
-
-PROC D_InitStrings_ NEAR
+PROC check_is_ultimate_ NEAR
 
 push    bp
 mov     bp, sp
-sub     sp, 14
-lea     si, str_dstrings_filename_
+sub     sp, 10
+lea     si, str_doomfilename_
 push    cs
 pop     ds
 push    ss
 pop     es
-lea     di, [bp - 14]
+lea     di, [bp - 10]
 mov     ax, di
-mov     cx, 13
-rep     movsb
+movsw
+movsw
+movsw
+movsw
+movsb
 push    ss
 pop     ds
-
 mov     dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
 call    locallib_fopen_nobuffering_
-test    ax, ax
-je      do_string_error
-
-xchg    ax, si   ; si gets fp
-
-mov     ax, si
-mov     dx, 2   ; SEEK_END
-xor     cx, cx
-mov     bx, cx
-call    locallib_fseek_
-
-mov     ax, si
-call    locallib_ftell_   ; get filesize
-
-xchg    ax, di  ; di gets size
-
-mov     ax, si
-xor     dx, dx ; 0 SEEK_SET
-xor     cx, cx
-mov     bx, cx
-call    locallib_fseek_   ; back to start
-
-; dump it all to memory then process?
-xor     ax, ax
-mov     cx, si  ; fp
-mov     dx, STRINGDATA_SEGMENT
-mov     bx, di
-call    locallib_fread_
-
-xchg    ax, si           ; get fp back
+push    ax
+xchg    cx, ax
+lea     ax, [bp - 6]
+mov     bx, 6 * 1
+call    locallib_fread_nearsegment_
+pop     ax  ; fp
 call    locallib_fclose_
+cmp     word ptr [bp - 2], 0902h
+jne     dont_set_ultimate_true
+mov     byte ptr ds:[_is_ultimate], 1
+dont_set_ultimate_true:
 
-; now we want to modify in place...
-
-mov     cx, di  ; count
-xor     si, si
-xor     di, di
-mov     ax, STRINGDATA_SEGMENT
-mov     ds, ax
-mov     es, ax
-xor     ax, ax
-mov     bx, STRINGOFFSETS_OFFSET  ; target
-
-mov     word ptr ds:[bx], di;  ; make sure to write zero for the first one.
-
-; ds:bx is where the string pointers go
-; ds:si is where we are reasing
-; es:di is where we are writing to (getting rid of escapes etc)
-
-loop_next_stringfile_char:
-lodsb
-
-cmp     al, 0Dh   ; carriage return
-je      skip_write
-
-cmp     al, 0Ah   ; newline
-je      terminate_string
-
-not_real_newline:
-
-cmp     al, 'n';
-jne     not_fake_newline
-cmp     dl, '\';  prev char
-jne     not_fake_newline
-mov     al, 0Ah ; write a newline
-dec     di
-not_fake_newline:
-
-stosb
-xchg    ax, dx ; store prev char in dx (for prev-char stuff)
-
-
-continue_loop:
-loop    loop_next_stringfile_char
-
-done_parsing_string_file:
-push    ss
-pop     ds
 LEAVE_MACRO
-
-ret
-terminate_string:
-inc     bx
-inc     bx
-mov     word ptr ds:[bx], di;  stringoffsets[j] = i;// +(page * 16384);
-skip_write:
-xor     dx, dx
-jmp     continue_loop
-
-
-ENDP
-
-
-PROC    locallib_fileexists_ NEAR
- 
-
-; note: clobbers cx, dx
-push  cs
-pop   ds
-xchg  ax, dx ; dx gets filename
-mov   ax, 04300h
-int   021h          ; DS:DX = pointer to an ASCIIZ path name  CX = attribute to set
-push  ss
-pop   ds
-mov   ax, 0
-;jc    return_0    ; file error, presumably file not found. anyway, cant read
-;clc   
-;return_0:
-cmc         ; just cms to reverse the result
-
-
 ret
 
-
-do_dos_error:
-;call  __doserror_
-; todo??
-xor   ax, ax
-ret
-
-ENDP
-
-
-PROC    PrintSpaces_
-
-mov   ax, 02020h
-rep   stosb
-xchg  ax, cx ; 0. null term
-stosb
-
-ret
 ENDP
 
 
@@ -1588,6 +1016,626 @@ ENDP
 
 
 
+
+
+str_getemspagemap:
+db "Z_GetEMSPageMap: Init EMS Conventional Mappings.", 0Ah, 0
+str_loaddefaults:
+db "M_LoadDefaults	: Load system defaults.", 0Ah, 0
+str_z_loadbinaries:
+db "Z_LoadBinaries: Load game code into memory", 0
+str_initstrings:
+db 0Ah, "D_InitStrings: loading text.", 0Ah, 0
+str_no_wad:
+db "Game mode indeterminate.", 0Ah, 0
+str_mem_param:
+db 0Ah, "BYTES LEFT: %li (DS : %x to %x BASEMEM : %x)", 0Ah, 0
+str_not_enough_mem:
+db 0Ah, "ERROR! Not enough conventioal memory free! Need %li more bytes free!", 0Ah, 0
+
+str_P_Init:
+db 0Ah, "P_Init: Checking cmd-line parameters...", 0Ah, 0
+str_turbo_scale:
+db "turbo scale: %i%%", 0Ah, 0
+
+str_title_ultimate:
+db " The Ultimate DOOM Startup v1.9", 0
+str_title_normal:
+db "  DOOM System Startup v1.9  ", 0
+str_title_doom2: 
+db "DOOM 2: Hell on Earth v1.9"
+str_title_doom2_done:
+
+str_z_init_ems:
+db "Z_InitEMS: Initialize EMS memory.", 0Ah, 0
+str_w_init:
+db "W_Init: Init WADfiles.", 0Ah, 0
+
+str_hu_init_font_lump:
+db "STCFN033", 0
+
+str_map31:
+db "map31", 0
+
+COMMENT @
+str_title_plutonia:
+db "                   DOOM 2: Plutonia Experiment v", 0
+str_title_tnt:
+db "                     DOOM 2: TNT - Evilution v", 0
+str_title_doom2other:
+db "                         DOOM 2: Hell on Earth v", 0
+@
+
+ str_ammonamebuf:
+ db "AMMNUM0", 0
+
+str_record_param:
+db "-record", 0
+str_playdemo_param:
+db "-playdemo", 0
+str_timedemo_param:
+db "-timedemo", 0
+str_loadgame_param:
+db "-loadgame", 0
+str_turbo:
+db "-turbo", 0
+str_skill:
+db "-skill", 0
+str_episode:
+db "-episode", 0
+str_warp:
+db "-warp", 0
+str_nosound:
+db "-nosound", 0
+str_nosfx:
+db "-nosfx", 0
+str_nomusic:
+db "-nomusic", 0
+str_mem:
+db "-mem", 0
+;str_noblit_param:
+;db "-noblit", 0
+
+str_nomonsters:
+db "-nomonsters", 0
+str_respawn:
+db "-respawn", 0
+str_fast:
+db "-fast", 0
+
+
+str_dstrings_filename_:
+db "dstrings.txt", 0
+str_dstrings_missing:
+db "dstrings.txt missing?", 0
+
+str_lmp_file_ext:
+db ".lmp", 0
+str_playing_demo:
+db "Playing demo %s.lmp.", 0Ah, 0
+
+
+_autostart:
+db 0
+
+
+COMMENT @
+str_plutoniafilename_:
+db "plutonia.wad", 0
+str_tntfilename_:
+db "tnt.wad", 0
+@
+
+
+
+
+TEMP_AREA_SEGMENT = 04000h
+
+
+PROC M_LoadDefaults_  NEAR
+PUBLIC M_LoadDefaults_
+
+PUSHA_NO_AX_MACRO
+push  bp
+
+mov   bp, sp
+sub   sp, 0AAh
+sub   bp, 080h
+xor   bx, bx
+
+mov   cx, NUM_DEFAULTS
+loop_set_default_values:
+xor   ax, ax
+mov   si, word ptr cs:[bx + _defaults + DEFAULT_T.default_loc_ptr]
+mov   al, byte ptr cs:[bx + _defaults + DEFAULT_T.default_defaultvalue] ; default...
+add   bx, 7               ; 
+cmp   si, OFFSET _snd_SBport    ; 16 bit value special case
+je    shift4_write_word
+cmp   si, OFFSET _snd_Mport    ; 16 bit value special case
+je    shift4_write_word
+mov   byte ptr ds:[si], al         ; written here 1
+jmp   wrote_byte
+shift4_write_word:
+SHIFT_MACRO shl ax 4
+mov   word ptr ds:[si], ax
+wrote_byte:
+loop  loop_set_default_values
+
+
+mov   ax, OFFSET _str_config
+call  CopyString13_
+mov   dx, ds
+call  M_CheckParm_
+
+
+
+test  ax, ax
+je    set_default_defaultsfilename
+mov   dx, word ptr ds:[_myargc]
+dec   dx
+cmp   ax, dx
+jge   set_default_defaultsfilename
+mov   si, OFFSET _myargv
+add   ax, ax
+add   si, ax
+mov   si, word ptr ds:[si + 2]   ; pointer to myargv for default filename
+push  si
+mov   bx, si  ; cache
+
+; copy updated filename locally
+
+mov   di, OFFSET _used_defaultfile
+push  cs
+pop   es
+mov   cx, 12        ; 12 chars max for 8.3 filename 
+
+loop_copy_new_defaults_filename:
+lodsb
+stosb
+cmp   al, 0
+je    done_copying_new_defaults_filename
+loop loop_copy_new_defaults_filename
+done_copying_new_defaults_filename:
+
+;mov   ax, OFFSET _str_default_file
+;call  DEBUG_PRINT_
+;add   sp, 4
+
+
+
+
+set_default_defaultsfilename:
+mov   ax, OFFSET _used_defaultfile
+call  CopyString13_
+
+
+
+
+mov     dl, (FILEFLAG_READ)
+;mov    ax, OFFSET _filename_argument    ; already set above
+call    locallib_fopen_nobuffering_
+
+test    ax, ax
+je      exit_mloaddefaults
+
+
+xchg    ax, si   ; si gets fp
+
+mov     ax, si
+mov     dx, 2   ; SEEK_END
+xor     cx, cx
+mov     bx, cx
+call    locallib_fseek_
+
+mov     ax, si
+call    locallib_ftell_   ; get filesize
+
+xchg    ax, di  ; di gets size
+
+mov     ax, si
+xor     dx, dx ; 0 SEEK_SET
+xor     cx, cx
+mov     bx, cx
+call    locallib_fseek_   ; back to start
+
+; dump it all to memory then process?
+xor     ax, ax
+mov     cx, si  ; fp
+mov     dx, TEMP_AREA_SEGMENT
+mov     bx, di
+call    locallib_fread_
+
+xchg    ax, si           ; get fp back
+call    locallib_fclose_
+
+
+
+
+
+
+
+
+defaults_file_loaded:
+
+; cx has length
+mov     cx, di  ; size for loop
+xor     si, si
+
+
+
+
+
+; bx is file pointer..
+xor   ax, ax
+;		int8_t readphase = 0; // getting param 0
+;		int8_t defindex = 0;
+;		int8_t strparmindex = 0;
+
+; todo make these flags in a single byte (bl/bh?)
+
+mov   byte ptr [bp + 07Ah], al          ; readphase
+mov   byte ptr [bp + 07Ch], al
+mov   byte ptr [bp + 07Eh], al          ; strparmindex
+
+
+loop_handle_next_char:
+push    cx
+mov     ax, TEMP_AREA_SEGMENT
+mov     es, ax                  ; todo make not necessary
+
+lods  byte ptr es:[si]
+mov   dl, al    ; todo  dont do this
+xor   ah, ah
+cmp   al, 020h                    ; space charcater
+je    is_tab_or_space
+cmp   al, 9                           ; tab characters \t
+jne   is_not_tab_or_space
+
+is_tab_or_space:
+inc   ah
+is_not_tab_or_space:
+; ah = 1 if whitespace.
+; dl is copy of char...
+cmp   al, 0Ah                     ; line feed character \n
+jne   not_linefeed
+is_linefeed_or_carriage_return:
+mov   al, 1
+checked_for_endline:
+; ah = 1 if whiteespace, al = 1 if newline
+cmp   byte ptr [bp + 07Ah], 0       ; check readphase
+jne   readphase_not_0
+; readphase is 0
+test  ah, ah
+jne   readphase_0_whitespace_or_newline
+test  al, al
+jne   readphase_0_whitespace_or_newline
+mov   al, byte ptr [bp + 07Ch]
+cbw  
+mov   di, ax
+inc   byte ptr [bp + 07Ch]
+mov   byte ptr [bp + di - 02Ah], dl
+character_finished_handling:
+
+pop   cx
+loop  loop_handle_next_char
+
+end_loop_close_file:
+
+; fall thru to bad file
+defaults_file_closed:
+
+exit_mloaddefaults:
+lea   sp, [bp + 080h]
+pop   bp
+POPA_NO_AX_MACRO
+
+ret
+
+
+not_linefeed:
+cmp   al, 0Dh                         ; carriage return characters \r
+je    is_linefeed_or_carriage_return
+xor   al, al
+jmp   checked_for_endline
+readphase_0_whitespace_or_newline:
+test  ah, ah
+je    readphase_0_whitespace
+mov   al, byte ptr [bp + 07Ch]
+cbw  
+mov   di, ax
+mov   byte ptr [bp + 07Ah], 1
+mov   byte ptr [bp + di - 02Ah], 0
+jmp   character_finished_handling
+readphase_0_whitespace:
+mov   byte ptr [bp + 07Ah], ah
+mov   byte ptr [bp + 07Ch], ah
+mov   byte ptr [bp + 07Eh], ah
+jmp   character_finished_handling
+readphase_not_0:
+cmp   byte ptr [bp + 07Ah], 1
+jne   character_finished_handling
+test  ah, ah
+jne   character_finished_handling
+test  al, al
+jne   hit_newline
+mov   al, byte ptr [bp + 07Eh]
+cbw  
+mov   di, ax
+inc   byte ptr [bp + 07Eh]
+mov   byte ptr [bp + di + 026h], dl
+jmp   character_finished_handling
+hit_newline:
+mov   al, byte ptr [bp + 07Eh]      ; get strparmindex
+cbw  
+mov   di, ax
+xor   al, al
+mov   byte ptr [bp + 07Ah], al
+mov   byte ptr [bp + 07Ch], al
+mov   byte ptr [bp + di + 026h], al
+cmp   byte ptr [bp + 07Eh], 0
+je    character_finished_handling
+; prepare to get param...
+mov   byte ptr [bp + 07Eh], al
+xor   ax, ax
+mov   di, ax
+mov   cx, ax
+
+
+read_next_digit:
+mov   cl, 10
+mul   cl         ; mul by 10
+mov   cl, byte ptr [bp + di + 026h];
+add   ax, cx     ; add next char
+sub   ax, 030h   ; but sub '0' from char
+inc   di
+cmp   byte ptr [bp + di + 026h], 0 ; check for null term
+jne   read_next_digit
+
+
+
+mov   word ptr [bp + 078h], ax
+xor   di, di
+
+scan_next_default_name_for_match:
+lea   ax, [bp - 02Ah]
+mov   cx, cs
+mov   dx, ds
+mov   bx, word ptr cs:[di + _defaults + DEFAULT_T.default_name_ptr]
+
+call  locallib_strcmp_
+test  ax, ax
+jne   no_match_increment_default
+mov   bx, word ptr cs:[di + _defaults + DEFAULT_T.default_loc_ptr]
+mov   ax, word ptr [bp + 078h]
+; if one of the 16 bit ones then write word..
+cmp   bx, OFFSET _snd_SBport
+je    do_word_write
+cmp   bx, OFFSET _snd_Mport
+je    do_word_write
+do_byte_write:
+mov   byte ptr ds:[bx], al                             ; written here 2 
+jmp   character_finished_handling      
+do_word_write:
+mov   word ptr ds:[bx], ax
+jmp   character_finished_handling
+no_match_increment_default:
+
+add   di, (SIZE DEFAULT_T)
+cmp   di, OFFSET _defaults +(NUM_DEFAULTS * (SIZE DEFAULT_T))
+jl    scan_next_default_name_for_match
+
+jmp   character_finished_handling
+
+
+ENDP
+
+PROC M_ScanTranslateDefaults_ NEAR
+PUBLIC M_ScanTranslateDefaults_
+
+PUSHA_NO_AX_MACRO
+
+xor   di, di
+
+;	for (i = 0; i < NUM_DEFAULTS; i++) {
+;		if (defaults[i].scantranslate) {
+;			parm = *defaults[i].location;
+;			defaults[i].untranslated = parm;
+;			*defaults[i].location = scantokey[parm];
+;		}
+;	}
+mov   bx, OFFSET _scantokey
+
+loop_defaults_to_set_initial_values:
+cmp   byte ptr cs:[di + _defaults + DEFAULT_T.default_scantranslate], 0
+je    no_pointer_load_next_defaults_value
+mov   si, word ptr cs:[di + _defaults + DEFAULT_T.default_loc_ptr]
+lodsb 
+mov   byte ptr cs:[di + _defaults + DEFAULT_T.default_untranslated], al  ; written here 3
+
+mov   si, word ptr cs:[di + _defaults + DEFAULT_T.default_loc_ptr]
+
+;mov   al, byte ptr cs:[bx + _scantokey]
+xlat  byte ptr cs:[bx]
+mov   byte ptr ds:[si], al                     ; written here 4
+no_pointer_load_next_defaults_value:
+add   di, (SIZE DEFAULT_T)
+cmp   di, NUM_DEFAULTS * (SIZE DEFAULT_T)
+jne   loop_defaults_to_set_initial_values
+
+POPA_NO_AX_MACRO
+ret
+
+
+
+ENDP
+
+
+
+; todo constants
+
+STRINGDATA_SEGMENT = 06000h
+STRINGOFFSETS_OFFSET = 03C40h
+
+do_string_error:
+push    cs
+mov     ax, OFFSET str_dstrings_missing
+push    ax
+call    I_Error_
+
+PROC D_InitStrings_ NEAR
+
+push    bp
+mov     bp, sp
+sub     sp, 14
+lea     si, str_dstrings_filename_
+push    cs
+pop     ds
+push    ss
+pop     es
+lea     di, [bp - 14]
+mov     ax, di
+mov     cx, 13
+rep     movsb
+push    ss
+pop     ds
+
+mov     dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
+call    locallib_fopen_nobuffering_
+test    ax, ax
+je      do_string_error
+
+xchg    ax, si   ; si gets fp
+
+mov     ax, si
+mov     dx, 2   ; SEEK_END
+xor     cx, cx
+mov     bx, cx
+call    locallib_fseek_
+
+mov     ax, si
+call    locallib_ftell_   ; get filesize
+
+xchg    ax, di  ; di gets size
+
+mov     ax, si
+xor     dx, dx ; 0 SEEK_SET
+xor     cx, cx
+mov     bx, cx
+call    locallib_fseek_   ; back to start
+
+; dump it all to memory then process?
+xor     ax, ax
+mov     cx, si  ; fp
+mov     dx, STRINGDATA_SEGMENT
+mov     bx, di
+call    locallib_fread_
+
+xchg    ax, si           ; get fp back
+call    locallib_fclose_
+
+; now we want to modify in place...
+
+mov     cx, di  ; count
+xor     si, si
+xor     di, di
+mov     ax, STRINGDATA_SEGMENT
+mov     ds, ax
+mov     es, ax
+xor     ax, ax
+mov     bx, STRINGOFFSETS_OFFSET  ; target
+
+mov     word ptr ds:[bx], di;  ; make sure to write zero for the first one.
+
+; ds:bx is where the string pointers go
+; ds:si is where we are reasing
+; es:di is where we are writing to (getting rid of escapes etc)
+
+loop_next_stringfile_char:
+lodsb
+
+cmp     al, 0Dh   ; carriage return
+je      skip_write
+
+cmp     al, 0Ah   ; newline
+je      terminate_string
+
+not_real_newline:
+
+cmp     al, 'n';
+jne     not_fake_newline
+cmp     dl, '\';  prev char
+jne     not_fake_newline
+mov     al, 0Ah ; write a newline
+dec     di
+not_fake_newline:
+
+stosb
+xchg    ax, dx ; store prev char in dx (for prev-char stuff)
+
+
+continue_loop:
+loop    loop_next_stringfile_char
+
+done_parsing_string_file:
+push    ss
+pop     ds
+LEAVE_MACRO
+
+ret
+terminate_string:
+inc     bx
+inc     bx
+mov     word ptr ds:[bx], di;  stringoffsets[j] = i;// +(page * 16384);
+skip_write:
+xor     dx, dx
+jmp     continue_loop
+
+
+ENDP
+
+
+PROC    locallib_fileexists_ NEAR
+ 
+
+; note: clobbers cx, dx
+push  cs
+pop   ds
+xchg  ax, dx ; dx gets filename
+mov   ax, 04300h
+int   021h          ; DS:DX = pointer to an ASCIIZ path name  CX = attribute to set
+push  ss
+pop   ds
+mov   ax, 0
+;jc    return_0    ; file error, presumably file not found. anyway, cant read
+;clc   
+;return_0:
+cmc         ; just cms to reverse the result
+
+
+ret
+
+
+do_dos_error:
+;call  __doserror_
+; todo??
+xor   ax, ax
+ret
+
+ENDP
+
+
+PROC    PrintSpaces_
+
+mov   ax, 02020h
+rep   stosb
+xchg  ax, cx ; 0. null term
+stosb
+
+ret
+ENDP
+
+
+
 PROC  D_DrawTitle_ NEAR
 
 PUSHA_NO_AX_MACRO
@@ -1673,44 +1721,6 @@ ret
 ENDP
 
 
-
-PROC check_is_ultimate_ NEAR
-
-push    bp
-mov     bp, sp
-sub     sp, 10
-lea     si, str_doomfilename_
-push    cs
-pop     ds
-push    ss
-pop     es
-lea     di, [bp - 10]
-mov     ax, di
-movsw
-movsw
-movsw
-movsw
-movsb
-push    ss
-pop     ds
-mov     dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
-call    locallib_fopen_nobuffering_
-push    ax
-xchg    cx, ax
-lea     ax, [bp - 6]
-mov     bx, 6 * 1
-call    locallib_fread_nearsegment_
-pop     ax  ; fp
-call    locallib_fclose_
-cmp     word ptr [bp - 2], 0902h
-jne     dont_set_ultimate_true
-mov     byte ptr ds:[_is_ultimate], 1
-dont_set_ultimate_true:
-
-LEAVE_MACRO
-ret
-
-ENDP
 
 
 PROC    makethreecharint_ NEAR

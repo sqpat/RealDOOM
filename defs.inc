@@ -717,14 +717,13 @@ _errno =      						 _NULL_OFFSET + 00ADAh
 
 
 
-___iob = 							 _NULL_OFFSET + 00ADCh
 ; NFILES * SIZE DOSFILE_INFO_T bytes = 2 * 10 = 20 = 018h
+___iob = 							 _NULL_OFFSET + 00ADCh
 
-_myargv = 	   	  					 _NULL_OFFSET + 00AF4h
 ; max args = 20 including program name i guess. should be enough? maybe too much.
-_filebufferstart =				     _NULL_OFFSET + 00B20h
+_myargv = 	   	  					 _NULL_OFFSET + 00AF4h
 
-_flatcache_nodes =				     _NULL_OFFSET + 00D20h
+_flatcache_nodes =				     _NULL_OFFSET + 00B20h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + ((SIZE CACHE_NODE_T) * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

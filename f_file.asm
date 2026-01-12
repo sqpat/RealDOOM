@@ -252,13 +252,17 @@ sub       word ptr ds:[bx + DOSFILE_INFO_T.dosfileinfo_cnt], cx
 
 sub       dx, cx
 mov       si, word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_ptr]
-
+push      cs
+pop       ds
 ; es already set...?
 
 shr       cx, 1
 rep       movsw
 adc       cx, cx
 rep       movsb
+
+push      ss
+pop       ds
 
 mov       word ptr ds:[bx + DOSFILE_INFO_T.dosfileinfo_ptr], si
 
@@ -282,7 +286,8 @@ skip_buffer_modify:
 
 
 mov       word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_cnt], 0
-mov       word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_ptr], _filebufferstart
+mov       word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_ptr], 0
+
 
 
 skip_buffer:
@@ -433,7 +438,7 @@ lea       si, [di - SIZE DOSFILE_INFO_T]
 cmp       si, WADFILE
 jne       skip_buf_setup
 
-mov   word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_ptr], _filebufferstart
+mov   word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_ptr], 0
 
 skip_buf_setup:
 ; si has fp
@@ -719,7 +724,8 @@ cmp  bx, ax
 ja   outside_of_buffer
 size_check_ok:
 
-mov  ax, _filebufferstart
+; todo mov and neg?
+xor  ax, ax
 sub  ax, word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_ptr]
 cwd  
 cmp  cx, dx
@@ -750,7 +756,7 @@ PUBLIC  locallib_reset_buffer_
 
 and  byte ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_flag], (NOT _EOF)
 mov  word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_cnt], 0
-mov  word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_ptr], _filebufferstart
+mov  word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_ptr], 0
 
 ret  
 
@@ -794,7 +800,7 @@ dont_subtract_offset:
 mov  word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_cnt], 0
 cmp  si, WADFILE
 jne  dont_modify_ptr
-mov  word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_ptr], _filebufferstart
+mov  word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_ptr], 0
 dont_modify_ptr:
 file_ready_for_seek:
 mov  dx, word ptr [bp - 2] ; retrieve seek type
@@ -1038,14 +1044,19 @@ push dx
 ; dont need ioalloc check. only call already did it
 
 
-mov  dx, _filebufferstart
-mov  word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_ptr], dx
 mov  cx, FILE_BUFFER_SIZE
 mov  bx, word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_handle]
 
+
 mov  ah, 03Fh  ; Read file or device using handle
+cwd  ; dx 0
+mov  word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_ptr], dx
+push cs
+pop  ds
 int  021h
 
+push ss
+pop  ds
 jc   do_qread_error
 
 mov  word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_cnt], ax

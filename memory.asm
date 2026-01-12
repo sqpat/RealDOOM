@@ -486,13 +486,7 @@ dw          00, 00, 00, 00, 00, 00
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; B10
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; B20 ; file buffer
-FILE_BUFFER_SIZE = 512
-
-REPT FILE_BUFFER_SIZE
-	db  0
-ENDM
-; D20
+; B20
 
 REPT NUM_FLAT_CACHE_PAGES
 	dw  00
