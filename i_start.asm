@@ -36,7 +36,7 @@ DGROUP group _NULL,_DATA,DATA,_BSS,STACK
 
 _NULL   segment para public 'BEGDATA'
         __nullarea label word
-        dw      16 dup(00101h)
+        dw      8 dup(00101h)
         public  __nullarea
 _NULL   ends
 
@@ -289,7 +289,7 @@ call  docloseall_
 cld        
 xor        di, di   ; di = null area
 mov        es, dx
-mov        cx, 010h
+mov        cx, 08h
 mov        ax, 0101h
 repe       scasw
 jne        null_check_fail

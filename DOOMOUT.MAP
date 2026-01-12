@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/11 11:54:14
+Created on:       26/01/12 10:01:18
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -13,7 +13,7 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          072a:0000            00001ac0
+DGROUP                          072a:0000            00001ab0
 
 
 
@@ -53,12 +53,12 @@ I_START_TEXT           CODE           AUTO           0000:6856       000001a3
 W_WAD_TEXT             CODE           AUTO           0000:69fa       0000024e
 V_VIDEO_TEXT           CODE           AUTO           0000:6c48       00000217
 Z_ZONE_TEXT            CODE           AUTO           0000:6e60       0000043b
-_NULL                  BEGDATA        DGROUP         072a:0000       00000020
-_FIXEDDATA             DATA           DGROUP         072c:0000       0000129e
-_DATA                  DATA           DGROUP         0855:000e       00000000
-DATA                   DATA           DGROUP         0855:000e       00000000
-_BSS                   BSS            DGROUP         0855:000e       00000002
-STACK                  STACK          DGROUP         0856:0000       00000800
+_NULL                  BEGDATA        DGROUP         072a:0000       00000010
+_FIXEDDATA             DATA           DGROUP         072b:0000       0000129e
+_DATA                  DATA           DGROUP         0854:000e       00000000
+DATA                   DATA           DGROUP         0854:000e       00000000
+_BSS                   BSS            DGROUP         0854:000e       00000002
+STACK                  STACK          DGROUP         0855:0000       00000800
 
 
                         +----------------+
@@ -445,6 +445,6 @@ Module: z_zone.obj(z_zone.ASM)
                         +-----------------------+
 
 Stack size:  0800 (2048.)
-Memory size:  8d60 (36192.)
+Memory size:  8d50 (36176.)
 Entry point address: 0000:696a
-Link time: 00:00.09
+Link time: 00:00.65
