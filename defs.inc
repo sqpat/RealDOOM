@@ -78,18 +78,16 @@ _cachedlumps =                 	   _NULL_OFFSET + 00044h
 _cachedtex =                 	   _NULL_OFFSET + 0004Ch
 _cachedcollength =                 _NULL_OFFSET + 00050h
 
- 
 _lastopening =                   	_NULL_OFFSET + 00052h
-_planezlight = 						_NULL_OFFSET + 00054h
-_caststate =                        _NULL_OFFSET + 00058h
-_dc_x = 							_NULL_OFFSET + 0005Ah
-_basexscale = 						_NULL_OFFSET + 0005Ch
-_baseyscale = 						_NULL_OFFSET + 00060h
-_viewx = 							_NULL_OFFSET + 00064h
-_viewy = 							_NULL_OFFSET + 00068h
-_viewz = 							_NULL_OFFSET + 0006Ch
-_centerx = 							_NULL_OFFSET + 00070h
-_centery = 							_NULL_OFFSET + 00072h
+_segloopprevlookup =                _NULL_OFFSET + 00054h
+_segloopcachedbasecol =             _NULL_OFFSET + 00058h
+_cachedsegmenttex =                 _NULL_OFFSET + 0005Ch
+	
+_basexscale = 						_NULL_OFFSET + 00060h
+_baseyscale = 						_NULL_OFFSET + 00064h
+_viewx = 							_NULL_OFFSET + 00068h
+_viewy = 							_NULL_OFFSET + 0006Ch
+_viewz = 							_NULL_OFFSET + 00070h
 _centeryfrac_shiftright4 = 			_NULL_OFFSET + 00074h
 _viewangle =                		_NULL_OFFSET + 00078h
 _viewz_shortheight = 				_NULL_OFFSET + 0007Ch
@@ -173,7 +171,8 @@ _TaskServiceCount =	                _NULL_OFFSET + 00102h
 _viewangle_shiftright3 = 			_NULL_OFFSET + 00104h
 _dc_source_segment =	 			_NULL_OFFSET + 0010Ah
 _ds_y = 				    		_NULL_OFFSET + 0010Ch
-;_stored_ds = 				    	_NULL_OFFSET + 00110h
+_dc_x = 							_NULL_OFFSET + 00110h
+
 
 
 _cachedheight_segment_storage =    	_NULL_OFFSET + 00112h
@@ -480,8 +479,8 @@ _screen_botleft_y =				     _NULL_OFFSET + 00506h
 _screen_topright_x =				 _NULL_OFFSET + 00508h
 _screen_topright_y =			     _NULL_OFFSET + 0050Ah
 
-;_Z_SetOverlay_addr =                 _NULL_OFFSET + 0050Ch
-;_W_LumpLength_addr =                 _NULL_OFFSET + 00510h
+_planezlight = 						_NULL_OFFSET + 00050Ch
+_caststate =                        _NULL_OFFSET + 000510h
 
 _playingdriver =                     _NULL_OFFSET + 00514h
 _currentsong_start_offset =          _NULL_OFFSET + 00518h
@@ -542,9 +541,11 @@ _leveltime =     		   			 _NULL_OFFSET + 005ECh
 _dodelayedcheatthisframe =			 _NULL_OFFSET + 005F2h
 _currenttask =            		     _NULL_OFFSET + 005F3h
 
-; 5f4 unused
-;_OutOfThinkers_addr =                _NULL_OFFSET + 005F8h
-;_FastDiv32u16u_addr =                _NULL_OFFSET + 005FCh
+_centerx = 							 _NULL_OFFSET + 005F4h
+_centery = 							 _NULL_OFFSET + 005F6h
+
+;_OutOfThinkers_addr =               _NULL_OFFSET + 005F8h
+;_FastDiv32u16u_addr =               _NULL_OFFSET + 005FCh
 
 
 _playerMobj_pos =		         	 _NULL_OFFSET + 00600h
@@ -711,7 +712,7 @@ _errno =      						 _NULL_OFFSET + 00ADAh
 
 
 
-; NFILES * SIZE DOSFILE_INFO_T bytes = 2 * 10 = 20 = 018h
+; NFILES * SIZE DOSFILE_INFO_T bytes = 3 * 8 = 24 = 018h
 ___iob = 							 _NULL_OFFSET + 00ADCh
 
 ; max args = 20 including program name i guess. should be enough? maybe too much.
