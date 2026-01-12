@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/12 12:47:35
+Created on:       26/01/12 13:07:10
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -84,9 +84,9 @@ W_INIT_TEXT            CODE           AUTO           2d4c:1bcc       0000016e
 I_INIT_TEXT            CODE           AUTO           2d4c:1d3a       0000019b
 Z_INIT_TEXT            CODE           AUTO           2d4c:1ed6       00000790
 S_SBINIT_TEXT          CODE           AUTO           2d4c:2666       000002e5
-P_INIT_TEXT            CODE           AUTO           2d4c:294c       00000274
-I_QUIT_TEXT            CODE           AUTO           2d4c:2bc0       000001a9
-I_IBM_TEXT             CODE           AUTO           2d4c:2d6a       00000051
+P_INIT_TEXT            CODE           AUTO           2d4c:294c       00000275
+I_QUIT_TEXT            CODE           AUTO           2d4c:2bc2       000001a9
+I_IBM_TEXT             CODE           AUTO           2d4c:2d6c       00000051
 bingen_TEXT            CODE           AUTO           2d4c:2dc0       00001449
 D_NET_TEXT             CODE           AUTO           2d4c:420a       000000b2
 G_GAME_TEXT            CODE           AUTO           2d4c:42bc       00000381
@@ -507,8 +507,8 @@ Module: p_pspr.obj(p_pspr.ASM)
 225c:3953*     A_CheckReload_
 225c:3e82*     A_FireShotgun_
 225c:3d98*     P_BulletSlope_
-225c:3f82*     A_LoadShotgun2_
 225c:3eb3*     A_FireShotgun2_
+225c:3f82*     A_LoadShotgun2_
 225c:3910*     P_PSPR_STARTMARKER_
 225c:3f2a*     A_FireCGun_
 225c:3a6c      P_DropWeapon_
@@ -737,8 +737,8 @@ Module: p_math.obj(p_math.ASM)
 225c:97e3      FixedMulTrigNoShift_MapLocal_
 225c:9b00*     div48_32_whole_MapLocal_
 225c:97df      FixedMulTrig_MapLocal_
-225c:9cf5*     R_PointToAngle_MapLocal_
 225c:9860      FixedMul16u32_MapLocal_
+225c:9cf5*     R_PointToAngle_MapLocal_
 225c:9c2e      FixedMul2424_
 225c:9f95      R_PointToAngle2_MapLocal_
 225c:9a57      FastDiv3216u_MapLocal_
@@ -857,26 +857,26 @@ Module: s_sbinit.obj(s_sbinit.ASM)
 2d4c:2736*     DMA_SetupTransfer_
 2d4c:27b7*     SB_EnableInterrupt_
 Module: p_init.obj(p_init.ASM)
-2d4c:2bc0*     P_INIT_ENDMARKER_
-2d4c:299e      P_Init_
+2d4c:2bc1*     P_INIT_ENDMARKER_
+2d4c:299d      P_Init_
 2d4c:294c*     P_INIT_STARTMARKER_
 2d4c:294d*     R_InstallSpriteLump_
 Module: i_quit.obj(i_quit.ASM)
-2d4c:2cae*     I_ShutdownWads_
-2d4c:2d69*     I_QUIT_ENDMARKER_
-2d4c:2c03*     I_ShutdownMouse_
-2d4c:2bc0*     I_QUIT_STARTMARKER_
-2d4c:2bc7*     I_ShutdownSound_
-2d4c:2d2e      I_Quit_
-2d4c:2c67*     zeroConventional_
-2d4c:2c0f*     Z_ShutdownEMS_
-2d4c:2d4d      I_Error_
-2d4c:2beb*     I_ShutdownGraphics_
+2d4c:2cb0*     I_ShutdownWads_
+2d4c:2d6b*     I_QUIT_ENDMARKER_
+2d4c:2c05*     I_ShutdownMouse_
+2d4c:2bc2*     I_QUIT_STARTMARKER_
+2d4c:2bc9*     I_ShutdownSound_
+2d4c:2d30      I_Quit_
+2d4c:2c69*     zeroConventional_
+2d4c:2c11*     Z_ShutdownEMS_
+2d4c:2d4f      I_Error_
+2d4c:2bed*     I_ShutdownGraphics_
 Module: i_ibm.obj(i_ibm.ASM)
-2d4c:2d6a*     I_IBM_STARTMARKER_
-2d4c:2d6a      I_WaitVBL_
-2d4c:2dbb*     I_IBM_ENDMARKER_
-2d4c:2d8a      I_ReadMouse_
+2d4c:2d6c*     I_IBM_STARTMARKER_
+2d4c:2d6c      I_WaitVBL_
+2d4c:2dbd*     I_IBM_ENDMARKER_
+2d4c:2d8c      I_ReadMouse_
 Module: bingen.obj(C:\REALDOOM\build\tools\bingen\bingen.c)
 2d4c:2dc0      main_
 Module: d_net.obj(d_net.ASM)

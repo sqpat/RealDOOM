@@ -56,12 +56,17 @@ NUMANIMDEFS = 23
 NUMSSPRITEDEFS = 29
 
 
+SEGMENT_4000_OFFSET = (04000h - FIXED_DS_SEGMENT) SHL 4
+
+
 SIZE_SPRITE_NAMES = 5 * NUMSPRITES
 SIZE_LOCALNAME =    (5 * NUMSPRITES) + 8
 ; plus 1 because odd..
 
 ; this is the largest of the three stack frames so we use it for the trio of P_InitSwitchList_, P_InitPicAnims_, R_InitSprites_
 SIZE_SPR_TEMP = (NUMSSPRITEDEFS * (SIZE SPRITEFRAME_T)) + (5 * NUMSPRITES) + 8 + 1
+
+TEMP_DATA_START   = SEGMENT_4000_OFFSET + SIZE_SPR_TEMP
 
 
 _p_init_maxframe:
@@ -91,7 +96,7 @@ sub   ax, 01000h  ; ax never used, only lump - firstspritelump
 xchg  ax, cx
 mov   al, SIZE SPRITEFRAME_T
 mul   dl  ; ax = [frame] offset
-lea   di, [bp - SIZE_SPR_TEMP]  ; base of stack array
+mov   di, SEGMENT_4000_OFFSET
 add   di, ax   ; es:di pts to p_init_sprtemp[frame]
 
 xchg  ax, cx   ; get ax = lump - firstspritelump back
@@ -156,9 +161,7 @@ PUBLIC  P_Init_
 
 PUSHA_NO_AX_OR_BP_MACRO
 push   bp
-mov    bp, sp
-;sub    sp, (NUMSWITCHDEFS * (SIZE SWITCHLIST_T))
-sub    sp, SIZE_SPR_TEMP   ; largest of the three stack frames. lets only make one.
+mov    bp, TEMP_DATA_START
 
 
 call   Z_QuickMapRender_  
@@ -188,7 +191,7 @@ mov   cx, SWITCH_DOOMDATA_OFFSET SHR 16
 call  locallib_fseek_  ;    fseek(fp, SWITCH_DOOMDATA_OFFSET, SEEK_SET);
 
 ;fread(alphSwitchList, sizeof(switchlist_t), NUMSWITCHDEFS, fp);
-mov   ax, sp
+mov   ax, SEGMENT_4000_OFFSET
 mov   cx, di ; fp
 mov   bx, (SIZE SWITCHLIST_T) * NUMSWITCHDEFS
 call  locallib_fread_nearsegment_
@@ -233,7 +236,7 @@ got_ep:
 ;	}
 
 mov   di, OFFSET _switchlist
-mov   si, sp
+mov   si, SEGMENT_4000_OFFSET
 
 mov   dx, ss
 
@@ -287,7 +290,7 @@ mov   di, ax ; di stores fp
 ; no fseek? at the start of the file i guess
 
 ;fread(animdefs, sizeof(animdef_t), NUMANIMDEFS, fp);
-mov   ax, sp
+mov   ax, SEGMENT_4000_OFFSET
 mov   cx, di ; fp
 mov   bx, (SIZE ANIMDEF_T) * NUMANIMDEFS
 call  locallib_fread_nearsegment_
@@ -296,7 +299,7 @@ xchg  ax, di
 call  locallib_fclose_
 
 mov   di, OFFSET _anims
-mov   si, sp
+mov   si, SEGMENT_4000_OFFSET
 mov   cx, NUMANIMDEFS
 
 
@@ -369,22 +372,9 @@ loop  loop_next_animdef
 
 mov   word ptr ds:[_lastanim], di
 
-;LEAVE_MACRO
-;POPA_NO_AX_OR_BP_MACRO
-;ret
-;ENDP
-
 
 ; fall thru
 
-
-;PROC    R_InitSprites_ NEAR
-;PUBLIC  R_InitSprites_
-;PUSHA_NO_AX_OR_BP_MACRO
-;push   bp
-;mov    bp, sp
-; 690 + 725 + 8 + 1 = 1424
-;sub    sp, SIZE_SPR_TEMP
 
 ;FAR_memset(negonearray, -1, SCREENWIDTH);
 mov   ax, NEGONEARRAY_SEGMENT + (OFFSET_NEGONEARRAY SHR 4)
@@ -440,7 +430,7 @@ loop_next_sprite:
 ; ss:sp is p_init_sprtemp here. set to es:di for rep stosw
 mov   di, ss
 mov   es, di
-mov   di, sp
+mov   di, SEGMENT_4000_OFFSET
 
 ;		FAR_memset(p_init_sprtemp, -1, sizeof(p_init_sprtemp));
 mov   ax, -1
@@ -646,7 +636,7 @@ exit_initspritedefs:
 
 call   Z_QuickMapPhysics_  
 
-LEAVE_MACRO
+pop    bp
 POPA_NO_AX_OR_BP_MACRO
 ret
 
