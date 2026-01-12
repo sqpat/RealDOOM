@@ -84,7 +84,7 @@
 #define PSightCodeSize                 0xAF07
 #define WipeCodeSize                   0x5FC
 #define FinaleCodeSize                 0xBBD
-#define SaveLoadCodeSize               0xBC3
+#define SaveLoadCodeSize               0xBB7
 #define SMLoadCodeSize                 0x492
 #define SInitCodeSize                  0x562
 #define PSetupCodeSize                 0xA8E

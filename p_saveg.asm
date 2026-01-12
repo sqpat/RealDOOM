@@ -523,7 +523,8 @@ movsw   ; z
 movsw                   ; si + 18h    di + 0Ch now 
 
 add       si, 8         ; si + 20h skip snext sprev
-add       di, 2         ; di + 0Eh
+inc       di
+inc       di            ; di + 0Eh
 
 movsw   ; angle         ; si + 22h    di + 010h
 movsw                   ; si + 24h    di + 012h
@@ -583,7 +584,8 @@ stosb               ; 062h -> 1Ch  tics
 add       si, 0Ah
 movsw               ; 06Eh -> 1Eh  health
 
-add       si, 2     ; si + 070h
+inc       si   
+inc       si        ; si + 070h
 inc       di        ; di + 01Fh
 
 movsb               ; 71h -> 20h   movedir
@@ -592,7 +594,8 @@ add       si, 3
 movsw               ; 76h -> 22h   movecount
 
 add       si, 6     ; si + 07Ch
-add       di, 2     ; di + 024h
+inc       di
+inc       di        ; di + 024h
 
 movsb               ; 7Dh -> 25h   reactiontime
 
@@ -1333,7 +1336,8 @@ cmp       ax, 0FFFFh
 je        skip_statenum_write           ; no need to write zeros. we already memset.
 ;mov       word ptr es:[di + 0f6h], 0
 stosw
-add       di, 2
+inc       di
+inc       di
 done_with_statenum_write:
 
 call      SaveInt16_   
@@ -1611,7 +1615,8 @@ movsw   ; z
 movsw                   ; di + 18h    si + 0Ch now 
 
 add       di, 8         ; di + 20h    skip snext sprev
-add       si, 2         ; si + 0Eh    skip snextRef
+inc       si
+inc       si            ; si + 0Eh    skip snextRef
 
 movsw   ; angle         ; di + 22h    si + 010h
 movsw                   ; di + 24h    si + 012h
@@ -1709,7 +1714,8 @@ call      SaveInt16_  ; di 078h <- si 022h   movecount
 
 
 add       di, 4     ; di + 07Ch
-add       si, 2     ; si + 024h
+inc       si   
+inc       si        ; si + 024h
 
 movsb               ; di 07Dh <- si 025h   reactiontime
 
@@ -1760,11 +1766,7 @@ PROC SaveInt8_ NEAR
 
 lodsb
 cbw        ; sign extend 16
-cwd        ; sign extend 32
-stosw
-xchg      ax, dx
-stosw     
-ret
+jmp  rest_of_save_int16
 ENDP
 
 PROC SaveUInt8_ NEAR
@@ -1779,6 +1781,7 @@ ENDP
 PROC SaveInt16_ NEAR
 
 lodsw
+rest_of_save_int16:
 cwd       ; sign extend 32
 stosw
 xchg      ax, dx
@@ -1909,7 +1912,7 @@ SHIFT_MACRO rol ax 5
 
 ; put func bits (most sig 5) into least sig bits
 
-cmp       ax, 10  ; funcbits too large or delete_me case
+cmp       ax, TF_DELETEME  ; funcbits too large or delete_me case
 jge       iterate_to_next_special
 ; we do some checks above to guarantee we know this is a valid thinker to serialize so now we can run common code here.
 
@@ -1981,13 +1984,14 @@ je        end_ceiling_search
 
 check_next_ceiling:
 inc       ax
-add       bx, 2
-cmp       ax, MAXCEILINGS
+inc       bx
+inc       bx
+cmp       al, MAXCEILINGS
 jge       iterate_to_next_special
 cmp       cx, word ptr ds:[bx]
 jne       check_next_ceiling
 end_ceiling_search:
-mov       ax, 2                 ; tc_ceil flag
+mov       al, 2                 ; tc_ceil flag
 jmp       force_ceiling
 
 
