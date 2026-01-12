@@ -334,9 +334,7 @@ mov   byte ptr ds:[_currenttask], TASK_STATUS
 
 ; todo abtch call these
 ;call      ST_Start_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _ST_Start_addr
+call  dword ptr ds:[_ST_Start_addr]
 
 ; st start calls hustart when its done.
 

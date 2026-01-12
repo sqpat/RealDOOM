@@ -1173,9 +1173,7 @@ les   ax, dword ptr ds:[si + 4]
 mov   dx, es
 ;call  [_R_DrawSkyPlaneCallHigh]
 SELFMODIFY_SPAN_draw_skyplane_call:
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _R_DrawSkyPlane_addr
+call  dword ptr ds:[_R_DrawSkyPlane_addr]
 inc   byte ptr cs:[SELFMODIFY_SPAN_drawplaneiter+1 - OFFSET R_SPAN24_STARTMARKER_]
 add   word ptr [bp - 8], VISPLANE_BYTE_SIZE
 jmp   SHORT drawplanes_loop
@@ -1538,9 +1536,7 @@ mov   bl, byte ptr [bp - 3]     ; usedflatindex AND 3
 add   bx, bx
 mov   bx, word ptr ds:[bx + _MULT_4096]
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_CacheLumpNumDirect_addr
+call  dword ptr ds:[_W_CacheLumpNumDirect_addr]
 
 ;call  W_CacheLumpNumDirect_
 pop   cx

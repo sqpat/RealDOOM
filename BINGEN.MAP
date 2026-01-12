@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/12 13:07:10
+Created on:       26/01/12 13:52:29
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -96,7 +96,7 @@ ST_STUFF_TEXT          CODE           AUTO           2d4c:492a       0000094f
 D_DMX_TEXT             CODE           AUTO           2d4c:527a       0000012e
 D_INT_TEXT             CODE           AUTO           2d4c:53a8       00000142
 MATH_TEXT              CODE           AUTO           2d4c:54ea       00000093
-MAIN_TEXT              CODE           AUTO           2d4c:557e       0000149c
+MAIN_TEXT              CODE           AUTO           2d4c:557e       0000149b
 G_SETUP_TEXT           CODE           AUTO           2d4c:6a1a       0000021e
 R_SETUP_TEXT           CODE           AUTO           2d4c:6c38       0000032f
 ST_SETUP_TEXT          CODE           AUTO           2d4c:6f68       00000122
@@ -507,8 +507,8 @@ Module: p_pspr.obj(p_pspr.ASM)
 225c:3953*     A_CheckReload_
 225c:3e82*     A_FireShotgun_
 225c:3d98*     P_BulletSlope_
-225c:3eb3*     A_FireShotgun2_
 225c:3f82*     A_LoadShotgun2_
+225c:3eb3*     A_FireShotgun2_
 225c:3910*     P_PSPR_STARTMARKER_
 225c:3f2a*     A_FireCGun_
 225c:3a6c      P_DropWeapon_
@@ -972,63 +972,63 @@ Module: math.obj(math.ASM)
 2d4c:553d      FastDiv3216u_
 2d4c:54ea      FixedMul_
 Module: main.obj(main.ASM)
-2d4c:64c2      DEBUG_PRINT_NOARG_
+2d4c:64c1      DEBUG_PRINT_NOARG_
 2d4c:607e*     G_Responder_
-2d4c:6340      locallib_strcpy_
-2d4c:64ae*     locallib_printstringfar_
-2d4c:6371      locallib_toupper_
-2d4c:67d3      DEBUG_PRINT_
+2d4c:633f      locallib_strcpy_
+2d4c:64ad*     locallib_printstringfar_
+2d4c:6370      locallib_toupper_
+2d4c:67d2      DEBUG_PRINT_
 2d4c:5d6a      _str_config
 2d4c:58ac      G_CopyCmd_
 2d4c:5d87      _used_defaultfile
-2d4c:62fa      combine_strings_
+2d4c:62f9      combine_strings_
 2d4c:566b      _oldkeyboardisr
 2d4c:5667      _sidemove
-2d4c:62e8      M_Ticker_
-2d4c:6260*     I_UpdateNoBlit_
+2d4c:62e7      M_Ticker_
+2d4c:625f*     I_UpdateNoBlit_
 2d4c:5663      _forwardmove
-2d4c:6a1a*     D_MAIN_ENDMARKER_
-2d4c:658b      I_ShutdownTimer_
+2d4c:6a19*     D_MAIN_ENDMARKER_
+2d4c:658a      I_ShutdownTimer_
 2d4c:59d0      _scantokey
 2d4c:614b      I_SetPalette_
-2d4c:619e*     I_UpdateBox_
-2d4c:657e      locallib_dos_setvect_old_
-2d4c:64b0*     locallib_printstringnear_
-2d4c:66bd      _SELFMODIFY_R_RENDERPLAYERVIEW_CALL
-2d4c:6991*     D_DoomLoop_
+2d4c:619d*     I_UpdateBox_
+2d4c:657d      locallib_dos_setvect_old_
+2d4c:64af*     locallib_printstringnear_
+2d4c:66bc      _SELFMODIFY_R_RENDERPLAYERVIEW_CALL
+2d4c:6990*     D_DoomLoop_
 2d4c:5f05      _defaults
 2d4c:5655*     D_MAIN_STARTMARKER_
-2d4c:63d0*     locallib_printhex_
-2d4c:6366*     locallib_tolower_
-2d4c:6603*     D_Display_
+2d4c:63cf*     locallib_printhex_
+2d4c:6365*     locallib_tolower_
+2d4c:6602*     D_Display_
 2d4c:5724      I_KeyboardISR_
-2d4c:684e      D_ProcessEvents_
+2d4c:684d      D_ProcessEvents_
 2d4c:5d3e      CopyString13_
-2d4c:6354*     locallib_strlen_
+2d4c:6353*     locallib_strlen_
 2d4c:5a50      G_BuildTiccmd_
 2d4c:582c      _localcmds
 2d4c:5670      cht_CheckCheat_Far_
-2d4c:65b3      I_ShutdownKeyboard_
+2d4c:65b2      I_ShutdownKeyboard_
 2d4c:5674      cht_CheckCheat_
-2d4c:69e8      Z_ClearDeadCode_
-2d4c:63af      putchar_stdout_
-2d4c:64c0      DEBUG_PRINT_NOARG_CS_
-2d4c:6575      locallib_dos_setvect_
-2d4c:631e      locallib_strcmp_
-2d4c:656b      locallib_dos_getvect_
-2d4c:6437*     locallib_printdecimal_
+2d4c:69e7      Z_ClearDeadCode_
+2d4c:63ae      putchar_stdout_
+2d4c:64bf      DEBUG_PRINT_NOARG_CS_
+2d4c:6574      locallib_dos_setvect_
+2d4c:631d      locallib_strcmp_
+2d4c:656a      locallib_dos_getvect_
+2d4c:6436*     locallib_printdecimal_
 2d4c:58ca      _gamekeydown
-2d4c:637c      copystr8_
+2d4c:637b      copystr8_
 2d4c:5fde      M_SaveDefaults_
-2d4c:695d      getStringByIndex_
+2d4c:695c      getStringByIndex_
 2d4c:56d5      cht_GetParam_
 2d4c:5661      _mousex
-2d4c:6246*     I_FinishUpdate_
-2d4c:6395*     locallib_createhexnibble_
-2d4c:67e8      S_PauseSound_
-2d4c:64c2      locallib_printf_
+2d4c:6245*     I_FinishUpdate_
+2d4c:6394*     locallib_createhexnibble_
+2d4c:67e7      S_PauseSound_
+2d4c:64c1      locallib_printf_
 2d4c:574e      I_StartTic_
-2d4c:6811      S_ResumeSound_
+2d4c:6810      S_ResumeSound_
 Module: g_setup.obj(g_setup.ASM)
 2d4c:6a3d      R_CheckTextureNumForName_
 2d4c:6c38*     G_SETUP_ENDMARKER_

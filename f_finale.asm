@@ -96,9 +96,7 @@ push  ss
 pop   ds    ; restore ds for this func call
 mov   bx, di
 add   si, ax
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_MarkRect_addr
+call  dword ptr ds:[_V_MarkRect_addr]
 
 pop   ds    ; restore ds 0x5000
 mov   cx, si
@@ -268,9 +266,7 @@ push  ax           ; v_ drawpatch arg
 xor   bx, bx
 mov   ax, cx
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawPatch_addr
+call  dword ptr ds:[_V_DrawPatch_addr]
 
 
 add   cx, di
@@ -488,9 +484,7 @@ mov   ax, OFFSET str_bossback
 mov   dx, cs
 xor   bx, bx
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawFullscreenPatch_addr
+call  dword ptr ds:[_V_DrawFullscreenPatch_addr]
 
 
 
@@ -506,9 +500,7 @@ cbw
 lea   bx, [bp - 068h] ; text param (100 length)
 add   ax, CASTORDEROFFSET
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _getStringByIndex_addr
+call  dword ptr ds:[_getStringByIndex_addr]
 
 ;call _Z_QuickMapStatusNoScreen4_
 ; inlined
@@ -550,9 +542,7 @@ xor   bx, bx
 add   ax, cx
 mov   cx, SCRATCH_SEGMENT_5000
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_CacheLumpNumDirect_addr   ; get graphic in memory
+call  dword ptr ds:[_W_CacheLumpNumDirect_addr]   ; get graphic in memory
 
 test  dl, dl
 je    not_flipped
@@ -569,9 +559,7 @@ mov   dx, 170                ; y param
 mov   ax, SCREENWIDTHOVER2
 xor   bx, bx
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawPatch_addr
+call  dword ptr ds:[_V_DrawPatch_addr]
 exit_castdrawer:
 LEAVE_MACRO 
 pop   si
@@ -617,9 +605,7 @@ xor       di, di                    ; dest offset 0
 
 xor       dx, dx
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_CacheLumpNameDirect_addr
+call  dword ptr ds:[_W_CacheLumpNameDirect_addr]
 
 
 ;    for (y=0 ; y<SCREENHEIGHT ; y++) {
@@ -682,17 +668,13 @@ mov       bx, SCREENWIDTH
 xor       ax, ax
 cwd
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_MarkRect_addr
+call  dword ptr ds:[_V_MarkRect_addr]
 lea       bx, [bp - 029Eh]
 mov       ax, word ptr ds:[_finaletext]
 mov       cx, ds
 mov       si, 10
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _getStringByIndex_addr
+call  dword ptr ds:[_getStringByIndex_addr]
 mov       ax, word ptr ds:[_finalecount]
 sub       ax, si
 mov       bx, 3
@@ -758,9 +740,7 @@ push      ax
 mov       dx, di
 xor       bx, bx
 mov       ax, si
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawPatch_addr
+call  dword ptr ds:[_V_DrawPatch_addr]
 mov       si, word ptr [bp - 0Ah]
 dec       cx
 jmp       loop_count
@@ -867,9 +847,7 @@ mov   cx, SCREENHEIGHT
 xor   ax, ax
 cwd
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_MarkRect_addr
+call  dword ptr ds:[_V_MarkRect_addr]
 ;    scrolled = 320 - (finalecount-230)/2;
 mov   ax, word ptr ds:[_finalecount]
 sub   ax, 230            
@@ -906,14 +884,10 @@ push  bx
 mov   cx, SCRATCH_SEGMENT_5000
 mov   dx, bx
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_GetNumForName_addr
+call  dword ptr ds:[_W_GetNumForName_addr]
 
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_CacheLumpNumDirectFragment_addr
+call  dword ptr ds:[_W_CacheLumpNumDirectFragment_addr]
 
 xor   bx, bx
 push  bx
@@ -927,13 +901,9 @@ mov   bx, di
 xor   cx, cx
 push  cx
 mov   cx, si
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_GetNumForName_addr
+call  dword ptr ds:[_W_GetNumForName_addr]
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_CacheLumpNumDirectFragment_addr
+call  dword ptr ds:[_W_CacheLumpNumDirectFragment_addr]
 
 draw_next_bunny_column:
 mov   ax, word ptr [bp - 0Ch]   ; get scrolled
@@ -979,13 +949,9 @@ mov   bx, di
 mov   cx, word ptr [bp - 4]
 push  cx
 mov   cx, si
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_GetNumForName_addr
+call  dword ptr ds:[_W_GetNumForName_addr]
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_CacheLumpNumDirectFragment_addr
+call  dword ptr ds:[_W_CacheLumpNumDirectFragment_addr]
 xor   ax, ax
 go_draw_patchcol:
 mov   bx, di
@@ -1033,9 +999,7 @@ add   byte ptr ds:[_filename_argument+3], cl ; add to the '0'
 mov   bx, word ptr [bp - 8]
 mov   cx, word ptr [bp - 0Eh]
 mov   dx, (SCREENHEIGHT-8*8)/2
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_CacheLumpNameDirect_addr
+call  dword ptr ds:[_W_CacheLumpNameDirect_addr]
 mov   ax, word ptr [bp - 0Eh]
 push  ax
 mov   ax, word ptr [bp - 8]
@@ -1043,9 +1007,7 @@ push  ax
 
 mov   ax, (SCREENWIDTH-13*8)/2
 xor   bx, bx
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawPatch_addr
+call  dword ptr ds:[_V_DrawPatch_addr]
 exit_bunnyscroll:
 LEAVE_MACRO
 pop   di
@@ -1063,9 +1025,7 @@ mov   bx, word ptr [bp - 8]
 
 
 mov   dx, (SCREENHEIGHT-8*8)/2
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_CacheLumpNameDirect_addr
+call  dword ptr ds:[_W_CacheLumpNameDirect_addr]
 mov   ax, word ptr [bp - 0Eh]
 push  ax
 mov   ax, word ptr [bp - 8]
@@ -1073,9 +1033,7 @@ push  ax
 
 mov   ax, (SCREENWIDTH-13*8)/2
 xor   bx, bx
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawPatch_addr
+call  dword ptr ds:[_V_DrawPatch_addr]
 mov   byte ptr ds:[_finale_laststage], 0
 LEAVE_MACRO
 pop   di
@@ -1105,13 +1063,9 @@ call  F_CopyString9_
 xor   bx, bx
 
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_GetNumForName_addr
+call  dword ptr ds:[_W_GetNumForName_addr]
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_CacheLumpNumDirectFragment_addr
+call  dword ptr ds:[_W_CacheLumpNumDirectFragment_addr]
 xor   ax, ax
 push  ax
 
@@ -1123,13 +1077,9 @@ mov   bx, di
 xor   cx, cx
 push  cx
 mov   cx, si
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_GetNumForName_addr
+call  dword ptr ds:[_W_GetNumForName_addr]
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_CacheLumpNumDirectFragment_addr
+call  dword ptr ds:[_W_CacheLumpNumDirectFragment_addr]
 currently_pic2:
 mov   ax, word ptr [bp - 0Ch] ; get scrolled
 add   ax, dx
@@ -1663,9 +1613,7 @@ do_noncommerical:
 lea   bx, [bp - 029Ah]
 mov   ax, word ptr ds:[_finaletext]
 mov   cx, ds
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _getStringByIndex_addr
+call  dword ptr ds:[_getStringByIndex_addr]
 cmp   byte ptr ds:[_finalestage], FINALE_STAGE_TEXT
 jne   exit_fticker
 lea   ax, [bp - 029Ah]
@@ -1757,9 +1705,7 @@ mov   ax, OFFSET str_help2
 do_finaledraw:
 mov   dx, cs
 xor   bx, bx
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawFullscreenPatch_addr
+call  dword ptr ds:[_V_DrawFullscreenPatch_addr]
 exit_fdrawer:
 pop   dx
 pop   bx

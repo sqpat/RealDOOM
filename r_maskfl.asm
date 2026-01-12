@@ -3393,9 +3393,7 @@ xor       bx, bx
 ;	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
 
 ;call      W_CacheLumpNumDirect_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_CacheLumpNumDirect_addr
+call  dword ptr ds:[_W_CacheLumpNumDirect_addr]
 
 ; wadpatch  is 0x5000 seg
 ; destpatch is dx
@@ -5190,9 +5188,7 @@ push      word ptr ds:[_maskednextlookup]
 ; dx is lookup
 ; ax is lump
 ;call      R_GetPatchTexture_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _R_GetPatchTexture_addr
+call  dword ptr ds:[_R_GetPatchTexture_addr]
 
 ; todo use di with offsets to all these? same size.
 ;		cachedsegmentlumps[0] = R_GetPatchTexture(lump, lookup);  // might zero out cachedlump vars;
@@ -5286,9 +5282,7 @@ mov       word ptr ds:[bx], ax ;    cachedtex[0] = tex;
 
 ;    cachedsegmenttex[0] = R_GetCompositeTexture(cachedtex[0]);
 ;call      R_GetCompositeTexture_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _R_GetCompositeTexture_addr
+call  dword ptr ds:[_R_GetCompositeTexture_addr]
 
 ;    // restore these if composite texture is unloaded...
 

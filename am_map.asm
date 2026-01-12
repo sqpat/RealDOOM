@@ -1158,9 +1158,7 @@ jne       not_mark_key
 mov       bx, OFFSET _player_message_string
 mov       ax, AMSTR_MARKEDSPOT
 mov       cx, ds
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _getStringByIndex_addr
+call  dword ptr ds:[_getStringByIndex_addr]
 
 
 mov       ax, 030h ; null terminated '0'
@@ -2199,9 +2197,7 @@ mov       es, bp
 push      es
 push      word ptr es:[di]  ;  + AMMNUMPATCHOFFSETS_FAR_OFFSET
 xor       bx, bx ; FB = 0
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawPatch_addr
+call      dword ptr ds:[_V_DrawPatch_addr]
 skip_draw_mark:
 inc       di
 inc       di
@@ -2214,9 +2210,7 @@ mov       cx, AUTOMAP_SCREENHEIGHT
 mov       bx, AUTOMAP_SCREENWIDTH
 xor       ax, ax
 cwd
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_MarkRect_addr
+call      dword ptr ds:[_V_MarkRect_addr]
 
 POPA_NO_AX_MACRO
 retf      

@@ -86,9 +86,7 @@ PUBLIC LoadSFXWadLumps_
 
     mov  si, ax  ; backup lump num
     
-    db 0FFh  ; lcall[addr]
-    db 01Eh  ;
-    dw _W_LumpLength_addr
+    call  dword ptr ds:[_W_LumpLength_addr]
 
     ; ax is lumpsize
 
@@ -97,9 +95,7 @@ PUBLIC LoadSFXWadLumps_
     push cx ; store this
     push bx ; store current pointer
     xor  bx, bx ; load into offset 0
-    db 0FFh  ; lcall[addr]
-    db 01Eh  ;
-    dw _W_CacheLumpNumDirect_addr
+    call  dword ptr ds:[_W_CacheLumpNumDirect_addr]
     pop  bx
     pop  ds   ; ds gets PC_SPEAKER_SFX_DATA_TEMP_SEGMENT
     
@@ -196,9 +192,7 @@ PUBLIC LoadSFXWadLumps_
     push es
 
     
-    db 0FFh  ; lcall[addr]
-    db 01Eh  ;
-    dw _W_LumpLength_addr
+    call  dword ptr ds:[_W_LumpLength_addr]
 
     ; ax is lumpsize
 
@@ -212,9 +206,7 @@ PUBLIC LoadSFXWadLumps_
     mov  cx, SCRATCH_SEGMENT_5000   ; load the data into a temp spot...
     push cx ; store this
     xor  bx, bx ; load into offset 0
-    db 0FFh  ; lcall[addr]
-    db 01Eh  ;
-    dw _W_CacheLumpNumDirect_addr   ; todo only load 4 bytes?
+    call  dword ptr ds:[_W_CacheLumpNumDirect_addr]
 
     pop  ds   ; ds gets 0x5000
     pop  es   ; SFX_DATA_SEGMENT
@@ -480,9 +472,7 @@ PUBLIC I_GetSfxLumpNum_
 
     mov ax, _filename_argument
 
-    db 0FFh  ; lcall[addr]
-    db 01Eh  ;
-    dw _W_CheckNumForNameFar_addr
+    call  dword ptr ds:[_W_CheckNumForNameFar_addr]
 
 
     ; call W_CheckNumForName

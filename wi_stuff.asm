@@ -304,9 +304,7 @@ xchg      ax, cx ; ax gets 0, cx gets screenheight
 cwd
 mov       bx, SCREENWIDTH
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_MarkRect_addr
+call  dword ptr ds:[_V_MarkRect_addr]
 
 POPA_NO_AX_OR_BP_MACRO
 ret       
@@ -345,10 +343,7 @@ xor       bx, bx			; set to FB
 mov       si, word ptr es:[si + 2]			; grab height of lname
 
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawPatch_addr
-
+call  dword ptr ds:[_V_DrawPatch_addr]
 
 mov       ax, WIOFFSETS_SEGMENT
 mov       es, ax
@@ -379,10 +374,7 @@ sar       ax, 1
 ; screen
 xor       bx, bx			; set to FB
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawPatch_addr
-
+call  dword ptr ds:[_V_DrawPatch_addr]
 LEAVE_MACRO     
 POPA_NO_AX_OR_BP_MACRO
 ret      
@@ -409,10 +401,7 @@ mov       dx, 2
 sar       ax, 1
 xor       bx, bx
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawPatch_addr
-
+call  dword ptr ds:[_V_DrawPatch_addr]
 mov       ax, WIGRAPHICSLEVELNAME_SEGMENT
 mov       bx, MAX_LEVEL_COMPLETE_GRAPHIC_SIZE
 mov       es, ax
@@ -429,10 +418,7 @@ add       dx, 2
 sar       ax, 1
 xor       bx, bx
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawPatch_addr
-
+call  dword ptr ds:[_V_DrawPatch_addr]
 pop       dx
 pop       bx
 ret       
@@ -516,10 +502,7 @@ push  es
 push  bx
 xor   bx, bx
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawPatch_addr
-
+call  dword ptr ds:[_V_DrawPatch_addr]
 jmp   exit_wi_drawonlnode
 
 failed_inc_i:
@@ -705,10 +688,7 @@ mov   dl, dh
 xor   dh, dh
 xor   bx, bx                ; fb argument
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawPatch_addr
-
+call  dword ptr ds:[_V_DrawPatch_addr]
 
 
 finish_draw_anim_loop_iter:
@@ -873,10 +853,7 @@ mov   dx, word ptr [bp - 2]     ; set y
 push  ax
 mov   ax, di                    ; set x
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawPatch_addr
-
+call  dword ptr ds:[_V_DrawPatch_addr]
 jmp   loop_digits
 digits_negative:
 
@@ -918,9 +895,7 @@ push  dx
 mov   dx, word ptr [bp - 2]
 push  ax
 mov   ax, di
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawPatch_addr
+call  dword ptr ds:[_V_DrawPatch_addr]
 return_x_and_exit:
 mov   ax, di
 LEAVE_MACRO 
@@ -951,9 +926,7 @@ xor   bx, bx
 push  ax
 mov   dx, di
 mov   ax, si
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawPatch_addr
+call  dword ptr ds:[_V_DrawPatch_addr]
 mov   bx, cx
 mov   cx, -1
 mov   dx, di
@@ -1015,9 +988,7 @@ les   dx, dword ptr [bp - 8]
 mov   ax, es
 push  word ptr [bp - 4]
 xor   bx, bx
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawPatch_addr
+call  dword ptr ds:[_V_DrawPatch_addr]
 do_next_drawtime_iter:
 mov   ax, di
 cwd   
@@ -1049,9 +1020,7 @@ push  ax
 les   dx, dword ptr [bp - 8]
 mov   ax, es
 sub   ax, word ptr es:[si]
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawPatch_addr
+call  dword ptr ds:[_V_DrawPatch_addr]
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -1451,9 +1420,7 @@ push  dx
 mov   dx, SP_STATSY
 push  ax
 mov   ax, dx
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawPatch_addr
+call  dword ptr ds:[_V_DrawPatch_addr]
 mov   dx, SP_STATSY
 mov   ax, SCREENWIDTH - SP_STATSX
 mov   bx, word ptr cs:[_cnt_kills - OFFSET WI_STARTMARKER_]
@@ -1466,9 +1433,7 @@ xor   bx, bx
 push  ax
 mov   dx, cx
 mov   ax, SP_STATSY
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawPatch_addr
+call  dword ptr ds:[_V_DrawPatch_addr]
 mov   ax, SCREENWIDTH - SP_STATSX
 mov   bx, word ptr cs:[_cnt_items - OFFSET WI_STARTMARKER_]
 mov   dx, cx
@@ -1483,9 +1448,7 @@ push  ax
 add   cx, SP_STATSY
 mov   ax, SP_STATSY
 mov   dx, cx
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawPatch_addr
+call  dword ptr ds:[_V_DrawPatch_addr]
 mov   ax, SCREENWIDTH - SP_STATSX
 mov   bx, word ptr cs:[_cnt_secret - OFFSET WI_STARTMARKER_]
 mov   dx, cx
@@ -1497,9 +1460,7 @@ push  dx
 mov   dx, SP_TIMEY
 push  ax
 mov   ax, 16
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawPatch_addr
+call  dword ptr ds:[_V_DrawPatch_addr]
 mov   dx, SP_TIMEY
 mov   ax, SCREENWIDTH/2 - SP_TIMEX
 mov   bx, word ptr cs:[_cnt_time - OFFSET WI_STARTMARKER_]
@@ -1520,9 +1481,7 @@ push  dx
 mov   dx, SP_TIMEY
 push  ax
 mov   ax, SCREENWIDTH/2 + SP_TIMEX
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawPatch_addr
+call  dword ptr ds:[_V_DrawPatch_addr]
 mov   dx, SP_TIMEY
 mov   ax, SCREENWIDTH - SP_TIMEX
 mov   bx, word ptr cs:[_cnt_par - OFFSET WI_STARTMARKER_]
@@ -1584,9 +1543,7 @@ dont_set_name1:
 mov   bx, 1
 mov   ax, di
 mov   dx, ds
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_DrawFullscreenPatch_addr
+call  dword ptr ds:[_V_DrawFullscreenPatch_addr]
 
 mov   al, byte ptr ds:[_commercial]
 test  al, al
@@ -1691,24 +1648,18 @@ lea   ax, [bp - 022h]
 mov   cx, word ptr [bp - 8]
 
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_GetNumForName_addr
+call  dword ptr ds:[_W_GetNumForName_addr]
 
 mov   si, ax
 
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_LumpLength_addr
+call  dword ptr ds:[_W_LumpLength_addr]
 
 
 mov   dx, ax
 mov   ax, si
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_CacheLumpNumDirect_addr
+call  dword ptr ds:[_W_CacheLumpNumDirect_addr]
 
 add   word ptr [bp - 012h], dx
 mov   ax, WIANIMOFFSETS_SEGMENT
@@ -1826,9 +1777,7 @@ gamemap_finalesetup:
 mov   ax, 2
 
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _Z_SetOverlay_addr
+call  dword ptr ds:[_Z_SetOverlay_addr]
 
 
 
@@ -2100,24 +2049,18 @@ pop   ds ; restore ds
 
 
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_GetNumForName_addr
+call  dword ptr ds:[_W_GetNumForName_addr]
 
 
 mov   di, ax				; ax has lump num, cache in di
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_LumpLength_addr
+call  dword ptr ds:[_W_LumpLength_addr]
 
 xchg  ax, di				; di gets size. ax gets lumpnum
 
 mov   cx, WIGRAPHICSPAGE0_SEGMENT  ; dest segment for W_CacheLumpNameDirect_ for loop
 mov   bx, word ptr [bp - 0Eh]
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_CacheLumpNumDirect_addr
+call  dword ptr ds:[_W_CacheLumpNumDirect_addr]
 
 les   bx, dword ptr [bp - 0Eh]
 mov   dx, es
@@ -2175,9 +2118,7 @@ mov   byte ptr [di + 7], 00h ; null terminator
 
 mov   ax, di
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_CacheLumpNameDirect_addr
+call  dword ptr ds:[_W_CacheLumpNameDirect_addr]
 
 
 mov   al, byte ptr [si + WBSTARTSTRUCT_T.wbss_next]		; wbs ->next
@@ -2204,9 +2145,7 @@ mov   byte ptr [di + 6], 00h ; null terminator
 
 
 mov   ax, di
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_CacheLumpNameDirect_addr
+call  dword ptr ds:[_W_CacheLumpNameDirect_addr]
 
 
 mov   al, byte ptr [si + WBSTARTSTRUCT_T.wbss_next]		; wbs ->next
@@ -2222,9 +2161,7 @@ mov   cx, WIGRAPHICSLEVELNAME_SEGMENT
 ;xchg  ax, di
 lea   ax, [bp - 0Ah]
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_CacheLumpNameDirect_addr
+call  dword ptr ds:[_W_CacheLumpNameDirect_addr]
 
 
 do_exit:

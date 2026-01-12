@@ -10971,9 +10971,7 @@ je        use_same_patch
 mov       cx, SCRATCH_PAGE_SEGMENT_7000 
 mov       ax, dx
 ;call      W_CacheLumpNumDirect_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_CacheLumpNumDirect_addr
+call  dword ptr ds:[_W_CacheLumpNumDirect_addr]
 
 mov       es, word ptr [bp - 010h]
 use_same_patch:
@@ -11386,9 +11384,7 @@ mov       ax, bx
 xor       bx, bx  ; zero seg offset
 mov       di, bx  ; zero
 ;call      W_CacheLumpNumDirect_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _W_CacheLumpNumDirect_addr
+call  dword ptr ds:[_W_CacheLumpNumDirect_addr]
 
 pop       ds      ; get 4000 segment
 pop       es      ; get dest segment
@@ -11601,9 +11597,7 @@ mov       word ptr ds:[_vissprite_p], ax  ;
 ;    FAR_memset (cachedheight, 0, sizeof(fixed_t) * SCREENHEIGHT);
 
 ;call      NetUpdate_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _NetUpdate_addr
+call      dword ptr ds:[_NetUpdate_addr]
 
 
 mov       ax, word ptr ds:[_numnodes]
@@ -11611,9 +11605,7 @@ dec       ax
 
 call      R_RenderBSPNode_
 ;call      NetUpdate_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _NetUpdate_addr
+call      dword ptr ds:[_NetUpdate_addr]
 call      R_PrepareMaskedPSprites_
 
 ;call      Z_QuickMapRenderPlanes_
@@ -11650,9 +11642,7 @@ Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
 mov   byte ptr ds:[_currenttask], TASK_PHYSICS
 
 ;call      NetUpdate_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _NetUpdate_addr
+call  dword ptr ds:[_NetUpdate_addr]
 
 POPA_NO_AX_OR_BP_MACRO
 retf      

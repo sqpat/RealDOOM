@@ -157,9 +157,7 @@ stop_sb_patch:
 cli
 
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _S_DecreaseRefCountFar_addr
+call  dword ptr ds:[_S_DecreaseRefCountFar_addr]
 
 mov   byte ptr ds:[_sb_voicelist + si + SB_VOICEINFO_T.sbvi_sfx_id], ah ; 0
 sti
@@ -714,9 +712,7 @@ jb    exit_startsoundwithposition ; no sfx driver to play.
 
 
 ;call  SFX_PlayPatch_
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _SFX_PlayPatch_addr
+call  dword ptr ds:[_SFX_PlayPatch_addr]
 
 ; todo inline only use?
 

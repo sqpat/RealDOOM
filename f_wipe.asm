@@ -1007,9 +1007,7 @@ cwd
 mov       si, ax
 mov       di, ax
 
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-dw _V_MarkRect_addr
+call  dword ptr ds:[_V_MarkRect_addr]
 
 mov       CX, 07D00h   ; SCREENWIDTH * SCREENHEIGHT / 2
 mov       ax, SCREEN0_SEGMENT
