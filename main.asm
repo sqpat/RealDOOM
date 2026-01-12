@@ -3392,6 +3392,8 @@ ENDP
 
 ; todo add another 1500 bytes or so of data to this clobbered region
 
+FILE_BUFFER_SIZE = 512
+
 PROC    Z_ClearDeadCode_ NEAR
 PUBLIC  Z_ClearDeadCode_
 
@@ -3410,6 +3412,7 @@ call  locallib_fseek_  ;    fseek(fp, SWITCH_DOOMDATA_OFFSET, SEEK_SET);
 
 xor   ax, ax
 mov   dx, cs
+add   dx, FILE_BUFFER_SIZE SHR 4
 mov   word ptr ds:[_tantoangle_segment], dx
 mov   cx, di ; fp
 mov   bx, 4 * 2049
