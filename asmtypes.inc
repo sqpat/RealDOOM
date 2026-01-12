@@ -709,38 +709,21 @@ VANILLA_PLAYER_T STRUC
 VANILLA_PLAYER_T ENDS
 
 
-; todo rename
-; todo combine buffer into flags. Smallbuf and largebuf flags?
 
-FILE_INFO_T STRUC
+; todo flag can be simplified to a byte. maybe handle too
 
-    fileinto_ptr        dw ? ; 00h      ptr             ; next character position
-    fileinto_cnt        dw ? ; 02h      int             ; number of characters left
-    fileinto_flag       dw ? ; 04h      unsigned        ; mode of file access
-    fileinto_handle     dw ? ; 06h      int             ; file handle
+DOSFILE_INFO_T STRUC
+
+    dosfileinfo_ptr        dw ? ; 00h      ptr             ; next character position
+    dosfileinfo_cnt        dw ? ; 02h      int             ; number of characters left
+    dosfileinfo_flag       dw ? ; 04h      unsigned        ; mode of file access
+    dosfileinfo_handle     dw ? ; 06h      int             ; file handle
 
 
-FILE_INFO_T ENDS
+DOSFILE_INFO_T ENDS
 
 
     
-COMMENT @
-#define _READ   0x0001  /* file opened for reading */
-#define _WRITE  0x0002  /* file opened for writing */
-
-#define _BIGBUF 0x0008  /* big buffer allocated */
-#define _EOF    0x0010  /* EOF has occurred */
-#define _SFERR  0x0020  /* error has occurred on this file */
-#define _APPEND 0x0080  /* file opened for append */
-#define _BINARY 0x0040  /* file is binary, skip CRLF processing */
-#define _IOFBF  0x0100  /* full buffering */
-#define _IOLBF  0x0200  /* line buffering */
-#define _IONBF  0x0400  /* no buffering */
-#define _DIRTY  0x1000  /* buffer has been modified */
-#define _ISTTY  0x2000  /* is console device */
-@
-
-
 HU_MAXLINELENGTH = 80
 
 HU_TEXTLINE_T STRUC

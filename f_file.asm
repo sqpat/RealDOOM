@@ -44,7 +44,7 @@ MAX_FILES = 3
 .CODE
 
 ; first file index... wadfile is special cased and uses file buffer.
-WADFILE = ___iob + 0 * (SIZE FILE_INFO_T)
+WADFILE = ___iob + 0 * (SIZE DOSFILE_INFO_T)
 
 
 ; todo: get rid of unused stuff
@@ -135,10 +135,10 @@ xchg      ax, dx   ; dx gets copy source ptr
 push      ax       ; push target segment
 
 
-mov       di, word ptr ds:[si + FILE_INFO_T.fileinto_flag]
+mov       di, word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_flag]
 and       di, (_SFERR OR _EOF)
 
-and       byte ptr ds:[si + FILE_INFO_T.fileinto_flag], (NOT (_SFERR OR _EOF))
+and       byte ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_flag], (NOT (_SFERR OR _EOF))
 
 do_binary_fwrite:
 
@@ -149,7 +149,7 @@ do_binary_fwrite:
 
 ; never do appends. always a whole write.
 
-mov       bx, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
+mov       bx, word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_handle]
 pop       ds  ; get target segment
 ; DS:DX is now fwrite source
 mov       ah, 040h  ; Write file or device using handle
@@ -173,7 +173,7 @@ jmp     got_error_str
 fwrote_everything:
 ; cx has bytes written 
 
-or        word ptr ds:[si + FILE_INFO_T.fileinto_flag], di
+or        word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_flag], di
 
 
 xchg      ax, cx ; cx had bytes copied.
@@ -236,7 +236,7 @@ mov       si, cx    ; si gets fp
 continue_fread_until_done:
 
 mov       ax, dx ; get bytes_left
-mov       cx, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
+mov       cx, word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_cnt]
 test      cx, cx
 je        out_of_buffer
 
@@ -248,10 +248,10 @@ dont_cap_bytesleft:
 ; di carries dest already.
 mov       bx, si
 
-sub       word ptr ds:[bx + FILE_INFO_T.fileinto_cnt], cx
+sub       word ptr ds:[bx + DOSFILE_INFO_T.dosfileinfo_cnt], cx
 
 sub       dx, cx
-mov       si, word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
+mov       si, word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_ptr]
 
 ; es already set...?
 
@@ -260,7 +260,7 @@ rep       movsw
 adc       cx, cx
 rep       movsb
 
-mov       word ptr ds:[bx + FILE_INFO_T.fileinto_ptr], si
+mov       word ptr ds:[bx + DOSFILE_INFO_T.dosfileinfo_ptr], si
 
 mov       si, bx ;unbackup
 
@@ -271,7 +271,7 @@ je        finished_fread
 
 cmp       si, WADFILE
 jne       skip_buffer
-test      word ptr ds:[si + FILE_INFO_T.fileinto_flag+1], (_IONBF SHR 8)
+test      word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_flag+1], (_IONBF SHR 8)
 jne       skip_buffer
 cmp       ax, SECTOR_SIZE 
 jb        just_fill_buffer_binary
@@ -281,8 +281,8 @@ skip_buffer_modify:
 
 
 
-mov       word ptr ds:[si + FILE_INFO_T.fileinto_cnt], 0
-mov       word ptr ds:[si + FILE_INFO_T.fileinto_ptr], _filebufferstart
+mov       word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_cnt], 0
+mov       word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_ptr], _filebufferstart
 
 
 skip_buffer:
@@ -290,7 +290,7 @@ mov       cx, dx
 
 push      dx
 mov       dx, di
-mov       bx, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
+mov       bx, word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_handle]
 push      es
 pop       ds ; set target segment for dos api call...
 
@@ -308,7 +308,7 @@ je        bad_read_do_error
 test      ax, ax
 jne       exit_fread
 hit_end_of_file:
-or        byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _EOF
+or        byte ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_flag], _EOF
 finished_fread:
 exit_fread:
 
@@ -356,8 +356,8 @@ call    locallib_fopen_
 test    ax, ax
 je      dont_modify_values_bad_file  ; todo carry flag
 xchg    ax, bx
-or      byte ptr ds:[bx + FILE_INFO_T.fileinto_flag + 1], _IONBF SHR 8
-and     byte ptr ds:[bx + FILE_INFO_T.fileinto_flag + 1], (NOT (_IOFBF OR _IOLBF)) SHR 8
+or      byte ptr ds:[bx + DOSFILE_INFO_T.dosfileinfo_flag + 1], _IONBF SHR 8
+and     byte ptr ds:[bx + DOSFILE_INFO_T.dosfileinfo_flag + 1], (NOT (_IOFBF OR _IOLBF)) SHR 8
 xchg    ax, bx
 dont_modify_values_bad_file:
 ret
@@ -401,10 +401,10 @@ xchg ax, cx  ; cx holds onto filename
 
 mov       di, OFFSET ___iob
 loop_next_static_file:
-test      byte ptr ds:[di + FILE_INFO_T.fileinto_flag], (_READ OR _WRITE)
+test      byte ptr ds:[di + DOSFILE_INFO_T.dosfileinfo_flag], (_READ OR _WRITE)
 je        create_streamlink      ; found an empty FP
-add       di, SIZE FILE_INFO_T
-cmp       di, (OFFSET ___iob + (MAX_FILES * SIZE FILE_INFO_T))
+add       di, SIZE DOSFILE_INFO_T
+cmp       di, (OFFSET ___iob + (MAX_FILES * SIZE DOSFILE_INFO_T))
 jb        loop_next_static_file
 mov       ax, OFFSET _OUTOFFILES_STR
 jmp       got_error_str
@@ -423,17 +423,17 @@ pop       es
 
 ; zero out the streamlink.
 xor       ax, ax
-stosw  ; 4 * 2 bytes = SIZE FILE_INFO_T = 0Ah
+stosw  ; 4 * 2 bytes = SIZE DOSFILE_INFO_T = 0Ah
 stosw
 stosw  
 stosw
 
-lea       si, [di - SIZE FILE_INFO_T]
+lea       si, [di - SIZE DOSFILE_INFO_T]
 
 cmp       si, WADFILE
 jne       skip_buf_setup
 
-mov   word ptr ds:[si + FILE_INFO_T.fileinto_ptr], _filebufferstart
+mov   word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_ptr], _filebufferstart
 
 skip_buf_setup:
 ; si has fp
@@ -454,7 +454,7 @@ not_write_flag:
 
 ; bx has permissions.
 
-or   word ptr ds:[si + FILE_INFO_T.fileinto_flag], ax  ; flags
+or   word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_flag], ax  ; flags
 
 
 ; flags set.
@@ -556,7 +556,7 @@ inc  di
 jz   bad_handle_exit
 dec  di
 
-mov  word ptr ds:[si + FILE_INFO_T.fileinto_handle], di
+mov  word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_handle], di
 
 xchg  ax, si
 exit_doopen:
@@ -651,24 +651,24 @@ push  di
 mov   si, ax
 
 xor   di, di ; error code.
-test  byte ptr ds:[si + FILE_INFO_T.fileinto_flag], (_READ OR _WRITE)
+test  byte ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_flag], (_READ OR _WRITE)
 je    error_and_exit_doclose  ; not readable or writable? todo get rid of error check
 
 ; todo do we need this seek on close thing? is it for making sure files get saved?
 
-mov   ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
+mov   ax, word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_cnt]
 test  ax, ax
 je    skip_seek_on_close
 neg   ax
 cwd   
-mov   bx, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
+mov   bx, word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_handle]
 xchg  ax, bx
 mov   cx, dx
 mov   dx, 1  ; SEEK_CUR
 call  locallib_lseek_
 skip_seek_on_close:
 
-mov   ax, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
+mov   ax, word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_handle]
 call  locallib_close_  ; close ms-dos file
 or    di, ax
 skip_close_null_handle:
@@ -680,7 +680,7 @@ jne   skip_bigbuf  ; todo do we get rid of this check?
 
 
 skip_bigbuf:
-mov   word ptr ds:[si + FILE_INFO_T.fileinto_flag], 0  ; not open for read or write anymore.
+mov   word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_flag], 0  ; not open for read or write anymore.
 
 exit_doclose:
 xchg  ax, di
@@ -710,7 +710,7 @@ PUBLIC  locallib_update_buffer_
 
 
 
-mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
+mov  ax, word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_cnt]
 cwd  
 cmp  cx, dx
 jl   size_check_ok
@@ -720,7 +720,7 @@ ja   outside_of_buffer
 size_check_ok:
 
 mov  ax, _filebufferstart
-sub  ax, word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
+sub  ax, word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_ptr]
 cwd  
 cmp  cx, dx
 jg   update_file
@@ -734,9 +734,9 @@ return_update_buffer:
 ret  
 
 update_file:
-and  byte ptr ds:[si + FILE_INFO_T.fileinto_flag], (NOT _EOF)
-add  word ptr ds:[si + FILE_INFO_T.fileinto_ptr], bx
-sub  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], bx
+and  byte ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_flag], (NOT _EOF)
+add  word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_ptr], bx
+sub  word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_cnt], bx
 clc
 jmp  return_update_buffer
 
@@ -748,9 +748,9 @@ PUBLIC  locallib_reset_buffer_
 
 ; si is file
 
-and  byte ptr ds:[si + FILE_INFO_T.fileinto_flag], (NOT _EOF)
-mov  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], 0
-mov  word ptr ds:[si + FILE_INFO_T.fileinto_ptr], _filebufferstart
+and  byte ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_flag], (NOT _EOF)
+mov  word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_cnt], 0
+mov  word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_ptr], _filebufferstart
 
 ret  
 
@@ -779,27 +779,27 @@ mov  si, ax
 
 push dx   ; bp - 2. store seek type.
 
-test byte ptr ds:[si + FILE_INFO_T.fileinto_flag + 0], (_WRITE)
+test byte ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_flag + 0], (_WRITE)
 je   check_for_seek_end
 cmp  dx, SEEK_CUR   
 jne  dont_subtract_offset
 subtract_offset:
-mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
+mov  ax, word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_cnt]
 cwd  
 sub  bx, ax
 sbb  cx, dx
 dont_subtract_offset:
 
 
-mov  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], 0
+mov  word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_cnt], 0
 cmp  si, WADFILE
 jne  dont_modify_ptr
-mov  word ptr ds:[si + FILE_INFO_T.fileinto_ptr], _filebufferstart
+mov  word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_ptr], _filebufferstart
 dont_modify_ptr:
 file_ready_for_seek:
 mov  dx, word ptr [bp - 2] ; retrieve seek type
 
-and  byte ptr ds:[si + FILE_INFO_T.fileinto_flag], (NOT (_EOF))       ; turn off the flags.
+and  byte ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_flag], (NOT (_EOF))       ; turn off the flags.
 ; lseek( int handle, off_t offset, int origin );
 do_call_lseek:
 call locallib_lseek_
@@ -831,7 +831,7 @@ ja   reset_buffer
 call locallib_tell_
 mov  di, ax    ; low bytes temporarily
 mov  es, dx
-mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
+mov  ax, word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_cnt]
 cwd  
 
 sub  di, ax
@@ -866,14 +866,14 @@ xor  ax, ax
 jmp  exit_return_fseek
 reset_buffer:
 call locallib_reset_buffer_
-mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
+mov  ax, word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_handle]
 jmp  do_call_lseek
 
 
 
 
 handle_seek_cur:
-mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
+mov  ax, word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_cnt]
 cwd  
 
 push dx
@@ -907,7 +907,7 @@ PROC    locallib_lseek_ NEAR
 xchg ax, bx  ; low size into ax
 xchg ax, dx  ; size cx:dx, ax gets type
 
-mov  bx, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
+mov  bx, word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_handle]
 
 ; fall thru
 
@@ -953,7 +953,7 @@ PROC    locallib_tell_ NEAR
 
 push bx
 push cx
-mov  bx, word ptr ds:[si + FILE_INFO_T.fileinto_handle]  ; si is always file handle here
+mov  bx, word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_handle]  ; si is always file handle here
 
 mov  ax, 04201h   ; Move file pointer using handle
 cwd         ; dx 0
@@ -990,11 +990,11 @@ jne  good_location
 cmp  ax, 0FFFFh
 je   exit_ftell
 good_location:
-cmp  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], 0
+cmp  word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_cnt], 0
 je   exit_ftell
 xchg ax, bx
 mov  cx, dx
-mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
+mov  ax, word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_cnt]
 cwd  
 
 ; dx:ax is file_cnt
@@ -1039,23 +1039,23 @@ push dx
 
 
 mov  dx, _filebufferstart
-mov  word ptr ds:[si + FILE_INFO_T.fileinto_ptr], dx
+mov  word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_ptr], dx
 mov  cx, FILE_BUFFER_SIZE
-mov  bx, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
+mov  bx, word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_handle]
 
 mov  ah, 03Fh  ; Read file or device using handle
 int  021h
 
 jc   do_qread_error
 
-mov  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], ax
+mov  word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_cnt], ax
 test ax, ax
 jg   done_with_eof_check
 jne  handle_fill_buffer_error  ; negative
-or   byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _EOF
+or   byte ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_flag], _EOF
 
 done_with_eof_check:
-mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_cnt]
+mov  ax, word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_cnt]
 pop  dx
 pop  cx
 pop  bx
@@ -1063,8 +1063,8 @@ ret
 
 
 handle_fill_buffer_error:
-mov  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], 0
-or   byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _SFERR
+mov  word ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_cnt], 0
+or   byte ptr ds:[si + DOSFILE_INFO_T.dosfileinfo_flag], _SFERR
 jmp  done_with_eof_check
 
 do_qread_error:
