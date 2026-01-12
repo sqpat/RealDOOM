@@ -43,17 +43,19 @@ MAX_FILES = 3
 
 .CODE
 
+; first file index... wadfile is special cased and uses file buffer.
+WADFILE = ___iob + 0 * (SIZE FILE_INFO_T)
 
 
 ; todo: get rid of unused stuff
 
 _READ    = 00001h    ; file opened for reading 
 _WRITE   = 00002h    ; file opened for writing 
-_BIGBUF  = 00008h    ; big buffer allocated 
+
 _EOF     = 00010h    ; EOF has occurred 
 _SFERR   = 00020h    ; error has occurred on this file 
 
-_BINARY  = 00040h    ; file is binary, skip CRLF processing 
+
 _IOFBF   = 00100h    ; full buffering 
 _IOLBF   = 00200h    ; line buffering 
 _IONBF   = 00400h    ; no buffering 
@@ -83,8 +85,8 @@ FREAD_BUFFER_SIZE = 512
 
 
 
-_buffercount:
-db  0
+
+
 
 _BAD_FCLOSE_STR:
 db "!! Bad FClose!", 0Ah, 0
@@ -235,26 +237,7 @@ cmp       word ptr ds:[si + FILE_INFO_T.fileinto_base], 0
 jne       dont_allocate_buffer
 
 ; si already fp
-;call      locallib_ioalloc_
 
-
-; if base is nonzero then you have a buffer.
-
-; si fas file already
-
-;call  malloc_   ; near malloc
-; inlined malloc
-cmp     byte ptr cs:[_buffercount], MAX_FILE_BUFFERS
-jae     error_overallocated
-mov     ax, OFFSET _filebufferstart
-inc     byte ptr cs:[_buffercount]
-
-; ax gets file buffer
-
-mov   word ptr ds:[si + FILE_INFO_T.fileinto_base], ax ; ptr to the file buf...
-or    byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _BIGBUF
-mov   word ptr ds:[si + FILE_INFO_T.fileinto_cnt], 0
-mov   word ptr ds:[si + FILE_INFO_T.fileinto_ptr], ax  ; current pointer.
 
 
 
@@ -297,8 +280,8 @@ mov       ax, dx
 test      ax, ax
 je        finished_fread
 
-test      byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _BIGBUF
-je        skip_buffer
+cmp       si, WADFILE
+jne       skip_buffer
 test      word ptr ds:[si + FILE_INFO_T.fileinto_flag+1], (_IONBF SHR 8)
 jne       skip_buffer
 cmp       ax, SECTOR_SIZE 
@@ -458,6 +441,13 @@ stosw
 
 lea       si, [di - SIZE FILE_INFO_T]
 
+cmp       si, WADFILE
+jne       skip_buf_setup
+
+mov   word ptr ds:[si + FILE_INFO_T.fileinto_base], _filebufferstart
+mov   word ptr ds:[si + FILE_INFO_T.fileinto_ptr], _filebufferstart
+
+skip_buf_setup:
 ; si has fp
 xchg ax, dx  ; ax gets flags
 xor  ah, ah  
@@ -694,13 +684,11 @@ mov   ax, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
 call  locallib_close_  ; close ms-dos file
 or    di, ax
 skip_close_null_handle:
-test  byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _BIGBUF
-je    skip_bigbuf  ; todo do we get rid of this check?
+cmp   si, WADFILE
+jne   skip_bigbuf  ; todo do we get rid of this check?
 
-mov   ax, word ptr ds:[si + FILE_INFO_T.fileinto_base]
-;call  free_
-dec     byte ptr cs:[_buffercount]
-js      error_underallocated
+
+
 
 mov   word ptr ds:[si + FILE_INFO_T.fileinto_base], 0
 skip_bigbuf:
@@ -1046,7 +1034,7 @@ ENDP
 
 
 
-
+; todo inline
 
 PROC    locallib_fill_buffer_   NEAR
 
