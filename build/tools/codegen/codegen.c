@@ -8,8 +8,8 @@
 #include "r_state.h"
 #include "p_setup.h"
 
-#define CONSTANTS_COUNT 1009
-#define LOCALS_COUNT 23
+#define CONSTANTS_COUNT 1010
+#define LOCALS_COUNT 30
 
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -77,6 +77,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "RNDTABLE_SEGMENT",
 
     "SEGS_PHYSICS_SEGMENT",
+	"PHYSICS_4000_END_SEGMENT",
     "DISKGRAPHICBYTES_SEGMENT",
 
 
@@ -1187,6 +1188,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     rndtable_segment,
 
     segs_physics_segment,
+	physics_4000_end_segment,
     diskgraphicbytes_segment,
 
 
@@ -2244,12 +2246,23 @@ char* LOCALS[LOCALS_COUNT] = {
     "_scalelight",	// do not use i guess
     "_patch_sizes",
     "_viewangletox",
+    "_sides_render",
 
 
     "_thinkerlist",
     "_mobjinfo",
     "_linebuffer",
     "_sectors_physics",
+
+    "_intercepts",
+    "_ammnumpatchbytes",
+    "_ammnumpatchoffsets",
+    "_doomednum",
+    "_linespeciallist",
+    "_font_widths",
+
+
+
     "NUM_FLAT_CACHE_PAGES",
     "NUM_SPRITE_CACHE_PAGES",
     "NUM_TEXTURE_PAGES",
@@ -2281,11 +2294,23 @@ void __near* VALUES[LOCALS_COUNT] = {
     scalelight,
     patch_sizes,
     viewangletox,
+	sides_render,
 
     thinkerlist,
     mobjinfo,
     linebuffer,
     sectors_physics,
+
+
+
+    intercepts,
+    ammnumpatchbytes,
+    ammnumpatchoffsets,
+    doomednum,
+    linespeciallist,
+    font_widths,
+
+
     NUM_FLAT_CACHE_PAGES,
     NUM_SPRITE_CACHE_PAGES,
     NUM_TEXTURE_PAGES,

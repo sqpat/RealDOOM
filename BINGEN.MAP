@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/12 12:31:44
+Created on:       26/01/12 12:47:35
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -515,6 +515,7 @@ Module: p_pspr.obj(p_pspr.ASM)
 225c:3f8b*     A_CloseShotgun2_
 225c:3910      P_BringUpWeapon_
 Module: p_enemy.obj(p_enemy.ASM)
+225c:4c01*     A_CyberAttack_
 225c:55c1*     A_Explode_
 225c:52d6*     A_FatRaise_
 225c:41e5      P_NoiseAlert_
@@ -575,10 +576,9 @@ Module: p_enemy.obj(p_enemy.ASM)
 225c:4116*     P_ENEMY_STARTMARKER_
 225c:4b4c*     A_TroopAttack_
 225c:5540*     A_PainAttack_
-225c:59e9*     A_PlayerScream_
 225c:5708*     A_BrainAwake_
+225c:59e9*     A_PlayerScream_
 225c:46a6*     A_KeenDie_
-225c:4c01*     A_CyberAttack_
 Module: p_ceilng.obj(p_ceilng.ASM)
 225c:5cda      P_AddActiveCeiling_
 225c:5b1a*     P_CEILNG_STARTMARKER_
@@ -737,8 +737,8 @@ Module: p_math.obj(p_math.ASM)
 225c:97e3      FixedMulTrigNoShift_MapLocal_
 225c:9b00*     div48_32_whole_MapLocal_
 225c:97df      FixedMulTrig_MapLocal_
-225c:9860      FixedMul16u32_MapLocal_
 225c:9cf5*     R_PointToAngle_MapLocal_
+225c:9860      FixedMul16u32_MapLocal_
 225c:9c2e      FixedMul2424_
 225c:9f95      R_PointToAngle2_MapLocal_
 225c:9a57      FastDiv3216u_MapLocal_
@@ -849,8 +849,8 @@ Module: s_sbinit.obj(s_sbinit.ASM)
 2d4c:26dd*     SB_SaveVoiceVolume_
 2d4c:26ce*     SB_ReadMixer_
 2d4c:2875*     SB_GetDSPVersion_
-2d4c:2705      SB_DSP1xx_BeginPlayback_
 2d4c:270c*     SB_DSP2xx_BeginPlayback_
+2d4c:2705      SB_DSP1xx_BeginPlayback_
 2d4c:2721*     SB_DSP4xx_BeginPlayback_
 2d4c:26cd      _SB_CardActive
 2d4c:2818*     SB_SetupPlayback_
@@ -917,8 +917,8 @@ Module: st_stuff.obj(st_stuff.ASM)
 2d4c:49df      _oldweaponsowned
 2d4c:4a50      _w_keyboxes
 2d4c:497a      _armsbg
-2d4c:495c      _arms
 2d4c:49e8      _keyboxes
+2d4c:495c      _arms
 2d4c:4f65*     ST_drawWidgets_
 2d4c:4a44      _w_armor
 2d4c:4976      _sbar
@@ -1420,4 +1420,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003bf80 (245632.)
 Entry point address: 2d4c:8c3e
-Link time: 00:00.05
+Link time: 00:00.04

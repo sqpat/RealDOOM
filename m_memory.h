@@ -50,7 +50,7 @@
 // round up a segment if necessary. convert size to segments
 #define MAKE_FULL_SEGMENT(a, b)  ((int32_t)a + ((((int32_t)b + 0x0F) >> 4) << 16))
 
-#define FIXED_DS_SEGMENT  0x3E40
+#define FIXED_DS_SEGMENT  0x3E80
 
 // ALLOCATION DEFINITIONS: UPPER MEMORY
 
@@ -315,7 +315,7 @@ scantokey            3194:0000
 #define size_font_widths           (HU_FONTSIZE * sizeof(int8_t))
 #define size_segs_physics          (MAX_SEGS_PHYSICS_SIZE)
 
-
+#define MAX_OVERLAYSIZE        (((FinaleCodeSize > SaveLoadCodeSize ? FinaleCodeSize : SaveLoadCodeSize)))
 
 #define thinkerlist_far        ((thinker_t __far*)            MAKE_FULL_SEGMENT(0x40000000, 0))
 #define mobjinfo_far           ((mobjinfo_t __far *)          MAKE_FULL_SEGMENT(thinkerlist_far,            size_thinkerlist))
@@ -331,6 +331,7 @@ scantokey            3194:0000
 #define code_overlay_start     ((byte __far*)                 MAKE_FULL_SEGMENT(font_widths_far,            size_font_widths))
 #define code_overlay_end       ((byte __far*)                 MAKE_FULL_SEGMENT(code_overlay_start,         FinaleCodeSize))
 #define segs_physics           ((seg_physics_t __far*)        MAKE_FULL_SEGMENT(code_overlay_start,         FinaleCodeSize))
+#define physics_4000_end       ((byte __far*)                 MAKE_FULL_SEGMENT(segs_physics,               size_segs_physics))
 // WipeCodeSize
 
 #define thinkerlist_segment           ((segment_t) ((int32_t)thinkerlist_far >> 16))
@@ -347,6 +348,7 @@ scantokey            3194:0000
 #define code_overlay_segment          ((segment_t) ((int32_t)code_overlay_start >> 16))
 #define code_overlay_end_segment      ((segment_t) ((int32_t)code_overlay_end >> 16))
 #define segs_physics_segment          ((segment_t) ((int32_t)segs_physics >> 16))
+#define physics_4000_end_segment      ((segment_t) ((int32_t)physics_4000_end >> 16))
 // 4FF4h
 
  // 3CC0:0x3400
@@ -354,13 +356,11 @@ scantokey            3194:0000
 #define mobjinfo           ((mobjinfo_t  __near*)        ((mobjinfo_segment          - FIXED_DS_SEGMENT) << 4))
 #define linebuffer         ((int16_t __near*)            ((linebuffer_segment        - FIXED_DS_SEGMENT) << 4))
 #define sectors_physics    ((sector_physics_t __near* )  ((sectors_physics_segment   - FIXED_DS_SEGMENT) << 4))
-// #define sectors_soundorgs  ((sector_soundorg_t __near* ) ((sectors_soundorgs_segment - FIXED_DS_SEGMENT) << 4))
-// #define sector_soundtraversed  ((int8_t __near* )        ((sector_soundtraversed_segment - FIXED_DS_SEGMENT) << 4))
-// #define intercepts         ((intercept_t __near* )       ((intercepts_segment - FIXED_DS_SEGMENT) << 4))
-// #define ammnumpatchbytes   ((byte __near* )              ((ammnumpatchbytes_segment - FIXED_DS_SEGMENT) << 4))
-// #define ammnumpatchoffsets ((uint16_t __near* )          (((uint16_t)ammnumpatchbytes) + 0x020C))
-// #define doomednum          ((int16_t __near* )           ((doomednum_segment - FIXED_DS_SEGMENT) << 4))
-// #define linespeciallist    ((int8_t __near* )            ((linespeciallist_segment - FIXED_DS_SEGMENT) << 4))
+#define intercepts         ((intercept_t __near* )       ((intercepts_segment - FIXED_DS_SEGMENT) << 4))
+#define ammnumpatchbytes   ((byte __near* )              ((ammnumpatchbytes_segment - FIXED_DS_SEGMENT) << 4))
+#define ammnumpatchoffsets ((uint16_t __near* )          (((uint16_t)ammnumpatchbytes) + 0x020C))
+#define doomednum          ((int16_t __near* )           ((doomednum_segment - FIXED_DS_SEGMENT) << 4))
+#define linespeciallist    ((int8_t __near* )            ((linespeciallist_segment - FIXED_DS_SEGMENT) << 4))
 #define font_widths        ((int8_t __near* )            ((font_widths_segment - FIXED_DS_SEGMENT) << 4))
 
 
@@ -376,8 +376,8 @@ scantokey            3194:0000
 // 4C6B:0000  FAB0 linespeciallist
 
 // 4C73:0000  FB30 font_widths
-// 4C77:0000  FB70 segs_physics
-// 4F37:0000  xxxx code_overlay_segment
+// 4C77:0000  xxxx code_overlay_segment
+// 4DD3:0000  FB70 segs_physics
 // 4FF4:0000  xxxx [empty]
 
 
@@ -1318,8 +1318,8 @@ spritedefs_bytes    73BB:0000
 #define viewangletox_far             ((int16_t __far*)            MAKE_FULL_SEGMENT(0x4C000000                  , 0))
 //#define viewangletox                ((int16_t __far*)            MAKE_FULL_SEGMENT(patch_sizes_far             , size_patch_sizes))
 // offset of a drawseg so we can subtract drawseg from drawsegs for a certain potential loop condition...
-#define states_render               ((state_render_t __far*)     MAKE_FULL_SEGMENT(viewangletox_far            , size_viewangletox))
-#define flatindex                   ((uint8_t __far*)            MAKE_FULL_SEGMENT(states_render           , size_states_render))
+#define states_render_far           ((state_render_t __far*)     MAKE_FULL_SEGMENT(viewangletox_far            , size_viewangletox))
+#define flatindex                   ((uint8_t __far*)            MAKE_FULL_SEGMENT(states_render_far           , size_states_render))
 #define spritepage                  ((uint8_t __far*)            MAKE_FULL_SEGMENT(flatindex               , size_flatindex))
 #define spriteoffset                ((uint8_t __far*)            (((int32_t)spritepage)                    + size_spritepage))
 
@@ -1364,7 +1364,7 @@ spritedefs_bytes    73BB:0000
 #define scalelight              ((uint8_t __near*)            ((scalelight_segment              - FIXED_DS_SEGMENT) << 4))
 #define patch_sizes             ((uint16_t __near*)           ((patch_sizes_segment             - FIXED_DS_SEGMENT) << 4))
 #define viewangletox            ((int16_t __near*)            ((viewangletox_segment            - FIXED_DS_SEGMENT) << 4))
-
+#define states_render           ((state_render_t __near*)    ((states_render_segment            - FIXED_DS_SEGMENT) << 4))
 
 #define SCALE_LIGHT_OFFSET_IN_FIXED_SCALELIGHT (16 * (scalelight_segment - scalelightfixed_segment))
 
