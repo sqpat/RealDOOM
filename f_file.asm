@@ -38,7 +38,7 @@ FILE_BUFFER_SIZE = 512
 
 MAX_FILE_BUFFERS = 2
 
-MAX_FILES = 6
+MAX_FILES = 3
 
 
 .CODE
@@ -204,7 +204,12 @@ ENDP
 
 SECTOR_SIZE = 512
 
-
+error_overallocated:
+mov     ax, OFFSET _OVERALLOCATED_STR
+got_error_str:
+push    cs
+push    ax
+jmp     I_Error_
 
 
 PROC    locallib_fread_nearsegment_   NEAR
@@ -230,7 +235,28 @@ cmp       word ptr ds:[si + FILE_INFO_T.fileinto_base], 0
 jne       dont_allocate_buffer
 
 ; si already fp
-call      locallib_ioalloc_
+;call      locallib_ioalloc_
+
+
+; if base is nonzero then you have a buffer.
+
+; si fas file already
+
+;call  malloc_   ; near malloc
+; inlined malloc
+cmp     byte ptr cs:[_buffercount], MAX_FILE_BUFFERS
+jae     error_overallocated
+mov     ax, OFFSET _filebufferstart
+inc     byte ptr cs:[_buffercount]
+
+; ax gets file buffer
+
+mov   word ptr ds:[si + FILE_INFO_T.fileinto_base], ax ; ptr to the file buf...
+or    byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _BIGBUF
+mov   word ptr ds:[si + FILE_INFO_T.fileinto_cnt], 0
+mov   word ptr ds:[si + FILE_INFO_T.fileinto_ptr], ax  ; current pointer.
+
+
 
 dont_allocate_buffer:
 
@@ -1015,43 +1041,6 @@ ENDP
 
 
 
-
-
-
-
-
-
-error_overallocated:
-mov     ax, OFFSET _OVERALLOCATED_STR
-got_error_str:
-push    cs
-push    ax
-jmp     I_Error_
-
-; todo inline
-; if base is nonzero then you have a buffer.
-
-PROC    locallib_ioalloc_ NEAR
-
-; si fas file already
-
-;call  malloc_   ; near malloc
-; inlined malloc
-cmp     byte ptr cs:[_buffercount], MAX_FILE_BUFFERS
-jae     error_overallocated
-mov     ax, OFFSET _filebufferstart
-inc     byte ptr cs:[_buffercount]
-
-; ax gets file buffer
-
-mov   word ptr ds:[si + FILE_INFO_T.fileinto_base], ax ; ptr to the file buf...
-or    byte ptr ds:[si + FILE_INFO_T.fileinto_flag], _BIGBUF
-mov   word ptr ds:[si + FILE_INFO_T.fileinto_cnt], 0
-mov   word ptr ds:[si + FILE_INFO_T.fileinto_ptr], ax  ; current pointer.
-
-ret  
-
-ENDP
 
 
 

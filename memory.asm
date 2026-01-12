@@ -476,25 +476,23 @@ dw  00, 00, 00, 00, 00, 00
 dw 00, 00, 00, 00, 00 ; file 0
 dw 00, 00, 00, 00, 00 ; file 1
 dw 00, 00, 00, 00, 00 ; file 2
-dw 00, 00, 00, 00, 00 ; file 3
-dw 00, 00, 00, 00, 00 ; file 4
-dw 00, 00, 00, 00, 00 ; file 5
+
 
 
 ; command line copy
-; B18
-dw  00, 00, 00, 00
-; B20
+; AFA
+dw 00, 00, 00
+; B00
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; B30
+; B10
 dw  00, 00, 00, 00, 00, 00, 00, 00
-; B40 ; file buffer
+; B20 ; file buffer
 FILE_BUFFER_SIZE = 512
 
 REPT FILE_BUFFER_SIZE
 	db  0
 ENDM
-; D40
+; D20
 
 REPT NUM_FLAT_CACHE_PAGES
 	dw  00

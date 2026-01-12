@@ -88,7 +88,7 @@ ENDP
 
 
 
-MAX_FILES = 6
+MAX_FILES = 3
 
 PROC   docloseall_ NEAR
 PUBLIC docloseall_
