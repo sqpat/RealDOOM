@@ -716,9 +716,8 @@ FILE_INFO_T STRUC
 
     fileinto_ptr        dw ? ; 00h      ptr             ; next character position
     fileinto_cnt        dw ? ; 02h      int             ; number of characters left
-    fileinto_base       dw ? ; 04h      ptr             ; location of buffer
-    fileinto_flag       dw ? ; 06h      unsigned        ; mode of file access
-    fileinto_handle     dw ? ; 08h      int             ; file handle
+    fileinto_flag       dw ? ; 04h      unsigned        ; mode of file access
+    fileinto_handle     dw ? ; 06h      int             ; file handle
 
 
 FILE_INFO_T ENDS

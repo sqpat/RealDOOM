@@ -911,7 +911,7 @@ typedef struct{
 #define FixedDivWholeA_addr	  		      (*((uint32_t __near*)              (_NULL_OFFSET + 0x0AD0)))
 #define cht_CheckCheat_Far_addr	 	      (*((uint32_t __near*)              (_NULL_OFFSET + 0x0AD4)))
 #define myargc				 		      (*((int16_t __near*)        		 (_NULL_OFFSET + 0x0AD8)))
-#define myargv				 		      (*((int8_t __near***)        		 (_NULL_OFFSET + 0x0AFA)))
+#define myargv				 		      (*((int8_t __near***)        		 (_NULL_OFFSET + 0x0AF4)))
 
 // some c vars here
 

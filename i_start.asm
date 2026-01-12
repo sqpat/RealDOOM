@@ -88,32 +88,6 @@ ENDP
 
 
 
-MAX_FILES = 3
-
-PROC   docloseall_ NEAR
-PUBLIC docloseall_
-
-push bx
-
-mov  bx, OFFSET ___iob  
-
-iterate_next_stream:
-cmp  word ptr ds:[bx + FILE_INFO_T.fileinto_base], 0
-je   skip_this_stream
-
-call doclose_
-
-skip_this_stream:
-add  bx, SIZE FILE_INFO_T
-cmp  bx, (OFFSET ___iob + (MAX_FILES * (SIZE FILE_INFO_T)))
-jb   iterate_next_stream
-
-done_closing_streams:
-
-pop  bx
-ret  
-
-
 
 
 ; creates a list of pointers to words/params (argv), unescaped
@@ -270,7 +244,6 @@ PUBLIC  exit_
 push  ax                        ; al = return code.
 mov   dx, DGROUP  ; worst case call getds
 mov   ds, dx
-call  docloseall_
 
 ; fall thru
 

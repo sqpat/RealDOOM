@@ -720,7 +720,7 @@ _errno =      						 _NULL_OFFSET + 00ADAh
 ___iob = 							 _NULL_OFFSET + 00ADCh
 ; NFILES * SIZE FILE_INFO_T bytes = 2 * 10 = 20 = 018h
 
-_myargv = 	   	  					 _NULL_OFFSET + 00AFAh
+_myargv = 	   	  					 _NULL_OFFSET + 00AF4h
 ; max args = 20 including program name i guess. should be enough? maybe too much.
 _filebufferstart =				     _NULL_OFFSET + 00B20h
 

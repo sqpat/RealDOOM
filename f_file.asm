@@ -233,17 +233,6 @@ mov       dx, bx    ; dx gets bytes to copy
 mov       si, cx    ; si gets fp
 
 
-cmp       word ptr ds:[si + FILE_INFO_T.fileinto_base], 0
-jne       dont_allocate_buffer
-
-; si already fp
-
-
-
-
-dont_allocate_buffer:
-
-
 continue_fread_until_done:
 
 mov       ax, dx ; get bytes_left
@@ -291,9 +280,10 @@ jb        just_fill_buffer_binary
 skip_buffer_modify:
 
 
-mov       ax, word ptr ds:[si + FILE_INFO_T.fileinto_base]
+
 mov       word ptr ds:[si + FILE_INFO_T.fileinto_cnt], 0
-mov       word ptr ds:[si + FILE_INFO_T.fileinto_ptr], ax
+mov       word ptr ds:[si + FILE_INFO_T.fileinto_ptr], _filebufferstart
+
 
 skip_buffer:
 mov       cx, dx  
@@ -433,9 +423,8 @@ pop       es
 
 ; zero out the streamlink.
 xor       ax, ax
-stosw  ; 5 * 2 bytes = SIZE FILE_INFO_T = 0Ah
+stosw  ; 4 * 2 bytes = SIZE FILE_INFO_T = 0Ah
 stosw
-stosw  
 stosw  
 stosw
 
@@ -444,7 +433,6 @@ lea       si, [di - SIZE FILE_INFO_T]
 cmp       si, WADFILE
 jne       skip_buf_setup
 
-mov   word ptr ds:[si + FILE_INFO_T.fileinto_base], _filebufferstart
 mov   word ptr ds:[si + FILE_INFO_T.fileinto_ptr], _filebufferstart
 
 skip_buf_setup:
@@ -690,7 +678,7 @@ jne   skip_bigbuf  ; todo do we get rid of this check?
 
 
 
-mov   word ptr ds:[si + FILE_INFO_T.fileinto_base], 0
+
 skip_bigbuf:
 mov   word ptr ds:[si + FILE_INFO_T.fileinto_flag], 0  ; not open for read or write anymore.
 
@@ -731,7 +719,7 @@ cmp  bx, ax
 ja   outside_of_buffer
 size_check_ok:
 
-mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_base]
+mov  ax, _filebufferstart
 sub  ax, word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
 cwd  
 cmp  cx, dx
@@ -761,9 +749,8 @@ PUBLIC  locallib_reset_buffer_
 ; si is file
 
 and  byte ptr ds:[si + FILE_INFO_T.fileinto_flag], (NOT _EOF)
-mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_base]
 mov  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], 0
-mov  word ptr ds:[si + FILE_INFO_T.fileinto_ptr], ax
+mov  word ptr ds:[si + FILE_INFO_T.fileinto_ptr], _filebufferstart
 
 ret  
 
@@ -803,9 +790,12 @@ sub  bx, ax
 sbb  cx, dx
 dont_subtract_offset:
 
-mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_base]
+
 mov  word ptr ds:[si + FILE_INFO_T.fileinto_cnt], 0
-mov  word ptr ds:[si + FILE_INFO_T.fileinto_ptr], ax
+cmp  si, WADFILE
+jne  dont_modify_ptr
+mov  word ptr ds:[si + FILE_INFO_T.fileinto_ptr], _filebufferstart
+dont_modify_ptr:
 file_ready_for_seek:
 mov  dx, word ptr [bp - 2] ; retrieve seek type
 
@@ -1047,15 +1037,10 @@ push dx
 
 ; dont need ioalloc check. only call already did it
 
-mov  ax, word ptr ds:[si + FILE_INFO_T.fileinto_base]
-mov  word ptr ds:[si + FILE_INFO_T.fileinto_ptr], ax   ; point to start of buffer
 
-test word ptr ds:[si + FILE_INFO_T.fileinto_flag+1], (_IONBF SHR 8)
-mov  cx, 1              ; todo breakpoint this.
-jne  dont_use_bufsize
+mov  dx, _filebufferstart
+mov  word ptr ds:[si + FILE_INFO_T.fileinto_ptr], dx
 mov  cx, FILE_BUFFER_SIZE
-dont_use_bufsize:
-mov  dx, word ptr ds:[si + FILE_INFO_T.fileinto_ptr]
 mov  bx, word ptr ds:[si + FILE_INFO_T.fileinto_handle]
 
 mov  ah, 03Fh  ; Read file or device using handle
