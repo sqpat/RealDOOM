@@ -30,7 +30,7 @@ EXTRN doclose_:NEAR
 STACK_SIZE = 0800h
 
 
-DGROUP group _NULL,_DATA,DATA,_BSS,STACK
+DGROUP group _NULL,STACK
 
 
 
@@ -41,21 +41,10 @@ _NULL   segment para public 'BEGDATA'
 _NULL   ends
 
 
-_DATA   segment word public 'DATA'
-_DATA   ends
 
-DATA    segment word public 'DATA'
-DATA    ends
-
-_BSS    segment word public 'BSS'
-        _edata label byte  ; end of DATA (start of BSS)
-        db 0, 0
-        _end   label byte  ; byte  ; end of BSS (start of STACK)
-                     
-
-_BSS    ends
 
 STACK   segment para stack 'STACK'
+        _stackstart     label byte  ; byte  (start of STACK)
         db      (STACK_SIZE) dup(?)
 STACK   ends
 
@@ -310,7 +299,7 @@ __do_exit_with_msg_:
 __exit_with_msg_:
 PUBLIC __do_exit_with_msg_
 PUBLIC __exit_with_msg_
-;mov        sp, offset DGROUP:_end+80h
+
 push       bx
 push       ax
 push       dx
@@ -357,9 +346,9 @@ PUBLIC _realdoomstart_
 sti        
 mov        cx, DGROUP
 mov        es, cx
-mov        bx, offset DGROUP:_end 
-add        bx, 00Fh
-and        bl, 0F0h ; round up a segment
+mov        bx, offset DGROUP:_stackstart 
+;add        bx, 00Fh
+;and        bl, 0F0h ; round up a segment
 mov        word ptr es:[__STACKLOW], bx
 ;mov        word ptr es:[__psp], ds
 add        bx, sp
@@ -403,12 +392,7 @@ mov        word ptr cs:[SELFMODIFY_set_program_name_ptr+1], cx
 mov        bx, sp
 mov        ax, bp
 mov        word ptr ds:[__STACKLOW], di
-mov        cx, offset DGROUP:_end
-mov        di, offset DGROUP:_edata
-sub        cx, di
-xor        al, al
-rep        stosb  ; zero  BSS segment
-xor        bp, bp
+
 push       bp
 mov        bp, sp
 

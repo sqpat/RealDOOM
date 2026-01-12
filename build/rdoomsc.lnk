@@ -51,7 +51,6 @@ file z_scamp.obj
 
 ORDER      clname CODE 
            clname BEGDATA segment _NULL 
-           clname DATA  segment _FIXEDDATA segment _DATA
-           clname BSS
+           clname DATA  segment _FIXEDDATA 
            clname STACK
            clname START 
