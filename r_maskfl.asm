@@ -4082,32 +4082,31 @@ ret
 
 ENDP
 
+; todo feels improvable without too many outside deps
+
+SIL_NONE =   0
+SIL_BOTTOM = 1
+SIL_TOP =    2
+SIL_BOTH =   3
+
+; todo: only push bx?
 
 PROC R_DrawSprite_ NEAR
 
 ; bp - 2	   ds_p segment. TODO always DRAWSEGS_BASE_SEGMENT_7000
-; bp - 4       unused
-; bp - 6       unused
+; bp - 4       vissprite near pointer
 
-; bp - 282h    cliptop
-; bp - 502h    clipbot
-; bp - 504h    vissprite near pointer
-
-push  bx
-push  cx
-push  dx
-push  si
-push  di
 push  bp
 mov   bp, sp
-sub   sp, 0502h	; for cliptop/clipbot
-push  ax        ; bp - 504h                 ; todo move this to lower bp for smaller accesses.
-mov   bx, ax
-mov   ax, word ptr ds:[bx + 2]
-mov   cx, word ptr ds:[bx + 4]  ; spr->x2
-cmp   ax, cx
-jg    no_clip  ; todo im not sure if this conditional is possible. spr x2 < spr x1?
-mov   di, ax
+; bx is already the sprite
+mov   dx, DRAWSEGS_BASE_SEGMENT_7000
+push  dx        ; bp - 2
+push  bx        ; bp - 4h   ; bx is already vissprite
+
+les   si, dword ptr ds:[bx + VISSPRITE_T.vs_x1]
+mov   cx, es   ; ;  x2
+cmp   si, cx
+jg    no_clip   ; todo fall thru in which case is better?
 
 
 ;	for (x = spr->x1; x <= spr->x2; x++) {
@@ -4116,114 +4115,114 @@ mov   di, ax
     
 ; init clipbot, cliptop
 
-add   di, ax
-mov   si, di
-lea   di, [bp + di - 0282h]
-mov   dx, ss
-mov   es, dx
-sub   cx, ax   				 ; minus spr->x1
 inc   cx				     ; for the equals case.
-mov   dx, cx
+sub   cx, si   				 ; minus spr->x1
+shl   si, 1                  ; si 
+lea   di, [si + CLIPTOP_START_OFFSET]
+mov   ax, cs
+mov   es, ax
+push  cx                 ; backup for iter 2
 mov   ax, UNCLIPPED_COLUMN             ; -2
 rep   stosw
-lea   di, [bp + si - 0502h]
-mov   cx, dx
+lea   di, [si + CLIPBOT_START_OFFSET]
+pop   cx                 ; restore for iter 2
 rep   stosw
 
 
 no_clip:
+
 ; di equals ds_p offset
 mov   di, word ptr ds:[_ds_p]
-mov   ax, DRAWSEGS_BASE_SEGMENT_7000
-sub   di, DRAWSEG_SIZE		; sizeof drawseg
-mov   word ptr [bp - 2], ax
-jz   done_masking
+sub   di, SIZE DRAWSEG_T	
+jz   done_masking  ; no drawsegs! i suppose possible on a map edge.
+mov   es, dx   ; DRAWSEGS_BASE_SEGMENT_7000 from above
 check_loop_conditions:
-mov   es, word ptr [bp - 2]
 
 ; compare ds->x1 > spr->x2
-mov   ax, word ptr es:[di + 2]
-cmp   ax, word ptr [bx + 4]
-jg    iterate_next_drawseg_loop
-jmp   continue_checking_if_drawseg_obscures_sprite
+mov   ax, word ptr es:[di + DRAWSEG_T.drawseg_x1]
+cmp   ax, word ptr ds:[bx + VISSPRITE_T.vs_x2]
+jng   continue_checking_if_drawseg_obscures_sprite
 iterate_next_drawseg_loop:
-mov   bx, word ptr [bp - 0504h]  ;todo put this after R_RenderMaskedSegRange_
-sub   di, DRAWSEG_SIZE       ; sizeof drawseg
+; note: es and bx dont necessaryly go together.
+; es is paired with di and ds with bx.
+les   bx, dword ptr [bp - 4] 
+iterate_next_drawseg_loop_dont_restore_esbx:
+sub   di, SIZE DRAWSEG_T   
 jnz   check_loop_conditions
 done_masking:
 ; check for unclipped columns
-mov   dx, bx  ; cache vissprite pointer
-mov   cx, word ptr ds:[bx + 4] ;x2
-mov   si, word ptr ds:[bx + 2] ;x1
+push  bx  ; cache vissprite pointer bp - 6
+les   si, dword ptr ds:[bx + VISSPRITE_T.vs_x1]
+mov   cx, es 
 sub   cx, si
 jl    draw_the_vissprite
 inc   cx
-add   si, si
-lea   si, [bp + si - 0502h]
-mov   bx, (0502h - 0282h)  
+shl   si, 1
+add   si, CLIPBOT_START_OFFSET
+mov   bx, (SCREENWIDTH * 2)
 
-; note: faster when this is put in the register rather than added in the loop.
+push  cs
+pop   ds
+
 SELFMODIFY_MASKED_viewheight_2:
 mov   ax, 01000h
+mov   dx, UNCLIPPED_COLUMN
+; ds is cs here
 
-; todo optim loop
 loop_clipping_columns:
-cmp   word ptr ds:[si], UNCLIPPED_COLUMN
+cmp   word ptr ds:[si], dx ; UNCLIPPED_COLUMN -2
 jne   dont_clip_bot
 mov   word ptr ds:[si], ax
 dont_clip_bot:
-cmp   word ptr ds:[si+bx], UNCLIPPED_COLUMN
+cmp   word ptr ds:[si+bx], dx ; UNCLIPPED_COLUMN -2
 jne   dont_clip_top
 mov   word ptr ds:[si+bx], 0FFFFh
 dont_clip_top:
-add   si, 2
+sub   si, dx ; add 2 by sub -2
 loop loop_clipping_columns
 
+push  ss
+pop   ds
+
+
 draw_the_vissprite:
+; could also be the segments and not the offsets.
+mov   word ptr ds:[_mfloorclip], CLIPBOT_START_OFFSET
+mov   word ptr ds:[_mfloorclip + 2], cs
 
-lea   ax, [bp - 0502h]
-mov   word ptr ds:[_mfloorclip], ax
-mov   word ptr ds:[_mfloorclip + 2], ds
-add   ax, 0280h   ;  [bp - 0282h]
-
-mov   word ptr ds:[_mceilingclip], ax
-mov   word ptr ds:[_mceilingclip + 2], ds
-mov   si, dx    ; vissprite pointer from above
+mov   word ptr ds:[_mceilingclip], CLIPTOP_START_OFFSET
+mov   word ptr ds:[_mceilingclip + 2], cs
+pop   si      ; vissprite pointer from above bp - 6
 call  R_DrawVisSprite_
 mov   word ptr ds:[_mceilingclip + 2], OPENINGS_SEGMENT
 mov   word ptr ds:[_mfloorclip + 2], OPENINGS_SEGMENT
 
+pop  bx ; restore bx
+pop  es ; garbage pop
 LEAVE_MACRO
 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
 ret   
 continue_checking_if_drawseg_obscures_sprite:
 ; compare (ds->x2 < spr->x1)
-mov   ax, word ptr es:[di + 4]
-cmp   ax, word ptr ds:[bx + 2]
-jl    iterate_next_drawseg_loop
+mov   ax, word ptr es:[di + DRAWSEG_T.drawseg_x2]
+cmp   ax, word ptr ds:[bx + VISSPRITE_T.vs_x1]
+jl    iterate_next_drawseg_loop_dont_restore_esbx
 ;  (!ds->silhouette     && ds->maskedtexturecol_val == NULL_TEX_COL) ) {
-cmp   byte ptr es:[di + 01Ch], 0
+cmp   byte ptr es:[di + DRAWSEG_T.drawseg_silhouette], 0    ; TODO constants..
 jne   check_drawseg_scales
-cmp   word ptr es:[di + 01Ah], NULL_TEX_COL
-jne   check_drawseg_scales
-jump_to_iterate_next_drawseg_loop_3:
-jmp   iterate_next_drawseg_loop
+cmp   word ptr es:[di + DRAWSEG_T.drawseg_maskedtexturecol_val], NULL_TEX_COL
+je    iterate_next_drawseg_loop_dont_restore_esbx
 check_drawseg_scales:
 
 ;		if (ds->scale1 > ds->scale2) {
 
 ;ax:dx = scale1. we will keep this throughout the scalecheckpass logic.
-;cx  = scale2 high word. we will also keep this throughout the scalecheckpass logic.
-;si  = spr scale high word. we will also keep this throughout the scalecheckpass logic.
-mov   ax, word ptr es:[di + 8]
-mov   dx, word ptr es:[di + 6]
-mov   cx, word ptr es:[di + 0Ch]
-mov   si, word ptr es:[di + 0Ah]
+;cx:si = scale2  we will also keep this throughout the scalecheckpass logic.
+
+mov   dx, word ptr es:[di + DRAWSEG_T.drawseg_scale1 + 0]
+mov   ax, word ptr es:[di + DRAWSEG_T.drawseg_scale1 + 2]
+mov   si, word ptr es:[di + DRAWSEG_T.drawseg_scale2 + 0]
+mov   cx, word ptr es:[di + DRAWSEG_T.drawseg_scale2 + 2]
 cmp   ax, cx
 jg    scale1_highbits_larger_than_scale2
 je    scale1_highbits_equal_to_scale2
@@ -4233,10 +4232,10 @@ scale1_smaller_than_scale2:
 ;lowscalecheckpass = ds->scale1 < spr->scale;
 ; ax:dx is ds->scale2
 
-cmp   cx, word ptr ds:[bx + 01Ch]
+cmp   cx, word ptr ds:[bx + VISSPRITE_T.vs_scale + 2]
 jl    set_r1_r2_and_render_masked_set_range
 jne   lowscalecheckpass_set_route2
-cmp   si, word ptr ds:[bx + 01Ah]
+cmp   si, word ptr ds:[bx + VISSPRITE_T.vs_scale + 0]
 jae   lowscalecheckpass_set_route2
 jmp   set_r1_r2_and_render_masked_set_range
 
@@ -4253,10 +4252,10 @@ scale1_highbits_larger_than_scale2:
 ; if scalecheckpass is 0, go calculate lowscalecheck pass. 
 ; if not, the following if/else fails and we skip out early
 
-cmp   ax, word ptr ds:[bx + 01Ch]
+cmp   ax, word ptr ds:[bx + VISSPRITE_T.vs_scale + 2]
 jl    set_r1_r2_and_render_masked_set_range
 jne   get_lowscalepass_1
-cmp   dx, word ptr ds:[bx + 01Ah]
+cmp   dx, word ptr ds:[bx + VISSPRITE_T.vs_scale + 0]
 jae   get_lowscalepass_1
 
 ;     scalecheckpass 1, fail early
@@ -4264,29 +4263,27 @@ jae   get_lowscalepass_1
 set_r1_r2_and_render_masked_set_range:
 ;	if (ds->maskedtexturecol_val != NULL_TEX_COL) {
  
-cmp   word ptr es:[di + 01Ah], NULL_TEX_COL
+cmp   word ptr es:[di + DRAWSEG_T.drawseg_maskedtexturecol_val], NULL_TEX_COL
 ; continue
-je    jump_to_iterate_next_drawseg_loop_3
+je    jump_to_iterate_next_drawseg_loop
 ;  r1 = ds->x1 < spr->x1 ? spr->x1 : ds->x1;
 ;  set r1 to the greater of the two.
-mov   ax, word ptr es:[di + 2] ; ds->x1
-cmp   ax, word ptr ds:[bx + 2]
+mov   ax, word ptr es:[di + DRAWSEG_T.drawseg_x1] ; ds->x1
+cmp   ax, word ptr ds:[bx + VISSPRITE_T.vs_x1]
 jge   r1_stays_ds_x1
-mov   ax, word ptr ds:[bx + 2]   ; spr->x1
+mov   ax, word ptr ds:[bx + VISSPRITE_T.vs_x1]   ; spr->x1
 r1_stays_ds_x1:
 
 ; r2 = ds->x2 > spr->x2 ? spr->x2 : ds->x2;
 ; set r2 as the minimum of the two.
-mov   cx, word ptr ds:[bx + 4]    ; spr->x2
-cmp   cx, word ptr es:[di + 4]
+mov   cx, word ptr ds:[bx + VISSPRITE_T.vs_x2]    ; spr->x2
+cmp   cx, word ptr es:[di + DRAWSEG_T.drawseg_x2]
 jle   r2_stays_ds_x2
 
-mov   cx, word ptr es:[di + 4] ; ds->x2
+mov   cx, word ptr es:[di + DRAWSEG_T.drawseg_x2] ; ds->x2
 
 r2_stays_ds_x2:
 
-
-do_render_masked_segrange:
 
 
 call  R_RenderMaskedSegRange_
@@ -4297,13 +4294,15 @@ get_lowscalepass_1:
 
 ;dx:bx = ds->scale2
 
-cmp   cx, word ptr ds:[bx + 01Ch]
+cmp   cx, word ptr ds:[bx + VISSPRITE_T.vs_scale + 2]
 jl    do_R_PointOnSegSide_check
 jne   failed_check_pass_set_r1_r2
-cmp   si, word ptr ds:[bx + 01Ah]
+cmp   si, word ptr ds:[bx + VISSPRITE_T.vs_scale + 0]
 jae   failed_check_pass_set_r1_r2
 
 jmp   do_R_PointOnSegSide_check
+jump_to_iterate_next_drawseg_loop:
+jmp   iterate_next_drawseg_loop_dont_restore_esbx
 
 
 
@@ -4313,79 +4312,73 @@ lowscalecheckpass_set_route2:
 ; ax:dx is still ds->scale1
 
 
-cmp   ax, word ptr ds:[bx + 01Ch]
+cmp   ax, word ptr ds:[bx + VISSPRITE_T.vs_scale + 2]
 jl    do_R_PointOnSegSide_check
 jne   failed_check_pass_set_r1_r2
-cmp   dx, word ptr ds:[bx + 01Ah]
+cmp   dx, word ptr ds:[bx + VISSPRITE_T.vs_scale + 0]
 jae   failed_check_pass_set_r1_r2
 
 do_R_PointOnSegSide_check:
 
 
-mov   si, word ptr es:[di]
-les   ax, dword ptr ds:[bx + 6]
+mov   si, word ptr es:[di + DRAWSEG_T.drawseg_cursegvalue]
+les   ax, dword ptr ds:[bx + VISSPRITE_T.vs_gx]
 mov   dx, es
-les   bx, dword ptr ds:[bx + 0Ah]
+les   bx, dword ptr ds:[bx + VISSPRITE_T.vs_gy]
 mov   cx, es
 
 ; todo this is the only place calling this? make sense to inline?
-call  R_PointOnSegSide_
+call  R_PointOnSegSide_   ; todo return in carry?
 test  ax, ax
-mov   bx, word ptr [bp - 0504h]  ; todo remove?
-mov   es, word ptr [bp - 2]     			; necessary
-jne   failed_check_pass_set_r1_r2
-jmp   set_r1_r2_and_render_masked_set_range
+les   bx, dword ptr [bp - 4] 
+
+je   set_r1_r2_and_render_masked_set_range
 
 failed_check_pass_set_r1_r2:
 
 ;		r1 = ds->x1 < spr->x1 ? spr->x1 : ds->x1;
 
 
-mov   si, word ptr es:[di + 2]  ; spr->x1
-cmp   si, word ptr ds:[bx + 2]     ; ds->x1 
-jl    spr_x1_smaller_than_ds_x1
-
-jmp   r1_set
+mov   si, word ptr es:[di + DRAWSEG_T.drawseg_x1]  ; spr->x1
+cmp   si, word ptr ds:[bx + VISSPRITE_T.vs_x1]
+jnl   r1_set
 
 spr_x1_smaller_than_ds_x1:
-mov   si, word ptr ds:[bx + 2]
+mov   si, word ptr ds:[bx +  VISSPRITE_T.vs_x1]
 r1_set:
 
 ;		r2 = ds->x2 > spr->x2 ? spr->x2 : ds->x2;
 
-mov   dx, word ptr es:[di + 4]	; spr->x2
-cmp   dx, word ptr ds:[bx + 4]		; ds->x2
-jg    spr_x2_greater_than_dx_x2
-
-jmp   r2_set
-jump_to_iterate_next_drawseg_loop_2:
-jmp   iterate_next_drawseg_loop
-
+mov   cx, word ptr es:[di + DRAWSEG_T.drawseg_x2]	; spr->x2
+cmp   cx, word ptr ds:[bx + VISSPRITE_T.vs_x2]		; ds->x2
+jng   r2_set
 
 
 spr_x2_greater_than_dx_x2:
-mov   dx, word ptr ds:[bx + 4]
+mov   cx, word ptr ds:[bx +  VISSPRITE_T.vs_x2]
 r2_set:
 
-; si is r1 and dx is r2
-; bx is near vissprite
+; si is r1 and cx is r2
+; bx is vissprite
 ; es:di is drawseg
 ; so only ax and cx are free.
 ; lets precalculate the loop count into cx, freeing up dx.
-mov   cx, dx
+
 sub   cx, si
-jl    jump_to_iterate_next_drawseg_loop_2 
-inc   cx
+jl    jump_to_iterate_next_drawseg_loop
+inc   cx  ; cx is now count! dont modify
 
 
 
 ;        silhouette = ds->silhouette;
 ;    	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, ds->bsilheight);
 
-mov   al, byte ptr es:[di + 01Ch]
+mov   al, byte ptr es:[di + DRAWSEG_T.drawseg_silhouette]
 mov   byte ptr cs:[SELFMODIFY_MASKED_set_al_to_silhouette+1 - OFFSET R_MASKFL_STARTMARKER_],  al
 
-mov   ax, word ptr es:[di + 012h]
+; todo could these be preshifted?
+
+mov   ax, word ptr es:[di + DRAWSEG_T.drawseg_bsilheight]
 xor   dx, dx
 sar   ax, 1
 rcr   dx, 1
@@ -4395,21 +4388,21 @@ sar   ax, 1
 rcr   dx, 1
 
 ;ax:dx = temp
-cmp   ax, word ptr ds:[bx + 010h]
+cmp   ax, word ptr ds:[bx + VISSPRITE_T.vs_gz + 2]
 
 ;		if (spr->gz.w >= temp.w) {
 ;			silhouette &= ~SIL_BOTTOM;
 ;		}
 
 jl    remove_bot_silhouette
-jg   do_not_remove_bot_silhouette
-cmp   dx, word ptr ds:[bx + 0Eh]
+jg    do_not_remove_bot_silhouette
+cmp   dx, word ptr ds:[bx + VISSPRITE_T.vs_gz + 0]
 ja    do_not_remove_bot_silhouette
 remove_bot_silhouette:
 and   byte ptr cs:[SELFMODIFY_MASKED_set_al_to_silhouette+1 - OFFSET R_MASKFL_STARTMARKER_], 0FEh  
 do_not_remove_bot_silhouette:
 
-mov   ax, word ptr es:[di + 014h]
+mov   ax, word ptr es:[di + DRAWSEG_T.drawseg_tsilheight]
 xor   dx, dx
 sar   ax, 1
 rcr   dx, 1
@@ -4418,33 +4411,31 @@ rcr   dx, 1
 sar   ax, 1
 rcr   dx, 1
 
-;cx:ax = temp
+;dx:ax = temp
 
 ;		if (spr->gzt.w <= temp.w) {
 ;			silhouette &= ~SIL_TOP;
 ;		}
 
-cmp   ax, word ptr ds:[bx + 014h]
+cmp   ax, word ptr ds:[bx + VISSPRITE_T.vs_gzt + 2]
 mov   ah,  0FFh		; for later and
 jg    remove_top_silhouette
-jl   do_not_remove_top_silhouette
-cmp   dx, word ptr ds:[bx + 012h]
+jl    do_not_remove_top_silhouette
+cmp   dx, word ptr ds:[bx + VISSPRITE_T.vs_gzt + 0]
 
 jb    do_not_remove_top_silhouette
 remove_top_silhouette:
 
 ; ok. this is too close to the following instruction to and to 0FD so instead, 
 ; we put the value to AND into ah.
-mov   ah,  0FDh
+mov   ah,  0FDh  ; ~SIL_TOP
 
 do_not_remove_top_silhouette:
 
-mov   dx, OPENINGS_SEGMENT
-mov   ds, dx
 
-add   si, si
+shl   si, 1
 
-; si is r1 and dx is r2
+; si is r1 and cx is count
 ; bx is near vissprite
 ; es:di is drawseg
 
@@ -4452,80 +4443,87 @@ add   si, si
 SELFMODIFY_MASKED_set_al_to_silhouette:
 mov   al, 0FFh ; this gets selfmodified
 and   al, ah   ; second AND is applied 
-cmp   al, 1
-jne   silhouette_not_1
+je    silhouette_is_SIL_NONE ; quit early
 
-do_silhouette_1_loop:
+cmp   al, SIL_TOP  ; al is 0 1 2 or 3. 2 = sil_top
+les   ax, dword ptr es:[di + DRAWSEG_T.drawseg_sprtopclip_offset]
+mov   bx, es ; top
+mov   dx, OPENINGS_SEGMENT
+mov   es, dx
+mov   dx, CLIPBOT_START_SEGMENT
+mov   ds, dx  ; ds gets cs to index clipbot
+mov   dx, UNCLIPPED_COLUMN
+je    silhouette_is_SIL_TOP
+ja    silhouette_is_SIL_BOTH
 
+silhouette_is_SIL_BOTTOM:
 
-mov   bx, word ptr es:[di + 018h]
-silhouette_1_loop:
-cmp   word ptr [bp + si - 0502h], UNCLIPPED_COLUMN
-jne   increment_silhouette_1_loop
+; bx already right
 
-mov   ax, word ptr ds:[bx+si]
-mov   word ptr [bp + si - 0502h], ax
-increment_silhouette_1_loop:
-add   si, 2
-loop   silhouette_1_loop
-mov   ax, ss
-mov   ds, ax
+silhouette_SIL_BOTTOM_loop:
+cmp   word ptr ds:[si], dx ; UNCLIPPED_COLUMN or -2
+jne   increment_silhouette_SIL_BOTTOM_loop
+
+push  word ptr es:[bx+si]
+pop   word ptr ds:[si]
+increment_silhouette_SIL_BOTTOM_loop:
+sub   si, dx ; add 2 by sub -2
+loop   silhouette_SIL_BOTTOM_loop
+mov   cx, ss
+mov   ds, cx
 jmp   iterate_next_drawseg_loop  ;todo change the flow to go to the other jump
 
-silhouette_not_1:
-cmp   al, 2
-jne   silhouette_not_2
 
+silhouette_is_SIL_TOP:
 
-mov   bx, word ptr es:[di + 016h]
+xchg  ax, bx   ; get botclip in bx
+add   si, SCREENWIDTH * 2 ; CLIPTOP_START_OFFSET
+sub   bx, SCREENWIDTH * 2  ; to cancel bx + si case to offset the above
 
 silhouette_2_loop:
-cmp   word ptr [bp + si - 0282h], UNCLIPPED_COLUMN
+cmp   word ptr ds:[si], dx ; UNCLIPPED_COLUMN or -2
 jne   increment_silhouette_2_loop
 
-mov   ax, word ptr ds:[bx+si]
-mov   word ptr [bp + si - 0282h], ax
+push  word ptr es:[bx+si]
+pop   word ptr ds:[si]
 increment_silhouette_2_loop:
-add   si, 2
-loop   silhouette_2_loop
+sub   si, dx ; add 2 by sub -2
+loop  silhouette_2_loop
+silhouette_is_SIL_NONE:
 mov   cx, ss
 mov   ds, cx
 jmp   iterate_next_drawseg_loop  ;todo change the flow to go to the other jump
-silhouette_not_2:
-cmp   al, 3
-je    silhouette_is_3
-jump_to_iterate_next_drawseg_loop:
-mov   cx, ss
-mov   ds, cx
-jmp   iterate_next_drawseg_loop
-silhouette_is_3:
-
-les   dx, dword ptr es:[di + 016h]
-mov   bx, es
-
-silhouette_3_loop:
-
-cmp   word ptr [bp + si - 0502h], UNCLIPPED_COLUMN
-jne   do_next_silhouette_3_subloop
 
 
+silhouette_is_SIL_BOTH:
 
-mov   ax, word ptr ds:[bx+si]
-mov   word ptr [bp + si - 0502h], ax
-do_next_silhouette_3_subloop:
-cmp   word ptr [bp + si - 0282h], UNCLIPPED_COLUMN
-jne   increment_silhouette_3_loop
+; ax/bx already set
 
-xchg  bx, dx
-mov   ax, word ptr ds:[bx+si]
-mov   word ptr [bp + si - 0282h], ax
-xchg  bx, dx
+xchg  ax, bp  ; ; use bp for bp + si pattern
 
-increment_silhouette_3_loop:
+silhouette_SIL_BOTH_loop:
 
-add   si, 2
+cmp   word ptr ds:[si], dx ; UNCLIPPED_COLUMN or -2
+jne   do_next_silhouette_SIL_BOTH_subloop
 
-loop   silhouette_3_loop
+push  word ptr es:[bx+si]
+pop   word ptr ds:[si]
+do_next_silhouette_SIL_BOTH_subloop:
+cmp   word ptr ds:[si + (SCREENWIDTH * 2)], dx ; UNCLIPPED_COLUMN or -2
+jne   increment_silhouette_SIL_BOTH_loop
+
+
+push  word ptr es:[bp+si]
+pop   word ptr ds:[si + (SCREENWIDTH * 2)]
+
+
+increment_silhouette_SIL_BOTH_loop:
+
+sub   si, dx ; add 2 by sub -2
+loop  silhouette_SIL_BOTH_loop
+xchg  ax, bp  ; restore bp
+
+
 mov   cx, ss
 mov   ds, cx
 jmp   iterate_next_drawseg_loop
