@@ -3043,6 +3043,7 @@ ret
 
 ENDP
 
+SEGMENT_4000_OFFSET = (04000h - FIXED_DS_SEGMENT) SHL 4
 
 _doomdata_bin_string:
 db "DOOMDATA.BIN", 0
@@ -3056,7 +3057,6 @@ PUBLIC  M_Init_
 PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
-sub   sp, MENUGRAPHICS_STR_SIZE
 
 ; M_Reload inlined
 
@@ -3070,7 +3070,7 @@ xor   cx, cx ; 0 high
 xor   dx, dx ; SEEK_SET
 call  dword ptr ds:[_fseek_addr]   ;	fseek(fp, MENUDATA_DOOMDATA_OFFSET, SEEK_SET);
 
-lea   ax, [bp - MENUGRAPHICS_STR_SIZE]
+mov   ax, SEGMENT_4000_OFFSET
 mov   si, ax
 mov   bx, NUM_MENU_ITEMS * SIZEOF_LUMP_NAME
 mov   cx, di
@@ -3083,7 +3083,7 @@ call  dword ptr ds:[_fclose_addr]
 
 ; si is start of array.
 
-lea   ax, [bp - SIZEOF_LUMP_NAME]
+mov   ax, SEGMENT_4000_OFFSET + MENUGRAPHICS_STR_SIZE - SIZEOF_LUMP_NAME
 cmp   byte ptr ds:[_is_ultimate], 0
 je    is_not_ultimate_dont_add_back_lump
 
@@ -3107,14 +3107,11 @@ push  bx  ; menuoffsets counter
 loop_load_next_menugraphic:
 
 mov   ax, si
-;call  W_GetNumForName_
-
 call  dword ptr ds:[_W_GetNumForName_addr]
 
 mov   cx, ax  ; store lump
 
 push  dx
-;call  W_LumpLength_
 
 call  dword ptr ds:[_W_LumpLength_addr]
 
@@ -3152,7 +3149,7 @@ iter_load_next_menugraphic:
 add   si, SIZEOF_LUMP_NAME
 SELFMODIFY_menugraphics_loop_end:
 cmp   si, 01000h
-jl loop_load_next_menugraphic
+jb  loop_load_next_menugraphic
 
 ; pop   bx  ; undo the push. not really necessary but symmetrical
 

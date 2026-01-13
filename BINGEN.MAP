@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/13 17:12:39
+Created on:       26/01/13 17:31:21
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -26,7 +26,7 @@ Segment                Class          Group          Address         Size
 
 SM_LOAD_TEXT           CODE           AUTO           0000:0000       00000492
 WI_STUFF_TEXT          CODE           AUTO           0049:0002       00000fd3
-M_MENU_TEXT            CODE           AUTO           0147:0000       00001507
+M_MENU_TEXT            CODE           AUTO           0147:0000       00001502
 F_WIPE_TEXT            CODE           AUTO           0298:0000       000005fc
 F_FINALE_TEXT          CODE           AUTO           02f8:0000       00000bbd
 P_SAVEG_TEXT           CODE           AUTO           03b4:0000       00000bb7
@@ -176,11 +176,11 @@ Module: m_menu.obj(m_menu.ASM)
 0147:044d*     M_LoadGame_
 0147:0bc6*     M_ChangeDetail_
 0147:0d07*     M_StringHeight_
-0147:1435      G_Responder_
+0147:1430      G_Responder_
 0147:0386*     M_DrawLoad_
 0147:05b8*     M_SaveGame_
 0147:0560*     M_SaveSelect_
-0147:1321*     M_MakeSaveGameName_
+0147:131c*     M_MakeSaveGameName_
 0147:0a07*     M_Options_
 0147:052f*     M_DoSave_
 0147:0dbd      M_Responder_
@@ -192,7 +192,7 @@ Module: m_menu.obj(m_menu.ASM)
 0147:08c3*     M_DrawEpisode_
 0147:077e*     M_DrawReadThisRetail_
 0147:0c8b*     M_StartMessage_
-0147:13c3*     M_strcpy_
+0147:13be*     M_strcpy_
 0147:0ba8*     M_ChangeSensitivity_
 0147:0b35*     M_QuitDOOM_
 0147:08a5*     M_NewGame_
@@ -206,7 +206,7 @@ Module: m_menu.obj(m_menu.ASM)
 0147:10ae      M_Drawer_
 0147:0d37*     M_WriteText_
 0147:045e*     M_ReadSaveStrings_
-0147:1404*     M_Z_QuickmapStatus_
+0147:13ff*     M_Z_QuickmapStatus_
 0147:0a91*     M_ReadThis_
 0147:0943*     M_Episode_
 0147:061b*     M_QuickSave_
@@ -216,18 +216,18 @@ Module: m_menu.obj(m_menu.ASM)
 0147:11f0      M_Init_
 0147:1090      M_StartControlPanel_
 0147:0c26*     M_DrawThermo_
-0147:1507      M_MENU_ENDMARKER_
+0147:1502      M_MENU_ENDMARKER_
 0147:041a*     M_LoadSelect_
 0147:0000      M_MENU_STARTMARKER_
 0147:03c5*     M_DrawSaveLoadBorder_
-0147:13d7      M_DrawPause_
+0147:13d2      M_DrawPause_
 0147:0998*     M_DrawOptions_
 0147:0ade*     M_QuitResponse_
 0147:06bf*     M_QuickLoadResponse_
 0147:11b7*     CopyString13_menu_seg_
 0147:04bd*     M_DrawSave_
-0147:13a1*     M_Strcmp_
-0147:133b      M_LoadFromSaveGame_
+0147:139c*     M_Strcmp_
+0147:1336      M_LoadFromSaveGame_
 0147:08dc*     M_VerifyNightmare_
 0147:0861*     M_DrawMainMenu_
 0147:0754*     M_DrawReadThis1_
@@ -1424,4 +1424,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003c1d0 (246224.)
 Entry point address: 2dea:81ee
-Link time: 00:00.04
+Link time: 00:00.05
