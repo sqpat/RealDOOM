@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/13 16:33:42
+Created on:       26/01/13 17:12:39
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -81,14 +81,14 @@ S_SOUND_TEXT           CODE           AUTO           2254:b450       0000051b
 D_INIT_TEXT            CODE           AUTO           2dea:000c       00000caf
 S_INIT_TEXT            CODE           AUTO           2dea:0cbc       00000562
 ST_INIT_TEXT           CODE           AUTO           2dea:121e       0000020d
-R_INIT_TEXT            CODE           AUTO           2dea:142c       000007ad
-W_INIT_TEXT            CODE           AUTO           2dea:1bda       0000016e
-I_INIT_TEXT            CODE           AUTO           2dea:1d48       0000019b
-Z_INIT_TEXT            CODE           AUTO           2dea:1ee4       0000078d
-S_SBINIT_TEXT          CODE           AUTO           2dea:2672       000002e5
-P_INIT_TEXT            CODE           AUTO           2dea:2958       00000275
-I_QUIT_TEXT            CODE           AUTO           2dea:2bce       000001a9
-I_IBM_TEXT             CODE           AUTO           2dea:2d78       00000051
+R_INIT_TEXT            CODE           AUTO           2dea:142c       000007a7
+W_INIT_TEXT            CODE           AUTO           2dea:1bd4       0000016e
+I_INIT_TEXT            CODE           AUTO           2dea:1d42       0000019b
+Z_INIT_TEXT            CODE           AUTO           2dea:1ede       0000078d
+S_SBINIT_TEXT          CODE           AUTO           2dea:266c       000002e5
+P_INIT_TEXT            CODE           AUTO           2dea:2952       00000275
+I_QUIT_TEXT            CODE           AUTO           2dea:2bc8       000001a9
+I_IBM_TEXT             CODE           AUTO           2dea:2d72       00000051
 bingen_TEXT            CODE           AUTO           2dea:2dd0       00001553
 D_NET_TEXT             CODE           AUTO           2dea:4324       000000b2
 G_GAME_TEXT            CODE           AUTO           2dea:43d6       00000383
@@ -871,64 +871,64 @@ Module: st_init.obj(st_init.ASM)
 2dea:12c6      ST_Init_
 Module: r_init.obj(r_init.ASM)
 2dea:1795*     R_InitTextures_
-2dea:1a1d      R_Init_
+2dea:1a17      R_Init_
 2dea:14b6*     R_GenerateLookup_
-2dea:1b95*     W_CacheLumpNumDirectSmall_
+2dea:1b8f*     W_CacheLumpNumDirectSmall_
 Module: w_init.obj(w_init.ASM)
-2dea:1bda*     W_INIT_STARTMARKER_
-2dea:1d48*     W_INIT_ENDMARKER_
-2dea:1c06      W_AddFile_
+2dea:1bd4*     W_INIT_STARTMARKER_
+2dea:1d42*     W_INIT_ENDMARKER_
+2dea:1c00      W_AddFile_
 Module: i_init.obj(i_init.ASM)
-2dea:1ee3*     I_INIT_ENDMARKER_
-2dea:1dc4      I_Init_
-2dea:1d48*     I_INIT_STARTMARKER_
+2dea:1edd*     I_INIT_ENDMARKER_
+2dea:1dbe      I_Init_
+2dea:1d42*     I_INIT_STARTMARKER_
 Module: z_init.obj(z_init.ASM)
-2dea:226a*     Z_ReadFileRegionWithIndex_
-2dea:1ee4      _doomdata_bin_string
-2dea:2671*     Z_INIT_ENDMARKER_
-2dea:249e      Z_LoadBinaries_
-2dea:21e5      Z_GetEMSPageMap_
-2dea:22ac*     Z_DoRenderCodeLoad_
-2dea:1ee4*     Z_INIT_STARTMARKER_
-2dea:2139      Z_InitEMS_
+2dea:2264*     Z_ReadFileRegionWithIndex_
+2dea:1ede      _doomdata_bin_string
+2dea:266b*     Z_INIT_ENDMARKER_
+2dea:2498      Z_LoadBinaries_
+2dea:21df      Z_GetEMSPageMap_
+2dea:22a6*     Z_DoRenderCodeLoad_
+2dea:1ede*     Z_INIT_STARTMARKER_
+2dea:2133      Z_InitEMS_
 Module: s_sbinit.obj(s_sbinit.ASM)
-2dea:27e6      SB_SetPlaybackRate_
-2dea:292e      SB_StartInit_
-2dea:26d7      _SB_DSP_Version
-2dea:2957*     S_SBINIT_ENDMARKER_
-2dea:28c0*     SB_InitCard_
-2dea:2672*     S_SBINIT_STARTMARKER_
-2dea:26e9*     SB_SaveVoiceVolume_
-2dea:26da*     SB_ReadMixer_
-2dea:2881*     SB_GetDSPVersion_
-2dea:2718*     SB_DSP2xx_BeginPlayback_
-2dea:2711      SB_DSP1xx_BeginPlayback_
-2dea:272d*     SB_DSP4xx_BeginPlayback_
-2dea:26d9      _SB_CardActive
-2dea:2824*     SB_SetupPlayback_
-2dea:2742*     DMA_SetupTransfer_
-2dea:27c3*     SB_EnableInterrupt_
+2dea:27e0      SB_SetPlaybackRate_
+2dea:2928      SB_StartInit_
+2dea:26d1      _SB_DSP_Version
+2dea:2951*     S_SBINIT_ENDMARKER_
+2dea:28ba*     SB_InitCard_
+2dea:266c*     S_SBINIT_STARTMARKER_
+2dea:26e3*     SB_SaveVoiceVolume_
+2dea:26d4*     SB_ReadMixer_
+2dea:287b*     SB_GetDSPVersion_
+2dea:2712*     SB_DSP2xx_BeginPlayback_
+2dea:270b      SB_DSP1xx_BeginPlayback_
+2dea:2727*     SB_DSP4xx_BeginPlayback_
+2dea:26d3      _SB_CardActive
+2dea:281e*     SB_SetupPlayback_
+2dea:273c*     DMA_SetupTransfer_
+2dea:27bd*     SB_EnableInterrupt_
 Module: p_init.obj(p_init.ASM)
-2dea:2bcd*     P_INIT_ENDMARKER_
-2dea:29a9      P_Init_
-2dea:2958*     P_INIT_STARTMARKER_
-2dea:2959*     R_InstallSpriteLump_
+2dea:2bc7*     P_INIT_ENDMARKER_
+2dea:29a3      P_Init_
+2dea:2952*     P_INIT_STARTMARKER_
+2dea:2953*     R_InstallSpriteLump_
 Module: i_quit.obj(i_quit.ASM)
-2dea:2cbc*     I_ShutdownWads_
-2dea:2d77*     I_QUIT_ENDMARKER_
-2dea:2c11*     I_ShutdownMouse_
-2dea:2bce*     I_QUIT_STARTMARKER_
-2dea:2bd5*     I_ShutdownSound_
-2dea:2d3c      I_Quit_
-2dea:2c75*     zeroConventional_
-2dea:2c1d*     Z_ShutdownEMS_
-2dea:2d5b      I_Error_
-2dea:2bf9*     I_ShutdownGraphics_
+2dea:2cb6*     I_ShutdownWads_
+2dea:2d71*     I_QUIT_ENDMARKER_
+2dea:2c0b*     I_ShutdownMouse_
+2dea:2bc8*     I_QUIT_STARTMARKER_
+2dea:2bcf*     I_ShutdownSound_
+2dea:2d36      I_Quit_
+2dea:2c6f*     zeroConventional_
+2dea:2c17*     Z_ShutdownEMS_
+2dea:2d55      I_Error_
+2dea:2bf3*     I_ShutdownGraphics_
 Module: i_ibm.obj(i_ibm.ASM)
-2dea:2d78*     I_IBM_STARTMARKER_
-2dea:2d78      I_WaitVBL_
-2dea:2dc9*     I_IBM_ENDMARKER_
-2dea:2d98      I_ReadMouse_
+2dea:2d72*     I_IBM_STARTMARKER_
+2dea:2d72      I_WaitVBL_
+2dea:2dc3*     I_IBM_ENDMARKER_
+2dea:2d92      I_ReadMouse_
 Module: bingen.obj(C:\REALDOOM\build\tools\bingen\bingen.c)
 2dea:2dd0      main_
 Module: d_net.obj(d_net.ASM)

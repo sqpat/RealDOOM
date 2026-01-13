@@ -747,6 +747,8 @@ ENDP
 
 
 
+TEMP_DATA_4000_OFFSET = (04000h - FIXED_DS_SEGMENT) SHL 4
+
 TEX_LOAD_ADDRESS_SEGMENT = 07000h
 TEX_LOAD_ADDRESS_2_SEGMENT = 07800h
 
@@ -758,7 +760,6 @@ PUSHA_NO_AX_OR_BP_MACRO
 
 push      bp
 mov       bp, sp
-sub       sp, 10 + (2 * MAX_PATCH_COUNT);  03ACh
 mov       ax, OFFSET str_patch_start
 mov       dx, cs
 call      W_CheckNumForNameFarString_
@@ -822,13 +823,10 @@ call      W_CacheLumpNameDirectFarString_  ; W_CacheLumpNameDirect("PNAMES", (by
 
 
 mov       es, di  ; 7000
-xor       bx, bx
+mov       cx, word ptr es:[0000]  ; loop counter
 
 
-mov       cx, word ptr es:[bx]  ; loop counter
 
-
-mov       di, bx ; 0 
 mov       si, 4 ; name_p
 
 ;	temp = (*((int32_t  __far*)TEX_LOAD_ADDRESS));
@@ -844,7 +842,7 @@ mov       si, 4 ; name_p
 
 
 
-lea       di, [bp - 03ACh]
+mov       di, TEMP_DATA_4000_OFFSET
 
 SELFMODIFY_set_patchend:
 mov       bx, 01000h
@@ -1085,7 +1083,7 @@ stosb       ; patch->originy = (mpatch->originy);
 lodsw
 shl     ax, 1
 xchg    ax, si
-mov     si, word ptr ss:[bp - 03ACh + si]
+mov     si, word ptr ss:[TEMP_DATA_4000_OFFSET + si]
 xchg    ax, si 
 add     ax, dx          ; (mpatch->originx < 0 ? 0x8000 : 0)
 stosw                   ; patch->patch = patchlookup[(mpatch->patch)] + (mpatch->originx < 0 ? 0x8000 : 0);
@@ -1262,15 +1260,8 @@ mov     word ptr es:[TEXTUREDEFS_OFFSET_OFFSET], bx  ; zero this
 mov       ax, COLORMAP_LUMP
 
 call      W_CacheLumpNumDirect_
-       
-;call      R_InitData_
-
-
-; inlined
-
 
 call      R_InitTextures_
-
 
 mov       ax, OFFSET str_double_dot
 call      DEBUG_PRINT_NOARG_CS_
