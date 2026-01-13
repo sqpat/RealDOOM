@@ -24,6 +24,7 @@ INSTRUCTION_SET_MACRO
 EXTRN HUlib_drawTextLine_:NEAR
 EXTRN HUlib_eraseTextLine_:NEAR
 EXTRN HUlib_addMessageToSText_:NEAR
+EXTRN Z_QuickMapStatus_Physics_:NEAR
 
 
 
@@ -109,11 +110,7 @@ done_drawing_everything:
 cmp   byte ptr ds:[_automapactive], ch ; 0
 je    check_if_mapped
 inc   cx
-;call      Z_QuickmapStatus_
-Z_QUICKMAPAI1 pageswapargs_stat_offset_size INDEXED_PAGE_9C00_OFFSET
-Z_QUICKMAPAI4_NO_DX (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
-Z_QUICKMAPAI1_NO_DX (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
-
+call  Z_QuickMapStatus_Physics_
 
 mov   ax, OFFSET _w_title
 call  HUlib_drawTextLine_
@@ -132,12 +129,7 @@ retf
 
 do_quickmap:
 inc   cx    ; mark mapped
-;call      Z_QuickmapStatus_
-push  si
-Z_QUICKMAPAI1 pageswapargs_stat_offset_size INDEXED_PAGE_9C00_OFFSET
-Z_QUICKMAPAI4_NO_DX (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
-Z_QUICKMAPAI1_NO_DX (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
-pop   si
+call  Z_QuickMapStatus_Physics_
 
 jmp   done_mapping
 

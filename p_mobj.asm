@@ -22,6 +22,7 @@ INSTRUCTION_SET_MACRO
 P_SIGHT_STARTMARKER_ = 0 
 
 
+EXTRN Z_QuickMapStatus_Physics_:NEAR
 
 EXTRN P_TryMove_:NEAR
 EXTRN P_SlideMove_:NEAR         ; except this is really near
@@ -327,11 +328,8 @@ call      P_BringUpWeapon_
 
 
 
-;call      Z_QuickmapStatus_
-Z_QUICKMAPAI1 pageswapargs_stat_offset_size INDEXED_PAGE_9C00_OFFSET
-Z_QUICKMAPAI4_NO_DX (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
-Z_QUICKMAPAI1_NO_DX (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
-mov   byte ptr ds:[_currenttask], TASK_STATUS
+call      Z_QuickMapStatus_Physics_
+
 
 
 call       ST_Start_
@@ -342,11 +340,6 @@ call       ST_Start_
 call      HU_Start_
 
 
-; todo really necessary?
-
-;call      Z_QuickMapPhysics_
-; ST_Start internally ran I_SetPalette_ which clobbers 8000 to 9400.
-;Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
 
 
 mov   byte ptr ds:[_currenttask], TASK_PHYSICS

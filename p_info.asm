@@ -431,11 +431,8 @@ je     ret_pain_256
 cmp    al, MT_SKULL
 je     ret_pain_256
 push   bx
-cbw
-mov    bx, ax
-mov    al, byte ptr cs:[bx + _pain_chance_lookup]
-pop    bx
-retf  
+mov    bx, OFFSET _pain_chance_lookup
+jmp    do_generic_byte_lookup
 
 ENDP
 
@@ -448,12 +445,8 @@ dec    ax
 cmp    al, (MT_WOLFSS - 1)
 ja     raise_state_default
 push   bx
-cbw
-xchg   ax, bx
-sal    bx, 1
-mov    ax, word ptr cs:[bx + _raise_state_lookup] ; 0 not counted..
-pop    bx
-retf 
+mov    bx, OFFSET _raise_state_lookup
+jmp    do_generic_word_lookup
 
 
 ENDP
@@ -500,9 +493,11 @@ dec    al
 cmp    al, (MT_WOLFSS - 1)
 ja     active_sound_default
 push   bx
+mov    bx, OFFSET _active_sound_lookup
+do_generic_byte_lookup:
 cbw
-mov    bx, ax
-mov    al, byte ptr cs:[bx + _active_sound_lookup]
+add    bx, ax
+mov    al, byte ptr cs:[bx]
 pop    bx
 retf   
 
@@ -518,11 +513,8 @@ PUBLIC  GetPainSound_
 cmp    al, MT_BOSSBRAIN
 ja     pain_sound_default
 push   bx
-cbw
-mov    bx, ax
-mov    al, byte ptr cs:[bx + _pain_sound_lookup]
-pop    bx
-retf 
+mov    bx, OFFSET _pain_sound_lookup
+jmp    do_generic_byte_lookup
 
 ENDP
 
@@ -535,10 +527,12 @@ PUBLIC  GetSeeState_
 cmp    al, MT_BOSSSPIT
 ja     see_state_default
 push   bx
+mov    bx, OFFSET _see_state_lookup
+do_generic_word_lookup:
 cbw
-mov    bx, ax
-sal    bx, 1
-mov    ax, word ptr cs:[bx + _see_state_lookup]
+sal    ax, 1
+add    bx, ax
+mov    ax, word ptr cs:[bx]
 pop    bx
 retf   
 
@@ -567,12 +561,8 @@ PUBLIC  GetMissileState_
 cmp    al, MT_WOLFSS
 ja     missile_state_default
 push   bx
-cbw
-xchg   ax, bx
-sal    bx, 1
-mov    ax, word ptr cs:[bx + _missile_state_lookup]
-pop    bx
-retf
+mov    bx, OFFSET _missile_state_lookup
+jmp    do_generic_word_lookup
 
 ENDP
 
@@ -585,12 +575,9 @@ PUBLIC  GetDeathState_
 cmp    al, MT_ARACHPLAZ
 ja     death_state_default
 push   bx
-cbw
-xchg   ax, bx
-sal    bx, 1
-mov    ax, word ptr cs:[bx + _death_state_lookup]
-pop    bx
-retf   
+mov    bx, OFFSET _death_state_lookup
+jmp    do_generic_word_lookup
+
 
 
 ENDP
@@ -605,12 +592,9 @@ PUBLIC  GetPainState_
 cmp    al, MT_BOSSBRAIN
 ja     pain_state_default
 push   bx
-cbw
-xchg   ax, bx
-sal    bx, 1
-mov    ax, word ptr cs:[bx + _pain_state_lookup]
-pop    bx
-retf   
+mov    bx, OFFSET _pain_state_lookup
+jmp    do_generic_word_lookup
+
 
 ENDP
 
@@ -703,12 +687,8 @@ PUBLIC  GetSpawnHealth_
 cmp    al, MT_BARREL
 ja     spawn_health_default
 push   bx
-cbw
-xchg   ax, bx
-sal    bx, 1
-mov    ax, word ptr cs:[bx + _spawn_health_lookup]
-pop    bx
-retf   
+mov    bx, OFFSET _spawn_health_lookup
+jmp    do_generic_word_lookup
 
 spawn_health_default:
 mov    ax, 1000
