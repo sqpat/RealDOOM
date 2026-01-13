@@ -30,9 +30,8 @@ EXTRN W_CacheLumpNameDirect_:FAR
 EXTRN Z_QuickMapScratch_5000_:FAR  
 EXTRN W_CheckNumForNameFarString_:NEAR
 EXTRN W_CacheLumpNumDirectFragment_:FAR
-EXTRN Z_QuickMapByTaskNum_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
-
+EXTRN Z_QuickMapMenu_:FAR
 
 _jump_mult_table_3:
 db 19, 18, 15, 12,  9,  6,  3, 0
@@ -383,6 +382,17 @@ ENDP
 
 ;void __far V_DrawFullscreenPatch ( int8_t __far* pagename, int8_t screen) {
 
+
+
+
+PROC   V_DrawFullscreenPatch_FromMenu_ FAR
+PUBLIC V_DrawFullscreenPatch_FromMenu_
+call   V_DrawFullscreenPatch_
+call   Z_QuickMapMenu_
+retf
+ENDP
+
+
 PROC V_DrawFullscreenPatch_ FAR
 PUBLIC V_DrawFullscreenPatch_
 
@@ -542,8 +552,8 @@ exit_drawfullscreenpatch:
 mov       ax, ss
 mov       ds, ax ; restore ds
 
-mov       al, byte ptr ds:[_currenttask]
-call      Z_QuickMapByTaskNum_  ; todo get rid of this? call safely
+call       Z_QuickMapPhysics_
+
 LEAVE_MACRO
 POPA_NO_AX_MACRO
 retf      

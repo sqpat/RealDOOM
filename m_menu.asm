@@ -1042,7 +1042,7 @@ mov   dx, cs
 xor   bx, bx
 mov   byte ptr ds:[_inhelpscreens], 1
 
-call  dword ptr ds:[_V_DrawFullscreenPatch_addr]
+call  dword ptr ds:[_V_DrawFullscreenPatch_FromMenu_addr]
 
 pop   bx
 pop   dx
@@ -1063,7 +1063,7 @@ mov   dx, cs
 xor   bx, bx
 mov   byte ptr ds:[_inhelpscreens], 1
 
-call  dword ptr ds:[_V_DrawFullscreenPatch_addr]
+call  dword ptr ds:[_V_DrawFullscreenPatch_FromMenu_addr]
 
 pop   bx
 pop   dx
@@ -1083,7 +1083,7 @@ mov   dx, cs
 xor   bx, bx
 mov   byte ptr ds:[_inhelpscreens], 1
 
-call  dword ptr ds:[_V_DrawFullscreenPatch_addr]
+call  dword ptr ds:[_V_DrawFullscreenPatch_FromMenu_addr]
 
 pop   bx
 pop   dx

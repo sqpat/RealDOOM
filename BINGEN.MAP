@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/13 12:02:47
+Created on:       26/01/13 12:12:59
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -84,11 +84,11 @@ ST_INIT_TEXT           CODE           AUTO           2dfe:121e       0000020d
 R_INIT_TEXT            CODE           AUTO           2dfe:142c       000007ad
 W_INIT_TEXT            CODE           AUTO           2dfe:1bda       0000016e
 I_INIT_TEXT            CODE           AUTO           2dfe:1d48       0000019b
-Z_INIT_TEXT            CODE           AUTO           2dfe:1ee4       0000078b
-S_SBINIT_TEXT          CODE           AUTO           2dfe:2670       000002e5
-P_INIT_TEXT            CODE           AUTO           2dfe:2956       00000275
-I_QUIT_TEXT            CODE           AUTO           2dfe:2bcc       000001a9
-I_IBM_TEXT             CODE           AUTO           2dfe:2d76       00000051
+Z_INIT_TEXT            CODE           AUTO           2dfe:1ee4       0000078f
+S_SBINIT_TEXT          CODE           AUTO           2dfe:2674       000002e5
+P_INIT_TEXT            CODE           AUTO           2dfe:295a       00000275
+I_QUIT_TEXT            CODE           AUTO           2dfe:2bd0       000001a9
+I_IBM_TEXT             CODE           AUTO           2dfe:2d7a       00000051
 bingen_TEXT            CODE           AUTO           2dfe:2dd0       00001553
 D_NET_TEXT             CODE           AUTO           2dfe:4324       000000b2
 G_GAME_TEXT            CODE           AUTO           2dfe:43d6       00000383
@@ -103,8 +103,8 @@ R_SETUP_TEXT           CODE           AUTO           2dfe:6306       0000032f
 S_SBSFX_TEXT           CODE           AUTO           2dfe:6636       00000d38
 BINFILE_TEXT           CODE           AUTO           2dfe:736e       0000004d
 W_WAD_TEXT             CODE           AUTO           2dfe:73bc       00000252
-V_VIDEO_TEXT           CODE           AUTO           2dfe:760e       00000217
-Z_ZONE_TEXT            CODE           AUTO           2dfe:7826       0000043b
+V_VIDEO_TEXT           CODE           AUTO           2dfe:760e       0000021d
+Z_ZONE_TEXT            CODE           AUTO           2dfe:782c       0000043b
 _TEXT                  CODE           AUTO           2dfe:7c70       00002e0f
 FAR_DATA               FAR_DATA       AUTO           38a5:000f       00000000
 _NULL                  BEGDATA        DGROUP         38a6:0000       00000020
@@ -885,50 +885,50 @@ Module: i_init.obj(i_init.ASM)
 Module: z_init.obj(z_init.ASM)
 2dfe:226a*     Z_ReadFileRegionWithIndex_
 2dfe:1ee4      _doomdata_bin_string
-2dfe:266f*     Z_INIT_ENDMARKER_
-2dfe:249a      Z_LoadBinaries_
+2dfe:2673*     Z_INIT_ENDMARKER_
+2dfe:249e      Z_LoadBinaries_
 2dfe:21e5      Z_GetEMSPageMap_
 2dfe:22ac*     Z_DoRenderCodeLoad_
 2dfe:1ee4*     Z_INIT_STARTMARKER_
 2dfe:2139      Z_InitEMS_
 Module: s_sbinit.obj(s_sbinit.ASM)
-2dfe:27e4      SB_SetPlaybackRate_
-2dfe:292c      SB_StartInit_
-2dfe:26d5      _SB_DSP_Version
-2dfe:2955*     S_SBINIT_ENDMARKER_
-2dfe:28be*     SB_InitCard_
-2dfe:2670*     S_SBINIT_STARTMARKER_
-2dfe:26e7*     SB_SaveVoiceVolume_
-2dfe:26d8*     SB_ReadMixer_
-2dfe:287f*     SB_GetDSPVersion_
-2dfe:2716*     SB_DSP2xx_BeginPlayback_
-2dfe:270f      SB_DSP1xx_BeginPlayback_
-2dfe:272b*     SB_DSP4xx_BeginPlayback_
-2dfe:26d7      _SB_CardActive
-2dfe:2822*     SB_SetupPlayback_
-2dfe:2740*     DMA_SetupTransfer_
-2dfe:27c1*     SB_EnableInterrupt_
+2dfe:27e8      SB_SetPlaybackRate_
+2dfe:2930      SB_StartInit_
+2dfe:26d9      _SB_DSP_Version
+2dfe:2959*     S_SBINIT_ENDMARKER_
+2dfe:28c2*     SB_InitCard_
+2dfe:2674*     S_SBINIT_STARTMARKER_
+2dfe:26eb*     SB_SaveVoiceVolume_
+2dfe:26dc*     SB_ReadMixer_
+2dfe:2883*     SB_GetDSPVersion_
+2dfe:271a*     SB_DSP2xx_BeginPlayback_
+2dfe:2713      SB_DSP1xx_BeginPlayback_
+2dfe:272f*     SB_DSP4xx_BeginPlayback_
+2dfe:26db      _SB_CardActive
+2dfe:2826*     SB_SetupPlayback_
+2dfe:2744*     DMA_SetupTransfer_
+2dfe:27c5*     SB_EnableInterrupt_
 Module: p_init.obj(p_init.ASM)
-2dfe:2bcb*     P_INIT_ENDMARKER_
-2dfe:29a7      P_Init_
-2dfe:2956*     P_INIT_STARTMARKER_
-2dfe:2957*     R_InstallSpriteLump_
+2dfe:2bcf*     P_INIT_ENDMARKER_
+2dfe:29ab      P_Init_
+2dfe:295a*     P_INIT_STARTMARKER_
+2dfe:295b*     R_InstallSpriteLump_
 Module: i_quit.obj(i_quit.ASM)
-2dfe:2cba*     I_ShutdownWads_
-2dfe:2d75*     I_QUIT_ENDMARKER_
-2dfe:2c0f*     I_ShutdownMouse_
-2dfe:2bcc*     I_QUIT_STARTMARKER_
-2dfe:2bd3*     I_ShutdownSound_
-2dfe:2d3a      I_Quit_
-2dfe:2c73*     zeroConventional_
-2dfe:2c1b*     Z_ShutdownEMS_
-2dfe:2d59      I_Error_
-2dfe:2bf7*     I_ShutdownGraphics_
+2dfe:2cbe*     I_ShutdownWads_
+2dfe:2d79*     I_QUIT_ENDMARKER_
+2dfe:2c13*     I_ShutdownMouse_
+2dfe:2bd0*     I_QUIT_STARTMARKER_
+2dfe:2bd7*     I_ShutdownSound_
+2dfe:2d3e      I_Quit_
+2dfe:2c77*     zeroConventional_
+2dfe:2c1f*     Z_ShutdownEMS_
+2dfe:2d5d      I_Error_
+2dfe:2bfb*     I_ShutdownGraphics_
 Module: i_ibm.obj(i_ibm.ASM)
-2dfe:2d76*     I_IBM_STARTMARKER_
-2dfe:2d76      I_WaitVBL_
-2dfe:2dc7*     I_IBM_ENDMARKER_
-2dfe:2d96      I_ReadMouse_
+2dfe:2d7a*     I_IBM_STARTMARKER_
+2dfe:2d7a      I_WaitVBL_
+2dfe:2dcb*     I_IBM_ENDMARKER_
+2dfe:2d9a      I_ReadMouse_
 Module: bingen.obj(C:\REALDOOM\build\tools\bingen\bingen.c)
 2dfe:2dd0      main_
 Module: d_net.obj(d_net.ASM)
@@ -1124,43 +1124,44 @@ Module: w_wad.obj(w_wad.ASM)
 2dfe:75b5      W_CacheLumpNameDirect_
 2dfe:73dc      W_CheckNumForNameFar_
 Module: v_video.obj(v_video.ASM)
-2dfe:7753      V_DrawFullscreenPatch_
+2dfe:775c      V_DrawFullscreenPatch_
+2dfe:7753      V_DrawFullscreenPatch_FromMenu_
 2dfe:7734*     M_AddToBox16_
 2dfe:7616      V_DrawPatch_
 2dfe:771e      V_MarkRect_
 2dfe:770a      R_FillBackScreen_ForceBufferRedraw_
 Module: z_zone.obj(z_zone.ASM)
-2dfe:7826      _codestartposition
-2dfe:78ba      Z_QuickMapPhysics_
-2dfe:785a      Z_QuickMapMusicPageFrame_
-2dfe:783e      _musdriverstartposition
-2dfe:7957*     Z_QuickMapRender_4000To9000_
-2dfe:7ba3      Z_QuickMapUnmapAll_
-2dfe:7985      Z_QuickMapRender_9000To6000_
-2dfe:7891      Z_QuickMapWADPageFrame_
-2dfe:7a3a      Z_QuickMapRenderPlanes_
-2dfe:7872      Z_QuickMapSFXPageFrame_
-2dfe:79b1      Z_QuickMapStatus_
-2dfe:7a24*     Z_QuickMapScreen0_
-2dfe:7916      Z_QuickMapRender_
-2dfe:7a0e      Z_QuickMapScratch_7000_
-2dfe:79e2      Z_QuickMapScratch_5000_
-2dfe:7c35*     CopyString13_Zonelocal_
-2dfe:79f8*     Z_QuickMapScratch_8000_
-2dfe:7ace      Z_QuickMapMenu_
-2dfe:7ab3      Z_QuickMapPalette_
-2dfe:799b      Z_QuickMapRender4000_
-2dfe:783e      _codestartposition_END
-2dfe:7a9d      Z_QuickMapMaskedExtraData_
-2dfe:7bed      Z_SetOverlay_
-2dfe:78e5      Z_QuickMapPhysics_FunctionAreaOnly_
-2dfe:7be0      _doomcode_filename
-2dfe:7b17      Z_QuickMapByTaskNum_
-2dfe:7a66      Z_QuickMapUndoFlatCache_
-2dfe:78fb      Z_QuickMapDemo_
-2dfe:7af4      Z_QuickMapIntermission_
-2dfe:7941*     Z_QuickMapRender_4000To9000_9000Only_
-2dfe:7b25      Z_QuickMapVisplanePage_
+2dfe:782c      _codestartposition
+2dfe:78c0      Z_QuickMapPhysics_
+2dfe:7860      Z_QuickMapMusicPageFrame_
+2dfe:7844      _musdriverstartposition
+2dfe:795d*     Z_QuickMapRender_4000To9000_
+2dfe:7ba9      Z_QuickMapUnmapAll_
+2dfe:798b      Z_QuickMapRender_9000To6000_
+2dfe:7897      Z_QuickMapWADPageFrame_
+2dfe:7a40      Z_QuickMapRenderPlanes_
+2dfe:7878      Z_QuickMapSFXPageFrame_
+2dfe:79b7      Z_QuickMapStatus_
+2dfe:7a2a*     Z_QuickMapScreen0_
+2dfe:791c      Z_QuickMapRender_
+2dfe:7a14      Z_QuickMapScratch_7000_
+2dfe:79e8      Z_QuickMapScratch_5000_
+2dfe:7c3b*     CopyString13_Zonelocal_
+2dfe:79fe*     Z_QuickMapScratch_8000_
+2dfe:7ad4      Z_QuickMapMenu_
+2dfe:7ab9      Z_QuickMapPalette_
+2dfe:79a1      Z_QuickMapRender4000_
+2dfe:7844      _codestartposition_END
+2dfe:7aa3      Z_QuickMapMaskedExtraData_
+2dfe:7bf3      Z_SetOverlay_
+2dfe:78eb      Z_QuickMapPhysics_FunctionAreaOnly_
+2dfe:7be6      _doomcode_filename
+2dfe:7b1d      Z_QuickMapByTaskNum_
+2dfe:7a6c      Z_QuickMapUndoFlatCache_
+2dfe:7901      Z_QuickMapDemo_
+2dfe:7afa      Z_QuickMapIntermission_
+2dfe:7947*     Z_QuickMapRender_4000To9000_9000Only_
+2dfe:7b2b      Z_QuickMapVisplanePage_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(exit.c)
 2dfe:7c70+     __null_int23_exit_
 2dfe:7c71      exit_
@@ -1423,4 +1424,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003c310 (246544.)
 Entry point address: 2dfe:81ee
-Link time: 00:00.05
+Link time: 00:00.04
