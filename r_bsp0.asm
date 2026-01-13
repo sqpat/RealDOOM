@@ -3463,17 +3463,13 @@ push  bp
 mov   bp, sp
 mov   dx, es					   ; back this up...
 mov   bx, word ptr es:[si + 012h]  ; thing->stateNum
-mov   ax, STATES_RENDER_SEGMENT
-mov   es, ax
-add   bx, bx
+sal   bx, 1
 
 ; todo clean all this up. do we need local copy?
 ; otherwise use ds and rep movsw
-mov   al, byte ptr es:[bx]		   ; states_render[thing->stateNum].sprite
+mov   ax, word ptr ds:[bx + STATE_T.state_sprite + _states_render]		   ; states_render[thing->stateNum].sprite
 mov   byte ptr cs:[SELFMODIFY_set_ax_to_spriteframe+1 - OFFSET R_BSP0_STARTMARKER_], al		   
-mov   al, byte ptr es:[bx + 1]	; states_render[thing->stateNum].frame
-mov   ah, (SIZE SPRITEFRAME_T)
-push   ax    ; bp - 2
+mov   al, ah
 sub   sp, 01Eh
 
 
@@ -8603,10 +8599,8 @@ mov   bx, word ptr ds:[_psprites]
 cmp   bx, STATENUM_NULL
 je    sprite_1_null
 sal   bx, 1
-mov   ax, STATES_RENDER_SEGMENT
-mov   es, ax
 mov   si, OFFSET _player_vissprites
-mov   ax, word ptr es:[bx]
+mov   ax, word ptr ds:[bx + _states_render]
 mov   cl, ah
 mov   bx, OFFSET _psprites
 call  R_DrawPSprite_
@@ -8618,10 +8612,8 @@ mov   bx, word ptr ds:[_psprites + 0Ch]
 cmp   bx, -1
 je    sprite_2_null
 sal   bx, 1
-mov   ax, STATES_RENDER_SEGMENT
-mov   es, ax
 mov   si, OFFSET _player_vissprites + 028h
-mov   ax, word ptr es:[bx]
+mov   ax, word ptr ds:[bx + _states_render]
 mov   cl, ah
 mov   bx, OFFSET _psprites + 0Ch
 call  R_DrawPSprite_

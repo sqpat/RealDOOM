@@ -1149,12 +1149,12 @@ call  Z_QuickMapRender4000_
 ;	}
 
 xchg  dx, di  ; store fp
-mov   ax, STATES_RENDER_SEGMENT
-mov   es, ax
+push  ds
+pop   es
 mov   ax, STATES_SEGMENT
 mov   ds, ax
 xor   si, si   ; sprite, frame are bytes 0, 1
-mov   di, si   ; same for state_render
+mov   di, _states_render
 mov   cx, NUMSTATES
 
 
