@@ -8,7 +8,7 @@
 #include "r_state.h"
 #include "p_setup.h"
 
-#define CONSTANTS_COUNT 1011
+#define CONSTANTS_COUNT 1015
 #define LOCALS_COUNT 30
 
 
@@ -182,6 +182,10 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "PHYSICS_7000_END_SEGMENT",
     "PHYSICS_9000_END_SEGMENT",
     "RENDER_8800_END_SEGMENT",
+	"CLIPBOT_START_SEGMENT",
+	"CLIPTOP_START_SEGMENT",
+	"CLIPBOT_START_OFFSET",
+	"CLIPTOP_START_OFFSET",
     "RENDER_9000_END_SEGMENT",
     "RENDER_9C00_END_SEGMENT_16",
     "RENDER_9C00_END_SEGMENT_24",
@@ -1292,6 +1296,10 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     physics_7000_end_segment,
     physics_9000_end_segment,
     render_8800_end_segment,
+	clipbot_start_segment,
+	cliptop_start_segment,
+	clipbot_start_offset,
+	cliptop_start_offset,
     render_9000_end_segment,
     render_9C00_end_segment_16,
     render_9C00_end_segment_24,

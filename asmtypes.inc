@@ -295,27 +295,22 @@ MASKED_HEADER_T ENDS
 
 
 DRAWSEG_T STRUC 
-    drawseg_cursegvalue           dw ?
-    drawseg_x1                    dw ?
-    drawseg_x2                    dw ?
-
-    drawseg_scale1                dd ?
-    drawseg_scale2                dd ?
-    drawseg_scalestep             dd ?
-
-    drawseg_bsilheight            dw ?
-    drawseg_tsilheight            dw ?
-    
-    drawseg_sprtopclip_offset     dw ?
-    drawseg_sprbottomclip_offset  dw ?
-    
-    drawseg_maskedtexturecol_val  dw ?
-
-    drawseg_silhouette            db ?
-    
-    drawseg_unused_padding_a      db ?
-    drawseg_unused_padding_b      db ?
-    drawseg_unused_padding_c      db ?
+    drawseg_cursegvalue           dw ?   ; 000h
+    drawseg_x1                    dw ?   ; 002h
+    drawseg_x2                    dw ?   ; 004h
+    drawseg_scale1                dd ?   ; 006h
+    drawseg_scale2                dd ?   ; 00Ah
+    drawseg_scalestep             dd ?   ; 00Eh
+    drawseg_bsilheight            dw ?   ; 012h
+    drawseg_tsilheight            dw ?   ; 014h
+    drawseg_sprtopclip_offset     dw ?   ; 016h
+    drawseg_sprbottomclip_offset  dw ?   ; 018h
+    drawseg_maskedtexturecol_val  dw ?   ; 01Ah
+    drawseg_silhouette            db ?   ; 01Ch
+    drawseg_unused_padding_a      db ?   ; 01Dh
+    drawseg_unused_padding_b      db ?   ; 01Eh
+    drawseg_unused_padding_c      db ?   ; 01Fh
+                                         ; 020h
 
 
 DRAWSEG_T ENDS

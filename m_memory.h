@@ -546,6 +546,7 @@ FREEBYTES             7F65:0000
 // EXTRA SPRITE/RENDER_MASKED DATA
 
 #define size_maskedpostdata             12238u
+// worst case i guess
 #define size_drawfuzzcol_area           R_DrawFuzzColumn24CodeSize
 
 #define size_spritepostdatasizes        (MAX_SPRITE_LUMPS * sizeof(uint16_t))
@@ -573,10 +574,17 @@ FREEBYTES             7F65:0000
 #define maskedpixeldataofs_segment         ((segment_t) ((int32_t)maskedpixeldataofs >> 16))
 #define maskedconstants_funcarea_segment   ((segment_t) ((int32_t)maskedconstants_funcarea >> 16))
 #define render_8800_end_segment            ((segment_t) ((int32_t)render_8800_end >> 16))
-
+// SMALL GAP HERE.
+#define clipbot_start_segment              0x8C00 - ((2 * (SCREENWIDTH * 2)) >> 4)
+#define cliptop_start_segment              clipbot_start_segment + ((SCREENWIDTH * 2) >> 4)
 
 #define maskedpostdata_segment             ((segment_t) ((int32_t)maskedpostdata >> 16))
 #define drawfuzzcol_area_segment           ((segment_t) ((int32_t)drawfuzzcol_area >> 16))
+
+#define clipbot_start_offset              ((clipbot_start_segment - drawfuzzcol_area_segment) << 4)
+#define cliptop_start_offset              ((cliptop_start_segment - drawfuzzcol_area_segment) << 4)
+
+
 
  /*
 

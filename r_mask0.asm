@@ -4086,11 +4086,14 @@ ret
 ENDP
 
 
+CLIPTOP_OFFSET = (render_8800_end_segment - drawfuzzcol_area_segment) SHL 4
+CLIPBOT_OFFSET = CLIPTOP_OFFSET + (SCREENWIDTH * 2)
+
+
+
 PROC R_DrawSprite_ NEAR
 
 ; bp - 2	   ds_p segment. TODO always DRAWSEGS_BASE_SEGMENT_7000
-; bp - 4       unused
-; bp - 6       unused
 
 ; bp - 282h    cliptop
 ; bp - 502h    clipbot
@@ -4121,15 +4124,15 @@ mov   di, ax
 
 add   di, ax
 mov   si, di
-lea   di, [bp + di - 0282h]
-mov   dx, ss
+add   di, CLIPBOT_OFFSET
+mov   dx, cs
 mov   es, dx
 sub   cx, ax   				 ; minus spr->x1
 inc   cx				     ; for the equals case.
 mov   dx, cx
 mov   ax, UNCLIPPED_COLUMN             ; -2
 rep   stosw
-lea   di, [bp + si - 0502h]
+lea   di, [si + CLIPTOP_OFFSET]
 mov   cx, dx
 rep   stosw
 
