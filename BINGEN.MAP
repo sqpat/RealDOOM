@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/13 12:12:59
+Created on:       26/01/13 12:29:31
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -172,8 +172,8 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 0049:0780*     WI_drawTime_
 0049:0ace*     WI_drawStats_
 Module: m_menu.obj(m_menu.ASM)
-0147:0ccb*     M_StringWidth_
 0147:044d*     M_LoadGame_
+0147:0ccb*     M_StringWidth_
 0147:0bc6*     M_ChangeDetail_
 0147:0d07*     M_StringHeight_
 0147:1435      G_Responder_
@@ -525,16 +525,16 @@ Module: p_enemy.obj(p_enemy.ASM)
 2268:4769*     A_Chase_
 2268:4b0c*     A_BspiAttack_
 2268:5591*     A_Fall_
-2268:422d*     P_CheckMissileRange_
 2268:572c*     A_BrainPain_
+2268:422d*     P_CheckMissileRange_
 2268:48cb*     A_FaceTarget_
 2268:4b68*     A_SargAttack_
 2268:51bf*     GetVileMomz_
 2268:4df1*     A_SkelWhoosh_
 2268:5411*     A_PainDie_
 2268:513a*     A_VileTarget_
-2268:5830*     A_BrainSpit_
 2268:45d1*     P_LookForPlayers_
+2268:5830*     A_BrainSpit_
 2268:42fb*     P_Move_
 2268:57ba*     A_BrainExplode_
 2268:5099*     A_VileStart_
