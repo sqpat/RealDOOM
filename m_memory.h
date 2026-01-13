@@ -863,13 +863,16 @@ skytexture         5400:0000
 #define menugraphicspage4   (byte __far* )0x64000000
 #define end_menu            ((uint16_t __far*)  MAKE_FULL_SEGMENT(menugraphicspage4, size_menugraphcispage4 ))
 // todo calculate safely
-#define menu_code_area      (byte __far* )0x6E800000
+// 6dc2? can come down.
+#define menu_code_area      (byte __far* )0x6E400000
+#define menu_code_area_end  ((uint16_t __far*)  MAKE_FULL_SEGMENT(menu_code_area, M_MenuCodeSize ))
 
-#define menugraphicspage0segment  ((segment_t) ((int32_t)menugraphicspage0 >> 16))
-#define menugraphicspage4segment  ((segment_t) ((int32_t)menugraphicspage4 >> 16))
-#define end_menu_segment          ((segment_t) ((int32_t)end_menu >> 16))
-#define menu_code_area_segment    ((segment_t) ((int32_t)menu_code_area >> 16))
-
+#define menugraphicspage0segment   ((segment_t) ((int32_t)menugraphicspage0 >> 16))
+#define menugraphicspage4segment   ((segment_t) ((int32_t)menugraphicspage4 >> 16))
+#define end_menu_segment           ((segment_t) ((int32_t)end_menu >> 16))
+#define menu_code_area_segment     ((segment_t) ((int32_t)menu_code_area >> 16))
+#define menu_code_area_end_segment ((segment_t) ((int32_t)menu_code_area_end >> 16))
+// 6fd1
 
 // menugraphicspage0  5000:0000
 // [empty]            5000:FFE0 

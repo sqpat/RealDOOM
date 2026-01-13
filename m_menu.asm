@@ -3487,6 +3487,149 @@ ENDP
 
 
 
+; return was never used. single case could be inlined?
+PROC G_Responder_  FAR
+PUBLIC G_Responder_
+
+push  bx
+push  cx
+mov   bx, ax
+mov   cx, dx
+cmp   byte ptr ds:[_gameaction], 0
+jne   not_starting_controlpanel
+cmp   byte ptr ds:[_singledemo], 0
+jne   not_starting_controlpanel
+cmp   byte ptr ds:[_demoplayback], 0
+jne   check_key_for_controlpanel
+cmp   byte ptr ds:[_gamestate], GS_DEMOSCREEN
+jne   not_starting_controlpanel
+check_key_for_controlpanel:
+mov   es, cx
+mov   ax, word ptr es:[bx + EVENT_T.event_data1]
+test  ah, ah ; EV_KEYDOWN, check if 0
+je    call_startcontrolpanel    ; keydown?
+cmp   ah, EV_MOUSE              ; mouse?
+jne   exit_gresponder
+test  al, al
+je    exit_gresponder    ; any mousebutton down?
+call_startcontrolpanel:
+; should already be in menu task?
+db    09Ah
+dw    M_STARTCONTROLPANELOFFSET, MENU_CODE_AREA_SEGMENT
+exit_gresponder:
+
+pop   cx
+pop   bx
+ret   
+not_starting_controlpanel:
+cmp   byte ptr ds:[_gamestate], GS_LEVEL
+jne   not_gamestate_level
+mov   ax, bx
+mov   dx, cx
+
+
+db      09Ah
+dw      HU_RESPONDER_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+
+; jc    exit_gresponder  ; always false. i think only netcode/chat stuff could eat the key
+mov   ax, bx
+mov   dx, cx
+
+db      09Ah
+dw      ST_RESPONDER_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+ 
+mov   ax, bx
+mov   dx, cx
+; todo: playerx/y not ready. store somewhere?
+;call  AM_Responder_
+db    09Ah
+dw    AM_RESPONDER_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+jc    exit_gresponder
+
+not_gamestate_level:
+cmp   byte ptr ds:[_gamestate], GS_FINALE
+jne   not_gamestate_finale
+mov   ax, OVERLAY_ID_FINALE
+call  dword ptr ds:[_Z_SetOverlay_addr]
+
+mov   dx, cx
+mov   ax, bx
+
+;call  dword ptr ds:[_F_Responder]
+db 09Ah
+dw F_RESPONDEROFFSET, CODE_OVERLAY_SEGMENT
+
+test  al, al
+jne   exit_gresponder_2
+
+not_gamestate_finale:
+
+; check event type
+mov   es, cx
+mov   ax, word ptr es:[bx + EVENT_T.event_data1]
+cmp   ah, EV_KEYUP
+ja    handle_game_mouse_event  ; ev_mouse
+xchg  ax, bx
+mov   al, 0
+je   handle_game_keyup_event
+; al has key
+
+handle_game_keydown_event:
+; i dont think we have to handle high word
+cmp   bl, KEY_PAUSE
+jne   handle_nonpause_game_keydown_event
+
+mov   byte ptr ds:[_sendpause], 1
+exit_gresponder_2:
+exit_gresponder_return_al:
+pop   cx
+pop   bx
+ret   
+
+handle_nonpause_game_keydown_event:
+inc   ax  ; al is 1. write 1 not 0 and return 1.
+handle_game_keyup_event:
+; G_SetGameKeyUp/Down:
+
+xor   bh, bh
+add   bx, word ptr ds:[_gamekeydownpointer]
+mov   es, word ptr ds:[_ORIGINAL_CS_SEGMENT_PTR]
+mov   byte ptr es:[bx], al ; 0 or 1...
+jmp   exit_gresponder_return_al
+
+
+
+handle_game_mouse_event:
+mov   ah, al
+mov   dx, ax ; backup button
+and   ax, 00201h
+mov   word ptr ds:[_mousebuttons], ax ; write two buttons;
+xchg  ax, dx  ; get another copy of button
+and   ax, 4   ; zero ah
+mov   byte ptr ds:[_mousebuttons + 2], al
+mov   al, byte ptr ds:[_mouseSensitivity]
+
+mov   dx, word ptr es:[bx + EVENT_T.event_data2]
+add   ax, 5
+mov   bx, 10
+imul  dx
+;call  FastDiv3216u_
+
+db    09Ah
+dw    FASTDIV3216U_MAPLOCAL_FAR_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+
+
+
+mov   word ptr ds:[_mousex], ax
+pop   cx
+pop   bx
+ret   
+
+ENDP
+
+
 
 
 PROC    M_MENU_ENDMARKER_ NEAR

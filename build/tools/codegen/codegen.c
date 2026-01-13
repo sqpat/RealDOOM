@@ -8,7 +8,7 @@
 #include "r_state.h"
 #include "p_setup.h"
 
-#define CONSTANTS_COUNT 1010
+#define CONSTANTS_COUNT 1011
 #define LOCALS_COUNT 30
 
 
@@ -204,6 +204,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"MUSIC_DRIVER_CODE_SEGMENT",
 	"END_SKY_PLANE_SEGMENT",
 	"MENU_CODE_AREA_SEGMENT",
+	"MENU_CODE_AREA_END_SEGMENT",
 	"DEMO_SEGMENT",
     "OFFSET_NEGONEARRAY",
     "OFFSET_SCREENHEIGHTARRAY",
@@ -1312,6 +1313,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	music_driver_code_segment,
     END_SKY_PLANE_SEGMENT,
 	menu_code_area_segment,
+	menu_code_area_end_segment,
 	DEMO_SEGMENT,
     offset_negonearray,
     offset_screenheightarray,
@@ -2246,7 +2248,7 @@ char* LOCALS[LOCALS_COUNT] = {
     "_scalelight",	// do not use i guess
     "_patch_sizes",
     "_viewangletox",
-    "_sides_render",
+    "_states_render",
 
 
     "_thinkerlist",
@@ -2294,7 +2296,7 @@ void __near* VALUES[LOCALS_COUNT] = {
     scalelight,
     patch_sizes,
     viewangletox,
-	sides_render,
+	states_render,
 
     thinkerlist,
     mobjinfo,

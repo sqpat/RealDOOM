@@ -77,7 +77,6 @@ EXTRN locallib_strcmp_:NEAR
 
 EXTRN _forwardmove:WORD
 EXTRN _sidemove:WORD
-EXTRN _singledemo:BYTE
 
 
 DEMO_MAX_SIZE = 0F800h
@@ -910,7 +909,7 @@ je    skip_playdemo_param
 cmp   ax, di
 jnl   skip_playdemo_param
 
-    mov   byte ptr cs:[_singledemo], cl  ; 1
+    mov   byte ptr ds:[_singledemo], cl  ; 1
     sal   ax, 1
     xchg  ax, si
     

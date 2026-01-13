@@ -25,7 +25,6 @@ EXTRN D_DoomMain_:NEAR
 
 EXTRN doclose_:NEAR
 
-
 STACK_SIZE = 0600h
 
 
@@ -48,6 +47,7 @@ STACK   segment para stack 'STACK'
 STACK   ends
 
 .CODE
+EXTRN _gamekeydown:BYTE
 EXTRN BASE_CHEAT_ADDRESS
 
 
@@ -337,6 +337,7 @@ mov        ax, bp
 mov        word ptr ds:[__STACKLOW], di
 mov        word ptr ds:[_ORIGINAL_CS_SEGMENT_PTR], cs
 mov        word ptr ds:[_BASE_CHEAT_ADDRESS_OFFSET_PTR], OFFSET BASE_CHEAT_ADDRESS
+mov        word ptr ds:[_gamekeydownpointer], OFFSET _gamekeydown
 push       bp
 mov        bp, sp
 

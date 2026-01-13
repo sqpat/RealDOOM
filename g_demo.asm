@@ -69,10 +69,6 @@ str_demo_recorded:
 db "Demo %s recorded", 0
 
 
-_singledemo:
-db 0
-PUBLIC _singledemo
-
 
 PROC    G_DeferedPlayDemo_ NEAR
 PUBLIC  G_DeferedPlayDemo_
@@ -408,7 +404,7 @@ dont_end_playback:
 
 cmp    byte ptr ds:[_demoplayback], al ; 0
 je     skip_demo_playback_end_check
-cmp    byte ptr cs:[_singledemo], al
+cmp    byte ptr ds:[_singledemo], al
 je     dont_quit
 call   I_Quit_
 dont_quit:

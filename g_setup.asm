@@ -42,7 +42,6 @@ LUMP_PER_EMS_PAGE = 1024
 .CODE
 
 EXTRN _gamekeydown:BYTE
-EXTRN _mousex:BYTE
 
 PROC    G_SETUP_STARTMARKER_ NEAR
 PUBLIC  G_SETUP_STARTMARKER_
@@ -428,7 +427,7 @@ mov  di, OFFSET _gamekeydown
 
 rep  stosw
 
-mov  word ptr cs:[_mousex], ax
+mov  word ptr ds:[_mousex], ax
 
 pop  di
 pop  cx

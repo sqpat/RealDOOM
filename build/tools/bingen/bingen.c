@@ -214,6 +214,7 @@ void __far M_MENU_STARTMARKER();
 void __far M_MENU_ENDMARKER();
 void __far M_Init();
 void __far M_Responder ();
+void __far G_Responder ();
 void __far M_StartControlPanel();
 
 void __far M_Drawer();
@@ -237,6 +238,7 @@ void __far ST_Init();
 void __far ST_Ticker();
 void __far ST_Drawer();
 void __far ST_Responder();
+void __far FastDiv3216u_MapLocal_Far();
 
 
 void __far _arms();
@@ -736,6 +738,9 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "ST_TICKER_OFFSET                        = 0%Xh\n", FP_OFF(ST_Ticker)                         - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "ST_DRAWER_OFFSET                        = 0%Xh\n", FP_OFF(ST_Drawer)                         - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "ST_RESPONDER_OFFSET                     = 0%Xh\n", FP_OFF(ST_Responder)                      - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "FASTDIV3216U_MAPLOCAL_FAR_OFFSET        = 0%Xh\n", FP_OFF(FastDiv3216u_MapLocal_Far)         - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "G_RESPONDEROFFSET                       = 0%Xh\n", FP_OFF(G_Responder)                       - FP_OFF(M_MENU_STARTMARKER));
+
 
     fprintf(fp, "ARMS_CS_OFFSET                          = 0%Xh\n", FP_OFF(_arms)                             - FP_OFF(P_SIGHT_STARTMARKER));               
     fprintf(fp, "ARMSBG_CS_OFFSET                        = 0%Xh\n", FP_OFF(_armsbg)                           - FP_OFF(P_SIGHT_STARTMARKER));               

@@ -57,7 +57,6 @@ EXTRN Z_QuickMapByTaskNum_:FAR
 .CODE
 EXTRN _OldInt8:DWORD
 EXTRN _TS_Installed:BYTE
-EXTRN _singledemo:BYTE
 EXTRN _doomdata_bin_string
 
 PUBLIC _SELFMODIFY_R_RENDERPLAYERVIEW_CALL
@@ -174,9 +173,7 @@ dw 0
 _dclickstate2:
 dw 0
 
-_mousex:
-dw 0
-PUBLIC _mousex
+
 _forwardmove:
 dw  019h, 032h
 _sidemove:
@@ -573,48 +570,6 @@ db 0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0
 
 
 
-; inlined
-COMMENT @
-
-PROC G_SetGameKeyDown_  NEAR
-PUBLIC G_SetGameKeyDown_
-
-push bx
-xor  ah, ah
-mov  bx, ax
-mov  byte ptr cs:[bx + _gamekeydown], 1
-pop  bx
-ret
-
-ENDP
-
-; todo inline
-PROC G_SetGameKeyUp_  NEAR
-PUBLIC G_SetGameKeyUp_
-
-push bx
-xor  ah, ah
-mov  bx, ax
-mov  byte ptr cs:[bx + _gamekeydown], 0
-pop  bx
-ret
-
-ENDP
-
-; todo inline later
-PROC G_GetGameKey_  NEAR
-PUBLIC G_GetGameKey_
-
-push bx
-xor  ah, ah
-mov  bx, ax
-mov  al, byte ptr cs:[bx + _gamekeydown]
-pop  bx
-ret
-
-@
-ENDP
-
 
 ; todo not heavily optimized
 PROC G_BuildTiccmd_ NEAR
@@ -866,7 +821,7 @@ xor       ax, ax
 mov       word ptr cs:[_dclicktime2], ax
 jmp       done_handling_mouse_strafe
 strafe_on_add_mousex:
-mov       ax, word ptr cs:[_mousex]
+mov       ax, word ptr ds:[_mousex]
 SHIFT_MACRO shl ax 3
 sub       word ptr cs:[si + 2], ax
 jmp       done_handling_mousex
@@ -880,7 +835,7 @@ done_handling_mouse_strafe:
 cmp       byte ptr [bp - 2], 0
 je        strafe_on_add_mousex
 ; set angle turn
-mov       ax, word ptr cs:[_mousex]
+mov       ax, word ptr ds:[_mousex]
 add       ax, ax
 cwd       
 add       cx, ax
@@ -889,7 +844,7 @@ done_handling_mousex:
 
 ; limit move speed to max move (forward_move[1])
 ; so many zero immediates, so many bytes to save... is a register possibly free?
-mov       word ptr cs:[_mousex], 0
+mov       word ptr ds:[_mousex], 0
 mov       ax, word ptr [bp - 6]
 cmp       ax, 0
 jg        clip_forwardmove_to_max
@@ -1315,142 +1270,6 @@ jmp   print_last_digit
 ENDP
 
 
-; return was never used. single case could be inlined?
-PROC G_Responder_  NEAR
-PUBLIC G_Responder_
-
-push  bx
-push  cx
-mov   bx, ax
-mov   cx, dx
-cmp   byte ptr ds:[_gameaction], 0
-jne   not_starting_controlpanel
-cmp   byte ptr cs:[_singledemo], 0
-jne   not_starting_controlpanel
-cmp   byte ptr ds:[_demoplayback], 0
-jne   check_key_for_controlpanel
-cmp   byte ptr ds:[_gamestate], GS_DEMOSCREEN
-jne   not_starting_controlpanel
-check_key_for_controlpanel:
-mov   es, cx
-mov   ax, word ptr es:[bx + EVENT_T.event_data1]
-test  ah, ah ; EV_KEYDOWN, check if 0
-je    call_startcontrolpanel    ; keydown?
-cmp   ah, EV_MOUSE              ; mouse?
-jne   exit_gresponder
-test  al, al
-je    exit_gresponder    ; any mousebutton down?
-call_startcontrolpanel:
-; should already be in menu task?
-db    09Ah
-dw    M_STARTCONTROLPANELOFFSET, MENU_CODE_AREA_SEGMENT
-exit_gresponder:
-
-pop   cx
-pop   bx
-ret   
-not_starting_controlpanel:
-cmp   byte ptr ds:[_gamestate], GS_LEVEL
-jne   not_gamestate_level
-mov   ax, bx
-mov   dx, cx
-
-;call     Z_QuickMapPhysics_
-db      09Ah
-dw      HU_RESPONDER_OFFSET, PHYSICS_HIGHCODE_SEGMENT
-
-
-; jc    exit_gresponder  ; always false. i think only netcode/chat stuff could eat the key
-mov   ax, bx
-mov   dx, cx
-;call     Z_QuickMapPhysics_
-db      09Ah
-dw      ST_RESPONDER_OFFSET, PHYSICS_HIGHCODE_SEGMENT
- ; never returns true
-;test  al, al
-;jne   exit_gresponder
-mov   ax, bx
-mov   dx, cx
-; todo: playerx/y not ready. store somewhere?
-;call  AM_Responder_
-db    09Ah
-dw    AM_RESPONDER_OFFSET, PHYSICS_HIGHCODE_SEGMENT
-
-jc    exit_gresponder
-
-not_gamestate_level:
-cmp   byte ptr ds:[_gamestate], GS_FINALE
-jne   not_gamestate_finale
-mov   ax, OVERLAY_ID_FINALE
-call  Z_SetOverlay_
-mov   dx, cx
-mov   ax, bx
-
-;call  dword ptr ds:[_F_Responder]
-db 09Ah
-dw F_RESPONDEROFFSET, CODE_OVERLAY_SEGMENT
-
-test  al, al
-jne   exit_gresponder_2
-
-not_gamestate_finale:
-
-; check event type
-mov   es, cx
-mov   ax, word ptr es:[bx + EVENT_T.event_data1]
-cmp   ah, EV_KEYUP
-ja    handle_game_mouse_event  ; ev_mouse
-xchg  ax, bx
-mov   al, 0
-je   handle_game_keyup_event
-; al has key
-
-handle_game_keydown_event:
-; i dont think we have to handle high word
-cmp   bl, KEY_PAUSE
-jne   handle_nonpause_game_keydown_event
-
-mov   byte ptr ds:[_sendpause], 1
-exit_gresponder_2:
-; mov   al, 1  return not used
-exit_gresponder_return_al:
-pop   cx
-pop   bx
-ret   
-
-handle_nonpause_game_keydown_event:
-inc   ax  ; al is 1. write 1 not 0 and return 1.
-handle_game_keyup_event:
-; G_SetGameKeyUp/Down:
-
-xor   bh, bh
-mov   byte ptr cs:[bx + _gamekeydown], al ; 0 or 1...
-jmp   exit_gresponder_return_al
-
-
-
-handle_game_mouse_event:
-mov   ah, al
-mov   dx, ax ; backup button
-and   ax, 00201h
-mov   word ptr ds:[_mousebuttons], ax ; write two buttons;
-xchg  ax, dx  ; get another copy of button
-and   ax, 4   ; zero ah
-mov   byte ptr ds:[_mousebuttons + 2], al
-mov   al, byte ptr ds:[_mouseSensitivity]
-
-mov   dx, word ptr es:[bx + EVENT_T.event_data2]
-add   ax, 5
-mov   bx, 10
-imul  dx
-call  FastDiv3216u_
-mov   word ptr cs:[_mousex], ax
-; mov   al, 1  return not used
-pop   cx
-pop   bx
-ret   
-
-ENDP
 
 ;void __near I_SetPalette(int8_t paletteNumber) {
 
@@ -3118,9 +2937,17 @@ dw    M_RESPONDEROFFSET, MENU_CODE_AREA_SEGMENT
 
 
 jc    menu_ate_event
+
+; call  Z_QuickMapMenu_
+; already paged. G_Responder_ in quickmap menu
+
 xchg  ax, si
 mov   dx, di
-call  G_Responder_
+
+;call  G_Responder_
+db    09Ah
+dw    G_RESPONDEROFFSET, MENU_CODE_AREA_SEGMENT
+
 
 menu_ate_event:
 inc   cx

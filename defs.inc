@@ -143,19 +143,13 @@ _destview    = 						_NULL_OFFSET + 000E0h
 _destscreen    = 					_NULL_OFFSET + 000E4h
 _tantoangle_segment  = 				_NULL_OFFSET + 000E8h
 _spanfunc_jump_segment_storage = 	_NULL_OFFSET + 000EAh
-
 _totalkills = 						_NULL_OFFSET + 000ECh
 _totalitems = 						_NULL_OFFSET + 000EEh
 _totalsecret = 						_NULL_OFFSET + 000F0h
 _TS_TimesInInterrupt = 				_NULL_OFFSET + 000F2h
 _TS_InInterrupt = 					_NULL_OFFSET + 000F3h
-
-
-
 _validcount_global =				_NULL_OFFSET + 000F4h
-
 _firstpatch =                       _NULL_OFFSET + 000F6h
-
 _numbraintargets = 					_NULL_OFFSET + 000F8h
 _braintargeton = 					_NULL_OFFSET + 000FAh
 _brainspit_easy = 					_NULL_OFFSET + 000FCh
@@ -164,17 +158,12 @@ _corpsehitRef = 					_NULL_OFFSET + 000FEh
 _vileobj = 							_NULL_OFFSET + 00100h
 _fastparm =	                        _NULL_OFFSET + 00100h
 _gameskill =	                    _NULL_OFFSET + 00101h
-
 _TaskServiceCount =	                _NULL_OFFSET + 00102h
-
-
 _viewangle_shiftright3 = 			_NULL_OFFSET + 00104h
 _dc_source_segment =	 			_NULL_OFFSET + 0010Ah
+; todo could ds and cx stuff overlap?
 _ds_y = 				    		_NULL_OFFSET + 0010Ch
 _dc_x = 							_NULL_OFFSET + 00110h
-
-
-
 _cachedheight_segment_storage =    	_NULL_OFFSET + 00112h
 _distscale_segment_storage =    	_NULL_OFFSET + 00114h
 _cacheddistance_segment_storage =   _NULL_OFFSET + 00116h
@@ -182,29 +171,20 @@ _cachedxstep_segment_storage =    	_NULL_OFFSET + 00118h
 _cachedystep_segment_storage =    	_NULL_OFFSET + 0011Ah
 
 _pspriteiscale =                    _NULL_OFFSET + 0011Ch
-
-; 120h
-
 _tmflags1 =                         _NULL_OFFSET + 00120h
 _tmfloorz =                         _NULL_OFFSET + 00122h
 _tmceilingz =                       _NULL_OFFSET + 00124h
 _tmdropoffz =                       _NULL_OFFSET + 00126h
-
-
 _MULT_4096 =                    	_NULL_OFFSET + 00128h
 _sb_port =              	      	_NULL_OFFSET + 00130h
 _sb_dma =           	         	_NULL_OFFSET + 00132h
 _sb_irq =                       	_NULL_OFFSET + 00133h
 _sfxcache_head =                    _NULL_OFFSET + 00134h
 _sfxcache_tail =                    _NULL_OFFSET + 00135h
-
 _grmode =                    		_NULL_OFFSET + 00136h
 _novideo =                    		_NULL_OFFSET + 00137h
-
-
 _visplanelookupsegments =           _NULL_OFFSET + 00138h
 _firstflat =                  		_NULL_OFFSET + 0013Eh
-; 140h
 _castattacking =                 	_NULL_OFFSET + 00140h
 _castdeath =                     	_NULL_OFFSET + 00141h
 _castonmelee =                   	_NULL_OFFSET + 00142h
@@ -214,10 +194,7 @@ _castnum =                       	_NULL_OFFSET + 00145h
 _finaleflat =                   	_NULL_OFFSET + 00146h
 _R_TextureNumForName_addr =         _NULL_OFFSET + 00148h
 _tmthing_pos =                      _NULL_OFFSET + 0014Ch
-
 _trace =                            _NULL_OFFSET + 00150h
-
-; 160h
 _currentflatpage =            		_NULL_OFFSET + 00160h
 _lastflatcacheindicesused =         _NULL_OFFSET + 00164h
 _skyflatnum =            			_NULL_OFFSET + 00168h
@@ -227,18 +204,11 @@ _screenblocks =            			_NULL_OFFSET + 0016Bh
 _lastvisplane =            			_NULL_OFFSET + 0016Ch
 _hudneedsupdate =                   _NULL_OFFSET + 0016Eh
 _gamestate =                        _NULL_OFFSET + 0016Fh
-
-
-; 170h
 _tmx =                             _NULL_OFFSET + 00170h
 _tmy =                             _NULL_OFFSET + 00174h
 _tmxmove =                         _NULL_OFFSET + 00178h
 _tmymove =                         _NULL_OFFSET + 0017Ch
 
-
-
-
-; 180h
 _currentpageframes =     			_NULL_OFFSET + 00180h
 
 IFDEF COMP_CH
@@ -248,24 +218,15 @@ _pagenum9000 =     					_NULL_OFFSET + 00186h
 ENDIF
 _prndindex =     					_NULL_OFFSET + 00188h
 _spanquality =              	    _NULL_OFFSET + 00189h
-
 _setStateReturn =     				_NULL_OFFSET + 0018Ah
-
 _R_GetPatchTexture_addr =           _NULL_OFFSET + 0018Ch
-
-; 190h
 _W_CacheLumpNumDirect_addr =        _NULL_OFFSET + 00190h
-
-
-
 _floorplaneindex =               	_NULL_OFFSET + 00194h
 _ceilingplaneindex =             	_NULL_OFFSET + 00196h
 _viewwidth =                     	_NULL_OFFSET + 00198h
 _viewheight =	                    _NULL_OFFSET + 0019Ah
-
 _ceiltop =      	                _NULL_OFFSET + 0019Ch
 _floortop =         	            _NULL_OFFSET + 001A0h
-
 _frontsector =          	        _NULL_OFFSET + 001A4h
 _backsector =               	    _NULL_OFFSET + 001A8h
 _playingtime =		                _NULL_OFFSET + 001ACh
@@ -274,27 +235,18 @@ _wipegamestate =                    _NULL_OFFSET + 001B5h
 _visplane_offset =              	_NULL_OFFSET + 001B6h
 _dirtybox =              			_NULL_OFFSET + 001E8h
 _ticcount =			              	_NULL_OFFSET + 001F0h
-
-
-
 _R_FlatNumForName_addr =             _NULL_OFFSET + 001F4h
-
 _deadAttackerX =                     _NULL_OFFSET + 001F8h
 _deadAttackerY =                     _NULL_OFFSET + 001FCh
 _am_scale_mtof =                     _NULL_OFFSET + 00200h
 _am_scale_ftom =       		     	 _NULL_OFFSET + 00204h
-
 _I_SetPalette_addr = 	        	 _NULL_OFFSET + 00208h
-
-
 _V_MarkRect_addr =                   _NULL_OFFSET + 0020Ch
-
-
+; 210 unused?
 _wipeduration =                      _NULL_OFFSET + 00214h
 _detailshift2minus =  		 		 _NULL_OFFSET + 00216h
 _maskedheaderpixeolfs =				 _NULL_OFFSET + 00218h
 _maskedtexturecol =					 _NULL_OFFSET + 0021Ch
-; 0220h
 _masked_headers =                    _NULL_OFFSET + 00220h
 _curseg =                          	 _NULL_OFFSET + 00280h
 _curseg_render =                     _NULL_OFFSET + 00282h
@@ -343,7 +295,6 @@ _fopen_addr =     			         _NULL_OFFSET + 00320h
 _fseek_addr =     			         _NULL_OFFSET + 00324h
 _fread_addr =     			         _NULL_OFFSET + 00328h
 _fclose_addr =    			         _NULL_OFFSET + 0032Ch
-; unused..
 _cached_psetup_lump_offset =		 _NULL_OFFSET + 00330h
 _S_InitSFXCache_addr =     	    	 _NULL_OFFSET + 00334h
 
@@ -413,7 +364,7 @@ _PC_SPEAKER_SFX_DATA_SEGMENT_PTR =	 _NULL_OFFSET + 00446h
 _WAD_PAGE_FRAME_PTR =				 _NULL_OFFSET + 00448h
 _BSP_CODE_SEGMENT_PTR =				 _NULL_OFFSET + 0044Ah
 
-;_ST_Start_addr = 			 	 	 _NULL_OFFSET + 0044Ch
+_cht_CheckCheat_Far_addr = 			 _NULL_OFFSET + 0044Ch
 _d_skill =                           _NULL_OFFSET + 00450h
 _d_episode =                         _NULL_OFFSET + 00451h
 _d_map =                             _NULL_OFFSET + 00452h
@@ -439,7 +390,10 @@ _S_DecreaseRefCountFar_addr =      	 _NULL_OFFSET + 00488h
 _filename_argument = 				 _NULL_OFFSET + 0048Ch
 
 _rndindex = 						 _NULL_OFFSET + 00499h
-; 49a-49d unused
+_mousex = 							 _NULL_OFFSET + 0049Ah
+_singledemo = 						 _NULL_OFFSET + 0049Ch
+
+; 49d unused
 
 _numsectors =						 _NULL_OFFSET + 0049Eh
 _numlines =						     _NULL_OFFSET + 004A0h
@@ -538,7 +492,7 @@ _attackrange16 = 		   			 _NULL_OFFSET + 005E8h
 _usergame =		   		         	 _NULL_OFFSET + 005EAh
 _crushchange = 		   			 	 _NULL_OFFSET + 005EBh
 _leveltime =     		   			 _NULL_OFFSET + 005ECh
-; 5F0 unused
+_gamekeydownpointer = 				 _NULL_OFFSET + 005F0h
 _dodelayedcheatthisframe =			 _NULL_OFFSET + 005F2h
 _currenttask =            		     _NULL_OFFSET + 005F3h
 
@@ -706,7 +660,7 @@ _screen_viewport_height =	  	  	 _NULL_OFFSET + 00ACAh
 _old_screen_viewport_width =	  	 _NULL_OFFSET + 00ACCh
 _old_screen_viewport_height =	  	 _NULL_OFFSET + 00ACEh
 ;_FixedDivWholeA_addr =   		     _NULL_OFFSET + 00AD0h
-_cht_CheckCheat_Far_addr = 	 	     _NULL_OFFSET + 00AD4h
+;_cht_CheckCheat_Far_addr = 	     _NULL_OFFSET + 00AD4h
 _myargc =				 	 	     _NULL_OFFSET + 00AD8h
 _errno =      						 _NULL_OFFSET + 00ADAh
 
