@@ -221,10 +221,14 @@ call  M_CheckParm_CS_
 test  ax, ax
 jne   do_mem_thing
 
-mov     dx, BASE_LOWER_MEMORY_SEGMENT ; base_lower_memory_segment
-mov     ax, DGROUP
-add     ax, ((DGROUP_SIZE + STACK_SIZE) SHR 4 );
-sub     ax, dx
+
+mov     ax, word ptr ds:[__STACKTOP]
+add     al, 0Fh
+SHIFT_MACRO   shr ax 4
+add     ax, DGROUP
+cmp     ax, BASE_LOWER_MEMORY_SEGMENT
+
+
 ja      not_enough_memory
 
 
@@ -280,8 +284,6 @@ call  PrintSpaces_
 jmp   got_title
 
 ;; todo any way to ge this dynamically?
-STACK_SIZE = 0A00h
-DGROUP_SIZE = 01A80h
 do_mem_thing:
 
 
