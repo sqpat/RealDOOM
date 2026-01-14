@@ -75,7 +75,7 @@
 #define R_MaskedConstantsFLCodeSize    0xEB
 #define R_DrawSkyColumnCodeSize        0xD86
 #define R_DrawSkyColumnFLCodeSize      0x303
-#define M_MenuCodeSize                 0x1502
+#define M_MenuCodeSize                 0x14FE
 #define R_BSP24CodeSize                0x3760
 #define R_BSP16CodeSize                0x3768
 #define R_BSP0CodeSize                 0x3697

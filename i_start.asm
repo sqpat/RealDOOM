@@ -47,7 +47,7 @@ STACK   segment para stack 'STACK'
 STACK   ends
 
 .CODE
-EXTRN _gamekeydown:BYTE
+
 EXTRN BASE_CHEAT_ADDRESS
 
 
@@ -127,8 +127,6 @@ mov        ds, dx  ; dgroup.
 mov        word ptr ds:[__STACKLOW], di  ; update stacklow with new end after program name written.
 mov        word ptr ds:[_ORIGINAL_CS_SEGMENT_PTR], cs
 mov        word ptr ds:[_BASE_CHEAT_ADDRESS_OFFSET_PTR], OFFSET BASE_CHEAT_ADDRESS
-mov        word ptr ds:[_gamekeydownpointer], OFFSET _gamekeydown
-
 
 mov        bp, sp
 

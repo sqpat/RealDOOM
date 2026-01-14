@@ -3590,8 +3590,8 @@ inc   ax  ; al is 1. write 1 not 0 and return 1.
 handle_game_keyup_event:
 ; G_SetGameKeyUp/Down:
 
-xor   bh, bh
-add   bx, word ptr ds:[_gamekeydownpointer]
+
+mov   bh, _gamekeydown SHR 8     ; _gamekeydown is at cs:0200
 mov   es, word ptr ds:[_ORIGINAL_CS_SEGMENT_PTR]
 mov   byte ptr es:[bx], al ; 0 or 1...
 jmp   exit_gresponder_return_al

@@ -39,7 +39,7 @@ EXTRN G_InitNew_:NEAR
 
 .CODE
 
-EXTRN _gamekeydown:BYTE
+
 
 MAX_DEMO_SIZE = 0FFE0h
 

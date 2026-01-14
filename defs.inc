@@ -52,6 +52,8 @@ ENDIF
 
 ;__nullarea =						 0
 
+; static pointer.
+_gamekeydown = 0200h
 
 _NULL_OFFSET = 010h
 
@@ -492,7 +494,7 @@ _attackrange16 = 		   			 _NULL_OFFSET + 005E8h
 _usergame =		   		         	 _NULL_OFFSET + 005EAh
 _crushchange = 		   			 	 _NULL_OFFSET + 005EBh
 _leveltime =     		   			 _NULL_OFFSET + 005ECh
-_gamekeydownpointer = 				 _NULL_OFFSET + 005F0h
+;_gamekeydownpointer = 				 _NULL_OFFSET + 005F0h
 _dodelayedcheatthisframe =			 _NULL_OFFSET + 005F2h
 _currenttask =            		     _NULL_OFFSET + 005F3h
 

@@ -524,24 +524,7 @@ PUBLIC G_CopyCmd_
 ENDP
 
 
-_gamekeydown:   ;  256 bytes.
-PUBLIC _gamekeydown
-db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+
 
 _angleturn:
 dw 640, 1280, 320
@@ -3190,14 +3173,18 @@ ENDP
 
 
 
-; todo add another 1500 bytes or so of data to this clobbered region
-
 FILE_BUFFER_SIZE = 512
+GAMEKEYDOWN_SIZE = 256
 
 PROC    Z_ClearDeadCode_ NEAR
 PUBLIC  Z_ClearDeadCode_
 
-
+mov   di, FILE_BUFFER_SIZE
+xor   ax, ax
+mov   cx, GAMEKEYDOWN_SIZE
+push  cs
+pop   es
+rep   stosw   ; clear _gamekeydown, which lives in cs:0200h
 
 mov   ax, OFFSET _doomdata_bin_string  ; technically this string is about to get clobbered! but its ok. we check above and dont re-run the func.
 call  CopyString13_
@@ -3212,7 +3199,7 @@ call  locallib_fseek_  ;    fseek(fp, SWITCH_DOOMDATA_OFFSET, SEEK_SET);
 
 xor   ax, ax
 mov   dx, cs
-add   dx, FILE_BUFFER_SIZE SHR 4
+add   dx, (FILE_BUFFER_SIZE + GAMEKEYDOWN_SIZE) SHR 4
 mov   word ptr ds:[_tantoangle_segment], dx
 mov   cx, di ; fp
 mov   bx, 4 * 2049
