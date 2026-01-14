@@ -25,7 +25,7 @@ EXTRN D_DoomMain_:NEAR
 
 EXTRN doclose_:NEAR
 
-STACK_SIZE = 0600h
+STACK_SIZE = 0400h
 
 
 DGROUP group _NULL,STACK
