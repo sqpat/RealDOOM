@@ -137,7 +137,8 @@ jz     add_second_ticcount
 
 done_adding_ticcount_high:
 done_with_headtask:
-SELFMODIFY_enable_mus_task:
+_SELFMODIFY_enable_mus_task:
+PUBLIC _SELFMODIFY_enable_mus_task
 jmp    skip_mus_task
 call   MUS_ServiceRoutine_
 skip_mus_task:
@@ -219,73 +220,14 @@ jmp    no_note
 
 ENDP
 
-COMMENT
-
-PROC   TS_Startup_ NEAR
-PUBLIC TS_Startup_
-
-
-push   bx
-push   dx
-xor    ax, ax
-cmp    byte ptr cs:[_TS_Installed], al
-jne    exit_ts_startup
-mov    word ptr ds:[_TaskServiceCount], ax
-mov    byte ptr ds:[_TS_TimesInInterrupt], al
-mov    al, 8
-call   locallib_dos_getvect_
-mov    word ptr cs:[_OldInt8 + 0], ax
-mov    word ptr cs:[_OldInt8 + 2], dx
-mov    dx, OFFSET TS_ServiceScheduleIntEnabled_
-mov    bx, cs
-mov    ax, 8
-call   locallib_dos_setvect_
-inc    byte ptr cs:[_TS_Installed]
-exit_ts_startup:
-pop    dx
-pop    bx
-ret   
-
-
-ENDP
 
 
 
-PROC   TS_ScheduleMainTask_ NEAR
-PUBLIC TS_ScheduleMainTask_
 
 
 
-call   TS_Startup_
-cli    
-mov    al, 036h
-out    043h, al
-mov    al, 042h  ; HZ_RATE_140 & FFh
-out    040h, al
-mov    al, 021h  ; HZ_RATE_140 >> 8
-out    040h, al
-sti    
-ret
 
 
-
-ENDP
-
-PROC   TS_Dispatch_ NEAR
-PUBLIC TS_Dispatch_
-
-cli
-mov    word ptr ds:[_HeadTask], (1 SHL 8 + HZ_INTERRUPTS_PER_TICK)
-;mov    word ptr ds:[_HeadTask], (1 SHL 8 + 0)
-cmp    word ptr ds:[_playingdriver + 2], 0
-je     dont_set_mustask_active
-mov    word ptr cs:[SELFMODIFY_enable_mus_task+0], 0C089h  ; two byte nop
-dont_set_mustask_active:
-sti    
-ret   
-
-
-ENDP
 
 PROC    D_DMX_ENDMARKER_ NEAR
 PUBLIC  D_DMX_ENDMARKER_

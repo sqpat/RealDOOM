@@ -26,8 +26,6 @@ EXTRN locallib_fclose_:NEAR
 EXTRN locallib_fread_:NEAR
 EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
 EXTRN M_CheckParm_:NEAR
-EXTRN TS_Dispatch_:NEAR
-EXTRN TS_ScheduleMainTask_:NEAR
 EXTRN CopyString13_:NEAR
 EXTRN I_KeyboardISR_:NEAR
 EXTRN locallib_dos_getvect_:NEAR
@@ -43,7 +41,10 @@ EXTRN locallib_dos_setvect_:NEAR
 EXTRN _musdriverstartposition:BYTE
 EXTRN _oldkeyboardisr:DWORD
 EXTRN _doomcode_filename:BYTE
-
+EXTRN _TS_Installed:BYTE
+EXTRN _OldInt8:DWORD
+EXTRN TS_ServiceScheduleIntEnabled_:BYTE
+EXTRN _SELFMODIFY_enable_mus_task:BYTE
 KEYBOARDINT = 9
 
 
@@ -284,8 +285,54 @@ done_setting_up_mus_driver:
 mov      ax, OFFSET _startuptimer_string
 call     DEBUG_PRINT_NOARG_CS_
 
-call     TS_ScheduleMainTask_
-call     TS_Dispatch_
+;call     TS_ScheduleMainTask_
+; inline
+
+
+
+
+
+HZ_RATE_35 	=	34058 ;		(1192030L / 35)
+HZ_RATE_140 =	8514  ;		(1192030L / 140)
+
+; 140 / 35
+HZ_INTERRUPTS_PER_TICK = 4
+
+
+
+xor    ax, ax
+cmp    byte ptr cs:[_TS_Installed], al
+jne    exit_ts_startup
+mov    word ptr ds:[_TaskServiceCount], ax
+mov    byte ptr ds:[_TS_TimesInInterrupt], al
+mov    al, 8
+call   locallib_dos_getvect_
+mov    word ptr cs:[_OldInt8 + 0], ax
+mov    word ptr cs:[_OldInt8 + 2], dx
+mov    dx, OFFSET TS_ServiceScheduleIntEnabled_
+mov    bx, cs
+mov    ax, 8
+call   locallib_dos_setvect_
+inc    byte ptr cs:[_TS_Installed]
+exit_ts_startup:
+
+cli    
+mov    al, 036h
+out    043h, al
+mov    al, 042h  ; HZ_RATE_140 & FFh
+out    040h, al
+mov    al, 021h  ; HZ_RATE_140 >> 8
+out    040h, al
+
+mov    word ptr ds:[_HeadTask], (1 SHL 8 + HZ_INTERRUPTS_PER_TICK)
+;mov    word ptr ds:[_HeadTask], (1 SHL 8 + 0)
+cmp    word ptr ds:[_playingdriver + 2], 0
+je     dont_set_mustask_active
+mov    word ptr cs:[_SELFMODIFY_enable_mus_task+0], 0C089h  ; two byte nop to eliminate jmp
+dont_set_mustask_active:
+sti    
+
+
 
 
 
