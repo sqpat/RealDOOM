@@ -25,7 +25,7 @@ EXTRN W_CheckNumForNameFarString_:NEAR
 EXTRN W_CacheLumpNameDirectFarString_:FAR
 EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN Z_QuickMapPalette_:FAR
-EXTRN Z_QuickMapStatus_:FAR
+EXTRN Z_QuickMapStatus_:NEAR
 
 
 

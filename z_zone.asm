@@ -162,7 +162,7 @@ ret
 ENDP
 
 
-PROC Z_QuickMapDemo_ FAR
+PROC Z_QuickMapDemo_ NEAR
 PUBLIC Z_QuickMapDemo_
 
 push  dx
@@ -174,7 +174,7 @@ Z_QUICKMAPAI4 pageswapargs_demo_offset_size INDEXED_PAGE_5000_OFFSET
 pop   si
 pop   cx
 pop   dx
-retf  
+ret
 
 ENDP
 
@@ -265,7 +265,7 @@ retf
 ENDP
 
 
-PROC Z_QuickMapStatus_ FAR
+PROC Z_QuickMapStatus_ NEAR
 PUBLIC Z_QuickMapStatus_
 
 push  dx
@@ -279,7 +279,7 @@ Z_QUICKMAPAI1_NO_DX (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
 pop   si
 pop   cx
 pop   dx
-retf  
+ret
 
 ENDP
 

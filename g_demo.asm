@@ -25,7 +25,7 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN Z_QuickMapPhysics_:NEAR
-EXTRN Z_QuickMapDemo_:FAR
+EXTRN Z_QuickMapDemo_:NEAR
 EXTRN I_Error_:FAR
 EXTRN M_WriteFile_:NEAR
 EXTRN I_Quit_:FAR

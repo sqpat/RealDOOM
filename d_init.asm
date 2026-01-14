@@ -39,8 +39,8 @@ EXTRN Z_QuickMapMenu_:FAR
 EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN Z_LoadBinaries_:NEAR
 EXTRN Z_SetOverlay_:FAR
-EXTRN Z_QuickMapStatus_:FAR
-EXTRN Z_QuickMapDemo_:FAR
+EXTRN Z_QuickMapStatus_:NEAR
+EXTRN Z_QuickMapDemo_:NEAR
 EXTRN Z_ClearDeadCode_:NEAR
 
 EXTRN I_Error_:FAR
