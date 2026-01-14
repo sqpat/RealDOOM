@@ -877,19 +877,19 @@ WBPLAYERSTRUCT_T STRUC
     wbos_sitems            dw  ? ;  3
     wbos_ssecret           dw  ? ;  5
     wbos_stime             dw  ? ;  7
-WBPLAYERSTRUCT_T ENDS
+WBPLAYERSTRUCT_T ENDS            ;  9
 
 WBSTARTSTRUCT_T STRUC
-    wbss_epsd              db  ? ;  0
-    wbss_didsecret         db  ? ;  1
-    wbss_last              db  ? ;  2
-    wbss_next              db  ? ;  3
-    wbss_maxkills          dw  ? ;  4
-    wbss_maxitems          dw  ? ;  6
-    wbss_maxsecret         dw  ? ;  8
-    wbss_partime           dw  ? ;  A
-    wbss_plyr              WBPLAYERSTRUCT_T  ? ;  C
-WBSTARTSTRUCT_T ENDS
+    wbss_epsd              db  ?           ;  00h
+    wbss_didsecret         db  ?           ;  01h
+    wbss_last              db  ?           ;  02h
+    wbss_next              db  ?           ;  03h
+    wbss_maxkills          dw  ?           ;  04h
+    wbss_maxitems          dw  ?           ;  06h
+    wbss_maxsecret         dw  ?           ;  08h
+    wbss_partime           dw  ?           ;  0Ah
+    wbss_plyr          WBPLAYERSTRUCT_T  ? ;  0Ch
+WBSTARTSTRUCT_T ENDS                       ; 015h
 
 TICCMD_T STRUC
     ticcmd_forwardmove    db ? ; 0

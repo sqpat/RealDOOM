@@ -32,6 +32,7 @@ EXTRN W_CheckNumForNameFarString_:NEAR
 EXTRN W_CacheLumpNumDirectFragment_:FAR
 EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN Z_QuickMapMenu_:NEAR
+EXTRN Z_QuickMapIntermission_:NEAR
 
 _jump_mult_table_3:
 db 19, 18, 15, 12,  9,  6,  3, 0
@@ -383,6 +384,12 @@ ENDP
 ;void __far V_DrawFullscreenPatch ( int8_t __far* pagename, int8_t screen) {
 
 
+PROC   V_DrawFullscreenPatch_FromIntermission_ FAR
+PUBLIC V_DrawFullscreenPatch_FromIntermission_
+call   V_DrawFullscreenPatch_
+call   Z_QuickMapIntermission_
+retf
+ENDP
 
 
 PROC   V_DrawFullscreenPatch_FromMenu_ FAR

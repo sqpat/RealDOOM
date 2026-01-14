@@ -31,6 +31,15 @@ FREAD_BUFFER_SIZE = 512
 
 ; this is just for bingen.
 
+
+PROC    I_Error_ NEAR
+PUBLIC  I_Error_
+ENDP
+PROC    I_Quit_ NEAR
+PUBLIC  I_Quit_
+ENDP
+
+
 PROC    locallib_fopen_ NEAR
 PUBLIC  locallib_fopen_
 ENDP

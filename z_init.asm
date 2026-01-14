@@ -74,6 +74,7 @@ EXTRN V_MarkRect_:FAR
 EXTRN V_DrawPatch_:FAR
 EXTRN V_DrawFullscreenPatch_:FAR
 EXTRN V_DrawFullscreenPatch_FromMenu_:FAR
+EXTRN V_DrawFullscreenPatch_FromIntermission_:FAR
 EXTRN SFX_PlayPatch_:FAR
 EXTRN S_DecreaseRefCountFar_:FAR
 EXTRN W_CheckNumForNameFar_:FAR
@@ -1157,6 +1158,7 @@ dw OFFSET _V_MarkRect_addr                     , OFFSET V_MarkRect_
 dw OFFSET _V_DrawPatch_addr                    , OFFSET V_DrawPatch_
 dw OFFSET _V_DrawFullscreenPatch_addr          , OFFSET V_DrawFullscreenPatch_
 dw OFFSET _V_DrawFullscreenPatch_FromMenu_addr , OFFSET V_DrawFullscreenPatch_FromMenu_
+dw OFFSET _V_DrawFullscreenPatch_FromIntermission_addr , OFFSET V_DrawFullscreenPatch_FromIntermission_
 dw OFFSET _SFX_PlayPatch_addr                  , OFFSET SFX_PlayPatch_
 dw OFFSET _S_DecreaseRefCountFar_addr          , OFFSET S_DecreaseRefCountFar_
 dw OFFSET _W_CheckNumForNameFar_addr           , OFFSET W_CheckNumForNameFar_

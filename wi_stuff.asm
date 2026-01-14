@@ -1543,7 +1543,7 @@ dont_set_name1:
 mov   bx, 1
 mov   ax, di
 mov   dx, ds
-call  dword ptr ds:[_V_DrawFullscreenPatch_addr]
+call  dword ptr ds:[_V_DrawFullscreenPatch_FromIntermission_addr]
 
 mov   al, byte ptr ds:[_commercial]
 test  al, al

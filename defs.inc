@@ -244,7 +244,7 @@ _am_scale_mtof =                     _NULL_OFFSET + 00200h
 _am_scale_ftom =       		     	 _NULL_OFFSET + 00204h
 _I_SetPalette_addr = 	        	 _NULL_OFFSET + 00208h
 _V_MarkRect_addr =                   _NULL_OFFSET + 0020Ch
-; 210 unused?
+_V_DrawFullscreenPatch_FromIntermission_addr = _NULL_OFFSET + 00210h
 _wipeduration =                      _NULL_OFFSET + 00214h
 _detailshift2minus =  		 		 _NULL_OFFSET + 00216h
 _maskedheaderpixeolfs =				 _NULL_OFFSET + 00218h
@@ -345,7 +345,7 @@ _currentThinkerListHead = 			 _NULL_OFFSET + 003D2h
 _W_LumpLength_addr =                 _NULL_OFFSET + 003D4h
 _demo_p =            				 _NULL_OFFSET + 003D8h
 _DEMO_SEGMENT_PTR =  				 _NULL_OFFSET + 003DAh
-;_I_WaitVBL_addr =       		     _NULL_OFFSET + 003DCh
+_V_DrawFullscreenPatch_addr =        _NULL_OFFSET + 003DCh
 
 _braintargets =                      _NULL_OFFSET + 003E0h
 _tmbbox =                            _NULL_OFFSET + 00420h
@@ -376,9 +376,9 @@ _secretexit =                        _NULL_OFFSET + 00453h
 _V_DrawPatch_addr =              	 _NULL_OFFSET + 00454h
 _m_paninc = 				 	 	 _NULL_OFFSET + 00458h
 
-; 20 bytes
+; 015h bytes
 _wminfo =			                 _NULL_OFFSET + 0045Ch
-_V_DrawFullscreenPatch_addr =        _NULL_OFFSET + 00470h
+; 471-473 free
 _getStringByIndex_addr =             _NULL_OFFSET + 00474h
 
 
