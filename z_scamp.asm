@@ -256,7 +256,7 @@ retf
 ENDP
 
 
-PROC Z_QuickMapSFXPageFrame_ FAR
+PROC   Z_QuickMapSFXPageFrame_ NEAR
 PUBLIC Z_QuickMapSFXPageFrame_
 
 cmp  al, byte ptr ds:[_currentpageframes + 1]
@@ -277,12 +277,12 @@ add  ax, (EMS_MEMORY_PAGE_OFFSET + SFX_DATA_PAGES)
 out  SCAMP_PAGE_SET_REGISTER, ax
 sti
 exit_sfx_pageframe:
-retf
+ret
 ENDP
 
 LUMP_MASK = 0FCh 
 
-PROC Z_QuickMapWADPageFrame_ FAR
+PROC Z_QuickMapWADPageFrame_ NEAR
 PUBLIC Z_QuickMapWADPageFrame_
 
 and  ah, LUMP_MASK
@@ -308,7 +308,7 @@ out  SCAMP_PAGE_SET_REGISTER, ax
 sti
 exit_wad_pageframe:
 
-retf
+ret
 
 ENDP
 

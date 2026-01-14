@@ -22,7 +22,7 @@ EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN Z_QuickMapRender_:NEAR
 EXTRN Z_QuickMapRenderPlanes_:FAR
 EXTRN Z_QuickMapUndoFlatCache_:FAR
-EXTRN Z_QuickMapWADPageFrame_:FAR
+EXTRN Z_QuickMapWADPageFrame_:NEAR
 EXTRN copystr8_:NEAR
 EXTRN CopyString13_:NEAR
 EXTRN locallib_fread_nearsegment_:NEAR

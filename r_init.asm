@@ -32,7 +32,7 @@ EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN Z_QuickMapMaskedExtraData_:NEAR
 
 EXTRN R_FlatNumForName_:NEAR
-EXTRN Z_QuickMapWADPageFrame_:FAR
+EXTRN Z_QuickMapWADPageFrame_:NEAR
 EXTRN locallib_fseek_:NEAR
 EXTRN locallib_fread_nearsegment_:NEAR
 

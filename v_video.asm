@@ -31,7 +31,7 @@ EXTRN Z_QuickMapScratch_5000_:NEAR
 EXTRN W_CheckNumForNameFarString_:NEAR
 EXTRN W_CacheLumpNumDirectFragment_:FAR
 EXTRN Z_QuickMapPhysics_:NEAR
-EXTRN Z_QuickMapMenu_:FAR
+EXTRN Z_QuickMapMenu_:NEAR
 
 _jump_mult_table_3:
 db 19, 18, 15, 12,  9,  6,  3, 0

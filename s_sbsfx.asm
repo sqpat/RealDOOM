@@ -21,7 +21,7 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN I_Error_:FAR
-EXTRN Z_QuickMapSFXPageFrame_:FAR
+EXTRN Z_QuickMapSFXPageFrame_:NEAR
 EXTRN W_CacheLumpNumDirectWithOffset_:FAR
 EXTRN SB_DSP1xx_BeginPlayback_:NEAR
 EXTRN SB_SetPlaybackRate_:NEAR

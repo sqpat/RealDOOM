@@ -19,7 +19,7 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN Z_QuickMapWADPageFrame_:FAR
+EXTRN Z_QuickMapWADPageFrame_:NEAR
 EXTRN locallib_fseek_:NEAR
 EXTRN locallib_fread_:NEAR
 EXTRN I_Error_:FAR

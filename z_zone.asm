@@ -44,13 +44,9 @@ PUBLIC _codestartposition_END
 IFDEF COMP_CH
 ELSE
 
-    PROC Z_QuickMapMusicPageFrame_ FAR
+    PROC   Z_QuickMapMusicPageFrame_ FAR
     PUBLIC Z_QuickMapMusicPageFrame_
 
-;    cmp   al, byte ptr ds:[_currentpageframes + MUS_PAGE_FRAME_INDEX]
-;    jne   actually_changing_music_page_frame
-;    retf  
-;    actually_changing_music_page_frame:
     push  bx
     push  dx
     mov   byte ptr ds:[_currentpageframes + MUS_PAGE_FRAME_INDEX], al
@@ -69,7 +65,7 @@ ELSE
 
     ENDP
 
-    PROC Z_QuickMapSFXPageFrame_ FAR
+    PROC   Z_QuickMapSFXPageFrame_ NEAR
     PUBLIC Z_QuickMapSFXPageFrame_
 
     cmp   al, byte ptr ds:[_currentpageframes + SFX_PAGE_FRAME_INDEX]
@@ -89,19 +85,19 @@ ELSE
     int   067h
     pop   dx
     pop   bx
-    retf  
+    ret
 
 
     ENDP
 
-    PROC Z_QuickMapWADPageFrame_ FAR
+    PROC   Z_QuickMapWADPageFrame_ NEAR
     PUBLIC Z_QuickMapWADPageFrame_
 
 
     and   ah, 0FCh
     cmp   ah, byte ptr ds:[_currentpageframes + WAD_PAGE_FRAME_INDEX]
     jne   actually_changing_wad_page_frame
-    retf  
+    ret
 
     actually_changing_wad_page_frame:
     push  bx
@@ -117,7 +113,7 @@ ELSE
     int   067h
     pop   dx
     pop   bx
-    retf  
+    ret
 
 
     ENDP
@@ -316,7 +312,7 @@ ret
 
 ENDP
 
-PROC Z_QuickMapMenu_ FAR
+PROC   Z_QuickMapMenu_ NEAR
 PUBLIC Z_QuickMapMenu_
 
 push  dx
@@ -329,11 +325,11 @@ Z_QUICKMAPAI4_NO_DX  pageswapargs_physics_code_offset_size INDEXED_PAGE_9000_OFF
 pop   si
 pop   cx
 pop   dx
-retf  
+ret
 
 ENDP
 
-PROC Z_QuickMapIntermission_ FAR
+PROC   Z_QuickMapIntermission_ NEAR
 PUBLIC Z_QuickMapIntermission_
 
 push  dx
@@ -346,154 +342,13 @@ Z_QUICKMAPAI16 pageswapargs_intermission_offset_size INDEXED_PAGE_6000_OFFSET
 pop   si
 pop   cx
 pop   dx
-retf  
+ret
 
 ENDP
 
 
 
 
-PROC Z_QuickMapVisplanePage_ FAR
-PUBLIC Z_QuickMapVisplanePage_
-
-;	int16_t usedpageindex = pagenum9000 + PAGE_8400_OFFSET + physicalpage;
-;	int16_t usedpagevalue;
-;	int8_t i;
-;	if (virtualpage < 2){
-;		usedpagevalue = FIRST_VISPLANE_PAGE + virtualpage;
-;	} else {
-;		usedpagevalue = EMS_VISPLANE_EXTRA_PAGE + (virtualpage-2);
-;	}
-
-push  bx
-push  cx
-push  si
-mov   cl, al
-mov   dh, dl
-mov   al, dl
-cbw  
-IFDEF COMP_CH
-mov   si, CHIPSET_PAGE_9000
-ELSE
-mov   si, word ptr ds:[_pagenum9000]
-ENDIF
-add   si, PAGE_8400_OFFSET ; sub 3
-add   si, ax
-mov   al, cl
-cbw  
-cmp   al, 2
-jge   visplane_page_above_2
-add   ax, FIRST_VISPLANE_PAGE
-used_pagevalue_ready:
-
-;		pageswapargs[pageswapargs_visplanepage_offset] = _EPR(usedpagevalue);
-
-; _EPR here
-IFDEF COMP_CH
-    add  ax, EMS_MEMORY_PAGE_OFFSET
-ELSE
-ENDIF
-mov   word ptr ds:[_pageswapargs + (pageswapargs_visplanepage_offset * 2)], ax
-
-
-;pageswapargs[pageswapargs_visplanepage_offset+1] = usedpageindex;
-IFDEF COMP_CH
-ELSE
-    mov   word ptr ds:[_pageswapargs + ((pageswapargs_visplanepage_offset+1) * 2)], si
-ENDIF
-
-;	physicalpage++;
-inc   dh
-mov   dl, 4
-
-;	for (i = 4; i > 0; i --){
-;		if (active_visplanes[i] == physicalpage){
-;			active_visplanes[i] = 0;
-;			break;
-;		}
-;	}
-
-loop_next_visplane_page:
-mov   al, dl
-cbw  
-mov   bx, ax
-cmp   dh, byte ptr ds:[bx + _active_visplanes]
-je    set_zero_and_break
-dec   dl
-test  dl, dl
-jg    loop_next_visplane_page
-
-done_with_visplane_loop:
-mov   al, cl
-cbw  
-mov   bx, ax
-
-mov   byte ptr ds:[bx + _active_visplanes], dh
-
-
-IFDEF COMP_CH
-	IF COMP_CH EQ CHIPSET_SCAT
-
-        mov  	dx, SCAT_PAGE_SELECT_REGISTER
-        xchg    ax, si
-        ; not necessary?
-        ;or      al, EMS_AUTOINCREMENT_FLAG  
-        cli
-        out  	dx, al
-        mov     si,  (pageswapargs_visplanepage_offset * 2) + _pageswapargs
-        mov  	dx, SCAT_PAGE_SET_REGISTER
-        lodsw
-        out 	dx, ax
-        sti
-
-	ELSEIF COMP_CH EQ CHIPSET_SCAMP
-
-        xchg    ax, si
-        ; not necessary?
-        ;or      al, EMS_AUTOINCREMENT_FLAG  
-        cli
-        out     SCAMP_PAGE_SELECT_REGISTER, al
-        mov     ax, ds:[_pageswapargs + (2 * pageswapargs_visplanepage_offset)]
-        out 	SCAMP_PAGE_SET_REGISTER, ax
-        sti
-
-	ELSEIF COMP_CH EQ CHIPSET_HT18
-
-        mov  	dx, HT18_PAGE_SELECT_REGISTER
-        xchg    ax, si
-        ; not necessary?
-        ;or      al, EMS_AUTOINCREMENT_FLAG  
-        cli
-        out  	dx, al
-        mov     si,  (pageswapargs_visplanepage_offset * 2) + _pageswapargs
-        mov  	dx, HT18_PAGE_SET_REGISTER
-        lodsw
-        out 	dx, ax
-        sti
-
-    ENDIF
-
-ELSE
-    Z_QUICKMAPAI1 pageswapargs_visplanepage_offset_size unused_param
-
-ENDIF
-
-
-mov   byte ptr ds:[_visplanedirty], 1
-pop   si
-pop   cx
-pop   bx
-retf  
-visplane_page_above_2:
-;		usedpagevalue = EMS_VISPLANE_EXTRA_PAGE + (virtualpage-2);
-add   ax, (EMS_VISPLANE_EXTRA_PAGE - 2)
-jmp   used_pagevalue_ready
-
-set_zero_and_break:
-mov   byte ptr ds:[bx + _active_visplanes], 0
-jmp   done_with_visplane_loop
-
-ENDP
 
 _ems_backfill_page_order:
 ;  ems_backfill_page_order[24] 
@@ -501,7 +356,7 @@ db         0, 1, 2, 3, -4, -3, -2, -1, -8, -7, -6, -5
 db -12, -11, -10, -9, -16, -15, -14, -13, -20, -19, -18, -17
 
 
-PROC Z_QuickMapUnmapAll_ NEAR
+PROC   Z_QuickMapUnmapAll_ NEAR
 PUBLIC Z_QuickMapUnmapAll_
 
 IFDEF COMP_CH
@@ -625,7 +480,7 @@ dw    exit_set_overlay
 @
 
 
-PROC Z_SetOverlay_ FAR
+PROC   Z_SetOverlay_ FAR
 PUBLIC Z_SetOverlay_
 cmp   al, byte ptr ds:[_currentoverlay]
 je   exit_overlay_early
@@ -679,7 +534,7 @@ ENDP
 ; copy string from cs:ax to ds:_filename_argument
 ; return _filename_argument in ax
 
-PROC CopyString13_Zonelocal_ NEAR
+PROC   CopyString13_Zonelocal_ NEAR
 PUBLIC CopyString13_Zonelocal_
 
 push  si

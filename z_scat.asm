@@ -274,7 +274,7 @@ retf
 ENDP
 
 
-PROC Z_QuickMapSFXPageFrame_ FAR
+PROC   Z_QuickMapSFXPageFrame_ NEAR
 PUBLIC Z_QuickMapSFXPageFrame_
 
 cmp  al, byte ptr ds:[_currentpageframes + 1]
@@ -302,12 +302,12 @@ sti
 pop  dx
 
 exit_sfx_pageframe:
-retf
+ret
 ENDP
 
 LUMP_MASK = 0FCh  ; todo move to constants
 
-PROC   Z_QuickMapWADPageFrame_ FAR
+PROC   Z_QuickMapWADPageFrame_ NEAR
 PUBLIC Z_QuickMapWADPageFrame_
 
 
@@ -339,7 +339,7 @@ pop  dx
 
 exit_wad_pageframe:
 ;pop  ax
-retf
+ret
 
 ENDP
 

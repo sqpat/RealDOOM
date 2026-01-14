@@ -21,9 +21,9 @@ INSTRUCTION_SET_MACRO
 
 EXTRN R_ExecuteSetViewSize_:NEAR
 EXTRN NetUpdateFromPhysics_:FAR
-EXTRN Z_QuickMapMenu_:FAR
+EXTRN Z_QuickMapMenu_:NEAR
 EXTRN Z_QuickMapPhysics_:NEAR
-EXTRN Z_QuickMapIntermission_:FAR
+EXTRN Z_QuickMapIntermission_:NEAR
 
 EXTRN V_DrawFullscreenPatch_:FAR
 EXTRN G_BeginRecording_:NEAR
@@ -510,6 +510,7 @@ ENDP
 ;  ticcmd_t localcmds[BACKUPTICS];
 ;  8 bytes each, 16 entries
 
+; 96 bytes, move to early cs
 
 _localcmds:
 PUBLIC _localcmds
@@ -569,6 +570,8 @@ ENDP
 
 _angleturn:
 dw 640, 1280, 320
+
+; 128 bytes, try to move to early cs.
 
 _scantokey:
 

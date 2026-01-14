@@ -26,15 +26,15 @@ EXTRN locallib_dos_getvect_:NEAR
 EXTRN locallib_freadfromfar_:FAR
 EXTRN I_Error_:FAR
 EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
-EXTRN Z_QuickMapWADPageFrame_:FAR
+EXTRN Z_QuickMapWADPageFrame_:NEAR
 EXTRN Z_QuickMapMusicPageFrame_:FAR
-EXTRN Z_QuickMapSFXPageFrame_:FAR
+EXTRN Z_QuickMapSFXPageFrame_:NEAR
 EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN Z_QuickMapRender_:NEAR
 
-EXTRN Z_QuickMapVisplanePage_:FAR
-EXTRN Z_QuickMapIntermission_:FAR
-EXTRN Z_QuickMapMenu_:FAR
+
+EXTRN Z_QuickMapIntermission_:NEAR
+EXTRN Z_QuickMapMenu_:NEAR
 EXTRN locallib_fread_nearsegment_:NEAR
 EXTRN locallib_fseek_:NEAR
 EXTRN locallib_fseekfromfar_:FAR
@@ -765,6 +765,150 @@ pop   dx
 ret
 
 ENDP
+
+
+PROC   Z_QuickMapVisplanePage_ NEAR
+PUBLIC Z_QuickMapVisplanePage_
+
+;	int16_t usedpageindex = pagenum9000 + PAGE_8400_OFFSET + physicalpage;
+;	int16_t usedpagevalue;
+;	int8_t i;
+;	if (virtualpage < 2){
+;		usedpagevalue = FIRST_VISPLANE_PAGE + virtualpage;
+;	} else {
+;		usedpagevalue = EMS_VISPLANE_EXTRA_PAGE + (virtualpage-2);
+;	}
+
+push  bx
+push  cx
+push  si
+mov   cl, al
+mov   dh, dl
+mov   al, dl
+cbw  
+IFDEF COMP_CH
+mov   si, CHIPSET_PAGE_9000
+ELSE
+mov   si, word ptr ds:[_pagenum9000]
+ENDIF
+add   si, PAGE_8400_OFFSET ; sub 3
+add   si, ax
+mov   al, cl
+cbw  
+cmp   al, 2
+jge   visplane_page_above_2
+add   ax, FIRST_VISPLANE_PAGE
+used_pagevalue_ready:
+
+;		pageswapargs[pageswapargs_visplanepage_offset] = _EPR(usedpagevalue);
+
+; _EPR here
+IFDEF COMP_CH
+    add  ax, EMS_MEMORY_PAGE_OFFSET
+ELSE
+ENDIF
+mov   word ptr ds:[_pageswapargs + (pageswapargs_visplanepage_offset * 2)], ax
+
+
+;pageswapargs[pageswapargs_visplanepage_offset+1] = usedpageindex;
+IFDEF COMP_CH
+ELSE
+    mov   word ptr ds:[_pageswapargs + ((pageswapargs_visplanepage_offset+1) * 2)], si
+ENDIF
+
+;	physicalpage++;
+inc   dh
+mov   dl, 4
+
+;	for (i = 4; i > 0; i --){
+;		if (active_visplanes[i] == physicalpage){
+;			active_visplanes[i] = 0;
+;			break;
+;		}
+;	}
+
+loop_next_visplane_page:
+mov   al, dl
+cbw  
+mov   bx, ax
+cmp   dh, byte ptr ds:[bx + _active_visplanes]
+je    set_zero_and_break
+dec   dl
+test  dl, dl
+jg    loop_next_visplane_page
+
+done_with_visplane_loop:
+mov   al, cl
+cbw  
+mov   bx, ax
+
+mov   byte ptr ds:[bx + _active_visplanes], dh
+
+
+IFDEF COMP_CH
+	IF COMP_CH EQ CHIPSET_SCAT
+
+        mov  	dx, SCAT_PAGE_SELECT_REGISTER
+        xchg    ax, si
+        ; not necessary?
+        ;or      al, EMS_AUTOINCREMENT_FLAG  
+        cli
+        out  	dx, al
+        mov     si,  (pageswapargs_visplanepage_offset * 2) + _pageswapargs
+        mov  	dx, SCAT_PAGE_SET_REGISTER
+        lodsw
+        out 	dx, ax
+        sti
+
+	ELSEIF COMP_CH EQ CHIPSET_SCAMP
+
+        xchg    ax, si
+        ; not necessary?
+        ;or      al, EMS_AUTOINCREMENT_FLAG  
+        cli
+        out     SCAMP_PAGE_SELECT_REGISTER, al
+        mov     ax, ds:[_pageswapargs + (2 * pageswapargs_visplanepage_offset)]
+        out 	SCAMP_PAGE_SET_REGISTER, ax
+        sti
+
+	ELSEIF COMP_CH EQ CHIPSET_HT18
+
+        mov  	dx, HT18_PAGE_SELECT_REGISTER
+        xchg    ax, si
+        ; not necessary?
+        ;or      al, EMS_AUTOINCREMENT_FLAG  
+        cli
+        out  	dx, al
+        mov     si,  (pageswapargs_visplanepage_offset * 2) + _pageswapargs
+        mov  	dx, HT18_PAGE_SET_REGISTER
+        lodsw
+        out 	dx, ax
+        sti
+
+    ENDIF
+
+ELSE
+    Z_QUICKMAPAI1 pageswapargs_visplanepage_offset_size unused_param
+
+ENDIF
+
+
+mov   byte ptr ds:[_visplanedirty], 1
+pop   si
+pop   cx
+pop   bx
+ret
+visplane_page_above_2:
+;		usedpagevalue = EMS_VISPLANE_EXTRA_PAGE + (virtualpage-2);
+add   ax, (EMS_VISPLANE_EXTRA_PAGE - 2)
+jmp   used_pagevalue_ready
+
+set_zero_and_break:
+mov   byte ptr ds:[bx + _active_visplanes], 0
+jmp   done_with_visplane_loop
+
+ENDP
+
 
 SPANFUNC_JUMP_LOOKUP_9000_SEGMENT =  SPANFUNC_JUMP_LOOKUP_SEGMENT - 09C00h + 09000h
 
