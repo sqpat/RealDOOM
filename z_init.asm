@@ -69,7 +69,6 @@ EXTRN FastDiv3216u_:FAR
 EXTRN S_InitSFXCache_:FAR
 EXTRN I_Quit_:FAR
 
-EXTRN I_WaitVBL_:FAR
 EXTRN I_SetPalette_:FAR
 EXTRN V_MarkRect_:FAR
 ;EXTRN V_DrawPatchDirect_:FAR

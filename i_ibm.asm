@@ -37,44 +37,6 @@ PUBLIC  I_IBM_STARTMARKER_
 ENDP
 
 
-STATUS_REGISTER_1  = 03DAh
-
-PROC    I_WaitVBL_ FAR
-PUBLIC  I_WaitVBL_
-
-cmp     byte ptr ds:[_novideo], 0
-jne     return_early
-push    dx
-push    cx
-xchg    ax, cx ; cx gets count
-mov     dx, STATUS_REGISTER_1
-
-loop_next_vbl:
-in      al, dx
-test    al, 8
-jne     got_flag_8
-jmp     loop_next_vbl
-
-got_flag_8:
-
-loop_next_vbl_2:
-in      al, dx
-test    al, 8
-je      cleared_flag_8
-jmp     loop_next_vbl_2
-
-cleared_flag_8:
-
-
-loop    loop_next_vbl
-
-
-pop     cx
-pop     dx
-return_early:
-retf
-
-ENDP
 
 PROC    I_ReadMouse_ NEAR
 PUBLIC  I_ReadMouse_

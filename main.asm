@@ -47,8 +47,6 @@ EXTRN locallib_fseek_:NEAR
 EXTRN locallib_ftell_:NEAR
 
 
-
-EXTRN I_WaitVBL_:FAR
 EXTRN Z_QuickMapPalette_:FAR
 EXTRN Z_QuickMapRender_:FAR
 
@@ -1252,6 +1250,8 @@ jmp   print_last_digit
 
 ENDP
 
+STATUS_REGISTER_1  = 03DAh
+
 
 
 ;void __near I_SetPalette(int8_t paletteNumber) {
@@ -1273,8 +1273,31 @@ xor   al, al
 xchg  ax, si  ; si = al * 768
 
 
-mov   ax, 1
-call  I_WaitVBL_
+;call  inlined i_waitvbl(1)
+
+cmp     byte ptr ds:[_novideo], 0
+jne     return_early
+
+mov     dx, STATUS_REGISTER_1
+
+loop_next_vbl:
+in      al, dx
+test    al, 8
+jne     got_flag_8
+jmp     loop_next_vbl
+
+got_flag_8:
+
+loop_next_vbl_2:
+in      al, dx
+test    al, 8
+je      cleared_flag_8
+jmp     loop_next_vbl_2
+
+cleared_flag_8:
+
+return_early:
+
 call  Z_QuickMapPalette_
 
 mov   dx, PEL_WRITE_ADR

@@ -345,7 +345,7 @@ _currentThinkerListHead = 			 _NULL_OFFSET + 003D2h
 _W_LumpLength_addr =                 _NULL_OFFSET + 003D4h
 _demo_p =            				 _NULL_OFFSET + 003D8h
 _DEMO_SEGMENT_PTR =  				 _NULL_OFFSET + 003DAh
-_I_WaitVBL_addr =       		     _NULL_OFFSET + 003DCh
+;_I_WaitVBL_addr =       		     _NULL_OFFSET + 003DCh
 
 _braintargets =                      _NULL_OFFSET + 003E0h
 _tmbbox =                            _NULL_OFFSET + 00420h
