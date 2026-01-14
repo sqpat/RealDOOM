@@ -122,22 +122,26 @@ _movedirangles:
 dw  00000h, 02000h, 04000h, 06000h, 08000h, 0A000h, 0C000h, 0E000h
 
 
+; optimized to use a bit less stack as a recursive function
+; destroys bx, si
+
 
 
 PROC    P_RecursiveSound_ NEAR
 PUBLIC  P_RecursiveSound_
 
 
-PUSHA_NO_AX_MACRO
+push    cx
+push    di
+
+
 ;dl holds soundblocks.
 ;dh will hold flags. dh is 0 at func start.
 
-mov   cx, SECTORS_SEGMENT
-mov   es, cx
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
 mov   di, ax ; di stores secnum for the function.
 xchg  ax, bx
 SHIFT_MACRO shl   bx 4
-mov   si, SECTOR_SOUNDTRAVERSED_SEGMENT
 mov   ax, word ptr es:[bx + SECTOR_T.sec_validcount]
 
 cmp   ax, word ptr ds:[_validcount_global]
@@ -148,33 +152,37 @@ jne   do_sound_recursion
 ;    }
 
 
-mov   es, si
+mov   ax, SECTOR_SOUNDTRAVERSED_SEGMENT
+mov   es, ax
 mov   al, byte ptr es:[di]
 cbw
-dec   ax ; instead of plus 1 to soundblocks do minus 12 to sector_soundtraversed
+dec   ax                       ; instead of plus 1 to soundblocks do minus 12 to sector_soundtraversed
 js    exit_p_recursive_sound_2 ; was definitely too small...
 cmp   ax, dx
 jg    do_sound_recursion
 exit_p_recursive_sound_2:
 
-POPA_NO_AX_MACRO
+
+pop   di
+pop   cx
+
 ret
 
 do_sound_recursion:
 
 ;	soundsector->validcount = validcount_global;
-mov   es, cx
-mov   ax, word ptr ds:[_validcount_global]
-
-mov   word ptr es:[bx + SECTOR_T.sec_validcount], ax
+mov   es, word ptr ds:[_SECTORS_SEGMENT_PTR]
+push  word ptr ds:[_validcount_global]
+pop   word ptr es:[bx + SECTOR_T.sec_validcount]
 
 mov   cx, word ptr es:[bx + SECTOR_T.sec_linesoffset]
-mov   bp, word ptr es:[bx + SECTOR_T.sec_linecount]  
-add   bp, cx
+mov   si, word ptr es:[bx + SECTOR_T.sec_linecount]  
+add   si, cx
 
 
 ;	sector_soundtraversed[secnum] = soundblocks+1;
-mov   es, si
+mov   ax, SECTOR_SOUNDTRAVERSED_SEGMENT
+mov   es, ax
 mov   ax, dx
 inc   ax
 
@@ -186,28 +194,28 @@ dec   di
 
 
 do_next_sector_line_loop:
+
+push  si   ; store loop counter
+
 mov   si, cx
 sal   si, 1
 mov   si, word ptr ds:[si + _linebuffer]  ; line number
-mov   ax, LINEFLAGSLIST_SEGMENT
-mov   es, ax
+
+mov   es, word ptr ds:[_LINEFLAGSLIST_SEGMENT_PTR]
 
 mov   dh, byte ptr es:[si] ; dh has flags.
 
 test  dh, ML_TWOSIDED
 je    continue_recursive_sound_loop
 
-mov   ax, LINES_SEGMENT
-mov   es, ax
+mov   es, word ptr ds:[_LINES_SEGMENT_PTR]
 SHIFT_MACRO shl   si 2  ; si has line number.
 mov   ax, word ptr es:[si + LINE_T.l_sidenum + 2]    ; back side
 SHIFT_MACRO shl   si 2  ; si shifted 4
-mov   bx, LINES_PHYSICS_SEGMENT
-mov   es, bx
+
+mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
 
 push   dx  ; store params... no where else ot put it.
-;mov   bx, word ptr es:[si + LINE_PHYSICS_T.lp_backsecnum]
-;mov   dx, word ptr es:[si + LINE_PHYSICS_T.lp_frontsecnum]
 les    dx, dword ptr es:[si + LINE_PHYSICS_T.lp_frontsecnum] ; backsecnum to es.
 mov    bx, es
 
@@ -221,8 +229,7 @@ mov   ax, word ptr ds:[_lineopening + LINE_OPENING_T.lo_opentop]
 cmp   ax, word ptr ds:[_lineopening + LINE_OPENING_T.lo_openbottom]
 jle   continue_recursive_sound_loop
 
-mov   ax, LINES_PHYSICS_SEGMENT
-mov   es, ax
+mov   es, word ptr ds:[_LINES_PHYSICS_SEGMENT_PTR]
 
 ;		if (check_physics->frontsecnum == secnum) {
 ;			othersecnum = check_physics->backsecnum;
@@ -248,21 +255,31 @@ je    recursive_call_soundblocks
 cmp   dl, 0
 jne   continue_recursive_sound_loop
 
-mov   si, dx ; store old dl
+
+push  dx
 mov   dx, 1
 call  P_RecursiveSound_
-mov   dx, si ; restore old values..
+pop   dx ; restore
+
 continue_recursive_sound_loop:
+
+pop   si  ; restore loop counter
+
 inc   cx
-cmp   cx, bp
+cmp   cx, si
 jl    do_next_sector_line_loop
 
 exit_p_recursive_sound:
-POPA_NO_AX_MACRO
+
+pop   di
+pop   cx
 ret   
+
 recursive_call_soundblocks:
 xor   dh, dh ; clear flags.
+push  dx
 call  P_RecursiveSound_
+pop   dx
 jmp   continue_recursive_sound_loop
 
 
@@ -276,7 +293,11 @@ inc   word ptr ds:[_validcount_global]
 mov   bx, word ptr ds:[_playerMobj]
 xor   dx, dx
 mov   ax, word ptr ds:[bx + MOBJ_T.m_secnum]
-call  P_RecursiveSound_
+push  bx
+push  si
+call  P_RecursiveSound_  ; destroys si/bx to avoid putting it on repetitive recursive frame
+pop   si
+pop   bx
 ret
 
 ENDP
