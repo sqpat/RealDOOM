@@ -8,7 +8,7 @@
 #include "r_state.h"
 #include "p_setup.h"
 
-#define CONSTANTS_COUNT 1016
+#define CONSTANTS_COUNT 1017
 #define LOCALS_COUNT 30
 
 
@@ -221,6 +221,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "MAXVISSPRITES",
     "CODE_OVERLAY_SEGMENT",
     "CODE_OVERLAY_END_SEGMENT",
+	"MAX_OVERLAYSIZE",
     "FONT_WIDTHS_SEGMENT",
     "ST_GRAPHICS_SEGMENT",
     "HU_FONTSTART",
@@ -1336,6 +1337,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     MAXVISSPRITES,
     code_overlay_segment,
     code_overlay_end_segment,
+	MAX_OVERLAYSIZE,
     font_widths_segment,
     ST_GRAPHICS_SEGMENT,
     HU_FONTSTART,

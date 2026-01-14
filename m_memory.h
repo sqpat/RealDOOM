@@ -329,8 +329,8 @@ scantokey            3194:0000
 #define linespeciallist_far    ((int16_t __far*)              MAKE_FULL_SEGMENT(doomednum_far,              size_doomednum ))
 #define font_widths_far        ((int8_t __far*)               MAKE_FULL_SEGMENT(linespeciallist_far,        size_linespeciallist))
 #define code_overlay_start     ((byte __far*)                 MAKE_FULL_SEGMENT(font_widths_far,            size_font_widths))
-#define code_overlay_end       ((byte __far*)                 MAKE_FULL_SEGMENT(code_overlay_start,         FinaleCodeSize))
-#define segs_physics           ((seg_physics_t __far*)        MAKE_FULL_SEGMENT(code_overlay_start,         FinaleCodeSize))
+#define code_overlay_end       ((byte __far*)                 MAKE_FULL_SEGMENT(code_overlay_start,         MAX_OVERLAYSIZE))
+#define segs_physics           ((seg_physics_t __far*)        MAKE_FULL_SEGMENT(code_overlay_start,         MAX_OVERLAYSIZE))
 #define physics_4000_end       ((byte __far*)                 MAKE_FULL_SEGMENT(segs_physics,               size_segs_physics))
 // WipeCodeSize
 

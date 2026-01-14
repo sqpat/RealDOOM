@@ -62,8 +62,8 @@ FINALE_STAGE_TEXT = 0
 FINALE_STAGE_BUNNY = 1
 FINALE_STAGE_CAST = 2
 
-; only called once... could inline and push/pop fewer reg
-PROC V_DrawPatchFlipped_ NEAR
+; todo lodsify the column loop and make smaller/better
+PROC   V_DrawPatchFlipped_ NEAR
 PUBLIC V_DrawPatchFlipped_
 
 
@@ -74,7 +74,8 @@ push  di
 push  ds
 push  bp
 mov   bp, sp
-sub   sp, 2
+
+
 mov   bx, SCRATCH_SEGMENT_5000
 mov   ds, bx
 xor   bx, bx
@@ -85,8 +86,8 @@ mov   ax, SCREENWIDTH
 mul   dx
 xchg  si, ax
 mov   di, word ptr ds:[bx]
-mov   word ptr [bp - 2], 0    ; loop counter
-mov   word ptr cs:[SELFMODIFY_cmp_col_to_patch_width+3], di
+xor   bp, bp   ; loop counter
+mov   word ptr cs:[SELFMODIFY_cmp_col_to_patch_width+2], di
 sub   ax, word ptr ds:[bx + 4]
 mov   cx, word ptr ds:[bx + 2]
 mov   dx, es   ; get dx back
@@ -117,6 +118,9 @@ cmp   al, 0FFh
 je    iterate_to_next_column_flipped
 draw_next_post_flipped:
 ; al has ds:[bx]
+
+; todo: lods-ify this.
+
 mov   ah, SCREENWIDTHOVER2
 mul   ah        ; 8 bit mul faster than 16, doesnt kill dx
 sal   ax, 1     ; times 2
@@ -148,11 +152,11 @@ mov   al, byte ptr ds:[bx]      ; get column topdelta
 cmp   al, 0FFh
 jne   draw_next_post_flipped
 iterate_to_next_column_flipped:
-inc   word ptr [bp - 2]
+inc   bp
 sub   dx, 4         ; iterate backwards a column..
 inc   cx            ; increment desttop x.
 SELFMODIFY_cmp_col_to_patch_width:
-cmp   word ptr [bp - 2], 01000h
+cmp    bp, 01000h
 jnge   draw_next_column_flipped
 exit_drawpatchflipped:
 LEAVE_MACRO
@@ -168,7 +172,7 @@ ret
 
 ENDP
 
-PROC F_CastPrint_ NEAR
+PROC   F_CastPrint_ NEAR
 PUBLIC F_CastPrint_
 
 
@@ -307,7 +311,7 @@ dw flat_floor4_8, flat_sflr6_1, flat_mflr8_4, flat_mflr8_3
 ; BIG TODO: if other build versions are to be implemented then
 ;  the strings above must be added to and switch cases changed a bit. could make a big fat lookup table with all fields?
 ;  once this is overlaid it probably wont be a big problem.
-PROC F_StartFinale_ FAR
+PROC   F_StartFinale_ FAR
 PUBLIC F_StartFinale_
 
 
@@ -462,7 +466,7 @@ ret
 ENDP
 
 
-PROC F_CastDrawer_ NEAR
+PROC   F_CastDrawer_ NEAR
 PUBLIC F_CastDrawer_
 
 ; bp - 4 is unused
@@ -530,8 +534,7 @@ mul   ah
 mov   bx, word ptr es:[bx]
 add   bx, ax
 
-;call  Z_QuickMapScratch_5000_ ; map scratch...
-Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
+call  Z_QuickMapScratch_5000_FinaleLocal_
 
 mov   cx, word ptr es:[bx]
 mov   dl, byte ptr es:[bx + 010h]
@@ -570,6 +573,7 @@ ret
 
 ENDP
 
+SEGMENT_4000_OFFSET = (04000h - FIXED_DS_SEGMENT) SHL 4
 
 
 PROC F_TextWrite_ NEAR
@@ -583,12 +587,11 @@ push      si
 push      di
 push      bp
 mov       bp, sp
-sub       sp, 029Eh
-lea       bx, [bp - 029Eh]
-mov       word ptr [bp - 4], bx
 
-;call  Z_QuickMapScratch_5000_ ; map scratch...
-Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
+mov       bx, SEGMENT_4000_OFFSET
+push      bx
+
+call  Z_QuickMapScratch_5000_FinaleLocal_
 
 ;call    Z_QuickMapScreen0_
 Z_QUICKMAPAI4 pageswapargs_screen0_offset_size INDEXED_PAGE_8000_OFFSET
@@ -667,13 +670,13 @@ mov       bx, SCREENWIDTH
 xor       ax, ax
 cwd
 
-call  dword ptr ds:[_V_MarkRect_addr]
-lea       bx, [bp - 029Eh]
+call      dword ptr ds:[_V_MarkRect_addr]
+mov       bx, SEGMENT_4000_OFFSET
 mov       ax, word ptr ds:[_finaletext]
 mov       cx, ds
 mov       si, 10
 
-call  dword ptr ds:[_getStringByIndex_addr]
+call      dword ptr ds:[_getStringByIndex_addr]
 mov       ax, word ptr ds:[_finalecount]
 sub       ax, si
 mov       bx, 3
@@ -685,10 +688,10 @@ jl        exit_ftextwrite
 loop_count:
 test      cx, cx
 je        exit_ftextwrite
-mov       bx, word ptr [bp - 4]
+mov       bx, word ptr [bp - 2]
 mov       al, byte ptr ds:[bx]
 cbw      
-inc       word ptr [bp - 4]
+inc       word ptr [bp - 2]
 mov       dx, ax
 test      ax, ax
 je        exit_ftextwrite
@@ -712,6 +715,7 @@ jle       lookup_glyph_width_ftextwrite
 bad_glyph_ftextwrite:
 add       si, 4
 jmp       do_next_glyph_ftextwrite
+
 lookup_glyph_width_ftextwrite:
 mov       ax, FONT_WIDTHS_SEGMENT
 mov       es, ax
@@ -719,7 +723,7 @@ xor       bh, bh                    ; zero high bits.
 mov       al, byte ptr es:[bx]
 cbw      
 add       ax, si
-mov       word ptr [bp - 0Ah], ax
+
 cmp       ax, SCREENWIDTH
 jle       do_draw_glyph_ftextwrite
 exit_ftextwrite:
@@ -731,16 +735,17 @@ pop       cx
 pop       bx
 ret       
 do_draw_glyph_ftextwrite:
+xchg      ax, si 
 sal       bx, 1
-mov       ax, ST_GRAPHICS_SEGMENT
-push      ax
-mov       ax, word ptr ds:[bx + _hu_font]
-push      ax
+mov       dx, ST_GRAPHICS_SEGMENT
+push      dx
+push      word ptr ds:[bx + _hu_font]
+
 mov       dx, di
 xor       bx, bx
-mov       ax, si
-call  dword ptr ds:[_V_DrawPatch_addr]
-mov       si, word ptr [bp - 0Ah]
+
+call      dword ptr ds:[_V_DrawPatch_addr]
+
 dec       cx
 jmp       loop_count
 
@@ -838,8 +843,7 @@ mov   byte ptr [bp - 2], al ; bp - 2 is pic2 boolean
 xor   ah, ah
 mov   word ptr [bp - 8], ax
 
-;call  Z_QuickMapScratch_5000_ ; map scratch...
-Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
+call  Z_QuickMapScratch_5000_FinaleLocal_
 
 mov   cx, SCREENHEIGHT
 
@@ -1096,7 +1100,7 @@ ENDP
 
 
 
-PROC F_StartCast_ NEAR
+PROC   F_StartCast_ NEAR
 PUBLIC F_StartCast_
 
 
@@ -1569,16 +1573,17 @@ ENDP
 
 TEXTWAIT = 250
 
-PROC F_Ticker_ FAR
+
+PROC   F_Ticker_ FAR
 PUBLIC F_Ticker_
 
 
 push  bx
 push  cx
 push  dx
-push  bp
-mov   bp, sp
-sub   sp, 029Ah
+
+
+
 cmp   byte ptr ds:[_commercial], 0
 je    done_checking_skipping
 cmp   word ptr ds:[_finalecount], 50
@@ -1597,7 +1602,7 @@ je    call_fcastticker
 cmp   byte ptr ds:[_commercial], 0
 je    do_noncommerical
 exit_fticker:
-LEAVE_MACRO
+
 pop   dx
 pop   cx
 pop   bx
@@ -1609,13 +1614,13 @@ call_fcastticker:
 call  F_CastTicker_
 jmp   exit_fticker
 do_noncommerical:
-lea   bx, [bp - 029Ah]
+mov   bx, SEGMENT_4000_OFFSET
 mov   ax, word ptr ds:[_finaletext]
 mov   cx, ds
 call  dword ptr ds:[_getStringByIndex_addr]
 cmp   byte ptr ds:[_finalestage], FINALE_STAGE_TEXT
 jne   exit_fticker
-lea   ax, [bp - 029Ah]
+mov   ax, SEGMENT_4000_OFFSET
 mov   dx, ds
 
 call F_locallib_strlen_
@@ -1638,7 +1643,7 @@ mov   word ptr ds:[_pendingmusicenum], ax
 ;mov   byte ptr ds:[_pendingmusicenumlooping], 0
 
 
-LEAVE_MACRO
+
 pop   dx
 pop   cx
 pop   bx
@@ -1771,6 +1776,28 @@ exit_m_to_upper:
 ret
 
 ENDP
+
+
+
+
+PROC   Z_QuickMapScratch_5000_FinaleLocal_ NEAR
+PUBLIC Z_QuickMapScratch_5000_FinaleLocal_
+
+push  dx
+push  cx
+push  si
+
+Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
+
+pop   si
+pop   cx
+pop   dx
+ret  
+
+ENDP
+
+
+
 
 PROC F_FINALE_ENDMARKER_ NEAR
 PUBLIC F_FINALE_ENDMARKER_
