@@ -30,7 +30,7 @@ EXTRN Z_QuickMapWADPageFrame_:FAR
 EXTRN Z_QuickMapMusicPageFrame_:FAR
 EXTRN Z_QuickMapSFXPageFrame_:FAR
 EXTRN Z_QuickMapPhysics_:NEAR
-EXTRN Z_QuickMapRender_:FAR
+EXTRN Z_QuickMapRender_:NEAR
 EXTRN Z_QuickMapRender4000_:FAR
 EXTRN Z_QuickMapVisplanePage_:FAR
 EXTRN Z_QuickMapIntermission_:FAR

@@ -162,7 +162,7 @@ ret
 ENDP
 
 
-PROC Z_QuickMapDemo_ NEAR
+PROC   Z_QuickMapDemo_ NEAR
 PUBLIC Z_QuickMapDemo_
 
 push  dx
@@ -178,7 +178,7 @@ ret
 
 ENDP
 
-PROC Z_QuickMapRender_ FAR
+PROC   Z_QuickMapRender_ NEAR
 PUBLIC Z_QuickMapRender_
 
 
@@ -191,11 +191,11 @@ Z_QUICKMAPAI24 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
 pop   si
 pop   cx
 pop   dx
-retf  
+ret  
 
 ENDP
 
-PROC Z_QuickMapRender_4000To9000_9000Only_ FAR
+PROC   Z_QuickMapRender_4000To9000_9000Only_ FAR
 PUBLIC Z_QuickMapRender_4000To9000_9000Only_
 
 push  dx

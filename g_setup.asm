@@ -28,7 +28,7 @@ EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN locallib_toupper_:NEAR
 
 EXTRN S_ResumeSound_:NEAR
-EXTRN Z_QuickMapRender_:FAR
+EXTRN Z_QuickMapRender_:NEAR
 EXTRN Z_QuickMapRender_9000To6000_:NEAR
 EXTRN Z_SetOverlay_:FAR
 .DATA

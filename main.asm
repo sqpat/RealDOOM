@@ -48,7 +48,7 @@ EXTRN locallib_ftell_:NEAR
 
 
 EXTRN Z_QuickMapPalette_:FAR
-EXTRN Z_QuickMapRender_:FAR
+EXTRN Z_QuickMapRender_:NEAR
 
 
 
@@ -3022,8 +3022,8 @@ jne   do_next_event
 
 mov   byte ptr ds:[_eventtail], cl ; put tail back
 
-; farcall quickmap physics or render.
-push  cs
+; call quickmap physics or render.
+
 call  bx
 
 cmp   byte ptr ds:[_dodelayedcheatthisframe], DO_DELAYED_MAP_CHEAT

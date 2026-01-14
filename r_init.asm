@@ -22,7 +22,7 @@ INSTRUCTION_SET_MACRO
 EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
 EXTRN I_Error_:FAR
 EXTRN Z_QuickMapScratch_5000_:FAR
-EXTRN Z_QuickMapRender_:FAR
+EXTRN Z_QuickMapRender_:NEAR
 EXTRN W_CacheLumpNumDirect_:FAR
 
 EXTRN W_CacheLumpNameDirectFarString_:FAR
