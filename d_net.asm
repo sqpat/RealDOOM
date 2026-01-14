@@ -20,7 +20,8 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN G_BuildTiccmd_:NEAR
-EXTRN D_ProcessEvents_: NEAR
+EXTRN D_ProcessEvents_Render_:NEAR
+EXTRN D_ProcessEvents_:NEAR
 EXTRN I_StartTic_: NEAR
 EXTRN M_Ticker_:NEAR
 EXTRN G_Ticker_:NEAR
@@ -40,24 +41,42 @@ ENDP
 
 ; note: some of the math here assums tics wont differ by more than 16 bits signed (32768 tics) per call, which i think is more than more than enough precision in any case.
 
-PROC    NetUpdate_ FAR
-PUBLIC  NetUpdate_
+; a little icky. depending on if we need to remap to render or physics on return we have 2 versions. but this let us get rid of keeping track of the 'current task'
 
+PROC    NetUpdateFromPhysics_ FAR
+PUBLIC  NetUpdateFromPhysics_
 
+push  bx
 push  cx
 push  dx
+mov   bx, OFFSET D_ProcessEvents_
+jmp   prep_net_loop
+
+ENDP
+
+
+
+PROC    NetUpdateFromRender_ FAR
+PUBLIC  NetUpdateFromRender_
+
+
+push  bx
+push  cx
+push  dx
+mov   bx, OFFSET D_ProcessEvents_Render_
+
+prep_net_loop:
 
 les   ax, dword ptr ds:[_ticcount]
 mov   cx, ax
 sub   cx, word ptr ds:[_gametime + 0]
-;js    exit_net_update  ; todo not sure this case is even poossible? maybe remove
 je    exit_net_update
 mov   word ptr ds:[_gametime + 0], ax
 mov   word ptr ds:[_gametime + 2], es
 ; cx has loopcount..
 loop_next_tic:
 call  I_StartTic_
-call  D_ProcessEvents_
+call  bx
 
 ;		if (maketic - gametic >= (BACKUPTICS / 2 - 1)) {
 ;			break; // can't hold any more
@@ -79,8 +98,10 @@ loop  loop_next_tic
 exit_net_update:
 pop   dx
 pop   cx
+pop   bx
 
 retf  
+; super rare, this is fine to go this way
 carry_add:
 inc   word ptr ds:[_maketic + 2]
 jmp   check_loop
@@ -102,7 +123,7 @@ sub   dx, word ptr ds:[_oldentertics]       ; ax is realtics, dx is ticcount, cx
 mov   word ptr ds:[_oldentertics], ax
 
 
-call  NetUpdate_
+call  NetUpdateFromPhysics_
 
 ;	availabletics = maketic - gametic;
 
@@ -156,7 +177,7 @@ sub   ax, word ptr ds:[_gametic + 0] ; 16 bit precision fine if we use a diff.
 cmp   ax, cx
 jge   done_with_maketic_loop
 
-call  NetUpdate_
+call  NetUpdateFromPhysics_
 
 
 ;		if (ticcount - entertic >= 20) {
@@ -191,7 +212,7 @@ inc   word ptr ds:[_gametic + 0]
 jz    carry_add_2
 
 do_net_update_check_loop:
-call  NetUpdate_
+call  NetUpdateFromPhysics_
 
 loop  loop_counts
 jmp   exit_tryruntics

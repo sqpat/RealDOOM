@@ -20,7 +20,7 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN R_ExecuteSetViewSize_:NEAR
-EXTRN NetUpdate_:FAR
+EXTRN NetUpdateFromPhysics_:FAR
 EXTRN Z_QuickMapMenu_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
 EXTRN Z_QuickMapIntermission_:FAR
@@ -50,7 +50,7 @@ EXTRN locallib_ftell_:NEAR
 
 EXTRN I_WaitVBL_:FAR
 EXTRN Z_QuickMapPalette_:FAR
-EXTRN Z_QuickMapByTaskNum_:FAR
+EXTRN Z_QuickMapRender_:FAR
 
 
 
@@ -2637,6 +2637,8 @@ db    09Ah
 _SELFMODIFY_R_RENDERPLAYERVIEW_CALL:
 dw    0, 0
 
+call  NetUpdateFromPhysics_  ; last one from R_RenderPlayerView done here
+
 skip_render_player_view:
 
 cmp   cl, bh ; 0
@@ -2739,7 +2741,7 @@ dw M_DRAWEROFFSET, MENU_CODE_AREA_SEGMENT
 
 call  Z_QuickmapPhysics_
 
-call  NetUpdate_
+call  NetUpdateFromPhysics_
 
 test  bl, bl
 jne   do_fwipe
@@ -2877,8 +2879,22 @@ db ",0x", 0
 _st_mapcheat_string4:
 db ")", 0
 
+
+PROC    D_ProcessEvents_Render_ NEAR
+PUBLIC  D_ProcessEvents_Render_
+mov  ax, word ptr ds:[_eventtail] ; head in ah
+cmp  al, ah
+je   no_events_to_process
+
+PUSHA_NO_AX_MACRO
+xchg  ax, cx ; cx store these two
+mov   ax, OFFSET Z_QuickmapRender_
+jmp   jump_into_from_render_version
+ENDP
+
 PROC    D_ProcessEvents_ NEAR
 PUBLIC  D_ProcessEvents_
+
 
 mov  ax, word ptr ds:[_eventtail] ; head in ah
 cmp  al, ah
@@ -2886,6 +2902,9 @@ je   no_events_to_process
 
 PUSHA_NO_AX_MACRO
 xchg  ax, cx ; cx store these two
+mov   ax, OFFSET Z_QuickmapPhysics_
+
+jump_into_from_render_version:
 
 ; HACK ALERT - we may need player x/y high bits for automap, when mobjpos is not paged in.
 les   bx, dword ptr ds:[_playerMobj_pos]
@@ -2894,9 +2913,7 @@ pop   word ptr ds:[_cached_playerMobj_x_highbits]
 push  word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
 pop   word ptr ds:[_cached_playerMobj_y_highbits]
 
-
-xor   bx, bx
-mov   bl, byte ptr ds:[_currenttask];
+xchg  ax, bx   ; bx gets quickmap call for later
 
 
 call  Z_QuickMapMenu_
@@ -2939,9 +2956,9 @@ jne   do_next_event
 
 mov   byte ptr ds:[_eventtail], cl ; put tail back
 
-
-xchg  ax, bx ; retrieve oldtask
-call  Z_QuickMapByTaskNum_
+; farcall quickmap physics or render.
+push  cs
+call  bx
 
 cmp   byte ptr ds:[_dodelayedcheatthisframe], DO_DELAYED_MAP_CHEAT
 je    do_map_cheat_late

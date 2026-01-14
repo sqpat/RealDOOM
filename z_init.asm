@@ -50,7 +50,7 @@ EXTRN W_LumpLength_:FAR
 EXTRN W_CacheLumpNameDirect_:FAR
 EXTRN W_CacheLumpNumDirectFragment_:FAR
 EXTRN W_GetNumForName_:FAR
-EXTRN NetUpdate_:FAR
+EXTRN NetUpdateFromRender_:FAR
 EXTRN locallib_fopen_nobuffering_:NEAR
 EXTRN locallib_fopenfromfar_nobuffer_:FAR
 EXTRN locallib_fclose_:NEAR
@@ -963,7 +963,7 @@ dw OFFSET _W_LumpLength_addr                   , OFFSET W_LumpLength_
 dw OFFSET _W_CacheLumpNameDirect_addr          , OFFSET W_CacheLumpNameDirect_
 dw OFFSET _W_CacheLumpNumDirectFragment_addr   , OFFSET W_CacheLumpNumDirectFragment_
 dw OFFSET _W_GetNumForName_addr                , OFFSET W_GetNumForName_
-dw OFFSET _NetUpdate_addr                      , OFFSET NetUpdate_
+dw OFFSET _NetUpdate_addr                      , OFFSET NetUpdateFromRender_
 dw OFFSET _fopen_addr                          , OFFSET locallib_fopenfromfar_nobuffer_
 dw OFFSET _fseek_addr                          , OFFSET locallib_fseekfromfar_
 dw OFFSET _fread_addr                          , OFFSET locallib_freadfromfar_

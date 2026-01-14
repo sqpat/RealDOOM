@@ -257,7 +257,6 @@ push  si
 
 
 Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
-mov   byte ptr ds:[_currenttask], TASK_PHYSICS
 
 pop   si
 pop   cx

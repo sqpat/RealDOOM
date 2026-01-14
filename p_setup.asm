@@ -2032,7 +2032,6 @@ push  si
 
 
 Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
-mov   byte ptr ds:[_currenttask], TASK_PHYSICS
 
 pop   si
 pop   cx
@@ -2086,7 +2085,6 @@ push  si
 Z_QUICKMAPAI16 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
 Z_QUICKMAPAI4_NO_DX pageswapargs_rend_other9000_size INDEXED_PAGE_9000_OFFSET
 
-mov   byte ptr ds:[_currenttask], TASK_RENDER  ; i dont think these are necessary in p_setup
 pop   si
 pop   cx
 pop   dx

@@ -496,7 +496,7 @@ _crushchange = 		   			 	 _NULL_OFFSET + 005EBh
 _leveltime =     		   			 _NULL_OFFSET + 005ECh
 ;_gamekeydownpointer = 				 _NULL_OFFSET + 005F0h
 _dodelayedcheatthisframe =			 _NULL_OFFSET + 005F2h
-_currenttask =            		     _NULL_OFFSET + 005F3h
+;_currenttask =            		     _NULL_OFFSET + 005F3h
 
 _centerx = 							 _NULL_OFFSET + 005F4h
 _centery = 							 _NULL_OFFSET + 005F6h

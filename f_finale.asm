@@ -506,7 +506,6 @@ call  dword ptr ds:[_getStringByIndex_addr]
 ; inlined
 Z_QUICKMAPAI4 (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
 Z_QUICKMAPAI1_NO_DX (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
-mov   byte ptr ds:[_currenttask], TASK_STATUS_NO_SCREEN4
 
 
 

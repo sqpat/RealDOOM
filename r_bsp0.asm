@@ -11525,7 +11525,6 @@ mov       word ptr ds:[_viewangle_shiftright3], ax
 
 ;call      Z_QuickMapRender_
 Z_QUICKMAPAI24 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
-mov   byte ptr ds:[_currenttask], TASK_RENDER
 
 ; call      R_SetupFrame_
 ; INLINED setupframe
@@ -11588,7 +11587,6 @@ mov       word ptr ds:[_vissprite_p], ax  ;
 
 ;    FAR_memset (cachedheight, 0, sizeof(fixed_t) * SCREENHEIGHT);
 
-;call      NetUpdate_
 call      dword ptr ds:[_NetUpdate_addr]
 
 
@@ -11596,7 +11594,6 @@ mov       ax, word ptr ds:[_numnodes]
 dec       ax
 
 call      R_RenderBSPNode_
-;call      NetUpdate_
 call      dword ptr ds:[_NetUpdate_addr]
 call      R_PrepareMaskedPSprites_
 
@@ -11631,10 +11628,8 @@ call      dword ptr ds:[_R_DrawMaskedCall]
 
 ;call      Z_QuickMapPhysics_
 Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
-mov   byte ptr ds:[_currenttask], TASK_PHYSICS
 
-;call      NetUpdate_
-call  dword ptr ds:[_NetUpdate_addr]
+; call netupdate on return.
 
 POPA_NO_AX_OR_BP_MACRO
 retf      

@@ -972,7 +972,6 @@ call  	I_ReadScreen_
 ;call Z_QuickMapPhysics_
 Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
 
-mov   byte ptr ds:[_currenttask], TASK_PHYSICS
 
 
 pop     si
@@ -1045,10 +1044,8 @@ push      dx
 ; Z_QuickmapMenu_. pages in menu code and graphics for m_drawer.
 Z_QUICKMAPAI8 pageswapargs_menu_offset_size INDEXED_PAGE_5000_OFFSET
 
-; mov   byte ptr ds:[_currenttask], TASK_MENU
 db    09Ah
 dw    M_DRAWEROFFSET, MENU_CODE_AREA_SEGMENT
-; mov   byte ptr ds:[_currenttask], TASK_WIPE
 
 ; NOTE: m_drawer clobbers 5000-6fff via Z_QuickMapMenu, 
 ; but in turn may call Z_QuickMapStatus_ which clobbers 7000-7FFF and 9C00-9FFF
@@ -1070,7 +1067,6 @@ mov       byte ptr ds:[_hudneedsupdate], 6
 
 ;call Z_QuickMapPhysics_
 Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
-mov     byte ptr ds:[_currenttask], TASK_PHYSICS
 
 pop       di
 pop       si

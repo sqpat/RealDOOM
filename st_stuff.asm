@@ -1552,7 +1552,6 @@ Z_QUICKMAPAI1 pageswapargs_stat_offset_size INDEXED_PAGE_9C00_OFFSET
 Z_QUICKMAPAI4_NO_DX (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
 Z_QUICKMAPAI1_NO_DX (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
 
-mov   byte ptr ds:[_currenttask], TASK_STATUS
 pop   si
 pop   cx
 pop   dx

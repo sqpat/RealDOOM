@@ -334,15 +334,12 @@ call      Z_QuickMapStatus_Physics_
 
 call       ST_Start_
 
-; st start calls hustart when its done.
-
 
 call      HU_Start_
 
 
 
 
-mov   byte ptr ds:[_currenttask], TASK_PHYSICS
 ;call     Z_QuickMapScratch_8000_   ; // gross, needed due to p_setup.... perhaps externalize.
 Z_QUICKMAPAI4 pageswapargs_scratch8000_offset_size INDEXED_PAGE_8000_OFFSET
 
