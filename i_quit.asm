@@ -32,7 +32,7 @@ EXTRN putchar_stdout_:NEAR
 EXTRN locallib_printf_:NEAR
 
 EXTRN DEBUG_PRINT_:NEAR
-EXTRN exit_:NEAR
+
 
 
 .DATA
@@ -377,6 +377,89 @@ mov  ax, 1
 jmp  exit_
 
 ENDP
+
+
+_NULL_AREA_STR:
+db "!!", 020h, "NULL area write detected"
+
+_NEWLINE_STR:
+db 0Dh, 0Ah , 0
+
+_CON_STR:
+db "con", 0
+
+
+
+
+; todo clean up triple exit function stuff..
+
+PROC    exit_   NEAR
+PUBLIC  exit_
+
+
+push  ax                        ; al = return code.
+mov   dx, DGROUP  ; worst case call getds
+mov   ds, dx
+
+; fall thru
+
+
+cld        
+xor        di, di   ; di = null area
+mov        es, dx
+mov        cx, 08h
+mov        ax, 0101h
+repe       scasw
+jne        null_check_fail
+
+null_check_ok:
+
+pop        ax
+mov        ah, 04Ch  ; Terminate process with return code
+int        021h
+
+
+null_check_fail:
+pop        bx
+mov        ax, OFFSET _NULL_AREA_STR
+mov        dx, cs
+
+__do_exit_with_msg_:
+__exit_with_msg_:
+PUBLIC __do_exit_with_msg_
+PUBLIC __exit_with_msg_
+
+push       bx
+push       ax
+push       dx
+mov        di, cs
+mov        ds, di
+mov        dx, OFFSET _CON_STR
+mov        ax, 03D01h        ; get console file handle into bx
+int        021h
+mov        bx, ax
+pop        ds
+pop        dx
+mov        si, dx
+cld        
+loop_find_end_of_string:
+lodsb      
+test       al, al
+jne        loop_find_end_of_string
+mov        cx, si
+sub        cx, dx
+dec        cx
+mov        ah, 040h  ; Write file or device using handle
+int        021h
+mov        ds, di   ; cs
+mov        dx, OFFSET _NEWLINE_STR
+mov        cx, 2
+mov        ah, 040h  ; Write file or device using handle
+int        021h
+
+
+ENDP
+
 
 
 

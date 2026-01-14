@@ -60,10 +60,79 @@ ENDP
 
 
 
+
+
+
+
+; PSP offsets
+MEMTOP    = 2
+CMDLDATA  = 81h
+
+; PROGRAM ENTRY POINT FROM MS-DOS!!!
+
+PROC   _realdoomstart_ NEAR
+PUBLIC _realdoomstart_
+
+
+sti        
+mov        cx, DGROUP
+mov        es, cx
+mov        bx, offset DGROUP:_stackstart 
+;add        bx, 00Fh
+;and        bl, 0F0h ; round up a segment
+mov        word ptr es:[__STACKLOW], bx
+;mov        word ptr es:[__psp], ds
+add        bx, sp
+add        bx, 00Fh
+and        bl, 0F0h  ; round up a segment
+mov        ss, cx
+mov        sp, bx
+mov        word ptr es:[__STACKTOP], bx
+
+
+
+mov        di, ds
+mov        es, di  ; es gets PSP
+mov        di, CMDLDATA
+mov        cl, byte ptr ds:[di - 1]
+xor        ch, ch
+cld        
+mov        al, ' ' ; 020h
+repe       scasb
+lea        si, [di - 1]
+mov        dx, DGROUP
+mov        es, dx
+mov        di, word ptr es:[__STACKLOW]
+mov        word ptr cs:[SELFMODIFY_set_command_line_ptr+1], di
+
+je         noparameters
+inc        cx
+rep        movsb
+noparameters:
+
+xor        ax, ax ; null terminate parameters
+stosw
+dec        di
+
+mov        cx, di
+
+done_with_program_name:
+mov        ds, dx
+mov        word ptr cs:[SELFMODIFY_set_program_name_ptr+1], cx
+
+mov        bx, sp
+mov        ax, bp
+mov        word ptr ds:[__STACKLOW], di
+mov        word ptr ds:[_ORIGINAL_CS_SEGMENT_PTR], cs
+mov        word ptr ds:[_BASE_CHEAT_ADDRESS_OFFSET_PTR], OFFSET BASE_CHEAT_ADDRESS
+mov        word ptr ds:[_gamekeydownpointer], OFFSET _gamekeydown
+push       bp
+mov        bp, sp
+
+
+; init argv
 ; creates a list of pointers to words/params (argv), unescaped
 
-PROC   __Init_Argv_ NEAR
-PUBLIC __Init_Argv_ 
 
 push      ds
 pop       es
@@ -177,173 +246,9 @@ xor       ax, ax
 stosw     ; null term argv
 mov       word ptr ds:[_myargc], cx ;
 
-ret      
-
-ENDP
 
 
 
-
-
-ENDP
-
-
-
-
-_NO_MEMORY_STR:
-db "!!", 020h, "Not Enough Memory", 0
-
-_NULL_AREA_STR:
-db "!!", 020h, "NULL area write detected"
-
-_NEWLINE_STR:
-db 0Dh, 0Ah , 0
-
-_CON_STR:
-db "con", 0
-
-
-
-
-; todo clean up triple exit function stuff..
-
-PROC    exit_   NEAR
-PUBLIC  exit_
-
-
-push  ax                        ; al = return code.
-mov   dx, DGROUP  ; worst case call getds
-mov   ds, dx
-
-; fall thru
-
-
-cld        
-xor        di, di   ; di = null area
-mov        es, dx
-mov        cx, 08h
-mov        ax, 0101h
-repe       scasw
-jne        null_check_fail
-
-null_check_ok:
-
-pop        ax
-mov        ah, 04Ch  ; Terminate process with return code
-int        021h
-
-
-null_check_fail:
-pop        bx
-mov        ax, OFFSET _NULL_AREA_STR
-mov        dx, cs
-
-__do_exit_with_msg_:
-__exit_with_msg_:
-PUBLIC __do_exit_with_msg_
-PUBLIC __exit_with_msg_
-
-push       bx
-push       ax
-push       dx
-mov        di, cs
-mov        ds, di
-mov        dx, OFFSET _CON_STR
-mov        ax, 03D01h        ; get console file handle into bx
-int        021h
-mov        bx, ax
-pop        ds
-pop        dx
-mov        si, dx
-cld        
-loop_find_end_of_string:
-lodsb      
-test       al, al
-jne        loop_find_end_of_string
-mov        cx, si
-sub        cx, dx
-dec        cx
-mov        ah, 040h  ; Write file or device using handle
-int        021h
-mov        ds, di   ; cs
-mov        dx, OFFSET _NEWLINE_STR
-mov        cx, 2
-mov        ah, 040h  ; Write file or device using handle
-int        021h
-
-
-ENDP
-
-
-
-; PSP offsets
-MEMTOP    = 2
-CMDLDATA  = 81h
-
-; PROGRAM ENTRY POINT FROM MS-DOS!!!
-
-PROC   _realdoomstart_ NEAR
-PUBLIC _realdoomstart_
-
-
-sti        
-mov        cx, DGROUP
-mov        es, cx
-mov        bx, offset DGROUP:_stackstart 
-;add        bx, 00Fh
-;and        bl, 0F0h ; round up a segment
-mov        word ptr es:[__STACKLOW], bx
-;mov        word ptr es:[__psp], ds
-add        bx, sp
-add        bx, 00Fh
-and        bl, 0F0h  ; round up a segment
-mov        ss, cx
-mov        sp, bx
-mov        word ptr es:[__STACKTOP], bx
-
-
-
-mov        di, ds
-mov        es, di  ; es gets PSP
-mov        di, CMDLDATA
-mov        cl, byte ptr ds:[di - 1]
-xor        ch, ch
-cld        
-mov        al, ' ' ; 020h
-repe       scasb
-lea        si, [di - 1]
-mov        dx, DGROUP
-mov        es, dx
-mov        di, word ptr es:[__STACKLOW]
-mov        word ptr cs:[SELFMODIFY_set_command_line_ptr+1], di
-
-je         noparameters
-inc        cx
-rep        movsb
-noparameters:
-
-xor        ax, ax ; null terminate parameters
-stosw
-dec        di
-
-mov        cx, di
-
-done_with_program_name:
-mov        ds, dx
-mov        word ptr cs:[SELFMODIFY_set_program_name_ptr+1], cx
-
-mov        bx, sp
-mov        ax, bp
-mov        word ptr ds:[__STACKLOW], di
-mov        word ptr ds:[_ORIGINAL_CS_SEGMENT_PTR], cs
-mov        word ptr ds:[_BASE_CHEAT_ADDRESS_OFFSET_PTR], OFFSET BASE_CHEAT_ADDRESS
-mov        word ptr ds:[_gamekeydownpointer], OFFSET _gamekeydown
-push       bp
-mov        bp, sp
-
-
-
-call  __Init_Argv_
 ;call  hackDS_
 
 ; inlined hackDS_
@@ -355,11 +260,9 @@ xor di, di
 mov si, di
 mov cx, FIXED_DS_SEGMENT
 
-;mov cx, ds
-;add cx, 400h
 mov es, cx
 
-mov CX, 1000h    ; 4000h bytes
+mov cx, 1000h    ; 2000h bytes
 rep movsw
 
 mov cx, es
