@@ -78,7 +78,6 @@ GLOBOBJS = $(GLOBOBJS) z_ht18.obj
 GLOBOBJS = $(GLOBOBJS) &
  i_init.obj &
  i_quit.obj &
- i_ibm.obj &
  sm_load.obj &
  f_finale.obj &
  d_init.obj &

@@ -24,7 +24,6 @@ file p_init.obj
 
 
 file i_quit.obj
-file i_ibm.obj
 file d_net.obj
 file g_game.obj
 file g_demo.obj

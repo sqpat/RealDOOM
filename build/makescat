@@ -43,7 +43,6 @@ CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s -zdp -d__SCAT_BUILD=1 -d__CH_BLD=1
 GLOBOBJS = &
  i_init.obj &
  i_quit.obj &
- i_ibm.obj &
  d_init.obj &
  d_net.obj &
  g_setup.obj &
