@@ -62,7 +62,6 @@ FINALE_STAGE_TEXT = 0
 FINALE_STAGE_BUNNY = 1
 FINALE_STAGE_CAST = 2
 
-; todo lodsify the column loop and make smaller/better
 PROC   V_DrawPatchFlipped_ NEAR
 PUBLIC V_DrawPatchFlipped_
 
@@ -79,18 +78,18 @@ mov   bp, sp
 mov   bx, SCRATCH_SEGMENT_5000
 mov   ds, bx
 xor   bx, bx
-sub   dx, word ptr ds:[bx + 6]
+sub   dx, word ptr ds:[bx + PATCH_T.patch_topoffset]
 mov   es, dx   ; store
 mov   si, ax
 mov   ax, SCREENWIDTH
 mul   dx
 xchg  si, ax
-mov   di, word ptr ds:[bx]
-xor   bp, bp   ; loop counter
-mov   word ptr cs:[SELFMODIFY_cmp_col_to_patch_width+2], di
-sub   ax, word ptr ds:[bx + 4]
-mov   cx, word ptr ds:[bx + 2]
+
+
+sub   ax, word ptr ds:[bx + PATCH_T.patch_leftoffset] 
+mov   cx, word ptr ds:[bx + PATCH_T.patch_height]
 mov   dx, es   ; get dx back
+mov   di, word ptr ds:[bx + PATCH_T.patch_width]
 
 push  ds    ; store ds 0x5000
 push  ss
@@ -100,65 +99,62 @@ add   si, ax
 call  dword ptr ds:[_V_MarkRect_addr]
 
 pop   ds    ; restore ds 0x5000
-mov   cx, si
+mov   word ptr cs:[_SELFMODIFY_set_desttop+1], si
 
-test  di, di
+; dx is end condition i guess
+mov   dx, di
+
+test  dx, dx
 jle   exit_drawpatchflipped
 dec   di
 SHIFT_MACRO shl di 2
-mov   dx, di
+lea   bx, [di + PATCH_T.patch_columnofs]
 mov   ax, SCREEN0_SEGMENT
 mov   es, ax    ; for movsw
+xor   cx, cx    ; zero ch
+
 draw_next_column_flipped:
-; ds:dx is patch 
-mov   bx, dx        
-mov   bx, word ptr ds:[bx + 8]   ; get columnofs
-mov   al, byte ptr ds:[bx]      ; get column topdelta
+; ds:bx is patch 
+
+mov   si, word ptr ds:[bx]   ; get column
+lodsb
 cmp   al, 0FFh
 je    iterate_to_next_column_flipped
-draw_next_post_flipped:
-; al has ds:[bx]
 
-; todo: lods-ify this.
+draw_next_post_flipped:
+; al has ds:[si]  ; top delta
+
+
 
 mov   ah, SCREENWIDTHOVER2
 mul   ah        ; 8 bit mul faster than 16, doesnt kill dx
 sal   ax, 1     ; times 2
 
-    ; desttop is cx
     ; dest = es:di.    dest = desttop + column->topdelta*SCREENWIDTH;
-mov   di, cx
+_SELFMODIFY_set_desttop:
+mov   di, 01000h
 add   di, ax
-mov   al, byte ptr ds:[bx + 1] ; get column length
-lea   si, ds:[bx + 3]
-loop_copy_pixel:
-dec   al
-js    done_drawing_post_flipped  ; jump if -1
+lodsb     ; get column length
+inc   si  ; to column data
 
+mov   cl, al
+loop_copy_pixel:
 movsb
 add   di, SCREENWIDTH-1
-jmp   loop_copy_pixel
-done_drawing_post_flipped:
-;mov   al, byte ptr ds:[bx + 1]  ; grab length again.
-;xor   ah, ah
-mov    ax, 1
-xlat
-; bx is column offset
-; column = (column_t __far *)(  ((byte  __far*)column) + column->length + 4 );
+loop   loop_copy_pixel
 
-add   bx, ax
-add   bx, 4
-mov   al, byte ptr ds:[bx]      ; get column topdelta
+inc    si
+lodsb
+
 cmp   al, 0FFh
 jne   draw_next_post_flipped
 iterate_to_next_column_flipped:
-inc   bp
-sub   dx, 4         ; iterate backwards a column..
-inc   cx            ; increment desttop x.
-SELFMODIFY_cmp_col_to_patch_width:
-cmp    bp, 01000h
-jnge   draw_next_column_flipped
+sub   bx, 4         ; iterate backwards a column..
+inc   word ptr cs:[_SELFMODIFY_set_desttop+1]      ; increment desttop x.
+dec   dx
+jne   draw_next_column_flipped
 exit_drawpatchflipped:
+
 LEAVE_MACRO
 pop   ds
 pop   di
@@ -1662,7 +1658,7 @@ je   call_castresponder
 xor  ax, ax
 retf 
 call_castresponder:
-call F_CastResponder_
+call F_CastResponder_   ; todo might as well inline
 retf 
 
 ENDP

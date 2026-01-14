@@ -379,6 +379,8 @@ xchg    ax, dx
     pop     di
     pop     si
 
+; todo improve defaults. compare both bytes to zero at once and branch out 
+
 cmp     byte ptr ds:[_demoplayback], bl ; 0
 je      dont_do_demo_play
 mov     ax, OFFSET [_player + PLAYER_T.player_cmd]
@@ -397,7 +399,7 @@ call    G_WriteDemoTiccmd_
 dont_do_demo_write:
 mov     al, byte ptr ds:[_player + PLAYER_T.player_cmd_buttons]
 test    al, BT_SPECIAL
-je      skip_special_button
+je      skip_special_button   ; todo make this reverse logic case?
 mov     ah, al
 and     al, BT_SPECIALMASK
 cmp     al, BTS_PAUSE
