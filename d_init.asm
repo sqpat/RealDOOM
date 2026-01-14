@@ -289,7 +289,10 @@ do_mem_thing:
 mov     dx, REAL_LOWEST_DATA_SEGMENT 
 push    dx
 mov     bx, DGROUP
-lea     ax, [bx + ((DGROUP_SIZE + STACK_SIZE) SHR 4 )]  ;
+mov     ax, word ptr ds:[__STACKTOP]
+add     al, 0Fh
+SHIFT_MACRO   shr ax 4
+add     ax, bx
 push    ax              ; end of binary
 push    bx              ; stored_ds
 sub     dx, ax          ; segments free
