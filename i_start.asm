@@ -75,35 +75,37 @@ PUBLIC _realdoomstart_
 
 
 sti        
-mov        cx, DGROUP
-mov        es, cx
-mov        bx, offset DGROUP:_stackstart 
-;add        bx, 00Fh
-;and        bl, 0F0h ; round up a segment
-mov        word ptr es:[__STACKLOW], bx
-;mov        word ptr es:[__psp], ds
-add        bx, sp
-add        bx, 00Fh
-and        bl, 0F0h  ; round up a segment
-mov        ss, cx
-mov        sp, bx
-mov        word ptr es:[__STACKTOP], bx
+mov        dx, DGROUP
+mov        es, dx
+mov        ax, OFFSET DGROUP:_stackstart 
+
+mov        word ptr es:[__STACKLOW], ax
+mov        bx, ax   ; bx holds onto old __STACKLOW
+
+add        ax, sp
+add        ax, 00Fh
+and        al, 0F0h  ; round up a segment
+mov        ss, dx
+xchg       ax, sp
+mov        word ptr es:[__STACKTOP], sp
 
 
 
-mov        di, ds
-mov        es, di  ; es gets PSP
+
+
+push       ds
+pop        es  ; es gets PSP for scasb
+
 mov        di, CMDLDATA
 mov        cl, byte ptr ds:[di - 1]
 xor        ch, ch
 cld        
+
 mov        al, ' ' ; 020h
 repe       scasb
-lea        si, [di - 1]
-mov        dx, DGROUP
+lea        si, [di - 1]   ; command line
 mov        es, dx
-mov        di, word ptr es:[__STACKLOW]
-mov        word ptr cs:[SELFMODIFY_set_command_line_ptr+1], di
+mov        di, bx
 
 je         noparameters
 inc        cx
@@ -114,19 +116,20 @@ xor        ax, ax ; null terminate parameters
 stosw
 dec        di
 
-mov        cx, di
+
+
+; keep program name ptr for a bit in di
 
 done_with_program_name:
-mov        ds, dx
-mov        word ptr cs:[SELFMODIFY_set_program_name_ptr+1], cx
+mov        ds, dx  ; dgroup.
 
-mov        bx, sp
-mov        ax, bp
-mov        word ptr ds:[__STACKLOW], di
+
+mov        word ptr ds:[__STACKLOW], di  ; update stacklow with new end after program name written.
 mov        word ptr ds:[_ORIGINAL_CS_SEGMENT_PTR], cs
 mov        word ptr ds:[_BASE_CHEAT_ADDRESS_OFFSET_PTR], OFFSET BASE_CHEAT_ADDRESS
 mov        word ptr ds:[_gamekeydownpointer], OFFSET _gamekeydown
-push       bp
+
+
 mov        bp, sp
 
 
@@ -136,16 +139,13 @@ mov        bp, sp
 
 push      ds
 pop       es
+xchg      ax, di   ; program name ptr
 mov       di, OFFSET _myargv
 
-; todo selfmodify?
-SELFMODIFY_set_program_name_ptr:
-mov       ax, 01000h  
 stosw
 ; di is argv[1] now
 
-SELFMODIFY_set_command_line_ptr:
-mov       si, 01000h
+mov       si, bx   ; old __stacklow
 
 
 ; inlined  splitparams
