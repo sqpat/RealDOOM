@@ -286,7 +286,7 @@ do_mem_thing:
 
 
 
-mov     dx, BASE_LOWER_MEMORY_SEGMENT ; base_lower_memory_segment
+mov     dx, REAL_LOWEST_DATA_SEGMENT 
 push    dx
 mov     bx, DGROUP
 lea     ax, [bx + ((DGROUP_SIZE + STACK_SIZE) SHR 4 )]  ;

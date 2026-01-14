@@ -8,7 +8,7 @@
 #include "r_state.h"
 #include "p_setup.h"
 
-#define CONSTANTS_COUNT 1015
+#define CONSTANTS_COUNT 1016
 #define LOCALS_COUNT 30
 
 
@@ -206,6 +206,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "DC_YL_LOOKUP_MASKEDMAPPING_SEGMENT",
     "FLOORCLIP_PARAGRAPH_ALIGNED_SEGMENT",
 	"MUSIC_DRIVER_CODE_SEGMENT",
+	"REAL_LOWEST_DATA_SEGMENT",
 	"END_SKY_PLANE_SEGMENT",
 	"MENU_CODE_AREA_SEGMENT",
 	"MENU_CODE_AREA_END_SEGMENT",
@@ -1319,6 +1320,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     dc_yl_lookup_maskedmapping_segment,
     floorclip_paragraph_aligned_segment,
 	music_driver_code_segment,
+	real_lowest_data_segment,
     END_SKY_PLANE_SEGMENT,
 	menu_code_area_segment,
 	menu_code_area_end_segment,

@@ -68,7 +68,7 @@
 #define music_driver_code_segment_size   ((int32_t)(MaximumMusDriverSize + 0xF) >> 4)
 //208E
 #define music_driver_code_segment        (base_lower_memory_segment - music_driver_code_segment_size)
-
+#define real_lowest_data_segment      music_driver_code_segment
 
 
 typedef struct sfxinfo_struct sfxinfo_t;
