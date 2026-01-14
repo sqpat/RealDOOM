@@ -18,7 +18,7 @@
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
-EXTRN Z_QuickMapPhysics_:FAR
+EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN Z_QuickMapRender_:FAR
 EXTRN Z_QuickMapRenderPlanes_:FAR
 EXTRN Z_QuickMapUndoFlatCache_:FAR

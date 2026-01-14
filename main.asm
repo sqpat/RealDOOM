@@ -22,7 +22,7 @@ INSTRUCTION_SET_MACRO
 EXTRN R_ExecuteSetViewSize_:NEAR
 EXTRN NetUpdateFromPhysics_:FAR
 EXTRN Z_QuickMapMenu_:FAR
-EXTRN Z_QuickMapPhysics_:FAR
+EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN Z_QuickMapIntermission_:FAR
 
 EXTRN V_DrawFullscreenPatch_:FAR

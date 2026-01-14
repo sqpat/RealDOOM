@@ -23,7 +23,7 @@ INSTRUCTION_SET_MACRO
 EXTRN M_WriteFile_:NEAR
 EXTRN M_ReadFile_:NEAR
 
-EXTRN Z_QuickMapPhysics_:FAR
+EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN Z_QuickMapScratch_5000_:FAR
 EXTRN Z_QuickMapIntermission_:FAR
 

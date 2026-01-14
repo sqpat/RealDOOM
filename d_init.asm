@@ -36,7 +36,7 @@ EXTRN W_AddFile_:NEAR
 EXTRN Z_GetEMSPageMap_:NEAR
 EXTRN Z_InitEMS_:NEAR
 EXTRN Z_QuickMapMenu_:FAR
-EXTRN Z_QuickMapPhysics_:FAR
+EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN Z_LoadBinaries_:NEAR
 EXTRN Z_SetOverlay_:FAR
 EXTRN Z_QuickMapStatus_:FAR

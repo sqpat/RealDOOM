@@ -23,7 +23,7 @@ INSTRUCTION_SET_MACRO
 
 
 EXTRN I_Error_:FAR
-EXTRN Z_QuickMapPhysics_:FAR
+EXTRN Z_QuickMapPhysics_:NEAR
 
 EXTRN locallib_toupper_:NEAR
 

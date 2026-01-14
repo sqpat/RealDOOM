@@ -23,7 +23,7 @@ INSTRUCTION_SET_MACRO
 EXTRN W_LumpLength_:FAR
 EXTRN W_CheckNumForNameFarString_:NEAR
 EXTRN W_CacheLumpNameDirectFarString_:FAR
-EXTRN Z_QuickMapPhysics_:FAR
+EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN Z_QuickMapPalette_:FAR
 EXTRN Z_QuickMapStatus_:FAR
 

@@ -30,7 +30,7 @@ EXTRN W_CacheLumpNameDirect_:FAR
 EXTRN Z_QuickMapScratch_5000_:FAR  
 EXTRN W_CheckNumForNameFarString_:NEAR
 EXTRN W_CacheLumpNumDirectFragment_:FAR
-EXTRN Z_QuickMapPhysics_:FAR
+EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN Z_QuickMapMenu_:FAR
 
 _jump_mult_table_3:

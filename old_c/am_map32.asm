@@ -24,7 +24,7 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN Z_QuickMapPhysics_:FAR
+EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN M_Random_:NEAR
 EXTRN FixedMul1632_:NEAR
 EXTRN FixedDivWholeA_:FAR

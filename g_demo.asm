@@ -24,7 +24,7 @@ INCLUDE strings.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN Z_QuickMapPhysics_:FAR
+EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN Z_QuickMapDemo_:FAR
 EXTRN I_Error_:FAR
 EXTRN M_WriteFile_:NEAR

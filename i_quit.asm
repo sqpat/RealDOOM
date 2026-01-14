@@ -22,7 +22,7 @@ INSTRUCTION_SET_MACRO
 EXTRN locallib_fclose_:NEAR
 EXTRN SB_Shutdown_:NEAR
 EXTRN Z_QuickMapUnmapAll_:NEAR
-EXTRN Z_QuickMapPhysics_:FAR
+EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN G_CheckDemoStatus_:NEAR
 EXTRN M_SaveDefaults_:NEAR
 EXTRN W_CacheLumpNameDirectFarString_:FAR

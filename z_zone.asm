@@ -129,7 +129,7 @@ ENDIF
 
 ENDP
 
-PROC Z_QuickMapPhysics_ FAR
+PROC Z_QuickMapPhysics_ NEAR
 PUBLIC Z_QuickMapPhysics_
 
 push  dx
@@ -141,7 +141,7 @@ Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
 pop   si
 pop   cx
 pop   dx
-retf  
+ret
 
 ENDP
 
