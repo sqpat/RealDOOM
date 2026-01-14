@@ -20,8 +20,8 @@ INSTRUCTION_SET_MACRO
 
 EXTRN  Z_QuickMapPhysics_:NEAR
 EXTRN  Z_QuickMapRender_:NEAR
-EXTRN  Z_QuickMapRenderPlanes_:FAR
-EXTRN  Z_QuickMapUndoFlatCache_:FAR
+EXTRN  Z_QuickMapRenderPlanes_:NEAR
+EXTRN  Z_QuickMapUndoFlatCache_:NEAR
 EXTRN  Z_QuickMapPhysics_FunctionAreaOnly_:NEAR
 EXTRN  FixedMul_:FAR
 EXTRN  FastDiv32u16u_:FAR

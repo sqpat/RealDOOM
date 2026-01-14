@@ -21,7 +21,7 @@ INSTRUCTION_SET_MACRO
 
 EXTRN DEBUG_PRINT_NOARG_CS_:NEAR
 EXTRN I_Error_:FAR
-EXTRN Z_QuickMapScratch_5000_:FAR
+EXTRN Z_QuickMapScratch_5000_:NEAR
 EXTRN Z_QuickMapRender_:NEAR
 EXTRN W_CacheLumpNumDirect_:FAR
 
@@ -29,8 +29,8 @@ EXTRN W_CacheLumpNameDirectFarString_:FAR
 
 EXTRN W_CheckNumForNameFarString_:NEAR
 EXTRN Z_QuickMapPhysics_:NEAR
-EXTRN Z_QuickMapMaskedExtraData_:FAR
-EXTRN Z_QuickMapScratch_7000_:FAR
+EXTRN Z_QuickMapMaskedExtraData_:NEAR
+
 EXTRN R_FlatNumForName_:NEAR
 EXTRN Z_QuickMapWADPageFrame_:FAR
 EXTRN locallib_fseek_:NEAR
@@ -114,6 +114,7 @@ MASKEDPIXELDATAOFS_OFFSET = (MASKEDPIXELDATAOFS_SEGMENT - MASKEDPOSTDATA_SEGMENT
 MASKED_LOOKUP_OFFSET = (MASKED_LOOKUP_SEGMENT - MASKEDPOSTDATA_SEGMENT) SHL 4
 
 TEXTUREDEFS_OFFSET_OFFSET = (TEXTUREDEFS_OFFSET_SEGMENT - TEXTUREDEFS_BYTES_SEGMENT) SHL 4
+
 
 PROC    R_GenerateLookup_ NEAR
 PUBLIC  R_GenerateLookup_
@@ -1144,7 +1145,18 @@ pop       ds  ; restore ds
 
 
 call      Z_QuickMapMaskedExtraData_
-call      Z_QuickMapScratch_7000_
+;inlined       Z_QuickMapScratch_7000_
+
+
+
+push  si
+
+Z_QUICKMAPAI4 pageswapargs_scratch7000_offset_size INDEXED_PAGE_7000_OFFSET
+
+pop   si
+
+
+
 mov       ax, TEXTUREDEFS_OFFSET_SEGMENT
 mov       es, ax
 xor       di, di

@@ -24,7 +24,7 @@ EXTRN M_WriteFile_:NEAR
 EXTRN M_ReadFile_:NEAR
 
 EXTRN Z_QuickMapPhysics_:NEAR
-EXTRN Z_QuickMapScratch_5000_:FAR
+EXTRN Z_QuickMapScratch_5000_:NEAR
 EXTRN Z_QuickMapIntermission_:FAR
 
 EXTRN R_ExecuteSetViewSize_:NEAR

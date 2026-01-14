@@ -31,7 +31,7 @@ EXTRN Z_QuickMapMusicPageFrame_:FAR
 EXTRN Z_QuickMapSFXPageFrame_:FAR
 EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN Z_QuickMapRender_:NEAR
-EXTRN Z_QuickMapRender4000_:FAR
+
 EXTRN Z_QuickMapVisplanePage_:FAR
 EXTRN Z_QuickMapIntermission_:FAR
 EXTRN Z_QuickMapMenu_:FAR
@@ -39,9 +39,8 @@ EXTRN locallib_fread_nearsegment_:NEAR
 EXTRN locallib_fseek_:NEAR
 EXTRN locallib_fseekfromfar_:FAR
 EXTRN locallib_fread_:NEAR
-EXTRN Z_QuickMapRenderPlanes_:FAR
-EXTRN Z_QuickMapPalette_:FAR
-EXTRN Z_QuickMapMaskedExtraData_:FAR
+EXTRN Z_QuickMapRenderPlanes_:NEAR
+EXTRN Z_QuickMapPalette_:NEAR
 EXTRN R_TextureNumForName_FAR_:FAR
 EXTRN R_FlatNumForName_FAR_:FAR
 
@@ -733,6 +732,39 @@ ret
 
 ENDP
 
+PROC Z_QuickMapMaskedExtraData_ NEAR
+PUBLIC Z_QuickMapMaskedExtraData_
+
+push  dx
+push  cx
+push  si
+
+Z_QUICKMAPAI2 pageswapargs_maskeddata_offset_size INDEXED_PAGE_8400_OFFSET
+
+pop   si
+pop   cx
+pop   dx
+ret
+
+ENDP
+
+
+PROC Z_QuickMapRender4000_ NEAR
+PUBLIC Z_QuickMapRender4000_
+
+
+push  dx
+push  cx
+push  si
+
+Z_QUICKMAPAI4 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
+
+pop   si
+pop   cx
+pop   dx
+ret
+
+ENDP
 
 SPANFUNC_JUMP_LOOKUP_9000_SEGMENT =  SPANFUNC_JUMP_LOOKUP_SEGMENT - 09C00h + 09000h
 

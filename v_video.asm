@@ -27,7 +27,7 @@ INSTRUCTION_SET_MACRO
 
 .CODE
 EXTRN W_CacheLumpNameDirect_:FAR
-EXTRN Z_QuickMapScratch_5000_:FAR  
+EXTRN Z_QuickMapScratch_5000_:NEAR  
 EXTRN W_CheckNumForNameFarString_:NEAR
 EXTRN W_CacheLumpNumDirectFragment_:FAR
 EXTRN Z_QuickMapPhysics_:NEAR

@@ -47,7 +47,7 @@ EXTRN locallib_fseek_:NEAR
 EXTRN locallib_ftell_:NEAR
 
 
-EXTRN Z_QuickMapPalette_:FAR
+EXTRN Z_QuickMapPalette_:NEAR
 EXTRN Z_QuickMapRender_:NEAR
 
 

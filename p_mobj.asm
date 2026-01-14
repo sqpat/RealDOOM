@@ -48,7 +48,7 @@ EXTRN FastDiv3216u_MapLocal_:NEAR
 EXTRN R_PointToAngle2_MapLocal_:NEAR
 EXTRN HU_Start_:NEAR
 EXTRN ST_Start_:NEAR
-
+EXTRN Z_QuickMapScratch_8000_PSetup_:NEAR
 .DATA
 
 
@@ -338,10 +338,8 @@ call       ST_Start_
 call      HU_Start_
 
 
+call      Z_QuickMapScratch_8000_PSetup_
 
-
-;call     Z_QuickMapScratch_8000_   ; // gross, needed due to p_setup.... perhaps externalize.
-Z_QUICKMAPAI4 pageswapargs_scratch8000_offset_size INDEXED_PAGE_8000_OFFSET
 
 POPA_NO_AX_OR_BP_MACRO
 ret       

@@ -195,42 +195,9 @@ ret
 
 ENDP
 
-PROC   Z_QuickMapRender_4000To9000_9000Only_ FAR
-PUBLIC Z_QuickMapRender_4000To9000_9000Only_
-
-push  dx
-push  cx
-push  si
-
-Z_QUICKMAPAI4 pageswapargs_rend_other9000_size INDEXED_PAGE_9000_OFFSET
-
-pop   si
-pop   cx
-pop   dx
-retf  
-
-ENDP
-
-PROC Z_QuickMapRender_4000To9000_ FAR
-PUBLIC Z_QuickMapRender_4000To9000_
-
-push  dx
-push  cx
-push  si
-
-Z_QUICKMAPAI16 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
-Z_QUICKMAPAI4_NO_DX pageswapargs_rend_other9000_size INDEXED_PAGE_9000_OFFSET
-
-pop   si
-pop   cx
-pop   dx
-retf  
-
-ENDP
 
 
-; setup only? should be near
-PROC Z_QuickMapRender_9000To6000_ NEAR
+PROC   Z_QuickMapRender_9000To6000_ NEAR
 PUBLIC Z_QuickMapRender_9000To6000_
 
 
@@ -247,25 +214,10 @@ ret
 
 ENDP
 
-PROC Z_QuickMapRender4000_ FAR
-PUBLIC Z_QuickMapRender4000_
 
 
-push  dx
-push  cx
-push  si
 
-Z_QUICKMAPAI4 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
-
-pop   si
-pop   cx
-pop   dx
-retf  
-
-ENDP
-
-
-PROC Z_QuickMapStatus_ NEAR
+PROC   Z_QuickMapStatus_ NEAR
 PUBLIC Z_QuickMapStatus_
 
 push  dx
@@ -284,7 +236,7 @@ ret
 ENDP
 
 
-PROC Z_QuickMapScratch_5000_ FAR
+PROC   Z_QuickMapScratch_5000_ NEAR
 PUBLIC Z_QuickMapScratch_5000_
 
 push  dx
@@ -296,61 +248,13 @@ Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
 pop   si
 pop   cx
 pop   dx
-retf  
-
-ENDP
-
-PROC Z_QuickMapScratch_8000_ FAR
-PUBLIC Z_QuickMapScratch_8000_
-
-
-push  dx
-push  cx
-push  si
-
-Z_QUICKMAPAI4 pageswapargs_scratch8000_offset_size INDEXED_PAGE_8000_OFFSET
-
-pop   si
-pop   cx
-pop   dx
-retf  
-
-ENDP
-
-PROC Z_QuickMapScratch_7000_ FAR
-PUBLIC Z_QuickMapScratch_7000_
-
-push  dx
-push  cx
-push  si
-
-Z_QUICKMAPAI4 pageswapargs_scratch7000_offset_size INDEXED_PAGE_7000_OFFSET
-
-pop   si
-pop   cx
-pop   dx
-retf  
-
-ENDP
-
-PROC Z_QuickMapScreen0_ FAR
-PUBLIC Z_QuickMapScreen0_
-
-push  dx
-push  cx
-push  si
-
-Z_QUICKMAPAI4 pageswapargs_screen0_offset_size INDEXED_PAGE_8000_OFFSET
-
-pop   si
-pop   cx
-pop   dx
-retf  
+ret  
 
 ENDP
 
 
-PROC Z_QuickMapRenderPlanes_ FAR
+
+PROC   Z_QuickMapRenderPlanes_ NEAR
 PUBLIC Z_QuickMapRenderPlanes_
 
 push  dx
@@ -366,13 +270,13 @@ Z_QUICKMAPAI4_NO_DX (pageswapargs_renderplane_offset_size+4) INDEXED_PAGE_7000_O
 pop   si
 pop   cx
 pop   dx
-retf  
+ret
 
 ENDP
 
 
 
-PROC Z_QuickMapUndoFlatCache_ FAR
+PROC   Z_QuickMapUndoFlatCache_ NEAR
 PUBLIC Z_QuickMapUndoFlatCache_
 
 push  dx
@@ -389,29 +293,14 @@ Z_QUICKMAPAI3_NO_DX pageswapargs_maskeddata_offset_size   	INDEXED_PAGE_8400_OFF
 pop   si
 pop   cx
 pop   dx
-retf  
-
-ENDP
-
-PROC Z_QuickMapMaskedExtraData_ FAR
-PUBLIC Z_QuickMapMaskedExtraData_
-
-push  dx
-push  cx
-push  si
-
-Z_QUICKMAPAI2 pageswapargs_maskeddata_offset_size INDEXED_PAGE_8400_OFFSET
-
-pop   si
-pop   cx
-pop   dx
-retf  
+ret
 
 ENDP
 
 
 
-PROC Z_QuickMapPalette_ FAR
+
+PROC   Z_QuickMapPalette_ NEAR
 PUBLIC Z_QuickMapPalette_
 
 push  dx
@@ -423,7 +312,7 @@ Z_QUICKMAPAI5 pageswapargs_palette_offset_size INDEXED_PAGE_8000_OFFSET
 pop   si
 pop   cx
 pop   dx
-retf  
+ret
 
 ENDP
 
