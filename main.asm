@@ -24,7 +24,7 @@ EXTRN NetUpdateFromPhysics_:FAR
 EXTRN Z_QuickMapMenu_:FAR
 EXTRN Z_QuickMapPhysics_:FAR
 EXTRN Z_QuickMapIntermission_:FAR
-EXTRN I_ReadMouse_:NEAR
+
 EXTRN V_DrawFullscreenPatch_:FAR
 EXTRN G_BeginRecording_:NEAR
 EXTRN D_DoomMain2_:NEAR
@@ -339,7 +339,50 @@ push dx
 cmp  byte ptr ds:[_mousepresent], 0
 je   no_mouse
 
-call I_ReadMouse_
+; inlined I_ReadMouse_
+
+push    cx
+mov     ax, 03h
+int     033h
+
+; 03h
+;on return:
+;	CX = horizontal (X) position  (0..639)
+;	DX = vertical (Y) position  (0..199)
+;	BX = button status:
+
+mov     ax, 0Bh
+int     033h
+; 0Bh
+;on return:
+;	CX = horizontal mickey count (-32768 to 32767)
+;	DX = vertical mickey count (-32768 to 32767)
+;	- count values are 1/200 inch intervals (1/200 in. = 1 mickey)
+
+xchg    ax, bx
+mov     ah, EV_MOUSE  ; ax has data1: buttons in al and EV_MOUSE in ah
+; cx has data2: horizontal count
+
+;call    D_PostEvent_
+push di
+mov  dx, EVENTS_SEGMENT
+mov  es, dx
+cwd  ; 0 no matter what
+mov  dl, byte ptr ds:[_eventhead];
+mov  di, dx
+SHIFT_MACRO sal  di 2
+stosw
+xchg ax, cx ; get data2/mouse
+stosw
+inc  dx
+and  dl, (MAXEVENTS-1)
+
+mov  byte ptr ds:[_eventhead], dl
+pop     di
+pop     cx
+
+
+
 
 no_mouse:
 loop_next_char:
