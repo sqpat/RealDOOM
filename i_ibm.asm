@@ -22,8 +22,6 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN I_SetPalette_:FAR
-
 
 .DATA
 

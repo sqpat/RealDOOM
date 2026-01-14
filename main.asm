@@ -1272,8 +1272,7 @@ add   ah, al  ; times 0x300..
 xor   al, al
 xchg  ax, si  ; si = al * 768
 
-;mov   di, word ptr ds:[_currenttask] ; get this before quickmap
-push  word ptr ds:[_currenttask] ; get this before quickmap
+
 mov   ax, 1
 call  I_WaitVBL_
 call  Z_QuickMapPalette_
@@ -1308,10 +1307,10 @@ loop  loop_palette_out
 mov   ax, ss
 mov   ds, ax
 
-;xchg  ax, di  ; get current task back
-pop   ax  ; task
 
-call  Z_QuickMapByTaskNum_
+
+
+call  Z_QuickMapPhysics_
 
 POPA_NO_AX_OR_BP_MACRO
 just_exit:
