@@ -60,6 +60,9 @@ EXTRN _doomdata_bin_string
 PUBLIC _SELFMODIFY_R_RENDERPLAYERVIEW_CALL
 
 
+PROC D_MAIN_STARTMARKER_ NEAR
+PUBLIC D_MAIN_STARTMARKER_
+ENDP
 
 
 
@@ -154,9 +157,6 @@ cheat_mypos:
 dw  OFFSET cheat_mypos_seq, 0
 
 
-PROC D_MAIN_STARTMARKER_ NEAR
-PUBLIC D_MAIN_STARTMARKER_
-ENDP
 
 _dclicks:
 dw 0
@@ -189,17 +189,11 @@ PUBLIC _sidemove
 
 ; external hook for am_map which is high
 
-PROC   cht_CheckCheat_Far_ FAR
-PUBLIC cht_CheckCheat_Far_
-call cht_CheckCheat_
-retf
-ENDP
-
 
 ; ax is cheat index
 ; dx is ptr
-PROC cht_CheckCheat_ NEAR
-PUBLIC cht_CheckCheat_
+PROC   cht_CheckCheat_Far_ FAR
+PUBLIC cht_CheckCheat_Far_
 
 ; return in carry
 
@@ -232,7 +226,7 @@ return_fail:
 clc
 pop  si
 pop  bx
-ret  
+retf  
 initialize_cheat:
 mov  ax, word ptr cs:[bx]
 mov  word ptr cs:[bx + 2], ax   ; set p to start of cht
@@ -259,7 +253,7 @@ mov  word ptr cs:[bx + 2], ax
 stc
 pop  si
 pop  bx
-ret  
+retf  
 
  
 ENDP

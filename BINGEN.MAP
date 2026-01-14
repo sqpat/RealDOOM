@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/14 16:35:18
+Created on:       26/01/14 16:53:30
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -524,8 +524,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 224b:476f*     A_Chase_
 224b:4b12*     A_BspiAttack_
 224b:5597*     A_Fall_
-224b:5732*     A_BrainPain_
 224b:4233*     P_CheckMissileRange_
+224b:5732*     A_BrainPain_
 224b:48d1*     A_FaceTarget_
 224b:4b6e*     A_SargAttack_
 224b:51c5*     GetVileMomz_
@@ -533,8 +533,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 224b:5417*     A_PainDie_
 224b:5140*     A_VileTarget_
 224b:45d7*     P_LookForPlayers_
-224b:57c0*     A_BrainExplode_
 224b:5836*     A_BrainSpit_
+224b:57c0*     A_BrainExplode_
 224b:4301*     P_Move_
 224b:509f*     A_VileStart_
 224b:50ac*     A_FireCrackle_
@@ -552,8 +552,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 224b:5320*     A_FatAttack1_
 224b:46d9*     A_Look_
 224b:56dd*     A_BabyMetal_
-224b:4bf8*     A_BruisAttack_
 224b:5580*     A_XScream_
+224b:4bf8*     A_BruisAttack_
 224b:5a4a      P_SetMobjState_
 224b:56d4*     A_Metal_
 224b:444d*     P_TryWalk_
@@ -786,8 +786,8 @@ Module: st_stuff.obj(st_stuff.ASM)
 224b:aa17      _oldweaponsowned
 224b:a9b2      _armsbg_
 224b:aa88      _w_keyboxes
-224b:aa20      _keyboxes
 224b:a994      _arms_
+224b:aa20      _keyboxes
 224b:af89*     ST_drawWidgets_
 224b:aa7c      _w_armor
 224b:ad4e*     ST_updateWidgets_
@@ -903,8 +903,8 @@ Module: s_sbinit.obj(s_sbinit.ASM)
 2de1:273b*     SB_SaveVoiceVolume_
 2de1:272c*     SB_ReadMixer_
 2de1:28d3*     SB_GetDSPVersion_
-2de1:276a*     SB_DSP2xx_BeginPlayback_
 2de1:2763      SB_DSP1xx_BeginPlayback_
+2de1:276a*     SB_DSP2xx_BeginPlayback_
 2de1:277f*     SB_DSP4xx_BeginPlayback_
 2de1:272b      _SB_CardActive
 2de1:2876*     SB_SetupPlayback_
@@ -981,8 +981,8 @@ Module: main.obj(main.ASM)
 2de1:4c6b      _sidemove
 2de1:571e      M_Ticker_
 2de1:5696*     I_UpdateNoBlit_
-2de1:5e61*     D_MAIN_ENDMARKER_
 2de1:4c67      _forwardmove
+2de1:5e61*     D_MAIN_ENDMARKER_
 2de1:59c1*     I_ShutdownTimer_
 2de1:4ed0      _scantokey
 2de1:557b      I_SetPalette_
