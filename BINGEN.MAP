@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/14 13:25:52
+Created on:       26/01/14 13:36:56
 Warning! W1027: file clibm.lib(cstart): redefinition of __do_exit_with_msg_ ignored
 Warning! W1027: file clibm.lib(xmsg.c): redefinition of __exit_with_msg_ ignored
 Executable Image: bingen.exe
@@ -102,11 +102,11 @@ MATH_TEXT              CODE           AUTO           2de4:4d00       00000093
 MAIN_TEXT              CODE           AUTO           2de4:4d94       000012dd
 G_SETUP_TEXT           CODE           AUTO           2de4:6072       00000219
 R_SETUP_TEXT           CODE           AUTO           2de4:628c       00000323
-S_SBSFX_TEXT           CODE           AUTO           2de4:65b0       00000d2e
-BINFILE_TEXT           CODE           AUTO           2de4:72de       0000004d
-W_WAD_TEXT             CODE           AUTO           2de4:732c       0000024a
-V_VIDEO_TEXT           CODE           AUTO           2de4:7576       00000219
-Z_ZONE_TEXT            CODE           AUTO           2de4:7790       000002da
+S_SBSFX_TEXT           CODE           AUTO           2de4:65b0       00000d2a
+BINFILE_TEXT           CODE           AUTO           2de4:72da       0000004d
+W_WAD_TEXT             CODE           AUTO           2de4:7328       00000246
+V_VIDEO_TEXT           CODE           AUTO           2de4:756e       00000219
+Z_ZONE_TEXT            CODE           AUTO           2de4:7788       000002da
 _TEXT                  CODE           AUTO           2de4:7a70       00002def
 FAR_DATA               FAR_DATA       AUTO           3869:000f       00000000
 _NULL                  BEGDATA        DGROUP         386a:0000       00000020
@@ -1056,107 +1056,107 @@ Module: r_setup.obj(r_setup.ASM)
 2de4:628c*     R_SETUP_STARTMARKER_
 2de4:6581      _SELFMODIFY_R_WRITEBACKVIEWCONSTANTSSPANCALL
 Module: s_sbsfx.obj(s_sbsfx.ASM)
-2de4:72bb      SB_Shutdown_
+2de4:72b7      SB_Shutdown_
 2de4:6b64      SFX_PlayPatch_
-2de4:727d*     SB_WriteMixer_
-2de4:7201*     out_21_and_exit
+2de4:7279*     SB_WriteMixer_
+2de4:71fd*     out_21_and_exit
 2de4:65d5      _SB_OldInt
 2de4:65dc      _SB_OriginalVoiceVolumeLeft
 2de4:694e*     S_UpdateLRUCache_
-2de4:7084      SB_ServiceInterrupt_
+2de4:7080      SB_ServiceInterrupt_
 2de4:65d4      _sb_dma_8
 2de4:6837      S_DecreaseRefCountFar_
-2de4:6f4a*     SB_Service_Mix11Khz_
+2de4:6f46*     SB_Service_Mix11Khz_
 2de4:67e4      _IRQ_TO_INTERRUPT_MAP
-2de4:6db0*     SB_Service_Mix22Khz_
-2de4:728e*     SB_RestoreVoiceVolume_
+2de4:6dac*     SB_Service_Mix22Khz_
+2de4:728a*     SB_RestoreVoiceVolume_
 2de4:683b*     S_DecreaseRefCount_
-2de4:7258      SB_ResetDSP_
+2de4:7254      SB_ResetDSP_
 2de4:65da*     _SB_IntController1Mask
 2de4:65dd      _SB_OriginalVoiceVolumeRight
-2de4:723d      SB_StopPlayback_
+2de4:7239      SB_StopPlayback_
 2de4:65d9      _SB_IntController2Mask
-2de4:6d88*     S_NormalizeSfxVolume_
-2de4:72de*     S_SBFX_ENDMARKER_
-2de4:7219*     SB_DMA_EndTransfer_
+2de4:6d84*     S_NormalizeSfxVolume_
+2de4:72da*     S_SBFX_ENDMARKER_
+2de4:7215*     SB_DMA_EndTransfer_
 2de4:67f4*     S_IncreaseRefCount_
 2de4:65db      _SB_MixerType
-2de4:7209      SB_DMA_VerifyChannel_
-2de4:7150      SB_WriteDSP_
+2de4:7205      SB_DMA_VerifyChannel_
+2de4:714c      SB_WriteDSP_
 2de4:65b0*     S_SBFX_STARTMARKER_
 2de4:6bff*     S_LoadSoundIntoCache_
 2de4:6a91*     S_EvictSFXPage_
-2de4:716e      S_InitSFXCache_
+2de4:716a      S_InitSFXCache_
 2de4:68c3*     S_MoveCacheItemBackOne_
-2de4:7132      SB_ReadDSP_
+2de4:712e      SB_ReadDSP_
 2de4:6996*     S_MarkSFXPageMRU_
-2de4:71c1*     SB_DisableInterrupt_
+2de4:71bd*     SB_DisableInterrupt_
 Module: binfile.obj(binfile.ASM)
-2de4:72de      locallib_fclosefromfar_
-2de4:72de      locallib_fclose_
-2de4:72de      locallib_fopenfromfar_nobuffer_
-2de4:72de      locallib_fopen_nobuffering_
-2de4:72df      locallib_far_fwrite_
-2de4:72de      locallib_fread_
-2de4:72de      locallib_fread_nearsegment_
-2de4:72de      locallib_freadfromfar_
-2de4:72de*     locallib_fopenfromfar_
-2de4:72de      locallib_fwrite_
-2de4:72de*     locallib_setbuf_
-2de4:72de*     locallib_fputc_
-2de4:72de*     locallib_fgetc_
-2de4:72de      locallib_ftell_
-2de4:72de      locallib_fopen_
-2de4:72de      locallib_fseekfromfar_
-2de4:72de      locallib_fseek_
+2de4:72da      locallib_fclosefromfar_
+2de4:72da      locallib_fclose_
+2de4:72da      locallib_fopenfromfar_nobuffer_
+2de4:72da      locallib_fopen_nobuffering_
+2de4:72db      locallib_far_fwrite_
+2de4:72da      locallib_fread_
+2de4:72da      locallib_fread_nearsegment_
+2de4:72da      locallib_freadfromfar_
+2de4:72da*     locallib_fopenfromfar_
+2de4:72da      locallib_fwrite_
+2de4:72da*     locallib_setbuf_
+2de4:72da*     locallib_fputc_
+2de4:72da*     locallib_fgetc_
+2de4:72da      locallib_ftell_
+2de4:72da      locallib_fopen_
+2de4:72da      locallib_fseekfromfar_
+2de4:72da      locallib_fseek_
 Module: w_wad.obj(w_wad.ASM)
-2de4:752b      W_CacheLumpNumDirect_
-2de4:7443      W_GetNumForNameFarString_
-2de4:7350*     W_CheckNumForNameFarString_FAR_
-2de4:74b1      W_ReadLump_
-2de4:7470      W_LumpLength_
-2de4:752f      W_CacheLumpNumDirectWithOffset_
-2de4:7356      W_CheckNumForName_
-2de4:7459      W_GetNumForName_
-2de4:7576*     W_WAD_ENDMARKER_
-2de4:7524      W_CacheLumpNameDirectFarString_
-2de4:7547      W_CacheLumpNumDirectFragment_
-2de4:73ea      SELFMODIFY_start_lump_for_search
-2de4:732c*     W_WAD_STARTMARKER_
-2de4:740a      SELFMODIFY_end_lump_for_search
-2de4:7354      W_CheckNumForNameFarString_
-2de4:751d      W_CacheLumpNameDirect_
-2de4:734c      W_CheckNumForNameFar_
+2de4:7523      W_CacheLumpNumDirect_
+2de4:743f      W_GetNumForNameFarString_
+2de4:734c*     W_CheckNumForNameFarString_FAR_
+2de4:74ad      W_ReadLump_
+2de4:746c      W_LumpLength_
+2de4:7527      W_CacheLumpNumDirectWithOffset_
+2de4:7352      W_CheckNumForName_
+2de4:7455      W_GetNumForName_
+2de4:756e*     W_WAD_ENDMARKER_
+2de4:7519      W_CacheLumpNameDirectFarString_
+2de4:753f      W_CacheLumpNumDirectFragment_
+2de4:73e6      SELFMODIFY_start_lump_for_search
+2de4:7328*     W_WAD_STARTMARKER_
+2de4:7406      SELFMODIFY_end_lump_for_search
+2de4:7350      W_CheckNumForNameFarString_
+2de4:7520      W_CacheLumpNameDirect_
+2de4:7348      W_CheckNumForNameFar_
 Module: v_video.obj(v_video.ASM)
-2de4:76c2      V_DrawFullscreenPatch_
-2de4:76ba      V_DrawFullscreenPatch_FromMenu_
-2de4:769b*     M_AddToBox16_
-2de4:757e      V_DrawPatch_
-2de4:7685      V_MarkRect_
-2de4:7672      R_FillBackScreen_ForceBufferRedraw_
+2de4:76ba      V_DrawFullscreenPatch_
+2de4:76b2      V_DrawFullscreenPatch_FromMenu_
+2de4:7693*     M_AddToBox16_
+2de4:7576      V_DrawPatch_
+2de4:767d      V_MarkRect_
+2de4:766a      R_FillBackScreen_ForceBufferRedraw_
 Module: z_zone.obj(z_zone.ASM)
-2de4:7790      _codestartposition
-2de4:780c      Z_QuickMapPhysics_
-2de4:77ac      Z_QuickMapMusicPageFrame_
-2de4:77a8      _musdriverstartposition
-2de4:79ac      Z_QuickMapUnmapAll_
-2de4:7884      Z_QuickMapRender_9000To6000_
-2de4:77e3      Z_QuickMapWADPageFrame_
-2de4:78dc      Z_QuickMapRenderPlanes_
-2de4:77c4      Z_QuickMapSFXPageFrame_
-2de4:789a      Z_QuickMapStatus_
-2de4:785e      Z_QuickMapRender_
-2de4:78c6      Z_QuickMapScratch_5000_
-2de4:7a3e*     CopyString13_Zonelocal_
-2de4:7955      Z_QuickMapMenu_
-2de4:793f      Z_QuickMapPalette_
-2de4:77a8      _codestartposition_END
-2de4:79f6      Z_SetOverlay_
-2de4:7832      Z_QuickMapPhysics_FunctionAreaOnly_
-2de4:79e9      _doomcode_filename
-2de4:7908      Z_QuickMapUndoFlatCache_
-2de4:7848      Z_QuickMapDemo_
-2de4:7976      Z_QuickMapIntermission_
+2de4:7788      _codestartposition
+2de4:7804      Z_QuickMapPhysics_
+2de4:77a4      Z_QuickMapMusicPageFrame_
+2de4:77a0      _musdriverstartposition
+2de4:79a4      Z_QuickMapUnmapAll_
+2de4:787c      Z_QuickMapRender_9000To6000_
+2de4:77db      Z_QuickMapWADPageFrame_
+2de4:78d4      Z_QuickMapRenderPlanes_
+2de4:77bc      Z_QuickMapSFXPageFrame_
+2de4:7892      Z_QuickMapStatus_
+2de4:7856      Z_QuickMapRender_
+2de4:78be      Z_QuickMapScratch_5000_
+2de4:7a36*     CopyString13_Zonelocal_
+2de4:794d      Z_QuickMapMenu_
+2de4:7937      Z_QuickMapPalette_
+2de4:77a0      _codestartposition_END
+2de4:79ee      Z_SetOverlay_
+2de4:782a      Z_QuickMapPhysics_FunctionAreaOnly_
+2de4:79e1      _doomcode_filename
+2de4:7900      Z_QuickMapUndoFlatCache_
+2de4:7840      Z_QuickMapDemo_
+2de4:796e      Z_QuickMapIntermission_
 Module: C:\WATCOM2\lib286\dos\clibm.lib(fopen.c)
 2de4:7a70+     __open_flags_
 2de4:7c1e+     _fsopen_

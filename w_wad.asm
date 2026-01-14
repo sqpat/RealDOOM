@@ -482,17 +482,6 @@ ret
 
 ENDP
 
-PROC    W_CacheLumpNameDirect_ FAR
-PUBLIC  W_CacheLumpNameDirect_
-
-
-call      W_CheckNumForName_
-call      W_ReadLump_
-retf      
-
-
-ENDP
-
 PROC    W_CacheLumpNameDirectFarString_ FAR
 PUBLIC  W_CacheLumpNameDirectFarString_
 
@@ -502,6 +491,13 @@ retf
 
 
 ENDP
+
+
+PROC    W_CacheLumpNameDirect_ FAR
+PUBLIC  W_CacheLumpNameDirect_
+call      W_CheckNumForName_
+ENDP
+; fall thru
 
 PROC    W_CacheLumpNumDirect_ FAR
 PUBLIC  W_CacheLumpNumDirect_
@@ -513,7 +509,7 @@ ENDP
 
 
 
-PROC    W_CacheLumpNumDirectWithOffset_ FAR
+PROC    W_CacheLumpNumDirectWithOffset_ NEAR
 PUBLIC  W_CacheLumpNumDirectWithOffset_
 
 
@@ -530,7 +526,7 @@ mov       word ptr cs:[SELFMODIFY_set_start_offset_low + 1], ax
 mov       word ptr cs:[SELFMODIFY_set_length + 1], ax
 
 
-retf      
+ret   
 
 
 ENDP
