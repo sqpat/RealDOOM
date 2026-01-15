@@ -8919,18 +8919,15 @@ dw R_CBB_SWITCH_CASE_08 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_09 - OF
 
 PROC R_CheckBBox_ NEAR
 
-; todo should this inline in R_RenderBSPNode_? used once...
+; todo refactor. just pass in es:bx instead of ax?
 
 ; jmp table for switch block.... 
 
 
 ; es:bx is bsp lookup
 
-push  bx
-push  cx
 push  si
 push  di
-mov   bx, ax
 
 ;es:[bx] is bspcoord
 ;	// Find the corners of the box
@@ -9000,11 +8997,9 @@ set_boxy_2:
 mov   ax, 2
 jmp   boxy_calculated
 return_1:
-mov   al, 1
+stc
 pop   di
 pop   si
-pop   cx
-pop   bx
 ret   
 R_CBB_SWITCH_CASE_00:
 ; cx
@@ -9107,19 +9102,15 @@ jb    tspan_smaller_than_span
 je    check_tspan_vs_span_lobits
 
 also_return_0:
-xor   al, al
+clc
 pop   di
 pop   si
-pop   cx
-pop   bx
 ret   
 
 also_return_1:
-mov   al, 1
+stc
 pop   di
 pop   si
-pop   cx
-pop   bx
 ret   
 
 check_tspan_vs_span_lobits:
@@ -9203,11 +9194,9 @@ jl    also_return_1
 cmp   ax, word ptr ds:[bx + 2]
 jg    also_return_1
 return_0_2:
-xor   al, al
+clc
 pop   di
 pop   si
-pop   cx
-pop   bx
 ret   
 
 
@@ -9313,192 +9302,135 @@ NOT_NF_SUBSECTOR  = 07FFFh
 ;R_RenderBSPNode_
 
 PROC R_RenderBSPNode_ NEAR
-
-
-push  bx
-push  cx
-push  dx
-push  si
-push  di
-push  bp
-mov   bp, sp
-sub   sp, ((MAX_BSP_DEPTH * 2) + (MAX_BSP_DEPTH * 1))
-mov   bx, word ptr ds:[_numnodes]
-xor   si, si      ; sp = 0
-dec   bx          ; bx is bspnum = numnodes - 1
-
-main_bsp_loop:
-test  bh, (NF_SUBSECTOR SHR 8)
-jne   after_inner_loop
-
-; inner loop
-mov   ax, NODES_SEGMENT
-mov   es, ax
-SELFMODIFY_BSP_viewx_hi_6:
-mov   dx, 01000h
-SELFMODIFY_BSP_viewy_hi_6:
-mov   cx, 01000h
-
-
-SHIFT_MACRO shl bx 3
-
-
-
-;        int16_t dx = viewx.h.intbits - bsp->x;
-;			int16_t dy = viewy.h.intbits - bsp->y;
-;			int16_t intermediate = bsp->dy ^ dx;
-
-sub   dx, word ptr es:[bx]
-sub   cx, word ptr es:[bx + 2]
-mov   ax, word ptr es:[bx + 6]
-mov   di, cx
-
-;			// check signs... if one side is positive and the other negative, then we dont need to multiply to 
-;			// figure out which is larger
-;			if ((intermediate ^ dy ^ bsp->dx) & 0x8000){
-
-xor   di, dx
-xor   di, ax
-xor   di, word ptr es:[bx + 4]
-test  di, 08000h ; sign check
-
-
-
-je    calculate_larger_side
-
-;				side = ROLAND1(intermediate);
-xor   ax, dx   ; recalc intermediate
-rol   ax, 1    ; ROLAND1
-and   ax, 1
-calculate_next_bspnum:
-
-;		bspnum = node_children[bspnum].children[side ^ 1];
-; side is ax (ah is 0)
-
-mov   byte ptr [bp + si - 040h], al       ; stack_side
-shr   bx, 1    ; bx is now bspnum * 4
-sal   si, 1    ; shift for lookup
-; stored preshifted.
-mov   word ptr [bp + si - 0C0h], bx       ; stack_bsp lookup
-
-sal   ax, 1
-add   bx, ax   ; add side lookup
-sar   si, 1    ; unshift
-inc   si       ; 
-mov   dx, NODE_CHILDREN_SEGMENT
-mov   es, dx
-
-mov   bx, word ptr es:[bx]   ; new bspnum lookup
-jmp   main_bsp_loop
-after_inner_loop:
-
-
-cmp   bx, -1
-jne   call_rsubsector_bspnum
-xor   ax, ax
-call_rsubsector:
-call  R_Subsector_
-
-;		if (sp == 0) {
-;			//back at root node and not visible. All done!
-;			return;
-;		}
-
-test  si, si
-je    exit_renderbspnode
-
-;		sp--;
-;		bspnum = stack_bsp[sp];
-;		side = stack_side[sp];
-
-dec   si
-mov   di, si
-add   di, si   ; make di the word lookup
-mov   bl, byte ptr [bp + si - 040h]  ; stack_side
-
-
-
-;		// Possibly divide back space.
-;		//Walk back up the tree until we find
-;		//a node that has a visible backspace.
-
-loop_check_bbox:
-mov   cx, word ptr [bp + di - 0C0h]  ; stack_bsp lookup
-xor   bl, 1       ; side ^ 1
-xor   bh, bh
-mov   dx, cx
-; stack_bsp was stored preshifted..
-SHIFT_MACRO sar dx 2
-add   dh, (NODES_RENDER_SEGMENT SHR 8)
-shl   bx, 1
-mov   ax, bx   ; todo get rid of this. go to ax directly.
-SHIFT_MACRO shl ax 2
-mov   es, dx
-call  R_CheckBBox_
-test  al, al
-je    exit_check_bbox_loop
-
-mov   dx, NODE_CHILDREN_SEGMENT
-mov   es, dx
-add   bx, cx   ; cx preshifted 2
-mov   bx, word ptr es:[bx]
-jmp   main_bsp_loop
-
+ 
+ ; improvements to stack usage/general algorithm thanks to zero318
+ 
+ PUSHA_NO_AX_MACRO
+ mov   bp, sp             ; Max SP difference of (MAX_BSP_DEPTH * 2)
+ mov   bx, word ptr ds:[_numnodes]
+ dec   bx
+ mov   ax, NODES_SEGMENT
+ mov   ds, ax
+ mov   ax, NODE_CHILDREN_SEGMENT
+ mov   es, ax
+ jmp   bsp_loop_start
 
 calculate_larger_side:
-;				fixed_t left =	FastMul1616(bsp->dy, dx);
-;				fixed_t right = FastMul1616(bsp->dx, dy);
-;				side = right > left;
-
-; dx is dx
-; di is dy
-
-; ax is already bsp->dy
-imul  dx          ; dx is dx (ha)
-mov   di, NODES_SEGMENT
-mov   es, di
-
-xchg  ax, cx              ; cx had dy. gets lobits.
-mov   di, dx              ; store hibits. DI:CX is left
-imul  word ptr es:[bx + 4]
-cmp   dx, di
-jg    right_is_greater
-jne   left_is_greater
-cmp   ax, cx
-jbe   left_is_greater
+ neg   dx
+ imul  dx
+ neg   cx
+ xchg  ax, cx
+ mov   si, dx
+ imul  di
+ cmp   dx, si
+ mov   dh, 0
+ jg    right_is_greater
+ jne   calculate_next_bspnum
+ cmp   ax, cx
+ jbe   calculate_next_bspnum
 right_is_greater:
-mov   ax, 1
-jmp   calculate_next_bspnum
-left_is_greater:
-xor   ax, ax
-jmp   calculate_next_bspnum
+ mov   dh, 080h            ; mark sign bit
+ jmp calculate_next_bspnum
+
+bsp_inner_loop:         
+
+; bx = bspnum * 2
+
+ shl   bx, 1  ; bx = bspnum * 2
+ mov   si, bx ; bx = bspnum * 4
+ shl   si, 1  ; si = bspnum * 8
+
+ lodsw                         ; NODE_T.n_x
+SELFMODIFY_BSP_viewx_hi_6:
+ sub   ax, 01000h
+ xchg  ax, dx     ; 
+ lodsw                         ; NODE_T.n_y
+SELFMODIFY_BSP_viewy_hi_6:
+ sub   ax, 01000h
+ xchg  ax, cx
+ lodsw                         ; NODE_T.n_dx
+ xchg  ax, di
+ lodsw                         ; NODE_T.n_dy
 
 
+ ; todo bench if this is actually faster
 
+; dx and cx are inverse. this is fine for the sign check (two negatives cancel out)
+; in the mul case, we neg at that time.
 
-call_rsubsector_bspnum:
-mov   ax, bx
-and   ah, (NOT_NF_SUBSECTOR SHR 8)  ; unnecessary, the shift killed this anyway.
-jmp   call_rsubsector
-exit_check_bbox_loop:
-test  si, si
-je    exit_renderbspnode
-dec   di       ; di is the word lookup
-dec   di
-dec   si
-mov   bl, byte ptr [bp + si - 040h]   ; stack_side lookup, following dec not included yet
-jmp   loop_check_bbox
+ mov   si, cx          ; copy for sign check
+ xor   si, dx
+ xor   si, ax
+ xor   si, di
+ jns   calculate_larger_side
+ ; TODO dh sign is backwards. maybe theres a way to get this in one instruction
+ ; or have the next instruction assume backwards logic from both sides and eliminate
+ ; both neg dx
+ neg   dx   
+ xor   dh, ah         
+calculate_next_bspnum:
+ shl   dh, 1          ; carry = sign
+ sbb   si, si         ; -1 when signed, carry = sign
+ mov   cx, bx
+ rcr   cx, 1          ; cx = bspnum * 2 with side bit in sign
+ push  cx
+ neg   si             ; Convert -1 to 1
+ shl   si, 1
+bsp_outer_loop:
+ mov   bx, es:[bx+si] ; add side lookup
+bsp_loop_start:
+ shl   bx, 1          ; Tests sign bit with one less instruction per inner loop
+ jnc   bsp_inner_loop
+ shr   bx, 1          ; unshift
+ cmp   bx, -1         ; sets carry for any values that aren't 0x7FFF
+ sbb   ax, ax
+ and   ax, bx         ; ax = (bx == 0x7FFF) ? 0 : bx
+
+ mov   dx, ss ; Restore DS
+ mov   ds, dx
+ call  R_Subsector_
+
+loop_check_bbox:
+ cmp   sp, bp ; Compare with original SP value
+ je    exit_renderbspnode 
+ pop   bx
+
+; calculate node_render address.
+; NODE_RENDER_T are 16 bytes long
+; two sides of 8 bytes each
+; bx gets 0 or 8, the render address is packed into the segment (ES) by shifting right 4 basically
+
+ shl   bx, 1   ; bx = bspnum * 4 and extract side bit into carry
+ sbb   si, si
+ inc   si      ; switching -1/0 to 0/1 also replaces ^1
+ shl   si, 1   ; side * 2
+ 
+ lea   ax, [bx+si]
+ xchg  ax, si  ; [si+bx] contains the proper value for bsp_outer_loop in case its needed. bx now does not need to be push/popped in R_CheckBBox_
+ xchg  ax, bx
+
+ shr   ax, 1
+ shr   ax, 1
+ add   ax, NODES_RENDER_SEGMENT
+ mov   es, ax
+
+  
+ shl   bx, 1   ; bx = side * 4
+ shl   bx, 1   ; bx = side * 8
+ 
+
+ call  R_CheckBBox_     ; bx and cx values are clobbered. 
+ jnc   loop_check_bbox
+ mov   ax, NODES_SEGMENT
+ mov   ds, ax
+ mov   ax, NODE_CHILDREN_SEGMENT
+ mov   es, ax
+ xor   bx, bx  ; following [bx+si] will be correct this way
+ jmp   bsp_outer_loop
 exit_renderbspnode:
-LEAVE_MACRO
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret
-
+ POPA_NO_AX_MACRO
+ ret
 ENDP
-
 
 
 
