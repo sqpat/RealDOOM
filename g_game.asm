@@ -45,7 +45,7 @@ EXTRN Z_SetOverlay_:FAR
 EXTRN G_ReadDemoTiccmd_:NEAR
 EXTRN G_WriteDemoTiccmd_:NEAR
 EXTRN S_ResumeSound_:NEAR
-EXTRN S_PauseSound_:NEAR
+
 
 
 
@@ -417,13 +417,28 @@ je      skip_special_button   ; todo make this reverse logic case?
 mov     ah, al
 and     al, BT_SPECIALMASK
 cmp     al, BTS_PAUSE
-jne     not_pause
+je      not_pause
 xor     byte ptr ds:[_paused], 1
 jne     do_pause
 call    S_ResumeSound_
 jmp     done_with_special_buttons
 do_pause:
-call    S_PauseSound_
+;call    S_PauseSound_ ; inlined
+
+xor   ax, ax
+cmp   byte ptr ds:[_mus_playing], al ; 0
+je    done_with_special_buttons
+cmp   byte ptr ds:[_mus_paused], al  ; todo put these adjacent. use a single word check
+jne   done_with_special_buttons
+
+mov   byte ptr ds:[_playingstate], ST_PAUSED
+cmp   byte ptr ds:[_playingdriver+3], al  ; segment high byte shouldnt be 0 if its set.
+je    done_with_special_buttons
+les   bx, dword ptr ds:[_playingdriver]
+call  es:[bx + MUSIC_DRIVER_T.md_pausemusic_func]
+mov   byte ptr ds:[_mus_paused], 1
+exit_pause_sound:
+
 jmp     done_with_special_buttons
 not_pause:
 cmp     al, BTS_SAVEGAME

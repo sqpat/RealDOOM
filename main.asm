@@ -1662,17 +1662,6 @@ ret
 
 ENDP
 
-PROC    M_Ticker_    NEAR
-PUBLIC  M_Ticker_
-
-
-dec   word ptr ds:[_skullAnimCounter]
-jnle   exit_m_ticker
-xor   byte ptr ds:[_whichSkull], 1
-mov   word ptr ds:[_skullAnimCounter], 8
-exit_m_ticker:
-ret   
-
 
 
 ENDP
@@ -2344,7 +2333,6 @@ mov   ds, bx
 mov   ah, 025h
 int   021h
 pop   ds
-exit_d_display_early:
 ret
 
 ENDP
@@ -2380,10 +2368,6 @@ PROC    D_Display_ NEAR
 PUBLIC  D_Display_
 
 
-cmp   byte ptr ds:[_novideo], 0
-jne   exit_d_display_early
-
-PUSHA_NO_AX_OR_BP_MACRO
 
 ;todo: cache game state (cl?)
 
@@ -2629,7 +2613,6 @@ dont_set_destscreen_0:
 
 exit_d_display:
  
-POPA_NO_AX_OR_BP_MACRO
 ret   
 
 do_fwipe:
@@ -2640,7 +2623,6 @@ call  Z_SetOverlay_
 db 09Ah
 dw WIPE_WIPELOOPOFFSET, CODE_OVERLAY_SEGMENT
 
-POPA_NO_AX_OR_BP_MACRO
 ret   
 
 
@@ -2704,29 +2686,6 @@ ret
 ENDP
 
 
-PROC    S_PauseSound_ NEAR
-PUBLIC  S_PauseSound_
-
-xor   ax, ax
-cmp   byte ptr ds:[_mus_playing], al ; 0
-je    exit_pause_sound
-cmp   byte ptr ds:[_mus_paused], al  ; todo put these adjacent. use a single word check
-jne   exit_pause_sound
-
-mov   byte ptr ds:[_playingstate], ST_PAUSED
-cmp   byte ptr ds:[_playingdriver+3], al  ; segment high byte shouldnt be 0 if its set.
-je    exit_pause_sound
-push  bx
-les   bx, dword ptr ds:[_playingdriver]
-call  es:[bx + MUSIC_DRIVER_T.md_pausemusic_func]
-pop   bx
-mov   byte ptr ds:[_mus_paused], 1
-exit_pause_sound:
-ret  
-
-ENDP
-
-
 
 PROC    S_ResumeSound_ NEAR
 PUBLIC  S_ResumeSound_
@@ -2739,11 +2698,12 @@ je    exit_resume_sound
 mov   byte ptr ds:[_playingstate], ST_PLAYING
 
 cmp   byte ptr ds:[_playingdriver+3], al  ; segment high byte shouldnt be 0 if its set.
-je    exit_pause_sound
-push  bx
+je    exit_resume_sound
+; outer frames can wreck bx
 les   bx, dword ptr ds:[_playingdriver]
 call  es:[bx + MUSIC_DRIVER_T.md_resumemusic_func]
-pop bx
+; outer frames can wreck bx
+
 
 mov   byte ptr ds:[_mus_paused], al ; 0
 exit_resume_sound:
@@ -3005,6 +2965,9 @@ jmp   done_with_gametic_inc
 carry_maketic_inc:
 inc   word ptr ds:[_maketic+2]
 jmp   done_with_maketic_inc
+do_advance_demo:
+call  D_DoAdvanceDemo_
+jmp   done_advancing_demo
 
 PROC    D_DoomLoop_ NEAR
 PUBLIC  D_DoomLoop_
@@ -3024,7 +2987,9 @@ cmp   byte ptr ds:[_advancedemo], 0
 jne   do_advance_demo
 dont_advance_demo:
 done_advancing_demo:
-call  M_Ticker_
+dec   word ptr ds:[_skullAnimCounter]
+jle   do_skullanimdecrease
+exit_m_ticker:
 call  G_Ticker_
 
 inc   word ptr ds:[_gametic]
@@ -3035,35 +3000,38 @@ jz    carry_maketic_inc
 done_with_maketic_inc:
 jmp   continue_tic
 
+do_skullanimdecrease:
+xor   byte ptr ds:[_whichSkull], 1
+mov   word ptr ds:[_skullAnimCounter], 8
+jmp   exit_m_ticker
+
 not_singletics:
 call  TryRunTics_
 
 continue_tic:
 
 ;call  S_UpdateSounds_
-
 db    09Ah
 dw    S_UPDATESOUNDSOFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 cmp   byte ptr ds:[_pendingmusicenum], 0
-je    no_pending_music
+jne   do_pending_music
+
+pending_music_done:
+no_pending_music:
+
+cmp   byte ptr ds:[_novideo], 0
+jne   continue_doom_loop
+
+call  D_Display_
+
+jmp   continue_doom_loop
+do_pending_music:
 mov   ax, OVERLAY_ID_MUS_LOADER
 call  Z_SetOverlay_
 db    09Ah
 dw    S_ACTUALLYCHANGEMUSICOFFSET, CODE_OVERLAY_SEGMENT
-
-
-no_pending_music:
-
-
-call  D_Display_
-
-; call DoLog_
-
-jmp   continue_doom_loop
-do_advance_demo:
-call  D_DoAdvanceDemo_
-jmp   done_advancing_demo
+jmp   pending_music_done
 
 
 ENDP

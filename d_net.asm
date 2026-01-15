@@ -23,7 +23,6 @@ EXTRN G_BuildTiccmd_:NEAR
 EXTRN D_ProcessEvents_Render_:NEAR
 EXTRN D_ProcessEvents_:NEAR
 EXTRN I_StartTic_: NEAR
-EXTRN M_Ticker_:NEAR
 EXTRN G_Ticker_:NEAR
 EXTRN D_DoAdvanceDemo_:NEAR
 
@@ -189,13 +188,24 @@ mov   ax, word ptr ds:[_ticcount]
 sub   ax, dx  ; entertic
 cmp   al, 20
 jb    loop_next_maketic
-call  M_Ticker_
+; inlined M_Ticker
+dec   word ptr ds:[_skullAnimCounter]
+jle   do_skullanimdecrease_2
+
+
+
 exit_tryruntics:
 
 pop   dx
 pop   cx
 ret   
 
+do_skullanimdecrease_2:
+xor   byte ptr ds:[_whichSkull], 1
+mov   word ptr ds:[_skullAnimCounter], 8
+pop   dx
+pop   cx
+ret   
 
 done_with_maketic_loop:
 
@@ -206,7 +216,12 @@ jne   do_demo
 
 dont_do_demo:
 
-call  M_Ticker_
+; inlined M_Ticker
+dec   word ptr ds:[_skullAnimCounter]
+jle   do_skullanimdecrease
+
+exit_m_ticker:
+
 call  G_Ticker_
 inc   word ptr ds:[_gametic + 0]
 jz    carry_add_2
@@ -223,6 +238,10 @@ do_demo:
 call  D_DoAdvanceDemo_  ; performance matters less for the title screen case. 
 jmp   dont_do_demo
 
+do_skullanimdecrease:
+xor   byte ptr ds:[_whichSkull], 1
+mov   word ptr ds:[_skullAnimCounter], 8
+jmp   exit_m_ticker
 ENDP
 
 PROC    D_NET_ENDMARKER_ NEAR
