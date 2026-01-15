@@ -35,6 +35,7 @@ EXTRN P_NoiseAlert_:NEAR         ; except this is really far
 EXTRN P_SpawnMobj_:NEAR          
 EXTRN P_DamageMobj_:NEAR
 EXTRN S_StartSound_:NEAR
+EXTRN S_StartSoundPlayer_:NEAR      
 EXTRN FixedMulTrig_MapLocal_:NEAR
 EXTRN R_PointToAngle2_MapLocal_:NEAR
 
@@ -80,8 +81,7 @@ mov   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], al
 jmp   check_for_chainsaw_pending
 rev_chainsaw_noise:
 mov   dl, SFX_SAWUP
-mov   ax, word ptr ds:[_playerMobj]
-call  S_StartSound_
+call  S_StartSoundPlayer_
 jmp   pending_weapon_checks_done
 ENDP
 
@@ -295,8 +295,8 @@ jne   dont_do_chainsaw_sound
 cmp   word ptr ds:[si], S_SAW
 jne   dont_do_chainsaw_sound
 mov   dl, SFX_SAWIDL
-mov   ax, word ptr ds:[_playerMobj]
-call  S_StartSound_
+
+call  S_StartSoundPlayer_
 dont_do_chainsaw_sound:
 
 
@@ -885,8 +885,8 @@ PROC A_FirePistol_ NEAR
 PUBLIC A_FirePistol_
 
 mov   dl, SFX_PISTOL
-mov   ax, word ptr ds:[_playerMobj]
-call  S_StartSound_
+
+call  S_StartSoundPlayer_
 
 mov   dx, S_PLAY_ATK2
 mov   ax, word ptr ds:[_playerMobj]
@@ -915,8 +915,8 @@ PUBLIC A_FireShotgun_
 
 
 mov   dl, SFX_SHOTGN
-mov   ax, word ptr ds:[_playerMobj]
-call  S_StartSound_
+
+call  S_StartSoundPlayer_
 
 mov   dx, S_PLAY_ATK2
 mov   ax, word ptr ds:[_playerMobj]
@@ -949,8 +949,8 @@ PUBLIC A_FireShotgun2_
 
 
 mov   dl, SFX_DSHTGN
-mov   ax, word ptr ds:[_playerMobj]
-call  S_StartSound_
+
+call  S_StartSoundPlayer_
 
 ;    P_SetMobjState (playerMobj, S_PLAY_ATK2);
 
@@ -1041,9 +1041,9 @@ PUBLIC A_FireCGun_
 
 mov   bx, ax
 mov   dl, SFX_PISTOL
-mov   ax, word ptr ds:[_playerMobj]
 
-call  S_StartSound_
+
+call  S_StartSoundPlayer_
 
 
 cmp   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CLIP)], 0
@@ -1101,8 +1101,8 @@ PROC A_OpenShotgun2_ NEAR
 PUBLIC A_OpenShotgun2_
 
 mov   dl, SFX_DBOPN
-mov   ax, word ptr ds:[_playerMobj]
-call  S_StartSound_
+
+call  S_StartSoundPlayer_
 ret
 
 ENDP
@@ -1111,8 +1111,8 @@ PROC A_LoadShotgun2_ NEAR
 PUBLIC A_LoadShotgun2_
 
 mov   dl, SFX_DBLOAD
-mov   ax, word ptr ds:[_playerMobj]
-call  S_StartSound_
+
+call  S_StartSoundPlayer_
 ret   
 
 ENDP
@@ -1122,8 +1122,8 @@ PUBLIC A_CloseShotgun2_
 
 push  ax
 mov   dl, SFX_DBCLS
-mov   ax, word ptr ds:[_playerMobj]
-call  S_StartSound_
+
+call  S_StartSoundPlayer_
 pop   ax
 call  A_Refire_
 ret   
@@ -1270,8 +1270,8 @@ PUBLIC A_BFGsound_
 
 
 mov   dl, SFX_BFG
-mov   ax, word ptr ds:[_playerMobj]
-call  S_StartSound_
+
+call  S_StartSoundPlayer_
 ret   
 
 

@@ -22,7 +22,7 @@ INCLUDE strings.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN S_StartSound_:NEAR
+EXTRN S_StartSoundAX0_:NEAR
 EXTRN P_Random_:NEAR
 EXTRN GetPainChance_:NEAR
 EXTRN GetPainState_:NEAR
@@ -325,7 +325,7 @@ ENDP
 
 
 ; return in carry
-PROC    P_GivePower_  FAR
+PROC    P_GivePower_  NEAR
 PUBLIC  P_GivePower_
 
 push   bx
@@ -553,10 +553,10 @@ mov    ax, 01000h
 call   P_RemoveMobj_
 
 mov    dx, cx
-xor    ax, ax
+
 add    byte ptr ds:[_player + PLAYER_T.player_bonuscount], BONUSADD
 
-call  S_StartSound_
+call  S_StartSoundAX0_
 
 exit_ptouchspecialthing:
 ;pop    di

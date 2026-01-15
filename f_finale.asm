@@ -980,11 +980,11 @@ cbw
 cmp   bx, ax
 jle   draw_end0_patch
 mov   dl, SFX_PISTOL
-xor   ax, ax
+
 
 ;call  S_StartSound_
 db    09Ah
-dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+dw    S_STARTSOUNDAX0FAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 
 mov   byte ptr ds:[_finale_laststage], bl
@@ -1186,10 +1186,10 @@ db    09Ah
 dw    GETSEESTATEADDR, PHYSICS_HIGHCODE_SEGMENT
 mov   dl, al
 
-xor   ax, ax
+
 ;call  S_StartSound_
 db    09Ah
-dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+dw    S_STARTSOUNDAX0FAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 mov   al, byte ptr ds:[_castnum]
 cbw  
@@ -1424,10 +1424,10 @@ jmp   selected_sfx
 selected_sfx:
 mov   dl, al
 
-xor   ax, ax
+
 ;call  S_StartSound_
 db    09Ah
-dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+dw    S_STARTSOUNDAX0FAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 cmp   byte ptr ds:[_castframes], 0Ch
 je    do_attack_frame
@@ -1552,13 +1552,13 @@ add   bx, ax
 mov   al, byte ptr cs:[bx + OFFSET _CSDATA_castorder+1]
 mov   ah, 0Bh  ; sizeof mobjinfo? todo constant
 mul   ah
-mov   bx, ax
-xor   ax, ax
+xchg  ax, bx
+
 mov   dl, byte ptr ds:[bx + _mobjinfo + MOBJINFO_T.mobjinfo_deathsound]
 
 ;call  S_StartSound_
 db    09Ah
-dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+dw    S_STARTSOUNDAX0FAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 mov   al, 1
 pop   bx

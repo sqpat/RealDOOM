@@ -22,7 +22,6 @@ INSTRUCTION_SET_MACRO
 
 
 
-EXTRN S_StartSound_:NEAR
 EXTRN S_StartSoundWithSecnum_:NEAR
 EXTRN P_RemoveThinker_:NEAR
 EXTRN P_CreateThinker_:NEAR

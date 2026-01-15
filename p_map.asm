@@ -20,7 +20,7 @@ INCLUDE states.inc
 INCLUDE sound.inc
 INSTRUCTION_SET_MACRO
 
-EXTRN P_SetMobjState_:NEAR         
+EXTRN P_SetMobjState_:NEAR   
 EXTRN P_SpawnPuff_:NEAR            ; except this is really near
 EXTRN P_SpawnMobj_:NEAR            
 EXTRN P_RemoveMobj_:NEAR
@@ -33,6 +33,7 @@ EXTRN P_ShootSpecialLine_:NEAR
 EXTRN P_TouchSpecialThing_:NEAR
 EXTRN GetDamage_:NEAR
 EXTRN S_StartSound_:NEAR
+EXTRN S_StartSoundPlayer_:NEAR      
 EXTRN FixedMul1632_MapLocal_:NEAR
 EXTRN FixedMul16u32_MapLocal_:NEAR
 EXTRN FixedMul2424_:NEAR
@@ -2902,10 +2903,10 @@ POPA_NO_AX_OR_BP_MACRO
 ret   
 use_thru_wall:
 
-mov   ax, word ptr ds:[_playerMobj]
+
 mov   dl, SFX_NOWAY
 
-call  S_StartSound_
+call  S_StartSoundPlayer_
 clc
 jmp   exit_usetraverse
 no_line_special:

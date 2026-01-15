@@ -779,6 +779,11 @@ jmp   successful_play  ; todo just exit maybe? handles not used for pc speaker?
 
 ENDP
 
+PROC    S_StartSoundAX0Far_  FAR
+PUBLIC  S_StartSoundAX0Far_
+xor    ax, ax
+; fall thru
+ENDP
 PROC    S_StartSoundFar_ FAR
 PUBLIC  S_StartSoundFar_
 
@@ -788,6 +793,16 @@ retf
 ENDP
 
 
+PROC    S_StartSoundAX0_ NEAR
+PUBLIC  S_StartSoundAX0_
+xor     ax, ax
+jmp     S_StartSound_
+ENDP
+
+PROC    S_StartSoundPlayer_ NEAR
+PUBLIC  S_StartSoundPlayer_
+mov     ax, word ptr ds:[_playerMobj]
+ENDP
 PROC    S_StartSound_ NEAR
 PUBLIC  S_StartSound_
 

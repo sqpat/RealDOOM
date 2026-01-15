@@ -20,7 +20,7 @@ INCLUDE sound.inc
 INSTRUCTION_SET_MACRO
 
 
-EXTRN S_StartSound_:NEAR
+
 EXTRN S_StartSoundWithSecnum_:NEAR
 EXTRN EV_DoFloor_:NEAR
 EXTRN EV_DoDoor_:NEAR

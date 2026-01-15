@@ -25,6 +25,7 @@ INSTRUCTION_SET_MACRO
 P_SIGHT_STARTMARKER_ = 0 
 
 EXTRN S_StartSound_:NEAR
+EXTRN S_StartSoundAX0_:NEAR
 EXTRN P_Random_:NEAR
 EXTRN P_SpawnPuff_:NEAR
 EXTRN P_SpawnMobj_:NEAR
@@ -4720,7 +4721,7 @@ jne   loop_next_brainawake
 
 mov   dl, SFX_BOSSIT
 xor   ax, ax
-call  S_StartSound_
+call  S_StartSoundAX0_
 
 ret   
 
@@ -4733,7 +4734,7 @@ PUBLIC  A_BrainPain_
 
 mov   dl, SFX_BOSPN
 xor   ax, ax
-call  S_StartSound_
+call  S_StartSoundAX0_
 
 ret   
 
@@ -4831,8 +4832,8 @@ jmp   do_next_brain_scream_iter
 
 done_with_brain_scream_loop:
 mov   dl, SFX_BOSDTH
-xor   ax, ax
-call  S_StartSound_
+
+call  S_StartSoundAX0_
 
 ret   
 
@@ -5077,8 +5078,8 @@ div   cl
 
 mov   byte ptr ds:[si + MOBJ_T.m_reactiontime], al
 mov   dl, SFX_BOSPIT
-xor   ax, ax
-call  S_StartSound_
+
+call  S_StartSoundAX0_
 exit_spawnfly:
 ret   
 

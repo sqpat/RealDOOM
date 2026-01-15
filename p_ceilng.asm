@@ -23,7 +23,6 @@ INSTRUCTION_SET_MACRO
 
 
 
-EXTRN S_StartSound_:NEAR
 EXTRN S_StartSoundWithSecnum_:NEAR
 EXTRN T_MovePlaneCeilingUp_:NEAR
 EXTRN T_MovePlaneCeilingDown_:NEAR

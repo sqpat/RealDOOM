@@ -836,10 +836,10 @@ mov   al, byte ptr ds:[_quickSaveSlot]
 cbw  
 call  M_DoSave_
 mov   dx, SFX_SWTCHX
-xor   ax, ax
+
 ;call  S_StartSound_
 db    09Ah
-dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+dw    S_STARTSOUNDAX0FAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 pop   dx
 exit_quicksave:
@@ -912,10 +912,10 @@ pop   bx
 ret   
 cant_save_not_in_game:
 mov   dx, SFX_OOF
-xor   ah, ah
+
 ;call  S_StartSound_
 db    09Ah
-dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+dw    S_STARTSOUNDAX0FAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 jmp   exit_m_quicksave
 
@@ -945,10 +945,10 @@ mov   al, byte ptr ds:[_quickSaveSlot]
 cbw  
 call  M_LoadSelect_
 mov   dx, SFX_SWTCHX
-xor   ax, ax
+
 ;call  S_StartSound_
 db    09Ah
-dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+dw    S_STARTSOUNDAX0FAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 pop   dx
 exit_quickload:
@@ -1606,7 +1606,7 @@ jne   do_endgame
 mov   dx, SFX_OOF
 ;call  S_StartSound_
 db    09Ah
-dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+dw    S_STARTSOUNDAX0FAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 exit_end_game:
 LEAVE_MACRO 
@@ -1711,12 +1711,12 @@ sar   ax, 1
 sar   ax, 1
 and   ax, 7
 add   bx, ax
-xor   ax, ax
-cwd
+
+xor   dx, dx
 mov   dl, byte ptr cs:[bx]
 ;call  S_StartSound_
 db    09Ah
-dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+dw    S_STARTSOUNDAX0FAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 mov   ax, 105
 
@@ -2526,10 +2526,10 @@ call  M_QuitDOOM_
 play_switch_sound_and_exit_m_responder_return_1:
 mov   dx, SFX_SWTCHN
 play_sound_and_exit_m_responder_return_1:
-xor   ax, ax
+
 ;call  S_StartSound_
 db    09Ah
-dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+dw    S_STARTSOUNDAX0FAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 
 stc
@@ -2651,10 +2651,10 @@ call  word ptr cs:[si + MENUITEM_T.menuitem_routine]
 
 play_stnmov_sound_and_exit_m_responder_return_1:
 mov   dx, SFX_STNMOV
-xor   ax, ax
+
 ;call  S_StartSound_
 db    09Ah
-dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+dw    S_STARTSOUNDAX0FAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 
 exit_m_responder_return_1_3:

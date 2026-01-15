@@ -151,6 +151,7 @@ void __far AM_Ticker();
 void __far S_UpdateSounds();
 void __far S_Start();
 void __far S_StartSoundFar();
+void __far S_StartSoundAX0Far();
 
 
 void __far P_AproxDistance();
@@ -658,6 +659,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 
     fprintf(fp, "S_UPDATESOUNDSOFFSET       = 0%Xh\n",            FP_OFF(S_UpdateSounds)                      - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "S_STARTSOUNDFAROFFSET      = 0%Xh\n",            FP_OFF(S_StartSoundFar)                     - FP_OFF(P_SIGHT_STARTMARKER));
+    fprintf(fp, "S_STARTSOUNDAX0FAROFFSET   = 0%Xh\n",            FP_OFF(S_StartSoundAX0Far)                     - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "S_ACTUALLYCHANGEMUSICOFFSET = 0%Xh\n",           FP_OFF(S_ActuallyChangeMusic)               - FP_OFF(SM_LOAD_STARTMARKER));
 
 

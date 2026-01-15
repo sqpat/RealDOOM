@@ -2191,10 +2191,10 @@ push   dx
 Z_QUICKMAPAI3 pageswapargs_physics_code_offset_size INDEXED_PAGE_9000_OFFSET
 
 pop    dx
-xor    ax, ax
+
 
 db    09Ah
-dw    S_STARTSOUNDFAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+dw    S_STARTSOUNDAX0FAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
 Z_QUICKMAPAI3 (pageswapargs_intermission_offset_size+12) INDEXED_PAGE_6000_OFFSET
 

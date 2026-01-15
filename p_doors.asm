@@ -25,6 +25,7 @@ EXTRN P_RemoveThinker_:NEAR
 EXTRN P_CreateThinker_:NEAR
 
 EXTRN S_StartSound_:NEAR
+EXTRN S_StartSoundAX0_:NEAR
 EXTRN S_StartSoundWithSecnum_:NEAR
 EXTRN P_FindLowestOrHighestCeilingSurrounding_:NEAR
 EXTRN P_FindSectorsFromLineTag_:NEAR
@@ -555,9 +556,9 @@ cbw
 mov   word ptr ds:[_player + PLAYER_T.player_message], ax
 
 
-xor   ax, ax
 
-call  S_StartSound_
+
+call  S_StartSoundAX0_
    
 jmp   exit_ev_verticaldoor
 
