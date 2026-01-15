@@ -29,7 +29,7 @@ EXTRN locallib_fread_:NEAR
 EXTRN exit_:NEAR
 
 EXTRN W_LumpLength_:FAR
-EXTRN W_CacheLumpNumDirect_:FAR
+EXTRN W_ReadLump_:NEAR
 EXTRN W_CheckNumForNameFarString_:NEAR
 EXTRN W_AddFile_:NEAR
 
@@ -777,7 +777,7 @@ shr   di, 1
 
 mov   cx, ST_GRAPHICS_SEGMENT
 xchg  ax, bx  ; size/lump trade
-call  W_CacheLumpNumDirect_  ;		W_CacheLumpNumDirect(lump, (byte __far*)(MK_FP(ST_GRAPHICS_SEGMENT, hu_font[i])));
+call  W_ReadLump_  ;		W_CacheLumpNumDirect(lump, (byte __far*)(MK_FP(ST_GRAPHICS_SEGMENT, hu_font[i])));
 
 ;		font_widths_far[i] = (((patch_t __far *)MK_FP(ST_GRAPHICS_SEGMENT, hu_font[i]))->width);
 
@@ -834,7 +834,7 @@ mov   dx, ax ; backup lump
 ; done earlier from si
 ;mov   cx, AMMNUMPATCHBYTES_SEGMENT
 mov   bx, si
-call  W_CacheLumpNumDirect_
+call  W_ReadLump_
 
 xchg  ax, dx    ; retrieve lump
 call  W_LumpLength_

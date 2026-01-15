@@ -195,69 +195,6 @@ pop     dx
 ret
 ENDP
 
-; TODO_IMPROVEMENT - put the loader in init code
-PROC   G_DoPlayDemo_ NEAR
-PUBLIC G_DoPlayDemo_
-
-PUSHA_NO_AX_OR_BP_MACRO
-
-call   Z_QuickMapDemo_
-xor    bx, bx
-mov    byte ptr ds:[_gameaction], bl ; 0 GA_NOTHING
-
-les    ax, dword ptr ds:[_defdemoname]
-mov    dx, es
-mov    cx, DEMO_SEGMENT
-mov    si, cx
-; TODO_BUG ftell, detect longer than MAX_DEMO_SIZE?
-;call   W_CacheLumpNameDirectFarString_ ; (defdemoname, demobuffer);
-; inlined W_CacheLumpNameDirectFarString_
-call   W_GetNumForNameFarString_
-call   W_ReadLump_
-
-
-mov    ds, si
-xor    si, si
-; ds:si is demo_addr
-lodsb
-cmp    al, VERSION
-jne    do_version_error
-do_version_error:  ; TODO_IMPROVEMENT implement bad version check?
-
-lodsw
-xchg   ax, dx   ; dl = skill, dh = episode
-lodsw
-xchg   ax, bx   ; bl = map,   bh = deathmatch
-lodsw
-xchg   ax, cx   ; cl = respawn, ch = fastparm
-lodsb
-
-
-push   ss
-pop    ds
-mov    byte ptr ds:[_respawnparm], cl
-mov    byte ptr ds:[_fastparm], ch
-mov    byte ptr ds:[_nomonsters], al
-lea    ax, [si+ 5]
-mov    word ptr ds:[_demo_p], ax ; probably a constant actually
-
-xchg   ax, dx ; al = skill, ah = episode
-mov    dl, ah ; dl = episode
-mov    byte ptr ds:[_precache], 0  ; false
-call   G_InitNew_
-
-mov    ax, 1
-mov    byte ptr ds:[_precache], al      ; true
-mov    byte ptr ds:[_usergame], ah      ; false
-mov    byte ptr ds:[_demoplayback], al  ; true
-
-
-call   Z_QuickMapPhysics_
-
-POPA_NO_AX_OR_BP_MACRO
-
-ret
-ENDP
 
 
 DEMOMARKER = 080h

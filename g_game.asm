@@ -31,7 +31,9 @@ EXTRN R_ExecuteSetViewSize_:NEAR
 EXTRN R_FillBackScreen_ForceBufferRedraw_:NEAR
 EXTRN W_CheckNumForNameFarString_:NEAR
 EXTRN locallib_strcmp_:NEAR
-
+EXTRN Z_QuickMapDemo_:NEAR
+EXTRN W_GetNumForNameFarString_:NEAR
+EXTRN W_ReadLump_:NEAR
 EXTRN G_DoLoadLevel_:NEAR
 EXTRN G_InitNew_:NEAR
 EXTRN I_Error_:FAR
@@ -39,7 +41,7 @@ EXTRN I_Error_:FAR
 
 
 EXTRN Z_SetOverlay_:FAR
-EXTRN G_DoPlayDemo_:NEAR
+
 EXTRN G_ReadDemoTiccmd_:NEAR
 EXTRN G_WriteDemoTiccmd_:NEAR
 EXTRN S_ResumeSound_:NEAR
@@ -66,91 +68,131 @@ ENDP
 ENDP
 
 
-PROC   G_DoNewGame_ NEAR
-PUBLIC G_DoNewGame_
-
-push   dx
-push   bx
-xor    ax, ax
-mov    byte ptr ds:[_demoplayback], al ; false
-mov    byte ptr ds:[_respawnparm], al ; false
-mov    byte ptr ds:[_fastparm], al ; false
-mov    byte ptr ds:[_nomonsters], al ; false
-mov    byte ptr ds:[_gameaction], al ; GA_NOTHING
-mov    ax, word ptr ds:[_d_skill]
-mov    dl, ah
-; mov    dl, byte ptr ds:[_d_episode]
-mov    bl, byte ptr ds:[_d_map]
-call   G_InitNew_
-pop    bx
-pop    dx
-
-ret
-ENDP
-
-
-
-PROC   G_DoWorldDone_ NEAR
-PUBLIC G_DoWorldDone_
-
-mov    ax, 1
-mov    byte ptr ds:[_gamestate], ah ; GS_LEVEL
-mov    byte ptr ds:[_gameaction], ah ; GA_NOTHING
-mov    byte ptr ds:[_viewactive], al ; true
-add    al, byte ptr ds:[_wminfo + WBSTARTSTRUCT_T.wbss_next] ; one plus...
-mov    byte ptr ds:[_gamemap], al ; true
-
-call   G_DoLoadLevel_
-
-ret
-ENDP
-
-
-
-PROC    G_DoSaveGame_ NEAR
-PUBLIC  G_DoSaveGame_
-
-PUSHA_NO_AX_OR_BP_MACRO
-
-; todo move this code into savegame stuff once its good to go. 
-
-call    Z_QuickMapScratch_5000_
-mov     al, '0'
-add     al, byte ptr ds:[_savegameslot];
-mov     byte ptr ds:[_doomsav0_string + 7], al
-
-db      09Ah
-dw      G_CONTINUESAVEGAMEOFFSET, CODE_OVERLAY_SEGMENT
-
-
-
-mov     ax, OFFSET _doomsav0_string
-mov     cx, es
-xor     bx, bx
-mov     dx, word ptr ds:[_save_p]
-call    M_WriteFile_
-xor     ax, ax
-mov     byte ptr ds:[_gameaction], al ; GA_NOTHING
-mov     byte ptr ds:[_savedescription], al ; \0
-mov     word ptr ds:[_player + PLAYER_T.player_message], GGSAVED
-call    R_FillBackScreen_ForceBufferRedraw_   ; force screen draw for save message
-
-
-POPA_NO_AX_OR_BP_MACRO
-
-ret
-ENDP
-
-
-
 
 
 VERSIONSIZE = 16
 
-PROC    G_DoLoadGame_ NEAR
-PUBLIC  G_DoLoadGame_
 
-PUSHA_NO_AX_OR_BP_MACRO
+PROC    R_FlatNumForName_FAR_ FAR
+PUBLIC  R_FlatNumForName_FAR_
+call    R_FlatNumForName_
+retf
+ENDP
+
+PROC    R_FlatNumForName_ NEAR
+PUBLIC  R_FlatNumForName_
+
+push    dx
+push    ax
+
+call    W_CheckNumForNameFarString_
+
+test    ax, ax
+js      do_flat_error
+
+sub     ax, word ptr ds:[_firstflat]
+
+add     sp, 4
+ret
+ENDP
+
+str_error_flatnum:
+db "\nR_FlatNumForName: %Fs not found", 0
+
+do_flat_error:
+
+; dx/ax already on stack?
+push     cs
+mov      ax, OFFSET str_error_flatnum
+push     ax
+call     I_Error_
+
+g_ticker_gameaction_table:
+dw OFFSET case_nothing
+dw OFFSET case_loadlevel
+dw OFFSET case_newgame
+dw OFFSET case_loadgame
+dw OFFSET case_savegame
+dw OFFSET case_playdemo
+dw OFFSET case_completed
+dw OFFSET case_victory
+dw OFFSET case_worlddone
+
+
+
+
+case_playdemo:
+;call    G_DoPlayDemo_   ; inlined
+
+; OUTER SCOPE PUSHES AND POPS
+
+call   Z_QuickMapDemo_
+xor    bx, bx
+mov    byte ptr ds:[_gameaction], bl ; 0 GA_NOTHING
+
+les    ax, dword ptr ds:[_defdemoname]
+mov    dx, es
+mov    cx, DEMO_SEGMENT
+mov    si, cx
+; TODO_BUG ftell, detect longer than MAX_DEMO_SIZE?
+;call   W_CacheLumpNameDirectFarString_ ; (defdemoname, demobuffer);
+; inlined W_CacheLumpNameDirectFarString_
+call   W_GetNumForNameFarString_
+call   W_ReadLump_
+
+
+mov    ds, si
+xor    si, si
+; ds:si is demo_addr
+lodsb
+cmp    al, VERSION
+jne    do_version_error
+do_version_error:  ; TODO_IMPROVEMENT implement bad version check?
+
+lodsw
+xchg   ax, dx   ; dl = skill, dh = episode
+lodsw
+xchg   ax, bx   ; bl = map,   bh = deathmatch
+lodsw
+xchg   ax, cx   ; cl = respawn, ch = fastparm
+lodsb
+
+
+push   ss
+pop    ds
+mov    byte ptr ds:[_respawnparm], cl
+mov    byte ptr ds:[_fastparm], ch
+mov    byte ptr ds:[_nomonsters], al
+lea    ax, [si+ 5]
+mov    word ptr ds:[_demo_p], ax ; probably a constant actually
+
+xchg   ax, dx ; al = skill, ah = episode
+mov    dl, ah ; dl = episode
+mov    byte ptr ds:[_precache], 0  ; false
+call   G_InitNew_
+
+mov    ax, 1
+mov    byte ptr ds:[_precache], al      ; true
+mov    byte ptr ds:[_usergame], ah      ; false
+mov    byte ptr ds:[_demoplayback], al  ; true
+
+
+call   Z_QuickMapPhysics_
+
+; OUTER SCOPE PUSHES AND POPS
+
+jmp     continue_while_loop
+
+ENDP
+
+
+
+
+case_loadgame:
+
+;call    G_DoLoadGame_ ; inlined
+
+
 
 ; todo move this code into savegame stuff once its good to go. 
 
@@ -217,61 +259,45 @@ skip_setviewsize:
 call    R_FillBackScreen_ForceBufferRedraw_
 
 
-POPA_NO_AX_OR_BP_MACRO
 
-ret
-ENDP
 
-PROC    R_FlatNumForName_FAR_ FAR
-PUBLIC  R_FlatNumForName_FAR_
-call    R_FlatNumForName_
-retf
-ENDP
+jmp     continue_while_loop
 
-PROC    R_FlatNumForName_ NEAR
-PUBLIC  R_FlatNumForName_
 
-push    dx
-push    ax
+case_savegame:
+mov     al, OVERLAY_ID_SAVELOADGAME
+call    Z_SetOverlay_
+;call    G_DoSaveGame_ ; inlined
 
-call    W_CheckNumForNameFarString_
+call    Z_QuickMapScratch_5000_
+mov     al, '0'
+add     al, byte ptr ds:[_savegameslot];
+mov     byte ptr ds:[_doomsav0_string + 7], al
 
-test    ax, ax
-js      do_flat_error
+db      09Ah
+dw      G_CONTINUESAVEGAMEOFFSET, CODE_OVERLAY_SEGMENT
 
-sub     ax, word ptr ds:[_firstflat]
+mov     ax, OFFSET _doomsav0_string
+mov     cx, es
+xor     bx, bx
+mov     dx, word ptr ds:[_save_p]
+call    M_WriteFile_
+xor     ax, ax
+mov     byte ptr ds:[_gameaction], al ; GA_NOTHING
+mov     byte ptr ds:[_savedescription], al ; \0
+mov     word ptr ds:[_player + PLAYER_T.player_message], GGSAVED
+call    R_FillBackScreen_ForceBufferRedraw_   ; force screen draw for save message
 
-add     sp, 4
-ret
-ENDP
 
-str_error_flatnum:
-db "\nR_FlatNumForName: %Fs not found", 0
 
-do_flat_error:
+jmp     continue_while_loop
 
-; dx/ax already on stack?
-push     cs
-mov      ax, OFFSET str_error_flatnum
-push     ax
-call     I_Error_
 
-g_ticker_gameaction_table:
-dw OFFSET case_nothing
-dw OFFSET case_loadlevel
-dw OFFSET case_newgame
-dw OFFSET case_loadgame
-dw OFFSET case_savegame
-dw OFFSET case_playdemo
-dw OFFSET case_completed
-dw OFFSET case_victory
-dw OFFSET case_worlddone
 
 PROC    G_Ticker_ NEAR
 PUBLIC  G_Ticker_
 
-push    bx
-push    dx
+PUSHA_NO_AX_OR_BP_MACRO
 
 cmp     byte ptr ds:[_player + PLAYER_T.player_playerstate], PST_REBORN
 jne     dont_reborn
@@ -289,18 +315,20 @@ case_loadlevel:
 call    G_DoLoadLevel_
 jmp     continue_while_loop
 case_newgame:
-call    G_DoNewGame_
-jmp     continue_while_loop
-case_loadgame:
-call    G_DoLoadGame_
-jmp     continue_while_loop
-case_savegame:
-mov     al, OVERLAY_ID_SAVELOADGAME
-call    Z_SetOverlay_
-call    G_DoSaveGame_
-jmp     continue_while_loop
-case_playdemo:
-call    G_DoPlayDemo_
+;call    G_DoNewGame_
+; inlined. bx/dx are ok to ruin in this stack frame
+xor    ax, ax
+mov    byte ptr ds:[_demoplayback], al ; false
+mov    byte ptr ds:[_respawnparm], al ; false
+mov    byte ptr ds:[_fastparm], al ; false
+mov    byte ptr ds:[_nomonsters], al ; false
+mov    byte ptr ds:[_gameaction], al ; GA_NOTHING
+mov    ax, word ptr ds:[_d_skill]
+mov    dl, ah
+; mov    dl, byte ptr ds:[_d_episode]
+mov    bl, byte ptr ds:[_d_map]
+call   G_InitNew_
+
 jmp     continue_while_loop
 case_completed:
 
@@ -319,7 +347,16 @@ dw      F_STARTFINALEOFFSET, CODE_OVERLAY_SEGMENT
 jmp     continue_while_loop
 
 case_worlddone:
-call    G_DoWorldDone_
+;call    G_DoWorldDone_  ; inlined
+
+mov    ax, 1
+mov    byte ptr ds:[_gamestate], ah ; GS_LEVEL
+mov    byte ptr ds:[_gameaction], ah ; GA_NOTHING
+mov    byte ptr ds:[_viewactive], al ; true
+add    al, byte ptr ds:[_wminfo + WBSTARTSTRUCT_T.wbss_next] ; one plus...
+mov    byte ptr ds:[_gamemap], al ; true
+
+call   G_DoLoadLevel_
 
 jmp     continue_while_loop
 
@@ -334,8 +371,6 @@ xchg    ax, dx
 ;call    G_CopyCmd_
 ; inlined only use...
 
-    push    si
-    push    di
     
     push    ds              ; es:di is player.cmd
     pop     es
@@ -357,8 +392,6 @@ xchg    ax, dx
     push    ss
     pop     ds
     
-    pop     di
-    pop     si
 
 ; todo improve defaults. compare both bytes to zero at once and branch out 
 
@@ -452,8 +485,7 @@ dec     word ptr ds:[_pagetic]
 jnz     exit_g_ticker
 mov     byte ptr ds:[_advancedemo], 1
 exit_g_ticker:
-pop     dx
-pop     bx
+POPA_NO_AX_OR_BP_MACRO
 ret
 ENDP
 
