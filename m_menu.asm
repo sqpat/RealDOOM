@@ -488,11 +488,11 @@ push  cx
 push  dx
 push  bp
 mov   bp, sp
-sub   sp, 0100h
+sub   sp, 060h
 cbw  
 mov   dx, ds
 mov   bx, ax
-lea   ax, [bp - 0100h]
+lea   ax, [bp - 060h]
 call  M_MakeSaveGameName_  ; todo make local
 
 ; call  G_LoadGame_
@@ -501,7 +501,7 @@ call  M_MakeSaveGameName_  ; todo make local
 mov   ax, OFFSET _savename
 mov   dx, ds
 mov   cx, ss
-lea   bx, [bp - 0100h]
+lea   bx, [bp - 060h]
 call  M_strcpy_
 
 mov   byte ptr ds:[_gameaction], GA_LOADGAME
@@ -531,7 +531,7 @@ PUBLIC  M_ReadSaveStrings_
 PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
-sub   sp, 0100h
+sub   sp, 060h
 xor   si, si
 mov   di, OFFSET _LoadMenu + MENUITEM_T.menuitem_status
 
@@ -539,10 +539,10 @@ mov   di, OFFSET _LoadMenu + MENUITEM_T.menuitem_status
 loop_next_savestring:
 mov   bx, si
 mov   dx, ss
-lea   ax, [bp - 0100h]
+lea   ax, [bp - 060h]
 call  M_MakeSaveGameName_
 mov   dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
-lea   ax, [bp - 0100h]
+lea   ax, [bp - 060h]
 call  dword ptr ds:[_fopen_addr]
 
 
@@ -725,7 +725,7 @@ PUBLIC  M_SaveSelect_
 PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
-sub   sp, 0100h
+sub   sp, 060h
 
 mov   byte ptr cs:[_saveSlot], al
 mov   ah, SAVESTRINGSIZE
@@ -747,13 +747,13 @@ sub   si, SAVESTRINGSIZE ; si has original choice * savestringsize
 push  ss
 pop   ds ; restore ds.
 
-lea   bx, [bp - 0100h]
+lea   bx, [bp - 060h]
 mov   ax, EMPTYSTRING
 mov   cx, ss
 
 call  dword ptr ds:[_getStringByIndex_addr]
 
-lea   bx, [bp - 0100h]
+lea   bx, [bp - 060h]
 mov   cx, ss
 mov   ax, si
 mov   dx, cs
@@ -787,18 +787,18 @@ push  cx
 push  dx
 push  bp
 mov   bp, sp
-sub   sp, 0100h
+sub   sp, 060h
 xor   ax, ax
 cmp   byte ptr ds:[_usergame], al
 jne   can_save_game
 
-lea   bx, [bp - 0100h]
+lea   bx, [bp - 060h]
 mov   ax, SAVEDEAD
 mov   cx, ds
 
 call  dword ptr ds:[_getStringByIndex_addr]
 xor   dx, dx
-lea   ax, [bp - 0100h]
+lea   ax, [bp - 060h]
 mov   bx, dx
 call  M_StartMessage_
 jmp   exit_m_savegame
@@ -1384,11 +1384,11 @@ push  cx
 push  dx
 push  bp
 mov   bp, sp
-sub   sp, 0100h
+sub   sp, 060h
 
 cmp   al, SK_NIGHTMARE
 jne   not_nightmare
-lea   bx, [bp - 0100h]
+lea   bx, [bp - 060h]
 mov   ax, NIGHTMARE
 mov   cx, ds
 mov   dx, OFFSET M_VerifyNightmare_
@@ -1397,7 +1397,7 @@ mov   dx, OFFSET M_VerifyNightmare_
 call  dword ptr ds:[_getStringByIndex_addr]
 
 mov   bx, 1
-lea   ax, [bp - 0100h]
+lea   ax, [bp - 060h]
 call  M_StartMessage_
 jmp   exit_choose_skill
 not_nightmare:
@@ -1433,7 +1433,7 @@ push  cx
 push  dx
 push  bp
 mov   bp, sp
-sub   sp, 0100h
+sub   sp, 060h
 
 cmp   byte ptr ds:[_shareware], 0
 je    show_episode
@@ -1448,14 +1448,14 @@ jmp   pop_and_exit_m_episode
 
 
 force_shareware_msg:
-lea   bx, [bp - 0100h]
+lea   bx, [bp - 060h]
 mov   ax, SWSTRING
 mov   cx, ds
 
 call  dword ptr ds:[_getStringByIndex_addr]
 
 xor   dx, dx
-lea   ax, [bp - 0100h]
+lea   ax, [bp - 060h]
 xor   bx, bx
 call  M_StartMessage_
 mov   word ptr cs:[_currentMenu], OFFSET _ReadDef1
@@ -1599,7 +1599,7 @@ push  cx
 push  dx
 push  bp
 mov   bp, sp
-sub   sp, 0100h
+sub   sp, 060h
 xor   ax, ax
 cmp   byte ptr ds:[_usergame], al
 jne   do_endgame
@@ -1615,7 +1615,7 @@ pop   cx
 pop   bx
 ret   
 do_endgame:
-lea   bx, [bp - 0100h]
+lea   bx, [bp - 060h]
 mov   ax, ENDGAME
 mov   cx, ds
 mov   dx, OFFSET M_EndGameResponse_
@@ -1623,7 +1623,7 @@ mov   dx, OFFSET M_EndGameResponse_
 call  dword ptr ds:[_getStringByIndex_addr]
 
 mov   bx, 1
-lea   ax, [bp - 0100h]
+lea   ax, [bp - 060h]
 call  M_StartMessage_
 jmp   exit_end_game
 

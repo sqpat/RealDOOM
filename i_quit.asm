@@ -61,56 +61,6 @@ str_ENDOOM:
 db "ENDOOM", 0
 
 
-PROC    I_ShutdownSound_   NEAR
-PUBLIC  I_ShutdownSound_
-
-cmp  word ptr ds:[_playingdriver+2], 0
-je   skip_music_unload
-push bx
-les  bx, dword ptr ds:[_playingdriver]
-
-call  dword ptr es:[bx + MUSIC_DRIVER_T.md_stopmusic_func]
-les  bx, dword ptr ds:[_playingdriver]
-call  dword ptr es:[bx + MUSIC_DRIVER_T.md_deinithardware_func]
-
-pop  bx
-
-skip_music_unload:
-
-cmp   byte ptr ds:[_snd_SfxDevice], snd_SB
-jne   skip_sound_unload
-call  SB_Shutdown_
-skip_sound_unload:
-
-
-ret
-
-
-ENDP
-
-
-
-PROC    I_ShutdownGraphics_   NEAR
-PUBLIC  I_ShutdownGraphics_
-    xor  ax, ax
-    mov  es, ax
-    cmp  byte ptr es:[0449h], 013h  ;  // don't reset mode if it didn't get set
-    jne  just_exit_graphics
-    mov  al, 3
-    push dx
-    push bx
-    cwd
-    xor  bx, bx
-    int 010h            ; // back to text mode
-
-    pop  bx
-    pop  dx
-    
-    just_exit_graphics:
-    ret
-
-ENDP
-
 
 
 
@@ -163,7 +113,7 @@ ENDP
 
 ENDP
 
-
+COMMENT @
 PROC zeroConventional_ NEAR
 PUBLIC zeroConventional_
 
@@ -208,7 +158,7 @@ rep  stosw
 pop di
 pop cx
 sti
-
+@
 
 ret
 
@@ -252,8 +202,44 @@ ENDP
 
 PROC    CallQuitFunctions_  NEAR
 
-call  I_ShutdownGraphics_
-call  I_ShutdownSound_
+;call  I_ShutdownGraphics_
+
+xor  ax, ax
+mov  es, ax
+cmp  byte ptr es:[0449h], 013h  ;  // don't reset mode if it didn't get set
+jne  just_exit_graphics
+mov  al, 3
+push dx
+push bx
+cwd
+xor  bx, bx
+int 010h            ; // back to text mode
+
+pop  bx
+pop  dx
+
+just_exit_graphics:
+
+;call  I_ShutdownSound_
+
+cmp  word ptr ds:[_playingdriver+2], 0
+je   skip_music_unload
+push bx
+les  bx, dword ptr ds:[_playingdriver]
+
+call  dword ptr es:[bx + MUSIC_DRIVER_T.md_stopmusic_func]
+les  bx, dword ptr ds:[_playingdriver]
+call  dword ptr es:[bx + MUSIC_DRIVER_T.md_deinithardware_func]
+
+pop  bx
+
+skip_music_unload:
+
+cmp   byte ptr ds:[_snd_SfxDevice], snd_SB
+jne   skip_sound_unload
+call  SB_Shutdown_
+skip_sound_unload:
+
 ;call  I_ShutdownTimer_
 
 cli
@@ -341,7 +327,7 @@ skip_enddoom:
 
 
 call  Z_ShutdownEMS_
-call  zeroConventional_; // zero conventional. clears various bugs that assume 0 in memory. kind of bad practice, the bugs shouldnt happen... todo fix
+;call  zeroConventional_; // zero conventional. clears various bugs that assume 0 in memory. kind of bad practice, the bugs shouldnt happen... todo fix
 ;call  hackDSBack_ 
 ; inlined
 
