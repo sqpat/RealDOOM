@@ -27,7 +27,7 @@ EXTRN SB_DSP1xx_BeginPlayback_:NEAR
 EXTRN SB_SetPlaybackRate_:NEAR
 EXTRN _SB_DSP_Version:BYTE
 EXTRN _SB_CardActive:BYTE
-EXTRN locallib_dos_setvect_old_:NEAR
+
 
 .DATA
 
@@ -3117,17 +3117,18 @@ call    SB_RestoreVoiceVolume_
 call    SB_ResetDSP_
 
 push    bx
-push    cx
+push    ds
+push    dx
 
 xor     bx, bx
 mov     bl, byte ptr ds:[_sb_irq]
 mov     al, byte ptr cs:[_IRQ_TO_INTERRUPT_MAP + bx]
-les     bx, dword ptr cs:[_SB_OldInt]
-mov     cx, es
-;locallib_dos_setvect_old(IRQ_TO_INTERRUPT_MAP[sb_irq], SB_OldInt);
+lds     dx, dword ptr cs:[_SB_OldInt]
+mov     ah, 025h
+int     021h
 
-call    locallib_dos_setvect_old_
-pop     cx
+pop     dx
+pop     ds
 pop     bx
 
 ret

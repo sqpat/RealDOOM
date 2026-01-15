@@ -45,7 +45,6 @@ EXTRN _TS_Installed:BYTE
 EXTRN _OldInt8:DWORD
 EXTRN TS_ServiceScheduleIntEnabled_:BYTE
 EXTRN _SELFMODIFY_enable_mus_task:BYTE
-KEYBOARDINT = 9
 
 
 PROC    I_INIT_STARTMARKER_ NEAR
@@ -127,6 +126,7 @@ exit_startup_mouse:
 mov  ax,  OFFSET str_startup_keyboard
 call DEBUG_PRINT_NOARG_CS_
 
+KEYBOARDINT = 9
 
 
 ;call I_StartupKeyboard_

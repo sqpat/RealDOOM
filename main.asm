@@ -554,11 +554,7 @@ PUBLIC G_BuildTiccmd_
 ; bp - 6      forward hi
 
 
-push      bx
-push      cx
-push      dx
-push      si
-push      di
+PUSHA_NO_AX_OR_BP_MACRO
 push      bp
 mov       bp, sp
 cbw      
@@ -853,12 +849,9 @@ mov       byte ptr cs:[si + 7], (BT_SPECIAL OR BTS_PAUSE)
 dont_pause:
 cmp       byte ptr ds:[_sendsave], 0
 jne       handle_save_press
+exit_build_ticcmd:
 LEAVE_MACRO
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
+POPA_NO_AX_OR_BP_MACRO
 ret       
 check_negative_max_forward:
 
@@ -885,13 +878,7 @@ SHIFT_MACRO shl al 2
 or        al, (BT_SPECIAL OR BTS_SAVEGAME)
 mov       byte ptr ds:[_sendsave], 0
 mov       byte ptr cs:[si + 7], al
-LEAVE_MACRO     
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
-ret       
+jmp       exit_build_ticcmd
 
 
 check_negative_max_side:
@@ -1486,33 +1473,8 @@ ENDP
 
 CRTC_INDEX = 03D4h  ; todo contstants
 
-PROC I_FinishUpdate_  NEAR
-PUBLIC I_FinishUpdate_
 
 
-;	outpw(CRTC_INDEX, (destscreen.h.fracbits & 0xff00L) + 0xc);
-;	//Next plane
-;    destscreen.h.fracbits += 0x4000;
-;	if ((uint16_t)destscreen.h.fracbits == 0xc000) {
-;		destscreen.h.fracbits = 0x0000;
-;	}
-
-
-push  dx
-mov   ax, word ptr ds:[_destscreen]
-mov   dx, CRTC_INDEX
-mov   al, 0Ch
-out   dx, ax
-add   byte ptr ds:[_destscreen + 1], 040h
-;cmp   byte ptr ds:[_destscreen + 1], 0C0h
-;je    set_destscreen_0 ; SF != OF
-jl    set_destscreen_0 ; SF != OF
-pop   dx
-ret
-set_destscreen_0:
-mov   byte ptr ds:[_destscreen+1], 0
-pop   dx
-ret
 
 
 
@@ -2159,56 +2121,6 @@ ENDP
 
 
 
-; old version, now used optimized in the single use case in g_setup
-COMMENT @
-
-PROC   locallib_strncasecmp_ NEAR
-PUBLIC locallib_strncasecmp_
-
-
-;int16_t __near locallib_strncasecmp(char __near *str1, char __near *str2, int16_t n){
-
-push   si
-
-xchg   ax, bx ; bx gets str1
-xchg   ax, dx ; dx gets n
-xchg   ax, si ; si gets str2
-
-; ds:si vs ds:bx.
-; n = dx 
-
-loop_next_char_strncasecmp:
-lodsb
-call   locallib_toupper_
-mov    ah, al
-xchg   bx, si
-lodsb
-xchg   bx, si
-call   locallib_toupper_
-
-; ah is a
-; al is b
-
-sub    al, ah
-jne    done_with_strncasecmp
-
-test   ah, ah
-mov    al, 0    ; in case we branch, we must return 0...
-je     done_with_strncasecmp
-
-dec    dx
-jnz    loop_next_char_strncasecmp
-
-done_with_strncasecmp:
-cbw
-
-pop    si
-
-ret
-ENDP
-
-@
-
 PROC   locallib_printstringfar_ NEAR
 PUBLIC locallib_printstringfar_
 
@@ -2432,81 +2344,13 @@ mov   ds, bx
 mov   ah, 025h
 int   021h
 pop   ds
-ret
-
-ENDP
-
-PROC    locallib_dos_setvect_old_ NEAR
-PUBLIC  locallib_dos_setvect_old_
-
-push  ds
-push  dx
-mov   ds, cx
-mov   dx, bx
-mov   ah, 025h
-int   021h
-pop   dx
-pop   ds
-ret
-
-ENDP
-
-KEYBOARDINT = 9
-
-
-
-
-
-PROC    I_ShutdownTimer_ NEAR
-PUBLIC  I_ShutdownTimer_
-
-cli
-mov   al, 036h
-out   043h, al
-xor   ax, ax
-out   040h, al
-out   040h, al
-sti
-cmp   byte ptr cs:[_TS_Installed], al ; 0 
-je    exit_shutdown_timer
-push  bx
-push  dx
-les   dx, dword ptr cs:[_OldInt8]
-mov   bx, es
-mov   byte ptr cs:[_TS_Installed], al ; 0 
-mov   al, 8
-call  locallib_dos_setvect_
-pop   dx
-pop   bx
-exit_shutdown_timer:
-ret
-
-ENDP
-
-PROC    I_ShutdownKeyboard_ NEAR
-PUBLIC  I_ShutdownKeyboard_
-
-xor   ax, ax
-cmp   word ptr cs:[_oldkeyboardisr], ax
-je    exit_shutdown_keyboard
-push  bx
-push  dx
-les   dx, dword ptr cs:[_oldkeyboardisr]
-mov   bx, es
-;mov   byte ptr cs:[_oldkeyboardisr], al ; 0 
-mov   al, KEYBOARDINT
-call  locallib_dos_setvect_
-pop   dx
-pop   bx
-exit_shutdown_keyboard:
-xor   ax, ax
-mov   es, ax
-push  word ptr es:[041Ah]
-pop   word ptr es:[041Ch]
 exit_d_display_early:
 ret
 
 ENDP
+
+
+KEYBOARDINT = 9
 
 d_display_switch_table:
 dw switch_case_1
@@ -2758,7 +2602,31 @@ call  NetUpdateFromPhysics_
 
 test  bl, bl
 jne   do_fwipe
-call  I_FinishUpdate_
+;call  I_FinishUpdate_
+; inlined
+
+;	outpw(CRTC_INDEX, (destscreen.h.fracbits & 0xff00L) + 0xc);
+;	//Next plane
+;    destscreen.h.fracbits += 0x4000;
+;	if ((uint16_t)destscreen.h.fracbits == 0xc000) {
+;		destscreen.h.fracbits = 0x0000;
+;	}
+
+
+
+mov   ax, word ptr ds:[_destscreen]
+mov   dx, CRTC_INDEX
+mov   al, 0Ch
+out   dx, ax
+add   byte ptr ds:[_destscreen + 1], 040h
+jnl   dont_set_destscreen_0 ; SF != OF
+
+
+set_destscreen_0:
+mov   byte ptr ds:[_destscreen+1], 0
+
+dont_set_destscreen_0:
+
 exit_d_display:
  
 POPA_NO_AX_OR_BP_MACRO

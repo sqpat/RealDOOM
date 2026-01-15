@@ -26,10 +26,9 @@ EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN G_CheckDemoStatus_:NEAR
 EXTRN M_SaveDefaults_:NEAR
 EXTRN W_CacheLumpNameDirectFarString_:FAR
-EXTRN I_ShutdownTimer_:NEAR
-EXTRN I_ShutdownKeyboard_:NEAR
 EXTRN putchar_stdout_:NEAR
 EXTRN locallib_printf_:NEAR
+EXTRN locallib_dos_setvect_:NEAR
 
 EXTRN DEBUG_PRINT_:NEAR
 
@@ -49,6 +48,9 @@ LUMP_PER_EMS_PAGE = 1024
 
 .CODE
 
+EXTRN  _TS_Installed:BYTE
+EXTRN  _OldInt8:DWORD
+EXTRN  _oldkeyboardisr:BYTE
 
 PROC    I_QUIT_STARTMARKER_ NEAR
 PUBLIC  I_QUIT_STARTMARKER_
@@ -110,18 +112,6 @@ PUBLIC  I_ShutdownGraphics_
 ENDP
 
 
-
-PROC    I_ShutdownMouse_   NEAR
-PUBLIC  I_ShutdownMouse_
-
-    cmp   byte ptr ds:[_mousepresent], 0
-    je    just_exit
-    xor   ax, ax
-    int   033h
-    just_exit:
-    ret
-
-ENDP
 
 
 PROC    Z_ShutdownEMS_   NEAR
@@ -264,9 +254,63 @@ PROC    CallQuitFunctions_  NEAR
 
 call  I_ShutdownGraphics_
 call  I_ShutdownSound_
-call  I_ShutdownTimer_
-call  I_ShutdownMouse_
-call  I_ShutdownKeyboard_
+;call  I_ShutdownTimer_
+
+cli
+mov   al, 036h
+out   043h, al
+xor   ax, ax
+out   040h, al
+out   040h, al
+sti
+cmp   byte ptr cs:[_TS_Installed], al ; 0 
+je    exit_shutdown_timer
+push  bx
+push  dx
+les   dx, dword ptr cs:[_OldInt8]
+mov   bx, es
+mov   byte ptr cs:[_TS_Installed], al ; 0 
+mov   al, 8
+call  locallib_dos_setvect_
+pop   dx
+pop   bx
+exit_shutdown_timer:
+
+
+;call  I_ShutdownMouse_
+xor   ax, ax
+
+cmp   byte ptr ds:[_mousepresent], al
+je    just_exit
+; ax 0
+int   033h
+just_exit:
+
+
+;call  I_ShutdownKeyboard_
+KEYBOARDINT = 9
+
+
+xor   ax, ax
+cmp   word ptr cs:[_oldkeyboardisr], ax
+je    exit_shutdown_keyboard
+push  bx
+push  dx
+les   dx, dword ptr cs:[_oldkeyboardisr]
+mov   bx, es
+;mov   byte ptr cs:[_oldkeyboardisr], al ; 0 
+mov   al, KEYBOARDINT
+call  locallib_dos_setvect_
+pop   dx
+pop   bx
+exit_shutdown_keyboard:
+xor   ax, ax
+mov   es, ax
+push  word ptr es:[041Ah]
+pop   word ptr es:[041Ch]
+
+
+
 test  dx, dx
 je    skip_enddoom
 

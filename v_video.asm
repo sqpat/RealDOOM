@@ -37,7 +37,7 @@ EXTRN Z_QuickMapIntermission_:NEAR
 _jump_mult_table_3:
 db 19, 18, 15, 12,  9,  6,  3, 0
 
-PROC V_DrawPatch_ FAR
+PROC   V_DrawPatch_ FAR
 PUBLIC V_DrawPatch_
 
 ; ax is x
@@ -321,7 +321,7 @@ ENDP
 
 
 ;void __far V_MarkRect ( int16_t x, int16_t y, int16_t width, int16_t height )  { 
-PROC V_MarkRect_ FAR
+PROC   V_MarkRect_ FAR
 PUBLIC V_MarkRect_
 
 

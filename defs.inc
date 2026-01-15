@@ -56,9 +56,10 @@ ENDIF
 ; file buffer is 0000h
 _rndtable    = 0200h
 _gamekeydown = 0300h
-;_localcmds  = 0300h
 _keyboardque = 0400h
 _next_empty  = 0420h
+;_localcmds   = 0420h
+;_next_empty  = 0480h
 
 
 _NULL_OFFSET = 010h
