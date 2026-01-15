@@ -16,7 +16,6 @@ GOTO PRINT_EXIT
 
 :MAKE_8086
     wmake -f build\make16 clean
-    wmake -f build\makebg ASMOPT="/dCOMPISA=0" USE_ISA="0"
     bingen.exe
     move doomcode.bin bin\doomcode.bin /Y
     wmake -f build\makecg clean

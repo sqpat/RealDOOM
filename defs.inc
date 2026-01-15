@@ -502,7 +502,7 @@ _centerx = 							 _NULL_OFFSET + 005F4h
 _centery = 							 _NULL_OFFSET + 005F6h
 
 _V_DrawFullscreenPatch_FromMenu_addr = _NULL_OFFSET + 005F8h
-;_FastDiv32u16u_addr =               _NULL_OFFSET + 005FCh
+_FastDiv32u16u_addr =               _NULL_OFFSET + 005FCh
 
 
 _playerMobj_pos =		         	 _NULL_OFFSET + 00600h

@@ -172,9 +172,9 @@ void __far F_WIPE_STARTMARKER();
 void __far F_WIPE_ENDMARKER();
 
 
-void __far WI_Start();
 void __far WI_Ticker();
 void __far WI_Drawer();
+void __far G_DoCompleted();
 
 void __far SM_OPL2_STARTMARKER();
 void __far SM_OPL3_STARTMARKER();
@@ -684,8 +684,9 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     // intermission/ wi stuff offsets
 
     fprintf(fp, "WI_TICKEROFFSET             = 0%Xh\n",           FP_OFF(WI_Ticker)                           - FP_OFF(WI_STARTMARKER));
-    fprintf(fp, "WI_STARTOFFSET              = 0%Xh\n",           FP_OFF(WI_Start)                            - FP_OFF(WI_STARTMARKER));
-    fprintf(fp, "WI_DRAWEROFFSET            = 0%Xh\n",            FP_OFF(WI_Drawer)                           - FP_OFF(WI_STARTMARKER));
+    fprintf(fp, "WI_DRAWEROFFSET             = 0%Xh\n",           FP_OFF(WI_Drawer)                           - FP_OFF(WI_STARTMARKER));
+    fprintf(fp, "G_DOCOMPLETED_OFFSET        = 0%Xh\n",           FP_OFF(G_DoCompleted)                       - FP_OFF(WI_STARTMARKER));
+
 
     fprintf(fp, "F_TICKEROFFSET              = 0%Xh\n",           FP_OFF(F_Ticker)                            - FP_OFF(F_FINALE_STARTMARKER));
     fprintf(fp, "P_TICKEROFFSET              = 0%Xh\n",           FP_OFF(P_Ticker)                            - FP_OFF(P_SIGHT_STARTMARKER));

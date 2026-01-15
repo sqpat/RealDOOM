@@ -11780,6 +11780,30 @@ Z_QUICKMAPAI24 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
 mov       al, byte ptr ds:[_player + 05Eh]  ; player.extralightvalue
 mov       byte ptr ds:[_extralight], al
 
+
+
+;    if (player.fixedcolormapvalue) {
+
+mov       al, byte ptr ds:[_player + 05Fh]
+mov       byte ptr ds:[_fixedcolormap], al   ; al is zero
+;		fixedcolormap = 0;
+test      al, al
+je        done_setting_colormap
+
+set_fixed_colormap_nonzero:
+
+;		fixedcolormap =  player.fixedcolormapvalue << 2; 
+SHIFT_MACRO shl       al 2
+mov       byte ptr ds:[_fixedcolormap], al
+
+mov       ah, al
+mov       cx, MAXLIGHTSCALE / 2        ;        scalelightfixed[i] = fixedcolormap;
+mov       di, OFFSET _scalelightfixed  ;     }
+rep       stosw
+
+
+done_setting_colormap:
+
 ;    viewz = player.viewzvalue;
 les       ax, dword ptr ds:[_player + 8] ; player.viewzvalue
 mov       word ptr ds:[_viewz], ax
@@ -11796,19 +11820,6 @@ rcl       dx, 1
 
 
 mov       word ptr ds:[_viewz_shortheight], dx
-
-;    if (player.fixedcolormapvalue) {
-
-mov       al, byte ptr ds:[_player + 05Fh]
-test      al, al
-je        set_fixed_colormap_zero
-jmp       set_fixed_colormap_nonzero
-
-set_fixed_colormap_zero:
-;		fixedcolormap = 0;
-mov       byte ptr ds:[_fixedcolormap], al   ; al is zero
-
-done_setting_colormap:
 
 ;    validcount_global++;
 inc       word ptr ds:[_validcount_global]
@@ -11834,7 +11845,6 @@ mov       word ptr ds:[_vissprite_p], ax  ;
 
 call      dword ptr ds:[_NetUpdate_addr]
 
-
 mov       ax, word ptr ds:[_numnodes]
 dec       ax
 
@@ -11852,7 +11862,6 @@ mov       ax, CACHEDHEIGHT_SEGMENT
 mov       es, ax
 xor       ax, ax
 mov       di, ax  ; 0
-mov       ax, ax  ; 0
 mov       cx, 400
 
 rep stosw 
@@ -11882,30 +11891,6 @@ visplane_dirty_do_revert:
 call      Z_QuickMapVisplaneRevert_BSPLocal_
 jmp       done_with_visplane_revert
 
-
-set_fixed_colormap_nonzero:
-
-;		fixedcolormap =  player.fixedcolormapvalue << 2; 
-SHIFT_MACRO shl       al 2
-mov       byte ptr ds:[_fixedcolormap], al
-
-;		for (i=0 ; i<MAXLIGHTSCALE ; i++){
-;			scalelightfixed[i] = fixedcolormap;
-;		}
-
-mov       ah, al
-
-
-mov       cx, ds
-mov       es, cx
-mov       cx, MAXLIGHTSCALE / 2
-mov       di, OFFSET _scalelightfixed
-rep       stosw
-;		for (i=0 ; i<MAXLIGHTSCALE ; i++){
-;			scalelightfixed[i] = fixedcolormap;
-;		}
-
-jmp       done_setting_colormap
 
 
 ENDP

@@ -46,7 +46,7 @@ EXTRN S_ResumeSound_:NEAR
 EXTRN S_PauseSound_:NEAR
 EXTRN G_CopyCmd_:NEAR
 
-EXTRN FastDiv32u16u_:FAR
+
 
 
 .DATA
@@ -64,31 +64,7 @@ ENDP
 
 
 
-PROC    G_PlayerFinishLevel_ NEAR
-PUBLIC  G_PlayerFinishLevel_
 
-push    di
-push    cx
-
-xor     ax, ax
-mov     word ptr ds:[_player + PLAYER_T.player_extralightvalue], ax ; 0        cancel invisibility 
-;mov     byte ptr ds:[_player + PLAYER_T.player_fixedcolormapvalue], al ; 0    cancel ir gogles 
-mov     word ptr ds:[_player + PLAYER_T.player_damagecount], ax ; 0            no palette changes 
-mov     byte ptr ds:[_player + PLAYER_T.player_bonuscount], al ; 0            
-les     di, dword ptr ds:[_playerMobj_pos]
-and     byte ptr es:[di + MOBJ_POS_T.mp_flags2], (NOT MF_SHADOW)
-mov     cx, (2 * NUMPOWERS + 1 * NUMCARDS) / 2  ; 18 or 012h / 2 = 9
-mov     di, OFFSET _player + PLAYER_T.player_powers
-push    ds
-pop     es
-rep     stosw
-    ;memset (player.powers, 0, sizeof (player.powers));
-    ;memset (player.cards, 0, sizeof (player.cards));
-
-pop    cx
-pop    di
-
-ret
 ENDP
 
 
@@ -252,6 +228,7 @@ PROC    R_FlatNumForName_FAR_ FAR
 PUBLIC  R_FlatNumForName_FAR_
 call    R_FlatNumForName_
 retf
+ENDP
 
 PROC    R_FlatNumForName_ NEAR
 PUBLIC  R_FlatNumForName_
@@ -328,7 +305,13 @@ case_playdemo:
 call    G_DoPlayDemo_
 jmp     continue_while_loop
 case_completed:
-call    G_DoCompleted_
+
+call    Z_QuickMapIntermission_
+db      09Ah
+dw      G_DOCOMPLETED_OFFSET, WIANIM_CODESPACE_SEGMENT
+call    Z_QuickMapPhysics_
+
+
 jmp     continue_while_loop
 case_victory:
 mov     al, OVERLAY_ID_FINALE
@@ -477,134 +460,6 @@ ret
 ENDP
 
 
-PROC    G_DoCompleted_ NEAR
-PUBLIC  G_DoCompleted_
-
-push    bx
-push    dx
-
-xor     ax, ax
-mov     byte ptr ds:[_gameaction], al ; GA_NOTHING
-call    G_PlayerFinishLevel_
-mov     ax, 1
-cmp     byte ptr ds:[_automapactive], ah ; 0
-je      skip_am_stop
-; AM_Stop() inlined
-mov     byte ptr ds:[_am_stopped], al ; 1
-mov     byte ptr ds:[_st_gamestate], al ; 1
-skip_am_stop:
-cmp     byte ptr ds:[_commercial], ah ; 0
-jne     skip_non_commercial_stuff
-cmp     byte ptr ds:[_gamemap], 8
-ja      do_level_9
-jne     skip_non_commercial_stuff
-do_level_8:
-mov     byte ptr ds:[_gameaction], GA_VICTORY
-jmp     done_with_non_commercial_stuff
-do_level_9:
-mov     byte ptr ds:[_player + PLAYER_T.player_didsecret], al ; true
-done_with_non_commercial_stuff:
-skip_non_commercial_stuff:
-
-mov     al, byte ptr ds:[_player + PLAYER_T.player_didsecret]
-mov     byte ptr ds:[_wminfo + WBSTARTSTRUCT_T.wbss_didsecret], al
-mov     ax, word ptr ds:[_gameepisode]
-sub     ax, 00101h ; sub 1 from each
-mov     byte ptr ds:[_wminfo + WBSTARTSTRUCT_T.wbss_epsd], al
-mov     byte ptr ds:[_wminfo + WBSTARTSTRUCT_T.wbss_last], ah
-
-xor     ax, ax
-mov     al, byte ptr ds:[_gamemap]
-
-cmp     byte ptr ds:[_commercial], ah
-je      do_non_commercial_wminfo
-cmp     byte ptr ds:[_secretexit], ah
-je      not_commercial_secret
-mov     ah, 30
-cmp     al, 15
-je      do_map_30
-inc     ah
-cmp     al, 31;    // wminfo.next is 0 biased, unlike gamemap
-je      do_map_31
-jmp     done_with_wbss_next_calc
-not_commercial_secret:
-mov     ah, 15
-cmp     al, 31
-jae      do_map_15
-;cmp     al, 32;    // wminfo.next is 0 biased, unlike gamemap
-;je      do_map_31
-jmp    do_default_map
-
-do_non_commercial_wminfo:
-cmp     byte ptr ds:[_secretexit], ah
-mov     ah, 8
-jne     do_map_8   ; secret
-cmp     al, 9  ; returning from secret level
-jne     not_map_9
-mov     al, byte ptr ds:[_gameepisode]
-mov     ah, 3
-cmp     al, 2
-jb      do_map_3  ; episode 1
-mov     ah, 5
-je      do_map_5  ; episode 2
-mov     ah, 6
-jpo     do_map_6  ; episode 3
-mov     ah, 2
-jmp     do_map_2  ; episode 4
-not_map_9:
-do_default_map:
-mov     ah, al  ; gamemap
-do_map_2:
-do_map_3:
-do_map_5:
-do_map_6:
-do_map_8:
-do_map_15:
-do_map_30:
-do_map_31:
-mov     byte ptr ds:[_wminfo + WBSTARTSTRUCT_T.wbss_next], ah
-
-done_with_wbss_next_calc:
-
-les     ax, dword ptr ds:[_totalkills]
-mov     word ptr ds:[_wminfo + WBSTARTSTRUCT_T.wbss_maxkills], ax
-mov     word ptr ds:[_wminfo + WBSTARTSTRUCT_T.wbss_maxitems], es
-mov     ax, word ptr ds:[_totalsecret]
-mov     word ptr ds:[_wminfo + WBSTARTSTRUCT_T.wbss_maxsecret], ax
-mov     byte ptr ds:[_wminfo + WBSTARTSTRUCT_T.wbss_plyr + WBPLAYERSTRUCT_T.wbos_in], 1 ; true
-les     ax, dword ptr ds:[_player + PLAYER_T.player_killcount]
-mov     word ptr ds:[_wminfo + WBSTARTSTRUCT_T.wbss_plyr + WBPLAYERSTRUCT_T.wbos_skills], ax
-mov     word ptr ds:[_wminfo + WBSTARTSTRUCT_T.wbss_plyr + WBPLAYERSTRUCT_T.wbos_sitems], es
-mov     ax, word ptr ds:[_player + PLAYER_T.player_secretcount]
-mov     word ptr ds:[_wminfo + WBSTARTSTRUCT_T.wbss_plyr + WBPLAYERSTRUCT_T.wbos_ssecret], ax
-les     ax, dword ptr ds:[_leveltime]
-mov     dx, es
-mov     bx, 35
-call    FastDiv32u16u_
-mov     word ptr ds:[_wminfo + WBSTARTSTRUCT_T.wbss_plyr + WBPLAYERSTRUCT_T.wbos_stime], ax
-mov     ax, 1
-mov     byte ptr ds:[_gamestate], al ; GS_INTERMISSION
-mov     byte ptr ds:[_viewactive], ah ; false
-mov     byte ptr ds:[_automapactive], ah ; false
-
-
-;    WI_Start (&wminfo, secretexit); 
-call    Z_QuickMapIntermission_
-
-mov     ax, OFFSET _wminfo
-mov     dl, byte ptr ds:[_secretexit]  ; todo get this from inside the func?
-
-db      09Ah
-dw      WI_STARTOFFSET, WIANIM_CODESPACE_SEGMENT
-
-call    Z_QuickMapPhysics_
-
-pop     dx
-pop     bx
-
-ret
-
-ENDP
 
 
 
