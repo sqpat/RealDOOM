@@ -9316,17 +9316,19 @@ PROC R_RenderBSPNode_ NEAR
  jmp   bsp_loop_start
 
 calculate_larger_side:
- neg   dx
+
+; note: dx and cx are negative from their expected values,
+; so comparative logic has reversed as the imul results will inverse
+
  imul  dx
- neg   cx
  xchg  ax, cx
  mov   si, dx
  imul  di
- cmp   dx, si
+ cmp   si, dx
  mov   dh, 0
  jg    right_is_greater
  jne   calculate_next_bspnum
- cmp   ax, cx
+ cmp   cx, ax
  jbe   calculate_next_bspnum
 right_is_greater:
  mov   dh, 080h            ; mark sign bit
@@ -9363,10 +9365,7 @@ SELFMODIFY_BSP_viewy_hi_6:
  xor   si, ax
  xor   si, di
  jns   calculate_larger_side
- ; TODO dh sign is backwards. maybe theres a way to get this in one instruction
- ; or have the next instruction assume backwards logic from both sides and eliminate
- ; both neg dx
- neg   dx   
+ neg   dx      ; TODO dh sign is backwards. there is probably a way to get this for free
  xor   dh, ah         
 calculate_next_bspnum:
  shl   dh, 1          ; carry = sign
