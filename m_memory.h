@@ -59,7 +59,7 @@
 
 
 // todo generate this programatically
-#define baselowermemoryaddress    (0x23CB0000)
+#define baselowermemoryaddress    (0x23DB0000)
 // MaximumMusDriverSize
 
 #define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
@@ -119,8 +119,8 @@ struct sfxinfo_struct{
 #define flattranslation    ((uint8_t __far*)            MAKE_FULL_SEGMENT(events, size_events))
 #define texturetranslation ((uint16_t __far*)           MAKE_FULL_SEGMENT(flattranslation, size_flattranslation))
 #define textureheights     ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturetranslation, size_texturetranslation))
-#define rndtable           ((uint8_t __far*)            MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
-#define subsector_lines    ((uint8_t __far*)            MAKE_FULL_SEGMENT(rndtable, size_rndtable))
+// #define rndtable           ((uint8_t __far*)            
+#define subsector_lines    ((uint8_t __far*)            MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
 #define base_lower_end     ((uint8_t __far*)            MAKE_FULL_SEGMENT(subsector_lines , size_subsector_lines))
 
 
@@ -133,7 +133,7 @@ struct sfxinfo_struct{
 #define flattranslation_segment       ((segment_t) ((int32_t)flattranslation >> 16))
 #define texturetranslation_segment    ((segment_t) ((int32_t)texturetranslation >> 16))
 #define textureheights_segment        ((segment_t) ((int32_t)textureheights >> 16))
-#define rndtable_segment              ((segment_t) ((int32_t)rndtable >> 16))
+// #define rndtable_segment              ((segment_t) ((int32_t)rndtable >> 16))
 #define subsector_lines_segment       ((segment_t) ((int32_t)subsector_lines >> 16))
 #define base_lower_end_segment        ((segment_t) ((int32_t)base_lower_end >> 16))
 

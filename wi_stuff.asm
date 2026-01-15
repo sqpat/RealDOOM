@@ -265,8 +265,7 @@ PUBLIC WI_MRandomLocal_
 push      es
 push      bx
 
-mov       ax, RNDTABLE_SEGMENT
-mov       es, ax
+mov       es, word ptr ds:[_RNDTABLE_SEGMENT_PTR]
 xor       ax, ax
 mov       bx, ax
 inc       byte ptr ds:[_rndindex]

@@ -44,8 +44,6 @@ EXTRN G_ReadDemoTiccmd_:NEAR
 EXTRN G_WriteDemoTiccmd_:NEAR
 EXTRN S_ResumeSound_:NEAR
 EXTRN S_PauseSound_:NEAR
-EXTRN G_CopyCmd_:NEAR
-
 
 
 
@@ -54,7 +52,7 @@ EXTRN G_CopyCmd_:NEAR
 
 .CODE
 
-EXTRN _localcmds:WORD
+EXTRN _localcmds
 
 
 

@@ -76,6 +76,8 @@ ENDP
 ;;;;;;;;;;;;;; CHEAT STRINGS ;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+; about 128 bytes? would be nice to dump into init code area along with the below. 
+
 cheat_mus_seq:
 db "idmus", 1, 0, 0, 0FFh
 cheat_choppers_seq:
@@ -261,12 +263,6 @@ ENDP
 
 
 ENDP
-; 32 bytes
-_keyboardque:
-db 0, 0, 0, 0, 0, 0, 0, 0
-db 0, 0, 0, 0, 0, 0, 0, 0
-db 0, 0, 0, 0, 0, 0, 0, 0
-db 0, 0, 0, 0, 0, 0, 0, 0
 _kbdtail:
 db 0
 _kbdhead:
@@ -285,8 +281,8 @@ in     al, 060h                     ; read kb
 mov    bl, byte ptr cs:[_kbdhead]
 and    bx, KBDQUESIZE - 1           ; wraparound keyboard queue
 mov    byte ptr cs:[bx + _keyboardque], al
+inc    byte ptr cs:[_kbdhead]
 
-;mov    ah, al   ; store for checking...
 
 in     al, 061h ; xt keyboard support shuffle.
 or     al, 080h
@@ -294,14 +290,9 @@ out    061h, al
 and    al, 07Fh
 out    061h, al
 
-
-inc    byte ptr cs:[_kbdhead]
 mov    al, 020h
 out    ACKNOWLEDGE_INTERRUPT, al
 
-;cmp    ah, 0B5h     ; / keydown
-;jne    skip_ctrl_c
-;call   dumpstacktrace_
 skip_ctrl_c:
 
 pop    ax
@@ -501,10 +492,6 @@ jmp  key_selected
 
 ENDP
 
-;  ticcmd_t localcmds[BACKUPTICS];
-;  8 bytes each, 16 entries
-
-; 96 bytes, move to early cs
 
 _localcmds:
 PUBLIC _localcmds
@@ -524,40 +511,6 @@ dw 0, 0, 0, 0
 dw 0, 0, 0, 0
 dw 0, 0, 0, 0
 dw 0, 0, 0, 0
-
-
-
-PROC G_CopyCmd_  NEAR
-PUBLIC G_CopyCmd_
-
-    push    si
-    push    di
-    
-    push    ds              ; es:di is player.cmd
-    pop     es
-    xchg    ax, di
-
-    push    cs              ; ds:si is _localcmds struct
-    pop     ds
-
-    xor     dh, dh
-    mov     si, dx
-    SHIFT_MACRO sal si 3 ; 8 bytes per
-    add     si, OFFSET _localcmds
-
-    movsw
-    movsw
-    movsw
-    movsw   ; copy one cmd
-    
-    push    ss
-    pop     ds
-    
-    pop     di
-    pop     si
-    ret
-
-ENDP
 
 
 
@@ -1019,8 +972,6 @@ ENDP
 
 
 
-_str_config:
-db "-config", 0
 _str_default_file:
 db "\tdefault file: %s\n", 0    ; todo check if escapes have to be done as bytes
 _used_defaultfile:              ; used filename with default value. recorded here after loaddefaults, till savedefaults in case changed.
@@ -1157,7 +1108,6 @@ dw OFFSET str_defaultname_30, OFFSET _skyquality
 db  0, 0, 0    
 
 PUBLIC _defaults
-PUBLIC _str_config
 PUBLIC _used_defaultfile
 PUBLIC _scantokey
 
@@ -3253,17 +3203,27 @@ ENDP
 
 
 FILE_BUFFER_SIZE = 512
+RND_TABLE_SIZE   = 256
+
 GAMEKEYDOWN_SIZE = 256
+;LOCALCMDS_SIZE   =  96
+LOCALCMDS_SIZE = 0
+KEYBOARDQUEUE_SIZE = 32
+TOTAL_ZERO_SIZE =  (GAMEKEYDOWN_SIZE + LOCALCMDS_SIZE + KEYBOARDQUEUE_SIZE)
+
+; 200h + 180h = 380h
+OFFSET_SIZE = FILE_BUFFER_SIZE + RND_TABLE_SIZE
+TOTAL_SKIP_SIZE = OFFSET_SIZE + TOTAL_ZERO_SIZE
 
 PROC    Z_ClearDeadCode_ NEAR
 PUBLIC  Z_ClearDeadCode_
 
-mov   di, FILE_BUFFER_SIZE
+mov   di, OFFSET_SIZE
 xor   ax, ax
-mov   cx, GAMEKEYDOWN_SIZE
+mov   cx, TOTAL_ZERO_SIZE / 2
 push  cs
 pop   es
-rep   stosw   ; clear _gamekeydown, which lives in cs:0200h
+rep   stosw   ; clear _gamekeydown etc, which start at cs:0200h
 
 mov   ax, OFFSET _doomdata_bin_string  ; technically this string is about to get clobbered! but its ok. we check above and dont re-run the func.
 call  CopyString13_
@@ -3278,7 +3238,7 @@ call  locallib_fseek_  ;    fseek(fp, SWITCH_DOOMDATA_OFFSET, SEEK_SET);
 
 xor   ax, ax
 mov   dx, cs
-add   dx, (FILE_BUFFER_SIZE + GAMEKEYDOWN_SIZE) SHR 4
+add   dx, (TOTAL_SKIP_SIZE) SHR 4
 mov   word ptr ds:[_tantoangle_segment], dx
 mov   cx, di ; fp
 mov   bx, 4 * 2049

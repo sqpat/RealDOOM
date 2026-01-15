@@ -52,8 +52,14 @@ ENDIF
 
 ;__nullarea =						 0
 
-; static pointer.
-_gamekeydown = 0200h
+; static pointers to cs init code clobber region.
+; file buffer is 0000h
+_rndtable    = 0200h
+_gamekeydown = 0300h
+;_localcmds  = 0300h
+_keyboardque = 0400h
+_next_empty  = 0420h
+
 
 _NULL_OFFSET = 010h
 
@@ -396,7 +402,6 @@ _mousex = 							 _NULL_OFFSET + 0049Ah
 _singledemo = 						 _NULL_OFFSET + 0049Ch
 
 ; 49d unused
-
 _numsectors =						 _NULL_OFFSET + 0049Eh
 _numlines =						     _NULL_OFFSET + 004A0h
 _numvertexes =						 _NULL_OFFSET + 004A2h
@@ -465,7 +470,8 @@ _activetexturepages =                _NULL_OFFSET + 00580h
 _activenumpages =                 	 _NULL_OFFSET + 00588h
 _textureL1LRU =                 	 _NULL_OFFSET + 00590h
 _BASE_CHEAT_ADDRESS_OFFSET_PTR =     _NULL_OFFSET + 00598h
-; 59a to 5ad free
+_RNDTABLE_SEGMENT_PTR = 			 _NULL_OFFSET + 0059Ah
+; 59c, 59d unused
 _flatcache_l2_head =                 _NULL_OFFSET + 005AEh
 _flatcache_l2_tail =                 _NULL_OFFSET + 005AFh
 _segloopprevlookup =                 _NULL_OFFSET + 005B0h

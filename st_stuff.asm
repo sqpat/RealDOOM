@@ -564,8 +564,8 @@ PUBLIC  ST_Ticker_
 ;call  M_Random_
 ; inline
 
-mov      ax, RNDTABLE_SEGMENT
-mov      es, ax
+
+mov      es, word ptr ds:[_RNDTABLE_SEGMENT_PTR]
 inc      byte ptr ds:[_rndindex]
 mov      al, byte ptr ds:[_rndindex]
 xor      ah, ah

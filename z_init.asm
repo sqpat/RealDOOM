@@ -1219,8 +1219,9 @@ xor   cx, cx
 call  locallib_fseek_
 
 ;	locallib_far_fread(rndtable, 256, fp);
+
 xor   ax, ax
-mov   dx, RNDTABLE_SEGMENT
+mov   dx, word ptr ds:[_RNDTABLE_SEGMENT_PTR]
 mov   bx, 256
 mov   cx, di
 call  locallib_fread_

@@ -65,7 +65,7 @@ EXTRN CopyString13_:NEAR
 EXTRN _defaults:NEAR
 EXTRN _scantokey:NEAR
 EXTRN _used_defaultfile:NEAR
-EXTRN _str_config:NEAR
+
 EXTRN locallib_strcmp_:NEAR
 
 .DATA
@@ -86,7 +86,8 @@ PROC    D_INIT_STARTMARKER_ NEAR
 PUBLIC  D_INIT_STARTMARKER_
 ENDP
 
-
+_str_config:
+db "-config", 0
 str_doom2filename_:
 db "doom2.wad", 0
 str_doomfilename_:
