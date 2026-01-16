@@ -8926,8 +8926,6 @@ PROC R_CheckBBox_ NEAR
 
 ; es:bx is bsp lookup
 
-push  si
-push  di
 
 ;es:[bx] is bspcoord
 ;	// Find the corners of the box
@@ -8998,8 +8996,7 @@ mov   ax, 2
 jmp   boxy_calculated
 return_1:
 stc
-pop   di
-pop   si
+
 ret   
 R_CBB_SWITCH_CASE_00:
 ; cx
@@ -9103,14 +9100,12 @@ je    check_tspan_vs_span_lobits
 
 also_return_0:
 clc
-pop   di
-pop   si
+
 ret   
 
 also_return_1:
 stc
-pop   di
-pop   si
+
 ret   
 
 check_tspan_vs_span_lobits:
@@ -9195,8 +9190,7 @@ cmp   ax, word ptr ds:[bx + 2]
 jg    also_return_1
 return_0_2:
 clc
-pop   di
-pop   si
+
 ret   
 
 
@@ -9325,6 +9319,7 @@ calculate_larger_side:
  mov   si, dx
  imul  di
 COMMENT @
+; what's wrong with this?
  cmp   cx, ax
  sbb   si, dx
  clc
@@ -9398,26 +9393,24 @@ bsp_loop_start:
 loop_check_bbox:
  cmp   sp, bp ; Compare with original SP value
  je    exit_renderbspnode 
- pop   bx
- xor   si, si
+ pop   ax
+ xor   bx, bx
 
 ; calculate node_render address.
 ; NODE_RENDER_T are 16 bytes long
 ; two sides of 8 bytes each
 ; bx gets 0 or 8, the render address is packed into the segment (ES) by shifting right 4 basically
- shl   bx, 1   ; bx = bspnum * 4 and extract side bit into carry
- rcl   si, 1   ; side was already stored inverted
- shl   si, 1   ; side * 2
+ shl   ax, 1   ; bx = bspnum * 4 and extract side bit into carry
+ rcl   bx, 1   ; side was already stored inverted
+ shl   bx, 1   ; side * 2
  
- lea   ax, [bx+si]
- xchg  ax, si  ; [si+bx] contains the proper value for bsp_outer_loop in case its needed. bx now does not need to be push/popped in R_CheckBBox_
- xchg  ax, bx
+ add   ax, bx
+ mov   word ptr cs:[_SELFMODIFY_set_next_child_node+3], ax
 
  shr   ax, 1
  shr   ax, 1
  add   ax, NODES_RENDER_SEGMENT
  mov   es, ax
-
   
  shl   bx, 1   ; bx = side * 4
  shl   bx, 1   ; bx = side * 8
@@ -9429,8 +9422,9 @@ loop_check_bbox:
  mov   ds, ax
  mov   ax, NODE_CHILDREN_SEGMENT
  mov   es, ax
- xor   bx, bx  ; following [bx+si] will be correct this way
- jmp   bsp_outer_loop
+_SELFMODIFY_set_next_child_node:
+ mov    bx, es:[01000h]
+ jmp   bsp_loop_start
 exit_renderbspnode:
  POPA_NO_AX_MACRO
  ret
