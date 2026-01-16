@@ -1230,6 +1230,13 @@ ENDP
 STATUS_REGISTER_1  = 03DAh
 
 
+PROC   I_SetPalette_FromMenu_  FAR
+PUBLIC I_SetPalette_FromMenu_
+call   I_SetPalette_
+call   Z_QuickMapMenu_
+retf
+
+
 
 ;void __near I_SetPalette(int8_t paletteNumber) {
 
@@ -1252,8 +1259,6 @@ xchg  ax, si  ; si = al * 768
 
 ;call  inlined i_waitvbl(1)
 
-cmp     byte ptr ds:[_novideo], 0
-jne     return_early
 
 mov     dx, STATUS_REGISTER_1
 
@@ -1273,7 +1278,6 @@ jmp     loop_next_vbl_2
 
 cleared_flag_8:
 
-return_early:
 
 call  Z_QuickMapPalette_
 
@@ -1284,10 +1288,7 @@ out   dx, al
 mov   bx, ax ; zero
 mov   bh, byte ptr ds:[_usegamma]
 
-;mov   dx, PALETTEBYTES_SEGMENT
-;mov   ds, dx
 mov   dx, GAMMATABLE_SEGMENT
-;mov   es, dx
 mov   ds, dx
 
 add   si, (PALETTEBYTES_SEGMENT - GAMMATABLE_SEGMENT) * 16
@@ -1304,17 +1305,14 @@ out   dx, al
 
 loop  loop_palette_out
 
-mov   ax, ss
-mov   ds, ax
-
-
-
+push  ss
+pop   ds
 
 call  Z_QuickMapPhysics_
 
 POPA_NO_AX_OR_BP_MACRO
 just_exit:
-ret   
+retf
 ENDP
 
 
@@ -2674,8 +2672,8 @@ push dx
 push bp
 mov  bp, sp
 lea  bx, [bp + 0Ch]
-mov  ax, word ptr [bp + 8]
-mov  dx, word ptr [bp + 0Ah]
+les  ax, dword ptr [bp + 8]
+mov  dx, es
 call locallib_printf_
 pop  bp
 pop  dx

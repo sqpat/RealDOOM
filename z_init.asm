@@ -68,6 +68,7 @@ EXTRN S_InitSFXCache_:FAR
 EXTRN I_Quit_:FAR
 
 EXTRN I_SetPalette_:FAR
+EXTRN I_SetPalette_FromMenu_:FAR
 EXTRN V_MarkRect_:FAR
 ;EXTRN V_DrawPatchDirect_:FAR
 EXTRN V_DrawPatch_:FAR
@@ -1156,6 +1157,7 @@ dw OFFSET _I_Quit_addr                         , OFFSET I_Quit_
 ;dw OFFSET _I_WaitVBL_addr                      , OFFSET I_WaitVBL_
 dw OFFSET _FastDiv32u16u_addr                  , OFFSET FastDiv32u16u_
 dw OFFSET _I_SetPalette_addr                   , OFFSET I_SetPalette_
+dw OFFSET _I_SetPalette_FromMenu_addr          , OFFSET I_SetPalette_FromMenu_
 dw OFFSET _V_MarkRect_addr                     , OFFSET V_MarkRect_
 dw OFFSET _V_DrawPatch_addr                    , OFFSET V_DrawPatch_
 dw OFFSET _V_DrawFullscreenPatch_addr          , OFFSET V_DrawFullscreenPatch_

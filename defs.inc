@@ -402,7 +402,8 @@ _rndindex = 						 _NULL_OFFSET + 00499h
 _mousex = 							 _NULL_OFFSET + 0049Ah
 _singledemo = 						 _NULL_OFFSET + 0049Ch
 
-; 49d unused
+_dodelayedcheatthisframe =			 _NULL_OFFSET + 0049Dh
+
 _numsectors =						 _NULL_OFFSET + 0049Eh
 _numlines =						     _NULL_OFFSET + 004A0h
 _numvertexes =						 _NULL_OFFSET + 004A2h
@@ -501,9 +502,7 @@ _attackrange16 = 		   			 _NULL_OFFSET + 005E8h
 _usergame =		   		         	 _NULL_OFFSET + 005EAh
 _crushchange = 		   			 	 _NULL_OFFSET + 005EBh
 _leveltime =     		   			 _NULL_OFFSET + 005ECh
-;_gamekeydownpointer = 				 _NULL_OFFSET + 005F0h
-_dodelayedcheatthisframe =			 _NULL_OFFSET + 005F2h
-;_currenttask =            		     _NULL_OFFSET + 005F3h
+_I_SetPalette_FromMenu_addr = 		 _NULL_OFFSET + 005F0h
 
 _centerx = 							 _NULL_OFFSET + 005F4h
 _centery = 							 _NULL_OFFSET + 005F6h

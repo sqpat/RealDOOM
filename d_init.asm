@@ -109,7 +109,7 @@ push    cs
 pop     ds
 push    ss
 pop     es
-lea     di, [bp - 10]
+mov     di, sp  ; bp - 10
 mov     ax, di
 movsw
 movsw
@@ -1497,7 +1497,7 @@ push    cs
 pop     ds
 push    ss
 pop     es
-lea     di, [bp - 14]
+mov     di, sp  ; bp - 14
 mov     ax, di
 mov     cx, 13
 rep     movsb

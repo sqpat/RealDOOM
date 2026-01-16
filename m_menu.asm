@@ -2740,7 +2740,7 @@ add   al, GAMMALVL0
 cbw
 mov   word ptr ds:[_player + PLAYER_T.player_message], ax
 xchg  ax, cx ; 0
-call  dword ptr ds:[_I_SetPalette_addr]
+call  dword ptr ds:[_I_SetPalette_FromMenu_addr]
 
 jmp   exit_m_responder_return_1
 
