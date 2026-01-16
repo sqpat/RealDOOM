@@ -34,8 +34,10 @@ EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN Z_QuickMapMenu_:NEAR
 EXTRN Z_QuickMapIntermission_:NEAR
 
-_jump_mult_table_3:
-db 19, 18, 15, 12,  9,  6,  3, 0
+
+exit_early:
+retf  4
+
 
 PROC   V_DrawPatch_ FAR
 PUBLIC V_DrawPatch_
@@ -46,34 +48,25 @@ PUBLIC V_DrawPatch_
 ; cx is unused?
 ; bp + 0c is ptr to patch
 
- 
+ cmp   byte ptr ds:[_skipdirectdraws], 0
+ jne   exit_early
 
-; todo: modify stack amount
-; todo: use dx for storing a loop var
-; todo: use cx more effectively. ch and cl?
+
 ; todo: change input to not be bp based
-; possible todo: interrupts, sp
-; todo: make 8086
 
 push  cx   ; +2
 push  si   ; +4
 push  di   ; +6
 push  bp   ; +8       thus 0A 0C is far patch
 mov   bp, sp
-push  dx
 
-mov   cl, bl   ; do push?
+
+
 ; bx = 2*ax for word lookup
 sal   bl, 1
 xor   bh, bh
 mov   es, word ptr ds:[bx + _screen_segments]
 
-
-cmp   byte ptr ds:[_skipdirectdraws], 0
-je    doing_draws
-jumptoexit:
-jmp   jumpexit
-doing_draws:
 
 ;    y -= (patch->topoffset); 
 ;    x -= (patch->leftoffset); 
@@ -81,195 +74,131 @@ doing_draws:
 
 ; load patch
 
-lds   bx, dword ptr [bp + 0Ch]
-sub   dl, byte ptr ds:[bx + 6]
-add   bx, 8
-; for 486 with larger prefetch queues we must write this BX as early as possible.
-mov   word ptr cs:[OFFSET SELFMODIFY_setup_bx_instruction + 1], bx  ; store column
+lds   di, dword ptr [bp + 0Ch]
+mov   word ptr cs:[_SELFMODIFY_add_patch_offset+2], di
+sub   dx, word ptr ds:[di + PATCH_T.patch_topoffset]
 
-xor   dh, dh
+xor   dh, dh  ; todo remove
 
-; si = y * screenwidth
 
+; calculate x + (y * screenwidth)
 
 
 IF COMPISA GE COMPILE_186
 
-imul   si, dx , SCREENWIDTH
+    imul  si, dx , SCREENWIDTH
+    add   si, ax
 
 ELSE
-
-mov    si, dx
-mov    di, ax
-mov    ax, SCREENWIDTH
-mul    dx
-mov    dx, si
-mov    si, ax
-mov    ax, di
+    xchg  ax, si  ; si gets x
+    mov   al, SCREENWIDTH / 2
+    mul   dl
+    sal   ax, 1
+    xchg  ax, si  ; si gets x
+    add   si, ax
 
 
 ENDIF
 
-add    si, ax
+; ax, dx maintained for markrect
 
-
-sub   si, word ptr ds:[bx - 4]	; bx has 8 added to it
-
-
-cmp   cl, 0
-jne   dontmarkrect
-jmp   domarkrect
-dontmarkrect:
-donemarkingrect:
-
-; 	desttop = MK_FP(screen_segments[scrn], offset); 
-
-
-
-; load patch addr again
+sub   si, word ptr ds:[di + PATCH_T.patch_leftoffset]
 mov   word ptr cs:[OFFSET SELFMODIFY_offset_add_di + 2], si
-mov   bx, word ptr [bp + 0Ch]
+
+
+cmp   bl, 0
+jne   dontmarkrect
+
+
+push  ds
+push  es 	; restore previously looked up segment.
+
+
+les   bx, dword ptr ds:[di + PATCH_T.patch_width] 
+mov   cx, es    ; height
+
+
+push  ss
+pop   ds
+call  V_MarkRect_
+pop   es
+pop   ds
+
+
+
+donemarkingrect:
+dontmarkrect:
 
 ;    w = (patch->width); 
-mov   ax, word ptr ds:[bx]
-
-mov   word ptr cs:[OFFSET SELFMODIFY_compare_instruction + 1], ax  ; store width
-test  ax, ax
-jle   jumptoexit
-; store patch segment (???) remove;
+mov   cx, word ptr ds:[di + PATCH_T.patch_width]  ; count
+lea   bx, [di + PATCH_T.patch_columnofs]          ; set up columnofs ptr
+mov   dx, SCREENWIDTH - 1                         ; loop constant
 
 draw_next_column:
+push  cx            ; store patch width for outer loop iter
+xor   cx, cx        ; clear ch specifically
 
-dec   word ptr cs:[OFFSET SELFMODIFY_compare_instruction + 1] ; decrement count ahead of time
 
-;		column = (column_t __far *)((byte __far*)patch + (patch->columnofs[col])); 
-
-; ds:si is patch segment
 ; es:di is screen pixel target
 
-; grab patch offset into di
-mov   si, word ptr [bp + 0Ch]
-SELFMODIFY_setup_bx_instruction:
-mov   bx, 0F030h               ; F030h is target for self modifying code     
-; si equals colofs lookup
-add   si, word ptr ds:[bx]
+mov   si, word ptr ds:[bx]           ; ds:si is patch segment
 
+_SELFMODIFY_add_patch_offset:
+add   si, 01000h
+
+lodsw
 ;		while (column->topdelta != 0xff )  
-; check topdelta for 0xFFh
-cmp   byte ptr ds:[si], 0FFh
+
+cmp  al, 0FFh               ; al topdelta, ah length
 je   column_done
 
+draw_next_patch_column:
 
 ; here we render the next patch in the column.
-draw_next_column_patch:
 
+xchg  cl, ah          ; cx is now col length, ah is now 0
+inc   si      
 
-; grab both column fields at once. si + 0 is topdelta. si + 1 is column length
-mov   ax, word ptr ds:[si]
-
-mov   cl, ah
-
-; cant optimize this because of the negative case with imul apparently.
 
 IF COMPISA GE COMPILE_186
-xor    ah, ah      ; al contains topdelta
-imul   di, ax, SCREENWIDTH
-mov    dx, SCREENWIDTH - 1 
+imul   di, ax, SCREENWIDTH   ; ax has topdelta.
 
 ELSE
 ; cant fit screenwidth in 1 byte but we can do this...
 mov   ah, SCREENWIDTH / 2
 mul   ah
 sal   ax, 1
-mov   dx, SCREENWIDTH - 1
-mov   di, ax
-
-
+xchg  ax, di
 ENDIF
 
 
 
 SELFMODIFY_offset_add_di:
-add   di, 0F030h   ; retrieve offset
+add   di, 01000h   ; retrieve offset
+
+; todo lazy len 8 or 16 unrolle dloop
 
 
-add   si, 3
-; figure out loop counts
-mov   bl, cl
-and   bx, 0007h
-mov   al, byte ptr cs:[_jump_mult_table_3 + bx]
-mov   byte ptr cs:[SELFMODIFY_offset_draw_remaining_pixels + 1], al
-SHIFT_MACRO shr cx 3
-je    done_drawing_8_pixels
-
-
-; bx, cx unused...
-
-;  todo full unroll
-
-draw_8_more_pixels:
+draw_next_patch_pixel:
 
 movsb
-add di, dx
-movsb
-add di, dx
-movsb
-add di, dx
-movsb
-add di, dx
-movsb
-add di, dx
-movsb
-add di, dx
-movsb
-add di, dx
-movsb
-add di, dx
+add   di, dx
+loop  draw_next_patch_pixel 
 
-loop   draw_8_more_pixels
-
-
-done_drawing_8_pixels:
-
-SELFMODIFY_offset_draw_remaining_pixels:
-db 0EBh, 00h		; jump rel8
-
-
-movsb
-add di, dx
-movsb
-add di, dx
-movsb
-add di, dx
-movsb
-add di, dx
-movsb
-add di, dx
-movsb
-add di, dx
-movsb
-
-
-; restore stuff we changed above
-done_drawing_pixels:
 check_for_next_column:
 
-inc si
-cmp   byte ptr ds:[si], 0FFh
+inc   si
+lodsw
+cmp   al, 0FFh
+jne   draw_next_patch_column
 
-
-jne   draw_next_column_patch
 column_done:
-add   word ptr cs:[OFFSET SELFMODIFY_setup_bx_instruction + 1], 4
-inc   word ptr cs:[OFFSET SELFMODIFY_offset_add_di + 2]
-xor   ax, ax
-SELFMODIFY_compare_instruction:
-cmp   ax, 0F030h		; compare to width
-;jnge  draw_next_column		; relative out of range by 5 bytes
-jge   jumpexit
-jmp   draw_next_column
-jumpexit:
-pop   dx
+add   bx, 4
+inc   word ptr cs:[OFFSET SELFMODIFY_offset_add_di + 2]   ; pixel offset increments each column
+pop   cx
+loop  draw_next_column		; relative out of range by 5 bytes
+
+done_drawing:
 mov   ax, ss
 mov   ds, ax
 LEAVE_MACRO
@@ -278,20 +207,6 @@ pop   si
 pop   cx
 retf  4
 
-domarkrect:
-push  ds
-lds   bx, dword ptr ds:[bx - 8]
-mov   cx, ds
-
-mov  di, ss
-mov  ds, di
-
-
-push es 	; remove push/pop es and read this screen crashes
-call  V_MarkRect_
-pop  es
-pop  ds
-jmp   donemarkingrect
 
 ENDP
 
