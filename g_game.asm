@@ -41,6 +41,12 @@ EXTRN I_Error_:FAR
 
 
 EXTRN Z_SetOverlay_:FAR
+EXTRN CopyString13_:NEAR
+EXTRN locallib_fseek_:NEAR
+EXTRN locallib_fseekfromfar_:FAR
+EXTRN locallib_fread_:NEAR
+EXTRN locallib_fclose_:NEAR
+EXTRN locallib_fopen_nobuffering_:NEAR
 
 EXTRN G_ReadDemoTiccmd_:NEAR
 EXTRN G_WriteDemoTiccmd_:NEAR
@@ -55,7 +61,7 @@ EXTRN S_ResumeSound_:NEAR
 .CODE
 
 EXTRN _localcmds
-
+EXTRN _doomcode_filename
 
 
 PROC    G_GAME_STARTMARKER_ NEAR
@@ -65,10 +71,14 @@ ENDP
 
 
 
-ENDP
+_wianimfilepos:
+dw 0, 0
+PUBLIC _wianimfilepos
 
+_wianimcodesize:
+dw 0
 
-
+PUBLIC  _wianimcodesize
 
 VERSIONSIZE = 16
 
@@ -333,6 +343,27 @@ jmp     continue_while_loop
 case_completed:
 
 call    Z_QuickMapIntermission_
+
+mov   ax, OFFSET _doomcode_filename
+call  CopyString13_
+mov   dl, (FILEFLAG_READ OR FILEFLAG_BINARY)
+call  locallib_fopen_nobuffering_        ; fopen("DOOMDATA.BIN", "rb"); 
+mov   di, ax ; di stores fp
+
+xor   dx, dx  ; SEEK_SET
+les   bx, dword ptr cs:[_wianimfilepos+0]
+mov   cx, es
+call  locallib_fseek_  ;    fseek(fp, SWITCH_DOOMDATA_OFFSET, SEEK_SET);
+
+xor   ax, ax
+mov   dx, WIANIM_CODESPACE_SEGMENT
+mov   cx, di
+mov   bx, word ptr cs:[_wianimcodesize]  ; WI_StuffCodeSize?
+call  locallib_fread_
+
+xchg  ax, di
+call  locallib_fclose_
+
 db      09Ah
 dw      G_DOCOMPLETED_OFFSET, WIANIM_CODESPACE_SEGMENT
 call    Z_QuickMapPhysics_

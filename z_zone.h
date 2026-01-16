@@ -276,7 +276,7 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define NUM_SPRITE_CACHE_PAGES                      20
 // dont do more than 63 pages. used as an index in a 4 byte thing. asm assumes one byte index
 // todo get this to 29, maybe 30...
-#define NUM_TEXTURE_PAGES                           29
+#define NUM_TEXTURE_PAGES                           25
 #define NUM_MUSIC_PAGES                             4
 #define NUM_SFX_PAGES                               7
 #elif EMS_BUILD_SETTING == EMS_4_MB_BUILD_SETTING  
@@ -335,27 +335,25 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define FIRST_FLAT_CACHE_LOGICAL_PAGE               FIRST_LUMPINFO_LOGICAL_PAGE + 3
 // 35
 #define FIRST_TEXTURE_LOGICAL_PAGE                  FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
-// 56  overlap
-#define FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE    FIRST_TEXTURE_LOGICAL_PAGE + (NUM_TEXTURE_PAGES - 8)
-// 64
-#define FIRST_EXTRA_MASKED_DATA_PAGE                FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
-// 66
+// 59  overlap one page (code page). other 7 pages do dual duty as visplane backups and demo pages.
+#define FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE    FIRST_TEXTURE_LOGICAL_PAGE + (NUM_TEXTURE_PAGES - 1) // one page overlap
+// 67
+#define FIRST_EXTRA_MASKED_DATA_PAGE                FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 8
+// 69
 #define FIRST_SPRITE_CACHE_LOGICAL_PAGE             FIRST_EXTRA_MASKED_DATA_PAGE + 2
 
-// 74
+// 77
 #define SCREEN1_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 8
-// 78
+// 81
 #define SCREEN2_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 12
-// 82
+// 85
 #define SCREEN3_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 16
 
-// 86
+// 89
 #define FLAT_DATA_PAGES                             (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
-// 89  // todo get this for free elsewhere? 3 pages just for backup visplanes now...
-#define EMS_VISPLANE_EXTRA_PAGE                     FLAT_DATA_PAGES + 3
 
 // 92
-#define MUS_DATA_PAGES                              EMS_VISPLANE_EXTRA_PAGE + 3
+#define MUS_DATA_PAGES                              FLAT_DATA_PAGES + 3
 
 // 96
 #define SFX_DATA_PAGES                              (MUS_DATA_PAGES + NUM_MUSIC_PAGES)
@@ -372,7 +370,8 @@ void __far Z_SetOverlay(int8_t wipeId);
 // NUM_EMS4_SWAP_PAGES needs to be 104 to fit in 256 k + (2 MB EMS - 384k)
 
 // 32
-#define FIRST_DEMO_LOGICAL_PAGE                     FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 4
+#define FIRST_DEMO_LOGICAL_PAGE                     FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 1
+#define EMS_VISPLANE_EXTRA_PAGE                     FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 5
 
 #define OVERLAY_ID_UNMAPPED 0
 #define OVERLAY_ID_WIPE 1

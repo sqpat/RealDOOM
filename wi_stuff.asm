@@ -2206,7 +2206,7 @@ ENDP
 
 
 
-PROC    G_DoCompleted_ NEAR
+PROC    G_DoCompleted_ FAR
 PUBLIC  G_DoCompleted_
 
 push    bx
@@ -2361,7 +2361,7 @@ pop     dx
 pop     cx
 pop     bx
 
-ret
+retf
 
 ENDP
 

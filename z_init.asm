@@ -33,7 +33,6 @@ EXTRN Z_QuickMapPhysics_:NEAR
 EXTRN Z_QuickMapRender_:NEAR
 
 
-EXTRN Z_QuickMapIntermission_:NEAR
 EXTRN Z_QuickMapMenu_:NEAR
 EXTRN locallib_fread_nearsegment_:NEAR
 EXTRN locallib_fseek_:NEAR
@@ -84,7 +83,6 @@ EXTRN CopyString13_:NEAR
 
 
 
-
 SCAMP_PAGE_SELECT_REGISTER = 0E8h
 SCAMP_PAGE_SET_REGISTER = 0EAh
 SCAMP_PAGE_CHIPSET_SELECT_REGISTER = 0ECh
@@ -102,6 +100,9 @@ HT18_PAGE_SET_REGISTER = 01ECh
 
 .CODE
 
+EXTRN _wianimfilepos:BYTE
+EXTRN _wianimcodesize:BYTE
+    
 EXTRN _SELFMODIFY_R_WRITEBACKVIEWCONSTANTSSPANCALL:DWORD
 EXTRN _SELFMODIFY_R_WRITEBACKVIEWCONSTANTSMASKEDCALL:DWORD
 EXTRN _SELFMODIFY_R_WRITEBACKVIEWCONSTANTS:DWORD
@@ -1367,14 +1368,25 @@ call  locallib_fopen_nobuffering_        ; fopen("DOOMDATA.BIN", "rb");
 mov   si, ax ; si stores fp
 call  Z_DoRenderCodeLoad_
 
-call  Z_QuickMapIntermission_
+
 
 call  GetCodeSize_
-;	locallib_far_fread(wianim_codespace, codesize, fp);
-xor   ax, ax
-mov   dx, WIANIM_CODESPACE_SEGMENT
-mov   cx, si
-call  locallib_fread_
+mov   word ptr cs:[_wianimcodesize+0], bx
+
+mov   ax, si
+call  locallib_ftell_   ; record the position
+
+mov   word ptr cs:[_wianimfilepos+0], ax
+mov   word ptr cs:[_wianimfilepos+2], dx
+
+
+
+mov   ax, si
+mov   dx, 1  ; SEEK_CUR
+xor   cx, cx  ; bx has value
+call  locallib_fseek_  ; skip these bytes
+
+
 
 call  Z_QuickMapPhysics_
 
