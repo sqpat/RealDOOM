@@ -8910,6 +8910,7 @@ ret
 ENDP
 
 R_CHECKBBOX_SWITCH_JMP_TABLE:
+; jmp table for switch block.... 
 
 dw R_CBB_SWITCH_CASE_00 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_01 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_02 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_03 - OFFSET R_BSP24_STARTMARKER_
 dw R_CBB_SWITCH_CASE_04 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_05 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_06 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_07 - OFFSET R_BSP24_STARTMARKER_
@@ -8917,17 +8918,24 @@ dw R_CBB_SWITCH_CASE_08 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_09 - OF
 
 ;R_CheckBBox_
 
+
+boxy_check_2nd_expression:
+; ax still viewy highbits
+SELFMODIFY_BSP_viewy_lo_4_TARGET_2:
+je    set_boxy_1
+SELFMODIFY_BSP_viewy_lo_4_TARGET_1:
+set_boxy_2:
+mov   al, 2
+jmp   boxy_calculated
+
 PROC R_CheckBBox_ NEAR
 
-; todo refactor. just pass in es:bx instead of ax?
 
-; jmp table for switch block.... 
 
 
 ; es:bx is bsp lookup
 
 
-;es:[bx] is bspcoord
 ;	// Find the corners of the box
 ;	// that define the edges from current viewpoint.
 
@@ -8952,15 +8960,14 @@ SHIFT_MACRO shl al 2
 add   al, dl
 cmp   al, 5
 je    return_1
-xor   ah, ah
+cbw
 mov   di, ax
-add   di, ax
+shl   di, 1
 ; switch block jump
 jmp   word ptr cs:[di + R_CHECKBBOX_SWITCH_JMP_TABLE - OFFSET R_BSP24_STARTMARKER_]
 SELFMODIFY_BSP_viewx_lo_4_TARGET_2:
 ; jmp here if viewx lobits are 0.
 viewx_greater_than_left:
-cmp   ax, word ptr es:[bx + 4]         ; bspcoord[BOXLEFT]
 jne   boxx_check_2nd_expression
 jmp   set_boxx_0
 ; jmp here if viewx lobits are nonzero.
@@ -8981,23 +8988,9 @@ SELFMODIFY_BSP_viewy_lo_4:
 jle   boxy_check_2nd_expression
 SELFMODIFY_BSP_viewy_lo_4_AFTER:
 set_boxy_1:
-mov   ax, 1
+mov   al, 1
 jmp   boxy_calculated
-boxy_check_2nd_expression:
-;cmp   word ptr ds:[_viewy], 0
-;jle   set_boxy_2
-; ax still viewy highbits
-SELFMODIFY_BSP_viewy_lo_4_TARGET_2:
-cmp   ax, word ptr es:[bx + 2]         ; bspcoord[BOXBOTTOM]
-je    set_boxy_1
-SELFMODIFY_BSP_viewy_lo_4_TARGET_1:
-set_boxy_2:
-mov   ax, 2
-jmp   boxy_calculated
-return_1:
-stc
 
-ret   
 R_CBB_SWITCH_CASE_00:
 ; cx
 ; di
@@ -9103,7 +9096,7 @@ clc
 
 ret   
 
-also_return_1:
+return_1:
 stc
 
 ret   
@@ -9185,9 +9178,9 @@ cmp   ax, word ptr ds:[bx + 2]
 jg    loop_find_solidsegs
 found_solidsegs:
 cmp   si, word ptr ds:[bx]
-jl    also_return_1
+jl    return_1
 cmp   ax, word ptr ds:[bx + 2]
-jg    also_return_1
+jg    return_1
 return_0_2:
 clc
 
