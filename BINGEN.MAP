@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/15 21:29:00
+Created on:       26/01/16 10:38:50
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -331,12 +331,12 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 0787:000a      SM_MPUMD_STARTMARKER_
 0787:07e5      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-0806:36ef      R_BSP24_ENDMARKER_
-0806:33b5      R_WriteBackViewConstants24_
-0806:2e93      R_GetPatchTexture_Far24_
+0806:36e9      R_BSP24_ENDMARKER_
+0806:33af      R_WriteBackViewConstants24_
+0806:2e8d      R_GetPatchTexture_Far24_
 0806:0000      R_BSP24_STARTMARKER_
-0806:3244      R_RenderPlayerView24_
-0806:2f2e      R_GetCompositeTexture_Far24_
+0806:323e      R_RenderPlayerView24_
+0806:2f28      R_GetCompositeTexture_Far24_
 Module: r_bsp16.obj(r_bsp16.ASM)
 0806:6993      R_RenderPlayerView16_
 0806:36f0      R_BSP16_STARTMARKER_

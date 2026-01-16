@@ -9324,16 +9324,23 @@ calculate_larger_side:
  xchg  ax, cx
  mov   si, dx
  imul  di
- cmp   si, dx
- mov   dh, 0
- jg    right_is_greater
- jne   calculate_next_bspnum
+COMMENT @
  cmp   cx, ax
- jbe   calculate_next_bspnum
-right_is_greater:
- mov   dh, 080h            ; mark sign bit
- jmp calculate_next_bspnum
+ sbb   si, dx
+ clc
+ jl    calculate_next_bspnum
+ cmc
+ jmp   calculate_next_bspnum
+ @
 
+ cmp   si, dx
+ clc                        
+ jg    calculate_next_bspnum ; carry flag = !sign, sign on
+ stc
+ jne   calculate_next_bspnum ; carry flag = !sign, sign off
+; equals fall thru, check low bits
+ cmp   cx, ax                ; sets carry flag as same as unsigned compare
+ jmp   calculate_next_bspnum
 bsp_inner_loop:         
 
 ; bx = bspnum * 2
@@ -9365,15 +9372,14 @@ SELFMODIFY_BSP_viewy_hi_6:
  xor   si, ax
  xor   si, di
  jns   calculate_larger_side
- neg   dx      ; TODO dh sign is backwards. there is probably a way to get this for free
- xor   dh, ah         
+ xor   dh, ah         ; dh sign is backwards
+ shl   dh, 1          ; carry = !sign
 calculate_next_bspnum:
- shl   dh, 1          ; carry = sign
- sbb   si, si         ; -1 when signed, carry = sign
+ sbb   si, si         ; -1 when unsigned, carry = !sign
  mov   cx, bx
- rcr   cx, 1          ; cx = bspnum * 2 with side bit in sign
+ rcr   cx, 1          ; cx = bspnum * 2 with !side bit in sign
  push  cx
- neg   si             ; Convert -1 to 1
+ inc   si             ; switching -1/0 to 0/1 inverts sign
  shl   si, 1
 bsp_outer_loop:
  mov   bx, es:[bx+si] ; add side lookup
@@ -9393,15 +9399,14 @@ loop_check_bbox:
  cmp   sp, bp ; Compare with original SP value
  je    exit_renderbspnode 
  pop   bx
+ xor   si, si
 
 ; calculate node_render address.
 ; NODE_RENDER_T are 16 bytes long
 ; two sides of 8 bytes each
 ; bx gets 0 or 8, the render address is packed into the segment (ES) by shifting right 4 basically
-
  shl   bx, 1   ; bx = bspnum * 4 and extract side bit into carry
- sbb   si, si
- inc   si      ; switching -1/0 to 0/1 also replaces ^1
+ rcl   si, 1   ; side was already stored inverted
  shl   si, 1   ; side * 2
  
  lea   ax, [bx+si]
