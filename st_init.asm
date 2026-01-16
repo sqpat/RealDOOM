@@ -203,7 +203,7 @@ push  word ptr es:[bx + SHORTNUM_CS_OFFSET + 4]
 pop   word ptr es:[di + ARMS_CS_OFFSET + 2]
 
 
-inc   byte ptr es:[st_init_str_4 + 6]
+inc   byte ptr cs:[st_init_str_4 + 6]
 
 add   di, 4
 cmp   di, 6 * 4
