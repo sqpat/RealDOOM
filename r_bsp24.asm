@@ -3084,11 +3084,6 @@ PROC R_Subsector_ NEAR
 
 ;ax is subsecnum
 
-push  cx
-push  dx
-
-push  si   ; used by inner function in a loop. push/pop once at outer layer.
-push  di
 
 
 mov   bx, ax
@@ -3106,7 +3101,7 @@ mov   es, ax
 
 SHIFT_MACRO shl bx 2
 
-mov   ax, word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS] ; get subsec secnum
+mov   ax, word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS + SUBSECTOR_T.ss_secnum] ; get subsec secnum
 
 SHIFT_MACRO shl ax 4
 
@@ -3114,7 +3109,7 @@ SHIFT_MACRO shl ax 4
 
 mov   word ptr ds:[_frontsector], ax
 ;mov   word ptr ds:[_frontsector+2], es   ; es holds sectors_segment..
-mov   bx, word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS + 2]   ; get subsec firstline
+mov   bx, word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS + SUBSECTOR_T.ss_firstline]   ; get subsec firstline
 xchg  bx, ax
 mov   word ptr cs:[SELFMODIFY_firstlinevalue+1 - OFFSET R_BSP24_STARTMARKER_], ax    ; di stores count for later
 
@@ -3132,8 +3127,8 @@ prepare_fields:
 xor   ax, ax
 ; idea: put these variables all next to each other, then knock them out
 ; with movsw
-mov   byte ptr ds:[_ceilphyspage], al
-mov   byte ptr ds:[_floorphyspage], al
+mov   word ptr ds:[_ceilphyspage], ax
+;mov   byte ptr ds:[_floorphyspage], al
 
 ;  es:bx holds frontsector
 mov   word ptr ds:[_ceiltop], ax
@@ -3142,7 +3137,7 @@ mov   word ptr ds:[_floortop], ax
 
 
 
-mov   dx, word ptr es:[bx]
+mov   dx, word ptr es:[bx + SECTOR_T.sec_floorheight]
 ; ax is already 0
 
 ;	SET_FIXED_UNION_FROM_SHORT_HEIGHT
@@ -3171,7 +3166,7 @@ jmp   prepare_fields
 set_ceiling_plane_minus_one:
 
 ; es:bx is still frontsector
-mov   cl, byte ptr es:[bx + 5]
+mov   cl, byte ptr es:[bx + SECTOR_T.sec_ceilingpic]
 cmp   cl, byte ptr ds:[_skyflatnum]
 je    find_ceiling_plane_index
 mov   word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1 - OFFSET R_BSP24_STARTMARKER_], 0FFFFh
@@ -3185,15 +3180,15 @@ jae   set_floor_plane_minus_one    ; todo move to the other label
 find_floor_plane_index:
 
 ; set up picandlight
-mov   ch, byte ptr es:[bx + 0Eh]
-mov   cl, byte ptr es:[bx + 4]
+mov   ch, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
+mov   cl, byte ptr es:[bx + SECTOR_T.sec_floorpic]
 xor   bx, bx ; isceil = 0
 call  R_FindPlane_
 mov   word ptr cs:[SELFMODIFY_set_floorplaneindex+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 floor_plane_set:
 les   bx, dword ptr ds:[_frontsector]
-mov   dx, word ptr es:[bx + 2]
+mov   dx, word ptr es:[bx +  + SECTOR_T.sec_ceilingheight]
 xor   ax, ax
 ;	SET_FIXED_UNION_FROM_SHORT_HEIGHT
 
@@ -3216,8 +3211,8 @@ find_ceiling_plane_index:
 les   bx, dword ptr ds:[_frontsector]
 
 ; set up picandlight
-mov   ch, byte ptr es:[bx + 0Eh]
-mov   cl, byte ptr es:[bx + 5]
+mov   ch, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
+mov   cl, byte ptr es:[bx + SECTOR_T.sec_ceilingpic]
 mov   bx, 1
 
 call  R_FindPlane_
@@ -3247,11 +3242,6 @@ loop   loop_addline
 
 
 
-pop   di
-pop   si
-
-pop   dx
-pop   cx
 ret   
 
 ENDP
