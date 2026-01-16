@@ -2194,8 +2194,8 @@ js        skip_draw_mark
 cmp       ax, (AUTOMAP_SCREENWIDTH - 5)
 jg        skip_draw_mark
 mov       es, bp
-push      es
-push      word ptr es:[di]  ;  + AMMNUMPATCHOFFSETS_FAR_OFFSET
+
+mov       cx, word ptr es:[di]  ;  + AMMNUMPATCHOFFSETS_FAR_OFFSET
 xor       bx, bx ; FB = 0
 call      dword ptr ds:[_V_DrawPatch_addr]
 skip_draw_mark:

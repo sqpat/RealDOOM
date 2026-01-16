@@ -190,16 +190,16 @@ cmp   byte ptr cs:[_st_statusbaron], al
 je    exit_st_refresh_background
 
 
-mov   dx, ST_GRAPHICS_SEGMENT
-push  dx
-mov   bx, 4
-push  word ptr cs:[_sbar_]
-; ax already 0
-cwd
-mov   cx, ST_HEIGHT
+mov   bx, 4   ; BG
+mov   cx, ST_GRAPHICS_SEGMENT
+mov   es, cx
+mov   cx, word ptr cs:[_sbar_]
+
+cwd   ; ax already 0
 call  dword ptr ds:[_V_DrawPatch_addr]
 
 
+mov   cx, ST_HEIGHT
 mov   bx, SCREENWIDTH
 mov   dx, ST_Y
 xor   ax, ax
@@ -775,13 +775,12 @@ pop   si                         ;   get inum-is_binicon lookup
 add   si, ax                     ; patch_offset[0] + inum-is_binicon lookup
 
 
-mov   ax, ST_GRAPHICS_SEGMENT
-push  ax
-push  word ptr cs:[si]
+mov   cx, ST_GRAPHICS_SEGMENT
+mov   es, cx
+mov   cx, word ptr cs:[si]
 
 xor   ax, ax
 xchg  ax, bx    ; ax gets x. bx gets FG == 0
-
 
 call  dword ptr ds:[_V_DrawPatch_addr]
 
@@ -898,8 +897,6 @@ sub   ax, cx
 push  ax    ; store for postcall
 push  dx    ; store for postcall
 
-mov   bx, ST_GRAPHICS_SEGMENT
-push  bx  ; func arc 1
 
 xchg  ax, di
 push  dx
@@ -911,12 +908,16 @@ xchg  ax, di  ; di gets result / 10. ax gets its value back
 pop   dx  ; restore dx for call
 sal   bx, 1   ; word lookup
 
-push  word ptr cs:[si+bx]
+push  cx
+mov   cx, ST_GRAPHICS_SEGMENT
+mov   es, cx  ; func arg
+
+mov   cx, word ptr cs:[si+bx]
 xor   bx, bx ; FG
 
 call  dword ptr ds:[_V_DrawPatch_addr]
 
-
+pop   cx
 pop   dx
 pop   ax
 test  di, di
@@ -929,11 +930,11 @@ ret
 
 draw_zero:
 ; draw one zero
-mov   bx, ST_GRAPHICS_SEGMENT
-push  bx
 xor   bx, bx
-push  word ptr cs:[si] ; first offset is 0
 sub   ax, cx
+mov   cx, ST_GRAPHICS_SEGMENT
+mov   es, cx  ; func arg
+mov   cx, word ptr cs:[si] ; first offset is 0
 call  dword ptr ds:[_V_DrawPatch_addr]
 
 jmp   exit_stlib_drawnum
@@ -959,12 +960,12 @@ call  STlib_updateflag_
 ;        V_DrawPatch(per->num.x, per->num.y, FG, (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, *(uint16_t __near*)(per->patch_offset))));
 
 
-mov   ax, ST_GRAPHICS_SEGMENT
-push  ax
 les   ax, dword ptr cs:[si + ST_NUMBER_T.st_number_x]
 mov   dx, es
 mov   si, word ptr cs:[si + ST_PERCENT_T.st_percent_patch_offset]
-push  word ptr cs:[si]
+mov   cx, ST_GRAPHICS_SEGMENT
+mov   es, cx
+mov   cx, word ptr cs:[si]
 xor   bx, bx
 call  dword ptr ds:[_V_DrawPatch_addr]
 

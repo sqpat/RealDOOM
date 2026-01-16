@@ -36,7 +36,7 @@ EXTRN Z_QuickMapIntermission_:NEAR
 
 
 exit_early:
-retf  4
+retf
 
 
 PROC   V_DrawPatch_ FAR
@@ -45,28 +45,22 @@ PUBLIC V_DrawPatch_
 ; ax is x
 ; dl is y
 ; bl is screen
-; cx is unused?
-; bp + 0c is ptr to patch
+; cx is patch offset
+; es is patch segment
 
  cmp   byte ptr ds:[_skipdirectdraws], 0
  jne   exit_early
 
-
-; todo: change input to not be bp based
-
-push  cx   ; +2
-push  si   ; +4
-push  di   ; +6
-push  bp   ; +8       thus 0A 0C is far patch
-mov   bp, sp
-
-
+push  si 
+push  di 
 
 ; bx = 2*ax for word lookup
 sal   bl, 1
 xor   bh, bh
-mov   es, word ptr ds:[bx + _screen_segments]
-
+mov   di, cx
+mov   cx, es   
+mov   es, word ptr ds:[bx + _screen_segments]   ;todo move to cs.
+mov   ds, cx    ; ds:di is seg
 
 ;    y -= (patch->topoffset); 
 ;    x -= (patch->leftoffset); 
@@ -74,7 +68,7 @@ mov   es, word ptr ds:[bx + _screen_segments]
 
 ; load patch
 
-lds   di, dword ptr [bp + 0Ch]
+; ds:di is patch
 mov   word ptr cs:[_SELFMODIFY_add_patch_offset+2], di
 sub   dx, word ptr ds:[di + PATCH_T.patch_topoffset]
 
@@ -201,11 +195,9 @@ loop  draw_next_column		; relative out of range by 5 bytes
 done_drawing:
 mov   ax, ss
 mov   ds, ax
-LEAVE_MACRO
 pop   di
 pop   si
-pop   cx
-retf  4
+retf
 
 
 ENDP

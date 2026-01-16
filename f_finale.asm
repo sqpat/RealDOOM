@@ -256,19 +256,22 @@ mov   es, bx
 cbw
 mov   bx, ax
 mov   al, byte ptr es:[bx]
-mov   di, ST_GRAPHICS_SEGMENT    
-push  di        ; v_ drawpatch arg
-sal   bx, 1
-mov   di, ax
-mov   ax, word ptr ds:[bx + _hu_font]
-mov   dx, 180   ; y coord for draw patch.
-push  ax           ; v_ drawpatch arg
-xor   bx, bx
-mov   ax, cx
+xchg  ax, di
 
+push  cx    ; kinda gross
+xchg  ax, cx
+
+mov   cx, ST_GRAPHICS_SEGMENT    
+mov   es, cx        ; v_ drawpatch arg
+
+sal   bx, 1
+mov   cx, word ptr ds:[bx + _hu_font]
+
+mov   dx, 180   ; y coord for draw patch.
+xor   bx, bx
 call  dword ptr ds:[_V_DrawPatch_addr]
 
-
+pop   cx 
 add   cx, di
 jmp   draw_next_glyph
 
@@ -549,10 +552,9 @@ mov   ax, SCREENWIDTHOVER2
 call  V_DrawPatchFlipped_
 jmp   exit_castdrawer
 not_flipped:
-mov   ax, SCRATCH_SEGMENT_5000
-push  ax
-xor   ax, ax
-push  ax
+mov   cx, SCRATCH_SEGMENT_5000
+mov   es, cx
+xor   cx, cx
 mov   dx, 170                ; y param
 mov   ax, SCREENWIDTHOVER2
 xor   bx, bx
@@ -733,17 +735,18 @@ ret
 do_draw_glyph_ftextwrite:
 xchg      ax, si 
 sal       bx, 1
-mov       dx, ST_GRAPHICS_SEGMENT
-push      dx
-push      word ptr ds:[bx + _hu_font]
+push      cx
+mov       cx, ST_GRAPHICS_SEGMENT
+mov       es, cx
+mov       cx, word ptr ds:[bx + _hu_font]
 
 mov       dx, di
 xor       bx, bx
 
 call      dword ptr ds:[_V_DrawPatch_addr]
-
+pop       cx
 dec       cx
-jmp       loop_count
+jmp       loop_count   ; dude why is this not a loop instruction
 
 
 ENDP
@@ -968,7 +971,7 @@ cmp   ax, FINALE_PHASE_2_CHANGE
 jl    draw_end_patch
 sub   ax, FINALE_PHASE_2_CHANGE
 mov   bx, 5
-CWD   
+cwd   
 div   bx
 mov   bx, ax        
 cmp   ax, 6
@@ -999,10 +1002,8 @@ mov   bx, word ptr [bp - 8]
 mov   cx, word ptr [bp - 0Eh]
 mov   dx, (SCREENHEIGHT-8*8)/2
 call  dword ptr ds:[_W_CacheLumpNameDirect_addr]
-mov   ax, word ptr [bp - 0Eh]
-push  ax
-mov   ax, word ptr [bp - 8]
-push  ax
+mov   es, word ptr [bp - 0Eh]  ; boy les would be great
+mov   cx, word ptr [bp - 8]
 
 mov   ax, (SCREENWIDTH-13*8)/2
 xor   bx, bx
@@ -1025,10 +1026,8 @@ mov   bx, word ptr [bp - 8]
 
 mov   dx, (SCREENHEIGHT-8*8)/2
 call  dword ptr ds:[_W_CacheLumpNameDirect_addr]
-mov   ax, word ptr [bp - 0Eh]
-push  ax
-mov   ax, word ptr [bp - 8]
-push  ax
+mov   es, word ptr [bp - 0Eh]  ; boy les would be great
+mov   cx, word ptr [bp - 8]
 
 mov   ax, (SCREENWIDTH-13*8)/2
 xor   bx, bx

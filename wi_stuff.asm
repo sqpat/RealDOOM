@@ -235,8 +235,9 @@ xchg      ax, bx
 sal       bx, 1
 mov       ax, WIOFFSETS_SEGMENT
 mov       es, ax
-mov       dx, WIGRAPHICSPAGE0_SEGMENT
 mov       ax, word ptr es:[bx]
+mov       dx, WIGRAPHICSPAGE0_SEGMENT
+mov       es, dx
 pop       bx
 ret
 
@@ -319,43 +320,37 @@ PUSHA_NO_AX_OR_BP_MACRO
 push      bp
 mov       bp, sp
 
-mov       ax, WIGRAPHICSLEVELNAME_SEGMENT
-mov       es, ax
+mov       cx, WIGRAPHICSLEVELNAME_SEGMENT
+mov       es, cx
 
 xor       si, si
 
 ; patch
-push      ax
-push      si				; 0
+
+
 
 ; x
 mov       ax, SCREENWIDTH
-sub       ax, word ptr es:[si]
+sub       ax, word ptr es:[si + PATCH_T.patch_width]
 sar       ax, 1
 
 ; y
 mov       dx, 2				; y = 2
 
+mov       si, word ptr es:[si + PATCH_T.patch_height]			; grab height of lname
 ;screen
 xor       bx, bx			; set to FB
+xor       cx, cx
+call      dword ptr ds:[_V_DrawPatch_addr]
 
-mov       si, word ptr es:[si + 2]			; grab height of lname
+mov       cx, WIOFFSETS_SEGMENT
+mov       es, cx
 
-
-call  dword ptr ds:[_V_DrawPatch_addr]
-
-mov       ax, WIOFFSETS_SEGMENT
-mov       es, ax
-
-mov       di, word ptr es:[5 * 2] ; todo constants
+mov       di, word ptr es:[WIPATCH_FINISHED * 2] ; todo constants
 
 mov       cx, WIGRAPHICSPAGE0_SEGMENT
 mov       es, cx
-
-; patch
-push      cx
-push      di
-
+mov       cx, di
 
 ;	y += (5 * (lname->height)) >>2;
 mov       dx, si
@@ -385,40 +380,41 @@ PUBLIC WI_drawEL_
 
 
 push      bx
+push      cx
 push      dx
-mov       bx, 27 * 2
+mov       bx, WIPATCH_ENTERING * 2
 mov       ax, WIOFFSETS_SEGMENT
 mov       dx, WIGRAPHICSPAGE0_SEGMENT
 mov       es, ax
-push      dx
 mov       ax, SCREENWIDTH
 mov       bx, word ptr es:[bx]
 mov       es, dx
-push      bx
-sub       ax, word ptr es:[bx]
+mov       cx, bx
+sub       ax, word ptr es:[bx + PATCH_T.patch_width]
 mov       dx, 2
 sar       ax, 1
 xor       bx, bx
 
-call  dword ptr ds:[_V_DrawPatch_addr]
+call      dword ptr ds:[_V_DrawPatch_addr]
 mov       ax, WIGRAPHICSLEVELNAME_SEGMENT
 mov       bx, MAX_LEVEL_COMPLETE_GRAPHIC_SIZE
 mov       es, ax
-mov       dx, word ptr es:[bx + 2]
+mov       dx, word ptr es:[bx + PATCH_T.patch_height]
 mov       ax, dx
-push      es
+
 SHIFT_MACRO shl ax 2
-push      bx
+mov       cx, bx
 add       dx, ax
 mov       ax, SCREENWIDTH
 SHIFT_MACRO sar dx 2
-sub       ax, word ptr es:[bx]
+sub       ax, word ptr es:[bx + PATCH_T.patch_width]
 add       dx, 2
 sar       ax, 1
 xor       bx, bx
 
-call  dword ptr ds:[_V_DrawPatch_addr]
+call      dword ptr ds:[_V_DrawPatch_addr]
 pop       dx
+pop       cx
 pop       bx
 ret       
 
@@ -497,8 +493,8 @@ jge   failed_inc_i
 
 mov   ax, di		; lnodex
 ; dx is already lnodey
-push  es
-push  bx
+; es already set
+mov   cx, bx
 xor   bx, bx
 
 call  dword ptr ds:[_V_DrawPatch_addr]
@@ -672,13 +668,16 @@ add   bx, ax
 
 mov   bx, word ptr cs:[bx + 6] ; pref lookup
 sal   bx, 1
-mov   ax, WIANIMSPAGE_SEGMENT
-push  ax                    ; segment arg to drawpatch
 mov   ax, WIANIMOFFSETS_SEGMENT
 mov   es, ax
 
-mov   ax, word ptr es:[bx]  ; anim patch offset
-push  ax                    ; offset arg to drawpatch
+push  cx  ; backup
+
+mov   cx, word ptr es:[bx]  ; anim patch offset
+
+mov   ax, WIANIMSPAGE_SEGMENT
+mov   es, ax  ; segment arg to drawpatch
+
 
 
 xor   ax, ax                ; set loc args
@@ -689,6 +688,7 @@ xor   bx, bx                ; fb argument
 
 call  dword ptr ds:[_V_DrawPatch_addr]
 
+pop   cx
 
 finish_draw_anim_loop_iter:
 add   di, (SIZE WIANIM_T)
@@ -815,7 +815,7 @@ mov   si, bx                    ; si holds n
 mov   al, byte ptr cs:[_numRef - OFFSET WI_STARTMARKER_]
 call  WI_GetPatch_
 mov   bx, ax
-mov   es, dx
+
 mov   ax, word ptr es:[bx]      ; fontwidth
 mov   word ptr [bp - 4], ax
 test  cx, cx
@@ -845,14 +845,15 @@ mov   si, ax                ; si updated
 ; todo just add by 14?
 mov   al, byte ptr cs:[bx + _numRef - OFFSET WI_STARTMARKER_]
 sub   di, word ptr [bp - 4]     ; x -= fontwidth
+push  cx
 call  WI_GetPatch_
+xchg  ax, cx
 xor   bx, bx
-push  dx
 mov   dx, word ptr [bp - 2]     ; set y
-push  ax
 mov   ax, di                    ; set x
 
 call  dword ptr ds:[_V_DrawPatch_addr]
+pop   cx
 jmp   loop_digits
 digits_negative:
 
@@ -890,9 +891,9 @@ mov   al, WIPATCH_MINUS
 call  WI_GetPatch_
 sub   di, 8
 xor   bx, bx
-push  dx
+
 mov   dx, word ptr [bp - 2]
-push  ax
+xchg  ax, cx
 mov   ax, di
 call  dword ptr ds:[_V_DrawPatch_addr]
 return_x_and_exit:
@@ -920,9 +921,9 @@ jnge  exit_draw_percent
 
 mov   al, WIPATCH_PERCENT
 call  WI_GetPatch_
-push  dx
+xchg  ax, cx
+
 xor   bx, bx
-push  ax
 mov   dx, di
 mov   ax, si
 call  dword ptr ds:[_V_DrawPatch_addr]
@@ -982,10 +983,11 @@ mov   word ptr [bp - 6], ax
 cmp   si, 60
 jne   check_tdiv
 do_draw_patch:
-push  word ptr [bp - 2]
+
 les   dx, dword ptr [bp - 8]
 mov   ax, es
-push  word ptr [bp - 4]
+
+les   cx, dword ptr [bp - 4]
 xor   bx, bx
 call  dword ptr ds:[_V_DrawPatch_addr]
 do_next_drawtime_iter:
@@ -1011,13 +1013,12 @@ jmp   do_next_drawtime_iter
 draw_sucks:
 mov   al, WIPATCH_SUCKS
 call  WI_GetPatch_
-xor   bx, bx
+xchg  ax, cx
 mov   si, ax
-push  dx
-mov   es, dx
-push  ax
-les   dx, dword ptr [bp - 8]
-mov   ax, es
+xor   bx, bx
+
+mov   dx, word ptr [bp - 8]
+mov   ax, word ptr [bp - 6]
 sub   ax, word ptr es:[si]
 call  dword ptr ds:[_V_DrawPatch_addr]
 LEAVE_MACRO 
@@ -1400,7 +1401,7 @@ mov   al, byte ptr cs:[_numRef - OFFSET WI_STARTMARKER_]	; patch numref 0
 
 call  WI_GetPatch_
 mov   si, ax
-mov   es, dx
+
 mov   dx, word ptr es:[si + PATCH_T.patch_height]  
 mov   ax, dx
 SHIFT_MACRO shl ax 2
@@ -1415,49 +1416,47 @@ call  WI_drawLF_
 mov   al, WIPATCH_KILLS
 xor   bx, bx
 call  WI_GetPatch_
-push  dx
+xchg  ax, cx
 mov   dx, SP_STATSY
-push  ax
-mov   ax, dx
+mov   ax, dx ; SP_STATSX
 call  dword ptr ds:[_V_DrawPatch_addr]
 mov   dx, SP_STATSY
 mov   ax, SCREENWIDTH - SP_STATSX
 mov   bx, word ptr cs:[_cnt_kills - OFFSET WI_STARTMARKER_]
 call  WI_drawPercent_
 mov   al, WIPATCH_ITEMS
-lea   cx, [si + 032h]
 call  WI_GetPatch_
-push  dx
+
+xchg  ax, cx
+
 xor   bx, bx
-push  ax
-mov   dx, cx
-mov   ax, SP_STATSY
+lea   dx, [si + SP_STATSY]
+
+mov   ax, SP_STATSX
 call  dword ptr ds:[_V_DrawPatch_addr]
 mov   ax, SCREENWIDTH - SP_STATSX
 mov   bx, word ptr cs:[_cnt_items - OFFSET WI_STARTMARKER_]
-mov   dx, cx
+lea   dx, [si + SP_STATSY]
+
 call  WI_drawPercent_
 mov   al, WIPATCH_SECRET
 call  WI_GetPatch_
-mov   cx, si
+xchg  ax, cx
+shl   si, 1
 xor   bx, bx
-push  dx
-add   cx, cx
-push  ax
-add   cx, SP_STATSY
-mov   ax, SP_STATSY
-mov   dx, cx
+lea   dx, [si + SP_STATSY]
+mov   ax, SP_STATSX
 call  dword ptr ds:[_V_DrawPatch_addr]
 mov   ax, SCREENWIDTH - SP_STATSX
 mov   bx, word ptr cs:[_cnt_secret - OFFSET WI_STARTMARKER_]
-mov   dx, cx
+lea   dx, [si + SP_STATSY]
+
 call  WI_drawPercent_
 mov   al, WIPATCH_TIME
 call  WI_GetPatch_
+xchg  ax, cx
 xor   bx, bx
-push  dx
 mov   dx, SP_TIMEY
-push  ax
 mov   ax, 16
 call  dword ptr ds:[_V_DrawPatch_addr]
 mov   dx, SP_TIMEY
@@ -1475,10 +1474,9 @@ ret
 done_exit_draw_stats:
 mov   al, WIPATCH_PAR
 call  WI_GetPatch_
+xchg  ax, cx
 xor   bx, bx
-push  dx
 mov   dx, SP_TIMEY
-push  ax
 mov   ax, SCREENWIDTH/2 + SP_TIMEX
 call  dword ptr ds:[_V_DrawPatch_addr]
 mov   dx, SP_TIMEY
@@ -1967,6 +1965,8 @@ sal   si, 1    ; word lookup
 mov   ax, word ptr cs:[_pars + si - OFFSET WI_STARTMARKER_]
 
 done_getting_pars:
+
+set_par:
 mov   word ptr [bx + WBSTARTSTRUCT_T.wbss_partime], ax        ; set partime
 
 xor   si, si
