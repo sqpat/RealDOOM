@@ -8928,12 +8928,16 @@ set_boxy_2:
 mov   al, 2
 jmp   boxy_calculated
 
+return_1_early:
+stc
+ret   
+
 PROC R_CheckBBox_ NEAR
 
 
 
 
-; es:bx is bsp lookup
+; ds:bx is bsp lookup
 
 
 ;	// Find the corners of the box
@@ -8941,7 +8945,7 @@ PROC R_CheckBBox_ NEAR
 
 SELFMODIFY_BSP_viewx_hi_4:
 mov   ax, 01000h
-cmp   ax, word ptr es:[bx + 4]         ; bspcoord[BOXLEFT]
+cmp   ax, word ptr ds:[bx + 4]         ; bspcoord[BOXLEFT]
 
 SELFMODIFY_BSP_viewx_lo_4:
 jge   viewx_greater_than_left    ; 7d xx
@@ -8952,14 +8956,14 @@ check_boxy:
 
 SELFMODIFY_BSP_viewy_hi_4:
 mov   ax, 01000h
-cmp   ax, word ptr es:[bx]         ; bspcoord[BOXTOP]
+cmp   ax, word ptr ds:[bx]         ; bspcoord[BOXTOP]
 jl    viewy_less_than_top
 xor   ax, ax
 boxy_calculated:
 SHIFT_MACRO shl al 2
 add   al, dl
 cmp   al, 5
-je    return_1
+je    return_1_early
 cbw
 mov   di, ax
 shl   di, 1
@@ -8974,7 +8978,7 @@ jmp   set_boxx_0
 SELFMODIFY_BSP_viewx_lo_4_TARGET_1:
 boxx_check_2nd_expression:
 ; ax is already viewx hi
-cmp   ax, word ptr es:[bx + 6]         ; bspcoord[BOXRIGHT]
+cmp   ax, word ptr ds:[bx + 6]         ; bspcoord[BOXRIGHT]
 jge   set_boxx_2
 set_boxx_1:
 mov   dl, 1
@@ -8983,7 +8987,7 @@ set_boxx_2:
 mov   dl, 2
 jmp   check_boxy
 viewy_less_than_top:
-cmp   ax, word ptr es:[bx + 2]         ; bspcoord[BOXBOTTOM]
+cmp   ax, word ptr ds:[bx + 2]         ; bspcoord[BOXBOTTOM]
 SELFMODIFY_BSP_viewy_lo_4:
 jle   boxy_check_2nd_expression
 SELFMODIFY_BSP_viewy_lo_4_AFTER:
@@ -8991,24 +8995,78 @@ set_boxy_1:
 mov   al, 1
 jmp   boxy_calculated
 
-R_CBB_SWITCH_CASE_00:
-; cx
-; di
-; si
-; dx
-mov   ax, es
-
-les   cx, dword ptr es:[bx]
+R_CBB_SWITCH_CASE_01:
+; di cx si dx
+mov   di, word ptr ds:[bx]
+mov   cx, di
+les   si, dword ptr ds:[bx+4]
+mov   dx, es
+jmp   boxpos_switchblock_done
+R_CBB_SWITCH_CASE_02:
+; di cx si dx
+les   di, dword ptr ds:[bx]
+mov   cx, es
+les   si, dword ptr ds:[bx+4]
+mov   dx, es
+jmp   boxpos_switchblock_done
+R_CBB_SWITCH_CASE_03:
+R_CBB_SWITCH_CASE_07:
+; dicxsidx
+mov   di, word ptr ds:[bx]
+mov   cx, di
+mov   si, di
+mov   dx, di
+jmp   boxpos_switchblock_done
+R_CBB_SWITCH_CASE_04:
+; sidx cx di
+mov   si, word ptr ds:[bx + 4]
+mov   dx, si
+les   cx, dword ptr ds:[bx]
 mov   di, es
+jmp   boxpos_switchblock_done
+R_CBB_SWITCH_CASE_06:
+; sidx di cx
+mov   si, word ptr ds:[bx+6]
+mov   dx, si
+les   di, dword ptr ds:[bx]
+mov   cx, es
+jmp   boxpos_switchblock_done
+R_CBB_SWITCH_CASE_08:
+; cx di dx si
+les   cx, dword ptr ds:[bx]
+mov   di, es
+les   dx, dword ptr ds:[bx+4]
+mov   si, es
+jmp   boxpos_switchblock_done
+R_CBB_SWITCH_CASE_09:
+; dicx dx si
+mov   di, word ptr ds:[bx+2]
+mov   cx, di
+les   dx, dword ptr ds:[bx+4]
+mov   si, es
+jmp   boxpos_switchblock_done
+R_CBB_SWITCH_CASE_10:
+; di cx dx si
+les   di, dword ptr ds:[bx]
+mov   cx, es
+les   dx, dword ptr ds:[bx+4]
+mov   si, es
+jmp   boxpos_switchblock_done
 
-mov   es, ax
-les   si, dword ptr es:[bx + 4]
+R_CBB_SWITCH_CASE_00:
+; cx di si dx
+les   cx, dword ptr ds:[bx]
+mov   di, es
+les   si, dword ptr ds:[bx + 4]
 mov   dx, es
 
 
 R_CBB_SWITCH_CASE_05:  ; unused
 boxpos_switchblock_done:
 ;	angle1.wu = R_PointToAngle16(x1, y1) - viewangle.wu;
+
+push  ss
+pop   ds
 
 ; di holds 
 call  R_PointToAngle16_
@@ -9098,7 +9156,6 @@ ret
 
 return_1:
 stc
-
 ret   
 
 check_tspan_vs_span_lobits:
@@ -9152,8 +9209,8 @@ tspan_smaller_than_span_2:
 ;		angle2.hu.intbits = -clipangle;
 
 SELFMODIFY_BSP_clipangle_8:
-mov   cx, 01000h
-neg   cx
+mov   cx, 01000h   ; already negative froms elfmodify
+
 
 done_with_second_tspan_adjustment:
 
@@ -9162,6 +9219,8 @@ add   ch, (ANG90_HIGHBITS SHR 8)
 SHIFT_MACRO shr si 2
 mov   bx, cx
 SHIFT_MACRO shr bx 2
+mov   ax, ss
+mov   ds, ax
 and   si, 0FFFEh  ; need to and out the last bit. (is there a faster way?)
 and   bl, 0FEh    ; need to and out the last bit. (is there a faster way?)
 mov   si, word ptr ds:[si + _viewangletox]
@@ -9187,98 +9246,7 @@ clc
 ret   
 
 
-R_CBB_SWITCH_CASE_01:
-; di cx
-; 
-; si
-; dx
-mov   di, word ptr es:[bx]
-mov   cx, di
 
-les   si, dword ptr es:[bx+4]
-mov   dx, es
-
-
-jmp   boxpos_switchblock_done
-R_CBB_SWITCH_CASE_02:
-
-; di 
-; cx
-; si
-; dx
-mov   dx, es
-les   di, dword ptr es:[bx]
-mov   cx, es
-mov   es, dx
-les   si, dword ptr es:[bx+4]
-mov   dx, es
-
-jmp   boxpos_switchblock_done
-R_CBB_SWITCH_CASE_03:
-R_CBB_SWITCH_CASE_07:
-; di cx si dx
-mov   di, word ptr es:[bx]
-mov   cx, di
-mov   si, di
-mov   dx, di
-jmp   boxpos_switchblock_done
-R_CBB_SWITCH_CASE_04:
-; di 
-; cx
-; si dx
-;
-mov   si, word ptr es:[bx + 4]
-mov   dx, si
-les   cx, dword ptr es:[bx]
-mov   di, es
-jmp   boxpos_switchblock_done
-R_CBB_SWITCH_CASE_06:
-; di
-; cx
-;
-; si dx
-mov   si, word ptr es:[bx + 6]
-mov   dx, si
-les   di, dword ptr es:[bx]
-mov   cx, es
-jmp   boxpos_switchblock_done
-R_CBB_SWITCH_CASE_08:
-; cx
-; di
-; dx
-; si
-mov   dx, es
-les   cx, dword ptr es:[bx]
-mov   di, es
-mov   es, dx
-les   dx, dword ptr es:[bx+4]
-mov   si, es
-
-jmp   boxpos_switchblock_done
-R_CBB_SWITCH_CASE_09:
-;
-; di cx
-; dx
-; si
-mov   di, word ptr es:[bx + 2]
-mov   cx, di
-les   dx, dword ptr es:[bx+4]
-mov   si, es
-
-jmp   boxpos_switchblock_done
-R_CBB_SWITCH_CASE_10:
-; di
-; cx
-; dx
-; si
-mov   dx, es
-les   di, dword ptr es:[bx]
-mov   cx, es
-mov   es, dx
-les   dx, dword ptr es:[bx+4]
-mov   si, es
-
-jmp   boxpos_switchblock_done
 
 ENDP
 
@@ -9403,7 +9371,7 @@ loop_check_bbox:
  shr   ax, 1
  shr   ax, 1
  add   ax, NODES_RENDER_SEGMENT
- mov   es, ax
+ mov   ds, ax
   
  shl   bx, 1   ; bx = side * 4
  shl   bx, 1   ; bx = side * 8
@@ -12286,6 +12254,7 @@ mov      word ptr ds:[SELFMODIFY_BSP_clipangle_4+2 - OFFSET R_BSP24_STARTMARKER_
 mov      word ptr ds:[SELFMODIFY_BSP_clipangle_5+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_clipangle_6+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_clipangle_7+2 - OFFSET R_BSP24_STARTMARKER_], ax
+neg      ax
 mov      word ptr ds:[SELFMODIFY_BSP_clipangle_8+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
