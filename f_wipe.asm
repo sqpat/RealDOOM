@@ -144,7 +144,7 @@ PUBLIC I_UpdateBox_Fwipe_local_
 push  si
 push  di
 
-mov   word ptr cs:[SELFMODIFY_set_h_check+2 - OFFSET F_WIPE_STARTMARKER_], cx
+mov   word ptr cs:[OFFSET _SELFMODIFY_set_h_check+2], cx
 
 mov   cx, ax
 
@@ -175,18 +175,18 @@ add   bx, dx    ; bx is offset
 ;    poffset = offset >> 2;
 
 
-mov   word ptr cs:[SELFMODIFY_set_offset+1 - OFFSET F_WIPE_STARTMARKER_], bx ; set
+mov   word ptr cs:[OFFSET _SELFMODIFY_set_offset+1], bx ; set
 SHIFT_MACRO shr   bx 2  ; poffset
-mov   word ptr cs:[SELFMODIFY_add_poffset+1 - OFFSET F_WIPE_STARTMARKER_], bx ; set
+mov   word ptr cs:[OFFSET _SELFMODIFY_add_poffset+1], bx ; set
 
 
 les   di, dword ptr ds:[_destscreen]
-add   word ptr cs:[SELFMODIFY_set_original_destscreen_offset+1 - OFFSET F_WIPE_STARTMARKER_], di ; add in by default
+add   word ptr cs:[OFFSET _SELFMODIFY_set_original_destscreen_offset+1], di ; add in by default
 
 
 ;    step = SCREENWIDTH - (count << 3);
 
-mov   word ptr cs:[SELFMODIFY_set_count+1 - OFFSET F_WIPE_STARTMARKER_], ax
+mov   word ptr cs:[OFFSET _SELFMODIFY_set_count+1], ax
 
 
 
@@ -199,9 +199,9 @@ sub   dx, ax            ; dx is step
 ;    pstep = step >> 2;
 
 mov   ax, dx
-mov   word ptr cs:[SELFMODIFY_add_step+2 - OFFSET F_WIPE_STARTMARKER_], ax
+mov   word ptr cs:[OFFSET _SELFMODIFY_add_step+2], ax
 SHIFT_MACRO sar   ax 2
-mov   word ptr cs:[SELFMODIFY_add_pstep+2 - OFFSET F_WIPE_STARTMARKER_], ax
+mov   word ptr cs:[OFFSET _SELFMODIFY_add_pstep+2], ax
 mov   dx, SC_INDEX
 mov   al, SC_MAPMASK
 out   dx, al
@@ -222,22 +222,22 @@ out   dx, al
 
 ;        source = &screen0[offset + i];
 ; source is ds:si
-SELFMODIFY_set_offset:
+_SELFMODIFY_set_offset:
 mov   si, 01000h
 add   si, cx   ; screen0 offset = offset + i
 
 
 ;        dest = (byte __far*) (destscreen.w + poffset);
 ; dest is es:di
-SELFMODIFY_set_original_destscreen_offset:
-SELFMODIFY_add_poffset:
+_SELFMODIFY_set_original_destscreen_offset:
+_SELFMODIFY_add_poffset:
 mov   di, 01000h ; just add it beforehand
 
 xor   bx, bx  ; j = 0 loop counter
 
 
 loop_next_pixel:
-SELFMODIFY_set_count:
+_SELFMODIFY_set_count:
 mov   dx, 01000h;
 dec   dx
 
@@ -260,14 +260,14 @@ jns    inner_inner_loop
 
 inner_inner_loop_done:
 inc   bx
-SELFMODIFY_add_step:
+_SELFMODIFY_add_step:
 add   si, 01000h
-SELFMODIFY_add_pstep:
+_SELFMODIFY_add_pstep:
 add   di, 01000h
 
 ;        for (j = 0; j < h; j++) {
 
-SELFMODIFY_set_h_check:
+_SELFMODIFY_set_h_check:
 cmp   bx, 01000h
 jb    loop_next_pixel
 inner_box_loop_done:
