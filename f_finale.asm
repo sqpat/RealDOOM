@@ -91,7 +91,8 @@ push  ss
 pop   ds    ; restore ds for this func call
 mov   bx, di
 add   si, ax
-call  dword ptr ds:[_V_MarkRect_addr]
+call  F_MarkRect_
+
 
 pop   ds    ; restore ds 0x5000
 mov   word ptr cs:[_SELFMODIFY_set_desttop+1], si
@@ -245,8 +246,9 @@ sal   bx, 1
 mov   cx, word ptr ds:[bx + _hu_font]
 
 mov   dx, 180   ; y coord for draw patch.
-xor   bx, bx
-call  dword ptr ds:[_V_DrawPatch_addr]
+
+call  F_DrawPatch_
+
 
 pop   cx 
 add   cx, di
@@ -524,9 +526,9 @@ mov   es, cx
 xor   cx, cx
 mov   dx, 170                ; y param
 mov   ax, SCREENWIDTHOVER2
-xor   bx, bx
 
-call  dword ptr ds:[_V_DrawPatch_addr]
+call  F_DrawPatch_
+
 exit_castdrawer:
 LEAVE_MACRO 
 ret   
@@ -621,12 +623,17 @@ pop       ds
 ; inlined
 Z_QUICKMAPAI4 (pageswapargs_stat_offset_size+1) INDEXED_PAGE_7000_OFFSET
 
-mov       cx, SCREENHEIGHT
-mov       bx, SCREENWIDTH
 xor       ax, ax
 cwd
+; inlined markrect, clear whole screen
+xor   ax, ax
+mov   di, OFFSET _dirtybox
+xor   ax, ax
+mov   word ptr ds:[di + 2 * BOXBOTTOM], ax
+mov   word ptr ds:[di + 2 * BOXLEFT],   ax
+mov   word ptr ds:[di + 2 * BOXTOP],    SCREENHEIGHT - 1
+mov   word ptr ds:[di + 2 * BOXRIGHT],  SCREENWIDTH - 1
 
-call      dword ptr ds:[_V_MarkRect_addr]
 mov       bx, SEGMENT_4000_OFFSET
 mov       ax, word ptr ds:[_finaletext]
 mov       cx, ds
@@ -694,9 +701,9 @@ mov       es, cx
 mov       cx, word ptr ds:[bx + _hu_font]
 
 mov       dx, di
-xor       bx, bx
 
-call      dword ptr ds:[_V_DrawPatch_addr]
+call      F_DrawPatch_
+
 pop       cx
 dec       cx
 jmp       loop_count   ; dude why is this not a loop instruction
@@ -785,19 +792,21 @@ xor   ax, ax
 mov   word ptr [bp - 4], ax
 mov   word ptr [bp - 6], ax
 xor   al, al
-mov   bx, SCREENWIDTH
 mov   byte ptr [bp - 2], al ; bp - 2 is pic2 boolean
 xor   ah, ah
 mov   word ptr [bp - 8], ax
 
 call  Z_QuickMapScratch_5000_FinaleLocal_
 
-mov   cx, SCREENHEIGHT
-
+; inlined markrect, clear whole screen
 xor   ax, ax
-cwd
+mov   di, OFFSET _dirtybox
+xor   ax, ax
+mov   word ptr ds:[di + 2 * BOXBOTTOM], ax
+mov   word ptr ds:[di + 2 * BOXLEFT],   ax
+mov   word ptr ds:[di + 2 * BOXTOP],    SCREENHEIGHT - 1
+mov   word ptr ds:[di + 2 * BOXRIGHT],  SCREENWIDTH - 1
 
-call  dword ptr ds:[_V_MarkRect_addr]
 ;    scrolled = 320 - (finalecount-230)/2;
 mov   ax, word ptr ds:[_finalecount]
 sub   ax, 230            
@@ -954,8 +963,8 @@ mov   es, word ptr [bp - 0Eh]  ; boy les would be great
 mov   cx, word ptr [bp - 8]
 
 mov   ax, (SCREENWIDTH-13*8)/2
-xor   bx, bx
-call  dword ptr ds:[_V_DrawPatch_addr]
+call  F_DrawPatch_
+
 exit_bunnyscroll:
 LEAVE_MACRO
 ret   
@@ -973,8 +982,8 @@ mov   es, word ptr [bp - 0Eh]  ; boy les would be great
 mov   cx, word ptr [bp - 8]
 
 mov   ax, (SCREENWIDTH-13*8)/2
-xor   bx, bx
-call  dword ptr ds:[_V_DrawPatch_addr]
+call  F_DrawPatch_
+
 mov   byte ptr ds:[_finale_laststage], 0
 LEAVE_MACRO
 ret
@@ -1213,24 +1222,24 @@ b_strooatk3:
 cmp   ax, S_SKEL_FIST4
 jb    b_sskelfist4
 ja    a_sskelfist4
-mov   ax, SFX_SKEPCH
+mov   al, SFX_SKEPCH
 jmp   selected_sfx
 
 b_sskelfist4:
 cmp   ax, S_SPOS_ATK2
 jb    b_ssposatk2
 ja    a_ssposatk2
-mov   ax, SFX_SHOTGN
+mov   al, SFX_SHOTGN
 jmp   selected_sfx
 
 
 e_spossatk2:
-mov   ax, 1
+mov   al, SFX_PISTOL
 jmp   selected_sfx
 a_ssposatk2:
 cmp   ax, S_SKEL_FIST2
 jne   ne_sskelfist2
-mov   ax, SFX_SKESWG
+mov   al, SFX_SKESWG
 jmp   selected_sfx
 b_ssposatk2:
 cmp   ax, S_POSS_ATK2
@@ -1238,7 +1247,7 @@ je    e_spossatk2
 
 cmp   ax, S_PLAY_ATK1
 jne   default_no_sfx
-mov   ax, SFX_DSHTGN
+mov   al, SFX_DSHTGN
 jmp   selected_sfx
 
 ne_sskelfist2:
@@ -1246,7 +1255,7 @@ cmp   ax, S_VILE_ATK2
 je    e_svileatk2
 jmp   default_no_sfx
 e_svileatk2:
-mov   ax, SFX_VILATK
+mov   al, SFX_VILATK
 jmp   selected_sfx
 
 
@@ -1254,7 +1263,7 @@ jmp   selected_sfx
 
 ae_strooatk3:
 ja    a_strooatk3
-mov   ax, SFX_CLAW
+mov   al, SFX_CLAW
 jmp   selected_sfx
 
 a_sskelfist4:
@@ -1264,7 +1273,7 @@ cmp   ax, S_FATT_ATK2
 jne   ne_sfattatk2
 
 e_sfattatk8:
-mov   ax, SFX_FIRSHT
+mov   al, SFX_FIRSHT
 jmp   selected_sfx
 
 a_strooatk3:
@@ -1275,12 +1284,12 @@ jae   ae_sbossatk2
 cmp   ax, S_HEAD_ATK2
 jne   ne_sheadatk2
 e_sbossatk2:
-mov   ax, SFX_FIRSHT
+mov   al, SFX_FIRSHT
 jmp   SHORT selected_sfx
 ae_sspidatk2:
 cmp   ax, S_SPID_ATK3
 ja    a_sspidatk3
-mov   ax, SFX_SHOTGN
+mov   al, SFX_SHOTGN
 jmp   selected_sfx
 a_sspidatk3:
 cmp   ax, S_CYBER_ATK4
@@ -1288,19 +1297,19 @@ jae   ae_scyberatk4
 cmp   ax, S_CYBER_ATK2
 jne   ne_scyberatk2
 e_scyberatk6:
-mov   ax, SFX_RLAUNC
+mov   al, SFX_RLAUNC
 jmp   selected_sfx
 
 ae_scyberatk4:
 jbe   e_scyberatk6
 cmp   ax, S_PAIN_ATK3
 jne   ne_spainatk3
-mov   ax, SFX_SKLATK
+mov   al, SFX_SKLATK
 jmp   selected_sfx
 ne_sfattatk2:
 cmp   ax, S_SKEL_MISS2
 jne   default_no_sfx
-mov   ax, SFX_SKEATK
+mov   al, SFX_SKEATK
 jmp   selected_sfx
 
 ne_spainatk3:
@@ -1312,13 +1321,13 @@ jmp   selected_sfx
 ne_scyberatk2:
 cmp   ax, S_BSPI_ATK2
 jne   default_no_sfx
-mov   ax, SFX_PLASMA
+mov   al, SFX_PLASMA
 jmp   selected_sfx
 ae_sbossatk2:
 jbe   e_sbossatk2
 cmp   ax, S_SKULL_ATK2
 jne   ne_sskullatk2
-mov   ax, SFX_SKLATK
+mov   al, SFX_SKLATK
 jmp   selected_sfx
 ne_sskullatk2:
 cmp   ax, S_BOS2_ATK2
@@ -1333,12 +1342,12 @@ cmp   ax, S_CPOS_ATK2
 jb    default_no_sfx
 cmp   ax, S_CPOS_ATK4
 ja    default_no_sfx
-mov   ax, SFX_SHOTGN
+mov   al, SFX_SHOTGN
 jmp   selected_sfx
 ne_sheadatk2:
 cmp   ax, S_SARG_ATK2
 jne   default_no_sfx
-mov   ax, SFX_SGTATK
+mov   al, SFX_SGTATK
 jmp   selected_sfx
 
 
@@ -1700,6 +1709,221 @@ ret
 
 ENDP
 
+
+PROC   F_MarkRect_ NEAR
+PUBLIC F_MarkRect_
+
+
+;    M_AddToBox16 (dirtybox, x, y); 
+;    M_AddToBox16 (dirtybox, x+width-1, y+height-1); 
+
+push      di
+
+mov       di, OFFSET _dirtybox
+
+add       cx, dx   
+dec       cx      ; y + height - 1
+add       bx, ax
+dec       bx      ; x + width - 1
+
+push      bx
+call      F_AddToBox16_
+pop       ax  ; restore bx
+mov       dx, cx
+call      F_AddToBox16_
+
+
+pop       di
+ret      
+
+
+ENDP
+
+;void __near M_AddToBox16 ( int16_t	x, int16_t	y, int16_t __near*	box  );
+
+PROC    F_AddToBox16_ NEAR
+PUBLIC  F_AddToBox16_
+
+mov   bx, (2 * BOXLEFT)
+cmp   ax, word ptr ds:[di + bx]
+jl    write_x_to_left
+mov   bl, (2 * BOXRIGHT)
+cmp   ax, word ptr ds:[di + bx]
+jle   do_y_compare
+write_x_to_left:
+mov   word ptr ds:[di + bx], ax
+do_y_compare:
+xchg  ax, dx
+mov   bl, 2 * BOXBOTTOM
+cmp   ax, word ptr ds:[di + bx]
+jl    write_y_to_bottom
+mov   bl, 2 * BOXTOP
+cmp   ax, word ptr ds:[di + bx]
+jng   exit_m_addtobox16
+write_y_to_bottom:
+mov   word ptr ds:[di + bx], ax
+exit_m_addtobox16:
+ret   
+
+
+ENDP
+
+
+PROC   F_DrawPatch_ NEAR
+PUBLIC F_DrawPatch_
+
+; ax is x
+; dl is y
+; bl is screen (always 0)
+; cx is patch offset
+; es is patch segment
+
+ cmp   byte ptr ds:[_skipdirectdraws], 0
+ jne   exit_early
+
+push  si 
+push  di 
+
+; bx = 2*ax for word lookup
+mov   di, cx
+mov   cx, es   
+mov   es, word ptr ds:[_screen_segments]   ;todo move to cs.
+mov   ds, cx    ; ds:di is seg
+
+;    y -= (patch->topoffset); 
+;    x -= (patch->leftoffset); 
+;	offset = y * SCREENWIDTH + x;
+
+; load patch
+
+; ds:di is patch
+mov   word ptr cs:[_SELFMODIFY_add_patch_offset+2], di
+sub   dx, word ptr ds:[di + PATCH_T.patch_topoffset]
+
+
+; calculate x + (y * screenwidth)
+
+
+IF COMPISA GE COMPILE_186
+
+    imul  si, dx , SCREENWIDTH
+    add   si, ax
+
+ELSE
+    xchg  ax, si  ; si gets x
+    mov   al, SCREENWIDTH / 2
+    mul   dl
+    sal   ax, 1
+    xchg  ax, si  ; si gets x
+    add   si, ax
+
+
+ENDIF
+
+; ax, dx maintained for markrect
+
+sub   si, word ptr ds:[di + PATCH_T.patch_leftoffset]
+mov   word ptr cs:[_SELFMODIFY_offset_add_di + 2], si
+
+; always screen 0, always mark rect
+
+
+push  ds
+push  es 	; restore previously looked up segment.
+
+
+les   bx, dword ptr ds:[di + PATCH_T.patch_width] 
+mov   cx, es    ; height
+
+
+push  ss
+pop   ds
+call  F_MarkRect_
+pop   es
+pop   ds
+
+
+
+
+;    w = (patch->width); 
+mov   cx, word ptr ds:[di + PATCH_T.patch_width]  ; count
+lea   bx, [di + PATCH_T.patch_columnofs]          ; set up columnofs ptr
+mov   dx, SCREENWIDTH - 1                         ; loop constant
+
+draw_next_column:
+push  cx            ; store patch width for outer loop iter
+xor   cx, cx        ; clear ch specifically
+
+
+; es:di is screen pixel target
+
+mov   si, word ptr ds:[bx]           ; ds:bx is current patch col offset to draw
+
+_SELFMODIFY_add_patch_offset:
+add   si, 01000h
+
+lodsw
+;		while (column->topdelta != 0xff )  
+
+cmp  al, 0FFh               ; al topdelta, ah length
+je   column_done
+
+draw_next_patch_column:
+
+; here we render the next patch in the column.
+
+xchg  cl, ah          ; cx is now col length, ah is now 0
+inc   si      
+
+
+IF COMPISA GE COMPILE_186
+imul   di, ax, SCREENWIDTH   ; ax has topdelta.
+
+ELSE
+; cant fit screenwidth in 1 byte but we can do this...
+mov   ah, SCREENWIDTH / 2
+mul   ah
+sal   ax, 1
+xchg  ax, di
+ENDIF
+
+
+
+_SELFMODIFY_offset_add_di:
+add   di, 01000h   ; retrieve offset
+
+; todo lazy len 8 or 16 unrolle dloop
+
+
+draw_next_patch_pixel:
+
+movsb
+add   di, dx
+loop  draw_next_patch_pixel 
+
+check_for_next_column:
+
+inc   si
+lodsw
+cmp   al, 0FFh
+jne   draw_next_patch_column
+
+column_done:
+add   bx, 4
+inc   word ptr cs:[_SELFMODIFY_offset_add_di + 2]   ; pixel offset increments each column
+pop   cx
+loop  draw_next_column		; relative out of range by 5 bytes
+
+done_drawing:
+push  ss
+pop   ds
+pop   di
+pop   si
+exit_early:
+ret
+
+
+ENDP
 
 
 

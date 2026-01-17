@@ -69,7 +69,7 @@ SHOWNEXTLOC = 1
 
 .CODE
 
-PROC WI_STARTMARKER_ NEAR
+PROC   WI_STARTMARKER_ NEAR
 PUBLIC WI_STARTMARKER_
 ENDP
 
@@ -224,7 +224,7 @@ dw 01482h, 02904h, 02D1Eh, 0396Ch, 02904h, 0189Ch, 01068h, 0041Ah
 _wianims:
 dw _epsd0animinfo - OFFSET WI_STARTMARKER_, _epsd1animinfo - OFFSET WI_STARTMARKER_, _epsd2animinfo - OFFSET WI_STARTMARKER_
 
-
+; todo return in bx?
 
 PROC WI_GetPatch_ NEAR
 PUBLIC WI_GetPatch_
@@ -281,11 +281,14 @@ ret
 ENDP
 
 
-PROC WI_slamBackground_ NEAR
+PROC   WI_slamBackground_ NEAR
 PUBLIC WI_slamBackground_
 
 
-PUSHA_NO_AX_OR_BP_MACRO
+push      cx
+push      di
+push      si
+
 mov       ax, SCREEN0_SEGMENT
 mov       es, ax
 mov       ah, (SCREEN1_SEGMENT SHR 8)
@@ -299,19 +302,24 @@ rep       movsw
 push      ss
 pop       ds
 
-mov       ax, SCREENHEIGHT
-xchg      ax, cx ; ax gets 0, cx gets screenheight
-cwd
-mov       bx, SCREENWIDTH
 
-call  dword ptr ds:[_V_MarkRect_addr]
+mov       di, OFFSET _dirtybox
+xor       ax, ax
+mov       word ptr ds:[di + 2 * BOXBOTTOM], ax
+mov       word ptr ds:[di + 2 * BOXLEFT],   ax
+mov       word ptr ds:[di + 2 * BOXTOP],    SCREENHEIGHT - 1
+mov       word ptr ds:[di + 2 * BOXRIGHT],  SCREENWIDTH - 1
 
-POPA_NO_AX_OR_BP_MACRO
+
+pop       si
+pop       di
+pop       cx
+
 ret       
 
 ENDP
 
-PROC WI_drawLF_ NEAR
+PROC   WI_drawLF_ NEAR
 PUBLIC WI_drawLF_
 
 
@@ -339,9 +347,9 @@ mov       dx, 2				; y = 2
 
 mov       si, word ptr es:[si + PATCH_T.patch_height]			; grab height of lname
 ;screen
-xor       bx, bx			; set to FB
-xor       cx, cx
-call      dword ptr ds:[_V_DrawPatch_addr]
+xor       bx, bx
+call      WI_DrawPatch_
+
 
 mov       cx, WIOFFSETS_SEGMENT
 mov       es, cx
@@ -350,7 +358,7 @@ mov       di, word ptr es:[WIPATCH_FINISHED * 2] ; todo constants
 
 mov       cx, WIGRAPHICSPAGE0_SEGMENT
 mov       es, cx
-mov       cx, di
+mov       bx, di
 
 ;	y += (5 * (lname->height)) >>2;
 mov       dx, si
@@ -365,17 +373,16 @@ mov       ax, SCREENWIDTH
 sub       ax, word ptr es:[di]
 sar       ax, 1
 
-; screen
-xor       bx, bx			; set to FB
 
-call  dword ptr ds:[_V_DrawPatch_addr]
+call  WI_DrawPatch_
+
 LEAVE_MACRO     
 POPA_NO_AX_OR_BP_MACRO
 ret      
 
 ENDP
 
-PROC WI_drawEL_ NEAR
+PROC   WI_drawEL_ NEAR
 PUBLIC WI_drawEL_
 
 
@@ -389,13 +396,12 @@ mov       es, ax
 mov       ax, SCREENWIDTH
 mov       bx, word ptr es:[bx]
 mov       es, dx
-mov       cx, bx
+
 sub       ax, word ptr es:[bx + PATCH_T.patch_width]
 mov       dx, 2
 sar       ax, 1
-xor       bx, bx
 
-call      dword ptr ds:[_V_DrawPatch_addr]
+call  WI_DrawPatch_
 mov       ax, WIGRAPHICSLEVELNAME_SEGMENT
 mov       bx, MAX_LEVEL_COMPLETE_GRAPHIC_SIZE
 mov       es, ax
@@ -403,16 +409,15 @@ mov       dx, word ptr es:[bx + PATCH_T.patch_height]
 mov       ax, dx
 
 SHIFT_MACRO shl ax 2
-mov       cx, bx
+
 add       dx, ax
 mov       ax, SCREENWIDTH
 SHIFT_MACRO sar dx 2
 sub       ax, word ptr es:[bx + PATCH_T.patch_width]
 add       dx, 2
 sar       ax, 1
-xor       bx, bx
 
-call      dword ptr ds:[_V_DrawPatch_addr]
+call      WI_DrawPatch_
 pop       dx
 pop       cx
 pop       bx
@@ -423,7 +428,7 @@ ENDP
 
 
 
-PROC WI_drawOnLnode_ NEAR
+PROC   WI_drawOnLnode_ NEAR
 PUBLIC WI_drawOnLnode_
 
 push  bx
@@ -494,10 +499,10 @@ jge   failed_inc_i
 mov   ax, di		; lnodex
 ; dx is already lnodey
 ; es already set
-mov   cx, bx
-xor   bx, bx
 
-call  dword ptr ds:[_V_DrawPatch_addr]
+
+call  WI_DrawPatch_
+
 jmp   exit_wi_drawonlnode
 
 failed_inc_i:
@@ -515,7 +520,7 @@ ENDP
 
 
 
-PROC WI_updateAnimatedBack_ NEAR
+PROC   WI_updateAnimatedBack_ NEAR
 PUBLIC WI_updateAnimatedBack_
 
 push  bx
@@ -628,7 +633,7 @@ ENDP
 
 
 
-PROC WI_drawAnimatedBack_ NEAR
+PROC   WI_drawAnimatedBack_ NEAR
 PUBLIC WI_drawAnimatedBack_
 
 push  bx
@@ -671,9 +676,8 @@ sal   bx, 1
 mov   ax, WIANIMOFFSETS_SEGMENT
 mov   es, ax
 
-push  cx  ; backup
 
-mov   cx, word ptr es:[bx]  ; anim patch offset
+mov   bx, word ptr es:[bx]  ; anim patch offset
 
 mov   ax, WIANIMSPAGE_SEGMENT
 mov   es, ax  ; segment arg to drawpatch
@@ -684,11 +688,10 @@ xor   ax, ax                ; set loc args
 mov   al, dl
 mov   dl, dh
 xor   dh, dh
-xor   bx, bx                ; fb argument
 
-call  dword ptr ds:[_V_DrawPatch_addr]
+call  WI_DrawPatch_
 
-pop   cx
+
 
 finish_draw_anim_loop_iter:
 add   di, (SIZE WIANIM_T)
@@ -708,7 +711,7 @@ ret
 ENDP
 
 
-PROC WI_initShowNextLoc_ NEAR
+PROC   WI_initShowNextLoc_ NEAR
 PUBLIC WI_initShowNextLoc_
 
 
@@ -720,7 +723,7 @@ mov   word ptr cs:[_acceleratestage - OFFSET WI_STARTMARKER_], 0
 
 ENDP
 
-PROC WI_initAnimatedBack_ NEAR
+PROC   WI_initAnimatedBack_ NEAR
 PUBLIC WI_initAnimatedBack_
 
 push  bx
@@ -801,7 +804,7 @@ ENDP
 ;int16_t __near WI_drawNum ( int16_t x, int16_t y, int16_t n, int16_t digits ){
 
 
-PROC WI_drawNum_ NEAR
+PROC   WI_drawNum_ NEAR
 PUBLIC WI_drawNum_
 
 push  si
@@ -845,15 +848,14 @@ mov   si, ax                ; si updated
 ; todo just add by 14?
 mov   al, byte ptr cs:[bx + _numRef - OFFSET WI_STARTMARKER_]
 sub   di, word ptr [bp - 4]     ; x -= fontwidth
-push  cx
+
 call  WI_GetPatch_
-xchg  ax, cx
-xor   bx, bx
+xchg  ax, bx
 mov   dx, word ptr [bp - 2]     ; set y
 mov   ax, di                    ; set x
 
-call  dword ptr ds:[_V_DrawPatch_addr]
-pop   cx
+call  WI_DrawPatch_
+
 jmp   loop_digits
 digits_negative:
 
@@ -890,12 +892,11 @@ je    return_x_and_exit
 mov   al, WIPATCH_MINUS
 call  WI_GetPatch_
 sub   di, 8
-xor   bx, bx
 
 mov   dx, word ptr [bp - 2]
-xchg  ax, cx
+xchg  ax, bx
 mov   ax, di
-call  dword ptr ds:[_V_DrawPatch_addr]
+call  WI_DrawPatch_
 return_x_and_exit:
 mov   ax, di
 LEAVE_MACRO 
@@ -906,7 +907,7 @@ ret
 ENDP
 
 
-PROC WI_drawPercent_ NEAR
+PROC   WI_drawPercent_ NEAR
 PUBLIC WI_drawPercent_
 
 
@@ -921,12 +922,11 @@ jnge  exit_draw_percent
 
 mov   al, WIPATCH_PERCENT
 call  WI_GetPatch_
-xchg  ax, cx
+xchg  ax, bx
 
-xor   bx, bx
 mov   dx, di
 mov   ax, si
-call  dword ptr ds:[_V_DrawPatch_addr]
+call  WI_DrawPatch_
 mov   bx, cx
 mov   cx, -1
 mov   dx, di
@@ -940,7 +940,7 @@ ret
 
 ENDP
 
-PROC WI_drawTime_ NEAR
+PROC   WI_drawTime_ NEAR
 PUBLIC WI_drawTime_
 
 
@@ -987,9 +987,8 @@ do_draw_patch:
 les   dx, dword ptr [bp - 8]
 mov   ax, es
 
-les   cx, dword ptr [bp - 4]
-xor   bx, bx
-call  dword ptr ds:[_V_DrawPatch_addr]
+les   bx, dword ptr [bp - 4]
+call  WI_DrawPatch_
 do_next_drawtime_iter:
 mov   ax, di
 cwd   
@@ -1013,14 +1012,13 @@ jmp   do_next_drawtime_iter
 draw_sucks:
 mov   al, WIPATCH_SUCKS
 call  WI_GetPatch_
-xchg  ax, cx
+xchg  ax, bx
 mov   si, ax
-xor   bx, bx
 
 mov   dx, word ptr [bp - 8]
 mov   ax, word ptr [bp - 6]
 sub   ax, word ptr es:[si]
-call  dword ptr ds:[_V_DrawPatch_addr]
+call  WI_DrawPatch_
 LEAVE_MACRO 
 pop   di
 pop   si
@@ -1032,7 +1030,7 @@ ENDP
 
 
 
-PROC WI_initNoState_ NEAR
+PROC   WI_initNoState_ NEAR
 PUBLIC WI_initNoState_
 
 mov   byte ptr cs:[_state - OFFSET WI_STARTMARKER_], -1
@@ -1044,7 +1042,7 @@ ENDP
 
 
 
-PROC WI_updateShowNextLoc_ NEAR
+PROC   WI_updateShowNextLoc_ NEAR
 PUBLIC WI_updateShowNextLoc_
 
 call  WI_updateAnimatedBack_
@@ -1067,7 +1065,7 @@ ret
 
 ENDP
 
-PROC WI_drawNoState_ NEAR
+PROC   WI_drawNoState_ NEAR
 PUBLIC WI_drawNoState_
 
 mov   byte ptr cs:[_snl_pointeron - OFFSET WI_STARTMARKER_], 1
@@ -1075,7 +1073,7 @@ mov   byte ptr cs:[_snl_pointeron - OFFSET WI_STARTMARKER_], 1
     ; fall thru
 ENDP
 
-PROC WI_drawShowNextLoc_ NEAR
+PROC   WI_drawShowNextLoc_ NEAR
 PUBLIC WI_drawShowNextLoc_
 
 push  bx
@@ -1151,7 +1149,7 @@ ret
 ENDP
 
 
-PROC WI_initStats_ NEAR
+PROC   WI_initStats_ NEAR
 PUBLIC WI_initStats_
 
 xor   ax, ax
@@ -1172,7 +1170,7 @@ ENDP
 
 
 
-PROC WI_updateStats_ NEAR
+PROC   WI_updateStats_ NEAR
 PUBLIC WI_updateStats_
 
 push  bx
@@ -1390,7 +1388,7 @@ ret
 ENDP
 
 
-PROC WI_drawStats_ NEAR
+PROC   WI_drawStats_ NEAR
 PUBLIC WI_drawStats_
 
 push  bx
@@ -1414,12 +1412,11 @@ call  WI_slamBackground_
 call  WI_drawAnimatedBack_
 call  WI_drawLF_
 mov   al, WIPATCH_KILLS
-xor   bx, bx
 call  WI_GetPatch_
-xchg  ax, cx
+xchg  ax, bx
 mov   dx, SP_STATSY
 mov   ax, dx ; SP_STATSX
-call  dword ptr ds:[_V_DrawPatch_addr]
+call  WI_DrawPatch_
 mov   dx, SP_STATSY
 mov   ax, SCREENWIDTH - SP_STATSX
 mov   bx, word ptr cs:[_cnt_kills - OFFSET WI_STARTMARKER_]
@@ -1427,13 +1424,12 @@ call  WI_drawPercent_
 mov   al, WIPATCH_ITEMS
 call  WI_GetPatch_
 
-xchg  ax, cx
+xchg  ax, bx
 
-xor   bx, bx
 lea   dx, [si + SP_STATSY]
-
 mov   ax, SP_STATSX
-call  dword ptr ds:[_V_DrawPatch_addr]
+
+call  WI_DrawPatch_
 mov   ax, SCREENWIDTH - SP_STATSX
 mov   bx, word ptr cs:[_cnt_items - OFFSET WI_STARTMARKER_]
 lea   dx, [si + SP_STATSY]
@@ -1441,12 +1437,13 @@ lea   dx, [si + SP_STATSY]
 call  WI_drawPercent_
 mov   al, WIPATCH_SECRET
 call  WI_GetPatch_
-xchg  ax, cx
+xchg  ax, bx
 shl   si, 1
-xor   bx, bx
+
 lea   dx, [si + SP_STATSY]
 mov   ax, SP_STATSX
-call  dword ptr ds:[_V_DrawPatch_addr]
+call  WI_DrawPatch_
+
 mov   ax, SCREENWIDTH - SP_STATSX
 mov   bx, word ptr cs:[_cnt_secret - OFFSET WI_STARTMARKER_]
 lea   dx, [si + SP_STATSY]
@@ -1454,11 +1451,11 @@ lea   dx, [si + SP_STATSY]
 call  WI_drawPercent_
 mov   al, WIPATCH_TIME
 call  WI_GetPatch_
-xchg  ax, cx
-xor   bx, bx
+xchg  ax, bx
 mov   dx, SP_TIMEY
 mov   ax, 16
-call  dword ptr ds:[_V_DrawPatch_addr]
+call  WI_DrawPatch_
+
 mov   dx, SP_TIMEY
 mov   ax, SCREENWIDTH/2 - SP_TIMEX
 mov   bx, word ptr cs:[_cnt_time - OFFSET WI_STARTMARKER_]
@@ -1474,11 +1471,11 @@ ret
 done_exit_draw_stats:
 mov   al, WIPATCH_PAR
 call  WI_GetPatch_
-xchg  ax, cx
-xor   bx, bx
+xchg  ax, bx
 mov   dx, SP_TIMEY
 mov   ax, SCREENWIDTH/2 + SP_TIMEX
-call  dword ptr ds:[_V_DrawPatch_addr]
+call  WI_DrawPatch_
+
 mov   dx, SP_TIMEY
 mov   ax, SCREENWIDTH - SP_TIMEX
 mov   bx, word ptr cs:[_cnt_par - OFFSET WI_STARTMARKER_]
@@ -1499,7 +1496,7 @@ str_wi_name2:
 db "WIMAP0", 0
 
 ; this function is a mess and the loop could be cleaned up but it works.
-PROC WI_loadData_ NEAR
+PROC   WI_loadData_ NEAR
 PUBLIC WI_loadData_
 
 PUSHA_NO_AX_OR_BP_MACRO
@@ -1703,7 +1700,7 @@ ENDP
 
 
 
-PROC WI_updateNoState_ NEAR
+PROC   WI_updateNoState_ NEAR
 PUBLIC WI_updateNoState_
 
 call  WI_updateAnimatedBack_
@@ -1724,7 +1721,7 @@ mov   byte ptr cs:[_unloaded - OFFSET WI_STARTMARKER_], 1
 
 
 
-PROC G_WorldDone_ NEAR
+PROC   G_WorldDone_ NEAR
 PUBLIC G_WorldDone_
 
 mov   byte ptr ds:[_gameaction], 8
@@ -1789,7 +1786,7 @@ ENDP
 
 
 
-PROC WI_Ticker_ FAR
+PROC   WI_Ticker_ FAR
 PUBLIC WI_Ticker_
 
 push  bx
@@ -1874,12 +1871,11 @@ ENDP
 
 
 
-PROC WI_Drawer_ FAR
+PROC   WI_Drawer_ FAR
 PUBLIC WI_Drawer_
 
 cmp   byte ptr cs:[_unloaded - OFFSET WI_STARTMARKER_], 0
-je    not_unloaded_do_draw
-retf  
+jne   unloaded_exit_early
 not_unloaded_do_draw:
 
 
@@ -1890,6 +1886,7 @@ call  WI_drawNoState_
 
 invalid_state:
 exit_wi_drawer:
+unloaded_exit_early:
 
 retf
 
@@ -1911,7 +1908,7 @@ ENDP
 
 
 
-PROC WI_initVariables_ NEAR
+PROC   WI_initVariables_ NEAR
 PUBLIC WI_initVariables_
 
 
@@ -1997,7 +1994,7 @@ ENDP
 
 
 
-PROC WI_Init_ NEAR
+PROC   WI_Init_ NEAR
 PUBLIC WI_Init_
 
 
@@ -2196,7 +2193,7 @@ pop    dx
 db    09Ah
 dw    S_STARTSOUNDAX0FAROFFSET, PHYSICS_HIGHCODE_SEGMENT
 
-Z_QUICKMAPAI3 (pageswapargs_intermission_offset_size+12) INDEXED_PAGE_6000_OFFSET
+Z_QUICKMAPAI3 (pageswapargs_intermission_offset_size+12) INDEXED_PAGE_9000_OFFSET
 
 pop    cx
 pop    si
@@ -2365,6 +2362,226 @@ retf
 
 ENDP
 
+
+PROC   WI_DrawPatch_ NEAR
+
+; ax is x
+; dl is y
+; bx is patch offset
+; cx is unused
+; es is patch segment
+
+ cmp   byte ptr ds:[_skipdirectdraws], 0
+ jne   exit_early
+
+push  si 
+push  di 
+push  cx
+
+; bx = 2*ax for word lookup
+mov   di, bx
+mov   cx, es   
+mov   es, word ptr ds:[_screen_segments]   ;todo move to cs.
+mov   ds, cx    ; ds:di is seg
+
+;    y -= (patch->topoffset); 
+;    x -= (patch->leftoffset); 
+;	offset = y * SCREENWIDTH + x;
+
+; load patch
+
+; ds:di is patch
+mov   word ptr cs:[_SELFMODIFY_add_patch_offset+2 - OFFSET WI_STARTMARKER_], di
+sub   dx, word ptr ds:[di + PATCH_T.patch_topoffset]
+
+
+; calculate x + (y * screenwidth)
+
+
+IF COMPISA GE COMPILE_186
+
+    imul  si, dx , SCREENWIDTH
+    add   si, ax
+
+ELSE
+    xchg  ax, si  ; si gets x
+    mov   al, SCREENWIDTH / 2
+    mul   dl
+    sal   ax, 1
+    xchg  ax, si  ; si gets x
+    add   si, ax
+
+
+ENDIF
+
+; ax, dx maintained for markrect
+
+sub   si, word ptr ds:[di + PATCH_T.patch_leftoffset]
+mov   word ptr cs:[_SELFMODIFY_offset_add_di + 2 - OFFSET WI_STARTMARKER_], si
+
+
+
+
+
+push  ds
+push  es 	; restore previously looked up segment.
+
+
+les   bx, dword ptr ds:[di + PATCH_T.patch_width] 
+mov   cx, es    ; height
+
+
+push  ss
+pop   ds
+call  WI_MarkRect_
+pop   es
+pop   ds
+
+
+
+
+;    w = (patch->width); 
+mov   cx, word ptr ds:[di + PATCH_T.patch_width]  ; count
+lea   bx, [di + PATCH_T.patch_columnofs]          ; set up columnofs ptr
+mov   dx, SCREENWIDTH - 1                         ; loop constant
+
+draw_next_column:
+push  cx            ; store patch width for outer loop iter
+xor   cx, cx        ; clear ch specifically
+
+
+; es:di is screen pixel target
+
+mov   si, word ptr ds:[bx]           ; ds:bx is current patch col offset to draw
+
+_SELFMODIFY_add_patch_offset:
+add   si, 01000h
+
+lodsw
+;		while (column->topdelta != 0xff )  
+
+cmp  al, 0FFh               ; al topdelta, ah length
+je   column_done
+
+draw_next_patch_column:
+
+; here we render the next patch in the column.
+
+xchg  cl, ah          ; cx is now col length, ah is now 0
+inc   si      
+
+
+IF COMPISA GE COMPILE_186
+imul   di, ax, SCREENWIDTH   ; ax has topdelta.
+
+ELSE
+; cant fit screenwidth in 1 byte but we can do this...
+mov   ah, SCREENWIDTH / 2
+mul   ah
+sal   ax, 1
+xchg  ax, di
+ENDIF
+
+
+
+_SELFMODIFY_offset_add_di:
+add   di, 01000h   ; retrieve offset
+
+; todo lazy len 8 or 16 unrolle dloop
+
+
+draw_next_patch_pixel:
+
+movsb
+add   di, dx
+loop  draw_next_patch_pixel 
+
+check_for_next_column:
+
+inc   si
+lodsw
+cmp   al, 0FFh
+jne   draw_next_patch_column
+
+column_done:
+add   bx, 4
+inc   word ptr cs:[_SELFMODIFY_offset_add_di + 2 - OFFSET WI_STARTMARKER_]   ; pixel offset increments each column
+pop   cx
+loop  draw_next_column		; relative out of range by 5 bytes
+
+done_drawing:
+push  ss
+pop   ds
+pop   cx
+pop   di
+pop   si
+exit_early:
+
+ret
+
+ENDP
+
+
+
+
+;void __far V_MarkRect ( int16_t x, int16_t y, int16_t width, int16_t height )  { 
+PROC   WI_MarkRect_ NEAR
+PUBLIC WI_MarkRect_
+
+
+;    M_AddToBox16 (dirtybox, x, y); 
+;    M_AddToBox16 (dirtybox, x+width-1, y+height-1); 
+
+push      di
+
+mov       di, OFFSET _dirtybox
+
+add       cx, dx   
+dec       cx      ; y + height - 1
+add       bx, ax
+dec       bx      ; x + width - 1
+
+push      bx
+call      WI_AddToBox16_
+pop       ax  ; restore bx
+mov       dx, cx
+call      WI_AddToBox16_
+
+
+pop       di
+ret   
+
+
+ENDP
+
+;void __near M_AddToBox16 ( int16_t	x, int16_t	y, int16_t __near*	box  );
+
+PROC    WI_AddToBox16_ NEAR
+PUBLIC  WI_AddToBox16_
+
+mov   bx, (2 * BOXLEFT)
+cmp   ax, word ptr ds:[di + bx]
+jl    write_x_to_left
+mov   bl, (2 * BOXRIGHT)
+cmp   ax, word ptr ds:[di + bx]
+jle   do_y_compare
+write_x_to_left:
+mov   word ptr ds:[di + bx], ax
+do_y_compare:
+xchg  ax, dx
+mov   bl, 2 * BOXBOTTOM
+cmp   ax, word ptr ds:[di + bx]
+jl    write_y_to_bottom
+mov   bl, 2 * BOXTOP
+cmp   ax, word ptr ds:[di + bx]
+jng   exit_m_addtobox16
+write_y_to_bottom:
+mov   word ptr ds:[di + bx], ax
+exit_m_addtobox16:
+ret   
+
+
+ENDP
 
 PROC WI_ENDMARKER_ NEAR
 PUBLIC WI_ENDMARKER_

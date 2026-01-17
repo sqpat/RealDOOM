@@ -25,7 +25,8 @@ EXTRN FixedDivWholeA_MapLocal_:NEAR
 EXTRN FixedDiv_MapLocal_:NEAR
 EXTRN FixedMul1632_MapLocal_:NEAR
 EXTRN FastDiv3216u_MapLocal_:NEAR
-
+EXTRN V_DrawPatch_:NEAR
+EXTRN V_MarkRect_:NEAR
 
 
 
@@ -2197,7 +2198,7 @@ mov       es, bp
 
 mov       cx, word ptr es:[di]  ;  + AMMNUMPATCHOFFSETS_FAR_OFFSET
 xor       bx, bx ; FB = 0
-call      dword ptr ds:[_V_DrawPatch_addr]
+call      V_DrawPatch_
 skip_draw_mark:
 inc       di
 inc       di
@@ -2210,7 +2211,7 @@ mov       cx, AUTOMAP_SCREENHEIGHT
 mov       bx, AUTOMAP_SCREENWIDTH
 xor       ax, ax
 cwd
-call      dword ptr ds:[_V_MarkRect_addr]
+call      V_MarkRect_
 
 POPA_NO_AX_MACRO
 retf      

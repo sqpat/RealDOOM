@@ -30,6 +30,8 @@ ST_WIDTH =	SCREENWIDTH
 ST_Y =		(SCREENHEIGHT - ST_HEIGHT)
 
 
+EXTRN V_MarkRect_:NEAR
+EXTRN V_DrawPatch_:NEAR
 EXTRN V_CopyRect_:NEAR
 EXTRN P_GivePower_:NEAR
 EXTRN R_PointToAngle2_MapLocal_:NEAR
@@ -196,15 +198,16 @@ mov   es, cx
 mov   cx, word ptr cs:[_sbar_]
 
 cwd   ; ax already 0
-call  dword ptr ds:[_V_DrawPatch_addr]
+call  V_DrawPatch_
+
 
 
 mov   cx, ST_HEIGHT
 mov   bx, SCREENWIDTH
 mov   dx, ST_Y
 xor   ax, ax
-call  dword ptr ds:[_V_MarkRect_addr]
 
+call  V_MarkRect_
 
 mov   cx, ST_HEIGHT
 mov   bx, SCREENWIDTH
@@ -753,7 +756,8 @@ mov   cx, es  ;  height
 push  cx
 push  bx  ; for the next call..
 
-call  dword ptr ds:[_V_MarkRect_addr]
+call  V_MarkRect_
+
 
 
 pop   bx    ; width
@@ -782,7 +786,8 @@ mov   cx, word ptr cs:[si]
 xor   ax, ax
 xchg  ax, bx    ; ax gets x. bx gets FG == 0
 
-call  dword ptr ds:[_V_DrawPatch_addr]
+call  V_DrawPatch_
+
 
 jmp   exit_updatemulticon
 
@@ -844,7 +849,7 @@ push  ax    ; x
 push  dx    ; number->y
 
 
-call  dword ptr ds:[_V_MarkRect_addr]
+call  V_MarkRect_
 
 
 ;    V_CopyRect (x + SCREENWIDTH*(number->y - ST_Y), x + SCREENWIDTH*number->y, digitwidth, h);
@@ -915,7 +920,8 @@ mov   es, cx  ; func arg
 mov   cx, word ptr cs:[si+bx]
 xor   bx, bx ; FG
 
-call  dword ptr ds:[_V_DrawPatch_addr]
+call  V_DrawPatch_
+
 
 pop   cx
 pop   dx
@@ -935,7 +941,8 @@ sub   ax, cx
 mov   cx, ST_GRAPHICS_SEGMENT
 mov   es, cx  ; func arg
 mov   cx, word ptr cs:[si] ; first offset is 0
-call  dword ptr ds:[_V_DrawPatch_addr]
+call  V_DrawPatch_
+
 
 jmp   exit_stlib_drawnum
 ENDP
@@ -967,7 +974,7 @@ mov   cx, ST_GRAPHICS_SEGMENT
 mov   es, cx
 mov   cx, word ptr cs:[si]
 xor   bx, bx
-call  dword ptr ds:[_V_DrawPatch_addr]
+call  V_DrawPatch_
 
 
 pop   ax

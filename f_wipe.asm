@@ -981,7 +981,7 @@ pop     dx
 
 retf
 
-endp
+ENDP
 
 PROC wipe_WipeLoop_ FAR
 PUBLIC wipe_WipeLoop_
@@ -998,15 +998,23 @@ Z_QUICKMAPAI4 pageswapargs_wipe_offset_size    INDEXED_PAGE_9000_OFFSET
 Z_QUICKMAPAI8_NO_DX (pageswapargs_wipe_offset_size+4)  INDEXED_PAGE_6000_OFFSET
 
 mov       ax, SCREEN3_SEGMENT
-mov       cx, SCREENHEIGHT
-mov       bx, SCREENWIDTH
 call      I_ReadScreen_
+
+; inlined markrect with fixed params
+
+
+mov       di, OFFSET _dirtybox
 xor       ax, ax
 cwd
+mov       word ptr ds:[di + 2 * BOXBOTTOM], ax
+mov       word ptr ds:[di + 2 * BOXLEFT],   ax
+mov       word ptr ds:[di + 2 * BOXTOP],    SCREENHEIGHT - 1
+mov       word ptr ds:[di + 2 * BOXRIGHT],  SCREENWIDTH - 1
+
 mov       si, ax
 mov       di, ax
 
-call  dword ptr ds:[_V_MarkRect_addr]
+
 
 mov       CX, 07D00h   ; SCREENWIDTH * SCREENHEIGHT / 2
 mov       ax, SCREEN0_SEGMENT
