@@ -258,7 +258,7 @@ ENDP
 
 
 
-PROC   V_DrawPatchDirect_ FAR
+PROC   V_DrawPatchDirect_ NEAR
 PUBLIC V_DrawPatchDirect_
 
 ; CX:BX is patch
@@ -403,7 +403,7 @@ pop   di
 pop   si
 
 exit_direct_early:
-retf  
+ret  
 
 ENDP
 

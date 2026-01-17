@@ -46,7 +46,7 @@ PUBLIC R_FillBackScreen_ForceBufferRedraw_
 
 mov    byte ptr ds:[_hudneedsupdate], 6
 mov    byte ptr ds:[_borderdrawcount], 3
-call   Z_QuickMapPhysics_  ; page in code and screen 0
+;call   Z_QuickMapPhysics_  ; page in code and screen 0
 
 ; fall thru
 ;call  R_FillBackScreen_

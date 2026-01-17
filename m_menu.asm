@@ -394,9 +394,7 @@ mov   dx, 28
 mov   ax, 72
 
 
-db    09Ah
-dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
-
+call  M_DrawPatchDirect_
 
 loop_draw_next_load_bar:
 
@@ -445,8 +443,7 @@ mov   ax, si
 mov   dx, di
 sub   ax, 8
 
-db    09Ah
-dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  M_DrawPatchDirect_
 
 
 
@@ -458,8 +455,7 @@ SELFMODIFY_set_saveloadborder_offset:
 mov   bx, 01000h
 SELFMODIFY_set_saveloadborder_segment:
 mov   cx, 01000h
-db    09Ah
-dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  M_DrawPatchDirect_
 add   si, 8
 inc   bp
 cmp   bp, 24
@@ -470,8 +466,7 @@ mov   cx, es
 
 mov   dx, di
 mov   ax, si
-db    09Ah
-dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  M_DrawPatchDirect_
 POPA_NO_AX_MACRO
 ret   
 
@@ -614,8 +609,7 @@ mov   di, LOADDEF_Y
 mov   dx, 28
 mov   ax, 72
 
-db    09Ah
-dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  M_DrawPatchDirect_
 
 xor   si, si
 
@@ -1107,8 +1101,7 @@ mov   cx, es
 
 mov   dx, 38
 mov   ax, 60
-db    09Ah
-dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  M_DrawPatchDirect_
 mov   bx, 16
 mov   ax, SOUNDDEF_X
 mov   dx, SOUNDDEF_Y  + LINEHEIGHT*(SOUND_E_SFX_VOL+1)
@@ -1263,8 +1256,7 @@ les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_DOOM)]
 mov   cx, es
 mov   dx, 2
 mov   ax, 94
-db    09Ah
-dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  M_DrawPatchDirect_
 pop   dx
 pop   cx
 pop   bx
@@ -1287,8 +1279,7 @@ mov   cx, es
 
 mov   dx, 14
 mov   ax, 96
-db    09Ah
-dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  M_DrawPatchDirect_
 
 
 les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_SKILL)]
@@ -1296,8 +1287,7 @@ mov   cx, es
 
 mov   dx, 38
 mov   ax, 54
-db    09Ah
-dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  M_DrawPatchDirect_
 
 pop   dx
 pop   cx
@@ -1339,8 +1329,7 @@ mov   cx, es
 
 mov   dx, 38
 mov   ax, 54
-db    09Ah
-dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  M_DrawPatchDirect_
 pop   dx
 pop   cx
 pop   bx
@@ -1481,8 +1470,7 @@ mov   cx, es
 
 mov   dx, 15
 mov   ax, 108
-db    09Ah
-dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  M_DrawPatchDirect_
 
 xor   bx, bx
 mov   bl, byte ptr ds:[_detailLevel]
@@ -1492,8 +1480,7 @@ les   bx, dword ptr cs:[_menupatches + bx]
 mov   cx, es
 mov   dx, OPTIONSDEF_Y + LINEHEIGHT*OPTIONS_E_DETAIL
 mov   ax, OPTIONSDEF_X + 175
-db    09Ah
-dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  M_DrawPatchDirect_
 
 xor   bx, bx
 mov   bl, byte ptr ds:[_showMessages]
@@ -1504,8 +1491,7 @@ mov   cx, es
 mov   dx, OPTIONSDEF_Y + LINEHEIGHT*OPTIONS_E_MESSAGES
 mov   ax, OPTIONSDEF_X + 120
 
-db    09Ah
-dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  M_DrawPatchDirect_
 
 mov   bx, 10
 mov   cl, byte ptr ds:[_mouseSensitivity]
@@ -1972,8 +1958,7 @@ mov   cx, es
 
 mov   dx, di
 
-db    09Ah
-dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  M_DrawPatchDirect_
 
 
 loop_next_thermo:
@@ -1982,8 +1967,7 @@ les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_THERMM)]
 mov   cx, es
 mov   dx, di
 mov   ax, si
-db    09Ah
-dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  M_DrawPatchDirect_
 
 add   si, 8
 dec   bp
@@ -1996,8 +1980,7 @@ mov   cx, es
 mov   dx, di
 mov   ax, si
 
-db    09Ah
-dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  M_DrawPatchDirect_
 
 
 les   bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_THERMO)]
@@ -2007,8 +1990,7 @@ mov   cx, es
 mov   dx, di
 SELFMODIFY_thermDot:
 mov   ax, 01000h
-db    09Ah
-dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  M_DrawPatchDirect_
 
 
 pop   bp
@@ -2248,8 +2230,7 @@ sal   bx, 1
 mov   bx, word ptr ds:[bx + _hu_font]
 xchg  ax, si
 mov   dx, di
-db    09Ah
-dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  M_DrawPatchDirect_
 
 jmp   loop_next_char_to_write
 exit_m_writetext:
@@ -2923,8 +2904,7 @@ les   bx, dword ptr cs:[_menupatches + bx]
 mov   cx, es
 mov   ax, di
 mov   dx, si
-db    09Ah
-dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  M_DrawPatchDirect_
 
 pop   bx
 
@@ -2950,8 +2930,7 @@ mul   byte ptr cs:[_itemOn]
 add   dx, ax
 sub   dx, 5
 lea   ax, [di - SKULLXOFF]
-db    09Ah
-dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  M_DrawPatchDirect_
 
 do_exit_check:
 ; actually we quickmap on exit...
@@ -3451,8 +3430,7 @@ add    ax, word ptr ds:[_viewwindowx]
 les    bx, dword ptr cs:[_menupatches + (4 * MENUPATCH_M_PAUSE)]
 mov    cx, es
 
-db    09Ah
-dw    V_DRAWPATCHDIRECT_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call   M_DrawPatchDirect_
 
 
 pop    dx
@@ -3623,6 +3601,157 @@ mov   word ptr ds:[_mousex], ax
 pop   cx
 pop   bx
 ret   
+
+ENDP
+
+
+
+PROC   M_DrawPatchDirect_ NEAR
+PUBLIC M_DrawPatchDirect_
+
+; CX:BX is patch
+; dx is y
+; ax is x
+
+
+; ARGS:
+; ax is x
+; dl is y
+; bl is screen
+; cx is patch offset
+; es is patch segment
+
+cmp   byte ptr ds:[_skipdirectdraws], 0
+jne   exit_direct_early
+
+push  si 
+push  di 
+push  bp    ; bp maintains current pixel and 3
+
+les   di, dword ptr ds:[_destscreen]
+mov   ds, cx
+
+; es:di  is scren
+; ds:bx  is patch
+
+
+
+;    y -= (patch->topoffset); 
+;    x -= (patch->leftoffset); 
+;	offset = y * SCREENWIDTH + x;
+
+; load patch
+
+; ds:bx is patch
+mov   word ptr cs:[_SELFMODIFY_add_patch_offset_direct+2], bx
+sub   ax, word ptr ds:[bx + PATCH_T.patch_leftoffset]
+sub   dx, word ptr ds:[bx + PATCH_T.patch_topoffset]
+
+mov   bp, ax        ; bp gets starting x. 
+and   bp, 3
+SHIFT_MACRO SHR AX 2
+
+; calculate x + (y * screenwidth)
+
+
+IF COMPISA GE COMPILE_186
+
+    imul  si, dx , SCREENWIDTH / 4
+    add   ax, si  ; add x >> 2
+
+ELSE
+    xchg  ax, si    
+    mov   al, SCREENWIDTH / 4
+    mul   dl
+    add   ax, si  ; add x >> 2
+
+ENDIF
+
+add   ax, di ; add currentscreen offset
+mov   word ptr cs:[_SELFMODIFY_offset_add_di_direct + 2], ax
+
+; no mark rect
+
+;    w = (patch->width); 
+mov   cx, word ptr ds:[bx + PATCH_T.patch_width]  ; count
+lea   bx, [bx + PATCH_T.patch_columnofs]          ; set up columnofs ptr
+
+draw_next_column_direct:
+push  cx            ; store patch width for outer loop iter
+
+mov   cx, bp        ; get x. already ANDed to 3, ch is 0
+mov   al, 1
+
+; select plane... 
+
+mov   dx, SC_DATA
+shl   al, cl
+out   dx, al
+mov   dx, ((SCREENWIDTH / 4) - 1)                 ; add per pixel write
+
+; es:di is screen pixel target
+
+mov   si, word ptr ds:[bx]           ; ds:bx is current patch col offset to draw
+
+_SELFMODIFY_add_patch_offset_direct:
+add   si, 01000h
+
+lodsw                                ; while (column->topdelta != 0xff )  
+
+cmp  al, 0FFh               ; al topdelta, ah length
+je   column_done_direct
+
+draw_next_patch_column_direct:
+
+; here we render the next patch in the column.
+
+xchg  cl, ah          ; cx is now col length. note ah is not 0 but doesnt matter in this case.
+inc   si      
+
+mov   ah, SCREENWIDTH / 4
+mul   ah
+xchg  ax, di
+
+
+
+_SELFMODIFY_offset_add_di_direct:
+add   di, 01000h   ; retrieve offset
+
+; todo lazy len 8 or 16 unrolled loop?
+
+
+draw_next_patch_pixel_direct:
+
+movsb
+add   di, dx
+loop  draw_next_patch_pixel_direct
+
+check_for_next_column_direct:
+
+inc   si
+lodsw
+cmp   al, 0FFh
+jne   draw_next_patch_column_direct
+
+column_done_direct:
+add   bx, 4     ; next columnofs
+inc   bp        ; next plane
+and   bp, 3     ; check for plane 0
+jne   skip_offset_inc
+inc   word ptr cs:[_SELFMODIFY_offset_add_di_direct + 2]   ; pixel offset increments each 4 columns
+skip_offset_inc:
+pop   cx
+loop  draw_next_column_direct		; relative out of range by 5 bytes
+
+done_drawing_direct:
+push  ss
+pop   ds
+pop   bp
+pop   di
+pop   si
+
+exit_direct_early:
+ret  
 
 ENDP
 
