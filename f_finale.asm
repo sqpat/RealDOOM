@@ -454,7 +454,6 @@ mov   word ptr [bp - 2], ax
 
 mov   ax, OFFSET str_bossback
 mov   dx, cs
-xor   bx, bx
 
 call  dword ptr ds:[_V_DrawFullscreenPatch_addr]
 
@@ -1628,7 +1627,7 @@ jne   do_ultimate_fullscreenpatch
 mov   ax, OFFSET str_help2
 do_finaledraw:
 mov   dx, cs
-xor   bx, bx
+
 call  dword ptr ds:[_V_DrawFullscreenPatch_addr]
 exit_fdrawer:
 POPA_NO_AX_OR_BP_MACRO

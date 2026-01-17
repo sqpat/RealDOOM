@@ -43,8 +43,8 @@
 #define wipe_StartScreenOffset                  0x4CC
 #define wipe_WipeLoopOffset                     0x512
 #define F_StartFinaleOffset                     0x177
-#define F_ResponderOffset                       0xA44
-#define F_DrawerOffset                          0xA6E
+#define F_ResponderOffset                       0xA42
+#define F_DrawerOffset                          0xA6C
 #define LoadSFXWadLumpsOffset                   0x4
 #define P_SetThingPositionFarOffset             0x29A4
 #define P_SpawnMapThingOffset                   0x2B17
@@ -52,10 +52,10 @@
 #define AM_DrawerOffset                         0x95A2
 #define S_StartSoundFarOffset                   0xB799
 #define S_StartOffset                           0xB877
-#define M_InitOffset                            0x11A8
-#define M_ResponderOffset                       0xD7D
-#define M_DrawPauseOffset                       0x138A
-#define M_StartControlPanelOffset               0x104C
+#define M_InitOffset                            0x1186
+#define M_ResponderOffset                       0xD5B
+#define M_DrawPauseOffset                       0x1368
+#define M_StartControlPanelOffset               0x102A
 
 #define R_DrawColumn24CodeSize         0xE46
 #define R_DrawColumn16CodeSize         0xCB4
@@ -75,15 +75,15 @@
 #define R_MaskedConstantsFLCodeSize    0xEB
 #define R_DrawSkyColumnCodeSize        0xD86
 #define R_DrawSkyColumnFLCodeSize      0x303
-#define M_MenuCodeSize                 0x1528
+#define M_MenuCodeSize                 0x1506
 #define R_BSP24CodeSize                0x36A7
 #define R_BSP16CodeSize                0x375A
 #define R_BSP0CodeSize                 0x3689
 #define R_BSPFLCodeSize                0x3631
-#define WI_StuffCodeSize               0x113D
+#define WI_StuffCodeSize               0x113A
 #define PSightCodeSize                 0xB902
 #define WipeCodeSize                   0x5FA
-#define FinaleCodeSize                 0xB9B
+#define FinaleCodeSize                 0xB97
 #define SaveLoadCodeSize               0xBB7
 #define SMLoadCodeSize                 0x492
 #define SInitCodeSize                  0x55D

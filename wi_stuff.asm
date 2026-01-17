@@ -1534,7 +1534,6 @@ cmp   byte ptr [bx + WBSTARTSTRUCT_T.wbss_epsd], 3
 jne   dont_set_name1
 lea   di, [bp - 036h]
 dont_set_name1:
-mov   bx, 1
 mov   ax, di
 mov   dx, ds
 call  dword ptr ds:[_V_DrawFullscreenPatch_FromIntermission_addr]

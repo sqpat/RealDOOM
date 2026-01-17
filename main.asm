@@ -2652,7 +2652,7 @@ jne   jump_to_done_with_gs_level_case
 
 mov   ax, word ptr ds:[_pagename]
 mov   dx, cs
-xor   bx, bx ; screen 0  ; ok to wreck bl/bx here? bh seems to be expected to be 0, this doesnt change?
+
 call  V_DrawFullscreenPatch_ 
 
 jump_to_done_with_gs_level_case:

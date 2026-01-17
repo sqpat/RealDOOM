@@ -1028,12 +1028,12 @@ ENDP
 PROC    M_DrawReadThis1_ NEAR
 PUBLIC  M_DrawReadThis1_
 
+mov   ax, OFFSET _MENU_STRING_HELP2
+do_read_this:
 push  dx
 push  bx
-mov   ax, OFFSET _MENU_STRING_HELP2
 
 mov   dx, cs
-xor   bx, bx
 mov   byte ptr ds:[_inhelpscreens], 1
 
 call  dword ptr ds:[_V_DrawFullscreenPatch_FromMenu_addr]
@@ -1047,43 +1047,14 @@ ENDP
 
 PROC    M_DrawReadThis2_ NEAR
 PUBLIC  M_DrawReadThis2_
-
-
-push  dx
-push  bx
 mov   ax, OFFSET _MENU_STRING_HELP1
-
-mov   dx, cs
-xor   bx, bx
-mov   byte ptr ds:[_inhelpscreens], 1
-
-call  dword ptr ds:[_V_DrawFullscreenPatch_FromMenu_addr]
-
-pop   bx
-pop   dx
-ret   
-
-
+jmp   do_read_this
 ENDP
 
 PROC    M_DrawReadThisRetail_ NEAR
 PUBLIC  M_DrawReadThisRetail_
-
-push  dx
-push  bx
 mov   ax, OFFSET _MENU_STRING_HELP
-
-mov   dx, cs
-xor   bx, bx
-mov   byte ptr ds:[_inhelpscreens], 1
-
-call  dword ptr ds:[_V_DrawFullscreenPatch_FromMenu_addr]
-
-pop   bx
-pop   dx
-ret   
-
-
+jmp   do_read_this
 ENDP
 
 
