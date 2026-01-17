@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/17 09:38:05
+Created on:       26/01/17 10:02:02
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -198,8 +198,8 @@ Module: main.obj(main.ASM)
 0000:33ef      _oldkeyboardisr
 0000:33eb      _sidemove
 0000:3da4*     I_UpdateNoBlit_
-0000:44f5*     D_MAIN_ENDMARKER_
 0000:33e7      _forwardmove
+0000:44f5*     D_MAIN_ENDMARKER_
 0000:360e      _scantokey
 0000:3cac      I_SetPalette_
 0000:3cfc*     I_UpdateBox_
@@ -361,4 +361,4 @@ Module: z_zone.obj(z_zone.ASM)
 Stack size:  0400 (1024.)
 Memory size:  74a0 (29856.)
 Entry point address: 0000:0000
-Link time: 00:00.65
+Link time: 00:00.10

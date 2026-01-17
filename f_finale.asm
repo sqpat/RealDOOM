@@ -1501,7 +1501,7 @@ mov   ax, 50  ; 50 low 0 hi
 
 cmp   byte ptr ds:[_commercial], ah ; 0
 je    done_checking_skipping
-cmp   word ptr ds:[_finalecount], al ; 50
+cmp   word ptr ds:[_finalecount], ax ; 50
 jle   done_checking_skipping
 cmp   byte ptr ds:[_player + PLAYER_T.player_cmd_buttons], ah ; 0
 je    done_checking_skipping

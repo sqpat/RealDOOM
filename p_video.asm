@@ -244,6 +244,9 @@ db "brdr_tr", 0
 str_brdr_br:
 db "brdr_br", 0
 
+exit_early:
+retf
+
 PROC V_DrawPatch5000Screen0_ NEAR
 PUBLIC V_DrawPatch5000Screen0_
 
@@ -252,232 +255,137 @@ PUBLIC V_DrawPatch5000Screen0_
 
 ; patch is 5000:0000
 
- 
-
-; todo: modify stack amount
-; todo: use dx for storing a loop var
-; todo: use cx more effectively. ch and cl?
-; todo: change input to not be bp based
-; possible todo: interrupts, sp
-; todo: make 8086
-
-push  cx
-push  si
-push  di
-push  dx
-push  bx
-push  ds
-mov   es, word ptr ds:[_screen_segments]
 
 
-cmp   byte ptr ds:[_skipdirectdraws], 0
-je    doing_draws5000Screen0_
-jumptoexit5000Screen0_:
-jmp   jumpexit5000Screen0_
-doing_draws5000Screen0_:
+ cmp   byte ptr ds:[_skipdirectdraws], 0
+ jne   exit_early
+
+PUSHA_NO_AX_OR_BP_MACRO
+
+
+mov   es, word ptr ds:[_screen_segments]  ; 05000h
+
+mov   bx, SCRATCH_SEGMENT_5000
+mov   ds, bx
+xor   bx, bx
 
 ;    y -= (patch->topoffset); 
 ;    x -= (patch->leftoffset); 
 ;	offset = y * SCREENWIDTH + x;
 
 ; load patch
-; for 486 with larger prefetch queues we must write this BX as early as possible.
-mov   word ptr cs:[OFFSET SELFMODIFY_setup_bx_instruction5000Screen0_ + 1], 8  ; store column
 
-mov   bx, SCRATCH_SEGMENT_5000
-mov   ds, bx
-xor   bx, bx
+; ds:bx is patch
+mov   word ptr cs:[_SELFMODIFY_add_patch_offset+2], bx
+sub   dx, word ptr ds:[bx + PATCH_T.patch_topoffset]
 
 
 
-sub   dl, byte ptr ds:[bx + 6]	; patch topoffset
-xor   dh, dh
-
-; si = y * screenwidth
+; calculate x + (y * screenwidth)
 
 
 IF COMPISA GE COMPILE_186
 
-imul   si, dx , SCREENWIDTH
+    imul  si, dx , SCREENWIDTH
+    add   si, ax
 
 ELSE
-
-mov    si, dx
-mov    di, ax
-mov    ax, SCREENWIDTH
-mul    dx
-mov    dx, si
-mov    si, ax
-mov    ax, di
+    xchg  ax, si  ; si gets x
+    mov   al, SCREENWIDTH / 2
+    mul   dl
+    sal   ax, 1
+    xchg  ax, si  ; si gets x
+    add   si, ax
 
 
 ENDIF
 
-add    si, ax
 
-
-sub   si, word ptr ds:[bx + 4]	; patch left offset
-
-
+sub   si, word ptr ds:[bx + PATCH_T.patch_leftoffset]
 
 ; no need to mark rect. we do it in outer func..
 
+mov   word ptr cs:[OFFSET SELFMODIFY_offset_add_di + 2], si
 
-; 	desttop = MK_FP(screen_segments[scrn], offset); 
 
-
-; load patch addr again
-mov   word ptr cs:[OFFSET SELFMODIFY_offset_add_di5000Screen0_ + 2], si
 
 ;    w = (patch->width); 
-mov   ax, word ptr ds:[bx]
+mov   cx, word ptr ds:[bx + PATCH_T.patch_width]  ; count
+mov   bl, PATCH_T.patch_columnofs                 ; set up columnofs ptr
+mov   dx, SCREENWIDTH - 1                         ; loop constant
 
-mov   word ptr cs:[OFFSET SELFMODIFY_compare_instruction5000Screen0_ + 1], ax  ; store width
-test  ax, ax
-jle   jumptoexit5000Screen0_
-; store patch segment (???) remove;
+draw_next_column:
+push  cx            ; store patch width for outer loop iter
+xor   cx, cx        ; clear ch specifically
 
-draw_next_column5000Screen0_:
 
-dec   word ptr cs:[OFFSET SELFMODIFY_compare_instruction5000Screen0_ + 1] ; decrement count ahead of time
-
-;		column = (column_t __far *)((byte __far*)patch + (patch->columnofs[col])); 
-
-; ds:si is patch segment
 ; es:di is screen pixel target
 
-SELFMODIFY_setup_bx_instruction5000Screen0_:
-mov   bx, 0F030h               ; F030h is target for self modifying code     
+mov   si, word ptr ds:[bx]           ; ds:si is patch segment
 
-; si equals colofs lookup
-mov   si, word ptr ds:[bx]
+_SELFMODIFY_add_patch_offset:
+add   si, 01000h
 
+lodsw
 ;		while (column->topdelta != 0xff )  
-; check topdelta for 0xFFh
-cmp   byte ptr ds:[si], 0FFh
-jne   draw_next_column_patch5000Screen0_
-jmp   column_done5000Screen0_
 
+cmp  al, 0FFh               ; al topdelta, ah length
+je   column_done
+
+draw_next_patch_column:
 
 ; here we render the next patch in the column.
-draw_next_column_patch5000Screen0_:
 
+xchg  cl, ah          ; cx is now col length, ah is now 0
+inc   si      
 
-; grab both column fields at once. si + 0 is topdelta. si + 1 is column length
-mov   ax, word ptr ds:[si]
-
-mov   cl, ah
-xor   ah, ah      ; al contains topdelta
-
-; todo: figure this out.
-; either one works on its own, but the else branch will fail regardless
-; of which code is in it if the if is active. Probably related to 
-; selfmodifying code references.
 
 IF COMPISA GE COMPILE_186
-imul   di, ax, SCREENWIDTH
-mov    dx, SCREENWIDTH - 1 
+imul   di, ax, SCREENWIDTH   ; ax has topdelta.
 
 ELSE
-
-mov   di, SCREENWIDTH
-mul   di
-mov   dx, di
-mov   di, ax
-dec   dx
-
+; cant fit screenwidth in 1 byte but we can do this...
+mov   ah, SCREENWIDTH / 2
+mul   ah
+sal   ax, 1
+xchg  ax, di
 ENDIF
 
 
 
-SELFMODIFY_offset_add_di5000Screen0_:
-add   di, 0F030h   ; retrieve offset
+SELFMODIFY_offset_add_di:
+add   di, 01000h   ; retrieve offset
+
+; todo lazy len 8 or 16 unrolle dloop
 
 
-add   si, 3
-; figure out loop counts
-mov   bl, cl
-and   bx, 0007h
-mov   al, byte ptr cs:[_jump_mult_table_3 + bx]
-mov   byte ptr cs:[SELFMODIFY_offset_draw_remaining_pixels5000Screen0_ + 1], al
-SHIFT_MACRO shr cx 3
-je    done_drawing_8_pixels5000Screen0_
-
-
-; bx, cx unused...
-
-;  todo full unroll
-
-draw_8_more_pixels5000Screen0_:
+draw_next_patch_pixel:
 
 movsb
-add di, dx
-movsb
-add di, dx
-movsb
-add di, dx
-movsb
-add di, dx
-movsb
-add di, dx
-movsb
-add di, dx
-movsb
-add di, dx
-movsb
-add di, dx
+add   di, dx
+loop  draw_next_patch_pixel 
 
-loop   draw_8_more_pixels5000Screen0_
+check_for_next_column:
 
-; todo: variable jmp here
+inc   si
+lodsw
+cmp   al, 0FFh
+jne   draw_next_patch_column
 
-done_drawing_8_pixels5000Screen0_:
-
-SELFMODIFY_offset_draw_remaining_pixels5000Screen0_:
-db 0EBh, 00h		; jump rel8
-
-
-movsb
-add di, dx
-movsb
-add di, dx
-movsb
-add di, dx
-movsb
-add di, dx
-movsb
-add di, dx
-movsb
-add di, dx
-movsb
-
-
-; restore stuff we changed above
-done_drawing_pixels5000Screen0_:
-check_for_next_column5000Screen0_:
-
-inc si
-cmp   byte ptr ds:[si], 0FFh
-
-
-jne   draw_next_column_patch5000Screen0_
-column_done5000Screen0_:
-add   word ptr cs:[OFFSET SELFMODIFY_setup_bx_instruction5000Screen0_ + 1], 4
-inc   word ptr cs:[OFFSET SELFMODIFY_offset_add_di5000Screen0_ + 2]
-xor   ax, ax
-SELFMODIFY_compare_instruction5000Screen0_:
-cmp   ax, 0F030h		; compare to width
-;jnge  draw_next_column5000Screen0_   ; out of range 5 bytes
-jge   jumpexit5000Screen0_
-jmp   draw_next_column5000Screen0_
-
-jumpexit5000Screen0_:
-pop   ds
-pop   bx
-pop   dx
-pop   di
-pop   si
+column_done:
+add   bx, 4
+inc   word ptr cs:[OFFSET SELFMODIFY_offset_add_di + 2]   ; pixel offset increments each column
 pop   cx
+loop  draw_next_column		; relative out of range by 5 bytes
+
+done_drawing:
+
+POPA_NO_AX_OR_BP_MACRO
+
+mov   ax, ss
+mov   ds, ax
+
+
 ret
 
 ENDP
