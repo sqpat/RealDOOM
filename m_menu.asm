@@ -3554,11 +3554,12 @@ mov   dx, cx
 mov   ax, bx
 
 ;call  dword ptr ds:[_F_Responder]
+; return al = 1 as carry on
 db 09Ah
 dw F_RESPONDEROFFSET, CODE_OVERLAY_SEGMENT
 
-test  al, al
-jne   exit_gresponder_2
+
+jnc   exit_gresponder_2
 
 not_gamestate_finale:
 

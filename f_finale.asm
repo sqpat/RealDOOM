@@ -66,11 +66,6 @@ PROC   V_DrawPatchFlipped_ NEAR
 PUBLIC V_DrawPatchFlipped_
 
 
-push  bx
-push  cx
-push  si
-push  di
-push  ds
 push  bp
 mov   bp, sp
 
@@ -156,11 +151,8 @@ jne   draw_next_column_flipped
 exit_drawpatchflipped:
 
 LEAVE_MACRO
+push  ss
 pop   ds
-pop   di
-pop   si
-pop   cx
-pop   bx
 ret   
 
 
@@ -172,11 +164,6 @@ PROC   F_CastPrint_ NEAR
 PUBLIC F_CastPrint_
 
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
 mov   di, ax
 mov   si, ax
 xor   cx, cx
@@ -201,11 +188,6 @@ cbw
 test  ax, ax
 jne   do_char_upper
 exit_castprint:
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
 ret   
 char_not_string_end:
 xor   ah, ah
@@ -244,11 +226,6 @@ add   cx, 4
 draw_next_glyph:
 test  si, si
 jne   print_next_char
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
 ret   
 lookup_glyph_width2:
 mov   bx, FONT_WIDTHS_SEGMENT
@@ -314,10 +291,7 @@ PROC   F_StartFinale_ FAR
 PUBLIC F_StartFinale_
 
 
-push  bx
-push  cx
-push  dx
-push  si
+PUSHA_NO_AX_OR_BP_OR_DI_MACRO
 mov   byte ptr ds:[_gameaction], 0
 xor   al, al
 mov   byte ptr ds:[_gamestate], 2
@@ -348,10 +322,7 @@ mov   word ptr ds:[_pendingmusicenum], ax
 xor   ax, ax
 mov   byte ptr ds:[_finalestage], al
 mov   word ptr ds:[_finalecount], ax
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_OR_DI_MACRO
 retf  
 
 doom2_above_or_equal_to_15:
@@ -472,10 +443,6 @@ PUBLIC F_CastDrawer_
 ; bp - 2 is spritenum
 ; bp - 1 is spriteframenum
 
-push  bx
-push  cx
-push  dx
-push  si
 push  bp
 mov   bp, sp
 sub   sp, 068h
@@ -500,7 +467,7 @@ xlat   byte ptr cs:[bx]
 mov   cx, ds
 ;xor   ah, ah   ; between 0-17, cbw is fine
 cbw
-lea   bx, [bp - 068h] ; text param (100 length)
+mov   bx, sp ; text param (100 length)
 add   ax, CASTORDEROFFSET
 
 call  dword ptr ds:[_getStringByIndex_addr]
@@ -512,7 +479,7 @@ Z_QUICKMAPAI1_NO_DX (pageswapargs_stat_offset_size+5) INDEXED_PAGE_6000_OFFSET
 
 
 
-lea   ax, [bp - 068h]  ; ; text param (100 length)
+mov   ax, sp  ; ; text param (100 length)
 call  F_CastPrint_
 
 ;call  Z_QuickMapRender7000_
@@ -562,10 +529,6 @@ xor   bx, bx
 call  dword ptr ds:[_V_DrawPatch_addr]
 exit_castdrawer:
 LEAVE_MACRO 
-pop   si
-pop   dx
-pop   cx
-pop   bx
 ret   
 
 
@@ -574,15 +537,10 @@ ENDP
 SEGMENT_4000_OFFSET = (04000h - FIXED_DS_SEGMENT) SHL 4
 
 
-PROC F_TextWrite_ NEAR
+PROC   F_TextWrite_ NEAR
 PUBLIC F_TextWrite_
 
 
-push      bx
-push      cx
-push      dx
-push      si
-push      di
 push      bp
 mov       bp, sp
 
@@ -726,11 +684,6 @@ cmp       ax, SCREENWIDTH
 jle       do_draw_glyph_ftextwrite
 exit_ftextwrite:
 LEAVE_MACRO    
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
 ret       
 do_draw_glyph_ftextwrite:
 xchg      ax, si 
@@ -752,7 +705,7 @@ jmp       loop_count   ; dude why is this not a loop instruction
 ENDP
 
 
-PROC F_DrawPatchCol_ NEAR
+PROC   F_DrawPatchCol_ NEAR
 PUBLIC F_DrawPatchCol_
 
 ; technically i think this is only called with single post columns...
@@ -822,14 +775,9 @@ FINALE_PHASE_2_CHANGE = 1180
 
 ; function can probably be optimized and made smaller, I haven't really tried - sq
 
-PROC F_BunnyScroll_ NEAR
+PROC   F_BunnyScroll_ NEAR
 PUBLIC F_BunnyScroll_
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
 push  bp
 mov   bp, sp
 sub   sp, 018h
@@ -1010,11 +958,6 @@ xor   bx, bx
 call  dword ptr ds:[_V_DrawPatch_addr]
 exit_bunnyscroll:
 LEAVE_MACRO
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
 ret   
 draw_end_patch:
 mov   cx, word ptr [bp - 0Eh]
@@ -1034,12 +977,7 @@ xor   bx, bx
 call  dword ptr ds:[_V_DrawPatch_addr]
 mov   byte ptr ds:[_finale_laststage], 0
 LEAVE_MACRO
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-ret   
+ret
 
 calculate_xcoord:
 mov   al, byte ptr [bp - 2]
@@ -1099,14 +1037,13 @@ PROC   F_StartCast_ NEAR
 PUBLIC F_StartCast_
 
 
-push  bx
 
 xor   ax, ax 
-mov   byte ptr ds:[_castdeath], al      ; 0
-mov   byte ptr ds:[_castframes], al     ; 0
-mov   byte ptr ds:[_castonmelee], al    ; 0
-mov   byte ptr ds:[_castattacking], al  ; 0 
-mov   byte ptr ds:[_castnum], al        ; 0
+mov   word ptr ds:[_castattacking], ax  ; 0     ; 140
+;mov   byte ptr ds:[_castdeath], al     ; 0     ; 141
+mov   word ptr ds:[_castonmelee], ax    ; 0    ; 142
+;mov   byte ptr ds:[_castframes], al    ; 0     ; 143
+mov   byte ptr ds:[_castnum], al        ; 0     ; 145
 dec   ax
 mov   byte ptr ds:[_wipegamestate], al  ; 0FFh force screen wipe
 mov   byte ptr ds:[_finalestage], FINALE_STAGE_CAST
@@ -1132,7 +1069,7 @@ mov   ax, MUS_EVIL + 0100h
 ;call  S_ChangeMusic_
 mov   word ptr ds:[_pendingmusicenum], ax
 
-pop   bx
+exit_castticker_early:
 ret   
 
 ENDP
@@ -1142,21 +1079,15 @@ cmp   word ptr es:[bx + STATE_T.state_nextstate], S_NULL
 je    select_next_monster
 jmp   select_next_anim
 
-PROC F_CastTicker_ NEAR
+PROC   F_CastTicker_ NEAR
 PUBLIC F_CastTicker_
 
 ; lots of switch block shenanigans going on. 
 
 dec   byte ptr ds:[_casttics]
-jz    do_castticker
-ret
+jnz   exit_castticker_early
 
 do_castticker:
-
-push  bx
-push  dx
-push  si
-push  cx
 
 ;call  Z_QuickMapPhysics_ 
 Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
@@ -1236,17 +1167,9 @@ cmp   al, 0FFh
 je    set_casttics_to_15
 exit_castticker:
 
-pop   cx
-pop   si
-pop   dx
-pop   bx
 ret   
 set_casttics_to_15:
 mov   byte ptr ds:[_casttics], 15
-pop   cx
-pop   si 
-pop   dx
-pop   bx
 ret   
 check_see_state:
 mov   al, byte ptr ds:[_castnum]
@@ -1502,32 +1425,32 @@ jmp   done_with_attack_frame_switch
 
 ENDP
 
-PROC F_CastResponder_ NEAR
+PROC   F_CastResponder_ NEAR
 PUBLIC F_CastResponder_
 
 
 
 push  bx
-mov   bx, ax
+xchg  ax, bx
 mov   es, dx
-cmp   byte ptr es:[bx + EVENT_T.event_evtype], 0
+xor   ax, ax
+cmp   byte ptr es:[bx + EVENT_T.event_evtype], al
 jne   exit_fresponder_return0
-cmp   byte ptr ds:[_castdeath], 0
+cmp   byte ptr ds:[_castdeath], al
 je    do_castdeath
-mov   al, 1
+exit_fresponder_return1:
+stc
 pop   bx
 ret   
 exit_fresponder_return0:
-xor   al, al
+clc
 pop   bx
 ret   
 do_castdeath:
-mov   al, byte ptr ds:[_castnum]
-cbw  
+mov   al, byte ptr ds:[_castnum]  ; ah already 0 from sor
 mov   bx, ax
-add   bx, ax
+shl   bx, 1
 mov   al, byte ptr cs:[bx + OFFSET _CSDATA_castorder+1]
-xor   ah, ah
 mov   byte ptr ds:[_castdeath], 1
 db    09Ah
 dw    GETDEATHSTATEADDR, PHYSICS_HIGHCODE_SEGMENT
@@ -1535,19 +1458,18 @@ dw    GETDEATHSTATEADDR, PHYSICS_HIGHCODE_SEGMENT
 mov   bx, ax
 SHIFT_MACRO shl bx 2
 sub   bx, ax
-mov   ax, STATES_SEGMENT
-add   bx, bx
+shl   bx, 1 
 mov   word ptr ds:[_caststate], bx
+mov   ax, STATES_SEGMENT
 mov   es, ax
 mov   al, byte ptr es:[bx + STATE_T.state_tics]
 mov   byte ptr ds:[_casttics], al
-xor   al, al
+xor   ax, ax
 mov   byte ptr ds:[_castframes], al
 mov   byte ptr ds:[_castattacking], al
 mov   al, byte ptr ds:[_castnum]
-cbw  
 mov   bx, ax
-add   bx, ax
+shl   bx, 1
 mov   al, byte ptr cs:[bx + OFFSET _CSDATA_castorder+1]
 mov   ah, 0Bh  ; sizeof mobjinfo? todo constant
 mul   ah
@@ -1558,10 +1480,10 @@ mov   dl, byte ptr ds:[bx + _mobjinfo + MOBJINFO_T.mobjinfo_deathsound]
 ;call  S_StartSound_
 db    09Ah
 dw    S_STARTSOUNDAX0FAROFFSET, PHYSICS_HIGHCODE_SEGMENT
+jmp   exit_fresponder_return1
 
-mov   al, 1
-pop   bx
-ret   
+
+
 
 
 ENDP
@@ -1573,17 +1495,15 @@ PROC   F_Ticker_ FAR
 PUBLIC F_Ticker_
 
 
-push  bx
-push  cx
-push  dx
+PUSHA_NO_AX_OR_BP_MACRO
+mov   ax, 50  ; 50 low 0 hi
 
 
-
-cmp   byte ptr ds:[_commercial], 0
+cmp   byte ptr ds:[_commercial], ah ; 0
 je    done_checking_skipping
-cmp   word ptr ds:[_finalecount], 50
+cmp   word ptr ds:[_finalecount], al ; 50
 jle   done_checking_skipping
-cmp   byte ptr ds:[_player + PLAYER_T.player_cmd_buttons], 0 
+cmp   byte ptr ds:[_player + PLAYER_T.player_cmd_buttons], ah ; 0
 je    done_checking_skipping
 cmp   byte ptr ds:[_gamemap], 30
 jne   do_worlddone
@@ -1598,9 +1518,7 @@ cmp   byte ptr ds:[_commercial], 0
 je    do_noncommerical
 exit_fticker:
 
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 retf  
 do_worlddone:
 mov   byte ptr ds:[_gameaction], GA_WORLDDONE
@@ -1618,7 +1536,7 @@ jne   exit_fticker
 mov   ax, SEGMENT_4000_OFFSET
 mov   dx, ds
 
-call F_locallib_strlen_
+call  F_locallib_strlen_
 
 mov   dx, ax
 SHIFT_MACRO shl ax 2
@@ -1629,19 +1547,17 @@ jge   exit_fticker
 mov   byte ptr ds:[_finalestage], FINALE_STAGE_BUNNY
 xor   ax, ax
 mov   byte ptr ds:[_wipegamestate], 0FFh
-mov   word ptr ds:[_finalecount], ax
+mov   word ptr ds:[_finalecount], ax ; 0
 cmp   byte ptr ds:[_gameepisode], 3
 jne   exit_fticker
-mov   ax, MUS_BUNNY
+mov   al, MUS_BUNNY  ; ah already 0
 ;call  S_StartMusic_
 mov   word ptr ds:[_pendingmusicenum], ax
 ;mov   byte ptr ds:[_pendingmusicenumlooping], 0
 
 
 
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 retf  
 
 
@@ -1649,12 +1565,13 @@ ENDP
 
 
 
-PROC F_Responder_ FAR
+PROC   F_Responder_ FAR
 PUBLIC F_Responder_
+; return al = 1 as carry on
 
 cmp  byte ptr ds:[_finalestage], FINALE_STAGE_CAST
 je   call_castresponder
-xor  ax, ax
+clc
 retf 
 call_castresponder:
 call F_CastResponder_   ; todo might as well inline
@@ -1671,12 +1588,11 @@ db "VICTORY2", 0
 str_endpic:
 db "ENDPIC", 0
 
-PROC F_Drawer_ FAR
+PROC   F_Drawer_ FAR
 PUBLIC F_Drawer_
 
 
-push  bx
-push  dx
+PUSHA_NO_AX_OR_BP_MACRO
 mov   al, byte ptr ds:[_finalestage]
 cmp   al, FINALE_STAGE_BUNNY ; 1
 ja    call_castdrawer ; 2
@@ -1706,20 +1622,15 @@ mov   dx, cs
 xor   bx, bx
 call  dword ptr ds:[_V_DrawFullscreenPatch_addr]
 exit_fdrawer:
-pop   dx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 retf  
 
 call_castdrawer:
 call  F_CastDrawer_
-pop   dx
-pop   bx
-retf  
+jmp   exit_fdrawer
 call_textwrite:
 call  F_TextWrite_
-pop   dx
-pop   bx
-retf  
+jmp   exit_fdrawer
 
 do_ultimate_fullscreenpatch:
 mov   ax, OFFSET str_credit
@@ -1729,9 +1640,7 @@ mov   ax, OFFSET str_victory2
 jmp   do_finaledraw
 fdrawer_episode3:
 call  F_BunnyScroll_
-pop   dx
-pop   bx
-retf  
+jmp   exit_fdrawer
 fdrawer_episode4:
 mov   ax, OFFSET str_endpic
 jmp   do_finaledraw

@@ -926,8 +926,31 @@ ELSE
 	pop   dx
 	pop   cx
 ENDIF
+ENDM
+
+PUSHA_NO_AX_OR_BP_OR_DI_MACRO MACRO
+
+IF COMPISA GE COMPILE_186
+	pusha
+ELSE	
+	push  cx
+	push  dx
+	push  bx
+	push  si
+ENDIF
+ENDM
 
 
+POPA_NO_AX_OR_BP_OR_DI_MACRO MACRO
+
+IF COMPISA GE COMPILE_186
+	popa
+ELSE	
+	pop   si
+	pop   bx
+	pop   dx
+	pop   cx
+ENDIF
 ENDM
 
 

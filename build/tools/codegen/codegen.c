@@ -8,7 +8,7 @@
 #include "r_state.h"
 #include "p_setup.h"
 
-#define CONSTANTS_COUNT 1017
+#define CONSTANTS_COUNT 1016
 #define LOCALS_COUNT 30
 
 
@@ -74,7 +74,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "FLATTRANSLATION_SEGMENT",
     "TEXTURETRANSLATION_SEGMENT",
     "TEXTUREHEIGHTS_SEGMENT",
-    "RNDTABLE_SEGMENT",
 
     "SEGS_PHYSICS_SEGMENT",
 	"PHYSICS_4000_END_SEGMENT",
@@ -1192,7 +1191,6 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     flattranslation_segment,
     texturetranslation_segment,
     textureheights_segment,
-    rndtable_segment,
 
     segs_physics_segment,
 	physics_4000_end_segment,
