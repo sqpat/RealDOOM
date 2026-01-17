@@ -33,190 +33,156 @@ PROC   P_VIDEO_STARTMARKER_ NEAR
 PUBLIC P_VIDEO_STARTMARKER_
 ENDP
 
-_jump_mult_table_3:
-db 19, 18, 15, 12,  9,  6,  3, 0
 
 
-jumptoexitdirect:
-jmp   jumpexitdirect
 
 
-PROC V_DrawPatchDirect_ FAR
+PROC   V_DrawPatchDirect_ FAR
 PUBLIC V_DrawPatchDirect_
 
 ; CX:BX is patch
 ; dx is y
 ; ax is x
 
-;bp  - 2 is ax  (x)
 
-push  si
-push  di
-push  bp
-mov   bp, sp
+; ARGS:
+; ax is x
+; dl is y
+; bl is screen
+; cx is patch offset
+; es is patch segment
 
-mov   es, cx
+cmp   byte ptr ds:[_skipdirectdraws], 0
+jne   exit_direct_early
+
+push  si 
+push  di 
+push  bp    ; bp maintains current pixel and 3
+
+les   di, dword ptr ds:[_destscreen]
+mov   ds, cx
+
+; es:di  is scren
+; ds:bx  is patch
+
+
 
 ;    y -= (patch->topoffset); 
 ;    x -= (patch->leftoffset); 
- 
+;	offset = y * SCREENWIDTH + x;
 
-; patch is es:bx
-sub   ax, word ptr es:[bx + 4]	; leftoffset
-sub   dx, word ptr es:[bx + 6]  ; topoffset
-mov   si, ax  ; store x
-mov   ax, (SCREENWIDTH / 4)
-mul   dx
+; load patch
 
-mov   word ptr cs:[SELFMODIFY_retrievepatchoffset+1], bx
-; load destscreen into es:bx to calc desttop
-mov   di, bx
-mov   word ptr cs:[SELFMODIFY_retrievenextcoloffset + 1], di
-les   bx, dword ptr ds:[_destscreen]
-mov   ds, cx
+; ds:bx is patch
+mov   word ptr cs:[_SELFMODIFY_add_patch_offset_direct+2], bx
+sub   ax, word ptr ds:[bx + PATCH_T.patch_leftoffset]
+sub   dx, word ptr ds:[bx + PATCH_T.patch_topoffset]
 
-   
-add   bx, ax
-mov   ax, si
+mov   bp, ax        ; bp gets starting x. 
+and   bp, 3
+SHIFT_MACRO SHR AX 2
 
-;	desttop = (byte __far*)(destscreen->w + y * (SCREENWIDTH / 4) + (x>>2));
-;   es:bx is desttop
+; calculate x + (y * screenwidth)
 
-SHIFT_MACRO SAR AX 2
+
+IF COMPISA GE COMPILE_186
+
+    imul  si, dx , SCREENWIDTH / 4
+    add   ax, si  ; add x >> 2
+
+ELSE
+    xchg  ax, si    
+    mov   al, SCREENWIDTH / 4
+    mul   dl
+    add   ax, si  ; add x >> 2
+
+ENDIF
+
+add   ax, di ; add currentscreen offset
+mov   word ptr cs:[_SELFMODIFY_offset_add_di_direct + 2], ax
+
+; no mark rect
 
 ;    w = (patch->width); 
-;    for ( col = 0 ; col<w ; col++) 
-
-
-;	column = (column_t  __far*)((byte  __far*)patch + (patch->columnofs[col]));
-
-mov   word ptr cs:[SELFMODIFY_col_increment+1], 0
-
-add   ax, bx
-
-mov   word ptr cs:[SELFMODIFY_offset_set_di+1], ax
-mov   ax, word ptr ds:[di]  ; get width
-mov   word ptr cs:[SELFMODIFY_compare_instruction_direct + 1], ax
-test  ax, ax
-jle   jumptoexitdirect
+mov   cx, word ptr ds:[bx + PATCH_T.patch_width]  ; count
+lea   bx, [bx + PATCH_T.patch_columnofs]          ; set up columnofs ptr
 
 draw_next_column_direct:
+push  cx            ; store patch width for outer loop iter
 
-;		outp (SC_INDEX+1,1<<(x&3));
-inc   word ptr cs:[SELFMODIFY_col_increment+1]    ; col++
+mov   cx, bp        ; get x. already ANDed to 3, ch is 0
+mov   al, 1
 
-mov   cx, si ; retrieve x
-mov   ax, 1
-
+; select plane... 
 
 mov   dx, SC_DATA
-and   cl, 3
-SELFMODIFY_retrievenextcoloffset:
-mov   di, 0F030h
-shl   ax, cl
-SELFMODIFY_retrievepatchoffset:
-mov   bx, 0F030h
-
-
-
+shl   al, cl
 out   dx, al
-mov   dx, si  ; store x in dx
-add   bx, word ptr ds:[di + 8]
-cmp   byte ptr ds:[bx], 0FFh
-je    check_desttop_increment
-draw_next_column_patch_direct:
-mov   al, byte ptr ds:[bx]
-mov   ah, (SCREENWIDTH / 4)
+mov   dx, ((SCREENWIDTH / 4) - 1)                 ; add per pixel write
+
+; es:di is screen pixel target
+
+mov   si, word ptr ds:[bx]           ; ds:bx is current patch col offset to draw
+
+_SELFMODIFY_add_patch_offset_direct:
+add   si, 01000h
+
+lodsw                                ; while (column->topdelta != 0xff )  
+
+cmp  al, 0FFh               ; al topdelta, ah length
+je   column_done_direct
+
+draw_next_patch_column_direct:
+
+; here we render the next patch in the column.
+
+xchg  cl, ah          ; cx is now col length. note ah is not 0 but doesnt matter in this case.
+inc   si      
+
+mov   ah, SCREENWIDTH / 4
 mul   ah
-SELFMODIFY_offset_set_di:
-mov   di, 0F030h
-add   di, ax
-mov   cl, byte ptr ds:[bx + 1]  ; get col length
-xor   ch, ch
-mov   si, cx
-and   si, 0007h
-mov   al, byte ptr cs:[_jump_mult_table_3 + si]
-mov   byte ptr cs:[SELFMODIFY_offset_draw_remaining_pixels_direct + 1], al
-mov   ax,  ((SCREENWIDTH / 4) - 1)
-lea   si, [bx + 3]
-SHIFT_MACRO shr cx 3
-je    done_drawing_8_pixels_direct
+xchg  ax, di
 
 
-draw_8_more_pixels_direct:
 
-movsb
-add   di, ax
-movsb
-add   di, ax
-movsb
-add   di, ax
-movsb
-add   di, ax
-movsb
-add   di, ax
-movsb
-add   di, ax
-movsb
-add   di, ax
-movsb
-add   di, ax
-loop draw_8_more_pixels_direct
+_SELFMODIFY_offset_add_di_direct:
+add   di, 01000h   ; retrieve offset
 
-done_drawing_8_pixels_direct:
-
-SELFMODIFY_offset_draw_remaining_pixels_direct:
-db 0EBh, 00h		; jump rel8
-
-movsb
-add   di, ax
-movsb
-add   di, ax
-movsb
-add   di, ax
-movsb
-add   di, ax
-movsb
-add   di, ax
-movsb
-add   di, ax
-movsb
+; todo lazy len 8 or 16 unrolled loop?
 
 
-done_drawing_column:
-mov   al, byte ptr ds:[bx + 1]
-; ah is 0
-add   bx, ax
-add   bx, 4
-cmp   byte ptr ds:[bx], 0FFh
-jne   draw_next_column_patch_direct
-check_desttop_increment:
+draw_next_patch_pixel_direct:
 
-;	if ( ((++x)&3) == 0 ) 
-;	    desttop++;	// go to next byte, not next plane 
-;    }
+movsb
+add   di, dx
+loop  draw_next_patch_pixel_direct
 
+check_for_next_column_direct:
 
-inc   dx
-test  dx, 3
-jne   dont_increment_desttop						; todo change branch? 1/4 chance of fallthru?
-inc   word ptr cs:[SELFMODIFY_offset_set_di+1]
-dont_increment_desttop:
-SELFMODIFY_col_increment:
-mov   ax, 0F030h
-add   word ptr cs:[SELFMODIFY_retrievenextcoloffset + 1], 4
-SELFMODIFY_compare_instruction_direct:
-cmp   ax, 0F030h
-jge   jumpexitdirect
+inc   si
+lodsw
+cmp   al, 0FFh
+jne   draw_next_patch_column_direct
 
-mov   si, dx
-jmp   draw_next_column_direct
-jumpexitdirect:
-mov   ax, ss
-mov   ds, ax
-LEAVE_MACRO
+column_done_direct:
+add   bx, 4     ; next columnofs
+inc   bp        ; next plane
+and   bp, 3     ; check for plane 0
+jne   skip_offset_inc
+inc   word ptr cs:[_SELFMODIFY_offset_add_di_direct + 2]   ; pixel offset increments each 4 columns
+skip_offset_inc:
+pop   cx
+loop  draw_next_column_direct		; relative out of range by 5 bytes
+
+done_drawing_direct:
+push  ss
+pop   ds
+pop   bp
 pop   di
 pop   si
+
+exit_direct_early:
+exit_early:
 retf  
 
 ENDP
@@ -244,8 +210,6 @@ db "brdr_tr", 0
 str_brdr_br:
 db "brdr_br", 0
 
-exit_early:
-retf
 
 PROC V_DrawPatch5000Screen0_ NEAR
 PUBLIC V_DrawPatch5000Screen0_
@@ -305,7 +269,7 @@ sub   si, word ptr ds:[bx + PATCH_T.patch_leftoffset]
 
 ; no need to mark rect. we do it in outer func..
 
-mov   word ptr cs:[OFFSET SELFMODIFY_offset_add_di + 2], si
+mov   word ptr cs:[_SELFMODIFY_offset_add_di + 2], si
 
 
 
@@ -321,7 +285,7 @@ xor   cx, cx        ; clear ch specifically
 
 ; es:di is screen pixel target
 
-mov   si, word ptr ds:[bx]           ; ds:si is patch segment
+mov   si, word ptr ds:[bx]           ; ds:bx is current patch col offset to draw
 
 _SELFMODIFY_add_patch_offset:
 add   si, 01000h
@@ -353,7 +317,7 @@ ENDIF
 
 
 
-SELFMODIFY_offset_add_di:
+_SELFMODIFY_offset_add_di:
 add   di, 01000h   ; retrieve offset
 
 ; todo lazy len 8 or 16 unrolle dloop
@@ -374,7 +338,7 @@ jne   draw_next_patch_column
 
 column_done:
 add   bx, 4
-inc   word ptr cs:[OFFSET SELFMODIFY_offset_add_di + 2]   ; pixel offset increments each column
+inc   word ptr cs:[_SELFMODIFY_offset_add_di + 2]   ; pixel offset increments each column
 pop   cx
 loop  draw_next_column		; relative out of range by 5 bytes
 
@@ -382,8 +346,8 @@ done_drawing:
 
 POPA_NO_AX_OR_BP_MACRO
 
-mov   ax, ss
-mov   ds, ax
+push  ss
+pop   ds
 
 
 ret

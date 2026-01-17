@@ -72,8 +72,6 @@ mov   ds, cx    ; ds:di is seg
 mov   word ptr cs:[_SELFMODIFY_add_patch_offset+2], di
 sub   dx, word ptr ds:[di + PATCH_T.patch_topoffset]
 
-xor   dh, dh  ; todo remove
-
 
 ; calculate x + (y * screenwidth)
 
@@ -135,7 +133,7 @@ xor   cx, cx        ; clear ch specifically
 
 ; es:di is screen pixel target
 
-mov   si, word ptr ds:[bx]           ; ds:si is patch segment
+mov   si, word ptr ds:[bx]           ; ds:bx is current patch col offset to draw
 
 _SELFMODIFY_add_patch_offset:
 add   si, 01000h
