@@ -711,35 +711,8 @@ _END_OF_FIXED_DATA = CURRENT_POSITION_9
 
 
 
-
-
-
-; TODO fix now that i know how to use CS indexed labels 
-
-; EXTERNAL CODE OFFSETS FOR SELF MODIFYING CODE
-; We use a 2 step build process. Some code is exported to a binary in the first build,
-; then the 2nd build includes less code in the final exe. The exe loads code from the
-; the first binary at runtime. The issue is some code from the build 2 exe wishes to
-; modify code offsets from the binary, but that 2nd build has no visibility into the
-; locations of things in the first build. So we must HARDCODE (ugh) some instruction
-; offsets in here. Oh well - it's pretty minimal.
-
-; todo this sucks.
-SELFMODIFY_COLFUNC_subtract_centery24 =                   0
-SELFMODIFY_COLFUNC_set_destview_segment24 =               0+3+2+2+1+2+2+2+2+2+2+2+2+2+2+2+2+2+2+2
-SELFMODIFY_COLFUNC_jump_offset24 =                        SELFMODIFY_COLFUNC_set_destview_segment24+3+2+2+5+2
-
-SELFMODIFY_COLFUNC_subtract_centery16 =                 0
-SELFMODIFY_COLFUNC_set_destview_segment16 =             0+3+2+2+1+2+2+2+2+2+2+2+2+2+2+2+2+2
-SELFMODIFY_COLFUNC_jump_offset16 =                      SELFMODIFY_COLFUNC_set_destview_segment16+3+2+2+5+2
-
-
-SELFMODIFY_COLFUNC_set_destview_segment0 = 0Fh
-SELFMODIFY_COLFUNC_jump_offset0          = SELFMODIFY_COLFUNC_set_destview_segment0 + 5
-
-SELFMODIFY_COLFUNC_set_destview_segmentFL = 0Fh
-SELFMODIFY_COLFUNC_jump_offsetFL          = SELFMODIFY_COLFUNC_set_destview_segmentFL + 5
-
+; size of tables within the segment to make cs offsets work
+COLFUNC_JUMPTABLE_SIZE_OFFSET = 0320h
 STATENUM_NULL = -1
 
 

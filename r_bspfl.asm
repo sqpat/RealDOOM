@@ -6582,7 +6582,7 @@ sal   di, 1                                 ; double diff (dc_yh - dc_yl) to get
 mov   di, word ptr ds:[di]                   ; get the jump value
 xchg  ax, di								 ; di gets screen dest offset, ax gets jump value
 ; somehow this can be bad.
-mov   word ptr ds:[((SELFMODIFY_COLFUNC_jump_offsetFL+1))+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
+mov   word ptr ds:[((SELFMODIFY_COLFUNC_JUMP_OFFSETFL_OFFSET+1))], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 
 
 
@@ -12049,7 +12049,7 @@ mov      ds, ax
 mov      ax, COLFUNC_FUNCTION_AREA_SEGMENT
 mov      es, ax
 mov      ax, word ptr ds:[_destview+2]
-mov      word ptr es:[SELFMODIFY_COLFUNC_set_destview_segmentFL+1], ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENTFL_OFFSET-COLFUNC_JUMPTABLE_SIZE_OFFSET+1], ax
 
 
 

@@ -253,9 +253,16 @@ void __far _sbar();
 void __far _faceback();
 void __far _tallpercent();
 
-
-
-
+void __far MARKER_SELFMODIFY_COLFUNC_set_destview_segment0();
+void __far MARKER_SELFMODIFY_COLFUNC_jump_offset0();
+void __far MARKER_SELFMODIFY_COLFUNC_subtract_centery16();
+void __far MARKER_SELFMODIFY_COLFUNC_set_destview_segment16();
+void __far MARKER_SELFMODIFY_COLFUNC_jump_offset16();
+void __far MARKER_SELFMODIFY_COLFUNC_subtract_centery24();
+void __far MARKER_SELFMODIFY_COLFUNC_set_destview_segment24();
+void __far MARKER_SELFMODIFY_COLFUNC_jump_offset24();
+void __far MARKER_SELFMODIFY_COLFUNC_set_destview_segmentFL();
+void __far MARKER_SELFMODIFY_COLFUNC_jump_offsetFL();
 
 filelength_t  __near locallib_far_fwrite(void __far* src, uint16_t elementsizetimeselementcount, FILE * fp);
 
@@ -733,6 +740,19 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "R_RENDERPLAYERVIEWFLOFFSET             = 0%Xh\n", FP_OFF(R_RenderPlayerViewFL)              - FP_OFF(R_BSPFL_STARTMARKER));
 	fprintf(fp, "R_GETCOMPOSITETEXTUREFLOFFSET          = 0%Xh\n", FP_OFF(R_GetCompositeTexture_FarFL)       - FP_OFF(R_BSPFL_STARTMARKER));
 	fprintf(fp, "R_GETPATCHTEXTUREFLOFFSET              = 0%Xh\n", FP_OFF(R_GetPatchTexture_FarFL)           - FP_OFF(R_BSPFL_STARTMARKER));
+
+    fprintf(fp, "SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET        = 0%Xh\n", FP_OFF(MARKER_SELFMODIFY_COLFUNC_subtract_centery24)      - FP_OFF(R_BSP24_STARTMARKER));
+	fprintf(fp, "SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENT24_OFFSET    = 0%Xh\n", FP_OFF(MARKER_SELFMODIFY_COLFUNC_set_destview_segment24)  - FP_OFF(R_BSP24_STARTMARKER));
+	fprintf(fp, "SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET             = 0%Xh\n", FP_OFF(MARKER_SELFMODIFY_COLFUNC_jump_offset24)           - FP_OFF(R_BSP24_STARTMARKER));
+    fprintf(fp, "SELFMODIFY_COLFUNC_SUBTRACT_CENTERY16_OFFSET        = 0%Xh\n", FP_OFF(MARKER_SELFMODIFY_COLFUNC_subtract_centery16)      - FP_OFF(R_BSP16_STARTMARKER));
+	fprintf(fp, "SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENT16_OFFSET    = 0%Xh\n", FP_OFF(MARKER_SELFMODIFY_COLFUNC_set_destview_segment16)  - FP_OFF(R_BSP16_STARTMARKER));
+	fprintf(fp, "SELFMODIFY_COLFUNC_JUMP_OFFSET16_OFFSET             = 0%Xh\n", FP_OFF(MARKER_SELFMODIFY_COLFUNC_jump_offset16)           - FP_OFF(R_BSP16_STARTMARKER));
+	fprintf(fp, "SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENT0_OFFSET     = 0%Xh\n", FP_OFF(MARKER_SELFMODIFY_COLFUNC_set_destview_segment0)   - FP_OFF(R_BSP0_STARTMARKER));
+	fprintf(fp, "SELFMODIFY_COLFUNC_JUMP_OFFSET0_OFFSET              = 0%Xh\n", FP_OFF(MARKER_SELFMODIFY_COLFUNC_jump_offset0)            - FP_OFF(R_BSP0_STARTMARKER));
+	fprintf(fp, "SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENTFL_OFFSET    = 0%Xh\n", FP_OFF(MARKER_SELFMODIFY_COLFUNC_set_destview_segmentFL)  - FP_OFF(R_BSPFL_STARTMARKER));
+	fprintf(fp, "SELFMODIFY_COLFUNC_JUMP_OFFSETFL_OFFSET             = 0%Xh\n", FP_OFF(MARKER_SELFMODIFY_COLFUNC_jump_offsetFL)           - FP_OFF(R_BSPFL_STARTMARKER));
+
+
     fprintf(fp, "M_INITOFFSET                           = 0%Xh\n", FP_OFF(M_Init)                            - FP_OFF(M_MENU_STARTMARKER));
     fprintf(fp, "P_SPAWNSPECIALSOFFSET                  = 0%Xh\n", FP_OFF(P_SpawnSpecials)                   - FP_OFF(P_SIGHT_STARTMARKER));
     fprintf(fp, "S_STARTOFFSET                          = 0%Xh\n", FP_OFF(S_Start)                           - FP_OFF(P_SIGHT_STARTMARKER));

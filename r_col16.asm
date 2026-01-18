@@ -103,7 +103,8 @@ PUBLIC  R_DrawColumn16_
     ; cx contains dc_iscale+1 (we never use byte 4)
 
     ; todo just move this above to prevenet the need for the mov ax
-    ;SELFMODIFY_COLFUNC_subtract_centery16
+MARKER_SELFMODIFY_COLFUNC_subtract_centery16_:
+PUBLIC MARKER_SELFMODIFY_COLFUNC_subtract_centery16_
     sub   ax, 01000h
     mov   ds, ax              ; save low(M1)
 
@@ -158,7 +159,8 @@ PUBLIC  R_DrawColumn16_
 
    ;  prep our loop variables
 
-;SELFMODIFY_COLFUNC_set_destview_segment16:
+MARKER_SELFMODIFY_COLFUNC_set_destview_segment16_:
+PUBLIC MARKER_SELFMODIFY_COLFUNC_set_destview_segment16_
    mov     ax, 01000h   
    mov     es, ax; ready the viewscreen segment
    xor     bx, bx       ; common bx offset of zero in the xlats ahead
@@ -167,7 +169,8 @@ PUBLIC  R_DrawColumn16_
 
    mov     ah,  7Fh   ; for ANDing to AX to mod al by 128 and preserve AH
 
-COLFUNC_JUMP_OFFSET:
+MARKER_SELFMODIFY_COLFUNC_jump_offset16_:
+PUBLIC  MARKER_SELFMODIFY_COLFUNC_jump_offset16_
    jmp loop_done         ; relative jump to be modified before function is called
 
 

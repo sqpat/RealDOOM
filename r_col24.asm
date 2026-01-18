@@ -21,7 +21,7 @@ INSTRUCTION_SET_MACRO_NO_MEDIUM
 ;=================================
 
 
-SEGMENT R_COL24_TEXT PARA PUBLIC 'CODE'
+SEGMENT R_COL24_TEXT PARA  'CODE'
 ASSUME  CS:R_COL24_TEXT
  
 
@@ -104,7 +104,8 @@ PUBLIC  R_DrawColumn24_
     ; cx contains dc_iscale+1 (we never use byte 4)
 
     ; todo just move this above to prevenet the need for the mov ax
-    ;SELFMODIFY_COLFUNC_subtract_centery24
+MARKER_SELFMODIFY_COLFUNC_subtract_centery24_:
+PUBLIC MARKER_SELFMODIFY_COLFUNC_subtract_centery24_
     sub   ax, 01000h
     mov   ds, ax              ; save low(M1)
 
@@ -166,7 +167,8 @@ PUBLIC  R_DrawColumn24_
 
    ;  prep our loop variables
 
-;SELFMODIFY_COLFUNC_set_destview_segment24:
+MARKER_SELFMODIFY_COLFUNC_set_destview_segment24_:
+PUBLIC MARKER_SELFMODIFY_COLFUNC_set_destview_segment24_
    mov     ax, 01000h   
    mov     es, ax; ready the viewscreen segment
    xor     bx, bx       ; common bx offset of zero in the xlats ahead
@@ -175,7 +177,9 @@ PUBLIC  R_DrawColumn24_
 
    mov     ah,  7Fh   ; for ANDing to AX to mod al by 128 and preserve AH
 
-COLFUNC_JUMP_OFFSET:
+MARKER_SELFMODIFY_COLFUNC_jump_offset24_:
+PUBLIC MARKER_SELFMODIFY_COLFUNC_jump_offset24_
+
    jmp loop_done         ; relative jump to be modified before function is called
 
 
