@@ -3712,7 +3712,7 @@ jne   skip_offset_inc
 inc   word ptr cs:[_SELFMODIFY_offset_add_di_direct + 2]   ; pixel offset increments each 4 columns
 skip_offset_inc:
 pop   cx
-loop  draw_next_column_direct		; relative out of range by 5 bytes
+loop  draw_next_column_direct
 
 done_drawing_direct:
 push  ss

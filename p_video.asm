@@ -243,7 +243,7 @@ column_done:
 add   bx, 4
 inc   word ptr cs:[_SELFMODIFY_offset_add_di + 2]   ; pixel offset increments each column
 pop   cx
-loop  draw_next_column		; relative out of range by 5 bytes
+loop  draw_next_column
 
 done_drawing:
 mov   ax, ss
@@ -278,12 +278,12 @@ jne   exit_direct_early
 
 push  si 
 push  di 
-push  bp    ; bp maintains current pixel and 3
+push  bp    ; bp maintains current pixel AND 3
 
 les   di, dword ptr ds:[_destscreen]
 mov   ds, cx
 
-; es:di  is scren
+; es:di  is screen
 ; ds:bx  is patch
 
 
@@ -308,12 +308,12 @@ SHIFT_MACRO SHR AX 2
 
 IF COMPISA GE COMPILE_186
 
-    imul  si, dx , SCREENWIDTH / 4
+    imul  si, dx , (SCREENWIDTH / 4)
     add   ax, si  ; add x >> 2
 
 ELSE
     xchg  ax, si    
-    mov   al, SCREENWIDTH / 4
+    mov   al, (SCREENWIDTH / 4)
     mul   dl
     add   ax, si  ; add x >> 2
 
@@ -360,7 +360,7 @@ draw_next_patch_column_direct:
 xchg  cl, ah          ; cx is now col length. note ah is not 0 but doesnt matter in this case.
 inc   si      
 
-mov   ah, SCREENWIDTH / 4
+mov   ah, (SCREENWIDTH / 4)
 mul   ah
 xchg  ax, di
 
@@ -393,7 +393,7 @@ jne   skip_offset_inc
 inc   word ptr cs:[_SELFMODIFY_offset_add_di_direct + 2]   ; pixel offset increments each 4 columns
 skip_offset_inc:
 pop   cx
-loop  draw_next_column_direct		; relative out of range by 5 bytes
+loop  draw_next_column_direct
 
 done_drawing_direct:
 push  ss
@@ -560,7 +560,7 @@ column_done_5000:
 add   bx, 4
 inc   word ptr cs:[_SELFMODIFY_offset_add_di_5000 + 2]   ; pixel offset increments each column
 pop   cx
-loop  draw_next_column_5000		; relative out of range by 5 bytes
+loop  draw_next_column_5000
 
 done_drawing_5000:
 

@@ -756,8 +756,8 @@ map31_doesnt_exist:
 
 call  Z_QuickMapStatus_
 
-xor  si, si ; runningoffset = 0
-mov  di, si ; loop index
+xor  di, di ; loop index
+lea  si, [di - 2] ; runningoffset = 0FFFEh  set si to 0FFFEh to avoid segment overruns. last pixel is grabbed as a lodsw. 
 loop_load_next_fontchar:
 
 mov   ax, OFFSET str_hu_init_font_lump

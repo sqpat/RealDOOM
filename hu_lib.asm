@@ -121,12 +121,12 @@ mov   ax, word ptr cs:[si + HU_TEXTLINE_T.hu_textline_x]
 
 loop_draw_next_textline:
 mov   bl, byte ptr cs:[si + bp + HU_TEXTLINE_T.hu_textline_characters]
-cmp   bl, ' '
+cmp   bl, ' '        ; todo wouldnt  sub bl, HU_FONTSTART cover this case
 je    forced_space
 cmp   bl, '_'
 ja    forced_space
 sub   bl, HU_FONTSTART
-jb    forced_space
+jb    forced_space      ; bad char
 mov   cx, ST_GRAPHICS_SEGMENT
 mov   es, cx
 
@@ -137,7 +137,7 @@ mov   bx, word ptr ds:[bx + _hu_font]
 mov   di, word ptr es:[bx + PATCH_T.patch_width]
 add   di, ax
 
-cmp   di, SCREENWIDTH
+cmp   di, SCREENWIDTH           ; too big to fit
 jg    exit_hulib_drawtextline
 
 
@@ -159,7 +159,7 @@ ret
 forced_space:
 add   ax, 4
 cmp   ax, SCREENWIDTH
-jge   exit_hulib_drawtextline
+jge   exit_hulib_drawtextline       ; too big to fit
 jmp   iter_next_drawtextline
 
 

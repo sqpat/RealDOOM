@@ -2506,7 +2506,7 @@ column_done:
 add   bx, 4
 inc   word ptr cs:[_SELFMODIFY_offset_add_di + 2]   ; pixel offset increments each column
 pop   cx
-loop  draw_next_column		; relative out of range by 5 bytes
+loop  draw_next_column
 
 done_drawing:
 push  ss
