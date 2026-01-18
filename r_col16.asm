@@ -16,24 +16,16 @@
 ; DESCRIPTION:
 ;
 INCLUDE defs.inc
-INSTRUCTION_SET_MACRO
-.DATA
-
- 
-
-
-
-
-
-
-
+INSTRUCTION_SET_MACRO_NO_MEDIUM
 
 ;=================================
 
-.CODE
+
+SEGMENT R_COL16_TEXT PARA PUBLIC 'CODE'
+ASSUME  CS:R_COL16_TEXT
 
 
-PROC R_COLUMN16_STARTMARKER_
+PROC   R_COLUMN16_STARTMARKER_
 PUBLIC R_COLUMN16_STARTMARKER_
 ENDP 
 
@@ -99,7 +91,7 @@ dw 03C00h, 03C50h, 03CA0h, 03CF0h, 03D40h, 03D90h, 03DE0h, 03E30h
 ; R_DrawColumn
 ;
 	
-PROC  R_DrawColumn16_
+PROC    R_DrawColumn16_ FAR
 PUBLIC  R_DrawColumn16_
 
 ; no need to push anything. outer function just returns and pops
@@ -238,7 +230,7 @@ PROC R_COLUMN16_ENDMARKER_
 PUBLIC R_COLUMN16_ENDMARKER_ 
 ENDP
 
-
+ENDS
 
 
 END

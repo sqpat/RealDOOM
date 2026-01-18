@@ -16,11 +16,15 @@
 ; DESCRIPTION:
 ;
 INCLUDE defs.inc
-INSTRUCTION_SET_MACRO
+INSTRUCTION_SET_MACRO_NO_MEDIUM
 
 ;=================================
 
-.CODE
+
+
+
+SEGMENT R_SPANFL_TEXT PARA PUBLIC 'CODE'
+ASSUME  CS:R_SPANFL_TEXT
 
 PROC R_SPANFL_STARTMARKER_
 PUBLIC R_SPANFL_STARTMARKER_
@@ -52,7 +56,7 @@ MAXLIGHTZ_UNSHIFTED            = 0800h
 ;
 ; R_DrawSpan
 ;
-PROC  R_DrawSpanFL_
+PROC    R_DrawSpanFL_ FAR
 PUBLIC  R_DrawSpanFL_ 
 ; bx is colormaps offset within cs.
 ; cs is colormaps segment.
@@ -261,7 +265,7 @@ ENDP
 
 ;R_DrawPlanes_
 
-PROC R_DrawPlanesFL_
+PROC   R_DrawPlanesFL_ FAR
 PUBLIC R_DrawPlanesFL_
 
 
@@ -1316,7 +1320,7 @@ mov      ds, ax
 
 
 
-ASSUME DS:DGROUP
+
 
 retf
 
@@ -1331,6 +1335,6 @@ PROC R_SPANFL_ENDMARKER_ FAR
 PUBLIC R_SPANFL_ENDMARKER_ 
 ENDP
 
-
+ENDS
 
 END

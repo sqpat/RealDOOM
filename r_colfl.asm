@@ -16,21 +16,13 @@
 ; DESCRIPTION:
 ;
 INCLUDE defs.inc
-INSTRUCTION_SET_MACRO
-.DATA
-
- 
-
-
-
-
-
-
-
+INSTRUCTION_SET_MACRO_NO_MEDIUM
 
 ;=================================
 
-.CODE
+
+SEGMENT R_COLFL_TEXT PARA PUBLIC 'CODE'
+ASSUME  CS:R_COLFL_TEXT
 
 
 PROC R_COLUMNFL_STARTMARKER_
@@ -97,7 +89,7 @@ dw 03C00h, 03C50h, 03CA0h, 03CF0h, 03D40h, 03D90h, 03DE0h, 03E30h
 ; R_DrawColumn
 ;
 	
-PROC  R_DrawColumnFL_
+PROC    R_DrawColumnFL_ FAR
 PUBLIC  R_DrawColumnFL_
 
 ; no need to push anything. outer function just returns and pops
@@ -162,6 +154,6 @@ PUBLIC R_COLUMNFL_ENDMARKER_
 ENDP
 
 
-
+ENDS
 
 END

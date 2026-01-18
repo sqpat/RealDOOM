@@ -16,9 +16,15 @@
 ; DESCRIPTION:
 ;
 INCLUDE defs.inc
-INSTRUCTION_SET_MACRO
+INSTRUCTION_SET_MACRO_NO_MEDIUM
 
-.DATA
+; todo move these all out once BSP code moved out of binary
+
+
+
+
+SEGMENT R_MASK24_TEXT USE16 PARA PUBLIC 'CODE'
+ASSUME  CS:R_MASK24_TEXT
 
 
 
@@ -34,7 +40,7 @@ COLORMAPS_MASKEDMAPPING_SEG_OFFSET_IN_CS = 16 * (COLORMAPS_6_MASKEDMAPPING_SEG_D
 
 ;=================================
 
-.CODE
+
 
 
 PROC  R_MASK24_STARTMARKER_
@@ -102,7 +108,7 @@ dw 01000h, 01400h, 01800h, 01C00h
 ; R_DrawFuzzColumn
 ;
 	
-PROC  R_DrawFuzzColumn_ 
+PROC  R_DrawFuzzColumn_  NEAR
 
 ; todo:
 ; could write sp somehwere and use it as 64h for si comps. 
@@ -209,7 +215,7 @@ mov  word ptr word ptr cs:[_fuzzpos - OFFSET R_MASK24_STARTMARKER_], si
 pop  es
 pop  di
 pop  si
-retf 
+ret 
 
 zero_out_fuzzpos:
 mov   si, (OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)
@@ -237,7 +243,7 @@ COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - C
 ;
 
 ; this version called for almost all masked calls	
-PROC  R_DrawColumnPrepMaskedMulti_ 
+PROC  R_DrawColumnPrepMaskedMulti_ NEAR
 
 ; argument AX is diff for various segment lookups
 
@@ -328,7 +334,7 @@ ENDP
 ; R_DrawSingleMaskedColumn
 ;
 	
-PROC  R_DrawSingleMaskedColumn_ 
+PROC  R_DrawSingleMaskedColumn_ NEAR 
 
 push  bx
 push  cx
@@ -529,7 +535,7 @@ pop   di
 pop   si
 pop   cx
 pop   bx
-retf   
+ret   
 
 ENDP
 
@@ -5774,7 +5780,7 @@ mov   word ptr ds:[SELFMODIFY_MASKED_viewheight_2+1 - OFFSET R_MASK24_STARTMARKE
 mov      ax, ss
 mov      ds, ax
 
-ASSUME DS:DGROUP
+
 
 retf
 
@@ -5847,7 +5853,7 @@ done_with_fixedcolormap_selfmodify:
 mov      ax, ss
 mov      ds, ax
 
-ASSUME DS:DGROUP
+
 
 
 
@@ -5863,4 +5869,5 @@ PROC R_MASK24_ENDMARKER_ FAR
 PUBLIC R_MASK24_ENDMARKER_ 
 ENDP
 
+ENDS
 END

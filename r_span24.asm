@@ -16,11 +16,15 @@
 ; DESCRIPTION:
 ;
 INCLUDE defs.inc
-INSTRUCTION_SET_MACRO
+INSTRUCTION_SET_MACRO_NO_MEDIUM
 
 ;=================================
 
-.CODE
+
+
+
+SEGMENT R_SPAN24_TEXT PARA PUBLIC 'CODE'
+ASSUME  CS:R_SPAN24_TEXT
 
 PROC R_SPAN24_STARTMARKER_
 PUBLIC R_SPAN24_STARTMARKER_
@@ -117,7 +121,7 @@ MAXLIGHTZ_UNSHIFTED            = 0800h
 ;
 ; R_DrawSpan
 ;
-PROC  R_DrawSpan24_
+PROC    R_DrawSpan24_ FAR
 PUBLIC  R_DrawSpan24_ 
 	
 ; need to include these 2 instructions, and need a function label to include this...
@@ -127,7 +131,7 @@ jmp   do_span_loop
 
 ENDP ; shut up compiler warning
 
-PROC  R_DrawSpanActual24_
+PROC  R_DrawSpanActual24_ FAR
 
 
 ; stack vars
@@ -536,7 +540,7 @@ ENDP
 
 
 
-PROC R_FixedMulTrigLocal24_
+PROC R_FixedMulTrigLocal24_ NEAR
 
 
 ; DX:AX  *  CX:BX
@@ -646,7 +650,7 @@ ret
 
 ENDP
 
-PROC R_FixedMulLocal24_
+PROC R_FixedMulLocal24_ NEAR
 
 
 ; DX:AX  *  CX:BX
@@ -1086,7 +1090,7 @@ ENDP
 
 ;R_DrawPlanes_
 
-PROC R_DrawPlanes24_
+PROC   R_DrawPlanes24_ FAR
 PUBLIC R_DrawPlanes24_
 
 
@@ -2264,7 +2268,7 @@ mov      ds, ax
 
 
 
-ASSUME DS:DGROUP
+
 
 retf
 
@@ -2279,6 +2283,6 @@ PROC R_SPAN24_ENDMARKER_ FAR
 PUBLIC R_SPAN24_ENDMARKER_ 
 ENDP
 
-
+ENDS
 
 END

@@ -16,16 +16,20 @@
 ; DESCRIPTION:
 ;
 INCLUDE defs.inc
-INSTRUCTION_SET_MACRO
+INSTRUCTION_SET_MACRO_NO_MEDIUM
 
-;=================================
-.DATA
+; todo move these all out once BSP code moved out of binary
+
+
+
+SEGMENT R_SKYFL_TEXT USE16 PARA PUBLIC 'CODE'
+ASSUME  CS:R_SKYFL_TEXT
 
 SKY_TEXTURE_MID = 100
 
 
 
-.CODE
+
 
 PROC R_SKYFL_STARTMARKER_ FAR
 PUBLIC R_SKYFL_STARTMARKER_
@@ -154,9 +158,9 @@ ENDP
 ; dx
 ; cx:bx is pl? seems cx/bx can be destroyed freely here
 
-PROC  R_DrawSkyPlaneDynamicFL_ FAR
+PROC    R_DrawSkyPlaneDynamicFL_ FAR
 PUBLIC  R_DrawSkyPlaneDynamicFL_
-
+ENDP
 PROC  R_DrawSkyPlaneFL_ FAR
 PUBLIC  R_DrawSkyPlaneFL_
 
@@ -283,6 +287,7 @@ PROC R_SKYFL_ENDMARKER_ FAR
 PUBLIC R_SKYFL_ENDMARKER_
 ENDP
 
+ENDS
 
 END
 

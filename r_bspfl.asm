@@ -22,8 +22,8 @@ INSTRUCTION_SET_MACRO_NO_MEDIUM
 
 
 
-SEGMENT R_BSP0_TEXT USE16 PARA PUBLIC 'CODE'
-ASSUME  CS:R_BSP0_TEXT
+SEGMENT R_BSPFL_TEXT USE16 PARA PUBLIC 'CODE'
+ASSUME  CS:R_BSPFL_TEXT
 
 PROC R_BSPFL_STARTMARKER_
 PUBLIC R_BSPFL_STARTMARKER_
@@ -594,7 +594,7 @@ jmp shift_bits
 ; basically, shift numerator left 16 and divide
 ; DX:AX:00 / CX:BX
 
-PROC div48_32_BSPLocal_
+PROC div48_32_BSPLocal_ NEAR
 
 
 ; di:si get shifted cx:bx
@@ -1073,7 +1073,7 @@ jmp shift_bits_whole
 ; basically, shift numerator left 16 and divide
 ; AX:00:00 / CX:BX
 
-PROC div48_32_whole_BSPLocal_
+PROC div48_32_whole_BSPLocal_ NEAR
 
 ; di:si get shifted cx:bx
 
@@ -1413,12 +1413,12 @@ ENDP
 
 IF COMPISA GE COMPILE_386
 
-    PROC FixedMulTrig_BSPLocal_
+    PROC FixedMulTrig_BSPLocal_ NEAR
     sal dx, 1
     sal dx, 1   ; DWORD lookup index
     ENDP
 
-    PROC FixedMulTrigNoShift_BSPLocal_
+    PROC FixedMulTrigNoShift_BSPLocal_ NEAR
     ; pass in the index already shifted to be a dword lookup..
 
 
@@ -1443,7 +1443,7 @@ IF COMPISA GE COMPILE_386
 
 ELSE
 
-    PROC FixedMulTrig_BSPLocal_
+    PROC FixedMulTrig_BSPLocal_ NEAR
 
     
 
@@ -1451,7 +1451,7 @@ ELSE
     sal dx, 1   ; DWORD lookup index
     ENDP
 
-    PROC FixedMulTrigNoShift_BSPLocal_
+    PROC FixedMulTrigNoShift_BSPLocal_ NEAR
     ; pass in the index already shifted to be a dword lookup..
 
     push  si
@@ -1621,7 +1621,7 @@ ret
 ;FastDiv3232_RPTA_
 ; DX:AX / CX:BX
 
-PROC FastDiv3232_RPTA_
+PROC FastDiv3232_RPTA_ NEAR
 
 ; we shift dx:ax by 11 into si... 
 
@@ -1942,7 +1942,7 @@ ENDP
 ENDIF
 
 
-PROC FixedDivBSPLocal_
+PROC FixedDivBSPLocal_ NEAR
 
 
 ;fixed_t32 FixedDivinner(fixed_t32	a, fixed_t32 b int8_t* file, int32_t line)
@@ -2093,7 +2093,7 @@ ret
 
 ENDP
 
-PROC FixedMulTrigNoShiftBSPLocal_
+PROC FixedMulTrigNoShiftBSPLocal_ NEAR
 ; pass in the index already shifted to be a dword lookup..
 
 push  si
@@ -4538,7 +4538,7 @@ xchg      ax, dx
 
 mov       si, cs
 mov       ds, si
-ASSUME DS:R_BSP0_TEXT
+ASSUME DS:R_BSPFL_TEXT
 ; rw_scalestep is ready. write it forward as selfmodifying code here
 
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_1+1 - OFFSET R_BSPFL_STARTMARKER_], ax
@@ -4665,7 +4665,7 @@ jmp       handle_two_sided_line
 
 handle_single_sided_line:
 
-ASSUME DS:R_BSP0_TEXT
+ASSUME DS:R_BSPFL_TEXT
 
 SELFMODIFY_BSP_drawtype_1:
 SELFMODIFY_BSP_drawtype_1_AFTER = SELFMODIFY_BSP_drawtype_1 + 2
@@ -5162,7 +5162,8 @@ at_least_one_column_to_draw:
 
 ; todo better use DS as a scratch var for mults etc ahead.
 
-ASSUME DS:R_BSP0_TEXT
+ASSUME DS:R_BSPFL_TEXT
+
 ; make ds equal to cs for self modifying codes
 mov       ax, cs
 mov       ds, ax
@@ -7012,7 +7013,8 @@ SELFMODIFY_BSP_drawtype_2_AFTER = SELFMODIFY_BSP_drawtype_2+2
 
 mov       ax, 0c089h 
 
-ASSUME DS:R_BSP0_TEXT
+ASSUME DS:R_BSPFL_TEXT
+
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1 - OFFSET R_BSPFL_STARTMARKER_], ax
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2 - OFFSET R_BSPFL_STARTMARKER_], ax
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3 - OFFSET R_BSPFL_STARTMARKER_], ax
@@ -11579,7 +11581,8 @@ mov      ax, cs
 mov      ds, ax
 
 
-ASSUME DS:R_BSP0_TEXT
+ASSUME DS:R_BSPFL_TEXT
+
 
 
 mov      ax,  word ptr ss:[_detailshift]
@@ -11854,7 +11857,8 @@ mov      ds, ax
 mov      ax, DRAWFUZZCOL_AREA_SEGMENT
 mov      es, ax
 
-ASSUME DS:R_BSP0_TEXT
+ASSUME DS:R_BSPFL_TEXT
+
 
 
 

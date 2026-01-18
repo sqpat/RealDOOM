@@ -16,11 +16,15 @@
 ; DESCRIPTION:
 ;
 INCLUDE defs.inc
-INSTRUCTION_SET_MACRO 
+INSTRUCTION_SET_MACRO_NO_MEDIUM
 
 ;=================================
 
-.CODE
+
+
+
+SEGMENT R_SPAN16_TEXT PARA PUBLIC 'CODE'
+ASSUME  CS:R_SPAN16_TEXT
 
 PROC R_SPAN16_STARTMARKER_
 PUBLIC R_SPAN16_STARTMARKER_
@@ -102,7 +106,7 @@ FIRST_FLAT_CACHE_LOGICAL_PAGE = 026h
 ;
 ; R_DrawSpan
 ;
-PROC  R_DrawSpan16_ 
+PROC    R_DrawSpan16_ FAR
 PUBLIC  R_DrawSpan16_ 
 	
 ; need to include these 2 instructions, and need a function label to include this...
@@ -112,7 +116,7 @@ jmp   do_span_loop
 
 ENDP ; shut up compiler warning
 
-PROC  R_DrawSpanActual16_
+PROC  R_DrawSpanActual16_ FAR
 
 ; stack vars
  
@@ -518,7 +522,7 @@ ENDP
 
 
 
-PROC R_FixedMulTrigLocal16_
+PROC R_FixedMulTrigLocal16_ NEAR
 
 ; DX:AX  *  CX:BX
 ;  0  1   2  3
@@ -627,7 +631,7 @@ ret
 
 ENDP
 
-PROC R_FixedMulLocal16_
+PROC R_FixedMulLocal16_ NEAR
 
 ; DX:AX  *  CX:BX
 ;  0  1      2  3
@@ -1049,7 +1053,7 @@ ENDP
 
 ;R_DrawPlanes_
 
-PROC R_DrawPlanes16_
+PROC   R_DrawPlanes16_ FAR
 PUBLIC R_DrawPlanes16_ 
 
 
@@ -2155,7 +2159,7 @@ mov      ds, ax
 
 
 
-ASSUME DS:DGROUP
+
 
 retf
 
@@ -2169,6 +2173,6 @@ PROC R_SPAN16_ENDMARKER_ FAR
 PUBLIC R_SPAN16_ENDMARKER_ 
 ENDP
 
-
+ENDS
 
 END

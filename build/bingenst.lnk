@@ -61,18 +61,31 @@ file r_bspfl.obj
 
 NEWSEGMENT
 file r_col24.obj
+NEWSEGMENT
 file r_col16.obj
+NEWSEGMENT
 file r_col0.obj
+NEWSEGMENT
 file r_colfl.obj
+NEWSEGMENT
 file r_span24.obj
+NEWSEGMENT
 file r_span16.obj
+NEWSEGMENT
 file r_span0.obj
+NEWSEGMENT
 file r_spanfl.obj
+NEWSEGMENT
 file r_sky.obj
+NEWSEGMENT
 file r_skyfl.obj
+NEWSEGMENT
 file r_mask24.obj
+NEWSEGMENT
 file r_mask16.obj
+NEWSEGMENT
 file r_mask0.obj
+NEWSEGMENT
 file r_maskfl.obj
 
 
