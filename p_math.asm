@@ -1465,121 +1465,53 @@ call   FixedDivWholeA_MapLocal_
 retf
 ENDP
 
-PROC   FixedDivWholeA_MapLocal_  NEAR
-PUBLIC FixedDivWholeA_MapLocal_
-
 
 ; AX:00 / CX:BX
 ; return in DX:AX
 
-; this is fixeddiv so we must do the whole labs14 check and word shift adjustment
-
-
-mov   dx, ax  ; dx will store sign bit 
-xor   dx, cx  ; dx now stores signedness via test operator...
-
-
-
-; here we abs the numbers before unsigned division algo
-
-or    cx, cx
-jge   b_is_positive_whole
-neg   bx
-adc   cx, 0
-neg   cx
-
-
-b_is_positive_whole:
-
-or    ax, ax			; sign check
-jge   a_is_positive_whole
-neg   ax
-
-a_is_positive_whole:
-
-;  ax:00  is  labs(ax:00) now (unshifted)
-;  cx:bx  is  labs(cx:bx) now
-mov   es, dx   ; store sign bit for now
-xor   dx, dx
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-cmp   dx ,cx   ; compare high bit
-jg    do_quick_return_whole                 ; greater
-jne   restore_reg_then_do_full_divide_whole ; smaller
-cmp   ax ,bx
+compare_low_bits:
+cmp   ax, bx
 jb    restore_reg_then_do_full_divide_whole
-do_quick_return_whole: 
-; return (a^b) < 0 ? MINLONG : MAXLONG;
+do_quick_return_whole:
+  xor   ax, ax
+  mov   dx, 08000h
 
+  RET
 
-mov   dx, es   ; restore sign bit
+  
+PROC   FixedDivWholeA_MapLocal_   NEAR
+PUBLIC FixedDivWholeA_MapLocal_
 
-test  dx, dx   ; just need to do the high word due to sign?
-jl    return_MAXLONG_whole
+; big improvements to branchless fixeddiv 'preamble' by zero318
+; both numbers positive. no signs!
 
-return_MINLONG_whole:
+  ; do bounds check
+  mov   ES, AX
+  xor   DX, DX
+  SAL   AX, 1
+  RCL   DX, 1
+  SAL   AX, 1
+  RCL   DX, 1
+  CMP   DX, CX ;   if ( (abs(a)>>14) >= abs(b))
+  JG    do_quick_return_whole
+  JE    compare_low_bits
+  
+  restore_reg_then_do_full_divide_whole:
 
-mov   ax, 0ffffh
-mov   dx, 07fffh
-
-
-ret
-
-restore_reg_then_do_full_divide_whole:
-
-
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1   ; restore ax
-mov   dx, es  ; restore sign bit
-
-; main division algo
-
+  mov   ax, es
 do_full_divide_whole:
 
+  
+push si
+
+call div48_32_whole_MapLocal_ ; internally does push pop of di/bp but not si
 
 ; set negative if need be...
 
-test  dx, dx
-jl do_negative_whole
-
-
-
-call div48_32_whole_MapLocal_
-
-
-
+pop   si
 ret
 
-do_negative_whole:
-
-
-
-call div48_32_whole_MapLocal_
-
-
-
-neg   ax
-adc   dx, 0
-neg   dx
-
-
-ret
-
-return_MAXLONG_whole:
-
-mov   dx, 08000h
-xor   ax, ax
-ret
-
-
-
-endp
-
-
+ENDP
 
 shift_word_whole:
 mov dx, ax
