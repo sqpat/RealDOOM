@@ -18,8 +18,8 @@ INCLUDE defs.inc
 
 INSTRUCTION_SET_MACRO_NO_MEDIUM
 
-SEGMENT MATH_TEXT  USE16 PARA PUBLIC 'CODE'
-ASSUME cs:MATH_TEXT
+SEGMENT P_MATH_TEXT  USE16 PARA PUBLIC 'CODE'
+ASSUME cs:P_MATH_TEXT
 
 
 
@@ -771,7 +771,7 @@ PUBLIC div48_32_MapLocal_
 
 ; di:si get shifted cx:bx
 
-push  si
+push  di
 push  bp
 
 
@@ -1021,7 +1021,7 @@ mov   cx, ss      ; restore ds
 mov   ds, cx      
 
 pop   bp
-pop   si
+pop   di
 ret  
 
 continue_check:
@@ -1087,7 +1087,7 @@ mov   cx, ss
 mov   ds, cx
 
 pop   bp
-pop   si
+pop   di
 ret  
 
 ; the divide would have overflowed. subtract values
@@ -1106,7 +1106,7 @@ mov   cx, ss
 mov   ds, cx
 
 pop   bp
-pop   si
+pop   di
 ret 
 
 
@@ -1174,146 +1174,75 @@ divide_overflow:
 
 IF COMPISA LE COMPILE_286
 
+do_quick_return:
+  MOV   AX, SI
+  NEG   AX
+  DEC   AX
+  CWD
+  RCR   DX, 1
+  MOV   BP, ES
+  POP   SI
+  RET
+
 PROC   FixedDiv_MapLocal_   NEAR
 PUBLIC FixedDiv_MapLocal_
 
-
-;fixed_t32 FixedDivinner(fixed_t32	a, fixed_t32 b int8_t* file, int32_t line)
-; fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b) {
-; 	if ((labs(a) >> 14) >= labs(b))
-; 		return (a^b) < 0 ? MINLONG : MAXLONG;
-; 	return FixedDiv2(a, b);
-; }
-
-;    abs(x) = (x XOR y) - y
-;      where y = x's sign bit extended.
+; big improvements to branchless fixeddiv 'preamble' by zero318
 
 
-; DX:AX   /   CX:BX
- 
-push  si
-push  di
-
-
-
-mov   si, dx ; 	si will store sign bit 
-xor   si, cx  ; si now stores signedness via test operator...
-
-
-
-; here we abs the numbers before unsigned division algo
-
-
-or    cx, cx
-jge   b_is_positive
-neg   cx
-neg   bx
-sbb   cx, 0
-
-
-b_is_positive:
-
-or    dx, dx			; sign check
-jge   a_is_positive
-neg   dx
-neg   ax
-sbb   dx, 0
-
-
-a_is_positive:
-
-;  dx:ax  is  labs(dx:ax) now (unshifted)
-;  cx:bx  is  labs(cx:bx) now
-
-; labs check
-
-do_shift_and_full_compare:
-
-; store backup dx:ax in ds:es
-
-SHIFT_MACRO rol dx 2
-
-mov di, dx
-and di, 03h
-
-
-; do comparison  di:bx vs dx:ax
-; 	if ((labs(a) >> 14) >= labs(b))
-
-cmp   di, cx
-jg    do_quick_return
-jne   restore_reg_then_do_full_divide ; below
-mov   di, dx      ; recover this
-mov   es, ax      ; back this up
-SHIFT_MACRO rol ax 2
-and   ax, 03h
-and   di, 0FFFCh  ; cx, 0FFFCh
-or    ax, di
-cmp   ax, bx
-jb    restore_reg_then_do_full_divide_2
-
-do_quick_return: 
-; return (a^b) < 0 ? MINLONG : MAXLONG;
-test  si, si   ; just need to do the high word due to sign?
-jl    return_MAXLONG
-
-return_MINLONG:
-
-mov   ax, 0ffffh
-mov   dx, 07fffh
-
-exit_and_return_early:
-
-; restore ds...
-
-
-pop   di
-pop   si
-ret
-
-return_MAXLONG:
-
-mov   dx, 08000h
-xor   ax, ax
-jmp   exit_and_return_early
-
-; main division algo
-
-restore_reg_then_do_full_divide_2:
-
-
-; restore ax
-mov ax, es
-restore_reg_then_do_full_divide:
-
-; restore dx
-SHIFT_MACRO ror dx 2
-
-
+  PUSH  SI
+  MOV   ES, BP
+  MOV   SI, DX
+  SHL   SI, 1
+  SBB   SI, SI  ; sign of dx in si
+  XOR   AX, SI
+  XOR   DX, SI  
+  SUB   AX, SI  
+  SBB   DX, SI  ; dx:ax now labs. sign bits in si
+  MOV   BP, CX
+  SHL   BP, 1
+  SBB   BP, BP
+  XOR   BX, BP
+  XOR   CX, BP
+  SUB   BX, BP
+  SBB   CX, BP ; cx:bx now labs. sign bits in bp
+  XOR   SI, BP ; si has sign bits
+  MOV   BP, DX ; 
+  ROL   BP, 1
+  ROL   BP, 1
+  AND   BP, 3  ;   3 is FFFF shr 14
+  CMP   BP, CX ;   if ( (abs(a)>>14) >= abs(b))
+ JG do_quick_return
+  JNE   do_full_divide
+  MOV   BP, DX
+  ROL   AX, 1
+  RCL   BP, 1
+  ROL   AX, 1
+  RCL   BP, 1
+  CMP   BP, BX
+  JAE   do_quick_return
+  ROR   AX, 1
+  ROR   AX, 1
 do_full_divide:
 
+  MOV  BP, ES    ; restore bp
+  mov  word ptr cs:[_SELFMODIFY_store_fixeddiv_sign_ahead+1], si
 
-call div48_32_MapLocal_
+
+
+call div48_32_MapLocal_ ; internally does push pop of di/bp but not si
 
 ; set negative if need be...
 
-test  si, si
+_SELFMODIFY_store_fixeddiv_sign_ahead:
+mov  si, 01000h
 
-jl do_negative
-
-
-pop   di
-pop   si
-ret
-
-do_negative:
-
-neg   dx
-neg   ax
-sbb   dx, 0
+XOR  AX, SI
+XOR  DX, SI  
+SUB  AX, SI  
+SBB  DX, SI  ; dx:ax now labs. sign bits in si
 
 
-pop   di
 pop   si
 ret
 
