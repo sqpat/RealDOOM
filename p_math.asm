@@ -294,48 +294,23 @@ PUBLIC FixedMul1632_MapLocal_
 
 
 
-; need to get the sign-extends for DX and CX
+; improved into imul version by zero318
 
 
-
-
-push  si
-CWD				; DX/S0
-mov   es, ax    ; store ax in es
-AND   DX, BX	; S0*BX
-NEG   DX
-mov   SI, DX	; DI stores hi word return
-CWD 
-AND  DX, CX    ; DX*CX
-NEG  DX
-add  SI, DX    ; low word result into high word return
-CWD
-; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
-; UNLESS BX is 0. then its also 0!
-; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
-MOV  AX, BX    ; create BX copy
-SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
-ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
-AND  AX, DX    ; 0 or BX - 1
-ADD  SI, AX    ; add DX * BX high word. 
-AND  DX, BX    ; DX * BX low bits
-NEG  DX
-XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
-mov  AX, ES    ; grab AX from ES
-mul  DX        ; BX*AX  
-add  BX, DX    ; high word result into low word return
-ADC  SI, 0
-mov  AX, CX   ; AX holds CX
-CWD           ; S1 in DX
-mov  CX, ES   ; AX from ES
-AND  DX, CX   ; S1*AX
-NEG  DX
-ADD  SI, DX   ; result into high word return
-MUL  CX       ; AX*CX
-ADD  AX, BX	  ; set up final return value
-ADC  DX, SI
-pop   si
-ret
+  MOV ES, CX
+  MOV CX, AX
+  MUL BX
+  XCHG AX, DX
+  XCHG AX, CX
+  CWD
+  AND BX, DX
+  MOV DX, ES
+  IMUL DX
+  SUB CX, BX
+  SBB BX, BX
+  ADD AX, CX
+  ADC DX, BX
+  RET
 
 
 
@@ -1096,6 +1071,56 @@ endp
 
 
 
+
+
+COMMENT @
+; TODO: test this fpu version by zero318
+
+
+  MOV ES, SI
+  XCHG AX, SI
+  XCHG AX, DX
+  CWD
+  PUSH DX
+  PUSH AX
+  PUSH SI
+  XOR AX, AX
+  PUSH AX
+  MOV SI, SP
+  FILD QWORD [SI]
+  WAIT
+  FNSTCW [SI]
+  MOV [SI+2], BX
+  MOV [SI+4], CX
+  FIDIV DWORD [SI+2]
+  MOV BH, 0xC
+  OR BX, [SI]
+  MOV [SI+6], BX
+  XOR CH, DH
+  WAIT
+  FLDCW [SI+6]
+  FISTP DWORD [SI+2]
+  WAIT
+  FLDCW [SI]
+  ADD SP, 2
+  POP AX
+  FNSTSW [SI+6]
+  MOV SI, ES
+  POP DX
+  POP BX
+  SHR BL, 1
+  JC divide_overflow
+  RET
+divide_overflow:
+  SHL CH, 1
+  CMC
+  SBB CX, CX
+  XOR AX, CX
+  XOR DX, CX
+  RET
+
+
+@
 
 
 

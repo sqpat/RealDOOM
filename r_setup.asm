@@ -130,7 +130,7 @@ _SELFMODIFY_set_focallength_hi:
 mov     cx, 01000h
 _SELFMODIFY_set_focallength_low:
 mov     bx, 01000h
-; this undoes DS! todo improve?
+
 call    FixedMul_     ; t.w = FixedMul(finetan_i.w, focallength);
 
 ;			t.w = (temp.w - t.w + 0xFFFFu);
