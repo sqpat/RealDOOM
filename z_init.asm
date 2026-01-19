@@ -62,7 +62,6 @@ EXTRN Z_QuickMapMusicPageFrame_:FAR
 EXTRN FixedMul_:FAR
 EXTRN FastDiv32u16u_:FAR
 EXTRN cht_CheckCheat_Far_:FAR
-EXTRN FastDiv3216u_:FAR
 
 EXTRN S_InitSFXCache_:FAR
 EXTRN I_Quit_:FAR

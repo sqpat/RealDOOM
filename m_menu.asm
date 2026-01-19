@@ -3561,10 +3561,7 @@ mov   dx, word ptr es:[bx + EVENT_T.event_data2]
 add   ax, 5
 mov   bx, 10
 imul  dx
-;call  FastDiv3216u_
-
-db    09Ah
-dw    FASTDIV3216U_MAPLOCAL_FAR_OFFSET, PHYSICS_HIGHCODE_SEGMENT
+call  FastDiv3216u_MenuLocal_   ; todo we only need ax so this is very improvable. but sort of who cares.
 
 
 
@@ -3574,7 +3571,76 @@ pop   bx
 ret   
 
 ENDP
+PROC   FastDiv3216u_MenuLocal_    NEAR
+PUBLIC FastDiv3216u_MenuLocal_
 
+;DX:AX / BX (?)
+
+test dx, dx
+js   handle_negative_3216
+
+cmp dx, bx
+jge two_part_divide
+div bx
+xor dx, dx
+ret
+
+handle_negative_3216:
+
+neg ax
+adc dx, 0
+neg dx
+
+
+cmp dx, bx
+jge two_part_divide_3216
+one_part_divide_3216:
+div bx
+xor dx, dx
+
+neg ax
+adc dx, 0
+neg dx
+
+ret
+two_part_divide_3216:
+mov es, ax
+mov ax, dx
+xor dx, dx
+div bx     ; div high
+mov ds, ax ; store q1
+mov ax, es
+; DX:AX contains remainder + ax...
+div bx
+mov dx, ds  ; retrieve q1
+            ; q0 already in ax
+neg ax
+adc dx, 0
+neg dx
+
+
+mov bx, ss
+mov ds, bx  ; restored ds
+ret
+
+two_part_divide:
+mov es, ax
+mov ax, dx
+xor dx, dx
+div bx     ; div high
+mov ds, ax ; store q1
+mov ax, es
+; DX:AX contains remainder + ax...
+div bx
+mov dx, ds  ; retrieve q1
+            ; q0 already in ax
+mov bx, ss
+mov ds, bx  ; restored ds
+ret
+
+
+
+ENDP
 
 
 PROC   M_DrawPatchDirect_ NEAR

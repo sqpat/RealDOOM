@@ -50,7 +50,7 @@ _rndtable_9000:
  db 197, 242,  98,  43,  39, 175, 254, 145, 190,  84, 118, 222, 187, 136
  db 120, 163, 236, 249
 
-PROC I_ReadScreen_ NEAR
+PROC   I_ReadScreen_ NEAR
 PUBLIC I_ReadScreen_
 
 
@@ -953,7 +953,7 @@ jmp       done_comparing_r
 
 endp
 
-PROC wipe_StartScreen_ FAR
+PROC   wipe_StartScreen_ FAR
 PUBLIC wipe_StartScreen_
 
 push    dx
@@ -983,7 +983,7 @@ retf
 
 ENDP
 
-PROC wipe_WipeLoop_ FAR
+PROC   wipe_WipeLoop_ FAR
 PUBLIC wipe_WipeLoop_
 
 push      bx

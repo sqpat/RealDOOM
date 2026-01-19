@@ -36,7 +36,6 @@ EXTRN D_DoAdvanceDemo_:NEAR
 EXTRN G_Ticker_:NEAR
 EXTRN TryRunTics_:NEAR
 
-EXTRN FastDiv3216u_:FAR
 EXTRN Z_SetOverlay_:FAR
 EXTRN locallib_fopen_:NEAR
 EXTRN locallib_fopen_nobuffering_:NEAR

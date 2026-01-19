@@ -1629,7 +1629,7 @@ ret
 ENDP
 
 
-PROC    PrintSpaces_
+PROC    PrintSpaces_ NEAR
 
 mov   ax, 02020h
 rep   stosb

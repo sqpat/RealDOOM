@@ -157,7 +157,7 @@ ret
 
 ENDP
 
-PROC FastDiv3216u_    FAR
+PROC   FastDiv3216u_    NEAR
 PUBLIC FastDiv3216u_
 
 ;DX:AX / BX (?)

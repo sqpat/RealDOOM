@@ -594,7 +594,7 @@ jmp shift_bits
 ; basically, shift numerator left 16 and divide
 ; DX:AX:00 / CX:BX
 
-PROC div48_32_BSPLocal_
+PROC div48_32_BSPLocal_  NEAR
 
 
 ; di:si get shifted cx:bx
@@ -1413,12 +1413,12 @@ ENDP
 
 IF COMPISA GE COMPILE_386
 
-    PROC FixedMulTrig_BSPLocal_
+    PROC FixedMulTrig_BSPLocal_  NEAR
     sal dx, 1
     sal dx, 1   ; DWORD lookup index
     ENDP
 
-    PROC FixedMulTrigNoShift_BSPLocal_
+    PROC FixedMulTrigNoShift_BSPLocal_ NEAR
     ; pass in the index already shifted to be a dword lookup..
 
 
@@ -1443,7 +1443,7 @@ IF COMPISA GE COMPILE_386
 
 ELSE
 
-   PROC FixedMulTrig_BSPLocal_
+    PROC FixedMulTrig_BSPLocal_  NEAR
 
     
 
@@ -1451,7 +1451,7 @@ ELSE
     sal dx, 1   ; DWORD lookup index
     ENDP
 
-    PROC FixedMulTrigNoShift_BSPLocal_
+    PROC FixedMulTrigNoShift_BSPLocal_ NEAR
     push  si
 
     ; lookup the fine angle
@@ -1940,7 +1940,7 @@ ENDP
 ENDIF
 
 
-PROC FixedDivBSPLocal_
+PROC FixedDivBSPLocal_  NEAR
 
 
 ;fixed_t32 FixedDivinner(fixed_t32	a, fixed_t32 b int8_t* file, int32_t line)
@@ -2091,7 +2091,7 @@ ret
 
 ENDP
 
-PROC FixedMulTrigNoShiftBSPLocal_
+PROC FixedMulTrigNoShiftBSPLocal_ NEAR
 ; pass in the index already shifted to be a dword lookup..
 
 push  si

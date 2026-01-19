@@ -1400,10 +1400,6 @@ ret
 
 ENDP
 
-PROC   FastDiv3216u_MapLocal_Far_    FAR
-PUBLIC FastDiv3216u_MapLocal_Far_
-call   FastDiv3216u_MapLocal_
-ENDP
 
 PROC   FastDiv3216u_MapLocal_    NEAR
 PUBLIC FastDiv3216u_MapLocal_

@@ -1443,7 +1443,7 @@ IF COMPISA GE COMPILE_386
 
 ELSE
 
-   PROC FixedMulTrig_BSPLocal_
+   PROC FixedMulTrig_BSPLocal_  NEAR
 
     
 
@@ -1451,7 +1451,7 @@ ELSE
     sal dx, 1   ; DWORD lookup index
     ENDP
 
-    PROC FixedMulTrigNoShift_BSPLocal_
+    PROC FixedMulTrigNoShift_BSPLocal_ NEAR
     push  si
 
     ; lookup the fine angle
