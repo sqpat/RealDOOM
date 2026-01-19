@@ -195,11 +195,24 @@ return_maxvalue:
 ; rare occurence
 mov   dx, 040h
 xor   ax, ax
-jmp normal_return
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret
+
 figure_out_sign_return:
 test  cx, cx
 js    return_maxvalue
-jmp   return_minvalue
+return_minvalue:
+; super duper rare case. actually never caught it happening.
+mov   ax, 0100h
+cwd
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret
 
 do_divide:
 
@@ -214,14 +227,19 @@ do_divide:
 ;   doesnt occur even every frame. lets avoid the "optimized" dupe function.
 
 
-call div48_32_BSPLocal_
 
+
+call div48_32_BSPLocal_ ; internally does push pop of di/bp but not si
+
+; set negative if need be...
 cmp   dx, 040h
 jg    return_maxvalue
 test  dx, dx
 ; dont need to check for negative result, this was unsigned.
-je   continue_check 
+jne   normal_return 
 
+cmp   ax, 0100h
+jnae  return_minvalue
 normal_return:
 
 pop   di
@@ -230,27 +248,6 @@ pop   cx
 pop   bx
 ret
 
-continue_check:
-cmp   ax, 0100h
-jnae   return_minvalue
-
-; also normal return
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret
-
-return_minvalue:
-; super duper rare case. actually never caught it happening.
-mov   ax, 0100h
-xor   dx, dx
-
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret
 
 ENDP
 
@@ -599,7 +596,7 @@ PROC div48_32_BSPLocal_ NEAR
 
 ; di:si get shifted cx:bx
 
-push  si
+push  di
 push  bp
 
 
@@ -849,7 +846,7 @@ mov   cx, ss      ; restore ds
 mov   ds, cx      
 
 pop   bp
-pop   si
+pop   di
 ret  
 
 continue_check2:
@@ -915,7 +912,7 @@ mov   cx, ss
 mov   ds, cx
 
 pop   bp
-pop   si
+pop   di
 ret  
 
 ; the divide would have overflowed. subtract values
@@ -934,7 +931,7 @@ mov   cx, ss
 mov   ds, cx
 
 pop   bp
-pop   si
+pop   di
 ret 
 
 
@@ -1939,223 +1936,145 @@ ENDP
 ENDIF
 
 
+do_quick_return:
+  MOV   AX, SI
+  NEG   AX
+  DEC   AX
+  CWD
+  RCR   DX, 1
+  MOV   BP, ES
+  POP   SI
+  RET
+
 PROC FixedDivBSPLocal_ NEAR
 
-
-;fixed_t32 FixedDivinner(fixed_t32	a, fixed_t32 b int8_t* file, int32_t line)
-; fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b) {
-; 	if ((labs(a) >> 14) >= labs(b))
-; 		return (a^b) < 0 ? MINLONG : MAXLONG;
-; 	return FixedDiv2(a, b);
-; }
-
-;    abs(x) = (x XOR y) - y
-;      where y = x's sign bit extended.
+; big improvements to branchless fixeddiv 'preamble' by zero318
 
 
-; DX:AX   /   CX:BX
- 
-push  si
-push  di
-
-
-mov   si, dx ; 	si will store sign bit 
-xor   si, cx  ; si now stores signedness via test operator...
-
-
-
-; here we abs the numbers before unsigned division algo
-
-or    cx, cx
-jge   b_is_positive
-neg   cx
-neg   bx
-sbb   cx, 0
-
-
-b_is_positive:
-
-or    dx, dx			; sign check
-jge   a_is_positive
-neg   dx
-neg   ax
-sbb   dx, 0
-
-
-a_is_positive:
-
-;  dx:ax  is  labs(dx:ax) now (unshifted)
-;  cx:bx  is  labs(cx:bx) now
-
-
-
-; labs check
-
-do_shift_and_full_compare:
-
-; store backup dx:ax in ds:es
-
-SHIFT_MACRO rol dx 2
-
-mov di, dx
-and di, 03h
-
-
-; do comparison  di:bx vs dx:ax
-; 	if ((labs(a) >> 14) >= labs(b))
-
-cmp   di, cx
-jg    do_quick_return
-jne   restore_reg_then_do_full_divide ; below
-mov   di, dx      ; recover this
-mov   es, ax      ; back this up
-SHIFT_MACRO rol ax 2
-and   ax, 03h
-and   di, 0FFFCh  ; cx, 0FFFCh
-or    ax, di
-cmp   ax, bx
-jb    restore_reg_then_do_full_divide_2
-
-do_quick_return: 
-; return (a^b) < 0 ? MINLONG : MAXLONG;
-test  si, si   ; just need to do the high word due to sign?
-jl    return_MAXLONG
-
-return_MINLONG:
-
-mov   ax, 0ffffh
-mov   dx, 07fffh
-
-exit_and_return_early:
-
-; restore ds...
-
-
-pop   di
-pop   si
-ret
-
-return_MAXLONG:
-
-mov   dx, 08000h
-xor   ax, ax
-jmp   exit_and_return_early
-
-; main division algo
-
-
-
-
-
-
-
-
-
-restore_reg_then_do_full_divide_2:
-
-
-; restore ax
-mov ax, es
-restore_reg_then_do_full_divide:
-
-; restore dx
-SHIFT_MACRO ror dx 2
-
-
+  PUSH  SI
+  MOV   ES, BP
+  MOV   SI, DX
+  SHL   SI, 1
+  SBB   SI, SI  ; sign of dx in si
+  XOR   AX, SI
+  XOR   DX, SI  
+  SUB   AX, SI  
+  SBB   DX, SI  ; dx:ax now labs. sign bits in si
+  MOV   BP, CX
+  SHL   BP, 1
+  SBB   BP, BP
+  XOR   BX, BP
+  XOR   CX, BP
+  SUB   BX, BP
+  SBB   CX, BP ; cx:bx now labs. sign bits in bp
+  XOR   SI, BP ; si has sign bits
+  MOV   BP, DX ; 
+  ROL   BP, 1
+  ROL   BP, 1
+  AND   BP, 3  ;   3 is FFFF shr 14
+  CMP   BP, CX ;   if ( (abs(a)>>14) >= abs(b))
+  JG do_quick_return
+  JNE   do_full_divide
+  MOV   BP, DX
+  ROL   AX, 1
+  RCL   BP, 1
+  ROL   AX, 1
+  RCL   BP, 1
+  CMP   BP, BX
+  JAE   do_quick_return
+  ROR   AX, 1
+  ROR   AX, 1
 do_full_divide:
 
-call div48_32_BSPLocal_
+  MOV  BP, ES    ; restore bp
+  mov  word ptr cs:[_SELFMODIFY_store_fixeddiv_sign_ahead+1], si
+
+call div48_32_BSPLocal_ ; internally does push pop of di/bp but not si
 
 ; set negative if need be...
 
-test  si, si
+_SELFMODIFY_store_fixeddiv_sign_ahead:
+mov  si, 01000h
 
-jl do_negative
+XOR  AX, SI
+XOR  DX, SI  
+SUB  AX, SI  
+SBB  DX, SI  ; dx:ax now labs. sign bits in si
 
 
-pop   di
 pop   si
 ret
 
-do_negative:
-
-neg   dx
-neg   ax
-sbb   dx, 0
-
-
-pop   di
-pop   si
-ret
 
 ENDP
 
 PROC FixedMulTrigNoShiftBSPLocal_ NEAR
 ; pass in the index already shifted to be a dword lookup..
 
-push  si
+    push  si
 
-; lookup the fine angle
+    ; lookup the fine angle
 
-mov si, dx
-mov ds, ax  ; put segment in ES
-lodsw
-mov es, ax
-lodsw
-
-mov   DX, AX    ; store sign bits in DX
-AND   AX, BX	; S0*BX
-NEG   AX
-mov   SI, AX	; SI stores hi word return
-
-mov   AX, DX    ; restore sign bits from DX
-
-AND  AX, CX    ; DX*CX
-NEG  AX
-add  SI, AX    ; low word result into high word return
-
-; DX already has sign bits..
-
-; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
-; UNLESS BX is 0. then its also 0!
-
-; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
-MOV  AX, BX    ; create BX copy
-SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
-ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
-
-AND  AX, DX    ; 0 or BX - 1
-ADD  SI, AX    ; add DX * BX high word. 
+; todo swap arg order so cx:bx is seg/lookup
+; allowing for mov es, cx -> les es:[bx]
 
 
-AND  DX, BX    ; DX * BX low bits
-NEG  DX
-XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
+    mov  si, dx
+    mov  es, ax  ; put segment in dS
+    les  ax, dword ptr es:[si]
 
-mov  AX, ES    ; grab AX from ES
-mul  DX        ; BX*AX  
-add  BX, DX    ; high word result into low word return
-ADC  SI, 0
+    mov  dx, es
+    mov  es, ax
+    mov  ax, dx  ; gross juggle... revisit. for consistency with old algo
 
-mov  AX, CX   ; AX holds CX
 
-CWD           ; S1 in DX
+    AND   AX, BX	; S0*BX
+    NEG   AX
+    XCHG  AX, SI	; SI stores hi word return
 
-mov  CX, ES   ; AX from ES
-AND  DX, CX   ; S1*AX
-NEG  DX
-ADD  SI, DX   ; result into high word return
+    MOV   AX, DX    ; restore sign bits from DX
 
-MUL  CX       ; AX*CX
+    AND   AX, CX     ; DX*CX
+    SUB   SI, AX     ; low word result into high word return
 
-ADD  AX, BX	  ; set up final return value
-ADC  DX, SI
- 
-MOV CX, SS
-MOV DS, CX    ; put DS back from SS
+    ; DX already has sign bits..
 
-pop   si
-ret
+    ; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
+    ; UNLESS BX is 0. then its also 0!
+
+    ; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
+    MOV  AX, BX    ; create BX copy
+    SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
+    ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
+
+    AND  AX, DX    ; 0 or BX - 1
+    ADD  SI, AX    ; add DX * BX high word. 
+
+
+    AND  DX, BX    ; DX * BX low bits
+    NEG  DX
+    XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
+
+    mov  AX, ES    ; grab AX from ES
+    mul  DX        ; BX*AX  
+    add  BX, DX    ; high word result into low word return
+    ADC  SI, 0    ; would be cool if we had a known zero reg
+
+    xchg AX, CX   ; AX gets CX
+
+    CWD           ; S1 in DX
+
+    mov  CX, ES   ; AX from ES
+    AND  DX, CX   ; S1*AX
+    SUB  SI, DX   ; result into high word return
+
+    MUL  CX       ; AX*CX
+
+    ADD  AX, BX	  ; set up final return value
+    ADC  DX, SI
+
+    pop   si
+    ret
 
 
 

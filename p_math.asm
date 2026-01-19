@@ -1211,7 +1211,7 @@ PUBLIC FixedDiv_MapLocal_
   ROL   BP, 1
   AND   BP, 3  ;   3 is FFFF shr 14
   CMP   BP, CX ;   if ( (abs(a)>>14) >= abs(b))
- JG do_quick_return
+  JG do_quick_return
   JNE   do_full_divide
   MOV   BP, DX
   ROL   AX, 1
