@@ -451,23 +451,27 @@ ELSE
 
     ; lookup the fine angle
 
+; todo swap arg order so cx:bx is seg/lookup
+; allowing for mov es, cx -> les es:[bx]
 
-    mov si, dx
-    mov ds, ax  ; put segment in dS
-    lodsw
-    mov es, ax
-    lodsw
 
-    mov   DX, AX    ; store sign bits in DX
+    mov  si, dx
+    mov  es, ax  ; put segment in dS
+    les  ax, dword ptr es:[si]
+
+    mov  dx, es
+    mov  es, ax
+    mov  ax, dx  ; gross juggle... revisit. for consistency with old algo
+
+
     AND   AX, BX	; S0*BX
     NEG   AX
-    mov   SI, AX	; SI stores hi word return
+    XCHG  AX, SI	; SI stores hi word return
 
-    mov   AX, DX    ; restore sign bits from DX
+    MOV   AX, DX    ; restore sign bits from DX
 
-    AND  AX, CX    ; DX*CX
-    NEG  AX
-    add  SI, AX    ; low word result into high word return
+    AND   AX, CX     ; DX*CX
+    SUB   SI, AX     ; low word result into high word return
 
     ; DX already has sign bits..
 
@@ -490,24 +494,20 @@ ELSE
     mov  AX, ES    ; grab AX from ES
     mul  DX        ; BX*AX  
     add  BX, DX    ; high word result into low word return
-    ADC  SI, 0
+    ADC  SI, 0    ; would be cool if we had a known zero reg
 
-    mov  AX, CX   ; AX holds CX
+    xchg AX, CX   ; AX gets CX
 
     CWD           ; S1 in DX
 
     mov  CX, ES   ; AX from ES
     AND  DX, CX   ; S1*AX
-    NEG  DX
-    ADD  SI, DX   ; result into high word return
+    SUB  SI, DX   ; result into high word return
 
     MUL  CX       ; AX*CX
 
     ADD  AX, BX	  ; set up final return value
     ADC  DX, SI
-    
-    MOV CX, SS
-    MOV DS, CX    ; put DS back from SS
 
     pop   si
     ret
