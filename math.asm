@@ -19,8 +19,8 @@ INCLUDE defs.inc
 INSTRUCTION_SET_MACRO
 
 IF COMPISA LE COMPILE_286
-GLOBAL FixedMul_:FAR
-GLOBAL FixedDiv_:FAR
+
+
 ENDIF
 
 
@@ -31,7 +31,7 @@ IF COMPISA LE COMPILE_286
 
 
 
-PROC FixedMul_ FAR
+PROC   FixedMul_ NEAR
 PUBLIC FixedMul_
 
 ; DX:AX  *  CX:BX
@@ -69,9 +69,11 @@ PUBLIC FixedMul_
 
 ; thanks zero318 from discord for improved algorithm  
 
+; thanks zero318 from discord for improved algorithm  
+
 MOV  ES, SI
 MOV  SI, DX
-MOV  word ptr cs:[_selfmodify_restore_original_ax+1], AX
+PUSH AX
 MUL  BX
 MOV  word ptr cs:[_selfmodify_restore_dx+1], DX
 MOV  AX, SI
@@ -82,19 +84,19 @@ AND  DX, BX
 SUB  SI, DX
 MUL  BX
 _selfmodify_restore_dx:
-mov  BX, 01000h
-ADD  BX, AX
+ADD  AX, 01000h
 ADC  SI, DX
-mov  AX, CX
+XCHG AX, CX
 CWD
 _selfmodify_restore_original_ax:
-mov CX, 01000h
-AND DX, CX
-SUB SI, DX
-MUL CX
-ADD AX, BX
-ADC DX, SI
-MOV SI, ES
+POP  BX
+AND  DX, BX
+SUB  SI, DX
+MUL  BX
+ADD  AX, CX
+ADC  DX, SI
+MOV  SI, ES
+
 
 
 ret
@@ -105,7 +107,7 @@ ENDP
 
 ELSE
 
-PROC FixedMul_ FAR
+PROC   FixedMul_ NEAR
 PUBLIC FixedMul_
 
 ; DX:AX  *  CX:BX
@@ -129,7 +131,7 @@ ENDIF
 
 
 
-PROC FastDiv32u16u_   FAR
+PROC   FastDiv32u16u_   NEAR
 PUBLIC FastDiv32u16u_
 
 ;DX:AX / BX (?)
@@ -142,22 +144,16 @@ xor dx, dx
 ret
 
 two_part_divide:
-mov es, ax
-mov ax, dx
-xor dx, dx
-div bx     ; div high
-mov ds, ax ; store q1
-mov ax, es
+mov  es, ax
+mov  ax, dx
+xor  dx, dx
+div  bx     ; div high
+push ax
+mov  ax, es
 ; DX:AX contains remainder + ax...
-div bx
-mov dx, ds  ; retrieve q1
-            ; q0 already in ax
-mov bx, ss
-mov ds, bx  ; restored ds
-retf
-
-
-
+div  bx
+pop  dx ; q0 already in ax
+ret
 
 ENDP
 
@@ -194,24 +190,22 @@ neg dx
 
 ret
 two_part_divide_3216:
-mov es, ax
-mov ax, dx
-xor dx, dx
-div bx     ; div high
-mov ds, ax ; store q1
+mov   es, ax
+mov   ax, dx
+xor   dx, dx
+div   bx     ; div high
+push  ax
 mov ax, es
 ; DX:AX contains remainder + ax...
 div bx
-mov dx, ds  ; retrieve q1
+pop   dx
             ; q0 already in ax
-neg ax
-adc dx, 0
-neg dx
+neg   ax
+adc   dx, 0
+neg   dx
 
 
-mov bx, ss
-mov ds, bx  ; restored ds
-retf
+ret
 
 
 
