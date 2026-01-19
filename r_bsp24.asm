@@ -6175,51 +6175,48 @@ mov   bx, 01000h
 SELFMODIFY_set_cx_rw_distance_hi:
 mov   cx, 01000h
 
+; begin inlined FixedMul_
 
-mov   es, ax	; store ax in es
-mov   ds, dx    ; store dx in ds
-mov   ax, dx	; ax holds dx
-CWD				; S0 in DX
+IF COMPISA GE COMPILE_386
 
-; todo inlined fixedmul do 386
+  shl  ecx, 16
+  mov  cx, bx
+  xchg ax, dx
+  shl  eax, 16
+  xchg ax, dx
+  imul  ecx
+  shr  eax, 16
 
-; TODO INLINE
+ELSE
 
-AND   DX, BX	; S0*BX
-NEG   DX
-mov   SI, DX	; SI stores hi word return
+ ; si not preserved
+  MOV  SI, DX
+  PUSH AX
+  MUL  BX
+  MOV  word ptr cs:[_selfmodify_restore_dx_10+1], DX
+  MOV  AX, SI
+  MUL  CX
+  XCHG AX, SI
+  CWD
+  AND  DX, BX
+  SUB  SI, DX
+  MUL  BX
+_selfmodify_restore_dx_10:
+  ADD  AX, 01000h
+  ADC  SI, DX
+  XCHG AX, CX
+  CWD
+  POP  BX
+  AND  DX, BX
+  SUB  SI, DX
+  MUL  BX
+  ADD  AX, CX
+  ADC  DX, SI
 
-; AX still stores DX
-MUL  CX         ; DX*CX
-add  SI, AX    ; low word result into high word return
 
-mov  AX, DS    ; restore DX from ds
 
-mov  DX, SS   ; restore DS here using the previous mul's prefetch..
-mov  DS, DX
-; NOTE1 DS RESTORED here//. but it doesnt have to be?
+ENDIF
 
-MUL  BX         ; DX*BX
-XCHG BX, AX    ; BX will hold low word return. store bx in ax
-add  SI, DX    ; add high word to result
-
-mov  DX, ES    ; restore AX from ES
-mul  DX        ; BX*AX  
-add  BX, DX    ; high word result into low word return
-ADC  SI, 0
-
-mov  AX, CX   ; AX holds CX
-CWD           ; S1 in DX
-
-mov  CX, ES   ; AX from ES
-AND  DX, CX   ; S1*AX
-NEG  DX
-ADD  SI, DX   ; result into high word return
-
-MUL  CX       ; AX*CX
-
-ADD  AX, BX	  ; set up final return value
-ADC  DX, SI
 
 
 ;	    texturecolumn = rw_offset-FixedMul(finetangent[angle],rw_distance);

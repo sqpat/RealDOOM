@@ -5545,7 +5545,6 @@ ADD  AX, 01000h
 ADC  SI, DX
 XCHG AX, CX
 CWD
-_selfmodify_restore_original_ax:
 POP  BX
 AND  DX, BX
 SUB  SI, DX

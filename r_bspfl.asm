@@ -1912,7 +1912,7 @@ PROC FixedMulBSPLocal_ NEAR
 
 MOV  ES, SI
 MOV  SI, DX
-MOV  word ptr cs:[_selfmodify_restore_original_ax+1], AX
+PUSH AX
 MUL  BX
 MOV  word ptr cs:[_selfmodify_restore_dx+1], DX
 MOV  AX, SI
@@ -1923,19 +1923,18 @@ AND  DX, BX
 SUB  SI, DX
 MUL  BX
 _selfmodify_restore_dx:
-mov  BX, 01000h
-ADD  BX, AX
+ADD  AX, 01000h
 ADC  SI, DX
-mov  AX, CX
+XCHG AX, CX
 CWD
-_selfmodify_restore_original_ax:
-mov CX, 01000h
-AND DX, CX
-SUB SI, DX
-MUL CX
-ADD AX, BX
-ADC DX, SI
-MOV SI, ES
+POP  BX
+AND  DX, BX
+SUB  SI, DX
+MUL  BX
+ADD  AX, CX
+ADC  DX, SI
+MOV  SI, ES
+
 
 ret
 
