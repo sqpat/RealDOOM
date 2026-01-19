@@ -32,7 +32,7 @@ DGROUP group _NULL,STACK
 
 
 
-_NULL   segment para public 'BEGDATA'
+_NULL   segment para use16 public 'BEGDATA'
         __nullarea label word
         dw      8 dup(00101h)
         public  __nullarea
@@ -41,7 +41,7 @@ _NULL   ends
 
 
 
-STACK   segment para stack 'STACK'
+STACK   segment para use16 stack 'STACK'
         _stackstart     label byte  ; byte  (start of STACK)
         db      (STACK_SIZE) dup(?)
 STACK   ends

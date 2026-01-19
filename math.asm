@@ -103,6 +103,26 @@ ret
 
 ENDP
 
+ELSE
+
+PROC FixedMul_ FAR
+PUBLIC FixedMul_
+
+; DX:AX  *  CX:BX
+;  0  1      2  3
+
+; thanks zero318 for xchg improvement ideas
+  
+  shl  ecx, 16
+  mov  cx, bx
+  xchg ax, dx
+  shl  eax, 16
+  xchg ax, dx
+  imul  ecx
+  shr  eax, 16
+
+
+ret
 
 
 ENDIF

@@ -16,12 +16,14 @@
 ;
 INCLUDE defs.inc
 
-INSTRUCTION_SET_MACRO
+INSTRUCTION_SET_MACRO_NO_MEDIUM
+
+SEGMENT MATH_TEXT  USE16 PARA PUBLIC 'CODE'
+ASSUME cs:MATH_TEXT
 
 
 
 
-.CODE
 
 PROC   P_MATH_STARTMARKER_ 
 PUBLIC P_MATH_STARTMARKER_
@@ -29,6 +31,32 @@ ENDP
 
 IF COMPISA LE COMPILE_286
 
+
+
+PROC   FixedMul2432_MapLocal_ NEAR
+PUBLIC FixedMul2432_MapLocal_
+
+; we are being passed two numbers that should be shifted right 8 bits before multiplication
+; this should lead to a couple fewer 16-bit multiplications if we do things right.
+; CWD becomes a little complicated
+
+; DX:AX  *  CX:BX
+;  0  1      2  3
+
+; with sign extend for byte 3:
+; S0:DX:AX    *   S1:CX:BX
+; S0 = DX sign extend
+; S1 = CX sign extend
+;
+
+MOV AL, DH  ; 43 24
+MOV DH, DL  ; 33 24
+MOV DL, AH  ; 32 24
+CBW         ; 32 S4
+XCHG AX, DX ; S4 32
+
+ENDP
+; fall thru
 
 
 PROC   FixedMul_MapLocal_ NEAR
@@ -71,7 +99,7 @@ PUBLIC FixedMul_MapLocal_
 
 MOV  ES, SI
 MOV  SI, DX
-MOV  word ptr cs:[_selfmodify_restore_original_ax+1], AX
+PUSH AX
 MUL  BX
 MOV  word ptr cs:[_selfmodify_restore_dx+1], DX
 MOV  AX, SI
@@ -82,81 +110,26 @@ AND  DX, BX
 SUB  SI, DX
 MUL  BX
 _selfmodify_restore_dx:
-mov  BX, 01000h
-ADD  BX, AX
+ADD  AX, 01000h
 ADC  SI, DX
-mov  AX, CX
+XCHG AX, CX
 CWD
 _selfmodify_restore_original_ax:
-mov CX, 01000h
-AND DX, CX
-SUB SI, DX
-MUL CX
-ADD AX, BX
-ADC DX, SI
-MOV SI, ES
-
-
-ret
-
-
+POP  BX
+AND  DX, BX
+SUB  SI, DX
+MUL  BX
+ADD  AX, CX
+ADC  DX, SI
+MOV  SI, ES
+RET
 
 ENDP
 
+ELSE
 
-
-ENDIF
-
-
-PROC   FixedMulBig16u32_MapLocal_ NEAR
-PUBLIC FixedMulBig16u32_MapLocal_
-
-; AX:00  *  CX:BX
-; 1          2  3
-
-; with sign extend for byte 3:
-; S0:DX:AX    *   S1:CX:BX
-; S0 = DX sign extend
-; S1 = CX sign extend
-
-;
-; 
-;BYTE
-; RETURN VALUE
-;                3       2       1		0
-;                DONTUSE USE     USE    DONTUSE
-;                               00BXhi	 00BXlo
-;                       AXBXhi  AXBXlo          
-;
-;                       00CXhi  00CXlo
-;               AXCXhi  AXCXlo  
-;                       
-;                               
-;                       
-;       
-
-
-
-
-; need to get the sign-extends for DX and CX
-
-
-
-XCHG CX, AX    ; AX stored in CX
-MUL  CX        ; AX * CX
-XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
-MUL  BX        ; AX * BX
-ADD  AX, CX    ; add 
-
-ret
-
-
-
-ENDP
-
-
-
-
+PROC   FixedMul2432_MapLocal_ NEAR
+PUBLIC FixedMul2432_MapLocal_
 
 PROC   FixedMul2432_MapLocal_ NEAR
 PUBLIC FixedMul2432_MapLocal_
@@ -256,8 +229,83 @@ pop   si
 ret
 
 
+ENDP
+; fall thru
+
+PROC   FixedMul_MapLocal_ NEAR
+PUBLIC FixedMul_MapLocal_
+
+; DX:AX  *  CX:BX
+;  0  1      2  3
+
+; thanks zero318 for xchg improvement ideas
+  
+  shl  ecx, 16
+  mov  cx, bx
+  xchg ax, dx
+  shl  eax, 16
+  xchg ax, dx
+  imul ecx
+  shr  eax, 16
+
+
+ret
+ENDP
+
+
+
+
+
+ENDIF
+
+
+PROC   FixedMulBig16u32_MapLocal_ NEAR
+PUBLIC FixedMulBig16u32_MapLocal_
+
+; AX:00  *  CX:BX
+; 1          2  3
+
+; with sign extend for byte 3:
+; S0:DX:AX    *   S1:CX:BX
+; S0 = DX sign extend
+; S1 = CX sign extend
+
+;
+; 
+;BYTE
+; RETURN VALUE
+;                3       2       1		0
+;                DONTUSE USE     USE    DONTUSE
+;                               00BXhi	 00BXlo
+;                       AXBXhi  AXBXlo          
+;
+;                       00CXhi  00CXlo
+;               AXCXhi  AXCXlo  
+;                       
+;                               
+;                       
+;       
+
+
+
+
+; need to get the sign-extends for DX and CX
+
+
+
+XCHG CX, AX    ; AX stored in CX
+MUL  CX        ; AX * CX
+XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+MUL  BX        ; AX * BX
+ADD  AX, CX    ; add 
+
+ret
+
+
 
 ENDP
+
+
 
 
 
@@ -1156,42 +1204,6 @@ xor   si, cx  ; si now stores signedness via test operator...
 ; here we abs the numbers before unsigned division algo
 
 
-;xchg  ax, di
-;xchg  ax, dx
-;cwd
-;xor   di, dx
-;xor   ax, dx
-;sub   di, dx
-;sbb   ax, dx
-;
-;xchg  ax, cx
-;cwd
-;
-;xor   bx, dx
-;xor   ax, dx
-;sub   bx, dx
-;sbb   ax, dx
-;
-;xchg  ax, cx
-;xchg  ax, dx
-;xchg  ax, di
-
-;mov   di, dx
-;add   di, dx
-;sbb   di, dx
-;xor   ax, di
-;xor   dx, di
-;sub   ax, di
-;sbb   dx, di
-;
-;mov   di, cx
-;add   di, cx
-;sbb   di, cx
-;xor   bx, di
-;xor   cx, di
-;sub   bx, di
-;sbb   cx, di
-
 or    cx, cx
 jge   b_is_positive
 neg   cx
@@ -1307,6 +1319,123 @@ ret
 
 
 ENDP
+
+ELSE
+
+  
+PROC   FixedDiv_MapLocal_ FAR
+PUBLIC FixedDiv_MapLocal_
+
+;DX:AX / CX:BX...
+
+
+push  si
+push  di
+
+mov   si, dx ; 	si will store sign bit 
+xor   si, cx  ; si now stores signedness via test operator...
+
+; here we abs the numbers before unsigned division algo
+
+or    cx, cx
+jge   b_is_positive
+neg   cx
+neg   bx
+sbb   cx, 0
+
+
+b_is_positive:
+
+or    dx, dx			; sign check
+jge   a_is_positive
+neg   dx
+neg   ax
+sbb   dx, 0
+
+
+a_is_positive:
+
+;  dx:ax  is  labs(dx:ax) now (unshifted)
+;  cx:bx  is  labs(cx:bx) now
+
+; labs check
+
+
+; set up eax
+shl  eax, 16
+shrd eax, edx, 16
+
+; set up ecx
+shl  ebx, 16
+shld ecx, ebx, 16
+
+; back up eax
+mov edx, eax        
+
+; do labs compare
+shr EAX, 14
+
+cmp eax, ecx
+jge do_quick_return
+mov eax, edx
+
+; do divide. prepare edx:eax properly.
+cdq             
+shld edx,eax,16
+shl  eax,16
+
+
+div ecx             ; todo optimize this function in general to be idiv with a lot less juggling.
+
+shld edx, eax, 010h
+
+
+test  si, si
+
+jl do_negative
+
+
+pop   di
+pop   si
+ret
+
+do_negative:
+
+neg   dx
+neg   ax
+sbb   dx, 0
+
+
+pop   di
+pop   si
+ret
+
+
+do_quick_return: 
+; return (a^b) < 0 ? MINLONG : MAXLONG;
+test  si, si   ; just need to do the high word due to sign?
+jl    return_MAXLONG
+
+return_MINLONG:
+
+mov   ax, 0ffffh
+mov   dx, 07fffh
+
+exit_and_return_early:
+
+pop   di
+pop   si
+ret
+
+return_MAXLONG:
+
+mov   dx, 08000h
+xor   ax, ax
+jmp   exit_and_return_early
+
+ENDP
+
+
 
 ENDIF
 
@@ -2747,5 +2876,6 @@ PROC   P_MATH_ENDMARKER_
 PUBLIC P_MATH_ENDMARKER_
 ENDP
 
+ENDS
 
 END
