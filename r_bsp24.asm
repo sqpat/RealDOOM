@@ -1910,7 +1910,7 @@ PROC FixedMulBSPLocal_ NEAR
 
 MOV  ES, SI
 MOV  SI, DX
-MOV  word ptr cs:[_selfmodify_restore_original_ax+1], AX
+PUSH AX
 MUL  BX
 MOV  word ptr cs:[_selfmodify_restore_dx+1], DX
 MOV  AX, SI
@@ -1921,19 +1921,17 @@ AND  DX, BX
 SUB  SI, DX
 MUL  BX
 _selfmodify_restore_dx:
-mov  BX, 01000h
-ADD  BX, AX
+ADD  AX, 01000h
 ADC  SI, DX
-mov  AX, CX
+XCHG AX, CX
 CWD
-_selfmodify_restore_original_ax:
-mov CX, 01000h
-AND DX, CX
-SUB SI, DX
-MUL CX
-ADD AX, BX
-ADC DX, SI
-MOV SI, ES
+POP  BX
+AND  DX, BX
+SUB  SI, DX
+MUL  BX
+ADD  AX, CX
+ADC  DX, SI
+MOV  SI, ES
 
 ret
 
@@ -4959,60 +4957,41 @@ mov       cx, es
 
 IF COMPISA GE COMPILE_386
 
-   ; set up ecx
-   db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
-   db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
+   shl  ecx, 16
+   mov  cx, bx
+   xchg ax, dx
+   shl  eax, 16
+   xchg ax, dx
+   imul  ecx
+   shr  eax, 16
 
-   ; set up eax
-   db 066h, 0C1h, 0E0h, 010h        ; shl  eax, 0x10
-   db 066h, 00Fh, 0ACh, 0D0h, 010h  ; shrd eax, edx, 0x10
-
-   ; actual mul
-   db 066h, 0F7h, 0E9h              ; imul ecx
-   ; set up return
-   db 066h, 0C1h, 0E8h, 010h        ; shr  eax, 0x10
 
 
 ELSE
-   push  si
-   mov   es, ax	; store ax in es
-   mov   ds, dx    ; store dx in ds
-   mov   ax, dx	; ax holds dx
-   CWD				; S0 in DX
-
-   AND   DX, BX	; S0*BX
-   NEG   DX
-   mov   SI, DX	; DI stores hi word return
-
-   ; AX still stores DX
-   MUL  CX         ; DX*CX
-   add  SI, AX    ; low word result into high word return
-
-   mov  AX, DS    ; restore DX from ds
-   MUL  BX         ; DX*BX
-   XCHG BX, AX    ; BX will hold low word return. store bx in ax
-   add  SI, DX    ; add high word to result
-
-   mov  DX, ES    ; restore AX from ES
-   mul  DX        ; BX*AX  
-   add  BX, DX    ; high word result into low word return
-   ADC  SI, 0
-
-   mov  AX, CX   ; AX holds CX
-   CWD           ; S1 in DX
-
-   mov  CX, ES   ; AX from ES
-   AND  DX, CX   ; S1*AX
-   NEG  DX
-   ADD  SI, DX   ; result into high word return
-
-   MUL  CX       ; AX*CX
-
-   ADD  AX, BX	  ; set up final return value
+   mov  word ptr cs:[_SELFMODIFY_restore_si_after_mults+1], si
+   MOV  SI, DX
+   PUSH AX
+   MUL  BX
+   MOV  word ptr cs:[_selfmodify_restore_dx_2+1], DX
+   MOV  AX, SI
+   MUL  CX
+   XCHG AX, SI
+   CWD
+   AND  DX, BX
+   SUB  SI, DX
+   MUL  BX
+   _selfmodify_restore_dx_2:
+   ADD  AX, 01000h
+   ADC  SI, DX
+   XCHG AX, CX
+   CWD
+   POP  BX
+   AND  DX, BX
+   SUB  SI, DX
+   MUL  BX
+   ADD  AX, CX
    ADC  DX, SI
 
-   ;mov  CX, SS   ; dont restore DS 
-   ;mov  DS, CX
 ENDIF
 
 ;end inlined FixedMulBSPLocal_
@@ -5050,59 +5029,41 @@ mov       cx, es
 
 IF COMPISA GE COMPILE_386
 
-   ; set up ecx
-   db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
-   db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
+   shl  ecx, 16
+   mov  cx, bx
+   xchg ax, dx
+   shl  eax, 16
+   xchg ax, dx
+   imul  ecx
+   shr  eax, 16
 
-   ; set up eax
-   db 066h, 0C1h, 0E0h, 010h        ; shl  eax, 0x10
-   db 066h, 00Fh, 0ACh, 0D0h, 010h  ; shrd eax, edx, 0x10
-
-   ; actual mul
-   db 066h, 0F7h, 0E9h              ; imul ecx
-   ; set up return
-   db 066h, 0C1h, 0E8h, 010h        ; shr  eax, 0x10
 
 
 ELSE
-   mov   es, ax	; store ax in es
-   mov   ds, dx    ; store dx in ds
-   mov   ax, dx	; ax holds dx
-   CWD				; S0 in DX
-
-   AND   DX, BX	; S0*BX
-   NEG   DX
-   mov   SI, DX	; DI stores hi word return
-
-   ; AX still stores DX
-   MUL  CX         ; DX*CX
-   add  SI, AX    ; low word result into high word return
-
-   mov  AX, DS    ; restore DX from ds
-   MUL  BX         ; DX*BX
-   XCHG BX, AX    ; BX will hold low word return. store bx in ax
-   add  SI, DX    ; add high word to result
-
-   mov  DX, ES    ; restore AX from ES
-   mul  DX        ; BX*AX  
-   add  BX, DX    ; high word result into low word return
-   ADC  SI, 0
-
-   mov  AX, CX   ; AX holds CX
-   CWD           ; S1 in DX
-
-   mov  CX, ES   ; AX from ES
-   AND  DX, CX   ; S1*AX
-   NEG  DX
-   ADD  SI, DX   ; result into high word return
-
-   MUL  CX       ; AX*CX
-
-   ADD  AX, BX	  ; set up final return value
+; si not preserved
+   MOV  SI, DX
+   PUSH AX
+   MUL  BX
+   MOV  word ptr cs:[_selfmodify_restore_dx_3+1], DX
+   MOV  AX, SI
+   MUL  CX
+   XCHG AX, SI
+   CWD
+   AND  DX, BX
+   SUB  SI, DX
+   MUL  BX
+   _selfmodify_restore_dx_3:
+   ADD  AX, 01000h
+   ADC  SI, DX
+   XCHG AX, CX
+   CWD
+   POP  BX
+   AND  DX, BX
+   SUB  SI, DX
+   MUL  BX
+   ADD  AX, CX
    ADC  DX, SI
 
-   mov  CX, SS   ; restore DS
-   mov  DS, CX
 ENDIF
 
 ;end inlined FixedMulBSPLocal_
@@ -5166,56 +5127,39 @@ mov       cx, es
 
 IF COMPISA GE COMPILE_386
 
-   ; set up ecx
-   db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
-   db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
+   shl  ecx, 16
+   mov  cx, bx
+   xchg ax, dx
+   shl  eax, 16
+   xchg ax, dx
+   imul  ecx
+   shr  eax, 16
 
-   ; set up eax
-   db 066h, 0C1h, 0E0h, 010h        ; shl  eax, 0x10
-   db 066h, 00Fh, 0ACh, 0D0h, 010h  ; shrd eax, edx, 0x10
-
-   ; actual mul
-   db 066h, 0F7h, 0E9h              ; imul ecx
-   ; set up return
-   db 066h, 0C1h, 0E8h, 010h        ; shr  eax, 0x10
 
 
 ELSE
-
-   mov   es, ax	; store ax in es
-   push  dx       ; store dx in stack
-   mov   ax, dx	; ax holds dx
-   CWD				; S0 in DX
-
-   AND   DX, BX	; S0*BX
-   NEG   DX
-   mov   SI, DX	; DI stores hi word return
-
-   ; AX still stores DX
-   MUL  CX        ; DX*CX
-   add  SI, AX    ; low word result into high word return
-
-   pop  AX        ; restore old DX from stack
-   MUL  BX        ; DX*BX
-   XCHG BX, AX    ; BX will hold low word return. store bx in ax
-   add  SI, DX    ; add high word to result
-
-   mov  DX, ES    ; restore AX from ES
-   mul  DX        ; BX*AX  
-   add  BX, DX    ; high word result into low word return
-   ADC  SI, 0
-
-   mov  AX, CX   ; AX holds CX
-   CWD           ; S1 in DX
-
-   mov  CX, ES   ; AX from ES
-   AND  DX, CX   ; S1*AX
-   NEG  DX
-   ADD  SI, DX   ; result into high word return
-
-   MUL  CX       ; AX*CX
-
-   ADD  AX, BX	  ; set up final return value
+; si not preserved
+   MOV  SI, DX
+   PUSH AX
+   MUL  BX
+   MOV  word ptr cs:[_selfmodify_restore_dx_4+1], DX
+   MOV  AX, SI
+   MUL  CX
+   XCHG AX, SI
+   CWD
+   AND  DX, BX
+   SUB  SI, DX
+   MUL  BX
+   _selfmodify_restore_dx_4:
+   ADD  AX, 01000h
+   ADC  SI, DX
+   XCHG AX, CX
+   CWD
+   POP  BX
+   AND  DX, BX
+   SUB  SI, DX
+   MUL  BX
+   ADD  AX, CX
    ADC  DX, SI
 
 ENDIF
@@ -5262,61 +5206,44 @@ mov       dx, 01000h
 
 IF COMPISA GE COMPILE_386
 
-   ; set up ecx
-   db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
-   db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
+   shl  ecx, 16
+   mov  cx, bx
+   xchg ax, dx
+   shl  eax, 16
+   xchg ax, dx
+   imul  ecx
+   shr  eax, 16
 
-   ; set up eax
-   db 066h, 0C1h, 0E0h, 010h        ; shl  eax, 0x10
-   db 066h, 00Fh, 0ACh, 0D0h, 010h  ; shrd eax, edx, 0x10
-
-   ; actual mul
-   db 066h, 0F7h, 0E9h              ; imul ecx
-   ; set up return
-   db 066h, 0C1h, 0E8h, 010h        ; shr  eax, 0x10
 
 
 ELSE
 
-   mov   es, ax	; store ax in es
-   push  dx       ; store dx in stack
-   mov   ax, dx	; ax holds dx
-   CWD				; S0 in DX
-
-   AND   DX, BX	; S0*BX
-   NEG   DX
-   mov   SI, DX	; DI stores hi word return
-
-   ; AX still stores DX
-   MUL  CX        ; DX*CX
-   add  SI, AX    ; low word result into high word return
-
-   pop  AX        ; restore old DX from stack
-   MUL  BX        ; DX*BX
-   XCHG BX, AX    ; BX will hold low word return. store bx in ax
-   add  SI, DX    ; add high word to result
-
-   mov  DX, ES    ; restore AX from ES
-   mul  DX        ; BX*AX  
-   add  BX, DX    ; high word result into low word return
-   ADC  SI, 0
-
-   mov  AX, CX   ; AX holds CX
-   CWD           ; S1 in DX
-
-   mov  CX, ES   ; AX from ES
-   AND  DX, CX   ; S1*AX
-   NEG  DX
-   ADD  SI, DX   ; result into high word return
-
-   MUL  CX       ; AX*CX
-
-   ADD  AX, BX	  ; set up final return value
+   MOV  SI, DX
+   PUSH AX
+   MUL  BX
+   MOV  word ptr cs:[_selfmodify_restore_dx_5+1], DX
+   MOV  AX, SI
+   MUL  CX
+   XCHG AX, SI
+   CWD
+   AND  DX, BX
+   SUB  SI, DX
+   MUL  BX
+   _selfmodify_restore_dx_5:
+   ADD  AX, 01000h
+   ADC  SI, DX
+   XCHG AX, CX
+   CWD
+   POP  BX
+   AND  DX, BX
+   SUB  SI, DX
+   MUL  BX
+   ADD  AX, CX
    ADC  DX, SI
+_SELFMODIFY_restore_si_after_mults:
+   mov  si, 01000h       ; restore si after these several mults
 
-   pop  si       ; restore si after these several mults
 ENDIF
-
 ;end inlined FixedMulBSPLocal_
 
 neg       dx
@@ -6333,6 +6260,8 @@ mov   ax, dx	; ax holds dx
 CWD				; S0 in DX
 
 ; todo inlined fixedmul do 386
+
+; TODO INLINE
 
 AND   DX, BX	; S0*BX
 NEG   DX
@@ -8530,6 +8459,7 @@ SELFMODIFY_BSP_pspritescale_1_AFTER = SELFMODIFY_BSP_pspritescale_1+2
 pspritescale_nonzero_1:
 mov   ax, word ptr [bp - 4]
 
+; TODO INLINE
 ; inlined FixedMul16u32_
 
 MUL  BX        ; AX * BX
@@ -8574,6 +8504,7 @@ SELFMODIFY_BSP_pspritescale_2_AFTER = SELFMODIFY_BSP_pspritescale_2 + 2
 pspritescale_nonzero_2:
 mov   ax, word ptr [bp - 4]
 
+; TODO INLINE
 ; inlined FixedMul16u32_ ; todo 386 bit version
 
 MUL  BX        ; AX * BX
@@ -8712,7 +8643,7 @@ mov   ax, word ptr ds:[si + VISSPRITE_T.vs_x1]
 cmp   ax, word ptr [bp - 0Eh]
 jle   vis_x1_greater_than_x1_2
 sub   ax, word ptr [bp - 0Eh]
-
+; TODO INLINE
 ; inlined FastMul16u32u_
 
 IF COMPISA GE COMPILE_386
