@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/20 10:40:23
+Created on:       26/01/20 11:19:36
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -35,7 +35,7 @@ SM_OPL2_TEXT           CODE           AUTO           0533:0000       00000f3c
 SM_OPL3_TEXT           CODE           AUTO           0627:0000       0000100e
 SM_SBMID_TEXT          CODE           AUTO           0728:0000       00000730
 SM_MPUMD_TEXT          CODE           AUTO           079b:0000       000007db
-R_BSP_24_TEXT          CODE           AUTO           0819:0000       00003607
+R_BSP_24_TEXT          CODE           AUTO           0819:0000       00003601
 R_BSP_16_TEXT          CODE           AUTO           0b7a:0000       0000374b
 R_BSP0_TEXT            CODE           AUTO           0eef:0000       0000367a
 R_BSPFL_TEXT           CODE           AUTO           1257:0000       00003622
@@ -254,8 +254,8 @@ Module: f_finale.obj(f_finale.ASM)
 0314:0000      F_FINALE_STARTMARKER_
 0314:024e*     F_CastDrawer_
 0314:0a42      F_Responder_
-0314:046d*     F_BunnyScroll_
 0314:0177      F_StartFinale_
+0314:046d*     F_BunnyScroll_
 0314:0b06*     F_AddToBox16_
 0314:09b2      F_Ticker_
 0314:0acf*     F_locallib_toupper_
@@ -340,14 +340,14 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079b:0000      SM_MPUMD_STARTMARKER_
 079b:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-0819:32cb      R_WriteBackViewConstants24_
-0819:3607      R_BSP24_ENDMARKER_
-0819:2da9      R_GetPatchTexture_Far24_
+0819:32c8      R_WriteBackViewConstants24_
+0819:3601      R_BSP24_ENDMARKER_
+0819:2da6      R_GetPatchTexture_Far24_
 0819:0000      R_BSP24_STARTMARKER_
-0819:315a      R_RenderPlayerView24_
+0819:3157      R_RenderPlayerView24_
 0819:0740*     FixedDivBSPLocal_
 0819:043b*     FixedDivWholeA_BSPLocal_
-0819:2e44      R_GetCompositeTexture_Far24_
+0819:2e41      R_GetCompositeTexture_Far24_
 Module: r_bsp16.obj(r_bsp16.ASM)
 0b7a:3294      R_RenderPlayerView16_
 0b7a:0000      R_BSP16_STARTMARKER_
@@ -1412,4 +1412,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003bce0 (244960.)
 Entry point address: 2dda:7bae
-Link time: 00:00.04
+Link time: 00:00.50

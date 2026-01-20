@@ -2164,16 +2164,13 @@ ret
 
 ENDP
 
+COSINE_OFFSET_IN_SINE = ((FINECOSINE_SEGMENT - FINESINE_SEGMENT) SHL 4)
 
 ;R_ClearPlanes
 
 PROC R_ClearPlanes_ NEAR
 
-
-push  bx
-push  cx
-push  dx
-push  di
+; dont need to preserve registers here
 
 
 SELFMODIFY_BSP_viewwidth_1:
@@ -2207,38 +2204,50 @@ SELFMODIFY_BSP_centerx_2:
 mov   cx, 01000h
 mov   di, ax
 
-mov   ax, FINECOSINE_SEGMENT
+mov   bx, FINESINE_SEGMENT
+mov   es, bx
 
-mov   es, ax
 
+les   ax, dword ptr es:[di + COSINE_OFFSET_IN_SINE]
+mov   si, es
 
-les   ax, dword ptr es:[di]
-mov   dx, es
-xor   bx, bx
+; note: range is -65535 to 65535. High word is already sign bits
 
-call FixedDivBSPLocal_  ; TODO! FixedDivWholeB? Optimize?
+; sine/cosine max at +/- 65536 so they wont overflow.
+
+xor   ax, si
+sub   ax, si   ; absolute value
+xor   dx, dx
+
+div   cx
+
+mov   es, bx ; restore es for next LES
+
+xor   ax, si ; apply sign
+sub   ax, si
+
 mov   word ptr ds:[_basexscale], ax
-mov   word ptr ds:[_basexscale + 2], dx
-mov   ax, FINESINE_SEGMENT
+mov   word ptr ds:[_basexscale + 2], si
 
-mov   es, ax
-SELFMODIFY_BSP_centerx_3:
-mov   cx, 01000h
 les   ax, dword ptr es:[di]
-mov   dx, es
-xor   bx, bx
-call FixedDivBSPLocal_  ; TODO! FixedDivWholeB? Optimize?
-neg   dx
-neg   ax
-sbb   dx, 0
+mov   si, es
+
+xor   ax, si
+sub   ax, si   ; absolute value
+xor   dx, dx
+
+div   cx
+not   si  ; we want a negative result so neg the sign
+
+
+xor   ax, si ; apply sign
+sub   ax, si
+
+
 mov   word ptr ds:[_baseyscale], ax
-mov   word ptr ds:[_baseyscale + 2], dx
+mov   word ptr ds:[_baseyscale + 2], si
 
 
-pop   di
-pop   dx
-pop   cx
-pop   bx
 ret   
 
 endp
@@ -11699,7 +11708,7 @@ mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_4+1 - OFFSET R_
 mov      ax, word ptr ss:[_centerx]
 mov      word ptr ds:[SELFMODIFY_BSP_centerx_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_centerx_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_centerx_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
+
 mov      word ptr ds:[SELFMODIFY_BSP_centerx_4+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_centerx_5+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_centerx_6+2 - OFFSET R_BSP24_STARTMARKER_], ax
