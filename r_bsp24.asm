@@ -941,60 +941,70 @@ ENDP
 
 
 
-compare_low_bits:
-cmp   ax, bx
-jb    restore_reg_then_do_full_divide_whole
 do_quick_return_whole:
   xor   ax, ax
   mov   dx, 08000h
 
   RET
-
-  
 PROC   FixedDivWholeA_BSPLocal_   NEAR
 PUBLIC FixedDivWholeA_BSPLocal_
 
 ; big improvements to branchless fixeddiv 'preamble' by zero318
 ; both numbers positive. no signs!
 
-  ; do bounds check
-  mov   ES, AX
-  xor   DX, DX
-  SAL   AX, 1
-  RCL   DX, 1
-  SAL   AX, 1
-  RCL   DX, 1
-  CMP   DX, CX ;   if ( (abs(a)>>14) >= abs(b))
-  JG    do_quick_return_whole
-  JE    compare_low_bits
-  
+; note: AX is always a fairly low number in this call and will never shift 2 into high bits
+
+
+   jcxz do_simple_div_whole  ; if cx is nonzero then the bounds check definitely failed and does not need to be done
   restore_reg_then_do_full_divide_whole:
 
-  mov   ax, es
+
 do_full_divide_whole:
 
   
 push si
+push di
 
+; todo inline i guess.
 call div48_32_whole_BSPLocal_ ; internally does push pop of di/bp but not si
 
 ; set negative if need be...
 
+mov   dx, es      ; retrieve q1
+mov   cx, ss      ; restore ds
+mov   ds, cx      
+pop   di
 pop   si
+
+
+
 ret
+
+do_simple_div_whole:
+; AX:0000 div 0000:BX
+; high word is AX:0000 / BX
+; low word: divide remainder << 16 / BX
+
+   mov  dx, ax  ; for division of AX:0000
+   shl  ax, 1
+   shl  ax, 1
+   cmp  ax, bx
+   jae  do_quick_return_whole   ; fixeddiv shift 14 
+   xchg ax, cx  ; zero ax for div. cx is known zero since we jcxzed here.
+
+   div  bx       ; get high result
+   mov  cx, ax   ; store high result
+   xor  ax, ax   ; prep to divide remainder
+   div  bx       ; divide by remainder, get low word
+   mov  dx, cx   ; restore high result
+   ret
 
 
 ENDP
 
 
 
-shift_word_whole:
-mov dx, ax
-xor ax, ax
-mov cx, bx
-xor bx, bx
 
-jmp shift_bits_whole
 
 ;div48_32_whole_
 ; basically, shift numerator left 16 and divide
@@ -1009,17 +1019,10 @@ PROC div48_32_whole_BSPLocal_ NEAR
 xor dx, dx
 
 
-push  si
-push  di
-push  bp
-mov   bp, sp
 
 
+; cx known nonzero.
 
-
-test cx, cx
-je  shift_word_whole
-; default branch taken 314358 vs 126885
 
 
 test ch, ch
@@ -1236,14 +1239,8 @@ ja    continue_c1_c2_test_whole
 je    continue_check_whole
 
 do_return_2_whole:
-mov   dx, es      ; retrieve q1
 mov   ax, bx
 
-mov   cx, ss      ; restore ds
-mov   ds, cx      
-LEAVE_MACRO
-pop   di
-pop   si
 ret  
 
 continue_check_whole:
@@ -1304,12 +1301,6 @@ decrement_qhat_and_return_whole:
 dec   bx
 dont_decrement_qhat_and_return_whole:
 mov   ax, bx
-mov   dx, es   ;retrieve q1
-mov   cx, ss
-mov   ds, cx
-LEAVE_MACRO
-pop   di
-pop   si
 ret  
 
 ; the divide would have overflowed. subtract values
@@ -1322,12 +1313,6 @@ div   di
 
 ; ax has its result...
 
-mov   dx, es
-mov   cx, ss
-mov   ds, cx
-LEAVE_MACRO
-pop   di
-pop   si
 ret 
 
 
@@ -1876,7 +1861,8 @@ do_quick_return:
   POP   SI
   RET
 
-PROC FixedDivBSPLocal_ NEAR
+PROC   FixedDivBSPLocal_ NEAR
+PUBLIC FixedDivBSPLocal_
 
 ; big improvements to branchless fixeddiv 'preamble' by zero318
 
@@ -1898,6 +1884,8 @@ PROC FixedDivBSPLocal_ NEAR
   SUB   BX, BP
   SBB   CX, BP ; cx:bx now labs. sign bits in bp
   XOR   SI, BP ; si has sign bits
+  ;CMP   CX, 3
+  ;ja    do_full_divide  
   MOV   BP, DX ; 
   ROL   BP, 1
   ROL   BP, 1
