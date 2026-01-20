@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/20 11:19:37
+Created on:       26/01/20 12:42:06
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -122,8 +122,8 @@ Module: s_sbinit.obj(s_sbinit.ASM)
 0000:229a*     S_SBINIT_STARTMARKER_
 0000:2302*     SB_ReadMixer_
 0000:24a9*     SB_GetDSPVersion_
-0000:2339      SB_DSP1xx_BeginPlayback_
 0000:2340*     SB_DSP2xx_BeginPlayback_
+0000:2339      SB_DSP1xx_BeginPlayback_
 0000:2355*     SB_DSP4xx_BeginPlayback_
 0000:2301      _SB_CardActive
 0000:244c*     SB_SetupPlayback_

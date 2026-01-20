@@ -3915,7 +3915,7 @@ les   bx, dword ptr [bp - 01Eh]
 mov   cx, es
 mov   word ptr ds:[si + 4], ax
 mov   ax, 1
-call FixedDivWholeA_BSPLocal_
+call  FixedDivWholeA_BSPLocal_
 mov   bx, ax
 SELFMODIFY_set_flip:
 mov   al, 00h

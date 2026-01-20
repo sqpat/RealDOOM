@@ -1179,28 +1179,27 @@ do_quick_return:
   DEC   AX
   CWD
   RCR   DX, 1
-  MOV   BP, ES
+
   POP   SI
   RET
-
-do_simple_div:
-; AX:0000 div 0000:BX
-; high word is AX:0000 / BX
+  do_simple_div:
+; high word is DX:AX / BX
 ; low word: divide remainder << 16 / BX
 
   ; bounds check
+  ; todo compare vs sal jc
    test dh, 0C0h ; are high bits non zero (known cx shift 14 )   
    jne  do_quick_return
    mov  cx, dx  ; copy of dx
-   mov  bp, ax
-   sal  bp, 1
+   mov  es, ax
+   sal  ax, 1
    rcl  cx, 1
-   sal  bp, 1
+   sal  ax, 1
    rcl  cx, 1
    cmp  cx, bx
    jae  do_quick_return
 
-
+   mov  ax, es  
 ; divide overflow possible!
    div  bx       ; get high result
    mov  cx, ax   ; store high result
@@ -1213,64 +1212,65 @@ do_simple_div:
    SUB  AX, SI  
    SBB  DX, SI
  
-   MOV   BP, ES 
+
    POP   SI
 
    ret
 
-PROC   FixedDiv_MapLocal_   NEAR
+
+
+PROC   FixedDiv_MapLocal_ NEAR
 PUBLIC FixedDiv_MapLocal_
 
 ; big improvements to branchless fixeddiv 'preamble' by zero318
 
-; todo: branchless labs maybe faster on 286
 
   PUSH  SI
-  MOV   ES, BP
-  MOV   SI, DX
-  SHL   SI, 1
-  SBB   SI, SI  ; sign of dx in si
-  XOR   AX, SI
-  XOR   DX, SI  
-  SUB   AX, SI  
-  SBB   DX, SI  ; dx:ax now labs. sign bits in si
-  MOV   BP, CX
-  SHL   BP, 1
-  SBB   BP, BP
-  XOR   BX, BP
-  XOR   CX, BP
-  SUB   BX, BP
-  SBB   CX, BP ; cx:bx now labs. sign bits in bp
-  XOR   SI, BP ; si has sign bits
-  
- ; cx:ax and dx:ax now sign-ready
 
-  jcxz do_simple_div
-  
-  MOV   BP, DX ; 
-  ROL   BP, 1
-  ROL   BP, 1
-  AND   BP, 3  ;   3 is FFFF shr 14
-  CMP   BP, CX ;   if ( (abs(a)>>14) >= abs(b))
-  JG do_quick_return
-  JNE   do_full_divide
-  MOV   BP, DX
-  ROL   AX, 1
-  RCL   BP, 1
-  ROL   AX, 1
-  RCL   BP, 1
-  CMP   BP, BX
-  JAE   do_quick_return
-  ROR   AX, 1
-  ROR   AX, 1
-do_full_divide:
+  xor   si, si  ; start with no sign adjust
+  test  dx, dx
+  jns   skip_sign_adjust_dx
+  neg   dx
+  neg   ax
+  sbb   dx, si  ; zero
+  dec   si      ; toggle sign bit
 
-  MOV  BP, ES    ; restore bp
+skip_sign_adjust_dx:
+  test  cx, cx
+  jns   skip_sign_adjust_cx
+  neg   cx
+  neg   bx
+  sbb   cx, 0
+  not   si     ; toggle sign bit
+
+skip_sign_adjust_cx:
+
+  jcxz  do_simple_div
+
   mov  word ptr cs:[_SELFMODIFY_store_fixeddiv_sign_ahead+1], si
 
+  MOV   SI, DX ; 
+  ROL   SI, 1
+  ROL   SI, 1
+  AND   SI, 3  ;   3 is FFFF shr 14
+  CMP   SI, CX ;   if ( (abs(a)>>14) >= abs(b))
+  JG do_quick_return
+  JNE   do_full_divide
+  MOV   SI, DX
+  mov   es, ax  ; store ax
+  sal   ax, 1
+  RCL   SI, 1
+  sal   ax, 1
+
+  RCL   SI, 1
+  CMP   SI, BX
+  JAE   do_quick_return
+  mov   ax, es  ; restore ax
+  
+  do_full_divide:
 
 
-call div48_32_MapLocal_ ; internally does push pop of di/bp but not si
+call div48_32_MapLocal_ 
 
 ; set negative if need be...
 

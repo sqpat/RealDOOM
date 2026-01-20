@@ -1851,24 +1851,24 @@ ENDP
 ENDIF
 
 do_simple_div:
-; AX:0000 div 0000:BX
-; high word is AX:0000 / BX
+; high word is DX:AX / BX
 ; low word: divide remainder << 16 / BX
 
   ; bounds check
+  ; todo compare vs sal jc
    test dh, 0C0h ; are high bits non zero (known cx shift 14 )   
    jne  do_quick_return
    mov  cx, dx  ; copy of dx
-   mov  bp, ax
-   sal  bp, 1
+   mov  es, ax
+   sal  ax, 1
    rcl  cx, 1
-   sal  bp, 1
+   sal  ax, 1
    rcl  cx, 1
    cmp  cx, bx
    jae  do_quick_return
 
+   mov  ax, es  
 
-; divide overflow possible!
    div  bx       ; get high result
    mov  cx, ax   ; store high result
    xor  ax, ax   ; prep to divide remainder
@@ -1880,7 +1880,7 @@ do_simple_div:
    SUB  AX, SI  
    SBB  DX, SI
  
-   MOV   BP, ES 
+
    POP   SI
 
    ret
@@ -1891,7 +1891,7 @@ do_quick_return:
   DEC   AX
   CWD
   RCR   DX, 1
-  MOV   BP, ES
+
   POP   SI
   RET
 
@@ -1902,49 +1902,51 @@ PUBLIC FixedDivBSPLocal_
 
 
   PUSH  SI
-  MOV   ES, BP
-  MOV   SI, DX
-  SHL   SI, 1
-  SBB   SI, SI  ; sign of dx in si
-  XOR   AX, SI
-  XOR   DX, SI  
-  SUB   AX, SI  
-  SBB   DX, SI  ; dx:ax now labs. sign bits in si
-  MOV   BP, CX
-  SHL   BP, 1
-  SBB   BP, BP
-  XOR   BX, BP
-  XOR   CX, BP
-  SUB   BX, BP
-  SBB   CX, BP ; cx:bx now labs. sign bits in bp
-  XOR   SI, BP ; si has sign bits
+
+  xor   si, si  ; start with no sign adjust
+  test  dx, dx
+  jns   skip_sign_adjust_dx
+  neg   dx
+  neg   ax
+  sbb   dx, si  ; zero
+  dec   si      ; toggle sign bit
+
+skip_sign_adjust_dx:
+  test  cx, cx
+  jns   skip_sign_adjust_cx
+  neg   cx
+  neg   bx
+  sbb   cx, 0
+  not   si     ; toggle sign bit
+
+skip_sign_adjust_cx:
 
   jcxz  do_simple_div
 
-  ;CMP   CX, 3
-  ;ja    do_full_divide  
-  MOV   BP, DX ; 
-  ROL   BP, 1
-  ROL   BP, 1
-  AND   BP, 3  ;   3 is FFFF shr 14
-  CMP   BP, CX ;   if ( (abs(a)>>14) >= abs(b))
-  JG do_quick_return
-  JNE   do_full_divide
-  MOV   BP, DX
-  ROL   AX, 1
-  RCL   BP, 1
-  ROL   AX, 1
-  RCL   BP, 1
-  CMP   BP, BX
-  JAE   do_quick_return
-  ROR   AX, 1
-  ROR   AX, 1
-do_full_divide:
-
-  MOV  BP, ES    ; restore bp
   mov  word ptr cs:[_SELFMODIFY_store_fixeddiv_sign_ahead+1], si
 
-call div48_32_BSPLocal_ ; internally does push pop of di/bp but not si
+  MOV   SI, DX ; 
+  ROL   SI, 1
+  ROL   SI, 1
+  AND   SI, 3  ;   3 is FFFF shr 14
+  CMP   SI, CX ;   if ( (abs(a)>>14) >= abs(b))
+  JG    do_quick_return
+  JNE   do_full_divide
+  MOV   SI, DX
+  mov   es, ax  ; store ax
+  sal   ax, 1
+  RCL   SI, 1
+  sal   ax, 1
+
+  RCL   SI, 1
+  CMP   SI, BX
+  JAE   do_quick_return
+  mov   ax, es  ; restore ax
+  
+  do_full_divide:
+
+
+call div48_32_BSPLocal_ 
 
 ; set negative if need be...
 
@@ -3350,9 +3352,9 @@ mov   cx, 6
 mov   bx, ss
 mov   es, bx					; es is SS i.e. destination segment
 mov   ds, dx					; ds is movsw source segment
-mov   ax, word ptr ds:[si+010h]		; 010h
+mov   ax, word ptr ds:[si + MOBJ_POS_T.mp_angle + 2]
 mov   word ptr cs:[SELFMODIFY_set_ax_to_angle_highword+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov   al, byte ptr ds:[si+016h]	; 016h  flags2
+mov   al, byte ptr ds:[si + MOBJ_POS_T.mp_flags2]	; 016h  flags2
 mov   byte ptr cs:[SELFMODIFY_set_al_to_flags2+1 - OFFSET R_BSP24_STARTMARKER_], al
 
 lea   di, [bp - 01Ah]			; di is the stack area to copy to..
@@ -3947,13 +3949,13 @@ PROC R_AddSprites_ NEAR
 
 mov   bx, ax
 mov   es, dx
-mov   ax, word ptr es:[bx + 6]		; sec->validcount
+mov   ax, word ptr es:[bx + SECTOR_T.sec_validcount]		; sec->validcount
 mov   dx, word ptr ds:[_validcount_global]
 cmp   ax, dx
 je    exit_add_sprites_quick
 
-mov   word ptr es:[bx + 6], dx
-mov   al, byte ptr es:[bx + 0Eh]		; sec->lightlevel
+mov   word ptr es:[bx + SECTOR_T.sec_validcount], dx
+mov   al, byte ptr es:[bx + SECTOR_T.sec_lightlevel]		; sec->lightlevel
 xor   ah, ah
 mov   dx, ax
 
@@ -3972,7 +3974,7 @@ mov   ah, 48
 mul   ah
 spritelights_set:
 mov   word ptr cs:[SELFMODIFY_set_spritelights_1 + 1 - OFFSET R_BSP24_STARTMARKER_], ax 
-mov   ax, word ptr es:[bx + 8]
+mov   ax, word ptr es:[bx + SECTOR_T.sec_thinglistref]
 test  ax, ax
 je    exit_add_sprites
 mov   si, MOBJPOSLIST_SEGMENT
@@ -3990,7 +3992,7 @@ mov   si, ax
 sal   si, 1
 add   si, ax
 call  R_ProjectSprite_
-mov   ax, word ptr es:[si + 0Ch]
+mov   ax, word ptr es:[si + MOBJ_POS_T.mp_snextRef]
 test  ax, ax
 jne   loop_things_in_thinglist
 
