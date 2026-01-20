@@ -1850,6 +1850,40 @@ ret
 ENDP
 ENDIF
 
+do_simple_div:
+; AX:0000 div 0000:BX
+; high word is AX:0000 / BX
+; low word: divide remainder << 16 / BX
+
+  ; bounds check
+   test dh, 0C0h ; are high bits non zero (known cx shift 14 )   
+   jne  do_quick_return
+   mov  cx, dx  ; copy of dx
+   mov  bp, ax
+   sal  bp, 1
+   rcl  cx, 1
+   sal  bp, 1
+   rcl  cx, 1
+   cmp  cx, bx
+   jae  do_quick_return
+
+
+; divide overflow possible!
+   div  bx       ; get high result
+   mov  cx, ax   ; store high result
+   xor  ax, ax   ; prep to divide remainder
+   div  bx       ; divide by remainder, get low word
+   mov  dx, cx   ; restore high result
+
+   XOR  AX, SI
+   XOR  DX, SI  ; apply sign  
+   SUB  AX, SI  
+   SBB  DX, SI
+ 
+   MOV   BP, ES 
+   POP   SI
+
+   ret
 
 do_quick_return:
   MOV   AX, SI
@@ -1884,6 +1918,9 @@ PUBLIC FixedDivBSPLocal_
   SUB   BX, BP
   SBB   CX, BP ; cx:bx now labs. sign bits in bp
   XOR   SI, BP ; si has sign bits
+
+  jcxz  do_simple_div
+
   ;CMP   CX, 3
   ;ja    do_full_divide  
   MOV   BP, DX ; 

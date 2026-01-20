@@ -1183,11 +1183,47 @@ do_quick_return:
   POP   SI
   RET
 
+do_simple_div:
+; AX:0000 div 0000:BX
+; high word is AX:0000 / BX
+; low word: divide remainder << 16 / BX
+
+  ; bounds check
+   test dh, 0C0h ; are high bits non zero (known cx shift 14 )   
+   jne  do_quick_return
+   mov  cx, dx  ; copy of dx
+   mov  bp, ax
+   sal  bp, 1
+   rcl  cx, 1
+   sal  bp, 1
+   rcl  cx, 1
+   cmp  cx, bx
+   jae  do_quick_return
+
+
+; divide overflow possible!
+   div  bx       ; get high result
+   mov  cx, ax   ; store high result
+   xor  ax, ax   ; prep to divide remainder
+   div  bx       ; divide by remainder, get low word
+   mov  dx, cx   ; restore high result
+
+   XOR  AX, SI
+   XOR  DX, SI  ; apply sign  
+   SUB  AX, SI  
+   SBB  DX, SI
+ 
+   MOV   BP, ES 
+   POP   SI
+
+   ret
+
 PROC   FixedDiv_MapLocal_   NEAR
 PUBLIC FixedDiv_MapLocal_
 
 ; big improvements to branchless fixeddiv 'preamble' by zero318
 
+; todo: branchless labs maybe faster on 286
 
   PUSH  SI
   MOV   ES, BP
@@ -1206,6 +1242,11 @@ PUBLIC FixedDiv_MapLocal_
   SUB   BX, BP
   SBB   CX, BP ; cx:bx now labs. sign bits in bp
   XOR   SI, BP ; si has sign bits
+  
+ ; cx:ax and dx:ax now sign-ready
+
+  jcxz do_simple_div
+  
   MOV   BP, DX ; 
   ROL   BP, 1
   ROL   BP, 1
