@@ -577,14 +577,7 @@ ret
 ENDP
 
 
-shift_word:
-mov si, dx
-xchg  ax, dx
-xor ax, ax
-mov cx, bx
-mov bx, ax
 
-jmp shift_bits
 
 ;   
 ; basically, shift numerator left 16 and divide
@@ -603,7 +596,7 @@ push  bp
 XOR SI, SI ; zero this out to get high bits of numhi
 
 
-jcxz  shift_word
+
 ; default branch taken 314358 vs 126885
 
 
@@ -764,8 +757,8 @@ sub   ax, bp
 sbb   dx, bx
 cmp   dx, di
 ja    qhat_subtract_2
-je    compare_low_word
-jmp   qhat_subtract_1
+jne   qhat_subtract_1
+
 
 compare_low_word:
 cmp   ax, si
@@ -1168,8 +1161,8 @@ check_c1_c2_diff_whole:
 sub   dx, bx
 cmp   dx, di
 ja    qhat_subtract_2_whole
-je    compare_low_word_whole
-jmp   qhat_subtract_1_whole
+jne   qhat_subtract_1_whole
+
 
 compare_low_word_whole:
 cmp   ax, si
@@ -1741,8 +1734,7 @@ sub   ax, di
 sbb   dx, bx
 cmp   dx, cx
 ja    qhat_subtract_2_3232RPTA
-je    compare_low_word_3232RPTA
-jmp   qhat_subtract_1_3232RPTA
+jne   qhat_subtract_1_3232RPTA
 
 compare_low_word_3232RPTA:
 cmp   ax, si
