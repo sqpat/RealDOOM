@@ -1110,6 +1110,7 @@ div   di
 
 pop   di
 ret 
+ENDP
 
 
 COMMENT @
@@ -1723,36 +1724,7 @@ cmp   dx, bx
 
 
 
-ja    check_c1_c2_diff_whole
-jne   q1_ready_whole
-test  ax, ax
-jz   q1_ready_whole
-check_c1_c2_diff_whole:
-
-; (c1 - c2.wu > den.wu)
-
-sub   dx, bx
-cmp   dx, di
-ja    qhat_subtract_2_whole
-jne   qhat_subtract_1_whole
-
-compare_low_word_whole:
-cmp   ax, si
-jbe   qhat_subtract_1_whole
-
-; ugly but rare occurrence i think?
-qhat_subtract_2_whole:
-mov ax, es
-dec ax
-mov es, ax
-qhat_subtract_1_whole:
-mov ax, es
-dec ax
-mov es, ax
-
-
-
-;    q1 = (uint16_t)qhat;
+jae   continue_checking_q1_whole
 
 q1_ready_whole:
 
@@ -1760,7 +1732,6 @@ mov  ax, es
 ;	rem.hu.intbits = numhi.hu.fracbits;
 ;	rem.hu.fracbits = num1;
 ;	rem.wu -= FastMul16u32u(q1, den.wu);
-
 
 
 
@@ -1789,9 +1760,6 @@ cmp   dx, di
 
 jnb    adjust_for_overflow_whole
 
-
-
-
 div   di
 
 mov   bx, ax
@@ -1800,36 +1768,61 @@ mov   cx, dx
 mul   si
 sub   dx, cx
 
-ja    continue_c1_c2_test_whole
-je    continue_check_whole
+jae   continue_c1_c2_test_whole
 
 do_return_2_whole:
 mov   ax, bx
+
 ret  
 
-continue_check_whole:
+continue_check2_whole:
 test  ax, ax
-jz   do_return_2_whole
+jz    do_return_2_whole
 continue_c1_c2_test_whole:
+je    continue_check2_whole
+; happens about 25% of the time
 
 cmp   dx, di
-ja    do_qhat_subtraction_by_2_whole
-jne   do_qhat_subtraction_by_1_whole
-cmp   si, ax
+jae   check_for_extra_qhat_subtraction_whole
 
-jae   do_qhat_subtraction_by_1_whole
-do_qhat_subtraction_by_2_whole:
-dec   bx
 do_qhat_subtraction_by_1_whole:
 dec   bx
 
 mov   ax, bx
+
 ret  
 
+check_for_extra_qhat_subtraction_whole:
+ja    do_qhat_subtraction_by_2_whole
+cmp   si, ax
 
+jae   do_qhat_subtraction_by_1_whole
+do_qhat_subtraction_by_2_whole:
 
+dec   bx
+jmp   do_qhat_subtraction_by_1_whole
 
+continue_checking_q1_whole:
+ja    check_c1_c2_diff_whole
+; rare codepath! 
+cmp   ax, cx
+jbe   q1_ready_whole
 
+check_c1_c2_diff_whole:
+sub   ax, cx
+sbb   dx, bx
+cmp   dx, di
+; these branches havent been tested but this is a super rare codepath
+ja    qhat_subtract_2_whole 
+je    compare_low_word_whole
+
+qhat_subtract_1_whole:
+mov ax, es
+dec ax
+mov es, ax
+jmp q1_ready_whole
+
+; very rare case!
 adjust_for_overflow_whole:
 xor   cx, cx
 sub   ax, di
@@ -1842,24 +1835,23 @@ cmp   dx, di
 jae   adjust_for_overflow_again_whole
 
 
-
-
-
 div   di
 mov   bx, ax
 mov   cx, dx
 
 mul   si
 sub   dx, cx
+; these branches havent been tested but this is a super super super rare codepath
 ja    continue_c1_c2_test_2_whole
 jne   dont_decrement_qhat_and_return_whole
 test  ax, ax
-jz    dont_decrement_qhat_and_return_whole
+jz   dont_decrement_qhat_and_return_whole
 continue_c1_c2_test_2_whole:
 
 
 cmp   dx, di
 ja    decrement_qhat_and_return_whole
+; these branches havent been tested but this is a super super super super super rare codepath
 jne   dont_decrement_qhat_and_return_whole
 cmp   si, ax
 jae   dont_decrement_qhat_and_return_whole
@@ -1868,6 +1860,16 @@ dec   bx
 dont_decrement_qhat_and_return_whole:
 mov   ax, bx
 ret  
+
+compare_low_word_whole:
+cmp   ax, si
+jbe   qhat_subtract_1_whole
+
+qhat_subtract_2_whole:
+mov ax, es
+dec ax
+mov es, ax
+jmp qhat_subtract_1_whole
 
 ; the divide would have overflowed. subtract values
 adjust_for_overflow_again_whole:
@@ -1880,9 +1882,6 @@ div   di
 ; ax has its result...
 
 ret 
-
-
-
 
 
 ENDP
