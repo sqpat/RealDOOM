@@ -920,45 +920,14 @@ mul   si   						; DX:AX = c1
 
 
 ; c1 hi = dx, c2 lo = bx
+; 0xE455 vx 0x1E iters
+
 cmp   dx, bx
 
 
 
-ja    check_c1_c2_diff
-jne   q1_ready
-cmp   ax, cx
-jbe   q1_ready
-check_c1_c2_diff:
-
-; (c1 - c2.wu > den.wu)
-
-sub   ax, cx
-sbb   dx, bx
-cmp   dx, di
-ja    qhat_subtract_2  ; todo branch out not branch past
-jne   qhat_subtract_1
-
-
-
-
-compare_low_word:
-cmp   ax, si
-jbe   qhat_subtract_1
-
-; ugly but rare occurrence i think?
-qhat_subtract_2:
-mov ax, es
-dec ax
-mov es, ax
-qhat_subtract_1:
-mov ax, es
-dec ax
-mov es, ax
-
-
-
-;    q1 = (uint16_t)qhat;
-
+jae   continue_checking_q1
+; most common case fallthru: branches about 2000:1 cases
 q1_ready:
 
 mov  ax, es
@@ -1000,8 +969,7 @@ cmp   dx, di
 
 ;    if (rem.hu.intbits < den1){
 
-jnb    adjust_for_overflow  ; 441240 branch not taken vs 3 taken
-
+jnb    adjust_for_overflow  ; fall thru at about about 2000:1 rate
 
 div   di
 
@@ -1011,14 +979,13 @@ mov   cx, dx
 mul   si
 sub   dx, cx
 
-ja    continue_c1_c2_test
-je    continue_check2
+jae   continue_c1_c2_test  ; happens about 25% of the time
+; happens about 75% of the time
+
 
 ; default 440124 vs branch 105492 times
 do_return_2:
 mov   ax, bx
-
-
 pop   di
 ret  
 
@@ -1026,23 +993,57 @@ continue_check2:
 test  ax, ax
 jz    do_return_2
 continue_c1_c2_test:
+je    continue_check2      ; happens almost never
+; happens about 25% of the time
 
 cmp   dx, di
-ja    do_qhat_subtraction_by_2
-jne   do_qhat_subtraction_by_1
-cmp   si, ax
+jae   check_for_extra_qhat_subtraction
 
-jae   do_qhat_subtraction_by_1
-do_qhat_subtraction_by_2:
-dec   bx
 do_qhat_subtraction_by_1:
 dec   bx
 
 mov   ax, bx
 pop   di
-ret
+ret  
+
+check_for_extra_qhat_subtraction:
+; very rare, basically never happens, dual jump is fine
+ja    do_qhat_subtraction_by_2
+; very rare, basically never happens, dual jump is fine
 
 
+cmp   si, ax
+
+jae   do_qhat_subtraction_by_1
+
+do_qhat_subtraction_by_2:
+; very rare, basically never happens, dual jump is fine
+dec   bx
+jmp   do_qhat_subtraction_by_1
+
+
+
+
+continue_checking_q1:
+ja    check_c1_c2_diff
+; rare codepath! 
+
+cmp   ax, cx
+jbe   q1_ready
+
+check_c1_c2_diff:
+sub   ax, cx
+sbb   dx, bx
+cmp   dx, di
+; these branches havent been tested but this is a super rare codepath
+ja    qhat_subtract_2  
+je    compare_low_word
+
+qhat_subtract_1:
+mov ax, es
+dec ax
+mov es, ax
+jmp q1_ready
 
 ; very rare case!
 adjust_for_overflow:
@@ -1057,24 +1058,23 @@ cmp   dx, di
 jae   adjust_for_overflow_again
 
 
-
-
-
 div   di
 mov   bx, ax
 mov   cx, dx
 
 mul   si
 sub   dx, cx
+; these branches havent been tested but this is a super super super rare codepath
 ja    continue_c1_c2_test_2
 jne   dont_decrement_qhat_and_return
 test  ax, ax
-jz    dont_decrement_qhat_and_return
+jz   dont_decrement_qhat_and_return
 continue_c1_c2_test_2:
 
 
 cmp   dx, di
 ja    decrement_qhat_and_return
+; these branches havent been tested but this is a super super super super super rare codepath
 jne   dont_decrement_qhat_and_return
 cmp   si, ax
 jae   dont_decrement_qhat_and_return
@@ -1087,6 +1087,18 @@ mov   ax, bx
 pop   di
 ret  
 
+compare_low_word:
+; extremely rare codepath! double jump is fine.
+cmp   ax, si
+jbe   qhat_subtract_1
+
+qhat_subtract_2:
+
+mov ax, es
+dec ax
+mov es, ax
+jmp qhat_subtract_1
+
 ; the divide would have overflowed. subtract values
 adjust_for_overflow_again:
 
@@ -1094,26 +1106,10 @@ sub   ax, di
 sbb   dx, cx
 
 div   di
-
-
 ; ax has its result...
-
-
 
 pop   di
 ret 
-
-
-
-
-
-ENDP
-
-
-
-
-
-
 
 
 COMMENT @
