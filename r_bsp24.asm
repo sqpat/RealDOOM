@@ -705,7 +705,7 @@ RCR BX, 1
 
 
 ; save numlo word in bp.
-; avoid going to memory... lets do interrupt magic
+; avoid going to memory...
 
 mov bp, ax
 
@@ -1923,28 +1923,17 @@ skip_sign_adjust_cx:
 
   jcxz  do_simple_div
 
-  mov  word ptr cs:[_SELFMODIFY_store_fixeddiv_sign_ahead+1], si
 
-  MOV   SI, DX ; 
-  ROL   SI, 1
-  ROL   SI, 1
-  AND   SI, 3  ;   3 is FFFF shr 14
-  CMP   SI, CX ;   if ( (abs(a)>>14) >= abs(b))
-  JG    do_quick_return
-  JNE   do_full_divide
-  MOV   SI, DX
-  mov   es, ax  ; store ax
-  sal   ax, 1
-  RCL   SI, 1
-  sal   ax, 1
+; cx is non zero, and sign bit is known zero afrer abs 
+; so for shift 14 compare, its a compare of cx to bit 14 of dx for high work
+; if cx is greater than 1, the shift 14 check fails and we fo fixed div
 
-  RCL   SI, 1
-  CMP   SI, BX
-  JAE   do_quick_return
-  mov   ax, es  ; restore ax
+  dec   cx
+  jz    do_cx_equals_1_case  ; cx was 1, further comparison needed
   
   do_full_divide:
-
+  inc   cx
+  mov  word ptr cs:[_SELFMODIFY_store_fixeddiv_sign_ahead+1], si
 
 call div48_32_BSPLocal_ 
 
@@ -1961,7 +1950,28 @@ SBB  DX, SI  ; dx:ax now labs. sign bits in si
 
 pop   si
 ret
-
+; pretty rare case, but does need to be handled for shift 14 fixeddiv bounds check
+  do_cx_equals_1_case:
+  ; cx was equal to 1. (needs to be re-incremented )
+  ; the fixeddiv shift 14 check still has to be done.
+  
+  ; todo  if cx is known to be 1, 
+  ; does that make this a simple/faster division algorithm that can be inlined?
+  
+  ; bounds check... 
+  mov   cx, dx
+  mov   es, ax  ; store ax
+  sal   ax, 1
+  rcl   cx, 1
+  sal   ax, 1
+  rcl   cx, 1
+  jc    restore_ax_do_full_divide   ; determined bit 14 was off
+  cmp   cx, bx
+  jae   do_quick_return
+  restore_ax_do_full_divide:
+  xor   cx, cx
+  mov   ax, es  ; restore ax
+  jmp   do_full_divide
 
 ENDP
 
@@ -2107,9 +2117,6 @@ skip_swap_x_y:
 mov   si, bx
 mov   di, cx
 
-
-
-; dx:ax ffa0fd1a
 
 
 call  FixedDivBSPLocal_

@@ -858,8 +858,8 @@ mov   word ptr [bp - 8], ax	; store frac
 mov   word ptr [bp - 6], dx
 mov   cx, SECTORS_SEGMENT
 mov   es, cx
-mov   cx, word ptr es:[di]
-cmp   cx, word ptr es:[si]
+mov   cx, word ptr es:[di + SECTOR_T.sec_floorheight]
+cmp   cx, word ptr es:[si + SECTOR_T.sec_floorheight]
 je    done_setting_bottomslope
 
 ; fixed height from shortheight
