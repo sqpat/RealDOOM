@@ -231,6 +231,8 @@ do_divide:
 
 call div48_32_BSPLocal_ ; internally does push pop of di/bp but not si
 
+mov   dx, es      ; retrieve q1
+
 ; set negative if need be...
 cmp   dx, 040h
 jg    return_maxvalue
@@ -583,13 +585,16 @@ ENDP
 ; basically, shift numerator left 16 and divide
 ; DX:AX:00 / CX:BX
 
+; todo: no push pop internally
+
 PROC div48_32_BSPLocal_ NEAR
+PUBLIC div48_32_BSPLocal_ 
 
 
 ; di:si get shifted cx:bx
 
 push  di
-push  bp
+
 
 
 
@@ -697,28 +702,33 @@ RCR BX, 1
 ; numlo = AX:00...
 
 
-; save numlo word in bp.
+; todo reeaxmine this register juggle. cx/di swap may not be necessary in particular
+
+; save numlo word in cx.
 ; avoid going to memory...
 
-mov bp, ax
+; store these two long term...
+mov   di, cx
+
+xchg  ax, cx   ; cx gets numlo
 
 
 ; set up first div. 
 ; dx:ax becomes numhi
-mov   ax, dx
+xchg  ax, dx
 mov   dx, si    
-
-; store these two long term...
-mov   di, cx
 mov   si, bx
 
-mov   ds, ax                    ; store copy of numhi.low?
+
+; todo use bx to do this after div
+mov   word ptr cs:[_SELFMODIFY_restore_numhi_low+1], ax ; store copy of numhi.low?
 
 
 
 ;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
 ; DX:AX = numhi.wu
 
+; todo dont juggle di
 
 div   di
 
@@ -747,17 +757,19 @@ cmp   dx, bx
 
 ja    check_c1_c2_diff
 jne   q1_ready
-cmp   ax, bp
+cmp   ax, cx
 jbe   q1_ready
 check_c1_c2_diff:
 
 ; (c1 - c2.wu > den.wu)
 
-sub   ax, bp
+sub   ax, cx
 sbb   dx, bx
 cmp   dx, di
-ja    qhat_subtract_2
+ja    qhat_subtract_2  ; todo branch out not branch past
 jne   qhat_subtract_1
+
+
 
 
 compare_low_word:
@@ -786,25 +798,32 @@ mov  ax, es
 ;	rem.wu -= FastMul16u32u(q1, den.wu);
 
 
-mov   cx, ax
 
 ; multiplying by DI:SI basically. inline SI in as BX.
 
 ;inlined FastMul16u32u_
 
 MUL  DI        ; AX * CX
-XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+mov  bx, ax    ; store low product to be high result. 
+mov  ax, es    ; Retrieve orig AX
 MUL  SI        ; AX * BX
-ADD  DX, CX    ; add 
+ADD  dx, bx    ; add 
 
 ; actual 2nd division...
 
 
-sub   bp, ax
-mov   cx, ds
-sbb   cx, dx
-mov   dx, cx
-mov   ax, bp
+sub   cx, ax
+_SELFMODIFY_restore_numhi_low: ; store copy of numhi.low?
+mov   bx, 01000h
+sbb   bx, dx
+
+; todo can we invert logic ahead instead of reversing sign, avoiding bx swap above?
+
+
+xchg  ax, cx
+mov   dx, bx
+; todo use as is?
+
 
 cmp   dx, di
 
@@ -812,10 +831,7 @@ cmp   dx, di
 
 ;    if (rem.hu.intbits < den1){
 
-jnb    adjust_for_overflow
-
-
-; 441240 branch not taken vs 3 taken
+jnb    adjust_for_overflow  ; 441240 branch not taken vs 3 taken
 
 
 div   di
@@ -831,13 +847,10 @@ je    continue_check2
 
 ; default 440124 vs branch 105492 times
 do_return_2:
-mov   dx, es      ; retrieve q1
 mov   ax, bx
 
-mov   cx, ss      ; restore ds
-mov   ds, cx      
 
-pop   bp
+
 pop   di
 ret  
 
@@ -861,19 +874,19 @@ jmp do_return_2;
 
 
 
-
+; very rare case!
 adjust_for_overflow:
-xor   dx, dx
+xor   cx, cx
 sub   ax, di
-sbb   cx, dx
+sbb   dx, cx
 
-cmp   cx, di
+cmp   dx, di
 
 ; check for overflow param
 
 jae   adjust_for_overflow_again
 
-mov   dx, cx
+
 
 
 
@@ -899,11 +912,8 @@ decrement_qhat_and_return:
 dec   bx
 dont_decrement_qhat_and_return:
 mov   ax, bx
-mov   dx, es   ;retrieve q1
-mov   cx, ss
-mov   ds, cx
 
-pop   bp
+
 pop   di
 ret  
 
@@ -911,18 +921,15 @@ ret
 adjust_for_overflow_again:
 
 sub   ax, di
-sbb   cx, dx
-mov   dx, cx
+sbb   dx, cx
+
 div   di
 
 
 ; ax has its result...
 
-mov   dx, es
-mov   cx, ss
-mov   ds, cx
 
-pop   bp
+
 pop   di
 ret 
 
@@ -964,8 +971,6 @@ call div48_32_whole_BSPLocal_ ; internally does push pop of di/bp but not si
 ; set negative if need be...
 
 mov   dx, es      ; retrieve q1
-mov   cx, ss      ; restore ds
-mov   ds, cx      
 pop   di
 pop   si
 
@@ -1108,17 +1113,11 @@ RCR BX, 1
 ; numlo = 00:00...
 
 
-
-
-
-; store these two long term...
-; todo i think cx can be filtered out...
 mov   di, cx
 mov   si, bx
 
-mov   ds, ax                    ; store copy of numhi.low
 
-
+mov   cx, ax      ; store copy of numhi.low
 
 
 ;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
@@ -1190,22 +1189,22 @@ mov  ax, es
 ;	rem.wu -= FastMul16u32u(q1, den.wu);
 
 
-mov   cx, ax
+
 
 ; multiplying by DI:SI basically. inline SI in as BX.
 
 ;inlined FastMul16u32u_
 
 MUL  DI        ; AX * CX
-XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+mov  bX, AX    ; store low product to be high result. Retrieve orig AX
+mov  ax, es
 MUL  SI        ; AX * BX
-ADD  DX, CX    ; add 
+ADD  DX, bX    ; add 
 
 ; actual 2nd division...
 
 
 neg   ax
-mov   cx, ds
 sbb   cx, dx
 mov   dx, cx
 
@@ -1258,17 +1257,17 @@ jmp do_return_2_whole
 
 
 adjust_for_overflow_whole:
-xor   dx, dx
+xor   cx, cx
 sub   ax, di
-sbb   cx, dx
+sbb   dx, cx
 
-cmp   cx, di
+cmp   dx, di
 
 ; check for overflow param
 
 jae   adjust_for_overflow_again_whole
 
-mov   dx, cx
+
 
 
 
@@ -1300,8 +1299,8 @@ ret
 adjust_for_overflow_again_whole:
 
 sub   ax, di
-sbb   cx, dx
-mov   dx, cx
+sbb   dx, cx
+
 div   di
 
 ; ax has its result...
@@ -1366,7 +1365,7 @@ ELSE
 
 
     mov  si, dx
-    mov  es, ax  ; put segment in dS
+    mov  es, ax  ; put segment in es
     les  ax, dword ptr es:[si]
 
     mov  dx, es
@@ -1929,6 +1928,8 @@ skip_sign_adjust_cx:
 
 call div48_32_BSPLocal_ 
 
+mov   dx, es      ; retrieve q1
+
 ; set negative if need be...
 
 _SELFMODIFY_store_fixeddiv_sign_ahead:
@@ -1979,7 +1980,7 @@ PROC FixedMulTrigNoShiftBSPLocal_ NEAR
 
 
     mov  si, dx
-    mov  es, ax  ; put segment in dS
+    mov  es, ax  ; put segment in es
     les  ax, dword ptr es:[si]
 
     mov  dx, es
