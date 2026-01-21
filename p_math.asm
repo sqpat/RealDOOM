@@ -1009,7 +1009,7 @@ mov   bx, ax
 mov   cx, dx
 
 mul   si
-cmp   dx, cx
+sub   dx, cx
 
 ja    continue_c1_c2_test
 je    continue_check2
@@ -1019,15 +1019,14 @@ do_return_2:
 mov   ax, bx
 
 
-
 pop   di
 ret  
 
 continue_check2:
-cmp   ax, 0
-jbe   do_return_2
+test  ax, ax
+jz    do_return_2
 continue_c1_c2_test:
-sbb   dx, cx
+
 cmp   dx, di
 ja    do_qhat_subtraction_by_2
 jne   do_qhat_subtraction_by_1
@@ -1039,7 +1038,9 @@ dec   bx
 do_qhat_subtraction_by_1:
 dec   bx
 
-jmp do_return_2;
+mov   ax, bx
+pop   di
+ret
 
 
 
@@ -1064,14 +1065,14 @@ mov   bx, ax
 mov   cx, dx
 
 mul   si
-cmp   dx, cx
+sub   dx, cx
 ja    continue_c1_c2_test_2
 jne   dont_decrement_qhat_and_return
-cmp   ax, 0
-jbe   dont_decrement_qhat_and_return
+test  ax, ax
+jz    dont_decrement_qhat_and_return
 continue_c1_c2_test_2:
 
-sub   dx, cx
+
 cmp   dx, di
 ja    decrement_qhat_and_return
 jne   dont_decrement_qhat_and_return
@@ -1168,15 +1169,7 @@ divide_overflow:
 
 IF COMPISA LE COMPILE_286
 
-do_quick_return:
-  MOV   AX, SI
-  NEG   AX
-  DEC   AX
-  CWD
-  RCR   DX, 1
 
-  POP   SI
-  RET
   do_simple_div:
 ; high word is DX:AX / BX
 ; low word: divide remainder << 16 / BX
@@ -1211,7 +1204,15 @@ do_quick_return:
    POP   SI
 
    ret
+do_quick_return:
+  MOV   AX, SI
+  NEG   AX
+  DEC   AX
+  CWD
+  RCR   DX, 1
 
+  POP   SI
+  RET
 
 
 PROC   FixedDiv_MapLocal_ NEAR
@@ -1728,8 +1729,8 @@ cmp   dx, bx
 
 ja    check_c1_c2_diff_whole
 jne   q1_ready_whole
-cmp   ax, 0
-jbe   q1_ready_whole
+test  ax, ax
+jz   q1_ready_whole
 check_c1_c2_diff_whole:
 
 ; (c1 - c2.wu > den.wu)
@@ -1801,21 +1802,20 @@ mov   bx, ax
 mov   cx, dx
 
 mul   si
-cmp   dx, cx
+sub   dx, cx
 
 ja    continue_c1_c2_test_whole
 je    continue_check_whole
 
 do_return_2_whole:
 mov   ax, bx
-
 ret  
 
 continue_check_whole:
-cmp   ax, 0
-jbe   do_return_2_whole
+test  ax, ax
+jz   do_return_2_whole
 continue_c1_c2_test_whole:
-sbb   dx, cx
+
 cmp   dx, di
 ja    do_qhat_subtraction_by_2_whole
 jne   do_qhat_subtraction_by_1_whole
@@ -1827,7 +1827,9 @@ dec   bx
 do_qhat_subtraction_by_1_whole:
 dec   bx
 
-jmp do_return_2_whole
+mov   ax, bx
+ret  
+
 
 
 
@@ -1852,14 +1854,14 @@ mov   bx, ax
 mov   cx, dx
 
 mul   si
-cmp   dx, cx
+sub   dx, cx
 ja    continue_c1_c2_test_2_whole
 jne   dont_decrement_qhat_and_return_whole
-cmp   ax, 0
-jbe   dont_decrement_qhat_and_return_whole
+test  ax, ax
+jz    dont_decrement_qhat_and_return_whole
 continue_c1_c2_test_2_whole:
 
-sub   dx, cx
+
 cmp   dx, di
 ja    decrement_qhat_and_return_whole
 jne   dont_decrement_qhat_and_return_whole

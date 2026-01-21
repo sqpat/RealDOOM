@@ -228,8 +228,10 @@ do_divide:
 
 
 
+; destroys si/di internally, but we dont care here.
 
-call div48_32_BSPLocal_ ; internally does push pop of di/bp but not si
+call  div48_32_BSPLocal_ ; internally does push pop of di/bp but not si
+
 
 mov   dx, es      ; retrieve q1
 
@@ -585,9 +587,9 @@ ENDP
 ; basically, shift numerator left 16 and divide
 ; DX:AX:00 / CX:BX
 
-; todo: no push pop internally
+; destroys si/di internally, outer scope must push/pop
 
-PROC div48_32_BSPLocal_ NEAR
+PROC   div48_32_BSPLocal_ NEAR
 PUBLIC div48_32_BSPLocal_ 
 
 
@@ -840,7 +842,7 @@ mov   bx, ax
 mov   cx, dx
 
 mul   si
-cmp   dx, cx
+sub   dx, cx
 
 ja    continue_c1_c2_test
 je    continue_check2
@@ -855,11 +857,12 @@ pop   di
 ret  
 
 continue_check2:
-cmp   ax, 0
-jbe   do_return_2
+test  ax, ax
+jz    do_return_2
 continue_c1_c2_test:
-sbb   dx, cx
+
 cmp   dx, di
+; todo bench this branch
 ja    do_qhat_subtraction_by_2
 jne   do_qhat_subtraction_by_1
 cmp   si, ax
@@ -870,7 +873,9 @@ dec   bx
 do_qhat_subtraction_by_1:
 dec   bx
 
-jmp do_return_2;
+mov   ax, bx
+pop   di
+ret  
 
 
 
@@ -887,24 +892,23 @@ cmp   dx, di
 jae   adjust_for_overflow_again
 
 
-
-
-
 div   di
 mov   bx, ax
 mov   cx, dx
 
 mul   si
-cmp   dx, cx
+sub   dx, cx
 ja    continue_c1_c2_test_2
+; todo bench this branch
 jne   dont_decrement_qhat_and_return
-cmp   ax, 0
-jbe   dont_decrement_qhat_and_return
+test  ax, ax
+jz   dont_decrement_qhat_and_return
 continue_c1_c2_test_2:
 
-sub   dx, cx
+
 cmp   dx, di
 ja    decrement_qhat_and_return
+; todo bench this branch
 jne   dont_decrement_qhat_and_return
 cmp   si, ax
 jae   dont_decrement_qhat_and_return
@@ -924,8 +928,6 @@ sub   ax, di
 sbb   dx, cx
 
 div   di
-
-
 ; ax has its result...
 
 
@@ -1011,17 +1013,8 @@ ENDP
 PROC div48_32_whole_BSPLocal_ NEAR
 
 ; di:si get shifted cx:bx
-
-
-
 xor dx, dx
-
-
-
-
 ; cx known nonzero.
-
-
 
 test ch, ch
 jne shift_bits_whole
@@ -1032,8 +1025,7 @@ mov cl, bh
 mov bh, bl
 xor bl, bl
 
-
-mov  dh, dl
+mov dh, dl
 mov dl, ah
 mov ah, al
 xor al, al
@@ -1151,8 +1143,8 @@ cmp   dx, bx
 
 ja    check_c1_c2_diff_whole
 jne   q1_ready_whole
-cmp   ax, 0
-jbe   q1_ready_whole
+test  ax, ax
+jz    q1_ready_whole
 check_c1_c2_diff_whole:
 
 ; (c1 - c2.wu > den.wu)
@@ -1216,16 +1208,13 @@ cmp   dx, di
 
 jnb    adjust_for_overflow_whole
 
-
-
-
 div   di
 
 mov   bx, ax
 mov   cx, dx
 
 mul   si
-cmp   dx, cx
+sub   dx, cx
 
 ja    continue_c1_c2_test_whole
 je    continue_check_whole
@@ -1236,10 +1225,10 @@ mov   ax, bx
 ret  
 
 continue_check_whole:
-cmp   ax, 0
-jbe   do_return_2_whole
+test  ax, ax
+jz    do_return_2_whole
 continue_c1_c2_test_whole:
-sbb   dx, cx
+
 cmp   dx, di
 ja    do_qhat_subtraction_by_2_whole
 jne   do_qhat_subtraction_by_1_whole
@@ -1251,10 +1240,12 @@ dec   bx
 do_qhat_subtraction_by_1_whole:
 dec   bx
 
-jmp do_return_2_whole
+mov   ax, bx
+ret  
 
 
 
+; very rare case!
 
 adjust_for_overflow_whole:
 xor   cx, cx
@@ -1268,22 +1259,19 @@ cmp   dx, di
 jae   adjust_for_overflow_again_whole
 
 
-
-
-
 div   di
 mov   bx, ax
 mov   cx, dx
 
 mul   si
-cmp   dx, cx
+sub   dx, cx
 ja    continue_c1_c2_test_2_whole
 jne   dont_decrement_qhat_and_return_whole
-cmp   ax, 0
-jbe   dont_decrement_qhat_and_return_whole
+test  ax, ax
+jz    dont_decrement_qhat_and_return_whole
 continue_c1_c2_test_2_whole:
 
-sub   dx, cx
+
 cmp   dx, di
 ja    decrement_qhat_and_return_whole
 jne   dont_decrement_qhat_and_return_whole
