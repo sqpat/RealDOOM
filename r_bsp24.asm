@@ -2017,115 +2017,6 @@ PROC FixedMulTrigNoShiftBSPLocal_ NEAR
 ENDP
 
 
-
-
-;R_PointToDist_
-
-PROC R_PointToDist_ NEAR
-
-
-;push  bx      ; these arent used after the call. no need to push/pop..
-;push  cx
-push  si
-push  di
-
-;    dx = labs(x.w - viewx.w);
-;  x = ax register
-;  y = dx
-
-xor   bx, bx
-mov   cx, ax
-xor   ax, ax
-; DX:AX = y
-; CX:BX = x
-SELFMODIFY_BSP_viewx_lo_2:
-sub   bx, 01000h
-SELFMODIFY_BSP_viewx_hi_2:
-sbb   cx, 01000h
-
-SELFMODIFY_BSP_viewy_lo_2:
-sub   ax, 01000h
-SELFMODIFY_BSP_viewy_hi_2:
-sbb   dx, 01000h
-
-
-or    cx, cx
-jge   skip_x_abs
-neg   bx
-adc   cx, 0
-neg   cx
-skip_x_abs:
-
-or    dx, dx
-jge   skip_y_abs
-neg   ax
-adc   dx, 0
-neg   dx
-skip_y_abs:
-
-
-
-
-;    if (dy>dx) {
-
-cmp   dx, cx
-jg    swap_x_y
-jne   skip_swap_x_y
-cmp   ax, bx
-jbe   skip_swap_x_y
-
-swap_x_y:
-xchg  dx, cx
-xchg  ax, bx
-skip_swap_x_y:
-
-;	angle = (tantoangle[ FixedDiv(dy,dx)>>DBITS ].hu.intbits+ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
-
-; save dx (var not register)
-
-mov   si, bx
-mov   di, cx
-
-
-
-call  FixedDivBSPLocal_
-
-; shift 5. since we do a tantoangle lookup... this maxes at 2048
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
-and   al, 0FCh
-mov   dx, di ; move di to dx early to free up di for les + di + bx combo
-
-
-mov   bx, ax
-mov   es, word ptr ds:[_tantoangle_segment] 
-mov   bx, word ptr es:[bx + 2] ; get just intbits..
-
-;    dist = FixedDiv (dx, finesine[angle] );	
-
-add   bh, 040h ; ang90 highbits
-mov   ax, FINESINE_SEGMENT
-shr   bx, 1
-and   bl, 0FCh
-mov   es, ax
-mov   ax, si
-les   bx, dword ptr es:[bx]
-mov   cx, es
-call  FixedDivBSPLocal_
-
-pop   di
-pop   si
-;pop   cx
-;pop   bx
-ret   
-
-ENDP
-
-
 PROC R_ClearClipSegs_ NEAR
 ; todo lea
 
@@ -2675,7 +2566,7 @@ ENDP
 
 ;R_AddLine_
 
-PROC R_AddLine_ NEAR
+PROC   R_AddLine_ NEAR
 
 ; ax = curlineNum
 
@@ -2832,6 +2723,7 @@ jne   not_single_sided_line
 mov   word ptr ds:[_backsector], SECNUM_NULL   ; does this ever get properly used or checked? can we just ignore?
 clipsolid:
 call  R_ClipSolidWallSegment_
+mov   byte ptr cs:[SELFMODIFY_set_get_hyp_ret], 056h ; push si
 exit_addline:
 LEAVE_MACRO 
 pop   cx
@@ -2916,6 +2808,7 @@ je    exit_addline
 clippass:
 xchg  ax, bx                   ; grab cached x1
 call  R_ClipPassWallSegment_
+mov   byte ptr cs:[SELFMODIFY_set_get_hyp_ret], 056h ; push si
 LEAVE_MACRO
 pop   cx
 pop   ax
@@ -2923,6 +2816,7 @@ ret
 clipsolid_ax_swap:
 xchg  ax, bx                   ; grab cached x1
 call  R_ClipSolidWallSegment_
+mov   byte ptr cs:[SELFMODIFY_set_get_hyp_ret], 056h ; push si
 LEAVE_MACRO 
 pop   cx
 pop   ax
@@ -3991,8 +3885,128 @@ COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - C
 
 
 
+PROC    R_GetHyp_ NEAR
+PUBLIC  R_GetHyp_ 
+; lazily calculate 32 bit hyp (two fixed divs involved, slow)
+; self modify so its available for later calls to R_StoreWallRange
+; return in cx:bx
+; clobber dx:ax
+
+SELFMODIFY_set_PointToDist_result_lo_1:
+mov       bx, 01000h
+SELFMODIFY_set_PointToDist_result_hi_1:
+mov       cx, 01000h
 
 
+SELFMODIFY_set_get_hyp_ret:
+push  si ; gets changed to ret
+push  di
+
+;    dx = labs(x.w - viewx.w);
+;  x = ax register
+;  y = dx
+
+SELFMODIFY_BSP_v1x:
+mov       cx, 01000h
+SELFMODIFY_BSP_v1y:
+mov       dx, 01000h
+
+xor   bx, bx
+xor   ax, ax
+
+; DX:AX = y
+; CX:BX = x
+SELFMODIFY_BSP_viewx_lo_2:
+sub   bx, 01000h
+SELFMODIFY_BSP_viewx_hi_2:
+sbb   cx, 01000h
+
+SELFMODIFY_BSP_viewy_lo_2:
+sub   ax, 01000h
+SELFMODIFY_BSP_viewy_hi_2:
+sbb   dx, 01000h
+
+
+or    cx, cx
+jge   skip_x_abs
+neg   bx
+adc   cx, 0
+neg   cx
+skip_x_abs:
+
+or    dx, dx
+jge   skip_y_abs
+neg   ax
+adc   dx, 0
+neg   dx
+skip_y_abs:
+
+;    if (dy>dx) {
+
+cmp   dx, cx
+jg    swap_x_y
+jne   skip_swap_x_y
+cmp   ax, bx
+jbe   skip_swap_x_y
+
+swap_x_y:
+xchg  dx, cx
+xchg  ax, bx
+skip_swap_x_y:
+
+;	angle = (tantoangle[ FixedDiv(dy,dx)>>DBITS ].hu.intbits+ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
+
+; save dx (var not register)
+
+mov   si, bx
+mov   di, cx
+
+call  FixedDivBSPLocal_
+
+; shift 5. since we do a tantoangle lookup... this maxes at 2048
+; todo 386
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+and   al, 0FCh
+mov   dx, di ; move di to dx early to free up di for les + di + bx combo
+
+
+xchg  ax, bx
+mov   es, word ptr ds:[_tantoangle_segment] 
+mov   bx, word ptr es:[bx + 2] ; get just intbits..
+
+;    dist = FixedDiv (dx, finesine[angle] );	
+
+add   bh, 040h ; ang90 highbits
+mov   ax, FINESINE_SEGMENT
+mov   es, ax
+shr   bx, 1
+and   bl, 0FCh
+mov   ax, si
+les   bx, dword ptr es:[bx]
+mov   cx, es
+call  FixedDivBSPLocal_
+
+xchg  ax, bx  ; result in cx:bx
+mov   cx, dx
+
+pop   di
+pop   si
+
+; store result
+mov   word ptr cs:[SELFMODIFY_set_PointToDist_result_lo_1+1], bx
+mov   word ptr cs:[SELFMODIFY_set_PointToDist_result_hi_1+1], cx
+mov   byte ptr cs:[SELFMODIFY_set_get_hyp_ret], 0C3h ; ret
+
+
+ret
+
+
+ENDP
 
 out_of_drawsegs:
 LEAVE_MACRO
@@ -4032,17 +4046,18 @@ MAXDRAWSEGS = 256
 
 ;R_StoreWallRange_
 
-PROC R_StoreWallRange_ NEAR
+PROC   R_StoreWallRange_ NEAR
+PUBLIC R_StoreWallRange_ 
 
 ; bp - 2  ; ax arg
 ; bp - 4  ; dx arg
-; bp - 6     ; hyp lo
-; bp - 8     ; hyp hi
+; bp - 6     ; hyp lo      ; UNUSED
+; bp - 8     ; hyp hi      ; UNUSED
 ; bp - 0Ah   ; side toptexture
 ; bp - 0Ch   ; side bottomtexture
 ; bp - 0Eh   ; side midtexture
-; bp - 010h  ; v1.x
-; bp - 012h  ; v1.y
+; bp - 010h  ; v1.x        ; UNUSED
+; bp - 012h  ; v1.y        ; UNUSED
 ; bp - 014h  ; lineflags
 ; bp - 016h  ; offsetangle
 ; bp - 018h  ; _rw_x
@@ -4094,13 +4109,18 @@ xor       ax, ax
 SELFMODIFY_get_curseg_render_1:
 mov       bx, 01000h 
 
-push      ax ; bp - 6
-push      ax ; bp - 8
+sub       sp, 4 ; unused
 
-mov       si, word ptr ds:[bx + 6]
+mov       si, word ptr ds:[bx + 6]  ; todo what's this again
 SHIFT_MACRO shl si 2
 mov       di, si
 shl       si, 1
+
+; todo i dont think this is really ever going to happen in realdoom?
+;mov       ax, word ptr ds:[_ds_p]
+;cmp       ax, (MAXDRAWSEGS * (SIZE DRAWSEG_T))
+;je        out_of_drawsegs
+
 
 mov       cx, ds  ; store for later.
 mov       ds, word ptr ds:[_SIDES_SEGMENT_PTR]
@@ -4118,8 +4138,8 @@ push ax   ; bp - 0Eh
 lodsw     ; textureoffset todo can be 8 bit
 
 
-les        si, dword ptr ss:[bx]   ; vertexes
-
+les        bx, dword ptr ss:[bx]   ; vertexes
+mov        si, es ; v2
 
 mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
@@ -4129,26 +4149,31 @@ mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_1+1 - OFFSET R_BSP24_S
 mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 mov   ds, word ptr ss:[_VERTEXES_SEGMENT_PTR]
-SHIFT_MACRO shl si 2
-lodsw
-push      ax       ; bp - 010h
-lodsw
-push      ax       ; bp - 012h
-
-
-mov       si, es ; les earlier
+SHIFT_MACRO shl bx 2
 SHIFT_MACRO shl si 2
 
-lodsw
-mov       word ptr cs:[SELFMODIFY_BSP_v2x+1 - OFFSET R_BSP24_STARTMARKER_], ax
-lodsw
-mov       word ptr cs:[SELFMODIFY_BSP_v2y+1 - OFFSET R_BSP24_STARTMARKER_], ax
+sub       sp, 4 ; unused ; bp -012h
+les       bx, dword ptr ds:[bx] ;v1.x
+mov       ax, es
+
+mov       word ptr cs:[SELFMODIFY_BSP_v1x+1 - OFFSET R_BSP24_STARTMARKER_], bx
+mov       word ptr cs:[SELFMODIFY_BSP_v1y+1 - OFFSET R_BSP24_STARTMARKER_], ax
+
+sub       ax, word ptr ds:[si + VERTEX_T.v_y]
+mov       dl, 04Ah  ; dec dx
+je        v2_y_equals_v1_y
+sub       bx, word ptr ds:[si + VERTEX_T.v_x]
+mov       dl, 090h  ; nop
+jne       v2_y_not_equals_v1_y
+mov       dl, 042h  ; inc dx
+v2_y_not_equals_v1_y:
+v2_y_equals_v1_y:
+
+mov       byte ptr cs:[SELFMODIFY_addlightnum_delta - OFFSET R_BSP24_STARTMARKER_], dl
+
 
 mov       ds, cx  ; restore ds..
 
-mov       bx, word ptr ds:[_ds_p]
-cmp       bx, (MAXDRAWSEGS * (SIZE DRAWSEG_T))
-je        out_of_drawsegs
 
 mov       ax, LINEFLAGSLIST_SEGMENT ; we will also index seg_linedefs off this.
 mov       es, ax
@@ -4208,27 +4233,21 @@ mov       word ptr cs:[SELFMODIFY_set_rw_normal_angle_shift3+1 - OFFSET R_BSP24_
 ;	offsetangle = (abs((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> 1) & 0xFFFC;
 sub       ax, word ptr [bp + 012h]   ; rw_angle hi from R_AddLine
 cwd       
-xor       ax, dx		; what's this about. is it an abs() thing?
+xor       ax, dx		; abs by sign bits
 sub       ax, dx
 sar       ax, 1
 
 and       al, 0FCh
 push      ax  ; bp - 016h
 mov       si, FINE_ANG90_NOSHIFT
+sub       si, ax   ; bp - 016h
 
 
-offsetangle_below_ang_90:
-les       dx, dword ptr [bp - 012h]
-mov       ax, es
-call      R_PointToDist_
-mov       word ptr [bp - 6], ax
-mov       word ptr [bp - 8], dx
-sub       si, word ptr [bp - 016h]
-xchg      ax, bx
-mov       cx, dx
+call      R_GetHyp_
+
 mov       ax, FINESINE_SEGMENT
 mov       dx, si
-call     FixedMulTrigNoShiftBSPLocal_
+call      FixedMulTrigNoShiftBSPLocal_
 
 
 do_set_rw_distance:
@@ -4653,20 +4672,13 @@ neg       ax
 and       ah, MOD_FINE_ANGLE_NOSHIFT_HIGHBITS
 mov       word ptr [bp - 016h], ax
 offsetangle_greater_than_fineang180:
-mov       ax, word ptr [bp - 8]
-or        ax, word ptr [bp - 6]
-jne       hyp_already_set   		; todo what is hyp about
-les       dx, dword ptr [bp - 012h]
-mov       ax, es
-call      R_PointToDist_
-mov       word ptr [bp - 6], ax
-mov       word ptr [bp - 8], dx
-hyp_already_set:
+
+call      R_GetHyp_
+
 mov       dx, word ptr [bp - 016h]
 cmp       dx, FINE_ANG90_NOSHIFT
 ja        offsetangle_greater_than_fineang90
-les       cx, dword ptr [bp - 8]
-mov       bx, es
+
 mov       ax, FINESINE_SEGMENT
 call      FixedMulTrigNoShiftBSPLocal_
 ; used later, dont change?
@@ -4674,8 +4686,8 @@ call      FixedMulTrigNoShiftBSPLocal_
 xchg      ax, dx
 jmp       done_with_offsetangle_stuff
 offsetangle_greater_than_fineang90:
-les       dx, dword ptr [bp - 8]
-mov       ax, es  ; bp - 6
+xchg      ax, cx
+mov       dx, bx
 
 
 
@@ -4712,7 +4724,7 @@ mov   word ptr cs:[SELFMODIFY_set_ax_rw_offset_hi+1 - OFFSET R_BSP24_STARTMARKER
 
 
 
-
+;	    lightnum = (frontsector->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
 
 SELFMODIFY_BSP_fixedcolormap_3:
@@ -4720,59 +4732,39 @@ jmp SHORT seg_textured_check_done    ; dont check walllights if fixedcolormap
 SELFMODIFY_BSP_fixedcolormap_3_AFTER:
 mov       al, byte ptr [bp - 03Bh]
 xor       ah, ah
+cwd
+mov       bx, dx
 SELFMODIFY_BSP_extralight2:
 mov       dl, 0
 
-SHIFT_MACRO sar ax 4
+; todo instead of shifting back and forth just use mults of 16
+SHIFT_MACRO shr ax 4
 
 
 
-xor       dh, dh
-add       dx, ax
-mov       ax, word ptr [bp - 012h]
-SELFMODIFY_BSP_v2y:
-cmp       ax, 01000h
-je        v1y_equals_v2y
+add       dl, al
 
-mov       ax, word ptr [bp - 010h]
-SELFMODIFY_BSP_v2x:
-cmp       ax, 01000h
-jne       v1x_equals_v2x
+SELFMODIFY_addlightnum_delta:
+dec       dx  ; nop carries flags from add dl, al. dec and inc will set signed accordingly
 
-inc       dx
-jge       lightnum_greater_than_0
-mov       ax, OFFSET _scalelight
-jmp       done_setting_ax_to_wallights
+js      done_setting_ax_to_wallights ; ax is 0, set to scalelights[0]
 
-
-v1y_equals_v2y:
-dec       dx
-jge       lightnum_greater_than_0
-mov       ax, OFFSET _scalelight
-jmp       done_setting_ax_to_wallights
-
-v1x_equals_v2x:
-test      dx, dx
-
-jge       lightnum_greater_than_0
-mov       ax, OFFSET _scalelight
-jmp       done_setting_ax_to_wallights
-lightnum_max:
-mov      ax, 720 + OFFSET _scalelight
-jmp      done_setting_ax_to_wallights
 lightnum_greater_than_0:
-cmp       dx, LIGHTLEVELS
-jnl       lightnum_max
+cmp       dl, LIGHTLEVELS
+mov       bx, 720 + OFFSET _scalelight  ; lightnum_max
+jnl       done_setting_ax_to_wallights_with_offset
 
-lightnum_less_than_lightlevels:
+
 mov       al, 48
 mul       dl
-add       ax, OFFSET _scalelight
+xchg      ax, bx
 done_setting_ax_to_wallights:
+add       bx, OFFSET _scalelight
+done_setting_ax_to_wallights_with_offset:
 
 
 ; write walllights to rendersegloop
-mov   word ptr cs:[SELFMODIFY_add_wallights+2 - OFFSET R_BSP24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_add_wallights+2 - OFFSET R_BSP24_STARTMARKER_], bx
 ; ? do math here and write this ahead to drawcolumn colormapsindex?
 
 SELFMODIFY_BSP_fixedcolormap_3_TARGET:
