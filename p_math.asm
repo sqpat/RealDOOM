@@ -764,12 +764,7 @@ PUBLIC div48_32_MapLocal_
 
 push  di
 
-
-
-
 XOR SI, SI ; zero this out to get high bits of numhi
-
-
 
 ; default branch taken 314358 vs 126885
 
@@ -877,19 +872,17 @@ RCR BX, 1
 ; avoid going to memory...
 
 ; store these two long term...
-mov   di, cx
 
-xchg  ax, cx   ; cx gets numlo
+
+xchg  ax, di   ; di gets numlo
 
 
 ; set up first div. 
 ; dx:ax becomes numhi
 xchg  ax, dx
 mov   dx, si    
-mov   si, bx
 
 
-; todo use bx to do this after div
 mov   word ptr cs:[_SELFMODIFY_restore_numhi_low+1], ax ; store copy of numhi.low?
 
 
@@ -897,18 +890,17 @@ mov   word ptr cs:[_SELFMODIFY_restore_numhi_low+1], ax ; store copy of numhi.lo
 ;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
 ; DX:AX = numhi.wu
 
-; todo dont juggle di
 
-div   di
+div   cx
 
 ; rhat = dx
 ; qhat = ax
 ;    c1 = FastMul16u16u(qhat , den0);
 
-mov   bx, dx					; bx stores rhat
-mov   es, ax     ; store qhat
+mov   si, dx					; si stores rhat
+mov   es, ax          ; store qhat
 
-mul   si   						; DX:AX = c1
+mul   bx   						; DX:AX = c1
 
 ;  c2 = rhat:num1
 
@@ -919,10 +911,10 @@ mul   si   						; DX:AX = c1
 ; 
 
 
-; c1 hi = dx, c2 lo = bx
+; c1 hi = dx, c2 lo = si
 ; 0xE455 vx 0x1E iters
 
-cmp   dx, bx
+cmp   dx, si
 
 
 
@@ -937,33 +929,33 @@ mov  ax, es
 
 
 
-; multiplying by DI:SI basically. inline SI in as BX.
+; multiplying by cx:bx basically. inline bx in as si.
 
 ;inlined FastMul16u32u_
 
-MUL  DI        ; AX * CX
-mov  bx, ax    ; store low product to be high result. 
+MUL  cx        ; AX * CX
+mov  si, ax    ; store low product to be high result. 
 mov  ax, es    ; Retrieve orig AX
-MUL  SI        ; AX * BX
-ADD  dx, bx    ; add 
+MUL  bx        ; AX * si
+ADD  dx, si    ; add 
 
 ; actual 2nd division...
 
 
-sub   cx, ax
+sub   di, ax
 _SELFMODIFY_restore_numhi_low: ; store copy of numhi.low?
-mov   bx, 01000h
-sbb   bx, dx
+mov   si, 01000h
+sbb   si, dx
 
-; todo can we invert logic ahead instead of reversing sign, avoiding bx swap above?
+; todo can we invert logic ahead instead of reversing sign, avoixxng si swap above?
 
 
-xchg  ax, cx
-mov   dx, bx
+xchg  ax, di
+mov   dx, si
 ; todo use as is?
 
 
-cmp   dx, di
+cmp   dx, cx
 
 ; check for adjustment
 
@@ -971,13 +963,13 @@ cmp   dx, di
 
 jnb    adjust_for_overflow  ; fall thru at about about 2000:1 rate
 
-div   di
+div   cx
 
-mov   bx, ax
-mov   cx, dx
+mov   si, ax
+mov   di, dx
 
-mul   si
-sub   dx, cx
+mul   bx
+sub   dx, di
 
 jae   continue_c1_c2_test  ; happens about 25% of the time
 ; happens about 75% of the time
@@ -985,7 +977,7 @@ jae   continue_c1_c2_test  ; happens about 25% of the time
 
 ; default 440124 vs branch 105492 times
 do_return_2:
-mov   ax, bx
+mov   ax, si
 pop   di
 ret  
 
@@ -996,13 +988,13 @@ continue_c1_c2_test:
 je    continue_check2      ; happens almost never
 ; happens about 25% of the time
 
-cmp   dx, di
+cmp   dx, cx
 jae   check_for_extra_qhat_subtraction
 
 do_qhat_subtraction_by_1:
-dec   bx
+dec   si
 
-mov   ax, bx
+mov   ax, si
 pop   di
 ret  
 
@@ -1012,13 +1004,13 @@ ja    do_qhat_subtraction_by_2
 ; very rare, basically never happens, dual jump is fine
 
 
-cmp   si, ax
+cmp   bx, ax
 
 jae   do_qhat_subtraction_by_1
 
 do_qhat_subtraction_by_2:
 ; very rare, basically never happens, dual jump is fine
-dec   bx
+dec   si
 jmp   do_qhat_subtraction_by_1
 
 
@@ -1028,13 +1020,13 @@ continue_checking_q1:
 ja    check_c1_c2_diff
 ; rare codepath! 
 
-cmp   ax, cx
+cmp   ax, di
 jbe   q1_ready
 
 check_c1_c2_diff:
-sub   ax, cx
-sbb   dx, bx
-cmp   dx, di
+sub   ax, di
+sbb   dx, si
+cmp   dx, cx
 ; these branches havent been tested but this is a super rare codepath
 ja    qhat_subtract_2  
 je    compare_low_word
@@ -1047,23 +1039,23 @@ jmp q1_ready
 
 ; very rare case!
 adjust_for_overflow:
-xor   cx, cx
-sub   ax, di
-sbb   dx, cx
 
-cmp   dx, di
+sub   ax, cx
+sbb   dx, 0
+
+cmp   dx, cx
 
 ; check for overflow param
 
 jae   adjust_for_overflow_again
 
 
-div   di
-mov   bx, ax
-mov   cx, dx
+div   cx
+mov   si, ax
+mov   di, dx
 
-mul   si
-sub   dx, cx
+mul   bx
+sub   dx, di
 ; these branches havent been tested but this is a super super super rare codepath
 ja    continue_c1_c2_test_2
 jne   dont_decrement_qhat_and_return
@@ -1072,16 +1064,16 @@ jz   dont_decrement_qhat_and_return
 continue_c1_c2_test_2:
 
 
-cmp   dx, di
+cmp   dx, cx
 ja    decrement_qhat_and_return
 ; these branches havent been tested but this is a super super super super super rare codepath
 jne   dont_decrement_qhat_and_return
-cmp   si, ax
+cmp   bx, ax
 jae   dont_decrement_qhat_and_return
 decrement_qhat_and_return:
-dec   bx
+dec   si
 dont_decrement_qhat_and_return:
-mov   ax, bx
+mov   ax, si
 
 
 pop   di
@@ -1089,7 +1081,7 @@ ret
 
 compare_low_word:
 ; extremely rare codepath! double jump is fine.
-cmp   ax, si
+cmp   ax, bx
 jbe   qhat_subtract_1
 
 qhat_subtract_2:
@@ -1102,14 +1094,15 @@ jmp qhat_subtract_1
 ; the divide would have overflowed. subtract values
 adjust_for_overflow_again:
 
-sub   ax, di
-sbb   dx, cx
+sub   ax, cx
+sbb   dx, di
 
-div   di
+div   cx
 ; ax has its result...
 
 pop   di
 ret 
+
 ENDP
 
 

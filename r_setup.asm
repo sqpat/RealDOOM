@@ -82,6 +82,8 @@ mov     word ptr cs:[_SELFMODIFY_add_center_x+1], ax
 mov     bx, FIXED_FINE_TAN AND 0FFFFh
 mov     cx, FIXED_FINE_TAN SHR 16
 
+; this can be much faster
+
 ; no paging needed, already in this code segment.
 db    09Ah
 dw    FIXEDDIVWHOLEA_ML, PHYSICS_HIGHCODE_SEGMENT
