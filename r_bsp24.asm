@@ -871,9 +871,9 @@ jmp q1_ready
 
 ; very rare case!
 adjust_for_overflow:
-
+xor   di, di
 sub   ax, cx
-sbb   dx, 0
+sbb   dx, di
 
 cmp   dx, cx
 
@@ -1101,41 +1101,31 @@ RCR BX, 1
 ; numlo = 00:00...
 
 
-mov   di, cx
-mov   si, bx
 
-
-mov   cx, ax      ; store copy of numhi.low
+mov   di, ax      ; store copy of numhi.low
 
 
 ;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
 ; DX:AX = numhi.wu
 
-
-div   di
+div   cx
 
 ; rhat = dx
 ; qhat = ax
 ;    c1 = FastMul16u16u(qhat , den0);
 
-mov   bx, dx					; bx stores rhat
+mov   si, dx					; si stores rhat
 mov   es, ax     ; store qhat
-
-mul   si   						; DX:AX = c1
+mul   bx   						; DX:AX = c1
 
 ;  c2 = rhat:num1
-
-
 
 ;    if (c1 > c2.wu)
 ;         qhat -= (c1 - c2.wu > den.wu) ? 2 : 1;
 ; 
 
-
-; c1 hi = dx, c2 lo = bx
-cmp   dx, bx
-
-
+; c1 hi = dx, c2 lo = si
+cmp   dx, si
 
 jae   continue_checking_q1_whole
 
@@ -1148,24 +1138,24 @@ mov  ax, es
 
 
 
-; multiplying by DI:SI basically. inline SI in as BX.
+; multiplying by cx:bx basically. inline bx in as si.
 
 ;inlined FastMul16u32u_
 
-MUL  DI        ; AX * CX
-mov  bX, AX    ; store low product to be high result. Retrieve orig AX
+MUL  cx        ; AX * CX
+mov  si, AX    ; store low product to be high result. Retrieve orig AX
 mov  ax, es
-MUL  SI        ; AX * BX
-ADD  DX, bX    ; add 
+MUL  bx        ; AX * si
+ADD  DX, si    ; add 
 
 ; actual 2nd division...
 
 
 neg   ax
-sbb   cx, dx
-mov   dx, cx
+sbb   di, dx
+mov   dx, di
 
-cmp   dx, di
+cmp   dx, cx
 
 ; check for adjustment
 
@@ -1173,18 +1163,18 @@ cmp   dx, di
 
 jnb    adjust_for_overflow_whole
 
-div   di
+div   cx
 
-mov   bx, ax
-mov   cx, dx
+mov   si, ax
+mov   di, dx
 
-mul   si
-sub   dx, cx
+mul   bx
+sub   dx, di
 
 jae   continue_c1_c2_test_whole
 
 do_return_2_whole:
-mov   ax, bx
+mov   ax, si
 
 ret  
 
@@ -1195,36 +1185,36 @@ continue_c1_c2_test_whole:
 je    continue_check2_whole
 ; happens about 25% of the time
 
-cmp   dx, di
+cmp   dx, cx
 jae   check_for_extra_qhat_subtraction_whole
 
 do_qhat_subtraction_by_1_whole:
-dec   bx
+dec   si
 
-mov   ax, bx
+mov   ax, si
 
 ret  
 
 check_for_extra_qhat_subtraction_whole:
 ja    do_qhat_subtraction_by_2_whole
-cmp   si, ax
+cmp   bx, ax
 
 jae   do_qhat_subtraction_by_1_whole
 do_qhat_subtraction_by_2_whole:
 
-dec   bx
+dec   si
 jmp   do_qhat_subtraction_by_1_whole
 
 continue_checking_q1_whole:
 ja    check_c1_c2_diff_whole
 ; rare codepath! 
-cmp   ax, cx
+cmp   ax, di
 jbe   q1_ready_whole
 
 check_c1_c2_diff_whole:
-sub   ax, cx
-sbb   dx, bx
-cmp   dx, di
+sub   ax, di
+sbb   dx, si
+cmp   dx, cx
 ; these branches havent been tested but this is a super rare codepath
 ja    qhat_subtract_2_whole 
 je    compare_low_word_whole
@@ -1237,23 +1227,23 @@ jmp q1_ready_whole
 
 ; very rare case!
 adjust_for_overflow_whole:
-xor   cx, cx
-sub   ax, di
-sbb   dx, cx
+xor   di, di
+sub   ax, cx
+sbb   dx, di
 
-cmp   dx, di
+cmp   dx, cx
 
 ; check for overflow param
 
 jae   adjust_for_overflow_again_whole
 
 
-div   di
-mov   bx, ax
-mov   cx, dx
+div   cx
+mov   si, ax
+mov   di, dx
 
-mul   si
-sub   dx, cx
+mul   bx
+sub   dx, di
 ; these branches havent been tested but this is a super super super rare codepath
 ja    continue_c1_c2_test_2_whole
 jne   dont_decrement_qhat_and_return_whole
@@ -1262,20 +1252,20 @@ jz   dont_decrement_qhat_and_return_whole
 continue_c1_c2_test_2_whole:
 
 
-cmp   dx, di
+cmp   dx, cx
 ja    decrement_qhat_and_return_whole
 ; these branches havent been tested but this is a super super super super super rare codepath
 jne   dont_decrement_qhat_and_return_whole
-cmp   si, ax
+cmp   bx, ax
 jae   dont_decrement_qhat_and_return_whole
 decrement_qhat_and_return_whole:
-dec   bx
+dec   si
 dont_decrement_qhat_and_return_whole:
-mov   ax, bx
+mov   ax, si
 ret  
 
 compare_low_word_whole:
-cmp   ax, si
+cmp   ax, bx
 jbe   qhat_subtract_1_whole
 
 qhat_subtract_2_whole:
@@ -1287,10 +1277,10 @@ jmp qhat_subtract_1_whole
 ; the divide would have overflowed. subtract values
 adjust_for_overflow_again_whole:
 
-sub   ax, di
-sbb   dx, cx
+sub   ax, cx
+sbb   dx, di
 
-div   di
+div   cx
 
 ; ax has its result...
 

@@ -1039,9 +1039,9 @@ jmp q1_ready
 
 ; very rare case!
 adjust_for_overflow:
-
+xor   di, di
 sub   ax, cx
-sbb   dx, 0
+sbb   dx, di
 
 cmp   dx, cx
 

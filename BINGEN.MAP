@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/21 21:31:26
+Created on:       26/01/21 21:39:52
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -35,7 +35,7 @@ SM_OPL2_TEXT           CODE           AUTO           0533:0000       00000f3c
 SM_OPL3_TEXT           CODE           AUTO           0627:0000       0000100e
 SM_SBMID_TEXT          CODE           AUTO           0728:0000       00000730
 SM_MPUMD_TEXT          CODE           AUTO           079b:0000       000007db
-R_BSP_24_TEXT          CODE           AUTO           0819:0000       000035c0
+R_BSP_24_TEXT          CODE           AUTO           0819:0000       000035bd
 R_BSP_16_TEXT          CODE           AUTO           0b75:0000       0000374b
 R_BSP0_TEXT            CODE           AUTO           0eea:0000       0000367a
 R_BSPFL_TEXT           CODE           AUTO           1252:0000       00003622
@@ -71,7 +71,7 @@ P_TICK_TEXT            CODE           AUTO           2250:821e       00000210
 P_USER_TEXT            CODE           AUTO           2250:842e       00000431
 P_INFO_TEXT            CODE           AUTO           2250:8860       00000320
 AM_MAP_TEXT            CODE           AUTO           2250:8b80       00000b2b
-P_MATH_TEXT            CODE           AUTO           2250:96b0       000007af
+P_MATH_TEXT            CODE           AUTO           2250:96b0       000007b0
 HU_SETUP_TEXT          CODE           AUTO           2250:9e60       00000247
 HU_LIB_TEXT            CODE           AUTO           2250:a0a8       0000014a
 HU_STUFF_TEXT          CODE           AUTO           2250:a1f2       00000189
@@ -140,11 +140,11 @@ Module: sm_load.obj(sm_load.ASM)
 0000:03ef      S_ActuallyChangeMusic_
 Module: wi_stuff.obj(wi_stuff.ASM)
 004a:113a      WI_ENDMARKER_
-004a:03e7*     WI_slamBackground_
 004a:08bb*     WI_initStats_
+004a:03e7*     WI_slamBackground_
 004a:0cfb*     WI_updateNoState_
-004a:0dff*     WI_initVariables_
 004a:073d*     WI_drawPercent_
+004a:0dff*     WI_initVariables_
 004a:0d59      WI_Ticker_
 004a:0000      WI_STARTMARKER_
 004a:03cf*     WI_MRandomLocal_
@@ -186,8 +186,8 @@ Module: m_menu.obj(m_menu.ASM)
 015e:09b3*     M_Options_
 015e:051f*     M_DoSave_
 015e:0d5b      M_Responder_
-015e:0755*     M_DrawSound_
 015e:07b9*     S_SetSfxVolume_
+015e:0755*     M_DrawSound_
 015e:0a53*     M_ReadThis2_
 015e:0802*     S_SetMusicVolume_
 015e:08b2*     M_ChooseSkill_
@@ -340,15 +340,15 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079b:0000      SM_MPUMD_STARTMARKER_
 079b:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-0819:3287      R_WriteBackViewConstants24_
-0819:35c0      R_BSP24_ENDMARKER_
-0819:2d65      R_GetPatchTexture_Far24_
+0819:3284      R_WriteBackViewConstants24_
+0819:35bd      R_BSP24_ENDMARKER_
+0819:2d62      R_GetPatchTexture_Far24_
 0819:0000      R_BSP24_STARTMARKER_
-0819:3116      R_RenderPlayerView24_
-0819:070a*     FixedDivBSPLocal_
+0819:3113      R_RenderPlayerView24_
+0819:0707*     FixedDivBSPLocal_
 0819:02e9*     div48_32_BSPLocal_
-0819:0412*     FixedDivWholeA_BSPLocal_
-0819:2e00      R_GetCompositeTexture_Far24_
+0819:0413*     FixedDivWholeA_BSPLocal_
+0819:2dfd      R_GetCompositeTexture_Far24_
 Module: r_bsp16.obj(r_bsp16.ASM)
 0b75:3294      R_RenderPlayerView16_
 0b75:0000      R_BSP16_STARTMARKER_
@@ -538,8 +538,8 @@ Module: p_pspr.obj(p_pspr.ASM)
 2250:38e0      P_BringUpWeapon_
 Module: p_enemy.obj(p_enemy.ASM)
 2250:4bbd*     A_CyberAttack_
-2250:5292*     A_FatRaise_
 2250:557d*     A_Explode_
+2250:5292*     A_FatRaise_
 2250:419d      P_NoiseAlert_
 2250:58b7*     A_SpawnFly_
 2250:491c*     A_PosAttack_
@@ -555,8 +555,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2250:53f5*     A_PainDie_
 2250:511e*     A_VileTarget_
 2250:45b5*     P_LookForPlayers_
-2250:5812*     A_BrainSpit_
 2250:579c*     A_BrainExplode_
+2250:5812*     A_BrainSpit_
 2250:42df*     P_Move_
 2250:507d*     A_VileStart_
 2250:508a*     A_FireCrackle_
@@ -656,8 +656,8 @@ Module: p_lights.obj(p_lights.ASM)
 2250:6f18      T_StrobeFlash_
 2250:6e3a      T_FireFlicker_
 Module: p_plats.obj(p_plats.ASM)
-2250:70ce      T_PlatRaise_
 2250:7180      EV_DoPlat_
+2250:70ce      T_PlatRaise_
 2250:7304      P_AddActivePlat_
 2250:734c*     P_PLATS_ENDMARKER_
 2250:731c*     P_RemoveActivePlat_
@@ -745,30 +745,30 @@ Module: am_map.obj(am_map.ASM)
 2250:93b1*     AM_drawWalls_
 2250:9231*     DOOUTCODE_
 Module: p_math.obj(p_math.ASM)
-2250:9e28      R_PointToAngle2_FAR_
-2250:98f6      FixedDiv_MapLocal_
-2250:9b1f      R_PointToAngle2_16_MapLocal_
+2250:9e29      R_PointToAngle2_FAR_
+2250:98f7      FixedDiv_MapLocal_
+2250:9b20      R_PointToAngle2_16_MapLocal_
 2250:979e*     div48_32_MapLocal_
 2250:96b0*     P_MATH_STARTMARKER_
 2250:96b0      FixedMul2432_MapLocal_
 2250:96ee      FixedMul1632_MapLocal_
 2250:9795      FastMul16u32u_MapLocal_
 2250:974e*     FixedMulTrig16_MapLocal_
-2250:99a4      FixedDivWholeA_MapLocal_FAR_
+2250:99a5      FixedDivWholeA_MapLocal_FAR_
 2250:976a      FixedMulTrigSpeedNoShift_MapLocal_
 2250:970a      FixedMulTrigNoShift_MapLocal_
-2250:99d0*     div48_32_whole_MapLocal_
+2250:99d1*     div48_32_whole_MapLocal_
 2250:9706      FixedMulTrig_MapLocal_
 2250:9780      FixedMul16u32_MapLocal_
-2250:9b9c*     R_PointToAngle_MapLocal_
-2250:9ad5      FixedMul2424_
-2250:9e3a      R_PointToAngle2_MapLocal_
-2250:9964      FastDiv3216u_MapLocal_
-2250:99ae      FixedDivWholeA_MapLocal_
-2250:9e5f*     P_MATH_ENDMARKER_
+2250:9b9d*     R_PointToAngle_MapLocal_
+2250:9ad6      FixedMul2424_
+2250:9e3b      R_PointToAngle2_MapLocal_
+2250:9965      FastDiv3216u_MapLocal_
+2250:99af      FixedDivWholeA_MapLocal_
+2250:9e60*     P_MATH_ENDMARKER_
 2250:96e5*     FixedMulBig16u32_MapLocal_
 2250:96b8      FixedMul_MapLocal_
-2250:9946      FastDiv32u16u_MapLocal_
+2250:9947      FastDiv32u16u_MapLocal_
 2250:9766      FixedMulTrigSpeed_MapLocal_
 Module: hu_setup.obj(hu_setup.ASM)
 2250:9fc5      _w_title
