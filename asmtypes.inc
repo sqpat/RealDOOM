@@ -371,7 +371,8 @@ SPRITEDEF_T ENDS
 
 
 VISPLANEHEADER_T STRUC 
-    visplaneheader_height     dd ? ; 0
+    visplaneheader_UNSUED     dw ? ; 0    ; todo make this piclights soon
+    visplaneheader_height     dw ? ; 2
     visplaneheader_minx       dw ? ; 4
     visplaneheader_maxx       dw ? ; 6
 

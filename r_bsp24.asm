@@ -2501,7 +2501,7 @@ ret
 ;		}
 
 check_for_visplane_match:
-cmp       dx, word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height+2] ; compare height high word
+cmp       dx, word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height] ; compare height high word
 jne       loop_iter_step_variables
 cmp       cx, word ptr ds:[si] ; compare picandlight
 je        break_loop
@@ -2524,8 +2524,8 @@ cbw       ; no longer need lastvisplane, zero out ah
 
 
 ; set up new visplaneheader
-; mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height+0], di
-mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height+2], dx
+; mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_UNSUED], di
+mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height], dx
 mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_minx], SCREENWIDTH
 mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_maxx], 0FFFFh
 
@@ -2824,7 +2824,7 @@ sal       bx, 1   ; bx is 2 per index
 ; done with old plheader..
 ; es is in use..
 
-mov       dx, word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_height+2]
+mov       dx, word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_height]
 
 ;	visplanepiclights[lastvisplane].pic_and_light = visplanepiclights[index].pic_and_light;
 
@@ -2838,8 +2838,8 @@ SHIFT_MACRO sal bx 2
 ; now bx is 8 per
 add       bx, _visplaneheaders
 ; set all plheader fields for lastvisplane...
-;mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height+0], ax
-mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height+2], dx
+;mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_UNSUED], ax
+mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height], dx
 mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_minx], si ; looks weird
 mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_maxx], cx  ; looks weird
 
@@ -3641,7 +3641,7 @@ PUBLIC R_StoreWallRange_
 ; bp - 01Ah  ; _rw_stopx
 ; bp - 01Bh  ; markceiling
 ; bp - 01Ch  ; markfloor
-; bp - 01Eh  ; UNUSED?
+; bp - 01Eh  ; UNUSED?              ; UNUSED
 ; bp - 020h  ; pixhigh hi
 ; bp - 022h  ; pixhigh lo
 ; bp - 024h  ; pixlow hi

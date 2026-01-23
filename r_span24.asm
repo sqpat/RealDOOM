@@ -988,17 +988,25 @@ generate_distance_steps:
 ; note: es wrecked by function calls to r_fixedmullocal...
 
 mov   word ptr es:[si], ax
-xor   dx, dx
-SHIFT32_MACRO_RIGHT ax dx 3    ; TODO: mul 16 * 32 and then shift
-xchg  ax, dx   ; for the mul
 les   bx, dword ptr es:[si + 0 (( YSLOPE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
 mov   cx, es
 
+; fastmul1632 with 13:3 value
+
+; todo 386 version i guess?
+
+XCHG CX, AX    ; AX stored in CX
+MUL  CX        ; AX * CX
+XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+MUL  BX        ; AX * BX
+ADD  DX, CX    ; add 
+
+; NOW lets shift, avoiding a fixedmul.
+SHIFT32_MACRO_RIGHT dx ax 3
 
 ; not worth continuing to LEA because fixedmul destroys ES and then we have to store and restore from SI which is too much extra time
 ; distance = cacheddistance[y] = R_FixedMulLocal (planeheight, yslope[y]);
 
-call R_FixedMulLocal24_
 
 ; result is distance
 mov   es, ds:[_cacheddistance_segment_storage]
@@ -1023,11 +1031,7 @@ mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_1+1 - OFFSET R_SPAN24_STARTMARKER
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_hi_1+1 - OFFSET R_SPAN24_STARTMARKER_], dx
 
 ; preshift left 4 bits.
-sal   ax, 1
-rcl   dx, 1
-sal   ax, 1
-rcl   dx, 1
-
+SHIFT32_MACRO_LEFT dx ax 2
 
 
 
@@ -1476,7 +1480,7 @@ mov   byte ptr ds:[_ds_source_offset+3], al            ; low byte always zero!
 
 ; planeheight = labs(plheader->height - viewz.w);
 
-mov   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_height + 2]
+mov   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_height]
 
 SELFMODIFY_SPAN_viewz_13_3_1:
 sub   ax, 01000h
