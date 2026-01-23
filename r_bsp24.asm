@@ -2581,7 +2581,7 @@ PROC R_Subsector_ NEAR
 
 
 
-mov   bx, ax
+xchg  ax, bx
 mov   ax, SUBSECTOR_LINES_SEGMENT
 mov   es, ax
 
@@ -3693,23 +3693,21 @@ SELFMODIFY_skip_curseg_based_selfmodify_AFTER:
 mov       bx, word ptr [bp + 010h]  ; curseg_render     ; turns into a jump past selfmodifying code once this next code block runs. 
 
 xor       ax, ax
-mov       si, word ptr ds:[bx + 6]  ; todo what's this again? lineside?
+mov       si, word ptr ds:[bx + SEG_RENDER_T.sr_sidedefOffset]  
 
 SHIFT_MACRO shl si 2
 
 ; todo pull this out into outer func?
-mov       ax, word ptr ds:[si+_sides_render]
+mov       ax, word ptr ds:[si + _sides_render]
 mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
 shl       si, 1
 
 mov       cx, ds  ; store for later.
-les       bx, dword ptr ds:[bx]   ; vertexes
-mov       di, es ; v2
+les       bx, dword ptr ds:[bx + SEG_RENDER_T.sr_v1Offset]   ; v1
+mov       di, es                                             ; v2
 
 mov   ds, word ptr ds:[_VERTEXES_SEGMENT_PTR]
-SHIFT_MACRO shl bx 2
-SHIFT_MACRO shl di 2
 
 
 les       bx, dword ptr ds:[bx] ;v1.x
@@ -4442,7 +4440,7 @@ SELFMODIFY_BSP_sidetextureoffset:
 add       ax, 01000h
 
 add       ax, word ptr [bp + 010h]
-add       ax, 4
+add       ax, OFFSET SEG_RENDER_T.sr_offset
 ; rw_offset ready to be written to rendersegloop:
 mov   word ptr cs:[SELFMODIFY_set_cx_rw_offset_lo+1 - OFFSET R_BSP24_STARTMARKER_], dx
 mov   word ptr cs:[SELFMODIFY_set_ax_rw_offset_hi+1 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -7239,11 +7237,11 @@ push  bx   ; bp - 0Ah
 
 ; todo move way later?
 les   si, dword ptr ds:[bx]       ;sr_v1Offset
+; preshifted
 mov   di, es                      ;sr_v2Offset
 mov   ax, VERTEXES_SEGMENT
 mov   ds, ax
-SHIFT_MACRO shl si 2
-SHIFT_MACRO shl di 2
+
 les   dx, dword ptr ds:[si]
 mov   ax, es
 

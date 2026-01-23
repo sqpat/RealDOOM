@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/23 15:45:50
+Created on:       26/01/23 16:07:27
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -30,12 +30,12 @@ M_MENU_TEXT            CODE           AUTO           015e:0000       00001559
 F_WIPE_TEXT            CODE           AUTO           02b4:0000       000005fa
 F_FINALE_TEXT          CODE           AUTO           0314:0000       00000b97
 P_SAVEG_TEXT           CODE           AUTO           03ce:0000       00000bb7
-P_SETUP_TEXT           CODE           AUTO           048a:0000       00000a84
-SM_OPL2_TEXT           CODE           AUTO           0533:0000       00000f3c
-SM_OPL3_TEXT           CODE           AUTO           0627:0000       0000100e
-SM_SBMID_TEXT          CODE           AUTO           0728:0000       00000730
-SM_MPUMD_TEXT          CODE           AUTO           079b:0000       000007db
-R_BSP_24_TEXT          CODE           AUTO           0819:0000       00003533
+P_SETUP_TEXT           CODE           AUTO           048a:0000       00000a92
+SM_OPL2_TEXT           CODE           AUTO           0534:0000       00000f3c
+SM_OPL3_TEXT           CODE           AUTO           0628:0000       0000100e
+SM_SBMID_TEXT          CODE           AUTO           0729:0000       00000730
+SM_MPUMD_TEXT          CODE           AUTO           079c:0000       000007db
+R_BSP_24_TEXT          CODE           AUTO           081a:0000       00003522
 R_BSP_16_TEXT          CODE           AUTO           0b6d:0000       00003740
 R_BSP0_TEXT            CODE           AUTO           0ee1:0000       0000366f
 R_BSPFL_TEXT           CODE           AUTO           1248:0000       00003617
@@ -49,7 +49,7 @@ R_SPAN0_TEXT           CODE           AUTO           1a1d:0000       0000063a
 R_SPANFL_TEXT          CODE           AUTO           1a81:0000       00000591
 R_SKY_TEXT             CODE           AUTO           1adb:0000       00000d86
 R_SKYFL_TEXT           CODE           AUTO           1bb4:0000       00000303
-R_MASK24_TEXT          CODE           AUTO           1be5:0000       000019cf
+R_MASK24_TEXT          CODE           AUTO           1be5:0000       000019c7
 R_MASK16_TEXT          CODE           AUTO           1d82:0000       000019cf
 R_MASK0_TEXT           CODE           AUTO           1f1f:0000       0000193b
 R_MASKFL_TEXT          CODE           AUTO           20b3:0000       00001905
@@ -287,71 +287,71 @@ Module: p_saveg.obj(p_saveg.ASM)
 03ce:0895*     P_ArchiveThinkers_
 Module: p_setup.obj(p_setup.ASM)
 048a:0210*     P_LoadLineDefs_
-048a:049c*     P_GroupLines_
+048a:04aa*     P_GroupLines_
 048a:0365*     P_LoadNodes_
-048a:0703*     Z_FreeConventionalAllocations_
-048a:05f5*     P_LoadThings_
-048a:0a84      P_SETUP_ENDMARKER_
+048a:0711*     Z_FreeConventionalAllocations_
+048a:0603*     P_LoadThings_
+048a:0a92      P_SETUP_ENDMARKER_
 048a:001d*     P_LoadSectors_
-048a:06b1*     R_LoadPatchColumnsColormap0_
+048a:06bf*     R_LoadPatchColumnsColormap0_
 048a:0000      P_SETUP_STARTMARKER_
 048a:03c4*     P_LoadSegs_
 048a:0000*     P_LoadVertexes_
 048a:0312*     P_LoadSubsectors_
-048a:0849      P_SetupLevel_
+048a:0857      P_SetupLevel_
 048a:01d0*     P_LoadBlockMap_
 048a:0115*     P_LoadSideDefs_
 Module: sm_opl2.obj(sm_opl2.ASM)
-0533:0926*     OPLpauseMusic_OPL2_
-0533:0c95*     OPLreleaseNote_OPL2_
-0533:0f3c      SM_OPL2_ENDMARKER_
-0533:0907*     OPL2deinitHardware_OPL2_
-0533:0846*     OPL2initHardware_OPL2_
-0533:0c0f*     OPLplayNote_OPL2_
-0533:0d35*     OPLchangeControl_OPL2_
-0533:0f0b*     OPLinitDriver_OPL2_
-0533:0e9f*     OPLstopMusic_OPL2_
-0533:0cd2*     OPLpitchWheel_OPL2_
-0533:0929*     OPLresumeMusic_OPL2_
-0533:0ec0*     OPLchangeSystemVolume_OPL2_
-0533:089d*     OPL2detectHardware_OPL2_
-0533:0e80*     OPLplayMusic_OPL2_
-0533:0000      SM_OPL2_STARTMARKER_
+0534:0926*     OPLpauseMusic_OPL2_
+0534:0c95*     OPLreleaseNote_OPL2_
+0534:0f3c      SM_OPL2_ENDMARKER_
+0534:0907*     OPL2deinitHardware_OPL2_
+0534:0846*     OPL2initHardware_OPL2_
+0534:0c0f*     OPLplayNote_OPL2_
+0534:0d35*     OPLchangeControl_OPL2_
+0534:0f0b*     OPLinitDriver_OPL2_
+0534:0e9f*     OPLstopMusic_OPL2_
+0534:0cd2*     OPLpitchWheel_OPL2_
+0534:0929*     OPLresumeMusic_OPL2_
+0534:0ec0*     OPLchangeSystemVolume_OPL2_
+0534:089d*     OPL2detectHardware_OPL2_
+0534:0e80*     OPLplayMusic_OPL2_
+0534:0000      SM_OPL2_STARTMARKER_
 Module: sm_opl3.obj(sm_opl3.ASM)
-0627:09f5*     OPLpauseMusic_OPL3_
-0627:0d64*     OPLreleaseNote_OPL3_
-0627:100e      SM_OPL3_ENDMARKER_
-0627:09c6*     OPL3deinitHardware_OPL3_
-0627:0cde*     OPLplayNote_OPL3_
-0627:08d0*     OPL3initHardware_OPL3_
-0627:0e0a*     OPLchangeControl_OPL3_
-0627:0fdf*     OPLinitDriver_OPL3_
-0627:0f74*     OPLstopMusic_OPL3_
-0627:0da1*     OPLpitchWheel_OPL3_
-0627:09f8*     OPLresumeMusic_OPL3_
-0627:0f95*     OPLchangeSystemVolume_OPL3_
-0627:0f55*     OPLplayMusic_OPL3_
-0627:09aa*     OPL3detectHardware_OPL3_
-0627:0000      SM_OPL3_STARTMARKER_
+0628:09f5*     OPLpauseMusic_OPL3_
+0628:0d64*     OPLreleaseNote_OPL3_
+0628:100e      SM_OPL3_ENDMARKER_
+0628:09c6*     OPL3deinitHardware_OPL3_
+0628:0cde*     OPLplayNote_OPL3_
+0628:08d0*     OPL3initHardware_OPL3_
+0628:0e0a*     OPLchangeControl_OPL3_
+0628:0fdf*     OPLinitDriver_OPL3_
+0628:0f74*     OPLstopMusic_OPL3_
+0628:0da1*     OPLpitchWheel_OPL3_
+0628:09f8*     OPLresumeMusic_OPL3_
+0628:0f95*     OPLchangeSystemVolume_OPL3_
+0628:0f55*     OPLplayMusic_OPL3_
+0628:09aa*     OPL3detectHardware_OPL3_
+0628:0000      SM_OPL3_STARTMARKER_
 Module: sm_sbmid.obj(sm_sbmid.ASM)
-0728:0730      SM_SBMID_ENDMARKER_
-0728:0000      SM_SBMID_STARTMARKER_
+0729:0730      SM_SBMID_ENDMARKER_
+0729:0000      SM_SBMID_STARTMARKER_
 Module: sm_mpumd.obj(sm_mpumd.ASM)
-079b:0000      SM_MPUMD_STARTMARKER_
-079b:07db      SM_MPUMD_ENDMARKER_
+079c:0000      SM_MPUMD_STARTMARKER_
+079c:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-0819:31f3      R_WriteBackViewConstants24_
-0819:1f58*     R_AddLine_
-0819:3533      R_BSP24_ENDMARKER_
-0819:2cd1      R_GetPatchTexture_Far24_
-0819:0e7d*     R_StoreWallRange_
-0819:0000      R_BSP24_STARTMARKER_
-0819:3082      R_RenderPlayerView24_
-0819:0707*     FixedDivBSPLocal_
-0819:02e9*     div48_32_BSPLocal_
-0819:3398*     R_WriteBackFrameConstants_
-0819:0413*     FixedDivWholeA_BSPLocal_
-0819:2d6c      R_GetCompositeTexture_Far24_
+081a:31e2      R_WriteBackViewConstants24_
+081a:1f4f*     R_AddLine_
+081a:3522      R_BSP24_ENDMARKER_
+081a:2cc0      R_GetPatchTexture_Far24_
+081a:0e7c*     R_StoreWallRange_
+081a:0000      R_BSP24_STARTMARKER_
+081a:3071      R_RenderPlayerView24_
+081a:0707*     FixedDivBSPLocal_
+081a:02e9*     div48_32_BSPLocal_
+081a:3387*     R_WriteBackFrameConstants_
+081a:0413*     FixedDivWholeA_BSPLocal_
+081a:2d5b      R_GetCompositeTexture_Far24_
 Module: r_bsp16.obj(r_bsp16.ASM)
 0b6d:3289      R_RenderPlayerView16_
 0b6d:0000      R_BSP16_STARTMARKER_
@@ -437,10 +437,10 @@ Module: r_skyfl.obj(r_skyfl.ASM)
 1bb4:0000      R_SKYFL_STARTMARKER_
 1bb4:0294      R_DrawSkyPlaneFL_
 Module: r_mask24.obj(r_mask24.ASM)
-1be5:18e4      R_WriteBackViewConstantsMasked24_
-1be5:1971      R_WriteBackMaskedFrameConstants24_
-1be5:1495      R_DrawMasked24_
-1be5:19cf      R_MASK24_ENDMARKER_
+1be5:18dc      R_WriteBackViewConstantsMasked24_
+1be5:1969      R_WriteBackMaskedFrameConstants24_
+1be5:148d      R_DrawMasked24_
+1be5:19c7      R_MASK24_ENDMARKER_
 1be5:0000      R_MASK24_STARTMARKER_
 Module: r_mask16.obj(r_mask16.ASM)
 1d82:19cf      R_MASK16_ENDMARKER_
@@ -508,8 +508,8 @@ Module: p_mobj.obj(p_mobj.ASM)
 Module: p_pspr.obj(p_pspr.ASM)
 2244:3b25*     A_Lower_
 2244:3baa*     A_Punch_
-2244:3f2b*     A_Light1_
 2244:3f31*     A_Light2_
+2244:3f2b*     A_Light1_
 2244:3a13*     P_FireWeapon_
 2244:3b5b*     A_Raise_
 2244:3b8f*     A_GunFlash_
@@ -575,8 +575,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2244:58b2*     A_SpawnSound_
 2244:4c13*     A_SkelMissile_
 2244:52fe*     A_FatAttack1_
-2244:46b7*     A_Look_
 2244:56bb*     A_BabyMetal_
+2244:46b7*     A_Look_
 2244:555e*     A_XScream_
 2244:4bd6*     A_BruisAttack_
 2244:5a24      P_SetMobjState_

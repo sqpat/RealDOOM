@@ -890,8 +890,14 @@ loop_next_seg:
 
 push   cx
 push   es
-movsw  ; v1
-movsw  ; v2
+; preshift v1/v2!
+lodsw 
+SHIFT_MACRO shl ax 2
+stosw ; v1
+
+lodsw 
+SHIFT_MACRO shl ax 2
+stosw ; v2
 
 mov    ax, SEG_NORMALANGLES_9000_SEGMENT
 mov    es, ax
@@ -974,8 +980,11 @@ SHIFT_MACRO  shr bx 1  ; word ptr again
 inc    bx   ; increment word offset
 inc    bx
 pop    cx
-loop   loop_next_seg
+dec    cx
+jz     break_seg_loop
+jmp    loop_next_seg
 
+break_seg_loop:
 
 push   ss
 pop    ds

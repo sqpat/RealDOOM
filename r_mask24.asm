@@ -1174,16 +1174,16 @@ mov   ax, ss
 mov   ds, ax
 
 mov   ax, SIDES_SEGMENT
-mov   si, word ptr ds:[bx + 6]			; get sidedefOffset
+mov   si, word ptr ds:[bx + SEG_RENDER_T.sr_sidedefOffset]			; get sidedefOffset
 mov   es, ax
 SHIFT_MACRO shl si 2
 mov   bx, si						; side_render_t is 4 bytes each
 shl   si, 1							; side_t is 8 bytes each
 add   bh, (_sides_render SHR 8 )		; sides render near addr is ds:[0xAE00]
-mov   si, word ptr es:[si + 4]		; lookup side->midtexture
-mov   ax, word ptr ds:[bx] 
+mov   si, word ptr es:[si + SIDE_T.s_midtexture]		; lookup side->midtexture
+mov   ax, word ptr ds:[bx + SIDE_RENDER_T.sr_rowoffset] 
 mov   word ptr cs:[SELFMODIFY_MASKED_siderender_00+1 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   ax, word ptr ds:[bx+2] 
+mov   ax, word ptr ds:[bx + SIDE_RENDER_T.sr_secnum] 
 mov   word ptr cs:[SELFMODIFY_MASKED_siderender_02+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 mov   ax, TEXTURETRANSLATION_SEGMENT
@@ -3961,24 +3961,18 @@ push  ax
 
 SHIFT_MACRO shl si 3
 
-;mov   ax, SEGS_RENDER_SEGMENT
-;mov   es, ax  ; ES for segs_render lookup
 
-mov   di, word ptr ds:[_segs_render + si]
-SHIFT_MACRO shl di 2
-
+mov   di, word ptr ds:[_segs_render + si + SEG_RENDER_T.sr_v1Offset]
 mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
-
 
 mov   bx, word ptr es:[di]      ; lx
 mov   ax, word ptr es:[di + 2]  ; ly
 
 
-mov   di, word ptr ds:[_segs_render + si + 2]
+mov   di, word ptr ds:[_segs_render + si + SEG_RENDER_T.sr_v2Offset]
 
 ;mov   es, ax  ; juggle ax around isntead of putting on stack...
 
-SHIFT_MACRO shl di 2
 
 mov   si, word ptr es:[di]      ; ldx
 mov   di, word ptr es:[di + 2]  ; ldy
