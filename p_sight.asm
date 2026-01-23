@@ -743,11 +743,11 @@ sal   bx, 1						; dword lookup
 les   di, dword ptr es:[bx]
 mov   si, es
 
+; di/si preshfited
+
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
 
-SHIFT_MACRO shl   di 4
-SHIFT_MACRO shl   si 4
 
 mov   ax, word ptr es:[di + SECTOR_T.sec_floorheight]
 

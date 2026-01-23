@@ -1005,8 +1005,11 @@ mov   ax, SEGS_PHYSICS_SEGMENT
 mov   es, ax
 xor   di, di
 
-rep   movsw
-
+loop_next_seg_physics:
+lodsw
+SHIFT_MACRO sal ax 4
+stosw
+loop  loop_next_seg_physics
 
 push  ss
 pop   ds

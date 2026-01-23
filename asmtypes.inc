@@ -236,8 +236,8 @@ SUBSECTOR_T ENDS
 
 
 SEG_PHYSICS_T STRUC 
-    sp_frontsecnum           dw ? ; 0
-    sp_backsecnum            dw ? ; 2
+    sp_frontsecnum           dw ? ; 0   ; preshifted left 4
+    sp_backsecnum            dw ? ; 2   ; preshifted left 4
                                   ; 4
 SEG_PHYSICS_T ENDS
 
