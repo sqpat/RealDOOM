@@ -2112,6 +2112,9 @@ not   si  ; we want a negative result so neg the sign
 xor   ax, si ; apply sign
 sub   ax, si
 
+jnz   dont_zero_si  ; weird case where we try to take negative of zero and it was leaving FFFF sign bits...
+mov   si, ax
+dont_zero_si:  
 
 mov   word ptr ds:[_baseyscale], ax
 mov   word ptr ds:[_baseyscale + 2], si
