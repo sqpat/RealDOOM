@@ -3696,7 +3696,7 @@ xor       ax, ax
 mov       si, word ptr ds:[bx + SEG_RENDER_T.sr_sidedefOffset]  ; preshifted 2
 
 ; todo pull this out into outer func?
-mov       ax, word ptr ds:[si + _sides_render]
+mov       ax, word ptr ds:[si + _sides_render + SIDE_RENDER_T.sr_rowoffset]
 mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
 shl       si, 1
@@ -7375,9 +7375,7 @@ SHIFT_MACRO shl bx 2
 
 
     ; secnum field in this side_render_t
-mov   si, word ptr ds:[bx + _sides_render + 2]
-SHIFT_MACRO shl si 4
-
+mov   si, word ptr ds:[bx + _sides_render + SIDE_RENDER_T.sr_secnum]
 mov   word ptr ds:[_backsector], si
 
 

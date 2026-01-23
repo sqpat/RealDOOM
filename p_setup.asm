@@ -332,6 +332,7 @@ lodsw
 xchg   ax, dx ; dx stores textureoffset
 movsw   ; siderender_t rowoffset
 mov    ax, word ptr ds:[si + (MAPSIDEDEF_T.mapsidedef_sector - MAPSIDEDEF_T.mapsidedef_toptexture)]  ; + 24, read ahead..
+SHIFT_MACRO shl ax 4
 stosw   ; siderender_t secnum, done
 
 xchg   bx, di
@@ -661,6 +662,7 @@ push es
 mov  ax, SIDES_RENDER_9000_SEGMENT
 mov  es, ax
 mov  ax, word ptr es:[bx + SIDE_RENDER_T.sr_secnum]
+SHIFT_MACRO sar ax 4   ; todo propagate shifted 4
 pop  es
 jmp  store_secnum_0
 
@@ -671,6 +673,7 @@ push es
 mov  ax, SIDES_RENDER_9000_SEGMENT
 mov  es, ax
 mov  ax, word ptr es:[bx + SIDE_RENDER_T.sr_secnum]
+SHIFT_MACRO sar ax 4   ; todo propagate shifted 4
 pop  es
 jmp  store_secnum_1
 
@@ -963,6 +966,8 @@ mov    cx, SIDES_RENDER_9000_SEGMENT
 mov    es, cx
 
 mov    bp, word ptr es:[bp + SIDE_RENDER_T.sr_secnum]
+SHIFT_MACRO sar bp 4   ; todo propagate shifted 4
+
 xchg   ax, bp   ; ax gets sidesecnum value. bp gets ldefothersidenum
 
 test   dl, ML_TWOSIDED
@@ -1023,6 +1028,7 @@ calc_second_secnum:
 
 SHIFT_MACRO  shl bp 2
 mov    dx, word ptr es:[bp + SIDE_RENDER_T.sr_secnum]
+SHIFT_MACRO sar dx 4   ; todo propagate shifted 4
 
 
 jmp  got_second_secnum
@@ -1054,8 +1060,10 @@ mov    es, dx ; SEGS_RENDER_9000_SEGMENT
 mov    bx, word ptr es:[bx + SEG_RENDER_T.sr_sidedefOffset] ; size 4 per. preshifted 2
 
 mov    es, di ; SIDES_RENDER_9000_SEGMENT
-push   word ptr es:[bx + SIDE_RENDER_T.sr_secnum] ; get secnum  ; size 4 per
-pop    word ptr ds:[si - 4]                       ; write secnum
+mov    ax,   word ptr es:[bx + SIDE_RENDER_T.sr_secnum] ; get secnum  ; size 4 per
+SHIFT_MACRO sar ax 4   ; todo propagate shifted 4
+
+mov    word ptr ds:[si - 4], ax                       ; write secnum
 inc    si
 inc    si ; skip other param
 

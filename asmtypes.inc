@@ -204,7 +204,7 @@ SIDE_T ENDS
 
 SIDE_RENDER_T  STRUC 
     sr_rowoffset        dw ? ; 0
-    sr_secnum           dw ? ; 2
+    sr_secnum           dw ? ; 2    ; preshifted 4
                              ; 4
 SIDE_RENDER_T ENDS
 

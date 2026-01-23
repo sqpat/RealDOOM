@@ -1218,8 +1218,8 @@ SHIFT_MACRO shl ax 3
 
 
 
-mov   bx, ax
-mov   ax, word ptr ds:[bx + _masked_headers + 2]
+xchg  ax, bx
+mov   ax, word ptr ds:[bx + _masked_headers + MASKED_HEADER_T.mh_postofsoffset]
 mov   word ptr cs:[SELFMODIFY_MASKED_maskedpostofs_1  +3 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   word ptr cs:[SELFMODIFY_MASKED_maskedpostofs_2+3 - OFFSET R_MASK24_STARTMARKER_], ax
 
@@ -1287,8 +1287,6 @@ done_comparing_vertexes:
 mov   byte ptr cs:[SELFMODIFY_MASKED_add_vertex_field - OFFSET R_MASK24_STARTMARKER_], al
 
 
-SELFMODIFY_MASKED_siderender_02:
-mov   cx, 01000h		; get side_render secnum
 
 
 ; backsector = &sectors[sides_render[curlinelinedef->sidenum[curlineside ^ 1]].secnum]
@@ -1311,10 +1309,12 @@ SHIFT_MACRO shl bx 2
 
 
 
-mov   bx, word ptr ds:[bx + _sides_render + 2]   ; get backsecnum
+mov   bx, word ptr ds:[bx + _sides_render + SIDE_RENDER_T.sr_secnum]   ; get backsecnum
 
-SHIFT_MACRO shl bx 4
 
+
+SELFMODIFY_MASKED_siderender_02:
+mov   di, 01000h		; get side_render secnum
 
 
 
@@ -1322,9 +1322,8 @@ SHIFT_MACRO shl bx 4
 
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
-mov   di, cx        ; retrieve side_render secnum from above
 
-SHIFT_MACRO SHL di 4
+
 
 ;mov   word ptr ds:[_frontsector], bx
 
