@@ -1,4 +1,4 @@
-#define R_DrawMasked24Offset                    0x1481
+#define R_DrawMasked24Offset                    0x1480
 #define R_DrawMasked16Offset                    0x1495
 #define R_DrawMasked0Offset                     0x140E
 #define R_DrawMaskedFLOffset                    0x13F6
@@ -24,10 +24,10 @@
 #define R_DrawSkyColumnFLOffset                 0x0
 #define R_DrawSkyPlaneFLOffset                  0x294
 #define R_DrawSkyPlaneDynamicFLOffset           0x294
-#define R_WriteBackViewConstants24Offset        0x31D7
-#define R_RenderPlayerView24Offset              0x3066
-#define R_GetCompositeTexture24Offset           0x2D50
-#define R_GetPatchTexture24Offset               0x2CB5
+#define R_WriteBackViewConstants24Offset        0x31D4
+#define R_RenderPlayerView24Offset              0x3063
+#define R_GetCompositeTexture24Offset           0x2D4D
+#define R_GetPatchTexture24Offset               0x2CB2
 #define R_WriteBackViewConstants16Offset        0x3406
 #define R_RenderPlayerView16Offset              0x3289
 #define R_GetCompositeTexture16Offset           0x2F73
@@ -46,10 +46,10 @@
 #define F_ResponderOffset                       0xA42
 #define F_DrawerOffset                          0xA6C
 #define LoadSFXWadLumpsOffset                   0x4
-#define P_SetThingPositionFarOffset             0x299E
-#define P_SpawnMapThingOffset                   0x2B11
-#define P_SpawnSpecialsOffset                   0x7C55
-#define AM_DrawerOffset                         0x959C
+#define P_SetThingPositionFarOffset             0x29A4
+#define P_SpawnMapThingOffset                   0x2B17
+#define P_SpawnSpecialsOffset                   0x7C5F
+#define AM_DrawerOffset                         0x95A6
 #define S_StartSoundFarOffset                   0xB6AF
 #define S_StartOffset                           0xB78D
 #define M_InitOffset                            0x1186
@@ -65,7 +65,7 @@
 #define R_DrawSpan16CodeSize           0xF60
 #define R_DrawSpan0CodeSize            0x63A
 #define R_DrawSpanFLCodeSize           0x591
-#define R_DrawFuzzColumn24CodeSize     0x18D0
+#define R_DrawFuzzColumn24CodeSize     0x18CF
 #define R_DrawFuzzColumn16CodeSize     0x18E4
 #define R_DrawFuzzColumn0CodeSize      0x1850
 #define R_DrawFuzzColumnFLCodeSize     0x181A
@@ -76,7 +76,7 @@
 #define R_DrawSkyColumnCodeSize        0xD86
 #define R_DrawSkyColumnFLCodeSize      0x303
 #define M_MenuCodeSize                 0x1559
-#define R_BSP24CodeSize                0x3517
+#define R_BSP24CodeSize                0x3514
 #define R_BSP16CodeSize                0x3740
 #define R_BSP0CodeSize                 0x366F
 #define R_BSPFLCodeSize                0x3617
@@ -87,5 +87,5 @@
 #define SaveLoadCodeSize               0xBB7
 #define SMLoadCodeSize                 0x492
 #define SInitCodeSize                  0x55D
-#define PSetupCodeSize                 0xAA5
+#define PSetupCodeSize                 0xAA2
 #define MaximumMusDriverSize           0x100E

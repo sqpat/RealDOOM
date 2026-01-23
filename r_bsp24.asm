@@ -2598,8 +2598,6 @@ SHIFT_MACRO shl bx 2
 push word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS + SUBSECTOR_T.ss_firstline]   ; get subsec firstline
 
 mov   bx, word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS + SUBSECTOR_T.ss_secnum] ; get subsec secnum
-; todo should this sector be preshifted...
-SHIFT_MACRO shl bx 4
 mov   word ptr ds:[_frontsector], bx
 
 

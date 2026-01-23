@@ -1061,9 +1061,8 @@ mov    bx, word ptr es:[bx + SEG_RENDER_T.sr_sidedefOffset] ; size 4 per. preshi
 
 mov    es, di ; SIDES_RENDER_9000_SEGMENT
 mov    ax,   word ptr es:[bx + SIDE_RENDER_T.sr_secnum] ; get secnum  ; size 4 per
-SHIFT_MACRO sar ax 4   ; todo propagate shifted 4
 
-mov    word ptr ds:[si - 4], ax                       ; write secnum
+mov    word ptr ds:[si - 4], ax                       ; write ss_secnum shfited 4
 inc    si
 inc    si ; skip other param
 

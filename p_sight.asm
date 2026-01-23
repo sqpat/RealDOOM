@@ -639,7 +639,7 @@ SHIFT_MACRO shl bx 2
 xor   ah, ah
 mov   es, dx
 mov   word ptr [bp - 0Ah], ax
-mov   dx, word ptr es:[bx + 2]		; get segnum/firstline
+mov   dx, word ptr es:[bx + SUBSECTOR_T.ss_firstline]		; get segnum/firstline   ; todo move after test?
 test  ax, ax
 je    cross_subsector_return_1
 mov   ax, dx

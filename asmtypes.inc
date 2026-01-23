@@ -228,7 +228,7 @@ LINE_OPENING_T ENDS
 
 
 SUBSECTOR_T STRUC 
-    ss_secnum           dw ? ; 0
+    ss_secnum           dw ? ; 0 ; preshifted left 4
     ss_firstline        dw ? ; 2
                              ; 4
 SUBSECTOR_T ENDS

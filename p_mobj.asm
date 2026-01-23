@@ -2201,8 +2201,10 @@ mov   bx, ax
 SHIFT_MACRO shl   bx 2
 mov   ax, SUBSECTORS_SEGMENT
 mov   es, ax
-push  word ptr es:[bx]
-
+mov   ax, word ptr es:[bx + SUBSECTOR_T.ss_secnum]
+; todo make this work without shift
+SHIFT_MACRO sar ax 4
+push  ax
 
 IF COMPISA GE COMPILE_186
     push  MT_TFOG

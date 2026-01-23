@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/23 17:23:23
+Created on:       26/01/23 17:48:40
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -30,12 +30,12 @@ M_MENU_TEXT            CODE           AUTO           015e:0000       00001559
 F_WIPE_TEXT            CODE           AUTO           02b4:0000       000005fa
 F_FINALE_TEXT          CODE           AUTO           0314:0000       00000b97
 P_SAVEG_TEXT           CODE           AUTO           03ce:0000       00000bb7
-P_SETUP_TEXT           CODE           AUTO           048a:0000       00000aa5
+P_SETUP_TEXT           CODE           AUTO           048a:0000       00000aa2
 SM_OPL2_TEXT           CODE           AUTO           0535:0000       00000f3c
 SM_OPL3_TEXT           CODE           AUTO           0629:0000       0000100e
 SM_SBMID_TEXT          CODE           AUTO           072a:0000       00000730
 SM_MPUMD_TEXT          CODE           AUTO           079d:0000       000007db
-R_BSP_24_TEXT          CODE           AUTO           081b:0000       00003517
+R_BSP_24_TEXT          CODE           AUTO           081b:0000       00003514
 R_BSP_16_TEXT          CODE           AUTO           0b6d:0000       00003740
 R_BSP0_TEXT            CODE           AUTO           0ee1:0000       0000366f
 R_BSPFL_TEXT           CODE           AUTO           1248:0000       00003617
@@ -49,28 +49,28 @@ R_SPAN0_TEXT           CODE           AUTO           1a1d:0000       0000063a
 R_SPANFL_TEXT          CODE           AUTO           1a81:0000       00000591
 R_SKY_TEXT             CODE           AUTO           1adb:0000       00000d86
 R_SKYFL_TEXT           CODE           AUTO           1bb4:0000       00000303
-R_MASK24_TEXT          CODE           AUTO           1be5:0000       000019bb
+R_MASK24_TEXT          CODE           AUTO           1be5:0000       000019ba
 R_MASK16_TEXT          CODE           AUTO           1d81:0000       000019cf
 R_MASK0_TEXT           CODE           AUTO           1f1e:0000       0000193b
 R_MASKFL_TEXT          CODE           AUTO           20b2:0000       00001905
 P_SIGHT_TEXT           CODE           AUTO           2243:0000       000006de
-P_MAP_TEXT             CODE           AUTO           2243:06de       000022c4
-P_MOBJ_TEXT            CODE           AUTO           2243:29a2       00000f37
-P_PSPR_TEXT            CODE           AUTO           2243:38da       000007e8
-P_ENEMY_TEXT           CODE           AUTO           2243:40c2       00001a09
-P_CEILNG_TEXT          CODE           AUTO           2243:5acc       00000285
-P_DOORS_TEXT           CODE           AUTO           2243:5d52       000003c3
-P_FLOOR_TEXT           CODE           AUTO           2243:6116       000004a5
-P_INTER_TEXT           CODE           AUTO           2243:65bc       00000877
-P_LIGHTS_TEXT          CODE           AUTO           2243:6e34       00000294
-P_PLATS_TEXT           CODE           AUTO           2243:70c8       0000027e
-P_SPEC_TEXT            CODE           AUTO           2243:7346       0000099b
-P_SWITCH_TEXT          CODE           AUTO           2243:7ce2       000003ba
-P_TELEPT_TEXT          CODE           AUTO           2243:809c       0000017c
-P_TICK_TEXT            CODE           AUTO           2243:8218       00000210
-P_USER_TEXT            CODE           AUTO           2243:8428       00000431
-P_INFO_TEXT            CODE           AUTO           2243:885a       00000320
-AM_MAP_TEXT            CODE           AUTO           2243:8b7a       00000b2b
+P_MAP_TEXT             CODE           AUTO           2243:06de       000022ca
+P_MOBJ_TEXT            CODE           AUTO           2243:29a8       00000f3b
+P_PSPR_TEXT            CODE           AUTO           2243:38e4       000007e8
+P_ENEMY_TEXT           CODE           AUTO           2243:40cc       00001a09
+P_CEILNG_TEXT          CODE           AUTO           2243:5ad6       00000285
+P_DOORS_TEXT           CODE           AUTO           2243:5d5c       000003c3
+P_FLOOR_TEXT           CODE           AUTO           2243:6120       000004a5
+P_INTER_TEXT           CODE           AUTO           2243:65c6       00000877
+P_LIGHTS_TEXT          CODE           AUTO           2243:6e3e       00000294
+P_PLATS_TEXT           CODE           AUTO           2243:70d2       0000027e
+P_SPEC_TEXT            CODE           AUTO           2243:7350       0000099b
+P_SWITCH_TEXT          CODE           AUTO           2243:7cec       000003ba
+P_TELEPT_TEXT          CODE           AUTO           2243:80a6       0000017c
+P_TICK_TEXT            CODE           AUTO           2243:8222       00000210
+P_USER_TEXT            CODE           AUTO           2243:8432       00000431
+P_INFO_TEXT            CODE           AUTO           2243:8864       00000320
+AM_MAP_TEXT            CODE           AUTO           2243:8b84       00000b2b
 P_MATH_TEXT            CODE           AUTO           2243:96b0       000007b0
 HU_SETUP_TEXT          CODE           AUTO           2243:9e60       00000247
 HU_LIB_TEXT            CODE           AUTO           2243:a0a8       0000014a
@@ -289,16 +289,16 @@ Module: p_setup.obj(p_setup.ASM)
 048a:0213*     P_LoadLineDefs_
 048a:04be*     P_GroupLines_
 048a:036e*     P_LoadNodes_
-048a:0724*     Z_FreeConventionalAllocations_
-048a:0616*     P_LoadThings_
-048a:0aa5      P_SETUP_ENDMARKER_
+048a:0721*     Z_FreeConventionalAllocations_
+048a:0613*     P_LoadThings_
+048a:0aa2      P_SETUP_ENDMARKER_
 048a:001d*     P_LoadSectors_
-048a:06d2*     R_LoadPatchColumnsColormap0_
+048a:06cf*     R_LoadPatchColumnsColormap0_
 048a:0000      P_SETUP_STARTMARKER_
 048a:03cd*     P_LoadSegs_
 048a:0000*     P_LoadVertexes_
 048a:031b*     P_LoadSubsectors_
-048a:086a      P_SetupLevel_
+048a:0867      P_SetupLevel_
 048a:01d3*     P_LoadBlockMap_
 048a:0115*     P_LoadSideDefs_
 Module: sm_opl2.obj(sm_opl2.ASM)
@@ -340,18 +340,18 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079d:0000      SM_MPUMD_STARTMARKER_
 079d:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-081b:31d7      R_WriteBackViewConstants24_
-081b:1f4b*     R_AddLine_
-081b:3517      R_BSP24_ENDMARKER_
-081b:2cb5      R_GetPatchTexture_Far24_
-081b:0e7c*     R_StoreWallRange_
+081b:31d4      R_WriteBackViewConstants24_
+081b:1f48*     R_AddLine_
+081b:3514      R_BSP24_ENDMARKER_
+081b:2cb2      R_GetPatchTexture_Far24_
+081b:0e79*     R_StoreWallRange_
 081b:0000      R_BSP24_STARTMARKER_
-081b:3066      R_RenderPlayerView24_
+081b:3063      R_RenderPlayerView24_
 081b:0707*     FixedDivBSPLocal_
 081b:02e9*     div48_32_BSPLocal_
-081b:337c*     R_WriteBackFrameConstants_
+081b:3379*     R_WriteBackFrameConstants_
 081b:0413*     FixedDivWholeA_BSPLocal_
-081b:2d50      R_GetCompositeTexture_Far24_
+081b:2d4d      R_GetCompositeTexture_Far24_
 Module: r_bsp16.obj(r_bsp16.ASM)
 0b6d:3289      R_RenderPlayerView16_
 0b6d:0000      R_BSP16_STARTMARKER_
@@ -437,10 +437,10 @@ Module: r_skyfl.obj(r_skyfl.ASM)
 1bb4:0000      R_SKYFL_STARTMARKER_
 1bb4:0294      R_DrawSkyPlaneFL_
 Module: r_mask24.obj(r_mask24.ASM)
-1be5:18d0      R_WriteBackViewConstantsMasked24_
-1be5:195d      R_WriteBackMaskedFrameConstants24_
-1be5:1481      R_DrawMasked24_
-1be5:19bb      R_MASK24_ENDMARKER_
+1be5:18cf      R_WriteBackViewConstantsMasked24_
+1be5:195c      R_WriteBackMaskedFrameConstants24_
+1be5:1480      R_DrawMasked24_
+1be5:19ba      R_MASK24_ENDMARKER_
 1be5:0000      R_MASK24_STARTMARKER_
 Module: r_mask16.obj(r_mask16.ASM)
 1d81:19cf      R_MASK16_ENDMARKER_
@@ -471,282 +471,282 @@ Module: p_sight.obj(p_sight.ASM)
 2243:03d4*     P_CrossSubsector_
 Module: p_map.obj(p_map.ASM)
 2243:0b41      P_SetThingPosition_
-2243:0c1f      R_PointInSubsector_
+2243:0c22      R_PointInSubsector_
 2243:06de*     P_MAP_STARTMARKER_
-2243:23ec      P_AimLineAttack_
-2243:189c      P_CheckPosition_
-2243:277c      P_RadiusAttack_
-2243:2541      P_LineAttack_
+2243:23f2      P_AimLineAttack_
+2243:189f      P_CheckPosition_
+2243:2782      P_RadiusAttack_
+2243:2547      P_LineAttack_
 2243:0a41      P_LineOpening_
-2243:299e      P_SetThingPositionFar_
+2243:29a4      P_SetThingPositionFar_
 2243:0a75      P_UnsetThingPosition_
 2243:0779      P_AproxDistance_
-2243:2676      P_UseLines_
-2243:22dc      P_TeleportMove_
-2243:1a57      P_SlideMove_
-2243:0cc9      P_BlockThingsIterator_
-2243:29a2*     P_MAP_ENDMARKER_
-2243:12a7      P_TryMove_
-2243:2976      P_ChangeSector_
+2243:267c      P_UseLines_
+2243:22e2      P_TeleportMove_
+2243:1a5d      P_SlideMove_
+2243:0ccc      P_BlockThingsIterator_
+2243:29a8*     P_MAP_ENDMARKER_
+2243:12aa      P_TryMove_
+2243:297c      P_ChangeSector_
 Module: p_mobj.obj(p_mobj.ASM)
-2243:2d25      P_SpawnMobj_
-2243:37a0      P_SpawnPlayerMissile_
-2243:35ae*     P_CheckMissileSpawn_
-2243:3462*     P_NightmareRespawn_
-2243:2b11      P_SpawnMapThing_
-2243:38d5      P_RemoveMobjFar_
-2243:2e62      P_RemoveMobj_
-2243:2a14*     P_SpawnPlayer_
-2243:3406*     P_ExplodeMissile_
-2243:29a2      P_SpawnPuff_
-2243:29a2*     P_MOBJ_STARTMARKER_
-2243:2c45      P_MobjThinker_
-2243:318f*     P_ZMovement_
-2243:362f      P_SpawnMissile_
-2243:38d9*     P_MOBJ_ENDMARKER_
-2243:2e84*     P_XYMovement_
+2243:2d2b      P_SpawnMobj_
+2243:37aa      P_SpawnPlayerMissile_
+2243:35b8*     P_CheckMissileSpawn_
+2243:3468*     P_NightmareRespawn_
+2243:2b17      P_SpawnMapThing_
+2243:38df      P_RemoveMobjFar_
+2243:2e68      P_RemoveMobj_
+2243:2a1a*     P_SpawnPlayer_
+2243:340c*     P_ExplodeMissile_
+2243:29a8      P_SpawnPuff_
+2243:29a8*     P_MOBJ_STARTMARKER_
+2243:2c4b      P_MobjThinker_
+2243:3195*     P_ZMovement_
+2243:3639      P_SpawnMissile_
+2243:38e3*     P_MOBJ_ENDMARKER_
+2243:2e8a*     P_XYMovement_
 Module: p_pspr.obj(p_pspr.ASM)
-2243:3b1f*     A_Lower_
-2243:3ba4*     A_Punch_
-2243:3f2b*     A_Light2_
-2243:3f25*     A_Light1_
-2243:3a0d*     P_FireWeapon_
-2243:3b55*     A_Raise_
-2243:3b89*     A_GunFlash_
-2243:4063*     P_SetPsprite_
-2243:3f1f*     A_Light0_
-2243:3c33*     A_Saw_
-2243:3f31*     A_OpenShotgun2_
-2243:391a*     P_CheckAmmo_
-2243:3e17*     A_FirePistol_
-2243:3af9*     A_ReFire_
-2243:3f48      A_BFGSpray_
-2243:3d2a*     A_FireMissile_
-2243:3d35*     A_FireBFG_
-2243:3d41*     A_FirePlasma_
-2243:3fe2      P_MovePsprites_
-2243:40c2*     P_PSPR_ENDMARKER_
-2243:3dc7*     P_GunShot_
-2243:3fdc*     A_BFGsound_
-2243:3a48*     A_WeaponReady_
-2243:391a*     A_CheckReload_
-2243:3e43*     A_FireShotgun_
-2243:3d5c*     P_BulletSlope_
-2243:3f37*     A_LoadShotgun2_
-2243:3e71*     A_FireShotgun2_
-2243:38da*     P_PSPR_STARTMARKER_
-2243:3ee5*     A_FireCGun_
-2243:3a33      P_DropWeapon_
-2243:3f3d*     A_CloseShotgun2_
-2243:38da      P_BringUpWeapon_
+2243:3b29*     A_Lower_
+2243:3bae*     A_Punch_
+2243:3f35*     A_Light2_
+2243:3f2f*     A_Light1_
+2243:3a17*     P_FireWeapon_
+2243:3b5f*     A_Raise_
+2243:3b93*     A_GunFlash_
+2243:406d*     P_SetPsprite_
+2243:3f29*     A_Light0_
+2243:3c3d*     A_Saw_
+2243:3f3b*     A_OpenShotgun2_
+2243:3924*     P_CheckAmmo_
+2243:3e21*     A_FirePistol_
+2243:3b03*     A_ReFire_
+2243:3f52      A_BFGSpray_
+2243:3d34*     A_FireMissile_
+2243:3d3f*     A_FireBFG_
+2243:3d4b*     A_FirePlasma_
+2243:3fec      P_MovePsprites_
+2243:40cc*     P_PSPR_ENDMARKER_
+2243:3dd1*     P_GunShot_
+2243:3fe6*     A_BFGsound_
+2243:3a52*     A_WeaponReady_
+2243:3924*     A_CheckReload_
+2243:3e4d*     A_FireShotgun_
+2243:3d66*     P_BulletSlope_
+2243:3f41*     A_LoadShotgun2_
+2243:3e7b*     A_FireShotgun2_
+2243:38e4*     P_PSPR_STARTMARKER_
+2243:3eef*     A_FireCGun_
+2243:3a3d      P_DropWeapon_
+2243:3f47*     A_CloseShotgun2_
+2243:38e4      P_BringUpWeapon_
 Module: p_enemy.obj(p_enemy.ASM)
-2243:4bb7*     A_CyberAttack_
-2243:5577*     A_Explode_
-2243:528c*     A_FatRaise_
-2243:4197      P_NoiseAlert_
-2243:58b1*     A_SpawnFly_
-2243:4916*     A_PosAttack_
-2243:4747*     A_Chase_
-2243:4aea*     A_BspiAttack_
-2243:556f*     A_Fall_
-2243:420b*     P_CheckMissileRange_
-2243:570a*     A_BrainPain_
-2243:48a9*     A_FaceTarget_
-2243:4b46*     A_SargAttack_
-2243:519d*     GetVileMomz_
-2243:4dcf*     A_SkelWhoosh_
-2243:53ef*     A_PainDie_
-2243:5118*     A_VileTarget_
-2243:45af*     P_LookForPlayers_
-2243:580c*     A_BrainSpit_
-2243:5796*     A_BrainExplode_
-2243:42d9*     P_Move_
-2243:5077*     A_VileStart_
-2243:5084*     A_FireCrackle_
-2243:4de0*     A_SkelFist_
-2243:4efa*     A_VileChase_
-2243:541b*     A_PainShootSkull_
-2243:550d*     A_Scream_
-2243:40df*     P_RecursiveSound_
-2243:41ac*     P_CheckMeleeRange_
-2243:56a3*     A_Hoof_
-2243:5296*     A_FatAttack3_
-2243:5313*     A_FatAttack2_
-2243:58ac*     A_SpawnSound_
-2243:4c0d*     A_SkelMissile_
-2243:52f8*     A_FatAttack1_
-2243:56b5*     A_BabyMetal_
-2243:46b1*     A_Look_
-2243:5558*     A_XScream_
-2243:4bd0*     A_BruisAttack_
-2243:5a1e      P_SetMobjState_
-2243:56ac*     A_Metal_
-2243:4425*     P_TryWalk_
-2243:5712*     A_BrainScream_
-2243:4b77*     A_HeadAttack_
-2243:555e*     A_Pain_
-2243:4e18*     PIT_VileCheck_
-2243:55d3*     A_BossDeath_
-2243:51c9*     A_VileAttack_
-2243:5acb*     P_ENEMY_ENDMARKER_
-2243:5089*     A_Fire_
-2243:497e*     A_SPosAttack_
-2243:4aa4*     A_SpidRefire_
-2243:49f5*     A_CPosAttack_
-2243:4434*     P_NewChaseDir_
-2243:507d*     A_StartFire_
-2243:4c59*     A_Tracer_
-2243:532e*     A_SkullAttack_
-2243:40c2*     P_ENEMY_STARTMARKER_
-2243:4a5e*     A_CPosRefire_
-2243:4b02*     A_TroopAttack_
-2243:54f6*     A_PainAttack_
-2243:56be*     A_BrainAwake_
-2243:599b*     A_PlayerScream_
-2243:465c*     A_KeenDie_
+2243:4bc1*     A_CyberAttack_
+2243:5296*     A_FatRaise_
+2243:5581*     A_Explode_
+2243:41a1      P_NoiseAlert_
+2243:58bb*     A_SpawnFly_
+2243:4920*     A_PosAttack_
+2243:4751*     A_Chase_
+2243:4af4*     A_BspiAttack_
+2243:5579*     A_Fall_
+2243:5714*     A_BrainPain_
+2243:4215*     P_CheckMissileRange_
+2243:48b3*     A_FaceTarget_
+2243:4b50*     A_SargAttack_
+2243:51a7*     GetVileMomz_
+2243:4dd9*     A_SkelWhoosh_
+2243:53f9*     A_PainDie_
+2243:5122*     A_VileTarget_
+2243:45b9*     P_LookForPlayers_
+2243:5816*     A_BrainSpit_
+2243:57a0*     A_BrainExplode_
+2243:42e3*     P_Move_
+2243:5081*     A_VileStart_
+2243:508e*     A_FireCrackle_
+2243:4dea*     A_SkelFist_
+2243:4f04*     A_VileChase_
+2243:5425*     A_PainShootSkull_
+2243:5517*     A_Scream_
+2243:40e9*     P_RecursiveSound_
+2243:41b6*     P_CheckMeleeRange_
+2243:56ad*     A_Hoof_
+2243:52a0*     A_FatAttack3_
+2243:531d*     A_FatAttack2_
+2243:58b6*     A_SpawnSound_
+2243:4c17*     A_SkelMissile_
+2243:5302*     A_FatAttack1_
+2243:56bf*     A_BabyMetal_
+2243:46bb*     A_Look_
+2243:5562*     A_XScream_
+2243:4bda*     A_BruisAttack_
+2243:5a28      P_SetMobjState_
+2243:56b6*     A_Metal_
+2243:442f*     P_TryWalk_
+2243:571c*     A_BrainScream_
+2243:4b81*     A_HeadAttack_
+2243:5568*     A_Pain_
+2243:4e22*     PIT_VileCheck_
+2243:55dd*     A_BossDeath_
+2243:51d3*     A_VileAttack_
+2243:5ad5*     P_ENEMY_ENDMARKER_
+2243:5093*     A_Fire_
+2243:4988*     A_SPosAttack_
+2243:4aae*     A_SpidRefire_
+2243:49ff*     A_CPosAttack_
+2243:443e*     P_NewChaseDir_
+2243:5087*     A_StartFire_
+2243:4c63*     A_Tracer_
+2243:5338*     A_SkullAttack_
+2243:40cc*     P_ENEMY_STARTMARKER_
+2243:4a68*     A_CPosRefire_
+2243:4b0c*     A_TroopAttack_
+2243:5500*     A_PainAttack_
+2243:56c8*     A_BrainAwake_
+2243:59a5*     A_PlayerScream_
+2243:4666*     A_KeenDie_
 Module: p_ceilng.obj(p_ceilng.ASM)
-2243:5c8c      P_AddActiveCeiling_
-2243:5acc*     P_CEILNG_STARTMARKER_
-2243:5ca2*     P_RemoveActiveCeiling_
-2243:5d51*     P_CEILNG_ENDMARKER_
-2243:5d07      EV_CeilingCrushStop_
-2243:5b9e      EV_DoCeiling_
-2243:5cc5*     P_ActivateInStasisCeiling_
-2243:5acc      T_MoveCeiling_
+2243:5c96      P_AddActiveCeiling_
+2243:5ad6*     P_CEILNG_STARTMARKER_
+2243:5cac*     P_RemoveActiveCeiling_
+2243:5d5b*     P_CEILNG_ENDMARKER_
+2243:5d11      EV_CeilingCrushStop_
+2243:5ba8      EV_DoCeiling_
+2243:5ccf*     P_ActivateInStasisCeiling_
+2243:5ad6      T_MoveCeiling_
 Module: p_doors.obj(p_doors.ASM)
-2243:5e60      EV_DoLockedDoor_
-2243:6115*     P_DOORS_ENDMARKER_
-2243:60c9      P_SpawnDoorRaiseIn5Mins_
-2243:5d52*     P_DOORS_STARTMARKER_
-2243:6092      P_SpawnDoorCloseIn30_
-2243:5d52      T_VerticalDoor_
-2243:5ea1      EV_DoDoor_
-2243:5f68      EV_VerticalDoor_
+2243:5e6a      EV_DoLockedDoor_
+2243:611f*     P_DOORS_ENDMARKER_
+2243:60d3      P_SpawnDoorRaiseIn5Mins_
+2243:5d5c*     P_DOORS_STARTMARKER_
+2243:609c      P_SpawnDoorCloseIn30_
+2243:5d5c      T_VerticalDoor_
+2243:5eab      EV_DoDoor_
+2243:5f72      EV_VerticalDoor_
 Module: p_floor.obj(p_floor.ASM)
-2243:6490      EV_BuildStairs_
-2243:6278      EV_DoFloor_
-2243:65bb*     P_FLOOR_ENDMARKER_
-2243:614c      T_MovePlaneFloorDown_
-2243:6116*     P_FLOOR_STARTMARKER_
-2243:61ba      T_MovePlaneFloorUp_
-2243:61ee      T_MoveFloor_
-2243:6116      T_MovePlaneCeilingDown_
-2243:6130      T_MovePlaneCeilingUp_
+2243:649a      EV_BuildStairs_
+2243:6282      EV_DoFloor_
+2243:65c5*     P_FLOOR_ENDMARKER_
+2243:6156      T_MovePlaneFloorDown_
+2243:6120*     P_FLOOR_STARTMARKER_
+2243:61c4      T_MovePlaneFloorUp_
+2243:61f8      T_MoveFloor_
+2243:6120      T_MovePlaneCeilingDown_
+2243:613a      T_MovePlaneCeilingUp_
 Module: p_inter.obj(p_inter.ASM)
-2243:67b7      P_TouchSpecialThing_
-2243:6680*     P_GiveWeapon_
-2243:66fc*     P_GiveCard_
-2243:6ba5      P_DamageMobj_
-2243:66bd*     P_GiveBody_
-2243:66df*     P_GiveArmor_
-2243:65bc*     P_INTER_STARTMARKER_
-2243:69e2*     P_KillMobj_
-2243:65cc*     P_GiveAmmo_
-2243:670d      P_GivePower_
-2243:6b42*     getMassThrust_
-2243:6e33*     P_INTER_ENDMARKER_
+2243:67c1      P_TouchSpecialThing_
+2243:668a*     P_GiveWeapon_
+2243:6706*     P_GiveCard_
+2243:6baf      P_DamageMobj_
+2243:66c7*     P_GiveBody_
+2243:66e9*     P_GiveArmor_
+2243:65c6*     P_INTER_STARTMARKER_
+2243:69ec*     P_KillMobj_
+2243:65d6*     P_GiveAmmo_
+2243:6717      P_GivePower_
+2243:6b4c*     getMassThrust_
+2243:6e3d*     P_INTER_ENDMARKER_
 Module: p_lights.obj(p_lights.ASM)
-2243:709a      P_SpawnGlowingLight_
-2243:6f8e      EV_StartLightStrobing_
-2243:6e9f      T_LightFlash_
-2243:6fb9      EV_LightChange_
-2243:705f      T_Glow_
-2243:70c8*     P_LIGHTS_ENDMARKER_
-2243:6f46      P_SpawnStrobeFlash_
-2243:6e6f      P_SpawnFireFlicker_
-2243:6edb      P_SpawnLightFlash_
-2243:6e34*     P_LIGHTS_STARTMARKER_
-2243:6f12      T_StrobeFlash_
-2243:6e34      T_FireFlicker_
+2243:70a4      P_SpawnGlowingLight_
+2243:6f98      EV_StartLightStrobing_
+2243:6ea9      T_LightFlash_
+2243:6fc3      EV_LightChange_
+2243:7069      T_Glow_
+2243:70d2*     P_LIGHTS_ENDMARKER_
+2243:6f50      P_SpawnStrobeFlash_
+2243:6e79      P_SpawnFireFlicker_
+2243:6ee5      P_SpawnLightFlash_
+2243:6e3e*     P_LIGHTS_STARTMARKER_
+2243:6f1c      T_StrobeFlash_
+2243:6e3e      T_FireFlicker_
 Module: p_plats.obj(p_plats.ASM)
-2243:717a      EV_DoPlat_
-2243:70c8      T_PlatRaise_
-2243:72fe      P_AddActivePlat_
-2243:7346*     P_PLATS_ENDMARKER_
-2243:7316*     P_RemoveActivePlat_
-2243:72b4      EV_PlatFunc_
-2243:70c8*     P_PLATS_STARTMARKER_
+2243:7184      EV_DoPlat_
+2243:70d2      T_PlatRaise_
+2243:7308      P_AddActivePlat_
+2243:7350*     P_PLATS_ENDMARKER_
+2243:7320*     P_RemoveActivePlat_
+2243:72be      EV_PlatFunc_
+2243:70d2*     P_PLATS_STARTMARKER_
 Module: p_spec.obj(p_spec.ASM)
-2243:79be      P_UpdateSpecials_
-2243:73ff      P_FindNextHighestFloor_
-2243:78f6      P_PlayerInSpecialSector_
-2243:7ce1*     P_SPEC_ENDMARKER_
-2243:739c      P_FindHighestOrLowestFloorSurrounding_
-2243:7346*     P_SPEC_STARTMARKER_
-2243:7aef      EV_DoDonut_
-2243:745c      P_FindLowestOrHighestCeilingSurrounding_
-2243:74f8      P_FindMinSurroundingLight_
-2243:7346*     getNextSectorList_
-2243:74c1      P_FindSectorsFromLineTag_
-2243:7672      P_CrossSpecialLine_
-2243:7869      P_ShootSpecialLine_
-2243:7c55      P_SpawnSpecials_
+2243:79c8      P_UpdateSpecials_
+2243:7409      P_FindNextHighestFloor_
+2243:7900      P_PlayerInSpecialSector_
+2243:7ceb*     P_SPEC_ENDMARKER_
+2243:73a6      P_FindHighestOrLowestFloorSurrounding_
+2243:7350*     P_SPEC_STARTMARKER_
+2243:7af9      EV_DoDonut_
+2243:7466      P_FindLowestOrHighestCeilingSurrounding_
+2243:7502      P_FindMinSurroundingLight_
+2243:7350*     getNextSectorList_
+2243:74cb      P_FindSectorsFromLineTag_
+2243:767c      P_CrossSpecialLine_
+2243:7873      P_ShootSpecialLine_
+2243:7c5f      P_SpawnSpecials_
 Module: p_switch.obj(p_switch.ASM)
-2243:809c*     P_SWITCH_ENDMARKER_
-2243:7ce2*     P_SWITCH_STARTMARKER_
-2243:7ce2      P_ChangeSwitchTexture_
-2243:7eda      P_UseSpecialLine_
+2243:80a6*     P_SWITCH_ENDMARKER_
+2243:7cec*     P_SWITCH_STARTMARKER_
+2243:7cec      P_ChangeSwitchTexture_
+2243:7ee4      P_UseSpecialLine_
 Module: p_telept.obj(p_telept.ASM)
-2243:8218*     P_TELEPT_ENDMARKER_
-2243:809c*     P_TELEPT_STARTMARKER_
-2243:809c      EV_Teleport_
+2243:8222*     P_TELEPT_ENDMARKER_
+2243:80a6*     P_TELEPT_STARTMARKER_
+2243:80a6      EV_Teleport_
 Module: p_tick.obj(p_tick.ASM)
-2243:82bf      P_UpdateThinkerFunc_
-2243:8418      P_Random_
-2243:8218*     P_TICK_STARTMARKER_
-2243:8229      P_CreateThinkerFar_
-2243:8428*     P_TICK_ENDMARKER_
-2243:82e1      P_RemoveThinker_
-2243:8314      P_Ticker_
-2243:822d      P_CreateThinker_
+2243:82c9      P_UpdateThinkerFunc_
+2243:8422      P_Random_
+2243:8222*     P_TICK_STARTMARKER_
+2243:8233      P_CreateThinkerFar_
+2243:8432*     P_TICK_ENDMARKER_
+2243:82eb      P_RemoveThinker_
+2243:831e      P_Ticker_
+2243:8237      P_CreateThinker_
 Module: p_user.obj(p_user.ASM)
-2243:8859*     P_USER_ENDMARKER_
-2243:8429*     P_Thrust_
-2243:8467*     P_CalcHeight_
-2243:8614*     P_DeathThink_
-2243:8429*     P_USER_STARTMARKER_
-2243:8590*     P_MovePlayer_
-2243:870a      P_PlayerThink_
+2243:8863*     P_USER_ENDMARKER_
+2243:8433*     P_Thrust_
+2243:8471*     P_CalcHeight_
+2243:861e*     P_DeathThink_
+2243:8433*     P_USER_STARTMARKER_
+2243:859a*     P_MovePlayer_
+2243:8714      P_PlayerThink_
 Module: p_info.obj(p_info.ASM)
-2243:8a82      GetPainChance_
-2243:8b11      GetAttackSound_
-2243:8afd      GetDeathState_
-2243:8ade      GetSeeState_
-2243:8a43      GetXDeathState_
-2243:8ac2      GetActiveSound_
-2243:8ad4      GetPainSound_
-2243:8b07      GetPainState_
-2243:8a94      GetRaiseState_
-2243:8af3      GetMissileState_
-2243:8a65      GetMeleeState_
-2243:8b3f      GetDamage_
-2243:8b7a*     P_INFO_ENDMARKER_
-2243:8a9f      GetMobjMass_
-2243:8b6b      GetSpawnHealth_
-2243:885a*     P_INFO_STARTMARKER_
+2243:8a8c      GetPainChance_
+2243:8b1b      GetAttackSound_
+2243:8b07      GetDeathState_
+2243:8ae8      GetSeeState_
+2243:8a4d      GetXDeathState_
+2243:8acc      GetActiveSound_
+2243:8ade      GetPainSound_
+2243:8b11      GetPainState_
+2243:8a9e      GetRaiseState_
+2243:8afd      GetMissileState_
+2243:8a6f      GetMeleeState_
+2243:8b49      GetDamage_
+2243:8b84*     P_INFO_ENDMARKER_
+2243:8aa9      GetMobjMass_
+2243:8b75      GetSpawnHealth_
+2243:8864*     P_INFO_STARTMARKER_
 Module: am_map.obj(am_map.ASM)
-2243:8edc*     AM_clearMarks_
-2243:8db7*     AM_findMinMaxBoundaries_
-2243:8e37*     AM_changeWindowLoc_
-2243:8ef3*     AM_Start_
-2243:8b7a*     AM_MAP_STARTMARKER_
-2243:8fd1*     AM_minOutWindowScale_
-2243:8cc4*     AM_activateNewScale_
-2243:914e      AM_Ticker_
-2243:94d1*     AM_drawLineCharacter_
-2243:924d*     AM_drawMline_
-2243:948d*     AM_rotate_
-2243:8c7e*     FastMulTrig16_
-2243:8caf*     CYMTOF16_
-2243:8c9f*     CXMTOF16_
-2243:8d19*     AM_restoreScaleAndLoc_
-2243:959c      AM_Drawer_
-2243:8d82*     AM_addMark_
-2243:96a5*     AM_MAP_ENDMARKER_
-2243:9526*     AM_drawPlayers_
-2243:8ff4      AM_Responder_
-2243:93ab*     AM_drawWalls_
-2243:922b*     DOOUTCODE_
+2243:8ee6*     AM_clearMarks_
+2243:8dc1*     AM_findMinMaxBoundaries_
+2243:8e41*     AM_changeWindowLoc_
+2243:8efd*     AM_Start_
+2243:8b84*     AM_MAP_STARTMARKER_
+2243:8fdb*     AM_minOutWindowScale_
+2243:8cce*     AM_activateNewScale_
+2243:9158      AM_Ticker_
+2243:94db*     AM_drawLineCharacter_
+2243:9257*     AM_drawMline_
+2243:9497*     AM_rotate_
+2243:8c88*     FastMulTrig16_
+2243:8d23*     AM_restoreScaleAndLoc_
+2243:8cb9*     CYMTOF16_
+2243:8ca9*     CXMTOF16_
+2243:95a6      AM_Drawer_
+2243:8d8c*     AM_addMark_
+2243:96af*     AM_MAP_ENDMARKER_
+2243:9530*     AM_drawPlayers_
+2243:8ffe      AM_Responder_
+2243:93b5*     AM_drawWalls_
+2243:9235*     DOOUTCODE_
 Module: p_math.obj(p_math.ASM)
 2243:9e29      R_PointToAngle2_FAR_
 2243:98f7      FixedDiv_MapLocal_

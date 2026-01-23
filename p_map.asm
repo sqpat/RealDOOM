@@ -1404,6 +1404,8 @@ xchg  ax, bx
 mov   ax, SUBSECTORS_SEGMENT
 mov   es, ax
 mov   cx, word ptr es:[bx + SUBSECTOR_T.ss_secnum]
+; todo make this work without shifts
+SHIFT_MACRO sar cx 4
 mov   ax, MOBJPOSLIST_6800_SEGMENT
 mov   es, ax
 
@@ -4558,6 +4560,8 @@ mov   ax, SUBSECTORS_SEGMENT
 SHIFT_MACRO shl   bx 2
 mov   es, ax
 mov   ax, word ptr es:[bx + SUBSECTOR_T.ss_secnum]
+; todo make this work without shifts
+SHIFT_MACRO sar ax 4
 
 
 use_cached_secnum:
