@@ -91,7 +91,8 @@ _lastopening =                   	_NULL_OFFSET + 00052h
 _segloopprevlookup =                _NULL_OFFSET + 00054h
 _segloopcachedbasecol =             _NULL_OFFSET + 00058h
 _cachedsegmenttex =                 _NULL_OFFSET + 0005Ch
-	
+
+; keep these in order for selfmodify lodsw chain?	
 _basexscale = 						_NULL_OFFSET + 00060h
 _baseyscale = 						_NULL_OFFSET + 00064h
 _viewx = 							_NULL_OFFSET + 00068h

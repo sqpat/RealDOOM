@@ -2427,7 +2427,7 @@ PROC R_FindPlane_ NEAR
 ;push      si
 ;push      di
 
-xor       ax, ax  ; 13:19 fixed height...
+xor       ax, ax
 
 cmp       cl, byte ptr ds:[_skyflatnum]
 jne       not_skyflat
@@ -2435,30 +2435,30 @@ jne       not_skyflat
 ;		height = 0;			// all skys map together
 ;		lightlevel = 0;
 
-cwd
+cwd         ; ax already 0
 xor       ch, ch
 not_skyflat:
 
-; TODO make this work without this.
-SHIFT32_MACRO_RIGHT dx ax 3
 
 ; loop vars
 
 ; al = i
 ; ah = lastvisplane
 ; dx is height high precision
-; di is height low precision
+; di is unused now
 ; bx is .. checkheader
 ; cx is pic_and_light
 ; si is visplanepiclights[i] (used for visplanelights lookups)
 
 
 ; set up find visplane loop
-mov       di, ax              ; note: di is always zero now due to 13:3
+
+; di unused... 
+
 push      bx  ; push isceil
 
 ; init loop vars
-xor       ax, ax
+; ax already xored.
 mov       si, _visplanepiclights    ; initial offset
 mov       ah, byte ptr ds:[_lastvisplane]
 
@@ -2501,8 +2501,6 @@ ret
 ;		}
 
 check_for_visplane_match:
-cmp       di, word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height+0]     ; compare height low word
-jne       loop_iter_step_variables
 cmp       dx, word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height+2] ; compare height high word
 jne       loop_iter_step_variables
 cmp       cx, word ptr ds:[si] ; compare picandlight
@@ -2526,7 +2524,7 @@ cbw       ; no longer need lastvisplane, zero out ah
 
 
 ; set up new visplaneheader
-mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height+0], di
+; mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height+0], di
 mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height+2], dx
 mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_minx], SCREENWIDTH
 mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_maxx], 0FFFFh
@@ -2803,13 +2801,13 @@ ret
 
 
 check_plane_is_floor:
-;dec       cx
+
 les       bx, dword ptr ds:[_floortop]
 jmp       loaded_floor_or_ceiling
 start_greater_than_min:
 mov       ax, word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_minx]
 
-;mov       dx, si                ; put start into intrl (dx was already si)
+
 mov       word ptr cs:[SELFMODIFY_setminx+3 - OFFSET R_BSP24_STARTMARKER_], ax
 jmp       checked_start
 stop_smaller_than_max:
@@ -2825,7 +2823,7 @@ sal       bx, 1   ; bx is 2 per index
 ; dx/ax is plheader->height
 ; done with old plheader..
 ; es is in use..
-mov       ax, word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_height+0]
+
 mov       dx, word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_height+2]
 
 ;	visplanepiclights[lastvisplane].pic_and_light = visplanepiclights[index].pic_and_light;
@@ -2840,7 +2838,7 @@ SHIFT_MACRO sal bx 2
 ; now bx is 8 per
 add       bx, _visplaneheaders
 ; set all plheader fields for lastvisplane...
-mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height+0], ax
+;mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height+0], ax
 mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height+2], dx
 mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_minx], si ; looks weird
 mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_maxx], cx  ; looks weird

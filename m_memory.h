@@ -777,6 +777,7 @@ rejectmatrix       5C00:0000
 #define size_distscale         (sizeof(fixed_t) * SCREENWIDTH)
 
 // start plane only
+// TODO: cachedheight is sizeof int16_t now
 #define cachedheight          ((fixed_t __far*)        MAKE_FULL_SEGMENT(0x50000000, 0))
 #define yslope                ((fixed_t __far*)        MAKE_FULL_SEGMENT(cachedheight, size_cachedheight))
 #define cacheddistance        ((fixed_t __far*)        MAKE_FULL_SEGMENT(yslope, size_yslope))

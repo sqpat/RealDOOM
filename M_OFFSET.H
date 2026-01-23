@@ -10,8 +10,8 @@
 #define R_WriteBackMaskedFrameConstants0Offset  0x8D
 #define R_WriteBackViewConstantsMaskedFLOffset  0x0
 #define R_WriteBackMaskedFrameConstantsFLOffset 0x8D
-#define R_DrawPlanes24Offset                    0xBCF
-#define R_WriteBackViewConstantsSpan24Offset    0x1054
+#define R_DrawPlanes24Offset                    0xBD1
+#define R_WriteBackViewConstantsSpan24Offset    0x104A
 #define R_DrawPlanes16Offset                    0x9E7
 #define R_WriteBackViewConstantsSpan16Offset    0xE6C
 #define R_DrawPlanes0Offset                     0x145
@@ -24,10 +24,10 @@
 #define R_DrawSkyColumnFLOffset                 0x0
 #define R_DrawSkyPlaneFLOffset                  0x294
 #define R_DrawSkyPlaneDynamicFLOffset           0x294
-#define R_WriteBackViewConstants24Offset        0x321F
-#define R_RenderPlayerView24Offset              0x30AE
-#define R_GetCompositeTexture24Offset           0x2D98
-#define R_GetPatchTexture24Offset               0x2CFD
+#define R_WriteBackViewConstants24Offset        0x3205
+#define R_RenderPlayerView24Offset              0x3094
+#define R_GetCompositeTexture24Offset           0x2D7E
+#define R_GetPatchTexture24Offset               0x2CE3
 #define R_WriteBackViewConstants16Offset        0x3411
 #define R_RenderPlayerView16Offset              0x3294
 #define R_GetCompositeTexture16Offset           0x2F7E
@@ -61,7 +61,7 @@
 #define R_DrawColumn16CodeSize         0xCB4
 #define R_DrawColumn0CodeSize          0x58E
 #define R_DrawColumnFLCodeSize         0x58E
-#define R_DrawSpan24CodeSize           0x11A0
+#define R_DrawSpan24CodeSize           0x1196
 #define R_DrawSpan16CodeSize           0xF64
 #define R_DrawSpan0CodeSize            0x63E
 #define R_DrawSpanFLCodeSize           0x595
@@ -76,7 +76,7 @@
 #define R_DrawSkyColumnCodeSize        0xD86
 #define R_DrawSkyColumnFLCodeSize      0x303
 #define M_MenuCodeSize                 0x1559
-#define R_BSP24CodeSize                0x355F
+#define R_BSP24CodeSize                0x3545
 #define R_BSP16CodeSize                0x374B
 #define R_BSP0CodeSize                 0x367A
 #define R_BSPFLCodeSize                0x3622

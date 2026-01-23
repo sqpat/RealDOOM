@@ -769,16 +769,13 @@ mov  si, di
 ; si is x * 4
 mov   es, ds:[_cachedheight_segment_storage]
 
-mov   ax, word ptr [bp - 010h]
-mov   dx, word ptr [bp - 0Eh]
+
+mov   ax, word ptr [bp - 0Eh]
 ; TODO: do this shl outside of the function. borrow from es:di lookup's di
 shl   si, 1
 ; CACHEDHEIGHT LOOKUP
 
-cmp   ax, word ptr es:[si] ; compare low word
-jne   go_generate_values
-
-cmp   dx, word ptr es:[si+2]
+cmp   ax, word ptr es:[si]
 jne   go_generate_values	; comparing high word
 
 
@@ -803,11 +800,7 @@ xchg  ax, bx
 lods  word ptr es:[si]
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_hi_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
 
-
-sal   bx, 1
-rcl   ax, 1
-sal   bx, 1
-rcl   ax, 1
+SHIFT32_MACRO_LEFT ax bx 2
 
 
 SELFMODIFY_SPAN_detailshift_3:
@@ -991,11 +984,13 @@ ret
 generate_distance_steps:
 
 ; es = 5000h  (CACHEDHEIGHT_SEGMENT)
-; dx:ax = planeheight segment
+; ax = planeheight 
 ; note: es wrecked by function calls to r_fixedmullocal...
 
 mov   word ptr es:[si], ax
-mov   word ptr es:[si + 2], dx   ; cachedheight into dx
+xor   dx, dx
+SHIFT32_MACRO_RIGHT ax dx 3    ; TODO: mul 16 * 32 and then shift
+xchg  ax, dx   ; for the mul
 les   bx, dword ptr es:[si + 0 (( YSLOPE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
 mov   cx, es
 
@@ -1097,7 +1092,7 @@ PUBLIC R_DrawPlanes24_
 ; ARGS none
 
 ; STACK
-; bp - 10h planeheight lo
+
 ; bp - 0Eh planeheight hi
 ; bp - 0Ch ds_x2
 ; bp - 0Ah ds_x1
@@ -1114,13 +1109,13 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 10h
 xor   ax, ax
-mov   word ptr [bp - 8], ax
-mov   word ptr [bp - 6], FIRST_VISPLANE_PAGE_SEGMENT   ; todo make constant visplane segment
-mov   word ptr [bp - 4], ax
-mov   word ptr [bp - 2], ax
-
+push  ax        ; bp - 2
+push  ax        ; bp - 4
+mov   dx, FIRST_VISPLANE_PAGE_SEGMENT
+push  dx        ; bp - 6
+push  ax        ; bp - 8
+sub   sp, 6
 ; inline R_WriteBackSpanFrameConstants_
 ; get whole dword at the end here.
 
@@ -1147,9 +1142,10 @@ lodsw
 mov   word ptr cs:[SELFMODIFY_SPAN_viewy_hi_1+2 - OFFSET R_SPAN24_STARTMARKER_], ax
 
 lodsw
-mov   word ptr cs:[SELFMODIFY_SPAN_viewz_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
+xchg  ax, dx
 lodsw
-mov   word ptr cs:[SELFMODIFY_SPAN_viewz_hi_1+2 - OFFSET R_SPAN24_STARTMARKER_], ax
+SHIFT32_MACRO_LEFT ax dx 3
+mov   word ptr cs:[SELFMODIFY_SPAN_viewz_13_3_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
 
 mov   ax, word ptr ds:[_destview+0]
 mov   word ptr cs:[SELFMODIFY_SPAN_destview_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
@@ -1220,7 +1216,7 @@ mov       word ptr cs:[SELFMODIFY_SPAN_draw_skyplane_call + 2 - OFFSET R_SPAN24_
 drawplanes_loop:
 SELFMODIFY_SPAN_drawplaneiter:
 mov   ax, 0 ; get i value. this is at the start of the function so its hard to self modify. so we reset to 0 at the end of the function
-cmp   ax, word ptr ds:[_lastvisplane]
+cmp   ax, word ptr ds:[_lastvisplane]   ; todo self modify constant in drawplanes24
 jge   exit_drawplanes
 SHIFT_MACRO shl ax 3
 
@@ -1228,8 +1224,8 @@ SHIFT_MACRO shl ax 3
 add   ax, offset _visplaneheaders
 ; todo lea si bx + _visplaneheaders
 mov   si, ax
-mov   ax, word ptr ds:[si + 4]			; fetch visplane minx
-cmp   ax, word ptr ds:[si + 6]			; fetch visplane maxx
+mov   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_minx]			; fetch visplane minx
+cmp   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_maxx]			; fetch visplane maxx
 jnle   do_next_drawplanes_loop
 
 loop_visplane_page_check:
@@ -1477,29 +1473,25 @@ add   al, byte ptr [bp - 3]
 add   al, 070h
 
 mov   byte ptr ds:[_ds_source_offset+3], al            ; low byte always zero!
-les   ax, dword ptr ds:[si]
-mov   dx, es
-SELFMODIFY_SPAN_viewz_lo_1:
-sub   ax, 01000h
-SELFMODIFY_SPAN_viewz_hi_1:
-sbb   dx, 01000h
-or    dx, dx
 
 ; planeheight = labs(plheader->height - viewz.w);
 
-jge   planeheight_already_positive	; labs check
-neg   ax
-adc   dx, 0
-neg   dx
-planeheight_already_positive:
-mov   word ptr [bp - 010h], ax
-mov   word ptr [bp - 0Eh], dx
-mov   ax, word ptr ds:[si + 6]
+mov   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_height + 2]
+
+SELFMODIFY_SPAN_viewz_13_3_1:
+sub   ax, 01000h
+; ABS
+cwd
+xor   ax, dx
+sub   ax, dx   
+
+mov   word ptr [bp - 0Eh], ax
+mov   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_maxx]
 mov   di, ax
 les   bx, dword ptr [bp - 8]
 
 mov   byte ptr es:[bx + di + 3], 0ffh
-mov   si, word ptr ds:[si + 4]
+mov   si, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_minx]
 mov   byte ptr es:[bx + si + 1], 0ffh
 inc   ax
 
