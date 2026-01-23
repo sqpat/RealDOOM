@@ -1204,7 +1204,7 @@ jnb   check_next_visplane_page
 mov   bx, word ptr cs:[SELFMODIFY_SPAN_drawplaneiter+1 - OFFSET R_SPAN16_STARTMARKER_]
 
 add   bx, bx
-mov   cx, word ptr ds:[bx +  _visplanepiclights]
+;mov   cx, word ptr ds:[bx +  _visplanepiclights]
 SELFMODIFY_SPAN_skyflatnum:
 cmp   cl, 0
 je    do_sky_flat_draw

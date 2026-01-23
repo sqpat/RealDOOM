@@ -598,7 +598,7 @@ drawmaskedfuncarea_sprite?  86FD:0000
  maskedconstants_funcarea_segment 8B8A:0000
  render_8800_end_segment          8B99:0000 
 
-FREEBYTES 1648 free . move some here
+// not much free because clipbot_start_segment has stufff after a gap
  */
 
 
@@ -1295,7 +1295,6 @@ spritedefs_bytes    73BB:0000
 #define size_player_vissprites        (sizeof(vissprite_t) * 2)
 #define size_texturepatchlump_offset  (MAX_TEXTURES * sizeof(uint16_t))
 #define size_visplaneheaders          (sizeof(visplaneheader_t) * MAXEMSVISPLANES)
-#define size_visplanepiclights        (sizeof(visplanepiclight_t) * MAXEMSVISPLANES)
 #define size_fuzzoffset               ((FUZZTABLE + (FUZZ_LOOP_LENGTH - 1)) * sizeof(int16_t))
 #define size_scalelightfixed          (sizeof(uint8_t) * (MAXLIGHTSCALE))
 #define size_scalelight               (sizeof(uint8_t) * (LIGHTLEVELS * MAXLIGHTSCALE))
@@ -1320,12 +1319,13 @@ spritedefs_bytes    73BB:0000
 #define player_vissprites_far       ((vissprite_t __far*)        MAKE_FULL_SEGMENT(vissprites_far              , size_vissprites))
 #define texturepatchlump_offset_far ((uint16_t __far*)           MAKE_FULL_SEGMENT(player_vissprites_far       , size_player_vissprites))
 #define visplaneheaders_far         ((visplaneheader_t __far*)   MAKE_FULL_SEGMENT(texturepatchlump_offset_far , size_texturepatchlump_offset))
-#define visplanepiclights_far       ((visplanepiclight_t __far*) MAKE_FULL_SEGMENT(visplaneheaders_far         , size_visplaneheaders))
-#define scalelightfixed_far         ((uint8_t __far*)            MAKE_FULL_SEGMENT(visplanepiclights_far       , size_visplanepiclights))
+
+#define scalelightfixed_far         ((uint8_t __far*)            MAKE_FULL_SEGMENT(visplaneheaders_far         , size_visplaneheaders))
 #define scalelight_far              ((uint8_t __far*)            MAKE_FULL_SEGMENT(scalelightfixed_far         , size_scalelightfixed))
 #define patch_sizes_far             ((uint16_t __far*)           MAKE_FULL_SEGMENT(scalelight_far              , size_scalelight))
 
 // 4BfB - 4c00 free
+#define patch_sizes_end_far         ((int16_t __far*)            MAKE_FULL_SEGMENT(patch_sizes_far             , size_patch_sizes))
 
 #define viewangletox_far             ((int16_t __far*)            MAKE_FULL_SEGMENT(0x4C000000                  , 0))
 //#define viewangletox                ((int16_t __far*)            MAKE_FULL_SEGMENT(patch_sizes_far             , size_patch_sizes))
@@ -1350,10 +1350,13 @@ spritedefs_bytes    73BB:0000
 #define player_vissprites_segment         ((segment_t) ((int32_t)player_vissprites_far >> 16))
 #define texturepatchlump_offset_segment   ((segment_t) ((int32_t)texturepatchlump_offset_far >> 16))
 #define visplaneheaders_segment           ((segment_t) ((int32_t)visplaneheaders_far >> 16))
-#define visplanepiclights_segment         ((segment_t) ((int32_t)visplanepiclights_far >> 16))
 #define scalelightfixed_segment           ((segment_t) ((int32_t)scalelightfixed_far >> 16))
 #define scalelight_segment                ((segment_t) ((int32_t)scalelight_far >> 16))
 #define patch_sizes_segment               ((segment_t) ((int32_t)patch_sizes_far >> 16))
+#define patch_sizes_end_segment               ((segment_t) ((int32_t)patch_sizes_end_far >> 16))
+
+
+
 #define viewangletox_segment              ((segment_t) ((int32_t)viewangletox_far >> 16))
 #define states_render_segment             ((segment_t) ((int32_t)states_render_far >> 16))
 #define flatindex_segment                 ((segment_t) ((int32_t)flatindex >> 16))
@@ -1371,7 +1374,6 @@ spritedefs_bytes    73BB:0000
 #define player_vissprites       ((vissprite_t __near*)        ((player_vissprites_segment       - FIXED_DS_SEGMENT) << 4))
 #define texturepatchlump_offset ((uint16_t __near*)           ((texturepatchlump_offset_segment - FIXED_DS_SEGMENT) << 4))
 #define visplaneheaders         ((visplaneheader_t __near*)   ((visplaneheaders_segment         - FIXED_DS_SEGMENT) << 4))
-#define visplanepiclights       ((visplanepiclight_t __near*) ((visplanepiclights_segment       - FIXED_DS_SEGMENT) << 4))
 #define scalelightfixed         ((uint8_t __near*)            ((scalelightfixed_segment         - FIXED_DS_SEGMENT) << 4))
 #define scalelight              ((uint8_t __near*)            ((scalelight_segment              - FIXED_DS_SEGMENT) << 4))
 #define patch_sizes             ((uint16_t __near*)           ((patch_sizes_segment             - FIXED_DS_SEGMENT) << 4))
@@ -1404,24 +1406,24 @@ spritedefs_bytes    73BB:0000
 
 /*
 
-segs_render             4000:0000   2000
-seg_normalangles        4580:0000   7800
-sides_render            46E0:0000   8E00
-vissprites              4967:0000   B670
-player_vissprites       4AAA:0000   CAA0
-texturepatchlump_offset 4AAF:0000   CAF0
-visplaneheaders         4AE5:0000   CE50
-visplanepiclights       4B24:0000   D240
-scalelightfixed         4B3D:0000   D340
-scalelight              4B40:0000   D370
-patch_sizes             4B70:0000   D670
-viewangletox            4C00:0000   E000
+segs_render             4000:0000   1400
+seg_normalangles        4580:0000   6C00
+sides_render            46E0:0000   8200
+vissprites              4967:0000   AA70
+player_vissprites       4AAA:0000   BEA0
+texturepatchlump_offset 4AAF:0000   BEF0
+visplaneheaders         4AE5:0000   C250
+
+scalelightfixed         4B24:0000   C640
+scalelight              4B24:0000   C670
+patch_sizes             4B57:0000   C970
+viewangletox            4C00:0000   D400
 
 
 [near range over]       
 // todo move viewangletox to later. the other stuff can all fit below
-states_render           4E00:0000
-flatindex               4E79:0000
+states_render           4E00:0000   F400
+flatindex               4E79:0000   4E79
 spritepage              4E83:0000
 spriteoffset            4E83:0565
 texturecollength        4F30:0000

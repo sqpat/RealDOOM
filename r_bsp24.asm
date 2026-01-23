@@ -2459,7 +2459,7 @@ push      bx  ; push isceil
 
 ; init loop vars
 ; ax already xored.
-mov       si, _visplanepiclights    ; initial offset
+
 mov       ah, byte ptr ds:[_lastvisplane]
 
 cmp       ah, 0
@@ -2503,13 +2503,12 @@ ret
 check_for_visplane_match:
 cmp       dx, word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height] ; compare height high word
 jne       loop_iter_step_variables
-cmp       cx, word ptr ds:[si] ; compare picandlight
+cmp       cx, word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_piclight] ; compare picandlight
 je        break_loop
 
 loop_iter_step_variables:
 inc       al
-add       si, 2
-add       bx, 8
+add       bx, SIZE VISPLANEHEADER_T
 
 cmp       al, ah
 jle       next_loop_iteration
@@ -2524,15 +2523,11 @@ cbw       ; no longer need lastvisplane, zero out ah
 
 
 ; set up new visplaneheader
-; mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_UNSUED], di
+mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_piclight], cx 
 mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height], dx
 mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_minx], SCREENWIDTH
 mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_maxx], 0FFFFh
 
-;si already has  word lookup for piclights
-
-
-mov       word ptr ds:[si], cx 
 
 pop       dx  ; get isceil
 inc       word ptr ds:[_lastvisplane]
@@ -2818,30 +2813,25 @@ jmp       done_checking_max
 make_new_visplane:
 mov       bx, word ptr ds:[_lastvisplane] 
 mov       es, bx    ; store in es
-sal       bx, 1   ; bx is 2 per index
+SHIFT_MACRO shl bx 3
 
 ; dx/ax is plheader->height
 ; done with old plheader..
 ; es is in use..
 
+add       bx, _visplaneheaders
+
 mov       dx, word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_height]
+mov       di, word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_piclight]
 
 ;	visplanepiclights[lastvisplane].pic_and_light = visplanepiclights[index].pic_and_light;
 
-; generate index from di again. 
-sub       di, _visplaneheaders
-SHIFT_MACRO sar di 2
-mov       di, word ptr ds:[di + _visplanepiclights]
 
-mov       word ptr ds:[bx + _visplanepiclights], di
-SHIFT_MACRO sal bx 2
-; now bx is 8 per
-add       bx, _visplaneheaders
 ; set all plheader fields for lastvisplane...
-;mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_UNSUED], ax
+mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_piclight], di
 mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height], dx
-mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_minx], si ; looks weird
-mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_maxx], cx  ; looks weird
+mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_minx], si 
+mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_maxx], cx 
 
 
 

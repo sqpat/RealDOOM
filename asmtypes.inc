@@ -370,19 +370,21 @@ SPRITEDEF_T STRUC
 SPRITEDEF_T ENDS
 
 
-VISPLANEHEADER_T STRUC 
-    visplaneheader_UNSUED     dw ? ; 0    ; todo make this piclights soon
-    visplaneheader_height     dw ? ; 2
-    visplaneheader_minx       dw ? ; 4
-    visplaneheader_maxx       dw ? ; 6
 
-VISPLANEHEADER_T ENDS    ; 8
 
 VISPLANEPICLIGHT_T STRUC 
     visplanepiclight_picnum     db ?
     visplanepiclight_lightlevel db ?
 
 VISPLANEPICLIGHT_T ENDS
+
+VISPLANEHEADER_T STRUC 
+    visplaneheader_piclight   VISPLANEPICLIGHT_T ? ; 0   
+    visplaneheader_height     dw ?                 ; 2
+    visplaneheader_minx       dw ?                 ; 4
+    visplaneheader_maxx       dw ?                 ; 6
+
+VISPLANEHEADER_T ENDS    ; 8
 
 VISPLANE_T STRUC 
     vp_pad0     db ?                    ; 0

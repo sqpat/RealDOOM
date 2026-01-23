@@ -9,7 +9,7 @@
 #include "p_setup.h"
 
 #define CONSTANTS_COUNT 1016
-#define LOCALS_COUNT 30
+#define LOCALS_COUNT 29
 
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -161,10 +161,11 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "PLAYER_VISSPRITES_SEGMENT",
     "TEXTUREPATCHLUMP_OFFSET_SEGMENT",
     "VISPLANEHEADERS_SEGMENT",
-    "VISPLANEPICLIGHTS_SEGMENT",
+
     "SCALELIGHTFIXED_SEGMENT",
     "SCALELIGHT_SEGMENT",
     "PATCH_SIZES_SEGMENT",
+	"PATCH_SIZES_END_SEGMENT",
     "VIEWANGLETOX_SEGMENT",
     "FLATINDEX_SEGMENT",
 
@@ -1276,10 +1277,11 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     player_vissprites_segment,
     texturepatchlump_offset_segment,
     visplaneheaders_segment,
-    visplanepiclights_segment,
+
     scalelightfixed_segment,
     scalelight_segment,
     patch_sizes_segment,
+	patch_sizes_end_segment,
     viewangletox_segment,
     flatindex_segment,
 
@@ -2253,7 +2255,6 @@ char* LOCALS[LOCALS_COUNT] = {
     "_player_vissprites",
     "_texturepatchlump_offset",
     "_visplaneheaders",
-    "_visplanepiclights",
     "_scalelightfixed",
     "_scalelight",	// do not use i guess
     "_patch_sizes",
@@ -2300,7 +2301,6 @@ void __near* VALUES[LOCALS_COUNT] = {
 
     texturepatchlump_offset,
     visplaneheaders,
-    visplanepiclights,
     scalelightfixed,
 
     scalelight,

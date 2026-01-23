@@ -529,14 +529,6 @@ typedef struct {
 } spritedef_t;
 
 
-// 8 bytes... picnum and lightlevel pulled out to their own fields
-typedef struct {
-  fixed_t height;
-  int16_t minx;
-  int16_t maxx;
-   
-
-} visplaneheader_t;
 
 // 2 bytes
 typedef union visplanepiclight_s {
@@ -549,6 +541,15 @@ typedef union visplanepiclight_s {
 
 } visplanepiclight_t;
 
+// 8 bytes... picnum and lightlevel pulled out to their own fields
+typedef struct {
+  visplanepiclight_t piclight;
+  int16_t height;
+  int16_t minx;
+  int16_t maxx;
+   
+
+} visplaneheader_t;
 
 
 //

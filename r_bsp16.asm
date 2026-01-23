@@ -2704,7 +2704,7 @@ push      bx  ; push isceil
 
 ; init loop vars
 xor       ax, ax
-mov       si, _visplanepiclights    ; initial offset
+;mov       si, _visplanepiclights    ; initial offset
 mov       ah, byte ptr ds:[_lastvisplane]
 
 cmp       ah, 0
@@ -3388,9 +3388,9 @@ mov       dx, word ptr ds:[di + 2]
 ; generate index from di again. 
 sub       di, _visplaneheaders
 SHIFT_MACRO sar di 2
-mov       di, word ptr ds:[di + _visplanepiclights]
+;mov       di, word ptr ds:[di + _visplanepiclights]
 
-mov       word ptr ds:[bx + _visplanepiclights], di
+;mov       word ptr ds:[bx + _visplanepiclights], di
 SHIFT_MACRO sal bx 2
 ; now bx is 8 per
 
