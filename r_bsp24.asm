@@ -2564,268 +2564,6 @@ ENDP
 
 
 
-;R_AddLine_
-
-PROC   R_AddLine_ NEAR
-
-; ax = curlineNum
-
-; bp - 2       curlineside
-; bp - 4       curseglinedef
-; bp - 6     curlinesidedef ?
-; bp - 8       span   lo bits ?
-; bp - 0Ah     _rw_scale hi
-; bp - 0Ch    _rw_scale lo
-; bp - 0Eh       angle1 lo bits ?
-
-;todo reorder stack and do push
-push  ax
-push  cx
-push  bp
-mov   bp, sp
-
-mov   si, ax
-mov   dx, SEG_LINEDEFS_SEGMENT
-mov   es, dx
-mov   bx, ax
-shl   bx, 1
-mov   dl, byte ptr es:[si + SEG_SIDES_OFFSET_IN_SEGLINES]
-mov   si, bx
-SHIFT_MACRO shl bx 2
-add   bh, (_segs_render SHR 8)
-push  dx                    ; bp - 2
-push  word ptr es:[si]      ; bp - 4
-push  word ptr ds:[bx + 6]  ; bp - 6
-
-les   si, dword ptr ds:[bx]       ;v1
-mov   di, es                   ;v2
-mov   word ptr cs:[SELFMODIFY_get_curseg_2 + 1 - OFFSET R_BSP24_STARTMARKER_], ax
-sal   ax, 1
-mov   word ptr cs:[SELFMODIFY_get_curseg_1 + 1 - OFFSET R_BSP24_STARTMARKER_], ax ; preshift
-mov   ax, VERTEXES_SEGMENT
-mov   es, ax
-SHIFT_MACRO shl si 2
-SHIFT_MACRO shl di 2
-les   dx, dword ptr es:[si]
-mov   cx, es
-mov   es, ax
-les   si, dword ptr es:[di]       ; v2.x
-mov   di, es   ; v2.y
-mov   word ptr cs:[SELFMODIFY_get_curseg_render_1 + 1 - OFFSET R_BSP24_STARTMARKER_], bx
-add   bx, 4
-mov   word ptr cs:[SELFMODIFY_get_curseg_render_2 + 2 - OFFSET R_BSP24_STARTMARKER_], bx ; todo can we store ahead the lookup instead of the ptr
-
-call  R_PointToAngle16_    ; todo debug why this doesnt work with the other one. stack corruption?
-
-xchg  ax, di
-xchg  ax, cx
-xchg  si, dx      ; SI: BX stores angle1
-
-
-call  R_PointToAngle16_    ; todo debug why this doesnt work with the other one. stack corruption?
-
-xchg  ax, di
-mov   bx, ax
-sub   ax, di
-mov   cx, si
-sbb   cx, dx
-cmp   cx, ANG180_HIGHBITS
-jb    dont_backface_cull
-LEAVE_MACRO 
-pop   cx
-pop   ax
-ret   
-dont_backface_cull:
-push  ax ; bp - 8
-
-; store rw_angle1 on stack
-push  si ; bp - 0Ah
-push  bx ; bp - 0Ch
-
-SELFMODIFY_BSP_viewangle_lo_1:
-sub   bx, 01000h
-push  bx  ; bp - 0Eh
-mov   bx, si
-SELFMODIFY_BSP_viewangle_hi_1:
-sbb   bx, 01000h
-
-SELFMODIFY_BSP_clipangle_4:
-lea   ax, [bx + 01000h]
-SELFMODIFY_BSP_viewangle_lo_2:
-sub   di, 01000h
-SELFMODIFY_BSP_viewangle_hi_2:
-sbb   dx, 01000h
-SELFMODIFY_BSP_fieldofview_1:
-cmp   ax, 01000h
-jbe   done_checking_left
-SELFMODIFY_BSP_fieldofview_2:
-sub   ax, 01000h
-cmp   ax, cx
-ja    exit_addline
-jne   not_off_left_side
-mov   ax, word ptr [bp - 0Eh]  ; todo carry from above
-cmp   ax, word ptr [bp - 8]
-jae   exit_addline
-not_off_left_side:
-SELFMODIFY_BSP_clipangle_1:
-mov   bx, 01000h
-done_checking_left:
-xor   si, si
-SELFMODIFY_BSP_clipangle_2:
-mov   ax, 01000h
-sub   si, di
-sbb   ax, dx
-mov   di, si
-SELFMODIFY_BSP_fieldofview_3:
-cmp   ax, 01000h
-jbe   done_checking_right
-SELFMODIFY_BSP_fieldofview_4:
-sub   ax, 01000h
-cmp   ax, cx
-ja    exit_addline
-jne   not_off_left_side_2
-cmp   si, word ptr [bp - 8]
-jae   exit_addline
-not_off_left_side_2:
-SELFMODIFY_BSP_clipangle_3:
-mov   dx, 01000h
-neg   dx
-done_checking_right:
-
-; seg in view angle but not necessarily visible
-add   bh, (ANG90_HIGHBITS SHR 8)
-
-
-SHIFT_MACRO shr bx 2
-
-
-
-
-and   bl, 0FEh  ; low bit removal
-add   dh, (ANG90_HIGHBITS SHR 8)
-mov   ax, word ptr ds:[bx + _viewangletox]
-mov   bx, dx
-SHIFT_MACRO shr bx 2
-
-
-and   bl, 0FEh  ; low bit removal
-mov   dx, word ptr ds:[bx + _viewangletox]
-cmp   ax, dx
-je    exit_addline
-;	if (!(lineflagslist[curseglinedef] & ML_TWOSIDED)) {
-dec   dx       ; x2 -1 for calls later.
-
-mov   bx, LINEFLAGSLIST_SEGMENT
-mov   es, bx
-mov   bx, word ptr [bp - 4]
-test  byte ptr es:[bx], ML_TWOSIDED
-jne   not_single_sided_line
-mov   word ptr ds:[_backsector], SECNUM_NULL   ; does this ever get properly used or checked? can we just ignore?
-clipsolid:
-call  R_ClipSolidWallSegment_
-mov   byte ptr cs:[SELFMODIFY_set_get_hyp_ret], 056h ; push si
-exit_addline:
-LEAVE_MACRO 
-pop   cx
-pop   ax
-ret   
-not_single_sided_line:
-mov   bl, byte ptr [bp - 2]
-xor   bl, 1
-xor   bh, bh
-add   bx, bx
-mov   si, LINES_SEGMENT
-mov   es, si
-mov   si, word ptr [bp - 4]
-SHIFT_MACRO  shl si 2
-mov   bx, word ptr es:[bx + si]
-
-SHIFT_MACRO shl bx 2
-
-
-    ; secnum field in this side_render_t
-mov   si, word ptr ds:[bx + _sides_render + 2]
-SHIFT_MACRO shl si 4
-
-mov   word ptr ds:[_backsector], si
-
-
-les   di, dword ptr ds:[_frontsector]
-;es:si backsector
-;es:di frontsector.
-
-; todo do in order with lodsw and compare ax?
-
-;    // Closed door.
-;	if (backsector->ceilingheight <= frontsector->floorheight
-;		|| backsector->floorheight >= frontsector->ceilingheight) 
-
-
-
-; weird. this kills performance on pentium by 3%.
-xchg  ax, bx   ; store x1 in bx
-
-lods  word ptr es:[si]        ; backsector  floor
-cmp   ax, word ptr es:[di+2]  ; frontsector ceiling
-jge   clipsolid_ax_swap
-xchg  ax, cx                  ; cx has old si+0 (backsector floor)
-lods  word ptr es:[si]        ; backsector  ceiling
-cmp   ax, word ptr es:[di]    ; frontsector floor
-jle   clipsolid_ax_swap
-
-;    // Window.
-;    if (backsector->ceilingheight != frontsector->ceilingheight
-;	|| backsector->floorheight != frontsector->floorheight)
-
-cmp   ax, word ptr es:[di + 2]      ; backsector ceiling vs frontsector ceiling
-jne   clippass
-cmp   cx, word ptr es:[di]          ; backsector floor vs frontsector floor
-jne   clippass
-
-; if (backsector->ceilingpic == frontsector->ceilingpic
-;		&& backsector->floorpic == frontsector->floorpic
-;		&& backsector->lightlevel == frontsector->lightlevel
-;		&& curlinesidedef->midtexture == 0) {
-;		return;
-;    }
-
-lods  word ptr es:[si]           ; al floorpic   ah ceilingpic
-cmp   ax, word ptr es:[di + 4]
-jne   clippass
-
-mov   al, byte ptr es:[si + 08h] ; 0E is lightlevels. offset by 6..
-cmp   al, byte ptr es:[di + 0Eh]
-jne   clippass
-
-;    fall thru and return if midtexture doesnt match.
-mov   ax, SIDES_SEGMENT
-mov   es, ax
-mov   si, word ptr [bp - 6]    ; presumably curlinesidedef.
-SHIFT_MACRO shl si 3
-cmp   word ptr es:[si + 4], 0
-je    exit_addline
-
-clippass:
-xchg  ax, bx                   ; grab cached x1
-call  R_ClipPassWallSegment_
-mov   byte ptr cs:[SELFMODIFY_set_get_hyp_ret], 056h ; push si
-LEAVE_MACRO
-pop   cx
-pop   ax
-ret   
-clipsolid_ax_swap:
-xchg  ax, bx                   ; grab cached x1
-call  R_ClipSolidWallSegment_
-mov   byte ptr cs:[SELFMODIFY_set_get_hyp_ret], 056h ; push si
-LEAVE_MACRO 
-pop   cx
-pop   ax
-ret   
-
-
-ENDP
-
-
 SUBSECTOR_OFFSET_IN_SECTORS       = (SUBSECTORS_SEGMENT - SECTORS_SEGMENT) * 16
 ;SUBSECTOR_LINES_OFFSET_IN_SECTORS = (SUBSECTOR_LINES_SEGMENT - SECTORS_SEGMENT) * 16
 
@@ -3014,18 +2752,10 @@ push      di
 
 mov       word ptr cs:[SELFMODIFY_setindex+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       si, dx    ; si holds start
-
-
-
 mov       di, ax
 
 
-
-
-
 SHIFT_MACRO shl di 3
-
-
 
 
 add       di, _visplaneheaders  ; _di is plheader
@@ -3885,128 +3615,6 @@ COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - C
 
 
 
-PROC    R_GetHyp_ NEAR
-PUBLIC  R_GetHyp_ 
-; lazily calculate 32 bit hyp (two fixed divs involved, slow)
-; self modify so its available for later calls to R_StoreWallRange
-; return in cx:bx
-; clobber dx:ax
-
-SELFMODIFY_set_PointToDist_result_lo_1:
-mov       bx, 01000h
-SELFMODIFY_set_PointToDist_result_hi_1:
-mov       cx, 01000h
-
-
-SELFMODIFY_set_get_hyp_ret:
-push  si ; gets changed to ret
-push  di
-
-;    dx = labs(x.w - viewx.w);
-;  x = ax register
-;  y = dx
-
-SELFMODIFY_BSP_v1x:
-mov       cx, 01000h
-SELFMODIFY_BSP_v1y:
-mov       dx, 01000h
-
-xor   bx, bx
-xor   ax, ax
-
-; DX:AX = y
-; CX:BX = x
-SELFMODIFY_BSP_viewx_lo_2:
-sub   bx, 01000h
-SELFMODIFY_BSP_viewx_hi_2:
-sbb   cx, 01000h
-
-SELFMODIFY_BSP_viewy_lo_2:
-sub   ax, 01000h
-SELFMODIFY_BSP_viewy_hi_2:
-sbb   dx, 01000h
-
-
-or    cx, cx
-jge   skip_x_abs
-neg   bx
-adc   cx, 0
-neg   cx
-skip_x_abs:
-
-or    dx, dx
-jge   skip_y_abs
-neg   ax
-adc   dx, 0
-neg   dx
-skip_y_abs:
-
-;    if (dy>dx) {
-
-cmp   dx, cx
-jg    swap_x_y
-jne   skip_swap_x_y
-cmp   ax, bx
-jbe   skip_swap_x_y
-
-swap_x_y:
-xchg  dx, cx
-xchg  ax, bx
-skip_swap_x_y:
-
-;	angle = (tantoangle[ FixedDiv(dy,dx)>>DBITS ].hu.intbits+ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
-
-; save dx (var not register)
-
-mov   si, bx
-mov   di, cx
-
-call  FixedDivBSPLocal_
-
-; shift 5. since we do a tantoangle lookup... this maxes at 2048
-; todo 386
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
-and   al, 0FCh
-mov   dx, di ; move di to dx early to free up di for les + di + bx combo
-
-
-xchg  ax, bx
-mov   es, word ptr ds:[_tantoangle_segment] 
-mov   bx, word ptr es:[bx + 2] ; get just intbits..
-
-;    dist = FixedDiv (dx, finesine[angle] );	
-
-add   bh, 040h ; ang90 highbits
-mov   ax, FINESINE_SEGMENT
-mov   es, ax
-shr   bx, 1
-and   bl, 0FCh
-mov   ax, si
-les   bx, dword ptr es:[bx]
-mov   cx, es
-call  FixedDivBSPLocal_
-
-xchg  ax, bx  ; result in cx:bx
-mov   cx, dx
-
-pop   di
-pop   si
-
-; store result
-mov   word ptr cs:[SELFMODIFY_set_PointToDist_result_lo_1+1], bx
-mov   word ptr cs:[SELFMODIFY_set_PointToDist_result_hi_1+1], cx
-mov   byte ptr cs:[SELFMODIFY_set_get_hyp_ret], 0C3h ; ret
-
-
-ret
-
-
-ENDP
 
 out_of_drawsegs:
 LEAVE_MACRO
@@ -4027,7 +3635,7 @@ FINE_TANGENT_MAX = 2048
 
 
 
-
+TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION = (TEXTUREHEIGHTS_SEGMENT - TEXTURETRANSLATION_SEGMENT) SHL 4
 
 
 SHORTTOFINESHIFT = 3
@@ -4051,15 +3659,15 @@ PUBLIC R_StoreWallRange_
 
 ; bp - 2  ; ax arg
 ; bp - 4  ; dx arg
-; bp - 6     ; hyp lo      ; UNUSED
-; bp - 8     ; hyp hi      ; UNUSED
-; bp - 0Ah   ; side toptexture
-; bp - 0Ch   ; side bottomtexture
-; bp - 0Eh   ; side midtexture
-; bp - 010h  ; v1.x        ; UNUSED
-; bp - 012h  ; v1.y        ; UNUSED
-; bp - 014h  ; lineflags
-; bp - 016h  ; offsetangle
+; bp - 6     ; hyp lo               ; UNUSED
+; bp - 8     ; hyp hi               ; UNUSED
+; bp - 0Ah   ; side toptexture      ; UNUSED
+; bp - 0Ch   ; side bottomtexture   ; UNUSED
+; bp - 0Eh   ; side midtexture      ; UNUSED
+; bp - 010h  ; v1.x                 ; UNUSED
+; bp - 012h  ; v1.y                 ; UNUSED
+; bp - 014h  ; lineflags            ; UNUSED (now bp + 018h)
+; bp - 016h  ; offsetangle          ; UNUSED
 ; bp - 018h  ; _rw_x
 ; bp - 01Ah  ; _rw_stopx
 ; bp - 01Bh  ; markceiling
@@ -4091,8 +3699,12 @@ PUBLIC R_StoreWallRange_
 ; bp - 048h  ; backsectorceilingheight
 
 
-; bp + 010h   ; rw_angle lo from R_AddLine
-; bp + 012h   ; rw_angle hi from R_AddLine
+; bp + 0Ch    ; rw_angle lo from R_AddLine
+; bp + 0Eh    ; rw_angle hi from R_AddLine
+; bp + 010h   ; curseg_render
+; bp + 014h   ; curseglinedef
+; bp + 018h   ; lineflags
+; bp + 01Eh   ; ax passed into R_AddLine_
 
              
 push      bx ; +8
@@ -4103,66 +3715,54 @@ push      bp ; +0
 mov       bp, sp
 push      ax ; bp - 2
 push      dx ; bp - 4
+
+sub       sp, 18 ; unused bytes
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; START LINE BASED SELF MODIFY BLOCK ;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; note - line jumps past sector, but falls thru to sector check
+; sector can not change without line changing.
+
+; todo also skip sector selfmodifies lazily
+
+SELFMODIFY_skip_curseg_based_selfmodify:
+mov       bx, (SELFMODIFY_skip_curseg_based_selfmodify_TARGET - SELFMODIFY_skip_curseg_based_selfmodify_AFTER)  ;  selfmodifies into mov bx, imm
+SELFMODIFY_skip_curseg_based_selfmodify_AFTER:
+
+mov       bx, word ptr [bp + 010h]  ; curseg_render     ; turns into a jump past selfmodifying code once this next code block runs. 
+
 xor       ax, ax
+mov       si, word ptr ds:[bx + 6]  ; todo what's this again? lineside?
 
-
-SELFMODIFY_get_curseg_render_1:
-mov       bx, 01000h 
-
-sub       sp, 4 ; unused
-
-mov       si, word ptr ds:[bx + 6]  ; todo what's this again
 SHIFT_MACRO shl si 2
-mov       di, si
-shl       si, 1
-
-; todo i dont think this is really ever going to happen in realdoom?
-;mov       ax, word ptr ds:[_ds_p]
-;cmp       ax, (MAXDRAWSEGS * (SIZE DRAWSEG_T))
-;je        out_of_drawsegs
-
-
-mov       cx, ds  ; store for later.
-mov       ds, word ptr ds:[_SIDES_SEGMENT_PTR]
-
-
-; read all the sides fields now. ;preshift them as they are word lookups
-
-lodsw
-push ax   ; bp - 0Ah
-lodsw
-sal       ax, 1               ; preshift
-push ax   ; bp - 0Ch
-lodsw
-push ax   ; bp - 0Eh
-lodsw     ; textureoffset todo can be 8 bit
-
-
-les        bx, dword ptr ss:[bx]   ; vertexes
-mov        si, es ; v2
-
-mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 ; todo pull this out into outer func?
-mov       ax, word ptr ss:[di+_sides_render]
+mov       ax, word ptr ds:[si+_sides_render]
 mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
+shl       si, 1
 
-mov   ds, word ptr ss:[_VERTEXES_SEGMENT_PTR]
+mov       cx, ds  ; store for later.
+les       bx, dword ptr ds:[bx]   ; vertexes
+mov       di, es ; v2
+
+mov   ds, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 SHIFT_MACRO shl bx 2
-SHIFT_MACRO shl si 2
+SHIFT_MACRO shl di 2
 
-sub       sp, 4 ; unused ; bp -012h
+
 les       bx, dword ptr ds:[bx] ;v1.x
 mov       ax, es
 
 mov       word ptr cs:[SELFMODIFY_BSP_v1x+1 - OFFSET R_BSP24_STARTMARKER_], bx
 mov       word ptr cs:[SELFMODIFY_BSP_v1y+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
-sub       ax, word ptr ds:[si + VERTEX_T.v_y]
+sub       ax, word ptr ds:[di + VERTEX_T.v_y]
 mov       dl, 04Ah  ; dec dx
 je        v2_y_equals_v1_y
-sub       bx, word ptr ds:[si + VERTEX_T.v_x]
+sub       bx, word ptr ds:[di + VERTEX_T.v_x]
 mov       dl, 090h  ; nop
 jne       v2_y_not_equals_v1_y
 mov       dl, 042h  ; inc dx
@@ -4170,105 +3770,274 @@ v2_y_not_equals_v1_y:
 v2_y_equals_v1_y:
 
 mov       byte ptr cs:[SELFMODIFY_addlightnum_delta - OFFSET R_BSP24_STARTMARKER_], dl
+; check for backsector and load side texture data
+; bx, dx, di free...
+
+   mov       ax, TEXTURETRANSLATION_SEGMENT
+   mov       es, ax
+
+   ; default jump locations for backsecnum == null
+   xor       dx, dx  ; jump zero
+   mov       bx, ((SELFMODIFY_do_backsector_work_or_not_TARGET_NULL - SELFMODIFY_do_backsector_work_or_not_AFTER) )
+   cmp       word ptr ss:[_backsector], SECNUM_NULL
+
+   mov       ds, word ptr ss:[_SIDES_SEGMENT_PTR]
+   ; ds:si is a SIDE_T
+
+   je        selfmodify_mid_only
+
+   ; overwrite jump locations for backsecnum!=null
+   mov       dx, ((SELFMODIFY_jmp_two_sided_or_not_TARGET - SELFMODIFY_jmp_two_sided_or_not_AFTER) )
+   mov       bx, ((SELFMODIFY_do_backsector_work_or_not_TARGET_NOTNULL - SELFMODIFY_do_backsector_work_or_not_AFTER) )
+   ; two sides wall may have bottom and top textures
 
 
-mov       ds, cx  ; restore ds..
+   ; read all the sides fields now. ;preshift them as they are word lookups
+
+   lodsw     ; side toptexture
+   test      ax, ax
+   jz        skip_toptex_selfmodify
+   xchg      ax, di
+   xor       ax, ax
+   mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
+   inc       ax
+   mov       word ptr cs:[SELFMODIFY_add_texturetopheight_plus_one+2- OFFSET R_BSP24_STARTMARKER_], ax
+   sal       di, 1
+   mov       ax, word ptr es:[di]
+   mov       word ptr cs:[SELFMODIFY_settoptexturetranslation_lookup+1- OFFSET R_BSP24_STARTMARKER_], ax
+
+   skip_toptex_selfmodify:
+   lodsw     ; side bottexture  ; faster to just do it than branch?
+   xchg      ax, di
+   sal       di, 1
+   mov       ax, word ptr es:[di]
+   mov       word ptr cs:[SELFMODIFY_setbottexturetranslation_lookup+1- OFFSET R_BSP24_STARTMARKER_], ax
+
+   sub       si, 4
+
+selfmodify_mid_only:
+   ; twosided textures can still have a mid texture (invisible walls like E1M1)
+
+   add       si, 4
+   lodsw     ; side midtexture
+   test      ax, ax
+   jz        skip_midptex_selfmodify
+   xchg      ax, di
+   xor       ax, ax
+   mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
+   inc       ax
+   mov       word ptr cs:[SELFMODIFY_add_texturemidheight_plus_one+1- OFFSET R_BSP24_STARTMARKER_], ax
+   sal       di, 1
+   mov       ax, word ptr es:[di]
+   mov       word ptr cs:[SELFMODIFY_setmidtexturetranslation_lookup+1- OFFSET R_BSP24_STARTMARKER_], ax
+
+   ; create jmp instruction
+   mov       ax, ((SELFMODIFY_has_midtexture_or_not_TARGET - SELFMODIFY_has_midtexture_or_not_AFTER) SHL 8) + 0EBh
+
+   jmp       finish_midtex_selfmodify
+skip_midptex_selfmodify:
+   mov       ax, 0c031h  ; xor ax, ax
+finish_midtex_selfmodify:
+
+   ; set some jumps and instructions based on secnumnull, midtexture
+   mov       word ptr cs:[SELFMODIFY_has_midtexture_or_not - OFFSET R_BSP24_STARTMARKER_], ax
+   mov       word ptr cs:[SELFMODIFY_jmp_two_sided_or_not + 1 - OFFSET R_BSP24_STARTMARKER_], dx
+   mov       word ptr cs:[SELFMODIFY_do_backsector_work_or_not + 1 - OFFSET R_BSP24_STARTMARKER_], bx
 
 
-mov       ax, LINEFLAGSLIST_SEGMENT ; we will also index seg_linedefs off this.
-mov       es, ax
-SELFMODIFY_get_curseg_1:
-mov       bx, 01000h
-mov       si, word ptr es:[bx + (16 * (SEG_LINEDEFS_SEGMENT - LINEFLAGSLIST_SEGMENT))]
-mov       al, byte ptr es:[si]
-xor       ah, ah
-push      ax      ; bp - 014h
+   lodsw     ; textureoffset todo can be 8 bit
+   mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset+1 - OFFSET R_BSP24_STARTMARKER_], ax
+
+   mov       ds, cx  ; restore ds..
+
+   mov       si, word ptr [bp + 014h]
+   ;	seenlines[linedefOffset/8] |= (0x01 << (linedefOffset % 8));
+   ; si is linedefOffset
+
+   mov       cx, si
+
+   SHIFT_MACRO sar si 3
+   mov       ax, SEENLINES_SEGMENT
+   mov       es, ax
+   mov       al, 1
+   and       cl, 7
+   shl       al, cl
+   or        byte ptr es:[si], al
+
+  mov       bx, word ptr [bp + 01Eh]
+   sal       bx, 1       ;  curseg word lookup
+
+   mov       ax, word ptr ds:[bx+_seg_normalangles]
+   mov       word ptr cs:[SELFMODIFY_sub_rw_normal_angle_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
+   xchg      ax, si
+
+   SELFMODIFY_set_viewanglesr3_1:
+   mov       ax, 01000h
+   ;add       ah, 8  ; preadded
+   sub       ax, si
+   and       ah, FINE_ANGLE_HIGH_BYTE
+
+   ; set centerangle in rendersegloop
+   mov       word ptr cs:[SELFMODIFY_set_rw_center_angle+1 - OFFSET R_BSP24_STARTMARKER_], ax
+   xchg      ax, si
+   SHIFT_MACRO shl ax SHORTTOFINESHIFT
+   mov       word ptr cs:[SELFMODIFY_set_rw_normal_angle_shift3+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
-;	seenlines[linedefOffset/8] |= (0x01 << (linedefOffset % 8));
-; si is linedefOffset
+   ;	offsetangle = (abs((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> 1) & 0xFFFC;
+   sub       ax, word ptr [bp + 0Eh]   ; rw_angle hi from R_AddLine
+   cwd       
+   xor       ax, dx		; abs by sign bits
+   sub       ax, dx
+   sar       ax, 1
 
-mov       cx, si
+   and       al, 0FCh
+   mov       word ptr cs:[SELFMODIFY_set_offsetangle+1], ax
+   mov       si, FINE_ANG90_NOSHIFT
+   sub       si, ax 
 
+; calculate hyp inlined
 
-SHIFT_MACRO sar si 3
+      push  si
 
+      ;    dx = labs(x.w - viewx.w);
+      ;  x = ax register
+      ;  y = dx
 
+      SELFMODIFY_BSP_v1x:
+      mov       cx, 01000h
+      SELFMODIFY_BSP_v1y:
+      mov       dx, 01000h
 
-mov       ax, SEENLINES_SEGMENT
-mov       es, ax
-mov       al, 1
-and       cl, 7
-shl       al, cl
-or        byte ptr es:[si], al
+      xor   bx, bx
+      xor   ax, ax
 
-; bx still curseg word lookup
+      ; DX:AX = y
+      ; CX:BX = x
+      SELFMODIFY_BSP_viewx_lo_2:
+      sub   bx, 01000h
+      SELFMODIFY_BSP_viewx_hi_2:
+      sbb   cx, 01000h
 
-mov       ax, word ptr ds:[bx+_seg_normalangles]
-
-mov       word ptr cs:[SELFMODIFY_sub_rw_normal_angle_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
-xchg      ax, si
-
-
-SELFMODIFY_set_viewanglesr3_1:
-mov       ax, 01000h
-;add       ah, 8  ; preadded
-sub       ax, si
-and       ah, FINE_ANGLE_HIGH_BYTE
-
-; set centerangle in rendersegloop
-mov       word ptr cs:[SELFMODIFY_set_rw_center_angle+1 - OFFSET R_BSP24_STARTMARKER_], ax
-
-
-xchg      ax, si
-
-
-SHIFT_MACRO shl ax SHORTTOFINESHIFT
-
-
-
-mov       word ptr cs:[SELFMODIFY_set_rw_normal_angle_shift3+1 - OFFSET R_BSP24_STARTMARKER_], ax
+      SELFMODIFY_BSP_viewy_lo_2:
+      sub   ax, 01000h
+      SELFMODIFY_BSP_viewy_hi_2:
+      sbb   dx, 01000h
 
 
-;	offsetangle = (abs((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> 1) & 0xFFFC;
-sub       ax, word ptr [bp + 012h]   ; rw_angle hi from R_AddLine
-cwd       
-xor       ax, dx		; abs by sign bits
-sub       ax, dx
-sar       ax, 1
+      or    cx, cx
+      jge   skip_x_abs
+      neg   bx
+      adc   cx, 0
+      neg   cx
+      skip_x_abs:
 
-and       al, 0FCh
-push      ax  ; bp - 016h
-mov       si, FINE_ANG90_NOSHIFT
-sub       si, ax   ; bp - 016h
+      or    dx, dx
+      jge   skip_y_abs
+      neg   ax
+      adc   dx, 0
+      neg   dx
+      skip_y_abs:
+
+      ;    if (dy>dx) {
+
+      cmp   dx, cx
+      jg    swap_x_y
+      jne   skip_swap_x_y
+      cmp   ax, bx
+      jbe   skip_swap_x_y
+
+      swap_x_y:
+      xchg  dx, cx
+      xchg  ax, bx
+      skip_swap_x_y:
+
+      ;	angle = (tantoangle[ FixedDiv(dy,dx)>>DBITS ].hu.intbits+ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
+
+      ; save dx (var not register)
+
+      mov   si, bx
+      mov   di, cx
+
+      call  FixedDivBSPLocal_
+
+      ; shift 5. since we do a tantoangle lookup... this maxes at 2048
+      ; todo 386
+      sar   dx, 1
+      rcr   ax, 1
+      sar   dx, 1
+      rcr   ax, 1
+      sar   dx, 1
+      rcr   ax, 1
+      and   al, 0FCh
+      mov   dx, di ; move di to dx early to free up di for les + di + bx combo
 
 
-call      R_GetHyp_
+      xchg  ax, bx
+      mov   es, word ptr ds:[_tantoangle_segment] 
+      mov   bx, word ptr es:[bx + 2] ; get just intbits..
 
-mov       ax, FINESINE_SEGMENT
-mov       dx, si
-call      FixedMulTrigNoShiftBSPLocal_
+      ;    dist = FixedDiv (dx, finesine[angle] );	
+
+      add   bh, 040h ; ang90 highbits
+      mov   ax, FINESINE_SEGMENT
+      mov   es, ax
+      shr   bx, 1
+      and   bl, 0FCh
+      mov   ax, si
+      les   bx, dword ptr es:[bx]
+      mov   cx, es
+      call  FixedDivBSPLocal_
+
+      xchg  ax, bx  ; result in cx:bx
+      mov   cx, dx
 
 
-do_set_rw_distance:
+      ; store result
+      mov   word ptr cs:[SELFMODIFY_set_PointToDist_result_lo+1], bx
+      mov   word ptr cs:[SELFMODIFY_set_PointToDist_result_hi+1], cx
 
-; self modifying code for rw_distance
-mov   word ptr cs:[SELFMODIFY_set_bx_rw_distance_lo+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_set_cx_rw_distance_hi+1 - OFFSET R_BSP24_STARTMARKER_], dx
-mov   word ptr cs:[SELFMODIFY_get_rw_distance_lo_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_get_rw_distance_hi_1+1 - OFFSET R_BSP24_STARTMARKER_], dx
+; end calculate hyp inlined
+
+   ; hyp in cx:bx.
+
+   mov       ax, FINESINE_SEGMENT
+   pop       dx  ; angle calculated prior
+
+   call      FixedMulTrigNoShiftBSPLocal_
+
+
+   do_set_rw_distance:
+
+   ; self modifying code for rw_distance
+   mov   word ptr cs:[SELFMODIFY_set_bx_rw_distance_lo+1 - OFFSET R_BSP24_STARTMARKER_], ax
+   mov   word ptr cs:[SELFMODIFY_set_cx_rw_distance_hi+1 - OFFSET R_BSP24_STARTMARKER_], dx
+   mov   word ptr cs:[SELFMODIFY_get_rw_distance_lo_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
+   mov   word ptr cs:[SELFMODIFY_get_rw_distance_hi_1+1 - OFFSET R_BSP24_STARTMARKER_], dx
+
+
+
+
+mov       byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify], 0E9h  ; jmp here
+
+SELFMODIFY_skip_curseg_based_selfmodify_TARGET:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; END LINE BASED SELF MODIFY BLOCK ;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+ 
 
 done_setting_rw_distance:
 les       di, dword ptr ds:[_ds_p]
-SELFMODIFY_get_curseg_2:
-mov       ax, 01000h
+mov       ax, word ptr [bp + 01Eh]  ; R_AddLine line num
+
 stosw              ; +0
 
 
 mov       ax, word ptr [bp - 2]
 push      ax   ; bp - 018h r  w_x
 stosw              ; +2
-
+xchg      ax, bx ; bx gets bp - 2
 mov       ax, word ptr [bp - 4]
 stosw              ; +4
 
@@ -4276,8 +4045,7 @@ inc       ax
 push      ax   ; bp - 01Ah  rw_stopx
 sub       sp, 014h   ; ;30h now
 
-mov       ax, XTOVIEWANGLE_SEGMENT
-mov       bx, word ptr [bp - 2]
+mov       ax, XTOVIEWANGLE_SEGMENT   ; todo selfmodify all these?
 mov       cx, es  ; store ds_p+2 segment
 mov       es, ax
 add       bx, bx
@@ -4518,16 +4286,15 @@ mov       byte ptr ds:[_maskedtexture], al
 mov       byte ptr cs:[SELFMODIFY_check_for_any_tex+1 - OFFSET R_BSP24_STARTMARKER_], al
 
 les       bx, dword ptr ds:[_ds_p]
-mov       word ptr es:[bx + 01ah], NULL_TEX_COL
-cmp       word ptr ds:[_backsector], SECNUM_NULL
+mov       word ptr es:[bx + DRAWSEG_T.drawseg_maskedtexturecol_val], NULL_TEX_COL
 
 mov       ax, cs
 mov       ds, ax
 
 
-je        handle_single_sided_line
-jmp       handle_two_sided_line
-
+SELFMODIFY_jmp_two_sided_or_not:
+jmp       handle_two_sided_line  ; might turn into a jmp 0 to go to handle_single_sided_line
+SELFMODIFY_jmp_two_sided_or_not_AFTER:
 handle_single_sided_line:
 
 ASSUME DS:R_BSP_24_TEXT
@@ -4563,11 +4330,8 @@ mov       word ptr ds:[SELFMODIFY_BSP_midtexture+1 - OFFSET R_BSP24_STARTMARKER_
 SELFMODIFY_BSP_drawtype_1_TARGET:
 
 ;es:bx still side
-mov       ax, TEXTURETRANSLATION_SEGMENT
-mov       bx, [bp - 0Eh]
-mov       es, ax
-add       bx, bx
-mov       ax, word ptr es:[bx]
+SELFMODIFY_setmidtexturetranslation_lookup:
+mov       ax, 01000h
 
 ; write the high byte of the word.
 ; prev two bytes will be a jump or mov cx with the low byte
@@ -4581,9 +4345,8 @@ or        byte ptr ds:[SELFMODIFY_check_for_any_tex+1 - OFFSET R_BSP24_STARTMARK
 
 
 
-mov       ax, 0101h
-mov       word ptr [bp - 01Ch], ax ; set markfloor and markceiling
-test      byte ptr [bp - 014h], ML_DONTPEGBOTTOM
+mov       word ptr [bp - 01Ch], 0101h ; set markfloor and markceiling
+test      byte ptr [bp + 018h], ML_DONTPEGBOTTOM
 jne       do_peg_bottom
 dont_peg_bottom:
 mov       ax, word ptr [bp - 040h]
@@ -4599,6 +4362,7 @@ mov       ax, word ptr [bp - 034h]
 SELFMODIFY_BSP_viewz_shortheight_5:
 sub       ax, 01000h
 xor       cx, cx
+; todo 386
 sar       ax, 1
 rcr       cx, 1
 sar       ax, 1
@@ -4608,15 +4372,12 @@ rcr       cx, 1
 mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1 - OFFSET R_BSP24_STARTMARKER_], cx
 
 
-mov       bx, word ptr [bp - 0Eh]
-mov       cx, TEXTUREHEIGHTS_SEGMENT
-mov       es, cx
-xor       cx, cx
-mov       cl, byte ptr es:[bx]
-inc       cx
-add       ax, cx
+; add textureheight+1
+
+SELFMODIFY_add_texturemidheight_plus_one:
+add       ax, 01000h
 done_with_bottom_peg:
-; cx:ax has rw_midtexturemid
+; ax:cx has rw_midtexturemid
 
 
 
@@ -4665,18 +4426,23 @@ mov       word ptr cs:[SELFMODIFY_BSP_get_segtextured - OFFSET R_BSP24_STARTMARK
 jmp       seg_textured_check_done
 do_seg_textured_stuff:
 mov       word ptr cs:[SELFMODIFY_BSP_get_segtextured - OFFSET R_BSP24_STARTMARKER_], 0C089h ; nop
-mov       ax, word ptr [bp - 016h]
-cmp       ax, FINE_ANG180_NOSHIFT
+SELFMODIFY_set_offsetangle:
+mov       dx, 01000h
+cmp       dx, FINE_ANG180_NOSHIFT ; 04000h
 jbe       offsetangle_greater_than_fineang180
-neg       ax
-and       ah, MOD_FINE_ANGLE_NOSHIFT_HIGHBITS
-mov       word ptr [bp - 016h], ax
+neg       dx
+and       dh, MOD_FINE_ANGLE_NOSHIFT_HIGHBITS
+
 offsetangle_greater_than_fineang180:
 
-call      R_GetHyp_
+SELFMODIFY_set_PointToDist_result_hi:
+mov       cx, 01000h
+SELFMODIFY_set_PointToDist_result_lo:
+mov       bx, 01000h
 
-mov       dx, word ptr [bp - 016h]
-cmp       dx, FINE_ANG90_NOSHIFT
+; dx is offsetangle
+
+cmp       dx, FINE_ANG90_NOSHIFT ; 02000h
 ja        offsetangle_greater_than_fineang90
 
 mov       ax, FINESINE_SEGMENT
@@ -4695,16 +4461,16 @@ done_with_offsetangle_stuff:
 ; ax:dx is rw_offset
 
 xor       cx, cx
+
 SELFMODIFY_set_rw_normal_angle_shift3:
-
 mov       bx, 01000h
-sub       cx, word ptr [bp + 010h]   ; rw_angle lo from R_AddLine
-sbb       bx, word ptr [bp + 012h]   ; rw_angle hi from R_AddLine
+sub       cx, word ptr [bp + 0Ch]   ; rw_angle lo from R_AddLine
+sbb       bx, word ptr [bp + 0Eh]   ; rw_angle hi from R_AddLine
 
-; ANG180_HIGHBITS is 08000h. can we get this for free without cmp with a sign thing?
-cmp       bx, ANG180_HIGHBITS
-jae       tempangle_not_smaller_than_fineang180
+;cmp       bx, ANG180_HIGHBITS
+;jae       tempangle_not_smaller_than_fineang180
 ; bx is already _rw_offset
+js        tempangle_not_smaller_than_fineang180
 neg       ax
 neg       dx
 sbb       ax, 0
@@ -4715,8 +4481,9 @@ tempangle_not_smaller_than_fineang180:
 
 SELFMODIFY_BSP_sidetextureoffset:
 add       ax, 01000h
-SELFMODIFY_get_curseg_render_2:
-add       ax, word ptr ds:[01000h]
+
+add       ax, word ptr [bp + 010h]
+add       ax, 4
 ; rw_offset ready to be written to rendersegloop:
 mov   word ptr cs:[SELFMODIFY_set_cx_rw_offset_lo+1 - OFFSET R_BSP24_STARTMARKER_], dx
 mov   word ptr cs:[SELFMODIFY_set_ax_rw_offset_hi+1 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -5130,11 +4897,12 @@ mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_2+3 - OFFSET R_BSP24_STAR
 
 
 
-cmp       word ptr ss:[_backsector], SECNUM_NULL
-jne       backsector_not_null
+SELFMODIFY_do_backsector_work_or_not:
 jmp       skip_pixlow_step
+SELFMODIFY_do_backsector_work_or_not_AFTER:
 jmp_to_skip_pixhigh_step:
 jmp skip_pixhigh_step
+SELFMODIFY_do_backsector_work_or_not_TARGET_NOTNULL:
 backsector_not_null:
 ; here we modify worldhigh/low then do not write them back to memory
 ; (except push/pop in one situation)
@@ -5479,6 +5247,7 @@ xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_sub_pixlow_hi+3 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr ds:[SELFMODIFY_add_pixlowstep_hi+4 - OFFSET R_BSP24_STARTMARKER_], ax
 
+; todo 386
 SELFMODIFY_BSP_detailshift_5:
 shl       dx, 1
 rcl       ax, 1
@@ -5493,9 +5262,8 @@ mov       word ptr ds:[SELFMODIFY_add_to_pixlow_lo_1+3 - OFFSET R_BSP24_STARTMAR
 mov       word ptr ds:[SELFMODIFY_add_to_pixlow_lo_2+3 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
-
+SELFMODIFY_do_backsector_work_or_not_TARGET_NULL:
 skip_pixlow_step:
-
 
 ;   BEGIN INLINED R_RenderSegLoop_
 ;   BEGIN INLINED R_RenderSegLoop_
@@ -7028,7 +6796,7 @@ pop       bx
 ret       
 
 handle_two_sided_line:
-
+SELFMODIFY_jmp_two_sided_or_not_TARGET:
 ; jumped to with ds as cs
 
 
@@ -7299,11 +7067,8 @@ setup_toptexture:
 
 ; toptexture = texturetranslation[side->toptexture];
 
-mov       ax, TEXTURETRANSLATION_SEGMENT
-mov       bx, word ptr [bp - 0Ah]
-mov       es, ax
-add       bx, bx
-mov       ax, word ptr es:[bx]
+SELFMODIFY_settoptexturetranslation_lookup:
+mov       ax, 01000h
 
 ; write the high byte of the word.
 ; prev two bytes will be a jump or mov cx with the low byte
@@ -7328,7 +7093,7 @@ or        bl, bh
 or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1 - OFFSET R_BSP24_STARTMARKER_], bl
 
 
-test      byte ptr [bp - 014h], ML_DONTPEGTOP
+test      byte ptr [bp + 018h], ML_DONTPEGTOP
 jne       set_toptexture_to_worldtop
 calculate_toptexturemid:
 ; SET_FIXED_UNION_FROM_SHORT_HEIGHT(rw_toptexturemid, backsectorceilingheight);
@@ -7338,6 +7103,7 @@ calculate_toptexturemid:
 
 ; dx holding on to backsectorceilingheight from above.
 
+;todo 386
 xor       ax, ax
 sar       dx, 1
 rcr       ax, 1
@@ -7346,13 +7112,11 @@ rcr       ax, 1
 sar       dx, 1
 rcr       ax, 1
 ;dx:ax are toptexturemid for now..
-mov       bx, TEXTUREHEIGHTS_SEGMENT
-mov       es, bx
-mov       bx, word ptr [bp - 0Ah]
 
-add       dl, byte ptr es:[bx]
-adc       dh, 0
-inc       dx
+; add textureheight+1
+
+SELFMODIFY_add_texturetopheight_plus_one:
+add       dx, 01000h
 
 SELFMODIFY_BSP_viewz_lo_1:
 sub       ax, 01000h
@@ -7377,11 +7141,8 @@ jne       bottexture_zero
 cmp       si, word ptr [bp - 044h]
 jbe       bottexture_zero
 setup_bottexture:
-mov       ax, TEXTURETRANSLATION_SEGMENT
-mov       bx, word ptr [bp - 0Ch]
-; preshifted
-mov       es, ax
-mov       ax, word ptr es:[bx]
+SELFMODIFY_setbottexturetranslation_lookup:
+mov       ax, 01000h
 
 ; write the high byte of the word.
 ; prev two bytes will be a jump or mov cx with the low byte
@@ -7402,7 +7163,7 @@ or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1 - OFFSET R_BSP24_STARTMARK
 
 
 
-test      byte ptr [bp - 014h], ML_DONTPEGBOTTOM
+test      byte ptr [bp + 018h], ML_DONTPEGBOTTOM
 je        calculate_bottexturemid
 ; todo cs write here
 les       ax, dword ptr [bp - 040h]
@@ -7426,16 +7187,18 @@ mov       ax, 01000h
 
 add       word ptr cs:[SELFMODIFY_set_toptexturemid_hi+1 - OFFSET R_BSP24_STARTMARKER_], ax
 add       word ptr cs:[SELFMODIFY_set_bottexturemid_hi+1 - OFFSET R_BSP24_STARTMARKER_], ax
-cmp       word ptr [bp - 0Eh], 0
+
 
 ; // allocate space for masked texture tables
 ; if (side->midtexture) {
 
 
 ; check midtexture on 2 sided line (e1m1 case)
-jne       side_has_midtexture
-xor       ax, ax
+SELFMODIFY_has_midtexture_or_not:
+jne       side_has_midtexture   ; become xor ax, ax if nomidtex ,or jmp.
+SELFMODIFY_has_midtexture_or_not_AFTER:
 jmp       done_with_sector_sided_check
+SELFMODIFY_has_midtexture_or_not_TARGET:
 side_has_midtexture:
 
 ; // masked midtexture
@@ -7469,6 +7232,275 @@ ENDP
 
 
 
+
+
+SEG_LINEDEFS_OFFSET_IN_LINEFLAGSLIST =  ((SEG_LINEDEFS_SEGMENT - LINEFLAGSLIST_SEGMENT) SHL 4)
+
+SEG_SIDES_OFFSET_IN_LINEFLAGSLIST    = ((SEG_SIDES_SEGMENT - LINEFLAGSLIST_SEGMENT) SHL 4)
+
+
+;R_AddLine_
+
+PROC   R_AddLine_ NEAR
+PUBLIC R_AddLine_ 
+
+; ax = curlineNum
+
+; bp - 2       lineflags       ; bp + 018h in R_StoreWallRange
+; bp - 4       curlineside     ; bp + 016h in R_StoreWallRange
+; bp - 6       curseglinedef   ; bp + 014h in R_StoreWallRange
+; bp - 8       curlinesidedef  ; shifted pointer to side
+; bp - 0Ah     curseg_render   ; bp + 010h in R_StoreWallRange
+; bp - 0Ch     _rw_scale hi    ; bp + 0Eh in R_StoreWallRange
+; bp - 0Eh     _rw_scale lo    ; bp + 0Ch in R_StoreWallRange
+
+
+;todo reorder stack? pushes and LES synergy?
+push  ax     ; bp + 4  ; bp + 01Eh in R_StoreWallRange
+push  cx     ; bp + 2  ; bp + 01Ch in R_StoreWallRange
+push  bp     ; bp + 0  ; bp + 01Ah in R_StoreWallRange
+mov   bp, sp
+
+mov   cx, ds
+mov   dx, LINEFLAGSLIST_SEGMENT
+mov   s, dx
+cwd   ; never will have 32k lines... clear dh
+xchg  ax, bx
+mov   dl, byte ptr ds:[bx + SEG_SIDES_OFFSET_IN_LINEFLAGSLIST]
+shl   bx, 1
+mov   di, word ptr ds:[bx + SEG_LINEDEFS_OFFSET_IN_LINEFLAGSLIST] 
+push  word ptr ds:[di]             ; bp - 2  ; lineflags
+push  dx                           ; bp - 4  ; line pointer
+push  di                           ; bp - 6  ; seg_sides
+SHIFT_MACRO shl bx 2
+add   bh, (_segs_render SHR 8)
+push  word ptr ds:[bx + SEG_RENDER_T.sr_sidedefOffset]  ; bp - 8  ; SIDE_T index. used once. 
+push  bx   ; bp - 0Ah
+
+; todo move way later?
+les   si, dword ptr ss:[bx]       ;sr_v1Offset
+mov   di, es                      ;sr_v2Offset
+mov   ax, VERTEXES_SEGMENT
+mov   ds, ax
+SHIFT_MACRO shl si 2
+SHIFT_MACRO shl di 2
+
+les   si, dword ptr ds:[di]       ; v2.x
+mov   di, es                      ; v2.y
+
+les   dx, dword ptr ds:[si]
+mov   ds, cx
+mov   cx, es
+
+call  R_PointToAngle16_    ; todo debug why this doesnt work with the other one. stack corruption?
+
+xchg  ax, di
+xchg  ax, cx
+xchg  si, dx      ; SI: BX stores angle1
+
+
+call  R_PointToAngle16_    ; todo debug why this doesnt work with the other one. stack corruption?
+
+; backup before sub
+mov   bx, di
+sub   di, ax
+mov   cx, si
+sbb   cx, dx
+jns   dont_backface_cull
+exit_addline:   ; todo branch measure
+
+LEAVE_MACRO 
+pop   cx
+pop   ax
+ret   
+dont_backface_cull:
+; cx:ax is span
+; dx:di is angle2
+; sx:bi is angle1
+
+
+xchg  ax, di  ; todo eliminate this juggle? 
+mov   es, ax
+
+; store rw_angle1 on stack
+push  si ; bp - 0Ch
+push  bx ; bp - 0Eh
+
+; si:bx is rw_angle1
+
+SELFMODIFY_BSP_viewangle_lo_1:
+sub   bx, 01000h
+
+SELFMODIFY_BSP_viewangle_hi_1:
+sbb   si, 01000h
+
+
+SELFMODIFY_BSP_clipangle_4:
+lea   ax, [si + 01000h]
+SELFMODIFY_BSP_viewangle_lo_2:
+sub   di, 01000h
+SELFMODIFY_BSP_viewangle_hi_2:
+sbb   dx, 01000h
+SELFMODIFY_BSP_fieldofview_1:
+cmp   ax, 01000h
+jbe   done_checking_left
+SELFMODIFY_BSP_fieldofview_2:
+sub   ax, 01000h
+cmp   ax, cx
+ja    exit_addline
+jne   not_off_left_side
+mov   ax, es
+cmp   bx, ax      ; last use of angle1 lobits
+jae   exit_addline
+not_off_left_side:
+SELFMODIFY_BSP_clipangle_1:
+mov   si, 01000h
+
+done_checking_left:
+
+mov   bx, si  ; todo eliminate the juggle. angle1 currently bx:00 instead of si:bx
+
+xor   si, si 
+SELFMODIFY_BSP_clipangle_2:
+mov   ax, 01000h
+sub   si, di
+sbb   ax, dx
+mov   di, si
+SELFMODIFY_BSP_fieldofview_3:
+cmp   ax, 01000h
+jbe   done_checking_right
+SELFMODIFY_BSP_fieldofview_4:
+sub   ax, 01000h
+cmp   ax, cx
+ja    exit_addline
+jne   not_off_left_side_2
+cmp   si, word ptr [bp - 0Ch]
+jae   exit_addline
+not_off_left_side_2:
+SELFMODIFY_BSP_clipangle_3:
+mov   dx, 01000h
+neg   dx
+done_checking_right:
+
+; seg in view angle but not necessarily visible
+add   bh, (ANG90_HIGHBITS SHR 8)
+
+SHIFT_MACRO shr bx 2
+
+and   bl, 0FEh  ; low bit removal
+add   dh, (ANG90_HIGHBITS SHR 8)
+mov   ax, word ptr ds:[bx + _viewangletox]
+mov   bx, dx
+SHIFT_MACRO shr bx 2
+
+
+and   bl, 0FEh  ; low bit removal
+mov   dx, word ptr ds:[bx + _viewangletox]
+cmp   ax, dx
+je    exit_addline
+;	if (!(lineflagslist[curseglinedef] & ML_TWOSIDED)) {
+dec   dx       ; x2 -1 for calls later.
+
+test  byte ptr [bp - 2], ML_TWOSIDED
+je    clip_solid_with_null_backsec
+not_single_sided_line:
+mov   bx, word ptr [bp - 4]
+xor   bl, 1
+sal   bx, 1
+mov   es, word ptr ds:[_LINES_SEGMENT_PTR]
+mov   si, word ptr [bp - 6]
+SHIFT_MACRO  shl si 2
+mov   bx, word ptr es:[bx + si]
+
+SHIFT_MACRO shl bx 2
+
+
+    ; secnum field in this side_render_t
+mov   si, word ptr ds:[bx + _sides_render + 2]
+SHIFT_MACRO shl si 4
+
+mov   word ptr ds:[_backsector], si
+
+
+les   di, dword ptr ds:[_frontsector]
+;es:si backsector
+;es:di frontsector.
+
+; todo do in order with lodsw and compare ax?
+
+;    // Closed door.
+;	if (backsector->ceilingheight <= frontsector->floorheight
+;		|| backsector->floorheight >= frontsector->ceilingheight) 
+
+
+
+; weird. this kills performance on pentium by 3%.
+xchg  ax, bx   ; store x1 in bx
+
+lods  word ptr es:[si]        ; backsector  floor
+cmp   ax, word ptr es:[di + SECTOR_T.sec_ceilingheight]  ; frontsector ceiling
+jge   clipsolid_ax_swap
+xchg  ax, cx                  ; cx has old si+0 (backsector floor)
+lods  word ptr es:[si]        ; backsector  ceiling
+cmp   ax, word ptr es:[di + SECTOR_T.sec_floorheight]    ; frontsector floor
+jle   clipsolid_ax_swap
+
+;    // Window.
+;    if (backsector->ceilingheight != frontsector->ceilingheight
+;	|| backsector->floorheight != frontsector->floorheight)
+
+cmp   ax, word ptr es:[di + SECTOR_T.sec_ceilingheight]      ; backsector ceiling vs frontsector ceiling
+jne   clippass
+cmp   cx, word ptr es:[di + SECTOR_T.sec_floorheight]          ; backsector floor vs frontsector floor
+jne   clippass
+
+; if (backsector->ceilingpic == frontsector->ceilingpic
+;		&& backsector->floorpic == frontsector->floorpic
+;		&& backsector->lightlevel == frontsector->lightlevel
+;		&& curlinesidedef->midtexture == 0) {
+;		return;
+;    }
+
+lods  word ptr es:[si]           ; al floorpic   ah ceilingpic
+cmp   ax, word ptr es:[di + SECTOR_T.sec_floorpic]
+jne   clippass
+
+mov   al, byte ptr es:[si + (SECTOR_T.sec_lightlevel - SECTOR_T.sec_validcount)] ; 0E is lightlevels. currently offset by 6..
+cmp   al, byte ptr es:[di + SECTOR_T.sec_lightlevel]
+jne   clippass
+
+;    fall thru and return if midtexture doesnt match.
+mov   es, word ptr ds:[_SIDES_SEGMENT_PTR]
+mov   si, word ptr [bp - 8]    ; presumably curlinesidedef.
+SHIFT_MACRO shl si 3
+cmp   word ptr es:[si + SIDE_T.s_midtexture], 0  ; todo investigate branch rate
+je    exit_addline_2
+
+clippass:
+xchg  ax, bx                   ; grab cached x1
+jmp   R_ClipPassWallSegment_
+exit_addline_2:
+LEAVE_MACRO 
+pop   cx
+pop   ax
+ret   
+
+clip_solid_with_null_backsec:
+xchg  ax, bx                   ; dont grab uncached x1 - reverse
+mov   word ptr ds:[_backsector], SECNUM_NULL   ; does this ever get properly used or checked? can we just ignore?
+
+
+clipsolid_ax_swap:
+xchg  ax, bx                   ; grab cached x1
+
+; single code path so we have a single return path to clear selfmodified line fields
+
+; fall thru
+;jmp   R_ClipSolidWallSegment_
+
+ENDP
+
+
 ;R_ClipSolidWallSegment_
 
 PROC R_ClipSolidWallSegment_ NEAR
@@ -7479,53 +7511,53 @@ mov   cx, ax                  ; backup first in cx for most of the function.
 mov   di, dx
 dec   ax
 mov   si, OFFSET _solidsegs
-cmp   ax, word ptr ds:[si+2]
-
+cmp   ax, word ptr ds:[si + CLIPRANGE_T.cliprange_last]
+ 
 ;  while (start->last < first-1)
 ;  	start++;
 
 jle   found_start_solid
 increment_start:
-add   si, 4
-cmp   ax, word ptr ds:[si + 2]
+add   si, SIZE CLIPRANGE_T
+cmp   ax, word ptr ds:[si + CLIPRANGE_T.cliprange_last]
 jg    increment_start
 found_start_solid:
 mov   ax, cx
-cmp   ax, word ptr ds:[si]
+cmp   ax, word ptr ds:[si + CLIPRANGE_T.cliprange_first]
 
 ;    if (first < start->first)
 
 jge   first_greater_than_startfirst ;		if (last < start->first-1) {
-mov   dx, word ptr ds:[si]
+mov   dx, word ptr ds:[si + CLIPRANGE_T.cliprange_first]
 dec   dx
 cmp   di, dx
 jl    last_smaller_than_startfirst;
 call  R_StoreWallRange_             ;		R_StoreWallRange (first, start->first - 1);
 mov   ax, cx                        ;		start->first = first;	
-mov   word ptr ds:[si], ax
+mov   word ptr ds:[si + CLIPRANGE_T.cliprange_first], ax
 first_greater_than_startfirst:
 ;	if (last <= start->last) {
 
-cmp   di, word ptr ds:[si + 2]
+cmp   di, word ptr ds:[si  + CLIPRANGE_T.cliprange_last]
 jle   write_back_newend_and_return
 ;    next = start;
 mov   bx, si                        ; si is start, bx is next
 ;    while (last >= (next+1)->first-1) {
 check_between_posts:
-mov   dx, word ptr ds:[bx + 4]
+mov   dx, word ptr ds:[bx + SIZE CLIPRANGE_T +  + CLIPRANGE_T.cliprange_first]
 dec   dx
 cmp   di, dx
 jl    do_final_fragment
-mov   ax, word ptr ds:[bx + 2]
+mov   ax, word ptr ds:[bx +  + CLIPRANGE_T.cliprange_last]
 inc   ax
 ;		// There is a fragment between two posts.
 ;		R_StoreWallRange (next->last + 1, (next+1)->first - 1);
 call  R_StoreWallRange_
-mov   ax, word ptr ds:[bx + 6]
+mov   ax, word ptr ds:[bx + SIZE CLIPRANGE_T + CLIPRANGE_T.cliprange_last]
 add   bx, 4
 cmp   di, ax
 jg    check_between_posts
-mov   word ptr ds:[si + 2], ax
+mov   word ptr ds:[si + CLIPRANGE_T.cliprange_last], ax
 crunch:
 ;    if (next == start) {
 cmp   bx, si
@@ -7536,15 +7568,15 @@ mov   cx, word ptr ds:[_newend] ; cache old newend
 
 check_to_remove_posts:
 mov   ax, bx
-lea   di, [si + 4]
-add   bx, 4
+lea   di, [si + SIZE CLIPRANGE_T]
+add   bx, SIZE CLIPRANGE_T
 cmp   ax, cx
 je    done_removing_posts
 les   ax, dword ptr ds:[bx]
 mov   dx, es
-mov   word ptr ds:[di], ax
+mov   word ptr ds:[di + CLIPRANGE_T.cliprange_first], ax
 mov   si, di
-mov   word ptr ds:[di + 2], dx
+mov   word ptr ds:[di + CLIPRANGE_T.cliprange_last], dx
 jmp   check_to_remove_posts
 last_smaller_than_startfirst:
 mov   dx, di
@@ -7566,31 +7598,41 @@ mov   dx, di         ; backup di
 std
 mov   di, cx         ; set dest
 sub   cx, si         ; count
-lea   si, [di - 4]   ; set source
+lea   si, [di - SIZE CLIPRANGE_T]   ; set source
 sar   cx, 1          ; set count in words
 rep   movsw
 cld
 
 ; ax = dest, dx = source, bx = count?
 
-mov   word ptr ds:[bx + 2], dx
-mov   word ptr ds:[bx], ax
+mov   word ptr ds:[bx + CLIPRANGE_T.cliprange_last], dx
+mov   word ptr ds:[bx + CLIPRANGE_T.cliprange_first], ax
 write_back_newend_and_return:
+
+mov   byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify], 0BBh ; mov bx, imm16 (fallthru)
+LEAVE_MACRO
+pop   cx
+pop   ax
 
 ret   
 
 do_final_fragment:
 ;    // There is a fragment after *next.
-mov   ax, word ptr ds:[bx + 2]
+mov   ax, word ptr ds:[bx + CLIPRANGE_T.cliprange_last]
 mov   dx, di
 inc   ax
 call  R_StoreWallRange_
-mov   word ptr ds:[si + 2], di
+mov   word ptr ds:[si + CLIPRANGE_T.cliprange_last], di
 jmp   crunch
 
 done_removing_posts:
     
 mov   word ptr ds:[_newend], di   ; newend = start+1;
+
+mov   byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify], 0BBh ; mov bx, imm16 (fallthru)
+LEAVE_MACRO
+pop   cx
+pop   ax
 
 ret   
 
@@ -7609,23 +7651,20 @@ dec  ax
 ;    start = solidsegs;
  
 mov  bx, OFFSET _solidsegs
-cmp  ax, word ptr ds:[bx + 2]
-
-;while (start->last < first - 1) {
-;   start++;
-;}
+cmp  ax, word ptr ds:[bx + CLIPRANGE_T.cliprange_last]
 
 
 jle  found_start
+; todo: try unrolling as optimization?
 keep_searching_for_start:
-add  bx, 4
-cmp  ax, word ptr ds:[bx + 2]
+add  bx, SIZE CLIPRANGE_T
+cmp  ax, word ptr ds:[bx + CLIPRANGE_T.cliprange_last]
 jg   keep_searching_for_start
 
 found_start:
 ;    if (first < start->first) {
 
-mov  ax, word ptr ds:[bx]  ; ax = start->first
+mov  ax, word ptr ds:[bx + CLIPRANGE_T.cliprange_first]  ; ax = start->first
 cmp  si, ax
 jge  check_last
 
@@ -7647,27 +7686,35 @@ check_last:
 ;	}
 
 
-cmp  cx, word ptr ds:[bx + 2]
+cmp  cx, word ptr ds:[bx + CLIPRANGE_T.cliprange_last]
 jle  do_clippass_exit
 check_next_fragment:
-mov  dx, word ptr ds:[bx + 4]
+mov  dx, word ptr ds:[bx + SIZE CLIPRANGE_T + CLIPRANGE_T.cliprange_first]
 dec  dx
 cmp  cx, dx
-mov  ax, word ptr ds:[bx + 2]
+mov  ax, word ptr ds:[bx + CLIPRANGE_T.cliprange_last]
 jl   fragment_after_next
 inc  ax
-add  bx, 4
+add  bx, SIZE CLIPRANGE_T
 ;  There is a fragment between two posts.
 
 call R_StoreWallRange_
-cmp  cx, word ptr ds:[bx + 2]
+cmp  cx, word ptr ds:[bx + CLIPRANGE_T.cliprange_last]
 jg   check_next_fragment
 do_clippass_exit:
+mov   byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify], 0BBh ; mov bx, imm16 (fallthru)
+LEAVE_MACRO
+pop   cx
+pop   ax
 ret  
 post_entirely_visible:
 mov  dx, cx
 mov  ax, si
 call R_StoreWallRange_
+mov   byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify], 0BBh ; mov bx, imm16 (fallthru)
+LEAVE_MACRO
+pop   cx
+pop   ax
 ret  
 
 fragment_after_next:
@@ -7675,6 +7722,10 @@ fragment_after_next:
 mov  dx, cx
 inc  ax
 call R_StoreWallRange_
+mov   byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify], 0BBh ; mov bx, imm16 (fallthru)
+LEAVE_MACRO
+pop   cx
+pop   ax
 ret  
 
 
@@ -8806,8 +8857,7 @@ sbb   bx, cx
 ;	}
 
 ; span low bits are in si
-cmp   bx, ANG180_HIGHBITS
-jae   return_1
+js     return_1
 
 ;	tspan.wu = angle1.wu;
 ;	tspan.hu.intbits += clipangle;
