@@ -2478,10 +2478,10 @@ jge       break_loop_visplane_not_found
 ; found visplane match. return it
 cbw       ; clear lastvisplane out of ah
 pop       dx  ; get isceil
-mov       bx, ax        ; store i
+
 call      R_HandleEMSVisplanePagination_
-; fetch and return i
-mov       ax, bx
+; fetch and return i * 8 ptr
+lea       ax, [bx - _visplaneheaders]
 
 
 ;pop       di
@@ -2553,7 +2553,7 @@ rep stosw
 ;rep stosw 
 
 
-mov       ax, si
+lea       ax, [bx - _visplaneheaders]
 
 
 ;pop       di
@@ -2750,12 +2750,12 @@ PROC R_CheckPlane_ NEAR
 push      si
 push      di
 
-mov       word ptr cs:[SELFMODIFY_setindex+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       si, dx    ; si holds start
 mov       di, ax
 
 
-SHIFT_MACRO shl di 3
+; already preshifted 3
+mov       word ptr cs:[SELFMODIFY_setindex+1 - OFFSET R_BSP24_STARTMARKER_], di
 
 
 add       di, _visplaneheaders  ; _di is plheader
@@ -2865,12 +2865,12 @@ mov       di, word ptr ds:[di + _visplanepiclights]
 mov       word ptr ds:[bx + _visplanepiclights], di
 SHIFT_MACRO sal bx 2
 ; now bx is 8 per
-
+add       bx, _visplaneheaders
 ; set all plheader fields for lastvisplane...
-mov       word ptr ds:[bx + _visplaneheaders], ax
-mov       word ptr ds:[bx + _visplaneheaders+2], dx
-mov       word ptr ds:[bx + _visplaneheaders+4], si ; looks weird
-mov       word ptr ds:[bx + _visplaneheaders+6], cx  ; looks weird
+mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height+0], ax
+mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height+2], dx
+mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_minx], si ; looks weird
+mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_maxx], cx  ; looks weird
 
 
 
@@ -2891,7 +2891,7 @@ mov       cx, (SCREENWIDTH / 2) + 1   ; plus one for the padding
 rep stosw 
 
 
-mov       ax, si
+lea       ax, [bx - _visplaneheaders]
 inc       word ptr ds:[_lastvisplane]
 
 
@@ -7263,7 +7263,7 @@ mov   bp, sp
 
 mov   cx, ds
 mov   dx, LINEFLAGSLIST_SEGMENT
-mov   s, dx
+mov   ds, dx
 cwd   ; never will have 32k lines... clear dh
 xchg  ax, bx
 mov   dl, byte ptr ds:[bx + SEG_SIDES_OFFSET_IN_LINEFLAGSLIST]
@@ -7274,23 +7274,27 @@ push  dx                           ; bp - 4  ; line pointer
 push  di                           ; bp - 6  ; seg_sides
 SHIFT_MACRO shl bx 2
 add   bh, (_segs_render SHR 8)
+mov   ds, cx
 push  word ptr ds:[bx + SEG_RENDER_T.sr_sidedefOffset]  ; bp - 8  ; SIDE_T index. used once. 
 push  bx   ; bp - 0Ah
 
 ; todo move way later?
-les   si, dword ptr ss:[bx]       ;sr_v1Offset
+les   si, dword ptr ds:[bx]       ;sr_v1Offset
 mov   di, es                      ;sr_v2Offset
 mov   ax, VERTEXES_SEGMENT
 mov   ds, ax
 SHIFT_MACRO shl si 2
 SHIFT_MACRO shl di 2
+les   dx, dword ptr ds:[si]
+mov   ax, es
+
 
 les   si, dword ptr ds:[di]       ; v2.x
 mov   di, es                      ; v2.y
-
-les   dx, dword ptr ds:[si]
 mov   ds, cx
-mov   cx, es
+xchg  ax, cx
+
+
 
 call  R_PointToAngle16_    ; todo debug why this doesnt work with the other one. stack corruption?
 
