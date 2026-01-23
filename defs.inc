@@ -967,6 +967,35 @@ ENDIF
 
 ENDM
 
+
+SHIFT32_MACRO_LEFT MACRO register_hi, register_lo, count
+  IF COMPISA GE COMPILE_386
+        shld &register_hi, &register_lo, &count
+        shl  &register_lo, &count
+  ELSE      
+    REPT &count
+        sal &register_lo, 1
+        rcl &register_hi, 1
+    ENDM
+  ENDIF
+ENDM
+
+
+SHIFT32_MACRO_RIGHT MACRO register_hi, register_lo, count
+  IF COMPISA GE COMPILE_386
+        shrd &register_lo, &register_hi, &count
+        sar  &register_hi, &count
+  ELSE      
+    REPT &count
+        sar &register_hi, 1
+        rcr &register_lo, 1
+    ENDM
+  ENDIF
+ENDM
+
+
+
+
 INSTRUCTION_SET_MACRO_NO_MEDIUM MACRO 
 IF COMPISA EQ COMPILE_386
 	.386

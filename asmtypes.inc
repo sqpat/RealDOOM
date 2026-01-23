@@ -371,11 +371,11 @@ SPRITEDEF_T ENDS
 
 
 VISPLANEHEADER_T STRUC 
-    visplaneheader_height     dd ?
-    visplaneheader_minx       dw ?
-    visplaneheader_maxx       dw ?
+    visplaneheader_height     dd ? ; 0
+    visplaneheader_minx       dw ? ; 4
+    visplaneheader_maxx       dw ? ; 6
 
-VISPLANEHEADER_T ENDS
+VISPLANEHEADER_T ENDS    ; 8
 
 VISPLANEPICLIGHT_T STRUC 
     visplanepiclight_picnum     db ?

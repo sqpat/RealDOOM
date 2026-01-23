@@ -2037,7 +2037,7 @@ COSINE_OFFSET_IN_SINE = ((FINECOSINE_SEGMENT - FINESINE_SEGMENT) SHL 4)
 
 ;R_ClearPlanes
 
-PROC R_ClearPlanes_ NEAR
+PROC   R_ClearPlanes_ NEAR
 
 ; dont need to preserve registers here
 
@@ -2420,12 +2420,14 @@ PROC R_FindPlane_ NEAR
 
 
 
-; dx:ax is height
+; dx is 13:3 height
 ; cx is picandlight
 ; bl is icceil
 
 ;push      si
 ;push      di
+
+xor       ax, ax  ; 13:19 fixed height...
 
 cmp       cl, byte ptr ds:[_skyflatnum]
 jne       not_skyflat
@@ -2433,11 +2435,12 @@ jne       not_skyflat
 ;		height = 0;			// all skys map together
 ;		lightlevel = 0;
 
-xor       ax, ax
 cwd
 xor       ch, ch
 not_skyflat:
 
+; TODO make this work without this.
+SHIFT32_MACRO_RIGHT dx ax 3
 
 ; loop vars
 
@@ -2451,7 +2454,7 @@ not_skyflat:
 
 
 ; set up find visplane loop
-mov       di, ax  
+mov       di, ax              ; note: di is always zero now due to 13:3
 push      bx  ; push isceil
 
 ; init loop vars
@@ -2498,9 +2501,9 @@ ret
 ;		}
 
 check_for_visplane_match:
-cmp       di, word ptr ds:[bx]     ; compare height low word
+cmp       di, word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height+0]     ; compare height low word
 jne       loop_iter_step_variables
-cmp       dx, word ptr ds:[bx + 2] ; compare height high word
+cmp       dx, word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height+2] ; compare height high word
 jne       loop_iter_step_variables
 cmp       cx, word ptr ds:[si] ; compare picandlight
 je        break_loop
@@ -2523,10 +2526,10 @@ cbw       ; no longer need lastvisplane, zero out ah
 
 
 ; set up new visplaneheader
-mov       word ptr ds:[bx], di
-mov       word ptr ds:[bx + 2], dx
-mov       word ptr ds:[bx + 4], SCREENWIDTH
-mov       word ptr ds:[bx + 6], 0FFFFh
+mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height+0], di
+mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height+2], dx
+mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_minx], SCREENWIDTH
+mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_maxx], 0FFFFh
 
 ;si already has  word lookup for piclights
 
@@ -2572,6 +2575,12 @@ SUBSECTOR_OFFSET_IN_SECTORS       = (SUBSECTORS_SEGMENT - SECTORS_SEGMENT) * 16
 
 ;R_Subsector_
 
+revert_visplane:
+call  Z_QuickMapVisplaneRevert_BSPLocal_ ;  todo inline i guess
+les   bx, dword ptr ds:[_frontsector]  ; retrieve frontsector? 
+jmp   prepare_fields
+
+
 PROC R_Subsector_ NEAR
 
 
@@ -2582,33 +2591,27 @@ PROC R_Subsector_ NEAR
 mov   bx, ax
 mov   ax, SUBSECTOR_LINES_SEGMENT
 mov   es, ax
-;mov   al, byte ptr es:[bx]
-;xor   ah, ah
+
 xor   ax, ax
 xlat  byte ptr es:[bx]
 
-mov   word ptr cs:[SELFMODIFY_countvalue+1 - OFFSET R_BSP24_STARTMARKER_], ax    ; di stores count for later
+push  ax  ; store count
 
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
 
 SHIFT_MACRO shl bx 2
 
-mov   ax, word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS + SUBSECTOR_T.ss_secnum] ; get subsec secnum
+push word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS + SUBSECTOR_T.ss_firstline]   ; get subsec firstline
 
-SHIFT_MACRO shl ax 4
-
-
-
-mov   word ptr ds:[_frontsector], ax
-;mov   word ptr ds:[_frontsector+2], es   ; es holds sectors_segment..
-mov   bx, word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS + SUBSECTOR_T.ss_firstline]   ; get subsec firstline
-xchg  bx, ax
-mov   word ptr cs:[SELFMODIFY_firstlinevalue+1 - OFFSET R_BSP24_STARTMARKER_], ax    ; di stores count for later
+mov   bx, word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS + SUBSECTOR_T.ss_secnum] ; get subsec secnum
+; todo should this sector be preshifted...
+SHIFT_MACRO shl bx 4
+mov   word ptr ds:[_frontsector], bx
 
 
 cmp   byte ptr ds:[_visplanedirty], 0
-jne   revert_visplane
+jne   revert_visplane      ; todo branch test
 
 prepare_fields:
 
@@ -2618,58 +2621,25 @@ prepare_fields:
 ;	floortop = NULL;
 
 xor   ax, ax
-; idea: put these variables all next to each other, then knock them out
-; with movsw
-mov   word ptr ds:[_ceilphyspage], ax
-;mov   byte ptr ds:[_floorphyspage], al
+
+mov   word ptr ds:[_ceilphyspage], ax  ; also writes _floorphyspage
+mov   word ptr ds:[_ceiltop], ax 
+;mov   word ptr ds:[_ceiltop+2], ax     ; seemed to be working fine without this?
+mov   word ptr ds:[_floortop], ax
+;mov   word ptr ds:[_floortop+2], ax    ; seemed to be working fine without this?
 
 ;  es:bx holds frontsector
-mov   word ptr ds:[_ceiltop], ax
 
-mov   word ptr ds:[_floortop], ax
+; OPTIMIZATION:  we compare as 13:3 instead of as 16:16
 
+dec   ax  ; was 0, becomes 0FFFFh ; -1 case
 
 
 mov   dx, word ptr es:[bx + SECTOR_T.sec_floorheight]
-; ax is already 0
-
-;	SET_FIXED_UNION_FROM_SHORT_HEIGHT
-
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
-
-SELFMODIFY_BSP_viewz_hi_6:
+SELFMODIFY_BSP_viewz_13_3_1:
 cmp   dx, 01000h
-jl    find_floor_plane_index
-je    check_viewz_lowbits_floor
+jg    set_floor_plane       ; todo test branch?
 
-set_floor_plane_minus_one:
-mov   word ptr cs:[SELFMODIFY_set_floorplaneindex+1 - OFFSET R_BSP24_STARTMARKER_], 0FFFFh
-
-jmp   floor_plane_set
-revert_visplane:
-call  Z_QuickMapVisplaneRevert_BSPLocal_
-jmp   prepare_fields
-
-
-set_ceiling_plane_minus_one:
-
-; es:bx is still frontsector
-mov   cl, byte ptr es:[bx + SECTOR_T.sec_ceilingpic]
-cmp   cl, byte ptr ds:[_skyflatnum]
-je    find_ceiling_plane_index
-mov   word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1 - OFFSET R_BSP24_STARTMARKER_], 0FFFFh
-jmp   do_addsprites
-
-check_viewz_lowbits_floor:
-
-SELFMODIFY_BSP_viewz_lo_6:
-cmp   ax, 01000h
-jae   set_floor_plane_minus_one    ; todo move to the other label
 find_floor_plane_index:
 
 ; set up picandlight
@@ -2677,49 +2647,49 @@ mov   ch, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
 mov   cl, byte ptr es:[bx + SECTOR_T.sec_floorpic]
 xor   bx, bx ; isceil = 0
 call  R_FindPlane_
+les   bx, dword ptr ds:[_frontsector]  ; retrieve frontsector
+set_floor_plane:
 mov   word ptr cs:[SELFMODIFY_set_floorplaneindex+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 floor_plane_set:
-les   bx, dword ptr ds:[_frontsector]
-mov   dx, word ptr es:[bx +  + SECTOR_T.sec_ceilingheight]
-xor   ax, ax
-;	SET_FIXED_UNION_FROM_SHORT_HEIGHT
+mov   ax, 0FFFFh  ; -1 case
+mov   dx, word ptr es:[bx + SECTOR_T.sec_ceilingheight]
 
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
+check_for_sky:
+; es:bx is still frontsector
+mov   cl, byte ptr es:[bx + SECTOR_T.sec_ceilingpic] 
+cmp   cl, byte ptr ds:[_skyflatnum]  ; todo single instruction cmp with constant
+je    find_ceiling_plane_index
 
-
-SELFMODIFY_BSP_viewz_hi_5:
+SELFMODIFY_BSP_viewz_13_3_2:
 cmp   dx, 01000h
-jg    find_ceiling_plane_index
-jne   set_ceiling_plane_minus_one
-SELFMODIFY_BSP_viewz_lo_5:
-cmp   ax, 01000h
-jbe   set_ceiling_plane_minus_one
+jl    set_ceiling_plane      ; TODO test branch
+
 find_ceiling_plane_index:
-les   bx, dword ptr ds:[_frontsector]
+; es:bx is frontsector
 
 ; set up picandlight
 mov   ch, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
 mov   cl, byte ptr es:[bx + SECTOR_T.sec_ceilingpic]
 mov   bx, 1
-
 call  R_FindPlane_
+les   bx, dword ptr ds:[_frontsector]    ; retrieve frontsector
+set_ceiling_plane:
 mov   word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1 - OFFSET R_BSP24_STARTMARKER_], ax
-do_addsprites:
-mov   ax, word ptr ds:[_frontsector]
-mov   dx, SECTORS_SEGMENT
-; todo make this not a function argument if its always frontsector?
-call  R_AddSprites_
 
-SELFMODIFY_countvalue:
-mov   cx, 0FFFFh
-SELFMODIFY_firstlinevalue:
-mov   ax, 0FFFFh
+do_addsprites:
+
+; todo: make single stack frame here
+; push frontsector values onto stack so its never again looked up 
+
+; es:bx already frontsector
+
+call  R_AddSprites_   ; todo inline?
+
+; if we create the stack frame here, ax/cx would be on stack and accessible without necessarily having to go back to register every time.
+
+pop   ax ; firstline
+pop   cx ; count
 
 loop_addline:
 
@@ -2775,13 +2745,13 @@ loaded_floor_or_ceiling:
 ; bx holds offset..
 
 mov       ax, si  ; fetch start
-cmp       ax, word ptr ds:[di + 4]    ; compare to minx
+cmp       ax, word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_minx]    ; compare to minx
 jge       start_greater_than_min
 mov       word ptr cs:[SELFMODIFY_setminx+3 - OFFSET R_BSP24_STARTMARKER_], ax
-mov       dx, word ptr ds:[di + 4]    ; fetch minx into intrl
+mov       dx, word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_minx]    ; fetch minx into intrl
 checked_start:
 ; now checkmax
-mov       ax, word ptr ds:[di + 6]   ; fetch maxx, ax = intrh = plheader->max
+mov       ax, word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_maxx]   ; fetch maxx, ax = intrh = plheader->max
 cmp       cx, ax                  ; compare stop to maxx
 jle       stop_smaller_than_max
 mov       word ptr cs:[SELFMODIFY_setmax+3 - OFFSET R_BSP24_STARTMARKER_], cx
@@ -2819,9 +2789,9 @@ breakloop:
 cmp       dx, ax
 jle       make_new_visplane
 SELFMODIFY_setminx:
-mov       word ptr ds:[di + 4], 0FFFFh
+mov       word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_minx], 0FFFFh
 SELFMODIFY_setmax:
-mov       word ptr ds:[di + 6], 0FFFFh
+mov       word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_maxx], 0FFFFh
 
 SELFMODIFY_setindex:
 mov       ax, 0ffffh
@@ -2837,7 +2807,7 @@ check_plane_is_floor:
 les       bx, dword ptr ds:[_floortop]
 jmp       loaded_floor_or_ceiling
 start_greater_than_min:
-mov       ax, word ptr ds:[di + 4]
+mov       ax, word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_minx]
 
 ;mov       dx, si                ; put start into intrl (dx was already si)
 mov       word ptr cs:[SELFMODIFY_setminx+3 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -2855,8 +2825,8 @@ sal       bx, 1   ; bx is 2 per index
 ; dx/ax is plheader->height
 ; done with old plheader..
 ; es is in use..
-mov       ax, word ptr ds:[di]
-mov       dx, word ptr ds:[di + 2]
+mov       ax, word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_height+0]
+mov       dx, word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_height+2]
 
 ;	visplanepiclights[lastvisplane].pic_and_light = visplanepiclights[index].pic_and_light;
 
@@ -3548,10 +3518,8 @@ ENDP
 
 PROC R_AddSprites_ NEAR
 
-; DX:AX = sector_t __far* sec
+; es:bx = sector_t __far* sec
 
-mov   bx, ax
-mov   es, dx
 mov   ax, word ptr es:[bx + SECTOR_T.sec_validcount]		; sec->validcount
 mov   dx, word ptr ds:[_validcount_global]
 cmp   ax, dx
@@ -11813,7 +11781,8 @@ ENDP
 
 ;R_WriteBackFrameConstants_
 
-PROC R_WriteBackFrameConstants_ NEAR
+PROC   R_WriteBackFrameConstants_ NEAR
+PUBLIC R_WriteBackFrameConstants_ 
 
 ; todo: calculate the values here and dont store to variables. (combine with setupframe etc)
 
@@ -11835,21 +11804,26 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_1+1 - OFFSET R_BSP24_STARTMARKER_]
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_2+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_3+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_4+2 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_5+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_6+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_7+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_8+2 - OFFSET R_BSP24_STARTMARKER_], ax
 
+xchg     ax, dx  ; dx has viewz lo
 
 mov      ax, word ptr ss:[_viewz+2]
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_1+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_2+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_3+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_4+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_5+2 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_6+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_7+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_8+1 - OFFSET R_BSP24_STARTMARKER_], ax
+
+; create 13:3 fixed point for comparison in ax
+
+SHIFT32_MACRO_LEFT ax dx 3
+
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_13_3_1+2 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_13_3_2+2 - OFFSET R_BSP24_STARTMARKER_], ax
+
 
 mov      ax, word ptr ss:[_viewz_shortheight]
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
