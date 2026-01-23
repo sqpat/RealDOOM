@@ -941,9 +941,10 @@ skip_swap:
 
 pop    es  ;  ; base pointer for di
 
-movsw   ; offset
+movsw   ; sr_offset
 xchg   ax, bp
-stosw   ; ldefsidenum
+SHIFT_MACRO shl ax 2
+stosw   ; sr_sidedefOffset  preshifted 2
 
 ; ax has ldefsidenum
 ; bp has ldefothersidenum
@@ -953,7 +954,7 @@ stosw   ; ldefsidenum
 
 SHIFT_MACRO  shl bx 2   ; for tempsecnums dword offset
 
-SHIFT_MACRO  shl ax 2
+
 xchg   ax, bp
 
 push   es
@@ -1047,9 +1048,8 @@ lodsw
 xchg   ax, bx
 SHIFT_MACRO shl bx 3
 mov    es, dx ; SEGS_RENDER_9000_SEGMENT
-mov    bx, word ptr es:[bx + SEG_RENDER_T.sr_sidedefOffset] ; size 8 per
+mov    bx, word ptr es:[bx + SEG_RENDER_T.sr_sidedefOffset] ; size 4 per. preshifted 2
 
-SHIFT_MACRO shl bx 2
 mov    es, di ; SIDES_RENDER_9000_SEGMENT
 push   word ptr es:[bx + SIDE_RENDER_T.sr_secnum] ; get secnum  ; size 4 per
 pop    word ptr ds:[si - 4]                       ; write secnum

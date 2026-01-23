@@ -1176,7 +1176,7 @@ mov   ds, ax
 mov   ax, SIDES_SEGMENT
 mov   si, word ptr ds:[bx + SEG_RENDER_T.sr_sidedefOffset]			; get sidedefOffset
 mov   es, ax
-SHIFT_MACRO shl si 2
+; si was preshifted
 mov   bx, si						; side_render_t is 4 bytes each
 shl   si, 1							; side_t is 8 bytes each
 add   bh, (_sides_render SHR 8 )		; sides render near addr is ds:[0xAE00]

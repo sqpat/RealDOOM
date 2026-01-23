@@ -3693,9 +3693,7 @@ SELFMODIFY_skip_curseg_based_selfmodify_AFTER:
 mov       bx, word ptr [bp + 010h]  ; curseg_render     ; turns into a jump past selfmodifying code once this next code block runs. 
 
 xor       ax, ax
-mov       si, word ptr ds:[bx + SEG_RENDER_T.sr_sidedefOffset]  
-
-SHIFT_MACRO shl si 2
+mov       si, word ptr ds:[bx + SEG_RENDER_T.sr_sidedefOffset]  ; preshifted 2
 
 ; todo pull this out into outer func?
 mov       ax, word ptr ds:[si + _sides_render]
@@ -7206,7 +7204,7 @@ PUBLIC R_AddLine_
 ; bp - 2       lineflags       ; bp + 018h in R_StoreWallRange
 ; bp - 4       curlineside     ; bp + 016h in R_StoreWallRange
 ; bp - 6       curseglinedef   ; bp + 014h in R_StoreWallRange
-; bp - 8       curlinesidedef  ; shifted pointer to side
+; bp - 8       curlinesidedef  ; bp + 012h in R_StoreWallRange shifted pointer to side
 ; bp - 0Ah     curseg_render   ; bp + 010h in R_StoreWallRange
 ; bp - 0Ch     _rw_scale hi    ; bp + 0Eh in R_StoreWallRange
 ; bp - 0Eh     _rw_scale lo    ; bp + 0Ch in R_StoreWallRange
@@ -7432,8 +7430,8 @@ jne   clippass
 
 ;    fall thru and return if midtexture doesnt match.
 mov   es, word ptr ds:[_SIDES_SEGMENT_PTR]
-mov   si, word ptr [bp - 8]    ; presumably curlinesidedef.
-SHIFT_MACRO shl si 3
+mov   si, word ptr [bp - 8]    ; preshifted 2
+shl   si, 1
 cmp   word ptr es:[si + SIDE_T.s_midtexture], 0  ; todo investigate branch rate
 je    exit_addline_2
 

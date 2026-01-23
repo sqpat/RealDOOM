@@ -749,37 +749,37 @@ mov   es, ax
 SHIFT_MACRO shl   di 4
 SHIFT_MACRO shl   si 4
 
-mov   ax, word ptr es:[di]
+mov   ax, word ptr es:[di + SECTOR_T.sec_floorheight]
 
-cmp   ax, word ptr es:[si]
-mov   ax, word ptr es:[di + 2]
+cmp   ax, word ptr es:[si + SECTOR_T.sec_floorheight]
+mov   ax, word ptr es:[di + SECTOR_T.sec_ceilingheight]
 jne   floor_ceiling_heights_dont_match
-cmp   ax, word ptr es:[si + 2]
+cmp   ax, word ptr es:[si + SECTOR_T.sec_ceilingheight]
 je    jump_to_cross_subsector_mainloop_increment
 floor_ceiling_heights_dont_match:
-cmp   ax, word ptr es:[si + 2]
+cmp   ax, word ptr es:[si + SECTOR_T.sec_ceilingheight]
 jl    set_opentop_to_frontsector
-mov   ax, word ptr es:[si + 2]
+mov   ax, word ptr es:[si + SECTOR_T.sec_ceilingheight]
 jmp   opentop_set
 side_crossed:
 jump_to_cross_subsector_mainloop_increment:
 jmp   cross_subsector_mainloop_increment
 
 set_opentop_to_frontsector:
-mov   ax, word ptr es:[di + 2]
+mov   ax, word ptr es:[di + SECTOR_T.sec_ceilingheight]
 
 opentop_set:
 mov   cx, ax	; store opentop
 mov   word ptr cs:[SELFMODIFY_PSIGHT_setopentop + 1 - P_SIGHT_STARTMARKER_], ax
-mov   ax, word ptr es:[di]
-cmp   ax, word ptr es:[si]
+mov   ax, word ptr es:[di + SECTOR_T.sec_floorheight]
+cmp   ax, word ptr es:[si + SECTOR_T.sec_floorheight]
 jg    set_openbottom_to_frontsector
-mov   bx, word ptr es:[si]
+mov   bx, word ptr es:[si + SECTOR_T.sec_floorheight]
 jmp   openbottom_set
 jump_to_cross_bsp_node_return_0_2:
 jmp   cross_bsp_node_return_0	; todo optim out fallthru
 set_openbottom_to_frontsector:
-mov   bx, word ptr es:[di]
+mov   bx, word ptr es:[di + SECTOR_T.sec_floorheight]
 openbottom_set:
 cmp   bx, cx
 jge   jump_to_cross_bsp_node_return_0_2

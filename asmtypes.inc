@@ -244,10 +244,10 @@ SEG_PHYSICS_T ENDS
 
 
 SEG_RENDER_T STRUC 
-    sr_v1Offset           dw ? ; 0
-    sr_v2Offset           dw ? ; 2
+    sr_v1Offset           dw ? ; 0  ; preshifted left 2
+    sr_v2Offset           dw ? ; 2  ; preshifted left 2
     sr_offset             dw ? ; 4
-    sr_sidedefOffset      dw ? ; 6
+    sr_sidedefOffset      dw ? ; 6  ; preshifted left 2
                                ; 8
 SEG_RENDER_T ENDS
 
