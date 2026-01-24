@@ -2424,9 +2424,6 @@ PROC R_FindPlane_ NEAR
 ; cx is picandlight
 ; bl is icceil
 
-;push      si
-;push      di
-
 xor       ax, ax
 
 cmp       cl, byte ptr ds:[_skyflatnum]
@@ -2455,7 +2452,7 @@ not_skyflat:
 
 ; di unused... 
 
-push      bx  ; push isceil
+push      bx  ; push isceil  ; todo store elsewhere maybe di
 
 ; init loop vars
 ; ax already xored.
@@ -2554,151 +2551,12 @@ rep stosw
 
 lea       ax, [bx - _visplaneheaders]
 
-
-;pop       di
-;pop       si
 ret       
 
 ENDP
 
 
 
-SUBSECTOR_OFFSET_IN_SECTORS       = (SUBSECTORS_SEGMENT - SECTORS_SEGMENT) * 16
-;SUBSECTOR_LINES_OFFSET_IN_SECTORS = (SUBSECTOR_LINES_SEGMENT - SECTORS_SEGMENT) * 16
-
-;R_Subsector_
-
-revert_visplane:
-call  Z_QuickMapVisplaneRevert_BSPLocal_ ;  todo inline i guess
-les   bx, dword ptr ds:[_frontsector]  ; retrieve frontsector? 
-jmp   prepare_fields
-
-
-PROC R_Subsector_ NEAR
-
-
-;ax is subsecnum
-
-
-
-xchg  ax, bx
-mov   ax, SUBSECTOR_LINES_SEGMENT
-mov   es, ax
-
-xor   ax, ax
-xlat  byte ptr es:[bx]
-
-push  ax  ; store count
-
-mov   ax, SECTORS_SEGMENT
-mov   es, ax
-
-SHIFT_MACRO shl bx 2
-
-push word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS + SUBSECTOR_T.ss_firstline]   ; get subsec firstline
-
-mov   bx, word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS + SUBSECTOR_T.ss_secnum] ; get subsec secnum
-mov   word ptr ds:[_frontsector], bx
-
-
-cmp   byte ptr ds:[_visplanedirty], 0
-jne   revert_visplane      ; todo branch test
-
-prepare_fields:
-
-;	ceilphyspage = 0;
-;	floorphyspage = 0;
-;	ceiltop = NULL;
-;	floortop = NULL;
-
-xor   ax, ax
-
-mov   word ptr ds:[_ceilphyspage], ax  ; also writes _floorphyspage
-mov   word ptr ds:[_ceiltop], ax 
-;mov   word ptr ds:[_ceiltop+2], ax     ; seemed to be working fine without this?
-mov   word ptr ds:[_floortop], ax
-;mov   word ptr ds:[_floortop+2], ax    ; seemed to be working fine without this?
-
-;  es:bx holds frontsector
-
-; OPTIMIZATION:  we compare as 13:3 instead of as 16:16
-
-dec   ax  ; was 0, becomes 0FFFFh ; -1 case
-
-
-mov   dx, word ptr es:[bx + SECTOR_T.sec_floorheight]
-SELFMODIFY_BSP_viewz_13_3_1:
-cmp   dx, 01000h
-jg    set_floor_plane       ; todo test branch?
-
-find_floor_plane_index:
-
-; set up picandlight
-mov   ch, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
-mov   cl, byte ptr es:[bx + SECTOR_T.sec_floorpic]
-xor   bx, bx ; isceil = 0
-call  R_FindPlane_
-les   bx, dword ptr ds:[_frontsector]  ; retrieve frontsector
-set_floor_plane:
-mov   word ptr cs:[SELFMODIFY_set_floorplaneindex+1 - OFFSET R_BSP24_STARTMARKER_], ax
-
-floor_plane_set:
-mov   ax, 0FFFFh  ; -1 case
-mov   dx, word ptr es:[bx + SECTOR_T.sec_ceilingheight]
-
-check_for_sky:
-; es:bx is still frontsector
-mov   cl, byte ptr es:[bx + SECTOR_T.sec_ceilingpic] 
-cmp   cl, byte ptr ds:[_skyflatnum]  ; todo single instruction cmp with constant
-je    find_ceiling_plane_index
-
-SELFMODIFY_BSP_viewz_13_3_2:
-cmp   dx, 01000h
-jl    set_ceiling_plane      ; TODO test branch
-
-find_ceiling_plane_index:
-; es:bx is frontsector
-
-; set up picandlight
-mov   ch, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
-mov   cl, byte ptr es:[bx + SECTOR_T.sec_ceilingpic]
-mov   bx, 1
-call  R_FindPlane_
-les   bx, dword ptr ds:[_frontsector]    ; retrieve frontsector
-set_ceiling_plane:
-mov   word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1 - OFFSET R_BSP24_STARTMARKER_], ax
-
-do_addsprites:
-
-; todo: make single stack frame here
-; push frontsector values onto stack so its never again looked up 
-
-; es:bx already frontsector
-
-call  R_AddSprites_   ; todo inline?
-
-; if we create the stack frame here, ax/cx would be on stack and accessible without necessarily having to go back to register every time.
-
-pop   ax ; firstline
-pop   cx ; count
-
-loop_addline:
-
-; what if we inlined AddLine? or unrolled this?
-; whats realistic maximum of numlines? a few hundred? might be 1800ish bytes... save about 10 cycles per call to addline maybe?
-
-
-call  R_AddLine_
-inc   ax
-
-loop   loop_addline
-
-
-
-
-ret   
-
-ENDP
 
 ;R_CheckPlane_
 
@@ -3572,7 +3430,7 @@ COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - C
 
 
 
-
+COMMENT @
 out_of_drawsegs:
 LEAVE_MACRO
 pop       di
@@ -3581,7 +3439,7 @@ pop       cx
 pop       bx
 ret       
 
-
+@
 
 ; 1 SHR 12
 HEIGHTUNIT = 01000h
@@ -3656,19 +3514,23 @@ PUBLIC R_StoreWallRange_
 ; bp - 048h  ; backsectorceilingheight
 
 
-; bp + 0Ch    ; rw_angle lo from R_AddLine
-; bp + 0Eh    ; rw_angle hi from R_AddLine
-; bp + 010h   ; curseg_render
-; bp + 014h   ; curseglinedef
+; todo shift 4/segsrender thing here
+; bp + 01Eh   ; linenum for R_AddLine_
+; bp + 01Ch   ; loop counter for R_AddLine_
+; bp + 01Ah   ; bp pushed from R_AddLine
 ; bp + 018h   ; lineflags
-; bp + 01Eh   ; ax passed into R_AddLine_
-
-             
-push      bx ; +8
-push      cx ; +6
-push      si ; +4
-push      di ; +2
-push      bp ; +0
+; bp + 016h   ; curlineside
+; bp + 014h   ; curseglinedef
+; bp + 012h   ; curlinesidedef
+; bp + 010h   ; curseg_render
+; bp + 0Eh    ; rw_angle hi from R_AddLine
+; bp + 0Ch    ; rw_angle lo from R_AddLine
+; return address ; bp + 0Ah             
+push      bx     ; bp + 8
+push      cx     ; bp + 6   ; todo get rid of most of these push pop
+push      si     ; bp + 4
+push      di     ; bp + 2
+push      bp     ; bp + 0
 mov       bp, sp
 push      ax ; bp - 2
 push      dx ; bp - 4
@@ -3693,7 +3555,7 @@ mov       bx, word ptr [bp + 010h]  ; curseg_render     ; turns into a jump past
 xor       ax, ax
 mov       si, word ptr ds:[bx + SEG_RENDER_T.sr_sidedefOffset]  ; preshifted 2
 
-; todo pull this out into outer func?
+; todo pull this out into outer func? and just push it?
 mov       ax, word ptr ds:[si + _sides_render + SIDE_RENDER_T.sr_rowoffset]
 mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -3817,7 +3679,7 @@ finish_midtex_selfmodify:
    shl       al, cl
    or        byte ptr es:[si], al
 
-  mov       bx, word ptr [bp + 01Eh]
+   mov       bx, word ptr [bp + 01Eh]
    sal       bx, 1       ;  curseg word lookup
 
    mov       ax, word ptr ds:[bx+_seg_normalangles]
@@ -3984,15 +3846,15 @@ done_setting_rw_distance:
 les       di, dword ptr ds:[_ds_p]
 mov       ax, word ptr [bp + 01Eh]  ; R_AddLine line num
 
-stosw              ; +0
+stosw              ; DRAWSEG_T.drawseg_cursegvalue
 
 
-mov       ax, word ptr [bp - 2]
+mov       ax, word ptr [bp - 2]  ; x1 arg
 push      ax   ; bp - 018h r  w_x
-stosw              ; +2
+stosw              ; DRAWSEG_T.drawseg_x1
 xchg      ax, bx ; bx gets bp - 2
-mov       ax, word ptr [bp - 4]
-stosw              ; +4
+mov       ax, word ptr [bp - 4]   ; x2 arg
+stosw              ; DRAWSEG_T.drawseg_x2
 
 inc       ax
 push      ax   ; bp - 01Ah  rw_stopx
@@ -4009,9 +3871,9 @@ call      R_ScaleFromGlobalAngle_
 mov       es, cx ; restore es as ds_p+2 segment
 push      dx  ; bp - 030h
 push      ax  ; bp - 032h
-stosw             ; +6
+stosw             ; DRAWSEG_T.drawseg_scale1
 xchg      ax, dx
-stosw             ; +8
+stosw             ; DRAWSEG_T.drawseg_scale2
 xchg      ax, dx                       ; put DX back; need it later.
 mov       si, word ptr [bp - 4]
 cmp       si, word ptr [bp - 2]
@@ -4021,9 +3883,9 @@ jg        stop_greater_than_start
 ; ds_p is es:di
 ;		ds_p->scale2 = ds_p->scale1;
 
-stosw      ; +0Ah
+stosw      ; DRAWSEG_T.drawseg_scalestep +0
 xchg      ax, dx
-stosw      ; +0Ch
+stosw      ; DRAWSEG_T.drawseg_scalestep +2
 xchg      ax, dx
 jmp       scales_set
 handle_negative_3216:
@@ -4345,11 +4207,11 @@ mov       ds, bx
 
 
 les       bx, dword ptr ds:[_ds_p]
-mov       word ptr es:[bx + 012h], MAXSHORT
-mov       word ptr es:[bx + 014h], MINSHORT
-mov       word ptr es:[bx + 016h], OFFSET_SCREENHEIGHTARRAY
-mov       word ptr es:[bx + 018h], OFFSET_NEGONEARRAY
-mov       byte ptr es:[bx + 01Ch], SIL_BOTH
+mov       word ptr es:[bx + DRAWSEG_T.drawseg_bsilheight], MAXSHORT
+mov       word ptr es:[bx + DRAWSEG_T.drawseg_tsilheight], MINSHORT
+mov       word ptr es:[bx + DRAWSEG_T.drawseg_sprtopclip_offset], OFFSET_SCREENHEIGHTARRAY
+mov       word ptr es:[bx + DRAWSEG_T.drawseg_sprbottomclip_offset], OFFSET_NEGONEARRAY
+mov       byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_BOTH
 xor       ax, ax
 ; here
 done_with_sector_sided_check:
@@ -6657,7 +6519,7 @@ mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1 - OFFSET R_BSP24_STARTMA
 
 check_spr_top_clip:
 les       bx, dword ptr ds:[_ds_p]
-test      byte ptr es:[bx + 01ch], SIL_TOP
+test      byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_TOP
 jne       continue_checking_spr_top_clip
 cmp       byte ptr ds:[_maskedtexture], 0
 je        check_spr_bottom_clip
@@ -6666,7 +6528,7 @@ je        check_spr_bottom_clip
 
 continue_checking_spr_top_clip:
 
-cmp       word ptr es:[bx + 016h], 0
+cmp       word ptr es:[bx + DRAWSEG_T.drawseg_sprtopclip_offset], 0
 jne       check_spr_bottom_clip
 mov       si, word ptr [bp - 2]
 add       si, si
@@ -6687,19 +6549,19 @@ mov       ax, word ptr ds:[_lastopening]
 sub       ax, word ptr [bp - 2]
 mov       es, word ptr ds:[_ds_p+2]   ; bx is ds_p offset above
 add       ax, ax
-mov       word ptr es:[bx + 016h], ax
+mov       word ptr es:[bx + DRAWSEG_T.drawseg_sprtopclip_offset], ax
 mov       ax, word ptr [bp - 01Ah]
 sub       ax, word ptr [bp - 2]
 add       word ptr ds:[_lastopening], ax
 check_spr_bottom_clip:
 ; es:si is ds_p
-test      byte ptr es:[bx + 01ch], SIL_BOTTOM
+test      byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_BOTTOM
 jne       continue_checking_spr_bottom_clip
 cmp       byte ptr ds:[_maskedtexture], 0
 je        check_silhouettes_then_exit
 jmp       continue_checking_spr_bottom_clip
 continue_checking_spr_bottom_clip:
-cmp       word ptr es:[bx + 018h], 0
+cmp       word ptr es:[bx + DRAWSEG_T.drawseg_sprbottomclip_offset], 0
 jne       check_silhouettes_then_exit
 mov       si, word ptr [bp - 2]
 add       si, si
@@ -6720,29 +6582,34 @@ mov       ax, word ptr ds:[_lastopening]
 sub       ax, word ptr [bp - 2]
 mov       es, word ptr ds:[_ds_p+2]   ; bx is ds_p offset above
 add       ax, ax
-mov       word ptr es:[bx + 018h], ax
+mov       word ptr es:[bx + DRAWSEG_T.drawseg_sprbottomclip_offset], ax
 mov       ax, word ptr [bp - 01Ah]
 sub       ax, word ptr [bp - 2]
 add       word ptr ds:[_lastopening], ax
 check_silhouettes_then_exit:
 cmp       byte ptr ds:[_maskedtexture], 0
 je        skip_top_silhouette
-test      byte ptr es:[bx + 01ch], SIL_TOP
+test      byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_TOP
 jne       skip_top_silhouette
-or        byte ptr es:[bx + 01ch], SIL_TOP
-mov       word ptr es:[bx + 014h], MINSHORT
+or        byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_TOP
+mov       word ptr es:[bx + DRAWSEG_T.drawseg_tsilheight], MINSHORT
 skip_top_silhouette:
 
 cmp       byte ptr ds:[_maskedtexture], 0
 je        skip_bot_silhouette
-test      byte ptr es:[bx + 01ch], SIL_BOTTOM
+test      byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_BOTTOM
 jne       skip_bot_silhouette
-or        byte ptr es:[bx + 01ch], SIL_BOTTOM
-mov       word ptr es:[bx + 012h], MAXSHORT
+or        byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_BOTTOM
+mov       word ptr es:[bx + DRAWSEG_T.drawseg_bsilheight], MAXSHORT
 skip_bot_silhouette:
 add       word ptr ds:[_ds_p], (SIZE DRAWSEG_T)
 LEAVE_MACRO
-pop       di
+
+; todo: backsector draws add 48h to the stack instead of 44h
+;add       sp, 044h     ; add back fixed SP
+;pop       bp           ; TODO: remove bp and use common stack frame
+
+pop       di            ; todo remove pushes  put ont he outside
 pop       si
 pop       cx
 pop       bx
@@ -6795,16 +6662,16 @@ mov       ds, si
 ; uint8_t backsectorlightlevel = backsector->lightlevel;
 
 les       si, dword ptr ds:[_backsector]
-lods      word ptr es:[si]
+lods      word ptr es:[si] ; floorheight
 push      ax  ; bp - 046h
 xchg      ax, cx
-lods      word ptr es:[si]
+lods      word ptr es:[si] ; ceilingheight
 push      ax  ; bp - 048h
 xchg      ax, bx   ; store for later
-lods      word ptr es:[si]
+lods      word ptr es:[si] ; floor, ceil pics
 mov       byte ptr [bp - 03Ah], al
 mov       byte ptr [bp - 038h], ah
-mov       al, byte ptr es:[si + 08h]  ; 0eh with the 6 from lodsw.
+mov       al, byte ptr es:[si + 08h]  ; sec_lightlevel with the 6 from lodsw.
 mov       byte ptr [bp - 03Ch], al
 xchg      ax, cx
 
@@ -6813,9 +6680,9 @@ xchg      ax, cx
 
 les       si, dword ptr ds:[_ds_p]
 xor       cx, cx
-mov       word ptr es:[si + 018h], cx
-mov       word ptr es:[si + 016h], cx
-mov       byte ptr es:[si + 01ch], cl ; SIL_NONE
+mov       word ptr es:[si + DRAWSEG_T.drawseg_sprbottomclip_offset], cx
+mov       word ptr es:[si + DRAWSEG_T.drawseg_sprtopclip_offset], cx
+mov       byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], cl ; SIL_NONE
 
 
 ; es:si is ds_p
@@ -6827,13 +6694,13 @@ SELFMODIFY_BSP_viewz_shortheight_2:
 cmp       ax, 01000h
 jle       bsilheight_set
 set_bsilheight_to_maxshort:
-mov       byte ptr es:[si + 01Ch], SIL_BOTTOM
-mov       word ptr es:[si + 012h], MAXSHORT
+mov       byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], SIL_BOTTOM
+mov       word ptr es:[si + DRAWSEG_T.drawseg_bsilheight], MAXSHORT
 jmp       bsilheight_set
 set_bsilheight_to_frontsectorfloorheight:
-mov       byte ptr es:[si + 01Ch], SIL_BOTTOM
+mov       byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], SIL_BOTTOM
 mov       cx, word ptr [bp - 034h]
-mov       word ptr es:[si + 012h], cx
+mov       word ptr es:[si + DRAWSEG_T.drawseg_bsilheight], cx
 bsilheight_set:
 
 xchg      ax, bx   ; retrieved from before
@@ -6843,13 +6710,13 @@ SELFMODIFY_BSP_viewz_shortheight_1:
 cmp       ax, 01000h
 jge       tsilheight_set
 set_tsilheight_to_minshort:
-or        byte ptr es:[si + 01ch], SIL_TOP
-mov       word ptr es:[si + 014h], MINSHORT
+or        byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], SIL_TOP
+mov       word ptr es:[si + DRAWSEG_T.drawseg_tsilheight], MINSHORT
 jmp       tsilheight_set
 set_tsilheight_to_frontsectorceilingheight:
-or        byte ptr es:[si + 01ch], SIL_TOP
+or        byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], SIL_TOP
 mov       cx, word ptr [bp - 036h]
-mov       word ptr es:[si + 014h], cx
+mov       word ptr es:[si + DRAWSEG_T.drawseg_tsilheight], cx
 tsilheight_set:
 ; es:si is still ds_p
 
@@ -6862,9 +6729,9 @@ jg        back_ceiling_greater_than_front_floor
 ; ds_p->bsilheight = MAXSHORT;
 ; ds_p->silhouette |= SIL_BOTTOM;
 
-mov       word ptr es:[si + 018h], OFFSET_NEGONEARRAY
-mov       word ptr es:[si + 012h], MAXSHORT
-or        byte ptr es:[si + 01ch], SIL_BOTTOM
+mov       word ptr es:[si + DRAWSEG_T.drawseg_sprbottomclip_offset], OFFSET_NEGONEARRAY
+mov       word ptr es:[si + DRAWSEG_T.drawseg_bsilheight], MAXSHORT
+or        byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], SIL_BOTTOM
 back_ceiling_greater_than_front_floor:
 ; es:si is still ds_p
 ; if (backsectorfloorheight >= frontsectorceilingheight) {
@@ -6876,9 +6743,9 @@ jl        back_floor_less_than_front_ceiling
 ; ds_p->sprtopclip_offset = offset_screenheightarray;
 ; ds_p->tsilheight = MINSHORT;
 ; ds_p->silhouette |= SIL_TOP;
-mov       word ptr es:[si + 016h], OFFSET_SCREENHEIGHTARRAY
-mov       word ptr es:[si + 014h], MINSHORT
-or        byte ptr es:[si + 01ch], SIL_TOP
+mov       word ptr es:[si + DRAWSEG_T.drawseg_sprtopclip_offset], OFFSET_SCREENHEIGHTARRAY
+mov       word ptr es:[si + DRAWSEG_T.drawseg_tsilheight], MINSHORT
+or        byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], SIL_TOP
 back_floor_less_than_front_ceiling:
 
 ; SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldhigh, backsectorceilingheight);
@@ -7188,8 +7055,158 @@ ENDP
 
 
 SEG_LINEDEFS_OFFSET_IN_LINEFLAGSLIST =  ((SEG_LINEDEFS_SEGMENT - LINEFLAGSLIST_SEGMENT) SHL 4)
-
 SEG_SIDES_OFFSET_IN_LINEFLAGSLIST    = ((SEG_SIDES_SEGMENT - LINEFLAGSLIST_SEGMENT) SHL 4)
+
+
+
+SUBSECTOR_OFFSET_IN_SECTORS       = (SUBSECTORS_SEGMENT - SECTORS_SEGMENT) * 16
+;SUBSECTOR_LINES_OFFSET_IN_SECTORS = (SUBSECTOR_LINES_SEGMENT - SECTORS_SEGMENT) * 16
+
+;R_Subsector_
+
+revert_visplane:
+call  Z_QuickMapVisplaneRevert_BSPLocal_ ;  doesn't ruin ES i guess
+les   bx, dword ptr ds:[_frontsector]  ; retrieve frontsector? 
+jmp   prepare_fields
+
+
+PROC R_Subsector_ NEAR
+PUBLIC R_Subsector_ 
+
+
+;ax is subsecnum
+
+
+
+xchg  ax, bx
+mov   ax, SUBSECTOR_LINES_SEGMENT
+mov   es, ax
+
+xor   ax, ax
+xlat  byte ptr es:[bx]
+
+
+mov   dx, SECTORS_SEGMENT
+mov   es, dx
+
+SHIFT_MACRO shl bx 2   ; TODO push this (and sectors_segment?) as frontsectorptr? then les that not _frontsector
+
+push  word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS + SUBSECTOR_T.ss_firstline]   ; get subsec firstline ; bp + 4
+push  ax  ; store count  ; bp + 2
+
+mov   bx, word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS + SUBSECTOR_T.ss_secnum] ; get subsec secnum
+mov   word ptr ds:[_frontsector], bx
+
+
+cmp   byte ptr ds:[_visplanedirty], 0
+jne   revert_visplane      ; todo branch test
+
+prepare_fields:
+
+;	ceilphyspage = 0;
+;	floorphyspage = 0;
+;	ceiltop = NULL;
+;	floortop = NULL;
+
+xor   ax, ax
+
+mov   word ptr ds:[_ceilphyspage], ax  ; also writes _floorphyspage
+mov   word ptr ds:[_ceiltop], ax 
+;mov   word ptr ds:[_ceiltop+2], ax     ; seemed to be working fine without this?
+mov   word ptr ds:[_floortop], ax
+;mov   word ptr ds:[_floortop+2], ax    ; seemed to be working fine without this?
+
+;  es:bx holds frontsector
+
+; OPTIMIZATION:  we compare as 13:3 instead of as 16:16
+
+dec   ax  ; was 0, becomes 0FFFFh ; -1 case
+
+
+mov   dx, word ptr es:[bx + SECTOR_T.sec_floorheight]
+SELFMODIFY_BSP_viewz_13_3_1:
+cmp   dx, 01000h
+jg    set_floor_plane       ; todo test branch?
+
+find_floor_plane_index:
+
+; set up picandlight
+mov   ch, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
+mov   cl, byte ptr es:[bx + SECTOR_T.sec_floorpic]
+xor   bx, bx ; isceil = 0
+call  R_FindPlane_
+les   bx, dword ptr ds:[_frontsector]  ; retrieve frontsector
+set_floor_plane:
+mov   word ptr cs:[SELFMODIFY_set_floorplaneindex+1 - OFFSET R_BSP24_STARTMARKER_], ax
+
+floor_plane_set:
+mov   ax, 0FFFFh  ; -1 case
+mov   dx, word ptr es:[bx + SECTOR_T.sec_ceilingheight]
+
+check_for_sky:
+; es:bx is still frontsector
+mov   cl, byte ptr es:[bx + SECTOR_T.sec_ceilingpic] 
+cmp   cl, byte ptr ds:[_skyflatnum]  ; todo single instruction cmp with constant
+je    find_ceiling_plane_index
+
+SELFMODIFY_BSP_viewz_13_3_2:
+cmp   dx, 01000h
+jl    set_ceiling_plane      ; TODO test branch
+
+find_ceiling_plane_index:
+; es:bx is frontsector
+
+; set up picandlight
+mov   ch, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
+mov   cl, byte ptr es:[bx + SECTOR_T.sec_ceilingpic]
+mov   bx, 1
+call  R_FindPlane_
+les   bx, dword ptr ds:[_frontsector]    ; retrieve frontsector
+set_ceiling_plane:
+mov   word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1 - OFFSET R_BSP24_STARTMARKER_], ax
+
+do_addsprites:
+
+; todo: make single stack frame here
+; push frontsector values onto stack so its never again looked up 
+
+; es:bx already frontsector
+
+call  R_AddSprites_   ; todo inline?
+
+; if we create the stack frame here, ax/cx would be on stack and accessible without necessarily having to go back to register every time.
+
+                        ; bp + 4 is line   bp + 01Eh in R_StoreWallRange
+                        ; bp + 2 is count  bp + 01Ch in R_StoreWallRange
+push  bp                ; bp + 0           bp + 01Ah in R_StoreWallRange
+mov   bp, sp
+mov   word ptr cs:[SELFMODIFY_reset_sp+1], sp  ; store stack pointer for loop iter repeats
+jmp   R_AddLine_
+
+exit_r_addline:
+
+pop   bp
+add   sp, 4  ; for the line/count pushed earlier
+ret   
+
+END_R_ADDLINE_AND_SELFMODIFY_LABEL:  
+; this is called if we know a call was made to R_StoreWallRange, 
+; so we must cachebust it (replace jump with fallthru to refresh
+;  selfmodify cache with new line values next R_StoreWallRange)
+
+mov   byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify], 0BBh ; mov bx, imm16 (fallthru)
+
+END_R_ADDLINE_LABEL:
+SELFMODIFY_reset_sp:
+
+mov   sp, 01000h
+inc   word ptr [bp + 4]  ; line
+dec   word ptr [bp + 2]  ; count
+jz    exit_r_addline
+
+; fall thru
+
+ENDP
 
 
 ;R_AddLine_
@@ -7208,17 +7225,12 @@ PUBLIC R_AddLine_
 ; bp - 0Eh     _rw_scale lo    ; bp + 0Ch in R_StoreWallRange
 
 
-;todo reorder stack? pushes and LES synergy?
-push  ax     ; bp + 4  ; bp + 01Eh in R_StoreWallRange
-push  cx     ; bp + 2  ; bp + 01Ch in R_StoreWallRange
-push  bp     ; bp + 0  ; bp + 01Ah in R_StoreWallRange
-mov   bp, sp
 
 mov   cx, ds
 mov   dx, LINEFLAGSLIST_SEGMENT
 mov   ds, dx
-cwd   ; never will have 32k lines... clear dh
-xchg  ax, bx
+xor   dx, dx
+mov   bx, word ptr [bp + 4]  ; get linenum todo push an already shl 4e d copy and add 16 in iter?
 mov   dl, byte ptr ds:[bx + SEG_SIDES_OFFSET_IN_LINEFLAGSLIST]
 shl   bx, 1
 mov   di, word ptr ds:[bx + SEG_LINEDEFS_OFFSET_IN_LINEFLAGSLIST] 
@@ -7264,12 +7276,9 @@ sub   di, ax
 mov   cx, si
 sbb   cx, dx
 jns   dont_backface_cull
-exit_addline:   ; todo branch measure
+exit_addline:
+jmp   END_R_ADDLINE_LABEL ; quick out
 
-LEAVE_MACRO 
-pop   cx
-pop   ax
-ret   
 dont_backface_cull:
 ; cx:ax is span
 ; dx:di is angle2
@@ -7354,7 +7363,7 @@ SHIFT_MACRO shr bx 2
 and   bl, 0FEh  ; low bit removal
 mov   dx, word ptr ds:[bx + _viewangletox]
 cmp   ax, dx
-je    exit_addline
+je    exit_addline_2
 ;	if (!(lineflagslist[curseglinedef] & ML_TWOSIDED)) {
 dec   dx       ; x2 -1 for calls later.
 
@@ -7432,13 +7441,11 @@ cmp   word ptr es:[si + SIDE_T.s_midtexture], 0  ; todo investigate branch rate
 je    exit_addline_2
 
 clippass:
+; we hit pass here.
 xchg  ax, bx                   ; grab cached x1
 jmp   R_ClipPassWallSegment_
 exit_addline_2:
-LEAVE_MACRO 
-pop   cx
-pop   ax
-ret   
+jmp   END_R_ADDLINE_LABEL
 
 clip_solid_with_null_backsec:
 xchg  ax, bx                   ; dont grab uncached x1 - reverse
@@ -7490,11 +7497,14 @@ jl    last_smaller_than_startfirst;
 call  R_StoreWallRange_             ;		R_StoreWallRange (first, start->first - 1);
 mov   ax, cx                        ;		start->first = first;	
 mov   word ptr ds:[si + CLIPRANGE_T.cliprange_first], ax
-first_greater_than_startfirst:
+
+first_greater_than_startfirst_already_rendered:
 ;	if (last <= start->last) {
 
 cmp   di, word ptr ds:[si  + CLIPRANGE_T.cliprange_last]
 jle   write_back_newend_and_return
+
+check_rest_loop:
 ;    next = start;
 mov   bx, si                        ; si is start, bx is next
 ;    while (last >= (next+1)->first-1) {
@@ -7522,16 +7532,15 @@ je    write_back_newend_and_return
 mov   cx, word ptr ds:[_newend] ; cache old newend
 
 check_to_remove_posts:
-mov   ax, bx
-lea   di, [si + SIZE CLIPRANGE_T]
-add   bx, SIZE CLIPRANGE_T
-cmp   ax, cx
+add   si, SIZE CLIPRANGE_T
+
+cmp   bx, cx
 je    done_removing_posts
+add   bx, SIZE CLIPRANGE_T
 les   ax, dword ptr ds:[bx]
-mov   dx, es
-mov   word ptr ds:[di + CLIPRANGE_T.cliprange_first], ax
-mov   si, di
-mov   word ptr ds:[di + CLIPRANGE_T.cliprange_last], dx
+mov   word ptr ds:[si + CLIPRANGE_T.cliprange_first], ax
+
+mov   word ptr ds:[si + CLIPRANGE_T.cliprange_last], es
 jmp   check_to_remove_posts
 last_smaller_than_startfirst:
 mov   dx, di
@@ -7562,14 +7571,17 @@ cld
 
 mov   word ptr ds:[bx + CLIPRANGE_T.cliprange_last], dx
 mov   word ptr ds:[bx + CLIPRANGE_T.cliprange_first], ax
-write_back_newend_and_return:
+write_back_newend_and_return:          ;todo misnamed? doesnt actually write back new end
+jmp   END_R_ADDLINE_AND_SELFMODIFY_LABEL
 
-mov   byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify], 0BBh ; mov bx, imm16 (fallthru)
-LEAVE_MACRO
-pop   cx
-pop   ax
-
-ret   
+first_greater_than_startfirst:
+; same as first_greater_than_startfirst_already_rendered but
+; we know we didnt render yet so if 2nd check fails dont selfmodify R_StoreWallRange_
+; stuff back due to no calls.
+cmp   di, word ptr ds:[si  + CLIPRANGE_T.cliprange_last]
+jnle  check_rest_loop
+return_didnt_render:
+jmp   END_R_ADDLINE_LABEL
 
 do_final_fragment:
 ;    // There is a fragment after *next.
@@ -7582,20 +7594,17 @@ jmp   crunch
 
 done_removing_posts:
     
-mov   word ptr ds:[_newend], di   ; newend = start+1;
+mov   word ptr ds:[_newend], si   ; newend = start+1;
 
-mov   byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify], 0BBh ; mov bx, imm16 (fallthru)
-LEAVE_MACRO
-pop   cx
-pop   ax
+jmp   END_R_ADDLINE_AND_SELFMODIFY_LABEL
 
-ret   
 
 ENDP
 
 ;R_ClipPassWallSegment_
 
-PROC R_ClipPassWallSegment_ NEAR
+PROC   R_ClipPassWallSegment_ NEAR
+PUBLIC R_ClipPassWallSegment_ 
 
 ; input: ax = first (transferred to si)
 ;        dx = last (transferred to cx)
@@ -7632,8 +7641,9 @@ jl   post_entirely_visible
 ; There is a fragment above *start.
 mov  ax, si
 call R_StoreWallRange_
+; possibly dupe the follwing code with an implicit assumption if R_StoreWallRange already ran or not
 
-check_last:
+check_last_already_rendered:
 
 ;   // Bottom contained in start?
 ;	if (last <= start->last) {
@@ -7657,31 +7667,30 @@ call R_StoreWallRange_
 cmp  cx, word ptr ds:[bx + CLIPRANGE_T.cliprange_last]
 jg   check_next_fragment
 do_clippass_exit:
-mov   byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify], 0BBh ; mov bx, imm16 (fallthru)
-LEAVE_MACRO
-pop   cx
-pop   ax
-ret  
+jmp   END_R_ADDLINE_AND_SELFMODIFY_LABEL
+
+check_last:  
+; same as check_last_already_rendered 
+; but if we detect two fails we know we didnt render anything and dont selfmodify over the R_StoreWallRangeStuff
+cmp    cx, word ptr ds:[bx + CLIPRANGE_T.cliprange_last]
+jnle  check_next_fragment
+do_clippass_nothing_seen:
+jmp   END_R_ADDLINE_LABEL
+
 post_entirely_visible:
 mov  dx, cx
 mov  ax, si
 call R_StoreWallRange_
-mov   byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify], 0BBh ; mov bx, imm16 (fallthru)
-LEAVE_MACRO
-pop   cx
-pop   ax
-ret  
+jmp   END_R_ADDLINE_AND_SELFMODIFY_LABEL
+
 
 fragment_after_next:
 
 mov  dx, cx
 inc  ax
 call R_StoreWallRange_
-mov   byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify], 0BBh ; mov bx, imm16 (fallthru)
-LEAVE_MACRO
-pop   cx
-pop   ax
-ret  
+jmp   END_R_ADDLINE_AND_SELFMODIFY_LABEL
+
 
 
 ENDP
