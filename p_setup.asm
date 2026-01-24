@@ -332,7 +332,9 @@ lodsw
 xchg   ax, dx ; dx stores textureoffset
 movsw   ; siderender_t rowoffset
 mov    ax, word ptr ds:[si + (MAPSIDEDEF_T.mapsidedef_sector - MAPSIDEDEF_T.mapsidedef_toptexture)]  ; + 24, read ahead..
-SHIFT_MACRO shl ax 4
+test   ax, ax
+js     skip_shifts
+SHIFT_MACRO rol ax 4   ; preserves negative 1 case
 stosw   ; siderender_t secnum, done
 
 xchg   bx, di
@@ -1012,7 +1014,7 @@ xor   di, di
 
 loop_next_seg_physics:
 lodsw
-SHIFT_MACRO sal ax 4
+SHIFT_MACRO rol ax 4
 stosw
 loop  loop_next_seg_physics
 
