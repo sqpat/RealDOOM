@@ -74,14 +74,15 @@ dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 02000h,  (COLORMAPS_SEGMENT 
 _spanfunc_jump_target:
 ; full quality
 
-dw 00768h, 00750h, 00738h, 00720h, 00708h, 006F0h, 006D8h, 006C0h, 006A8h, 00690h
-dw 00678h, 00660h, 00648h, 00630h, 00618h, 00600h, 005E8h, 005D0h, 005B8h, 005A0h
-dw 00588h, 00570h, 00558h, 00540h, 00528h, 00510h, 004F8h, 004E0h, 004C8h, 004B0h
-dw 00498h, 00480h, 00468h, 00450h, 00438h, 00420h, 00408h, 003F0h, 003D8h, 003C0h
-dw 003A8h, 00390h, 00378h, 00360h, 00348h, 00330h, 00318h, 00300h, 002E8h, 002D0h
-dw 002B8h, 002A0h, 00288h, 00270h, 00258h, 00240h, 00228h, 00210h, 001F8h, 001E0h
-dw 001C8h, 001B0h, 00198h, 00180h, 00168h, 00150h, 00138h, 00120h, 00108h, 000F0h
-dw 000D8h, 000C0h, 000A8h, 00090h, 00078h, 00060h, 00048h, 00030h, 00018h, 00000h
+
+dw 00719h, 00702h, 006EBh, 006D4h, 006BDh, 006A6h, 0068Fh, 00678h, 00661h, 0064Ah
+dw 00633h, 0061Ch, 00605h, 005EEh, 005D7h, 005C0h, 005A9h, 00592h, 0057Bh, 00564h
+dw 0054Dh, 00536h, 0051Fh, 00508h, 004F1h, 004DAh, 004C3h, 004ACh, 00495h, 0047Eh
+dw 00467h, 00450h, 00439h, 00422h, 0040Bh, 003F4h, 003DDh, 003C6h, 003AFh, 00398h
+dw 00381h, 0036Ah, 00353h, 0033Ch, 00325h, 0030Eh, 002F7h, 002E0h, 002C9h, 002B2h
+dw 0029Bh, 00284h, 0026Dh, 00256h, 0023Fh, 00228h, 00211h, 001FAh, 001E3h, 001CCh
+dw 001B5h, 0019Eh, 00187h, 00170h, 00159h, 00142h, 0012Bh, 00114h, 000FDh, 000E6h
+dw 000CFh, 000B8h, 000A1h, 0008Ah, 00073h, 0005Ch, 00045h, 0002Eh, 00017h, 00000h
 
 MAXLIGHTZ                      = 0080h
 MAXLIGHTZ_UNSHIFTED            = 0800h
@@ -348,8 +349,7 @@ sar   si, 1
 sar   si, 1
 lodsb 
 mov   si, ax
-lods  byte ptr cs:[si]
-stosb 
+movs  byte ptr es:[di], byte ptr cs:[si]
 mov   si, ss
 add   bp, si
 adc   cl, bl
@@ -370,8 +370,8 @@ sar   si, 1
 sar   si, 1
 lodsb 
 mov   si, ax
-lods  byte ptr cs:[si]
-stosb 
+movs  byte ptr es:[di], byte ptr cs:[si]
+
 
 
  

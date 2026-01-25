@@ -10,8 +10,8 @@
 #define R_WriteBackMaskedFrameConstants0Offset  0x8D
 #define R_WriteBackViewConstantsMaskedFLOffset  0x0
 #define R_WriteBackMaskedFrameConstantsFLOffset 0x8D
-#define R_DrawPlanes24Offset                    0xBD3
-#define R_WriteBackViewConstantsSpan24Offset    0x1050
+#define R_DrawPlanes24Offset                    0xB83
+#define R_WriteBackViewConstantsSpan24Offset    0x1000
 #define R_DrawPlanes16Offset                    0x9E7
 #define R_WriteBackViewConstantsSpan16Offset    0xE68
 #define R_DrawPlanes0Offset                     0x145
@@ -61,7 +61,7 @@
 #define R_DrawColumn16CodeSize         0xCB4
 #define R_DrawColumn0CodeSize          0x58E
 #define R_DrawColumnFLCodeSize         0x58E
-#define R_DrawSpan24CodeSize           0x119C
+#define R_DrawSpan24CodeSize           0x114C
 #define R_DrawSpan16CodeSize           0xF60
 #define R_DrawSpan0CodeSize            0x63A
 #define R_DrawSpanFLCodeSize           0x591
