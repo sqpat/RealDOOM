@@ -107,31 +107,54 @@ PUBLIC  R_DrawColumn24_
 MARKER_SELFMODIFY_COLFUNC_subtract_centery24_:
 PUBLIC MARKER_SELFMODIFY_COLFUNC_subtract_centery24_
     sub   ax, 01000h
-    mov   ds, ax              ; save low(M1)
-
-;    this is now done outside the call, including the register swap    
-;    mov   bx, word ptr ds:[_dc_iscale + 0]   
-;    mov   ch, byte ptr ds:[_dc_iscale + 2]      ; 2nd byte of high word not used up ahead...
-;    mov   cl, bh                             ; construct dc_iscale + 1 word
-     mov   es, cx                             ; cache for later to avoid going to memory
 
 
+; another different approach by zero318 
+    ; MOV DX, AX
+    ; MUL CH
+    ; MOV AH, BL
+    ; AND AH, DH
+    ; SUB AL, AH
+    ; MOV AH, BL
+    ; XCHG AX, BX
+    ; MUL DX
+    ; ADD AX, BP
+    ; ADC DX, SI
+    ; MOV BP, CX
+    ; ADD DL, BL
+    ; MOV DH, DL
+    ; MOV DL, AH
+    ; MOV CL, BH
+    ; MOV CH, AL
 
-;  DX:AX * CX:BX
 
-; note this is 8 bit times 32 bit and we want the mid 16
 
-; begin multiply
-	CWD
-	AND DX, BX
-	NEG DX
 
-    mul     ch;             ; only the bottom 16 bits are necessary.
-    add     dx,ax           ; - add to total
-    mov     cx,dx           ; - hold total in cx
-    mov     ax,ds           ; restore low(M1)
-    mul     bx              ; low(M2) * low(M1)
-    add     dx,cx           ; add previously computed high part
+
+
+
+
+
+      mov     dx, ax        
+      mul     ch           
+      add     si, ax    
+      mov     ax, bx
+      mov     bh, bl ; gross
+      and     bl, dh ; sign
+      sub     si, bx ; apply sign
+      xchg    bp, cx
+      mul     dx
+      add     cx, ax ;  al into cl
+      adc     dx, si
+      mov     dh, dl
+      mov     dl, ch
+      mov     cl, bh
+
+        
+
+
+
+
 ; end multiply    
 
 ; multiply completed. 
@@ -140,24 +163,17 @@ PUBLIC MARKER_SELFMODIFY_COLFUNC_subtract_centery24_
 ;    finishing  dc_texturemid.w + (dc_yl-centery)*fracstep.w
 
 
-    
-    add   ax, bp
-    adc   dx, si ; si was holding onto _dc_texturemid+2
-
-    mov   bp, es        ; bp gets dc_iscale + 1
 
     ; note: top 8 bits cut off! can we restructure? make it faster?
     ; adc dl, [8 bit reg] instead of si?
 
-    mov   dh, dl
-    mov   dl, ah        ; mid 16 bits of the 32 bit dx:ax into dx
     
 
     ; bx still has dc_iscale low word from above. prepare low bits of precision
-    mov   cl, bl        ; cl has 8 bits of precision (dc_iscale+0)
-    mov   ch, al        ; ch gets the low 8 bits     (starting texel)
 
-    
+
+
+
     
 
     
@@ -197,7 +213,7 @@ DRAW_SINGLE_PIXEL MACRO
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    ch,cl                  ; add 8 low bits of precision
+	add    cl,ch                  ; add 8 low bits of precision
     adc    dx,bp                  ; carry result into this add
 	add    di,si                  ; si has 79 (0x4F) and stos added one
 ENDM
