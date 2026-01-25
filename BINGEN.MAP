@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/01/24 23:18:12
+Created on:       26/01/25 00:23:13
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -39,7 +39,7 @@ R_BSP_24_TEXT          CODE           AUTO           081b:0000       00003507
 R_BSP_16_TEXT          CODE           AUTO           0b6c:0000       00003740
 R_BSP0_TEXT            CODE           AUTO           0ee0:0000       0000366f
 R_BSPFL_TEXT           CODE           AUTO           1247:0000       00003617
-R_COL24_TEXT           CODE           AUTO           15a9:0000       00000e3f
+R_COL24_TEXT           CODE           AUTO           15a9:0000       00000e3a
 R_COL16_TEXT           CODE           AUTO           168d:0000       00000cb4
 R_COL0_TEXT            CODE           AUTO           1759:0000       0000058e
 R_COLFL_TEXT           CODE           AUTO           17b2:0000       0000058e
@@ -376,11 +376,11 @@ Module: r_bspfl.obj(r_bspfl.ASM)
 1247:2db7      R_GetPatchTexture_FarFL_
 1247:32e5      R_WriteBackViewConstantsFL_
 Module: r_col24.obj(r_col24.ASM)
-15a9:034d      MARKER_SELFMODIFY_COLFUNC_jump_offset24_
-15a9:033f      MARKER_SELFMODIFY_COLFUNC_set_destview_segment24_
+15a9:0348      MARKER_SELFMODIFY_COLFUNC_jump_offset24_
+15a9:033a      MARKER_SELFMODIFY_COLFUNC_set_destview_segment24_
 15a9:0000      R_COLUMN24_STARTMARKER_
 15a9:0320      MARKER_SELFMODIFY_COLFUNC_subtract_centery24_
-15a9:0e3f      R_COLUMN24_ENDMARKER_
+15a9:0e3a      R_COLUMN24_ENDMARKER_
 15a9:0320*     R_DrawColumn24_
 Module: r_col16.obj(r_col16.ASM)
 168d:0cb4      R_COLUMN16_ENDMARKER_

@@ -108,90 +108,35 @@ MARKER_SELFMODIFY_COLFUNC_subtract_centery24_:
 PUBLIC MARKER_SELFMODIFY_COLFUNC_subtract_centery24_
     sub   ax, 01000h
 
-
-; another different approach by zero318 
-    ; MOV DX, AX
-    ; MUL CH
-    ; MOV AH, BL
-    ; AND AH, DH
-    ; SUB AL, AH
-    ; MOV AH, BL
-    ; XCHG AX, BX
-    ; MUL DX
-    ; ADD AX, BP
-    ; ADC DX, SI
-    ; MOV BP, CX
-    ; ADD DL, BL
-    ; MOV DH, DL
-    ; MOV DL, AH
-    ; MOV CL, BH
-    ; MOV CH, AL
-
-
-
-
-
-
-
-
+; credit to zero318 for various ideas for the function
 
       mov     dx, ax        
-      mul     ch           
-      add     si, ax    
-      mov     ax, bx
-      mov     bh, bl ; gross
-      and     bl, dh ; sign
-      sub     si, bx ; apply sign
-      xchg    bp, cx
-      mul     dx
-      add     cx, ax ;  al into cl
-      adc     dx, si
-      mov     dh, dl
-      mov     dl, ch
-      mov     cl, bh
-
-        
+      mul     ch           ; mul high byte
+      add     si, ax       
+      mov     ax, bx       ; for mul
+      mov     bh, ch       ; ah eventually needs original ch
+      mov     cx, ax       ; cx needs original bx for adding in loop
+      and     bl, dh       ; sign extend of high byte mul
+      sub     si, bx       ; apply sign; high word is garbage and will be dropped
+      mul     dx      
+      add     bp, ax       ; bp has low 16 bits of precision
+      adc     dx, si       ; dl has next 8 bits of precision. dh will be trashed
+      xchg    ax, bx       ; ah gets bh. ah:cx has 24 bits of adder
 
 
-
-
-; end multiply    
-
-; multiply completed. 
-; dx:ax is the 32 bits of the mul. we want dx to have the mid 16.
-
-;    finishing  dc_texturemid.w + (dc_yl-centery)*fracstep.w
-
-
-
-    ; note: top 8 bits cut off! can we restructure? make it faster?
-    ; adc dl, [8 bit reg] instead of si?
-
-    
-
-    ; bx still has dc_iscale low word from above. prepare low bits of precision
-
-
-
-
-    
-
-    
-
-    ; for fixing jaggies... need extra precision from time to time
 
 
    ;  prep our loop variables
 
 MARKER_SELFMODIFY_COLFUNC_set_destview_segment24_:
 PUBLIC MARKER_SELFMODIFY_COLFUNC_set_destview_segment24_
-   mov     ax, 01000h   
-   mov     es, ax; ready the viewscreen segment
+   mov     bx, 01000h   
+   mov     es, bx; ready the viewscreen segment
    xor     bx, bx       ; common bx offset of zero in the xlats ahead
 
    lds     si, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and si to 004Fh (hardcoded)
 
-   mov     ah,  7Fh   ; for ANDing to AX to mod al by 128 and preserve AH
+   mov     dh,  7Fh   ; for ANDing to AX to mod al by 128 and preserve AH
 
 MARKER_SELFMODIFY_COLFUNC_jump_offset24_:
 PUBLIC MARKER_SELFMODIFY_COLFUNC_jump_offset24_
@@ -208,14 +153,14 @@ DRAW_SINGLE_PIXEL MACRO
    ; tried to reorder adds in between xlats and stos, but it didn't make anything faster.
    ; todo retry on real 286
 
-    mov    al,dh
-	and    al,ah                  ; ah is 7F
-	xlat   BYTE PTR ds:[bx]       ;
-	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
-	stos   BYTE PTR es:[di]       ;
-	add    cl,ch                  ; add 8 low bits of precision
-    adc    dx,bp                  ; carry result into this add
-	add    di,si                  ; si has 79 (0x4F) and stos added one
+    mov    al, dl
+	and    al, dh                  ; ah is 7F
+	xlat   BYTE PTR ds:[bx]        ;
+	xlat   BYTE PTR cs:[bx]        ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]        ;
+	add    bp, cx                  ; add 16 low bits of precision
+    adc    dl, ah                  ; carry result into this add
+	add    di, si                  ; si has 79 (0x4F) and stos added one
 ENDM
 
 
@@ -225,8 +170,8 @@ ENDM
 
 ; draw last pixel, cut off the add
 
-    mov    al,dh
-	and    al,ah                  ; ah is 7F
+    mov    al,dl
+	and    al,dh                  ; ah is 7F
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
