@@ -6128,9 +6128,9 @@ mov   si, dx            ; dc_texturemid+2 to si
 
 ; dc_iscale loaded here..
 SELFMODIFY_BSP_set_dc_iscale_lo:
-mov   bx, 01000h        ; dc_iscale +0
+mov   cx, 01000h        ; dc_iscale +0
 SELFMODIFY_BSP_set_dc_iscale_hi:
-mov   cx, 01000h        ; dc_iscale +1
+mov   bx, 01000h        ; dc_iscale +1
 
 
 

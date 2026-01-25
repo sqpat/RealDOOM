@@ -111,17 +111,16 @@ PUBLIC MARKER_SELFMODIFY_COLFUNC_subtract_centery24_
 ; credit to zero318 for various ideas for the function
 
       mov     dx, ax        
-      mul     ch           ; mul high byte
+      mul     bh           ; mul high byte
       add     si, ax       
-      mov     ax, bx       ; for mul
-      mov     bh, ch       ; ah eventually needs original ch
-      mov     cx, ax       ; cx needs original bx for adding in loop
+      mov     ax, cx       ; for mul
+      mov     bl, cl       ; prepare for signing
       and     bl, dh       ; sign extend of high byte mul
       sub     si, bx       ; apply sign; high word is garbage and will be dropped
       mul     dx      
       add     bp, ax       ; bp has low 16 bits of precision
       adc     dx, si       ; dl has next 8 bits of precision. dh will be trashed
-      xchg    ax, bx       ; ah gets bh. ah:cx has 24 bits of adder
+      xchg    ax, bx       ; ah gets original bh. ah:cx has 24 bits of adder
 
 
 

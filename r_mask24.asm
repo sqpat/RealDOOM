@@ -301,9 +301,9 @@ mov   bp, cx    ; dc_textutremid in cx
 ; dynamic call lookuptable based on used colormaps address being CS:00
 
 SELFMODIFY_MASKED_set_dc_iscale_lo:
-mov   bx, 01000h ; dc_iscale +0
+mov   cx, 01000h ; dc_iscale +0
 SELFMODIFY_MASKED_set_dc_iscale_hi:
-mov   cx, 01000h ; dc_iscale +1
+mov   bx, 01000h ; dc_iscale +1
 
 
 db 02Eh  ; cs segment override
@@ -504,8 +504,8 @@ mov   word ptr es:[((SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET-COLFUNC_JUMPTABLE_S
 xchg  ax, bx    ; dc_yl in ax
 ; gross lol. but again - rare function. in exchange the common function is faster.
 mov   si, word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1+1 - OFFSET R_MASK24_STARTMARKER_]
-mov   bx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_]
-mov   cx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_]
+mov   cx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_]
+mov   bx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_]
 
 
 push  bp
