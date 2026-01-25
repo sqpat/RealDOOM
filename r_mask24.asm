@@ -247,13 +247,12 @@ PROC  R_DrawColumnPrepMaskedMulti_ NEAR
 
 ; argument AX is diff for various segment lookups
 
-push  bx
-push  cx
-push  dx
+; todo some of these such as dx and cx for sure can be modified
+
 push  si
 push  di
 
-xchg  ax, cx	; cx holds onto dc_texturemid lo. TODO move this out of function along with push/pop cx
+; dl:?? currently has dc_texturemid
 
 mov   ax, ((COLORMAPS_MASKEDMAPPING_SEG_DIFF + COLFUNC_JUMP_LOOKUP_SEGMENT) AND 0FFFFh); shut up assembler warning, this is fine
 mov   es, ax                                 ; store this segment for now, with offset pre-added
@@ -280,7 +279,7 @@ add   ax, 01000h
 mov   si, word ptr ds:[_dc_yh]                  ; grab dc_yh
 sub   si, bx                                 ;
 
-add   si, si                                 ; double diff (dc_yh - dc_yl) to get a word offset
+sal   si, 1                                  ; double diff (dc_yh - dc_yl) to get a word offset
 xchg  ax, di
 mov   ax, word ptr es:[si]                   ; get the jump value
 mov   word ptr es:[((SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET-COLFUNC_JUMPTABLE_SIZE_OFFSET+1))+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
@@ -292,18 +291,19 @@ mov   word ptr es:[((SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET-COLFUNC_JUMPTABLE_S
 ; if we make a separate drawcol masked we can use a constant here.
 
 xchg  ax, bx    ; dc_yl in ax
-mov   si, dx    ; dc_texturemid+2 in si
 
 
-push  bp
-mov   bp, cx    ; dc_textutremid in cx
 
 ; dynamic call lookuptable based on used colormaps address being CS:00
 
+
+; CH:BX = dc_iscale
 SELFMODIFY_MASKED_set_dc_iscale_lo:
-mov   cx, 01000h ; dc_iscale +0
+mov   bx, 01000h ; dc_iscale +0
 SELFMODIFY_MASKED_set_dc_iscale_hi:
-mov   bx, 01000h ; dc_iscale +1
+mov   ch, 010h ; dc_iscale +1
+SELFMODIFY_MASKED_dc_texturemid_lo_1:
+mov   si, 01000h        ; todo can this just go to si in the call?
 
 
 db 02Eh  ; cs segment override
@@ -313,22 +313,14 @@ SELFMODIFY_MASKED_multi_set_colormap_index_jump:
 dw 0000h
 ; addr 0000 + first byte (4x colormap.)
 
-pop   bp
 
 pop   di 
 pop   si
-pop   dx
-pop   cx
-pop   bx
 ret
 
 ENDP
 
 
-
-
-
-ENDP
 
 ;
 ; R_DrawSingleMaskedColumn
@@ -336,11 +328,10 @@ ENDP
 	
 PROC  R_DrawSingleMaskedColumn_ NEAR 
 
-push  bx
 push  cx
 push  si
 push  di
-push  bp
+
 
 ; note: this function is called so rarely i don't care if its a little more innefficient.
 ; it is called for reverse visible walls like in e1m1's slime REALDOOM
@@ -503,13 +494,16 @@ mov   word ptr es:[((SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET-COLFUNC_JUMPTABLE_S
 
 xchg  ax, bx    ; dc_yl in ax
 ; gross lol. but again - rare function. in exchange the common function is faster.
-mov   si, word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1+1 - OFFSET R_MASK24_STARTMARKER_]
-mov   cx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_]
-mov   bx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_]
+
+; CL:SI = dc_texturemid
+; CH:BX = dc_iscale
+
+mov   cl, byte ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1+1 - OFFSET R_MASK24_STARTMARKER_]
+mov   bx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_]
+mov   ch, byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_]
 
 
-push  bp
-mov   bp, word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1+1 - OFFSET R_MASK24_STARTMARKER_]
+mov   si, word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1+1 - OFFSET R_MASK24_STARTMARKER_]
 
 
 
@@ -522,7 +516,6 @@ SELFMODIFY_MASKED_set_colormap_index_jump:
 dw 0000h
 ; addr 0000 + first byte (4x colormap.)
 
-pop   bp
 
 
 
@@ -530,11 +523,10 @@ pop   bp
 exit_function_single:
 
 
-pop   bp
+
 pop   di
 pop   si
 pop   cx
-pop   bx
 ret   
 
 ENDP
@@ -789,10 +781,8 @@ rcr   ax, 1
 xiscale_shift_done:
 
 
-mov   dh, dl
-mov   dl, ah
 mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], dx
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], dl
 
 
 
@@ -812,7 +802,7 @@ les   bx, dword ptr [si + VISSPRITE_T.vs_texturemid] ; vis->texturemid
 mov   cx, es
 ; write this ahead
 mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1 + 1 - OFFSET R_MASK24_STARTMARKER_], bx
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1 + 1 - OFFSET R_MASK24_STARTMARKER_], cx
+mov   byte ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1 + 1 - OFFSET R_MASK24_STARTMARKER_], cl
 
 
 test  dx, dx
@@ -1415,7 +1405,7 @@ add   ax, 01000h
 mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1 + 1 - OFFSET R_MASK24_STARTMARKER_], dx
 mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_2 + 1 - OFFSET R_MASK24_STARTMARKER_], dx
 mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_3 + 1 - OFFSET R_MASK24_STARTMARKER_], dx
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1 + 1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   byte ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1 + 1 - OFFSET R_MASK24_STARTMARKER_], al
 mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_2 + 1 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_3 + 1 - OFFSET R_MASK24_STARTMARKER_], ax
 
@@ -1859,10 +1849,8 @@ mov   bx, word ptr ds:[_spryscale]
 mov   cx, word ptr ds:[_spryscale + 2]
 call  FastDiv3232FFFF_
 
-mov   dh, dl
-mov   dl, ah
 mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], dx
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], dl
 
 
 mov   bx, si  ; bx gets a copy of texture column?
@@ -4691,6 +4679,7 @@ PROC  R_DrawMaskedColumn_ NEAR
 ;  bp - 06  cached dc_texturemid intbits to restore before function
 
 ; todo: synergy with outer function... cx and es
+; todo dont create stack frame
 
 push  dx
 push  si
@@ -4715,8 +4704,8 @@ draw_next_column_patch:
 mov   bx, word ptr ds:[_spryscale]
 mov   ax, word ptr ds:[_spryscale+2]
 
-mov   cl, byte ptr es:[si]
-xor   ch, ch
+xor   cx, cx
+mov   cl, byte ptr es:[si]   ; todo use ds and lodsb pattern...?
 
 ;inlined fastmul16u32u
 MUL  CX        ; AX * CX
@@ -4826,33 +4815,31 @@ mov   bx, di
 SHIFT_MACRO shr bx 4
 
 
+; CL:SI = dc_texturemid (eventually)
+
 SELFMODIFY_MASKED_dc_texturemid_hi_1:
-mov   dx, 01000h;  dc_texturemid intbits
-les   ax, dword ptr [bp - 4]
+mov   cl, 010h;  dc_texturemid intbits
+les   ax, dword ptr [bp - 4]        ; es gets texture segment
 add   ax, bx
 mov   word ptr ds:[_dc_source_segment], ax
-mov   al, byte ptr es:[si]
-xor   ah, ah
-; dx = dc_texturemid hi. carry this into the call
-sub   dx, ax
-; cx = dc_texturemid lo. carry this into the call
+sub   cl, byte ptr es:[si]          ; subtract tex top offset
+; dl = dc_texturemid hi. carry this into the call
+; dont set dc_texturemid lo till inside call
 
-SELFMODIFY_MASKED_dc_texturemid_lo_1:
-mov   ax, 01000h
 
-call  R_DrawColumnPrepMaskedMulti_
+call  R_DrawColumnPrepMaskedMulti_   ;todo inline?
 
 increment_column_and_continue_loop:
 mov   es, word ptr [bp-2]
-mov   al, byte ptr es:[si + 1]
+mov   al, byte ptr es:[si + 1] ; get patch height again. todo add this earlier?
 xor   ah, ah
 
 add   di, ax
+neg   al
+and   al, 0Fh
+add   di, ax    ; round up segment.
 
-neg   ax
-and   ax, 0Fh
-add   si, 2
-add   di, ax
+add   si, 2     ; todo bench inc si inc si
 cmp   byte ptr es:[si], 0FFh
 je    exit_function
 jmp   draw_next_column_patch ; todo inverse and skip jump

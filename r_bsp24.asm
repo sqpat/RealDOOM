@@ -3557,6 +3557,7 @@ mov       si, word ptr ds:[bx + SEG_RENDER_T.sr_sidedefOffset]  ; preshifted 2
 
 ; todo pull this out into outer func? and just push it?
 mov       ax, word ptr ds:[si + _sides_render + SIDE_RENDER_T.sr_rowoffset]
+; TODO i think this is buggy right now
 mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
 shl       si, 1
@@ -4190,16 +4191,17 @@ mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1 - OFFSET R_BSP24_STARTM
 ; add textureheight+1
 
 SELFMODIFY_add_texturemidheight_plus_one:
-add       ax, 01000h
+add       ax, 01000h  ; todo byte
 done_with_bottom_peg:
 ; ax:cx has rw_midtexturemid
 
 
 
+; TODO i think this is buggy right now
 SELFMODIFY_BSP_siderenderrowoffset_1:
-add       ax, 01000h
+add       ax, 01000h ; todo byte
 
-mov       word ptr ds:[SELFMODIFY_set_midtexturemid_hi+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov       byte ptr ds:[SELFMODIFY_set_midtexturemid_hi+1 - OFFSET R_BSP24_STARTMARKER_], al
 
 mov       bx, ss   ; restore DS
 mov       ds, bx
@@ -5695,7 +5697,7 @@ SHIFT_MACRO shr si 4
 
 
 ; todo investigate selfmodify lookup here, write ahead byte value directly ahead.... also dont need to push pop si.
-;(talking about SELFMODIFY_add_wallights).
+
 ; tricky due to fixedcolormap??
 ; alternatively just add si's value here to it.
 
@@ -6008,10 +6010,8 @@ FastDiv3232FFFF_done:
 
 ; do the bit shuffling etc when writing direct to drawcol.
 
-mov   dh, dl
-mov   dl, ah
 mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_lo+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1 - OFFSET R_BSP24_STARTMARKER_], dx  
+mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1 - OFFSET R_BSP24_STARTMARKER_], dl
 
 
 ; store dc_x directly in code
@@ -6068,19 +6068,19 @@ add   ax, 01000h
 just_do_draw0:
 mov   word ptr ds:[_dc_source_segment], ax ; what if this was push then pop es later. hard because we get a 2nd value with lds.
 
-push  bp
 SELFMODIFY_set_midtexturemid_hi:
 SELFMODIFY_set_toptexturemid_hi:
-mov   dx, 01000h
+mov   cl, 010h
 SELFMODIFY_set_midtexturemid_lo:
 SELFMODIFY_set_toptexturemid_lo:
-mov   bp, 01000h
+mov   dx, 01000h
 
 ENDP
 
 ; fall thru in the case of top/bot column.
 PROC  R_DrawColumnPrep_ NEAR
 
+;cl:dx are texturemid (si needs to hold dc_yl!)
 
 push  bx
 push  si
@@ -6117,20 +6117,14 @@ mov   word ptr ds:[(SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET+1)], ax  ; overwrite
 
 
 xchg  ax, bx            ; dc_yl in ax
-mov   si, dx            ; dc_texturemid+2 to si
 
-; We don't have easy access into the drawcolumn code segment.
-; so instead of cli -> push bp after call, we do it right before,
-; so that we have register space to use bp now instead of a bit later.
-; (for carrying dc_texturemid)
-
-
+mov   si, dx  ; si gets texturemid low word (todo: figure out a way to do this without the juggle)
 
 ; dc_iscale loaded here..
 SELFMODIFY_BSP_set_dc_iscale_lo:
-mov   cx, 01000h        ; dc_iscale +0
+mov   bx, 01000h        ; dc_iscale +0
 SELFMODIFY_BSP_set_dc_iscale_hi:
-mov   bx, 01000h        ; dc_iscale +1
+mov   ch, 010h          ; dc_iscale +2
 
 
 
@@ -6146,13 +6140,13 @@ dw 0000h
 
 
 pop   di 
-pop   si
+pop   si  ; restore si as dc_y
 pop   bx
 
 SELFMODIFY_BSP_R_DrawColumnPrep_ret:
 
 ; the pop dx gets replaced with ret if bottom is calling
-pop   bp
+
 pop   dx
 pop   es
 
@@ -6339,20 +6333,19 @@ add   ax, 01000h
 just_do_draw1:
 mov   word ptr ds:[_dc_source_segment], ax
 
-push  bp
 
 SELFMODIFY_set_bottexturemid_hi:
-mov   dx, 01000h
+mov   cl, 010h
 SELFMODIFY_set_bottexturemid_lo:
-mov   bp, 01000h
+mov   dx, 01000h
 
 ; small idea: make these each three NOPs if its gonna be a bot only draw?
 mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret - OFFSET R_BSP24_STARTMARKER_], 0C3h  ; ret
 call  R_DrawColumnPrep_
 
-pop bp
-mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret - OFFSET R_BSP24_STARTMARKER_], 05Dh  ; pop bp
 
+
+mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret - OFFSET R_BSP24_STARTMARKER_], 05Ah  ; pop dx
 pop   dx
 pop   es
 
@@ -6948,7 +6941,7 @@ do_selfmodify_toptexture:
 ; set _rw_toptexturemid in rendersegloop
 
 mov   word ptr cs:[SELFMODIFY_set_toptexturemid_lo+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_set_toptexturemid_hi+1 - OFFSET R_BSP24_STARTMARKER_], dx
+mov   byte ptr cs:[SELFMODIFY_set_toptexturemid_hi+1 - OFFSET R_BSP24_STARTMARKER_], dl
 
 
 toptexture_stuff_done:
@@ -6993,20 +6986,21 @@ do_selfmodify_bottexture:
 ; set _rw_toptexturemid in rendersegloop
 
 mov   word ptr cs:[SELFMODIFY_set_bottexturemid_lo+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_set_bottexturemid_hi+1 - OFFSET R_BSP24_STARTMARKER_], dx
+mov   byte ptr cs:[SELFMODIFY_set_bottexturemid_hi+1 - OFFSET R_BSP24_STARTMARKER_], dl
 
 
 bottexture_stuff_done:
+
 SELFMODIFY_BSP_siderenderrowoffset_2:
-mov       ax, 01000h
+mov       ax, 01000h   ;todo byte
 
 ;  extra selfmodify? or hold in vars till this pt and finally write the high bits
 ; 	rw_toptexturemid.h.intbits += side_render->rowoffset;
 ;	rw_bottomtexturemid.h.intbits += side_render->rowoffset;
 
 
-add       word ptr cs:[SELFMODIFY_set_toptexturemid_hi+1 - OFFSET R_BSP24_STARTMARKER_], ax
-add       word ptr cs:[SELFMODIFY_set_bottexturemid_hi+1 - OFFSET R_BSP24_STARTMARKER_], ax
+add   byte ptr cs:[SELFMODIFY_set_toptexturemid_hi+1 - OFFSET R_BSP24_STARTMARKER_], al
+add   byte ptr cs:[SELFMODIFY_set_bottexturemid_hi+1 - OFFSET R_BSP24_STARTMARKER_], al
 
 
 ; // allocate space for masked texture tables
@@ -11841,16 +11835,12 @@ mov      ax, 0c089h
 mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_3 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_4 - OFFSET R_BSP24_STARTMARKER_], ax
-;mov      word ptr cs:[SELFMODIFY_add_wallights - OFFSET R_BSP24_STARTMARKER_], 0848ah       ; mov al, byte ptr... 
+
 
 jmp      done_with_bsp_fixedcolormap_selfmodify
 do_bsp_fixedcolormap_selfmodify:
 
 
-;mov   ah, al
-;mov   al, 0b0h
-;mov   word ptr cs:[SELFMODIFY_add_wallights - OFFSET R_BSP24_STARTMARKER_], ax       ; mov al, FIXEDCOLORMAP
-;mov   word ptr cs:[SELFMODIFY_add_wallights+2 - OFFSET R_BSP24_STARTMARKER_], 0c089h ; nop
 
 ; zero out the value in the walllights read which wont be updated again.
 ; It'll get a fixedcolormap value by default. We could alternately get rid of the loop that sets scalelightfixed to fixedcolormap and modify the instructions like above.

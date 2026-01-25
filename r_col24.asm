@@ -95,47 +95,45 @@ dw 03C00h, 03C50h, 03CA0h, 03CF0h, 03D40h, 03D90h, 03DE0h, 03E30h
 PROC    R_DrawColumn24_ FAR
 PUBLIC  R_DrawColumn24_
 
-; no need to push anything. outer function just returns and pops
-
-    ; di contains shifted dc_x relative to detailshift
+    ; di contains screen coord
     ; ax contains dc_yl
-    ; bp:si is dc_texturemid
-    ; bx contains dc_iscale+0
-    ; cx contains dc_iscale+1 (we never use byte 4)
+    ; CL:SI = dc_texturemid
+    ; CH:BX = dc_iscale
 
-    ; todo just move this above to prevenet the need for the mov ax
+; thoughts: 
+; every call to this functions has an xchg ax, bx to put dc_yl into ax
+; can consider just having it in bx? and dc_iscale low in ax
+
 MARKER_SELFMODIFY_COLFUNC_subtract_centery24_:
 PUBLIC MARKER_SELFMODIFY_COLFUNC_subtract_centery24_
     sub   ax, 01000h
 
 ; credit to zero318 for various ideas for the function
-
-      mov     dx, ax        
-      mul     bh           ; mul high byte
-      add     si, ax       
-      mov     ax, cx       ; for mul
-      mov     bl, cl       ; prepare for signing
-      and     bl, dh       ; sign extend of high byte mul
-      sub     si, bx       ; apply sign; high word is garbage and will be dropped
-      mul     dx      
-      add     bp, ax       ; bp has low 16 bits of precision
-      adc     dx, si       ; dl has next 8 bits of precision. dh will be trashed
-      xchg    ax, bx       ; ah gets original bh. ah:cx has 24 bits of adder
-
-
+   MOV  DX, AX  ; copy center24y
+   MUL  CH
+   ADD  CL, AL
+   MOV  AX, DX ; restore center_y
+   AND  DH, BL
+   SUB  CL, DH  ; apply neg sign
+   MUL  BX
+   ADD  SI, AX
+   ADC  CL, DL
+   mov  AH,  7Fh   ; for ANDing to AX to mod al by 128 and preserve AH
+   CWD           ; zero dx
+   xchg DX, BX   ; dx gets bx, bx gets  0 
 
 
+   push    bp
    ;  prep our loop variables
 
 MARKER_SELFMODIFY_COLFUNC_set_destview_segment24_:
 PUBLIC MARKER_SELFMODIFY_COLFUNC_set_destview_segment24_
-   mov     bx, 01000h   
-   mov     es, bx; ready the viewscreen segment
-   xor     bx, bx       ; common bx offset of zero in the xlats ahead
+   mov     bp, 01000h   
+   mov     es, bp; ready the viewscreen segment
 
-   lds     si, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and si to 004Fh (hardcoded)
 
-   mov     dh,  7Fh   ; for ANDing to AX to mod al by 128 and preserve AH
+   lds     bp, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and bp to 004Fh (hardcoded)
+
 
 MARKER_SELFMODIFY_COLFUNC_jump_offset24_:
 PUBLIC MARKER_SELFMODIFY_COLFUNC_jump_offset24_
@@ -152,14 +150,14 @@ DRAW_SINGLE_PIXEL MACRO
    ; tried to reorder adds in between xlats and stos, but it didn't make anything faster.
    ; todo retry on real 286
 
-    mov    al, dl
-	and    al, dh                  ; ah is 7F
+    mov    al, cl
+	and    al, ah                  ; ah is 7F
 	xlat   BYTE PTR ds:[bx]        ;
 	xlat   BYTE PTR cs:[bx]        ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]        ;
-	add    bp, cx                  ; add 16 low bits of precision
-    adc    dl, ah                  ; carry result into this add
-	add    di, si                  ; si has 79 (0x4F) and stos added one
+	add    si, dx                  ; add 16 low bits of precision
+    adc    cl, ch                  ; carry result into this add
+	add    di, bp                  ; bp has 79 (0x4F) and stos added one
 ENDM
 
 
@@ -169,22 +167,20 @@ ENDM
 
 ; draw last pixel, cut off the add
 
-    mov    al,dl
-	and    al,dh                  ; ah is 7F
+    mov    al, cl
+	and    al, ah                 ; ah is 7F
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	; dont need these in last loop
-    ;add    di,si                  ; si has 79 (0x4F) and stos added one
-	;add    dx,cx
 
 loop_done:
 ; clean up
 
 ; restore ds without going to memory.
 
-    mov ax, ss
-    mov ds, ax
+    mov  ax, ss
+    mov  ds, ax
+    pop  bp
 
     retf
 
