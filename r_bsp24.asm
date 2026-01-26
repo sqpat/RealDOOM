@@ -3488,14 +3488,14 @@ PUBLIC R_StoreWallRange_
 ; bp - 01Bh  ; markceiling
 ; bp - 01Ch  ; markfloor
 ; bp - 01Eh  ; UNUSED?              ; UNUSED
-; bp - 020h  ; pixhigh hi
-; bp - 022h  ; pixhigh lo
-; bp - 024h  ; pixlow hi  preshifted 4
-; bp - 026h  ; pixlow lo  preshifted 4
-; bp - 028h  ; bottomfrac hi
-; bp - 02Ah  ; bottomfrac lo
-; bp - 02Ch  ; topfrac hi
-; bp - 02Eh  ; topfrac lo
+; bp - 020h  ; pixhigh hi     preshifted 4
+; bp - 022h  ; pixhigh lo     preshifted 4
+; bp - 024h  ; pixlow hi      preshifted 4
+; bp - 026h  ; pixlow lo      preshifted 4
+; bp - 028h  ; bottomfrac hi  preshifted 4
+; bp - 02Ah  ; bottomfrac lo  preshifted 4
+; bp - 02Ch  ; topfrac hi     preshifted 4
+; bp - 02Eh  ; topfrac lo     preshifted 4
 ; bp - 030h  ; rw_scale hi
 ; bp - 032h  ; rw_scale lo
 ; bp - 034h  ; frontsectorfloorheight
@@ -4441,19 +4441,19 @@ sub       cx, ax
 SELFMODIFY_sub__centeryfrac_shiftright4_hi_4:
 mov       ax, 01000h
 sbb       ax, dx
+
+; store preshifted 
+SHIFT32_MACRO_LEFT ax cx 4
+
 mov       word ptr [bp - 02Eh], cx
 mov       word ptr [bp - 02Ch], ax
 ; les to load two words
 les       ax, dword ptr [bp - 044h]
 mov       dx, es
-sar       dx, 1
-rcr       ax, 1
-sar       dx, 1
-rcr       ax, 1
-sar       dx, 1
-rcr       ax, 1
-sar       dx, 1
-rcr       ax, 1
+
+; todo re-examine
+SHIFT32_MACRO_RIGHT dx ax 4
+
 
 mov       word ptr [bp - 042h], dx
 mov       word ptr [bp - 044h], ax
@@ -4462,6 +4462,8 @@ mov       word ptr [bp - 044h], ax
 
 les       bx, dword ptr [bp - 032h]
 mov       cx, es
+
+; todo 24 bit muls?
 
 ;start inlined FixedMulBSPLocal_
 
@@ -4513,6 +4515,9 @@ sub       cx, ax
 SELFMODIFY_sub__centeryfrac_shiftright4_hi_3:
 mov       ax, 01000h
 sbb       ax, dx
+
+SHIFT32_MACRO_LEFT ax cx 4
+
 mov       word ptr [bp - 02Ah], cx
 mov       word ptr [bp - 028h], ax
 
@@ -4609,6 +4614,7 @@ neg       ax
 sbb       dx, 0
 
 ; dx:ax are topstep
+SHIFT32_MACRO_LEFT dx ax 4
 
 mov       word ptr ds:[SELFMODIFY_sub_topstep_lo+3 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr ds:[SELFMODIFY_add_topstep_lo+4 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -4689,6 +4695,7 @@ neg       ax
 sbb       dx, 0
 
 ; dx:ax are bottomstep
+SHIFT32_MACRO_LEFT dx ax 4
 
 mov       word ptr ds:[SELFMODIFY_sub_botstep_lo+3 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr ds:[SELFMODIFY_add_botstep_lo+4 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -5459,26 +5466,10 @@ mov   si, word ptr es:[bx+di+OFFSET_CEILINGCLIP] ; dx = ceiling
 inc   si
 
 mov   ax, word ptr [bp - 02Eh]
-add   ax, ((HEIGHTUNIT)-1)
-mov   dx, word ptr [bp - 02Ch]
-adc   dx, 0
+add   ax, ((HEIGHTUNIT)-1) SHL 4
+mov   ax, word ptr [bp - 02Ch]
+adc   ax, 0
 
-mov   al, ah
-mov   ah, dl
-
-; we dont have to shift DH's stuff in at all.
-; if DH was even 1, we'd have triggered the above cmp
-
-; is dh ever actually ever non zero??? would be nice to remove them.
-
-sar   dh, 1
-rcr   ax, 1
-sar   dh, 1
-rcr   ax, 1
-sar   dh, 1
-rcr   ax, 1
-sar   dh, 1
-rcr   ax, 1
 
 cmp   ax, si
 jge   skip_yl_ceil_clip
@@ -5509,27 +5500,9 @@ markceiling_done:
 
 ; yh = bottomfrac>>HEIGHTBITS;
 
-; any of these bits being set means yh > 320 and clips
-cmp   byte ptr [bp - 027h], 0
-jne	  do_yh_floorclip
 
-mov   ax, word ptr [bp - 029h] ; get bytes 2 and 3..
-
-; screenheight << HEIGHTBITS 
-; if AH > 20 , then we know yh cannot be smaller than floor clip which maxes out at screenheight+1
-; (20 is (SCREENHEIGHT+1) >> 4, or rather, (((SCREENHEIGHT+1) << HEIGHTBITS) >> 16))
-; we dont have to shift in that case. because 320 is the highest possible value for floorclip.
-
-cmp   ah, ((SCREENHEIGHT+1) SHR 4)
-jg    do_yh_floorclip
-
-; finish the shift 12
-; todo: we are assuming this cant be negative. If it can be,
-; we must do the full sar rcr with the 4th byte. seems fine so far?
-
-
-SHIFT_MACRO shr ax 4
-
+mov   ax, word ptr [bp - 028h] ; get shifted int byte
+; ah 0 because si < 255
 
 
 
@@ -10735,6 +10708,7 @@ and       ax, 0Fh
 
 add       al, dl   ; textureheight copy
 ;	usetextureheight = usetextureheight >> 4;
+; todo make this not happen?
 SHIFT_MACRO sar       ax 4
 ; ah already known zero
 
@@ -11646,6 +11620,7 @@ done_modding_shift_detail_code:
 
 mov      al, byte ptr ss:[_detailshiftitercount]
 mov      byte ptr ds:[SELFMODIFY_cmp_al_to_detailshiftitercount+1 - OFFSET R_BSP24_STARTMARKER_], al
+; todo is this supposed to be SELFMODIFY_add_iter_to_rw_x plus 2?
 mov      byte ptr ds:[SELFMODIFY_add_iter_to_rw_x+1 - OFFSET R_BSP24_STARTMARKER_], al
 mov      byte ptr ds:[SELFMODIFY_add_detailshiftitercount+3 - OFFSET R_BSP24_STARTMARKER_], al
 
