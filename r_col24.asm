@@ -161,6 +161,16 @@ DRAW_SINGLE_PIXEL MACRO
 ENDM
 
 
+; TODO: make colormaps duplicate at F offset and sti/cli for 12 byte version.
+
+; and    SI, SP                  ; SP is 7F
+; LODSB
+; XLAT    cs:[bx]
+; stos    es:[di]
+; add    ??, dx  
+; adc    si, cx
+; add    di, bp
+
 REPT 199
     DRAW_SINGLE_PIXEL
 ENDM

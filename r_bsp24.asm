@@ -3490,8 +3490,8 @@ PUBLIC R_StoreWallRange_
 ; bp - 01Eh  ; UNUSED?              ; UNUSED
 ; bp - 020h  ; pixhigh hi
 ; bp - 022h  ; pixhigh lo
-; bp - 024h  ; pixlow hi
-; bp - 026h  ; pixlow lo
+; bp - 024h  ; pixlow hi  preshifted 4
+; bp - 026h  ; pixlow lo  preshifted 4
 ; bp - 028h  ; bottomfrac hi
 ; bp - 02Ah  ; bottomfrac lo
 ; bp - 02Ch  ; topfrac hi
@@ -4831,6 +4831,7 @@ SELFMODIFY_sub__centeryfrac_shiftright4_hi_2:
 mov       ax, 01000h
 sbb       ax, dx
 
+SHIFT32_MACRO_LEFT ax cx 4
 
 mov       word ptr [bp - 022h], cx
 mov       word ptr [bp - 020h], ax
@@ -4890,6 +4891,7 @@ neg       dx
 neg       ax
 sbb       dx, 0
 
+SHIFT32_MACRO_LEFT dx ax 4
 
 ; dx:ax is pixhighstep.
 ; self modifying code to write to pixlowstep usages.
@@ -4994,6 +4996,7 @@ SELFMODIFY_sub__centeryfrac_shiftright4_hi_1:
 mov       ax, 01000h
 sbb       ax, dx
 
+SHIFT32_MACRO_LEFT ax cx 4
 
 mov       word ptr [bp - 026h], cx
 mov       word ptr [bp - 024h], ax
@@ -5057,6 +5060,7 @@ sbb       dx, 0
 ; dx:ax is pixlowstep.
 ; self modifying code to write to pixlowstep usages.
 
+SHIFT32_MACRO_LEFT dx ax 4
 
 mov       word ptr ds:[SELFMODIFY_sub_pixlow_lo+3 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr ds:[SELFMODIFY_add_pixlowstep_lo+4 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -6091,10 +6095,8 @@ mov   ax, COLFUNC_JUMP_LOOKUP_SEGMENT        ; compute segment now, clear AX dep
 mov   ds, ax ; store this segment for now, with offset pre-added
 
 SELFMODIFY_COLFUNC_get_dc_x:
-mov   ax, 01000h
+mov   ax, 01000h              ; note: tried preshifting this in the outer layer but it was slower
 
-; shift ax by (2 - detailshift.)
-; todo: are we benefitted by moving this out into rendersegrange..?
 SELFMODIFY_BSP_detailshift2minus:
 sar   ax, 1
 sar   ax, 1
@@ -6217,22 +6219,14 @@ SELFMODIFY_BSP_toptexture:
 SELFMODIFY_BSP_toptexture_AFTER = SELFMODIFY_BSP_toptexture + 2
 
 do_top_texture_draw:
-mov   ax, word ptr [bp - 021h]
-mov   cl, byte ptr [bp - 01Fh]
-sar   cl, 1
-rcr   ax, 1
-sar   cl, 1
-rcr   ax, 1
-sar   cl, 1
-rcr   ax, 1
-sar   cl, 1
-rcr   ax, 1
+PUBLIC do_top_texture_draw
+mov   cx, word ptr [bp - 020h]
 SELFMODIFY_add_to_pixhigh_lo_1:
 add   word ptr [bp - 022h], 01000h
 SELFMODIFY_add_to_pixhigh_hi_1:
 adc   word ptr [bp - 020h], 01000h
 ; bx is rw_x << 1
-mov   cx, ax
+
 mov   ax, word ptr es:[bx + OFFSET_FLOORCLIP]
 cmp   cx, ax
 jl    dont_clip_top_floor
@@ -6271,28 +6265,17 @@ SELFMODIFY_BSP_bottexture:
 SELFMODIFY_BSP_bottexture_AFTER = SELFMODIFY_BSP_bottexture + 2
 
 do_bottom_texture_draw:
-SELFMODIFY_get_pixlow_lo:
-mov   ax, word ptr [bp - 026h]
-add   ax, ((HEIGHTUNIT)-1)
-SELFMODIFY_get_pixlow_hi:
+
 mov   cx, word ptr [bp - 024h]
-adc   cx, 0
-mov   al, ah
-mov   ah, cl
-sar   ch, 1
-rcr   ax, 1
-sar   ch, 1
-rcr   ax, 1
-sar   ch, 1
-rcr   ax, 1
-sar   ch, 1
-rcr   ax, 1
+cmp   word ptr [bp - 026h], 1
+sbb   cx, 0FFFFh
+
+
 SELFMODIFY_add_to_pixlow_lo_1:
 add   word ptr [bp - 026h], 01000h
 SELFMODIFY_add_to_pixlow_hi_1:
 adc   word ptr [bp - 024h], 01000h
 
-mov   cx, ax
 mov   ax, word ptr es:[bx+OFFSET_CEILINGCLIP]
 cmp   cx, ax
 jg    dont_clip_bot_ceil
@@ -6524,7 +6507,7 @@ continue_checking_spr_top_clip:
 cmp       word ptr es:[bx + DRAWSEG_T.drawseg_sprtopclip_offset], 0
 jne       check_spr_bottom_clip
 mov       si, word ptr [bp - 2]
-add       si, si
+sal       si, 1
 add       si, OFFSET_CEILINGCLIP
 mov       di, word ptr ds:[_lastopening]
 mov       cx, word ptr [bp - 01Ah]
@@ -6900,7 +6883,7 @@ mov       dx, es
 jmp       do_selfmodify_toptexture
 
 toptexture_not_zero:
-mov       word ptr cs:[SELFMODIFY_BSP_toptexture - OFFSET R_BSP24_STARTMARKER_], 0468Bh ; mov   ax, word ptr [bp - 02Dh] first two bytes
+mov       word ptr cs:[SELFMODIFY_BSP_toptexture - OFFSET R_BSP24_STARTMARKER_], 04E8Bh ; mov   cx, word ptr [bp - 02Dh] first two bytes
 ; are any bits set?
 or        bl, bh
 or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1 - OFFSET R_BSP24_STARTMARKER_], bl
@@ -6969,7 +6952,7 @@ bottexture_zero:
 mov       word ptr cs:[SELFMODIFY_BSP_bottexture - OFFSET R_BSP24_STARTMARKER_], ((SELFMODIFY_BSP_bottexture_TARGET - SELFMODIFY_BSP_bottexture_AFTER) SHL 8) + 0EBh
 jmp       bottexture_stuff_done
 bottexture_not_zero:
-mov       word ptr cs:[SELFMODIFY_BSP_bottexture - OFFSET R_BSP24_STARTMARKER_], 0468Bh   ; mov   ax, word ptr [bp - 02Dh] first two bytes
+mov       word ptr cs:[SELFMODIFY_BSP_bottexture - OFFSET R_BSP24_STARTMARKER_], 04E8Bh   ; mov   cx, word ptr [bp - 02Dh] first two bytes
 ; are any bits set?
 or        bl, bh
 or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1 - OFFSET R_BSP24_STARTMARKER_], bl
