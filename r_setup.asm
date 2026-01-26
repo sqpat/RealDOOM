@@ -578,21 +578,7 @@ mov   ax, word ptr ds:[_viewheight]
 shr   ax, 1
 mov   word ptr ds:[_centery], ax
 
-;   temp.h.intbits = centery;
-;	centeryfrac_shiftright4.w = temp.w >> 4;
-xor   cx, cx
 
-shr   ax, 1
-rcr   cx, 1
-shr   ax, 1
-rcr   cx, 1
-shr   ax, 1
-rcr   cx, 1
-shr   ax, 1
-rcr   cx, 1
-
-mov   word ptr ds:[_centeryfrac_shiftright4+0], cx
-mov   word ptr ds:[_centeryfrac_shiftright4+2], ax
 
 ;	// multiple of 16 guaranteed.. can be a segment instead of offset
 ;	viewwindowx = (SCREENWIDTH - scaledviewwidth) >> 1;

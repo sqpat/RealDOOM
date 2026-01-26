@@ -3778,13 +3778,7 @@ finish_midtex_selfmodify:
       call  FixedDivBSPLocal_
 
       ; shift 5. since we do a tantoangle lookup... this maxes at 2048
-      ; todo 386
-      sar   dx, 1
-      rcr   ax, 1
-      sar   dx, 1
-      rcr   ax, 1
-      sar   dx, 1
-      rcr   ax, 1
+      SHIFT32_MACRO_RIGHT dx ax 3
       and   al, 0FCh
       mov   dx, di ; move di to dx early to free up di for les + di + bx combo
 
@@ -4059,12 +4053,7 @@ push      word ptr es:[si + 07h]  ; + 6 from lodsw/lodsb = 0eh
 xchg      ax, cx  ; ax has frontsectorceilingheight
 ; todo can this cwd
 xor       dx, dx
-sar       ax, 1
-rcr       dx, 1
-sar       ax, 1
-rcr       dx, 1
-sar       ax, 1
-rcr       dx, 1
+SHIFT32_MACRO_RIGHT ax dx 3
 
 
 SELFMODIFY_BSP_viewz_lo_7:
@@ -4080,12 +4069,7 @@ push      dx  ; bp - 040h
 xchg      ax, bx    ; restore from before
 
 xor       cx, cx
-sar       ax, 1
-rcr       cx, 1
-sar       ax, 1
-rcr       cx, 1
-sar       ax, 1
-rcr       cx, 1
+SHIFT32_MACRO_RIGHT ax cx 3
 SELFMODIFY_BSP_viewz_lo_8:
 sub       cx, 01000h
 SELFMODIFY_BSP_viewz_hi_8:
@@ -4178,13 +4162,7 @@ mov       ax, word ptr [bp - 034h]
 SELFMODIFY_BSP_viewz_shortheight_5:
 sub       ax, 01000h
 xor       cx, cx
-; todo 386
-sar       ax, 1
-rcr       cx, 1
-sar       ax, 1
-rcr       cx, 1
-sar       ax, 1
-rcr       cx, 1
+SHIFT32_MACRO_RIGHT ax cx 3
 mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1 - OFFSET R_BSP24_STARTMARKER_], cx
 
 
@@ -4373,17 +4351,6 @@ les       ax, dword ptr [bp - 040h]
 mov       dx, es
 
 
-sar       dx, 1
-rcr       ax, 1
-sar       dx, 1
-rcr       ax, 1
-sar       dx, 1
-rcr       ax, 1
-sar       dx, 1
-rcr       ax, 1
-
-mov       word ptr [bp - 03Eh], dx
-mov       word ptr [bp - 040h], ax
 
 ; les to load two words
 les       bx, dword ptr [bp - 032h]
@@ -4434,32 +4401,16 @@ ENDIF
 
 ;end inlined FixedMulBSPLocal_
 
-
-SELFMODIFY_sub__centeryfrac_shiftright4_lo_4:
-mov       cx, 01000h
-sub       cx, ax
-SELFMODIFY_sub__centeryfrac_shiftright4_hi_4:
-mov       ax, 01000h
+neg       ax
+mov       word ptr [bp - 02Eh], ax
+SELFMODIFY_sub__centeryfrac_4_hi_4:
+mov       ax, 01000h ; ah known zero. dh too probably?
 sbb       ax, dx
 
-; store preshifted 
-SHIFT32_MACRO_LEFT ax cx 4
-
-mov       word ptr [bp - 02Eh], cx
 mov       word ptr [bp - 02Ch], ax
 ; les to load two words
 les       ax, dword ptr [bp - 044h]
 mov       dx, es
-
-; todo re-examine
-SHIFT32_MACRO_RIGHT dx ax 4
-
-
-mov       word ptr [bp - 042h], dx
-mov       word ptr [bp - 044h], ax
-
-
-
 les       bx, dword ptr [bp - 032h]
 mov       cx, es
 
@@ -4509,16 +4460,13 @@ ENDIF
 ;end inlined FixedMulBSPLocal_
 
 
-SELFMODIFY_sub__centeryfrac_shiftright4_lo_3:
-mov       cx, 01000h
-sub       cx, ax
-SELFMODIFY_sub__centeryfrac_shiftright4_hi_3:
-mov       ax, 01000h
+neg       ax
+mov       word ptr [bp - 02Ah], ax
+SELFMODIFY_sub__centeryfrac_4_hi_3:
+mov       ax, 01000h ; ah known zero. dh too probably?
 sbb       ax, dx
 
-SHIFT32_MACRO_LEFT ax cx 4
 
-mov       word ptr [bp - 02Ah], cx
 mov       word ptr [bp - 028h], ax
 
 cmp       byte ptr [bp - 01Bh], 0  ;markceiling
@@ -4614,7 +4562,7 @@ neg       ax
 sbb       dx, 0
 
 ; dx:ax are topstep
-SHIFT32_MACRO_LEFT dx ax 4
+
 
 mov       word ptr ds:[SELFMODIFY_sub_topstep_lo+3 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr ds:[SELFMODIFY_add_topstep_lo+4 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -4695,7 +4643,7 @@ neg       ax
 sbb       dx, 0
 
 ; dx:ax are bottomstep
-SHIFT32_MACRO_LEFT dx ax 4
+
 
 mov       word ptr ds:[SELFMODIFY_sub_botstep_lo+3 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr ds:[SELFMODIFY_add_botstep_lo+4 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -4731,19 +4679,7 @@ backsector_not_null:
 ; here we modify worldhigh/low then do not write them back to memory
 ; (except push/pop in one situation)
 
-; worldhigh.w >>= 4;
-; worldlow.w >>= 4;
 
-
-; worldlow is di:si
-sar       di, 1
-rcr       si, 1
-sar       di, 1
-rcr       si, 1
-sar       di, 1
-rcr       si, 1
-sar       di, 1
-rcr       si, 1
 
 ; worldlow to dx:ax
 mov       dx, di
@@ -4752,15 +4688,6 @@ xchg      ax, si
 pop       si
 pop       di
 
-; worldhi to di:si
-sar       di, 1
-rcr       si, 1
-sar       di, 1
-rcr       si, 1
-sar       di, 1
-rcr       si, 1
-sar       di, 1
-rcr       si, 1
 
 
 ; if (worldhigh.w < worldtop.w) {
@@ -4773,7 +4700,7 @@ cmp       word ptr [bp - 040h], si
 jbe       jmp_to_skip_pixhigh_step
 do_pixhigh_step:
 
-; pixhigh = (centeryfrac_shiftright4.w) - FixedMul (worldhigh.w, rw_scale.w);
+; pixhigh = (centeryfrac_4.w) - FixedMul (worldhigh.w, rw_scale.w);
 ; pixhighstep = -FixedMul    (rw_scalestep.w,          worldhigh.w);
 
 ; store these
@@ -4829,18 +4756,15 @@ ENDIF
 ;end inlined FixedMulBSPLocal_
 
 
-; mov cx, low word
-; mov bx, high word
-SELFMODIFY_sub__centeryfrac_shiftright4_lo_2:
-mov       cx, 01000h
-sub       cx, ax
-SELFMODIFY_sub__centeryfrac_shiftright4_hi_2:
-mov       ax, 01000h
+neg       ax
+mov       word ptr [bp - 022h], ax
+
+SELFMODIFY_sub__centeryfrac_4_hi_2:
+mov       ax, 01000h ; ah known zero. dh too probably?
 sbb       ax, dx
 
-SHIFT32_MACRO_LEFT ax cx 4
 
-mov       word ptr [bp - 022h], cx
+
 mov       word ptr [bp - 020h], ax
 pop       bx
 pop       cx
@@ -4898,7 +4822,7 @@ neg       dx
 neg       ax
 sbb       dx, 0
 
-SHIFT32_MACRO_LEFT dx ax 4
+
 
 ; dx:ax is pixhighstep.
 ; self modifying code to write to pixlowstep usages.
@@ -4943,7 +4867,7 @@ jmp_to_skip_pixlow_step:
 jmp       skip_pixlow_step
 do_pixlow_step:
 
-; pixlow = (centeryfrac_shiftright4.w) - FixedMul (worldlow.w, rw_scale.w);
+; pixlow = (centeryfrac << 16) - FixedMul (worldlow.w, rw_scale.w);
 ; pixlowstep = -FixedMul    (rw_scalestep.w,          worldlow.w);
 
 
@@ -4995,17 +4919,14 @@ ENDIF
 
 ;end inlined FixedMulBSPLocal_
 
-
-SELFMODIFY_sub__centeryfrac_shiftright4_lo_1:
-mov       cx, 01000h
-sub       cx, ax
-SELFMODIFY_sub__centeryfrac_shiftright4_hi_1:
-mov       ax, 01000h
+neg       ax
+mov       word ptr [bp - 026h], ax
+SELFMODIFY_sub__centeryfrac_4_hi_1:
+mov       ax, 01000h ; ah known zero. dh too probably?
 sbb       ax, dx
 
-SHIFT32_MACRO_LEFT ax cx 4
 
-mov       word ptr [bp - 026h], cx
+
 mov       word ptr [bp - 024h], ax
 SELFMODIFY_get_rwscalestep_lo_4:
 mov       ax, 01000h
@@ -5067,7 +4988,6 @@ sbb       dx, 0
 ; dx:ax is pixlowstep.
 ; self modifying code to write to pixlowstep usages.
 
-SHIFT32_MACRO_LEFT dx ax 4
 
 mov       word ptr ds:[SELFMODIFY_sub_pixlow_lo+3 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr ds:[SELFMODIFY_add_pixlowstep_lo+4 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -11627,16 +11547,6 @@ mov      byte ptr ds:[SELFMODIFY_add_detailshiftitercount+3 - OFFSET R_BSP24_STA
 mov      ax, word ptr ss:[_detailshiftandval]
 mov      word ptr ds:[SELFMODIFY_detailshift_and_1+2 - OFFSET R_BSP24_STARTMARKER_], ax
 
-mov      ax, word ptr ss:[_centeryfrac_shiftright4]
-mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_lo_4+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      ax, word ptr ss:[_centeryfrac_shiftright4+2]
-mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_shiftright4_hi_4+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 ; ah is definitely 0... optimizable?
 mov      ax, word ptr ss:[_centerx]
@@ -11659,6 +11569,11 @@ mov      ax, word ptr ss:[_centery]
 
 mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET+1 - COLFUNC_JUMPTABLE_SIZE_OFFSET], ax
  
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_4+1 - OFFSET R_BSP24_STARTMARKER_], ax
+
 mov      ax, word ptr ss:[_viewwidth]
 mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
