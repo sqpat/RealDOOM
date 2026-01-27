@@ -3673,13 +3673,15 @@ mov       bx, (SELFMODIFY_skip_curseg_based_selfmodify_TARGET - SELFMODIFY_skip_
 SELFMODIFY_skip_curseg_based_selfmodify_AFTER:
 
 mov       bx, word ptr [bp + 010h]  ; curseg_render     ; turns into a jump past selfmodifying code once this next code block runs. 
+mov       ax, word ptr ds:[bx + SEG_RENDER_T.sr_offset]         
+mov       word ptr cs:[SELFMODIFY_BSP_sidesegoffset+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 xor       ax, ax
 mov       si, word ptr ds:[bx + SEG_RENDER_T.sr_sidedefOffset]  ; preshifted 2
 
 ; todo pull this out into outer func? and just push it?
 mov       ax, word ptr ds:[si + _sides_render + SIDE_RENDER_T.sr_rowoffset]
-; TODO i think this is buggy right now
+
 mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
 shl       si, 1
@@ -4404,8 +4406,8 @@ tempangle_not_smaller_than_fineang180:
 
 SELFMODIFY_BSP_sidetextureoffset:
 add       ax, 01000h
-
-add       ax, word ptr [bp + 010h]
+SELFMODIFY_BSP_sidesegoffset:
+add       ax, 01000h 
 add       ax, OFFSET SEG_RENDER_T.sr_offset
 ; rw_offset ready to be written to rendersegloop:
 mov   word ptr cs:[SELFMODIFY_set_cx_rw_offset_lo+1 - OFFSET R_BSP24_STARTMARKER_], dx
