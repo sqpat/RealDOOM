@@ -539,116 +539,221 @@ ENDP
 
 
 
-
-PROC R_FixedMulTrigLocal24_ NEAR
-
-
-; DX:AX  *  CX:BX
-;  0  1   2  3
-
-; AX * CX:BX
-; The difference between FixedMulTrig and FixedMul1632:
-; fine sine/cosine lookup tables are -65535 to 65535, so 17 bits. 
-; technically, this resembles 16 * 32 with sign extend, except we cannot use CWD to generate the high 16 bits.
-; So those sign bits which contain bit 17, sign extended must be stored somewhere cannot be regenerated via CWD
-; we basically take the above function and shove sign bits in DS for storage and regenerate DS from SS upon return
-;
-; 
-;BYTE
-; RETURN VALUE
-;                3       2       1		0
-;                DONTUSE USE     USE    DONTUSE
-
-
-;                               AXBXhi	 AXBXlo
-;                       DXBXhi  DXBXlo          
-;               S0BXhi  S0BXlo                          
-;
-;                       AXCXhi  AXCXlo
-;               DXCXhi  DXCXlo  
-;                       
-;               AXS1hi  AXS1lo
-;                               
-;                       
-;       
-
-; AX is param 1 (segment)
-; DX is param 2 (fineangle or lookup)
-; CX:BX is value 2
+; todo optimize this a bit, wasteful...
 
 
 
+IF COMPISA GE COMPILE_386
 
-push  si
+    PROC   FixedMulTrigSineLocal_ NEAR
+    PUBLIC FixedMulTrigSineLocal_
+    sal dx, 1
+    sal dx, 1   ; DWORD lookup index
 
-; lookup the fine angle
+    shr  dx, 1
+    mov  ax, FINESINE_SEGMENT
 
-; DWORD lookup index
-SHIFT_MACRO sal dx 2
+    ; lookup the fine angle
 
-mov si, dx
+    mov es, ax
+    db  066h, 081h, 0E2h, 0FFh, 0FFh, 0, 0  ;  and edx, 0x0000FFFF   
 
-mov ds, ax  ; cosine/sine segment in ds
-lodsw
-mov  es, ax
-lodsw
-mov  dx, ax ; store sign bits in DX
-
-AND AX, BX  ; S0*BX
-NEG AX
-MOV SI, AX  ; SI stores hi word return
-
-mov AX, DX  ; restore sign bits from dx
-
-AND  AX, CX    ; DX*CX
-NEG  AX
-add  SI, AX    ; low word result into high word return
-; use DX copy of sign bits later..
-
-; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
-; UNLESS BX is 0. then its also 0!
-
-; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
-MOV  AX, BX    ; create BX copy
-SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
-ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
-
-AND  AX, DX    ; 0 or BX - 1
-ADD  SI, AX    ; add DX * BX high word. 
+    db  026h, 067h, 066h, 08bh, 002h     ; mov  eax, dword ptr es:[edx]
 
 
-AND  DX, BX    ; DX * BX low bits
-NEG  DX
-XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
+    db  066h, 0C1h, 0E3h, 010h           ; shl  ebx, 0x10
+    db  066h, 00Fh, 0ACh, 0CBh, 010h     ; shrd ebx, ecx, 0x10
+    db  066h, 0F7h, 0EBh                 ; imul ebx
+    db  066h, 0C1h, 0E8h, 010h           ; shr  eax, 0x10
 
-mov  AX, ES    ; grab AX from ES
-mul  DX        ; BX*AX  
-add  BX, DX    ; high word result into low word return
-ADC  SI, 0
 
-mov  AX, CX   ; AX holds CX
+    ret
 
-CWD           ; S1 in DX
+    ENDP
 
-mov  CX, ES   ; AX from ES
-AND  DX, CX   ; S1*AX
-NEG  DX
-ADD  SI, DX   ; result into high word return
+    PROC   FixedMulTrigCosineLocal_ NEAR
+    PUBLIC FixedMulTrigCosineLocal_
+    sal dx, 1
+    sal dx, 1   ; DWORD lookup index
 
-MUL  CX       ; AX*CX
+    shr  dx, 1
+    mov  ax, FINECOSINE_SEGMENT
 
-ADD  AX, BX	  ; set up final return value
-ADC  DX, SI
- 
-MOV CX, SS
-MOV DS, CX    ; put DS back from SS
 
-pop   si
-ret
+    ; lookup the fine angle
+
+    mov es, ax
+    db  066h, 081h, 0E2h, 0FFh, 0FFh, 0, 0  ;  and edx, 0x0000FFFF   
+
+    db  026h, 067h, 066h, 08bh, 002h     ; mov  eax, dword ptr es:[edx]
+
+
+    db  066h, 0C1h, 0E3h, 010h           ; shl  ebx, 0x10
+    db  066h, 00Fh, 0ACh, 0CBh, 010h     ; shrd ebx, ecx, 0x10
+    db  066h, 0F7h, 0EBh                 ; imul ebx
+    db  066h, 0C1h, 0E8h, 010h           ; shr  eax, 0x10
+
+
+    ret
 
 
 
-ENDP
+    ENDP
+
+
+ELSE
+
+    PROC   FixedMulTrigSineLocal_ NEAR
+    PUBLIC FixedMulTrigSineLocal_
+
+
+    push  si
+
+    SHIFT_MACRO sal dx 2
+    
+
+
+    mov   ax, FINESINE_SEGMENT
+    mov   es, ax  ; put segment in es
+    mov   si, dx                ; dword lookup in si
+    xchg  ax, dx                ; offset in ax
+    shr   si, 1                 ; word lookup in si
+    shl   ax, 1                 ; 0-7FFF becomes 0-FFFF
+    cwd                        ; dx gets sign
+    mov   es, word ptr es:[si]  ; es gets low word
+    mov   ax, dx                ; ax gets sign copy
+
+    AND   AX, BX	; S0*BX
+    NEG   AX
+    XCHG  AX, SI	; SI stores hi word return
+
+    MOV   AX, DX    ; restore sign bits from DX
+
+    AND   AX, CX     ; DX*CX
+    SUB   SI, AX     ; low word result into high word return
+
+    ; DX already has sign bits..
+
+    ; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
+    ; UNLESS BX is 0. then its also 0!
+
+    ; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
+    MOV  AX, BX    ; create BX copy
+    SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
+    ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
+
+    AND  AX, DX    ; 0 or BX - 1
+    ADD  SI, AX    ; add DX * BX high word. 
+
+
+    AND  DX, BX    ; DX * BX low bits
+    NEG  DX
+    XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
+
+    mov  AX, ES    ; grab AX from ES
+    mul  DX        ; BX*AX  
+    add  BX, DX    ; high word result into low word return
+    ADC  SI, 0    ; would be cool if we had a known zero reg
+
+    xchg AX, CX   ; AX gets CX
+
+    CWD           ; S1 in DX
+
+    mov  CX, ES   ; AX from ES
+    AND  DX, CX   ; S1*AX
+    SUB  SI, DX   ; result into high word return
+
+    MUL  CX       ; AX*CX
+
+    ADD  AX, BX	  ; set up final return value
+    ADC  DX, SI
+
+    pop   si
+    ret
+
+
+
+    ENDP
+
+
+    PROC   FixedMulTrigCosineLocal_ NEAR
+    PUBLIC FixedMulTrigCosineLocal_
+
+    sal dx, 1
+    sal dx, 1   ; DWORD lookup index
+
+    push  si
+
+    ; lookup the fine angle
+
+; todo swap arg order so cx:bx is seg/lookup
+; allowing for mov es, cx -> les es:[bx]
+
+    mov   ax, FINECOSINE_SEGMENT
+    mov   es, ax                ; put segment in es
+    mov   si, dx                ; out offset  in si
+    lea   ax, [si + 02000h]
+    shr   si, 1                 ; dword to word lookup
+    shl   ax, 1                 ; 0-7FFF becomes 0-FFFF
+    cwd                         ; dx gets sign
+    mov   es, word ptr es:[si]  ; es gets low word
+    mov   ax, dx                ; ax gets sign copy
+
+    AND   AX, BX	; S0*BX
+    NEG   AX
+    XCHG  AX, SI	; SI stores hi word return
+
+    MOV   AX, DX    ; restore sign bits from DX
+
+    AND   AX, CX     ; DX*CX
+    SUB   SI, AX     ; low word result into high word return
+
+    ; DX already has sign bits..
+
+    ; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
+    ; UNLESS BX is 0. then its also 0!
+
+    ; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
+    MOV  AX, BX    ; create BX copy
+    SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
+    ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
+
+    AND  AX, DX    ; 0 or BX - 1
+    ADD  SI, AX    ; add DX * BX high word. 
+
+
+    AND  DX, BX    ; DX * BX low bits
+    NEG  DX
+    XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
+
+    mov  AX, ES    ; grab AX from ES
+    mul  DX        ; BX*AX  
+    add  BX, DX    ; high word result into low word return
+    ADC  SI, 0    ; would be cool if we had a known zero reg
+
+    xchg AX, CX   ; AX gets CX
+
+    CWD           ; S1 in DX
+
+    mov  CX, ES   ; AX from ES
+    AND  DX, CX   ; S1*AX
+    SUB  SI, DX   ; result into high word return
+
+    MUL  CX       ; AX*CX
+
+    ADD  AX, BX	  ; set up final return value
+    ADC  DX, SI
+
+    pop   si
+    ret
+
+
+
+    ENDP
+ENDIF
+
+
+
 
 PROC R_FixedMulLocal24_ NEAR
 
@@ -753,8 +858,8 @@ jmp   generate_distance_steps
 
 
 
-PROC  R_MapPlane24_ NEAR
-
+PROC    R_MapPlane24_ NEAR
+PUBLIC  R_MapPlane24_
 
 push  cx
 push  si
@@ -876,13 +981,12 @@ and   ah, 01Fh			; MOD_FINE_ANGLE mod high bits
 push  ax            ; store fineangle
 
 xchg  dx, ax			; fineangle in DX
-mov   ax, FINECOSINE_SEGMENT
 
 mov   di, bx			; backup low word to DX
 mov   si, cx			; backup high word
 
 ;call FAR PTR FixedMul_ 
-call R_FixedMulTrigLocal24_
+call FixedMulTrigCosineLocal_
 
 ;    ds_yfrac = -viewy.w - R_FixedMulLocal(finesine[angle], length );
 
@@ -893,13 +997,13 @@ adc   dx, 01000h
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xfrac_lo+1 - OFFSET R_SPAN24_STARTMARKER_], ax
 mov   byte ptr cs:[SELFMODIFY_SPAN_ds_xfrac_hi+2 - OFFSET R_SPAN24_STARTMARKER_], dl
 
-mov   ax, FINESINE_SEGMENT
+
 pop   dx              ; get fineangle
 mov   cx, si					; prep length
 mov   bx, di					; prep length
 
 ;call FAR PTR FixedMul_ 
-call R_FixedMulTrigLocal24_
+call FixedMulTrigSineLocal_
 
 ;    ds_yfrac = -viewy.w - R_FixedMulLocalWrapper(finesine[angle], length );
 

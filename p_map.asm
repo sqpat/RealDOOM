@@ -39,7 +39,9 @@ EXTRN FixedMul16u32_MapLocal_:NEAR
 EXTRN FixedMul2424_:NEAR
 EXTRN FixedDiv_MapLocal_:NEAR
 EXTRN FixedMul_MapLocal_:NEAR 
-EXTRN FixedMulTrigNoShift_MapLocal_:NEAR
+EXTRN FixedMulTrigNoShiftSine_MapLocal_:NEAR
+EXTRN FixedMulTrigNoShiftCosine_MapLocal_:NEAR
+
 EXTRN FixedMul2432_MapLocal_:NEAR
 EXTRN R_PointToAngle2_16_MapLocal_:NEAR
 EXTRN R_PointToAngle2_MapLocal_:NEAR
@@ -47,7 +49,7 @@ EXTRN R_PointToAngle2_MapLocal_:NEAR
 P_SIGHT_STARTMARKER_ = 0 
 
 .DATA
-
+COSINE_OFFSET_IN_SINE = ((FINECOSINE_SEGMENT - FINESINE_SEGMENT) SHL 4)
 
 
 .CODE
@@ -3752,8 +3754,8 @@ mov   bx, ax
 mov   cx, dx
 
 mov   dx, si     ; si is now free
-mov   ax, FINECOSINE_SEGMENT
-call  FixedMulTrigNoShift_MapLocal_
+
+call  FixedMulTrigNoShiftCosine_MapLocal_
 
 
 ;    tmxmove.w = FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, lineangle.hu.intbits, newlen);
@@ -3766,15 +3768,15 @@ push  dx        ; need this once more
 
 mov   bx, si
 mov   cx, di
-mov   ax, FINECOSINE_SEGMENT
-call  FixedMulTrigNoShift_MapLocal_
+
+call  FixedMulTrigNoShiftCosine_MapLocal_
 mov   word ptr ds:[_tmxmove+0], ax
 mov   word ptr ds:[_tmxmove+2], dx
 mov   bx, si
 mov   cx, di
 pop   dx
-mov   ax, FINESINE_SEGMENT
-call  FixedMulTrigNoShift_MapLocal_
+
+call  FixedMulTrigNoShiftSine_MapLocal_
 mov   word ptr ds:[_tmymove+0], ax
 mov   word ptr ds:[_tmymove+2], dx
 POPA_NO_AX_MACRO
@@ -6704,7 +6706,7 @@ ENDP
 
 ;fixed_t __near P_AimLineAttack(mobj_t __near*	t1,fineangle_t	angle,int16_t	distance);
 
-PROC P_AimLineAttack_ NEAR
+PROC   P_AimLineAttack_ NEAR
 PUBLIC P_AimLineAttack_
 
 
@@ -6772,18 +6774,25 @@ xchg  bx, si  ; restore si
 push  bx      ; bp - 0Eh write original bx plus eight
 
 mov   di, cx
-SHIFT_MACRO shl   di 2
 
 mov   ax, ss
 mov   ds, ax	; restore ds
 
-mov   cx, FINESINE_SEGMENT
-mov   es, cx
-les   ax, dword ptr es:[di+02000h] ; cosine
-mov   dx, es
-mov   es, cx
-les   bx, dword ptr es:[di]
-mov   cx, es
+shl   di, 1					; word lookup
+
+mov   ax, FINESINE_SEGMENT
+mov   es, ax
+
+mov   ax, di				; ax 0-3FFFh	
+SHIFT_MACRO sal   ax, 2		; ax 0-FFFFh
+cwd			 			    ; sine high word
+mov   cx, dx 			    ; sine high word in cx
+add   ax, 04000h
+cwd			 				; cosine high word
+
+mov   ax, word ptr es:[di + COSINE_OFFSET_IN_SINE]
+mov   bx, word ptr es:[di]
+
 
 
 ; dx:ax is cosine
@@ -6830,7 +6839,6 @@ jmp   aim_line_done_with_switchblock_shift
 
 
 
-jmp   aim_line_done_with_switchblock_shift
 
 aim_line_is_melee:
 
@@ -6880,14 +6888,31 @@ mov   es, si
 
 ; already shifted 6
 
-add   ax, word ptr es:[di + 02000h]
-adc   dx, word ptr es:[di + 02002h]
+; di already lookup
+; si is free... juggle
+
+push  ax    ; store ax
+push  dx	; old dx
+
+mov   ax, di
+SHIFT_MACRO sal ax 2
+cwd
+mov   si, dx  ; sine hi bits
+add   ax, 04000h
+cwd
+
+
 
 add   bx, word ptr es:[di]
-adc   cx, word ptr es:[di + 2]
+adc   cx, dx
+
+pop   dx   ; old dx
+pop   ax   ; old ax
+add   ax, word ptr es:[di + COSINE_OFFSET_IN_SINE]
+adc   dx, si
 
 
-jmp   aim_line_done_with_switchblock_shift
+
 
 
 aim_line_done_with_switchblock_shift:
@@ -6991,7 +7016,7 @@ ENDP
 
 
 
-PROC P_LineAttack_ NEAR
+PROC   P_LineAttack_ NEAR
 PUBLIC P_LineAttack_
 
 ; void __near P_LineAttack (mobj_t __near* t1, fineangle_t	angle, int16_t	distance16, fixed_t	slope, int16_t	damage ) {
@@ -7049,15 +7074,22 @@ mov   word ptr [bp - 4], ax
 mov   ax, word ptr es:[bx + 6]
 mov   word ptr [bp - 2], ax
 
-SHIFT_MACRO shl   di 2
 
-mov   cx, FINESINE_SEGMENT
-mov   es, cx
-les   ax, dword ptr es:[di + 02000h]
-mov   dx, es
-mov   es, cx
-les   bx, dword ptr es:[di]
-mov   cx, es
+shl   di, 1					; word lookup
+
+mov   ax, FINESINE_SEGMENT
+mov   es, ax
+
+mov   ax, di				; ax 0-3FFFh	
+SHIFT_MACRO sal   ax, 2		; ax 0-FFFFh
+cwd			 			    ; sine high word
+mov   cx, dx 			    ; sine high word in cx
+add   ax, 04000h
+cwd			 				; cosine high word
+
+mov   ax, word ptr es:[di + COSINE_OFFSET_IN_SINE]
+mov   bx, word ptr es:[di]
+
 
 ; cx:bx   sine
 ; dx:ax   cosine
@@ -7101,56 +7133,44 @@ jmp   lineattack_done_with_switchblock
 
 lineattack_is_melee:
 
-IF COMPISA GE COMPILE_386
-	SHLD  dx, ax, 6
-	SHLD  cx, bx, 6
-ELSE
 
-	; shift 6
-	sal   ax, 1
-	rcl   dx, 1
-	sal   ax, 1
-	rcl   dx, 1
-	sal   ax, 1
-	rcl   dx, 1
-	sal   ax, 1
-	rcl   dx, 1
-	sal   ax, 1
-	rcl   dx, 1
-	sal   ax, 1
-	rcl   dx, 1
+SHIFT32_MACRO_LEFT dx ax 6
+SHIFT32_MACRO_LEFT cx bx 6
 
-	; shift 6
-	sal   bx, 1
-	rcl   cx, 1
-	sal   bx, 1
-	rcl   cx, 1
-	sal   bx, 1
-	rcl   cx, 1
-	sal   bx, 1
-	rcl   cx, 1
-	sal   bx, 1
-	rcl   cx, 1
-	sal   bx, 1
-	rcl   cx, 1
 
-ENDIF
 
 cmp   si, CHAINSAWRANGE
-jne    lineattack_done_with_switchblock
+jne   lineattack_done_with_switchblock
 
 lineattack_is_chainsaw:
 
-mov   si, FINESINE_SEGMENT
-mov   es, si
 ; es:di
 
 ; already have shift 6. add the extra sine/cosine
+; di angle preserved from above..
 
-add   ax, word ptr es:[di + 02000h]
-adc   dx, word ptr es:[di + 02002h]
+mov   si, FINESINE_SEGMENT
+mov   es, si
+
+push  ax
+push  dx
+
+mov   ax, di
+SHIFT_MACRO sal ax 2
+cwd					; sine bits
+
 add   bx, word ptr es:[di]
-adc   cx, word ptr es:[di + 2]
+adc   cx, dx
+
+add   ax, 04000h
+cwd					; cosine hibits
+mov   si, dx
+
+pop   dx
+pop   ax
+
+add   ax, word ptr es:[di + COSINE_OFFSET_IN_SINE]
+adc   dx, si  ; cosine hibits
 
 lineattack_done_with_switchblock:
 
@@ -7219,7 +7239,7 @@ ENDP
 
 
 
-PROC P_UseLines_ NEAR
+PROC   P_UseLines_ NEAR
 PUBLIC P_UseLines_
 
 PUSHA_NO_AX_MACRO
@@ -7235,9 +7255,12 @@ push  word ptr es:[di]		; x lo bp - 2
 push  word ptr es:[di + 2]  ; x hi bp - 4
 les   bx, dword ptr es:[di + 4]
 mov   cx, es		;			si:di y
-shr   ax, 1
-and   al, 0FCh  ; same as shr 3, shl 2
+mov   di, ax
+SHIFT_MACRO sar ax 2
+and   al, 0FEh  ; word lookup
 xchg  ax, di    ; di has sine/cosine fineangle lookup
+				; ax has sign
+
 
 
 mov   si, FINESINE_SEGMENT
@@ -7247,39 +7270,23 @@ IF COMPISA GE COMPILE_186
 	push  OFFSET PTR_UseTraverse_ - OFFSET P_SIGHT_STARTMARKER_
 	push  PT_ADDLINES
 ELSE
-	mov   ax, OFFSET PTR_UseTraverse_ - OFFSET P_SIGHT_STARTMARKER_
-	push  ax
-	mov   ax, PT_ADDLINES
-	push  ax
+	mov   si, OFFSET PTR_UseTraverse_ - OFFSET P_SIGHT_STARTMARKER_
+	push  si
+	mov   si, PT_ADDLINES
+	push  si
 ENDIF
 
-les   ax, dword ptr es:[di] ; load sin into dx:ax
-mov   dx, es
-mov   es, si ; restore es
-les   di, dword ptr es:[di + 02000h] ; load cos into si:di
-mov   si, es
+; ax has full angle
+cwd
+mov   si, dx		; sine hibits in si
+add   ax, 04000h	
+cwd					; cosine hibits in dx
+mov   ax, word ptr es:[di] ; load sin into si:ax
+mov   di, word ptr es:[di + COSINE_OFFSET_IN_SINE] ; load cos into dx:di
+xchg  dx, si	    ; di:si cosine, dx:ax sine
 
+SHIFT32_MACRO_LEFT dx ax 6
 
-
-IF COMPISA GE COMPILE_386
-	SHLD  dx, ax, 6
-
-ELSE
-
-	; shift 6
-	sal   ax, 1
-	rcl   dx, 1
-	sal   ax, 1
-	rcl   dx, 1
-	sal   ax, 1
-	rcl   dx, 1
-	sal   ax, 1
-	rcl   dx, 1
-	sal   ax, 1
-	rcl   dx, 1
-	sal   ax, 1
-	rcl   dx, 1
-ENDIF
 
 
 add   ax, bx
@@ -7296,26 +7303,7 @@ les   dx, dword ptr [bp - 4]
 mov   ax, es
 
 
-IF COMPISA GE COMPILE_386
-	SHLD  si, di, 6
-
-ELSE
-
-	; shift 6
-	sal   di, 1
-	rcl   si, 1
-	sal   di, 1
-	rcl   si, 1
-	sal   di, 1
-	rcl   si, 1
-	sal   di, 1
-	rcl   si, 1
-	sal   di, 1
-	rcl   si, 1
-	sal   di, 1
-	rcl   si, 1
-ENDIF
-
+SHIFT32_MACRO_LEFT si di 6
 
 
 add   di, ax

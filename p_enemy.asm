@@ -56,8 +56,10 @@ EXTRN GetSpawnHealth_:NEAR
 EXTRN GetSeeState_:NEAR
 EXTRN GetRaiseState_:NEAR
 EXTRN GetAttackSound_:NEAR
-EXTRN FixedMulTrigNoShift_MapLocal_:NEAR
-EXTRN FixedMulTrigSpeedNoShift_MapLocal_:NEAR
+EXTRN FixedMulTrigNoShiftSine_MapLocal_:NEAR
+EXTRN FixedMulTrigNoShiftCosine_MapLocal_:NEAR
+EXTRN FixedMulTrigSpeedNoShiftSine_MapLocal_:NEAR
+EXTRN FixedMulTrigSpeedNoShiftCosine_MapLocal_:NEAR
 EXTRN FastDiv3216u_MapLocal_:NEAR
 EXTRN R_PointToAngle2_MapLocal_:NEAR
 
@@ -3476,8 +3478,8 @@ call  P_UnsetThingPosition_
 mov   cx, 24
 xor   bx, bx
 mov   dx, word ptr [bp - 6]
-mov   ax, FINECOSINE_SEGMENT
-call  FixedMulTrigNoShift_MapLocal_
+
+call  FixedMulTrigNoShiftCosine_MapLocal_
 mov   ds, word ptr [bp - 2]
 
 add   ax, word ptr ds:[si + MOBJ_POS_T.mp_x + 0]
@@ -3490,10 +3492,10 @@ pop   ds
 
 mov   cx, 24
 xor   bx, bx
-mov   ax, FINESINE_SEGMENT
+
 pop   dx  ; bp - 6
 
-call  FixedMulTrigNoShift_MapLocal_
+call  FixedMulTrigNoShiftSine_MapLocal_
 mov   ds, word ptr [bp - 2]
 
 add   ax, word ptr ds:[si + MOBJ_POS_T.mp_y + 0]
@@ -3757,10 +3759,10 @@ mov   cx, 24
 add   ax, (_thinkerlist + THINKER_T.t_data)
 mov   dx, word ptr [bp - 8]
 push  ax  ; bp - 0Ah
-mov   ax, FINECOSINE_SEGMENT
+
 xor   bx, bx
 
-call  FixedMulTrigNoShift_MapLocal_
+call  FixedMulTrigNoShiftCosine_MapLocal_
 les   bx, dword ptr [bp - 6]
 
 xchg  ax, cx
@@ -3775,8 +3777,8 @@ mov   word ptr es:[di + MOBJ_POS_T.mp_x + 2], ax
 mov   cx, 24
 mov   dx, word ptr [bp - 8]
 xor   bx, bx
-mov   ax, FINESINE_SEGMENT
-call  FixedMulTrigNoShift_MapLocal_
+
+call  FixedMulTrigNoShiftSine_MapLocal_
 les   bx, dword ptr [bp - 6]
 
 xchg  ax, cx
@@ -3907,9 +3909,9 @@ and   dx, 0FFFCh
 
 push  dx  ; angle
 push  bx  ; speed
-mov   ax, FINECOSINE_SEGMENT
 
-call FixedMulTrigSpeedNoShift_MapLocal_
+
+call FixedMulTrigSpeedNoShiftCosine_MapLocal_
 
 mov   word ptr ds:[si + MOBJ_T.m_momx + 0], ax
 mov   word ptr ds:[si + MOBJ_T.m_momx + 2], dx
@@ -3917,9 +3919,9 @@ mov   word ptr ds:[si + MOBJ_T.m_momx + 2], dx
 
 pop   bx  ; speed
 pop   dx  ; angle
-mov   ax, FINESINE_SEGMENT
 
-call FixedMulTrigSpeedNoShift_MapLocal_
+
+call FixedMulTrigSpeedNoShiftSine_MapLocal_
 mov   word ptr ds:[si + MOBJ_T.m_momy + 0], ax
 mov   word ptr ds:[si + MOBJ_T.m_momy + 2], dx
 
@@ -4034,17 +4036,17 @@ push  ax  ; bp - 2
 push  dx  ; bp - 4
 
 
-mov   ax, FINECOSINE_SEGMENT
+
 mov   bx, SKULLSPEED_SMALL
-call FixedMulTrigSpeedNoShift_MapLocal_
+call FixedMulTrigSpeedNoShiftCosine_MapLocal_
 
 mov   word ptr ds:[si + MOBJ_T.m_momx + 0], ax
 mov   word ptr ds:[si + MOBJ_T.m_momx + 2], dx
 
 mov   bx, SKULLSPEED_SMALL
 pop   dx ; bp - 4
-mov   ax, FINESINE_SEGMENT
-call FixedMulTrigSpeedNoShift_MapLocal_
+
+call FixedMulTrigSpeedNoShiftSine_MapLocal_
 
 mov   word ptr ds:[si + MOBJ_T.m_momy + 0], ax
 mov   word ptr ds:[si + MOBJ_T.m_momy + 2], dx
@@ -4220,9 +4222,9 @@ ENDIF
 mov   cx, 0004Ah
 mov   bx, 08000h
 mov   dx, word ptr [bp - 2]
-mov   ax, FINECOSINE_SEGMENT
 
-call  FixedMulTrigNoShift_MapLocal_
+
+call  FixedMulTrigNoShiftCosine_MapLocal_
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   es, cx
 add   ax, word ptr es:[si + MOBJ_POS_T.mp_x + 0]
@@ -4232,8 +4234,8 @@ push  dx  ; bp - 8h
 mov   cx, 0004Ah
 mov   bx, 08000h
 mov   dx, word ptr [bp - 2]
-mov   ax, FINESINE_SEGMENT
-call  FixedMulTrigNoShift_MapLocal_
+
+call  FixedMulTrigNoShiftSine_MapLocal_
 
 mov   cx, MOBJPOSLIST_6800_SEGMENT
 mov   es, cx

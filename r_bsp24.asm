@@ -96,43 +96,45 @@ sub   ax, 01000h
 and   dh, 01Fh
 and   ah, 01Fh
 
-xchg  ax, di
+xchg  ax, di   ; di holds angleB
 
 ; dx = anglea
 ; di = angleb
 
-mov   ax, FINESINE_SEGMENT
-mov   si, ax
+
 SELFMODIFY_get_rw_distance_lo_1:
 mov   bx, 01000h
 SELFMODIFY_get_rw_distance_hi_1:
+public SELFMODIFY_get_rw_distance_hi_1
 mov   cx, 01000h
-
-
 
 ;    den = FixedMulTrig(FINE_SINE_ARGUMENT, anglea, rw_distance);
  
-call FixedMulTrig_BSPLocal_
+call FixedMulTrigSine_BSPLocal_
 
 
 ;    num.w = FixedMulTrig(FINE_SINE_ARGUMENT, angleb, projection.w)<<detailshift.b.bytelow;
  
 ;call FixedMulTrig16_
 ; inlined  16 bit times sine value
+xchg ax, bx  ; 
+mov  cx, dx  ; result to cx:bx
 
-mov es, si
-SHIFT_MACRO sal di 2
-les bx, dword ptr es:[di]
-mov cx, es
-xchg dx, cx
-xchg ax, bx
+mov  si, FINESINE_SEGMENT
+mov  es, si  ; set segment
 
-;  dx now has anglea
-;  ax has finesine_segment
+sal  di, 1   ; word lookup 0-3FFFh
+mov  ax, di
+SHIFT_MACRO sal ax 2      ; 0-FFFFh
+cwd                       ; dx has high word
+mov  ax, word ptr es:[di]
+
+
+;  dx:ax holds sine lookup
 ;  cx:bx is den
 
 SELFMODIFY_BSP_centerx_1:
-mov   si, 01000h
+mov   si, 01000h  ; note high byte always 0
 
 
 AND  DX, SI    ; DX*CX
@@ -1291,119 +1293,6 @@ ENDP
 
 
 
-IF COMPISA GE COMPILE_386
-
-    PROC FixedMulTrig_BSPLocal_ NEAR
-    sal dx, 1
-    sal dx, 1   ; DWORD lookup index
-    ENDP
-
-    PROC FixedMulTrigNoShift_BSPLocal_ NEAR
-    ; pass in the index already shifted to be a dword lookup..
-
-
-    ; lookup the fine angle
-
-    mov es, ax
-    db  066h, 081h, 0E2h, 0FFh, 0FFh, 0, 0  ;  and edx, 0x0000FFFF   
-
-    db  026h, 067h, 066h, 08bh, 002h     ; mov  eax, dword ptr es:[edx]
-
-
-    db  066h, 0C1h, 0E3h, 010h           ; shl  ebx, 0x10
-    db  066h, 00Fh, 0ACh, 0CBh, 010h     ; shrd ebx, ecx, 0x10
-    db  066h, 0F7h, 0EBh                 ; imul ebx
-    db  066h, 0C1h, 0E8h, 010h           ; shr  eax, 0x10
-
-
-    ret
-
-    ENDP
-
-
-ELSE
-
-   PROC FixedMulTrig_BSPLocal_  NEAR
-
-    
-
-    sal dx, 1
-    sal dx, 1   ; DWORD lookup index
-    ENDP
-
-    PROC FixedMulTrigNoShift_BSPLocal_  NEAR
-    push  si
-
-    ; lookup the fine angle
-
-; todo swap arg order so cx:bx is seg/lookup
-; allowing for mov es, cx -> les es:[bx]
-
-
-    mov  si, dx
-    mov  es, ax  ; put segment in es
-    les  ax, dword ptr es:[si]
-
-    mov  dx, es
-    mov  es, ax
-    mov  ax, dx  ; gross juggle... revisit. for consistency with old algo
-
-
-    AND   AX, BX	; S0*BX
-    NEG   AX
-    XCHG  AX, SI	; SI stores hi word return
-
-    MOV   AX, DX    ; restore sign bits from DX
-
-    AND   AX, CX     ; DX*CX
-    SUB   SI, AX     ; low word result into high word return
-
-    ; DX already has sign bits..
-
-    ; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
-    ; UNLESS BX is 0. then its also 0!
-
-    ; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
-    MOV  AX, BX    ; create BX copy
-    SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
-    ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
-
-    AND  AX, DX    ; 0 or BX - 1
-    ADD  SI, AX    ; add DX * BX high word. 
-
-
-    AND  DX, BX    ; DX * BX low bits
-    NEG  DX
-    XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
-
-    mov  AX, ES    ; grab AX from ES
-    mul  DX        ; BX*AX  
-    add  BX, DX    ; high word result into low word return
-    ADC  SI, 0    ; would be cool if we had a known zero reg
-
-    xchg AX, CX   ; AX gets CX
-
-    CWD           ; S1 in DX
-
-    mov  CX, ES   ; AX from ES
-    AND  DX, CX   ; S1*AX
-    SUB  SI, DX   ; result into high word return
-
-    MUL  CX       ; AX*CX
-
-    ADD  AX, BX	  ; set up final return value
-    ADC  DX, SI
-
-    pop   si
-    ret
-
-
-
-
-    ENDP
-ENDIF
-
-
 
 fast_div_32_16:
 
@@ -1944,8 +1833,118 @@ ret
 
 ENDP
 
-PROC FixedMulTrigNoShiftBSPLocal_ NEAR
-; pass in the index already shifted to be a dword lookup..
+IF COMPISA GE COMPILE_386
+
+    PROC   FixedMulTrigSine_BSPLocal_ NEAR
+    PUBLIC FixedMulTrigSine_BSPLocal_
+    sal dx, 1
+    sal dx, 1   ; DWORD lookup index
+    ENDP
+
+    PROC   FixedMulTrigNoShiftSine_BSPLocal_ NEAR
+    PUBLIC FixedMulTrigNoShiftSine_BSPLocal_
+    ; pass in the index already shifted to be a dword lookup..
+
+    shr  dx, 1
+    mov  ax, FINESINE_SEGMENT
+
+    ; lookup the fine angle
+
+    mov es, ax
+    db  066h, 081h, 0E2h, 0FFh, 0FFh, 0, 0  ;  and edx, 0x0000FFFF   
+
+    db  026h, 067h, 066h, 08bh, 002h     ; mov  eax, dword ptr es:[edx]
+
+
+    db  066h, 0C1h, 0E3h, 010h           ; shl  ebx, 0x10
+    db  066h, 00Fh, 0ACh, 0CBh, 010h     ; shrd ebx, ecx, 0x10
+    db  066h, 0F7h, 0EBh                 ; imul ebx
+    db  066h, 0C1h, 0E8h, 010h           ; shr  eax, 0x10
+
+
+    ret
+
+    ENDP
+
+    PROC   FixedMulTrigCosine_BSPLocal_ NEAR
+    PUBLIC FixedMulTrigCosine_BSPLocal_
+    sal dx, 1
+    sal dx, 1   ; DWORD lookup index
+    ENDP
+
+    PROC   FixedMulTrigNoShiftCosine_BSPLocal_ NEAR
+    PUBLIC FixedMulTrigNoShiftCosine_BSPLocal_
+    ; pass in the index already shifted to be a dword lookup..
+    shr  dx, 1
+    mov  ax, FINECOSINE_SEGMENT
+
+
+    ; lookup the fine angle
+
+    mov es, ax
+    db  066h, 081h, 0E2h, 0FFh, 0FFh, 0, 0  ;  and edx, 0x0000FFFF   
+
+    db  026h, 067h, 066h, 08bh, 002h     ; mov  eax, dword ptr es:[edx]
+
+
+    db  066h, 0C1h, 0E3h, 010h           ; shl  ebx, 0x10
+    db  066h, 00Fh, 0ACh, 0CBh, 010h     ; shrd ebx, ecx, 0x10
+    db  066h, 0F7h, 0EBh                 ; imul ebx
+    db  066h, 0C1h, 0E8h, 010h           ; shr  eax, 0x10
+
+
+    ret
+
+
+
+    ENDP
+
+
+ELSE
+
+    PROC   FixedMulTrigSine_BSPLocal_ NEAR
+    PUBLIC FixedMulTrigSine_BSPLocal_
+
+    ; DX:AX  *  CX:BX
+    ;  0  1   2  3
+
+    ; AX * CX:BX
+    ; The difference between FixedMulTrig and FixedMul1632:
+    ; fine sine/cosine lookup tables are -65535 to 65535, so 17 bits. 
+    ; technically, this resembles 16 * 32 with sign extend, except we cannot use CWD to generate the high 16 bits.
+    ; So those sign bits which contain bit 17, sign extended must be stored somewhere cannot be regenerated via CWD
+    ; we basically take the above function and shove sign bits in DS for storage and regenerate DS from SS upon return
+    ;
+    ; 
+    ;BYTE
+    ; RETURN VALUE
+    ;                3       2       1		0
+    ;                DONTUSE USE     USE    DONTUSE
+
+
+    ;                               AXBXhi	 AXBXlo
+    ;                       DXBXhi  DXBXlo          
+    ;               S0BXhi  S0BXlo                          
+    ;
+    ;                       AXCXhi  AXCXlo
+    ;               DXCXhi  DXCXlo  
+    ;                       
+    ;               AXS1hi  AXS1lo
+    ;                               
+    ;                       
+    ;       
+
+    ; AX is param 1 (segment)
+    ; DX is param 2 (fineangle or lookup)
+    ; CX:BX is value 2
+
+    sal dx, 1
+    sal dx, 1   ; DWORD lookup index
+
+    ENDP
+    PROC   FixedMulTrigNoShiftSine_BSPLocal_ NEAR
+    PUBLIC FixedMulTrigNoShiftSine_BSPLocal_
+    ; pass in the index already shifted to be a dword lookup..
 
     push  si
 
@@ -1954,15 +1953,15 @@ PROC FixedMulTrigNoShiftBSPLocal_ NEAR
 ; todo swap arg order so cx:bx is seg/lookup
 ; allowing for mov es, cx -> les es:[bx]
 
-
-    mov  si, dx
-    mov  es, ax  ; put segment in es
-    les  ax, dword ptr es:[si]
-
-    mov  dx, es
-    mov  es, ax
-    mov  ax, dx  ; gross juggle... revisit. for consistency with old algo
-
+    mov   ax, FINESINE_SEGMENT
+    mov   es, ax  ; put segment in es
+    mov   si, dx                ; dword lookup in si
+    xchg  ax, dx                ; offset in ax
+    shr   si, 1                 ; word lookup in si
+    shl   ax, 1                 ; 0-7FFF becomes 0-FFFF
+    cwd                        ; dx gets sign
+    mov   es, word ptr es:[si]  ; es gets low word
+    mov   ax, dx                ; ax gets sign copy
 
     AND   AX, BX	; S0*BX
     NEG   AX
@@ -2014,7 +2013,125 @@ PROC FixedMulTrigNoShiftBSPLocal_ NEAR
 
 
 
-ENDP
+    ENDP
+
+
+    PROC   FixedMulTrigCosine_BSPLocal_ NEAR
+    PUBLIC FixedMulTrigCosine_BSPLocal_
+
+    ; DX:AX  *  CX:BX
+    ;  0  1   2  3
+
+    ; AX * CX:BX
+    ; The difference between FixedMulTrig and FixedMul1632:
+    ; fine sine/cosine lookup tables are -65535 to 65535, so 17 bits. 
+    ; technically, this resembles 16 * 32 with sign extend, except we cannot use CWD to generate the high 16 bits.
+    ; So those sign bits which contain bit 17, sign extended must be stored somewhere cannot be regenerated via CWD
+    ; we basically take the above function and shove sign bits in DS for storage and regenerate DS from SS upon return
+    ;
+    ; 
+    ;BYTE
+    ; RETURN VALUE
+    ;                3       2       1		0
+    ;                DONTUSE USE     USE    DONTUSE
+
+
+    ;                               AXBXhi	 AXBXlo
+    ;                       DXBXhi  DXBXlo          
+    ;               S0BXhi  S0BXlo                          
+    ;
+    ;                       AXCXhi  AXCXlo
+    ;               DXCXhi  DXCXlo  
+    ;                       
+    ;               AXS1hi  AXS1lo
+    ;                               
+    ;                       
+    ;       
+
+    ; AX is param 1 (segment)
+    ; DX is param 2 (fineangle or lookup)
+    ; CX:BX is value 2
+
+    sal dx, 1
+    sal dx, 1   ; DWORD lookup index
+
+    ENDP
+    PROC   FixedMulTrigNoShiftCosine_BSPLocal_ NEAR
+    PUBLIC FixedMulTrigNoShiftCosine_BSPLocal_
+    ; pass in the index already shifted to be a dword lookup..
+
+    push  si
+
+    ; lookup the fine angle
+
+; todo swap arg order so cx:bx is seg/lookup
+; allowing for mov es, cx -> les es:[bx]
+
+    mov   ax, FINECOSINE_SEGMENT
+    mov   es, ax                ; put segment in es
+    mov   si, dx                ; out offset  in si
+    lea   ax, [si + 02000h]
+    shr   si, 1                 ; dword to word lookup
+    shl   ax, 1                 ; 0-7FFF becomes 0-FFFF
+    cwd                         ; dx gets sign
+    mov   es, word ptr es:[si]  ; es gets low word
+    mov   ax, dx                ; ax gets sign copy
+
+    AND   AX, BX	; S0*BX
+    NEG   AX
+    XCHG  AX, SI	; SI stores hi word return
+
+    MOV   AX, DX    ; restore sign bits from DX
+
+    AND   AX, CX     ; DX*CX
+    SUB   SI, AX     ; low word result into high word return
+
+    ; DX already has sign bits..
+
+    ; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
+    ; UNLESS BX is 0. then its also 0!
+
+    ; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
+    MOV  AX, BX    ; create BX copy
+    SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
+    ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
+
+    AND  AX, DX    ; 0 or BX - 1
+    ADD  SI, AX    ; add DX * BX high word. 
+
+
+    AND  DX, BX    ; DX * BX low bits
+    NEG  DX
+    XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
+
+    mov  AX, ES    ; grab AX from ES
+    mul  DX        ; BX*AX  
+    add  BX, DX    ; high word result into low word return
+    ADC  SI, 0    ; would be cool if we had a known zero reg
+
+    xchg AX, CX   ; AX gets CX
+
+    CWD           ; S1 in DX
+
+    mov  CX, ES   ; AX from ES
+    AND  DX, CX   ; S1*AX
+    SUB  SI, DX   ; result into high word return
+
+    MUL  CX       ; AX*CX
+
+    ADD  AX, BX	  ; set up final return value
+    ADC  DX, SI
+
+    pop   si
+    ret
+
+
+
+    ENDP
+ENDIF
+
+
+
 
 
 PROC R_ClearClipSegs_ NEAR
@@ -2038,6 +2155,7 @@ COSINE_OFFSET_IN_SINE = ((FINECOSINE_SEGMENT - FINESINE_SEGMENT) SHL 4)
 ;R_ClearPlanes
 
 PROC   R_ClearPlanes_ NEAR
+PUBLIC R_ClearPlanes_ 
 
 ; dont need to preserve registers here
 
@@ -2067,18 +2185,25 @@ mov   ax, 01000h
 sub   ah, 08h   ; FINE_ANG90
 and   ah, 01Fh    ; MOD_FINE_ANGLE
 
-SHIFT_MACRO shl ax 2
+shl ax, 1  ; word lookup
+mov   di, ax
  
 SELFMODIFY_BSP_centerx_2:
 mov   cx, 01000h
-mov   di, ax
 
 mov   bx, FINESINE_SEGMENT
 mov   es, bx
 
+SHIFT_MACRO shl ax 2
 
-les   ax, dword ptr es:[di + COSINE_OFFSET_IN_SINE]
-mov   si, es
+cwd
+mov   bx, dx  ; sine sign
+add   ax, 04000h
+cwd
+
+mov   ax, word ptr es:[di + COSINE_OFFSET_IN_SINE]
+mov   si, dx  ; cos sine
+
 
 ; note: range is -65535 to 65535. High word is already sign bits
 
@@ -2090,7 +2215,8 @@ xor   dx, dx
 
 div   cx
 
-mov   es, bx ; restore es for next LES
+;    basexscale = FixedDivWholeB(finecosine[angle],temp.w);
+
 
 xor   ax, si ; apply sign
 sub   ax, si
@@ -2098,8 +2224,8 @@ sub   ax, si
 mov   word ptr ds:[_basexscale], ax
 mov   word ptr ds:[_basexscale + 2], si
 
-les   ax, dword ptr es:[di]
-mov   si, es
+mov   ax, word ptr es:[di]
+mov   si, bx ; sine sign
 
 xor   ax, si
 sub   ax, si   ; absolute value
@@ -2810,11 +2936,10 @@ stosw
 
 ;    gxt.w = FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, viewangle_shiftright1 ,tr_x.w);
 
-mov   ax, FINECOSINE_SEGMENT
 SELFMODIFY_set_viewanglesr1_3:
 mov   dx, 01000h
 mov   di, dx
-call  FixedMulTrigNoShiftBSPLocal_
+call  FixedMulTrigNoShiftCosine_BSPLocal_
 
 
 
@@ -2832,9 +2957,8 @@ mov   cx, es
 
 ;    gyt.w = -FixedMulTrigNoShift(FINE_SINE_ARGUMENT, viewangle_shiftright1 ,tr_y.w);
 
-mov   ax, FINESINE_SEGMENT
 
-call FixedMulTrigNoShiftBSPLocal_
+call FixedMulTrigNoShiftSine_BSPLocal_
 
 ; todo clean this up. less register swapping.
 
@@ -2878,11 +3002,10 @@ xchg  ax, bx
 lodsw
 xchg  ax, cx
 
-mov   ax, FINESINE_SEGMENT
 SELFMODIFY_set_viewanglesr1_2:
 mov   dx, 01000h
 
-call  FixedMulTrigNoShiftBSPLocal_
+call  FixedMulTrigNoShiftSine_BSPLocal_
 neg dx
 neg ax
 sbb dx, 0
@@ -2897,11 +3020,10 @@ lodsw
 xchg  ax, cx
 
 mov   si, dx  ; SI can now move 
-mov   ax, FINECOSINE_SEGMENT
 SELFMODIFY_set_viewanglesr1_1:
 mov   dx, 01000h
 
-call FixedMulTrigNoShiftBSPLocal_
+call FixedMulTrigNoShiftCosine_BSPLocal_
 
 ;    tx.w = -(gyt.w+gxt.w); 
 
@@ -3780,7 +3902,7 @@ finish_midtex_selfmodify:
       ; shift 5. since we do a tantoangle lookup... this maxes at 2048
       SHIFT32_MACRO_RIGHT dx ax 3
       and   al, 0FCh
-      mov   dx, di ; move di to dx early to free up di for les + di + bx combo
+
 
 
       xchg  ax, bx
@@ -3789,14 +3911,22 @@ finish_midtex_selfmodify:
 
       ;    dist = FixedDiv (dx, finesine[angle] );	
 
-      add   bh, 040h ; ang90 highbits
-      mov   ax, FINESINE_SEGMENT
+      add   bh, (ANG90_HIGHBITS SHR 8)
+
+      mov   ax, FINESINE_SEGMENT 
       mov   es, ax
-      shr   bx, 1
-      and   bl, 0FCh
-      mov   ax, si
-      les   bx, dword ptr es:[bx]
-      mov   cx, es
+      mov   ax, bx   
+      cwd                        ; dx gets sine sign
+      mov   cx, dx               ; sine sign
+
+      SHIFT_MACRO shr bx 2       ; from FFFFh to 3FFFh
+      and   bl, 0FEh             ; word lookup clean low dirty bit
+
+      mov   ax, si               ; dx:ax now becomes di:si's earlier dx
+      mov   dx, di 
+      mov   bx, word ptr es:[bx] ; sine low word
+      ; cx set from cwd above
+
       call  FixedDivBSPLocal_
 
       xchg  ax, bx  ; result in cx:bx
@@ -3811,10 +3941,9 @@ finish_midtex_selfmodify:
 
    ; hyp in cx:bx.
 
-   mov       ax, FINESINE_SEGMENT
    pop       dx  ; angle calculated prior
 
-   call      FixedMulTrigNoShiftBSPLocal_
+   call      FixedMulTrigNoShiftSine_BSPLocal_
 
 
    do_set_rw_distance:
@@ -4218,7 +4347,7 @@ or   	  al, 0
 jne       do_seg_textured_stuff
 mov       word ptr cs:[SELFMODIFY_BSP_get_segtextured - OFFSET R_BSP24_STARTMARKER_], ((SELFMODIFY_BSP_get_segtextured_TARGET - SELFMODIFY_BSP_get_segtextured_AFTER) SHL 8) + 0EBh
 
-jmp       seg_textured_check_done
+jmp       SHORT seg_textured_check_done
 do_seg_textured_stuff:
 mov       word ptr cs:[SELFMODIFY_BSP_get_segtextured - OFFSET R_BSP24_STARTMARKER_], 0C089h ; nop
 SELFMODIFY_set_offsetangle:
@@ -4240,8 +4369,7 @@ mov       bx, 01000h
 cmp       dx, FINE_ANG90_NOSHIFT ; 02000h
 ja        offsetangle_greater_than_fineang90
 
-mov       ax, FINESINE_SEGMENT
-call      FixedMulTrigNoShiftBSPLocal_
+call      FixedMulTrigNoShiftSine_BSPLocal_
 ; used later, dont change?
 ; dx:ax is rw_offset
 xchg      ax, dx

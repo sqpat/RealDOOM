@@ -384,13 +384,15 @@ mov   ds, ax
 lodsw
 xchg  ax, bx
 ; dword lookup
-SHIFT_MACRO shl bx 2
+shl   bx ,1
+mov   ax, bx
+SHIFT_MACRO shl ax 2
+cwd
+mov   cx, dx
 mov   ax, FINECOSINE_SEGMENT
 mov   ds, ax
-les   bx, dword ptr ds:[bx]
-mov   cx, es
+mov   bx, word ptr ds:[bx]
 test  cx, cx
-
 ; cosine is 17 bit in a 32 bit storage... we can probably figure out a way to do this without labs.
 
 jns   dont_do_labs

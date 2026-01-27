@@ -36,7 +36,8 @@ EXTRN P_SpawnMobj_:NEAR
 EXTRN P_DamageMobj_:NEAR
 EXTRN S_StartSound_:NEAR
 EXTRN S_StartSoundPlayer_:NEAR      
-EXTRN FixedMulTrig_MapLocal_:NEAR
+EXTRN FixedMulTrigSine_MapLocal_:NEAR
+EXTRN FixedMulTrigCosine_MapLocal_:NEAR
 EXTRN R_PointToAngle2_MapLocal_:NEAR
 
 .DATA
@@ -344,26 +345,26 @@ xchg  ax, dx
 
 les   bx, dword ptr ds:[_player + PLAYER_T.player_bob + 0]
 mov   cx, es
-mov   ax, FINECOSINE_SEGMENT
 
-call  FixedMulTrig_MapLocal_
+
+call  FixedMulTrigCosine_MapLocal_
 
 
 inc   dx
-mov   word ptr ds:[si + 4], ax
-mov   word ptr ds:[si + 6], dx
+mov   word ptr ds:[si + PSPDEF_T.pspdef_sx + 0], ax
+mov   word ptr ds:[si + PSPDEF_T.pspdef_sx + 2], dx
 
 mov   dx, di
 and   dh, 0Fh
 
 les   bx, dword ptr ds:[_player + PLAYER_T.player_bob + 0]
 mov   cx, es
-mov   ax, FINESINE_SEGMENT
-call  FixedMulTrig_MapLocal_
+
+call  FixedMulTrigSine_MapLocal_
 
 add   dx, WEAPONTOP_HIGH
-mov   word ptr ds:[si + 8], ax
-mov   word ptr ds:[si + 0Ah], dx
+mov   word ptr ds:[si + PSPDEF_T.pspdef_sy + 0], ax
+mov   word ptr ds:[si + PSPDEF_T.pspdef_sy + 2], dx
 
 ret   
 

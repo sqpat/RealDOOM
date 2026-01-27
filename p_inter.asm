@@ -37,7 +37,8 @@ EXTRN P_DropWeapon_:NEAR
 EXTRN P_SpawnMobj_:NEAR
 EXTRN P_SetMobjState_:NEAR
 EXTRN FastMul16u32u_MapLocal_:NEAR
-EXTRN FixedMulTrigNoShift_MapLocal_:NEAR
+EXTRN FixedMulTrigNoShiftSine_MapLocal_:NEAR
+EXTRN FixedMulTrigNoShiftCosine_MapLocal_:NEAR
 EXTRN FastDiv32u16u_MapLocal_:NEAR
 EXTRN R_PointToAngle2_MapLocal_:NEAR
 
@@ -1339,19 +1340,19 @@ and    dx, 0FFFCh
 push   dx
 push   cx
 push   bx
-mov    ax, FINECOSINE_SEGMENT
-call  FixedMulTrigNoShift_MapLocal_
+
+call  FixedMulTrigNoShiftCosine_MapLocal_
 
 add    word ptr ds:[si + MOBJ_T.m_momx + 0], ax
 adc    word ptr ds:[si + MOBJ_T.m_momx + 2], dx
 
 
-mov    ax, FINESINE_SEGMENT
+
 pop    bx
 pop    cx
 pop    dx
 
-call  FixedMulTrigNoShift_MapLocal_
+call  FixedMulTrigNoShiftSine_MapLocal_
 add    word ptr ds:[si + MOBJ_T.m_momy + 0], ax
 adc    word ptr ds:[si + MOBJ_T.m_momy + 2], dx
 

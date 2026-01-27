@@ -42,8 +42,10 @@ EXTRN FixedMul16u32_MapLocal_:NEAR
 EXTRN FastMul16u32u_MapLocal_:NEAR
 EXTRN S_StopSoundMobjRef_:NEAR
 EXTRN S_StartSound_:NEAR
-EXTRN FixedMulTrigSpeed_MapLocal_:NEAR
-EXTRN FixedMulTrigSpeedNoShift_MapLocal_:NEAR
+EXTRN FixedMulTrigSpeedSine_MapLocal_:NEAR
+EXTRN FixedMulTrigSpeedNoShiftSine_MapLocal_:NEAR
+EXTRN FixedMulTrigSpeedCosine_MapLocal_:NEAR
+EXTRN FixedMulTrigSpeedNoShiftCosine_MapLocal_:NEAR
 EXTRN FastDiv3216u_MapLocal_:NEAR
 EXTRN R_PointToAngle2_MapLocal_:NEAR
 EXTRN HU_Start_:NEAR
@@ -2620,8 +2622,8 @@ shr   si, 1
 and   si, 0FFFCh
 mov   dx, si
 mov   bx, word ptr [bp - 014h]
-mov   ax, FINECOSINE_SEGMENT
-call  FixedMulTrigSpeedNoShift_MapLocal_
+
+call  FixedMulTrigSpeedNoShiftCosine_MapLocal_
 
 mov   word ptr ds:[di + MOBJ_T.m_momx + 0], ax
 mov   word ptr ds:[di + MOBJ_T.m_momx + 2], dx
@@ -2631,8 +2633,8 @@ mov   word ptr ds:[di + MOBJ_T.m_momx + 2], dx
 mov   dx, si
 ;mov   bx, word ptr [bp - 014h]
 pop   bx
-mov   ax, FINESINE_SEGMENT
-call  FixedMulTrigSpeedNoShift_MapLocal_
+
+call  FixedMulTrigSpeedNoShiftSine_MapLocal_
 
 
 mov   word ptr ds:[di + MOBJ_T.m_momy + 0], ax
@@ -2812,8 +2814,8 @@ mov    bx, ax
 mov    bl, byte ptr ds:[bx + _mobjinfo + MOBJINFO_T.mobjinfo_speed]
 xor    bh, bh
 push   bx  ; bp - 0Ah
-mov    ax, FINECOSINE_SEGMENT
-call   FixedMulTrigSpeed_MapLocal_
+
+call   FixedMulTrigSpeedCosine_MapLocal_
 
 
 mov    word ptr ds:[di + MOBJ_T.m_momx + 0], ax
@@ -2821,8 +2823,8 @@ mov    word ptr ds:[di + MOBJ_T.m_momx + 2], dx
 
 mov    bx, word ptr [bp - 0Ah]
 mov    dx, si
-mov    ax, FINESINE_SEGMENT
-call   FixedMulTrigSpeed_MapLocal_
+
+call   FixedMulTrigSpeedSine_MapLocal_
 
 
 mov    word ptr ds:[di + MOBJ_T.m_momy + 0], ax

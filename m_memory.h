@@ -59,7 +59,7 @@
 
 
 // todo generate this programatically
-#define baselowermemoryaddress    (0x23DB0000)
+#define baselowermemoryaddress    (0x28DB0000)
 // MaximumMusDriverSize
 
 #define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
@@ -128,7 +128,7 @@ struct sfxinfo_struct{
 #define sb_dmabuffer_segment          ((segment_t) ((int32_t)sb_dmabuffer  >> 16))
 #define finesine_segment              ((segment_t) ((int32_t)finesine >> 16))
 // todo clean this and finecosine up
-#define finecosine_segment            ((segment_t) (finesine_segment + 0x200))
+#define finecosine_segment            ((segment_t) (finesine_segment + 0x100))
 #define events_segment                ((segment_t) ((int32_t)events >> 16))
 #define flattranslation_segment       ((segment_t) ((int32_t)flattranslation >> 16))
 #define texturetranslation_segment    ((segment_t) ((int32_t)texturetranslation >> 16))
@@ -225,7 +225,7 @@ scantokey            3194:0000
 
 #define size_sfxdata             (NUMSFX * sizeof(sfxinfo_t))
 #define size_sb_dmabuffer        (256 * 2)
-#define size_finesine            (10240u * sizeof(int32_t))
+#define size_finesine            (10240u * sizeof(int16_t))
 #define size_events              (sizeof(event_t) * MAXEVENTS)
 #define size_flattranslation     (MAX_FLATS * sizeof(uint8_t))
 #define size_texturetranslation  (MAX_TEXTURES * sizeof(uint16_t))

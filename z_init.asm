@@ -1255,10 +1255,10 @@ mov     ax, OFFSET str_dot
 call    DEBUG_PRINT_NOARG_CS_
 
 
-;	locallib_far_fread(finesine, 4 * 10240u, fp);
+;	locallib_far_fread(finesine, 2 * 10240u, fp);
 xor   ax, ax
 mov   dx, FINESINE_SEGMENT
-mov   bx, 4 * 10240
+mov   bx, 2 * 10240
 mov   cx, di
 call  locallib_fread_
 

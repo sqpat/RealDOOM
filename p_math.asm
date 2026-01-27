@@ -368,16 +368,18 @@ ENDP
 
 IF COMPISA GE COMPILE_386
 
-    PROC   FixedMulTrig_MapLocal_ NEAR
-    PUBLIC FixedMulTrig_MapLocal_
+    PROC   FixedMulTrigSine_MapLocal_ NEAR
+    PUBLIC FixedMulTrigSine_MapLocal_
     sal dx, 1
     sal dx, 1   ; DWORD lookup index
     ENDP
 
-    PROC   FixedMulTrigNoShift_MapLocal_ NEAR
-    PUBLIC FixedMulTrigNoShift_MapLocal_
+    PROC   FixedMulTrigNoShiftSine_MapLocal_ NEAR
+    PUBLIC FixedMulTrigNoShiftSine_MapLocal_
     ; pass in the index already shifted to be a dword lookup..
 
+    shr  dx, 1
+    mov  ax, FINESINE_SEGMENT
 
     ; lookup the fine angle
 
@@ -402,8 +404,8 @@ IF COMPISA GE COMPILE_386
 
 ELSE
 
-    PROC   FixedMulTrig_MapLocal_ NEAR
-    PUBLIC FixedMulTrig_MapLocal_
+    PROC   FixedMulTrigSine_MapLocal_ NEAR
+    PUBLIC FixedMulTrigSine_MapLocal_
 
     ; DX:AX  *  CX:BX
     ;  0  1   2  3
@@ -442,8 +444,8 @@ ELSE
     sal dx, 1   ; DWORD lookup index
 
     ENDP
-    PROC   FixedMulTrigNoShift_MapLocal_ NEAR
-    PUBLIC FixedMulTrigNoShift_MapLocal_
+    PROC   FixedMulTrigNoShiftSine_MapLocal_ NEAR
+    PUBLIC FixedMulTrigNoShiftSine_MapLocal_
     ; pass in the index already shifted to be a dword lookup..
 
     push  si
@@ -454,14 +456,176 @@ ELSE
 ; allowing for mov es, cx -> les es:[bx]
 
 
-    mov  si, dx
-    mov  es, ax  ; put segment in es
-    les  ax, dword ptr es:[si]
+    mov   ax, FINESINE_SEGMENT
+    mov   es, ax  ; put segment in es
+    
+    mov   si, dx                ; dword lookup in si
+    xchg  ax, dx                ; angle in ax 0-7FFF
+    shr   si, 1                 ; word lookup in si
+    shl   ax, 1                 ; 0-7FFF becomes 0-FFFF
+    cwd                         ; dx gets sign
+    
+    mov   es, word ptr es:[si]  ; es gets low word
+    mov   ax, dx                ; ax gets sign copy
 
-    mov  dx, es
-    mov  es, ax
-    mov  ax, dx  ; gross juggle... revisit. for consistency with old algo
+   ; es has low word
+   ; dx, ax have sign.
 
+    AND   AX, BX	; S0*BX
+    NEG   AX
+    XCHG  AX, SI	; SI stores hi word return
+
+    MOV   AX, DX    ; restore sign bits from DX
+
+    AND   AX, CX     ; DX*CX
+    SUB   SI, AX     ; low word result into high word return
+
+    ; DX already has sign bits..
+
+    ; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
+    ; UNLESS BX is 0. then its also 0!
+
+    ; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
+    MOV  AX, BX    ; create BX copy
+    SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
+    ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
+
+    AND  AX, DX    ; 0 or BX - 1
+    ADD  SI, AX    ; add DX * BX high word. 
+
+
+    AND  DX, BX    ; DX * BX low bits
+    NEG  DX
+    XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
+
+    mov  AX, ES    ; grab AX from ES
+    mul  DX        ; BX*AX  
+    add  BX, DX    ; high word result into low word return
+    ADC  SI, 0    ; would be cool if we had a known zero reg
+
+    xchg AX, CX   ; AX gets CX
+
+    CWD           ; S1 in DX
+
+    mov  CX, ES   ; AX from ES
+    AND  DX, CX   ; S1*AX
+    SUB  SI, DX   ; result into high word return
+
+    MUL  CX       ; AX*CX
+
+    ADD  AX, BX	  ; set up final return value
+    ADC  DX, SI
+
+    pop   si
+    ret
+
+
+
+    ENDP
+ENDIF
+
+
+IF COMPISA GE COMPILE_386
+
+    PROC   FixedMulTrigCosine_MapLocal_ NEAR
+    PUBLIC FixedMulTrigCosine_MapLocal_
+    sal dx, 1
+    sal dx, 1   ; DWORD lookup index
+    ENDP
+
+    PROC   FixedMulTrigNoShiftCosine_MapLocal_ NEAR
+    PUBLIC FixedMulTrigNoShiftCosine_MapLocal_
+    ; pass in the index already shifted to be a dword lookup..
+    shr  dx, 1
+    mov  ax, FINECOSINE_SEGMENT
+
+
+    ; lookup the fine angle
+
+    mov es, ax
+    db  066h, 081h, 0E2h, 0FFh, 0FFh, 0, 0  ;  and edx, 0x0000FFFF   
+
+    db  026h, 067h, 066h, 08bh, 002h     ; mov  eax, dword ptr es:[edx]
+
+
+    db  066h, 0C1h, 0E3h, 010h           ; shl  ebx, 0x10
+    db  066h, 00Fh, 0ACh, 0CBh, 010h     ; shrd ebx, ecx, 0x10
+    db  066h, 0F7h, 0EBh                 ; imul ebx
+    db  066h, 0C1h, 0E8h, 010h           ; shr  eax, 0x10
+
+
+    ret
+
+
+
+    ENDP
+
+
+ELSE
+
+    PROC   FixedMulTrigCosine_MapLocal_ NEAR
+    PUBLIC FixedMulTrigCosine_MapLocal_
+
+    ; DX:AX  *  CX:BX
+    ;  0  1   2  3
+
+    ; AX * CX:BX
+    ; The difference between FixedMulTrig and FixedMul1632:
+    ; fine sine/cosine lookup tables are -65535 to 65535, so 17 bits. 
+    ; technically, this resembles 16 * 32 with sign extend, except we cannot use CWD to generate the high 16 bits.
+    ; So those sign bits which contain bit 17, sign extended must be stored somewhere cannot be regenerated via CWD
+    ; we basically take the above function and shove sign bits in DS for storage and regenerate DS from SS upon return
+    ;
+    ; 
+    ;BYTE
+    ; RETURN VALUE
+    ;                3       2       1		0
+    ;                DONTUSE USE     USE    DONTUSE
+
+
+    ;                               AXBXhi	 AXBXlo
+    ;                       DXBXhi  DXBXlo          
+    ;               S0BXhi  S0BXlo                          
+    ;
+    ;                       AXCXhi  AXCXlo
+    ;               DXCXhi  DXCXlo  
+    ;                       
+    ;               AXS1hi  AXS1lo
+    ;                               
+    ;                       
+    ;       
+
+    ; AX is param 1 (segment)
+    ; DX is param 2 (fineangle or lookup)
+    ; CX:BX is value 2
+
+    sal dx, 1
+    sal dx, 1   ; DWORD lookup index
+
+    ENDP
+  PROC   FixedMulTrigNoShiftCosine_MapLocal_ NEAR
+  PUBLIC FixedMulTrigNoShiftCosine_MapLocal_
+    ; pass in the index already shifted to be a dword lookup..
+
+    push  si
+
+    ; lookup the fine angle
+
+; todo swap arg order so cx:bx is seg/lookup
+; allowing for mov es, cx -> les es:[bx]
+
+    mov   ax, FINECOSINE_SEGMENT
+    mov   es, ax                ; put segment in es
+    mov   si, dx                ; out offset  in si
+    lea   ax, [si + 02000h]
+    shr   si, 1                 ; dword to word lookup
+    shl   ax, 1                 ; 0-7FFF becomes 0-FFFF
+    cwd                         ; dx gets sign
+    mov   es, word ptr es:[si]  ; es gets low word
+    mov   ax, dx                ; ax gets sign copy
+
+   ; es has low word
+   ; dx, ax have sign.
 
     AND   AX, BX	; S0*BX
     NEG   AX
@@ -518,102 +682,62 @@ ENDIF
 
 
 
-IF COMPISA GE COMPILE_386
-
-    PROC   FixedMulTrig16_MapLocal_ NEAR
-    PUBLIC FixedMulTrig16_MapLocal_
-
-    ; lookup the fine angle
-    mov es, ax
-
-    ; todo improve zeroing out of high 16 bits.
-    db  066h, 081h, 0E2h, 0FFh, 0FFh, 0, 0  ;  and edx, 0x0000FFFF   
-
-    ; no shift of dx needed..
-    db  026h, 066h, 08bh, 06bh, 0, 0     ; mov  eax, dword ptr es:[4*edx]
-    db  066h, 081h, 0E3h, 0FFh, 0FFh, 0, 0  ;  and ebx, 0x0000FFFF   
-    db  066h, 0F7h, 0EBh                 ; imul ebx
-
-    db  066h, 0C1h, 0E8h, 010h           ; shr  eax, 0x10
-
-    ret
 
 
+; todo: hardcode 10, 15, 20, 25 versions on switch case
+; takes in 8 bit speed param, which is always a missile 
+; then does a multiply to get the expected result.
+; avoids needless back and forth 16 bit shift
 
-    ENDP
-ELSE
+; bl holds speed
+; allowed to modify ax bx cx dx
 
-    PROC   FixedMulTrig16_MapLocal_ NEAR
-    PUBLIC FixedMulTrig16_MapLocal_
+; equivalent to an unsigned mult even though it is signed.
 
-    ; DX:AX  *  CX:00
-    ;  0  1   2  
+PROC   FixedMulTrigSpeedCosine_MapLocal_  NEAR
+PUBLIC FixedMulTrigSpeedCosine_MapLocal_
 
-    ; DX:AX * CX:00
-    ; The difference between FixedMulTrig and FixedMul1632:
-    ; fine sine/cosine lookup tables are -65535 to 65535, so 17 bits. 
-    ; technically, this resembles 16 * 32 with sign extend, except we cannot use CWD to generate the high 16 bits.
-    ; So those sign bits which contain bit 17, sign extended must be stored somewhere cannot be regenerated via CWD
-    ; we basically take the above function and shove sign bits in DS for storage and regenerate DS from SS upon return
-    ;
-    ; 
-    ;BYTE
-    ; RETURN VALUE
-    ;                3       2       1		0
-    ;                DONTUSE USE     USE    DONTUSE
+SHIFT_MACRO shl dx 2
+
+ENDP
+PROC   FixedMulTrigSpeedNoShiftCosine_MapLocal_ NEAR
+PUBLIC FixedMulTrigSpeedNoShiftCosine_MapLocal_
 
 
-    ;                               AXBXhi	 AXBXlo
-    ;                       DXBXhi  DXBXlo          
-    ;               S0BXhi  S0BXlo                          
-    ;
-    ;                       AXCXhi  AXCXlo
-    ;               DXCXhi  DXCXlo  
-    ;                       
-    ;               AXS1hi  AXS1lo
-    ;                               
-    ;                       
-    ;       
+; todo clean up the juggle and math
+; bx has speed
+; dx has angle
 
-    ; AX is param 1 (segment)
-    ; DX is param 2 (fineangle or lookup)
-    ; CX:00 is value 2
+mov  ax, FINECOSINE_SEGMENT
+mov  es, ax  ; put segment in ES
+mov  cx, bx  ; cx gets value
+mov  bx, dx  ; bx gets angle dword lookup
+lea  ax, [bx + 02000h]
+shr  bx, 1   ; bx has word lookup
+shl  ax, 1   ; 0-7FFF becomes 0-FFFF
+cwd          ; dx gets sign
+xchg ax, dx  ; ax gets sign
 
-    ; DX:AX * CX
+mov  dx, word ptr es:[bx]  ; ax gets sine value
+xchg cx, dx
 
-    ; BX is used by this function and not preserved! fine in our use case.
+; dx should have speed
+; ax:cx should be sine
 
+; speed is dx, mul by ax:Cx 
+and dx, 07Fh  ; drop the 32 bit flag.   bit 7 stores that this is a * fracunit value.
 
-    ; lookup the fine angle
+mov  BX, DX    ; dupe DX
+MUL  DX        ; high mul
+XCHG BX, AX    ; store low product to be high result. Retrieve orig AX
+MUL  CX        ; low mul
+ADD  DX, BX    ; add 
 
-    SAL dx, 1
-    SAL dx, 1   ; DWORD lookup index
-    MOV BX, dx
-    MOV es, ax  ; put segment in ES
-    les ax, dword ptr es:[BX]
-    mov dx, es
+; ax * cx:bx
 
+ret
 
-
-    AND  DX, CX    ; DX*CX
-    NEG  DX
-    MOV  BX, DX    ; store high result
-
-
-    MUL  CX       ; AX*CX
-    ADD  DX, BX   
-    
-
-    ret
-
-
-
-    ENDP
-
-ENDIF
-
-
-
+ENDP
 
 
 
@@ -627,25 +751,35 @@ ENDIF
 
 ; equivalent to an unsigned mult even though it is signed.
 
-PROC   FixedMulTrigSpeed_MapLocal_  NEAR
-PUBLIC FixedMulTrigSpeed_MapLocal_
+PROC   FixedMulTrigSpeedSine_MapLocal_  NEAR
+PUBLIC FixedMulTrigSpeedSine_MapLocal_
 
 SHIFT_MACRO shl dx 2
 
 ENDP
-PROC   FixedMulTrigSpeedNoShift_MapLocal_ NEAR
-PUBLIC FixedMulTrigSpeedNoShift_MapLocal_
 
-; todo pass this in via ES
+PROC   FixedMulTrigSpeedNoShiftSine_MapLocal_ NEAR
+PUBLIC FixedMulTrigSpeedNoShiftSine_MapLocal_
 
-mov es, ax  ; put segment in ES
-xchg dx, bx
+; todo clean up the juggle and math
 
-les cx, dword ptr es:[BX]
-mov ax, es
+mov  ax, FINESINE_SEGMENT
+mov  es, ax  ; put segment in ES
+mov  cx, bx  ; cx gets value
+mov  bx, dx  ; bx gets angle dword lookup
+mov  ax, bx
+shr  bx, 1   ; bx has word lookup
+shl  ax, 1   ; 0-7FFF becomes 0-FFFF
+cwd          ; dx gets sign
+xchg ax, dx  ; ax gets sign
+
+mov  dx, word ptr es:[bx]  ; ax gets sine value
+xchg cx, dx
+
+; AX:CX * DX
 
 ; speed is dx, mul by ax:Cx 
-and dx, 07Fh  ; drop the 32 bit flag.   bit 7 stores that this is a * fracunit value.
+and  dx, 07Fh  ; drop the 32 bit flag.   bit 7 stores that this is a * fracunit value.
 
 mov  BX, DX    ; dupe DX
 

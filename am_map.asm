@@ -257,15 +257,13 @@ dw 0
 
 IF COMPISA GE COMPILE_386
 
-    PROC FastMulTrig16_    NEAR
-    PUBLIC FastMulTrig16_
+    PROC   FastMulTrig16Cosine_    NEAR
+    PUBLIC FastMulTrig16Cosine_
 
     
-    ;db  066h, 025h, 0FFh, 0FFh, 0, 0        ;  and eax, 0x0000FFFF  
-    ;db 066h, 08eh, 0c0h                   ; mov es, eax
-    
-    ; seems to work instead of the above
-    mov es, ax
+    mov  ax, FINECOSINE_SEGMENT
+    mov  es, ax
+
 
     db  066h, 081h, 0E3h, 0FFh, 0FFh, 0, 0  ;  and ebx, 0x0000FFFF   
     ;sal   dx, 2
@@ -286,41 +284,107 @@ IF COMPISA GE COMPILE_386
 ELSE
 
 
-    PROC FastMulTrig16_    NEAR
-    PUBLIC FastMulTrig16_
-    ; ax:[dx * 4] * BX
+    PROC   FastMulTrig16Cosine_    NEAR
+    PUBLIC FastMulTrig16Cosine_
+
     ; (dont shift answer 16)
-    ;
-    ; 
-    ;BYTE
-    ; RETURN VALUE
-    ;                3       2       1		0
-    ;                DONTUSE DONTUSE USE    USE
+
+    ; cosine32[bx] * dx
+    ; bx already passed in as lookup index...  multiply against dx 
+
+    mov  ax, FINECOSINE_SEGMENT
+    mov  es, ax  ; put segment in ES
+    
+    lea  ax, [bx + 02000h]
+    shl  ax, 1      ; signed 0-FFFF
+    shr  bx, 1      ; word lookup 0-3FFF
+    push dx         ; store 16 bit operand
+    cwd    
+    mov ax, word ptr es:[bx] ; ax gets cosine lo
+    mov bx, dx               ; bx gets sign/cosine hi
+    pop dx                   ; dx gets orig value
 
 
-    ;                               AXBXhi	 AXBXlo
-    ;                       DXBXhi  DXBXlo          
-    ;               S0BXhi  S0BXlo                          
-    ;
-    ;               AXS1hi  AXS1lo
-    ;                               
-    ;                       
-    ;       
+    ;BX:AX * DX
 
-    ; AX is param 1 (segment)
-    ; DX is param 2 (fineangle or lookup)
-    ; BX is value 2
+    ; begin multiply...
 
-    ; DX:AX * BX
-    ; need to sign extend BX to CX...
+    AND   BX, DX
+    NEG   BX        ; get sign mult for 16 bit param * high trig.
 
-    ; do lookup..
+    MOV   ES, BX    ; store it in ES
 
-    ; bx already passed in as lookup index...  value in dx etc
+    MOV   BX, AX  ; BX stores trig param lowbits
+    MOV   AX, DX  ; AX stores 16 bit param 
 
-    mov es, ax  ; put segment in ES
-    les ax, dword ptr es:[BX]
-    mov bx, es
+    CWD   ; DX gets 16 bit arg's sign bits
+    AND   DX, BX  ; still need to neg. move after mul for pipelining
+    XCHG  DX, BX  ; swap params
+
+    MUL   DX
+
+    NEG   BX      ; finish the sign multiply from above, after the queue is full from mul
+    ADD   DX, BX  ; add first sign bits back
+    MOV   BX, ES  ; add second sign bits back
+    ADD   DX, BX
+
+
+
+    ret
+
+
+    ENDP
+
+ENDIF
+
+
+IF COMPISA GE COMPILE_386
+
+    PROC   FastMulTrig16Sine_    NEAR
+    PUBLIC FastMulTrig16Sine_
+
+    mov  ax, FINESINE_SEGMENT
+    mov  es, ax
+    
+
+    db  066h, 081h, 0E3h, 0FFh, 0FFh, 0, 0  ;  and ebx, 0x0000FFFF   
+    ;sal   dx, 2
+
+    xchg  dx, ax                            ; get dx in ax for sign extend
+    db 066h, 098h                           ; cwde  (sign extend ax to eax for imul)
+
+    db 026h, 067h, 066h, 0F7h, 02Bh         ; imul dword ptr es:[ebx]
+
+    db  066h, 00Fh, 0A4h, 0C2h, 010h        ; shld edx, eax, 0x10
+
+    ret
+
+
+
+    ENDP
+
+ELSE
+
+
+    PROC   FastMulTrig16Sine_    NEAR
+    PUBLIC FastMulTrig16Sine_
+   
+    ; (dont shift answer 16)
+   
+    ; sine32[bx] * dx
+    ; bx already passed in as lookup index...  multiply against dx 
+
+    mov  ax, FINESINE_SEGMENT
+    mov  es, ax  ; put segment in ES
+    
+    mov  ax, bx     ; dword lookup 0-7FFF
+    shl  ax, 1      ; signed 0-FFFF
+    shr  bx, 1      ; word lookup 0-3FFF
+    push dx         ; store 16 bit operand
+    cwd    
+    mov ax, word ptr es:[bx] ; ax gets cosine lo
+    mov bx, dx               ; bx gets sign/cosine hi
+    pop dx                   ; dx gets orig value
 
     ;BX:AX * DX
 
@@ -1935,17 +1999,15 @@ mov       cx, word ptr [bp - 0Ch] ; angle from outer scope.
 
 xchg      ax, si  ; x backup
 mov       di, dx  ; y backup
-mov       ax, FINESINE_SEGMENT
 mov       bx, cx
 ;mov       dx, di ; already set
-call      FastMulTrig16_
+call      FastMulTrig16Sine_
 xchg      ax, bp
 push      dx
 
-mov       ax, FINECOSINE_SEGMENT
 mov       bx, cx
 mov       dx, si
-call      FastMulTrig16_
+call      FastMulTrig16Cosine_
 sub       ax, bp
 pop       ax
 sbb       dx, ax
@@ -1955,14 +2017,12 @@ sbb       dx, ax
 xchg      dx, si   ; dx gets old x value once more and si stores x result
 
 mov       bx, cx
-mov       ax, FINESINE_SEGMENT
-call      FastMulTrig16_
+call      FastMulTrig16Sine_
 xchg      ax, bp  ; low result
 xchg      dx, di  ; high result, get last y value into dx
 
 mov       bx, cx
-mov       ax, FINECOSINE_SEGMENT
-call      FastMulTrig16_
+call      FastMulTrig16Cosine_
 add       ax, bp
 adc       dx, di ; y result right into dx.
 xchg      ax, si ; recover x result

@@ -29,7 +29,8 @@ EXTRN P_SetMobjState_:NEAR
 EXTRN P_MovePsprites_:NEAR
 EXTRN P_UseLines_:NEAR
 EXTRN FixedMul_MapLocal_:NEAR
-EXTRN FixedMulTrig_MapLocal_:NEAR
+EXTRN FixedMulTrigSine_MapLocal_:NEAR
+EXTRN FixedMulTrigCosine_MapLocal_:NEAR
 EXTRN R_PointToAngle2_MapLocal_:NEAR
 
 .DATA
@@ -86,8 +87,8 @@ push  bx
 push  cx  ; store for second call
 push  dx  
 
-mov   ax, FINECOSINE_SEGMENT
-call  FixedMulTrig_MapLocal_
+
+call  FixedMulTrigCosine_MapLocal_
 
 
 
@@ -97,8 +98,8 @@ adc   word ptr ds:[bx + MOBJ_T.m_momx + 2], dx
 pop   dx
 pop   cx
 pop   bx
-mov   ax, FINESINE_SEGMENT
-call  FixedMulTrig_MapLocal_
+
+call  FixedMulTrigSine_MapLocal_
 
 
 
@@ -226,9 +227,9 @@ xchg  ax, dx
 
 sar   cx, 1
 rcr   bx, 1
-mov   ax, FINESINE_SEGMENT
 
-call  FixedMulTrig_MapLocal_
+
+call  FixedMulTrigSine_MapLocal_
 
 
 
