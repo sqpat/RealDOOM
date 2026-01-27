@@ -383,11 +383,12 @@ mov   ds, ax
 
 lodsw
 xchg  ax, bx
-; dword lookup
-shl   bx ,1
-mov   ax, bx
+; word lookup
+shl   bx, 1
+lea   ax, [bx + 01000h]
 SHIFT_MACRO shl ax 2
 cwd
+
 mov   cx, dx
 mov   ax, FINECOSINE_SEGMENT
 mov   ds, ax
@@ -485,21 +486,11 @@ inc   bp
 cmp   bp, LIGHTLEVELS
 jb    outer_lightscale_loop
 
-
-
 POPA_NO_AX_MACRO
 
 
 
 ret
-
-
-
-
-
-
-
-
 
 
 ENDP
