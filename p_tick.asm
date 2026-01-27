@@ -122,7 +122,7 @@ rep       stosw
 
 mov       dx, SIZE MOBJ_POS_T
 mul       dx
-mov       dx, MOBJPOSLIST_6800_SEGMENT
+mov       dx, MOBJPOSLIST_SEGMENT
 mov       es, dx
 xchg      ax, di
 mov       ax, (SIZE MOBJ_POS_T) / 2
@@ -302,7 +302,7 @@ add   bx, ax                 ; 0x18
 
 mov       ax, di
 
-mov       cx, MOBJPOSLIST_6800_SEGMENT ; todo remove maybe?
+mov       cx, MOBJPOSLIST_SEGMENT ; todo remove maybe?
 mov       dx, si
 call      P_MobjThinker_
 
@@ -387,7 +387,7 @@ mov   cx, di
 sal   di, 1                  ; 0x10
 add   di, cx                 ; 0x18
 
-mov       cx, MOBJPOSLIST_6800_SEGMENT
+mov       cx, MOBJPOSLIST_SEGMENT
 mov       es, cx
 mov       cx, (SIZE MOBJ_POS_T) /2
 rep       stosw

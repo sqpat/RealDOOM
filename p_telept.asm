@@ -64,7 +64,7 @@ mov   byte ptr cs:[OFFSET SELFMODIFY_telept_linetag + 4], al
 push  bx  ; bp - 2 mobj
 mov   di, bx
 mov   bx, cx
-mov   es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
+mov   es, word ptr ds:[_MOBJPOSLIST_SEGMENT_PTR]
 push  es ; bp - 4 mobjpos segment
 push  cx ; bp - 6 mobjpos offset
 

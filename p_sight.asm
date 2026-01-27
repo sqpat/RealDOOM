@@ -124,7 +124,7 @@ not_in_reject_table:
 inc   word ptr ds:[_validcount_global]
 
 
-mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   ax, MOBJPOSLIST_SEGMENT
 mov   es, ax
 push  si  					; store for now
 

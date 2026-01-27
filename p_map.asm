@@ -1070,7 +1070,7 @@ push  si
 push  di
 mov   si, ax
 
-mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   ax, MOBJPOSLIST_SEGMENT
 mov   es, ax
 mov   bx, dx  ; move offset over. es:bx is mobjpos
 
@@ -1150,7 +1150,7 @@ mov   ax, SECTORS_SEGMENT
 mov   es, ax
 mov   word ptr es:[si + SECTOR_T.sec_thinglistRef], di
 
-mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   ax, MOBJPOSLIST_SEGMENT
 mov   es, ax
 
 jmp   done_clearing_blockmap
@@ -1381,7 +1381,7 @@ xor   dx, dx
 div   bx
 push  ax	;bp - 2 is thingref
 
-mov   bx, MOBJPOSLIST_6800_SEGMENT
+mov   bx, MOBJPOSLIST_SEGMENT
 mov   es, bx
 
 
@@ -1408,7 +1408,7 @@ mov   es, ax
 mov   cx, word ptr es:[bx + SUBSECTOR_T.ss_secnum]
 ; todo make this work without shifts
 SHIFT_MACRO sar cx 4
-mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   ax, MOBJPOSLIST_SEGMENT
 mov   es, ax
 
 secnum_ready:
@@ -1458,7 +1458,7 @@ ELSE
 ENDIF
 
 add   di, (_thinkerlist + THINKER_T.t_data)
-mov   si, MOBJPOSLIST_6800_SEGMENT
+mov   si, MOBJPOSLIST_SEGMENT
 mov   es, si
 
 
@@ -1834,7 +1834,7 @@ ELSE
 ENDIF
 
 add  si, (_thinkerlist + THINKER_T.t_data)
-mov  cx, MOBJPOSLIST_6800_SEGMENT
+mov  cx, MOBJPOSLIST_SEGMENT
 mov  dx, si
 call di
 
@@ -4505,7 +4505,7 @@ ELSE
 	xchg  ax, bx
 ENDIF
 
-mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   ax, MOBJPOSLIST_SEGMENT
 mov   word ptr ds:[_tmthing_pos+0], bx
 mov   word ptr ds:[_tmthing_pos+2], ax  ;todo remove once fixed?
 mov   es, ax
@@ -5365,7 +5365,7 @@ PROC PTR_ShootTraverse_ NEAR
 
 ; bp - 2     INTERCEPTS_SEGMENT
 ; bp - 4     linenum shift 2            / thinker near ptr
-; bp - 6 	 LINES_PHYSICS_SEGMENT      / MOBJPOSLIST_6800_SEGMENT
+; bp - 6 	 LINES_PHYSICS_SEGMENT      / MOBJPOSLIST_SEGMENT
 ; bp - 8     line_phys offset			/ thingpos offset?
 ; bp - 0Ah   x hi			    		/ x hi
 ; bp - 0Ch   x lo						/ x lo
@@ -5714,7 +5714,7 @@ ELSE
 
 ENDIF
 
-mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   ax, MOBJPOSLIST_SEGMENT
 mov   es, ax
 
 push   dx	; bp - 4 thinker near ptr  
@@ -6234,7 +6234,7 @@ ENDIF
 
 
 
-mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   ax, MOBJPOSLIST_SEGMENT
 mov   es, ax
 test  byte ptr es:[di + MOBJ_POS_T.mp_flags1], MF_SHOOTABLE
 je    exit_aimtraverse_return_1
@@ -6250,7 +6250,7 @@ call  P_GetAttackRangeMult_
 
 ;    thingtopslope = FixedDiv (th_pos->z.w+th->height.w - shootz.w , dist);
 
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   cx, MOBJPOSLIST_SEGMENT
 mov   es, cx
 
 mov   cx, dx
@@ -6296,7 +6296,7 @@ done_checking_thingtopslope:
 
 ;    thingbottomslope = FixedDiv (th_pos->z.w - shootz.w, dist);
 
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   cx, MOBJPOSLIST_SEGMENT
 mov   es, cx
 
 pop   cx
@@ -6370,7 +6370,7 @@ mov   word ptr ds:[_aimslope+2], dx
 
 pop   word ptr ds:[_linetarget_pos+0] ; thing pos ptr
 pop   word ptr ds:[_linetarget] 	  ; thing ptr
-mov   word ptr ds:[_linetarget_pos+2], MOBJPOSLIST_6800_SEGMENT  ; todo remove once hardcoded
+mov   word ptr ds:[_linetarget_pos+2], MOBJPOSLIST_SEGMENT  ; todo remove once hardcoded
 
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
@@ -6715,7 +6715,7 @@ PUBLIC P_AimLineAttack_
 ; bp - 6     x hi
 ; bp - 8     x lo
 ; bp - 0Ah   thing ptr (ax arg)
-; bp - 0Ch   MOBJPOSLIST_6800_SEGMENT
+; bp - 0Ch   MOBJPOSLIST_SEGMENT
 ; bp - 0Eh   mobjpos offset
 
 push  cx
@@ -6760,7 +6760,7 @@ xchg  bx, si
 
 mov   ax, ds
 mov   es, ax
-mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   ax, MOBJPOSLIST_SEGMENT
 mov   ds, ax
 push  ax  ; bp - 0Ch
 
@@ -7026,7 +7026,7 @@ PUBLIC P_LineAttack_
 ; bp - 6    x hi
 ; bp - 8	x lo
 ; bp - 0Ah  thing
-; bp - 0Ch  MOBJPOSLIST_6800_SEGMENT
+; bp - 0Ch  MOBJPOSLIST_SEGMENT
 ; bp - 0Eh  mobjposlist offset
 
 push  cx
@@ -7057,7 +7057,7 @@ ELSE
 
 ENDIF
 
-mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   ax, MOBJPOSLIST_SEGMENT
 mov   es, ax
 push  ax				; bp - 0Ch
 push  bx				; bp - 0Eh
@@ -7480,7 +7480,7 @@ mov   word ptr ds:[_bombdamage], cx
 
 mov   si, cx  ; si gets damage
 
-mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   ax, MOBJPOSLIST_SEGMENT
 mov   word ptr ds:[_bombspot_pos + 2], ax   ; todo hardcode
 
 
@@ -7632,7 +7632,7 @@ mov   word ptr ds:[si + 6], ax
 mov   dx, word ptr ds:[_tmceilingz]
 mov   word ptr ds:[si + 8], dx
 
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   cx, MOBJPOSLIST_SEGMENT
 mov   es, cx
 
 ;if (onfloor) {

@@ -280,7 +280,7 @@ mov       ax, (SIZE MOBJ_POS_T)
 mul       word ptr ds:[_playerMobjRef]
 
 mov       word ptr ds:[_playerMobj_pos], ax
-mov       word ptr ds:[_playerMobj_pos + 2], MOBJPOSLIST_6800_SEGMENT  
+mov       word ptr ds:[_playerMobj_pos + 2], MOBJPOSLIST_SEGMENT  
 
 pop       ax ; retrieve stored angle
 cwd       
@@ -690,7 +690,7 @@ mov       ax, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
 and       ax, TF_FUNCBITS
 cmp       ax, TF_DELETEME_HIGHBITS
 je        exit_p_mobjthinker
-mov       es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
+mov       es, word ptr ds:[_MOBJPOSLIST_SEGMENT_PTR]
 jmp       done_with_z_movement
 
 do_xy_movement:
@@ -717,7 +717,7 @@ mov       ax, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
 and       ax, TF_FUNCBITS
 cmp       ax, TF_DELETEME_HIGHBITS
 je        exit_p_mobjthinker
-mov       es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
+mov       es, word ptr ds:[_MOBJPOSLIST_SEGMENT_PTR]
 jmp       done_with_xy_movement
 
 
@@ -803,7 +803,7 @@ ELSE
 ENDIF
 
 
-mov       dx, MOBJPOSLIST_6800_SEGMENT
+mov       dx, MOBJPOSLIST_SEGMENT
 mov       es, dx
 
 
@@ -900,7 +900,7 @@ mov       word ptr ds:[si + MOBJ_T.m_floorz], ax
 mov       ax, word ptr es:[bx + SECTOR_T.sec_ceilingheight]
 mov       word ptr ds:[si + MOBJ_T.m_ceilingz], ax
 
-mov       ax, MOBJPOSLIST_6800_SEGMENT
+mov       ax, MOBJPOSLIST_SEGMENT
 mov       es, ax
 xor       dx, dx
 
@@ -1546,7 +1546,7 @@ VIEWHEIGHT_HIGH = 41
 PROC P_ZMovement_ NEAR
 PUBLIC P_ZMovement_
 
-; bp - 2  segment for mobjpos (MOBJPOSLIST_6800_SEGMENT)
+; bp - 2  segment for mobjpos (MOBJPOSLIST_SEGMENT)
 ; bp - 4  floorz fixedheight hi
 ; bp - 6  floorz fixedheight lo
 ; bp - 8  mobj type  
@@ -2385,7 +2385,7 @@ mov   bx, si
 call  P_TryMove_  
 jc    exit_check_missile_sapwn
 do_missile_explode_on_spawn:
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   cx, MOBJPOSLIST_SEGMENT
 mov   bx, si
 mov   ax, di
 call  P_ExplodeMissile_
@@ -2404,7 +2404,7 @@ PUBLIC P_SpawnMissile_
 ; bp + 8     type
 
 ; bp - 2     ax (mobj)
-; bp - 4     MOBJPOSLIST_6800_SEGMENT
+; bp - 4     MOBJPOSLIST_SEGMENT
 ; bp - 6     dest_pos offset
 ; bp - 8     thRef
 ; bp - 0Ah   th_pos offset
@@ -2800,7 +2800,7 @@ mov    word ptr ds:[di + MOBJ_T.m_targetRef], ax
 mov    al, (SIZE MOBJINFO_T)
 mul    byte ptr [bp - 2]
 
-mov    bx, MOBJPOSLIST_6800_SEGMENT
+mov    bx, MOBJPOSLIST_SEGMENT
 mov    es, bx
 mov    bx, word ptr [bp - 8]
 mov    word ptr es:[bx + MOBJ_POS_T.mp_angle + 0], 0
@@ -2839,7 +2839,7 @@ mov    bx, word ptr [bp - 6]
 call  FastMul16u32u_MapLocal_
 
 mov    bx, word ptr [bp - 8]
-mov    cx, MOBJPOSLIST_6800_SEGMENT
+mov    cx, MOBJPOSLIST_SEGMENT
 mov    word ptr ds:[di + MOBJ_T.m_momz + 0], ax
 mov    ax, di
 mov    word ptr ds:[di + MOBJ_T.m_momz + 2], dx

@@ -507,7 +507,7 @@ mov       di, ax                          ; di has mobjpos_t offset
 xchg      ax, dx                          ; dx also holds on to mobjpos_t base 
 
 
-mov       ax, MOBJPOSLIST_6800_SEGMENT
+mov       ax, MOBJPOSLIST_SEGMENT
 mov       es, ax
 
 
@@ -1596,7 +1596,7 @@ push      dx
 
 
 ; default everything to zero
-mov       ax, MOBJPOSLIST_6800_SEGMENT
+mov       ax, MOBJPOSLIST_SEGMENT
 mov       ds, ax
 
 

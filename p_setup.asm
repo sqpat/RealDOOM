@@ -1420,7 +1420,7 @@ mov     word ptr ds:[_playerMobj], ax
 mov     ax, SIZE MOBJ_POS_T
 mul     di
 mov     word ptr ds:[_playerMobj_pos+0], ax
-mov     word ptr ds:[_playerMobj_pos+2], MOBJPOSLIST_6800_SEGMENT   ; todo necessary?
+mov     word ptr ds:[_playerMobj_pos+2], MOBJPOSLIST_SEGMENT   ; todo necessary?
 jmp     done_with_player_setup
 
 ENDP

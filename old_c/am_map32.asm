@@ -2276,7 +2276,7 @@ ELSE
     xchg      ax, si
 ENDIF
 
-mov       es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
+mov       es, word ptr ds:[_MOBJPOSLIST_SEGMENT_PTR]
 
 mov       ax, OFFSET _thintriangle_guy
 mov       cx, 3

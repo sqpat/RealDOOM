@@ -448,7 +448,7 @@ mov   byte ptr cs:[_st_face_priority], cl
 mov   ax, (SIZE MOBJ_POS_T)
 mul   word ptr ds:[_player + PLAYER_T.player_attackerRef]
 xchg  ax, di
-mov   es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
+mov   es, word ptr ds:[_MOBJPOSLIST_SEGMENT_PTR]
 
 ;   badguyangle.wu = R_PointToAngle2(playerMobj_pos->x,
 ;       playerMobj_pos->y,

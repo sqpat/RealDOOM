@@ -59,8 +59,9 @@
 
 
 // todo generate this programatically
-#define baselowermemoryaddress    (0x28DB0000)
+#define baselowermemoryaddress    (0x23EC0000)
 // MaximumMusDriverSize
+
 
 #define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
 #define lumpinfoinitsegment       base_lower_memory_segment + (0x20)
@@ -83,7 +84,8 @@ struct sfxinfo_struct{
     
     int16_t_union       cache_position;
 };
-
+//  20160
+#define size_mobjposlist        (MAX_THINKERS * sizeof(mobj_pos_t)) 
 #define size_sectors            (MAX_SECTORS_SIZE)
 #define size_vertexes           (MAX_VERTEXES_SIZE)
 #define size_sides              (MAX_SIDES_SIZE)
@@ -98,7 +100,10 @@ struct sfxinfo_struct{
 
 
 // NOTE!   BELOW level data sequential for clearing in a single pass
-#define sectors           ((sector_t __far*)        MAKE_FULL_SEGMENT(baselowermemoryaddress , 0))
+
+
+#define mobjposlist       ((mobj_pos_t __far*)      MAKE_FULL_SEGMENT(baselowermemoryaddress , 0))
+#define sectors           ((sector_t __far*)        MAKE_FULL_SEGMENT(mobjposlist            , size_mobjposlist))
 #define vertexes          ((vertex_t __far*)        MAKE_FULL_SEGMENT(sectors          , size_sectors))
 #define sides             ((side_t __far*)          MAKE_FULL_SEGMENT(vertexes         , size_vertexes))
 #define lines             ((line_t __far*)          MAKE_FULL_SEGMENT(sides            , size_sides))
@@ -156,6 +161,7 @@ struct sfxinfo_struct{
 
 
 
+#define mobjposlist_segment          ((segment_t) ((int32_t)mobjposlist >> 16))
 #define sectors_segment              ((segment_t) ((int32_t)sectors >> 16))
 #define vertexes_segment             ((segment_t) ((int32_t)vertexes >> 16))
 #define sides_segment                ((segment_t) ((int32_t)sides >> 16))
@@ -461,7 +467,6 @@ FREEBYTES             7F65:0000
 // this is used both in physics and part of render code
 
 
-#define size_mobjposlist           (MAX_THINKERS * sizeof(mobj_pos_t))
 #define size_colfunc_jump_lookup   (sizeof(uint16_t) * SCREENHEIGHT)
 #define size_dc_yl_lookup          (sizeof(uint16_t) * SCREENHEIGHT)
 #define size_colfunc_function_area R_DrawColumn24CodeSize - size_colfunc_jump_lookup - size_dc_yl_lookup
@@ -480,8 +485,8 @@ FREEBYTES             7F65:0000
 #define colfunc_jump_lookup   ((uint16_t  __far*)         MAKE_FULL_SEGMENT(colormaps             , size_colormaps))
 #define dc_yl_lookup          ((uint16_t  __far*)         MAKE_FULL_SEGMENT(colfunc_jump_lookup   , size_colfunc_jump_lookup))
 #define colfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(dc_yl_lookup          , size_dc_yl_lookup))
-#define mobjposlist           ((mobj_pos_t __far*)        MAKE_FULL_SEGMENT(colfunc_function_area , size_colfunc_function_area))
-#define seenlines             ((uint8_t __far*)           MAKE_FULL_SEGMENT(mobjposlist           , size_mobjposlist))
+
+#define seenlines             ((uint8_t __far*)           MAKE_FULL_SEGMENT(colfunc_function_area , size_colfunc_function_area))
 #define empty_render_9800     ((uint16_t  __far*)         MAKE_FULL_SEGMENT(seenlines             , size_seenlines))
 //6D8A
 
@@ -489,7 +494,6 @@ FREEBYTES             7F65:0000
 #define colfunc_jump_lookup_segment     ((segment_t) ((int32_t)colfunc_jump_lookup >> 16))
 #define dc_yl_lookup_segment            ((segment_t) ((int32_t)dc_yl_lookup >> 16))
 #define colfunc_function_area_segment   ((segment_t) ((int32_t)colfunc_function_area >> 16))
-#define mobjposlist_segment             ((segment_t) ((int32_t)mobjposlist >> 16))
 #define seenlines_segment               ((segment_t) ((int32_t)seenlines >> 16))
 #define empty_render_9800_segment       ((segment_t) ((int32_t)empty_render_9800 >> 16))
 
@@ -498,15 +502,13 @@ FREEBYTES             7F65:0000
 #define colfunc_jump_lookup_6800   ((uint16_t  __far*)         MAKE_FULL_SEGMENT(colormaps_6800             , size_colormaps))
 #define dc_yl_lookup_6800          ((uint16_t  __far*)         MAKE_FULL_SEGMENT(colfunc_jump_lookup_6800   , size_colfunc_jump_lookup))
 #define colfunc_function_area_6800 ((byte  __far*)             MAKE_FULL_SEGMENT(dc_yl_lookup_6800          , size_dc_yl_lookup))
-#define mobjposlist_6800           ((mobj_pos_t __far*)        MAKE_FULL_SEGMENT(colfunc_function_area_6800 , size_colfunc_function_area))
-#define seenlines_6800             ((uint8_t __far*)           MAKE_FULL_SEGMENT(mobjposlist_6800           , size_mobjposlist))
+#define seenlines_6800             ((uint8_t __far*)           MAKE_FULL_SEGMENT(colfunc_function_area_6800 , size_colfunc_function_area))
 #define empty_render_6800          ((byte __far*)              MAKE_FULL_SEGMENT(seenlines_6800             , size_seenlines))
 
 #define colormaps_6800_segment               ((segment_t) ((int32_t)colormaps_6800 >> 16))
 #define colfunc_jump_lookup_6800_segment     ((segment_t) ((int32_t)colfunc_jump_lookup_6800 >> 16))
 #define dc_yl_lookup_6800_segment            ((segment_t) ((int32_t)dc_yl_lookup_6800 >> 16))
 #define colfunc_function_area_6800_segment   ((segment_t) ((int32_t)colfunc_function_area_6800 >> 16))
-#define mobjposlist_6800_segment             ((segment_t) ((int32_t)mobjposlist_6800 >> 16))
 #define seenlines_6800_segment               ((segment_t) ((int32_t)seenlines_6800 >> 16))
 #define empty_render_6800_segment            ((segment_t) ((int32_t)empty_render_6800 >> 16))
 

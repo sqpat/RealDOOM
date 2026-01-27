@@ -328,7 +328,7 @@ push  si  ; bp - 2
 
 
 mov   di, bx
-mov   cx, MOBJPOSLIST_6800_SEGMENT  ; might not be necessary. whatever.
+mov   cx, MOBJPOSLIST_SEGMENT  ; might not be necessary. whatever.
 mov   es, cx
 
 
@@ -451,7 +451,7 @@ mov   bx, si
 call  P_CheckSight_
 
 jnc   exit_checkmissilerange_return_0_and_pop
-mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   ax, MOBJPOSLIST_SEGMENT
 mov   es, ax
 test  byte ptr es:[si + MOBJ_POS_T.mp_flags1], MF_JUSTHIT
 jne   just_hit_enemy
@@ -600,7 +600,7 @@ push  di
 push  bp
 mov   bp, sp
 
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   cx, MOBJPOSLIST_SEGMENT
 mov   es, cx
 mov   al, (SIZE MOBJINFO_T) 
 mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
@@ -620,7 +620,7 @@ sal   bx, 1 ; jump word index...
 
 ; ax has speed, or dx:ax has 47000 * speed
 ; bx has jump lookup offset
-; cx already MOBJPOSLIST_6800_SEGMENT
+; cx already MOBJPOSLIST_SEGMENT
 ; trymove params will be pre-pushed here.
 
 push  word ptr es:[di + MOBJ_POS_T.mp_y + 2] ; bp - 2
@@ -640,7 +640,7 @@ got_x_y_for_trymove:
 
 mov   bx, di
 mov   ax, si
-;mov   cx, MOBJPOSLIST_6800_SEGMENT ; this was set above.
+;mov   cx, MOBJPOSLIST_SEGMENT ; this was set above.
 
 
 
@@ -648,7 +648,7 @@ call  P_TryMove_
 
 
 
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   cx, MOBJPOSLIST_SEGMENT
 mov   es, cx
 
 jc    try_ok
@@ -813,7 +813,7 @@ mov   bp, sp
 
 ; si is mobj
 ; di is mobjpos
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   cx, MOBJPOSLIST_SEGMENT
 
 ;	olddir = actor->movedir;
 ;	actorTarget = (mobj_t __near*)(&thinkerlist[actor->targetRef].data);
@@ -1168,7 +1168,7 @@ ELSE
     xchg ax, si
 ENDIF
 
-mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   ax, MOBJPOSLIST_SEGMENT
 mov   es, ax
 ; read about this hack in p_mobj.h MF_LASTLOOK_1 notes...
 test  byte ptr es:[si + MOBJ_POS_T.mp_flags2+1], (MF_LASTLOOK_1 SHR 8)
@@ -1216,7 +1216,7 @@ push  ss
 pop   ds
 
 call  R_PointToAngle2_MapLocal_
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   cx, MOBJPOSLIST_SEGMENT
 mov   ds, cx
 
 
@@ -1456,7 +1456,7 @@ push  si
 push  di
 push  bp
 
-mov   bp, MOBJPOSLIST_6800_SEGMENT
+mov   bp, MOBJPOSLIST_SEGMENT
 ;mov   si, ax
 mov   di, bx
 
@@ -1711,7 +1711,7 @@ ELSE
 ENDIF
 
 
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   cx, MOBJPOSLIST_SEGMENT
 mov   ds, cx
 and   byte ptr ds:[si + MOBJ_POS_T.mp_flags1], (NOT MF_AMBUSH)
 
@@ -1746,7 +1746,7 @@ pop   ds
 
 call  R_PointToAngle2_MapLocal_
 
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   cx, MOBJPOSLIST_SEGMENT
 mov   es, cx
 mov   word ptr es:[si + MOBJ_POS_T.mp_angle + 0], ax
 mov   word ptr es:[si + MOBJ_POS_T.mp_angle + 2], dx
@@ -1799,7 +1799,7 @@ ENDIF
 mov   ax, si
 call  A_FaceTarget_
 
-mov   dx, MOBJPOSLIST_6800_SEGMENT
+mov   dx, MOBJPOSLIST_SEGMENT
 mov   es, dx
 mov   cx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
 mov   ax, si
@@ -1889,7 +1889,7 @@ call  A_FaceTarget_
 
 ;	bangle = actor_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
 
-mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   ax, MOBJPOSLIST_SEGMENT
 mov   es, ax
 mov   dx, word ptr es:[si + MOBJ_POS_T.mp_angle + 2]
 SHIFT_MACRO shr   dx 3
@@ -1979,7 +1979,7 @@ call  S_StartSound_
 mov   ax, si
 call  A_FaceTarget_
 
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   cx, MOBJPOSLIST_SEGMENT
 mov   es, cx
 mov   cx, word ptr es:[bx + MOBJ_POS_T.mp_angle + 2]
 mov   ax, si
@@ -2803,7 +2803,7 @@ call  FastDiv3216u_MapLocal_
 ;    else
 ;		actor->momz.w += FRACUNIT/8;
 
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   cx, MOBJPOSLIST_SEGMENT
 mov   ds, cx
 pop   di ; bp - 2
 cmp   dx, word ptr ds:[di + MOBJ_T.m_momz + 2]
@@ -2957,7 +2957,7 @@ mov   al, (SIZE MOBJINFO_T)
 mul   byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xchg  ax, di
 
-mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   ax, MOBJPOSLIST_SEGMENT
 mov   es, ax
 
 mov   al, byte ptr ds:[di + _mobjinfo + MOBJINFO_T.mobjinfo_radius]
@@ -3307,7 +3307,7 @@ call  P_SetMobjState_
 shl   word ptr ds:[si + MOBJ_T.m_height+2], 1
 shl   word ptr ds:[si + MOBJ_T.m_height+2], 1
 
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   cx, MOBJPOSLIST_SEGMENT
 mov   es, cx
 
 mov   di, word ptr [bp - 6]
@@ -3671,7 +3671,7 @@ PROC    A_VileAttack_ NEAR
 PUBLIC  A_VileAttack_
 
 ; bp - 2   (bx) mobjpos offset
-; bp - 4   (cx) MOBJPOSLIST_6800_SEGMENT
+; bp - 4   (cx) MOBJPOSLIST_SEGMENT
 ; bp - 6   actorTarget_pos
 ; bp - 8   angle
 ; bp - 0Ah fire (mobj)
@@ -3836,7 +3836,7 @@ mov   si, FATSPREADHIGH/2
 ; fall thru
 
 ; di has actor ptr
-; cx has MOBJPOSLIST_6800_SEGMENT
+; cx has MOBJPOSLIST_SEGMENT
 ; bx has actor pos
 ; dx target actor
 ; ax free...
@@ -3863,7 +3863,7 @@ ELSE
     mov   ax, MT_FATSHOT
     push  ax
 ENDIF
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   cx, MOBJPOSLIST_SEGMENT
 
 mov   ax, di
 call  P_SpawnMissile_
@@ -4026,7 +4026,7 @@ ENDIF
 
 
 add   ax, (_thinkerlist + THINKER_T.t_data)
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   cx, MOBJPOSLIST_SEGMENT
 
 mov   dx, word ptr es:[di + MOBJ_POS_T.mp_angle + 2]
 shr   dx, 1
@@ -4051,7 +4051,7 @@ call FixedMulTrigSpeedNoShiftSine_MapLocal_
 mov   word ptr ds:[si + MOBJ_T.m_momy + 0], ax
 mov   word ptr ds:[si + MOBJ_T.m_momy + 2], dx
 
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   cx, MOBJPOSLIST_SEGMENT
 mov   ds, cx
 mov   bx, bp
 
@@ -4070,7 +4070,7 @@ pop   ds
 
 call   P_AproxDistance_
 
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   cx, MOBJPOSLIST_SEGMENT
 mov   es, cx
 
 
@@ -4225,7 +4225,7 @@ mov   dx, word ptr [bp - 2]
 
 
 call  FixedMulTrigNoShiftCosine_MapLocal_
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   cx, MOBJPOSLIST_SEGMENT
 mov   es, cx
 add   ax, word ptr es:[si + MOBJ_POS_T.mp_x + 0]
 adc   dx, word ptr es:[si + MOBJ_POS_T.mp_x + 2]
@@ -4237,7 +4237,7 @@ mov   dx, word ptr [bp - 2]
 
 call  FixedMulTrigNoShiftSine_MapLocal_
 
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   cx, MOBJPOSLIST_SEGMENT
 mov   es, cx
 
 add   ax, word ptr es:[si + MOBJ_POS_T.mp_y + 0]
@@ -4259,7 +4259,7 @@ ELSE
     mov   ax, MT_SKULL
     push  ax
     
-    mov   ax, MOBJPOSLIST_6800_SEGMENT
+    mov   ax, MOBJPOSLIST_SEGMENT
     push  ax
     mov   ax, es
     pop   es
@@ -4758,7 +4758,7 @@ mov   si, word ptr es:[di + MOBJ_POS_T.mp_x + 2]
 sub   si, 196
 do_next_brain_scream_iter:
 
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   cx, MOBJPOSLIST_SEGMENT
 mov   es, cx
 mov   ax, word ptr es:[di + MOBJ_POS_T.mp_x + 2]
 add   ax, 320
@@ -5001,7 +5001,7 @@ ENDIF
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 
 
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   cx, MOBJPOSLIST_SEGMENT
 mov   ax, si
 mov   bx, di
 call  P_SpawnMissile_
@@ -5135,7 +5135,7 @@ push  word ptr ds:[bx]   ; param secnum
 
 push  word ptr ds:[bx]   ; param secnum
 
-;mov   ax, MOBJPOSLIST_6800_SEGMENT
+;mov   ax, MOBJPOSLIST_SEGMENT
 mov   ds, cx
 
 IF COMPISA GE COMPILE_186
@@ -5225,7 +5225,7 @@ chose_spawn_unit:
 xor   ah, ah
 push  ax                                  ; type
 
-mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   ax, MOBJPOSLIST_SEGMENT
 mov   ds, ax
 
 push  word ptr ds:[di + MOBJ_POS_T.mp_z + 2]
@@ -5260,7 +5260,7 @@ ENDIF
 
 mov   dx, 1
 mov   ax, di
-mov   cx, MOBJPOSLIST_6800_SEGMENT
+mov   cx, MOBJPOSLIST_SEGMENT
 call  P_LookForPlayers_
 jnc   dont_set_seestate
 mov   al, byte ptr ds:[di + MOBJ_T.m_mobjtype]
@@ -5411,7 +5411,7 @@ ELSE
     mul   di
 ENDIF
 
-;mov       word ptr ds:[_setStateReturn_pos + 2], MOBJPOSLIST_6800_SEGMENT
+;mov       word ptr ds:[_setStateReturn_pos + 2], MOBJPOSLIST_SEGMENT
 mov       word ptr ds:[_setStateReturn_pos], ax
 
 
@@ -5425,7 +5425,7 @@ push      ax  ; mobjpos offset
 xchg      ax, bx   ; bx gets mobjpos offset
 mov       ax, 6
 mul       cx        ; todo shift.. 
-mov       di, MOBJPOSLIST_6800_SEGMENT
+mov       di, MOBJPOSLIST_SEGMENT
 mov       es, di
 push      ax    ; state offset
 xchg      ax, di
@@ -5445,7 +5445,7 @@ cbw
 sal       ax, 1
 xchg      ax, di
 
-mov       cx, MOBJPOSLIST_6800_SEGMENT
+mov       cx, MOBJPOSLIST_SEGMENT
 mov       ax, si
 
 PUSHA_NO_AX_MACRO
@@ -5477,7 +5477,7 @@ jne       do_next_state
 state_is_null:
 xchg      ax, bx  ; bx gets ptr from ax
 
-mov       ax, MOBJPOSLIST_6800_SEGMENT
+mov       ax, MOBJPOSLIST_SEGMENT
 mov       es, ax
 mov       ax, si
 mov       word ptr es:[bx + MOBJ_POS_T.mp_stateNum], 0
@@ -5500,7 +5500,7 @@ ELSE
     mul   di
 ENDIF
 
-;mov       word ptr ds:[_setStateReturn_pos + 2], MOBJPOSLIST_6800_SEGMENT
+;mov       word ptr ds:[_setStateReturn_pos + 2], MOBJPOSLIST_SEGMENT
 mov       word ptr ds:[_setStateReturn_pos], ax
 xor       al, al
 

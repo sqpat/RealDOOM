@@ -621,7 +621,7 @@ xchg  bx, ax
 mov   ax, (SIZE MOBJ_POS_T)
 mul   bx
 xchg  ax, bx
-mov   es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
+mov   es, word ptr ds:[_MOBJPOSLIST_SEGMENT_PTR]
 
 ;    originX = originMobjPos->x;
 ;    originY = originMobjPos->y;
@@ -886,7 +886,7 @@ jz    iter_next_channel_updatesounds   ; null source.
 mov   bx, (SIZE MOBJ_POS_T)
 mul   bx
 xchg  ax, bx
-mov   es, word ptr ds:[_MOBJPOSLIST_6800_SEGMENT_PTR]
+mov   es, word ptr ds:[_MOBJPOSLIST_SEGMENT_PTR]
 
 ;    originX = originMobjPos->x;
 ;    originY = originMobjPos->y;

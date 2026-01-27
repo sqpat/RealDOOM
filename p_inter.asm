@@ -437,8 +437,8 @@ jle    dead_toucher_cant_pickup
 mov    word ptr cs:[OFFSET SELFMODIFY_touchspecial_removemobj_ptr+1], ax
 ; ax free
 
-; es is actually already guaranteed MOBJPOSLIST_6800_SEGMENT in caller scope?
-;mov    dx, MOBJPOSLIST_6800_SEGMENT
+; es is actually already guaranteed MOBJPOSLIST_SEGMENT in caller scope?
+;mov    dx, MOBJPOSLIST_SEGMENT
 ;mov    es, dx
 
 ;	fixed_t specialz = special_pos->z.w;
@@ -1027,7 +1027,7 @@ push   ax
 xor    ax, ax
 push   ax
 
-mov    ax, MOBJPOSLIST_6800_SEGMENT
+mov    ax, MOBJPOSLIST_SEGMENT
 mov    es, ax
 mov    ax, word ptr es:[bx]
 mov    dx, word ptr es:[bx + 2]
@@ -1179,7 +1179,7 @@ mul    dx
 xchg   ax, bx
 
 ; es:bx 
-mov    dx, MOBJPOSLIST_6800_SEGMENT
+mov    dx, MOBJPOSLIST_SEGMENT
 mov    es, dx
 
 push   bx ; bp - 8
@@ -1246,7 +1246,7 @@ push   ax  ; lo second
 
 
 ; let's push arguments for the upcoming call to R_PointToAngle2
-mov    ax, MOBJPOSLIST_6800_SEGMENT
+mov    ax, MOBJPOSLIST_SEGMENT
 mov    es, ax
 mov    bx, word ptr [bp - 8]
 push   word ptr es:[bx + MOBJ_POS_T.mp_y + 2]
@@ -1285,7 +1285,7 @@ call  R_PointToAngle2_MapLocal_
 ;				thrust *= 4;
 ;		}
 
-mov    ax, MOBJPOSLIST_6800_SEGMENT
+mov    ax, MOBJPOSLIST_SEGMENT
 mov    es, ax 
 
 
@@ -1477,7 +1477,7 @@ call   GetPainChance_
 
 cmp    dx, ax
 jge    dont_do_pain_state
-mov    bx, MOBJPOSLIST_6800_SEGMENT
+mov    bx, MOBJPOSLIST_SEGMENT
 mov    es, bx  ; necessary?
 mov    bx, word ptr [bp - 8]
 test   byte ptr es:[bx + MOBJ_POS_T.mp_flags2 + 1], (MF_SKULLFLY SHR 8)
@@ -1503,7 +1503,7 @@ je     chase_source
 jmp    exit_p_damagemobj
 do_kill_mobj:
 mov    bx, word ptr [bp - 8]
-mov    cx, MOBJPOSLIST_6800_SEGMENT
+mov    cx, MOBJPOSLIST_SEGMENT
 
 mov    ax, word ptr [bp - 4]
 mov    dx, si
@@ -1517,7 +1517,7 @@ mul    bx
 xchg   ax, si
 push   ds
 pop    es
-mov    dx, MOBJPOSLIST_6800_SEGMENT
+mov    dx, MOBJPOSLIST_SEGMENT
 mov    ds, dx
 mov    di, _deadAttackerX
 ; copy four words.
@@ -1551,7 +1551,7 @@ mul    byte ptr ds:[si + MOBJ_T.m_mobjtype]
 pop    di
 mov    byte ptr ds:[si + MOBJ_T.m_threshold], BASETHRESHOLD
 
-mov    bx, MOBJPOSLIST_6800_SEGMENT
+mov    bx, MOBJPOSLIST_SEGMENT
 mov    es, bx
 
 xchg   ax, bx

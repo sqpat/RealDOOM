@@ -8,7 +8,7 @@
 #include "r_state.h"
 #include "p_setup.h"
 
-#define CONSTANTS_COUNT 1016
+#define CONSTANTS_COUNT 1015
 #define LOCALS_COUNT 29
 
 
@@ -25,7 +25,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"COLFUNC_JUMP_LOOKUP_6800_SEGMENT",
 	"DC_YL_LOOKUP_6800_SEGMENT",
 	"COLFUNC_FUNCTION_AREA_6800_SEGMENT",
-	"MOBJPOSLIST_6800_SEGMENT",
 	"SEENLINES_6800_SEGMENT",
 	"EMPTY_RENDER_6800_SEGMENT",
 
@@ -1145,7 +1144,6 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	colfunc_jump_lookup_6800_segment,
 	dc_yl_lookup_6800_segment,
 	colfunc_function_area_6800_segment,
-	mobjposlist_6800_segment,
 	seenlines_6800_segment,
 	empty_render_6800_segment,
 

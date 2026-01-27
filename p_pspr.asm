@@ -1153,7 +1153,7 @@ mov   cx, 40
 
 loop_bfg_spray:
 
-mov   ax, MOBJPOSLIST_6800_SEGMENT
+mov   ax, MOBJPOSLIST_SEGMENT
 mov   es, ax
 
 
