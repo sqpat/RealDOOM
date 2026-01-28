@@ -47,6 +47,8 @@ PROC  R_MASKFL_STARTMARKER_
 PUBLIC  R_MASKFL_STARTMARKER_
 
 ENDP
+; todo deprecated dont use
+DRAWCOL_OFFSET                 = (COLFUNC_FUNCTION_AREA_SEGMENT        - COLORMAPS_SEGMENT) * 16
 
 dw DRAWCOL_OFFSET - 00000h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0000h
 dw DRAWCOL_OFFSET - 00100h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0010h
@@ -251,7 +253,7 @@ PUSHA_NO_AX_OR_BP_MACRO
 
 
 
-mov   ax, ((COLORMAPS_MASKEDMAPPING_SEG_DIFF + COLFUNC_JUMP_LOOKUP_SEGMENT) AND 0FFFFh); shut up assembler warning, this is fine
+mov   ax, (COLFUNC_JUMP_LOOKUP_SEGMENT - COLORMAPS_MASKEDMAPPING_SEG_DIFF); shut up assembler warning, this is fine
 mov   es, ax                                 ; store this segment for now, with offset pre-added
 
 ; todo optimize this read

@@ -48,45 +48,34 @@ PUBLIC  R_MASK24_STARTMARKER_
 
 ENDP
 
-dw DRAWCOL_NOLOOP_OFFSET - 00000h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0000h
-dw DRAWCOL_NOLOOP_OFFSET - 00100h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0010h
-dw DRAWCOL_NOLOOP_OFFSET - 00200h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0020h
-dw DRAWCOL_NOLOOP_OFFSET - 00300h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0030h
-dw DRAWCOL_NOLOOP_OFFSET - 00400h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0040h
-dw DRAWCOL_NOLOOP_OFFSET - 00500h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0050h
-dw DRAWCOL_NOLOOP_OFFSET - 00600h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0060h
-dw DRAWCOL_NOLOOP_OFFSET - 00700h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0070h
-dw DRAWCOL_NOLOOP_OFFSET - 00800h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0080h
-dw DRAWCOL_NOLOOP_OFFSET - 00900h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0090h
-dw DRAWCOL_NOLOOP_OFFSET - 00A00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 00A0h
-dw DRAWCOL_NOLOOP_OFFSET - 00B00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 00B0h
-dw DRAWCOL_NOLOOP_OFFSET - 00C00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 00C0h
-dw DRAWCOL_NOLOOP_OFFSET - 00D00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 00D0h
-dw DRAWCOL_NOLOOP_OFFSET - 00E00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 00E0h
-dw DRAWCOL_NOLOOP_OFFSET - 00F00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 00F0h
-dw DRAWCOL_NOLOOP_OFFSET - 01000h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0100h
-dw DRAWCOL_NOLOOP_OFFSET - 01100h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0110h
-dw DRAWCOL_NOLOOP_OFFSET - 01200h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0120h
-dw DRAWCOL_NOLOOP_OFFSET - 01300h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0130h
-dw DRAWCOL_NOLOOP_OFFSET - 01400h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0140h
-dw DRAWCOL_NOLOOP_OFFSET - 01500h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0150h
-dw DRAWCOL_NOLOOP_OFFSET - 01600h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0160h
-dw DRAWCOL_NOLOOP_OFFSET - 01700h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0170h
-dw DRAWCOL_NOLOOP_OFFSET - 01800h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0180h
-dw DRAWCOL_NOLOOP_OFFSET - 01900h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0190h
-dw DRAWCOL_NOLOOP_OFFSET - 01A00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 01A0h
-dw DRAWCOL_NOLOOP_OFFSET - 01B00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 01B0h
-dw DRAWCOL_NOLOOP_OFFSET - 01C00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 01C0h
-dw DRAWCOL_NOLOOP_OFFSET - 01D00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 01D0h
-dw DRAWCOL_NOLOOP_OFFSET - 01E00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 01E0h
-dw DRAWCOL_NOLOOP_OFFSET - 01F00h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 01F0h
-dw DRAWCOL_NOLOOP_OFFSET - 02000h,  COLORMAPS_SEGMENT_MASKEDMAPPING + 0200h
+CALL_OFFSET  = DRAWCOL_NOLOOP_OFFSET_MASKED
+CALL_SEGMENT = COLORMAPS_SEGMENT_MASKEDMAPPING
+COLORMAPS_COUNT = 21h
+
+REPT COLORMAPS_COUNT
+    dw CALL_OFFSET, CALL_SEGMENT
+    CALL_OFFSET = CALL_OFFSET - 0100h
+    CALL_SEGMENT = CALL_SEGMENT + 010h
+ENDM
+
+
+; 054h
+_fuzzpos:
+dw  (OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)
+; 056h
+
+_pagesegments:
+
+dw 00000h, 00400h, 00800h, 00C00h
+dw 01000h, 01400h, 01800h, 01C00h
+; 066h
 
 
 SIZE_FUZZTABLE = 50
 
 ; extended length of a max run...
 _fuzzoffset:
+PUBLIC _fuzzoffset
 dw  00050h, 0FFB0h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h 
 dw  00050h, 00050h, 00050h, 0FFB0h, 00050h, 00050h, 00050h, 0FFB0h, 0FFB0h, 0FFB0h
 dw  0FFB0h, 00050h, 0FFB0h, 0FFB0h, 00050h, 00050h, 00050h, 00050h, 0FFB0h, 00050h
@@ -95,14 +84,6 @@ dw  0FFB0h, 00050h, 00050h, 00050h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h, 0005
 dw  00050h, 0FFB0h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h
 dw  00050h, 00050h, 00050h, 0FFB0h, 00050h
 
-_fuzzpos:
-dw  (OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)
-
-
-_pagesegments:
-
-dw 00000h, 00400h, 00800h, 00C00h
-dw 01000h, 01400h, 01800h, 01C00h
 
 ;
 ; R_DrawFuzzColumn
@@ -226,8 +207,8 @@ ENDP
 
 
 
-COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF   = ((DC_YL_LOOKUP_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
-COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
+
+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - COLFUNC_FILE_START_SEGMENT) * 16)
 
 
 ; multi/single refer to whether this is drawing masked columns
@@ -244,6 +225,7 @@ COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - C
 
 ; this version called for almost all masked calls	
 PROC  R_DrawColumnPrepMaskedMulti_ NEAR
+PUBLIC  R_DrawColumnPrepMaskedMulti_
 
 ; argument AX is diff for various segment lookups
 
@@ -251,10 +233,11 @@ PROC  R_DrawColumnPrepMaskedMulti_ NEAR
 
 push  si
 push  di
+push  bp
 
 ; dl:?? currently has dc_texturemid
 
-mov   ax, ((COLORMAPS_MASKEDMAPPING_SEG_DIFF + COLFUNC_JUMP_LOOKUP_SEGMENT) AND 0FFFFh); shut up assembler warning, this is fine
+mov   ax, (COLFUNC_FILE_START_SEGMENT - COLORMAPS_MASKEDMAPPING_SEG_DIFF); shut up assembler warning, this is fine
 mov   es, ax                                 ; store this segment for now, with offset pre-added
 
 ; todo optimize this read
@@ -271,7 +254,7 @@ sar   ax, 1
 ; todo optimize this read
 mov   bx, word ptr ds:[_dc_yl]
 mov   si, bx
-add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
+add   ax, word ptr es:[bx+si]                  ; set up destview 
 SELFMODIFY_MASKED_destview_lo_3:
 add   ax, 01000h
 
@@ -282,7 +265,7 @@ sub   si, bx                                 ;
 sal   si, 1                                  ; double diff (dc_yh - dc_yl) to get a word offset
 xchg  ax, di
 mov   ax, word ptr es:[si + DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET]                   ; get the jump value
-mov   word ptr es:[((SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET-COLFUNC_JUMPTABLE_SIZE_OFFSET+1))+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
+mov   word ptr es:[SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
 ; or can we do this in an outer func without this instrction?
@@ -313,7 +296,7 @@ SELFMODIFY_MASKED_multi_set_colormap_index_jump:
 dw 0000h
 ; addr 0000 + first byte (4x colormap.)
 
-
+pop   bp
 pop   di 
 pop   si
 ret
@@ -331,6 +314,7 @@ PROC  R_DrawSingleMaskedColumn_ NEAR
 push  cx
 push  si
 push  di
+push  bp
 
 
 ; note: this function is called so rarely i don't care if its a little more innefficient.
@@ -454,7 +438,7 @@ jg    exit_function_single
 ; inlined R_DrawColumnPrepMaskedSingle_
 
 
-mov   ax, ((COLORMAPS_MASKEDMAPPING_SEG_DIFF + COLFUNC_JUMP_LOOKUP_SEGMENT) AND 0FFFFh); shut up assembler warning, this is fine
+mov   ax, (COLFUNC_FILE_START_SEGMENT - COLORMAPS_MASKEDMAPPING_SEG_DIFF); shut up assembler warning, this is fine
 mov   es, ax                                 ; store this segment for now, with offset pre-added
 
 ;dx is dc_yh
@@ -474,17 +458,17 @@ sar   ax, 1
 ; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
 
 mov   bx, si
-add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
-SELFMODIFY_MASKED_destview_lo_2:
+add   ax, word ptr es:[bx+si]                  ; add dc_yl * 80
+SELFMODIFY_MASKED_destview_lo_2:               ; add destview
 add   ax, 01000h
 
 mov   si, dx                                 ; grab dc_yh
 sub   si, bx                                 ;
 
-add   si, si                                 ; double diff (dc_yh - dc_yl) to get a word offset
+sal   si, 1                                 ; double diff (dc_yh - dc_yl) to get a word offset
 xchg  ax, di
 mov   ax, word ptr es:[si + DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET]                   ; get the jump value
-mov   word ptr es:[((SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET-COLFUNC_JUMPTABLE_SIZE_OFFSET+1))+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
+mov   word ptr es:[SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
 ; or can we do this in an outer func without this instrction?
@@ -523,7 +507,7 @@ dw 0000h
 exit_function_single:
 
 
-
+pop   bp
 pop   di
 pop   si
 pop   cx

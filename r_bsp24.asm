@@ -17,8 +17,6 @@
 INCLUDE defs.inc
 INSTRUCTION_SET_MACRO_NO_MEDIUM
 
-; todo move these all out once BSP code moved out of binary
-
 
 
 
@@ -33,47 +31,90 @@ ANG90_HIGHBITS =		04000h
 ANG180_HIGHBITS =    08000h
 
 
-MID_ONLY_DRAW_TYPE = 1
-BOT_TOP_DRAW_TYPE = 2
 
-dw DRAWCOL_OFFSET - 00000h,  COLORMAPS_SEGMENT + 0000h
-dw DRAWCOL_OFFSET - 00100h,  COLORMAPS_SEGMENT + 0010h
-dw DRAWCOL_OFFSET - 00200h,  COLORMAPS_SEGMENT + 0020h
-dw DRAWCOL_OFFSET - 00300h,  COLORMAPS_SEGMENT + 0030h
-dw DRAWCOL_OFFSET - 00400h,  COLORMAPS_SEGMENT + 0040h
-dw DRAWCOL_OFFSET - 00500h,  COLORMAPS_SEGMENT + 0050h
-dw DRAWCOL_OFFSET - 00600h,  COLORMAPS_SEGMENT + 0060h
-dw DRAWCOL_OFFSET - 00700h,  COLORMAPS_SEGMENT + 0070h
-dw DRAWCOL_OFFSET - 00800h,  COLORMAPS_SEGMENT + 0080h
-dw DRAWCOL_OFFSET - 00900h,  COLORMAPS_SEGMENT + 0090h
-dw DRAWCOL_OFFSET - 00A00h,  COLORMAPS_SEGMENT + 00A0h
-dw DRAWCOL_OFFSET - 00B00h,  COLORMAPS_SEGMENT + 00B0h
-dw DRAWCOL_OFFSET - 00C00h,  COLORMAPS_SEGMENT + 00C0h
-dw DRAWCOL_OFFSET - 00D00h,  COLORMAPS_SEGMENT + 00D0h
-dw DRAWCOL_OFFSET - 00E00h,  COLORMAPS_SEGMENT + 00E0h
-dw DRAWCOL_OFFSET - 00F00h,  COLORMAPS_SEGMENT + 00F0h
-dw DRAWCOL_OFFSET - 01000h,  COLORMAPS_SEGMENT + 0100h
-dw DRAWCOL_OFFSET - 01100h,  COLORMAPS_SEGMENT + 0110h
-dw DRAWCOL_OFFSET - 01200h,  COLORMAPS_SEGMENT + 0120h
-dw DRAWCOL_OFFSET - 01300h,  COLORMAPS_SEGMENT + 0130h
-dw DRAWCOL_OFFSET - 01400h,  COLORMAPS_SEGMENT + 0140h
-dw DRAWCOL_OFFSET - 01500h,  COLORMAPS_SEGMENT + 0150h
-dw DRAWCOL_OFFSET - 01600h,  COLORMAPS_SEGMENT + 0160h
-dw DRAWCOL_OFFSET - 01700h,  COLORMAPS_SEGMENT + 0170h
-dw DRAWCOL_OFFSET - 01800h,  COLORMAPS_SEGMENT + 0180h
-dw DRAWCOL_OFFSET - 01900h,  COLORMAPS_SEGMENT + 0190h
-dw DRAWCOL_OFFSET - 01A00h,  COLORMAPS_SEGMENT + 01A0h
-dw DRAWCOL_OFFSET - 01B00h,  COLORMAPS_SEGMENT + 01B0h
-dw DRAWCOL_OFFSET - 01C00h,  COLORMAPS_SEGMENT + 01C0h
-dw DRAWCOL_OFFSET - 01D00h,  COLORMAPS_SEGMENT + 01D0h
-dw DRAWCOL_OFFSET - 01E00h,  COLORMAPS_SEGMENT + 01E0h
-dw DRAWCOL_OFFSET - 01F00h,  COLORMAPS_SEGMENT + 01F0h
-dw DRAWCOL_OFFSET - 02000h,  COLORMAPS_SEGMENT + 0200h
 
+
+; COLFUNC TYPES (work in progress)
+; 0 = regular draw, texture can loop
+; 1 = texture cannot loop, no AND 7Fh per texel coord calcualtion
+
+; cs:0n00h contains call table for that colfunc type
+; _colfunc_jump_lookup_segments[n] is jump table for that colfunct type
+; _colfunc_lookup_segments
+
+
+; FIRST JUMP TABLE FOR NORMAL DRAWCOL
+
+_COLFUNC_NORMAL_CALLTABLE:
+PUBLIC _COLFUNC_NORMAL_CALLTABLE
+
+CALL_OFFSET  = DRAWCOL_OFFSET_BSP
+CALL_SEGMENT = COLORMAPS_SEGMENT
+COLORMAPS_COUNT = 21h
+
+REPT COLORMAPS_COUNT
+    dw CALL_OFFSET, CALL_SEGMENT
+    CALL_OFFSET = CALL_OFFSET - 0100h
+    CALL_SEGMENT = CALL_SEGMENT + 010h
+ENDM
+
+; 84h
+
+R_CHECKBBOX_SWITCH_JMP_TABLE:
+; jmp table for switch block.... 
+
+dw R_CBB_SWITCH_CASE_00 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_01 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_02 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_03 - OFFSET R_BSP24_STARTMARKER_
+dw R_CBB_SWITCH_CASE_04 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_05 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_06 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_07 - OFFSET R_BSP24_STARTMARKER_
+dw R_CBB_SWITCH_CASE_08 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_09 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_10 - OFFSET R_BSP24_STARTMARKER_
+
+
+_pagesegments:
+
+dw 00000h, 00400h, 00800h, 00C00h
+dw 01000h, 01400h, 01800h, 01C00h
+
+
+; 0AAh
+
+; UNUSED PADDING
+; UNUSED PADDING
+; UNUSED PADDING
+
+
+dw 0, 0, 0
+dw 0, 0, 0, 0, 0, 0, 0, 0
+dw 0, 0, 0, 0, 0, 0, 0, 0
+dw 0, 0, 0, 0, 0, 0, 0, 0
+dw 0, 0, 0, 0, 0, 0, 0, 0
+dw 0, 0, 0, 0, 0, 0, 0, 0
+
+; UNUSED PADDING
+; UNUSED PADDING
+; UNUSED PADDING
+
+; SECOND JUMP TABLE ALIGNED AT CS:0100 FOR NON-LOOPING DRAWCOL
+
+; NEEDS TO BE 0100h
+_COLFUNC_NOLOOP_CALLTABLE:
+PUBLIC _COLFUNC_NOLOOP_CALLTABLE
+
+
+CALL_OFFSET  = DRAWCOL_NOLOOP_OFFSET_BSP
+CALL_SEGMENT = COLORMAPS_SEGMENT
+COLORMAPS_COUNT = 21h
+
+; 0100h
+
+REPT COLORMAPS_COUNT
+    dw CALL_OFFSET, CALL_SEGMENT
+    CALL_OFFSET = CALL_OFFSET - 0100h
+    CALL_SEGMENT = CALL_SEGMENT + 010h
+ENDM
 
 ;R_ScaleFromGlobalAngle_
 
 PROC R_ScaleFromGlobalAngle_ NEAR
+PUBLIC R_ScaleFromGlobalAngle_ 
 
 
 push  bx
@@ -3547,8 +3588,8 @@ jmp   spritelights_set
 
 endp
 
-COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF   = ((DC_YL_LOOKUP_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
-COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
+
+
 
 
 
@@ -3686,7 +3727,7 @@ mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_1+1 - OFFSET R_BSP24_S
 mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
 shl       si, 1
 
-mov       cx, ds  ; store for later.
+
 les       bx, dword ptr ds:[bx + SEG_RENDER_T.sr_v1Offset]   ; v1
 mov       di, es                                             ; v2
 
@@ -3740,18 +3781,46 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta - OFFSET R_BSP24_STARTMARKER
    xchg      ax, di
    xor       ax, ax
    mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
-   inc       ax
-   mov       word ptr cs:[SELFMODIFY_add_texturetopheight_plus_one+2- OFFSET R_BSP24_STARTMARKER_], ax
    sal       di, 1
-   mov       ax, word ptr es:[di]
-   mov       word ptr cs:[SELFMODIFY_settoptexturetranslation_lookup+1- OFFSET R_BSP24_STARTMARKER_], ax
+   inc       ax      ; MAINTAIN THIS FLAG STATE
+   mov       word ptr cs:[SELFMODIFY_add_texturetopheight_plus_one+2- OFFSET R_BSP24_STARTMARKER_], ax
+
+   push      word ptr es:[di]
+   pop       word ptr cs:[SELFMODIFY_settoptexturetranslation_lookup+1- OFFSET R_BSP24_STARTMARKER_]
+
+   mov       al, 0   ; leave flags alone
+   mov       di, COLFUNC_JUMP_LOOKUP_OFFSET  ; default values
+   mov       cx, (SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET+1)   
+   js        setup_looping_top_texture
+   mov       di, DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET
+   mov       cx, (SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1)
+   inc       ax 
+   setup_looping_top_texture:
+   mov       byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+5], al
+   mov       word ptr cs:[SELFMODIFY_toggle_top_jump_lookup_offset+1], di
+   mov       word ptr cs:[SELFMODIFY_toggle_top_jump_instruction_offset+1], cx
 
    skip_toptex_selfmodify:
    lodsw     ; side bottexture  ; faster to just do it than branch?
    xchg      ax, di
+   mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
    sal       di, 1
-   mov       ax, word ptr es:[di]
-   mov       word ptr cs:[SELFMODIFY_setbottexturetranslation_lookup+1- OFFSET R_BSP24_STARTMARKER_], ax
+   inc       ax     ; 128 if 127, set sign bit
+   push      word ptr es:[di]
+   pop       word ptr cs:[SELFMODIFY_setbottexturetranslation_lookup+1- OFFSET R_BSP24_STARTMARKER_]
+
+
+   mov       al, 0   ; leave flags alone
+   mov       di, COLFUNC_JUMP_LOOKUP_OFFSET  ; default values
+   mov       cx, (SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET+1)   
+   js        setup_looping_bot_texture
+   mov       di, DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET
+   mov       cx, (SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1)
+   inc       ax 
+   setup_looping_bot_texture:
+   mov       byte ptr cs:[SELFMODIFY_toggle_bot_colfunc_type+5], al
+   mov       word ptr cs:[SELFMODIFY_toggle_bot_jump_lookup_offset+1], di
+   mov       word ptr cs:[SELFMODIFY_toggle_bot_jump_instruction_offset+1], cx
 
    sub       si, 4
 
@@ -3761,21 +3830,35 @@ selfmodify_mid_only:
    add       si, 4
    lodsw     ; side midtexture
    test      ax, ax
-   jz        skip_midptex_selfmodify
+   jz        skip_midtex_selfmodify
    xchg      ax, di
    xor       ax, ax
    mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
+   sal       di, 1  ; word lookup
    inc       ax
    mov       word ptr cs:[SELFMODIFY_add_texturemidheight_plus_one+1- OFFSET R_BSP24_STARTMARKER_], ax
-   sal       di, 1
-   mov       ax, word ptr es:[di]
-   mov       word ptr cs:[SELFMODIFY_setmidtexturetranslation_lookup+1- OFFSET R_BSP24_STARTMARKER_], ax
+   push      word ptr es:[di]
+   pop       word ptr cs:[SELFMODIFY_setmidtexturetranslation_lookup+1- OFFSET R_BSP24_STARTMARKER_]
+
+   mov       al, 0   ; leave flags alone
+   mov       di, COLFUNC_JUMP_LOOKUP_OFFSET  ; default values
+   mov       cx, (SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET+1)   
+   js        setup_looping_mid_texture       ; USE FLAG STATE
+   mov       di, DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET
+   mov       cx, (SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1)
+   inc       ax 
+   setup_looping_mid_texture:
+   mov       byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+5], al
+   mov       word ptr cs:[SELFMODIFY_toggle_top_jump_lookup_offset+1], di
+   mov       word ptr cs:[SELFMODIFY_toggle_top_jump_instruction_offset+1], cx
+
+
 
    ; create jmp instruction
    mov       ax, ((SELFMODIFY_has_midtexture_or_not_TARGET - SELFMODIFY_has_midtexture_or_not_AFTER) SHL 8) + 0EBh
 
    jmp       finish_midtex_selfmodify
-skip_midptex_selfmodify:
+skip_midtex_selfmodify:
    mov       ax, 0c031h  ; xor ax, ax
 finish_midtex_selfmodify:
 
@@ -3787,7 +3870,7 @@ finish_midtex_selfmodify:
 
    lodsw     ; textureoffset todo can be 8 bit
    mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset+1 - OFFSET R_BSP24_STARTMARKER_], ax
-
+   mov       cx, FIXED_DS_SEGMENT
    mov       ds, cx  ; restore ds..
 
    mov       si, word ptr [bp + 014h]
@@ -6072,6 +6155,7 @@ jl    mid_no_pixels_to_draw
 ; inlined function. 
 R_GetSourceSegment0_START:
 push  es
+push  bp
 push  dx
 
 
@@ -6104,17 +6188,27 @@ mov   dx, 01000h
 
 ENDP
 
+SELFMODIFY_toggle_top_colfunc_type:
+mov   byte ptr cs:[SELFMODIFY_COLFUNC_set_colormap_index_jump+1], 0  ; set the function variant for this DrawColumnPrep call
+SELFMODIFY_toggle_top_jump_lookup_offset:
+mov   bp, COLFUNC_JUMP_LOOKUP_OFFSET        ; hold onto offset for jump lookup
+SELFMODIFY_toggle_top_jump_instruction_offset:
+mov   ax, (SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET+1)
+
 ; fall thru in the case of top/bot column.
 PROC  R_DrawColumnPrep_ NEAR
-
+PUBLIC R_DrawColumnPrep_ 
 ;cl:dx are texturemid (si needs to hold dc_yl!)
 
 push  bx
 push  si
 push  di
 
+; PASS IN POINTER TO COLFUNC JUMP LOOKUP OFFSET IN BP
+; PASS IN POINTER TO COLFUNC JUMP INSTRUCTION IN AX
 
-mov   ax, COLFUNC_JUMP_LOOKUP_SEGMENT        ; compute segment now, clear AX dependency
+xchg  ax, bx  ;  bx gets instruction ptr
+mov   ax, COLFUNC_FILE_START_SEGMENT        ; compute segment now, clear AX dependency
 mov   ds, ax ; store this segment for now, with offset pre-added
 
 SELFMODIFY_COLFUNC_get_dc_x:
@@ -6128,20 +6222,21 @@ sar   ax, 1
 ; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
 
 ; si is dc_yl 
-mov   bx, si
-add   ax, word ptr ds:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
+sub   di, si                                 ; dc_yh - dc_yl
+sal   di, 1                                  ; double diff (dc_yh - dc_yl) to get a word offset
+mov   di, word ptr ds:[di+bp]                ; get the jump value. bp has offset to table in segment
+
+mov   bp, si
+add   ax, word ptr ds:[si+bp]                   ; add * 80 lookup table value 
 SELFMODIFY_BSP_add_destview_offset:
 add   ax, 01000h
 
 ; di is dc_yh
-sub   di, bx                                 ;
-sal   di, 1                                 ; double diff (dc_yh - dc_yl) to get a word offset
-mov   di, word ptr ds:[di]                   ; get the jump value
-xchg  ax, di								 ; di gets screen dest offset, ax gets jump value
-mov   word ptr ds:[(SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET+1)], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
+xchg  ax, di								         ; di gets screen dest offset, ax gets jump value
+mov   word ptr ds:[bx], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 
 
-xchg  ax, bx            ; dc_yl in ax
+xchg  ax, si            ; dc_yl *2 in ax
 
 mov   si, dx  ; si gets texturemid low word (todo: figure out a way to do this without the juggle)
 
@@ -6158,7 +6253,7 @@ mov   ch, 010h          ; dc_iscale +2
 db 02Eh  ; cs segment override
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
-SELFMODIFY_COLFUNC_set_colormap_index_jump:
+SELFMODIFY_COLFUNC_set_colormap_index_jump:  ; low byte is colormaps-based cs:ip lookup. high byte is function type selector
 dw 0000h
 ; addr 0000 + first byte (4x colormap.)
 
@@ -6173,6 +6268,7 @@ SELFMODIFY_BSP_R_DrawColumnPrep_ret:
 ; the pop dx gets replaced with ret if bottom is calling
 
 pop   dx
+pop   bp
 pop   es
 
 ; this runs as a jmp for a top call, otherwise NOP for mid call
@@ -6320,6 +6416,7 @@ xchg   cx, si
 ; BEGIN INLINED R_GetSourceSegment1_
 
 push  es
+push  bp
 push  dx
 
 
@@ -6345,6 +6442,13 @@ mov   cl, 010h
 SELFMODIFY_set_bottexturemid_lo:
 mov   dx, 01000h
 
+SELFMODIFY_toggle_bot_colfunc_type:
+mov   byte ptr cs:[SELFMODIFY_COLFUNC_set_colormap_index_jump+1], 0 ; ; set the function variant for this DrawColumnPrep call
+SELFMODIFY_toggle_bot_jump_lookup_offset:
+mov   bp, COLFUNC_JUMP_LOOKUP_OFFSET        ; compute segment now, clear AX dependency
+SELFMODIFY_toggle_bot_jump_instruction_offset:
+mov   ax, (SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET+1)
+
 ; small idea: make these each three NOPs if its gonna be a bot only draw?
 mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret - OFFSET R_BSP24_STARTMARKER_], 0C3h  ; ret
 call  R_DrawColumnPrep_
@@ -6352,7 +6456,9 @@ call  R_DrawColumnPrep_
 
 
 mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret - OFFSET R_BSP24_STARTMARKER_], 05Ah  ; pop dx
+
 pop   dx
+pop   bp
 pop   es
 
 
@@ -6922,20 +7028,21 @@ calculate_toptexturemid:
 
 ; dx holding on to backsectorceilingheight from above.
 
-;todo 386
+;todo investigate no shift
 xor       ax, ax
-sar       dx, 1
-rcr       ax, 1
-sar       dx, 1
-rcr       ax, 1
-sar       dx, 1
-rcr       ax, 1
+SHIFT32_MACRO_RIGHT dx ax 3
+
 ;dx:ax are toptexturemid for now..
 
 ; add textureheight+1
 
+; todo should work as a byte add
 SELFMODIFY_add_texturetopheight_plus_one:
 add       dx, 01000h
+
+SELFMODIFY_toggle_colfunc_type:
+mov   byte ptr cs:[SELFMODIFY_COLFUNC_set_colormap_index_jump+1], 0
+
 
 SELFMODIFY_BSP_viewz_lo_1:
 sub       ax, 01000h
@@ -8615,12 +8722,6 @@ ret
 
 ENDP
 
-R_CHECKBBOX_SWITCH_JMP_TABLE:
-; jmp table for switch block.... 
-
-dw R_CBB_SWITCH_CASE_00 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_01 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_02 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_03 - OFFSET R_BSP24_STARTMARKER_
-dw R_CBB_SWITCH_CASE_04 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_05 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_06 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_07 - OFFSET R_BSP24_STARTMARKER_
-dw R_CBB_SWITCH_CASE_08 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_09 - OFFSET R_BSP24_STARTMARKER_, R_CBB_SWITCH_CASE_10 - OFFSET R_BSP24_STARTMARKER_
 
 ;R_CheckBBox_
 
@@ -9097,11 +9198,6 @@ exit_renderbspnode:
 ENDP
 
 
-
-_pagesegments:
-
-dw 00000h, 00400h, 00800h, 00C00h
-dw 01000h, 01400h, 01800h, 01C00h
 
 
 
@@ -11691,13 +11787,13 @@ mov      word ptr ds:[SELFMODIFY_BSP_centerx_8+1 - OFFSET R_BSP24_STARTMARKER_],
 
 
 
-mov      ax, COLFUNC_FUNCTION_AREA_SEGMENT
+mov      ax, COLFUNC_FILE_START_SEGMENT
 mov      es, ax
 
 ; ah is definitely 0... optimizable?
 mov      ax, word ptr ss:[_centery]
-mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_1+1 - COLFUNC_JUMPTABLE_SIZE_OFFSET], ax
-mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_2+1 - COLFUNC_JUMPTABLE_SIZE_OFFSET], ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_1+1], ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_2+1], ax
  
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -11972,11 +12068,11 @@ mov      ax, ss
 mov      ds, ax
 ;ASSUME DS:DGROUP
 
-mov      ax, COLFUNC_FUNCTION_AREA_SEGMENT
+mov      ax, COLFUNC_FILE_START_SEGMENT
 mov      es, ax
 mov      ax, word ptr ds:[_destview+2]
-mov      word ptr es:[SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENT24_OFFSET+1-COLFUNC_JUMPTABLE_SIZE_OFFSET], ax
-mov      word ptr es:[SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENT24_NOLOOP_OFFSET+1-COLFUNC_JUMPTABLE_SIZE_OFFSET], ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENT24_OFFSET+1], ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENT24_NOLOOP_OFFSET+1], ax
 
 
 

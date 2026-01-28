@@ -482,17 +482,17 @@ FREEBYTES             7F65:0000
 
 
 #define colormaps             ((lighttable_t  __far*)     MAKE_FULL_SEGMENT(0x98000000            , 0))
-#define colfunc_jump_lookup   ((uint16_t  __far*)         MAKE_FULL_SEGMENT(colormaps             , size_colormaps))
-#define dc_yl_lookup          ((uint16_t  __far*)         MAKE_FULL_SEGMENT(colfunc_jump_lookup   , size_colfunc_jump_lookup))
-#define colfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(dc_yl_lookup          , size_dc_yl_lookup))
+#define dc_yl_lookup          ((uint16_t  __far*)         MAKE_FULL_SEGMENT(colormaps             , size_colormaps))
+#define colfunc_jump_lookup   ((uint16_t  __far*)         MAKE_FULL_SEGMENT(dc_yl_lookup          , size_dc_yl_lookup))
+#define colfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(colfunc_jump_lookup   , size_colfunc_jump_lookup))
 
 #define seenlines             ((uint8_t __far*)           MAKE_FULL_SEGMENT(colfunc_function_area , size_colfunc_function_area))
 #define empty_render_9800     ((uint16_t  __far*)         MAKE_FULL_SEGMENT(seenlines             , size_seenlines))
 //6D8A
 
 #define colormaps_segment               ((segment_t) ((int32_t)colormaps >> 16))
-#define colfunc_jump_lookup_segment     ((segment_t) ((int32_t)colfunc_jump_lookup >> 16))
 #define dc_yl_lookup_segment            ((segment_t) ((int32_t)dc_yl_lookup >> 16))
+#define colfunc_jump_lookup_segment     ((segment_t) ((int32_t)colfunc_jump_lookup >> 16))
 #define colfunc_function_area_segment   ((segment_t) ((int32_t)colfunc_function_area >> 16))
 #define seenlines_segment               ((segment_t) ((int32_t)seenlines >> 16))
 #define empty_render_9800_segment       ((segment_t) ((int32_t)empty_render_9800 >> 16))
@@ -519,7 +519,7 @@ FREEBYTES             7F65:0000
 // FREEBYTES 272 bytes free
 
 // 8C60
-#define colormaps_maskedmapping_seg_diff  ((segment_t)0x8C00 - colormaps_segment)
+#define colormaps_maskedmapping_seg_diff  ((segment_t)colormaps_segment - 0x8C00)
 
 // used in sprite render, this has been remapped to 8C00 page
 #define colormaps_maskedmapping         ((lighttable_t  __far*) 0x8C000000)

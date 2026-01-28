@@ -34,17 +34,9 @@ ENDP
 
 
 
-_colfunc_jump_target:
-PUBLIC _colfunc_jump_target
-BYTES_PER_PIXEL = 14
-MAX_PIXELS = 200
-bytecount = MAX_PIXELS * BYTES_PER_PIXEL
-REPT MAX_PIXELS
-    bytecount = bytecount - BYTES_PER_PIXEL
-    dw bytecount 
-ENDM
 
-; mul 80 table.
+
+; mul 80 table. common table to put at segment:[0000]
 _dc_yl_lookup_table:
 PUBLIC _dc_yl_lookup_table
 sumof80s = 0
@@ -55,7 +47,15 @@ REPT MAX_PIXELS
 ENDM
 
 
-
+MARKER_COLFUNC_JUMP_TARGET24_:
+PUBLIC MARKER_COLFUNC_JUMP_TARGET24_
+BYTES_PER_PIXEL = 14
+MAX_PIXELS = 200
+bytecount = MAX_PIXELS * BYTES_PER_PIXEL
+REPT MAX_PIXELS
+    bytecount = bytecount - BYTES_PER_PIXEL
+    dw bytecount 
+ENDM
 
 ;
 ; R_DrawColumn
@@ -92,7 +92,7 @@ PUBLIC MARKER_SELFMODIFY_COLFUNC_subtract_centery24_1_
    xchg DX, BX   ; dx gets bx, bx gets  0 
 
 
-   push    bp
+
    ;  prep our loop variables
 
 MARKER_SELFMODIFY_COLFUNC_set_destview_segment24_:
@@ -158,7 +158,7 @@ loop_done:
 
     mov  ax, ss
     mov  ds, ax
-    pop  bp
+
 
     retf
 
@@ -214,7 +214,7 @@ PUBLIC MARKER_SELFMODIFY_COLFUNC_subtract_centery24_2_
 
 ; todo clean this up...
 
-   push    bp
+
 
    mov  ax, bx   ; ax gets 0
    mov  al, ch
@@ -280,7 +280,7 @@ loop_done_noloop:
     mov  ss, ax
 
 
-    pop  bp
+
     sti
 
     retf
