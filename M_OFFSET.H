@@ -1,4 +1,4 @@
-#define R_DrawMasked24Offset                    0x1467
+#define R_DrawMasked24Offset                    0x146B
 #define R_DrawMasked16Offset                    0x1495
 #define R_DrawMasked0Offset                     0x140E
 #define R_DrawMaskedFLOffset                    0x13F6
@@ -57,7 +57,7 @@
 #define M_DrawPauseOffset                       0x1368
 #define M_StartControlPanelOffset               0x102A
 
-#define R_DrawColumn24CodeSize         0xE38
+#define R_DrawColumn24CodeSize         0x17DC
 #define R_DrawColumn16CodeSize         0xCB4
 #define R_DrawColumn0CodeSize          0x58E
 #define R_DrawColumnFLCodeSize         0x58E
@@ -65,7 +65,7 @@
 #define R_DrawSpan16CodeSize           0xF60
 #define R_DrawSpan0CodeSize            0x63A
 #define R_DrawSpanFLCodeSize           0x591
-#define R_DrawFuzzColumn24CodeSize     0x18AD
+#define R_DrawFuzzColumn24CodeSize     0x18B1
 #define R_DrawFuzzColumn16CodeSize     0x18E4
 #define R_DrawFuzzColumn0CodeSize      0x1850
 #define R_DrawFuzzColumnFLCodeSize     0x181A
@@ -76,7 +76,7 @@
 #define R_DrawSkyColumnCodeSize        0xD86
 #define R_DrawSkyColumnFLCodeSize      0x303
 #define M_MenuCodeSize                 0x1559
-#define R_BSP24CodeSize                0x3454
+#define R_BSP24CodeSize                0x345C
 #define R_BSP16CodeSize                0x3740
 #define R_BSP0CodeSize                 0x366F
 #define R_BSPFLCodeSize                0x3617

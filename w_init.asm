@@ -32,8 +32,6 @@ EXTRN DEBUG_PRINT_:NEAR
 .DATA
 
 
-; leave space for title text which is there
-LUMPINFO_INIT_SEGMENT = BASE_LOWER_MEMORY_SEGMENT + 020h
 
 .CODE
 
@@ -178,7 +176,7 @@ mov    word ptr cs:[SELFMODIFY_start_lump_for_search+1], dx ; W_UpdateNumLumps_
 
 mov    ax, SCRATCH_SEGMENT_5000
 mov    ds, ax
-mov    ax, LUMPINFO_INIT_SEGMENT
+mov    ax, LUMPINFOINITSEGMENT
 mov    es, ax
 xor    si, si ; ds:si is fileinfo..
 xor    cx, cx ; ch 0
@@ -228,7 +226,7 @@ ret
 do_non_wad:
 
 
-mov    ax, LUMPINFO_INIT_SEGMENT
+mov    ax, LUMPINFOINITSEGMENT
 mov    es, ax
 mov    ax, word ptr ds:[_numlumps]
 push   ax   ; numlumps [MATCH A]
@@ -280,7 +278,7 @@ call   locallib_fseek_  ; fseek(usefp, 0L, SEEK_END);
 mov    ax, si
 call   locallib_ftell_  ; singleinfo.size = ftell(usefp);
 
-mov    cx, LUMPINFO_INIT_SEGMENT
+mov    cx, LUMPINFOINITSEGMENT
 mov    es, cx
 
 

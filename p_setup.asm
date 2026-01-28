@@ -1636,10 +1636,10 @@ xor   ax, ax
 
 ;erase the level data region
 ; FAR_memset(((byte __far*) baselowermemoryaddress), 0, (sfx_data_segment - base_lower_memory_segment) << 4);
-mov   dx, BASE_LOWER_MEMORY_SEGMENT
+mov   dx, SECTORS_SEGMENT
 mov   es, dx
 xor   di, di
-mov   cx, (SFX_DATA_SEGMENT - BASE_LOWER_MEMORY_SEGMENT) SHL 3  ; 3 not 4 because stosw
+mov   cx, (SFX_DATA_SEGMENT - SECTORS_SEGMENT) SHL 3  ; 3 not 4 because stosw
 rep   stosw
 
 

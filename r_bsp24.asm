@@ -11696,8 +11696,8 @@ mov      es, ax
 
 ; ah is definitely 0... optimizable?
 mov      ax, word ptr ss:[_centery]
-
-mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET+1 - COLFUNC_JUMPTABLE_SIZE_OFFSET], ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_1+1 - COLFUNC_JUMPTABLE_SIZE_OFFSET], ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_2+1 - COLFUNC_JUMPTABLE_SIZE_OFFSET], ax
  
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -11976,6 +11976,8 @@ mov      ax, COLFUNC_FUNCTION_AREA_SEGMENT
 mov      es, ax
 mov      ax, word ptr ds:[_destview+2]
 mov      word ptr es:[SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENT24_OFFSET+1-COLFUNC_JUMPTABLE_SIZE_OFFSET], ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENT24_NOLOOP_OFFSET+1-COLFUNC_JUMPTABLE_SIZE_OFFSET], ax
+
 
 
 

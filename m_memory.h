@@ -58,13 +58,13 @@
 
 
 
-// todo generate this programatically
-#define baselowermemoryaddress    (0x23EC0000)
+// todo generate this programatically, downward from fixeddssegment
+#define baselowermemoryaddress    (0x23EF0000)
 // MaximumMusDriverSize
 
 
 #define base_lower_memory_segment ((segment_t) ((int32_t)baselowermemoryaddress >> 16))
-#define lumpinfoinitsegment       base_lower_memory_segment + (0x20)
+
 
 #define music_driver_code_segment_size   ((int32_t)(MaximumMusDriverSize + 0xF) >> 4)
 //208E
@@ -174,7 +174,7 @@ struct sfxinfo_struct{
 #define seg_sides_segment            ((segment_t) ((int32_t)seg_sides >> 16))
 #define seg_sides_offset_in_seglines ((uint16_t)(((seg_sides_segment - seg_linedefs_segment) << 4)))
 
-
+#define lumpinfoinitsegment       sectors_segment + 0x20
 
 
 

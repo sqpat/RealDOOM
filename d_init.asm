@@ -1641,7 +1641,8 @@ ENDP
 
 
 
-PROC  D_DrawTitle_ NEAR
+PROC   D_DrawTitle_ NEAR
+PUBLIC D_DrawTitle_ 
 
 PUSHA_NO_AX_MACRO
 
