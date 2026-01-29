@@ -1282,7 +1282,7 @@ mov       es, ax
 pop       ds   ; COLORMAPS_SEGMENT above
 mov       cx, (SIZE_COLORMAPS) / 2
 xor       si, si
-mov       di, 0Fh
+mov       di, 07Fh
 rep       movsw		; odd alignment... ah well
 push      ss
 pop       ds

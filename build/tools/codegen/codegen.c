@@ -8,7 +8,7 @@
 #include "r_state.h"
 #include "p_setup.h"
 
-#define CONSTANTS_COUNT 1016
+#define CONSTANTS_COUNT 1017
 #define LOCALS_COUNT 29
 
 
@@ -110,6 +110,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 
     "COLORMAPS_SEGMENT",
 	"COLORMAPS_F_DUPE_SEGMENT",
+	"RENDER_9800_9C00_GAP_SEGMENT",
     "COLFUNC_JUMP_LOOKUP_SEGMENT",
     "DC_YL_LOOKUP_SEGMENT",
     "COLFUNC_FUNCTION_AREA_SEGMENT",
@@ -1225,6 +1226,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 
     colormaps_segment,
 	colormaps_f_dupe_segment,
+	render_9800_9C00_GAP_segment,
     colfunc_jump_lookup_segment,
     dc_yl_lookup_segment,
     colfunc_function_area_segment,

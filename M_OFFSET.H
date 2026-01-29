@@ -57,7 +57,7 @@
 #define M_DrawPauseOffset                       0x1368
 #define M_StartControlPanelOffset               0x102A
 
-#define R_DrawColumn24CodeSize         0x1FD6
+#define R_DrawColumn24CodeSize         0x1E5B
 #define R_DrawColumn16CodeSize         0xCB4
 #define R_DrawColumn0CodeSize          0x58E
 #define R_DrawColumnFLCodeSize         0x58E
