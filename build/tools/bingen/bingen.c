@@ -257,7 +257,7 @@ void __far MARKER_SM_COLFUNC_jump_offset0();
 void __far MARKER_SM_COLFUNC_subtract_centery16();
 void __far MARKER_SM_COLFUNC_set_destview_segment16();
 void __far MARKER_SM_COLFUNC_jump_offset16();
-void __far MARKER_SM_COLFUNC_subtract_centery24_1();
+void __far MARKER_SM_COLFUNC_subtract_centery24_normal();
 void __far MARKER_SM_COLFUNC_subtract_centery24_noloop();
 void __far MARKER_SM_COLFUNC_subtract_centery24_noloopandstretch();
 void __far MARKER_SM_COLFUNC_set_destview_segment24();
@@ -751,7 +751,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
 	fprintf(fp, "R_GETCOMPOSITETEXTUREFLOFFSET          = 0%Xh\n", FP_OFF(R_GetCompositeTexture_FarFL)       - FP_OFF(R_BSPFL_STARTMARKER));
 	fprintf(fp, "R_GETPATCHTEXTUREFLOFFSET              = 0%Xh\n", FP_OFF(R_GetPatchTexture_FarFL)           - FP_OFF(R_BSPFL_STARTMARKER));
 
-    fprintf(fp, "SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_1      = 0%Xh\n", FP_OFF(MARKER_SM_COLFUNC_subtract_centery24_1)    - FP_OFF(R_BSP24_STARTMARKER));
+    fprintf(fp, "SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_NORMAL = 0%Xh\n", FP_OFF(MARKER_SM_COLFUNC_subtract_centery24_normal)    - FP_OFF(R_BSP24_STARTMARKER));
     fprintf(fp, "SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_NOLOOP = 0%Xh\n", FP_OFF(MARKER_SM_COLFUNC_subtract_centery24_noloop) - FP_OFF(R_BSP24_STARTMARKER));
     fprintf(fp, "SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_NOLOOPANDSTRETCH = 0%Xh\n", FP_OFF(MARKER_SM_COLFUNC_subtract_centery24_noloopandstretch) - FP_OFF(R_BSP24_STARTMARKER));
 	fprintf(fp, "SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENT24_OFFSET    = 0%Xh\n", FP_OFF(MARKER_SM_COLFUNC_set_destview_segment24)  - FP_OFF(R_BSP24_STARTMARKER));

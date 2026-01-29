@@ -521,8 +521,8 @@ ENDM
 	_NPR PAGE_5C00_OFFSET		 			 		PAGE_5C00_OFFSET
 	_NPR PAGE_6000_OFFSET	 			 		 	PAGE_6000_OFFSET
 	_NPR PAGE_6400_OFFSET							PAGE_6400_OFFSET
-	_EPR 13		 			 		            	PAGE_6800_OFFSET
-	_EPR 14 	 				    	 			PAGE_6C00_OFFSET
+	_EPR 13		 			 		            	PAGE_6800_OFFSET ; colormaps 
+	_EPR 14 	 				    	 			PAGE_6C00_OFFSET ; colormaps_f_dupe
 	_NPR PAGE_7000_OFFSET				 			PAGE_7000_OFFSET
 	_NPR PAGE_7400_OFFSET	 						PAGE_7400_OFFSET
 	_NPR PAGE_7800_OFFSET				 			PAGE_7800_OFFSET 
@@ -562,8 +562,8 @@ ENDM
 
 	_EPR 11 					 					PAGE_9000_OFFSET ;pageswapargs_rend_9000_size
 	_EPR 12 				 						PAGE_9400_OFFSET
-	_EPR 13 					 					PAGE_9800_OFFSET
-	_EPR 14 				 						PAGE_9C00_OFFSET
+	_EPR PHYSICS_RENDER_9800_PAGE 					PAGE_9800_OFFSET
+	_EPR PHYSICS_RENDER_9C00_PAGE 				 	PAGE_9C00_OFFSET
 		; render 4000 to 9000
 	_EPR 0					 						PAGE_9000_OFFSET ;pageswapargs_rend_other9000_size
 	_EPR 1					 						PAGE_9400_OFFSET 
@@ -631,9 +631,9 @@ ENDM
 		;masked
 	_EPR FIRST_EXTRA_MASKED_DATA_PAGE		 		PAGE_8400_OFFSET ;pageswapargs_maskeddata_offset_size
 	_EPR FIRST_EXTRA_MASKED_DATA_PAGE+1 			PAGE_8800_OFFSET
-	_EPR PHYSICS_RENDER_9800_PAGE PAGE_8C00_OFFSET  ; put colormaps where vissprites used to be?
+	_EPR PHYSICS_RENDER_9800_PAGE 					PAGE_8C00_OFFSET  ; put colormaps where vissprites used to be?
 		;render 9000 to 6000
-	_EPR 11 										PAGE_6000_OFFSET ;pageswapargs_render_to_6000_size
+	_EPR 11						 					PAGE_6000_OFFSET ;pageswapargs_render_to_6000_size
 	_EPR 12 										PAGE_6400_OFFSET
 		; palette
 	_NPR PAGE_8000_OFFSET 							PAGE_8000_OFFSET ;pageswapargs_palette_offset_size

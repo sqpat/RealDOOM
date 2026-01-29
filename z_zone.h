@@ -311,6 +311,7 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define RENDER_7800_PAGE                            9
 #define RENDER_7C00_PAGE                            10
 #define PHYSICS_RENDER_9800_PAGE                    13
+#define PHYSICS_RENDER_9C00_PAGE                    14
 //#define PHYSICS_RENDER_6C00_PAGE                    15
 //#define EMS_VISPLANE_EXTRA_PAGE                     SCREEN3_LOGICAL_PAGE + 1
 #define FIRST_VISPLANE_PAGE							5

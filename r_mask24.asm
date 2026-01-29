@@ -873,17 +873,8 @@ mov   al, 0
 mov   di, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1
 jne   not_stretch_draw
 
-; TODO: re-enable these once there is room in memory
-; TODO: re-enable these once there is room in memory
-; TODO: re-enable these once there is room in memory
-
 inc   ax
 mov   di, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOPANDSTRETCH_OFFSET+1
-
-; TODO: re-enable these once there is room in memory
-; TODO: re-enable these once there is room in memory
-; TODO: re-enable these once there is room in memory
-
 
 not_stretch_draw:
 

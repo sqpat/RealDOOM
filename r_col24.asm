@@ -49,6 +49,7 @@ ENDM
 
 MARKER_COLFUNC_JUMP_TARGET24_:
 PUBLIC MARKER_COLFUNC_JUMP_TARGET24_
+;BYTES_PER_PIXEL = 12
 BYTES_PER_PIXEL = 14
 MAX_PIXELS = 200
 bytecount = MAX_PIXELS * BYTES_PER_PIXEL
@@ -61,18 +62,6 @@ ENDM
 ; R_DrawColumn
 ;
 	
-PROC    R_DrawColumn24_ FAR
-PUBLIC  R_DrawColumn24_
-
-    ; di contains screen coord
-    ; ax contains dc_yl
-    ; CL:SI = dc_texturemid
-    ; CH:BX = dc_iscale
-
-; thoughts: 
-; every call to this functions has an xchg ax, bx to put dc_yl into ax
-; can consider just having it in bx? and dc_iscale low in ax
-
 
 COLFUNC_NOLOOP_FUNCTION_AREA_SEGMENT_:
 public COLFUNC_NOLOOP_FUNCTION_AREA_SEGMENT_
@@ -288,8 +277,20 @@ ENDP
 
 ALIGN 16
 
-MARKER_SM_COLFUNC_subtract_centery24_1_:
-PUBLIC MARKER_SM_COLFUNC_subtract_centery24_1_
+PROC    R_DrawColumnNormal24_ FAR
+PUBLIC  R_DrawColumnNormal24_
+
+    ; di contains screen coord
+    ; ax contains dc_yl
+    ; CL:SI = dc_texturemid
+    ; CH:BX = dc_iscale
+
+; thoughts: 
+; every call to this functions has an xchg ax, bx to put dc_yl into ax
+; can consider just having it in bx? and dc_iscale low in ax
+
+MARKER_SM_COLFUNC_subtract_centery24_normal_:
+PUBLIC MARKER_SM_COLFUNC_subtract_centery24_normal_
     sub   ax, 01000h
 
 ; credit to zero318 for various ideas for the function
@@ -369,6 +370,102 @@ loop_done:
 
 ENDP
 
+
+COMMENT @
+ALIGN 16
+
+MARKER_SM_COLFUNC_subtract_centery24_normal_:
+PUBLIC MARKER_SM_COLFUNC_subtract_centery24_normal_
+    sub   ax, 01000h
+
+; credit to zero318 for various ideas for the function
+   MOV  DX, AX  ; copy center24y
+   MUL  CH
+   ADD  CL, AL
+   MOV  AX, DX ; restore center_y
+   AND  DH, BL
+   SUB  CL, DH  ; apply neg sign
+   MUL  BX
+   ADD  SI, AX
+   ADC  CL, DL
+   mov  DX,  7Fh   ; for ANDing to SI 
+   xchg DX, BX   ; dx gets bx, bx gets  7Fh
+
+; todo clean this up...
+
+   mov  ax, bx   ; ah gets 0
+   mov  al, cl
+   xchg ax, si   ; si gets hi texel
+   xchg ax, cx   ; cx gets low texel (previously si)
+
+
+
+   ;  prep our loop variables
+
+MARKER_SM_COLFUNC_set_destview_segment24_:
+PUBLIC MARKER_SM_COLFUNC_set_destview_segment24_
+   mov     bp, 01000h   
+   mov     es, bp; ready the viewscreen segment
+
+
+   cli 
+   lds     ax, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and ax to 004Fh (hardcoded) to mvoe into sp
+   mov     ss, sp
+   xchg    ax, sp
+
+
+MARKER_SM_COLFUNC_jump_offset24_:
+PUBLIC MARKER_SM_COLFUNC_jump_offset24_
+
+   jmp loop_done         ; relative jump to be modified before function is called
+
+
+
+   ;; 12 bytes loop iter
+
+; 0xC size
+DRAW_SINGLE_PIXEL MACRO 
+   ; tried to reorder adds in between xlats and stos, but it didn't make anything faster.
+   ; todo retry on real 286
+
+
+	and    si, bx                  ; bx is 7F
+	lods   BYTE PTR ds:[si]        ;
+	xlat   BYTE PTR cs:[bx]        ; cs:[bx + 7F] is colormaps
+	stos   BYTE PTR es:[di]        ;
+	add    bp, dx                  ; add 16 low bits of precision
+    adc    si, cx                  ; carry result into this add
+	add    di, sp                  ; bp has 79 (0x4F) and stos added one
+ENDM
+
+REPT 199
+    DRAW_SINGLE_PIXEL
+ENDM
+
+; draw last pixel, cut off the add
+
+	and    si, bx                  ; bx is 7F
+	lods   BYTE PTR ds:[si]        ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+
+loop_done:
+; clean up
+
+; restore ds without going to memory.
+
+    mov  sp, ss
+    mov  ax, FIXED_DS_SEGMENT
+    mov  ds, ax
+    mov  ss, ax
+
+    sti
+
+    retf
+
+
+ENDP
+@
 
 
 

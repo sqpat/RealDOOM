@@ -477,8 +477,9 @@ FREEBYTES             7F65:0000
 
 
 
-#define size_colormaps        ((33 * 256))
+#define size_colormaps          ((33 * 256))
 #define size_seenlines          (MAX_SEENLINES_SIZE)
+#define size_colormaps_f_dupe   size_colormaps + 0x0F  // subtract 0x70 to get real 7Fh offset.
 
 
 #define colormaps             ((lighttable_t  __far*)     MAKE_FULL_SEGMENT(0x98000000            , 0))
@@ -487,7 +488,8 @@ FREEBYTES             7F65:0000
 #define colfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(colfunc_jump_lookup   , size_colfunc_jump_lookup))
 
 #define seenlines             ((uint8_t __far*)           MAKE_FULL_SEGMENT(colfunc_function_area , size_colfunc_function_area))
-#define empty_render_9800     ((uint16_t  __far*)         MAKE_FULL_SEGMENT(seenlines             , size_seenlines))
+#define colormaps_f_dupe      ((lighttable_t  __far*)     MAKE_FULL_SEGMENT(seenlines             , size_seenlines))
+#define empty_render_9800     ((uint16_t  __far*)         MAKE_FULL_SEGMENT(colormaps_f_dupe      , size_colormaps_f_dupe))
 //6D8A
 
 #define colormaps_segment               ((segment_t) ((int32_t)colormaps >> 16))
@@ -495,6 +497,7 @@ FREEBYTES             7F65:0000
 #define colfunc_jump_lookup_segment     ((segment_t) ((int32_t)colfunc_jump_lookup >> 16))
 #define colfunc_function_area_segment   ((segment_t) ((int32_t)colfunc_function_area >> 16))
 #define seenlines_segment               ((segment_t) ((int32_t)seenlines >> 16))
+#define colormaps_f_dupe_segment        ((segment_t) ((int32_t)colormaps_f_dupe >> 16))
 #define empty_render_9800_segment       ((segment_t) ((int32_t)empty_render_9800 >> 16))
 
 //physics addresses. if wads ever move out of EMS, use the 9800 mapping again.

@@ -1246,7 +1246,7 @@ ENDP
 
 
 
-
+SIZE_COLORMAPS = 33 * 256
 
 
 
@@ -1259,6 +1259,7 @@ call      Z_QuickMapRender_
 
 mov       cx, COLORMAPS_SEGMENT
 xor       bx, bx
+push      cx
 
 mov     word ptr cs:[SELFMODIFY_set_currentlumpindex+1], bx   ; zero this
 mov     word ptr cs:[SELFMODIFY_set_currentpostoffset+1], bx  ; zero this
@@ -1273,6 +1274,20 @@ mov     word ptr es:[TEXTUREDEFS_OFFSET_OFFSET], bx  ; zero this
 mov       ax, COLORMAP_LUMP
 
 call      W_CacheLumpNumDirect_
+
+; copy to 0Fh offset 
+
+mov       ax, COLORMAPS_F_DUPE_SEGMENT
+mov       es, ax
+pop       ds   ; COLORMAPS_SEGMENT above
+mov       cx, (SIZE_COLORMAPS) / 2
+xor       si, si
+mov       di, 0Fh
+rep       movsw		; odd alignment... ah well
+push      ss
+pop       ds
+
+
 
 call      R_InitTextures_
 

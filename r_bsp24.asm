@@ -47,9 +47,9 @@ ANG180_HIGHBITS =    08000h
 
 _COLFUNC_NORMAL_CALLTABLE:
 PUBLIC _COLFUNC_NORMAL_CALLTABLE
-
 CALL_OFFSET  = DRAWCOL_OFFSET_BSP
 CALL_SEGMENT = COLORMAPS_SEGMENT
+;CALL_SEGMENT = COLORMAPS_F_DUPE_SEGMENT - 7   ; the 7 in 07Fh
 COLORMAPS_COUNT = 21h
 
 REPT COLORMAPS_COUNT
@@ -3823,7 +3823,7 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta - OFFSET R_BSP24_STARTMARKER
    xchg      ax, di
    mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
    sal       di, 1
-   inc       ax     ; 128 if 127, set sign bit
+   inc       al     ; 128 if 127, set sign bit
    push      word ptr es:[di]
    pop       word ptr cs:[SELFMODIFY_setbottexturetranslation_lookup+1- OFFSET R_BSP24_STARTMARKER_]
 
@@ -3834,7 +3834,7 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta - OFFSET R_BSP24_STARTMARKER
    js        setup_looping_bot_texture
    mov       di, DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET
    mov       cx, (SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1)
-   inc       ax 
+   inc       al
    setup_looping_bot_texture:
    mov       byte ptr cs:[SELFMODIFY_toggle_bot_colfunc_type+5], al
    mov       word ptr cs:[SELFMODIFY_toggle_bot_jump_lookup_offset+1], di
@@ -3853,7 +3853,7 @@ selfmodify_mid_only:
    xor       ax, ax
    mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
    sal       di, 1  ; word lookup
-   inc       ax
+   inc       al
    mov       word ptr cs:[SELFMODIFY_add_texturemidheight_plus_one+1- OFFSET R_BSP24_STARTMARKER_], ax
    push      word ptr es:[di]
    pop       word ptr cs:[SELFMODIFY_setmidtexturetranslation_lookup+1- OFFSET R_BSP24_STARTMARKER_]
@@ -11786,7 +11786,7 @@ mov      es, ax
 
 ; ah is definitely 0... optimizable?
 mov      ax, word ptr ss:[_centery]
-mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_1+1], ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_NORMAL+1], ax
 mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_NOLOOP+1], ax
 mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_NOLOOPANDSTRETCH+1], ax
  
