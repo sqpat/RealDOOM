@@ -598,7 +598,8 @@ drawmaskedfuncarea_sprite?  86FD:0000
  maskedpostdataofs                89DA:0000
  maskedpixeldataofs               8AB2:0000
  maskedconstants_funcarea_segment 8B8A:0000
- render_8800_end_segment          8B99:0000 
+ render_8800_end_segment          8BB2:0000 
+ clipbot_start_segment            8BB0:0000
 
 // not much free because clipbot_start_segment has stufff after a gap
  */
@@ -1103,7 +1104,9 @@ patchoffset                 83BD:01DC
 //              bsp     plane     sprite
 // 9800-9FFF      COLORMAPS       sprcache
 // 9000-97FF    DATA1    DATA1    sprcache
-// 8000-8FFF    VISPLANES_DATA    COLORMAPS_DATA
+// 8C00-8FFF    VISPLANES_DATA    COLORMAPS HALF
+// 8400-8BFF    VISPLANES_DATA    MASKEDDATA
+// 8000-83FF  SPRITES PLANECACHE  SPRITES
 // 7800-7FFF    DATA2 flatcache   DATA2
 // 7000-77FF    DATA3 flatcache   DATA1   
 // 6000-6FFF  TEXTURE   -----     TEXTURE

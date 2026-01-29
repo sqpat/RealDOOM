@@ -43,10 +43,14 @@ COLORMAPS_MASKEDMAPPING_SEG_OFFSET_IN_CS = 16 * (COLORMAPS_6_MASKEDMAPPING_SEG_D
 
 
 
-PROC  R_MASK24_STARTMARKER_
-PUBLIC  R_MASK24_STARTMARKER_
+PROC   R_MASK24_STARTMARKER_
+PUBLIC R_MASK24_STARTMARKER_
 
 ENDP
+
+; NEEDS TO BE 0000h
+_COLFUNC_NOLOOP_CALLTABLE:
+
 
 CALL_OFFSET  = DRAWCOL_NOLOOP_OFFSET_MASKED
 CALL_SEGMENT = COLORMAPS_SEGMENT_MASKEDMAPPING
@@ -59,16 +63,100 @@ REPT COLORMAPS_COUNT
 ENDM
 
 
-; 054h
-_fuzzpos:
-dw  (OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)
-; 056h
 
 _pagesegments:
+PUBLIC _pagesegments
 
 dw 00000h, 00400h, 00800h, 00C00h
 dw 01000h, 01400h, 01800h, 01C00h
-; 066h
+
+
+; PADDING ; need the next table to start at 0100h.
+; BUT WE ARE REALLY TIGHT ON SPACE. so shove a function in here.
+
+IF COMPISA GE COMPILE_386
+
+PROC FixedMulMaskedLocal_ NEAR
+; thanks zero318 from discord for improved algorithm  
+
+; DX:AX  *  CX:BX
+;  0  1      2  3
+
+  shl  ecx, 16
+  mov  cx, bx
+  xchg ax, dx
+  shl  eax, 16
+  xchg ax, dx
+  imul  ecx
+  shr  eax, 16
+  ret
+
+
+
+ENDP
+ELSE
+
+
+PROC FixedMulMaskedLocal_ NEAR
+PUBLIC FixedMulMaskedLocal_
+; DX:AX  *  CX:BX
+;  0  1      2  3
+
+; thanks zero318 from discord for improved algorithm  
+
+MOV  ES, SI
+MOV  SI, DX
+PUSH AX
+MUL  BX
+MOV  word ptr cs:[_selfmodify_restore_dx+1], DX
+MOV  AX, SI
+MUL  CX
+XCHG AX, SI
+CWD
+AND  DX, BX
+SUB  SI, DX
+MUL  BX
+_selfmodify_restore_dx:
+ADD  AX, 01000h
+ADC  SI, DX
+XCHG AX, CX
+CWD
+POP  BX
+AND  DX, BX
+SUB  SI, DX
+MUL  BX
+ADD  AX, CX
+ADC  DX, SI
+MOV  SI, ES
+RET
+
+ENDP
+ENDIF
+
+
+ALIGN 256
+
+
+; NEEDS TO BE 0100h
+_COLFUNC_NOLOOPSTRETCH_CALLTABLE:
+PUBLIC _COLFUNC_NOLOOPSTRETCH_CALLTABLE
+CALL_OFFSET  = DRAWCOL_NOLOOPSTRETCH_OFFSET_MASKED
+CALL_SEGMENT = COLORMAPS_SEGMENT_MASKEDMAPPING
+COLORMAPS_COUNT = 21h
+
+REPT COLORMAPS_COUNT
+    dw CALL_OFFSET, CALL_SEGMENT
+    CALL_OFFSET = CALL_OFFSET - 0100h
+    CALL_SEGMENT = CALL_SEGMENT + 010h
+ENDM
+
+
+; 084h
+_fuzzpos:
+
+dw  (OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)
+; 086h
+
 
 
 SIZE_FUZZTABLE = 50
@@ -85,11 +173,15 @@ dw  00050h, 0FFB0h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB
 dw  00050h, 00050h, 00050h, 0FFB0h, 00050h
 
 
+
 ;
 ; R_DrawFuzzColumn
 ;
+
+; 118h
 	
 PROC  R_DrawFuzzColumn_  NEAR
+PUBLIC  R_DrawFuzzColumn_  
 
 ; todo:
 ; could write sp somehwere and use it as 64h for si comps. 
@@ -264,8 +356,11 @@ sub   si, bx                                 ;
 
 sal   si, 1                                  ; double diff (dc_yh - dc_yl) to get a word offset
 xchg  ax, di
+; both variants use 10 byte loops. same jump table
 mov   ax, word ptr es:[si + DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET]                   ; get the jump value
-mov   word ptr es:[SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
+
+SELFMODIFY_masked_set_jump_lookup_offset:
+mov   word ptr es:[01000h], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
 ; or can we do this in an outer func without this instrction?
@@ -310,7 +405,7 @@ ENDP
 ;
 	
 PROC  R_DrawSingleMaskedColumn_ NEAR 
-
+PUBLIC R_DrawSingleMaskedColumn_
 push  cx
 push  si
 push  di
@@ -324,9 +419,9 @@ push  bp
 
 mov   word ptr ds:[_dc_source_segment], ax	; set this early. 
 
-; slow and ugly - infer it anohter way later if possible.
-mov   al, byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_MASK24_STARTMARKER_]
-mov   byte ptr cs:[SELFMODIFY_MASKED_set_colormap_index_jump - OFFSET R_MASK24_STARTMARKER_], al
+; slow and ugly - infer it another way later if possible.
+mov   ax, word ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_MASK24_STARTMARKER_]
+mov   word ptr cs:[SELFMODIFY_MASKED_set_colormap_index_jump - OFFSET R_MASK24_STARTMARKER_], ax
 
 
 mov   cl, dl
@@ -468,7 +563,9 @@ sub   si, bx                                 ;
 sal   si, 1                                 ; double diff (dc_yh - dc_yl) to get a word offset
 xchg  ax, di
 mov   ax, word ptr es:[si + DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET]                   ; get the jump value
-mov   word ptr es:[SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
+
+mov   si, word ptr cs:[SELFMODIFY_masked_set_jump_lookup_offset+2]        ; hold onto offset for jump lookup
+mov   word ptr es:[si], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
 ; or can we do this in an outer func without this instrction?
@@ -481,6 +578,9 @@ xchg  ax, bx    ; dc_yl in ax
 
 ; CL:SI = dc_texturemid
 ; CH:BX = dc_iscale
+
+; leach these vars...
+; todo: does this need support for the looping variant?
 
 mov   cl, byte ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1+1 - OFFSET R_MASK24_STARTMARKER_]
 mov   bx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_]
@@ -717,7 +817,7 @@ endp
 ; todo may not have to push/pop most of these vars.
 
 PROC  R_DrawVisSprite_ NEAR
-
+PUBLIC R_DrawVisSprite_
 ; si is vissprite_t near pointer
 
 ; bp - 2  	 frac.h.fracbits
@@ -767,6 +867,29 @@ xiscale_shift_done:
 
 mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], dl
+test  dl, dl
+
+mov   al, 0
+mov   di, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1
+jne   not_stretch_draw
+
+; TODO: re-enable these once there is room in memory
+; TODO: re-enable these once there is room in memory
+; TODO: re-enable these once there is room in memory
+
+inc   ax
+mov   di, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOPANDSTRETCH_OFFSET+1
+
+; TODO: re-enable these once there is room in memory
+; TODO: re-enable these once there is room in memory
+; TODO: re-enable these once there is room in memory
+
+
+not_stretch_draw:
+
+mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump+1 - OFFSET R_MASK24_STARTMARKER_], al
+mov   word ptr cs:[SELFMODIFY_masked_set_jump_lookup_offset+2 - OFFSET R_MASK24_STARTMARKER_], di
+
 
 
 
@@ -4656,8 +4779,8 @@ ENDP
 ; R_DrawMaskedColumn
 ;
 	
-PROC  R_DrawMaskedColumn_ NEAR
-
+PROC   R_DrawMaskedColumn_ NEAR
+PUBLIC R_DrawMaskedColumn_
 ;  bp - 02 cx/maskedcolumn segment
 ;  bp - 04  ax/pixelsegment cache
 ;  bp - 06  cached dc_texturemid intbits to restore before function
@@ -5544,65 +5667,6 @@ ENDP
 
 
 
-
-IF COMPISA GE COMPILE_386
-
-PROC FixedMulMaskedLocal_ NEAR
-; thanks zero318 from discord for improved algorithm  
-
-; DX:AX  *  CX:BX
-;  0  1      2  3
-
-  shl  ecx, 16
-  mov  cx, bx
-  xchg ax, dx
-  shl  eax, 16
-  xchg ax, dx
-  imul  ecx
-  shr  eax, 16
-  ret
-
-
-
-ENDP
-ELSE
-
-
-PROC FixedMulMaskedLocal_ NEAR
-
-; DX:AX  *  CX:BX
-;  0  1      2  3
-
-; thanks zero318 from discord for improved algorithm  
-
-MOV  ES, SI
-MOV  SI, DX
-PUSH AX
-MUL  BX
-MOV  word ptr cs:[_selfmodify_restore_dx+1], DX
-MOV  AX, SI
-MUL  CX
-XCHG AX, SI
-CWD
-AND  DX, BX
-SUB  SI, DX
-MUL  BX
-_selfmodify_restore_dx:
-ADD  AX, 01000h
-ADC  SI, DX
-XCHG AX, CX
-CWD
-POP  BX
-AND  DX, BX
-SUB  SI, DX
-MUL  BX
-ADD  AX, CX
-ADC  DX, SI
-MOV  SI, ES
-RET
-
-ENDP
-ENDIF
 
 
 

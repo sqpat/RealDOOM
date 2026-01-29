@@ -76,21 +76,93 @@ dw 01000h, 01400h, 01800h, 01C00h
 
 ; 0AAh
 
-; UNUSED PADDING
-; UNUSED PADDING
-; UNUSED PADDING
+; shoving some small functions in here since w ehave to pad to 0100h for the next jump table
+
+;R_PointToAngle16_
 
 
-dw 0, 0, 0
-dw 0, 0, 0, 0, 0, 0, 0, 0
-dw 0, 0, 0, 0, 0, 0, 0, 0
-dw 0, 0, 0, 0, 0, 0, 0, 0
-dw 0, 0, 0, 0, 0, 0, 0, 0
-dw 0, 0, 0, 0, 0, 0, 0, 0
 
-; UNUSED PADDING
-; UNUSED PADDING
-; UNUSED PADDING
+
+
+PROC R_ClearClipSegs_ NEAR
+; todo lea
+
+mov  word ptr ds:[_solidsegs+0], 08001h
+mov  word ptr ds:[_solidsegs+2], 0FFFFh
+; todo push pop
+mov  ax, word ptr ds:[_viewwidth]
+mov  word ptr ds:[_solidsegs+4], ax
+mov  word ptr ds:[_solidsegs+6], 07FFFh
+mov  word ptr ds:[_newend], OFFSET _solidsegs + 2 * (SIZE CLIPRANGE_T)
+ret  
+
+
+
+ENDP
+
+
+IF COMPISA GE COMPILE_386
+
+PROC FixedMulBSPLocal_ NEAR
+; thanks zero318 from discord for improved algorithm  
+
+; DX:AX  *  CX:BX
+;  0  1      2  3
+
+  shl  ecx, 16
+  mov  cx, bx
+  xchg ax, dx
+  shl  eax, 16
+  xchg ax, dx
+  imul  ecx
+  shr  eax, 16
+  ret
+
+
+
+ENDP
+ELSE
+
+
+PROC FixedMulBSPLocal_ NEAR
+
+; DX:AX  *  CX:BX
+;  0  1      2  3
+
+; thanks zero318 from discord for improved algorithm  
+
+MOV  ES, SI
+MOV  SI, DX
+PUSH AX
+MUL  BX
+MOV  word ptr cs:[_selfmodify_restore_dx+1], DX
+MOV  AX, SI
+MUL  CX
+XCHG AX, SI
+CWD
+AND  DX, BX
+SUB  SI, DX
+MUL  BX
+_selfmodify_restore_dx:
+ADD  AX, 01000h
+ADC  SI, DX
+XCHG AX, CX
+CWD
+POP  BX
+AND  DX, BX
+SUB  SI, DX
+MUL  BX
+ADD  AX, CX
+ADC  DX, SI
+MOV  SI, ES
+
+ret
+
+ENDP
+ENDIF
+
+
+ALIGN 256
 
 ; SECOND JUMP TABLE ALIGNED AT CS:0100 FOR NON-LOOPING DRAWCOL
 
@@ -379,6 +451,28 @@ neg   ax
 sbb   dx, 0
 
 ret  
+
+; params cx, dx. ax/bx get zeroed/clobbered.
+PROC R_PointToAngle16_ NEAR
+
+
+xor  ax, ax
+mov  bx, ax
+SELFMODIFY_BSP_viewx_lo_5:
+sub  ax, 01000h
+SELFMODIFY_BSP_viewx_hi_5:
+sbb  dx, 01000h
+SELFMODIFY_BSP_viewy_lo_5:
+sub  bx, 01000h
+SELFMODIFY_BSP_viewy_hi_5:
+sbb  cx, 01000h
+
+; FALL THROUGH
+;call R_PointToAngle_
+;ret  
+
+ENDP
+
 
 ;R_PointToAngle_
 
@@ -1687,66 +1781,6 @@ ENDP
 
 
 
-IF COMPISA GE COMPILE_386
-
-PROC FixedMulBSPLocal_ NEAR
-; thanks zero318 from discord for improved algorithm  
-
-; DX:AX  *  CX:BX
-;  0  1      2  3
-
-  shl  ecx, 16
-  mov  cx, bx
-  xchg ax, dx
-  shl  eax, 16
-  xchg ax, dx
-  imul  ecx
-  shr  eax, 16
-  ret
-
-
-
-ENDP
-ELSE
-
-
-PROC FixedMulBSPLocal_ NEAR
-
-; DX:AX  *  CX:BX
-;  0  1      2  3
-
-; thanks zero318 from discord for improved algorithm  
-
-MOV  ES, SI
-MOV  SI, DX
-PUSH AX
-MUL  BX
-MOV  word ptr cs:[_selfmodify_restore_dx+1], DX
-MOV  AX, SI
-MUL  CX
-XCHG AX, SI
-CWD
-AND  DX, BX
-SUB  SI, DX
-MUL  BX
-_selfmodify_restore_dx:
-ADD  AX, 01000h
-ADC  SI, DX
-XCHG AX, CX
-CWD
-POP  BX
-AND  DX, BX
-SUB  SI, DX
-MUL  BX
-ADD  AX, CX
-ADC  DX, SI
-MOV  SI, ES
-
-ret
-
-ENDP
-ENDIF
-
 do_simple_div:
 ; high word is DX:AX / BX
 ; low word: divide remainder << 16 / BX
@@ -2174,22 +2208,6 @@ ENDIF
 
 
 
-
-PROC R_ClearClipSegs_ NEAR
-; todo lea
-
-mov  word ptr ds:[_solidsegs+0], 08001h
-mov  word ptr ds:[_solidsegs+2], 0FFFFh
-; todo push pop
-mov  ax, word ptr ds:[_viewwidth]
-mov  word ptr ds:[_solidsegs+4], ax
-mov  word ptr ds:[_solidsegs+6], 07FFFh
-mov  word ptr ds:[_newend], OFFSET _solidsegs + 2 * (SIZE CLIPRANGE_T)
-ret  
-
-
-
-ENDP
 
 COSINE_OFFSET_IN_SINE = ((FINECOSINE_SEGMENT - FINESINE_SEGMENT) SHL 4)
 
@@ -8696,31 +8714,7 @@ jmp   first_iter
 
 ENDP
 
-;R_PointToAngle16_
 
-
-; params cx, dx. ax/bx get zeroed/clobbered.
-PROC R_PointToAngle16_ NEAR
-
-
-xor  ax, ax
-mov  bx, ax
-SELFMODIFY_BSP_viewx_lo_5:
-sub  ax, 01000h
-SELFMODIFY_BSP_viewx_hi_5:
-sbb  dx, 01000h
-SELFMODIFY_BSP_viewy_lo_5:
-sub  bx, 01000h
-SELFMODIFY_BSP_viewy_hi_5:
-sbb  cx, 01000h
-
-
-call R_PointToAngle_
-
-
-ret  
-
-ENDP
 
 
 ;R_CheckBBox_
@@ -11793,7 +11787,8 @@ mov      es, ax
 ; ah is definitely 0... optimizable?
 mov      ax, word ptr ss:[_centery]
 mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_1+1], ax
-mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_2+1], ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_NOLOOP+1], ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_NOLOOPANDSTRETCH+1], ax
  
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -12073,6 +12068,7 @@ mov      es, ax
 mov      ax, word ptr ds:[_destview+2]
 mov      word ptr es:[SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENT24_OFFSET+1], ax
 mov      word ptr es:[SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENT24_NOLOOP_OFFSET+1], ax
+mov      word ptr es:[SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENT24_NOLOOPANDSTRETCH_OFFSET+1], ax
 
 
 
