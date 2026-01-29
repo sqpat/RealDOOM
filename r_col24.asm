@@ -151,7 +151,7 @@ DRAW_SINGLE_PIXEL_NOLOOP MACRO
 	stos   BYTE PTR es:[di]        ;
 	add    cx, dx                  ; add 16 low bits of precision
     adc    si, bp                  ; carry result into this add
-	add    di, sp                  ; bp has 79 (0x4F) and stos added one
+	add    di, sp                  ; sp has 79 (0x4F) and stos added one
     
 ENDM
 
@@ -276,6 +276,12 @@ ENDP
 
 ALIGN 16
 
+MARKER_COLFUNC_NORMAL_FUNCTION_AREA_OFFSET_:
+PUBLIC MARKER_COLFUNC_NORMAL_FUNCTION_AREA_OFFSET_
+
+PROC    R_DrawColumn24Normal_ FAR
+PUBLIC  R_DrawColumn24Normal_
+
 ; 7Fh in BL to AND to SI, high byte helps point to the colormap for xlat
 ; 417Fh
 COLORMAPS_F_OFFSET = 07Fh + (((COLORMAPS_F_DUPE_SEGMENT) - COLORMAPS_SEGMENT) SHL 4)
@@ -339,13 +345,13 @@ DRAW_SINGLE_PIXEL MACRO
    ; todo retry on real 286
 
 
-	and    si, bx                  ; bl is 7F
+	and    si, bx                  ; bx is 7F
 	lods   BYTE PTR ds:[si]        ;
 	xlat   BYTE PTR cs:[bx]        ; cs:[bx + 7F] is colormaps
 	stos   BYTE PTR es:[di]        ;
 	add    cx, dx                  ; add 16 low bits of precision
     adc    si, bp                  ; carry result into this add
-	add    di, sp                  ; bp has 79 (0x4F) and stos added one
+	add    di, sp                  ; sp has 79 (0x4F) and stos added one
 ENDM
 
 REPT 199
@@ -377,6 +383,106 @@ loop_done:
 ENDP
 
 
+ALIGN 16
+
+MARKER_COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET_:
+PUBLIC MARKER_COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET_
+
+PROC    R_DrawColumn24NormalStretch_ FAR
+PUBLIC  R_DrawColumn24NormalStretch_
+
+
+MARKER_SM_COLFUNC_subtract_centery24_normalstretch_:
+PUBLIC MARKER_SM_COLFUNC_subtract_centery24_normalstretch_
+    sub   ax, 01000h
+
+; credit to zero318 for various ideas for the function
+   MOV  DX, AX  ; copy center24y
+   MUL  CH
+   ADD  CL, AL
+   MOV  AX, DX ; restore center_y
+   AND  DH, BL
+   SUB  CL, DH  ; apply neg sign
+   MUL  BX
+   ADD  SI, AX
+   ADC  CL, DL
+   
+   MOV  DX, BX
+   xor  BX, bx   ; for XLAT
+
+; todo clean this up...
+
+   xor  ch, ch   ; ch gets 0
+   
+   xchg si, cx   ; si gets hi texel, cx gets low texel 
+
+
+   ;  prep our loop variables
+
+MARKER_SM_COLFUNC_set_destview_segment24_normalstretch_:
+PUBLIC MARKER_SM_COLFUNC_set_destview_segment24_normalstretch_
+   mov     ax, 01000h   
+   mov     es, ax; ready the viewscreen segment
+   mov     bp, 07Fh
+
+   cli 
+   lds     ax, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and ax to 004Fh (hardcoded) to mvoe into sp
+   mov     ss, sp
+   xchg    ax, sp
+
+
+MARKER_SM_COLFUNC_jump_offset24_normalstretch_:
+PUBLIC MARKER_SM_COLFUNC_jump_offset24_normalstretch_
+
+   jmp loop_done_normalstretch         ; relative jump to be modified before function is called
+
+
+   ;; 12 bytes loop iter
+
+; 0xC size
+DRAW_SINGLE_PIXEL MACRO 
+   ; tried to reorder adds in between xlats and stos, but it didn't make anything faster.
+   ; todo retry on real 286
+
+
+	and    si, bp                  ; bp is 7F
+	lods   BYTE PTR ds:[si]        ;
+	xlat   BYTE PTR cs:[bx]        ; cs:[bx] is colormaps
+	stos   BYTE PTR es:[di]        ;
+	add    di, sp                  ; sp has 79 (0x4F) and stos added one
+	add    cx, dx                  ; add 16 low bits of precision
+    db     073h, 005h              ; jnc past and lods xlat into next stos
+
+ENDM
+
+REPT 199
+    DRAW_SINGLE_PIXEL
+ENDM
+
+; draw last pixel, cut off the add
+
+	and    si, bp                  ; bp is 7F
+	lods   BYTE PTR ds:[si]        ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+
+loop_done_normalstretch:
+; clean up
+
+; restore ds without going to memory.
+
+    mov  sp, ss
+    mov  ax, FIXED_DS_SEGMENT
+    mov  ds, ax
+    mov  ss, ax
+
+    sti
+
+    retf
+
+
+
+ENDP
 
 
 ; end marker for this asm file
