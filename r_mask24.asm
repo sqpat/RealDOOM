@@ -48,19 +48,7 @@ PUBLIC R_MASK24_STARTMARKER_
 
 ENDP
 
-; NEEDS TO BE 0000h
-_COLFUNC_NOLOOP_CALLTABLE:
 
-
-CALL_OFFSET  = DRAWCOL_NOLOOP_OFFSET_MASKED
-CALL_SEGMENT = COLORMAPS_SEGMENT_MASKEDMAPPING
-COLORMAPS_COUNT = 21h
-
-REPT COLORMAPS_COUNT
-    dw CALL_OFFSET, CALL_SEGMENT
-    CALL_OFFSET = CALL_OFFSET - 0100h
-    CALL_SEGMENT = CALL_SEGMENT + 010h
-ENDM
 
 
 
@@ -71,8 +59,30 @@ dw 00000h, 00400h, 00800h, 00C00h
 dw 01000h, 01400h, 01800h, 01C00h
 
 
-; PADDING ; need the next table to start at 0100h.
-; BUT WE ARE REALLY TIGHT ON SPACE. so shove a function in here.
+
+
+
+
+
+_fuzzpos:
+
+dw  (OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)
+
+
+
+SIZE_FUZZTABLE = 50
+
+; extended length of a max run...
+_fuzzoffset:
+PUBLIC _fuzzoffset
+dw  00050h, 0FFB0h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h 
+dw  00050h, 00050h, 00050h, 0FFB0h, 00050h, 00050h, 00050h, 0FFB0h, 0FFB0h, 0FFB0h
+dw  0FFB0h, 00050h, 0FFB0h, 0FFB0h, 00050h, 00050h, 00050h, 00050h, 0FFB0h, 00050h
+dw  0FFB0h, 00050h, 00050h, 0FFB0h, 0FFB0h, 00050h, 00050h, 0FFB0h, 0FFB0h, 0FFB0h
+dw  0FFB0h, 00050h, 00050h, 00050h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h, 00050h
+dw  00050h, 0FFB0h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h
+dw  00050h, 00050h, 00050h, 0FFB0h, 00050h
+
 
 IF COMPISA GE COMPILE_386
 
@@ -134,51 +144,11 @@ ENDP
 ENDIF
 
 
-ALIGN 256
-
-
-; NEEDS TO BE 0100h
-_COLFUNC_NOLOOPSTRETCH_CALLTABLE:
-PUBLIC _COLFUNC_NOLOOPSTRETCH_CALLTABLE
-CALL_OFFSET  = DRAWCOL_NOLOOPSTRETCH_OFFSET_MASKED
-CALL_SEGMENT = COLORMAPS_SEGMENT_MASKEDMAPPING
-COLORMAPS_COUNT = 21h
-
-REPT COLORMAPS_COUNT
-    dw CALL_OFFSET, CALL_SEGMENT
-    CALL_OFFSET = CALL_OFFSET - 0100h
-    CALL_SEGMENT = CALL_SEGMENT + 010h
-ENDM
-
-
-; 084h
-_fuzzpos:
-
-dw  (OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)
-; 086h
-
-
-
-SIZE_FUZZTABLE = 50
-
-; extended length of a max run...
-_fuzzoffset:
-PUBLIC _fuzzoffset
-dw  00050h, 0FFB0h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h 
-dw  00050h, 00050h, 00050h, 0FFB0h, 00050h, 00050h, 00050h, 0FFB0h, 0FFB0h, 0FFB0h
-dw  0FFB0h, 00050h, 0FFB0h, 0FFB0h, 00050h, 00050h, 00050h, 00050h, 0FFB0h, 00050h
-dw  0FFB0h, 00050h, 00050h, 0FFB0h, 0FFB0h, 00050h, 00050h, 0FFB0h, 0FFB0h, 0FFB0h
-dw  0FFB0h, 00050h, 00050h, 00050h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h, 00050h
-dw  00050h, 0FFB0h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h
-dw  00050h, 00050h, 00050h, 0FFB0h, 00050h
-
-
-
 ;
 ; R_DrawFuzzColumn
 ;
 
-; 118h
+
 	
 PROC  R_DrawFuzzColumn_  NEAR
 PUBLIC  R_DrawFuzzColumn_  
@@ -316,7 +286,7 @@ COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - C
 ;
 
 ; this version called for almost all masked calls	
-PROC  R_DrawColumnPrepMaskedMulti_ NEAR
+PROC    R_DrawColumnPrepMaskedMulti_ NEAR
 PUBLIC  R_DrawColumnPrepMaskedMulti_
 
 ; argument AX is diff for various segment lookups
@@ -328,39 +298,36 @@ push  di
 push  bp
 
 ; dl:?? currently has dc_texturemid
-
-mov   ax, (COLFUNC_FILE_START_SEGMENT - COLORMAPS_MASKEDMAPPING_SEG_DIFF); shut up assembler warning, this is fine
-mov   es, ax                                 ; store this segment for now, with offset pre-added
-
-; todo optimize this read
+mov   si, word ptr ds:[_dc_yl]
+mov   di, word ptr ds:[_dc_yh]                  ; grab dc_yh
 mov   ax, word ptr ds:[_dc_x]
+
+mov   bx, (COLFUNC_FILE_START_SEGMENT - COLORMAPS_MASKEDMAPPING_SEG_DIFF)
+mov   ds, bx                                 ; store this segment for now, with offset pre-added
+
 
 ; shift ax by (2 - detailshift.)
 SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift:
 sar   ax, 1
 sar   ax, 1
 
-; dest = destview + dc_yl*80 + (dc_x>>2); 
-; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
 
-; todo optimize this read
-mov   bx, word ptr ds:[_dc_yl]
-mov   si, bx
-add   ax, word ptr es:[bx+si]                  ; set up destview 
+sub   di, si                                 ;
+sal   di, 1                                  ; double diff (dc_yh - dc_yl) to get a word offset
+mov   di, word ptr ds:[di+DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET]   ; get the jump value. both tables in masked are 10 byte jump tables
+
+mov   bp, si
+add   ax, word ptr ds:[si+bp]                   ; add * 80 lookup table value 
+
 SELFMODIFY_MASKED_destview_lo_3:
 add   ax, 01000h
 
-; todo optimize this read
-mov   si, word ptr ds:[_dc_yh]                  ; grab dc_yh
-sub   si, bx                                 ;
-
-sal   si, 1                                  ; double diff (dc_yh - dc_yl) to get a word offset
 xchg  ax, di
-; both variants use 10 byte loops. same jump table
-mov   ax, word ptr es:[si + DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET]                   ; get the jump value
 
-SELFMODIFY_masked_set_jump_lookup_offset:
-mov   word ptr es:[01000h], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
+
+SELFMODIFY_masked_set_jump_write_offset:
+mov   word ptr ds:[01000h], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
+
 
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
 ; or can we do this in an outer func without this instrction?
@@ -368,7 +335,7 @@ mov   word ptr es:[01000h], ax  ; overwrite the jump relative call for however m
 
 ; if we make a separate drawcol masked we can use a constant here.
 
-xchg  ax, bx    ; dc_yl in ax
+xchg  ax, si    ; dc_yl in ax
 
 
 
@@ -383,13 +350,16 @@ mov   ch, 010h ; dc_iscale +1
 SELFMODIFY_MASKED_dc_texturemid_lo_1:
 mov   si, 01000h        ; todo can this just go to si in the call?
 
+SELFMODIFY_MASKED_set_xlat_offset:
+mov   bp, 01000h          ; dc_iscale +2
 
-db 02Eh  ; cs segment override
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-SELFMODIFY_MASKED_multi_set_colormap_index_jump:
-dw 0000h
-; addr 0000 + first byte (4x colormap.)
+; pass in xlat offset for bx via bp
+
+db 09Ah
+SELFMODIFY_MASKED_COLFUNC_set_func_offset:
+dw DRAWCOL_NOLOOP_OFFSET_MASKED, COLORMAPS_SEGMENT_MASKEDMAPPING
+
+
 
 pop   bp
 pop   di 
@@ -420,8 +390,12 @@ push  bp
 mov   word ptr ds:[_dc_source_segment], ax	; set this early. 
 
 ; slow and ugly - infer it another way later if possible.
-mov   ax, word ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_MASK24_STARTMARKER_]
-mov   word ptr cs:[SELFMODIFY_MASKED_set_colormap_index_jump - OFFSET R_MASK24_STARTMARKER_], ax
+; todo can this go up a layer
+mov   ax, word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset]
+mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset_dupe], ax
+mov   ax, word ptr cs:[SELFMODIFY_masked_set_jump_write_offset+1]
+mov   word ptr cs:[SELFMODIFY_masked_set_jump_write_offset_dupe+1], ax
+
 
 
 mov   cl, dl
@@ -532,9 +506,13 @@ jg    exit_function_single
 
 ; inlined R_DrawColumnPrepMaskedSingle_
 
+; consider getting rid of this... 
+
+
+
 
 mov   ax, (COLFUNC_FILE_START_SEGMENT - COLORMAPS_MASKEDMAPPING_SEG_DIFF); shut up assembler warning, this is fine
-mov   es, ax                                 ; store this segment for now, with offset pre-added
+mov   ds, ax                                 ; store this segment for now, with offset pre-added
 
 ;dx is dc_yh
 ;si is dc_yl
@@ -552,54 +530,38 @@ sar   ax, 1
 ; dest = destview + dc_yl*80 + (dc_x>>2); 
 ; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
 
-mov   bx, si
-add   ax, word ptr es:[bx+si]                  ; add dc_yl * 80
+mov   bp, si  ; word lookup
+add   ax, word ptr ds:[bp+si]                  ; add dc_yl * 80
 SELFMODIFY_MASKED_destview_lo_2:               ; add destview
 add   ax, 01000h
 
-mov   si, dx                                 ; grab dc_yh
-sub   si, bx                                 ;
+mov   di, dx                                 ; grab dc_yh
+sub   di, bp                                 ;
 
-sal   si, 1                                 ; double diff (dc_yh - dc_yl) to get a word offset
+sal   di, 1                                 ; double diff (dc_yh - dc_yl) to get a word offset
+
+mov   di, word ptr ds:[di + DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET]                   ; get the jump value
 xchg  ax, di
-mov   ax, word ptr es:[si + DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET]                   ; get the jump value
+SELFMODIFY_masked_set_jump_write_offset_dupe:
+mov   word ptr ds:[01000h], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 
-mov   si, word ptr cs:[SELFMODIFY_masked_set_jump_lookup_offset+2]        ; hold onto offset for jump lookup
-mov   word ptr es:[si], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
-
-; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
-; or can we do this in an outer func without this instrction?
- 
-
-; if we make a separate drawcol masked we can use a constant here.
-
-xchg  ax, bx    ; dc_yl in ax
-; gross lol. but again - rare function. in exchange the common function is faster.
+xchg  ax, si    ; dc_yl in ax
 
 ; CL:SI = dc_texturemid
 ; CH:BX = dc_iscale
 
-; leach these vars...
-; todo: does this need support for the looping variant?
-
+; gross lol. but again - rare function. in exchange the common function is faster.
 mov   cl, byte ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1+1 - OFFSET R_MASK24_STARTMARKER_]
 mov   bx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_]
 mov   ch, byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_]
-
-
 mov   si, word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1+1 - OFFSET R_MASK24_STARTMARKER_]
+mov   bp, word ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+1 - OFFSET R_MASK24_STARTMARKER_]
 
+; pass in xlat offset for bx via bp
 
-
-; dynamic call lookuptable based on used colormaps address being CS:00
-
-db 02Eh  ; cs segment override
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-SELFMODIFY_MASKED_set_colormap_index_jump:
-dw 0000h
-; addr 0000 + first byte (4x colormap.)
-
+db 09Ah
+SELFMODIFY_MASKED_COLFUNC_set_func_offset_dupe:
+dw DRAWCOL_NOLOOP_OFFSET_MASKED, COLORMAPS_SEGMENT_MASKEDMAPPING
 
 
 
@@ -834,7 +796,7 @@ mov   al, byte ptr ds:[si + VISSPRITE_T.vs_colormap]
 
 ; al is colormap. 
 
-mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_MASK24_STARTMARKER_], al
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMARKER_], al
 
 ; todo move this out to a higher level! possibly when executesetviewsize happens.
 
@@ -869,23 +831,23 @@ mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTM
 mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], dl
 test  dl, dl
 
-mov   al, 0
-mov   di, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1
+mov   ax, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1
+mov   dx, DRAWCOL_NOLOOP_OFFSET_MASKED
 jne   not_stretch_draw
 
-inc   ax
-mov   di, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOPANDSTRETCH_OFFSET+1
+mov   ax, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOPANDSTRETCH_OFFSET+1
+mov   dx, DRAWCOL_NOLOOPSTRETCH_OFFSET_MASKED
 
 not_stretch_draw:
 
-mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump+1 - OFFSET R_MASK24_STARTMARKER_], al
-mov   word ptr cs:[SELFMODIFY_masked_set_jump_lookup_offset+2 - OFFSET R_MASK24_STARTMARKER_], di
+mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset], dx
+mov   word ptr cs:[SELFMODIFY_masked_set_jump_write_offset+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 
 
 
 
-lea   di, ds:[_sprtopscreen]
+mov   di, OFFSET _sprtopscreen
 mov   word ptr ds:[di], 0		; di is _sprtopscreen
 SELFMODIFY_MASKED_centery_1:
 mov   word ptr ds:[di + 2], 01000h
@@ -1473,12 +1435,7 @@ sector_height_chosen:
 
 ; set fixed union from shortheight, i.e. shift 13 left
 xor   dx, dx
-sar   ax, 1
-rcr   dx, 1
-sar   ax, 1
-rcr   dx, 1
-sar   ax, 1
-rcr   dx, 1
+SHIFT32_MACRO_RIGHT ax dx 3
 
 ; ax:dx is textureheight (NOT DX:AX!!)
 ;    dc_texturemid.h.intbits += adder;		
@@ -1546,7 +1503,7 @@ jmp   lights_set
 SELFMODIFY_MASKED_fixedcolormap_2_TARGET:
 fixed_colormap:
 SELFMODIFY_MASKED_fixedcolormap_3:
-mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_MASK24_STARTMARKER_], 0
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMARKER_], 0
 jmp   colormap_set
 
 
@@ -1938,7 +1895,7 @@ xor   ah, ah
 mov   bx, ax
 SELFMODIFY_MASKED_set_walllights:
 mov   al, byte ptr ds:[bx + 01000h]
-mov   byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_MASK24_STARTMARKER_], al
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMARKER_], al
 
 SELFMODIFY_MASKED_fixedcolormap_1_TARGET:
 got_colormap:

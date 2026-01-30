@@ -106,20 +106,16 @@ PUBLIC MARKER_SM_COLFUNC_subtract_centery24_noloop_
    MUL  BX
    ADD  SI, AX
    ADC  CL, DL
-   xor  dx, dx   ; zero dx
-   xchg DX, BX   ; dx gets bx, bx gets  0 
 
-; todo clean this up...
+   xchg bp, bx   ; bp gets lowstep, bx gets xlat lookup
 
 
 
-   mov  ax, bx   ; ax gets 0
-   mov  al, ch
-   mov  bp, ax   ; bl gets texel step
-   mov  al, cl
-   xchg ax, si   ; si gets hi texel
-   xchg ax, cx   ; cx gets low texel (previously cx)
-   dec  bp       ; minus one to account for lodsb
+
+   xor  dx, dx   ; ax gets 0
+   xchg dl, ch   ; zero ch fo xchg into si. dx gets hi step
+   dec  dx       ; minus one to account for lodsb
+   xchg cx, si      
 
 
 MARKER_SM_COLFUNC_set_destview_segment24_noloop_:
@@ -149,8 +145,8 @@ DRAW_SINGLE_PIXEL_NOLOOP MACRO
     lods   BYTE PTR ds:[si]        
 	xlat   BYTE PTR cs:[bx]        ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]        ;
-	add    cx, dx                  ; add 16 low bits of precision
-    adc    si, bp                  ; carry result into this add
+	add    cx, bp                  ; add 16 low bits of precision
+    adc    si, dx                  ; carry result into this add
 	add    di, sp                  ; sp has 79 (0x4F) and stos added one
     
 ENDM
@@ -213,18 +209,17 @@ PUBLIC MARKER_SM_COLFUNC_subtract_centery24_noloopandstretch_
    MUL  BX
    ADD  SI, AX
    ADC  CL, DL
-   xor  dx, dx   ; zero dx
-   mov  ch, dh   ; ch gets 0
-   xchg dx, bx   ; dx gets bx, bx gets  0 
 
 
-   xchg si, cx   ; si gets hi texel, cx gets low texel 
+   xchg bx, bp   ; bx gets colormap offset, bp gets high step
 
 
 
    ;  prep our loop variables
    
-   lds     bp, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and bp to 004Fh (hardcoded)
+   lds  dx, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and bp to 004Fh (hardcoded)
+   mov  ch, dh   ; ch gets 0
+   xchg si, cx   ; si gets hi texel, cx gets low texel 
 
 
 MARKER_SM_COLFUNC_set_destview_segment24_noloopandstretch_:
@@ -243,8 +238,8 @@ DRAW_SINGLE_PIXEL_NOLOOPANDSTRETCH MACRO
     lods   BYTE PTR ds:[si]        
 	xlat   BYTE PTR cs:[bx]        ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]        ;
-	add    di, bp                  ; bp has 79 (0x4F) and stos added one
-	add    cx, dx                  ; add 16 low bits of precision
+	add    di, dx                  ; bp has 79 (0x4F) and stos added one
+	add    cx, bp                  ; add 16 low bits of precision
     db     073h, 003h              ; jnc past lods xlat into next stos
     
 ENDM
@@ -299,18 +294,16 @@ PUBLIC MARKER_SM_COLFUNC_subtract_centery24_normal_
    ADC  CL, DL
    
    MOV  DX, BX
-   mov  BX, COLORMAPS_F_OFFSET   ; for ANDing to SI and XLAT
+   LEA  BX, [bp + COLORMAPS_F_OFFSET]   ; for ANDing to SI and XLAT
 
 ; todo clean this up...
 
    xor  ax, ax   ; ah gets 0
-   mov  al, ch
+   xchg al, ch   ; al gets value for bp, ch gets 0
    mov  bp, ax   ; bp gets integer texel step
    dec  bp       ; minus 1 for lods 
 
-   mov  al, cl
-   xchg ax, si   ; si gets hi texel
-   xchg ax, cx   ; cx gets low texel (previously si)
+   xchg cx, si   ; si gets hi texel, cx gets low texel
 
 
    ;  prep our loop variables
@@ -404,9 +397,10 @@ PUBLIC MARKER_SM_COLFUNC_subtract_centery24_normalstretch_
    ADD  SI, AX
    ADC  CL, DL
    
-   MOV  DX, BX
-   xor  BX, bx   ; for XLAT
-   mov  ch, bh   ; ch gets 0
+   xchg bx, bp   ; bx gets xlat lookup, bp gets high adder
+
+   mov  dx, 07Fh
+    ; dont need to zero ch. first use of SI is ANDed anyway.
 
 ; todo clean this up...
    
@@ -419,7 +413,6 @@ MARKER_SM_COLFUNC_set_destview_segment24_normalstretch_:
 PUBLIC MARKER_SM_COLFUNC_set_destview_segment24_normalstretch_
    mov     ax, 01000h   
    mov     es, ax; ready the viewscreen segment
-   mov     bp, 07Fh
 
    cli 
    lds     ax, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and ax to 004Fh (hardcoded) to mvoe into sp
@@ -441,12 +434,12 @@ DRAW_SINGLE_PIXEL MACRO
    ; todo retry on real 286
 
 
-	and    si, bp                  ; bp is 7F
+	and    si, dx                  ; dx is 7F
 	lods   BYTE PTR ds:[si]        ;
 	xlat   BYTE PTR cs:[bx]        ; cs:[bx] is colormaps
 	stos   BYTE PTR es:[di]        ;
 	add    di, sp                  ; sp has 79 (0x4F) and stos added one
-	add    cx, dx                  ; add 16 low bits of precision
+	add    cx, bp                  ; add 16 low bits of precision
     db     073h, 005h              ; jnc past and lods xlat into next stos
 
 ENDM
@@ -457,7 +450,7 @@ ENDM
 
 ; draw last pixel, cut off the add
 
-	and    si, bp                  ; bp is 7F
+	and    si, dx                  ; bp is 7F
 	lods   BYTE PTR ds:[si]        ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;

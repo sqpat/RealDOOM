@@ -43,21 +43,27 @@ ANG180_HIGHBITS =    08000h
 ; _colfunc_lookup_segments
 
 
-; FIRST JUMP TABLE FOR NORMAL DRAWCOL
+_COLFUNC_SELFMODIFY_LOOKUPTABLE:
+; normal ; 12 bytes per
+dw COLFUNC_JUMP_LOOKUP_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET+1
+; noloop ; 10 bytes per
+dw DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1
+; normalstretch ; 12 bytes per
+dw COLFUNC_JUMP_LOOKUP_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NORMALSTRETCH_OFFSET+1
+; noloopstretch ; 10 bytes per
+dw DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOPANDSTRETCH_OFFSET+1
 
-_COLFUNC_NORMAL_CALLTABLE:
-PUBLIC _COLFUNC_NORMAL_CALLTABLE
-CALL_OFFSET  = DRAWCOL_OFFSET_BSP
-CALL_SEGMENT = COLORMAPS_SEGMENT
-COLORMAPS_COUNT = 21h
+_COLFUNC_SELFMODIFY_FUNCLOCATIONS:
+; normal
+dw DRAWCOL_OFFSET_BSP
+; noloop
+dw DRAWCOL_NOLOOP_OFFSET_BSP
+; normalstretch
+dw DRAWCOL_NORMAL_STRETCH_OFFSET_BSP
+; noloopstretch
+dw DRAWCOL_NOLOOP_STRETCH_OFFSET_BSP
 
-REPT COLORMAPS_COUNT
-    dw CALL_OFFSET, CALL_SEGMENT
-    CALL_OFFSET = CALL_OFFSET - 0100h
-    CALL_SEGMENT = CALL_SEGMENT + 010h
-ENDM
 
-; 84h
 
 R_CHECKBBOX_SWITCH_JMP_TABLE:
 ; jmp table for switch block.... 
@@ -161,78 +167,9 @@ ENDP
 ENDIF
 
 
-ALIGN 256
-
-; SECOND JUMP TABLE ALIGNED AT CS:0100 FOR NON-LOOPING DRAWCOL
-
-; NEEDS TO BE 0100h
-_COLFUNC_NOLOOP_CALLTABLE:
-PUBLIC _COLFUNC_NOLOOP_CALLTABLE
 
 
-CALL_OFFSET  = DRAWCOL_NOLOOP_OFFSET_BSP
-CALL_SEGMENT = COLORMAPS_SEGMENT
-COLORMAPS_COUNT = 21h
 
-; 0100h
-
-REPT COLORMAPS_COUNT
-    dw CALL_OFFSET, CALL_SEGMENT
-    CALL_OFFSET = CALL_OFFSET - 0100h
-    CALL_SEGMENT = CALL_SEGMENT + 010h
-ENDM
-
-
-ALIGN 256
-
-; THIRD JUMP TABLE ALIGNED AT CS:0200 FOR LOOPING STRETCH DRAWCOL
-
-; NEEDS TO BE 0100h
-_COLFUNC_NORMALSTRETCH_CALLTABLE:
-PUBLIC _COLFUNC_NORMALSTRETCH_CALLTABLE
-
-
-CALL_OFFSET  = DRAWCOL_NORMAL_STRETCH_OFFSET_BSP
-CALL_SEGMENT = COLORMAPS_SEGMENT
-COLORMAPS_COUNT = 21h
-
-
-REPT COLORMAPS_COUNT
-    dw CALL_OFFSET, CALL_SEGMENT
-    CALL_OFFSET = CALL_OFFSET - 0100h
-    CALL_SEGMENT = CALL_SEGMENT + 010h
-ENDM
-
-_COLFUNC_SELFMODIFY_LOOKUPTABLE:
-; normal ; 12 bytes per
-dw COLFUNC_JUMP_LOOKUP_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET+1
-; noloop ; 10 bytes per
-dw DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1
-; normalstretch ; 12 bytes per
-dw COLFUNC_JUMP_LOOKUP_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NORMALSTRETCH_OFFSET+1
-; noloopstretch ; 10 bytes per
-dw DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOPANDSTRETCH_OFFSET+1
-
-
-ALIGN 256
-
-; FOURTH JUMP TABLE ALIGNED AT CS:0300 FOR NONLOOPING STRETCH DRAWCOL
-
-; NEEDS TO BE 0100h
-_COLFUNC_NOLOOPSTRETCH_CALLTABLE_BSP:
-PUBLIC _COLFUNC_NOLOOPSTRETCH_CALLTABLE_BSP
-
-
-CALL_OFFSET  = DRAWCOL_NOLOOP_STRETCH_OFFSET_BSP
-CALL_SEGMENT = COLORMAPS_SEGMENT
-COLORMAPS_COUNT = 21h
-
-
-REPT COLORMAPS_COUNT
-    dw CALL_OFFSET, CALL_SEGMENT
-    CALL_OFFSET = CALL_OFFSET - 0100h
-    CALL_SEGMENT = CALL_SEGMENT + 010h
-ENDM
 
 
 ;R_ScaleFromGlobalAngle_
@@ -3861,7 +3798,7 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta - OFFSET R_BSP24_STARTMARKER
 
    mov       al, 0   ; leave flags alone
    js        setup_looping_top_texture
-   inc       ax 
+   mov       al, 2
    setup_looping_top_texture:
    mov       byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], al
 
@@ -3877,7 +3814,7 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta - OFFSET R_BSP24_STARTMARKER
 
    mov       al, 0   ; leave flags alone
    js        setup_looping_bot_texture
-   inc       ax
+   mov       al, 2
    setup_looping_bot_texture:
    mov       byte ptr cs:[SELFMODIFY_toggle_bot_colfunc_type+1], al
 
@@ -3901,7 +3838,7 @@ selfmodify_mid_only:
 
    mov       al, 0   ; leave flags alone
    js        setup_looping_mid_texture       ; USE FLAG STATE
-   inc       ax 
+   mov       al, 2
    setup_looping_mid_texture:
    mov       byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], al
 
@@ -5870,8 +5807,8 @@ SELFMODIFY_add_wallights:
 ; si is scalelight
 ; scalelight is pre-shifted 4 to save on the double sal every column.
 mov   al, byte ptr ds:[si+01000h]         ; 8a 84 00 10 
-;        set drawcolumn colormap function address
-mov   byte ptr cs:[SELFMODIFY_COLFUNC_set_colormap_index_jump - OFFSET R_BSP24_STARTMARKER_], al
+;        set colormap offset to high byte
+mov   byte ptr cs:[SELFMODIFY_BSP_set_xlat_offset+2 - OFFSET R_BSP24_STARTMARKER_], al
 
 
 jmp   light_set
@@ -6018,7 +5955,7 @@ ELSE
 
    ; cx is zero already coming in from the first shift so cx:ax is already the result.
 
-   mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+1], 2  ; turn on stretch variant for this frame
+   mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+1], 4  ; turn on stretch variant for this frame
 
    jmp FastDiv3232FFFF_done  
 
@@ -6178,7 +6115,7 @@ ELSE
    sub  ax, bx ; modify qhat by measured amount
 
 
-   mov   byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+1], 2  ; turn on stretch variant for this frame
+   mov   byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+1], 4  ; turn on stretch variant for this frame
 
 
 ENDIF
@@ -6276,12 +6213,14 @@ push  di
 SELFMODIFY_bsp_apply_stretch_tag:
 add   al, 010h
 cbw
-; al has function type index now
+; al has function type index now, preshifted 1
 
-mov   byte ptr cs:[SELFMODIFY_COLFUNC_set_colormap_index_jump+1], al   ; function type index set
+
 
 xchg  ax, bx  ;  bx gets lookup type...
-SHIFT_MACRO sal bx 2  ; dword lookup
+mov   ax, word ptr cs:[bx + _COLFUNC_SELFMODIFY_FUNCLOCATIONS]
+mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset], ax
+sal   bx, 1   ; dword lookup
 les   bp, dword ptr cs:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
 mov   bx, es
 
@@ -6290,8 +6229,8 @@ mov   bx, es
 ;  POINTER TO COLFUNC JUMP INSTRUCTION IN BX
 
 
-mov   ax, COLFUNC_FILE_START_SEGMENT        ; compute segment now, clear AX dependency
-mov   ds, ax ; store this segment for now, with offset pre-added
+mov   ax, COLFUNC_FILE_START_SEGMENT
+mov   ds, ax ;
 
 SELFMODIFY_COLFUNC_get_dc_x:
 mov   ax, 01000h              ; note: tried preshifting this in the outer layer but it was slower
@@ -6318,7 +6257,7 @@ xchg  ax, di								         ; di gets screen dest offset, ax gets jump value
 mov   word ptr ds:[bx], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 
 
-xchg  ax, si            ; dc_yl *2 in ax
+xchg  ax, si            ; dc_yl in ax
 
 mov   si, dx  ; si gets texturemid low word (todo: figure out a way to do this without the juggle)
 
@@ -6329,15 +6268,14 @@ SELFMODIFY_BSP_set_dc_iscale_hi:
 mov   ch, 010h          ; dc_iscale +2
 
 
+SELFMODIFY_BSP_set_xlat_offset:
+mov   bp, 01000h          ; dc_iscale +2
 
-; dynamic call lookuptable based on used colormaps address being CS:00
+; pass in xlat offset for bx via bp
 
-db 02Eh  ; cs segment override
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
-SELFMODIFY_COLFUNC_set_colormap_index_jump:  ; low byte is colormaps-based cs:ip lookup. high byte is function type selector
-dw 0000h
-; addr 0000 + first byte (4x colormap.)
+db 09Ah
+SELFMODIFY_COLFUNC_set_func_offset:
+dw DRAWCOL_OFFSET_BSP, COLORMAPS_SEGMENT
 
 
 
@@ -6347,7 +6285,8 @@ pop   bx
 
 SELFMODIFY_BSP_R_DrawColumnPrep_ret:
 
-; the pop dx gets replaced with ret if bottom is calling
+; the pop dx gets replaced with ret if bottom is calling.
+; todo: the bottom caller pops the same stuff. pop here and modify a later instruction instead?
 
 pop   dx
 pop   bp

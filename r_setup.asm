@@ -477,7 +477,7 @@ jmp   set_value
 use_level_0:
 xor   ax, ax
 set_value:
-SHIFT_MACRO sal ax 2
+
 stosb
 add   bx, SCREENWIDTH
 cmp   bx, (SCREENWIDTH * MAXLIGHTSCALE)  ; 0x3C00
