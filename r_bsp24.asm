@@ -5930,8 +5930,11 @@ ELSE
 
    jmp FastDiv3232FFFF_done    ; todo branch better 
 
+
    main_3232_div:
    public main_3232_div
+
+  ; todo dont use di, use dx instead
 
    push  di
 
@@ -5992,6 +5995,28 @@ ELSE
    ; continue the last bit
    rcr bx, 1
    rcr di, 1
+    ; todo bench branch
+   jnz do_full_div_ffff
+
+   do_single_div_FFFF:
+   ; bx has entire dividend, in 16 bits of precision. we know cx and di are zero after all.
+   ; si contains a bit count of how much to shift result left by...
+
+   shr ax, 1   ; still gotta continue to shift the last ax/si
+   rcr si, 1
+
+   ; i want to skip last rcr si but it makes detecting the 0 case hard.
+   
+   xchg ax, dx    ; ax all 1s,  dx 0 leading 1s
+   div  bx
+
+   ; cx is zero already coming in from the first shift so cx:ax is already the result.
+
+   mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+1], 2  ; turn on stretch variant for this frame
+   pop di 
+   jmp FastDiv3232FFFF_done  
+
+   do_full_div_ffff:
    shr ax, 1
    rcr si, 1
 
@@ -6072,7 +6097,9 @@ ELSE
    ; ugly but rare occurrence i think?
    qhat_subtract_2_3232:
    inc  bx
-   jmp finalize_div  
+   jmp finalize_div
+
+
 ENDIF
 
 
@@ -6148,7 +6175,7 @@ ELSE
 
    pop   di
 
-   mov   byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+1], 2  ; toggle stretch variant for this frame
+   mov   byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+1], 2  ; turn on stretch variant for this frame
 
 
 ENDIF
