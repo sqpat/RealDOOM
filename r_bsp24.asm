@@ -2663,7 +2663,8 @@ PROC R_FindPlane_ NEAR
 
 xor       ax, ax
 
-cmp       cl, byte ptr ds:[_skyflatnum]
+SELFMODIFY_BSP_set_skyflatnum_3:
+cmp       cl, 010h
 jne       not_skyflat
 
 ;		height = 0;			// all skys map together
@@ -4607,7 +4608,8 @@ SELFMODIFY_BSP_viewz_shortheight_3:
 cmp       ax, 01000h
 jg        not_below_viewplane
 mov       al, byte ptr [bp - 037h]
-cmp       al, byte ptr ds:[_skyflatnum]
+SELFMODIFY_BSP_set_skyflatnum_4:
+cmp       al, 010h
 je        not_below_viewplane
 mov       byte ptr [bp - 01Bh], 0  ;markceiling
 not_below_viewplane:
@@ -6019,6 +6021,7 @@ ELSE
    shr ax, 1
    rcr si, 1
 
+   ; todo shift into the right places, reduce juggle
 
    mov  cx, bx  ; dividend hi
    mov  bx, dx  ; dividend lo
@@ -6028,7 +6031,6 @@ ELSE
    cwd          ; dx 0FFFFh again. si hi bit is 1 for sure.
 
 
-   ; todo shift into the right places, reduce juggle
 
    ; SI:DX:AX holds divisor...
    ; CX:BX holds dividend...
@@ -6048,12 +6050,10 @@ ELSE
    mov   si, bx
 
 
-
    ; numhi is 00:SI in this case?
 
    ;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
    ; DX:AX = numhi.wu
-
 
    div   cx
 
@@ -6969,7 +6969,8 @@ sbb       cx, 01000h
 ; }
 
 ; todohigh skyflatnum should be a per level constant??
-mov       al, byte ptr ds:[_skyflatnum]
+SELFMODIFY_BSP_set_skyflatnum_1:
+mov       al, 010h
 cmp       al, byte ptr [bp - 037h]
 jne       not_a_skyflat
 cmp       al, byte ptr [bp - 038h]
@@ -7325,7 +7326,8 @@ mov   dx, word ptr es:[bx + SECTOR_T.sec_ceilingheight]
 check_for_sky:
 ; es:bx is still frontsector
 mov   cl, byte ptr es:[bx + SECTOR_T.sec_ceilingpic] 
-cmp   cl, byte ptr ds:[_skyflatnum]  ; todo single instruction cmp with constant
+SELFMODIFY_BSP_set_skyflatnum_2:
+cmp   cl, 010h
 je    find_ceiling_plane_index
 
 SELFMODIFY_BSP_viewz_13_3_2:
@@ -11927,8 +11929,11 @@ mov      es, ax
 
 ASSUME DS:R_BSP_24_TEXT
 
-
-
+mov      al, byte ptr ss:[_skyflatnum]  ; todo do once per level ?
+mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_1+1 - OFFSET R_BSP24_STARTMARKER_], al
+mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_2+2 - OFFSET R_BSP24_STARTMARKER_], al
+mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_3+2 - OFFSET R_BSP24_STARTMARKER_], al
+mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_4+1 - OFFSET R_BSP24_STARTMARKER_], al
 
 
 mov      ax, word ptr ss:[_viewz]

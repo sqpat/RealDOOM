@@ -1244,6 +1244,10 @@ sub   sp, 6
 ; inline R_WriteBackSpanFrameConstants_
 ; get whole dword at the end here.
 
+mov      al, byte ptr ds:[_skyflatnum]
+mov      byte ptr ds:[SELFMODIFY_SPAN_skyflatnum + 2 - OFFSET R_SPAN24_STARTMARKER_], al
+
+
 ; lodsw, push pop si worth?
 mov   si, _basexscale
 lodsw
@@ -2201,9 +2205,6 @@ mov      ds, ax
 ASSUME DS:R_SPAN24_TEXT
 
 
-mov      al, byte ptr ss:[_skyflatnum]
-
-mov      byte ptr ds:[SELFMODIFY_SPAN_skyflatnum + 2 - OFFSET R_SPAN24_STARTMARKER_], al
 
 
 mov      al, byte ptr ss:[_detailshift]
