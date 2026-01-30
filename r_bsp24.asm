@@ -5877,20 +5877,6 @@ jmp   light_set
 
 ; begin fast_div_32_16_FFFF
 
-IF COMPISA GE COMPILE_386
-   ; unused portion of code for 386. 
-ELSE
-
-   fast_div_32_16_FFFF:
-
-   xchg dx, cx   ; cx was 0, dx is FFFF
-   div bx        ; after this dx stores remainder, ax stores q1
-   xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
-   div bx
-   mov dx, cx   ; q1:q0 is dx:ax
-   jmp FastDiv3232FFFF_done 
-ENDIF
-
 
 use_max_light:
 ; ugly 
@@ -5930,92 +5916,94 @@ ELSE
    cwd
 
    test cx, cx
-   je fast_div_32_16_FFFF
+   jne main_3232_div
+
+   fast_div_32_16_FFFF:
+
+   xchg dx, cx   ; cx was 0, dx is FFFF
+   div bx        ; after this dx stores remainder, ax stores q1
+   xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
+   div bx
+   ; cx:ax is result 
+   ; ch is known zero.
+   mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+1], ch  ; toggle stretch variant for this frame
+
+   jmp FastDiv3232FFFF_done    ; todo branch better 
 
    main_3232_div:
+   public main_3232_div
 
    push  di
 
-
+   ; generally cx maxes out at around 5 bits of precision? bias towards shift right instead of left.  
 
    XOR SI, SI ; zero this out to get high bits of numhi
+   XOR DI, DI ; zero this out to get low bits of cx/bx
+   
+   shr cx, 1
+   jz  done_shifting_3232
+   rcr bx, 1
+   rcr di, 1
+   shr ax, 1
+   rcr si, 1
 
 
+   shr cx, 1
+   jz  done_shifting_3232
+   rcr bx, 1
+   rcr di, 1
+   shr ax, 1
+   rcr si, 1
 
+   shr cx, 1
+   jz  done_shifting_3232
+   rcr bx, 1
+   rcr di, 1
+   shr ax, 1
+   rcr si, 1
 
-   test ch, ch
-   jne shift_bits_3232
-   ; shift a whole byte immediately
+   shr cx, 1
+   jz  done_shifting_3232
+   rcr bx, 1
+   rcr di, 1
+   shr ax, 1
+   rcr si, 1
 
-   mov ch, cl
-   mov cl, bh
-   mov bh, bl
-   xor bl, bl
+   shr cx, 1
+   jz  done_shifting_3232
+   rcr bx, 1
+   rcr di, 1
+   shr ax, 1
+   rcr si, 1
 
-   ; dont need a full shift 8 because we know everything is FF
-   mov  si, 000FFh
-   xor al, al
+   shr cx, 1
+   jz  done_shifting_3232
+   rcr bx, 1
+   rcr di, 1
+   shr ax, 1
+   rcr si, 1
 
-   shift_bits_3232:
-
-   ; less than a byte to shift
-   ; shift until MSB is 1
-   ; DX gets 1s so we can skip it.
-
-   SAL BX, 1
-   RCL CX, 1
-   JC done_shifting_3232  
-   SAL AX, 1
-   RCL SI, 1
-
-   SAL BX, 1
-   RCL CX, 1
-   JC done_shifting_3232
-   SAL AX, 1
-   RCL SI, 1
-
-   SAL BX, 1
-   RCL CX, 1
-   JC done_shifting_3232
-   SAL AX, 1
-   RCL SI, 1
-
-   SAL BX, 1
-   RCL CX, 1
-   JC done_shifting_3232
-   SAL AX, 1
-   RCL SI, 1
-
-   SAL BX, 1
-   RCL CX, 1
-   JC done_shifting_3232
-   SAL AX, 1
-   RCL SI, 1
-
-   SAL BX, 1
-   RCL CX, 1
-   JC done_shifting_3232
-   SAL AX, 1
-   RCL SI, 1
-
-   SAL BX, 1
-   RCL CX, 1
-   JC done_shifting_3232
-   SAL AX, 1
-   RCL SI, 1
-
-   SAL BX, 1
-   RCL CX, 1
-
-
+   shr cx, 1
+   ; todo shouldnt fall thru here? if it does may crash with divide overflow down the line.
 
    ; store this
    done_shifting_3232:
 
-   ; we overshifted by one and caught it in the carry bit. lets shift back right one.
+   ; continue the last bit
+   rcr bx, 1
+   rcr di, 1
+   shr ax, 1
+   rcr si, 1
 
-   RCR CX, 1
-   RCR BX, 1
+   ; todo test di for zero?
+   ; if di is zero then we had 16 bits of precision to divide anyway.
+   ; we can divide once and then shift result left until si is empty.
+
+   ; todo reduce the giant juggle..
+
+   xchg ax, si
+   mov  cx, bx
+   mov  bx, di
 
 
    ; SI:DX:AX holds divisor...
@@ -6024,8 +6012,7 @@ ELSE
    ; numlo = AX:00...
 
 
-   ; save numlo word in sp.
-   ; avoid going to memory... lets do interrupt magic
+   ; save numlo word in di.
    mov di, ax
 
 
@@ -6071,15 +6058,12 @@ ELSE
    sub   ax, di
    sbb   dx, bx
    cmp   dx, cx
+   mov   bx, 1                
    ja    qhat_subtract_2_3232
    je    compare_low_word_3232
 
    qhat_subtract_1_3232:
-   mov ax, es
-   dec ax
-   xor dx, dx
-
-   jmp FastDiv3232FFFF_done_di_si
+   jmp finalize_div
 
    compare_low_word_3232:
    cmp   ax, si
@@ -6087,11 +6071,8 @@ ELSE
 
    ; ugly but rare occurrence i think?
    qhat_subtract_2_3232:
-   mov ax, es
-   dec ax
-   dec ax
-
-   jmp FastDiv3232FFFF_done_di_si  
+   inc  bx
+   jmp finalize_div  
 ENDIF
 
 
@@ -6156,31 +6137,31 @@ jmp   just_do_draw0
 
 IF COMPISA GE COMPILE_386
 ELSE
+   
    q1_ready_3232:
-
+   mov  bx, 0   ; no sub case
+   finalize_div:
    mov  ax, es
-   xor  dx, dx
+   xor  cx, cx
+   sub  ax, bx
 
-   FastDiv3232FFFF_done_di_si:
+
    pop   di
+
+   mov   byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+1], 2  ; toggle stretch variant for this frame
+
+
 ENDIF
 
 ; end fast_div_32_16_FFFF
 
 
 FastDiv3232FFFF_done:
-
+; result is in CX:AX
 ; do the bit shuffling etc when writing direct to drawcol.
 
 mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_lo+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1 - OFFSET R_BSP24_STARTMARKER_], dl
-mov   al, 0
-test  dl, dl
-jne   dont_do_stretch
-do_stretch:
-mov   al, 2
-dont_do_stretch:
-mov   byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+1], al  ; toggle stretch variant for this frame
+mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1 - OFFSET R_BSP24_STARTMARKER_], cl
 
 
 
