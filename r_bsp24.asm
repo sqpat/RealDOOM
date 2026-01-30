@@ -5912,6 +5912,9 @@ IF COMPISA GE COMPILE_386
    ; set up return
    db 066h, 00Fh, 0A4h, 0C2h, 010h  ; shld edx, eax, 0x10
 
+   ; ?only write to dc_iscale_hi when nonzero.
+   mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1 - OFFSET R_BSP24_STARTMARKER_], dl
+
    jmp FastDiv3232FFFF_done 
 
 ELSE
@@ -5929,6 +5932,8 @@ ELSE
    ; cx:ax is result 
    ; ch is known zero.
    mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+1], ch  ; toggle stretch variant for this frame
+   ; only write to dc_iscale_hi when nonzero.
+   mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1 - OFFSET R_BSP24_STARTMARKER_], cl
 
    jmp FastDiv3232FFFF_done    ; todo branch better 
 
@@ -6169,7 +6174,7 @@ ELSE
    finalize_div:
    _SELFMODIFY_get_qhat:
    mov  ax, 01000h
-   xor  cx, cx
+
    sub  ax, bx ; modify qhat by measured amount
 
 
@@ -6186,8 +6191,8 @@ FastDiv3232FFFF_done:
 ; do the bit shuffling etc when writing direct to drawcol.
 
 mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_lo+1 - OFFSET R_BSP24_STARTMARKER_], ax
-; todo if zero we dont even have to write this?
-mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1 - OFFSET R_BSP24_STARTMARKER_], cl
+; dc_iscale_hi was written ealier if nonzero
+
 
 
 

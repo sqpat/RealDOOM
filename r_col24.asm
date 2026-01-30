@@ -198,31 +198,28 @@ PUBLIC  R_DrawColumn24NoLoopAndStretch_
     ; di contains screen coord
     ; ax contains dc_yl
     ; CL:SI = dc_texturemid
-    ; CH:BX = dc_iscale
+    ; 00:BX = dc_iscale
 
 
 MARKER_SM_COLFUNC_subtract_centery24_noloopandstretch_:
 PUBLIC MARKER_SM_COLFUNC_subtract_centery24_noloopandstretch_
-    sub   ax, 01000h
+   sub   ax, 01000h
+    ; ch is unset (garbage), but implied value 0. skip the mul ch step
 
    MOV  DX, AX  ; copy center24y
-   MUL  CH
-   ADD  CL, AL
-   MOV  AX, DX ; restore center_y
+   
    AND  DH, BL
    SUB  CL, DH  ; apply neg sign
    MUL  BX
    ADD  SI, AX
    ADC  CL, DL
    xor  dx, dx   ; zero dx
-   xchg DX, BX   ; dx gets bx, bx gets  0 
+   mov  ch, dh   ; ch gets 0
+   xchg dx, bx   ; dx gets bx, bx gets  0 
 
-; todo clean this up...
 
-   mov  ax, bx   ; ax gets 0
-   mov  al, cl
-   xchg ax, si   ; si gets hi texel
-   xchg ax, cx   ; cx gets low texel (previously si)
+   xchg si, cx   ; si gets hi texel, cx gets low texel 
+
 
 
    ;  prep our loop variables
@@ -396,11 +393,11 @@ MARKER_SM_COLFUNC_subtract_centery24_normalstretch_:
 PUBLIC MARKER_SM_COLFUNC_subtract_centery24_normalstretch_
     sub   ax, 01000h
 
+   ; ch is unset (garbage), but implied value 0. skip the mul ch step
+
 ; credit to zero318 for various ideas for the function
    MOV  DX, AX  ; copy center24y
-   MUL  CH
-   ADD  CL, AL
-   MOV  AX, DX ; restore center_y
+
    AND  DH, BL
    SUB  CL, DH  ; apply neg sign
    MUL  BX
@@ -409,10 +406,9 @@ PUBLIC MARKER_SM_COLFUNC_subtract_centery24_normalstretch_
    
    MOV  DX, BX
    xor  BX, bx   ; for XLAT
+   mov  ch, bh   ; ch gets 0
 
 ; todo clean this up...
-
-   xor  ch, ch   ; ch gets 0
    
    xchg si, cx   ; si gets hi texel, cx gets low texel 
 
