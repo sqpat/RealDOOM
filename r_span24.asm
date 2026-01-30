@@ -75,7 +75,7 @@ _spanfunc_jump_target:
 ; full quality
 
 
-BYTES_PER_PIXEL = 17h
+BYTES_PER_PIXEL = 15h
 MAX_PIXELS = 80
 bytecount = MAX_PIXELS * BYTES_PER_PIXEL
 REPT MAX_PIXELS
@@ -254,10 +254,6 @@ mov   dx, 01000h
 
 ; shove this in the mul post prefetch.
 
-SELFMODIFY_SPAN_ds_xstep_lo_2:
-; preshifted left 4
-mov     dx, 01000h
-mov     ss, dx
 
 SELFMODIFY_SPAN_ds_ystep_lo_2:
 mov     sp, 01000h
@@ -309,14 +305,12 @@ mov bx, 01000h      ; set xstep24 hi 8 and ystep 24 hi 8 at once
 ; todo LES something here dunno? maybe a selfmodify thing instead.
 mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
 
-lds   ax, dword ptr ds:[_ds_source_offset] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
-; ah gets 3F
 
 
 
 
-;  ch:dx is yfrac24 (running total)
-;  cl:bp is xfrac24 (running total)
+;  ch:bp is yfrac24 (running total)
+;  cl:dl is xfrac24 (running total)
 
 ; todo... prebake this in the selfmodifies?
 
@@ -329,11 +323,34 @@ rcl cl, 1
 shl bp, 1
 rcl cl, 1
 
+; cx/bx dont change
+; bp gets old dx
+; dl gets old ss hi
+; dh gets old bp hi
 
 
+xchg dx, bp       ; dh gets xfrac24, bp gets yfrac24
 
 
+SELFMODIFY_SPAN_ds_xstep_lo_2:
+; preshifted left 4
+mov     ax, 01000h
+mov     dl, ah       
 
+lds   ax, dword ptr ds:[_ds_source_offset] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
+; ah gets 3F
+
+
+; xstep: IS bh:bl WAS bl:si
+; ystep: IS dh:sp WAS bh:sp
+
+; sp IS ystep WAS ystep
+; dl IS xfraclo WAS 
+; bh IS xstephi WAS ystephi
+
+
+; cl IS/WAS xfrachi
+; ch IS/WAS yfrachi
  
 SPANFUNC_JUMP_OFFSET:
 jmp span_i_loop_done         ; relative jump to be modified before function is called
@@ -350,11 +367,11 @@ sar   si, 1
 lodsb 
 mov   si, ax
 movs  byte ptr es:[di], byte ptr cs:[si]
-mov   si, ss
-add   bp, si
-adc   cl, bl
-add   dx, sp
-adc   ch, bh
+
+add   dh, dl ; dl = xxxxxxxx
+adc   cl, bl ; cl = XXXXXXxx
+add   bp, sp ; bp = yyyyyyyy yy000000
+adc   ch, bh ; ch = 00YYYYYY
 
 ENDM
 
@@ -369,7 +386,7 @@ mov   si, cx
 sar   si, 1
 sar   si, 1
 lodsb 
-mov   si, ax
+mov   si, ax  ; xchg last one?
 movs  byte ptr es:[di], byte ptr cs:[si]
 
 
