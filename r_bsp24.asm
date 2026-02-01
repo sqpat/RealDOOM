@@ -174,7 +174,7 @@ ENDIF
 
 ;R_ScaleFromGlobalAngle_
 
-PROC R_ScaleFromGlobalAngle_ NEAR
+PROC   R_ScaleFromGlobalAngle_ NEAR
 PUBLIC R_ScaleFromGlobalAngle_ 
 
 
@@ -275,24 +275,40 @@ mov    di, dx
 xor    di, cx   ; different signs?
 js     figure_out_sign_return  ; different bit 15s
 
-test   dx, dx
+test   cx, cx
 jns    two_positives
 
 two_negatives:
-neg    cx
-neg    bx
-adc    cx, 0
 neg    dx
 neg    ax
 adc    dx, 0
+neg    cx
+neg    bx
+adc    cx, 0
 
 two_positives:
 
 
-test  cx, cx
-jne   do_divide ; definitely larger than dx if nonzero..
-cmp   bx, dx
-jg    do_divide
+;test  cx, cx
+jnz   do_divide ; definitely larger than dx if nonzero..
+
+; cx is zero... do fast divide.
+
+cmp   dx, bx
+jae   return_maxvalue
+
+div   bx
+cmp   ax, 040h
+jae   return_maxvalue
+xchg  ax, cx ; cx, known zero into ax, store high
+div   bx
+mov   dx, cx ; restore high.
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret
+
 
 
 return_maxvalue:
@@ -816,6 +832,7 @@ done_shifting:
 
 RCR CX, 1
 RCR BX, 1
+; bx is not 0 often enough here to optimize with bx check (unless we get bx zero flag check for free)
 
 
 ; SI:DX:AX holds divisor...
@@ -843,11 +860,60 @@ mov   dx, si
 
 mov   word ptr cs:[_SELFMODIFY_restore_numhi_low+1], ax ; store copy of numhi.low?
 
+test  dx, dx
+jnz   do_normal_div
+; dx is zero, not too uncommon.
+;  first div result is trivial to calculate. result is 0 or 1 
+; and we can inline the next half of the function in those cases
+
+; note: i implemented a bx = 0 case checker and it was not faster, 
+; because bx being 0 is fairly rare and the branch check itself
+;  didnt make up for the fast div
+
+xchg  ax, dx   
+cmp   dx, cx
+jae   div_1_result_1
+div_1_result_0:
+; todo: inline the whole rest of the function here.
+
+mov   es, ax ; zero
+mov   si, dx
+xchg  ax, di
+
+; qhat = 0
+; c1   = 0
+; rhat = si
+
+
+jmp   continue_to_second_div
+
+
+div_1_result_1:
+; qhat = 1
+; rhat = si
+; c1 = bx
+; c2 = rhat:num1
+
+; i dont think the estimate can be wrong here. no need to check rhat etc.
+; if rhat nonzero then estimate is good
+
+
+inc   ax
+sub   dx, cx
+mov   si, dx					; si stores rhat
+mov   es, ax ; one
+xchg  ax, di
+;jz    further_check_c1_c2
+
+
+jmp   continue_to_second_div
+
 
 
 ;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
 ; DX:AX = numhi.wu
 
+do_normal_div:
 
 div   cx
 
@@ -920,6 +986,8 @@ cmp   dx, cx
 ;    if (rem.hu.intbits < den1){
 
 jnb    adjust_for_overflow  ; fall thru at about about 2000:1 rate
+
+continue_to_second_div:
 
 div   cx
 
@@ -1217,6 +1285,10 @@ done_shifting_whole:
 RCR CX, 1
 RCR BX, 1
 
+; todo unsure if this is worth it
+;test bx, bx                ; rcr does not set zero flag, lame!
+;jz  do_simple_div_after_all_whole  ; we can divide by 16 bits after all?
+
 
 
 
@@ -1330,6 +1402,16 @@ do_qhat_subtraction_by_2_whole:
 
 dec   si
 jmp   do_qhat_subtraction_by_1_whole
+
+do_simple_div_after_all_whole:
+
+; zero high word just calculate low word.
+div  cx       ; get low result
+mov  es, ax
+mov  ax, bx   ; known zero
+div  cx
+ret
+
 
 continue_checking_q1_whole:
 ja    check_c1_c2_diff_whole

@@ -1020,10 +1020,58 @@ mov   dx, si
 mov   word ptr cs:[_SELFMODIFY_restore_numhi_low+1], ax ; store copy of numhi.low?
 
 
+test  dx, dx
+jnz   do_normal_div
+; dx is zero, not too uncommon.
+;  first div result is trivial to calculate. result is 0 or 1 
+; and we can inline the next half of the function in those cases
+
+; note: i implemented a bx = 0 case checker and it was not faster, 
+; because bx being 0 is fairly rare and the branch check itself
+;  didnt make up for the fast div
+
+xchg  ax, dx   
+cmp   dx, cx
+jae   div_1_result_1
+div_1_result_0:
+; todo: inline the whole rest of the function here.
+
+mov   es, ax ; zero
+mov   si, dx
+xchg  ax, di
+
+; qhat = 0
+; c1   = 0
+; rhat = si
+
+
+jmp   continue_to_second_div
+
+
+div_1_result_1:
+; qhat = 1
+; rhat = si
+; c1 = bx
+; c2 = rhat:num1
+
+; i dont think the estimate can be wrong here. no need to check rhat etc.
+; if rhat nonzero then estimate is good
+
+
+inc   ax
+sub   dx, cx
+mov   si, dx					; si stores rhat
+mov   es, ax ; one
+xchg  ax, di
+;jz    further_check_c1_c2
+
+
+jmp   continue_to_second_div
 
 ;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
 ; DX:AX = numhi.wu
 
+do_normal_div:
 
 div   cx
 
@@ -1096,6 +1144,8 @@ cmp   dx, cx
 ;    if (rem.hu.intbits < den1){
 
 jnb    adjust_for_overflow  ; fall thru at about about 2000:1 rate
+
+continue_to_second_div:
 
 div   cx
 
@@ -1805,6 +1855,10 @@ done_shifting_whole:
 RCR CX, 1
 RCR BX, 1
 
+; todo test if worth it
+;test bx, bx                ; rcr does not set zero flag, lame!
+;jz  do_simple_div_after_all_whole  ; we can divide by 16 bits after all?
+
 
 
 
@@ -1918,6 +1972,15 @@ dec   bx
 mov   ax, bx
 
 ret  
+
+do_simple_div_after_all_whole:
+
+; zero high word just calculate low word.
+div  cx       ; get low result
+mov  es, ax
+mov  ax, bx   ; known zero
+div  cx
+ret
 
 check_for_extra_qhat_subtraction_whole:
 ja    do_qhat_subtraction_by_2_whole
@@ -2830,19 +2893,6 @@ ret
 
 ENDP
 
-PROC   R_PointToAngle2_FAR_ FAR
-PUBLIC R_PointToAngle2_FAR_
-
-; a little gross. Ah well, rare call (once every many frames) compared to below (many every frame)
-
-push   word ptr [bp + 08h]
-push   word ptr [bp + 0Ah]
-push   word ptr [bp + 0Ch]
-push   word ptr [bp + 0Eh]
-
-call   R_PointToAngle2_MapLocal_
-retf   8
-ENDP
 
 ;R_PointToAngle2_
 

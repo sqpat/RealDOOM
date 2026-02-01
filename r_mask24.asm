@@ -1850,14 +1850,7 @@ jge   use_maxlight
 xor   dx, dx
 mov   ax, word ptr ds:[_spryscale + 1]
 mov   dl, byte ptr ds:[_spryscale + 3]
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
+SHIFT32_MACRO_RIGHT dx ax 4
 
 jmp   get_colormap
 
@@ -1981,56 +1974,6 @@ call R_DrawMaskedColumn_
 
 jmp   update_maskedtexturecol_finish_loop_iter
 
-COMMENT @
-; unused in vanilla, and untested.
-do_looped_column_calc:
-; calculate column by looping until 0 < column < width
-; but column may be offset by (width * n)
-; we iterate such that (width * n) < column < (width * (n+1))
-; such that we can subtract column by width * n each iteration.
-; di stores maskedcachedbasecol, which is (width * n).
-
-
-
-;	while (usetexturecolumn < (maskedcachedbasecol)){
-;		maskedcachedbasecol -= maskedtexrepeat;
-;	}
-cmp bx, di
-jge done_subtracting_column
-subtract_column_by_modulo:
-sub di, ax
-cmp bx, di
-jl subtract_column_by_modulo 
-
-; we know maskedcachedbasecol is already good. skip the next loop check. 
-; but it only saves running one instruction. lets keep it simpler.
-;jmp done_calculating_column_modulo
-
-done_subtracting_column:
-
-;	while (usetexturecolumn >= maskedcachedbasecol){
-;		maskedcachedbasecol += maskedtexrepeat;
-;	}
-
-
-
-cmp bx, di
-jl done_adding_column 
-add_column_by_modulo:
-add di, ax
-cmp bx, di
-jge add_column_by_modulo
-done_adding_column:
-sub di, ax
-done_calculating_column_modulo:
-
-mov ds:[_maskedcachedbasecol], di  ; write the changes back
-
-;	usetexturecolumn -= maskedcachedbasecol;
-sub bx, di
-
-jmp repeat_column_calculated
-@
 
 SELFMODIFY_MASKED_lookup_2_TARGET:
 lookup_FF_repeat:
