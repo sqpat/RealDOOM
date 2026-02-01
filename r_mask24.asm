@@ -778,6 +778,19 @@ endp
 
 ; todo may not have to push/pop most of these vars.
 
+
+do_32_bit_mul_vissprite:
+inc   dx
+jz    do_16_bit_mul_after_all_vissprite
+dec   dx
+do_32_bit_mul_after_all_vissprite:
+
+call FixedMulMaskedLocal_
+
+
+jmp done_with_mul_vissprite
+
+
 PROC  R_DrawVisSprite_ NEAR
 PUBLIC R_DrawVisSprite_
 ; si is vissprite_t near pointer
@@ -788,8 +801,6 @@ PUBLIC R_DrawVisSprite_
 ; bp - 8     xiscalestep_shift high word
 
 
-push  bp
-mov   bp, sp
 
 
 mov   al, byte ptr ds:[si + VISSPRITE_T.vs_colormap]
@@ -805,12 +816,12 @@ mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMA
 
 les   ax, dword ptr ds:[si + VISSPRITE_T.vs_xiscale]   ; vis->xiscale
 mov   dx, es
-
+xor   cx, cx  ; cx is 0
 ; labs
 or    dx, dx
 jge   xiscale_already_positive
 neg   ax
-adc   dx, 0
+adc   dx, cx   ; 0
 neg   dx
 xiscale_already_positive:
 
@@ -848,7 +859,7 @@ mov   word ptr cs:[SELFMODIFY_masked_set_jump_write_offset+1 - OFFSET R_MASK24_S
 
 
 mov   di, OFFSET _sprtopscreen
-mov   word ptr ds:[di], 0		; di is _sprtopscreen
+mov   word ptr ds:[di], cx   ; cx is 0
 SELFMODIFY_MASKED_centery_1:
 mov   word ptr ds:[di + 2], 01000h
 
@@ -866,16 +877,31 @@ mov   byte ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1 + 1 - OFFSET R_MASK24_ST
 
 
 test  dx, dx
-jnz    do_32_bit_mul_vissprite
+jnz   do_32_bit_mul_vissprite
 
-test ax, 08000h  ; high bit
+test ax, ax  ; high bit     ; apparently this one needs to be tested for??
+js   do_32_bit_mul_after_all_vissprite  ; why?
 do_16_bit_mul_after_all_vissprite:
-jnz  do_32_bit_mul_after_all_vissprite
 
-call FixedMul1632MaskedLocal_
+;call FixedMul1632MaskedLocal_
+  MOV ES, CX
+  MOV CX, AX
+  MUL BX
+  XCHG AX, DX
+  XCHG AX, CX
+  CWD
+  AND BX, DX
+  MOV DX, ES
+  IMUL DX
+  SUB CX, BX
+  SBB BX, BX
+  ADD AX, CX
+  ADC DX, BX
 
 
 done_with_mul_vissprite:
+push  bp
+mov   bp, sp
 
 
 ; di is _sprtopscreen
@@ -961,16 +987,6 @@ je    jump_to_draw_shadow_sprite
 
 jmp loop_vga_plane_draw_normal 
 
-do_32_bit_mul_vissprite:
-inc   dx
-jz    do_16_bit_mul_after_all_vissprite
-dec   dx
-do_32_bit_mul_after_all_vissprite:
-
-call FixedMulMaskedLocal_
-
-
-jmp done_with_mul_vissprite
 
   
 sprite_not_first_cachedsegment:
@@ -1173,7 +1189,6 @@ PROC R_RenderMaskedSegRange_ NEAR
 
 
   
-push  si
 push  di
 
 ; todo selfmodify all this up ahead too.
@@ -1181,17 +1196,17 @@ push  di
 
 mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_2+1 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_3+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_3+2 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   word ptr cs:[SELFMODIFY_MASKED_cmp_to_x2+1 - OFFSET R_MASK24_STARTMARKER_], cx
 
 ; grab a bunch of drawseg values early in the function and write them forward.
 mov   si, di
 lods  word ptr es:[si]  ; si 2 after
 
-mov   word ptr ds:[_curseg], ax  
+mov   word ptr ds:[_curseg], ax  ; todo only use? put on stack? dont use?
 SHIFT_MACRO shl ax 3
 add   ah, (_segs_render SHR 8 ) 		; segs_render is ds:[0x4000] 
-mov   word ptr ds:[_curseg_render], ax
+mov   word ptr ds:[_curseg_render], ax  ; todo only use? put on stack? dont use?
 mov   bx, ax
 
 ; todo rearrange fields to make this faster?
@@ -1314,11 +1329,9 @@ les   bx, dword ptr ds:[bx]				; get v1 offset
 mov   cx, es                            ; get v2 offset
 mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 
-
+; todo i think remove this.
 SHIFT_MACRO shl bx 2
 SHIFT_MACRO shl cx 2
-
-
 
 
 ; compare v1/v2 fields right now, self modify the lightnum diff that it is used for later.
@@ -1637,7 +1650,7 @@ rcl   dx, 1
 done_shifting_spryscale:
 
 
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_lo_1+2 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep_shift
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_lo_1+1 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep_shift
 mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_lo_2+4 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep_shift
 mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_hi_1+2 - OFFSET R_MASK24_STARTMARKER_], dx		; rw_scalestep_shift
 mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_hi_2+4 - OFFSET R_MASK24_STARTMARKER_], dx		; rw_scalestep_shift
@@ -1692,30 +1705,30 @@ continue_outer_loop:
 mov   dx, SC_DATA
 ; di contains xoffset..
 SELFMODIFY_MASKED_detailshiftplus1_4:
-mov   al, byte ptr ds:[di + 20]
+mov   al, byte ptr ds:[di + 010h] ; selfmodified...
 out   dx, al
 
 
 ;			spryscale.w = basespryscale;
 
 SELFMODIFY_MASKED_get_basespryscale_lo:
-mov   dx, 01000h
+mov   ax, 01000h
 SELFMODIFY_MASKED_get_basespryscale_hi:
-mov   bx, 01000h
+mov   dx, 01000h
 
 ; di holds xoffset.
-; bx:dx temporarily holds _spryscale
-; ax will temporarily store dc_x
+; dx:ax temporarily holds _spryscale
+; bx will temporarily store dc_x
 ;			dc_x        = dc_x_base4 + xoffset;
 SELFMODIFY_MASKED_dc_x_base4:
-mov   ax, 01000h
-add   ax, di		; add xoffset to dc_x
+mov   bx, 01000h
+add   bx, di		; add xoffset to dc_x
 
 
 
 ;	if (dc_x < x1){
 SELFMODIFY_MASKED_x1_field_3:
-cmp   ax, 08000h   ; x1 
+cmp   bx, 08000h   ; x1 
 jge   calculate_sprtopscreen
 
 ; adjust by shiftstep
@@ -1724,17 +1737,17 @@ jge   calculate_sprtopscreen
 ;	spryscale.w += rw_scalestep_shift;
 
 SELFMODIFY_MASKED_detailshiftitercount_9:
-add   ax, 0
+add   bx, 01000h
 SELFMODIFY_MASKED_rw_scalestep_shift_lo_1:
-add   dx, 01000h
+add   ax, 01000h
 SELFMODIFY_MASKED_rw_scalestep_shift_hi_1:
-adc   bx, 01000h
+adc   dx, 01000h
 
 calculate_sprtopscreen:
 
-mov   word ptr ds:[_dc_x], ax
-mov   word ptr ds:[_spryscale], dx
-mov   word ptr ds:[_spryscale + 2], bx
+mov   word ptr ds:[_dc_x], bx
+mov   word ptr ds:[_spryscale], ax
+mov   word ptr ds:[_spryscale + 2], dx
 
 ; bx:dx written back to  _spryscale
 
@@ -1745,22 +1758,35 @@ mov   word ptr ds:[_spryscale + 2], bx
 
 ;			sprtopscreen.w -= FixedMul(dc_texturemid.w,spryscale.w);
 
-mov   ax, dx
-mov   dx, bx
+
 SELFMODIFY_MASKED_dc_texturemid_lo_3:
 mov   bx, 01000h
 SELFMODIFY_MASKED_dc_texturemid_hi_3:
-mov   cx, 01000h
+mov   si, 01000h
 
 test  dx, dx
-jnz    do_32_bit_mul
+jnz   do_32_bit_mul
+test  ax, ax
+js    do_32_bit_mul_after_all
 
-test ax, 08000h  ; high bit
 do_16_bit_mul_after_all:
-jnz  do_32_bit_mul_after_all
 
-call FixedMul1632MaskedLocal_
 
+; todo make room to inline
+;call FixedMul1632MaskedLocal_
+
+  MOV CX, AX
+  MUL BX
+  XCHG AX, DX
+  XCHG AX, CX
+  CWD
+  AND BX, DX
+
+  IMUL SI
+  SUB CX, BX
+  SBB BX, BX
+  ADD AX, CX
+  ADC DX, BX
 
 
 
@@ -1804,7 +1830,7 @@ adc   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_hi+1 - OFFSET R_MASK24_ST
 ; xoffset < detailshiftitercount
 SELFMODIFY_MASKED_detailshiftitercount_8:
 cmp   di, 0
-jle    continue_outer_loop		; 6 bytes out of range
+jle   continue_outer_loop		; 6 bytes out of range
 
 exit_render_masked_segrange:
 mov   ax, NULL_TEX_COL
@@ -1813,7 +1839,7 @@ mov   word ptr ds:[_maskedcachedbasecol], ax
 mov   word ptr ds:[_maskedtexrepeat], 0
 
 pop   di
-pop   si
+
 ret   
 
 do_32_bit_mul:
@@ -1830,7 +1856,7 @@ jmp done_with_mul
 do_inner_loop:
 ;   ax is dc_x
 les   bx, dword ptr ds:[_maskedtexturecol]
-add   ax, ax
+sal   ax, 1
 add   bx, ax
 ;  si caches _texturecolumn in this inner loop
 mov   si, word ptr es:[bx]
@@ -1895,7 +1921,7 @@ got_colormap:
 
 mov   bx, word ptr ds:[_spryscale]
 mov   cx, word ptr ds:[_spryscale + 2]
-call  FastDiv3232FFFF_
+call  FastDiv3232FFFF_   ; todo inline?
 
 mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], dl
@@ -3831,96 +3857,6 @@ ENDIF
 
 
 
-PROC FixedMul1632MaskedLocal_ NEAR
-
-; AX  *  CX:BX
-;  0  1   2  3
-
-; AX * CX:BX
-
-;
-; 
-;BYTE
-; RETURN VALUE
-;                3       2       1		0
-;                DONTUSE USE     USE    DONTUSE
-
-
-;                               AXBXhi	 AXBXlo
-;                       DXBXhi  DXBXlo          
-;               S0BXhi  S0BXlo                          
-;
-;                       AXCXhi  AXCXlo
-;               DXCXhi  DXCXlo  
-;                       
-;               AXS1hi  AXS1lo
-;                               
-;                       
-;       
-
-
-
-; need to get the sign-extends for DX and CX
-
-
-
-
-push  si
-
-CWD				; DX/S0
-
-mov   es, ax    ; store ax in es
-AND   DX, BX	; S0*BX
-NEG   DX
-mov   SI, DX	; DI stores hi word return
-
-CWD 
-
-AND  DX, CX    ; DX*CX
-NEG  DX
-add  SI, DX    ; low word result into high word return
-
-CWD
-
-; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
-; UNLESS BX is 0. then its also 0!
-
-; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
-MOV  AX, BX    ; create BX copy
-SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
-ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
-
-AND  AX, DX    ; 0 or BX - 1
-ADD  SI, AX    ; add DX * BX high word. 
-
-
-AND  DX, BX    ; DX * BX low bits
-NEG  DX
-XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
-
-mov  AX, ES    ; grab AX from ES
-mul  DX        ; BX*AX  
-add  BX, DX    ; high word result into low word return
-ADC  SI, 0
-
-mov  AX, CX   ; AX holds CX
-CWD           ; S1 in DX
-
-mov  CX, ES   ; AX from ES
-AND  DX, CX   ; S1*AX
-NEG  DX
-ADD  SI, DX   ; result into high word return
-
-MUL  CX       ; AX*CX
-
-ADD  AX, BX	  ; set up final return value
-ADC  DX, SI
- 
-
-pop   si
-ret
-
-ENDP
 
 
 ;R_PointOnSegSide_
@@ -4094,7 +4030,20 @@ jne   do_sign_bit_return
 mov   di, cx  ; store cx.. 
 pop   bx
 mov   cx, dx
-call FixedMul1632MaskedLocal_
+;call FixedMul1632MaskedLocal_
+  MOV ES, CX
+  MOV CX, AX
+  MUL BX
+  XCHG AX, DX
+  XCHG AX, CX
+  CWD
+  AND BX, DX
+  MOV DX, ES
+  IMUL DX
+  SUB CX, BX
+  SBB BX, BX
+  ADD AX, CX
+  ADC DX, BX
 
 
 
@@ -4105,7 +4054,20 @@ push  ax
 mov   ax, si
 mov   di, dx
 
-call FixedMul1632MaskedLocal_
+;call FixedMul1632MaskedLocal_
+  MOV ES, CX
+  MOV CX, AX
+  MUL BX
+  XCHG AX, DX
+  XCHG AX, CX
+  CWD
+  AND BX, DX
+  MOV DX, ES
+  IMUL DX
+  SUB CX, BX
+  SBB BX, BX
+  ADD AX, CX
+  ADC DX, BX
 
 
 cmp   dx, di
@@ -4637,16 +4599,16 @@ les  di, dword ptr ds:[_ds_p]
 sub  di, (SIZE DRAWSEG_T)
 
 jle  done_rendering_masked_segranges
-mov  si, es
+
 check_next_seg:
-cmp  word ptr es:[di + 01Ah], NULL_TEX_COL
+cmp  word ptr es:[di + DRAWSEG_T.drawseg_maskedtexturecol_val], NULL_TEX_COL
 je   not_masked
 
 mov  ax, word ptr es:[di + 2]
 mov  cx, word ptr es:[di + 4]
 
 call R_RenderMaskedSegRange_
-mov  es, si
+mov  es, word ptr ds:[_ds_p + 2]
 not_masked:
 sub  di, (SIZE DRAWSEG_T)
 
@@ -5671,7 +5633,7 @@ mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_5+4 - OFFSET R_MASK24_
 mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_6+1 - OFFSET R_MASK24_STARTMARKER_], al
 mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_7+4 - OFFSET R_MASK24_STARTMARKER_], al
 mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_8+2 - OFFSET R_MASK24_STARTMARKER_], al
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_9+1 - OFFSET R_MASK24_STARTMARKER_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_9+2 - OFFSET R_MASK24_STARTMARKER_], al
 
 
 mov   ax, word ptr ss:[_detailshiftandval]
