@@ -1329,7 +1329,7 @@ les   bx, dword ptr ds:[bx]				; get v1 offset
 mov   cx, es                            ; get v2 offset
 mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 
-; todo i think remove this.
+; todo i think remove this. i think they are preshifted, double check
 SHIFT_MACRO shl bx 2
 SHIFT_MACRO shl cx 2
 
@@ -3886,6 +3886,7 @@ SHIFT_MACRO shl si 3
 mov   di, word ptr ds:[_segs_render + si + SEG_RENDER_T.sr_v1Offset]
 mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 
+; todo lodsw chain?
 mov   bx, word ptr es:[di]      ; lx
 mov   ax, word ptr es:[di + 2]  ; ly
 

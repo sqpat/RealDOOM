@@ -2166,14 +2166,6 @@ loop_next_thingref:
 test      si, si
 je        done_with_sector
 
-IF COMPISA GE COMPILE_186
-    imul      si, si, (SIZE MOBJ_POS_T)
-ELSE
-    mov       ax, (SIZE MOBJ_POS_T)
-    mul       si
-    xchg      ax, si
-ENDIF
-
 mov       es, word ptr ds:[_MOBJPOSLIST_SEGMENT_PTR]
 
 mov       ax, OFFSET _thintriangle_guy

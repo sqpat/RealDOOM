@@ -877,7 +877,7 @@ xchg  si, ax	; v1 divline ptr to si
 
 les   bx, DIVLINE_T ptr ds:[_trace.dl_dx]
 mov   cx, es
-les   ax, dword ptr ds:[si + 0Ch]
+les   ax, dword ptr ds:[si + DIVLINE_T.dl_dy]
 mov   dx, es
 call  FixedMul2432_MapLocal_
 
@@ -886,7 +886,7 @@ mov   cx, es
 push  ax	   ; bp-2
 mov   di, dx
 
-les   ax, dword ptr ds:[si + 8]
+les   ax, dword ptr ds:[si + DIVLINE_T.dl_dx]
 mov   dx, es
 call  FixedMul2432_MapLocal_
 
@@ -912,9 +912,9 @@ den_not_zero:
 ;num = FixedMul2432 ( (v1->x.w - v2->x.w) ,v1->dy.w) + 
 ;		FixedMul2432 ( (v2->y.w - v1->y.w), v1->dx.w);
 
-les   bx, dword ptr ds:[si + 0Ch]
+les   bx, dword ptr ds:[si + DIVLINE_T.dl_dy]
 mov   cx, es
-les   ax, dword ptr ds:[si]
+les   ax, dword ptr ds:[si + DIVLINE_T.dl_x]
 mov   dx, es
 sub   ax, DIVLINE_T ptr ds:[_trace.dl_x]
 sbb   dx, DIVLINE_T ptr ds:[_trace.dl_x+2]
@@ -927,10 +927,10 @@ mov   di, dx
 les   ax, DIVLINE_T ptr ds:[_trace.dl_y]
 mov   dx, es
 
-sub   ax, word ptr ds:[bx + 4]
-sbb   dx, word ptr ds:[bx + 6]
+sub   ax, word ptr ds:[bx + DIVLINE_T.dl_y + 0]
+sbb   dx, word ptr ds:[bx + DIVLINE_T.dl_y + 2]
 
-les   bx, dword ptr ds:[bx + 8]
+les   bx, dword ptr ds:[bx + DIVLINE_T.dl_dx]
 mov   cx, es
 
 call  FixedMul2432_MapLocal_
@@ -1028,10 +1028,10 @@ jle  front_floor_above_back_floor
 xchg ax, bx ; swap param to write..
 
 front_floor_above_back_floor:
-mov  word ptr ss:[_lineopening+2], ax
+mov  word ptr ss:[_lineopening + LINE_OPENING_T.lo_openbottom], ax
 mov  ax, ss
 mov  ds, ax
-mov  word ptr ds:[_lineopening+4], bx
+mov  word ptr ds:[_lineopening + LINE_OPENING_T.lo_lowfloor], bx
 
 
 mov  ax, es  ; front+2
@@ -1040,7 +1040,7 @@ jl   front_ceiling_below_back_ceiling
 xchg ax, dx   ; swap what to write
 
 front_ceiling_below_back_ceiling:
-mov  word ptr ds:[_lineopening+0], ax  ; set opentop
+mov  word ptr ds:[_lineopening + LINE_OPENING_T.lo_opentop], ax  ; set opentop
 
 
 return_lineopening:
@@ -1054,7 +1054,7 @@ ENDP
 
 ;void __near P_UnsetThingPosition (mobj_t __near* thing, uint16_t mobj_pos_offset);
 
-PROC P_UnsetThingPosition_ NEAR
+PROC   P_UnsetThingPosition_ NEAR
 PUBLIC P_UnsetThingPosition_ 
 
 ; #define GETTHINKERREF(a) ((((uint16_t)((byte __near*)a - (byte __near*)thinkerlist))-4)/(SIZE THINKER_T))
@@ -1086,12 +1086,6 @@ lea   cx, ds:[si - (_thinkerlist + THINKER_T.t_data) - 4]
 
 
 
-
-
-
-mov   di, MOBJ_POS_T ptr es:[bx + MOBJ_POS_T.mp_snextRef]	; snextRef
-
-
 ;	if (!(thingflags1 & MF_NOSECTOR)) {
 
 test  byte ptr es:[bx + MOBJ_POS_T.mp_flags1], MF_NOSECTOR  ; flags1
@@ -1101,44 +1095,36 @@ jne   mobj_inert_not_in_blockmap
 ;			changeThing = (mobj_t __near*)&thinkerlist[thingsnextRef].data;
 ;			changeThing->sprevRef = thingsprevRef;
 ;		}
+mov   di, word ptr es:[bx + MOBJ_POS_T.mp_snextRef]	; snextRef
 
 
-test  di, di
+test  di, di			; if (thingsnextRef) {
 je    no_next_ref
 
+; unlink; remove the prevref on this
 
-IF COMPISA GE COMPILE_186
+; convert from mobjpos to mobj...
 
-	xchg  ax, si ; store si in ax
-	imul  si, di, (SIZE THINKER_T)
-	mov   word ptr ds:[si + (_thinkerlist + THINKER_T.t_data)], dx
-	xchg  ax, si  ; restore si
+push bx
+push dx
 
-ELSE
+mov  ax, di
+xor  dx, dx
+mov  bx, SIZE MOBJ_POS_T
+div  bx					; ax has index...
 
-	push  dx
-
-	mov   ax, (SIZE THINKER_T)
-	mul   di
-	xchg  ax, si 
-
-	pop   dx
-	mov   word ptr ds:[si + (_thinkerlist + THINKER_T.t_data)], dx
-	xchg  ax, si 
-
-
-ENDIF
+mov  dx, SIZE THINKER_T
+mul  dx					; ax has mobj array offset
+mov  bx, ax				; changeThing = (mobj_t __near*)&thinkerlist[thingsnextRef].data;
+pop  dx
+mov   word ptr ds:[bx + (_thinkerlist + THINKER_T.t_data + MOBJ_T.m_sprevRef)], dx ;	changeThing->sprevRef = thingsprevRef;
+pop  bx ; restore thing_pos
 
 
 no_next_ref:
 
-;		if (thingsprevRef) {
-;			changeThing_pos = &mobjposlist_6800[thingsprevRef];
-;			changeThing_pos->snextRef = thingsnextRef;
-;		}
-
 test  dx, dx
-jne   has_prev_ref
+jne   has_prev_ref			;		if (thingsprevRef) {
 
 ;			sectors[thingsecnum].thinglistRef = thingsnextRef;
 
@@ -1155,6 +1141,8 @@ mov   es, ax
 
 jmp   done_clearing_blockmap
 
+; todo this sucks...
+
 exit_unset_position_and_pop_once:
 pop   ax	; undo bp - 2
 pop   di
@@ -1165,15 +1153,15 @@ ret
 
 
 has_prev_ref:
-;			changeThing_pos = &mobjposlist_6800[thingsprevRef];
-;			changeThing_pos->snextRef = thingsnextRef;
+
+
 
 ; dx is thingsprevRef
 ; di is thingsnextRef
 
 IF COMPISA GE COMPILE_186
 
-	imul  si, dx, (SIZE MOBJ_POS_T)
+	imul  si, dx, (SIZE MOBJ_POS_T)   ;			changeThing_pos = &mobjposlist_6800[thingsprevRef];
 
 ELSE
 
@@ -1189,9 +1177,13 @@ ELSE
 
 ENDIF
 
-mov   word ptr es:[si + 0Ch], di
+
+; this code path leads to trouble.
+mov   word ptr es:[si + MOBJ_POS_T.mp_snextRef], di  ;			changeThing_pos->snextRef = thingsnextRef;
 mobj_inert_not_in_blockmap:
 done_clearing_blockmap:
+
+; di free now
 
 ;    if (! (thingflags1 & MF_NOBLOCKMAP) ) {
 
@@ -1288,6 +1280,7 @@ xchg  cx, ax			    ; cx gets thisref. ax restored.
 
 pop   di	; di gets bnextRef
 
+
 do_next_check_nextref_loop_iter:
 ; ax is nextref
 ; si becomes thinkerlist[nextref]
@@ -1309,7 +1302,7 @@ ELSE
 
 ENDIF
 
-add   si, (_thinkerlist + THINKER_T.t_data) + m_bnextRef
+add   si, (_thinkerlist + THINKER_T.t_data) + MOBJ_T.m_bnextRef
 cmp   cx, word ptr ds:[si]
 jne   ref_not_a_match
 ; write bnextref and break look
@@ -1358,7 +1351,7 @@ ENDP
 ; dx    thing_pos_offset
 ; bx    knownsecnum
 
-PROC P_SetThingPosition_ NEAR
+PROC   P_SetThingPosition_ NEAR
 PUBLIC P_SetThingPosition_ 
 
 push  cx
@@ -1378,7 +1371,7 @@ mov   si, dx  ; thing_pos offset
 mov   bx, (SIZE THINKER_T)
 sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
-div   bx
+div   bx			; todo get rid of, change to ptr
 push  ax	;bp - 2 is thingref
 
 mov   bx, MOBJPOSLIST_SEGMENT
@@ -1394,18 +1387,18 @@ jne   secnum_ready
 ;		int16_t subsectorsecnum = subsectors[subsecnum].secnum;
 ;		thing->secnum = subsectorsecnum;
 
-les   ax, dword ptr es:[si]
+les   ax, dword ptr es:[si + MOBJ_POS_T.mp_x]
 mov   dx, es
 mov   es, bx   ; was the segment above..
-les   bx, dword ptr es:[si + 4]
+les   bx, dword ptr es:[si + MOBJ_POS_T.mp_y]
 mov   cx, es
-;sub   si, 8
-call  R_PointInSubsector_
+
+call  R_PointInSubsector_  ; todo return preshifted?
 SHIFT_MACRO shl   ax 2
 xchg  ax, bx
 mov   ax, SUBSECTORS_SEGMENT
 mov   es, ax
-mov   cx, word ptr es:[bx + SUBSECTOR_T.ss_secnum]
+mov   cx, word ptr es:[bx + SUBSECTOR_T.ss_secnum]  ; preshifted...
 ; todo make this work without shifts
 SHIFT_MACRO sar cx 4
 mov   ax, MOBJPOSLIST_SEGMENT
@@ -1415,9 +1408,9 @@ secnum_ready:
 
 ;		thing->secnum = knownsecnum;
 
-mov   word ptr ds:[di + MOBJ_T.m_secnum], cx
+mov   word ptr ds:[di + MOBJ_T.m_secnum], cx	; todo store shifted
 
-;pop   cx  ; cx gets thingRef
+mov    bx, cx ; get secnum
 mov    cx, word ptr [bp - 2]
 
 ;	if (!(thing_pos->flags1 & MF_NOSECTOR)) {
@@ -1429,80 +1422,55 @@ jne   done_setting_sector_stuff
 ;		oldsectorthinglist = sectors[thing->secnum].thinglistRef;
 ;		sectors[thing->secnum].thinglistRef = thingRef;
 
-mov   bx, MOBJ_T ptr ds:[di + MOBJ_T.m_secnum]
+
+SHIFT_MACRO shl   bx  4
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
-SHIFT_MACRO shl   bx  4
 
-mov   ax, cx
-mov   dx, ax
-xchg  ax, word ptr es:[bx + SECTOR_T.sec_thinglistRef]
+; si is thingpos
+; di is thing   
+; cx is thingRef
+; bx is sector
+mov   ax, si
+
+
+
 
 ;		thing = (mobj_t __near*)&thinkerlist[thingRef].data;
 ;		thing_pos = &mobjposlist_6800[thingRef];
+xchg  ax, word ptr es:[bx + SECTOR_T.sec_thinglistRef]
+
+; ax is new thingpos
+
+mov   dx, MOBJPOSLIST_SEGMENT
+mov   es, dx
+xor   dx, dx
 
 
-
-IF COMPISA GE COMPILE_186
-	imul  di, dx, (SIZE THINKER_T)
-ELSE
-	push  ax
-	push  dx
-
-	mov   ax, (SIZE THINKER_T)
-	mul   dx
-	xchg  ax, di
-
-	pop   dx
-	pop   ax
-ENDIF
-
-add   di, (_thinkerlist + THINKER_T.t_data)
-mov   si, MOBJPOSLIST_SEGMENT
-mov   es, si
-
-
-IF COMPISA GE COMPILE_186
-	imul  si, dx, (SIZE MOBJ_POS_T)
-ELSE
-	push  ax
-	push  dx
-
-	mov   ax, (SIZE MOBJ_POS_T)
-	mul   dx
-	xchg  ax, si
-
-	pop   dx
-	pop   ax
-ENDIF
-
-;		thing->sprevRef = NULL_THINKERREF;
-mov   word ptr ds:[di + MOBJ_T.m_sprevRef], 0
-;		thing_pos->snextRef = oldsectorthinglist;
-mov   word ptr es:[si + MOBJ_POS_T.mp_snextRef], ax
+mov   word ptr ds:[di + MOBJ_T.m_sprevRef], dx		;		thing->sprevRef = NULL_THINKERREF;  dx known 0
+mov   word ptr es:[si + MOBJ_POS_T.mp_snextRef], ax ;		thing_pos->snextRef = oldsectorthinglist;
 ;		if (thing_pos->snextRef) {
-test  ax, ax
 
-
+test  ax, ax										;       if (thing_pos->snextRef) {
 je    done_setting_sector_stuff
 
 ;			thingList = (mobj_t __near*)&thinkerlist[thing_pos->snextRef].data;
-;			thingList->sprevRef = thingRef;
+
+; convert old sector's thingpos to a thing
+
+; dx already 0
+mov   bx, SIZE MOBJ_POS_T
+div   bx
+
+mov   dx, SIZE THINKER_T   ; todo imul 186
+mul   dx
+xchg  ax, bx   ; bx gets ptr to thinker_t ax gets index.
+
+mov   word ptr ds:[bx + (_thinkerlist + THINKER_T.t_data + MOBJ_T.m_sprevRef)], cx   ;  thingList->sprevRef = thingRef;
 
 
-IF COMPISA GE COMPILE_186
-	imul  bx, ax, (SIZE THINKER_T)
-ELSE
-	push  dx
 
-	mov   bx, (SIZE THINKER_T)
-	mul   bx
-	xchg  ax, bx
 
-	pop   dx
-ENDIF
-
-mov   word ptr ds:[bx + (_thinkerlist + THINKER_T.t_data)], dx
 
 done_setting_sector_stuff:
 
@@ -1520,11 +1488,11 @@ jne   exit_set_position
 ;		if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky < bmapheight) {
 
 
-mov   ax, word ptr es:[si + 6]
+mov   ax, word ptr es:[si + MOBJ_POS_T.mp_y + 2]
 sub   ax, word ptr ds:[_bmaporgy]
 jl    set_null_bnextref_and_exit ; quick check branches early
 
-mov   bx, word ptr es:[si + 2]
+mov   bx, word ptr es:[si + MOBJ_POS_T.mp_x + 2]
 sub   bx, word ptr ds:[_bmaporgx]
 jl    set_null_bnextref_and_exit ; quick check branches early
 
@@ -1578,6 +1546,7 @@ mov   es, ax
 ;			blocklinks[bindex] = thingRef;
 ; cx is already thingRef;
 
+; todo this. seems fine...?
 xchg  cx, word ptr es:[bx]  ; set thingref. get linkref
 mov   word ptr ds:[di + MOBJ_T.m_bnextRef], cx ; set linkref
 
@@ -1605,7 +1574,7 @@ ENDP
 
 ; int16_t __far R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y ) {
 
-PROC R_PointInSubsector_ NEAR
+PROC   R_PointInSubsector_ NEAR  ; todo return preshifted? or struct holds them preshifted?
 PUBLIC R_PointInSubsector_ 
 
 
@@ -1801,7 +1770,7 @@ jge  exit_blockthingsiterator_return1
 
 xchg ax, bx  ; bx gets x
 xchg ax, dx  ; ax gets y
-imul word ptr ds:[_bmapwidth]
+imul word ptr ds:[_bmapwidth]	; should it be mul not imul?? we just checked for < 0 above right?
 add  bx, ax
 sal  bx, 1
 mov  ax, BLOCKLINKS_SEGMENT
@@ -1839,7 +1808,7 @@ mov  dx, si
 call di
 
 jnc  exit_blockthingsiterator  ; return noc arry as false as is.
-mov  si, word ptr ds:[si + 2]
+mov  si, word ptr ds:[si + MOBJ_T.m_bnextRef]
 test si, si
 jne  loop_check_next_block_thing
 exit_blockthingsiterator_return1:
@@ -2896,8 +2865,8 @@ call  P_LineOpening_
 
 ; 		if (lineopening.opentop < lineopening.openbottom) {
 
-mov   ax, word ptr ds:[_lineopening]
-cmp   ax, word ptr ds:[_lineopening+2]
+mov   ax, word ptr ds:[_lineopening + LINE_OPENING_T.lo_opentop]
+cmp   ax, word ptr ds:[_lineopening + LINE_OPENING_T.lo_openbottom]
 jl    use_thru_wall
 ; cant use thru wall
 stc
@@ -3033,8 +3002,8 @@ call  P_LineOpening_
 ;	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, (lineopening.opentop - lineopening.openbottom));
 
 mov   bx, word ptr ds:[_playerMobj]
-mov   ax, word ptr ds:[_lineopening+0]
-sub   ax, word ptr ds:[_lineopening+2]
+mov   ax, word ptr ds:[_lineopening + LINE_OPENING_T.lo_opentop]
+sub   ax, word ptr ds:[_lineopening + LINE_OPENING_T.lo_openbottom]
 
 SHIFT_MACRO sar   ax 3
 cmp   ax, word ptr ds:[bx + 0Ch]
@@ -3045,14 +3014,9 @@ jl    is_blocking
 ;		goto isblocking;		// too big a step up
 
 
-xor       ax, ax
-mov       dx, word ptr ds:[_lineopening+0]
-sar       dx, 1
-rcr       ax, 1
-sar       dx, 1
-rcr       ax, 1
-sar       dx, 1
-rcr       ax, 1
+xor   ax, ax
+mov   dx, word ptr ds:[_lineopening + LINE_OPENING_T.lo_opentop]
+SHIFT32_MACRO_RIGHT dx ax 3
 
 les   di, dword ptr ds:[_playerMobj_pos]
 
@@ -3060,7 +3024,7 @@ les   di, dword ptr ds:[_playerMobj_pos]
 
 sub   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 0]		; subtract height
 sbb   dx, word ptr es:[di + MOBJ_POS_T.mp_z + 2]	; subtract height
-cmp   dx, word ptr ds:[bx + 0Ch]
+cmp   dx, word ptr ds:[bx + MOBJ_T.m_height + 2]
 jge   continue_blocking_check
 is_blocking:
 
@@ -3096,19 +3060,14 @@ continue_blocking_check:
 
 
 jne   continue_blocking_check_2
-cmp   ax, word ptr ds:[bx + 0Ah]
+cmp   ax, word ptr ds:[bx + MOBJ_T.m_height + 0]
 jb    is_blocking
 continue_blocking_check_2:
 
 
 xor       cx, cx
-mov       ax, word ptr ds:[_lineopening+2]
-sar       ax, 1
-rcr       cx, 1
-sar       ax, 1
-rcr       cx, 1
-sar       ax, 1
-rcr       cx, 1
+mov       ax, word ptr ds:[_lineopening + LINE_OPENING_T.lo_openbottom]
+SHIFT32_MACRO_RIGHT ax cx 3
 
 
 
@@ -3207,7 +3166,7 @@ ELSE
 	sar ax, cl
 ENDIF
 
-cmp   ax, word ptr ds:[si + 0Ch]
+cmp   ax, word ptr ds:[si + MOBJ_T.m_height + 2]
 jnge  exit_trymove_return0
 
 ;		floatok = true;
@@ -3232,29 +3191,24 @@ rcr   cx, 1
 sar   ax, 1
 rcr   cx, 1
 
-sub   cx, word ptr es:[di + 8]
-sbb   ax, word ptr es:[di + 0Ah]
+sub   cx, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
+sbb   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
 
-cmp   ax, word ptr ds:[si + 0Ch]
+cmp   ax, word ptr ds:[si + MOBJ_T.m_height + 2]
 jl    exit_trymove_return0
 jne   mobj_top_ok
-cmp   cx, word ptr ds:[si + 0Ah]
+cmp   cx, word ptr ds:[si + MOBJ_T.m_height + 0]
 jb    exit_trymove_return0  ; mobj must lower itself to fit
 mobj_top_ok:
 
 
 mov   ax, word ptr ds:[_tmfloorz]
 xor   cx, cx
-sar   ax, 1
-rcr   cx, 1
-sar   ax, 1
-rcr   cx, 1
-sar   ax, 1
-rcr   cx, 1
+SHIFT32_MACRO_RIGHT ax cx 3
 
 
-sub   cx, word ptr es:[di + 8]
-sbb   ax, word ptr es:[di + 0Ah]
+sub   cx, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
+sbb   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
 cmp   ax, 24
 jg    exit_trymove_return0
 jne   mobj_bot_ok
@@ -3859,8 +3813,8 @@ mov   es, word ptr [bp - 2]
 
 
 
-push  word ptr es:[di + 0Ah]  ; frontsecnum bp - 014h
-push  word ptr es:[di + 0Ch]  ; backsecnum  bp - 016h
+push  word ptr es:[di + LINE_PHYSICS_T.lp_frontsecnum]  ; frontsecnum bp - 014h
+push  word ptr es:[di + LINE_PHYSICS_T.lp_backsecnum]  ; backsecnum  bp - 016h
 
 ; si is linebot
 ; ax is free
@@ -4004,7 +3958,7 @@ call  P_LineOpening_
 ;		ceilinglinenum = linenum;
 ;    } 
 
-mov   ax, word ptr ds:[_lineopening+0]
+mov   ax, word ptr ds:[_lineopening + LINE_OPENING_T.lo_opentop]
 cmp   ax, word ptr ds:[_tmceilingz]
 
 jge   dont_adjust_ceil
@@ -4017,7 +3971,7 @@ dont_adjust_ceil:
 ;		tmfloorz = lineopening.openbottom;
 ;	}
 
-mov   ax, word ptr ds:[_lineopening+2]
+mov   ax, word ptr ds:[_lineopening + LINE_OPENING_T.lo_openbottom]
 cmp   ax, word ptr ds:[_tmfloorz]
 jle   dont_adjust_floor
 mov   word ptr ds:[_tmfloorz], ax
@@ -4027,7 +3981,7 @@ dont_adjust_floor:
 ;		tmdropoffz = lineopening.lowfloor;
 ;	}
 
-mov   ax, word ptr ds:[_lineopening+4]
+mov   ax, word ptr ds:[_lineopening + LINE_OPENING_T.lo_lowfloor]
 cmp   ax, word ptr ds:[_tmdropoffz]
 jge   dont_adjust_dropoff
 mov   word ptr ds:[_tmdropoffz], ax
@@ -4144,9 +4098,9 @@ mov   si, dx
 mov   ax, ss
 mov   ds, ax
 
-push  word ptr ds:[si + 0Ch]  ; bp - 010h
-push  word ptr ds:[si + 0Ah]  ; bp - 012h
-push  word ptr ds:[si + 01Ah] ; bp - 014h ; hi byte garbage.
+push  word ptr ds:[si + MOBJ_T.m_height + 2]  ; bp - 010h
+push  word ptr ds:[si + MOBJ_T.m_height + 0]  ; bp - 012h
+push  word ptr ds:[si + MOBJ_T.m_mobjtype]    ; bp - 014h ; hi byte garbage.
 
 mov   di, word ptr ds:[_tmthing]
 
@@ -4200,14 +4154,14 @@ jge  exit_checkthing_return_1_3
 ;	tmthingtargetRef = tmthing->targetRef;
 
 mov   di, word ptr ds:[_tmthing]
-push  word ptr ds:[di + 0Ch] ; bp - 016h
-push  word ptr ds:[di + 0Ah] ; bp - 018h
+push  word ptr ds:[di + MOBJ_T.m_height + 2] ; bp - 016h
+push  word ptr ds:[di + MOBJ_T.m_height + 0] ; bp - 018h
 
 les   bx, dword ptr ds:[_tmthing_pos]
-push  word ptr es:[bx + 8] ; bp - 01Ah
+push  word ptr es:[bx + MOBJ_POS_T.mp_z + 0] ; bp - 01Ah
 
-mov   ax, word ptr es:[bx + 0Ah]  ; store tmthingz hi in ax
-push  word ptr ds:[di + 022h] ; bp - 01Ch
+mov   ax, word ptr es:[bx + MOBJ_POS_T.mp_z + 2]  ; store tmthingz hi in ax
+push  word ptr ds:[di + MOBJ_T.m_targetRef] ; bp - 01Ch
 
 
 test  byte ptr es:[bx + MOBJ_POS_T.mp_flags2 + 1], (MF_SKULLFLY SHR 8)
@@ -5619,14 +5573,8 @@ floorheights_not_equal:
 mov   cx, dx
 xchg  ax, bx
 
-mov   dx, word ptr ds:[_lineopening+2]
-xor   ax, ax
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
+mov   dx, word ptr ds:[_lineopening + LINE_OPENING_T.lo_openbottom]
+SHIFT32_MACRO_RIGHT dx ax 3
 
 sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
@@ -5663,14 +5611,9 @@ ceilingheights_not_equal:
 pop   bx  ; recover dist
 pop   cx 
 
-mov   dx, word ptr ds:[_lineopening+0]
+mov   dx, word ptr ds:[_lineopening + LINE_OPENING_T.lo_opentop]
 xor   ax, ax
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
-sar   dx, 1
-rcr   ax, 1
+SHIFT32_MACRO_RIGHT dx ax 3
 
 sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
@@ -5747,8 +5690,8 @@ les   di, dword ptr [bp - 8]
 les   ax, dword ptr es:[di + 8]
 mov   dx, es
 mov   di, word ptr [bp - 4]
-add   ax, word ptr ds:[di + 0Ah]
-adc   dx, word ptr ds:[di + 0Ch]
+add   ax, word ptr ds:[di + MOBJ_T.m_height + 0]
+adc   dx, word ptr ds:[di + MOBJ_T.m_height + 2]
 
 sub   ax, word ptr ds:[_shootz+0]
 sbb   dx, word ptr ds:[_shootz+2]
@@ -6063,8 +6006,8 @@ call  P_LineOpening_
 ;			return false;		// stop
 ;		}
 
-mov   ax, word ptr ds:[_lineopening+2]
-cmp   ax, word ptr ds:[_lineopening+0]
+mov   ax, word ptr ds:[_lineopening + LINE_OPENING_T.lo_openbottom]
+cmp   ax, word ptr ds:[_lineopening + LINE_OPENING_T.lo_opentop]
 jge   exit_aimtraverse_return_0_2
 
 ;		dist = P_GetAttackRangeMult(attackrange16, in->frac);
@@ -6098,7 +6041,7 @@ je    aimtraverse_floorheights_equal
 mov   cx, dx
 xchg  ax, bx
 
-mov   dx, word ptr ds:[_lineopening+2]
+mov   dx, word ptr ds:[_lineopening + LINE_OPENING_T.lo_openbottom]
 xor   ax, ax
 sar   dx, 1
 rcl   ax, 1
@@ -6140,14 +6083,9 @@ je    aimtraverse_ceilingheights_equal
 ; 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.opentop);
 ;			slope = FixedDiv (temp.w - shootz.w , dist);
 
-mov   dx, word ptr ds:[_lineopening+0]
+mov   dx, word ptr ds:[_lineopening + LINE_OPENING_T.lo_opentop]
 xor   ax, ax
-sar   dx, 1
-rcl   ax, 1
-sar   dx, 1
-rcl   ax, 1
-sar   dx, 1
-rcl   ax, 1
+SHIFT32_MACRO_RIGHT dx ax 3
 
 pop   cx ; dist hi
 pop   bx ; dist lo
@@ -6842,40 +6780,10 @@ jmp   aim_line_done_with_switchblock_shift
 
 aim_line_is_melee:
 
-IF COMPISA GE COMPILE_386
-	SHLD  dx, ax, 6
-	SHLD  cx, bx, 6
-ELSE
+; todo is < 286 variant faster doing moves and shift 2?
+SHIFT32_MACRO_LEFT dx ax 6
+SHIFT32_MACRO_LEFT cx bx 6
 
-	; shift 6
-	sal   ax, 1
-	rcl   dx, 1
-	sal   ax, 1
-	rcl   dx, 1
-	sal   ax, 1
-	rcl   dx, 1
-	sal   ax, 1
-	rcl   dx, 1
-	sal   ax, 1
-	rcl   dx, 1
-	sal   ax, 1
-	rcl   dx, 1
-
-	; shift 6
-	sal   bx, 1
-	rcl   cx, 1
-	sal   bx, 1
-	rcl   cx, 1
-	sal   bx, 1
-	rcl   cx, 1
-	sal   bx, 1
-	rcl   cx, 1
-	sal   bx, 1
-	rcl   cx, 1
-	sal   bx, 1
-	rcl   cx, 1
-
-ENDIF
 
 cmp   si, CHAINSAWRANGE
 jne   aim_line_done_with_switchblock_shift

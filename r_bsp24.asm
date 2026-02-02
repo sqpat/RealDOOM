@@ -3003,8 +3003,6 @@ PROC R_ProjectSprite_ NEAR
 ; bp - 020h:   spriteindex. used for spriteframes and spritetopindex?
 
 
-push  si
-push  es
 push  bp
 mov   bp, sp
 mov   dx, es					   ; back this up...
@@ -3195,9 +3193,8 @@ cmp   dx, di
 jle   not_too_far_off_side_highbits
 exit_project_sprite:
 LEAVE_MACRO 
-pop   es
-pop   si
 ret   
+
 not_too_far_off_side_highbits:
 jne   not_too_far_off_side_lowbits
 cmp   ax, cx
@@ -3576,15 +3573,11 @@ mov   bx, 01000h
 mov   al, byte ptr ds:[_scalelight+bx+di]
 mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], al
 LEAVE_MACRO
-pop   es
-pop   si
 ret   
 
 exit_set_fullbright_colormap:
 mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], 0
 LEAVE_MACRO
-pop   es
-pop   si
 ret   
 
 SELFMODIFY_BSP_fixedcolormap_2_TARGET:
@@ -3592,8 +3585,6 @@ SELFMODIFY_BSP_fixedcolormap_1:
 exit_set_fixed_colormap:
 mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], 0
 LEAVE_MACRO
-pop   es
-pop   si
 ret   
 
 
@@ -3601,8 +3592,6 @@ ret
 exit_set_shadow:
 mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], COLORMAP_SHADOW
 LEAVE_MACRO
-pop   es
-pop   si
 ret   
 
 ENDP
@@ -3617,51 +3606,46 @@ PROC R_AddSprites_ NEAR
 
 ; es:bx = sector_t __far* sec
 
-mov   ax, word ptr es:[bx + SECTOR_T.sec_validcount]		; sec->validcount
-mov   dx, word ptr ds:[_validcount_global]
-cmp   ax, dx
-je    exit_add_sprites_quick
+mov   ax, word ptr ds:[_validcount_global]
+cmp   ax, word ptr es:[bx + SECTOR_T.sec_validcount]		; sec->validcount
 
-mov   word ptr es:[bx + SECTOR_T.sec_validcount], dx
+je    exit_add_sprites_quick  ; todo branch test. fall through ret is likely faster.
+
+mov   word ptr es:[bx + SECTOR_T.sec_validcount], ax
+xor   ax, ax
 mov   al, byte ptr es:[bx + SECTOR_T.sec_lightlevel]		; sec->lightlevel
-xor   ah, ah
 mov   dx, ax
 
 SHIFT_MACRO sar dx 4
 
 
-
 SELFMODIFY_BSP_extralight1:
 mov   al, 0
 add   ax, dx
-test  ax, ax
-jl    set_spritelights_to_zero
+js    set_spritelights_to_zero
 cmp   ax, LIGHTLEVELS
 jge   set_spritelights_to_max
 mov   ah, 48
 mul   ah
 spritelights_set:
 mov   word ptr cs:[SELFMODIFY_set_spritelights_1 + 1 - OFFSET R_BSP24_STARTMARKER_], ax 
-mov   ax, word ptr es:[bx + SECTOR_T.sec_thinglistref]
-test  ax, ax
+mov   si, word ptr es:[bx + SECTOR_T.sec_thinglistref]
+test  si, si
 je    exit_add_sprites
-mov   si, MOBJPOSLIST_SEGMENT
-mov   es, si
+
 
 loop_things_in_thinglist:
-; multiply by 18h ((SIZE MOBJ_POS_T)), AX maxes at MAX_THINKERS - 1 (839), cant 8 bit mul
-; tested, imul si, ax, (SIZE MOBJ_POS_T)  still slower
 
-
-SHIFT_MACRO sal ax 3
-
-
-mov   si, ax
-sal   si, 1
-add   si, ax
-call  R_ProjectSprite_
+mov   ax, MOBJPOSLIST_SEGMENT
+mov   es, ax
 mov   ax, word ptr es:[si + MOBJ_POS_T.mp_snextRef]
-test  ax, ax
+mov   word ptr cs:[SELFMODIFY_BSP_get_next_thing_in_sector+1], ax
+; es:si set, R_ProjectSprite doesnt need to push/pop.
+call  R_ProjectSprite_    ; todo inline
+
+SELFMODIFY_BSP_get_next_thing_in_sector:
+mov   si, 01000h
+test  si, si
 jne   loop_things_in_thinglist
 
 exit_add_sprites:

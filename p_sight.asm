@@ -76,12 +76,12 @@ mov   si, cx    ; si gets t2_pos
 ; todo clean up this di shuffling
 mov   es, ax    ; es holds t1
 mov   di, dx    ; di gets t2
-mov   ax, word ptr ds:[di + 4]
+mov   ax, word ptr ds:[di + MOBJ_T.m_secnum]
 cwd   
 
 xchg  ax, cx  ; back up low
 mov   di, es    ; di gets t1 
-mov   ax, word ptr ds:[di + 4]
+mov   ax, word ptr ds:[di + MOBJ_T.m_secnum]
 mov   di, dx  ; back up high	di:cx holds first result
 
 mul   word ptr ds:[_numsectors]
@@ -133,10 +133,10 @@ mov   di, cx				; grab t1 again
 
 ;    sightzstart = t1_pos->z.w + t1->height.w - (t1->height.w>>2);
 
-mov   cx, word ptr es:[bx + 8]
-mov   si, word ptr es:[bx + 0Ah]
-mov   ax, word ptr ds:[di + 0Ah]
-mov   dx, word ptr ds:[di + 0Ch]
+mov   cx, word ptr es:[bx + MOBJ_POS_T.mp_z + 0]
+mov   si, word ptr es:[bx + MOBJ_POS_T.mp_z + 2]
+mov   ax, word ptr ds:[di + MOBJ_T.m_height + 0]
+mov   dx, word ptr ds:[di + MOBJ_T.m_height + 2]
 add   cx, ax
 adc   si, dx			; si:cx result
 
@@ -157,10 +157,10 @@ xchg  ax, bx				; bx gets sightzstart+2
 
 ;    topslope = (t2_pos->z.w+t2->height.w) - sightzstart;
 
-mov   ax, word ptr es:[si + 8]
-mov   dx, word ptr es:[si + 0Ah]
-add   ax, word ptr ds:[di + 0Ah]
-adc   dx, word ptr ds:[di + 0Ch]	; last di use...
+mov   ax, word ptr es:[si + MOBJ_POS_T.mp_z + 0]
+mov   dx, word ptr es:[si + MOBJ_POS_T.mp_z + 2]
+add   ax, word ptr ds:[di + MOBJ_T.m_height + 0]
+adc   dx, word ptr ds:[di + MOBJ_T.m_height + 2]	; last di use...
 sub   ax, cx			; subtract sightzstart	
 sbb   dx, bx
 
@@ -179,8 +179,8 @@ stosw
 
 ; cx:bx has sightzstart still..
 
-mov   ax, word ptr ds:[si + 8]
-mov   dx, word ptr ds:[si + 0Ah]
+mov   ax, word ptr ds:[si + MOBJ_POS_T.mp_z + 0]
+mov   dx, word ptr ds:[si + MOBJ_POS_T.mp_z + 2]
 sub   ax, cx			; subtract sightzstart
 sbb   dx, bx
 ; write bottomslope
@@ -953,6 +953,10 @@ ENDP
 
 ; what the heck?
 ; openwatcom turned this from a recursive to iterative function??? hello?? 
+
+
+; todo update to new bsp traversal method?
+
 ;return carry
 PROC    P_CrossBSPNode_ NEAR
 PUBLIC  P_CrossBSPNode_
@@ -1019,7 +1023,7 @@ mov   word ptr [bp - 6], ax
 test  ah, (NF_SUBSECTOR SHR 8)
 je    iterate_bsp_recursion
 
-; this fallthru should be impossible????
+; this fallthru should be impossible???? not sure
 is_subsector:
 mov   ax, word ptr [bp - 6]
 cmp   ax, 0FFFFh

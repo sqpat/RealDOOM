@@ -255,10 +255,10 @@ cmp       al, byte ptr ds:[_menuactive]
 je        do_ptick
 cmp       al, byte ptr ds:[_demoplayback]
 jne       do_ptick
-cmp       ax, word ptr ds:[_player + 8 + 2]
+cmp       ax, word ptr ds:[_player + PLAYER_T.player_viewzvalue + 2]
 jne       exit_pticker_return
 inc       ax
-cmp       ax, word ptr ds:[_player + 8 + 0]    ; player.viewzvalue
+cmp       ax, word ptr ds:[_player + PLAYER_T.player_viewzvalue + 0]  
 je        do_ptick
 exit_pticker_return:
 retf      
@@ -273,8 +273,7 @@ call      P_PlayerThink_
 
 PUSHA_NO_AX_MACRO ; revist once we call outer func...
 mov       si, word ptr ds:[_thinkerlist + THINKER_T.t_next]
-;test      si, si
-;je        exit_run_thinkers  ; 0 thinkers ought to be impossible?
+
 do_next_thinker:
 
 ;    imul  bx, si, SIZE THINKER_T  ; todo test shift vs mul...

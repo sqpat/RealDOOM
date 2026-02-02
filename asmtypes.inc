@@ -64,11 +64,11 @@ PLAYER_T STRUC
 PLAYER_T ENDS
 
 DIVLINE_T STRUC 
-    dl_x    dd ?
-    dl_y    dd ?
-    dl_dx   dd ?
-    dl_dy   dd ?
-DIVLINE_T ENDS
+    dl_x    dd ?  ; 0
+    dl_y    dd ?  ; 4
+    dl_dx   dd ?  ; 8
+    dl_dy   dd ?  ; 0Ch
+DIVLINE_T ENDS  ; 010h
 
 INTERCEPT_T STRUC 
     intercept_isaline    db ?
@@ -123,7 +123,7 @@ MOBJ_POS_T STRUC
     mp_x        dd ?        ; 0
     mp_y        dd ?        ; 4
     mp_z        dd ?        ; 8
-    mp_snextRef dw ?        ; C
+    mp_snextRef dw ?        ; C     ; preshifted offset to mobjpos, not index
     mp_angle    dd ?        ; E
     mp_statenum dw ?        ; 12
     mp_flags1   dw ?        ; 14
@@ -163,7 +163,7 @@ SECTOR_T STRUC
     sec_floorpic             db ?   ; 4
     sec_ceilingpic           db ?   ; 5
     sec_validcount           dw ?   ; 6
-    sec_thinglistRef         dw ?   ; 8
+    sec_thinglistRef         dw ?   ; 8     ; preshifted offset to mobjpos, not index
     sec_linecount            dw ?   ; A
     sec_linesoffset          dw ?   ; C
     sec_lightlevel           db ?   ; E
