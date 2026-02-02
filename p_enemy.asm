@@ -1253,17 +1253,17 @@ ENDP
 PROC    A_KeenDie_ NEAR
 PUBLIC  A_KeenDie_
 
-push  bp
-mov   bp, sp
 
 ;mov   si, ax
-push  word ptr ds:[si + MOBJ_T.m_mobjtype]
 
 mov   es, cx
 mov   cx, (SIZE THINKER_T)
 xor   dx, dx
 lea   ax, ds:[si - (_thinkerlist + THINKER_T.t_data)]
 div   cx
+
+mov   dl, byte ptr ds:[si + MOBJ_T.m_mobjtype]
+
 
 ; inlined A_Fall_
 and   byte ptr es:[bx + MOBJ_POS_T.mp_flags1], (NOT MF_SOLID)
@@ -1282,9 +1282,9 @@ mov       bx, word ptr es:[bx]
 
 
 ; todo sub if we add + 4
-mov   dx, word ptr ds:[bx + THINKER_T.t_prevFunctype]
-and   dx, TF_FUNCBITS
-cmp   dx, TF_MOBJTHINKER_HIGHBITS
+mov   si, word ptr ds:[bx + THINKER_T.t_prevFunctype]
+and   si, TF_FUNCBITS
+cmp   si, TF_MOBJTHINKER_HIGHBITS
 
 jne    not_thinker_skip_keencheck
 
@@ -1293,7 +1293,7 @@ jne    not_thinker_skip_keencheck
 cmp   ax, cx
 je    not_thinker_skip_keencheck
 mov   al, byte ptr ds:[bx + THINKER_T.t_data + MOBJ_T.m_mobjtype]
-cmp   al, byte ptr [bp - 2]
+cmp   al, dl
 jne   not_thinker_skip_keencheck
 cmp   word ptr ds:[bx + THINKER_T.t_data + MOBJ_T.m_health], 0
 jg    exit_keen_die
@@ -1310,7 +1310,7 @@ call  EV_DoDoor_
 
 
 exit_keen_die:
-LEAVE_MACRO 
+
 ret   
 
 
@@ -2602,26 +2602,20 @@ jmp   exit_a_tracer
 
 valid_tracerref:
 
-IF COMPISA GE COMPILE_186
-    imul  bx, ax, (SIZE THINKER_T)
-ELSE
-    xchg ax, bx
-    mov  ax, (SIZE THINKER_T)
-    mul  bx
-    xchg ax, bx
-ENDIF
+
+mov   bx, MOBJLOOKUPTABLE_SEGMENT
+mov   es, bx
+mov   bx, ax
+sal   bx, 1
+
+mov   si, word ptr es:[bx + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
+mov   bx, word ptr es:[bx]
 
 
-cmp   word ptr ds:[bx + _thinkerlist + THINKER_T.t_data + MOBJ_T.m_health], 0
+cmp   word ptr ds:[bx + THINKER_T.t_data + MOBJ_T.m_health], 0
 jle   jump_to_exit_a_tracer
 
-IF COMPISA GE COMPILE_186
-    imul  bx, ax, (SIZE MOBJ_POS_T)
-ELSE
-    mov  dx, (SIZE MOBJ_POS_T)
-    mul  dx
-    xchg ax, bx
-ENDIF
+mov   bx, si
 
 lds   si, dword ptr [bp - 6]
 
@@ -2861,16 +2855,16 @@ mov   ax, si
 mov   dl, SFX_SKEPCH
 call  S_StartSound_
 
-IF COMPISA GE COMPILE_186
-    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
-ELSE
-    mov   ax, (SIZE THINKER_T)
-    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
-ENDIF
+mov   bx, MOBJLOOKUPTABLE_SEGMENT
+mov   es, bx
+mov   bx, word ptr ds:[si + MOBJ_T.m_targetRef]
+sal   bx, 1
+mov   ax, word ptr es:[bx]
+
 
 mov   bx, si
 mov   dx, si
-add   ax, (_thinkerlist + THINKER_T.t_data)
+add   ax, THINKER_T.t_data
 call  P_DamageMobj_
 
 exit_a_skelfist_full:
@@ -3241,21 +3235,16 @@ mov   dx, S_VILE_HEAL1
 call  P_SetMobjState_
 
 
-IF COMPISA GE COMPILE_186
-    imul  si, word ptr ds:[_corpsehitRef], (SIZE THINKER_T)
-    imul  bx, word ptr ds:[_corpsehitRef], (SIZE MOBJ_POS_T)
-ELSE
-    mov   ax, (SIZE THINKER_T)
-    mov   cx, word ptr ds:[_corpsehitRef]
-    mul   cx
-    xchg  ax, si
-    mov   ax, (SIZE MOBJ_POS_T)
-    mul   cx
-    xchg  ax, bx
+mov   bx, MOBJLOOKUPTABLE_SEGMENT
+mov   es, bx
+mov   bx, word ptr ds:[_corpsehitRef]
+sal   bx, 1
+mov   si, word ptr es:[bx]
+mov   bx, word ptr es:[bx + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
+add   si, THINKER_T.t_data
 
-ENDIF
 
-add   si, (_thinkerlist + THINKER_T.t_data)
+
 mov   dl, SFX_SLOP
 mov   ax, si
 call  S_StartSound_
@@ -3493,28 +3482,20 @@ do_vile_target:
 
 call  A_FaceTarget_
 
-IF COMPISA GE COMPILE_186
-    mov   ax, word ptr ds:[si + MOBJ_T.m_targetRef]
-    imul  di, ax, (SIZE THINKER_T)
-    imul  bx, ax, (SIZE MOBJ_POS_T)
-ELSE
-    mov   ax, (SIZE THINKER_T)
-    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
-    xchg  ax, di
-    mov   ax, (SIZE MOBJ_POS_T)
-    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
-    xchg  ax, bx
+mov   bx, MOBJLOOKUPTABLE_SEGMENT
+mov   es, bx
+mov   bx, word ptr ds:[si + MOBJ_T.m_targetRef]
+sal   bx, 1
+mov   di, word ptr es:[bx]
+mov   bx, word ptr es:[bx + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
+add   di, THINKER_T.t_data
 
-ENDIF
 
-add   di, (_thinkerlist + THINKER_T.t_data)
+
 push  word ptr ds:[di + MOBJ_T.m_secnum]
-IF COMPISA GE COMPILE_186
-    push  MT_FIRE
-ELSE
-    mov   ax, MT_FIRE
-    push  ax
-ENDIF
+PUSH_MACRO MT_FIRE
+
+
 
 mov   ds, cx
 
@@ -3646,26 +3627,27 @@ LEAVE_MACRO
 ret   
 do_vile_attack:
 
-IF COMPISA GE COMPILE_186
-    imul  cx, ax, (SIZE MOBJ_POS_T)
-ELSE
-    mov   cx, (SIZE MOBJ_POS_T)
-    mul   cx
-    xchg  ax, cx
-ENDIF
+push  si
+mov   si, MOBJPOSLOOKUPTABLE_SEGMENT
+mov   es, si
+mov   si, ax
+sal   si, 1
+mov   cx, word ptr es:[si]
+pop   si
+
+
 mov   ax, si
 call  A_FaceTarget_
 
-IF COMPISA GE COMPILE_186
-    imul  di, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
-ELSE
-    mov   ax, (SIZE THINKER_T)
-    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
-    xchg  ax, di
-ENDIF
+
+mov   di, MOBJLOOKUPTABLE_SEGMENT
+mov   es, di
+mov   di, word ptr ds:[si + MOBJ_T.m_targetRef]
+sal   di, 1
+mov   di, word ptr es:[di]
+add   di, THINKER_T.t_data
 
 push  cx  ; bp - 6
-add   di, (_thinkerlist + THINKER_T.t_data)
 mov   ax, si
 mov   dx, di
 
@@ -3701,19 +3683,16 @@ mov   word ptr ds:[di + MOBJ_T.m_momz + 2], dx
 test  cx, cx
 je    exit_vile_attack
 
-IF COMPISA GE COMPILE_186
-    imul  ax, cx, (SIZE THINKER_T)
-    imul  di, cx, (SIZE MOBJ_POS_T)
-ELSE
-    mov   ax, (SIZE MOBJ_POS_T)
-    mul   cx
-    xchg  ax, di
-    mov   ax, (SIZE THINKER_T)
-    mul   cx
-ENDIF
+mov   di, MOBJLOOKUPTABLE_SEGMENT
+mov   es, di
+mov   di, cx
+sal   di, 1
+mov   ax, word ptr es:[di]
+mov   di, word ptr es:[di + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
+add   ax, THINKER_T.t_data
+
 
 mov   cx, 24
-add   ax, (_thinkerlist + THINKER_T.t_data)
 mov   dx, word ptr [bp - 8]
 push  ax  ; bp - 0Ah
 
@@ -3802,25 +3781,19 @@ mov   si, FATSPREADHIGH/2
 PROC    A_DoFatShot_ NEAR
 
 
-IF COMPISA GE COMPILE_186
-    imul  dx, word ptr ds:[di + MOBJ_T.m_targetRef], (SIZE THINKER_T)
-    add   dx, (_thinkerlist + THINKER_T.t_data)
-ELSE
-    
-    mov   ax, (SIZE THINKER_T)
-    mul   word ptr ds:[di + MOBJ_T.m_targetRef]
-    xchg  ax, dx
-    add   dx, (_thinkerlist + THINKER_T.t_data)
-ENDIF
+push  bx
+mov   bx, MOBJLOOKUPTABLE_SEGMENT
+mov   es, bx
+mov   bx, word ptr ds:[di + MOBJ_T.m_targetRef]
+sal   bx, 1
+mov   dx, word ptr es:[bx]
+add   dx, THINKER_T.t_data
+pop   bx
 
 
-IF COMPISA GE COMPILE_186
-    push  MT_FATSHOT
-ELSE
-    mov   ax, MT_FATSHOT
-    push  ax
-ENDIF
-mov   cx, MOBJPOSLIST_SEGMENT
+PUSH_MACRO MT_FATSHOT
+
+mov   cx, MOBJPOSLIST_SEGMENT  ; todo might be guarnteed set to this?
 
 mov   ax, di
 call  P_SpawnMissile_
@@ -3969,22 +3942,19 @@ call  S_StartSound_
 mov   ax, si
 call  A_FaceTarget_
 
-IF COMPISA GE COMPILE_186
-    mov   cx, word ptr ds:[si + MOBJ_T.m_targetRef]
-    imul  ax, cx, (SIZE THINKER_T)
-    imul  bx, cx, (SIZE MOBJ_POS_T)
-ELSE
-    mov   ax, (SIZE MOBJ_POS_T)
-    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
-    xchg  ax, bx
-    mov   ax, (SIZE THINKER_T)
-    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
-ENDIF
 
 
-add   ax, (_thinkerlist + THINKER_T.t_data)
+mov   bx, MOBJLOOKUPTABLE_SEGMENT
+mov   es, bx
+mov   bx, word ptr ds:[si + MOBJ_T.m_targetRef]
+sal   bx, 1
+mov   ax, word ptr es:[bx]
+mov   bx, word ptr es:[bx + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
+add   ax, THINKER_T.t_data
+
+
 mov   cx, MOBJPOSLIST_SEGMENT
-
+mov   es, cx
 mov   dx, word ptr es:[di + MOBJ_POS_T.mp_angle + 2]
 shr   dx, 1
 and   dl, 0FCh
@@ -4119,25 +4089,25 @@ mov   ax, word ptr ds:[_thinkerlist + THINKER_T.t_next]
 xor   cx, cx  ; count = 0
 continue_checking_thinkers_for_skulls:
 
-IF COMPISA GE COMPILE_186
-    imul  bx, ax, (SIZE THINKER_T)
-ELSE
-    mov   bx, (SIZE THINKER_T)
-    mul   bx
-    xchg  ax, bx
-ENDIF
-mov   dx, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
+
+mov   bx, MOBJLOOKUPTABLE_SEGMENT
+mov   es, bx
+mov   bx, ax
+sal   bx, 1
+mov   bx, word ptr es:[bx]
+
+mov   dx, word ptr ds:[bx + THINKER_T.t_prevFunctype]
 and   dx, TF_FUNCBITS SHR 8
 cmp   dx, TF_MOBJTHINKER_HIGHBITS
 jne   not_thinker_do_next
-cmp   byte ptr ds:[bx + _thinkerlist + THINKER_T.t_data + MOBJ_T.m_mobjtype], MT_SKULL
+cmp   byte ptr ds:[bx + THINKER_T.t_data + MOBJ_T.m_mobjtype], MT_SKULL
 jne   not_thinker_do_next
 inc   cx
 not_thinker_do_next:
 cmp   cx, 20
 jg    exit_a_painshootskull
 
-mov   ax, word ptr ds:[bx + _thinkerlist + THINKER_T.t_next]
+mov   ax, word ptr ds:[bx + THINKER_T.t_next]
 test  ax, ax
 jne   continue_checking_thinkers_for_skulls
 
@@ -4203,7 +4173,7 @@ pop   dx ; bp - 8h
 pop   ax ; bp - 6h
 
 
-
+; gross, rewrite
 
 IF COMPISA GE COMPILE_186
     push  -1
@@ -4599,23 +4569,22 @@ mov   ax, word ptr ds:[_thinkerlist + THINKER_T.t_next]
 
 loop_next_brainawake:
 
-IF COMPISA GE COMPILE_186
-    imul  bx, ax, (SIZE THINKER_T)
-ELSE
-    xchg  ax, bx
-    mov   ax, (SIZE THINKER_T)
-    mul   bx
-    xchg  ax, bx
-ENDIF
 
-mov   dx, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
+mov   bx, MOBJLOOKUPTABLE_SEGMENT
+mov   es, bx
+mov   bx, ax
+sal   bx, 1
+mov   bx, word ptr es:[bx]
+
+
+mov   dx, word ptr ds:[bx + THINKER_T.t_prevFunctype]
 and   dx, TF_FUNCBITS
 cmp   dx, TF_MOBJTHINKER_HIGHBITS
 jne   mobj_not_braintarget
 
 
 
-cmp   byte ptr ds:[bx + OFFSET _thinkerlist + THINKER_T.t_data + MOBJ_T.m_mobjtype], MT_BOSSTARGET
+cmp   byte ptr ds:[bx + THINKER_T.t_data + MOBJ_T.m_mobjtype], MT_BOSSTARGET
 jne   mobj_not_braintarget
 
 mov   bx, word ptr ds:[_numbraintargets]
@@ -4626,15 +4595,15 @@ inc   word ptr ds:[_numbraintargets]
 
 mobj_not_braintarget:
 
-IF COMPISA GE COMPILE_186
-    imul  bx, ax, (SIZE THINKER_T)
-ELSE
-    mov   bx, (SIZE THINKER_T)
-    mul   bx
-    xchg  ax, bx
-ENDIF
+; todo is this just a repeat??
+;mov   bx, MOBJLOOKUPTABLE_SEGMENT
+;mov   es, bx
+mov   bx, ax
+sal   bx, 1
+mov   bx, word ptr es:[bx]
 
-mov   ax, word ptr ds:[bx + OFFSET _thinkerlist + THINKER_T.t_next]
+
+mov   ax, word ptr ds:[bx + THINKER_T.t_next]
 test  ax, ax
 jne   loop_next_brainawake
 
@@ -4871,31 +4840,18 @@ xor   ax, ax
 dont_mod_braintargets:
 mov   word ptr ds:[_braintargeton], ax
 
+mov   bx, MOBJLOOKUPTABLE_SEGMENT
+mov   es, bx
+mov   bx, cx
+sal   bx, 1
+mov   dx, word ptr es:[bx]
+mov   bx, word ptr es:[bx + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
+push  bx
 
-IF COMPISA GE COMPILE_186
-    imul  dx, cx, (SIZE THINKER_T)
-    imul  bx, cx, (SIZE MOBJ_POS_T)
-    push  bx   ; bp - 4
-
-ELSE
-    mov   ax, (SIZE MOBJ_POS_T)
-    mul   cx
-    xchg  ax, bx
-
-    mov   ax, (SIZE THINKER_T)
-    mul   cx
-    xchg  ax, dx
-
-    push  bx   ; bp - 4
-
-
-
-
-ENDIF
 
 PUSH_MACRO MT_SPAWNSHOT
 
-add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
+add   dx, THINKER_T.t_data
 
 
 mov   cx, MOBJPOSLIST_SEGMENT
@@ -5011,23 +4967,17 @@ jne   exit_spawnfly
 do_spawnfly:
 
 
+mov   bx, MOBJLOOKUPTABLE_SEGMENT
+mov   es, bx
+mov   bx, word ptr ds:[si + MOBJ_T.m_targetRef]
+sal   bx, 1
+mov   di, word ptr es:[bx + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
+mov   bx, word ptr es:[bx]
 
-mov   di, word ptr ds:[si + MOBJ_T.m_targetRef]
-IF COMPISA GE COMPILE_186
-    imul  bx, di, (SIZE THINKER_T)
-    imul  di, di, (SIZE MOBJ_POS_T)
-ELSE
-    mov   ax, (SIZE MOBJ_POS_T)
-    mul   di
-    xchg  ax, di
-    mov   bx, (SIZE THINKER_T)
-    mul   bx
-    xchg  ax, bx
-ENDIF
 
 
 ; push once for arg for next function, once for arg to this function
-add   bx, _thinkerlist + THINKER_T.t_data + MOBJ_T.m_secnum
+add   bx, THINKER_T.t_data + MOBJ_T.m_secnum
 push  word ptr ds:[bx]   ; param secnum
 
 push  word ptr ds:[bx]   ; param secnum
