@@ -59,7 +59,7 @@
 
 
 // todo generate this programatically, downward from fixeddssegment
-#define baselowermemoryaddress    (0x23EF0000)
+#define baselowermemoryaddress    (0x231D0000)
 // MaximumMusDriverSize
 
 
@@ -85,48 +85,52 @@ struct sfxinfo_struct{
     int16_t_union       cache_position;
 };
 //  20160
-#define size_mobjposlist        (MAX_THINKERS * sizeof(mobj_pos_t)) 
-#define size_sectors            (MAX_SECTORS_SIZE)
-#define size_vertexes           (MAX_VERTEXES_SIZE)
-#define size_sides              (MAX_SIDES_SIZE)
-#define size_lines              (MAX_LINES_SIZE)
-#define size_lineflagslist      (MAX_LINEFLAGS_SIZE)
-#define size_subsectors         (MAX_SUBSECTORS_SIZE)
-#define size_nodes              (MAX_NODES_SIZE)
-#define size_node_children      (MAX_NODE_CHILDREN_SIZE)
-#define size_seg_linedefs       (MAX_SEGS * sizeof(int16_t))
-#define size_seg_sides          (MAX_SEGS * sizeof(uint8_t))
+#define size_mobjposlist           (MAX_THINKERS * sizeof(mobj_pos_t)) 
+#define size_mobjlookup_table      (MAX_THINKERS * sizeof(uint16_t))
+#define size_mobjposlookup_table   (MAX_THINKERS * sizeof(uint16_t))
+#define size_sectors               (MAX_SECTORS_SIZE)
+#define size_vertexes              (MAX_VERTEXES_SIZE)
+#define size_sides                 (MAX_SIDES_SIZE)
+#define size_lines                 (MAX_LINES_SIZE)
+#define size_lineflagslist         (MAX_LINEFLAGS_SIZE)
+#define size_subsectors            (MAX_SUBSECTORS_SIZE)
+#define size_nodes                 (MAX_NODES_SIZE)
+#define size_node_children         (MAX_NODE_CHILDREN_SIZE)
+#define size_seg_linedefs          (MAX_SEGS * sizeof(int16_t))
+#define size_seg_sides             (MAX_SEGS * sizeof(uint8_t))
 
 
 
 // NOTE!   BELOW level data sequential for clearing in a single pass
 
 
-#define mobjposlist       ((mobj_pos_t __far*)      MAKE_FULL_SEGMENT(baselowermemoryaddress , 0))
-#define sectors           ((sector_t __far*)        MAKE_FULL_SEGMENT(mobjposlist            , size_mobjposlist))
-#define vertexes          ((vertex_t __far*)        MAKE_FULL_SEGMENT(sectors          , size_sectors))
-#define sides             ((side_t __far*)          MAKE_FULL_SEGMENT(vertexes         , size_vertexes))
-#define lines             ((line_t __far*)          MAKE_FULL_SEGMENT(sides            , size_sides))
-#define lineflagslist     ((uint8_t __far*)         MAKE_FULL_SEGMENT(lines            , size_lines))
-#define subsectors        ((subsector_t __far*)     MAKE_FULL_SEGMENT(lineflagslist    , size_lineflagslist))
-#define nodes             ((node_t __far*)          MAKE_FULL_SEGMENT(subsectors       , size_subsectors))
-#define node_children     ((node_children_t __far*) MAKE_FULL_SEGMENT(nodes            , size_nodes))
-#define seg_linedefs      ((int16_t __far*)         MAKE_FULL_SEGMENT(node_children    , size_node_children))
-#define seg_sides         ((uint8_t __far*)         MAKE_FULL_SEGMENT(seg_linedefs     , size_seg_linedefs))
+#define mobjposlist        ((mobj_pos_t __far*)      MAKE_FULL_SEGMENT(baselowermemoryaddress , 0))
+#define mobjlookuptable    ((sector_t __far*)        MAKE_FULL_SEGMENT(mobjposlist        , size_mobjposlist))
+#define mobjposlookuptable ((sector_t __far*)        MAKE_FULL_SEGMENT(mobjlookuptable    , size_mobjlookup_table))
+#define sectors            ((sector_t __far*)        MAKE_FULL_SEGMENT(mobjposlookuptable , size_mobjposlookup_table))
+#define vertexes           ((vertex_t __far*)        MAKE_FULL_SEGMENT(sectors            , size_sectors))
+#define sides              ((side_t __far*)          MAKE_FULL_SEGMENT(vertexes           , size_vertexes))
+#define lines              ((line_t __far*)          MAKE_FULL_SEGMENT(sides              , size_sides))
+#define lineflagslist      ((uint8_t __far*)         MAKE_FULL_SEGMENT(lines              , size_lines))
+#define subsectors         ((subsector_t __far*)     MAKE_FULL_SEGMENT(lineflagslist      , size_lineflagslist))
+#define nodes              ((node_t __far*)          MAKE_FULL_SEGMENT(subsectors         , size_subsectors))
+#define node_children      ((node_children_t __far*) MAKE_FULL_SEGMENT(nodes              , size_nodes))
+#define seg_linedefs       ((int16_t __far*)         MAKE_FULL_SEGMENT(node_children      , size_node_children))
+#define seg_sides          ((uint8_t __far*)         MAKE_FULL_SEGMENT(seg_linedefs       , size_seg_linedefs))
 // NOTE!   ABOVE level data sequential for clearing in a single pass
 
 
-#define sfx_data           ((sfxinfo_t __far*)          MAKE_FULL_SEGMENT(seg_sides        , size_seg_sides))
-#define sb_dmabuffer       ((uint8_t __far*)            MAKE_FULL_SEGMENT(sfx_data, size_sfxdata))  // 10240
-#define finesine           ((int32_t __far*)            MAKE_FULL_SEGMENT(sb_dmabuffer, size_sb_dmabuffer))  // 10240
-#define finecosine         ((int32_t __far*)            (((int32_t)finesine) + 0x2000))  // 10240
-#define events             ((event_t __far*)            MAKE_FULL_SEGMENT(finesine, size_finesine))
-#define flattranslation    ((uint8_t __far*)            MAKE_FULL_SEGMENT(events, size_events))
-#define texturetranslation ((uint16_t __far*)           MAKE_FULL_SEGMENT(flattranslation, size_flattranslation))
-#define textureheights     ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturetranslation, size_texturetranslation))
-// #define rndtable           ((uint8_t __far*)            
-#define subsector_lines    ((uint8_t __far*)            MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
-#define base_lower_end     ((uint8_t __far*)            MAKE_FULL_SEGMENT(subsector_lines , size_subsector_lines))
+#define sfx_data            ((sfxinfo_t __far*)          MAKE_FULL_SEGMENT(seg_sides        , size_seg_sides))
+#define sb_dmabuffer        ((uint8_t __far*)            MAKE_FULL_SEGMENT(sfx_data, size_sfxdata))  // 10240
+#define finesine            ((int32_t __far*)            MAKE_FULL_SEGMENT(sb_dmabuffer, size_sb_dmabuffer))  // 10240
+#define finecosine          ((int32_t __far*)            (((int32_t)finesine) + 0x2000))  // 10240
+#define events              ((event_t __far*)            MAKE_FULL_SEGMENT(finesine, size_finesine))
+#define flattranslation     ((uint8_t __far*)            MAKE_FULL_SEGMENT(events, size_events))
+#define texturetranslation  ((uint16_t __far*)           MAKE_FULL_SEGMENT(flattranslation, size_flattranslation))
+#define textureheights      ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturetranslation, size_texturetranslation))
+// #define rndtable            ((uint8_t __far*)            
+#define subsector_lines     ((uint8_t __far*)            MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
+#define base_lower_end      ((uint8_t __far*)            MAKE_FULL_SEGMENT(subsector_lines , size_subsector_lines))
 
 
 #define sfx_data_segment              ((segment_t) ((int32_t)sfx_data  >> 16))
@@ -162,6 +166,10 @@ struct sfxinfo_struct{
 
 
 #define mobjposlist_segment          ((segment_t) ((int32_t)mobjposlist >> 16))
+
+#define mobjlookuptable_segment              ((segment_t) ((int32_t)mobjlookuptable >> 16))
+#define mobjposlookuptable_segment           ((segment_t) ((int32_t)mobjposlookuptable >> 16))
+
 #define sectors_segment              ((segment_t) ((int32_t)sectors >> 16))
 #define vertexes_segment             ((segment_t) ((int32_t)vertexes >> 16))
 #define sides_segment                ((segment_t) ((int32_t)sides >> 16))

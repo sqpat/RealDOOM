@@ -8,7 +8,7 @@
 #include "r_state.h"
 #include "p_setup.h"
 
-#define CONSTANTS_COUNT 1017
+#define CONSTANTS_COUNT 1019
 #define LOCALS_COUNT 29
 
 
@@ -179,6 +179,11 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "STATES_RENDER_SEGMENT",
     "BASE_LOWER_MEMORY_SEGMENT",
     "BASE_LOWER_END_SEGMENT",
+
+	"MOBJLOOKUPTABLE_SEGMENT",
+	"MOBJPOSLOOKUPTABLE_SEGMENT",
+
+
     "EMPTY_RENDER_9800_SEGMENT",
     "PHYSICS_7000_END_SEGMENT",
     "PHYSICS_9000_END_SEGMENT",
@@ -1296,6 +1301,9 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     states_render_segment,
     base_lower_memory_segment,
     base_lower_end_segment,
+	mobjlookuptable_segment,
+	mobjposlookuptable_segment,
+
 	empty_render_9800_segment,
     physics_7000_end_segment,
     physics_9000_end_segment,

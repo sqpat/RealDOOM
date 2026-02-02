@@ -146,24 +146,24 @@ call  P_SpawnMobj_
 ;    th->tics -= P_Random()&3;
 
 mov   bx, word ptr ds:[_setStateReturn];
-mov   word ptr ds:[bx + 018h], 1
+mov   word ptr ds:[bx + MOBJ_T.m_momz + 2], 1 
 SELFMODIFY_set_rnd_value_3:
 mov   al, 0FFh
 and   al, 3
-sub   byte ptr ds:[bx + 01Bh], al
+sub   byte ptr ds:[bx + MOBJ_T.m_tics], al
 
 ;    if (th->tics < 1 || th->tics > 240){
 ;		th->tics = 1;
 ;	}
 
 
-mov   al, byte ptr ds:[bx + 01Bh]
+mov   al, byte ptr ds:[bx + MOBJ_T.m_tics]
 cmp   al, 1
 jb    set_tics_to_1
 cmp   al, 240
 jbe   dont_set_tics_to_1
 set_tics_to_1:
-mov   byte ptr ds:[bx + 01Bh], 1
+mov   byte ptr ds:[bx + MOBJ_T.m_tics], 1
 dont_set_tics_to_1:
 cmp   word ptr ds:[_attackrange16], MELEERANGE
 je    spark_punch_on_wall

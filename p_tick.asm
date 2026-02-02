@@ -74,11 +74,13 @@ inc       ax
 cmp       ax, dx
 je        error_no_thinker_found
 
-MUL_SIZEOF_THINKER_T di ax
+mov       di, MOBJLOOKUPTABLE_SEGMENT
+mov       es, di
+mov       di, ax
+sal       di, 1
+mov       di, word ptr es:[di]
 
 
-
-add       di, OFFSET _thinkerlist
 loop_check_next_thinker:
 cmp       ax, MAX_THINKERS
 jne       use_current_thinker_index
@@ -136,27 +138,30 @@ pop       di
 xchg      ax, si ; get orig ax back
 
 
-
-
-
-
-
-;imul      si, word ptr ds:[_thinkerlist], SIZE THINKER_T
-
-mov   dx, word ptr ds:[_thinkerlist]
-
-MUL_SIZEOF_THINKER_T si, dx
-
 pop       dx
+
+; BUG: SI is MAX_THINKERS
+
+mov       si, MOBJLOOKUPTABLE_SEGMENT
+mov       es, si
+mov       si, word ptr ds:[_thinkerlist + THINKER_T.t_prevFunctype]
+and       si, TF_PREVBITS
+; todo does this have to have highbits ripped off?
+sal       si, 1
+mov       si, word ptr es:[si]
+
+test      si, si        ; todo edge case get rid of on first thinker
+jz        skip_write
+
 
 
 ;	thinkerlist[temp].next = index;
 
-mov       word ptr ds:[si + _thinkerlist + THINKER_T.t_next], ax
+mov       word ptr ds:[si + THINKER_T.t_next], ax
 
 ;	thinkerlist[0].prevFunctype = index;
-
-mov       word ptr ds:[_thinkerlist], ax
+skip_write:
+mov       word ptr ds:[_thinkerlist + THINKER_T.t_prevFunctype], ax
 
 xchg      ax, di
 ;add       ax, 4 ; stosw handled it
@@ -168,25 +173,31 @@ ENDP
 
 
 
-PROC P_UpdateThinkerFunc_ NEAR
+PROC   P_UpdateThinkerFunc_ NEAR
 PUBLIC P_UpdateThinkerFunc_
 
 push      bx
 
-MUL_SIZEOF_THINKER_T bx ax
-
-
-
-mov       ax, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
+mov       bx, MOBJLOOKUPTABLE_SEGMENT
+mov       es, bx
 and       ax, TF_PREVBITS
-add       ax, dx
-mov       word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype], ax
+mov       bx, ax
+sal       bx, 1
+mov       bx, word ptr es:[bx]
+
+
+
+; we are only modifying the high byte
+mov       al, byte ptr ds:[bx + THINKER_T.t_prevFunctype+1]
+and       al, (TF_PREVBITS SHR 8)
+add       al, dh
+mov       byte ptr ds:[bx + THINKER_T.t_prevFunctype], al
 pop       bx
 ret       
 
 ENDP
 
-PROC P_RemoveThinker_ NEAR
+PROC   P_RemoveThinker_ NEAR
 PUBLIC P_RemoveThinker_
 
 ;	thinkerlist[thinkerRef].prevFunctype = (thinkerlist[thinkerRef].prevFunctype & TF_PREVBITS) + TF_DELETEME_HIGHBITS;
@@ -194,13 +205,18 @@ PUBLIC P_RemoveThinker_
 
 push      bx
 
-MUL_SIZEOF_THINKER_T bx, ax
-add       bx, _thinkerlist
+mov       bx, MOBJLOOKUPTABLE_SEGMENT
+mov       es, bx
+mov       bx, ax
+and       bx, TF_PREVBITS  ; not sure if necessary
+sal       bx, 1
+mov       bx, word ptr es:[bx]
 
-mov       ax, word ptr ds:[bx]
-and       ah, (TF_PREVBITS SHR 8)
-add       ah, (TF_DELETEME_HIGHBITS SHR 8)
-mov       word ptr ds:[bx], ax
+; we are only modifying the high byte
+mov       al, byte ptr ds:[bx + THINKER_T.t_prevFunctype+1]
+and       al, (TF_PREVBITS SHR 8)
+add       al, (TF_DELETEME_HIGHBITS SHR 8)
+mov       byte ptr ds:[bx + THINKER_T.t_prevFunctype+1], al
 pop       bx
 ret
 
@@ -230,22 +246,9 @@ dw OFFSET T_StrobeFlash_
 dw OFFSET T_Glow_
 
 
-COMMENT @
-PROC do_logger_ NEAR
-
-PUSHA_NO_AX_MACRO
-call dword ptr ds:[_MainLogger_addr];
-POPA_NO_AX_MACRO
-
-ret
-
-@
 
 
-
-
-
-PROC P_Ticker_ FAR
+PROC   P_Ticker_ FAR
 PUBLIC P_Ticker_
 
 xor       ax, ax
@@ -273,31 +276,32 @@ call      P_PlayerThink_
 
 PUSHA_NO_AX_MACRO ; revist once we call outer func...
 mov       si, word ptr ds:[_thinkerlist + THINKER_T.t_next]
+and       si, TF_PREVBITS
 
 do_next_thinker:
 
 ;    imul  bx, si, SIZE THINKER_T  ; todo test shift vs mul...
-MUL_SIZEOF_THINKER_T bx, si
+mov       bx, MOBJLOOKUPTABLE_SEGMENT
+mov       es, bx
+mov       bx, si
+mov       bx, word ptr es:[bx + si]
+
 
 
 ; consider inc bx?
-mov       al, byte ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype +1]  ; just get high bit
-lea       di, ds:[bx + _thinkerlist + THINKER_T.t_data]
+mov       al, byte ptr ds:[bx + THINKER_T.t_prevFunctype +1]  ; just get high bit
+lea       di, ds:[bx + THINKER_T.t_data]
 and       al, (TF_FUNCBITS SHR 8)
 
-; call  do_logger_
 
 cmp       al, (TF_MOBJTHINKER_HIGHBITS SHR 8)
 jne       continue_checking_tf_types
 do_mobjthinker:
 
-;imul      bx, si, (SIZE MOBJ_POS_T) 
-
-mov   bx, si
-SHIFT_MACRO  sal   bx 3     ; 0x08
-mov   ax, bx
-sal   bx, 1                  ; 0x10
-add   bx, ax                 ; 0x18
+mov      cx, MOBJPOSLOOKUPTABLE_SEGMENT
+mov      es, cx
+mov      bx, si
+mov      bx, word ptr es:[bx + si]
 
 mov       ax, di
 
@@ -350,29 +354,33 @@ do_delete_me:
 ; THINKERREF prevRef = thinkerlist[currentthinker].prevFunctype & TF_PREVBITS;
 ; THINKERREF nextRef = thinkerlist[currentthinker].next;
 
-les       ax, dword ptr ds:[bx + _thinkerlist]  ; prevref
-mov       cx, es                                ; nectref
+les       ax, dword ptr ds:[bx]  ; prevref
+mov       cx, es                                ; nextref
 
-;imul      di, cx, SIZE THINKER_T
-MUL_SIZEOF_THINKER_T di cx
+mov       di, MOBJLOOKUPTABLE_SEGMENT
+mov       es, di
+mov       di, cx
+and       di, TF_PREVBITS
+sal       di, 1
+mov       di, word ptr es:[di]
 
-mov       byte ptr ds:[di + _thinkerlist + THINKER_T.t_prevFunctype], 0
+
+mov       byte ptr ds:[di + THINKER_T.t_prevFunctype], 0
 and       ah, (TF_PREVBITS SHR 8)
 ; thinkerlist[nextRef].prevFunctype &= TF_FUNCBITS;
-and       byte ptr ds:[di + _thinkerlist + THINKER_T.t_prevFunctype + 1], (TF_FUNCBITS SHR 8)
+and       byte ptr ds:[di + THINKER_T.t_prevFunctype + 1], (TF_FUNCBITS SHR 8)
 ; thinkerlist[nextRef].prevFunctype += prevRef;
-add       word ptr ds:[di + _thinkerlist + THINKER_T.t_prevFunctype], ax
+add       word ptr ds:[di + THINKER_T.t_prevFunctype], ax
 
-
-
-MUL_SIZEOF_THINKER_T di ax
-
+xchg      di, ax
+sal       di, 1
+mov       di, word ptr es:[di]
 
 
 xor       ax, ax
-mov       word ptr [di + _thinkerlist + THINKER_T.t_next], cx
+mov       word ptr ds:[di + THINKER_T.t_next], cx
 
-lea       di, ds:[bx + _thinkerlist + THINKER_T.t_data]
+lea       di, [bx + THINKER_T.t_data]
 mov       cx, ds
 mov       es, cx
 mov       cx, (SIZE MOBJ_T) / 2
@@ -380,19 +388,19 @@ rep       stosw
 
 ; (SIZE MOBJ_POS_T)
 
-mov   di, si
-SHIFT_MACRO  sal   di 3     ; 0x08
-mov   cx, di
-sal   di, 1                  ; 0x10
-add   di, cx                 ; 0x18
+mov       di, MOBJPOSLOOKUPTABLE_SEGMENT
+mov       es, di
+sal       si, 1
+
+mov       di, word ptr es:[si]
 
 mov       cx, MOBJPOSLIST_SEGMENT
 mov       es, cx
 mov       cx, (SIZE MOBJ_POS_T) /2
 rep       stosw
 
-mov       word ptr ds:[bx + _thinkerlist], MAX_THINKERS
-lea       di, ds:[bx + _thinkerlist + THINKER_T.t_data]
+mov       word ptr ds:[bx + THINKER_T.t_prevFunctype], MAX_THINKERS
+lea       di, [bx + THINKER_T.t_data]
 jmp       done_processing_thinker
 
 

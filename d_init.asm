@@ -708,6 +708,21 @@ mov   ax, R_INIT_TEXT_STR
 call  DoPrintChain_
 call  R_Init_
 
+; ready constant lookups table
+mov   cx, MAX_THINKERS
+mov   ax, MOBJLOOKUPTABLE_SEGMENT
+mov   es, ax
+mov   bx, (MOBJPOSLOOKUPTABLE_SEGMENT - MOBJLOOKUPTABLE_SEGMENT) * 16
+xor   di, di
+mov   ax, OFFSET _thinkerlist  ; + 4?
+xor   dx, dx
+loop_do_next_lookup:
+mov   word ptr es:[bx + di], dx
+stosw
+add   dx, SIZE MOBJ_POS_T
+add   ax, SIZE THINKER_T
+loop  loop_do_next_lookup
+
 mov   ax, P_INIT_TEXT_STR
 call  DoPrintChain_
 call  P_Init_
