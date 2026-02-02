@@ -811,15 +811,17 @@ mov   ah, byte ptr cs:[bx + _opposite - OFFSET P_SIGHT_STARTMARKER_] ; todo make
 push  ax  ; bp - 2. both movedir and opposite.
 push  ax  ; garbage push instead of sub sp 2 to hold d[1] d[2]
 
-mov   es, si  ; backup si
 
-IF COMPISA GE COMPILE_186
-    imul  si, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE MOBJ_POS_T)
-ELSE
-    mov  ax, (SIZE MOBJ_POS_T)
-    mul  word ptr ds:[si + MOBJ_T.m_targetRef]
-    xchg  ax, si
-ENDIF
+
+mov       ax, MOBJPOSLOOKUPTABLE_SEGMENT
+mov       es, ax
+mov       ax, si
+mov       si, word ptr ds:[si + MOBJ_T.m_targetRef]
+sal       si, 1
+mov       si, word ptr es:[si]
+mov       es, ax  ; store old si
+
+
 
 mov   ds, cx
 
@@ -1272,15 +1274,15 @@ mov   ax, word ptr ds:[_thinkerlist + THINKER_T.t_next]
 
 loop_next_thinker_keendie:
 
-IF COMPISA GE COMPILE_186
-    imul  bx, ax, (SIZE THINKER_T)
-ELSE
-    mov  dx, (SIZE THINKER_T)
-    mul  dx
-    xchg ax, bx
-ENDIF
+mov       bx, MOBJLOOKUPTABLE_SEGMENT
+mov       es, bx
+mov       bx, ax  
+sal       bx, 1
+mov       bx, word ptr es:[bx]
 
-mov   dx, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
+
+; todo sub if we add + 4
+mov   dx, word ptr ds:[bx + THINKER_T.t_prevFunctype]
 and   dx, TF_FUNCBITS
 cmp   dx, TF_MOBJTHINKER_HIGHBITS
 
@@ -1290,14 +1292,14 @@ jne    not_thinker_skip_keencheck
 
 cmp   ax, cx
 je    not_thinker_skip_keencheck
-mov   al, byte ptr ds:[bx + _thinkerlist + THINKER_T.t_data + MOBJ_T.m_mobjtype]
+mov   al, byte ptr ds:[bx + THINKER_T.t_data + MOBJ_T.m_mobjtype]
 cmp   al, byte ptr [bp - 2]
 jne   not_thinker_skip_keencheck
-cmp   word ptr ds:[bx + _thinkerlist + THINKER_T.t_data + MOBJ_T.m_health], 0
+cmp   word ptr ds:[bx + THINKER_T.t_data + MOBJ_T.m_health], 0
 jg    exit_keen_die
 not_thinker_skip_keencheck:
 
-mov   ax, word ptr ds:[bx + _thinkerlist + THINKER_T.t_next]
+mov   ax, word ptr ds:[bx + THINKER_T.t_next]
 test  ax, ax
 jne   loop_next_thinker_keendie
 
@@ -1424,18 +1426,52 @@ jmp   do_seesound
 
 ENDP
 
-;todo make something fall into chase.
+PROC    A_Metal_ NEAR
+PUBLIC  A_Metal_
+
+
+mov   dl, SFX_METAL
+call  S_StartSound_
+
+xchg  ax, si  ; si has ax value
+jmp   A_Chase_
+
+ENDP
+
+
+PROC    A_BabyMetal_ NEAR
+PUBLIC  A_BabyMetal_
+
+
+mov   dl, SFX_BSPWLK
+call  S_StartSound_
+
+xchg  ax, si  ; si has ax value
+jmp   A_Chase_
+
+ENDP
+
+
+
+PROC    A_Hoof_ NEAR
+PUBLIC  A_Hoof_
+
+
+mov   dl, SFX_HOOF
+call  S_StartSound_
+
+xchg  ax, si  ; si has ax value
+; jmp   A_Chase_  ; fall thru
+
+ENDP
+
+
 
 PROC    A_Chase_ NEAR
 PUBLIC  A_Chase_
 
-push  dx
-push  si
-push  di
-push  bp
 
-mov   bp, MOBJPOSLIST_SEGMENT
-;mov   si, ax
+
 mov   di, bx
 
 MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT = (MOBJPOSLOOKUPTABLE_SEGMENT - MOBJLOOKUPTABLE_SEGMENT) * 16
@@ -1471,7 +1507,8 @@ set_threshold_0:
 mov   byte ptr ds:[si + MOBJ_T.m_threshold], 0
 
 done_modifying_threshold:
-mov   es, bp
+mov   ax, MOBJPOSLIST_SEGMENT
+mov   es, ax
 
 ;    // turn towards movement direction if not there yet
 
@@ -1512,10 +1549,7 @@ je    exit_a_chase
 cmp   byte ptr ds:[_fastparm], 0
 je    new_chase_dir_and_exit
 exit_a_chase:
-pop   bp
-pop   di
-pop   si
-pop   dx
+
 ret   
 
 look_for_new_target:
@@ -1572,10 +1606,7 @@ mov   ax, si
 call  P_SetMobjState_
 
 exit_a_chase_2:
-pop   bp
-pop   di
-pop   si
-pop   dx
+
 ret   
 
 melee_check_failed_try_missile:
@@ -1624,7 +1655,8 @@ xchg  ax, si
 
 call  S_StartSound_
 
-jmp   exit_a_chase_2
+ret   
+
 
 
 
@@ -1643,9 +1675,11 @@ mov   dx, ax
 mov   ax, si
 call  P_SetMobjState_
 
-mov   es, bp
+mov   ax, MOBJPOSLIST_SEGMENT
+mov   es, ax
 or    byte ptr es:[di + MOBJ_POS_T.mp_flags1], MF_JUSTATTACKED
-jmp   exit_a_chase
+ret   
+
 
 ENDP
 
@@ -4550,43 +4584,9 @@ jmp   do_tag_666_and_door
 ENDP
 
 
-PROC    A_Hoof_ NEAR
-PUBLIC  A_Hoof_
 
 
-mov   dl, SFX_HOOF
-call  S_StartSound_
 
-xchg  ax, si  ; si has ax value
-jmp   A_Chase_
-
-ENDP
-
-
-PROC    A_Metal_ NEAR
-PUBLIC  A_Metal_
-
-
-mov   dl, SFX_METAL
-call  S_StartSound_
-
-xchg  ax, si  ; si has ax value
-jmp   A_Chase_
-
-ENDP
-
-
-PROC    A_BabyMetal_ NEAR
-PUBLIC  A_BabyMetal_
-
-
-mov   dl, SFX_BSPWLK
-call  S_StartSound_
-
-xchg  ax, si  ; si has ax value
-jmp   A_Chase_
-
-ENDP
 
 
 PROC    A_BrainAwake_ NEAR
