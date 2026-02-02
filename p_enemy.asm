@@ -1139,14 +1139,12 @@ xor   dx, dx
 div   bx
 
 
+mov       si, MOBJPOSLOOKUPTABLE_SEGMENT
+mov       es, si
+mov       si, ax
+sal       si, 1
+mov       si, word ptr es:[si]
 
-IF COMPISA GE COMPILE_186
-    imul  si, ax, (SIZE MOBJ_POS_T)
-ELSE
-    mov  dx, (SIZE MOBJ_POS_T)
-    mul  dx
-    xchg ax, si
-ENDIF
 
 mov   ax, MOBJPOSLIST_SEGMENT
 mov   es, ax
@@ -1667,22 +1665,16 @@ sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   cx
 
-IF COMPISA GE COMPILE_186
-    imul  si, ax, (SIZE MOBJ_POS_T)
-ELSE
-    mov  dx, (SIZE MOBJ_POS_T)
-    mul  dx
-    xchg ax, si
-ENDIF
+mov       si, MOBJPOSLOOKUPTABLE_SEGMENT
+mov       es, si
+mov       si, ax
+sal       si, 1
+mov       si, word ptr es:[si]
+mov       di, word ptr ds:[bx + MOBJ_T.m_targetRef]
+sal       di, 1
+mov       di, word ptr es:[di]
 
 
-IF COMPISA GE COMPILE_186
-    imul  di, word ptr ds:[bx + MOBJ_T.m_targetRef], (SIZE MOBJ_POS_T)
-ELSE
-    mov  ax, (SIZE MOBJ_POS_T)
-    mul  word ptr ds:[bx + MOBJ_T.m_targetRef]
-    xchg ax, di
-ENDIF
 
 
 mov   cx, MOBJPOSLIST_SEGMENT
@@ -1760,13 +1752,11 @@ sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
 
-IF COMPISA GE COMPILE_186
-    imul  bx, ax, (SIZE MOBJ_POS_T)
-ELSE
-    mov  dx, (SIZE MOBJ_POS_T)
-    mul  dx
-    xchg ax, bx
-ENDIF
+mov       bx, MOBJPOSLOOKUPTABLE_SEGMENT
+mov       es, bx
+mov       bx, ax
+sal       bx, 1
+mov       bx, word ptr es:[bx]
 
 
 
@@ -1845,14 +1835,11 @@ sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   si
 
-IF COMPISA GE COMPILE_186
-    imul  si, ax, (SIZE MOBJ_POS_T)
-ELSE
-    mov  dx, (SIZE MOBJ_POS_T)
-    mul  dx
-    xchg ax, si
-ENDIF
-
+mov       si, MOBJPOSLOOKUPTABLE_SEGMENT
+mov       es, si
+mov       si, ax
+sal       si, 1
+mov       si, word ptr es:[si]
 
 mov   dl, SFX_SHOTGN
 mov   ax, di
@@ -1938,13 +1925,12 @@ sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
 
-IF COMPISA GE COMPILE_186
-    imul  bx, ax, (SIZE MOBJ_POS_T)
-ELSE
-    mov  dx, (SIZE MOBJ_POS_T)
-    mul  dx
-    xchg ax, bx
-ENDIF
+mov       bx, MOBJPOSLOOKUPTABLE_SEGMENT
+mov       es, bx
+mov       bx, ax
+sal       bx, 1
+mov       bx, word ptr es:[bx]
+
 
 mov   dl, SFX_SHOTGN
 mov   ax, si
@@ -2030,13 +2016,12 @@ lea   ax, ds:[di - (_thinkerlist + THINKER_T.t_data)]
 xor   dx, dx
 div   cx
 
-IF COMPISA GE COMPILE_186
-    imul  cx, ax, (SIZE MOBJ_POS_T)
-ELSE
-    mov  dx, (SIZE MOBJ_POS_T)
-    mul  dx
-    xchg ax, cx
-ENDIF
+mov       cx, MOBJPOSLOOKUPTABLE_SEGMENT
+mov       es, cx
+xchg      ax, si
+sal       si, 1
+mov       cx, word ptr es:[si]
+xchg      ax, si
 
 mov   dx, di
 mov   ax, si
@@ -2093,13 +2078,12 @@ lea   ax, ds:[di - (_thinkerlist + THINKER_T.t_data)]
 xor   dx, dx
 div   cx
 
-IF COMPISA GE COMPILE_186
-    imul  cx, ax, (SIZE MOBJ_POS_T)
-ELSE
-    mov  dx, (SIZE MOBJ_POS_T)
-    mul  dx
-    xchg ax, cx
-ENDIF
+mov       cx, MOBJPOSLOOKUPTABLE_SEGMENT
+mov       es, cx
+xchg      ax, si
+sal       si, 1
+mov       cx, word ptr es:[si]
+xchg      ax, si
 
 mov   dx, di
 mov   ax, si
@@ -2442,14 +2426,16 @@ add   word ptr es:[di + MOBJ_POS_T.mp_z + 2], 16
 
 IF COMPISA GE COMPILE_186
     imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
-    push  MT_TRACER
+
 ELSE
     mov   ax, (SIZE THINKER_T)
     mul   word ptr ds:[si + MOBJ_T.m_targetRef] 
     xchg  ax, dx
-    mov   ax, MT_TRACER
-    push  ax
+
+
 ENDIF
+
+PUSH_MACRO MT_TRACER
 
 mov   ax, si
 add   dx, (_thinkerlist + THINKER_T.t_data)
@@ -2532,15 +2518,10 @@ call  P_SpawnPuff_
 ;		actor_pos->y.w-actor->momy.w,
 ;		actor_pos->z.w, MT_SMOKE, -1);
 
-IF COMPISA GE COMPILE_186
-    push  -1 
-    push  MT_SMOKE
-ELSE
-    mov   ax, -1 
-    push  ax
-    mov   ax, MT_SMOKE
-    push  ax
-ENDIF
+PUSH_MACRO -1
+PUSH_MACRO MT_SMOKE
+
+
 
 
 lds   si, dword ptr [bp - 6]
@@ -3408,34 +3389,23 @@ mov   di, bx
 ; bx,        gets targetref mobjpos
 ; cx         destpos (tracerref mobjpos)
 
-IF COMPISA GE COMPILE_186
-    
-    imul  dx, ax, (SIZE THINKER_T)
-    imul  cx, ax, (SIZE MOBJ_POS_T)
-    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
-    imul  bx, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE MOBJ_POS_T)
+mov       dx, MOBJLOOKUPTABLE_SEGMENT
+mov       es, dx
+xchg      ax, bx
+sal       bx, 1
+mov       cx, word ptr es:[bx + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
+mov       dx, word ptr es:[bx]
 
-ELSE
-    xchg  ax, cx   ; cx stores index
-    mov   ax, (SIZE MOBJ_POS_T)
-    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
-    xchg  ax, bx  ; bx has what it needs
-    mov   ax, (SIZE THINKER_T)
-    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
-    xchg  ax, si   ; si has ax's contents
-    mov   ax, (SIZE MOBJ_POS_T)
-    mul   cx
-    xchg  ax, cx   ; cx has what it needs, ax has index for next mult
-    mov   dx, (SIZE THINKER_T)
-    mul   dx
-    xchg  ax, dx   ; dx has what it needs
-    xchg  ax, si   ; ax has what it needs
-ENDIF
+mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
+sal       bx, 1
+mov       ax, word ptr es:[bx]
+mov       bx, word ptr es:[bx + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
+
 
 
 mov   si, cx
-add   dx, (_thinkerlist + THINKER_T.t_data)
-add   ax, (_thinkerlist + THINKER_T.t_data)
+add   dx, THINKER_T.t_data
+add   ax, THINKER_T.t_data
 
 call  P_CheckSight_
 
@@ -3673,6 +3643,7 @@ ELSE
 ENDIF
 mov   ax, si
 call  A_FaceTarget_
+
 IF COMPISA GE COMPILE_186
     imul  di, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
 ELSE
@@ -4182,14 +4153,11 @@ mov   bx, (SIZE THINKER_T)
 div   bx
 
 
-IF COMPISA GE COMPILE_186
-    imul  si, ax, (SIZE MOBJ_POS_T)
-ELSE
-    mov   si, (SIZE MOBJ_POS_T)
-    mul   si
-    xchg  ax, si
-ENDIF
-
+mov       si, MOBJPOSLOOKUPTABLE_SEGMENT
+mov       es, si
+mov       si, ax
+sal       si, 1
+mov       si, word ptr es:[si]
 ;    x = actor_pos->x.w + FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, an, prestep.w);
 
 
@@ -4221,6 +4189,9 @@ mov   cx, dx
 
 pop   dx ; bp - 8h
 pop   ax ; bp - 6h
+
+
+
 
 IF COMPISA GE COMPILE_186
     push  -1
@@ -4743,15 +4714,9 @@ mov   dx, word ptr es:[di + MOBJ_POS_T.mp_x + 0]
 les   bx, dword ptr es:[di + MOBJ_POS_T.mp_y + 0]
 mov   cx, es
 
-IF COMPISA GE COMPILE_186
-    push  -1
-    push  MT_ROCKET
-ELSE
-    mov   ax, -1
-    push  ax
-    mov   ax, MT_ROCKET
-    push  ax
-ENDIF
+PUSH_MACRO -1
+PUSH_MACRO MT_ROCKET
+
 
 call  P_Random_
 
@@ -4759,12 +4724,7 @@ sal   ax, 1
 add   ax, 128
 push  ax  ; z hi
 
-IF COMPISA GE COMPILE_186
-    push  0   ; z lo
-ELSE
-    xor ax, ax
-    push  ax   ; z 
-ENDIF
+PUSH_MACRO 0
 
 sub   cx, 320
 xchg  ax, dx   ; ax gets x lobits
@@ -4831,15 +4791,8 @@ sub   dx, ax
 
 
 
-IF COMPISA GE COMPILE_186
-    push  -1 
-    push  MT_ROCKET
-ELSE
-    mov   ax, -1
-    push  ax
-    mov   ax, MT_ROCKET
-    push  ax
-ENDIF
+PUSH_MACRO -1
+PUSH_MACRO MT_ROCKET
 
 
 call  P_Random_
@@ -4850,12 +4803,7 @@ sal   ax, 1
 add   ax, 128
 push  ax
 
-IF COMPISA GE COMPILE_186
-    push  0
-ELSE
-    xor   ax, ax
-    push  ax
-ENDIF
+PUSH_MACRO 0
 
 ; shift 11
 xor   cx, cx
@@ -4955,7 +4903,7 @@ IF COMPISA GE COMPILE_186
     imul  dx, cx, (SIZE THINKER_T)
     imul  bx, cx, (SIZE MOBJ_POS_T)
     push  bx   ; bp - 4
-    push  MT_SPAWNSHOT ; todo 186
+
 ELSE
     mov   ax, (SIZE MOBJ_POS_T)
     mul   cx
@@ -4967,10 +4915,12 @@ ELSE
 
     push  bx   ; bp - 4
 
-    mov   ax, MT_SPAWNSHOT
-    push  ax
+
+
 
 ENDIF
+
+PUSH_MACRO MT_SPAWNSHOT
 
 add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
 
@@ -5112,12 +5062,8 @@ push  word ptr ds:[bx]   ; param secnum
 ;mov   ax, MOBJPOSLIST_SEGMENT
 mov   ds, cx
 
-IF COMPISA GE COMPILE_186
-    push  MT_SPAWNFIRE                      ; param graphic
-ELSE
-    mov   ax, MT_SPAWNFIRE
-    push  ax
-ENDIF
+PUSH_MACRO MT_SPAWNFIRE
+
 push  word ptr ds:[di + MOBJ_POS_T.mp_z + 2] ; param z hi
 push  word ptr ds:[di + MOBJ_POS_T.mp_z + 0] ; param z lo
 
@@ -5368,7 +5314,8 @@ mov       word ptr ds:[_setStateReturn], ax
 mov       bx, (SIZE THINKER_T)
 sub       ax, (_thinkerlist + THINKER_T.t_data)
 xor       dx, dx
-div       bx
+div       bx    ; todo gross
+
 mov       di, MOBJPOSLOOKUPTABLE_SEGMENT
 mov       es, di
 mov       di, ax
@@ -5402,7 +5349,6 @@ mov       byte ptr ds:[si + MOBJ_T.m_tics], al
 mov       al, byte ptr es:[di + state_action]
 sub       al, ETF_A_BFGSpray                        ; minimum action number
 
-;cmp       al, ETF_A_BRAINEXPLODE ; max range
 cmp       al, (ETF_A_BRAINEXPLODE - ETF_A_BFGSPRAY) ; max range
 ja        done_with_mobj_state_action
 cbw
@@ -5451,18 +5397,17 @@ xor       dx, dx
 call      P_RemoveMobj_
 
 
+xor       dx, dx
 mov       word ptr ds:[_setStateReturn], si
 lea       ax, [si - (_thinkerlist + THINKER_T.t_data)]
 mov       bx, (SIZE THINKER_T)
 div       bx
 
-
-IF COMPISA GE COMPILE_186
-    imul  ax, ax, (SIZE MOBJ_POS_T)
-ELSE
-    mov   di, (SIZE MOBJ_POS_T)
-    mul   di
-ENDIF
+mov       di, MOBJPOSLOOKUPTABLE_SEGMENT
+mov       es, di
+mov       di, ax
+sal       di, 1
+mov       ax, word ptr es:[di]
 
 ;mov       word ptr ds:[_setStateReturn_pos + 2], MOBJPOSLIST_SEGMENT
 mov       word ptr ds:[_setStateReturn_pos], ax

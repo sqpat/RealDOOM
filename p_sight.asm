@@ -69,7 +69,7 @@ PUBLIC  P_CheckSight_
 push  si
 push  di
 
-push dx			; bp - 2
+push  dx		; bp - 2
 
 mov   si, cx    ; si gets t2_pos
 
@@ -93,12 +93,7 @@ mov   cx, ax	; cx is preshifted
 and   cl, 7		; will shift by this amount for bit count
 
 ; divide by 8 for 8 bits per byte..
-shr   dx, 1
-rcr   ax, 1
-shr   dx, 1
-rcr   ax, 1
-shr   dx, 1
-rcr   ax, 1
+SHIFT32_MACRO_RIGHT dx ax 3
 
 xchg  di, ax 			; di gets post-shifted.
 
@@ -256,7 +251,6 @@ ENDP
 PROC    P_DivlineSide_ NEAR
 PUBLIC  P_DivlineSide_
 
-	push di
 
 
 ;    if (!node->dx.w) {
@@ -300,23 +294,19 @@ PUBLIC  P_DivlineSide_
 	jbe  return_0
 	divline_side_return_1:
 	mov  ax, 1
-	pop  di
 	ret
 
 	return_2:
 	mov  ax, 2
-	pop  di
 	ret
 	return_0:
 	xor  ax, ax
-	pop  di
 	ret
 	x_more_than_nodex:
 	mov  ax, word ptr ds:[si + 0Eh]
 	test ax, ax
 	jl   divline_side_return_1
 	xor  ax, ax
-	pop  di
 	ret
 	node_dx_nonzero:
 	mov  cx, word ptr ds:[si + 0Eh]
@@ -338,7 +328,6 @@ PUBLIC  P_DivlineSide_
 	test ax, ax
 	jl   divline_side_return_1
 	xor  ax, ax
-	pop  di
 	ret
 	y_more_than_nodey:
 	mov  ax, word ptr ds:[si + 0Ah]
@@ -349,7 +338,6 @@ PUBLIC  P_DivlineSide_
 	ja   divline_side_return_1
 	return_0_2:
 	xor  ax, ax
-	pop  di
 	ret
 	node_dy_nonzero:
 	sub  bx, word ptr ds:[si]
@@ -374,13 +362,11 @@ PUBLIC  P_DivlineSide_
 	je   compare_leftright_low
 	return_1_2:
 	mov  ax, 1
-	pop  di
 	ret
 	compare_leftright_low:
 	cmp  di, ax
 	jne  return_1_2
 	mov  ax, 2
-	pop  di
 	ret
 
 
@@ -728,7 +714,9 @@ mov   cx, es
 les   ax, dword ptr ds:[_cachedt2x] 
 mov   dx, es
 ; si still divl from above
+push  di
 call  P_DivlineSide_
+pop   di
 cmp   di, ax
 je   side_crossed
 

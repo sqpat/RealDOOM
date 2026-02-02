@@ -2677,7 +2677,7 @@ PUSHA_NO_AX_OR_BP_MACRO
 
 push   bp
 mov    bp, sp
-xor    ah, ah   ; todo necessary?
+cbw
 push   ax      ; bp - 2
 
 

@@ -30,7 +30,7 @@ EXTRN P_Random_:NEAR
 EXTRN P_LineAttack_:NEAR
 EXTRN P_SpawnPlayerMissile_:NEAR
 EXTRN P_AimLineAttack_:NEAR  
-EXTRN P_SetMobjState_:NEAR         ; except this is really far
+EXTRN P_SetMobjState_:NEAR
 EXTRN P_NoiseAlert_:NEAR         ; except this is really far
 EXTRN P_SpawnMobj_:NEAR          
 EXTRN P_DamageMobj_:NEAR
@@ -731,7 +731,7 @@ PROC A_FireMissile_ NEAR
 PUBLIC A_FireMissile_
 
 
-mov   ax, MT_ROCKET
+mov   al, MT_ROCKET
 dec   ds:[_player + PLAYER_T.player_ammo + (2 * AM_MISL)]
 call  P_SpawnPlayerMissile_
 ret   
@@ -741,7 +741,7 @@ ENDP
 PROC A_FireBFG_ NEAR
 PUBLIC A_FireBFG_
 
-mov   ax, MT_BFG
+mov   al, MT_BFG
 sub   ds:[_player + PLAYER_T.player_ammo + (2 * AM_CELL)], BFGCELLS
 call  P_SpawnPlayerMissile_
 ret   
@@ -760,7 +760,7 @@ mov   dx, word ptr ds:[_weaponinfo + (WP_PLASMA * (SIZE WEAPONINFO_T) + WEAPONIN
 add   dx, ax
 mov   al, PS_FLASH
 call  P_SetPsprite_
-mov   ax, MT_PLASMA
+mov   al, MT_PLASMA
 call  P_SpawnPlayerMissile_
 
 ret   
