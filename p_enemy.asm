@@ -1741,22 +1741,10 @@ PROC    A_PosAttack_ NEAR
 PUBLIC  A_PosAttack_
 
 
-;mov   si, ax
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_a_posattack
 
-do_a_posattack:
-
-mov   bx, (SIZE THINKER_T)
-sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
-xor   dx, dx
-div   bx
-
-mov       bx, MOBJPOSLOOKUPTABLE_SEGMENT
-mov       es, bx
-mov       bx, ax
-sal       bx, 1
-mov       bx, word ptr es:[bx]
+; cx:bx is already mobjpos
 
 
 
@@ -2000,15 +1988,13 @@ test  dx, dx
 je    exit_a_cposrefire
 
 
-IF COMPISA GE COMPILE_186
-    imul  di, dx, (SIZE THINKER_T)
-ELSE
-    mov  ax, (SIZE THINKER_T)
-    mul  dx
-    xchg ax, di
-ENDIF
+mov       di, MOBJLOOKUPTABLE_SEGMENT
+mov       es, di
+mov       di, dx
+sal       di, 1
+mov       di, word ptr es:[di]
 
-add   di, (_thinkerlist + THINKER_T.t_data)
+add   di, THINKER_T.t_data
 cmp   word ptr ds:[di + MOBJ_T.m_health], 0
 jle   set_cgunner_seestate
 mov   cx, (SIZE THINKER_T)
@@ -2061,15 +2047,13 @@ mov   dx, word ptr ds:[si + MOBJ_T.m_targetRef]
 test  dx, dx
 je    exit_a_spidrefire
 
-IF COMPISA GE COMPILE_186
-    imul  di, dx, (SIZE THINKER_T)
-ELSE
-    mov  ax, (SIZE THINKER_T)
-    mul  dx
-    xchg ax, di
-ENDIF
+mov       di, MOBJLOOKUPTABLE_SEGMENT
+mov       es, di
+mov       di, dx
+sal       di, 1
+mov       di, word ptr es:[di]
 
-add   di, (_thinkerlist + THINKER_T.t_data)
+add   di, THINKER_T.t_data
 
 cmp   word ptr ds:[di + MOBJ_T.m_health], 0
 jle   set_spid_seestate
@@ -2117,20 +2101,19 @@ je    a_bspiexit
 do_a_bspiattack:
 call  A_FaceTarget_
 
+PUSH_MACRO MT_ARACHPLAZ
+push      bx  ; todo not sure if needed
+mov       bx, MOBJLOOKUPTABLE_SEGMENT
+mov       es, bx
+mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
+sal       bx, 1
+mov       dx, word ptr es:[bx]
+add       dx, THINKER_T.t_data
+pop       bx  ; todo not sure if needed
 
-IF COMPISA GE COMPILE_186
-    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
-    push  MT_ARACHPLAZ  
-ELSE
-    mov   ax, (SIZE THINKER_T)
-    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
-    xchg  ax, dx
-    mov   ax, MT_ARACHPLAZ
-    push  ax
-ENDIF
 
 xchg  ax, si
-add   dx, (_thinkerlist + THINKER_T.t_data)
+
 call  P_SpawnMissile_
 a_bspiexit:
 ret   
@@ -2141,7 +2124,7 @@ ENDP
 PROC    A_TroopAttack_ NEAR
 PUBLIC  A_TroopAttack_
 
-;mov   si, ax
+
 cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    a_troopattack_exit
 
@@ -2167,16 +2150,17 @@ mov   cx, ax
 sal   ax, 1
 add   cx, ax  ; cx is damage.
 
-IF COMPISA GE COMPILE_186
-    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
-ELSE
-    mov   ax, (SIZE THINKER_T)
-    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
-ENDIF
+
+mov       bx, MOBJLOOKUPTABLE_SEGMENT
+mov       es, bx
+mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
+sal       bx, 1
+mov       ax, word ptr es:[bx]
+
+add       ax, THINKER_T.t_data
 
 mov   bx, si
 mov   dx, si
-add   ax, (_thinkerlist + THINKER_T.t_data)
 
 call  P_DamageMobj_
 
@@ -2184,19 +2168,17 @@ ret
 
 do_troop_missile:
 
-IF COMPISA GE COMPILE_186
-    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
-    push  MT_TROOPSHOT 
-ELSE
-    mov   ax, (SIZE THINKER_T)
-    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
-    xchg  ax, dx
-    mov   ax, MT_TROOPSHOT
-    push  ax
-ENDIF
+PUSH_MACRO  MT_TROOPSHOT
+push      bx  ; todo not sure if needed
+mov       bx, MOBJLOOKUPTABLE_SEGMENT
+mov       es, bx
+mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
+sal       bx, 1
+mov       dx, word ptr es:[bx]
+add       dx, THINKER_T.t_data
+pop       bx  ; todo not sure if needed
 
 mov   ax, si
-add   dx, (_thinkerlist + THINKER_T.t_data)
 call  P_SpawnMissile_
 
 a_troopattack_exit:
@@ -2232,17 +2214,18 @@ SHIFT_MACRO sal  ax 2
 xchg  ax, cx
 
 
-IF COMPISA GE COMPILE_186
-    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
-ELSE
-    mov   ax, (SIZE THINKER_T)
-    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
-ENDIF
+mov       bx, MOBJLOOKUPTABLE_SEGMENT
+mov       es, bx
+mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
+sal       bx, 1
+mov       ax, word ptr es:[bx]
+
+add       ax, THINKER_T.t_data
 
 mov   bx, si
 mov   dx, si
 
-add   ax, (_thinkerlist + THINKER_T.t_data)
+
 call  P_DamageMobj_
 
 exit_a_sargattack_full:
@@ -2279,36 +2262,35 @@ mul   bh
 xchg  ax, cx
 
 
-IF COMPISA GE COMPILE_186
-    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
-ELSE
-    mov   ax, (SIZE THINKER_T)
-    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
-ENDIF
+mov       bx, MOBJLOOKUPTABLE_SEGMENT
+mov       es, bx
+mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
+sal       bx, 1
+mov       ax, word ptr es:[bx]
+
+add       ax, THINKER_T.t_data
 
 
 mov   bx, si
 mov   dx, si
-add   ax, (_thinkerlist + THINKER_T.t_data)
+
 call  P_DamageMobj_
 
 ret   
 
 do_head_missile:
 
-IF COMPISA GE COMPILE_186
-    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
-    push  MT_HEADSHOT
-ELSE
-    mov   ax, (SIZE THINKER_T)
-    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
-    xchg  ax, dx
-    mov   ax, MT_HEADSHOT
-    push  ax
-ENDIF
+PUSH_MACRO MT_HEADSHOT
+push      bx  ; todo not sure if needed
+mov       dx, MOBJLOOKUPTABLE_SEGMENT
+mov       es, dx
+mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
+sal       bx, 1
+mov       dx, word ptr es:[bx]
+add       dx, THINKER_T.t_data
+pop       bx  ; todo not sure if needed
 
 mov   ax, si
-add   dx, (_thinkerlist + THINKER_T.t_data)
 call  P_SpawnMissile_
 
 exit_head_attack:
@@ -2326,19 +2308,18 @@ cmp   word ptr ds:[si + MOBJ_T.m_targetRef], 0
 je    exit_cyber_attack
 call  A_FaceTarget_
 
-IF COMPISA GE COMPILE_186
-    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
-    push  MT_ROCKET
-ELSE
-    mov   ax, (SIZE THINKER_T)
-    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
-    xchg  ax, dx
-    mov   ax, MT_ROCKET
-    push  ax
-ENDIF
+PUSH_MACRO MT_ROCKET
+push      bx  ; todo not sure if needed
+mov       dx, MOBJLOOKUPTABLE_SEGMENT
+mov       es, dx
+mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
+sal       bx, 1
+mov       dx, word ptr es:[bx]
+add       dx, THINKER_T.t_data
+pop       bx  ; todo not sure if needed
 
 mov   ax, si
-add   dx, (_thinkerlist + THINKER_T.t_data)
+
 call  P_SpawnMissile_
 
 exit_cyber_attack:
@@ -2372,35 +2353,36 @@ inc   ax
 mov   ah, 10
 mul   ah
 mov   cx, ax
-IF COMPISA GE COMPILE_186
-    imul  ax, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
-ELSE
-    mov   ax, (SIZE THINKER_T)
-    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
-ENDIF
+
+mov       bx, MOBJLOOKUPTABLE_SEGMENT
+mov       es, bx
+mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
+sal       bx, 1
+mov       ax, word ptr es:[bx]
+
+add       ax, THINKER_T.t_data
 
 mov   bx, si
 mov   dx, si
-add   ax, (_thinkerlist + THINKER_T.t_data)
+
 call  P_DamageMobj_
 
 ret   
 
 do_bruis_missile:
 
-IF COMPISA GE COMPILE_186
-    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
-    push  MT_BRUISERSHOT
-ELSE
-    mov   ax, (SIZE THINKER_T)
-    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
-    xchg  ax, dx
-    mov   ax, MT_BRUISERSHOT
-    push  ax
-ENDIF
+PUSH_MACRO MT_ROCKET
+push      bx  ; todo not sure if needed
+mov       dx, MOBJLOOKUPTABLE_SEGMENT
+mov       es, dx
+mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
+sal       bx, 1
+mov       dx, word ptr es:[bx]
+add       dx, THINKER_T.t_data
+pop       bx  ; todo not sure if needed
+
 
 mov   ax, si
-add   dx, (_thinkerlist + THINKER_T.t_data)
 call  P_SpawnMissile_
 
 exit_a_bruisattack:
@@ -2424,21 +2406,17 @@ call  A_FaceTarget_
 mov   es, cx
 add   word ptr es:[di + MOBJ_POS_T.mp_z + 2], 16
 
-IF COMPISA GE COMPILE_186
-    imul  dx, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
-
-ELSE
-    mov   ax, (SIZE THINKER_T)
-    mul   word ptr ds:[si + MOBJ_T.m_targetRef] 
-    xchg  ax, dx
-
-
-ENDIF
-
 PUSH_MACRO MT_TRACER
+push      bx  ; todo not sure if needed
+mov       bx, MOBJLOOKUPTABLE_SEGMENT
+mov       es, bx
+mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
+sal       bx, 1
+mov       dx, word ptr es:[bx]
+add       dx, THINKER_T.t_data
+pop       bx  ; todo not sure if needed
 
 mov   ax, si
-add   dx, (_thinkerlist + THINKER_T.t_data)
 call  P_SpawnMissile_
 
 les   bx, dword ptr ds:[_setStateReturn_pos]
@@ -4343,8 +4321,8 @@ ENDP
 PROC    A_Pain_ NEAR
 PUBLIC  A_Pain_
 
-mov   bx, ax
-mov   al, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
+
+mov   al, byte ptr ds:[si + MOBJ_T.m_mobjtype]
 xor   ah, ah
 
 push  cs
@@ -4373,22 +4351,17 @@ ENDP
 PROC    A_Explode_ NEAR
 PUBLIC  A_Explode_
 
-;xchg  ax, si
+mov dx, bx   ; mobjpos
 
-IF COMPISA GE COMPILE_186
-    mov   dx, bx
-    imul  bx, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE THINKER_T)
-ELSE
-    push  ax
-    mov   ax, (SIZE THINKER_T)
-    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
-    xchg  ax, bx  ; product to bx
-    xchg  ax, dx  ; dx gets bx
-    pop   ax
-ENDIF
 
+mov       bx, MOBJLOOKUPTABLE_SEGMENT
+mov       es, bx
+mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
+sal       bx, 1
+mov       bx, word ptr es:[bx]
+add       bx, THINKER_T.t_data
 mov   cx, 128
-add   bx, (_thinkerlist + THINKER_T.t_data)
+
 call  P_RadiusAttack_
 
 ret   
@@ -5360,7 +5333,16 @@ mov       ax, si
 
 PUSHA_NO_AX_MACRO
 
+; cx:bx is mobjposlist segment
+; ax/si are thing
+; dx is... ?
+; di can be (?) target ref 
+
+
+; todo can selfmodify
+; SELFMODIFY_do_next_mobjstatefunc:
 call      word ptr cs:[di + OFFSET setmobjstate_jump_table - OFFSET P_SIGHT_STARTMARKER_]
+
 
 POPA_NO_AX_MACRO
 

@@ -184,23 +184,6 @@ ENDP
 
 
 
-COMMENT @
-; INLINED AT SINGLE USE
-PROC P_SetupPsprites_ NEAR
-PUBLIC P_SetupPsprites_
-
-mov       word ptr ds:[_psprites + (0 * (SIZE PSPDEF_T) + PSPDEF_T).pspdef_statenum], STATENUM_NULL
-mov       word ptr ds:[_psprites + (1 * (SIZE PSPDEF_T) + PSPDEF_T).pspdef_statenum], STATENUM_NULL
-mov       al, byte ptr ds:[_player + PLAYER_T.player_readyweapon]
-mov       byte ptr ds:[_player + PLAYER_T.player_pendingweapon], al
-call      P_BringUpWeapon_
-ret       
-
-ENDP
-
-@
-
-
 PROC P_SpawnPlayer_ NEAR
 PUBLIC P_SpawnPlayer_
 
@@ -2423,6 +2406,8 @@ push  ax    ; bp - 2
 push  cx    ; bp - 4
 mov   si, bx
 xchg  ax, di
+
+; todo pass in mobj pos.
 
 mov   ax, dx
 mov   bx, (SIZE THINKER_T)

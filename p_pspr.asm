@@ -52,11 +52,9 @@ PUBLIC  P_PSPR_STARTMARKER_
 ENDP
 
 
-PROC P_BringUpWeapon_ NEAR
+PROC   P_BringUpWeapon_ NEAR
 PUBLIC P_BringUpWeapon_
  
-push  bx
-push  dx
 cmp   byte ptr ds:[_player + PLAYER_T.player_pendingweapon], WP_NOCHANGE
 je    set_pending_weapon_ready_weapon
 check_for_chainsaw_pending:
@@ -73,8 +71,6 @@ xor   ax, ax
 mov   word ptr ds:[_psprites + (PS_WEAPON * (SIZE PSPDEF_T) + PSPDEF_T).pspdef_sy + 0], ax   ; WEAPONBOTTOM_LOW
 mov   word ptr ds:[_psprites + (PS_WEAPON * (SIZE PSPDEF_T) + PSPDEF_T).pspdef_sy + 2], WEAPONBOTTOM_HIGH
 call  P_SetPsprite_
-pop   dx
-pop   bx
 ret   
 set_pending_weapon_ready_weapon:
 mov   al, byte ptr ds:[_player + PLAYER_T.player_readyweapon]
@@ -272,7 +268,7 @@ ret
 
 ENDP
 
-PROC A_WeaponReady_ NEAR
+PROC   A_WeaponReady_ NEAR
 PUBLIC A_WeaponReady_
 
 mov   si, ax
@@ -393,7 +389,7 @@ ret
 
 ENDP
 
-PROC A_Lower_ NEAR
+PROC   A_Lower_ NEAR
 PUBLIC A_Lower_
 
 xchg  ax, bx
@@ -1074,7 +1070,7 @@ ret
 
 ENDP
 
-PROC A_Light0_ NEAR
+PROC   A_Light0_ NEAR
 PUBLIC A_Light0_
 
 mov   byte ptr ds:[_player + PLAYER_T.player_extralightvalue], 0
@@ -1082,7 +1078,7 @@ ret
 
 ENDP
 
-PROC A_Light1_ NEAR
+PROC   A_Light1_ NEAR
 PUBLIC A_Light1_
 
 mov   byte ptr ds:[_player + PLAYER_T.player_extralightvalue], 1
@@ -1090,7 +1086,7 @@ ret
 
 ENDP
 
-PROC A_Light2_ NEAR
+PROC   A_Light2_ NEAR
 PUBLIC A_Light2_
 
 mov   byte ptr ds:[_player + PLAYER_T.player_extralightvalue], 2
@@ -1098,7 +1094,7 @@ ret
 
 ENDP
 
-PROC A_OpenShotgun2_ NEAR
+PROC   A_OpenShotgun2_ NEAR
 PUBLIC A_OpenShotgun2_
 
 mov   dl, SFX_DBOPN
@@ -1108,7 +1104,7 @@ ret
 
 ENDP
 
-PROC A_LoadShotgun2_ NEAR
+PROC   A_LoadShotgun2_ NEAR
 PUBLIC A_LoadShotgun2_
 
 mov   dl, SFX_DBLOAD
@@ -1118,7 +1114,7 @@ ret
 
 ENDP
 
-PROC A_CloseShotgun2_ NEAR
+PROC   A_CloseShotgun2_ NEAR
 PUBLIC A_CloseShotgun2_
 
 push  ax
@@ -1131,14 +1127,12 @@ ret
 
 ENDP
 
-PROC A_BFGSpray_ NEAR
+PROC   A_BFGSpray_ NEAR
 PUBLIC A_BFGSpray_
 
 ;void __near A_BFGSpray (mobj_t __near* mo, mobj_pos_t __far* mo_pos) {
 
-push  dx
-push  si
-push  di
+
 
 mov   di, bx   ; di has mobjpos
 mov   si, ax   ; si has mobj
@@ -1187,9 +1181,7 @@ jne   bfg_spray_hit_something
 finish_this_bfg_spray_iter:
 
 loop  loop_bfg_spray
-pop   di
-pop   si
-pop   dx
+
 ret   
 
 bfg_spray_hit_something:
@@ -1213,12 +1205,7 @@ rcr   ax, 1
 
 push  word ptr ds:[bx + MOBJ_T.m_secnum]
 
-IF COMPISA GE COMPILE_186
-    push  MT_EXTRABFG        ; todo 186
-ELSE
-    mov   bx, MT_EXTRABFG
-    push  bx
-ENDIF
+PUSH_MACRO MT_EXTRABFG 
 
 lds   bx, dword ptr ds:[_linetarget_pos]
 add   ax, word ptr ds:[bx + MOBJ_POS_T.mp_z + 0]
@@ -1278,10 +1265,10 @@ ret
 
 ENDP
 
-PROC P_MovePsprites_ NEAR
+PROC   P_MovePsprites_ NEAR
 PUBLIC P_MovePsprites_
 
-push  bx
+push  bx  ; todo unclear if push pop necessary
 push  cx
 push  dx
 
@@ -1368,14 +1355,14 @@ dw OFFSET A_FireBFG_ - OFFSET P_SIGHT_STARTMARKER_
 
 ENDP
 
-PROC P_SetPsprite_ NEAR
+PROC   P_SetPsprite_ NEAR
 PUBLIC P_SetPsprite_
 
 
 push  bx
 push  si
-cmp   al, 0
-je    psprite_0
+test  al, al 
+jz    psprite_0
 mov   al, (SIZE PSPDEF_T)
 psprite_0:
 cbw
