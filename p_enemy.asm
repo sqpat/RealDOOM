@@ -328,26 +328,20 @@ push  si  ; bp - 2
 
 
 mov   di, bx
-mov   cx, MOBJPOSLIST_SEGMENT  ; might not be necessary. whatever.
-mov   es, cx
 
 
 mov   si, word ptr ds:[si + MOBJ_T.m_targetRef]
 
-IF COMPISA GE COMPILE_186
-    imul  bx, si, (SIZE THINKER_T)
-    add   bx, (_thinkerlist + THINKER_T.t_data)
-    imul  si, si, (SIZE MOBJ_POS_T)
-ELSE
-    mov   ax, (SIZE THINKER_T)
-    mul   si
-    add   ax, (_thinkerlist + THINKER_T.t_data)
-    xchg  ax, bx
-    mov   ax, (SIZE MOBJ_POS_T)
-    mul   si
-    xchg  ax, si
 
-ENDIF
+mov   bx, MOBJLOOKUPTABLE_SEGMENT
+mov   es, bx
+sal   si, 1
+mov   bx, word ptr es:[si]
+mov   si, word ptr es:[si + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
+add   bx, THINKER_T.t_data
+
+mov   cx, MOBJPOSLIST_SEGMENT  ; might not be necessary. whatever.
+mov   es, cx
 
 
 push  bx  ; bp - 4
@@ -415,36 +409,22 @@ PUBLIC  P_CheckMissileRange_
 PUSHA_NO_AX_MACRO
 xchg  di, si
 
-IF COMPISA GE COMPILE_186
-    imul  bx, word ptr ds:[di + MOBJ_T.m_targetRef], (SIZE THINKER_T)
-ELSE
-    mov   ax, (SIZE THINKER_T) 
-    mul   word ptr ds:[di + MOBJ_T.m_targetRef]
-    xchg  ax, bx
-ENDIF
 
-mov   cx, (SIZE THINKER_T)
+mov  bx, MOBJLOOKUPTABLE_SEGMENT
+mov  es, bx
+mov  bx, word ptr ds:[di + MOBJ_T.m_targetRef]
+sal  bx, 1
+mov  cx, word ptr es:[bx + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
+mov  dx, word ptr es:[bx]
+
 
 ; di is actor mobj
 ; si is actorpos
 ; bx is targ mobj
 
-xor   dx, dx
-mov   ax, bx
-div   cx
-; ax has index...
-
-IF COMPISA GE COMPILE_186
-    imul  cx, ax, (SIZE MOBJ_POS_T)
-ELSE
-    mov   dx, (SIZE MOBJ_POS_T)
-    mul   dx
-    xchg  ax, cx
-ENDIF
-
+add   dx, THINKER_T.t_data
 mov   bp, cx
 
-lea   dx, ds:[bx + (_thinkerlist + THINKER_T.t_data)]
 mov   ax, di
 mov   bx, si
 
@@ -1460,25 +1440,19 @@ mov   bp, MOBJPOSLIST_SEGMENT
 ;mov   si, ax
 mov   di, bx
 
-IF COMPISA GE COMPILE_186
-    mov   ax, word ptr ds:[si + MOBJ_T.m_targetRef]
-    imul  dx, ax, (SIZE THINKER_T)
-    imul  cx, ax, (SIZE MOBJ_POS_T)
-ELSE
-    mov   bx, word ptr ds:[si + MOBJ_T.m_targetRef]
-    mov   ax, (SIZE MOBJ_POS_T)
-    mul   bx
-    xchg  ax, cx
-    mov   ax, (SIZE THINKER_T)
-    mul   bx
-    xchg  ax, dx
-    xchg  ax, bx
-    
+MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT = (MOBJPOSLOOKUPTABLE_SEGMENT - MOBJLOOKUPTABLE_SEGMENT) * 16
 
-ENDIF
+mov  bx, MOBJLOOKUPTABLE_SEGMENT
+mov  es, bx
+mov  bx, word ptr ds:[si + MOBJ_T.m_targetRef]
+sal  bx, 1
+mov  dx, word ptr es:[bx]
+mov  cx, word ptr es:[bx + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
 
 
-add   dx, (OFFSET _thinkerlist + THINKER_T.t_data)
+
+
+add   dx, THINKER_T.t_data
 cmp   byte ptr ds:[si + MOBJ_T.m_reactiontime], 0
 je    dont_dec_reaction
 dec   byte ptr ds:[si + MOBJ_T.m_reactiontime]
@@ -5241,22 +5215,13 @@ pop   ds
 
 call  P_SpawnMobj_
 
-
-IF COMPISA GE COMPILE_186
-    imul  di, ax, (SIZE THINKER_T)
-    add   di, (OFFSET _thinkerlist + THINKER_T.t_data)
-    imul  bx, ax, (SIZE MOBJ_POS_T)
-ELSE
-    xchg  ax, bx
-    mov   ax, (SIZE THINKER_T)
-    mul   bx
-    xchg  ax, di
-    add   di, (OFFSET _thinkerlist + THINKER_T.t_data)
-    mov   ax, (SIZE MOBJ_POS_T)
-    mul   bx
-    xchg  ax, bx
-
-ENDIF
+mov   bx, MOBJLOOKUPTABLE_SEGMENT
+mov   es, bx
+xchg  ax, bx
+sal   bx, 1
+mov   di, word ptr es:[bx]
+add   di, THINKER_T.t_data
+mov   bx, word ptr es:[bx + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
 
 mov   dx, 1
 mov   ax, di
@@ -5399,17 +5364,16 @@ mov       si, ax
 mov       cx, dx
 
 mov       word ptr ds:[_setStateReturn], ax
+
 mov       bx, (SIZE THINKER_T)
 sub       ax, (_thinkerlist + THINKER_T.t_data)
 xor       dx, dx
 div       bx
-
-IF COMPISA GE COMPILE_186
-    imul  ax, ax, (SIZE MOBJ_POS_T)
-ELSE
-    mov   di, (SIZE MOBJ_POS_T)
-    mul   di
-ENDIF
+mov       di, MOBJPOSLOOKUPTABLE_SEGMENT
+mov       es, di
+mov       di, ax
+sal       di, 1
+mov       ax, word ptr es:[di]
 
 ;mov       word ptr ds:[_setStateReturn_pos + 2], MOBJPOSLIST_SEGMENT
 mov       word ptr ds:[_setStateReturn_pos], ax
