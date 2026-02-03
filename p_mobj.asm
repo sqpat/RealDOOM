@@ -115,28 +115,15 @@ mov   byte ptr cs:[SELFMODIFY_set_rnd_value_3+1 - OFFSET P_SIGHT_STARTMARKER_], 
 
 pop   bx
 pop   dx
-pop   ax
+pop   es
 
-IF COMPISA GE COMPILE_186
-
-push  -1        ; complicated for 8088...
-push  MT_PUFF
+PUSH_MACRO -1
+PUSH_MACRO MT_PUFF
 push  di
 push  si
 
+mov  ax, es
 
-ELSE
-
-mov   es, si
-mov   si, -1
-push  si
-mov   si, MT_PUFF
-push  si
-push  di
-push  es
-
-
-ENDIF
 
 
 call  P_SpawnMobj_
@@ -235,19 +222,10 @@ dont_player_reborn:
 mov       cx, word ptr ds:[bx + MAPTHING_T.mapthing_y]
 xor       bx, bx
 
-IF COMPISA GE COMPILE_186
-    push      -1
-    push      bx
-    push      ONFLOORZ_HIGHBITS
-    push      bx
-ELSE
-    mov       ax, -1
-    push      ax
-    push      bx
-    mov       ax, ONFLOORZ_HIGHBITS
-    push      ax
-    push      bx
-ENDIF
+PUSH_MACRO -1
+push       bx
+PUSH_MACRO ONFLOORZ_HIGHBITS
+push       bx
 
 mov       ax, bx
 call      P_SpawnMobj_
@@ -444,19 +422,14 @@ jne       exit_spawnmapthing_2
 
 do_spawn_monster:
 
+
 xchg      ax, bx
+PUSH_MACRO -1
 mov       al, (SIZE MOBJINFO_T)
 mul       bl
 xchg      ax, bx
 
 ; mobjRef = P_SpawnMobj(x.w, y.w, z.w, i, -1);
-
-IF COMPISA GE COMPILE_186
-    push      -1
-ELSE
-    mov       dx, -1
-    push      dx
-ENDIF
 
 xor       ah, ah
 push      ax
@@ -2130,12 +2103,7 @@ mov   es, word ptr [bp - 6]
 push  ax
 mov   di, word ptr [bp - 4]
 
-IF COMPISA GE COMPILE_186
-    push  MT_TFOG
-ELSE
-    mov   dx, MT_TFOG
-    push  dx
-ENDIF
+PUSH_MACRO  MT_TFOG
 
 
 mov   bx, word ptr es:[di + MOBJ_POS_T.mp_y + 0]
@@ -2191,12 +2159,7 @@ mov   ax, word ptr es:[bx + SUBSECTOR_T.ss_secnum]
 SHIFT_MACRO sar ax 4
 push  ax
 
-IF COMPISA GE COMPILE_186
-    push  MT_TFOG
-ELSE
-    mov   ax, MT_TFOG
-    push  ax
-ENDIF
+PUSH_MACRO MT_TFOG
 
 mov   cx, word ptr [bp - 0Eh]
 mov   dx, word ptr [bp - 010h]

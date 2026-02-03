@@ -999,27 +999,7 @@ pop    ds
 call   Z_QuickMapPhysics_PSetup_
 call   Z_QuickMapScratch_5000_PSetup_
 
-;	FAR_memcpy(segs_physics, MK_FP(0x5000, 0xc000), numsegs*4);
-
-mov   cx, word ptr ds:[_numsegs]
-shl   cx, 1 ; x4 bytes = x2 words
-
-mov   ax, SCRATCH_SEGMENT_5000
-mov   ds, ax
-mov   si, TEMPSECNUMS_OFFSET
-mov   ax, SEGS_PHYSICS_SEGMENT
-mov   es, ax
-xor   di, di
-
-loop_next_seg_physics:
-lodsw
-SHIFT_MACRO rol ax 4
-stosw
-loop  loop_next_seg_physics
-
-push  ss
-pop   ds
-
+; segs_physics removed
 
 POPA_NO_AX_MACRO
 

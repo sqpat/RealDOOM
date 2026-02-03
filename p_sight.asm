@@ -642,7 +642,7 @@ mov   si, ax
 SHIFT_MACRO shl si 4
 mov   cx, LINES_PHYSICS_SEGMENT
 mov   es, cx
-mov   dx, word ptr es:[si + 8]
+mov   dx, word ptr es:[si + LINE_PHYSICS_T.lp_validcount]
 cmp   dx, word ptr ds:[_validcount_global]
 jne   do_full_loop_iteration
 cross_subsector_mainloop_increment:
@@ -662,7 +662,7 @@ mov   al, byte ptr es:[bx]
 mov   byte ptr [bp - 2], al				; todo selfmodify ahead
 mov   ax, word ptr ds:[_validcount_global]
 mov   es, cx
-mov   word ptr es:[si + 8], ax
+mov   word ptr es:[si + LINE_PHYSICS_T.lp_validcount], ax
 les   di, dword ptr es:[si]		; linev1Offset
 mov   bx, es					; linev2Offset
 SHIFT_MACRO shl   di 2
@@ -724,14 +724,22 @@ test  byte ptr [bp - 2], ML_TWOSIDED		; test flag
 je    jump_to_cross_bsp_node_return_0_2	; todo optim out fallthru
 
 two_sided:
-mov   ax, SEGS_PHYSICS_SEGMENT
+
+mov   ax, SEG_LINEDEFS_SEGMENT
 mov   es, ax
-mov   bx, word ptr [bp - 4]	; word lookup
-sal   bx, 1						; dword lookup
-les   di, dword ptr es:[bx]
+mov   bx, word ptr [bp - 4]
+mov   si, word ptr es:[bx]
+SHIFT_MACRO shl si 4
+mov   ax, LINES_PHYSICS_SEGMENT
+mov   es, ax
+les   di, dword ptr es:[si + LINE_PHYSICS_T.lp_frontsecnum]
 mov   si, es
 
-; di/si preshfited
+SHIFT_MACRO shl di 4
+SHIFT_MACRO shl si 4
+
+
+; di/si not preshfited
 
 mov   ax, SECTORS_SEGMENT
 mov   es, ax

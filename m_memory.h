@@ -395,7 +395,7 @@ scantokey            3194:0000
 // 4FF4:0000  xxxx [empty]
 
 
-// 9712 bytes free?
+
 
 // PHYSICS 0x6000 - 0x7FFF DATA
 // note: strings in 0x6000-6400 region
