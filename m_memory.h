@@ -59,7 +59,7 @@
 
 
 // todo generate this programatically, downward from fixeddssegment
-#define baselowermemoryaddress    (0x231D0000)
+#define baselowermemoryaddress    (0x23EF0000)
 // MaximumMusDriverSize
 
 
@@ -105,9 +105,7 @@ struct sfxinfo_struct{
 
 
 #define mobjposlist        ((mobj_pos_t __far*)      MAKE_FULL_SEGMENT(baselowermemoryaddress , 0))
-#define mobjlookuptable    ((sector_t __far*)        MAKE_FULL_SEGMENT(mobjposlist        , size_mobjposlist))
-#define mobjposlookuptable ((sector_t __far*)        MAKE_FULL_SEGMENT(mobjlookuptable    , size_mobjlookup_table))
-#define sectors            ((sector_t __far*)        MAKE_FULL_SEGMENT(mobjposlookuptable , size_mobjposlookup_table))
+#define sectors            ((sector_t __far*)        MAKE_FULL_SEGMENT(mobjposlist        , size_mobjposlist))
 #define vertexes           ((vertex_t __far*)        MAKE_FULL_SEGMENT(sectors            , size_sectors))
 #define sides              ((side_t __far*)          MAKE_FULL_SEGMENT(vertexes           , size_vertexes))
 #define lines              ((line_t __far*)          MAKE_FULL_SEGMENT(sides              , size_sides))
@@ -167,8 +165,6 @@ struct sfxinfo_struct{
 
 #define mobjposlist_segment          ((segment_t) ((int32_t)mobjposlist >> 16))
 
-#define mobjlookuptable_segment              ((segment_t) ((int32_t)mobjlookuptable >> 16))
-#define mobjposlookuptable_segment           ((segment_t) ((int32_t)mobjposlookuptable >> 16))
 
 #define sectors_segment              ((segment_t) ((int32_t)sectors >> 16))
 #define vertexes_segment             ((segment_t) ((int32_t)vertexes >> 16))
@@ -289,20 +285,6 @@ scantokey            3194:0000
 #define physics_9000_end_segment    ((segment_t) ((int32_t)physics_9000_end >> 16))
 
 
-
-// 11264
-
-// diskgraphicbytes 92C0:0000
-// D_INFO           92D9:0000
-// [empty]          9343:0000
-// FREEBYTES 2784 bytes free
- // todo disassembly the above and put it int he other physics code space code!
-
- 
-
-
-
-
  
 
 // 3428 bytes free
@@ -327,7 +309,6 @@ scantokey            3194:0000
 #define size_doomednum             ((sizeof(int16_t) * NUMMOBJTYPES))
 #define size_linespeciallist       ((sizeof(int16_t) * MAXLINEANIMS))
 #define size_font_widths           (HU_FONTSIZE * sizeof(int8_t))
-#define size_segs_physics          (MAX_SEGS_PHYSICS_SIZE)
 
 #define MAX_OVERLAYSIZE        (((FinaleCodeSize > SaveLoadCodeSize ? FinaleCodeSize : SaveLoadCodeSize)))
 
@@ -342,10 +323,14 @@ scantokey            3194:0000
 #define doomednum_far          ((int16_t __far*)              MAKE_FULL_SEGMENT(ammnumpatchbytes_far,     (size_ammnumpatchbytes+size_ammnumpatchoffsets )))
 #define linespeciallist_far    ((int16_t __far*)              MAKE_FULL_SEGMENT(doomednum_far,              size_doomednum ))
 #define font_widths_far        ((int8_t __far*)               MAKE_FULL_SEGMENT(linespeciallist_far,        size_linespeciallist))
-#define code_overlay_start     ((byte __far*)                 MAKE_FULL_SEGMENT(font_widths_far,            size_font_widths))
+
+#define mobjlookuptable_far    ((int16_t __far*)        MAKE_FULL_SEGMENT(font_widths_far,            size_font_widths))
+#define mobjposlookuptable_far ((int16_t __far*)        MAKE_FULL_SEGMENT(mobjlookuptable_far    , size_mobjlookup_table))
+
+
+#define code_overlay_start     ((byte __far*)                 MAKE_FULL_SEGMENT(mobjposlookuptable_far , size_mobjposlookup_table))
 #define code_overlay_end       ((byte __far*)                 MAKE_FULL_SEGMENT(code_overlay_start,         MAX_OVERLAYSIZE))
-#define segs_physics           ((seg_physics_t __far*)        MAKE_FULL_SEGMENT(code_overlay_start,         MAX_OVERLAYSIZE))
-#define physics_4000_end       ((byte __far*)                 MAKE_FULL_SEGMENT(segs_physics,               size_segs_physics))
+#define physics_4000_end       ((byte __far*)                 MAKE_FULL_SEGMENT(code_overlay_start,         MAX_OVERLAYSIZE))
 // WipeCodeSize
 
 #define thinkerlist_segment           ((segment_t) ((int32_t)thinkerlist_far >> 16))
@@ -359,9 +344,10 @@ scantokey            3194:0000
 #define doomednum_segment             ((segment_t) ((int32_t)doomednum_far >> 16))
 #define linespeciallist_segment       ((segment_t) ((int32_t)linespeciallist_far >> 16))
 #define font_widths_segment           ((segment_t) ((int32_t)font_widths_far >> 16))
+#define mobjlookuptable_segment       ((segment_t) ((int32_t)mobjlookuptable_far >> 16))
+#define mobjposlookuptable_segment    ((segment_t) ((int32_t)mobjposlookuptable_far >> 16))
 #define code_overlay_segment          ((segment_t) ((int32_t)code_overlay_start >> 16))
 #define code_overlay_end_segment      ((segment_t) ((int32_t)code_overlay_end >> 16))
-#define segs_physics_segment          ((segment_t) ((int32_t)segs_physics >> 16))
 #define physics_4000_end_segment      ((segment_t) ((int32_t)physics_4000_end >> 16))
 // 4FF4h
 
@@ -370,12 +356,14 @@ scantokey            3194:0000
 #define mobjinfo           ((mobjinfo_t  __near*)        ((mobjinfo_segment          - FIXED_DS_SEGMENT) << 4))
 #define linebuffer         ((int16_t __near*)            ((linebuffer_segment        - FIXED_DS_SEGMENT) << 4))
 #define sectors_physics    ((sector_physics_t __near* )  ((sectors_physics_segment   - FIXED_DS_SEGMENT) << 4))
-#define intercepts         ((intercept_t __near* )       ((intercepts_segment - FIXED_DS_SEGMENT) << 4))
-#define ammnumpatchbytes   ((byte __near* )              ((ammnumpatchbytes_segment - FIXED_DS_SEGMENT) << 4))
+#define intercepts         ((intercept_t __near* )       ((intercepts_segment        - FIXED_DS_SEGMENT) << 4))
+#define ammnumpatchbytes   ((byte __near* )              ((ammnumpatchbytes_segment  - FIXED_DS_SEGMENT) << 4))
 #define ammnumpatchoffsets ((uint16_t __near* )          (((uint16_t)ammnumpatchbytes) + 0x020C))
-#define doomednum          ((int16_t __near* )           ((doomednum_segment - FIXED_DS_SEGMENT) << 4))
-#define linespeciallist    ((int8_t __near* )            ((linespeciallist_segment - FIXED_DS_SEGMENT) << 4))
-#define font_widths        ((int8_t __near* )            ((font_widths_segment - FIXED_DS_SEGMENT) << 4))
+#define doomednum          ((int16_t __near* )           ((doomednum_segment          - FIXED_DS_SEGMENT) << 4))
+#define linespeciallist    ((int8_t __near* )            ((linespeciallist_segment    - FIXED_DS_SEGMENT) << 4))
+#define font_widths        ((int8_t __near* )            ((font_widths_segment        - FIXED_DS_SEGMENT) << 4))
+#define mobjlookuptable    ((int16_t __near*)            ((mobjlookuptable_segment    - FIXED_DS_SEGMENT) << 4))
+#define mobjposlookuptable ((int16_t __near*)            ((mobjposlookuptable_segment - FIXED_DS_SEGMENT) << 4))
 
 
 

@@ -333,11 +333,9 @@ mov   di, bx
 mov   si, word ptr ds:[si + MOBJ_T.m_targetRef]
 
 
-mov   bx, MOBJLOOKUPTABLE_SEGMENT
-mov   es, bx
 sal   si, 1
-mov   bx, word ptr es:[si]
-mov   si, word ptr es:[si + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
+mov   bx, word ptr ds:[si + _mobjlookuptable]
+mov   si, word ptr ds:[si + _mobjposlookuptable]
 add   bx, THINKER_T.t_data
 
 mov   cx, MOBJPOSLIST_SEGMENT  ; might not be necessary. whatever.
@@ -410,12 +408,10 @@ PUSHA_NO_AX_MACRO
 xchg  di, si
 
 
-mov  bx, MOBJLOOKUPTABLE_SEGMENT
-mov  es, bx
 mov  bx, word ptr ds:[di + MOBJ_T.m_targetRef]
 sal  bx, 1
-mov  cx, word ptr es:[bx + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
-mov  dx, word ptr es:[bx]
+mov  cx, word ptr ds:[bx + _mobjposlookuptable]
+mov  dx, word ptr ds:[bx + _mobjlookuptable]
 
 
 ; di is actor mobj
@@ -813,13 +809,11 @@ push  ax  ; garbage push instead of sub sp 2 to hold d[1] d[2]
 
 
 
-mov       ax, MOBJPOSLOOKUPTABLE_SEGMENT
-mov       es, ax
-mov       ax, si
+mov       es, si
 mov       si, word ptr ds:[si + MOBJ_T.m_targetRef]
 sal       si, 1
-mov       si, word ptr es:[si]
-mov       es, ax  ; store old si
+mov       si, word ptr ds:[si + _mobjposlookuptable]
+
 
 
 
@@ -1141,11 +1135,9 @@ xor   dx, dx
 div   bx
 
 
-mov       si, MOBJPOSLOOKUPTABLE_SEGMENT
-mov       es, si
 mov       si, ax
 sal       si, 1
-mov       si, word ptr es:[si]
+mov       si, word ptr ds:[si + _mobjposlookuptable]
 
 
 mov   ax, MOBJPOSLIST_SEGMENT
@@ -1274,11 +1266,10 @@ mov   ax, word ptr ds:[_thinkerlist + THINKER_T.t_next]
 
 loop_next_thinker_keendie:
 
-mov       bx, MOBJLOOKUPTABLE_SEGMENT
-mov       es, bx
+
 mov       bx, ax  
 sal       bx, 1
-mov       bx, word ptr es:[bx]
+mov       bx, word ptr ds:[bx + _mobjlookuptable]
 
 
 ; todo sub if we add + 4
@@ -1474,14 +1465,11 @@ PUBLIC  A_Chase_
 
 mov   di, bx
 
-MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT = (MOBJPOSLOOKUPTABLE_SEGMENT - MOBJLOOKUPTABLE_SEGMENT) * 16
 
-mov  bx, MOBJLOOKUPTABLE_SEGMENT
-mov  es, bx
 mov  bx, word ptr ds:[si + MOBJ_T.m_targetRef]
 sal  bx, 1
-mov  dx, word ptr es:[bx]
-mov  cx, word ptr es:[bx + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
+mov  dx, word ptr ds:[bx + _mobjlookuptable]
+mov  cx, word ptr ds:[bx + _mobjposlookuptable]
 
 
 
@@ -1699,14 +1687,12 @@ sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   cx
 
-mov       si, MOBJPOSLOOKUPTABLE_SEGMENT
-mov       es, si
 mov       si, ax
 sal       si, 1
-mov       si, word ptr es:[si]
+mov       si, word ptr ds:[si + _mobjposlookuptable]
 mov       di, word ptr ds:[bx + MOBJ_T.m_targetRef]
 sal       di, 1
-mov       di, word ptr es:[di]
+mov       di, word ptr ds:[di + _mobjposlookuptable]
 
 
 
@@ -1857,11 +1843,9 @@ sub   ax, (OFFSET _thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   si
 
-mov       si, MOBJPOSLOOKUPTABLE_SEGMENT
-mov       es, si
 mov       si, ax
 sal       si, 1
-mov       si, word ptr es:[si]
+mov       si, word ptr ds:[si + _mobjposlookuptable]
 
 mov   dl, SFX_SHOTGN
 mov   ax, di
@@ -1947,11 +1931,9 @@ sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
 
-mov       bx, MOBJPOSLOOKUPTABLE_SEGMENT
-mov       es, bx
 mov       bx, ax
 sal       bx, 1
-mov       bx, word ptr es:[bx]
+mov       bx, word ptr ds:[bx + _mobjposlookuptable]
 
 
 mov   dl, SFX_SHOTGN
@@ -2022,11 +2004,9 @@ test  dx, dx
 je    exit_a_cposrefire
 
 
-mov       di, MOBJLOOKUPTABLE_SEGMENT
-mov       es, di
 mov       di, dx
 sal       di, 1
-mov       di, word ptr es:[di]
+mov       di, word ptr ds:[di + _mobjlookuptable]
 
 add   di, THINKER_T.t_data
 cmp   word ptr ds:[di + MOBJ_T.m_health], 0
@@ -2036,11 +2016,9 @@ lea   ax, ds:[di - (_thinkerlist + THINKER_T.t_data)]
 xor   dx, dx
 div   cx
 
-mov       cx, MOBJPOSLOOKUPTABLE_SEGMENT
-mov       es, cx
 xchg      ax, si
 sal       si, 1
-mov       cx, word ptr es:[si]
+mov       cx, word ptr ds:[si + _mobjposlookuptable]
 xchg      ax, si
 
 mov   dx, di
@@ -2081,11 +2059,10 @@ mov   dx, word ptr ds:[si + MOBJ_T.m_targetRef]
 test  dx, dx
 je    exit_a_spidrefire
 
-mov       di, MOBJLOOKUPTABLE_SEGMENT
-mov       es, di
+
 mov       di, dx
 sal       di, 1
-mov       di, word ptr es:[di]
+mov       di, word ptr ds:[di + _mobjlookuptable]
 
 add   di, THINKER_T.t_data
 
@@ -2096,11 +2073,9 @@ lea   ax, ds:[di - (_thinkerlist + THINKER_T.t_data)]
 xor   dx, dx
 div   cx
 
-mov       cx, MOBJPOSLOOKUPTABLE_SEGMENT
-mov       es, cx
 xchg      ax, si
 sal       si, 1
-mov       cx, word ptr es:[si]
+mov       cx, word ptr ds:[si + _mobjposlookuptable]
 xchg      ax, si
 
 mov   dx, di
@@ -2137,11 +2112,11 @@ call  A_FaceTarget_
 
 PUSH_MACRO MT_ARACHPLAZ
 push      bx  ; todo not sure if needed
-mov       bx, MOBJLOOKUPTABLE_SEGMENT
-mov       es, bx
+
+
 mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
 sal       bx, 1
-mov       dx, word ptr es:[bx]
+mov       dx, word ptr ds:[bx + _mobjlookuptable]
 add       dx, THINKER_T.t_data
 pop       bx  ; todo not sure if needed
 
@@ -2185,11 +2160,10 @@ sal   ax, 1
 add   cx, ax  ; cx is damage.
 
 
-mov       bx, MOBJLOOKUPTABLE_SEGMENT
-mov       es, bx
+
 mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
 sal       bx, 1
-mov       ax, word ptr es:[bx]
+mov       ax, word ptr ds:[bx + _mobjlookuptable]
 
 add       ax, THINKER_T.t_data
 
@@ -2204,11 +2178,9 @@ do_troop_missile:
 
 PUSH_MACRO  MT_TROOPSHOT
 push      bx  ; todo not sure if needed
-mov       bx, MOBJLOOKUPTABLE_SEGMENT
-mov       es, bx
 mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
 sal       bx, 1
-mov       dx, word ptr es:[bx]
+mov       dx, word ptr ds:[bx + _mobjlookuptable]
 add       dx, THINKER_T.t_data
 pop       bx  ; todo not sure if needed
 
@@ -2248,11 +2220,10 @@ SHIFT_MACRO sal  ax 2
 xchg  ax, cx
 
 
-mov       bx, MOBJLOOKUPTABLE_SEGMENT
-mov       es, bx
+
 mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
 sal       bx, 1
-mov       ax, word ptr es:[bx]
+mov       ax, word ptr ds:[bx + _mobjlookuptable]
 
 add       ax, THINKER_T.t_data
 
@@ -2296,11 +2267,10 @@ mul   bh
 xchg  ax, cx
 
 
-mov       bx, MOBJLOOKUPTABLE_SEGMENT
-mov       es, bx
+
 mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
 sal       bx, 1
-mov       ax, word ptr es:[bx]
+mov       ax, word ptr ds:[bx + _mobjlookuptable]
 
 add       ax, THINKER_T.t_data
 
@@ -2316,11 +2286,9 @@ do_head_missile:
 
 PUSH_MACRO MT_HEADSHOT
 push      bx  ; todo not sure if needed
-mov       dx, MOBJLOOKUPTABLE_SEGMENT
-mov       es, dx
 mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
 sal       bx, 1
-mov       dx, word ptr es:[bx]
+mov       dx, word ptr ds:[bx + _mobjlookuptable]
 add       dx, THINKER_T.t_data
 pop       bx  ; todo not sure if needed
 
@@ -2344,11 +2312,9 @@ call  A_FaceTarget_
 
 PUSH_MACRO MT_ROCKET
 push      bx  ; todo not sure if needed
-mov       dx, MOBJLOOKUPTABLE_SEGMENT
-mov       es, dx
 mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
 sal       bx, 1
-mov       dx, word ptr es:[bx]
+mov       dx, word ptr ds:[bx + _mobjlookuptable]
 add       dx, THINKER_T.t_data
 pop       bx  ; todo not sure if needed
 
@@ -2388,11 +2354,10 @@ mov   ah, 10
 mul   ah
 mov   cx, ax
 
-mov       bx, MOBJLOOKUPTABLE_SEGMENT
-mov       es, bx
+
 mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
 sal       bx, 1
-mov       ax, word ptr es:[bx]
+mov       ax, word ptr ds:[bx + _mobjlookuptable]
 
 add       ax, THINKER_T.t_data
 
@@ -2407,11 +2372,10 @@ do_bruis_missile:
 
 PUSH_MACRO MT_ROCKET
 push      bx  ; todo not sure if needed
-mov       dx, MOBJLOOKUPTABLE_SEGMENT
-mov       es, dx
+
 mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
 sal       bx, 1
-mov       dx, word ptr es:[bx]
+mov       dx, word ptr ds:[bx + _mobjlookuptable]
 add       dx, THINKER_T.t_data
 pop       bx  ; todo not sure if needed
 
@@ -2442,11 +2406,10 @@ add   word ptr es:[di + MOBJ_POS_T.mp_z + 2], 16
 
 PUSH_MACRO MT_TRACER
 push      bx  ; todo not sure if needed
-mov       bx, MOBJLOOKUPTABLE_SEGMENT
-mov       es, bx
+
 mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
 sal       bx, 1
-mov       dx, word ptr es:[bx]
+mov       dx, word ptr ds:[bx + _mobjlookuptable]
 add       dx, THINKER_T.t_data
 pop       bx  ; todo not sure if needed
 
@@ -2603,13 +2566,12 @@ jmp   exit_a_tracer
 valid_tracerref:
 
 
-mov   bx, MOBJLOOKUPTABLE_SEGMENT
-mov   es, bx
+
 mov   bx, ax
 sal   bx, 1
 
-mov   si, word ptr es:[bx + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
-mov   bx, word ptr es:[bx]
+mov   si, word ptr ds:[bx + _mobjposlookuptable]
+mov   bx, word ptr ds:[bx + _mobjlookuptable]
 
 
 cmp   word ptr ds:[bx + THINKER_T.t_data + MOBJ_T.m_health], 0
@@ -2855,11 +2817,10 @@ mov   ax, si
 mov   dl, SFX_SKEPCH
 call  S_StartSound_
 
-mov   bx, MOBJLOOKUPTABLE_SEGMENT
-mov   es, bx
+
 mov   bx, word ptr ds:[si + MOBJ_T.m_targetRef]
 sal   bx, 1
-mov   ax, word ptr es:[bx]
+mov   ax, word ptr ds:[bx + _mobjlookuptable]
 
 
 mov   bx, si
@@ -3235,12 +3196,10 @@ mov   dx, S_VILE_HEAL1
 call  P_SetMobjState_
 
 
-mov   bx, MOBJLOOKUPTABLE_SEGMENT
-mov   es, bx
 mov   bx, word ptr ds:[_corpsehitRef]
 sal   bx, 1
-mov   si, word ptr es:[bx]
-mov   bx, word ptr es:[bx + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
+mov   si, word ptr ds:[bx + _mobjlookuptable]
+mov   bx, word ptr ds:[bx + _mobjposlookuptable]
 add   si, THINKER_T.t_data
 
 
@@ -3390,17 +3349,16 @@ mov   di, bx
 ; bx,        gets targetref mobjpos
 ; cx         destpos (tracerref mobjpos)
 
-mov       dx, MOBJLOOKUPTABLE_SEGMENT
-mov       es, dx
+
 xchg      ax, bx
 sal       bx, 1
-mov       cx, word ptr es:[bx + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
-mov       dx, word ptr es:[bx]
+mov       cx, word ptr ds:[bx + _mobjposlookuptable]
+mov       dx, word ptr ds:[bx + _mobjlookuptable]
 
 mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
 sal       bx, 1
-mov       ax, word ptr es:[bx]
-mov       bx, word ptr es:[bx + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
+mov       ax, word ptr ds:[bx + _mobjlookuptable]
+mov       bx, word ptr ds:[bx + _mobjposlookuptable]
 
 
 
@@ -3482,12 +3440,11 @@ do_vile_target:
 
 call  A_FaceTarget_
 
-mov   bx, MOBJLOOKUPTABLE_SEGMENT
-mov   es, bx
+
 mov   bx, word ptr ds:[si + MOBJ_T.m_targetRef]
 sal   bx, 1
-mov   di, word ptr es:[bx]
-mov   bx, word ptr es:[bx + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
+mov   di, word ptr ds:[bx + _mobjlookuptable]
+mov   bx, word ptr ds:[bx + _mobjposlookuptable]
 add   di, THINKER_T.t_data
 
 
@@ -3628,11 +3585,9 @@ ret
 do_vile_attack:
 
 push  si
-mov   si, MOBJPOSLOOKUPTABLE_SEGMENT
-mov   es, si
 mov   si, ax
 sal   si, 1
-mov   cx, word ptr es:[si]
+mov   cx, word ptr ds:[si + _mobjposlookuptable]
 pop   si
 
 
@@ -3640,11 +3595,10 @@ mov   ax, si
 call  A_FaceTarget_
 
 
-mov   di, MOBJLOOKUPTABLE_SEGMENT
-mov   es, di
+
 mov   di, word ptr ds:[si + MOBJ_T.m_targetRef]
 sal   di, 1
-mov   di, word ptr es:[di]
+mov   di, word ptr ds:[di + _mobjlookuptable]
 add   di, THINKER_T.t_data
 
 push  cx  ; bp - 6
@@ -3683,12 +3637,11 @@ mov   word ptr ds:[di + MOBJ_T.m_momz + 2], dx
 test  cx, cx
 je    exit_vile_attack
 
-mov   di, MOBJLOOKUPTABLE_SEGMENT
-mov   es, di
+
 mov   di, cx
 sal   di, 1
-mov   ax, word ptr es:[di]
-mov   di, word ptr es:[di + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
+mov   ax, word ptr ds:[di + _mobjlookuptable]
+mov   di, word ptr ds:[di + _mobjposlookuptable]
 add   ax, THINKER_T.t_data
 
 
@@ -3782,11 +3735,10 @@ PROC    A_DoFatShot_ NEAR
 
 
 push  bx
-mov   bx, MOBJLOOKUPTABLE_SEGMENT
-mov   es, bx
+
 mov   bx, word ptr ds:[di + MOBJ_T.m_targetRef]
 sal   bx, 1
-mov   dx, word ptr es:[bx]
+mov   dx, word ptr ds:[bx + _mobjlookuptable]
 add   dx, THINKER_T.t_data
 pop   bx
 
@@ -3944,12 +3896,11 @@ call  A_FaceTarget_
 
 
 
-mov   bx, MOBJLOOKUPTABLE_SEGMENT
-mov   es, bx
+
 mov   bx, word ptr ds:[si + MOBJ_T.m_targetRef]
 sal   bx, 1
-mov   ax, word ptr es:[bx]
-mov   bx, word ptr es:[bx + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
+mov   ax, word ptr ds:[bx + _mobjlookuptable]
+mov   bx, word ptr ds:[bx + _mobjposlookuptable]
 add   ax, THINKER_T.t_data
 
 
@@ -4090,11 +4041,10 @@ xor   cx, cx  ; count = 0
 continue_checking_thinkers_for_skulls:
 
 
-mov   bx, MOBJLOOKUPTABLE_SEGMENT
-mov   es, bx
+
 mov   bx, ax
 sal   bx, 1
-mov   bx, word ptr es:[bx]
+mov   bx, word ptr ds:[bx + _mobjlookuptable]
 
 mov   dx, word ptr ds:[bx + THINKER_T.t_prevFunctype]
 and   dx, TF_FUNCBITS SHR 8
@@ -4135,11 +4085,9 @@ mov   bx, (SIZE THINKER_T)
 div   bx
 
 
-mov       si, MOBJPOSLOOKUPTABLE_SEGMENT
-mov       es, si
 mov       si, ax
 sal       si, 1
-mov       si, word ptr es:[si]
+mov       si, word ptr ds:[si + _mobjposlookuptable]
 ;    x = actor_pos->x.w + FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, an, prestep.w);
 
 
@@ -4358,11 +4306,10 @@ PUBLIC  A_Explode_
 mov dx, bx   ; mobjpos
 
 
-mov       bx, MOBJLOOKUPTABLE_SEGMENT
-mov       es, bx
+
 mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
 sal       bx, 1
-mov       bx, word ptr es:[bx]
+mov       bx, word ptr ds:[bx + _mobjlookuptable]
 add       bx, THINKER_T.t_data
 mov   cx, 128
 
@@ -4570,11 +4517,10 @@ mov   ax, word ptr ds:[_thinkerlist + THINKER_T.t_next]
 loop_next_brainawake:
 
 
-mov   bx, MOBJLOOKUPTABLE_SEGMENT
-mov   es, bx
+
 mov   bx, ax
 sal   bx, 1
-mov   bx, word ptr es:[bx]
+mov   bx, word ptr ds:[bx + _mobjlookuptable]
 
 
 mov   dx, word ptr ds:[bx + THINKER_T.t_prevFunctype]
@@ -4596,11 +4542,10 @@ inc   word ptr ds:[_numbraintargets]
 mobj_not_braintarget:
 
 ; todo is this just a repeat??
-;mov   bx, MOBJLOOKUPTABLE_SEGMENT
-;mov   es, bx
+
 mov   bx, ax
 sal   bx, 1
-mov   bx, word ptr es:[bx]
+mov   bx, word ptr ds:[bx + _mobjlookuptable]
 
 
 mov   ax, word ptr ds:[bx + THINKER_T.t_next]
@@ -4840,12 +4785,10 @@ xor   ax, ax
 dont_mod_braintargets:
 mov   word ptr ds:[_braintargeton], ax
 
-mov   bx, MOBJLOOKUPTABLE_SEGMENT
-mov   es, bx
 mov   bx, cx
 sal   bx, 1
-mov   dx, word ptr es:[bx]
-mov   bx, word ptr es:[bx + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
+mov   dx, word ptr ds:[bx + _mobjlookuptable]
+mov   bx, word ptr ds:[bx + _mobjposlookuptable]
 push  bx
 
 
@@ -4966,13 +4909,10 @@ jne   exit_spawnfly
 
 do_spawnfly:
 
-
-mov   bx, MOBJLOOKUPTABLE_SEGMENT
-mov   es, bx
 mov   bx, word ptr ds:[si + MOBJ_T.m_targetRef]
 sal   bx, 1
-mov   di, word ptr es:[bx + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
-mov   bx, word ptr es:[bx]
+mov   di, word ptr ds:[bx + _mobjposlookuptable]
+mov   bx, word ptr ds:[bx + _mobjlookuptable]
 
 
 
@@ -5084,13 +5024,12 @@ pop   ds
 
 call  P_SpawnMobj_
 
-mov   bx, MOBJLOOKUPTABLE_SEGMENT
-mov   es, bx
+
 xchg  ax, bx
 sal   bx, 1
-mov   di, word ptr es:[bx]
+mov   di, word ptr ds:[bx + _mobjlookuptable]
 add   di, THINKER_T.t_data
-mov   bx, word ptr es:[bx + MOBJPOSLOOKUP_IN_MOBJLOOKUPTABLE_SEGMENT]
+mov   bx, word ptr ds:[bx + _mobjposlookuptable]
 
 mov   dx, 1
 mov   ax, di
@@ -5239,11 +5178,9 @@ sub       ax, (_thinkerlist + THINKER_T.t_data)
 xor       dx, dx
 div       bx    ; todo gross
 
-mov       di, MOBJPOSLOOKUPTABLE_SEGMENT
-mov       es, di
 mov       di, ax
 sal       di, 1
-mov       ax, word ptr es:[di]
+mov       ax, word ptr ds:[di + _mobjposlookuptable]
 
 ;mov       word ptr ds:[_setStateReturn_pos + 2], MOBJPOSLIST_SEGMENT
 mov       word ptr ds:[_setStateReturn_pos], ax
@@ -5335,11 +5272,9 @@ lea       ax, [si - (_thinkerlist + THINKER_T.t_data)]
 mov       bx, (SIZE THINKER_T)
 div       bx
 
-mov       di, MOBJPOSLOOKUPTABLE_SEGMENT
-mov       es, di
 mov       di, ax
 sal       di, 1
-mov       ax, word ptr es:[di]
+mov       ax, word ptr ds:[di + _mobjposlookuptable]
 
 ;mov       word ptr ds:[_setStateReturn_pos + 2], MOBJPOSLIST_SEGMENT
 mov       word ptr ds:[_setStateReturn_pos], ax

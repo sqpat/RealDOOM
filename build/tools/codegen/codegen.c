@@ -8,8 +8,8 @@
 #include "r_state.h"
 #include "p_setup.h"
 
-#define CONSTANTS_COUNT 1019
-#define LOCALS_COUNT 29
+#define CONSTANTS_COUNT 1018
+#define LOCALS_COUNT 31
 
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -74,7 +74,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "TEXTURETRANSLATION_SEGMENT",
     "TEXTUREHEIGHTS_SEGMENT",
 
-    "SEGS_PHYSICS_SEGMENT",
 	"PHYSICS_4000_END_SEGMENT",
     "DISKGRAPHICBYTES_SEGMENT",
 
@@ -1198,7 +1197,6 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     texturetranslation_segment,
     textureheights_segment,
 
-    segs_physics_segment,
 	physics_4000_end_segment,
     diskgraphicbytes_segment,
 
@@ -2283,6 +2281,8 @@ char* LOCALS[LOCALS_COUNT] = {
     "_doomednum",
     "_linespeciallist",
     "_font_widths",
+    "_mobjlookuptable",
+    "_mobjposlookuptable",
 
 
 
@@ -2331,6 +2331,8 @@ void __near* VALUES[LOCALS_COUNT] = {
     doomednum,
     linespeciallist,
     font_widths,
+    mobjlookuptable,
+    mobjposlookuptable,
 
 
     NUM_FLAT_CACHE_PAGES,

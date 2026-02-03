@@ -74,11 +74,9 @@ inc       ax
 cmp       ax, dx
 je        error_no_thinker_found
 
-mov       di, MOBJLOOKUPTABLE_SEGMENT
-mov       es, di
 mov       di, ax
 sal       di, 1
-mov       di, word ptr es:[di]
+mov       di, word ptr ds:[di + _mobjlookuptable]
 
 
 loop_check_next_thinker:
@@ -142,13 +140,11 @@ pop       dx
 
 ; BUG: SI is MAX_THINKERS
 
-mov       si, MOBJLOOKUPTABLE_SEGMENT
-mov       es, si
 mov       si, word ptr ds:[_thinkerlist + THINKER_T.t_prevFunctype]
 and       si, TF_PREVBITS
 ; todo does this have to have highbits ripped off?
 sal       si, 1
-mov       si, word ptr es:[si]
+mov       si, word ptr ds:[si + _mobjlookuptable]
 
 test      si, si        ; todo edge case get rid of on first thinker
 jz        skip_write
@@ -178,12 +174,10 @@ PUBLIC P_UpdateThinkerFunc_
 
 push      bx
 
-mov       bx, MOBJLOOKUPTABLE_SEGMENT
-mov       es, bx
 and       ax, TF_PREVBITS
 mov       bx, ax
 sal       bx, 1
-mov       bx, word ptr es:[bx]
+mov       bx, word ptr ds:[bx + _mobjlookuptable]
 
 
 
@@ -205,12 +199,10 @@ PUBLIC P_RemoveThinker_
 
 push      bx
 
-mov       bx, MOBJLOOKUPTABLE_SEGMENT
-mov       es, bx
 mov       bx, ax
 and       bx, TF_PREVBITS  ; not sure if necessary
 sal       bx, 1
-mov       bx, word ptr es:[bx]
+mov       bx, word ptr ds:[bx + _mobjlookuptable]
 
 ; we are only modifying the high byte
 mov       al, byte ptr ds:[bx + THINKER_T.t_prevFunctype+1]
@@ -281,10 +273,9 @@ and       si, TF_PREVBITS
 do_next_thinker:
 
 ;    imul  bx, si, SIZE THINKER_T  ; todo test shift vs mul...
-mov       bx, MOBJLOOKUPTABLE_SEGMENT
-mov       es, bx
+
 mov       bx, si
-mov       bx, word ptr es:[bx + si]
+mov       bx, word ptr ds:[bx + si + _mobjlookuptable]
 
 
 
@@ -298,10 +289,8 @@ cmp       al, (TF_MOBJTHINKER_HIGHBITS SHR 8)
 jne       continue_checking_tf_types
 do_mobjthinker:
 
-mov      cx, MOBJPOSLOOKUPTABLE_SEGMENT
-mov      es, cx
 mov      bx, si
-mov      bx, word ptr es:[bx + si]
+mov      bx, word ptr ds:[bx + si + _mobjposlookuptable]
 
 mov       ax, di
 
@@ -357,12 +346,11 @@ do_delete_me:
 les       ax, dword ptr ds:[bx]  ; prevref
 mov       cx, es                                ; nextref
 
-mov       di, MOBJLOOKUPTABLE_SEGMENT
-mov       es, di
+
 mov       di, cx
 and       di, TF_PREVBITS
 sal       di, 1
-mov       di, word ptr es:[di]
+mov       di, word ptr ds:[di + _mobjlookuptable]
 
 
 mov       byte ptr ds:[di + THINKER_T.t_prevFunctype], 0
@@ -374,7 +362,7 @@ add       word ptr ds:[di + THINKER_T.t_prevFunctype], ax
 
 xchg      di, ax
 sal       di, 1
-mov       di, word ptr es:[di]
+mov       di, word ptr ds:[di + _mobjlookuptable]
 
 
 xor       ax, ax
@@ -388,11 +376,9 @@ rep       stosw
 
 ; (SIZE MOBJ_POS_T)
 
-mov       di, MOBJPOSLOOKUPTABLE_SEGMENT
-mov       es, di
 sal       si, 1
 
-mov       di, word ptr es:[si]
+mov       di, word ptr ds:[si + _mobjposlookuptable]
 
 mov       cx, MOBJPOSLIST_SEGMENT
 mov       es, cx
