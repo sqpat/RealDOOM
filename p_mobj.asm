@@ -628,21 +628,14 @@ mov       cx, es
 call      P_ZMovement_
 
 
-
-IF COMPISA GE COMPILE_186
-    imul  bx, dx, (SIZE THINKER_T)
-ELSE
-    push  dx
-    mov   ax, (SIZE THINKER_T)
-    mul   dx
-    xchg  ax, bx
-    pop   dx
-
-ENDIF
+mov       bx, dx
+sal       bx, 1
+mov       bx, word ptr ds:[bx + _mobjlookuptable]
 
 
 
-mov       ax, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
+
+mov       ax, word ptr ds:[bx + THINKER_T.t_prevFunctype]
 and       ax, TF_FUNCBITS
 cmp       ax, TF_DELETEME_HIGHBITS
 je        exit_p_mobjthinker
@@ -656,19 +649,11 @@ mov       ax, si
 call  P_XYMovement_
 
 
+mov       bx, dx
+sal       bx, 1
+mov       bx, word ptr ds:[bx + _mobjlookuptable]
 
-IF COMPISA GE COMPILE_186
-    imul  bx, dx, (SIZE THINKER_T)
-ELSE
-    push  dx
-    mov   ax, (SIZE THINKER_T)
-    mul   dx
-    xchg  ax, bx
-    pop   dx
-ENDIF
-
-
-mov       ax, word ptr ds:[bx + _thinkerlist + THINKER_T.t_prevFunctype]
+mov       ax, word ptr ds:[bx + THINKER_T.t_prevFunctype]
 
 and       ax, TF_FUNCBITS
 cmp       ax, TF_DELETEME_HIGHBITS
@@ -750,13 +735,10 @@ div       cx
 
 mov       word ptr [bp - 2], ax
 
-IF COMPISA GE COMPILE_186
-    imul      di, ax, (SIZE MOBJ_POS_T)
-ELSE
-    mov       di, (SIZE MOBJ_POS_T)
-    mul       di
-    xchg      ax, di
-ENDIF
+mov       di, ax
+sal       di, 1
+mov       di, word ptr ds:[di + _mobjposlookuptable]
+
 
 
 mov       dx, MOBJPOSLIST_SEGMENT
@@ -940,14 +922,12 @@ div       cx  ; get mobjref
 
 mov       cx, ax ; store mobjref for later
 
+push      bx  ; gross revisit?
+mov       bx, ax
+sal       bx, 1
+mov       dx, word ptr ds:[bx + _mobjposlookuptable]
+pop       bx
 
-IF COMPISA GE COMPILE_186
-    imul  dx, ax, (SIZE MOBJ_POS_T)
-ELSE
-    mov   dx, (SIZE MOBJ_POS_T)
-    mul   dx
-    xchg  ax, dx
-ENDIF
 
 pop       ax ; restore mobj
 
@@ -1602,13 +1582,10 @@ jne   jump_to_done_with_floating_with_target
 ;    moTarget = (mobj_t __near*)&thinkerlist[mo->targetRef].data;
 ;    moTarget_pos = &mobjposlist_6800[mo->targetRef];
 
-IF COMPISA GE COMPILE_186
-    imul  bx, word ptr ds:[si + MOBJ_T.m_targetRef], (SIZE MOBJ_POS_T)
-ELSE
-    mov   ax, (SIZE MOBJ_POS_T)
-    mul   word ptr ds:[si + MOBJ_T.m_targetRef]
-    mov   bx, ax
-ENDIF
+mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
+sal       bx, 1
+mov       bx, word ptr ds:[bx + _mobjposlookuptable]
+
 
 push  bx  ; store for later
 

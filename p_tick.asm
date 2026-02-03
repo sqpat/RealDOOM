@@ -272,7 +272,7 @@ and       si, TF_PREVBITS
 
 do_next_thinker:
 
-;    imul  bx, si, SIZE THINKER_T  ; todo test shift vs mul...
+
 
 mov       bx, si
 mov       bx, word ptr ds:[bx + si + _mobjlookuptable]
