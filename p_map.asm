@@ -1113,11 +1113,12 @@ xor  dx, dx
 mov  bx, SIZE MOBJ_POS_T
 div  bx					; ax has index...
 
-mov  dx, SIZE THINKER_T
-mul  dx					; ax has mobj array offset
-mov  bx, ax				; changeThing = (mobj_t __near*)&thinkerlist[thingsnextRef].data;
+mov       bx, ax
+sal       bx, 1
+mov       bx, word ptr ds:[bx + _mobjlookuptable]
+
 pop  dx
-mov   word ptr ds:[bx + (_thinkerlist + THINKER_T.t_data + MOBJ_T.m_sprevRef)], dx ;	changeThing->sprevRef = thingsprevRef;
+mov  word ptr ds:[bx + (THINKER_T.t_data + MOBJ_T.m_sprevRef)], dx ;	changeThing->sprevRef = thingsprevRef;
 pop  bx ; restore thing_pos
 
 
@@ -1158,24 +1159,9 @@ has_prev_ref:
 
 ; dx is thingsprevRef
 ; di is thingsnextRef
-
-IF COMPISA GE COMPILE_186
-
-	imul  si, dx, (SIZE MOBJ_POS_T)   ;			changeThing_pos = &mobjposlist_6800[thingsprevRef];
-
-ELSE
-
-	; 018h
-
-	sal   dx, 1 	; x2
-	sal   dx, 1     ; x4
-	sal   dx, 1     ; x8
-	mov   si, dx    ; x8  + x8
-	sal   dx, 1     ; x16 + x8
-	add   si, dx    ; x24
-
-
-ENDIF
+mov       si, dx
+sal       si, 1
+mov       si, word ptr ds:[si + _mobjposlookuptable]
 
 
 ; this code path leads to trouble.
@@ -1280,6 +1266,7 @@ xchg  cx, ax			    ; cx gets thisref. ax restored.
 
 pop   di	; di gets bnextRef
 
+mov       si, ax
 
 do_next_check_nextref_loop_iter:
 ; ax is nextref
@@ -1289,20 +1276,12 @@ do_next_check_nextref_loop_iter:
 ; di is bnextRef
 
 
-IF COMPISA GE COMPILE_186
+sal       si, 1
+mov       si, word ptr ds:[si + _mobjlookuptable]
 
-	imul  si, ax, (SIZE THINKER_T)
 
-ELSE
 
-	xchg ax, si
-	mov  ax, (SIZE THINKER_T)
-	mul  si
-	xchg ax, si  ; maintain ax
-
-ENDIF
-
-add   si, (_thinkerlist + THINKER_T.t_data) + MOBJ_T.m_bnextRef
+add   si, (THINKER_T.t_data) + MOBJ_T.m_bnextRef
 cmp   cx, word ptr ds:[si]
 jne   ref_not_a_match
 ; write bnextref and break look
@@ -1325,8 +1304,8 @@ ret
 
 ref_not_a_match:
 ; nextRef = innerthing->bnextRef;
-mov   ax, word ptr ds:[si]
-test  ax, ax
+mov   si, word ptr ds:[si]
+test  si, si
 jne   do_next_check_nextref_loop_iter
 
 not_found_in_blocklink:
@@ -1462,11 +1441,12 @@ je    done_setting_sector_stuff
 mov   bx, SIZE MOBJ_POS_T
 div   bx
 
-mov   dx, SIZE THINKER_T   ; todo imul 186
-mul   dx
-xchg  ax, bx   ; bx gets ptr to thinker_t ax gets index.
+mov   bx, ax
+sal   bx, 1
+mov   bx, word ptr ds:[bx + _mobjlookuptable]
 
-mov   word ptr ds:[bx + (_thinkerlist + THINKER_T.t_data + MOBJ_T.m_sprevRef)], cx   ;  thingList->sprevRef = thingRef;
+
+mov   word ptr ds:[bx + (THINKER_T.t_data + MOBJ_T.m_sprevRef)], cx   ;  thingList->sprevRef = thingRef;
 
 
 
@@ -1783,26 +1763,14 @@ je   exit_blockthingsiterator_return1
 
 loop_check_next_block_thing:
 
-IF COMPISA GE COMPILE_186
-
-	imul bx, si, (SIZE MOBJ_POS_T)
-	mov  ax, si
-	imul si, si, (SIZE THINKER_T)
-
-ELSE
+mov    ax, si
+sal    si, 1
+mov    bx, word ptr ds:[si + _mobjposlookuptable]
+mov    si, word ptr ds:[si + _mobjlookuptable]
 
 
-	mov  ax, (SIZE MOBJ_POS_T)
-	mul  si
-	mov  bx, ax
 
-	mov  ax, (SIZE THINKER_T)
-	mul  si
-	xchg ax, si	; si gets ptr, ax gets index
-
-ENDIF
-
-add  si, (_thinkerlist + THINKER_T.t_data)
+add  si, (THINKER_T.t_data)
 mov  cx, MOBJPOSLIST_SEGMENT
 mov  dx, si
 call di
@@ -3184,12 +3152,7 @@ jne   skip_checks_for_teleport
 
 mov   ax, word ptr ds:[_tmceilingz]
 xor   cx, cx
-sar   ax, 1
-rcr   cx, 1
-sar   ax, 1
-rcr   cx, 1
-sar   ax, 1
-rcr   cx, 1
+SHIFT32_MACRO_RIGHT ax cx 3
 
 sub   cx, word ptr es:[di + MOBJ_POS_T.mp_z + 0]
 sbb   ax, word ptr es:[di + MOBJ_POS_T.mp_z + 2]
@@ -4275,17 +4238,15 @@ mov   ax, word ptr [bp - 01Ch]
 test  ax, ax  ; NULL_THINKERREF check
 je    good_missile_target  
 
-IF COMPISA GE COMPILE_186
-	imul  bx, ax, (SIZE THINKER_T)
-	add   bx, (_thinkerlist + THINKER_T.t_data)
-ELSE
-	mov   bx, (SIZE THINKER_T)
-	mul   bx
-	add   ax, (_thinkerlist + THINKER_T.t_data)
-	xchg  ax, bx
-ENDIF
 
-mov   al, byte ptr ds:[bx + 01Ah]
+mov   bx, ax
+sal   bx, 1
+mov   bx, word ptr ds:[bx + _mobjlookuptable]
+add   bx, (THINKER_T.t_data)
+
+
+
+mov   al, byte ptr ds:[bx + MOBJ_T.m_mobjtype]
 mov   ah, byte ptr [bp - 014h]    ; get thingtype in ah
 cmp   al, ah
 je    dont_damage_target
@@ -4451,13 +4412,12 @@ xor   dx, dx  ; cwd seems bad??? are we passing in -1?
 div   bx
 
 
-IF COMPISA GE COMPILE_186
-	imul  bx, ax, (SIZE MOBJ_POS_T)
-ELSE
-	mov   bx, (SIZE MOBJ_POS_T)
-	mul   bx
-	xchg  ax, bx
-ENDIF
+
+mov    bx, ax
+sal    bx, 1
+mov    bx, word ptr ds:[bx + _mobjposlookuptable]
+
+
 
 mov   ax, MOBJPOSLIST_SEGMENT
 mov   word ptr ds:[_tmthing_pos+0], bx
@@ -5633,29 +5593,16 @@ is_not_a_line:
 ; bx has thingnum
 
 
-IF COMPISA GE COMPILE_186
-	imul  dx, bx, (SIZE THINKER_T)
-ELSE
-	mov   ax, (SIZE THINKER_T)
-	mul   bx
-	xchg  ax, dx
+sal    bx, 1
+mov    dx, word ptr ds:[bx + _mobjlookuptable]
 
-ENDIF
-
-add   dx, (_thinkerlist + THINKER_T.t_data)
+add   dx, (THINKER_T.t_data)
 cmp   dx, word ptr ds:[_shootthing]
 je    exit_shoottraverse_return_1
 
-IF COMPISA GE COMPILE_186
-	imul  bx, bx, (SIZE MOBJ_POS_T)
-ELSE
-	push  dx
-	mov   ax, (SIZE MOBJ_POS_T)
-	mul   bx
-	xchg  ax, bx
-	pop   dx
+mov    bx, word ptr ds:[bx + _mobjposlookuptable]
 
-ENDIF
+
 
 mov   ax, MOBJPOSLIST_SEGMENT
 mov   es, ax
@@ -6141,34 +6088,18 @@ aimtraverse_is_not_a_line:
 ;	}
 
 
-IF COMPISA GE COMPILE_186
+sal    bx, 1
+mov    ax, word ptr ds:[bx + _mobjlookuptable]
 
-	imul  ax, bx, (SIZE THINKER_T)
 
-ELSE
-    push  dx
-	mov   ax, (SIZE THINKER_T)
-	mul   bx
-	pop   dx
 
-ENDIF
-
-add   ax, (_thinkerlist + THINKER_T.t_data)
+add   ax, (THINKER_T.t_data)
 cmp   ax, word ptr ds:[_shootthing]
 je    exit_aimtraverse_return_1
 push  ax  ; thing ptr
 
-IF COMPISA GE COMPILE_186
 
-	imul  di, bx, (SIZE MOBJ_POS_T)
-
-ELSE
-    push  dx
-	mov   ax, (SIZE MOBJ_POS_T)
-	mul   bx
-	xchg  ax, di
-	pop   dx
-ENDIF
+mov    di, word ptr ds:[bx + _mobjposlookuptable]
 
 
 
@@ -6680,16 +6611,11 @@ sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
 
-IF COMPISA GE COMPILE_186
+mov    bx, ax
+sal    bx, 1
+mov    bx, word ptr ds:[bx + _mobjposlookuptable]
 
-	imul  bx, ax, (SIZE MOBJ_POS_T)
 
-ELSE
-	mov   bx, (SIZE MOBJ_POS_T)
-	mul   bx
-	xchg  ax, bx
-
-ENDIF
 
 xchg  bx, si
 
@@ -6954,16 +6880,11 @@ sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
 
-IF COMPISA GE COMPILE_186
+mov    bx, ax
+sal    bx, 1
+mov    bx, word ptr ds:[bx + _mobjposlookuptable]
 
-	imul  bx, ax, (SIZE MOBJ_POS_T)
 
-ELSE
-	mov   bx, (SIZE MOBJ_POS_T)
-	mul   bx
-	xchg  ax, bx
-
-ENDIF
 
 mov   ax, MOBJPOSLIST_SEGMENT
 mov   es, ax
