@@ -65,10 +65,10 @@
 #define R_DrawSpan16CodeSize           0xF60
 #define R_DrawSpan0CodeSize            0x63A
 #define R_DrawSpanFLCodeSize           0x591
-#define R_DrawFuzzColumn24CodeSize     0x1851
-#define R_DrawFuzzColumn16CodeSize     0x18E4
-#define R_DrawFuzzColumn0CodeSize      0x1850
-#define R_DrawFuzzColumnFLCodeSize     0x181A
+#define R_DrawFuzzColumn24CodeSize     0x184B
+#define R_DrawFuzzColumn16CodeSize     0x18E3
+#define R_DrawFuzzColumn0CodeSize      0x184F
+#define R_DrawFuzzColumnFLCodeSize     0x1819
 #define R_MaskedConstants24CodeSize    0xEB
 #define R_MaskedConstants16CodeSize    0xEB
 #define R_MaskedConstants0CodeSize     0xEB

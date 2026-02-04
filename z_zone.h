@@ -276,7 +276,7 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define NUM_SPRITE_CACHE_PAGES                      20
 // dont do more than 63 pages. used as an index in a 4 byte thing. asm assumes one byte index
 // todo get this to 29, maybe 30...
-#define NUM_TEXTURE_PAGES                           25
+#define NUM_TEXTURE_PAGES                           27
 #define NUM_MUSIC_PAGES                             4
 #define NUM_SFX_PAGES                               7
 #elif EMS_BUILD_SETTING == EMS_4_MB_BUILD_SETTING  
@@ -310,31 +310,31 @@ void __far Z_SetOverlay(int8_t wipeId);
 
 #define RENDER_7800_PAGE                            9
 #define RENDER_7C00_PAGE                            10
-#define PHYSICS_RENDER_9800_PAGE                    13
-#define PHYSICS_RENDER_9C00_PAGE                    14
+#define PHYSICS_RENDER_9800_PAGE                    11
+#define PHYSICS_RENDER_9C00_PAGE                    12
 //#define PHYSICS_RENDER_6C00_PAGE                    15
 //#define EMS_VISPLANE_EXTRA_PAGE                     SCREEN3_LOGICAL_PAGE + 1
 #define FIRST_VISPLANE_PAGE							5
 
-#define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE         14
+#define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE         PHYSICS_RENDER_9C00_PAGE
 
 //#define EMS_VISPLANE_EXTRA_PAGE                     NUM_EMS4_SWAP_PAGES + 1
-// 14
-#define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE         14
-// 15
+// 12
+
+// 13
 #define FIRST_STATUS_LOGICAL_PAGE                   LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE + 1
-// 19
+// 17
 #define PALETTE_LOGICAL_PAGE                        FIRST_STATUS_LOGICAL_PAGE + 4
 // todo almost 6k free here..
-// 20
+// 18
 #define FIRST_MENU_GRAPHICS_LOGICAL_PAGE            PALETTE_LOGICAL_PAGE + 1
-// 22
+// 20
 #define FIRST_SCRATCH_LOGICAL_PAGE                  FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 2
-// 26
+// 24
 #define FIRST_LUMPINFO_LOGICAL_PAGE                 FIRST_SCRATCH_LOGICAL_PAGE + 4
-// 29
+// 27
 #define FIRST_FLAT_CACHE_LOGICAL_PAGE               FIRST_LUMPINFO_LOGICAL_PAGE + 3
-// 35
+// 33
 #define FIRST_TEXTURE_LOGICAL_PAGE                  FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
 // 59  overlap one page (code page). other 7 pages do dual duty as visplane backups and demo pages.
 #define FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE    FIRST_TEXTURE_LOGICAL_PAGE + (NUM_TEXTURE_PAGES - 1) // one page overlap

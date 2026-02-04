@@ -1192,7 +1192,7 @@ mov   word ptr cs:[SELFMODIFY_MASKED_siderender_02+1 - OFFSET R_MASK16_STARTMARK
 mov   ax, TEXTURETRANSLATION_SEGMENT
 add   si, si
 mov   es, ax
-mov   ax, MASKED_LOOKUP_SEGMENT_7000
+mov   ax, MASKED_LOOKUP_SEGMENT
 mov   si, word ptr es:[si]			; get texnum. si is stored for the whole function. not good revisit.
 mov   es, ax
 mov   al, byte ptr es:[si]			; translate texnum to lookup
@@ -4180,13 +4180,13 @@ SIL_BOTH =   3
 
 PROC R_DrawSprite_ NEAR
 
-; bp - 2	   ds_p segment. TODO always DRAWSEGS_BASE_SEGMENT_7000
+; bp - 2	   ds_p segment. TODO always DRAWSEGS_BASE_SEGMENT
 ; bp - 4       vissprite near pointer
 
 push  bp
 mov   bp, sp
 ; bx is already the sprite
-mov   dx, DRAWSEGS_BASE_SEGMENT_7000
+mov   dx, DRAWSEGS_BASE_SEGMENT
 push  dx        ; bp - 2
 push  bx        ; bp - 4h   ; bx is already vissprite
 
@@ -4222,7 +4222,7 @@ no_clip:
 mov   di, word ptr ds:[_ds_p]
 sub   di, SIZE DRAWSEG_T	
 jz   done_masking  ; no drawsegs! i suppose possible on a map edge.
-mov   es, dx   ; DRAWSEGS_BASE_SEGMENT_7000 from above
+mov   es, dx   ; DRAWSEGS_BASE_SEGMENT from above
 check_loop_conditions:
 
 ; compare ds->x1 > spr->x2
@@ -4629,7 +4629,7 @@ call R_SortVisSprites_
 
 
 ; adjust ds_p to be 7000 based instead of 9000 based due to different masked task mappings.
-sub  word ptr ds:[_ds_p + 2], (DRAWSEGS_BASE_SEGMENT - DRAWSEGS_BASE_SEGMENT_7000)	
+sub  word ptr ds:[_ds_p + 2], (DRAWSEGS_BASE_SEGMENT - DRAWSEGS_BASE_SEGMENT)	
 ;    if (vissprite_p > 0) {
 cmp  word ptr ds:[_vissprite_p], 0
 jle  done_drawing_sprites
@@ -4938,7 +4938,7 @@ sal       bx, 1 ; bx is  texturecolumnlump ptr
 ;	loopwidth = texturecolumnlump[1].bu.bytehigh;
 
 
-mov       ax, TEXTURECOLUMNLUMPS_BYTES_7000_SEGMENT
+mov       ax, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
 mov       es, ax
 mov       al, byte ptr es:[bx + 3]
 xor       ah, ah
@@ -5103,16 +5103,16 @@ lump_greater_than_zero_masked:
 ; di is bp - 2
 
 ;	uint8_t lookup = masked_lookup_7000[tex];
-;mov       ax, MASKED_LOOKUP_SEGMENT_7000
+;mov       ax, MASKED_LOOKUP_SEGMENT
 ;mov       es, ax
-mov       dl, byte ptr es:[di + ((MASKED_LOOKUP_SEGMENT_7000 - TEXTURECOLUMNLUMPS_BYTES_7000_SEGMENT) * 16)]
-;mov       ax, PATCHHEIGHTS_7000_SEGMENT
+mov       dl, byte ptr es:[di + ((MASKED_LOOKUP_SEGMENT - TEXTURECOLUMNLUMPS_BYTES_SEGMENT) * 16)]
+;mov       ax, PATCHHEIGHTS_SEGMENT
 ;mov       es, ax
 
 ;    uint8_t heightval = patchheights_7000[lump-firstpatch];
 mov       bx, si                        ; bx is lump-firstpatch lookup
 sub       bx, word ptr ds:[_firstpatch] ; hardcode?
-mov       al, byte ptr es:[bx + ((PATCHHEIGHTS_7000_SEGMENT - TEXTURECOLUMNLUMPS_BYTES_7000_SEGMENT) * 16)]
+mov       al, byte ptr es:[bx + ((PATCHHEIGHTS_SEGMENT - TEXTURECOLUMNLUMPS_BYTES_SEGMENT) * 16)]
 
 
 ;	cachedbyteheight = heightval & 0xF0;
@@ -5164,7 +5164,7 @@ jnl       col_not_under_zero_masked
 ;        patchwidth = 0x100;
 ;    }
 
-mov       ax, PATCHWIDTHS_7000_SEGMENT
+mov       ax, PATCHWIDTHS_SEGMENT
 mov       es, ax
 sub       si, word ptr ds:[_firstpatch]
 xor       ax, ax
@@ -5182,7 +5182,7 @@ adc       ah, ah    ; if width is zero that encoded 0x100. now ah is 1.
 ;mov       bx, TEXTUREWIDTHMASKS_SEGMENT
 ;mov       es, bx
 mov       bx, word ptr [bp - 2]
-mov       dl, byte ptr es:[bx + ((TEXTUREWIDTHMASKS_SEGMENT - PATCHWIDTHS_7000_SEGMENT) * 16)]      ; dh 0 from above cwd
+mov       dl, byte ptr es:[bx + ((TEXTUREWIDTHMASKS_SEGMENT - PATCHWIDTHS_SEGMENT) * 16)]      ; dh 0 from above cwd
 cmp       ax, dx
 jna       negative_modulo_thing_masked
 xchg      ax, dx

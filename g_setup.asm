@@ -29,7 +29,7 @@ EXTRN locallib_toupper_:NEAR
 
 EXTRN S_ResumeSound_:NEAR
 EXTRN Z_QuickMapRender_:NEAR
-EXTRN Z_QuickMapRender_9000To6000_:NEAR
+
 EXTRN Z_SetOverlay_:FAR
 .DATA
 
@@ -64,9 +64,9 @@ mov     cx, word ptr ds:[_numtextures]
 
 xor     si, si ; loop counter
 mov     dx, si ; zero dh.
-mov     ax, TEXTUREDEFS_OFFSET_6000_SEGMENT
+mov     ax, TEXTUREDEFS_OFFSET_SEGMENT
 mov     ds, ax
-mov     ax, TEXTUREDEFS_BYTES_6000_SEGMENT
+mov     ax, TEXTUREDEFS_BYTES_SEGMENT
 mov     es, ax
 
 loop_next_tex:
@@ -318,7 +318,7 @@ mov   byte ptr ds:[_viewactive], al		; true
 xchg  ax, dx ; dx gets 0001
 
 call	Z_QuickMapRender_
-call    Z_QuickMapRender_9000To6000_  ; //for R_TextureNumForName
+
 
 ; todo this stuff
 

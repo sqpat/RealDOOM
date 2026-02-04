@@ -7700,17 +7700,17 @@ check_rest_loop:
 mov   bx, si                        ; si is start, bx is next
 ;    while (last >= (next+1)->first-1) {
 check_between_posts:
-mov   dx, word ptr ds:[bx + SIZE CLIPRANGE_T +  + CLIPRANGE_T.cliprange_first]
+mov   dx, word ptr ds:[bx + SIZE CLIPRANGE_T + CLIPRANGE_T.cliprange_first]
 dec   dx
 cmp   di, dx
 jl    do_final_fragment
-mov   ax, word ptr ds:[bx +  + CLIPRANGE_T.cliprange_last]
+mov   ax, word ptr ds:[bx + CLIPRANGE_T.cliprange_last]
 inc   ax
 ;		// There is a fragment between two posts.
 ;		R_StoreWallRange (next->last + 1, (next+1)->first - 1);
 call  R_StoreWallRange_
 mov   ax, word ptr ds:[bx + SIZE CLIPRANGE_T + CLIPRANGE_T.cliprange_last]
-add   bx, 4
+add   bx, SIZE CLIPRANGE_T
 cmp   di, ax
 jg    check_between_posts
 mov   word ptr ds:[si + CLIPRANGE_T.cliprange_last], ax
@@ -8379,8 +8379,8 @@ mov   di, ax
 sal   ax, 1
 add   di, ax  ; shifted 3
 
-push  word ptr ds:[bx + 4]         ; bp - 4  tx fracbits
-push  word ptr ds:[bx + 6]         ; bp - 6  tx intbits
+push  word ptr ds:[bx + PSPDEF_T.pspdef_sx + 0]         ; bp - 4  tx fracbits
+push  word ptr ds:[bx + PSPDEF_T.pspdef_sx + 2]         ; bp - 6  tx intbits
 push  bx                        ; bp - 8
 
 
@@ -8395,18 +8395,18 @@ and   cx, FF_FRAMEMASK
 
 
 IF COMPISA GE COMPILE_186
-imul  bx, cx, (SIZE SPRITEFRAME_T)
-mov   di, word ptr es:[di]       ; get spriteframesOffset from spritedef_t
-push  word ptr es:[bx + di + 010h]    ; 0Ah
-mov   bx, word ptr es:[di + bx]       ; get spriteindex
+   imul  bx, cx, (SIZE SPRITEFRAME_T)
+   mov   di, word ptr es:[di]       ; get spriteframesOffset from spritedef_t
+   push  word ptr es:[bx + di + 010h]    ; 0Ah
+   mov   bx, word ptr es:[di + bx]       ; get spriteindex
 
 ELSE
-mov   al, (SIZE SPRITEFRAME_T)
-mul   cl
-mov   di, word ptr es:[di]       ; get spriteframesOffset from spritedef_t
-add   di, ax
-push  word ptr es:[di + 010h]    ; 0Ah
-mov   bx, word ptr es:[di]       ; get spriteindex
+   mov   al, (SIZE SPRITEFRAME_T)
+   mul   cl
+   mov   di, word ptr es:[di]       ; get spriteframesOffset from spritedef_t
+   add   di, ax
+   push  word ptr es:[di + 010h]    ; 0Ah
+   mov   bx, word ptr es:[di]       ; get spriteindex
 ENDIF
 
 
@@ -8414,7 +8414,7 @@ ENDIF
 ;	spriteframes = (spriteframe_t __far*)&(spritedefs_bytes[sprites[sprite].spriteframesOffset]);
 
 push  bx                         ; 0Ch
-sub   sp, 4
+sub   sp, 4                      ; 0Eh, 010h
 
 mov   ax, SPRITEOFFSETS_SEGMENT
 mov   es, ax
@@ -8436,7 +8436,7 @@ SELFMODIFY_BSP_pspritescale_1_AFTER = SELFMODIFY_BSP_pspritescale_1+2
 pspritescale_nonzero_1:
 mov   ax, word ptr [bp - 4]
 
-; TODO INLINE
+
 ; inlined FixedMul16u32_
 
 MUL  BX        ; AX * BX
@@ -8713,8 +8713,8 @@ SHIFT_MACRO shl bx 4
 
 
 mov   es, ax
+xor   ax, ax
 mov   al, byte ptr es:[bx + 0Eh]  ; sector lightlevel byte offset
-xor   ah, ah
 mov   dx, ax
 
 
@@ -9145,6 +9145,7 @@ calculate_larger_side:
  xchg  ax, cx
  mov   si, dx
  imul  di
+ 
 COMMENT @
 ; what's wrong with this?
  cmp   cx, ax

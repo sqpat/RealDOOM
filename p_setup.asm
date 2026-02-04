@@ -283,7 +283,6 @@ div    bx
 mov    word ptr ds:[_numsides], ax  
 
 call Z_QuickMapRender_4000To9000_PSetup_
-call Z_QuickMapRender_9000To6000_PSetup_  ; for R_TextureNumForName
 call   Z_QuickMapScratch_5000_PSetup_
 
 
@@ -756,7 +755,7 @@ ret
 
 ENDP
 
-
+NODES_RENDER_6000_SEGMENT = NODES_RENDER_SEGMENT - (09000h - 06000h)
 
 
 PROC    P_LoadNodes_ NEAR
@@ -774,6 +773,7 @@ div    bx
 mov    word ptr ds:[_numnodes], ax
 
 call   Z_QuickMapRender_4000To9000_PSetup_
+call   Z_QuickMapRender_9000To6000_PSetup_  ; for NODES_RENDER_6000_SEGMENT
 call   Z_QuickMapScratch_5000_PSetup_
 
 xchg   ax, si   ; get lump
@@ -790,7 +790,7 @@ mov    si, di
 
 mov    dx, NODES_SEGMENT
 mov    bp, NODE_CHILDREN_SEGMENT
-mov    bx, NODES_RENDER_SEGMENT
+mov    bx, NODES_RENDER_6000_SEGMENT
 
 mov    ax, SCRATCH_SEGMENT_5000
 mov    ds, ax
@@ -808,7 +808,7 @@ mov    es, dx  ; NODES_SEGMENT   ; 8 bytes each
 rep    movsb
 
 
-mov    es, bx   ; NODES_RENDER_SEGMENT ; 16 bytes each
+mov    es, bx   ; NODES_RENDER_6000_SEGMENT ; 16 bytes each
 sub    di, ax  ; 8
 shl    di, 1
 mov    cx, ax

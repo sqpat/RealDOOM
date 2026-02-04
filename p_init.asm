@@ -36,7 +36,6 @@ EXTRN R_CheckTextureNumForName_:NEAR
 EXTRN R_FlatNumForName_:NEAR
 EXTRN W_CheckNumForName_:NEAR
 EXTRN W_GetNumForName_:FAR
-EXTRN Z_QuickMapRender_9000To6000_:NEAR
  
 .DATA
 
@@ -171,7 +170,7 @@ mov    bp, TEMP_DATA_START
 
 
 call   Z_QuickMapRender_  
-call   Z_QuickMapRender_9000To6000_  ; for R_TextureNumForName
+
 
 ; fall thru
 

@@ -59,7 +59,7 @@
 
 
 // todo generate this programatically, downward from fixeddssegment
-#define baselowermemoryaddress    (0x23EF0000)
+#define baselowermemoryaddress    (0x1C310000)
 // MaximumMusDriverSize
 
 
@@ -100,11 +100,45 @@ struct sfxinfo_struct{
 #define size_seg_sides             (MAX_SEGS * sizeof(uint8_t))
 
 
-
+#define size_texturecolumnlumps_bytes  (1424u * sizeof(int16_t))
+#define size_texturedefs_bytes         8756u
+#define size_spritetopoffsets          (sizeof(int8_t) * MAX_SPRITE_LUMPS)
+#define size_texturedefs_offset        (MAX_TEXTURES * sizeof(uint16_t))
+#define size_masked_lookup             (MAX_TEXTURES * sizeof(uint8_t))
+#define size_patchwidths               (MAX_PATCHES * sizeof(uint8_t))
+#define size_patchheights              (MAX_PATCHES * sizeof(uint8_t))
+#define size_finetangentinner          2048u * sizeof(int32_t)
+#define size_drawsegs                  (sizeof(drawseg_t) * (MAXDRAWSEGS+1))
+#define size_drawsegs_PLUS_EXTRA       (sizeof(drawseg_t) * (MAXDRAWSEGS+2))
 // NOTE!   BELOW level data sequential for clearing in a single pass
 
 
-#define mobjposlist        ((mobj_pos_t __far*)      MAKE_FULL_SEGMENT(baselowermemoryaddress , 0))
+
+// all of these masked sizes are their maximums in doom1.
+#define MAX_MASKED_TEXTURES 12
+
+
+
+//. render only section moved here to make space for larger texture cache and free up pages
+
+#define texturecolumnlumps_bytes   ((int16_t_union __far*)     MAKE_FULL_SEGMENT(baselowermemoryaddress , 0))
+#define texturedefs_bytes          ((byte __far*)              MAKE_FULL_SEGMENT(texturecolumnlumps_bytes, size_texturecolumnlumps_bytes))
+#define spritetopoffsets           ((int8_t __far*)            MAKE_FULL_SEGMENT(texturedefs_bytes,        size_texturedefs_bytes))
+#define texturedefs_offset         ((uint16_t  __far*)         MAKE_FULL_SEGMENT(spritetopoffsets,         size_spritetopoffsets))
+#define masked_lookup              ((uint8_t __far*)           MAKE_FULL_SEGMENT(texturedefs_offset,       size_texturedefs_offset))
+#define patchwidths                ((uint8_t  __far*)          MAKE_FULL_SEGMENT(masked_lookup,            size_masked_lookup))
+#define patchheights               ((uint8_t   __far*)         MAKE_FULL_SEGMENT(patchwidths,              size_patchwidths))
+#define drawsegs_BASE              ((drawseg_t __far*)         MAKE_FULL_SEGMENT(patchheights,             size_patchheights))
+#define drawsegs_PLUSONE           ((drawseg_t __far*)         (drawsegs_BASE          + 1))
+#define finetangentinner           ((int32_t __far*)           MAKE_FULL_SEGMENT(drawsegs_BASE   ,         size_drawsegs_PLUS_EXTRA))
+
+// end render only section moved here to make space for larger texture cache and free up pages
+
+
+
+
+
+#define mobjposlist        ((mobj_pos_t __far*)      MAKE_FULL_SEGMENT(finetangentinner,         size_finetangentinner))
 #define sectors            ((sector_t __far*)        MAKE_FULL_SEGMENT(mobjposlist        , size_mobjposlist))
 #define vertexes           ((vertex_t __far*)        MAKE_FULL_SEGMENT(sectors            , size_sectors))
 #define sides              ((side_t __far*)          MAKE_FULL_SEGMENT(vertexes           , size_vertexes))
@@ -130,6 +164,31 @@ struct sfxinfo_struct{
 #define subsector_lines     ((uint8_t __far*)            MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
 #define base_lower_end      ((uint8_t __far*)            MAKE_FULL_SEGMENT(subsector_lines , size_subsector_lines))
 
+
+#define texturecolumnlumps_bytes_segment ((segment_t) ((int32_t)texturecolumnlumps_bytes >> 16))
+#define texturedefs_bytes_segment        ((segment_t) ((int32_t)texturedefs_bytes >> 16))
+#define spritetopoffsets_segment         ((segment_t) ((int32_t)spritetopoffsets >> 16))
+#define texturedefs_offset_segment       ((segment_t) ((int32_t)texturedefs_offset >> 16))
+#define masked_lookup_segment            ((segment_t) ((int32_t)masked_lookup >> 16))
+#define patchwidths_segment              ((segment_t) ((int32_t)patchwidths >> 16))
+#define patchheights_segment             ((segment_t) ((int32_t)patchheights >> 16))
+#define drawsegs_BASE_segment            ((segment_t) ((int32_t)drawsegs_BASE >> 16))
+#define finetangentinner_segment         ((segment_t) ((int32_t)finetangentinner >> 16))
+
+#define mobjposlist_segment          ((segment_t) ((int32_t)mobjposlist >> 16))
+#define sectors_segment              ((segment_t) ((int32_t)sectors >> 16))
+#define vertexes_segment             ((segment_t) ((int32_t)vertexes >> 16))
+#define sides_segment                ((segment_t) ((int32_t)sides >> 16))
+#define lines_segment                ((segment_t) ((int32_t)lines >> 16))
+#define lineflagslist_segment        ((segment_t) ((int32_t)lineflagslist >> 16))
+#define subsectors_segment           ((segment_t) ((int32_t)subsectors >> 16))
+#define nodes_segment                ((segment_t) ((int32_t)nodes >> 16))
+#define node_children_segment        ((segment_t) ((int32_t)node_children >> 16))
+#define seg_linedefs_segment         ((segment_t) ((int32_t)seg_linedefs >> 16))
+#define seg_sides_segment            ((segment_t) ((int32_t)seg_sides >> 16))
+#define seg_sides_offset_in_seglines ((uint16_t)(((seg_sides_segment - seg_linedefs_segment) << 4)))
+
+#define lumpinfoinitsegment       sectors_segment + 0x20
 
 #define sfx_data_segment              ((segment_t) ((int32_t)sfx_data  >> 16))
 #define sb_dmabuffer_segment          ((segment_t) ((int32_t)sb_dmabuffer  >> 16))
@@ -163,22 +222,7 @@ struct sfxinfo_struct{
 
 
 
-#define mobjposlist_segment          ((segment_t) ((int32_t)mobjposlist >> 16))
 
-
-#define sectors_segment              ((segment_t) ((int32_t)sectors >> 16))
-#define vertexes_segment             ((segment_t) ((int32_t)vertexes >> 16))
-#define sides_segment                ((segment_t) ((int32_t)sides >> 16))
-#define lines_segment                ((segment_t) ((int32_t)lines >> 16))
-#define lineflagslist_segment        ((segment_t) ((int32_t)lineflagslist >> 16))
-#define subsectors_segment           ((segment_t) ((int32_t)subsectors >> 16))
-#define nodes_segment                ((segment_t) ((int32_t)nodes >> 16))
-#define node_children_segment        ((segment_t) ((int32_t)node_children >> 16))
-#define seg_linedefs_segment         ((segment_t) ((int32_t)seg_linedefs >> 16))
-#define seg_sides_segment            ((segment_t) ((int32_t)seg_sides >> 16))
-#define seg_sides_offset_in_seglines ((uint16_t)(((seg_sides_segment - seg_linedefs_segment) << 4)))
-
-#define lumpinfoinitsegment       sectors_segment + 0x20
 
 
 
@@ -1101,10 +1145,24 @@ patchoffset                 83BD:01DC
 
 // RENDER REMAPPING
 
-// RENDER 0x7800 - 0x7FFF DATA NOT USED IN PLANES
 
 
-//NOW
+//              bsp     plane     sprite
+// 9800-9FFF      COLORMAPS       MASKEDTEXTURES
+// 9000-97FF    DATA3   unused    MASKEDTEXTURES
+// 8C00-8FFF    VISPLANES_DATA    COLORMAPS HALF
+// 8400-8BFF    VISPLANES_DATA    MASKEDDATA
+// 8000-83FF  SPRITES PLANECACHE  SPRITES
+// 7800-7FFF    DATA2 flatcache   DATA2
+// 7000-77FF  TEXTURE flatcache   TEXTURE
+// 6000-6FFF  TEXTURE   -----     TEXTURE
+// 5000-5FFF  TEXTURE sky texture TEXTURE
+// 4000-4FFF        -- no changes --
+
+// "data1" moved low, data3 moved up in bsp, texture extended
+
+
+//WAS (recently
 
 // todo: also extend flatcache down to 6000?
 // also extend 
@@ -1122,7 +1180,7 @@ patchoffset                 83BD:01DC
 // 4000-4FFF        -- no changes --
 
 
-//WAS
+//WAS (long ago)
 
 //              bsp     plane     sprite
 // 9000-9FFF  TEXTURE sky texture TEXTURE
@@ -1149,7 +1207,7 @@ patchoffset                 83BD:01DC
 #define spritewidths_offset    (((0x400) - ((size_spritewidths + 0xF) >> 4)) << 4)
 
 // first element
-#define nodes_render          ((node_render_t __far*)  MAKE_FULL_SEGMENT(0x70000000, 0))
+#define nodes_render          ((node_render_t __far*)  MAKE_FULL_SEGMENT(0x90000000, 0))
 
 //middle element
 
@@ -1158,9 +1216,9 @@ patchoffset                 83BD:01DC
 #define spritedefs_bytes      ((byte __far*)           sprites)
 
 
+#define nodes_render_segment        ((segment_t)     ((int32_t)nodes_render >> 16))
 #define sprites_segment             ((segment_t)     ((int32_t)sprites >> 16))
 
-#define nodes_render_segment 0x7000
 
 
 
@@ -1188,22 +1246,6 @@ spritedefs_bytes    73BB:0000
 
 
 
-// all of these masked sizes are their maximums in doom1.
-#define MAX_MASKED_TEXTURES 12
-
-
-// todo this is actually smaller than 1424 again? like 12xx.
-#define size_texturecolumnlumps_bytes  (1424u * sizeof(int16_t))
-#define size_texturedefs_bytes         8756u
-#define size_spritetopoffsets          (sizeof(int8_t) * MAX_SPRITE_LUMPS)
-#define size_texturedefs_offset        (MAX_TEXTURES * sizeof(uint16_t))
-#define size_masked_lookup             (MAX_TEXTURES * sizeof(uint8_t))
-#define size_patchwidths               (MAX_PATCHES * sizeof(uint8_t))
-#define size_patchheights              (MAX_PATCHES * sizeof(uint8_t))
-#define size_finetangentinner          2048u * sizeof(int32_t)
-#define size_drawsegs                  (sizeof(drawseg_t) * (MAXDRAWSEGS+1))
-#define size_drawsegs_PLUS_EXTRA       (sizeof(drawseg_t) * (MAXDRAWSEGS+2))
-
 
 // size_texturedefs_bytes 0x6184... 0x6674
 
@@ -1211,66 +1253,7 @@ spritedefs_bytes    73BB:0000
 // this is 9000-9800 for bsp/plane
 //. then   7000-7800 for sprite.
 
-#define texturecolumnlumps_bytes   ((int16_t_union __far*)     (0x90000000 ))
-#define texturedefs_bytes          ((byte __far*)              MAKE_FULL_SEGMENT(texturecolumnlumps_bytes, size_texturecolumnlumps_bytes))
-#define spritetopoffsets           ((int8_t __far*)            MAKE_FULL_SEGMENT(texturedefs_bytes,        size_texturedefs_bytes))
-#define texturedefs_offset         ((uint16_t  __far*)         MAKE_FULL_SEGMENT(spritetopoffsets,         size_spritetopoffsets))
-#define masked_lookup              ((uint8_t __far*)           MAKE_FULL_SEGMENT(texturedefs_offset,       size_texturedefs_offset))
-#define patchwidths                ((uint8_t  __far*)          MAKE_FULL_SEGMENT(masked_lookup,            size_masked_lookup))
-#define patchheights               ((uint8_t   __far*)         MAKE_FULL_SEGMENT(patchwidths,              size_patchwidths))
-#define drawsegs_BASE              ((drawseg_t __far*)         MAKE_FULL_SEGMENT(patchheights,             size_patchheights))
-#define drawsegs_PLUSONE           ((drawseg_t __far*)         (drawsegs_BASE          + 1))
-#define finetangentinner           ((int32_t __far*)           MAKE_FULL_SEGMENT(drawsegs_BASE   ,         size_drawsegs_PLUS_EXTRA))
-#define render_9000_end            ((uint8_t __far*)           MAKE_FULL_SEGMENT(finetangentinner,         size_finetangentinner))
 
-
-#define texturecolumnlumps_bytes_segment ((segment_t) ((int32_t)texturecolumnlumps_bytes >> 16))
-#define texturedefs_bytes_segment        ((segment_t) ((int32_t)texturedefs_bytes >> 16))
-#define spritetopoffsets_segment         ((segment_t) ((int32_t)spritetopoffsets >> 16))
-#define texturedefs_offset_segment       ((segment_t) ((int32_t)texturedefs_offset >> 16))
-#define masked_lookup_segment            ((segment_t) ((int32_t)masked_lookup >> 16))
-#define patchwidths_segment              ((segment_t) ((int32_t)patchwidths >> 16))
-#define patchheights_segment             ((segment_t) ((int32_t)patchheights >> 16))
-#define drawsegs_BASE_segment            ((segment_t) ((int32_t)drawsegs_BASE >> 16))
-#define finetangentinner_segment         ((segment_t) ((int32_t)finetangentinner >> 16))
-#define render_9000_end_segment          ((segment_t) ((int32_t)render_9000_end >> 16))
-
-
-#define texturecolumnlumps_bytes_7000   ((int16_t_union __far*)     (0x70000000 ))
-#define texturedefs_bytes_7000          ((byte __far*)              MAKE_FULL_SEGMENT(texturecolumnlumps_bytes_7000, size_texturecolumnlumps_bytes))
-#define spritetopoffsets_7000           ((int8_t __far*)            MAKE_FULL_SEGMENT(texturedefs_bytes_7000,        size_texturedefs_bytes))
-#define texturedefs_offset_7000         ((uint16_t  __far*)         MAKE_FULL_SEGMENT(spritetopoffsets_7000,         size_spritetopoffsets))
-#define masked_lookup_7000              ((uint8_t __far*)           MAKE_FULL_SEGMENT(texturedefs_offset_7000,       size_texturedefs_offset))
-#define patchwidths_7000                ((uint8_t  __far*)          MAKE_FULL_SEGMENT(masked_lookup_7000,            size_masked_lookup))
-#define patchheights_7000               ((uint8_t   __far*)         MAKE_FULL_SEGMENT(patchwidths_7000,              size_patchwidths))
-#define drawsegs_BASE_7000              ((drawseg_t __far*)         MAKE_FULL_SEGMENT(patchheights_7000,             size_patchheights))
-#define drawsegs_PLUSONE_7000           ((drawseg_t __far*)         (drawsegs_BASE_7000          + 1))
-#define finetangentinner_7000           ((int32_t __far*)           MAKE_FULL_SEGMENT(drawsegs_BASE_7000   ,         size_drawsegs_PLUS_EXTRA))
-#define render_9000_end_7000            ((uint8_t __far*)           MAKE_FULL_SEGMENT(finetangentinner_7000,         size_finetangentinner))
-
-#define texturecolumnlumps_bytes_6000   ((int16_t_union __far*)     (0x60000000 ))
-#define texturedefs_bytes_6000          ((byte __far*)              MAKE_FULL_SEGMENT(texturecolumnlumps_bytes_6000, size_texturecolumnlumps_bytes))
-#define spritetopoffsets_6000           ((int8_t __far*)            MAKE_FULL_SEGMENT(texturedefs_bytes_6000,        size_texturedefs_bytes))
-#define texturedefs_offset_6000         ((uint16_t  __far*)         MAKE_FULL_SEGMENT(spritetopoffsets_6000,         size_spritetopoffsets))
-
-#define drawsegs_BASE_segment_7000      ((segment_t) ((int32_t)drawsegs_BASE_7000 >> 16))
-#define masked_lookup_segment_7000      ((segment_t) ((int32_t)masked_lookup_7000 >> 16))
-
-#define texturecolumnlumps_bytes_6000_segment ((segment_t) ((int32_t)texturecolumnlumps_bytes_6000 >> 16))
-#define texturedefs_bytes_6000_segment        ((segment_t) ((int32_t)texturedefs_bytes_6000 >> 16))
-#define texturedefs_offset_6000_segment       ((segment_t) ((int32_t)texturedefs_offset_6000 >> 16))
-
-
-#define texturecolumnlumps_bytes_7000_segment ((segment_t) ((int32_t)texturecolumnlumps_bytes_7000 >> 16))
-#define texturedefs_bytes_7000_segment        ((segment_t) ((int32_t)texturedefs_bytes_7000 >> 16))
-#define spritetopoffsets_7000_segment         ((segment_t) ((int32_t)spritetopoffsets_7000 >> 16))
-#define texturedefs_offset_7000_segment       ((segment_t) ((int32_t)texturedefs_offset_7000 >> 16))
-#define masked_lookup_7000_segment            ((segment_t) ((int32_t)masked_lookup_7000 >> 16))
-#define patchwidths_7000_segment              ((segment_t) ((int32_t)patchwidths_7000 >> 16))
-#define patchheights_7000_segment             ((segment_t) ((int32_t)patchheights_7000 >> 16))
-#define drawsegs_BASE_7000_segment            ((segment_t) ((int32_t)drawsegs_BASE_7000 >> 16))
-#define finetangentinner_7000_segment         ((segment_t) ((int32_t)finetangentinner_7000 >> 16))
-#define render_9000_end_7000_segment          ((segment_t) ((int32_t)render_9000_end_7000 >> 16))
 
 // texturecolumnlumps_bytes   9000:0000
 // texturedefs_bytes          90B2:0000

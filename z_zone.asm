@@ -193,26 +193,6 @@ ENDP
 
 
 
-PROC   Z_QuickMapRender_9000To6000_ NEAR
-PUBLIC Z_QuickMapRender_9000To6000_
-
-
-push  dx
-push  cx
-push  si
-
-Z_QUICKMAPAI2 pageswapargs_render_to_6000_size INDEXED_PAGE_6000_OFFSET
-
-pop   si
-pop   cx
-pop   dx
-ret
-
-ENDP
-
-
-
-
 PROC   Z_QuickMapStatus_ NEAR
 PUBLIC Z_QuickMapStatus_
 

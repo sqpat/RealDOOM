@@ -8,7 +8,7 @@
 #include "r_state.h"
 #include "p_setup.h"
 
-#define CONSTANTS_COUNT 1018
+#define CONSTANTS_COUNT 1003
 #define LOCALS_COUNT 32
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -50,21 +50,12 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "SPRITETOPOFFSETS_SEGMENT",
     "TEXTUREDEFS_OFFSET_SEGMENT",
     "MASKED_LOOKUP_SEGMENT",
-    "MASKED_LOOKUP_SEGMENT_7000",
+
     "PATCHWIDTHS_SEGMENT",
     "PATCHHEIGHTS_SEGMENT",
     "DRAWSEGS_BASE_SEGMENT",
-    "DRAWSEGS_BASE_SEGMENT_7000",
 
-	"TEXTURECOLUMNLUMPS_BYTES_7000_SEGMENT",
-	"TEXTUREDEFS_BYTES_7000_SEGMENT",
-	"SPRITETOPOFFSETS_7000_SEGMENT",
-	"TEXTUREDEFS_OFFSET_7000_SEGMENT",
-	"MASKED_LOOKUP_7000_SEGMENT",
-	"PATCHWIDTHS_7000_SEGMENT",
-	"PATCHHEIGHTS_7000_SEGMENT",
-	"FINETANGENTINNER_7000_SEGMENT",
-	"RENDER_9000_END_7000_SEGMENT",
+
 
 
     "STATES_SEGMENT",
@@ -190,7 +181,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"CLIPTOP_START_SEGMENT",
 	"CLIPBOT_START_OFFSET",
 	"CLIPTOP_START_OFFSET",
-    "RENDER_9000_END_SEGMENT",
     "RENDER_9C00_END_SEGMENT_16",
     "RENDER_9C00_END_SEGMENT_24",
 	"MENUGRAPHICSPAGE0SEGMENT",
@@ -1057,9 +1047,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"CHEATID_CHOPPERS",
 	"CHEATID_CHANGE_LEVEL",
 	"CHEATID_MAPPOS",
-	"TEXTURECOLUMNLUMPS_BYTES_6000_SEGMENT",
-	"TEXTUREDEFS_BYTES_6000_SEGMENT",
-	"TEXTUREDEFS_OFFSET_6000_SEGMENT",
 	"MAXEVENTS",
 
 	"MAX_ADJOINING_SECTORS",
@@ -1173,21 +1160,10 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     spritetopoffsets_segment,
     texturedefs_offset_segment,
     masked_lookup_segment,
-    masked_lookup_segment_7000,
     patchwidths_segment,
 	patchheights_segment,
     drawsegs_BASE_segment,
-    drawsegs_BASE_segment_7000,
 
-	texturecolumnlumps_bytes_7000_segment,
-	texturedefs_bytes_7000_segment,
-	spritetopoffsets_7000_segment,
-	texturedefs_offset_7000_segment,
-	masked_lookup_7000_segment,
-	patchwidths_7000_segment,
-	patchheights_7000_segment,
-	finetangentinner_7000_segment,
-	render_9000_end_7000_segment,
 
 
     states_segment,
@@ -1309,7 +1285,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	cliptop_start_segment,
 	clipbot_start_offset,
 	cliptop_start_offset,
-    render_9000_end_segment,
+
     render_9C00_end_segment_16,
     render_9C00_end_segment_24,
     menugraphicspage0segment,
@@ -2178,9 +2154,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	CHEATID_CHOPPERS,
 	CHEATID_CHANGE_LEVEL,
 	CHEATID_MAPPOS,
-	texturecolumnlumps_bytes_6000_segment,
-	texturedefs_bytes_6000_segment,
-	texturedefs_offset_6000_segment,
+
 	MAXEVENTS,
 	MAX_ADJOINING_SECTORS,
 	2 * MAX_ADJOINING_SECTORS,
