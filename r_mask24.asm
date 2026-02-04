@@ -1305,7 +1305,7 @@ mov   ax, word ptr ds:[_curseg]
 mov   bx, ax
 add   bh, (seg_sides_offset_in_seglines SHR 8)		; seg_sides_offset_in_seglines high word
 mov   dl, byte ptr es:[bx]		; ; dl is curlineside here
-add   ax, ax
+sal   ax, 1
 mov   bx, ax
 mov   di, word ptr es:[bx]		; di holds curlinelinedef
 

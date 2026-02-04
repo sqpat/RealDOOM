@@ -918,15 +918,9 @@ call   LoadInt8_
 
 
 mov    ax, word ptr es:[di-0Fh]  ; di is 0F, we want 0
+SHIFT_MACRO shl ax 4
 
-IF COMPISA GE COMPILE_186
-    shl    ax, 4
-ELSE
-    shl    ax, 1
-    shl    ax, 1
-    shl    ax, 1
-    shl    ax, 1
-ENDIF
+
 ; todo xchg
 xchg   ax, bx
 mov    word ptr ds:[bx + (_sectors_physics + 8)], ax  ; sectors_physics specialdataRef
