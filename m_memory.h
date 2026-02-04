@@ -309,6 +309,7 @@ scantokey            3194:0000
 #define size_doomednum             ((sizeof(int16_t) * NUMMOBJTYPES))
 #define size_linespeciallist       ((sizeof(int16_t) * MAXLINEANIMS))
 #define size_font_widths           (HU_FONTSIZE * sizeof(int8_t))
+#define size_states                (sizeof(state_t) * NUMSTATES)
 
 #define MAX_OVERLAYSIZE        (((FinaleCodeSize > SaveLoadCodeSize ? FinaleCodeSize : SaveLoadCodeSize)))
 
@@ -324,11 +325,12 @@ scantokey            3194:0000
 #define linespeciallist_far    ((int16_t __far*)              MAKE_FULL_SEGMENT(doomednum_far,              size_doomednum ))
 #define font_widths_far        ((int8_t __far*)               MAKE_FULL_SEGMENT(linespeciallist_far,        size_linespeciallist))
 
-#define mobjlookuptable_far    ((int16_t __far*)        MAKE_FULL_SEGMENT(font_widths_far,            size_font_widths))
-#define mobjposlookuptable_far ((int16_t __far*)        MAKE_FULL_SEGMENT(mobjlookuptable_far    , size_mobjlookup_table))
+#define mobjlookuptable_far    ((int16_t __far*)              MAKE_FULL_SEGMENT(font_widths_far,            size_font_widths))
+#define mobjposlookuptable_far ((int16_t __far*)              MAKE_FULL_SEGMENT(mobjlookuptable_far    , size_mobjlookup_table))
 
+#define states_far             ((state_t __far*)              MAKE_FULL_SEGMENT(mobjposlookuptable_far , size_mobjposlookup_table))
 
-#define code_overlay_start     ((byte __far*)                 MAKE_FULL_SEGMENT(mobjposlookuptable_far , size_mobjposlookup_table))
+#define code_overlay_start     ((byte __far*)                 MAKE_FULL_SEGMENT(states_far,                 size_states ))
 #define code_overlay_end       ((byte __far*)                 MAKE_FULL_SEGMENT(code_overlay_start,         MAX_OVERLAYSIZE))
 #define physics_4000_end       ((byte __far*)                 MAKE_FULL_SEGMENT(code_overlay_start,         MAX_OVERLAYSIZE))
 // WipeCodeSize
@@ -346,6 +348,7 @@ scantokey            3194:0000
 #define font_widths_segment           ((segment_t) ((int32_t)font_widths_far >> 16))
 #define mobjlookuptable_segment       ((segment_t) ((int32_t)mobjlookuptable_far >> 16))
 #define mobjposlookuptable_segment    ((segment_t) ((int32_t)mobjposlookuptable_far >> 16))
+#define states_segment                ((segment_t) ((int32_t)states_far >> 16))
 #define code_overlay_segment          ((segment_t) ((int32_t)code_overlay_start >> 16))
 #define code_overlay_end_segment      ((segment_t) ((int32_t)code_overlay_end >> 16))
 #define physics_4000_end_segment      ((segment_t) ((int32_t)physics_4000_end >> 16))
@@ -364,6 +367,7 @@ scantokey            3194:0000
 #define font_widths        ((int8_t __near* )            ((font_widths_segment        - FIXED_DS_SEGMENT) << 4))
 #define mobjlookuptable    ((int16_t __near*)            ((mobjlookuptable_segment    - FIXED_DS_SEGMENT) << 4))
 #define mobjposlookuptable ((int16_t __near*)            ((mobjposlookuptable_segment - FIXED_DS_SEGMENT) << 4))
+#define states             ((state_t __near*)            ((states_segment             - FIXED_DS_SEGMENT) << 4))
 
 
 
@@ -421,7 +425,6 @@ this area used in many tasks including physics but not including render
 
 #define size_lines_physics         (MAX_LINES_PHYSICS_SIZE)
 #define size_blockmaplump          ( MAX_BLOCKMAP_LUMPSIZE)
-#define size_states                (sizeof(state_t) * NUMSTATES)
 #define size_sectors_soundorgs     (MAX_SECTORS_SOUNDORGS_SIZE)
 #define size_sector_soundtraversed (MAX_SECTORS_SOUNDTRAVERSED_SIZE)
 #define size_diskgraphicbytes      (392)
@@ -430,15 +433,14 @@ this area used in many tasks including physics but not including render
 #define lines_physics          ((line_physics_t __far*)       MAKE_FULL_SEGMENT(0x70000000, 0))
 #define blockmaplump           ((int16_t __far*)              MAKE_FULL_SEGMENT(lines_physics,         size_lines_physics))
 #define blockmaplump_plus4     ((int16_t __far*)              (((int32_t)blockmaplump) + 0x08))
-#define states                 ((state_t __far*)              MAKE_FULL_SEGMENT(blockmaplump,           size_blockmaplump))  
-#define sectors_soundorgs      ((sector_soundorg_t __far* )   MAKE_FULL_SEGMENT(states,                 size_states ))
+
+#define sectors_soundorgs      ((sector_soundorg_t __far* )   MAKE_FULL_SEGMENT(blockmaplump,           size_blockmaplump))  
 #define sector_soundtraversed  ((int8_t __far*)               MAKE_FULL_SEGMENT(sectors_soundorgs,      size_sectors_soundorgs ))
 #define diskgraphicbytes       ((byte __far*)                 MAKE_FULL_SEGMENT(sector_soundtraversed,  size_sector_soundtraversed ))
 #define physics_7000_end       ((uint8_t __far*)              MAKE_FULL_SEGMENT(diskgraphicbytes,       size_diskgraphicbytes))
 
 #define lines_physics_segment         ((segment_t) ((int32_t)lines_physics >> 16))
 #define blockmaplump_segment          ((segment_t) ((int32_t)blockmaplump >> 16))
-#define states_segment                ((segment_t) ((int32_t)states >> 16))
 #define sectors_soundorgs_segment     ((segment_t) ((int32_t)sectors_soundorgs >> 16))
 #define sector_soundtraversed_segment ((segment_t) ((int32_t)sector_soundtraversed >> 16))
 #define diskgraphicbytes_segment      ((segment_t) ((int32_t)diskgraphicbytes >> 16))
@@ -448,11 +450,11 @@ this area used in many tasks including physics but not including render
 lines_physics         7000:0000
 blockmaplump          76E4:0000
 blockmaplump_plus4    76E4:0008
-states                7D74:0000
-sectors_soundorgs     7EDF:0000
-sector_soundtraversed 7F4C:0000
-FREEBYTES             7F65:0000
- 2480 bytes free!
+sectors_soundorgs     7D74:0000
+sector_soundtraversed 7DCB:0000
+diskgraphicbytessegment 7DE1:0000
+FREEBYTES             7DFA:0000
+ 8288 bytes free!
 */
 
 

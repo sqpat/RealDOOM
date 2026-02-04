@@ -4861,10 +4861,9 @@ les   di, dword ptr ds:[_setStateReturn_pos]
 mov   ax, (SIZE STATE_T)
 
 mul   word ptr es:[di + MOBJ_POS_T.mp_statenum]
-mov   dx, STATES_SEGMENT
-mov   es, dx
+
 xchg  ax, bx
-mov   al, byte ptr es:[bx + STATE_T.state_tics] ; todo is this a hardcoded value
+mov   al, byte ptr ds:[bx + _states + STATE_T.state_tics] ; todo is this a hardcoded value
 cbw  
 
 ;cwd
@@ -5202,11 +5201,9 @@ push      ax    ; state offset
 xchg      ax, di
 
 mov       word ptr es:[bx + MOBJ_POS_T.mp_statenum], cx
-mov       ax, STATES_SEGMENT
-mov       es, ax
-mov       al, byte ptr es:[di + STATE_T.state_tics]
+mov       al, byte ptr ds:[di + _states + STATE_T.state_tics]
 mov       byte ptr ds:[si + MOBJ_T.m_tics], al
-mov       al, byte ptr es:[di + state_action]
+mov       al, byte ptr ds:[di + _states + STATE_T.state_action]
 sub       al, ETF_A_BFGSpray                        ; minimum action number
 
 cmp       al, (ETF_A_BRAINEXPLODE - ETF_A_BFGSPRAY) ; max range
@@ -5243,10 +5240,7 @@ mov       word ptr ds:[_setStateReturn_pos], ax
 
 ;mov       word ptr ds:[_setStateReturn_pos + 2], dx
 
-mov       cx, STATES_SEGMENT
-mov       es, cx
-
-mov       cx, word ptr es:[di + STATE_T.state_nextstate]
+mov       cx, word ptr ds:[di + _states + STATE_T.state_nextstate]
 cmp       byte ptr ds:[si + MOBJ_T.m_tics], 0
 jne       exit_p_setmobjstate_return_1
 test      cx, cx

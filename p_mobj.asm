@@ -606,11 +606,11 @@ mov       ax, (SIZE STATE_T)
 mul       di
 xchg      ax, di
 mov       cx, es 
-mov       ax, STATES_SEGMENT
-mov       es, ax
+
+
 
 mov       ax, si
-mov       dx, word ptr es:[di + STATE_T.state_nextstate]
+mov       dx, word ptr ds:[di + _states + STATE_T.state_nextstate]
 
 call      P_SetMobjState_
 
@@ -820,11 +820,10 @@ mov       ax, SIZE STATE_T
 mul       bx ; statenum
 xchg      ax, bx
 
-mov       ax, STATES_SEGMENT
-mov       es, ax
+
 
 mov       dx, di
-mov       al, byte ptr es:[bx + STATE_T.state_tics]
+mov       al, byte ptr ds:[bx + _states + STATE_T.state_tics]
 mov       bx, word ptr [bp + 0Eh]
 mov       byte ptr ds:[si + MOBJ_T.m_tics], al
 mov       ax, si

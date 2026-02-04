@@ -253,8 +253,8 @@ do_respawn_on:
 inc   byte ptr ds:[_respawnparm]
 keep_respawn_off:
 
-mov   dx, STATES_SEGMENT
-mov   es, dx
+
+
 mov   bx, (S_SARG_RUN1 * (SIZE STATE_T)) + STATE_T.state_tics ; 6 bytes per
 
 cmp   byte ptr ds:[_fastparm], ah
@@ -268,7 +268,7 @@ je    check_fastmonsters_off
 do_fastmonsters_on:
 
 speedup_next_state:
-shr   byte ptr es:[bx ], 1  ; already offset to  STATE_T.state_tics
+shr   byte ptr ds:[bx + _states], 1  ; already offset to  STATE_T.state_tics
 add   bx, SIZE STATE_T
 cmp   bx, (S_SARG_PAIN2 * SIZE STATE_T)
 jl    speedup_next_state

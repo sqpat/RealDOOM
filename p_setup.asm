@@ -1634,7 +1634,7 @@ rep   stosw
 mov   dx, LINES_PHYSICS_SEGMENT
 mov   es, dx
 xor   di, di
-mov   cx, (STATES_SEGMENT - LINES_PHYSICS_SEGMENT) SHL 3  ; 3 not 4 because stosw
+mov   cx, (DISKGRAPHICBYTES_SEGMENT - LINES_PHYSICS_SEGMENT) SHL 3  ; 3 not 4 because stosw
 rep   stosw
 
 call  Z_QuickMapRender_4000To9000_PSetup_

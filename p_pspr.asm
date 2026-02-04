@@ -1289,10 +1289,10 @@ sal   ax, 1     ; x2, na
 mov   bx, ax    ; x2, x2
 sal   bx, 1     ; x2, x4
 add   bx, ax    ; x2, x6
-mov   ax, STATES_SEGMENT
-mov   es, ax
+
+
 mov   ax, cx
-mov   dx, word ptr es:[bx + 4]
+mov   dx, word ptr ds:[bx + _states + STATE_T.state_nextstate]
 call  P_SetPsprite_
 
 dont_set_this_psprite:
@@ -1382,20 +1382,19 @@ mov   si, dx
 sal   si, 1
 add   si, dx  ; si has dx * 6..
 
-mov   ax, STATES_SEGMENT
-mov   es, ax
 
 
-mov   al, byte ptr es:[si + STATE_T.state_tics]
+
+mov   al, byte ptr ds:[si + _states + STATE_T.state_tics]
 
 cbw  
 mov   word ptr ds:[bx + PSPDEF_T.pspdef_tics], ax
 
-mov   al, byte ptr es:[si + STATE_T.state_action]
+mov   al, byte ptr ds:[si + _states + STATE_T.state_action]
 cbw
 dec   ax
 
-mov   dx, word ptr es:[si + STATE_T.state_nextstate] ; grab state now.... remove SI dependency
+mov   dx, word ptr ds:[si + _states + STATE_T.state_nextstate] ; grab state now.... remove SI dependency
 
 cmp   al, 21   ; max state
 ja    bad_state

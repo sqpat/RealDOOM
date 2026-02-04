@@ -9,8 +9,7 @@
 #include "p_setup.h"
 
 #define CONSTANTS_COUNT 1018
-#define LOCALS_COUNT 31
-
+#define LOCALS_COUNT 32
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
 	"FIXED_DS_SEGMENT",
@@ -2283,6 +2282,7 @@ char* LOCALS[LOCALS_COUNT] = {
     "_font_widths",
     "_mobjlookuptable",
     "_mobjposlookuptable",
+	"_states",
 
 
 
@@ -2333,7 +2333,7 @@ void __near* VALUES[LOCALS_COUNT] = {
     font_widths,
     mobjlookuptable,
     mobjposlookuptable,
-
+	states,
 
     NUM_FLAT_CACHE_PAGES,
     NUM_SPRITE_CACHE_PAGES,

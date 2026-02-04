@@ -495,10 +495,9 @@ add    bx, dx
 sal    bx, 1  ; size 6..
 
 ;	spritenum_t specialsprite = states[special_pos->stateNum].sprite;
-mov    dx, STATES_SEGMENT
-mov    es, dx
+
 xchg   ax, dx  ; dx gets dropped flag.
-mov    al, byte ptr es:[bx + STATE_T.state_sprite]
+mov    al, byte ptr ds:[bx + _states + STATE_T.state_sprite]
 sub    al, SPR_ARM1   ; minimum switch block case
 cmp    al, (SPR_SGN2 - SPR_ARM1)  ; 0x26.. diff between low and high case
 
