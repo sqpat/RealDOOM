@@ -5115,10 +5115,10 @@ adc       ah, ah    ; if width is zero that encoded 0x100. now ah is 1.
 ;    }
 
 
-;mov       bx, TEXTUREWIDTHMASKS_SEGMENT
-;mov       es, bx
+mov       bx, TEXTUREWIDTHMASKS_SEGMENT
+mov       es, bx
 mov       bx, word ptr [bp - 2]
-mov       dl, byte ptr es:[bx + ((TEXTUREWIDTHMASKS_SEGMENT - PATCHWIDTHS_SEGMENT) * 16)]      ; dh 0 from above cwd
+mov       dl, byte ptr es:[bx]      ; dh 0 from above cwd
 cmp       ax, dx
 jna       negative_modulo_thing_masked
 xchg      ax, dx

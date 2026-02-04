@@ -103,7 +103,7 @@ db 08h, 0
 COLORMAP_LUMP = 1
 
 
-SPRITETOPOFFSETS_OFFSET =     (SPRITETOPOFFSETS_SEGMENT - SPRITEOFFSETS_SEGMENT) SHL 4
+
 SPRITETOTALDATASIZES_OFFSET = (SPRITETOTALDATASIZES_SEGMENT - SPRITEOFFSETS_SEGMENT) SHL 4
 SPRITEPOSTDATASIZES_OFFSET =  (SPRITEPOSTDATASIZES_SEGMENT - SPRITEOFFSETS_SEGMENT) SHL 4
 
@@ -1423,8 +1423,12 @@ lodsw     ;     PATCH_T.patch_topoffset]
 cmp       ax, 129
 je        handle_129_spritetopoffset
 handle_normal_sprite_offset:
-mov       byte ptr es:[di + SPRITETOPOFFSETS_OFFSET], al
 
+push      es  ; grr gross
+mov       dx, SPRITETOPOFFSETS_SEGMENT
+mov       es, dx
+mov       byte ptr es:[di], al  ; todo stosb?
+pop       es
 
 ;   cx has patchwidth for looping
 xor       ax, ax  ; ah 0 for whole loop

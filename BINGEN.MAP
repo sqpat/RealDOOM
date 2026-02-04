@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/03 17:38:38
+Created on:       26/02/04 10:36:42
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -49,7 +49,7 @@ R_SPAN0_TEXT           CODE           AUTO           1ba1:0000       0000063a
 R_SPANFL_TEXT          CODE           AUTO           1c05:0000       00000591
 R_SKY_TEXT             CODE           AUTO           1c5f:0000       00000d86
 R_SKYFL_TEXT           CODE           AUTO           1d38:0000       00000303
-R_MASK24_TEXT          CODE           AUTO           1d69:0000       00001936
+R_MASK24_TEXT          CODE           AUTO           1d69:0000       00001939
 R_MASK16_TEXT          CODE           AUTO           1efd:0000       000019ce
 R_MASK0_TEXT           CODE           AUTO           209a:0000       0000193a
 R_MASKFL_TEXT          CODE           AUTO           222e:0000       00001904
@@ -83,12 +83,12 @@ S_SOUND_TEXT           CODE           AUTO           23bf:b40a       00000525
 D_INIT_TEXT            CODE           AUTO           2f52:0000       00000cc5
 S_INIT_TEXT            CODE           AUTO           2f52:0cc6       0000055d
 ST_INIT_TEXT           CODE           AUTO           2f52:1224       00000207
-R_INIT_TEXT            CODE           AUTO           2f52:142c       000007b8
-W_INIT_TEXT            CODE           AUTO           2f52:1be4       0000016e
-I_INIT_TEXT            CODE           AUTO           2f52:1d52       000001e4
-Z_INIT_TEXT            CODE           AUTO           2f52:1f36       0000081a
-S_SBINIT_TEXT          CODE           AUTO           2f52:2750       000002e5
-P_INIT_TEXT            CODE           AUTO           2f52:2a36       0000026c
+R_INIT_TEXT            CODE           AUTO           2f52:142c       000007bd
+W_INIT_TEXT            CODE           AUTO           2f52:1bea       0000016e
+I_INIT_TEXT            CODE           AUTO           2f52:1d58       000001e4
+Z_INIT_TEXT            CODE           AUTO           2f52:1f3c       0000081a
+S_SBINIT_TEXT          CODE           AUTO           2f52:2756       000002e5
+P_INIT_TEXT            CODE           AUTO           2f52:2a3c       0000026c
 bingen_TEXT            CODE           AUTO           2f52:2cb0       00001739
 D_NET_TEXT             CODE           AUTO           2f52:43ea       000000df
 G_GAME_TEXT            CODE           AUTO           2f52:44ca       000002f4
@@ -476,13 +476,13 @@ Module: r_mask24.obj(r_mask24.ASM)
 1d69:0094*     FixedMulMaskedLocal_
 1d69:0000*     _pagesegments
 1d69:0012*     _fuzzoffset
-1d69:184b      R_WriteBackViewConstantsMasked24_
-1d69:18d8      R_WriteBackMaskedFrameConstants24_
+1d69:184e      R_WriteBackViewConstantsMasked24_
+1d69:18db      R_WriteBackMaskedFrameConstants24_
 1d69:00c1*     R_DrawFuzzColumn_
 1d69:1438      R_DrawMasked24_
 1d69:01fe*     R_DrawSingleMaskedColumn_
 1d69:03b2*     R_DrawVisSprite_
-1d69:1936      R_MASK24_ENDMARKER_
+1d69:1939      R_MASK24_ENDMARKER_
 1d69:1486*     R_DrawMaskedColumn_
 1d69:01be*     R_DrawColumnPrepMaskedMulti_
 1d69:0000      R_MASK24_STARTMARKER_
@@ -893,9 +893,9 @@ Module: st_stuff.obj(st_stuff.ASM)
 23bf:adc9*     STlib_updateflag_
 23bf:a924      _st_oldhealth
 23bf:a91e*     ST_STUFF_STARTMARKER_
-23bf:b2c3*     ST_STUFF_ENDMARKER_
 23bf:a93c      _tallnum_
 23bf:aa30      _w_faces
+23bf:b2c3*     ST_STUFF_ENDMARKER_
 23bf:a9f8      _w_armsbg
 23bf:ad38      ST_Ticker_
 23bf:aaf2*     ST_calcPainOffset_
@@ -950,49 +950,49 @@ Module: r_init.obj(r_init.ASM)
 2f52:1795*     R_InitTextures_
 2f52:1a1f      R_Init_
 2f52:14b6*     R_GenerateLookup_
-2f52:1ba2*     W_CacheLumpNumDirectSmall_
+2f52:1ba7*     W_CacheLumpNumDirectSmall_
 Module: w_init.obj(w_init.ASM)
-2f52:1be4*     W_INIT_STARTMARKER_
-2f52:1d52*     W_INIT_ENDMARKER_
-2f52:1c10      W_AddFile_
+2f52:1bea*     W_INIT_STARTMARKER_
+2f52:1d58*     W_INIT_ENDMARKER_
+2f52:1c16      W_AddFile_
 Module: i_init.obj(i_init.ASM)
-2f52:1f36*     I_INIT_ENDMARKER_
-2f52:1dce      I_Init_
-2f52:1d52*     I_INIT_STARTMARKER_
+2f52:1f3c*     I_INIT_ENDMARKER_
+2f52:1dd4      I_Init_
+2f52:1d58*     I_INIT_STARTMARKER_
 Module: z_init.obj(z_init.ASM)
-2f52:22b8*     Z_ReadFileRegionWithIndex_
-2f52:1f36      _doomdata_bin_string
-2f52:2750*     Z_INIT_ENDMARKER_
-2f52:257c      Z_LoadBinaries_
-2f52:2237      Z_GetEMSPageMap_
-2f52:238c*     Z_DoRenderCodeLoad_
-2f52:1f36*     Z_INIT_STARTMARKER_
-2f52:218b      Z_InitEMS_
-2f52:2310*     Z_QuickMapRender4000_
-2f52:22fa      Z_QuickMapMaskedExtraData_
-2f52:2326*     Z_QuickMapVisplanePage_
+2f52:22be*     Z_ReadFileRegionWithIndex_
+2f52:1f3c      _doomdata_bin_string
+2f52:2756*     Z_INIT_ENDMARKER_
+2f52:2582      Z_LoadBinaries_
+2f52:223d      Z_GetEMSPageMap_
+2f52:2392*     Z_DoRenderCodeLoad_
+2f52:1f3c*     Z_INIT_STARTMARKER_
+2f52:2191      Z_InitEMS_
+2f52:2316*     Z_QuickMapRender4000_
+2f52:2300      Z_QuickMapMaskedExtraData_
+2f52:232c*     Z_QuickMapVisplanePage_
 Module: s_sbinit.obj(s_sbinit.ASM)
-2f52:28c4      SB_SetPlaybackRate_
-2f52:2a0c      SB_StartInit_
-2f52:27b5      _SB_DSP_Version
-2f52:2a35*     S_SBINIT_ENDMARKER_
-2f52:299e*     SB_InitCard_
-2f52:27c7*     SB_SaveVoiceVolume_
-2f52:2750*     S_SBINIT_STARTMARKER_
-2f52:27b8*     SB_ReadMixer_
-2f52:295f*     SB_GetDSPVersion_
-2f52:27ef      SB_DSP1xx_BeginPlayback_
-2f52:27f6*     SB_DSP2xx_BeginPlayback_
-2f52:280b*     SB_DSP4xx_BeginPlayback_
-2f52:27b7      _SB_CardActive
-2f52:2902*     SB_SetupPlayback_
-2f52:2820*     DMA_SetupTransfer_
-2f52:28a1*     SB_EnableInterrupt_
+2f52:28ca      SB_SetPlaybackRate_
+2f52:2a12      SB_StartInit_
+2f52:27bb      _SB_DSP_Version
+2f52:2a3b*     S_SBINIT_ENDMARKER_
+2f52:29a4*     SB_InitCard_
+2f52:27cd*     SB_SaveVoiceVolume_
+2f52:2756*     S_SBINIT_STARTMARKER_
+2f52:27be*     SB_ReadMixer_
+2f52:2965*     SB_GetDSPVersion_
+2f52:27f5      SB_DSP1xx_BeginPlayback_
+2f52:27fc*     SB_DSP2xx_BeginPlayback_
+2f52:2811*     SB_DSP4xx_BeginPlayback_
+2f52:27bd      _SB_CardActive
+2f52:2908*     SB_SetupPlayback_
+2f52:2826*     DMA_SetupTransfer_
+2f52:28a7*     SB_EnableInterrupt_
 Module: p_init.obj(p_init.ASM)
-2f52:2ca2*     P_INIT_ENDMARKER_
-2f52:2a87      P_Init_
-2f52:2a36*     P_INIT_STARTMARKER_
-2f52:2a37*     R_InstallSpriteLump_
+2f52:2ca8*     P_INIT_ENDMARKER_
+2f52:2a8d      P_Init_
+2f52:2a3c*     P_INIT_STARTMARKER_
+2f52:2a3d*     R_InstallSpriteLump_
 Module: bingen.obj(C:\REALDOOM\build\tools\bingen\bingen.c)
 2f52:2cb0      main_
 Module: d_net.obj(d_net.ASM)
@@ -1463,4 +1463,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003d9b0 (252336.)
 Entry point address: 2f52:7cde
-Link time: 00:00.04
+Link time: 00:00.49
