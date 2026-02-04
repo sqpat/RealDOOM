@@ -291,7 +291,7 @@ do_fastmonsters_off:
 
 
 speeddown_next_state:
-shl   byte ptr es:[bx ], 1  ; already offset to  STATE_T.state_tics
+shl   byte ptr ds:[bx +_states], 1  ; already offset to  STATE_T.state_tics
 add   bx, SIZE STATE_T
 cmp   bx, (S_SARG_PAIN2 * SIZE STATE_T)
 jl    speeddown_next_state

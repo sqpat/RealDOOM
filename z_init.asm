@@ -1234,12 +1234,11 @@ call  locallib_fread_nearsegment_
 mov     ax, OFFSET str_dot
 call    DEBUG_PRINT_NOARG_CS_
 
-;	locallib_far_fread(states, sizeof(state_t) * NUMSTATES, fp);
-mov   dx, STATES_SEGMENT
-xor   ax, ax
+;	fread(states, sizeof(state_t) * NUMSTATES, fp);
+mov   ax, OFFSET _states
 mov   bx, (SIZE STATE_T) * NUMSTATES
 mov   cx, di
-call  locallib_fread_
+call  locallib_fread_nearsegment_
 
 mov     ax, OFFSET str_dot
 call    DEBUG_PRINT_NOARG_CS_
@@ -1318,7 +1317,9 @@ mov   bx, 2 * NUMMOBJTYPES
 mov   cx, di
 call  locallib_fread_
 
-call  Z_QuickMapRender4000_
+; quickmap render 4000 to 9000
+
+Z_QUICKMAPAI4 pageswapargs_rend_other9000_size INDEXED_PAGE_9000_OFFSET
 
 
 ;	for (i = 0; i < NUMSTATES; i++){
@@ -1327,12 +1328,10 @@ call  Z_QuickMapRender4000_
 ;	}
 
 xchg  dx, di  ; store fp
-push  ds
-pop   es
-mov   ax, STATES_SEGMENT
-mov   ds, ax
-xor   si, si   ; sprite, frame are bytes 0, 1
-mov   di, _states_render
+mov   ax, STATES_RENDER_SEGMENT + (09000h - 04000h)
+mov   es, ax
+mov   si, OFFSET _states
+xor   di, di   ; sprite, frame are bytes 0, 1
 mov   cx, NUMSTATES
 
 
@@ -1342,8 +1341,7 @@ add    si, (SIZE STATE_T) - 2
 loop   loop_copy_state_spriteframes
 
 xchg   dx, di  ; put fp back
-push   ss
-pop    ds
+
 
 call   Z_QuickMapRender_
 
