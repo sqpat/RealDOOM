@@ -1392,13 +1392,16 @@ set_player_stuff:
 mov     word ptr ds:[_playerMobjRef], di
 
 ; #define playerMobjMakerExpression		((mobj_t __near *) (((byte __far*)thinkerlist) + (playerMobjRef*sizeof(thinker_t) + 2 * sizeof(THINKERREF))))
-mov     ax, SIZE THINKER_T
-mul     di
-add     ax, OFFSET _thinkerlist + (2 * 2)
 mov     word ptr ds:[_playerMobjRef], di
+
+sal     di, 1
+mov     ax, word ptr ds:[di + _mobjlookuptable]
+
+add     ax, THINKER_T.t_data
 mov     word ptr ds:[_playerMobj], ax
-mov     ax, SIZE MOBJ_POS_T
-mul     di
+mov     ax, word ptr ds:[di + _mobjposlookuptable]
+
+
 mov     word ptr ds:[_playerMobj_pos+0], ax
 mov     word ptr ds:[_playerMobj_pos+2], MOBJPOSLIST_SEGMENT   ; todo necessary?
 jmp     done_with_player_setup

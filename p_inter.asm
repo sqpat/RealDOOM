@@ -1174,9 +1174,12 @@ sub    ax, (_thinkerlist + THINKER_T.t_data)
 xor    dx, dx
 
 div    bx
-mov    dx, (SIZE MOBJ_POS_T)
-mul    dx
-xchg   ax, bx
+
+mov       bx, ax
+sal       bx, 1
+mov       bx, word ptr ds:[bx + _mobjposlookuptable]
+
+
 
 ; es:bx 
 mov    dx, MOBJPOSLIST_SEGMENT
@@ -1261,9 +1264,9 @@ mov    bx, (SIZE THINKER_T)
 sub    ax, (_thinkerlist + THINKER_T.t_data)
 div    bx
 
-mov    dx, (SIZE MOBJ_POS_T)
-mul    dx
-xchg   ax, di
+mov       di, ax
+sal       di, 1
+mov       di, word ptr ds:[di + _mobjposlookuptable]
 
 
 mov    ax, word ptr es:[di + MOBJ_POS_T.mp_x + 0]
@@ -1512,9 +1515,11 @@ jmp    exit_p_damagemobj
 
 do_dead_attackerref_stuff:
 ; ax has attackerref..
-mov    bx, (SIZE MOBJ_POS_T)
-mul    bx
-xchg   ax, si
+mov       bx, ax
+sal       bx, 1
+mov       si, word ptr ds:[bx + _mobjposlookuptable]
+
+
 push   ds
 pop    es
 mov    dx, MOBJPOSLIST_SEGMENT

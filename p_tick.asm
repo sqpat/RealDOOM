@@ -120,11 +120,15 @@ push      cx
 mov       cx, ((SIZE MOBJ_T) - 4) / 2
 rep       stosw
 
-mov       dx, SIZE MOBJ_POS_T
-mul       dx
+
+
+mov       di, ax
+sal       di, 1
+mov       di, word ptr ds:[di + _mobjposlookuptable]
+
 mov       dx, MOBJPOSLIST_SEGMENT
 mov       es, dx
-xchg      ax, di
+
 mov       ax, (SIZE MOBJ_POS_T) / 2
 xchg      ax, cx  ; cx was zero after rep stosw above
 rep       stosw

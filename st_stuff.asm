@@ -445,9 +445,13 @@ ret
 
 look_at_attacker:
 mov   byte ptr cs:[_st_face_priority], cl
-mov   ax, (SIZE MOBJ_POS_T)
-mul   word ptr ds:[_player + PLAYER_T.player_attackerRef]
-xchg  ax, di
+
+
+mov       di, word ptr ds:[_player + PLAYER_T.player_attackerRef]
+sal       di, 1
+mov       di, word ptr ds:[di + _mobjposlookuptable]
+
+
 mov   es, word ptr ds:[_MOBJPOSLIST_SEGMENT_PTR]
 
 ;   badguyangle.wu = R_PointToAngle2(playerMobj_pos->x,

@@ -237,8 +237,10 @@ add       ax, (_thinkerlist + THINKER_T.t_data)
 
 mov       word ptr ds:[_playerMobj], ax
 
-mov       ax, (SIZE MOBJ_POS_T)
-mul       word ptr ds:[_playerMobjRef]
+mov       bx, word ptr ds:[_playerMobjRef]
+sal       bx, 1
+mov       ax, word ptr ds:[bx + _mobjposlookuptable]
+
 
 mov       word ptr ds:[_playerMobj_pos], ax
 mov       word ptr ds:[_playerMobj_pos + 2], MOBJPOSLIST_SEGMENT  
@@ -2355,10 +2357,9 @@ sub   ax, (_thinkerlist + THINKER_T.t_data)
 xor   dx, dx
 div   bx
 
-mov   dx, (SIZE MOBJ_POS_T)
-mul   dx
-
-push  ax  ; bp - 6
+mov   bx, ax
+sal   bx, 1
+push  word ptr ds:[bx + _mobjposlookuptable]
 
 
 

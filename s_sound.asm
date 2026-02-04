@@ -617,10 +617,11 @@ je    skip_vol_adjustment_use_norm_setp
 location_good_adjust_sound_for_mobj:
 
 
-xchg  bx, ax
-mov   ax, (SIZE MOBJ_POS_T)
-mul   bx
-xchg  ax, bx
+xchg      bx, ax
+sal       bx, 1
+mov       bx, word ptr ds:[bx + _mobjposlookuptable]
+
+
 mov   es, word ptr ds:[_MOBJPOSLIST_SEGMENT_PTR]
 
 ;    originX = originMobjPos->x;
@@ -883,9 +884,10 @@ update_sound_with_mobjpos:
 ; ax is originref
 test  ax, ax
 jz    iter_next_channel_updatesounds   ; null source.
-mov   bx, (SIZE MOBJ_POS_T)
-mul   bx
-xchg  ax, bx
+
+xchg      bx, ax
+sal       bx, 1
+mov       bx, word ptr ds:[bx + _mobjposlookuptable]
 mov   es, word ptr ds:[_MOBJPOSLIST_SEGMENT_PTR]
 
 ;    originX = originMobjPos->x;
