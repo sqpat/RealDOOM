@@ -251,7 +251,9 @@ _deadAttackerY =                     _NULL_OFFSET + 001FCh
 _am_scale_mtof =                     _NULL_OFFSET + 00200h
 _am_scale_ftom =       		     	 _NULL_OFFSET + 00204h
 _I_SetPalette_addr = 	        	 _NULL_OFFSET + 00208h
-;_V_MarkRect_addr =                   _NULL_OFFSET + 0020Ch
+_BASE_CHEAT_ADDRESS_OFFSET_PTR =     _NULL_OFFSET + 0020Ch
+_RNDTABLE_SEGMENT_PTR = 			 _NULL_OFFSET + 0020Eh
+
 _V_DrawFullscreenPatch_FromIntermission_addr = _NULL_OFFSET + 00210h
 _wipeduration =                      _NULL_OFFSET + 00214h
 _detailshift2minus =  		 		 _NULL_OFFSET + 00216h
@@ -381,7 +383,9 @@ _d_map =                             _NULL_OFFSET + 00452h
 _secretexit =                        _NULL_OFFSET + 00453h
 
 
-;_V_DrawPatch_addr =              	 _NULL_OFFSET + 00454h
+_currentoverlay = 		         	 _NULL_OFFSET + 00454h
+_turnheld = 		         	 	 _NULL_OFFSET + 00455h
+; 456-457 free
 _m_paninc = 				 	 	 _NULL_OFFSET + 00458h
 
 ; 015h bytes
@@ -473,12 +477,9 @@ _spritecache_l2_tail =               _NULL_OFFSET + 0057Dh
 _texturecache_l2_head =              _NULL_OFFSET + 0057Eh
 _texturecache_l2_tail =              _NULL_OFFSET + 0057Fh
 _activetexturepages =                _NULL_OFFSET + 00580h
-_activenumpages =                 	 _NULL_OFFSET + 00588h
-_textureL1LRU =                 	 _NULL_OFFSET + 00590h
-_BASE_CHEAT_ADDRESS_OFFSET_PTR =     _NULL_OFFSET + 00598h
-_RNDTABLE_SEGMENT_PTR = 			 _NULL_OFFSET + 0059Ah
-_currentoverlay = 		         	 _NULL_OFFSET + 0059Ch
-_turnheld = 		         	 	 _NULL_OFFSET + 0059Dh
+_activenumpages =                 	 _NULL_OFFSET + 0058Ah
+_textureL1LRU =                 	 _NULL_OFFSET + 00594h
+; up to 59E
 ; IS 59E TO 5AD FREE?
 _flatcache_l2_head =                 _NULL_OFFSET + 005AEh
 _flatcache_l2_tail =                 _NULL_OFFSET + 005AFh

@@ -2993,7 +2993,7 @@ ret
 
 ENDP
 
-; part of R_GetTexturePage_
+; part of R_GetSpritePage_
 
 found_active_single_page:
 
@@ -3052,7 +3052,7 @@ jne   get_multipage
 ; single page
 
 ;		// one page, most common case - lets write faster code here...
-;		for (i = 0; i < NUM_TEXTURE_L1_CACHE_PAGES; i++) {
+;		for (i = 0; i < NUM_SPRITE_L1_CACHE_PAGES; i++) {
 ;			if (activetexturepages[i] == realtexpage ) {
 ;				R_MarkL1TextureCacheMRU(i);
 ;				R_MarkL2TextureCacheMRU(realtexpage);
@@ -3075,15 +3075,15 @@ jb    loop_next_active_page_single
 
 ; cache miss...
 
-;		startpage = textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1];
+;		startpage = _spriteL1LRU[NUM_SPRITE_L1_CACHE_PAGES-1];
 ;		R_MarkL1TextureCacheMRU7(startpage);
 
 ;   ah is 0. al is dirty but gets fixed...
 cwd
 dec   dx ; dx = -1, ah is 0
-mov   bx, cx    ; NUM_TEXTURE_L1_CACHE_PAGES
-dec   bx        ; NUM_TEXTURE_L1_CACHE_PAGES - 1
-mov   al, byte ptr ds:[bx + _spriteL1LRU]   ; textureL1LRU[NUM_TEXTURE_L1_CACHE_PAGES-1]
+mov   bx, cx    ; NUM_SPRITE_L1_CACHE_PAGES
+dec   bx        ; NUM_SPRITE_L1_CACHE_PAGES - 1
+mov   al, byte ptr ds:[bx + _spriteL1LRU]   ; _spriteL1LRU[NUM_SPRITE_L1_CACHE_PAGES-1]
 mov   bx, ax
 mov   cx, ax
 ;call  R_MarkL1SpriteCacheMRU3_
@@ -3172,10 +3172,10 @@ sub   cx, dx
 ;  al/ax already realtexpage
 
 ; dl is numpages
-; cl is NUM_TEXTURE_L1_CACHE_PAGES-numpages
+; cl is NUM_SPRITE_L1_CACHE_PAGES-numpages
 ; ch is 0
 ; bl will be i (starts as -2, incrementing to 0 first loop)
-; for (i = 0; i < NUM_TEXTURE_L1_CACHE_PAGES-numpages; i++) {
+; for (i = 0; i < NUM_SPRITE_L1_CACHE_PAGES-numpages; i++) {
 ; al is realtexpage
 
 
@@ -3227,7 +3227,7 @@ mov   ax, es
 ret   
  
 ;		// figure out startpage based on LRU
-;		startpage = NUM_TEXTURE_L1_CACHE_PAGES-1; // num EMS pages in conventional memory - 1
+;		startpage = NUM_SPRITE_L1_CACHE_PAGES-1; // num EMS pages in conventional memory - 1
 
 evict_and_find_startpage_multi:
 xor   ax, ax ; set ah to 0. 
@@ -3237,13 +3237,13 @@ mov   cx, bx
 sub   cl, dl
 ; dl is numpages
 ; bx is startpage
-; cx is ((NUM_TEXTURE_L1_CACHE_PAGES-1)-numpages)
+; cx is ((NUM_SPRITE_L1_CACHE_PAGES-1)-numpages)
 
 add   bx, OFFSET _spriteL1LRU 
 
 find_start_page_loop_multi:
 
-;		while (textureL1LRU[startpage] > ((NUM_TEXTURE_L1_CACHE_PAGES-1)-numpages)){
+;		while (_spriteL1LRU[startpage] > ((NUM_SPRITE_L1_CACHE_PAGES-1)-numpages)){
 ;			startpage--;
 ;		}
 
@@ -3297,7 +3297,7 @@ mov   ax, es
 ret
 
 found_startpage_multi:
-;		startpage = textureL1LRU[startpage];
+;		startpage = _spriteL1LRU[startpage];
 
 ; al already set to startpage
 mov   bx, ax    ; ah/bh is 0

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/04 15:10:44
+Created on:       26/02/04 17:05:41
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -355,6 +355,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:2fbb      R_RenderPlayerView24_
 0819:06de*     FixedDivBSPLocal_
 0819:0312*     div48_32_BSPLocal_
+0819:2ab7*     R_GetTexturePage_
 0819:32d4*     R_WriteBackFrameConstants_
 0819:077f*     FixedMulTrigNoShiftCosine_BSPLocal_
 0819:07cb*     R_ClearPlanes_
@@ -587,8 +588,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 23b8:4c4c*     A_CyberAttack_
 23b8:5641*     A_Explode_
 23b8:5358*     A_FatRaise_
-23b8:41e1      P_NoiseAlert_
 23b8:5639*     A_Fall_
+23b8:41e1      P_NoiseAlert_
 23b8:596a*     A_SpawnFly_
 23b8:497b*     A_PosAttack_
 23b8:47ab*     A_Chase_
@@ -622,9 +623,9 @@ Module: p_enemy.obj(p_enemy.ASM)
 23b8:479d*     A_BabyMetal_
 23b8:46ff*     A_Look_
 23b8:5624*     A_XScream_
-23b8:4795*     A_Metal_
 23b8:4c6b*     A_BruisAttack_
 23b8:5ade      P_SetMobjState_
+23b8:4795*     A_Metal_
 23b8:446e*     P_TryWalk_
 23b8:57cb*     A_BrainScream_
 23b8:4c01*     A_HeadAttack_
@@ -1079,8 +1080,8 @@ Module: main.obj(main.ASM)
 2f4a:5a6f      locallib_dos_getvect_
 2f4a:593b*     locallib_printdecimal_
 2f4a:5880      copystr8_
-2f4a:55d6*     M_SaveDefaults_
 2f4a:5de3      getStringByIndex_
+2f4a:55d6*     M_SaveDefaults_
 2f4a:5899*     locallib_createhexnibble_
 2f4a:59c6*     locallib_printf_
 2f4a:4e53      I_StartTic_
@@ -1119,9 +1120,9 @@ Module: s_sbsfx.obj(s_sbsfx.ASM)
 2f4a:666d*     S_DecreaseRefCount_
 2f4a:7086      SB_ResetDSP_
 2f4a:640c*     _SB_IntController1Mask
-2f4a:640f      _SB_OriginalVoiceVolumeRight
 2f4a:706b      SB_StopPlayback_
 2f4a:640b      _SB_IntController2Mask
+2f4a:640f      _SB_OriginalVoiceVolumeRight
 2f4a:6bb6*     S_NormalizeSfxVolume_
 2f4a:710d*     S_SBFX_ENDMARKER_
 2f4a:7047*     SB_DMA_EndTransfer_
@@ -1463,4 +1464,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003d940 (252224.)
 Entry point address: 2f4a:7cee
-Link time: 00:00.49
+Link time: 00:00.04

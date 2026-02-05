@@ -77,7 +77,7 @@ _pagesegments:
 
 dw 00000h, 00400h, 00800h, 00C00h
 dw 01000h, 01400h, 01800h, 01C00h
-
+;dw 02000h, 02400h
 
 ; 0AAh
 
@@ -9301,6 +9301,12 @@ xchg byte ptr ds:[_textureL1LRU+6], ah
 cmp  al, ah
 je   exit_markl1texturecachemru
 xchg byte ptr ds:[_textureL1LRU+7], ah
+;cmp  al, ah
+;je   exit_markl1texturecachemru
+;xchg byte ptr ds:[_textureL1LRU+8], ah
+;cmp  al, ah
+;je   exit_markl1texturecachemru
+;xchg byte ptr ds:[_textureL1LRU+9], ah
 
 exit_markl1texturecachemru:
 ret  
@@ -10174,6 +10180,7 @@ ret
 
 
 PROC R_GetTexturePage_ NEAR
+PUBLIC R_GetTexturePage_
 
 ;uint8_t __near R_GetTexturePage(uint8_t texpage, uint8_t pageoffset){
 ; al texpage
@@ -10253,6 +10260,10 @@ mov   al, byte ptr ds:[bx + _textureL1LRU]   ; textureL1LRU[NUM_TEXTURE_L1_CACHE
 mov   cx, ax
 ;call  R_MarkL1TextureCacheMRU7_ ; todo inline?
 mov   bx, OFFSET _textureL1LRU+1
+
+
+;push word ptr ds:[bx+6]     ; grab [7] and [8]
+;pop  word ptr ds:[bx+7]     ; put in [8] and [9]
 
 push word ptr ds:[bx+4]     ; grab [5] and [6]
 pop  word ptr ds:[bx+5]     ; put in [6] and [7]
