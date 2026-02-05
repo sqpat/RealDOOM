@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/04 13:13:48
+Created on:       26/02/04 13:29:35
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -43,7 +43,7 @@ R_COL24_TEXT           CODE           AUTO           159e:0000       000027ec
 R_COL16_TEXT           CODE           AUTO           181d:0000       00000cb4
 R_COL0_TEXT            CODE           AUTO           18e9:0000       0000058e
 R_COLFL_TEXT           CODE           AUTO           1942:0000       0000058e
-R_SPAN24_TEXT          CODE           AUTO           199b:0000       000010f7
+R_SPAN24_TEXT          CODE           AUTO           199b:0000       000010f8
 R_SPAN16_TEXT          CODE           AUTO           1aab:0000       00000f60
 R_SPAN0_TEXT           CODE           AUTO           1ba1:0000       0000063a
 R_SPANFL_TEXT          CODE           AUTO           1c05:0000       00000591
@@ -434,13 +434,13 @@ Module: r_colfl.obj(r_colfl.ASM)
 1942:0000      R_COLUMNFL_STARTMARKER_
 Module: r_span24.obj(r_span24.ASM)
 199b:0124*     R_DrawSpan24_
-199b:0fb2      R_WriteBackViewConstantsSpan24_
+199b:0fb3      R_WriteBackViewConstantsSpan24_
 199b:0000      R_SPAN24_STARTMARKER_
 199b:08c7*     FixedMulTrigSineLocal_
 199b:09a0*     R_MapPlane24_
 199b:0914*     FixedMulTrigCosineLocal_
 199b:0b2f      R_DrawPlanes24_
-199b:10f7      R_SPAN24_ENDMARKER_
+199b:10f8      R_SPAN24_ENDMARKER_
 Module: r_span16.obj(r_span16.ASM)
 1aab:0e68      R_WriteBackViewConstantsSpan16_
 1aab:0124*     R_DrawSpan16_
@@ -1463,4 +1463,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003d9a0 (252320.)
 Entry point address: 2f51:7cde
-Link time: 00:00.04
+Link time: 00:00.05

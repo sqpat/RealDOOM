@@ -1245,7 +1245,7 @@ sub   sp, 6
 ; get whole dword at the end here.
 
 mov      al, byte ptr ds:[_skyflatnum]
-mov      byte ptr ds:[SELFMODIFY_SPAN_skyflatnum + 2 - OFFSET R_SPAN24_STARTMARKER_], al
+mov      byte ptr cs:[SELFMODIFY_SPAN_skyflatnum + 2 - OFFSET R_SPAN24_STARTMARKER_], al
 
 
 ; lodsw, push pop si worth?
