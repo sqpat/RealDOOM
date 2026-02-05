@@ -2822,10 +2822,10 @@ mov   bx, word ptr ds:[si + MOBJ_T.m_targetRef]
 sal   bx, 1
 mov   ax, word ptr ds:[bx + _mobjlookuptable]
 
+add   ax, THINKER_T.t_data
 
 mov   bx, si
 mov   dx, si
-add   ax, THINKER_T.t_data
 call  P_DamageMobj_
 
 exit_a_skelfist_full:

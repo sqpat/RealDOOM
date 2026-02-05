@@ -867,7 +867,7 @@ push   di
 push   bp
 mov    bp, sp
 mov    di, ax
-mov    si, dx
+
 
 mov    es, cx
 
@@ -1508,7 +1508,7 @@ mov    bx, word ptr [bp - 8]
 mov    cx, MOBJPOSLIST_SEGMENT
 
 mov    ax, word ptr [bp - 4]
-mov    dx, si
+
 call   P_KillMobj_
 jmp    exit_p_damagemobj
 
@@ -1516,8 +1516,8 @@ do_dead_attackerref_stuff:
 ; ax has attackerref..
 mov       bx, ax
 sal       bx, 1
-mov       si, word ptr ds:[bx + _mobjposlookuptable]
-
+mov       ax, word ptr ds:[bx + _mobjposlookuptable]
+xchg      ax, si
 
 push   ds
 pop    es
