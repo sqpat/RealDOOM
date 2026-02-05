@@ -3610,68 +3610,6 @@ ENDP
 
 
 
-;R_AddSprites_
-
-PROC R_AddSprites_ NEAR
-
-; es:bx = sector_t __far* sec
-
-mov   ax, word ptr ds:[_validcount_global]
-cmp   ax, word ptr es:[bx + SECTOR_T.sec_validcount]		; sec->validcount
-
-je    exit_add_sprites_quick  ; todo branch test. fall through ret is likely faster.
-
-mov   word ptr es:[bx + SECTOR_T.sec_validcount], ax
-xor   ax, ax
-mov   al, byte ptr es:[bx + SECTOR_T.sec_lightlevel]		; sec->lightlevel
-mov   dx, ax
-
-SHIFT_MACRO sar dx 4
-
-
-SELFMODIFY_BSP_extralight1:
-mov   al, 0
-add   ax, dx
-js    set_spritelights_to_zero
-cmp   ax, LIGHTLEVELS
-jge   set_spritelights_to_max
-mov   ah, 48
-mul   ah
-spritelights_set:
-mov   word ptr cs:[SELFMODIFY_set_spritelights_1 + 1 - OFFSET R_BSP24_STARTMARKER_], ax 
-mov   si, word ptr es:[bx + SECTOR_T.sec_thinglistref]
-test  si, si
-je    exit_add_sprites
-
-
-loop_things_in_thinglist:
-
-mov   ax, MOBJPOSLIST_SEGMENT
-mov   es, ax
-mov   ax, word ptr es:[si + MOBJ_POS_T.mp_snextRef]
-mov   word ptr cs:[SELFMODIFY_BSP_get_next_thing_in_sector+1], ax
-; es:si set, R_ProjectSprite doesnt need to push/pop.
-call  R_ProjectSprite_    ; todo inline
-
-SELFMODIFY_BSP_get_next_thing_in_sector:
-mov   si, 01000h
-test  si, si
-jne   loop_things_in_thinglist
-
-exit_add_sprites:
-exit_add_sprites_quick:
-ret   
-set_spritelights_to_zero:
-xor   ax, ax
-jmp   spritelights_set
-set_spritelights_to_max:
-; _NULL_OFFSET + 02A0h + 16 - 1 ... (0x2ee)
-mov    ax, 720   ; hardcoded (lightmult48lookup[LIGHTLEVELS - 1])
-jmp   spritelights_set
-
-
-endp
-
 
 
 
@@ -7373,7 +7311,56 @@ do_addsprites:
 
 ; es:bx already frontsector
 
-call  R_AddSprites_   ; todo inline?
+
+;R_AddSprites_ inlined
+
+; es:bx = sector_t __far* sec
+SELFMODIFY_BSP_validcountglobal:
+mov   ax, 01000h
+cmp   ax, word ptr es:[bx + SECTOR_T.sec_validcount]		 ; sec->validcount
+
+je    exit_add_sprites_quick  ; todo branch test. fall through ret is likely faster.
+
+mov   word ptr es:[bx + SECTOR_T.sec_validcount], ax
+xor   ax, ax
+mov   al, byte ptr es:[bx + SECTOR_T.sec_lightlevel]		; sec->lightlevel
+mov   dx, ax
+
+SHIFT_MACRO sar dx 4
+
+
+SELFMODIFY_BSP_extralight1:
+mov   al, 0
+add   ax, dx
+js    set_spritelights_to_zero
+cmp   ax, LIGHTLEVELS
+jge   set_spritelights_to_max
+mov   ah, 48
+mul   ah
+spritelights_set:
+mov   word ptr cs:[SELFMODIFY_set_spritelights_1 + 1 - OFFSET R_BSP24_STARTMARKER_], ax 
+mov   si, word ptr es:[bx + SECTOR_T.sec_thinglistref]
+test  si, si
+je    exit_add_sprites
+
+loop_things_in_thinglist:
+
+mov   ax, MOBJPOSLIST_SEGMENT
+mov   es, ax
+mov   ax, word ptr es:[si + MOBJ_POS_T.mp_snextRef]
+mov   word ptr cs:[SELFMODIFY_BSP_get_next_thing_in_sector+1], ax
+; es:si set, R_ProjectSprite doesnt need to push/pop.
+call  R_ProjectSprite_    ; todo inline
+
+SELFMODIFY_BSP_get_next_thing_in_sector:
+mov   si, 01000h
+test  si, si
+jne   loop_things_in_thinglist
+
+exit_add_sprites:
+exit_add_sprites_quick:
+
+
 
 ; if we create the stack frame here, ax/cx would be on stack and accessible without necessarily having to go back to register every time.
 
@@ -7383,6 +7370,15 @@ push  bp                ; bp + 0           bp + 01Ah in R_StoreWallRange
 mov   bp, sp
 mov   word ptr cs:[SELFMODIFY_reset_sp+1], sp  ; store stack pointer for loop iter repeats
 jmp   R_AddLine_
+
+set_spritelights_to_max:
+; _NULL_OFFSET + 02A0h + 16 - 1 ... (0x2ee)
+mov    ax, 720   ; hardcoded (lightmult48lookup[LIGHTLEVELS - 1])
+jmp   spritelights_set
+
+set_spritelights_to_zero:
+xor   ax, ax
+jmp   spritelights_set
 
 exit_r_addline:
 
@@ -11598,6 +11594,8 @@ mov       word ptr ds:[_viewz_shortheight], dx
 
 ;    validcount_global++;
 inc       word ptr ds:[_validcount_global]
+mov       ax, word ptr ds:[_validcount_global]
+mov       word ptr cs:[SELFMODIFY_BSP_validcountglobal+1], ax
 
 ;	destview = (byte __far*)(destscreen.w + viewwindowoffset);
 les       ax, dword ptr ds:[_destscreen]

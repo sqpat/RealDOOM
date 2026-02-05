@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/04 17:05:41
+Created on:       26/02/04 17:27:48
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -35,7 +35,7 @@ SM_OPL2_TEXT           CODE           AUTO           0533:0000       00000f3c
 SM_OPL3_TEXT           CODE           AUTO           0627:0000       0000100e
 SM_SBMID_TEXT          CODE           AUTO           0728:0000       00000730
 SM_MPUMD_TEXT          CODE           AUTO           079b:0000       000007db
-R_BSP_24_TEXT          CODE           AUTO           0819:0000       0000348b
+R_BSP_24_TEXT          CODE           AUTO           0819:0000       0000348e
 R_BSP_16_TEXT          CODE           AUTO           0b62:0000       00003740
 R_BSP0_TEXT            CODE           AUTO           0ed6:0000       0000366f
 R_BSPFL_TEXT           CODE           AUTO           123d:0000       00003617
@@ -340,29 +340,29 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079b:0000      SM_MPUMD_STARTMARKER_
 079b:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-0819:3137      R_WriteBackViewConstants24_
-0819:1f00*     R_AddLine_
-0819:348b      R_BSP24_ENDMARKER_
-0819:2c0e      R_GetPatchTexture_Far24_
+0819:313a      R_WriteBackViewConstants24_
+0819:1efc*     R_AddLine_
+0819:348e      R_BSP24_ENDMARKER_
+0819:2c0a      R_GetPatchTexture_Far24_
 0819:0732*     FixedMulTrigNoShiftSine_BSPLocal_
 0819:072e*     FixedMulTrigSine_BSPLocal_
-0819:0dd3*     R_StoreWallRange_
-0819:20f5*     R_ClipPassWallSegment_
+0819:0d7f*     R_StoreWallRange_
+0819:20f1*     R_ClipPassWallSegment_
 0819:077b*     FixedMulTrigCosine_BSPLocal_
-0819:1e5e*     R_Subsector_
-0819:1a07*     do_top_texture_draw
+0819:1e0a*     R_Subsector_
+0819:19b3*     do_top_texture_draw
 0819:0000      R_BSP24_STARTMARKER_
-0819:2fbb      R_RenderPlayerView24_
+0819:2fb7      R_RenderPlayerView24_
 0819:06de*     FixedDivBSPLocal_
 0819:0312*     div48_32_BSPLocal_
-0819:2ab7*     R_GetTexturePage_
-0819:32d4*     R_WriteBackFrameConstants_
+0819:2ab3*     R_GetTexturePage_
+0819:32d7*     R_WriteBackFrameConstants_
 0819:077f*     FixedMulTrigNoShiftCosine_BSPLocal_
 0819:07cb*     R_ClearPlanes_
-0819:183c*     main_3232_div
+0819:17e8*     main_3232_div
 0819:0456*     FixedDivWholeA_BSPLocal_
-0819:2ca7      R_GetCompositeTexture_Far24_
-0819:1969*     R_DrawColumnPrep_
+0819:2ca3      R_GetCompositeTexture_Far24_
+0819:1915*     R_DrawColumnPrep_
 0819:00a4*     SELFMODIFY_get_rw_distance_hi_1
 0819:008a*     R_ScaleFromGlobalAngle_
 Module: r_bsp16.obj(r_bsp16.ASM)
@@ -1080,8 +1080,8 @@ Module: main.obj(main.ASM)
 2f4a:5a6f      locallib_dos_getvect_
 2f4a:593b*     locallib_printdecimal_
 2f4a:5880      copystr8_
-2f4a:5de3      getStringByIndex_
 2f4a:55d6*     M_SaveDefaults_
+2f4a:5de3      getStringByIndex_
 2f4a:5899*     locallib_createhexnibble_
 2f4a:59c6*     locallib_printf_
 2f4a:4e53      I_StartTic_
