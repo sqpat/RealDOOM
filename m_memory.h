@@ -1121,9 +1121,16 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define visplanes_8400          ((visplane_t __far*)      (0x84000000 ))
 #define visplanes_8800          ((visplane_t __far*)      (0x88000000 ))
 #define visplanes_8C00          ((visplane_t __far*)      (0x8C000000 ))
+// only used for span section now, bsp still juggles plane 3
+#define visplanes_9000          ((visplane_t __far*)      (0x90000000 ))
+#define visplanes_9400          ((visplane_t __far*)      (0x94000000 ))
 
 #define visplanes_8400_segment       ((segment_t) ((int32_t)visplanes_8400 >> 16))
 #define visplanes_8800_segment       ((segment_t) ((int32_t)visplanes_8800 >> 16))
+// only used for span section now, bsp still juggles plane 3
+#define visplanes_8C00_segment       ((segment_t) ((int32_t)visplanes_8C00 >> 16))
+#define visplanes_9000_segment       ((segment_t) ((int32_t)visplanes_9000 >> 16))
+#define visplanes_9400_segment       ((segment_t) ((int32_t)visplanes_9400 >> 16))
 
 /*
   

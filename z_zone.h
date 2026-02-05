@@ -413,6 +413,7 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define num_scratch7000_params 4
 #define num_scratch4000_params 4
 #define num_renderplane_params 4
+#define num_allvisplanes_params 3
 #define num_flatcache_params 4
 #define num_spritecache_params 4
 #define num_flatcache_undo_params 4
@@ -452,7 +453,8 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define pageswapargs_scratch7000_offset_size         (pageswapargs_scratch8000_offset_size    + num_scratch8000_params)
 #define pageswapargs_scratch4000_offset_size         (pageswapargs_scratch7000_offset_size    + num_scratch7000_params)
 #define pageswapargs_renderplane_offset_size         (pageswapargs_scratch4000_offset_size    + num_scratch4000_params)
-#define pageswapargs_flatcache_offset_size           (pageswapargs_renderplane_offset_size    + num_renderplane_params)
+#define pageswapargs_allvisplanes_offset_size        (pageswapargs_renderplane_offset_size    + num_renderplane_params)
+#define pageswapargs_flatcache_offset_size           (pageswapargs_allvisplanes_offset_size   + num_allvisplanes_params)
 #define pageswapargs_spritecache_offset_size         (pageswapargs_flatcache_offset_size      + num_flatcache_params)
 #define pageswapargs_flatcache_undo_offset_size      (pageswapargs_spritecache_offset_size    + num_spritecache_params)
 #define pageswapargs_maskeddata_offset_size          (pageswapargs_flatcache_undo_offset_size + num_flatcache_undo_params)
@@ -474,7 +476,8 @@ void __far Z_SetOverlay(int8_t wipeId);
 #define pageswapargs_scratch7000_offset     (pageswapargs_scratch8000_offset        + (num_scratch8000_params*PAGE_SWAP_ARG_MULT))
 #define pageswapargs_scratch4000_offset     (pageswapargs_scratch7000_offset        + (num_scratch7000_params*PAGE_SWAP_ARG_MULT))
 #define pageswapargs_renderplane_offset     (pageswapargs_scratch4000_offset        + (num_scratch4000_params*PAGE_SWAP_ARG_MULT))
-#define pageswapargs_flatcache_offset       (pageswapargs_renderplane_offset        + (num_renderplane_params*PAGE_SWAP_ARG_MULT))
+#define pageswapargs_allvisplanes_offset    (pageswapargs_renderplane_offset        + (num_renderplane_params*PAGE_SWAP_ARG_MULT))
+#define pageswapargs_flatcache_offset       (pageswapargs_allvisplanes_offset       + (num_allvisplanes_params*PAGE_SWAP_ARG_MULT))
 #define pageswapargs_spritecache_offset     (pageswapargs_flatcache_offset          + (num_flatcache_params*PAGE_SWAP_ARG_MULT))
 #define pageswapargs_flatcache_undo_offset  (pageswapargs_spritecache_offset        + (num_spritecache_params*PAGE_SWAP_ARG_MULT))
 #define pageswapargs_maskeddata_offset      (pageswapargs_flatcache_undo_offset     + (num_flatcache_undo_params*PAGE_SWAP_ARG_MULT))

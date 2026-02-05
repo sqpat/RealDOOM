@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/04 13:29:37
+Created on:       26/02/04 15:10:46
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -13,7 +13,7 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          0615:0000            00001290
+DGROUP                          0616:0000            000012a0
 
 
 
@@ -49,11 +49,11 @@ S_SBSFX_TEXT           CODE           AUTO           0000:4a2a       00000d2b
 F_FILE_TEXT            CODE           AUTO           0000:5756       000003f1
 W_WAD_TEXT             CODE           AUTO           0000:5b48       00000242
 V_VIDEO_TEXT           CODE           AUTO           0000:5d8a       000000f8
-Z_ZONE_TEXT            CODE           AUTO           0000:5e82       000002c4
-_NULL                  BEGDATA        DGROUP         0615:0000       00000010
-_FIXEDDATA             DATA           DGROUP         0616:0000       00000e74
-_DATA                  DATA           DGROUP         06fd:0004       00000000
-STACK                  STACK          DGROUP         06fe:0000       00000400
+Z_ZONE_TEXT            CODE           AUTO           0000:5e82       000002cf
+_NULL                  BEGDATA        DGROUP         0616:0000       00000010
+_FIXEDDATA             DATA           DGROUP         0617:0000       00000e90
+_DATA                  DATA           DGROUP         0700:0000       00000000
+STACK                  STACK          DGROUP         0700:0000       00000400
 
 
                         +----------------+
@@ -67,7 +67,7 @@ Address        Symbol
 =======        ======
 
 Module: i_start.obj(i_start.ASM)
-0615:0000*     __nullarea
+0616:0000*     __nullarea
 0000:0000      _realdoomstart_
 0000:00de*     I_START_ENDMARKER_
 0000:0000*     I_START_STARTMARKER_
@@ -119,8 +119,8 @@ Module: s_sbinit.obj(s_sbinit.ASM)
 0000:233b      _SB_DSP_Version
 0000:25bb*     S_SBINIT_ENDMARKER_
 0000:2524*     SB_InitCard_
-0000:234d*     SB_SaveVoiceVolume_
 0000:22d6*     S_SBINIT_STARTMARKER_
+0000:234d*     SB_SaveVoiceVolume_
 0000:233e*     SB_ReadMixer_
 0000:24e5*     SB_GetDSPVersion_
 0000:237c*     SB_DSP2xx_BeginPlayback_
@@ -332,23 +332,23 @@ Module: z_zone.obj(z_zone.ASM)
 0000:5efe      Z_QuickMapPhysics_
 0000:5e9e      Z_QuickMapMusicPageFrame_
 0000:5e9a      _musdriverstartposition
-0000:6088      Z_QuickMapUnmapAll_
+0000:6093      Z_QuickMapUnmapAll_
 0000:5ed5      Z_QuickMapWADPageFrame_
 0000:5fb8      Z_QuickMapRenderPlanes_
 0000:5eb6      Z_QuickMapSFXPageFrame_
 0000:5f76      Z_QuickMapStatus_
 0000:5f50      Z_QuickMapRender_
 0000:5fa2      Z_QuickMapScratch_5000_
-0000:611a*     CopyString13_Zonelocal_
-0000:6031      Z_QuickMapMenu_
-0000:601b      Z_QuickMapPalette_
+0000:6125*     CopyString13_Zonelocal_
+0000:603c      Z_QuickMapMenu_
+0000:6026      Z_QuickMapPalette_
 0000:5e9a      _codestartposition_END
-0000:60d2      Z_SetOverlay_
+0000:60dd      Z_SetOverlay_
 0000:5f24      Z_QuickMapPhysics_FunctionAreaOnly_
-0000:60c5      _doomcode_filename
-0000:5fe4      Z_QuickMapUndoFlatCache_
+0000:60d0      _doomcode_filename
+0000:5fef      Z_QuickMapUndoFlatCache_
 0000:5f3a      Z_QuickMapDemo_
-0000:6052      Z_QuickMapIntermission_
+0000:605d      Z_QuickMapIntermission_
 
 
                         +-----------------------+
@@ -356,6 +356,6 @@ Module: z_zone.obj(z_zone.ASM)
                         +-----------------------+
 
 Stack size:  0400 (1024.)
-Memory size:  73e0 (29664.)
+Memory size:  7400 (29696.)
 Entry point address: 0000:0000
 Link time: 00:00.10

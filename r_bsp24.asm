@@ -2481,6 +2481,7 @@ je    is_floor
 ; is ceil
 cmp   byte ptr ds:[_floorphyspage], 2  
 jne   use_phys_page_2
+;ja    out_of_visplanes
 use_phys_page_1:
 mov   bl, 1
 
@@ -2498,16 +2499,25 @@ call  Z_QuickMapVisplanePage_BSPLocal_
 jmp   return_visplane
 is_floor:
 cmp   byte ptr ds:[_ceilphyspage], 2
+;ja    out_of_visplanes
 je    use_phys_page_1
 mov   bl, 2
 mov   dl, bl
 
 call  Z_QuickMapVisplanePage_BSPLocal_
 jmp   return_visplane
-
-
+COMMENT @
+out_of_visplanes:
+push    cs
+mov     ax, OFFSET str_outofvisplanes
+push    ax
+call    dword ptr ds:[_I_Error_addr]
 
 ENDP
+
+str_outofvisplanes:
+db "Out of Visplanes!", 0
+@
 
 PROC Z_QuickMapVisplanePage_BSPLocal_ NEAR
 
@@ -11607,9 +11617,10 @@ call      dword ptr ds:[_NetUpdate_addr]
 call      R_PrepareMaskedPSprites_  ; todo inline
 
 ;call      Z_QuickMapRenderPlanes_
-Z_QUICKMAPAI3 pageswapargs_renderplane_offset_size INDEXED_PAGE_5000_OFFSET
-Z_QUICKMAPAI1_NO_DX (pageswapargs_renderplane_offset_size+3) INDEXED_PAGE_9C00_OFFSET
-Z_QUICKMAPAI4_NO_DX (pageswapargs_renderplane_offset_size+4) INDEXED_PAGE_7000_OFFSET
+Z_QUICKMAPAI3       pageswapargs_renderplane_offset_size INDEXED_PAGE_5000_OFFSET
+Z_QUICKMAPAI3_NO_DX (pageswapargs_renderplane_offset_size+3) INDEXED_PAGE_8800_OFFSET
+Z_QUICKMAPAI1_NO_DX (pageswapargs_renderplane_offset_size+6) INDEXED_PAGE_9C00_OFFSET
+Z_QUICKMAPAI4_NO_DX (pageswapargs_renderplane_offset_size+7) INDEXED_PAGE_7000_OFFSET
 
 
 mov       ax, CACHEDHEIGHT_SEGMENT

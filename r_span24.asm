@@ -245,7 +245,7 @@ SELFMODIFY_SPAN_ds_ystep_hi:
 mov   dx, 01000h
 
 ;		yfrac.w = basey = ds_yfrac + ds_ystep * prt;
-
+ 
 
 
 ; inline i4m
@@ -917,6 +917,8 @@ push  ax
 
 mov   es, ds:[_cachedxstep_segment_storage]
 lods  word ptr es:[si]
+
+
 mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
 xchg  ax, bx
 lods  word ptr es:[si]
@@ -1424,28 +1426,8 @@ check_next_visplane_page:
 ; do next visplane page
 sub   word ptr [bp - 8], VISPLANE_BYTES_PER_PAGE
 inc   byte ptr [bp - 2]
-cmp   byte ptr [bp - 2], 3
-je    do_visplane_pagination
-lookup_visplane_segment:
-mov   bx, word ptr [bp - 2]
-add   bx, bx
-mov   ax, word ptr ds:[bx + _visplanelookupsegments]
-mov   word ptr [bp - 6], ax
+add   word ptr [bp - 6], 0400h
 jmp   loop_visplane_page_check
-do_visplane_pagination:
-mov   al, byte ptr ds:[_visplanedirty]
-add   al, 3
-mov   dx, 2
-cbw  
-mov   byte ptr [bp - 2], 2
-
-
-
-call  Z_QuickMapVisplanePage_SpanLocal24_
-
-
-jmp   lookup_visplane_segment
-
 
 
 
@@ -2036,153 +2018,6 @@ mov       byte ptr ds:[si+bx], bl   ; bx is -1. this both writes FF and subtract
 jmp       continue_erasing_flats
 
 ENDP
-
-PROC Z_QuickMapVisplanePage_SpanLocal24_ NEAR
-
-
-
-
-;	int16_t usedpageindex = pagenum9000 + PAGE_8400_OFFSET + physicalpage;
-;	int16_t usedpagevalue;
-;	int8_t i;
-;	if (virtualpage < 2){
-;		usedpagevalue = FIRST_VISPLANE_PAGE + virtualpage;
-;	} else {
-;		usedpagevalue = EMS_VISPLANE_EXTRA_PAGE + (virtualpage-2);
-;	}
-
-push  bx
-push  cx
-push  si
-mov   cl, al
-mov   dh, dl
-mov   al, dl
-cbw  
-IFDEF COMP_CH
-mov   si, CHIPSET_PAGE_9000
-ELSE
-mov   si, word ptr ds:[_pagenum9000]
-ENDIF
-add   si, PAGE_8400_OFFSET ; sub 3
-add   si, ax
-mov   al, cl
-cbw  
-cmp   al, 2
-jge   visplane_page_above_2
-add   ax, FIRST_VISPLANE_PAGE
-used_pagevalue_ready:
-
-;		pageswapargs[pageswapargs_visplanepage_offset] = _EPR(usedpagevalue);
-
-; _EPR here
-IFDEF COMP_CH
-    add  ax, EMS_MEMORY_PAGE_OFFSET
-ELSE
-ENDIF
-mov   word ptr ds:[_pageswapargs + (pageswapargs_visplanepage_offset * 2)], ax
-
-
-;pageswapargs[pageswapargs_visplanepage_offset+1] = usedpageindex;
-IFDEF COMP_CH
-ELSE
-    mov   word ptr ds:[_pageswapargs + ((pageswapargs_visplanepage_offset+1) * 2)], si
-ENDIF
-
-;	physicalpage++;
-inc   dh
-mov   dl, 4
-
-;	for (i = 4; i > 0; i --){
-;		if (active_visplanes[i] == physicalpage){
-;			active_visplanes[i] = 0;
-;			break;
-;		}
-;	}
-
-loop_next_visplane_page:
-mov   al, dl
-cbw  
-mov   bx, ax
-cmp   dh, byte ptr ds:[bx + _active_visplanes]
-je    set_zero_and_break
-dec   dl
-test  dl, dl
-jg    loop_next_visplane_page
-
-done_with_visplane_loop:
-mov   al, cl
-cbw  
-mov   bx, ax
-
-mov   byte ptr ds:[bx + _active_visplanes], dh
-
-
-IFDEF COMP_CH
-    IF COMP_CH EQ CHIPSET_SCAT
-
-        mov  	dx, SCAT_PAGE_SELECT_REGISTER
-        xchg    ax, si
-        ; not necessary?
-        ;or      al, EMS_AUTOINCREMENT_FLAG  
-        cli
-        out  	dx, al
-        mov     ax,  ds:[(pageswapargs_visplanepage_offset * 2) + _pageswapargs]
-        mov  	dx, SCAT_PAGE_SET_REGISTER
-        out 	dx, ax
-        sti
-
-    ELSEIF COMP_CH EQ CHIPSET_SCAMP
-
-        xchg    ax, si
-        ; not necessary?
-        ;or      al, EMS_AUTOINCREMENT_FLAG  
-        cli
-        out     SCAMP_PAGE_SELECT_REGISTER, al
-        mov     ax, ds:[_pageswapargs + (2 * pageswapargs_visplanepage_offset)]
-        out 	SCAMP_PAGE_SET_REGISTER, ax
-        sti
-
-    ELSEIF COMP_CH EQ CHIPSET_HT18
-
-        mov  	dx, HT18_PAGE_SELECT_REGISTER
-        xchg    ax, si
-        ; not necessary?
-        ;or      al, EMS_AUTOINCREMENT_FLAG  
-        cli
-        out  	dx, al
-        mov     ax,  ds:[(pageswapargs_visplanepage_offset * 2) + _pageswapargs]
-        mov  	dx, HT18_PAGE_SET_REGISTER
-        out 	dx, ax
-        sti
-
-    ENDIF
-
-ELSE
-
-
-    Z_QUICKMAPAI1 pageswapargs_visplanepage_offset_size unused_param
-
-
-
-ENDIF
-
-
-mov   byte ptr ds:[_visplanedirty], 1
-pop   si
-pop   cx
-pop   bx
-ret  
-visplane_page_above_2:
-;		usedpagevalue = EMS_VISPLANE_EXTRA_PAGE + (virtualpage-2);
-add   ax, (EMS_VISPLANE_EXTRA_PAGE - 2)
-jmp   used_pagevalue_ready
-
-set_zero_and_break:
-mov   byte ptr ds:[bx + _active_visplanes], 0
-jmp   done_with_visplane_loop
-
-ENDP
-
 
 
 ;

@@ -2321,7 +2321,7 @@ void __near* VALUES[LOCALS_COUNT] = {
 
 };
 
-#define EMS_PAGE_STUFF_COUNT 124
+#define EMS_PAGE_STUFF_COUNT 127
 
 char* EMS_PAGE_STRINGS[EMS_PAGE_STUFF_COUNT] = {
 
@@ -2335,6 +2335,7 @@ char* EMS_PAGE_STRINGS[EMS_PAGE_STUFF_COUNT] = {
 	"NUM_SCRATCH7000_PARAMS",
 	"NUM_SCRATCH4000_PARAMS",
 	"NUM_RENDERPLANE_PARAMS",
+	"NUM_ALLVISPLANES_PARAMS",
 	"NUM_FLATCACHE_PARAMS",
 	"NUM_SPRITECACHE_PARAMS",
 	"NUM_FLATCACHE_UNDO_PARAMS",
@@ -2361,6 +2362,7 @@ char* EMS_PAGE_STRINGS[EMS_PAGE_STUFF_COUNT] = {
 	"PAGESWAPARGS_SCRATCH7000_OFFSET_SIZE",
 	"PAGESWAPARGS_SCRATCH4000_OFFSET_SIZE",
 	"PAGESWAPARGS_RENDERPLANE_OFFSET_SIZE",
+	"PAGESWAPARGS_ALLVISPLANES_OFFSET_SIZE",
 	"PAGESWAPARGS_FLATCACHE_OFFSET_SIZE",
 	"PAGESWAPARGS_SPRITECACHE_OFFSET_SIZE",
 	"PAGESWAPARGS_FLATCACHE_UNDO_OFFSET_SIZE",
@@ -2382,6 +2384,7 @@ char* EMS_PAGE_STRINGS[EMS_PAGE_STUFF_COUNT] = {
 	"PAGESWAPARGS_SCRATCH7000_OFFSET",
 	"PAGESWAPARGS_SCRATCH4000_OFFSET",
 	"PAGESWAPARGS_RENDERPLANE_OFFSET",
+	"PAGESWAPARGS_ALLVISPLANES_OFFSET",
 	"PAGESWAPARGS_FLATCACHE_OFFSET",
 	"PAGESWAPARGS_SPRITECACHE_OFFSET",
 	"PAGESWAPARGS_FLATCACHE_UNDO_OFFSET",
@@ -2475,6 +2478,7 @@ void __near* EMS_PAGE_VALUES[EMS_PAGE_STUFF_COUNT] = {
 	num_scratch7000_params,
 	num_scratch4000_params,
 	num_renderplane_params,
+	num_allvisplanes_params,
 	num_flatcache_params,
 	num_spritecache_params,
 	num_flatcache_undo_params,
@@ -2501,6 +2505,7 @@ void __near* EMS_PAGE_VALUES[EMS_PAGE_STUFF_COUNT] = {
 	pageswapargs_scratch7000_offset_size,
 	pageswapargs_scratch4000_offset_size,
 	pageswapargs_renderplane_offset_size,
+	pageswapargs_allvisplanes_offset_size,
 	pageswapargs_flatcache_offset_size,
 	pageswapargs_spritecache_offset_size,
 	pageswapargs_flatcache_undo_offset_size,
@@ -2523,6 +2528,7 @@ void __near* EMS_PAGE_VALUES[EMS_PAGE_STUFF_COUNT] = {
 	pageswapargs_scratch7000_offset,
 	pageswapargs_scratch4000_offset,
 	pageswapargs_renderplane_offset,
+	pageswapargs_allvisplanes_offset,
 	pageswapargs_flatcache_offset,
 	pageswapargs_spritecache_offset,
 	pageswapargs_flatcache_undo_offset,

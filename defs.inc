@@ -386,7 +386,10 @@ _m_paninc = 				 	 	 _NULL_OFFSET + 00458h
 
 ; 015h bytes
 _wminfo =			                 _NULL_OFFSET + 0045Ch
-; 471-473 free
+; 471 free
+_setsizeneeded = 				 	 _NULL_OFFSET + 00472h
+_setblocks = 					 	 _NULL_OFFSET + 00473h
+
 _getStringByIndex_addr =             _NULL_OFFSET + 00474h
 
 
@@ -474,7 +477,9 @@ _activenumpages =                 	 _NULL_OFFSET + 00588h
 _textureL1LRU =                 	 _NULL_OFFSET + 00590h
 _BASE_CHEAT_ADDRESS_OFFSET_PTR =     _NULL_OFFSET + 00598h
 _RNDTABLE_SEGMENT_PTR = 			 _NULL_OFFSET + 0059Ah
-; 59c, 59d unused
+_currentoverlay = 		         	 _NULL_OFFSET + 0059Ch
+_turnheld = 		         	 	 _NULL_OFFSET + 0059Dh
+; IS 59E TO 5AD FREE?
 _flatcache_l2_head =                 _NULL_OFFSET + 005AEh
 _flatcache_l2_tail =                 _NULL_OFFSET + 005AFh
 _segloopprevlookup =                 _NULL_OFFSET + 005B0h
@@ -512,26 +517,10 @@ _V_DrawFullscreenPatch_FromMenu_addr = _NULL_OFFSET + 005F8h
 _FastDiv32u16u_addr =               _NULL_OFFSET + 005FCh
 
 
-_playerMobj_pos =		         	 _NULL_OFFSET + 00600h
-_MOBJPOSLIST_SEGMENT_PTR =	         _NULL_OFFSET + 00602h
-_setStateReturn_pos =		         _NULL_OFFSET + 00604h
-_gametic =						     _NULL_OFFSET + 00608h
-_clipangle =				         _NULL_OFFSET + 0060Ch
-_fieldofview =				         _NULL_OFFSET + 0060Eh
 
-_solidsegs = 			         	 _NULL_OFFSET + 00610h
-_newend = 				         	 _NULL_OFFSET + 00690h
-_pspritescale = 		         	 _NULL_OFFSET + 00692h
-_currentoverlay = 		         	 _NULL_OFFSET + 00694h
-_turnheld = 		         	 	 _NULL_OFFSET + 00695h
+_solidsegs = 			         	 _NULL_OFFSET + 00600h
 
 
-_r_cachedplayerMobjsecnum = 		 _NULL_OFFSET + 00696h
-_scaledviewwidth = 					 _NULL_OFFSET + 00698h
-_viewwindowoffset = 				 _NULL_OFFSET + 0069Ah
-_pendingdetail = 				 	 _NULL_OFFSET + 0069Ch
-_setsizeneeded = 				 	 _NULL_OFFSET + 0069Eh
-_setblocks = 					 	 _NULL_OFFSET + 0069Fh
 _player = 						 	 _NULL_OFFSET + 006A0h
 _skyquality =  					 	 _NULL_OFFSET + 00703h
 _viewwindowx = 					 	 _NULL_OFFSET + 00704h
@@ -551,7 +540,8 @@ _mtof_zoommul =        			     _NULL_OFFSET + 00718h
 _ftom_zoommul =        			     _NULL_OFFSET + 0071Ah
 _am_max_scale_mtof =       		     _NULL_OFFSET + 0071Ch
 
-;_FastDiv3216u_addr =				 _NULL_OFFSET + 00720h
+_newend = 				         	 _NULL_OFFSET + 00720h
+_pspritescale = 		         	 _NULL_OFFSET + 00722h
 _bulletslope = 			 			 _NULL_OFFSET + 00724h
 _weaponinfo = 			 			 _NULL_OFFSET + 00728h
 _W_CheckNumForNameFar_addr =         _NULL_OFFSET + 0078Ch
@@ -668,8 +658,10 @@ _screen_viewport_width =	  	  	 _NULL_OFFSET + 00AC8h
 _screen_viewport_height =	  	  	 _NULL_OFFSET + 00ACAh
 _old_screen_viewport_width =	  	 _NULL_OFFSET + 00ACCh
 _old_screen_viewport_height =	  	 _NULL_OFFSET + 00ACEh
-;_FixedDivWholeA_addr =   		     _NULL_OFFSET + 00AD0h
-;_cht_CheckCheat_Far_addr = 	     _NULL_OFFSET + 00AD4h
+_r_cachedplayerMobjsecnum = 		 _NULL_OFFSET + 00AD0h
+_scaledviewwidth = 					 _NULL_OFFSET + 00AD2h
+_viewwindowoffset = 				 _NULL_OFFSET + 00AD4h
+_pendingdetail = 				 	 _NULL_OFFSET + 00AD6h
 _myargc =				 	 	     _NULL_OFFSET + 00AD8h
 _errno =      						 _NULL_OFFSET + 00ADAh
 
@@ -682,7 +674,14 @@ ___iob = 							 _NULL_OFFSET + 00ADCh
 ; max args = 20 including program name i guess. should be enough? maybe too much.
 _myargv = 	   	  					 _NULL_OFFSET + 00AF4h
 
-_flatcache_nodes =				     _NULL_OFFSET + 00B20h
+_playerMobj_pos =		         	 _NULL_OFFSET + 00B20h
+_MOBJPOSLIST_SEGMENT_PTR =	         _NULL_OFFSET + 00B22h
+_setStateReturn_pos =		         _NULL_OFFSET + 00B24h
+_gametic =						     _NULL_OFFSET + 00B28h
+_clipangle =				         _NULL_OFFSET + 00B2Ch
+_fieldofview =				         _NULL_OFFSET + 00B2Eh
+
+_flatcache_nodes =				     _NULL_OFFSET + 00B30h
 
 CURRENT_POSITION_1 =  			      (_flatcache_nodes    + ((SIZE CACHE_NODE_T) * NUM_FLAT_CACHE_PAGES))
 _spritecache_nodes =				  CURRENT_POSITION_1

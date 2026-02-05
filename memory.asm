@@ -264,21 +264,12 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 5F0 
 dw  00, 00, 00, 00, 00, 00, 00, 00
 
-; 600
-dw  00, MOBJPOSLIST_SEGMENT, 00, MOBJPOSLIST_SEGMENT, 00, 00,  00, 00
+; 600 solidsegs
+REPT 40 ; 40xsolidsegs
+ dw 00, 00
+ENDM
 
-; 610 solidsegs
-dw  00, 00, 00, 00, 00, 00, 00, 00
-dw  00, 00, 00, 00, 00, 00, 00, 00
-dw  00, 00, 00, 00, 00, 00, 00, 00
-dw  00, 00, 00, 00, 00, 00, 00, 00
-dw  00, 00, 00, 00, 00, 00, 00, 00
-dw  00, 00, 00, 00, 00, 00, 00, 00
-dw  00, 00, 00, 00, 00, 00, 00, 00
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; 690  
-dw  00, 00, 00, 00, 00, 00, 00, 00
-; 6A0 
+; 6A0 ; player
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; 6B0 
 dw  00, 00, 00, 00, 00, 00, 00, 00
@@ -473,6 +464,8 @@ dw  00, 00, 00, 00, 00, 00, 00, 00
 ; B10
 dw  00, 00, 00, 00, 00, 00, 00, 00
 ; B20
+dw  00, MOBJPOSLIST_SEGMENT, 00, MOBJPOSLIST_SEGMENT, 00, 00,  00, 00
+; B30
 
 REPT NUM_FLAT_CACHE_PAGES
 	dw  00
@@ -554,8 +547,8 @@ ENDM
 	_EPR 9					 						PAGE_7800_OFFSET
 	_EPR 10		 									PAGE_7C00_OFFSET
 	_EPR 4									 		PAGE_8000_OFFSET
-	_EPR 5						 					PAGE_8400_OFFSET
-	_EPR 6			 								PAGE_8800_OFFSET
+	_EPR FIRST_VISPLANE_PAGE						PAGE_8400_OFFSET
+	_EPR FIRST_VISPLANE_PAGE+1			 			PAGE_8800_OFFSET
 	_EPR EMS_VISPLANE_EXTRA_PAGE			 		PAGE_8C00_OFFSET
 		; this 9000 unused; todo: move 6000-8000 to 7000-9000
 		; todo are all these used...?
@@ -611,6 +604,12 @@ ENDM
 	_EPR FLAT_DATA_PAGES 							PAGE_5000_OFFSET ;pageswapargs_renderplane_offset_size
 	_EPR FLAT_DATA_PAGES+1 							PAGE_5400_OFFSET
 	_EPR FLAT_DATA_PAGES+2 							PAGE_5800_OFFSET
+
+		; puts all visplanes active
+	_EPR EMS_VISPLANE_EXTRA_PAGE			 		PAGE_8C00_OFFSET
+	_EPR EMS_VISPLANE_EXTRA_PAGE+1			 		PAGE_9000_OFFSET
+	_EPR EMS_VISPLANE_EXTRA_PAGE+2			 		PAGE_9400_OFFSET
+
 	_EPR PALETTE_LOGICAL_PAGE 						PAGE_9C00_OFFSET      ; SPAN CODE SHOVED IN HERE. used to be mobjposlist but thats unused during planes														
 		; flat cache
 	_EPR FIRST_FLAT_CACHE_LOGICAL_PAGE+0 			PAGE_7000_OFFSET ;pageswapargs_flatcache_offset_size
