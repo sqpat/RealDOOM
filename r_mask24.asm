@@ -4567,6 +4567,8 @@ PUSHA_NO_AX_OR_BP_MACRO
 call R_SortVisSprites_
 
 ;    if (vissprite_p > 0) {
+;cmp  word ptr ds:[_vissprite_p], OFFSET _vissprites
+;jbe  done_drawing_sprites
 cmp  word ptr ds:[_vissprite_p], 0
 jle  done_drawing_sprites
 
@@ -5355,11 +5357,7 @@ ret
 
 
 count_not_zero:
-push      bx
-push      cx
-push      dx
-push      si
-push      di
+PUSHA_NO_AX_OR_BP_MACRO
 push      bp
 mov       bp, sp
 sub       sp, 034h				; let's set things up finally isnce we're not quick-exiting out
@@ -5472,11 +5470,7 @@ exit_sort_vissprites:
 
 LEAVE_MACRO
 
-pop       di
-pop       si
-pop       dx
-pop       cx
-pop       bx
+POPA_NO_AX_OR_BP_MACRO
 ret       
 
 done_with_find_best_index_loop:

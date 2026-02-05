@@ -364,10 +364,9 @@ SPRITEFRAME_T ENDS
 
 
 SPRITEDEF_T STRUC 
-    spritedef_spriteframesOffset  dw ?
-    spritedef_numframes           db ?
-
-SPRITEDEF_T ENDS
+    spritedef_spriteframesOffset  dw ? ; 0
+    spritedef_numframes           db ? ; 2
+SPRITEDEF_T ENDS ; 3
 
 
 

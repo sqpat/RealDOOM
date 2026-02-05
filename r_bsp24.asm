@@ -30,8 +30,7 @@ ENDP
 ANG90_HIGHBITS =		04000h
 ANG180_HIGHBITS =    08000h
 
-
-
+MAX_VISSPRITES_ADDRESS = (SIZE VISSPRITE_T * MAXVISSPRITES) + _vissprites ; 0BE70h
 
 
 ; COLFUNC TYPES (work in progress)
@@ -2993,7 +2992,7 @@ PROC R_ProjectSprite_ NEAR
 ; es:si is sprite.
 ; es is a constant..
 
-
+; use parent stackframe
 
 ; bp - 2:	 	thingframe (byte, with (SIZE SPRITEFRAME_T) high)
 ; bp - 4:    	; now unused?
@@ -3010,11 +3009,13 @@ PROC R_ProjectSprite_ NEAR
 ; bp - 01Ah:	thingx lo
 ; bp - 01Ch:	xscale hi
 ; bp - 01Eh:	xscale lo
-; bp - 020h:   spriteindex. used for spriteframes and spritetopindex?
+; bp - 020h:   temp lowbits
+; bp - 022h:   spriteindex. used for spriteframes and spritetopindex?
+; bp - 024h:   flip
+; bp - 026h:   vis->x1
+; bp - 028h:   vis->x2
 
 
-push  bp
-mov   bp, sp
 mov   dx, es					   ; back this up...
 mov   bx, word ptr es:[si + MOBJ_POS_T.mp_statenum]  ; thing->stateNum
 sal   bx, 1
@@ -3026,7 +3027,7 @@ mov   byte ptr cs:[SELFMODIFY_set_ax_to_spriteframe+1 - OFFSET R_BSP24_STARTMARK
 mov   al, ah
 mov   ah, (SIZE SPRITEFRAME_T)
 push  ax    ; bp - 2
-sub   sp, 01Eh
+sub   sp, 018h
 
 
 
@@ -3052,17 +3053,14 @@ lea   si, [bp - 01Ah]
 lodsw
 SELFMODIFY_BSP_viewx_lo_1:
 sub   ax, 01000h
-stosw
+stosw                ; tr_x lo
 xchg   bx, ax
 lodsw
 SELFMODIFY_BSP_viewx_hi_1:
 sbb   ax, 01000h
-stosw
+stosw                ; tr_x hi
 xchg   cx, ax						
 
-; todo:
-; sub [bp - 016h], 01000h
-; sbb [bp - 014h], 01000h
 
 lodsw
 SELFMODIFY_BSP_viewy_lo_1:
@@ -3107,16 +3105,12 @@ neg   ax
 sbb   dx, 0
 
 ;    tz.w = gxt.w-gyt.w; 
-mov   bx, si
-mov   cx, di
-sub   bx, ax
-sbb   cx, dx
+sub   si, ax
+sbb   di, dx
 
 
-mov   word ptr cs:[SELFMODIFY_get_tz_lobits+1 - OFFSET R_BSP24_STARTMARKER_], bx
-mov   word ptr cs:[SELFMODIFY_get_tz_hibits+1 - OFFSET R_BSP24_STARTMARKER_], cx
 
-cmp   cx, MINZ_HIGHBITS
+cmp   di, MINZ_HIGHBITS
 
 ;    // thing is behind view plane?
 ;    if (tz.h.intbits < MINZ_HIGHBITS){ // (- sq: where does this come from)
@@ -3125,6 +3119,8 @@ cmp   cx, MINZ_HIGHBITS
 
 jl   exit_project_sprite
 
+mov   bx, si
+mov   cx, di
 
 ;    xscale.w = FixedDivWholeA(centerx, tz.w);
 
@@ -3132,14 +3128,13 @@ SELFMODIFY_BSP_centerx_4:
 mov   ax, 01000h
 
 call  FixedDivWholeA_BSPLocal_
-mov   word ptr [bp - 01Eh], ax
-mov   word ptr [bp - 01Ch], dx
+push  dx ; bp - 01Ch
+push  ax ; bp - 01Eh
 
-lea   si, [bp - 0Eh]
-lodsw
-xchg  ax, bx
-lodsw
-xchg  ax, cx
+
+
+les   bx, [bp - 0Eh]
+mov   cx, es
 
 SELFMODIFY_set_viewanglesr1_2:
 mov   dx, 01000h
@@ -3149,16 +3144,18 @@ neg dx
 neg ax
 sbb dx, 0
 ; results from DX:AX to DI:SI... eventually
+
+push  si  ; tz_lobits
+push  di  ; tz_hibits
+
 mov   di, dx
-xchg  ax, dx
+xchg  ax, si
+
+les   bx, [bp - 0Ah]
+mov   cx, es
 
 
-lodsw
-xchg  ax, bx
-lodsw
-xchg  ax, cx
 
-mov   si, dx  ; SI can now move 
 SELFMODIFY_set_viewanglesr1_1:
 mov   dx, 01000h
 
@@ -3171,9 +3168,14 @@ adc   dx, di
 neg   dx
 neg   ax
 sbb   dx, 0
-mov   word ptr cs:[SELFMODIFY_get_temp_lowbits+1 - OFFSET R_BSP24_STARTMARKER_], ax
+
+pop   di ; tz_hibits
+pop   bx ; tz_lobits
+
+push  ax ; store temp lowbtis ; bp - 020h
+
 mov   si, dx						; si stores temp highbits
-or    dx, dx
+
 
 ; si stores tx highbits?
 
@@ -3182,51 +3184,51 @@ or    dx, dx
 
 jge   tx_already_positive				; labs sign check
 neg   ax
-adc   dx, 0
 neg   dx
+sbb   dx, 0
 tx_already_positive:
 
 ;        return;
 ;	}
 
 
-mov   cx, ax
-SELFMODIFY_get_tz_lobits:
-mov   ax, 01234h
-SELFMODIFY_get_tz_hibits:
-mov   di, 01234h
-add   ax, ax
-adc   di, di
-add   ax, ax
-adc   di, di
+xchg  ax, cx  ; cx gets low
+
+
+
+sal   bx, 1
+rcl   di, 1
+sal   bx, 1
+rcl   di, 1
 cmp   dx, di
-jle   not_too_far_off_side_highbits
-exit_project_sprite:
-LEAVE_MACRO 
-ret   
+jl    not_too_far_off_side_lowbits
+je    not_too_far_off_side_highbits
+
+exit_project_sprite: ; todo bench branch
+
+jmp   done_with_r_projectsprite
 
 not_too_far_off_side_highbits:
-jne   not_too_far_off_side_lowbits
-cmp   ax, cx
+cmp   bx, cx
 jb    exit_project_sprite
 not_too_far_off_side_lowbits:
+
 SELFMODIFY_set_ax_to_spriteframe:
 mov   ax, 00012h  ; leave high byte 0
 mov   di, ax
 SHIFT_MACRO shl di 2
-sub   di, ax
+sub   di, ax               ; di = ax * 3, SIZE SPRITEDEF_T
 mov   ax, SPRITES_SEGMENT
 mov   es, ax
-mov   ax, word ptr [bp - 2]
+mov   ax, word ptr [bp - 2]  ; thingframe in al, SIZE SPRITEFRAME_T hih)
 and   al, FF_FRAMEMASK
 mul   ah
-mov   di, word ptr es:[di]
-mov   bx, di
-add   bx, ax
-cmp   byte ptr es:[bx + 018h], 0
-mov   bx, 0				; rot 0 on jmp
-je    skip_sprite_rotation
+mov   di, word ptr es:[di + SPRITEDEF_T.spritedef_spriteframesOffset] 
+xor   bx, bx ; default 0 rotation for lookup
+add   di, ax
+cmp   byte ptr es:[di + SPRITEFRAME_T.spriteframe_rotate], 0
 
+je    skip_sprite_rotation
 
 les   ax, dword ptr [bp - 01Ah]
 mov   dx, es
@@ -3254,34 +3256,30 @@ sub   ax, 01212h
 add   ah, 090h
 SHIFT_MACRO rol ax 3
 and   ax, 7
-mov   bx, ax				; rot result
-skip_sprite_rotation:
-mov   ax, word ptr [bp - 2]
-and   al, FF_FRAMEMASK
-mul   ah
-add   di, ax					; add frame offset
+add   di, ax					; add rot lookup (byte)
+xchg  ax, bx               ; bx gets 2nd byte for word lookup
 
-add   di, bx					; add rot lookup
 mov   cx, SPRITES_SEGMENT
 mov   es, cx
 
-mov   bx, word ptr es:[bx+di]	; 2x rot lookup?
-mov   word ptr [bp - 020h], bx
+skip_sprite_rotation:
+
+
+mov   bx, word ptr es:[di+bx + SPRITEFRAME_T.spriteframe_lump]	; word lookup based on rot
+push  bx  ; bp - 022h
 xchg  bx, di
 
-mov   al, byte ptr es:[bx + 010h]
-mov   byte ptr cs:[SELFMODIFY_set_flip+1 - OFFSET R_BSP24_STARTMARKER_], al
+push word ptr es:[bx + SPRITEFRAME_T.spriteframe_flip] ; bp - 024h  ; byte lookup based on flip
 mov   ax, SPRITEOFFSETS_SEGMENT
 
 mov   es, ax
-mov   al, byte ptr es:[di]
+mov   al, byte ptr es:[di]  ; lump for sprite.
 les   bx, dword ptr [bp - 01Eh]
 mov   cx, es
 xor   ah, ah
 
 sub   si, ax						; no need for sbb?
-SELFMODIFY_get_temp_lowbits:
-mov   ax, 01234h
+mov   ax, word ptr [bp - 020h]
 mov   di, ax
 mov   dx, si
 call FixedMulBSPLocal_
@@ -3296,15 +3294,15 @@ add   ax, 01000h
 ;    }
     
 
-mov   word ptr cs:[SELFMODIFY_set_vis_x1+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_sub_x1+1 - OFFSET R_BSP24_STARTMARKER_], ax
+
 SELFMODIFY_BSP_viewwidth_2:
 cmp   ax, 01000h
 jle   not_too_far_off_right_side_highbits
 jump_to_exit_project_sprite_2:
 jmp   exit_project_sprite
 not_too_far_off_right_side_highbits:
-mov   bx, word ptr [bp - 020h]
+push  ax ; bp - 026h
+mov   bx, word ptr [bp - 022h]
 xor   ax, ax
 mov   al, byte ptr cs:[bx + (SPRITEWIDTHS_OFFSET)]
 
@@ -3315,7 +3313,7 @@ mov   al, byte ptr cs:[bx + (SPRITEWIDTHS_OFFSET)]
 
 cmp   al, 1
 jne   usedwidth_not_1
-mov   ah, al
+mov   ah, al      ; encodes 257, hack..
 usedwidth_not_1:
 
 ;   temp.h.fracbits = 0;
@@ -3325,13 +3323,14 @@ usedwidth_not_1:
 ;	temp.h.intbits = centerx;
 ;	temp.w += FixedMul (tx.w,xscale.w);
 
-mov   word ptr cs:[SELFMODIFY_set_ax_to_usedwidth+1 - OFFSET R_BSP24_STARTMARKER_], ax
+dec   ax
+mov   word ptr cs:[SELFMODIFY_set_usedwidth + 3 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
 les   bx, dword ptr [bp - 01Eh]
 mov   cx, es
-mov   dx, si
 
+mov   dx, si
 add   dx, ax					; no need for adc
 mov   ax, di
 
@@ -3342,7 +3341,7 @@ call FixedMulBSPLocal_
 SELFMODIFY_BSP_centerx_6:
 add   dx, 01000h
 dec   dx
-mov   word ptr cs:[SELFMODIFY_set_ax_to_x2+1 - OFFSET R_BSP24_STARTMARKER_], dx
+push  dx ; bp - 028h
 
 ;    // off the left side
 ;    if (x2 < 0)
@@ -3352,15 +3351,17 @@ test  dx, dx
 jl    jump_to_exit_project_sprite_2  ; 06Ah ish out of range
 
 mov   si, word ptr ds:[_vissprite_p]
+;cmp  si, MAX_VISSPRITES_ADDRESS
 cmp  si, MAXVISSPRITES
 je   got_vissprite
 ; don't increment vissprite if its the max index. reuse this index.
+;add   word ptr ds:[_vissprite_p], SIZE VISSPRITE_T
 inc   word ptr ds:[_vissprite_p]
 got_vissprite:
+; get rid of this once vissprite_t is a pointer
 ; mul by 28h or 40. (SIZE VISSPRITE_T)
 
 SHIFT_MACRO shl si 3
-
 
 mov   bx, si
 
@@ -3400,7 +3401,9 @@ rep movsw
 
 lea   si, [di - 012h]			; restore si
 
-mov   bx, word ptr [bp - 020h]
+mov   bx, word ptr [bp - 022h]
+mov   word ptr ds:[si + VISSPRITE_T.vs_patch], bx
+
 mov   ax, SPRITETOPOFFSETS_SEGMENT
 mov   es, ax
 mov   al, byte ptr es:[bx]
@@ -3416,7 +3419,7 @@ cbw
 
 
 cmp   ax, 0FF80h				; -128
-je   set_intbits_to_129
+je   set_intbits_to_129    ; hacky special case.
 intbits_ready:
 ;	vis->gzt.w = vis->gz.w + temp.w;
 mov   bx, word ptr ds:[si + VISSPRITE_T.vs_gz + 0]
@@ -3432,8 +3435,8 @@ SELFMODIFY_BSP_viewz_hi_4:
 sbb       ax, 01000h
 mov   word ptr ds:[si + VISSPRITE_T.vs_texturemid + 0], bx
 mov   word ptr ds:[si + VISSPRITE_T.vs_texturemid + 2], ax
-SELFMODIFY_set_vis_x1:
-mov   ax, 01234h
+
+mov   ax, word ptr [bp - 026h]
 
 ;    vis->x1 = x1 < 0 ? 0 : x1;
 
@@ -3446,8 +3449,8 @@ mov   word ptr ds:[si + VISSPRITE_T.vs_x1], ax
 
 ;    vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;       
 
-SELFMODIFY_set_ax_to_x2:
-mov   ax, 00012h			; get x2
+
+mov   ax, word ptr [bp - 028h]  ; get x2
 
 SELFMODIFY_BSP_viewwidth_3:
 mov   bx, 01000h
@@ -3462,18 +3465,16 @@ mov   word ptr ds:[si + VISSPRITE_T.vs_x2], ax
 mov   ax, 1
 ; todo: make a "div65536" function which does a shift strategy rather than needing the full thing
 call FixedDivWholeA_BSPLocal_
-mov   bx, ax
-SELFMODIFY_set_flip:
-mov   al, 00h
-cmp   al, 0
+xchg  ax, bx
+mov   cx, dx
+xor   ax, ax
+cmp   byte ptr [bp - 024h], al
 jne   flip_not_zero
 
 flip_zero: ; zero case
-cbw 
+
 mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], ax ; 0
 mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], ax ; 0
-mov   word ptr ds:[si + VISSPRITE_T.vs_xiscale + 0], bx
-mov   word ptr ds:[si + VISSPRITE_T.vs_xiscale + 2], dx
 jmp   flip_stuff_done
 
 set_intbits_to_129:
@@ -3481,31 +3482,32 @@ mov   ax, 129
 jmp intbits_ready
 
 flip_not_zero:
-mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], -1
-SELFMODIFY_set_ax_to_usedwidth:
-mov   ax, 01234h 
 dec   ax
-mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], ax
+mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], ax ; -1
 
-neg   dx
+SELFMODIFY_set_usedwidth:
+mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], 01000h
+
+neg   cx
 neg   bx
-sbb   dx, 0
-
-mov   word ptr ds:[si + VISSPRITE_T.vs_xiscale + 0], bx
-mov   word ptr ds:[si + VISSPRITE_T.vs_xiscale + 2], dx
+sbb   cx, 0
 
 flip_stuff_done:
+
+mov   word ptr ds:[si + VISSPRITE_T.vs_xiscale + 0], bx
+mov   word ptr ds:[si + VISSPRITE_T.vs_xiscale + 2], cx
 
 
 ;    if (vis->x1 > x1)
 ;        vis->startfrac += FastMul16u32u((vis->x1-x1),vis->xiscale);
 
 mov   ax, word ptr ds:[si + VISSPRITE_T.vs_x1]
-SELFMODIFY_sub_x1:
-sub   ax, 01234h
+
+sub   ax, word ptr [bp - 026h]
 jle   vis_x1_greater_than_x1
-les   bx, dword ptr ds:[si + VISSPRITE_T.vs_xiscale + 0]
-mov   cx, es
+
+; cx:bx already vs_xiscale 
+
 ; inlined FastMul16u32u
 
 IF COMPISA GE COMPILE_386
@@ -3537,8 +3539,6 @@ add   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], ax
 adc   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], dx
 
 vis_x1_greater_than_x1:
-mov   bx, word ptr [bp - 020h]
-mov   word ptr ds:[si + VISSPRITE_T.vs_patch], bx
 
 ;    if (thingflags2 & MF_SHADOW) {
 
@@ -3582,27 +3582,28 @@ SELFMODIFY_set_spritelights_1:
 mov   bx, 01000h
 mov   al, byte ptr ds:[_scalelight+bx+di]
 mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], al
-LEAVE_MACRO
-ret   
+
+jmp   done_with_r_projectsprite
 
 exit_set_fullbright_colormap:
 mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], 0
-LEAVE_MACRO
-ret   
+
+jmp   done_with_r_projectsprite
+
 
 SELFMODIFY_BSP_fixedcolormap_2_TARGET:
 SELFMODIFY_BSP_fixedcolormap_1:
 exit_set_fixed_colormap:
 mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], 0
-LEAVE_MACRO
-ret   
+
+jmp   done_with_r_projectsprite
 
 
 
 exit_set_shadow:
 mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], COLORMAP_SHADOW
-LEAVE_MACRO
-ret   
+
+jmp   done_with_r_projectsprite
 
 ENDP
 
@@ -7306,10 +7307,21 @@ mov   word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1 - OFFSET R_BSP24_STARTMARK
 
 do_addsprites:
 
-; todo: make single stack frame here
-; push frontsector values onto stack so its never again looked up 
+; R_SUBSECTOR CREATES STACKFRAME HERE
+; projectsprite may get called and use it
+; addline will use it iteratively
+; if we create the stack frame here, ax/cx would be on stack and accessible without necessarily having to go back to register every time.
+                        ; bp + 4 is line   bp + 01Eh in R_StoreWallRange
+                        ; bp + 2 is count  bp + 01Ch in R_StoreWallRange
+push  bp                ; bp + 0           bp + 01Ah in R_StoreWallRange
+mov   bp, sp
+mov   word ptr cs:[SELFMODIFY_reset_sp+1], sp  ; store stack pointer for loop iter repeats
+
+
+
 
 ; es:bx already frontsector
+
 
 
 ;R_AddSprites_ inlined
@@ -7350,7 +7362,10 @@ mov   es, ax
 mov   ax, word ptr es:[si + MOBJ_POS_T.mp_snextRef]
 mov   word ptr cs:[SELFMODIFY_BSP_get_next_thing_in_sector+1], ax
 ; es:si set, R_ProjectSprite doesnt need to push/pop.
-call  R_ProjectSprite_    ; todo inline
+jmp   R_ProjectSprite_    ; todo inline
+done_with_r_projectsprite:
+
+mov   sp, bp  ; restore sp
 
 SELFMODIFY_BSP_get_next_thing_in_sector:
 mov   si, 01000h
@@ -7362,13 +7377,6 @@ exit_add_sprites_quick:
 
 
 
-; if we create the stack frame here, ax/cx would be on stack and accessible without necessarily having to go back to register every time.
-
-                        ; bp + 4 is line   bp + 01Eh in R_StoreWallRange
-                        ; bp + 2 is count  bp + 01Ch in R_StoreWallRange
-push  bp                ; bp + 0           bp + 01Ah in R_StoreWallRange
-mov   bp, sp
-mov   word ptr cs:[SELFMODIFY_reset_sp+1], sp  ; store stack pointer for loop iter repeats
 jmp   R_AddLine_
 
 set_spritelights_to_max:
@@ -11613,6 +11621,7 @@ mov       word ptr ds:[_ds_p + 2], DRAWSEGS_BASE_SEGMENT        ; nseed to be wr
 call      R_ClearPlanes_
 xor       ax, ax
 mov       word ptr ds:[_vissprite_p], ax  ;
+;mov       word ptr ds:[_vissprite_p], OFFSET _vissprites
 
 ;    FAR_memset (cachedheight, 0, sizeof(fixed_t) * SCREENHEIGHT);
 

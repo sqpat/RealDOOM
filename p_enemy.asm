@@ -2370,7 +2370,7 @@ ret
 
 do_bruis_missile:
 
-PUSH_MACRO MT_ROCKET
+PUSH_MACRO MT_BRUISERSHOT
 push      bx  ; todo not sure if needed
 
 mov       bx, word ptr ds:[si + MOBJ_T.m_targetRef]
