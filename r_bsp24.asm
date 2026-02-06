@@ -3378,7 +3378,7 @@ mov   word ptr ds:[si + VISSPRITE_T.vs_scale + 0], ax
 mov   word ptr ds:[si + VISSPRITE_T.vs_scale + 2], di
 
 mov   cx, 6
-lea   di, [si  + 006h]
+lea   di, [si  + VISSPRITE_T.vs_gx]
 lea   si, [bp - 01Ah]
 
 mov   ax, ss
@@ -3387,7 +3387,7 @@ mov   es, ax
 ; copy thing x y z to new vissprite x y z
 rep movsw
 
-lea   si, [di - 012h]			; restore si
+lea   si, [di - VISSPRITE_T.vs_gzt]			; restore si
 
 mov   bx, word ptr [bp - 022h]
 mov   word ptr ds:[si + VISSPRITE_T.vs_patch], bx
@@ -4253,7 +4253,7 @@ push      ax   ; bp - 03A; bp - 037h gets ah
 
 ;	SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldtop, frontsectorceilingheight);
 ;	worldtop.w -= viewz.w;
-
+;todo clean this up with struct fields
 push      word ptr es:[si + 07h]  ; + 6 from lodsw/lodsb = 0eh
                                   ; bp - 03C; bp - 03Bh gets ah
 
@@ -6796,6 +6796,7 @@ xchg      ax, bx   ; store for later
 lods      word ptr es:[si] ; floor, ceil pics
 mov       byte ptr [bp - 03Ah], al
 mov       byte ptr [bp - 038h], ah
+;todo clean this up with struct fields
 mov       al, byte ptr es:[si + 08h]  ; sec_lightlevel with the 6 from lodsw.
 mov       byte ptr [bp - 03Ch], al
 xchg      ax, cx
@@ -8528,7 +8529,7 @@ mov   di, 129   ; hack to fit data in 8 bits
 
 tempbits_not_minus128:
 mov   bx, word ptr [bp - 8]
-les   ax, dword ptr ds:[bx + 8]
+les   ax, dword ptr ds:[bx + PSPDEF_T.pspdef_sy]  ; label
 mov   cx, es
 mov   bx, FRACUNIT_OVER_2
 sbb   cx, di
@@ -11506,7 +11507,7 @@ PUSHA_NO_AX_OR_BP_MACRO
 
 ;	r_cachedplayerMobjsecnum = playerMobj->secnum;
 mov       bx, word ptr ds:[_playerMobj]
-push      word ptr ds:[bx + 4]  ; playerMobj->secnum
+push      word ptr ds:[bx + MOBJ_T.m_secnum]  ; playerMobj->secnum
 pop       word ptr ds:[_r_cachedplayerMobjsecnum]
 
 lds       si, dword ptr ds:[_playerMobj_pos]

@@ -1330,6 +1330,7 @@ spritedefs_bytes    73BB:0000
 // 4BfB - 4c00 free
 #define patch_sizes_end_far         ((int16_t __far*)            MAKE_FULL_SEGMENT(patch_sizes_far             , size_patch_sizes))
 
+// this is aligned to 4C00 so we can add 4C to a high byte in asm...
 #define viewangletox_far             ((int16_t __far*)            MAKE_FULL_SEGMENT(0x4C000000                  , 0))
 //#define viewangletox                ((int16_t __far*)            MAKE_FULL_SEGMENT(patch_sizes_far             , size_patch_sizes))
 // offset of a drawseg so we can subtract drawseg from drawsegs for a certain potential loop condition...

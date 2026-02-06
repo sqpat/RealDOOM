@@ -337,20 +337,21 @@ COLUMN_T ENDS
 
 VISSPRITE_T STRUC 
     vs_next                dw ? ; 0
-    vs_x1                  dw ? ; 2
-    vs_x2                  dw ? ; 4
-    vs_gx                  dd ? ; 6
-    vs_gy                  dd ? ; 0Ah
-    vs_gz                  dd ? ; 0Eh
-    vs_gzt                 dd ? ; 012h
-    vs_startfrac           dd ? ; 016h
-    vs_scale               dd ? ; 01Ah
-    vs_xiscale             dd ? ; 01Eh
-    vs_texturemid          dd ? ; 022h
-    vs_patch               dw ? ; 026h
-    vs_colormap            dw ? ; 028h
+    vs_prev                dw ? ; 2
+    vs_x1                  dw ? ; 4
+    vs_x2                  dw ? ; 6
+    vs_gx                  dd ? ; 8
+    vs_gy                  dd ? ; 0Ch
+    vs_gz                  dd ? ; 010h
+    vs_gzt                 dd ? ; 014h
+    vs_startfrac           dd ? ; 018h
+    vs_scale               dd ? ; 01Ch
+    vs_xiscale             dd ? ; 020h
+    vs_texturemid          dd ? ; 024h
+    vs_patch               dw ? ; 028h
+    vs_colormap            dw ? ; 02Ah
 
-;2Ah
+;2Ch
 
 VISSPRITE_T ENDS
 

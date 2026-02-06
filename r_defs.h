@@ -442,11 +442,12 @@ typedef struct  {
 //  that will be drawn during a refresh.
 // I.e. a sprite object that is partly visible.
 
-// 42 bytes.
+// 44 bytes.
 typedef struct vissprite_s {
     // Doubly linked list.
     //0x0
     uint16_t	next;
+    uint16_t	prev;
     
 
     //0x2
