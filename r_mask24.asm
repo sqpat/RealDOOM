@@ -150,7 +150,7 @@ ENDIF
 
 
 	
-PROC  R_DrawFuzzColumn_  NEAR
+PROC    R_DrawFuzzColumn_  NEAR
 PUBLIC  R_DrawFuzzColumn_  
 
 ; todo:
@@ -4574,11 +4574,136 @@ PUSHA_NO_AX_OR_BP_MACRO
 
 
 ;    if (vissprite_p > 0) {
-cmp  word ptr ds:[_vissprite_p], OFFSET _vissprites
+mov       bx, OFFSET _vissprites
+mov       ax, word ptr ds:[_vissprite_p]
+
+cmp  ax, bx
 jbe  done_drawing_sprites ; no sprites.
 
-call R_SortVisSprites_  ; todo inline
+;call R_SortVisSprites_  ; inlined
 
+; di stores vsprsortedheadprev
+; bp stores unsorted
+; si stores best
+; ax stores iterator
+
+; no need to check for count on inside, we already check on outside.
+
+push      bp
+mov       bp, bx         ; back up &vissprites[0]
+mov       di, OFFSET _vsprsortedhead
+
+; create default list
+;   for (ds=vissprites ; ds<vissprite_p ; ds++) {
+;	    ds->next = ds+1;
+;   	ds->prev = ds-1;
+;   }
+
+
+loop_set_vissprite_next:
+; bx is current counter
+
+mov       word ptr ds:[bx + VISSPRITE_T.vs_prev], si ; ds->prev = ds-1;  first iter sets this to garbage, clean up later
+mov       si, bx                    ; si = ds
+add       bx, (SIZE VISSPRITE_T)  
+mov       word ptr ds:[si + VISSPRITE_T.vs_next], bx   ; ds->next = ds+1;
+cmp       bx, ax    ; ax is vissprite_p
+jb        loop_set_vissprite_next
+
+done_setting_vissprite_next:
+
+; unsorted will be sp, so sp + 0 = next, sp + 2 = prev.
+push      si ; unsorted->prev = vissprite_p - 1
+push      bp ; unsorted->next = vissprites[0]
+mov       word ptr ss:[bp + VISSPRITE_T.vs_prev], sp ; vissprites[0].prev = &unsorted;
+mov       word ptr ds:[si + VISSPRITE_T.vs_next], sp ; (vissprite_p-1)->next = &unsorted;
+
+mov       bp, sp   ; finally set bp to unsorted for the rest of the function
+
+;    vsprsortedhead.next = vsprsortedhead.prev = &vsprsortedhead;
+mov       word ptr ds:[di + VISSPRITE_T.vs_next], di ; vsprsortedhead.prev = &vsprsortedhead;
+mov       word ptr ds:[di + VISSPRITE_T.vs_prev], di ; vsprsortedhead.next = &vsprsortedhead;
+
+
+
+loop_vissprite_sort:
+
+
+;DX:CX is bestscale
+
+; bp is unsorted
+; bx is ds
+; si is best
+
+
+; instead of maxlong, just set it to the first one... inlined first iteration
+mov       bx, word ptr ss:[bp + VISSPRITE_T.vs_next]    ; ds = unsorted.next
+; could just jmp unsorted_next_is_best_next here
+les       cx, dword ptr ds:[bx + VISSPRITE_T.vs_scale]
+mov       dx, es        ;	bestscale = ds->scale;
+mov       si, bx        ;   best = ds;
+mov       bx, word ptr ds:[bx + VISSPRITE_T.vs_next]
+cmp       bx, bp        ; ds!= &unsorted
+je        done_with_sort_subloop
+
+
+loop_sort_subloop:
+
+cmp       dx, word ptr ds:[bx + VISSPRITE_T.vs_scale + 2]
+jg        unsorted_next_is_best_next
+jne       iter_next_find_best_index_loop
+cmp       cx, word ptr ds:[bx + VISSPRITE_T.vs_scale]
+jbe       iter_next_find_best_index_loop
+unsorted_next_is_best_next:
+
+les       cx, dword ptr ds:[bx + VISSPRITE_T.vs_scale]
+mov       dx, es        ;	bestscale = ds->scale;
+mov       si, bx        ;   best = ds;
+
+iter_next_find_best_index_loop:
+
+mov       bx, word ptr ds:[bx + VISSPRITE_T.vs_next]
+cmp       bx, bp  ; ds!= &unsorted
+jne       loop_sort_subloop
+
+done_with_sort_subloop:
+
+
+;	best->next->prev = best->prev;
+;	best->prev->next = best->next;
+;	best->next = &vsprsortedhead;
+;	best->prev = vsprsortedhead.prev;
+;	vsprsortedhead.prev->next = best;
+;	vsprsortedhead.prev = best;
+
+
+mov       bx, word ptr ds:[si + VISSPRITE_T.vs_next]   ; bx = best->next
+mov       dx, word ptr ds:[si + VISSPRITE_T.vs_prev]   ; dx = best->prev
+
+mov       word ptr ds:[bx + VISSPRITE_T.vs_prev], dx   ; best->next->prev = best->prev;
+xchg      bx, dx
+mov       word ptr ds:[bx + VISSPRITE_T.vs_next], dx   ; best->prev->next = best->next;
+
+mov       word ptr ds:[si + VISSPRITE_T.vs_next], di   ; best->next = &vsprsortedhead;
+
+mov       bx, word ptr ds:[di + VISSPRITE_T.vs_prev]   ; bx = vsprsortedhead.prev
+mov       word ptr ds:[si + VISSPRITE_T.vs_prev], bx   ; best->prev = vsprsortedhead.prev;
+mov       word ptr ds:[bx + VISSPRITE_T.vs_next], si   ; vsprsortedhead.prev->next = best;
+mov       word ptr ds:[di + VISSPRITE_T.vs_prev], si   ; vsprsortedhead.prev = best;
+
+sub       ax, SIZE VISSPRITE_T
+cmp       ax, OFFSET _vissprites ; iterate once per vissprite_p; ax started as vissprite_p and _vissprites is array base
+jg        loop_vissprite_sort
+
+exit_sort_vissprites:
+pop        ax
+pop        ax ; add sp, 4
+pop        bp
+
+; di is still _vsprsortedhead
+mov        bx, word ptr ds:[di + VISSPRITE_T.vs_next]  ; set up bx for following loop
+
+; END R_SortVisSprites_
 
 ;	for (spr = vsprsortedheadfirst ;
 ;       spr != END_OF_VISSPRITE_SORTED_LOOP ;
@@ -4586,7 +4711,7 @@ call R_SortVisSprites_  ; todo inline
 ;       R_DrawSprite (&vissprites[spr]);
 ;   }
 
-mov  bx, word ptr ds:[_vsprsortedhead + VISSPRITE_T.vs_next]
+
 
 draw_next_sprite:
 
@@ -5340,148 +5465,6 @@ jmp       done_setting_cached_tex_masked
 
 ENDP
 
-
-
-; todo: consider adding prev field and removing inner loop. worth the 256 bytes to simplify this once per frame?
-; test speed!
-
-
-PROC   R_SortVisSprites_ NEAR
-PUBLIC R_SortVisSprites_
-
-; bp stores vsprsortedheadprev
-; di stores unsorted.next
-; si stores best
-; ax stores iterator
-
-; no need to check for count on inside, we already check on outside.
-
-push      bp
-mov       bx, OFFSET _vissprites
-mov       ax, word ptr ds:[_vissprite_p]
-
-mov       bp, OFFSET _vsprsortedhead
-
-mov       di, bx         ; back up &vissprites[0]
-
-
-
-; create default list
-;   for (ds=vissprites ; ds<vissprite_p ; ds++) {
-;	    ds->next = ds+1;
-;   	ds->prev = ds-1;
-;   }
-
-
-loop_set_vissprite_next:
-; bx is current counter
-
-mov       word ptr ds:[bx + VISSPRITE_T.vs_prev], si ; ds->prev = ds-1;  first iter sets this to garbage, clean up later
-mov       si, bx                    ; si = ds
-add       bx, (SIZE VISSPRITE_T)  
-mov       word ptr ds:[si + VISSPRITE_T.vs_next], bx   ; ds->next = ds+1;
-cmp       bx, ax    ; ax is vissprite_p
-jb        loop_set_vissprite_next
-
-done_setting_vissprite_next:
-
-; unsorted will be sp, so sp + 0 = next, sp + 2 = prev.
-push      si ; unsorted->prev = vissprite_p - 1
-push      di ; unsorted->next = vissprites[0]
-mov       word ptr ds:[di + VISSPRITE_T.vs_prev], sp ; vissprites[0].prev = &unsorted;
-mov       word ptr ds:[si + VISSPRITE_T.vs_next], sp ; (vissprite_p-1)->next = &unsorted;
-
-mov       bx, sp  ; now set bx to sp...
-mov       word ptr ds:[bx + VISSPRITE_T.vs_prev], si ; unsorted.prev = vissprite_p-1;
-mov       word ptr ds:[bx + VISSPRITE_T.vs_next], di ; unsorted.next = &vissprites[0];
-mov       di, bx   ; finally set di to unsorted for the rest of the function
-
-;    vsprsortedhead.next = vsprsortedhead.prev = &vsprsortedhead;
-mov       word ptr ss:[bp + VISSPRITE_T.vs_next], bp ; vsprsortedhead.prev = &vsprsortedhead;
-mov       word ptr ss:[bp + VISSPRITE_T.vs_prev], bp ; vsprsortedhead.next = &vsprsortedhead;
-
-
-
-loop_vissprite_sort:
-
-
-
-;DX:CX is bestscale
-
-
-
-; di is unsorted
-; bx is ds
-; si is best
-
-
-; instead of maxlong, just set it to the first one... inlined first iteration
-mov       bx, word ptr ds:[di + VISSPRITE_T.vs_next]    ; ds = unsorted.next
-; could just jmp unsorted_next_is_best_next here
-les       cx, dword ptr ds:[bx + VISSPRITE_T.vs_scale]
-mov       dx, es        ;	bestscale = ds->scale;
-mov       si, bx        ;   best = ds;
-mov       bx, word ptr ds:[di + VISSPRITE_T.vs_next]
-cmp       bx, di        ; ds!= &unsorted
-je        done_with_sort_subloop
-
-
-loop_sort_subloop:
-
-cmp       dx, word ptr ds:[bx + VISSPRITE_T.vs_scale + 2]
-jg        unsorted_next_is_best_next
-jne       iter_next_find_best_index_loop
-cmp       cx, word ptr ds:[bx + VISSPRITE_T.vs_scale]
-jbe       iter_next_find_best_index_loop
-unsorted_next_is_best_next:
-
-les       cx, dword ptr ds:[bx + VISSPRITE_T.vs_scale]
-mov       dx, es        ;	bestscale = ds->scale;
-mov       si, bx        ;   best = ds;
-
-iter_next_find_best_index_loop:
-
-mov       bx, word ptr ds:[bx + VISSPRITE_T.vs_next]
-cmp       bx, di  ; ds!= &unsorted
-jne       loop_sort_subloop
-
-done_with_sort_subloop:
-
-
-;	best->next->prev = best->prev;
-;	best->prev->next = best->next;
-;	best->next = &vsprsortedhead;
-;	best->prev = vsprsortedhead.prev;
-;	vsprsortedhead.prev->next = best;
-;	vsprsortedhead.prev = best;
-
-
-mov       bx, word ptr ds:[si + VISSPRITE_T.vs_next]   ; bx = best->next
-mov       dx, word ptr ds:[si + VISSPRITE_T.vs_prev]   ; dx = best->prev
-
-mov       word ptr ds:[bx + VISSPRITE_T.vs_prev], dx   ; best->next->prev = best->prev;
-xchg      bx, dx
-mov       word ptr ds:[bx + VISSPRITE_T.vs_next], dx   ; best->prev->next = best->next;
-
-mov       word ptr ds:[si + VISSPRITE_T.vs_next], bp   ; best->next = &vsprsortedhead;
-
-mov       bx, word ptr ss:[bp + VISSPRITE_T.vs_prev]   ; bx = vsprsortedhead.prev
-mov       word ptr ds:[si + VISSPRITE_T.vs_prev], bx   ; best->prev = vsprsortedhead.prev;
-mov       word ptr ds:[bx + VISSPRITE_T.vs_next], si   ; vsprsortedhead.prev->next = best;
-mov       word ptr ss:[bp + VISSPRITE_T.vs_prev], si   ; vsprsortedhead.prev = best;
-
-sub       ax, SIZE VISSPRITE_T
-cmp       ax, OFFSET _vissprites ; iterate once per vissprite_p; ax started as vissprite_p and _vissprites is array base
-jg        loop_vissprite_sort
-
-exit_sort_vissprites:
-add        sp, 4    ; undo unsorted on stack
-pop        bp
-ret
-
-
-
-ENDP
 
 
 
