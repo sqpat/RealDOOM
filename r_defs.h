@@ -442,12 +442,11 @@ typedef struct  {
 //  that will be drawn during a refresh.
 // I.e. a sprite object that is partly visible.
 
-// 40 bytes.
+// 42 bytes.
 typedef struct vissprite_s {
     // Doubly linked list.
     //0x0
-    uint8_t	next;
-    uint8_t	colormap;
+    uint16_t	next;
     
 
     //0x2
@@ -477,6 +476,7 @@ typedef struct vissprite_s {
     fixed_t		texturemid;
     //0x26
 	int16_t     patch;
+    uint16_t	colormap; // actualy 8 bit
 
     // flags removed -were only used for player color translations?
    

@@ -24,10 +24,10 @@
 #define R_DrawSkyColumnFLOffset                 0x0
 #define R_DrawSkyPlaneFLOffset                  0x294
 #define R_DrawSkyPlaneDynamicFLOffset           0x294
-#define R_WriteBackViewConstants24Offset        0x30F8
-#define R_RenderPlayerView24Offset              0x2F75
-#define R_GetCompositeTexture24Offset           0x2C61
-#define R_GetPatchTexture24Offset               0x2BC8
+#define R_WriteBackViewConstants24Offset        0x30EA
+#define R_RenderPlayerView24Offset              0x2F66
+#define R_GetCompositeTexture24Offset           0x2C52
+#define R_GetPatchTexture24Offset               0x2BB9
 #define R_WriteBackViewConstants16Offset        0x3406
 #define R_RenderPlayerView16Offset              0x3289
 #define R_GetCompositeTexture16Offset           0x2F73
@@ -65,7 +65,7 @@
 #define R_DrawSpan16CodeSize           0xF60
 #define R_DrawSpan0CodeSize            0x63A
 #define R_DrawSpanFLCodeSize           0x591
-#define R_DrawFuzzColumn24CodeSize     0x1846
+#define R_DrawFuzzColumn24CodeSize     0x17CD
 #define R_DrawFuzzColumn16CodeSize     0x18E3
 #define R_DrawFuzzColumn0CodeSize      0x184F
 #define R_DrawFuzzColumnFLCodeSize     0x1819
@@ -76,7 +76,7 @@
 #define R_DrawSkyColumnCodeSize        0xD86
 #define R_DrawSkyColumnFLCodeSize      0x303
 #define M_MenuCodeSize                 0x1559
-#define R_BSP24CodeSize                0x344C
+#define R_BSP24CodeSize                0x343E
 #define R_BSP16CodeSize                0x3740
 #define R_BSP0CodeSize                 0x366F
 #define R_BSPFLCodeSize                0x3617

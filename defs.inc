@@ -269,7 +269,7 @@ _tmthing =                           _NULL_OFFSET + 0028Ch
 _maskedcachedbasecol =               _NULL_OFFSET + 0028Eh
 _maskedcachedsegment =               _NULL_OFFSET + 00290h
 _maskedheightvalcache =              _NULL_OFFSET + 00292h
-_vsprsortedheadfirst =               _NULL_OFFSET + 00293h
+; 293 free
 _lastvisspritesegment =              _NULL_OFFSET + 00294h
 _lastvisspritesegment2 =             _NULL_OFFSET + 00296h
 _lastvisspritepatch =                _NULL_OFFSET + 00298h
@@ -385,7 +385,7 @@ _secretexit =                        _NULL_OFFSET + 00453h
 
 _currentoverlay = 		         	 _NULL_OFFSET + 00454h
 _turnheld = 		         	 	 _NULL_OFFSET + 00455h
-; 456-457 free
+_vsprsortedheadfirst =               _NULL_OFFSET + 00456h
 _m_paninc = 				 	 	 _NULL_OFFSET + 00458h
 
 ; 015h bytes

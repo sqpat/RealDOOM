@@ -336,8 +336,7 @@ COLUMN_T STRUC
 COLUMN_T ENDS
 
 VISSPRITE_T STRUC 
-    vs_next                db ? ; 0
-    vs_colormap            db ? ; 1
+    vs_next                dw ? ; 0
     vs_x1                  dw ? ; 2
     vs_x2                  dw ? ; 4
     vs_gx                  dd ? ; 6
@@ -349,7 +348,9 @@ VISSPRITE_T STRUC
     vs_xiscale             dd ? ; 01Eh
     vs_texturemid          dd ? ; 022h
     vs_patch               dw ? ; 026h
-;28h
+    vs_colormap            dw ? ; 028h
+
+;2Ah
 
 VISSPRITE_T ENDS
 

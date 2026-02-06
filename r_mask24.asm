@@ -4557,41 +4557,41 @@ jmp   iterate_next_drawseg_loop
 
 ENDP
 
-VISSPRITE_SORTED_HEAD_INDEX = 0FEh
+
+END_OF_VISSPRITE_UNSORTED_LOOP = 0FFFFh
+END_OF_VISSPRITE_SORTED_LOOP   = 0
+
 
 PROC R_DrawMasked24_ FAR
 PUBLIC R_DrawMasked24_
 
 PUSHA_NO_AX_OR_BP_MACRO
 
-call R_SortVisSprites_
 
 ;    if (vissprite_p > 0) {
-;cmp  word ptr ds:[_vissprite_p], OFFSET _vissprites
-;jbe  done_drawing_sprites
-cmp  word ptr ds:[_vissprite_p], 0
-jle  done_drawing_sprites
+cmp  word ptr ds:[_vissprite_p], OFFSET _vissprites
+jbe  done_drawing_sprites ; no sprites.
+
+call R_SortVisSprites_  ; todo inline
+
 
 ;	for (spr = vsprsortedheadfirst ;
-;       spr != VISSPRITE_SORTED_HEAD_INDEX ;
+;       spr != END_OF_VISSPRITE_SORTED_LOOP ;
 ;       spr=vissprites[spr].next) {
 ;       R_DrawSprite (&vissprites[spr]);
 ;   }
 
-mov  al, byte ptr ds:[_vsprsortedheadfirst]
-cmp  al, VISSPRITE_SORTED_HEAD_INDEX
-je   done_drawing_sprites
+mov  bx, word ptr ds:[_vsprsortedheadfirst]
+
 draw_next_sprite:
-mov  ah, (SIZE VISSPRITE_T)
-mul  ah
-add  ax, OFFSET _vissprites
-mov  bx, ax  ; bx gets this for the call
+
 call R_DrawSprite_
-mov  al, byte ptr ds:[bx]
+mov  bx, word ptr ds:[bx + VISSPRITE_T.vs_next]
 
 
-cmp  al, VISSPRITE_SORTED_HEAD_INDEX
-jne  draw_next_sprite
+test  bx, bx
+jnz  draw_next_sprite
+
 done_drawing_sprites:
 
 les  di, dword ptr ds:[_ds_p]
@@ -4604,11 +4604,11 @@ check_next_seg:
 cmp  word ptr es:[di + DRAWSEG_T.drawseg_maskedtexturecol_val], NULL_TEX_COL
 je   not_masked
 
-mov  ax, word ptr es:[di + 2]
-mov  cx, word ptr es:[di + 4]
+mov  ax, word ptr es:[di + DRAWSEG_T.drawseg_x1]
+mov  cx, word ptr es:[di + DRAWSEG_T.drawseg_x2]
 
 call R_RenderMaskedSegRange_
-mov  es, word ptr ds:[_ds_p + 2]
+mov  es, word ptr ds:[_ds_p + 2] ; retrieve segment
 not_masked:
 sub  di, (SIZE DRAWSEG_T)
 
@@ -5337,174 +5337,176 @@ ENDP
 
 
 
-VISSPRITE_UNSORTED_INDEX    = 0FFh
-VISSPRITE_SORTED_HEAD_INDEX = 0FEh
+; todo: consider adding prev field and removing inner loop. worth the 256 bytes to simplify this once per frame?
+; test speed!
 
 
-PROC R_SortVisSprites_ NEAR
+PROC   R_SortVisSprites_ NEAR
+PUBLIC R_SortVisSprites_
+; bp stores vsprsortedheadprev
+; di stores unsorted.next
+; si stores best
+; ax stores iterator
 
-; bp - 2     vsprsortedheadfirst ?
-; bp - 4     best ?
-; bp - 8     UNUSED i (loop counter). todo selfmodify out.
-; bp - 0ah   UNUSED vissprite_p pointer/count todo selfmodify out
-; bp -034h   unsorted?
+; no need to check for count on inside, we already check on outside.
 
-
-mov       ax, word ptr ds:[_vissprite_p]
-test      ax, ax
-jne       count_not_zero
-ret
-
-
-count_not_zero:
-PUSHA_NO_AX_OR_BP_MACRO
 push      bp
-mov       bp, sp
-sub       sp, 034h				; let's set things up finally isnce we're not quick-exiting out
-
-mov       byte ptr cs:[SELFMODIFY_MASKED_loop_compare_instruction+1 - OFFSET R_MASK24_STARTMARKER_], al ; store count
-mov       dx, ax
-mov       cx, 014h
-lea       di, [bp - 034h]
-mov       ax, ds
-mov       es, ax
-xor       ax, ax
-rep stosw
-
-
-
 mov       bx, OFFSET _vissprites
-; dl is vissprite count
-loop_set_vissprite_next:
-; ax already 0
+mov       ax, word ptr ds:[_vissprite_p]
 
-inc       al
-mov       byte ptr ds:[bx], al
+xor       bp, bp  ; END_OF_VISSPRITE_SORTED_LOOP
+; dont  need to set head, it will be overwritten first iter..
+
+mov       di, bx         ; unsorted.next = &vissprites[0];
+
+
+; create default list
+;   for (ds=vissprites ; ds<vissprite_p ; ds++) {
+;	    ds->next = ds+1;
+;   }
+
+; ax is vissprite_p
+loop_set_vissprite_next:
+; bx is current counter
+
 add       bx, (SIZE VISSPRITE_T)  
-cmp       ax, dx
-jl        loop_set_vissprite_next
+mov       word ptr ds:[bx - (SIZE VISSPRITE_T) + VISSPRITE_T.vs_next], bx
+cmp       bx, ax
+jb        loop_set_vissprite_next
 
 done_setting_vissprite_next:
 
-sub        bx, (SIZE VISSPRITE_T)
-mov       byte ptr cs:[SELFMODIFY_MASKED_set_al_to_loop_counter+1 - OFFSET R_MASK24_STARTMARKER_], 0  ; zero loop counter
 
-mov       al, VISSPRITE_SORTED_HEAD_INDEX
+;    (vissprites[vissprite_p-1]).next = VISSPRITE_UNSORTED_INDEX;
+mov       word ptr ds:[bx - (SIZE VISSPRITE_T) + VISSPRITE_T.vs_next], END_OF_VISSPRITE_UNSORTED_LOOP
 
-mov       byte ptr [bp - 2], al
-mov       byte ptr ds:[_vsprsortedheadfirst], al
-mov       byte ptr ds:[bx], VISSPRITE_UNSORTED_INDEX
-cmp       dx, 0  ; is this redundant?
-jle       exit_sort_vissprites
 
-loop_visplane_sort:
+loop_vissprite_sort:
 
-inc       byte ptr cs:[SELFMODIFY_MASKED_set_al_to_loop_counter+1 - OFFSET R_MASK24_STARTMARKER_] ; update loop counter
 
-;DI:CX is bestscale
-;        bestscale = MAXLONG;
 
-mov       cx, 0FFFFh  ; max long low word
-mov       di, 07FFFh  ; max long hi word
+;DX:CX is bestscale
 
-;        for (ds=unsorted.next ; ds!= VISSPRITE_UNSORTED_INDEX ; ds=vissprites[ds].next) {
 
-mov       si, OFFSET _vissprites
-mov       al, byte ptr [bp - 034h]  ; ds=unsorted.next
-cmp       al, VISSPRITE_UNSORTED_INDEX ; ds!= VISSPRITE_UNSORTED_INDEX
+; cant trigger on first iteration.
+;cmp       di, END_OF_VISSPRITE_UNSORTED_LOOP ; ds!= END_OF_VISSPRITE_UNSORTED_LOOP
+;je        done_with_sort_subloop
+
+; di is unsorted.next
+; bx is ds
+; si is best
+
+; instead of maxlong, just set it to the first one... inlined first iteration
+
+les       cx, dword ptr ds:[di + VISSPRITE_T.vs_scale]
+mov       dx, es        ;	bestscale = ds->scale;
+mov       si, di        ;   best = ds;
+mov       bx, word ptr ds:[di + VISSPRITE_T.vs_next]
+cmp       bx, END_OF_VISSPRITE_UNSORTED_LOOP  ; ds!= &unsorted
 je        done_with_sort_subloop
+
+
 loop_sort_subloop:
-mov       ah, (SIZE VISSPRITE_T)
-mov       bx, ax
-mul       ah
-xchg      ax, bx
 
-mov       word ptr [bp - 06h], 0  ; field in unsorted
-mov       word ptr [bp - 08h], bx ; field in unsorted
-cmp       di, word ptr ds:[bx + si + + 1Ah + 2]
+cmp       dx, word ptr ds:[bx + VISSPRITE_T.vs_scale + 2]
 jg        unsorted_next_is_best_next
-jne       prepare_find_best_index_subloop
-cmp       cx, word ptr ds:[bx + si + 1Ah]
-jbe       prepare_find_best_index_subloop
+jne       iter_next_find_best_index_loop
+cmp       cx, word ptr ds:[bx + VISSPRITE_T.vs_scale]
+jbe       iter_next_find_best_index_loop
 unsorted_next_is_best_next:
-mov       dh, al  ;  store bestindex ( i think)
-les       cx, dword ptr ds:[bx + si + 1Ah]
-mov       di, es
-add       bx, si
-mov       word ptr [bp - 4], bx   ; todo dont add vissprites to this?
 
-prepare_find_best_index_subloop:
 
-mul       ah	  ; still 028h ((SIZE VISSPRITE_T) )
-mov       bx, ax
 
-mov       al, byte ptr ds:[bx+si]
-cmp       al, VISSPRITE_UNSORTED_INDEX
+les       cx, dword ptr ds:[bx + VISSPRITE_T.vs_scale]
+mov       dx, es        ;	bestscale = ds->scale;
+mov       si, bx        ;   best = ds;
+
+iter_next_find_best_index_loop:
+
+mov       bx, word ptr ds:[bx + VISSPRITE_T.vs_next]
+cmp       bx, END_OF_VISSPRITE_UNSORTED_LOOP  ; ds!= &unsorted
 jne       loop_sort_subloop
+
 done_with_sort_subloop:
-mov       di, word ptr [bp - 4]		; retrieve best visprite pointer
-mov       al, byte ptr [bp - 034h]
 
-cmp       al, dh
+mov       dx, word ptr  ds:[si + VISSPRITE_T.vs_next]  ; dx = best->next
+
+
+cmp       si, di   ;      if (unsorted.next == bestindex){
 je        done_with_find_best_index_loop
-mov       dl, (SIZE VISSPRITE_T)
-loop_find_best_index:
-mul       dl
-mov       word ptr [bp - 0Ah], 0  ; some unsorted field
-mov       bx, ax
-mov       word ptr [bp - 0Ch], ax ; some unsorted field
-mov       al, byte ptr ds:[bx + si]
 
-cmp       al, dh
+mov       bx, di
+cmp       word ptr ds:[bx + VISSPRITE_T.vs_next], si
+  ; because of the weird issue of comparing to next and also grabbing the next ref in the loop,
+  ; we must precheck index 0's "next" before the loop which 
+je        found_best_index
+
+;          for (ds=unsorted.next ; ; ds=vissprites[ds].next) {
+;              if (vissprites[ds].next == bestindex) {
+;                  vissprites[ds].next = best->next;
+;                  break;
+;              }
+;          }
+
+; basically a loop to find prev since we currently dont maintain it in 
+loop_find_best_index:
+
+mov       bx, word ptr ds:[bx + VISSPRITE_T.vs_next]
+cmp       word ptr ds:[bx + VISSPRITE_T.vs_next], si
 jne       loop_find_best_index
 
-
+found_best_index:
 
 ; vissprites[ds].next = best->next;
  ;break;
 
-mov       al, byte ptr ds:[di]
-mov       byte ptr ds:[bx+si], al
-jmp       found_best_index
-exit_sort_vissprites:
-
-LEAVE_MACRO
-
-POPA_NO_AX_OR_BP_MACRO
-ret       
+mov       word ptr ds:[bx + VISSPRITE_T.vs_next], dx
+jmp       done_with_best_index
 
 done_with_find_best_index_loop:
+; unsorted.next = best->next
+mov       di, dx
+
+done_with_best_index:
 
 
-mov       al, byte ptr ds:[di]
-mov       byte ptr [bp - 034h], al
-found_best_index:
-;        if (vsprsortedheadfirst == VISSPRITE_SORTED_HEAD_INDEX){
-cmp       byte ptr ds:[_vsprsortedheadfirst], VISSPRITE_SORTED_HEAD_INDEX
-jne       set_next_to_best_index
+;        if (vsprsortedheadfirst == END_OF_VISSPRITE_SORTED_LOOP){
+;            // only on first iteration
+;            vsprsortedheadfirst = bestindex;
+;        } else {
+;            // dont set on first iteration
+;            vissprites[vsprsortedheadprev].next = bestindex;
+;        }
 
-mov       byte ptr ds:[_vsprsortedheadfirst], dh
-increment_visplane_sort_loop_variables:
 
-mov       byte ptr [bp - 2], dh
-mov       byte ptr ds:[di], VISSPRITE_SORTED_HEAD_INDEX
-SELFMODIFY_MASKED_set_al_to_loop_counter:
-mov       al, 0FFh ; get loop counter
-SELFMODIFY_MASKED_loop_compare_instruction:
-cmp       al, 0FFh ; compare
-jge       exit_sort_vissprites
-jmp       loop_visplane_sort
+
+;        if (vsprsortedheadfirst == END_OF_VISSPRITE_SORTED_LOOP){
+test      bp, bp              ; catch first iteration and set head if so
+jz        initialize_vsphead 
 
 set_next_to_best_index:
 ;            vissprites[vsprsortedheadprev].next = bestindex;
+mov       word ptr ss:[bp + VISSPRITE_T.vs_next], si  ; ss and ds are equal; use ss for optimal encoding? but next field is 0 so kind of dumb for bp + 0...
 
-mov       al, byte ptr [bp - 2]
-mov	      ah, (SIZE VISSPRITE_T)
-mul       ah
-mov       bx, ax
+increment_vissprite_sort_loop_variables:
 
-mov       byte ptr ds:[bx + _vissprites], dh
-jmp       increment_visplane_sort_loop_variables
+mov       bp, si            ;        vsprsortedheadprev = best;
+mov       word ptr ds:[si + VISSPRITE_T.vs_next], END_OF_VISSPRITE_SORTED_LOOP  ; best->next = END_OF_VISSPRITE_SORTED_LOOP;
+
+sub       ax, SIZE VISSPRITE_T
+cmp       ax, OFFSET _vissprites ; iterate once per vissprite_p; ax started as vissprite_p and _vissprites is array base
+jg        loop_vissprite_sort
+exit_sort_vissprites:
+
+pop        bp
+ret       
+
+
+initialize_vsphead:
+; happens only in first loop iter.
+;            vsprsortedheadfirst = bestindex;
+mov       word ptr ds:[_vsprsortedheadfirst], si
+jmp       increment_vissprite_sort_loop_variables
 
 ENDP
 

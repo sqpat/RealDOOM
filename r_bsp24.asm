@@ -30,7 +30,7 @@ ENDP
 ANG90_HIGHBITS =		04000h
 ANG180_HIGHBITS =    08000h
 
-MAX_VISSPRITES_ADDRESS = (SIZE VISSPRITE_T * MAXVISSPRITES) + _vissprites ; 0BE70h
+MAX_VISSPRITES_ADDRESS = ((SIZE VISSPRITE_T) * MAXVISSPRITES) + _vissprites ; 0BE70h
 
 
 ; COLFUNC TYPES (work in progress)
@@ -3351,23 +3351,11 @@ test  dx, dx
 jl    jump_to_exit_project_sprite_2  ; 06Ah ish out of range
 
 mov   si, word ptr ds:[_vissprite_p]
-;cmp  si, MAX_VISSPRITES_ADDRESS
-cmp  si, MAXVISSPRITES
+cmp   si, MAX_VISSPRITES_ADDRESS
 je   got_vissprite
 ; don't increment vissprite if its the max index. reuse this index.
-;add   word ptr ds:[_vissprite_p], SIZE VISSPRITE_T
-inc   word ptr ds:[_vissprite_p]
+add   word ptr ds:[_vissprite_p], SIZE VISSPRITE_T
 got_vissprite:
-; get rid of this once vissprite_t is a pointer
-; mul by 28h or 40. (SIZE VISSPRITE_T)
-
-SHIFT_MACRO shl si 3
-
-mov   bx, si
-
-SHIFT_MACRO sal si 2
-; x32 20h
-lea   si, [bx + si + OFFSET _vissprites] ; x40  28h
 
 
 les   ax, dword ptr [bp - 01Eh]
@@ -11619,11 +11607,8 @@ call      R_ClearClipSegs_
 mov       word ptr ds:[_ds_p],     (SIZE DRAWSEG_T)             ; drawsegs_PLUSONE
 mov       word ptr ds:[_ds_p + 2], DRAWSEGS_BASE_SEGMENT        ; nseed to be written because masked subs 02000h from it due to remapping...
 call      R_ClearPlanes_
-xor       ax, ax
-mov       word ptr ds:[_vissprite_p], ax  ;
-;mov       word ptr ds:[_vissprite_p], OFFSET _vissprites
+mov       word ptr ds:[_vissprite_p], OFFSET _vissprites
 
-;    FAR_memset (cachedheight, 0, sizeof(fixed_t) * SCREENHEIGHT);
 
 call      dword ptr ds:[_NetUpdate_addr]
 
@@ -11640,6 +11625,7 @@ Z_QUICKMAPAI3_NO_DX (pageswapargs_renderplane_offset_size+3) INDEXED_PAGE_8800_O
 Z_QUICKMAPAI1_NO_DX (pageswapargs_renderplane_offset_size+6) INDEXED_PAGE_9C00_OFFSET
 Z_QUICKMAPAI4_NO_DX (pageswapargs_renderplane_offset_size+7) INDEXED_PAGE_7000_OFFSET
 
+;    FAR_memset (cachedheight, 0, sizeof(fixed_t) * SCREENHEIGHT);
 
 mov       ax, CACHEDHEIGHT_SEGMENT
 mov       es, ax
