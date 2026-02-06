@@ -583,37 +583,32 @@ UNCLIPPED_COLUMN  = 0FFFEh
 
 ; note remove masked start from here 
 
-jump_to_exit_draw_shadow_sprite:
-jmp   exit_draw_shadow_sprite
+
 
 PROC R_DrawMaskedSpriteShadow_ NEAR
 
 ; ax 	 pixelsegment
 ; cx:bx  column fardata
 
-; bp - 2     topscreen  segment
+; bp carries topscreen segment
 
 
 push  dx
 push  si
 push  di
 push  bp
-mov   bp, sp
-sub   sp, 2
-mov   si, bx
 
+
+mov   si, bx
 mov   es, cx
 
 
-; es is already cx
-cmp   byte ptr es:[si], 0FFh  ; todo cant this check be only at the end? can this be called with 0 posts?
-je    jump_to_exit_draw_shadow_sprite
 draw_next_shadow_sprite_post:
 ; es is in use
-mov   bx, word ptr ds:[_spryscale]
-mov   cx, word ptr ds:[_spryscale + 2]
+mov   bx, word ptr ds:[_spryscale]            ; todo selfmodify
+mov   cx, word ptr ds:[_spryscale + 2]        ; todo selfmodify
 mov   di, cx
-mov   al, byte ptr es:[si]
+mov   al, byte ptr es:[si + COLUMN_T.column_topdelta]
 xor   ah, ah  ; todo can this be cbw
 
 ;inlined FastMul16u32u_
@@ -624,16 +619,17 @@ MUL  BX        ; AX * BX
 ADD  DX, CX    ; add 
 
 
-add   ax, word ptr ds:[_sprtopscreen]
-mov   word ptr [bp - 2], ax
-adc   dx, word ptr ds:[_sprtopscreen + 2]
+add   ax, word ptr ds:[_sprtopscreen]         ; todo selfmodify
+mov   bp, ax
+adc   dx, word ptr ds:[_sprtopscreen + 2]      ; todo selfmodify
 mov   cx, dx
 
 ; todo cache above values to not grab these again?
 ; BX IS STILL _spryscale
+; DI is _spryscale + 2 copy
 
 
-mov   al, byte ptr es:[si + 1]
+mov   al, byte ptr es:[si + COLUMN_T.column_length]
 xor   ah, ah
 
 ;inlined FastMul16u32u_
@@ -645,14 +641,14 @@ ADD  DX, DI    ; add
 
 
 mov   bx, cx   ; bx store _sprtopscreen + 2
-add   ax, word ptr [bp - 2]
+add   ax, bp
 adc   dx, cx
 test  ax, ax
 jne   bottomscreen_not_zero
 dec   dx
 bottomscreen_not_zero:
-cmp   word ptr [bp - 2], 0
-je    topscreen_not_zero
+test  bp, bp
+jz    topscreen_not_zero
 inc   bx   				; inc _dc_yl
 topscreen_not_zero:
 mov   ax, dx  ; store dc_yh in ax...
@@ -686,12 +682,12 @@ jg   do_next_shadow_sprite_iteration
 mov   di, ax  ; finally pass off dc_yh to di
 ; _dc_texturemid = basetexturemid
 
-mov   bl, byte ptr es:[si]
+mov   bl, byte ptr es:[si + COLUMN_T.column_topdelta]
 
 xor   bh, bh
 sub   ax, bx
-cmp   dx, 0			; dx still holds dc_yl
-jne   high_border_adjusted
+test  dx, dx		; dx still holds dc_yl
+jnz   high_border_adjusted
 inc   dx 
 high_border_adjusted:
 SELFMODIFY_MASKED_viewheight_1:
@@ -756,19 +752,19 @@ call R_DrawFuzzColumn_
 
 do_next_shadow_sprite_iteration:
 add   si, 2
-cmp   byte ptr es:[si], 0FFh
+cmp   byte ptr es:[si + COLUMN_T.column_topdelta], 0FFh
 je    exit_draw_shadow_sprite
 jmp   draw_next_shadow_sprite_post
 exit_draw_shadow_sprite:
 
-LEAVE_MACRO
+pop   bp
 mov   cx, es
 pop   di
 pop   si
 pop   dx
 ret   
 
-endp
+ENDP
 
 
 
@@ -4411,12 +4407,7 @@ mov   byte ptr cs:[SELFMODIFY_MASKED_set_al_to_silhouette+1 - OFFSET R_MASK24_ST
 
 mov   ax, word ptr es:[di + DRAWSEG_T.drawseg_bsilheight]
 xor   dx, dx
-sar   ax, 1
-rcr   dx, 1
-sar   ax, 1
-rcr   dx, 1
-sar   ax, 1
-rcr   dx, 1
+SHIFT32_MACRO_RIGHT ax, dx, 3
 
 ;ax:dx = temp
 cmp   ax, word ptr ds:[bx + VISSPRITE_T.vs_gz + 2]
@@ -4435,12 +4426,8 @@ do_not_remove_bot_silhouette:
 
 mov   ax, word ptr es:[di + DRAWSEG_T.drawseg_tsilheight]
 xor   dx, dx
-sar   ax, 1
-rcr   dx, 1
-sar   ax, 1
-rcr   dx, 1
-sar   ax, 1
-rcr   dx, 1
+SHIFT32_MACRO_RIGHT ax, dx, 3
+
 
 ;dx:ax = temp
 

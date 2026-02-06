@@ -956,6 +956,15 @@ ELSE
 ENDIF
 ENDM
 
+PUSH_MACRO_WITH_REG MACRO register, immediate
+IF COMPISA GE COMPILE_186
+    push &immediate
+ELSE
+	mov  &register, &immediate
+	push &register
+ENDIF
+ENDM
+
 
 SHIFT_MACRO MACRO instruction, register, count
 
