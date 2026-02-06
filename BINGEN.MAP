@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/06 17:11:15
+Created on:       26/02/07 11:37:41
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -49,7 +49,7 @@ R_SPAN0_TEXT           CODE           AUTO           1b95:0000       0000063a
 R_SPANFL_TEXT          CODE           AUTO           1bf9:0000       00000591
 R_SKY_TEXT             CODE           AUTO           1c53:0000       00000d86
 R_SKYFL_TEXT           CODE           AUTO           1d2c:0000       00000303
-R_MASK24_TEXT          CODE           AUTO           1d5d:0000       0000189c
+R_MASK24_TEXT          CODE           AUTO           1d5d:0000       000018a0
 R_MASK16_TEXT          CODE           AUTO           1ee7:0000       000019ce
 R_MASK0_TEXT           CODE           AUTO           2084:0000       0000193a
 R_MASKFL_TEXT          CODE           AUTO           2218:0000       00001904
@@ -477,14 +477,15 @@ Module: r_mask24.obj(r_mask24.ASM)
 1d5d:0094*     FixedMulMaskedLocal_
 1d5d:0000*     _pagesegments
 1d5d:0012*     _fuzzoffset
-1d5d:17b1      R_WriteBackViewConstantsMasked24_
-1d5d:183e      R_WriteBackMaskedFrameConstants24_
+1d5d:17b5      R_WriteBackViewConstantsMasked24_
+1d5d:1842      R_WriteBackMaskedFrameConstants24_
 1d5d:00c1*     R_DrawFuzzColumn_
-1d5d:1425      R_DrawMasked24_
+1d5d:1424      R_DrawMasked24_
 1d5d:01fe*     R_DrawSingleMaskedColumn_
+1d5d:1204*     R_DrawSprite_
 1d5d:039f*     R_DrawVisSprite_
-1d5d:189c      R_MASK24_ENDMARKER_
-1d5d:14d6*     R_DrawMaskedColumn_
+1d5d:18a0      R_MASK24_ENDMARKER_
+1d5d:14da*     R_DrawMaskedColumn_
 1d5d:01be*     R_DrawColumnPrepMaskedMulti_
 1d5d:0000      R_MASK24_STARTMARKER_
 Module: r_mask16.obj(r_mask16.ASM)

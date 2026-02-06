@@ -786,8 +786,8 @@ call FixedMulMaskedLocal_
 
 jmp done_with_mul_vissprite
 
-
-PROC  R_DrawVisSprite_ NEAR
+; todo remove stack frame and just mov sp, bp before ret.
+PROC   R_DrawVisSprite_ NEAR
 PUBLIC R_DrawVisSprite_
 ; si is vissprite_t near pointer
 
@@ -4117,23 +4117,32 @@ SIL_TOP =    2
 SIL_BOTH =   3
 
 ; todo: only push bx?
+no_draw:
+mov   bx, word ptr ds:[bx + VISSPRITE_T.vs_next]
+jmp  done_with_drawsprite_skip_setter
 
-PROC R_DrawSprite_ NEAR
 
-; bp - 2	   ds_p segment. TODO always DRAWSEGS_BASE_SEGMENT
+PROC   R_DrawSprite_ NEAR
+PUBLIC R_DrawSprite_
+; bp - 2	   ds_p segment.  always DRAWSEGS_BASE_SEGMENT
 ; bp - 4       vissprite near pointer
 
-push  bp
-mov   bp, sp
 ; bx is already the sprite
-mov   dx, DRAWSEGS_BASE_SEGMENT
-push  dx        ; bp - 2
-push  bx        ; bp - 4h   ; bx is already vissprite
 
 les   si, dword ptr ds:[bx + VISSPRITE_T.vs_x1]
-mov   cx, es   ; ;  x2
-cmp   si, cx
-jg    no_clip   ; todo fall thru in which case is better?
+mov   cx, es    
+sub   cx, si
+jl    no_draw   ; no pixels
+PUSH_MACRO_WITH_REG dx DRAWSEGS_BASE_SEGMENT  ; bp - 2
+push  bx        ; bp - 4h   ; bx is already vissprite
+
+; write these ahead into immediates in the drawseg loop.
+mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_x1_1+1], si
+mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_x1_2+1], si
+mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_x2_1+1], es
+mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_x2_2+1], es
+mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_x2_3+1], es
+
 
 
 ;	for (x = spr->x1; x <= spr->x2; x++) {
@@ -4142,19 +4151,20 @@ jg    no_clip   ; todo fall thru in which case is better?
     
 ; init clipbot, cliptop
 
-inc   cx				     ; for the equals case.
-sub   cx, si   				 ; minus spr->x1
-shl   si, 1                  ; si 
+inc   cx				   ; for the equals case.
+shl   si, 1                ; word offset
 lea   di, [si + CLIPTOP_START_OFFSET]
 mov   ax, cs
 mov   es, ax
-push  cx                 ; backup for iter 2
-mov   ax, UNCLIPPED_COLUMN             ; -2
+push  cx                   ; bp - 6 count  for use in later loop
+push  cx                   ; bp - 8 backup for iter 2
+mov   ax, UNCLIPPED_COLUMN ; -2
 rep   stosw
 lea   di, [si + CLIPBOT_START_OFFSET]
-pop   cx                 ; restore for iter 2
-rep   stosw
+pop   cx                   ; bp - 8 restore for iter 2
+push  di                   ; bp - 8 clipbot start offset for use in later loop
 
+rep   stosw
 
 no_clip:
 
@@ -4162,13 +4172,16 @@ no_clip:
 mov   di, word ptr ds:[_ds_p]
 sub   di, SIZE DRAWSEG_T	
 jz   done_masking  ; no drawsegs! i suppose possible on a map edge.
-mov   es, dx   ; DRAWSEGS_BASE_SEGMENT from above
+mov   es, word ptr [bp - 2] ; DRAWSEGS_BASE_SEGMENT
+
 check_loop_conditions:
 
 ; compare ds->x1 > spr->x2
 mov   ax, word ptr es:[di + DRAWSEG_T.drawseg_x1]
-cmp   ax, word ptr ds:[bx + VISSPRITE_T.vs_x2]
+SELFMODIFY_MASKED_vissprite_x2_1:
+cmp   ax, 01000h    ; maybe put this in ax from outside the loop...?
 jng   continue_checking_if_drawseg_obscures_sprite
+
 iterate_next_drawseg_loop:
 ; note: es and bx dont necessaryly go together.
 ; es is paired with di and ds with bx.
@@ -4176,63 +4189,74 @@ les   bx, dword ptr [bp - 4]
 iterate_next_drawseg_loop_dont_restore_esbx:
 sub   di, SIZE DRAWSEG_T   
 jnz   check_loop_conditions
-done_masking:
-; check for unclipped columns
-push  bx  ; cache vissprite pointer bp - 6
-les   si, dword ptr ds:[bx + VISSPRITE_T.vs_x1]
-mov   cx, es 
-sub   cx, si
-jl    draw_the_vissprite
-inc   cx
-shl   si, 1
-add   si, CLIPBOT_START_OFFSET
-mov   bx, (SCREENWIDTH * 2)
 
-push  cs
-pop   ds
+done_masking:
+
+pop  si   ; bp - 8 get clipbot
+pop  cx   ; bp - 6 get count back
+
+mov   ax, word ptr ds:[bx + VISSPRITE_T.vs_next]
+mov   word ptr cs:[SELFMODIFY_MASKED_get_next_sprite+1], ax ; write ahead for next function call.
+
+mov   bx, CLIPTOP_START_OFFSET - CLIPBOT_START_OFFSET;  (SCREENWIDTH * 2)  ; clip top
+
+mov   ax, cs
+mov   ds, ax
 
 SELFMODIFY_MASKED_viewheight_2:
 mov   ax, 01000h
-mov   dx, UNCLIPPED_COLUMN
+mov   dx, 0FFFFh
+mov   es, dx
+dec   dx        ; UNCLIPPED_COLUMN, -2
 ; ds is cs here
 
 loop_clipping_columns:
+
+; todo: would this be faster with scasw pattern?
+
+; scan_for_next_instance:
+; repne scasb
+; mov   byte ptr ds:[di-1], ah
+; jnz scan_for_next_instance
+
 cmp   word ptr ds:[si], dx ; UNCLIPPED_COLUMN -2
 jne   dont_clip_bot
 mov   word ptr ds:[si], ax
 dont_clip_bot:
 cmp   word ptr ds:[si+bx], dx ; UNCLIPPED_COLUMN -2
 jne   dont_clip_top
-mov   word ptr ds:[si+bx], 0FFFFh
+mov   word ptr ds:[si+bx], es  ; 0FFFFh
 dont_clip_top:
 sub   si, dx ; add 2 by sub -2
 loop loop_clipping_columns
 
-push  ss
-pop   ds
+mov   ax, ss
+mov   ds, ax    ; restore ds
 
 
-draw_the_vissprite:
+
 ; could also be the segments and not the offsets.
-mov   word ptr ds:[_mfloorclip], CLIPBOT_START_OFFSET
+pop   si      ; vissprite pointer from bp - 4
+
+mov   word ptr ds:[_mfloorclip], CLIPBOT_START_OFFSET   ; todo sucks... maybe have drawvissprite use a different ptr than maskedsegrange?
 mov   word ptr ds:[_mfloorclip + 2], cs
 
 mov   word ptr ds:[_mceilingclip], CLIPTOP_START_OFFSET
 mov   word ptr ds:[_mceilingclip + 2], cs
-pop   si      ; vissprite pointer from above bp - 6
+
 call  R_DrawVisSprite_
+; restore bx, because R_DrawVisSprite_ does naughy things to stack and cant be trusted
 mov   word ptr ds:[_mceilingclip + 2], OPENINGS_SEGMENT
 mov   word ptr ds:[_mfloorclip + 2], OPENINGS_SEGMENT
 
-pop  bx ; restore bx
-pop  es ; garbage pop
-LEAVE_MACRO
+mov  sp, bp  ; reset stack
 
-ret   
+jmp  done_with_drawsprite
+
 continue_checking_if_drawseg_obscures_sprite:
 ; compare (ds->x2 < spr->x1)
 mov   ax, word ptr es:[di + DRAWSEG_T.drawseg_x2]
-cmp   ax, word ptr ds:[bx + VISSPRITE_T.vs_x1]
+cmp   ax, word ptr ds:[bx + VISSPRITE_T.vs_x1]   ; todo i think comparatively rare and maybe not worth the selfmodify. test?
 jl    iterate_next_drawseg_loop_dont_restore_esbx
 ;  (!ds->silhouette     && ds->maskedtexturecol_val == NULL_TEX_COL) ) {
 cmp   byte ptr es:[di + DRAWSEG_T.drawseg_silhouette], 0    ; TODO constants..
@@ -4279,7 +4303,7 @@ scale1_highbits_larger_than_scale2:
 ; if scalecheckpass is 0, go calculate lowscalecheck pass. 
 ; if not, the following if/else fails and we skip out early
 
-cmp   ax, word ptr ds:[bx + VISSPRITE_T.vs_scale + 2]
+cmp   ax, word ptr ds:[bx + VISSPRITE_T.vs_scale + 2]  ; todo consider selfmodify
 jl    set_r1_r2_and_render_masked_set_range
 jne   get_lowscalepass_1
 cmp   dx, word ptr ds:[bx + VISSPRITE_T.vs_scale + 0]
@@ -4295,19 +4319,24 @@ cmp   word ptr es:[di + DRAWSEG_T.drawseg_maskedtexturecol_val], NULL_TEX_COL
 je    jump_to_iterate_next_drawseg_loop
 ;  r1 = ds->x1 < spr->x1 ? spr->x1 : ds->x1;
 ;  set r1 to the greater of the two.
+
 mov   ax, word ptr es:[di + DRAWSEG_T.drawseg_x1] ; ds->x1
-cmp   ax, word ptr ds:[bx + VISSPRITE_T.vs_x1]
+SELFMODIFY_MASKED_vissprite_x1_1:
+mov   cx, 01000h
+cmp   ax, cx
 jge   r1_stays_ds_x1
-mov   ax, word ptr ds:[bx + VISSPRITE_T.vs_x1]   ; spr->x1
+xchg  ax, cx  ; ax gets spr->x1
 r1_stays_ds_x1:
 
 ; r2 = ds->x2 > spr->x2 ? spr->x2 : ds->x2;
 ; set r2 as the minimum of the two.
-mov   cx, word ptr ds:[bx + VISSPRITE_T.vs_x2]    ; spr->x2
-cmp   cx, word ptr es:[di + DRAWSEG_T.drawseg_x2]
-jle   r2_stays_ds_x2
+SELFMODIFY_MASKED_vissprite_x2_2:
+mov   cx, 01000h
+mov   dx, word ptr es:[di + DRAWSEG_T.drawseg_x2]
+cmp   cx, dx
+jle    r2_stays_ds_x2
 
-mov   cx, word ptr es:[di + DRAWSEG_T.drawseg_x2] ; ds->x2
+mov   cx, dx
 
 r2_stays_ds_x2:
 
@@ -4315,13 +4344,14 @@ r2_stays_ds_x2:
 
 call  R_RenderMaskedSegRange_
 jmp   iterate_next_drawseg_loop
+
 get_lowscalepass_1:
 
 ;			lowscalecheckpass = ds->scale2 < spr->scale;
 
 ;dx:bx = ds->scale2
 
-cmp   cx, word ptr ds:[bx + VISSPRITE_T.vs_scale + 2]
+cmp   cx, word ptr ds:[bx + VISSPRITE_T.vs_scale + 2] ; todo selfmodify?
 jl    do_R_PointOnSegSide_check
 jne   failed_check_pass_set_r1_r2
 cmp   si, word ptr ds:[bx + VISSPRITE_T.vs_scale + 0]
@@ -4339,7 +4369,7 @@ lowscalecheckpass_set_route2:
 ; ax:dx is still ds->scale1
 
 
-cmp   ax, word ptr ds:[bx + VISSPRITE_T.vs_scale + 2]
+cmp   ax, word ptr ds:[bx + VISSPRITE_T.vs_scale + 2] ; todo selfmodify?
 jl    do_R_PointOnSegSide_check
 jne   failed_check_pass_set_r1_r2
 cmp   dx, word ptr ds:[bx + VISSPRITE_T.vs_scale + 0]
@@ -4367,22 +4397,25 @@ failed_check_pass_set_r1_r2:
 
 
 mov   si, word ptr es:[di + DRAWSEG_T.drawseg_x1]  ; spr->x1
-cmp   si, word ptr ds:[bx + VISSPRITE_T.vs_x1]
+SELFMODIFY_MASKED_vissprite_x1_2:
+mov   cx, 01000h
+cmp   si, cx
 jnl   r1_set
-
 spr_x1_smaller_than_ds_x1:
-mov   si, word ptr ds:[bx +  VISSPRITE_T.vs_x1]
+mov   si, cx
 r1_set:
 
 ;		r2 = ds->x2 > spr->x2 ? spr->x2 : ds->x2;
 
+SELFMODIFY_MASKED_vissprite_x2_3:
+mov   dx, 01000h
 mov   cx, word ptr es:[di + DRAWSEG_T.drawseg_x2]	; spr->x2
-cmp   cx, word ptr ds:[bx + VISSPRITE_T.vs_x2]		; ds->x2
+cmp   cx, dx 		; ds->x2
 jng   r2_set
 
 
 spr_x2_greater_than_dx_x2:
-mov   cx, word ptr ds:[bx +  VISSPRITE_T.vs_x2]
+mov   cx, dx
 r2_set:
 
 ; si is r1 and cx is r2
@@ -4558,6 +4591,10 @@ PROC R_DrawMasked24_ FAR
 PUBLIC R_DrawMasked24_
 
 PUSHA_NO_AX_OR_BP_MACRO
+push  bp
+mov   bp, sp
+
+
 
 
 ;    if (vissprite_p > 0) {
@@ -4702,14 +4739,17 @@ mov        bx, word ptr ds:[di + VISSPRITE_T.vs_next]  ; set up bx for following
 
 draw_next_sprite:
 
-call R_DrawSprite_
-mov  bx, word ptr ds:[bx + VISSPRITE_T.vs_next]
-
+jmp  R_DrawSprite_
+done_with_drawsprite:
+SELFMODIFY_MASKED_get_next_sprite:
+mov  bx, 01000h ; previous ds:[bx + VISSPRITE_T.vs_next]
+done_with_drawsprite_skip_setter:
 
 cmp  bx, OFFSET _vsprsortedhead
-jne  draw_next_sprite
+jne  draw_next_sprite   ; todo jne to R_DrawSprite instead
 
 done_drawing_sprites:
+
 
 les  di, dword ptr ds:[_ds_p]
 
@@ -4733,6 +4773,7 @@ ja   check_next_seg
 done_rendering_masked_segranges:
 call R_DrawPlayerSprites_
 exit_draw_masked:
+LEAVE_MACRO
 POPA_NO_AX_OR_BP_MACRO
 retf
 
