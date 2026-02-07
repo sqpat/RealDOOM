@@ -4116,11 +4116,216 @@ SIL_BOTTOM = 1
 SIL_TOP =    2
 SIL_BOTH =   3
 
-; todo: only push bx?
-no_draw:
-mov   bx, word ptr ds:[bx + VISSPRITE_T.vs_next]
-jmp  done_with_drawsprite_skip_setter
 
+
+
+
+END_OF_VISSPRITE_SORTED_LOOP   = 0
+
+
+PROC R_DrawMasked24_ FAR
+PUBLIC R_DrawMasked24_
+
+PUSHA_NO_AX_OR_BP_MACRO
+push  bp
+mov   bp, sp
+
+
+
+
+;    if (vissprite_p > 0) {
+mov       bx, OFFSET _vissprites
+mov       ax, word ptr ds:[_vissprite_p]
+
+cmp  ax, bx
+jbe  done_drawing_sprites ; no sprites.
+
+;call R_SortVisSprites_  ; inlined
+
+; di stores vsprsortedheadprev
+; bp stores unsorted
+; si stores best
+; ax stores iterator
+
+; no need to check for count on inside, we already check on outside.
+
+push      bp
+mov       bp, bx         ; back up &vissprites[0]
+mov       di, OFFSET _vsprsortedhead
+
+; create default list
+;   for (ds=vissprites ; ds<vissprite_p ; ds++) {
+;	    ds->next = ds+1;
+;   	ds->prev = ds-1;
+;   }
+
+
+loop_set_vissprite_next:
+; bx is current counter
+
+mov       word ptr ds:[bx + VISSPRITE_T.vs_prev], si ; ds->prev = ds-1;  first iter sets this to garbage, clean up later
+mov       si, bx                    ; si = ds
+add       bx, (SIZE VISSPRITE_T)  
+mov       word ptr ds:[si + VISSPRITE_T.vs_next], bx   ; ds->next = ds+1;
+cmp       bx, ax    ; ax is vissprite_p
+jb        loop_set_vissprite_next
+
+done_setting_vissprite_next:
+
+; unsorted will be sp, so sp + 0 = next, sp + 2 = prev.
+push      si ; unsorted->prev = vissprite_p - 1
+push      bp ; unsorted->next = vissprites[0]
+mov       word ptr ss:[bp + VISSPRITE_T.vs_prev], sp ; vissprites[0].prev = &unsorted;
+mov       word ptr ds:[si + VISSPRITE_T.vs_next], sp ; (vissprite_p-1)->next = &unsorted;
+
+mov       bp, sp   ; finally set bp to unsorted for the rest of the function
+
+;    vsprsortedhead.next = vsprsortedhead.prev = &vsprsortedhead;
+mov       word ptr ds:[di + VISSPRITE_T.vs_next], di ; vsprsortedhead.prev = &vsprsortedhead;
+mov       word ptr ds:[di + VISSPRITE_T.vs_prev], di ; vsprsortedhead.next = &vsprsortedhead;
+
+
+
+loop_vissprite_sort:
+
+
+;DX:CX is bestscale
+
+; bp is unsorted
+; bx is ds
+; si is best
+
+
+; instead of maxlong, just set it to the first one... inlined first iteration
+mov       bx, word ptr ss:[bp + VISSPRITE_T.vs_next]    ; ds = unsorted.next
+; could just jmp unsorted_next_is_best_next here
+les       cx, dword ptr ds:[bx + VISSPRITE_T.vs_scale]
+mov       dx, es        ;	bestscale = ds->scale;
+mov       si, bx        ;   best = ds;
+mov       bx, word ptr ds:[bx + VISSPRITE_T.vs_next]
+cmp       bx, bp        ; ds!= &unsorted
+je        done_with_sort_subloop
+
+
+loop_sort_subloop:
+
+cmp       dx, word ptr ds:[bx + VISSPRITE_T.vs_scale + 2]
+jg        unsorted_next_is_best_next
+jne       iter_next_find_best_index_loop
+cmp       cx, word ptr ds:[bx + VISSPRITE_T.vs_scale]
+jbe       iter_next_find_best_index_loop
+unsorted_next_is_best_next:
+
+les       cx, dword ptr ds:[bx + VISSPRITE_T.vs_scale]
+mov       dx, es        ;	bestscale = ds->scale;
+mov       si, bx        ;   best = ds;
+
+iter_next_find_best_index_loop:
+
+mov       bx, word ptr ds:[bx + VISSPRITE_T.vs_next]
+cmp       bx, bp  ; ds!= &unsorted
+jne       loop_sort_subloop
+
+done_with_sort_subloop:
+
+
+;	best->next->prev = best->prev;
+;	best->prev->next = best->next;
+;	best->next = &vsprsortedhead;
+;	best->prev = vsprsortedhead.prev;
+;	vsprsortedhead.prev->next = best;
+;	vsprsortedhead.prev = best;
+
+
+mov       bx, word ptr ds:[si + VISSPRITE_T.vs_next]   ; bx = best->next
+mov       dx, word ptr ds:[si + VISSPRITE_T.vs_prev]   ; dx = best->prev
+
+mov       word ptr ds:[bx + VISSPRITE_T.vs_prev], dx   ; best->next->prev = best->prev;
+xchg      bx, dx
+mov       word ptr ds:[bx + VISSPRITE_T.vs_next], dx   ; best->prev->next = best->next;
+
+mov       word ptr ds:[si + VISSPRITE_T.vs_next], di   ; best->next = &vsprsortedhead;
+
+mov       bx, word ptr ds:[di + VISSPRITE_T.vs_prev]   ; bx = vsprsortedhead.prev
+mov       word ptr ds:[si + VISSPRITE_T.vs_prev], bx   ; best->prev = vsprsortedhead.prev;
+mov       word ptr ds:[bx + VISSPRITE_T.vs_next], si   ; vsprsortedhead.prev->next = best;
+mov       word ptr ds:[di + VISSPRITE_T.vs_prev], si   ; vsprsortedhead.prev = best;
+
+sub       ax, SIZE VISSPRITE_T
+cmp       ax, OFFSET _vissprites ; iterate once per vissprite_p; ax started as vissprite_p and _vissprites is array base
+jg        loop_vissprite_sort
+
+exit_sort_vissprites:
+pop        ax
+pop        ax ; add sp, 4
+pop        bp
+
+; di is still _vsprsortedhead
+mov        bx, word ptr ds:[di + VISSPRITE_T.vs_next]  ; set up bx for following loop
+
+; END R_SortVisSprites_
+
+;	for (spr = vsprsortedheadfirst ;
+;       spr != END_OF_VISSPRITE_SORTED_LOOP ;
+;       spr=vissprites[spr].next) {
+;       R_DrawSprite (&vissprites[spr]);
+;   }
+
+
+; SET FUNCTION CONSTANTS FOR DRAWSPRITE LOOP 
+
+PUSH_MACRO_WITH_REG dx DRAWSEGS_BASE_SEGMENT  ; bp - 2
+push  bx                                      ; bp - 4h   ; bx is already vissprite
+
+jmp  R_DrawSprite_  ; draw first sprite
+
+
+done_drawing_sprites:
+
+mov   sp, bp ; undo stack
+; now start iterating drawsegs for masked seg ranges
+les  di, dword ptr ds:[_ds_p]
+sub  di, (SIZE DRAWSEG_T)
+
+jle  done_rendering_masked_segranges
+
+check_next_seg:
+cmp  word ptr es:[di + DRAWSEG_T.drawseg_maskedtexturecol_val], NULL_TEX_COL
+je   not_masked
+
+mov  ax, word ptr es:[di + DRAWSEG_T.drawseg_x1]
+mov  cx, word ptr es:[di + DRAWSEG_T.drawseg_x2]
+
+call R_RenderMaskedSegRange_
+mov  es, word ptr ds:[_ds_p + 2] ; retrieve segment
+not_masked:
+sub  di, (SIZE DRAWSEG_T)
+
+ja   check_next_seg
+done_rendering_masked_segranges:
+call R_DrawPlayerSprites_
+exit_draw_masked:
+LEAVE_MACRO
+POPA_NO_AX_OR_BP_MACRO
+retf
+
+ENDP
+
+
+; LOOP EXTRA CALLS TO DRAWSPRITE HERE
+
+done_with_drawsprite:
+no_draw:            ; in theory this doesnt need a pop, but its rare and otherwise we cant balance stack.
+pop  bx   ; bp - 4
+
+mov  bx, word ptr ds:[bx + VISSPRITE_T.vs_next]
+push bx   ; bp - 4
+
+
+cmp  bx, OFFSET _vsprsortedhead
+je   done_drawing_sprites   ; todo jne to R_DrawSprite instead
+
+; fall thru to R_DrawSprite_
 
 PROC   R_DrawSprite_ NEAR
 PUBLIC R_DrawSprite_
@@ -4133,8 +4338,7 @@ les   si, dword ptr ds:[bx + VISSPRITE_T.vs_x1]
 mov   cx, es    
 sub   cx, si
 jl    no_draw   ; no pixels
-PUSH_MACRO_WITH_REG dx DRAWSEGS_BASE_SEGMENT  ; bp - 2
-push  bx        ; bp - 4h   ; bx is already vissprite
+push  bx        ; bp - 6h   ; bx is already vissprite
 
 ; write these ahead into immediates in the drawseg loop.
 mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_x1_1+1], si
@@ -4156,13 +4360,13 @@ shl   si, 1                ; word offset
 lea   di, [si + CLIPTOP_START_OFFSET]
 mov   ax, cs
 mov   es, ax
-push  cx                   ; bp - 6 count  for use in later loop
-push  cx                   ; bp - 8 backup for iter 2
+push  cx                   ; bp - 8 count  for use in later loop
+push  cx                   ; bp - 0Ah backup for iter 2
 mov   ax, UNCLIPPED_COLUMN ; -2
 rep   stosw
 lea   di, [si + CLIPBOT_START_OFFSET]
-pop   cx                   ; bp - 8 restore for iter 2
-push  di                   ; bp - 8 clipbot start offset for use in later loop
+pop   cx                   ; bp - 0Ah restore for iter 2
+push  di                   ; bp - 0Ah clipbot start offset for use in later loop
 
 rep   stosw
 
@@ -4192,11 +4396,9 @@ jnz   check_loop_conditions
 
 done_masking:
 
-pop  si   ; bp - 8 get clipbot
-pop  cx   ; bp - 6 get count back
+pop  si   ; bp - 0Ah get clipbot
+pop  cx   ; bp - 8 get count back
 
-mov   ax, word ptr ds:[bx + VISSPRITE_T.vs_next]
-mov   word ptr cs:[SELFMODIFY_MASKED_get_next_sprite+1], ax ; write ahead for next function call.
 
 mov   bx, CLIPTOP_START_OFFSET - CLIPBOT_START_OFFSET;  (SCREENWIDTH * 2)  ; clip top
 
@@ -4236,7 +4438,7 @@ mov   ds, ax    ; restore ds
 
 
 ; could also be the segments and not the offsets.
-pop   si      ; vissprite pointer from bp - 4
+pop   si      ; vissprite pointer from bp - 6
 
 mov   word ptr ds:[_mfloorclip], CLIPBOT_START_OFFSET   ; todo sucks... maybe have drawvissprite use a different ptr than maskedsegrange?
 mov   word ptr ds:[_mfloorclip + 2], cs
@@ -4249,7 +4451,7 @@ call  R_DrawVisSprite_
 mov   word ptr ds:[_mceilingclip + 2], OPENINGS_SEGMENT
 mov   word ptr ds:[_mfloorclip + 2], OPENINGS_SEGMENT
 
-mov  sp, bp  ; reset stack
+; sp should be bp - 4 again
 
 jmp  done_with_drawsprite
 
@@ -4276,7 +4478,7 @@ mov   si, word ptr es:[di + DRAWSEG_T.drawseg_scale2 + 0]
 mov   cx, word ptr es:[di + DRAWSEG_T.drawseg_scale2 + 2]
 cmp   ax, cx
 jg    scale1_highbits_larger_than_scale2
-je    scale1_highbits_equal_to_scale2
+je    compare_lowbits_scale1_scale2
 
 scale1_smaller_than_scale2:
 
@@ -4291,7 +4493,7 @@ jae   lowscalecheckpass_set_route2
 jmp   set_r1_r2_and_render_masked_set_range
 
 
-scale1_highbits_equal_to_scale2:
+compare_lowbits_scale1_scale2:
 cmp   dx, si
 jbe   scale1_smaller_than_scale2
 scale1_highbits_larger_than_scale2:
@@ -4581,204 +4783,6 @@ jmp   iterate_next_drawseg_loop
 
 
 ENDP
-
-
-
-END_OF_VISSPRITE_SORTED_LOOP   = 0
-
-
-PROC R_DrawMasked24_ FAR
-PUBLIC R_DrawMasked24_
-
-PUSHA_NO_AX_OR_BP_MACRO
-push  bp
-mov   bp, sp
-
-
-
-
-;    if (vissprite_p > 0) {
-mov       bx, OFFSET _vissprites
-mov       ax, word ptr ds:[_vissprite_p]
-
-cmp  ax, bx
-jbe  done_drawing_sprites ; no sprites.
-
-;call R_SortVisSprites_  ; inlined
-
-; di stores vsprsortedheadprev
-; bp stores unsorted
-; si stores best
-; ax stores iterator
-
-; no need to check for count on inside, we already check on outside.
-
-push      bp
-mov       bp, bx         ; back up &vissprites[0]
-mov       di, OFFSET _vsprsortedhead
-
-; create default list
-;   for (ds=vissprites ; ds<vissprite_p ; ds++) {
-;	    ds->next = ds+1;
-;   	ds->prev = ds-1;
-;   }
-
-
-loop_set_vissprite_next:
-; bx is current counter
-
-mov       word ptr ds:[bx + VISSPRITE_T.vs_prev], si ; ds->prev = ds-1;  first iter sets this to garbage, clean up later
-mov       si, bx                    ; si = ds
-add       bx, (SIZE VISSPRITE_T)  
-mov       word ptr ds:[si + VISSPRITE_T.vs_next], bx   ; ds->next = ds+1;
-cmp       bx, ax    ; ax is vissprite_p
-jb        loop_set_vissprite_next
-
-done_setting_vissprite_next:
-
-; unsorted will be sp, so sp + 0 = next, sp + 2 = prev.
-push      si ; unsorted->prev = vissprite_p - 1
-push      bp ; unsorted->next = vissprites[0]
-mov       word ptr ss:[bp + VISSPRITE_T.vs_prev], sp ; vissprites[0].prev = &unsorted;
-mov       word ptr ds:[si + VISSPRITE_T.vs_next], sp ; (vissprite_p-1)->next = &unsorted;
-
-mov       bp, sp   ; finally set bp to unsorted for the rest of the function
-
-;    vsprsortedhead.next = vsprsortedhead.prev = &vsprsortedhead;
-mov       word ptr ds:[di + VISSPRITE_T.vs_next], di ; vsprsortedhead.prev = &vsprsortedhead;
-mov       word ptr ds:[di + VISSPRITE_T.vs_prev], di ; vsprsortedhead.next = &vsprsortedhead;
-
-
-
-loop_vissprite_sort:
-
-
-;DX:CX is bestscale
-
-; bp is unsorted
-; bx is ds
-; si is best
-
-
-; instead of maxlong, just set it to the first one... inlined first iteration
-mov       bx, word ptr ss:[bp + VISSPRITE_T.vs_next]    ; ds = unsorted.next
-; could just jmp unsorted_next_is_best_next here
-les       cx, dword ptr ds:[bx + VISSPRITE_T.vs_scale]
-mov       dx, es        ;	bestscale = ds->scale;
-mov       si, bx        ;   best = ds;
-mov       bx, word ptr ds:[bx + VISSPRITE_T.vs_next]
-cmp       bx, bp        ; ds!= &unsorted
-je        done_with_sort_subloop
-
-
-loop_sort_subloop:
-
-cmp       dx, word ptr ds:[bx + VISSPRITE_T.vs_scale + 2]
-jg        unsorted_next_is_best_next
-jne       iter_next_find_best_index_loop
-cmp       cx, word ptr ds:[bx + VISSPRITE_T.vs_scale]
-jbe       iter_next_find_best_index_loop
-unsorted_next_is_best_next:
-
-les       cx, dword ptr ds:[bx + VISSPRITE_T.vs_scale]
-mov       dx, es        ;	bestscale = ds->scale;
-mov       si, bx        ;   best = ds;
-
-iter_next_find_best_index_loop:
-
-mov       bx, word ptr ds:[bx + VISSPRITE_T.vs_next]
-cmp       bx, bp  ; ds!= &unsorted
-jne       loop_sort_subloop
-
-done_with_sort_subloop:
-
-
-;	best->next->prev = best->prev;
-;	best->prev->next = best->next;
-;	best->next = &vsprsortedhead;
-;	best->prev = vsprsortedhead.prev;
-;	vsprsortedhead.prev->next = best;
-;	vsprsortedhead.prev = best;
-
-
-mov       bx, word ptr ds:[si + VISSPRITE_T.vs_next]   ; bx = best->next
-mov       dx, word ptr ds:[si + VISSPRITE_T.vs_prev]   ; dx = best->prev
-
-mov       word ptr ds:[bx + VISSPRITE_T.vs_prev], dx   ; best->next->prev = best->prev;
-xchg      bx, dx
-mov       word ptr ds:[bx + VISSPRITE_T.vs_next], dx   ; best->prev->next = best->next;
-
-mov       word ptr ds:[si + VISSPRITE_T.vs_next], di   ; best->next = &vsprsortedhead;
-
-mov       bx, word ptr ds:[di + VISSPRITE_T.vs_prev]   ; bx = vsprsortedhead.prev
-mov       word ptr ds:[si + VISSPRITE_T.vs_prev], bx   ; best->prev = vsprsortedhead.prev;
-mov       word ptr ds:[bx + VISSPRITE_T.vs_next], si   ; vsprsortedhead.prev->next = best;
-mov       word ptr ds:[di + VISSPRITE_T.vs_prev], si   ; vsprsortedhead.prev = best;
-
-sub       ax, SIZE VISSPRITE_T
-cmp       ax, OFFSET _vissprites ; iterate once per vissprite_p; ax started as vissprite_p and _vissprites is array base
-jg        loop_vissprite_sort
-
-exit_sort_vissprites:
-pop        ax
-pop        ax ; add sp, 4
-pop        bp
-
-; di is still _vsprsortedhead
-mov        bx, word ptr ds:[di + VISSPRITE_T.vs_next]  ; set up bx for following loop
-
-; END R_SortVisSprites_
-
-;	for (spr = vsprsortedheadfirst ;
-;       spr != END_OF_VISSPRITE_SORTED_LOOP ;
-;       spr=vissprites[spr].next) {
-;       R_DrawSprite (&vissprites[spr]);
-;   }
-
-
-
-draw_next_sprite:
-
-jmp  R_DrawSprite_
-done_with_drawsprite:
-SELFMODIFY_MASKED_get_next_sprite:
-mov  bx, 01000h ; previous ds:[bx + VISSPRITE_T.vs_next]
-done_with_drawsprite_skip_setter:
-
-cmp  bx, OFFSET _vsprsortedhead
-jne  draw_next_sprite   ; todo jne to R_DrawSprite instead
-
-done_drawing_sprites:
-
-
-les  di, dword ptr ds:[_ds_p]
-
-sub  di, (SIZE DRAWSEG_T)
-
-jle  done_rendering_masked_segranges
-
-check_next_seg:
-cmp  word ptr es:[di + DRAWSEG_T.drawseg_maskedtexturecol_val], NULL_TEX_COL
-je   not_masked
-
-mov  ax, word ptr es:[di + DRAWSEG_T.drawseg_x1]
-mov  cx, word ptr es:[di + DRAWSEG_T.drawseg_x2]
-
-call R_RenderMaskedSegRange_
-mov  es, word ptr ds:[_ds_p + 2] ; retrieve segment
-not_masked:
-sub  di, (SIZE DRAWSEG_T)
-
-ja   check_next_seg
-done_rendering_masked_segranges:
-call R_DrawPlayerSprites_
-exit_draw_masked:
-LEAVE_MACRO
-POPA_NO_AX_OR_BP_MACRO
-retf
-
-ENDP
-
 
 
 
