@@ -87,8 +87,8 @@ dw  00050h, 00050h, 00050h, 0FFB0h, 00050h
 
 
 IF COMPISA GE COMPILE_386
-
-PROC FixedMulMaskedLocal_ NEAR
+; todo used only once. 
+PROC FixedMulMaskedLocal_ NEAR   ; fairly optimized
 ; thanks zero318 from discord for improved algorithm  
 
 ; DX:AX  *  CX:BX
@@ -109,7 +109,7 @@ ENDP
 ELSE
 
 
-PROC   FixedMulMaskedLocal_ NEAR
+PROC   FixedMulMaskedLocal_ NEAR   ; fairly optimized
 PUBLIC FixedMulMaskedLocal_
 ; DX:AX  *  CX:BX
 ;  0  1      2  3
@@ -174,7 +174,7 @@ COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - C
 	
 ; all 3 instances called from R_RenderMaskedSegRange_
 
-PROC   R_DrawSingleMaskedColumn_  NEAR 
+PROC   R_DrawSingleMaskedColumn_  NEAR    ; fairly unoptimized, barely runs
 PUBLIC R_DrawSingleMaskedColumn_
 push  cx
 push  si
@@ -386,7 +386,7 @@ UNCLIPPED_COLUMN  = 0FFFEh
 exit_draw_masked_column_shadow_early:
 ret
 
-PROC R_DrawMaskedSpriteShadow_ NEAR
+PROC R_DrawMaskedSpriteShadow_ NEAR  ; fairly optimized
 
 ; ax 	 pixelsegment
 ; cx:bx  column fardata
@@ -709,7 +709,7 @@ call FixedMulMaskedLocal_
 jmp done_with_mul_vissprite
 
 
-PROC   R_DrawVisSprite_ NEAR
+PROC   R_DrawVisSprite_ NEAR  ; fairly optimized.
 PUBLIC R_DrawVisSprite_
 ; si is vissprite_t near pointer
 
@@ -1105,7 +1105,7 @@ ENDP
 
 
 
-PROC R_RenderMaskedSegRange_ NEAR
+PROC R_RenderMaskedSegRange_ NEAR ; todo definitely needs another look
 
 ;void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2) {
 
@@ -1589,7 +1589,49 @@ SELFMODIFY_MASKED_dc_texturemid_lo_2:
 mov   bx, 01000h
 SELFMODIFY_MASKED_dc_texturemid_hi_2:
 mov   cx, 01000h
-call FixedMulMaskedLocal_
+
+; clobbers SI, seems safe? if not use es
+
+; call FixedMulMaskedLocal_  ; inlined
+
+
+IF COMPISA GE COMPILE_386
+  shl  ecx, 16
+  mov  cx, bx
+  xchg ax, dx
+  shl  eax, 16
+  xchg ax, dx
+  imul  ecx
+  shr  eax, 16
+
+ENDP
+ELSE
+
+
+    MOV  SI, DX
+    PUSH AX
+    MUL  BX
+    MOV  es, DX
+    MOV  AX, SI
+    MUL  CX
+    XCHG AX, SI
+    CWD
+    AND  DX, BX
+    SUB  SI, DX
+    MUL  BX
+    MOV  BX, ES
+    ADD  AX, BX
+    ADC  SI, DX
+    XCHG AX, CX
+    CWD
+    POP  BX
+    AND  DX, BX
+    SUB  SI, DX
+    MUL  BX
+    ADD  AX, CX
+    ADC  DX, SI
+ENDIF
+
 
 
 mov   word ptr cs:[SELFMODIFY_MASKED_sprtopscreen_lo+4 - OFFSET R_MASK24_STARTMARKER_], ax	  ; sprtopscreen_step
@@ -1776,7 +1818,45 @@ jz    do_16_bit_mul_after_all
 dec   dx
 do_32_bit_mul_after_all:
 
-call FixedMulMaskedLocal_
+;call FixedMulMaskedLocal_  ; inlined
+
+
+IF COMPISA GE COMPILE_386
+  shl  ecx, 16
+  mov  cx, bx
+  xchg ax, dx
+  shl  eax, 16
+  xchg ax, dx
+  imul  ecx
+  shr  eax, 16
+
+ENDP
+ELSE
+
+
+    MOV  SI, DX
+    PUSH AX
+    MUL  BX
+    MOV  es, DX
+    MOV  AX, SI
+    MUL  CX
+    XCHG AX, SI
+    CWD
+    AND  DX, BX
+    SUB  SI, DX
+    MUL  BX
+    MOV  BX, ES
+    ADD  AX, BX
+    ADC  SI, DX
+    XCHG AX, CX
+    CWD
+    POP  BX
+    AND  DX, BX
+    SUB  SI, DX
+    MUL  BX
+    ADD  AX, CX
+    ADC  DX, SI
+ENDIF
 
 
 jmp done_with_mul
@@ -2068,7 +2148,7 @@ SPRITE_COLUMN_SEGMENT = 09000h
 SCRATCH_ADDRESS_4000_SEGMENT = 04000h
 SCRATCH_ADDRESS_5000_SEGMENT = 05000h
 
-PROC R_GetSpriteTexture_ NEAR
+PROC R_GetSpriteTexture_ NEAR  ; needs another look
 
 push  dx
 push  si
@@ -2135,7 +2215,7 @@ ENDP
 
 
 
-PROC R_GetNextSpriteBlock_ NEAR
+PROC R_GetNextSpriteBlock_ NEAR  ; todo improve. do this stackless
 
 
 
@@ -2143,12 +2223,9 @@ PUSHA_NO_AX_MACRO
 push      bp
 mov       bp, sp
 
-IF COMPISA GE COMPILE_186
-    push      CACHETYPE_SPRITE 
-ELSE
-    mov   dx, CACHETYPE_SPRITE 
-    push  dx
-ENDIF
+
+PUSH_MACRO_WITH_REG dx CACHETYPE_SPRITE
+
 sub       ax, word ptr ds:[_firstspritelump]
 mov       dx, SPRITETOTALDATASIZES_SEGMENT
 mov       es, dx
@@ -2157,12 +2234,8 @@ sal       bx, 1
 mov       dx, word ptr es:[bx] ; dx = size
 mov       bl, dh
 push      bx  ; bp - 4  only bl technically
-IF COMPISA GE COMPILE_186
-    push      NUM_SPRITE_CACHE_PAGES 
-ELSE
-    mov   di, NUM_SPRITE_CACHE_PAGES 
-    push  di
-ENDIF
+
+PUSH_MACRO_WITH_REG di NUM_SPRITE_CACHE_PAGES
 
 
 push      ax  ; bp - 6  store for later
@@ -2465,7 +2538,7 @@ ENDP
 
 
 
-PROC R_EvictL2CacheEMSPage_Sprite_ NEAR
+PROC R_EvictL2CacheEMSPage_Sprite_ NEAR ; needs another look
 
 ; bp - 2 currentpage
 
@@ -2691,7 +2764,7 @@ ENDP
 
 ENDP
 
-PROC R_MarkL2SpriteCacheMRU_ NEAR
+PROC R_MarkL2SpriteCacheMRU_ NEAR ; needs another look
 
 ;	if (index == spritecache_l2_head) {
 ;		return;
@@ -2932,7 +3005,7 @@ mov   ax, es
 ret   
 
 
-PROC R_GetSpritePage_ NEAR
+PROC R_GetSpritePage_ NEAR ; needs another look
 
 PUSHA_NO_AX_MACRO
 push  bp
@@ -3385,7 +3458,7 @@ ENDP
 ; ax = lump
 ; dx = segment
 
-PROC R_LoadSpriteColumns_ NEAR
+PROC R_LoadSpriteColumns_ NEAR ; needs another look
 
 PUSHA_NO_AX_MACRO
 push      bp
@@ -3540,7 +3613,7 @@ ENDP
 
 IF COMPISA GE COMPILE_386
 
-    PROC FastDiv3232FFFF_ NEAR
+    PROC FastDiv3232FFFF_ NEAR    ; needs another look, compare with bsp's version
 
     ; EDX:EAX as 00000000 FFFFFFFF
 
@@ -3579,7 +3652,7 @@ ELSE
     ;FastDiv3232FFFF_
     ; DX:AX / CX:BX
 
-    PROC FastDiv3232FFFF_ NEAR
+    PROC FastDiv3232FFFF_ NEAR    ; needs another look, compare with bsp's version
 
 
 
@@ -3782,7 +3855,7 @@ ENDIF
 
 ;R_PointOnSegSide_
 
-PROC R_PointOnSegSide_ NEAR
+PROC R_PointOnSegSide_ NEAR  ; needs another look
 
 push  di
 push  bp
@@ -4043,7 +4116,7 @@ SIL_BOTH =   3
 END_OF_VISSPRITE_SORTED_LOOP   = 0
 
 
-PROC R_DrawMasked24_ FAR
+PROC   R_DrawMasked24_ FAR   ; fairly optimized? doesnt run much, procedural
 PUBLIC R_DrawMasked24_
 
 PUSHA_NO_AX_OR_BP_MACRO
@@ -4226,8 +4299,6 @@ done_rendering_masked_segranges:
 ;call R_DrawPlayerSprites_  ; inlined
 
 
-;PROC R_DrawPlayerSprites_ NEAR
-
 ; todo some sort of special draw unclipped sprite function? can scale lookups also be optimized?
 mov  word ptr ds:[_mfloorclip], OFFSET_SCREENHEIGHTARRAY 
 mov  word ptr ds:[_mceilingclip], OFFSET_NEGONEARRAY 
@@ -4268,7 +4339,7 @@ je   done_drawing_sprites   ; todo jne to R_DrawSprite instead
 
 ; fall thru to R_DrawSprite_
 
-PROC   R_DrawSprite_ NEAR
+PROC   R_DrawSprite_ NEAR  ; fairly optimized
 PUBLIC R_DrawSprite_
 ; bp - 2	   ds_p segment.  always DRAWSEGS_BASE_SEGMENT
 ; bp - 4 not set yet but becomes bx/current vissprite
@@ -4746,7 +4817,7 @@ ret
 ; revisit what really needs to be push/popped
 
 	
-PROC   R_DrawMaskedColumn_ NEAR
+PROC   R_DrawMaskedColumn_ NEAR ; fairly optimized
 PUBLIC R_DrawMaskedColumn_
 
 ; todo: synergy with outer function... cx and es
@@ -5058,7 +5129,7 @@ mov       bx, dx
 sub       bx, di
 jmp       done_with_loop_check_masked
 
-PROC R_GetMaskedColumnSegment_ NEAR
+PROC R_GetMaskedColumnSegment_ NEAR ; could use another look
 
 ;  bp - 2      ; tex (orig ax)
 ;  bp - 4      ; texcol. maybe ok to remain here.
@@ -5580,7 +5651,7 @@ ENDP
 
 ;R_WriteBackViewConstantsMasked
 
-PROC R_WriteBackViewConstantsMasked24_ FAR
+PROC R_WriteBackViewConstantsMasked24_ FAR   ; fairly unoptimized, doesnt run much
 PUBLIC R_WriteBackViewConstantsMasked24_ 
 
 
@@ -5743,7 +5814,7 @@ endp
 
 ;R_WriteBackMaskedFrameConstants
 
-PROC R_WriteBackMaskedFrameConstants24_ FAR
+PROC R_WriteBackMaskedFrameConstants24_ FAR   ; fairly unoptimized, doesnt run much
 PUBLIC R_WriteBackMaskedFrameConstants24_ 
 
 ; todo: merge this with some other code. maybe R_DrawMasked and use CS
