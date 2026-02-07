@@ -72,6 +72,8 @@ dw  (OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)
 
 SIZE_FUZZTABLE = 50
 
+; DONT MOVE THIS FROM 0
+
 ; extended length of a max run...
 _fuzzoffset:
 PUBLIC _fuzzoffset
@@ -149,143 +151,20 @@ ENDIF
 ;
 
 
-	
-PROC    R_DrawFuzzColumn_  NEAR
-PUBLIC  R_DrawFuzzColumn_  
-
-; todo:
-; could write sp somehwere and use it as 64h for si comps. 
-
-; arguments: 
-; bx is equal to destview + 2 (screen segment)... any reason to not do it in here?
-; cx is offset to screen segment
-; di has count. note that this is an 8 bit value. (screen height max of 240)
-; ideally di and cx get swapped...
-
-push si
-push di
-push es
-mov  es, bx
-mov  si, word ptr cs:[_fuzzpos - OFFSET R_MASK24_STARTMARKER_]	; note this is always the byte offset - no shift conversion necessary
-
-;  need to put di in cx
-xchg cx, di   ; cx gets count , di gets screen offset
-
-mov  ax, cs     ; cs:0 is fuzzpos
-mov  ds, ax
-; constant space
-mov  dx, 04Fh
-mov  ch, 010h
-
-; todo: store count in cx not di?
-
-
-push bp
-mov  bx, COLORMAPS_MASKEDMAPPING_SEG_OFFSET_IN_CS
-
-
-
-
-
-cmp  cl, ch
-jg   draw_16_fuzzpixels
-jmp  done_drawing_16_fuzzpixels
-draw_16_fuzzpixels:
-
-
-
-DRAW_SINGLE_FUZZPIXEL MACRO 
-
-
-
-lodsw     						; load fuzz offset...
-xchg ax, bp	       				; move offset to bx.
-mov  al, byte ptr es:[bp + di]  ; read screen
-xlat byte ptr cs:[bx]		    ; lookup colormaps + al byte
-stosb							; write to screen
-add  di, dx						; dx contains constant (0x4F) to add to di to get next screen dest.
-
-
-ENDM
-
-REPT 16
-    DRAW_SINGLE_FUZZPIXEL
-endm
-
-
-
-cmp  si, ((OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)) +  (SIZE_FUZZTABLE * 2) ; word size
-jl   fuzzpos_ok
-; subtract 50 from fuzzpos
-sub  si, SIZE_FUZZTABLE * 2 ; word size
-fuzzpos_ok:
-sub  cl, ch
-cmp  cl, ch
-jle  done_drawing_16_fuzzpixels
-jmp  draw_16_fuzzpixels
-done_drawing_16_fuzzpixels:
-test cl, cl
-je   finished_drawing_fuzzpixels
-xor ch, ch;
-
-draw_one_fuzzpixel:
-
-lodsw     						; load fuzz offset...
-xchg ax, bp	       				; move offset to bx.
-mov  al, byte ptr es:[bp + di]  ; read screen
-xlat byte ptr cs:[bx]		    ; lookup colormaps + al byte
-stosb							; write to screen
-add  di, dx						; dx contains constant (0x4F) to add to di to get next screen dest.
-
-cmp  si, ((OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)) +  (SIZE_FUZZTABLE * 2) ; word size
-je   zero_out_fuzzpos
-finish_one_fuzzpixel_iteration:
-loop  draw_one_fuzzpixel
-; write back fuzzpos
-finished_drawing_fuzzpixels:
-
-pop bp
-
-
-; restore ds
-mov  di, ss
-mov  ds, di
-
-; write back fuzzpos
-
-mov  word ptr word ptr cs:[_fuzzpos - OFFSET R_MASK24_STARTMARKER_], si
-
-pop  es
-pop  di
-pop  si
-ret 
-
-zero_out_fuzzpos:
-mov   si, (OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)
-loop  draw_one_fuzzpixel
-jmp finished_drawing_fuzzpixels
-
-ENDP
-
 
 
 
 COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - COLFUNC_FILE_START_SEGMENT) * 16)
 
 
-; multi/single refer to whether this is drawing masked columns
-; that may have multiple segments (real masked textures)
-; or are single (false walls like e1m1)
+
+; multi/single refer to whether this is drawing real masked columns with multiple sections
+; most are multi
+; single generally involves false mid walls like e1m1's slime room
 ; this function is not actually significantly different but there are
-; different codepaths leading here. So its easier to have different variables in
-; registers in either case.
-; todo: investigate making them the same after all?
-
-;
-; R_DrawColumnPrepMaskedMulti
-;
-
-
+; different codepaths leading here and different data formats used.
+;  So its easier to have different functions, and really optimize the the multi version.
+; Note that this isnt called once in shareware timedemo 3 for instance
 
 
 
@@ -293,7 +172,9 @@ COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - C
 ; R_DrawSingleMaskedColumn
 ;
 	
-PROC  R_DrawSingleMaskedColumn_ NEAR 
+; all 3 instances called from R_RenderMaskedSegRange_
+
+PROC   R_DrawSingleMaskedColumn_  NEAR 
 PUBLIC R_DrawSingleMaskedColumn_
 push  cx
 push  si
@@ -502,7 +383,8 @@ UNCLIPPED_COLUMN  = 0FFFEh
 
 ; note remove masked start from here 
 
-
+exit_draw_masked_column_shadow_early:
+ret
 
 PROC R_DrawMaskedSpriteShadow_ NEAR
 
@@ -510,6 +392,11 @@ PROC R_DrawMaskedSpriteShadow_ NEAR
 ; cx:bx  column fardata
 
 ; bp carries topscreen segment
+
+mov   es, cx
+
+cmp   byte ptr es:[bx + COLUMN_T.column_topdelta], 0FFh
+je    exit_draw_masked_column_shadow_early
 
 
 push  dx
@@ -519,143 +406,154 @@ push  bp
 
 
 mov   si, bx
-mov   es, cx
 
+mov   bx, word ptr ds:[_dc_x]
+mov   word ptr cs:[SELFMODIFY_MASKED_SHADOW_drawmaskedcolumn_set_dc_x+1], bx
+sal   bx, 1                             ; word lookup
+lds   di, dword ptr ds:[_mfloorclip]
+mov   ax, word ptr ds:[bx+di]
+mov   word ptr cs:[SELFMODIFY_MASKED_SHADOW_set_mfloorclip_dc_x_lookup+1], ax
+lds   di, dword ptr ss:[_mceilingclip]
+mov   ax, word ptr ds:[bx+di]
+mov   word ptr cs:[SELFMODIFY_MASKED_SHADOW_set_mceilingclip_dc_x_lookup+1], ax
+
+mov   ax, ss
+mov   ds, ax   ; restore ds...
+
+lods  word ptr es:[si]
 
 draw_next_shadow_sprite_post:
-; es is in use
-mov   bx, word ptr ds:[_spryscale]            ; todo selfmodify
-mov   cx, word ptr ds:[_spryscale + 2]        ; todo selfmodify
-mov   di, cx
-mov   al, byte ptr es:[si + COLUMN_T.column_topdelta]
-xor   ah, ah  ; todo can this be cbw
+push  es
+push  si
 
+; es, si, bp safe to use
+
+
+xor   cx, cx
+mov   cl, al      ; al 0, cx = 0 extended topdelta for mul
+
+xchg  ax, bx      ; back column field up in bx
+
+xor   ax, ax  ; ax = 0
+cwd           ; dx = 0
+
+les   di, dword ptr ds:[_spryscale]
+mov   bp, es
+
+jcxz  skip_topdelta_mul_shadow
+
+mov   ax, bp
+
+; todo this is actually mul 8x32. is there a faster way involving 8 bit muls?
 ;inlined FastMul16u32u_
-XCHG CX, AX    ; AX stored in CX
 MUL  CX        ; AX * CX
 XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
-MUL  BX        ; AX * BX
+MUL  DI        ; AX * BX
 ADD  DX, CX    ; add 
 
+skip_topdelta_mul_shadow:
 
-add   ax, word ptr ds:[_sprtopscreen]         ; todo selfmodify
-mov   bp, ax
-adc   dx, word ptr ds:[_sprtopscreen + 2]      ; todo selfmodify
-mov   cx, dx
-
-; todo cache above values to not grab these again?
-; BX IS STILL _spryscale
-; DI is _spryscale + 2 copy
+add   ax, word ptr ds:[_sprtopscreen]       ; are these lowbits ever nonzero? yes, usually so
+adc   dx, word ptr ds:[_sprtopscreen+2]
 
 
-mov   al, byte ptr es:[si + COLUMN_T.column_length]
-xor   ah, ah
+; topscreen = DX:AX.
 
-;inlined FastMul16u32u_
-XCHG DI, AX    ; AX stored in DI
+;		dc_yl = topscreen.h.intbits; 
+;		if (topscreen.h.fracbits)
+;			dc_yl++;
+
+xor  si, si
+neg  ax
+adc  si, dx  ; si stores dc_yl
+neg  ax
+
+
+; calculate dc_yh ((length * scale))
+
+mov  cl, bh   ; cached length. bx now free to use. ch already was 0
+
+xchg ax, bp   ;  ax gets spyscale+2 back. bp stores old topscreen low
+mov  bx, dx   ;  bx:bp stores old topscreen result
+
+;        bottomscreen.w = topscreen.w + FastMul16u32u(column->length, spryscale.w);
+
+; ax:bx spryscale
+
+; todo can this be 8 bit mul without the xor ch or not
+;inlined fastmul16u32u
+MUL  CX        ; AX * CX
+XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
 MUL  DI        ; AX * DI
-XCHG DI, AX    ; store low product to be high result. Retrieve orig AX
-MUL  BX        ; AX * BX
-ADD  DX, DI    ; add 
+ADD  DX, CX    ; add prev low result to high word
 
 
-mov   bx, cx   ; bx store _sprtopscreen + 2
+; add cached topscreen
 add   ax, bp
-adc   dx, cx
-test  ax, ax
-jne   bottomscreen_not_zero
-dec   dx
-bottomscreen_not_zero:
-test  bp, bp
-jz    topscreen_not_zero
-inc   bx   				; inc _dc_yl
-topscreen_not_zero:
-mov   ax, dx  ; store dc_yh in ax...
-mov   dx, bx			; dx gets _dc_yl
-mov   cx, es    ; cache this
-mov   bx, word ptr ds:[_dc_x]
-les   di, dword ptr ds:[_mfloorclip]
-add   bx, bx
-cmp   ax, word ptr es:[bx + di]   ; ax holds dc_yh
-jl    dc_yh_clipped_to_floor
-mov   ax, word ptr es:[bx + di]
-dec   ax
-dc_yh_clipped_to_floor:
+adc   dx, bx
+
+;		dc_yh = bottomscreen.h.intbits;
+;		if (!bottomscreen.h.fracbits)
+;			dc_yh--;
+
+neg ax
+sbb dx, 0h
+
+mov di, dx  ; todo get this for free with register juggling above?
 
 
-les   di, dword ptr ds:[_mceilingclip]
+; dx is dc_yh but needs to be written back 
+; dc_yh, dc_yl are set (di, si)
 
-cmp   dx, word ptr es:[bx + di]  ; _dc_yl compare
-jg    dc_yl_clipped_to_ceiling
 
-mov   dx, word ptr es:[bx + di]
-inc   dx
-dc_yl_clipped_to_ceiling:
-; ax still stores dc_yh
+SELFMODIFY_MASKED_SHADOW_set_mfloorclip_dc_x_lookup:
+mov   cx, 01000h
+cmp   di, cx
+jl    skip_floor_clip_set_shadow
+mov   di, cx
+dec   di
+skip_floor_clip_set_shadow:
 
-;        if (dc_yl <= dc_yh) {
-cmp   dx, ax
-mov   es, cx
-jg   do_next_shadow_sprite_iteration
 
-mov   di, ax  ; finally pass off dc_yh to di
-; _dc_texturemid = basetexturemid
+;        if (dc_yl <= mceilingclip[dc_x])
+;            dc_yl = mceilingclip[dc_x]+1;
 
-mov   bl, byte ptr es:[si + COLUMN_T.column_topdelta]
+SELFMODIFY_MASKED_SHADOW_set_mceilingclip_dc_x_lookup:
+mov   cx, 01000h
 
-xor   bh, bh
-sub   ax, bx
-test  dx, dx		; dx still holds dc_yl
-jnz   high_border_adjusted
-inc   dx 
-high_border_adjusted:
-SELFMODIFY_MASKED_viewheight_1:
-mov   ax, 01000h
-dec   ax
-cmp   ax, di    ; di still holds _dc_yh
-jne   low_border_adjusted
-dec   di        ; _dc_yh --
-low_border_adjusted:
+cmp   si, cx
+jg    skip_ceil_clip_set_shadow
+mov   si, cx
+inc   si
+skip_ceil_clip_set_shadow:
 
-mov   bx, dx    ; bx gets dc_yl 
-sub   di, bx
 
-; di = count
-jl    do_next_shadow_sprite_iteration
-mov   ax, word ptr ds:[_dc_x]
-mov   dx, ax
+sub   di, si   ; count =  dc_yh - dc_yl
+js    jump_to_do_next_shadow_sprite_iteration  ; rare i think... branch is fine
 
-and   al, 3
-SELFMODIFY_MASKED_detailshiftplus1_1:
-add   al, 0
-mov   byte ptr cs:[SELFMODIFY_MASKED_set_bx_to_lookup+1 - OFFSET R_MASK24_STARTMARKER_], al
-mov   cx, DC_YL_LOOKUP_MASKEDMAPPING_SEGMENT
 
-add   bx, bx
-mov   ax, es
-mov   es, cx
+; texmid not needed for fuzzdraws, because we are reading from screen behind sprite, not texture.
+
+SELFMODIFY_MASKED_SHADOW_drawmaskedcolumn_set_dc_x:
+mov   dx, 01000h
+
+; todo... is this supposed to be done outside?
+
+mov   ax, DC_YL_LOOKUP_MASKEDMAPPING_SEGMENT
+mov   es, ax
+mov   bx, si   ; bx+si = dc_yl word lookup
 
 ; todo: proper shift jmp thing.
 mov   cl, byte ptr ds:[_detailshift2minus]
 sar   dx, cl
+
 SELFMODIFY_MASKED_destview_lo_1:
 add   dx, 1000h   ; need the 2 byte constant.
-add   dx, word ptr es:[bx]
-mov   es, ax
+add   dx, word ptr es:[bx+si]
 
 mov   cx, dx
 
-; vga plane stuff.
-mov   dx, SC_DATA
-SELFMODIFY_MASKED_set_bx_to_lookup:
-mov   bx, 0
-mov   al, byte ptr ds:[bx + _quality_port_lookup]
-
-out   dx, al
-add   bx, bx
-mov   dx, GC_INDEX
-mov   ax, word ptr ds:[bx + _vga_read_port_lookup]
-out   dx, ax
+; todo has this already been done?
 
 SELFMODIFY_MASKED_destview_hi_1:
 mov   bx, 0
@@ -664,16 +562,121 @@ mov   bx, 0
 ; pass in destview via bx
 ; pass in offset via cx
 
-; todo - fix cs/colormaps offset data?
-call R_DrawFuzzColumn_
+
+
+;call R_DrawFuzzColumn_  ; inlined
+
+
+mov  es, bx
+mov  si, word ptr cs:[_fuzzpos - OFFSET R_MASK24_STARTMARKER_]	; note this is always the byte offset - no shift conversion necessary
+
+;  need to put di in cx
+xchg cx, di   ; cx gets count , di gets screen offset
+
+mov  ax, cs     ; cs holds fuzzpos
+mov  ds, ax
+; constant space
+mov  dx, 04Fh
+mov  ch, 010h
+
+; todo: store count in cx not di?
+
+
+push bp
+mov  bx, COLORMAPS_MASKEDMAPPING_SEG_OFFSET_IN_CS
+
+
+
+
+
+cmp  cl, ch
+jg   draw_16_fuzzpixels
+jmp  done_drawing_16_fuzzpixels
+jump_to_do_next_shadow_sprite_iteration:
+jmp  do_next_shadow_sprite_iteration
+draw_16_fuzzpixels:
+
+DRAW_SINGLE_FUZZPIXEL MACRO 
+
+
+
+lodsw     						; load fuzz offset...
+xchg ax, bp	       				; move offset to bx.
+mov  al, byte ptr es:[bp + di]  ; read screen
+xlat byte ptr cs:[bx]		    ; lookup colormaps + al byte
+stosb							; write to screen
+add  di, dx						; dx contains constant (0x4F) to add to di to get next screen dest.
+
+
+ENDM
+
+REPT 16
+    DRAW_SINGLE_FUZZPIXEL
+endm
+
+
+
+cmp  si, ((OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)) +  (SIZE_FUZZTABLE * 2) ; word size
+jl   fuzzpos_ok
+; subtract 50 from fuzzpos
+sub  si, SIZE_FUZZTABLE * 2 ; word size
+fuzzpos_ok:
+sub  cl, ch
+cmp  cl, ch
+jle  done_drawing_16_fuzzpixels
+jmp  draw_16_fuzzpixels
+done_drawing_16_fuzzpixels:
+test cl, cl
+je   finished_drawing_fuzzpixels
+xor ch, ch;
+
+draw_one_fuzzpixel:
+
+lodsw     						; load fuzz offset...
+xchg ax, bp	       				; move offset to bx.
+mov  al, byte ptr es:[bp + di]  ; read screen
+xlat byte ptr cs:[bx]		    ; lookup colormaps + al byte
+stosb							; write to screen
+add  di, dx						; dx contains constant (0x4F) to add to di to get next screen dest.
+
+cmp  si, ((OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)) +  (SIZE_FUZZTABLE * 2) ; word size
+je   zero_out_fuzzpos
+finish_one_fuzzpixel_iteration:
+loop  draw_one_fuzzpixel
+; write back fuzzpos
+finished_drawing_fuzzpixels:
+
+pop bp
+
+
+; restore ds
+mov  di, ss
+mov  ds, di
+
+; write back fuzzpos
+
+mov  word ptr word ptr cs:[_fuzzpos - OFFSET R_MASK24_STARTMARKER_], si
+
+ 
+
+
 
 
 
 do_next_shadow_sprite_iteration:
-add   si, 2
-cmp   byte ptr es:[si + COLUMN_T.column_topdelta], 0FFh
+pop   si
+pop   es
+
+lods  word ptr es:[si]
+
+cmp   al, 0FFh
 je    exit_draw_shadow_sprite
 jmp   draw_next_shadow_sprite_post
+zero_out_fuzzpos:
+mov   si, (OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)
+loop  draw_one_fuzzpixel
+jmp finished_drawing_fuzzpixels
+
 exit_draw_shadow_sprite:
 
 pop   bp
@@ -1029,6 +1032,12 @@ mov   dx, SC_DATA
 SELFMODIFY_MASKED_detailshiftplus1_3:
 mov   al, byte ptr ds:[bx + 010h] ; NOTE this offset is selfmodified
 out   dx, al
+
+sal   bx, 1
+mov   dx, GC_INDEX
+mov   ax, word ptr ds:[bx + _vga_read_port_lookup]
+out   dx, ax
+
 SELFMODIFY_MASKED_vissprite_get_startfrac_lo_shadow:
 mov   di, 01000h  
 SELFMODIFY_MASKED_vissprite_get_startfrac_hi_shadow:
@@ -2896,21 +2905,6 @@ ret
 
 ENDP
 
-; todo inline...
-PROC Z_QuickMapSpritePage_ NEAR
-
-push  dx
-push  cx
-push  si
-
-Z_QUICKMAPAI4 pageswapargs_spritecache_offset_size INDEXED_PAGE_9000_OFFSET
-
-pop   si
-pop   cx
-pop   dx
-ret   
-
-ENDP
 
 ; part of R_GetSpritePage_
 
@@ -3199,11 +3193,15 @@ mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_SPRITECACHE_OFFSET * 2)], 
 xchg  ax, dx
 
 call  R_MarkL2SpriteCacheMRU_
-call  Z_QuickMapSpritePage_
+
+push  cx
+;call  Z_QuickMapSpritePage_
+Z_QUICKMAPAI4 pageswapargs_spritecache_offset_size INDEXED_PAGE_9000_OFFSET
+pop   dx
 
 mov   ax, 0FFFFh
 
-mov   dx, cx
+
 do_sprite_eviction:
 
 mov   word ptr ds:[_lastvisspritepatch], ax
@@ -3366,7 +3364,11 @@ jns   loop_mark_next_page_mru_multi
 
 mov   ax, word ptr [bp - 6]
 call  R_MarkL2SpriteCacheMRU_
-call  Z_QuickMapSpritePage_
+;call  Z_QuickMapSpritePage_
+
+push  dx
+Z_QUICKMAPAI4 pageswapargs_spritecache_offset_size INDEXED_PAGE_9000_OFFSET
+pop   dx
 
 ;	//todo: detected and only do -1 if its in the knocked out page? pretty infrequent though.
 ;    cachedtex = -1;
@@ -3799,7 +3801,7 @@ push  ax
 
 ; segs_render is 8 bytes each. need to get the index..
 
-SHIFT_MACRO shl si 3
+SHIFT_MACRO shl si 3   ; todo preshift? (drawseg_cursegvalue)
 
 
 mov   di, word ptr ds:[_segs_render + si + SEG_RENDER_T.sr_v1Offset]
@@ -4746,8 +4748,6 @@ ret
 	
 PROC   R_DrawMaskedColumn_ NEAR
 PUBLIC R_DrawMaskedColumn_
-;  bp - 02 cx/maskedcolumn segment
-;  bp - 04  ax/pixelsegment cache
 
 ; todo: synergy with outer function... cx and es
 ; todo dont create stack frame
@@ -4819,15 +4819,15 @@ mov   bp, es
 jcxz  skip_topdelta_mul
 
 mov   ax, bp
+
 ; todo this is actually mul 8x32. is there a faster way involving 8 bit muls?
 ;inlined fastmul16u32u
+
 MUL  CX        ; AX * CX
 XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
 MUL  DI        ; AX * DI
 ADD  DX, CX    ; add prev low result to high word
 
-; di was preserved im mul
-; DX:AX = fastmult result. 
 skip_topdelta_mul:
 
 add   ax, word ptr ds:[_sprtopscreen]       ; are these lowbits ever nonzero? yes, usually so
@@ -5720,14 +5720,14 @@ mov   word ptr ds:[SELFMODIFY_MASKED_detailshiftandval_2+1 - OFFSET R_MASK24_STA
 
 
 mov   al, byte ptr ss:[_detailshift+1]
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_1+1 - OFFSET R_MASK24_STARTMARKER_], al
 add   al, _quality_port_lookup
 mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_2+2 - OFFSET R_MASK24_STARTMARKER_], al
 mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_3+2 - OFFSET R_MASK24_STARTMARKER_], al
 mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_4+2 - OFFSET R_MASK24_STARTMARKER_], al
 
 mov   ax, word ptr ss:[_viewheight]
-mov   word ptr ds:[SELFMODIFY_MASKED_viewheight_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
+; todo revisit. shadow column no longer checking vs view height? i guess sprites should have already been clipped?
+;mov   word ptr ds:[SELFMODIFY_MASKED_viewheight_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   word ptr ds:[SELFMODIFY_MASKED_viewheight_2+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 
