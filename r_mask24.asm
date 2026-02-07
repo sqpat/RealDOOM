@@ -107,7 +107,7 @@ ENDP
 ELSE
 
 
-PROC FixedMulMaskedLocal_ NEAR
+PROC   FixedMulMaskedLocal_ NEAR
 PUBLIC FixedMulMaskedLocal_
 ; DX:AX  *  CX:BX
 ;  0  1      2  3
@@ -821,22 +821,17 @@ adc   dx, cx   ; 0
 neg   dx
 xiscale_already_positive:
 
-;; todo proper jump thing
-cmp byte ptr ds:[_detailshift], 1
-jb xiscale_shift_done
-je do_xiscale_shift_once
-; fall thru do twice
+SELFMODIFY_MASKED_detailshift_2_32bit_1:
 sar   dx, 1
 rcr   ax, 1
-do_xiscale_shift_once:
 sar   dx, 1
 rcr   ax, 1
-xiscale_shift_done:
+
 
 
 mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], dl
-test  dl, dl
+test  dl, dl ; todo reorder and get this for free 
 
 mov   ax, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1
 mov   dx, DRAWCOL_NOLOOP_OFFSET_MASKED
@@ -935,13 +930,10 @@ mov   bx, word ptr ds:[si + VISSPRITE_T.vs_xiscale + 0] ; DX:BX = vis->xiscale
 mov   dx, word ptr ds:[si + VISSPRITE_T.vs_xiscale + 2]
 
 ; todo: proper shift jmp thing
-cmp byte ptr ds:[_detailshift2minus], 1
-jb done_shifting_shift_xiscalestep_shift
-je do_shift_xiscalestep_shift_once
-; fall thru do twice
+
+SELFMODIFY_MASKED_detailshift_2_32bit_2:
 shl   bx, 1
 rcl   dx, 1
-do_shift_xiscalestep_shift_once:
 shl   bx, 1
 rcl   dx, 1
 
@@ -1154,27 +1146,7 @@ jmp   draw_sprite_shadow_innerloop
 
 ENDP
 
-PROC R_DrawPlayerSprites_ NEAR
 
-mov  word ptr ds:[_mfloorclip], OFFSET_SCREENHEIGHTARRAY 
-mov  word ptr ds:[_mceilingclip], OFFSET_NEGONEARRAY 
-
-cmp  word ptr ds:[_psprites], -1  ; STATENUM_NULL
-je  check_next_player_sprite
-mov  si, _player_vissprites       ; vissprite 0
-call R_DrawVisSprite_
-
-check_next_player_sprite:
-cmp  word ptr ds:[_psprites + 0Ch], -1  ; STATENUM_NULL
-je  exit_drawplayersprites
-mov  si, _player_vissprites + (SIZE VISSPRITE_T)
-call R_DrawVisSprite_
-
-exit_drawplayersprites:
-ret 
-
-
-ENDP
 
 
 
@@ -4109,7 +4081,7 @@ ret
 
 ENDP
 
-; todo feels improvable without too many outside deps
+
 
 SIL_NONE =   0
 SIL_BOTTOM = 1
@@ -4275,14 +4247,14 @@ mov        bx, word ptr ds:[di + VISSPRITE_T.vs_next]  ; set up bx for following
 ; SET FUNCTION CONSTANTS FOR DRAWSPRITE LOOP 
 
 PUSH_MACRO_WITH_REG dx DRAWSEGS_BASE_SEGMENT  ; bp - 2
-push  bx                                      ; bp - 4h   ; bx is already vissprite
+
 
 jmp  R_DrawSprite_  ; draw first sprite
 
 
 done_drawing_sprites:
 
-mov   sp, bp ; undo stack
+mov   sp, bp ; undo stack. sp should be bp - 2.
 ; now start iterating drawsegs for masked seg ranges
 les  di, dword ptr ds:[_ds_p]
 sub  di, (SIZE DRAWSEG_T)
@@ -4303,7 +4275,29 @@ sub  di, (SIZE DRAWSEG_T)
 
 ja   check_next_seg
 done_rendering_masked_segranges:
-call R_DrawPlayerSprites_
+;call R_DrawPlayerSprites_  ; inlined
+
+
+;PROC R_DrawPlayerSprites_ NEAR
+
+; todo some sort of special draw unclipped sprite function? can scale lookups also be optimized?
+mov  word ptr ds:[_mfloorclip], OFFSET_SCREENHEIGHTARRAY 
+mov  word ptr ds:[_mceilingclip], OFFSET_NEGONEARRAY 
+
+cmp  word ptr ds:[_psprites + PSPDEF_T.pspdef_statenum], -1  ; STATENUM_NULL
+je  check_next_player_sprite
+mov  si, _player_vissprites       ; vissprite 0
+call R_DrawVisSprite_
+
+check_next_player_sprite:
+cmp  word ptr ds:[_psprites + (SIZE PSPDEF_T) +  + PSPDEF_T.pspdef_statenum], -1  ; STATENUM_NULL
+je  exit_drawplayersprites
+mov  si, _player_vissprites + (SIZE VISSPRITE_T)
+call R_DrawVisSprite_
+
+exit_drawplayersprites:
+
+
 exit_draw_masked:
 LEAVE_MACRO
 POPA_NO_AX_OR_BP_MACRO
@@ -4315,11 +4309,10 @@ ENDP
 ; LOOP EXTRA CALLS TO DRAWSPRITE HERE
 
 done_with_drawsprite:
-no_draw:            ; in theory this doesnt need a pop, but its rare and otherwise we cant balance stack.
 pop  bx   ; bp - 4
+no_draw:            ; in theory this doesnt need a pop, but its rare and otherwise we cant balance stack.
 
 mov  bx, word ptr ds:[bx + VISSPRITE_T.vs_next]
-push bx   ; bp - 4
 
 
 cmp  bx, OFFSET _vsprsortedhead
@@ -4330,7 +4323,8 @@ je   done_drawing_sprites   ; todo jne to R_DrawSprite instead
 PROC   R_DrawSprite_ NEAR
 PUBLIC R_DrawSprite_
 ; bp - 2	   ds_p segment.  always DRAWSEGS_BASE_SEGMENT
-; bp - 4       vissprite near pointer
+; bp - 4 not set yet but becomes bx/current vissprite
+; bp - 6 not set yet but becomes bx/current vissprite
 
 ; bx is already the sprite
 
@@ -4338,7 +4332,9 @@ les   si, dword ptr ds:[bx + VISSPRITE_T.vs_x1]
 mov   cx, es    
 sub   cx, si
 jl    no_draw   ; no pixels
-push  bx        ; bp - 6h   ; bx is already vissprite
+push  bx        ; bp - 4h   ; for next loop
+push  bx        ; bp - 6h   ; for si later
+
 
 ; write these ahead into immediates in the drawseg loop.
 mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_x1_1+1], si
@@ -4346,6 +4342,7 @@ mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_x1_2+1], si
 mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_x2_1+1], es
 mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_x2_2+1], es
 mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_x2_3+1], es
+; todo any others? some (vs_scale + 2) situations look intriguing
 
 
 
@@ -5520,7 +5517,7 @@ PROC R_WriteBackViewConstantsMasked24_ FAR
 PUBLIC R_WriteBackViewConstantsMasked24_ 
 
 
-
+push     bx
 mov      ax, DRAWFUZZCOL_AREA_SEGMENT
 mov      ds, ax
 
@@ -5550,13 +5547,24 @@ mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET
 mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+2], ax
 mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+0], ax
 mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+2], ax
+mov      bx, OFFSET (SELFMODIFY_MASKED_detailshift_2_32bit_1+0 - OFFSET R_MASK24_STARTMARKER_)
+mov      ax, 0FAD1h ; sar dx, 1 
+mov      word ptr ds:[bx], ax
+mov      word ptr ds:[bx+4], ax
+mov      ax, 0D8D1h ; rcr ax, 1
+mov      word ptr ds:[bx+2], ax
+mov      word ptr ds:[bx+6], ax
+
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_32bit_2 - OFFSET R_MASK24_STARTMARKER_], 006EBh
+
+
+
 
 
 
 
 ; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
 ; 0EBh, 006h = jmp 6
-
 
 
 jmp      done_modding_shift_detail_code_masked
@@ -5579,6 +5587,17 @@ mov      ax, 0c089h
 mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+2], ax
 mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+2], ax
 
+mov      bx, OFFSET (SELFMODIFY_MASKED_detailshift_2_32bit_1+0 - OFFSET R_MASK24_STARTMARKER_)
+mov      word ptr ds:[bx], ax
+mov      word ptr ds:[bx+2], ax
+mov      word ptr ds:[bx+4], 0FAD1h ; sar dx, 1 
+mov      word ptr ds:[bx+6], 0D8D1h ; rcr ax, 1
+
+mov      bx, OFFSET (SELFMODIFY_MASKED_detailshift_2_32bit_2+0 - OFFSET R_MASK24_STARTMARKER_)
+mov      word ptr ds:[bx], ax
+mov      word ptr ds:[bx+2], ax
+mov      word ptr ds:[bx+4], 0E3D1h ; shl bx, 1 
+mov      word ptr ds:[bx+6], 0D2D1h ; rcl dx, 1
 
 
 ; 81 c3 00 00 = add bx, 0000. Not technically a nop, but probably better than two mov ax, ax?
@@ -5598,6 +5617,17 @@ mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET
 mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+2], ax
 mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+0], ax
 mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+2], ax
+
+;mov      ax, 006EBh  ; jmp 6
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_32bit_1 - OFFSET R_MASK24_STARTMARKER_], 006EBh
+
+mov      bx, OFFSET (SELFMODIFY_MASKED_detailshift_2_32bit_2+0 - OFFSET R_MASK24_STARTMARKER_)
+mov      ax, 0E3D1h ; shl bx, 1 
+mov      word ptr ds:[bx], ax
+mov      word ptr ds:[bx+4], ax
+mov      ax, 0D2D1h ; rcl dx, 1
+mov      word ptr ds:[bx+2], ax
+mov      word ptr ds:[bx+6], ax
 
 
 ; fall thru
@@ -5638,7 +5668,7 @@ mov   word ptr ds:[SELFMODIFY_MASKED_viewheight_2+1 - OFFSET R_MASK24_STARTMARKE
 
 mov      ax, ss
 mov      ds, ax
-
+pop      bx
 
 
 retf
