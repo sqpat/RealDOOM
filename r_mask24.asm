@@ -2148,64 +2148,65 @@ SPRITE_COLUMN_SEGMENT = 09000h
 SCRATCH_ADDRESS_4000_SEGMENT = 04000h
 SCRATCH_ADDRESS_5000_SEGMENT = 05000h
 
-PROC R_GetSpriteTexture_ NEAR  ; needs another look
+; todo inline this eventually
+PROC   R_GetSpriteTexture_ NEAR  ; needs another look
+PUBLIC R_GetSpriteTexture_
+; di, cx are soon clobbered after return and dont have to be preserved
 
-push  dx
-push  si
-mov   si, SPRITEPAGE_SEGMENT
-mov   es, si
+mov   di, SPRITEPAGE_SEGMENT
+mov   es, di
 
-xchg  ax, si    ; si gets index
+xchg  ax, di    ; di gets index
 
-mov   al, byte ptr es:[si]
+mov   al, byte ptr es:[di]
 cmp   al, 0FFh
 je    sprite_not_in_cache
 
-mov   dl, byte ptr es:[si + SPRITEOFFSETS_OFFSET]
+mov   cl, byte ptr es:[di + SPRITEOFFSETS_OFFSET]
 
 call  R_GetSpritePage_
+
 xor   ah, ah
-mov   si, ax
-mov   al, dl
+mov   di, ax
+mov   al, cl
 SHIFT_MACRO shl   ax 4
-sal   si, 1
-mov   dx, word ptr cs:[si + _pagesegments - OFFSET R_MASK24_STARTMARKER_]
-add   dh, (SPRITE_COLUMN_SEGMENT SHR 8)
-add   ax, dx
-pop   si
-pop   dx
+sal   di, 1
+mov   cx, word ptr cs:[di + _pagesegments - OFFSET R_MASK24_STARTMARKER_]
+add   ch, (SPRITE_COLUMN_SEGMENT SHR 8)
+add   ax, cx
+
+
 ret
 
 sprite_not_in_cache:
 
 mov   ax, word ptr ds:[_firstspritelump]
-add   ax, si
+add   ax, di
 push  ax    ; bp - 2, index
 push  es    ; bp - 4, segment
 call  R_GetNextSpriteBlock_
 
 pop   es    ; bp - 4, segment
-mov   al, byte ptr es:[si]
+mov   al, byte ptr es:[di]
 
-mov   dl, byte ptr es:[si + SPRITEOFFSETS_OFFSET]
+mov   cl, byte ptr es:[di + SPRITEOFFSETS_OFFSET]
 
 call  R_GetSpritePage_
 xor   ah, ah
-mov   si, ax
-mov   al, dl
+mov   di, ax
+mov   al, cl
 SHIFT_MACRO shl   ax 4
-sal   si, 1
-mov   dx, word ptr cs:[si + _pagesegments - OFFSET R_MASK24_STARTMARKER_]
-add   dh, (SPRITE_COLUMN_SEGMENT SHR 8) 
-add   dx, ax
-mov   si, dx ; back this up
+sal   di, 1
+mov   cx, word ptr cs:[di + _pagesegments - OFFSET R_MASK24_STARTMARKER_]
+add   ch, (SPRITE_COLUMN_SEGMENT SHR 8) 
+add   cx, ax
+mov   di, cx ; back this up
 pop   ax     ; bp - 2, index
 
 call  R_LoadSpriteColumns_
 
-mov   ax, si
-pop   si
-pop   dx
+mov   ax, di
+
 ret
 
 
@@ -3465,7 +3466,7 @@ push      bp
 mov       bp, sp
 mov       bx, ax
 
-mov       di, dx    ; preserve dx thru quickmap
+mov       di, cx    ; preserve cx thru quickmap
 ;call      Z_QuickMapScratch_5000_
 Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
 
