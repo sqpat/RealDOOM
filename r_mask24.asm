@@ -285,84 +285,7 @@ COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - C
 ; R_DrawColumnPrepMaskedMulti
 ;
 
-; this version called for almost all masked calls	
-PROC    R_DrawColumnPrepMaskedMulti_ NEAR
-PUBLIC  R_DrawColumnPrepMaskedMulti_
 
-
-
-; todo some of these such as dx and cx for sure can be modified
-
-push  si
-
-; dl:?? currently has dc_texturemid
-mov   si, word ptr ds:[_dc_yl]
-mov   di, word ptr ds:[_dc_yh]                  ; grab dc_yh
-mov   ax, word ptr ds:[_dc_x]
-
-mov   bx, (COLFUNC_FILE_START_SEGMENT - COLORMAPS_MASKEDMAPPING_SEG_DIFF)
-mov   ds, bx                                 ; store this segment for now, with offset pre-added
-
-
-; shift ax by (2 - detailshift.)
-SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift:
-sar   ax, 1
-sar   ax, 1
-
-
-sub   di, si                                 ;
-sal   di, 1                                  ; double diff (dc_yh - dc_yl) to get a word offset
-mov   di, word ptr ds:[di+DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET]   ; get the jump value. both tables in masked are 10 byte jump tables
-
-mov   bp, si
-add   ax, word ptr ds:[si+bp]                   ; add * 80 lookup table value 
-
-SELFMODIFY_MASKED_destview_lo_3:
-add   ax, 01000h
-
-xchg  ax, di
-
-
-SELFMODIFY_masked_set_jump_write_offset:
-mov   word ptr ds:[01000h], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
-
-
-; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
-; or can we do this in an outer func without this instrction?
-
-
-; if we make a separate drawcol masked we can use a constant here.
-
-xchg  ax, si    ; dc_yl in ax
-
-
-
-; dynamic call lookuptable based on used colormaps address being CS:00
-
-
-; CH:BX = dc_iscale
-SELFMODIFY_MASKED_set_dc_iscale_lo:
-mov   bx, 01000h ; dc_iscale +0
-SELFMODIFY_MASKED_set_dc_iscale_hi:
-mov   ch, 010h ; dc_iscale +1
-SELFMODIFY_MASKED_dc_texturemid_lo_1:
-mov   si, 01000h        ; todo can this just go to si in the call?
-
-SELFMODIFY_MASKED_set_xlat_offset:
-mov   bp, 01000h          ; dc_iscale +2
-
-; pass in xlat offset for bx via bp
-
-db 09Ah
-SELFMODIFY_MASKED_COLFUNC_set_func_offset:
-dw DRAWCOL_NOLOOP_OFFSET_MASKED, COLORMAPS_SEGMENT_MASKEDMAPPING
-
-
-
-pop   si
-ret
-
-ENDP
 
 
 
@@ -1043,7 +966,7 @@ add   ax, cx ; self modify? does it change?
 ; cx is preserved by this call here
 ; so is ES
 
-call R_DrawMaskedColumn_
+call R_DrawMaskedColumn_  ; does si need to be preserved?
 
 increment_by_shift:
 
@@ -4808,7 +4731,7 @@ ENDP
 
 ; ax pixelsegment
 ; cx:bx column
-; todo: use es:bx instead of cx.
+; todo: use es:si instead of cx:bx. lodsw and compare al as 0FFh right away. si then shouldnt need to be preserved.
 
 ;
 ; R_DrawMaskedColumn
@@ -4852,23 +4775,26 @@ mov   si, bx        ; si now holds column address.
 mov   byte ptr cs:[SELFMODIFY_MASKED_add_currentoffset+1], 0
 
 mov   bx, word ptr ds:[_dc_x]
+mov   word ptr cs:[SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x+1], bx
 sal   bx, 1                             ; word lookup
 lds   di, dword ptr ds:[_mfloorclip]
-mov   di, word ptr ds:[bx+di]
-mov   word ptr cs:[SELFMODIFY_MASKED_set_mfloorclip_dc_x_lookup+1], di
+mov   ax, word ptr ds:[bx+di]
+mov   word ptr cs:[SELFMODIFY_MASKED_set_mfloorclip_dc_x_lookup+1], ax
 lds   di, dword ptr ss:[_mceilingclip]
-mov   cx, word ptr ds:[bx+di]
-mov   word ptr cs:[SELFMODIFY_MASKED_set_mceilingclip_dc_x_lookup+1], cx
+mov   ax, word ptr ds:[bx+di]
+mov   word ptr cs:[SELFMODIFY_MASKED_set_mceilingclip_dc_x_lookup+1], ax
 
 mov   ax, ss
 mov   ds, ax   ; restore ds...
 
 
-lods  word ptr es:[si]  ; todo load the word. store one part in bp?
+lods  word ptr es:[si]  ; load column for first iter
 
 draw_next_column_patch:
 
 push  es   ; retrieve after R_DrawColumnPrepMaskedMulti call. 
+push  si   ; retrieve after R_DrawColumnPrepMaskedMulti call. 
+
 ; ax contains column fields!
 
 ;        topscreen.w = sprtopscreen + FastMul16u32u(column->topdelta, spryscale.w);
@@ -4880,14 +4806,14 @@ mov   byte ptr cs:[SELFMODIFY_MASKED_set_last_offset + 1], ah
 ; calculate dc_yl (topdelta * scale)
 
 xor   cx, cx
-xchg  cl, al      ; al 0, cx = 0 extended topdelta for mul
+mov   cl, al      ; al 0, cx = 0 extended topdelta for mul
 
 xchg  ax, bx      ; back column field up in bx
 
-cbw  ; ax = 0
-cwd  ; dx = 0
+xor   ax, ax  ; ax = 0
+cwd           ; dx = 0
 
-les   di, word ptr ds:[_spryscale]
+les   di, dword ptr ds:[_spryscale]
 mov   bp, es
 
 jcxz  skip_topdelta_mul
@@ -4913,12 +4839,11 @@ adc   dx, word ptr ds:[_sprtopscreen+2]
 ;		if (topscreen.h.fracbits)
 ;			dc_yl++;
 
-xor  cx, cx
+xor  si, si
 neg  ax
-adc  dx, cx
-mov  es, dx   ; es stores dc_yl
+adc  si, dx  ; si stores dc_yl
 neg  ax
-sbb  dx, cx
+
 
 
 ; calculate dc_yh ((length * scale))
@@ -4940,13 +4865,9 @@ MUL  DI        ; AX * DI
 ADD  DX, CX    ; add prev low result to high word
 
 
-
-
 ; add cached topscreen
 add   ax, bp
 adc   dx, bx
-
-
 
 ;		dc_yh = bottomscreen.h.intbits;
 ;		if (!bottomscreen.h.fracbits)
@@ -4955,12 +4876,12 @@ adc   dx, bx
 neg ax
 sbb dx, 0h
 
+mov di, dx  ; todo get this for free with register juggling above?
+
 
 ; dx is dc_yh but needs to be written back 
-; dc_yh, dc_yl are set (dx, es)
+; dc_yh, dc_yl are set (di, si)
         
-; todo we need to check for count > 0?
-; todo improve this area di/bp use as they are free.
 
 
 
@@ -4973,10 +4894,10 @@ sbb dx, 0h
 
 SELFMODIFY_MASKED_set_mfloorclip_dc_x_lookup:
 mov   cx, 01000h
-cmp   dx, cx
+cmp   di, cx
 jl    skip_floor_clip_set
-mov   dx, cx
-dec   dx
+mov   di, cx
+dec   di
 skip_floor_clip_set:
 
 
@@ -4986,30 +4907,21 @@ skip_floor_clip_set:
 SELFMODIFY_MASKED_set_mceilingclip_dc_x_lookup:
 mov   cx, 01000h
 
-mov   ax, es    ; es had dc_yl
-cmp   ax, cx
+cmp   si, cx
 jg    skip_ceil_clip_set
-mov   ax, cx
-inc   ax
+mov   si, cx
+inc   si
 skip_ceil_clip_set:
 
 
-cmp   ax, dx   ; dx is dc_yh
+cmp   si, di   ; di is dc_yh
 jg    increment_column_and_continue_loop
-
-;SHIFT_MACRO shr bx 4 ; preshifted now
-
-  ; finally store dc_yl, dc_yh
-mov   word ptr ds:[_dc_yl], ax
-mov   word ptr ds:[_dc_yh], dx
-
-
 
 SELFMODIFY_MASKED_dc_texturemid_hi_1:
 mov   cl, 010h;  dc_texturemid intbits
 
 SELFMODIFY_MASKED_set_base_segment:
-mov   ax, 01000h
+mov   ax, 01000h    ; preshifted right 4 
 
 
 SELFMODIFY_MASKED_add_currentoffset:
@@ -5018,24 +4930,81 @@ db 05, 00, 00    ; add ax, 0000 (word)  ; always a single low byte actually
 mov   word ptr ds:[_dc_source_segment], ax
 
 SELFMODIFY_MASKED_sub_topdelta:
-sub   cl, 010h          ; subtract tex top offset. si = si+1
-; dl = dc_texturemid hi. carry this into the call
-; dont set dc_texturemid lo till inside call
+sub    cl, 010h          ; subtract tex top offset. si = si+1
+; cl = dc_texturemid hi. carry this into the call
 
 
+;call  R_DrawColumnPrepMaskedMulti_  ; INLINED
 
-; dc_yl is ax
-; dc_yh is dx
+; dc_yl is si
+; dc_yh is di
 ; dc_x not loaded.
 
-;mov   si, word ptr ds:[_dc_yl]
-;mov   di, word ptr ds:[_dc_yh]                  ; grab dc_yh
-;mov   ax, word ptr ds:[_dc_x]
+
+; cl:?? currently has dc_texturemid
+
+; si is already dc_yl
+; di is already dc_yh
+SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x:
+mov   ax, 01000h
+
+mov   bx, (COLFUNC_FILE_START_SEGMENT - COLORMAPS_MASKEDMAPPING_SEG_DIFF)
+mov   ds, bx                                 ; store this segment for now, with offset pre-added
+
+; shift ax by (2 - detailshift.)
+SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift:
+sar   ax, 1
+sar   ax, 1
 
 
-call  R_DrawColumnPrepMaskedMulti_  ; this call does not need anything besides si preserved. actually es too
+sub   di, si                                 ;
+sal   di, 1                                  ; double diff (dc_yh - dc_yl) to get a word offset
+mov   di, word ptr ds:[di+DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET]   ; get the jump value. both tables in masked are 10 byte jump tables
+
+mov   bp, si
+add   ax, word ptr ds:[si+bp]                   ; add * 80 lookup table value 
+
+SELFMODIFY_MASKED_destview_lo_3:
+add   ax, 01000h
+
+xchg  ax, di
+
+SELFMODIFY_masked_set_jump_write_offset:
+mov   word ptr ds:[01000h], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
+
+
+; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
+; or can we do this in an outer func without this instrction?
+
+
+; if we make a separate drawcol masked we can use a constant here.
+
+xchg  ax, si    ; dc_yl in ax
+
+; cl:si is dc_texturemid
+; ch:bx is dc_iscale
+; pass in xlat offset for bx via bp
+
+
+
+SELFMODIFY_MASKED_set_dc_iscale_lo:
+mov   bx, 01000h ; dc_iscale +0
+SELFMODIFY_MASKED_set_dc_iscale_hi:
+mov   ch, 010h ; dc_iscale +1
+SELFMODIFY_MASKED_dc_texturemid_lo_1:
+mov   si, 01000h        ; todo can this just go to si in the call?
+
+
+SELFMODIFY_MASKED_set_xlat_offset:
+mov   bp, 01000h   
+
+db 09Ah
+SELFMODIFY_MASKED_COLFUNC_set_func_offset:
+dw DRAWCOL_NOLOOP_OFFSET_MASKED, COLORMAPS_SEGMENT_MASKEDMAPPING
+
 
 increment_column_and_continue_loop:
+pop   si
 pop   es
 ; check next column
 lods  word ptr es:[si]       ; column->length. now si = si + 2.
