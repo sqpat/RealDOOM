@@ -289,13 +289,11 @@ COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - C
 PROC    R_DrawColumnPrepMaskedMulti_ NEAR
 PUBLIC  R_DrawColumnPrepMaskedMulti_
 
-; argument AX is diff for various segment lookups
+
 
 ; todo some of these such as dx and cx for sure can be modified
 
 push  si
-push  di
-push  bp
 
 ; dl:?? currently has dc_texturemid
 mov   si, word ptr ds:[_dc_yl]
@@ -361,8 +359,6 @@ dw DRAWCOL_NOLOOP_OFFSET_MASKED, COLORMAPS_SEGMENT_MASKEDMAPPING
 
 
 
-pop   bp
-pop   di 
 pop   si
 ret
 
@@ -792,9 +788,6 @@ PUBLIC R_DrawVisSprite_
 ; si is vissprite_t near pointer
 
 
-
-
-
 mov   al, byte ptr ds:[si + VISSPRITE_T.vs_colormap]
 
 ; al is colormap. 
@@ -802,8 +795,6 @@ mov   al, byte ptr ds:[si + VISSPRITE_T.vs_colormap]
 mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMARKER_], al
 
 ; todo move this out to a higher level! possibly when executesetviewsize happens.
-
-
 
 
 les   ax, dword ptr ds:[si + VISSPRITE_T.vs_xiscale]   ; vis->xiscale
@@ -840,10 +831,6 @@ mov   di, DRAWCOL_NOLOOPSTRETCH_OFFSET_MASKED
 continue_selfmodifies_vissprites:
 mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset], di
 mov   word ptr cs:[SELFMODIFY_masked_set_jump_write_offset+1 - OFFSET R_MASK24_STARTMARKER_], dx
-
-
-
-
 
 
 mov   di, OFFSET _sprtopscreen
@@ -901,10 +888,8 @@ mov   es, word ptr ds:[_lastvisspritesegment]
 
 spritesegment_ready:
 
-
 mov   di, word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0]
 mov   cx, word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2]  
-
 
 mov   ax, word ptr ds:[si + VISSPRITE_T.vs_x2]
 mov   word ptr cs:[SELFMODIFY_MASKED_visspriteloop_x2_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
@@ -937,8 +922,6 @@ shl   bx, 1
 rcl   dx, 1
 shl   bx, 1
 rcl   dx, 1
-
-
 
 mov   word ptr cs:[SELFMODIFY_MASKED_add_shifted_xiscale_lo+2 - OFFSET R_MASK24_STARTMARKER_], bx
 mov   word ptr cs:[SELFMODIFY_MASKED_add_shifted_xiscale_hi+2 - OFFSET R_MASK24_STARTMARKER_], dx
@@ -1015,6 +998,7 @@ ret
 
 loop_vga_plane_draw_normal:
 mov   cx, es
+; si currently unused. can we use it?
 
 SELFMODIFY_MASKED_set_bx_to_xoffset:
 mov   bx, 0 ; zero out bh
@@ -4829,53 +4813,98 @@ ENDP
 ;
 ; R_DrawMaskedColumn
 ;
+
+exit_draw_masked_column_early:
+ret
+
+; three uses... two in maskedsegrange one in drawvissprite?
+; revisit what really needs to be push/popped
+
 	
 PROC   R_DrawMaskedColumn_ NEAR
 PUBLIC R_DrawMaskedColumn_
 ;  bp - 02 cx/maskedcolumn segment
 ;  bp - 04  ax/pixelsegment cache
-;  bp - 06  cached dc_texturemid intbits to restore before function
 
 ; todo: synergy with outer function... cx and es
 ; todo dont create stack frame
+
+mov   es, cx
+
+cmp   byte ptr es:[bx + COLUMN_T.column_topdelta], 0FFh
+je    exit_draw_masked_column_early
+
+; no early out, properly run the function. note fixed stack frame
 
 push  dx
 push  si
 push  di
 push  bp
-mov   bp, sp
-push  cx            ; bp - 2
+
+mov   word ptr cs:[SELFMODIFY_MASKED_set_base_segment+1], ax
 mov   si, bx        ; si now holds column address.
-mov   es, cx
-push  ax            ; bp - 4
+; es:si is now column
 
 ; dc_texturemid already set pre call.
-xor   di, di        ; di used as currentoffset.
 
-cmp   byte ptr es:[si], 0FFh
-jne   draw_next_column_patch
-jmp   exit_function
+; look up loop constants which involve segment juggling (floor/ceil clips)
+
+mov   byte ptr cs:[SELFMODIFY_MASKED_add_currentoffset+1], 0
+
+mov   bx, word ptr ds:[_dc_x]
+sal   bx, 1                             ; word lookup
+lds   di, dword ptr ds:[_mfloorclip]
+mov   di, word ptr ds:[bx+di]
+mov   word ptr cs:[SELFMODIFY_MASKED_set_mfloorclip_dc_x_lookup+1], di
+lds   di, dword ptr ss:[_mceilingclip]
+mov   cx, word ptr ds:[bx+di]
+mov   word ptr cs:[SELFMODIFY_MASKED_set_mceilingclip_dc_x_lookup+1], cx
+
+mov   ax, ss
+mov   ds, ax   ; restore ds...
+
+
+lods  word ptr es:[si]  ; todo load the word. store one part in bp?
+
 draw_next_column_patch:
 
+push  es   ; retrieve after R_DrawColumnPrepMaskedMulti call. 
+; ax contains column fields!
+
 ;        topscreen.w = sprtopscreen + FastMul16u32u(column->topdelta, spryscale.w);
-;es in use
-mov   bx, word ptr ds:[_spryscale]
-mov   ax, word ptr ds:[_spryscale+2]
+
+
+mov   byte ptr cs:[SELFMODIFY_MASKED_sub_topdelta + 2], al
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_last_offset + 1], ah
+
+; calculate dc_yl (topdelta * scale)
 
 xor   cx, cx
-mov   cl, byte ptr es:[si]   ; todo use ds and lodsb pattern...?
+xchg  cl, al      ; al 0, cx = 0 extended topdelta for mul
 
+xchg  ax, bx      ; back column field up in bx
+
+cbw  ; ax = 0
+cwd  ; dx = 0
+
+les   di, word ptr ds:[_spryscale]
+mov   bp, es
+
+jcxz  skip_topdelta_mul
+
+mov   ax, bp
+; todo this is actually mul 8x32. is there a faster way involving 8 bit muls?
 ;inlined fastmul16u32u
 MUL  CX        ; AX * CX
 XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
-MUL  BX        ; AX * BX
-ADD  DX, CX    ; add 
+MUL  DI        ; AX * DI
+ADD  DX, CX    ; add prev low result to high word
 
-; bx was preserved im mul
+; di was preserved im mul
 ; DX:AX = fastmult result. 
+skip_topdelta_mul:
 
-
-add   ax, word ptr ds:[_sprtopscreen]
+add   ax, word ptr ds:[_sprtopscreen]       ; are these lowbits ever nonzero? yes, usually so
 adc   dx, word ptr ds:[_sprtopscreen+2]
 
 ; topscreen = DX:AX.
@@ -4884,38 +4913,39 @@ adc   dx, word ptr ds:[_sprtopscreen+2]
 ;		if (topscreen.h.fracbits)
 ;			dc_yl++;
 
-
+xor  cx, cx
 neg  ax
-adc  dx, 0
-mov  ds:[_dc_yl], dx
+adc  dx, cx
+mov  es, dx   ; es stores dc_yl
 neg  ax
-sbb  dx, 0
+sbb  dx, cx
 
-mov  ds, ax    ; store old topscreen
-mov  ax, word ptr ss:[_spryscale+2]    ; use ss as ds as a hack...
 
-mov  cl, byte ptr es:[si + 1] ; get length for mult
-xor  ch, ch
+; calculate dc_yh ((length * scale))
 
-mov  es, dx   ;  es:ds stores old topscreen result
- 
+mov  cl, bh   ; cached length. bx now free to use. ch already was 0
+
+xchg ax, bp   ;  ax gets spyscale+2 back. bp stores old topscreen low
+mov  bx, dx   ;  bx:bp stores old topscreen result
+
+;        bottomscreen.w = topscreen.w + FastMul16u32u(column->length, spryscale.w);
+
+; ax:bx spryscale
 
 ; todo can this be 8 bit mul without the xor ch or not
 ;inlined fastmul16u32u
 MUL  CX        ; AX * CX
 XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
-MUL  BX        ; AX * BX
-ADD  DX, CX    ; add 
+MUL  DI        ; AX * DI
+ADD  DX, CX    ; add prev low result to high word
 
 
-;        bottomscreen.w = topscreen.w + FastMul16u32u(column->length, spryscale.w);
+
+
 ; add cached topscreen
-mov   cx, ds
-add   ax, cx
-mov   cx, es
-adc   dx, cx
-mov   cx, ss
-mov   ds, cx
+add   ax, bp
+adc   dx, bx
+
 
 
 ;		dc_yh = bottomscreen.h.intbits;
@@ -4927,84 +4957,113 @@ sbb dx, 0h
 
 
 ; dx is dc_yh but needs to be written back 
-
-; dc_yh, dc_yl are set
+; dc_yh, dc_yl are set (dx, es)
+        
+; todo we need to check for count > 0?
+; todo improve this area di/bp use as they are free.
 
 
 
 ;        if (dc_yh >= mfloorclip[dc_x])
 ;            dc_yh = mfloorclip[dc_x]-1;
 
+; todo look these up otuside of loop 
+; alternatively store dc_x in bp/di/si?
 
-mov   bx, word ptr ds:[_dc_x]
-sal   bx, 1
-les   ax, dword ptr ds:[_mfloorclip]
-add   bx, ax
 
-mov   cx, word ptr es:[bx]
+SELFMODIFY_MASKED_set_mfloorclip_dc_x_lookup:
+mov   cx, 01000h
 cmp   dx, cx
 jl    skip_floor_clip_set
 mov   dx, cx
 dec   dx
 skip_floor_clip_set:
-mov   word ptr ds:[_dc_yh], dx
 
 
 ;        if (dc_yl <= mceilingclip[dc_x])
 ;            dc_yl = mceilingclip[dc_x]+1;
 
-sub   bx, ax
-les   ax, dword ptr ds:[_mceilingclip]   
-add   bx, ax
+SELFMODIFY_MASKED_set_mceilingclip_dc_x_lookup:
+mov   cx, 01000h
 
-mov   ax, word ptr ds:[_dc_yl]
-mov   cx, word ptr es:[bx]
+mov   ax, es    ; es had dc_yl
 cmp   ax, cx
 jg    skip_ceil_clip_set
 mov   ax, cx
 inc   ax
-mov   word ptr ds:[_dc_yl], ax
 skip_ceil_clip_set:
 
-cmp   ax, word ptr ds:[_dc_yh]
-jg    increment_column_and_continue_loop
-mov   bx, di
 
-SHIFT_MACRO shr bx 4
+cmp   ax, dx   ; dx is dc_yh
+jg    increment_column_and_continue_loop
+
+;SHIFT_MACRO shr bx 4 ; preshifted now
+
+  ; finally store dc_yl, dc_yh
+mov   word ptr ds:[_dc_yl], ax
+mov   word ptr ds:[_dc_yh], dx
 
 
 
 SELFMODIFY_MASKED_dc_texturemid_hi_1:
 mov   cl, 010h;  dc_texturemid intbits
-les   ax, dword ptr [bp - 4]        ; es gets texture segment
-add   ax, bx
+
+SELFMODIFY_MASKED_set_base_segment:
+mov   ax, 01000h
+
+
+SELFMODIFY_MASKED_add_currentoffset:
+db 05, 00, 00    ; add ax, 0000 (word)  ; always a single low byte actually
+
 mov   word ptr ds:[_dc_source_segment], ax
-sub   cl, byte ptr es:[si]          ; subtract tex top offset
+
+SELFMODIFY_MASKED_sub_topdelta:
+sub   cl, 010h          ; subtract tex top offset. si = si+1
 ; dl = dc_texturemid hi. carry this into the call
 ; dont set dc_texturemid lo till inside call
 
 
-call  R_DrawColumnPrepMaskedMulti_   ;todo inline?
+
+; dc_yl is ax
+; dc_yh is dx
+; dc_x not loaded.
+
+;mov   si, word ptr ds:[_dc_yl]
+;mov   di, word ptr ds:[_dc_yh]                  ; grab dc_yh
+;mov   ax, word ptr ds:[_dc_x]
+
+
+call  R_DrawColumnPrepMaskedMulti_  ; this call does not need anything besides si preserved. actually es too
 
 increment_column_and_continue_loop:
-mov   es, word ptr [bp-2]
-mov   al, byte ptr es:[si + 1] ; get patch height again. todo add this earlier?
-xor   ah, ah
+pop   es
+; check next column
+lods  word ptr es:[si]       ; column->length. now si = si + 2.
 
-add   di, ax
-neg   al
-and   al, 0Fh
-add   di, ax    ; round up segment.
 
-add   si, 2     ; todo bench inc si inc si
-cmp   byte ptr es:[si], 0FFh
+cmp   al, 0FFh               ; do we have another post int he column?
 je    exit_function
-jmp   draw_next_column_patch ; todo inverse and skip jump
+
+; only calculate next offset if necessary since the shift 4 is expensive..
+;        currentoffset += column->length;
+;        currentoffset += (16 - ((column->length &0xF)) &0xF);
+
+; round up to next segment. add 0Fh and shift right four. but dont do this if we dont continue the loop.
+
+SELFMODIFY_MASKED_set_last_offset:
+db    0bbh, 00, 00   ; mov   bx, (byte) zero extended into high
+add   bx, 0Fh        
+
+SHIFT_MACRO shr bx 4   ; TODO separately bench lookup table for shift right 4? mov bl, byte ptrs cs:[_sar4table + bx]
+add   byte ptr cs:[SELFMODIFY_MASKED_add_currentoffset+1], bl
+
+jmp   draw_next_column_patch 
 exit_function:
 
 
 mov   cx, es               ; restore cx
-LEAVE_MACRO
+
+pop   bp
 pop   di
 pop   si
 pop   dx
