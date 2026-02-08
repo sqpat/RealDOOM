@@ -80,6 +80,8 @@ dw 01000h, 01400h, 01800h, 01C00h
 
 base_product = OFFSET _scalelight
 
+; todo 256 entry table with shift 4 and min/max etc logic baked in
+
 _mul48lookup_with_scalelight:
 REPT 16
    dw base_product
@@ -8680,8 +8682,7 @@ ret
 
 set_vis_colormap:
 SELFMODIFY_set_spritelights_2:
-mov   bx, 01000h
-mov   al, byte ptr ds:[bx + (MAXLIGHTSCALE-1) + _scalelight]  ;todo or is this supposed to be scalelightfixed...?
+mov   al, byte ptr ds:[01000h]       ;todo or is this supposed to be scalelightfixed...?
 mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], al
 LEAVE_MACRO
 ret   
@@ -8693,38 +8694,24 @@ ENDP
 
 PROC R_PrepareMaskedPSprites_ NEAR
 
-push  bx
-push  cx
-push  dx
-push  si ; used in inner functions.
-push  di
+
 
 mov   bx, word ptr ds:[_r_cachedplayerMobjsecnum]
-mov   ax, SECTORS_SEGMENT
-
-
 SHIFT_MACRO shl bx 4
-
-
-
+mov   ax, SECTORS_SEGMENT
 mov   es, ax
+
 xor   ax, ax
-mov   al, byte ptr es:[bx + 0Eh]  ; sector lightlevel byte offset
-mov   dx, ax
+mov   al, byte ptr es:[bx + SECTOR_T.sec_lightlevel]  ; sector lightlevel byte offset
 
+SHIFT_MACRO shr ax 3
+SELFMODIFY_BSP_extralight3_shiftone:
+add       al, 0
 
-SHIFT_MACRO sar dx 4
+xchg      ax, bx
+mov       ax, word ptr cs:[_mul48lookup_with_scalelight + bx]
+add       ax, MAXLIGHTSCALE-1 ; revisit this logic...? was there before
 
-
-SELFMODIFY_BSP_extralight3:
-mov   al, 0
-add   ax, dx
-cmp   al, 240   ; checking if its < 0, by checking if its above max possible
-ja    use_spritelights_zero
-cmp   al, LIGHTLEVELS
-jb    calculate_spritelights
-; use max spritelight
-mov    ax, 720   ; hardcoded (lightmult48lookup[LIGHTLEVELS - 1])
 player_spritelights_set:
 mov   word ptr cs:[SELFMODIFY_set_spritelights_2 + 1 - OFFSET R_BSP24_STARTMARKER_], ax 
 
@@ -8732,7 +8719,7 @@ mov   word ptr cs:[SELFMODIFY_set_spritelights_2 + 1 - OFFSET R_BSP24_STARTMARKE
 
 first_iter:
 
-mov   bx, word ptr ds:[_psprites]
+mov   bx, word ptr ds:[_psprites  + PSPDEF_T.pspdef_statenum]
 cmp   bx, STATENUM_NULL
 je    sprite_1_null
 sal   bx, 1
@@ -8745,32 +8732,20 @@ sprite_1_null:
 
 second_iter:
 
-mov   bx, word ptr ds:[_psprites + 0Ch]
+mov   bx, word ptr ds:[_psprites + (SIZE PSPDEF_T) + PSPDEF_T.pspdef_statenum]
 cmp   bx, -1
 je    sprite_2_null
 sal   bx, 1
-mov   si, OFFSET _player_vissprites + 028h
+mov   si, OFFSET _player_vissprites + SIZE VISSPRITE_T
 mov   ax, word ptr ds:[bx + _states_render]
 mov   cl, ah
-mov   bx, OFFSET _psprites + 0Ch
+mov   bx, OFFSET _psprites + SIZE PSPDEF_T
 call  R_DrawPSprite_
 sprite_2_null:
 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+
 ret  
 
-use_spritelights_zero:
-xor   ax, ax
-jmp   player_spritelights_set
-calculate_spritelights:
-mov   ah, 48
-mul   ah
-mov   word ptr cs:[SELFMODIFY_set_spritelights_2 + 1 - OFFSET R_BSP24_STARTMARKER_], ax 
-jmp   first_iter
 
 
 ENDP
@@ -11989,8 +11964,8 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_4+1 - OFFSET R_BSP24_STAR
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_5+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 mov      al, byte ptr ss:[_extralight]
-mov      byte ptr ds:[SELFMODIFY_BSP_extralight3+1 - OFFSET R_BSP24_STARTMARKER_], al
 shl      ax, 1
+mov      byte ptr ds:[SELFMODIFY_BSP_extralight3_shiftone+1 - OFFSET R_BSP24_STARTMARKER_], al
 mov      byte ptr ds:[SELFMODIFY_BSP_extralight1_shiftone+1 - OFFSET R_BSP24_STARTMARKER_], al
 shr      ax, 1
 inc      ax 
