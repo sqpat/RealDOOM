@@ -174,7 +174,7 @@ COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - C
 	
 ; all 3 instances called from R_RenderMaskedSegRange_
 
-PROC   R_DrawSingleMaskedColumn_  NEAR    ; fairly unoptimized, barely runs
+PROC   R_DrawSingleMaskedColumn_  NEAR    ; fairly unoptimized, barely runs though so who cares
 PUBLIC R_DrawSingleMaskedColumn_
 push  cx
 push  si
@@ -1414,7 +1414,7 @@ xor   ah, ah
 
 
 
-SHIFT_MACRO sar ax 4
+SHIFT_MACRO sar ax 4;shift4
 
 
 mov   dx, ax
@@ -2172,7 +2172,7 @@ call  R_GetSpritePage_
 xor   ah, ah
 mov   di, ax
 mov   al, cl
-SHIFT_MACRO shl   ax 4
+SHIFT_MACRO shl   ax 4      ;shift4
 sal   di, 1
 mov   cx, word ptr cs:[di + _pagesegments - OFFSET R_MASK24_STARTMARKER_]
 add   ch, (SPRITE_COLUMN_SEGMENT SHR 8)
@@ -2200,7 +2200,7 @@ call  R_GetSpritePage_
 xor   ah, ah
 mov   di, ax
 mov   al, cl
-SHIFT_MACRO shl   ax 4
+SHIFT_MACRO shl   ax 4      ;shift4
 sal   di, 1
 mov   di, word ptr cs:[di + _pagesegments - OFFSET R_MASK24_STARTMARKER_]
 add   di, SPRITE_COLUMN_SEGMENT
@@ -2297,7 +2297,7 @@ dec       word ptr cs:[SELFMODIFY_loadspritecolumn_width_check+1 - OFFSET R_MASK
 
 mov       ax, di
 
-SHIFT_MACRO shr       ax 4
+SHIFT_MACRO shr       ax 4;shift4
 mov       si, dx
 mov       si, word ptr ds:[si]
 
@@ -3112,35 +3112,36 @@ call  R_MarkL2SpriteCacheMRU_
 ;    return i;
 
 xchg  ax, bx
-LEAVE_MACRO 
+ 
 pop   cx
 
 ret   
 
 
-PROC R_GetSpritePage_ NEAR ; needs another look
+PROC R_GetSpritePage_ NEAR ; needs a rewrite to better use 8 bit regs etc
 
-; todo dont wreck cx... thats it?
+; stack: dont wreck cx... thats it. outer frame eventually takes care of the rest.
 
 push  cx
-push  bp
-mov   bp, sp
+
 
 
 mov   si, OFFSET _activespritepages
 mov   di, OFFSET _activespritenumpages
 mov   cx, NUM_SPRITE_L1_CACHE_PAGES
-mov   dx, FIRST_SPRITE_CACHE_LOGICAL_PAGE ; pageoffset
+cbw
+cwd
 
 continue_get_page:
 
-push  cx        ; bp - 2         max   (loop counter etc). ch 0
-push  dx        ; bp - 4   dh 0 pageoffset
+
+
 
 ;	uint8_t realtexpage = texpage >> 2;
 mov   dl, al
 SHIFT_MACRO sar   dx 2
-push  dx        ; bp - 6   dh 0 realtexpage
+
+mov   bp, dx  ; bp holds onto realtexpage  
 
 ;	uint8_t numpages = (texpage& 0x03);
 
@@ -3318,11 +3319,10 @@ jns   mark_all_pages_mru_loop
 ;    R_MarkL2TextureCacheMRU(realtexpage);
 ;    return i;
 
-pop   ax;   word ptr [bp - 6]
+xchg  ax, bp
 call  R_MarkL2SpriteCacheMRU_
 mov   al, dh
 
-LEAVE_MACRO 
 pop   cx
 
 ret   
@@ -3332,15 +3332,15 @@ ret
 
 evict_and_find_startpage_multi:
 xor   ax, ax ; set ah to 0. 
-mov   bx, word ptr [bp - 2]
-dec   bx
-mov   cx, bx
+mov   bx, NUM_SPRITE_L1_CACHE_PAGES - 1 + OFFSET _spriteL1LRU 
+
+mov   cx, NUM_SPRITE_L1_CACHE_PAGES - 1
 sub   cl, dl
 ; dl is numpages
 ; bx is startpage
 ; cx is ((NUM_SPRITE_L1_CACHE_PAGES-1)-numpages)
 
-add   bx, OFFSET _spriteL1LRU 
+
 
 find_start_page_loop_multi:
 
@@ -3360,14 +3360,14 @@ found_start_page_single:
 ;  cl/cx is startpage
 ;  bl/bx is startpage 
 
-pop   dx  ; bp - 6, get realtexpage
+mov   dx, bp
 ; dx has realtexpage
 ; bx already ok
 
 mov   byte ptr ds:[bx + di], bh  ; zero
 mov   byte ptr ds:[bx + si], dl
 shl   bx, 1                      ; startpage word offset.
-pop   ax                         ; mov   ax, word ptr [bp - 4]
+mov   ax, FIRST_SPRITE_CACHE_LOGICAL_PAGE
 
 add   ax, dx                     ; _EPR(pageoffset + realtexpage);
 EPR_MACRO ax
@@ -3396,7 +3396,7 @@ mov   word ptr ds:[_lastvisspritepatch], ax
 mov   word ptr ds:[_lastvisspritepatch2], ax
 
 xchg  ax, dx
-LEAVE_MACRO 
+ 
 pop   cx
 ret
 
@@ -3405,7 +3405,7 @@ found_startpage_multi:
 
 ; al already set to startpage
 mov   bx, ax    ; ah/bh is 0
-push  ax  ; bp - 8
+;push  ax  ; 
 mov   dh, al ; dh gets startpage..
 mov   cx, -1
 
@@ -3499,7 +3499,7 @@ mov   ch, dl
 
 ;	for (i = 0; i <= numpages; i++) {
 ; es gets currentpage
-mov   es, word ptr [bp - 6]
+mov   es, bp
 
 ;    for (i = 0; i <= numpages; i++) {
 ;        R_MarkL1TextureCacheMRU(startpage+i);
@@ -3526,7 +3526,7 @@ mov   byte ptr ds:[bx + di], ch   ;   activenumpages[startpage + i] = numpages-i
 mov   byte ptr ds:[bx + si], al   ;	activetexturepages[startpage + i]  = currentpage;
 sal   bx, 1             ; word lookup
 
-add   ax, word ptr [bp - 4]  ; pageoffset
+add   ax, FIRST_SPRITE_CACHE_LOGICAL_PAGE
 EPR_MACRO ax
 
 ;	pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT]  = _EPR(currentpage+pageoffset);
@@ -3549,9 +3549,9 @@ jns   loop_mark_next_page_mru_multi
 ;    R_MarkL2SpriteCacheMRU(realspritepage);
 ;    Z_QuickMapSpritePage();
 
-mov   ax, word ptr [bp - 6]
+mov   ax, bp
 call  R_MarkL2SpriteCacheMRU_
-;call  Z_QuickMapSpritePage_
+
 
 push  dx
 Z_QUICKMAPAI4 pageswapargs_spritecache_offset_size INDEXED_PAGE_9000_OFFSET
@@ -4268,8 +4268,8 @@ mov  si, _player_vissprites       ; vissprite 0
 call R_DrawVisSprite_
 
 check_next_player_sprite:
-cmp  word ptr ds:[_psprites + (SIZE PSPDEF_T) +  + PSPDEF_T.pspdef_statenum], -1  ; STATENUM_NULL
-je  exit_drawplayersprites
+cmp  word ptr ds:[_psprites + (SIZE PSPDEF_T) +  PSPDEF_T.pspdef_statenum], -1  ; STATENUM_NULL
+je   exit_drawplayersprites
 mov  si, _player_vissprites + (SIZE VISSPRITE_T)
 call R_DrawVisSprite_
 
