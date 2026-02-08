@@ -1766,8 +1766,7 @@ void __near R_GetNextTextureBlock(int16_t tex_index, uint16_t size, int8_t cache
 */
 
 
-void __near R_GetNextSpriteBlock(int16_t lump);
-/*
+
 void __near R_GetNextSpriteBlock(int16_t lump) {
 	uint16_t size = spritetotaldatasizes[lump-firstspritelump];
 	uint8_t blocksize = size >> 8; // num 256-sized blocks needed
@@ -1892,7 +1891,7 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 	spriteoffset[lump - firstspritelump] = texoffset;
 
 }
-*/
+
 //
 // R_GenerateComposite
 // Using the texture definition,

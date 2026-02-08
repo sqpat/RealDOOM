@@ -909,7 +909,7 @@ mov   dx, word ptr ds:[_lastvisspritepatch]
 mov   word ptr ds:[_lastvisspritepatch2], dx
 mov   dx, word ptr ds:[_lastvisspritesegment]
 mov   word ptr ds:[_lastvisspritesegment2], dx
-call  R_GetSpriteTexture_
+call  R_GetSpriteTexture_    ; may be able to inline the whole thing...
 
 mov   word ptr ds:[_lastvisspritesegment], ax
 mov   es, ax
@@ -2151,6 +2151,9 @@ SCRATCH_ADDRESS_5000_SEGMENT = 05000h
 ; todo inline this eventually
 PROC   R_GetSpriteTexture_ NEAR  ; needs another look
 PUBLIC R_GetSpriteTexture_
+
+; todo move si or maybe si/bp push/pop to this outer layer instead of the other functions repeating it
+
 ; everything but si and bp is free game to be clobbered!
 
 mov   di, SPRITEPAGE_SEGMENT
@@ -2370,213 +2373,198 @@ ENDP
 
 
 
-PROC R_GetNextSpriteBlock_ NEAR  ; todo improve. do this stackless
+PROC   R_GetNextSpriteBlock_ NEAR  ; fairly optimized now
+PUBLIC R_GetNextSpriteBlock_
 
 
-
-PUSHA_NO_AX_MACRO
+push      si
+push      di
 push      bp
-mov       bp, sp
 
 
-PUSH_MACRO_WITH_REG dx CACHETYPE_SPRITE
 
-sub       ax, word ptr ds:[_firstspritelump]
+sub       ax, word ptr ds:[_firstspritelump]  ; todo selfmodify 
+xchg      ax, bp   ; bp holds the lookup
+mov       di, bp
 mov       dx, SPRITETOTALDATASIZES_SEGMENT
 mov       es, dx
-mov       bx, ax
-sal       bx, 1
-mov       dx, word ptr es:[bx] ; dx = size
-mov       bl, dh
-push      bx  ; bp - 4  only bl technically
-
-PUSH_MACRO_WITH_REG di NUM_SPRITE_CACHE_PAGES
-
-
-push      ax  ; bp - 6  store for later
-mov       di, OFFSET _spritecache_nodes
-mov       si, OFFSET _usedspritepagemem
-
-
-xchg      ax, bx
 
 
 ;	if (size & 0xFF) {
 ;		blocksize++;
 ;	}
 
-test      dl, 0FFh
-je        dont_increment_blocksize
-inc       al
-mov       byte ptr [bp - 4], al
-dont_increment_blocksize:
-;	numpages = blocksize >> 6; // num EMS pages needed
+mov       bx, word ptr es:[bp+di] ; dx = size  ; bp+di = word lookup
+add       bx, 0FFh
+mov       bl, bh  ; blocksize = size >> 8
 
-xor       ah, ah
-SHIFT_MACRO rol       al 2
-and       al, 3
+;   bl is blocksize
+
+;	numpages = blocksize >> 6; // num EMS pages needed
+xor       bh, bh
+mov       ax, bx
 
 ;	if (blocksize & 0x3F) {
 ;		numpages++;
 ;	}
 
-mov       ch, al
-test      byte ptr [bp - 4], 03Fh
-je        dont_increment_numpages
-inc       ch
-dont_increment_numpages:
+add       al, 03Fh      ; numpages in high 2 bits of al
+SHIFT_MACRO sal ax 2
+mov       ch, ah   ; ch = numpages
+
+mov       di, OFFSET _spritecache_nodes
+mov       si, OFFSET _usedspritepagemem
+
+; ch is numpages
+; bl = blocksize
+
 
 ;	if (numpages == 1) {
 
-xor       bx, bx
 cmp       ch, 1
 jne       multipage_textureblock
 ;		uint8_t freethreshold = 64 - blocksize;
-mov       dx, 04000h
-sub       dh, byte ptr [bp - 4]
-; dl zeroed 
+mov       al, 040h
+sub       al, bl  
+mov       cl, bl   
+mov       ch, NUM_SPRITE_CACHE_PAGES
+xor       bx, bx
+;  cl = blocksize
+;  al = threshold
+;  bl = i
+;  bh = 0
 
-;		for (i = 0; i < NUM_TEXTURE_PAGES; i++) {
-;			if (freethreshold >= usedtexturepagemem[i]) {
+
+;		for (i = 0; i < NUM_SPRITE_CACHE_PAGES; i++) {
+;			if (freethreshold >= usedspritepagemem[i]) {
 ;				goto foundonepage;
 ;			}
 ;		}
 
 check_next_texture_page_for_space:
-mov       bl, dl
-cmp       dh, byte ptr ds:[bx + si]
-jnb       foundonepage
+
+cmp       al, byte ptr ds:[bx + si]
+jae       foundonepage
 
 ;		i = R_EvictL2CacheEMSPage(1, cachetype);
 
-inc       dl
-cmp       dl, [bp - 6]
+inc       bx
+cmp       bl, ch
 jl        check_next_texture_page_for_space
-mov       al, byte ptr [bp - 2]
-cbw      
-mov       dx, ax
-mov       al, 1
+
+mov       al, 1 ; 1 page
 call      R_EvictL2CacheEMSPage_Sprite_
-mov       dl, al
+cbw       ; might not be necessary.
+xchg      ax, bx  ; bl = page, bh = 0
 
 foundonepage:
 
+; bl = page
+
 ;		texpage = i << 2;
-;		texoffset = usedtexturepagemem[i];
-;		usedtexturepagemem[i] += blocksize;
+;		texoffset = usedspritepagemem[i];   ; si
+;		usedspritepagemem[i] += blocksize;
 
-mov       dh, dl
-SHIFT_MACRO shl       dh 2
-mov       bl, dl
-mov       al, byte ptr ds:[bx + si]
-mov       ah, byte ptr [bp - 4]
-add       ah, al
-mov       byte ptr ds:[bx + si], ah
 
-done_finding_open_page:
-pop       si ; was bp - 6
-cmp       byte ptr [bp - 2], CACHETYPE_PATCH
-jne       set_non_patch_pages
-set_patch_pages:
-mov       bx, PATCHOFFSET_SEGMENT
-mov       es, bx
-mov       byte ptr es:[si], dh
-mov       byte ptr es:[si + PATCHOFFSET_OFFSET], al
-LEAVE_MACRO     
-POPA_NO_AX_MACRO
-ret       
-set_non_patch_pages:
-jb        set_sprite_pages
-set_tex_pages:
-mov       bx, COMPOSITETEXTUREOFFSET_SEGMENT
-mov       es, bx
-mov       byte ptr es:[si], dh
-mov       byte ptr es:[si + COMPOSITETEXTUREOFFSET_OFFSET], al
-LEAVE_MACRO     
-POPA_NO_AX_MACRO
-ret       
-set_sprite_pages:
-mov       bx, SPRITEPAGE_SEGMENT
-mov       es, bx
-mov       byte ptr es:[si], dh
-mov       byte ptr es:[si + SPRITEOFFSETS_OFFSET], al
-LEAVE_MACRO     
-POPA_NO_AX_MACRO
+mov       al, byte ptr ds:[bx + si]  ; al = texoffset
+add       byte ptr ds:[bx + si], cl  ; add blocksize
+
+SHIFT_MACRO shl       bx 2 
+
+; al = texoffset
+; bx = texpage
+
+;	spritepage[lump - firstspritelump] = texpage;
+;	spriteoffset[lump - firstspritelump] = texoffset;
+; bp = lump - firstsegment
+mov       dx, SPRITEPAGE_SEGMENT
+mov       es, dx
+mov       byte ptr es:[bp], bl
+mov       byte ptr es:[bp + SPRITEOFFSETS_OFFSET], al
+
+pop       bp
+pop       di
+pop       si
 ret       
 
 
 multipage_textureblock:
 
-;		uint8_t numpagesminus1 = numpages - 1;
-
-mov       dh, byte ptr ds:[_texturecache_l2_head]
-mov       ah, 0FFh
-mov       cl, 040h
-; al is free, in use a lot
-; ah is 0FFh
-; bh is 000h
-; bl is active offset
 ; ch is numpages
-; cl is 040h
+; bl = blocksize
+
+mov       dh, byte ptr ds:[_spritecache_l2_head]
+
+mov       cl, 0FFh
+mov       ah, bl    ; al stores blocksize for a bit
+xor       bx, bx    ; bh needs to be 0 for various lookups/offsets
+
+; al is free, in use a lot
+; cl is 0FFh
+; bh is 000h
+; bl is active offset used for lookups 
+; ch is numpages
 ; dh is head
 ; dl is nextpage
 
 
-;		for (i = texturecache_l2_head;
+;		for (i = spritecache_l2_head;
 ;				i != -1; 
-;				i = texturecache_nodes[i].prev
+;				i = spritecache_nodes[i].prev
 ;				) {
-;			if (!usedtexturepagemem[i]) {
+;			if (!usedspritepagemem[i]) {
 ;				// need to check following pages for emptiness, or else after evictions weird stuff can happen
-;				int8_t nextpage = texturecache_nodes[i].prev;
-;				if ((nextpage != -1 &&!usedtexturepagemem[nextpage])) {
-;					nextpage = texturecache_nodes[nextpage].prev;
+;				int8_t nextpage = spritecache_nodes[i].prev;
+;				if ((nextpage != -1 &&!usedspritepagemem[nextpage])) {
+;					nextpage = spritecache_nodes[nextpage].prev;
 
 ;				}
 ;			}
 ;		}
 
-cmp       dh, ah  ; dh is texturecache_l2_head
-je        done_with_textureblock_multipage_loop
+; note: the reason weird stuff can happen is that we dont reorder pages here, 
+; so we only return a multipage is ok if we found enough contiguous pages
+; if we dont, then we evict.
+
 
 do_texture_multipage_loop:
 mov       bl, dh
-cmp       byte ptr ds:[bx + si], bh
-jne       do_next_texture_multipage_loop_iter
+cmp       byte ptr ds:[bx + si], bh             ; usedspritepagemem == 0?
+jne       do_next_texture_multipage_loop_iter   ; page is not empty
 
 page_has_space:
 SHIFT_MACRO shl       bl 2
-mov       al, byte ptr ds:[bx + di]
-cmp       al, ah
+mov       al, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev] ; check prev page
+cmp       al, cl
 je        do_next_texture_multipage_loop_iter
 ; has next page
 mov       bl, al
-cmp       byte ptr ds:[bx + si], bh
-jne       do_next_texture_multipage_loop_iter
+cmp       byte ptr ds:[bx + si], bh             ; usedspritepagemem == 0?
+jne       do_next_texture_multipage_loop_iter   ; page is not empty
 SHIFT_MACRO shl       bl 2
-mov       dl, byte ptr ds:[bx + di]
+mov       dl, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
 
-;					if (numpagesminus1 < 2 || (nextpage != -1 && (!usedtexturepagemem[nextpage]))) {
-
+;					if (numpagesminus1 < 2 || (nextpage != -1 && (!usedspritepagemem[nextpage]))) {
 
 cmp       ch, 3   ; use numpages instead of numpagesminus1
 jb        less_than_2_pages_or_next_page_good
 not_less_than_2_pages_check_next_page_good:
-cmp       dl, ah
+; need to check a 3rd page.
+cmp       dl, cl
 je        do_next_texture_multipage_loop_iter
 mov       bl, dl
-cmp       byte ptr ds:[bx + si], bh
-jne       do_next_texture_multipage_loop_iter
+cmp       byte ptr ds:[bx + si], bh             ; usedspritepagemem == 0?
+jne       do_next_texture_multipage_loop_iter   ; page is not empty
 
 less_than_2_pages_or_next_page_good:
 
-;						nextpage = texturecache_nodes[nextpage].prev;
+;						nextpage = spritecache_nodes[nextpage].prev;
 
 mov       bl, dl
 SHIFT_MACRO shl       bl 2
-mov       dl, byte ptr ds:[bx + di]
+mov       dl, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
 
-;						if (numpagesminus1 < 3 || (nextpage != -1 &&(!usedtexturepagemem[nextpage]))) {
+;						if (numpagesminus1 < 3 || (nextpage != -1 &&(!usedspritepagemem[nextpage]))) {
 ;							goto foundmultipage;
 ;						}
 
@@ -2584,10 +2572,11 @@ cmp       ch, 4  ; use numpages instead of numpagesminus1
 jb        found_multipage
 
 
-check_for_next_multipage_loop_iter:
 
-; (nextpage != -1 &&(!usedtexturepagemem[nextpage])
-cmp       dl, ah
+check_for_next_multipage_loop_iter:
+; need to check a 4th page.
+; (nextpage != -1 &&(!usedspritepagemem[nextpage])
+cmp       dl, cl
 je        do_next_texture_multipage_loop_iter
 mov       bl, dl
 cmp       byte ptr ds:[bx + si], bh
@@ -2596,95 +2585,119 @@ jne       do_next_texture_multipage_loop_iter
 do_next_texture_multipage_loop_iter:
 mov       bl, dh
 SHIFT_MACRO shl       bl 2
-mov       dh, byte ptr ds:[bx + di]
-cmp       dh, ah
+mov       dh, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+cmp       dh, cl
 jne       do_texture_multipage_loop
 
 done_with_textureblock_multipage_loop:
 
 ;		i = R_EvictL2CacheEMSPage(numpages, cachetype);
 
-mov       al, byte ptr [bp - 2]
-cbw      
-mov       dx, ax
-mov       al, ch
+
+mov       al, ch   ; numpages
+mov       cl, ah   ; backup blocksize
 call      R_EvictL2CacheEMSPage_Sprite_
 mov       dh, al
+mov       ah, cl   ; restore blocksize in ah
 
 less_than_3_pages_or_next_page_good:
+
 found_multipage:
+; reminder:
+; al is free, in use a lot
+; cl is now free (currenly 0FFh)
+; bh is 000h
+; ah is blocksize
+; bl is active offset used for lookups 
+; ch is numpages
+; dh is head
+; dl is nextpage
+
+
+
 ;		foundmultipage:
-;        usedtexturepagemem[i] = 64;
+;        usedspritepagemem[i] = 64;
 
 mov       bl, dh
-mov       byte ptr ds:[bx + si], cl
+mov       byte ptr ds:[bx + si], 040h
 
-;		texturecache_nodes[i].numpages = numpages;
-;		texturecache_nodes[i].pagecount = numpages;
+;		spritecache_nodes[i].numpages = numpages;
+;		spritecache_nodes[i].pagecount = numpages;
 
 SHIFT_MACRO shl       bl 2
-mov       byte ptr ds:[bx + di + 3], ch
-mov       byte ptr ds:[bx + di + 2], ch
-mov       dl, dh
+mov       cl, ch ; cl = numpages
+mov       word ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], cx  ; write .numpages too at once
+
+
 ;		if (numpages >= 3) {
-cmp       ch, 3
-jl        numpages_not_3_or_more
-mov       dl, byte ptr ds:[bx + di]
-mov       bl, dl
-mov       al, ch
-dec       al
-mov       byte ptr ds:[bx + si], cl
-SHIFT_MACRO shl       bl 2
-mov       byte ptr ds:[bx + di + 3], ch
-mov       byte ptr ds:[bx + di + 2], al
-numpages_not_3_or_more:
-mov       bl, dl
-SHIFT_MACRO shl       bl 2
-mov       al, byte ptr ds:[bx + di]
-mov       bl, al
-SHIFT_MACRO shl       bl 2
+; numpages for sprites can only be 1 or 2, so if we are in multipage sprite  area its 2.
 
-;		texturecache_nodes[j].numpages = numpages;
-;		texturecache_nodes[j].pagecount = 1;
+COMMENT @
+        cmp       ch, 3
+        jl        numpages_not_3_or_more
+        mov       al, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+        mov       bl, al    ; undo dword
+        dec       cx  ; cl = numpages -1
+        mov       byte ptr ds:[bx + si], 040h
+        SHIFT_MACRO shl       bl 2
+        mov       word ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], cx  ; write .numpages too at once
+        numpages_not_3_or_more:
+        mov       bl, al    ; undo dword
+@
 
-mov       byte ptr ds:[bx + di + 2], 1
-mov       byte ptr ds:[bx + di + 3], ch
+; set the last page.
+
+mov       al, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
 mov       bl, al
 
-mov       al, byte ptr [bp - 4]
 
+mov       al, 040h
 ;	if (blocksize & 0x3F) {
-
-test      al, 03Fh
-jne        dont_set_used_all_memory_for_page
-;			usedtexturepagemem[j] = blocksize & 0x3F;
-set_used_all_memory_for_page:
-
-;			usedtexturepagemem[j] = 64;
+test      ah, 03Fh
+je        dont_update_blocksize
+and       ah, 03Fh
+mov       al, ah            ;			usedspritepagemem[j] = blocksize & 0x3F;
+dont_update_blocksize:
 
 
 ;		texpage = (i << 2) + (numpagesminus1);
 ;		texoffset = 0; // if multipage then its always aligned to start of its block
 
 
-mov       byte ptr ds:[bx + si], cl
-SHIFT_MACRO shl       dh 2
-xor       al, al
-add       dh, ch  ; use numpages instead of numpagesminus1
-dec       dh 
-jmp       done_finding_open_page
-dont_set_used_all_memory_for_page:
-and       al, 03Fh
 mov       byte ptr ds:[bx + si], al
 
-;		texpage = (i << 2) + (numpagesminus1);
-;		texoffset = 0; // if multipage then its always aligned to start of its block
+SHIFT_MACRO shl       bl 2
 
-SHIFT_MACRO shl       dh 2
-xor       al, al
-add       dh, ch    ; use numpages instead of numpagesminus1. need the dec
-dec       dh
-jmp       done_finding_open_page
+;		spritecache_nodes[j].numpages = numpages;
+;		spritecache_nodes[j].pagecount = 1;
+
+dec       cx   ; cl = 1
+mov       word ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], cx  ; write .numpages too at once
+
+
+
+SHIFT_MACRO shl       dh 2   ; i 
+
+;add       dh, ch  ; numpages
+;dec       dh      ; numpages minus one
+; numpages - 1 = 1
+inc        dh
+
+;	spritepage[lump - firstspritelump] = texpage;
+;	spriteoffset[lump - firstspritelump] = texoffset;
+
+
+; bp = lump - firstsegment
+mov       bx, SPRITEPAGE_SEGMENT
+mov       es, bx
+mov       byte ptr es:[bp], dh
+mov       byte ptr es:[bp + SPRITEOFFSETS_OFFSET], bh  ; known 0
+
+pop       bp
+pop       di
+pop       si
+ret       
+
 
 
 
@@ -2693,8 +2706,8 @@ ENDP
 
 
 
-PROC R_EvictL2CacheEMSPage_Sprite_ NEAR ; needs another look
-
+PROC   R_EvictL2CacheEMSPage_Sprite_ NEAR ; needs another look. especially revisit what needs to be push.popped
+PUBLIC R_EvictL2CacheEMSPage_Sprite_
 ; bp - 2 currentpage
 
 push      bx
@@ -3547,7 +3560,7 @@ mov   es, word ptr [bp - 6]
 ;        activetexturepages[startpage + i]  = currentpage;
 ;        activenumpages[startpage + i] = numpages-i;
 ;        pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT]  = _EPR(currentpage+pageoffset);
-;        currentpage = texturecache_nodes[currentpage].prev;
+;        currentpage = spritecache_nodes[currentpage].prev;
 ;    }
 
 
