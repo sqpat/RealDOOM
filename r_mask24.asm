@@ -2452,7 +2452,7 @@ jl        check_next_texture_page_for_space
 
 mov       al, 1 ; 1 page
 call      R_EvictL2CacheEMSPage_Sprite_
-cbw       ; might not be necessary.
+; ah is 0
 xchg      ax, bx  ; bl = page, bh = 0
 
 foundonepage:
@@ -2647,7 +2647,7 @@ ret
 ENDP
 
 
-
+; todo optmized evict 1 vs evict 2 with no param?
 
 PROC   R_EvictL2CacheEMSPage_Sprite_ NEAR ; needs another look. especially revisit what needs to be push.popped
 PUBLIC R_EvictL2CacheEMSPage_Sprite_
@@ -2667,7 +2667,7 @@ done_with_switchblock:
 
 mov       al, byte ptr ds:[_spritecache_l2_tail]
 cbw      
-xor       dl, dl
+
 
 ;	// go back enough pages to allocate them all.
 ;	for (j = 0; j < numpages-1; j++){
@@ -2676,77 +2676,90 @@ xor       dl, dl
 
 
 ; dh has numpages
-; dl has j
 dec       dh  ; numpages - 1
 
-go_back_next_page:
-cmp       dl, dh
-jge       found_enough_pages
+jz        found_enough_pages
 mov       bx, ax
 SHIFT_MACRO shl       bx, 2
 mov       al, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]  ; get next
-inc       dl
-jmp       go_back_next_page
+
+; no need to loop. maxes at 2
 
 
 found_enough_pages:
 
-push ax   ; bp - 2 store currentpage
+; dh = numpages - 1
+; ax = currentpage
+
+push ax    ; store currentpage. todo removable?
+
+; we store this here because we may go back and clear more pages 
+; (if they are part of a contiguous allocation that were are evicting)
+; but at the end, this is where we actually want to begin our allocation from - 
+; and we will leave the extra pages empty on the tail.
 
 ;	evictedpage = currentpage;
 
-mov       cx, ax
+xchg      ax, cx
+
+; cx = evictedpage
+; bx = becomes evictedpage CACHE_NODE_PAGE_COUNT_T ptr
 
 ;	while (nodelist[evictedpage].numpages != nodelist[evictedpage].pagecount){
 ;		evictedpage = nodelist[evictedpage].next;
 ;	}
 
-
+; was this page part of a multipage allocation? then go back...
+; bh, ch, ah zero
 find_first_evictable_page:
 mov       bx, cx
 SHIFT_MACRO shl       bx, 2
-mov       ax, word ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount]
+mov       ax, word ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount] ; ah has numpages. when pagecount = numpages this is the last page
 cmp       al, ah
 je        found_first_evictable_page
-mov       al, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
-cbw      
-mov       cx, ax
+mov       cl, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
 jmp       find_first_evictable_page
 
 found_first_evictable_page:
 
+; got to the end of the multipage (if any) allocaiton.
+; now go back towards tail, remove things from cache until we reach 0FFh node
 
 
-
-
-;	while (evictedpage != -1){
+; evict cache loop setup.
 mov       dx, 000FFh      ; dh gets 0, dl gets ff
 
-check_next_evicted_page:
-cmp       cl, dl
-je        cleared_all_cache_data
+mov       bx, SPRITEPAGE_SEGMENT
+mov       es, bx                ; es..
+mov       si, di                ; put this here for now
+xchg      ax, cx                ; furthest back page we are clearing. free cx for loop
 
+; di = k, 
+; cx = maxitersize (for repne scasb)
+; al = evictedpage
+; bx = evictedpage ptr
+
+;	while (evictedpage != -1){
 
 do_next_evicted_page:
 
 
 ; loop setup
-mov       bx, cx
+mov       bx, ax
+mov       byte ptr ds:[bx + _usedspritepagemem], dh ; usedspritepagemem[evictedpage] = 0;
+
 SHIFT_MACRO shl       bx 2
 
-xor       ax, ax
 
 
 ;		nodelist[evictedpage].pagecount = 0;
 ;		nodelist[evictedpage].numpages = 0;
 
-mov       word ptr ss:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], ax    ; set both at once
-mov       si, ax                   ; zero
-; ds!
-
-mov       bx, SPRITEPAGE_SEGMENT
-mov       ds, bx
-mov       bx, MAX_SPRITE_LUMPS
+xor       di, di                   ; zero for scas
+mov       word ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], di    ; set both at once
+xchg      ax, bx ; store ptr
+mov       bx, MAX_SPRITE_LUMPS - 1 ; scasb makes this off by one so we offset here... 
+mov       cx, MAX_SPRITE_LUMPS +1  ; plus one so jcxz logic is correct?
 
 
 ;    for (k = 0; k < maxitersize; k++){
@@ -2755,59 +2768,55 @@ mov       bx, MAX_SPRITE_LUMPS
 ;				cacherefoffset[k] = 0xFF;
 ;			}
 ;		}
-dec       bx   ; lodsw makes this off by one so we offset here...
 
+; loop through every element in the list looking for this element.
+
+; todo this didnt catch anything..? did it have the wrong al value?
 continue_first_cache_erase_loop:
-lodsb     ; increments si...
-SHIFT_MACRO shr       ax, 2
-cmp       al, cl
-je        erase_this_page
-done_erasing_page:
-cmp       si, bx
-jle       continue_first_cache_erase_loop   ; jle, not jl because bx is decced
+repne     scasb
+jcxz      done_with_first_cache_erase_loop
+mov       byte ptr es:[di-1],  dl    ; 0FFh
+mov       byte ptr es:[di+bx], dl    ; 0FFh
+jmp       continue_first_cache_erase_loop
 
-done_with_first_cache_erase_loop:
+done_with_first_cache_erase_loop:  ; sprites have no secondary cache loop
 
-; sprites have no secondary cache loop
-
-;		usedcacherefpage[evictedpage] = 0;
+xchg      ax, bx  ; restore bx ptr. ah now dirty.
+cbw               ; ah now clean.
 
 
-
-
-
-mov       bx, cx
-mov       byte ptr ss:[bx + _usedspritepagemem], dh    ; 0
 
 ;		evictedpage = nodelist[evictedpage].prev;
 
-SHIFT_MACRO shl       bx 2
-mov       cl, byte ptr ss:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]     ; get prev
-cmp       cl, dl                   ; dl is -1
+
+mov       al, byte ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]     ; get prev
+cmp       al, dl                   ; dl is 0FFh. have we reached the end of the list again?
 jne       do_next_evicted_page
 
 
 cleared_all_cache_data:
 
-;	// connect old tail and old head.
-;	nodelist[*nodetail].prev = *nodehead;
-mov      ax, ss
-mov      ds, ax
-mov       al, byte ptr ds:[_spritecache_l2_tail]
-cbw      
+mov       di, si   ; restore di
+
+
+mov       al, byte ptr ds:[_spritecache_l2_tail] ; ah already 0
 mov       cx, ax            ; cx stores nodetail
 
-SHIFT_MACRO shl       ax 2
-xchg      ax, bx            ; bx has nodelist nodetail lookup
+xchg      ax, bx            ; bx has nodelist nodetail lookup ; ah/bh still safely 0
+SHIFT_MACRO shl       bx 2
 
 mov       si, OFFSET _spritecache_l2_head
+
+
+;    connect old tail and old head.
+;	nodelist[*nodetail].prev = *nodehead;
 mov       al, byte ptr ds:[si]
-mov       byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], al
+mov       byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], al ; node->prev = head
 mov       bl, al
 
 ;	nodelist[*nodehead].next = *nodetail;
 SHIFT_MACRO shl       bx 2
-mov       byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], cl  ; write nodetail to next
+mov       byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], cl ;  head->next = tail
 ;	previous_next = nodelist[currentpage].next;
 ;	*nodehead = currentpage;
 pop       bx ; retrieve currentpage
@@ -2815,7 +2824,7 @@ pop       bx ; retrieve currentpage
 mov       byte ptr ds:[si], bl
 SHIFT_MACRO shl       bx 2
 mov       al, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]    ; previous_next
-cbw
+
 ;	nodelist[currentpage].next = -1;
 mov       byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], dl   ; still 0FFh
 ;	*nodetail = previous_next;
@@ -2829,16 +2838,12 @@ mov       byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], d
 
 ;	return *nodehead;
 
-lodsb       
+lodsb      ; return ds:[si] in al
 
 pop       si
 pop       cx
 
 ret       
-erase_this_page:
-mov       byte ptr ds:[si-1], dl     ; 0FFh
-mov       byte ptr ds:[si+bx], dl    ; 0FFh
-jmp       done_erasing_page
 
 
 
@@ -2847,8 +2852,8 @@ ENDP
 
 ; todo inline?
 
-PROC R_MarkL1SpriteCacheMRU_ NEAR  ; performance probably fine
-
+PROC   R_MarkL1SpriteCacheMRU_ NEAR  ; performance probably fine
+PUBLIC R_MarkL1SpriteCacheMRU_
 
 mov  ah, byte ptr ds:[_spriteL1LRU+0]
 cmp  al, ah

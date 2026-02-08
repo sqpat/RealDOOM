@@ -910,7 +910,7 @@ TICCMD_T ENDS
 CACHE_NODE_PAGE_COUNT_T STRUC
     cachenodecount_prev       db ? ; 0
     cachenodecount_next       db ? ; 1
-    cachenodecount_pagecount  db ? ; 2
+    cachenodecount_pagecount  db ? ; 2  ; counts up from 1 to numpages. when pagecount == numpages then it is the last lage in a multipage allocation.
     cachenodecount_numpages   db ? ; 3
 CACHE_NODE_PAGE_COUNT_T ENDS
 
