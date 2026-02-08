@@ -78,6 +78,22 @@ dw 00000h, 00400h, 00800h, 00C00h
 dw 01000h, 01400h, 01800h, 01C00h
 ;dw 02000h, 02400h
 
+base_product = OFFSET _scalelight
+
+_mul48lookup_with_scalelight:
+REPT 16
+   dw base_product
+   base_product = base_product + 48
+ENDM
+REPT 16
+   dw base_product ; for overflow cases...
+ENDM
+
+
+
+
+
+
 ; 0AAh
 
 ; shoving some small functions in here since w ehave to pad to 0100h for the next jump table
@@ -3567,8 +3583,7 @@ jl    index_below_maxlightscale
 mov   di, MAXLIGHTSCALE - 1
 index_below_maxlightscale:
 SELFMODIFY_set_spritelights_1:
-mov   bx, 01000h
-mov   al, byte ptr ds:[_scalelight+bx+di]
+mov   al, byte ptr ds:[di+01000h]
 mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], al
 
 jmp   done_with_r_projectsprite
@@ -3752,12 +3767,12 @@ mov       word ptr cs:[SELFMODIFY_BSP_v1x+1 - OFFSET R_BSP24_STARTMARKER_], bx
 mov       word ptr cs:[SELFMODIFY_BSP_v1y+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 sub       ax, word ptr ds:[di + VERTEX_T.v_y]
-mov       dl, 04Ah  ; dec dx
+mov       dl, 048h  ; dec ax
 je        v2_y_equals_v1_y
 sub       bx, word ptr ds:[di + VERTEX_T.v_x]
 mov       dl, 090h  ; nop
 jne       v2_y_not_equals_v1_y
-mov       dl, 042h  ; inc dx
+mov       dl, 040h  ; inc ax
 v2_y_not_equals_v1_y:
 v2_y_equals_v1_y:
 
@@ -4498,41 +4513,28 @@ mov   word ptr cs:[SELFMODIFY_set_ax_rw_offset_hi+1 - OFFSET R_BSP24_STARTMARKER
 SELFMODIFY_BSP_fixedcolormap_3:
 jmp SHORT seg_textured_check_done    ; dont check walllights if fixedcolormap
 SELFMODIFY_BSP_fixedcolormap_3_AFTER:
-mov       al, byte ptr [bp - 03Bh]
-xor       ah, ah
-cwd
-mov       bx, dx
-SELFMODIFY_BSP_extralight2:
-mov       dl, 0
 
-; todo instead of shifting back and forth just use mults of 16
+xor       ax, ax
+mov       al, byte ptr [bp - 03Bh]   ; light level
 SHIFT_MACRO shr ax 4
 
 
+SELFMODIFY_BSP_extralight2_plusone:
+add       al, 0
 
-add       dl, al
 
 SELFMODIFY_addlightnum_delta:
-dec       dx  ; nop carries flags from add dl, al. dec and inc will set signed accordingly
+dec       ax  ; nop carries flags from add dl, al. dec and inc will set signed accordingly
 
-js      done_setting_ax_to_wallights ; ax is 0, set to scalelights[0]
-
-lightnum_greater_than_0:
-cmp       dl, LIGHTLEVELS
-mov       bx, 720 + OFFSET _scalelight  ; lightnum_max
-jnl       done_setting_ax_to_wallights_with_offset
-
-
-mov       al, 48
-mul       dl
+shl       ax, 1  ; word lookup
 xchg      ax, bx
-done_setting_ax_to_wallights:
-add       bx, OFFSET _scalelight
-done_setting_ax_to_wallights_with_offset:
+mov       ax, word ptr cs:[_mul48lookup_with_scalelight + bx]
+
+
 
 
 ; write walllights to rendersegloop
-mov   word ptr cs:[SELFMODIFY_add_wallights+2 - OFFSET R_BSP24_STARTMARKER_], bx
+mov   word ptr cs:[SELFMODIFY_add_wallights+2 - OFFSET R_BSP24_STARTMARKER_], ax
 ; ? do math here and write this ahead to drawcolumn colormapsindex?
 
 SELFMODIFY_BSP_fixedcolormap_3_TARGET:
@@ -7323,23 +7325,20 @@ cmp   ax, word ptr es:[bx + SECTOR_T.sec_validcount]		 ; sec->validcount
 je    exit_add_sprites_quick  ; todo branch test. fall through ret is likely faster.
 
 mov   word ptr es:[bx + SECTOR_T.sec_validcount], ax
-xor   ax, ax
-mov   al, byte ptr es:[bx + SECTOR_T.sec_lightlevel]		; sec->lightlevel
-mov   dx, ax
-
-SHIFT_MACRO sar dx 4
 
 
-SELFMODIFY_BSP_extralight1:
-mov   al, 0
-add   ax, dx
-js    set_spritelights_to_zero
-cmp   ax, LIGHTLEVELS
-jge   set_spritelights_to_max
-mov   ah, 48
-mul   ah
-spritelights_set:
-mov   word ptr cs:[SELFMODIFY_set_spritelights_1 + 1 - OFFSET R_BSP24_STARTMARKER_], ax 
+xor       ax, ax
+mov       al, byte ptr es:[bx + SECTOR_T.sec_lightlevel]		; sec->lightlevel
+
+SHIFT_MACRO shr ax 3  ; only 3; got the word lookup for free
+
+SELFMODIFY_BSP_extralight1_shiftone:
+add       al, 0
+
+xchg      ax, si
+mov       ax, word ptr cs:[_mul48lookup_with_scalelight + si]
+
+mov   word ptr cs:[SELFMODIFY_set_spritelights_1 + 2 - OFFSET R_BSP24_STARTMARKER_], ax 
 mov   si, word ptr es:[bx + SECTOR_T.sec_thinglistref]
 test  si, si
 je    exit_add_sprites
@@ -7368,14 +7367,7 @@ exit_add_sprites_quick:
 
 jmp   R_AddLine_
 
-set_spritelights_to_max:
-; _NULL_OFFSET + 02A0h + 16 - 1 ... (0x2ee)
-mov    ax, 720   ; hardcoded (lightmult48lookup[LIGHTLEVELS - 1])
-jmp   spritelights_set
 
-set_spritelights_to_zero:
-xor   ax, ax
-jmp   spritelights_set
 
 exit_r_addline:
 
@@ -11997,9 +11989,12 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_4+1 - OFFSET R_BSP24_STAR
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_5+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 mov      al, byte ptr ss:[_extralight]
-mov      byte ptr ds:[SELFMODIFY_BSP_extralight1+1 - OFFSET R_BSP24_STARTMARKER_], al
-mov      byte ptr ds:[SELFMODIFY_BSP_extralight2+1 - OFFSET R_BSP24_STARTMARKER_], al
 mov      byte ptr ds:[SELFMODIFY_BSP_extralight3+1 - OFFSET R_BSP24_STARTMARKER_], al
+shl      ax, 1
+mov      byte ptr ds:[SELFMODIFY_BSP_extralight1_shiftone+1 - OFFSET R_BSP24_STARTMARKER_], al
+shr      ax, 1
+inc      ax 
+mov      byte ptr ds:[SELFMODIFY_BSP_extralight2_plusone+1 - OFFSET R_BSP24_STARTMARKER_], al
 
 mov      al, byte ptr ss:[_fixedcolormap]
 

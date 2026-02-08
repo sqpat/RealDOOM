@@ -85,10 +85,23 @@ dw  0FFB0h, 00050h, 00050h, 00050h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h, 0005
 dw  00050h, 0FFB0h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h
 dw  00050h, 00050h, 00050h, 0FFB0h, 00050h
 
+base_product = OFFSET _scalelight
+
+_mul48lookup_with_scalelight:
+REPT 16
+   dw base_product
+   base_product = base_product + 48
+ENDM
+REPT 16
+   dw base_product ; for overflow cases...
+ENDM
+
+
 
 IF COMPISA GE COMPILE_386
 ; todo used only once. 
-PROC FixedMulMaskedLocal_ NEAR   ; fairly optimized
+PROC   FixedMulMaskedLocal_ NEAR   ; fairly optimized
+PUBLIC FixedMulMaskedLocal_
 ; thanks zero318 from discord for improved algorithm  
 
 ; DX:AX  *  CX:BX
@@ -386,8 +399,8 @@ UNCLIPPED_COLUMN  = 0FFFEh
 exit_draw_masked_column_shadow_early:
 ret
 
-PROC R_DrawMaskedSpriteShadow_ NEAR  ; fairly optimized
-
+PROC   R_DrawMaskedSpriteShadow_ NEAR  ; fairly optimized
+PUBLIC R_DrawMaskedSpriteShadow_
 ; ax 	 pixelsegment
 ; cx:bx  column fardata
 
@@ -1105,7 +1118,8 @@ ENDP
 
 
 
-PROC R_RenderMaskedSegRange_ NEAR ; todo definitely needs another look
+PROC   R_RenderMaskedSegRange_ NEAR ; todo definitely needs another look
+PUBLIC R_RenderMaskedSegRange_
 
 ;void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2) {
 
@@ -1409,38 +1423,29 @@ mov   ax, SECTORS_SEGMENT
 mov   es, ax
 
 ; di is frontsector
-mov   al, byte ptr es:[di + 0Eh]   ; get sector lightlevel
-xor   ah, ah
 
 
+xor   ax, ax
+mov   al, byte ptr es:[di + SECTOR_T.sec_lightlevel]   ; get sector lightlevel
 
-SHIFT_MACRO sar ax 4;shift4
+SHIFT_MACRO shr ax 3
+; shifted 3 instead of 4 for the word lookup situation.
 
+SELFMODIFY_MASKED_extralight_1_shiftone:
+add   al, 0  ; this is 
 
-mov   dx, ax
-SELFMODIFY_MASKED_extralight_1:
-mov   al, 0
-add   ax, dx
+xchg  ax, bx
+mov   ax, word ptr cs:[_mul48lookup_with_scalelight + bx]
+
 
 SELFMODIFY_MASKED_add_vertex_field:
 nop				; becomes inc ax, dec ax, or nop
 
-;	if (lightnum < 0){
-;test  ax, ax			; we get this for free via the above instructions
-jl   set_walllights_zero
-cmp   ax, LIGHTLEVELS
-jge   clip_lights_to_max
-mov   ah, 48
-mul   ah
-jmp   lights_set
+lights_set:
+mov   word ptr cs:[SELFMODIFY_MASKED_set_walllights+2 - OFFSET R_MASK24_STARTMARKER_], ax      ; store lights
+jmp   ugly_jump  ; todo i got rid of branching code here then had nowhere to stick this code blob. revisit!
 
 
-
-
-
-set_walllights_zero:
-xor   ax, ax
-jmp   lights_set
 SELFMODIFY_MASKED_fixedcolormap_2_TARGET:
 fixed_colormap:
 SELFMODIFY_MASKED_fixedcolormap_3:
@@ -1448,21 +1453,15 @@ mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMA
 jmp   colormap_set
 
 
-clip_lights_to_max:
-mov    ax, 720   ; hardcoded (lightmult48lookup[LIGHTLEVELS - 1])
 
-lights_set:
-add   ax, OFFSET _scalelight
-mov   word ptr cs:[SELFMODIFY_MASKED_set_walllights+2 - OFFSET R_MASK24_STARTMARKER_], ax      ; store lights
-
-
+ugly_jump:
 ;    maskedtexturecol = &openings[ds->maskedtexturecol_val];
 
 SELFMODIFY_MASKED_dsp_1A:
 mov   ax, 01000h		; ds->maskedtexturecol_val
 add   ax, ax
 mov   word ptr ds:[_maskedtexturecol], ax
-;mov   word ptr ds:[_maskedtexturecol+2], OPENINGS_SEGMENT	; this is now hardcoded in data
+
 
 ;    rw_scalestep.w = ds->scalestep;
 
@@ -1525,7 +1524,7 @@ mov   word ptr ds:[_mceilingclip], 01000h
 ;	}
 
 
-
+; TODO make this a 3 byte jmp instruction or 3 byte nop i guess.
 SELFMODIFY_MASKED_fixedcolormap_2:
 jne fixed_colormap		; jump when fixedcolormap is not 0.
 SELFMODIFY_MASKED_fixedcolormap_2_AFTER:
@@ -2297,12 +2296,12 @@ dec       word ptr cs:[SELFMODIFY_loadspritecolumn_width_check+1 - OFFSET R_MASK
 
 mov       ax, di
 
-SHIFT_MACRO shr       ax 4;shift4
+SHIFT_MACRO shr       ax 4;shift4  unlikely due to word?
 mov       si, dx
 mov       si, word ptr ds:[si]
 
 
-mov       word ptr es:[bp], ax
+mov       word ptr es:[bp], ax      ; todo swap bp/di and stosw?
 mov       word ptr es:[bp+2], bx
 add       bp, 4
 
@@ -2647,11 +2646,10 @@ ret
 ENDP
 
 
-; todo optmized evict 1 vs evict 2 with no param?
 
-PROC   R_EvictL2CacheEMSPage_Sprite_ NEAR ; needs another look. especially revisit what needs to be push.popped
+PROC   R_EvictL2CacheEMSPage_Sprite_ NEAR ; fairly optimized. consider 1page vs 2page variants
 PUBLIC R_EvictL2CacheEMSPage_Sprite_
-; bp - 2 currentpage
+
 
 push      cx
 push      si   ; find a way to not use this? or reset to constant after call
@@ -2850,35 +2848,13 @@ ret
 
 ENDP
 
-; todo inline?
-
-PROC   R_MarkL1SpriteCacheMRU_ NEAR  ; performance probably fine
-PUBLIC R_MarkL1SpriteCacheMRU_
-
-mov  ah, byte ptr ds:[_spriteL1LRU+0]
-cmp  al, ah
-je   exit_markl1spritecachemru
-mov  byte ptr ds:[_spriteL1LRU+0], al
-xchg byte ptr ds:[_spriteL1LRU+1], ah
-cmp  al, ah
-je   exit_markl1spritecachemru
-xchg byte ptr ds:[_spriteL1LRU+2], ah
-cmp  al, ah
-je   exit_markl1spritecachemru
-xchg byte ptr ds:[_spriteL1LRU+3], ah
-exit_markl1spritecachemru:
-ret  
-
-
-ENDP
 
 
 
 
-ENDP
 
-PROC R_MarkL2SpriteCacheMRU_ NEAR ; needs another look
-
+PROC   R_MarkL2SpriteCacheMRU_ NEAR ; needs another look
+PUBLIC R_MarkL2SpriteCacheMRU_
 ;	if (index == spritecache_l2_head) {
 ;		return;
 ;	}
@@ -3102,7 +3078,23 @@ found_active_single_page:
 
 xchg  ax, dx            ; dx gets realtexpage
 mov   ax, bx            ; ax gets i
-call  R_MarkL1SpriteCacheMRU_
+
+;call  R_MarkL1SpriteCacheMRU_  ; inlined
+
+mov  ah, byte ptr ds:[_spriteL1LRU+0]
+cmp  al, ah
+je   exit_markl1spritecachemru_inline_1
+mov  byte ptr ds:[_spriteL1LRU+0], al
+xchg byte ptr ds:[_spriteL1LRU+1], ah
+cmp  al, ah
+je   exit_markl1spritecachemru_inline_1
+xchg byte ptr ds:[_spriteL1LRU+2], ah
+cmp  al, ah
+je   exit_markl1spritecachemru_inline_1
+xchg byte ptr ds:[_spriteL1LRU+3], ah
+exit_markl1spritecachemru_inline_1:
+
+
 
 ;    R_MarkL2TextureCacheMRU(realtexpage);
 
@@ -3118,8 +3110,8 @@ pop   cx
 ret   
 
 
-PROC R_GetSpritePage_ NEAR ; needs a rewrite to better use 8 bit regs etc
-
+PROC   R_GetSpritePage_ NEAR ; needs a rewrite to better use 8 bit regs etc
+PUBLIC R_GetSpritePage_
 ; stack: dont wreck cx... thats it. outer frame eventually takes care of the rest.
 
 push  cx
@@ -3309,7 +3301,21 @@ mov   dh, bl
 mark_all_pages_mru_loop:
 mov   ax, bx
 
-call  R_MarkL1SpriteCacheMRU_
+;call  R_MarkL1SpriteCacheMRU_  ; inlined
+
+mov  ah, byte ptr ds:[_spriteL1LRU+0]
+cmp  al, ah
+je   exit_markl1spritecachemru_inline_2
+mov  byte ptr ds:[_spriteL1LRU+0], al
+xchg byte ptr ds:[_spriteL1LRU+1], ah
+cmp  al, ah
+je   exit_markl1spritecachemru_inline_2
+xchg byte ptr ds:[_spriteL1LRU+2], ah
+cmp  al, ah
+je   exit_markl1spritecachemru_inline_2
+xchg byte ptr ds:[_spriteL1LRU+3], ah
+exit_markl1spritecachemru_inline_2:
+
 inc   bl
 dec   dl
 jns   mark_all_pages_mru_loop
@@ -3516,7 +3522,20 @@ loop_mark_next_page_mru_multi:
 
 mov   al, cl
 
-call  R_MarkL1SpriteCacheMRU_  ; does not affect es
+;call  R_MarkL1SpriteCacheMRU_  ; inlined
+
+mov  ah, byte ptr ds:[_spriteL1LRU+0]
+cmp  al, ah
+je   exit_markl1spritecachemru_inline_3
+mov  byte ptr ds:[_spriteL1LRU+0], al
+xchg byte ptr ds:[_spriteL1LRU+1], ah
+cmp  al, ah
+je   exit_markl1spritecachemru_inline_3
+xchg byte ptr ds:[_spriteL1LRU+2], ah
+cmp  al, ah
+je   exit_markl1spritecachemru_inline_3
+xchg byte ptr ds:[_spriteL1LRU+3], ah
+exit_markl1spritecachemru_inline_3:
 
 
 mov   ax, es ; currentpage in ax
@@ -3572,8 +3591,8 @@ ENDP
 
 IF COMPISA GE COMPILE_386
 
-    PROC FastDiv3232FFFF_ NEAR    ; needs another look, compare with bsp's version
-
+    PROC   FastDiv3232FFFF_ NEAR    ; needs another look, compare with bsp's version
+    PUBLIC FastDiv3232FFFF_
     ; EDX:EAX as 00000000 FFFFFFFF
 
     db 066h, 031h, 0C0h              ; xor eax, eax
@@ -3611,7 +3630,8 @@ ELSE
     ;FastDiv3232FFFF_
     ; DX:AX / CX:BX
 
-    PROC FastDiv3232FFFF_ NEAR    ; needs another look, compare with bsp's version
+    PROC   FastDiv3232FFFF_ NEAR    ; needs another look, compare with bsp's version
+    PUBLIC FastDiv3232FFFF_
 
 
 
@@ -3814,8 +3834,8 @@ ENDIF
 
 ;R_PointOnSegSide_
 
-PROC R_PointOnSegSide_ NEAR  ; needs another look
-
+PROC   R_PointOnSegSide_ NEAR  ; needs another look
+PUBLIC R_PointOnSegSide_
 push  di
 push  bp
 mov   bp, sp
@@ -5088,8 +5108,8 @@ mov       bx, dx
 sub       bx, di
 jmp       done_with_loop_check_masked
 
-PROC R_GetMaskedColumnSegment_ NEAR ; could use another look
-
+PROC   R_GetMaskedColumnSegment_ NEAR ; could use another look
+PUBLIC R_GetMaskedColumnSegment_
 ;  bp - 2      ; tex (orig ax)
 ;  bp - 4      ; texcol. maybe ok to remain here.
 ;  bp - 6      ; loopwidth
@@ -5610,7 +5630,7 @@ ENDP
 
 ;R_WriteBackViewConstantsMasked
 
-PROC R_WriteBackViewConstantsMasked24_ FAR   ; fairly unoptimized, doesnt run much
+PROC   R_WriteBackViewConstantsMasked24_ FAR   ; fairly unoptimized, doesnt run much
 PUBLIC R_WriteBackViewConstantsMasked24_ 
 
 
@@ -5773,7 +5793,7 @@ endp
 
 ;R_WriteBackMaskedFrameConstants
 
-PROC R_WriteBackMaskedFrameConstants24_ FAR   ; fairly unoptimized, doesnt run much
+PROC   R_WriteBackMaskedFrameConstants24_ FAR   ; fairly unoptimized, doesnt run much
 PUBLIC R_WriteBackMaskedFrameConstants24_ 
 
 ; todo: merge this with some other code. maybe R_DrawMasked and use CS
@@ -5804,7 +5824,8 @@ mov   ax, word ptr ss:[_destview+2]
 mov   word ptr ds:[SELFMODIFY_MASKED_destview_hi_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 mov   al, byte ptr ss:[_extralight]
-mov   byte ptr ds:[SELFMODIFY_MASKED_extralight_1+1 - OFFSET R_MASK24_STARTMARKER_], al
+sal   ax, 1
+mov   byte ptr ds:[SELFMODIFY_MASKED_extralight_1_shiftone+1 - OFFSET R_MASK24_STARTMARKER_], al
 
 mov   al, byte ptr ss:[_fixedcolormap]
 cmp   al, 0
