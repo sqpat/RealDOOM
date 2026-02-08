@@ -2152,9 +2152,9 @@ SCRATCH_ADDRESS_5000_SEGMENT = 05000h
 PROC   R_GetSpriteTexture_ NEAR  ; needs another look
 PUBLIC R_GetSpriteTexture_
 
-; todo move si or maybe si/bp push/pop to this outer layer instead of the other functions repeating it
-
-; everything but si and bp is free game to be clobbered!
+push  si
+push  bp
+; everything but si and bp is free game to be clobbered! 
 
 mov   di, SPRITEPAGE_SEGMENT
 mov   es, di
@@ -2178,6 +2178,8 @@ mov   cx, word ptr cs:[di + _pagesegments - OFFSET R_MASK24_STARTMARKER_]
 add   ch, (SPRITE_COLUMN_SEGMENT SHR 8)
 add   ax, cx
 
+pop   bp
+pop   si
 
 ret
 
@@ -2215,8 +2217,6 @@ push  di     ; return value
 ; dx = segment
 
 
-push      si
-push      bp
 
 
 xchg      ax, bx    ; backup..
@@ -2359,10 +2359,11 @@ mov       ds, ax
 Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
 
 
-pop       bp
-pop       si
 
 pop   ax     ; return 
+
+pop   bp
+pop   si
 
 ret
 
@@ -2376,10 +2377,7 @@ ENDP
 PROC   R_GetNextSpriteBlock_ NEAR  ; fairly optimized now
 PUBLIC R_GetNextSpriteBlock_
 
-
-push      si
 push      di
-push      bp
 
 
 
@@ -2482,13 +2480,13 @@ mov       es, dx
 mov       byte ptr es:[bp], bl
 mov       byte ptr es:[bp + SPRITEOFFSETS_OFFSET], al
 
-pop       bp
 pop       di
-pop       si
 ret       
 
 
 multipage_textureblock:
+
+; sprites are never 3-4 pages in practice... sort of a hack but maybe custom wads with sprites this big arent meant for realdoom
 
 ; ch is numpages
 ; bl = blocksize
@@ -2532,7 +2530,7 @@ mov       bl, dh
 cmp       byte ptr ds:[bx + si], bh             ; usedspritepagemem == 0?
 jne       do_next_texture_multipage_loop_iter   ; page is not empty
 
-page_has_space:
+page_1_has_space:
 SHIFT_MACRO shl       bl 2
 mov       al, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev] ; check prev page
 cmp       al, cl
@@ -2540,47 +2538,9 @@ je        do_next_texture_multipage_loop_iter
 ; has next page
 mov       bl, al
 cmp       byte ptr ds:[bx + si], bh             ; usedspritepagemem == 0?
-jne       do_next_texture_multipage_loop_iter   ; page is not empty
-SHIFT_MACRO shl       bl 2
-mov       dl, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
-
-;					if (numpagesminus1 < 2 || (nextpage != -1 && (!usedspritepagemem[nextpage]))) {
-
-cmp       ch, 3   ; use numpages instead of numpagesminus1
-jb        less_than_2_pages_or_next_page_good
-not_less_than_2_pages_check_next_page_good:
-; need to check a 3rd page.
-cmp       dl, cl
-je        do_next_texture_multipage_loop_iter
-mov       bl, dl
-cmp       byte ptr ds:[bx + si], bh             ; usedspritepagemem == 0?
-jne       do_next_texture_multipage_loop_iter   ; page is not empty
-
-less_than_2_pages_or_next_page_good:
-
-;						nextpage = spritecache_nodes[nextpage].prev;
-
-mov       bl, dl
-SHIFT_MACRO shl       bl 2
-mov       dl, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
-
-;						if (numpagesminus1 < 3 || (nextpage != -1 &&(!usedspritepagemem[nextpage]))) {
-;							goto foundmultipage;
-;						}
-
-cmp       ch, 4  ; use numpages instead of numpagesminus1
-jb        found_multipage
+je        found_multipage                       ; page is empty
 
 
-
-check_for_next_multipage_loop_iter:
-; need to check a 4th page.
-; (nextpage != -1 &&(!usedspritepagemem[nextpage])
-cmp       dl, cl
-je        do_next_texture_multipage_loop_iter
-mov       bl, dl
-cmp       byte ptr ds:[bx + si], bh
-jne       do_next_texture_multipage_loop_iter
 
 do_next_texture_multipage_loop_iter:
 mov       bl, dh
@@ -2599,12 +2559,13 @@ mov       cl, ah   ; backup blocksize
 call      R_EvictL2CacheEMSPage_Sprite_
 mov       dh, al
 mov       ah, cl   ; restore blocksize in ah
+mov       al, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
 
 less_than_3_pages_or_next_page_good:
 
 found_multipage:
 ; reminder:
-; al is free, in use a lot
+; al is prev page
 ; cl is now free (currenly 0FFh)
 ; bh is 000h
 ; ah is blocksize
@@ -2627,27 +2588,11 @@ mov       byte ptr ds:[bx + si], 040h
 SHIFT_MACRO shl       bl 2
 mov       cl, ch ; cl = numpages
 mov       word ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], cx  ; write .numpages too at once
-
-
-;		if (numpages >= 3) {
 ; numpages for sprites can only be 1 or 2, so if we are in multipage sprite  area its 2.
 
-COMMENT @
-        cmp       ch, 3
-        jl        numpages_not_3_or_more
-        mov       al, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
-        mov       bl, al    ; undo dword
-        dec       cx  ; cl = numpages -1
-        mov       byte ptr ds:[bx + si], 040h
-        SHIFT_MACRO shl       bl 2
-        mov       word ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], cx  ; write .numpages too at once
-        numpages_not_3_or_more:
-        mov       bl, al    ; undo dword
-@
 
 ; set the last page.
 
-mov       al, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
 mov       bl, al
 
 
@@ -2693,9 +2638,7 @@ mov       es, bx
 mov       byte ptr es:[bp], dh
 mov       byte ptr es:[bp + SPRITEOFFSETS_OFFSET], bh  ; known 0
 
-pop       bp
 pop       di
-pop       si
 ret       
 
 
@@ -2907,7 +2850,9 @@ jmp       done_erasing_page
 
 ENDP
 
-PROC R_MarkL1SpriteCacheMRU_ NEAR
+; todo inline?
+
+PROC R_MarkL1SpriteCacheMRU_ NEAR  ; performance probably fine
 
 
 mov  ah, byte ptr ds:[_spriteL1LRU+0]
@@ -3166,16 +3111,18 @@ call  R_MarkL2SpriteCacheMRU_
 
 ;    return i;
 
-mov   es, bx            ; return i
+xchg  ax, bx
 LEAVE_MACRO 
-POPA_NO_AX_MACRO
-mov   ax, es
+pop   cx
+
 ret   
 
 
 PROC R_GetSpritePage_ NEAR ; needs another look
 
-PUSHA_NO_AX_MACRO
+; todo dont wreck cx... thats it?
+
+push  cx
 push  bp
 mov   bp, sp
 
@@ -3374,10 +3321,10 @@ jns   mark_all_pages_mru_loop
 pop   ax;   word ptr [bp - 6]
 call  R_MarkL2SpriteCacheMRU_
 mov   al, dh
-mov   es, ax
+
 LEAVE_MACRO 
-POPA_NO_AX_MACRO
-mov   ax, es
+pop   cx
+
 ret   
  
 ;		// figure out startpage based on LRU
@@ -3448,10 +3395,9 @@ do_sprite_eviction:
 mov   word ptr ds:[_lastvisspritepatch], ax
 mov   word ptr ds:[_lastvisspritepatch2], ax
 
-mov   es, dx ; cl/cx is start page
+xchg  ax, dx
 LEAVE_MACRO 
-POPA_NO_AX_MACRO
-mov   ax, es
+pop   cx
 ret
 
 found_startpage_multi:
