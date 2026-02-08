@@ -2653,16 +2653,12 @@ PROC   R_EvictL2CacheEMSPage_Sprite_ NEAR ; needs another look. especially revis
 PUBLIC R_EvictL2CacheEMSPage_Sprite_
 ; bp - 2 currentpage
 
-push      bx
 push      cx
-push      si
-push      di
+push      si   ; find a way to not use this? or reset to constant after call
 mov       dh, al
 
-
-
-
-mov       di, OFFSET _spritecache_nodes
+; this value is maintained from outer scope
+;mov       di, OFFSET _spritecache_nodes 
 
 
 done_with_switchblock:
@@ -2688,7 +2684,7 @@ cmp       dl, dh
 jge       found_enough_pages
 mov       bx, ax
 SHIFT_MACRO shl       bx, 2
-mov       al, byte ptr ds:[bx + di + 1]  ; get next
+mov       al, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]  ; get next
 inc       dl
 jmp       go_back_next_page
 
@@ -2709,10 +2705,10 @@ mov       cx, ax
 find_first_evictable_page:
 mov       bx, cx
 SHIFT_MACRO shl       bx, 2
-mov       ax, word ptr ds:[bx + di + 2]
+mov       ax, word ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount]
 cmp       al, ah
 je        found_first_evictable_page
-mov       al, byte ptr ds:[bx + di + 1]
+mov       al, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
 cbw      
 mov       cx, ax
 jmp       find_first_evictable_page
@@ -2744,7 +2740,7 @@ xor       ax, ax
 ;		nodelist[evictedpage].pagecount = 0;
 ;		nodelist[evictedpage].numpages = 0;
 
-mov       word ptr ss:[bx + di + 2], ax    ; set both at once
+mov       word ptr ss:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], ax    ; set both at once
 mov       si, ax                   ; zero
 ; ds!
 
@@ -2786,7 +2782,7 @@ mov       byte ptr ss:[bx + _usedspritepagemem], dh    ; 0
 ;		evictedpage = nodelist[evictedpage].prev;
 
 SHIFT_MACRO shl       bx 2
-mov       cl, byte ptr ss:[bx + di]     ; get prev
+mov       cl, byte ptr ss:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]     ; get prev
 cmp       cl, dl                   ; dl is -1
 jne       do_next_evicted_page
 
@@ -2806,22 +2802,22 @@ xchg      ax, bx            ; bx has nodelist nodetail lookup
 
 mov       si, OFFSET _spritecache_l2_head
 mov       al, byte ptr ds:[si]
-mov       byte ptr ds:[bx + di], al
+mov       byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], al
 mov       bl, al
 
 ;	nodelist[*nodehead].next = *nodetail;
 SHIFT_MACRO shl       bx 2
-mov       byte ptr ds:[bx + di + 1], cl  ; write nodetail to next
+mov       byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], cl  ; write nodetail to next
 ;	previous_next = nodelist[currentpage].next;
 ;	*nodehead = currentpage;
 pop       bx ; retrieve currentpage
 
 mov       byte ptr ds:[si], bl
 SHIFT_MACRO shl       bx 2
-mov       al, byte ptr ds:[bx + di + 1]    ; previous_next
+mov       al, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]    ; previous_next
 cbw
 ;	nodelist[currentpage].next = -1;
-mov       byte ptr ds:[bx + di + 1], dl   ; still 0FFh
+mov       byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], dl   ; still 0FFh
 ;	*nodetail = previous_next;
 mov       byte ptr ds:[_spritecache_l2_tail], al
 
@@ -2829,16 +2825,15 @@ mov       byte ptr ds:[_spritecache_l2_tail], al
 ;	nodelist[previous_next].prev = -1;
 mov       bx, ax
 SHIFT_MACRO shl       bx 2
-mov       byte ptr ds:[bx + di], dl    ; still 0FFh
+mov       byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], dl    ; still 0FFh
 
 ;	return *nodehead;
 
 lodsb       
 
-pop       di
 pop       si
 pop       cx
-pop       bx
+
 ret       
 erase_this_page:
 mov       byte ptr ds:[si-1], dl     ; 0FFh
