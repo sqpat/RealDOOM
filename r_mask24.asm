@@ -2151,7 +2151,7 @@ SCRATCH_ADDRESS_5000_SEGMENT = 05000h
 ; todo inline this eventually
 PROC   R_GetSpriteTexture_ NEAR  ; needs another look
 PUBLIC R_GetSpriteTexture_
-; di, cx are soon clobbered after return and dont have to be preserved
+; everything but si and bp is free game to be clobbered!
 
 mov   di, SPRITEPAGE_SEGMENT
 mov   es, di
@@ -2197,15 +2197,169 @@ mov   di, ax
 mov   al, cl
 SHIFT_MACRO shl   ax 4
 sal   di, 1
-mov   cx, word ptr cs:[di + _pagesegments - OFFSET R_MASK24_STARTMARKER_]
-add   ch, (SPRITE_COLUMN_SEGMENT SHR 8) 
-add   cx, ax
-mov   di, cx ; back this up
+mov   di, word ptr cs:[di + _pagesegments - OFFSET R_MASK24_STARTMARKER_]
+add   di, SPRITE_COLUMN_SEGMENT
+add   di, ax
 pop   ax     ; bp - 2, index
+push  di     ; return value
 
-call  R_LoadSpriteColumns_
 
-mov   ax, di
+;call  R_LoadSpriteColumns_  ; inlined
+
+
+;void R_LoadSpriteColumns(uint16_t lump, segment_t destpatch_segment);
+; ax = lump
+; dx = segment
+
+
+push      si
+push      bp
+
+
+xchg      ax, bx    ; backup..
+
+;call      Z_QuickMapScratch_5000_
+Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
+
+mov       dx, di ; dest patch
+
+;	patch_t __far *wadpatch = (patch_t __far *)SCRATCH_ADDRESS_5000;
+;	uint16_t __far * columnofs = (uint16_t __far *)&(destpatch->columnofs[0]);   // will be updated in place..
+
+mov       cx, SCRATCH_ADDRESS_5000_SEGMENT
+push      cx   ; for ds later
+mov       si, bx
+mov       ax, si
+xor       bx, bx
+;	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
+
+;call      W_CacheLumpNumDirect_
+call  dword ptr ds:[_W_CacheLumpNumDirect_addr]
+
+; wadpatch  is 0x5000 seg
+; destpatch is dx
+;	patchwidth = wadpatch->width;
+;	destpatch->width = wadpatch->width;
+;	destpatch->height = wadpatch->height;
+;	destpatch->leftoffset = wadpatch->leftoffset;
+;	destpatch->topoffset = wadpatch->topoffset;
+
+sub       si, word ptr ds:[_firstspritelump] ; get this before we clobber ds
+mov       cx, si ; store in cx
+
+pop       ds ; SCRATCH_ADDRESS_5000_SEGMENT
+xor       di, di
+mov       si, di
+
+mov       es, dx
+lodsw
+mov       word ptr cs:[SELFMODIFY_loadspritecolumn_width_check+1 - OFFSET R_MASK24_STARTMARKER_],  ax  ; patchwidth
+stosw
+movsw
+movsw
+movsw
+mov       bx, ax ; patchwidth
+mov       bp, di   ; bp gets 8
+
+
+; 	destoffset = 8 + ( patchwidth << 2);
+;	currentpostbyte = destoffset;
+;	postdata = (uint16_t __far *)(((byte __far*)destpatch) + currentpostbyte);
+
+
+SHIFT_MACRO shl       bx 2
+mov       si, cx
+shl       si, 1
+add       bx, 8
+;	destoffset += spritepostdatasizes[lump-firstspritelump];
+mov       ax, SPRITEPOSTDATASIZES_SEGMENT
+mov       es, ax
+
+mov       di, bx
+add       di, word ptr es:[si]
+mov       es, dx  ; restore es
+mov       dx, bp  ; dx starts as 8 for loop too
+
+;	destoffset += (16 - ((destoffset &0xF)) &0xF); // round up so first pixel data starts aligned of course.
+;	currentpixelbyte = destoffset;
+;	pixeldataoffset = (byte __far *)MK_FP(destpatch_segment, currentpixelbyte);
+
+add       di, 15
+and       di, 0FFF0h
+
+start_sprite_column_loop:
+xor       cx, cx
+do_next_sprite_column:
+dec       word ptr cs:[SELFMODIFY_loadspritecolumn_width_check+1 - OFFSET R_MASK24_STARTMARKER_]
+
+mov       ax, di
+
+SHIFT_MACRO shr       ax 4
+mov       si, dx
+mov       si, word ptr ds:[si]
+
+
+mov       word ptr es:[bp], ax
+mov       word ptr es:[bp+2], bx
+add       bp, 4
+
+
+lodsw
+cmp       al, 0FFh
+je        done_with_sprite_column
+
+do_next_sprite_post:
+
+mov       word ptr es:[bx], ax
+mov       cl, ah
+mov       ax, cx
+inc       si
+
+shr       cx, 1
+rep movsw 
+adc       cx, cx
+rep movsb 
+
+add       di, 15
+and       di, 0FFF0h  ; round up to next segment destination
+
+; column = (column_t __far *)(  ((byte  __far*)column) + column->length + 4 );
+
+inc       si
+inc       bx
+inc       bx
+
+lodsw
+cmp       al, 0FFh
+jne       do_next_sprite_post
+done_with_sprite_column:
+
+mov       word ptr es:[bx], 0FFFFh
+add       dx, 4
+inc       bx
+inc       bx
+
+
+SELFMODIFY_loadspritecolumn_width_check:
+mov       ax, 01000h
+test      ax, ax
+jne       do_next_sprite_column
+
+
+done_with_sprite_column_loop:
+
+mov       ax, ss  ; restore ds
+mov       ds, ax
+
+
+;call      Z_QuickMapRender5000_
+Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
+
+
+pop       bp
+pop       si
+
+pop   ax     ; return 
 
 ret
 
@@ -3454,161 +3608,6 @@ mov   dl, dh  ; numpages in cl
 jmp   do_sprite_eviction
 ENDP
 
-
-;void R_LoadSpriteColumns(uint16_t lump, segment_t destpatch_segment);
-; ax = lump
-; dx = segment
-
-PROC R_LoadSpriteColumns_ NEAR ; needs another look
-
-PUSHA_NO_AX_MACRO
-push      bp
-mov       bp, sp
-mov       bx, ax
-
-mov       di, cx    ; preserve cx thru quickmap
-;call      Z_QuickMapScratch_5000_
-Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
-
-mov       dx, di
-
-;	patch_t __far *wadpatch = (patch_t __far *)SCRATCH_ADDRESS_5000;
-;	uint16_t __far * columnofs = (uint16_t __far *)&(destpatch->columnofs[0]);   // will be updated in place..
-
-mov       di, SCRATCH_ADDRESS_5000_SEGMENT
-mov       cx, di
-mov       si, bx
-mov       ax, si
-xor       bx, bx
-;	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
-
-;call      W_CacheLumpNumDirect_
-call  dword ptr ds:[_W_CacheLumpNumDirect_addr]
-
-; wadpatch  is 0x5000 seg
-; destpatch is dx
-;	patchwidth = wadpatch->width;
-;	destpatch->width = wadpatch->width;
-;	destpatch->height = wadpatch->height;
-;	destpatch->leftoffset = wadpatch->leftoffset;
-;	destpatch->topoffset = wadpatch->topoffset;
-
-sub       si, word ptr ds:[_firstspritelump] ; get this before we clobber ds
-mov       cx, si ; store in cx
-
-mov       ds, di
-xor       di, di
-mov       si, di
-
-mov       es, dx
-lodsw
-mov       word ptr cs:[SELFMODIFY_loadspritecolumn_width_check+1 - OFFSET R_MASK24_STARTMARKER_],  ax  ; patchwidth
-stosw
-movsw
-movsw
-movsw
-mov       bx, ax ; patchwidth
-mov       bp, di   ; bp gets 8
-
-
-; 	destoffset = 8 + ( patchwidth << 2);
-;	currentpostbyte = destoffset;
-;	postdata = (uint16_t __far *)(((byte __far*)destpatch) + currentpostbyte);
-
-
-SHIFT_MACRO shl       bx 2
-mov       si, cx
-shl       si, 1
-add       bx, 8
-;	destoffset += spritepostdatasizes[lump-firstspritelump];
-mov       ax, SPRITEPOSTDATASIZES_SEGMENT
-mov       es, ax
-
-mov       di, bx
-add       di, word ptr es:[si]
-mov       es, dx  ; restore es
-mov       dx, bp  ; dx starts as 8 for loop too
-
-;	destoffset += (16 - ((destoffset &0xF)) &0xF); // round up so first pixel data starts aligned of course.
-;	currentpixelbyte = destoffset;
-;	pixeldataoffset = (byte __far *)MK_FP(destpatch_segment, currentpixelbyte);
-
-add       di, 15
-and       di, 0FFF0h
-
-start_sprite_column_loop:
-xor       cx, cx
-do_next_sprite_column:
-dec       word ptr cs:[SELFMODIFY_loadspritecolumn_width_check+1 - OFFSET R_MASK24_STARTMARKER_]
-
-mov       ax, di
-
-SHIFT_MACRO shr       ax 4
-mov       si, dx
-mov       si, word ptr ds:[si]
-
-
-mov       word ptr es:[bp], ax
-mov       word ptr es:[bp+2], bx
-add       bp, 4
-
-
-lodsw
-cmp       al, 0FFh
-je        done_with_sprite_column
-
-do_next_sprite_post:
-
-mov       word ptr es:[bx], ax
-mov       cl, ah
-mov       ax, cx
-inc       si
-
-shr       cx, 1
-rep movsw 
-adc       cx, cx
-rep movsb 
-
-add       di, 15
-and       di, 0FFF0h  ; round up to next segment destination
-
-; column = (column_t __far *)(  ((byte  __far*)column) + column->length + 4 );
-
-inc       si
-inc       bx
-inc       bx
-
-lodsw
-cmp       al, 0FFh
-jne       do_next_sprite_post
-done_with_sprite_column:
-
-mov       word ptr es:[bx], 0FFFFh
-add       dx, 4
-inc       bx
-inc       bx
-
-
-SELFMODIFY_loadspritecolumn_width_check:
-mov       ax, 01000h
-test      ax, ax
-jne       do_next_sprite_column
-
-
-done_with_sprite_column_loop:
-
-mov       ax, ss  ; restore ds
-mov       ds, ax
-pop       bp 
-
-;call      Z_QuickMapRender5000_
-Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
-
-POPA_NO_AX_MACRO
-ret      
-
-
-ENDP
 
 
 

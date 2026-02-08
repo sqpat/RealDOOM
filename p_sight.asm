@@ -450,7 +450,7 @@ PUBLIC  P_DivlineSide16_
 	sbb  di, word ptr ds:[bx + 6]
 
 	xchg ax, cx		
-	imul word ptr ds:[bx + 0Eh]
+	imul word ptr ds:[bx + 0Eh]			; lots of cycles spent here!
 	xchg ax, di		; cx:di gets result
 	mov  cx, dx
 	

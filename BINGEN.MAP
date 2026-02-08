@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/08 10:28:08
+Created on:       26/02/08 12:54:40
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -49,7 +49,7 @@ R_SPAN0_TEXT           CODE           AUTO           1b95:0000       0000063a
 R_SPANFL_TEXT          CODE           AUTO           1bf9:0000       00000591
 R_SKY_TEXT             CODE           AUTO           1c53:0000       00000d86
 R_SKYFL_TEXT           CODE           AUTO           1d2c:0000       00000303
-R_MASK24_TEXT          CODE           AUTO           1d5d:0000       0000192f
+R_MASK24_TEXT          CODE           AUTO           1d5d:0000       00001923
 R_MASK16_TEXT          CODE           AUTO           1ef0:0000       000019ce
 R_MASK0_TEXT           CODE           AUTO           208d:0000       0000193a
 R_MASKFL_TEXT          CODE           AUTO           2221:0000       00001904
@@ -441,6 +441,7 @@ Module: r_span24.obj(r_span24.ASM)
 1997:09a0*     R_MapPlane24_
 1997:0914*     FixedMulTrigCosineLocal_
 1997:0b2f      R_DrawPlanes24_
+1997:0127*     R_DrawSpanActual24_
 1997:1073      R_SPAN24_ENDMARKER_
 Module: r_span16.obj(r_span16.ASM)
 1a9f:0e68      R_WriteBackViewConstantsSpan16_
@@ -478,14 +479,14 @@ Module: r_mask24.obj(r_mask24.ASM)
 1d5d:0a91*     R_GetSpriteTexture_
 1d5d:0000*     _pagesegments
 1d5d:0012*     _fuzzoffset
-1d5d:17f6      R_WriteBackViewConstantsMasked24_
-1d5d:18d1      R_WriteBackMaskedFrameConstants24_
-1d5d:11e3      R_DrawMasked24_
+1d5d:17ea      R_WriteBackViewConstantsMasked24_
+1d5d:18c5      R_WriteBackMaskedFrameConstants24_
+1d5d:11d7      R_DrawMasked24_
 1d5d:00c1*     R_DrawSingleMaskedColumn_
-1d5d:12c0*     R_DrawSprite_
+1d5d:12b4*     R_DrawSprite_
 1d5d:0332*     R_DrawVisSprite_
-1d5d:192f      R_MASK24_ENDMARKER_
-1d5d:14f2*     R_DrawMaskedColumn_
+1d5d:1923      R_MASK24_ENDMARKER_
+1d5d:14e6*     R_DrawMaskedColumn_
 1d5d:0000      R_MASK24_STARTMARKER_
 Module: r_mask16.obj(r_mask16.ASM)
 1ef0:19ce      R_MASK16_ENDMARKER_
@@ -627,8 +628,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 23b2:4795*     A_Metal_
 23b2:5ade      P_SetMobjState_
 23b2:446e*     P_TryWalk_
-23b2:57cb*     A_BrainScream_
 23b2:4c01*     A_HeadAttack_
+23b2:57cb*     A_BrainScream_
 23b2:562a*     A_Pain_
 23b2:4ed0*     PIT_VileCheck_
 23b2:56a1*     A_BossDeath_
@@ -1057,8 +1058,8 @@ Module: main.obj(main.ASM)
 2f44:56ce*     I_UpdateBox_
 2f44:59b4*     locallib_printstringnear_
 2f44:5b5e      _SELFMODIFY_R_RENDERPLAYERVIEW_CALL
-2f44:5e1c*     D_DoomLoop_
 2f44:54fd      _defaults
+2f44:5e1c*     D_DoomLoop_
 2f44:4cd6*     D_MAIN_STARTMARKER_
 2f44:58d4*     locallib_printhex_
 2f44:4d69*     BASE_CHEAT_ADDRESS

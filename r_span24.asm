@@ -132,8 +132,8 @@ jmp   do_span_loop
 
 ENDP ; shut up compiler warning
 
-PROC  R_DrawSpanActual24_ FAR
-
+PROC   R_DrawSpanActual24_ FAR
+PUBLIC R_DrawSpanActual24_
 
 ; stack vars
  
