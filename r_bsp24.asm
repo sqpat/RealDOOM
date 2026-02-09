@@ -78,18 +78,22 @@ dw 00000h, 00400h, 00800h, 00C00h
 dw 01000h, 01400h, 01800h, 01C00h
 ;dw 02000h, 02400h
 
-base_product = OFFSET _scalelight
 
 ; todo 256 entry table with shift 4 and min/max etc logic baked in
+base_product = OFFSET _scalelight
 
+
+_mul48lookup_with_scalelight_with_minusone_offset:
+   dw base_product
 _mul48lookup_with_scalelight:
 REPT 16
    dw base_product
    base_product = base_product + 48
 ENDM
-REPT 16
+   base_product = base_product - 48
    dw base_product ; for overflow cases...
-ENDM
+   dw base_product ; for overflow cases...
+   dw base_product ; for overflow cases...
 
 
 
@@ -4516,13 +4520,14 @@ SELFMODIFY_BSP_fixedcolormap_3:
 jmp SHORT seg_textured_check_done    ; dont check walllights if fixedcolormap
 SELFMODIFY_BSP_fixedcolormap_3_AFTER:
 
-xor       ax, ax
+
 mov       al, byte ptr [bp - 03Bh]   ; light level
-SHIFT_MACRO shr ax 4
+SHIFT_MACRO shr al 4
 
 
 SELFMODIFY_BSP_extralight2_plusone:
 add       al, 0
+cbw
 
 
 SELFMODIFY_addlightnum_delta:
@@ -4530,7 +4535,7 @@ dec       ax  ; nop carries flags from add dl, al. dec and inc will set signed a
 
 shl       ax, 1  ; word lookup
 xchg      ax, bx
-mov       ax, word ptr cs:[_mul48lookup_with_scalelight + bx]
+mov       ax, word ptr cs:[_mul48lookup_with_scalelight_with_minusone_offset + bx]
 
 
 
@@ -7328,17 +7333,18 @@ je    exit_add_sprites_quick  ; todo branch test. fall through ret is likely fas
 
 mov   word ptr es:[bx + SECTOR_T.sec_validcount], ax
 
-
-xor       ax, ax
 mov       al, byte ptr es:[bx + SECTOR_T.sec_lightlevel]		; sec->lightlevel
 
-SHIFT_MACRO shr ax 3  ; only 3; got the word lookup for free
+SHIFT_MACRO shr al 4  ; only 3; got the word lookup for free
+cbw
 
-SELFMODIFY_BSP_extralight1_shiftone:
+SELFMODIFY_BSP_extralight1:
 add       al, 0
 
+shl       ax, 1
 xchg      ax, si
 mov       ax, word ptr cs:[_mul48lookup_with_scalelight + si]
+
 
 mov   word ptr cs:[SELFMODIFY_set_spritelights_1 + 2 - OFFSET R_BSP24_STARTMARKER_], ax 
 mov   si, word ptr es:[bx + SECTOR_T.sec_thinglistref]
@@ -8682,8 +8688,8 @@ ret
 
 set_vis_colormap:
 SELFMODIFY_set_spritelights_2:
-mov   al, byte ptr ds:[01000h]       ;todo or is this supposed to be scalelightfixed...?
-mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], al
+mov   al, byte ptr ds:[01000h]    
+mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], al ; maybe
 LEAVE_MACRO
 ret   
 
@@ -8701,13 +8707,16 @@ SHIFT_MACRO shl bx 4
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
 
-xor   ax, ax
+
 mov   al, byte ptr es:[bx + SECTOR_T.sec_lightlevel]  ; sector lightlevel byte offset
 
-SHIFT_MACRO shr ax 3
-SELFMODIFY_BSP_extralight3_shiftone:
+SHIFT_MACRO shr al 4
+cbw
+
+SELFMODIFY_BSP_extralight3:
 add       al, 0
 
+shl       ax, 1
 xchg      ax, bx
 mov       ax, word ptr cs:[_mul48lookup_with_scalelight + bx]
 add       ax, MAXLIGHTSCALE-1 ; revisit this logic...? was there before
@@ -11964,10 +11973,8 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_4+1 - OFFSET R_BSP24_STAR
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_5+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 mov      al, byte ptr ss:[_extralight]
-shl      ax, 1
-mov      byte ptr ds:[SELFMODIFY_BSP_extralight3_shiftone+1 - OFFSET R_BSP24_STARTMARKER_], al
-mov      byte ptr ds:[SELFMODIFY_BSP_extralight1_shiftone+1 - OFFSET R_BSP24_STARTMARKER_], al
-shr      ax, 1
+mov      byte ptr ds:[SELFMODIFY_BSP_extralight3+1 - OFFSET R_BSP24_STARTMARKER_], al
+mov      byte ptr ds:[SELFMODIFY_BSP_extralight1+1 - OFFSET R_BSP24_STARTMARKER_], al
 inc      ax 
 mov      byte ptr ds:[SELFMODIFY_BSP_extralight2_plusone+1 - OFFSET R_BSP24_STARTMARKER_], al
 

@@ -87,14 +87,18 @@ dw  00050h, 00050h, 00050h, 0FFB0h, 00050h
 
 base_product = OFFSET _scalelight
 
+_mul48lookup_with_scalelight_with_minusone_offset:
+   dw base_product
+
 _mul48lookup_with_scalelight:
 REPT 16
    dw base_product
    base_product = base_product + 48
 ENDM
-REPT 16
+   base_product = base_product - 48
    dw base_product ; for overflow cases...
-ENDM
+   dw base_product ; for overflow cases...
+   dw base_product ; for overflow cases...
 
 
 
@@ -1366,8 +1370,8 @@ front_back_floor_case:
 
 ;	base = frontsector->floorheight > backsector->floorheight ? frontsector->floorheight : backsector->floorheight;
 
-mov   ax, word ptr es:[di] ; frontsector floor
-mov   cx, word ptr es:[bx] ; backsector floor
+mov   ax, word ptr es:[di + SECTOR_T.sec_floorheight] ; frontsector floor
+mov   cx, word ptr es:[bx + SECTOR_T.sec_floorheight] ; backsector floor
 cmp   ax, cx
 jg    use_frontsector_floor
 mov   ax, cx   ; use backsector floor
@@ -1425,23 +1429,24 @@ mov   es, ax
 ; di is frontsector
 
 
-xor   ax, ax
+
 mov   al, byte ptr es:[di + SECTOR_T.sec_lightlevel]   ; get sector lightlevel
 
-SHIFT_MACRO shr ax 3
-; shifted 3 instead of 4 for the word lookup situation.
+SHIFT_MACRO shr al 4
 
-SELFMODIFY_MASKED_extralight_1_shiftone:
-add   al, 0  ; this is 
-
-xchg  ax, bx
-mov   ax, word ptr cs:[_mul48lookup_with_scalelight + bx]
-
+SELFMODIFY_MASKED_extralight_1_plus_one:
+add   al, 0  ; added one extra, in case the next instruction went dec and turned it into -1
 
 SELFMODIFY_MASKED_add_vertex_field:
 nop				; becomes inc ax, dec ax, or nop
 
-lights_set:
+cbw
+shl   ax, 1
+
+xchg  ax, bx
+mov   ax, word ptr cs:[_mul48lookup_with_scalelight_with_minusone_offset + bx]
+
+
 mov   word ptr cs:[SELFMODIFY_MASKED_set_walllights+2 - OFFSET R_MASK24_STARTMARKER_], ax      ; store lights
 jmp   ugly_jump  ; todo i got rid of branching code here then had nowhere to stick this code blob. revisit!
 
@@ -5828,8 +5833,8 @@ mov   ax, word ptr ss:[_destview+2]
 mov   word ptr ds:[SELFMODIFY_MASKED_destview_hi_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 mov   al, byte ptr ss:[_extralight]
-sal   ax, 1
-mov   byte ptr ds:[SELFMODIFY_MASKED_extralight_1_shiftone+1 - OFFSET R_MASK24_STARTMARKER_], al
+inc   ax
+mov   byte ptr ds:[SELFMODIFY_MASKED_extralight_1_plus_one+1 - OFFSET R_MASK24_STARTMARKER_], al
 
 mov   al, byte ptr ss:[_fixedcolormap]
 cmp   al, 0
