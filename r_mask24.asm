@@ -104,6 +104,7 @@ ENDM
 
 IF COMPISA GE COMPILE_386
 ; todo used only once. 
+ALIGN_MACRO
 PROC   FixedMulMaskedLocal_ NEAR   ; fairly optimized
 PUBLIC FixedMulMaskedLocal_
 ; thanks zero318 from discord for improved algorithm  
@@ -126,6 +127,7 @@ ENDP
 ELSE
 
 
+ALIGN_MACRO
 PROC   FixedMulMaskedLocal_ NEAR   ; fairly optimized
 PUBLIC FixedMulMaskedLocal_
 ; DX:AX  *  CX:BX
@@ -191,6 +193,7 @@ COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - C
 	
 ; all 3 instances called from R_RenderMaskedSegRange_
 
+ALIGN_MACRO
 PROC   R_DrawSingleMaskedColumn_  NEAR    ; fairly unoptimized, barely runs though so who cares
 PUBLIC R_DrawSingleMaskedColumn_
 push  cx
@@ -403,6 +406,7 @@ UNCLIPPED_COLUMN  = 0FFFEh
 exit_draw_masked_column_shadow_early:
 ret
 
+ALIGN_MACRO
 PROC   R_DrawMaskedSpriteShadow_ NEAR  ; fairly optimized
 PUBLIC R_DrawMaskedSpriteShadow_
 ; ax 	 pixelsegment
@@ -609,8 +613,10 @@ mov  bx, COLORMAPS_MASKEDMAPPING_SEG_OFFSET_IN_CS
 cmp  cl, ch
 jg   draw_16_fuzzpixels
 jmp  done_drawing_16_fuzzpixels
+ALIGN_MACRO
 jump_to_do_next_shadow_sprite_iteration:
 jmp  do_next_shadow_sprite_iteration
+ALIGN_MACRO
 draw_16_fuzzpixels:
 
 DRAW_SINGLE_FUZZPIXEL MACRO 
@@ -642,6 +648,7 @@ sub  cl, ch
 cmp  cl, ch
 jle  done_drawing_16_fuzzpixels
 jmp  draw_16_fuzzpixels
+ALIGN_MACRO
 done_drawing_16_fuzzpixels:
 test cl, cl
 je   finished_drawing_fuzzpixels
@@ -689,11 +696,12 @@ lods  word ptr es:[si]
 cmp   al, 0FFh
 je    exit_draw_shadow_sprite
 jmp   draw_next_shadow_sprite_post
+ALIGN_MACRO
 zero_out_fuzzpos:
 mov   si, (OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)
 loop  draw_one_fuzzpixel
 jmp finished_drawing_fuzzpixels
-
+ALIGN_MACRO
 exit_draw_shadow_sprite:
 
 pop   bp
@@ -725,7 +733,7 @@ call FixedMulMaskedLocal_
 
 jmp done_with_mul_vissprite
 
-
+ALIGN_MACRO
 PROC   R_DrawVisSprite_ NEAR  ; fairly optimized.
 PUBLIC R_DrawVisSprite_
 ; si is vissprite_t near pointer
@@ -767,6 +775,7 @@ not_stretch_draw:
 mov   dx, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1
 mov   di, DRAWCOL_NOLOOP_OFFSET_MASKED
 jmp   continue_selfmodifies_vissprites
+ALIGN_MACRO
 is_stretch_draw:
 mov   dx, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOPANDSTRETCH_OFFSET+1
 mov   di, DRAWCOL_NOLOOPSTRETCH_OFFSET_MASKED
@@ -905,8 +914,10 @@ je    jump_to_draw_shadow_sprite
 ; selfmodify any other visplane stuff here...?
 
 jmp loop_vga_plane_draw_normal 
-
-
+ALIGN_MACRO
+jump_to_draw_shadow_sprite:
+jmp   draw_shadow_sprite
+ALIGN_MACRO
   
 sprite_not_first_cachedsegment:
 cmp   ax, word ptr ds:[_lastvisspritepatch2]
@@ -921,22 +932,511 @@ mov   dx, word ptr ds:[_lastvisspritepatch]
 mov   word ptr ds:[_lastvisspritepatch2], dx
 mov   word ptr ds:[_lastvisspritepatch], ax
 jmp   spritesegment_ready
+ALIGN_MACRO
 sprite_not_in_cached_segments:
 mov   dx, word ptr ds:[_lastvisspritepatch]
 mov   word ptr ds:[_lastvisspritepatch2], dx
 mov   dx, word ptr ds:[_lastvisspritesegment]
 mov   word ptr ds:[_lastvisspritesegment2], dx
-call  R_GetSpriteTexture_    ; may be able to inline the whole thing...
+;call  R_GetSpriteTexture_   inlined
+
+
+push  si
+push  bp
+; everything but si and bp is free game to be clobbered! 
+
+mov   di, SPRITEPAGE_SEGMENT
+mov   es, di
+
+xchg  ax, di    ; di gets index
+
+mov   al, byte ptr es:[di]
+cmp   al, 0FFh
+je    sprite_not_in_cache
+
+mov   cl, byte ptr es:[di + SPRITEOFFSETS_OFFSET]
+
+call  R_GetSpritePage_  ; destroys di, get cl first
+
+cbw
+mov   di, ax
+mov   al, cl
+SHIFT_MACRO shl   ax 4      ;shift4
+sal   di, 1
+mov   cx, word ptr cs:[di + _pagesegments - OFFSET R_MASK24_STARTMARKER_]
+add   ch, (SPRITE_COLUMN_SEGMENT SHR 8)
+add   ax, cx
+
+pop   bp
+pop   si
+
+;jmp   done_with_R_GetSpriteTexture_
+mov   word ptr ds:[_lastvisspritesegment], ax
+mov   es, ax
+mov   ax, word ptr ds:[si + VISSPRITE_T.vs_patch]
+mov   word ptr ds:[_lastvisspritepatch], ax
+jmp   spritesegment_ready
+ALIGN_MACRO
+
+sprite_not_in_cache:
+
+mov   ax, word ptr ds:[_firstspritelump]
+add   ax, di
+push  ax    ; bp - 2, index
+push  es    ; bp - 4, segment
+
+push      di
+
+sub       ax, word ptr ds:[_firstspritelump]  ; todo selfmodify 
+xchg      ax, bp   ; bp holds the lookup
+mov       di, bp
+mov       dx, SPRITETOTALDATASIZES_SEGMENT
+mov       es, dx
+
+
+;	if (size & 0xFF) {
+;		blocksize++;
+;	}
+
+mov       bx, word ptr es:[bp+di] ; dx = size  ; bp+di = word lookup
+add       bx, 0FFh
+mov       bl, bh  ; blocksize = size >> 8
+
+;   bl is blocksize
+
+;	numpages = blocksize >> 6; // num EMS pages needed
+xor       bh, bh
+mov       ax, bx
+
+;	if (blocksize & 0x3F) {
+;		numpages++;
+;	}
+
+add       al, 03Fh      ; numpages in high 2 bits of al
+SHIFT_MACRO sal ax 2
+mov       ch, ah   ; ch = numpages
+
+mov       di, OFFSET _spritecache_nodes
+mov       si, OFFSET _usedspritepagemem
+
+; ch is numpages
+; bl = blocksize
+
+
+;	if (numpages == 1) {
+
+cmp       ch, 1
+jne       multipage_textureblock
+;		uint8_t freethreshold = 64 - blocksize;
+mov       al, 040h
+sub       al, bl  
+mov       cl, bl   
+mov       ch, NUM_SPRITE_CACHE_PAGES
+xor       bx, bx
+;  cl = blocksize
+;  al = threshold
+;  bl = i
+;  bh = 0
+
+
+;		for (i = 0; i < NUM_SPRITE_CACHE_PAGES; i++) {
+;			if (freethreshold >= usedspritepagemem[i]) {
+;				goto foundonepage;
+;			}
+;		}
+
+check_next_texture_page_for_space:
+
+cmp       al, byte ptr ds:[bx + si]
+jae       foundonepage
+
+;		i = R_EvictL2CacheEMSPage(1, cachetype);
+
+inc       bx
+cmp       bl, ch
+jl        check_next_texture_page_for_space
+
+mov       al, 1 ; 1 page
+call      R_EvictL2CacheEMSPage_Sprite_
+; ah is 0
+xchg      ax, bx  ; bl = page, bh = 0
+
+foundonepage:
+
+; bl = page
+
+;		texpage = i << 2;
+;		texoffset = usedspritepagemem[i];   ; si
+;		usedspritepagemem[i] += blocksize;
+
+
+mov       al, byte ptr ds:[bx + si]  ; al = texoffset
+add       byte ptr ds:[bx + si], cl  ; add blocksize
+
+SHIFT_MACRO shl       bx 2 
+
+; al = texoffset
+; bx = texpage
+
+;	spritepage[lump - firstspritelump] = texpage;
+;	spriteoffset[lump - firstspritelump] = texoffset;
+; bp = lump - firstsegment
+mov       dx, SPRITEPAGE_SEGMENT
+mov       es, dx
+mov       byte ptr es:[bp], bl
+mov       byte ptr es:[bp + SPRITEOFFSETS_OFFSET], al
+
+pop       di
+jmp       done_with_getnextspriteblock
+ALIGN_MACRO
+multipage_textureblock:
+
+; sprites are never 3-4 pages in practice... sort of a hack but maybe custom wads with sprites this big arent meant for realdoom
+
+; ch is numpages
+; bl = blocksize
+
+mov       dh, byte ptr ds:[_spritecache_l2_head]
+
+mov       cl, 0FFh
+mov       ah, bl    ; al stores blocksize for a bit
+xor       bx, bx    ; bh needs to be 0 for various lookups/offsets
+
+; al is free, in use a lot
+; cl is 0FFh
+; bh is 000h
+; bl is active offset used for lookups 
+; ch is numpages
+; dh is head
+; dl is nextpage
+
+
+;		for (i = spritecache_l2_head;
+;				i != -1; 
+;				i = spritecache_nodes[i].prev
+;				) {
+;			if (!usedspritepagemem[i]) {
+;				// need to check following pages for emptiness, or else after evictions weird stuff can happen
+;				int8_t nextpage = spritecache_nodes[i].prev;
+;				if ((nextpage != -1 &&!usedspritepagemem[nextpage])) {
+;					nextpage = spritecache_nodes[nextpage].prev;
+
+;				}
+;			}
+;		}
+
+; note: the reason weird stuff can happen is that we dont reorder pages here, 
+; so we only return a multipage is ok if we found enough contiguous pages
+; if we dont, then we evict.
+
+
+do_texture_multipage_loop:
+mov       bl, dh
+cmp       byte ptr ds:[bx + si], bh             ; usedspritepagemem == 0?
+jne       do_next_texture_multipage_loop_iter   ; page is not empty
+
+page_1_has_space:
+SHIFT_MACRO shl       bl 2
+mov       al, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev] ; check prev page
+cmp       al, cl
+je        do_next_texture_multipage_loop_iter
+; has next page
+mov       bl, al
+cmp       byte ptr ds:[bx + si], bh             ; usedspritepagemem == 0?
+je        found_multipage                       ; page is empty
+
+
+
+do_next_texture_multipage_loop_iter:
+mov       bl, dh
+SHIFT_MACRO shl       bl 2
+mov       dh, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+cmp       dh, cl
+jne       do_texture_multipage_loop
+
+done_with_textureblock_multipage_loop:
+
+;		i = R_EvictL2CacheEMSPage(numpages, cachetype);
+
+
+mov       al, ch   ; numpages
+mov       cl, ah   ; backup blocksize
+call      R_EvictL2CacheEMSPage_Sprite_
+mov       dh, al
+mov       ah, cl   ; restore blocksize in ah
+mov       al, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+
+less_than_3_pages_or_next_page_good:
+
+found_multipage:
+; reminder:
+; al is prev page
+; cl is now free (currenly 0FFh)
+; bh is 000h
+; ah is blocksize
+; bl is active offset used for lookups 
+; ch is numpages
+; dh is head
+; dl is nextpage
+
+
+
+;		foundmultipage:
+;        usedspritepagemem[i] = 64;
+
+mov       bl, dh
+mov       byte ptr ds:[bx + si], 040h
+
+;		spritecache_nodes[i].numpages = numpages;
+;		spritecache_nodes[i].pagecount = numpages;
+
+SHIFT_MACRO shl       bl 2
+mov       cl, ch ; cl = numpages
+mov       word ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], cx  ; write .numpages too at once
+; numpages for sprites can only be 1 or 2, so if we are in multipage sprite  area its 2.
+
+
+; set the last page.
+
+mov       bl, al
+
+
+mov       al, 040h
+;	if (blocksize & 0x3F) {
+test      ah, 03Fh
+je        dont_update_blocksize
+and       ah, 03Fh
+mov       al, ah            ;			usedspritepagemem[j] = blocksize & 0x3F;
+dont_update_blocksize:
+
+
+;		texpage = (i << 2) + (numpagesminus1);
+;		texoffset = 0; // if multipage then its always aligned to start of its block
+
+
+mov       byte ptr ds:[bx + si], al
+
+SHIFT_MACRO shl       bl 2
+
+;		spritecache_nodes[j].numpages = numpages;
+;		spritecache_nodes[j].pagecount = 1;
+
+dec       cx   ; cl = 1
+mov       word ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], cx  ; write .numpages too at once
+
+
+
+SHIFT_MACRO shl       dh 2   ; i 
+
+;add       dh, ch  ; numpages
+;dec       dh      ; numpages minus one
+; numpages - 1 = 1
+inc        dh
+
+;	spritepage[lump - firstspritelump] = texpage;
+;	spriteoffset[lump - firstspritelump] = texoffset;
+
+
+; bp = lump - firstsegment
+mov       di, SPRITEPAGE_SEGMENT
+mov       es, di
+mov       byte ptr es:[bp], dh
+mov       byte ptr es:[bp + SPRITEOFFSETS_OFFSET], bh  ; known 0
+
+pop       di
+
+
+done_with_getnextspriteblock:
+
+pop   es    ; bp - 4, segment
+mov   al, byte ptr es:[di]
+
+mov   cl, byte ptr es:[di + SPRITEOFFSETS_OFFSET]
+
+call  R_GetSpritePage_  ; destroys di, get cl first
+cbw
+mov   di, ax
+mov   al, cl
+SHIFT_MACRO shl   ax 4      ;shift4
+sal   di, 1
+mov   di, word ptr cs:[di + _pagesegments - OFFSET R_MASK24_STARTMARKER_]
+add   di, SPRITE_COLUMN_SEGMENT
+add   di, ax
+pop   ax     ; bp - 2, index
+push  di     ; return value
+
+
+;call  R_LoadSpriteColumns_  ; inlined
+
+
+;void R_LoadSpriteColumns(uint16_t lump, segment_t destpatch_segment);
+; ax = lump
+; dx = segment
+
+
+
+
+xchg      ax, bx    ; backup..
+
+;call      Z_QuickMapScratch_5000_
+Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
+
+mov       dx, di ; dest patch
+
+;	patch_t __far *wadpatch = (patch_t __far *)SCRATCH_ADDRESS_5000;
+;	uint16_t __far * columnofs = (uint16_t __far *)&(destpatch->columnofs[0]);   // will be updated in place..
+
+mov       cx, SCRATCH_ADDRESS_5000_SEGMENT
+push      cx   ; for ds later
+mov       si, bx
+mov       ax, si
+xor       bx, bx
+;	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
+
+;call      W_CacheLumpNumDirect_
+call  dword ptr ds:[_W_CacheLumpNumDirect_addr]
+
+; wadpatch  is 0x5000 seg
+; destpatch is dx
+;	patchwidth = wadpatch->width;
+;	destpatch->width = wadpatch->width;
+;	destpatch->height = wadpatch->height;
+;	destpatch->leftoffset = wadpatch->leftoffset;
+;	destpatch->topoffset = wadpatch->topoffset;
+
+sub       si, word ptr ds:[_firstspritelump] ; get this before we clobber ds
+mov       cx, si ; store in cx
+
+pop       ds ; SCRATCH_ADDRESS_5000_SEGMENT
+xor       di, di
+mov       si, di
+
+mov       es, dx
+lodsw
+mov       word ptr cs:[SELFMODIFY_loadspritecolumn_width_check+1 - OFFSET R_MASK24_STARTMARKER_],  ax  ; patchwidth
+stosw
+movsw
+movsw
+movsw
+mov       bx, ax ; patchwidth
+mov       bp, di   ; bp gets 8
+
+
+; 	destoffset = 8 + ( patchwidth << 2);
+;	currentpostbyte = destoffset;
+;	postdata = (uint16_t __far *)(((byte __far*)destpatch) + currentpostbyte);
+
+
+SHIFT_MACRO shl       bx 2
+mov       si, cx
+shl       si, 1
+add       bx, 8
+;	destoffset += spritepostdatasizes[lump-firstspritelump];
+mov       ax, SPRITEPOSTDATASIZES_SEGMENT
+mov       es, ax
+
+mov       di, bx
+add       di, word ptr es:[si]
+mov       es, dx  ; restore es
+mov       dx, bp  ; dx starts as 8 for loop too
+
+;	destoffset += (16 - ((destoffset &0xF)) &0xF); // round up so first pixel data starts aligned of course.
+;	currentpixelbyte = destoffset;
+;	pixeldataoffset = (byte __far *)MK_FP(destpatch_segment, currentpixelbyte);
+
+add       di, 15
+and       di, 0FFF0h
+
+start_sprite_column_loop:
+xor       cx, cx
+do_next_sprite_column:
+dec       word ptr cs:[SELFMODIFY_loadspritecolumn_width_check+1 - OFFSET R_MASK24_STARTMARKER_]
+
+mov       ax, di
+
+SHIFT_MACRO shr       ax 4;shift4  unlikely due to word?
+mov       si, dx
+mov       si, word ptr ds:[si]
+
+
+mov       word ptr es:[bp], ax      ; todo swap bp/di and stosw?
+mov       word ptr es:[bp+2], bx
+add       bp, 4
+
+
+lodsw
+cmp       al, 0FFh
+je        done_with_sprite_column
+
+do_next_sprite_post:
+
+mov       word ptr es:[bx], ax
+mov       cl, ah
+mov       ax, cx
+inc       si
+
+shr       cx, 1
+rep movsw 
+adc       cx, cx
+rep movsb 
+
+add       di, 15
+and       di, 0FFF0h  ; round up to next segment destination
+
+; column = (column_t __far *)(  ((byte  __far*)column) + column->length + 4 );
+
+inc       si
+inc       bx
+inc       bx
+
+lodsw
+cmp       al, 0FFh
+jne       do_next_sprite_post
+done_with_sprite_column:
+
+mov       word ptr es:[bx], 0FFFFh
+add       dx, 4
+inc       bx
+inc       bx
+
+
+SELFMODIFY_loadspritecolumn_width_check:
+mov       ax, 01000h
+test      ax, ax
+jne       do_next_sprite_column
+
+
+done_with_sprite_column_loop:
+
+mov       ax, ss  ; restore ds
+mov       ds, ax
+
+
+;call      Z_QuickMapRender5000_
+Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
+
+
+
+pop   ax     ; return 
+
+pop   bp
+pop   si
+
+
+
+
+done_with_R_GetSpriteTexture_:
+
 
 mov   word ptr ds:[_lastvisspritesegment], ax
 mov   es, ax
 mov   ax, word ptr ds:[si + VISSPRITE_T.vs_patch]
 mov   word ptr ds:[_lastvisspritepatch], ax
 jmp   spritesegment_ready
-jump_to_draw_shadow_sprite:
-jmp   draw_shadow_sprite
+ALIGN_MACRO
 exit_draw_vissprites:
 ret 
+ALIGN_MACRO
 
 
 loop_vga_plane_draw_normal:
@@ -999,6 +1499,7 @@ adc   dx, 01000h
 
 mov   ax, word ptr ds:[_dc_x]
 jmp   draw_sprite_normal_innerloop
+ALIGN_MACRO
 
 
 end_draw_sprite_normal_innerloop:
@@ -1009,6 +1510,7 @@ add   word ptr cs:[SELFMODIFY_MASKED_vissprite_get_startfrac_lo+1], 01000h
 SELFMODIFY_MASKED_vissprite_xiscale_hi:
 adc   word ptr cs:[SELFMODIFY_MASKED_vissprite_get_startfrac_hi+1], 01000h
 jmp   loop_vga_plane_draw_normal
+ALIGN_MACRO
 
 ; shadow sprite loop
 
@@ -1101,6 +1603,7 @@ adc   dx, 01000h
 mov   ax, word ptr ds:[_dc_x]
 
 jmp   draw_sprite_shadow_innerloop
+ALIGN_MACRO
 
 
 end_draw_sprite_shadow_innerloop:
@@ -1112,6 +1615,7 @@ add   word ptr cs:[SELFMODIFY_MASKED_vissprite_get_startfrac_lo_shadow+1], 01000
 SELFMODIFY_MASKED_vissprite_xiscale_hi_shadow:
 adc   word ptr cs:[SELFMODIFY_MASKED_vissprite_get_startfrac_hi_shadow+1], 01000h
 jmp   loop_vga_plane_draw_shadow
+ALIGN_MACRO
 exit_draw_vissprites_2:
 ret 
 
@@ -1122,6 +1626,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC   R_RenderMaskedSegRange_ NEAR ; todo definitely needs another look
 PUBLIC R_RenderMaskedSegRange_
 
@@ -1217,6 +1722,7 @@ mov   ax, ((SELFMODIFY_MASKED_lookup_1_TARGET - SELFMODIFY_MASKED_lookup_1_AFTER
 mov   bx, ((SELFMODIFY_MASKED_lookup_2_TARGET - SELFMODIFY_MASKED_lookup_2_AFTER) SHL 8) + 0EBh
 
 jmp   do_lookup_selfmodifies
+ALIGN_MACRO
 ; still havent changed flags.
 
 lookup_is_ff:
@@ -1357,12 +1863,15 @@ use_frontsector_ceil:
 xor   cx, cx
 
 jmp sector_height_chosen
+ALIGN_MACRO
 ys_equal:
 mov   al, 048h  ; dec ax instruction
 jmp   done_comparing_vertexes
+ALIGN_MACRO
 xs_equal:
 mov   al, 040h  ; inc ax instruciton
 jmp   done_comparing_vertexes
+ALIGN_MACRO
 
 
 SELFMODIFY_MASKED_lineflags_ml_dontpegbottom_TARGET:
@@ -1521,6 +2030,7 @@ mov   word ptr ds:[_mceilingclip], 01000h
 
 SELFMODIFY_MASKED_fixedcolormap_2:
 jmp fixed_colormap		; jump when fixedcolormap is not 0. 3 byte (word) jump!!!
+ALIGN_MACRO
 SELFMODIFY_MASKED_fixedcolormap_2_AFTER:
 colormap_set:
 
@@ -1804,6 +2314,7 @@ mov   word ptr ds:[_maskedtexrepeat], 0
 pop   di
 
 ret   
+ALIGN_MACRO
 
 do_32_bit_mul:
 inc   dx
@@ -1853,12 +2364,15 @@ ENDIF
 
 
 jmp done_with_mul
+ALIGN_MACRO
 
+; kinda rare case, fine if its a far jmp
 SELFMODIFY_MASKED_fixedcolormap_2_TARGET:
 fixed_colormap:
 SELFMODIFY_MASKED_fixedcolormap_3:
 mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMARKER_], 0
 jmp   colormap_set
+ALIGN_MACRO
 
 
 do_inner_loop:
@@ -1887,6 +2401,7 @@ mov   dl, byte ptr ds:[_spryscale + 3]
 SHIFT32_MACRO_RIGHT dx ax 4
 
 jmp   get_colormap
+ALIGN_MACRO
 
 
 update_maskedtexturecol_finish_loop_iter:
@@ -1914,6 +2429,7 @@ sub   word ptr ds:[_sprtopscreen], 01000h
 SELFMODIFY_MASKED_sprtopscreen_hi:
 sbb   word ptr ds:[_sprtopscreen + 2], 01000h
 jmp   inner_loop_draw_columns
+ALIGN_MACRO
 
 use_maxlight:
 mov   al, MAXLIGHTSCALE - 1
@@ -1960,6 +2476,7 @@ mov   ax, bx
 ;	if (lookup != 0xFF){
 SELFMODIFY_MASKED_lookup_2:
 jmp    lookup_FF_repeat
+ALIGN_MACRO
 SELFMODIFY_MASKED_lookup_2_AFTER:
 
 ;if (maskedheaderpixeolfs != 0xFFFF){
@@ -2007,6 +2524,7 @@ mov   cx, MASKEDPOSTDATA_SEGMENT
 call R_DrawMaskedColumn_
 
 jmp   update_maskedtexturecol_finish_loop_iter
+ALIGN_MACRO
 
 
 SELFMODIFY_MASKED_lookup_2_TARGET:
@@ -2023,12 +2541,14 @@ mov   dx, word ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word w
 call R_DrawSingleMaskedColumn_
 
 jmp   update_maskedtexturecol_finish_loop_iter
+ALIGN_MACRO
 
 ; pixelsegment = FastMul8u8u((uint8_t) usetexturecolumn, maskedheightvalcache);
 calculate_pixelsegment_mul:
 
 mul   byte ptr ds:[_maskedheightvalcache]
 jmp   go_draw_masked_column_repeat
+ALIGN_MACRO
 
 do_non_repeat:
 
@@ -2041,6 +2561,7 @@ sub   ax, di
 ;	if (lookup != 0xFF){
 SELFMODIFY_MASKED_lookup_1:  
 jmp   lookup_FF
+ALIGN_MACRO
 SELFMODIFY_MASKED_lookup_1_AFTER:
 
 ; lookup NOT ff.
@@ -2081,6 +2602,7 @@ mov   cx, MASKEDPOSTDATA_SEGMENT
 call R_DrawMaskedColumn_
 
 jmp   update_maskedtexturecol_finish_loop_iter
+ALIGN_MACRO
 
 calculate_maskedheader_pixel_ofs:
 ; es:ax previously LESed
@@ -2090,6 +2612,7 @@ add   bx, bx
 add   bx, ax
 mov   ax, word ptr es:[bx]
 jmp   go_draw_masked_column
+ALIGN_MACRO
 
 load_masked_column_segment_lookup:
 mov   dx, si
@@ -2103,6 +2626,7 @@ mov   dx, word ptr ds:[_maskedcachedsegment]   ; to offset for above
 sub   ax, dx
 
 jmp   go_draw_masked_column
+ALIGN_MACRO
 
 
 SELFMODIFY_MASKED_lookup_1_TARGET:
@@ -2123,6 +2647,7 @@ mov   dx, word ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word w
 
 call R_DrawSingleMaskedColumn_
 jmp   update_maskedtexturecol_finish_loop_iter
+ALIGN_MACRO
 
 load_masked_column_segment:
 mov   dx, si
@@ -2138,6 +2663,7 @@ call R_DrawSingleMaskedColumn_  ;todo inline here, jump from above case? both ju
 
 
 jmp   update_maskedtexturecol_finish_loop_iter
+ALIGN_MACRO
 
 ENDP
 
@@ -2148,506 +2674,10 @@ SPRITE_COLUMN_SEGMENT = 09000h
 SCRATCH_ADDRESS_4000_SEGMENT = 04000h
 SCRATCH_ADDRESS_5000_SEGMENT = 05000h
 
-; todo inline this eventually
-PROC   R_GetSpriteTexture_ NEAR  ; needs another look
-PUBLIC R_GetSpriteTexture_
 
-push  si
-push  bp
-; everything but si and bp is free game to be clobbered! 
 
-mov   di, SPRITEPAGE_SEGMENT
-mov   es, di
 
-xchg  ax, di    ; di gets index
-
-mov   al, byte ptr es:[di]
-cmp   al, 0FFh
-je    sprite_not_in_cache
-
-mov   cl, byte ptr es:[di + SPRITEOFFSETS_OFFSET]
-
-call  R_GetSpritePage_  ; destroys di, get cl first
-
-cbw
-mov   di, ax
-mov   al, cl
-SHIFT_MACRO shl   ax 4      ;shift4
-sal   di, 1
-mov   cx, word ptr cs:[di + _pagesegments - OFFSET R_MASK24_STARTMARKER_]
-add   ch, (SPRITE_COLUMN_SEGMENT SHR 8)
-add   ax, cx
-
-pop   bp
-pop   si
-
-ret
-
-sprite_not_in_cache:
-
-mov   ax, word ptr ds:[_firstspritelump]
-add   ax, di
-push  ax    ; bp - 2, index
-push  es    ; bp - 4, segment
-call  R_GetNextSpriteBlock_
-
-pop   es    ; bp - 4, segment
-mov   al, byte ptr es:[di]
-
-mov   cl, byte ptr es:[di + SPRITEOFFSETS_OFFSET]
-
-call  R_GetSpritePage_  ; destroys di, get cl first
-cbw
-mov   di, ax
-mov   al, cl
-SHIFT_MACRO shl   ax 4      ;shift4
-sal   di, 1
-mov   di, word ptr cs:[di + _pagesegments - OFFSET R_MASK24_STARTMARKER_]
-add   di, SPRITE_COLUMN_SEGMENT
-add   di, ax
-pop   ax     ; bp - 2, index
-push  di     ; return value
-
-
-;call  R_LoadSpriteColumns_  ; inlined
-
-
-;void R_LoadSpriteColumns(uint16_t lump, segment_t destpatch_segment);
-; ax = lump
-; dx = segment
-
-
-
-
-xchg      ax, bx    ; backup..
-
-;call      Z_QuickMapScratch_5000_
-Z_QUICKMAPAI4 pageswapargs_scratch5000_offset_size INDEXED_PAGE_5000_OFFSET
-
-mov       dx, di ; dest patch
-
-;	patch_t __far *wadpatch = (patch_t __far *)SCRATCH_ADDRESS_5000;
-;	uint16_t __far * columnofs = (uint16_t __far *)&(destpatch->columnofs[0]);   // will be updated in place..
-
-mov       cx, SCRATCH_ADDRESS_5000_SEGMENT
-push      cx   ; for ds later
-mov       si, bx
-mov       ax, si
-xor       bx, bx
-;	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
-
-;call      W_CacheLumpNumDirect_
-call  dword ptr ds:[_W_CacheLumpNumDirect_addr]
-
-; wadpatch  is 0x5000 seg
-; destpatch is dx
-;	patchwidth = wadpatch->width;
-;	destpatch->width = wadpatch->width;
-;	destpatch->height = wadpatch->height;
-;	destpatch->leftoffset = wadpatch->leftoffset;
-;	destpatch->topoffset = wadpatch->topoffset;
-
-sub       si, word ptr ds:[_firstspritelump] ; get this before we clobber ds
-mov       cx, si ; store in cx
-
-pop       ds ; SCRATCH_ADDRESS_5000_SEGMENT
-xor       di, di
-mov       si, di
-
-mov       es, dx
-lodsw
-mov       word ptr cs:[SELFMODIFY_loadspritecolumn_width_check+1 - OFFSET R_MASK24_STARTMARKER_],  ax  ; patchwidth
-stosw
-movsw
-movsw
-movsw
-mov       bx, ax ; patchwidth
-mov       bp, di   ; bp gets 8
-
-
-; 	destoffset = 8 + ( patchwidth << 2);
-;	currentpostbyte = destoffset;
-;	postdata = (uint16_t __far *)(((byte __far*)destpatch) + currentpostbyte);
-
-
-SHIFT_MACRO shl       bx 2
-mov       si, cx
-shl       si, 1
-add       bx, 8
-;	destoffset += spritepostdatasizes[lump-firstspritelump];
-mov       ax, SPRITEPOSTDATASIZES_SEGMENT
-mov       es, ax
-
-mov       di, bx
-add       di, word ptr es:[si]
-mov       es, dx  ; restore es
-mov       dx, bp  ; dx starts as 8 for loop too
-
-;	destoffset += (16 - ((destoffset &0xF)) &0xF); // round up so first pixel data starts aligned of course.
-;	currentpixelbyte = destoffset;
-;	pixeldataoffset = (byte __far *)MK_FP(destpatch_segment, currentpixelbyte);
-
-add       di, 15
-and       di, 0FFF0h
-
-start_sprite_column_loop:
-xor       cx, cx
-do_next_sprite_column:
-dec       word ptr cs:[SELFMODIFY_loadspritecolumn_width_check+1 - OFFSET R_MASK24_STARTMARKER_]
-
-mov       ax, di
-
-SHIFT_MACRO shr       ax 4;shift4  unlikely due to word?
-mov       si, dx
-mov       si, word ptr ds:[si]
-
-
-mov       word ptr es:[bp], ax      ; todo swap bp/di and stosw?
-mov       word ptr es:[bp+2], bx
-add       bp, 4
-
-
-lodsw
-cmp       al, 0FFh
-je        done_with_sprite_column
-
-do_next_sprite_post:
-
-mov       word ptr es:[bx], ax
-mov       cl, ah
-mov       ax, cx
-inc       si
-
-shr       cx, 1
-rep movsw 
-adc       cx, cx
-rep movsb 
-
-add       di, 15
-and       di, 0FFF0h  ; round up to next segment destination
-
-; column = (column_t __far *)(  ((byte  __far*)column) + column->length + 4 );
-
-inc       si
-inc       bx
-inc       bx
-
-lodsw
-cmp       al, 0FFh
-jne       do_next_sprite_post
-done_with_sprite_column:
-
-mov       word ptr es:[bx], 0FFFFh
-add       dx, 4
-inc       bx
-inc       bx
-
-
-SELFMODIFY_loadspritecolumn_width_check:
-mov       ax, 01000h
-test      ax, ax
-jne       do_next_sprite_column
-
-
-done_with_sprite_column_loop:
-
-mov       ax, ss  ; restore ds
-mov       ds, ax
-
-
-;call      Z_QuickMapRender5000_
-Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
-
-
-
-pop   ax     ; return 
-
-pop   bp
-pop   si
-
-ret
-
-
-ENDP
-
-
-
-
-
-PROC   R_GetNextSpriteBlock_ NEAR  ; fairly optimized now
-PUBLIC R_GetNextSpriteBlock_
-
-push      di
-
-
-
-sub       ax, word ptr ds:[_firstspritelump]  ; todo selfmodify 
-xchg      ax, bp   ; bp holds the lookup
-mov       di, bp
-mov       dx, SPRITETOTALDATASIZES_SEGMENT
-mov       es, dx
-
-
-;	if (size & 0xFF) {
-;		blocksize++;
-;	}
-
-mov       bx, word ptr es:[bp+di] ; dx = size  ; bp+di = word lookup
-add       bx, 0FFh
-mov       bl, bh  ; blocksize = size >> 8
-
-;   bl is blocksize
-
-;	numpages = blocksize >> 6; // num EMS pages needed
-xor       bh, bh
-mov       ax, bx
-
-;	if (blocksize & 0x3F) {
-;		numpages++;
-;	}
-
-add       al, 03Fh      ; numpages in high 2 bits of al
-SHIFT_MACRO sal ax 2
-mov       ch, ah   ; ch = numpages
-
-mov       di, OFFSET _spritecache_nodes
-mov       si, OFFSET _usedspritepagemem
-
-; ch is numpages
-; bl = blocksize
-
-
-;	if (numpages == 1) {
-
-cmp       ch, 1
-jne       multipage_textureblock
-;		uint8_t freethreshold = 64 - blocksize;
-mov       al, 040h
-sub       al, bl  
-mov       cl, bl   
-mov       ch, NUM_SPRITE_CACHE_PAGES
-xor       bx, bx
-;  cl = blocksize
-;  al = threshold
-;  bl = i
-;  bh = 0
-
-
-;		for (i = 0; i < NUM_SPRITE_CACHE_PAGES; i++) {
-;			if (freethreshold >= usedspritepagemem[i]) {
-;				goto foundonepage;
-;			}
-;		}
-
-check_next_texture_page_for_space:
-
-cmp       al, byte ptr ds:[bx + si]
-jae       foundonepage
-
-;		i = R_EvictL2CacheEMSPage(1, cachetype);
-
-inc       bx
-cmp       bl, ch
-jl        check_next_texture_page_for_space
-
-mov       al, 1 ; 1 page
-call      R_EvictL2CacheEMSPage_Sprite_
-; ah is 0
-xchg      ax, bx  ; bl = page, bh = 0
-
-foundonepage:
-
-; bl = page
-
-;		texpage = i << 2;
-;		texoffset = usedspritepagemem[i];   ; si
-;		usedspritepagemem[i] += blocksize;
-
-
-mov       al, byte ptr ds:[bx + si]  ; al = texoffset
-add       byte ptr ds:[bx + si], cl  ; add blocksize
-
-SHIFT_MACRO shl       bx 2 
-
-; al = texoffset
-; bx = texpage
-
-;	spritepage[lump - firstspritelump] = texpage;
-;	spriteoffset[lump - firstspritelump] = texoffset;
-; bp = lump - firstsegment
-mov       dx, SPRITEPAGE_SEGMENT
-mov       es, dx
-mov       byte ptr es:[bp], bl
-mov       byte ptr es:[bp + SPRITEOFFSETS_OFFSET], al
-
-pop       di
-ret       
-
-
-multipage_textureblock:
-
-; sprites are never 3-4 pages in practice... sort of a hack but maybe custom wads with sprites this big arent meant for realdoom
-
-; ch is numpages
-; bl = blocksize
-
-mov       dh, byte ptr ds:[_spritecache_l2_head]
-
-mov       cl, 0FFh
-mov       ah, bl    ; al stores blocksize for a bit
-xor       bx, bx    ; bh needs to be 0 for various lookups/offsets
-
-; al is free, in use a lot
-; cl is 0FFh
-; bh is 000h
-; bl is active offset used for lookups 
-; ch is numpages
-; dh is head
-; dl is nextpage
-
-
-;		for (i = spritecache_l2_head;
-;				i != -1; 
-;				i = spritecache_nodes[i].prev
-;				) {
-;			if (!usedspritepagemem[i]) {
-;				// need to check following pages for emptiness, or else after evictions weird stuff can happen
-;				int8_t nextpage = spritecache_nodes[i].prev;
-;				if ((nextpage != -1 &&!usedspritepagemem[nextpage])) {
-;					nextpage = spritecache_nodes[nextpage].prev;
-
-;				}
-;			}
-;		}
-
-; note: the reason weird stuff can happen is that we dont reorder pages here, 
-; so we only return a multipage is ok if we found enough contiguous pages
-; if we dont, then we evict.
-
-
-do_texture_multipage_loop:
-mov       bl, dh
-cmp       byte ptr ds:[bx + si], bh             ; usedspritepagemem == 0?
-jne       do_next_texture_multipage_loop_iter   ; page is not empty
-
-page_1_has_space:
-SHIFT_MACRO shl       bl 2
-mov       al, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev] ; check prev page
-cmp       al, cl
-je        do_next_texture_multipage_loop_iter
-; has next page
-mov       bl, al
-cmp       byte ptr ds:[bx + si], bh             ; usedspritepagemem == 0?
-je        found_multipage                       ; page is empty
-
-
-
-do_next_texture_multipage_loop_iter:
-mov       bl, dh
-SHIFT_MACRO shl       bl 2
-mov       dh, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
-cmp       dh, cl
-jne       do_texture_multipage_loop
-
-done_with_textureblock_multipage_loop:
-
-;		i = R_EvictL2CacheEMSPage(numpages, cachetype);
-
-
-mov       al, ch   ; numpages
-mov       cl, ah   ; backup blocksize
-call      R_EvictL2CacheEMSPage_Sprite_
-mov       dh, al
-mov       ah, cl   ; restore blocksize in ah
-mov       al, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
-
-less_than_3_pages_or_next_page_good:
-
-found_multipage:
-; reminder:
-; al is prev page
-; cl is now free (currenly 0FFh)
-; bh is 000h
-; ah is blocksize
-; bl is active offset used for lookups 
-; ch is numpages
-; dh is head
-; dl is nextpage
-
-
-
-;		foundmultipage:
-;        usedspritepagemem[i] = 64;
-
-mov       bl, dh
-mov       byte ptr ds:[bx + si], 040h
-
-;		spritecache_nodes[i].numpages = numpages;
-;		spritecache_nodes[i].pagecount = numpages;
-
-SHIFT_MACRO shl       bl 2
-mov       cl, ch ; cl = numpages
-mov       word ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], cx  ; write .numpages too at once
-; numpages for sprites can only be 1 or 2, so if we are in multipage sprite  area its 2.
-
-
-; set the last page.
-
-mov       bl, al
-
-
-mov       al, 040h
-;	if (blocksize & 0x3F) {
-test      ah, 03Fh
-je        dont_update_blocksize
-and       ah, 03Fh
-mov       al, ah            ;			usedspritepagemem[j] = blocksize & 0x3F;
-dont_update_blocksize:
-
-
-;		texpage = (i << 2) + (numpagesminus1);
-;		texoffset = 0; // if multipage then its always aligned to start of its block
-
-
-mov       byte ptr ds:[bx + si], al
-
-SHIFT_MACRO shl       bl 2
-
-;		spritecache_nodes[j].numpages = numpages;
-;		spritecache_nodes[j].pagecount = 1;
-
-dec       cx   ; cl = 1
-mov       word ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], cx  ; write .numpages too at once
-
-
-
-SHIFT_MACRO shl       dh 2   ; i 
-
-;add       dh, ch  ; numpages
-;dec       dh      ; numpages minus one
-; numpages - 1 = 1
-inc        dh
-
-;	spritepage[lump - firstspritelump] = texpage;
-;	spriteoffset[lump - firstspritelump] = texoffset;
-
-
-; bp = lump - firstsegment
-mov       di, SPRITEPAGE_SEGMENT
-mov       es, di
-mov       byte ptr es:[bp], dh
-mov       byte ptr es:[bp + SPRITEOFFSETS_OFFSET], bh  ; known 0
-
-pop       di
-ret       
-
-
-
-
-ENDP
-
-
-
+ALIGN_MACRO
 PROC   R_EvictL2CacheEMSPage_Sprite_ NEAR ; fairly optimized. consider 1page vs 2page variants
 PUBLIC R_EvictL2CacheEMSPage_Sprite_
 
@@ -2718,6 +2748,7 @@ cmp       al, ah
 je        found_first_evictable_page
 mov       cl, byte ptr ds:[bx + di + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
 jmp       find_first_evictable_page
+ALIGN_MACRO
 
 found_first_evictable_page:
 
@@ -2777,6 +2808,7 @@ jcxz      done_with_first_cache_erase_loop
 mov       byte ptr es:[di-1],  dl    ; 0FFh
 mov       byte ptr es:[di+bx], dl    ; 0FFh
 jmp       continue_first_cache_erase_loop
+ALIGN_MACRO
 
 done_with_first_cache_erase_loop:  ; sprites have no secondary cache loop
 
@@ -2854,6 +2886,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC   R_MarkL2SpriteCacheMRU_ NEAR ; needs another look
 PUBLIC R_MarkL2SpriteCacheMRU_
 ;	if (index == spritecache_l2_head) {
@@ -2865,6 +2898,7 @@ PUBLIC R_MarkL2SpriteCacheMRU_
 cmp  al, byte ptr ds:[_spritecache_l2_head]
 jne  dont_early_out
 ret
+ALIGN_MACRO
 
 ; only push bx
 
@@ -2903,6 +2937,7 @@ cmp  al, ah
 je   sprite_found_first_index
 mov  dl, byte ptr ds:[bx + si + 1]
 jmp  sprite_check_next_cache_node
+ALIGN_MACRO
 
 sprite_found_first_index:
 
@@ -2939,6 +2974,7 @@ cmp  byte ptr ds:[bx + si + 2], 1
 je   found_sprite_multipage_last_page
 mov  dh, byte ptr ds:[bx + si + 0]
 jmp  sprite_check_next_cache_node_pagecount
+ALIGN_MACRO
 
 found_sprite_multipage_last_page:
 
@@ -2969,6 +3005,7 @@ mov  bl, cl
 SHIFT_MACRO   shl  bx 2
 mov  byte ptr ds:[bx + si + 0], -1
 jmp  sprite_done_with_multi_tail_update
+ALIGN_MACRO
 
 spritecache_l2_tail_not_equal_to_lastindex:
 
@@ -3010,6 +3047,7 @@ mark_sprite_lru_exit:
 pop  cx
 pop  bx
 ret  
+ALIGN_MACRO
 
 selected_sprite_page_single_page:
 
@@ -3033,6 +3071,7 @@ jne  spritecache_tail_not_equal_to_index
 mov  byte ptr ds:[bx], dh
 xor  bx, bx
 jmp  done_with_spritecache_tail_handling
+ALIGN_MACRO
 
 spritecache_tail_not_equal_to_index:
 xor  bx, bx
@@ -3116,6 +3155,7 @@ pop   cx
 ret   
 
 
+ALIGN_MACRO
 PROC   R_GetSpritePage_ NEAR ; needs a rewrite to better use 8 bit regs etc
 PUBLIC R_GetSpritePage_
 ; stack: dont wreck cx... thats it. outer frame eventually takes care of the rest.
@@ -3259,6 +3299,7 @@ inc   ax
 
 mov   bx, cx    ; zero out bh, set bx to startpage again
 jmp   deallocate_next_startpage_single
+ALIGN_MACRO
 
 get_multipage:
 
@@ -3337,6 +3378,7 @@ mov   al, bh
 pop   cx
 
 ret   
+ALIGN_MACRO
  
 ;		// figure out startpage based on LRU
 ;		startpage = NUM_SPRITE_L1_CACHE_PAGES-1; // num EMS pages in conventional memory - 1
@@ -3364,6 +3406,7 @@ cmp   al, cl
 jle   found_startpage_multi
 dec   bx
 jmp   find_start_page_loop_multi
+ALIGN_MACRO
 
 found_start_page_single:
 
@@ -3410,6 +3453,7 @@ xchg  ax, dx
  
 pop   cx
 ret
+ALIGN_MACRO
 
 found_startpage_multi:
 ;		startpage = _spriteL1LRU[startpage];
@@ -3490,6 +3534,7 @@ inc   ax
 
 xor   bx, bx
 jmp   loop_next_invalidate_page_multi
+ALIGN_MACRO
 
 
 
@@ -3589,6 +3634,7 @@ mov   ax, 0FFFFh
 
 mov   dl, dh  ; numpages in cl
 jmp   do_sprite_eviction
+ALIGN_MACRO
 ENDP
 
 
@@ -3596,6 +3642,7 @@ ENDP
 
 IF COMPISA GE COMPILE_386
 
+ALIGN_MACRO
     PROC   FastDiv3232FFFF_ NEAR    ; needs another look, compare with bsp's version
     PUBLIC FastDiv3232FFFF_
     ; EDX:EAX as 00000000 FFFFFFFF
@@ -3635,6 +3682,7 @@ ELSE
     ;FastDiv3232FFFF_
     ; DX:AX / CX:BX
 
+ALIGN_MACRO
     PROC   FastDiv3232FFFF_ NEAR    ; needs another look, compare with bsp's version
     PUBLIC FastDiv3232FFFF_
 
@@ -3798,6 +3846,7 @@ ELSE
     pop   di
     pop   si
     ret
+    ALIGN_MACRO
 
     compare_low_word_3232:
     cmp   ax, si
@@ -3812,6 +3861,7 @@ ELSE
     pop   di
     pop   si
     ret  
+    ALIGN_MACRO
 
 
 
@@ -3826,6 +3876,7 @@ ELSE
     pop   di
     pop   si
     ret
+    ALIGN_MACRO
 
 
     ENDP
@@ -3839,6 +3890,7 @@ ENDIF
 
 ;R_PointOnSegSide_
 
+ALIGN_MACRO
 PROC   R_PointOnSegSide_ NEAR  ; needs another look
 PUBLIC R_PointOnSegSide_
 push  di
@@ -3920,6 +3972,7 @@ xor   ax, ax
 LEAVE_MACRO
 pop   di
 ret   
+ALIGN_MACRO
 
 ;        return ly < ldy;
 
@@ -3932,6 +3985,7 @@ mov   ax, 1
 LEAVE_MACRO
 pop   di
 ret   
+ALIGN_MACRO
 
 ldx_nonequal:
 
@@ -3962,6 +4016,7 @@ xor   ax, ax
 LEAVE_MACRO
 pop   di
 ret   
+ALIGN_MACRO
 ret_ldx_less_than_lx:
 
 ;            return ldx < lx;
@@ -3976,6 +4031,7 @@ xor   ax, ax
 LEAVE_MACRO
 pop   di
 ret   
+ALIGN_MACRO
 ldy_nonzero:
 
 ;	ldx -= lx;
@@ -4058,6 +4114,7 @@ xor   ax, ax
 LEAVE_MACRO
 pop   di
 ret   
+ALIGN_MACRO
 
 check_lowbits:
 pop   cx ;  old AX
@@ -4069,6 +4126,7 @@ mov   ax, 1
 LEAVE_MACRO
 pop   di
 ret   
+ALIGN_MACRO
 do_sign_bit_return:
 
 ;		// (left is negative)
@@ -4082,6 +4140,7 @@ and   ah, 080h
 LEAVE_MACRO
 pop   di
 ret   
+
 
 
 ENDP
@@ -4100,6 +4159,7 @@ SIL_BOTH =   3
 END_OF_VISSPRITE_SORTED_LOOP   = 0
 
 
+ALIGN_MACRO
 PROC   R_DrawMasked24_ FAR   ; fairly optimized? doesnt run much, procedural
 PUBLIC R_DrawMasked24_
 
@@ -4255,6 +4315,7 @@ PUSH_MACRO_WITH_REG dx DRAWSEGS_BASE_SEGMENT  ; bp - 2
 
 
 jmp  R_DrawSprite_  ; draw first sprite
+ALIGN_MACRO
 
 
 done_drawing_sprites:
@@ -4323,6 +4384,7 @@ je   done_drawing_sprites   ; todo jne to R_DrawSprite instead
 
 ; fall thru to R_DrawSprite_
 
+ALIGN_MACRO
 PROC   R_DrawSprite_ NEAR  ; fairly optimized
 PUBLIC R_DrawSprite_
 ; bp - 2	   ds_p segment.  always DRAWSEGS_BASE_SEGMENT
@@ -4454,6 +4516,7 @@ mov   word ptr ds:[_mfloorclip + 2], OPENINGS_SEGMENT
 ; sp should be bp - 4 again
 
 jmp  done_with_drawsprite
+ALIGN_MACRO
 
 continue_checking_if_drawseg_obscures_sprite:
 ; compare (ds->x2 < spr->x1)
@@ -4491,6 +4554,7 @@ jne   lowscalecheckpass_set_route2
 cmp   si, word ptr ds:[bx + VISSPRITE_T.vs_scale + 0]
 jae   lowscalecheckpass_set_route2
 jmp   set_r1_r2_and_render_masked_set_range
+ALIGN_MACRO
 
 
 compare_lowbits_scale1_scale2:
@@ -4546,6 +4610,7 @@ r2_stays_ds_x2:
 
 call  R_RenderMaskedSegRange_
 jmp   iterate_next_drawseg_loop
+ALIGN_MACRO
 
 get_lowscalepass_1:
 
@@ -4560,9 +4625,10 @@ cmp   si, word ptr ds:[bx + VISSPRITE_T.vs_scale + 0]
 jae   failed_check_pass_set_r1_r2
 
 jmp   do_R_PointOnSegSide_check
+ALIGN_MACRO
 jump_to_iterate_next_drawseg_loop:
 jmp   iterate_next_drawseg_loop_dont_restore_esbx
-
+ALIGN_MACRO
 
 
 
@@ -4725,7 +4791,7 @@ loop   silhouette_SIL_BOTTOM_loop
 mov   cx, ss
 mov   ds, cx
 jmp   iterate_next_drawseg_loop  ;todo change the flow to go to the other jump
-
+ALIGN_MACRO
 
 silhouette_is_SIL_TOP:
 
@@ -4746,7 +4812,7 @@ silhouette_is_SIL_NONE:
 mov   cx, ss
 mov   ds, cx
 jmp   iterate_next_drawseg_loop  ;todo change the flow to go to the other jump
-
+ALIGN_MACRO
 
 silhouette_is_SIL_BOTH:
 
@@ -4780,7 +4846,7 @@ xchg  ax, bp  ; restore bp
 mov   cx, ss
 mov   ds, cx
 jmp   iterate_next_drawseg_loop
-
+ALIGN_MACRO
 
 ENDP
 
@@ -4801,6 +4867,7 @@ ret
 ; revisit what really needs to be push/popped
 
 	
+ALIGN_MACRO
 PROC   R_DrawMaskedColumn_ NEAR ; fairly optimized
 PUBLIC R_DrawMaskedColumn_
 
@@ -5104,7 +5171,7 @@ loop_below_zero_subtractor_masked:
 
 add       di, ax
 jmp       done_with_loop_check_subtractor_MASKED
-
+ALIGN_MACRO
 lump_below_zero_masked:
 
 ;	maskedcachedbasecol = runningbasetotal - textotal;
@@ -5112,7 +5179,7 @@ lump_below_zero_masked:
 mov       bx, dx
 sub       bx, di
 jmp       done_with_loop_check_masked
-
+ALIGN_MACRO
 PROC   R_GetMaskedColumnSegment_ NEAR ; could use another look
 PUBLIC R_GetMaskedColumnSegment_
 ;  bp - 2      ; tex (orig ax)
@@ -5180,7 +5247,7 @@ mov       si, word ptr es:[bx]
 mov       word ptr ds:[_maskedcachedbasecol], dx ; basecol
 mov       word ptr ds:[_maskedtexrepeat], ax  ; loopwidth
 jmp       done_with_loopwidth_masked
-
+ALIGN_MACRO
 loopwidth_zero_masked:
 xor       di, di   ; textotal
 
@@ -5278,7 +5345,7 @@ mov       di, word ptr [bp - 2]
 test      si, si
 jg        lump_greater_than_zero_masked
 jmp       no_lump_do_texture
-
+ALIGN_MACRO
 not_cache_0_masked:
 ;    segment_t usedsegment = cachedsegmentlumps[cachelumpindex];
 ;    int16_t cachedlump = cachedlumps[cachelumpindex];
@@ -5317,7 +5384,7 @@ pop       word ptr ds:[di]
 xchg      ax, si ; restore lump
 
 jmp       found_cached_lump_masked_set_di
-
+ALIGN_MACRO
 lump_greater_than_zero_masked:
 ; di is bp - 2
 
@@ -5439,6 +5506,7 @@ pop       si
 pop       cx
 pop       bx
 ret  
+ALIGN_MACRO
 is_masked:
 
 ; al has lookup...
@@ -5467,6 +5535,7 @@ pop       si
 pop       cx
 pop       bx
 ret      
+ALIGN_MACRO
 
 
 
@@ -5520,7 +5589,7 @@ pop       word ptr ds:[_maskedtexrepeat]    ; bp - 6 off
 
 jmp       found_cached_lump_masked
 
-
+ALIGN_MACRO
  
 no_lump_do_texture:
 ; di is bp - 2 (tex)
@@ -5563,6 +5632,7 @@ pop       si
 pop       cx
 pop       bx
 ret      
+ALIGN_MACRO
 do_cache_tex_miss_masked:
 
 ;if (cachedtex[1] != tex){
@@ -5585,7 +5655,7 @@ xchg      ax, word ptr ds:[si]
 mov       word ptr ds:[si-2], ax
 
 jmp       done_setting_cached_tex_masked
-
+ALIGN_MACRO
 update_both_cache_texes_masked:
 
 
@@ -5635,6 +5705,7 @@ ENDP
 
 ;R_WriteBackViewConstantsMasked
 
+ALIGN_MACRO
 PROC   R_WriteBackViewConstantsMasked24_ FAR   ; fairly unoptimized, doesnt run much
 PUBLIC R_WriteBackViewConstantsMasked24_ 
 
@@ -5794,10 +5865,11 @@ pop      bx
 
 retf
 
-endp
+ENDP
 
 ;R_WriteBackMaskedFrameConstants
 
+ALIGN_MACRO
 PROC   R_WriteBackMaskedFrameConstants24_ FAR   ; fairly unoptimized, doesnt run much
 PUBLIC R_WriteBackMaskedFrameConstants24_ 
 
