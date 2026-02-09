@@ -3121,13 +3121,11 @@ PUBLIC R_GetSpritePage_
 
 push  cx
 
-
-
 mov   si, OFFSET _activespritepages
 mov   di, OFFSET _activespritenumpages
 mov   cx, NUM_SPRITE_L1_CACHE_PAGES
 cbw
-cwd
+
 
 continue_get_page:
 
@@ -3135,16 +3133,15 @@ continue_get_page:
 
 
 ;	uint8_t realtexpage = texpage >> 2;
-mov   dl, al
-SHIFT_MACRO sar   dx 2
+mov   dx, ax
+SHIFT_MACRO sar   ax 2
 
-mov   bp, dx  ; bp holds onto realtexpage  
+mov   bp, ax  ; bp holds onto realtexpage  
 
 ;	uint8_t numpages = (texpage& 0x03);
 
 
-xchg  ax, dx   ; ax has realtexpage
-and   dx, 3    ; zero dh here
+and   dx, 3                        ; zero dh here
 ;	if (!numpages) {                ; todo push less stuff if we get the zero case?
 jne   get_multipage
 
@@ -3169,8 +3166,8 @@ loop_next_active_page_single:
 cmp   al, byte ptr ds:[bx + si]
 je    found_active_single_page
 inc   bx
-cmp   bx, cx
-jb    loop_next_active_page_single
+
+loop    loop_next_active_page_single
 
 ; cache miss...
 
@@ -3180,8 +3177,10 @@ jb    loop_next_active_page_single
 ;   ah is 0. al is dirty but gets fixed...
 cwd
 dec   dx ; dx = -1, ah is 0
-mov   bx, cx    ; NUM_SPRITE_L1_CACHE_PAGES
-dec   bx        ; NUM_SPRITE_L1_CACHE_PAGES - 1
+
+
+mov   bl, NUM_SPRITE_L1_CACHE_PAGES - 1  ; bh was already 0..
+
 mov   al, byte ptr ds:[bx + _spriteL1LRU]   ; _spriteL1LRU[NUM_SPRITE_L1_CACHE_PAGES-1]
 mov   bx, ax
 mov   cx, ax
@@ -3191,7 +3190,6 @@ push word ptr ds:[_spriteL1LRU+1]     ; grab [1] and [2]
 pop  word ptr ds:[_spriteL1LRU+2]     ; put in [2] and [3]
 xchg al, byte ptr ds:[_spriteL1LRU+0] ; swap index for [0]
 mov  byte ptr ds:[_spriteL1LRU+1], al ; put [0] in [1]
-
 
 
 ;		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
@@ -3205,21 +3203,21 @@ mov  byte ptr ds:[_spriteL1LRU+1], al ; put [0] in [1]
 ;			}
 ;		}
 
-cmp   byte ptr ds:[bx + di], ah  ; ah is still 0 after MRU7/MRU3 func 0
+cmp   byte ptr ds:[bx + di], ah  ; ah is still 0. di is _activespritenumpages
 je    found_start_page_single
 
 mov   al, 1 ; al/ax is i
 ; cl/cx is start page.
 ; bx is start page or startpage + i offset
-; dl was numpages but we know its zero. so use dx for -1 for small code reasons
+; dx is -1
 
 deallocate_next_startpage_single:
 
-cmp   al, byte ptr ds:[bx + di]
+cmp   al, byte ptr ds:[bx + di]  ; di is _activespritenumpages
 ja    found_start_page_single
 
 add   bl, al
-mov   byte ptr ds:[bx + di], 0
+mov   byte ptr ds:[bx + di], ah  ; ah is 0
 
 
 ; bx is currently startpage+i as a byte lookup
@@ -3255,10 +3253,10 @@ ELSE
 
 ENDIF
 
-inc   al
+inc   ax
 
 
-mov   bx, cx    ; zero out bh
+mov   bx, cx    ; zero out bh, set bx to startpage again
 jmp   deallocate_next_startpage_single
 
 get_multipage:
@@ -3273,7 +3271,7 @@ sub   cx, dx
 ; dl is numpages
 ; cl is NUM_SPRITE_L1_CACHE_PAGES-numpages
 ; ch is 0
-; bl will be i (starts as -2, incrementing to 0 first loop)
+; bl will be i (starts as -1, incrementing to 0 first loop)
 ; for (i = 0; i < NUM_SPRITE_L1_CACHE_PAGES-numpages; i++) {
 ; al is realtexpage
 
@@ -3290,8 +3288,8 @@ jnl   evict_and_find_startpage_multi
 ;        continue;
 ;    }
 
-cmp   al, byte ptr ds:[bx + si]
-jne   grab_next_page_loop_multi_continue
+cmp   al, byte ptr ds:[bx + si]     ; _activespritepages
+jne   grab_next_page_loop_multi_continue  ; todo loop, or inc cx then loop ..
 
 
 ;    // all pages for this texture are in the cache, unevicted.
@@ -3321,8 +3319,8 @@ je   exit_markl1spritecachemru_inline_2
 xchg byte ptr ds:[_spriteL1LRU+3], ah
 exit_markl1spritecachemru_inline_2:
 
-inc   bl
-dec   dl
+inc   bx
+dec   dx
 jns   mark_all_pages_mru_loop
  
 
@@ -3417,7 +3415,7 @@ found_startpage_multi:
 
 ; al already set to startpage
 mov   bx, ax    ; ah/bh is 0
-;push  ax  ; 
+
 mov   dh, al ; dh gets startpage..
 mov   cx, -1
 
@@ -3433,7 +3431,7 @@ mov   cx, -1
 ;		}
 
 
-cmp   dl, byte ptr ds:[bx + di]
+cmp   dl, byte ptr ds:[bx + di]  ; di is _activespritenumpages
 jae   done_invalidating_pages_multi
 mov   al, dl
 
@@ -3441,7 +3439,7 @@ mov   al, dl
 ; dh is startpage
 ; al is i
 ; ah is 0
-; bx is startpage lookup
+; bx is startpage looxkup
 
 loop_next_invalidate_page_multi:
 mov   bl, dh   ; set bl to startpage
@@ -3487,9 +3485,9 @@ ELSE
 
 ENDIF
 
-inc   al
+inc   ax
 
-xor   bh, bh
+xor   bx, bx
 jmp   loop_next_invalidate_page_multi
 
 
