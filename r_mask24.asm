@@ -2166,9 +2166,9 @@ je    sprite_not_in_cache
 
 mov   cl, byte ptr es:[di + SPRITEOFFSETS_OFFSET]
 
-call  R_GetSpritePage_
+call  R_GetSpritePage_  ; destroys di, get cl first
 
-xor   ah, ah
+cbw
 mov   di, ax
 mov   al, cl
 SHIFT_MACRO shl   ax 4      ;shift4
@@ -2195,8 +2195,8 @@ mov   al, byte ptr es:[di]
 
 mov   cl, byte ptr es:[di + SPRITEOFFSETS_OFFSET]
 
-call  R_GetSpritePage_
-xor   ah, ah
+call  R_GetSpritePage_  ; destroys di, get cl first
+cbw
 mov   di, ax
 mov   al, cl
 SHIFT_MACRO shl   ax 4      ;shift4
@@ -2632,8 +2632,8 @@ inc        dh
 
 
 ; bp = lump - firstsegment
-mov       bx, SPRITEPAGE_SEGMENT
-mov       es, bx
+mov       di, SPRITEPAGE_SEGMENT
+mov       es, di
 mov       byte ptr es:[bp], dh
 mov       byte ptr es:[bp + SPRITEOFFSETS_OFFSET], bh  ; known 0
 
@@ -2859,14 +2859,17 @@ PUBLIC R_MarkL2SpriteCacheMRU_
 ;		return;
 ;	}
 
+; todo move this check to caller
+
 cmp  al, byte ptr ds:[_spritecache_l2_head]
 jne  dont_early_out
 ret
 
-
+; only push bx
 
 dont_early_out:
-PUSHA_NO_AX_MACRO
+push bx
+push cx
 mov  si, OFFSET _spritecache_nodes
 mov  di, OFFSET _spritecache_l2_tail
 mov  es, di
@@ -3003,7 +3006,8 @@ SHIFT_MACRO    shl  bx 2
 mov  byte ptr ds:[di], dl
 mov  byte ptr ds:[bx + si + 1], -1
 mark_sprite_lru_exit:
-POPA_NO_AX_MACRO
+pop  cx
+pop  bx
 ret  
 
 selected_sprite_page_single_page:
@@ -3061,7 +3065,8 @@ mov  byte ptr ds:[bx + si + 1], dl
 
 mov  byte ptr ds:[di], dl
 
-POPA_NO_AX_MACRO
+pop  cx
+pop  bx
 ret  
 
 
@@ -3326,8 +3331,9 @@ jns   mark_all_pages_mru_loop
 ;    return i;
 
 xchg  ax, bp
+mov   bx, dx  ; so we dont have to push/pop dx
 call  R_MarkL2SpriteCacheMRU_
-mov   al, dh
+mov   al, bh
 
 pop   cx
 

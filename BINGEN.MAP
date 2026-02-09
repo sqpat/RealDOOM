@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/08 14:23:51
+Created on:       26/02/08 19:27:38
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -49,7 +49,7 @@ R_SPAN0_TEXT           CODE           AUTO           1b96:0000       0000063a
 R_SPANFL_TEXT          CODE           AUTO           1bfa:0000       00000591
 R_SKY_TEXT             CODE           AUTO           1c54:0000       00000d86
 R_SKYFL_TEXT           CODE           AUTO           1d2d:0000       00000303
-R_MASK24_TEXT          CODE           AUTO           1d5e:0000       000018a5
+R_MASK24_TEXT          CODE           AUTO           1d5e:0000       000018a8
 R_MASK16_TEXT          CODE           AUTO           1ee9:0000       000019ce
 R_MASK0_TEXT           CODE           AUTO           2086:0000       0000193a
 R_MASKFL_TEXT          CODE           AUTO           221a:0000       00001904
@@ -475,26 +475,26 @@ Module: r_skyfl.obj(r_skyfl.ASM)
 1d2d:0000      R_SKYFL_STARTMARKER_
 1d2d:0294      R_DrawSkyPlaneFL_
 Module: r_mask24.obj(r_mask24.ASM)
-1d5e:0fd2*     FastDiv3232FFFF_
+1d5e:0fd5*     FastDiv3232FFFF_
 1d5e:00d4*     FixedMulMaskedLocal_
 1d5e:0ac1*     R_GetSpriteTexture_
-1d5e:107b*     R_PointOnSegSide_
+1d5e:107e*     R_PointOnSegSide_
 1d5e:0000*     _pagesegments
 1d5e:0012*     _fuzzoffset
-1d5e:176a      R_WriteBackViewConstantsMasked24_
-1d5e:0cac*     R_EvictL2CacheEMSPage_Sprite_
+1d5e:176d      R_WriteBackViewConstantsMasked24_
+1d5e:0caa*     R_EvictL2CacheEMSPage_Sprite_
 1d5e:01b3*     R_DrawMaskedSpriteShadow_
-1d5e:1845      R_WriteBackMaskedFrameConstants24_
-1d5e:1570*     R_GetMaskedColumnSegment_
-1d5e:0d43*     R_MarkL2SpriteCacheMRU_
-1d5e:1157      R_DrawMasked24_
+1d5e:1848      R_WriteBackMaskedFrameConstants24_
+1d5e:1573*     R_GetMaskedColumnSegment_
+1d5e:0d41*     R_MarkL2SpriteCacheMRU_
+1d5e:115a      R_DrawMasked24_
 1d5e:0101*     R_DrawSingleMaskedColumn_
-1d5e:1234*     R_DrawSprite_
+1d5e:1237*     R_DrawSprite_
 1d5e:0372*     R_DrawVisSprite_
-1d5e:18a5      R_MASK24_ENDMARKER_
-1d5e:1466*     R_DrawMaskedColumn_
-1d5e:0bd9*     R_GetNextSpriteBlock_
-1d5e:0e4d*     R_GetSpritePage_
+1d5e:18a8      R_MASK24_ENDMARKER_
+1d5e:1469*     R_DrawMaskedColumn_
+1d5e:0bd7*     R_GetNextSpriteBlock_
+1d5e:0e4e*     R_GetSpritePage_
 1d5e:05cd*     R_RenderMaskedSegRange_
 1d5e:0000      R_MASK24_STARTMARKER_
 Module: r_mask16.obj(r_mask16.ASM)
@@ -1474,4 +1474,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003d870 (252016.)
 Entry point address: 2f3d:7cee
-Link time: 00:00.04
+Link time: 00:00.05
