@@ -1448,18 +1448,7 @@ mov   ax, word ptr cs:[_mul48lookup_with_scalelight_with_minusone_offset + bx]
 
 
 mov   word ptr cs:[SELFMODIFY_MASKED_set_walllights+2 - OFFSET R_MASK24_STARTMARKER_], ax      ; store lights
-jmp   ugly_jump  ; todo i got rid of branching code here then had nowhere to stick this code blob. revisit!
 
-
-SELFMODIFY_MASKED_fixedcolormap_2_TARGET:
-fixed_colormap:
-SELFMODIFY_MASKED_fixedcolormap_3:
-mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMARKER_], 0
-jmp   colormap_set
-
-
-
-ugly_jump:
 ;    maskedtexturecol = &openings[ds->maskedtexturecol_val];
 
 SELFMODIFY_MASKED_dsp_1A:
@@ -1529,9 +1518,9 @@ mov   word ptr ds:[_mceilingclip], 01000h
 ;	}
 
 
-; TODO make this a 3 byte jmp instruction or 3 byte nop i guess.
+
 SELFMODIFY_MASKED_fixedcolormap_2:
-jne fixed_colormap		; jump when fixedcolormap is not 0.
+jmp fixed_colormap		; jump when fixedcolormap is not 0. 3 byte (word) jump!!!
 SELFMODIFY_MASKED_fixedcolormap_2_AFTER:
 colormap_set:
 
@@ -1864,6 +1853,13 @@ ENDIF
 
 
 jmp done_with_mul
+
+SELFMODIFY_MASKED_fixedcolormap_2_TARGET:
+fixed_colormap:
+SELFMODIFY_MASKED_fixedcolormap_3:
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMARKER_], 0
+jmp   colormap_set
+
 
 do_inner_loop:
 ;   ax is dc_x
@@ -5845,7 +5841,9 @@ do_no_fixedcolormap_selfmodify:
 ; nop 
 mov      ax, 0c089h 
 mov      word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_1 - OFFSET R_MASK24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_2 - OFFSET R_MASK24_STARTMARKER_], ax
+; lea bp, [bp + 0] ; 3 byte nop
+mov      word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_2 - OFFSET R_MASK24_STARTMARKER_], 06E8Dh 
+mov      byte ptr ds:[SELFMODIFY_MASKED_fixedcolormap_2+2 - OFFSET R_MASK24_STARTMARKER_], 00
 
 
 
@@ -5857,8 +5855,8 @@ mov   byte ptr ds:[SELFMODIFY_MASKED_fixedcolormap_3+5 - OFFSET R_MASK24_STARTMA
 ; modify jmp in place.
 mov   ax, ((SELFMODIFY_MASKED_fixedcolormap_1_TARGET - SELFMODIFY_MASKED_fixedcolormap_1_AFTER) SHL 8) + 0EBh
 mov   word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_1 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   ah, (SELFMODIFY_MASKED_fixedcolormap_2_TARGET - SELFMODIFY_MASKED_fixedcolormap_2_AFTER)
-mov   word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_2 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   byte ptr ds:[SELFMODIFY_MASKED_fixedcolormap_2+0 - OFFSET R_MASK24_STARTMARKER_], 0E9h ; word jmp
+mov   word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_2+1 - OFFSET R_MASK24_STARTMARKER_], (SELFMODIFY_MASKED_fixedcolormap_2_TARGET - SELFMODIFY_MASKED_fixedcolormap_2_AFTER)
 
 
 
