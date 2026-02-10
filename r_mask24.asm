@@ -2887,42 +2887,37 @@ ENDP
 
 
 ALIGN_MACRO
-PROC   R_MarkL2SpriteCacheMRU_ NEAR ; needs another look
+PROC   R_MarkL2SpriteCacheMRU_ NEAR ; seems ok, maybe can get a little but not much better.
 PUBLIC R_MarkL2SpriteCacheMRU_
+
 ;	if (index == spritecache_l2_head) {
 ;		return;
 ;	}
+; check done outside now
 
-; todo move this check to caller
 
-cmp  al, byte ptr ds:[_spritecache_l2_head]
-jne  dont_early_out
-ret
-ALIGN_MACRO
+; only push bx/cx
 
-; only push bx
-
-dont_early_out:
 push bx
 push cx
 mov  si, OFFSET _spritecache_nodes
-mov  di, OFFSET _spritecache_l2_tail
-mov  es, di
-mov  di, OFFSET _spritecache_l2_head
-;dec  di ; OFFSET _spritecache_l2_head
-; todo just use di - 1 instead of es
-do_markl2func:
+mov  di, OFFSET _spritecache_l2_head ; di + 1 is tail.
+cbw
+; ah assume 0?
+; dl = index
+; cl = head
+; bx is pointer
+; TODO al is barely used! replace cl etc usage with it. smaller code.
 
-mov  cl, byte ptr ds:[di]
-mov  dl, al
-mov  bx, ax
+mov  cl, byte ptr ds:[di] ; cl = head
+mov  dl, al 
+xchg ax, bx  ; bx gets index..
 
 ;	pagecount = spritecache_nodes[index].pagecount;
 ;	if (pagecount){
 
 SHIFT_MACRO shl  bx 2
-mov  al, byte ptr ds:[bx + si + 2]
-test al, al
+cmp  byte ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], bh ; 0
 je   sprite_pagecount_zero
 
 ;	 	while (spritecache_nodes[index].numpages != spritecache_nodes[index].pagecount){
@@ -2932,10 +2927,10 @@ je   sprite_pagecount_zero
 sprite_check_next_cache_node:
 mov  bl, dl   ; bh always zero here...
 SHIFT_MACRO shl  bx 2
-mov  ax, word ptr ds:[bx + si + 2]
+mov  ax, word ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount]
 cmp  al, ah
 je   sprite_found_first_index
-mov  dl, byte ptr ds:[bx + si + 1]
+mov  dl, byte ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
 jmp  sprite_check_next_cache_node
 ALIGN_MACRO
 
@@ -2954,9 +2949,70 @@ sprite_pagecount_zero:
 
 ;	if (spritecache_nodes[index].numpages){
 
-cmp  byte ptr ds:[bx + si + 3], 0
-je   selected_sprite_page_single_page
+cmp  byte ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_numpages], bh ; 0
 
+jne  selected_sprite_page_multi
+
+selected_sprite_page_single_page:
+
+;		// handle the simple one page case.
+;		prev = spritecache_nodes[index].prev;
+;		next = spritecache_nodes[index].next;
+
+mov  dh, byte ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]
+mov  ch, byte ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
+
+;		if (index == spritecache_l2_tail) {
+;			spritecache_l2_tail = next;
+;		} else {
+;			spritecache_nodes[prev].next = next; 
+;		}
+
+
+
+cmp  dl, byte ptr ds:[di + 1]   ; tail
+jne  spritecache_tail_not_equal_to_index
+mov  byte ptr ds:[di + 1], dh   ; tail
+
+jmp  done_with_spritecache_tail_handling
+
+ALIGN_MACRO
+spritecache_tail_not_equal_to_index:
+mov  bl, ch
+SHIFT_MACRO shl  bx 2
+mov  byte ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], dh
+
+done_with_spritecache_tail_handling:
+
+; spritecache_nodes[next].prev = prev;  // works in either of the above cases. prev is -1 if tail.
+mov  bl, dh
+SHIFT_MACRO shl  bx 2
+mov  byte ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], ch
+
+;	spritecache_nodes[index].prev = spritecache_l2_head;
+;	spritecache_nodes[index].next = -1;
+
+mov  bl, dl
+SHIFT_MACRO shl  bx 2
+mov  ch, -1
+mov  word ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], cx
+
+; spritecache_nodes[spritecache_l2_head].next = index;
+
+mov  bl, cl
+SHIFT_MACRO shl  bx 2
+mov  byte ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], dl
+
+;	spritecache_l2_head = index;
+
+mov  byte ptr ds:[di], dl
+mark_sprite_lru_exit:
+
+pop  cx
+pop  bx
+ret  
+
+selected_sprite_page_multi:
 ; multi page case...
 
 ;		lastindex = index;
@@ -2970,9 +3026,9 @@ sprite_check_next_cache_node_pagecount:
 
 mov  bl, dh         ; bh always 0 here...
 SHIFT_MACRO  shl  bx 2
-cmp  byte ptr ds:[bx + si + 2], 1
+cmp  byte ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_pagecount], 1
 je   found_sprite_multipage_last_page
-mov  dh, byte ptr ds:[bx + si + 0]
+mov  dh, byte ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]
 jmp  sprite_check_next_cache_node_pagecount
 ALIGN_MACRO
 
@@ -2985,25 +3041,25 @@ found_sprite_multipage_last_page:
 ;		index_next = spritecache_nodes[index].next;
 
 
-mov  ch, byte ptr ds:[bx + si + 0]    ; lastindex_prev
+mov  ch, byte ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev]    ; lastindex_prev
 mov  bl, dl
 SHIFT_MACRO   shl  bx 2
 
-mov  cl, byte ptr ds:[bx + si + 1]    ; index_next
+mov  cl, byte ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next]    ; index_next
 
 ;		if (spritecache_l2_tail == lastindex){
-mov  bx, es  ; tail
-cmp  dh, byte ptr ds:[bx]
+
+cmp  dh, byte ptr ds:[di + 1] ; tail
 jne  spritecache_l2_tail_not_equal_to_lastindex
 
 ;			spritecache_l2_tail = index_next;
 ;			spritecache_nodes[index_next].prev = -1;
 
-mov  byte ptr ds:[bx], cl
-xor  bx, bx
+mov  byte ptr ds:[di + 1], cl ; tail
+
 mov  bl, cl
 SHIFT_MACRO   shl  bx 2
-mov  byte ptr ds:[bx + si + 0], -1
+mov  byte ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], -1
 jmp  sprite_done_with_multi_tail_update
 ALIGN_MACRO
 
@@ -3012,14 +3068,14 @@ spritecache_l2_tail_not_equal_to_lastindex:
 ;			spritecache_nodes[lastindex_prev].next = index_next;
 ;			spritecache_nodes[index_next].prev = lastindex_prev;
 
-xor  bx, bx
+
 mov  bl, ch
 SHIFT_MACRO shl  bx 2
-mov  byte ptr ds:[bx + si + 1], cl
+mov  byte ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], cl
 
 mov  bl, cl
 SHIFT_MACRO shl  bx 2
-mov  byte ptr ds:[bx + si + 0], ch
+mov  byte ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], ch
 
 sprite_done_with_multi_tail_update:
 
@@ -3029,10 +3085,10 @@ sprite_done_with_multi_tail_update:
 mov  bl, dh
 SHIFT_MACRO    shl  bx 2
 mov  al, byte ptr ds:[di]
-mov  byte ptr ds:[bx + si + 0], al  ; spritecache_l2_head
+mov  byte ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_prev], al  ; spritecache_l2_head
 mov  bl, al
 SHIFT_MACRO    shl  bx 2
-mov  byte ptr ds:[bx + si + 1], dh  ; lastindex
+mov  byte ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], dh  ; lastindex
 
 mov  bl, dl
 SHIFT_MACRO    shl  bx 2
@@ -3042,72 +3098,13 @@ SHIFT_MACRO    shl  bx 2
 
 
 mov  byte ptr ds:[di], dl
-mov  byte ptr ds:[bx + si + 1], -1
-mark_sprite_lru_exit:
+mov  byte ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], -1
 pop  cx
 pop  bx
 ret  
 ALIGN_MACRO
 
-selected_sprite_page_single_page:
 
-;		// handle the simple one page case.
-;		prev = spritecache_nodes[index].prev;
-;		next = spritecache_nodes[index].next;
-
-mov  dh, byte ptr ds:[bx + si + 1]
-mov  ch, byte ptr ds:[bx + si + 0]
-
-;		if (index == spritecache_l2_tail) {
-;			spritecache_l2_tail = next;
-;		} else {
-;			spritecache_nodes[prev].next = next; 
-;		}
-
-
-mov  bx, es  ; tail
-cmp  dl, byte ptr ds:[bx]
-jne  spritecache_tail_not_equal_to_index
-mov  byte ptr ds:[bx], dh
-xor  bx, bx
-jmp  done_with_spritecache_tail_handling
-ALIGN_MACRO
-
-spritecache_tail_not_equal_to_index:
-xor  bx, bx
-mov  bl, ch
-SHIFT_MACRO shl  bx 2
-mov  byte ptr ds:[bx + si + 1], dh
-
-done_with_spritecache_tail_handling:
-
-; spritecache_nodes[next].prev = prev;  // works in either of the above cases. prev is -1 if tail.
-
-mov  bl, dh
-SHIFT_MACRO shl  bx 2
-mov  byte ptr ds:[bx + si + 0], ch
-
-;	spritecache_nodes[index].prev = spritecache_l2_head;
-;	spritecache_nodes[index].next = -1;
-
-mov  bl, dl
-SHIFT_MACRO shl  bx 2
-mov  ch, -1
-mov  word ptr ds:[bx + si + 0], cx
-
-; spritecache_nodes[spritecache_l2_head].next = index;
-
-mov  bl, cl
-SHIFT_MACRO shl  bx 2
-mov  byte ptr ds:[bx + si + 1], dl
-
-;	spritecache_l2_head = index;
-
-mov  byte ptr ds:[di], dl
-
-pop  cx
-pop  bx
-ret  
 
 
 ENDP
@@ -3143,6 +3140,17 @@ exit_markl1spritecachemru_inline_1:
 
 ;    R_MarkL2TextureCacheMRU(realtexpage);
 
+
+
+cmp   dl, byte ptr ds:[_spritecache_l2_head]
+jne   do_l2_sprite_cache_evict_2
+
+xchg  ax, bx
+pop   cx
+ret   
+
+do_l2_sprite_cache_evict_2:
+ALIGN_MACRO
 xchg  ax, dx            ; realtexpage into ax. 
 call  R_MarkL2SpriteCacheMRU_
 
@@ -3371,6 +3379,17 @@ jns   mark_all_pages_mru_loop
 ;    return i;
 
 xchg  ax, bp
+
+cmp   al, byte ptr ds:[_spritecache_l2_head]
+jne   do_l2_sprite_cache_evict_4
+
+mov   al, dh
+pop   cx
+ret   
+
+ALIGN_MACRO
+
+do_l2_sprite_cache_evict_4:
 mov   bx, dx  ; so we dont have to push/pop dx
 call  R_MarkL2SpriteCacheMRU_
 mov   al, bh
@@ -3432,18 +3451,29 @@ SHIFT_PAGESWAP_ARGS bx
 mov   word ptr ds:[bx + _pageswapargs + (PAGESWAPARGS_SPRITECACHE_OFFSET * 2)], ax        ; = _EPR(pageoffset + realtexpage);
 
 ; dx should be realtexpage???
-xchg  ax, dx
+cmp   dl, byte ptr ds:[_spritecache_l2_head]
+jne   do_l2_sprite_cache_evict_3
+push  cx ; eventual return value
+Z_QUICKMAPAI4 pageswapargs_spritecache_offset_size INDEXED_PAGE_9000_OFFSET
 
+; todo is this code path possible
+mov   dx, 0FFFFh
+mov   word ptr ds:[_lastvisspritepatch], dx
+mov   word ptr ds:[_lastvisspritepatch2], dx
+pop   ax  ; return value
+pop   cx
+ret
+
+ALIGN_MACRO
+do_l2_sprite_cache_evict_3:
+xchg  ax, dx
 call  R_MarkL2SpriteCacheMRU_
 
 push  cx
 ;call  Z_QuickMapSpritePage_
 Z_QUICKMAPAI4 pageswapargs_spritecache_offset_size INDEXED_PAGE_9000_OFFSET
 pop   dx
-
 mov   ax, 0FFFFh
-
-
 do_sprite_eviction:
 
 mov   word ptr ds:[_lastvisspritepatch], ax
@@ -3453,6 +3483,7 @@ xchg  ax, dx
  
 pop   cx
 ret
+
 ALIGN_MACRO
 
 found_startpage_multi:
@@ -3619,22 +3650,43 @@ jns   loop_mark_next_page_mru_multi
 ;    Z_QuickMapSpritePage();
 
 mov   ax, bp
-call  R_MarkL2SpriteCacheMRU_
+cmp   al, byte ptr ds:[_spritecache_l2_head]
+jne   do_l2_sprite_cache_evict_1
 
+
+push  dx ; eventual return value
+Z_QUICKMAPAI4 pageswapargs_spritecache_offset_size INDEXED_PAGE_9000_OFFSET
+
+
+
+mov   ax, 0FFFFh
+
+mov   word ptr ds:[_lastvisspritepatch], ax
+mov   word ptr ds:[_lastvisspritepatch2], ax
+
+pop   ax  ; return value
+mov   al, ah
+pop   cx
+ret
+
+ALIGN_MACRO
+do_l2_sprite_cache_evict_1:
+
+
+call  R_MarkL2SpriteCacheMRU_
 
 push  dx
 Z_QUICKMAPAI4 pageswapargs_spritecache_offset_size INDEXED_PAGE_9000_OFFSET
 pop   dx
-
-;	//todo: detected and only do -1 if its in the knocked out page? pretty infrequent though.
-;    cachedtex = -1;
-;    cachedtex2 = -1;
-
 mov   ax, 0FFFFh
 
-mov   dl, dh  ; numpages in cl
-jmp   do_sprite_eviction
-ALIGN_MACRO
+mov   word ptr ds:[_lastvisspritepatch], ax
+mov   word ptr ds:[_lastvisspritepatch2], ax
+
+mov   al, dh  ; numpages in al
+pop   cx
+ret
+
 ENDP
 
 
