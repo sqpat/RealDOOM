@@ -69,7 +69,7 @@
 //  in posts/runs of opaque pixels.
 //
 
-/*
+
 
 
 //todo... do the dc_x mod quality loop and redo in asm
@@ -158,9 +158,9 @@ void __near R_DrawMaskedSpriteShadow (segment_t pixelsegment, column_t __far* co
 
 }
 
-*/
 
-/*
+
+
 void __near R_DrawMaskedColumn2 (segment_t pixelsegment, column_t __far* column) {
 	
 	fixed_t_union     topscreen;
@@ -212,7 +212,7 @@ void __near R_DrawMaskedColumn2 (segment_t pixelsegment, column_t __far* column)
         
     dc_texturemid = basetexturemid;
 }
-*/
+
 
 // this is called for things like reverse sides of columns and openings where the underlying texture is not actually masked
 // only a single column is actually drawn
@@ -476,7 +476,7 @@ void __near R_SortVisSprites (void) {
                 }
             }
         }
-       
+        
 
         if (vsprsortedheadfirst == VISSPRITE_SORTED_HEAD_INDEX){
             // only on first iteration
@@ -498,8 +498,7 @@ void __near R_SortVisSprites (void) {
 //
 // R_DrawSprite
 //
-void __near R_DrawSprite (vissprite_t __near* spr);
-/*
+
 void __near R_DrawSprite (vissprite_t __near* spr) {
     drawseg_t __far*          ds;
     int16_t               clipbot[SCREENWIDTH]; // could be uint8_t, need to change -2 special case
@@ -626,7 +625,6 @@ void __near R_DrawSprite (vissprite_t __near* spr) {
     mfloorclip_segment = mceilingclip_segment = openings_segment;
 }
 
-*/ 
 
 //
 // R_DrawMasked

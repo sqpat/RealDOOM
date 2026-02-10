@@ -77,7 +77,7 @@ _spanfunc_jump_target:
 
 BYTES_PER_PIXEL = 15h
 MAX_PIXELS = 80
-bytecount = MAX_PIXELS * BYTES_PER_PIXEL
+bytecount = (MAX_PIXELS * BYTES_PER_PIXEL) + 1 ; odd offset
 REPT MAX_PIXELS
     bytecount = bytecount - BYTES_PER_PIXEL
     dw bytecount 
@@ -132,6 +132,7 @@ jmp   do_span_loop
 
 ENDP ; shut up compiler warning
 
+ALIGN_MACRO	
 PROC   R_DrawSpanActual24_ FAR
 PUBLIC R_DrawSpanActual24_
 
@@ -354,7 +355,10 @@ lds   ax, dword ptr ds:[_ds_source_offset] 		; ds:si is ds_source. BX is pulled 
  
 SPANFUNC_JUMP_OFFSET:
 jmp span_i_loop_done         ; relative jump to be modified before function is called
-
+; ODD
+ALIGN_MACRO
+MARKER_SM_SPAN24_AFTER_JUMP_1:
+PUBLIC MARKER_SM_SPAN24_AFTER_JUMP_1
 
 
 
@@ -412,6 +416,7 @@ jge   span_i_loop_done
 MOV   es, ds:[_spanfunc_jump_segment_storage]
 
 jmp   span_i_loop_repeat
+ALIGN_MACRO	
 span_i_loop_done:
 
 ; restore sp, bp
@@ -437,7 +442,7 @@ ENDP
 ;
 ; R_DrawSpanPrep
 ;
-	
+ALIGN_MACRO	
 PROC  R_DrawSpanPrep24_ NEAR
 
 
@@ -562,6 +567,7 @@ ENDP
 
 IF COMPISA GE COMPILE_386
 
+    ALIGN_MACRO	
     PROC   FixedMulTrigSineLocal_ NEAR
     PUBLIC FixedMulTrigSineLocal_
     sal dx, 1
@@ -588,6 +594,7 @@ IF COMPISA GE COMPILE_386
 
     ENDP
 
+    ALIGN_MACRO	
     PROC   FixedMulTrigCosineLocal_ NEAR
     PUBLIC FixedMulTrigCosineLocal_
     sal dx, 1
@@ -620,6 +627,7 @@ IF COMPISA GE COMPILE_386
 
 ELSE
 
+    ALIGN_MACRO	
     PROC   FixedMulTrigSineLocal_ NEAR
     PUBLIC FixedMulTrigSineLocal_
 
@@ -693,6 +701,7 @@ ELSE
     ENDP
 
 
+    ALIGN_MACRO	
     PROC   FixedMulTrigCosineLocal_ NEAR
     PUBLIC FixedMulTrigCosineLocal_
 
@@ -772,6 +781,7 @@ ENDIF
 
 
 
+ALIGN_MACRO	
 PROC R_FixedMulLocal24_ NEAR
 
 
@@ -855,6 +865,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO	
 go_generate_values:
 jmp   generate_distance_steps
 
@@ -875,6 +886,7 @@ jmp   generate_distance_steps
 
 
 
+ALIGN_MACRO	
 PROC    R_MapPlane24_ NEAR
 PUBLIC  R_MapPlane24_
 
@@ -1086,6 +1098,7 @@ pop   di
 pop   si
 pop   cx
 ret
+ALIGN_MACRO	
 
 SELFMODIFY_SPAN_fixedcolormap_1_TARGET:
 SELFMODIFY_SPAN_fixedcolormap_2:
@@ -1103,6 +1116,7 @@ pop   di
 pop   si
 pop   cx
 ret  
+ALIGN_MACRO	
 
 generate_distance_steps:
 
@@ -1212,6 +1226,7 @@ ENDP
 
 ;R_DrawPlanes_
 
+ALIGN_MACRO	
 PROC   R_DrawPlanes24_ FAR
 PUBLIC R_DrawPlanes24_
 
@@ -1290,12 +1305,14 @@ test  al, al
 jne   do_span_fixedcolormap_selfmodify
 mov   ax, 0c089h  ; nop
 jmp   done_with_span_fixedcolormap_selfmodify
+ALIGN_MACRO	
 
 do_next_drawplanes_loop:	
 
 inc   byte ptr cs:[SELFMODIFY_SPAN_drawplaneiter+1 - OFFSET R_SPAN24_STARTMARKER_]
 add   word ptr [bp - 8], VISPLANE_BYTE_SIZE
 jmp   SHORT drawplanes_loop
+ALIGN_MACRO	
 do_sky_flat_draw:
 ; todo revisit params. maybe these can be loaded in R_DrawSkyPlaneCallHigh
 les   bx, dword ptr [bp - 8] ; get visplane offset
@@ -1308,6 +1325,7 @@ call  dword ptr ds:[_R_DrawSkyPlane_addr]
 inc   byte ptr cs:[SELFMODIFY_SPAN_drawplaneiter+1 - OFFSET R_SPAN24_STARTMARKER_]
 add   word ptr [bp - 8], VISPLANE_BYTE_SIZE
 jmp   SHORT drawplanes_loop
+ALIGN_MACRO	
 
 exit_drawplanes:
 LEAVE_MACRO 
@@ -1318,6 +1336,7 @@ pop   cx
 pop   bx
 mov   byte ptr cs:[(SELFMODIFY_SPAN_drawplaneiter+1) - OFFSET R_SPAN24_STARTMARKER_], 0
 retf   
+ALIGN_MACRO	
 do_span_fixedcolormap_selfmodify:
 mov   byte ptr cs:[SELFMODIFY_SPAN_fixedcolormap_2 + 5 - OFFSET R_SPAN24_STARTMARKER_], al
 mov   ax, ((SELFMODIFY_SPAN_fixedcolormap_1_TARGET - SELFMODIFY_SPAN_fixedcolormap_1_AFTER) SHL 8) + 0EBh
@@ -1421,6 +1440,7 @@ inc   bl
 cmp   bl, NUM_FLAT_CACHE_PAGES
 jge   found_flat_page_to_evict
 jmp   loop_find_flat
+ALIGN_MACRO	
 
 check_next_visplane_page:
 ; do next visplane page
@@ -1428,6 +1448,7 @@ sub   word ptr [bp - 8], VISPLANE_BYTES_PER_PAGE
 inc   byte ptr [bp - 2]
 add   word ptr [bp - 6], 0400h
 jmp   loop_visplane_page_check
+ALIGN_MACRO	
 
 
 
@@ -1480,26 +1501,31 @@ cmp   dl, byte ptr ds:[_currentflatpage+1]
 jne   not_in_flat_page_1
 mov   cl, 1
 jmp   SHORT update_l1_cache
+ALIGN_MACRO	
 found_flat_page_to_evict:
 
 
 ;call  R_EvictFlatCacheEMSPage_   ; al stores result..
 jmp    do_evict_flatcache_ems_page
+ALIGN_MACRO	
 done_with_evict_flatcache_ems_page:
 SHIFT_MACRO shl al 2
 
 jmp   found_flat
+ALIGN_MACRO	
 
 not_in_flat_page_1:
 cmp   dl, byte ptr ds:[_currentflatpage+2]
 jne   not_in_flat_page_2
 mov   cl, 2
 jmp SHORT  update_l1_cache
+ALIGN_MACRO	
 not_in_flat_page_2:
 cmp   dl, byte ptr ds:[_currentflatpage+3]
 jne   not_in_flat_page_3
 mov   cl, 3
 jmp SHORT  update_l1_cache
+ALIGN_MACRO	
 not_in_flat_page_3:
 ; L2 page not in L1 cache. need to EMS remap
 
@@ -1537,6 +1563,7 @@ pop   cx
 
 
 jmp  SHORT l1_cache_finished_updating
+ALIGN_MACRO	
 in_flat_page_0:
 mov   cl, 0
 
@@ -1611,9 +1638,11 @@ mov   word ptr cs:[SELFMODIFY_SPAN_comparestop+2 - OFFSET R_SPAN24_STARTMARKER_]
 cmp   si, ax
 jle   start_single_plane_draw_loop
 jmp   do_next_drawplanes_loop
+ALIGN_MACRO	
 
 jump_to_flatcachemruL2:
 jmp continue_flatcachemru
+ALIGN_MACRO	
 
 ; flat is unloaded. load it in
 flat_is_unloaded:
@@ -1648,6 +1677,7 @@ call  dword ptr ds:[_W_CacheLumpNumDirect_addr]
 ;call  W_CacheLumpNumDirect_
 pop   cx
 jmp   flat_not_unloaded
+ALIGN_MACRO	
 
 
 
@@ -1706,6 +1736,7 @@ inc   di
 inc   di
 
 jmp   loop_first_mapplane
+ALIGN_MACRO	
 
 end_single_plane_draw_loop_iteration:
 
@@ -1718,6 +1749,7 @@ jle   single_plane_draw_loop
 ;jmp exit_drawplanes
 
 jmp   do_next_drawplanes_loop
+ALIGN_MACRO	
 
 done_with_first_mapplane_loop:
 
@@ -1748,6 +1780,7 @@ jbe   done_with_second_mapplane_loop
 dec   di
 dec   di
 jmp   loop_second_mapplane
+ALIGN_MACRO	
 
 done_with_second_mapplane_loop:
 
@@ -1833,6 +1866,7 @@ std
 rep   stosw
 cld
 jmp   end_single_plane_draw_loop_iteration
+ALIGN_MACRO	
 
 
 
@@ -1882,6 +1916,7 @@ jne       index_not_tail
 
 mov       byte ptr ds:[_flatcache_l2_tail], ah
 jmp       flat_tail_check_done
+ALIGN_MACRO	
 
 index_not_tail:
 
@@ -1932,6 +1967,7 @@ ENDP
 
 ;PROC R_EvictFlatCacheEMSPage24_ NEAR
 
+ALIGN_MACRO	
 do_evict_flatcache_ems_page:
 
 push      bx
@@ -2011,6 +2047,7 @@ pop       si
 pop       dx
 pop       bx
 jmp       done_with_evict_flatcache_ems_page
+ALIGN_MACRO	
 ;ret   
 
 erase_flat:
@@ -2028,6 +2065,7 @@ ENDP
 
 ;R_WriteBackViewConstantsSpan
 
+ALIGN_MACRO	
 PROC R_WriteBackViewConstantsSpan24_ FAR
 PUBLIC R_WriteBackViewConstantsSpan24_ 
 
@@ -2047,6 +2085,7 @@ cmp      al, 1
 je       do_detail_shift_one
 jl       do_detail_shift_zero
 jmp      do_detail_shift_two
+ALIGN_MACRO	
 do_detail_shift_zero:
 
 mov      byte ptr ds:[SELFMODIFY_SPAN_compare_span_counter+2        - OFFSET R_SPAN24_STARTMARKER_], 4
@@ -2103,6 +2142,7 @@ mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_3+2 - OFFSET R_SPAN24_ST
 
 
 jmp     done_with_detailshift
+ALIGN_MACRO	
 do_detail_shift_one:
 
 mov      byte ptr ds:[SELFMODIFY_SPAN_compare_span_counter+2        - OFFSET R_SPAN24_STARTMARKER_], 2
@@ -2165,6 +2205,7 @@ mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_3+2 - OFFSET R_SPAN24_ST
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_4+2 - OFFSET R_SPAN24_STARTMARKER_], ax
 
 jmp     done_with_detailshift
+ALIGN_MACRO	
 
 do_detail_shift_two:
 

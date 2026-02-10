@@ -51,7 +51,7 @@ MARKER_COLFUNC_JUMP_TARGET24_:
 PUBLIC MARKER_COLFUNC_JUMP_TARGET24_
 BYTES_PER_PIXEL = 12
 MAX_PIXELS = 200
-bytecount = MAX_PIXELS * BYTES_PER_PIXEL
+bytecount = (MAX_PIXELS * BYTES_PER_PIXEL) + 1
 REPT MAX_PIXELS
     bytecount = bytecount - BYTES_PER_PIXEL
     dw bytecount 
@@ -72,7 +72,7 @@ MARKER_COLFUNC_NOLOOP_JUMPTABLE_SIZE_OFFSET_:
 public MARKER_COLFUNC_NOLOOP_JUMPTABLE_SIZE_OFFSET_
 BYTES_PER_PIXEL = 10
 MAX_PIXELS = 200
-bytecount = MAX_PIXELS * BYTES_PER_PIXEL
+bytecount = (MAX_PIXELS * BYTES_PER_PIXEL)
 REPT MAX_PIXELS
     bytecount = bytecount - BYTES_PER_PIXEL
     dw bytecount
@@ -84,6 +84,7 @@ ENDM
 MARKER_COLFUNC_NOLOOP_FUNCTION_AREA_OFFSET_:
 PUBLIC MARKER_COLFUNC_NOLOOP_FUNCTION_AREA_OFFSET_
 
+ALIGN_MACRO
 PROC    R_DrawColumn24NoLoop_ FAR
 PUBLIC  R_DrawColumn24NoLoop_
 
@@ -112,7 +113,7 @@ PUBLIC MARKER_SM_COLFUNC_subtract_centery24_noloop_
 
 
 
-   xor  dx, dx   ; ax gets 0
+   xor  dx, dx   ; dx gets 0
    xchg dl, ch   ; zero ch fo xchg into si. dx gets hi step
    dec  dx       ; minus one to account for lodsb
    xchg cx, si      
@@ -128,7 +129,7 @@ PUBLIC MARKER_SM_COLFUNC_set_destview_segment24_noloop_
    cli 
    lds     ax, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and bp to 004Fh (hardcoded)
    mov     ss, sp
-   xchg    ax, sp
+   mov     sp, ax ; dont use xchg - it will make the following jmp go to an odd offset.
 
 
 
@@ -138,7 +139,10 @@ MARKER_SM_COLFUNC_jump_offset24_noloop_:
 PUBLIC MARKER_SM_COLFUNC_jump_offset24_noloop_
 
    jmp loop_done_noloop         ; relative jump to be modified before function is called
-
+; currently EVEN
+; 10 bytes each
+MARKER_SM_COL24_AFTER_JUMP_1:
+PUBLIC MARKER_SM_COL24_AFTER_JUMP_1
 
 DRAW_SINGLE_PIXEL_NOLOOP MACRO 
 
@@ -188,6 +192,7 @@ ALIGN 16
 MARKER_COLFUNC_NOLOOPANDSTRETCH_FUNCTION_AREA_OFFSET_:
 PUBLIC MARKER_COLFUNC_NOLOOPANDSTRETCH_FUNCTION_AREA_OFFSET_
 
+ALIGN_MACRO
 PROC    R_DrawColumn24NoLoopAndStretch_ FAR
 PUBLIC  R_DrawColumn24NoLoopAndStretch_
 
@@ -217,7 +222,7 @@ PUBLIC MARKER_SM_COLFUNC_subtract_centery24_noloopandstretch_
 
    ;  prep our loop variables
    
-   lds  dx, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and bp to 004Fh (hardcoded)
+   lds  dx, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and dx to 004Fh (hardcoded)
    mov  ch, dh   ; ch gets 0
    xchg si, cx   ; si gets hi texel, cx gets low texel 
 
@@ -231,8 +236,12 @@ MARKER_SM_COLFUNC_jump_offset24_noloopandstretch_:
 PUBLIC MARKER_SM_COLFUNC_jump_offset24_noloopandstretch_
 
    jmp loop_done_noloopandstretch         ; relative jump to be modified before function is called
+; currently EVEN
+MARKER_SM_COL24_AFTER_JUMP_2:
+PUBLIC MARKER_SM_COL24_AFTER_JUMP_2
 
 
+; 10 bytes each
 DRAW_SINGLE_PIXEL_NOLOOPANDSTRETCH MACRO 
 
     lods   BYTE PTR ds:[si]        
@@ -271,6 +280,7 @@ ALIGN 16
 MARKER_COLFUNC_NORMAL_FUNCTION_AREA_OFFSET_:
 PUBLIC MARKER_COLFUNC_NORMAL_FUNCTION_AREA_OFFSET_
 
+ALIGN_MACRO
 PROC    R_DrawColumn24Normal_ FAR
 PUBLIC  R_DrawColumn24Normal_
 
@@ -324,7 +334,11 @@ MARKER_SM_COLFUNC_jump_offset24_:
 PUBLIC MARKER_SM_COLFUNC_jump_offset24_
 
    jmp loop_done         ; relative jump to be modified before function is called
+; currently ODD
+MARKER_SM_COL24_AFTER_JUMP_3:
+PUBLIC MARKER_SM_COL24_AFTER_JUMP_3
 
+xchg  ax, ax  ; pad even, made up for in jmp lookup
 
 
    ;; 12 bytes loop iter
@@ -378,6 +392,7 @@ ALIGN 16
 MARKER_COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET_:
 PUBLIC MARKER_COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET_
 
+ALIGN_MACRO
 PROC    R_DrawColumn24NormalStretch_ FAR
 PUBLIC  R_DrawColumn24NormalStretch_
 
@@ -424,7 +439,11 @@ MARKER_SM_COLFUNC_jump_offset24_normalstretch_:
 PUBLIC MARKER_SM_COLFUNC_jump_offset24_normalstretch_
 
    jmp loop_done_normalstretch         ; relative jump to be modified before function is called
+; currently ODD
+MARKER_SM_COL24_AFTER_JUMP_4:
+PUBLIC MARKER_SM_COL24_AFTER_JUMP_4
 
+xchg  ax, ax  ; pad even, made up for in jmp lookup
 
    ;; 12 bytes loop iter
 
