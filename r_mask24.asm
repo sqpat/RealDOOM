@@ -5223,15 +5223,15 @@ ENDP
 loop_below_zero_subtractor_masked:
 ;	textotal += subtractor; // add the last's total.
 
-add       di, ax
+add       bx, ax
 jmp       done_with_loop_check_subtractor_MASKED
 ALIGN_MACRO
 lump_below_zero_masked:
 
 ;	maskedcachedbasecol = runningbasetotal - textotal;
 
-mov       bx, dx
-sub       bx, di
+mov       di, dx
+sub       di, bx
 jmp       done_with_loop_check_masked
 ALIGN_MACRO
 
@@ -5275,39 +5275,38 @@ sal       di, 1
 
 ;	texturecolumnlump = &(texturecolumnlumps_bytes_7000[texturepatchlump_offset[tex]]);
 
-mov       bx, word ptr ds:[di + _texturepatchlump_offset]
-sal       bx, 1 ; bx is  texturecolumnlump ptr
+mov       si, word ptr ds:[di + _texturepatchlump_offset]
+sal       si, 1 ; si is  texturecolumnlump ptr
 
 ;	loopwidth = texturecolumnlump[1].bu.bytehigh;
 
 
 mov       ax, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
-mov       es, ax
-mov       al, byte ptr es:[bx + TEXTURECOLUMNLUMP_T.texturecolumnlump_loopwidth]
-xor       ah, ah
-push      ax  ; bp - 6 ; loopwidth
-
+mov       ds, ax
+xor       ax, ax
+mov       al, byte ptr ds:[si + TEXTURECOLUMNLUMP_T.texturecolumnlump_loopwidth]
+push      ax  ; bp - 6 ; loopwidth ; todo is this always equivalent to maskedtexrepeat
 
 test      al, al
 je       loopwidth_zero_masked
 
 loopwidth_nonzero_masked:
-; di is tex shifted left 1?
-; es:bx is texcollump
+; di is free to use
+; es:si is texcollump
 
 
 ;	lump = texturecolumnlump[0].h;
 ;    maskedcachedbasecol  = basecol;
 ;    maskedtexrepeat	 	 = loopwidth;
 
-mov       si, word ptr es:[bx + TEXTURECOLUMNLUMP_T.texturecolumnlump_lump]
-mov       word ptr ds:[_maskedcachedbasecol], dx ; basecol
-mov       word ptr ds:[_maskedtexrepeat], ax  ; loopwidth
+mov       di, word ptr ds:[si + TEXTURECOLUMNLUMP_T.texturecolumnlump_lump]
+mov       word ptr ss:[_maskedcachedbasecol], dx ; basecol
+mov       word ptr ss:[_maskedtexrepeat], ax  ; loopwidth
 jmp       done_with_loopwidth_masked
 
 ALIGN_MACRO
 loopwidth_zero_masked:
-xor       di, di   ; textotal
+xor       bx, bx   ; textotal
 
 ;		uint8_t startpixel;
 ;		int16_t subtractor;
@@ -5316,15 +5315,16 @@ xor       di, di   ; textotal
 ;		int16_t n = 0;
 
 
-push      dx  ; bp - 8, basecol
+mov        es, dx
 
+; es is basecol
 ; ax is subtractor      
-; bx is loop iter        
+; si is loop iter        
 ; cx is col 
 ; dx is runningbasetotal
 ; bp - 4 is texcol
-; si is lump
-; di is textotal
+; di is lump
+; bx is textotal
 
 
 ;    while (col >= 0) {
@@ -5340,6 +5340,7 @@ push      dx  ; bp - 8, basecol
 ;        n += 2;
 ;    }
 
+
 ;    while (col >= 0) {
 test      cx, cx
 jl        done_with_subtractor_loop_masked
@@ -5348,20 +5349,23 @@ do_next_subtractor_loop_masked:
 
 ;			subtractor = texturecolumnlump[n+1].bu.bytelow + 1;
 
-;todo lodsw and swap bx/si
-xor       ax, ax
-mov       al, byte ptr es:[bx + 2 + TEXTURECOLUMNLUMP_T.texturecolumnlump_subtractor]
+
+
+; ah should be 0
+lodsw     ; ax gets lump
+xchg      ax, di  ; di gets lump
+lodsw     ; al gets subtractor
+xor       ah, ah
 inc       ax                     ; subtractor = texturecolumnlump[n+1].bu.bytelow + 1;
-mov       si, word ptr es:[bx] + TEXTURECOLUMNLUMP_T.texturecolumnlump_lump   ; lump = texturecolumnlump[n].h;
 add       dx, ax                 ; runningbasetotal += subtractor;
 sub       cx, ax                 ; col -= subtractor;
-test      si, si
+test      di, di
 jnge      loop_below_zero_subtractor_masked
 
 ;				texcol -= subtractor; // is this correct or does it have to be bytelow direct?
 sub       byte ptr [bp - 4], al
 done_with_loop_check_subtractor_MASKED:
-add       bx, SIZE TEXTURECOLUMNLUMP_T
+
 test      cx, cx
 jge       do_next_subtractor_loop_masked
 done_with_subtractor_loop_masked:
@@ -5370,25 +5374,29 @@ done_with_subtractor_loop_masked:
 
 mov       word ptr ds:[_maskednextlookup], dx 
 
-test      si, si
+test      di, di
 jng       lump_below_zero_masked
 
 ;    startpixel = texturecolumnlump[n-1].bu.bytehigh;
-mov       bl, byte ptr es:[bx - SIZE TEXTURECOLUMNLUMP_T + TEXTURECOLUMNLUMP_T.texturecolumnlump_loopwidth]  ; startpixel
-xor       bh, bh
+xor       bx, bx
+mov       bl, byte ptr ds:[si - SIZE TEXTURECOLUMNLUMP_T + TEXTURECOLUMNLUMP_T.texturecolumnlump_loopwidth]  ; startpixel
 ;    maskedcachedbasecol = basecol + startpixel;
-add       bx, word ptr [bp - 8]   ; basecol
+mov       si, es ; basecol
+add       bx, si
 done_with_loop_check_masked:
-; undo bp - 8/ basecol
 
-add       sp, 2
+mov       si, ss
+mov       ds, si
 
 ; cx is now col
 ; bx is _maskedcachedbasecol
 ; dx is runningbasetotal
 ; ax is subtractor
-; di is textotal
-; si is lump
+; si is free
+; di is lump
+
+; todo reverse this again
+mov       si, di ; reverse
 
 ;		maskedprevlookup     = runningbasetotal - subtractor;
 mov       word ptr ds:[_maskedcachedbasecol], bx

@@ -65,7 +65,7 @@
 #define R_DrawSpan16CodeSize           0xF60
 #define R_DrawSpan0CodeSize            0x63A
 #define R_DrawSpanFLCodeSize           0x591
-#define R_DrawFuzzColumn24CodeSize     0x17BC
+#define R_DrawFuzzColumn24CodeSize     0x17B8
 #define R_DrawFuzzColumn16CodeSize     0x18E3
 #define R_DrawFuzzColumn0CodeSize      0x184F
 #define R_DrawFuzzColumnFLCodeSize     0x1819
