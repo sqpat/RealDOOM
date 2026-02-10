@@ -3166,7 +3166,7 @@ ret
 
 
 ALIGN_MACRO
-PROC   R_GetSpritePage_ NEAR ; needs a rewrite to better use 8 bit regs etc
+PROC   R_GetSpritePage_ NEAR ; seems more or less ok, maybe can improve a little bit
 PUBLIC R_GetSpritePage_
 ; stack: dont wreck cx... thats it. outer frame eventually takes care of the rest.
 
@@ -4530,8 +4530,8 @@ dec   dx        ; UNCLIPPED_COLUMN, -2
 
 loop_clipping_columns:
 
-; todo: would this be faster with scasw pattern?
-
+; would this be faster with scas pattern?
+; ANSWER: no! tested. 
 ; scan_for_next_instance:
 ; repne scasb
 ; mov   byte ptr ds:[di-1], ah
@@ -5234,6 +5234,7 @@ mov       bx, dx
 sub       bx, di
 jmp       done_with_loop_check_masked
 ALIGN_MACRO
+
 PROC   R_GetMaskedColumnSegment_ NEAR ; could use another look
 PUBLIC R_GetMaskedColumnSegment_
 ;  bp - 2      ; tex (orig ax)
@@ -5241,11 +5242,13 @@ PUBLIC R_GetMaskedColumnSegment_
 ;  bp - 6      ; loopwidth
 ;  bp - 8      ; basecol
 
-push      bx
-push      cx
+; di, dx ok to clobber
+; bx ok to clobber. mayeb cx
+; probably not si or bp
+
 push      si
-push      di
 push      bp
+
 mov       bp, sp
 push      ax        ; tex bp - 2
 xchg      ax, di
@@ -5260,7 +5263,7 @@ mov       ax, TEXTUREWIDTHMASKS_SEGMENT
 mov       es, ax
 xor       dh, dh
 mov       cx, dx
-and       cl, byte ptr es:[di] ; di is tex
+and       cl, byte ptr es:[di] ; and by mask 
 
 ;	basecol -= col;
 sub       dx, cx
@@ -5280,7 +5283,7 @@ sal       bx, 1 ; bx is  texturecolumnlump ptr
 
 mov       ax, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
 mov       es, ax
-mov       al, byte ptr es:[bx + 3]
+mov       al, byte ptr es:[bx + TEXTURECOLUMNLUMP_T.texturecolumnlump_loopwidth]
 xor       ah, ah
 push      ax  ; bp - 6 ; loopwidth
 
@@ -5297,10 +5300,11 @@ loopwidth_nonzero_masked:
 ;    maskedcachedbasecol  = basecol;
 ;    maskedtexrepeat	 	 = loopwidth;
 
-mov       si, word ptr es:[bx]
+mov       si, word ptr es:[bx + TEXTURECOLUMNLUMP_T.texturecolumnlump_lump]
 mov       word ptr ds:[_maskedcachedbasecol], dx ; basecol
 mov       word ptr ds:[_maskedtexrepeat], ax  ; loopwidth
 jmp       done_with_loopwidth_masked
+
 ALIGN_MACRO
 loopwidth_zero_masked:
 xor       di, di   ; textotal
@@ -5346,9 +5350,9 @@ do_next_subtractor_loop_masked:
 
 ;todo lodsw and swap bx/si
 xor       ax, ax
-mov       al, byte ptr es:[bx + 2]
+mov       al, byte ptr es:[bx + 2 + TEXTURECOLUMNLUMP_T.texturecolumnlump_subtractor]
 inc       ax                     ; subtractor = texturecolumnlump[n+1].bu.bytelow + 1;
-mov       si, word ptr es:[bx]   ; lump = texturecolumnlump[n].h;
+mov       si, word ptr es:[bx] + TEXTURECOLUMNLUMP_T.texturecolumnlump_lump   ; lump = texturecolumnlump[n].h;
 add       dx, ax                 ; runningbasetotal += subtractor;
 sub       cx, ax                 ; col -= subtractor;
 test      si, si
@@ -5357,7 +5361,7 @@ jnge      loop_below_zero_subtractor_masked
 ;				texcol -= subtractor; // is this correct or does it have to be bytelow direct?
 sub       byte ptr [bp - 4], al
 done_with_loop_check_subtractor_MASKED:
-add       bx, 4
+add       bx, SIZE TEXTURECOLUMNLUMP_T
 test      cx, cx
 jge       do_next_subtractor_loop_masked
 done_with_subtractor_loop_masked:
@@ -5370,14 +5374,14 @@ test      si, si
 jng       lump_below_zero_masked
 
 ;    startpixel = texturecolumnlump[n-1].bu.bytehigh;
-mov       bl, byte ptr es:[bx - 1]  ; startpixel
+mov       bl, byte ptr es:[bx - SIZE TEXTURECOLUMNLUMP_T + TEXTURECOLUMNLUMP_T.texturecolumnlump_loopwidth]  ; startpixel
 xor       bh, bh
 ;    maskedcachedbasecol = basecol + startpixel;
 add       bx, word ptr [bp - 8]   ; basecol
 done_with_loop_check_masked:
 ; undo bp - 8/ basecol
-inc       sp
-inc       sp
+
+add       sp, 2
 
 ; cx is now col
 ; bx is _maskedcachedbasecol
@@ -5555,10 +5559,7 @@ mov       byte ptr ds:[_maskedheightvalcache], al
 mul       cl
 add       ax, word ptr ds:[_maskedcachedsegment]
 LEAVE_MACRO     
-pop       di
 pop       si
-pop       cx
-pop       bx
 ret  
 ALIGN_MACRO
 is_masked:
@@ -5584,10 +5585,7 @@ add       bx, cx
 mov       ax, word ptr ds:[_maskedcachedsegment]
 add       ax, word ptr es:[bx]
 LEAVE_MACRO     
-pop       di
 pop       si
-pop       cx
-pop       bx
 ret      
 ALIGN_MACRO
 
@@ -5681,10 +5679,7 @@ mov       al, byte ptr ds:[_cachedcollength] ; cachedcollength
 mul       byte ptr [bp - 4]
 add       ax, dx
 LEAVE_MACRO     
-pop       di
 pop       si
-pop       cx
-pop       bx
 ret      
 ALIGN_MACRO
 do_cache_tex_miss_masked:

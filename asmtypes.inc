@@ -920,6 +920,12 @@ CACHE_NODE_T STRUC
     cachenode_next       db ? ; 1
 CACHE_NODE_T ENDS
 
+TEXTURECOLUMNLUMP_T STRUC
+    texturecolumnlump_lump          dw ? ; 0
+    texturecolumnlump_subtractor    db ? ; 2
+    texturecolumnlump_loopwidth     db ? ; 3
+TEXTURECOLUMNLUMP_T ENDS
+
 
 SFXINFO_T STRUC
     sfxinfo_lumpandflags    dw ? ; 0
