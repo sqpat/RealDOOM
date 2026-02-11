@@ -2030,8 +2030,8 @@ mov   word ptr ds:[_mceilingclip], 01000h
 
 SELFMODIFY_MASKED_fixedcolormap_2:
 jmp fixed_colormap		; jump when fixedcolormap is not 0. 3 byte (word) jump!!!
-ALIGN_MACRO
 SELFMODIFY_MASKED_fixedcolormap_2_AFTER:
+;ALIGN_MACRO
 colormap_set:
 
 ; set up main outer loop
@@ -2476,8 +2476,8 @@ mov   ax, bx
 ;	if (lookup != 0xFF){
 SELFMODIFY_MASKED_lookup_2:
 jmp    lookup_FF_repeat
-ALIGN_MACRO
 SELFMODIFY_MASKED_lookup_2_AFTER:
+;ALIGN_MACRO
 
 ;if (maskedheaderpixeolfs != 0xFFFF){
 
@@ -2561,8 +2561,8 @@ sub   ax, di
 ;	if (lookup != 0xFF){
 SELFMODIFY_MASKED_lookup_1:  
 jmp   lookup_FF
-ALIGN_MACRO
 SELFMODIFY_MASKED_lookup_1_AFTER:
+;ALIGN_MACRO
 
 ; lookup NOT ff.
 
