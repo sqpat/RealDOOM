@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/09 22:43:40
+Created on:       26/02/10 18:27:06
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -35,7 +35,7 @@ SM_OPL2_TEXT           CODE           AUTO           0533:0000       00000f3c
 SM_OPL3_TEXT           CODE           AUTO           0627:0000       0000100e
 SM_SBMID_TEXT          CODE           AUTO           0728:0000       00000730
 SM_MPUMD_TEXT          CODE           AUTO           079b:0000       000007db
-R_BSP_24_TEXT          CODE           AUTO           0819:0000       0000345d
+R_BSP_24_TEXT          CODE           AUTO           0819:0000       0000345b
 R_BSP_16_TEXT          CODE           AUTO           0b5f:0000       00003740
 R_BSP0_TEXT            CODE           AUTO           0ed3:0000       0000366f
 R_BSPFL_TEXT           CODE           AUTO           123a:0000       00003617
@@ -49,7 +49,7 @@ R_SPAN0_TEXT           CODE           AUTO           1b98:0000       0000063a
 R_SPANFL_TEXT          CODE           AUTO           1bfc:0000       00000591
 R_SKY_TEXT             CODE           AUTO           1c56:0000       00000d86
 R_SKYFL_TEXT           CODE           AUTO           1d2f:0000       00000303
-R_MASK24_TEXT          CODE           AUTO           1d60:0000       00001901
+R_MASK24_TEXT          CODE           AUTO           1d60:0000       00001907
 R_MASK16_TEXT          CODE           AUTO           1ef1:0000       000019ce
 R_MASK0_TEXT           CODE           AUTO           208e:0000       0000193a
 R_MASKFL_TEXT          CODE           AUTO           2222:0000       00001904
@@ -340,9 +340,9 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079b:0000      SM_MPUMD_STARTMARKER_
 079b:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-0819:3102      R_WriteBackViewConstants24_
+0819:3100      R_WriteBackViewConstants24_
 0819:1eb9*     R_AddLine_
-0819:345d      R_BSP24_ENDMARKER_
+0819:345b      R_BSP24_ENDMARKER_
 0819:2bca      R_GetPatchTexture_Far24_
 0819:075a*     FixedMulTrigNoShiftSine_BSPLocal_
 0819:0756*     FixedMulTrigSine_BSPLocal_
@@ -352,11 +352,11 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:1dd4*     R_Subsector_
 0819:1974*     do_top_texture_draw
 0819:0000      R_BSP24_STARTMARKER_
-0819:2f7c      R_RenderPlayerView24_
+0819:2f7a      R_RenderPlayerView24_
 0819:0706*     FixedDivBSPLocal_
 0819:033a*     div48_32_BSPLocal_
 0819:2a70*     R_GetTexturePage_
-0819:32a4*     R_WriteBackFrameConstants_
+0819:32a2*     R_WriteBackFrameConstants_
 0819:07a7*     FixedMulTrigNoShiftCosine_BSPLocal_
 0819:07f3*     R_ClearPlanes_
 0819:17a8*     main_3232_div
@@ -480,24 +480,24 @@ Module: r_skyfl.obj(r_skyfl.ASM)
 1d2f:0000      R_SKYFL_STARTMARKER_
 1d2f:0294      R_DrawSkyPlaneFL_
 Module: r_mask24.obj(r_mask24.ASM)
-1d60:101c*     FastDiv3232FFFF_
+1d60:101a*     FastDiv3232FFFF_
 1d60:00bc*     FixedMulMaskedLocal_
-1d60:10c8*     R_PointOnSegSide_
+1d60:10c6*     R_PointOnSegSide_
 1d60:0000*     _pagesegments
 1d60:0012*     _fuzzoffset
-1d60:17b8      R_WriteBackViewConstantsMasked24_
-1d60:0caa*     R_EvictL2CacheEMSPage_Sprite_
+1d60:17be      R_WriteBackViewConstantsMasked24_
+1d60:0ca8*     R_EvictL2CacheEMSPage_Sprite_
 1d60:019c*     R_DrawMaskedSpriteShadow_
-1d60:1894      R_WriteBackMaskedFrameConstants24_
-1d60:15c8*     R_GetMaskedColumnSegment_
-1d60:0d42*     R_MarkL2SpriteCacheMRU_
-1d60:11a8      R_DrawMasked24_
+1d60:189a      R_WriteBackMaskedFrameConstants24_
+1d60:15c6*     R_GetMaskedColumnSegment_
+1d60:0d40*     R_MarkL2SpriteCacheMRU_
+1d60:11a6      R_DrawMasked24_
 1d60:00ea*     R_DrawSingleMaskedColumn_
-1d60:1286*     R_DrawSprite_
+1d60:1284*     R_DrawSprite_
 1d60:0360*     R_DrawVisSprite_
-1d60:1901      R_MASK24_ENDMARKER_
-1d60:14be*     R_DrawMaskedColumn_
-1d60:0e42*     R_GetSpritePage_
+1d60:1907      R_MASK24_ENDMARKER_
+1d60:14bc*     R_DrawMaskedColumn_
+1d60:0e40*     R_GetSpritePage_
 1d60:07b2*     R_RenderMaskedSegRange_
 1d60:0000      R_MASK24_STARTMARKER_
 Module: r_mask16.obj(r_mask16.ASM)
@@ -616,8 +616,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 23b3:54bb*     A_PainDie_
 23b3:51d6*     A_VileTarget_
 23b3:45fd*     P_LookForPlayers_
-23b3:584f*     A_BrainExplode_
 23b3:58c5*     A_BrainSpit_
+23b3:584f*     A_BrainExplode_
 23b3:4322*     P_Move_
 23b3:5132*     A_VileStart_
 23b3:513f*     A_FireCrackle_
@@ -1477,4 +1477,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003d8f0 (252144.)
 Entry point address: 2f45:7cee
-Link time: 00:00.04
+Link time: 00:00.05

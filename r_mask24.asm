@@ -2030,8 +2030,8 @@ mov   word ptr ds:[_mceilingclip], 01000h
 
 SELFMODIFY_MASKED_fixedcolormap_2:
 jmp fixed_colormap		; jump when fixedcolormap is not 0. 3 byte (word) jump!!!
-ALIGN_MACRO
 SELFMODIFY_MASKED_fixedcolormap_2_AFTER:
+;ALIGN_MACRO
 colormap_set:
 
 ; set up main outer loop
@@ -2476,8 +2476,8 @@ mov   ax, bx
 ;	if (lookup != 0xFF){
 SELFMODIFY_MASKED_lookup_2:
 jmp    lookup_FF_repeat
-ALIGN_MACRO
 SELFMODIFY_MASKED_lookup_2_AFTER:
+;ALIGN_MACRO
 
 ;if (maskedheaderpixeolfs != 0xFFFF){
 
@@ -2561,8 +2561,8 @@ sub   ax, di
 ;	if (lookup != 0xFF){
 SELFMODIFY_MASKED_lookup_1:  
 jmp   lookup_FF
-ALIGN_MACRO
 SELFMODIFY_MASKED_lookup_1_AFTER:
+;ALIGN_MACRO
 
 ; lookup NOT ff.
 
@@ -5229,9 +5229,9 @@ ALIGN_MACRO
 lump_below_zero_masked:
 
 ;	maskedcachedbasecol = runningbasetotal - textotal;
-
-mov       di, dx
-sub       di, bx
+; bx to become maskedcachedbasecol, currently is  is textotal, dx is running base total.
+neg       bx
+add       bx, dx
 jmp       done_with_loop_check_masked
 ALIGN_MACRO
 
@@ -5288,20 +5288,23 @@ mov       al, byte ptr ds:[si + TEXTURECOLUMNLUMP_T.texturecolumnlump_loopwidth]
 push      ax  ; bp - 6 ; loopwidth ; todo is this always equivalent to maskedtexrepeat
 
 test      al, al
-je       loopwidth_zero_masked
+je        loopwidth_zero_masked
 
 loopwidth_nonzero_masked:
 ; di is free to use
-; es:si is texcollump
+; ds:si is texcollump
 
 
 ;	lump = texturecolumnlump[0].h;
 ;    maskedcachedbasecol  = basecol;
 ;    maskedtexrepeat	 	 = loopwidth;
 
-mov       di, word ptr ds:[si + TEXTURECOLUMNLUMP_T.texturecolumnlump_lump]
-mov       word ptr ss:[_maskedcachedbasecol], dx ; basecol
 mov       word ptr ss:[_maskedtexrepeat], ax  ; loopwidth
+lodsw       ; mov       ax, word ptr ds:[si + TEXTURECOLUMNLUMP_T.texturecolumnlump_lump]
+xchg      ax, si
+mov       ax, ss
+mov       ds, ax
+mov       word ptr ds:[_maskedcachedbasecol], dx ; basecol
 jmp       done_with_loopwidth_masked
 
 ALIGN_MACRO
@@ -5360,13 +5363,13 @@ inc       ax                     ; subtractor = texturecolumnlump[n+1].bu.bytelo
 add       dx, ax                 ; runningbasetotal += subtractor;
 sub       cx, ax                 ; col -= subtractor;
 test      di, di
-jnge      loop_below_zero_subtractor_masked
+js        loop_below_zero_subtractor_masked
 
 ;				texcol -= subtractor; // is this correct or does it have to be bytelow direct?
 sub       byte ptr [bp - 4], al
 done_with_loop_check_subtractor_MASKED:
 
-test      cx, cx
+test      cx, cx  ; todo change sub order and get this for free
 jge       do_next_subtractor_loop_masked
 done_with_subtractor_loop_masked:
 
@@ -5396,7 +5399,7 @@ mov       ds, si
 ; di is lump
 
 ; todo reverse this again
-mov       si, di ; reverse
+mov       si, di ; reverse. si is lump again
 
 ;		maskedprevlookup     = runningbasetotal - subtractor;
 mov       word ptr ds:[_maskedcachedbasecol], bx
@@ -5404,6 +5407,10 @@ sub       dx, ax
 mov       word ptr ds:[_maskedprevlookup], dx  ;	maskedprevlookup     = runningbasetotal - subtractor;
 mov       word ptr ds:[_maskedtexrepeat], 0
 done_with_loopwidth_masked:
+
+; cx = col
+; si = lump
+; bx = cachelumpindex? needs to be zeroed...
 
 ;	if (lump > 0){
 
@@ -5455,8 +5462,8 @@ lump_greater_than_zero_masked:
 ; di is bp - 2
 
 ;	uint8_t lookup = masked_lookup_7000[tex];
-;mov       ax, MASKED_LOOKUP_SEGMENT
-;mov       es, ax
+mov       ax, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
+mov       es, ax
 mov       dl, byte ptr es:[di + ((MASKED_LOOKUP_SEGMENT - TEXTURECOLUMNLUMPS_BYTES_SEGMENT) * 16)]
 ;mov       ax, PATCHHEIGHTS_SEGMENT
 ;mov       es, ax
@@ -5583,7 +5590,7 @@ mov       bx, word ptr ds:[bx + _masked_headers]    ;    maskedheader->pixelofso
 mov       word ptr ds:[_maskedheaderpixeolfs], bx   ;    maskedheaderpixeolfs = maskedheader->pixelofsoffset;
 
 ;    uint16_t __far* pixelofs   =  MK_FP(maskedpixeldataofs_segment, maskedheader->pixelofsoffset);
-; es:bx is paixelofs
+; es:bx is pixelofs
 
 ;    uint16_t ofs  = pixelofs[col]; // precached as segment value.
 sal       cx, 1  ; col word lookup

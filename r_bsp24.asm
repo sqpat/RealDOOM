@@ -4415,7 +4415,7 @@ mov       ds, ax
 
 SELFMODIFY_jmp_two_sided_or_not:
 jmp       handle_two_sided_line  ; might turn into a jmp 0 to go to handle_single_sided_line
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+
 SELFMODIFY_jmp_two_sided_or_not_AFTER:
 handle_single_sided_line:
 
@@ -4615,7 +4615,7 @@ mov   word ptr cs:[SELFMODIFY_set_ax_rw_offset_hi+1 - OFFSET R_BSP24_STARTMARKER
 
 SELFMODIFY_BSP_fixedcolormap_3:
 jmp SHORT seg_textured_check_done    ; dont check walllights if fixedcolormap
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+
 SELFMODIFY_BSP_fixedcolormap_3_AFTER:
 
 
@@ -4986,7 +4986,7 @@ mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_2+3 - OFFSET R_BSP24_STAR
 
 SELFMODIFY_do_backsector_work_or_not:
 jmp       skip_pixlow_step
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+
 SELFMODIFY_do_backsector_work_or_not_AFTER:
 jmp_to_skip_pixhigh_step:
 jmp skip_pixhigh_step
@@ -5795,13 +5795,9 @@ SELFMODIFY_BSP_markfloor_1_TARGET:
 markfloor_done:
 SELFMODIFY_BSP_get_segtextured:
 jmp SHORT    jump_to_seg_non_textured
-;; ALIGN_MACRO  ; adding these back seems to lower bench scores  ; this crashes 86box?
-
-
-
-
 
 SELFMODIFY_BSP_get_segtextured_AFTER:
+; ALIGN_MACRO  
 seg_is_textured:
 
 ; angle = MOD_FINE_ANGLE (rw_centerangle + xtoviewangle[rw_x]);
@@ -6322,7 +6318,7 @@ SELFMODIFY_BSP_check_seglooptexmodulo0:
 SELFMODIFY_BSP_set_seglooptexrepeat0:
 ; 3 bytes. May become one of two jumps (two bytes) or mov ax, imm16 (three bytes)
 jmp    non_repeating_texture0
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+
 SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER:
 SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER:
 xchg  ax, ax                    ; one byte nop placeholder. this gets the ah value in mov ax, xxxx (byte 3)
@@ -6496,8 +6492,8 @@ no_top_texture_draw:
 ; bx is already rw_x << 1
 SELFMODIFY_BSP_markceiling_2:
 jmp SHORT   check_bottom_texture
-ALIGN_MACRO
 SELFMODIFY_BSP_markceiling_2_AFTER:
+
 ; bx is already rw_x << 1
 mark_ceiling_si:
 ; bx is already rw_x << 1
@@ -6600,10 +6596,10 @@ SELFMODIFY_BSP_check_seglooptexmodulo1:
 SELFMODIFY_BSP_set_seglooptexrepeat1:
 ; 3 bytes. May become one of two jumps (two bytes) or mov ax, imm16 (three bytes)
 jmp SHORT non_repeating_texture1
-ALIGN_MACRO
 
 SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER:
 SELFMODIFY_BSP_check_seglooptexmodulo1_AFTER:
+;ALIGN_MACRO
 xchg  ax, ax                    ; one byte nop placeholder. this gets the ah value in mov ax, xxxx (byte 3)
 and   dl, ah   ; ah has loopwidth-1 (modulo )
 mul   dl       ; al has heightval
@@ -7318,7 +7314,7 @@ SELFMODIFY_has_midtexture_or_not:
 jne       side_has_midtexture   ; become xor ax, ax if nomidtex ,or jmp.
 SELFMODIFY_has_midtexture_or_not_AFTER:
 jmp       done_with_sector_sided_check
-ALIGN_MACRO
+;ALIGN_MACRO
 SELFMODIFY_has_midtexture_or_not_TARGET:
 side_has_midtexture:
 
@@ -8852,8 +8848,8 @@ jne   mark_shadow_draw
 
 SELFMODIFY_BSP_fixedcolormap_4:
 jmp   use_fixedcolormap
-ALIGN_MACRO
 SELFMODIFY_BSP_fixedcolormap_4_AFTER:
+;ALIGN_MACRO
 test  byte ptr [bp - 2], FF_FULLBRIGHT
 je    set_vis_colormap
 SELFMODIFY_BSP_fixedcolormap_4_TARGET:
@@ -11662,8 +11658,8 @@ inc       si
 ;cmp       byte ptr [bp - 2], 0
 SELFMODIFY_loadpatchcolumn_masked_check1:
 jmp       SHORT       skip_segment_alignment_1
-ALIGN_MACRO
 SELFMODIFY_loadpatchcolumn_masked_check1_AFTER:
+;ALIGN_MACRO
 ; ah is 0
 ; adjust col offset
 
@@ -11680,8 +11676,8 @@ done_with_column:
 ;cmp       byte ptr [bp - 2], 0
 SELFMODIFY_loadpatchcolumn_masked_check2:
 jmp       SHORT       skip_segment_alignment_2
-ALIGN_MACRO
 SELFMODIFY_loadpatchcolumn_masked_check2_AFTER:
+;ALIGN_MACRO
 ; adjust col offset
 
 sub       di, dx
