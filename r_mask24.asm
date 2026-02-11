@@ -769,6 +769,7 @@ rcr   ax, 1
 
 mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], dl
+
 test  dl, dl
 je    is_stretch_draw ; from dl
 not_stretch_draw:
@@ -2450,6 +2451,20 @@ call  FastDiv3232FFFF_   ; todo inline?
 mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], dl
 
+test  dl, dl
+je    is_stretch_draw_2 ; from dl
+not_stretch_draw_2:
+mov   dx, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1
+mov   bx, DRAWCOL_NOLOOP_OFFSET_MASKED
+jmp   continue_selfmodifies_maskedsegrange
+ALIGN_MACRO
+is_stretch_draw_2:
+mov   dx, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOPANDSTRETCH_OFFSET+1
+mov   bx, DRAWCOL_NOLOOPSTRETCH_OFFSET_MASKED
+
+continue_selfmodifies_maskedsegrange:
+mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset], bx
+mov   word ptr cs:[SELFMODIFY_masked_set_jump_write_offset+1 - OFFSET R_MASK24_STARTMARKER_], dx
 
 mov   bx, si  ; bx gets a copy of texture column?
 ;  ax stores _maskedtexrepeat for a little bit
