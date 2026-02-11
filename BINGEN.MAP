@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/10 20:42:32
+Created on:       26/02/10 22:04:18
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -49,7 +49,7 @@ R_SPAN0_TEXT           CODE           AUTO           1b98:0000       0000063a
 R_SPANFL_TEXT          CODE           AUTO           1bfc:0000       00000591
 R_SKY_TEXT             CODE           AUTO           1c56:0000       00000d86
 R_SKYFL_TEXT           CODE           AUTO           1d2f:0000       00000303
-R_MASK24_TEXT          CODE           AUTO           1d60:0000       0000191b
+R_MASK24_TEXT          CODE           AUTO           1d60:0000       00001919
 R_MASK16_TEXT          CODE           AUTO           1ef2:0000       000019ce
 R_MASK0_TEXT           CODE           AUTO           208f:0000       0000193a
 R_MASKFL_TEXT          CODE           AUTO           2223:0000       00001904
@@ -143,8 +143,8 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 004a:08bb*     WI_initStats_
 004a:03e7*     WI_slamBackground_
 004a:0cfb*     WI_updateNoState_
-004a:0dff*     WI_initVariables_
 004a:073d*     WI_drawPercent_
+004a:0dff*     WI_initVariables_
 004a:0d59      WI_Ticker_
 004a:0000      WI_STARTMARKER_
 004a:03cf*     WI_MRandomLocal_
@@ -480,24 +480,24 @@ Module: r_skyfl.obj(r_skyfl.ASM)
 1d2f:0000      R_SKYFL_STARTMARKER_
 1d2f:0294      R_DrawSkyPlaneFL_
 Module: r_mask24.obj(r_mask24.ASM)
-1d60:1036*     FastDiv3232FFFF_
+1d60:1034*     FastDiv3232FFFF_
 1d60:00bc*     FixedMulMaskedLocal_
-1d60:10e2*     R_PointOnSegSide_
+1d60:10e0*     R_PointOnSegSide_
 1d60:0000*     _pagesegments
 1d60:0012*     _fuzzoffset
-1d60:17d2      R_WriteBackViewConstantsMasked24_
-1d60:0cc4*     R_EvictL2CacheEMSPage_Sprite_
+1d60:17d0      R_WriteBackViewConstantsMasked24_
+1d60:0cc2*     R_EvictL2CacheEMSPage_Sprite_
 1d60:019c*     R_DrawMaskedSpriteShadow_
-1d60:18ae      R_WriteBackMaskedFrameConstants24_
-1d60:15e2*     R_GetMaskedColumnSegment_
-1d60:0d5c*     R_MarkL2SpriteCacheMRU_
-1d60:11c2      R_DrawMasked24_
+1d60:18ac      R_WriteBackMaskedFrameConstants24_
+1d60:15e0*     R_GetMaskedColumnSegment_
+1d60:0d5a*     R_MarkL2SpriteCacheMRU_
+1d60:11c0      R_DrawMasked24_
 1d60:00ea*     R_DrawSingleMaskedColumn_
-1d60:12a0*     R_DrawSprite_
+1d60:129e*     R_DrawSprite_
 1d60:0360*     R_DrawVisSprite_
-1d60:191b      R_MASK24_ENDMARKER_
-1d60:14d8*     R_DrawMaskedColumn_
-1d60:0e5c*     R_GetSpritePage_
+1d60:1919      R_MASK24_ENDMARKER_
+1d60:14d6*     R_DrawMaskedColumn_
+1d60:0e5a*     R_GetSpritePage_
 1d60:07b2*     R_RenderMaskedSegRange_
 1d60:0000      R_MASK24_STARTMARKER_
 Module: r_mask16.obj(r_mask16.ASM)
@@ -616,8 +616,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 23b4:54bb*     A_PainDie_
 23b4:51d6*     A_VileTarget_
 23b4:45fd*     P_LookForPlayers_
-23b4:58c5*     A_BrainSpit_
 23b4:584f*     A_BrainExplode_
+23b4:58c5*     A_BrainSpit_
 23b4:4322*     P_Move_
 23b4:5132*     A_VileStart_
 23b4:513f*     A_FireCrackle_
@@ -640,8 +640,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 23b4:4795*     A_Metal_
 23b4:5ade      P_SetMobjState_
 23b4:446e*     P_TryWalk_
-23b4:4c01*     A_HeadAttack_
 23b4:57cb*     A_BrainScream_
+23b4:4c01*     A_HeadAttack_
 23b4:562a*     A_Pain_
 23b4:4ed0*     PIT_VileCheck_
 23b4:56a1*     A_BossDeath_
@@ -1070,8 +1070,8 @@ Module: main.obj(main.ASM)
 2f46:56ce*     I_UpdateBox_
 2f46:59b4*     locallib_printstringnear_
 2f46:5b5e      _SELFMODIFY_R_RENDERPLAYERVIEW_CALL
-2f46:54fd      _defaults
 2f46:5e1c*     D_DoomLoop_
+2f46:54fd      _defaults
 2f46:4cd6*     D_MAIN_STARTMARKER_
 2f46:58d4*     locallib_printhex_
 2f46:4d69*     BASE_CHEAT_ADDRESS

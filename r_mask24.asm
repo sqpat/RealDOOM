@@ -2160,16 +2160,16 @@ sbb   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_hi+1 - OFFSET R_MASK24_ST
 
 
 dec   di
-jne   loop_dec_base4diff
+jne   loop_dec_base4diff    ; if xoffset < detailshiftitercount exit loop
 base4diff_is_zero_rendermaskedsegrange:
 
-
-mov   di, 0		; x_offset. 
-
+; di is 0
 
 
 
-; if xoffset < detailshiftitercount exit loop
+
+
+
 
 
 continue_outer_loop:
@@ -2211,7 +2211,7 @@ jge   calculate_sprtopscreen
 ;	spryscale.w += rw_scalestep_shift;
 
 SELFMODIFY_MASKED_detailshiftitercount_9:
-add   bx, 01000h
+add   bx, 00000h
 SELFMODIFY_MASKED_rw_scalestep_shift_lo_1:
 add   ax, 01000h
 SELFMODIFY_MASKED_rw_scalestep_shift_hi_1:
@@ -2322,7 +2322,7 @@ inc   dx
 jz    do_16_bit_mul_after_all
 dec   dx
 do_32_bit_mul_after_all:
-
+mov   cx, si
 ;call FixedMulMaskedLocal_  ; inlined
 
 
