@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/10 22:04:18
+Created on:       26/02/10 22:52:51
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -83,7 +83,7 @@ S_SOUND_TEXT           CODE           AUTO           23b4:b3fa       00000525
 D_INIT_TEXT            CODE           AUTO           2f46:0000       00000cc5
 S_INIT_TEXT            CODE           AUTO           2f46:0cc6       0000055d
 ST_INIT_TEXT           CODE           AUTO           2f46:1224       00000207
-R_INIT_TEXT            CODE           AUTO           2f46:142c       000007bd
+R_INIT_TEXT            CODE           AUTO           2f46:142c       000007be
 W_INIT_TEXT            CODE           AUTO           2f46:1bea       0000016e
 I_INIT_TEXT            CODE           AUTO           2f46:1d58       000001e4
 Z_INIT_TEXT            CODE           AUTO           2f46:1f3c       0000081a
@@ -961,10 +961,10 @@ Module: st_init.obj(st_init.ASM)
 2f46:142b*     ST_INIT_ENDMARKER_
 2f46:12cc      ST_Init_
 Module: r_init.obj(r_init.ASM)
-2f46:1795*     R_InitTextures_
-2f46:1a1f      R_Init_
+2f46:1796*     R_InitTextures_
+2f46:1a20      R_Init_
 2f46:14b6*     R_GenerateLookup_
-2f46:1ba7*     W_CacheLumpNumDirectSmall_
+2f46:1ba8*     W_CacheLumpNumDirectSmall_
 Module: w_init.obj(w_init.ASM)
 2f46:1bea*     W_INIT_STARTMARKER_
 2f46:1d58*     W_INIT_ENDMARKER_
@@ -1477,4 +1477,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003d900 (252160.)
 Entry point address: 2f46:7cee
-Link time: 00:00.04
+Link time: 00:00.05

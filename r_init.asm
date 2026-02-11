@@ -111,8 +111,6 @@ SPRITEPOSTDATASIZES_OFFSET =  (SPRITEPOSTDATASIZES_SEGMENT - SPRITEOFFSETS_SEGME
 
 MASKEDPOSTDATAOFS_OFFSET = (MASKEDPOSTDATAOFS_SEGMENT - MASKEDPOSTDATA_SEGMENT) SHL 4
 MASKEDPIXELDATAOFS_OFFSET = (MASKEDPIXELDATAOFS_SEGMENT - MASKEDPOSTDATA_SEGMENT) SHL 4
-; dangerous offset
-MASKED_LOOKUP_OFFSET = (MASKED_LOOKUP_SEGMENT - MASKEDPOSTDATA_SEGMENT) SHL 4
 
 TEXTUREDEFS_OFFSET_OFFSET = (TEXTUREDEFS_OFFSET_SEGMENT - TEXTUREDEFS_BYTES_SEGMENT) SHL 4
 
@@ -493,15 +491,18 @@ push      ds    ; store SCRATCH_PAGE_SEGMENT_7000 for ds later  [MATCH F]
 push      ss
 pop       ds    ; ds back to normal
 
-mov       ax, MASKEDPOSTDATA_SEGMENT
+mov       ax, MASKED_LOOKUP_SEGMENT
 mov       es, ax
+
+mov       ax, MASKEDPOSTDATA_SEGMENT
 push      ax  ; store MASKEDPOSTDATA_SEGMENT [MATCH D]
 SELFMODIFY_get_texnum:
 mov       di, 01000h  ; texnum
 SELFMODIFY_get_maskedcount:
 mov       al, 00h;
 cbw
-mov       byte ptr es:[di + MASKED_LOOKUP_OFFSET], al ;		masked_lookup[texnum] = maskedcount;	// index to lookup of struct...
+
+mov       byte ptr es:[di], al ;		masked_lookup[texnum] = maskedcount;	// index to lookup of struct...
 xchg      ax, di
 
 SHIFT_MACRO  shl di 3
