@@ -5238,9 +5238,8 @@ ALIGN_MACRO
 PROC   R_GetMaskedColumnSegment_ NEAR ; could use another look
 PUBLIC R_GetMaskedColumnSegment_
 ;  bp - 2      ; tex (orig ax)
-;  bp - 4      ; texcol. maybe ok to remain here.
-;  bp - 6      ; loopwidth
-;  bp - 8      ; basecol
+;  cl generally stores texcol texcol
+
 
 ; di, dx ok to clobber
 ; bx ok to clobber. mayeb cx
@@ -5249,7 +5248,6 @@ PUBLIC R_GetMaskedColumnSegment_
 push      si
 push      bp
 
-mov       bp, sp
 push      ax        ; tex bp - 2
 xchg      ax, di
 ;	maskedheaderpixeolfs = 0xFFFF;
@@ -5269,7 +5267,7 @@ and       cl, byte ptr es:[di] ; and by mask
 sub       dx, cx
 
 ;	texcol = col;
-push      cx  ; bp - 4
+mov       bp, cx ; cl is 'bp - 4'
 
 sal       di, 1
 
@@ -5285,7 +5283,8 @@ mov       ax, TEXTURECOLUMNLUMPS_BYTES_SEGMENT
 mov       ds, ax
 xor       ax, ax
 mov       al, byte ptr ds:[si + TEXTURECOLUMNLUMP_T.texturecolumnlump_loopwidth]
-push      ax  ; bp - 6 ; loopwidth ; todo is this always equivalent to maskedtexrepeat
+mov       word ptr ds:[_maskedtexrepeat], ax  ; always equals loopwidth whether 0 or not?
+
 
 test      al, al
 je        loopwidth_zero_masked
@@ -5323,12 +5322,13 @@ mov        es, dx
 ; es is basecol
 ; ax is subtractor      
 ; si is loop iter        
-; cx is col 
+; bp is col 
 ; dx is runningbasetotal
-; bp - 4 is texcol
+; cx is texcol
 ; di is lump
 ; bx is textotal
 
+mov       bp, cx
 
 ;    while (col >= 0) {
 ;        subtractor = texturecolumnlump[n+1].bu.bytelow + 1;
@@ -5345,7 +5345,7 @@ mov        es, dx
 
 
 ;    while (col >= 0) {
-test      cx, cx
+test      bp, bp
 jl        done_with_subtractor_loop_masked
 
 do_next_subtractor_loop_masked:
@@ -5361,15 +5361,15 @@ lodsw     ; al gets subtractor
 xor       ah, ah
 inc       ax                     ; subtractor = texturecolumnlump[n+1].bu.bytelow + 1;
 add       dx, ax                 ; runningbasetotal += subtractor;
-sub       cx, ax                 ; col -= subtractor;
+sub       bp, ax                 ; col -= subtractor;
 test      di, di
 js        loop_below_zero_subtractor_masked
 
-;				texcol -= subtractor; // is this correct or does it have to be bytelow direct?
-sub       byte ptr [bp - 4], al
+;				texcol -= subtractor; ; todo really consider this. does it have to be plus one? is this the garbage source? is this correct or does it have to be bytelow direct?
+sub       cl, al
 done_with_loop_check_subtractor_MASKED:
 
-test      cx, cx  ; todo change sub order and get this for free
+test      bp, bp
 jge       do_next_subtractor_loop_masked
 done_with_subtractor_loop_masked:
 
@@ -5391,7 +5391,7 @@ done_with_loop_check_masked:
 mov       si, ss
 mov       ds, si
 
-; cx is now col
+; bp is now col
 ; bx is _maskedcachedbasecol
 ; dx is runningbasetotal
 ; ax is subtractor
@@ -5405,7 +5405,6 @@ mov       si, di ; reverse. si is lump again
 mov       word ptr ds:[_maskedcachedbasecol], bx
 sub       dx, ax
 mov       word ptr ds:[_maskedprevlookup], dx  ;	maskedprevlookup     = runningbasetotal - subtractor;
-mov       word ptr ds:[_maskedtexrepeat], 0
 done_with_loopwidth_masked:
 
 ; cx = col
@@ -5414,7 +5413,9 @@ done_with_loopwidth_masked:
 
 ;	if (lump > 0){
 
-mov       di, word ptr [bp - 2]
+pop       di ; bp - 2
+push      di ; restore bp - 2 todo remove
+
 test      si, si
 jg        lump_greater_than_zero_masked
 jmp       no_lump_do_texture
@@ -5510,7 +5511,7 @@ mov       di, dx  ; store the two values in di
 found_cached_lump_masked:   ; di was already dx
 ; di has the 2 values now
 ;	if (col < 0){
-test      cx, cx
+test      bp, bp
 
 
 
@@ -5540,7 +5541,9 @@ adc       ah, ah    ; if width is zero that encoded 0x100. now ah is 1.
 
 mov       bx, TEXTUREWIDTHMASKS_SEGMENT
 mov       es, bx
-mov       bx, word ptr [bp - 2]
+pop       bx ; bp - 2
+push      bx ; restore bp - 2 todo remove
+
 mov       dl, byte ptr es:[bx]      ; dh 0 from above cwd
 cmp       ax, dx
 jna       negative_modulo_thing_masked
@@ -5551,7 +5554,7 @@ inc       ax
 ;        col+= patchwidth;
 ;    }
 negative_modulo_thing_masked:
-add       cx, ax
+add       bp, ax
 jl        negative_modulo_thing_masked
 
 col_not_under_zero_masked:
@@ -5573,7 +5576,8 @@ mov       byte ptr ds:[_maskedheightvalcache], al
 ;    return maskedcachedsegment + (FastMul8u8u(col , heightval) );
 mul       cl
 add       ax, word ptr ds:[_maskedcachedsegment]
-LEAVE_MACRO     
+add       sp, 2  ; garbage bp - 2 pop
+pop       bp    
 pop       si
 ret  
 ALIGN_MACRO
@@ -5593,13 +5597,15 @@ mov       word ptr ds:[_maskedheaderpixeolfs], bx   ;    maskedheaderpixeolfs = 
 ; es:bx is pixelofs
 
 ;    uint16_t ofs  = pixelofs[col]; // precached as segment value.
-sal       cx, 1  ; col word lookup
-add       bx, cx
+sal       bp, 1  ; col word lookup
+add       bx, bp
 
 ;    return maskedcachedsegment + ofs;
 mov       ax, word ptr ds:[_maskedcachedsegment]
 add       ax, word ptr es:[bx]
-LEAVE_MACRO     
+
+add       sp, 2  ; garbage bp - 2 pop
+pop       bp    
 pop       si
 ret      
 ALIGN_MACRO
@@ -5649,8 +5655,7 @@ mov       word ptr ds:[_cachedsegmentlumps], ax
 mov       word ptr ds:[_cachedlumps], si
 ;		maskednextlookup     = cached_nextlookup; 
 pop       word ptr ds:[_maskednextlookup]
-;		maskedtexrepeat 	 = loopwidth;
-pop       word ptr ds:[_maskedtexrepeat]    ; bp - 6 off
+
 
 ; di was set above before the function call...
 
@@ -5691,7 +5696,7 @@ mov       word ptr ds:[_maskedcachedsegment], ax
 
 xchg      ax, dx
 mov       al, byte ptr ds:[_cachedcollength] ; cachedcollength
-mul       byte ptr [bp - 4]
+mul       cl ; bp - 4
 add       ax, dx
 LEAVE_MACRO     
 pop       si
@@ -5744,7 +5749,6 @@ mov       word ptr ds:[si], ax
 mov       byte ptr ds:[_cachedcollength], cl  ;    cachedcollength[0] = collength;
 
 pop       word ptr ds:[_maskednextlookup] ;    maskednextlookup     = cached_nextlookup; 
-pop       word ptr ds:[_maskedtexrepeat]      ;    maskedtexrepeat 	 = loopwidth (bp - 6_);
 jmp       done_setting_cached_tex_masked
 
 
