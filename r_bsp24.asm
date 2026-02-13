@@ -161,7 +161,7 @@ MOV  ES, SI
 MOV  SI, DX
 PUSH AX
 MUL  BX
-MOV  word ptr cs:[_selfmodify_restore_dx+1], DX
+MOV  word ptr cs:[_selfmodify_restore_dx-2], DX
 MOV  AX, SI
 MUL  CX
 XCHG AX, SI
@@ -169,8 +169,9 @@ CWD
 AND  DX, BX
 SUB  SI, DX
 MUL  BX
-_selfmodify_restore_dx:
 ADD  AX, 01000h
+_selfmodify_restore_dx:  ; odd addr, selfmodify even with 3 byte add
+PUBLIC _selfmodify_restore_dx
 ADC  SI, DX
 XCHG AX, CX
 CWD
@@ -4662,6 +4663,7 @@ SELFMODIFY_BSP_set_skyflatnum_4:
 cmp       al, 010h
 je        not_below_viewplane
 mov       byte ptr [bp - 01Bh], 0  ;markceiling
+; ok here
 not_below_viewplane:
 
 les       ax, dword ptr [bp - 040h]
@@ -4694,7 +4696,7 @@ ELSE
    MOV  SI, DX
    PUSH AX
    MUL  BX
-   MOV  word ptr cs:[_selfmodify_restore_dx_2+1], DX
+   MOV  word ptr cs:[_selfmodify_restore_dx_2-2], DX
    MOV  AX, SI
    MUL  CX
    XCHG AX, SI
@@ -4702,8 +4704,9 @@ ELSE
    AND  DX, BX
    SUB  SI, DX
    MUL  BX
-   _selfmodify_restore_dx_2:
-   ADD  AX, 01000h
+   db 081h, 0c0h, 00, 10;  ADD  AX, 01000h
+   _selfmodify_restore_dx_2:  ; even addr, selfmodify even with 4 byte add
+   PUBLIC _selfmodify_restore_dx_2
    ADC  SI, DX
    XCHG AX, CX
    CWD
@@ -4717,7 +4720,7 @@ ELSE
 ENDIF
 
 ;end inlined FixedMulBSPLocal_
-
+; not ok
 neg       ax
 mov       word ptr [bp - 02Eh], ax
 SELFMODIFY_sub__centeryfrac_4_hi_4:
@@ -4752,7 +4755,7 @@ ELSE
    MOV  SI, DX
    PUSH AX
    MUL  BX
-   MOV  word ptr cs:[_selfmodify_restore_dx_3+1], DX
+   MOV  word ptr cs:[_selfmodify_restore_dx_3-2], DX
    MOV  AX, SI
    MUL  CX
    XCHG AX, SI
@@ -4760,8 +4763,9 @@ ELSE
    AND  DX, BX
    SUB  SI, DX
    MUL  BX
-   _selfmodify_restore_dx_3:
-   ADD  AX, 01000h
+   ADD  AX, 01000h ; db 081h, 0c0h, 00, 10; 
+   _selfmodify_restore_dx_3:  ; even addr, selfmodify even with 4 byte add... but ruins performance up ahead?
+   PUBLIC _selfmodify_restore_dx_3
    ADC  SI, DX
    XCHG AX, CX
    CWD
@@ -4790,6 +4794,7 @@ cmp       byte ptr [bp - 01Bh], 0  ;markceiling
 je        dont_mark_ceiling
 mov       cx, 1
 SELFMODIFY_set_ceilingplaneindex:
+PUBLIC SELFMODIFY_set_ceilingplaneindex
 mov       ax, 0FFFFh
 les       bx, dword ptr [bp - 01Ah]
 mov       dx, es
@@ -4802,6 +4807,7 @@ cmp       byte ptr [bp - 01Ch], 0 ; markfloor
 je        dont_mark_floor
 xor       cx, cx
 SELFMODIFY_set_floorplaneindex:
+PUBLIC SELFMODIFY_set_floorplaneindex
 mov       ax, 0FFFFh
 les       bx, dword ptr [bp - 01Ah]
 mov       dx, es
@@ -4851,7 +4857,7 @@ ELSE
    MOV  SI, DX
    PUSH AX
    MUL  BX
-   MOV  word ptr cs:[_selfmodify_restore_dx_4+1], DX
+   MOV  word ptr cs:[_selfmodify_restore_dx_4-2], DX
    MOV  AX, SI
    MUL  CX
    XCHG AX, SI
@@ -4859,8 +4865,9 @@ ELSE
    AND  DX, BX
    SUB  SI, DX
    MUL  BX
-   _selfmodify_restore_dx_4:
    ADD  AX, 01000h
+   _selfmodify_restore_dx_4:  ; odd addr, selfmodify even with 3 byte add
+   PUBLIC _selfmodify_restore_dx_4
    ADC  SI, DX
    XCHG AX, CX
    CWD
@@ -4931,7 +4938,7 @@ ELSE
    MOV  SI, DX
    PUSH AX
    MUL  BX
-   MOV  word ptr cs:[_selfmodify_restore_dx_5+1], DX
+   MOV  word ptr cs:[_selfmodify_restore_dx_5-2], DX
    MOV  AX, SI
    MUL  CX
    XCHG AX, SI
@@ -4939,8 +4946,9 @@ ELSE
    AND  DX, BX
    SUB  SI, DX
    MUL  BX
-   _selfmodify_restore_dx_5:
    ADD  AX, 01000h
+   _selfmodify_restore_dx_5:  ; odd addr, selfmodify even with 3 byte add
+   PUBLIC _selfmodify_restore_dx_5
    ADC  SI, DX
    XCHG AX, CX
    CWD
@@ -4992,6 +5000,7 @@ jmp       skip_pixlow_step
 
 SELFMODIFY_do_backsector_work_or_not_AFTER:
 jmp_to_skip_pixhigh_step:
+PUBLIC jmp_to_skip_pixhigh_step
 jmp skip_pixhigh_step
 ; ALIGN_MACRO  ; adding these back seems to lower bench scores
 SELFMODIFY_do_backsector_work_or_not_TARGET_NOTNULL:
@@ -5051,7 +5060,7 @@ ELSE
    MOV  SI, DX
    PUSH AX
    MUL  BX
-   MOV  word ptr cs:[_selfmodify_restore_dx_6+1], DX
+   MOV  word ptr cs:[_selfmodify_restore_dx_6-2], DX
    MOV  AX, SI
    MUL  CX
    XCHG AX, SI
@@ -5059,8 +5068,9 @@ ELSE
    AND  DX, BX
    SUB  SI, DX
    MUL  BX
-   _selfmodify_restore_dx_6:
-   ADD  AX, 01000h
+   ADD  AX, 01000h 
+   _selfmodify_restore_dx_6:  ; even addr, selfmodify even with 4 byte add..? but it wrecks performance. something after this gets knocked odd.
+   PUBLIC _selfmodify_restore_dx_6
    ADC  SI, DX
    XCHG AX, CX
    CWD
@@ -5113,7 +5123,7 @@ ELSE
    MOV  SI, DX
    PUSH AX
    MUL  BX
-   MOV  word ptr cs:[_selfmodify_restore_dx_7+1], DX
+   MOV  word ptr cs:[_selfmodify_restore_dx_7-2], DX
    MOV  AX, SI
    MUL  CX
    XCHG AX, SI
@@ -5121,8 +5131,9 @@ ELSE
    AND  DX, BX
    SUB  SI, DX
    MUL  BX
-   _selfmodify_restore_dx_7:
    ADD  AX, 01000h
+   _selfmodify_restore_dx_7:  ; even addr, selfmodify even with 4 byte add
+   PUBLIC _selfmodify_restore_dx_7
    ADC  SI, DX
    XCHG AX, CX
    CWD
@@ -5216,7 +5227,7 @@ ELSE
    MOV  SI, DX
    PUSH AX
    MUL  BX
-   MOV  word ptr cs:[_selfmodify_restore_dx_8+1], DX
+   MOV  word ptr cs:[_selfmodify_restore_dx_8-2], DX
    MOV  AX, SI
    MUL  CX
    XCHG AX, SI
@@ -5224,8 +5235,9 @@ ELSE
    AND  DX, BX
    SUB  SI, DX
    MUL  BX
-   _selfmodify_restore_dx_8:
    ADD  AX, 01000h
+   _selfmodify_restore_dx_8:
+   PUBLIC _selfmodify_restore_dx_8
    ADC  SI, DX
    XCHG AX, CX
    CWD
@@ -5865,7 +5877,7 @@ ELSE
   MOV  SI, DX
   PUSH AX
   MUL  BX
-  MOV  word ptr cs:[_selfmodify_restore_dx_10+1], DX
+  MOV  word ptr cs:[_selfmodify_restore_dx_10-2], DX
   MOV  AX, SI
   MUL  CX
   XCHG AX, SI
@@ -5873,8 +5885,9 @@ ELSE
   AND  DX, BX
   SUB  SI, DX
   MUL  BX
-_selfmodify_restore_dx_10:
   ADD  AX, 01000h
+_selfmodify_restore_dx_10:
+   PUBLIC _selfmodify_restore_dx_10
   ADC  SI, DX
   XCHG AX, CX
   CWD
