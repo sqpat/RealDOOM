@@ -4586,9 +4586,13 @@ mov       bx, 01000h
 sub       cx, word ptr [bp + 0Ch]   ; rw_angle lo from R_AddLine
 sbb       bx, word ptr [bp + 0Eh]   ; rw_angle hi from R_AddLine
 
-;cmp       bx, ANG180_HIGHBITS
-;jae       tempangle_not_smaller_than_fineang180
-; bx is already _rw_offset
+
+;		if (tempangle.hu.intbits < ANG180_HIGHBITS) {	
+;			rw_offset.w = -rw_offset.w;
+;		}
+;		rw_offset.h.intbits += (sidetextureoffset + curseg_render->offset);
+
+; use sbb bx flags to check for < 08000h (ANG180)
 js        tempangle_not_smaller_than_fineang180
 neg       ax
 neg       dx
@@ -4602,7 +4606,6 @@ SELFMODIFY_BSP_sidetextureoffset:
 add       ax, 01000h
 SELFMODIFY_BSP_sidesegoffset:
 add       ax, 01000h 
-add       ax, OFFSET SEG_RENDER_T.sr_offset
 ; rw_offset ready to be written to rendersegloop:
 mov   word ptr cs:[SELFMODIFY_set_cx_rw_offset_lo+1 - OFFSET R_BSP24_STARTMARKER_], dx
 mov   word ptr cs:[SELFMODIFY_set_ax_rw_offset_hi+1 - OFFSET R_BSP24_STARTMARKER_], ax

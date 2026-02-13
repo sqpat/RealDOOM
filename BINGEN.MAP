@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/13 10:30:45
+Created on:       26/02/13 11:20:31
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -35,7 +35,7 @@ SM_OPL2_TEXT           CODE           AUTO           0533:0000       00000f3c
 SM_OPL3_TEXT           CODE           AUTO           0627:0000       0000100e
 SM_SBMID_TEXT          CODE           AUTO           0728:0000       00000730
 SM_MPUMD_TEXT          CODE           AUTO           079b:0000       000007db
-R_BSP_24_TEXT          CODE           AUTO           0819:0000       0000345b
+R_BSP_24_TEXT          CODE           AUTO           0819:0000       00003457
 R_BSP_16_TEXT          CODE           AUTO           0b5f:0000       00003740
 R_BSP0_TEXT            CODE           AUTO           0ed3:0000       0000366f
 R_BSPFL_TEXT           CODE           AUTO           123a:0000       00003617
@@ -340,29 +340,30 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079b:0000      SM_MPUMD_STARTMARKER_
 079b:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-0819:3100      R_WriteBackViewConstants24_
-0819:1eb9*     R_AddLine_
-0819:345b      R_BSP24_ENDMARKER_
-0819:2bca      R_GetPatchTexture_Far24_
+0819:30fc      R_WriteBackViewConstants24_
+0819:1eb5*     R_AddLine_
+0819:3457      R_BSP24_ENDMARKER_
+0819:2bc6      R_GetPatchTexture_Far24_
+0819:119f*     tempangle_not_smaller_than_fineang180
 0819:075a*     FixedMulTrigNoShiftSine_BSPLocal_
 0819:0756*     FixedMulTrigSine_BSPLocal_
 0819:0d51*     R_StoreWallRange_
-0819:20b2*     R_ClipPassWallSegment_
+0819:20ae*     R_ClipPassWallSegment_
 0819:07a3*     FixedMulTrigCosine_BSPLocal_
-0819:1dd4*     R_Subsector_
-0819:1974*     do_top_texture_draw
+0819:1dd0*     R_Subsector_
+0819:1970*     do_top_texture_draw
 0819:0000      R_BSP24_STARTMARKER_
-0819:2f7a      R_RenderPlayerView24_
+0819:2f76      R_RenderPlayerView24_
 0819:0706*     FixedDivBSPLocal_
 0819:033a*     div48_32_BSPLocal_
-0819:2a70*     R_GetTexturePage_
-0819:32a2*     R_WriteBackFrameConstants_
+0819:2a6c*     R_GetTexturePage_
+0819:329e*     R_WriteBackFrameConstants_
 0819:07a7*     FixedMulTrigNoShiftCosine_BSPLocal_
 0819:07f3*     R_ClearPlanes_
-0819:17a8*     main_3232_div
+0819:17a5*     main_3232_div
 0819:047e*     FixedDivWholeA_BSPLocal_
-0819:2c64      R_GetCompositeTexture_Far24_
-0819:18d5*     R_DrawColumnPrep_
+0819:2c60      R_GetCompositeTexture_Far24_
+0819:18d2*     R_DrawColumnPrep_
 0819:00cc*     SELFMODIFY_get_rw_distance_hi_1
 0819:00b2*     R_ScaleFromGlobalAngle_
 Module: r_bsp16.obj(r_bsp16.ASM)
@@ -748,8 +749,8 @@ Module: p_spec.obj(p_spec.ASM)
 23b4:75b2      P_FindMinSurroundingLight_
 23b4:7400*     getNextSectorList_
 23b4:757b      P_FindSectorsFromLineTag_
-23b4:772c      P_CrossSpecialLine_
 23b4:7923      P_ShootSpecialLine_
+23b4:772c      P_CrossSpecialLine_
 23b4:7d0f      P_SpawnSpecials_
 Module: p_switch.obj(p_switch.ASM)
 23b4:8156*     P_SWITCH_ENDMARKER_
@@ -1489,4 +1490,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003d900 (252160.)
 Entry point address: 2f46:7cee
-Link time: 00:00.04
+Link time: 00:00.49
