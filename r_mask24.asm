@@ -723,8 +723,6 @@ ENDP
 ; R_DrawVisSprite_
 ;
 
-; todo may not have to push/pop most of these vars.
-
 
 do_32_bit_mul_vissprite:
 inc   dx
@@ -1482,6 +1480,7 @@ mov   word ptr ds:[_dc_x], ax
 SELFMODIFY_MASKED_visspriteloop_x1_1:
 cmp   ax, 01000h 
 jl    increment_by_shift
+; todo try ALIGN_MACRO
 
 draw_sprite_normal_innerloop:
 SELFMODIFY_MASKED_visspriteloop_x2_1:
@@ -1493,7 +1492,7 @@ SHIFT_MACRO shl bx 2 ; possible to preshift dx by 2?
 ; es is patch 
 mov   ax, word ptr es:[bx + PATCH_T.patch_columnofs+0] ; todo LES?
 mov   bx, word ptr es:[bx + PATCH_T.patch_columnofs+2]
-; todo, cx was 05000h ???
+
 add   ax, cx ; self modify? does it change?
 
 ; ax pixelsegment
@@ -1505,6 +1504,8 @@ add   ax, cx ; self modify? does it change?
 call R_DrawMaskedColumn_  ; does si need to be preserved?
 
 increment_by_shift:
+
+; todohigh add into an immediate and remove dependency on variables, stack, etc. only makes sense if R_DrawMaskedColumn stops push/popping
 
 SELFMODIFY_MASKED_detailshiftitercount_2:
 add   word ptr ds:[_dc_x], 0
@@ -3020,7 +3021,6 @@ mov  byte ptr ds:[bx + si + CACHE_NODE_PAGE_COUNT_T.cachenodecount_next], al
 
 mov  byte ptr ds:[di], al
 mark_sprite_lru_exit:
-
 ret  
 
 ALIGN_MACRO
@@ -3195,7 +3195,9 @@ je    skip_l2_sprite_cache_marklru
 ; bx stores eventual return value
 xchg  ax, dx            ; realtexpage into ax. 
 push  bx ; eventual return value
-call  R_MarkL2SpriteCacheMRU_
+push  cx ; wrecked by markl2
+call  R_MarkL2SpriteCacheMRU_ 
+pop   cx
 pop   ax
 ;    return i;
 ret
@@ -3461,7 +3463,7 @@ PUBLIC evict_and_find_startpage_multi
 xor   ax, ax ; set ah to 0. 
 mov   bx, NUM_SPRITE_L1_CACHE_PAGES - 1 + OFFSET _spriteL1LRU 
 
-mov   cx, NUM_SPRITE_L1_CACHE_PAGES - 1
+mov   cl, NUM_SPRITE_L1_CACHE_PAGES - 1  ; ch was already 0
 sub   cl, dl
 ; dl is ; dl is numpages-1
 ; bx is startpage
@@ -4980,7 +4982,7 @@ PROC   R_DrawMaskedColumn_ NEAR ; fairly optimized
 PUBLIC R_DrawMaskedColumn_
 
 ; todo: synergy with outer function... cx and es
-; todo dont create stack frame
+; todo push/pop fewer?
 
 mov   es, cx
 
@@ -5104,9 +5106,9 @@ adc   dx, bx
 ;			dc_yh--;
 
 neg ax
-sbb dx, 0h
+sbb dx, 0FFFFh  ; we actually want to simultaneously add one back to this. has to do with the >= case and is made up for with jmp lookup
 
-mov di, dx  ; todo get this for free with register juggling above?
+mov   di, dx  ; would be nice to get this without a register juggle
 
 
 ; dx is dc_yh but needs to be written back 
@@ -5127,7 +5129,7 @@ mov   cx, 01000h
 cmp   di, cx
 jl    skip_floor_clip_set
 mov   di, cx
-dec   di
+dec   di        ; todo bake this into the lookup
 skip_floor_clip_set:
 
 
@@ -5140,12 +5142,12 @@ mov   cx, 01000h
 cmp   si, cx
 jg    skip_ceil_clip_set
 mov   si, cx
-inc   si
+inc   si        ; todo bake this into the lookup
 skip_ceil_clip_set:
 
 
-cmp   si, di   ; di is dc_yh
-jg    increment_column_and_continue_loop
+sub   di, si   ; di is dc_yh
+jl    increment_column_and_continue_loop
 
 SELFMODIFY_MASKED_dc_texturemid_hi_1:
 mov   cl, 010h;  dc_texturemid intbits
@@ -5187,7 +5189,7 @@ sar   ax, 1
 sar   ax, 1
 
 
-sub   di, si                                 ;
+; di already subtracted above
 sal   di, 1                                  ; double diff (dc_yh - dc_yl) to get a word offset
 mov   di, word ptr ds:[di+DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET]   ; get the jump value. both tables in masked are 10 byte jump tables
 

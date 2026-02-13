@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/12 18:28:43
+Created on:       26/02/13 10:30:45
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -49,7 +49,7 @@ R_SPAN0_TEXT           CODE           AUTO           1b98:0000       0000063a
 R_SPANFL_TEXT          CODE           AUTO           1bfc:0000       00000591
 R_SKY_TEXT             CODE           AUTO           1c56:0000       00000d86
 R_SKYFL_TEXT           CODE           AUTO           1d2f:0000       00000303
-R_MASK24_TEXT          CODE           AUTO           1d60:0000       00001913
+R_MASK24_TEXT          CODE           AUTO           1d60:0000       00001911
 R_MASK16_TEXT          CODE           AUTO           1ef2:0000       000019ce
 R_MASK0_TEXT           CODE           AUTO           208f:0000       0000193a
 R_MASKFL_TEXT          CODE           AUTO           2223:0000       00001904
@@ -485,26 +485,26 @@ Module: r_mask24.obj(r_mask24.ASM)
 1d60:00b0*     FixedMulMaskedLocal_
 1d60:10da*     R_PointOnSegSide_
 1d60:0006*     _fuzzoffset
-1d60:17ca      R_WriteBackViewConstantsMasked24_
+1d60:17c8      R_WriteBackViewConstantsMasked24_
 1d60:0190*     R_DrawMaskedSpriteShadow_
 1d60:055a*     found_multipage
-1d60:18a6      R_WriteBackMaskedFrameConstants24_
-1d60:0da6*     selected_sprite_page_multi
-1d60:15da*     R_GetMaskedColumnSegment_
+1d60:18a4      R_WriteBackMaskedFrameConstants24_
+1d60:0da2*     selected_sprite_page_multi
+1d60:15d8*     R_GetMaskedColumnSegment_
 1d60:0caa*     R_EvictL2CacheEMSPage_Sprite_Multi_
 1d60:05bc*     R_LoadSpriteColumns_
 1d60:0cca*     R_EvictL2CacheEMSPage_Sprite_Single_
 1d60:0d5a*     R_MarkL2SpriteCacheMRU_
 1d60:0f66*     found_startpage_multi
 1d60:0eac*     get_multipage_spritepage
-1d60:0efc*     evict_and_find_startpage_multi
+1d60:0efe*     evict_and_find_startpage_multi
 1d60:11ba      R_DrawMasked24_
 1d60:00de*     R_DrawSingleMaskedColumn_
 1d60:1298*     R_DrawSprite_
 1d60:0354*     R_DrawVisSprite_
 1d60:068c*     loop_vga_plane_draw_normal
 1d60:0ec6*     mark_all_pages_mru_loop
-1d60:1913      R_MASK24_ENDMARKER_
+1d60:1911      R_MASK24_ENDMARKER_
 1d60:0000*     _spritepagesegments
 1d60:14d0*     R_DrawMaskedColumn_
 1d60:0e4e*     R_GetSpritePage_
@@ -1489,4 +1489,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003d900 (252160.)
 Entry point address: 2f46:7cee
-Link time: 00:00.05
+Link time: 00:00.04
