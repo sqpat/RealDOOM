@@ -2177,6 +2177,7 @@ uint8_t __near R_GetSpritePage(uint8_t texpage) {
 		startpage = spriteL1LRU[NUM_SPRITE_L1_CACHE_PAGES-1];
 		R_MarkL1SpriteCacheMRU3(startpage);
 		if (activespritenumpages[startpage]) {
+	;		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 			for (i = 1; i <= activespritenumpages[startpage]; i++) {
 				activespritepages[startpage + i] = -1;
 				pageswapargs[pageswapargs_spritecache_offset + (startpage + i)*PAGE_SWAP_ARG_MULT] =  _NPR(PAGE_9000_OFFSET+(startpage+i)); // unpaged				
@@ -2203,6 +2204,9 @@ uint8_t __near R_GetSpritePage(uint8_t texpage) {
 			R_MarkL2SpriteCacheMRU(realtexpage);
 			return i;
 		}
+
+		// whats going on here...
+
 		startpage = NUM_SPRITE_L1_CACHE_PAGES-1;
 		while (spriteL1LRU[startpage] > ((NUM_SPRITE_L1_CACHE_PAGES-1)-numpages)){
 			startpage--;
@@ -2217,6 +2221,7 @@ uint8_t __near R_GetSpritePage(uint8_t texpage) {
 		}
 		{
 			int8_t currentpage = realtexpage;
+	;		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 			for (i = 0; i <= numpages; i++) {
 				R_MarkL1SpriteCacheMRU(startpage+i);
 				activespritepages[startpage + i] = currentpage;
