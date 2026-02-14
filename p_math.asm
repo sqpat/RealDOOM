@@ -1204,12 +1204,15 @@ continue_checking_q1:
 ja    check_c1_c2_diff
 ; rare codepath! 
 
-cmp   ax, di
-jbe   q1_ready
+test  ax, ax
+jz    q1_ready
+
+;cmp   ax, di
+;jbe   q1_ready
 
 check_c1_c2_diff:
-sub   ax, di
-sbb   dx, si
+;sub   ax, di
+sub   dx, si
 cmp   dx, cx
 ; these branches havent been tested but this is a super rare codepath
 ja    qhat_subtract_2  
@@ -1994,13 +1997,17 @@ jmp   do_qhat_subtraction_by_1_whole
 
 continue_checking_q1_whole:
 ja    check_c1_c2_diff_whole
+
+test  ax, ax
+jz    q1_ready_whole
+
 ; rare codepath! 
-cmp   ax, cx
-jbe   q1_ready_whole
+;cmp   ax, cx
+;jbe   q1_ready_whole
 
 check_c1_c2_diff_whole:
-sub   ax, cx
-sbb   dx, bx
+;sub   ax, cx
+sub   dx, bx
 cmp   dx, di
 ; these branches havent been tested but this is a super rare codepath
 ja    qhat_subtract_2_whole 
