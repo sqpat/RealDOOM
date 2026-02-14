@@ -110,12 +110,12 @@ ENDM
 
 
 
-PROC R_ClearClipSegs_ NEAR
+PROC R_ClearClipSegs_ NEAR ; fairly optimized
 ; todo lea
 
 mov  word ptr ds:[_solidsegs+0], 08001h
 mov  word ptr ds:[_solidsegs+2], 0FFFFh
-; todo push pop
+; push pop?
 mov  ax, word ptr ds:[_viewwidth]
 mov  word ptr ds:[_solidsegs+4], ax
 mov  word ptr ds:[_solidsegs+6], 07FFFh
@@ -129,7 +129,7 @@ ENDP
 
 IF COMPISA GE COMPILE_386
 ; ALIGN_MACRO  ; adding these back seems to lower bench scores
-PROC FixedMulBSPLocal_ NEAR
+PROC FixedMulBSPLocal_ NEAR ; fairly optimized
 ; thanks zero318 from discord for improved algorithm  
 
 ; DX:AX  *  CX:BX
@@ -150,7 +150,7 @@ ENDP
 ELSE
 
 ; ALIGN_MACRO  ; adding these back seems to lower bench scores
-PROC FixedMulBSPLocal_ NEAR
+PROC FixedMulBSPLocal_ NEAR ; fairly optimized
 
 ; DX:AX  *  CX:BX
 ;  0  1      2  3
@@ -195,8 +195,8 @@ ENDIF
 
 
 ;R_ScaleFromGlobalAngle_
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
-PROC   R_ScaleFromGlobalAngle_ NEAR
+ALIGN_MACRO
+PROC   R_ScaleFromGlobalAngle_ NEAR ; todo needs another look for sure
 PUBLIC R_ScaleFromGlobalAngle_ 
 
 
@@ -513,7 +513,7 @@ ENDP
 
 
 ; ALIGN_MACRO  ; adding these back seems to lower bench scores
-PROC R_PointToAngle_ NEAR
+PROC R_PointToAngle_ NEAR  ;todo needs another look
 
 ; inputs:
 ; DX:AX = x  (32 bit fixed pt 16:16)
@@ -527,21 +527,7 @@ PROC R_PointToAngle_ NEAR
 
 ; idea: self modify code, change this to constants per frame.
 
-
-
-test  dx, dx
-jne   inputs_not_zero   ; todo rearrange this. rare case
-test  cx, cx
-jne   inputs_not_zero   ; todo rearrange this. rare case
-test  ax, ax
-jne   inputs_not_zero   ; todo rearrange this. rare case
-test  bx, bx
-jne   inputs_not_zero   ; todo rearrange this. rare case
-
-; return 0
-ret  
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
-
+; ignore zero inputs case
 
 inputs_not_zero:
 
@@ -556,7 +542,7 @@ x_is_positive:
 test  cx, cx
 
 jl   y_is_negative
-y_is_positive:
+x_and_y_positive:
 
 cmp   dx, cx
 jg    octant_0
@@ -579,9 +565,7 @@ mov   dx, 02000h
 xor   ax, ax
 
 ret  
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
-
-
+ALIGN_MACRO
 octant_0_do_divide:
 ;x_is_negative
 xchg dx, cx
@@ -596,9 +580,8 @@ mov   bx, ax
 les   ax, dword ptr es:[bx]
 mov   dx, es
 ret  
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
 
-
+ALIGN_MACRO
 octant_1:
 test  cx, cx
 
@@ -610,7 +593,8 @@ mov   ax, 0ffffh
 mov   dx, 01fffh
 
 ret  
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+
+ALIGN_MACRO
 octant_1_do_divide:
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
@@ -625,9 +609,7 @@ sbb   dx, word ptr es:[bx + 2]
 
 ret  
 
-
-
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 x_is_negative:
 
 ;		x.w = -x.w;
@@ -655,9 +637,9 @@ jae   octant_3_do_divide
 octant_3_out_of_bounds:
 mov   ax, 0ffffh
 mov   dx, 05fffh
-
 ret  
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+
+ALIGN_MACRO
 octant_3_do_divide:
 xchg dx, cx
 xchg ax, bx
@@ -673,7 +655,8 @@ mov   dx, 07fffh
 sbb   dx, word ptr es:[bx + 2]
 
 ret  
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+
+ALIGN_MACRO
 octant_2:
 test  cx, cx
 
@@ -684,7 +667,8 @@ octant_2_out_of_bounds:
 mov   dx, 06000h
 xor   ax, ax
 ret  
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+
+ALIGN_MACRO
 octant_2_do_divide:
 
 call FastDiv3232_shift_3_8_
@@ -698,7 +682,8 @@ mov   dx, es
 add   dx, 04000h
 
 ret  
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+
+ALIGN_MACRO
 y_is_negative_x_neg:
 
 ;			y.w = -y.w;
@@ -721,7 +706,8 @@ mov   dx, 0a000h
 xor   ax, ax
 
 ret  
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+
+ALIGN_MACRO
 octant_4_do_divide:
 xchg dx, cx
 xchg ax, bx
@@ -737,7 +723,8 @@ mov   dx, es
 add   dx, 08000h
 
 ret  
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+
+ALIGN_MACRO
 octant_5:
 test  cx, cx
 
@@ -749,7 +736,8 @@ mov   ax, 0ffffh
 mov   dx, 09fffh
 
 ret  
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+
+ALIGN_MACRO
 octant_5_do_divide:
 
 call FastDiv3232_shift_3_8_
@@ -775,8 +763,8 @@ ENDP
 
 ; destroys si/di internally, outer scope must push/pop
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
-PROC   div48_32_BSPLocal_ NEAR
+ALIGN_MACRO
+PROC   div48_32_BSPLocal_ NEAR ; fairly optimized i think
 PUBLIC div48_32_BSPLocal_ 
 
 
@@ -933,7 +921,7 @@ xchg  ax, di
 jmp   continue_to_second_div
 
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 div_1_result_1:
 ; qhat = 1
 ; rhat = si
@@ -959,7 +947,7 @@ jmp   continue_to_second_div
 ;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
 ; DX:AX = numhi.wu
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 do_normal_div:
 
 div   cx
@@ -1054,7 +1042,7 @@ mov   ax, si
 pop   di
 ret  
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 continue_check2:
 test  ax, ax
 jz    do_return_2
@@ -1072,7 +1060,7 @@ mov   ax, si
 pop   di
 ret  
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 check_for_extra_qhat_subtraction:
 ; very rare, basically never happens, dual jump is fine
 ja    do_qhat_subtraction_by_2
@@ -1091,7 +1079,7 @@ jmp   do_qhat_subtraction_by_1
 
 
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 continue_checking_q1:
 
 test  ax, ax
@@ -1117,7 +1105,7 @@ dec ax
 mov es, ax
 jmp q1_ready
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 ; very rare case!
 adjust_for_overflow:
 xor   di, di
@@ -1160,7 +1148,7 @@ mov   ax, si
 pop   di
 ret  
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 compare_low_word:
 ; extremely rare codepath! double jump is fine.
 cmp   ax, bx
@@ -1174,7 +1162,7 @@ mov es, ax
 jmp qhat_subtract_1
 
 ; the divide would have overflowed. subtract values
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 adjust_for_overflow_again:
 
 sub   ax, cx
@@ -1190,15 +1178,15 @@ ENDP
 
 
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 do_quick_return_whole:
   xor   ax, ax
   mov   dx, 08000h
 
   ret
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
-PROC   FixedDivWholeA_BSPLocal_   NEAR
+ALIGN_MACRO
+PROC   FixedDivWholeA_BSPLocal_   NEAR ; fairly optimized i think
 PUBLIC FixedDivWholeA_BSPLocal_
 
 ; big improvements to branchless fixeddiv 'preamble' by zero318
@@ -1262,7 +1250,7 @@ ENDP
 ; AX:00:00 / CX:BX
 
 ; ALIGN_MACRO  ; adding these back seems to lower bench scores
-PROC div48_32_whole_BSPLocal_ NEAR
+PROC div48_32_whole_BSPLocal_ NEAR ; fairly optimized i think
 
 ; di:si get shifted cx:bx
 xor dx, dx
@@ -1599,7 +1587,7 @@ ret
 
 
 ; ALIGN_MACRO  ; adding these back seems to lower bench scores
-PROC FastDiv3232_shift_3_8_ NEAR
+PROC FastDiv3232_shift_3_8_ NEAR ; todo needs another look
 
 ; used by R_PointToAngle.
 ; DX:AX << 3 / CX:BX >> 8
@@ -1672,7 +1660,7 @@ ret
 ; DX:AX / CX:BX
 
 ; ALIGN_MACRO  ; adding these back seems to lower bench scores
-PROC FastDiv3232_RPTA_ NEAR
+PROC FastDiv3232_RPTA_ NEAR ; todo needs another look
 
 ; we shift dx:ax by 11 into si... 
 
@@ -1980,7 +1968,7 @@ do_quick_return:
   RET
 
 ; ALIGN_MACRO  ; adding these back seems to lower bench scores
-PROC   FixedDivBSPLocal_ NEAR
+PROC   FixedDivBSPLocal_ NEAR ; fairly optimized
 PUBLIC FixedDivBSPLocal_
 
 ; big improvements to branchless fixeddiv 'preamble' by zero318
@@ -2066,13 +2054,13 @@ ENDP
 IF COMPISA GE COMPILE_386
 
 ; ALIGN_MACRO  ; adding these back seems to lower bench scores
-    PROC   FixedMulTrigSine_BSPLocal_ NEAR
+    PROC   FixedMulTrigSine_BSPLocal_ NEAR ; fairly optimized
     PUBLIC FixedMulTrigSine_BSPLocal_
     sal dx, 1
     sal dx, 1   ; DWORD lookup index
     ENDP
 
-    PROC   FixedMulTrigNoShiftSine_BSPLocal_ NEAR
+    PROC   FixedMulTrigNoShiftSine_BSPLocal_ NEAR ; fairly optimized
     PUBLIC FixedMulTrigNoShiftSine_BSPLocal_
     ; pass in the index already shifted to be a dword lookup..
 
@@ -2098,13 +2086,13 @@ IF COMPISA GE COMPILE_386
     ENDP
 
 ; ALIGN_MACRO  ; adding these back seems to lower bench scores
-    PROC   FixedMulTrigCosine_BSPLocal_ NEAR
+    PROC   FixedMulTrigCosine_BSPLocal_ NEAR ; fairly optimized
     PUBLIC FixedMulTrigCosine_BSPLocal_
     sal dx, 1
     sal dx, 1   ; DWORD lookup index
     ENDP
 
-    PROC   FixedMulTrigNoShiftCosine_BSPLocal_ NEAR
+    PROC   FixedMulTrigNoShiftCosine_BSPLocal_ NEAR ; fairly optimized
     PUBLIC FixedMulTrigNoShiftCosine_BSPLocal_
     ; pass in the index already shifted to be a dword lookup..
     shr  dx, 1
@@ -2135,7 +2123,7 @@ IF COMPISA GE COMPILE_386
 ELSE
 
 ; ALIGN_MACRO  ; adding these back seems to lower bench scores
-    PROC   FixedMulTrigSine_BSPLocal_ NEAR
+    PROC   FixedMulTrigSine_BSPLocal_ NEAR ; fairly optimized
     PUBLIC FixedMulTrigSine_BSPLocal_
 
     ; DX:AX  *  CX:BX
@@ -2175,7 +2163,7 @@ ELSE
     sal dx, 1   ; DWORD lookup index
 
     ENDP
-    PROC   FixedMulTrigNoShiftSine_BSPLocal_ NEAR
+    PROC   FixedMulTrigNoShiftSine_BSPLocal_ NEAR ; fairly optimized
     PUBLIC FixedMulTrigNoShiftSine_BSPLocal_
     ; pass in the index already shifted to be a dword lookup..
 
@@ -2250,7 +2238,7 @@ ELSE
 
 
 ; ALIGN_MACRO  ; adding these back seems to lower bench scores
-    PROC   FixedMulTrigCosine_BSPLocal_ NEAR
+    PROC   FixedMulTrigCosine_BSPLocal_ NEAR ; fairly optimized
     PUBLIC FixedMulTrigCosine_BSPLocal_
 
     ; DX:AX  *  CX:BX
@@ -2290,7 +2278,7 @@ ELSE
     sal dx, 1   ; DWORD lookup index
 
     ENDP
-    PROC   FixedMulTrigNoShiftCosine_BSPLocal_ NEAR
+    PROC   FixedMulTrigNoShiftCosine_BSPLocal_ NEAR ; fairly optimized
     PUBLIC FixedMulTrigNoShiftCosine_BSPLocal_
     ; pass in the index already shifted to be a dword lookup..
 
@@ -2373,7 +2361,7 @@ COSINE_OFFSET_IN_SINE = ((FINECOSINE_SEGMENT - FINESINE_SEGMENT) SHL 4)
 ;R_ClearPlanes
 
 ; ALIGN_MACRO  ; adding these back seems to lower bench scores
-PROC   R_ClearPlanes_ NEAR
+PROC   R_ClearPlanes_ NEAR ; TODO could be better if we only clear up to lastvisplane and then dont clear visplanes when we create new ones.
 PUBLIC R_ClearPlanes_ 
 
 ; dont need to preserve registers here
@@ -2783,7 +2771,7 @@ ENDP
 ;R_FindPlane_
 
 ; ALIGN_MACRO  ; adding these back seems to lower bench scores
-PROC R_FindPlane_ NEAR
+PROC R_FindPlane_ NEAR ; could use another look
 
 
 
@@ -2931,7 +2919,7 @@ ENDP
 ;R_CheckPlane_
 
 ; ALIGN_MACRO  ; adding these back seems to lower bench scores
-PROC R_CheckPlane_ NEAR
+PROC R_CheckPlane_ NEAR ; needs another look 
 
 ; ax: index
 ; cl: isceil?
@@ -3097,7 +3085,7 @@ MINZ_HIGHBITS = 4
 ;R_ProjectSprite_
 
 ; ALIGN_MACRO  ; adding these back seems to lower bench scores
-PROC R_ProjectSprite_ NEAR
+PROC R_ProjectSprite_ NEAR  ; somewhatoptimized... maybe re-examine. 
 
 ; es:si is sprite.
 ; es is a constant..
@@ -3760,7 +3748,7 @@ MAXDRAWSEGS = 256
 ;R_StoreWallRange_
 
 ; ALIGN_MACRO  ; adding these back seems to lower bench scores
-PROC   R_StoreWallRange_ NEAR
+PROC   R_StoreWallRange_ NEAR ; needs another look and reconciliation with outer stack frames.
 PUBLIC R_StoreWallRange_ 
 
 ; bp - 2  ; ax arg
@@ -11732,7 +11720,7 @@ ENDP
 
 ; todo inline
 ALIGN_MACRO
-PROC Z_QuickMapRenderTexture_BSPLocal_ NEAR
+PROC Z_QuickMapRenderTexture_BSPLocal_ NEAR ; todo
 
 
 push  dx
@@ -11752,7 +11740,7 @@ ENDP
 ;R_RenderPlayerView_
 
 ALIGN_MACRO
-PROC R_RenderPlayerView24_ FAR
+PROC R_RenderPlayerView24_ FAR ; probably not optimized, runs rarely
 PUBLIC R_RenderPlayerView24_ 
 
 
@@ -11927,7 +11915,7 @@ ENDP
 
 ;R_WriteBackViewConstants24_
 
-PROC R_WriteBackViewConstants24_ FAR
+PROC R_WriteBackViewConstants24_ FAR ; probably not optimized, runs rarely
 PUBLIC R_WriteBackViewConstants24_ 
 
 
@@ -12204,7 +12192,7 @@ ENDP
 ;R_WriteBackFrameConstants_
 
 ALIGN_MACRO
-PROC   R_WriteBackFrameConstants_ NEAR
+PROC   R_WriteBackFrameConstants_ NEAR ; probably not optimized, runs rarely
 PUBLIC R_WriteBackFrameConstants_ 
 
 ; todo: calculate the values here and dont store to variables. (combine with setupframe etc)

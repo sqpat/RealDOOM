@@ -747,7 +747,9 @@ mov   al, byte ptr ds:[si + VISSPRITE_T.vs_colormap]
 
 mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMARKER_], al
 
-; todo move this out to a higher level! possibly when executesetviewsize happens.
+; todo calculate xiscale now.
+; note: we lazily calculate xiscale (the result of a FixedDiv (FRACUNIT, xxxx) operation) here.
+; this is because the sprite may have been obscured by this point with no visible pixels.
 
 
 les   ax, dword ptr ds:[si + VISSPRITE_T.vs_xiscale]   ; vis->xiscale
@@ -2468,9 +2470,10 @@ mov   cx, word ptr ds:[_spryscale + 2]
 call  FastDiv3232FFFF_  ; todo inline eventually
 
 mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
+; high byte set in fastdiv.
 
 SELFMODIFY_MASKED_apply_stretch_tag:
-jmp   is_stretch_draw_2     ; nop or 
+jmp   is_stretch_draw_2     ; nop or jmp
 SELFMODIFY_MASKED_apply_stretch_tag_AFTER:
 mov   dx, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1
 mov   bx, DRAWCOL_NOLOOP_OFFSET_MASKED
