@@ -1655,7 +1655,7 @@ PUBLIC R_RenderMaskedSegRange_
 
 ; no stack frame used..
 
-
+; todo pass in si instead of di?
   
 push  di
 
@@ -1669,45 +1669,46 @@ mov   word ptr cs:[SELFMODIFY_MASKED_cmp_to_x2+1 - OFFSET R_MASK24_STARTMARKER_]
 
 ; grab a bunch of drawseg values early in the function and write them forward.
 mov   si, di
-lods  word ptr es:[si]  ; si 2 after
+mov   ax, es
+mov   ds, ax
 
-mov   word ptr ds:[_curseg], ax  ; todo only use? put on stack? dont use?
+lods  word ptr ds:[si]  ; si 2 after   ; drawseg_cursegvalue
+
+mov   cx, ax  ; cx stores curseg. todo move all the uses up here.
 SHIFT_MACRO shl ax 3
 add   ah, (_segs_render SHR 8 ) 		; segs_render is ds:[0x4000] 
-mov   word ptr ds:[_curseg_render], ax  ; todo only use? put on stack? dont use?
-mov   bx, ax
+xchg  ax, di   ; di stores _curseg_render
 
 ; todo rearrange fields to make this faster?
 ; this whole charade with the lodsw is ~6-8 bytes smaller overall than just doing displacement.
 ; It could be better if we arranged adjacent fields i guess.
-mov   ax, es
-mov   ds, ax
-lods  word ptr ds:[si]  ; si 4 after
+
+lods  word ptr ds:[si]  ; si 4 after    ; drawseg_x1
 mov   word ptr cs:[SELFMODIFY_MASKED_dsp_02+1 - OFFSET R_MASK24_STARTMARKER_], ax
 inc   si
-inc   si
-lods  word ptr ds:[si]  ; si 8 after
+inc   si  ; skip drawseg_x2
+lods  word ptr ds:[si]  ; si 8 after    ; drawseg_scale1 lo
 mov   word ptr cs:[SELFMODIFY_MASKED_dsp_06+1 - OFFSET R_MASK24_STARTMARKER_], ax
-lods  word ptr ds:[si]  ; si A after
-add   si, 4
+lods  word ptr ds:[si]  ; si A after    ; drawseg_scale1 hi
+add   si, 4 ; skip drawseg_scale2
 mov   word ptr cs:[SELFMODIFY_MASKED_dsp_08+2 - OFFSET R_MASK24_STARTMARKER_], ax
-lods  word ptr ds:[si]  ; si 0x10 after
+lods  word ptr ds:[si]  ; si 0x10 after ; drawseg_scalestep lo
 mov   word ptr cs:[SELFMODIFY_MASKED_dsp_0E+1 - OFFSET R_MASK24_STARTMARKER_], ax
-lods  word ptr ds:[si]  ; si 0x12 after
+lods  word ptr ds:[si]  ; si 0x12 after ; drawseg_scalestep hi
 mov   word ptr cs:[SELFMODIFY_MASKED_dsp_10+1 - OFFSET R_MASK24_STARTMARKER_], ax
-add   si, 4
-lods  word ptr ds:[si]  ; si 0x18 after
+add   si, 4 ; drawseg_bsilheight, drawseg_tsilheight
+lods  word ptr ds:[si]  ; si 0x18 after ; drawseg_sprtopclip_offset
 mov   word ptr cs:[SELFMODIFY_MASKED_dsp_16+4 - OFFSET R_MASK24_STARTMARKER_], ax
-lods  word ptr ds:[si]  ; si 0x1A after
+lods  word ptr ds:[si]  ; si 0x1A after ; drawseg_maskedtexturecol_val
 mov   word ptr cs:[SELFMODIFY_MASKED_dsp_18+4 - OFFSET R_MASK24_STARTMARKER_], ax
-lods  word ptr ds:[si]  ; si 0x1C after
+lods  word ptr ds:[si]  ; si 0x1C after ; drawseg_silhouette
 mov   word ptr cs:[SELFMODIFY_MASKED_dsp_1A+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 mov   ax, ss
 mov   ds, ax
 
 mov   ax, SIDES_SEGMENT
-mov   si, word ptr ds:[bx + SEG_RENDER_T.sr_sidedefOffset]			; get sidedefOffset
+mov   si, word ptr ds:[di + SEG_RENDER_T.sr_sidedefOffset]			; get sidedefOffset
 mov   es, ax
 ; si was preshifted
 mov   bx, si						; side_render_t is 4 bytes each
@@ -1720,7 +1721,7 @@ mov   ax, word ptr ds:[bx + SIDE_RENDER_T.sr_secnum]
 mov   word ptr cs:[SELFMODIFY_MASKED_siderender_02+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 mov   ax, TEXTURETRANSLATION_SEGMENT
-add   si, si
+shl   si, 1
 mov   es, ax
 mov   ax, MASKED_LOOKUP_SEGMENT
 mov   si, word ptr es:[si]			; get texnum. si is stored for the whole function. not good revisit.
@@ -1770,21 +1771,23 @@ mov   word ptr cs:[SELFMODIFY_MASKED_lookup_2 - OFFSET R_MASK24_STARTMARKER_], b
 
 mov   ax, SEG_LINEDEFS_SEGMENT
 mov   es, ax
-mov   ax, word ptr ds:[_curseg]
-mov   bx, ax
+
+mov   bx, cx ; _curseg
 add   bh, (seg_sides_offset_in_seglines SHR 8)		; seg_sides_offset_in_seglines high word
 mov   dl, byte ptr es:[bx]		; ; dl is curlineside here
-sal   ax, 1
-mov   bx, ax
-mov   di, word ptr es:[bx]		; di holds curlinelinedef
+sal   cx, 1
+mov   bx, cx ; _curseg word
+
+
+mov   bx, word ptr es:[bx]		; 
+xchg  bx, di                    ; di holds curlinelinedef, bx holds curseg_render  
 
 mov   ax, LINEFLAGSLIST_SEGMENT
 mov   es, ax
-mov   al, byte ptr es:[di]
-mov   bx, word ptr ds:[_curseg_render]   ; get curseg 
 
-; lineflags jmp/nop selfmodify here
-test  al, ML_DONTPEGBOTTOM
+test  byte ptr es:[di], ML_DONTPEGBOTTOM
+
+; todo lineflags jmp/nop selfmodify here?
 ; nop 
 mov   ax, 0c089h 
 je    peg_bottom
@@ -1796,11 +1799,10 @@ mov   word ptr cs:[SELFMODIFY_MASKED_lineflags_ml_dontpegbottom - OFFSET R_MASK2
 
 les   bx, dword ptr ds:[bx]				; get v1 offset
 mov   cx, es                            ; get v2 offset
-mov   es, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 
-; todo i think remove this. i think they are preshifted, double check
-SHIFT_MACRO shl bx 2
-SHIFT_MACRO shl cx 2
+mov   ax, VERTEXES_SEGMENT
+mov   es, ax
+; bx/cx are preshifted
 
 
 ; compare v1/v2 fields right now, self modify the lightnum diff that it is used for later.
@@ -1979,7 +1981,7 @@ mov   word ptr cs:[SELFMODIFY_MASKED_set_walllights+2 - OFFSET R_MASK24_STARTMAR
 
 SELFMODIFY_MASKED_dsp_1A:
 mov   ax, 01000h		; ds->maskedtexturecol_val
-add   ax, ax
+sal   ax, 1  ; todo should this value be stored preshifted by default?
 mov   word ptr ds:[_maskedtexturecol], ax
 
 

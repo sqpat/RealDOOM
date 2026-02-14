@@ -1695,8 +1695,8 @@ les    bx, dword ptr [bp - 8]
 
 
 
-mov   dx, word ptr es:[bx + si + 0143h]	; b1&b2
-mov   cx, word ptr es:[bx + si + 1]		; t1&t2
+mov   dx, word ptr es:[bx + si + VISPLANE_T.vp_bottom - 1]	; b1&b2
+mov   cx, word ptr es:[bx + si + VISPLANE_T.vp_top - 1]		; t1&t2
 
 
 mov   ax, SPANSTART_SEGMENT
@@ -1721,7 +1721,7 @@ add   di, ax
 
 loop_first_mapplane:
 cmp   cl, dl
-ja   done_with_first_mapplane_loop
+ja    done_with_first_mapplane_loop
 
 mov   ax, word ptr es:[di]
 mov   word ptr ds:[_ds_y], di   ; predoubled for lookup

@@ -4764,7 +4764,7 @@ ELSE
    SUB  SI, DX
    MUL  BX
    ADD  AX, 01000h ; db 081h, 0c0h, 00, 10; 
-   _selfmodify_restore_dx_3:  ; even addr, selfmodify even with 4 byte add... but ruins performance up ahead?
+   _selfmodify_restore_dx_3:  ; even addr, selfmodify even with 4 byte add... but ruins performance up ahead? requires invesitgation to see what breaks.
    PUBLIC _selfmodify_restore_dx_3
    ADC  SI, DX
    XCHG AX, CX
