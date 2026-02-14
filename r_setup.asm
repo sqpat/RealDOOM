@@ -500,6 +500,7 @@ ENDP
 PROC    R_ExecuteSetViewSize_ NEAR
 PUBLIC  R_ExecuteSetViewSize_
 
+push  bx
 push  cx
 push  dx
 
@@ -656,6 +657,7 @@ mov     word ptr ds:[_spanfunc_outp + 0], ax
 
 pop   dx
 pop   cx
+pop   bx
 ret
 
 ENDP

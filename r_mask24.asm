@@ -719,21 +719,406 @@ ENDP
 
 
 
+ALIGN_MACRO
+do_quick_return_whole:
+  xor   ax, ax
+  mov   dx, 08000h
+
+  ret
+
+ALIGN_MACRO
+PROC   FixedDivWholeA_MaskedLocal_   NEAR ; fairly optimized i think
+PUBLIC FixedDivWholeA_MaskedLocal_
+
+; big improvements to branchless fixeddiv 'preamble' by zero318
+; both numbers positive. no signs!
+
+; note: AX is always a fairly low number in this call and will never shift 2 into high bits
+
+
+   jcxz do_simple_div_whole  ; if cx is nonzero then the bounds check definitely failed and does not need to be done
+  restore_reg_then_do_full_divide_whole:
+
+
+do_full_divide_whole:
+
+  
+push si
+push di
+
+; todo inline i guess.
+call div48_32_whole_BSPLocal_ ; internally does push pop of di/bp but not si
+
+; set negative if need be...
+
+mov   dx, es      ; retrieve q1
+pop   di
+pop   si
+
+
+
+ret
+
+; ALIGN_MACRO  ; adding these back seems to lower bench scores
+do_simple_div_whole:
+; AX:0000 div 0000:BX
+; high word is AX:0000 / BX
+; low word: divide remainder << 16 / BX
+
+   mov  dx, ax  ; for division of AX:0000
+   shl  ax, 1
+   shl  ax, 1
+   cmp  ax, bx
+   jae  do_quick_return_whole   ; fixeddiv shift 14 
+   xchg ax, cx  ; zero ax for div. cx is known zero since we jcxzed here.
+
+   div  bx       ; get high result
+   mov  cx, ax   ; store high result
+   xor  ax, ax   ; prep to divide remainder
+   div  bx       ; divide by remainder, get low word
+   mov  dx, cx   ; restore high result
+   ret
+
+
+ENDP
+
+
+
+
+
+;div48_32_whole_
+; basically, shift numerator left 16 and divide
+; AX:00:00 / CX:BX
+
+; ALIGN_MACRO  ; adding these back seems to lower bench scores
+PROC div48_32_whole_BSPLocal_ NEAR ; fairly optimized i think
+
+; di:si get shifted cx:bx
+xor dx, dx
+; cx known nonzero.
+
+test ch, ch
+jne shift_bits_whole
+; shift a whole byte immediately
+
+mov ch, cl
+mov cl, bh
+mov bh, bl
+xor bl, bl
+
+mov dh, dl
+mov dl, ah
+mov ah, al
+xor al, al
+
+shift_bits_whole:
+
+
+
+; less than a byte to shift
+; shift until MSB is 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_whole
+SAL AX, 1
+RCL DX, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_whole  
+SAL AX, 1
+RCL DX, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_whole  
+SAL AX, 1
+RCL DX, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_whole  
+SAL AX, 1
+RCL DX, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_whole  
+SAL AX, 1
+RCL DX, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_whole  
+SAL AX, 1
+RCL DX, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_whole  
+SAL AX, 1
+RCL DX, 1
+
+SAL BX, 1
+RCL CX, 1
+
+
+
+
+
+
+; store this
+done_shifting_whole:
+
+; we overshifted by one and caught it in the carry bit. lets shift back right one.
+
+RCR CX, 1
+RCR BX, 1
+
+; todo unsure if this is worth it
+;test bx, bx                ; rcr does not set zero flag, lame!
+;jz  do_simple_div_after_all_whole  ; we can divide by 16 bits after all?
+
+
+
+
+
+; DX:AX holds divisor...
+; CX:BX holds dividend...
+; numhi = DX:AX
+; numlo = 00:00...
+
+
+
+mov   di, ax      ; store copy of numhi.low
+
+
+;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
+; DX:AX = numhi.wu
+
+div   cx
+
+; rhat = dx
+; qhat = ax
+;    c1 = FastMul16u16u(qhat , den0);
+
+mov   si, dx					; si stores rhat
+mov   es, ax     ; store qhat
+mul   bx   						; DX:AX = c1
+
+;  c2 = rhat:num1
+
+;    if (c1 > c2.wu)
+;         qhat -= (c1 - c2.wu > den.wu) ? 2 : 1;
+; 
+
+; c1 hi = dx, c2 lo = si
+cmp   dx, si
+
+jae   continue_checking_q1_whole
+
+q1_ready_whole:
+
+mov  ax, es
+;	rem.hu.intbits = numhi.hu.fracbits;
+;	rem.hu.fracbits = num1;
+;	rem.wu -= FastMul16u32u(q1, den.wu);
+
+
+
+; multiplying by cx:bx basically. inline bx in as si.
+
+;inlined FastMul16u32u_
+
+MUL  cx        ; AX * CX
+mov  si, AX    ; store low product to be high result. Retrieve orig AX
+mov  ax, es
+MUL  bx        ; AX * si
+ADD  DX, si    ; add 
+
+; actual 2nd division...
+
+
+neg   ax
+sbb   di, dx
+mov   dx, di
+
+cmp   dx, cx
+
+; check for adjustment
+
+;    if (rem.hu.intbits < den1){
+
+jnb    adjust_for_overflow_whole
+
+div   cx
+
+mov   si, ax
+mov   di, dx
+
+mul   bx
+sub   dx, di
+
+jae   continue_c1_c2_test_whole
+
+do_return_2_whole:
+mov   ax, si
+
+ret  
+
+; ALIGN_MACRO  ; adding these back seems to lower bench scores
+continue_check2_whole:
+test  ax, ax
+jz    do_return_2_whole
+continue_c1_c2_test_whole:
+je    continue_check2_whole
+; happens about 25% of the time
+
+cmp   dx, cx
+jae   check_for_extra_qhat_subtraction_whole
+
+do_qhat_subtraction_by_1_whole:
+dec   si
+
+mov   ax, si
+
+ret  
+
+; ALIGN_MACRO  ; adding these back seems to lower bench scores
+check_for_extra_qhat_subtraction_whole:
+ja    do_qhat_subtraction_by_2_whole
+cmp   bx, ax
+
+jae   do_qhat_subtraction_by_1_whole
+do_qhat_subtraction_by_2_whole:
+
+dec   si
+jmp   do_qhat_subtraction_by_1_whole
+
+; ALIGN_MACRO  ; adding these back seems to lower bench scores
+do_simple_div_after_all_whole:
+
+; zero high word just calculate low word.
+div  cx       ; get low result
+mov  es, ax
+mov  ax, bx   ; known zero
+div  cx
+ret
+
+
+; ALIGN_MACRO  ; adding these back seems to lower bench scores
+continue_checking_q1_whole:
+ja    check_c1_c2_diff_whole
+
+test  ax, ax
+jz    q1_ready_whole
+
+; rare codepath! 
+;cmp   ax, di
+;jbe   q1_ready_whole
+
+check_c1_c2_diff_whole:
+;sub   ax, di
+sub   dx, si
+cmp   dx, cx
+; these branches havent been tested but this is a super rare codepath
+ja    qhat_subtract_2_whole 
+je    compare_low_word_whole
+
+qhat_subtract_1_whole:
+mov ax, es
+dec ax
+mov es, ax
+jmp q1_ready_whole
+
+; very rare case!
+; ALIGN_MACRO  ; adding these back seems to lower bench scores
+adjust_for_overflow_whole:
+xor   di, di
+sub   ax, cx
+sbb   dx, di
+
+cmp   dx, cx
+
+; check for overflow param
+
+jae   adjust_for_overflow_again_whole
+
+
+div   cx
+mov   si, ax
+mov   di, dx
+
+mul   bx
+sub   dx, di
+; these branches havent been tested but this is a super super super rare codepath
+ja    continue_c1_c2_test_2_whole
+jne   dont_decrement_qhat_and_return_whole
+test  ax, ax
+jz   dont_decrement_qhat_and_return_whole
+continue_c1_c2_test_2_whole:
+
+
+cmp   dx, cx
+ja    decrement_qhat_and_return_whole
+; these branches havent been tested but this is a super super super super super rare codepath
+jne   dont_decrement_qhat_and_return_whole
+cmp   bx, ax
+jae   dont_decrement_qhat_and_return_whole
+decrement_qhat_and_return_whole:
+dec   si
+dont_decrement_qhat_and_return_whole:
+mov   ax, si
+ret  
+
+; ALIGN_MACRO  ; adding these back seems to lower bench scores
+compare_low_word_whole:
+cmp   ax, bx
+jbe   qhat_subtract_1_whole
+
+qhat_subtract_2_whole:
+mov ax, es
+dec ax
+mov es, ax
+jmp qhat_subtract_1_whole
+
+; the divide would have overflowed. subtract values
+; ALIGN_MACRO  ; adding these back seems to lower bench scores
+adjust_for_overflow_again_whole:
+
+sub   ax, cx
+sbb   dx, di
+
+div   cx
+
+; ax has its result...
+
+ret 
+
+
+ENDP
+
+
+ALIGN_MACRO
+flip_not_zero:
+
+; rare case
+
+dec   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0]   ; 0FFFFh
+
+neg   cx
+neg   bx
+sbb   cx, ax ; known 0
+jmp   flip_stuff_done
+
+
 ;
 ; R_DrawVisSprite_
 ;
 
 
-do_32_bit_mul_vissprite:
-inc   dx
-jz    do_16_bit_mul_after_all_vissprite
-dec   dx
-do_32_bit_mul_after_all_vissprite:
 
-call FixedMulMaskedLocal_
-
-
-jmp done_with_mul_vissprite
 
 ALIGN_MACRO
 PROC   R_DrawVisSprite_ NEAR  ; fairly optimized.
@@ -741,19 +1126,91 @@ PUBLIC R_DrawVisSprite_
 ; si is vissprite_t near pointer
 
 
-mov   al, byte ptr ds:[si + VISSPRITE_T.vs_colormap]
-
-; al is colormap. 
-
-mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMARKER_], al
 
 ; todo calculate xiscale now.
 ; note: we lazily calculate xiscale (the result of a FixedDiv (FRACUNIT, xxxx) operation) here.
 ; this is because the sprite may have been obscured by this point with no visible pixels.
 
 
-les   ax, dword ptr ds:[si + VISSPRITE_T.vs_xiscale]   ; vis->xiscale
-mov   dx, es
+mov   ax, 1
+
+les   bx, dword ptr ds:[si + VISSPRITE_T.vs_xiscale]
+mov   cx, es
+
+call FixedDivWholeA_MaskedLocal_   ; todo inline? then make do_32_bit_mul_vissprite etc fit without jump.
+
+xchg  ax, bx
+mov   cx, dx  ; cx:bx get vs_xiscale
+
+xor   ax, ax
+cwd
+cmp   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], ax   ; startfrac +0 = flip
+xchg  dx, word ptr ds:[si + VISSPRITE_T.vs_startfrac]       ; dx gets x1, startfrac + 0 gets 0 
+jne   flip_not_zero
+
+flip_stuff_done:
+
+mov   word ptr ds:[si + VISSPRITE_T.vs_xiscale + 0], bx
+mov   word ptr ds:[si + VISSPRITE_T.vs_xiscale + 2], cx
+
+
+;    if (vis->x1 > x1)
+;        vis->startfrac += FastMul16u32u((vis->x1-x1),vis->xiscale);
+
+mov   ax, word ptr ds:[si + VISSPRITE_T.vs_x1]
+
+sub   ax, dx  ; we grabbed x1 earlier
+jle   vis_x1_greater_than_x1
+
+; cx:bx already vs_xiscale 
+mov   di, cx ; backup
+
+; inlined FastMul16u32u
+
+IF COMPISA GE COMPILE_386
+
+
+   ; set up ecx
+   db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
+   db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
+
+   ; set up eax
+   db 066h, 098h                    ; cwde (prepare AX)
+
+   ; actual mul
+   db 066h, 0F7h, 0E1h              ; mul ecx
+   ; set up return
+   db 066h, 00Fh, 0A4h, 0C2h, 010h  ; shld edx, eax, 0x10
+   
+
+ELSE
+
+   XCHG CX, AX    ; AX stored in CX
+   MUL  CX        ; AX * CX
+   XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+   MUL  BX        ; AX * BX
+   ADD  DX, CX    ; add 
+ENDIF
+
+add   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], ax
+adc   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], dx
+
+mov   cx, di ; restore cx. bx was unchanged.
+
+vis_x1_greater_than_x1:
+
+; TODO: dont write startfrac to memory. instead self modify it ahead directly.
+
+; get xiscale into dx:ax
+xchg  ax, bx
+mov   dx, cx  ; xi_scale was in cx:bx
+
+
+
+R_DrawPlayerVisSprite_:  ; pass in vs_xiscale in dx:ax. todo: consider a whole speciailized variant just for player.
+PUBLIC R_DrawPlayerVisSprite_
+
+
 xor   cx, cx  ; cx is 0
 ; labs
 or    dx, dx
@@ -774,12 +1231,29 @@ rcr   ax, 1
 mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], dl
 
+mov   al, byte ptr ds:[si + VISSPRITE_T.vs_colormap]
+; al is colormap. 
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMARKER_], al
+
+
 test  dl, dl
 je    is_stretch_draw ; from dl
 not_stretch_draw:
 mov   dx, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1
 mov   di, DRAWCOL_NOLOOP_OFFSET_MASKED
 jmp   continue_selfmodifies_vissprites
+
+ALIGN_MACRO
+do_32_bit_mul_vissprite:
+inc   dx
+jz    do_16_bit_mul_after_all_vissprite
+dec   dx
+do_32_bit_mul_after_all_vissprite:
+
+call FixedMulMaskedLocal_
+
+jmp done_with_mul_vissprite
+
 ALIGN_MACRO
 is_stretch_draw:
 mov   dx, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOPANDSTRETCH_OFFSET+1
@@ -1491,7 +1965,8 @@ jg    end_draw_sprite_normal_innerloop
 mov   bx, dx
 
 SHIFT_MACRO shl bx 2 ; possible to preshift dx by 2?
-; es is patch 
+; es is patch   
+; bx way too high???
 mov   ax, word ptr es:[bx + PATCH_T.patch_columnofs+0] ; todo LES?
 mov   bx, word ptr es:[bx + PATCH_T.patch_columnofs+2]
 
@@ -4474,13 +4949,17 @@ mov  word ptr ds:[_mceilingclip], OFFSET_NEGONEARRAY
 cmp  word ptr ds:[_psprites + PSPDEF_T.pspdef_statenum], -1  ; STATENUM_NULL
 je  check_next_player_sprite
 mov  si, _player_vissprites       ; vissprite 0
-call R_DrawVisSprite_
+les  ax, dword ptr ds:[si + VISSPRITE_T.vs_xiscale]
+mov  dx, es
+call R_DrawPlayerVisSprite_
 
 check_next_player_sprite:
 cmp  word ptr ds:[_psprites + (SIZE PSPDEF_T) +  PSPDEF_T.pspdef_statenum], -1  ; STATENUM_NULL
 je   exit_drawplayersprites
 mov  si, _player_vissprites + (SIZE VISSPRITE_T)
-call R_DrawVisSprite_
+les  ax, dword ptr ds:[si + VISSPRITE_T.vs_xiscale]
+mov  dx, es
+call R_DrawPlayerVisSprite_
 
 exit_drawplayersprites:
 
@@ -5847,18 +6326,17 @@ PROC   R_WriteBackViewConstantsMasked24_ FAR   ; fairly unoptimized, doesnt run 
 PUBLIC R_WriteBackViewConstantsMasked24_ 
 
 
-push     bx
+
 mov      ax, DRAWFUZZCOL_AREA_SEGMENT
 mov      ds, ax
+
+
 
 
 ASSUME DS:R_MASK24_TEXT
 
 mov      ax,  word ptr ss:[_detailshift]
 
-; todo modify these as loops
-;mov   al, byte ptr ss:[_detailshift2minus]
-;mov   al, byte ptr ss:[_detailshift]
 
 
 ; for 16 bit shifts, modify jump to jump 4 for 0 shifts, 2 for 1 shifts, 0 for 0 shifts.
@@ -5886,10 +6364,6 @@ mov      word ptr ds:[bx+2], ax
 mov      word ptr ds:[bx+6], ax
 
 mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_32bit_2 - OFFSET R_MASK24_STARTMARKER_], 006EBh
-
-
-
-
 
 
 
@@ -5995,9 +6469,9 @@ mov   word ptr ds:[SELFMODIFY_MASKED_viewheight_2+1 - OFFSET R_MASK24_STARTMARKE
 
 
 
-mov      ax, ss
-mov      ds, ax
-pop      bx
+push   ss
+pop    ds
+
 
 
 retf
@@ -6010,11 +6484,10 @@ ALIGN_MACRO
 PROC   R_WriteBackMaskedFrameConstants24_ FAR   ; fairly unoptimized, doesnt run much
 PUBLIC R_WriteBackMaskedFrameConstants24_ 
 
-; todo: merge this with some other code. maybe R_DrawMasked and use CS
 
+; cs is NOT DRAWFUZZCOL_AREA_SEGMENT. todo fixable?
 mov      ax, DRAWFUZZCOL_AREA_SEGMENT
 mov      ds, ax
-
 
 ASSUME DS:R_MASK24_TEXT
 
@@ -6048,11 +6521,12 @@ do_no_fixedcolormap_selfmodify:
 
 ; replace with nop.
 ; nop 
+mov      bx, SELFMODIFY_MASKED_fixedcolormap_2 - OFFSET R_MASK24_STARTMARKER_
 mov      ax, 0c089h 
 mov      word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_1 - OFFSET R_MASK24_STARTMARKER_], ax
 ; lea bp, [bp + 0] ; 3 byte nop
-mov      word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_2 - OFFSET R_MASK24_STARTMARKER_], 06E8Dh 
-mov      byte ptr ds:[SELFMODIFY_MASKED_fixedcolormap_2+2 - OFFSET R_MASK24_STARTMARKER_], 00
+mov      word ptr ds:[bx], 06E8Dh 
+mov      byte ptr ds:[bx+2], 00
 
 
 
@@ -6064,20 +6538,16 @@ mov   byte ptr ds:[SELFMODIFY_MASKED_fixedcolormap_3+5 - OFFSET R_MASK24_STARTMA
 ; modify jmp in place.
 mov   ax, ((SELFMODIFY_MASKED_fixedcolormap_1_TARGET - SELFMODIFY_MASKED_fixedcolormap_1_AFTER) SHL 8) + 0EBh
 mov   word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_1 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   byte ptr ds:[SELFMODIFY_MASKED_fixedcolormap_2+0 - OFFSET R_MASK24_STARTMARKER_], 0E9h ; word jmp
-mov   word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_2+1 - OFFSET R_MASK24_STARTMARKER_], (SELFMODIFY_MASKED_fixedcolormap_2_TARGET - SELFMODIFY_MASKED_fixedcolormap_2_AFTER)
+mov   byte ptr ds:[bx+0], 0E9h ; word jmp
+mov   word ptr ds:[bx+1], (SELFMODIFY_MASKED_fixedcolormap_2_TARGET - SELFMODIFY_MASKED_fixedcolormap_2_AFTER)
 
 
 
 ; fall thru
 done_with_fixedcolormap_selfmodify:
 
-mov      ax, ss
-mov      ds, ax
-
-
-
-
+push   ss
+pop    ds
 
 
 retf

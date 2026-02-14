@@ -645,12 +645,12 @@ FREEBYTES             7DFA:0000
 TODO UPDATE
 maskedpostdata              8400:0000
 drawmaskedfuncarea_sprite?  86FD:0000
- spritepostdatasizes              8880:0000
- spritetotaldatasizes             89D2:0000
- maskedpostdataofs                89DA:0000
- maskedpixeldataofs               8AB2:0000
- maskedconstants_funcarea_segment 8B8A:0000
- render_8800_end_segment          8BB2:0000 
+ spritepostdatasizes              8892:0000
+ spritetotaldatasizes             893F:0000
+ maskedpostdataofs                89EC:0000
+ maskedpixeldataofs               8AC4:0000
+ maskedconstants_funcarea_segment 8B9C:0000
+ render_8800_end_segment          8BB0:0000 
  clipbot_start_segment            8BB0:0000
 
 // not much free because clipbot_start_segment has stufff after a gap

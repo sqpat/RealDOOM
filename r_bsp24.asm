@@ -1186,7 +1186,7 @@ do_quick_return_whole:
   ret
 
 ALIGN_MACRO
-PROC   FixedDivWholeA_BSPLocal_   NEAR ; fairly optimized i think
+PROC   FixedDivWholeA_BSPLocal_   NEAR ; fairly optimized i think TODO make 386 version
 PUBLIC FixedDivWholeA_BSPLocal_
 
 ; big improvements to branchless fixeddiv 'preamble' by zero318
@@ -2597,11 +2597,12 @@ mov     ax, OFFSET str_outofvisplanes
 push    ax
 call    dword ptr ds:[_I_Error_addr]
 
-ENDP
+
 
 str_outofvisplanes:
 db "Out of Visplanes!", 0
 @
+ENDP
 
 ; ALIGN_MACRO  ; adding these back seems to lower bench scores
 PROC Z_QuickMapVisplanePage_BSPLocal_ NEAR
@@ -3423,7 +3424,7 @@ usedwidth_not_1:
 ;	temp.w += FixedMul (tx.w,xscale.w);
 
 dec   ax
-mov   word ptr cs:[SELFMODIFY_set_usedwidth + 3 - OFFSET R_BSP24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_set_usedwidth + 1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
 les   bx, dword ptr [bp - 01Eh]
@@ -3547,87 +3548,29 @@ mov   ax, bx
 dec   ax
 x2_smaller_than_viewwidth:
 les   bx, dword ptr [bp - 01Eh]
-mov   cx, es
 mov   word ptr ds:[si + VISSPRITE_T.vs_x2], ax
-mov   ax, 1
-; todo: make a "div65536" function which does a shift strategy rather than needing the full thing
-call FixedDivWholeA_BSPLocal_
-xchg  ax, bx
-mov   cx, dx
-xor   ax, ax
-cmp   byte ptr [bp - 024h], al
-jne   flip_not_zero
 
-flip_zero: ; zero case
-
-mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], ax ; 0
-mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], ax ; 0
-jmp   flip_stuff_done
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
-
-set_intbits_to_129:
-mov   ax, 129
-jmp intbits_ready
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
-
-flip_not_zero:
-dec   ax
-mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], ax ; -1
-
-SELFMODIFY_set_usedwidth:
-mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], 01000h
-
-neg   cx
-neg   bx
-sbb   cx, 0
-
-flip_stuff_done:
+; all this logic moved to masked.
+; we do not need iscale until draw time. and we might not draw this because the sprite
+; may be behind a wall!
+; so for now just store the arg to fixeddivwhole in xiscale
 
 mov   word ptr ds:[si + VISSPRITE_T.vs_xiscale + 0], bx
-mov   word ptr ds:[si + VISSPRITE_T.vs_xiscale + 2], cx
+mov   word ptr ds:[si + VISSPRITE_T.vs_xiscale + 2], es   
 
+mov   al, byte ptr [bp - 024h] ; flip
+ror   ax, 1                    ; signed if flip on
+cwd   ; if flip, dx = 0FFFFh
+SELFMODIFY_set_usedwidth:
+mov   ax, 01000h
 
-;    if (vis->x1 > x1)
-;        vis->startfrac += FastMul16u32u((vis->x1-x1),vis->xiscale);
+and   ax, dx
+; this is both the correct starting value for startfrac + 2 (must set startfrac+0 to 0 later) but also encodes flip for later.
+; if non zero, then neg iscale in masked
+mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], ax   ; startfrac +2 is what it should be (0 or spritewidth - 1)
+mov   ax, word ptr [bp - 026h]
+mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], ax   ; startfrac +0 = x1
 
-mov   ax, word ptr ds:[si + VISSPRITE_T.vs_x1]
-
-sub   ax, word ptr [bp - 026h]
-jle   vis_x1_greater_than_x1
-
-; cx:bx already vs_xiscale 
-
-; inlined FastMul16u32u
-
-IF COMPISA GE COMPILE_386
-
-
-   ; set up ecx
-   db 066h, 0C1h, 0E3h, 010h        ; shl  ebx, 0x10
-   db 066h, 00Fh, 0A4h, 0D9h, 010h  ; shld ecx, ebx, 0x10
-
-   ; set up eax
-   db 066h, 098h                    ; cwde (prepare AX)
-
-   ; actual mul
-   db 066h, 0F7h, 0E1h              ; mul ecx
-   ; set up return
-   db 066h, 00Fh, 0A4h, 0C2h, 010h  ; shld edx, eax, 0x10
-   
-
-ELSE
-
-   XCHG CX, AX    ; AX stored in CX
-   MUL  CX        ; AX * CX
-   XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
-   MUL  BX        ; AX * BX
-   ADD  DX, CX    ; add 
-ENDIF
-
-add   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], ax
-adc   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], dx
-
-vis_x1_greater_than_x1:
 
 ;    if (thingflags2 & MF_SHADOW) {
 
@@ -3673,6 +3616,10 @@ mov   al, byte ptr ds:[di+01000h]
 mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], al
 
 jmp   done_with_r_projectsprite
+set_intbits_to_129:
+mov   ax, 129
+jmp intbits_ready
+
 ; ALIGN_MACRO  ; adding these back seems to lower bench scores
 
 exit_set_fullbright_colormap:
@@ -3747,7 +3694,8 @@ MAXDRAWSEGS = 256
 
 ;R_StoreWallRange_
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO  ; adding these back seems to lower bench scores
+NOP
 PROC   R_StoreWallRange_ NEAR ; needs another look and reconciliation with outer stack frames.
 PUBLIC R_StoreWallRange_ 
 
