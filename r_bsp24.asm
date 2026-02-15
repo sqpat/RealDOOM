@@ -6774,29 +6774,36 @@ continue_checking_spr_top_clip:
 
 cmp       word ptr es:[bx + DRAWSEG_T.drawseg_sprtopclip_offset], 0
 jne       check_spr_bottom_clip
+
 mov       si, word ptr [bp - 2]
+mov       di, word ptr ds:[_lastopening]
+mov       ax, di
+sub       ax, si
+shl       ax, 1
+
+mov       cx, word ptr [bp - 01Ah]
+sub       cx, si
+add       word ptr ds:[_lastopening], cx
+
+
+mov       dx, OPENINGS_SEGMENT
+mov       es, dx
+mov       ds, dx
+
 sal       si, 1
 add       si, OFFSET_CEILINGCLIP
-mov       di, word ptr ds:[_lastopening]
-mov       cx, word ptr [bp - 01Ah]
-sub       cx, word ptr [bp - 2]
-mov       ax, OPENINGS_SEGMENT
-mov       es, ax
-mov       ds, ax
-add       di, di
+
+sal       di, 1
 
 rep movsw
 
-mov       ax, ss
-mov       ds, ax
-mov       ax, word ptr ds:[_lastopening]
-sub       ax, word ptr [bp - 2]
+mov       dx, ss
+mov       ds, dx
+
+
 mov       es, word ptr ds:[_ds_p+2]   ; bx is ds_p offset above
-add       ax, ax
 mov       word ptr es:[bx + DRAWSEG_T.drawseg_sprtopclip_offset], ax
-mov       ax, word ptr [bp - 01Ah]
-sub       ax, word ptr [bp - 2]
-add       word ptr ds:[_lastopening], ax
+
 check_spr_bottom_clip:
 ; es:si is ds_p
 test      byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_BOTTOM
@@ -6808,29 +6815,34 @@ ALIGN_MACRO
 continue_checking_spr_bottom_clip:
 cmp       word ptr es:[bx + DRAWSEG_T.drawseg_sprbottomclip_offset], 0
 jne       check_silhouettes_then_exit
+
 mov       si, word ptr [bp - 2]
-add       si, si
-add       si, OFFSET_FLOORCLIP
-mov       ax, OPENINGS_SEGMENT
 mov       di, word ptr ds:[_lastopening]
-add       di, di
+mov       ax, di
+sub       ax, si
+shl       ax, 1
+
 mov       cx, word ptr [bp - 01Ah]
-sub       cx, word ptr [bp - 2]
-mov       es, ax
-mov       ds, ax
-rep movsw 
+sub       cx, si
+add       word ptr ds:[_lastopening], cx
 
-mov       ax, ss
-mov       ds, ax
+mov       dx, OPENINGS_SEGMENT
+mov       es, dx
+mov       ds, dx
 
-mov       ax, word ptr ds:[_lastopening]
-sub       ax, word ptr [bp - 2]
+sal       si, 1
+add       si, OFFSET_FLOORCLIP
+
+sal       di, 1
+
+rep movsw
+
+mov       dx, ss
+mov       ds, dx
+
+
 mov       es, word ptr ds:[_ds_p+2]   ; bx is ds_p offset above
-add       ax, ax
 mov       word ptr es:[bx + DRAWSEG_T.drawseg_sprbottomclip_offset], ax
-mov       ax, word ptr [bp - 01Ah]
-sub       ax, word ptr [bp - 2]
-add       word ptr ds:[_lastopening], ax
 check_silhouettes_then_exit:
 cmp       byte ptr ds:[_maskedtexture], 0
 je        skip_top_silhouette
