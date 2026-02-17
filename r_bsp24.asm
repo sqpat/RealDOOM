@@ -2778,8 +2778,8 @@ ENDP
 ;R_FindPlane_
 
 ALIGN_MACRO
-PROC R_FindPlane_ NEAR ; could use another look
-
+PROC   R_FindPlane_ NEAR ; could use another look
+PUBLIC R_FindPlane_
 
 
 ; dx is 13:3 height
@@ -2890,7 +2890,6 @@ mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height], dx
 mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_minx], SCREENWIDTH
 mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_maxx], 0FFFFh
 
-
 pop       dx  ; get isceil
 inc       word ptr ds:[_lastvisplane]
 
@@ -2902,9 +2901,14 @@ call      R_HandleEMSVisplanePagination_
 mov       di, ax
 mov       es, dx
 
+
 mov       cx, (SCREENWIDTH / 2) + 1    ; one extra word for pad
 mov       ax, 0FFFFh
 rep stosw 
+
+;  es:di currently points to 0142h or vp_pad2
+
+mov       byte ptr es:[di + (VISPLANE_T.vp_pad5 - VISPLANE_T.vp_pad2)], 0 ; zero modified field
 
 
 ; zero out pl bot
@@ -5726,6 +5730,8 @@ mov   byte ptr es:[bx+di + vp_bottom_offset], al
 mov   ax, si						    		   ; dl is 0, si is < screensize (and thus under 255)
 dec   ax
 mov   byte ptr es:[bx+di], al
+mov   byte ptr es:[bx + vp_pad5_offset], 1
+
 SELFMODIFY_BSP_markceiling_1_TARGET:
 markceiling_done:
 
@@ -5775,6 +5781,7 @@ dec   ax
 mov   byte ptr es:[bx+di], al
 dec   cx
 mov   byte ptr es:[bx+di + vp_bottom_offset], cl
+mov   byte ptr es:[bx + vp_pad5_offset], 1
 SELFMODIFY_BSP_markfloor_1_TARGET:
 markfloor_done:
 SELFMODIFY_BSP_get_segtextured:
@@ -11889,7 +11896,7 @@ mov       ax, CACHEDHEIGHT_SEGMENT
 mov       es, ax
 xor       ax, ax
 mov       di, ax  ; 0
-mov       cx, 400
+mov       cx, 200
 
 rep stosw 
 

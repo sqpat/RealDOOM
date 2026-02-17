@@ -1144,6 +1144,8 @@ PUBLIC R_DrawVisSprite_
 ; this is because the sprite may have been obscured by this point with no visible pixels.
 
 
+; begin fixeddivwhole sequence.
+
 mov   ax, 1
 
 les   bx, dword ptr ds:[si + VISSPRITE_T.vs_xiscale]
@@ -2948,6 +2950,8 @@ mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMA
 SELFMODIFY_MASKED_fixedcolormap_1_TARGET:
 got_colormap:
 
+; fastdiv here
+
 mov   bx, word ptr ds:[_spryscale]
 mov   cx, word ptr ds:[_spryscale + 2]
 
@@ -2970,6 +2974,8 @@ mov   bx, DRAWCOL_NOLOOPSTRETCH_OFFSET_MASKED
 continue_selfmodifies_maskedsegrange:
 mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset], bx
 mov   word ptr cs:[SELFMODIFY_masked_set_jump_write_offset+1 - OFFSET R_MASK24_STARTMARKER_], dx
+
+; end fastdiv sequence
 
 mov   bx, si  ; bx gets a copy of texture column?
 ;  ax stores _maskedtexrepeat for a little bit
@@ -5331,8 +5337,6 @@ mov   ah,  0FDh  ; ~SIL_TOP
 do_not_remove_top_silhouette:
 
 
-;shl   si, 1
-
 ; si is r1 and cx is count
 ; bx is near vissprite
 ; es:di is drawseg
@@ -5398,7 +5402,7 @@ ALIGN_MACRO
 silhouette_is_SIL_BOTH:
 
 ; ax/bx already set
-
+push  bp
 xchg  ax, bp  ; ; use bp for bp + si pattern
 
 silhouette_SIL_BOTH_loop:
@@ -5406,23 +5410,21 @@ silhouette_SIL_BOTH_loop:
 cmp   byte ptr ds:[si], dh ; viewheight+1
 jne   do_next_silhouette_SIL_BOTH_subloop
 
-mov   dl, byte ptr es:[bx+si]   ; is 0 shouldnt be?
-mov   byte ptr ds:[si], dl
-xor   dl, dl
+mov   al, byte ptr es:[bx+si]   ; is 0 shouldnt be?
+mov   byte ptr ds:[si], al
 do_next_silhouette_SIL_BOTH_subloop:
 
 cmp   byte ptr ds:[si + (SCREENWIDTH)], dl ; 0
 jne   increment_silhouette_SIL_BOTH_loop
 
-mov   dl, byte ptr es:[bp+si]
-mov   byte ptr ds:[si + SCREENWIDTH], dl
-xor   dl, dl
+mov   al, byte ptr es:[bp+si]
+mov   byte ptr ds:[si + SCREENWIDTH], al
 
 increment_silhouette_SIL_BOTH_loop:
 
 inc   si
 loop  silhouette_SIL_BOTH_loop
-xchg  ax, bp  ; restore bp
+pop   bp
 
 
 mov   cx, ss

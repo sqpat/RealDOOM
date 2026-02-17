@@ -1314,6 +1314,17 @@ inc   byte ptr cs:[SELFMODIFY_SPAN_drawplaneiter+1 - OFFSET R_SPAN24_STARTMARKER
 add   word ptr [bp - 8], VISPLANE_BYTE_SIZE
 jmp   SHORT drawplanes_loop
 ALIGN_MACRO	
+
+exit_drawplanes:
+LEAVE_MACRO 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+mov   byte ptr cs:[(SELFMODIFY_SPAN_drawplaneiter+1) - OFFSET R_SPAN24_STARTMARKER_], 0
+retf   
+ALIGN_MACRO	
 do_sky_flat_draw:
 ; todo revisit params. maybe these can be loaded in R_DrawSkyPlaneCallHigh
 les   bx, dword ptr [bp - 8] ; get visplane offset
@@ -1326,17 +1337,7 @@ call  dword ptr ds:[_R_DrawSkyPlane_addr]
 inc   byte ptr cs:[SELFMODIFY_SPAN_drawplaneiter+1 - OFFSET R_SPAN24_STARTMARKER_]
 add   word ptr [bp - 8], VISPLANE_BYTE_SIZE
 jmp   SHORT drawplanes_loop
-ALIGN_MACRO	
 
-exit_drawplanes:
-LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-mov   byte ptr cs:[(SELFMODIFY_SPAN_drawplaneiter+1) - OFFSET R_SPAN24_STARTMARKER_], 0
-retf   
 ALIGN_MACRO	
 do_span_fixedcolormap_selfmodify:
 mov   byte ptr cs:[SELFMODIFY_SPAN_fixedcolormap_2 + 5 - OFFSET R_SPAN24_STARTMARKER_], al
@@ -1345,13 +1346,6 @@ mov   ax, ((SELFMODIFY_SPAN_fixedcolormap_1_TARGET - SELFMODIFY_SPAN_fixedcolorm
 done_with_span_fixedcolormap_selfmodify:
 ; modify instruction
 mov   word ptr cs:[SELFMODIFY_SPAN_fixedcolormap_1 - OFFSET R_SPAN24_STARTMARKER_], ax
-
-
-
-
-
-
-
 
 mov       ax, OFFSET _R_DrawSkyPlane_addr
 cmp       byte ptr ds:[_screenblocks], 10
@@ -1369,6 +1363,11 @@ SELFMODIFY_SPAN_drawplaneiter:
 mov   ax, 0 ; get i value. this is at the start of the function so its hard to self modify. so we reset to 0 at the end of the function
 cmp   ax, word ptr ds:[_lastvisplane]   ; todo self modify constant in drawplanes24
 jge   exit_drawplanes
+
+les   bx, dword ptr [bp - 8]
+cmp   byte ptr es:[bx + VISPLANE_T.vp_pad5], 0
+je    do_next_drawplanes_loop
+
 SHIFT_MACRO shl ax 3
 
 
@@ -1377,7 +1376,7 @@ add   ax, offset _visplaneheaders
 mov   si, ax
 mov   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_minx]			; fetch visplane minx
 cmp   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_maxx]			; fetch visplane maxx
-jnle   do_next_drawplanes_loop
+jg    do_next_drawplanes_loop
 
 loop_visplane_page_check:
 cmp   word ptr [bp - 8], VISPLANE_BYTES_PER_PAGE

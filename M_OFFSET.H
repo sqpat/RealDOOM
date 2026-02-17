@@ -11,7 +11,7 @@
 #define R_WriteBackViewConstantsMaskedFLOffset  0x0
 #define R_WriteBackMaskedFrameConstantsFLOffset 0x8D
 #define R_DrawPlanes24Offset                    0xB36
-#define R_WriteBackViewConstantsSpan24Offset    0xF40
+#define R_WriteBackViewConstantsSpan24Offset    0xF4C
 #define R_DrawPlanes16Offset                    0x9E7
 #define R_WriteBackViewConstantsSpan16Offset    0xE68
 #define R_DrawPlanes0Offset                     0x145
@@ -24,10 +24,10 @@
 #define R_DrawSkyColumnFLOffset                 0x0
 #define R_DrawSkyPlaneFLOffset                  0x294
 #define R_DrawSkyPlaneDynamicFLOffset           0x294
-#define R_WriteBackViewConstants24Offset        0x30F6
-#define R_RenderPlayerView24Offset              0x2F70
-#define R_GetCompositeTexture24Offset           0x2C5A
-#define R_GetPatchTexture24Offset               0x2BC0
+#define R_WriteBackViewConstants24Offset        0x3108
+#define R_RenderPlayerView24Offset              0x2F82
+#define R_GetCompositeTexture24Offset           0x2C6C
+#define R_GetPatchTexture24Offset               0x2BD2
 #define R_WriteBackViewConstants16Offset        0x3406
 #define R_RenderPlayerView16Offset              0x3289
 #define R_GetCompositeTexture16Offset           0x2F73
@@ -61,11 +61,11 @@
 #define R_DrawColumn16CodeSize         0xCB4
 #define R_DrawColumn0CodeSize          0x58E
 #define R_DrawColumnFLCodeSize         0x58E
-#define R_DrawSpan24CodeSize           0x1085
+#define R_DrawSpan24CodeSize           0x1091
 #define R_DrawSpan16CodeSize           0xF60
 #define R_DrawSpan0CodeSize            0x63A
 #define R_DrawSpanFLCodeSize           0x591
-#define R_DrawFuzzColumn24CodeSize     0x1920
+#define R_DrawFuzzColumn24CodeSize     0x191C
 #define R_DrawFuzzColumn16CodeSize     0x18E3
 #define R_DrawFuzzColumn0CodeSize      0x184F
 #define R_DrawFuzzColumnFLCodeSize     0x1819
@@ -76,7 +76,7 @@
 #define R_DrawSkyColumnCodeSize        0xD86
 #define R_DrawSkyColumnFLCodeSize      0x303
 #define M_MenuCodeSize                 0x1559
-#define R_BSP24CodeSize                0x3457
+#define R_BSP24CodeSize                0x3469
 #define R_BSP16CodeSize                0x3740
 #define R_BSP0CodeSize                 0x366F
 #define R_BSPFLCodeSize                0x3617

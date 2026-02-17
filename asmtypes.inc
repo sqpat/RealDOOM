@@ -399,12 +399,12 @@ VISPLANE_T STRUC
 
     vp_pad4     db ?                    ; 0284h
     vp_pad5     db ?                    ; 0285h
-                                        ; 0286h (644)
+                                        ; 0286h (646)
 
 VISPLANE_T ENDS
  
 vp_bottom_offset = VISPLANE_T.vp_bottom - VISPLANE_T.vp_top
-
+vp_pad5_offset   = VISPLANE_T.vp_pad5   - VISPLANE_T.vp_top
 
 
 PSPDEF_T STRUC
