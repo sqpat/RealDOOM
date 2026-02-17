@@ -3720,8 +3720,8 @@ PUBLIC R_StoreWallRange_
 ; bp - 012h  ; v1.y                 ; UNUSED
 ; bp - 014h  ; lineflags            ; UNUSED (now bp + 018h)
 ; bp - 016h  ; offsetangle          ; UNUSED
-; bp - 018h  ; _rw_x
-; bp - 01Ah  ; _rw_stopx
+; bp - 018h  ; _rw_x                ; UNUSED was equivalent to bp - 2
+; bp - 01Ah  ; _rw_stopx            ; UNUSED was equivalent to bp - 4 + 1
 ; bp - 01Bh  ; markceiling
 ; bp - 01Ch  ; markfloor
 ; bp - 01Eh  ; UNUSED?              ; UNUSED
@@ -3772,7 +3772,7 @@ mov       bp, sp
 push      ax ; bp - 2
 push      dx ; bp - 4
 
-sub       sp, 18 ; unused bytes
+sub       sp, 02Ah ; unused bytes. up to bp - 02Eh.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; START LINE BASED SELF MODIFY BLOCK ;;;;;;;
@@ -4116,20 +4116,32 @@ stosw              ; DRAWSEG_T.drawseg_cursegvalue
 
 
 mov       ax, word ptr [bp - 2]  ; x1 arg
-push      ax   ; bp - 018h r  w_x
-stosw              ; DRAWSEG_T.drawseg_x1
-xchg      ax, bx ; bx gets bp - 2
-mov       ax, word ptr [bp - 4]   ; x2 arg
-stosw              ; DRAWSEG_T.drawseg_x2
+
+stosw                            ; DRAWSEG_T.drawseg_x1
+xchg      ax, bx                 ; bx gets bp - 2
+mov       ax, word ptr [bp - 4]  ; x2 arg
+stosw                            ; DRAWSEG_T.drawseg_x2
 
 inc       ax
-push      ax   ; bp - 01Ah  rw_stopx
-sub       sp, 014h   ; ;30h now
+
+
+
+mov   word ptr cs:[SELFMODIFY_cmp_ax_to_rw_stopx_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_cmp_ax_to_rw_stopx_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_cmp_ax_to_rw_stopx_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
+
+sub   ax, bx   ; stop - start
+mov   word ptr cs:[SELFMODIFY_set_cx_to_count_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_set_cx_to_count_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
+
+
+; sp is bp  - 030h
+
 
 mov       ax, XTOVIEWANGLE_SEGMENT   ; todo selfmodify all these?
 mov       cx, es  ; store ds_p+2 segment
 mov       es, ax
-add       bx, bx
+sal       bx, 1   ; rw_x word lookup
 SELFMODIFY_set_viewanglesr3_3:
 mov       ax, 01000h
 add       ax, word ptr es:[bx]
@@ -4216,11 +4228,11 @@ xchg      ax, dx
 sub       bx, word ptr [bp - 2]
 stos      word ptr es:[di]             ; +0Ch
 xchg      ax, dx
-sub       ax, word ptr [bp - 032h]
-sbb       dx, word ptr [bp - 030h]
+sub       ax, word ptr [bp - 032h] ; todo try storing it here
+sbb       dx, word ptr [bp - 030h] ; todo try storing it here
 
 ; inlined FastDiv3216u_    (only use in the codebase, might as well.)
-test dx, dx
+test dx, dx  ; todo remove
 js   handle_negative_3216
 
 cmp dx, bx
@@ -4750,9 +4762,9 @@ mov       cx, 1
 SELFMODIFY_set_ceilingplaneindex:
 PUBLIC SELFMODIFY_set_ceilingplaneindex
 mov       ax, 0FFFFh
-les       bx, dword ptr [bp - 01Ah]
+les       bx, dword ptr [bp - 4]   ; rw_stopx - 1 = stop
 mov       dx, es
-dec       bx
+
 call      R_CheckPlane_
 mov       word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1 - OFFSET R_BSP24_STARTMARKER_], ax
 dont_mark_ceiling:
@@ -4763,9 +4775,9 @@ xor       cx, cx
 SELFMODIFY_set_floorplaneindex:
 PUBLIC SELFMODIFY_set_floorplaneindex
 mov       ax, 0FFFFh
-les       bx, dword ptr [bp - 01Ah]
+les       bx, dword ptr [bp - 4]   ; rw_stopx - 1 = stop
 mov       dx, es
-dec       bx
+
 call      R_CheckPlane_
 mov       word ptr cs:[SELFMODIFY_set_floorplaneindex+1 - OFFSET R_BSP24_STARTMARKER_], ax
 dont_mark_floor:
@@ -5308,7 +5320,7 @@ skip_pixlow_step:
 
 
 xchg  ax, cx
-mov   bx, word ptr [bp - 018h]    ; rw_x
+mov   bx, word ptr [bp - 2]    ; rw_x. from here on out we do not pull from bp - 018h again. its always in some register or other.
 mov   di, bx
 SELFMODIFY_detailshift_and_1:
 
@@ -5322,11 +5334,6 @@ mov   word ptr ds:[SELFMODIFY_compare_ax_to_start_rw_x+1 - OFFSET R_BSP24_STARTM
 mov   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1 - OFFSET R_BSP24_STARTMARKER_], 0
 
 
-
-mov   ax, word ptr [bp - 01Ah]
-mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
 cmp   byte ptr [bp - 01Ch], 0 ;markfloor
@@ -5523,7 +5530,7 @@ SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_TARGET:
 xchg  ax, bx	; get xoffset  back
 SELFMODIFY_add_rw_x_base4_to_ax:
 add   ax, 1000h
-mov   word ptr [bp - 018h], ax    ; rw_x
+; ax contains rw_x
 SELFMODIFY_compare_ax_to_start_rw_x:
 cmp   ax, 1000h
 jl    pre_increment_values
@@ -5631,8 +5638,8 @@ pre_increment_values:
 
 SELFMODIFY_add_iter_to_rw_x:
 ; ax was already up-to-date rw_x
-add   ax, 1
-mov   word ptr [bp - 018h], ax     ; rw_x
+db  05h, 00h, 00h   ;add   ax, 1
+; ax has rw_x...
 SELFMODIFY_add_to_rwscale_lo_2:
 add   word ptr [bp - 032h], 01000h
 SELFMODIFY_add_to_rwscale_hi_2:
@@ -6450,9 +6457,10 @@ finished_inner_loop_iter:
 ;			bottomfrac  += bottomstepshift,
 ;			rw_scale.w  += rwscaleshift
 
+mov   ax, bx  ; rw_x   ; todo xchg?
 SELFMODIFY_add_detailshiftitercount:
-add   word ptr [bp - 018h], 0   ; rw_x
-mov   ax, word ptr [bp - 018h]  ; rw_x
+db  05h, 00h, 00h   ;add   ax, 0
+
 SELFMODIFY_cmp_ax_to_rw_stopx_2:
 cmp   ax, 01000h
 jge   jump_to_finish_outer_loop  ; exit before adding the other loop vars.
@@ -6840,8 +6848,9 @@ mov       es, cx
 mov       ds, cx
 
 
-mov       cx, word ptr [bp - 01Ah]
-sub       cx, si
+SELFMODIFY_set_cx_to_count_1:
+mov       cx, 01000h
+
 
 add       si, OFFSET_CEILINGCLIP
 
@@ -6877,8 +6886,9 @@ mov       cx, OPENINGS_SEGMENT
 mov       es, cx
 mov       ds, cx
 
-mov       cx, word ptr [bp - 01Ah]
-sub       cx, si
+SELFMODIFY_set_cx_to_count_2:
+mov       cx, 01000h
+
 
 add       si, OFFSET_FLOORCLIP
 
@@ -7337,7 +7347,7 @@ jmp       done_with_sector_sided_check
 ;ALIGN_MACRO
 SELFMODIFY_has_midtexture_or_not_TARGET:
 side_has_midtexture:
-
+public side_has_midtexture
 ;	// allocate space for masked texture tables. it will be a word table unlike others.
 
 
@@ -7350,13 +7360,15 @@ side_has_midtexture:
 ; this is offset 'backwards' because the array is indexed by screen x, 
 ; and so we move the start back to make up for the fact that the start position is not 0 (and is rw_x or whatever)
 
+; this runs fairly rarely. so we can use the messy way to fetch dc_x.
+
 mov       ax, word ptr ds:[_lastopening]
 
 mov       bx, ax
 and       ax, 1   ; round up to word boundary since we are storing words not bytes in this case.
 add       ax, bx  ; now even
 mov       word ptr ds:[_lastopening], ax  ; now even
-mov       dx, word ptr [bp - 018h]    ; rw_x
+mov       dx, word ptr [bp - 2]    ; rw_x
 sub       ax, dx ; byte..
 sub       ax, dx ; word..
 
@@ -7364,7 +7376,9 @@ les       bx, dword ptr ds:[_ds_p]
 mov       word ptr es:[bx + DRAWSEG_T.drawseg_maskedtexturecol_val], ax
 
 mov       word ptr ds:[_maskedtexturecol], ax
-mov       ax, word ptr [bp - 01Ah]   ; rw_stopx   todo this sub exists a lot, also store on stack?
+
+mov       ax, word ptr [bp - 4]
+inc       ax                     ; calculate rw_stopx. this runs rarely, dont bother selfmodifying.
 sub       ax, dx    ; rw_x
 sal       ax, 1   ; word increments, double this diff.
 add       word ptr ds:[_lastopening], ax
@@ -12115,7 +12129,7 @@ mov      al, byte ptr ss:[_detailshiftitercount]
 mov      byte ptr ds:[SELFMODIFY_cmp_al_to_detailshiftitercount+1 - OFFSET R_BSP24_STARTMARKER_], al
 ; todo is this supposed to be SELFMODIFY_add_iter_to_rw_x plus 2?
 mov      byte ptr ds:[SELFMODIFY_add_iter_to_rw_x+1 - OFFSET R_BSP24_STARTMARKER_], al
-mov      byte ptr ds:[SELFMODIFY_add_detailshiftitercount+3 - OFFSET R_BSP24_STARTMARKER_], al
+mov      byte ptr ds:[SELFMODIFY_add_detailshiftitercount+1 - OFFSET R_BSP24_STARTMARKER_], al
 
 mov      ax, word ptr ss:[_detailshiftandval]
 mov      word ptr ds:[SELFMODIFY_detailshift_and_1+2 - OFFSET R_BSP24_STARTMARKER_], ax
