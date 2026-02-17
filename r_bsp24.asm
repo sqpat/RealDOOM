@@ -2986,7 +2986,7 @@ jg        breakloop
 add       bx, dx
 loop_increment_x:
 
-;	pltop[x]==0xff ;todo rep scasb or scasw
+;	pltop[x]==0xff ; todo rep scasb or scasw
 
 cmp       byte ptr es:[bx], 0FFh
 jne       breakloop

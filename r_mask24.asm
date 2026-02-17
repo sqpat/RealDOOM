@@ -5032,16 +5032,16 @@ inc   cx				   ; for the equals case.
 lea   di, [si + CLIPTOP_START_OFFSET]
 mov   ax, cs
 mov   es, ax
-push  cx                   ; bp - 8 count  for use in later loop
-push  cx                   ; bp - 0Ah backup for iter 2
+mov   dx, cx    ; backup count
 shr   cx, 1
-mov   ax, (UNCLIPPED_COLUMN SHL 8) + UNCLIPPED_COLUMN ; -2
+xor   ax, ax
 rep   stosw
 adc   cx, cx
 rep   stosb
 lea   di, [si + CLIPBOT_START_OFFSET]
-pop   cx                   ; bp - 0Ah restore for iter 2
-push  di                   ; bp - 0Ah clipbot start offset for use in later loop
+SELFMODIFY_MASKED_viewheight_2: 
+mov   ax, 01000h           ; viewheight+1
+mov   cx, dx               ; restore count.
 
 shr   cx, 1
 rep   stosw
@@ -5074,51 +5074,6 @@ jnz   check_loop_conditions
 
 done_masking:
 
-pop  si   ; bp - 0Ah get clipbot
-pop  cx   ; bp - 8 get count back
-
-
-mov   bx, CLIPTOP_START_OFFSET - CLIPBOT_START_OFFSET;  (SCREENWIDTH * 2)  ; clip top
-
-mov   ax, cs
-mov   ds, ax
-
-; all clipping has been performed, so draw the sprite
-; record lowest floors and highest ceiligs as we loop.
-; if sprite is determined to be invisible, skip draw.
-
-; clips are all set to value + 1 and subtracted later. this has to do with fitting supporting single byte instead of word logic for these y values
-
-SELFMODIFY_MASKED_viewheight_2:
-mov   ax, 0FE10h  ; ah is UNCLIPPED_COLUMN, al is viewheight+1
-xor   dx, dx
-; ds is cs here
-
-loop_clipping_columns:
-PUBLIC loop_clipping_columns
-
-; would this be faster with scas pattern?
-; ANSWER: no! tested. 
-; scan_for_next_instance:
-; repne scasb
-; mov   byte ptr ds:[di-1], ah
-; jnz scan_for_next_instance
-
-; todo does this have to exist? just set to 0/viewwidth 
-
-cmp   byte ptr ds:[si], ah ; UNCLIPPED_COLUMN -2
-jne   dont_clip_bot
-mov   byte ptr ds:[si], al
-dont_clip_bot:
-cmp   byte ptr ds:[si+bx], ah ; UNCLIPPED_COLUMN -2
-jne   dont_clip_top
-mov   byte ptr ds:[si+bx], dl     ; 0FEh to 0
-dont_clip_top:
-inc   si
-loop loop_clipping_columns
-
-mov   ax, ss
-mov   ds, ax    ; restore ds
 
 
 
@@ -5396,7 +5351,8 @@ mov   dx, OPENINGS_SEGMENT
 mov   es, dx
 mov   dx, CLIPBOT_START_SEGMENT
 mov   ds, dx  ; ds gets cs to index clipbot
-mov   dl, UNCLIPPED_COLUMN
+SELFMODIFY_MASKED_viewheight_3:
+mov   dx, 01000h  ; high byte is viewheight+1, low byte is 0.
 je    silhouette_is_SIL_TOP
 ja    silhouette_is_SIL_BOTH
 
@@ -5405,11 +5361,11 @@ silhouette_is_SIL_BOTTOM:
 ; bx already right
 
 silhouette_SIL_BOTTOM_loop:
-cmp   byte ptr ds:[si], dl ; UNCLIPPED_COLUMN or -2
+cmp   byte ptr ds:[si], dh ; ; viewheight + 1
 jne   increment_silhouette_SIL_BOTTOM_loop
 
-mov   dh, byte ptr es:[bx+si]
-mov   byte ptr ds:[si], dh
+mov   dl, byte ptr es:[bx+si]
+mov   byte ptr ds:[si], dl
 increment_silhouette_SIL_BOTTOM_loop:
 inc    si
 loop   silhouette_SIL_BOTTOM_loop
@@ -5425,7 +5381,7 @@ add   si, SCREENWIDTH  ; CLIPTOP_START_OFFSET
 sub   bx, SCREENWIDTH  ; to cancel bx + si case to offset the above
 
 silhouette_2_loop:
-cmp   byte ptr ds:[si], dl ; UNCLIPPED_COLUMN or -2
+cmp   byte ptr ds:[si], dl ; 0
 jne   increment_silhouette_2_loop
 
 mov   dh, byte ptr es:[bx+si]
@@ -5447,19 +5403,20 @@ xchg  ax, bp  ; ; use bp for bp + si pattern
 
 silhouette_SIL_BOTH_loop:
 
-cmp   byte ptr ds:[si], dl ; UNCLIPPED_COLUMN or -2
+cmp   byte ptr ds:[si], dh ; viewheight+1
 jne   do_next_silhouette_SIL_BOTH_subloop
 
-mov   dh, byte ptr es:[bx+si]   ; is 0 shouldnt be?
-mov   byte ptr ds:[si], dh
+mov   dl, byte ptr es:[bx+si]   ; is 0 shouldnt be?
+mov   byte ptr ds:[si], dl
+xor   dl, dl
 do_next_silhouette_SIL_BOTH_subloop:
-cmp   byte ptr ds:[si + (SCREENWIDTH)], dl ; UNCLIPPED_COLUMN or -2
+
+cmp   byte ptr ds:[si + (SCREENWIDTH)], dl ; 0
 jne   increment_silhouette_SIL_BOTH_loop
 
-mov   dh, byte ptr es:[bp+si]
-mov   byte ptr ds:[si + SCREENWIDTH], dh
-
-
+mov   dl, byte ptr es:[bp+si]
+mov   byte ptr ds:[si + SCREENWIDTH], dl
+xor   dl, dl
 
 increment_silhouette_SIL_BOTH_loop:
 
@@ -6499,7 +6456,10 @@ mov   ax, word ptr ss:[_viewheight]
 ; todo revisit. shadow column no longer checking vs view height? i guess sprites should have already been clipped?
 ;mov   word ptr ds:[SELFMODIFY_MASKED_viewheight_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
 inc   ax 
-mov   byte ptr ds:[SELFMODIFY_MASKED_viewheight_2+1 - OFFSET R_MASK24_STARTMARKER_], al
+mov   ah, al
+mov   word ptr ds:[SELFMODIFY_MASKED_viewheight_2+1 - OFFSET R_MASK24_STARTMARKER_], ax
+xor   al, al
+mov   word ptr ds:[SELFMODIFY_MASKED_viewheight_3+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 
 
