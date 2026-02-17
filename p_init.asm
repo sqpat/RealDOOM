@@ -380,10 +380,11 @@ mov   word ptr ds:[_lastanim], di
 
 
 ;FAR_memset(negonearray, -1, SCREENWIDTH);
+; actually, lets use 0, not -1 as this.
 mov   ax, NEGONEARRAY_SEGMENT + (OFFSET_NEGONEARRAY SHR 4)
 mov   es, ax
 xor   di, di
-mov   ax, 0FFFFh
+xor   ax, ax
 mov   cx, SCREENWIDTH / 2
 rep   stosw
 

@@ -387,6 +387,7 @@ VISPLANEHEADER_T STRUC
 
 VISPLANEHEADER_T ENDS    ; 8
 
+
 VISPLANE_T STRUC 
     vp_pad0     db ?                    ; 0
     vp_pad1     db ?                    ; 1
@@ -402,6 +403,8 @@ VISPLANE_T STRUC
 
 VISPLANE_T ENDS
  
+vp_bottom_offset = VISPLANE_T.vp_bottom - VISPLANE_T.vp_top
+
 
 
 PSPDEF_T STRUC

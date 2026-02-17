@@ -629,8 +629,8 @@ FREEBYTES             7DFA:0000
 #define maskedconstants_funcarea_segment   ((segment_t) ((int32_t)maskedconstants_funcarea >> 16))
 #define render_8800_end_segment            ((segment_t) ((int32_t)render_8800_end >> 16))
 // SMALL GAP HERE.
-#define clipbot_start_segment              0x8C00 - ((2 * (SCREENWIDTH * 2)) >> 4)
-#define cliptop_start_segment              clipbot_start_segment + ((SCREENWIDTH * 2) >> 4)
+#define clipbot_start_segment              0x8C00 - ((2 * (SCREENWIDTH * 1)) >> 4)
+#define cliptop_start_segment              clipbot_start_segment + ((SCREENWIDTH * 1) >> 4)
 
 #define maskedpostdata_segment             ((segment_t) ((int32_t)maskedpostdata >> 16))
 #define drawfuzzcol_area_segment           ((segment_t) ((int32_t)drawfuzzcol_area >> 16))
@@ -1055,21 +1055,21 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define offset_openings             0
 #define offset_negonearray          size_openings               
 //8228
-#define offset_screenheightarray    offset_negonearray          + (sizeof(int16_t) * SCREENWIDTH)
+#define offset_screenheightarray    offset_negonearray          + (sizeof(uint8_t) * SCREENWIDTH)
 //8250
-#define offset_floorclip            offset_screenheightarray    + (sizeof(int16_t) * SCREENWIDTH)
-#define offset_ceilingclip          offset_floorclip            + (sizeof(int16_t) * SCREENWIDTH)
+#define offset_floorclip            offset_screenheightarray    + (sizeof(uint8_t) * SCREENWIDTH)
+#define offset_ceilingclip          offset_floorclip            + (sizeof(uint8_t) * SCREENWIDTH)
 
 // todo use this to connect below
 // #define offset_                                     + (sizeof(int16_t) * SCREENWIDTH)
 
 #define openings             ((uint16_t __far*)         (0x78000000 + offset_openings))
-#define negonearray          ((int16_t __far*)          (0x78000000 + offset_negonearray))
-#define screenheightarray    ((int16_t __far*)          (0x78000000 + offset_screenheightarray))
-#define floorclip            ((int16_t __far*)          (0x78000000 + offset_floorclip))
-#define ceilingclip          ((int16_t __far*)          (0x78000000 + offset_ceilingclip))
+#define negonearray          ((uint8_t __far*)          (0x78000000 + offset_negonearray))
+#define screenheightarray    ((uint8_t __far*)          (0x78000000 + offset_screenheightarray))
+#define floorclip            ((uint8_t __far*)          (0x78000000 + offset_floorclip))
+#define ceilingclip          ((uint8_t __far*)          (0x78000000 + offset_ceilingclip))
 
-#define floorclip_paragraph_aligned       ((int16_t __far*)          MAKE_FULL_SEGMENT(openings, offset_floorclip))
+#define floorclip_paragraph_aligned       ((uint8_t __far*)          MAKE_FULL_SEGMENT(openings, offset_floorclip))
 
 // todo these are wrong i guess.
 #define openings_segment             ((segment_t) ((int32_t)openings >> 16))
@@ -1085,6 +1085,7 @@ screenheightarray_offset 7800:A500  or 8000:2500
 //floorclip         = 7800:A500 or 8252
 //ceilingclip       = 7800:A780 or 827A
 
+// todo empty area???
 
 // LEAVE ALL THESE in 0x7800 SEGMENT 
 
@@ -1152,7 +1153,7 @@ patchoffset                 83BD:01DC
 
 // RENDER REMAPPING
 
-
+// NOW
 
 //              bsp     plane     sprite
 // 9800-9FFF      COLORMAPS       MASKEDTEXTURES

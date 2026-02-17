@@ -2368,25 +2368,29 @@ PUBLIC R_ClearPlanes_
 
 
 SELFMODIFY_BSP_viewwidth_1:
-mov   cx, 01000h
+mov   cx, 01000h  ; preshifted right
 mov   dx, cx
 
 xor   di, di
+
+mov   ax, FLOORCLIP_PARAGRAPH_ALIGNED_SEGMENT; 
+mov   es, ax
+
 SELFMODIFY_BSP_setviewheight_2:
-mov   ax, 01000h
-mov bx, FLOORCLIP_PARAGRAPH_ALIGNED_SEGMENT; 
-mov es, bx
+mov   ax, 01010h
 
-rep stosw  ; write vieweight to es:di
 
-mov ax, 0FFFFh
-mov di, 0280h  ; offset of ceilingclip within floorclip
-mov cx, dx
-rep stosw  ; write vieweight to es:di
+rep   stosw  ; write vieweight to es:di
 
-inc ax   ; zeroed
-mov   word ptr ds:[_lastvisplane], ax
-mov   word ptr ds:[_lastopening], ax
+
+xor   ax, ax
+
+mov   di, SCREENWIDTH  ; offset of ceilingclip within floorclip
+mov   cx, dx
+rep   stosw  ; write 0 to es:di
+
+mov   word ptr ds:[_lastvisplane], cx ; 0
+mov   word ptr ds:[_lastopening], cx ; 0
 SELFMODIFY_set_viewanglesr3_4:
 mov   ax, 01000h
 sub   ah, 08h   ; FINE_ANG90
@@ -2514,10 +2518,10 @@ mov   bl, ch
 sal   bx, 1
 
 mov   ax, word ptr ds:[bx + _visplane_offset]
-add   ax, 2
+add   ax, OFFSET VISPLANE_T.vp_top
 
 mov   word ptr ds:[_ceiltop], ax
-sub   ax, 2
+sub   ax, OFFSET VISPLANE_T.vp_top
 mov   word ptr ds:[_ceiltop+2], dx
 
 
@@ -2534,10 +2538,10 @@ mov   bl, ch
 sal   bx, 1
 
 mov   ax, word ptr ds:[bx + _visplane_offset]
-add   ax, 2
+add   ax, OFFSET VISPLANE_T.vp_top
 
 mov   word ptr ds:[_floortop], ax
-sub   ax, 2
+sub   ax, OFFSET VISPLANE_T.vp_top
 mov   word ptr ds:[_floortop+2], dx
 
 ;pop   cx
@@ -4388,7 +4392,7 @@ mov       word ptr ds:[SELFMODIFY_BSP_drawtype_2 - OFFSET R_BSP24_STARTMARKER_],
 mov       word ptr ds:[SELFMODIFY_BSP_drawtype_1 - OFFSET R_BSP24_STARTMARKER_], ((SELFMODIFY_BSP_drawtype_1_TARGET - SELFMODIFY_BSP_drawtype_1_AFTER) SHL 8) + 0EBh
 
 mov       byte ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+0 - OFFSET R_BSP24_STARTMARKER_], 026h    ; es:
-mov       word ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+1 - OFFSET R_BSP24_STARTMARKER_], 087C7h  ; next 2 bytes of following instr (mov   word ptr es:[bx + OFFSET_CEILINGCLIP], 01000h)
+mov       word ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+1 - OFFSET R_BSP24_STARTMARKER_], 087C6h  ; next 2 bytes of following instr (mov   byte ptr es:[bx + OFFSET_CEILINGCLIP], 01000h)
 
 mov       byte ptr ds:[SELFMODIFY_BSP_midtexture - OFFSET R_BSP24_STARTMARKER_], 039h     ; cmp di,
 mov       word ptr ds:[SELFMODIFY_BSP_midtexture+1 - OFFSET R_BSP24_STARTMARKER_], 07CF7h   ; (cmp di,) si, jl
@@ -5323,7 +5327,7 @@ cmp   byte ptr [bp - 01Ch], 0 ;markfloor
 
 je    do_markfloor_selfmodify_jumps
 mov   ax, 04940h     ; inc ax dec cx
-mov   si, 02647h     ; inc di, es:
+mov   si, 04097h     ; xchg ax, di; inc ax
 jmp do_markfloor_selfmodify
 ; ALIGN_MACRO  ; adding these back seems to lower bench scores
 do_markfloor_selfmodify_jumps:
@@ -5335,9 +5339,9 @@ mov   word ptr ds:[SELFMODIFY_BSP_markfloor_1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov   word ptr ds:[SELFMODIFY_BSP_markfloor_2 - OFFSET R_BSP24_STARTMARKER_], si
 
 mov   ah, byte ptr [bp - 01Bh] ;markceiling
-cmp   ah, 0   
+test  ah, ah
 
-je    do_markceiling_selfmodify_jumps
+jz    do_markceiling_selfmodify_jumps
 mov   al, 0B2h  ;      mov dl, [ah value]
 ;mov   si, 0448Dh     ; lea   ax, [si - 1]
 mov   si, 0c089h    ; nop
@@ -5667,40 +5671,51 @@ mov   ds, ax
 
 mov   ax, OPENINGS_SEGMENT
 mov   es, ax
-mov   bx, di                                     ; di = rw_x
-mov   cx, word ptr es:[bx+di+OFFSET_FLOORCLIP]	 ; cx = floor
-mov   si, word ptr es:[bx+di+OFFSET_CEILINGCLIP] ; dx = ceiling
+
+check_here:
+PUBLIC check_here
+
+; todo clean up logic. store only in ch/cl. possible store same pixel floor/ceiling side by side? one read, word?
+                                                 ; di = rw_x
+xor   ax, ax
+mov   al, byte ptr es:[di+OFFSET_FLOORCLIP]	 ; cx = floor
+mov   cx, ax
+mov   al, byte ptr es:[di+OFFSET_CEILINGCLIP] ; si = ceiling  = ceilingclip[rw_x]+1;
+
+xchg  ax, si
+
 inc   si
 
-mov   ax, word ptr [bp - 02Eh]
+mov   ax, word ptr [bp - 02Eh]  ; topfrac lo
 add   ax, ((HEIGHTUNIT)-1) SHL 4
-mov   ax, word ptr [bp - 02Ch]
+mov   ax, word ptr [bp - 02Ch]  ; topfrac hi
 adc   ax, 0
 
 
-cmp   ax, si
-jge   skip_yl_ceil_clip
+cmp   ax, si  ; ax can be negative even if si is not? but maybe ah is always ff?
+jg    skip_yl_ceil_clip    
 do_yl_ceil_clip:
 mov   ax, si
 skip_yl_ceil_clip:
-push  ax 				; store yl
+push  ax 				; store yl. todo keep this in a reg eventually
 SELFMODIFY_BSP_markceiling_1:
-jmp SHORT    markceiling_done
+jmp SHORT    markceiling_done    ; OR mov dl, [markceiling]
 ; ALIGN_MACRO  ; adding these back seems to lower bench scores
 SELFMODIFY_BSP_markceiling_1_AFTER = SELFMODIFY_BSP_markceiling_1+2
 
-;                       si = top = ceilingclip[rw_x]+1;
-dec   ax				; bottom = yl-1;
+; ax is yl
+; si = top = ceilingclip[rw_x]+1;
+dec   ax				; now ax = bottom = yl-1
 ; cx is floor, 
-cmp   ax, cx
-jl    skip_bottom_floorclip
-mov   ax, cx
+cmp   al, cl      ;   ax cannot be negative, already was inc-ed before.
+jb    skip_bottom_floorclip
+mov   al, cl
 dec   ax
 skip_bottom_floorclip:
 cmp   si, ax
 jg    markceiling_done
 les   bx, dword ptr ds:[_ceiltop] 
-mov   byte ptr es:[bx+di + 0142h], al		; in a visplane_t, add 322 (0x142) to get bottom from top pointer
+mov   byte ptr es:[bx+di + VISPLANE_T.vp_bottom_offset], al
 mov   ax, si						    		   ; dl is 0, si is < screensize (and thus under 255)
 mov   byte ptr es:[bx+di], al
 SELFMODIFY_BSP_markceiling_1_TARGET:
@@ -5723,11 +5738,10 @@ dec   ax
 skip_yh_floorclip:
 push  ax  ; store yh
 SELFMODIFY_BSP_markfloor_1:
-;je    markfloor_done
 SELFMODIFY_BSP_markfloor_1_AFTER = SELFMODIFY_BSP_markfloor_1 + 2
 ; ax is already yh
-inc   ax			; top = yh + 1...
 ; cx is already  floor
+inc   ax			; top = yh + 1...     OR  je    markfloor_done
 dec   cx			; bottom = floorclip[rw_x]-1;
 
 ;	if (top <= ceilingclip[rw_x]){
@@ -5736,8 +5750,9 @@ dec   cx			; bottom = floorclip[rw_x]-1;
 
 ; si is ceil
 cmp   ax, si
-jge   skip_top_ceilingclip
-mov   ax, si	 ; ax = ceiling clip di + 1
+jg    skip_top_ceilingclip
+mov   ax, si	 ; 		top = ceilingclip[rw_x]+1;  ;todo is si ok to knock out via xchg?
+
 skip_top_ceilingclip:
 
 ;	if (top <= bottom) {
@@ -5749,11 +5764,11 @@ cmp   ax, cx
 jg    markfloor_done
 les   bx, dword ptr ds:[_floortop]
 mov   byte ptr es:[bx+di], al
-mov   byte ptr es:[bx+di + 0142h], cl
+mov   byte ptr es:[bx+di + vp_bottom_offset], cl
 SELFMODIFY_BSP_markfloor_1_TARGET:
 markfloor_done:
 SELFMODIFY_BSP_get_segtextured:
-jmp SHORT    jump_to_seg_non_textured
+jmp SHORT    jump_to_seg_non_textured  ; or nop
 
 SELFMODIFY_BSP_get_segtextured_AFTER:
 ; ALIGN_MACRO  
@@ -6244,7 +6259,7 @@ seg_non_textured:
 ; si/di are yh/yl
 ;if (yh >= yl){
 mov   bx, di 			; store rw_x
-add   bx, bx
+
 mov   ax, OPENINGS_SEGMENT ; todo is this necessary? just gets pushed later.
 mov   es, ax
 
@@ -6406,10 +6421,11 @@ SELFMODIFY_BSP_midtexture_return_jmp_AFTER = SELFMODIFY_BSP_midtexture_return_jm
 
 
 mid_no_pixels_to_draw:
-; bx is already _rw_x << 1
+; bx is already _rw_x
+
 SELFMODIFY_BSP_setviewheight_1:
-mov   word ptr es:[bx + OFFSET_CEILINGCLIP], 01000h   ; 26 c7 87 80 a7 00 10  (this instruction that gets selfmodified)
-mov   word ptr es:[bx + OFFSET_FLOORCLIP], 0FFFFh
+mov   byte ptr es:[bx + OFFSET_CEILINGCLIP], 010h   ; 26 c6 87 80 a7 10  (this instruction that gets selfmodified)
+mov   byte ptr es:[bx + OFFSET_FLOORCLIP], 000h
 finished_inner_loop_iter:
 
 ;		for ( ; rw_x < rw_stopx ; 
@@ -6449,16 +6465,16 @@ ALIGN_MACRO
 
 SELFMODIFY_BSP_toptexture_TARGET:
 no_top_texture_draw:
-; bx is already rw_x << 1
+; bx is already rw_x
 SELFMODIFY_BSP_markceiling_2:
 jmp SHORT   check_bottom_texture
 SELFMODIFY_BSP_markceiling_2_AFTER:
 
-; bx is already rw_x << 1
+; bx is already rw_x
 mark_ceiling_si:
-; bx is already rw_x << 1
+; bx is already rw_x
 lea   ax, [si - 1]
-mov   word ptr es:[bx + OFFSET_CEILINGCLIP], ax
+mov   byte ptr es:[bx + OFFSET_CEILINGCLIP], al
 jmp   check_bottom_texture
 ALIGN_MACRO
 
@@ -6475,13 +6491,17 @@ SELFMODIFY_add_to_pixhigh_lo_1:
 add   word ptr [bp - 022h], 01000h
 SELFMODIFY_add_to_pixhigh_hi_1:
 adc   word ptr [bp - 020h], 01000h
-; bx is rw_x << 1
+; bx is rw_x 
 
-mov   ax, word ptr es:[bx + OFFSET_FLOORCLIP]
+; todo reduce 16 bit logic, use 8 bit logic.
+
+xor   ax, ax
+mov   al, byte ptr es:[bx + OFFSET_FLOORCLIP]
 cmp   cx, ax
 jl    dont_clip_top_floor
-mov   cx, ax
+xchg  ax, cx
 dec   cx
+
 dont_clip_top_floor:
 cmp   cx, si
 jl    mark_ceiling_si
@@ -6507,34 +6527,48 @@ xchg   cx, di
 
 
 mark_ceiling_cx:
-mov   word ptr es:[bx  + OFFSET_CEILINGCLIP], cx
+mov   byte ptr es:[bx  + OFFSET_CEILINGCLIP], cl
 SELFMODIFY_BSP_markceiling_2_TARGET:
 check_bottom_texture:
-; bx is already rw_x << 1
+; bx is already rw_x
 
 SELFMODIFY_BSP_bottexture:
 SELFMODIFY_BSP_bottexture_AFTER = SELFMODIFY_BSP_bottexture + 2
 
-do_bottom_texture_draw:
 
-mov   cx, word ptr [bp - 024h]
+
+do_bottom_texture_draw:
+public do_bottom_texture_draw
+mov   cx, word ptr [bp - 024h]   ; pixlow hi
+;		mid = (pixlow+HEIGHTUNIT-1)>>HEIGHTBITS;
 cmp   word ptr [bp - 026h], 1
 sbb   cx, 0FFFFh
 
+;		pixlow += pixlowstep;
 
 SELFMODIFY_add_to_pixlow_lo_1:
 add   word ptr [bp - 026h], 01000h
 SELFMODIFY_add_to_pixlow_hi_1:
 adc   word ptr [bp - 024h], 01000h
+;		if (mid <= ceilingclip[rw_x])
+;		    mid = ceilingclip[rw_x]+1;
 
-mov   ax, word ptr es:[bx+OFFSET_CEILINGCLIP]
+xor   ax, ax
+mov   al, byte ptr es:[bx+OFFSET_CEILINGCLIP]
 cmp   cx, ax
 jg    dont_clip_bot_ceil
 inc   ax
 xchg  cx, ax
+
+;		if (mid <= yh)
+
 dont_clip_bot_ceil:
 cmp   cx, di
 jg    mark_floor_di
+
+;		if (markfloor)
+;		    floorclip[rw_x] = yh+1;
+
 cmp   di, si
 jle   mark_floor_cx
 
@@ -6597,7 +6631,7 @@ pop   es
 xchg   cx, si
 
 mark_floor_cx:
-mov   word ptr es:[bx+OFFSET_FLOORCLIP], cx
+mov   byte ptr es:[bx+OFFSET_FLOORCLIP], cl
 SELFMODIFY_BSP_markfloor_2_TARGET:
 done_marking_floor:
 SELFMODIFY_get_maskedtexture_1:
@@ -6611,10 +6645,12 @@ no_bottom_texture_draw:
 SELFMODIFY_BSP_markfloor_2:
 ;je    done_marking_floor
 SELFMODIFY_BSP_markfloor_2_AFTER = SELFMODIFY_BSP_markfloor_2+2
-;floorclip[rw_x] = yh + 1;
+
 mark_floor_di:
-inc   di
-mov   word ptr es:[bx+OFFSET_FLOORCLIP], di
+   ;floorclip[rw_x] = yh + 1;
+xchg  ax, di   ; di seems safe to clobber?
+inc   ax
+mov   byte ptr es:[bx+OFFSET_FLOORCLIP], al
 SELFMODIFY_get_maskedtexture_2:
 mov   al, 0
 test  al, al
@@ -6736,6 +6772,7 @@ ALIGN_MACRO
 
 
 record_masked:
+; todo if we move this up, maybe dx does not need to be pushed/popped/maintained.
 
 ;if (maskedtexture) {
 ;	// save texturecol
@@ -6743,7 +6780,9 @@ record_masked:
 ;	maskedtexturecol[rw_x] = texturecolumn;
 ;}
 
-les   si, dword ptr ds:[_maskedtexturecol]
+; es already OPENINGS_SEGMENT
+mov   si, word ptr ds:[_maskedtexturecol]
+add   si, bx  ; bx word ptr  ; double up bx as a word offset.
 mov   word ptr es:[bx+si], dx
 jmp   finished_inner_loop_iter
 ALIGN_MACRO
@@ -6779,27 +6818,24 @@ mov       si, word ptr [bp - 2]
 mov       di, word ptr ds:[_lastopening]
 mov       ax, di
 sub       ax, si
-shl       ax, 1
+
+mov       cx, OPENINGS_SEGMENT
+mov       es, cx
+mov       ds, cx
+
 
 mov       cx, word ptr [bp - 01Ah]
 sub       cx, si
-add       word ptr ds:[_lastopening], cx
 
-
-mov       dx, OPENINGS_SEGMENT
-mov       es, dx
-mov       ds, dx
-
-sal       si, 1
 add       si, OFFSET_CEILINGCLIP
 
-sal       di, 1
 
 rep movsw
 
-mov       dx, ss
-mov       ds, dx
+mov       si, ss
+mov       ds, si
 
+mov       word ptr ds:[_lastopening], di
 
 mov       es, word ptr ds:[_ds_p+2]   ; bx is ds_p offset above
 mov       word ptr es:[bx + DRAWSEG_T.drawseg_sprtopclip_offset], ax
@@ -6820,26 +6856,22 @@ mov       si, word ptr [bp - 2]
 mov       di, word ptr ds:[_lastopening]
 mov       ax, di
 sub       ax, si
-shl       ax, 1
+
+mov       cx, OPENINGS_SEGMENT
+mov       es, cx
+mov       ds, cx
 
 mov       cx, word ptr [bp - 01Ah]
 sub       cx, si
-add       word ptr ds:[_lastopening], cx
 
-mov       dx, OPENINGS_SEGMENT
-mov       es, dx
-mov       ds, dx
-
-sal       si, 1
 add       si, OFFSET_FLOORCLIP
-
-sal       di, 1
 
 rep movsw
 
-mov       dx, ss
-mov       ds, dx
+mov       si, ss
+mov       ds, si
 
+mov       word ptr ds:[_lastopening], di
 
 mov       es, word ptr ds:[_ds_p+2]   ; bx is ds_p offset above
 mov       word ptr es:[bx + DRAWSEG_T.drawseg_sprbottomclip_offset], ax
@@ -7243,7 +7275,7 @@ mov       word ptr cs:[SELFMODIFY_BSP_bottexture - OFFSET R_BSP24_STARTMARKER_],
 jmp       bottexture_stuff_done
 ALIGN_MACRO
 bottexture_not_zero:
-mov       word ptr cs:[SELFMODIFY_BSP_bottexture - OFFSET R_BSP24_STARTMARKER_], 04E8Bh   ; mov   cx, word ptr [bp - 02Dh] first two bytes
+mov       word ptr cs:[SELFMODIFY_BSP_bottexture - OFFSET R_BSP24_STARTMARKER_], 04E8Bh   ; mov   cx, word ptr [bp - 024h] first two bytes
 ; are any bits set?
 or        bl, bh
 or        byte ptr cs:[SELFMODIFY_check_for_any_tex+1 - OFFSET R_BSP24_STARTMARKER_], bl
@@ -7290,25 +7322,40 @@ jmp       done_with_sector_sided_check
 SELFMODIFY_has_midtexture_or_not_TARGET:
 side_has_midtexture:
 
+;	// allocate space for masked texture tables. it will be a word table unlike others.
+
+
 ; // masked midtexture
 ; maskedtexture = true;
 ; ds_p->maskedtexturecol_val = lastopening - rw_x;
 ; maskedtexturecol_offset = (ds_p->maskedtexturecol_val) << 1;
 ; lastopening += rw_stopx - rw_x;
 
+; this is offset 'backwards' because the array is indexed by screen x, 
+; and so we move the start back to make up for the fact that the start position is not 0 (and is rw_x or whatever)
+
 mov       ax, word ptr ds:[_lastopening]
-sub       ax, word ptr [bp - 018h]    ; rw_x
+
+mov       bx, ax
+and       ax, 1   ; round up to word boundary since we are storing words not bytes in this case.
+add       ax, bx  ; now even
+mov       word ptr ds:[_lastopening], ax  ; now even
+mov       dx, word ptr [bp - 018h]    ; rw_x
+sub       ax, dx ; byte..
+sub       ax, dx ; word..
+
 les       bx, dword ptr ds:[_ds_p]
-mov       word ptr es:[bx + 01ah], ax
-mov       ax, word ptr es:[bx + 01ah]
-add       ax, ax
+mov       word ptr es:[bx + DRAWSEG_T.drawseg_maskedtexturecol_val], ax
+
 mov       word ptr ds:[_maskedtexturecol], ax
-mov       ax, word ptr [bp - 01Ah]
-sub       ax, word ptr [bp - 018h]    ; rw_x
+mov       ax, word ptr [bp - 01Ah]   ; rw_stopx   todo this sub exists a lot, also store on stack?
+sub       ax, dx    ; rw_x
+sal       ax, 1   ; word increments, double this diff.
 add       word ptr ds:[_lastopening], ax
 mov       al, 1
 mov       byte ptr ds:[_maskedtexture], al
-jmp       done_with_sector_sided_check
+
+jmp       done_with_sector_sided_check ; todo skip this check and jump past the big OR statement
 ALIGN_MACRO
 calculate_bottexturemid:
 ; todo cs write here
@@ -7382,9 +7429,8 @@ xor   ax, ax
 
 mov   word ptr ds:[_ceilphyspage], ax  ; also writes _floorphyspage
 mov   word ptr ds:[_ceiltop], ax 
-;mov   word ptr ds:[_ceiltop+2], ax     ; seemed to be working fine without this?
 mov   word ptr ds:[_floortop], ax
-;mov   word ptr ds:[_floortop+2], ax    ; seemed to be working fine without this?
+
 
 ;  es:bx holds frontsector
 
@@ -12088,14 +12134,17 @@ mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_3+1 - OFFSET R_BSP24_STAR
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_4+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 mov      ax, word ptr ss:[_viewwidth]
-mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_4+1 - OFFSET R_BSP24_STARTMARKER_], ax
+shr      ax, 1
+mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
-mov      ax, word ptr ss:[_viewheight]
-mov      word ptr ds:[SELFMODIFY_BSP_setviewheight_1+5 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      al, byte ptr ss:[_viewheight]
+mov      byte ptr ds:[SELFMODIFY_BSP_setviewheight_1+5 - OFFSET R_BSP24_STARTMARKER_], al
+mov      ah, al
 mov      word ptr ds:[SELFMODIFY_BSP_setviewheight_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
+
 
 mov      ax,  word ptr ss:[_pspritescale]
 test     ax, ax

@@ -354,6 +354,7 @@ lds   ax, dword ptr ds:[_ds_source_offset] 		; ds:si is ds_source. BX is pulled 
 ; ch IS/WAS yfrachi
  
 SPANFUNC_JUMP_OFFSET:
+public SPANFUNC_JUMP_OFFSET
 jmp span_i_loop_done         ; relative jump to be modified before function is called
 ; ODD
 ALIGN_MACRO
@@ -1261,7 +1262,7 @@ sub   sp, 6
 ; inline R_WriteBackSpanFrameConstants_
 ; get whole dword at the end here.
 
-mov      al, byte ptr ds:[_skyflatnum]
+mov      al, byte ptr ds:[_skyflatnum]  ; todo self modify at a different layer once per level
 mov      byte ptr cs:[SELFMODIFY_SPAN_skyflatnum + 2 - OFFSET R_SPAN24_STARTMARKER_], al
 
 

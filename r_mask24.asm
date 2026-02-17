@@ -273,9 +273,11 @@ adc dx, 0FFFFh      ;
 ;			dc_yl++;
 
 
+xor   cx, cx
+
 
 neg  di
-adc  si, 0
+adc  si, cx  ; 0
 ;mov  word ptr ds:[_dc_yl], si   ; dont actually need to write back.
 
 ; dx is dc_yh
@@ -287,36 +289,33 @@ adc  si, 0
 ;        if (dc_yh >= mfloorclip[dc_x])
 ;            dc_yh = mfloorclip[dc_x]-1;
 
+; ch is 0 up ahead
 
+mov   di, word ptr ds:[_dc_x]   ; di gets dc_x
 
-mov   bx, word ptr ds:[_dc_x]
-mov   di, bx ; copy dc_x to di...
-sal   bx, 1
-les   ax, dword ptr ds:[_mfloorclip]
-add   bx, ax
-mov   cx, word ptr es:[bx]
+les   bx, dword ptr ds:[_mfloorclip]
 
-cmp   dx, cx
+mov   al, byte ptr es:[bx+di]
+cbw  ; this looks suspect
+cmp   dx, ax
 jl    skip_floor_clip_set_single	; todo consider making this jump out and back? whats the better default branch
-mov   dx, cx
+xchg  ax, dx
 dec   dx
 skip_floor_clip_set_single:
 
-
+; dl is cliiped...
 
 ;        if (dc_yl <= mceilingclip[dc_x])
 ;            dc_yl = mceilingclip[dc_x]+1;
 
 
-sub   bx, ax
+les   bx, dword ptr ds:[_mceilingclip]   
+xor   ax, ax
 
-les   ax, dword ptr ds:[_mceilingclip]   
-add   bx, ax
-
-mov   cx, word ptr es:[bx]
-cmp   si, cx
+mov   al, byte ptr es:[bx+di] ; ch 0
+cmp   si, ax
 jg    skip_ceil_clip_set_single   ; todo consider making this jump out and back? whats the better default branch
-mov   si, cx
+xchg  ax, si
 inc   si
 skip_ceil_clip_set_single:
 
@@ -401,7 +400,7 @@ ret
 
 ENDP
 
-UNCLIPPED_COLUMN  = 0FFFEh
+UNCLIPPED_COLUMN  = 0FEh
 
 
 
@@ -434,13 +433,12 @@ mov   si, bx
 
 mov   bx, word ptr ds:[_dc_x]
 mov   word ptr cs:[SELFMODIFY_MASKED_SHADOW_drawmaskedcolumn_set_dc_x+1], bx
-sal   bx, 1                             ; word lookup
+
 lds   di, dword ptr ds:[_mfloorclip]
-mov   ax, word ptr ds:[bx+di]
-mov   word ptr cs:[SELFMODIFY_MASKED_SHADOW_set_mfloorclip_dc_x_lookup+1], ax
+mov   al, byte ptr ds:[bx+di]
 lds   di, dword ptr ss:[_mceilingclip]
-mov   ax, word ptr ds:[bx+di]
-mov   word ptr cs:[SELFMODIFY_MASKED_SHADOW_set_mceilingclip_dc_x_lookup+1], ax
+mov   ah, byte ptr ds:[bx+di]
+mov   word ptr cs:[SELFMODIFY_MASKED_SHADOW_set_mfloorceilclip_dc_x_lookup+1], ax
 
 mov   ax, ss
 mov   ds, ax   ; restore ds...
@@ -524,37 +522,47 @@ adc   dx, bx
 neg ax
 sbb dx, 0h
 
-mov di, dx  ; todo get this for free with register juggling above?
 
 
-; dx is dc_yh but needs to be written back 
-; dc_yh, dc_yl are set (di, si)
+
+; dc_yh, dc_yl are set (dx, si)
 
 
-SELFMODIFY_MASKED_SHADOW_set_mfloorclip_dc_x_lookup:
+
+; cl is floor clip
+; ch is ceil clip
+
+xor   ax, ax
+
+SELFMODIFY_MASKED_SHADOW_set_mfloorceilclip_dc_x_lookup:
+
 mov   cx, 01000h
-cmp   di, cx
+mov   al, cl
+cmp   dx, ax
 jl    skip_floor_clip_set_shadow
-mov   di, cx
-dec   di
+mov   dx, ax
+
+dec   dx        ; todo bake this into the lookup
+
 skip_floor_clip_set_shadow:
+mov   al, ch
 
 
 ;        if (dc_yl <= mceilingclip[dc_x])
 ;            dc_yl = mceilingclip[dc_x]+1;
 
-SELFMODIFY_MASKED_SHADOW_set_mceilingclip_dc_x_lookup:
-mov   cx, 01000h
 
-cmp   si, cx
+cmp   si, ax
 jg    skip_ceil_clip_set_shadow
-mov   si, cx
-inc   si
+xchg  ax, si
+inc   si        ; todo bake this into the lookup
 skip_ceil_clip_set_shadow:
 
 
-sub   di, si   ; count =  dc_yh - dc_yl
-js    jump_to_do_next_shadow_sprite_iteration  ; rare i think... branch is fine
+sub   dx, si   ; dx is dc_yh
+js   jump_to_do_next_shadow_sprite_iteration
+
+mov   di, dx ; finally write dc_yh to di
 
 
 ; texmid not needed for fuzzdraws, because we are reading from screen behind sprite, not texture.
@@ -1965,8 +1973,7 @@ jg    end_draw_sprite_normal_innerloop
 mov   bx, dx
 
 SHIFT_MACRO shl bx 2 ; possible to preshift dx by 2?
-; es is patch   
-; bx way too high???
+; es is patch 
 mov   ax, word ptr es:[bx + PATCH_T.patch_columnofs+0] ; todo LES?
 mov   bx, word ptr es:[bx + PATCH_T.patch_columnofs+2]
 
@@ -2179,7 +2186,7 @@ mov   word ptr cs:[SELFMODIFY_MASKED_dsp_16+4 - OFFSET R_MASK24_STARTMARKER_], a
 lods  word ptr ds:[si]  ; si 0x1A after ; drawseg_maskedtexturecol_val
 mov   word ptr cs:[SELFMODIFY_MASKED_dsp_18+4 - OFFSET R_MASK24_STARTMARKER_], ax
 lods  word ptr ds:[si]  ; si 0x1C after ; drawseg_silhouette
-mov   word ptr cs:[SELFMODIFY_MASKED_dsp_1A+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dsp_1A+4 - OFFSET R_MASK24_STARTMARKER_], ax
 
 mov   ax, ss
 mov   ds, ax
@@ -2457,9 +2464,7 @@ mov   word ptr cs:[SELFMODIFY_MASKED_set_walllights+2 - OFFSET R_MASK24_STARTMAR
 ;    maskedtexturecol = &openings[ds->maskedtexturecol_val];
 
 SELFMODIFY_MASKED_dsp_1A:
-mov   ax, 01000h		; ds->maskedtexturecol_val
-sal   ax, 1  ; todo should this value be stored preshifted by default?
-mov   word ptr ds:[_maskedtexturecol], ax
+mov   word ptr ds:[_maskedtexturecol], 01000h  ; ; ds->maskedtexturecol_val
 
 
 ;    rw_scalestep.w = ds->scalestep;
@@ -5020,19 +5025,24 @@ mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_x2_3+1], es
 ; init clipbot, cliptop
 
 inc   cx				   ; for the equals case.
-shl   si, 1                ; word offset
 lea   di, [si + CLIPTOP_START_OFFSET]
 mov   ax, cs
 mov   es, ax
 push  cx                   ; bp - 8 count  for use in later loop
 push  cx                   ; bp - 0Ah backup for iter 2
-mov   ax, UNCLIPPED_COLUMN ; -2
+shr   cx, 1
+mov   ax, (UNCLIPPED_COLUMN SHL 8) + UNCLIPPED_COLUMN ; -2
 rep   stosw
+adc   cx, cx
+rep   stosb
 lea   di, [si + CLIPBOT_START_OFFSET]
 pop   cx                   ; bp - 0Ah restore for iter 2
 push  di                   ; bp - 0Ah clipbot start offset for use in later loop
 
+shr   cx, 1
 rep   stosw
+adc   cx, cx
+rep   stosb
 
 no_clip:
 
@@ -5069,14 +5079,17 @@ mov   bx, CLIPTOP_START_OFFSET - CLIPBOT_START_OFFSET;  (SCREENWIDTH * 2)  ; cli
 mov   ax, cs
 mov   ds, ax
 
+; all clipping has been performed, so draw the sprite
+; record lowest floors and highest ceiligs as we loop.
+; if sprite is determined to be invisible, skip draw.
+
 SELFMODIFY_MASKED_viewheight_2:
-mov   ax, 01000h
-mov   dx, 0FFFFh
-mov   es, dx
-dec   dx        ; UNCLIPPED_COLUMN, -2
+mov   ax, 0FE10h  ; ah is UNCLIPPED_COLUMN, al is viewheight
+xor   dx, dx
 ; ds is cs here
 
 loop_clipping_columns:
+PUBLIC loop_clipping_columns
 
 ; would this be faster with scas pattern?
 ; ANSWER: no! tested. 
@@ -5085,15 +5098,17 @@ loop_clipping_columns:
 ; mov   byte ptr ds:[di-1], ah
 ; jnz scan_for_next_instance
 
-cmp   word ptr ds:[si], dx ; UNCLIPPED_COLUMN -2
+; todo does this have to exist? just set to 0/viewwidth 
+
+cmp   byte ptr ds:[si], ah ; UNCLIPPED_COLUMN -2
 jne   dont_clip_bot
-mov   word ptr ds:[si], ax
+mov   byte ptr ds:[si], al
 dont_clip_bot:
-cmp   word ptr ds:[si+bx], dx ; UNCLIPPED_COLUMN -2
+cmp   byte ptr ds:[si+bx], ah ; UNCLIPPED_COLUMN -2
 jne   dont_clip_top
-mov   word ptr ds:[si+bx], es  ; 0FFFFh
+mov   byte ptr ds:[si+bx], dl     ; 0FEh to 000h
 dont_clip_top:
-sub   si, dx ; add 2 by sub -2
+inc   si
 loop loop_clipping_columns
 
 mov   ax, ss
@@ -5110,7 +5125,7 @@ mov   word ptr ds:[_mfloorclip + 2], cs
 mov   word ptr ds:[_mceilingclip], CLIPTOP_START_OFFSET
 mov   word ptr ds:[_mceilingclip + 2], cs
 
-call  R_DrawVisSprite_
+call  R_DrawVisSprite_   ; todo dont have to set the above if this becomes its own version separate from psprite
 ; restore bx, because R_DrawVisSprite_ does naughy things to stack and cant be trusted
 mov   word ptr ds:[_mceilingclip + 2], OPENINGS_SEGMENT
 mov   word ptr ds:[_mfloorclip + 2], OPENINGS_SEGMENT
@@ -5121,6 +5136,7 @@ jmp  done_with_drawsprite
 ALIGN_MACRO
 
 continue_checking_if_drawseg_obscures_sprite:
+public continue_checking_if_drawseg_obscures_sprite
 ; compare (ds->x2 < spr->x1)
 mov   ax, word ptr es:[di + DRAWSEG_T.drawseg_x2]
 cmp   ax, word ptr ds:[bx + VISSPRITE_T.vs_x1]   ; todo i think comparatively rare and maybe not worth the selfmodify. test?
@@ -5354,7 +5370,7 @@ mov   ah,  0FDh  ; ~SIL_TOP
 do_not_remove_top_silhouette:
 
 
-shl   si, 1
+;shl   si, 1
 
 ; si is r1 and cx is count
 ; bx is near vissprite
@@ -5362,6 +5378,7 @@ shl   si, 1
 
 
 SELFMODIFY_MASKED_set_al_to_silhouette:
+public SELFMODIFY_MASKED_set_al_to_silhouette
 mov   al, 0FFh ; this gets selfmodified
 and   al, ah   ; second AND is applied 
 je    silhouette_is_SIL_NONE ; quit early
@@ -5373,7 +5390,7 @@ mov   dx, OPENINGS_SEGMENT
 mov   es, dx
 mov   dx, CLIPBOT_START_SEGMENT
 mov   ds, dx  ; ds gets cs to index clipbot
-mov   dx, UNCLIPPED_COLUMN
+mov   dl, UNCLIPPED_COLUMN
 je    silhouette_is_SIL_TOP
 ja    silhouette_is_SIL_BOTH
 
@@ -5382,13 +5399,13 @@ silhouette_is_SIL_BOTTOM:
 ; bx already right
 
 silhouette_SIL_BOTTOM_loop:
-cmp   word ptr ds:[si], dx ; UNCLIPPED_COLUMN or -2
+cmp   byte ptr ds:[si], dl ; UNCLIPPED_COLUMN or -2
 jne   increment_silhouette_SIL_BOTTOM_loop
 
-push  word ptr es:[bx+si]
-pop   word ptr ds:[si]
+mov   dh, byte ptr es:[bx+si]
+mov   byte ptr ds:[si], dh
 increment_silhouette_SIL_BOTTOM_loop:
-sub   si, dx ; add 2 by sub -2
+inc    si
 loop   silhouette_SIL_BOTTOM_loop
 mov   cx, ss
 mov   ds, cx
@@ -5398,17 +5415,17 @@ ALIGN_MACRO
 silhouette_is_SIL_TOP:
 
 xchg  ax, bx   ; get botclip in bx
-add   si, SCREENWIDTH * 2 ; CLIPTOP_START_OFFSET
-sub   bx, SCREENWIDTH * 2  ; to cancel bx + si case to offset the above
+add   si, SCREENWIDTH  ; CLIPTOP_START_OFFSET
+sub   bx, SCREENWIDTH  ; to cancel bx + si case to offset the above
 
 silhouette_2_loop:
-cmp   word ptr ds:[si], dx ; UNCLIPPED_COLUMN or -2
+cmp   byte ptr ds:[si], dl ; UNCLIPPED_COLUMN or -2
 jne   increment_silhouette_2_loop
 
-push  word ptr es:[bx+si]
-pop   word ptr ds:[si]
+mov   dh, byte ptr es:[bx+si]
+mov   byte ptr ds:[si], dh
 increment_silhouette_2_loop:
-sub   si, dx ; add 2 by sub -2
+inc   si
 loop  silhouette_2_loop
 silhouette_is_SIL_NONE:
 mov   cx, ss
@@ -5424,23 +5441,23 @@ xchg  ax, bp  ; ; use bp for bp + si pattern
 
 silhouette_SIL_BOTH_loop:
 
-cmp   word ptr ds:[si], dx ; UNCLIPPED_COLUMN or -2
+cmp   byte ptr ds:[si], dl ; UNCLIPPED_COLUMN or -2
 jne   do_next_silhouette_SIL_BOTH_subloop
 
-push  word ptr es:[bx+si]
-pop   word ptr ds:[si]
+mov   dh, byte ptr es:[bx+si]   ; is 0 shouldnt be?
+mov   byte ptr ds:[si], dh
 do_next_silhouette_SIL_BOTH_subloop:
-cmp   word ptr ds:[si + (SCREENWIDTH * 2)], dx ; UNCLIPPED_COLUMN or -2
+cmp   byte ptr ds:[si + (SCREENWIDTH)], dl ; UNCLIPPED_COLUMN or -2
 jne   increment_silhouette_SIL_BOTH_loop
 
+mov   dh, byte ptr es:[bp+si]
+mov   byte ptr ds:[si + SCREENWIDTH], dh
 
-push  word ptr es:[bp+si]
-pop   word ptr ds:[si + (SCREENWIDTH * 2)]
 
 
 increment_silhouette_SIL_BOTH_loop:
 
-sub   si, dx ; add 2 by sub -2
+inc   si
 loop  silhouette_SIL_BOTH_loop
 xchg  ax, bp  ; restore bp
 
@@ -5500,13 +5517,12 @@ mov   byte ptr cs:[SELFMODIFY_MASKED_add_currentoffset+1], 0
 
 mov   bx, word ptr ds:[_dc_x]
 mov   word ptr cs:[SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x+1], bx
-sal   bx, 1                             ; word lookup
+
 lds   di, dword ptr ds:[_mfloorclip]
-mov   ax, word ptr ds:[bx+di]
-mov   word ptr cs:[SELFMODIFY_MASKED_set_mfloorclip_dc_x_lookup+1], ax
+mov   al, byte ptr ds:[bx+di]
 lds   di, dword ptr ss:[_mceilingclip]
-mov   ax, word ptr ds:[bx+di]
-mov   word ptr cs:[SELFMODIFY_MASKED_set_mceilingclip_dc_x_lookup+1], ax
+mov   ah, byte ptr ds:[bx+di]
+mov   word ptr cs:[SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup+1], ax
 
 mov   ax, ss
 mov   ds, ax   ; restore ds...
@@ -5600,11 +5616,9 @@ adc   dx, bx
 neg ax
 sbb dx, 0FFFFh  ; we actually want to simultaneously add one back to this. has to do with the >= case and is made up for with jmp lookup
 
-mov   di, dx  ; would be nice to get this without a register juggle
 
 
-; dx is dc_yh but needs to be written back 
-; dc_yh, dc_yl are set (di, si)
+; dc_yh, dc_yl are set (dx, si)
         
 
 
@@ -5616,30 +5630,40 @@ mov   di, dx  ; would be nice to get this without a register juggle
 ; alternatively store dc_x in bp/di/si?
 
 
-SELFMODIFY_MASKED_set_mfloorclip_dc_x_lookup:
+; cl is floor clip
+; ch is ceil clip
+
+xor   ax, ax
+
+SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup:
+PUBLIC SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup
 mov   cx, 01000h
-cmp   di, cx
+mov   al, cl
+cmp   dx, ax
 jl    skip_floor_clip_set
-mov   di, cx
-dec   di        ; todo bake this into the lookup
+mov   dx, ax
+
+dec   dx        ; todo bake this into the lookup
+
 skip_floor_clip_set:
+mov   al, ch
 
 
 ;        if (dc_yl <= mceilingclip[dc_x])
 ;            dc_yl = mceilingclip[dc_x]+1;
 
-SELFMODIFY_MASKED_set_mceilingclip_dc_x_lookup:
-mov   cx, 01000h
 
-cmp   si, cx
+cmp   si, ax
 jg    skip_ceil_clip_set
-mov   si, cx
+xchg  ax, si
 inc   si        ; todo bake this into the lookup
 skip_ceil_clip_set:
 
 
-sub   di, si   ; di is dc_yh
+sub   dx, si   ; dx is dc_yh
 jl    increment_column_and_continue_loop
+
+mov   di, dx ; finally write dc_yh to di
 
 SELFMODIFY_MASKED_dc_texturemid_hi_1:
 mov   cl, 010h;  dc_texturemid intbits
@@ -6465,7 +6489,7 @@ mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_4+2 - OFFSET R_MASK24_STAR
 mov   ax, word ptr ss:[_viewheight]
 ; todo revisit. shadow column no longer checking vs view height? i guess sprites should have already been clipped?
 ;mov   word ptr ds:[SELFMODIFY_MASKED_viewheight_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   word ptr ds:[SELFMODIFY_MASKED_viewheight_2+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   byte ptr ds:[SELFMODIFY_MASKED_viewheight_2+1 - OFFSET R_MASK24_STARTMARKER_], al
 
 
 

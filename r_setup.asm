@@ -310,9 +310,11 @@ done_calculating_spritescale:
 xor    di, di
 mov    ax, (SCREENHEIGHTARRAY_SEGMENT + OFFSET_SCREENHEIGHTARRAY SHR 4)
 mov    es, ax
-mov    ax, word ptr ds:[_viewheight]
+mov    al, byte ptr ds:[_viewheight]
+mov    ah, al
+shr    cx, 1
 rep    stosw
-
+xor    ah, ah
 ; prep the following loop.
 
 mov    si, ax   ; si gets viewheight
