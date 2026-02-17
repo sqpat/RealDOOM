@@ -128,7 +128,7 @@ ENDP
 
 
 IF COMPISA GE COMPILE_386
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 PROC FixedMulBSPLocal_ NEAR ; fairly optimized
 ; thanks zero318 from discord for improved algorithm  
 
@@ -149,7 +149,7 @@ PROC FixedMulBSPLocal_ NEAR ; fairly optimized
 ENDP
 ELSE
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 PROC FixedMulBSPLocal_ NEAR ; fairly optimized
 
 ; DX:AX  *  CX:BX
@@ -343,7 +343,7 @@ pop   cx
 pop   bx
 ret
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 figure_out_sign_return:
 test  cx, cx
 js    return_maxvalue
@@ -356,7 +356,7 @@ pop   si
 pop   cx
 pop   bx
 ret
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 
 do_divide:
 
@@ -401,7 +401,7 @@ ENDP
 
 
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 octant_6:
 test  cx, cx
 
@@ -413,7 +413,7 @@ mov   dx, 0e000h
 xor   ax, ax
 
 ret  
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 octant_6_do_divide:
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
@@ -428,7 +428,7 @@ add   dx, 0c000h
 
 ret  
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 y_is_negative:
 ;			y.w = -y.w;
 
@@ -451,7 +451,7 @@ mov   dx, 0e000h
 xor   ax, ax
 
 ret  
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 ; result 16f01520
 ; 7ffd1a dx:ax
 ; 3077f6 cx:bx
@@ -484,7 +484,7 @@ neg   ax
 sbb   dx, 0
 
 ret  
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 
 ; params cx, dx. ax/bx get zeroed/clobbered.
 PROC R_PointToAngle16_ NEAR
@@ -512,7 +512,7 @@ ENDP
 
 
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 PROC R_PointToAngle_ NEAR  ;todo needs another look
 
 ; inputs:
@@ -1218,7 +1218,7 @@ pop   si
 
 ret
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 do_simple_div_whole:
 ; AX:0000 div 0000:BX
 ; high word is AX:0000 / BX
@@ -1249,7 +1249,7 @@ ENDP
 ; basically, shift numerator left 16 and divide
 ; AX:00:00 / CX:BX
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 PROC div48_32_whole_BSPLocal_ NEAR ; fairly optimized i think
 
 ; di:si get shifted cx:bx
@@ -1426,7 +1426,7 @@ mov   ax, si
 
 ret  
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 continue_check2_whole:
 test  ax, ax
 jz    do_return_2_whole
@@ -1444,7 +1444,7 @@ mov   ax, si
 
 ret  
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 check_for_extra_qhat_subtraction_whole:
 ja    do_qhat_subtraction_by_2_whole
 cmp   bx, ax
@@ -1455,7 +1455,7 @@ do_qhat_subtraction_by_2_whole:
 dec   si
 jmp   do_qhat_subtraction_by_1_whole
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 do_simple_div_after_all_whole:
 
 ; zero high word just calculate low word.
@@ -1466,7 +1466,7 @@ div  cx
 ret
 
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 continue_checking_q1_whole:
 ja    check_c1_c2_diff_whole
 
@@ -1492,7 +1492,7 @@ mov es, ax
 jmp q1_ready_whole
 
 ; very rare case!
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 adjust_for_overflow_whole:
 xor   di, di
 sub   ax, cx
@@ -1531,7 +1531,7 @@ dont_decrement_qhat_and_return_whole:
 mov   ax, si
 ret  
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 compare_low_word_whole:
 cmp   ax, bx
 jbe   qhat_subtract_1_whole
@@ -1543,7 +1543,7 @@ mov es, ax
 jmp qhat_subtract_1_whole
 
 ; the divide would have overflowed. subtract values
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 adjust_for_overflow_again_whole:
 
 sub   ax, cx
@@ -1560,7 +1560,7 @@ ENDP
 
 
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 fast_div_32_16:
 
 mov bl, bh
@@ -1578,7 +1578,7 @@ div bx        ; after this dx stores remainder, ax stores q1
 
 ret          ; dx will be garbage, but who cares , return 16 bits.
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 return_2048:
 
 
@@ -1586,7 +1586,7 @@ mov ax, 0800h
 ret
 
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 PROC FastDiv3232_shift_3_8_ NEAR ; todo needs another look
 
 ; used by R_PointToAngle.
@@ -1631,7 +1631,7 @@ ENDP
 ; todo optimize around fact ch is always 0...
 ; we are moving a byte back and forth
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 fast_div_32_16_RPTA:
 
 mov bl, bh
@@ -1659,7 +1659,7 @@ ret
 ;FastDiv3232_RPTA_
 ; DX:AX / CX:BX
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 PROC FastDiv3232_RPTA_ NEAR ; todo needs another look
 
 ; we shift dx:ax by 11 into si... 
@@ -1885,7 +1885,7 @@ pop   di
 pop   si
 ret  
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 return_2048_2:
 ; bigger than 2048.. just return it
 pop   di
@@ -1893,7 +1893,7 @@ pop   si
 ret
 
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 qhat_subtract_1_3232RPTA:
 mov ax, es
 dec ax
@@ -1905,7 +1905,7 @@ ret
 
 
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 q1_ready_3232RPTA:
 
 mov  ax, es
@@ -1920,7 +1920,7 @@ ENDP
 
 
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 do_simple_div:
 ; high word is DX:AX / BX
 ; low word: divide remainder << 16 / BX
@@ -1956,7 +1956,7 @@ do_simple_div:
 
    ret
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 do_quick_return:
   MOV   AX, SI
   NEG   AX
@@ -1967,7 +1967,7 @@ do_quick_return:
   POP   SI
   RET
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 PROC   FixedDivBSPLocal_ NEAR ; fairly optimized
 PUBLIC FixedDivBSPLocal_
 
@@ -2025,7 +2025,7 @@ SBB  DX, SI  ; dx:ax now labs. sign bits in si
 
 pop   si
 ret
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 ; pretty rare case, but does need to be handled for shift 14 fixeddiv bounds check
   do_cx_equals_1_case:
   ; cx was equal to 1. (needs to be re-incremented )
@@ -2053,7 +2053,7 @@ ENDP
 
 IF COMPISA GE COMPILE_386
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
     PROC   FixedMulTrigSine_BSPLocal_ NEAR ; fairly optimized
     PUBLIC FixedMulTrigSine_BSPLocal_
     sal dx, 1
@@ -2085,7 +2085,7 @@ IF COMPISA GE COMPILE_386
 
     ENDP
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
     PROC   FixedMulTrigCosine_BSPLocal_ NEAR ; fairly optimized
     PUBLIC FixedMulTrigCosine_BSPLocal_
     sal dx, 1
@@ -2122,7 +2122,7 @@ IF COMPISA GE COMPILE_386
 
 ELSE
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
     PROC   FixedMulTrigSine_BSPLocal_ NEAR ; fairly optimized
     PUBLIC FixedMulTrigSine_BSPLocal_
 
@@ -2237,7 +2237,7 @@ ELSE
     ENDP
 
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
     PROC   FixedMulTrigCosine_BSPLocal_ NEAR ; fairly optimized
     PUBLIC FixedMulTrigCosine_BSPLocal_
 
@@ -2360,7 +2360,7 @@ COSINE_OFFSET_IN_SINE = ((FINECOSINE_SEGMENT - FINESINE_SEGMENT) SHL 4)
 
 ;R_ClearPlanes
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 PROC   R_ClearPlanes_ NEAR ; TODO could be better if we only clear up to lastvisplane and then dont clear visplanes when we create new ones.
 PUBLIC R_ClearPlanes_ 
 
@@ -2375,6 +2375,8 @@ xor   di, di
 
 mov   ax, FLOORCLIP_PARAGRAPH_ALIGNED_SEGMENT; 
 mov   es, ax
+
+; viewheight plus one.
 
 SELFMODIFY_BSP_setviewheight_2:
 mov   ax, 01010h
@@ -2466,7 +2468,7 @@ endp
 
 
 ;R_HandleEMSVisplanePagination
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 
 PROC R_HandleEMSVisplanePagination_ NEAR
 
@@ -2528,7 +2530,7 @@ mov   word ptr ds:[_ceiltop+2], dx
 ;pop   cx
 pop   bx
 ret   
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 is_floor_2:
 mov   byte ptr ds:[_floorphyspage], bl   
 sal   bx, 1
@@ -2547,20 +2549,20 @@ mov   word ptr ds:[_floortop+2], dx
 ;pop   cx
 pop   bx
 ret
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 loop_cycle_visplane_ems_page:  ; move this above func
 sub   ch, VISPLANES_PER_EMS_PAGE
 inc   dl
 cmp   ch, VISPLANES_PER_EMS_PAGE
 jae   loop_cycle_visplane_ems_page
 jmp   visplane_ems_page_ready
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 visplane_not_dirty:
 cmp   al, MAX_CONVENTIONAL_VISPLANES  
 jge   visplane_dirty_or_index_over_max_conventional_visplanes
 mov   bx, dx
 jmp   return_visplane
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 do_quickmap_ems_visplaes:
 test  cl, cl    ; check isceil
 je    is_floor
@@ -2576,7 +2578,7 @@ mov   dl, bl
 
 call  Z_QuickMapVisplanePage_BSPLocal_
 jmp   return_visplane
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 use_phys_page_2:
 mov   bl, 2
 mov   dl, bl
@@ -2584,7 +2586,7 @@ mov   dl, bl
 
 call  Z_QuickMapVisplanePage_BSPLocal_
 jmp   return_visplane
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 is_floor:
 cmp   byte ptr ds:[_ceilphyspage], 2
 ;ja    out_of_visplanes
@@ -2608,7 +2610,7 @@ db "Out of Visplanes!", 0
 @
 ENDP
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 PROC Z_QuickMapVisplanePage_BSPLocal_ NEAR
 
 
@@ -2743,20 +2745,20 @@ pop   si
 pop   cx
 pop   bx
 ret  
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 visplane_page_above_2:
 ;		usedpagevalue = EMS_VISPLANE_EXTRA_PAGE + (virtualpage-2);
 add   ax, (EMS_VISPLANE_EXTRA_PAGE - 2)
 jmp   used_pagevalue_ready
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 set_zero_and_break:
 mov   byte ptr ds:[bx + _active_visplanes], 0
 jmp   done_with_visplane_loop
 
 ENDP
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 PROC Z_QuickMapVisplaneRevert_BSPLocal_ NEAR
 
 push  dx
@@ -2775,7 +2777,7 @@ ENDP
 
 ;R_FindPlane_
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 PROC R_FindPlane_ NEAR ; could use another look
 
 
@@ -2858,7 +2860,7 @@ ret
 ;				break;
 ;		}
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 check_for_visplane_match:
 cmp       dx, word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height] ; compare height high word
 jne       loop_iter_step_variables
@@ -2874,7 +2876,7 @@ jle       next_loop_iteration
 sub       bx, 8  ; use last checkheader index
 jmp       break_loop
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 
 break_loop_visplane_not_found:
 ; not found, create new visplane
@@ -2923,7 +2925,7 @@ ENDP
 
 ;R_CheckPlane_
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 PROC R_CheckPlane_ NEAR ; needs another look 
 
 ; ax: index
@@ -2984,7 +2986,7 @@ jg        breakloop
 add       bx, dx
 loop_increment_x:
 
-;	pltop[x]==0xff
+;	pltop[x]==0xff ;todo rep scasb or scasw
 
 cmp       byte ptr es:[bx], 0FFh
 jne       breakloop
@@ -3015,25 +3017,25 @@ pop       si
 ret       
 
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 check_plane_is_floor:
 
 les       bx, dword ptr ds:[_floortop]
 jmp       loaded_floor_or_ceiling
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 start_greater_than_min:
 mov       ax, word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_minx]
 
 
 mov       word ptr cs:[SELFMODIFY_setminx+3 - OFFSET R_BSP24_STARTMARKER_], ax
 jmp       checked_start
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 stop_smaller_than_max:
 mov       word ptr cs:[SELFMODIFY_setmax+3 - OFFSET R_BSP24_STARTMARKER_], ax     ; unionh = plheader->max
 mov       ax, cx                                    ; intrh = stop
 jmp       done_checking_max
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 make_new_visplane:
 mov       bx, word ptr ds:[_lastvisplane] 
 mov       es, bx    ; store in es
@@ -3089,7 +3091,7 @@ ENDP
 MINZ_HIGHBITS = 4
 ;R_ProjectSprite_
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 PROC R_ProjectSprite_ NEAR  ; somewhatoptimized... maybe re-examine. 
 
 ; es:si is sprite.
@@ -3309,7 +3311,7 @@ je    not_too_far_off_side_highbits
 exit_project_sprite: ; todo bench branch
 
 jmp   done_with_r_projectsprite
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 
 not_too_far_off_side_highbits:
 cmp   bx, cx
@@ -3403,7 +3405,7 @@ cmp   ax, 01000h
 jle   not_too_far_off_right_side_highbits
 jump_to_exit_project_sprite_2:
 jmp   exit_project_sprite
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 not_too_far_off_right_side_highbits:
 push  ax ; bp - 026h
 mov   bx, word ptr [bp - 022h]
@@ -3584,7 +3586,7 @@ test  al, MF_SHADOW
 jne   exit_set_shadow
 SELFMODIFY_BSP_fixedcolormap_2:
 jmp SHORT   exit_set_fixed_colormap
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 SELFMODIFY_BSP_fixedcolormap_2_AFTER:
 test  byte ptr [bp - 2], FF_FULLBRIGHT
 jne   exit_set_fullbright_colormap
@@ -3624,13 +3626,13 @@ set_intbits_to_129:
 mov   ax, 129
 jmp intbits_ready
 
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 
 exit_set_fullbright_colormap:
 mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], 0
 
 jmp   done_with_r_projectsprite
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 
 
 SELFMODIFY_BSP_fixedcolormap_2_TARGET:
@@ -3639,7 +3641,7 @@ exit_set_fixed_colormap:
 mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], 0
 
 jmp   done_with_r_projectsprite
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 
 
 
@@ -3908,7 +3910,7 @@ selfmodify_mid_only:
    mov       ax, ((SELFMODIFY_has_midtexture_or_not_TARGET - SELFMODIFY_has_midtexture_or_not_AFTER) SHL 8) + 0EBh
 
    jmp       finish_midtex_selfmodify
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 skip_midtex_selfmodify:
    mov       ax, 0c031h  ; xor ax, ax
 finish_midtex_selfmodify:
@@ -4148,7 +4150,7 @@ xchg      ax, dx
 stosw      ; DRAWSEG_T.drawseg_scalestep +2
 xchg      ax, dx
 jmp       scales_set
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 handle_negative_3216:
 
 neg ax
@@ -4166,7 +4168,7 @@ neg ax
 adc dx, 0
 neg dx
 jmp div_done
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 
 two_part_divide_3216:
 mov es, ax
@@ -4187,12 +4189,12 @@ neg dx
 mov bx, ss
 mov ds, bx  ; restored ds
 jmp div_done
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 one_part_divide:
 div bx
 xor dx, dx
 jmp div_done
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 
 stop_greater_than_start:
 
@@ -4425,7 +4427,7 @@ mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1 - OFFSET R_BSP24_STARTM
 mov       ax, word ptr [bp - 03Eh]
 ; ax has rw_midtexturemid+2
 jmp       done_with_bottom_peg
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 
 
 
@@ -4491,7 +4493,7 @@ jne       do_seg_textured_stuff
 mov       word ptr cs:[SELFMODIFY_BSP_get_segtextured - OFFSET R_BSP24_STARTMARKER_], ((SELFMODIFY_BSP_get_segtextured_TARGET - SELFMODIFY_BSP_get_segtextured_AFTER) SHL 8) + 0EBh
 
 jmp       SHORT seg_textured_check_done
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 do_seg_textured_stuff:
 mov       word ptr cs:[SELFMODIFY_BSP_get_segtextured - OFFSET R_BSP24_STARTMARKER_], 0C089h ; nop
 SELFMODIFY_set_offsetangle:
@@ -4518,7 +4520,7 @@ call      FixedMulTrigNoShiftSine_BSPLocal_
 ; dx:ax is rw_offset
 xchg      ax, dx
 jmp       done_with_offsetangle_stuff
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 offsetangle_greater_than_fineang90:
 xchg      ax, cx
 mov       dx, bx
@@ -4731,7 +4733,7 @@ ENDIF
 
 neg       ax
 mov       word ptr [bp - 02Ah], ax
-SELFMODIFY_sub__centeryfrac_4_hi_3:
+SELFMODIFY_sub__centeryfrac_4_hi_3: ; preincremented by 1 to pass into bp -028h
 mov       ax, 01000h ; ah known zero. dh too probably?
 sbb       ax, dx
 
@@ -4767,7 +4769,7 @@ mov       ax, word ptr [bp - 4]
 cmp       ax, word ptr [bp - 2]
 jge       at_least_one_column_to_draw
 jmp       check_spr_top_clip
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 at_least_one_column_to_draw:
 
 ; todo better use DS as a scratch var for mults etc ahead.
@@ -4950,7 +4952,7 @@ SELFMODIFY_do_backsector_work_or_not_AFTER:
 jmp_to_skip_pixhigh_step:
 PUBLIC jmp_to_skip_pixhigh_step
 jmp skip_pixhigh_step
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 SELFMODIFY_do_backsector_work_or_not_TARGET_NOTNULL:
 backsector_not_null:
 ; here we modify worldhigh/low then do not write them back to memory
@@ -5144,7 +5146,7 @@ ja        do_pixlow_step
 
 jmp_to_skip_pixlow_step:
 jmp       skip_pixlow_step
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 do_pixlow_step:
 
 ; pixlow = (centeryfrac << 16) - FixedMul (worldlow.w, rw_scale.w);
@@ -5202,7 +5204,7 @@ ENDIF
 
 neg       ax
 mov       word ptr [bp - 026h], ax
-SELFMODIFY_sub__centeryfrac_4_hi_1:
+SELFMODIFY_sub__centeryfrac_4_hi_1:  ; preincremented 1 for dc_yh/yl stuff
 mov       ax, 01000h ; ah known zero. dh too probably?
 sbb       ax, dx
 
@@ -5318,9 +5320,9 @@ mov   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1 - OFFSET R_BSP24_STARTMARKER_]
 
 
 mov   ax, word ptr [bp - 01Ah]
-mov   word ptr ds:[SELFMODIFY_cmp_di_to_rw_stopx_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov   word ptr ds:[SELFMODIFY_cmp_di_to_rw_stopx_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov   word ptr ds:[SELFMODIFY_cmp_di_to_rw_stopx_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
 cmp   byte ptr [bp - 01Ch], 0 ;markfloor
@@ -5329,7 +5331,7 @@ je    do_markfloor_selfmodify_jumps
 mov   ax, 04940h     ; inc ax dec cx
 mov   si, 04097h     ; xchg ax, di; inc ax
 jmp do_markfloor_selfmodify
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 do_markfloor_selfmodify_jumps:
 mov   ax, ((SELFMODIFY_BSP_markfloor_1_TARGET - SELFMODIFY_BSP_markfloor_1_AFTER) SHL 8) + 0EBh
 mov   si, ((SELFMODIFY_BSP_markfloor_2_TARGET - SELFMODIFY_BSP_markfloor_2_AFTER) SHL 8) + 0EBh
@@ -5347,7 +5349,7 @@ mov   al, 0B2h  ;      mov dl, [ah value]
 mov   si, 0c089h    ; nop
 
 jmp do_markceiling_selfmodify
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 do_markceiling_selfmodify_jumps:
 mov   ax, ((SELFMODIFY_BSP_markceiling_1_TARGET - SELFMODIFY_BSP_markceiling_1_AFTER) SHL 8) + 0EBh
 mov   si, ((SELFMODIFY_BSP_markceiling_2_TARGET - SELFMODIFY_BSP_markceiling_2_AFTER) SHL 8) + 0EBh
@@ -5434,7 +5436,7 @@ lods  word ptr ss:[si] ; bottomfrac hi
 mov   word ptr ds:[SELFMODIFY_set_botfrac_hi+1 - OFFSET R_BSP24_STARTMARKER_], ax
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3:
 jmp SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3 + 2
 lods  word ptr ss:[si] ; pixlow lo
 mov   word ptr ds:[SELFMODIFY_set_pixlow_lo+1 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -5497,7 +5499,7 @@ stosw
 
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5:
 jmp   SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_TARGET
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5 + 2
 
 SELFMODIFY_set_pixlow_lo:
@@ -5522,8 +5524,8 @@ SELFMODIFY_compare_ax_to_start_rw_x:
 cmp   ax, 1000h
 jl    pre_increment_values
 
-SELFMODIFY_cmp_di_to_rw_stopx_3:
-cmp   ax, 01000h   ; cmp   di, word ptr [bp - 01Ah]
+SELFMODIFY_cmp_ax_to_rw_stopx_3:
+cmp   ax, 01000h
 jl    jump_to_start_per_column_inner_loop  ; 026hish out of range
 
 finish_outer_loop:
@@ -5563,7 +5565,7 @@ adc   word ptr ds:[SELFMODIFY_set_rw_scale_hi+1 - OFFSET R_BSP24_STARTMARKER_], 
 
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2:
 jmp SHORT   SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_TARGET
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2 + 2
 
 SELFMODIFY_add_pixlowstep_lo:
@@ -5578,7 +5580,7 @@ adc   word ptr ds:[SELFMODIFY_set_pixhigh_hi+1 - OFFSET R_BSP24_STARTMARKER_], 0
 
 
 jmp   continue_outer_rendersegloop
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 
 
 exit_rendersegloop:
@@ -5598,17 +5600,17 @@ stosw ; mov   word ptr ds:[_seglooptexrepeat], ax
 
 
 jmp   R_RenderSegLoop_exit   
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 
 
 
 jump_to_start_per_column_inner_loop:
 jmp   start_per_column_inner_loop
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 jump_to_finish_outer_loop_2:
 mov   dx, SC_DATA  ; cheat this out of the loop..
 jmp   finish_outer_loop
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 pre_increment_values:
 
 
@@ -5642,7 +5644,7 @@ adc   word ptr [bp - 028h], 01000h
 
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1:
 jmp SHORT SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1 + 2
 SELFMODIFY_add_to_pixlow_lo_2:
 add   word ptr [bp - 026h], 01000h
@@ -5655,8 +5657,8 @@ adc   word ptr [bp - 020h], 01000h
 
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET:
 ; this is right before inner loop start
-SELFMODIFY_cmp_di_to_rw_stopx_1:
-cmp   ax, 01000h   ; cmp   ax, word ptr [bp - 01Ah]
+SELFMODIFY_cmp_ax_to_rw_stopx_1:
+cmp   ax, 01000h
 jge   jump_to_finish_outer_loop_2
 
 start_per_column_inner_loop:
@@ -5686,6 +5688,10 @@ xchg  ax, si
 
 inc   si
 
+; all these y values - ceil and floorclip, and later dc_yl and dc_yh are 
+; increased by one to allow 0 to viewheight+1 range instead of ff to viewheight range.
+; when written to visplanes and such this must be considered
+
 mov   ax, word ptr [bp - 02Eh]  ; topfrac lo
 add   ax, ((HEIGHTUNIT)-1) SHL 4
 mov   ax, word ptr [bp - 02Ch]  ; topfrac hi
@@ -5700,7 +5706,7 @@ skip_yl_ceil_clip:
 push  ax 				; store yl. todo keep this in a reg eventually
 SELFMODIFY_BSP_markceiling_1:
 jmp SHORT    markceiling_done    ; OR mov dl, [markceiling]
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 SELFMODIFY_BSP_markceiling_1_AFTER = SELFMODIFY_BSP_markceiling_1+2
 
 ; ax is yl
@@ -5715,8 +5721,10 @@ skip_bottom_floorclip:
 cmp   si, ax
 jg    markceiling_done
 les   bx, dword ptr ds:[_ceiltop] 
-mov   byte ptr es:[bx+di + VISPLANE_T.vp_bottom_offset], al
+dec   ax
+mov   byte ptr es:[bx+di + vp_bottom_offset], al
 mov   ax, si						    		   ; dl is 0, si is < screensize (and thus under 255)
+dec   ax
 mov   byte ptr es:[bx+di], al
 SELFMODIFY_BSP_markceiling_1_TARGET:
 markceiling_done:
@@ -5724,7 +5732,7 @@ markceiling_done:
 ; yh = bottomfrac>>HEIGHTBITS;
 
 
-mov   ax, word ptr [bp - 028h] ; get shifted int byte
+mov   ax, word ptr [bp - 028h] ; already incremented by 1.
 ; ah 0 because si < 255
 
 
@@ -5763,7 +5771,9 @@ skip_top_ceilingclip:
 cmp   ax, cx
 jg    markfloor_done
 les   bx, dword ptr ds:[_floortop]
+dec   ax
 mov   byte ptr es:[bx+di], al
+dec   cx
 mov   byte ptr es:[bx+di + vp_bottom_offset], cl
 SELFMODIFY_BSP_markfloor_1_TARGET:
 markfloor_done:
@@ -5780,7 +5790,7 @@ mov   ax, XTOVIEWANGLE_SEGMENT
 mov   es, ax
 SELFMODIFY_set_rw_center_angle:
 mov   ax, 01000h
-mov   bx, di
+mov   bx, di        ; word lookup
 add   ax, word ptr es:[bx+di]
 and   ah, FINE_ANGLE_HIGH_BYTE				; MOD_FINE_ANGLE = and 0x1FFF
 
@@ -5801,12 +5811,12 @@ neg   dx
 neg   ax
 sbb   dx, 0
 jmp   finetangent_ready
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 SELFMODIFY_BSP_get_segtextured_TARGET:
 jump_to_seg_non_textured:
 xor   dx, dx
 jmp   seg_non_textured
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 non_subtracted_finetangent:
 SHIFT_MACRO shl bx 2
 les   ax, dword ptr es:[bx]
@@ -5916,7 +5926,7 @@ mov   byte ptr cs:[SELFMODIFY_BSP_set_xlat_offset+2 - OFFSET R_BSP24_STARTMARKER
 
 
 jmp   light_set
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 
 
 ; begin fast_div_32_16_FFFF
@@ -5926,7 +5936,7 @@ use_max_light:
 ; ugly 
 mov   si, MAXLIGHTSCALE - 1
 jmp   do_light_write
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 light_set:
 
 ; INLINED FASTDIV3232FFF_ algo. only used here.
@@ -5959,7 +5969,7 @@ IF COMPISA GE COMPILE_386
    mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1 - OFFSET R_BSP24_STARTMARKER_], dl
 
    jmp FastDiv3232FFFF_done 
-   ; ALIGN_MACRO  ; adding these back seems to lower bench scores
+   ALIGN_MACRO
 
 ELSE
 
@@ -5980,7 +5990,7 @@ ELSE
    mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1 - OFFSET R_BSP24_STARTMARKER_], cl
 
    jmp FastDiv3232FFFF_done    ; todo branch better 
-   ; ALIGN_MACRO  ; adding these back seems to lower bench scores
+   ALIGN_MACRO
 
 
    main_3232_div:
@@ -6066,7 +6076,7 @@ ELSE
    mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+1], 4  ; turn on stretch variant for this frame
 
    jmp FastDiv3232FFFF_done  
-   ; ALIGN_MACRO  ; adding these back seems to lower bench scores
+   ALIGN_MACRO
 
    do_full_div_ffff:
    shr ax, 1
@@ -6148,7 +6158,7 @@ ELSE
    qhat_subtract_2_3232:
    inc  bx
    jmp finalize_div
-   ; ALIGN_MACRO  ; adding these back seems to lower bench scores
+   ALIGN_MACRO
 
 
 ENDIF
@@ -6159,13 +6169,13 @@ seglooptexrepeat0_is_jmp:
 ; NOTE1 next CS here
 mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0 - OFFSET R_BSP24_STARTMARKER_], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
 jmp   just_do_draw0
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 in_texture_bounds0:
 xchg  ax, dx
 sub   al, byte ptr ds:[_segloopcachedbasecol]
 mul   byte ptr ds:[_segloopheightvalcache]
 jmp   add_base_segment_and_draw0
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 
 
 SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET:
@@ -6198,7 +6208,7 @@ mov   word ptr cs:[SELFMODIFY_add_cached_segment0+1 - OFFSET R_BSP24_STARTMARKER
          mov   dl, 0B2h   ;  (mov dl, xx)
          mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0 - OFFSET R_BSP24_STARTMARKER_], dx
          jmp   check_seglooptexrepeat0
-         ; ALIGN_MACRO  ; adding these back seems to lower bench scores
+         ALIGN_MACRO
          seglooptexmodulo0_is_jmp:
          mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0 - OFFSET R_BSP24_STARTMARKER_], ((SELFMODIFY_BSP_check_seglooptexmodulo0_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER) SHL 8) + 0EBh
          check_seglooptexrepeat0:
@@ -6214,7 +6224,7 @@ mov   byte ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0 - OFFSET R_BSP24_START
 mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0+1 - OFFSET R_BSP24_STARTMARKER_], dx
 
 jmp   just_do_draw0
-; ALIGN_MACRO  ; adding these back seems to lower bench scores
+ALIGN_MACRO
 
 
 ; continue fast_div_32_16_FFFF
@@ -6270,7 +6280,7 @@ pop   si
 SELFMODIFY_BSP_midtexture:
 SELFMODIFY_BSP_midtexture_AFTER = SELFMODIFY_BSP_midtexture + 3
 
-cmp   di, si               ; todo should we check this earlier...?
+cmp   di, si               ; todo should we check this earlier...? can this be a sub? modify the self modify too.
 jl    mid_no_pixels_to_draw
 
 ; si:di are dc_yl, dc_yh
@@ -6324,7 +6334,7 @@ PUBLIC R_DrawColumnPrep_
 
 push  bx
 push  si
-push  di
+push  di ; i think this can be removed.
 
 
 SELFMODIFY_bsp_apply_stretch_tag:
@@ -6359,11 +6369,13 @@ sar   ax, 1
 ; dest = destview + dc_yl*80 + (dc_x>>2); 
 ; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
 
+; dc_yl and dc_yh are both still one too high, but (di - si) count calculation is unaffected.
+
 ; si is dc_yl 
 sub   di, si                                 ; dc_yh - dc_yl
 sal   di, 1                                  ; double diff (dc_yh - dc_yl) to get a word offset
 mov   di, word ptr ds:[di+bp]                ; get the jump value. bp has offset to table in segment
-
+dec   si ; finally undo +1 to dc_yl.
 mov   bp, si
 add   ax, word ptr ds:[si+bp]                   ; add * 80 lookup table value 
 SELFMODIFY_BSP_add_destview_offset:
@@ -6396,14 +6408,10 @@ dw DRAWCOL_OFFSET_BSP, COLORMAPS_SEGMENT
 
 
 
-pop   di 
+pop   di  ; i think this can be removed.
 pop   si  ; restore si as dc_y
 pop   bx
 
-; TODO TODO: remove above here, gain 5 realtics.
-; TODO TODO: remove above here, gain 5 realtics.
-; TODO TODO: remove above here, gain 5 realtics.
-; TODO TODO: remove above here, gain 5 realtics.
 SELFMODIFY_BSP_R_DrawColumnPrep_ret:
 
 ; the pop dx gets replaced with ret if bottom is calling.
@@ -6424,6 +6432,7 @@ mid_no_pixels_to_draw:
 ; bx is already _rw_x
 
 SELFMODIFY_BSP_setviewheight_1:
+; view height plus 1.
 mov   byte ptr es:[bx + OFFSET_CEILINGCLIP], 010h   ; 26 c6 87 80 a7 10  (this instruction that gets selfmodified)
 mov   byte ptr es:[bx + OFFSET_FLOORCLIP], 000h
 finished_inner_loop_iter:
@@ -6437,8 +6446,8 @@ finished_inner_loop_iter:
 SELFMODIFY_add_detailshiftitercount:
 add   word ptr [bp - 018h], 0   ; rw_x
 mov   ax, word ptr [bp - 018h]  ; rw_x
-SELFMODIFY_cmp_di_to_rw_stopx_2:
-cmp   ax, 01000h   ; cmp   di, word ptr [bp - 01Ah]
+SELFMODIFY_cmp_ax_to_rw_stopx_2:
+cmp   ax, 01000h
 jge   jump_to_finish_outer_loop  ; exit before adding the other loop vars.
 
 
@@ -6558,7 +6567,7 @@ mov   al, byte ptr es:[bx+OFFSET_CEILINGCLIP]
 cmp   cx, ax
 jg    dont_clip_bot_ceil
 inc   ax
-xchg  cx, ax
+xchg  ax, cx
 
 ;		if (mid <= yh)
 
@@ -12128,10 +12137,11 @@ mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_NOLOOP+1], ax
 mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_NORMALSTRETCH+1], ax
 mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_NOLOOPANDSTRETCH+1], ax
  
-mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
+inc      ax ; has to do with yl/yh inc by 1 logic
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_4+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_4+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 mov      ax, word ptr ss:[_viewwidth]
 mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -12141,6 +12151,7 @@ shr      ax, 1
 mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 mov      al, byte ptr ss:[_viewheight]
+inc      ax
 mov      byte ptr ds:[SELFMODIFY_BSP_setviewheight_1+5 - OFFSET R_BSP24_STARTMARKER_], al
 mov      ah, al
 mov      word ptr ds:[SELFMODIFY_BSP_setviewheight_2+1 - OFFSET R_BSP24_STARTMARKER_], ax

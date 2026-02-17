@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/16 21:02:41
+Created on:       26/02/17 01:16:10
 Executable Image: doomout.exe
 creating a DOS executable
 
@@ -44,7 +44,7 @@ MEMORY_TEXT            CODE           AUTO           0000:329e       00000000
 MATH_TEXT              CODE           AUTO           0000:329e       0000007f
 MAIN_TEXT              CODE           AUTO           0000:331e       000011ef
 G_SETUP_TEXT           CODE           AUTO           0000:450e       00000213
-R_SETUP_TEXT           CODE           AUTO           0000:4722       0000030f
+R_SETUP_TEXT           CODE           AUTO           0000:4722       00000310
 S_SBSFX_TEXT           CODE           AUTO           0000:4a32       00000d2b
 F_FILE_TEXT            CODE           AUTO           0000:575e       000003f1
 W_WAD_TEXT             CODE           AUTO           0000:5b50       00000242
@@ -244,13 +244,13 @@ Module: g_setup.obj(g_setup.ASM)
 0000:4597      G_InitNew_
 0000:46ae      G_DoLoadLevel_
 Module: r_setup.obj(r_setup.ASM)
-0000:49fa      _SELFMODIFY_R_WRITEBACKVIEWCONSTANTS
+0000:49fb      _SELFMODIFY_R_WRITEBACKVIEWCONSTANTS
 0000:4734*     R_InitTextureMapping_
-0000:4a0a      _SELFMODIFY_R_WRITEBACKVIEWCONSTANTSMASKEDCALL
-0000:4a31*     R_SETUP_ENDMARKER_
-0000:4947      R_ExecuteSetViewSize_
+0000:4a0b      _SELFMODIFY_R_WRITEBACKVIEWCONSTANTSMASKEDCALL
+0000:4a32*     R_SETUP_ENDMARKER_
+0000:4948      R_ExecuteSetViewSize_
 0000:4722*     R_SETUP_STARTMARKER_
-0000:4a02      _SELFMODIFY_R_WRITEBACKVIEWCONSTANTSSPANCALL
+0000:4a03      _SELFMODIFY_R_WRITEBACKVIEWCONSTANTSSPANCALL
 Module: s_sbsfx.obj(s_sbsfx.ASM)
 0000:5739      SB_Shutdown_
 0000:4fe6      SFX_PlayPatch_

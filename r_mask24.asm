@@ -283,7 +283,8 @@ adc  si, cx  ; 0
 ; dx is dc_yh
 ; si is dc_yl
 
-
+inc dx
+inc si ; dc_yh, dc_yl plus one...
 
 
 ;        if (dc_yh >= mfloorclip[dc_x])
@@ -293,10 +294,11 @@ adc  si, cx  ; 0
 
 mov   di, word ptr ds:[_dc_x]   ; di gets dc_x
 
+xor   ax, ax
 les   bx, dword ptr ds:[_mfloorclip]
 
 mov   al, byte ptr es:[bx+di]
-cbw  ; this looks suspect
+
 cmp   dx, ax
 jl    skip_floor_clip_set_single	; todo consider making this jump out and back? whats the better default branch
 xchg  ax, dx
@@ -313,16 +315,17 @@ les   bx, dword ptr ds:[_mceilingclip]
 xor   ax, ax
 
 mov   al, byte ptr es:[bx+di] ; ch 0
+
 cmp   si, ax
 jg    skip_ceil_clip_set_single   ; todo consider making this jump out and back? whats the better default branch
 xchg  ax, si
 inc   si
 skip_ceil_clip_set_single:
 
-cmp   si, dx			
-jg    exit_function_single
+sub   dx, si
+js    exit_function_single
 
-
+dec   si ; undo +1
 ; dx/si contain dc_yh/dc_yl
 
 ; todo: this can be a second, local version of the function that is specialized?
@@ -359,7 +362,7 @@ SELFMODIFY_MASKED_destview_lo_2:               ; add destview
 add   ax, 01000h
 
 mov   di, dx                                 ; grab dc_yh
-sub   di, bp                                 ;
+
 
 sal   di, 1                                 ; double diff (dc_yh - dc_yl) to get a word offset
 
@@ -523,7 +526,8 @@ neg ax
 sbb dx, 0h
 
 
-
+inc si
+inc dx  ; dc_yh, dc_yl +1
 
 ; dc_yh, dc_yl are set (dx, si)
 
@@ -563,7 +567,7 @@ sub   dx, si   ; dx is dc_yh
 js   jump_to_do_next_shadow_sprite_iteration
 
 mov   di, dx ; finally write dc_yh to di
-
+dec   si     ; undo dc_yl+1
 
 ; texmid not needed for fuzzdraws, because we are reading from screen behind sprite, not texture.
 
@@ -2183,9 +2187,9 @@ mov   word ptr cs:[SELFMODIFY_MASKED_dsp_10+1 - OFFSET R_MASK24_STARTMARKER_], a
 add   si, 4 ; drawseg_bsilheight, drawseg_tsilheight
 lods  word ptr ds:[si]  ; si 0x18 after ; drawseg_sprtopclip_offset
 mov   word ptr cs:[SELFMODIFY_MASKED_dsp_16+4 - OFFSET R_MASK24_STARTMARKER_], ax
-lods  word ptr ds:[si]  ; si 0x1A after ; drawseg_maskedtexturecol_val
-mov   word ptr cs:[SELFMODIFY_MASKED_dsp_18+4 - OFFSET R_MASK24_STARTMARKER_], ax
-lods  word ptr ds:[si]  ; si 0x1C after ; drawseg_silhouette
+lods  word ptr ds:[si]  ; si 0x1A after ; drawseg_sprbottomclip_offset
+mov   word ptr cs:[SELFMODIFY_MASKED_dsp_18+4 - OFFSET R_MASK24_STARTMARKER_], ax  ; todo what if we set mfloorclip etc here.
+lods  word ptr ds:[si]  ; si 0x1C after ; drawseg_maskedtexturecol_val
 mov   word ptr cs:[SELFMODIFY_MASKED_dsp_1A+4 - OFFSET R_MASK24_STARTMARKER_], ax
 
 mov   ax, ss
@@ -5083,8 +5087,10 @@ mov   ds, ax
 ; record lowest floors and highest ceiligs as we loop.
 ; if sprite is determined to be invisible, skip draw.
 
+; clips are all set to value + 1 and subtracted later. this has to do with fitting supporting single byte instead of word logic for these y values
+
 SELFMODIFY_MASKED_viewheight_2:
-mov   ax, 0FE10h  ; ah is UNCLIPPED_COLUMN, al is viewheight
+mov   ax, 0FE10h  ; ah is UNCLIPPED_COLUMN, al is viewheight+1
 xor   dx, dx
 ; ds is cs here
 
@@ -5106,7 +5112,7 @@ mov   byte ptr ds:[si], al
 dont_clip_bot:
 cmp   byte ptr ds:[si+bx], ah ; UNCLIPPED_COLUMN -2
 jne   dont_clip_top
-mov   byte ptr ds:[si+bx], dl     ; 0FEh to 000h
+mov   byte ptr ds:[si+bx], dl     ; 0FEh to 0
 dont_clip_top:
 inc   si
 loop loop_clipping_columns
@@ -5616,7 +5622,8 @@ adc   dx, bx
 neg ax
 sbb dx, 0FFFFh  ; we actually want to simultaneously add one back to this. has to do with the >= case and is made up for with jmp lookup
 
-
+inc   si ; dc_yl + 1
+inc   dx ; dc_yh + 1
 
 ; dc_yh, dc_yl are set (dx, si)
         
@@ -5637,7 +5644,8 @@ xor   ax, ax
 
 SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup:
 PUBLIC SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup
-mov   cx, 01000h
+; todo 8 bit logic? can dx be above 255?
+mov   cx, 01000h ; can end up ff high
 mov   al, cl
 cmp   dx, ax
 jl    skip_floor_clip_set
@@ -5663,6 +5671,7 @@ skip_ceil_clip_set:
 sub   dx, si   ; dx is dc_yh
 jl    increment_column_and_continue_loop
 
+dec   si     ; undo dc_yl+1
 mov   di, dx ; finally write dc_yh to di
 
 SELFMODIFY_MASKED_dc_texturemid_hi_1:
@@ -6489,6 +6498,7 @@ mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_4+2 - OFFSET R_MASK24_STAR
 mov   ax, word ptr ss:[_viewheight]
 ; todo revisit. shadow column no longer checking vs view height? i guess sprites should have already been clipped?
 ;mov   word ptr ds:[SELFMODIFY_MASKED_viewheight_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
+inc   ax 
 mov   byte ptr ds:[SELFMODIFY_MASKED_viewheight_2+1 - OFFSET R_MASK24_STARTMARKER_], al
 
 
