@@ -1057,8 +1057,6 @@ screenheightarray_offset 7800:A500  or 8000:2500
 //8228
 #define offset_screenheightarray    offset_negonearray          + (sizeof(uint8_t) * SCREENWIDTH)
 //8250
-#define offset_floorclip            offset_screenheightarray    + (sizeof(uint8_t) * SCREENWIDTH)
-#define offset_ceilingclip          offset_floorclip            + (sizeof(uint8_t) * SCREENWIDTH)
 
 // todo use this to connect below
 // #define offset_                                     + (sizeof(int16_t) * SCREENWIDTH)
@@ -1066,18 +1064,11 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define openings             ((uint16_t __far*)         (0x78000000 + offset_openings))
 #define negonearray          ((uint8_t __far*)          (0x78000000 + offset_negonearray))
 #define screenheightarray    ((uint8_t __far*)          (0x78000000 + offset_screenheightarray))
-#define floorclip            ((uint8_t __far*)          (0x78000000 + offset_floorclip))
-#define ceilingclip          ((uint8_t __far*)          (0x78000000 + offset_ceilingclip))
-
-#define floorclip_paragraph_aligned       ((uint8_t __far*)          MAKE_FULL_SEGMENT(openings, offset_floorclip))
 
 // todo these are wrong i guess.
 #define openings_segment             ((segment_t) ((int32_t)openings >> 16))
 #define negonearray_segment          ((segment_t) ((int32_t)negonearray >> 16))
 #define screenheightarray_segment    ((segment_t) ((int32_t)screenheightarray >> 16))
-#define floorclip_segment            ((segment_t) ((int32_t)floorclip >> 16))
-#define ceilingclip_segment          ((segment_t) ((int32_t)ceilingclip >> 16))
-#define floorclip_paragraph_aligned_segment       ((segment_t) ((int32_t)floorclip_paragraph_aligned >> 16))
 
 
 //negonearray       = 7800:A000 or 8202

@@ -107,6 +107,21 @@ ENDM
    dw base_product ; for overflow cases...
 
 
+; segment aligned
+ALIGN 16
+
+OFFSET_FLOORCLIP:
+_floorclip:
+REPT SCREENWIDTH ; 320
+    db 0
+ENDM
+
+OFFSET_CEILINGCLIP:
+_ceilingclip:
+REPT SCREENWIDTH ; 320
+    db 0
+ENDM
+
 
 
 
@@ -2382,10 +2397,13 @@ SELFMODIFY_BSP_viewwidth_1:
 mov   cx, 01000h  ; preshifted right
 mov   dx, cx
 
-xor   di, di
 
-mov   ax, FLOORCLIP_PARAGRAPH_ALIGNED_SEGMENT; 
+mov   ax, cs
+mov   di, OFFSET OFFSET_FLOORCLIP
+SHIFT_MACRO shr di 4
+add   ax, di      ; TODO tasm does not let me do  ((OFFSET_FLOORCLIP) SHR 4). once this is pretty set in stone hardcode it?
 mov   es, ax
+xor   di, di
 
 ; viewheight plus one.
 
@@ -4417,8 +4435,8 @@ mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5 - OFFSET 
 mov       word ptr ds:[SELFMODIFY_BSP_drawtype_2 - OFFSET R_BSP24_STARTMARKER_], 089B8h   ; mov ax, xx89
 mov       word ptr ds:[SELFMODIFY_BSP_drawtype_1 - OFFSET R_BSP24_STARTMARKER_], ((SELFMODIFY_BSP_drawtype_1_TARGET - SELFMODIFY_BSP_drawtype_1_AFTER) SHL 8) + 0EBh
 
-mov       byte ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+0 - OFFSET R_BSP24_STARTMARKER_], 026h    ; es:
-mov       word ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+1 - OFFSET R_BSP24_STARTMARKER_], 087C6h  ; next 2 bytes of following instr (mov   byte ptr es:[bx + OFFSET_CEILINGCLIP], 01000h)
+mov       byte ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+0 - OFFSET R_BSP24_STARTMARKER_], 02Eh    ; cs:
+mov       word ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+1 - OFFSET R_BSP24_STARTMARKER_], 087C6h  ; next 2 bytes of following instr (mov   byte ptr cs:[bx + OFFSET_CEILINGCLIP], 01000h)
 
 mov       byte ptr ds:[SELFMODIFY_BSP_midtexture - OFFSET R_BSP24_STARTMARKER_], 039h     ; cmp di,
 mov       word ptr ds:[SELFMODIFY_BSP_midtexture+1 - OFFSET R_BSP24_STARTMARKER_], 07CF7h   ; (cmp di,) si, jl
@@ -5666,8 +5684,6 @@ xchg  ax, di   ; ax was still rw_x
 mov   ax, ss
 mov   ds, ax
 
-mov   ax, OPENINGS_SEGMENT
-mov   es, ax
 
 check_here:
 PUBLIC check_here
@@ -5675,9 +5691,9 @@ PUBLIC check_here
 ; todo clean up logic. store only in ch/cl. possible store same pixel floor/ceiling side by side? one read, word?
                                                  ; di = rw_x
 xor   ax, ax
-mov   al, byte ptr es:[di+OFFSET_FLOORCLIP]	 ; cx = floor
+mov   al, byte ptr cs:[di+OFFSET_FLOORCLIP]	 ; cx = floor
 mov   cx, ax
-mov   al, byte ptr es:[di+OFFSET_CEILINGCLIP] ; si = ceiling  = ceilingclip[rw_x]+1;
+mov   al, byte ptr cs:[di+OFFSET_CEILINGCLIP] ; si = ceiling  = ceilingclip[rw_x]+1;
 
 xchg  ax, si
 
@@ -6265,8 +6281,6 @@ seg_non_textured:
 ;if (yh >= yl){
 mov   bx, di 			; store rw_x
 
-mov   ax, OPENINGS_SEGMENT ; todo is this necessary? just gets pushed later.
-mov   es, ax
 
 ; dx holds texturecolumn
 ; get yl/yh in di/si
@@ -6284,7 +6298,7 @@ jl    mid_no_pixels_to_draw
 
 ; inlined function. 
 R_GetSourceSegment0_START:
-push  es
+
 push  bp
 push  dx
 
@@ -6414,7 +6428,7 @@ SELFMODIFY_BSP_R_DrawColumnPrep_ret:
 
 pop   dx
 pop   bp
-pop   es
+
 
 ; this runs as a jmp for a top call, otherwise NOP for mid call
 SELFMODIFY_BSP_midtexture_return_jmp:
@@ -6428,8 +6442,8 @@ mid_no_pixels_to_draw:
 
 SELFMODIFY_BSP_setviewheight_1:
 ; view height plus 1.
-mov   byte ptr es:[bx + OFFSET_CEILINGCLIP], 010h   ; 26 c6 87 80 a7 10  (this instruction that gets selfmodified)
-mov   byte ptr es:[bx + OFFSET_FLOORCLIP], 000h
+mov   byte ptr cs:[bx + OFFSET_CEILINGCLIP], 010h   ; 2e c6 87 80 a7 10  (this instruction that gets selfmodified)
+mov   byte ptr cs:[bx + OFFSET_FLOORCLIP], 000h
 finished_inner_loop_iter:
 
 ;		for ( ; rw_x < rw_stopx ; 
@@ -6479,7 +6493,7 @@ SELFMODIFY_BSP_markceiling_2_AFTER:
 mark_ceiling_si:
 ; bx is already rw_x
 lea   ax, [si - 1]
-mov   byte ptr es:[bx + OFFSET_CEILINGCLIP], al
+mov   byte ptr cs:[bx + OFFSET_CEILINGCLIP], al
 jmp   check_bottom_texture
 ALIGN_MACRO
 
@@ -6501,7 +6515,7 @@ adc   word ptr [bp - 020h], 01000h
 ; todo reduce 16 bit logic, use 8 bit logic.
 
 xor   ax, ax
-mov   al, byte ptr es:[bx + OFFSET_FLOORCLIP]
+mov   al, byte ptr cs:[bx + OFFSET_FLOORCLIP]
 cmp   cx, ax
 jl    dont_clip_top_floor
 xchg  ax, cx
@@ -6532,7 +6546,7 @@ xchg   cx, di
 
 
 mark_ceiling_cx:
-mov   byte ptr es:[bx  + OFFSET_CEILINGCLIP], cl
+mov   byte ptr cs:[bx  + OFFSET_CEILINGCLIP], cl
 SELFMODIFY_BSP_markceiling_2_TARGET:
 check_bottom_texture:
 ; bx is already rw_x
@@ -6559,7 +6573,7 @@ adc   word ptr [bp - 024h], 01000h
 ;		    mid = ceilingclip[rw_x]+1;
 
 xor   ax, ax
-mov   al, byte ptr es:[bx+OFFSET_CEILINGCLIP]
+mov   al, byte ptr cs:[bx+OFFSET_CEILINGCLIP]
 cmp   cx, ax
 jg    dont_clip_bot_ceil
 inc   ax
@@ -6586,7 +6600,7 @@ xchg   cx, si
 
 ; BEGIN INLINED R_GetSourceSegment1_
 
-push  es
+
 push  bp
 push  dx
 
@@ -6627,7 +6641,7 @@ mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret - OFFSET R_BSP24_STARTMAR
 
 pop   dx
 pop   bp
-pop   es
+
 
 
 
@@ -6636,7 +6650,7 @@ pop   es
 xchg   cx, si
 
 mark_floor_cx:
-mov   byte ptr es:[bx+OFFSET_FLOORCLIP], cl
+mov   byte ptr cs:[bx+OFFSET_FLOORCLIP], cl
 SELFMODIFY_BSP_markfloor_2_TARGET:
 done_marking_floor:
 SELFMODIFY_get_maskedtexture_1:
@@ -6655,7 +6669,7 @@ mark_floor_di:
    ;floorclip[rw_x] = yh + 1;
 xchg  ax, di   ; di seems safe to clobber?
 inc   ax
-mov   byte ptr es:[bx+OFFSET_FLOORCLIP], al
+mov   byte ptr cs:[bx+OFFSET_FLOORCLIP], al
 SELFMODIFY_get_maskedtexture_2:
 mov   al, 0
 test  al, al
@@ -6785,8 +6799,7 @@ record_masked:
 ;	maskedtexturecol[rw_x] = texturecolumn;
 ;}
 
-; es already OPENINGS_SEGMENT
-mov   si, word ptr ds:[_maskedtexturecol]
+les   si, dword ptr ds:[_maskedtexturecol]
 add   si, bx  ; bx word ptr  ; double up bx as a word offset.
 mov   word ptr es:[bx+si], dx
 jmp   finished_inner_loop_iter
@@ -6824,16 +6837,17 @@ mov       di, word ptr ds:[_lastopening]
 mov       ax, di
 sub       ax, si
 
+mov       cx, cs
+mov       ds, cx
 mov       cx, OPENINGS_SEGMENT
 mov       es, cx
-mov       ds, cx
 
 
 SELFMODIFY_set_cx_to_count_1:
 mov       cx, 01000h
 
 
-add       si, OFFSET_CEILINGCLIP
+add       si, OFFSET OFFSET_CEILINGCLIP
 
 
 rep movsw
@@ -6863,15 +6877,16 @@ mov       di, word ptr ds:[_lastopening]
 mov       ax, di
 sub       ax, si
 
+mov       cx, cs
+mov       ds, cx
 mov       cx, OPENINGS_SEGMENT
 mov       es, cx
-mov       ds, cx
 
 SELFMODIFY_set_cx_to_count_2:
 mov       cx, 01000h
 
 
-add       si, OFFSET_FLOORCLIP
+add       si, OFFSET OFFSET_FLOORCLIP
 
 rep movsw
 

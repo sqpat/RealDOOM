@@ -8,7 +8,7 @@
 #include "r_state.h"
 #include "p_setup.h"
 
-#define CONSTANTS_COUNT 1003
+#define CONSTANTS_COUNT 998
 #define LOCALS_COUNT 32
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -123,8 +123,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "OPENINGS_SEGMENT",
     "NEGONEARRAY_SEGMENT",
     "SCREENHEIGHTARRAY_SEGMENT",
-    "FLOORCLIP_SEGMENT",
-    "CEILINGCLIP_SEGMENT",
 
     "TEXTUREWIDTHMASKS_SEGMENT",
     "ZLIGHT_SEGMENT",
@@ -198,7 +196,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 
     "MAXLIGHTSCALE",
     "DC_YL_LOOKUP_MASKEDMAPPING_SEGMENT",
-    "FLOORCLIP_PARAGRAPH_ALIGNED_SEGMENT",
 	"MUSIC_DRIVER_CODE_SEGMENT",
 	"REAL_LOWEST_DATA_SEGMENT",
 	"END_SKY_PLANE_SEGMENT",
@@ -207,8 +204,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"DEMO_SEGMENT",
     "OFFSET_NEGONEARRAY",
     "OFFSET_SCREENHEIGHTARRAY",
-    "OFFSET_FLOORCLIP",
-    "OFFSET_CEILINGCLIP",
 	"SIZEOF_OP2INSTRENTRY",
 
     "SPRITES_SEGMENT",
@@ -1229,8 +1224,6 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     openings_segment,
     negonearray_segment,
     screenheightarray_segment,
-    floorclip_segment,
-    ceilingclip_segment,
 
     texturewidthmasks_segment,
     zlight_segment,
@@ -1302,7 +1295,6 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     seg_sides_offset_in_seglines,
     MAXLIGHTSCALE,
     dc_yl_lookup_maskedmapping_segment,
-    floorclip_paragraph_aligned_segment,
 	music_driver_code_segment,
 	real_lowest_data_segment,
     END_SKY_PLANE_SEGMENT,
@@ -1311,8 +1303,6 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	DEMO_SEGMENT,
     offset_negonearray,
     offset_screenheightarray,
-    offset_floorclip,
-    offset_ceilingclip,
 	sizeof(OP2instrEntry),
 
 
