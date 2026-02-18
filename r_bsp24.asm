@@ -78,6 +78,17 @@ dw 00000h, 00400h, 00800h, 00C00h
 dw 01000h, 01400h, 01800h, 01C00h
 ;dw 02000h, 02400h
 
+_selfmodify_lookup_markfloor:
+dw ((SELFMODIFY_BSP_markfloor_1_TARGET - SELFMODIFY_BSP_markfloor_1_AFTER) SHL 8) + 0EBh
+dw ((SELFMODIFY_BSP_markfloor_2_TARGET - SELFMODIFY_BSP_markfloor_2_AFTER) SHL 8) + 0EBh
+dw 04940h
+dw 04097h
+_selfmodify_lookup_markceiling:
+dw ((SELFMODIFY_BSP_markceiling_1_TARGET - SELFMODIFY_BSP_markceiling_1_AFTER) SHL 8) + 0EBh
+dw ((SELFMODIFY_BSP_markceiling_2_TARGET - SELFMODIFY_BSP_markceiling_2_AFTER) SHL 8) + 0EBh
+dw 001B2h
+dw 0C089h
+
 
 ; todo 256 entry table with shift 4 and min/max etc logic baked in
 base_product = OFFSET _scalelight
@@ -4430,8 +4441,7 @@ or        al, ah
 or        byte ptr ds:[SELFMODIFY_check_for_any_tex+1 - OFFSET R_BSP24_STARTMARKER_], al
 
 
-
-mov       word ptr [bp - 01Ch], 0101h ; set markfloor and markceiling
+mov       word ptr [bp - 01Ch], 0404h ; set markfloor and markceiling
 test      byte ptr [bp + 018h], ML_DONTPEGBOTTOM
 jne       do_peg_bottom
 dont_peg_bottom:
@@ -5308,7 +5318,7 @@ mov       word ptr ds:[SELFMODIFY_add_to_pixlow_lo_2+3 - OFFSET R_BSP24_STARTMAR
 
 SELFMODIFY_do_backsector_work_or_not_TARGET_NULL:
 skip_pixlow_step:
-
+public skip_pixlow_step
 ;   BEGIN INLINED R_RenderSegLoop_
 ;   BEGIN INLINED R_RenderSegLoop_
 ;   BEGIN INLINED R_RenderSegLoop_
@@ -5316,11 +5326,11 @@ skip_pixlow_step:
 
 
 
-xchg  ax, cx
 mov   bx, word ptr [bp - 2]    ; rw_x. from here on out we do not pull from bp - 018h again. its always in some register or other.
-mov   di, bx
-SELFMODIFY_detailshift_and_1:
 
+mov   cx, bx
+
+SELFMODIFY_detailshift_and_1:
 and   bx, 01000h
 
 ; self modify code in the function to set constants rather than
@@ -5328,49 +5338,27 @@ and   bx, 01000h
 
 
 mov   word ptr ds:[SELFMODIFY_add_rw_x_base4_to_ax+1 - OFFSET R_BSP24_STARTMARKER_], bx
-mov   word ptr ds:[SELFMODIFY_compare_ax_to_start_rw_x+1 - OFFSET R_BSP24_STARTMARKER_], di
-
-mov   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1 - OFFSET R_BSP24_STARTMARKER_], 0 ; 0
-cmp   byte ptr [bp - 01Ch], 0 ; markfloor check
-
-je    do_markfloor_selfmodify_jumps
-mov   ax, 04940h     ; inc ax dec cx
-mov   si, 04097h     ; xchg ax, di; inc ax
-jmp do_markfloor_selfmodify
-ALIGN_MACRO
-do_markfloor_selfmodify_jumps:
-mov   ax, ((SELFMODIFY_BSP_markfloor_1_TARGET - SELFMODIFY_BSP_markfloor_1_AFTER) SHL 8) + 0EBh
-mov   si, ((SELFMODIFY_BSP_markfloor_2_TARGET - SELFMODIFY_BSP_markfloor_2_AFTER) SHL 8) + 0EBh
-do_markfloor_selfmodify:
-
-mov   word ptr ds:[SELFMODIFY_BSP_markfloor_1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov   word ptr ds:[SELFMODIFY_BSP_markfloor_2 - OFFSET R_BSP24_STARTMARKER_], si
-
-mov   ah, byte ptr [bp - 01Bh] ;markceiling
-test  ah, ah
-
-jz    do_markceiling_selfmodify_jumps
-mov   al, 0B2h  ;      mov dl, [ah value]
-mov   si, 0c089h    ; nop
-
-jmp do_markceiling_selfmodify
-ALIGN_MACRO
-do_markceiling_selfmodify_jumps:
-mov   ax, ((SELFMODIFY_BSP_markceiling_1_TARGET - SELFMODIFY_BSP_markceiling_1_AFTER) SHL 8) + 0EBh
-mov   si, ((SELFMODIFY_BSP_markceiling_2_TARGET - SELFMODIFY_BSP_markceiling_2_AFTER) SHL 8) + 0EBh
-do_markceiling_selfmodify:
-
-mov   word ptr ds:[SELFMODIFY_BSP_markceiling_1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov   word ptr ds:[SELFMODIFY_BSP_markceiling_2 - OFFSET R_BSP24_STARTMARKER_], si
-
-xchg  ax, cx
-
-
+mov   word ptr ds:[SELFMODIFY_compare_ax_to_start_rw_x+1 - OFFSET R_BSP24_STARTMARKER_], cx
 
 ;  	int16_t base4diff = rw_x - rw_x_base4;
-mov   cx, di
+sub   cx, bx ; for loop later.
 
-sub   cx, bx
+mov   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1 - OFFSET R_BSP24_STARTMARKER_], ch ; 0 
+
+xor   bx, bx
+
+mov   dx, word ptr [bp - 01Ch] ; todo selfmodify?
+mov   bl, dl
+les   ax, dword ptr cs:[bx+_selfmodify_lookup_markfloor]
+mov   word ptr ds:[SELFMODIFY_BSP_markfloor_1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_BSP_markfloor_2 - OFFSET R_BSP24_STARTMARKER_], es
+
+mov   bl, dh ; retrieve high byte
+les   bx, dword ptr cs:[bx+_selfmodify_lookup_markceiling]
+mov   word ptr ds:[SELFMODIFY_BSP_markceiling_1 - OFFSET R_BSP24_STARTMARKER_], bx
+mov   word ptr ds:[SELFMODIFY_BSP_markceiling_2 - OFFSET R_BSP24_STARTMARKER_], es
+
+; sub cx, bx flags still active.
 
 ;	while (base4diff){
 ;		rw_scale.w      -= rw_scalestep;
@@ -7165,7 +7153,7 @@ mov       dx, word ptr [bp - 03Ch]
 cmp       dl, dh
 je        markfloor_set
 set_markfloor_true:
-inc       ax     ; markfloor  al = 1
+mov       al, 4     ; markfloor  al = 1
 
 markfloor_set:
 ; di/si are already worldhigh..
@@ -7182,7 +7170,7 @@ mov       dx, word ptr [bp - 03Ch]
 cmp       dl, dh
 je        markceiling_set
 set_markceiling_true:
-inc       ah    ;markceiling  ah = 1
+mov       ah, 4    ;markceiling  ah = 1
 markceiling_set:
 
 
@@ -7200,7 +7188,7 @@ SELFMODIFY_get_backsector_floorheight:
 cmp       word ptr [bp - 036h], 01000h
 jge       not_closed_door 
 closed_door_detected:
-mov       ax, 0101h
+mov       ax, 0404h
 not_closed_door:
 ; finally write this just once.
 mov       word ptr [bp - 01Ch], ax  ; markfloor, ceiling

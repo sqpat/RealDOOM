@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/17 21:47:40
+Created on:       26/02/17 23:15:11
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -35,7 +35,7 @@ SM_OPL2_TEXT           CODE           AUTO           0533:0000       00000f3c
 SM_OPL3_TEXT           CODE           AUTO           0627:0000       0000100e
 SM_SBMID_TEXT          CODE           AUTO           0728:0000       00000730
 SM_MPUMD_TEXT          CODE           AUTO           079b:0000       000007db
-R_BSP_24_TEXT          CODE           AUTO           0819:0000       00003459
+R_BSP_24_TEXT          CODE           AUTO           0819:0000       00003451
 R_BSP_16_TEXT          CODE           AUTO           0b5f:0000       00003740
 R_BSP0_TEXT            CODE           AUTO           0ed3:0000       0000366f
 R_BSPFL_TEXT           CODE           AUTO           123a:0000       00003617
@@ -208,8 +208,8 @@ Module: m_menu.obj(m_menu.ASM)
 015e:1048      M_Drawer_
 015e:0cd7*     M_WriteText_
 015e:1393*     M_Z_QuickmapStatus_
-015e:0453*     M_ReadSaveStrings_
 015e:0a3a*     M_ReadThis_
+015e:0453*     M_ReadSaveStrings_
 015e:08f8*     M_Episode_
 015e:0603*     M_QuickSave_
 015e:09d9*     M_EndGameResponse_
@@ -340,48 +340,49 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079b:0000      SM_MPUMD_STARTMARKER_
 079b:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-0819:30f8      R_WriteBackViewConstants24_
-0819:1eb1*     R_AddLine_
-0819:3459      R_BSP24_ENDMARKER_
-0819:2bc2      R_GetPatchTexture_Far24_
-0819:0762*     FixedMulTrigNoShiftSine_BSPLocal_
-0819:13b2*     _selfmodify_restore_dx_6
-0819:13f3*     _selfmodify_restore_dx_7
-0819:121c*     _selfmodify_restore_dx_2
-0819:1464*     _selfmodify_restore_dx_8
-0819:133a*     _selfmodify_restore_dx_5
-0819:12de*     _selfmodify_restore_dx_4
-0819:1261*     _selfmodify_restore_dx_3
-0819:075e*     FixedMulTrigSine_BSPLocal_
-0819:0d49*     R_StoreWallRange_
-0819:20aa*     R_ClipPassWallSegment_
-0819:1378*     jmp_to_skip_pixhigh_step
-0819:07ac*     FixedMulTrigCosine_BSPLocal_
-0819:1dcc*     R_Subsector_
-0819:1693*     check_here
-0819:1988*     do_top_texture_draw
+0819:30f0      R_WriteBackViewConstants24_
+0819:1ea9*     R_AddLine_
+0819:3451      R_BSP24_ENDMARKER_
+0819:2bba      R_GetPatchTexture_Far24_
+0819:0772*     FixedMulTrigNoShiftSine_BSPLocal_
+0819:13c2*     _selfmodify_restore_dx_6
+0819:1403*     _selfmodify_restore_dx_7
+0819:122c*     _selfmodify_restore_dx_2
+0819:1474*     _selfmodify_restore_dx_8
+0819:134a*     _selfmodify_restore_dx_5
+0819:12ee*     _selfmodify_restore_dx_4
+0819:1271*     _selfmodify_restore_dx_3
+0819:076e*     FixedMulTrigSine_BSPLocal_
+0819:0d59*     R_StoreWallRange_
+0819:20a2*     R_ClipPassWallSegment_
+0819:1388*     jmp_to_skip_pixhigh_step
+0819:07bc*     FixedMulTrigCosine_BSPLocal_
+0819:1dc4*     R_Subsector_
+0819:1689*     check_here
+0819:197e*     do_top_texture_draw
 0819:0000      R_BSP24_STARTMARKER_
-0819:2f72      R_RenderPlayerView24_
-0819:070e*     FixedDivBSPLocal_
-0819:0334*     div48_32_BSPLocal_
-0819:2a68*     R_GetTexturePage_
-0819:32a0*     R_WriteBackFrameConstants_
-0819:00a1*     _selfmodify_restore_dx
-0819:07b0*     FixedMulTrigNoShiftCosine_BSPLocal_
-0819:129d*     SELFMODIFY_set_floorplaneindex
-0819:1286*     SELFMODIFY_set_ceilingplaneindex
-0819:07fc*     R_ClearPlanes_
-0819:1b60*     mark_planes_dirty
-0819:17bc*     main_3232_div
-0819:09a4*     R_FindPlane_
-0819:047e*     FixedDivWholeA_BSPLocal_
-0819:1d8a*     side_has_midtexture
-0819:2c5c      R_GetCompositeTexture_Far24_
-0819:18ec*     R_DrawColumnPrep_
-0819:00ce*     SELFMODIFY_get_rw_distance_hi_1
-0819:19b8*     do_bottom_texture_draw
-0819:1762*     _selfmodify_restore_dx_10
-0819:00b4*     R_ScaleFromGlobalAngle_
+0819:2f6a      R_RenderPlayerView24_
+0819:071e*     FixedDivBSPLocal_
+0819:0344*     div48_32_BSPLocal_
+0819:14e7*     skip_pixlow_step
+0819:2a60*     R_GetTexturePage_
+0819:3298*     R_WriteBackFrameConstants_
+0819:00b1*     _selfmodify_restore_dx
+0819:07c0*     FixedMulTrigNoShiftCosine_BSPLocal_
+0819:12ad*     SELFMODIFY_set_floorplaneindex
+0819:1296*     SELFMODIFY_set_ceilingplaneindex
+0819:080c*     R_ClearPlanes_
+0819:1b56*     mark_planes_dirty
+0819:17b2*     main_3232_div
+0819:09b4*     R_FindPlane_
+0819:048e*     FixedDivWholeA_BSPLocal_
+0819:1d82*     side_has_midtexture
+0819:2c54      R_GetCompositeTexture_Far24_
+0819:18e2*     R_DrawColumnPrep_
+0819:00de*     SELFMODIFY_get_rw_distance_hi_1
+0819:19ae*     do_bottom_texture_draw
+0819:1758*     _selfmodify_restore_dx_10
+0819:00c4*     R_ScaleFromGlobalAngle_
 Module: r_bsp16.obj(r_bsp16.ASM)
 0b5f:3289      R_RenderPlayerView16_
 0b5f:0000      R_BSP16_STARTMARKER_
@@ -649,8 +650,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 23c9:525e*     GetVileMomz_
 23c9:4e82*     A_SkelWhoosh_
 23c9:54bb*     A_PainDie_
-23c9:51d6*     A_VileTarget_
 23c9:45fd*     P_LookForPlayers_
+23c9:51d6*     A_VileTarget_
 23c9:4322*     P_Move_
 23c9:584f*     A_BrainExplode_
 23c9:58c5*     A_BrainSpit_
@@ -1170,8 +1171,8 @@ Module: s_sbsfx.obj(s_sbsfx.ASM)
 2f5a:6424*     _SB_IntController1Mask
 2f5a:7083      SB_StopPlayback_
 2f5a:6423      _SB_IntController2Mask
-2f5a:6bce*     S_NormalizeSfxVolume_
 2f5a:6427      _SB_OriginalVoiceVolumeRight
+2f5a:6bce*     S_NormalizeSfxVolume_
 2f5a:7125*     S_SBFX_ENDMARKER_
 2f5a:705f*     SB_DMA_EndTransfer_
 2f5a:663e*     S_IncreaseRefCount_
