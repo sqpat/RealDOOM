@@ -5330,10 +5330,8 @@ and   bx, 01000h
 mov   word ptr ds:[SELFMODIFY_add_rw_x_base4_to_ax+1 - OFFSET R_BSP24_STARTMARKER_], bx
 mov   word ptr ds:[SELFMODIFY_compare_ax_to_start_rw_x+1 - OFFSET R_BSP24_STARTMARKER_], di
 
-mov   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1 - OFFSET R_BSP24_STARTMARKER_], bh ; 0
-
-
-cmp   byte ptr [bp - 01Ch], bh ; bh = 0. markfloor check
+mov   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1 - OFFSET R_BSP24_STARTMARKER_], 0 ; 0
+cmp   byte ptr [bp - 01Ch], 0 ; markfloor check
 
 je    do_markfloor_selfmodify_jumps
 mov   ax, 04940h     ; inc ax dec cx
