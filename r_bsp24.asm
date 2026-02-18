@@ -4516,11 +4516,9 @@ done_with_sector_sided_check:
 
 ; set maskedtexture in rendersegloop
 
-; NOTE: Dont selfmodify these branches into nop/jump. tested to be slower?
-; though thats with [nop to a long jmp]. could try straight long jmp. 
-; modify the word addr but not the long jmp instruction for a single word.
+; would be nice to turn into a jmp or nop, but the lookup is slow and doesnt actually run often.
+
 mov       byte ptr cs:[SELFMODIFY_get_maskedtexture_1+1 - OFFSET R_BSP24_STARTMARKER_], al
-mov       byte ptr cs:[SELFMODIFY_get_maskedtexture_2+1 - OFFSET R_BSP24_STARTMARKER_], al
 
 ; create segtextured value
 SELFMODIFY_check_for_any_tex:
@@ -6492,10 +6490,32 @@ mov   byte ptr cs:[bx + OFFSET_CEILINGCLIP], al ; bx is already rw_x
 jmp   check_bottom_texture
 ALIGN_MACRO
 
+record_masked:
+
+;if (maskedtexture) {
+;	// save texturecol
+;	//  for backdrawing of masked mid texture			
+;	maskedtexturecol[rw_x] = texturecolumn;
+;}
+
+xchg  ax, si  ; back up si
+les   si, dword ptr ds:[_maskedtexturecol]
+add   si, bx  ; bx byte ptr
+mov   word ptr es:[bx+si], dx  ; add bx again, word ptr
+xchg  ax, si  ; restore si
+jmp   finished_recording_masked
+ALIGN_MACRO
+
 SELFMODIFY_BSP_midtexture_TARGET:
 no_mid_texture_draw:
 
-mov   word ptr cs:[SELFMODIFY_BSP_write_masked_column+3], dx  ; i think this might be able to run a little less often with better logic.
+SELFMODIFY_get_maskedtexture_1:
+mov   al, 0
+test  al, al
+jnz   record_masked
+
+finished_recording_masked:
+
 
 SELFMODIFY_BSP_toptexture:
 SELFMODIFY_BSP_toptexture_AFTER = SELFMODIFY_BSP_toptexture + 2
@@ -6575,6 +6595,8 @@ SELFMODIFY_add_to_pixlow_hi_1:
 adc   word ptr [bp - 024h], 01000h
 ;		if (mid <= ceilingclip[rw_x])
 ;		    mid = ceilingclip[rw_x]+1;
+
+
 
 xor   ax, ax
 mov   al, byte ptr cs:[bx+OFFSET_CEILINGCLIP]
@@ -6660,11 +6682,9 @@ pop   bx ; restore dc_x
 done_marking_floor_cx:
 SELFMODIFY_BSP_markfloor_2_TARGET:
 done_marking_floor:
-SELFMODIFY_get_maskedtexture_1:
-mov   al, 0
-test  al, al
-jne   record_masked
 jmp   finished_inner_loop_iter
+
+
 ALIGN_MACRO
 mark_floor_cx:
 mov   byte ptr cs:[bx+OFFSET_FLOORCLIP], cl
@@ -6682,10 +6702,6 @@ mark_floor_di:
 xchg  ax, di   ; di seems safe to clobber?
 inc   ax
 mov   byte ptr cs:[bx+OFFSET_FLOORCLIP], al
-SELFMODIFY_get_maskedtexture_2:
-mov   al, 0
-test  al, al
-jne   record_masked
 jmp   finished_inner_loop_iter
 ALIGN_MACRO
 ;BEGIN INLINED R_GetSourceSegment1_ AGAIN
@@ -6804,25 +6820,7 @@ ALIGN_MACRO
 
 
 
-record_masked:
 
-
-; todo if we move this logic earlier, maybe this value can already be in a register.
-
-
-; todo is dx correct...
-
-;if (maskedtexture) {
-;	// save texturecol
-;	//  for backdrawing of masked mid texture			
-;	maskedtexturecol[rw_x] = texturecolumn;
-;}
-
-les   si, dword ptr ds:[_maskedtexturecol]
-add   si, bx  ; bx word ptr  ; double up bx as a word offset.
-SELFMODIFY_BSP_write_masked_column:
-mov   word ptr es:[bx+si], 01000h
-jmp   finished_inner_loop_iter
 ALIGN_MACRO
 
 R_RenderSegLoop_exit:
