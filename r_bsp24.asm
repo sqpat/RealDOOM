@@ -6595,6 +6595,9 @@ jg    mark_floor_di
 cmp   di, si
 jle   mark_floor_cx
 
+mov   byte ptr cs:[bx+OFFSET_FLOORCLIP], cl
+
+
 xchg   cx, si
 ; dont push/pop cx because we don't need to preserve si, and si preserves cx
 ; si:di are dc_yl, dc_yh
@@ -6607,8 +6610,7 @@ xchg   cx, si
 
 
 push  bx ; dc_x
-push  di
-push  si
+
 push  bp ; bp. remove if sp becomes constant?
 
 
@@ -6647,8 +6649,7 @@ call  R_DrawColumnPrep_
 
 mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret - OFFSET R_BSP24_STARTMARKER_], 05Dh  ; pop bp
 pop   bp ; bp. remove if sp becomes constant?
-pop   si
-pop   di
+
 pop   bx ; restore dc_x
 
 ; todo did di/si need to be recovered?
@@ -6656,10 +6657,7 @@ pop   bx ; restore dc_x
 
 ;END INLINED R_GetSourceSegment1_
 
-xchg   cx, si
-
-mark_floor_cx:
-mov   byte ptr cs:[bx+OFFSET_FLOORCLIP], cl
+done_marking_floor_cx:
 SELFMODIFY_BSP_markfloor_2_TARGET:
 done_marking_floor:
 SELFMODIFY_get_maskedtexture_1:
@@ -6667,6 +6665,11 @@ mov   al, 0
 test  al, al
 jne   record_masked
 jmp   finished_inner_loop_iter
+ALIGN_MACRO
+mark_floor_cx:
+mov   byte ptr cs:[bx+OFFSET_FLOORCLIP], cl
+jmp   done_marking_floor_cx
+
 ALIGN_MACRO
 SELFMODIFY_BSP_bottexture_TARGET:
 no_bottom_texture_draw:
