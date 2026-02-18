@@ -5910,8 +5910,6 @@ mov   cx, es
 ; store texturecolumn
 push  ax       ; later popped into dx
 
-;todo only do this if bottomdraw exists?
-mov   word ptr cs:[SELFMODIFY_BSP_set_bottom_texturecolumn+1], ax
 
 cmp   cl, 3
 jae   use_max_light
@@ -6481,28 +6479,30 @@ ALIGN_MACRO
 
 SELFMODIFY_BSP_toptexture_TARGET:
 no_top_texture_draw:
+
 ; bx is already rw_x
 SELFMODIFY_BSP_markceiling_2:
 jmp SHORT   check_bottom_texture
 SELFMODIFY_BSP_markceiling_2_AFTER:
 
-; bx is already rw_x
+
 mark_ceiling_si:
-; bx is already rw_x
 lea   ax, [si - 1]
-mov   byte ptr cs:[bx + OFFSET_CEILINGCLIP], al
+mov   byte ptr cs:[bx + OFFSET_CEILINGCLIP], al ; bx is already rw_x
 jmp   check_bottom_texture
 ALIGN_MACRO
 
 SELFMODIFY_BSP_midtexture_TARGET:
 no_mid_texture_draw:
 
+mov   word ptr cs:[SELFMODIFY_BSP_write_masked_column+3], dx  ; i think this might be able to run a little less often with better logic.
+
 SELFMODIFY_BSP_toptexture:
 SELFMODIFY_BSP_toptexture_AFTER = SELFMODIFY_BSP_toptexture + 2
 
-do_top_texture_draw:
+do_top_texture_draw:  ; not a jump target.
 PUBLIC do_top_texture_draw
-mov   cx, word ptr [bp - 020h]
+mov   cx, word ptr [bp - 020h]   ; pixhigh
 SELFMODIFY_add_to_pixhigh_lo_1:
 add   word ptr [bp - 022h], 01000h
 SELFMODIFY_add_to_pixhigh_hi_1:
@@ -6524,13 +6524,14 @@ jl    mark_ceiling_si
 cmp   di, si
 jle   mark_ceiling_cx
 
-xchg   cx, di
+xchg   cx, di  ; todo maybe this xchg doesnt need to be here; swap above register logic.
 ; si:di are dc_yl, dc_yh
 push   cx ; note: midtexture doesnt need/use cx and doesnt do this.
 
 
 ; si:di are dc_yl, dc_yh
 
+push dx  ; texturecolumn
 ; store for bottom draw.
 push  si ; dc_yl
 push  di ; dc_yh i think this can be removed.
@@ -6542,7 +6543,7 @@ R_GetSourceSegment0_DONE_TOP:
 
 pop   di  ; dc_yh i think this can be removed.
 pop   si  ; dc_yl
-
+pop   dx  ; textuecolumn
 pop    cx      ; todo whats this again. something for floorclip?
 xchg   cx, di
 
@@ -6735,9 +6736,6 @@ ALIGN_MACRO
 SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET:
 non_repeating_texture1:
 ; finally set dx back to texturecolumn in this case
-SELFMODIFY_BSP_set_bottom_texturecolumn:
-public SELFMODIFY_BSP_set_bottom_texturecolumn
-mov   dx, 01000h  ; restore texturecolumn ; since we didnt push/pop it.
 
 cmp   dx, word ptr ds:[2 + _segloopnextlookup]
 jge   out_of_texture_bounds1
@@ -6808,8 +6806,8 @@ record_masked:
 
 ; todo if we move this logic earlier, maybe this value can already be in a register.
 
-mov   ax, word ptr cs:[SELFMODIFY_BSP_set_bottom_texturecolumn+1]
 
+; todo is dx correct...
 
 ;if (maskedtexture) {
 ;	// save texturecol
@@ -6819,7 +6817,8 @@ mov   ax, word ptr cs:[SELFMODIFY_BSP_set_bottom_texturecolumn+1]
 
 les   si, dword ptr ds:[_maskedtexturecol]
 add   si, bx  ; bx word ptr  ; double up bx as a word offset.
-mov   word ptr es:[bx+si], ax
+SELFMODIFY_BSP_write_masked_column:
+mov   word ptr es:[bx+si], 01000h
 jmp   finished_inner_loop_iter
 ALIGN_MACRO
 
