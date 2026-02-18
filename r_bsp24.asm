@@ -4687,12 +4687,13 @@ ENDIF
 ;end inlined FixedMulBSPLocal_
 ; not ok
 neg       ax
-mov       word ptr [bp - 02Eh], ax
 SELFMODIFY_sub__centeryfrac_4_hi_4:
-mov       ax, 01000h ; ah known zero. dh too probably?
-sbb       ax, dx
-
-mov       word ptr [bp - 02Ch], ax
+mov       cx, 01000h ; ah known zero. dh too probably?
+sbb       cx, dx
+add       ax, ((HEIGHTUNIT)-1) SHL 4 ; bake this in once, instead of doing it every loop.
+mov       word ptr [bp - 02Eh], ax
+adc       cx, 0
+mov       word ptr [bp - 02Ch], cx
 ; les to load two words
 les       ax, dword ptr [bp - 044h]
 mov       dx, es
@@ -5323,18 +5324,18 @@ mov   di, bx
 SELFMODIFY_detailshift_and_1:
 
 and   bx, 01000h
-mov   word ptr ds:[SELFMODIFY_add_rw_x_base4_to_ax+1 - OFFSET R_BSP24_STARTMARKER_], bx
-mov   word ptr ds:[SELFMODIFY_compare_ax_to_start_rw_x+1 - OFFSET R_BSP24_STARTMARKER_], di
 
 ; self modify code in the function to set constants rather than
 ; repeatedly reading loop-constant or function-constant variables.
 
-mov   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1 - OFFSET R_BSP24_STARTMARKER_], 0
+
+mov   word ptr ds:[SELFMODIFY_add_rw_x_base4_to_ax+1 - OFFSET R_BSP24_STARTMARKER_], bx
+mov   word ptr ds:[SELFMODIFY_compare_ax_to_start_rw_x+1 - OFFSET R_BSP24_STARTMARKER_], di
+
+mov   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1 - OFFSET R_BSP24_STARTMARKER_], bh ; 0
 
 
-
-
-cmp   byte ptr [bp - 01Ch], 0 ;markfloor
+cmp   byte ptr [bp - 01Ch], bh ; bh = 0. markfloor check
 
 je    do_markfloor_selfmodify_jumps
 mov   ax, 04940h     ; inc ax dec cx
@@ -5354,7 +5355,6 @@ test  ah, ah
 
 jz    do_markceiling_selfmodify_jumps
 mov   al, 0B2h  ;      mov dl, [ah value]
-;mov   si, 0448Dh     ; lea   ax, [si - 1]
 mov   si, 0c089h    ; nop
 
 jmp do_markceiling_selfmodify
@@ -5429,7 +5429,9 @@ skip_sub_base4diff:
 
 
 lea   si, [bp - 032h]
-
+; idea:
+; sti/cli. use lodsw on ds and ss:bp + byte relative offset with ss as cs.
+; might save a handful of bytes.
 
 lods  word ptr ss:[si]
 mov   word ptr ds:[SELFMODIFY_set_rw_scale_lo+1 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -5701,10 +5703,7 @@ inc   si
 ; increased by one to allow 0 to viewheight+1 range instead of ff to viewheight range.
 ; when written to visplanes and such this must be considered
 
-mov   ax, word ptr [bp - 02Eh]  ; topfrac lo
-add   ax, ((HEIGHTUNIT)-1) SHL 4
 mov   ax, word ptr [bp - 02Ch]  ; topfrac hi
-adc   ax, 0
 
 
 cmp   ax, si  ; ax can be negative even if si is not? but maybe ah is always ff?
@@ -5793,7 +5792,7 @@ SELFMODIFY_BSP_get_segtextured:
 jmp SHORT    jump_to_seg_non_textured  ; or nop
 
 SELFMODIFY_BSP_get_segtextured_AFTER:
-; ALIGN_MACRO  
+
 seg_is_textured:
 
 ; angle = MOD_FINE_ANGLE (rw_centerangle + xtoviewangle[rw_x]);
@@ -7010,7 +7009,7 @@ mov       ds, si
 les       si, dword ptr ds:[_backsector]
 lods      word ptr es:[si] ; floorheight
 push      ax  ; bp - 046h
-xchg      ax, cx
+xchg      ax, di
 lods      word ptr es:[si] ; ceilingheight
 push      ax  ; bp - 048h
 xchg      ax, bx   ; store for later
@@ -7020,58 +7019,58 @@ mov       byte ptr [bp - 038h], ah
 ;todo clean this up with struct fields
 mov       al, byte ptr es:[si + 08h]  ; sec_lightlevel with the 6 from lodsw.
 mov       byte ptr [bp - 03Ch], al
-xchg      ax, cx
+
 
 ;		ds_p->sprtopclip_offset = ds_p->sprbottomclip_offset = 0;
 ;		ds_p->silhouette = 0;
 
 les       si, dword ptr ds:[_ds_p]
-xor       cx, cx
-mov       word ptr es:[si + DRAWSEG_T.drawseg_sprbottomclip_offset], cx
-mov       word ptr es:[si + DRAWSEG_T.drawseg_sprtopclip_offset], cx
-mov       byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], cl ; SIL_NONE
+xor       ax, ax
+mov       word ptr es:[si + DRAWSEG_T.drawseg_sprbottomclip_offset], ax
+mov       word ptr es:[si + DRAWSEG_T.drawseg_sprtopclip_offset], ax
+mov       byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], al ; SIL_NONE
 
 
 ; es:si is ds_p
 ;		if (frontsectorfloorheight > backsectorfloorheight) {
-
-cmp       ax, word ptr [bp - 034h]
+mov       ax, 0201h
+mov       cx, word ptr [bp - 034h]
+mov       dx, word ptr [bp - 036h]
+cmp       di, cx
 jl        set_bsilheight_to_frontsectorfloorheight
 SELFMODIFY_BSP_viewz_shortheight_2:
-cmp       ax, 01000h
+cmp       di, 01000h
 jle       bsilheight_set
 set_bsilheight_to_maxshort:
-mov       byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], SIL_BOTTOM
+mov       byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], al ; SIL_BOTTOM
 mov       word ptr es:[si + DRAWSEG_T.drawseg_bsilheight], MAXSHORT
 jmp       bsilheight_set
 ALIGN_MACRO
 set_bsilheight_to_frontsectorfloorheight:
-mov       byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], SIL_BOTTOM
-mov       cx, word ptr [bp - 034h]
-mov       word ptr es:[si + DRAWSEG_T.drawseg_bsilheight], cx
+mov       byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], al ; SIL_BOTTOM
+mov       word ptr es:[si + DRAWSEG_T.drawseg_bsilheight], cx  ; bp - 034h
 bsilheight_set:
 
-xchg      ax, bx   ; retrieved from before
-cmp       ax, word ptr [bp - 036h]
+
+cmp       bx, dx  ; ceilingheight/bp - 048h
 jg        set_tsilheight_to_frontsectorceilingheight
 SELFMODIFY_BSP_viewz_shortheight_1:
-cmp       ax, 01000h
+cmp       bx, 01000h
 jge       tsilheight_set
 set_tsilheight_to_minshort:
-or        byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], SIL_TOP
+or        byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], ah ; SIL_TOP
 mov       word ptr es:[si + DRAWSEG_T.drawseg_tsilheight], MINSHORT
 jmp       tsilheight_set
 ALIGN_MACRO
 set_tsilheight_to_frontsectorceilingheight:
-or        byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], SIL_TOP
-mov       cx, word ptr [bp - 036h]
-mov       word ptr es:[si + DRAWSEG_T.drawseg_tsilheight], cx
+or        byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], ah ; SIL_TOP
+mov       word ptr es:[si + DRAWSEG_T.drawseg_tsilheight], dx
 tsilheight_set:
 ; es:si is still ds_p
 
 ; if (backsectorceilingheight <= frontsectorfloorheight) {
 
-cmp       ax, word ptr [bp - 034h]
+cmp       bx, cx
 jg        back_ceiling_greater_than_front_floor
 
 ; ds_p->sprbottomclip_offset = offset_negonearray;
@@ -7080,13 +7079,13 @@ jg        back_ceiling_greater_than_front_floor
 
 mov       word ptr es:[si + DRAWSEG_T.drawseg_sprbottomclip_offset], OFFSET_NEGONEARRAY
 mov       word ptr es:[si + DRAWSEG_T.drawseg_bsilheight], MAXSHORT
-or        byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], SIL_BOTTOM
+or        byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], al ; SIL_BOTTOM
 back_ceiling_greater_than_front_floor:
 ; es:si is still ds_p
 ; if (backsectorfloorheight >= frontsectorceilingheight) {
 ; ax is backsectorfloorheight
-mov       ax, word ptr [bp - 046h]
-cmp       ax, word ptr [bp - 036h]
+
+cmp       di, dx
 jl        back_floor_less_than_front_ceiling
 
 ; ds_p->sprtopclip_offset = offset_screenheightarray;
@@ -7094,7 +7093,7 @@ jl        back_floor_less_than_front_ceiling
 ; ds_p->silhouette |= SIL_TOP;
 mov       word ptr es:[si + DRAWSEG_T.drawseg_sprtopclip_offset], OFFSET_SCREENHEIGHTARRAY
 mov       word ptr es:[si + DRAWSEG_T.drawseg_tsilheight], MINSHORT
-or        byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], SIL_TOP
+or        byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], ah; SIL_TOP
 back_floor_less_than_front_ceiling:
 
 ; SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldhigh, backsectorceilingheight);
@@ -12310,8 +12309,8 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewz_13_3_2+2 - OFFSET R_BSP24_STARTMARKER
 
 
 mov      ax, word ptr ss:[_viewz_shortheight]
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_1+2 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_2+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_4+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_5+1 - OFFSET R_BSP24_STARTMARKER_], ax
