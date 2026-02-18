@@ -3711,7 +3711,7 @@ PUBLIC R_StoreWallRange_
 
 ; bp - 2  ; ax arg
 ; bp - 4  ; dx arg
-; bp - 6     ; hyp lo               ; UNUSED
+; bp - 6  ;  stop - start
 ; bp - 8     ; hyp hi               ; UNUSED
 ; bp - 0Ah   ; side toptexture      ; UNUSED
 ; bp - 0Ch   ; side bottomtexture   ; UNUSED
@@ -3772,7 +3772,9 @@ mov       bp, sp
 push      ax ; bp - 2
 push      dx ; bp - 4
 
-sub       sp, 02Ah ; unused bytes. up to bp - 02Eh.
+sub       dx, ax
+push      dx ; bp - 6   stop - start. used often.
+sub       sp, 028h ; unused bytes. up to bp - 02Eh.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; START LINE BASED SELF MODIFY BLOCK ;;;;;;;
@@ -4224,17 +4226,17 @@ mov       ax, 01000h
 add       ax, word ptr es:[si]
 call      R_ScaleFromGlobalAngle_
 mov       es, cx ; restore es as ds_p+2
-mov       bx, word ptr [bp - 4]
 stos      word ptr es:[di]             ; +0Ah
 xchg      ax, dx
-sub       bx, word ptr [bp - 2]
 stos      word ptr es:[di]             ; +0Ch
 xchg      ax, dx
+mov       bx, word ptr [bp - 6]
+
 sub       ax, word ptr [bp - 032h] ; todo try storing it here
 sbb       dx, word ptr [bp - 030h] ; todo try storing it here
 
 ; inlined FastDiv3216u_    (only use in the codebase, might as well.)
-test dx, dx  ; todo remove
+
 js   handle_negative_3216
 
 cmp dx, bx
@@ -4783,8 +4785,7 @@ mov       dx, es
 call      R_CheckPlane_
 mov       word ptr cs:[SELFMODIFY_set_floorplaneindex+1 - OFFSET R_BSP24_STARTMARKER_], ax
 dont_mark_floor:
-mov       ax, word ptr [bp - 4]
-cmp       ax, word ptr [bp - 2]
+cmp       word ptr [bp - 6], 0
 jge       at_least_one_column_to_draw
 jmp       check_spr_top_clip
 ALIGN_MACRO
@@ -7379,9 +7380,8 @@ mov       word ptr es:[bx + DRAWSEG_T.drawseg_maskedtexturecol_val], ax
 
 mov       word ptr ds:[_maskedtexturecol], ax
 
-mov       ax, word ptr [bp - 4]
-inc       ax                     ; calculate rw_stopx. this runs rarely, dont bother selfmodifying.
-sub       ax, dx    ; rw_x
+mov       ax, word ptr [bp - 6]
+inc       ax  ; rw_stopx would be [bp - 4] + 1
 sal       ax, 1   ; word increments, double this diff.
 add       word ptr ds:[_lastopening], ax
 mov       al, 1
