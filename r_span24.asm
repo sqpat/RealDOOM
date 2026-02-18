@@ -1262,6 +1262,14 @@ sub   sp, 6
 ; inline R_WriteBackSpanFrameConstants_
 ; get whole dword at the end here.
 
+
+mov      al, byte ptr ds:[_lastvisplane]
+mov      ah, SIZE VISPLANEHEADER_T
+mul      ah
+add      ax, OFFSET _visplaneheaders
+mov      word ptr cs:[SELFMODIFY_SPAN_last_iter_compare+2 - OFFSET R_SPAN24_STARTMARKER_], ax
+
+
 mov      al, byte ptr ds:[_skyflatnum]  ; todo self modify at a different layer once per level
 mov      byte ptr cs:[SELFMODIFY_SPAN_skyflatnum + 2 - OFFSET R_SPAN24_STARTMARKER_], al
 
@@ -1310,7 +1318,7 @@ ALIGN_MACRO
 
 do_next_drawplanes_loop:	
 
-inc   byte ptr cs:[SELFMODIFY_SPAN_drawplaneiter+1 - OFFSET R_SPAN24_STARTMARKER_]
+add   word ptr cs:[SELFMODIFY_SPAN_drawplaneiter+1 - OFFSET R_SPAN24_STARTMARKER_], SIZE VISPLANEHEADER_T
 add   word ptr [bp - 8], VISPLANE_BYTE_SIZE
 jmp   SHORT drawplanes_loop
 ALIGN_MACRO	
@@ -1322,7 +1330,7 @@ pop   si
 pop   dx
 pop   cx
 pop   bx
-mov   byte ptr cs:[(SELFMODIFY_SPAN_drawplaneiter+1) - OFFSET R_SPAN24_STARTMARKER_], 0
+mov   word ptr cs:[(SELFMODIFY_SPAN_drawplaneiter+1) - OFFSET R_SPAN24_STARTMARKER_], OFFSET _visplaneheaders
 retf   
 ALIGN_MACRO	
 do_sky_flat_draw:
@@ -1334,7 +1342,7 @@ mov   dx, es
 ;call  [_R_DrawSkyPlaneCallHigh]
 SELFMODIFY_SPAN_draw_skyplane_call:
 call  dword ptr ds:[_R_DrawSkyPlane_addr]
-inc   byte ptr cs:[SELFMODIFY_SPAN_drawplaneiter+1 - OFFSET R_SPAN24_STARTMARKER_]
+add   word ptr cs:[SELFMODIFY_SPAN_drawplaneiter+1 - OFFSET R_SPAN24_STARTMARKER_], SIZE VISPLANEHEADER_T
 add   word ptr [bp - 8], VISPLANE_BYTE_SIZE
 jmp   SHORT drawplanes_loop
 
@@ -1360,20 +1368,16 @@ mov       word ptr cs:[SELFMODIFY_SPAN_draw_skyplane_call + 2 - OFFSET R_SPAN24_
 
 drawplanes_loop:
 SELFMODIFY_SPAN_drawplaneiter:
-mov   ax, 0 ; get i value. this is at the start of the function so its hard to self modify. so we reset to 0 at the end of the function
-cmp   ax, word ptr ds:[_lastvisplane]   ; todo self modify constant in drawplanes24
-jge   exit_drawplanes
+mov   si, OFFSET _visplaneheaders ; get i value. this is at the start of the function so its hard to self modify. so we reset to 0 at the end of the function
+SELFMODIFY_SPAN_last_iter_compare:
+cmp   si, 01000h   ; todo self modify constant in drawplanes24
+jae   exit_drawplanes
 
-les   bx, dword ptr [bp - 8]
-cmp   byte ptr es:[bx + VISPLANE_T.vp_pad5], 0
+
+
+
+cmp   byte ptr ds:[si + VISPLANEHEADER_T.visplaneheader_dirty], 0
 je    do_next_drawplanes_loop
-
-SHIFT_MACRO shl ax 3
-
-
-add   ax, offset _visplaneheaders
-; todo lea si bx + _visplaneheaders
-mov   si, ax
 mov   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_minx]			; fetch visplane minx
 cmp   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_maxx]			; fetch visplane maxx
 jg    do_next_drawplanes_loop
@@ -1387,8 +1391,7 @@ jnb   check_next_visplane_page
 
 mov   bx, word ptr cs:[SELFMODIFY_SPAN_drawplaneiter+1 - OFFSET R_SPAN24_STARTMARKER_]
 
-SHIFT_MACRO sal bx 3
-mov   cx, word ptr ds:[bx +  _visplaneheaders + VISPLANEHEADER_T.visplaneheader_piclight]
+mov   cx, word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_piclight]
 SELFMODIFY_SPAN_skyflatnum:
 cmp   cl, 0
 je    do_sky_flat_draw

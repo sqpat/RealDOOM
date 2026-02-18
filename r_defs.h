@@ -548,6 +548,7 @@ typedef struct {
   int16_t height;
   int16_t minx;
   int16_t maxx;
+  int8_t  dirty;
    
 
 } visplaneheader_t;

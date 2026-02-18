@@ -2846,12 +2846,11 @@ cbw       ; clear lastvisplane out of ah
 pop       dx  ; get isceil
 
 call      R_HandleEMSVisplanePagination_
+
 ; fetch and return i * 8 ptr
 lea       ax, [bx - _visplaneheaders]
 
 
-;pop       di
-;pop       si
 ret       
 
 
@@ -2873,7 +2872,7 @@ add       bx, SIZE VISPLANEHEADER_T
 
 cmp       al, ah
 jle       next_loop_iteration
-sub       bx, 8  ; use last checkheader index
+sub       bx, SIZE VISPLANEHEADER_T  ; use last checkheader index
 jmp       break_loop
 
 ALIGN_MACRO
@@ -2889,6 +2888,7 @@ mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_piclight], cx
 mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_height], dx
 mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_minx], SCREENWIDTH
 mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_maxx], 0FFFFh
+mov       byte ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_dirty], ah ; 0
 
 pop       dx  ; get isceil
 inc       word ptr ds:[_lastvisplane]
@@ -2908,14 +2908,6 @@ rep stosw
 
 ;  es:di currently points to 0142h or vp_pad2
 
-mov       byte ptr es:[di + (VISPLANE_T.vp_pad5 - VISPLANE_T.vp_pad2)], 0 ; zero modified field
-
-
-; zero out pl bot
-; di is already set
-;inc       ax   ; zeroed
-;mov       cx, (SCREENWIDTH / 2) + 1  ; one extra word for pad
-;rep stosw 
 
 
 lea       ax, [bx - _visplaneheaders]
@@ -2946,7 +2938,7 @@ mov       si, dx    ; si holds start
 mov       di, ax
 
 
-; already preshifted 3
+; already mult 9'd
 mov       word ptr cs:[SELFMODIFY_setindex+1 - OFFSET R_BSP24_STARTMARKER_], di
 
 
@@ -3043,7 +3035,9 @@ ALIGN_MACRO
 make_new_visplane:
 mov       bx, word ptr ds:[_lastvisplane] 
 mov       es, bx    ; store in es
+mov       dx, bx
 SHIFT_MACRO shl bx 3
+add       bx, dx  ; * 9
 
 ; dx/ax is plheader->height
 ; done with old plheader..
@@ -3051,6 +3045,7 @@ SHIFT_MACRO shl bx 3
 
 add       bx, _visplaneheaders
 
+mov       byte ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_dirty], dh  ; should be 0
 mov       dx, word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_height]
 mov       di, word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_piclight]
 
@@ -5740,7 +5735,7 @@ mov   byte ptr es:[bx+di + vp_bottom_offset], al
 mov   ax, si						    		   ; dl is 0, si is < screensize (and thus under 255)
 dec   ax
 mov   byte ptr es:[bx+di], al
-mov   byte ptr es:[bx + vp_pad5_offset], 1
+or    byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], 1 ; ceiling bit
 
 SELFMODIFY_BSP_markceiling_1_TARGET:
 markceiling_done:
@@ -5791,7 +5786,7 @@ dec   ax
 mov   byte ptr es:[bx+di], al
 dec   cx
 mov   byte ptr es:[bx+di + vp_bottom_offset], cl
-mov   byte ptr es:[bx + vp_pad5_offset], 1
+or    byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], 2 ; floor bit
 SELFMODIFY_BSP_markfloor_1_TARGET:
 markfloor_done:
 SELFMODIFY_BSP_get_segtextured:
@@ -6921,6 +6916,12 @@ or        byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_BOTTOM
 mov       word ptr es:[bx + DRAWSEG_T.drawseg_bsilheight], MAXSHORT
 skip_bot_silhouette:
 add       word ptr ds:[_ds_p], (SIZE DRAWSEG_T)
+
+SELFMODIFY_mark_planes_dirty:
+db  0B8h, 00h, 00h   ;mov ax, 0  ; modify the first byte with bit flags . 00 for ah.
+test      al, 3
+jne       mark_planes_dirty
+
 LEAVE_MACRO
 
 ; todo: backsector draws add 48h to the stack instead of 44h
@@ -6932,6 +6933,32 @@ pop       si
 pop       cx
 pop       bx
 ret       
+
+ALIGN_MACRO
+mark_planes_dirty:
+public mark_planes_dirty
+mov      di, _visplaneheaders + VISPLANEHEADER_T.visplaneheader_dirty
+test     al, 1
+je       dont_mark_ceil_dirty
+mov      bx,  word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1]
+mov      byte ptr ds:[bx+di], al ; nonzero
+dont_mark_ceil_dirty:
+test     al, 2
+je       dont_mark_floor_dirty
+mov      bx,  word ptr cs:[SELFMODIFY_set_floorplaneindex+1]
+mov      byte ptr ds:[bx+di], al ; nonzero
+
+dont_mark_floor_dirty:
+mov      byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], ah ;zero
+
+LEAVE_MACRO
+
+pop       di            ; todo remove pushes  put ont he outside
+pop       si
+pop       cx
+pop       bx
+ret       
+
 
 ALIGN_MACRO
 handle_two_sided_line:

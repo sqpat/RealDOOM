@@ -384,8 +384,9 @@ VISPLANEHEADER_T STRUC
     visplaneheader_height     dw ?                 ; 2
     visplaneheader_minx       dw ?                 ; 4
     visplaneheader_maxx       dw ?                 ; 6
+    visplaneheader_dirty      db ?                 ; 8
 
-VISPLANEHEADER_T ENDS    ; 8
+VISPLANEHEADER_T ENDS    ; 9
 
 
 VISPLANE_T STRUC 
@@ -404,7 +405,6 @@ VISPLANE_T STRUC
 VISPLANE_T ENDS
  
 vp_bottom_offset = VISPLANE_T.vp_bottom - VISPLANE_T.vp_top
-vp_pad5_offset   = VISPLANE_T.vp_pad5   - VISPLANE_T.vp_top
 
 
 PSPDEF_T STRUC
