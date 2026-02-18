@@ -3742,8 +3742,6 @@ PUBLIC R_StoreWallRange_
 ; bp - 040h  ; worldtop lo
 ; bp - 042h  ; worldbottom hi
 ; bp - 044h  ; worldbottom lo
-; bp - 046h  ; backsectorfloorheight
-; bp - 048h  ; backsectorceilingheight
 
 
 ; todo shift 4/segsrender thing here
@@ -6995,8 +6993,6 @@ SELFMODIFY_BSP_drawtype_2_TARGET:
 ; nomidtexture. this will be checked before top/bot, have to set it to 0.
 
 
-mov       si, ss   ; restore DS
-mov       ds, si
 ;ASSUME DS:DGROUP
 
 
@@ -7006,94 +7002,97 @@ mov       ds, si
 ; uint8_t backsectorfloorpic = backsector->floorpic;
 ; uint8_t backsectorlightlevel = backsector->lightlevel;
 
-les       si, dword ptr ds:[_backsector]
-lods      word ptr es:[si] ; floorheight
-push      ax  ; bp - 046h
-xchg      ax, di
-lods      word ptr es:[si] ; ceilingheight
-push      ax  ; bp - 048h
-xchg      ax, bx   ; store for later
-lods      word ptr es:[si] ; floor, ceil pics
+lds       si, dword ptr ss:[_backsector]
+lodsw     ; floorheight
+mov       word ptr cs:[SELFMODIFY_get_backsector_floorheight+3], ax
+xchg      ax, cx
+
+lodsw     ; ceilingheight
+mov       word ptr cs:[SELFMODIFY_get_backsector_ceilingheight+1], ax
+xchg      ax, di   ; store for later
+
+lodsw     ; floor, ceil pics
 mov       byte ptr [bp - 03Ah], al
 mov       byte ptr [bp - 038h], ah
 ;todo clean this up with struct fields
-mov       al, byte ptr es:[si + 08h]  ; sec_lightlevel with the 6 from lodsw.
+mov       al, byte ptr ds:[si + 08h]  ; sec_lightlevel with the 6 from lodsw.
 mov       byte ptr [bp - 03Ch], al
 
 
 ;		ds_p->sprtopclip_offset = ds_p->sprbottomclip_offset = 0;
 ;		ds_p->silhouette = 0;
 
-les       si, dword ptr ds:[_ds_p]
+les       dx, dword ptr [bp - 036h]
+mov       bx, es ;      [bp - 034h]
+
+lds       si, dword ptr ss:[_ds_p]
 xor       ax, ax
-mov       word ptr es:[si + DRAWSEG_T.drawseg_sprbottomclip_offset], ax
-mov       word ptr es:[si + DRAWSEG_T.drawseg_sprtopclip_offset], ax
-mov       byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], al ; SIL_NONE
+mov       word ptr ds:[si + DRAWSEG_T.drawseg_sprbottomclip_offset], ax
+mov       word ptr ds:[si + DRAWSEG_T.drawseg_sprtopclip_offset], ax
+mov       byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], al ; SIL_NONE
 
 
-; es:si is ds_p
+; ds:si is ds_p
 ;		if (frontsectorfloorheight > backsectorfloorheight) {
-mov       ax, 0201h
-mov       cx, word ptr [bp - 034h]
-mov       dx, word ptr [bp - 036h]
-cmp       di, cx
+mov       ax, 0201h ; silbottom and siltop
+cmp       cx, bx
 jl        set_bsilheight_to_frontsectorfloorheight
 SELFMODIFY_BSP_viewz_shortheight_2:
-cmp       di, 01000h
+cmp       cx, 01000h
 jle       bsilheight_set
 set_bsilheight_to_maxshort:
-mov       byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], al ; SIL_BOTTOM
-mov       word ptr es:[si + DRAWSEG_T.drawseg_bsilheight], MAXSHORT
+mov       byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], al ; SIL_BOTTOM
+mov       word ptr ds:[si + DRAWSEG_T.drawseg_bsilheight], MAXSHORT
 jmp       bsilheight_set
 ALIGN_MACRO
 set_bsilheight_to_frontsectorfloorheight:
-mov       byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], al ; SIL_BOTTOM
-mov       word ptr es:[si + DRAWSEG_T.drawseg_bsilheight], cx  ; bp - 034h
+mov       byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], al ; SIL_BOTTOM
+mov       word ptr ds:[si + DRAWSEG_T.drawseg_bsilheight], bx  ; bp - 034h
 bsilheight_set:
 
 
-cmp       bx, dx  ; ceilingheight/bp - 048h
+cmp       di, dx  ; ceilingheight
 jg        set_tsilheight_to_frontsectorceilingheight
 SELFMODIFY_BSP_viewz_shortheight_1:
-cmp       bx, 01000h
+cmp       di, 01000h
 jge       tsilheight_set
 set_tsilheight_to_minshort:
-or        byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], ah ; SIL_TOP
-mov       word ptr es:[si + DRAWSEG_T.drawseg_tsilheight], MINSHORT
+or        byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], ah ; SIL_TOP
+mov       word ptr ds:[si + DRAWSEG_T.drawseg_tsilheight], MINSHORT
 jmp       tsilheight_set
 ALIGN_MACRO
 set_tsilheight_to_frontsectorceilingheight:
-or        byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], ah ; SIL_TOP
-mov       word ptr es:[si + DRAWSEG_T.drawseg_tsilheight], dx
+or        byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], ah ; SIL_TOP
+mov       word ptr ds:[si + DRAWSEG_T.drawseg_tsilheight], dx
 tsilheight_set:
-; es:si is still ds_p
+
 
 ; if (backsectorceilingheight <= frontsectorfloorheight) {
 
-cmp       bx, cx
+cmp       di, bx
 jg        back_ceiling_greater_than_front_floor
 
 ; ds_p->sprbottomclip_offset = offset_negonearray;
 ; ds_p->bsilheight = MAXSHORT;
 ; ds_p->silhouette |= SIL_BOTTOM;
 
-mov       word ptr es:[si + DRAWSEG_T.drawseg_sprbottomclip_offset], OFFSET_NEGONEARRAY
-mov       word ptr es:[si + DRAWSEG_T.drawseg_bsilheight], MAXSHORT
-or        byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], al ; SIL_BOTTOM
+mov       word ptr ds:[si + DRAWSEG_T.drawseg_sprbottomclip_offset], OFFSET_NEGONEARRAY
+mov       word ptr ds:[si + DRAWSEG_T.drawseg_bsilheight], MAXSHORT
+or        byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], al ; SIL_BOTTOM
 back_ceiling_greater_than_front_floor:
-; es:si is still ds_p
+
 ; if (backsectorfloorheight >= frontsectorceilingheight) {
 ; ax is backsectorfloorheight
 
-cmp       di, dx
+cmp       cx, dx
 jl        back_floor_less_than_front_ceiling
 
 ; ds_p->sprtopclip_offset = offset_screenheightarray;
 ; ds_p->tsilheight = MINSHORT;
 ; ds_p->silhouette |= SIL_TOP;
-mov       word ptr es:[si + DRAWSEG_T.drawseg_sprtopclip_offset], OFFSET_SCREENHEIGHTARRAY
-mov       word ptr es:[si + DRAWSEG_T.drawseg_tsilheight], MINSHORT
-or        byte ptr es:[si + DRAWSEG_T.drawseg_silhouette], ah; SIL_TOP
+mov       word ptr ds:[si + DRAWSEG_T.drawseg_sprtopclip_offset], OFFSET_SCREENHEIGHTARRAY
+mov       word ptr ds:[si + DRAWSEG_T.drawseg_tsilheight], MINSHORT
+or        byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], ah; SIL_TOP
 back_floor_less_than_front_ceiling:
 
 ; SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldhigh, backsectorceilingheight);
@@ -7101,14 +7100,12 @@ back_floor_less_than_front_ceiling:
 ; SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldlow, backsectorfloorheight);
 ; worldlow.w -= viewz.w;
 
-mov       di, word ptr [bp - 048h]
+mov       si, ss
+mov       ds, si
+
 xor       si, si
-sar       di, 1
-rcr       si, 1
-sar       di, 1  ; todo 386 shrd type stuff
-rcr       si, 1
-sar       di, 1
-rcr       si, 1
+SHIFT32_MACRO_RIGHT di si 3
+
 SELFMODIFY_BSP_viewz_lo_3:
 sub       si, 01000h
 SELFMODIFY_BSP_viewz_hi_3:
@@ -7116,14 +7113,10 @@ sbb       di, 01000h
 
 ;di:si will store worldhigh
 ; what if we store bx/cx here as well, and finally push it once it's too onerous to hold onto?
-mov       cx, word ptr [bp - 046h] ; can be ax?
+
 xor       bx, bx
-sar       cx, 1
-rcr       bx, 1
-sar       cx, 1
-rcr       bx, 1
-sar       cx, 1
-rcr       bx, 1
+SHIFT32_MACRO_RIGHT cx bx 3
+
 
 SELFMODIFY_BSP_viewz_lo_2:
 sub       bx, 01000h
@@ -7160,22 +7153,22 @@ not_a_skyflat:
 ;		markfloor = false;
 ;	}
 
+; TOOO: consider al flags instead of al and ah as two boolean bytes.
+xor       ax, ax  ; ax will store markfloor/markceiling
+
 cmp       cx, word ptr [bp - 042h]
 jne       set_markfloor_true
 cmp       bx, word ptr [bp - 044h]
 jne       set_markfloor_true
-mov       ax, word ptr [bp - 03Ah]
-cmp       al, ah
+mov       dx, word ptr [bp - 03Ah]
+cmp       dl, dh
 jne       set_markfloor_true
-mov       ax, word ptr [bp - 03Ch]
-cmp       al, ah
-jne       set_markfloor_true
-set_markfloor_false:
-mov       byte ptr [bp - 01Ch], 0  ; markfloor
-jmp       markfloor_set
-ALIGN_MACRO
+mov       dx, word ptr [bp - 03Ch]
+cmp       dl, dh
+je        markfloor_set
 set_markfloor_true:
-mov       byte ptr [bp - 01Ch], 1  ; markfloor
+inc       ax     ; markfloor  al = 1
+
 markfloor_set:
 ; di/si are already worldhigh..
 cmp       word ptr [bp - 03Eh], di
@@ -7183,23 +7176,17 @@ jne       set_markceiling_true
 cmp       word ptr [bp - 040h], si
 jne       set_markceiling_true
 
-mov       ax, word ptr [bp - 038h]
-cmp       al, ah
+mov       dx, word ptr [bp - 038h]
+cmp       dl, dh
 jne       set_markceiling_true
 
-mov       ax, word ptr [bp - 03Ch]
-cmp       al, ah
-jne       set_markceiling_true
-set_markceiling_false:
-mov       byte ptr [bp - 01Bh], 0   ;markceiling
-jmp       markceiling_set
-ALIGN_MACRO
+mov       dx, word ptr [bp - 03Ch]
+cmp       dl, dh
+je        markceiling_set
 set_markceiling_true:
-mov       byte ptr [bp - 01Bh], 1   ;markceiling
+inc       ah    ;markceiling  ah = 1
 markceiling_set:
 
-; TOOO: improve this area. write to markceiling/floor once not twice. use al/ah to store their values.
-; write one word at the end. or write directly to the code.
 
 ;		if (backsectorceilingheight <= frontsectorfloorheight
 ;			|| backsectorfloorheight >= frontsectorceilingheight) {
@@ -7207,16 +7194,18 @@ markceiling_set:
 ;			markceiling = markfloor = true;
 ;		}
 
-mov       dx, word ptr [bp - 048h]
+SELFMODIFY_get_backsector_ceilingheight:
+mov       dx, 01000h ; carry this forward.
 cmp       dx, word ptr [bp - 034h]
 jle       closed_door_detected
-mov       ax, word ptr [bp - 046h]
-cmp       ax, word ptr [bp - 036h]
-jl        not_closed_door 
+SELFMODIFY_get_backsector_floorheight:
+cmp       word ptr [bp - 036h], 01000h
+jge       not_closed_door 
 closed_door_detected:
 mov       ax, 0101h
-mov       word ptr [bp - 01Ch], ax  ; markfloor, ceiling
 not_closed_door:
+; finally write this just once.
+mov       word ptr [bp - 01Ch], ax  ; markfloor, ceiling
 ; ax free at last!
 ;		if (worldhigh.w < worldtop.w) {
 
