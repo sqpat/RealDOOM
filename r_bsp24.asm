@@ -4131,6 +4131,8 @@ mov   word ptr cs:[SELFMODIFY_cmp_ax_to_rw_stopx_2+1 - OFFSET R_BSP24_STARTMARKE
 mov   word ptr cs:[SELFMODIFY_cmp_ax_to_rw_stopx_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 sub   ax, bx   ; stop - start
+shr   ax, 1    ; byte copies not word copies
+adc   al, ah    ; round up. ah should be zero.
 mov   word ptr cs:[SELFMODIFY_set_cx_to_count_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov   word ptr cs:[SELFMODIFY_set_cx_to_count_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
