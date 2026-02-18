@@ -502,7 +502,7 @@ SELFMODIFY_get_maskedcount:
 mov       al, 00h;
 cbw
 
-mov       byte ptr es:[di], al ;		masked_lookup[texnum] = maskedcount;	// index to lookup of struct...
+stosb	  ; mov       byte ptr es:[di], al ;		masked_lookup[texnum] = maskedcount;	// index to lookup of struct...
 xchg      ax, di
 
 SHIFT_MACRO  shl di 3

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/17 23:15:11
+Created on:       26/02/18 08:42:07
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -83,12 +83,12 @@ S_SOUND_TEXT           CODE           AUTO           23c9:b3f6       00000525
 D_INIT_TEXT            CODE           AUTO           2f5a:000c       00000cc5
 S_INIT_TEXT            CODE           AUTO           2f5a:0cd2       0000055d
 ST_INIT_TEXT           CODE           AUTO           2f5a:1230       00000207
-R_INIT_TEXT            CODE           AUTO           2f5a:1438       000007be
-W_INIT_TEXT            CODE           AUTO           2f5a:1bf6       0000016e
-I_INIT_TEXT            CODE           AUTO           2f5a:1d64       000001e4
-Z_INIT_TEXT            CODE           AUTO           2f5a:1f48       0000081a
-S_SBINIT_TEXT          CODE           AUTO           2f5a:2762       000002e5
-P_INIT_TEXT            CODE           AUTO           2f5a:2a48       0000026b
+R_INIT_TEXT            CODE           AUTO           2f5a:1438       000007bc
+W_INIT_TEXT            CODE           AUTO           2f5a:1bf4       0000016e
+I_INIT_TEXT            CODE           AUTO           2f5a:1d62       000001e4
+Z_INIT_TEXT            CODE           AUTO           2f5a:1f46       0000081a
+S_SBINIT_TEXT          CODE           AUTO           2f5a:2760       000002e5
+P_INIT_TEXT            CODE           AUTO           2f5a:2a46       0000026b
 bingen_TEXT            CODE           AUTO           2f5a:2cc0       00001739
 D_NET_TEXT             CODE           AUTO           2f5a:43fa       000000df
 G_GAME_TEXT            CODE           AUTO           2f5a:44da       000002f4
@@ -694,8 +694,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 23c9:410c*     P_ENEMY_STARTMARKER_
 23c9:4ac0*     A_CPosRefire_
 23c9:4b7c*     A_TroopAttack_
-23c9:5771*     A_BrainAwake_
 23c9:55c2*     A_PainAttack_
+23c9:5771*     A_BrainAwake_
 23c9:5a5b*     A_PlayerScream_
 23c9:46af*     A_KeenDie_
 Module: p_ceilng.obj(p_ceilng.ASM)
@@ -997,52 +997,52 @@ Module: st_init.obj(st_init.ASM)
 2f5a:1437*     ST_INIT_ENDMARKER_
 2f5a:12d8      ST_Init_
 Module: r_init.obj(r_init.ASM)
-2f5a:17a2*     R_InitTextures_
-2f5a:1a2c      R_Init_
+2f5a:17a0*     R_InitTextures_
+2f5a:1a2a      R_Init_
 2f5a:14c2*     R_GenerateLookup_
-2f5a:1bb4*     W_CacheLumpNumDirectSmall_
+2f5a:1bb2*     W_CacheLumpNumDirectSmall_
 Module: w_init.obj(w_init.ASM)
-2f5a:1bf6*     W_INIT_STARTMARKER_
-2f5a:1d64*     W_INIT_ENDMARKER_
-2f5a:1c22      W_AddFile_
+2f5a:1bf4*     W_INIT_STARTMARKER_
+2f5a:1d62*     W_INIT_ENDMARKER_
+2f5a:1c20      W_AddFile_
 Module: i_init.obj(i_init.ASM)
-2f5a:1f48*     I_INIT_ENDMARKER_
-2f5a:1de0      I_Init_
-2f5a:1d64*     I_INIT_STARTMARKER_
+2f5a:1f46*     I_INIT_ENDMARKER_
+2f5a:1dde      I_Init_
+2f5a:1d62*     I_INIT_STARTMARKER_
 Module: z_init.obj(z_init.ASM)
-2f5a:22ca*     Z_ReadFileRegionWithIndex_
-2f5a:1f48      _doomdata_bin_string
-2f5a:2762*     Z_INIT_ENDMARKER_
-2f5a:258e      Z_LoadBinaries_
-2f5a:2249      Z_GetEMSPageMap_
-2f5a:239e*     Z_DoRenderCodeLoad_
-2f5a:1f48*     Z_INIT_STARTMARKER_
-2f5a:219d      Z_InitEMS_
-2f5a:2322*     Z_QuickMapRender4000_
-2f5a:230c      Z_QuickMapMaskedExtraData_
-2f5a:2338*     Z_QuickMapVisplanePage_
+2f5a:22c8*     Z_ReadFileRegionWithIndex_
+2f5a:1f46      _doomdata_bin_string
+2f5a:2760*     Z_INIT_ENDMARKER_
+2f5a:258c      Z_LoadBinaries_
+2f5a:2247      Z_GetEMSPageMap_
+2f5a:239c*     Z_DoRenderCodeLoad_
+2f5a:1f46*     Z_INIT_STARTMARKER_
+2f5a:219b      Z_InitEMS_
+2f5a:2320*     Z_QuickMapRender4000_
+2f5a:230a      Z_QuickMapMaskedExtraData_
+2f5a:2336*     Z_QuickMapVisplanePage_
 Module: s_sbinit.obj(s_sbinit.ASM)
-2f5a:28d6      SB_SetPlaybackRate_
-2f5a:2a1e      SB_StartInit_
-2f5a:27c7      _SB_DSP_Version
-2f5a:2a47*     S_SBINIT_ENDMARKER_
-2f5a:29b0*     SB_InitCard_
-2f5a:2762*     S_SBINIT_STARTMARKER_
-2f5a:27d9*     SB_SaveVoiceVolume_
-2f5a:27ca*     SB_ReadMixer_
-2f5a:2971*     SB_GetDSPVersion_
-2f5a:2801      SB_DSP1xx_BeginPlayback_
-2f5a:2808*     SB_DSP2xx_BeginPlayback_
-2f5a:281d*     SB_DSP4xx_BeginPlayback_
-2f5a:27c9      _SB_CardActive
-2f5a:2914*     SB_SetupPlayback_
-2f5a:2832*     DMA_SetupTransfer_
-2f5a:28b3*     SB_EnableInterrupt_
+2f5a:28d4      SB_SetPlaybackRate_
+2f5a:2a1c      SB_StartInit_
+2f5a:27c5      _SB_DSP_Version
+2f5a:2a45*     S_SBINIT_ENDMARKER_
+2f5a:29ae*     SB_InitCard_
+2f5a:2760*     S_SBINIT_STARTMARKER_
+2f5a:27d7*     SB_SaveVoiceVolume_
+2f5a:27c8*     SB_ReadMixer_
+2f5a:296f*     SB_GetDSPVersion_
+2f5a:27ff      SB_DSP1xx_BeginPlayback_
+2f5a:2806*     SB_DSP2xx_BeginPlayback_
+2f5a:281b*     SB_DSP4xx_BeginPlayback_
+2f5a:27c7      _SB_CardActive
+2f5a:2912*     SB_SetupPlayback_
+2f5a:2830*     DMA_SetupTransfer_
+2f5a:28b1*     SB_EnableInterrupt_
 Module: p_init.obj(p_init.ASM)
-2f5a:2cb3*     P_INIT_ENDMARKER_
-2f5a:2a99      P_Init_
-2f5a:2a48*     P_INIT_STARTMARKER_
-2f5a:2a49*     R_InstallSpriteLump_
+2f5a:2cb1*     P_INIT_ENDMARKER_
+2f5a:2a97      P_Init_
+2f5a:2a46*     P_INIT_STARTMARKER_
+2f5a:2a47*     R_InstallSpriteLump_
 Module: bingen.obj(C:\REALDOOM\build\tools\bingen\bingen.c)
 2f5a:2cc0      main_
 Module: d_net.obj(d_net.ASM)
