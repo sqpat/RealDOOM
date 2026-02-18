@@ -5910,6 +5910,9 @@ mov   cx, es
 ; store texturecolumn
 push  ax       ; later popped into dx
 
+;todo only do this if bottomdraw exists?
+mov   word ptr cs:[SELFMODIFY_BSP_set_bottom_texturecolumn+1], ax
+
 cmp   cl, 3
 jae   use_max_light
 do_lightscaleshift:
@@ -6296,11 +6299,11 @@ jl    mid_no_pixels_to_draw
 ; dx holds texturecolumn
 
 
+
 ; inlined function. 
 R_GetSourceSegment0_START:
 
-push  bp
-push  dx
+push  bp  ; bp. remove if sp becomes constant?
 
 
 ; okay. we modify the first instruction in this argument. 
@@ -6341,9 +6344,9 @@ PROC  R_DrawColumnPrep_ NEAR
 PUBLIC R_DrawColumnPrep_ 
 ;cl:dx are texturemid (si needs to hold dc_yl!)
 
-push  bx
-push  si
-push  di ; i think this can be removed.
+push  bx ; rw_x
+push  si ; dc_yl
+push  di ; dc_yh i think this can be removed.
 
 
 SELFMODIFY_bsp_apply_stretch_tag:
@@ -6416,18 +6419,17 @@ SELFMODIFY_COLFUNC_set_func_offset:
 dw DRAWCOL_OFFSET_BSP, COLORMAPS_SEGMENT
 
 
-
-pop   di  ; i think this can be removed.
-pop   si  ; restore si as dc_y
-pop   bx
+; todo dont push/pop unless we draw to bottom. otherwise add sp?
+pop   di  ; dc_yh i think this can be removed.
+pop   si  ; dc_yl
+pop   bx  ; rw_x
 
 SELFMODIFY_BSP_R_DrawColumnPrep_ret:
 
-; the pop dx gets replaced with ret if bottom is calling.
+; the pop bp gets replaced with ret if bottom is calling.
 ; todo: the bottom caller pops the same stuff. pop here and modify a later instruction instead?
 
-pop   dx
-pop   bp
+pop   bp ; bp. remove if sp becomes constant?
 
 
 ; this runs as a jmp for a top call, otherwise NOP for mid call
@@ -6533,14 +6535,14 @@ push   cx ; note: midtexture doesnt need/use cx and doesnt do this.
 
 
 ; si:di are dc_yl, dc_yh
-; dx holds texturecolumn
+
 
 jmp R_GetSourceSegment0_START
 ALIGN_MACRO
 SELFMODIFY_BSP_midtexture_return_jmp_TARGET:
 R_GetSourceSegment0_DONE_TOP:
 
-pop    cx
+pop    cx      ; todo whats this again. something for floorclip?
 xchg   cx, di
 
 
@@ -6555,12 +6557,12 @@ SELFMODIFY_BSP_bottexture:
 SELFMODIFY_BSP_bottexture_AFTER = SELFMODIFY_BSP_bottexture + 2
 
 
-
+; todo dx is free... can it be used usefully?
 do_bottom_texture_draw:
 public do_bottom_texture_draw
 mov   cx, word ptr [bp - 024h]   ; pixlow hi
 ;		mid = (pixlow+HEIGHTUNIT-1)>>HEIGHTBITS;
-cmp   word ptr [bp - 026h], 1
+cmp   word ptr [bp - 026h], 1    ; todo bake this in to pixlow
 sbb   cx, 0FFFFh
 
 ;		pixlow += pixlowstep;
@@ -6596,13 +6598,14 @@ xchg   cx, si
 ; si:di are dc_yl, dc_yh
 
 ; si:di are dc_yl, dc_yh
-; dx holds texturecolumn
+; dx is free
 
 ; BEGIN INLINED R_GetSourceSegment1_
 
 
-push  bp
-push  dx
+
+push  bp ; bp. remove if sp becomes constant?
+
 
 
 SELFMODIFY_BSP_check_seglooptexmodulo1:
@@ -6637,12 +6640,8 @@ call  R_DrawColumnPrep_
 
 
 
-mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret - OFFSET R_BSP24_STARTMARKER_], 05Ah  ; pop dx
-
-pop   dx
-pop   bp
-
-
+mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret - OFFSET R_BSP24_STARTMARKER_], 05Dh  ; pop bp
+pop   bp ; bp. remove if sp becomes constant?
 
 
 ;END INLINED R_GetSourceSegment1_
@@ -6726,6 +6725,11 @@ ALIGN_MACRO
 
 SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET:
 non_repeating_texture1:
+; finally set dx back to texturecolumn in this case
+SELFMODIFY_BSP_set_bottom_texturecolumn:
+public SELFMODIFY_BSP_set_bottom_texturecolumn
+mov   dx, 01000h  ; restore texturecolumn ; since we didnt push/pop it.
+
 cmp   dx, word ptr ds:[2 + _segloopnextlookup]
 jge   out_of_texture_bounds1
 cmp   dx, word ptr ds:[2 + _segloopprevlookup]
@@ -6791,7 +6795,12 @@ ALIGN_MACRO
 
 
 record_masked:
-; todo if we move this up, maybe dx does not need to be pushed/popped/maintained.
+
+
+; todo if we move this logic earlier, maybe this value can already be in a register.
+
+mov   ax, word ptr cs:[SELFMODIFY_BSP_set_bottom_texturecolumn+1]
+
 
 ;if (maskedtexture) {
 ;	// save texturecol
@@ -6801,7 +6810,7 @@ record_masked:
 
 les   si, dword ptr ds:[_maskedtexturecol]
 add   si, bx  ; bx word ptr  ; double up bx as a word offset.
-mov   word ptr es:[bx+si], dx
+mov   word ptr es:[bx+si], ax
 jmp   finished_inner_loop_iter
 ALIGN_MACRO
 
