@@ -6299,10 +6299,10 @@ jl    mid_no_pixels_to_draw
 ; dx holds texturecolumn
 
 
-
 ; inlined function. 
 R_GetSourceSegment0_START:
 
+push  bx ; rw_x
 push  bp  ; bp. remove if sp becomes constant?
 
 
@@ -6344,9 +6344,6 @@ PROC  R_DrawColumnPrep_ NEAR
 PUBLIC R_DrawColumnPrep_ 
 ;cl:dx are texturemid (si needs to hold dc_yl!)
 
-push  bx ; rw_x
-push  si ; dc_yl
-push  di ; dc_yh i think this can be removed.
 
 
 SELFMODIFY_bsp_apply_stretch_tag:
@@ -6419,10 +6416,6 @@ SELFMODIFY_COLFUNC_set_func_offset:
 dw DRAWCOL_OFFSET_BSP, COLORMAPS_SEGMENT
 
 
-; todo dont push/pop unless we draw to bottom. otherwise add sp?
-pop   di  ; dc_yh i think this can be removed.
-pop   si  ; dc_yl
-pop   bx  ; rw_x
 
 SELFMODIFY_BSP_R_DrawColumnPrep_ret:
 
@@ -6430,6 +6423,8 @@ SELFMODIFY_BSP_R_DrawColumnPrep_ret:
 ; todo: the bottom caller pops the same stuff. pop here and modify a later instruction instead?
 
 pop   bp ; bp. remove if sp becomes constant?
+pop   bx  ; rw_x  always want this back
+
 
 
 ; this runs as a jmp for a top call, otherwise NOP for mid call
@@ -6536,11 +6531,17 @@ push   cx ; note: midtexture doesnt need/use cx and doesnt do this.
 
 ; si:di are dc_yl, dc_yh
 
+; store for bottom draw.
+push  si ; dc_yl
+push  di ; dc_yh i think this can be removed.
 
 jmp R_GetSourceSegment0_START
 ALIGN_MACRO
 SELFMODIFY_BSP_midtexture_return_jmp_TARGET:
 R_GetSourceSegment0_DONE_TOP:
+
+pop   di  ; dc_yh i think this can be removed.
+pop   si  ; dc_yl
 
 pop    cx      ; todo whats this again. something for floorclip?
 xchg   cx, di
@@ -6604,6 +6605,9 @@ xchg   cx, si
 
 
 
+push  bx ; dc_x
+push  di
+push  si
 push  bp ; bp. remove if sp becomes constant?
 
 
@@ -6642,7 +6646,12 @@ call  R_DrawColumnPrep_
 
 mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret - OFFSET R_BSP24_STARTMARKER_], 05Dh  ; pop bp
 pop   bp ; bp. remove if sp becomes constant?
+pop   si
+pop   di
+pop   bx ; restore dc_x
 
+; todo did di/si need to be recovered?
+; yh seems to need to be written to mark floor if floorclip
 
 ;END INLINED R_GetSourceSegment1_
 
