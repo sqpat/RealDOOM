@@ -1377,7 +1377,7 @@ jae   exit_drawplanes
 
 
 cmp   byte ptr ds:[si + VISPLANEHEADER_T.visplaneheader_dirty], 0
-je    do_next_drawplanes_loop
+;je    do_next_drawplanes_loop
 mov   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_minx]			; fetch visplane minx
 cmp   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_maxx]			; fetch visplane maxx
 jg    do_next_drawplanes_loop

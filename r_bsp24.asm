@@ -3066,7 +3066,7 @@ mov       bx, word ptr ds:[_lastvisplane]
 mov       es, bx    ; store in es
 mov       dx, bx
 SHIFT_MACRO shl bx 3
-add       bx, dx  ; * 9
+add       bx, dx  ; * 9  ; SIZE VISPLANEHEADER_T
 
 ; dx/ax is plheader->height
 ; done with old plheader..
@@ -3074,7 +3074,6 @@ add       bx, dx  ; * 9
 
 add       bx, _visplaneheaders
 
-mov       byte ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_dirty], dh  ; should be 0
 mov       dx, word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_height]
 mov       di, word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_piclight]
 
@@ -3093,6 +3092,8 @@ mov       word ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_maxx], cx
 SELFMODIFY_setisceil:
 mov       dx, 0000h     ; set isceil argument
 
+mov       byte ptr ds:[bx + VISPLANEHEADER_T.visplaneheader_dirty], dh  ; should be 0
+
 mov       ax, es 
 mov       si, ax 
 cbw      
@@ -3107,7 +3108,7 @@ rep stosw
 
 
 lea       ax, [bx - _visplaneheaders]
-inc       word ptr ds:[_lastvisplane]
+inc       word ptr ds:[_lastvisplane] ; todo add SIZE VISPLANEHEADER_T?
 
 
 pop       di
@@ -6956,14 +6957,14 @@ mark_planes_dirty:
 public mark_planes_dirty
 mov      di, _visplaneheaders + VISPLANEHEADER_T.visplaneheader_dirty
 test     al, 1
-je       dont_mark_ceil_dirty
+je       mark_ceil_dirty  ; if 3 tested true and 1 didnt, it must be the other one, skip the check.
 mov      bx,  word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1]
-mov      byte ptr ds:[bx+di], al ; nonzero
-dont_mark_ceil_dirty:
+;mov      byte ptr ds:[bx+di], al ; nonzero
 test     al, 2
 je       dont_mark_floor_dirty
+mark_ceil_dirty:  
 mov      bx,  word ptr cs:[SELFMODIFY_set_floorplaneindex+1]
-mov      byte ptr ds:[bx+di], al ; nonzero
+;mov      byte ptr ds:[bx+di], al ; nonzero
 
 dont_mark_floor_dirty:
 mov      byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], ah ;zero
@@ -11947,7 +11948,7 @@ mov       ax, CACHEDHEIGHT_SEGMENT
 mov       es, ax
 xor       ax, ax
 mov       di, ax  ; 0
-mov       cx, 200
+mov       cx, 400
 
 rep stosw 
 
