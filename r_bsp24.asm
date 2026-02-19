@@ -5485,8 +5485,8 @@ out   dx, al
 ; pixlow     = base_pixlow;
 ; pixhigh    = base_pixhigh;
 
-mov   dx, ss
-mov   es, dx
+mov   di, ss
+mov   es, di
 lea   di, [bp - 032h]
 
 SELFMODIFY_set_rw_scale_lo:
@@ -5540,6 +5540,7 @@ cmp   ax, 01000h
 jl    jump_to_start_per_column_inner_loop  ; 026hish out of range
 
 finish_outer_loop:
+public finish_outer_loop
 ; self modifying code for step values.
 
 
@@ -5638,7 +5639,7 @@ pre_increment_values:
 
 SELFMODIFY_add_iter_to_rw_x:
 ; ax was already up-to-date rw_x
-db  05h, 00h, 00h   ;add   ax, 1
+db  05h, 00h, 00h   ;add   ax, 0
 ; ax has rw_x...
 SELFMODIFY_add_to_rwscale_lo_2:
 add   word ptr [bp - 032h], 01000h

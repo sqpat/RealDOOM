@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/18 17:20:18
+Created on:       26/02/18 17:43:46
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -364,6 +364,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:31ee      R_RenderPlayerView24_
 0819:09a8*     FixedDivBSPLocal_
 0819:05ce*     div48_32_BSPLocal_
+0819:186a*     finish_outer_loop
 0819:1773*     skip_pixlow_step
 0819:2ce4*     R_GetTexturePage_
 0819:351c*     R_WriteBackFrameConstants_
@@ -1513,4 +1514,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003dcd0 (253136.)
 Entry point address: 2f82:7cfe
-Link time: 00:00.05
+Link time: 00:00.04
