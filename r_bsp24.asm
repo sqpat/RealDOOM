@@ -5361,7 +5361,7 @@ sub   cx, bx ; for loop later.
 
 mov   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1 - OFFSET R_BSP24_STARTMARKER_], ch ; 0 
 
-xor   bx, bx
+mov   bx, 0
 
 mov   dx, word ptr [bp - 01Ch] ; todo selfmodify?
 mov   bl, dl
@@ -6564,7 +6564,7 @@ R_GetSourceSegment0_DONE_TOP:
 pop   di  ; dc_yh i think this can be removed.
 pop   si  ; dc_yl
 pop   dx  ; textuecolumn
-pop    cx      ; todo whats this again. something for floorclip?
+pop    cx      ; todo whats this again. something for floorclip? yl-1?
 xchg   cx, di
 
 
