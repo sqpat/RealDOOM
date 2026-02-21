@@ -42,25 +42,18 @@ MAX_VISSPRITES_ADDRESS = ((SIZE VISSPRITE_T) * MAXVISSPRITES) + _vissprites ; 0B
 ; _colfunc_lookup_segments
 
 
-_COLFUNC_SELFMODIFY_LOOKUPTABLE:
-; normal ; 12 bytes per
-dw COLFUNC_JUMP_LOOKUP_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET+1
-; noloop ; 10 bytes per
-dw DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1
-; normalstretch ; 12 bytes per
-dw COLFUNC_JUMP_LOOKUP_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NORMALSTRETCH_OFFSET+1
-; noloopstretch ; 10 bytes per
-dw DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOPANDSTRETCH_OFFSET+1
+; entries at 0, 6, 0x80, 0x86.
 
-_COLFUNC_SELFMODIFY_FUNCLOCATIONS:
-; normal
-dw DRAWCOL_OFFSET_BSP
-; noloop
-dw DRAWCOL_NOLOOP_OFFSET_BSP
-; normalstretch
-dw DRAWCOL_NORMAL_STRETCH_OFFSET_BSP
-; noloopstretch
-dw DRAWCOL_NOLOOP_STRETCH_OFFSET_BSP
+; 0x80 on means noloop
+;  0x2 on means stretch
+
+_COLFUNC_SELFMODIFY_LOOKUPTABLE:
+public _COLFUNC_SELFMODIFY_LOOKUPTABLE
+; noloop ; 10 bytes per
+dw DRAWCOL_NOLOOP_OFFSET_BSP, DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1
+; noloopstretch ; 10 bytes per
+dw DRAWCOL_NOLOOP_STRETCH_OFFSET_BSP, DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOPANDSTRETCH_OFFSET+1
+
 
 
 
@@ -108,9 +101,21 @@ ENDM
 
 
 ; segment aligned
+ALIGN 128
+_COLFUNC_SELFMODIFY_LOOKUPTABLE_SECOND_HALF:
+public _COLFUNC_SELFMODIFY_LOOKUPTABLE_SECOND_HALF
+; normal ; 12 bytes per
+dw DRAWCOL_OFFSET_BSP, COLFUNC_JUMP_LOOKUP_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET+1
+; normalstretch ; 12 bytes per
+dw DRAWCOL_NORMAL_STRETCH_OFFSET_BSP, COLFUNC_JUMP_LOOKUP_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NORMALSTRETCH_OFFSET+1
+
+
+
+
 ALIGN 16
 
 OFFSET_FLOORCLIP:
+public OFFSET_FLOORCLIP
 _floorclip:
 REPT SCREENWIDTH ; 320
     db 0
@@ -3881,16 +3886,14 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta - OFFSET R_BSP24_STARTMARKER
    xor       ax, ax
    mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
    sal       di, 1
-   inc       al      ; MAINTAIN THIS FLAG STATE
+   inc       ax
    mov       word ptr cs:[SELFMODIFY_add_texturetopheight_plus_one+2- OFFSET R_BSP24_STARTMARKER_], ax
 
    push      word ptr es:[di]
    pop       word ptr cs:[SELFMODIFY_settoptexturetranslation_lookup+1- OFFSET R_BSP24_STARTMARKER_]
 
-   mov       al, 0   ; leave flags alone
-   js        setup_looping_top_texture
-   mov       al, 2
-   setup_looping_top_texture:
+   ; todo selfmodify here? mov al, 080h etc.
+   and       al, 080h
    mov       byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], al
 
    skip_toptex_selfmodify:
@@ -3898,15 +3901,13 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta - OFFSET R_BSP24_STARTMARKER
    xchg      ax, di
    mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
    sal       di, 1
-   inc       al     ; 128 if 127, set sign bit
+   inc       ax
    push      word ptr es:[di]
    pop       word ptr cs:[SELFMODIFY_setbottexturetranslation_lookup+1- OFFSET R_BSP24_STARTMARKER_]
 
 
-   mov       al, 0   ; leave flags alone
-   js        setup_looping_bot_texture
-   mov       al, 2
-   setup_looping_bot_texture:
+   ; todo selfmodify here? mov al, 080h etc.
+   and       al, 080h
    mov       byte ptr cs:[SELFMODIFY_toggle_bot_colfunc_type+1], al
 
    sub       si, 4 ; rewind si for fall through. twosided textures can still have a mid texture (invisible walls like E1M1)
@@ -3922,15 +3923,13 @@ selfmodify_mid_only:
    xor       ax, ax
    mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
    sal       di, 1  ; word lookup
-   inc       al
+   inc       ax
    mov       word ptr cs:[SELFMODIFY_add_texturemidheight_plus_one+1- OFFSET R_BSP24_STARTMARKER_], ax
    push      word ptr es:[di]
    pop       word ptr cs:[SELFMODIFY_setmidtexturetranslation_lookup+1- OFFSET R_BSP24_STARTMARKER_]
 
-   mov       al, 0   ; leave flags alone
-   js        setup_looping_mid_texture       ; USE FLAG STATE
-   mov       al, 2
-   setup_looping_mid_texture:
+   ; todo selfmodify here? mov al, 080h etc.
+   and       al, 080h
    mov       byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], al
 
 
@@ -5990,7 +5989,7 @@ ELSE
    div bx
    ; cx:ax is result 
    ; ch is known zero.
-   mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+1], ch  ; toggle stretch variant for this frame
+   mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+2], ch  ; toggle stretch variant for this frame
    ; only write to dc_iscale_hi when nonzero.
    mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1 - OFFSET R_BSP24_STARTMARKER_], cl
 
@@ -6078,7 +6077,7 @@ ELSE
 
    ; cx is zero already coming in from the first shift so cx:ax is already the result.
 
-   mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+1], 4  ; turn on stretch variant for this frame
+   mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+2], 6  ; turn on stretch variant for this frame
 
    jmp FastDiv3232FFFF_done  
    ALIGN_MACRO
@@ -6230,7 +6229,7 @@ ELSE
    sub  ax, bx ; modify qhat by measured amount
 
 
-   mov   byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+1], 4  ; turn on stretch variant for this frame
+   mov   byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+2], 6  ; turn on stretch variant for this frame
 
 
 ENDIF
@@ -6313,7 +6312,7 @@ mov   dx, 01000h
 ENDP
 
 SELFMODIFY_toggle_top_colfunc_type:
-mov   al, 010h  ; set the function variant for this DrawColumnPrep call
+db 0BBh, 00, 00    ; mov bx, 00000    ; set the function variant for this DrawColumnPrep call
 
 ; fall thru in the case of top/bot column.
 PROC  R_DrawColumnPrep_ NEAR
@@ -6323,17 +6322,16 @@ PUBLIC R_DrawColumnPrep_
 
 
 SELFMODIFY_bsp_apply_stretch_tag:
-add   al, 010h
-cbw
+public SELFMODIFY_bsp_apply_stretch_tag
+add   bl, 010h ; add 2 or 0 for a different word lookup
+
 ; al has function type index now, preshifted 1
 
 
 
-xchg  ax, bx  ;  bx gets lookup type...
-mov   ax, word ptr cs:[bx + _COLFUNC_SELFMODIFY_FUNCLOCATIONS]
+mov   ax, word ptr cs:[bx]  ; bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE, which is a 0 offset
 mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset], ax
-sal   bx, 1   ; dword lookup
-les   bp, dword ptr cs:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
+les   bp, dword ptr cs:[bx + 2] ; bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 2, which is a 0 offset
 mov   bx, es
 
 
@@ -6641,7 +6639,7 @@ SELFMODIFY_set_bottexturemid_lo:
 mov   dx, 01000h
 
 SELFMODIFY_toggle_bot_colfunc_type:
-mov   al, 010h
+db 0BBh, 00, 00    ; mov bx, 00000    ; set the function variant for this DrawColumnPrep call
 
 ; small idea: make these each three NOPs if its gonna be a bot only draw?
 mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret - OFFSET R_BSP24_STARTMARKER_], 0C3h  ; ret
