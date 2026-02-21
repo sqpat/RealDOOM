@@ -5525,6 +5525,9 @@ jcxz  skip_topdelta_mul
 
 mov   ax, bp
 
+; cx (cl) = topdelta.
+; topscreen.w = sprtopscreen + FastMul16u32u(column->topdelta, spryscale.w);
+
 ; todo this is actually mul 8x32. is there a faster way involving 8 bit muls?
 ;inlined fastmul16u32u
 
@@ -5552,7 +5555,7 @@ neg  ax
 
 
 ; calculate dc_yh ((length * scale))
-
+xor  cx, cx   ; clear ch.
 mov  cl, bh   ; cached length. bx now free to use. ch already was 0
 
 xchg ax, bp   ;  ax gets spyscale+2 back. bp stores old topscreen low
@@ -5606,7 +5609,7 @@ PUBLIC SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup
 ; todo 8 bit logic? can dx be above 255?
 mov   cx, 01000h ; can end up ff high
 mov   al, cl
-cmp   dx, ax
+cmp   dx, ax                ; something here.... 
 jl    skip_floor_clip_set
 mov   dx, ax
 
@@ -5668,7 +5671,7 @@ mov   bx, (COLFUNC_FILE_START_SEGMENT - COLORMAPS_MASKEDMAPPING_SEG_DIFF)
 mov   ds, bx                                 ; store this segment for now, with offset pre-added
 
 ; shift ax by (2 - detailshift.)
-SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift:
+SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift:  ; todo make this into the above selfmodify setter.
 sar   ax, 1
 sar   ax, 1
 

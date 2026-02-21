@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/18 18:48:40
+Created on:       26/02/20 11:57:32
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -49,7 +49,7 @@ R_SPAN0_TEXT           CODE           AUTO           1bc0:0000       0000063a
 R_SPANFL_TEXT          CODE           AUTO           1c24:0000       00000591
 R_SKY_TEXT             CODE           AUTO           1c7e:0000       00000d86
 R_SKYFL_TEXT           CODE           AUTO           1d57:0000       00000303
-R_MASK24_TEXT          CODE           AUTO           1d88:0000       00001a64
+R_MASK24_TEXT          CODE           AUTO           1d88:0000       00001a66
 R_MASK16_TEXT          CODE           AUTO           1f2f:0000       000019ce
 R_MASK0_TEXT           CODE           AUTO           20cc:0000       0000193a
 R_MASKFL_TEXT          CODE           AUTO           2260:0000       00001904
@@ -381,6 +381,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:2ed4      R_GetCompositeTexture_Far24_
 0819:1b62*     R_DrawColumnPrep_
 0819:0368*     SELFMODIFY_get_rw_distance_hi_1
+0819:1b48*     SELFMODIFY_BSP_midtexture
 0819:1c41*     do_bottom_texture_draw
 0819:19de*     _selfmodify_restore_dx_10
 0819:034e*     R_ScaleFromGlobalAngle_
@@ -506,13 +507,13 @@ Module: r_mask24.obj(r_mask24.ASM)
 1d88:149a*     continue_checking_if_drawseg_obscures_sprite
 1d88:1244*     R_PointOnSegSide_
 1d88:0006*     _fuzzoffset
-1d88:191c      R_WriteBackViewConstantsMasked24_
+1d88:191e      R_WriteBackViewConstantsMasked24_
 1d88:018a*     R_DrawMaskedSpriteShadow_
 1d88:06c4*     found_multipage
 1d88:15b0*     SELFMODIFY_MASKED_set_al_to_silhouette
-1d88:19fc      R_WriteBackMaskedFrameConstants24_
+1d88:19fe      R_WriteBackMaskedFrameConstants24_
 1d88:0ef0*     selected_sprite_page_multi
-1d88:172c*     R_GetMaskedColumnSegment_
+1d88:172e*     R_GetMaskedColumnSegment_
 1d88:0df8*     R_EvictL2CacheEMSPage_Sprite_Multi_
 1d88:0726*     R_LoadSpriteColumns_
 1d88:0ea8*     R_MarkL2SpriteCacheMRU_
@@ -526,10 +527,10 @@ Module: r_mask24.obj(r_mask24.ASM)
 1d88:047e*     R_DrawVisSprite_
 1d88:07f6*     loop_vga_plane_draw_normal
 1d88:1014*     mark_all_pages_mru_loop
-1d88:1a64      R_MASK24_ENDMARKER_
+1d88:1a66      R_MASK24_ENDMARKER_
 1d88:0000*     _spritepagesegments
 1d88:1624*     R_DrawMaskedColumn_
-1d88:16a9*     SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup
+1d88:16ab*     SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup
 1d88:0f9c*     R_GetSpritePage_
 1d88:04b9*     R_DrawPlayerVisSprite_
 1d88:0e1e*     found_enough_pages
@@ -1172,8 +1173,8 @@ Module: s_sbsfx.obj(s_sbsfx.ASM)
 2f82:6424*     _SB_IntController1Mask
 2f82:7083      SB_StopPlayback_
 2f82:6423      _SB_IntController2Mask
-2f82:6bce*     S_NormalizeSfxVolume_
 2f82:6427      _SB_OriginalVoiceVolumeRight
+2f82:6bce*     S_NormalizeSfxVolume_
 2f82:7125*     S_SBFX_ENDMARKER_
 2f82:705f*     SB_DMA_EndTransfer_
 2f82:663e*     S_IncreaseRefCount_
@@ -1514,4 +1515,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003dcd0 (253136.)
 Entry point address: 2f82:7cfe
-Link time: 00:00.05
+Link time: 00:00.04

@@ -3909,12 +3909,12 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta - OFFSET R_BSP24_STARTMARKER
    setup_looping_bot_texture:
    mov       byte ptr cs:[SELFMODIFY_toggle_bot_colfunc_type+1], al
 
-   sub       si, 4
+   sub       si, 4 ; rewind si for fall through. twosided textures can still have a mid texture (invisible walls like E1M1)
 
 selfmodify_mid_only:
    ; twosided textures can still have a mid texture (invisible walls like E1M1)
 
-   add       si, 4
+   add       si, 4   ; skip top/bot
    lodsw     ; side midtexture
    test      ax, ax
    jz        skip_midtex_selfmodify
@@ -3940,6 +3940,7 @@ selfmodify_mid_only:
 
    jmp       finish_midtex_selfmodify
 ALIGN_MACRO
+midtexture_backsec_not_null:
 skip_midtex_selfmodify:
    mov       ax, 0c031h  ; xor ax, ax
 finish_midtex_selfmodify:
@@ -4405,7 +4406,7 @@ mov       word ptr es:[bx + DRAWSEG_T.drawseg_maskedtexturecol_val], NULL_TEX_CO
 mov       ax, cs
 mov       ds, ax
 
-
+; here we jump based on backsector presence. thats fine.
 
 SELFMODIFY_jmp_two_sided_or_not:
 jmp       handle_two_sided_line  ; might turn into a jmp 0 to go to handle_single_sided_line
@@ -4427,9 +4428,6 @@ mov       ah, SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET - SELFMODIF
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       ah, SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_AFTER
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5 - OFFSET R_BSP24_STARTMARKER_], ax
-
-;mov       ax, ((SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4_AFTER) SHL 8) + 0E2h  ; LOOP instruction
-;mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
  
@@ -5403,13 +5401,8 @@ sub   word ptr [bp - 02Ah], 01000h
 SELFMODIFY_sub_botstep_hi:
 sbb   word ptr [bp - 028h], 01000h
 
-; THIS IS COMPLICATED because of the fall through after loop. 
-; could do a 2nd modded instruction worth jump? is that worth it?
-; i dont really think so.
-SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4:
-; loop SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4_TARGET
-; todo: why does this equal +1 instead of +2???
-SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4 + 2
+
+
 SELFMODIFY_sub_pixlow_lo:
 sub   word ptr [bp - 026h], 01000h
 SELFMODIFY_sub_pixlow_hi:
@@ -6209,22 +6202,6 @@ pop   bx
 mov   dx, word ptr ds:[_segloopcachedsegment]
 mov   word ptr cs:[SELFMODIFY_add_cached_segment0+1 - OFFSET R_BSP24_STARTMARKER_], dx
 
-         COMMENT @ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
-         ; see above, but all textures in vanilla are po2 so this is not necessary for now.
-         mov   dh, byte ptr ds:[_seglooptexmodulo]
-         mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexmodulo0+1 - OFFSET R_BSP24_STARTMARKER_], dh
-
-         cmp   dh, 0
-         je    seglooptexmodulo0_is_jmp
-
-         mov   dl, 0B2h   ;  (mov dl, xx)
-         mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0 - OFFSET R_BSP24_STARTMARKER_], dx
-         jmp   check_seglooptexrepeat0
-         ALIGN_MACRO
-         seglooptexmodulo0_is_jmp:
-         mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0 - OFFSET R_BSP24_STARTMARKER_], ((SELFMODIFY_BSP_check_seglooptexmodulo0_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER) SHL 8) + 0EBh
-         check_seglooptexrepeat0:
-         @
 
 ; todohigh get this dh and dl in same read?
 mov   dh, byte ptr ds:[_seglooptexrepeat]
@@ -6288,6 +6265,7 @@ mov   bx, di 			; store rw_x
 pop   di
 pop   si
 SELFMODIFY_BSP_midtexture:
+PUBLIC SELFMODIFY_BSP_midtexture
 SELFMODIFY_BSP_midtexture_AFTER = SELFMODIFY_BSP_midtexture + 3
 
 cmp   di, si               ; todo should we check this earlier...? can this be a sub? modify the self modify too.
@@ -6709,51 +6687,6 @@ ALIGN_MACRO
 ;BEGIN INLINED R_GetSourceSegment1_ AGAIN
 ; this was only called in one place. this runs often, so inline it.
 
-         COMMENT @ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
-         non_po2_texture_mod1:
-         ; cx stores tex repeat
-         SELFMODIFY_BSP_check_seglooptexmodulo1_TARGET:
-         SELFMODIFY_BSP_set_seglooptexmodulo1:
-         mov   cx, 0
-         mov   dx, word ptr ds:[2 + _segloopcachedbasecol]
-         cmp   ax, dx
-         jge   done_subbing_modulo1
-         sub   dx, cx
-         continue_subbing_modulo1:
-         cmp   ax, dx
-         jge   record_subbed_modulo1
-         sub   dx, cx
-         jmp   continue_subbing_modulo1
-         ALIGN_MACRO
-         record_subbed_modulo1:
-         ; at least one write was done. write back.
-         mov   word ptr ds:[2 + _segloopcachedbasecol], dx
-
-         done_subbing_modulo1:
-
-         add   dx, cx
-         cmp   ax, dx
-         jl    done_adding_modulo1
-         continue_adding_modulo1:
-         add   dx, cx
-         cmp   ax, dx
-         jl    record_added_modulo1
-         jmp   continue_adding_modulo1
-         ALIGN_MACRO
-         record_added_modulo1:
-         sub   dx, cx
-         mov   word ptr ds:[2 + _segloopcachedbasecol], dx
-         add   dx, cx
-
-         done_adding_modulo1:
-         sub   dx, cx
-         sub   al, dl
-         mul   ah  byte ptr ds:[1 + _segloopheightvalcache]
-         jmp   add_base_segment_and_draw1
-         ALIGN_MACRO
-
-         @ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
-
 SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET:
 non_repeating_texture1:
 ; finally set dx back to texturecolumn in this case
@@ -6775,23 +6708,6 @@ mov   dx, word ptr ds:[2 + _segloopcachedsegment]
 mov   word ptr cs:[SELFMODIFY_add_cached_segment1+1 - OFFSET R_BSP24_STARTMARKER_], dx
 
 
-
-
-         COMMENT @ REDO THIS AREA IF WE RE-ADD NON PO2 TEXTURES
-         mov   dh, byte ptr ds:[1 + _seglooptexmodulo]
-         mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexmodulo1+1 - OFFSET R_BSP24_STARTMARKER_], dh
-
-         cmp   dh, 0
-         je    seglooptexmodulo1_is_jmp
-
-         mov   dl, 0B2h   ;  (mov dl, xx)
-         mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1 - OFFSET R_BSP24_STARTMARKER_], dx
-         jmp   check_seglooptexrepeat1
-         ALIGN_MACRO
-         seglooptexmodulo1_is_jmp:
-         mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1 - OFFSET R_BSP24_STARTMARKER_], ((SELFMODIFY_BSP_check_seglooptexmodulo1_TARGET - SELFMODIFY_BSP_check_seglooptexmodulo1_AFTER) SHL 8) + 0EBh
-         check_seglooptexrepeat1:
-         @
 
 
 ; todo get this dh and dl in same read
@@ -6989,20 +6905,24 @@ SELFMODIFY_jmp_two_sided_or_not_TARGET:
 SELFMODIFY_BSP_drawtype_2:
 SELFMODIFY_BSP_drawtype_2_AFTER = SELFMODIFY_BSP_drawtype_2+2
 
-mov       ax, 0c089h 
+; drawtype 2 is for two sided lines
+
+;  todo. These are nops instead of jumps, but optimally they should be [expected instruction] instead of nop when possible.
+;  Bake this is once everything else is done; we dont want to keep updating this
+
+mov       ax, 0c089h   
 
 ASSUME DS:R_BSP_24_TEXT
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3 - OFFSET R_BSP24_STARTMARKER_], ax
-;mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
 mov       word ptr ds:[SELFMODIFY_BSP_drawtype_1 - OFFSET R_BSP24_STARTMARKER_], 0EBB8h   ; mov ax, xxeB
 mov       word ptr ds:[SELFMODIFY_BSP_drawtype_2 - OFFSET R_BSP24_STARTMARKER_], ((SELFMODIFY_BSP_drawtype_2_TARGET - SELFMODIFY_BSP_drawtype_2_AFTER) SHL 8) + 0EBh
 
-mov       word ptr ds:[SELFMODIFY_BSP_midtexture - OFFSET R_BSP24_STARTMARKER_], 0E9h
+mov       byte ptr ds:[SELFMODIFY_BSP_midtexture - OFFSET R_BSP24_STARTMARKER_], 0E9h
 mov       word ptr ds:[SELFMODIFY_BSP_midtexture+1 - OFFSET R_BSP24_STARTMARKER_], (SELFMODIFY_BSP_midtexture_TARGET - SELFMODIFY_BSP_midtexture_AFTER) 
 
 mov       byte ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+0 - OFFSET R_BSP24_STARTMARKER_], 0E9h ; jmp short rel16
@@ -7395,6 +7315,9 @@ public side_has_midtexture
 ; ds_p->maskedtexturecol_val = lastopening - rw_x;
 ; maskedtexturecol_offset = (ds_p->maskedtexturecol_val) << 1;
 ; lastopening += rw_stopx - rw_x;
+
+; note. if this runs and we have no top and no bottom texture then we do not render in bsp. its a masked wall and we skip draws!
+
 
 ; this is offset 'backwards' because the array is indexed by screen x, 
 ; and so we move the start back to make up for the fact that the start position is not 0 (and is rw_x or whatever)
