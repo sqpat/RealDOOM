@@ -197,13 +197,13 @@ SIDE_T STRUC
     s_toptexture       dw ? ; 0
     s_bottomtexture    dw ? ; 2
     s_midtexture       dw ? ; 4
-    s_textureoffset    dw ? ; 6
+    s_textureoffset    dw ? ; 6 ; todo i think this i sonly 0-255. maybe worth storing as a byte array in a diff segment.
 SIDE_T ENDS
 
 
 
 SIDE_RENDER_T  STRUC 
-    sr_rowoffset        dw ? ; 0
+    sr_rowoffset        dw ? ; 0    ; todo i think this is only 0-127. maybe worth storing as a byte array in a diff segment.
     sr_secnum           dw ? ; 2    ; preshifted 4
                              ; 4
 SIDE_RENDER_T ENDS

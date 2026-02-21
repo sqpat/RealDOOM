@@ -45,7 +45,7 @@ MAX_VISSPRITES_ADDRESS = ((SIZE VISSPRITE_T) * MAXVISSPRITES) + _vissprites ; 0B
 ; entries at 0, 6, 0x80, 0x86.
 
 ; 0x80 on means noloop
-;  0x2 on means stretch
+;  0x6 on means stretch
 
 _COLFUNC_SELFMODIFY_LOOKUPTABLE:
 public _COLFUNC_SELFMODIFY_LOOKUPTABLE
@@ -3751,10 +3751,10 @@ PUBLIC R_StoreWallRange_
 ; bp - 014h  ; lineflags            ; UNUSED (now bp + 018h)
 ; bp - 016h  ; offsetangle          ; UNUSED
 ; bp - 018h  ; _rw_x                ; UNUSED was equivalent to bp - 2
-; bp - 01Ah  ; _rw_stopx            ; UNUSED was equivalent to bp - 4 + 1
+; bp - 01Ah  ; frontsectorceilingheight - frontsectorfloorheight (compare to bp - 01Eh in mid draw case)
 ; bp - 01Bh  ; markceiling
 ; bp - 01Ch  ; markfloor
-; bp - 01Eh  ; UNUSED?              ; UNUSED
+; bp - 01Eh  ; 128 - siderowoffset (nonloop draw height threshhold)
 ; bp - 020h  ; pixhigh hi     preshifted 4
 ; bp - 022h  ; pixhigh lo     preshifted 4
 ; bp - 024h  ; pixlow hi      preshifted 4
@@ -3816,19 +3816,33 @@ sub       sp, 028h ; unused bytes. up to bp - 02Eh.
 SELFMODIFY_skip_curseg_based_selfmodify:
 mov       bx, (SELFMODIFY_skip_curseg_based_selfmodify_TARGET - SELFMODIFY_skip_curseg_based_selfmodify_AFTER)  ;  selfmodifies into mov bx, imm
 SELFMODIFY_skip_curseg_based_selfmodify_AFTER:
-
+public  SELFMODIFY_skip_curseg_based_selfmodify_AFTER
 mov       bx, word ptr [bp + 010h]  ; curseg_render     ; turns into a jump past selfmodifying code once this next code block runs. 
-mov       ax, word ptr ds:[bx + SEG_RENDER_T.sr_offset]         
+mov       ax, word ptr ds:[bx + SEG_RENDER_T.sr_offset]  ; can be up to 512 i think.
 mov       word ptr cs:[SELFMODIFY_BSP_sidesegoffset+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
-xor       ax, ax
+
 mov       si, word ptr ds:[bx + SEG_RENDER_T.sr_sidedefOffset]  ; preshifted 2
 
-; todo pull this out into outer func? and just push it?
-mov       ax, word ptr ds:[si + _sides_render + SIDE_RENDER_T.sr_rowoffset]
+; NOTE: when we want to detect looping textures, we are checking for textures of size < 128 (the looping boundary)
 
-mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov       word ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
+; this is a little awkward - we need to combine row (texel v) offset with a sector height 
+; but sector height is stored 13:3 and thus this must be shiftd 3...
+
+mov       al, byte ptr ds:[si + _sides_render + SIDE_RENDER_T.sr_rowoffset]
+mov       byte ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_1+1 - OFFSET R_BSP24_STARTMARKER_], al
+mov       byte ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_2+1 - OFFSET R_BSP24_STARTMARKER_], al
+
+mov       di, 080h SHL 3 ; 0400h
+test      al, al
+jz        dont_adjust_rowoffset
+cbw      ; maxes at 127, ah is 0
+SHIFT_MACRO shl ax 3
+sub       di, ax
+dont_adjust_rowoffset:
+
+mov       word ptr [bp - 01Eh], di   ;  TODO make this a push. probably change the bp addr.
+
 shl       si, 1
 
 
@@ -3892,7 +3906,6 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta - OFFSET R_BSP24_STARTMARKER
    push      word ptr es:[di]
    pop       word ptr cs:[SELFMODIFY_settoptexturetranslation_lookup+1- OFFSET R_BSP24_STARTMARKER_]
 
-   ; todo selfmodify here? mov al, 080h etc.
    and       al, 080h
    mov       byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], al
 
@@ -3906,7 +3919,6 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta - OFFSET R_BSP24_STARTMARKER
    pop       word ptr cs:[SELFMODIFY_setbottexturetranslation_lookup+1- OFFSET R_BSP24_STARTMARKER_]
 
 
-   ; todo selfmodify here? mov al, 080h etc.
    and       al, 080h
    mov       byte ptr cs:[SELFMODIFY_toggle_bot_colfunc_type+1], al
 
@@ -3919,6 +3931,8 @@ selfmodify_mid_only:
    lodsw     ; side midtexture
    test      ax, ax
    jz        skip_midtex_selfmodify
+   ; todo handle masked etc properly...
+   ; mid should never render if we did top/bot so i think some of these selfmodifies wouldnt need to run.
    xchg      ax, di
    xor       ax, ax
    mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
@@ -3928,7 +3942,6 @@ selfmodify_mid_only:
    push      word ptr es:[di]
    pop       word ptr cs:[SELFMODIFY_setmidtexturetranslation_lookup+1- OFFSET R_BSP24_STARTMARKER_]
 
-   ; todo selfmodify here? mov al, 080h etc.
    and       al, 080h
    mov       byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], al
 
@@ -4344,10 +4357,10 @@ scales_set:
 ; si = frontsector
 les       si, dword ptr ds:[_frontsector]
 lods      word ptr es:[si]
-push      ax   ; bp - 034h
+push      ax   ; bp - 034h ; floorheight
 xchg      ax, bx
 lods      word ptr es:[si]
-push      ax   ; bp - 036h
+push      ax   ; bp - 036h ; ceilheight
 xchg      ax, cx
 lods      word ptr es:[si]
 push      ax   ; bp - 038; bp - 037h gets ah
@@ -4363,6 +4376,11 @@ push      ax   ; bp - 03A; bp - 037h gets ah
 ;todo clean this up with struct fields
 push      word ptr es:[si + 07h]  ; + 6 from lodsw/lodsb = 0eh
                                   ; bp - 03C; bp - 03Bh gets ah
+
+mov       ax, cx    ; frontsector ceil
+sub       ax, bx    ; frontsector floor
+; ax has frontsector wall height
+mov       word ptr [bp - 01Ah], ax   ; todo reorder and use push.
 
 xchg      ax, cx  ; ax has frontsectorceilingheight
 ; todo can this cwd
@@ -4442,7 +4460,14 @@ mov       word ptr ds:[SELFMODIFY_BSP_midtexture+1 - OFFSET R_BSP24_STARTMARKER_
 
 SELFMODIFY_BSP_drawtype_1_TARGET:
 
-;es:bx still side
+; todo any clever way to infer to not do this check if we already turned 080h on?
+
+mov       ax, word ptr [bp - 01Ah] ; frontsectorceil - floor  (wall height)
+cmp       ax, word ptr [bp - 01Eh]
+jg        midwall_may_loop
+or        byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], 080h
+midwall_may_loop:
+
 SELFMODIFY_setmidtexturetranslation_lookup:
 mov       ax, 01000h
 
@@ -4488,9 +4513,9 @@ done_with_bottom_peg:
 
 
 
-; TODO i think this is buggy right now
+
 SELFMODIFY_BSP_siderenderrowoffset_1:
-add       ax, 01000h ; todo byte
+add       al, 010h
 
 mov       byte ptr ds:[SELFMODIFY_set_midtexturemid_hi+1 - OFFSET R_BSP24_STARTMARKER_], al
 
@@ -5874,7 +5899,7 @@ _selfmodify_restore_dx_10:
 
 ENDIF
 
-
+; around here whats wrong
 
 ;	    texturecolumn = rw_offset-FixedMul(finetangent[angle],rw_distance);
 
@@ -5970,6 +5995,7 @@ IF COMPISA GE COMPILE_386
    db 066h, 00Fh, 0A4h, 0C2h, 010h  ; shld edx, eax, 0x10
 
    ; ?only write to dc_iscale_hi when nonzero.
+; todo   mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+2], dl  ; turn on stretch variant for this frame
    mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1 - OFFSET R_BSP24_STARTMARKER_], dl
 
    jmp FastDiv3232FFFF_done 
@@ -5989,7 +6015,8 @@ ELSE
    div bx
    ; cx:ax is result 
    ; ch is known zero.
-   mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+2], ch  ; toggle stretch variant for this frame
+   ; how did this get 15!! cx:bx was 0:000c. how does that happen!?
+   mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+2], 0  ; toggle stretch variant for this frame
    ; only write to dc_iscale_hi when nonzero.
    mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1 - OFFSET R_BSP24_STARTMARKER_], cl
 
@@ -6312,18 +6339,18 @@ mov   dx, 01000h
 ENDP
 
 SELFMODIFY_toggle_top_colfunc_type:
-db 0BBh, 00, 00    ; mov bx, 00000    ; set the function variant for this DrawColumnPrep call
+db 0BBh, 00, 00    ; mov bx, 00000    ; set the function variant for this DrawColumnPrep call. May also arry the stretch tag of 6 independently applied to top/mid
 
 ; fall thru in the case of top/bot column.
 PROC  R_DrawColumnPrep_ NEAR
 PUBLIC R_DrawColumnPrep_ 
 ;cl:dx are texturemid (si needs to hold dc_yl!)
 
-
-
+; todo how did this get 15.
 SELFMODIFY_bsp_apply_stretch_tag:
 public SELFMODIFY_bsp_apply_stretch_tag
-add   bl, 010h ; add 2 or 0 for a different word lookup
+
+or   bl, 000h ; toggle on 6 or 0 for a different word lookup. Don't double add, just toggle on if not already on.
 
 ; al has function type index now, preshifted 1
 
@@ -6639,7 +6666,7 @@ SELFMODIFY_set_bottexturemid_lo:
 mov   dx, 01000h
 
 SELFMODIFY_toggle_bot_colfunc_type:
-db 0BBh, 00, 00    ; mov bx, 00000    ; set the function variant for this DrawColumnPrep call
+db 0BBh, 00, 00    ; mov bx, 00000    ; set the function variant for this DrawColumnPrep call.  May also arry the stretch tag of 6 independently applied to bot
 
 ; small idea: make these each three NOPs if its gonna be a bot only draw?
 mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret - OFFSET R_BSP24_STARTMARKER_], 0C3h  ; ret
@@ -6941,6 +6968,16 @@ SELFMODIFY_BSP_drawtype_2_TARGET:
 ; uint8_t backsectorfloorpic = backsector->floorpic;
 ; uint8_t backsectorlightlevel = backsector->lightlevel;
 
+; todo: i dont think these necessarily should be lodsw and written to cs. its not fast. is there a better way - hold inr egs etc?
+
+; if two sided:
+ ; noloop top if:
+  ; wall height < 128. that means fronsector.ceiling - backsector.ceiling < 128
+
+ ; noloop bot if:
+  ; wall height < 128. that means backsector.floor - front.floor < 128
+
+
 lds       si, dword ptr ss:[_backsector]
 lodsw     ; floorheight
 mov       word ptr cs:[SELFMODIFY_get_backsector_floorheight+3], ax
@@ -6970,12 +7007,34 @@ mov       word ptr ds:[si + DRAWSEG_T.drawseg_sprbottomclip_offset], ax
 mov       word ptr ds:[si + DRAWSEG_T.drawseg_sprtopclip_offset], ax
 mov       byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], al ; SIL_NONE
 
+; ax silbottom/top
+; bx frontsectorfloorheight
+; cx backsectorfloorheight
+; dx frontsectorceilingheight
+; di backsectorceilingheight
+; si ds_p
+; 
+
+
 
 ; ds:si is ds_p
 ;		if (frontsectorfloorheight > backsectorfloorheight) {
+
 mov       ax, 0201h ; silbottom and siltop
-cmp       cx, bx
+mov       es, cx ; backup
+sub       cx, bx
 jl        set_bsilheight_to_frontsectorfloorheight
+
+; backsector floor is higher than frontsector floor. so we will see the wall rendered.
+; if its less than 128 tall (minus tex top offset etc) then it wont loop
+cmp        cx, word ptr [bp - 01Eh]
+jg         backsector_floor_may_loop
+or         byte ptr cs:[SELFMODIFY_toggle_bot_colfunc_type+1], 080h
+backsector_floor_may_loop:
+
+mov        cx, es ; restore.
+
+;		} else if (backsectorfloorheight > viewz_shortheight) {
 SELFMODIFY_BSP_viewz_shortheight_2:
 cmp       cx, 01000h
 jle       bsilheight_set
@@ -6987,11 +7046,20 @@ ALIGN_MACRO
 set_bsilheight_to_frontsectorfloorheight:
 mov       byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], al ; SIL_BOTTOM
 mov       word ptr ds:[si + DRAWSEG_T.drawseg_bsilheight], bx  ; bp - 034h
+mov       cx, es  ; restore
 bsilheight_set:
 
+mov       es, dx ; backup
 
-cmp       di, dx  ; ceilingheight
-jg        set_tsilheight_to_frontsectorceilingheight
+sub       dx, di  ; ceilingheight
+jle       set_tsilheight_to_frontsectorceilingheight
+
+cmp        dx, word ptr [bp - 01Eh]
+jg         backsector_ceil_may_loop
+or         byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], 080h
+backsector_ceil_may_loop:
+mov        dx, es ; restore.
+
 SELFMODIFY_BSP_viewz_shortheight_1:
 cmp       di, 01000h
 jge       tsilheight_set
@@ -7001,6 +7069,7 @@ mov       word ptr ds:[si + DRAWSEG_T.drawseg_tsilheight], MINSHORT
 jmp       tsilheight_set
 ALIGN_MACRO
 set_tsilheight_to_frontsectorceilingheight:
+mov       dx, es
 or        byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], ah ; SIL_TOP
 mov       word ptr ds:[si + DRAWSEG_T.drawseg_tsilheight], dx
 tsilheight_set:
@@ -7281,7 +7350,7 @@ mov   byte ptr cs:[SELFMODIFY_set_bottexturemid_hi+1 - OFFSET R_BSP24_STARTMARKE
 bottexture_stuff_done:
 
 SELFMODIFY_BSP_siderenderrowoffset_2:
-mov       ax, 01000h   ;todo byte
+mov   al, 010h ; todo should this just be done above...?  rather than this selfmodify chain
 
 ;  extra selfmodify? or hold in vars till this pt and finally write the high bits
 ; 	rw_toptexturemid.h.intbits += side_render->rowoffset;
