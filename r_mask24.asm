@@ -5338,10 +5338,9 @@ and   al, ah   ; second AND is applied
 je    silhouette_is_SIL_NONE ; quit early
 
 cmp   al, SIL_TOP  ; al is 0 1 2 or 3. 2 = sil_top
-les   ax, dword ptr es:[di + DRAWSEG_T.drawseg_sprtopclip_offset]
-mov   bx, es ; top
-mov   dx, OPENINGS_SEGMENT
-mov   es, dx
+
+mov   ax, OPENINGS_SEGMENT
+
 mov   dx, CLIPBOT_START_SEGMENT
 mov   ds, dx  ; ds gets cs to index clipbot
 SELFMODIFY_MASKED_viewheight_3:
@@ -5352,7 +5351,10 @@ ja    silhouette_is_SIL_BOTH
 silhouette_is_SIL_BOTTOM:
 
 ; bx already right
+mov   bx, word ptr es:[di + DRAWSEG_T.drawseg_sprbottomclip_offset]
+mov   es, ax
 
+ALIGN_MACRO
 silhouette_SIL_BOTTOM_loop:
 cmp   byte ptr ds:[si], dh ; ; viewheight + 1
 jne   increment_silhouette_SIL_BOTTOM_loop
@@ -5369,10 +5371,13 @@ ALIGN_MACRO
 
 silhouette_is_SIL_TOP:
 
-xchg  ax, bx   ; get botclip in bx
+mov   bx, word ptr es:[di + DRAWSEG_T.drawseg_sprtopclip_offset]
+mov   es, ax
+
 add   si, SCREENWIDTH  ; CLIPTOP_START_OFFSET
 sub   bx, SCREENWIDTH  ; to cancel bx + si case to offset the above
 
+ALIGN_MACRO
 silhouette_2_loop:
 cmp   byte ptr ds:[si], dl ; 0
 jne   increment_silhouette_2_loop
@@ -5386,14 +5391,18 @@ silhouette_is_SIL_NONE:
 mov   cx, ss
 mov   ds, cx
 jmp   iterate_next_drawseg_loop  ;todo change the flow to go to the other jump
-ALIGN_MACRO
 
+ALIGN_MACRO
 silhouette_is_SIL_BOTH:
 
-; ax/bx already set
+push  di
 push  bp
-xchg  ax, bp  ; ; use bp for bp + si pattern
+les   bp, dword ptr es:[di + DRAWSEG_T.drawseg_sprtopclip_offset] ; get both
+mov   bx, es
+mov   es, ax ; OPENINGS_SEGMENT
+lea   di, [si + SCREENWIDTH]
 
+ALIGN_MACRO
 silhouette_SIL_BOTH_loop:
 
 cmp   byte ptr ds:[si], dh ; viewheight+1
@@ -5403,17 +5412,19 @@ mov   al, byte ptr es:[bx+si]   ; is 0 shouldnt be?
 mov   byte ptr ds:[si], al
 do_next_silhouette_SIL_BOTH_subloop:
 
-cmp   byte ptr ds:[si + (SCREENWIDTH)], dl ; 0
+cmp   byte ptr ds:[di], dl ; 0
 jne   increment_silhouette_SIL_BOTH_loop
 
 mov   al, byte ptr es:[bp+si]
-mov   byte ptr ds:[si + SCREENWIDTH], al
+mov   byte ptr ds:[di], al
 
 increment_silhouette_SIL_BOTH_loop:
 
 inc   si
+inc   di
 loop  silhouette_SIL_BOTH_loop
 pop   bp
+pop   di
 
 
 mov   cx, ss
@@ -5440,9 +5451,7 @@ mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTM
 mov   ax, es
 mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], al
 
-; set once. should be constant for both sprites.
 mov   al, byte ptr ds:[si + VISSPRITE_T.vs_colormap]
-; al is colormap. 
 mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMARKER_], al
 
 ; hardcoded function types.   TODO: if scale 1 use scale-less draw? or use hardcoded draws one way or another?
@@ -5470,12 +5479,15 @@ check_next_player_sprite:
 cmp  word ptr ds:[_psprites + (SIZE PSPDEF_T) +  PSPDEF_T.pspdef_statenum], -1  ; STATENUM_NULL
 je   dont_draw_playersprite_2
 
+mov   si, _player_vissprites + (SIZE VISSPRITE_T)
+mov   al, byte ptr ds:[si + VISSPRITE_T.vs_colormap]
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMARKER_], al
+
 mov   di, OFFSET _sprtopscreen
 mov   word ptr ds:[di], 0   ;
 SELFMODIFY_MASKED_centery_4:
 mov   word ptr ds:[di + 2], 01000h
 
-mov  si, _player_vissprites + (SIZE VISSPRITE_T)
 SELFMODIFY_set_player_pspritescale_lo_2:
 mov  ax, 01000h
 SELFMODIFY_set_player_pspritescale_hi_2:

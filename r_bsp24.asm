@@ -8891,12 +8891,12 @@ jmp   use_fixedcolormap
 SELFMODIFY_BSP_fixedcolormap_4_AFTER:
 ;ALIGN_MACRO
 test  byte ptr [bp - 2], FF_FULLBRIGHT
-je    set_vis_colormap
-SELFMODIFY_BSP_fixedcolormap_4_TARGET:
-use_fixedcolormap:
-SELFMODIFY_BSP_fixedcolormap_5:
-mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], 00h
+jne    use_fixedcolormap
 
+set_vis_colormap:
+SELFMODIFY_set_spritelights_2:
+mov   al, byte ptr ds:[01000h]    
+mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], al ; maybe
 LEAVE_MACRO
 ret   
 
@@ -8936,12 +8936,14 @@ ret
 
 
 ALIGN_MACRO
-set_vis_colormap:
-SELFMODIFY_set_spritelights_2:
-mov   al, byte ptr ds:[01000h]    
-mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], al ; maybe
+SELFMODIFY_BSP_fixedcolormap_4_TARGET:
+use_fixedcolormap:
+SELFMODIFY_BSP_fixedcolormap_5:
+mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], 00h
+
 LEAVE_MACRO
 ret   
+
 
 
 ENDP
