@@ -3750,7 +3750,7 @@ PUBLIC R_StoreWallRange_
 ; bp - 012h  ; v1.y                 ; UNUSED
 ; bp - 014h  ; lineflags            ; UNUSED (now bp + 018h)
 ; bp - 016h  ; offsetangle          ; UNUSED
-; bp - 018h  ; _rw_x                ; UNUSED was equivalent to bp - 2
+; bp - 018h  ; base4diff
 ; bp - 01Ah  ; frontsectorceilingheight - frontsectorfloorheight (compare to bp - 01Eh in mid draw case)
 ; bp - 01Bh  ; markceiling
 ; bp - 01Ch  ; markfloor
@@ -4164,18 +4164,41 @@ inc       ax
 
 
 
-mov   word ptr cs:[SELFMODIFY_cmp_ax_to_rw_stopx_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_cmp_ax_to_rw_stopx_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_cmp_ax_to_rw_stopx_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov       cx, cs
+mov       ds, cx
+
+; bx is already [bp - 2]
+mov   cx, bx
+
+SELFMODIFY_detailshift_and_1:
+and   bx, 01000h
+mov   word ptr ds:[SELFMODIFY_add_rw_x_base4_to_ax+1 - OFFSET R_BSP24_STARTMARKER_], bx
+mov   word ptr ds:[SELFMODIFY_compare_ax_to_start_rw_x+1 - OFFSET R_BSP24_STARTMARKER_], cx
+
+;  	int16_t base4diff = rw_x - rw_x_base4;
+sub   cx, bx   ; result is 0 1 2 or 3. but if 2 then we want to set value 080h
+add   bx, cx   ; bx is [bp - 2] or rw_x again.
+ror   cl, 1    ; ; result is 0, 1, 2, 3
+mov   byte ptr [bp - 018h], cl  ; remap to 0, 0x80, 1, 0x81
+
+
+
+
+
+mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 sub   ax, bx   ; stop - start
 shr   ax, 1    ; byte copies not word copies
 adc   al, ah    ; round up. ah should be zero.
-mov   word ptr cs:[SELFMODIFY_set_cx_to_count_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_set_cx_to_count_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_set_cx_to_count_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_set_cx_to_count_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
 ; sp is bp  - 030h
+mov       ax, ss
+mov       ds, ax
 
 
 mov       ax, XTOVIEWANGLE_SEGMENT   ; todo selfmodify all these?
@@ -4316,7 +4339,6 @@ mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_2+1 - OFFSET R_BSP24_STARTM
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_4+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr ds:[SELFMODIFY_add_rwscale_lo+4 - OFFSET R_BSP24_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_sub_rwscale_lo+3 - OFFSET R_BSP24_STARTMARKER_], ax
 
 xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -4326,8 +4348,28 @@ mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_4+1 - OFFSET R_BSP24_STARTM
 
 
 mov       word ptr ds:[SELFMODIFY_add_rwscale_hi+4 - OFFSET R_BSP24_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_sub_rwscale_hi+3 - OFFSET R_BSP24_STARTMARKER_], ax
 
+
+
+
+cmp       byte ptr [bp - 018h], 1
+jc        skip_rwscale_sub    
+mov       cx, dx
+mov       bx, ax
+jo        rwscale_sub_2x
+jz        rwscale_sub_1x
+rwscale_sub_3x:
+add       cx, dx
+adc       bx, ax
+rwscale_sub_2x:
+add       cx, dx
+adc       bx, ax
+rwscale_sub_1x:
+do_rwscale_sub:
+sub       word ptr [bp - 032h], cx
+sbb       word ptr [bp - 030h], bx
+
+skip_rwscale_sub:
 
 
 ; todo change these in 386 mode to shld?
@@ -4901,11 +4943,31 @@ sbb       dx, 0
 ; dx:ax are topstep
 
 
-mov       word ptr ds:[SELFMODIFY_sub_topstep_lo+3 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr ds:[SELFMODIFY_add_topstep_lo+4 - OFFSET R_BSP24_STARTMARKER_], ax
-xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_sub_topstep_hi+3 - OFFSET R_BSP24_STARTMARKER_], ax
+xchg      ax, dx ; todo remove this again
 mov       word ptr ds:[SELFMODIFY_add_topstep_hi+4 - OFFSET R_BSP24_STARTMARKER_], ax
+
+
+cmp       byte ptr [bp - 018h], 1
+jc        skip_topstep_sub
+mov       cx, dx
+mov       bx, ax
+jo        topstep_sub_2x
+jz        topstep_sub_1x
+topstep_sub_3x:
+add       cx, dx
+adc       bx, ax
+topstep_sub_2x:
+add       cx, dx
+adc       bx, ax
+topstep_sub_1x:
+do_topstep_sub:
+sub       word ptr [bp - 02Eh], cx
+sbb       word ptr [bp - 02Ch], bx
+
+skip_topstep_sub:
+
+
 
 
 SELFMODIFY_BSP_detailshift_2:
@@ -4983,11 +5045,33 @@ sbb       dx, 0
 ; dx:ax are bottomstep
 
 
-mov       word ptr ds:[SELFMODIFY_sub_botstep_lo+3 - OFFSET R_BSP24_STARTMARKER_], ax
+
 mov       word ptr ds:[SELFMODIFY_add_botstep_lo+4 - OFFSET R_BSP24_STARTMARKER_], ax
-xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_sub_botstep_hi+3 - OFFSET R_BSP24_STARTMARKER_], ax
+xchg      ax, dx ; todo remove this again
 mov       word ptr ds:[SELFMODIFY_add_botstep_hi+4 - OFFSET R_BSP24_STARTMARKER_], ax
+
+
+cmp       byte ptr [bp - 018h], 1
+jc        skip_botstep_sub
+mov       cx, dx
+mov       bx, ax
+jo        botstep_sub_2x
+jz        botstep_sub_1x
+botstep_sub_3x:
+add       cx, dx
+adc       bx, ax
+botstep_sub_2x:
+add       cx, dx
+adc       bx, ax
+botstep_sub_1x:
+do_botstep_sub:
+sub       word ptr [bp - 02Ah], cx
+sbb       word ptr [bp - 028h], bx
+
+skip_botstep_sub:
+
+
+
 
 SELFMODIFY_BSP_detailshift_3:
 shl       dx, 1
@@ -5171,11 +5255,33 @@ sbb       dx, 0
 ; self modifying code to write to pixlowstep usages.
 
 
-mov       word ptr ds:[SELFMODIFY_sub_pixhigh_lo+3 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr ds:[SELFMODIFY_add_pixhighstep_lo+4 - OFFSET R_BSP24_STARTMARKER_], ax
-xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_sub_pixhigh_hi+3 - OFFSET R_BSP24_STARTMARKER_], ax
+xchg      ax, dx ; todo remove this again
 mov       word ptr ds:[SELFMODIFY_add_pixhighstep_hi+4 - OFFSET R_BSP24_STARTMARKER_], ax
+
+
+
+cmp       byte ptr [bp - 018h], 1
+jc        skip_pixhigh_sub
+mov       cx, dx
+mov       bx, ax
+jo        pixhigh_sub_2x
+jz        pixhigh_sub_1x
+pixhigh_sub_3x:
+add       cx, dx
+adc       bx, ax
+pixhigh_sub_2x:
+add       cx, dx
+adc       bx, ax
+pixhigh_sub_1x:
+do_pixhigh_sub:
+sub       word ptr [bp - 022h], cx
+sbb       word ptr [bp - 020h], bx
+
+skip_pixhigh_sub:
+
+
+
 
 SELFMODIFY_BSP_detailshift_4:
 shl       dx, 1
@@ -5334,11 +5440,32 @@ sbb       dx, 0
 ; self modifying code to write to pixlowstep usages.
 
 
-mov       word ptr ds:[SELFMODIFY_sub_pixlow_lo+3 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr ds:[SELFMODIFY_add_pixlowstep_lo+4 - OFFSET R_BSP24_STARTMARKER_], ax
-xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_sub_pixlow_hi+3 - OFFSET R_BSP24_STARTMARKER_], ax
+xchg      ax, dx ; todo remove this again
 mov       word ptr ds:[SELFMODIFY_add_pixlowstep_hi+4 - OFFSET R_BSP24_STARTMARKER_], ax
+
+
+
+cmp       byte ptr [bp - 018h], 1
+jc        skip_pixlow_sub
+mov       cx, dx
+mov       bx, ax
+jo        pixlow_sub_2x
+jz        pixlow_sub_1x
+pixlow_sub_3x:
+add       cx, dx
+adc       bx, ax
+pixlow_sub_2x:
+add       cx, dx
+adc       bx, ax
+pixlow_sub_1x:
+do_pixlow_sub:
+sub       word ptr [bp - 026h], cx
+sbb       word ptr [bp - 024h], bx
+
+skip_pixlow_sub:
+
+
 
 ; todo 386
 SELFMODIFY_BSP_detailshift_5:
@@ -5365,26 +5492,9 @@ public skip_pixlow_step
 
 
 
-mov   bx, word ptr [bp - 2]    ; rw_x. from here on out we do not pull from bp - 018h again. its always in some register or other.
 
-mov   cx, bx
-
-SELFMODIFY_detailshift_and_1:
-and   bx, 01000h
-
-; self modify code in the function to set constants rather than
-; repeatedly reading loop-constant or function-constant variables.
-
-
-mov   word ptr ds:[SELFMODIFY_add_rw_x_base4_to_ax+1 - OFFSET R_BSP24_STARTMARKER_], bx
-mov   word ptr ds:[SELFMODIFY_compare_ax_to_start_rw_x+1 - OFFSET R_BSP24_STARTMARKER_], cx
-
-;  	int16_t base4diff = rw_x - rw_x_base4;
-sub   cx, bx ; for loop later.
-
-mov   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1 - OFFSET R_BSP24_STARTMARKER_], ch ; 0 
-
-mov   bx, 0
+xor   bx, bx
+mov   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1 - OFFSET R_BSP24_STARTMARKER_], bl ; 0 
 
 mov   dx, word ptr [bp - 01Ch] ; todo selfmodify?
 mov   bl, dl
@@ -5397,47 +5507,6 @@ les   bx, dword ptr cs:[bx+_selfmodify_lookup_markceiling]
 mov   word ptr ds:[SELFMODIFY_BSP_markceiling_1 - OFFSET R_BSP24_STARTMARKER_], bx
 mov   word ptr ds:[SELFMODIFY_BSP_markceiling_2 - OFFSET R_BSP24_STARTMARKER_], es
 
-; sub cx, bx flags still active.
-
-;	while (base4diff){
-;		rw_scale.w      -= rw_scalestep;
-;		topfrac         -= topstep;
-;		bottomfrac      -= bottomstep;
-;		pixlow		    -= pixlowstep;
-;		pixhigh		    -= pixhighstep;
-;		base4diff--;
-;	}
-je    skip_sub_base4diff
-SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_4_TARGET:
-sub_base4diff:
-
-
-SELFMODIFY_sub_rwscale_lo:
-sub   word ptr [bp - 032h], 01000h
-SELFMODIFY_sub_rwscale_hi:
-sbb   word ptr [bp - 030h], 01000h
-SELFMODIFY_sub_topstep_lo:
-sub   word ptr [bp - 02Eh], 01000h
-SELFMODIFY_sub_topstep_hi:
-sbb   word ptr [bp - 02Ch], 01000h
-SELFMODIFY_sub_botstep_lo:
-sub   word ptr [bp - 02Ah], 01000h
-SELFMODIFY_sub_botstep_hi:
-sbb   word ptr [bp - 028h], 01000h
-
-
-
-SELFMODIFY_sub_pixlow_lo:
-sub   word ptr [bp - 026h], 01000h
-SELFMODIFY_sub_pixlow_hi:
-sbb   word ptr [bp - 024h], 01000h
-SELFMODIFY_sub_pixhigh_lo:
-sub   word ptr [bp - 022h], 01000h
-SELFMODIFY_sub_pixhigh_hi:
-sbb   word ptr [bp - 020h], 01000h
-
-loop   sub_base4diff
-skip_sub_base4diff:
 
 ;	base_rw_scale   = rw_scale.w;
 ;	base_topfrac    = topfrac;
@@ -5465,7 +5534,7 @@ lods  word ptr ss:[si] ; bottomfrac hi
 mov   word ptr ds:[SELFMODIFY_set_botfrac_hi+1 - OFFSET R_BSP24_STARTMARKER_], ax
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3:
 jmp SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET
-ALIGN_MACRO
+; ALIGN_MACRO
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3 + 2
 lods  word ptr ss:[si] ; pixlow lo
 mov   word ptr ds:[SELFMODIFY_set_pixlow_lo+1 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -5528,7 +5597,7 @@ stosw
 
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5:
 jmp   SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_TARGET
-ALIGN_MACRO
+; ALIGN_MACRO
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5 + 2
 
 SELFMODIFY_set_pixlow_lo:
