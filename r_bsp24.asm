@@ -6964,12 +6964,12 @@ mov      di, _visplaneheaders + VISPLANEHEADER_T.visplaneheader_dirty
 test     al, 1
 je       mark_ceil_dirty  ; if 3 tested true and 1 didnt, it must be the other one, skip the check.
 mov      bx,  word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1]
-;mov      byte ptr ds:[bx+di], al ; nonzero
+mov      byte ptr ds:[bx+di], al ; nonzero
 test     al, 2
 je       dont_mark_floor_dirty
 mark_ceil_dirty:  
 mov      bx,  word ptr cs:[SELFMODIFY_set_floorplaneindex+1]
-;mov      byte ptr ds:[bx+di], al ; nonzero
+mov      byte ptr ds:[bx+di], al ; nonzero
 
 dont_mark_floor_dirty:
 mov      byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], ah ;zero

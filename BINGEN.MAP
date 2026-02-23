@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/22 02:24:32
+Created on:       26/02/22 03:10:02
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -35,7 +35,7 @@ SM_OPL2_TEXT           CODE           AUTO           0533:0000       00000f3c
 SM_OPL3_TEXT           CODE           AUTO           0627:0000       0000100e
 SM_SBMID_TEXT          CODE           AUTO           0728:0000       00000730
 SM_MPUMD_TEXT          CODE           AUTO           079b:0000       000007db
-R_BSP_24_TEXT          CODE           AUTO           0819:0000       00003719
+R_BSP_24_TEXT          CODE           AUTO           0819:0000       0000371d
 R_BSP_16_TEXT          CODE           AUTO           0b8b:0000       00003740
 R_BSP0_TEXT            CODE           AUTO           0eff:0000       0000366f
 R_BSPFL_TEXT           CODE           AUTO           1266:0000       00003617
@@ -43,7 +43,7 @@ R_COL24_TEXT           CODE           AUTO           15c8:0000       000027ed
 R_COL16_TEXT           CODE           AUTO           1847:0000       00000cb4
 R_COL0_TEXT            CODE           AUTO           1913:0000       0000058e
 R_COLFL_TEXT           CODE           AUTO           196c:0000       0000058e
-R_SPAN24_TEXT          CODE           AUTO           19c5:0000       00001089
+R_SPAN24_TEXT          CODE           AUTO           19c5:0000       0000108b
 R_SPAN16_TEXT          CODE           AUTO           1ace:0000       00000f60
 R_SPAN0_TEXT           CODE           AUTO           1bc4:0000       0000063a
 R_SPANFL_TEXT          CODE           AUTO           1c28:0000       00000591
@@ -340,10 +340,10 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079b:0000      SM_MPUMD_STARTMARKER_
 079b:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-0819:33cc      R_WriteBackViewConstants24_
-0819:21ab*     R_AddLine_
-0819:3719      R_BSP24_ENDMARKER_
-0819:2e96      R_GetPatchTexture_Far24_
+0819:33d0      R_WriteBackViewConstants24_
+0819:21af*     R_AddLine_
+0819:371d      R_BSP24_ENDMARKER_
+0819:2e9a      R_GetPatchTexture_Far24_
 0819:0a0c*     FixedMulTrigNoShiftSine_BSPLocal_
 0819:16d0*     _selfmodify_restore_dx_6
 0819:1711*     _selfmodify_restore_dx_7
@@ -354,22 +354,22 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:1553*     _selfmodify_restore_dx_3
 0819:0a08*     FixedMulTrigSine_BSPLocal_
 0819:0ff9*     R_StoreWallRange_
-0819:23a4*     R_ClipPassWallSegment_
+0819:23a8*     R_ClipPassWallSegment_
 0819:1696*     jmp_to_skip_pixhigh_step
 0819:0a56*     FixedMulTrigCosine_BSPLocal_
 0819:100b*     SELFMODIFY_skip_curseg_based_selfmodify_AFTER
-0819:20c6*     R_Subsector_
+0819:20ca*     R_Subsector_
 0819:1974*     check_here
 0819:1c6c*     do_top_texture_draw
 0819:0000      R_BSP24_STARTMARKER_
-0819:3246      R_RenderPlayerView24_
+0819:324a      R_RenderPlayerView24_
 0819:09b8*     FixedDivBSPLocal_
 0819:05de*     div48_32_BSPLocal_
 0819:18cd*     finish_outer_loop
 0819:0080*     _COLFUNC_SELFMODIFY_LOOKUPTABLE_SECOND_HALF
 0819:1821*     skip_pixlow_step
-0819:2d3c*     R_GetTexturePage_
-0819:3560*     R_WriteBackFrameConstants_
+0819:2d40*     R_GetTexturePage_
+0819:3564*     R_WriteBackFrameConstants_
 0819:034b*     _selfmodify_restore_dx
 0819:0a5a*     FixedMulTrigNoShiftCosine_BSPLocal_
 0819:158f*     SELFMODIFY_set_floorplaneindex
@@ -380,8 +380,8 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:1bc9*     SELFMODIFY_bsp_apply_stretch_tag
 0819:0c54*     R_FindPlane_
 0819:0728*     FixedDivWholeA_BSPLocal_
-0819:2085*     side_has_midtexture
-0819:2f30      R_GetCompositeTexture_Far24_
+0819:2089*     side_has_midtexture
+0819:2f34      R_GetCompositeTexture_Far24_
 0819:0000*     _COLFUNC_SELFMODIFY_LOOKUPTABLE
 0819:1bc9*     R_DrawColumnPrep_
 0819:0378*     SELFMODIFY_get_rw_distance_hi_1
@@ -466,14 +466,14 @@ Module: r_span24.obj(r_span24.ASM)
 19c5:01b4*     SPANFUNC_JUMP_OFFSET
 19c5:01b8*     MARKER_SM_SPAN24_AFTER_JUMP_1
 19c5:0124*     R_DrawSpan24_
-19c5:0f44      R_WriteBackViewConstantsSpan24_
+19c5:0f46      R_WriteBackViewConstantsSpan24_
 19c5:0000      R_SPAN24_STARTMARKER_
 19c5:08ca*     FixedMulTrigSineLocal_
 19c5:09a6*     R_MapPlane24_
 19c5:0918*     FixedMulTrigCosineLocal_
 19c5:0b36      R_DrawPlanes24_
 19c5:0128*     R_DrawSpanActual24_
-19c5:1089      R_SPAN24_ENDMARKER_
+19c5:108b      R_SPAN24_ENDMARKER_
 Module: r_span16.obj(r_span16.ASM)
 1ace:0e68      R_WriteBackViewConstantsSpan16_
 1ace:0124*     R_DrawSpan16_
@@ -684,8 +684,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2400:4c6b*     A_BruisAttack_
 2400:5ade      P_SetMobjState_
 2400:446e*     P_TryWalk_
-2400:4c01*     A_HeadAttack_
 2400:57cb*     A_BrainScream_
+2400:4c01*     A_HeadAttack_
 2400:562a*     A_Pain_
 2400:4ed0*     PIT_VileCheck_
 2400:56a1*     A_BossDeath_
