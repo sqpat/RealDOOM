@@ -8651,9 +8651,9 @@ and   cx, FF_FRAMEMASK
 
 
 IF COMPISA GE COMPILE_186
-   imul  bx, cx, (SIZE SPRITEFRAME_T)
+   imul  bx, cx, (SIZE SPRITEFRAME_T)  ; todo lookup table? how big can cx be?
    mov   di, word ptr es:[di]       ; get spriteframesOffset from spritedef_t
-   push  word ptr es:[bx + di + 010h]    ; 0Ah
+   push  word ptr es:[bx + di + SPRITEFRAME_T.spriteframe_flip]    ; 0Ah
    mov   bx, word ptr es:[di + bx]       ; get spriteindex
 
 ELSE
@@ -8661,7 +8661,7 @@ ELSE
    mul   cl
    mov   di, word ptr es:[di]       ; get spriteframesOffset from spritedef_t
    add   di, ax
-   push  word ptr es:[di + 010h]    ; 0Ah
+   push  word ptr es:[di + SPRITEFRAME_T.spriteframe_flip]    ; 0Ah
    mov   bx, word ptr es:[di]       ; get spriteindex
 ENDIF
 
@@ -8819,69 +8819,34 @@ x2_smaller_than_viewwidth_2:
 dec   ax
 vis_x2_set:
 mov   word ptr ds:[si + VISSPRITE_T.vs_x2], ax
-SELFMODIFY_BSP_pspritescale_3:
-mov   ax, 01000h
-SELFMODIFY_BSP_pspritescale_3_AFTER = SELFMODIFY_BSP_pspritescale_3 + 2
-pspritescale_nonzero_3:
-xor   dx, dx
 
-jmp   shift_visscale
-ALIGN_MACRO
-
-SELFMODIFY_BSP_pspritescale_3_TARGET:
-pspritescale_zero_3:
-mov   dx, 1
+; dont set psprite vs_scale. Its essentially a viewsize constant and is done in masked code.
 xor   ax, ax
-
-shift_visscale:
-
-SELFMODIFY_BSP_detailshift_6:
-shl   ax, 1
-rcl   dx, 1
-shl   ax, 1
-rcl   dx, 1
-
-mov   word ptr ds:[si + VISSPRITE_T.vs_scale + 0], ax
-mov   word ptr ds:[si + VISSPRITE_T.vs_scale + 2], dx
-
 SELFMODIFY_BSP_pspriteiscale_lo_1:
 mov   bx, 01000h
 SELFMODIFY_BSP_pspriteiscale_hi_1:
 mov   cx, 01000h
 
-cmp   byte ptr [bp - 0Ah], 0       ; check flip
+cmp   byte ptr [bp - 0Ah], al  ; al = 0     ; check flip
 jne   flip_on
 
 flip_off:
-xor   ax, ax
+
 mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], ax
 mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], ax
-jmp   vis_startfrac_set
-ALIGN_MACRO
-
-flip_on:
-
-neg   cx
-neg   bx
-sbb   cx, 0
-
-
-; mov ax, 0; add ax, -1; adc di, -1 optimized 
-
-mov   ax, word ptr [bp - 010h]
-dec   ax
-mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], -1
-mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], ax
+done_with_flip:
 
 vis_startfrac_set:
 mov   word ptr ds:[si + VISSPRITE_T.vs_xiscale + 0], bx
 mov   word ptr ds:[si + VISSPRITE_T.vs_xiscale + 2], cx
 
 mov   ax, word ptr ds:[si + VISSPRITE_T.vs_x1]
-cmp   ax, word ptr [bp - 0Eh]
+les   dx, dword ptr [bp - 0Eh]  ; es gets bp - 0Ch
+mov   word ptr ds:[si + VISSPRITE_T.vs_patch], es ; [bp - 0Ch] 
+
+sub   ax, dx
 jle   vis_x1_greater_than_x1_2
-sub   ax, word ptr [bp - 0Eh]
-; TODO INLINE
+
 ; inlined FastMul16u32u_
 
 IF COMPISA GE COMPILE_386
@@ -8912,8 +8877,7 @@ ENDIF
 add   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], ax
 adc   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], dx
 vis_x1_greater_than_x1_2:
-mov   bx, word ptr [bp - 0Ch]
-mov   word ptr ds:[si + VISSPRITE_T.vs_patch], bx
+
 
 ;    if (player.powers[pw_invisibility] > 4*32
 
@@ -8935,6 +8899,31 @@ mov   byte ptr ds:[si + VISSPRITE_T.vs_colormap], 00h
 
 LEAVE_MACRO
 ret   
+
+
+ALIGN_MACRO
+
+flip_on:
+
+neg   cx
+neg   bx
+sbb   cx, ax  ; 0 
+
+;      vis->xiscale = -pspriteiscale;
+;      temp.h.intbits = usedwidth;
+;		vis->startfrac = temp.w - 1;
+
+dec   ax
+mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], ax ; -1
+
+; mov ax, 0; add ax, -1; adc di, -1 optimized 
+
+mov   ax, word ptr [bp - 010h]
+dec   ax
+mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], ax
+
+jmp   done_with_flip
+
 
 
 
@@ -12046,12 +12035,8 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+2 - OFFSET R_BSP24_STAR
 mov      ax, 0e0d1h 
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+0 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+0 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_6+0 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      ax, 0d2d1h 
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+2 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_6+2 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      ax, 0d7d1h 
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+2 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+2 - OFFSET R_BSP24_STARTMARKER_], 0d2d1h
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+2 - OFFSET R_BSP24_STARTMARKER_], 0d7d1h
 
 
 
@@ -12100,8 +12085,6 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+0 - OFFSET R_BSP24_STAR
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+0 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+2 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_6+0 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_6+2 - OFFSET R_BSP24_STARTMARKER_], ax
 
 jmp      done_modding_shift_detail_code
 ALIGN_MACRO
@@ -12142,7 +12125,6 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5+2 - OFFSET R_BSP24_STARTMARKE
 mov      ax, 006EBh
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+0 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+0 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_6+0 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
 ; fall thru
@@ -12207,27 +12189,20 @@ mov      word ptr ds:[SELFMODIFY_BSP_setviewheight_2+1 - OFFSET R_BSP24_STARTMAR
 
 
 mov      ax,  word ptr ss:[_pspritescale]
-test     ax, ax
+test     ax, ax  ; zero means specialcase as 1.
 je       pspritescale_zero_selfmodifies
 
 mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      al, 0BBh  ; mov bx, imm16
 mov      byte ptr ds:[SELFMODIFY_BSP_pspritescale_1 - OFFSET R_BSP24_STARTMARKER_], al
 mov      byte ptr ds:[SELFMODIFY_BSP_pspritescale_2 - OFFSET R_BSP24_STARTMARKER_], al
-mov      byte ptr ds:[SELFMODIFY_BSP_pspritescale_3 - OFFSET R_BSP24_STARTMARKER_], 0B8h
 jmp      done_with_pspritescale_zero_selfmodifies
 ALIGN_MACRO
 pspritescale_zero_selfmodifies:
 
-mov      al, 0EBh
-mov      ah, (SELFMODIFY_BSP_pspritescale_1_TARGET - SELFMODIFY_BSP_pspritescale_1_AFTER)
-mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      ah, (SELFMODIFY_BSP_pspritescale_2_TARGET - SELFMODIFY_BSP_pspritescale_2_AFTER)
-mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_2 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      ah, (SELFMODIFY_BSP_pspritescale_3_TARGET - SELFMODIFY_BSP_pspritescale_3_AFTER)
-mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_3 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_1 - OFFSET R_BSP24_STARTMARKER_], (((SELFMODIFY_BSP_pspritescale_1_TARGET - SELFMODIFY_BSP_pspritescale_1_AFTER)) SHL 8) + 0EBh
+mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_2 - OFFSET R_BSP24_STARTMARKER_], (((SELFMODIFY_BSP_pspritescale_2_TARGET - SELFMODIFY_BSP_pspritescale_2_AFTER)) SHL 8) + 0EBh
 
 done_with_pspritescale_zero_selfmodifies:
 

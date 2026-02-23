@@ -1221,8 +1221,6 @@ mov   dx, cx  ; xi_scale was in cx:bx
 
 
 
-R_DrawPlayerVisSprite_:  ; pass in vs_xiscale in dx:ax. todo: consider a whole speciailized variant just for player.
-PUBLIC R_DrawPlayerVisSprite_
 
 
 xor   cx, cx  ; cx is 0
@@ -1287,7 +1285,11 @@ les   ax, dword ptr ds:[si + VISSPRITE_T.vs_scale]  ; vis->scale
 mov   dx, es
 
 mov   word ptr ds:[_spryscale], ax
-mov   word ptr ds:[_spryscale + 2], dx
+mov   word ptr ds:[_spryscale + 2], dx  ; todo this feels wasteful? why write here and not selfmodify? double check
+
+R_DrawPlayerVisSprite_:  ; pass in vs_scale in dx:ax...
+PUBLIC R_DrawPlayerVisSprite_
+
 
 les   bx, dword ptr ds:[si + VISSPRITE_T.vs_texturemid] ; vis->texturemid
 mov   cx, es
@@ -4954,27 +4956,14 @@ sub  di, (SIZE DRAWSEG_T)
 
 ja   check_next_seg
 done_rendering_masked_segranges:
-;call R_DrawPlayerSprites_  ; inlined
+;call R_DrawPlayerSprites_  
 
 
-; todo some sort of special draw unclipped sprite function? can scale lookups also be optimized?
-mov  word ptr ds:[_mfloorclip], OFFSET_SCREENHEIGHTARRAY 
-mov  word ptr ds:[_mceilingclip], OFFSET_NEGONEARRAY 
 
 cmp  word ptr ds:[_psprites + PSPDEF_T.pspdef_statenum], -1  ; STATENUM_NULL
-je  check_next_player_sprite
-mov  si, _player_vissprites       ; vissprite 0
-les  ax, dword ptr ds:[si + VISSPRITE_T.vs_xiscale]
-mov  dx, es
-call R_DrawPlayerVisSprite_
+je   exit_drawplayersprites   ; if no sprite 1 then no sprite 2 either, i think (?)
 
-check_next_player_sprite:
-cmp  word ptr ds:[_psprites + (SIZE PSPDEF_T) +  PSPDEF_T.pspdef_statenum], -1  ; STATENUM_NULL
-je   exit_drawplayersprites
-mov  si, _player_vissprites + (SIZE VISSPRITE_T)
-les  ax, dword ptr ds:[si + VISSPRITE_T.vs_xiscale]
-mov  dx, es
-call R_DrawPlayerVisSprite_
+jmp  do_psprite_draws
 
 exit_drawplayersprites:
 
@@ -5430,9 +5419,73 @@ pop   bp
 mov   cx, ss
 mov   ds, cx
 jmp   iterate_next_drawseg_loop
-ALIGN_MACRO
 
 ENDP
+
+; end of drawmasked 
+
+ALIGN_MACRO
+do_psprite_draws:
+public do_psprite_draws
+
+mov  word ptr ds:[_mfloorclip], OFFSET_SCREENHEIGHTARRAY 
+mov  word ptr ds:[_mceilingclip], OFFSET_NEGONEARRAY 
+
+; player vissprite related hardcodes
+mov   si, _player_vissprites       ; vissprite 0
+
+les   ax, dword ptr ds:[si + VISSPRITE_T.vs_xiscale]
+; no scale check, it was done in bsp
+mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   ax, es
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], al
+
+; set once. should be constant for both sprites.
+mov   al, byte ptr ds:[si + VISSPRITE_T.vs_colormap]
+; al is colormap. 
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMARKER_], al
+
+; hardcoded function types.   TODO: if scale 1 use scale-less draw? or use hardcoded draws one way or another?
+mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset], DRAWCOL_NOLOOP_OFFSET_MASKED
+mov   word ptr cs:[SELFMODIFY_masked_set_jump_write_offset+1 - OFFSET R_MASK24_STARTMARKER_], SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1
+
+mov   di, OFFSET _sprtopscreen
+mov   word ptr ds:[di], 0   ;
+SELFMODIFY_MASKED_centery_3:
+mov   word ptr ds:[di + 2], 01000h
+
+SELFMODIFY_set_player_pspritescale_lo_1:
+mov  ax, 01000h
+SELFMODIFY_set_player_pspritescale_hi_1:
+mov  dx, 01000h
+
+mov   word ptr ds:[_spryscale], ax      ; do just once.
+mov   word ptr ds:[_spryscale + 2], dx
+
+; todo: if the above known to be FRACUNIT, skip the multiply in R_DrawVisSprite_ ...? selfmodify here?
+
+call R_DrawPlayerVisSprite_ ; todo an even further hardcoded function possible/worth it?
+
+check_next_player_sprite:
+cmp  word ptr ds:[_psprites + (SIZE PSPDEF_T) +  PSPDEF_T.pspdef_statenum], -1  ; STATENUM_NULL
+je   dont_draw_playersprite_2
+
+mov   di, OFFSET _sprtopscreen
+mov   word ptr ds:[di], 0   ;
+SELFMODIFY_MASKED_centery_4:
+mov   word ptr ds:[di + 2], 01000h
+
+mov  si, _player_vissprites + (SIZE VISSPRITE_T)
+SELFMODIFY_set_player_pspritescale_lo_2:
+mov  ax, 01000h
+SELFMODIFY_set_player_pspritescale_hi_2:
+mov  dx, 01000h
+call R_DrawPlayerVisSprite_
+dont_draw_playersprite_2:
+LEAVE_MACRO
+POPA_NO_AX_OR_BP_MACRO
+retf
+
 
 
 
@@ -5444,13 +5497,15 @@ ENDP
 ; R_DrawMaskedColumn
 ;
 
+ALIGN_MACRO
 exit_draw_masked_column_early:
 ret
 
 ; three uses... two in maskedsegrange one in drawvissprite?
 ; revisit what really needs to be push/popped
 
-	
+
+
 ALIGN_MACRO
 PROC   R_DrawMaskedColumn_ NEAR ; fairly optimized
 PUBLIC R_DrawMaskedColumn_
@@ -6331,6 +6386,8 @@ mov      ds, ax
 ASSUME DS:R_MASK24_TEXT
 
 mov      ax,  word ptr ss:[_detailshift]
+xor      cx, cx
+mov      cl, al   ; cx has detailshift for plater.
 
 
 
@@ -6467,6 +6524,33 @@ xor   al, al
 mov   word ptr ds:[SELFMODIFY_MASKED_viewheight_3+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 
+; some psprite stuff here instead of bsp, where bsp would just write constants to vissprite.
+
+mov      ax,  word ptr ss:[_pspritescale]
+mov      dx, 1
+test     ax, ax  ; zero means specialcase as 1.
+je       pspritescale_zero_selfmodifies
+dec      dx
+pspritescale_zero_selfmodifies:  ; 0001:0000 or 0000:AX
+; cx has detailshift.
+jcxz  skip_pscale_shift
+shl   ax, 1
+rcl   dx, 1
+dec   cx
+jz    skip_pscale_shift
+shl   ax, 1
+rcl   dx, 1
+skip_pscale_shift:
+
+;DX:AX is vs_scale
+
+; hardcode psprite scales
+mov   word ptr ds:[SELFMODIFY_set_player_pspritescale_lo_1+1], ax
+mov   word ptr ds:[SELFMODIFY_set_player_pspritescale_hi_1+1], dx
+mov   word ptr ds:[SELFMODIFY_set_player_pspritescale_lo_2+1], ax
+mov   word ptr ds:[SELFMODIFY_set_player_pspritescale_hi_2+1], dx
+
+
 
 push   ss
 pop    ds
@@ -6495,6 +6579,8 @@ ASSUME DS:R_MASK24_TEXT
 mov   ax, word ptr ss:[_centery]
 mov   word ptr ds:[SELFMODIFY_MASKED_centery_1+3 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   word ptr ds:[SELFMODIFY_MASKED_centery_2+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_centery_3+3 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_centery_4+3 - OFFSET R_MASK24_STARTMARKER_], ax
 
 mov   ax, word ptr ss:[_viewz+0]
 mov   word ptr ds:[SELFMODIFY_MASKED_viewz_lo_1+2 - OFFSET R_MASK24_STARTMARKER_], ax
