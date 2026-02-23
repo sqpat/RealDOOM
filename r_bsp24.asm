@@ -8897,8 +8897,9 @@ jne   flip_on
 flip_off:
 
 mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], ax
-mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], ax
+
 done_with_flip:
+mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], ax
 
 vis_startfrac_set:
 mov   word ptr ds:[si + VISSPRITE_T.vs_xiscale + 0], bx
@@ -8982,9 +8983,7 @@ mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0], ax ; -1
 
 ; mov ax, 0; add ax, -1; adc di, -1 optimized 
 
-mov   ax, word ptr [bp - 010h]
-dec   ax
-mov   word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2], ax
+add   ax, word ptr [bp - 010h]  ; add - 1 to the value.
 
 jmp   done_with_flip
 
@@ -12046,7 +12045,9 @@ mov      ds, ax
 ASSUME DS:R_BSP_24_TEXT
 
 
-mov      ax,  word ptr ss:[_detailshift]
+xor      cx, cx
+mov      ax, word ptr ss:[_detailshift]
+mov      cl, al
 add      ah, OFFSET _quality_port_lookup
 mov      byte ptr ds:[SELFMODIFY_detailshift_plus1_1+3 - OFFSET R_BSP24_STARTMARKER_], ah
 
@@ -12272,15 +12273,10 @@ mov      word ptr ds:[SELFMODIFY_BSP_pspritescale_2 - OFFSET R_BSP24_STARTMARKER
 
 done_with_pspritescale_zero_selfmodifies:
 
+les      ax, dword ptr ss:[_pspriteiscale]
 
-
-
-
-
-mov      ax,  word ptr ss:[_pspriteiscale]
 mov      word ptr ds:[SELFMODIFY_BSP_pspriteiscale_lo_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      ax,  word ptr ss:[_pspriteiscale+2]
-mov      word ptr ds:[SELFMODIFY_BSP_pspriteiscale_hi_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_pspriteiscale_hi_1+1 - OFFSET R_BSP24_STARTMARKER_], es
 
 
 

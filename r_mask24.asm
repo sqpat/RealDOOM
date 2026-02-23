@@ -5445,11 +5445,13 @@ mov  word ptr ds:[_mceilingclip], OFFSET_NEGONEARRAY
 ; player vissprite related hardcodes
 mov   si, _player_vissprites       ; vissprite 0
 
-les   ax, dword ptr ds:[si + VISSPRITE_T.vs_xiscale]
-; no scale check, it was done in bsp
-mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   ax, es
-mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], al
+
+SELFMODIFY_MASKED_pspriteiscale_lo_1:
+mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], 01000h
+SELFMODIFY_MASKED_pspriteiscale_hi_1:
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], 010h
+
+
 
 mov   al, byte ptr ds:[si + VISSPRITE_T.vs_colormap]
 mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMARKER_], al
@@ -6561,6 +6563,23 @@ mov   word ptr ds:[SELFMODIFY_set_player_pspritescale_lo_1+1], ax
 mov   word ptr ds:[SELFMODIFY_set_player_pspritescale_hi_1+1], dx
 mov   word ptr ds:[SELFMODIFY_set_player_pspritescale_lo_2+1], ax
 mov   word ptr ds:[SELFMODIFY_set_player_pspritescale_hi_2+1], dx
+
+mov      cl,  byte ptr ss:[_detailshift]
+
+les      ax, dword ptr ss:[_pspriteiscale]
+mov      dx, es
+
+jcxz     done_shifting_pspriteiscale
+shr      dx, 1
+rcr      ax, 1
+dec      cx
+jz       done_shifting_pspriteiscale
+shr      dx, 1
+rcr      ax, 1
+done_shifting_pspriteiscale:
+
+mov      word ptr ds:[SELFMODIFY_MASKED_pspriteiscale_lo_1+5 - OFFSET R_MASK24_STARTMARKER_], ax
+mov      byte ptr ds:[SELFMODIFY_MASKED_pspriteiscale_hi_1+5 - OFFSET R_MASK24_STARTMARKER_], dl
 
 
 
