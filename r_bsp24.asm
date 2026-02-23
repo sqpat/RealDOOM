@@ -4944,22 +4944,21 @@ sbb       dx, 0
 
 
 mov       word ptr ds:[SELFMODIFY_add_topstep_lo+4 - OFFSET R_BSP24_STARTMARKER_], ax
-xchg      ax, dx ; todo remove this again
-mov       word ptr ds:[SELFMODIFY_add_topstep_hi+4 - OFFSET R_BSP24_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_topstep_hi+4 - OFFSET R_BSP24_STARTMARKER_], dx
 
 
 cmp       byte ptr [bp - 018h], 1
 jc        skip_topstep_sub
-mov       cx, dx
-mov       bx, ax
+mov       cx, ax
+mov       bx, dx
 jo        topstep_sub_2x
 jz        topstep_sub_1x
 topstep_sub_3x:
-add       cx, dx
-adc       bx, ax
+add       cx, ax
+adc       bx, dx
 topstep_sub_2x:
-add       cx, dx
-adc       bx, ax
+add       cx, ax
+adc       bx, dx
 topstep_sub_1x:
 do_topstep_sub:
 sub       word ptr [bp - 02Eh], cx
@@ -4971,19 +4970,19 @@ skip_topstep_sub:
 
 
 SELFMODIFY_BSP_detailshift_2:
-shl       dx, 1
-rcl       ax, 1
+shl       ax, 1
+rcl       dx, 1
 shift_topstep_once:
-shl       dx, 1
-rcl       ax, 1
+shl       ax, 1
+rcl       dx, 1
 
 finished_shifting_topstep:
 
-mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_1+3 - OFFSET R_BSP24_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_2+3 - OFFSET R_BSP24_STARTMARKER_], ax
-xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_1+3 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_2+3 - OFFSET R_BSP24_STARTMARKER_], ax
+xchg      ax, dx
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_1+3 - OFFSET R_BSP24_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_2+3 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
 les       bx, dword ptr [bp - 044h]
@@ -5047,22 +5046,21 @@ sbb       dx, 0
 
 
 mov       word ptr ds:[SELFMODIFY_add_botstep_lo+4 - OFFSET R_BSP24_STARTMARKER_], ax
-xchg      ax, dx ; todo remove this again
-mov       word ptr ds:[SELFMODIFY_add_botstep_hi+4 - OFFSET R_BSP24_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_botstep_hi+4 - OFFSET R_BSP24_STARTMARKER_], dx
 
 
 cmp       byte ptr [bp - 018h], 1
 jc        skip_botstep_sub
-mov       cx, dx
-mov       bx, ax
+mov       cx, ax
+mov       bx, dx
 jo        botstep_sub_2x
 jz        botstep_sub_1x
 botstep_sub_3x:
-add       cx, dx
-adc       bx, ax
+add       cx, ax
+adc       bx, dx
 botstep_sub_2x:
-add       cx, dx
-adc       bx, ax
+add       cx, ax
+adc       bx, dx
 botstep_sub_1x:
 do_botstep_sub:
 sub       word ptr [bp - 02Ah], cx
@@ -5074,19 +5072,19 @@ skip_botstep_sub:
 
 
 SELFMODIFY_BSP_detailshift_3:
-shl       dx, 1
-rcl       ax, 1
+shl       ax, 1
+rcl       dx, 1
 shift_botstep_once:
-shl       dx, 1
-rcl       ax, 1
+shl       ax, 1
+rcl       dx, 1
 
 finished_shifting_botstep:
 
-mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_1+3 - OFFSET R_BSP24_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_2+3 - OFFSET R_BSP24_STARTMARKER_], ax
-xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_1+3 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_2+3 - OFFSET R_BSP24_STARTMARKER_], ax
+xchg      ax, dx
+mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_1+3 - OFFSET R_BSP24_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_2+3 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
 
@@ -5256,23 +5254,21 @@ sbb       dx, 0
 
 
 mov       word ptr ds:[SELFMODIFY_add_pixhighstep_lo+4 - OFFSET R_BSP24_STARTMARKER_], ax
-xchg      ax, dx ; todo remove this again
-mov       word ptr ds:[SELFMODIFY_add_pixhighstep_hi+4 - OFFSET R_BSP24_STARTMARKER_], ax
-
+mov       word ptr ds:[SELFMODIFY_add_pixhighstep_hi+4 - OFFSET R_BSP24_STARTMARKER_], dx
 
 
 cmp       byte ptr [bp - 018h], 1
 jc        skip_pixhigh_sub
-mov       cx, dx
-mov       bx, ax
+mov       cx, ax
+mov       bx, dx
 jo        pixhigh_sub_2x
 jz        pixhigh_sub_1x
 pixhigh_sub_3x:
-add       cx, dx
-adc       bx, ax
+add       cx, ax
+adc       bx, dx
 pixhigh_sub_2x:
-add       cx, dx
-adc       bx, ax
+add       cx, ax
+adc       bx, dx
 pixhigh_sub_1x:
 do_pixhigh_sub:
 sub       word ptr [bp - 022h], cx
@@ -5284,17 +5280,18 @@ skip_pixhigh_sub:
 
 
 SELFMODIFY_BSP_detailshift_4:
-shl       dx, 1
-rcl       ax, 1
+shl       ax, 1
+rcl       dx, 1
 shift_pixhighstep_once:
-shl       dx, 1
-rcl       ax, 1
+shl       ax, 1
+rcl       dx, 1
 done_shifting_pixhighstep:
-mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_hi_1+3 - OFFSET R_BSP24_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_hi_2+3 - OFFSET R_BSP24_STARTMARKER_], ax
-xchg      ax, dx
+
 mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_lo_1+3 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_lo_2+3 - OFFSET R_BSP24_STARTMARKER_], ax
+xchg      ax, dx
+mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_hi_1+3 - OFFSET R_BSP24_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_hi_2+3 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
 ; put these back where they need to be.
@@ -5441,23 +5438,21 @@ sbb       dx, 0
 
 
 mov       word ptr ds:[SELFMODIFY_add_pixlowstep_lo+4 - OFFSET R_BSP24_STARTMARKER_], ax
-xchg      ax, dx ; todo remove this again
-mov       word ptr ds:[SELFMODIFY_add_pixlowstep_hi+4 - OFFSET R_BSP24_STARTMARKER_], ax
-
+mov       word ptr ds:[SELFMODIFY_add_pixlowstep_hi+4 - OFFSET R_BSP24_STARTMARKER_], dx
 
 
 cmp       byte ptr [bp - 018h], 1
 jc        skip_pixlow_sub
-mov       cx, dx
-mov       bx, ax
+mov       cx, ax
+mov       bx, dx
 jo        pixlow_sub_2x
 jz        pixlow_sub_1x
 pixlow_sub_3x:
-add       cx, dx
-adc       bx, ax
+add       cx, ax
+adc       bx, dx
 pixlow_sub_2x:
-add       cx, dx
-adc       bx, ax
+add       cx, ax
+adc       bx, dx
 pixlow_sub_1x:
 do_pixlow_sub:
 sub       word ptr [bp - 026h], cx
@@ -5469,17 +5464,17 @@ skip_pixlow_sub:
 
 ; todo 386
 SELFMODIFY_BSP_detailshift_5:
-shl       dx, 1
-rcl       ax, 1
+shl       ax, 1
+rcl       dx, 1
 shift_pixlowstep_once:
-shl       dx, 1
-rcl       ax, 1
+shl       ax, 1
+rcl       dx, 1
 done_shifting_pixlowstep:
-mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_1+3 - OFFSET R_BSP24_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_2+3 - OFFSET R_BSP24_STARTMARKER_], ax
-xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_add_to_pixlow_lo_1+3 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       word ptr ds:[SELFMODIFY_add_to_pixlow_lo_2+3 - OFFSET R_BSP24_STARTMARKER_], ax
+xchg      ax, dx
+mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_1+3 - OFFSET R_BSP24_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_2+3 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
 SELFMODIFY_do_backsector_work_or_not_TARGET_NULL:
@@ -12179,14 +12174,14 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+2 - OFFSET R_BSP24_STARTM
 ; d1 e0 d1 d2   =  shl ax, 1; rcl dx, 1.
 ; d1 e2 d1 d0   = shl dx, 1; rcl ax, 1
 
-mov      ax, 0E2D1h
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+0 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+0 - OFFSET R_BSP24_STARTMARKER_], 0E2D1h
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+2 - OFFSET R_BSP24_STARTMARKER_], 0D0D1h
+mov      ax, 0E0D1h  
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+0 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+0 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+0 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5+0 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      ax, 0D0D1h
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+2 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      ax, 0D2D1h
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+2 - OFFSET R_BSP24_STARTMARKER_], ax
