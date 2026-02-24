@@ -197,7 +197,7 @@ SIDE_T STRUC
     s_toptexture       dw ? ; 0
     s_bottomtexture    dw ? ; 2
     s_midtexture       dw ? ; 4
-    s_textureoffset    dw ? ; 6 ; todo i think this i sonly 0-255. maybe worth storing as a byte array in a diff segment.
+    s_textureoffset    dw ? ; 6 ; 0-511?
 SIDE_T ENDS
 
 

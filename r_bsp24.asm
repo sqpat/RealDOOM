@@ -3884,8 +3884,11 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta - OFFSET R_BSP24_STARTMARKER
    mov       es, ax
 
    ; default jump locations for backsecnum == null
-   xor       dx, dx  ; jump zero
-   mov       bx, ((SELFMODIFY_do_backsector_work_or_not_TARGET_NULL - SELFMODIFY_do_backsector_work_or_not_AFTER) )
+
+   ; note: BX free now
+
+   mov       dx, 0E9BBh ; 0E9h = jmp rel 16, 08Bh = mov bx, imm16
+
    cmp       word ptr ss:[_backsector], SECNUM_NULL
 
    mov       ds, word ptr ss:[_SIDES_SEGMENT_PTR]
@@ -3894,8 +3897,7 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta - OFFSET R_BSP24_STARTMARKER
    je        selfmodify_mid_only
 
    ; overwrite jump locations for backsecnum!=null
-   mov       dx, ((SELFMODIFY_jmp_two_sided_or_not_TARGET - SELFMODIFY_jmp_two_sided_or_not_AFTER) )
-   mov       bx, ((SELFMODIFY_do_backsector_work_or_not_TARGET_NOTNULL - SELFMODIFY_do_backsector_work_or_not_AFTER) )
+   mov       dx, 0B8E9h ; 0E9h = jmp rel 16, 08Bh = mov bx, imm16
    ; two sides wall may have bottom and top textures
 
 
@@ -3950,22 +3952,23 @@ selfmodify_mid_only:
 
 
    ; create jmp instruction
-   mov       ax, ((SELFMODIFY_has_midtexture_or_not_TARGET - SELFMODIFY_has_midtexture_or_not_AFTER) SHL 8) + 0EBh
+   mov       al, 0B8h   ; mov ax, imm16
 
    jmp       finish_midtex_selfmodify
 ALIGN_MACRO
 midtexture_backsec_not_null:
 skip_midtex_selfmodify:
-   mov       ax, 0c031h  ; xor ax, ax
+   mov       al, 0E9h   ; jmp rel 16
 finish_midtex_selfmodify:
 
    ; set some jumps and instructions based on secnumnull, midtexture
-   mov       word ptr cs:[SELFMODIFY_has_midtexture_or_not - OFFSET R_BSP24_STARTMARKER_], ax
-   mov       word ptr cs:[SELFMODIFY_jmp_two_sided_or_not + 1 - OFFSET R_BSP24_STARTMARKER_], dx
-   mov       word ptr cs:[SELFMODIFY_do_backsector_work_or_not + 1 - OFFSET R_BSP24_STARTMARKER_], bx
+   mov       byte ptr cs:[SELFMODIFY_has_midtexture_or_not - OFFSET R_BSP24_STARTMARKER_], al
+   mov       byte ptr cs:[SELFMODIFY_jmp_two_sided_or_not - OFFSET R_BSP24_STARTMARKER_], dl
+   mov       byte ptr cs:[SELFMODIFY_do_backsector_work_or_not - OFFSET R_BSP24_STARTMARKER_], dh
+   
 
 
-   lodsw     ; textureoffset todo can be 8 bit
+   lodsw     ; textureoffset 
    mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset+1 - OFFSET R_BSP24_STARTMARKER_], ax
    mov       cx, FIXED_DS_SEGMENT
    mov       ds, cx  ; restore ds..
@@ -4469,10 +4472,11 @@ mov       word ptr es:[bx + DRAWSEG_T.drawseg_maskedtexturecol_val], NULL_TEX_CO
 mov       ax, cs
 mov       ds, ax
 
-; here we jump based on backsector presence. thats fine.
+; here we jump based on backsector presence. 
+; todo: possible to combine the two tiers of jumps into a single one...? seems hard or maybe slow
 
 SELFMODIFY_jmp_two_sided_or_not:
-jmp       handle_two_sided_line  ; might turn into a jmp 0 to go to handle_single_sided_line
+jmp       handle_two_sided_line  ; might turn into a mov bx, garbage
 
 SELFMODIFY_jmp_two_sided_or_not_AFTER:
 handle_single_sided_line:
@@ -4566,17 +4570,19 @@ add       al, 010h
 
 mov       byte ptr ds:[SELFMODIFY_set_midtexturemid_hi+1 - OFFSET R_BSP24_STARTMARKER_], al
 
-mov       bx, ss   ; restore DS
-mov       ds, bx
 ;ASSUME DS:DGROUP
 
 
-les       bx, dword ptr ds:[_ds_p]
-mov       word ptr es:[bx + DRAWSEG_T.drawseg_bsilheight], MAXSHORT
-mov       word ptr es:[bx + DRAWSEG_T.drawseg_tsilheight], MINSHORT
-mov       word ptr es:[bx + DRAWSEG_T.drawseg_sprtopclip_offset], OFFSET_SCREENHEIGHTARRAY
-mov       word ptr es:[bx + DRAWSEG_T.drawseg_sprbottomclip_offset], OFFSET_NEGONEARRAY
-mov       byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_BOTH
+lds       bx, dword ptr ss:[_ds_p]
+mov       word ptr ds:[bx + DRAWSEG_T.drawseg_bsilheight], MAXSHORT
+mov       word ptr ds:[bx + DRAWSEG_T.drawseg_tsilheight], MINSHORT
+mov       word ptr ds:[bx + DRAWSEG_T.drawseg_sprtopclip_offset], OFFSET_SCREENHEIGHTARRAY
+mov       word ptr ds:[bx + DRAWSEG_T.drawseg_sprbottomclip_offset], OFFSET_NEGONEARRAY
+mov       byte ptr ds:[bx + DRAWSEG_T.drawseg_silhouette], SIL_BOTH
+
+mov       ax, ss   ; restore DS
+mov       ds, ax
+
 xor       ax, ax
 ; here
 done_with_sector_sided_check:
@@ -5095,14 +5101,9 @@ mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_2+3 - OFFSET R_BSP24_STAR
 
 
 SELFMODIFY_do_backsector_work_or_not:
-jmp       skip_pixlow_step
+jmp       skip_pixlow_step   ; may become mov bx, garbage (three byte) (fallthru) bx xored after.
 
-SELFMODIFY_do_backsector_work_or_not_AFTER:
-jmp_to_skip_pixhigh_step:
-PUBLIC jmp_to_skip_pixhigh_step
-jmp skip_pixhigh_step
 ALIGN_MACRO
-SELFMODIFY_do_backsector_work_or_not_TARGET_NOTNULL:
 backsector_not_null:
 ; here we modify worldhigh/low then do not write them back to memory
 ; (except push/pop in one situation)
@@ -5113,7 +5114,7 @@ backsector_not_null:
 mov       dx, di
 xchg      ax, si
 
-pop       si
+pop       si  ; todo selfmodified instead?
 pop       di
 
 
@@ -5124,8 +5125,10 @@ cmp       word ptr [bp - 03Eh], di
 jg        do_pixhigh_step
 jne       jmp_to_skip_pixhigh_step
 cmp       word ptr [bp - 040h], si
+jnbe      do_pixhigh_step
+jmp_to_skip_pixhigh_step:
+jmp skip_pixhigh_step
 
-jbe       jmp_to_skip_pixhigh_step
 do_pixhigh_step:
 
 ; pixhigh = (centeryfrac_4.w) - FixedMul (worldhigh.w, rw_scale.w);
@@ -5482,7 +5485,6 @@ mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_1+3 - OFFSET R_BSP24_STARTMAR
 mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_2+3 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
-SELFMODIFY_do_backsector_work_or_not_TARGET_NULL:
 skip_pixlow_step:
 public skip_pixlow_step
 ;   BEGIN INLINED R_RenderSegLoop_
@@ -7434,11 +7436,7 @@ add   byte ptr cs:[SELFMODIFY_set_bottexturemid_hi+1 - OFFSET R_BSP24_STARTMARKE
 
 ; check midtexture on 2 sided line (e1m1 case)
 SELFMODIFY_has_midtexture_or_not:
-jne       side_has_midtexture   ; become xor ax, ax if nomidtex ,or jmp.
-SELFMODIFY_has_midtexture_or_not_AFTER:
-jmp       done_with_sector_sided_check
-;ALIGN_MACRO
-SELFMODIFY_has_midtexture_or_not_TARGET:
+jmp       done_with_sector_sided_check   ; may  turn into mov ax, garbage (fall thru)
 side_has_midtexture:
 public side_has_midtexture
 ;	// allocate space for masked texture tables. it will be a word table unlike others.
