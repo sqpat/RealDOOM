@@ -49,10 +49,10 @@ MAX_VISSPRITES_ADDRESS = ((SIZE VISSPRITE_T) * MAXVISSPRITES) + _vissprites ; 0B
 
 _COLFUNC_SELFMODIFY_LOOKUPTABLE:
 public _COLFUNC_SELFMODIFY_LOOKUPTABLE
-; noloop ; 10 bytes per
-dw DRAWCOL_NOLOOP_OFFSET_BSP, DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1
-; noloopstretch ; 10 bytes per
-dw DRAWCOL_NOLOOP_STRETCH_OFFSET_BSP, DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOPANDSTRETCH_OFFSET+1
+; normal ; 12 bytes per
+dw DRAWCOL_OFFSET_BSP, COLFUNC_JUMP_LOOKUP_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET+1
+; normalstretch ; 12 bytes per
+dw DRAWCOL_NORMAL_STRETCH_OFFSET_BSP, COLFUNC_JUMP_LOOKUP_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NORMALSTRETCH_OFFSET+1
 
 
 
@@ -104,10 +104,10 @@ ENDM
 ALIGN 128
 _COLFUNC_SELFMODIFY_LOOKUPTABLE_SECOND_HALF:
 public _COLFUNC_SELFMODIFY_LOOKUPTABLE_SECOND_HALF
-; normal ; 12 bytes per
-dw DRAWCOL_OFFSET_BSP, COLFUNC_JUMP_LOOKUP_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET+1
-; normalstretch ; 12 bytes per
-dw DRAWCOL_NORMAL_STRETCH_OFFSET_BSP, COLFUNC_JUMP_LOOKUP_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NORMALSTRETCH_OFFSET+1
+; noloop ; 10 bytes per
+dw DRAWCOL_NOLOOP_OFFSET_BSP, DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1
+; noloopstretch ; 10 bytes per
+dw DRAWCOL_NOLOOP_STRETCH_OFFSET_BSP, DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOPANDSTRETCH_OFFSET+1
 
 
 
@@ -3731,6 +3731,16 @@ ML_DONTPEGBOTTOM = 010h
 ML_DONTPEGTOP = 8
 MAXDRAWSEGS = 256
 
+ALIGN_MACRO
+adjust_row_offset:
+public adjust_row_offset
+cbw      ; maxes at 127, ah is 0
+SHIFT_MACRO shl ax 3
+neg       ax  ; subtract this from the real number
+add       ax, ((080h SHL 3) - 1) ; 0400h - 1 for equals case
+mov       word ptr [bp - 01Eh], ax   ;  TODO make this a push. probably change the bp addr.
+
+jmp       done_adjusting_row_offset
 
 ;R_StoreWallRange_
 
@@ -3751,7 +3761,7 @@ PUBLIC R_StoreWallRange_
 ; bp - 014h  ; lineflags            ; UNUSED (now bp + 018h)
 ; bp - 016h  ; offsetangle          ; UNUSED
 ; bp - 018h  ; _rw_x                ; UNUSED was equivalent to bp - 2
-; bp - 01Ah  ; frontsectorceilingheight - frontsectorfloorheight (compare to bp - 01Eh in mid draw case)
+; bp - 01Ah  ;                      ; UNUSED
 ; bp - 01Bh  ; markceiling
 ; bp - 01Ch  ; markfloor
 ; bp - 01Eh  ; 128 - siderowoffset (nonloop draw height threshhold)
@@ -3833,15 +3843,13 @@ mov       al, byte ptr ds:[si + _sides_render + SIDE_RENDER_T.sr_rowoffset]
 mov       byte ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_1+1 - OFFSET R_BSP24_STARTMARKER_], al
 mov       byte ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_2+1 - OFFSET R_BSP24_STARTMARKER_], al
 
-mov       di, 080h SHL 3 ; 0400h
-test      al, al
-jz        dont_adjust_rowoffset
-cbw      ; maxes at 127, ah is 0
-SHIFT_MACRO shl ax 3
-sub       di, ax
-dont_adjust_rowoffset:
 
-mov       word ptr [bp - 01Eh], di   ;  TODO make this a push. probably change the bp addr.
+test      al, al
+jnz       adjust_row_offset
+mov       word ptr [bp - 01Eh], (080h SHL 3) - 1 ; 0400h - 1 for equals case   ;  TODO make this a push. probably change the bp addr.
+done_adjusting_row_offset:
+
+
 
 shl       si, 1
 
@@ -3849,7 +3857,7 @@ shl       si, 1
 les       bx, dword ptr ds:[bx + SEG_RENDER_T.sr_v1Offset]   ; v1
 mov       di, es                                             ; v2
 
-mov   ds, word ptr ds:[_VERTEXES_SEGMENT_PTR]
+mov       ds, word ptr ds:[_VERTEXES_SEGMENT_PTR]
 
 
 les       bx, dword ptr ds:[bx] ;v1.x
@@ -3897,8 +3905,9 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta - OFFSET R_BSP24_STARTMARKER
    test      ax, ax
    jz        skip_toptex_selfmodify
    xchg      ax, di
-   xor       ax, ax
+
    mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
+   cbw
    sal       di, 1
    inc       ax
    mov       word ptr cs:[SELFMODIFY_add_texturetopheight_plus_one+2- OFFSET R_BSP24_STARTMARKER_], ax
@@ -3906,21 +3915,15 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta - OFFSET R_BSP24_STARTMARKER
    push      word ptr es:[di]
    pop       word ptr cs:[SELFMODIFY_settoptexturetranslation_lookup+1- OFFSET R_BSP24_STARTMARKER_]
 
-   and       al, 080h
-   mov       byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], al
-
+   
    skip_toptex_selfmodify:
    lodsw     ; side bottexture  ; faster to just do it than branch?
    xchg      ax, di
-   mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
    sal       di, 1
-   inc       ax
    push      word ptr es:[di]
    pop       word ptr cs:[SELFMODIFY_setbottexturetranslation_lookup+1- OFFSET R_BSP24_STARTMARKER_]
 
 
-   and       al, 080h
-   mov       byte ptr cs:[SELFMODIFY_toggle_bot_colfunc_type+1], al
 
    sub       si, 4 ; rewind si for fall through. twosided textures can still have a mid texture (invisible walls like E1M1)
 
@@ -3934,16 +3937,15 @@ selfmodify_mid_only:
    ; todo handle masked etc properly...
    ; mid should never render if we did top/bot so i think some of these selfmodifies wouldnt need to run.
    xchg      ax, di
-   xor       ax, ax
+
    mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
+   cbw
    sal       di, 1  ; word lookup
    inc       ax
    mov       word ptr cs:[SELFMODIFY_add_texturemidheight_plus_one+1- OFFSET R_BSP24_STARTMARKER_], ax
    push      word ptr es:[di]
    pop       word ptr cs:[SELFMODIFY_setmidtexturetranslation_lookup+1- OFFSET R_BSP24_STARTMARKER_]
 
-   and       al, 080h
-   mov       byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], al
 
 
 
@@ -4352,6 +4354,7 @@ mov       ds, si
 
 
 scales_set:
+public scales_set
 
 
 ; si = frontsector
@@ -4379,43 +4382,45 @@ push      word ptr es:[si + 07h]  ; + 6 from lodsw/lodsb = 0eh
 
 mov       ax, cx    ; frontsector ceil
 sub       ax, bx    ; frontsector floor
-; ax has frontsector wall height
-mov       word ptr [bp - 01Ah], ax   ; todo reorder and use push.
 
-xchg      ax, cx  ; ax has frontsectorceilingheight
-; todo can this cwd
-xor       dx, dx
-SHIFT32_MACRO_RIGHT ax dx 3
+cwd       ; zero dx clear dx now. we wont ever have a height 32768 or whatever sector.
+
+; ax has frontsector wall height
+
+; make cx:dx our value
+
+SHIFT32_MACRO_RIGHT cx dx 3
 
 
 SELFMODIFY_BSP_viewz_lo_7:
 sub       dx, 01000h
 SELFMODIFY_BSP_viewz_hi_7:
-sbb       ax, 01000h
+sbb       cx, 01000h
 ; storeworldtop
 
-push      ax  ; bp - 03Eh
+push      cx  ; bp - 03Eh
 push      dx  ; bp - 040h
 
 
-xchg      ax, bx    ; restore from before
+cwd
+xchg      ax, dx   ; ax gets 0 and dx stores the previous frontsectorceil - frontsector floor
 
-xor       cx, cx
-SHIFT32_MACRO_RIGHT ax cx 3
-SELFMODIFY_BSP_viewz_lo_8:
-sub       cx, 01000h
-SELFMODIFY_BSP_viewz_hi_8:
-sbb       ax, 01000h
-push      ax ; bp - 042h
-push      cx ; bp - 044h
-
-
-xor       ax, ax
+;bx:ax as our value
 
 ; zero out maskedtexture 
 mov       byte ptr ds:[_maskedtexture], al
 ; default to 0
 mov       byte ptr cs:[SELFMODIFY_check_for_any_tex+1 - OFFSET R_BSP24_STARTMARKER_], al
+
+
+SHIFT32_MACRO_RIGHT bx ax 3
+SELFMODIFY_BSP_viewz_lo_8:
+sub       ax, 01000h
+SELFMODIFY_BSP_viewz_hi_8:
+sbb       bx, 01000h
+push      bx ; bp - 042h
+push      ax ; bp - 044h
+
 
 les       bx, dword ptr ds:[_ds_p]
 mov       word ptr es:[bx + DRAWSEG_T.drawseg_maskedtexturecol_val], NULL_TEX_COL
@@ -4459,14 +4464,15 @@ mov       word ptr ds:[SELFMODIFY_BSP_midtexture+1 - OFFSET R_BSP24_STARTMARKER_
 
 
 SELFMODIFY_BSP_drawtype_1_TARGET:
+public SELFMODIFY_BSP_drawtype_1_TARGET
 
-; todo any clever way to infer to not do this check if we already turned 080h on?
+; cx still carries forward the frontsectorceil - frontsector floor in this case.
+; dont do this all unless its actually mid draw!
+sub       dx, word ptr [bp - 01Eh]  ; compare to sectorheight
+and       dh, 080h
+mov       byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], dh
 
-mov       ax, word ptr [bp - 01Ah] ; frontsectorceil - floor  (wall height)
-cmp       ax, word ptr [bp - 01Eh]
-jg        midwall_may_loop
-or        byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], 080h
-midwall_may_loop:
+
 
 SELFMODIFY_setmidtexturetranslation_lookup:
 mov       ax, 01000h
@@ -6900,12 +6906,12 @@ mov      di, _visplaneheaders + VISPLANEHEADER_T.visplaneheader_dirty
 test     al, 1
 je       mark_ceil_dirty  ; if 3 tested true and 1 didnt, it must be the other one, skip the check.
 mov      bx,  word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1]
-;mov      byte ptr ds:[bx+di], al ; nonzero
+mov      byte ptr ds:[bx+di], al ; nonzero
 test     al, 2
 je       dont_mark_floor_dirty
 mark_ceil_dirty:  
 mov      bx,  word ptr cs:[SELFMODIFY_set_floorplaneindex+1]
-;mov      byte ptr ds:[bx+di], al ; nonzero
+mov      byte ptr ds:[bx+di], al ; nonzero
 
 dont_mark_floor_dirty:
 mov      byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], ah ;zero
@@ -7027,12 +7033,11 @@ jl        set_bsilheight_to_frontsectorfloorheight
 
 ; backsector floor is higher than frontsector floor. so we will see the wall rendered.
 ; if its less than 128 tall (minus tex top offset etc) then it wont loop
-cmp        cx, word ptr [bp - 01Eh]
-jg         backsector_floor_may_loop
-or         byte ptr cs:[SELFMODIFY_toggle_bot_colfunc_type+1], 080h
-backsector_floor_may_loop:
+sub       cx, word ptr [bp - 01Eh]
+and       ch, 080h
+mov       byte ptr cs:[SELFMODIFY_toggle_bot_colfunc_type+1], ch
 
-mov        cx, es ; restore.
+mov       cx, es ; restore.
 
 ;		} else if (backsectorfloorheight > viewz_shortheight) {
 SELFMODIFY_BSP_viewz_shortheight_2:
@@ -7054,11 +7059,10 @@ mov       es, dx ; backup
 sub       dx, di  ; ceilingheight
 jle       set_tsilheight_to_frontsectorceilingheight
 
-cmp        dx, word ptr [bp - 01Eh]
-jg         backsector_ceil_may_loop
-or         byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], 080h
-backsector_ceil_may_loop:
-mov        dx, es ; restore.
+sub       dx, word ptr [bp - 01Eh]
+and       dh, 080h
+mov       byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], dh
+mov       dx, es ; restore.
 
 SELFMODIFY_BSP_viewz_shortheight_1:
 cmp       di, 01000h
@@ -12288,7 +12292,7 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_2+2 - OFFSET R_BSP24_STARTMARKER_]
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_3+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_4+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_7+2 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_8+2 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_8+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 xchg     ax, dx  ; dx has viewz lo
 
@@ -12297,8 +12301,8 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_1+2 - OFFSET R_BSP24_STARTMARKER_]
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_2+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_3+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_4+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_7+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_8+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_7+2 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_8+2 - OFFSET R_BSP24_STARTMARKER_], ax
 
 ; create 13:3 fixed point for comparison in ax
 
