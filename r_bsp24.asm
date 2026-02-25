@@ -4529,7 +4529,7 @@ SELFMODIFY_BSP_drawtype_1:
 SELFMODIFY_BSP_drawtype_1_AFTER = SELFMODIFY_BSP_drawtype_1 + 2
 
 
-mov       ax, ((SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_AFTER) SHL 8) + 0EBh
+mov       ax, ((SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_AFTER) SHL 8) + 0EBh   ; selfmodified instruciton
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov       ah, SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_AFTER
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -4539,8 +4539,7 @@ mov       ah, SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_TARGET - SELFMODIF
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
- 
-mov       word ptr ds:[SELFMODIFY_BSP_drawtype_2 - OFFSET R_BSP24_STARTMARKER_], 089B8h   ; mov ax, xx89
+mov       word ptr ds:[SELFMODIFY_BSP_drawtype_2 - OFFSET R_BSP24_STARTMARKER_], 006C7h   ; mov word ptr[xxxx], imm16
 mov       word ptr ds:[SELFMODIFY_BSP_drawtype_1 - OFFSET R_BSP24_STARTMARKER_], ((SELFMODIFY_BSP_drawtype_1_TARGET - SELFMODIFY_BSP_drawtype_1_AFTER) SHL 8) + 0EBh
 
 mov       byte ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+0 - OFFSET R_BSP24_STARTMARKER_], 02Eh    ; cs:
@@ -5217,8 +5216,8 @@ lods  word ptr ss:[si] ; bottomfrac hi
 mov   word ptr ds:[SELFMODIFY_set_botfrac_hi+1 - OFFSET R_BSP24_STARTMARKER_], ax
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3:
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3 + 2
-jmp SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET
-;lods  word ptr ss:[si] ; pixlow lo ; selfmodified instruction
+jmp SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET  ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
+;lods  word ptr ss:[si] ; pixlow lo ;   THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
 mov   word ptr ds:[SELFMODIFY_set_pixlow_lo+1 - OFFSET R_BSP24_STARTMARKER_], ax
 lods  word ptr ss:[si] ; pixlow hi
 mov   word ptr ds:[SELFMODIFY_set_pixlow_hi+1 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -5281,8 +5280,8 @@ SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5:
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5 + 2
 
 SELFMODIFY_set_pixlow_lo:
-jmp   SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_TARGET
-;mov   ax, 01000h ; selfmodified instruction
+jmp   SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_TARGET  ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
+;mov   ax, 01000h ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
 db    00h
 stosw
 SELFMODIFY_set_pixlow_hi:
@@ -5349,8 +5348,8 @@ SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2:
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2 + 2
 
 SELFMODIFY_add_pixlowstep_lo:
-jmp SHORT   continue_outer_rendersegloop
-;add   word ptr ds:[SELFMODIFY_set_pixlow_lo+1 - OFFSET R_BSP24_STARTMARKER_], 01000h ; selfmodified instruction
+jmp SHORT   continue_outer_rendersegloop  ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
+;add   word ptr ds:[SELFMODIFY_set_pixlow_lo+1 - OFFSET R_BSP24_STARTMARKER_], 01000h ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
 dw SELFMODIFY_set_pixlow_lo+1 - OFFSET R_BSP24_STARTMARKER_
 dw 01000h
 SELFMODIFY_add_pixlowstep_hi:
@@ -5429,8 +5428,8 @@ adc   word ptr [bp - 028h], 01000h
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1:
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1+2
 SELFMODIFY_add_to_pixlow_lo_2:
-jmp SHORT SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET
-;add   word ptr [bp - 026h], 01000h ; selfmodified instruction
+jmp SHORT SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET  ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
+;add   word ptr [bp - 026h], 01000h ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
 db (0100h - 26h)
 dw 01000h
 SELFMODIFY_add_to_pixlow_hi_2:
@@ -6055,8 +6054,8 @@ SELFMODIFY_BSP_midtexture:
 PUBLIC SELFMODIFY_BSP_midtexture
 SELFMODIFY_BSP_midtexture_AFTER = SELFMODIFY_BSP_midtexture + 3
 
-cmp   di, si                ; selfmodified instruction
-jl    mid_no_pixels_to_draw ; selfmodified instruction
+cmp   di, si                ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
+jl    mid_no_pixels_to_draw ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
 
 ; si:di are dc_yl, dc_yh
 ; dx holds texturecolumn
@@ -6292,7 +6291,7 @@ SELFMODIFY_BSP_toptexture_AFTER = SELFMODIFY_BSP_toptexture + 2
 do_top_texture_draw:  ; not a jump target.
 PUBLIC do_top_texture_draw
 
-mov   cx, word ptr [bp - 020h]    ; selfmodified instruction  ; pixhigh
+mov   cx, word ptr [bp - 020h]    ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET  ; pixhigh
 SELFMODIFY_add_to_pixhigh_lo_1:
 add   word ptr [bp - 022h], 01000h  ; ! this wasnt selfmodified
 SELFMODIFY_add_to_pixhigh_hi_1:
@@ -6703,16 +6702,15 @@ SELFMODIFY_BSP_drawtype_2_AFTER = SELFMODIFY_BSP_drawtype_2+2
 ;  todo. These are nops instead of jumps, but optimally they should be [expected instruction] instead of nop when possible.
 ;  Bake this is once everything else is done; we dont want to keep updating this
 
-mov       ax, 0c089h   
 
 ASSUME DS:R_BSP_24_TEXT
-mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1 - OFFSET R_BSP24_STARTMARKER_], 04681h  ; add word ptr [bp - xx], imm16
+mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1 - OFFSET R_BSP24_STARTMARKER_], 04681h  ; add word ptr [bp - xx], imm16     ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2 - OFFSET R_BSP24_STARTMARKER_], 00681h  ; add word ptr ds:[xxxx], imm16
 
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3 - OFFSET R_BSP24_STARTMARKER_], 0AD36h  ; lods  word ptr ss:[si]
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5 - OFFSET R_BSP24_STARTMARKER_], 000B8h  ; mov ax, imm16
 
-mov       word ptr ds:[SELFMODIFY_BSP_drawtype_1 - OFFSET R_BSP24_STARTMARKER_], 0EBB8h   ; mov ax, xxeB
+mov       word ptr ds:[SELFMODIFY_BSP_drawtype_1 - OFFSET R_BSP24_STARTMARKER_], 0EBB8h   ; mov ax, 0EBxxh
 mov       word ptr ds:[SELFMODIFY_BSP_drawtype_2 - OFFSET R_BSP24_STARTMARKER_], ((SELFMODIFY_BSP_drawtype_2_TARGET - SELFMODIFY_BSP_drawtype_2_AFTER) SHL 8) + 0EBh
 
 mov       byte ptr ds:[SELFMODIFY_BSP_midtexture - OFFSET R_BSP24_STARTMARKER_], 0E9h

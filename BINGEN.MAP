@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/24 02:13:30
+Created on:       26/02/24 11:54:22
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -35,7 +35,7 @@ SM_OPL2_TEXT           CODE           AUTO           0533:0000       00000f3c
 SM_OPL3_TEXT           CODE           AUTO           0627:0000       0000100e
 SM_SBMID_TEXT          CODE           AUTO           0728:0000       00000730
 SM_MPUMD_TEXT          CODE           AUTO           079b:0000       000007db
-R_BSP_24_TEXT          CODE           AUTO           0819:0000       000036db
+R_BSP_24_TEXT          CODE           AUTO           0819:0000       000036d7
 R_BSP_16_TEXT          CODE           AUTO           0b87:0000       00003740
 R_BSP0_TEXT            CODE           AUTO           0efb:0000       0000366f
 R_BSPFL_TEXT           CODE           AUTO           1262:0000       00003617
@@ -341,33 +341,33 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079b:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
 0819:1744*     pre_increment_values
-0819:3390      R_WriteBackViewConstants24_
-0819:2155*     R_AddLine_
-0819:36db      R_BSP24_ENDMARKER_
-0819:2e40      R_GetPatchTexture_Far24_
+0819:338c      R_WriteBackViewConstants24_
+0819:2151*     R_AddLine_
+0819:36d7      R_BSP24_ENDMARKER_
+0819:2e3c      R_GetPatchTexture_Far24_
 0819:09f8*     FixedMulTrigNoShiftSine_BSPLocal_
-0819:1f0b*     _selfmodify_restore_dx_6
-0819:1f4b*     _selfmodify_restore_dx_7
-0819:1fd5*     _selfmodify_restore_dx_8
+0819:1f07*     _selfmodify_restore_dx_6
+0819:1f47*     _selfmodify_restore_dx_7
+0819:1fd1*     _selfmodify_restore_dx_8
 0819:09f4*     FixedMulTrigSine_BSPLocal_
-0819:1ed3*     continue_backsector_not_null
+0819:1ecf*     continue_backsector_not_null
 0819:1027*     R_StoreWallRange_
-0819:234e*     R_ClipPassWallSegment_
+0819:234a*     R_ClipPassWallSegment_
 0819:0a42*     FixedMulTrigCosine_BSPLocal_
 0819:1411*     done_with_sector_sided_check
 0819:1039*     SELFMODIFY_skip_curseg_based_selfmodify_AFTER
-0819:2070*     R_Subsector_
+0819:206c*     R_Subsector_
 0819:177f*     check_here
 0819:1a7c*     do_top_texture_draw
 0819:0000      R_BSP24_STARTMARKER_
-0819:31f0      R_RenderPlayerView24_
+0819:31ec      R_RenderPlayerView24_
 0819:09a4*     FixedDivBSPLocal_
 0819:163c*     SELFMODIFY_set_rw_x_loop_counter
 0819:05ca*     div48_32_BSPLocal_
 0819:16e3*     finish_outer_loop
 0819:0080*     _COLFUNC_SELFMODIFY_LOOKUPTABLE_SECOND_HALF
-0819:2ce6*     R_GetTexturePage_
-0819:3522*     R_WriteBackFrameConstants_
+0819:2ce2*     R_GetTexturePage_
+0819:351e*     R_WriteBackFrameConstants_
 0819:0337*     _selfmodify_restore_dx
 0819:0a46*     FixedMulTrigNoShiftCosine_BSPLocal_
 0819:1543*     SELFMODIFY_set_floorplaneindex
@@ -380,8 +380,8 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:1c70*     handle_two_sided_line
 0819:0c40*     R_FindPlane_
 0819:0714*     FixedDivWholeA_BSPLocal_
-0819:1ea0*     side_has_midtexture
-0819:2eda      R_GetCompositeTexture_Far24_
+0819:1e9c*     side_has_midtexture
+0819:2ed6      R_GetCompositeTexture_Far24_
 0819:1014*     adjust_row_offset
 0819:0000*     _COLFUNC_SELFMODIFY_LOOKUPTABLE
 0819:19d9*     R_DrawColumnPrep_
@@ -686,8 +686,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 23fc:4c6b*     A_BruisAttack_
 23fc:5ade      P_SetMobjState_
 23fc:446e*     P_TryWalk_
-23fc:57cb*     A_BrainScream_
 23fc:4c01*     A_HeadAttack_
+23fc:57cb*     A_BrainScream_
 23fc:562a*     A_Pain_
 23fc:4ed0*     PIT_VileCheck_
 23fc:56a1*     A_BossDeath_
