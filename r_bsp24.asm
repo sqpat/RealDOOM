@@ -4522,7 +4522,7 @@ jmp       handle_two_sided_line  ; might turn into a mov bx, garbage
 
 
 handle_single_sided_line:
-
+public handle_single_sided_line
 ASSUME DS:R_BSP_24_TEXT
 
 SELFMODIFY_BSP_drawtype_1:
@@ -5216,10 +5216,9 @@ mov   word ptr ds:[SELFMODIFY_set_botfrac_lo+1 - OFFSET R_BSP24_STARTMARKER_], a
 lods  word ptr ss:[si] ; bottomfrac hi
 mov   word ptr ds:[SELFMODIFY_set_botfrac_hi+1 - OFFSET R_BSP24_STARTMARKER_], ax
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3:
-jmp SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET
-; ALIGN_MACRO
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3 + 2
-lods  word ptr ss:[si] ; pixlow lo
+jmp SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET
+;lods  word ptr ss:[si] ; pixlow lo ; selfmodified instruction
 mov   word ptr ds:[SELFMODIFY_set_pixlow_lo+1 - OFFSET R_BSP24_STARTMARKER_], ax
 lods  word ptr ss:[si] ; pixlow hi
 mov   word ptr ds:[SELFMODIFY_set_pixlow_hi+1 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -5279,12 +5278,12 @@ mov   ax, 01000h
 stosw
 
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5:
-jmp   SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_TARGET
-; ALIGN_MACRO
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5 + 2
 
 SELFMODIFY_set_pixlow_lo:
-mov   ax, 01000h
+jmp   SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_TARGET
+;mov   ax, 01000h ; selfmodified instruction
+db    00h
 stosw
 SELFMODIFY_set_pixlow_hi:
 mov   ax, 01000h
@@ -5347,13 +5346,13 @@ SELFMODIFY_add_rwscale_hi:
 adc   word ptr ds:[SELFMODIFY_set_rw_scale_hi+1 - OFFSET R_BSP24_STARTMARKER_], 01000h
 
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2:
-jmp SHORT   continue_outer_rendersegloop
-SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_AFTER_WITH_ALIGN:
-ALIGN_MACRO
-SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_AFTER_WITH_ALIGN
+SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2 + 2
 
 SELFMODIFY_add_pixlowstep_lo:
-add   word ptr ds:[SELFMODIFY_set_pixlow_lo+1 - OFFSET R_BSP24_STARTMARKER_], 01000h
+jmp SHORT   continue_outer_rendersegloop
+;add   word ptr ds:[SELFMODIFY_set_pixlow_lo+1 - OFFSET R_BSP24_STARTMARKER_], 01000h ; selfmodified instruction
+dw SELFMODIFY_set_pixlow_lo+1 - OFFSET R_BSP24_STARTMARKER_
+dw 01000h
 SELFMODIFY_add_pixlowstep_hi:
 adc   word ptr ds:[SELFMODIFY_set_pixlow_hi+1 - OFFSET R_BSP24_STARTMARKER_], 01000h
 
@@ -5428,12 +5427,12 @@ SELFMODIFY_add_to_bottomfrac_hi_2:
 adc   word ptr [bp - 028h], 01000h
 
 SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1:
-jmp SHORT SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET
-SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_AFTER_ALIGN:   ; todo real op instead of nop/jmp
-ALIGN_MACRO
-SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_AFTER_ALIGN
+SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1+2
 SELFMODIFY_add_to_pixlow_lo_2:
-add   word ptr [bp - 026h], 01000h
+jmp SHORT SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET
+;add   word ptr [bp - 026h], 01000h ; selfmodified instruction
+db (0100h - 26h)
+dw 01000h
 SELFMODIFY_add_to_pixlow_hi_2:
 adc   word ptr [bp - 024h], 01000h
 SELFMODIFY_add_to_pixhigh_lo_2:
@@ -6689,6 +6688,7 @@ ret
 
 ALIGN_MACRO
 handle_two_sided_line:
+public handle_two_sided_line
 SELFMODIFY_jmp_two_sided_or_not_TARGET:
 ; jumped to with ds as cs
 
@@ -6706,11 +6706,11 @@ SELFMODIFY_BSP_drawtype_2_AFTER = SELFMODIFY_BSP_drawtype_2+2
 mov       ax, 0c089h   
 
 ASSUME DS:R_BSP_24_TEXT
-mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2 - OFFSET R_BSP24_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3 - OFFSET R_BSP24_STARTMARKER_], ax
-mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5 - OFFSET R_BSP24_STARTMARKER_], ax
+mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1 - OFFSET R_BSP24_STARTMARKER_], 04681h  ; add word ptr [bp - xx], imm16
+mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2 - OFFSET R_BSP24_STARTMARKER_], 00681h  ; add word ptr ds:[xxxx], imm16
 
+mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3 - OFFSET R_BSP24_STARTMARKER_], 0AD36h  ; lods  word ptr ss:[si]
+mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5 - OFFSET R_BSP24_STARTMARKER_], 000B8h  ; mov ax, imm16
 
 mov       word ptr ds:[SELFMODIFY_BSP_drawtype_1 - OFFSET R_BSP24_STARTMARKER_], 0EBB8h   ; mov ax, xxeB
 mov       word ptr ds:[SELFMODIFY_BSP_drawtype_2 - OFFSET R_BSP24_STARTMARKER_], ((SELFMODIFY_BSP_drawtype_2_TARGET - SELFMODIFY_BSP_drawtype_2_AFTER) SHL 8) + 0EBh
