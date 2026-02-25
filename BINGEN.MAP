@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/23 13:57:20
+Created on:       26/02/23 22:29:44
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -341,56 +341,53 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079b:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
 0819:33a6      R_WriteBackViewConstants24_
-0819:2185*     R_AddLine_
+0819:216b*     R_AddLine_
 0819:36f3      R_BSP24_ENDMARKER_
-0819:2e70      R_GetPatchTexture_Far24_
-0819:0a0c*     FixedMulTrigNoShiftSine_BSPLocal_
-0819:16a9*     _selfmodify_restore_dx_6
-0819:16ea*     _selfmodify_restore_dx_7
-0819:14e8*     _selfmodify_restore_dx_2
-0819:1770*     _selfmodify_restore_dx_8
-0819:161c*     _selfmodify_restore_dx_5
-0819:15aa*     _selfmodify_restore_dx_4
-0819:152d*     _selfmodify_restore_dx_3
-0819:0a08*     FixedMulTrigSine_BSPLocal_
-0819:100b*     R_StoreWallRange_
-0819:237e*     R_ClipPassWallSegment_
-0819:0a56*     FixedMulTrigCosine_BSPLocal_
-0819:101d*     SELFMODIFY_skip_curseg_based_selfmodify_AFTER
-0819:20a0*     R_Subsector_
-0819:194c*     check_here
-0819:1c44*     do_top_texture_draw
+0819:2e56      R_GetPatchTexture_Far24_
+0819:09f8*     FixedMulTrigNoShiftSine_BSPLocal_
+0819:1f21*     _selfmodify_restore_dx_6
+0819:1f61*     _selfmodify_restore_dx_7
+0819:1feb*     _selfmodify_restore_dx_8
+0819:09f4*     FixedMulTrigSine_BSPLocal_
+0819:1ee9*     continue_backsector_not_null
+0819:1027*     R_StoreWallRange_
+0819:2364*     R_ClipPassWallSegment_
+0819:0a42*     FixedMulTrigCosine_BSPLocal_
+0819:1423*     done_with_sector_sided_check
+0819:1039*     SELFMODIFY_skip_curseg_based_selfmodify_AFTER
+0819:2086*     R_Subsector_
+0819:17a6*     check_here
+0819:1a9e*     do_top_texture_draw
 0819:0000      R_BSP24_STARTMARKER_
-0819:3220      R_RenderPlayerView24_
-0819:09b8*     FixedDivBSPLocal_
-0819:05de*     div48_32_BSPLocal_
-0819:18a5*     finish_outer_loop
+0819:3206      R_RenderPlayerView24_
+0819:09a4*     FixedDivBSPLocal_
+0819:05ca*     div48_32_BSPLocal_
+0819:1700*     finish_outer_loop
 0819:0080*     _COLFUNC_SELFMODIFY_LOOKUPTABLE_SECOND_HALF
-0819:17f9*     skip_pixlow_step
-0819:2d16*     R_GetTexturePage_
+0819:2cfc*     R_GetTexturePage_
 0819:353a*     R_WriteBackFrameConstants_
-0819:034b*     _selfmodify_restore_dx
-0819:0a5a*     FixedMulTrigNoShiftCosine_BSPLocal_
-0819:1569*     SELFMODIFY_set_floorplaneindex
-0819:1552*     SELFMODIFY_set_ceilingplaneindex
-0819:0aa6*     R_ClearPlanes_
-0819:1e14*     mark_planes_dirty
-0819:1a76*     main_3232_div
-0819:1ba1*     SELFMODIFY_bsp_apply_stretch_tag
-0819:0c54*     R_FindPlane_
-0819:0728*     FixedDivWholeA_BSPLocal_
-0819:205f*     side_has_midtexture
-0819:2f0a      R_GetCompositeTexture_Far24_
-0819:0ff8*     adjust_row_offset
+0819:0337*     _selfmodify_restore_dx
+0819:0a46*     FixedMulTrigNoShiftCosine_BSPLocal_
+0819:1555*     SELFMODIFY_set_floorplaneindex
+0819:1537*     SELFMODIFY_set_ceilingplaneindex
+0819:0a92*     R_ClearPlanes_
+0819:1c6e*     mark_planes_dirty
+0819:18d0*     main_3232_div
+0819:19fb*     SELFMODIFY_bsp_apply_stretch_tag
+0819:0c40*     R_FindPlane_
+0819:0714*     FixedDivWholeA_BSPLocal_
+0819:1eb6*     side_has_midtexture
+0819:2ef0      R_GetCompositeTexture_Far24_
+0819:1014*     adjust_row_offset
 0819:0000*     _COLFUNC_SELFMODIFY_LOOKUPTABLE
-0819:1ba1*     R_DrawColumnPrep_
-0819:0378*     SELFMODIFY_get_rw_distance_hi_1
-0819:1b86*     SELFMODIFY_BSP_midtexture
-0819:1c7b*     do_bottom_texture_draw
+0819:19fb*     R_DrawColumnPrep_
+0819:0364*     SELFMODIFY_get_rw_distance_hi_1
+0819:19e0*     SELFMODIFY_BSP_midtexture
+0819:1ad5*     do_bottom_texture_draw
 0819:0090*     OFFSET_FLOORCLIP
-0819:1a1a*     _selfmodify_restore_dx_10
-0819:035e*     R_ScaleFromGlobalAngle_
-0819:13b8*     SELFMODIFY_BSP_drawtype_1_TARGET
+0819:1874*     _selfmodify_restore_dx_10
+0819:034a*     R_ScaleFromGlobalAngle_
+0819:13c2*     SELFMODIFY_BSP_drawtype_1_TARGET
 Module: r_bsp16.obj(r_bsp16.ASM)
 0b89:3289      R_RenderPlayerView16_
 0b89:0000      R_BSP16_STARTMARKER_
