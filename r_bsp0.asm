@@ -37,6 +37,17 @@ MID_ONLY_DRAW_TYPE = 1
 BOT_TOP_DRAW_TYPE = 2
 ; todo deprecated dont use
 DRAWCOL_OFFSET                 = (COLFUNC_FUNCTION_AREA_SEGMENT        - COLORMAPS_SEGMENT) * 16
+_viewz_shortheight = 0
+_viewz = 0
+_centeryfrac_shiftright4 = 0
+_basexscale = 		0
+_baseyscale = 		0
+_viewx = 			0
+_viewy = 			0
+_viewangle =      0
+_viewangle_shiftright1 = 0
+_viewangle_shiftright3 = 0
+_extralight =     0
 
 dw DRAWCOL_OFFSET - 00000h,  COLORMAPS_SEGMENT + 0000h
 dw DRAWCOL_OFFSET - 00100h,  COLORMAPS_SEGMENT + 0010h

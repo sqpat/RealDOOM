@@ -110,7 +110,32 @@ dw DRAWCOL_NOLOOP_OFFSET_BSP, DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET, SELFMODIFY_COLFU
 dw DRAWCOL_NOLOOP_STRETCH_OFFSET_BSP, DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOPANDSTRETCH_OFFSET+1
 
 
+_lastbasexscale:
+_basexscale:
+PUBLIC _basexscale  ; todo this has to be constant across variants?
+dw 0F0F0h, 0F0F0h
+_lastbaseyscale:
+dw 0F0F0h, 0F0F0h
+_lastviewx:
+dw 0F0F0h, 0F0F0h
+_lastviewy:
+dw 0F0F0h, 0F0F0h
+_lastviewz_shortangle:
+dw 0F0F0h, 0F0F0h
+_lastviewz:
+dw 0F0F0h, 0F0F0h
 
+_lastviewangle:
+dw 0F0F0h, 0F0F0h
+
+
+
+_lastfixedcolormap:
+db 0F0h  ; force selfmodify frame one
+_lastskyflatnum:
+db 0F0h  ; force selfmodify frame one
+_lastextralight:
+db 0F0h
 
 ALIGN 16
 
@@ -2455,8 +2480,8 @@ div   cx
 xor   ax, si ; apply sign
 sub   ax, si
 
-mov   word ptr ds:[_basexscale], ax
-mov   word ptr ds:[_basexscale + 2], si
+mov   word ptr cs:[_lastbasexscale], ax
+mov   word ptr cs:[_lastbasexscale + 2], si
 
 mov   ax, word ptr es:[di]
 mov   si, bx ; sine sign
@@ -2476,8 +2501,8 @@ jnz   dont_zero_si  ; weird case where we try to take negative of zero and it wa
 mov   si, ax
 dont_zero_si:  
 
-mov   word ptr ds:[_baseyscale], ax
-mov   word ptr ds:[_baseyscale + 2], si
+mov   word ptr cs:[_lastbaseyscale], ax
+mov   word ptr cs:[_lastbaseyscale + 2], si
 
 
 ret   
@@ -9121,8 +9146,8 @@ ALIGN_MACRO
 PROC R_PrepareMaskedPSprites_ NEAR
 
 
-
-mov   bx, word ptr ds:[_r_cachedplayerMobjsecnum]
+SELFMODIFY_BSP_set_playermobjsecnum:
+mov   bx, 01000h
 SHIFT_MACRO shl bx 4
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
@@ -11972,33 +11997,8 @@ PUSHA_NO_AX_OR_BP_MACRO
 ;	r_cachedplayerMobjsecnum = playerMobj->secnum;
 mov       bx, word ptr ds:[_playerMobj]
 push      word ptr ds:[bx + MOBJ_T.m_secnum]  ; playerMobj->secnum
-pop       word ptr ds:[_r_cachedplayerMobjsecnum]
+pop       word ptr cs:[SELFMODIFY_BSP_set_playermobjsecnum + 1]
 
-lds       si, dword ptr ds:[_playerMobj_pos]
-mov       dx, ss
-mov       es, dx
-mov       di, OFFSET _viewx
-
-mov       cx, 4
-rep       movsw ; viewx, viewy
-
-add       si, 6
-mov       di, OFFSET _viewangle
-movsw
-lodsw     ; ax has viewangle hi
-stosw
-
-; cx is 0. write to something that is 0?
-
-
-mov       ds, dx ; dx already had ds
-shr       ax, 1
-;	viewangle_shiftright1 = (viewangle.hu.intbits >> 1) & 0xFFFC;
-and       al, 0FCh
-mov       word ptr ds:[_viewangle_shiftright1], ax
-mov       ax, word ptr ds:[_viewangle + 2]
-SHIFT_MACRO shr       ax 3
-mov       word ptr ds:[_viewangle_shiftright3], ax
 
 ;call      Z_QuickMapRender_
 Z_QUICKMAPAI24 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
@@ -12007,10 +12007,6 @@ Z_QUICKMAPAI24 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
 ; INLINED setupframe
 
 
-
-;    extralight = player.extralightvalue;
-mov       al, byte ptr ds:[_player + 05Eh]  ; player.extralightvalue
-mov       byte ptr ds:[_extralight], al
 
 
 
@@ -12036,22 +12032,10 @@ rep       stosw
 
 done_setting_colormap:
 
-;    viewz = player.viewzvalue;
-les       ax, dword ptr ds:[_player + 8] ; player.viewzvalue
-mov       word ptr ds:[_viewz], ax
-mov       word ptr ds:[_viewz + 2], es
-mov       dx, es
-;	viewz_shortheight = viewz.w >> (16 - SHORTFLOORBITS);
-
-sal       ax, 1
-rcl       dx, 1
-sal       ax, 1
-rcl       dx, 1
-sal       ax, 1
-rcl       dx, 1
 
 
-mov       word ptr ds:[_viewz_shortheight], dx
+
+
 
 ;    validcount_global++;
 inc       word ptr ds:[_validcount_global]
@@ -12385,6 +12369,31 @@ mov      word ptr ds:[SELFMODIFY_BSP_pspriteiscale_hi_1+1 - OFFSET R_BSP24_START
 
 
 
+mov      ax, word ptr ss:[_fieldofview]
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_4+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_5+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_6+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_7+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_8+1 - OFFSET R_BSP24_STARTMARKER_], ax
+
+
+mov      ax, word ptr ss:[_clipangle]
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_4+2 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_5+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_6+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_7+2 - OFFSET R_BSP24_STARTMARKER_], ax
+neg      ax
+mov      word ptr ds:[SELFMODIFY_BSP_clipangle_8+1 - OFFSET R_BSP24_STARTMARKER_], ax
+
+
+
+
 mov      ax, ss
 mov      ds, ax
 
@@ -12418,54 +12427,78 @@ mov      es, ax
 ASSUME DS:R_BSP_24_TEXT
 
 mov      al, byte ptr ss:[_skyflatnum]  ; todo do once per level ?
+cmp      al, byte ptr ds:[_lastskyflatnum]
+je       skip_skyflat_selfmodifies_this_frame
+mov      byte ptr ds:[_lastskyflatnum], al
 mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_1+1 - OFFSET R_BSP24_STARTMARKER_], al
 mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_2+2 - OFFSET R_BSP24_STARTMARKER_], al
 mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_3+2 - OFFSET R_BSP24_STARTMARKER_], al
 mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_4+1 - OFFSET R_BSP24_STARTMARKER_], al
+skip_skyflat_selfmodifies_this_frame:
+
+; VIEWZ LO
 
 
-mov      ax, word ptr ss:[_viewz]
+les      ax, dword ptr ss:[_player + PLAYER_T.player_viewzvalue+0]
+cmp      ax, word ptr ds:[_lastviewz+0]
+je       skip_viewz_lo_selfmodifies_this_frame
+mov      word ptr ds:[_lastviewz+0], ax
+
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_2+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_3+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_4+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_7+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_8+1 - OFFSET R_BSP24_STARTMARKER_], ax
+skip_viewz_lo_selfmodifies_this_frame:
 
+; VIEWZ HI
+
+mov      dx, es
 xchg     ax, dx  ; dx has viewz lo
+cmp      ax, word ptr ds:[_lastviewz+2]
+je       skip_viewz_hi_selfmodifies_this_frame
+mov      word ptr ds:[_lastviewz+2], ax
 
-mov      ax, word ptr ss:[_viewz+2]
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_1+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_2+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_3+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_4+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_7+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_8+2 - OFFSET R_BSP24_STARTMARKER_], ax
-
 ; create 13:3 fixed point for comparison in ax
 
 SHIFT32_MACRO_LEFT ax dx 3
+mov      word ptr ds:[_lastviewz_shortangle], ax
 
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_13_3_1+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_13_3_2+2 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
-mov      ax, word ptr ss:[_viewz_shortheight]
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_1+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_2+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_4+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_5+1 - OFFSET R_BSP24_STARTMARKER_], ax
+skip_viewz_hi_selfmodifies_this_frame:
 
-mov      al, byte ptr ss:[_extralight]
+mov      al, byte ptr ss:[_player + PLAYER_T.player_extralightvalue]
+cmp      al, byte ptr ds:[_lastextralight]
+je       skip_extralight_selfmodifies_this_frame
+mov      byte ptr ds:[_lastextralight], al
+
 mov      byte ptr ds:[SELFMODIFY_BSP_extralight3+1 - OFFSET R_BSP24_STARTMARKER_], al
 mov      byte ptr ds:[SELFMODIFY_BSP_extralight1+1 - OFFSET R_BSP24_STARTMARKER_], al
 inc      ax 
 mov      byte ptr ds:[SELFMODIFY_BSP_extralight2_plusone+1 - OFFSET R_BSP24_STARTMARKER_], al
+skip_extralight_selfmodifies_this_frame:
 
 mov      al, byte ptr ss:[_fixedcolormap]
-
+cmp      al, byte ptr ds:[_lastfixedcolormap]  ; in cs segment
+je       skip_fixed_colormap_selfmodify_this_frame
 ; zero these in either case.
+mov      byte ptr ds:[_lastfixedcolormap], al
+
 mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_1+3 - OFFSET R_BSP24_STARTMARKER_], al
 mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_5+3 - OFFSET R_BSP24_STARTMARKER_], al
 
@@ -12500,11 +12533,17 @@ mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_4 - OFFSET R_BSP24_STARTMARKER_]
 
 ; fall thru
 done_with_bsp_fixedcolormap_selfmodify:
+skip_fixed_colormap_selfmodify_this_frame:
 
 
+; VIEWX LO
 
+les      si, dword ptr ss:[_playerMobj_pos]
+les      ax, dword ptr es:[si + MOBJ_POS_T.mp_x]
+cmp      ax, word ptr ds:[_lastviewx]
+je       skip_viewx_lo_selfmodifies_this_frame
+mov      word ptr ds:[_lastviewx+0], ax
 
-mov      ax, word ptr ss:[_viewx]
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_2+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -12521,7 +12560,16 @@ mov      ax, ((SELFMODIFY_BSP_viewx_lo_4_TARGET_1 - SELFMODIFY_BSP_viewx_lo_4_AF
 selfmodify_viewx_done:
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_4 - OFFSET R_BSP24_STARTMARKER_], ax
 
-mov      ax, word ptr ss:[_viewx+2]
+; VIEWX HI
+
+skip_viewx_lo_selfmodifies_this_frame:
+
+mov      ax, es
+cmp      ax, word ptr ds:[_lastviewx+2]
+je       skip_viewx_hi_selfmodifies_this_frame
+mov      word ptr ds:[_lastviewx+2], ax
+
+
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_2+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_3+2 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -12529,7 +12577,16 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_4+1 - OFFSET R_BSP24_STARTMARKER_]
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_5+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_6+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
-mov      ax, word ptr ss:[_viewy]
+skip_viewx_hi_selfmodifies_this_frame:
+
+; VIEWY LO
+
+les      si, dword ptr ss:[_playerMobj_pos]
+les      ax, dword ptr es:[si + MOBJ_POS_T.mp_y]
+cmp      ax, word ptr ds:[_lastviewy]
+je       skip_viewy_lo_selfmodifies_this_frame
+mov      word ptr ds:[_lastviewy+0], ax
+
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_3+2 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -12546,9 +12603,14 @@ mov      ax, ((SELFMODIFY_BSP_viewy_lo_4_TARGET_1 - SELFMODIFY_BSP_viewy_lo_4_AF
 selfmodify_viewy_done:
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_4 - OFFSET R_BSP24_STARTMARKER_], ax
 
+; VIEWY HI
 
+skip_viewy_lo_selfmodifies_this_frame:
+mov      ax, es
+cmp      ax, word ptr ds:[_lastviewy+2]
+je       skip_viewy_hi_selfmodifies_this_frame
+mov      word ptr ds:[_lastviewy+2], ax
 
-mov      ax, word ptr ss:[_viewy+2]
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_2+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_3+2 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -12556,8 +12618,50 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_4+1 - OFFSET R_BSP24_STARTMARKER_]
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_5+2 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_6+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
+skip_viewy_hi_selfmodifies_this_frame:
 
-mov      ax, word ptr ss:[_viewangle_shiftright3]
+; VIEWANGLE LO
+
+les      si, dword ptr ss:[_playerMobj_pos]
+les      ax, dword ptr es:[si + MOBJ_POS_T.mp_angle]
+cmp      ax, word ptr ds:[_lastviewangle+0]
+je       skip_viewangle_lo_selfmodifies_this_frame
+mov      word ptr ds:[_lastviewangle+0], ax
+
+
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_1+2 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_2+2 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_4+1 - OFFSET R_BSP24_STARTMARKER_], ax
+
+
+; VIEWANGLE HI
+
+skip_viewangle_lo_selfmodifies_this_frame:
+mov      ax, es  
+cmp      ax, word ptr ds:[_lastviewangle+2]
+je       skip_viewangle_hi_selfmodifies_this_frame
+mov      word ptr ds:[_lastviewangle+2], ax
+
+
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_1+2 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_2+2 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_3+2 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_4+2 - OFFSET R_BSP24_STARTMARKER_], ax
+
+shr       ax, 1
+;	viewangle_shiftright1 = (viewangle.hu.intbits >> 1) & 0xFFFC;
+and       al, 0FCh
+
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
+
+mov      ax, es  
+SHIFT_MACRO shr ax 3
+mov      word ptr ss:[_viewangle_shiftright3], ax
+
+
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_4+1 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -12566,63 +12670,28 @@ mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_5+2 - OFFSET R_BSP24_STARTMARK
 add      ah, 8
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
-
-mov      ax, word ptr ss:[_viewangle_shiftright1]
-mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_set_viewanglesr1_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
-
-mov      ax, word ptr ss:[_viewangle]
-mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_1+2 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_2+2 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewangle_lo_4+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      ax, word ptr ss:[_viewangle+2]
-mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_1+2 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_2+2 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_3+2 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewangle_hi_4+2 - OFFSET R_BSP24_STARTMARKER_], ax
-
-mov      ax, word ptr ss:[_fieldofview]
-mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_4+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_5+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_6+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_7+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_fieldofview_8+1 - OFFSET R_BSP24_STARTMARKER_], ax
-
-mov      ax, word ptr ss:[_clipangle]
-mov      word ptr ds:[SELFMODIFY_BSP_clipangle_1+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_clipangle_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_clipangle_3+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_clipangle_4+2 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_clipangle_5+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_clipangle_6+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_clipangle_7+2 - OFFSET R_BSP24_STARTMARKER_], ax
-neg      ax
-mov      word ptr ds:[SELFMODIFY_BSP_clipangle_8+1 - OFFSET R_BSP24_STARTMARKER_], ax
+skip_viewangle_hi_selfmodifies_this_frame:
 
 
 
 
 ; get whole dword at the end here.
-mov      ax, word ptr ss:[_destview]
+les      ax, dword ptr ss:[_destview]
 mov      word ptr ds:[SELFMODIFY_BSP_add_destview_offset+1 - OFFSET R_BSP24_STARTMARKER_], ax
+
+
+mov      dx, COLFUNC_FILE_START_SEGMENT
+mov      ds, dx
+mov      ax, es
+
+mov      word ptr ds:[SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENT24_OFFSET+1], ax
+mov      word ptr ds:[SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENT24_NORMALSTRETCH_OFFSET+1], ax
+mov      word ptr ds:[SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENT24_NOLOOP_OFFSET+1], ax
+mov      word ptr ds:[SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENT24_NOLOOPANDSTRETCH_OFFSET+1], ax
 
 mov      ax, ss
 mov      ds, ax
 ;ASSUME DS:DGROUP
-
-mov      ax, COLFUNC_FILE_START_SEGMENT
-mov      es, ax
-mov      ax, word ptr ds:[_destview+2]
-mov      word ptr es:[SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENT24_OFFSET+1], ax
-mov      word ptr es:[SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENT24_NORMALSTRETCH_OFFSET+1], ax
-mov      word ptr es:[SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENT24_NOLOOP_OFFSET+1], ax
-mov      word ptr es:[SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENT24_NOLOOPANDSTRETCH_OFFSET+1], ax
-
 
 
 

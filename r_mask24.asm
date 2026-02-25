@@ -105,6 +105,12 @@ ENDM
    dw base_product ; for overflow cases...
 
 
+_lastfixedcolormap:
+db 0F0h
+
+_lastcentery:
+dw 0F0F0h;
+
 
 IF COMPISA GE COMPILE_386
 ; todo used only once. 
@@ -6608,15 +6614,18 @@ ASSUME DS:R_MASK24_TEXT
 ; get whole dword at the end here.
 
 mov   ax, word ptr ss:[_centery]
+cmp   ax, word ptr ds:[_lastcentery]
+je    skip_centery_selfmodifies_this_frame
+mov   word ptr ds:[_lastcentery], ax
 mov   word ptr ds:[SELFMODIFY_MASKED_centery_1+3 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   word ptr ds:[SELFMODIFY_MASKED_centery_2+1 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   word ptr ds:[SELFMODIFY_MASKED_centery_3+3 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   word ptr ds:[SELFMODIFY_MASKED_centery_4+3 - OFFSET R_MASK24_STARTMARKER_], ax
+skip_centery_selfmodifies_this_frame:
 
-mov   ax, word ptr ss:[_viewz+0]
+les   ax, dword ptr ss:[_player + PLAYER_T.player_viewzvalue+0]
 mov   word ptr ds:[SELFMODIFY_MASKED_viewz_lo_1+2 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   ax, word ptr ss:[_viewz+2]
-mov   word ptr ds:[SELFMODIFY_MASKED_viewz_hi_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_viewz_hi_1+1 - OFFSET R_MASK24_STARTMARKER_], es
 
 mov   ax, word ptr ss:[_destview+0]
 mov   word ptr ds:[SELFMODIFY_MASKED_destview_lo_1+2 - OFFSET R_MASK24_STARTMARKER_], ax
@@ -6626,11 +6635,18 @@ mov   word ptr ds:[SELFMODIFY_MASKED_destview_lo_3+1 - OFFSET R_MASK24_STARTMARK
 mov   ax, word ptr ss:[_destview+2]
 mov   word ptr ds:[SELFMODIFY_MASKED_destview_hi_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
-mov   al, byte ptr ss:[_extralight]
+mov   al, byte ptr ss:[_player + PLAYER_T.player_extralightvalue]
 inc   ax
 mov   byte ptr ds:[SELFMODIFY_MASKED_extralight_1_plus_one+1 - OFFSET R_MASK24_STARTMARKER_], al
 
 mov   al, byte ptr ss:[_fixedcolormap]
+cmp   al, byte ptr ds:[_lastfixedcolormap]  ; in cs segment
+je    skip_fixed_colormap_selfmodify_this_frame
+; zero these in either case.
+mov   byte ptr ds:[_lastfixedcolormap], al
+
+
+
 cmp   al, 0
 jne   do_fixedcolormap_selfmodify
 do_no_fixedcolormap_selfmodify:
@@ -6660,10 +6676,11 @@ mov   word ptr ds:[bx+1], (SELFMODIFY_MASKED_fixedcolormap_2_TARGET - SELFMODIFY
 
 
 ; fall thru
+skip_fixed_colormap_selfmodify_this_frame:
 done_with_fixedcolormap_selfmodify:
 
-push   ss
-pop    ds
+mov    ax, FIXED_DS_SEGMENT
+mov    ds, ax
 
 
 retf

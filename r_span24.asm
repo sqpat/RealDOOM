@@ -1273,9 +1273,10 @@ mov      word ptr cs:[SELFMODIFY_SPAN_last_iter_compare+2 - OFFSET R_SPAN24_STAR
 mov      al, byte ptr ds:[_skyflatnum]  ; todo self modify at a different layer once per level
 mov      byte ptr cs:[SELFMODIFY_SPAN_skyflatnum + 2 - OFFSET R_SPAN24_STARTMARKER_], al
 
+mov      ds, word ptr ds:[_BSP_CODE_SEGMENT_PTR]
 
-; lodsw, push pop si worth?
-mov   si, _basexscale
+
+mov   si, _BASEXSCALE_OFFSET_R_BSP
 lodsw
 mov   word ptr cs:[SELFMODIFY_SPAN_basexscale_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
 lodsw
@@ -1296,16 +1297,17 @@ mov   word ptr cs:[SELFMODIFY_SPAN_viewy_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_],
 lodsw
 mov   word ptr cs:[SELFMODIFY_SPAN_viewy_hi_1+2 - OFFSET R_SPAN24_STARTMARKER_], ax
 
-lodsw
-xchg  ax, dx
-lodsw
-SHIFT32_MACRO_LEFT ax dx 3
+lodsw  ; viewz_shortheight
 mov   word ptr cs:[SELFMODIFY_SPAN_viewz_13_3_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
+
+mov   ax, ss
+mov   ds, ax
+
 
 mov   ax, word ptr ds:[_destview+0]
 mov   word ptr cs:[SELFMODIFY_SPAN_destview_lo_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
 
-mov   al, byte ptr ds:[_extralight]
+mov   al, byte ptr ds:[_player + PLAYER_T.player_extralightvalue]
 mov   byte ptr cs:[SELFMODIFY_SPAN_extralight_1+1 - OFFSET R_SPAN24_STARTMARKER_], al
 
 

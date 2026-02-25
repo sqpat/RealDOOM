@@ -36,6 +36,8 @@ DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_JUMP_LOOKUP_SEGMENT - COLORMAPS
 
 
 ;SPANFUNC_JUMP_LOOKUP_SEGMENT and COLORMAPS_SEGMENT difference is  006A0h
+_basexscale = 0
+_extralight =     0
 
 
 MAXLIGHTZ                      = 0080h

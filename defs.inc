@@ -93,14 +93,14 @@ _segloopcachedbasecol =             _NULL_OFFSET + 00058h
 _cachedsegmenttex =                 _NULL_OFFSET + 0005Ch
 
 ; keep these in order for selfmodify lodsw chain?	
-_basexscale = 						_NULL_OFFSET + 00060h
-_baseyscale = 						_NULL_OFFSET + 00064h
-_viewx = 							_NULL_OFFSET + 00068h
-_viewy = 							_NULL_OFFSET + 0006Ch
-_viewz = 							_NULL_OFFSET + 00070h
-_centeryfrac_shiftright4 = 			_NULL_OFFSET + 00074h
-_viewangle =                		_NULL_OFFSET + 00078h
-_viewz_shortheight = 				_NULL_OFFSET + 0007Ch
+;_basexscale = 						_NULL_OFFSET + 00060h
+;_baseyscale = 						_NULL_OFFSET + 00064h
+;_viewx = 							_NULL_OFFSET + 00068h
+;_viewy = 							_NULL_OFFSET + 0006Ch
+;_viewz = 							_NULL_OFFSET + 00070h  ; unused now
+;_centeryfrac_shiftright4 = 		_NULL_OFFSET + 00074h ; unused now
+;_viewangle =                		_NULL_OFFSET + 00078h
+;_viewz_shortheight = 				_NULL_OFFSET + 0007Ch  ; unused now
 _screen_segments = 					_NULL_OFFSET + 0007Eh
 
 _maskedtexture = 					_NULL_OFFSET + 00088h
@@ -141,7 +141,7 @@ _mceilingclip = 					_NULL_OFFSET + 000C4h
 
 _viletryx =                         _NULL_OFFSET + 000CCh
 _viletryy =                         _NULL_OFFSET + 000D0h
-_viewangle_shiftright1 = 			_NULL_OFFSET + 000D4h
+;_viewangle_shiftright1 = 			_NULL_OFFSET + 000D4h ; unused now
 _snd_SfxDevice = 					_NULL_OFFSET + 000D6h
 _snd_MusicDevice =				    _NULL_OFFSET + 000D7h
 
@@ -170,6 +170,8 @@ _fastparm =	                        _NULL_OFFSET + 00100h
 _gameskill =	                    _NULL_OFFSET + 00101h
 _TaskServiceCount =	                _NULL_OFFSET + 00102h
 _viewangle_shiftright3 = 			_NULL_OFFSET + 00104h
+; 106h is a segment used for LES
+; todo free space after 106?
 _dc_source_segment =	 			_NULL_OFFSET + 0010Ah
 ; todo could ds and cx stuff overlap?
 _ds_y = 				    		_NULL_OFFSET + 0010Ch
@@ -208,7 +210,7 @@ _trace =                            _NULL_OFFSET + 00150h
 _currentflatpage =            		_NULL_OFFSET + 00160h
 _lastflatcacheindicesused =         _NULL_OFFSET + 00164h
 _skyflatnum =            			_NULL_OFFSET + 00168h
-_extralight =            			_NULL_OFFSET + 00169h
+;_extralight =            			_NULL_OFFSET + 00169h  ; unused
 _visplanedirty =            		_NULL_OFFSET + 0016Ah
 _screenblocks =            			_NULL_OFFSET + 0016Bh
 _lastvisplane =            			_NULL_OFFSET + 0016Ch
@@ -1794,7 +1796,8 @@ ENDM
 
 
 
-
+; gross.
+_BASEXSCALE_OFFSET_R_BSP = 08Ch
 
 
 
