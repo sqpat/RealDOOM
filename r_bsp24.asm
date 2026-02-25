@@ -3700,15 +3700,13 @@ jne   exit_set_fullbright_colormap
 ; shift 32 bit value by (12 - detailshift) right.
 ; but final result is capped at 48. so we dont have to do as much with the high word...
 mov   ax, word ptr [bp - 01Dh] ; shift 8 by loading a byte higher.
-; shift 2 more guaranteed
-SHIFT_MACRO sar ax 2
 
-; test for detailshift portion
+
+; cl should be 2-4
 SELFMODIFY_BSP_detailshift_7:
-sar   ax, 1
-shift_xscale_once:
-sar   ax, 1
-done_shifting_xscale:
+mov   cl, 2
+
+sar   ax, cl
 
 ;        if (index >= MAXLIGHTSCALE) {
 ;            index = MAXLIGHTSCALE-1;
@@ -5170,6 +5168,8 @@ jcxz   skip_sub_base4diff
 
 sub_base4diff:
 
+; todo: push these immediates. popa them. add back to sp if loop skipped. 
+
 SELFMODIFY_sub_rwscale_lo:
 sub   word ptr [bp - 032h], 01000h
 SELFMODIFY_sub_rwscale_hi:
@@ -5195,6 +5195,9 @@ skip_sub_base4diff:
 ;	base_bottomfrac = bottomfrac;
 ;	base_pixlow     = pixlow;
 ;	base_pixhigh    = pixhigh;
+
+; todo: fall thru, popa bp - 032h stuff from stack. Reorder of stack items probably necessary.
+
 
 
 lea   si, [bp - 032h]
@@ -6135,7 +6138,7 @@ SELFMODIFY_COLFUNC_get_dc_x:
 mov   ax, 01000h              ; note: tried preshifting this in the outer layer but it was slower
 
 SELFMODIFY_BSP_detailshift2minus:
-sar   ax, 1
+sar   ax, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
 sar   ax, 1
 
 ; dest = destview + dc_yl*80 + (dc_x>>2); 
@@ -12174,19 +12177,13 @@ jump_to_set_to_zero:
 jmp      set_to_zero
 ALIGN_MACRO
 set_to_two:
-; detailshift 2 case. usually involves no shift. in this case - we just jump past the shift code.
 
-; nop 
+mov      byte ptr ds:[SELFMODIFY_BSP_detailshift_7+1 - OFFSET R_BSP24_STARTMARKER_], 2
 mov      ax, 0c089h 
 
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+0 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+2 - OFFSET R_BSP24_STARTMARKER_], ax
 
-; write to colfunc segment
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+2 - OFFSET R_BSP24_STARTMARKER_], ax
-
-
 
 
 ; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
@@ -12200,11 +12197,6 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4 - OFFSET R_BSP24_STARTMARKER_
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
-mov      al,  0
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+0 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+2 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+0 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+2 - OFFSET R_BSP24_STARTMARKER_], ax
 
 ; inverse. do shifts
 ; d1 e0 d1 d2  = shl ax, 1; rcl dx, 1
@@ -12230,15 +12222,13 @@ set_to_one:
 ; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
 
 ; d1 f8  = sar ax, 1
-mov      ax, 0f8d1h 
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+0 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      byte ptr ds:[SELFMODIFY_BSP_detailshift_7+1 - OFFSET R_BSP24_STARTMARKER_], 3
 
 ; write to colfunc segment
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0 - OFFSET R_BSP24_STARTMARKER_], 0f8d1h 
 
 ; nop 
 mov      ax, 0c089h 
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+2 - OFFSET R_BSP24_STARTMARKER_], ax
 ; write to colfunc segment
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+2 - OFFSET R_BSP24_STARTMARKER_], ax
 
@@ -12247,7 +12237,7 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+2 - OFFSET R_BSP24_STARTM
 ; 81 c3 00 00 = add bx, 0000. Not technically a nop, but probably better than two mov ax, ax?
 ; 89 c0       = mov ax, ax. two byte nop.
 
-mov      ax, 0c089h
+;mov      ax, 0c089h  ; continued from above
 
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+0 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+2 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -12273,9 +12263,8 @@ set_to_zero:
 ; in this case - we make that first shift a proper shift
 
 ; d1 f8  = sar ax, 1
+mov      byte ptr ds:[SELFMODIFY_BSP_detailshift_7+1 - OFFSET R_BSP24_STARTMARKER_], 4
 mov      ax, 0f8d1h 
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+0 - OFFSET R_BSP24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_7+2 - OFFSET R_BSP24_STARTMARKER_], ax
 
 ; write to colfunc segment
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0 - OFFSET R_BSP24_STARTMARKER_], ax
