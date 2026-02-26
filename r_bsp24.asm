@@ -164,7 +164,6 @@ db SIL_BOTH
 
 ; shoving some small functions in here since w ehave to pad to 0100h for the next jump table
 
-;R_PointToAngle16_
 
 
 
@@ -3825,7 +3824,7 @@ cbw      ; maxes at 127, ah is 0
 SHIFT_MACRO shl ax 3
 neg       ax  ; subtract this from the real number
 add       ax, ((080h SHL 3) - 1) ; 0400h - 1 for equals case
-mov       word ptr [bp - 036h], ax   ;  TODO make this a push. probably change the bp addr.
+mov       word ptr [bp - 0Ch], ax   ;  TODO make this a push. probably change the bp addr.
 
 jmp       done_adjusting_row_offset
 
@@ -3846,21 +3845,21 @@ PUBLIC R_StoreWallRange_
 ; bp - 6     ; curseglinedef
 ; bp - 8     ; curlinesidedef
 ; bp - 0Ah   ; curseg_render
-; bp - 0Ch   ; rw_angle hi from R_AddLine
-; bp - 0Eh   ; rw_angle lo from R_AddLine
-; bp - 010h  ; return address
-; bp - 012h  ; PUSHed bx
-; bp - 014h  ; PUSHed cx
-; bp - 016h  ; PUSHed si
-; bp - 018h  ; PUSHed di
-; bp - 01Ah  ; ax arg (no need to pop)
-; bp - 01Ch  ; dx arg (no need to pop)
-; bp - 01Eh  ;  stop - start
-; bp - 020h  ; base4diff
-; bp - 022h  ; frontsectorceilingheight - frontsectorfloorheight (compare to bp - 026h in mid draw case)
-; bp - 023h  ; markceiling
-; bp - 024h  ; markfloor
-; bp - 026h  ; 128 - siderowoffset (nonloop draw height threshhold)
+; bp - 0Ch   ; lazily calculated 128 - siderowoffset (nonloop draw height threshhold)
+; bp - 0Eh   ; unused for now? push something else
+; bp - 010h  ; rw_angle hi from R_AddLine
+; bp - 012h  ; rw_angle lo from R_AddLine
+; bp - 014h  ; return address
+; bp - 016h  ; PUSHed bx
+; bp - 018h  ; PUSHed cx
+; bp - 01Ah  ; PUSHed si
+; bp - 01Ch  ; PUSHed di
+; bp - 01Eh  ; ax arg (no need to pop)
+; bp - 020h  ; dx arg (no need to pop)
+; bp - 022h  ; stop - start   ; last pushed thing. todo push others.
+; bp - 024h  ; base4diff
+; bp - 025h  ; markceiling
+; bp - 026h  ; markfloor
 ; bp - 028h  ; pixhigh hi     preshifted 4
 ; bp - 02Ah  ; pixhigh lo     preshifted 4
 ; bp - 02Ch  ; pixlow hi      preshifted 4
@@ -3868,9 +3867,13 @@ PUBLIC R_StoreWallRange_
 ; bp - 030h  ; bottomfrac hi  preshifted 4
 ; bp - 032h  ; bottomfrac lo  preshifted 4
 ; bp - 034h  ; topfrac hi     preshifted 4
-; bp - 036h  ; topfrac lo     preshifted 4
+; bp - 036h  ; topfrac lo     preshifted 4 ; up to here not pushed 
+
 ; bp - 038h  ; rw_scale hi
-; bp - 03Ah  ; rw_scale lo
+; bp - 03Ah  ; rw_scale lo           ; todo swap order this and above with  everything below this
+
+
+
 ; bp - 03Ch  ; frontsectorfloorheight
 ; bp - 03Eh  ; frontsectorceilingheight
 ; bp - 03Fh  ; frontsectorceilingpic
@@ -3879,6 +3882,9 @@ PUBLIC R_StoreWallRange_
 ; bp - 042h  ; backsectorfloorpic
 ; bp - 043h  ; frontsectorlightlevel
 ; bp - 044h  ; backsectorlightlevel
+
+; the above sector variables should be prepared in R_Subsector or possibly lazily calculated and then placed into an above region.
+
 ; bp - 046h  ; worldtop hi
 ; bp - 048h  ; worldtop lo
 ; bp - 04Ah  ; worldbottom hi
@@ -3886,18 +3892,18 @@ PUBLIC R_StoreWallRange_
 
 
 
-push      bx     ; bp - 012h
-push      cx     ; bp - 014h   ; todo get rid of most of these push pop
-push      si     ; bp - 016h
-push      di     ; bp - 018h
+push      bx     ; bp - 016h
+push      cx     ; bp - 018h   ; todo get rid of most of these push pop
+push      si     ; bp - 01Ah
+push      di     ; bp - 01Ch
 
 
-push      ax ; bp - 01Ah
-push      dx ; bp - 01Ch
+push      ax ; bp - 01Eh
+push      dx ; bp - 020h
 
 sub       dx, ax
-push      dx ; bp - 01Eh   stop - start. used often.
-sub       sp, 018h ; unused bytes. up to bp - 036h.
+push      dx ; bp - 022h   stop - start. used often.
+sub       sp, 014h ; unused bytes. up to bp - 036h.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; START LINE BASED SELF MODIFY BLOCK ;;;;;;;
@@ -3917,7 +3923,7 @@ mov       ax, word ptr ds:[bx + SEG_RENDER_T.sr_offset]  ; can be up to 512 i th
 mov       word ptr cs:[SELFMODIFY_BSP_sidesegoffset+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
-mov       si, word ptr ds:[bx + SEG_RENDER_T.sr_sidedefOffset]  ; preshifted 2
+mov       si, word ptr [bp - 8]  ; SEG_RENDER_T.sr_sidedefOffset preshifted 2
 
 ; NOTE: when we want to detect looping textures, we are checking for textures of size < 128 (the looping boundary)
 
@@ -3932,7 +3938,7 @@ mov       byte ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_2+1 - OFFSET R_BSP24_S
 test      al, al
 jnz       adjust_row_offset
 ; todo calculate this in upper frame.
-mov       word ptr [bp - 026h], (080h SHL 3) - 1 ; 0400h - 1 for equals case   ;  TODO make this a push. probably change the bp addr.
+mov       word ptr [bp - 0Ch], (080h SHL 3) - 1 ; 0400h - 1 for equals case   ;  TODO make this a push. probably change the bp addr.
 done_adjusting_row_offset:
 
 
@@ -3971,12 +3977,16 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta - OFFSET R_BSP24_STARTMARKER
 
    ; default jump locations for backsecnum == null
 
+
    ; note: BX free now
    mov       dl, 0BBh ; 0E9h = jmp rel 16, 08Bh = mov bx, imm16
 
+   mov       ax, SIDES_SEGMENT
+   mov       ds, ax
+
+
    cmp       word ptr ss:[_backsector], SECNUM_NULL
 
-   mov       ds, word ptr ss:[_SIDES_SEGMENT_PTR]
    ; ds:si is a SIDE_T
 
    je        selfmodify_mid_only
@@ -4093,7 +4103,7 @@ finish_midtex_selfmodify:
 
 
    ;	offsetangle = (abs((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> 1) & 0xFFFC;
-   sub       ax, word ptr [bp - 0Ch]   ; rw_angle hi from R_AddLine
+   sub       ax, word ptr [bp - 010h]   ; rw_angle hi from R_AddLine
    cwd       
    xor       ax, dx		; abs by sign bits
    sub       ax, dx
@@ -4243,11 +4253,11 @@ mov       ax, word ptr [bp + 4]  ; R_AddLine line num
 stosw              ; DRAWSEG_T.drawseg_cursegvalue
 
 
-mov       ax, word ptr [bp - 01Ah]  ; x1 arg
+mov       ax, word ptr [bp - 01Eh]  ; x1 arg
 
 stosw                            ; DRAWSEG_T.drawseg_x1
-xchg      ax, bx                 ; bx gets bp - 01Ah
-mov       ax, word ptr [bp - 01Ch]  ; x2 arg
+xchg      ax, bx                 ; bx gets bp - 01Eh
+mov       ax, word ptr [bp - 020h]  ; x2 arg
 stosw                            ; DRAWSEG_T.drawseg_x2
 
 inc       ax
@@ -4257,7 +4267,7 @@ inc       ax
 mov       cx, cs
 mov       ds, cx
 
-; bx is already [bp - 01Ah]
+; bx is already [bp - 01Eh]
 mov   cx, bx
 
 SELFMODIFY_detailshift_and_1:
@@ -4268,9 +4278,9 @@ mov   word ptr ds:[SELFMODIFY_compare_ax_to_start_rw_x+1 - OFFSET R_BSP24_STARTM
 ;  	int16_t base4diff = rw_x - rw_x_base4;
 sub   cx, bx   ; result is 0 1 2 or 3. but if 2 then we want to set value 080h
 mov   byte ptr ds:[SELFMODIFY_set_rw_x_loop_counter+1 - OFFSET R_BSP24_STARTMARKER_], cl
-add   bx, cx   ; bx is [bp - 01Ah] or rw_x again.
+add   bx, cx   ; bx is [bp - 01Eh] or rw_x again.
 ror   cl, 1    ; ; result is 0, 1, 2, 3
-mov   byte ptr [bp - 020h], cl  ; remap to 0, 0x80, 1, 0x81
+mov   byte ptr [bp - 024h], cl  ; remap to 0, 0x80, 1, 0x81
 
 
 
@@ -4287,7 +4297,7 @@ mov   word ptr ds:[SELFMODIFY_set_cx_to_count_1+1 - OFFSET R_BSP24_STARTMARKER_]
 mov   word ptr ds:[SELFMODIFY_set_cx_to_count_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
-; sp is bp  - 030h
+; sp is bp  - 038h
 mov       ax, ss
 mov       ds, ax
 
@@ -4307,8 +4317,8 @@ stosw             ; DRAWSEG_T.drawseg_scale1
 xchg      ax, dx
 stosw             ; DRAWSEG_T.drawseg_scale2
 xchg      ax, dx                       ; put DX back; need it later.
-mov       si, word ptr [bp - 01Ch]
-cmp       si, word ptr [bp - 01Ah]
+mov       si, word ptr [bp - 020h]
+cmp       si, word ptr [bp - 01Eh]
 
 jg        stop_greater_than_start
 
@@ -4380,7 +4390,7 @@ stos      word ptr es:[di]             ; +0Ah
 xchg      ax, dx
 stos      word ptr es:[di]             ; +0Ch
 xchg      ax, dx
-mov       bx, word ptr [bp - 01Eh]
+mov       bx, word ptr [bp - 022h]
 
 sub       ax, word ptr [bp - 03Ah] ; todo try storing it here
 sbb       dx, word ptr [bp - 038h] ; todo try storing it here
@@ -4575,7 +4585,7 @@ public SELFMODIFY_BSP_drawtype_1_TARGET
 
 ; cx still carries forward the frontsectorceil - frontsector floor in this case.
 ; dont do this all unless its actually mid draw!
-sub       dx, word ptr [bp - 026h]  ; compare to sectorheight
+sub       dx, word ptr [bp - 0Ch]  ; compare to sectorheight
 and       dh, 080h
 mov       byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], dh
 
@@ -4595,7 +4605,7 @@ or        al, ah
 or        byte ptr ds:[SELFMODIFY_check_for_any_tex+1 - OFFSET R_BSP24_STARTMARKER_], al
 
 
-mov       word ptr [bp - 024h], 0404h ; set markfloor and markceiling
+mov       word ptr [bp - 026h], 0404h ; set markfloor and markceiling
 test      byte ptr [bp - 2], ML_DONTPEGBOTTOM
 jne       do_peg_bottom
 dont_peg_bottom:
@@ -4728,8 +4738,8 @@ xor       cx, cx
 
 SELFMODIFY_set_rw_normal_angle_shift3:
 mov       bx, 01000h
-sub       cx, word ptr [bp - 0Eh]   ; rw_angle lo from R_AddLine
-sbb       bx, word ptr [bp - 0Ch]   ; rw_angle hi from R_AddLine
+sub       cx, word ptr [bp - 012h]   ; rw_angle lo from R_AddLine
+sbb       bx, word ptr [bp - 010h]   ; rw_angle hi from R_AddLine
 
 
 ;		if (tempangle.hu.intbits < ANG180_HIGHBITS) {	
@@ -4796,7 +4806,7 @@ mov       ax, word ptr [bp - 03Ch]
 SELFMODIFY_BSP_viewz_shortheight_4:
 cmp       ax, 01000h
 jl        not_above_viewplane
-mov       byte ptr [bp - 024h], 0
+mov       byte ptr [bp - 026h], 0
 not_above_viewplane:
 mov       ax, word ptr [bp - 03Eh]
 SELFMODIFY_BSP_viewz_shortheight_3:
@@ -4806,7 +4816,7 @@ mov       al, byte ptr [bp - 03Fh]
 SELFMODIFY_BSP_set_skyflatnum_4:
 cmp       al, 010h
 je        not_below_viewplane
-mov       byte ptr [bp - 023h], 0  ;markceiling
+mov       byte ptr [bp - 025h], 0  ;markceiling
 ; ok here
 not_below_viewplane:
 
@@ -4941,13 +4951,13 @@ sbb       ax, dx
 
 mov       word ptr [bp - 030h], ax
 
-cmp       byte ptr [bp - 023h], 0  ;markceiling
+cmp       byte ptr [bp - 025h], 0  ;markceiling
 je        dont_mark_ceiling ; todo which default braunch?
 
 SELFMODIFY_set_ceilingplaneindex:
 PUBLIC SELFMODIFY_set_ceilingplaneindex
 mov       ax, 0FFFFh
-les       cx, dword ptr [bp - 01Ch]   ; rw_stopx - 1 = stop
+les       cx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
 mov       dx, es
 les       bx, dword ptr ss:[_ceiltop] ; todo cs var
 
@@ -4956,12 +4966,12 @@ call      R_CheckPlane_ ; enters and exits with ds as cs
 mov       word ptr ds:[SELFMODIFY_set_ceilingplaneindex+1 - OFFSET R_BSP24_STARTMARKER_], ax
 dont_mark_ceiling:
 
-cmp       byte ptr [bp - 024h], 0 ; markfloor
+cmp       byte ptr [bp - 026h], 0 ; markfloor
 je        dont_mark_floor ; todo which default braunch?
 SELFMODIFY_set_floorplaneindex:
 PUBLIC SELFMODIFY_set_floorplaneindex
 mov       ax, 0FFFFh
-les       cx, dword ptr [bp - 01Ch]   ; rw_stopx - 1 = stop
+les       cx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
 mov       dx, es
 les       bx, dword ptr ss:[_floortop] ; todo cs var
 
@@ -4969,7 +4979,7 @@ mov       byte ptr ds:[SELFMODIFY_setisceil + 1 - OFFSET R_BSP24_STARTMARKER_], 
 call      R_CheckPlane_ ; enters and exits with ds as cs
 mov       word ptr ds:[SELFMODIFY_set_floorplaneindex+1 - OFFSET R_BSP24_STARTMARKER_], ax
 dont_mark_floor:
-cmp       word ptr [bp - 01Eh], 0
+cmp       word ptr [bp - 022h], 0
 jge       at_least_one_column_to_draw
 jmp       check_spr_top_clip
 ALIGN_MACRO
@@ -5162,7 +5172,7 @@ mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_2+3 - OFFSET R_BSP24_STAR
 xor   bx, bx
 mov   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1 - OFFSET R_BSP24_STARTMARKER_], bl ; 0 
 
-mov   dx, word ptr [bp - 024h] ; todo selfmodify?
+mov   dx, word ptr [bp - 026h] ; todo selfmodify?
 mov   bl, dl
 les   ax, dword ptr ds:[bx+_selfmodify_lookup_markfloor]
 mov   word ptr ds:[SELFMODIFY_BSP_markfloor_1 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -6584,7 +6594,7 @@ continue_checking_spr_top_clip:
 cmp       word ptr es:[bx + DRAWSEG_T.drawseg_sprtopclip_offset], 0
 jne       check_spr_bottom_clip
 
-mov       si, word ptr [bp - 01Ah]
+mov       si, word ptr [bp - 01Eh]
 mov       di, word ptr ds:[_lastopening]
 mov       ax, di
 sub       ax, si
@@ -6624,7 +6634,7 @@ continue_checking_spr_bottom_clip:
 cmp       word ptr es:[bx + DRAWSEG_T.drawseg_sprbottomclip_offset], 0
 jne       check_silhouettes_then_exit
 
-mov       si, word ptr [bp - 01Ah]
+mov       si, word ptr [bp - 01Eh]
 mov       di, word ptr ds:[_lastopening]
 mov       ax, di
 sub       ax, si
@@ -6674,7 +6684,7 @@ jne       mark_planes_dirty
 
 
 ; todo: backsector draws add 48h to the stack instead of 44h
-add       sp, 034h     ; add back fixed SP
+add       sp, 030h     ; add back fixed SP
 
 
 pop       di            ; todo remove pushes  put ont he outside
@@ -6700,7 +6710,7 @@ mov      byte ptr ds:[bx+di], al ; nonzero
 dont_mark_floor_dirty:
 mov      byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], ah ;zero
 
-add       sp, 034h     ; add back fixed SP
+add       sp, 030h     ; add back fixed SP
 
 
 pop       di            ; todo remove pushes  put ont he outside
@@ -6823,7 +6833,7 @@ jl        set_bsilheight_to_frontsectorfloorheight
 
 ; backsector floor is higher than frontsector floor. so we will see the wall rendered.
 ; if its less than 128 tall (minus tex top offset etc) then it wont loop
-sub       cx, word ptr [bp - 026h]
+sub       cx, word ptr [bp - 0Ch]
 and       ch, 080h
 mov       byte ptr cs:[SELFMODIFY_toggle_bot_colfunc_type+1], ch
 
@@ -6849,7 +6859,7 @@ mov       es, dx ; backup
 sub       dx, di  ; ceilingheight
 jle       set_tsilheight_to_frontsectorceilingheight
 
-sub       dx, word ptr [bp - 026h]
+sub       dx, word ptr [bp - 0Ch]
 and       dh, 080h
 mov       byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], dh
 mov       dx, es ; restore.
@@ -7007,7 +7017,7 @@ closed_door_detected:
 mov       ax, 0404h
 not_closed_door:
 ; finally write this just once.
-mov       word ptr [bp - 024h], ax  ; markfloor, ceiling
+mov       word ptr [bp - 026h], ax  ; markfloor, ceiling
 ; ax free at last!
 ;		if (worldhigh.w < worldtop.w) {
 
@@ -7201,7 +7211,7 @@ mov       bx, ax
 and       ax, 1   ; round up to word boundary since we are storing words not bytes in this case.
 add       ax, bx  ; now even
 mov       word ptr ss:[_lastopening], ax  ; now even
-mov       dx, word ptr [bp - 01Ah]    ; rw_x
+mov       dx, word ptr [bp - 01Eh]    ; rw_x
 sub       ax, dx ; byte..
 sub       ax, dx ; word..
 
@@ -7210,8 +7220,8 @@ mov       word ptr es:[bx + DRAWSEG_T.drawseg_maskedtexturecol_val], ax
 
 mov       word ptr ss:[_maskedtexturecol], ax
 
-mov       ax, word ptr [bp - 01Eh]
-inc       ax  ; rw_stopx would be [bp - 01Ch] + 1
+mov       ax, word ptr [bp - 022h]
+inc       ax  ; rw_stopx would be [bp - 020h] + 1
 sal       ax, 1   ; word increments, double this diff.
 add       word ptr ss:[_lastopening], ax
 
@@ -7389,7 +7399,7 @@ mov       word ptr ds:[SELFMODIFY_add_pixhighstep_lo+4 - OFFSET R_BSP24_STARTMAR
 mov       word ptr ds:[SELFMODIFY_add_pixhighstep_hi+4 - OFFSET R_BSP24_STARTMARKER_], dx
 
 
-cmp       byte ptr [bp - 020h], 1
+cmp       byte ptr [bp - 024h], 1
 jc        skip_pixhigh_sub
 mov       cx, ax
 mov       bx, dx
@@ -7576,7 +7586,7 @@ mov       word ptr ds:[SELFMODIFY_add_pixlowstep_lo+4 - OFFSET R_BSP24_STARTMARK
 mov       word ptr ds:[SELFMODIFY_add_pixlowstep_hi+4 - OFFSET R_BSP24_STARTMARKER_], dx
 
 
-cmp       byte ptr [bp - 020h], 1
+cmp       byte ptr [bp - 024h], 1
 jc        skip_pixlow_sub
 mov       cx, ax
 mov       bx, dx
@@ -7735,6 +7745,9 @@ mov   word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1 - OFFSET R_BSP24_STARTMARK
 
 do_addsprites:
 
+; todo create stack frame space here. possibly put things on stack, or just lazily do it later.
+
+
 ; R_SUBSECTOR CREATES STACKFRAME HERE
 ; projectsprite may get called and use it
 ; addline will use it iteratively
@@ -7848,8 +7861,10 @@ PUBLIC R_AddLine_
 ; bp - 6       curseglinedef  
 ; bp - 8       curlinesidedef 
 ; bp - 0Ah     curseg_render  
-; bp - 0Ch     _rw_scale hi   
-; bp - 0Eh     _rw_scale lo   
+; bp - 0Ch     lazily calculated 128 - siderowoffset (in R_StoreWallRange_) (nonloop draw height threshhold)
+; bp - 0Eh     UNUSED for now
+; bp - 010h    _rw_scale hi   
+; bp - 012h    _rw_scale lo   
 
 
 
@@ -7869,6 +7884,8 @@ add   bh, (_segs_render SHR 8)
 mov   ds, cx
 push  word ptr ds:[bx + SEG_RENDER_T.sr_sidedefOffset]  ; bp - 8  ; SIDE_T index. used once. 
 push  bx   ; bp - 0Ah
+
+sub   sp, 4   ; room for lazily calculate 128 - siderowoffset later.
 
 ; todo move way later?
 les   si, dword ptr ds:[bx]       ;sr_v1Offset
@@ -7917,8 +7934,8 @@ xchg  ax, di  ; todo eliminate this juggle?
 mov   es, ax
 
 ; store rw_angle1 on stack
-push  si ; bp - 0Ch
-push  bx ; bp - 0Eh
+push  si ; bp - 010h
+push  bx ; bp - 012h
 
 ; si:bx is rw_angle1
 
@@ -7968,7 +7985,7 @@ sub   ax, 01000h
 cmp   ax, cx
 ja    exit_addline
 jne   not_off_left_side_2
-cmp   si, word ptr [bp - 0Ch]
+cmp   si, word ptr [bp - 010h]
 jae   exit_addline
 not_off_left_side_2:
 SELFMODIFY_BSP_clipangle_3:
