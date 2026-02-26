@@ -3837,6 +3837,17 @@ PUBLIC R_StoreWallRange_
 
 
 ; todo shift 4/segsrender thing here
+;below are lazily populated in sector block
+; bp + 0Fh   ; backsectorlightlevel     - backsector items set by line code
+; bp + 0Eh   ; frontsectorlightlevel
+; bp + 0Dh   ; backsectorfloorpic       - backsector items set by line code
+; bp + 0Ch   ; frontsectorfloorpic
+; bp + 0Bh   ; backsectorceilingpic     - backsector items set by line code
+; bp + 0Ah   ; frontsectorceilingpic
+; bp + 8     ; frontsectorceilingheight
+; bp + 6     ; frontsectorfloorheight
+
+;below are pushed in R_AddLine_
 ; bp + 4     ; linenum for R_AddLine_
 ; bp + 2     ; loop counter for R_AddLine_
 ; bp - 0     ; bp pushed from R_AddLine
@@ -3849,15 +3860,20 @@ PUBLIC R_StoreWallRange_
 ; bp - 0Eh   ; unused for now? push something else
 ; bp - 010h  ; rw_angle hi from R_AddLine
 ; bp - 012h  ; rw_angle lo from R_AddLine
-; bp - 014h  ; return address
+
+; func return and preserved vars. TODO pusha/popa support with constant for 8088 
+; bp - 014h  ; return address from R_StoreWallRange_
 ; bp - 016h  ; PUSHed bx
 ; bp - 018h  ; PUSHed cx
 ; bp - 01Ah  ; PUSHed si
 ; bp - 01Ch  ; PUSHed di
 ; bp - 01Eh  ; ax arg (no need to pop)
 ; bp - 020h  ; dx arg (no need to pop)
+
+; pushed stuff
 ; bp - 022h  ; stop - start   ; last pushed thing. todo push others.
 ; bp - 024h  ; base4diff
+; nonpushed, but should be (TODO swap order)
 ; bp - 025h  ; markceiling
 ; bp - 026h  ; markfloor
 ; bp - 028h  ; pixhigh hi     preshifted 4
@@ -3874,21 +3890,10 @@ PUBLIC R_StoreWallRange_
 
 
 
-; bp - 03Ch  ; frontsectorfloorheight
-; bp - 03Eh  ; frontsectorceilingheight
-; bp - 03Fh  ; frontsectorceilingpic
-; bp - 040h  ; backsectorceilingpic
-; bp - 041h  ; frontsectorfloorpic
-; bp - 042h  ; backsectorfloorpic
-; bp - 043h  ; frontsectorlightlevel
-; bp - 044h  ; backsectorlightlevel
-
-; the above sector variables should be prepared in R_Subsector or possibly lazily calculated and then placed into an above region.
-
-; bp - 046h  ; worldtop hi
-; bp - 048h  ; worldtop lo
-; bp - 04Ah  ; worldbottom hi
-; bp - 04Ch  ; worldbottom lo   ; on return, add 034h to sp, set bp to sp.
+; bp - 03Ch  ; worldtop hi
+; bp - 03Eh  ; worldtop lo
+; bp - 040h  ; worldbottom hi
+; bp - 042h  ; worldbottom lo   ; on return, add 034h to sp, set bp to sp.
 
 
 
@@ -3904,6 +3909,55 @@ push      dx ; bp - 020h
 sub       dx, ax
 push      dx ; bp - 022h   stop - start. used often.
 sub       sp, 014h ; unused bytes. up to bp - 036h.
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; START SECTOR BASED SELF MODIFY BLOCK ;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+SELFMODIFY_skip_frontsector_based_selfmodify:
+mov       bl, (SELFMODIFY_skip_frontsector_based_selfmodify_TARGET - SELFMODIFY_skip_frontsector_based_selfmodify_AFTER)  ;  selfmodifies into mov bl, imm8
+SELFMODIFY_skip_frontsector_based_selfmodify_AFTER:
+
+; here we lazily set all front sector fields.
+; backsector fields must be set afterwards.
+
+; bp + 6   ; frontsectorfloorheight
+; bp + 8   ; frontsectorceilingheight
+; bp + 0Ah   ; frontsectorceilingpic
+; bp + 0Bh   ; backsectorceilingpic     - backsector items set by line code
+; bp + 0Ch     ; frontsectorfloorpic
+; bp + 0Dh     ; backsectorfloorpic       - backsector items set by line code
+; bp + 0Eh     ; frontsectorlightlevel
+; bp + 0Fh     ; backsectorlightlevel     - backsector items set by line code
+
+lea       di, [bp + 6]
+mov       dx, ss
+mov       es, dx
+lds       si, dword ptr ds:[_frontsector]
+
+; si = frontsector
+movsw     ; bp + 6 frontsectorfloorheight
+movsw     ; bp + 8 frontsectorceilingheight
+lodsw
+xchg       al, ah
+stosw     ; bp + 0Ah  gets frontsectorceilingpic
+mov       al, ah
+stosw     ; bp + 0Ch gets frontsectorceilingheight
+mov       al, byte ptr ds:[si + (SECTOR_T.sec_lightlevel - SECTOR_T.sec_validcount)]
+stosb     ; bp + 0Eh frontsectorceilingheight
+
+
+mov       ds, dx
+
+mov       byte ptr cs:[SELFMODIFY_skip_frontsector_based_selfmodify], 0EBh  ; jmp here
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; END SECTOR BASED SELF MODIFY BLOCK ;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+SELFMODIFY_skip_frontsector_based_selfmodify_TARGET:
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; START LINE BASED SELF MODIFY BLOCK ;;;;;;;
@@ -4477,30 +4531,14 @@ mov       ds, si
 scales_set:
 
 
-; si = frontsector
-les       si, dword ptr ds:[_frontsector]
-lods      word ptr es:[si]
-push      ax   ; bp - 03Ch ; floorheight
-xchg      ax, bx
-lods      word ptr es:[si]
-push      ax   ; bp - 03Eh ; ceilheight
-xchg      ax, cx
-lods      word ptr es:[si]
-push      ax   ; bp - 038; bp - 03Fh gets ah
-xchg      ah, al
-push      ax   ; bp - 03A; bp - 03Fh gets ah
 
+; todo selfmodify this as it's being done?
+les       bx, dword ptr [bp + 6]
+mov       ax, es
+mov       cx, ax
 
-; BIG TODO: make this di used some other way
-; (di:si is worldtop)
+; bx floorheight
 
-;	SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldtop, frontsectorceilingheight);
-;	worldtop.w -= viewz.w;
-;todo clean this up with struct fields
-push      word ptr es:[si + 07h]  ; + 6 from lodsw/lodsb = 0eh
-                                  ; bp - 03C; bp - 043h gets ah
-
-mov       ax, cx    ; frontsector ceil
 sub       ax, bx    ; frontsector floor
 
 cwd       ; zero dx clear dx now. we wont ever have a height 32768 or whatever sector.
@@ -4518,8 +4556,8 @@ SELFMODIFY_BSP_viewz_hi_7:
 sbb       cx, 01000h
 ; storeworldtop
 
-push      cx  ; bp - 046h
-push      dx  ; bp - 048h
+push      cx  ; bp - 03Ch
+push      dx  ; bp - 03Eh
 
 
 cwd
@@ -4538,8 +4576,8 @@ SELFMODIFY_BSP_viewz_lo_8:
 sub       ax, 01000h
 SELFMODIFY_BSP_viewz_hi_8:
 sbb       bx, 01000h
-push      bx ; bp - 04Ah
-push      ax ; bp - 04Ch
+push      bx ; bp - 040h
+push      ax ; bp - 042h
 
 
 
@@ -4609,9 +4647,9 @@ mov       word ptr [bp - 026h], 0404h ; set markfloor and markceiling
 test      byte ptr [bp - 2], ML_DONTPEGBOTTOM
 jne       do_peg_bottom
 dont_peg_bottom:
-mov       ax, word ptr [bp - 048h]
+mov       ax, word ptr [bp - 03Eh]
 mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1 - OFFSET R_BSP24_STARTMARKER_], ax
-mov       ax, word ptr [bp - 046h]
+mov       ax, word ptr [bp - 03Ch]
 ; ax has rw_midtexturemid+2
 jmp       done_with_bottom_peg
 ALIGN_MACRO
@@ -4619,7 +4657,7 @@ ALIGN_MACRO
 
 
 do_peg_bottom:
-mov       ax, word ptr [bp - 03Ch]
+mov       ax, word ptr [bp + 6]
 SELFMODIFY_BSP_viewz_shortheight_5:
 sub       ax, 01000h
 xor       cx, cx
@@ -4777,7 +4815,7 @@ jmp SHORT seg_textured_check_done    ; dont check walllights if fixedcolormap
 SELFMODIFY_BSP_fixedcolormap_3_AFTER:
 
 
-mov       al, byte ptr [bp - 043h]   ; light level
+mov       al, byte ptr [bp + 0Eh]   ; light level
 SHIFT_MACRO shr al 4
 
 
@@ -4802,17 +4840,17 @@ mov   word ptr ds:[SELFMODIFY_add_wallights+2 - OFFSET R_BSP24_STARTMARKER_], ax
 
 SELFMODIFY_BSP_fixedcolormap_3_TARGET:
 seg_textured_check_done:
-mov       ax, word ptr [bp - 03Ch]
+mov       ax, word ptr [bp + 6]
 SELFMODIFY_BSP_viewz_shortheight_4:
 cmp       ax, 01000h
 jl        not_above_viewplane
 mov       byte ptr [bp - 026h], 0
 not_above_viewplane:
-mov       ax, word ptr [bp - 03Eh]
+mov       ax, word ptr [bp + 8]
 SELFMODIFY_BSP_viewz_shortheight_3:
 cmp       ax, 01000h
 jg        not_below_viewplane
-mov       al, byte ptr [bp - 03Fh]
+mov       al, byte ptr [bp + 0Ah]
 SELFMODIFY_BSP_set_skyflatnum_4:
 cmp       al, 010h
 je        not_below_viewplane
@@ -4827,7 +4865,7 @@ not_below_viewplane:
 
 IF COMPISA GE COMPILE_386
 
-   les       ax, dword ptr [bp - 048h]
+   les       ax, dword ptr [bp - 03Eh]
    mov       dx, es
    les       bx, dword ptr [bp - 03Ah]
    mov       cx, es
@@ -4844,7 +4882,7 @@ IF COMPISA GE COMPILE_386
 
 ELSE
 
-   les       ax, dword ptr [bp - 048h]
+   les       ax, dword ptr [bp - 03Eh]
    mov       dx, es
    les       bx, dword ptr [bp - 03Ah]
    mov       cx, es
@@ -4891,7 +4929,7 @@ mov       word ptr [bp - 034h], cx
 
 IF COMPISA GE COMPILE_386
 
-   les       ax, dword ptr [bp - 04Ch]
+   les       ax, dword ptr [bp - 042h]
    mov       dx, es
    les       bx, dword ptr [bp - 03Ah]
    mov       cx, es
@@ -4909,7 +4947,7 @@ IF COMPISA GE COMPILE_386
 ELSE
 ; si not preserved
 
-   les       ax, dword ptr [bp - 04Ch]
+   les       ax, dword ptr [bp - 042h]
    mov       dx, es
    les       bx, dword ptr [bp - 03Ah]
    mov       cx, es
@@ -4995,7 +5033,7 @@ SELFMODIFY_get_rwscalestep_lo_1:
 mov       ax, 01000h
 SELFMODIFY_get_rwscalestep_hi_1:
 mov       dx, 01000h
-les       bx, dword ptr [bp - 048h]
+les       bx, dword ptr [bp - 03Eh]
 mov       cx, es
 
 ;start inlined FixedMulBSPLocal_
@@ -5078,7 +5116,7 @@ mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_2+3 - OFFSET R_BSP24_STARTMA
 
 
 
-les       bx, dword ptr [bp - 04Ch]
+les       bx, dword ptr [bp - 042h]
 mov       cx, es
 SELFMODIFY_get_rwscalestep_lo_2:
 mov       ax, 01000h
@@ -6684,7 +6722,7 @@ jne       mark_planes_dirty
 
 
 ; todo: backsector draws add 48h to the stack instead of 44h
-add       sp, 030h     ; add back fixed SP
+add       sp, 026h     ; add back fixed SP
 
 
 pop       di            ; todo remove pushes  put ont he outside
@@ -6710,7 +6748,7 @@ mov      byte ptr ds:[bx+di], al ; nonzero
 dont_mark_floor_dirty:
 mov      byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], ah ;zero
 
-add       sp, 030h     ; add back fixed SP
+add       sp, 026h     ; add back fixed SP
 
 
 pop       di            ; todo remove pushes  put ont he outside
@@ -6792,18 +6830,18 @@ mov       word ptr cs:[SELFMODIFY_get_backsector_ceilingheight+1], ax
 xchg      ax, di   ; store for later
 
 lodsw     ; floor, ceil pics
-mov       byte ptr [bp - 042h], al
-mov       byte ptr [bp - 040h], ah
+mov       byte ptr [bp + 0Dh], al
+mov       byte ptr [bp + 0Bh], ah
 ;todo clean this up with struct fields
-mov       al, byte ptr ds:[si + 08h]  ; sec_lightlevel with the 6 from lodsw.
-mov       byte ptr [bp - 044h], al
+mov       al, byte ptr ds:[si + (SECTOR_T.sec_lightlevel - SECTOR_T.sec_validcount)]
+mov       byte ptr [bp + 0Fh], al
 
 
 ;		ds_p->sprtopclip_offset = ds_p->sprbottomclip_offset = 0;
 ;		ds_p->silhouette = 0;
 
-les       dx, dword ptr [bp - 03Eh]
-mov       bx, es ;      [bp - 03Ch]
+les       bx, dword ptr [bp + 6]
+mov       dx, es ;      [bp + 8]
 
 ; todo les stosw movsw?
 lds       si, dword ptr ss:[_ds_p]
@@ -6850,7 +6888,7 @@ jmp       bsilheight_set
 ALIGN_MACRO
 set_bsilheight_to_frontsectorfloorheight:
 mov       byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], al ; SIL_BOTTOM
-mov       word ptr ds:[si + DRAWSEG_T.drawseg_bsilheight], bx  ; bp - 03Ch
+mov       word ptr ds:[si + DRAWSEG_T.drawseg_bsilheight], bx  ; bp + 6
 mov       cx, es  ; restore
 bsilheight_set:
 
@@ -6946,14 +6984,14 @@ sbb       cx, 01000h
 ; todohigh skyflatnum should be a per level constant??
 SELFMODIFY_BSP_set_skyflatnum_1:
 mov       al, 010h
-cmp       al, byte ptr [bp - 03Fh]
+cmp       al, byte ptr [bp + 0Ah]
 jne       not_a_skyflat
-cmp       al, byte ptr [bp - 040h]
+cmp       al, byte ptr [bp + 0Bh]
 jne       not_a_skyflat
 ;di/si are worldhigh..
 
-mov       word ptr [bp - 048h], si
-mov       word ptr [bp - 046h], di
+mov       word ptr [bp - 03Eh], si
+mov       word ptr [bp - 03Ch], di
 
 not_a_skyflat:
 
@@ -6968,14 +7006,14 @@ not_a_skyflat:
 ; TOOO: consider al flags instead of al and ah as two boolean bytes.
 xor       ax, ax  ; ax will store markfloor/markceiling
 
-cmp       cx, word ptr [bp - 04Ah]
+cmp       cx, word ptr [bp - 040h]
 jne       set_markfloor_true
-cmp       bx, word ptr [bp - 04Ch]
+cmp       bx, word ptr [bp - 042h]
 jne       set_markfloor_true
-mov       dx, word ptr [bp - 042h]
+mov       dx, word ptr [bp + 0Ch]
 cmp       dl, dh
 jne       set_markfloor_true
-mov       dx, word ptr [bp - 044h]
+mov       dx, word ptr [bp + 0Eh]
 cmp       dl, dh
 je        markfloor_set
 set_markfloor_true:
@@ -6983,16 +7021,16 @@ mov       al, 4     ; markfloor  al = 1
 
 markfloor_set:
 ; di/si are already worldhigh..
-cmp       word ptr [bp - 046h], di
+cmp       word ptr [bp - 03Ch], di
 jne       set_markceiling_true
-cmp       word ptr [bp - 048h], si
+cmp       word ptr [bp - 03Eh], si
 jne       set_markceiling_true
 
-mov       dx, word ptr [bp - 040h]
+mov       dx, word ptr [bp + 0Ah]
 cmp       dl, dh
 jne       set_markceiling_true
 
-mov       dx, word ptr [bp - 044h]
+mov       dx, word ptr [bp + 0Eh]
 cmp       dl, dh
 je        markceiling_set
 set_markceiling_true:
@@ -7008,10 +7046,10 @@ markceiling_set:
 
 SELFMODIFY_get_backsector_ceilingheight:
 mov       dx, 01000h ; carry this forward.
-cmp       dx, word ptr [bp - 03Ch]
+cmp       dx, word ptr [bp + 6]
 jle       closed_door_detected
 SELFMODIFY_get_backsector_floorheight:
-cmp       word ptr [bp - 03Eh], 01000h
+cmp       word ptr [bp + 8], 01000h
 jge       not_closed_door 
 closed_door_detected:
 mov       ax, 0404h
@@ -7028,10 +7066,10 @@ xchg      di, cx
 xchg      si, bx
 
 ; worldhigh check one past time
-cmp       word ptr [bp - 046h], cx
+cmp       word ptr [bp - 03Ch], cx
 jg        setup_toptexture
 jne       toptexture_zero
-cmp       word ptr [bp - 048h], bx
+cmp       word ptr [bp - 03Eh], bx
 jbe       toptexture_zero
 setup_toptexture:
 
@@ -7060,7 +7098,7 @@ or        byte ptr ds:[SELFMODIFY_check_for_any_tex+1 - OFFSET R_BSP24_STARTMARK
 test      byte ptr [bp - 2], ML_DONTPEGTOP
 je        calculate_toptexturemid  ; either branche has to jump i guess
 set_toptexture_to_worldtop:
-les       ax, dword ptr [bp - 048h]
+les       ax, dword ptr [bp - 03Eh]
 mov       dx, es
 jmp       do_selfmodify_toptexture
 
@@ -7121,10 +7159,10 @@ toptexture_stuff_done:
 
 
 
-cmp       di, word ptr [bp - 04Ah]
+cmp       di, word ptr [bp - 040h]
 jg        setup_bottexture
 jne       bottexture_zero
-cmp       si, word ptr [bp - 04Ch]
+cmp       si, word ptr [bp - 042h]
 jbe       bottexture_zero
 setup_bottexture:
 SELFMODIFY_setbottexturetranslation_lookup:
@@ -7153,7 +7191,7 @@ or        byte ptr ds:[SELFMODIFY_check_for_any_tex+1 - OFFSET R_BSP24_STARTMARK
 test      byte ptr [bp - 2], ML_DONTPEGBOTTOM
 je        calculate_bottexturemid
 ; todo cs write here ??
-les       ax, dword ptr [bp - 048h]
+les       ax, dword ptr [bp - 03Eh]
 mov       dx, es
 do_selfmodify_bottexture:
 
@@ -7248,19 +7286,19 @@ pop       di  ; restore here
 
 ; dx:ax worldlow
 ; di:si worldhi
-; bp - 046h  ; worldtop hi
-; bp - 048h  ; worldtop lo
-; bp - 04Ah  ; worldbottom hi
-; bp - 04Ch  ; worldbottom lo
+; bp - 03Ch  ; worldtop hi
+; bp - 03Eh  ; worldtop lo
+; bp - 040h  ; worldbottom hi
+; bp - 042h  ; worldbottom lo
 
 
 
 ; if (worldhigh.w < worldtop.w) {
 
-cmp       word ptr [bp - 046h], di
+cmp       word ptr [bp - 03Ch], di
 jg        do_pixhigh_step
 jne       jmp_to_skip_pixhigh_step
-cmp       word ptr [bp - 048h], si
+cmp       word ptr [bp - 03Eh], si
 jnbe      do_pixhigh_step
 jmp_to_skip_pixhigh_step:
 jmp skip_pixhigh_step
@@ -7447,13 +7485,13 @@ skip_pixhigh_step:
 
 ; if (worldlow.w > worldbottom.w) {
 
-cmp       dx, word ptr [bp - 04Ah]
+cmp       dx, word ptr [bp - 040h]
 jg        do_pixlow_step
 je        continue_worldlow_checks
 mov       al, byte ptr ss:[_maskedtexture]  ; todo is it necessary to write?
 jmp       done_with_sector_sided_check
 continue_worldlow_checks:
-cmp       ax, word ptr [bp - 04Ch]
+cmp       ax, word ptr [bp - 042h]
 ja        do_pixlow_step
 
 ALIGN_MACRO
@@ -7669,6 +7707,9 @@ mov   es, dx
 
 SHIFT_MACRO shl bx 2   ; TODO push this (and sectors_segment?) as frontsectorptr? then les that not _frontsector
 
+sub   sp, 0Ah          ; for sector fields to be lazily added in R_StoreWallRange_
+
+
 push  word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS + SUBSECTOR_T.ss_firstline]   ; get subsec firstline ; bp + 4
 push  ax  ; store count  ; bp + 2
 
@@ -7825,7 +7866,9 @@ ALIGN_MACRO
 exit_r_addline:
 
 pop   bp
-add   sp, 4  ; for the line/count pushed earlier
+add   sp, 0Eh  ; for the line/count pushed earlier
+; todo investigate NOPPing this
+mov   byte ptr cs:[SELFMODIFY_skip_frontsector_based_selfmodify], 0B3h ; mov bl, imm8 (fallthru)
 ret   
 ALIGN_MACRO
 
