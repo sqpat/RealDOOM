@@ -1292,101 +1292,43 @@ ret
 
 ENDP
 
-
-COMMENT @
-; TODO: test this fpu version by zero318
-
-
-  MOV ES, SI
-  XCHG AX, SI
-  XCHG AX, DX
-  CWD
-  PUSH DX
-  PUSH AX
-  PUSH SI
-  XOR AX, AX
-  PUSH AX
-  MOV SI, SP
-  FILD QWORD [SI]
-  WAIT
-  FNSTCW [SI]
-  MOV [SI+2], BX
-  MOV [SI+4], CX
-  FIDIV DWORD [SI+2]
-  MOV BH, 0xC
-  OR BX, [SI]
-  MOV [SI+6], BX
-  XOR CH, DH
-  WAIT
-  FLDCW [SI+6]
-  FISTP DWORD [SI+2]
-  WAIT
-  FLDCW [SI]
-  ADD SP, 2
-  POP AX
-  FNSTSW [SI+6]
-  MOV SI, ES
-  POP DX
-  POP BX
-  SHR BL, 1
-  JC divide_overflow
-  RET
-divide_overflow:
-  SHL CH, 1
-  CMC
-  SBB CX, CX
-  XOR AX, CX
-  XOR DX, CX
-  RET
-
-
-@
-
 IF COMPISA LE COMPILE_286
 
 COMMENT @
 ; revisit this x87 implementation
 
-PROC   FixedDiv_MapLocal_
-PUBLIC FixedDiv_MapLocal_
+PROC   div48_32_MapLocal_
+PUBLIC div48_32_MapLocal_
 
-push   bp
-mov    bp, sp
+PUSH CX
+PUSH BX
+XCHG AX, CX
+XCHG AX, DX
+CWD
+PUSH DX
+PUSH AX
+PUSH CX
+XOR AX, AX
+PUSH AX
+MOV BX, SP
+FILD QWORD PTR DS:[BX]
+WAIT
+FIDIV DWORD PTR DS:[BX + 8]
+MOV WORD PTR DS:[BX], 0EFFh
+WAIT
+FLDCW WORD PTR DS:[BX]
+FISTP DWORD PTR DS:[BX + 8]
+MOV BYTE PTR DS:[BX + 1], 02
+WAIT
+FLDCW WORD PTR DS:[BX]
+ADD SP, 8
+POP AX
+POP DX
+RET
 
-mov    es, ax  ; low word
-xchg   ax, dx  ; high word in dx
-cwd            ; sign extend in dx
-push   dx      ; push sign extend  [bp - 2]
-push   ax      ; push high word    [bp - 4]
-push   es      ; push low word     [bp - 6]
-xor    ax, ax
-push   ax      ; push 0            [bp - 8]
-
-mov    ah, 0Ch
-FILD   qword ptr  [bp - 8] 
-mov    word ptr   [bp - 4], bx ; todo push instead?
-mov    word ptr   [bp - 2], cx
-WAIT                          ; wait for FILD
-FNSTCW word ptr  [bp - 6]
-FIDIV  dword ptr [bp - 4]
-or     ax, word ptr [bp - 6]
-mov    word ptr  [bp - 8], ax
-WAIT                          ; wait for FIDIV
-FLDCW  word ptr   [bp - 8]
-FISTP  dword ptr  [bp - 4]
-WAIT                          ; wait for FISTP
-FLDCW [BP-6]
-add sp, 4                     ; todo safe to do before FLDCW?
-pop ax  ; MOV AX, [BP-4]
-pop dx  ; MOV DX, [BP-2]
-
-LEAVE_MACRO
-
-ret
 
 ENDP
 @
-
 
   do_simple_div:
 ; high word is DX:AX / BX
@@ -1477,7 +1419,7 @@ skip_sign_adjust_cx:
 
 call div48_32_MapLocal_ 
 
-  mov  dx, es  ; retrieve q1
+  mov  dx, es  ; retrieve q1. COMMENT OUT IF USING FPU VERSION
 ; set negative if need be...
 
 _SELFMODIFY_store_fixeddiv_sign_ahead:
@@ -1726,7 +1668,38 @@ ret
 
 ENDP
 
+COMMENT @
+PROC   div48_32_whole_MapLocal_   NEAR
+PUBLIC div48_32_whole_MapLocal_
 
+PUSH CX
+PUSH BX
+XCHG AX, CX
+XCHG AX, DX
+CWD  
+PUSH   DX ; zero
+PUSH   AX ; whole number
+PUSH   DX ; zero
+PUSH   DX ; zero
+MOV BX, SP
+FILD QWORD PTR DS:[BX]
+WAIT
+FIDIV DWORD PTR DS:[BX + 8]
+MOV WORD PTR DS:[BX], 0EFFh
+WAIT
+FLDCW WORD PTR DS:[BX]
+FISTP DWORD PTR DS:[BX + 8]
+MOV BYTE PTR DS:[BX + 1], 02
+WAIT
+FLDCW WORD PTR DS:[BX]
+ADD SP, 8
+POP AX
+POP DX
+RET
+
+ENDP  
+
+@
 
 PROC   FixedDivWholeA_MapLocal_FAR_  FAR
 PUBLIC FixedDivWholeA_MapLocal_FAR_
@@ -1770,7 +1743,7 @@ call div48_32_whole_MapLocal_ ; internally does push pop of di/bp but not si
 
 ; set negative if need be...
 
-mov   dx, es      ; retrieve q1
+mov  dx, es  ; retrieve q1. COMMENT OUT IF USING FPU VERSIONmov   dx, es      ; retrieve q1 
 pop   di
 pop   si
 

@@ -276,7 +276,7 @@ mov ss, cx
 
 
 sti
-
+; finit ; if using FPU
 jmp   D_DoomMain_
 
 
