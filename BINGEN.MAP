@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/24 19:10:39
+Created on:       26/02/24 21:00:38
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -1042,8 +1042,8 @@ Module: s_sbinit.obj(s_sbinit.ASM)
 2f91:27d7*     SB_SaveVoiceVolume_
 2f91:27c8*     SB_ReadMixer_
 2f91:296f*     SB_GetDSPVersion_
-2f91:27ff      SB_DSP1xx_BeginPlayback_
 2f91:2806*     SB_DSP2xx_BeginPlayback_
+2f91:27ff      SB_DSP1xx_BeginPlayback_
 2f91:281b*     SB_DSP4xx_BeginPlayback_
 2f91:27c7      _SB_CardActive
 2f91:2912*     SB_SetupPlayback_
@@ -1524,4 +1524,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003ddc0 (253376.)
 Entry point address: 2f91:7cfe
-Link time: 00:00.05
+Link time: 00:00.04
