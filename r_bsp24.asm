@@ -4635,8 +4635,8 @@ mov       word ptr ds:[SELFMODIFY_BSP_drawtype_1 - OFFSET R_BSP24_STARTMARKER_],
 mov       byte ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+0 - OFFSET R_BSP24_STARTMARKER_], 089h    ; first byte of mov bp, sp
 mov       word ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+1 - OFFSET R_BSP24_STARTMARKER_], 083E5h  ; next  byte of mov bp, sp and  first byte of add bp, imm8
 
-mov       byte ptr ds:[SELFMODIFY_BSP_midtexture - OFFSET R_BSP24_STARTMARKER_], 039h     ; cmp di,
-mov       word ptr ds:[SELFMODIFY_BSP_midtexture+1 - OFFSET R_BSP24_STARTMARKER_], 07CF7h   ; (cmp di,) si, jl
+mov       byte ptr ds:[SELFMODIFY_BSP_midtexture - OFFSET R_BSP24_STARTMARKER_], 029h     ; sub di,
+mov       word ptr ds:[SELFMODIFY_BSP_midtexture+1 - OFFSET R_BSP24_STARTMARKER_], 07CF7h   ; (sub di,) si, jl
 
 
 SELFMODIFY_BSP_drawtype_1_TARGET:
@@ -6166,12 +6166,13 @@ SELFMODIFY_BSP_midtexture:
 PUBLIC SELFMODIFY_BSP_midtexture
 SELFMODIFY_BSP_midtexture_AFTER = SELFMODIFY_BSP_midtexture + 3
 
-cmp   di, si                ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
+sub   di, si                ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
 jl    mid_no_pixels_to_draw ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
 
 ; si:di are dc_yl, dc_yh
 ; dx holds texturecolumn
 
+; TOP DRAW ENTERS HERE.
 
 ; inlined function. 
 R_GetSourceSegment0_START:
@@ -6256,8 +6257,9 @@ mov   ds, ax
 
 ; dc_yl and dc_yh are both still one too high, but (di - si) count calculation is unaffected.
 
+; di is dc_yh - dc_yl
 ; si is dc_yl 
-sub   di, si                                 ; dc_yh - dc_yl
+
 sal   di, 1                                  ; double diff (dc_yh - dc_yl) to get a word offset
 
 mov   ax, word ptr ds:[di+bx]                ; get the jump value. bp has offset to table in segment
@@ -6321,7 +6323,7 @@ mov   bp, sp
 add   bp, STOREWALLRANGE_FULL_STACK_SIZE
 
 mid_no_pixels_to_draw:
-
+; end of mid column draw
 ; bx is already _rw_x
 
 SELFMODIFY_BSP_setviewheight_1:
@@ -6415,6 +6417,9 @@ SELFMODIFY_BSP_toptexture_AFTER = SELFMODIFY_BSP_toptexture + 2
 do_top_texture_draw:  ; not a jump target.
 PUBLIC do_top_texture_draw
 
+; TOP DRAW CEIL/FLOOR CHECKS HERE
+; todo swap ax/cx roles.
+
 mov   cx, word ptr [bp - 034h]    ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET  ; pixhigh
 SELFMODIFY_add_to_pixhigh_lo_1:
 add   word ptr [bp - 036h], 01000h  ; ! this wasnt selfmodified
@@ -6447,7 +6452,8 @@ push   cx ; note: midtexture doesnt need/use cx and doesnt do this.
 push dx  ; texturecolumn
 ; store for bottom draw.
 push  si ; dc_yl
-push  di ; dc_yh i think this can be removed.
+push  di ; dc_yh
+sub   di, si ; pre sub
 
 jmp R_GetSourceSegment0_START
 ALIGN_MACRO
@@ -6455,7 +6461,7 @@ SELFMODIFY_BSP_midtexture_return_jmp_TARGET:
 R_GetSourceSegment0_DONE_TOP:
 public R_GetSourceSegment0_DONE_TOP
 
-pop   di  ; dc_yh i think this can be removed.
+pop   di  ; dc_yh
 pop   si  ; dc_yl
 pop   dx  ; textuecolumn
 pop   cx      ; todo whats this again. something for floorclip? yl-1?
@@ -6511,12 +6517,13 @@ jg    mark_floor_di
 ;		    floorclip[rw_x] = yh+1;
 
 cmp   di, si  ; todo sub
-jle   mark_floor_cx
-
 mov   byte ptr cs:[bx+OFFSET_FLOORCLIP], cl
+jle   done_marking_floor_cx
+
 
 
 xchg   cx, si
+sub    di, si
 ; dont push/pop cx because we don't need to preserve si, and si preserves cx
 ; si:di are dc_yl, dc_yh
 
@@ -6589,11 +6596,7 @@ done_marking_floor:
 jmp   finished_inner_loop_iter
 
 
-ALIGN_MACRO
-mark_floor_cx:
-mov   byte ptr cs:[bx+OFFSET_FLOORCLIP], cl
-; di - si was negative so dont draw!
-jmp   done_marking_floor_cx
+
 
 ALIGN_MACRO
 SELFMODIFY_BSP_bottexture_TARGET:
