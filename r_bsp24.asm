@@ -4660,7 +4660,7 @@ mov       byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], ah
 xor       bx, bx
 mov       bl, ah
 mov       ax, word ptr cs:[bx + _COLFUNC_JUMP_LOOKUP]
-mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset+1], ax
+mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset+2], ax
 
 
 SELFMODIFY_setmidtexturetranslation_lookup:
@@ -6216,7 +6216,9 @@ add   ax, 01000h
 ENDP
 
 just_do_draw0:
-mov   word ptr ds:[_dc_source_segment], ax ; what if this was push then pop es later. hard because we get a 2nd value with lds.
+;mov   word ptr ds:[_dc_source_segment], ax ; what if this was push then pop es later. hard because we get a 2nd value with lds.
+
+; ax carries _dc_source_segment
 
 
 SELFMODIFY_set_midtexturemid_hi:
@@ -6228,17 +6230,20 @@ mov   dx, 01000h
 
 
 ; todo bx may still be dc_x here?
-dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
+;dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
+sal   di, 1                                  ; double diff (dc_yh - dc_yl) to get a word offset
+mov   bx, COLFUNC_FILE_START_SEGMENT
+mov   ds, bx
 
 SELFMODIFY_set_top_lookup_offset:
-mov bp, 01000h
+add   di, 01000h
 SELFMODIFY_toggle_top_colfunc_type:
-mov bx, 00000    ; set the function variant for this DrawColumnPrep call. May also arry the stretch tag of 6 independently applied to top/mid
+mov   bx, 00000    ; set the function variant for this DrawColumnPrep call. May also arry the stretch tag of 6 independently applied to top/mid
 
 ; ax is actually source segment in fallthru... maybe save a lds in colfunc? what about in call case, masked, etc?
 
 ; fall thru in the case of top/bot column.
-PROC  R_DrawColumnPrep_ NEAR
+PROC   R_DrawColumnPrep_ NEAR
 PUBLIC R_DrawColumnPrep_ 
 ;cl:dx are texturemid (si needs to hold dc_yl!)
 
@@ -6256,13 +6261,6 @@ les   bx, dword ptr cs:[bx]  ; bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE, which is a 
 mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset], es
 
 
-;  POINTER TO COLFUNC JUMP LOOKUP OFFSET IN BP
-;  POINTER TO COLFUNC JUMP INSTRUCTION IN BX
-
-
-mov   ax, COLFUNC_FILE_START_SEGMENT
-mov   ds, ax
-
 
 ; dest = destview + dc_yl*80 + (dc_x>>2); 
 ; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
@@ -6272,10 +6270,11 @@ mov   ds, ax
 ; di is dc_yh - dc_yl
 ; si is dc_yl 
 
-sal   di, 1                                  ; double diff (dc_yh - dc_yl) to get a word offset
+; 5 bytes, doesnt use ax.
+;todo: table to ss?
+push  word ptr ds:[di]                   ; get the jump value. bp has offset to table in segment
+pop   word ptr ds:[bx]                   ; overwrite the jump relative call for however many iterations in unrolled loop we need
 
-mov   ax, word ptr ds:[di+bp]                ; get the jump value. bp has offset to table in segment
-mov   word ptr ds:[bx], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 
 SELFMODIFY_COLFUNC_get_dc_x:
 mov   di, 01000h              ; note: tried preshifting this in the outer layer but it was slower
@@ -6285,13 +6284,15 @@ SELFMODIFY_BSP_detailshift2minus:
 sar   di, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
 sar   di, 1
 
-;dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
+dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
 mov   bx, si
 add   di, word ptr ds:[si+bx]                   ; add * 80 lookup table value 
 
-;xchg  ax, dx ; odd even toggle for SELFMODIFY_BSP_R_DrawColumnPrep_ret
+mov   ds, ax ; finally set _dc_source_segment
+
+xchg  ax, dx ; odd even toggle for SELFMODIFY_BSP_R_DrawColumnPrep_ret
 xchg  ax, si
-mov   si, dx ; odd even toggle for SELFMODIFY_BSP_R_DrawColumnPrep_ret
+;mov   si, dx ; odd even toggle for SELFMODIFY_BSP_R_DrawColumnPrep_ret
 
 SELFMODIFY_BSP_add_destview_offset:
 add   di, 01000h
@@ -6569,17 +6570,21 @@ add   ax, 01000h
 
 just_do_draw1:
 public just_do_draw1
-mov   word ptr ds:[_dc_source_segment], ax
-
+;mov   word ptr ds:[_dc_source_segment], ax
+; ax carries _dc_source_segment
 
 SELFMODIFY_set_bottexturemid_hi:
 mov   cl, 010h
 SELFMODIFY_set_bottexturemid_lo:
 mov   dx, 01000h
 
-dec   si ; finally undo +1 to dc_yl.  ; toggle inside/outside of function so bottom call can copy and shift even/off
+; dec   si ; finally undo +1 to dc_yl.  ; toggle inside/outside of function so bottom call can copy and shift even/off
+sal   di, 1
+mov   bx, COLFUNC_FILE_START_SEGMENT
+mov   ds, bx
+
 SELFMODIFY_set_bot_lookup_offset:
-mov   bp, 01000h
+add   di, 01000h
 SELFMODIFY_toggle_bot_colfunc_type:
 mov   bx, 00000    ; set the function variant for this DrawColumnPrep call.  May also arry the stretch tag of 6 independently applied to bot
 
@@ -6590,7 +6595,6 @@ mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_call], 0EAh  ; jmp far
 
 push  cs
 call  R_DrawColumnPrep_
-
 
 R_DrawColumnPrep_bottom_return:
 public R_DrawColumnPrep_bottom_return
@@ -6959,7 +6963,7 @@ push      bx  ; todo pushpop bx once ?
 xor       bx, bx
 mov       bl, ch
 mov       cx, word ptr cs:[bx + _COLFUNC_JUMP_LOOKUP]
-mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset+1], cx
+mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset+2], cx
 pop       bx
 
 mov       cx, es ; restore.
@@ -6991,7 +6995,7 @@ push      bx  ; todo pushpop bx once ?
 xor       bx, bx
 mov       bl, dh
 mov       dx, word ptr cs:[bx + _COLFUNC_JUMP_LOOKUP]
-mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset+1], dx
+mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset+2], dx
 pop       bx
 mov       dx, es ; restore.
 

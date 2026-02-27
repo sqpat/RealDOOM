@@ -28,6 +28,7 @@ ASSUME  CS:R_COL0_TEXT
 
 
 
+_dc_source_segment = 0
 
 
 

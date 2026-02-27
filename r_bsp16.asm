@@ -48,6 +48,7 @@ _viewangle =      0
 _viewangle_shiftright1 = 0
 _viewangle_shiftright3 = 0
 _extralight =     0
+_dc_source_segment = 0
 
 dw DRAWCOL_OFFSET - 00000h,  COLORMAPS_SEGMENT + 0000h
 dw DRAWCOL_OFFSET - 00100h,  COLORMAPS_SEGMENT + 0010h

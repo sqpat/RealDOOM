@@ -37,6 +37,7 @@ COLORMAPS_MASKEDMAPPING_SEG_OFFSET_IN_CS = 16 * (COLORMAPS_6_MASKEDMAPPING_SEG_D
 _viewz_shortheight = 0
 _viewz = 0
 _extralight =     0
+_dc_source_segment = 0
 
 
 _vsprsortedheadfirst = 0
@@ -319,7 +320,7 @@ ENDP
 	
 PROC  R_DrawSingleMaskedColumn_ NEAR
 
-push  bx
+push  bx ; todo pusha
 push  cx
 push  si
 push  di
@@ -330,7 +331,8 @@ push  bp
 
 
 
-mov   word ptr ds:[_dc_source_segment], ax	; set this early. 
+;mov   word ptr ds:[_dc_source_segment], ax	; set this early. 
+push  ax   ; dc_source_segment
 
 ; slow and ugly - infer it anohter way later if possible.
 mov   al, byte ptr cs:[SELFMODIFY_MASKED_multi_set_colormap_index_jump - OFFSET R_MASKFL_STARTMARKER_]
@@ -481,7 +483,7 @@ mov   word ptr es:[((SELFMODIFY_COLFUNC_JUMP_OFFSETFL_OFFSET-COLFUNC_JUMPTABLE_S
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
 ; or can we do this in an outer func without this instrction?
  
-
+pop   ds  ; dc_source_segment
 
 
 
@@ -4644,7 +4646,7 @@ push  cx            ; bp - 2
 mov   si, bx        ; si now holds column address.
 mov   es, cx
 push  ax            ; bp - 4
-mov   word ptr ds:[_dc_source_segment], ax
+;mov   word ptr ds:[_dc_source_segment], ax
 
 ; dc_texturemid already set pre call.
 xor   di, di        ; di used as currentoffset.

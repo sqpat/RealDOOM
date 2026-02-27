@@ -51,7 +51,7 @@ MARKER_COLFUNC_JUMP_TARGET24_:
 PUBLIC MARKER_COLFUNC_JUMP_TARGET24_
 BYTES_PER_PIXEL = 12
 MAX_PIXELS = 200
-bytecount = (MAX_PIXELS * BYTES_PER_PIXEL) + 1
+bytecount = (MAX_PIXELS * BYTES_PER_PIXEL)
 REPT MAX_PIXELS
     bytecount = bytecount - BYTES_PER_PIXEL
     dw bytecount 
@@ -127,9 +127,10 @@ PUBLIC MARKER_SM_COLFUNC_set_destview_segment24_noloop_
    ;  prep our loop variables
    
    cli 
-   lds     ax, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and bp to 004Fh (hardcoded)
+   ;lds     ax, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and bp to 004Fh (hardcoded)
+
    mov     ss, sp
-   mov     sp, ax ; dont use xchg - it will make the following jmp go to an odd offset.
+   mov     sp, 04Fh
 
 
 
@@ -222,7 +223,8 @@ PUBLIC MARKER_SM_COLFUNC_subtract_centery24_noloopandstretch_
 
    ;  prep our loop variables
    
-   lds  dx, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and dx to 004Fh (hardcoded)
+   ;lds  dx, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and dx to 004Fh (hardcoded)
+   mov  dx, 04Fh
    mov  ch, dh   ; ch gets 0
    xchg si, cx   ; si gets hi texel, cx gets low texel 
 
@@ -325,20 +327,19 @@ PUBLIC MARKER_SM_COLFUNC_set_destview_segment24_
 
 
    cli 
-   lds     ax, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and ax to 004Fh (hardcoded) to mvoe into sp
+   ;lds     ax, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and ax to 004Fh (hardcoded) to mvoe into sp
    mov     ss, sp
-   xchg    ax, sp
+   mov     sp, 04Fh
 
 
 MARKER_SM_COLFUNC_jump_offset24_:
 PUBLIC MARKER_SM_COLFUNC_jump_offset24_
 
    jmp loop_done         ; relative jump to be modified before function is called
-; currently ODD
+; currently EVEN
 MARKER_SM_COL24_AFTER_JUMP_3:
 PUBLIC MARKER_SM_COL24_AFTER_JUMP_3
 
-xchg  ax, ax  ; pad even, made up for in jmp lookup
 
 
    ;; 12 bytes loop iter
@@ -430,20 +431,20 @@ PUBLIC MARKER_SM_COLFUNC_set_destview_segment24_normalstretch_
    mov     es, ax; ready the viewscreen segment
 
    cli 
-   lds     ax, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and ax to 004Fh (hardcoded) to mvoe into sp
+   ;lds     ax, dword ptr ss:[_dc_source_segment-2]  ; sets ds, and ax to 004Fh (hardcoded) to mvoe into sp
    mov     ss, sp
-   xchg    ax, sp
+   mov     sp, 04Fh
+
 
 
 MARKER_SM_COLFUNC_jump_offset24_normalstretch_:
 PUBLIC MARKER_SM_COLFUNC_jump_offset24_normalstretch_
 
    jmp loop_done_normalstretch         ; relative jump to be modified before function is called
-; currently ODD
+; currently EVEN
 MARKER_SM_COL24_AFTER_JUMP_4:
 PUBLIC MARKER_SM_COL24_AFTER_JUMP_4
 
-xchg  ax, ax  ; pad even, made up for in jmp lookup
 
    ;; 12 bytes loop iter
 

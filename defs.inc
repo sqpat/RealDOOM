@@ -172,7 +172,7 @@ _TaskServiceCount =	                _NULL_OFFSET + 00102h
 _viewangle_shiftright3 = 			_NULL_OFFSET + 00104h
 ; 106h is a segment used for LES
 ; todo free space after 106?
-_dc_source_segment =	 			_NULL_OFFSET + 0010Ah
+;_dc_source_segment =	 			_NULL_OFFSET + 0010Ah
 ; todo could ds and cx stuff overlap?
 _ds_y = 				    		_NULL_OFFSET + 0010Ch
 _dc_x = 							_NULL_OFFSET + 00110h

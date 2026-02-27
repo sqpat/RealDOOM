@@ -217,7 +217,8 @@ push  bp
 
 
 
-mov   word ptr ds:[_dc_source_segment], ax	; set this early. 
+;mov   word ptr ds:[_dc_source_segment], ax	; set this early. 
+push  ax 
 
 ; slow and ugly - infer it another way later if possible.
 ; todo can this go up a layer
@@ -381,13 +382,17 @@ xchg  ax, si    ; dc_yl in ax
 
 ; CL:SI = dc_texturemid
 ; CH:BX = dc_iscale
-
+mov   bp, cs
+mov   ds, bp
 ; gross lol. but again - rare function. in exchange the common function is faster.
-mov   cl, byte ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1+1 - OFFSET R_MASK24_STARTMARKER_]
-mov   bx, word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_]
-mov   ch, byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_]
-mov   si, word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1+1 - OFFSET R_MASK24_STARTMARKER_]
-mov   bp, word ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+1 - OFFSET R_MASK24_STARTMARKER_]
+mov   cl, byte ptr ds:[SELFMODIFY_MASKED_dc_texturemid_hi_1+1 - OFFSET R_MASK24_STARTMARKER_]
+mov   bx, word ptr ds:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_]
+mov   ch, byte ptr ds:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_]
+mov   si, word ptr ds:[SELFMODIFY_MASKED_dc_texturemid_lo_1+1 - OFFSET R_MASK24_STARTMARKER_]
+mov   bp, word ptr ds:[SELFMODIFY_MASKED_set_xlat_offset+1 - OFFSET R_MASK24_STARTMARKER_]
+
+
+pop   ds  ; get original _dc_source_segment
 
 ; pass in xlat offset for bx via bp
 
@@ -5721,7 +5726,8 @@ mov   ax, 01000h    ; preshifted right 4
 SELFMODIFY_MASKED_add_currentoffset:
 db 05, 00, 00    ; add ax, 0000 (word)  ; always a single low byte actually
 
-mov   word ptr ds:[_dc_source_segment], ax
+;mov   word ptr ds:[_dc_source_segment], ax
+push   ax ; push and pop later into ds. todo improve
 
 SELFMODIFY_MASKED_sub_topdelta:
 sub    cl, 010h          ; subtract tex top offset. si = si+1
@@ -5791,6 +5797,7 @@ mov   si, 01000h        ; todo can this just go to si in the call?
 
 SELFMODIFY_MASKED_set_xlat_offset:
 mov   bp, 01000h   
+pop   ds ; _dc_source_segment
 
 db 09Ah
 SELFMODIFY_MASKED_COLFUNC_set_func_offset:

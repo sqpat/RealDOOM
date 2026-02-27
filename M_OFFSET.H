@@ -1,7 +1,7 @@
-#define R_DrawMasked24Offset                    0x1328
+#define R_DrawMasked24Offset                    0x1326
 #define R_DrawMasked16Offset                    0x1495
 #define R_DrawMasked0Offset                     0x140E
-#define R_DrawMaskedFLOffset                    0x13F6
+#define R_DrawMaskedFLOffset                    0x13F5
 #define R_WriteBackViewConstantsMasked24Offset  0x0
 #define R_WriteBackMaskedFrameConstants24Offset 0x12A
 #define R_WriteBackViewConstantsMasked16Offset  0x0
@@ -24,10 +24,10 @@
 #define R_DrawSkyColumnFLOffset                 0x0
 #define R_DrawSkyPlaneFLOffset                  0x294
 #define R_DrawSkyPlaneDynamicFLOffset           0x294
-#define R_WriteBackViewConstants24Offset        0x3396
-#define R_RenderPlayerView24Offset              0x3246
-#define R_GetCompositeTexture24Offset           0x2F30
-#define R_GetPatchTexture24Offset               0x2E96
+#define R_WriteBackViewConstants24Offset        0x3398
+#define R_RenderPlayerView24Offset              0x3248
+#define R_GetCompositeTexture24Offset           0x2F32
+#define R_GetPatchTexture24Offset               0x2E98
 #define R_WriteBackViewConstants16Offset        0x3406
 #define R_RenderPlayerView16Offset              0x3289
 #define R_GetCompositeTexture16Offset           0x2F73
@@ -57,7 +57,7 @@
 #define M_DrawPauseOffset                       0x1368
 #define M_StartControlPanelOffset               0x102A
 
-#define R_DrawColumn24CodeSize         0x27ED
+#define R_DrawColumn24CodeSize         0x27D9
 #define R_DrawColumn16CodeSize         0xCB4
 #define R_DrawColumn0CodeSize          0x58E
 #define R_DrawColumnFLCodeSize         0x58E
@@ -65,10 +65,10 @@
 #define R_DrawSpan16CodeSize           0xF60
 #define R_DrawSpan0CodeSize            0x63A
 #define R_DrawSpanFLCodeSize           0x591
-#define R_DrawFuzzColumn24CodeSize     0x1982
+#define R_DrawFuzzColumn24CodeSize     0x197E
 #define R_DrawFuzzColumn16CodeSize     0x18E3
 #define R_DrawFuzzColumn0CodeSize      0x184F
-#define R_DrawFuzzColumnFLCodeSize     0x1819
+#define R_DrawFuzzColumnFLCodeSize     0x1815
 #define R_MaskedConstants24CodeSize    0x1AB
 #define R_MaskedConstants16CodeSize    0xEB
 #define R_MaskedConstants0CodeSize     0xEB
@@ -76,7 +76,7 @@
 #define R_DrawSkyColumnCodeSize        0xD86
 #define R_DrawSkyColumnFLCodeSize      0x303
 #define M_MenuCodeSize                 0x1559
-#define R_BSP24CodeSize                0x3737
+#define R_BSP24CodeSize                0x3739
 #define R_BSP16CodeSize                0x3740
 #define R_BSP0CodeSize                 0x366F
 #define R_BSPFLCodeSize                0x3617

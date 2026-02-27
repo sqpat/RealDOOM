@@ -40,6 +40,7 @@ _vsprsortedheadfirst = 0
 _viewz_shortheight = 0
 _viewz = 0
 _extralight =     0
+_dc_source_segment = 0
 
 
 

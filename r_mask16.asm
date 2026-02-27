@@ -38,6 +38,7 @@ COLORMAPS_MASKEDMAPPING_SEG_OFFSET_IN_CS = 16 * (COLORMAPS_6_MASKEDMAPPING_SEG_D
 _viewz_shortheight = 0
 _viewz = 0
 _extralight =     0
+_dc_source_segment = 0
 
 
 _vsprsortedheadfirst = 0
