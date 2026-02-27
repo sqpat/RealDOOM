@@ -3830,8 +3830,10 @@ jmp       done_adjusting_row_offset
 
 ;R_StoreWallRange_
 
+STOREWALLRANGE_INNER_STACK_SIZE = 02Ah
+STOREWALLRANGE_FULL_STACK_SIZE = 046h
+
 ALIGN_MACRO  ; adding these back seems to lower bench scores
-NOP
 PROC   R_StoreWallRange_ NEAR ; needs another look and reconciliation with outer stack frames.
 PUBLIC R_StoreWallRange_ 
 
@@ -4628,8 +4630,10 @@ mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5 - OFFSET 
 mov       word ptr ds:[SELFMODIFY_BSP_drawtype_2 - OFFSET R_BSP24_STARTMARKER_], 089B8h   ; mov ax, xx89
 mov       word ptr ds:[SELFMODIFY_BSP_drawtype_1 - OFFSET R_BSP24_STARTMARKER_], ((SELFMODIFY_BSP_drawtype_1_TARGET - SELFMODIFY_BSP_drawtype_1_AFTER) SHL 8) + 0EBh
 
-mov       byte ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+0 - OFFSET R_BSP24_STARTMARKER_], 02Eh    ; cs:
-mov       word ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+1 - OFFSET R_BSP24_STARTMARKER_], 087C6h  ; next 2 bytes of following instr (mov   byte ptr cs:[bx + OFFSET_CEILINGCLIP], 01000h)
+; todo word align
+; 89 e5 83 
+mov       byte ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+0 - OFFSET R_BSP24_STARTMARKER_], 089h    ; first byte of mov bp, sp
+mov       word ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+1 - OFFSET R_BSP24_STARTMARKER_], 083E5h  ; next  byte of mov bp, sp and  first byte of add bp, imm8
 
 mov       byte ptr ds:[SELFMODIFY_BSP_midtexture - OFFSET R_BSP24_STARTMARKER_], 039h     ; cmp di,
 mov       word ptr ds:[SELFMODIFY_BSP_midtexture+1 - OFFSET R_BSP24_STARTMARKER_], 07CF7h   ; (cmp di,) si, jl
@@ -5266,7 +5270,9 @@ public SELFMODIFY_set_rw_x_loop_counter
 ;	}
 jcxz   skip_sub_base4diff
 
+; ALIGN_MACRO
 sub_base4diff:
+public sub_base4diff
 
 ; todo: push these immediates. popa them. add back to sp if loop skipped. 
 
@@ -6169,9 +6175,11 @@ jl    mid_no_pixels_to_draw ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
 
 ; inlined function. 
 R_GetSourceSegment0_START:
+PUBLIC  R_GetSourceSegment0_START
+; dont push bp. restore from sp instead.
+; bp is currently SP + 46
 
 push  bx ; rw_x
-push  bp  ; bp. remove if sp becomes constant?
 
 
 ; okay. we modify the first instruction in this argument. 
@@ -6189,11 +6197,16 @@ SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER:
 xchg  ax, ax                    ; one byte nop placeholder. this gets the ah value in mov ax, xxxx (byte 3)
 and   dl, ah   ; ah has loopwidth-1 (modulo )
 mul   dl       ; al has heightval
-add_base_segment_and_draw0:
+
+add_base_segment_and_draw0:  ; align target?
 SELFMODIFY_add_cached_segment0:
 add   ax, 01000h
+
+ENDP
+
 just_do_draw0:
 mov   word ptr ds:[_dc_source_segment], ax ; what if this was push then pop es later. hard because we get a 2nd value with lds.
+
 
 SELFMODIFY_set_midtexturemid_hi:
 SELFMODIFY_set_toptexturemid_hi:
@@ -6202,7 +6215,9 @@ SELFMODIFY_set_midtexturemid_lo:
 SELFMODIFY_set_toptexturemid_lo:
 mov   dx, 01000h
 
-ENDP
+
+; todo bx may still be dc_x here?
+
 
 SELFMODIFY_toggle_top_colfunc_type:
 mov bx, 00000    ; set the function variant for this DrawColumnPrep call. May also arry the stretch tag of 6 independently applied to top/mid
@@ -6261,8 +6276,9 @@ dec   si ; finally undo +1 to dc_yl.
 mov   bx, si
 add   di, word ptr ds:[si+bx]                   ; add * 80 lookup table value 
 
+xchg  ax, dx
 xchg  ax, si
-mov   si, dx
+
 
 SELFMODIFY_BSP_add_destview_offset:
 add   di, 01000h
@@ -6287,12 +6303,11 @@ dw DRAWCOL_OFFSET_BSP, COLORMAPS_SEGMENT
 SELFMODIFY_BSP_R_DrawColumnPrep_ret:
 public SELFMODIFY_BSP_R_DrawColumnPrep_ret
 
-; the pop bp gets replaced with ret if bottom is calling.
+; the pop bx gets replaced with ret if bottom is calling.
 ; todo: the bottom caller pops the same stuff. pop here and modify a later instruction instead?
 
-pop   bp ; bp. remove if sp becomes constant?
-pop   bx  ; rw_x  always want this back
 
+pop   bx  ; rw_x  always want this back
 
 
 ; this runs as a jmp for a top call, otherwise NOP for mid call
@@ -6301,8 +6316,11 @@ SELFMODIFY_BSP_midtexture_return_jmp:
 ; we overwrite the next instruction with a jmp if toptexture call. otherwise we restore it.
 SELFMODIFY_BSP_midtexture_return_jmp_AFTER = SELFMODIFY_BSP_midtexture_return_jmp+3
 
+mov   bp, sp
+add   bp, STOREWALLRANGE_FULL_STACK_SIZE
 
 mid_no_pixels_to_draw:
+
 ; bx is already _rw_x
 
 SELFMODIFY_BSP_setviewheight_1:
@@ -6434,12 +6452,15 @@ jmp R_GetSourceSegment0_START
 ALIGN_MACRO
 SELFMODIFY_BSP_midtexture_return_jmp_TARGET:
 R_GetSourceSegment0_DONE_TOP:
+public R_GetSourceSegment0_DONE_TOP
 
 pop   di  ; dc_yh i think this can be removed.
 pop   si  ; dc_yl
 pop   dx  ; textuecolumn
-pop    cx      ; todo whats this again. something for floorclip? yl-1?
-xchg   cx, di
+pop   cx      ; todo whats this again. something for floorclip? yl-1?
+mov   bp, sp
+add   bp, STOREWALLRANGE_FULL_STACK_SIZE
+xchg  cx, di
 
 
 
@@ -6488,7 +6509,7 @@ jg    mark_floor_di
 ;		if (markfloor)
 ;		    floorclip[rw_x] = yh+1;
 
-cmp   di, si
+cmp   di, si  ; todo sub
 jle   mark_floor_cx
 
 mov   byte ptr cs:[bx+OFFSET_FLOORCLIP], cl
@@ -6502,12 +6523,11 @@ xchg   cx, si
 ; dx is free
 
 ; BEGIN INLINED R_GetSourceSegment1_
-
+R_GetSourceSegment1_:
+PUBLIC R_GetSourceSegment1_
 
 
 push  bx ; dc_x
-
-push  bp ; bp. remove if sp becomes constant?
 
 
 
@@ -6525,7 +6545,10 @@ mul   dl       ; al has heightval
 add_base_segment_and_draw1:
 SELFMODIFY_add_cached_segment1:
 add   ax, 01000h
+
+
 just_do_draw1:
+public just_do_draw1
 mov   word ptr ds:[_dc_source_segment], ax
 
 
@@ -6541,12 +6564,14 @@ mov bx, 00000    ; set the function variant for this DrawColumnPrep call.  May a
 mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret - OFFSET R_BSP24_STARTMARKER_], 0C3h  ; ret
 call  R_DrawColumnPrep_
 
+R_DrawColumnPrep_bottom_return:
+public R_DrawColumnPrep_bottom_return
 
 
-mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret - OFFSET R_BSP24_STARTMARKER_], 05Dh  ; pop bp
-pop   bp ; bp. remove if sp becomes constant?
-
+mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret - OFFSET R_BSP24_STARTMARKER_], 05Bh  ; pop bx
 pop   bx ; restore dc_x
+mov   bp, sp
+add   bp, STOREWALLRANGE_FULL_STACK_SIZE
 
 ; todo did di/si need to be recovered?
 ; yh seems to need to be written to mark floor if floorclip
@@ -6562,6 +6587,7 @@ jmp   finished_inner_loop_iter
 ALIGN_MACRO
 mark_floor_cx:
 mov   byte ptr cs:[bx+OFFSET_FLOORCLIP], cl
+; di - si was negative so dont draw!
 jmp   done_marking_floor_cx
 
 ALIGN_MACRO
@@ -6742,7 +6768,7 @@ mov       word ptr es:[bx + DRAWSEG_T.drawseg_bsilheight], MAXSHORT
 skip_bot_silhouette:
 add       word ptr ds:[_ds_p], (SIZE DRAWSEG_T)
 
-add       sp, 02Ah     ; add back fixed SP
+add       sp, STOREWALLRANGE_INNER_STACK_SIZE     ; add back fixed SP
 SELFMODIFY_mark_planes_dirty:
 public SELFMODIFY_mark_planes_dirty 
 db  0B8h, 00h, 00h   ;mov ax, 0  ; modify the first byte with bit flags . 00 for ah.
@@ -6819,9 +6845,10 @@ mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5 - OFFSET 
 mov       word ptr ds:[SELFMODIFY_BSP_drawtype_1 - OFFSET R_BSP24_STARTMARKER_], 0EBB8h   ; mov ax, 0EBxxh
 mov       word ptr ds:[SELFMODIFY_BSP_drawtype_2 - OFFSET R_BSP24_STARTMARKER_], ((SELFMODIFY_BSP_drawtype_2_TARGET - SELFMODIFY_BSP_drawtype_2_AFTER) SHL 8) + 0EBh
 
+; todo word align
 mov       byte ptr ds:[SELFMODIFY_BSP_midtexture - OFFSET R_BSP24_STARTMARKER_], 0E9h
 mov       word ptr ds:[SELFMODIFY_BSP_midtexture+1 - OFFSET R_BSP24_STARTMARKER_], (SELFMODIFY_BSP_midtexture_TARGET - SELFMODIFY_BSP_midtexture_AFTER) 
-
+; todo word align
 mov       byte ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+0 - OFFSET R_BSP24_STARTMARKER_], 0E9h ; jmp short rel16
 mov       word ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+1 - OFFSET R_BSP24_STARTMARKER_], SELFMODIFY_BSP_midtexture_return_jmp_TARGET - SELFMODIFY_BSP_midtexture_return_jmp_AFTER
 
