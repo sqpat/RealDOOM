@@ -6295,6 +6295,7 @@ mov   bp, 01000h          ; dc_iscale +2
 
 ; pass in xlat offset for bx via bp
 
+SELFMODIFY_BSP_R_DrawColumnPrep_call:
 db 09Ah
 SELFMODIFY_COLFUNC_set_func_offset:
 dw DRAWCOL_OFFSET_BSP, COLORMAPS_SEGMENT
@@ -6561,14 +6562,18 @@ SELFMODIFY_toggle_bot_colfunc_type:
 mov bx, 00000    ; set the function variant for this DrawColumnPrep call.  May also arry the stretch tag of 6 independently applied to bot
 
 ; small idea: make these each three NOPs if its gonna be a bot only draw?
-mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret - OFFSET R_BSP24_STARTMARKER_], 0C3h  ; ret
+mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_call], 0EAh  ; jmp far
+
+; zero318's optim idea: modify the call to a jmp, piggy back on retf.
+
+push cs
 call  R_DrawColumnPrep_
+
 
 R_DrawColumnPrep_bottom_return:
 public R_DrawColumnPrep_bottom_return
 
-
-mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_ret - OFFSET R_BSP24_STARTMARKER_], 05Bh  ; pop bx
+mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_call], 09Ah  ; call far
 pop   bx ; restore dc_x
 mov   bp, sp
 add   bp, STOREWALLRANGE_FULL_STACK_SIZE
