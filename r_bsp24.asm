@@ -5865,8 +5865,7 @@ IF COMPISA GE COMPILE_386
    db 066h, 00Fh, 0A4h, 0C2h, 010h  ; shld edx, eax, 0x10
 
    ; ?only write to dc_iscale_hi when nonzero.
-; todo   mov byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], dl  ; turn on stretch variant for this frame
-; todo   mov byte ptr cs:[SELFMODIFY_toggle_bot_colfunc_type+1], dl  ; turn on stretch variant for this frame
+; todo   mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+2], dl  ; turn on stretch variant for this frame
    mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1 - OFFSET R_BSP24_STARTMARKER_], dl
 
    jmp FastDiv3232FFFF_done 
@@ -5886,10 +5885,7 @@ ELSE
    div bx
    ; cx:ax is result 
    ; ch is known zero.
-   ; how did this get 15!! cx:bx was 0:000c. how does that happen!?
-   ; todo ch
-   or  byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], ch  ; toggle stretch variant for this frame
-   or  byte ptr cs:[SELFMODIFY_toggle_bot_colfunc_type+1], ch  ; toggle stretch variant for this frame
+   mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+2], ch  ; toggle stretch variant for this frame
    ; only write to dc_iscale_hi when nonzero.
    mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1 - OFFSET R_BSP24_STARTMARKER_], cl
 
@@ -5977,8 +5973,7 @@ ELSE
 
    ; cx is zero already coming in from the first shift so cx:ax is already the result.
 
-   or  byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], 6  ; turn on stretch variant for this frame
-   or  byte ptr cs:[SELFMODIFY_toggle_bot_colfunc_type+1], 6  ; turn on stretch variant for this frame
+   mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+2], 6  ; turn on stretch variant for this frame
 
    jmp FastDiv3232FFFF_done  
    ALIGN_MACRO
@@ -6130,8 +6125,7 @@ ELSE
    sub  ax, bx ; modify qhat by measured amount
 
 
-   or  byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], 6  ; turn on stretch variant for this frame
-   or  byte ptr cs:[SELFMODIFY_toggle_bot_colfunc_type+1], 6  ; turn on stretch variant for this frame
+   mov   byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+2], 6  ; turn on stretch variant for this frame
 
 
 ENDIF
@@ -6239,6 +6233,7 @@ PUBLIC R_DrawColumnPrep_
 SELFMODIFY_bsp_apply_stretch_tag:
 public SELFMODIFY_bsp_apply_stretch_tag
 
+or   bl, 000h ; toggle on 6 or 0 for a different word lookup. Don't double add, just toggle on if not already on.
 
 ; al has function type index now, preshifted 1
 
@@ -6282,9 +6277,8 @@ dec   si ; finally undo +1 to dc_yl.
 mov   bx, si
 add   di, word ptr ds:[si+bx]                   ; add * 80 lookup table value 
 
-;xchg  ax, dx
+xchg  ax, dx
 xchg  ax, si
-mov   si, dx
 
 
 SELFMODIFY_BSP_add_destview_offset:
