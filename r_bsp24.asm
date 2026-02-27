@@ -6418,9 +6418,9 @@ do_top_texture_draw:  ; not a jump target.
 PUBLIC do_top_texture_draw
 
 ; TOP DRAW CEIL/FLOOR CHECKS HERE
-; todo swap ax/cx roles.
 
-mov   cx, word ptr [bp - 034h]    ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET  ; pixhigh
+
+mov   ax, word ptr [bp - 034h]    ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET  ; pixhigh
 SELFMODIFY_add_to_pixhigh_lo_1:
 add   word ptr [bp - 036h], 01000h  ; ! this wasnt selfmodified
 SELFMODIFY_add_to_pixhigh_hi_1:
@@ -6429,26 +6429,29 @@ adc   word ptr [bp - 034h], 01000h  ; ! this wasnt selfmodified
 
 ; todo reduce 16 bit logic, use 8 bit logic.
 
-xor   ax, ax
-mov   al, byte ptr cs:[bx + OFFSET_FLOORCLIP]
-cmp   cx, ax
-jl    dont_clip_top_floor
+xor   cx, cx
+mov   cl, byte ptr cs:[bx + OFFSET_FLOORCLIP]
+cmp   ax, cx
+jl    dont_clip_top_floor  ; todo branch test
 xchg  ax, cx
-dec   cx
+dec   ax
 
 dont_clip_top_floor:
-cmp   cx, si
-jl    mark_ceiling_si
+cmp   ax, si
+jl    mark_ceiling_si  ; skip drawing ceiling.
 cmp   di, si
-jle   mark_ceiling_cx
+jle   mark_ceiling_ax  ; skip drawing ceiling.
 
-xchg   cx, di  ; todo maybe this xchg doesnt need to be here; swap above register logic.
-; si:di are dc_yl, dc_yh
-push   cx ; note: midtexture doesnt need/use cx and doesnt do this.
-
-
+xchg   ax, di  ; todo maybe this xchg doesnt need to be here; swap above register logic.
 ; si:di are dc_yl, dc_yh
 
+
+
+; si:di are dc_yl, dc_yh   
+
+; todo test vs pusha
+
+push   ax ; store celip
 push dx  ; texturecolumn
 ; store for bottom draw.
 push  si ; dc_yl
@@ -6461,18 +6464,21 @@ SELFMODIFY_BSP_midtexture_return_jmp_TARGET:
 R_GetSourceSegment0_DONE_TOP:
 public R_GetSourceSegment0_DONE_TOP
 
-pop   di  ; dc_yh
+; todo test vs popa
+
+pop   ax  ; dc_yh
 pop   si  ; dc_yl
 pop   dx  ; textuecolumn
-pop   cx      ; todo whats this again. something for floorclip? yl-1?
+pop   di      ; todo whats this again. something for floorclip? yl-1?
+
 mov   bp, sp
 add   bp, STOREWALLRANGE_FULL_STACK_SIZE
-xchg  cx, di
 
 
 
-mark_ceiling_cx:
-mov   byte ptr cs:[bx  + OFFSET_CEILINGCLIP], cl
+
+mark_ceiling_ax:
+mov   byte ptr cs:[bx  + OFFSET_CEILINGCLIP], al
 SELFMODIFY_BSP_markceiling_2_TARGET:
 check_bottom_texture:
 ; bx is already rw_x
@@ -6484,10 +6490,10 @@ SELFMODIFY_BSP_bottexture_AFTER = SELFMODIFY_BSP_bottexture + 2
 ; todo dx is free... can it be used usefully?
 do_bottom_texture_draw:
 public do_bottom_texture_draw
-mov   cx, word ptr [bp - 038h]   ; pixlow hi
+mov   ax, word ptr [bp - 038h]   ; ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET pixlow hi
 ;		mid = (pixlow+HEIGHTUNIT-1)>>HEIGHTBITS;
-cmp   word ptr [bp - 03Ah], 1    ; todo bake this in to pixlow
-sbb   cx, 0FFFFh
+cmp   word ptr [bp - 03Ah], 1    ; ! todo bake this in to pixlow
+sbb   ax, 0FFFFh
 
 ;		pixlow += pixlowstep;
 
@@ -6499,35 +6505,32 @@ adc   word ptr [bp - 038h], 01000h
 ;		    mid = ceilingclip[rw_x]+1;
 
 
-
-xor   ax, ax
-mov   al, byte ptr cs:[bx+OFFSET_CEILINGCLIP]
-cmp   cx, ax
-jg    dont_clip_bot_ceil
-inc   ax
+xor   cx, cx
+mov   cl, byte ptr cs:[bx+OFFSET_CEILINGCLIP]
+cmp   ax, cx
+jg    dont_clip_bot_ceil ; todo branch test
+inc   cx
 xchg  ax, cx
 
 ;		if (mid <= yh)
 
 dont_clip_bot_ceil:
-cmp   cx, di
-jg    mark_floor_di
+cmp   ax, di
+jg    mark_floor_di  ; todo branch test
 
 ;		if (markfloor)
 ;		    floorclip[rw_x] = yh+1;
 
 cmp   di, si  ; todo sub
-mov   byte ptr cs:[bx+OFFSET_FLOORCLIP], cl
-jle   done_marking_floor_cx
+mov   byte ptr cs:[bx+OFFSET_FLOORCLIP], al
+jle   done_marking_floor_ax     ; todo branch test
 
 
-
-xchg   cx, si
+xchg   ax, si
+; si:di are dc_yl, dc_yh
 sub    di, si
-; dont push/pop cx because we don't need to preserve si, and si preserves cx
-; si:di are dc_yl, dc_yh
 
-; si:di are dc_yl, dc_yh
+
 ; dx is free
 
 ; BEGIN INLINED R_GetSourceSegment1_
@@ -6573,7 +6576,7 @@ mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_call], 0EAh  ; jmp far
 
 ; zero318's optim idea: modify the call to a jmp, piggy back on retf.
 
-push cs
+push  cs
 call  R_DrawColumnPrep_
 
 
@@ -6590,7 +6593,7 @@ add   bp, STOREWALLRANGE_FULL_STACK_SIZE
 
 ;END INLINED R_GetSourceSegment1_
 
-done_marking_floor_cx:
+done_marking_floor_ax:
 SELFMODIFY_BSP_markfloor_2_TARGET:
 done_marking_floor:
 jmp   finished_inner_loop_iter
@@ -7156,7 +7159,7 @@ test      ax, ax
 je        toptexture_zero         ; todo whats more common?
 
 toptexture_not_zero:
-mov       word ptr ds:[SELFMODIFY_BSP_toptexture - OFFSET R_BSP24_STARTMARKER_], 04E8Bh ; mov   cx, word ptr [bp - 0xxh] first two bytes
+mov       word ptr ds:[SELFMODIFY_BSP_toptexture - OFFSET R_BSP24_STARTMARKER_], 0468Bh ; mov   ax, word ptr [bp - 0xxh] first two bytes
 ; are any bits set?
 or        bl, bh
 or        byte ptr ds:[SELFMODIFY_check_for_any_tex+1 - OFFSET R_BSP24_STARTMARKER_], bl
@@ -7247,7 +7250,7 @@ mov       word ptr ds:[SELFMODIFY_BSP_bottexture - OFFSET R_BSP24_STARTMARKER_],
 jmp       bottexture_stuff_done
 ALIGN_MACRO
 bottexture_not_zero:
-mov       word ptr ds:[SELFMODIFY_BSP_bottexture - OFFSET R_BSP24_STARTMARKER_], 04E8Bh   ; mov   cx, word ptr [bp - 038h] first two bytes
+mov       word ptr ds:[SELFMODIFY_BSP_bottexture - OFFSET R_BSP24_STARTMARKER_], 0468Bh   ; mov   ax, word ptr [bp - 038h] first two bytes
 ; are any bits set?
 or        bl, bh
 or        byte ptr ds:[SELFMODIFY_check_for_any_tex+1 - OFFSET R_BSP24_STARTMARKER_], bl
