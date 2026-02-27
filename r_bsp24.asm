@@ -6154,8 +6154,6 @@ mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_lo+1 - OFFSET R_BSP24_STARTMARKE
 
 
 
-; store dc_x directly in code
-mov   word ptr cs:[SELFMODIFY_COLFUNC_get_dc_x+1 - OFFSET R_BSP24_STARTMARKER_], di
 
 ; get texturecolumn     in dx
 pop   dx
@@ -6220,6 +6218,9 @@ just_do_draw0:
 
 ; ax carries _dc_source_segment
 
+mov   dx, COLFUNC_FILE_START_SEGMENT
+mov   ds, dx
+
 
 SELFMODIFY_set_midtexturemid_hi:
 SELFMODIFY_set_toptexturemid_hi:
@@ -6232,8 +6233,9 @@ mov   dx, 01000h
 ; todo bx may still be dc_x here?
 ;dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
 sal   di, 1                                  ; double diff (dc_yh - dc_yl) to get a word offset
-mov   bx, COLFUNC_FILE_START_SEGMENT
-mov   ds, bx
+
+; note: bx is dc_x...
+mov     bp, bx
 
 SELFMODIFY_set_top_lookup_offset:
 add   di, 01000h
@@ -6275,18 +6277,20 @@ mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset], es
 push  word ptr ds:[di]                   ; get the jump value. bp has offset to table in segment
 pop   word ptr ds:[bx]                   ; overwrite the jump relative call for however many iterations in unrolled loop we need
 
-
-SELFMODIFY_COLFUNC_get_dc_x:
-mov   di, 01000h              ; note: tried preshifting this in the outer layer but it was slower
+; bp is dc_x
 
 ;todo change selfmodify
 SELFMODIFY_BSP_detailshift2minus:
-sar   di, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
-sar   di, 1
+sar   bp, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
+sar   bp, 1
 
 dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
 mov   bx, si
-add   di, word ptr ds:[si+bx]                   ; add * 80 lookup table value 
+mov   di, word ptr ds:[si+bx]                   ; add * 80 lookup table value 
+
+SELFMODIFY_BSP_add_destview_offset:
+lea   di, [bp + di + 01000h]
+
 
 mov   ds, ax ; finally set _dc_source_segment
 
@@ -6294,8 +6298,6 @@ xchg  ax, dx ; odd even toggle for SELFMODIFY_BSP_R_DrawColumnPrep_ret
 xchg  ax, si
 ;mov   si, dx ; odd even toggle for SELFMODIFY_BSP_R_DrawColumnPrep_ret
 
-SELFMODIFY_BSP_add_destview_offset:
-add   di, 01000h
 
 ; dc_iscale loaded here..
 SELFMODIFY_BSP_set_dc_iscale_lo:
@@ -6573,6 +6575,9 @@ public just_do_draw1
 ;mov   word ptr ds:[_dc_source_segment], ax
 ; ax carries _dc_source_segment
 
+mov   dx, COLFUNC_FILE_START_SEGMENT
+mov   ds, dx
+
 SELFMODIFY_set_bottexturemid_hi:
 mov   cl, 010h
 SELFMODIFY_set_bottexturemid_lo:
@@ -6580,8 +6585,10 @@ mov   dx, 01000h
 
 ; dec   si ; finally undo +1 to dc_yl.  ; toggle inside/outside of function so bottom call can copy and shift even/off
 sal   di, 1
-mov   bx, COLFUNC_FILE_START_SEGMENT
-mov   ds, bx
+
+; note: bx is dc_x...
+mov     bp, bx
+
 
 SELFMODIFY_set_bot_lookup_offset:
 add   di, 01000h
@@ -12374,7 +12381,7 @@ set_to_one:
 mov      byte ptr ds:[SELFMODIFY_BSP_detailshift_7+1 - OFFSET R_BSP24_STARTMARKER_], 3
 
 ; write to colfunc segment
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0 - OFFSET R_BSP24_STARTMARKER_], 0ffd1h ; sar di, 1
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0 - OFFSET R_BSP24_STARTMARKER_], 0fdd1h ; sar bp, 1
 
 ; nop 
 mov      ax, 0c089h 
@@ -12411,9 +12418,9 @@ set_to_zero:
 ; detailshift 0 case. usually involves two shift pairs.
 ; in this case - we make that first shift a proper shift
 
-; d1 ff  = sar di, 1
+; d1 fd  = sar bp, 1
 mov      byte ptr ds:[SELFMODIFY_BSP_detailshift_7+1 - OFFSET R_BSP24_STARTMARKER_], 4
-mov      ax, 0ffd1h 
+mov      ax, 0fdd1h 
 
 ; write to colfunc segment
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0 - OFFSET R_BSP24_STARTMARKER_], ax

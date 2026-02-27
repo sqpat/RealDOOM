@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/26 12:40:56
+Created on:       26/02/26 13:28:19
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -35,7 +35,7 @@ SM_OPL2_TEXT           CODE           AUTO           0533:0000       00000f3c
 SM_OPL3_TEXT           CODE           AUTO           0627:0000       0000100e
 SM_SBMID_TEXT          CODE           AUTO           0728:0000       00000730
 SM_MPUMD_TEXT          CODE           AUTO           079b:0000       000007db
-R_BSP_24_TEXT          CODE           AUTO           0819:0000       00003739
+R_BSP_24_TEXT          CODE           AUTO           0819:0000       00003735
 R_BSP_16_TEXT          CODE           AUTO           0b8d:0000       00003740
 R_BSP0_TEXT            CODE           AUTO           0f01:0000       0000366f
 R_BSPFL_TEXT           CODE           AUTO           1268:0000       00003617
@@ -341,69 +341,69 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079b:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
 0819:177a*     pre_increment_values
-0819:1b3a*     R_DrawColumnPrep_bottom_return
-0819:3398      R_WriteBackViewConstants24_
-0819:21a9*     R_AddLine_
-0819:3739      R_BSP24_ENDMARKER_
-0819:2e98      R_GetPatchTexture_Far24_
-0819:1b12*     R_GetSourceSegment1_
+0819:1b36*     R_DrawColumnPrep_bottom_return
+0819:3394      R_WriteBackViewConstants24_
+0819:21a5*     R_AddLine_
+0819:3735      R_BSP24_ENDMARKER_
+0819:2e94      R_GetPatchTexture_Far24_
+0819:1b0c*     R_GetSourceSegment1_
 0819:0a08*     FixedMulTrigNoShiftSine_BSPLocal_
-0819:1b1d*     just_do_draw1
-0819:1f56*     _selfmodify_restore_dx_6
-0819:1f90*     _selfmodify_restore_dx_7
-0819:201d*     _selfmodify_restore_dx_8
+0819:1b17*     just_do_draw1
+0819:1f52*     _selfmodify_restore_dx_6
+0819:1f8c*     _selfmodify_restore_dx_7
+0819:2019*     _selfmodify_restore_dx_8
 0819:0a04*     FixedMulTrigSine_BSPLocal_
-0819:1f1b*     continue_backsector_not_null
+0819:1f17*     continue_backsector_not_null
 0819:1036*     R_StoreWallRange_
-0819:1ada*     R_GetSourceSegment0_DONE_TOP
-0819:23a6*     R_ClipPassWallSegment_
+0819:1ad4*     R_GetSourceSegment0_DONE_TOP
+0819:23a2*     R_ClipPassWallSegment_
 0819:0a52*     FixedMulTrigCosine_BSPLocal_
 0819:1436*     done_with_sector_sided_check
 0819:1064*     SELFMODIFY_skip_curseg_based_selfmodify_AFTER
-0819:20ba*     R_Subsector_
+0819:20b6*     R_Subsector_
 0819:17b8*     check_here
-0819:1a46*     SELFMODIFY_BSP_R_DrawColumnPrep_ret
-0819:1aae*     do_top_texture_draw
+0819:1a40*     SELFMODIFY_BSP_R_DrawColumnPrep_ret
+0819:1aa8*     do_top_texture_draw
 0819:0000      R_BSP24_STARTMARKER_
-0819:19f8*     R_GetSourceSegment0_START
-0819:3248      R_RenderPlayerView24_
+0819:19f3*     R_GetSourceSegment0_START
+0819:3244      R_RenderPlayerView24_
 0819:09b4*     FixedDivBSPLocal_
 0819:166a*     SELFMODIFY_set_rw_x_loop_counter
 0819:05da*     div48_32_BSPLocal_
 0819:1715*     finish_outer_loop
 0819:0080*     _COLFUNC_SELFMODIFY_LOOKUPTABLE_SECOND_HALF
 0819:0080*     BEOFRE_COLFUNC_LOOKUP
-0819:2d3e*     R_GetTexturePage_
-0819:354c*     R_WriteBackFrameConstants_
+0819:2d3a*     R_GetTexturePage_
+0819:3548*     R_WriteBackFrameConstants_
 0819:0347*     _selfmodify_restore_dx
 0819:0a56*     FixedMulTrigNoShiftCosine_BSPLocal_
 0819:156b*     SELFMODIFY_set_floorplaneindex
 0819:154d*     SELFMODIFY_set_ceilingplaneindex
 0819:0aa2*     R_ClearPlanes_
-0819:1c82*     mark_planes_dirty
+0819:1c7e*     mark_planes_dirty
 0819:18e4*     main_3232_div
-0819:1a16*     SELFMODIFY_bsp_apply_stretch_tag
+0819:1a13*     SELFMODIFY_bsp_apply_stretch_tag
 0819:0068*     _lastbasexscale
 0819:138a*     handle_single_sided_line
-0819:1ca6*     handle_two_sided_line
+0819:1ca2*     handle_two_sided_line
 0819:0c54*     R_FindPlane_
 0819:0724*     FixedDivWholeA_BSPLocal_
-0819:1ee8*     side_has_midtexture
-0819:2f32      R_GetCompositeTexture_Far24_
+0819:1ee4*     side_has_midtexture
+0819:2f2e      R_GetCompositeTexture_Far24_
 0819:0068*     _basexscale
 0819:1024*     adjust_row_offset
 0819:0000*     _COLFUNC_SELFMODIFY_LOOKUPTABLE
-0819:1a16*     R_DrawColumnPrep_
+0819:1a13*     R_DrawColumnPrep_
 0819:0374*     SELFMODIFY_get_rw_distance_hi_1
-0819:19f4*     SELFMODIFY_BSP_midtexture
-0819:1ae8*     do_bottom_texture_draw
+0819:19ef*     SELFMODIFY_BSP_midtexture
+0819:1ae2*     do_bottom_texture_draw
 0819:00a0*     OFFSET_FLOORCLIP
 0819:121f*     done_setting_rw_distance
 0819:1640*     R_RenderSegLoop_
 0819:188a*     _selfmodify_restore_dx_10
-0819:24d8*     R_GetColumnSegment_
+0819:24d4*     R_GetColumnSegment_
 0819:035a*     R_ScaleFromGlobalAngle_
-0819:1c76*     SELFMODIFY_mark_planes_dirty
+0819:1c72*     SELFMODIFY_mark_planes_dirty
 0819:166f*     sub_base4diff
 0819:13c1*     SELFMODIFY_BSP_drawtype_1_TARGET
 Module: r_bsp16.obj(r_bsp16.ASM)
@@ -429,8 +429,8 @@ Module: r_bspfl.obj(r_bspfl.ASM)
 1268:32e5      R_WriteBackViewConstantsFL_
 Module: r_col24.obj(r_col24.ASM)
 15ca:14e2*     MARKER_SM_COL24_AFTER_JUMP_3
-15ca:0ce0*     MARKER_SM_COL24_AFTER_JUMP_2
 15ca:04dc*     MARKER_SM_COL24_AFTER_JUMP_1
+15ca:0ce0*     MARKER_SM_COL24_AFTER_JUMP_2
 15ca:1e74*     MARKER_SM_COL24_AFTER_JUMP_4
 15ca:1e50      MARKER_COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET_
 15ca:04b0*     R_DrawColumn24NoLoop_
@@ -1537,4 +1537,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003ddd0 (253392.)
 Entry point address: 2f92:7cfe
-Link time: 00:00.05
+Link time: 00:00.04
