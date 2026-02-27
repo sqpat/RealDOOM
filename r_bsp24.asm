@@ -42,7 +42,7 @@ MAX_VISSPRITES_ADDRESS = ((SIZE VISSPRITE_T) * MAXVISSPRITES) + _vissprites ; 0B
 ; _colfunc_lookup_segments
 
 
-; entries at 0, 6, 0x80, 0x86.
+; entries at 0, 4, 0x80, 0x84.
 
 ; 0x80 on means noloop
 ;  0x6 on means stretch
@@ -50,10 +50,11 @@ MAX_VISSPRITES_ADDRESS = ((SIZE VISSPRITE_T) * MAXVISSPRITES) + _vissprites ; 0B
 _COLFUNC_SELFMODIFY_LOOKUPTABLE:
 public _COLFUNC_SELFMODIFY_LOOKUPTABLE
 ; normal ; 12 bytes per
-dw DRAWCOL_OFFSET_BSP, COLFUNC_JUMP_LOOKUP_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET+1
+dw SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET+1, DRAWCOL_OFFSET_BSP
 ; normalstretch ; 12 bytes per
-dw DRAWCOL_NORMAL_STRETCH_OFFSET_BSP, COLFUNC_JUMP_LOOKUP_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NORMALSTRETCH_OFFSET+1
-
+dw SELFMODIFY_COLFUNC_JUMP_OFFSET24_NORMALSTRETCH_OFFSET+1, DRAWCOL_NORMAL_STRETCH_OFFSET_BSP
+_COLFUNC_JUMP_LOOKUP:
+dw COLFUNC_JUMP_LOOKUP_OFFSET
 
 
 
@@ -100,17 +101,8 @@ ENDM
    dw base_product ; for overflow cases...
 
 
-; segment aligned
-ALIGN 128
-_COLFUNC_SELFMODIFY_LOOKUPTABLE_SECOND_HALF:
-public _COLFUNC_SELFMODIFY_LOOKUPTABLE_SECOND_HALF
-; noloop ; 10 bytes per
-dw DRAWCOL_NOLOOP_OFFSET_BSP, DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1
-; noloopstretch ; 10 bytes per
-dw DRAWCOL_NOLOOP_STRETCH_OFFSET_BSP, DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOPANDSTRETCH_OFFSET+1
-
-
 _lastbasexscale:
+public _lastbasexscale ; IF THIS MOVES, UPDATE _BASEXSCALE_OFFSET_R_BSP in DEFS.INC
 _basexscale:
 PUBLIC _basexscale  ; todo this has to be constant across variants?
 dw 0F0F0h, 0F0F0h
@@ -124,6 +116,22 @@ _lastviewz_shortangle:
 dw 0F0F0h, 0F0F0h
 _lastviewz:
 dw 0F0F0h, 0F0F0h
+
+
+BEOFRE_COLFUNC_LOOKUP:
+public  BEOFRE_COLFUNC_LOOKUP
+; 080h here
+
+; segment aligned
+ALIGN 128
+_COLFUNC_SELFMODIFY_LOOKUPTABLE_SECOND_HALF:
+public _COLFUNC_SELFMODIFY_LOOKUPTABLE_SECOND_HALF
+; noloop ; 10 bytes per
+dw SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1, DRAWCOL_NOLOOP_OFFSET_BSP
+; noloopstretch ; 10 bytes per
+dw SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOPANDSTRETCH_OFFSET+1, DRAWCOL_NOLOOP_STRETCH_OFFSET_BSP
+dw DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET
+
 
 _lastviewangle:
 dw 0F0F0h, 0F0F0h
@@ -4649,7 +4657,10 @@ sub       ax, dx  ; ceiling - floor
 sub       ax, word ptr [bp - 0Ch]  ; subtract sectorheight
 and       ah, 080h                 ; function type select.
 mov       byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], ah
-
+xor       bx, bx
+mov       bl, ah
+mov       ax, word ptr cs:[bx + _COLFUNC_JUMP_LOOKUP]
+mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset+1], ax
 
 
 SELFMODIFY_setmidtexturetranslation_lookup:
@@ -5973,7 +5984,7 @@ ELSE
 
    ; cx is zero already coming in from the first shift so cx:ax is already the result.
 
-   mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+2], 6  ; turn on stretch variant for this frame
+   mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+2], 4  ; turn on stretch variant for this frame
 
    jmp FastDiv3232FFFF_done  
    ALIGN_MACRO
@@ -6125,7 +6136,7 @@ ELSE
    sub  ax, bx ; modify qhat by measured amount
 
 
-   mov   byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+2], 6  ; turn on stretch variant for this frame
+   mov   byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+2], 4  ; turn on stretch variant for this frame
 
 
 ENDIF
@@ -6217,8 +6228,10 @@ mov   dx, 01000h
 
 
 ; todo bx may still be dc_x here?
+dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
 
-
+SELFMODIFY_set_top_lookup_offset:
+mov bp, 01000h
 SELFMODIFY_toggle_top_colfunc_type:
 mov bx, 00000    ; set the function variant for this DrawColumnPrep call. May also arry the stretch tag of 6 independently applied to top/mid
 
@@ -6233,18 +6246,18 @@ PUBLIC R_DrawColumnPrep_
 SELFMODIFY_bsp_apply_stretch_tag:
 public SELFMODIFY_bsp_apply_stretch_tag
 
-or   bl, 000h ; toggle on 6 or 0 for a different word lookup. Don't double add, just toggle on if not already on.
+or   bl, 000h ; toggle on 4 or 0 for a different word lookup. Don't double add, just toggle on if not already on.
 
 ; al has function type index now, preshifted 1
 
 
+; instead of OR above, add to this lookup of cs.
+les   bx, dword ptr cs:[bx]  ; bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE, which is a 0 offset
+mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset], es
 
-mov   ax, word ptr cs:[bx]  ; bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE, which is a 0 offset
-mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset], ax
-les   bx, dword ptr cs:[bx + 2] ; bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 2, which is a 0 offset
 
-;  POINTER TO COLFUNC JUMP LOOKUP OFFSET IN BX
-;  POINTER TO COLFUNC JUMP INSTRUCTION IN ES
+;  POINTER TO COLFUNC JUMP LOOKUP OFFSET IN BP
+;  POINTER TO COLFUNC JUMP INSTRUCTION IN BX
 
 
 mov   ax, COLFUNC_FILE_START_SEGMENT
@@ -6261,8 +6274,7 @@ mov   ds, ax
 
 sal   di, 1                                  ; double diff (dc_yh - dc_yl) to get a word offset
 
-mov   ax, word ptr ds:[di+bx]                ; get the jump value. bp has offset to table in segment
-mov   bx, es
+mov   ax, word ptr ds:[di+bp]                ; get the jump value. bp has offset to table in segment
 mov   word ptr ds:[bx], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 
 SELFMODIFY_COLFUNC_get_dc_x:
@@ -6273,13 +6285,13 @@ SELFMODIFY_BSP_detailshift2minus:
 sar   di, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
 sar   di, 1
 
-dec   si ; finally undo +1 to dc_yl.
+;dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
 mov   bx, si
 add   di, word ptr ds:[si+bx]                   ; add * 80 lookup table value 
 
-xchg  ax, dx
+;xchg  ax, dx ; odd even toggle for SELFMODIFY_BSP_R_DrawColumnPrep_ret
 xchg  ax, si
-
+mov   si, dx ; odd even toggle for SELFMODIFY_BSP_R_DrawColumnPrep_ret
 
 SELFMODIFY_BSP_add_destview_offset:
 add   di, 01000h
@@ -6565,8 +6577,11 @@ mov   cl, 010h
 SELFMODIFY_set_bottexturemid_lo:
 mov   dx, 01000h
 
+dec   si ; finally undo +1 to dc_yl.  ; toggle inside/outside of function so bottom call can copy and shift even/off
+SELFMODIFY_set_bot_lookup_offset:
+mov   bp, 01000h
 SELFMODIFY_toggle_bot_colfunc_type:
-mov bx, 00000    ; set the function variant for this DrawColumnPrep call.  May also arry the stretch tag of 6 independently applied to bot
+mov   bx, 00000    ; set the function variant for this DrawColumnPrep call.  May also arry the stretch tag of 6 independently applied to bot
 
 ; small idea: make these each three NOPs if its gonna be a bot only draw?
 mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_call], 0EAh  ; jmp far
@@ -6940,6 +6955,13 @@ sub       cx, word ptr [bp - 0Ch]
 and       ch, 080h
 mov       byte ptr cs:[SELFMODIFY_toggle_bot_colfunc_type+1], ch
 
+push      bx  ; todo pushpop bx once ?
+xor       bx, bx
+mov       bl, ch
+mov       cx, word ptr cs:[bx + _COLFUNC_JUMP_LOOKUP]
+mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset+1], cx
+pop       bx
+
 mov       cx, es ; restore.
 
 ;		} else if (backsectorfloorheight > viewz_shortheight) {
@@ -6965,6 +6987,12 @@ jle       set_tsilheight_to_frontsectorceilingheight
 sub       dx, word ptr [bp - 0Ch]
 and       dh, 080h
 mov       byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], dh
+push      bx  ; todo pushpop bx once ?
+xor       bx, bx
+mov       bl, dh
+mov       dx, word ptr cs:[bx + _COLFUNC_JUMP_LOOKUP]
+mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset+1], dx
+pop       bx
 mov       dx, es ; restore.
 
 SELFMODIFY_BSP_viewz_shortheight_1:
