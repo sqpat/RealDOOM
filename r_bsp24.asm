@@ -6243,8 +6243,8 @@ mov   ax, word ptr cs:[bx]  ; bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE, which is a 0
 mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset], ax
 les   bx, dword ptr cs:[bx + 2] ; bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 2, which is a 0 offset
 
-;  POINTER TO COLFUNC JUMP LOOKUP OFFSET IN BP
-;  POINTER TO COLFUNC JUMP INSTRUCTION IN BX
+;  POINTER TO COLFUNC JUMP LOOKUP OFFSET IN BX
+;  POINTER TO COLFUNC JUMP INSTRUCTION IN ES
 
 
 mov   ax, COLFUNC_FILE_START_SEGMENT
@@ -6491,9 +6491,7 @@ do_bottom_texture_draw:
 public do_bottom_texture_draw
 mov   ax, word ptr [bp - 038h]   ; ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET pixlow hi
 ;		mid = (pixlow+HEIGHTUNIT-1)>>HEIGHTBITS;
-cmp   word ptr [bp - 03Ah], 1    ; ! todo bake this in to pixlow
-sbb   ax, 0FFFFh
-
+; +HEIGHTUNIT-1 baked in
 ;		pixlow += pixlowstep;
 
 SELFMODIFY_add_to_pixlow_lo_1:
@@ -7123,7 +7121,7 @@ mov       ax, 0404h
 not_closed_door:
 ; finally write this just once.
 push      ax  ; bp - 032h   markfloor/ceil for bottom path
-sub       sp, 8   ; for pixhigh/pixlo todo push these! get rid of these other push/pops in the way.
+
 ; ax free at last!
 ;		if (worldhigh.w < worldtop.w) {
 
@@ -7369,6 +7367,7 @@ jne       jmp_to_skip_pixhigh_step
 cmp       word ptr [bp - 028h], si
 jnbe      do_pixhigh_step
 jmp_to_skip_pixhigh_step:
+sub       sp, 4  ; skip pixhigh
 jmp skip_pixhigh_step
 
 do_pixhigh_step:
@@ -7422,24 +7421,27 @@ ELSE
    MUL  BX
    ADD  AX, CX
    ADC  DX, SI
-   MOV  SI, ES
+
 ENDIF
 
 ;end inlined FixedMulBSPLocal_
 
 
 neg       ax
-mov       word ptr [bp - 036h], ax
 
 SELFMODIFY_sub__centeryfrac_4_hi_2:
-mov       ax, 01000h ; ah known zero. dh too probably?
-sbb       ax, dx
+mov       cx, 01000h ; ah known zero. dh too probably?
+sbb       cx, dx
+mov       dx, cx
 
 
-
-mov       word ptr [bp - 034h], ax
 pop       bx
 pop       cx
+
+push      dx  ; bp - 034h
+push      ax  ; bp - 036h
+
+; last pop...
 SELFMODIFY_get_rwscalestep_lo_3:
 mov       ax, 01000h
 SELFMODIFY_get_rwscalestep_hi_3:
@@ -7461,7 +7463,7 @@ IF COMPISA GE COMPILE_386
 
 
 ELSE
-   MOV  ES, SI
+
    MOV  SI, DX
    PUSH AX
    MUL  BX
@@ -7557,6 +7559,7 @@ cmp       dx, word ptr [bp - 02Ah]
 jg        do_pixlow_step
 je        continue_worldlow_checks
 mov       al, byte ptr ss:[_maskedtexture]  ; todo is it necessary to write?
+sub       sp, 4 ; skip pixlow
 jmp       done_with_sector_sided_check
 continue_worldlow_checks:
 cmp       ax, word ptr [bp - 02Ch]
@@ -7618,15 +7621,17 @@ ENDIF
 
 ;end inlined FixedMulBSPLocal_
 
-neg       ax
-mov       word ptr [bp - 03Ah], ax
-SELFMODIFY_sub__centeryfrac_4_hi_1:  ; preincremented 1 for dc_yh/yl stuff
-mov       ax, 01000h ; ah known zero. dh too probably?
-sbb       ax, dx
+neg       ax     ;  -Fixedmul lowbits
+SELFMODIFY_sub__centeryfrac_4_hi_1:  
+mov       bx, 01000h ; ah known zero. dh too probably?
+sbb       bx, dx ; -FixedMul highbits
+
+add       ax, 0FFFFh ; HEIGHTUNIT -1 preshifted 4
+adc       bx, 0
+push      bx  ; bp - 038h
+push      ax  ; bp - 03Ah
 
 
-
-mov       word ptr [bp - 038h], ax
 SELFMODIFY_get_rwscalestep_lo_4:
 mov       ax, 01000h
 SELFMODIFY_get_rwscalestep_hi_4:
