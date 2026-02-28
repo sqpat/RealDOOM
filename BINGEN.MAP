@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/26 23:52:10
+Created on:       26/02/27 08:15:56
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -383,12 +383,12 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:1567*     SELFMODIFY_set_floorplaneindex
 0819:1549*     SELFMODIFY_set_ceilingplaneindex
 0819:0aa2*     R_ClearPlanes_
-0819:1ca0*     mark_planes_dirty
+0819:1ca2*     mark_planes_dirty
 0819:18e0*     main_3232_div
 0819:1a0f*     SELFMODIFY_bsp_apply_stretch_tag
 0819:0068*     _lastbasexscale
 0819:1386*     handle_single_sided_line
-0819:1cc0*     handle_two_sided_line
+0819:1cc2*     handle_two_sided_line
 0819:0c54*     R_FindPlane_
 0819:0724*     FixedDivWholeA_BSPLocal_
 0819:1f08*     side_has_midtexture
@@ -406,8 +406,8 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:1886*     _selfmodify_restore_dx_10
 0819:252e*     R_GetColumnSegment_
 0819:035a*     R_ScaleFromGlobalAngle_
-0819:1b6a*     SELFMODIFY_BSP_R_DrawColumnPrep_ret_bot
-0819:1c98*     SELFMODIFY_mark_planes_dirty
+0819:1b6c*     SELFMODIFY_BSP_R_DrawColumnPrep_ret_bot
+0819:1c9a*     SELFMODIFY_mark_planes_dirty
 0819:166b*     sub_base4diff
 0819:13bd*     SELFMODIFY_BSP_drawtype_1_TARGET
 Module: r_bsp16.obj(r_bsp16.ASM)
@@ -1541,4 +1541,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003de40 (253504.)
 Entry point address: 2f99:7cfe
-Link time: 00:00.04
+Link time: 00:00.05

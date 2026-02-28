@@ -5828,6 +5828,7 @@ SELFMODIFY_add_wallights:
 mov   al, byte ptr ds:[si+01000h]         ; 8a 84 00 10 
 ;        set colormap offset to high byte
 mov   byte ptr cs:[SELFMODIFY_BSP_set_xlat_offset+2 - OFFSET R_BSP24_STARTMARKER_], al
+;mov   byte ptr cs:[SELFMODIFY_BSP_set_xlat_offset_bot+2 - OFFSET R_BSP24_STARTMARKER_], al
 
 
 jmp   light_set
@@ -5873,6 +5874,7 @@ IF COMPISA GE COMPILE_386
    ; ?only write to dc_iscale_hi when nonzero.
 ; todo   mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+2], dl  ; turn on stretch variant for this frame
    mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1 - OFFSET R_BSP24_STARTMARKER_], dl
+   ;mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi_bot+1 - OFFSET R_BSP24_STARTMARKER_], dl
 
    jmp FastDiv3232FFFF_done 
    ALIGN_MACRO
@@ -5894,6 +5896,7 @@ ELSE
    mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+2], ch  ; toggle stretch variant for this frame
    ; only write to dc_iscale_hi when nonzero.
    mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1 - OFFSET R_BSP24_STARTMARKER_], cl
+   ;mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi_bot+1 - OFFSET R_BSP24_STARTMARKER_], cl
 
    jmp FastDiv3232FFFF_done    ; todo branch better 
    ALIGN_MACRO
@@ -6144,6 +6147,7 @@ FastDiv3232FFFF_done:
 ; do the bit shuffling etc when writing direct to drawcol.
 
 mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_lo+1 - OFFSET R_BSP24_STARTMARKER_], ax
+;mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_lo_bot+1 - OFFSET R_BSP24_STARTMARKER_], ax
 ; dc_iscale_hi was written ealier if nonzero
 
 
@@ -6615,8 +6619,6 @@ mov   bx, 00000    ; set the function variant for this DrawColumnPrep call.  May
 
 
 
-; zero318's optim idea: modify the call to a jmp, piggy back on retf.
-
 
 PROC   R_DrawColumnPrepBot_ NEAR
 PUBLIC R_DrawColumnPrepBot_ 
@@ -6661,8 +6663,9 @@ SELFMODIFY_BSP_set_dc_iscale_hi_bot:   ; gross but works
 mov   ch, byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi + 1]
 
 
-SELFMODIFY_BSP_set_xlat_offset_bot:   ; gross but works
-mov   bp, 01000h
+SELFMODIFY_BSP_set_xlat_offset_bot:
+;mov   bp, 01000h
+mov   bp, word ptr cs:[SELFMODIFY_BSP_set_xlat_offset + 1]
 
 ; pass in xlat offset for bx via bp
 
@@ -7322,7 +7325,7 @@ setup_bottexture:
 ; todo: bench copying here vs setting when mids generated.
 
 mov       ax, word ptr ds:[SELFMODIFY_BSP_set_xlat_offset + 1]
-mov       word ptr ds:[SELFMODIFY_BSP_set_xlat_offset_bot + 1], ax
+;mov       word ptr ds:[SELFMODIFY_BSP_set_xlat_offset_bot + 1], ax
 
 
 
