@@ -3918,11 +3918,6 @@ PUBLIC R_StoreWallRange_
 
 
 
-;push      bx     ; bp - 016h
-;push      cx     ; bp - 018h   ; todo get rid of most of these push pop
-;push      si     ; bp - 01Ah
-;push      di     ; bp - 01Ch
-
 
 push      ax ; bp - 01Eh
 push      dx ; bp - 020h
@@ -6373,7 +6368,7 @@ SELFMODIFY_add_to_bottomfrac_lo_1:
 add   word ptr [bp - 03Eh], 01000h
 SELFMODIFY_add_to_bottomfrac_hi_1:
 adc   word ptr [bp - 03Ch], 01000h
-jmp   start_per_column_inner_loop
+jmp   start_per_column_inner_loop ; 1ade jumped here
 ALIGN_MACRO
 jump_to_finish_outer_loop:
 mov   dx, cs
@@ -6473,6 +6468,29 @@ push  di ; dc_yh
 sub   di, si ; pre sub
 
 jmp R_GetSourceSegment0_START
+
+done_marking_floor_ax:
+public done_marking_floor_ax
+SELFMODIFY_BSP_markfloor_2_TARGET:
+done_marking_floor:
+jmp   finished_inner_loop_iter
+
+
+ALIGN_MACRO
+SELFMODIFY_BSP_bottexture_TARGET:
+no_bottom_texture_draw:
+SELFMODIFY_BSP_markfloor_2:
+;je    done_marking_floor
+SELFMODIFY_BSP_markfloor_2_AFTER = SELFMODIFY_BSP_markfloor_2+2
+
+mark_floor_di:
+public mark_floor_di
+   ;floorclip[rw_x] = yh + 1;
+xchg  ax, di   ; di seems safe to clobber?
+inc   ax
+mov   byte ptr cs:[bx+OFFSET_FLOORCLIP], al
+jmp   finished_inner_loop_iter
+
 ALIGN_MACRO
 SELFMODIFY_BSP_midtexture_return_jmp_TARGET:
 R_GetSourceSegment0_DONE_TOP:
@@ -6560,7 +6578,7 @@ SELFMODIFY_BSP_set_seglooptexrepeat1:
 jmp SHORT non_repeating_texture1
 
 SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER:
-SELFMODIFY_BSP_check_seglooptexmodulo1_AFTER:
+
 ;ALIGN_MACRO
 xchg  ax, ax                    ; one byte nop placeholder. this gets the ah value in mov ax, xxxx (byte 3)
 and   dl, ah   ; ah has loopwidth-1 (modulo )
@@ -6572,12 +6590,12 @@ add   ax, 01000h
 
 just_do_draw1:
 public just_do_draw1
-;mov   word ptr ds:[_dc_source_segment], ax
 ; ax carries _dc_source_segment
 
 mov   dx, COLFUNC_FILE_START_SEGMENT
 mov   ds, dx
 
+; todo cx here.
 SELFMODIFY_set_bottexturemid_hi:
 mov   cl, 010h
 SELFMODIFY_set_bottexturemid_lo:
@@ -6595,47 +6613,81 @@ add   di, 01000h
 SELFMODIFY_toggle_bot_colfunc_type:
 mov   bx, 00000    ; set the function variant for this DrawColumnPrep call.  May also arry the stretch tag of 6 independently applied to bot
 
-; small idea: make these each three NOPs if its gonna be a bot only draw?
-mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_call], 0EAh  ; jmp far
+
 
 ; zero318's optim idea: modify the call to a jmp, piggy back on retf.
 
-push  cs
-call  R_DrawColumnPrep_
 
-R_DrawColumnPrep_bottom_return:
-public R_DrawColumnPrep_bottom_return
+PROC   R_DrawColumnPrepBot_ NEAR
+PUBLIC R_DrawColumnPrepBot_ 
 
-mov   byte ptr cs:[SELFMODIFY_BSP_R_DrawColumnPrep_call], 09Ah  ; call far
+
+SELFMODIFY_bsp_apply_stretch_tag_bot:
+public SELFMODIFY_bsp_apply_stretch_tag_bot ; gross but works
+or   bl, byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag + 2]
+
+; al has function type index now, preshifted 1
+; instead of OR above, add to this lookup of cs.
+les   bx, dword ptr cs:[bx]  ; bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE, which is a 0 offset
+mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset_bot], es
+
+; 5 bytes, doesnt use ax.
+;todo: table to ss?
+push  word ptr ds:[di]                   ; get the jump value. bp has offset to table in segment
+pop   word ptr ds:[bx]                   ; overwrite the jump relative call for however many iterations in unrolled loop we need
+
+SELFMODIFY_BSP_detailshift2minus_bot:
+sar   bp, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
+sar   bp, 1
+
+dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
+mov   bx, si
+mov   di, word ptr ds:[si+bx]                   ; add * 80 lookup table value 
+
+SELFMODIFY_BSP_add_destview_offset_bot:
+lea   di, [bp + di + 01000h]
+
+
+mov   ds, ax ; finally set _dc_source_segment
+
+xchg  ax, dx ; odd even toggle for SELFMODIFY_BSP_R_DrawColumnPrep_ret
+xchg  ax, si
+
+
+; dc_iscale loaded here..
+SELFMODIFY_BSP_set_dc_iscale_lo_bot:   ; gross but works 
+mov   bx, word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_lo + 1]
+SELFMODIFY_BSP_set_dc_iscale_hi_bot:   ; gross but works
+mov   ch, byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi + 1]
+
+
+SELFMODIFY_BSP_set_xlat_offset_bot:   ; gross but works
+mov   bp, 01000h
+
+; pass in xlat offset for bx via bp
+
+SELFMODIFY_BSP_R_DrawColumnPrep_call_bot:
+db 09Ah
+SELFMODIFY_COLFUNC_set_func_offset_bot:
+dw DRAWCOL_OFFSET_BSP, COLORMAPS_SEGMENT
+
+
+SELFMODIFY_BSP_R_DrawColumnPrep_ret_bot:
+public SELFMODIFY_BSP_R_DrawColumnPrep_ret_bot
+
+; the pop bx gets replaced with ret if bottom is calling.
+; todo: the bottom caller pops the same stuff. pop here and modify a later instruction instead?
+
+
+
 pop   bx ; restore dc_x
 mov   bp, sp
 add   bp, STOREWALLRANGE_FULL_STACK_SIZE
 
-; todo did di/si need to be recovered?
-; yh seems to need to be written to mark floor if floorclip
 
 ;END INLINED R_GetSourceSegment1_
 
-done_marking_floor_ax:
-SELFMODIFY_BSP_markfloor_2_TARGET:
-done_marking_floor:
-jmp   finished_inner_loop_iter
 
-
-
-
-ALIGN_MACRO
-SELFMODIFY_BSP_bottexture_TARGET:
-no_bottom_texture_draw:
-SELFMODIFY_BSP_markfloor_2:
-;je    done_marking_floor
-SELFMODIFY_BSP_markfloor_2_AFTER = SELFMODIFY_BSP_markfloor_2+2
-
-mark_floor_di:
-   ;floorclip[rw_x] = yh + 1;
-xchg  ax, di   ; di seems safe to clobber?
-inc   ax
-mov   byte ptr cs:[bx+OFFSET_FLOORCLIP], al
 jmp   finished_inner_loop_iter
 ALIGN_MACRO
 ;BEGIN INLINED R_GetSourceSegment1_ AGAIN
@@ -6959,6 +7011,8 @@ sub       cx, word ptr [bp - 0Ch]
 and       ch, 080h
 mov       byte ptr cs:[SELFMODIFY_toggle_bot_colfunc_type+1], ch
 
+; todo set bot vals here?
+
 push      bx  ; todo pushpop bx once ?
 xor       bx, bx
 mov       bl, ch
@@ -7263,6 +7317,15 @@ jne       bottexture_zero
 cmp       si, word ptr [bp - 02Ch]
 jbe       bottexture_zero
 setup_bottexture:
+
+; todo: bottom selfmodifies.
+; todo: bench copying here vs setting when mids generated.
+
+mov       ax, word ptr ds:[SELFMODIFY_BSP_set_xlat_offset + 1]
+mov       word ptr ds:[SELFMODIFY_BSP_set_xlat_offset_bot + 1], ax
+
+
+
 SELFMODIFY_setbottexturetranslation_lookup:
 mov       ax, 01000h
 
@@ -12389,6 +12452,8 @@ mov      ax, 0c089h
 
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+2 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_bot+0 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_bot+2 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
 ; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
@@ -12430,12 +12495,16 @@ set_to_one:
 mov      byte ptr ds:[SELFMODIFY_BSP_detailshift_7+1 - OFFSET R_BSP24_STARTMARKER_], 3
 
 ; write to colfunc segment
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0 - OFFSET R_BSP24_STARTMARKER_], 0fdd1h ; sar bp, 1
+mov      ax, 0fdd1h ; sar bp, 1
+
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_bot+0 - OFFSET R_BSP24_STARTMARKER_], ax
 
 ; nop 
 mov      ax, 0c089h 
 ; write to colfunc segment
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+2 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_bot+2 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
 
@@ -12474,6 +12543,8 @@ mov      ax, 0fdd1h
 ; write to colfunc segment
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+2 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_bot+0 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_bot+2 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
 ; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
@@ -12899,6 +12970,7 @@ skip_viewangle_hi_selfmodifies_this_frame:
 ; get whole dword at the end here.
 les      ax, dword ptr ss:[_destview]
 mov      word ptr ds:[SELFMODIFY_BSP_add_destview_offset+2 - OFFSET R_BSP24_STARTMARKER_], ax
+mov      word ptr ds:[SELFMODIFY_BSP_add_destview_offset_bot+2 - OFFSET R_BSP24_STARTMARKER_], ax
 
 
 mov      dx, COLFUNC_FILE_START_SEGMENT
