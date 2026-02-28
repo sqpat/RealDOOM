@@ -4640,6 +4640,7 @@ mov       word ptr ds:[SELFMODIFY_BSP_midtexture_return_jmp+1 - OFFSET R_BSP24_S
 
 mov       byte ptr ds:[SELFMODIFY_BSP_midtexture - OFFSET R_BSP24_STARTMARKER_], 029h     ; sub di,
 mov       word ptr ds:[SELFMODIFY_BSP_midtexture+1 - OFFSET R_BSP24_STARTMARKER_], 07CF7h   ; (sub di,) si, jl
+;mov       word ptr ds:[SELFMODIFY_BSP_midtexture+1 - OFFSET R_BSP24_STARTMARKER_], 07CCFh   ; (sub di,) cx, jl
 
 
 SELFMODIFY_BSP_drawtype_1_TARGET:
@@ -6146,6 +6147,7 @@ FastDiv3232FFFF_done:
 ; result is in CX:AX
 ; do the bit shuffling etc when writing direct to drawcol.
 
+; todo write after a div in the function? in various spots?
 mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_lo+1 - OFFSET R_BSP24_STARTMARKER_], ax
 ;mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_lo_bot+1 - OFFSET R_BSP24_STARTMARKER_], ax
 ; dc_iscale_hi was written ealier if nonzero
@@ -6164,7 +6166,7 @@ mov   bx, di 			; store rw_x
 
 
 ; dx holds texturecolumn
-; get yl/yh in di/si
+; get yl/yh in di/cx
 pop   di
 pop   si
 
@@ -6177,7 +6179,7 @@ SELFMODIFY_BSP_midtexture_AFTER = SELFMODIFY_BSP_midtexture + 3
 sub   di, si                ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
 jl    mid_no_pixels_to_draw ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
 
-; si:di are dc_yl, dc_yh
+; cx:di are dc_yl, dc_yh
 ; dx holds texturecolumn
 
 ; TOP DRAW ENTERS HERE.
@@ -6238,7 +6240,6 @@ mov   bx, 00000    ; set the function variant for this DrawColumnPrep call. May 
 ; fall thru in the case of top/bot column.
 R_DrawColumnPrep_:
 PUBLIC R_DrawColumnPrep_ 
-;cl:dx are texturemid (si needs to hold dc_yl!)
 
 
 SELFMODIFY_bsp_apply_stretch_tag:
@@ -6264,10 +6265,15 @@ mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset], es
 
 ; 5 bytes, doesnt use ax.
 ;todo: table to ss?
+; compare: mul ah, movsw, shift solution, etc
+; mul ah: lose about 15 realtics
+
 sal   di, 1                                  ; double diff (dc_yh - dc_yl) to get a word offset
 SELFMODIFY_set_top_lookup_offset:
 push  word ptr ds:[di+01000h]            ; get the jump value. bp has offset to table in segment
 pop   word ptr ds:[bx]                   ; overwrite the jump relative call for however many iterations in unrolled loop we need
+
+mov   ds, ax ; finally set _dc_source_segment
 
 ; bp is dc_x
 
@@ -6277,17 +6283,16 @@ sar   bp, 1    ; todo would love to get rid of these. happening for every column
 sar   bp, 1
 
 dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
-mov   bx, si
-mov   di, word ptr ds:[si+bx]                   ; add * 80 lookup table value 
+lea   bx,  [si + _bsp_local_dc_yl_lookup_table]
+mov   di, word ptr cs:[si+bx]                   ; add * 80 lookup table value 
 
 SELFMODIFY_BSP_add_destview_offset:
 lea   di, [bp + di + 01000h]
 
 
-mov   ds, ax ; finally set _dc_source_segment
 
-xchg  ax, si ; dc_yl in ax. ; toggle for even/odd ret label
-;mov  ax, si ; dc_yl in ax.   ; toggle for even/odd ret label
+;xchg  ax, si ; dc_yl in ax. ; toggle for even/odd ret label
+mov  ax, si ; dc_yl in ax.   ; toggle for even/odd ret label
 
 
 
@@ -6520,7 +6525,6 @@ SELFMODIFY_BSP_bottexture:
 SELFMODIFY_BSP_bottexture_AFTER = SELFMODIFY_BSP_bottexture + 2
 
 
-; todo dx is free... can it be used usefully?
 do_bottom_texture_draw:
 public do_bottom_texture_draw
 mov   ax, word ptr [bp - 038h]   ; ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET pixlow hi
@@ -6556,11 +6560,12 @@ cmp   di, si  ; todo sub
 mov   byte ptr cs:[bx+OFFSET_FLOORCLIP], al
 jle   done_marking_floor_ax     ; todo branch test
 
-
+; todo this is messy
 xchg   ax, si
 ; si:di are dc_yl, dc_yh
 sub    di, si
 
+; todo move the post R_GetSourceSegment1_ logic here. 
 
 ; dx is free
 
@@ -6629,22 +6634,23 @@ SELFMODIFY_set_bot_lookup_offset:
 push  word ptr ds:[di+01000h]            ; get the jump value. bp has offset to table in segment
 pop   word ptr ds:[bx]                   ; overwrite the jump relative call for however many iterations in unrolled loop we need
 
+mov   ds, ax ; finally set _dc_source_segment
+
 SELFMODIFY_BSP_detailshift2minus_bot:
 sar   bp, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
 sar   bp, 1
 
 dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
-mov   bx, si
-mov   di, word ptr ds:[si+bx]                   ; add * 80 lookup table value 
+lea   bx,  [si + _bsp_local_dc_yl_lookup_table]
+mov   di, word ptr cs:[si+bx]                   ; add * 80 lookup table value 
 
 SELFMODIFY_BSP_add_destview_offset_bot:
 lea   di, [bp + di + 01000h]
 
 
-mov   ds, ax ; finally set _dc_source_segment
 
-;xchg  ax, si ; dc_yl in ax. ; toggle for even/odd ret label
-mov  ax, si ; dc_yl in ax.   ; toggle for even/odd ret label
+xchg  ax, si ; dc_yl in ax. ; toggle for even/odd ret label
+;mov  ax, si ; dc_yl in ax.   ; toggle for even/odd ret label
 
 ; todo combine here. somehow.
 SELFMODIFY_set_bottexturemid_hi:
@@ -12992,6 +12998,16 @@ mov      ds, ax
 ret
 
 ENDP
+
+
+_bsp_local_dc_yl_lookup_table:
+PUBLIC _bsp_local_dc_yl_lookup_table
+sumof80s = 0
+MAX_PIXELS = 200
+REPT MAX_PIXELS
+    dw sumof80s 
+    sumof80s = sumof80s + 80
+ENDM
 
 
 PROC R_BSP24_ENDMARKER_
