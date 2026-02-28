@@ -3918,10 +3918,10 @@ PUBLIC R_StoreWallRange_
 
 
 
-push      bx     ; bp - 016h
-push      cx     ; bp - 018h   ; todo get rid of most of these push pop
-push      si     ; bp - 01Ah
-push      di     ; bp - 01Ch
+;push      bx     ; bp - 016h
+;push      cx     ; bp - 018h   ; todo get rid of most of these push pop
+;push      si     ; bp - 01Ah
+;push      di     ; bp - 01Ch
 
 
 push      ax ; bp - 01Eh
@@ -6809,11 +6809,8 @@ db  0B8h, 00h, 00h   ;mov ax, 0  ; modify the first byte with bit flags . 00 for
 test      al, 3   
 jne       mark_planes_dirty ; common case is fall thru.
 
+; pops on outside
 
-pop       di            ; todo remove pushes  put ont he outside
-pop       si
-pop       cx
-pop       bx
 ret       
 
 ALIGN_MACRO
@@ -6833,12 +6830,8 @@ mov      byte ptr ds:[bx+di], al ; nonzero
 dont_mark_floor_dirty:
 mov      byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], ah ;zero
 
+; pops on outside
 
-
-pop       di            ; todo remove pushes  put ont he outside
-pop       si
-pop       cx
-pop       bx
 ret       
 
 ;   END INLINED R_RenderSegLoop_
@@ -8247,6 +8240,18 @@ jmp   R_ClipPassWallSegment_
 ALIGN_MACRO
 exit_addline_2:
 jmp   END_R_ADDLINE_LABEL
+
+ALIGN_MACRO
+first_greater_than_startfirst:
+; same as first_greater_than_startfirst_already_rendered but
+; we know we didnt render yet so if 2nd check fails dont selfmodify R_StoreWallRange_
+; stuff back due to no calls.
+cmp   di, word ptr ds:[si  + CLIPRANGE_T.cliprange_last]
+jnle  check_rest_loop
+return_didnt_render:
+jmp   END_R_ADDLINE_LABEL
+ALIGN_MACRO
+
 ALIGN_MACRO
 
 clip_solid_with_null_backsec:
@@ -8296,7 +8301,15 @@ mov   dx, word ptr ds:[si + CLIPRANGE_T.cliprange_first]
 dec   dx
 cmp   di, dx
 jl    last_smaller_than_startfirst;
-call  R_StoreWallRange_             ;		R_StoreWallRange (first, start->first - 1);
+push      bx
+push      cx
+push      si
+push      di
+call R_StoreWallRange_
+pop       di
+pop       si
+pop       cx
+pop       bx
 mov   ax, cx                        ;		start->first = first;	
 mov   word ptr ds:[si + CLIPRANGE_T.cliprange_first], ax
 
@@ -8319,7 +8332,15 @@ mov   ax, word ptr ds:[bx + CLIPRANGE_T.cliprange_last]
 inc   ax
 ;		// There is a fragment between two posts.
 ;		R_StoreWallRange (next->last + 1, (next+1)->first - 1);
-call  R_StoreWallRange_
+push bx
+push cx
+push si
+push di
+call R_StoreWallRange_
+pop  di
+pop  si
+pop  cx
+pop  bx
 mov   ax, word ptr ds:[bx + SIZE CLIPRANGE_T + CLIPRANGE_T.cliprange_last]
 add   bx, SIZE CLIPRANGE_T
 cmp   di, ax
@@ -8348,7 +8369,15 @@ ALIGN_MACRO
 last_smaller_than_startfirst:
 mov   dx, di
 ;// Post is entirely visible (above start),  so insert a new clippost.
-call  R_StoreWallRange_          ; 			R_StoreWallRange (first, last);
+push  bx
+push  cx
+push  si
+push  di
+call  R_StoreWallRange_
+pop   di
+pop   si
+pop   cx
+pop   bx
 mov   ax, cx                     ;        backup first
 mov   cx, word ptr ds:[_newend]     
 add   cx, 8
@@ -8378,22 +8407,22 @@ write_back_newend_and_return:          ;todo misnamed? doesnt actually write bac
 jmp   END_R_ADDLINE_AND_SELFMODIFY_LABEL
 ALIGN_MACRO
 
-first_greater_than_startfirst:
-; same as first_greater_than_startfirst_already_rendered but
-; we know we didnt render yet so if 2nd check fails dont selfmodify R_StoreWallRange_
-; stuff back due to no calls.
-cmp   di, word ptr ds:[si  + CLIPRANGE_T.cliprange_last]
-jnle  check_rest_loop
-return_didnt_render:
-jmp   END_R_ADDLINE_LABEL
-ALIGN_MACRO
+
 
 do_final_fragment:
 ;    // There is a fragment after *next.
 mov   ax, word ptr ds:[bx + CLIPRANGE_T.cliprange_last]
 mov   dx, di
 inc   ax
+push  bx
+push  cx
+push  si
+push  di
 call  R_StoreWallRange_
+pop   di
+pop   si
+pop   cx
+pop   bx
 mov   word ptr ds:[si + CLIPRANGE_T.cliprange_last], di
 jmp   crunch
 ALIGN_MACRO
@@ -8447,7 +8476,15 @@ jl   post_entirely_visible
 
 ; There is a fragment above *start.
 mov  ax, si
+push bx
+push cx
+push si
+push di
 call R_StoreWallRange_
+pop  di
+pop  si
+pop  cx
+pop  bx
 ; possibly dupe the follwing code with an implicit assumption if R_StoreWallRange already ran or not
 
 check_last_already_rendered:
@@ -8470,7 +8507,16 @@ inc  ax
 add  bx, SIZE CLIPRANGE_T
 ;  There is a fragment between two posts.
 
+push bx
+push cx
+push si
+push di
 call R_StoreWallRange_
+pop  di
+pop  si
+pop  cx
+pop  bx
+
 cmp  cx, word ptr ds:[bx + CLIPRANGE_T.cliprange_last]
 jg   check_next_fragment
 do_clippass_exit:
@@ -8489,6 +8535,7 @@ ALIGN_MACRO
 post_entirely_visible:
 mov  dx, cx
 mov  ax, si
+sub  sp, 8
 call R_StoreWallRange_
 jmp   END_R_ADDLINE_AND_SELFMODIFY_LABEL
 ALIGN_MACRO
@@ -8498,7 +8545,9 @@ fragment_after_next:
 
 mov  dx, cx
 inc  ax
+sub  sp, 8
 call R_StoreWallRange_
+
 jmp   END_R_ADDLINE_AND_SELFMODIFY_LABEL
 
 
