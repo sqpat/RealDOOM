@@ -6282,8 +6282,8 @@ SELFMODIFY_BSP_detailshift2minus:
 sar   bp, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
 sar   bp, 1
 
-dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
-lea   bx,  [si + _bsp_local_dc_yl_lookup_table]
+;dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
+lea   bx,  [si + _bsp_local_dc_yl_lookup_table - 2]
 mov   di, word ptr cs:[si+bx]                   ; add * 80 lookup table value 
 
 SELFMODIFY_BSP_add_destview_offset:
@@ -6291,8 +6291,8 @@ lea   di, [bp + di + 01000h]
 
 
 
-;xchg  ax, si ; dc_yl in ax. ; toggle for even/odd ret label
-mov  ax, si ; dc_yl in ax.   ; toggle for even/odd ret label
+xchg  ax, si ; dc_yl in ax. ; toggle for even/odd ret label
+;mov  ax, si ; dc_yl in ax.   ; toggle for even/odd ret label
 
 
 
@@ -6640,8 +6640,8 @@ SELFMODIFY_BSP_detailshift2minus_bot:
 sar   bp, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
 sar   bp, 1
 
-dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
-lea   bx,  [si + _bsp_local_dc_yl_lookup_table]
+;dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
+lea   bx,  [si + _bsp_local_dc_yl_lookup_table - 2]
 mov   di, word ptr cs:[si+bx]                   ; add * 80 lookup table value 
 
 SELFMODIFY_BSP_add_destview_offset_bot:
@@ -6649,8 +6649,8 @@ lea   di, [bp + di + 01000h]
 
 
 
-xchg  ax, si ; dc_yl in ax. ; toggle for even/odd ret label
-;mov  ax, si ; dc_yl in ax.   ; toggle for even/odd ret label
+;xchg  ax, si ; dc_yl in ax. ; toggle for even/odd ret label
+mov  ax, si ; dc_yl in ax.   ; toggle for even/odd ret label
 
 ; todo combine here. somehow.
 SELFMODIFY_set_bottexturemid_hi:
@@ -12618,12 +12618,12 @@ mov      es, ax
 
 ; ah is definitely 0... optimizable?
 mov      ax, word ptr ss:[_centery]
+inc      ax ; has to do with yl/yh inc by 1 logic
 mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_NORMAL+1], ax
 mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_NOLOOP+1], ax
 mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_NORMALSTRETCH+1], ax
 mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_NOLOOPANDSTRETCH+1], ax
  
-inc      ax ; has to do with yl/yh inc by 1 logic
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_4+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_2+1 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_3+1 - OFFSET R_BSP24_STARTMARKER_], ax

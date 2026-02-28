@@ -332,7 +332,7 @@ skip_ceil_clip_set_single:
 sub   dx, si
 js    exit_function_single
 
-dec   si ; undo +1
+;dec   si ; undo +1
 ; dx/si contain dc_yh/dc_yl
 
 ; todo: this can be a second, local version of the function that is specialized?
@@ -364,7 +364,7 @@ sar   ax, 1
 ; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
 
 mov   bp, si  ; word lookup
-add   ax, word ptr ds:[bp+si]                  ; add dc_yl * 80
+add   ax, word ptr ds:[bp+si-2]                  ; add dc_yl * 80
 SELFMODIFY_MASKED_destview_lo_2:               ; add destview
 add   ax, 01000h
 
@@ -578,7 +578,7 @@ sub   dx, si   ; dx is dc_yh
 js   jump_to_do_next_shadow_sprite_iteration
 
 mov   di, dx ; finally write dc_yh to di
-dec   si     ; undo dc_yl+1
+;dec   si     ; undo dc_yl+1
 
 ; texmid not needed for fuzzdraws, because we are reading from screen behind sprite, not texture.
 
@@ -597,7 +597,7 @@ sar   dx, cl
 
 SELFMODIFY_MASKED_destview_lo_1:
 add   dx, 1000h   ; need the 2 byte constant.
-add   dx, word ptr es:[bx+si]
+add   dx, word ptr es:[bx+si-2]
 
 mov   cx, dx
 
@@ -5713,7 +5713,7 @@ skip_ceil_clip_set:
 sub   dx, si   ; dx is dc_yh
 jl    increment_column_and_continue_loop
 
-dec   si     ; undo dc_yl+1
+;dec   si     ; undo dc_yl+1
 mov   di, dx ; finally write dc_yh to di
 
 SELFMODIFY_MASKED_dc_texturemid_hi_1:
@@ -5762,7 +5762,7 @@ sal   di, 1                                  ; double diff (dc_yh - dc_yl) to ge
 mov   di, word ptr ds:[di+DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET]   ; get the jump value. both tables in masked are 10 byte jump tables
 
 mov   bp, si
-add   ax, word ptr ds:[si+bp]                   ; add * 80 lookup table value 
+add   ax, word ptr ds:[si+bp-2]                   ; add * 80 lookup table value 
 
 SELFMODIFY_MASKED_destview_lo_3:
 add   ax, 01000h
