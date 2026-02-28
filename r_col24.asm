@@ -96,7 +96,7 @@ PUBLIC  R_DrawColumn24NoLoop_
 
 MARKER_SM_COLFUNC_subtract_centery24_noloop_:
 PUBLIC MARKER_SM_COLFUNC_subtract_centery24_noloop_
-    sub   ax, 01000h
+   sub   ax, 01000h  ; todo move this outside with lea ax, [si - 01000h]
 
    MOV  DX, AX  ; copy center24y
    MUL  CH
@@ -205,7 +205,7 @@ PUBLIC  R_DrawColumn24NoLoopAndStretch_
 
 MARKER_SM_COLFUNC_subtract_centery24_noloopandstretch_:
 PUBLIC MARKER_SM_COLFUNC_subtract_centery24_noloopandstretch_
-   sub   ax, 01000h
+   sub   ax, 01000h  ; todo move this outside with lea ax, [si - 01000h]
     ; ch is unset (garbage), but implied value 0. skip the mul ch step
 
    MOV  DX, AX  ; copy center24y
@@ -292,7 +292,7 @@ COLORMAPS_F_OFFSET = 07Fh + (((COLORMAPS_F_DUPE_SEGMENT) - COLORMAPS_SEGMENT) SH
 
 MARKER_SM_COLFUNC_subtract_centery24_normal_:
 PUBLIC MARKER_SM_COLFUNC_subtract_centery24_normal_
-    sub   ax, 01000h
+   sub   ax, 01000h  ; todo move this outside with lea ax, [si - 01000h]
 
 ; credit to zero318 for various ideas for the function
    MOV  DX, AX  ; copy center24y
@@ -400,7 +400,7 @@ PUBLIC  R_DrawColumn24NormalStretch_
 
 MARKER_SM_COLFUNC_subtract_centery24_normalstretch_:
 PUBLIC MARKER_SM_COLFUNC_subtract_centery24_normalstretch_
-    sub   ax, 01000h
+   sub   ax, 01000h  ; todo move this outside with lea ax, [si - 01000h]
 
    ; ch is unset (garbage), but implied value 0. skip the mul ch step
 

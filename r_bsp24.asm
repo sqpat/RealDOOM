@@ -5873,8 +5873,8 @@ IF COMPISA GE COMPILE_386
 
    ; ?only write to dc_iscale_hi when nonzero.
 ; todo   mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+2], dl  ; turn on stretch variant for this frame
-   mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1 - OFFSET R_BSP24_STARTMARKER_], dl
-   ;mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi_bot+1 - OFFSET R_BSP24_STARTMARKER_], dl
+   mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+2 - OFFSET R_BSP24_STARTMARKER_], dl
+   ;mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi_bot+2 - OFFSET R_BSP24_STARTMARKER_], dl
 
    jmp FastDiv3232FFFF_done 
    ALIGN_MACRO
@@ -5889,14 +5889,14 @@ ELSE
 
    xchg dx, cx   ; cx was 0, dx is FFFF
    div bx        ; after this dx stores remainder, ax stores q1
+   ;mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi_bot+2 - OFFSET R_BSP24_STARTMARKER_], al
    xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
    div bx
    ; cx:ax is result 
    ; ch is known zero.
    mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+2], ch  ; toggle stretch variant for this frame
    ; only write to dc_iscale_hi when nonzero.
-   mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+1 - OFFSET R_BSP24_STARTMARKER_], cl
-   ;mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi_bot+1 - OFFSET R_BSP24_STARTMARKER_], cl
+   mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+2 - OFFSET R_BSP24_STARTMARKER_], cl
 
    jmp FastDiv3232FFFF_done    ; todo branch better 
    ALIGN_MACRO
@@ -6221,16 +6221,7 @@ mov   dx, COLFUNC_FILE_START_SEGMENT
 mov   ds, dx
 
 
-SELFMODIFY_set_midtexturemid_hi:
-SELFMODIFY_set_toptexturemid_hi:
-mov   cl, 010h
-SELFMODIFY_set_midtexturemid_lo:
-SELFMODIFY_set_toptexturemid_lo:
-mov   dx, 01000h
 
-
-; todo bx may still be dc_x here?
-;dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
 sal   di, 1                                  ; double diff (dc_yh - dc_yl) to get a word offset
 
 ; note: bx is dc_x...
@@ -6244,7 +6235,7 @@ mov   bx, 00000    ; set the function variant for this DrawColumnPrep call. May 
 ; ax is actually source segment in fallthru... maybe save a lds in colfunc? what about in call case, masked, etc?
 
 ; fall thru in the case of top/bot column.
-PROC   R_DrawColumnPrep_ NEAR
+R_DrawColumnPrep_:
 PUBLIC R_DrawColumnPrep_ 
 ;cl:dx are texturemid (si needs to hold dc_yl!)
 
@@ -6293,21 +6284,25 @@ lea   di, [bp + di + 01000h]
 
 mov   ds, ax ; finally set _dc_source_segment
 
-xchg  ax, dx ; odd even toggle for SELFMODIFY_BSP_R_DrawColumnPrep_ret
-xchg  ax, si
-;mov   si, dx ; odd even toggle for SELFMODIFY_BSP_R_DrawColumnPrep_ret
+xchg  ax, si ; dc_yl in ax. ; toggle for even/odd ret label
+;mov  ax, si ; dc_yl in ax.   ; toggle for even/odd ret label
+
 
 
 ; dc_iscale loaded here..
 SELFMODIFY_BSP_set_dc_iscale_lo:
 mov   bx, 01000h        ; dc_iscale +0
+SELFMODIFY_set_midtexturemid_hi:
+SELFMODIFY_set_toptexturemid_hi:
 SELFMODIFY_BSP_set_dc_iscale_hi:
-mov   ch, 010h          ; dc_iscale +2
+mov   cx, 01000h        ; dc_iscale +2 hi, toptexturemid hi lo
 
 
+SELFMODIFY_set_midtexturemid_lo:
+SELFMODIFY_set_toptexturemid_lo:
+mov   si, 01000h
 SELFMODIFY_BSP_set_xlat_offset:
-mov   bp, 01000h          ; dc_iscale +2
-
+mov   bp, 01000h          ; todo if drawcol preamble moves local then write this to bx there
 ; pass in xlat offset for bx via bp
 
 SELFMODIFY_BSP_R_DrawColumnPrep_call:
@@ -6599,13 +6594,8 @@ public just_do_draw1
 mov   dx, COLFUNC_FILE_START_SEGMENT
 mov   ds, dx
 
-; todo cx here.
-SELFMODIFY_set_bottexturemid_hi:
-mov   cl, 010h
-SELFMODIFY_set_bottexturemid_lo:
-mov   dx, 01000h
 
-; dec   si ; finally undo +1 to dc_yl.  ; toggle inside/outside of function so bottom call can copy and shift even/off
+
 sal   di, 1
 
 ; note: bx is dc_x...
@@ -6620,7 +6610,7 @@ mov   bx, 00000    ; set the function variant for this DrawColumnPrep call.  May
 
 
 
-PROC   R_DrawColumnPrepBot_ NEAR
+R_DrawColumnPrepBot_ :
 PUBLIC R_DrawColumnPrepBot_ 
 
 
@@ -6652,19 +6642,26 @@ lea   di, [bp + di + 01000h]
 
 mov   ds, ax ; finally set _dc_source_segment
 
-xchg  ax, dx ; odd even toggle for SELFMODIFY_BSP_R_DrawColumnPrep_ret
-xchg  ax, si
+;xchg  ax, si ; dc_yl in ax. ; toggle for even/odd ret label
+mov  ax, si ; dc_yl in ax.   ; toggle for even/odd ret label
 
+; todo combine here. somehow.
+SELFMODIFY_set_bottexturemid_hi:
+SELFMODIFY_BSP_set_dc_iscale_hi_bot:   ; gross but works
+;mov   cx, 01000h
+mov   cl, 010h
+mov   ch, byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi + 2]
+
+SELFMODIFY_set_bottexturemid_lo:
+mov   si, 01000h
 
 ; dc_iscale loaded here..
 SELFMODIFY_BSP_set_dc_iscale_lo_bot:   ; gross but works 
 mov   bx, word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_lo + 1]
-SELFMODIFY_BSP_set_dc_iscale_hi_bot:   ; gross but works
-mov   ch, byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi + 1]
 
 
 SELFMODIFY_BSP_set_xlat_offset_bot:
-;mov   bp, 01000h
+;mov   bp, 01000h   mov   bp, 01000h          ; todo if drawcol preamble moves local then write this to bx there
 mov   bp, word ptr cs:[SELFMODIFY_BSP_set_xlat_offset + 1]
 
 ; pass in xlat offset for bx via bp
