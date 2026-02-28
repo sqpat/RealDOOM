@@ -6173,6 +6173,7 @@ SELFMODIFY_BSP_midtexture:
 PUBLIC SELFMODIFY_BSP_midtexture
 SELFMODIFY_BSP_midtexture_AFTER = SELFMODIFY_BSP_midtexture + 3
 
+; dc_yl and dc_yh are both still one too high, but (di - si) count calculation is unaffected.
 sub   di, si                ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
 jl    mid_no_pixels_to_draw ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
 
@@ -6180,6 +6181,9 @@ jl    mid_no_pixels_to_draw ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
 ; dx holds texturecolumn
 
 ; TOP DRAW ENTERS HERE.
+
+; todo move self modify logic here before getsourcesegment.
+
 
 ; inlined function. 
 R_GetSourceSegment0_START:
@@ -6222,13 +6226,10 @@ mov   ds, dx
 
 
 
-sal   di, 1                                  ; double diff (dc_yh - dc_yl) to get a word offset
 
 ; note: bx is dc_x...
 mov     bp, bx
 
-SELFMODIFY_set_top_lookup_offset:
-add   di, 01000h
 SELFMODIFY_toggle_top_colfunc_type:
 mov   bx, 00000    ; set the function variant for this DrawColumnPrep call. May also arry the stretch tag of 6 independently applied to top/mid
 
@@ -6257,14 +6258,15 @@ mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset], es
 ; dest = destview + dc_yl*80 + (dc_x>>2); 
 ; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
 
-; dc_yl and dc_yh are both still one too high, but (di - si) count calculation is unaffected.
 
 ; di is dc_yh - dc_yl
 ; si is dc_yl 
 
 ; 5 bytes, doesnt use ax.
 ;todo: table to ss?
-push  word ptr ds:[di]                   ; get the jump value. bp has offset to table in segment
+sal   di, 1                                  ; double diff (dc_yh - dc_yl) to get a word offset
+SELFMODIFY_set_top_lookup_offset:
+push  word ptr ds:[di+01000h]            ; get the jump value. bp has offset to table in segment
 pop   word ptr ds:[bx]                   ; overwrite the jump relative call for however many iterations in unrolled loop we need
 
 ; bp is dc_x
@@ -6596,14 +6598,11 @@ mov   ds, dx
 
 
 
-sal   di, 1
 
 ; note: bx is dc_x...
 mov     bp, bx
 
 
-SELFMODIFY_set_bot_lookup_offset:
-add   di, 01000h
 SELFMODIFY_toggle_bot_colfunc_type:
 mov   bx, 00000    ; set the function variant for this DrawColumnPrep call.  May also arry the stretch tag of 6 independently applied to bot
 
@@ -6625,7 +6624,9 @@ mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset_bot], es
 
 ; 5 bytes, doesnt use ax.
 ;todo: table to ss?
-push  word ptr ds:[di]                   ; get the jump value. bp has offset to table in segment
+sal   di, 1
+SELFMODIFY_set_bot_lookup_offset:
+push  word ptr ds:[di+01000h]            ; get the jump value. bp has offset to table in segment
 pop   word ptr ds:[bx]                   ; overwrite the jump relative call for however many iterations in unrolled loop we need
 
 SELFMODIFY_BSP_detailshift2minus_bot:
