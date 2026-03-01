@@ -170,6 +170,11 @@ dw 0FFFFh
 _floorplaneindex:
 dw 0FFFFh
 
+_frontsector:
+dw 0FFFFh, SECTORS_SEGMENT
+_backsector:
+dw 0FFFFh, SECTORS_SEGMENT
+
 
 ; 0AAh
 
@@ -3888,7 +3893,7 @@ SELFMODIFY_skip_frontsector_based_selfmodify_AFTER:
 lea       di, [bp + 6]
 mov       dx, ss
 mov       es, dx
-lds       si, dword ptr ds:[_frontsector]
+lds       si, dword ptr cs:[_frontsector]
 
 ; si = frontsector
 movsw     ; bp + 6 frontsectorfloorheight
@@ -3996,7 +4001,7 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta], dl
    mov       ds, ax
 
 
-   cmp       word ptr ss:[_backsector], SECNUM_NULL
+   cmp       word ptr cs:[_backsector], SECNUM_NULL
 
    ; ds:si is a SIDE_T
 
@@ -6928,7 +6933,7 @@ SELFMODIFY_BSP_drawtype_2_TARGET:
   ; wall height < 128. that means backsector.floor - front.floor < 128
 
 
-lds       si, dword ptr ss:[_backsector]
+lds       si, dword ptr cs:[_backsector]
 lodsw     ; floorheight
 mov       word ptr cs:[SELFMODIFY_get_backsector_floorheight+3], ax
 xchg      ax, cx
@@ -7890,7 +7895,7 @@ pop        ax
 
 
 
-;jmp       done_with_sector_sided_check
+; done_with_sector_sided_check
 
 
 ; todo get _maskedtexture for free?
@@ -8229,7 +8234,7 @@ SUBSECTOR_OFFSET_IN_SECTORS       = (SUBSECTORS_SEGMENT - SECTORS_SEGMENT) * 16
 ALIGN_MACRO
 revert_visplane:
 call  Z_QuickMapVisplaneRevert_BSPLocal_ ;  doesn't ruin ES i guess
-les   bx, dword ptr ds:[_frontsector]  ; retrieve frontsector? 
+les   bx, dword ptr cs:[_frontsector]  ; retrieve frontsector? 
 jmp   prepare_fields
 
 ALIGN_MACRO
@@ -8262,7 +8267,7 @@ push  word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS + SUBSECTOR_T.ss_firstline]   
 push  ax  ; store count  ; bp + 2
 
 mov   bx, word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS + SUBSECTOR_T.ss_secnum] ; get subsec secnum
-mov   word ptr ds:[_frontsector], bx
+mov   word ptr cs:[_frontsector], bx
 
 
 cmp   byte ptr ds:[_visplanedirty], 0
@@ -8301,7 +8306,7 @@ mov   ch, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
 mov   cl, byte ptr es:[bx + SECTOR_T.sec_floorpic]
 xor   bx, bx ; isceil = 0
 call  R_FindPlane_
-les   bx, dword ptr ds:[_frontsector]  ; retrieve frontsector
+les   bx, dword ptr cs:[_frontsector]  ; retrieve frontsector
 set_floor_plane:
 mov   word ptr cs:[_floorplaneindex], ax
 
@@ -8328,7 +8333,7 @@ mov   ch, byte ptr es:[bx + SECTOR_T.sec_lightlevel]
 mov   cl, byte ptr es:[bx + SECTOR_T.sec_ceilingpic]
 mov   bx, 1
 call  R_FindPlane_
-les   bx, dword ptr ds:[_frontsector]    ; retrieve frontsector
+les   bx, dword ptr cs:[_frontsector]    ; retrieve frontsector
 set_ceiling_plane:
 mov   word ptr cs:[_ceilingplaneindex], ax
 
@@ -8619,10 +8624,10 @@ SHIFT_MACRO shl bx 2
 
     ; secnum field in this side_render_t
 mov   si, word ptr ds:[bx + _sides_render + SIDE_RENDER_T.sr_secnum]
-mov   word ptr ds:[_backsector], si
+mov   word ptr cs:[_backsector], si
 
 
-les   di, dword ptr ds:[_frontsector]
+les   di, dword ptr cs:[_frontsector]
 ;es:si backsector
 ;es:di frontsector.
 
@@ -8699,7 +8704,7 @@ ALIGN_MACRO
 
 clip_solid_with_null_backsec:
 xchg  ax, bx                   ; dont grab uncached x1 - reverse
-mov   word ptr ds:[_backsector], SECNUM_NULL   ; does this ever get properly used or checked? can we just ignore?
+mov   word ptr cs:[_backsector], SECNUM_NULL   ; does this ever get properly used or checked? can we just ignore?
 
 
 clipsolid_ax_swap:
