@@ -4646,19 +4646,27 @@ mov       word ptr ds:[SELFMODIFY_BSP_midtexture+1 - OFFSET R_BSP24_STARTMARKER_
 SELFMODIFY_BSP_drawtype_1_TARGET:
 public SELFMODIFY_BSP_drawtype_1_TARGET
 
-; dont do this all unless its actually mid draw!
+; todo dont do this all unless its actually textured?
 les       dx, dword ptr [bp + 6] ; frontsector floor and ceiling
 mov       ax, es
 sub       ax, dx  ; ceiling - floor
 sub       ax, word ptr [bp - 0Ch]  ; subtract sectorheight
 and       ah, 080h                 ; function type select.
-mov       byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], ah
+
+; using loop/noloop lookup flag, look up the function setter params for stretch/nostretch for this func type and set them.
+
 xor       bx, bx
 mov       bl, ah
-mov       ax, word ptr cs:[bx + _COLFUNC_JUMP_LOOKUP]
-mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset+2], ax
-
-
+mov       ax, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP]
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset+2], ax  ; per pixel byte count lookuo selector (mul 10/12)
+les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset+5], ax
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr+5], es
+les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 4]
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_1+5], ax
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1+5], es
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_2+5], ax
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2+5], es
 SELFMODIFY_setmidtexturetranslation_lookup:
 mov       ax, 01000h
 
@@ -5828,6 +5836,11 @@ SELFMODIFY_add_wallights:
 ; scalelight is pre-shifted 4 to save on the double sal every column.
 mov   al, byte ptr ds:[si+01000h]         ; 8a 84 00 10 
 ;        set colormap offset to high byte
+
+; todo: this
+;mov   dx, cs
+;mov   ds, dx
+
 mov   byte ptr cs:[SELFMODIFY_BSP_set_xlat_offset+2 - OFFSET R_BSP24_STARTMARKER_], al
 ;mov   byte ptr cs:[SELFMODIFY_BSP_set_xlat_offset_bot+2 - OFFSET R_BSP24_STARTMARKER_], al
 
@@ -5877,6 +5890,13 @@ IF COMPISA GE COMPILE_386
    mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+2 - OFFSET R_BSP24_STARTMARKER_], dl
    ;mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi_bot+2 - OFFSET R_BSP24_STARTMARKER_], dl
 
+; todo: 386 logic.
+   SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset:
+   mov   word ptr cs:[SELFMODIFY_set_top_jump_immediate_location+1], 01000h
+
+   SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr:
+   mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset], 01000h
+
    jmp FastDiv3232FFFF_done 
    ALIGN_MACRO
 
@@ -5890,12 +5910,20 @@ ELSE
 
    xchg dx, cx   ; cx was 0, dx is FFFF
    div bx        ; after this dx stores remainder, ax stores q1
-   ;mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi_bot+2 - OFFSET R_BSP24_STARTMARKER_], al
+; stretch draw off path
+   SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset:
+   mov   word ptr cs:[SELFMODIFY_set_top_jump_immediate_location+1], 01000h
+   SELFMODIFY_set_bot_lookup_offset_setter_nostretch_jumpoffset:
+   mov   word ptr cs:[SELFMODIFY_set_bot_jump_immediate_location+1], 01000h
+
    xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
    div bx
    ; cx:ax is result 
    ; ch is known zero.
-   mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+2], ch  ; toggle stretch variant for this frame
+   SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr:
+   mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset], 01000h
+   SELFMODIFY_set_bot_lookup_offset_setter_nostretch_funcaddr:
+   mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset_bot], 01000h
    ; only write to dc_iscale_hi when nonzero.
    mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+2 - OFFSET R_BSP24_STARTMARKER_], cl
 
@@ -5983,7 +6011,16 @@ ELSE
 
    ; cx is zero already coming in from the first shift so cx:ax is already the result.
 
-   mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+2], 4  ; turn on stretch variant for this frame
+; stretch draw on path
+
+   SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_1:
+   mov   word ptr cs:[SELFMODIFY_set_top_jump_immediate_location+1], 01000h
+   SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1:
+   mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset], 01000h
+   SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_1:
+   mov   word ptr cs:[SELFMODIFY_set_bot_jump_immediate_location+1], 01000h
+   SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_1:
+   mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset_bot], 01000h
 
    jmp FastDiv3232FFFF_done  
    ALIGN_MACRO
@@ -6027,6 +6064,13 @@ ELSE
    ; DX:AX = numhi.wu
 
    div   cx
+; stretch draw on path
+   SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_2:
+   mov   word ptr cs:[SELFMODIFY_set_top_jump_immediate_location+1], 01000h
+
+   SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_2:
+   mov   word ptr cs:[SELFMODIFY_set_bot_jump_immediate_location+1], 01000h
+
 
    ; rhat = dx
    ; qhat = ax
@@ -6037,7 +6081,12 @@ ELSE
    mov   bx, dx					; bx stores rhat
 
    mul   si   						; DX:AX = c1
+; stretch draw on path
+   SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2:
+   mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset], 01000h
 
+   SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_2:
+   mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset_bot], 01000h
 
    ; c1 hi = dx, c2 lo = es
    sub   dx, bx      ; cmp and sub at same time... 
@@ -6135,7 +6184,6 @@ ELSE
    sub  ax, bx ; modify qhat by measured amount
 
 
-   mov   byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+2], 4  ; turn on stretch variant for this frame
 
 
 ENDIF
@@ -6219,80 +6267,52 @@ add   ax, 01000h
 ENDP
 
 just_do_draw0:
+public just_do_draw0
 ;mov   word ptr ds:[_dc_source_segment], ax ; what if this was push then pop es later. hard because we get a 2nd value with lds.
 
 ; ax carries _dc_source_segment
 
-mov   dx, COLFUNC_FILE_START_SEGMENT
-mov   ds, dx
-
-
-
-
-; note: bx is dc_x...
-mov     bp, bx
-
-SELFMODIFY_toggle_top_colfunc_type:
-mov   bx, 00000    ; set the function variant for this DrawColumnPrep call. May also arry the stretch tag of 6 independently applied to top/mid
-
-; ax is actually source segment in fallthru... maybe save a lds in colfunc? what about in call case, masked, etc?
-
-; fall thru in the case of top/bot column.
-R_DrawColumnPrep_:
-PUBLIC R_DrawColumnPrep_ 
-
-
-SELFMODIFY_bsp_apply_stretch_tag:
-public SELFMODIFY_bsp_apply_stretch_tag
-
-or   bl, 000h ; toggle on 4 or 0 for a different word lookup. Don't double add, just toggle on if not already on.
-
-; al has function type index now, preshifted 1
-
-
-; instead of OR above, add to this lookup of cs.
-les   bx, dword ptr cs:[bx]  ; bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE, which is a 0 offset
-mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset], es
-
-
-
-; dest = destview + dc_yl*80 + (dc_x>>2); 
-; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
-
-
-; di is dc_yh - dc_yl
-; si is dc_yl 
-
-; 5 bytes, doesnt use ax.
-;todo: table to ss?
-; compare: mul ah, movsw, shift solution, etc
-; mul ah: lose about 15 realtics
-
-sal   di, 1                                  ; double diff (dc_yh - dc_yl) to get a word offset
-SELFMODIFY_set_top_lookup_offset:
-push  word ptr ds:[di+01000h]            ; get the jump value. bp has offset to table in segment
-pop   word ptr ds:[bx]                   ; overwrite the jump relative call for however many iterations in unrolled loop we need
-
-mov   ds, ax ; finally set _dc_source_segment
-
-; bp is dc_x
-
-;todo change selfmodify
-SELFMODIFY_BSP_detailshift2minus:
-sar   bp, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
-sar   bp, 1
-
-;dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
-lea   bx,  [si + _bsp_local_dc_yl_lookup_table - 2]
-mov   di, word ptr cs:[si+bx]                   ; add * 80 lookup table value 
-
-SELFMODIFY_BSP_add_destview_offset:
-lea   di, [bp + di + 01000h]
-
+mov   ds, ax ; set _dc_source_segment
+mov   ax, COLFUNC_FILE_START_SEGMENT
+mov   es, ax
 
 
 xchg  ax, si ; dc_yl in ax. ; toggle for even/odd ret label
 ;mov  ax, si ; dc_yl in ax.   ; toggle for even/odd ret label
+
+
+
+
+
+
+R_DrawColumnPrep_:
+PUBLIC R_DrawColumnPrep_ 
+
+
+
+sal   di, 1
+SELFMODIFY_set_top_lookup_offset:
+lea   si, [di + 01000h]   ; word lookup with offset
+SELFMODIFY_set_top_jump_immediate_location:
+mov   di, 01000h
+movs  word ptr es:[si], word ptr es:[di]
+
+; note: bx is dc_x...
+mov     si, ax   ; restore si here..
+
+SELFMODIFY_BSP_detailshift2minus:
+sar   bx, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
+sar   bx, 1
+
+;dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
+lea   bp,  [si + _bsp_local_dc_yl_lookup_table - 2]
+mov   di, word ptr cs:[si+bp]                   ; add * 80 lookup table value 
+
+SELFMODIFY_BSP_add_destview_offset:
+lea   di, [bx + di + 01000h]
+
+
+
 
 
 
@@ -6598,18 +6618,15 @@ just_do_draw1:
 public just_do_draw1
 ; ax carries _dc_source_segment
 
-mov   dx, COLFUNC_FILE_START_SEGMENT
-mov   ds, dx
+mov   ds, ax ; set _dc_source_segment
+mov   ax, COLFUNC_FILE_START_SEGMENT
+mov   es, ax
 
 
+xchg  ax, si ; dc_yl in ax. ; toggle for even/odd ret label
+;mov  ax, si ; dc_yl in ax.   ; toggle for even/odd ret label
 
 
-; note: bx is dc_x...
-mov     bp, bx
-
-
-SELFMODIFY_toggle_bot_colfunc_type:
-mov   bx, 00000    ; set the function variant for this DrawColumnPrep call.  May also arry the stretch tag of 6 independently applied to bot
 
 
 
@@ -6618,39 +6635,30 @@ R_DrawColumnPrepBot_ :
 PUBLIC R_DrawColumnPrepBot_ 
 
 
-SELFMODIFY_bsp_apply_stretch_tag_bot:
-public SELFMODIFY_bsp_apply_stretch_tag_bot ; gross but works
-or   bl, byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag + 2]
 
-; al has function type index now, preshifted 1
-; instead of OR above, add to this lookup of cs.
-les   bx, dword ptr cs:[bx]  ; bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE, which is a 0 offset
-mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset_bot], es
-
-; 5 bytes, doesnt use ax.
-;todo: table to ss?
 sal   di, 1
 SELFMODIFY_set_bot_lookup_offset:
-push  word ptr ds:[di+01000h]            ; get the jump value. bp has offset to table in segment
-pop   word ptr ds:[bx]                   ; overwrite the jump relative call for however many iterations in unrolled loop we need
+lea   si, [di + 01000h]   ; word lookup with offset
+SELFMODIFY_set_bot_jump_immediate_location:
+mov   di, 01000h
+movs  word ptr es:[si], word ptr es:[di]
 
-mov   ds, ax ; finally set _dc_source_segment
+; note: bx is dc_x...
+mov     si, ax   ; restore si here..
 
 SELFMODIFY_BSP_detailshift2minus_bot:
-sar   bp, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
-sar   bp, 1
+sar   bx, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
+sar   bx, 1
 
 ;dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
-lea   bx,  [si + _bsp_local_dc_yl_lookup_table - 2]
-mov   di, word ptr cs:[si+bx]                   ; add * 80 lookup table value 
+lea   bp,  [si + _bsp_local_dc_yl_lookup_table - 2]
+mov   di, word ptr cs:[si+bp]                   ; add * 80 lookup table value 
 
 SELFMODIFY_BSP_add_destview_offset_bot:
-lea   di, [bp + di + 01000h]
+lea   di, [bx + di + 01000h]
 
 
 
-;xchg  ax, si ; dc_yl in ax. ; toggle for even/odd ret label
-mov  ax, si ; dc_yl in ax.   ; toggle for even/odd ret label
 
 ; todo combine here. somehow.
 SELFMODIFY_set_bottexturemid_hi:
@@ -7016,15 +7024,30 @@ jl        set_bsilheight_to_frontsectorfloorheight
 ; if its less than 128 tall (minus tex top offset etc) then it wont loop
 sub       cx, word ptr [bp - 0Ch]
 and       ch, 080h
-mov       byte ptr cs:[SELFMODIFY_toggle_bot_colfunc_type+1], ch
 
 ; todo set bot vals here?
 
 push      bx  ; todo pushpop bx once ?
+push      es
+
+; using loop/noloop lookup flag, look up the function setter params for stretch/nostretch for this func type and set them.
+
 xor       bx, bx
 mov       bl, ch
+; todo cs as ds
 mov       cx, word ptr cs:[bx + _COLFUNC_JUMP_LOOKUP]
 mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset+2], cx
+les       cx, dword ptr cs:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
+mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_nostretch_jumpoffset+5], cx
+mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_nostretch_funcaddr+5], es
+les       cx, dword ptr cs:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 4]
+mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_1+5], cx
+mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_1+5], es
+mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_2+5], cx
+mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_2+5], es
+
+
+pop       es
 pop       bx
 
 mov       cx, es ; restore.
@@ -7051,13 +7074,29 @@ jle       set_tsilheight_to_frontsectorceilingheight
 
 sub       dx, word ptr [bp - 0Ch]
 and       dh, 080h
-mov       byte ptr cs:[SELFMODIFY_toggle_top_colfunc_type+1], dh
+
 push      bx  ; todo pushpop bx once ?
+push      es
+
+; using loop/noloop lookup flag, look up the function setter params for stretch/nostretch for this func type and set them.
+
 xor       bx, bx
 mov       bl, dh
+; todo cs as ds
 mov       dx, word ptr cs:[bx + _COLFUNC_JUMP_LOOKUP]
 mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset+2], dx
+les       dx, dword ptr cs:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
+mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset+5], dx
+mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr+5], es
+les       dx, dword ptr cs:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 4]
+mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_1+5], dx
+mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1+5], es
+mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_2+5], dx
+mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2+5], es
+
+pop       es
 pop       bx
+
 mov       dx, es ; restore.
 
 SELFMODIFY_BSP_viewz_shortheight_1:
@@ -12502,7 +12541,7 @@ set_to_one:
 mov      byte ptr ds:[SELFMODIFY_BSP_detailshift_7+1 - OFFSET R_BSP24_STARTMARKER_], 3
 
 ; write to colfunc segment
-mov      ax, 0fdd1h ; sar bp, 1
+mov      ax, 0fbd1h ; sar bx, 1
 
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0 - OFFSET R_BSP24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_bot+0 - OFFSET R_BSP24_STARTMARKER_], ax
@@ -12545,7 +12584,7 @@ set_to_zero:
 
 ; d1 fd  = sar bp, 1
 mov      byte ptr ds:[SELFMODIFY_BSP_detailshift_7+1 - OFFSET R_BSP24_STARTMARKER_], 4
-mov      ax, 0fdd1h 
+mov      ax, 0fbd1h ; sar bx, 1
 
 ; write to colfunc segment
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0 - OFFSET R_BSP24_STARTMARKER_], ax
