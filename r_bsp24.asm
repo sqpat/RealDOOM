@@ -5077,7 +5077,6 @@ mov       word ptr ds:[SELFMODIFY_sub_topstep_hi+3], ax
 mov       word ptr ds:[SELFMODIFY_add_topstep_hi+4], ax
 
 
-skip_topstep_sub:
 
 
 
@@ -5191,6 +5190,7 @@ mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_2+3], ax
 R_RenderSegLoop_:
 PUBLIC R_RenderSegLoop_
 
+; ds still cs
 
 ; duplicate from here on out for ordering purposes. todo cleanup.
 push  word ptr [bp - 02Eh]  ; bp - 044h
@@ -7886,6 +7886,23 @@ mov        si, OFFSET SELFMODIFY_BSP_sidesegoffset+1
 mov        di, OFFSET SELFMODIFY_BSP_sidesegoffset_TWOSIDED+1
 movsw
 
+
+mov        si, OFFSET SELFMODIFY_get_rwscalestep_lo_1+1
+mov        di, OFFSET SELFMODIFY_get_rwscalestep_lo_1_TWOSIDED+1
+movsw
+
+mov        si, OFFSET SELFMODIFY_get_rwscalestep_hi_1+1
+mov        di, OFFSET SELFMODIFY_get_rwscalestep_hi_1_TWOSIDED+1
+movsw
+
+mov        si, OFFSET SELFMODIFY_get_rwscalestep_lo_2+1
+mov        di, OFFSET SELFMODIFY_get_rwscalestep_lo_2_TWOSIDED+1
+movsw
+
+mov        si, OFFSET SELFMODIFY_get_rwscalestep_hi_2+1
+mov        di, OFFSET SELFMODIFY_get_rwscalestep_hi_2_TWOSIDED+1
+movsw
+
 ;
 ;
 
@@ -8212,7 +8229,166 @@ jge       at_least_one_column_to_draw_TWOSIDED
 jmp       check_spr_top_clip     ; TODOUPDATE
 ALIGN_MACRO
 at_least_one_column_to_draw_TWOSIDED:
-jmp       at_least_one_column_to_draw  ; TODOUPDATE
+public at_least_one_column_to_draw_TWOSIDED
+ASSUME DS:R_BSP_24_TEXT
+; make ds equal to cs for self modifying codes
+
+
+
+SELFMODIFY_get_rwscalestep_lo_1_TWOSIDED:
+mov       ax, 01000h
+SELFMODIFY_get_rwscalestep_hi_1_TWOSIDED:
+mov       dx, 01000h
+les       bx, dword ptr [bp - 028h]
+mov       cx, es
+
+;start inlined FixedMulBSPLocal_
+
+
+IF COMPISA GE COMPILE_386
+
+   shl  ecx, 16
+   mov  cx, bx
+   xchg ax, dx
+   shl  eax, 16
+   xchg ax, dx
+   imul  ecx
+   shr  eax, 16
+
+
+
+ELSE
+
+   MOV  SI, DX
+   MOV  ES, AX
+   MUL  BX
+   MOV  DI, DX
+   MOV  AX, SI
+   MUL  CX
+   XCHG AX, SI
+   CWD
+   AND  DX, BX
+   SUB  SI, DX
+   MUL  BX
+   ADD  AX, DI
+   ADC  SI, DX
+   XCHG AX, CX
+   CWD
+   MOV  BX, ES
+   AND  DX, BX
+   SUB  SI, DX
+   MUL  BX
+   ADD  AX, CX
+   ADC  DX, SI
+
+ENDIF
+
+;end inlined FixedMulBSPLocal_
+
+neg       dx
+neg       ax
+sbb       dx, 0
+
+; dx:ax are topstep
+
+
+mov       word ptr ds:[SELFMODIFY_sub_topstep_lo+3], ax  ; TODOUPDATE
+mov       word ptr ds:[SELFMODIFY_add_topstep_lo+4], ax  ; TODOUPDATE
+xchg      ax, dx
+mov       word ptr ds:[SELFMODIFY_sub_topstep_hi+3], ax  ; TODOUPDATE
+mov       word ptr ds:[SELFMODIFY_add_topstep_hi+4], ax  ; TODOUPDATE
+
+SELFMODIFY_BSP_detailshift_2_TWOSIDED:
+shl       dx, 1
+rcl       ax, 1
+shl       dx, 1
+rcl       ax, 1
+
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_1+3], ax  ; TODOUPDATE
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_2+3], ax  ; TODOUPDATE
+xchg      ax, dx
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_1+3], ax  ; TODOUPDATE
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_2+3], ax  ; TODOUPDATE
+
+les       bx, dword ptr [bp - 02Ch]
+mov       cx, es
+SELFMODIFY_get_rwscalestep_lo_2_TWOSIDED:
+mov       ax, 01000h
+SELFMODIFY_get_rwscalestep_hi_2_TWOSIDED:
+mov       dx, 01000h
+
+;start inlined FixedMulBSPLocal_
+
+IF COMPISA GE COMPILE_386
+
+   shl  ecx, 16
+   mov  cx, bx
+   xchg ax, dx
+   shl  eax, 16
+   xchg ax, dx
+   imul  ecx
+   shr  eax, 16
+
+
+
+ELSE
+
+   MOV  SI, DX
+   MOV  ES, AX
+   MUL  BX
+   MOV  DI, DX
+   MOV  AX, SI
+   MUL  CX
+   XCHG AX, SI
+   CWD
+   AND  DX, BX
+   SUB  SI, DX
+   MUL  BX
+   ADD  AX, DI
+   ADC  SI, DX
+   XCHG AX, CX
+   CWD
+   MOV  BX, ES
+   AND  DX, BX
+   SUB  SI, DX
+   MUL  BX
+   ADD  AX, CX
+   ADC  DX, SI
+
+ENDIF
+;end inlined FixedMulBSPLocal_
+
+neg       dx
+neg       ax
+sbb       dx, 0
+
+; dx:ax are bottomstep
+
+
+
+
+mov       word ptr ds:[SELFMODIFY_sub_botstep_lo+3], ax  ; TODOUPDATE
+mov       word ptr ds:[SELFMODIFY_add_botstep_lo+4], ax  ; TODOUPDATE
+xchg      ax, dx
+mov       word ptr ds:[SELFMODIFY_sub_botstep_hi+3], ax  ; TODOUPDATE
+mov       word ptr ds:[SELFMODIFY_add_botstep_hi+4], ax  ; TODOUPDATE
+
+SELFMODIFY_BSP_detailshift_3_TWOSIDED:
+shl       dx, 1
+rcl       ax, 1
+shl       dx, 1
+rcl       ax, 1
+
+
+mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_1+3], ax  ; TODOUPDATE
+mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_2+3], ax  ; TODOUPDATE
+xchg      ax, dx
+mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_1+3], ax  ; TODOUPDATE
+mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_2+3], ax  ; TODOUPDATE
+
+jmp       R_RenderSegLoop_
+
+
 
 
 
@@ -12851,6 +13027,9 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5], ax
 
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2_TWOSIDED], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3_TWOSIDED], ax
+
 
 
 ; inverse. do shifts
@@ -12914,6 +13093,12 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+2], ax
 
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2_TWOSIDED+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2_TWOSIDED+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3_TWOSIDED+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3_TWOSIDED+2], ax
+
+
 jmp      done_modding_shift_detail_code
 ALIGN_MACRO
 set_to_zero:
@@ -12941,6 +13126,9 @@ mov      ax, 0E2D1h
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2_TWOSIDED+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3_TWOSIDED+0], ax
+
 mov      ah, 0E0h
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5+0], ax
@@ -12949,6 +13137,8 @@ mov      ah, 0D0h
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2_TWOSIDED+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3_TWOSIDED+2], ax
 
 mov      ah, 0D2h
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+2], ax

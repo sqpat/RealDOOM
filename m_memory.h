@@ -1203,7 +1203,9 @@ patchoffset                 83BD:01DC
 
 // spritewidths at end of bsp
 // #define spritewidths_segment   ((bsp_code_segment + 0x400) - ((size_spritewidths + 0xF) >> 4))
-#define spritewidths_offset    (((0x400) - ((size_spritewidths + 0xF) >> 4)) << 4)
+// TODO HACK: move it to e0000 for now
+#define spritewidths_offset    (((0x600) - ((size_spritewidths + 0xF) >> 4)) << 4)
+// #define spritewidths_offset    (((0x400) - ((size_spritewidths + 0xF) >> 4)) << 4)
 
 // first element
 #define nodes_render          ((node_render_t __far*)  MAKE_FULL_SEGMENT(0x90000000, 0))
