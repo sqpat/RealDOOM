@@ -165,7 +165,10 @@ DEFAULT_DRAWSEG_T:
 dw MAXSHORT, MINSHORT, OFFSET_SCREENHEIGHTARRAY, OFFSET_NEGONEARRAY, NULL_TEX_COL
 db SIL_BOTH
 
-
+_ceilingplaneindex:
+dw 0FFFFh
+_floorplaneindex:
+dw 0FFFFh
 
 
 ; 0AAh
@@ -4971,30 +4974,27 @@ mov       word ptr [bp - 03Ch], ax
 cmp       byte ptr [bp - 031h], 0  ;markceiling
 je        dont_mark_ceiling ; todo which default braunch?
 
-SELFMODIFY_set_ceilingplaneindex:
-PUBLIC SELFMODIFY_set_ceilingplaneindex
-mov       ax, 0FFFFh
+mov       ax, word ptr ds:[_ceilingplaneindex]
 les       cx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
 mov       dx, es
 les       bx, dword ptr ss:[_ceiltop] ; todo cs var
 
 mov       byte ptr ds:[SELFMODIFY_setisceil + 1], 1
 call      R_CheckPlane_ ; enters and exits with ds as cs
-mov       word ptr ds:[SELFMODIFY_set_ceilingplaneindex+1], ax
+mov       word ptr ds:[_ceilingplaneindex], ax
 dont_mark_ceiling:
 
 cmp       byte ptr [bp - 032h], 0 ; markfloor
 je        dont_mark_floor ; todo which default braunch?
-SELFMODIFY_set_floorplaneindex:
-PUBLIC SELFMODIFY_set_floorplaneindex
-mov       ax, 0FFFFh
+mov       ax, word ptr ds:[_floorplaneindex]
+
 les       cx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
 mov       dx, es
 les       bx, dword ptr ss:[_floortop] ; todo cs var
 
 mov       byte ptr ds:[SELFMODIFY_setisceil + 1], 0
 call      R_CheckPlane_ ; enters and exits with ds as cs
-mov       word ptr ds:[SELFMODIFY_set_floorplaneindex+1], ax
+mov       word ptr ds:[_floorplaneindex], ax
 dont_mark_floor:
 cmp       word ptr [bp - 022h], 0
 jge       at_least_one_column_to_draw
@@ -6831,12 +6831,12 @@ public mark_planes_dirty
 mov      di, _visplaneheaders + VISPLANEHEADER_T.visplaneheader_dirty
 test     al, 1
 je       mark_ceil_dirty  ; if 3 tested true and 1 didnt, it must be the other one, skip the check.
-mov      bx,  word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1]
+mov      bx,  word ptr cs:[_ceilingplaneindex]
 mov      byte ptr ds:[bx+di], al ; nonzero
 test     al, 2
 je       dont_mark_floor_dirty
 mark_ceil_dirty:  
-mov      bx,  word ptr cs:[SELFMODIFY_set_floorplaneindex+1]
+mov      bx,  word ptr cs:[_floorplaneindex]
 mov      byte ptr ds:[bx+di], al ; nonzero
 
 dont_mark_floor_dirty:
@@ -7832,12 +7832,382 @@ mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_2+3], ax
 
 mov       al, byte ptr ss:[_maskedtexture]
 ; fallthru
+
+; begin duplicate code for two_sided block
+
+
 done_with_two_sided_sector_setup:
 
 
-; TODO implement duplicate logic here.
+; todo: early func self modified some stuff forward into single variant.
+; for now we must clone to this variant
 
-jmp       done_with_sector_sided_check
+push       ax
+mov        ax, cs
+mov        es, ax
+
+
+mov        si, OFFSET SELFMODIFY_check_for_any_tex+1
+mov        di, OFFSET SELFMODIFY_check_for_any_tex_TWOSIDED+1
+movsb
+
+mov        si, OFFSET SELFMODIFY_addlightnum_delta+1
+mov        di, OFFSET SELFMODIFY_addlightnum_delta_TWOSIDED+1
+movsb
+
+
+
+mov        si, OFFSET SELFMODIFY_set_offsetangle+1
+mov        di, OFFSET SELFMODIFY_set_offsetangle_TWOSIDED+1
+movsw
+
+mov        si, OFFSET SELFMODIFY_set_PointToDist_result_hi+1
+mov        di, OFFSET SELFMODIFY_set_PointToDist_result_hi_TWOSIDED+1
+movsw
+
+mov        si, OFFSET SELFMODIFY_set_PointToDist_result_lo+1
+mov        di, OFFSET SELFMODIFY_set_PointToDist_result_lo_TWOSIDED+1
+movsw
+
+mov        si, OFFSET SELFMODIFY_set_rw_normal_angle_shift3+1
+mov        di, OFFSET SELFMODIFY_set_rw_normal_angle_shift3_TWOSIDED+1
+movsw
+
+mov        si, OFFSET SELFMODIFY_BSP_sidetextureoffset+1
+mov        di, OFFSET SELFMODIFY_BSP_sidetextureoffset_TWOSIDED+1
+movsw
+
+mov        si, OFFSET SELFMODIFY_BSP_sidesegoffset+1
+mov        di, OFFSET SELFMODIFY_BSP_sidesegoffset_TWOSIDED+1
+movsw
+
+;
+;
+
+
+pop        ax
+
+
+
+
+;jmp       done_with_sector_sided_check
+
+
+; todo get _maskedtexture for free?
+
+; coming into here, AL is equal to maskedtexture.
+; ds is equal to CS
+; sp should now be bp - 03Ah
+
+sub       sp, 8  ; bp - 044h.  make room for topstep/botstep. TODO swap their order generation, push them
+
+
+; set maskedtexture in rendersegloop
+
+; would be nice to turn into a jmp or nop, but the lookup is slow and doesnt actually run often.
+
+mov       byte ptr ds:[SELFMODIFY_get_maskedtexture_1+1], al   ; TODOUPDATE
+
+; DS STILL CS.
+
+
+; create segtextured value
+SELFMODIFY_check_for_any_tex_TWOSIDED:
+or   	  al, 0
+
+; set segtextured in rendersegloop
+
+
+
+jne       do_seg_textured_stuff_TWOSIDED
+mov       word ptr ds:[SELFMODIFY_BSP_get_segtextured], ((SELFMODIFY_BSP_get_segtextured_TARGET - SELFMODIFY_BSP_get_segtextured_AFTER) SHL 8) + 0EBh     ; TODOUPDATE
+
+jmp       SHORT seg_textured_check_done_TWOSIDED
+ALIGN_MACRO
+do_seg_textured_stuff_TWOSIDED:
+mov       word ptr ds:[SELFMODIFY_BSP_get_segtextured], 0C089h ; nop   ; TODOUPDATE
+SELFMODIFY_set_offsetangle_TWOSIDED:
+mov       dx, 01000h
+cmp       dx, FINE_ANG180_NOSHIFT ; 04000h
+jbe       offsetangle_greater_than_fineang180_TWOSIDED
+neg       dx
+and       dh, MOD_FINE_ANGLE_NOSHIFT_HIGHBITS
+
+offsetangle_greater_than_fineang180_TWOSIDED:
+
+SELFMODIFY_set_PointToDist_result_hi_TWOSIDED:
+mov       cx, 01000h
+SELFMODIFY_set_PointToDist_result_lo_TWOSIDED:
+mov       bx, 01000h
+
+; dx is offsetangle
+
+cmp       dx, FINE_ANG90_NOSHIFT ; 02000h
+ja        offsetangle_greater_than_fineang90_TWOSIDED
+
+call      FixedMulTrigNoShiftSine_BSPLocal_
+; used later, dont change?
+; dx:ax is rw_offset
+xchg      ax, dx
+jmp       done_with_offsetangle_stuff_TWOSIDED
+ALIGN_MACRO
+offsetangle_greater_than_fineang90_TWOSIDED:
+xchg      ax, cx
+mov       dx, bx
+
+
+
+done_with_offsetangle_stuff_TWOSIDED:
+; ax:dx is rw_offset
+
+xor       cx, cx
+
+SELFMODIFY_set_rw_normal_angle_shift3_TWOSIDED:
+mov       bx, 01000h
+sub       cx, word ptr [bp - 012h]   ; rw_angle lo from R_AddLine
+sbb       bx, word ptr [bp - 010h]   ; rw_angle hi from R_AddLine
+
+
+;		if (tempangle.hu.intbits < ANG180_HIGHBITS) {	
+;			rw_offset.w = -rw_offset.w;
+;		}
+;		rw_offset.h.intbits += (sidetextureoffset + curseg_render->offset);
+
+; use sbb bx flags to check for < 08000h (ANG180)
+js        tempangle_not_smaller_than_fineang180_TWOSIDED
+neg       ax
+neg       dx
+sbb       ax, 0
+tempangle_not_smaller_than_fineang180_TWOSIDED:
+
+
+
+
+SELFMODIFY_BSP_sidetextureoffset_TWOSIDED:
+add       ax, 01000h
+SELFMODIFY_BSP_sidesegoffset_TWOSIDED:
+add       ax, 01000h 
+; rw_offset ready to be written to rendersegloop:
+mov   word ptr ds:[SELFMODIFY_set_cx_rw_offset_lo+1], dx   ; TODOUPDATE
+mov   word ptr ds:[SELFMODIFY_set_ax_rw_offset_hi+1], ax   ; TODOUPDATE
+
+
+
+
+;	    lightnum = (frontsector->lightlevel >> LIGHTSEGSHIFT)+extralight;
+
+
+SELFMODIFY_BSP_fixedcolormap_3_TWOSIDED:
+jmp SHORT seg_textured_check_done_TWOSIDED    ; dont check walllights if fixedcolormap
+
+SELFMODIFY_BSP_fixedcolormap_3_AFTER_TWOSIDED:
+
+
+mov       al, byte ptr [bp + 0Eh]   ; light level
+SHIFT_MACRO shr al 4
+
+
+SELFMODIFY_BSP_extralight2_plusone_TWOSIDED:
+add       al, 0
+cbw
+
+
+SELFMODIFY_addlightnum_delta_TWOSIDED:
+dec       ax  ; nop carries flags from add dl, al. dec and inc will set signed accordingly
+
+shl       ax, 1  ; word lookup
+xchg      ax, bx
+mov       ax, word ptr ds:[_mul48lookup_with_scalelight_with_minusone_offset + bx]
+
+
+
+
+; write walllights to rendersegloop
+mov   word ptr ds:[SELFMODIFY_add_wallights+2], ax
+; ? do math here and write this ahead to drawcolumn colormapsindex?
+
+SELFMODIFY_BSP_fixedcolormap_3_TARGET_TWOSIDED:
+seg_textured_check_done_TWOSIDED:
+mov       ax, word ptr [bp + 6]
+SELFMODIFY_BSP_viewz_shortheight_4_TWOSIDED:
+cmp       ax, 01000h
+jl        not_above_viewplane_TWOSIDED
+mov       byte ptr [bp - 032h], 0
+not_above_viewplane_TWOSIDED:
+mov       ax, word ptr [bp + 8]
+SELFMODIFY_BSP_viewz_shortheight_3_TWOSIDED:
+cmp       ax, 01000h
+jg        not_below_viewplane_TWOSIDED
+mov       al, byte ptr [bp + 0Ah]
+SELFMODIFY_BSP_set_skyflatnum_4_TWOSIDED:
+cmp       al, 010h
+je        not_below_viewplane_TWOSIDED
+mov       byte ptr [bp - 031h], 0  ;markceiling
+; ok here
+not_below_viewplane_TWOSIDED:
+
+
+;start inlined FixedMulBSPLocal_
+
+
+
+IF COMPISA GE COMPILE_386
+
+   les       ax, dword ptr [bp - 028h]
+   mov       dx, es
+   les       bx, dword ptr [bp - 030h]
+   mov       cx, es
+
+   shl  ecx, 16
+   mov  cx, bx
+   xchg ax, dx
+   shl  eax, 16
+   xchg ax, dx
+   imul  ecx
+   shr  eax, 16
+
+
+
+ELSE
+
+   les       ax, dword ptr [bp - 028h]
+   mov       dx, es
+   les       bx, dword ptr [bp - 030h]
+   mov       cx, es
+
+   MOV  SI, DX
+   MOV  ES, AX ; todo synergy
+   MUL  BX
+   MOV  DI, DX
+   MOV  AX, SI
+   MUL  CX
+   XCHG AX, SI
+   CWD
+   AND  DX, BX
+   SUB  SI, DX
+   MUL  BX
+   ADD  AX, DI
+   ADC  SI, DX
+   XCHG AX, CX
+   CWD
+   MOV  BX, ES
+   AND  DX, BX
+   SUB  SI, DX
+   MUL  BX
+   ADD  AX, CX
+   ADC  DX, SI
+
+ENDIF
+
+;end inlined FixedMulBSPLocal_
+; not ok
+neg       ax
+SELFMODIFY_sub__centeryfrac_4_hi_4_TWOSIDED:
+mov       cx, 01000h ; ah known zero. dh too probably?
+sbb       cx, dx
+add       ax, ((HEIGHTUNIT)-1) SHL 4 ; bake this in once, instead of doing it every loop.
+mov       word ptr [bp - 042h], ax
+adc       cx, 0
+mov       word ptr [bp - 040h], cx
+; les to load two words
+
+; todo 24 bit muls?
+
+;start inlined FixedMulBSPLocal_
+
+IF COMPISA GE COMPILE_386
+
+   les       ax, dword ptr [bp - 02Ch]
+   mov       dx, es
+   les       bx, dword ptr [bp - 030h]
+   mov       cx, es
+
+   shl  ecx, 16
+   mov  cx, bx
+   xchg ax, dx
+   shl  eax, 16
+   xchg ax, dx
+   imul  ecx
+   shr  eax, 16
+
+
+
+ELSE
+; si not preserved
+
+   les       ax, dword ptr [bp - 02Ch]
+   mov       dx, es
+   les       bx, dword ptr [bp - 030h]
+   mov       cx, es
+
+   MOV  SI, DX
+   MOV  ES, AX ; todo synergy
+   MUL  BX
+   MOV  DI, DX
+   MOV  AX, SI
+   MUL  CX
+   XCHG AX, SI
+   CWD
+   AND  DX, BX
+   SUB  SI, DX
+   MUL  BX
+   ADD  AX, DI
+   ADC  SI, DX
+   XCHG AX, CX
+   CWD
+   MOV  BX, ES
+   AND  DX, BX
+   SUB  SI, DX
+   MUL  BX
+   ADD  AX, CX
+   ADC  DX, SI
+
+ENDIF
+
+;end inlined FixedMulBSPLocal_
+
+
+
+neg       ax
+mov       word ptr [bp - 03Eh], ax
+SELFMODIFY_sub__centeryfrac_4_hi_3_TWOSIDED: ; preincremented by 1 to pass into bp -028h
+mov       ax, 01000h ; ah known zero. dh too probably?
+sbb       ax, dx
+
+
+mov       word ptr [bp - 03Ch], ax
+
+cmp       byte ptr [bp - 031h], 0  ;markceiling
+je        dont_mark_ceiling_TWOSIDED ; todo which default braunch?
+
+mov       ax, word ptr ds:[_ceilingplaneindex]
+les       cx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
+mov       dx, es
+les       bx, dword ptr ss:[_ceiltop] ; todo cs var
+
+mov       byte ptr ds:[SELFMODIFY_setisceil + 1], 1
+call      R_CheckPlane_ ; enters and exits with ds as cs
+mov       word ptr ds:[_ceilingplaneindex], ax
+dont_mark_ceiling_TWOSIDED:
+
+cmp       byte ptr [bp - 032h], 0 ; markfloor
+je        dont_mark_floor_TWOSIDED ; todo which default braunch?
+
+mov       ax, word ptr ds:[_floorplaneindex]
+les       cx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
+mov       dx, es
+les       bx, dword ptr ss:[_floortop] ; todo cs var
+
+mov       byte ptr ds:[SELFMODIFY_setisceil + 1], 0
+call      R_CheckPlane_ ; enters and exits with ds as cs
+mov       word ptr ds:[_floorplaneindex], ax
+dont_mark_floor_TWOSIDED:
+cmp       word ptr [bp - 022h], 0
+jge       at_least_one_column_to_draw_TWOSIDED
+jmp       check_spr_top_clip     ; TODOUPDATE
+ALIGN_MACRO
+at_least_one_column_to_draw_TWOSIDED:
+jmp       at_least_one_column_to_draw  ; TODOUPDATE
 
 
 
@@ -7933,7 +8303,7 @@ xor   bx, bx ; isceil = 0
 call  R_FindPlane_
 les   bx, dword ptr ds:[_frontsector]  ; retrieve frontsector
 set_floor_plane:
-mov   word ptr cs:[SELFMODIFY_set_floorplaneindex+1], ax
+mov   word ptr cs:[_floorplaneindex], ax
 
 floor_plane_set:
 mov   ax, 0FFFFh  ; -1 case
@@ -7960,7 +8330,7 @@ mov   bx, 1
 call  R_FindPlane_
 les   bx, dword ptr ds:[_frontsector]    ; retrieve frontsector
 set_ceiling_plane:
-mov   word ptr cs:[SELFMODIFY_set_ceilingplaneindex+1], ax
+mov   word ptr cs:[_ceilingplaneindex], ax
 
 do_addsprites:
 
@@ -12631,6 +13001,8 @@ mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_4+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_2+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_3+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_1+1], ax
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_3_TWOSIDED+1], ax
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_4_TWOSIDED+1], ax
 
 mov      ax, word ptr ss:[_viewwidth]
 mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_2+1], ax
@@ -12782,6 +13154,8 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_2+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_3+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_4+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_5+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_3_TWOSIDED+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_4_TWOSIDED+1], ax
 skip_viewz_hi_selfmodifies_this_frame:
 
 mov      al, byte ptr ss:[_player + PLAYER_T.player_extralightvalue]
@@ -12793,6 +13167,7 @@ mov      byte ptr ds:[SELFMODIFY_BSP_extralight3+1], al
 mov      byte ptr ds:[SELFMODIFY_BSP_extralight1+1], al
 inc      ax 
 mov      byte ptr ds:[SELFMODIFY_BSP_extralight2_plusone+1], al
+mov      byte ptr ds:[SELFMODIFY_BSP_extralight2_plusone_TWOSIDED+1], al
 skip_extralight_selfmodifies_this_frame:
 
 mov      al, byte ptr ss:[_fixedcolormap]
@@ -12813,6 +13188,7 @@ mov      ax, 0c089h
 mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_3], ax
 mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_4], ax
+mov      word ptr ds:[SELFMODIFY_BSP_fixedcolormap_3_TWOSIDED], ax
 
 
 jmp      done_with_bsp_fixedcolormap_selfmodify
@@ -12831,6 +13207,9 @@ mov   ah, (SELFMODIFY_BSP_fixedcolormap_3_TARGET - SELFMODIFY_BSP_fixedcolormap_
 mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_3], ax
 mov   ah, (SELFMODIFY_BSP_fixedcolormap_4_TARGET - SELFMODIFY_BSP_fixedcolormap_4_AFTER)
 mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_4], ax
+
+mov   ah, (SELFMODIFY_BSP_fixedcolormap_3_TARGET_TWOSIDED - SELFMODIFY_BSP_fixedcolormap_3_AFTER_TWOSIDED)
+mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_3_TWOSIDED], ax
 
 
 ; fall thru
