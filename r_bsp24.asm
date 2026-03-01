@@ -177,70 +177,6 @@ db SIL_BOTH
 
 
 
-IF COMPISA GE COMPILE_386
-ALIGN_MACRO
-PROC FixedMulBSPLocal_ NEAR ; fairly optimized
-; thanks zero318 from discord for improved algorithm  
-
-; DX:AX  *  CX:BX
-;  0  1      2  3
-
-  shl  ecx, 16
-  mov  cx, bx
-  xchg ax, dx
-  shl  eax, 16
-  xchg ax, dx
-  imul  ecx
-  shr  eax, 16
-  ret
-
-
-
-ENDP
-ELSE
-
-ALIGN_MACRO
-PROC FixedMulBSPLocal_ NEAR ; fairly optimized
-
-; DX:AX  *  CX:BX
-;  0  1      2  3
-
-; thanks zero318 from discord for improved algorithm  
-
-MOV  ES, SI
-MOV  SI, DX
-PUSH AX
-MUL  BX
-MOV  word ptr cs:[_selfmodify_restore_dx-2], DX
-MOV  AX, SI
-MUL  CX
-XCHG AX, SI
-CWD
-AND  DX, BX
-SUB  SI, DX
-MUL  BX
-ADD  AX, 01000h
-_selfmodify_restore_dx:  ; odd addr, selfmodify even with 3 byte add
-PUBLIC _selfmodify_restore_dx
-ADC  SI, DX
-XCHG AX, CX
-CWD
-POP  BX
-AND  DX, BX
-SUB  SI, DX
-MUL  BX
-ADD  AX, CX
-ADC  DX, SI
-MOV  SI, ES
-
-ret
-
-ENDP
-ENDIF
-
-
-
-
 
 
 
@@ -4746,6 +4682,7 @@ xor       ax, ax   ; maskedtexture is 0 in this case. todo wish we got this for 
 ; here
 
 sub       sp, 8  ; skip top/bottom dwords. from 032h to 03Ah
+
 done_with_sector_sided_check:
 public done_with_sector_sided_check
 ; todo get _maskedtexture for free?
@@ -6300,16 +6237,21 @@ movs  word ptr es:[si], word ptr es:[di]
 ; note: bx is dc_x...
 mov     si, ax   ; restore si here..
 
+mov     ah, 80
+dec     ax       ; todo put lookup back
+mul     ah
+xchg    ax, si
+
 SELFMODIFY_BSP_detailshift2minus:
 sar   bx, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
 sar   bx, 1
 
 ;dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
-lea   bp,  [si + _bsp_local_dc_yl_lookup_table - 2]
-mov   di, word ptr cs:[si+bp]                   ; add * 80 lookup table value 
+
 
 SELFMODIFY_BSP_add_destview_offset:
-lea   di, [bx + di + 01000h]
+lea   di, [bx + si + 01000h]
+
 
 
 
@@ -6645,17 +6587,20 @@ movs  word ptr es:[si], word ptr es:[di]
 
 ; note: bx is dc_x...
 mov     si, ax   ; restore si here..
+mov     ah, 80
+dec     ax       ; todo put lookup back
+mul     ah
+xchg    ax, si
 
 SELFMODIFY_BSP_detailshift2minus_bot:
 sar   bx, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
 sar   bx, 1
 
 ;dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
-lea   bp,  [si + _bsp_local_dc_yl_lookup_table - 2]
-mov   di, word ptr cs:[si+bp]                   ; add * 80 lookup table value 
+
 
 SELFMODIFY_BSP_add_destview_offset_bot:
-lea   di, [bx + di + 01000h]
+lea   di, [bx + si + 01000h]
 
 
 
@@ -6908,7 +6853,19 @@ ret
 
 
 
+
+
+
+
+
+; TWO SIDED LINE VARIANT OF R_StoreWallRange_ AND R_RenderSegLoop_
+
+
+
 ; begin all backsector logic
+
+
+
 
 ALIGN_MACRO
 handle_two_sided_line:
@@ -7701,7 +7658,7 @@ jg        do_pixlow_step
 je        continue_worldlow_checks
 mov       al, byte ptr ss:[_maskedtexture]  ; todo is it necessary to write?
 sub       sp, 4 ; skip pixlow
-jmp       done_with_sector_sided_check
+jmp       done_with_two_sided_sector_setup
 continue_worldlow_checks:
 cmp       ax, word ptr [bp - 02Ch]
 ja        do_pixlow_step
@@ -7874,7 +7831,14 @@ mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_1+3 - OFFSET R_BSP24_STARTMAR
 mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_2+3 - OFFSET R_BSP24_STARTMARKER_], ax
 
 mov       al, byte ptr ss:[_maskedtexture]
+; fallthru
+done_with_two_sided_sector_setup:
+
+
+; TODO implement duplicate logic here.
+
 jmp       done_with_sector_sided_check
+
 
 
 
@@ -13038,7 +13002,7 @@ ret
 
 ENDP
 
-
+COMMENT @
 _bsp_local_dc_yl_lookup_table:
 PUBLIC _bsp_local_dc_yl_lookup_table
 sumof80s = 0
@@ -13047,7 +13011,7 @@ REPT MAX_PIXELS
     dw sumof80s 
     sumof80s = sumof80s + 80
 ENDM
-
+@
 
 PROC R_BSP24_ENDMARKER_
 PUBLIC R_BSP24_ENDMARKER_
