@@ -4569,8 +4569,6 @@ mov       ax, ((SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1_TARGET - SELFMOD
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1], ax
 mov       ah, SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_AFTER
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2], ax
-mov       ah, SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_AFTER
-mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3], ax
 mov       ah, SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_TARGET - SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5_AFTER
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5], ax
 
@@ -5221,8 +5219,6 @@ public SELFMODIFY_set_rw_x_loop_counter
 ;		rw_scale.w      -= rw_scalestep;
 ;		topfrac         -= topstep;
 ;		bottomfrac      -= bottomstep;
-;		pixlow		    -= pixlowstep;  ; these two done elsewhere
-;		pixhigh		    -= pixhighstep; ; these two done elsewhere
 ;		base4diff--;
 ;	}
 jcxz   skip_sub_base4diff
@@ -5280,20 +5276,6 @@ lods  word ptr ss:[si] ; bottomfrac lo
 mov   word ptr ds:[SELFMODIFY_set_botfrac_lo+1], ax
 lods  word ptr ss:[si] ; bottomfrac hi
 mov   word ptr ds:[SELFMODIFY_set_botfrac_hi+1], ax
-SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3:
-jmp SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET
-; ALIGN_MACRO
-SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_AFTER = SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3 + 2
-lods  word ptr ss:[si] ; pixlow lo
-mov   word ptr ds:[SELFMODIFY_set_pixlow_lo+1], ax
-lods  word ptr ss:[si] ; pixlow hi
-mov   word ptr ds:[SELFMODIFY_set_pixlow_hi+1], ax
-lods  word ptr ss:[si] ; pixhigh lo
-mov   word ptr ds:[SELFMODIFY_set_pixhigh_lo+1], ax
-lods  word ptr ss:[si] ; pixhigh hi
-mov   word ptr ds:[SELFMODIFY_set_pixhigh_hi+1], ax
-
-SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3_TARGET:
 mov   al, 0 ; xoffset is 0
 mov   dx, SC_DATA  ; cheat this out of the loop..
 
@@ -6895,7 +6877,6 @@ mov       ax, 0c089h
 ASSUME DS:R_BSP_24_TEXT
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_1], ax
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2], ax
-mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_3], ax
 mov       word ptr ds:[SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_5], ax
 
 mov       word ptr ds:[SELFMODIFY_BSP_drawtype_1], 0EBB8h   ; mov ax, 0EBxxh
@@ -7903,6 +7884,16 @@ mov        si, OFFSET SELFMODIFY_get_rwscalestep_hi_2+1
 mov        di, OFFSET SELFMODIFY_get_rwscalestep_hi_2_TWOSIDED+1
 movsw
 
+mov        si, OFFSET SELFMODIFY_sub_rwscale_lo+1
+mov        di, OFFSET SELFMODIFY_sub_rwscale_lo_TWOSIDED+1
+movsw
+
+mov        si, OFFSET SELFMODIFY_sub_rwscale_hi+1
+mov        di, OFFSET SELFMODIFY_sub_rwscale_hi_TWOSIDED+1
+movsw
+
+
+
 ;
 ;
 
@@ -8292,11 +8283,11 @@ sbb       dx, 0
 ; dx:ax are topstep
 
 
-mov       word ptr ds:[SELFMODIFY_sub_topstep_lo+3], ax  ; TODOUPDATE
-mov       word ptr ds:[SELFMODIFY_add_topstep_lo+4], ax  ; TODOUPDATE
+mov       word ptr ds:[SELFMODIFY_sub_topstep_lo_TWOSIDED+3], ax
+mov       word ptr ds:[SELFMODIFY_add_topstep_lo+4], ax           ; TODOUPDATE
 xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_sub_topstep_hi+3], ax  ; TODOUPDATE
-mov       word ptr ds:[SELFMODIFY_add_topstep_hi+4], ax  ; TODOUPDATE
+mov       word ptr ds:[SELFMODIFY_sub_topstep_hi_TWOSIDED+3], ax
+mov       word ptr ds:[SELFMODIFY_add_topstep_hi+4], ax           ; TODOUPDATE
 
 SELFMODIFY_BSP_detailshift_2_TWOSIDED:
 shl       dx, 1
@@ -8367,11 +8358,11 @@ sbb       dx, 0
 
 
 
-mov       word ptr ds:[SELFMODIFY_sub_botstep_lo+3], ax  ; TODOUPDATE
-mov       word ptr ds:[SELFMODIFY_add_botstep_lo+4], ax  ; TODOUPDATE
+mov       word ptr ds:[SELFMODIFY_sub_botstep_lo_TWOSIDED+3], ax
+mov       word ptr ds:[SELFMODIFY_add_botstep_lo+4], ax             ; TODOUPDATE
 xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_sub_botstep_hi+3], ax  ; TODOUPDATE
-mov       word ptr ds:[SELFMODIFY_add_botstep_hi+4], ax  ; TODOUPDATE
+mov       word ptr ds:[SELFMODIFY_sub_botstep_hi_TWOSIDED+3], ax
+mov       word ptr ds:[SELFMODIFY_add_botstep_hi+4], ax             ; TODOUPDATE
 
 SELFMODIFY_BSP_detailshift_3_TWOSIDED:
 shl       dx, 1
@@ -8386,8 +8377,99 @@ xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_1+3], ax  ; TODOUPDATE
 mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_2+3], ax  ; TODOUPDATE
 
-jmp       R_RenderSegLoop_
+;   BEGIN INLINED R_RenderSegLoop_TWOSIDED_
+;   BEGIN INLINED R_RenderSegLoop_TWOSIDED_
+;   BEGIN INLINED R_RenderSegLoop_TWOSIDED_
+;   BEGIN INLINED R_RenderSegLoop_TWOSIDED_
 
+R_RenderSegLoop_TWOSIDED_:
+public R_RenderSegLoop_TWOSIDED_
+
+push  word ptr [bp - 02Eh]  ; bp - 044h
+push  word ptr [bp - 030h]  ; bp - 046h
+
+
+xor   bx, bx
+mov   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1], bl ; 0 
+
+mov   dx, word ptr [bp - 032h] ; todo selfmodify?
+mov   bl, dl
+les   ax, dword ptr ds:[bx+_selfmodify_lookup_markfloor]
+mov   word ptr ds:[SELFMODIFY_BSP_markfloor_1], ax
+mov   word ptr ds:[SELFMODIFY_BSP_markfloor_2], es
+
+mov   bl, dh ; retrieve high byte
+les   bx, dword ptr ds:[bx+_selfmodify_lookup_markceiling]
+mov   word ptr ds:[SELFMODIFY_BSP_markceiling_1], bx
+mov   word ptr ds:[SELFMODIFY_BSP_markceiling_2], es
+
+
+
+SELFMODIFY_set_rw_x_loop_counter_TWOSIDED:
+db 0B9h, 00, 00   ; mov cx, 00000
+
+;	while (base4diff){
+;		rw_scale.w      -= rw_scalestep;
+;		topfrac         -= topstep;
+;		bottomfrac      -= bottomstep;
+;		pixlow		    -= pixlowstep;  ; todo add
+;		pixhigh		    -= pixhighstep; ; todo add
+;		base4diff--;
+;	}
+jcxz   skip_sub_base4diff_TWOSIDED
+
+; ALIGN_MACRO
+sub_base4diff_TWOSIDED  :
+
+; todo: push these immediates. popa them. add back to sp if loop skipped. 
+
+SELFMODIFY_sub_rwscale_lo_TWOSIDED:
+sub   word ptr [bp - 046h], 01000h
+SELFMODIFY_sub_rwscale_hi_TWOSIDED:
+sbb   word ptr [bp - 044h], 01000h
+SELFMODIFY_sub_topstep_lo_TWOSIDED:
+sub   word ptr [bp - 042h], 01000h
+SELFMODIFY_sub_topstep_hi_TWOSIDED:
+sbb   word ptr [bp - 040h], 01000h
+SELFMODIFY_sub_botstep_lo_TWOSIDED:
+sub   word ptr [bp - 03Eh], 01000h 
+SELFMODIFY_sub_botstep_hi_TWOSIDED:
+sbb   word ptr [bp - 03Ch], 01000h
+
+; todo include  pixlow, pixhigh in this variant.
+
+loop   sub_base4diff_TWOSIDED
+skip_sub_base4diff_TWOSIDED:
+
+lea   si, [bp - 046h]  ; todo use sp
+; idea:
+; sti/cli. use lodsw on ds and ss:bp + byte relative offset with ss as cs.
+; might save a handful of bytes.
+
+lods  word ptr ss:[si]
+mov   word ptr ds:[SELFMODIFY_set_rw_scale_lo+1], ax  ; TODO UPDATE
+lods  word ptr ss:[si]
+mov   word ptr ds:[SELFMODIFY_set_rw_scale_hi+1], ax  ; TODO UPDATE
+lods  word ptr ss:[si] ; topfrac lo
+mov   word ptr ds:[SELFMODIFY_set_topfrac_lo+1], ax   ; TODO UPDATE
+lods  word ptr ss:[si] ; topfrac hi
+mov   word ptr ds:[SELFMODIFY_set_topfrac_hi+1], ax   ; TODO UPDATE
+lods  word ptr ss:[si] ; bottomfrac lo
+mov   word ptr ds:[SELFMODIFY_set_botfrac_lo+1], ax   ; TODO UPDATE
+lods  word ptr ss:[si] ; bottomfrac hi
+mov   word ptr ds:[SELFMODIFY_set_botfrac_hi+1], ax   ; TODO UPDATE
+lods  word ptr ss:[si] ; pixlow lo
+mov   word ptr ds:[SELFMODIFY_set_pixlow_lo+1], ax    ; TODO UPDATE
+lods  word ptr ss:[si] ; pixlow hi
+mov   word ptr ds:[SELFMODIFY_set_pixlow_hi+1], ax    ; TODO UPDATE
+lods  word ptr ss:[si] ; pixhigh lo
+mov   word ptr ds:[SELFMODIFY_set_pixhigh_lo+1], ax   ; TODO UPDATE
+lods  word ptr ss:[si] ; pixhigh hi
+mov   word ptr ds:[SELFMODIFY_set_pixhigh_hi+1], ax   ; TODO UPDATE
+mov   al, 0 ; xoffset is 0
+mov   dx, SC_DATA  ; cheat this out of the loop..
+
+jmp   continue_outer_rendersegloop
 
 
 
