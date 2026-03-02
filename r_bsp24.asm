@@ -7467,6 +7467,10 @@ mov        si, OFFSET SELFMODIFY_set_cx_to_count_1+1
 mov        di, OFFSET SELFMODIFY_set_cx_to_count_1_TWOSIDED+1
 movsw
 
+mov        si, OFFSET SELFMODIFY_set_cx_to_count_2+1
+mov        di, OFFSET SELFMODIFY_set_cx_to_count_2_TWOSIDED+1
+movsw
+
 mov        si, OFFSET SELFMODIFY_add_rwscale_lo+4
 mov        di, OFFSET SELFMODIFY_add_rwscale_lo_TWOSIDED+4
 movsw
@@ -8989,7 +8993,7 @@ xchg   ax, di  ; todo maybe this xchg doesnt need to be here; swap above registe
 
 ; todo test vs pusha
 
-push   ax ; store celip
+push   ax ; store celip 
 push dx  ; texturecolumn
 ; store for bottom draw.
 push  si ; dc_yl
