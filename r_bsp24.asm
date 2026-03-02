@@ -4577,13 +4577,13 @@ mov       bl, ah
 mov       ax, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP]
 mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset+2], ax  ; per pixel byte count lookuo selector (mul 10/12)
 les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset+5], ax
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr+5], es
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset+4], ax
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr+4], es
 les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 4]
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_1+5], ax
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1+5], es
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_2+5], ax
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2+5], es
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_1+4], ax
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1+4], es
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_2+4], ax
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2+4], es
 SELFMODIFY_setmidtexturetranslation_lookup:
 mov       ax, 01000h
 
@@ -5676,10 +5676,10 @@ mov   al, byte ptr ds:[si+01000h]         ; 8a 84 00 10
 ;        set colormap offset to high byte
 
 ; todo: this
-;mov   dx, cs
-;mov   ds, dx
+mov   dx, cs
+mov   ds, dx
 
-mov   byte ptr cs:[SELFMODIFY_BSP_set_xlat_offset+2], al
+mov   byte ptr ds:[SELFMODIFY_BSP_set_xlat_offset+2], al
 
 
 
@@ -5696,6 +5696,7 @@ mov   si, MAXLIGHTSCALE - 1
 jmp   do_light_write
 ALIGN_MACRO
 light_set:
+public light_set
 
 ; INLINED FASTDIV3232FFF_ algo. only used here.
 
@@ -5724,16 +5725,16 @@ IF COMPISA GE COMPILE_386
    db 066h, 00Fh, 0A4h, 0C2h, 010h  ; shld edx, eax, 0x10
 
    ; ?only write to dc_iscale_hi when nonzero.
-; todo   mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag+2], dl  ; turn on stretch variant for this frame
-   mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+2], dl
+; todo   mov byte ptr ds:[SELFMODIFY_bsp_apply_stretch_tag+2], dl  ; turn on stretch variant for this frame
+   mov   byte ptr ds:[SELFMODIFY_BSP_set_dc_iscale_hi+2], dl
 
 
 ; todo: 386 logic.
    SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset:
-   mov   word ptr cs:[SELFMODIFY_set_top_jump_immediate_location+1], 01000h
+   mov   word ptr ds:[SELFMODIFY_set_top_jump_immediate_location+1], 01000h
 
    SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr:
-   mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset], 01000h
+   mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset], 01000h
 
    jmp FastDiv3232FFFF_done 
    ALIGN_MACRO
@@ -5750,16 +5751,16 @@ ELSE
    div bx        ; after this dx stores remainder, ax stores q1
 ; stretch draw off path
    SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset:
-   mov   word ptr cs:[SELFMODIFY_set_top_jump_immediate_location+1], 01000h
+   mov   word ptr ds:[SELFMODIFY_set_top_jump_immediate_location+1], 01000h
 
    xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
    div bx
    ; cx:ax is result 
    ; ch is known zero.
    SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr:
-   mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset], 01000h
+   mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset], 01000h
    ; only write to dc_iscale_hi when nonzero.
-   mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi+2], cl
+   mov   byte ptr ds:[SELFMODIFY_BSP_set_dc_iscale_hi+2], cl
 
    jmp FastDiv3232FFFF_done    ; todo branch better 
    ALIGN_MACRO
@@ -5848,9 +5849,9 @@ ELSE
 ; stretch draw on path
 
    SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_1:
-   mov   word ptr cs:[SELFMODIFY_set_top_jump_immediate_location+1], 01000h
+   mov   word ptr ds:[SELFMODIFY_set_top_jump_immediate_location+1], 01000h
    SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1:
-   mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset], 01000h
+   mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset], 01000h
 
    jmp FastDiv3232FFFF_done  
    ALIGN_MACRO
@@ -5896,7 +5897,7 @@ ELSE
    div   cx
 ; stretch draw on path
    SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_2:
-   mov   word ptr cs:[SELFMODIFY_set_top_jump_immediate_location+1], 01000h
+   mov   word ptr ds:[SELFMODIFY_set_top_jump_immediate_location+1], 01000h
 
 
 
@@ -5904,14 +5905,14 @@ ELSE
    ; qhat = ax
    ;    c1 = FastMul16u16u(qhat , den0);
 
-   mov   word ptr cs:[_SELFMODIFY_get_qhat+1], ax     ; store qhat. use div's prefetch to juice this...
+   mov   word ptr ds:[_SELFMODIFY_get_qhat+1], ax     ; store qhat. use div's prefetch to juice this...
 
    mov   bx, dx					; bx stores rhat
 
    mul   si   						; DX:AX = c1
 ; stretch draw on path
    SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2:
-   mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset], 01000h
+   mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset], 01000h
 
 
    ; c1 hi = dx, c2 lo = es
@@ -6021,12 +6022,14 @@ FastDiv3232FFFF_done:
 ; do the bit shuffling etc when writing direct to drawcol.
 
 ; todo write after a div in the function? in various spots?
-mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_lo+1], ax
+mov   word ptr ds:[SELFMODIFY_BSP_set_dc_iscale_lo+1], ax
 
 ; dc_iscale_hi was written ealier if nonzero
 
 
-
+; restore ds
+mov   dx, ss
+mov   ds, dx
 
 
 ; get texturecolumn     in dx
@@ -6501,13 +6504,13 @@ mov       bl, ch
 mov       cx, word ptr cs:[bx + _COLFUNC_JUMP_LOOKUP]
 mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_TWOSIDED+2], cx
 les       cx, dword ptr cs:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
-mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_nostretch_jumpoffset_TWOSIDED+5], cx
-mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_nostretch_funcaddr_TWOSIDED+5], es
+mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_nostretch_jumpoffset_TWOSIDED+4], cx
+mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_nostretch_funcaddr_TWOSIDED+4], es
 les       cx, dword ptr cs:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 4]
-mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_1_TWOSIDED+5], cx
-mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_1_TWOSIDED+5], es
-mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_2_TWOSIDED+5], cx
-mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_2_TWOSIDED+5], es
+mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_1_TWOSIDED+4], cx
+mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_1_TWOSIDED+4], es
+mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_2_TWOSIDED+4], cx
+mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_2_TWOSIDED+4], es
 
 
 pop       es
@@ -6549,13 +6552,13 @@ mov       bl, dh
 mov       dx, word ptr cs:[bx + _COLFUNC_JUMP_LOOKUP]
 mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_TWOSIDED+2], dx
 les       dx, dword ptr cs:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
-mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset_TWOSIDED+5], dx
-mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr_TWOSIDED+5], es
+mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset_TWOSIDED+4], dx
+mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr_TWOSIDED+4], es
 les       dx, dword ptr cs:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 4]
-mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_1_TWOSIDED+5], dx
-mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1_TWOSIDED+5], es
-mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_2_TWOSIDED+5], dx
-mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2_TWOSIDED+5], es
+mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_1_TWOSIDED+4], dx
+mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1_TWOSIDED+4], es
+mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_2_TWOSIDED+4], dx
+mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2_TWOSIDED+4], es
 
 pop       es
 pop       bx
@@ -6752,6 +6755,7 @@ je        toptexture_zero         ; todo whats more common?
 
 toptexture_not_zero:
 mov       word ptr ds:[SELFMODIFY_BSP_toptexture_TWOSIDED], 0468Bh ; mov   ax, word ptr [bp - 0xxh] first two bytes
+mov       byte ptr ds:[SELFMODIFY_BSP_toptexture_TWOSIDED+2], 0100 - 034h   ; ugh gross [bp - 034h]
 ; are any bits set?
 or        bl, bh
 or        byte ptr ds:[SELFMODIFY_check_for_any_tex+1], bl
@@ -6774,7 +6778,8 @@ jmp       do_selfmodify_bottexture
 
 ALIGN_MACRO
 toptexture_zero:
-mov       word ptr cs:[SELFMODIFY_BSP_toptexture_TWOSIDED], ((SELFMODIFY_BSP_toptexture_TARGET_TWOSIDED - SELFMODIFY_BSP_toptexture_AFTER_TWOSIDED) SHL 8) + 0EBh
+mov       byte ptr cs:[SELFMODIFY_BSP_toptexture_TWOSIDED], 0E9h
+mov       word ptr cs:[SELFMODIFY_BSP_toptexture_TWOSIDED+1], (SELFMODIFY_BSP_toptexture_TARGET_TWOSIDED - SELFMODIFY_BSP_toptexture_AFTER_TWOSIDED)
 jmp       toptexture_stuff_done
 
 ALIGN_MACRO
@@ -8517,11 +8522,11 @@ mov   al, byte ptr ds:[si+01000h]         ; 8a 84 00 10
 ;        set colormap offset to high byte
 
 ; todo: this
-;mov   dx, cs
-;mov   ds, dx
+mov   dx, cs
+mov   ds, dx
 
-mov   byte ptr cs:[SELFMODIFY_BSP_set_xlat_offset_TWOSIDED+2], al
-mov   byte ptr cs:[SELFMODIFY_BSP_set_xlat_offset_bot_TWOSIDED+2], al
+mov   byte ptr ds:[SELFMODIFY_BSP_set_xlat_offset_TWOSIDED+2], al
+mov   byte ptr ds:[SELFMODIFY_BSP_set_xlat_offset_bot_TWOSIDED+2], al
 
 
 jmp   light_set_TWOSIDED
@@ -8538,6 +8543,7 @@ jmp   do_light_write_TWOSIDED
 ALIGN_MACRO
 light_set_TWOSIDED:
 
+; ds is cs here
 ; INLINED FASTDIV3232FFF_ algo. only used here.
 
 ; set ax:dx ffffffff
@@ -8565,16 +8571,16 @@ IF COMPISA GE COMPILE_386
    db 066h, 00Fh, 0A4h, 0C2h, 010h  ; shld edx, eax, 0x10
 
    ; ?only write to dc_iscale_hi when nonzero.
-; todo   mov byte ptr cs:[SELFMODIFY_bsp_apply_stretch_tag_TWOSIDED+2], dl  ; turn on stretch variant for this frame
-   mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi_TWOSIDED+2], dl
-   mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi_bot_TWOSIDED+2], dl
+; todo   mov byte ptr ds:[SELFMODIFY_bsp_apply_stretch_tag_TWOSIDED+2], dl  ; turn on stretch variant for this frame
+   mov   byte ptr ds:[SELFMODIFY_BSP_set_dc_iscale_hi_TWOSIDED+2], dl
+   mov   byte ptr ds:[SELFMODIFY_BSP_set_dc_iscale_hi_bot_TWOSIDED+2], dl
 
 ; todo: 386 logic.
    SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset_TWOSIDED:
-   mov   word ptr cs:[SELFMODIFY_set_top_jump_immediate_location_TWOSIDED+1], 01000h
+   mov   word ptr ds:[SELFMODIFY_set_top_jump_immediate_location_TWOSIDED+1], 01000h
 
    SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr_TWOSIDED:
-   mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset_TWOSIDED], 01000h
+   mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_TWOSIDED], 01000h
 
    jmp FastDiv3232FFFF_done_TWOSIDED 
    ALIGN_MACRO
@@ -8588,24 +8594,28 @@ ELSE
    cwd
 
    xchg dx, cx   ; cx was 0, dx is FFFF
+
+      ; todo put stuff in reg
+
    div bx        ; after this dx stores remainder, ax stores q1
 ; stretch draw off path
    SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset_TWOSIDED:
-   mov   word ptr cs:[SELFMODIFY_set_top_jump_immediate_location_TWOSIDED+1], 01000h
+   mov   word ptr ds:[SELFMODIFY_set_top_jump_immediate_location_TWOSIDED+1], 01000h
    SELFMODIFY_set_bot_lookup_offset_setter_nostretch_jumpoffset_TWOSIDED:
-   mov   word ptr cs:[SELFMODIFY_set_bot_jump_immediate_location_TWOSIDED+1], 01000h
+   mov   word ptr ds:[SELFMODIFY_set_bot_jump_immediate_location_TWOSIDED+1], 01000h
 
    xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
    div bx
    ; cx:ax is result 
    ; ch is known zero.
+
    SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr_TWOSIDED:
-   mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset_TWOSIDED], 01000h
+   mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_TWOSIDED], 01000h
    SELFMODIFY_set_bot_lookup_offset_setter_nostretch_funcaddr_TWOSIDED:
-   mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset_bot_TWOSIDED], 01000h
+   mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_bot_TWOSIDED], 01000h
    ; only write to dc_iscale_hi when nonzero.
-   mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi_TWOSIDED+2], cl
-   mov   byte ptr cs:[SELFMODIFY_BSP_set_dc_iscale_hi_bot_TWOSIDED+2], cl
+   mov   byte ptr ds:[SELFMODIFY_BSP_set_dc_iscale_hi_TWOSIDED+2], cl
+   mov   byte ptr ds:[SELFMODIFY_BSP_set_dc_iscale_hi_bot_TWOSIDED+2], cl
 
    jmp FastDiv3232FFFF_done_TWOSIDED    ; todo branch better 
    ALIGN_MACRO
@@ -8694,13 +8704,13 @@ ELSE
 ; stretch draw on path
 
    SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_1_TWOSIDED:
-   mov   word ptr cs:[SELFMODIFY_set_top_jump_immediate_location_TWOSIDED+1], 01000h
+   mov   word ptr ds:[SELFMODIFY_set_top_jump_immediate_location_TWOSIDED+1], 01000h
    SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1_TWOSIDED:
-   mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset_TWOSIDED], 01000h
+   mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_TWOSIDED], 01000h
    SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_1_TWOSIDED:
-   mov   word ptr cs:[SELFMODIFY_set_bot_jump_immediate_location_TWOSIDED+1], 01000h
+   mov   word ptr ds:[SELFMODIFY_set_bot_jump_immediate_location_TWOSIDED+1], 01000h
    SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_1_TWOSIDED:
-   mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset_bot_TWOSIDED], 01000h
+   mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_bot_TWOSIDED], 01000h
 
    jmp FastDiv3232FFFF_done_TWOSIDED
    ALIGN_MACRO
@@ -8746,27 +8756,27 @@ ELSE
    div   cx
 ; stretch draw on path
    SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_2_TWOSIDED:
-   mov   word ptr cs:[SELFMODIFY_set_top_jump_immediate_location_TWOSIDED+1], 01000h
+   mov   word ptr ds:[SELFMODIFY_set_top_jump_immediate_location_TWOSIDED+1], 01000h
 
    SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_2_TWOSIDED:
-   mov   word ptr cs:[SELFMODIFY_set_bot_jump_immediate_location_TWOSIDED+1], 01000h
+   mov   word ptr ds:[SELFMODIFY_set_bot_jump_immediate_location_TWOSIDED+1], 01000h
 
 
    ; rhat = dx
    ; qhat = ax
    ;    c1 = FastMul16u16u(qhat , den0);
 
-   mov   word ptr cs:[_SELFMODIFY_get_qhat_TWOSIDED+1], ax     ; store qhat. use div's prefetch to juice this...
+   mov   word ptr ds:[_SELFMODIFY_get_qhat_TWOSIDED+1], ax     ; store qhat. use div's prefetch to juice this...
 
    mov   bx, dx					; bx stores rhat
 
    mul   si   						; DX:AX = c1
 ; stretch draw on path
    SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2_TWOSIDED:
-   mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset_TWOSIDED], 01000h
+   mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_TWOSIDED], 01000h
 
    SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_2_TWOSIDED:
-   mov   word ptr cs:[SELFMODIFY_COLFUNC_set_func_offset_bot_TWOSIDED], 01000h
+   mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_bot_TWOSIDED], 01000h
 
    ; c1 hi = dx, c2 lo = es
    sub   dx, bx      ; cmp and sub at same time... 
@@ -8803,11 +8813,6 @@ ELSE
 ENDIF
 
 
-; do jmp. highest priority, overwrite previously written thing.
-seglooptexrepeat0_is_jmp_TWOSIDED:
-; NOTE1 next CS here
-mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0_TWOSIDED], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET_TWOSIDED - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER_TWOSIDED) SHL 8) + 0EBh
-jmp   just_do_draw0_TWOSIDED
 ALIGN_MACRO
 in_texture_bounds0_TWOSIDED:
 xchg  ax, dx
@@ -8820,6 +8825,7 @@ ALIGN_MACRO
 SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET_TWOSIDED:
 public SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET_TWOSIDED
 non_repeating_texture0_TWOSIDED:
+public non_repeating_texture0_TWOSIDED
 cmp   dx, word ptr ds:[_segloopnextlookup]
 jge   out_of_texture_bounds0_TWOSIDED
 cmp   dx, word ptr ds:[_segloopprevlookup]
@@ -8839,12 +8845,17 @@ mov   word ptr cs:[SELFMODIFY_add_cached_segment0_TWOSIDED+1], dx
 
 
 ; todohigh get this dh and dl in same read?
+mov   cl, 0B8h  ; mov ax, xxxx
 mov   dh, byte ptr ds:[_seglooptexrepeat]
-cmp   dh, 0
-je    seglooptexrepeat0_is_jmp_TWOSIDED
-; modulo is seglooptexrepeat - 1
 mov   dl, byte ptr ds:[_segloopheightvalcache]
-mov   byte ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0_TWOSIDED],   0B8h   ; mov ax, xxxx
+cmp   dh, 0
+jne   seglooptexrepeat0_is_not_jmp_TWOSIDED
+mov   dx, (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET_TWOSIDED - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER_TWOSIDED)
+mov   cl, 0E9h  ; jmp 
+
+seglooptexrepeat0_is_not_jmp_TWOSIDED:
+; modulo is seglooptexrepeat - 1
+mov   byte ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0_TWOSIDED],   cl
 mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0_TWOSIDED+1], dx
 
 jmp   just_do_draw0_TWOSIDED
@@ -8895,10 +8906,13 @@ FastDiv3232FFFF_done_TWOSIDED:
 ; do the bit shuffling etc when writing direct to drawcol.
 
 ; todo write after a div in the function? in various spots?
-mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_lo_TWOSIDED+1], ax
-mov   word ptr cs:[SELFMODIFY_BSP_set_dc_iscale_lo_bot_TWOSIDED+1], ax
+mov   word ptr ds:[SELFMODIFY_BSP_set_dc_iscale_lo_TWOSIDED+1], ax
+mov   word ptr ds:[SELFMODIFY_BSP_set_dc_iscale_lo_bot_TWOSIDED+1], ax
 ; dc_iscale_hi was written ealier if nonzero
 
+; restore ds
+mov   dx, ss
+mov   ds, dx
 
 
 
@@ -8931,8 +8945,8 @@ finished_recording_masked:
 
 
 SELFMODIFY_BSP_toptexture_TWOSIDED:
-SELFMODIFY_BSP_toptexture_AFTER_TWOSIDED = SELFMODIFY_BSP_toptexture_TWOSIDED + 2
-
+SELFMODIFY_BSP_toptexture_AFTER_TWOSIDED = SELFMODIFY_BSP_toptexture_TWOSIDED + 3
+public SELFMODIFY_BSP_toptexture_AFTER_TWOSIDED
 do_top_texture_draw:  ; not a jump target.
 PUBLIC do_top_texture_draw
 
@@ -8963,7 +8977,7 @@ jnle  dont_mark_ceiling_ax_TWOSIDED  ; skip drawing ceiling.
 jmp   mark_ceiling_ax_TWOSIDED
 
 jump_to_mark_ceiling_si_TWOSIDED:
-jmp   jump_to_mark_ceiling_si_TWOSIDED
+jmp   mark_ceiling_si_TWOSIDED
 ALIGN_MACRO
 dont_mark_ceiling_ax_TWOSIDED:
 xchg   ax, di  ; todo maybe this xchg doesnt need to be here; swap above register logic.
@@ -9003,13 +9017,14 @@ push  bx ; rw_x
   ; if one is set, then the result of the predetermined value of seglooptexmodulo might it into a jump
    ; if its a repeating texture  then we modify it to mov ah, segloopheightvalcache
 
+; bad
 SELFMODIFY_BSP_check_seglooptexmodulo0_TWOSIDED:
 SELFMODIFY_BSP_set_seglooptexrepeat0_TWOSIDED:
 ; 3 bytes. May become one of two jumps (three bytes) or mov ax, imm16 (three bytes)
 jmp    non_repeating_texture0_TWOSIDED
 
-SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER_TWOSIDED:
-public SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER_TWOSIDED
+SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER_TWOSIDED = SELFMODIFY_BSP_check_seglooptexmodulo0_TWOSIDED + 3
+
 SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER_TWOSIDED:
 public SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER_TWOSIDED
 xchg  ax, ax                    ; one byte nop placeholder. this gets the ah value in mov ax, xxxx (byte 3)
@@ -9149,6 +9164,7 @@ jmp   finish_outer_loop_TWOSIDED
 ALIGN_MACRO
 
 SELFMODIFY_BSP_toptexture_TARGET_TWOSIDED:
+public SELFMODIFY_BSP_toptexture_TARGET_TWOSIDED
 no_top_texture_draw_TWOSIDED:
 
 ; bx is already rw_x
@@ -9444,7 +9460,7 @@ R_RenderSegLoop_exit_TWOSIDED:
 
 ; clean up the self modified code of renderseg loop. 
 mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0_TWOSIDED], 0E9h
-mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0_TWOSIDED+1], (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET_TWOSIDED - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER_TWOSIDED)
+mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0_TWOSIDED+1], (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET_TWOSIDED - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER_TWOSIDED )
 mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1_TWOSIDED], ((SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET_TWOSIDED - SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER_TWOSIDED) SHL 8) + 0EBh
 
 
