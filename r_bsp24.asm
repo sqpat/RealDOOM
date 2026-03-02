@@ -3875,6 +3875,7 @@ push      dx ; bp - 020h
 sub       dx, ax
 push      dx ; bp - 022h   stop - start. used often. ; todo: maybe we get this for free elsewhere without this sub?
 
+mov       cx, cs  ; ends these blocks with cs
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; START SECTOR BASED SELF MODIFY BLOCK ;;;;;;
@@ -3917,7 +3918,7 @@ mov       ds, dx
 mov       al, 0EBh
 mov       byte ptr cs:[SELFMODIFY_skip_frontsector_based_selfmodify], al  ; jmp here
 mov       byte ptr cs:[SELFMODIFY_skip_frontsector_based_selfmodify_TWOSIDED], al  ; jmp here
-
+; cx still cs
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; END SECTOR BASED SELF MODIFY BLOCK ;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -3968,10 +3969,10 @@ done_adjusting_row_offset:
 shl       si, 1
 
 
-les       bx, dword ptr ds:[bx + SEG_RENDER_T.sr_v1Offset]   ; v1
+les       bx, dword ptr ss:[bx + SEG_RENDER_T.sr_v1Offset]   ; v1
 mov       di, es                                             ; v2
 
-mov       ds, word ptr ds:[_VERTEXES_SEGMENT_PTR]
+mov       ds, word ptr ss:[_VERTEXES_SEGMENT_PTR]
 
 
 les       bx, dword ptr ds:[bx] ;v1.x
@@ -4054,8 +4055,8 @@ ALIGN_MACRO
 
    lodsw     ; textureoffset
    mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset+1], ax
-   mov       cx, FIXED_DS_SEGMENT
-   mov       ds, cx  ; restore ds..   ; todo dont switch ds?
+   mov       si, ss
+   mov       ds, si  ; restore ds..   ; todo dont switch ds?
 
    mov       si, word ptr [bp - 6]
    ;	seenlines[linedefOffset/8] |= (0x01 << (linedefOffset % 8));
@@ -4215,18 +4216,18 @@ ALIGN_MACRO
    call      FixedMulTrigNoShiftSine_BSPLocal_
 
 
-   do_set_rw_distance:
+   mov       cx, cs
+   mov       ds, cx
 
    ; self modifying code for rw_distance
-   mov   word ptr cs:[SELFMODIFY_set_bx_rw_distance_lo+1], ax
-   mov   word ptr cs:[SELFMODIFY_set_cx_rw_distance_hi+1], dx
-   mov   word ptr cs:[SELFMODIFY_get_rw_distance_lo_1+1], ax
-   mov   word ptr cs:[SELFMODIFY_get_rw_distance_hi_1+1], dx
+   mov   word ptr ds:[SELFMODIFY_set_bx_rw_distance_lo+1], ax
+   mov   word ptr ds:[SELFMODIFY_set_cx_rw_distance_hi+1], dx
+   mov   word ptr ds:[SELFMODIFY_get_rw_distance_lo_1+1], ax
+   mov   word ptr ds:[SELFMODIFY_get_rw_distance_hi_1+1], dx
 
-
-
-
-mov       byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify], 0E9h  ; jmp here
+   ; this can be done once per line as BP will not change.
+   mov   word ptr ds:[SELFMODIFY_restore_bp_after_draw_mid+1], bp
+   mov   byte ptr ds:[SELFMODIFY_skip_curseg_based_selfmodify], 0E9h  ; jmp here
 
 
 SELFMODIFY_skip_curseg_based_selfmodify_TARGET:
@@ -4236,7 +4237,7 @@ SELFMODIFY_skip_curseg_based_selfmodify_TARGET:
 
  
 
-les       di, dword ptr ds:[_ds_p]
+les       di, dword ptr ss:[_ds_p]
 mov       ax, word ptr [bp + 4]  ; R_AddLine line num
 
 stosw              ; DRAWSEG_T.drawseg_cursegvalue
@@ -4253,8 +4254,8 @@ inc       ax
 
 
 
-mov       cx, cs
-mov       ds, cx
+mov       ds, cx  ; cs = ds, in case it wasnt already..
+
 
 ; bx is already [bp - 01Eh]
 mov   cx, bx
@@ -4382,7 +4383,7 @@ div bx
 xor dx, dx
 
 neg ax
-adc dx, 0
+adc dx, dx  ; dx = 0...
 neg dx
 jmp div_done
 ALIGN_MACRO
@@ -5123,17 +5124,13 @@ push  word ptr [bp - 02Eh]  ; bp - 044h
 push  word ptr [bp - 030h]  ; bp - 046h
 
 
-xor   bx, bx
-mov   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1], bl ; 0 
-
-
-
 
 
 
 SELFMODIFY_set_rw_x_loop_counter:
 db 0B9h, 00, 00   ; mov cx, 00000
 public SELFMODIFY_set_rw_x_loop_counter
+mov   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1], ch ; 0   ; todo move this after a div or mul somewhere
 
 ;	while (base4diff){
 ;		rw_scale.w      -= rw_scalestep;
@@ -5255,7 +5252,7 @@ jl    pre_increment_values
 
 SELFMODIFY_cmp_ax_to_rw_stopx_3:
 cmp   ax, 01000h
-jl    jump_to_start_per_column_inner_loop  ; 026hish out of range
+jl    start_per_column_inner_loop  ; 026hish out of range
 
 finish_outer_loop:
 public finish_outer_loop
@@ -5319,8 +5316,6 @@ ALIGN_MACRO
 
 
 
-jump_to_start_per_column_inner_loop:
-jmp   start_per_column_inner_loop
 ALIGN_MACRO
 jump_to_finish_outer_loop_2:
 mov   dx, SC_DATA  ; cheat this out of the loop..
@@ -5367,6 +5362,7 @@ start_per_column_inner_loop:
 ; ax was rw_x
 ; now di is rw_x
 
+; todo make ds = cs here.
 
 ; todo i think below here can get improved a lot...?
 
@@ -6127,8 +6123,8 @@ pop   bx  ; rw_x  always want this back
 
 ; this runs as a jmp for a top call, otherwise NOP for mid call
 
-mov   bp, sp
-add   bp, STOREWALLRANGE_FULL_STACK_SIZE
+SELFMODIFY_restore_bp_after_draw_mid:
+mov   bp, 01000h
 
 mid_no_pixels_to_draw:
 ; end of mid column draw
@@ -6193,7 +6189,7 @@ R_RenderSegLoop_exit:
 ; clean up the self modified code of renderseg loop. 
 mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
 
-; single wall mid texture has no clipping done.
+; single wall mid texture has no clipping done...
 
 add       word ptr ds:[_ds_p], (SIZE DRAWSEG_T)
 
@@ -6355,6 +6351,8 @@ push      dx ; bp - 020h
 
 sub       dx, ax
 push      dx ; bp - 022h   stop - start. used often. ; todo: maybe we get this for free elsewhere without this sub?
+
+mov       cx, cs
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -6695,16 +6693,20 @@ finish_midtex_selfmodify_TWOSIDED:
 
    call      FixedMulTrigNoShiftSine_BSPLocal_
 
+   mov       cx, cs
+   mov       ds, cx
 
-   do_set_rw_distance_TWOSIDED:
 
    ; self modifying code for rw_distance
-   mov   word ptr cs:[SELFMODIFY_set_bx_rw_distance_lo_TWOSIDED+1], ax
-   mov   word ptr cs:[SELFMODIFY_set_cx_rw_distance_hi_TWOSIDED+1], dx
-   mov   word ptr cs:[SELFMODIFY_get_rw_distance_lo_1+1], ax ; ??
-   mov   word ptr cs:[SELFMODIFY_get_rw_distance_hi_1+1], dx ; ?? 
+   mov   word ptr ds:[SELFMODIFY_set_bx_rw_distance_lo_TWOSIDED+1], ax
+   mov   word ptr ds:[SELFMODIFY_set_cx_rw_distance_hi_TWOSIDED+1], dx
+   mov   word ptr ds:[SELFMODIFY_get_rw_distance_lo_1+1], ax ; ??
+   mov   word ptr ds:[SELFMODIFY_get_rw_distance_hi_1+1], dx ; ?? 
 
 
+  ; this can be done once per line as BP will not change.
+   mov   word ptr ds:[SELFMODIFY_restore_bp_after_draw_top+1], bp
+   mov   word ptr ds:[SELFMODIFY_restore_bp_after_draw_bot+1], bp
 
 
 mov       byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify_TWOSIDED], 0E9h  ; jmp here
@@ -6719,7 +6721,7 @@ selfmod_done_bot:
 public selfmod_done_bot
 
 
-les       di, dword ptr ds:[_ds_p]
+les       di, dword ptr ss:[_ds_p]
 mov       ax, word ptr [bp + 4]  ; R_AddLine line num
 
 stosw              ; DRAWSEG_T.drawseg_cursegvalue
@@ -6736,7 +6738,6 @@ inc       ax
 
 
 
-mov       cx, cs
 mov       ds, cx
 
 ; bx is already [bp - 01Eh]
@@ -9679,8 +9680,8 @@ pop   si  ; dc_yl
 pop   dx  ; textuecolumn
 pop   di      ; todo whats this again. something for floorclip? yl-1?
 
-mov   bp, sp
-add   bp, STOREWALLRANGE_FULL_STACK_SIZE
+SELFMODIFY_restore_bp_after_draw_top:
+mov   bp, 01000h
 
 
 
@@ -9843,8 +9844,9 @@ public SELFMODIFY_BSP_R_DrawColumnPrep_ret_bot
 
 
 pop   bx ; restore dc_x
-mov   bp, sp
-add   bp, STOREWALLRANGE_FULL_STACK_SIZE
+SELFMODIFY_restore_bp_after_draw_bot:
+mov   bp, 01000h
+
 
 
 ;END INLINED R_GetSourceSegment1_
