@@ -4008,7 +4008,7 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta], dl
 
    cmp       word ptr cs:[_backsector], SECNUM_NULL
 
-   jne       handle_closed_door     ; if this was called with a backsector then its a closed door, go fetch top tex instead of mid
+   jne       handle_closed_door     ; if this was called with a backsector then its a closed door, go fetch top or bot tex instead of mid
 
 
 selfmodify_mid_only:
@@ -4020,6 +4020,7 @@ selfmodify_mid_only:
    jz        skip_midtex_selfmodify
 
 got_texture:
+   ; si pts to textureheight now
    xchg      ax, di
 
    mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
@@ -4035,9 +4036,15 @@ ALIGN_MACRO
 
 ; todo find a way to fit this elsewhere w/o a jump
 handle_closed_door:  
-
+; note: a closed door can also be a raised elevator and thus a bot texture.
    lodsw             ; toptex
+   test      ax, ax
+   jz        use_bot_tex_for_closed_door
    add       si, 4   ; skip bot, midtex.
+   jmp       got_texture
+   use_bot_tex_for_closed_door:
+   lodsw
+   add       si, 2  ; skip midtex.
    jmp       got_texture
 
    ; create jmp instruction
@@ -5466,7 +5473,7 @@ skip_top_ceilingclip:
 
 cmp   ax, cx
 jg    markfloor_done
-les   bx, dword ptr ds:[_floortop]
+les   bx, dword ptr ds:[_floortop] ; todo move to cs
 dec   ax
 mov   byte ptr es:[bx+di], al
 dec   cx
@@ -8822,7 +8829,7 @@ skip_top_ceilingclip_TWOSIDED:
 
 cmp   ax, cx
 jg    markfloor_done_TWOSIDED
-les   bx, dword ptr ds:[_floortop]
+les   bx, dword ptr ds:[_floortop] ; todo move to cs
 dec   ax
 mov   byte ptr es:[bx+di], al
 dec   cx
@@ -10269,7 +10276,11 @@ END_R_ADDLINE_AND_SELFMODIFY_LABEL:
 ; so we must cachebust it (replace jump with fallthru to refresh
 ;  selfmodify cache with new line values next R_StoreWallRange)
 
-mov   byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify], 0BBh ; mov bx, imm16 (fallthru)
+
+mov   al, 0BBh ; mov bx, imm16 (fallthru)
+mov   byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify], al
+mov   byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify_TWOSIDED], al
+
 
 END_R_ADDLINE_LABEL:
 SELFMODIFY_reset_sp:
