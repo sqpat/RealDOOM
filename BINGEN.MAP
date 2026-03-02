@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/03/01 10:37:02
+Created on:       26/03/01 12:10:15
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -347,7 +347,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:37ce      R_GetPatchTexture_Far24_
 0819:280a*     R_GetSourceSegment1_
 0819:09e6*     FixedMulTrigNoShiftSine_BSPLocal_
-0819:1909*     just_do_draw0
+0819:1915*     just_do_draw0
 0819:19ff*     SELFMODIFY_skip_curseg_based_selfmodify_AFTER_TWOSIDED
 0819:2815*     just_do_draw1
 0819:1fbc*     _selfmodify_restore_dx_6
@@ -365,7 +365,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:1045*     SELFMODIFY_skip_curseg_based_selfmodify_AFTER
 0819:29ac*     R_Subsector_
 0819:16af*     check_here
-0819:193e*     SELFMODIFY_BSP_R_DrawColumnPrep_ret
+0819:194c*     SELFMODIFY_BSP_R_DrawColumnPrep_ret
 0819:2713*     do_top_texture_draw
 0819:2268*     at_least_one_column_to_draw_TWOSIDED
 0819:0000      R_BSP24_STARTMARKER_
@@ -373,7 +373,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:256b*     checktexcolumn
 0819:1b8e*     selfmod_done_bot
 0819:1321*     scales_set
-0819:18fe*     R_GetSourceSegment0_START
+0819:190a*     R_GetSourceSegment0_START
 0819:281d*     R_DrawColumnPrepBot_
 0819:280d*     SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER_TWOSIDED
 0819:26aa*     non_repeating_texture0_TWOSIDED
@@ -399,7 +399,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:199c*     mark_planes_dirty
 0819:2489*     check_here_TWOSIDED
 0819:1cf5*     scales_set_TWOSIDED
-0819:17e2*     main_3232_div
+0819:17e6*     main_3232_div
 0819:1d2c*     set_values
 0819:0068*     _lastbasexscale
 0819:255c*     _selfmodify_restore_dx_10_TWOSIDED
@@ -414,7 +414,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:274f*     just_do_draw0_TWOSIDED
 0819:1002*     adjust_row_offset
 0819:0000*     _COLFUNC_SELFMODIFY_LOOKUPTABLE
-0819:1911*     R_DrawColumnPrep_
+0819:191d*     R_DrawColumnPrep_
 0819:0352*     SELFMODIFY_get_rw_distance_hi_1
 0819:23ed*     finish_outer_loop_TWOSIDED
 0819:25d2*     main_3232_div_TWOSIDED
@@ -422,7 +422,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:00a0*     OFFSET_FLOORCLIP
 0819:15b4*     R_RenderSegLoop_
 0819:1a43*     v2_y_equals_v1_y_TWOSIDED
-0819:1780*     _selfmodify_restore_dx_10
+0819:1784*     _selfmodify_restore_dx_10
 0819:2e0c*     R_GetColumnSegment_
 0819:0338*     R_ScaleFromGlobalAngle_
 0819:284a*     SELFMODIFY_BSP_R_DrawColumnPrep_ret_bot
@@ -430,7 +430,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:1993*     SELFMODIFY_mark_planes_dirty
 0819:15c3*     sub_base4diff
 0819:27c8*     done_marking_floor_ax_TWOSIDED
-0819:17c0*     light_set
+0819:17c4*     light_set
 0819:2757*     R_DrawColumnPrep_TWOSIDED_
 Module: r_bsp16.obj(r_bsp16.ASM)
 0c44:3289      R_RenderPlayerView16_

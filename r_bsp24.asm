@@ -5476,6 +5476,7 @@ dec   cx
 mov   byte ptr es:[bx+di + vp_bottom_offset], cl
 or    byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], 2 ; floor bit
 SELFMODIFY_BSP_markfloor_1_TARGET:
+
 markfloor_done:
 SELFMODIFY_BSP_get_segtextured:
 jmp SHORT    jump_to_seg_non_textured  ; or nop
@@ -5514,6 +5515,8 @@ jmp   finetangent_ready
 ALIGN_MACRO
 SELFMODIFY_BSP_get_segtextured_TARGET:
 jump_to_seg_non_textured:
+mov   dx, cs
+mov   ds, dx
 xor   dx, dx
 jmp   seg_non_textured
 ALIGN_MACRO
@@ -5915,6 +5918,8 @@ ALIGN_MACRO
 
 SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET:
 non_repeating_texture0:
+mov   cx, ss
+mov   ds, cx
 cmp   dx, word ptr ds:[_segloopnextlookup]
 jge   out_of_texture_bounds0
 cmp   dx, word ptr ds:[_segloopprevlookup]
@@ -5976,9 +5981,6 @@ mov   word ptr ds:[SELFMODIFY_BSP_set_dc_iscale_lo+1], ax
 ; dc_iscale_hi was written ealier if nonzero
 
 
-; restore ds
-mov   dx, ss
-mov   ds, dx
 
 
 ; get texturecolumn     in dx
@@ -5987,17 +5989,29 @@ pop   dx
 seg_non_textured:
 ; si/di are yh/yl
 ;if (yh >= yl){
-mov   bx, di 			; store rw_x
+
+; di has rw_x
+; ds is cs.
+
+
+; this runs no matter which branch taken - remove the dependency now
+SELFMODIFY_BSP_setviewheight_1:
+; view height plus 1.
+
+; todo: rep stosw  this later for the whole 
+mov   byte ptr ds:[di + OFFSET_CEILINGCLIP], 010h   ; 2e c6 87 80 a7 10  (this instruction that gets selfmodified)
+mov   byte ptr ds:[di + OFFSET_FLOORCLIP], 000h
+
 
 
 ; dx holds texturecolumn
 ; get yl/yh in di/si
-pop   di
+pop   bx
 pop   si
 
 
 ; dc_yl and dc_yh are both still one too high, but (di - si) count calculation is unaffected.
-sub   di, si
+sub   bx, si
 jl    mid_no_pixels_to_draw
 
 ; cx:di are dc_yl, dc_yh
@@ -6012,7 +6026,7 @@ PUBLIC  R_GetSourceSegment0_START
 ; dont push bp. restore from sp instead.
 ; bp is currently SP + 46
 
-push  bx ; rw_x
+push  di ; rw_x
 
 
 ; okay. we modify the first instruction in this argument. 
@@ -6044,6 +6058,8 @@ public just_do_draw0
 ; ax carries _dc_source_segment
 
 mov   ds, ax ; set _dc_source_segment
+
+; remove once the relevent bits are in cs.
 mov   ax, COLFUNC_FILE_START_SEGMENT
 mov   es, ax
 
@@ -6059,11 +6075,16 @@ xchg  ax, si ; dc_yl in ax. ; toggle for even/odd ret label
 R_DrawColumnPrep_:
 PUBLIC R_DrawColumnPrep_ 
 
+; bx is dc_yh
+; di is dc_x
 
-
-sal   di, 1
+sal   bx, 1
 SELFMODIFY_set_top_lookup_offset:
-lea   si, [di + 01000h]   ; word lookup with offset
+lea   si, [bx + 01000h]   ; word lookup with offset
+
+mov   bx, di  ; todo remove!
+
+
 SELFMODIFY_set_top_jump_immediate_location:
 mov   di, 01000h
 movs  word ptr es:[si], word ptr es:[di]
@@ -6118,7 +6139,7 @@ public SELFMODIFY_BSP_R_DrawColumnPrep_ret
 ; todo: the bottom caller pops the same stuff. pop here and modify a later instruction instead?
 
 
-pop   bx  ; rw_x  always want this back
+pop   di  ; rw_x  always want this back
 
 
 ; this runs as a jmp for a top call, otherwise NOP for mid call
@@ -6128,12 +6149,8 @@ mov   bp, 01000h
 
 mid_no_pixels_to_draw:
 ; end of mid column draw
-; bx is already _rw_x
+; di is already _rw_x
 
-SELFMODIFY_BSP_setviewheight_1:
-; view height plus 1.
-mov   byte ptr cs:[bx + OFFSET_CEILINGCLIP], 010h   ; 2e c6 87 80 a7 10  (this instruction that gets selfmodified)
-mov   byte ptr cs:[bx + OFFSET_FLOORCLIP], 000h
 finished_inner_loop_iter:
 
 ;		for ( ; rw_x < rw_stopx ; 
@@ -6142,14 +6159,15 @@ finished_inner_loop_iter:
 ;			bottomfrac  += bottomstepshift,
 ;			rw_scale.w  += rwscaleshift
 
-mov   ax, bx  ; rw_x   ; todo xchg?
+
 SELFMODIFY_add_detailshiftitercount:
-db  05h, 00h, 00h   ;add   ax, 0
+db  08dh, 085h, 00h, 00h   ;lea ax, [di + 01000h]
 
 SELFMODIFY_cmp_ax_to_rw_stopx_2:
 cmp   ax, 01000h
 jge   jump_to_finish_outer_loop  ; exit before adding the other loop vars.
 
+; todo popa etc
 
 SELFMODIFY_add_to_rwscale_lo_1:
 add   word ptr [bp - 046h], 01000h
@@ -14844,7 +14862,7 @@ mov      byte ptr ds:[SELFMODIFY_cmp_al_to_detailshiftitercount_TWOSIDED+1], al
 ; todo is this supposed to be SELFMODIFY_add_iter_to_rw_x plus 2?
 mov      byte ptr ds:[SELFMODIFY_add_iter_to_rw_x+1], al
 mov      byte ptr ds:[SELFMODIFY_add_iter_to_rw_x_TWOSIDED+1], al
-mov      byte ptr ds:[SELFMODIFY_add_detailshiftitercount+1], al
+mov      byte ptr ds:[SELFMODIFY_add_detailshiftitercount+2], al
 mov      byte ptr ds:[SELFMODIFY_add_detailshiftitercount_TWOSIDED+1], al
 
 mov      ax, word ptr ss:[_detailshiftandval]
