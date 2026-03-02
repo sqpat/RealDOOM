@@ -155,15 +155,14 @@ REPT SCREENWIDTH ; 320
 ENDM
 
 OFFSET_CEILINGCLIP:
+public OFFSET_CEILINGCLIP
 _ceilingclip:
+public _ceilingclip
 REPT SCREENWIDTH ; 320
     db 0
 ENDM
 
 
-DEFAULT_DRAWSEG_T:
-dw MAXSHORT, MINSHORT, OFFSET_SCREENHEIGHTARRAY, OFFSET_NEGONEARRAY, NULL_TEX_COL
-db SIL_BOTH
 
 _ceilingplaneindex:
 dw 0FFFFh
@@ -174,6 +173,11 @@ _frontsector:
 dw 0FFFFh, SECTORS_SEGMENT
 _backsector:
 dw 0FFFFh, SECTORS_SEGMENT
+
+
+DEFAULT_DRAWSEG_T:
+dw MAXSHORT, MINSHORT, OFFSET_SCREENHEIGHTARRAY, OFFSET_NEGONEARRAY, NULL_TEX_COL
+db SIL_BOTH
 
 
 ; 0AAh
@@ -3780,14 +3784,16 @@ mov       word ptr [bp - 0Ch], ax   ;  TODO make this a push. probably change th
 
 jmp       done_adjusting_row_offset
 
-;R_StoreWallRange_
+
+
+;R_StoreWallRangeNoBackSector_
 
 STOREWALLRANGE_INNER_STACK_SIZE = 02Ah
 STOREWALLRANGE_FULL_STACK_SIZE = 046h
 
 ALIGN_MACRO  ; adding these back seems to lower bench scores
-PROC   R_StoreWallRange_ NEAR ; needs another look and reconciliation with outer stack frames.
-PUBLIC R_StoreWallRange_ 
+PROC   R_StoreWallRangeNoBackSector_ NEAR ; needs another look and reconciliation with outer stack frames.
+PUBLIC R_StoreWallRangeNoBackSector_ 
 
 
 ; todo shift 4/segsrender thing here
@@ -3908,8 +3914,9 @@ stosb     ; bp + 0Eh frontsectorceilingheight
 
 
 mov       ds, dx
-
-mov       byte ptr cs:[SELFMODIFY_skip_frontsector_based_selfmodify], 0EBh  ; jmp here
+mov       al, 0EBh
+mov       byte ptr cs:[SELFMODIFY_skip_frontsector_based_selfmodify], al  ; jmp here
+mov       byte ptr cs:[SELFMODIFY_skip_frontsector_based_selfmodify_TWOSIDED], al  ; jmp here
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; END SECTOR BASED SELF MODIFY BLOCK ;;;;;;;
@@ -3948,7 +3955,6 @@ mov       si, word ptr [bp - 8]  ; SEG_RENDER_T.sr_sidedefOffset preshifted 2
 
 mov       al, byte ptr ds:[si + _sides_render + SIDE_RENDER_T.sr_rowoffset]
 mov       byte ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_1+1], al
-mov       byte ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_2+1], al
 
 
 test      al, al
@@ -3976,10 +3982,10 @@ mov       word ptr cs:[SELFMODIFY_BSP_v1y+1], ax
 
 sub       ax, word ptr ds:[di + VERTEX_T.v_y]
 mov       dl, 048h  ; dec ax
-je        v2_y_equals_v1_y
+je        v2_y_equals_v1_y      ; todo branch test
 sub       bx, word ptr ds:[di + VERTEX_T.v_x]
 mov       dl, 090h  ; nop
-jne       v2_y_not_equals_v1_y
+jne       v2_y_not_equals_v1_y  ; todo branch test
 mov       dl, 040h  ; inc ax
 v2_y_not_equals_v1_y:
 v2_y_equals_v1_y:
@@ -3995,7 +4001,6 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta], dl
 
 
    ; note: BX free now
-   mov       dl, 0BBh ; 0E9h = jmp rel 16, 08Bh = mov bx, imm16
 
    mov       ax, SIDES_SEGMENT
    mov       ds, ax
@@ -4003,42 +4008,8 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta], dl
 
    cmp       word ptr cs:[_backsector], SECNUM_NULL
 
-   ; ds:si is a SIDE_T
+   jne       handle_closed_door     ; if this was called with a backsector then its a closed door, go fetch top tex instead of mid
 
-   je        selfmodify_mid_only
-
-   ; overwrite jump locations for backsecnum!=null
-   mov       dl, 0E9h ; 0E9h = jmp rel 16, 08Bh = mov bx, imm16
-   ; two sides wall may have bottom and top textures
-
-
-   ; read all the sides fields now. ;preshift them as they are word lookups
-
-   lodsw     ; side toptexture
-   test      ax, ax
-   jz        skip_toptex_selfmodify
-   xchg      ax, di
-
-   mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
-   cbw
-   sal       di, 1
-   inc       ax
-   mov       word ptr cs:[SELFMODIFY_add_texturetopheight_plus_one+2], ax
-
-   push      word ptr es:[di]
-   pop       word ptr cs:[SELFMODIFY_settoptexturetranslation_lookup+1]
-
-   
-   skip_toptex_selfmodify:
-   lodsw     ; side bottexture  ; faster to just do it than branch?
-   xchg      ax, di
-   sal       di, 1
-   push      word ptr es:[di]
-   pop       word ptr cs:[SELFMODIFY_setbottexturetranslation_lookup+1]
-
-
-
-   sub       si, 4 ; rewind si for fall through. twosided textures can still have a mid texture (invisible walls like E1M1)
 
 selfmodify_mid_only:
    ; twosided textures can still have a mid texture (invisible walls like E1M1)
@@ -4047,8 +4018,8 @@ selfmodify_mid_only:
    lodsw     ; side midtexture
    test      ax, ax
    jz        skip_midtex_selfmodify
-   ; todo handle masked etc properly...
-   ; mid should never render if we did top/bot so i think some of these selfmodifies wouldnt need to run.
+
+got_texture:
    xchg      ax, di
 
    mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
@@ -4059,30 +4030,25 @@ selfmodify_mid_only:
    push      word ptr es:[di]
    pop       word ptr cs:[SELFMODIFY_setmidtexturetranslation_lookup+1]
 
-
-
-
-   ; create jmp instruction
-   mov       al, 0B0h   ; mov al, imm8
-
-   jmp       finish_midtex_selfmodify
+   jmp       skip_midtex_selfmodify
 ALIGN_MACRO
 
-skip_midtex_selfmodify:
-   mov       al, 0EBh   ; jmp rel 8
-finish_midtex_selfmodify:
+; todo find a way to fit this elsewhere w/o a jump
+handle_closed_door:  
 
-   ; set some jumps and instructions based on secnumnull, midtexture
-   mov       byte ptr cs:[SELFMODIFY_has_midtexture_or_not], al
-   mov       byte ptr cs:[SELFMODIFY_jmp_two_sided_or_not], dl
+   lodsw             ; toptex
+   add       si, 4   ; skip bot, midtex.
+   jmp       got_texture
 
-   
+   ; create jmp instruction
+ALIGN_MACRO
+   skip_midtex_selfmodify:
 
 
-   lodsw     ; textureoffset 
+   lodsw     ; textureoffset
    mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset+1], ax
    mov       cx, FIXED_DS_SEGMENT
-   mov       ds, cx  ; restore ds..
+   mov       ds, cx  ; restore ds..   ; todo dont switch ds?
 
    mov       si, word ptr [bp - 6]
    ;	seenlines[linedefOffset/8] |= (0x01 << (linedefOffset % 8));
@@ -4255,6 +4221,7 @@ finish_midtex_selfmodify:
 
 mov       byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify], 0E9h  ; jmp here
 
+
 SELFMODIFY_skip_curseg_based_selfmodify_TARGET:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; END LINE BASED SELF MODIFY BLOCK ;;;;;;;;;
@@ -4262,8 +4229,6 @@ SELFMODIFY_skip_curseg_based_selfmodify_TARGET:
 
  
 
-done_setting_rw_distance:
-public done_setting_rw_distance
 les       di, dword ptr ds:[_ds_p]
 mov       ax, word ptr [bp + 4]  ; R_AddLine line num
 
@@ -4307,11 +4272,7 @@ mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_1+1], ax
 mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_2+1], ax
 mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_3+1], ax
 
-sub   ax, bx   ; stop - start
-shr   ax, 1    ; byte copies not word copies
-adc   al, ah    ; round up. ah should be zero.
-mov   word ptr ds:[SELFMODIFY_set_cx_to_count_1+1], ax
-mov   word ptr ds:[SELFMODIFY_set_cx_to_count_2+1], ax
+
 
 ; sp at bp - 026h
 
@@ -4350,9 +4311,6 @@ mov       dx, word ptr [bp + 6] ; frontsector floor
 xor       ax, ax
 
 
-; zero out maskedtexture 
-mov       byte ptr ds:[_maskedtexture], al  ; todo is it necessary to write up here?
-; default to 0
 
 
 
@@ -4491,7 +4449,7 @@ mov ds, bx  ; restored ds
 
 
 div_done:
-
+public div_done
 
 
 
@@ -4509,16 +4467,12 @@ ASSUME DS:R_BSP_24_TEXT
 
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_1+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_2+1], ax
-mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_3+1], ax
-mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_4+1], ax
 mov       word ptr ds:[SELFMODIFY_add_rwscale_lo+4], ax
 mov       word ptr ds:[SELFMODIFY_sub_rwscale_lo+3], ax
 
 xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_1+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_2+1], ax
-mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_3+1], ax
-mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_4+1], ax
 
 mov       word ptr ds:[SELFMODIFY_sub_rwscale_hi+3], ax
 mov       word ptr ds:[SELFMODIFY_add_rwscale_hi+4], ax
@@ -4529,10 +4483,8 @@ mov       word ptr ds:[SELFMODIFY_add_rwscale_hi+4], ax
 SELFMODIFY_BSP_detailshift_1:
 shl   dx, 1
 rcl   ax, 1
-shift_rw_scale_once:
 shl   dx, 1
 rcl   ax, 1
-finished_shifting_rw_scale:
 
 mov       word ptr ds:[SELFMODIFY_add_to_rwscale_hi_1+3], ax
 mov       word ptr ds:[SELFMODIFY_add_to_rwscale_hi_2+3], ax
@@ -4545,6 +4497,7 @@ mov       word ptr ds:[SELFMODIFY_add_to_rwscale_lo_2+3], ax
 
 
 scales_set:
+public scales_set
 
 ; ds is cs here
 
@@ -4553,12 +4506,8 @@ scales_set:
 
 ; here we jump based on backsector presence. 
 
-SELFMODIFY_jmp_two_sided_or_not:
-jmp       handle_two_sided_line  ; might turn into a mov bx, garbage
 
 
-handle_single_sided_line:
-public handle_single_sided_line
 ASSUME DS:R_BSP_24_TEXT
 
 
@@ -4664,9 +4613,7 @@ xor       ax, ax   ; maskedtexture is 0 in this case. todo wish we got this for 
 
 sub       sp, 8  ; skip top/bottom dwords. from 032h to 03Ah
 
-done_with_sector_sided_check:
-public done_with_sector_sided_check
-; todo get _maskedtexture for free?
+
 
 ; coming into here, AL is equal to maskedtexture.
 ; ds is equal to CS
@@ -4678,7 +4625,7 @@ sub       sp, 8  ; bp - 044h.  make room for topstep/botstep. TODO swap their or
 
 ; would be nice to turn into a jmp or nop, but the lookup is slow and doesnt actually run often.
 
-mov       byte ptr ds:[SELFMODIFY_get_maskedtexture_1_TWOSIDED+1], al
+
 
 ; DS STILL CS.
 
@@ -4976,7 +4923,7 @@ mov       word ptr ds:[_floorplaneindex], ax
 dont_mark_floor:
 cmp       word ptr [bp - 022h], 0
 jge       at_least_one_column_to_draw
-jmp       check_spr_top_clip
+jmp       R_RenderSegLoop_exit
 ALIGN_MACRO
 at_least_one_column_to_draw:
 
@@ -5057,7 +5004,6 @@ mov       word ptr ds:[SELFMODIFY_add_topstep_hi+4], ax
 SELFMODIFY_BSP_detailshift_2:
 shl       dx, 1
 rcl       ax, 1
-shift_topstep_once:
 shl       dx, 1
 rcl       ax, 1
 
@@ -6042,19 +5988,17 @@ mov   bx, di 			; store rw_x
 
 
 ; dx holds texturecolumn
-; get yl/yh in di/cx
+; get yl/yh in di/si
 pop   di
 pop   si
 
 
 ; dc_yl and dc_yh are both still one too high, but (di - si) count calculation is unaffected.
-sub   di, si                ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
-jl    mid_no_pixels_to_draw ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
+sub   di, si
+jl    mid_no_pixels_to_draw
 
 ; cx:di are dc_yl, dc_yh
 ; dx holds texturecolumn
-
-; TOP DRAW ENTERS HERE.
 
 ; todo move self modify logic here before getsourcesegment.
 
@@ -6092,7 +6036,7 @@ ENDP
 
 just_do_draw0:
 public just_do_draw0
-;mov   word ptr ds:[_dc_source_segment], ax ; what if this was push then pop es later. hard because we get a 2nd value with lds.
+
 
 ; ax carries _dc_source_segment
 
@@ -6236,109 +6180,17 @@ jmp   finish_outer_loop
 ALIGN_MACRO
 
 R_RenderSegLoop_exit:
-   
-; todo can terminal/single sided wall mark sprites? i think no.
+; hardcoded!   
+   ; SIL_BOTH, markfloor = true, markceil = true
+   ;		ds_p->sprtopclip = screenheightarray;
+   ;		ds_p->sprbottomclip = negonearray;
 
 
 ; clean up the self modified code of renderseg loop. 
 mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
 
+; single wall mid texture has no clipping done.
 
-check_spr_top_clip:
-les       bx, dword ptr ds:[_ds_p]
-test      byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_TOP
-jne       continue_checking_spr_top_clip
-cmp       byte ptr ds:[_maskedtexture], 0
-je        check_spr_bottom_clip
-
-
-
-continue_checking_spr_top_clip:
-
-cmp       word ptr es:[bx + DRAWSEG_T.drawseg_sprtopclip_offset], 0
-jne       check_spr_bottom_clip
-
-mov       si, word ptr [bp - 01Eh]
-mov       di, word ptr ds:[_lastopening]
-mov       ax, di
-sub       ax, si
-
-mov       cx, cs
-mov       ds, cx
-mov       cx, OPENINGS_SEGMENT
-mov       es, cx
-
-
-SELFMODIFY_set_cx_to_count_1:
-mov       cx, 01000h
-
-
-add       si, OFFSET OFFSET_CEILINGCLIP
-
-
-rep movsw
-
-mov       si, ss
-mov       ds, si
-
-mov       word ptr ds:[_lastopening], di
-
-mov       es, word ptr ds:[_ds_p+2]   ; bx is ds_p offset above
-mov       word ptr es:[bx + DRAWSEG_T.drawseg_sprtopclip_offset], ax
-
-check_spr_bottom_clip:
-; es:si is ds_p
-test      byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_BOTTOM
-jne       continue_checking_spr_bottom_clip
-cmp       byte ptr ds:[_maskedtexture], 0
-je        check_silhouettes_then_exit
-jmp       continue_checking_spr_bottom_clip
-ALIGN_MACRO
-continue_checking_spr_bottom_clip:
-cmp       word ptr es:[bx + DRAWSEG_T.drawseg_sprbottomclip_offset], 0
-jne       check_silhouettes_then_exit
-
-mov       si, word ptr [bp - 01Eh]
-mov       di, word ptr ds:[_lastopening]
-mov       ax, di
-sub       ax, si
-
-mov       cx, cs
-mov       ds, cx
-mov       cx, OPENINGS_SEGMENT
-mov       es, cx
-
-SELFMODIFY_set_cx_to_count_2:
-mov       cx, 01000h
-
-
-add       si, OFFSET OFFSET_FLOORCLIP
-
-rep movsw
-
-mov       si, ss
-mov       ds, si
-
-mov       word ptr ds:[_lastopening], di
-
-mov       es, word ptr ds:[_ds_p+2]   ; bx is ds_p offset above
-mov       word ptr es:[bx + DRAWSEG_T.drawseg_sprbottomclip_offset], ax
-check_silhouettes_then_exit:
-cmp       byte ptr ds:[_maskedtexture], 0
-je        skip_top_silhouette
-test      byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_TOP
-jne       skip_top_silhouette
-or        byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_TOP
-mov       word ptr es:[bx + DRAWSEG_T.drawseg_tsilheight], MINSHORT
-skip_top_silhouette:
-
-cmp       byte ptr ds:[_maskedtexture], 0
-je        skip_bot_silhouette
-test      byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_BOTTOM
-jne       skip_bot_silhouette
-or        byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_BOTTOM
-mov       word ptr es:[bx + DRAWSEG_T.drawseg_bsilheight], MAXSHORT
-skip_bot_silhouette:
 add       word ptr ds:[_ds_p], (SIZE DRAWSEG_T)
 
 add       sp, STOREWALLRANGE_INNER_STACK_SIZE     ; add back fixed SP
@@ -6372,11 +6224,16 @@ mov      byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], ah ;zero
 ; pops on outside
 
 ret       
+ENDP
 
 ;   END INLINED R_RenderSegLoop_
 ;   END INLINED R_RenderSegLoop_
 ;   END INLINED R_RenderSegLoop_
 
+;   END R_StoreWallRange_
+;   END R_StoreWallRange_
+;   END R_StoreWallRange_
+;   END R_StoreWallRange_
 
 
 
@@ -6390,35 +6247,758 @@ ret
 
 
 
-
-; TWO SIDED LINE VARIANT OF R_StoreWallRange_ AND R_RenderSegLoop_
-; TWO SIDED LINE VARIANT OF R_StoreWallRange_ AND R_RenderSegLoop_
-; TWO SIDED LINE VARIANT OF R_StoreWallRange_ AND R_RenderSegLoop_
-; TWO SIDED LINE VARIANT OF R_StoreWallRange_ AND R_RenderSegLoop_
-; TWO SIDED LINE VARIANT OF R_StoreWallRange_ AND R_RenderSegLoop_
-
-
-
-; begin all backsector logic
-
+; TWO SIDED LINE VARIANTS
+; TWO SIDED LINE VARIANTS
+; TWO SIDED LINE VARIANTS
+; TWO SIDED LINE VARIANTS
+; TWO SIDED LINE VARIANTS
 
 
 
 ALIGN_MACRO
-handle_two_sided_line:
-public handle_two_sided_line
-SELFMODIFY_jmp_two_sided_or_not_TARGET:
-; jumped to with ds as cs
+adjust_row_offset_TWOSIDED:
+public adjust_row_offset_TWOSIDED
+cbw      ; maxes at 127, ah is 0
+SHIFT_MACRO shl ax 3
+neg       ax  ; subtract this from the real number
+add       ax, ((080h SHL 3) - 1) ; 0400h - 1 for equals case
+mov       word ptr [bp - 0Ch], ax   ;  TODO make this a push. probably change the bp addr.
 
-; ds is cs here
-; nop 
+jmp       done_adjusting_row_offset_TWOSIDED
+
+; begin all backsector logic
+ALIGN_MACRO
+PROC   R_StoreWallRangeWithBackSector_
+PUBLIC R_StoreWallRangeWithBackSector_
 
 
+
+; todo shift 4/segsrender thing here
+;below are lazily populated in sector block
+
+; todo cache floor - ceil?
+
+; bp + 0Fh   ; backsectorlightlevel     - backsector items set by line code
+; bp + 0Eh   ; frontsectorlightlevel
+; bp + 0Dh   ; backsectorfloorpic       - backsector items set by line code
+; bp + 0Ch   ; frontsectorfloorpic
+; bp + 0Bh   ; backsectorceilingpic     - backsector items set by line code
+; bp + 0Ah   ; frontsectorceilingpic
+; bp + 8     ; frontsectorceilingheight
+; bp + 6     ; frontsectorfloorheight
+
+;below are pushed in R_AddLine_
+; bp + 4     ; linenum for R_AddLine_
+; bp + 2     ; loop counter for R_AddLine_
+; bp - 0     ; bp pushed from R_AddLine
+; bp - 2     ; lineflags
+; bp - 4     ; curlineside
+; bp - 6     ; curseglinedef
+; bp - 8     ; curlinesidedef
+; bp - 0Ah   ; curseg_render
+; bp - 0Ch   ; lazily calculated 128 - siderowoffset (nonloop draw height threshhold)
+; bp - 0Eh   ; unused for now? push something else
+; bp - 010h  ; rw_angle hi from R_AddLine
+; bp - 012h  ; rw_angle lo from R_AddLine
+
+; func return and preserved vars. TODO pusha/popa support with constant for 8088 
+; bp - 014h  ; return address from R_StoreWallRange_
+; bp - 016h  ; PUSHed bx
+; bp - 018h  ; PUSHed cx
+; bp - 01Ah  ; PUSHed si
+; bp - 01Ch  ; PUSHed di
+; bp - 01Eh  ; ax arg (no need to pop)
+; bp - 020h  ; dx arg (no need to pop)
+
+; pushed stuff
+; bp - 022h  ; stop - start   ; last pushed thing. todo push others.
+; bp - 024h  ; base4diff
+
+; bp - 026h  ; worldtop hi
+; bp - 028h  ; worldtop lo
+; bp - 02Ah  ; worldbottom hi
+; bp - 02Ch  ; worldbottom lo   ; on return, add 034h to sp, set bp to sp.
+
+; bp - 02Eh  ; rw_scale hi ORIGINAL
+; bp - 030h  ; rw_scale lo ORIGINAL          ; todo swap order this and above with  everything below this
+
+; bp - 031h  ; markceiling  ; todo maybe move generation behind rw_scale.
+; bp - 032h  ; markfloor
+
+; nonpushed, but should be (TODO swap order)
+
+; bp - 034h  ; pixhigh hi     preshifted 4
+; bp - 036h  ; pixhigh lo     preshifted 4
+; bp - 038h  ; pixlow hi      preshifted 4
+; bp - 03Ah  ; pixlow lo      preshifted 4
+; bp - 03Ch  ; bottomfrac hi  preshifted 4
+; bp - 03Eh  ; bottomfrac lo  preshifted 4
+; bp - 040h  ; topfrac hi     preshifted 4
+; bp - 042h  ; topfrac lo     preshifted 4 ; up to here not pushed 
+
+; pushed/duped (todo improve? reorder?)
+; bp - 044h  ; rw_scale hi  REPUSHED
+; bp - 046h  ; rw_scale lo  REPUSHED         ; todo swap order this and above with  everything below this
+
+
+
+
+
+
+
+push      ax ; bp - 01Eh
+push      dx ; bp - 020h
+
+sub       dx, ax
+push      dx ; bp - 022h   stop - start. used often. ; todo: maybe we get this for free elsewhere without this sub?
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; START SECTOR BASED SELF MODIFY BLOCK ;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+SELFMODIFY_skip_frontsector_based_selfmodify_TWOSIDED:
+mov       bl, (SELFMODIFY_skip_frontsector_based_selfmodify_TARGET_TWOSIDED - SELFMODIFY_skip_frontsector_based_selfmodify_AFTER_TWOSIDED)  ;  selfmodifies into mov bl, imm8
+SELFMODIFY_skip_frontsector_based_selfmodify_AFTER_TWOSIDED:
+
+; here we lazily set all front sector fields.
+; backsector fields must be set afterwards.
+
+; bp + 6   ; frontsectorfloorheight
+; bp + 8   ; frontsectorceilingheight
+; bp + 0Ah   ; frontsectorceilingpic
+; bp + 0Bh   ; backsectorceilingpic     - backsector items set by line code
+; bp + 0Ch     ; frontsectorfloorpic
+; bp + 0Dh     ; backsectorfloorpic       - backsector items set by line code
+; bp + 0Eh     ; frontsectorlightlevel
+; bp + 0Fh     ; backsectorlightlevel     - backsector items set by line code
+
+lea       di, [bp + 6]
+mov       dx, ss
+mov       es, dx
+lds       si, dword ptr cs:[_frontsector]
+
+; si = frontsector
+movsw     ; bp + 6 frontsectorfloorheight
+movsw     ; bp + 8 frontsectorceilingheight
+lodsw
+xchg       al, ah
+stosw     ; bp + 0Ah  gets frontsectorceilingpic
+mov       al, ah
+stosw     ; bp + 0Ch gets frontsectorceilingheight
+mov       al, byte ptr ds:[si + (SECTOR_T.sec_lightlevel - SECTOR_T.sec_validcount)]
+stosb     ; bp + 0Eh frontsectorceilingheight
+
+
+mov       ds, dx
+
+mov       al, 0EBh
+mov       byte ptr cs:[SELFMODIFY_skip_frontsector_based_selfmodify], al  ; jmp here
+mov       byte ptr cs:[SELFMODIFY_skip_frontsector_based_selfmodify_TWOSIDED], al  ; jmp here
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; END SECTOR BASED SELF MODIFY BLOCK ;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+SELFMODIFY_skip_frontsector_based_selfmodify_TARGET_TWOSIDED:
+
+; todo modify the sector skip to skip both?
+; or jump out and back to do inits instead of jump past?
+; bench!
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; START LINE BASED SELF MODIFY BLOCK ;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; note - line jumps past sector, but falls thru to sector check
+; sector can not change without line changing.
+
+; todo also skip sector selfmodifies lazily
+
+SELFMODIFY_skip_curseg_based_selfmodify_TWOSIDED:
+mov       bx, (SELFMODIFY_skip_curseg_based_selfmodify_TARGET_TWOSIDED - SELFMODIFY_skip_curseg_based_selfmodify_AFTER_TWOSIDED)  ;  selfmodifies into mov bx, imm
+SELFMODIFY_skip_curseg_based_selfmodify_AFTER_TWOSIDED:
+public  SELFMODIFY_skip_curseg_based_selfmodify_AFTER_TWOSIDED
+mov       bx, word ptr [bp - 0Ah]  ; curseg_render     ; turns into a jump past selfmodifying code once this next code block runs. 
+mov       ax, word ptr ds:[bx + SEG_RENDER_T.sr_offset]  ; can be up to 512 i think.
+mov       word ptr cs:[SELFMODIFY_BSP_sidesegoffset_TWOSIDED+1], ax
+
+
+mov       si, word ptr [bp - 8]  ; SEG_RENDER_T.sr_sidedefOffset preshifted 2
+
+
+mov       al, byte ptr ds:[si + _sides_render + SIDE_RENDER_T.sr_rowoffset]
+mov       byte ptr cs:[SELFMODIFY_BSP_siderenderrowoffset_2_TWOSIDED+1], al
+
+
+test      al, al
+jnz       adjust_row_offset_TWOSIDED
+; todo calculate this in upper frame.
+mov       word ptr [bp - 0Ch], (080h SHL 3) - 1 ; 0400h - 1 for equals case   ;  TODO make this a push. probably change the bp addr.
+done_adjusting_row_offset_TWOSIDED:
+
+
+
+shl       si, 1
+
+
+les       bx, dword ptr ds:[bx + SEG_RENDER_T.sr_v1Offset]   ; v1
+mov       di, es                                             ; v2
+
+mov       ds, word ptr ds:[_VERTEXES_SEGMENT_PTR]
+
+
+les       bx, dword ptr ds:[bx] ;v1.x
+mov       ax, es
+
+mov       word ptr cs:[SELFMODIFY_BSP_v1x_TWOSIDED+1], bx
+mov       word ptr cs:[SELFMODIFY_BSP_v1y_TWOSIDED+1], ax
+
+sub       ax, word ptr ds:[di + VERTEX_T.v_y]
+mov       dl, 048h  ; dec ax
+je        v2_y_equals_v1_y_TWOSIDED
+sub       bx, word ptr ds:[di + VERTEX_T.v_x]
+mov       dl, 090h  ; nop
+jne       v2_y_not_equals_v1_y_TWOSIDED
+mov       dl, 040h  ; inc ax
+v2_y_not_equals_v1_y_TWOSIDED:
+v2_y_equals_v1_y_TWOSIDED:
+public v2_y_equals_v1_y_TWOSIDED
+
+mov       byte ptr cs:[SELFMODIFY_addlightnum_delta_TWOSIDED], dl
+; check for backsector and load side texture data
+; bx, dx, di free...
+
+   mov       ax, TEXTURETRANSLATION_SEGMENT
+   mov       es, ax
+
+   ; default jump locations for backsecnum == null
+
+
+   ; note: BX free now
+
+
+   mov       ax, SIDES_SEGMENT
+   mov       ds, ax
+
+
+   ; two sides wall may have bottom and top textures
+
+
+   ; read all the sides fields now. ;preshift them as they are word lookups
+
+   lodsw     ; side toptexture
+   test      ax, ax
+   jz        skip_toptex_selfmodify
+   xchg      ax, di
+
+   mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
+   cbw
+   sal       di, 1
+   inc       ax
+   mov       word ptr cs:[SELFMODIFY_add_texturetopheight_plus_one+2], ax
+
+   push      word ptr es:[di]
+   pop       word ptr cs:[SELFMODIFY_settoptexturetranslation_lookup+1]
+
+   
+   skip_toptex_selfmodify:
+   lodsw     ; side bottexture  ; faster to just do it than branch?
+   xchg      ax, di
+   sal       di, 1
+   push      word ptr es:[di]
+   pop       word ptr cs:[SELFMODIFY_setbottexturetranslation_lookup+1]
+
+
+   lodsw     ; side midtexture
+   test      ax, ax
+
+   ; create jmp instruction
+   mov       al, 0EBh   ; jmp rel 8
+   jz        finish_midtex_selfmodify_TWOSIDED
+
+   mov       al, 0B0h   ; mov al, imm8
+
+finish_midtex_selfmodify_TWOSIDED:
+
+   ; set some jumps and instructions based on secnumnull, midtexture
+   mov       byte ptr cs:[SELFMODIFY_has_midtexture_or_not], al
+
+
+   
+
+
+   lodsw     ; textureoffset 
+   mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset_TWOSIDED+1], ax
+   mov       cx, FIXED_DS_SEGMENT
+   mov       ds, cx  ; restore ds..
+
+   mov       si, word ptr [bp - 6]
+   ;	seenlines[linedefOffset/8] |= (0x01 << (linedefOffset % 8));
+   ; si is linedefOffset
+
+   mov       cx, si
+
+   SHIFT_MACRO sar si 3
+   mov       ax, SEENLINES_SEGMENT
+   mov       es, ax
+   mov       al, 1
+   and       cl, 7
+   shl       al, cl
+   or        byte ptr es:[si], al
+
+   mov       bx, word ptr [bp + 4]
+   sal       bx, 1       ;  curseg word lookup
+
+   mov       ax, word ptr ds:[bx+_seg_normalangles]
+   mov       word ptr cs:[SELFMODIFY_sub_rw_normal_angle_1+1], ax
+   xchg      ax, si
+
+   SELFMODIFY_set_viewanglesr3_1_TWOSIDED:
+   mov       ax, 01000h
+   ;add       ah, 8  ; preadded
+   sub       ax, si
+   and       ah, FINE_ANGLE_HIGH_BYTE
+
+   ; set centerangle in rendersegloop
+   mov       word ptr cs:[SELFMODIFY_set_rw_center_angle_TWOSIDED+1], ax
+   xchg      ax, si
+   SHIFT_MACRO shl ax SHORTTOFINESHIFT
+   mov       word ptr cs:[SELFMODIFY_set_rw_normal_angle_shift3_TWOSIDED+1], ax
+
+
+   ;	offsetangle = (abs((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> 1) & 0xFFFC;
+   sub       ax, word ptr [bp - 010h]   ; rw_angle hi from R_AddLine
+   cwd       
+   xor       ax, dx		; abs by sign bits
+   sub       ax, dx
+   sar       ax, 1
+
+   and       al, 0FCh
+   mov       word ptr cs:[SELFMODIFY_set_offsetangle_TWOSIDED+1], ax
+   mov       si, FINE_ANG90_NOSHIFT
+   sub       si, ax 
+
+; calculate hyp inlined
+
+      push  si
+
+      ;    dx = labs(x.w - viewx.w);
+      ;  x = ax register
+      ;  y = dx
+
+      SELFMODIFY_BSP_v1x_TWOSIDED:
+      mov       cx, 01000h
+      SELFMODIFY_BSP_v1y_TWOSIDED:
+      mov       dx, 01000h
+
+      xor   bx, bx
+      xor   ax, ax
+
+      ; DX:AX = y
+      ; CX:BX = x
+      SELFMODIFY_BSP_viewx_lo_2_TWOSIDED:
+      sub   bx, 01000h
+      SELFMODIFY_BSP_viewx_hi_2_TWOSIDED:
+      sbb   cx, 01000h
+
+      SELFMODIFY_BSP_viewy_lo_2_TWOSIDED:
+      sub   ax, 01000h
+      SELFMODIFY_BSP_viewy_hi_2_TWOSIDED:
+      sbb   dx, 01000h
+
+
+      or    cx, cx
+      jge   skip_x_abs_TWOSIDED
+      neg   bx
+      adc   cx, 0
+      neg   cx
+      skip_x_abs_TWOSIDED:
+
+      or    dx, dx
+      jge   skip_y_abs_TWOSIDED
+      neg   ax
+      adc   dx, 0
+      neg   dx
+      skip_y_abs_TWOSIDED:
+
+      ;    if (dy>dx) {
+
+      cmp   dx, cx
+      jg    swap_x_y_TWOSIDED
+      jne   skip_swap_x_y_TWOSIDED
+      cmp   ax, bx
+      jbe   skip_swap_x_y_TWOSIDED
+
+      swap_x_y_TWOSIDED:
+      xchg  dx, cx
+      xchg  ax, bx
+      skip_swap_x_y_TWOSIDED:
+
+      ;	angle = (tantoangle[ FixedDiv(dy,dx)>>DBITS ].hu.intbits+ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
+
+      ; save dx (var not register)
+
+      mov   si, bx
+      mov   di, cx
+
+      call  FixedDivBSPLocal_
+
+      ; shift 5. since we do a tantoangle lookup... this maxes at 2048
+      SHIFT32_MACRO_RIGHT dx ax 3
+      and   al, 0FCh
+
+
+
+      xchg  ax, bx
+      mov   es, word ptr ds:[_tantoangle_segment] 
+      mov   bx, word ptr es:[bx + 2] ; get just intbits..
+
+      ;    dist = FixedDiv (dx, finesine[angle] );	
+
+      add   bh, (ANG90_HIGHBITS SHR 8)
+
+      mov   ax, FINESINE_SEGMENT 
+      mov   es, ax
+      mov   ax, bx   
+      cwd                        ; dx gets sine sign
+      mov   cx, dx               ; sine sign
+
+      SHIFT_MACRO shr bx 2       ; from FFFFh to 3FFFh
+      and   bl, 0FEh             ; word lookup clean low dirty bit
+
+      mov   ax, si               ; dx:ax now becomes di:si's earlier dx
+      mov   dx, di 
+      mov   bx, word ptr es:[bx] ; sine low word
+      ; cx set from cwd above
+
+      call  FixedDivBSPLocal_
+
+      xchg  ax, bx  ; result in cx:bx
+      mov   cx, dx
+
+
+      ; store result
+      mov   word ptr cs:[SELFMODIFY_set_PointToDist_result_lo_TWOSIDED+1], bx
+      mov   word ptr cs:[SELFMODIFY_set_PointToDist_result_hi_TWOSIDED+1], cx
+
+; end calculate hyp inlined
+
+   ; hyp in cx:bx.
+
+   pop       dx  ; angle calculated prior
+
+   call      FixedMulTrigNoShiftSine_BSPLocal_
+
+
+   do_set_rw_distance_TWOSIDED:
+
+   ; self modifying code for rw_distance
+   mov   word ptr cs:[SELFMODIFY_set_bx_rw_distance_lo_TWOSIDED+1], ax
+   mov   word ptr cs:[SELFMODIFY_set_cx_rw_distance_hi_TWOSIDED+1], dx
+   mov   word ptr cs:[SELFMODIFY_get_rw_distance_lo_1+1], ax ; ??
+   mov   word ptr cs:[SELFMODIFY_get_rw_distance_hi_1+1], dx ; ?? 
+
+
+
+
+mov       byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify_TWOSIDED], 0E9h  ; jmp here
+
+SELFMODIFY_skip_curseg_based_selfmodify_TARGET_TWOSIDED:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; END LINE BASED SELF MODIFY BLOCK ;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+ 
+selfmod_done_bot:
+public selfmod_done_bot
+
+
+les       di, dword ptr ds:[_ds_p]
+mov       ax, word ptr [bp + 4]  ; R_AddLine line num
+
+stosw              ; DRAWSEG_T.drawseg_cursegvalue
+
+
+mov       ax, word ptr [bp - 01Eh]  ; x1 arg
+
+stosw                            ; DRAWSEG_T.drawseg_x1
+xchg      ax, bx                 ; bx gets bp - 01Eh
+mov       ax, word ptr [bp - 020h]  ; x2 arg
+stosw                            ; DRAWSEG_T.drawseg_x2
+
+inc       ax
+
+
+
+mov       cx, cs
+mov       ds, cx
+
+; bx is already [bp - 01Eh]
+mov   cx, bx
+
+SELFMODIFY_detailshift_and_1_TWOSIDED:
+and   bx, 01000h
+mov   word ptr ds:[SELFMODIFY_add_rw_x_base4_to_ax_TWOSIDED+1], bx
+mov   word ptr ds:[SELFMODIFY_compare_ax_to_start_rw_x_TWOSIDED+1], cx
+
+;  	int16_t base4diff = rw_x - rw_x_base4;
+sub   cx, bx   ; result is 0 1 2 or 3. but if 2 then we want to set value 080h
+mov   byte ptr ds:[SELFMODIFY_set_rw_x_loop_counter+1], cl
+add   bx, cx   ; bx is [bp - 01Eh] or rw_x again.
+ror   cl, 1    ; result is 0, 1, 2, 3
+push  cx       ; bp - 024h remap to 0, 0x80, 1, 0x81
+
+
+
+
+
+mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_1_TWOSIDED+1], ax
+mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_2_TWOSIDED+1], ax
+mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_3_TWOSIDED+1], ax
+
+sub   ax, bx   ; stop - start
+shr   ax, 1    ; byte copies not word copies
+adc   al, ah    ; round up. ah should be zero.
+mov   word ptr ds:[SELFMODIFY_set_cx_to_count_1_TWOSIDED+1], ax
+mov   word ptr ds:[SELFMODIFY_set_cx_to_count_2_TWOSIDED+1], ax
+
+; sp at bp - 026h
+
+
+; do worldtop/worldbot calculation now
+; todo selfmodify this as it's being done?
+mov       dx, word ptr [bp + 8] ; frontsector ceiling
+
+; bx floorheight
+
+xor       ax, ax
+
+; zero out
+mov       byte ptr ds:[SELFMODIFY_check_for_any_tex_TWOSIDED+1], al
+
+
+; make dx:ax our value
+SHIFT32_MACRO_RIGHT dx ax 3
+
+
+SELFMODIFY_BSP_viewz_lo_7_TWOSIDED:
+sub       ax, 01000h
+SELFMODIFY_BSP_viewz_hi_7_TWOSIDED:
+sbb       dx, 01000h
+; storeworldtop
+
+push      dx  ; bp - 026h
+push      ax  ; bp - 028h
+
+
+
+mov       ax, ss
+mov       ds, ax
+
+mov       dx, word ptr [bp + 6] ; frontsector floor 
+xor       ax, ax
+
+
+; zero out maskedtexture 
+mov       byte ptr ds:[_maskedtexture], al  ; todo is it necessary to write up here?
+; default to 0
+
+
+
+;dx:ax as our value
+
+SHIFT32_MACRO_RIGHT dx ax 3
+SELFMODIFY_BSP_viewz_lo_8_TWOSIDED:
+sub       ax, 01000h
+SELFMODIFY_BSP_viewz_hi_8_TWOSIDED:
+sbb       dx, 01000h
+push      dx ; bp - 02Ah
+push      ax ; bp - 02Ch
+
+
+
+
+
+mov       ax, XTOVIEWANGLE_SEGMENT   ; todo selfmodify all these?
+mov       cx, es  ; store ds_p+2 segment
+mov       es, ax
+sal       bx, 1   ; rw_x word lookup
+SELFMODIFY_set_viewanglesr3_3_TWOSIDED:
+mov       ax, 01000h
+add       ax, word ptr es:[bx]
+call      R_ScaleFromGlobalAngle_
+mov       es, cx ; restore es as ds_p+2 segment
+push      dx  ; bp - 02Eh  ; 0000
+push      ax  ; bp - 030h  ; 60b9
+stosw             ; DRAWSEG_T.drawseg_scale1
+xchg      ax, dx
+stosw             ; DRAWSEG_T.drawseg_scale2
+xchg      ax, dx                       ; put DX back; need it later.
+mov       si, word ptr [bp - 020h]
+cmp       si, word ptr [bp - 01Eh]
+
+jg        stop_greater_than_start_TWOSIDED
+
+; ds_p is es:di
+;		ds_p->scale2 = ds_p->scale1;
+
+stosw      ; DRAWSEG_T.drawseg_scalestep +0
+xchg      ax, dx
+stosw      ; DRAWSEG_T.drawseg_scalestep +2
+xchg      ax, dx
+
+mov       ax, cs
+mov       ds, ax ; set ds to cs before scales_set
+
+jmp       scales_set_TWOSIDED
+ALIGN_MACRO
+handle_negative_3216_TWOSIDED:
+
+neg ax
+adc dx, 0
+neg dx
+
+
+cmp dx, bx
+jge two_part_divide_3216_TWOSIDED
+one_part_divide_3216_TWOSIDED:
+div bx
+xor dx, dx
+
+neg ax
+adc dx, 0
+neg dx
+jmp div_done_TWOSIDED
+ALIGN_MACRO
+
+two_part_divide_3216_TWOSIDED:
+mov es, ax
+mov ax, dx
+xor dx, dx
+div bx     ; div high
+mov ds, ax ; store q1
+mov ax, es
+; DX:AX contains remainder + ax...
+div bx
+mov dx, ds  ; retrieve q1
+            ; q0 already in ax
+neg ax
+adc dx, 0
+neg dx
+
+
+mov bx, ss
+mov ds, bx  ; restored ds
+jmp div_done_TWOSIDED
+ALIGN_MACRO
+one_part_divide_TWOSIDED:
+div bx
+xor dx, dx
+jmp div_done_TWOSIDED
+ALIGN_MACRO
+
+stop_greater_than_start_TWOSIDED:
+
+sal       si, 1
+mov       ax, XTOVIEWANGLE_SEGMENT
+mov       es, ax
+SELFMODIFY_set_viewanglesr3_2_TWOSIDED:
+mov       ax, 01000h
+add       ax, word ptr es:[si]
+call      R_ScaleFromGlobalAngle_
+mov       es, cx ; restore es as ds_p+2
+stos      word ptr es:[di]             ; +0Ah
+xchg      ax, dx
+stos      word ptr es:[di]             ; +0Ch
+xchg      ax, dx
+mov       bx, word ptr [bp - 022h]
+
+sub       ax, word ptr [bp - 030h]
+sbb       dx, word ptr [bp - 02Eh]
+
+; inlined FastDiv3216u_    (only use in the codebase, might as well.)
+
+js   handle_negative_3216_TWOSIDED
+
+cmp dx, bx
+jl one_part_divide_TWOSIDED
+
+two_part_divide_TWOSIDED:
+mov es, ax
+mov ax, dx
+xor dx, dx
+div bx     ; div high
+
+ ; todo shove some selfmodify from below up here?
+mov ds, ax ; store q1
+mov ax, es
+; DX:AX contains remainder + ax...
+div bx
+mov dx, ds  ; retrieve q1
+            ; q0 already in ax
+mov bx, ss
+mov ds, bx  ; restored ds
+
+
+
+div_done_TWOSIDED:
+
+
+
+
+
+mov       es, cx ; restore es as ds_p+2
+stos      word ptr es:[di]             ; +0Eh
+xchg      ax, dx
+stos      word ptr es:[di]             ; +10h
+xchg      ax, dx
+
+mov       si, cs
+mov       ds, si
+ASSUME DS:R_BSP_24_TEXT
+; rw_scalestep is ready. write it forward as selfmodifying code here
+
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_1_TWOSIDED+1], ax
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_2_TWOSIDED+1], ax
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_3_TWOSIDED+1], ax
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_4_TWOSIDED+1], ax
+mov       word ptr ds:[SELFMODIFY_add_rwscale_lo_TWOSIDED+4], ax
+mov       word ptr ds:[SELFMODIFY_sub_rwscale_lo_TWOSIDED+3], ax
+
+xchg      ax, dx
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_1_TWOSIDED+1], ax
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_2_TWOSIDED+1], ax
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_3_TWOSIDED+1], ax
+mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_4_TWOSIDED+1], ax
+
+mov       word ptr ds:[SELFMODIFY_sub_rwscale_hi_TWOSIDED+3], ax
+mov       word ptr ds:[SELFMODIFY_add_rwscale_hi_TWOSIDED+4], ax
+
+
+
+; todo change these in 386 mode to shld?
+SELFMODIFY_BSP_detailshift_1_TWOSIDED:
+shl   dx, 1
+rcl   ax, 1
+shl   dx, 1
+rcl   ax, 1
+
+mov       word ptr ds:[SELFMODIFY_add_to_rwscale_hi_1_TWOSIDED+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_rwscale_hi_2_TWOSIDED+3], ax
+xchg      ax, dx
+mov       word ptr ds:[SELFMODIFY_add_to_rwscale_lo_1_TWOSIDED+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_rwscale_lo_2_TWOSIDED+3], ax
+
+;ASSUME DS:DGROUP  ; lods coming up
+
+
+
+scales_set_TWOSIDED:
+public scales_set_TWOSIDED
 
 ; nomidtexture. this will be checked before top/bot, have to set it to 0.
-
-
-
 
 
 ; short_height_t backsectorfloorheight = backsector->floorheight;
@@ -6427,7 +7007,6 @@ SELFMODIFY_jmp_two_sided_or_not_TARGET:
 ; uint8_t backsectorfloorpic = backsector->floorpic;
 ; uint8_t backsectorlightlevel = backsector->lightlevel;
 
-; todo: i dont think these necessarily should be lodsw and written to cs. its not fast. is there a better way - hold inr egs etc?
 
 ; if two sided:
  ; noloop top if:
@@ -6437,7 +7016,7 @@ SELFMODIFY_jmp_two_sided_or_not_TARGET:
   ; wall height < 128. that means backsector.floor - front.floor < 128
 
 
-lds       si, dword ptr cs:[_backsector]
+lds       si, dword ptr ds:[_backsector]
 lodsw     ; floorheight
 mov       word ptr cs:[SELFMODIFY_get_backsector_floorheight+3], ax
 xchg      ax, cx
@@ -6476,7 +7055,8 @@ mov       byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], al ; SIL_NONE
 ; si ds_p
 ; 
 
-
+set_values:
+public set_values
 
 ; ds:si is ds_p
 ;		if (frontsectorfloorheight > backsectorfloorheight) {
@@ -6500,19 +7080,23 @@ push      es
 
 xor       bx, bx
 mov       bl, ch
-; todo cs as ds
-mov       cx, word ptr cs:[bx + _COLFUNC_JUMP_LOOKUP]
-mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_TWOSIDED+2], cx
-les       cx, dword ptr cs:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
-mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_nostretch_jumpoffset_TWOSIDED+4], cx
-mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_nostretch_funcaddr_TWOSIDED+4], es
-les       cx, dword ptr cs:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 4]
-mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_1_TWOSIDED+4], cx
-mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_1_TWOSIDED+4], es
-mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_2_TWOSIDED+4], cx
-mov       word ptr cs:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_2_TWOSIDED+4], es
 
+push      ds
+push      cs
+pop       ds
 
+mov       cx, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP]
+mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_TWOSIDED+2], cx
+les       cx, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
+mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_nostretch_jumpoffset_TWOSIDED+4], cx
+mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_nostretch_funcaddr_TWOSIDED+4], es
+les       cx, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 4]
+mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_1_TWOSIDED+4], cx
+mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_1_TWOSIDED+4], es
+mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_2_TWOSIDED+4], cx
+mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_2_TWOSIDED+4], es
+
+pop       ds
 pop       es
 pop       bx
 
@@ -6548,17 +7132,23 @@ push      es
 
 xor       bx, bx
 mov       bl, dh
-; todo cs as ds
-mov       dx, word ptr cs:[bx + _COLFUNC_JUMP_LOOKUP]
-mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_TWOSIDED+2], dx
-les       dx, dword ptr cs:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
-mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset_TWOSIDED+4], dx
-mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr_TWOSIDED+4], es
-les       dx, dword ptr cs:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 4]
-mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_1_TWOSIDED+4], dx
-mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1_TWOSIDED+4], es
-mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_2_TWOSIDED+4], dx
-mov       word ptr cs:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2_TWOSIDED+4], es
+
+push      ds
+push      cs
+pop       ds
+
+mov       dx, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP]
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_TWOSIDED+2], dx
+les       dx, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset_TWOSIDED+4], dx
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr_TWOSIDED+4], es
+les       dx, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 4]
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_1_TWOSIDED+4], dx
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1_TWOSIDED+4], es
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_2_TWOSIDED+4], dx
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2_TWOSIDED+4], es
+
+pop       ds
 
 pop       es
 pop       bx
@@ -6758,7 +7348,7 @@ mov       word ptr ds:[SELFMODIFY_BSP_toptexture_TWOSIDED], 0468Bh ; mov   ax, w
 mov       byte ptr ds:[SELFMODIFY_BSP_toptexture_TWOSIDED+2], 0100h - 034h   ; ugh gross [bp - 034h]
 ; are any bits set?
 or        bl, bh
-or        byte ptr ds:[SELFMODIFY_check_for_any_tex+1], bl
+or        byte ptr ds:[SELFMODIFY_check_for_any_tex_TWOSIDED+1], bl
 
 test      byte ptr [bp - 2], ML_DONTPEGTOP
 je        calculate_toptexturemid  ; either branche has to jump i guess
@@ -6857,7 +7447,7 @@ bottexture_not_zero:
 mov       word ptr ds:[SELFMODIFY_BSP_bottexture_TWOSIDED], 0468Bh   ; mov   ax, word ptr [bp - 038h] first two bytes
 ; are any bits set?
 or        bl, bh
-or        byte ptr ds:[SELFMODIFY_check_for_any_tex+1], bl
+or        byte ptr ds:[SELFMODIFY_check_for_any_tex_TWOSIDED+1], bl
 
 
 
@@ -6876,7 +7466,7 @@ mov   byte ptr ds:[SELFMODIFY_set_bottexturemid_hi_TWOSIDED+1], dl
 
 bottexture_stuff_done:
 
-SELFMODIFY_BSP_siderenderrowoffset_2:
+SELFMODIFY_BSP_siderenderrowoffset_2_TWOSIDED:
 mov   al, 010h ; todo should this just be done above...?  rather than this selfmodify chain
 
 ;  extra selfmodify? or hold in vars till this pt and finally write the high bits
@@ -6895,6 +7485,7 @@ add   byte ptr ds:[SELFMODIFY_set_bottexturemid_hi_TWOSIDED+1], al
 ; check midtexture on 2 sided line (e1m1 case)
 SELFMODIFY_has_midtexture_or_not:
 jmp       continue_backsector_not_null   ; may  turn into mov al, garbage (fall thru)
+
 side_has_midtexture:
 public side_has_midtexture
 ;	// allocate space for masked texture tables. it will be a word table unlike others.
@@ -7049,9 +7640,9 @@ push      dx  ; bp - 034h
 push      ax  ; bp - 036h
 
 ; last pop...
-SELFMODIFY_get_rwscalestep_lo_3:
+SELFMODIFY_get_rwscalestep_lo_3_TWOSIDED:
 mov       ax, 01000h
-SELFMODIFY_get_rwscalestep_hi_3:
+SELFMODIFY_get_rwscalestep_hi_3_TWOSIDED:
 mov       dx, 01000h
 
 ;start inlined FixedMulBSPLocal_
@@ -7237,9 +7828,9 @@ push      bx  ; bp - 038h
 push      ax  ; bp - 03Ah
 
 
-SELFMODIFY_get_rwscalestep_lo_4:
+SELFMODIFY_get_rwscalestep_lo_4_TWOSIDED:
 mov       ax, 01000h
-SELFMODIFY_get_rwscalestep_hi_4:
+SELFMODIFY_get_rwscalestep_hi_4_TWOSIDED:
 mov       dx, 01000h
 
 ;start inlined FixedMulBSPLocal_
@@ -7349,146 +7940,7 @@ done_with_two_sided_sector_setup:
 ; todo: early func self modified some stuff forward into single variant.
 ; for now we must clone to this variant
 
-push       ax
-mov        ax, cs
-mov        es, ax
 
-
-mov        si, OFFSET SELFMODIFY_check_for_any_tex+1
-mov        di, OFFSET SELFMODIFY_check_for_any_tex_TWOSIDED+1
-movsb
-
-mov        si, OFFSET SELFMODIFY_addlightnum_delta+1
-mov        di, OFFSET SELFMODIFY_addlightnum_delta_TWOSIDED+1
-movsb
-
-
-
-mov        si, OFFSET SELFMODIFY_set_offsetangle+1
-mov        di, OFFSET SELFMODIFY_set_offsetangle_TWOSIDED+1
-movsw
-
-mov        si, OFFSET SELFMODIFY_set_PointToDist_result_hi+1
-mov        di, OFFSET SELFMODIFY_set_PointToDist_result_hi_TWOSIDED+1
-movsw
-
-mov        si, OFFSET SELFMODIFY_set_PointToDist_result_lo+1
-mov        di, OFFSET SELFMODIFY_set_PointToDist_result_lo_TWOSIDED+1
-movsw
-
-mov        si, OFFSET SELFMODIFY_set_rw_normal_angle_shift3+1
-mov        di, OFFSET SELFMODIFY_set_rw_normal_angle_shift3_TWOSIDED+1
-movsw
-
-mov        si, OFFSET SELFMODIFY_BSP_sidetextureoffset+1
-mov        di, OFFSET SELFMODIFY_BSP_sidetextureoffset_TWOSIDED+1
-movsw
-
-mov        si, OFFSET SELFMODIFY_BSP_sidesegoffset+1
-mov        di, OFFSET SELFMODIFY_BSP_sidesegoffset_TWOSIDED+1
-movsw
-
-
-mov        si, OFFSET SELFMODIFY_get_rwscalestep_lo_1+1
-mov        di, OFFSET SELFMODIFY_get_rwscalestep_lo_1_TWOSIDED+1
-movsw
-
-mov        si, OFFSET SELFMODIFY_get_rwscalestep_hi_1+1
-mov        di, OFFSET SELFMODIFY_get_rwscalestep_hi_1_TWOSIDED+1
-movsw
-
-mov        si, OFFSET SELFMODIFY_get_rwscalestep_lo_2+1
-mov        di, OFFSET SELFMODIFY_get_rwscalestep_lo_2_TWOSIDED+1
-movsw
-
-mov        si, OFFSET SELFMODIFY_get_rwscalestep_hi_2+1
-mov        di, OFFSET SELFMODIFY_get_rwscalestep_hi_2_TWOSIDED+1
-movsw
-
-mov        si, OFFSET SELFMODIFY_add_to_rwscale_lo_1+3
-mov        di, OFFSET SELFMODIFY_add_to_rwscale_lo_1_TWOSIDED+3
-movsw
-
-mov        si, OFFSET SELFMODIFY_add_to_rwscale_lo_2+3
-mov        di, OFFSET SELFMODIFY_add_to_rwscale_lo_2_TWOSIDED+3
-movsw
-
-mov        si, OFFSET SELFMODIFY_add_to_rwscale_hi_1+3
-mov        di, OFFSET SELFMODIFY_add_to_rwscale_hi_1_TWOSIDED+3
-movsw
-
-mov        si, OFFSET SELFMODIFY_add_to_rwscale_hi_2+3
-mov        di, OFFSET SELFMODIFY_add_to_rwscale_hi_2_TWOSIDED+3
-movsw
-
-
-
-mov        si, OFFSET SELFMODIFY_sub_rwscale_lo+3
-mov        di, OFFSET SELFMODIFY_sub_rwscale_lo_TWOSIDED+3
-movsw
-
-mov        si, OFFSET SELFMODIFY_sub_rwscale_hi+3
-mov        di, OFFSET SELFMODIFY_sub_rwscale_hi_TWOSIDED+3
-movsw
-
-mov        si, OFFSET SELFMODIFY_set_bx_rw_distance_lo+1
-mov        di, OFFSET SELFMODIFY_set_bx_rw_distance_lo_TWOSIDED+1
-movsw
-
-mov        si, OFFSET SELFMODIFY_set_cx_rw_distance_hi+1
-mov        di, OFFSET SELFMODIFY_set_cx_rw_distance_hi_TWOSIDED+1
-movsw
-
-mov        si, OFFSET SELFMODIFY_set_rw_center_angle+1
-mov        di, OFFSET SELFMODIFY_set_rw_center_angle_TWOSIDED+1
-movsw
-
-mov        si, OFFSET SELFMODIFY_add_rw_x_base4_to_ax+1
-mov        di, OFFSET SELFMODIFY_add_rw_x_base4_to_ax_TWOSIDED+1
-movsw
-
-mov        si, OFFSET SELFMODIFY_compare_ax_to_start_rw_x+1
-mov        di, OFFSET SELFMODIFY_compare_ax_to_start_rw_x_TWOSIDED+1
-movsw
-
-mov        si, OFFSET SELFMODIFY_cmp_ax_to_rw_stopx_3+1
-mov        di, OFFSET SELFMODIFY_cmp_ax_to_rw_stopx_3_TWOSIDED+1
-movsw
-
-mov        si, OFFSET SELFMODIFY_cmp_ax_to_rw_stopx_2+1
-mov        di, OFFSET SELFMODIFY_cmp_ax_to_rw_stopx_2_TWOSIDED+1
-movsw
-
-mov        si, OFFSET SELFMODIFY_cmp_ax_to_rw_stopx_1+1
-mov        di, OFFSET SELFMODIFY_cmp_ax_to_rw_stopx_1_TWOSIDED+1
-movsw
-
-mov        si, OFFSET SELFMODIFY_set_cx_to_count_1+1
-mov        di, OFFSET SELFMODIFY_set_cx_to_count_1_TWOSIDED+1
-movsw
-
-mov        si, OFFSET SELFMODIFY_set_cx_to_count_2+1
-mov        di, OFFSET SELFMODIFY_set_cx_to_count_2_TWOSIDED+1
-movsw
-
-mov        si, OFFSET SELFMODIFY_add_rwscale_lo+4
-mov        di, OFFSET SELFMODIFY_add_rwscale_lo_TWOSIDED+4
-movsw
-
-mov        si, OFFSET SELFMODIFY_add_rwscale_hi+4
-mov        di, OFFSET SELFMODIFY_add_rwscale_hi_TWOSIDED+4
-movsw
-
-
-
-
-
-
-;
-;
-
-
-pop        ax
 
 
 
@@ -8472,6 +8924,9 @@ _selfmodify_restore_dx_10_TWOSIDED:
 
 ENDIF
 
+checktexcolumn:
+public checktexcolumn
+
 ; around here whats wrong
 
 ;	    texturecolumn = rw_offset-FixedMul(finetangent[angle],rw_distance);
@@ -8525,7 +8980,6 @@ SELFMODIFY_add_wallights_TWOSIDED:
 mov   al, byte ptr ds:[si+01000h]         ; 8a 84 00 10 
 ;        set colormap offset to high byte
 
-; todo: this
 mov   dx, cs
 mov   ds, dx
 
@@ -9043,7 +9497,7 @@ ENDP
 
 just_do_draw0_TWOSIDED:
 public just_do_draw0_TWOSIDED
-;mov   word ptr ds:[_dc_source_segment], ax ; what if this was push then pop es later. hard because we get a 2nd value with lds.
+
 
 ; ax carries _dc_source_segment
 
@@ -9178,6 +9632,7 @@ SELFMODIFY_BSP_markceiling_2_AFTER_TWOSIDED:
 
 
 mark_ceiling_si_TWOSIDED:
+; this value comes out bad for al. sometimes.
 lea   ax, [si - 1]
 mov   byte ptr cs:[bx + OFFSET_CEILINGCLIP], al ; bx is already rw_x
 jmp   check_bottom_texture_TWOSIDED
@@ -9803,7 +10258,9 @@ exit_r_addline:
 pop   bp
 add   sp, 0Eh  ; for the line/count pushed earlier
 ; todo investigate NOPPing this
-mov   byte ptr cs:[SELFMODIFY_skip_frontsector_based_selfmodify], 0B3h ; mov bl, imm8 (fallthru)
+mov   al, 0B3h  ; mov bl, imm8 (fallthru)
+mov   byte ptr cs:[SELFMODIFY_skip_frontsector_based_selfmodify], al
+mov   byte ptr cs:[SELFMODIFY_skip_frontsector_based_selfmodify_TWOSIDED], al
 ret   
 ALIGN_MACRO
 
@@ -10135,7 +10592,7 @@ push      bx
 push      cx
 push      si
 push      di
-call R_StoreWallRange_
+call R_StoreWallRangeNoBackSector_
 pop       di
 pop       si
 pop       cx
@@ -10166,7 +10623,7 @@ push bx
 push cx
 push si
 push di
-call R_StoreWallRange_
+call R_StoreWallRangeNoBackSector_
 pop  di
 pop  si
 pop  cx
@@ -10203,7 +10660,7 @@ push  bx
 push  cx
 push  si
 push  di
-call  R_StoreWallRange_
+call  R_StoreWallRangeNoBackSector_
 pop   di
 pop   si
 pop   cx
@@ -10248,7 +10705,7 @@ push  bx
 push  cx
 push  si
 push  di
-call  R_StoreWallRange_
+call  R_StoreWallRangeNoBackSector_
 pop   di
 pop   si
 pop   cx
@@ -10310,7 +10767,7 @@ push bx
 push cx
 push si
 push di
-call R_StoreWallRange_
+call R_StoreWallRangeWithBackSector_
 pop  di
 pop  si
 pop  cx
@@ -10341,7 +10798,7 @@ push bx
 push cx
 push si
 push di
-call R_StoreWallRange_
+call R_StoreWallRangeWithBackSector_
 pop  di
 pop  si
 pop  cx
@@ -10366,7 +10823,7 @@ post_entirely_visible:
 mov  dx, cx
 mov  ax, si
 sub  sp, 8
-call R_StoreWallRange_
+call R_StoreWallRangeWithBackSector_
 jmp   END_R_ADDLINE_AND_SELFMODIFY_LABEL
 ALIGN_MACRO
 
@@ -10376,7 +10833,7 @@ fragment_after_next:
 mov  dx, cx
 inc  ax
 sub  sp, 8
-call R_StoreWallRange_
+call R_StoreWallRangeWithBackSector_
 
 jmp   END_R_ADDLINE_AND_SELFMODIFY_LABEL
 
@@ -14236,6 +14693,8 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5], ax
 
+
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1_TWOSIDED], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2_TWOSIDED], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3_TWOSIDED], ax
 
@@ -14304,6 +14763,8 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+2], ax
 
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1_TWOSIDED+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1_TWOSIDED+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2_TWOSIDED+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2_TWOSIDED+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3_TWOSIDED+0], ax
@@ -14341,6 +14802,7 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2_TWOSIDED+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3_TWOSIDED+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1_TWOSIDED+0], ax
 
 mov      ah, 0E0h
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+0], ax
@@ -14352,6 +14814,7 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2_TWOSIDED+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3_TWOSIDED+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1_TWOSIDED+2], ax
 
 mov      ah, 0D2h
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+2], ax
@@ -14382,6 +14845,7 @@ mov      byte ptr ds:[SELFMODIFY_add_detailshiftitercount_TWOSIDED+1], al
 
 mov      ax, word ptr ss:[_detailshiftandval]
 mov      word ptr ds:[SELFMODIFY_detailshift_and_1+2], ax
+mov      word ptr ds:[SELFMODIFY_detailshift_and_1_TWOSIDED+2], ax
 
 
 ; ah is definitely 0... optimizable?
@@ -14536,6 +15000,8 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_3+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_4+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_7+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_8+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_7_TWOSIDED+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_8_TWOSIDED+1], ax
 skip_viewz_lo_selfmodifies_this_frame:
 
 ; VIEWZ HI
@@ -14552,6 +15018,8 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_3+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_4+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_7+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_8+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_7_TWOSIDED+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_8_TWOSIDED+2], ax
 ; create 13:3 fixed point for comparison in ax
 
 SHIFT32_MACRO_LEFT ax dx 3
@@ -14642,6 +15110,7 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_1+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_2+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_3+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_5+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_2_TWOSIDED+2], ax
 
 test     ax, ax
 jne      selfmodify_viewx_lo_nonzero
@@ -14670,6 +15139,7 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_3+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_4+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_5+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_6+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_2_TWOSIDED+2], ax
 
 skip_viewx_hi_selfmodifies_this_frame:
 
@@ -14685,6 +15155,7 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_1+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_2+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_3+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_5+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_2_TWOSIDED+1], ax
 
 cmp      ax, 0
 jle      selfmodify_viewy_lo_lessthanequaltozero
@@ -14711,6 +15182,7 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_3+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_4+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_5+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_6+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_2_TWOSIDED+2], ax
 
 skip_viewy_hi_selfmodifies_this_frame:
 
@@ -14761,8 +15233,12 @@ mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_3+1], ax
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_4+1], ax
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_5+2], ax
 
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_2_TWOSIDED+1], ax
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_3_TWOSIDED+1], ax
+
 add      ah, 8
 mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_1+1], ax
+mov      word ptr ds:[SELFMODIFY_set_viewanglesr3_1_TWOSIDED+1], ax
 
 skip_viewangle_hi_selfmodifies_this_frame:
 
