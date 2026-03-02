@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/02/28 13:08:58
+Created on:       26/02/28 13:30:30
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -351,6 +351,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:26c9*     just_do_draw1
 0819:1d96*     _selfmodify_restore_dx_6
 0819:1dd0*     _selfmodify_restore_dx_7
+0819:267c*     mark_floor_di
 0819:1e5d*     _selfmodify_restore_dx_8
 0819:09e2*     FixedMulTrigSine_BSPLocal_
 0819:1d5b*     continue_backsector_not_null
@@ -401,7 +402,6 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:25f9*     SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER_TWOSIDED
 0819:1d28*     side_has_midtexture
 0819:3716      R_GetCompositeTexture_Far24_
-0819:267c*     mark_floor_di_TWOSIDED
 0819:0068*     _basexscale
 0819:2601*     just_do_draw0_TWOSIDED
 0819:1002*     adjust_row_offset
@@ -445,9 +445,9 @@ Module: r_bspfl.obj(r_bspfl.ASM)
 12ee:2db7      R_GetPatchTexture_FarFL_
 12ee:32e5      R_WriteBackViewConstantsFL_
 Module: r_col24.obj(r_col24.ASM)
+1650:14e2*     MARKER_SM_COL24_AFTER_JUMP_3
 1650:0ce0*     MARKER_SM_COL24_AFTER_JUMP_2
 1650:04dc*     MARKER_SM_COL24_AFTER_JUMP_1
-1650:14e2*     MARKER_SM_COL24_AFTER_JUMP_3
 1650:1e74*     MARKER_SM_COL24_AFTER_JUMP_4
 1650:1e50      MARKER_COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET_
 1650:04b0*     R_DrawColumn24NoLoop_

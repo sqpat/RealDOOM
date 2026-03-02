@@ -6755,7 +6755,7 @@ je        toptexture_zero         ; todo whats more common?
 
 toptexture_not_zero:
 mov       word ptr ds:[SELFMODIFY_BSP_toptexture_TWOSIDED], 0468Bh ; mov   ax, word ptr [bp - 0xxh] first two bytes
-mov       byte ptr ds:[SELFMODIFY_BSP_toptexture_TWOSIDED+2], 0100 - 034h   ; ugh gross [bp - 034h]
+mov       byte ptr ds:[SELFMODIFY_BSP_toptexture_TWOSIDED+2], 0100h - 034h   ; ugh gross [bp - 034h]
 ; are any bits set?
 or        bl, bh
 or        byte ptr ds:[SELFMODIFY_check_for_any_tex+1], bl
@@ -9200,8 +9200,8 @@ SELFMODIFY_BSP_markfloor_2_TWOSIDED:
 ;je    done_marking_floor_TWOSIDED
 SELFMODIFY_BSP_markfloor_2_AFTER_TWOSIDED = SELFMODIFY_BSP_markfloor_2_TWOSIDED+2
 
-mark_floor_di_TWOSIDED:
-public mark_floor_di_TWOSIDED
+mark_floor_di:
+public mark_floor_di
    ;floorclip[rw_x] = yh + 1;
 xchg  ax, di   ; di seems safe to clobber?
 inc   ax
@@ -9264,7 +9264,7 @@ xchg  ax, cx
 
 dont_clip_bot_ceil:
 cmp   ax, di
-jg    mark_floor_di_TWOSIDED  ; todo branch test
+jg    mark_floor_di  ; todo branch test
 
 ;		if (markfloor)
 ;		    floorclip[rw_x] = yh+1;
