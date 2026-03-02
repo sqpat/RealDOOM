@@ -3834,7 +3834,7 @@ PUBLIC R_StoreWallRangeNoBackSector_
 ; bp - 020h  ; dx arg (no need to pop)
 
 ; pushed stuff
-; bp - 022h  ; stop - start   ; last pushed thing. todo push others.
+; bp - 022h  ; stop - start
 ; bp - 024h  ; base4diff
 
 ; bp - 026h  ; worldtop hi
@@ -5994,14 +5994,6 @@ seg_non_textured:
 ; ds is cs.
 
 
-; this runs no matter which branch taken - remove the dependency now
-SELFMODIFY_BSP_setviewheight_1:
-; view height plus 1.
-
-; todo: rep stosw  this later for the whole 
-mov   byte ptr ds:[di + OFFSET_CEILINGCLIP], 010h   ; 2e c6 87 80 a7 10  (this instruction that gets selfmodified)
-mov   byte ptr ds:[di + OFFSET_FLOORCLIP], 000h
-
 
 
 ; dx holds texturecolumn
@@ -6106,10 +6098,6 @@ lea   di, [bx + di + 01000h]
 
 
 
-
-
-
-
 ; dc_iscale loaded here..
 SELFMODIFY_BSP_set_dc_iscale_lo:
 mov   bx, 01000h        ; dc_iscale +0
@@ -6198,6 +6186,39 @@ jmp   finish_outer_loop
 ALIGN_MACRO
 
 R_RenderSegLoop_exit:
+
+mov   ax, cs
+mov   es, ax
+
+
+mov   si, word ptr [bp - 01Eh]  ; startx
+mov   dx, word ptr [bp - 022h]  ; stopx - startx
+mov   cx, dx
+
+
+; mark all floors viewheight(+1)
+
+lea   di, [OFFSET_CEILINGCLIP + si]
+shr   cx, 1  ; count inw ords
+
+SELFMODIFY_BSP_setviewheight_1:
+mov   ax, 01000h
+rep   stosw
+adc   cx, cx
+rep   stosb
+
+; mark all floors -1 (+1)
+lea   di, [OFFSET_FLOORCLIP + si]
+xor   ax, ax
+
+mov   cx, dx
+shr   cx, 1
+rep   stosw
+adc   cx, cx
+rep   stosb
+
+
+
 ; hardcoded!   
    ; SIL_BOTH, markfloor = true, markceil = true
    ;		ds_p->sprtopclip = screenheightarray;
@@ -14910,9 +14931,9 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_1+1], ax
 
 mov      al, byte ptr ss:[_viewheight]
 inc      ax
-mov      byte ptr ds:[SELFMODIFY_BSP_setviewheight_1+5], al
 
 mov      ah, al
+mov      word ptr ds:[SELFMODIFY_BSP_setviewheight_1+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_setviewheight_2+1], ax
 
 
