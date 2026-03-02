@@ -6075,20 +6075,17 @@ movs  word ptr es:[si], word ptr es:[di]
 ; note: bx is dc_x...
 mov     si, ax   ; restore si here..
 
-mov     ah, 80
-dec     ax       ; todo put lookup back
-mul     ah
-xchg    ax, si
 
 SELFMODIFY_BSP_detailshift2minus:
 sar   bx, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
 sar   bx, 1
 
-;dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
+lea   bp,  [si + _bsp_local_dc_yl_lookup_table - 2]
+mov   di, word ptr cs:[si+bp]                   ; add * 80 lookup table value 
 
 
 SELFMODIFY_BSP_add_destview_offset:
-lea   di, [bx + si + 01000h]
+lea   di, [bx + di + 01000h]
 
 
 
@@ -9536,20 +9533,17 @@ movs  word ptr es:[si], word ptr es:[di]
 ; note: bx is dc_x...
 mov     si, ax   ; restore si here..
 
-mov     ah, 80
-dec     ax       ; todo put lookup back
-mul     ah
-xchg    ax, si
 
 SELFMODIFY_BSP_detailshift2minus_TWOSIDED:
 sar   bx, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
 sar   bx, 1
 
-;dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
+lea   bp,  [si + _bsp_local_dc_yl_lookup_table - 2]
+mov   di, word ptr cs:[si+bp]                   ; add * 80 lookup table value 
 
 
 SELFMODIFY_BSP_add_destview_offset_TWOSIDED:
-lea   di, [bx + si + 01000h]
+lea   di, [bx + di + 01000h]
 
 
 
@@ -9801,20 +9795,17 @@ movs  word ptr es:[si], word ptr es:[di]
 
 ; note: bx is dc_x...
 mov     si, ax   ; restore si here..
-mov     ah, 80
-dec     ax       ; todo put lookup back
-mul     ah
-xchg    ax, si
 
 SELFMODIFY_BSP_detailshift2minus_bot_TWOSIDED:
 sar   bx, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
 sar   bx, 1
 
-;dec   si ; finally undo +1 to dc_yl.  ; toggle inside/ outside of function so bottom call can copy and shift even/off
+lea   bp,  [si + _bsp_local_dc_yl_lookup_table - 2]
+mov   di, word ptr cs:[si+bp]                   ; add * 80 lookup table value 
 
 
 SELFMODIFY_BSP_add_destview_offset_bot_TWOSIDED:
-lea   di, [bx + si + 01000h]
+lea   di, [bx + di + 01000h]
 
 
 
@@ -15282,7 +15273,6 @@ ret
 
 ENDP
 
-COMMENT @
 _bsp_local_dc_yl_lookup_table:
 PUBLIC _bsp_local_dc_yl_lookup_table
 sumof80s = 0
@@ -15291,7 +15281,6 @@ REPT MAX_PIXELS
     dw sumof80s 
     sumof80s = sumof80s + 80
 ENDM
-@
 
 PROC R_BSP24_ENDMARKER_
 PUBLIC R_BSP24_ENDMARKER_
