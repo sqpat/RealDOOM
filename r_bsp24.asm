@@ -5715,8 +5715,8 @@ IF COMPISA GE COMPILE_386
    db 066h, 00Fh, 0A4h, 0C2h, 010h  ; shld edx, eax, 0x10
 
    ; ?only write to dc_iscale_hi when nonzero.
-; todo   mov byte ptr ds:[SELFMODIFY_bsp_apply_stretch_tag+2], dl  ; turn on stretch variant for this frame
-   mov   byte ptr ds:[SELFMODIFY_BSP_set_dc_iscale_hi+2], dl
+   mov   ch, dl  ; dc_iscale hi 8 bits
+
 
 
 ; todo: 386 logic.
@@ -5750,7 +5750,7 @@ ELSE
    SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr:
    mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset], 01000h
    ; only write to dc_iscale_hi when nonzero.
-   mov   byte ptr ds:[SELFMODIFY_BSP_set_dc_iscale_hi+2], cl
+   mov   ch, cl  ; dc_iscale hi 8 bits
 
 ; todo what if we inlined the function right here, instead of writing selfmodifies forward to selfmodifies...
 
@@ -6022,11 +6022,8 @@ FastDiv3232FFFF_done:
 ; result is in CX:AX
 ; do the bit shuffling etc when writing direct to drawcol.
 
-; todo write after a div in the function? in various spots?
-mov   word ptr ds:[SELFMODIFY_BSP_set_dc_iscale_lo+1], ax
 
 ; dc_iscale_hi was written ealier if nonzero
-
 
 
 
@@ -6039,6 +6036,8 @@ public seg_non_textured  ; todo should this even be here? yh/yl wise?
 
 ; di has rw_x
 ; ds is cs.
+; ax is dc_iscale_lo
+; ch is already dc_iscale_hi
 
 
 
@@ -6047,16 +6046,17 @@ public seg_non_textured  ; todo should this even be here? yh/yl wise?
 pop   bx
 pop   si
 
-push  di   ; dc_x
-; si:bxare dc_yl, dc_yh
+push  di   ; dc_x  ; store for now...
+; si:bxa re dc_yl, dc_yh
 sub   bx, si
 
 
 
 ; remove once the relevent bits are in cs.
-mov   ax, COLFUNC_FILE_START_SEGMENT
-mov   es, ax
+mov   dx, COLFUNC_FILE_START_SEGMENT
+mov   es, dx
 
+xchg  ax, dx ; dx holds onto dc_iscale lo todo juggle less
 
 xchg  ax, si ; dc_yl in ax. ; toggle for even/odd ret label
 ;mov  ax, si ; dc_yl in ax.   ; toggle for even/odd ret label
@@ -6102,11 +6102,11 @@ lea   di, [bx + di + 01000h]
 
 ; dc_iscale loaded here..
 SELFMODIFY_BSP_set_dc_iscale_lo:
-mov   bx, 01000h        ; dc_iscale +0
+mov   bx, dx        ; dc_iscale +0  todo juggle less
 SELFMODIFY_set_midtexturemid_hi:
 
 SELFMODIFY_BSP_set_dc_iscale_hi:
-mov   cx, 01000h        ; dc_iscale +2 hi, toptexturemid hi lo
+mov   cl, 010h        ; dc_iscale +2 already in ch
 
 
 SELFMODIFY_set_midtexturemid_lo:
