@@ -51,6 +51,11 @@ _extralight =     0
 _dc_source_segment = 0
 _frontsector =    0
 _backsector =     0
+_ceiltop =      	0
+_floortop =       0
+_floorphyspage =  0
+_ceilphyspage =   0
+_visplanedirty =  0
 
 dw DRAWCOL_OFFSET - 00000h,  COLORMAPS_SEGMENT + 0000h
 dw DRAWCOL_OFFSET - 00100h,  COLORMAPS_SEGMENT + 0010h

@@ -30,6 +30,9 @@ PROC R_SPAN16_STARTMARKER_
 PUBLIC R_SPAN16_STARTMARKER_
 ENDP 
 
+_floorphyspage =  0
+_ceilphyspage =   0
+_visplanedirty =  0
 
 R_DRAWSPANACTUAL_DIFF = (OFFSET R_DrawSpanActual16_ - OFFSET R_SPAN16_STARTMARKER_)
 DRAWSPAN_BX_OFFSET             = 0FC0h

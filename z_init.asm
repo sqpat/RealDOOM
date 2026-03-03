@@ -892,7 +892,6 @@ ELSE
 ENDIF
 
 
-mov   byte ptr ds:[_visplanedirty], 1
 pop   si
 pop   cx
 pop   bx

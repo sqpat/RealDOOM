@@ -44,6 +44,9 @@ MAXLIGHTZ_UNSHIFTED            = 0800h
 _extralight =     0
 
 
+_floorphyspage =  0
+_ceilphyspage =   0
+_visplanedirty =  0
 
 
 

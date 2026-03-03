@@ -174,11 +174,23 @@ dw 0FFFFh, SECTORS_SEGMENT
 _backsector:
 dw 0FFFFh, SECTORS_SEGMENT
 
+_ceiltop:
+dw 0FFFFh, SECTORS_SEGMENT
+_floortop:
+dw 0FFFFh, SECTORS_SEGMENT
 
+_ceilphyspage:
+db 00
+_floorphyspage:
+db 00
+
+ALIGN_MACRO
 DEFAULT_DRAWSEG_T:
 dw MAXSHORT, MINSHORT, OFFSET_SCREENHEIGHTARRAY, OFFSET_NEGONEARRAY, NULL_TEX_COL
 db SIL_BOTH
 
+_visplanedirty:
+db 1
 
 ; 0AAh
 
@@ -2393,7 +2405,7 @@ mov   cx, dx
 rep   stosw  ; write 0 to es:di
 
 mov   word ptr ds:[_lastvisplane], cx ; 0
-mov   word ptr ds:[_lastopening], cx ; 0
+mov   word ptr ds:[_lastopening], cx ; 0  ; todo cs var?
 SELFMODIFY_set_viewanglesr3_4:
 mov   ax, 01000h
 sub   ah, 08h   ; FINE_ANG90
@@ -2495,7 +2507,7 @@ xor   dx, dx
 cmp   al, VISPLANES_PER_EMS_PAGE
 jae   loop_cycle_visplane_ems_page
 visplane_ems_page_ready:
-cmp   byte ptr ds:[_visplanedirty], 0
+cmp   byte ptr cs:[_visplanedirty], 0
 je    visplane_not_dirty
 visplane_dirty_or_index_over_max_conventional_visplanes:
 mov   bx, dx
@@ -2513,7 +2525,7 @@ return_visplane:
 test  cl, cl    ; check isceil
 je    is_floor_2
 
-mov   byte ptr ds:[_ceilphyspage], bl
+mov   byte ptr cs:[_ceilphyspage], bl
 sal   bx, 1
 mov   dx, word ptr ds:[bx + _visplanelookupsegments] ; return value for ax
 
@@ -2523,9 +2535,9 @@ sal   bx, 1
 mov   ax, word ptr ds:[bx + _visplane_offset]
 add   ax, OFFSET VISPLANE_T.vp_top
 
-mov   word ptr ds:[_ceiltop], ax
+mov   word ptr cs:[_ceiltop], ax
 sub   ax, OFFSET VISPLANE_T.vp_top
-mov   word ptr ds:[_ceiltop+2], dx
+mov   word ptr cs:[_ceiltop+2], dx
 
 
 ;pop   cx
@@ -2533,7 +2545,7 @@ pop   bx
 ret   
 ALIGN_MACRO
 is_floor_2:
-mov   byte ptr ds:[_floorphyspage], bl   
+mov   byte ptr cs:[_floorphyspage], bl   
 sal   bx, 1
 mov   dx, word ptr ds:[bx + _visplanelookupsegments] ; return value for ax
 
@@ -2543,9 +2555,9 @@ sal   bx, 1
 mov   ax, word ptr ds:[bx + _visplane_offset]
 add   ax, OFFSET VISPLANE_T.vp_top
 
-mov   word ptr ds:[_floortop], ax
+mov   word ptr cs:[_floortop], ax
 sub   ax, OFFSET VISPLANE_T.vp_top
-mov   word ptr ds:[_floortop+2], dx
+mov   word ptr cs:[_floortop+2], dx
 
 ;pop   cx
 pop   bx
@@ -2568,7 +2580,7 @@ do_quickmap_ems_visplaes:
 test  cl, cl    ; check isceil
 je    is_floor
 ; is ceil
-cmp   byte ptr ds:[_floorphyspage], 2  
+cmp   byte ptr cs:[_floorphyspage], 2  
 jne   use_phys_page_2
 ;ja    out_of_visplanes
 use_phys_page_1:
@@ -2589,7 +2601,7 @@ call  Z_QuickMapVisplanePage_BSPLocal_
 jmp   return_visplane
 ALIGN_MACRO
 is_floor:
-cmp   byte ptr ds:[_ceilphyspage], 2
+cmp   byte ptr cs:[_ceilphyspage], 2
 ;ja    out_of_visplanes
 je    use_phys_page_1
 mov   bl, 2
@@ -2597,6 +2609,7 @@ mov   dl, bl
 
 call  Z_QuickMapVisplanePage_BSPLocal_
 jmp   return_visplane
+
 COMMENT @
 out_of_visplanes:
 push    cs
@@ -2741,7 +2754,7 @@ ELSE
 ENDIF
 
 
-mov   byte ptr ds:[_visplanedirty], 1
+mov   byte ptr cs:[_visplanedirty], 1
 pop   si
 pop   cx
 pop   bx
@@ -2769,7 +2782,7 @@ call  Z_QuickMapVisplanePage_BSPLocal_
 mov   dx, 2
 mov   ax, dx
 call  Z_QuickMapVisplanePage_BSPLocal_
-mov   byte ptr ds:[_visplanedirty], 0
+mov   byte ptr cs:[_visplanedirty], 0
 pop   dx
 ret  
 
@@ -2943,11 +2956,10 @@ mov       di, ax
 add       di, _visplaneheaders  ; _di is plheader
 
 
-mov       ax, ss   ;  restore DS for now, try to make this not happen though.
+mov       ax, ss   ;  restore DS for now due to visplane headers use. try to make this not happen though?
 mov       ds, ax
 
 
-; todo pass in _ceiltop etc not 1, in bx. then les it.
 
 
 loaded_floor_or_ceiling:
@@ -3025,7 +3037,7 @@ jmp       done_checking_max
 
 ALIGN_MACRO
 make_new_visplane:
-mov       bx, word ptr ds:[_lastvisplane] 
+mov       bx, word ptr ds:[_lastvisplane]  ;todo move to cs, pass into r_span as arg.
 mov       es, bx    ; store in es
 mov       dx, bx
 SHIFT_MACRO shl bx 3
@@ -4729,7 +4741,7 @@ mov       ax, word ptr ds:[_mul48lookup_with_scalelight_with_minusone_offset + b
 
 
 ; write walllights to rendersegloop
-mov   word ptr ds:[SELFMODIFY_add_wallights+2], ax
+mov   word ptr ds:[SELFMODIFY_add_wallights+3], ax
 ; ? do math here and write this ahead to drawcolumn colormapsindex?
 
 SELFMODIFY_BSP_fixedcolormap_3_TARGET:
@@ -4872,7 +4884,7 @@ ENDIF
 
 ;end inlined FixedMulBSPLocal_
 
-
+; ds is still cs
 
 neg       ax
 mov       word ptr [bp - 03Eh], ax
@@ -4889,7 +4901,7 @@ je        dont_mark_ceiling ; todo which default braunch?
 mov       ax, word ptr ds:[_ceilingplaneindex]
 les       cx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
 mov       dx, es
-les       bx, dword ptr ss:[_ceiltop] ; todo cs var
+les       bx, dword ptr ds:[_ceiltop]
 
 mov       byte ptr ds:[SELFMODIFY_setisceil + 1], 1
 call      R_CheckPlane_ ; enters and exits with ds as cs
@@ -4902,7 +4914,7 @@ mov       ax, word ptr ds:[_floorplaneindex]
 
 les       cx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
 mov       dx, es
-les       bx, dword ptr ss:[_floortop] ; todo cs var
+les       bx, dword ptr ds:[_floortop]
 
 mov       byte ptr ds:[SELFMODIFY_setisceil + 1], 0
 call      R_CheckPlane_ ; enters and exits with ds as cs
@@ -5071,11 +5083,9 @@ mov       word ptr ds:[SELFMODIFY_add_botstep_hi+4], ax
 SELFMODIFY_BSP_detailshift_3:
 shl       dx, 1
 rcl       ax, 1
-shift_botstep_once:
 shl       dx, 1
 rcl       ax, 1
 
-finished_shifting_botstep:
 
 mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_1+3], ax
 mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_2+3], ax
@@ -5173,16 +5183,18 @@ mov   word ptr ds:[SELFMODIFY_set_botfrac_lo+1], ax
 lods  word ptr ss:[si] ; bottomfrac hi
 mov   word ptr ds:[SELFMODIFY_set_botfrac_hi+1], ax
 mov   al, 0 ; xoffset is 0
-mov   dx, SC_DATA  ; cheat this out of the loop..
 
 
 continue_outer_rendersegloop:
+
+; xoffset is al
 
 cbw  
 xchg  ax, bx	; xoffset to bx
 
 inc   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1]
 
+mov   dx, SC_DATA
 SELFMODIFY_detailshift_plus1_1:
 mov   al, byte ptr ss:[bx + OFFSET _quality_port_lookup]	
 out   dx, al
@@ -5237,6 +5249,7 @@ finish_outer_loop:
 public finish_outer_loop
 ; self modifying code for step values.
 
+; ds is cs
 
 
 ; xoffset++,
@@ -5247,7 +5260,7 @@ public finish_outer_loop
 ; base_pixhigh    += pixhighstep
 
 
-
+; feels like it can be faster.
 SELFMODIFY_set_al_to_xoffset:
 mov   al, 0
 SELFMODIFY_cmp_al_to_detailshiftitercount:
@@ -5291,14 +5304,7 @@ stosw ; mov   word ptr ds:[_seglooptexrepeat], ax
 
 
 jmp   R_RenderSegLoop_exit   
-ALIGN_MACRO
 
-
-
-ALIGN_MACRO
-jump_to_finish_outer_loop_2:
-mov   dx, SC_DATA  ; cheat this out of the loop..
-jmp   finish_outer_loop
 
 ALIGN_MACRO
 pre_increment_values:       ; ; todo this seems to be rare. maybe does not need to be in a code hot spot and can be far jumped to
@@ -5332,41 +5338,43 @@ add   word ptr [bp - 03Eh], 01000h
 SELFMODIFY_add_to_bottomfrac_hi_2:
 adc   word ptr [bp - 03Ch], 01000h
 
-; this is right before inner loop start
+
+; todo change inner loop to work off constant di not ax?
+; or possibly even bp. once we are doing pusha/popa chains, we may not use bp?
+
+; this is right before inner loop start. due to vga plane aligmnent we might not draw pixel 0 for this plane?
 SELFMODIFY_cmp_ax_to_rw_stopx_1:
 cmp   ax, 01000h
-jge   jump_to_finish_outer_loop_2
+jge   finish_outer_loop
 
 start_per_column_inner_loop:
 ; ax was rw_x
-; now di is rw_x
 
-; todo make ds = cs here.
 
-; todo i think below here can get improved a lot...?
 
 xchg  ax, di   ; ax was still rw_x
+; ds is always cs coming in.
 
 
 check_here:
 PUBLIC check_here
+; todo i think below here can get improved a lot...?
 
-; i think ch is 0 due to  loop above
 
-; todo clean up logic. store only in ch/cl. possible store same pixel floor/ceiling side by side? one read, word?
+; todo find a way to clean up 8/16 bit logic and compares. 
+; store only in ch/cl. possible store same pixel floor/ceiling side by side? one read, word?
+; si sucks for holding this value. use dx?
                                                  ; di = rw_x
 xor   ax, ax
-mov   al, byte ptr cs:[di+OFFSET_FLOORCLIP]	 ; cx = floor
+mov   al, byte ptr ds:[di+OFFSET_FLOORCLIP]	 ; cx = floor
 mov   cx, ax
-mov   al, byte ptr cs:[di+OFFSET_CEILINGCLIP] ; si = ceiling  = ceilingclip[rw_x]+1;
+mov   al, byte ptr ds:[di+OFFSET_CEILINGCLIP] ; si = ceiling  = ceilingclip[rw_x]+1;
 
 xchg  ax, si
 
 inc   si
 
-; NOTE set ds here again (not all paths are ds = cs, but maybe should be)
-mov   ax, ss
-mov   ds, ax
+; ds is cs
 
 
 ; all these y values - ceil and floorclip, and later dc_yl and dc_yh are 
@@ -5396,13 +5404,13 @@ dec   ax
 skip_bottom_floorclip:
 cmp   si, ax
 jg    markceiling_done
-les   bx, dword ptr ds:[_ceiltop]  ; todo cs var?
+les   bx, dword ptr ds:[_ceiltop]
 dec   ax
 mov   byte ptr es:[bx+di + vp_bottom_offset], al
 mov   ax, si						    		   ; dl is 0, si is < screensize (and thus under 255)
 dec   ax
 mov   byte ptr es:[bx+di], al
-or    byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], 1 ; ceiling bit
+or    byte ptr ds:[SELFMODIFY_mark_planes_dirty+1], 1 ; ceiling bit
 
 markceiling_done:
 
@@ -5425,7 +5433,7 @@ skip_yh_floorclip:
 push  dx  ; store yl. todo keep this in a reg eventually
 neg   dx
 add   dx, ax
-push  dx  ; store yh - yl
+push  dx  ; store yh - yl  ; note only a byte?
 
 
 ; ax is already yh
@@ -5451,12 +5459,12 @@ skip_top_ceilingclip:
 
 cmp   ax, cx
 jg    markfloor_done
-les   bx, dword ptr ds:[_floortop] ; todo move to cs
+les   bx, dword ptr ds:[_floortop]
 dec   ax
 mov   byte ptr es:[bx+di], al
 dec   cx
 mov   byte ptr es:[bx+di + vp_bottom_offset], cl
-or    byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], 2 ; floor bit
+or    byte ptr ds:[SELFMODIFY_mark_planes_dirty+1], 2 ; floor bit
 
 
 markfloor_done:
@@ -5541,7 +5549,7 @@ ELSE
   MOV  SI, DX
   PUSH AX
   MUL  BX
-  MOV  word ptr cs:[_selfmodify_restore_dx_10-2], DX
+  MOV  word ptr ds:[_selfmodify_restore_dx_10-2], DX
   MOV  AX, SI
   MUL  CX
   XCHG AX, SI
@@ -5620,18 +5628,15 @@ ENDP
 just_do_draw0:
 public just_do_draw0
 
+; ds must be reset to cs returning here.
+
+
 push  ax  ; store dc_source_segment
-
-
-
 
 
 ; CX:BX rw_scale
 ; todo bp/stack candidate
 mov   bx, word ptr [bp - 045h] ; get with shift 8
-
-
-
 
 
 cmp   bh, 3
@@ -5649,11 +5654,12 @@ do_light_write:
 SELFMODIFY_add_wallights:
 ; bx is scalelight
 ; scalelight is pre-shifted 4 to save on the double sal every column.
-mov   al, byte ptr ds:[bx+01000h]         ; 8a 84 00 10 
+; todo xlat candidate?
+; mov bx, 01000h
+; xlat   byte ptr ss:[bx]  (al loaded previously)
+mov   al, byte ptr ss:[bx+01000h]         ; 8a 84 00 10 
 ;        set colormap offset to high byte
 ; todo: this
-mov   dx, cs
-mov   ds, dx
 
 mov   byte ptr ds:[SELFMODIFY_BSP_set_xlat_offset+2], al ; set colormaps bit for function
 
@@ -5725,6 +5731,7 @@ ELSE
    mov   ch, cl  ; dc_iscale hi 8 bits
 
 ; todo what if we inlined the function right here, instead of writing selfmodifies forward to selfmodifies...
+; then push return value. far jmp.
 
    jmp FastDiv3232FFFF_done    ; todo branch better 
 ENDIF
@@ -5733,47 +5740,49 @@ ENDIF
    ALIGN_MACRO
    ; do jmp. highest priority, overwrite previously written thing.
    seglooptexrepeat0_is_jmp:
-   ; NOTE1 next CS here
-   mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
+   ; ds already cs
+   mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
    jmp   just_do_draw0
    ALIGN_MACRO
    in_texture_bounds0:
    xchg  ax, dx
-   sub   al, byte ptr ds:[_segloopcachedbasecol]
-   mul   byte ptr ds:[_segloopheightvalcache]
+   sub   al, byte ptr ss:[_segloopcachedbasecol]
+   mul   byte ptr ss:[_segloopheightvalcache]
    jmp   add_base_segment_and_draw0
    ALIGN_MACRO
 
 
    SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET:
    non_repeating_texture0:
-   mov   cx, ss
-   mov   ds, cx
-   cmp   dx, word ptr ds:[_segloopnextlookup]
+   cmp   dx, word ptr ss:[_segloopnextlookup]
    jge   out_of_texture_bounds0
-   cmp   dx, word ptr ds:[_segloopprevlookup]
+   cmp   dx, word ptr ss:[_segloopprevlookup]
    jge   in_texture_bounds0
    out_of_texture_bounds0:
+   ; branch nonpush with moves etc. 
+   mov   ax, ss
+   mov   ds, ax
    push  bx
    xor   bx, bx
 
    SELFMODIFY_BSP_set_midtexture:
    mov   ax, 01000h
    call  R_GetColumnSegment_
-   pop   bx
-
    mov   dx, word ptr ds:[_segloopcachedsegment]
-   mov   word ptr cs:[SELFMODIFY_add_cached_segment0+1], dx
+   mov   bx, cs
+   mov   ds, bx
+   pop   bx
+   mov   word ptr ds:[SELFMODIFY_add_cached_segment0+1], dx
 
 
    ; todohigh get this dh and dl in same read?
-   mov   dh, byte ptr ds:[_seglooptexrepeat]
+   mov   dh, byte ptr ss:[_seglooptexrepeat]
    cmp   dh, 0
    je    seglooptexrepeat0_is_jmp
    ; modulo is seglooptexrepeat - 1
-   mov   dl, byte ptr ds:[_segloopheightvalcache]
-   mov   byte ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0],   0B8h   ; mov ax, xxxx
-   mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0+1], dx
+   mov   dl, byte ptr ss:[_segloopheightvalcache]
+   mov   byte ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo0],   0B8h   ; mov ax, xxxx
+   mov   word ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo0+1], dx
 
    jmp   just_do_draw0
    ALIGN_MACRO
@@ -6101,6 +6110,9 @@ public SELFMODIFY_BSP_R_DrawColumnPrep_ret
 ; the pop bx gets replaced with ret if bottom is calling.
 ; todo: the bottom caller pops the same stuff. pop here and modify a later instruction instead?
 
+mov   ax, cs
+mov   ds, ax
+
 
 pop   ax  ; rw_x  always want this back
 
@@ -6143,12 +6155,9 @@ SELFMODIFY_add_to_bottomfrac_lo_1:
 add   word ptr [bp - 03Eh], 01000h
 SELFMODIFY_add_to_bottomfrac_hi_1:
 adc   word ptr [bp - 03Ch], 01000h
-jmp   start_per_column_inner_loop ; 1ade jumped here
+jmp   start_per_column_inner_loop
 ALIGN_MACRO
 jump_to_finish_outer_loop:
-mov   dx, cs
-mov   ds, dx
-mov   dx, SC_DATA  ; cheat this out of the loop..
 jmp   finish_outer_loop
 
 
@@ -8251,7 +8260,7 @@ je        dont_mark_ceiling_TWOSIDED ; todo which default braunch?
 mov       ax, word ptr ds:[_ceilingplaneindex]
 les       cx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
 mov       dx, es
-les       bx, dword ptr ss:[_ceiltop] ; todo cs var
+les       bx, dword ptr ds:[_ceiltop] 
 
 mov       byte ptr ds:[SELFMODIFY_setisceil + 1], 1
 call      R_CheckPlane_ ; enters and exits with ds as cs
@@ -8264,7 +8273,7 @@ je        dont_mark_floor_TWOSIDED ; todo which default braunch?
 mov       ax, word ptr ds:[_floorplaneindex]
 les       cx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
 mov       dx, es
-les       bx, dword ptr ss:[_floortop] ; todo cs var
+les       bx, dword ptr ds:[_floortop]
 
 mov       byte ptr ds:[SELFMODIFY_setisceil + 1], 0
 call      R_CheckPlane_ ; enters and exits with ds as cs
@@ -8783,7 +8792,7 @@ dec   ax
 skip_bottom_floorclip_TWOSIDED:
 cmp   si, ax
 jg    markceiling_done_TWOSIDED
-les   bx, dword ptr ds:[_ceiltop]  ; todo cs var?
+les   bx, dword ptr cs:[_ceiltop]
 dec   ax
 mov   byte ptr es:[bx+di + vp_bottom_offset], al
 mov   ax, si						    		   ; dl is 0, si is < screensize (and thus under 255)
@@ -8835,7 +8844,7 @@ skip_top_ceilingclip_TWOSIDED:
 
 cmp   ax, cx
 jg    markfloor_done_TWOSIDED
-les   bx, dword ptr ds:[_floortop] ; todo move to cs
+les   bx, dword ptr cs:[_floortop]
 dec   ax
 mov   byte ptr es:[bx+di], al
 dec   cx
@@ -10115,7 +10124,7 @@ mov   bx, word ptr es:[bx+SUBSECTOR_OFFSET_IN_SECTORS + SUBSECTOR_T.ss_secnum] ;
 mov   word ptr cs:[_frontsector], bx
 
 
-cmp   byte ptr ds:[_visplanedirty], 0
+cmp   byte ptr cs:[_visplanedirty], 0
 jne   revert_visplane      ; todo branch test
 
 prepare_fields:
@@ -10127,9 +10136,9 @@ prepare_fields:
 
 xor   ax, ax
 
-mov   word ptr ds:[_ceilphyspage], ax  ; also writes _floorphyspage
-mov   word ptr ds:[_ceiltop], ax 
-mov   word ptr ds:[_floortop], ax
+mov   word ptr cs:[_ceilphyspage], ax  ; also writes _floorphyspage
+mov   word ptr cs:[_ceiltop], ax 
+mov   word ptr cs:[_floortop], ax
 
 
 ;  es:bx holds frontsector
@@ -14615,7 +14624,7 @@ mov       cx, 400
 
 rep stosw 
 
-cmp       byte ptr ds:[_visplanedirty], al   ; 0
+cmp       byte ptr cs:[_visplanedirty], al   ; 0
 jne       visplane_dirty_do_revert
 done_with_visplane_revert:
 call      dword ptr ds:[_R_DrawPlanesCall]
@@ -15091,7 +15100,7 @@ do_bsp_fixedcolormap_selfmodify:
 
 ; zero out the value in the walllights read which wont be updated again.
 ; It'll get a fixedcolormap value by default. We could alternately get rid of the loop that sets scalelightfixed to fixedcolormap and modify the instructions like above.
-mov   word ptr cs:[SELFMODIFY_add_wallights+2], OFFSET _scalelightfixed 
+mov   word ptr cs:[SELFMODIFY_add_wallights+3], OFFSET _scalelightfixed 
 mov   word ptr cs:[SELFMODIFY_add_wallights_TWOSIDED+2], OFFSET _scalelightfixed 
 
 mov   ax, ((SELFMODIFY_BSP_fixedcolormap_2_TARGET - SELFMODIFY_BSP_fixedcolormap_2_AFTER) SHL 8) + 0EBh
