@@ -4030,7 +4030,7 @@ got_texture:
    inc       ax
    mov       word ptr cs:[SELFMODIFY_add_texturemidheight_plus_one+1], ax
    push      word ptr es:[di]
-   pop       word ptr cs:[SELFMODIFY_setmidtexturetranslation_lookup+1]
+   pop       word ptr cs:[SELFMODIFY_BSP_set_midtexture+1]
 
    jmp       skip_midtex_selfmodify
 ALIGN_MACRO
@@ -4293,8 +4293,6 @@ mov       dx, word ptr [bp + 8] ; frontsector ceiling
 
 xor       ax, ax
 
-; zero out
-mov       byte ptr ds:[SELFMODIFY_check_for_any_tex+1], al
 
 
 ; make dx:ax our value
@@ -4541,18 +4539,11 @@ mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpo
 mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1+4], es
 mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_2+4], ax
 mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2+4], es
-SELFMODIFY_setmidtexturetranslation_lookup:
-mov       ax, 01000h
 
 ; write the high byte of the word.
 ; prev two bytes will be a jump or mov cx with the low byte
 
 
-
-mov       word ptr ds:[SELFMODIFY_BSP_set_midtexture+1], ax
-; are any bits set?
-or        al, ah
-or        byte ptr ds:[SELFMODIFY_check_for_any_tex+1], al
 
 PUSH_MACRO 0404h   ; bp - 032h ; push 
 
@@ -4638,21 +4629,9 @@ sub       sp, 8  ; bp - 044h.  make room for topstep/botstep. TODO swap their or
 ; DS STILL CS.
 
 
-; create segtextured value
-SELFMODIFY_check_for_any_tex:
-or   	  al, 0
 
-; set segtextured in rendersegloop
-
-
-
-jne       do_seg_textured_stuff
-mov       word ptr ds:[SELFMODIFY_BSP_get_segtextured], ((SELFMODIFY_BSP_get_segtextured_TARGET - SELFMODIFY_BSP_get_segtextured_AFTER) SHL 8) + 0EBh
-
-jmp       SHORT seg_textured_check_done
-ALIGN_MACRO
 do_seg_textured_stuff:
-mov       word ptr ds:[SELFMODIFY_BSP_get_segtextured], 0C089h ; nop
+
 SELFMODIFY_set_offsetangle:
 mov       dx, 01000h
 cmp       dx, FINE_ANG180_NOSHIFT ; 04000h
@@ -5444,8 +5423,9 @@ dec   ax
 skip_yh_floorclip:
 
 push  dx  ; store yl. todo keep this in a reg eventually
-push  ax  ; store yh - yl
-sub   dx, ax ; if >=0 then nothing drawn
+neg   dx
+add   dx, ax
+push  dx  ; store yh - yl
 
 
 ; ax is already yh
@@ -5482,12 +5462,8 @@ or    byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], 2 ; floor bit
 markfloor_done:
 
 test  dx, dx
-jge   jump_to_mid_no_pixels_to_draw ; wait until floors/ceils marked to early out.
+jl    jump_to_mid_no_pixels_to_draw ; wait until floors/ceils marked to early out.
 
-SELFMODIFY_BSP_get_segtextured:
-jmp SHORT    jump_to_seg_non_textured  ; or nop
-
-SELFMODIFY_BSP_get_segtextured_AFTER:
 
 seg_is_textured:
 
@@ -5520,16 +5496,12 @@ sbb   dx, 0
 jmp   finetangent_ready
 ALIGN_MACRO
 jump_to_mid_no_pixels_to_draw:
-add   sp, 4  ; undo pushes...
+add   sp, 4   ; undo pushes...
+xchg  ax, di  ; dc_yl into ax
 jmp   mid_no_pixels_to_draw
-ALIGN_MACRO
 
-SELFMODIFY_BSP_get_segtextured_TARGET:
-jump_to_seg_non_textured:
-mov   dx, cs
-mov   ds, dx
-xor   dx, dx
-jmp   seg_non_textured
+
+
 
 ALIGN_MACRO
 use_max_light:
@@ -6031,6 +6003,9 @@ pop   ds ; ds gets dc_source_segment
 
 seg_non_textured:
 public seg_non_textured  ; todo should this even be here? yh/yl wise?
+
+; todo ???
+
 ; si/di are yh/yl
 ;if (yh >= yl){
 
@@ -6047,8 +6022,8 @@ pop   bx
 pop   si
 
 push  di   ; dc_x  ; store for now...
-; si:bxa re dc_yl, dc_yh
-sub   bx, si
+
+; dc_yh already subbed dc_yl
 
 
 
@@ -6084,7 +6059,7 @@ mov   di, 01000h
 movs  word ptr es:[si], word ptr es:[di]
 
 ; note: bx is dc_x...
-mov     si, ax   ; restore si here..
+mov     si, ax   ; copy for lookup
 
 
 SELFMODIFY_BSP_detailshift2minus:
@@ -6104,8 +6079,6 @@ lea   di, [bx + di + 01000h]
 SELFMODIFY_BSP_set_dc_iscale_lo:
 mov   bx, dx        ; dc_iscale +0  todo juggle less
 SELFMODIFY_set_midtexturemid_hi:
-
-SELFMODIFY_BSP_set_dc_iscale_hi:
 mov   cl, 010h        ; dc_iscale +2 already in ch
 
 
@@ -6129,7 +6102,7 @@ public SELFMODIFY_BSP_R_DrawColumnPrep_ret
 ; todo: the bottom caller pops the same stuff. pop here and modify a later instruction instead?
 
 
-pop   di  ; rw_x  always want this back
+pop   ax  ; rw_x  always want this back
 
 
 ; this runs as a jmp for a top call, otherwise NOP for mid call
@@ -6139,9 +6112,9 @@ mov   bp, 01000h
 
 mid_no_pixels_to_draw:
 ; end of mid column draw
-; di is already _rw_x
+; ax is already _rw_x
 
-finished_inner_loop_iter:
+; finished_inner_loop_iter
 
 ;		for ( ; rw_x < rw_stopx ; 
 ;			rw_x		+= detailshiftitercount,
@@ -6149,9 +6122,8 @@ finished_inner_loop_iter:
 ;			bottomfrac  += bottomstepshift,
 ;			rw_scale.w  += rwscaleshift
 
-
 SELFMODIFY_add_detailshiftitercount:
-db  08dh, 085h, 00h, 00h   ;lea ax, [di + 01000h]
+db  083h, 0C0h, 00h   ;add ax, 00h  
 
 SELFMODIFY_cmp_ax_to_rw_stopx_2:
 cmp   ax, 01000h
@@ -6178,11 +6150,6 @@ mov   dx, cs
 mov   ds, dx
 mov   dx, SC_DATA  ; cheat this out of the loop..
 jmp   finish_outer_loop
-
-
-
-
-
 
 
 ALIGN_MACRO
