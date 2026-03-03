@@ -4239,6 +4239,7 @@ ALIGN_MACRO
 
    ; this can be done once per line as BP will not change.
    mov   word ptr ds:[SELFMODIFY_restore_bp_after_draw_mid+1], bp
+   mov   word ptr ds:[SELFMODIFY_restore_bp_after_drawcol_setup+1], bp  ; todo work this out.
    mov   byte ptr ds:[SELFMODIFY_skip_curseg_based_selfmodify], 0E9h  ; jmp here
 
 
@@ -4544,12 +4545,12 @@ mov       bl, ah
 mov       ax, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP]
 mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset+2], ax  ; per pixel byte count lookuo selector (mul 10/12)
 les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset+4], ax
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset+3], ax
 mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr+4], es
 les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 4]
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_1+4], ax
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_1+3], ax
 mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1+4], es
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_2+4], ax
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_2+3], ax
 mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2+4], es
 
 ; write the high byte of the word.
@@ -5430,10 +5431,10 @@ mov   ax, cx
 dec   ax
 skip_yh_floorclip:
 
-push  dx  ; store yl. todo keep this in a reg eventually
+push  di  ; store dc_x
+mov   bp, dx  ; store yl. todo keep this in a reg eventually. maybe bp
 neg   dx
 add   dx, ax
-push  dx  ; store yh - yl  ; note only a byte?
 
 
 ; ax is already yh
@@ -5468,9 +5469,36 @@ or    byte ptr ds:[SELFMODIFY_mark_planes_dirty+1], 2 ; floor bit
 
 
 markfloor_done:
-
-test  dx, dx
+public  markfloor_done
+; get jl check sort of for free, we need to sal anyway on fall thru
+sal   dx, 1        ; word offset of yh-yl 
 jl    jump_to_mid_no_pixels_to_draw ; wait until floors/ceils marked to early out.
+
+push  bp  ; push because ax needs this later.
+
+SELFMODIFY_set_top_lookup_offset:
+add   dx, 01000h   ; word lookup with offset
+
+
+lea   si,  [bp + _bsp_local_dc_yl_lookup_table - 2] ; word offset + lookup
+mov   si, word ptr ds:[si+bp]                       ; add * 80 lookup table value 
+
+
+mov   bx, di  ; copy dc_x
+
+SELFMODIFY_BSP_detailshift2minus:
+sar   bx, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
+sar   bx, 1
+
+
+SELFMODIFY_BSP_add_destview_offset:
+lea   ax, [bx + si + 01000h]
+
+push  ax  ; destview offset.          pop into di later.
+push  dx  ; jmp addr lookup/modifier. todo store in di?
+
+SELFMODIFY_restore_bp_after_drawcol_setup:  ; todo work this out of the function
+mov  bp,  01000h
 
 
 seg_is_textured:
@@ -5504,9 +5532,9 @@ sbb   dx, 0
 jmp   finetangent_ready
 ALIGN_MACRO
 jump_to_mid_no_pixels_to_draw:
-add   sp, 4   ; undo pushes...
+add   sp, 2   ; undo pushes...
 xchg  ax, di  ; dc_yl into ax
-jmp   mid_no_pixels_to_draw
+jmp   mid_no_pixels_to_draw  ; restore bp here
 
 
 
@@ -5631,7 +5659,7 @@ public just_do_draw0
 ; ds must be reset to cs returning here.
 
 
-push  ax  ; store dc_source_segment
+mov   di, ax  ; store dc_source_segment
 
 
 ; CX:BX rw_scale
@@ -5696,8 +5724,7 @@ IF COMPISA GE COMPILE_386
    mov   ch, dl  ; dc_iscale hi 8 bits
 
 
-
-; todo: 386 logic.
+; big todo: 386 logic all wrong..
    SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset:
    mov   word ptr ds:[SELFMODIFY_set_top_jump_immediate_location+1], 01000h
 
@@ -5710,18 +5737,25 @@ IF COMPISA GE COMPILE_386
 ELSE
 
    test cx, cx
-   jne main_3232_div
+   jne  main_3232_div
 
    fast_div_32_16_FFFF:
    cwd
 
    xchg dx, cx   ; cx was 0, dx is FFFF
-   div bx        ; after this dx stores remainder, ax stores q1
-; stretch draw off path
-   SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset:
-   mov   word ptr ds:[SELFMODIFY_set_top_jump_immediate_location+1], 01000h
+   div  bx        ; after this dx stores remainder, ax stores q1
 
-   xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
+   mov   si, COLFUNC_FILE_START_SEGMENT
+   mov   es, si
+   xchg  cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
+
+   pop   si     ; retrieve dc_yh - dc_yl jmp amount lookup
+   mov   si, word ptr es:[si]
+
+   ; stretch draw off path
+   SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset:
+   mov   word ptr es:[01000h], si
+
    div bx
    ; cx:ax is result 
    ; ch is known zero.
@@ -5872,9 +5906,14 @@ ELSE
    ; cx is zero already coming in from the first shift so cx:ax is already the result.
 
 ; stretch draw on path
+   mov  si, COLFUNC_FILE_START_SEGMENT
+   mov  es, si
+   pop   si     ; retrieve dc_yh - dc_yl jmp amount lookup
+   mov   si, word ptr es:[si]
 
    SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_1:
-   mov   word ptr ds:[SELFMODIFY_set_top_jump_immediate_location+1], 01000h
+   mov   word ptr es:[01000h], si
+
    SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1:
    mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset], 01000h
 
@@ -5921,8 +5960,15 @@ ELSE
 
    div   cx
 ; stretch draw on path
+   ; gross. should clean up masively once this is all in cs.
+   mov   bx, COLFUNC_FILE_START_SEGMENT
+   mov   ds, bx
+   pop   bx     ; retrieve dc_yh - dc_yl jmp amount lookup
+   mov   bx, word ptr ds:[bx]
    SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_2:
-   mov   word ptr ds:[SELFMODIFY_set_top_jump_immediate_location+1], 01000h
+   mov  word ptr ds:[01000h], bx
+   mov   bx, cs
+   mov   ds, bx
 
 
 
@@ -6000,99 +6046,25 @@ ENDIF
 
 
 FastDiv3232FFFF_done:
-; result is in CX:AX
-; do the bit shuffling etc when writing direct to drawcol.
+
+; cl:ax has 24 bits of result. 
+; dc_iscale loaded here..
+xchg  ax, bx        ; dc_iscale +0  into bx
 
 
-; dc_iscale_hi was written ealier if nonzero
+mov   ds, di  ; store dc_source_segment
 
-
-
-pop   ds ; ds gets dc_source_segment
-
-seg_non_textured:
-public seg_non_textured  ; todo should this even be here? yh/yl wise?
-
-; todo ???
-
-; si/di are yh/yl
-;if (yh >= yl){
-
-; di has rw_x
-; ds is cs.
-; ax is dc_iscale_lo
-; ch is already dc_iscale_hi
-
-
-
-; dx holds texturecolumn
-; get yl/yh in di/si
-pop   bx
-pop   si
-
-push  di   ; dc_x  ; store for now...
-
-; dc_yh already subbed dc_yl
-
-
-
-; remove once the relevent bits are in cs.
-mov   dx, COLFUNC_FILE_START_SEGMENT
-mov   es, dx
-
-xchg  ax, dx ; dx holds onto dc_iscale lo todo juggle less
-
-xchg  ax, si ; dc_yl in ax. ; toggle for even/odd ret label
-;mov  ax, si ; dc_yl in ax.   ; toggle for even/odd ret label
-
-
-
-
+pop   di   ; screen coord
+pop   ax   ; dc_yl
 
 
 R_DrawColumnPrep_:
 PUBLIC R_DrawColumnPrep_ 
 
-; bx is dc_yh
-; di is dc_x
-
-sal   bx, 1
-SELFMODIFY_set_top_lookup_offset:
-lea   si, [bx + 01000h]   ; word lookup with offset
-
-mov   bx, di  ; todo remove!
-
-
-SELFMODIFY_set_top_jump_immediate_location:
-mov   di, 01000h
-movs  word ptr es:[si], word ptr es:[di]
-
-; note: bx is dc_x...
-mov     si, ax   ; copy for lookup
-
-
-SELFMODIFY_BSP_detailshift2minus:
-sar   bx, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
-sar   bx, 1
-
-lea   bp,  [si + _bsp_local_dc_yl_lookup_table - 2]
-mov   di, word ptr cs:[si+bp]                   ; add * 80 lookup table value 
-
-
-SELFMODIFY_BSP_add_destview_offset:
-lea   di, [bx + di + 01000h]
-
-
-
-; dc_iscale loaded here..
-SELFMODIFY_BSP_set_dc_iscale_lo:
-mov   bx, dx        ; dc_iscale +0  todo juggle less
 SELFMODIFY_set_midtexturemid_hi:
 mov   cl, 010h        ; dc_iscale +2 already in ch
 
-
 SELFMODIFY_set_midtexturemid_lo:
-
 mov   si, 01000h
 SELFMODIFY_BSP_set_xlat_offset:
 mov   bp, 01000h          ; todo if drawcol preamble moves local then write this to bx there
@@ -6119,10 +6091,11 @@ pop   ax  ; rw_x  always want this back
 
 ; this runs as a jmp for a top call, otherwise NOP for mid call
 
+mid_no_pixels_to_draw:
+
 SELFMODIFY_restore_bp_after_draw_mid:
 mov   bp, 01000h
 
-mid_no_pixels_to_draw:
 ; end of mid column draw
 ; ax is already _rw_x
 
