@@ -5482,7 +5482,7 @@ or    byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], 2 ; floor bit
 markfloor_done:
 
 test  dx, dx
-jge   jump_to_mid_no_pixels_to_draw ; wait until floors/ceils marked
+jge   jump_to_mid_no_pixels_to_draw ; wait until floors/ceils marked to early out.
 
 SELFMODIFY_BSP_get_segtextured:
 jmp SHORT    jump_to_seg_non_textured  ; or nop
@@ -5523,12 +5523,22 @@ jump_to_mid_no_pixels_to_draw:
 add   sp, 4  ; undo pushes...
 jmp   mid_no_pixels_to_draw
 ALIGN_MACRO
+
 SELFMODIFY_BSP_get_segtextured_TARGET:
 jump_to_seg_non_textured:
 mov   dx, cs
 mov   ds, dx
 xor   dx, dx
 jmp   seg_non_textured
+
+ALIGN_MACRO
+use_max_light:
+; ugly 
+mov   bx, MAXLIGHTSCALE - 1
+jmp   do_light_write
+
+
+
 ALIGN_MACRO
 non_subtracted_finetangent:
 SHIFT_MACRO shl bx 2
@@ -5593,6 +5603,7 @@ SELFMODIFY_set_cx_rw_offset_lo:
 mov   cx, 01000h
 sub   cx, ax   ; cx is soon clobbered. so we only need AX?
 SELFMODIFY_set_ax_rw_offset_hi:
+public SELFMODIFY_set_ax_rw_offset_hi
 mov   ax, 01000h
 sbb   ax, dx
 
@@ -5604,61 +5615,78 @@ sbb   ax, dx
 ;		index = rw_scale.w >> LIGHTSCALESHIFT;
 ;	}
 
+xchg    ax, dx  ; dx has texturecolumn
+
+; inlined function. 
+R_GetSourceSegment0_START:
+PUBLIC  R_GetSourceSegment0_START
+; dont push bp. restore from sp instead.
+; bp is currently SP + 46
+
+; okay. we modify the first instruction in this argument. 
+ ; if no texture is yet cached for this rendersegloop, jmp to non_repeating_texture
+  ; if one is set, then the result of the predetermined value of seglooptexmodulo might it into a jump
+   ; if its a repeating texture  then we modify it to mov ah, segloopheightvalcache
+
+SELFMODIFY_BSP_check_seglooptexmodulo0:
+SELFMODIFY_BSP_set_seglooptexrepeat0:
+; 3 bytes. May become one of two jumps (two bytes) or mov ax, imm16 (three bytes)
+jmp    non_repeating_texture0
+
+SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER:
+SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER:
+xchg  ax, ax                    ; one byte nop placeholder. this gets the ah value in mov ax, xxxx (byte 3)
+and   dl, ah   ; ah has loopwidth-1 (modulo )
+mul   dl       ; al has heightval
+
+add_base_segment_and_draw0:  ; align target?
+SELFMODIFY_add_cached_segment0:
+add   ax, 01000h
+
+ENDP
+
+just_do_draw0:
+public just_do_draw0
+
+push  ax  ; store dc_source_segment
+
+
+
+
+
 ; CX:BX rw_scale
 ; todo bp/stack candidate
-les   bx, dword ptr [bp - 046h]
-mov   cx, es
-
-; store texturecolumn
-push  ax       ; later popped into dx
+mov   bx, word ptr [bp - 045h] ; get with shift 8
 
 
-cmp   cl, 3
+
+
+
+cmp   bh, 3
 jae   use_max_light
 do_lightscaleshift:
 
-mov   al, bh
-mov   ah, cl
-mov   si, ax
 
-SHIFT_MACRO shr si 4
+SHIFT_MACRO shr bx 4
 
-
-
-; todo investigate selfmodify lookup here, write ahead byte value directly ahead.... also dont need to push pop si.
-
+; todo: movsb possible here?
 ; tricky due to fixedcolormap??
-; alternatively just add si's value here to it.
+; alternatively just add bx's value here to it.
 
 do_light_write:
 SELFMODIFY_add_wallights:
-; si is scalelight
+; bx is scalelight
 ; scalelight is pre-shifted 4 to save on the double sal every column.
-mov   al, byte ptr ds:[si+01000h]         ; 8a 84 00 10 
+mov   al, byte ptr ds:[bx+01000h]         ; 8a 84 00 10 
 ;        set colormap offset to high byte
-
 ; todo: this
 mov   dx, cs
 mov   ds, dx
 
-mov   byte ptr ds:[SELFMODIFY_BSP_set_xlat_offset+2], al
+mov   byte ptr ds:[SELFMODIFY_BSP_set_xlat_offset+2], al ; set colormaps bit for function
 
-
-
-jmp   light_set
-ALIGN_MACRO
-
-
-; begin fast_div_32_16_FFFF
-
-
-use_max_light:
-; ugly 
-mov   si, MAXLIGHTSCALE - 1
-jmp   do_light_write
-ALIGN_MACRO
-light_set:
-public light_set
+les   bx, dword ptr [bp - 046h] ; for the div
+mov   cx, es
 
 ; INLINED FASTDIV3232FFF_ algo. only used here.
 
@@ -5724,7 +5752,61 @@ ELSE
    ; only write to dc_iscale_hi when nonzero.
    mov   byte ptr ds:[SELFMODIFY_BSP_set_dc_iscale_hi+2], cl
 
+; todo what if we inlined the function right here, instead of writing selfmodifies forward to selfmodifies...
+
    jmp FastDiv3232FFFF_done    ; todo branch better 
+ENDIF
+   
+   ; here for both IFDEF types. kind of ugly, find a better way!
+   ALIGN_MACRO
+   ; do jmp. highest priority, overwrite previously written thing.
+   seglooptexrepeat0_is_jmp:
+   ; NOTE1 next CS here
+   mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
+   jmp   just_do_draw0
+   ALIGN_MACRO
+   in_texture_bounds0:
+   xchg  ax, dx
+   sub   al, byte ptr ds:[_segloopcachedbasecol]
+   mul   byte ptr ds:[_segloopheightvalcache]
+   jmp   add_base_segment_and_draw0
+   ALIGN_MACRO
+
+
+   SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET:
+   non_repeating_texture0:
+   mov   cx, ss
+   mov   ds, cx
+   cmp   dx, word ptr ds:[_segloopnextlookup]
+   jge   out_of_texture_bounds0
+   cmp   dx, word ptr ds:[_segloopprevlookup]
+   jge   in_texture_bounds0
+   out_of_texture_bounds0:
+   push  bx
+   xor   bx, bx
+
+   SELFMODIFY_BSP_set_midtexture:
+   mov   ax, 01000h
+   call  R_GetColumnSegment_
+   pop   bx
+
+   mov   dx, word ptr ds:[_segloopcachedsegment]
+   mov   word ptr cs:[SELFMODIFY_add_cached_segment0+1], dx
+
+
+   ; todohigh get this dh and dl in same read?
+   mov   dh, byte ptr ds:[_seglooptexrepeat]
+   cmp   dh, 0
+   je    seglooptexrepeat0_is_jmp
+   ; modulo is seglooptexrepeat - 1
+   mov   dl, byte ptr ds:[_segloopheightvalcache]
+   mov   byte ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0],   0B8h   ; mov ax, xxxx
+   mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0+1], dx
+
+   jmp   just_do_draw0
+   ALIGN_MACRO
+IF COMPISA GE COMPILE_386
+ELSE
    ALIGN_MACRO
 
 
@@ -5912,51 +5994,6 @@ ELSE
 ENDIF
 
 
-; do jmp. highest priority, overwrite previously written thing.
-seglooptexrepeat0_is_jmp:
-; NOTE1 next CS here
-mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
-jmp   just_do_draw0
-ALIGN_MACRO
-in_texture_bounds0:
-xchg  ax, dx
-sub   al, byte ptr ds:[_segloopcachedbasecol]
-mul   byte ptr ds:[_segloopheightvalcache]
-jmp   add_base_segment_and_draw0
-ALIGN_MACRO
-
-
-SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET:
-non_repeating_texture0:
-mov   cx, ss
-mov   ds, cx
-cmp   dx, word ptr ds:[_segloopnextlookup]
-jge   out_of_texture_bounds0
-cmp   dx, word ptr ds:[_segloopprevlookup]
-jge   in_texture_bounds0
-out_of_texture_bounds0:
-push  bx
-xor   bx, bx
-
-SELFMODIFY_BSP_set_midtexture:
-mov   ax, 01000h
-call  R_GetColumnSegment_
-pop   bx
-
-mov   dx, word ptr ds:[_segloopcachedsegment]
-mov   word ptr cs:[SELFMODIFY_add_cached_segment0+1], dx
-
-
-; todohigh get this dh and dl in same read?
-mov   dh, byte ptr ds:[_seglooptexrepeat]
-cmp   dh, 0
-je    seglooptexrepeat0_is_jmp
-; modulo is seglooptexrepeat - 1
-mov   dl, byte ptr ds:[_segloopheightvalcache]
-mov   byte ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0],   0B8h   ; mov ax, xxxx
-mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0+1], dx
-
-jmp   just_do_draw0
 ALIGN_MACRO
 
 
@@ -5993,10 +6030,10 @@ mov   word ptr ds:[SELFMODIFY_BSP_set_dc_iscale_lo+1], ax
 
 
 
-; get texturecolumn     in dx
-pop   dx
+pop   ds ; ds gets dc_source_segment
 
 seg_non_textured:
+public seg_non_textured  ; todo should this even be here? yh/yl wise?
 ; si/di are yh/yl
 ;if (yh >= yl){
 
@@ -6005,59 +6042,16 @@ seg_non_textured:
 
 
 
-
 ; dx holds texturecolumn
 ; get yl/yh in di/si
 pop   bx
 pop   si
 
+push  di   ; dc_x
+; si:bxare dc_yl, dc_yh
 sub   bx, si
-;js    mid_no_pixels_to_draw
-
-; cx:di are dc_yl, dc_yh
-; dx holds texturecolumn
-
-; todo move self modify logic here before getsourcesegment.
 
 
-; inlined function. 
-R_GetSourceSegment0_START:
-PUBLIC  R_GetSourceSegment0_START
-; dont push bp. restore from sp instead.
-; bp is currently SP + 46
-
-push  di ; rw_x
-
-
-; okay. we modify the first instruction in this argument. 
- ; if no texture is yet cached for this rendersegloop, jmp to non_repeating_texture
-  ; if one is set, then the result of the predetermined value of seglooptexmodulo might it into a jump
-   ; if its a repeating texture  then we modify it to mov ah, segloopheightvalcache
-
-SELFMODIFY_BSP_check_seglooptexmodulo0:
-SELFMODIFY_BSP_set_seglooptexrepeat0:
-; 3 bytes. May become one of two jumps (two bytes) or mov ax, imm16 (three bytes)
-jmp    non_repeating_texture0
-
-SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER:
-SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER:
-xchg  ax, ax                    ; one byte nop placeholder. this gets the ah value in mov ax, xxxx (byte 3)
-and   dl, ah   ; ah has loopwidth-1 (modulo )
-mul   dl       ; al has heightval
-
-add_base_segment_and_draw0:  ; align target?
-SELFMODIFY_add_cached_segment0:
-add   ax, 01000h
-
-ENDP
-
-just_do_draw0:
-public just_do_draw0
-
-
-; ax carries _dc_source_segment
-
-mov   ds, ax ; set _dc_source_segment
 
 ; remove once the relevent bits are in cs.
 mov   ax, COLFUNC_FILE_START_SEGMENT
