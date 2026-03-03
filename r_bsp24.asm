@@ -5402,9 +5402,8 @@ jg    skip_yl_ceil_clip
 do_yl_ceil_clip:
 mov   ax, si
 skip_yl_ceil_clip:
-push  ax 				; store yl. todo keep this in a reg eventually
 
-mov   dl, 1          ; mark ceiling = true
+mov   dx, ax   ; dx has yl...
 
 
 ; ax is yl
@@ -5426,7 +5425,6 @@ dec   ax
 mov   byte ptr es:[bx+di], al
 or    byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], 1 ; ceiling bit
 
-SELFMODIFY_BSP_markceiling_1_TARGET:
 markceiling_done:
 
 ; yh = bottomfrac>>HEIGHTBITS;
@@ -5444,7 +5442,11 @@ do_yh_floorclip:
 mov   ax, cx
 dec   ax
 skip_yh_floorclip:
-push  ax  ; store yh
+
+push  dx  ; store yl. todo keep this in a reg eventually
+push  ax  ; store yh - yl
+sub   dx, ax ; if >=0 then nothing drawn
+
 
 ; ax is already yh
 ; cx is already  floor
@@ -5475,9 +5477,13 @@ mov   byte ptr es:[bx+di], al
 dec   cx
 mov   byte ptr es:[bx+di + vp_bottom_offset], cl
 or    byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], 2 ; floor bit
-SELFMODIFY_BSP_markfloor_1_TARGET:
+
 
 markfloor_done:
+
+test  dx, dx
+jge   jump_to_mid_no_pixels_to_draw ; wait until floors/ceils marked
+
 SELFMODIFY_BSP_get_segtextured:
 jmp SHORT    jump_to_seg_non_textured  ; or nop
 
@@ -5512,6 +5518,10 @@ neg   dx
 neg   ax
 sbb   dx, 0
 jmp   finetangent_ready
+ALIGN_MACRO
+jump_to_mid_no_pixels_to_draw:
+add   sp, 4  ; undo pushes...
+jmp   mid_no_pixels_to_draw
 ALIGN_MACRO
 SELFMODIFY_BSP_get_segtextured_TARGET:
 jump_to_seg_non_textured:
@@ -6001,10 +6011,8 @@ seg_non_textured:
 pop   bx
 pop   si
 
-
-; dc_yl and dc_yh are both still one too high, but (di - si) count calculation is unaffected.
 sub   bx, si
-jl    mid_no_pixels_to_draw
+;js    mid_no_pixels_to_draw
 
 ; cx:di are dc_yl, dc_yh
 ; dx holds texturecolumn
