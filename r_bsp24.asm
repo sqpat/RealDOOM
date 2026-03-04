@@ -4556,17 +4556,18 @@ mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_stretch], es
 ; prev two bytes will be a jump or mov cx with the low byte
 
 
+;PUSH_MACRO 0404h   ; bp - 032h ; push 
+sub       sp, 2     ; bp - 032h ; garbage, todo remove
 
-PUSH_MACRO 0404h   ; bp - 032h ; push 
 
 test      byte ptr [bp - 2], ML_DONTPEGBOTTOM
-jne       do_peg_bottom
+jne       do_peg_bottom  ; todo branch test.
 dont_peg_bottom:
-mov       ax, word ptr [bp - 028h]
+les       ax,  dword ptr [bp - 028h]
 mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1], ax
 mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo_stretch+1], ax
 
-mov       ax, word ptr [bp - 026h]
+mov       ax, es   ; word ptr [bp - 026h]
 ; ax has rw_midtexturemid+2
 jmp       done_with_bottom_peg
 ALIGN_MACRO
@@ -4750,23 +4751,8 @@ mov   word ptr ds:[SELFMODIFY_add_wallights+3], ax
 
 SELFMODIFY_BSP_fixedcolormap_3_TARGET:
 seg_textured_check_done:
-mov       ax, word ptr [bp + 6]
-SELFMODIFY_BSP_viewz_shortheight_4:
-cmp       ax, 01000h
-jl        not_above_viewplane
-mov       byte ptr [bp - 032h], 0
-not_above_viewplane:
-mov       ax, word ptr [bp + 8]
-SELFMODIFY_BSP_viewz_shortheight_3:
-cmp       ax, 01000h
-jg        not_below_viewplane
-mov       al, byte ptr [bp + 0Ah]
-SELFMODIFY_BSP_set_skyflatnum_4:
-cmp       al, 010h
-je        not_below_viewplane
-mov       byte ptr [bp - 031h], 0  ;markceiling
-; ok here
-not_below_viewplane:
+
+
 
 
 ;start inlined FixedMulBSPLocal_
@@ -4895,12 +4881,22 @@ mov       word ptr [bp - 03Eh], ax
 SELFMODIFY_sub__centeryfrac_4_hi_3: ; preincremented by 1 to pass into bp -028h
 mov       ax, 01000h ; ah known zero. dh too probably?
 sbb       ax, dx
-
-
 mov       word ptr [bp - 03Ch], ax
 
-cmp       byte ptr [bp - 031h], 0  ;markceiling
-je        dont_mark_ceiling ; todo which default braunch?
+; mid markceiling/markfloor are true unless this check passes.
+; based on this check, do R_CheckPlane and modify jmp vs fall thru in the 
+
+SELFMODIFY_BSP_set_skyflatnum_4:
+public SELFMODIFY_BSP_set_skyflatnum_4
+cmp       byte ptr [bp + 0Ah], 010h
+je        do_mark_ceiling
+
+SELFMODIFY_BSP_viewz_shortheight_3:
+cmp       word ptr [bp + 8], 01000h
+jng       skip_mark_ceiling
+
+do_mark_ceiling:
+; markceiling = true
 
 mov       ax, word ptr ds:[_ceilingplaneindex]
 les       cx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
@@ -4910,10 +4906,14 @@ les       bx, dword ptr ds:[_ceiltop]
 mov       byte ptr ds:[SELFMODIFY_setisceil + 1], 1
 call      R_CheckPlane_ ; enters and exits with ds as cs
 mov       word ptr ds:[_ceilingplaneindex], ax
-dont_mark_ceiling:
 
-cmp       byte ptr [bp - 032h], 0 ; markfloor
-je        dont_mark_floor ; todo which default braunch?
+done_marking_ceiling:
+
+
+SELFMODIFY_BSP_viewz_shortheight_4:
+cmp       word ptr [bp + 6], 01000h
+jnl       skip_mark_floor
+; markfloor = true
 mov       ax, word ptr ds:[_floorplaneindex]
 
 les       cx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
@@ -4923,10 +4923,29 @@ les       bx, dword ptr ds:[_floortop]
 mov       byte ptr ds:[SELFMODIFY_setisceil + 1], 0
 call      R_CheckPlane_ ; enters and exits with ds as cs
 mov       word ptr ds:[_floorplaneindex], ax
-dont_mark_floor:
+
+done_marking_floor:
+
 cmp       word ptr [bp - 022h], 0
-jge       at_least_one_column_to_draw
-jmp       R_RenderSegLoop_exit
+jge       at_least_one_column_to_draw ; todo work this out. also does this ever happen???
+jmp       R_RenderSegLoop_exit   
+
+ALIGN_MACRO
+skip_mark_ceiling:
+; rare case - we get to skip a couple things up ahead in the function.
+mov       word ptr ds:[SELFMODIFY_toggle_skip_ceilingclip_mid], 0EBh + ((SELFMODIFY_toggle_skip_ceilingclip_mid_TARGET - SELFMODIFY_toggle_skip_ceilingclip_mid_AFTER) SHL 8)
+mov       word ptr ds:[SELFMODIFY_BSP_markceiling_1],           0EBh + ((SELFMODIFY_BSP_markceiling_1_TARGET - SELFMODIFY_BSP_markceiling_1_AFTER) SHL 8)
+jmp       done_marking_ceiling
+ALIGN_MACRO
+skip_mark_floor:
+; rare case - we get to skip a couple things up ahead in the function.
+mov       word ptr ds:[SELFMODIFY_toggle_skip_floorclip_mid], 0EBh + ((SELFMODIFY_toggle_skip_floorclip_mid_TARGET - SELFMODIFY_toggle_skip_floorclip_mid_AFTER) SHL 8)
+mov       word ptr ds:[SELFMODIFY_BSP_markfloor_1],           0EBh + ((SELFMODIFY_BSP_markfloor_1_TARGET - SELFMODIFY_BSP_markfloor_1_AFTER) SHL 8)
+
+
+jmp       done_marking_floor
+
+
 ALIGN_MACRO
 at_least_one_column_to_draw:
 
@@ -5385,6 +5404,8 @@ inc   si
 ; increased by one to allow 0 to viewheight+1 range instead of ff to viewheight range.
 ; when written to visplanes and such this must be considered
 
+
+; TODO add directly into here.
 mov   ax, word ptr [bp - 040h]  ; topfrac hi
 
 
@@ -5394,8 +5415,11 @@ do_yl_ceil_clip:
 mov   ax, si
 skip_yl_ceil_clip:
 
+
 mov   dx, ax   ; dx has yl...
 
+SELFMODIFY_BSP_markceiling_1:
+SELFMODIFY_BSP_markceiling_1_AFTER = SELFMODIFY_BSP_markceiling_1 + 2
 
 ; ax is yl
 ; si = top = ceilingclip[rw_x]+1;
@@ -5416,11 +5440,16 @@ dec   ax
 mov   byte ptr es:[bx+di], al
 or    byte ptr ds:[SELFMODIFY_mark_planes_dirty+1], 1 ; ceiling bit
 
+SELFMODIFY_BSP_markceiling_1_TARGET:
+
 markceiling_done:
 
 ; yh = bottomfrac>>HEIGHTBITS;
 
+; bp - 03Ch  ; bottomfrac hi  preshifted 4
+; bp - 03Eh  ; bottomfrac lo  preshifted 4
 
+; TODO add directly into here.
 mov   ax, word ptr [bp - 03Ch] ; already incremented by 1.
 ; ah 0 because si < 255
 
@@ -5442,6 +5471,8 @@ add   dx, ax
 
 ; ax is already yh
 ; cx is already  floor
+SELFMODIFY_BSP_markfloor_1:
+SELFMODIFY_BSP_markfloor_1_AFTER = SELFMODIFY_BSP_markfloor_1 + 2
 inc   ax			; top = yh + 1...     OR  je    markfloor_done
 dec   cx			; bottom = floorclip[rw_x]-1;
 
@@ -5470,6 +5501,7 @@ dec   cx
 mov   byte ptr es:[bx+di + vp_bottom_offset], cl
 or    byte ptr ds:[SELFMODIFY_mark_planes_dirty+1], 2 ; floor bit
 
+SELFMODIFY_BSP_markfloor_1_TARGET:
 
 markfloor_done:
 public  markfloor_done
@@ -5669,7 +5701,8 @@ xchg  ax, di  ; store dc_source_segment. todo: go direct to ds.
 
 
 ; CX:BX rw_scale
-; todo bp/stack candidate
+; TODO add directly into les below, and construct this from 8 bit shift.
+
 mov   bx, word ptr [bp - 045h] ; get with shift 8
 
 
@@ -5861,11 +5894,17 @@ R_RenderSegLoop_exit:
 
 mov   ax, cs
 mov   es, ax
+mov   ds, ax
 
+; ds is cs.
 
 mov   si, word ptr [bp - 01Eh]  ; startx
 mov   dx, word ptr [bp - 022h]  ; stopx - startx
-mov   cx, dx
+
+
+SELFMODIFY_toggle_skip_ceilingclip_mid:
+mov   cx, dx   ; MAY BE SELF MODIFIED INTO JMP (E8) skip_ceiling_clip
+SELFMODIFY_toggle_skip_ceilingclip_mid_AFTER:
 
 
 ; mark all floors viewheight(+1)
@@ -5879,16 +5918,22 @@ rep   stosw
 adc   cx, cx
 rep   stosb
 
+done_skipping_markceiling_copy_mid:
+
+
+
+SELFMODIFY_toggle_skip_floorclip_mid:
+mov   cx, dx   ; MAY BE SELF MODIFIED INTO JMP (E8) skip_floor_clip
+SELFMODIFY_toggle_skip_floorclip_mid_AFTER:
+
 ; mark all floors -1 (+1)
 lea   di, [OFFSET_FLOORCLIP + si]
 xor   ax, ax
 
-mov   cx, dx
 shr   cx, 1
 rep   stosw
 adc   cx, cx
 rep   stosb
-
 
 
 ; hardcoded!   
@@ -5896,12 +5941,16 @@ rep   stosb
    ;		ds_p->sprtopclip = screenheightarray;
    ;		ds_p->sprbottomclip = negonearray;
 
+done_skipping_markfloor_copy_mid:
 
 ; clean up the self modified code of renderseg loop. 
-mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0], 0E9h
-mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER)
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0], 0E9h
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER)
 
 ; single wall mid texture has no clipping done...
+
+mov       ax, ss
+mov       ds, ax
 
 add       word ptr ds:[_ds_p], (SIZE DRAWSEG_T)
 
@@ -5915,6 +5964,21 @@ jne       mark_planes_dirty ; common case is fall thru.  ; todo is this always t
 ; pops on outside
 
 ret       
+ALIGN_MACRO
+SELFMODIFY_toggle_skip_ceilingclip_mid_TARGET:
+skip_ceiling_clip:
+mov       word ptr ds:[SELFMODIFY_toggle_skip_ceilingclip_mid], 0D189h ; mov cx, dx
+mov       word ptr ds:[SELFMODIFY_BSP_markceiling_1],           0468Bh ; mov ax, word ptr [bp - xx];
+
+
+jmp       done_skipping_markceiling_copy_mid
+ALIGN_MACRO
+SELFMODIFY_toggle_skip_floorclip_mid_TARGET:
+skip_floor_clip:
+mov       word ptr ds:[SELFMODIFY_toggle_skip_floorclip_mid], 0D189h ; mov cx, dx
+mov       word ptr ds:[SELFMODIFY_BSP_markfloor_1],           04940h ; inc ax; dec ax
+
+jmp       done_skipping_markfloor_copy_mid
 
 ALIGN_MACRO
 mark_planes_dirty:
@@ -7303,7 +7367,7 @@ SELFMODIFY_get_backsector_floorheight:
 cmp       word ptr [bp + 8], 01000h
 jge       not_closed_door 
 closed_door_detected:
-mov       ax, 0404h
+mov       ax, 0404h  ; todo can this happen???
 not_closed_door:
 ; finally write this just once.
 push      ax  ; bp - 032h   markfloor/ceil for bottom path
@@ -8081,13 +8145,13 @@ mov   word ptr ds:[SELFMODIFY_add_wallights_TWOSIDED+2], ax
 
 SELFMODIFY_BSP_fixedcolormap_3_TARGET_TWOSIDED:
 seg_textured_check_done_TWOSIDED:
-mov       ax, word ptr [bp + 6]
+les       ax, dword ptr [bp + 6]
 SELFMODIFY_BSP_viewz_shortheight_4_TWOSIDED:
 cmp       ax, 01000h
 jl        not_above_viewplane_TWOSIDED
 mov       byte ptr [bp - 032h], 0
 not_above_viewplane_TWOSIDED:
-mov       ax, word ptr [bp + 8]
+mov       ax, es ; word ptr [bp + 8]
 SELFMODIFY_BSP_viewz_shortheight_3_TWOSIDED:
 cmp       ax, 01000h
 jg        not_below_viewplane_TWOSIDED
@@ -14980,7 +15044,7 @@ mov      byte ptr ds:[_lastskyflatnum], al
 mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_1+1], al
 mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_2+2], al
 mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_3+2], al
-mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_4+1], al
+mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_4+3], al
 skip_skyflat_selfmodifies_this_frame:
 
 ; VIEWZ LO
@@ -15028,8 +15092,8 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewz_13_3_2+2], ax
 
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_1+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_2+2], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_3+1], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_4+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_3+3], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_4+3], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_5+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_3_TWOSIDED+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_4_TWOSIDED+1], ax
