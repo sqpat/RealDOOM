@@ -4545,13 +4545,12 @@ mov       bl, ah
 mov       ax, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP]
 mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset+2], ax  ; per pixel byte count lookuo selector (mul 10/12)
 les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset+3], ax
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr+4], es
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset+1], ax
+mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_nostretch], es
 les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 4]
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_1+3], ax
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1+4], es
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_2+3], ax
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2+4], es
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset+1], ax
+mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_stretch], es
+
 
 ; write the high byte of the word.
 ; prev two bytes will be a jump or mov cx with the low byte
@@ -4565,6 +4564,8 @@ jne       do_peg_bottom
 dont_peg_bottom:
 mov       ax, word ptr [bp - 028h]
 mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1], ax
+mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo_stretch+1], ax
+
 mov       ax, word ptr [bp - 026h]
 ; ax has rw_midtexturemid+2
 jmp       done_with_bottom_peg
@@ -4579,6 +4580,7 @@ sub       ax, 01000h
 xor       cx, cx
 SHIFT32_MACRO_RIGHT ax cx 3
 mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1], cx
+mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo_stretch+1], ax
 
 
 ; add textureheight+1
@@ -4595,6 +4597,7 @@ SELFMODIFY_BSP_siderenderrowoffset_1:
 add       al, 010h
 
 mov       byte ptr ds:[SELFMODIFY_set_midtexturemid_hi+1], al
+mov       byte ptr ds:[SELFMODIFY_set_midtexturemid_hi_stretch+1], al
 
 
 
@@ -5662,7 +5665,7 @@ public just_do_draw0
 ; ds must be reset to cs returning here.
 
 
-mov   di, ax  ; store dc_source_segment
+xchg  ax, di  ; store dc_source_segment. todo: go direct to ds.
 
 
 ; CX:BX rw_scale
@@ -5685,19 +5688,17 @@ do_light_write:
 SELFMODIFY_add_wallights:
 ; bx is scalelight
 ; scalelight is pre-shifted 4 to save on the double sal every column.
-; todo xlat candidate?
-; mov bx, 01000h
-; xlat   byte ptr ss:[bx]  (al loaded previously)
-mov   al, byte ptr ss:[bx+01000h]         ; 8a 84 00 10 
-;        set colormap offset to high byte
-; todo: this
 
-mov   byte ptr ds:[SELFMODIFY_BSP_set_xlat_offset+2], al ; set colormaps bit for function
+mov   dh, byte ptr ss:[bx+01000h]         ; 8a 84 00 10 
+xor   dl, dl
+;        set colormap offset to high byte
 
 les   bx, dword ptr [bp - 046h] ; for the div
 mov   cx, es
 
-; INLINED FASTDIV3232FFF_ algo. only used here.
+mov   bp, dx
+
+; INLINED FASTDIV3232FFF_ 
 
 ; set ax:dx ffffffff
 
@@ -5731,11 +5732,7 @@ IF COMPISA GE COMPILE_386
 ; big todo: 386 logic all wrong..
 ; big todo: 386 logic all wrong..
 ; big todo: 386 logic all wrong..
-   SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset:
-   mov   word ptr ds:[SELFMODIFY_set_top_jump_immediate_location+1], 01000h
 
-   SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr:
-   mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset], 01000h
 
    jmp FastDiv3232FFFF_done 
    ALIGN_MACRO
@@ -5751,37 +5748,37 @@ ELSE
    xchg dx, cx   ; cx was 0, dx is FFFF
    div  bx        ; after this dx stores remainder, ax stores q1
 
-   SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr:
-   mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset], 01000h
-
    mov   si, COLFUNC_FILE_START_SEGMENT
-   mov   es, si
-   xchg  cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
+   mov   ds, si
+   xchg  cx, ax   ; q1 to cx, ffff to ax  so div remainder:ffff 
+
+   mov   ch, cl  ; dc_iscale hi 8 bits
+   SELFMODIFY_set_midtexturemid_hi:
+   mov   cl, 010h        ; dc_iscale +2 already in ch
 
    pop   si     ; retrieve dc_yh - dc_yl jmp amount lookup
-   mov   si, word ptr es:[si]
 
+   div   bx
+   ; cx:ax is result 
+   FastDiv3232FFFF_done:
+
+   xchg  ax, bx        ; dc_iscale +0  into bx
+;   mov   bx, ax        ; dc_iscale +0  into bx
+
+   lodsw
    ; stretch draw off path
    SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset:
-   mov   word ptr es:[01000h], si
-
-   div bx
-   ; cx:ax is result 
-
-   ; only write to dc_iscale_hi when nonzero.
-   mov   ch, cl  ; dc_iscale hi 8 bits
+   mov   word ptr ds:[01000h], ax
+   
 
 ; todo what if we inlined the function right here, instead of writing selfmodifies forward to selfmodifies...
 ; then push return value. far jmp.
 ENDIF
 
-   FastDiv3232FFFF_done:
    
    ; cl:ax has 24 bits of result. 
    ; dc_iscale loaded here..
 
-;   xchg  ax, bx        ; dc_iscale +0  into bx
-   mov   bx, ax        ; dc_iscale +0  into bx
 
    mov   ds, di  ; store dc_source_segment
    pop   di   ; screen coord
@@ -5790,21 +5787,18 @@ ENDIF
    R_DrawColumnPrep_:
    PUBLIC R_DrawColumnPrep_ 
 
-   SELFMODIFY_set_midtexturemid_hi:
-   mov   cl, 010h        ; dc_iscale +2 already in ch
    SELFMODIFY_set_midtexturemid_lo:
    mov   si, 01000h
-   SELFMODIFY_BSP_set_xlat_offset:
-   mov   bp, 01000h          ; todo if drawcol preamble moves local then write this to bx there
+
+   ; bp passed in
    ; pass in xlat offset for bx via bp
 
-   ; far JUMP. pass in return addr
-   SELFMODIFY_BSP_R_DrawColumnPrep_call:
+
    db 09Ah
-   SELFMODIFY_COLFUNC_set_func_offset:
+   SELFMODIFY_COLFUNC_set_func_offset_nostretch:
    dw DRAWCOL_OFFSET_BSP, COLORMAPS_SEGMENT
 
-
+; keep this even aligned.
 
 SELFMODIFY_BSP_R_DrawColumnPrep_ret:
 public SELFMODIFY_BSP_R_DrawColumnPrep_ret
@@ -5817,9 +5811,6 @@ mov   ds, ax
 
 
 pop   ax  ; rw_x  always want this back
-
-
-; this runs as a jmp for a top call, otherwise NOP for mid call
 
 mid_no_pixels_to_draw:
 
@@ -5947,56 +5938,54 @@ mov      byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], ah ;zero
 ret       
 ENDP
 
-   ; here for both IFDEF types. kind of ugly, find a better way!
-   ALIGN_MACRO
-   ; do jmp. highest priority, overwrite previously written thing.
-   seglooptexrepeat0_is_jmp:
-   ; ds already cs
-   mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0], 0E9h
-   mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER)
-   jmp   just_do_draw0
-   ALIGN_MACRO
-   in_texture_bounds0:
-   xchg  ax, dx
-   sub   al, byte ptr ss:[_segloopcachedbasecol]
-   mul   byte ptr ss:[_segloopheightvalcache]
-   jmp   add_base_segment_and_draw0
-   ALIGN_MACRO
+ALIGN_MACRO
+seglooptexrepeat0_is_jmp:
+; ds already cs
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0], 0E9h
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER)
+jmp   just_do_draw0
+ALIGN_MACRO
+in_texture_bounds0:
+xchg  ax, dx
+sub   al, byte ptr ss:[_segloopcachedbasecol]
+mul   byte ptr ss:[_segloopheightvalcache]
+jmp   add_base_segment_and_draw0
+ALIGN_MACRO
 
 
-   SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET:
-   non_repeating_texture0:
-   cmp   dx, word ptr ss:[_segloopnextlookup]
-   jge   out_of_texture_bounds0
-   cmp   dx, word ptr ss:[_segloopprevlookup]
-   jge   in_texture_bounds0
-   out_of_texture_bounds0:
-   ; branch nonpush with moves etc. 
-   mov   ax, ss
-   mov   ds, ax
-   push  bx
-   xor   bx, bx
+SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET:
+non_repeating_texture0:
+cmp   dx, word ptr ss:[_segloopnextlookup]
+jge   out_of_texture_bounds0
+cmp   dx, word ptr ss:[_segloopprevlookup]
+jge   in_texture_bounds0
+out_of_texture_bounds0:
+; branch nonpush with moves etc. 
+mov   ax, ss
+mov   ds, ax
+push  bx
+xor   bx, bx
 
-   SELFMODIFY_BSP_set_midtexture:
-   mov   ax, 01000h
-   call  R_GetColumnSegment_
-   mov   dx, word ptr ds:[_segloopcachedsegment]
-   mov   bx, cs
-   mov   ds, bx
-   pop   bx
-   mov   word ptr ds:[SELFMODIFY_add_cached_segment0+1], dx
+SELFMODIFY_BSP_set_midtexture:
+mov   ax, 01000h
+call  R_GetColumnSegment_
+mov   dx, word ptr ds:[_segloopcachedsegment]
+mov   bx, cs
+mov   ds, bx
+pop   bx
+mov   word ptr ds:[SELFMODIFY_add_cached_segment0+1], dx
 
 
-   ; todohigh get this dh and dl in same read?
-   mov   dh, byte ptr ss:[_seglooptexrepeat]
-   cmp   dh, 0
-   je    seglooptexrepeat0_is_jmp
-   ; modulo is seglooptexrepeat - 1
-   mov   dl, byte ptr ss:[_segloopheightvalcache]
-   mov   byte ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo0],   0B8h   ; mov ax, xxxx
-   mov   word ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo0+1], dx
+; todohigh get this dh and dl in same read?
+mov   dh, byte ptr ss:[_seglooptexrepeat]
+cmp   dh, 0
+je    seglooptexrepeat0_is_jmp
+; modulo is seglooptexrepeat - 1
+mov   dl, byte ptr ss:[_segloopheightvalcache]
+mov   byte ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo0],   0B8h   ; mov ax, xxxx
+mov   word ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo0+1], dx
 
-   jmp   just_do_draw0
+jmp   just_do_draw0
 
 
 IF COMPISA GE COMPILE_386
@@ -6084,19 +6073,49 @@ ELSE
 
    ; cx is zero already coming in from the first shift so cx:ax is already the result.
 
-; stretch draw on path
-   mov  si, COLFUNC_FILE_START_SEGMENT
-   mov  es, si
+   
+   FastDiv3232FFFF_done_stretch:
+
+   xchg  ax, bx        ; dc_iscale +0  into bx
+
+   mov   si, COLFUNC_FILE_START_SEGMENT
+   mov   ds, si
    pop   si     ; retrieve dc_yh - dc_yl jmp amount lookup
-   mov   si, word ptr es:[si]
+   lodsw
+   SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset:
+   mov  word ptr ds:[01000h], ax
 
-   SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_1:
-   mov   word ptr es:[01000h], si
+   mov   ds, di  ; store dc_source_segment
+   pop   di   ; screen coord
+   pop   ax   ; dc_yl
 
-   SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1:
-   mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset], 01000h
+   R_DrawColumnPrep_Stretch_:
+   PUBLIC R_DrawColumnPrep_Stretch_
 
-   jmp FastDiv3232FFFF_done  
+   SELFMODIFY_set_midtexturemid_hi_stretch:
+   mov   cl, 010h        ; dc_iscale +2 already in ch
+   SELFMODIFY_set_midtexturemid_lo_stretch:
+   mov   si, 01000h
+
+   ; bp already set.
+
+   ; far JUMP. pass in return addr below
+
+   push cs   
+IF COMPISA GE COMPILE_186
+   push OFFSET SELFMODIFY_BSP_R_DrawColumnPrep_ret
+ELSE
+   mov  dx, OFFSET SELFMODIFY_BSP_R_DrawColumnPrep_ret
+   push dx
+ENDIF
+   
+   ; far JUMP. pass in return addr above
+
+   db 0EAh
+   SELFMODIFY_COLFUNC_set_func_offset_stretch:
+   dw DRAWCOL_OFFSET_BSP, COLORMAPS_SEGMENT
+   
+
    ALIGN_MACRO
 
    do_full_div_ffff:
@@ -6140,14 +6159,6 @@ ELSE
    div   cx
 ; stretch draw on path
    ; gross. should clean up masively once this is all in cs.
-   mov   bx, COLFUNC_FILE_START_SEGMENT
-   mov   ds, bx
-   pop   bx     ; retrieve dc_yh - dc_yl jmp amount lookup
-   mov   bx, word ptr ds:[bx]
-   SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_2:
-   mov  word ptr ds:[01000h], bx
-   mov   bx, cs
-   mov   ds, bx
 
 
 
@@ -6161,8 +6172,6 @@ ELSE
 
    mul   si   						; DX:AX = c1
 ; stretch draw on path
-   SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2:
-   mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset], 01000h
 
 
    ; c1 hi = dx, c2 lo = es
@@ -6204,7 +6213,7 @@ ELSE
    mov  ax, 01000h
 
    sub  ax, bx ; modify qhat by measured amount
-   jmp  FastDiv3232FFFF_done
+   jmp  FastDiv3232FFFF_done_stretch
 
 
 
