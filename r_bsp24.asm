@@ -5545,6 +5545,9 @@ use_max_light:
 mov   bx, MAXLIGHTSCALE - 1
 jmp   do_light_write
 
+ALIGN_MACRO
+jmp_to_main_3232_div:
+jmp   main_3232_div
 
 
 ALIGN_MACRO
@@ -5638,7 +5641,7 @@ PUBLIC  R_GetSourceSegment0_START
 
 SELFMODIFY_BSP_check_seglooptexmodulo0:
 SELFMODIFY_BSP_set_seglooptexrepeat0:
-; 3 bytes. May become one of two jumps (two bytes) or mov ax, imm16 (three bytes)
+; 3 bytes. May become one of two jumps (three bytes) or mov ax, imm16 (three bytes)
 jmp    non_repeating_texture0
 
 SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER:
@@ -5724,6 +5727,9 @@ IF COMPISA GE COMPILE_386
    mov   ch, dl  ; dc_iscale hi 8 bits
 
 
+
+; big todo: 386 logic all wrong..
+; big todo: 386 logic all wrong..
 ; big todo: 386 logic all wrong..
    SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset:
    mov   word ptr ds:[SELFMODIFY_set_top_jump_immediate_location+1], 01000h
@@ -5737,13 +5743,16 @@ IF COMPISA GE COMPILE_386
 ELSE
 
    test cx, cx
-   jne  main_3232_div
+   jne  jmp_to_main_3232_div
 
    fast_div_32_16_FFFF:
    cwd
 
    xchg dx, cx   ; cx was 0, dx is FFFF
    div  bx        ; after this dx stores remainder, ax stores q1
+
+   SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr:
+   mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset], 01000h
 
    mov   si, COLFUNC_FILE_START_SEGMENT
    mov   es, si
@@ -5758,24 +5767,193 @@ ELSE
 
    div bx
    ; cx:ax is result 
-   ; ch is known zero.
-   SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr:
-   mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset], 01000h
+
    ; only write to dc_iscale_hi when nonzero.
    mov   ch, cl  ; dc_iscale hi 8 bits
 
 ; todo what if we inlined the function right here, instead of writing selfmodifies forward to selfmodifies...
 ; then push return value. far jmp.
-
-   jmp FastDiv3232FFFF_done    ; todo branch better 
 ENDIF
+
+   FastDiv3232FFFF_done:
    
+   ; cl:ax has 24 bits of result. 
+   ; dc_iscale loaded here..
+
+;   xchg  ax, bx        ; dc_iscale +0  into bx
+   mov   bx, ax        ; dc_iscale +0  into bx
+
+   mov   ds, di  ; store dc_source_segment
+   pop   di   ; screen coord
+   pop   ax   ; dc_yl
+
+   R_DrawColumnPrep_:
+   PUBLIC R_DrawColumnPrep_ 
+
+   SELFMODIFY_set_midtexturemid_hi:
+   mov   cl, 010h        ; dc_iscale +2 already in ch
+   SELFMODIFY_set_midtexturemid_lo:
+   mov   si, 01000h
+   SELFMODIFY_BSP_set_xlat_offset:
+   mov   bp, 01000h          ; todo if drawcol preamble moves local then write this to bx there
+   ; pass in xlat offset for bx via bp
+
+   ; far JUMP. pass in return addr
+   SELFMODIFY_BSP_R_DrawColumnPrep_call:
+   db 09Ah
+   SELFMODIFY_COLFUNC_set_func_offset:
+   dw DRAWCOL_OFFSET_BSP, COLORMAPS_SEGMENT
+
+
+
+SELFMODIFY_BSP_R_DrawColumnPrep_ret:
+public SELFMODIFY_BSP_R_DrawColumnPrep_ret
+
+; the pop bx gets replaced with ret if bottom is calling.
+; todo: the bottom caller pops the same stuff. pop here and modify a later instruction instead?
+
+mov   ax, cs
+mov   ds, ax
+
+
+pop   ax  ; rw_x  always want this back
+
+
+; this runs as a jmp for a top call, otherwise NOP for mid call
+
+mid_no_pixels_to_draw:
+
+SELFMODIFY_restore_bp_after_draw_mid:
+mov   bp, 01000h
+
+; end of mid column draw
+; ax is already _rw_x
+
+; finished_inner_loop_iter
+
+;		for ( ; rw_x < rw_stopx ; 
+;			rw_x		+= detailshiftitercount,
+;			topfrac 	+= topstepshift,
+;			bottomfrac  += bottomstepshift,
+;			rw_scale.w  += rwscaleshift
+
+SELFMODIFY_add_detailshiftitercount:
+db  083h, 0C0h, 00h   ;add ax, 00h  
+
+SELFMODIFY_cmp_ax_to_rw_stopx_2:
+cmp   ax, 01000h
+jge   jump_to_finish_outer_loop  ; exit before adding the other loop vars.
+
+; todo popa etc
+
+SELFMODIFY_add_to_rwscale_lo_1:
+add   word ptr [bp - 046h], 01000h
+SELFMODIFY_add_to_rwscale_hi_1:
+adc   word ptr [bp - 044h], 01000h
+SELFMODIFY_add_to_topfrac_lo_1:
+add   word ptr [bp - 042h], 01000h
+SELFMODIFY_add_to_topfrac_hi_1:
+adc   word ptr [bp - 040h], 01000h
+SELFMODIFY_add_to_bottomfrac_lo_1:
+add   word ptr [bp - 03Eh], 01000h
+SELFMODIFY_add_to_bottomfrac_hi_1:
+adc   word ptr [bp - 03Ch], 01000h
+jmp   start_per_column_inner_loop
+ALIGN_MACRO
+jump_to_finish_outer_loop:
+jmp   finish_outer_loop
+
+
+ALIGN_MACRO
+
+R_RenderSegLoop_exit:
+
+mov   ax, cs
+mov   es, ax
+
+
+mov   si, word ptr [bp - 01Eh]  ; startx
+mov   dx, word ptr [bp - 022h]  ; stopx - startx
+mov   cx, dx
+
+
+; mark all floors viewheight(+1)
+
+lea   di, [OFFSET_CEILINGCLIP + si]
+shr   cx, 1  ; count inw ords
+
+SELFMODIFY_BSP_setviewheight_1:
+mov   ax, 01000h
+rep   stosw
+adc   cx, cx
+rep   stosb
+
+; mark all floors -1 (+1)
+lea   di, [OFFSET_FLOORCLIP + si]
+xor   ax, ax
+
+mov   cx, dx
+shr   cx, 1
+rep   stosw
+adc   cx, cx
+rep   stosb
+
+
+
+; hardcoded!   
+   ; SIL_BOTH, markfloor = true, markceil = true
+   ;		ds_p->sprtopclip = screenheightarray;
+   ;		ds_p->sprbottomclip = negonearray;
+
+
+; clean up the self modified code of renderseg loop. 
+mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0], 0E9h
+mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER)
+
+; single wall mid texture has no clipping done...
+
+add       word ptr ds:[_ds_p], (SIZE DRAWSEG_T)
+
+add       sp, STOREWALLRANGE_INNER_STACK_SIZE     ; add back fixed SP
+SELFMODIFY_mark_planes_dirty:
+public SELFMODIFY_mark_planes_dirty 
+db  0B8h, 00h, 00h   ;mov ax, 0  ; modify the first byte with bit flags . 00 for ah.
+test      al, 3   
+jne       mark_planes_dirty ; common case is fall thru.  ; todo is this always true for mid?
+
+; pops on outside
+
+ret       
+
+ALIGN_MACRO
+mark_planes_dirty:
+public mark_planes_dirty
+mov      di, _visplaneheaders + VISPLANEHEADER_T.visplaneheader_dirty
+test     al, 1
+je       mark_ceil_dirty  ; if 3 tested true and 1 didnt, it must be the other one, skip the check.
+mov      bx,  word ptr cs:[_ceilingplaneindex]
+mov      byte ptr ds:[bx+di], al ; nonzero
+test     al, 2
+je       dont_mark_floor_dirty
+mark_ceil_dirty:  
+mov      bx,  word ptr cs:[_floorplaneindex]
+mov      byte ptr ds:[bx+di], al ; nonzero
+
+dont_mark_floor_dirty:
+mov      byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], ah ;zero
+
+; pops on outside
+
+ret       
+ENDP
+
    ; here for both IFDEF types. kind of ugly, find a better way!
    ALIGN_MACRO
    ; do jmp. highest priority, overwrite previously written thing.
    seglooptexrepeat0_is_jmp:
    ; ds already cs
-   mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
+   mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0], 0E9h
+   mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER)
    jmp   just_do_draw0
    ALIGN_MACRO
    in_texture_bounds0:
@@ -5819,7 +5997,8 @@ ENDIF
    mov   word ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo0+1], dx
 
    jmp   just_do_draw0
-   ALIGN_MACRO
+
+
 IF COMPISA GE COMPILE_386
 ELSE
    ALIGN_MACRO
@@ -6017,17 +6196,6 @@ ELSE
    jmp finalize_div
    ALIGN_MACRO
 
-
-ENDIF
-
-
-ALIGN_MACRO
-
-
-; continue fast_div_32_16_FFFF
-
-IF COMPISA GE COMPILE_386
-ELSE
    
    q1_ready_3232:
    mov  bx, 0   ; no sub case
@@ -6036,185 +6204,11 @@ ELSE
    mov  ax, 01000h
 
    sub  ax, bx ; modify qhat by measured amount
-
+   jmp  FastDiv3232FFFF_done
 
 
 
 ENDIF
-
-; end fast_div_32_16_FFFF
-
-
-FastDiv3232FFFF_done:
-
-; cl:ax has 24 bits of result. 
-; dc_iscale loaded here..
-xchg  ax, bx        ; dc_iscale +0  into bx
-
-
-mov   ds, di  ; store dc_source_segment
-
-pop   di   ; screen coord
-pop   ax   ; dc_yl
-
-
-R_DrawColumnPrep_:
-PUBLIC R_DrawColumnPrep_ 
-
-SELFMODIFY_set_midtexturemid_hi:
-mov   cl, 010h        ; dc_iscale +2 already in ch
-
-SELFMODIFY_set_midtexturemid_lo:
-mov   si, 01000h
-SELFMODIFY_BSP_set_xlat_offset:
-mov   bp, 01000h          ; todo if drawcol preamble moves local then write this to bx there
-; pass in xlat offset for bx via bp
-
-SELFMODIFY_BSP_R_DrawColumnPrep_call:
-db 09Ah
-SELFMODIFY_COLFUNC_set_func_offset:
-dw DRAWCOL_OFFSET_BSP, COLORMAPS_SEGMENT
-
-
-SELFMODIFY_BSP_R_DrawColumnPrep_ret:
-public SELFMODIFY_BSP_R_DrawColumnPrep_ret
-
-; the pop bx gets replaced with ret if bottom is calling.
-; todo: the bottom caller pops the same stuff. pop here and modify a later instruction instead?
-
-mov   ax, cs
-mov   ds, ax
-
-
-pop   ax  ; rw_x  always want this back
-
-
-; this runs as a jmp for a top call, otherwise NOP for mid call
-
-mid_no_pixels_to_draw:
-
-SELFMODIFY_restore_bp_after_draw_mid:
-mov   bp, 01000h
-
-; end of mid column draw
-; ax is already _rw_x
-
-; finished_inner_loop_iter
-
-;		for ( ; rw_x < rw_stopx ; 
-;			rw_x		+= detailshiftitercount,
-;			topfrac 	+= topstepshift,
-;			bottomfrac  += bottomstepshift,
-;			rw_scale.w  += rwscaleshift
-
-SELFMODIFY_add_detailshiftitercount:
-db  083h, 0C0h, 00h   ;add ax, 00h  
-
-SELFMODIFY_cmp_ax_to_rw_stopx_2:
-cmp   ax, 01000h
-jge   jump_to_finish_outer_loop  ; exit before adding the other loop vars.
-
-; todo popa etc
-
-SELFMODIFY_add_to_rwscale_lo_1:
-add   word ptr [bp - 046h], 01000h
-SELFMODIFY_add_to_rwscale_hi_1:
-adc   word ptr [bp - 044h], 01000h
-SELFMODIFY_add_to_topfrac_lo_1:
-add   word ptr [bp - 042h], 01000h
-SELFMODIFY_add_to_topfrac_hi_1:
-adc   word ptr [bp - 040h], 01000h
-SELFMODIFY_add_to_bottomfrac_lo_1:
-add   word ptr [bp - 03Eh], 01000h
-SELFMODIFY_add_to_bottomfrac_hi_1:
-adc   word ptr [bp - 03Ch], 01000h
-jmp   start_per_column_inner_loop
-ALIGN_MACRO
-jump_to_finish_outer_loop:
-jmp   finish_outer_loop
-
-
-ALIGN_MACRO
-
-R_RenderSegLoop_exit:
-
-mov   ax, cs
-mov   es, ax
-
-
-mov   si, word ptr [bp - 01Eh]  ; startx
-mov   dx, word ptr [bp - 022h]  ; stopx - startx
-mov   cx, dx
-
-
-; mark all floors viewheight(+1)
-
-lea   di, [OFFSET_CEILINGCLIP + si]
-shr   cx, 1  ; count inw ords
-
-SELFMODIFY_BSP_setviewheight_1:
-mov   ax, 01000h
-rep   stosw
-adc   cx, cx
-rep   stosb
-
-; mark all floors -1 (+1)
-lea   di, [OFFSET_FLOORCLIP + si]
-xor   ax, ax
-
-mov   cx, dx
-shr   cx, 1
-rep   stosw
-adc   cx, cx
-rep   stosb
-
-
-
-; hardcoded!   
-   ; SIL_BOTH, markfloor = true, markceil = true
-   ;		ds_p->sprtopclip = screenheightarray;
-   ;		ds_p->sprbottomclip = negonearray;
-
-
-; clean up the self modified code of renderseg loop. 
-mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0], ((SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER) SHL 8) + 0EBh
-
-; single wall mid texture has no clipping done...
-
-add       word ptr ds:[_ds_p], (SIZE DRAWSEG_T)
-
-add       sp, STOREWALLRANGE_INNER_STACK_SIZE     ; add back fixed SP
-SELFMODIFY_mark_planes_dirty:
-public SELFMODIFY_mark_planes_dirty 
-db  0B8h, 00h, 00h   ;mov ax, 0  ; modify the first byte with bit flags . 00 for ah.
-test      al, 3   
-jne       mark_planes_dirty ; common case is fall thru.  ; todo is this always true for mid?
-
-; pops on outside
-
-ret       
-
-ALIGN_MACRO
-mark_planes_dirty:
-public mark_planes_dirty
-mov      di, _visplaneheaders + VISPLANEHEADER_T.visplaneheader_dirty
-test     al, 1
-je       mark_ceil_dirty  ; if 3 tested true and 1 didnt, it must be the other one, skip the check.
-mov      bx,  word ptr cs:[_ceilingplaneindex]
-mov      byte ptr ds:[bx+di], al ; nonzero
-test     al, 2
-je       dont_mark_floor_dirty
-mark_ceil_dirty:  
-mov      bx,  word ptr cs:[_floorplaneindex]
-mov      byte ptr ds:[bx+di], al ; nonzero
-
-dont_mark_floor_dirty:
-mov      byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], ah ;zero
-
-; pops on outside
-
-ret       
-ENDP
 
 ;   END INLINED R_RenderSegLoop_
 ;   END INLINED R_RenderSegLoop_
