@@ -5019,7 +5019,7 @@ sbb       dx, 0
 mov       word ptr ds:[SELFMODIFY_sub_topstep_lo+3], ax
 mov       word ptr ds:[SELFMODIFY_add_topstep_lo+3], ax
 xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_sub_topstep_hi+3], ax
+mov       word ptr ds:[SELFMODIFY_sub_topstep_hi+4], ax
 mov       word ptr ds:[SELFMODIFY_add_topstep_hi+3], ax
 
 
@@ -5035,8 +5035,8 @@ rcl       ax, 1
 
 finished_shifting_topstep:
 
-mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_1+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_2+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_1+4], ax
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_2+4], ax
 xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_1+3], ax
 mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_2+3], ax
@@ -5192,7 +5192,7 @@ sbb   word ptr [bp - 036h], 01000h
 SELFMODIFY_sub_topstep_lo:
 sub   word ptr [bp - 034h], 01000h
 SELFMODIFY_sub_topstep_hi:
-sbb   word ptr [bp - 032h], 01000h
+sbb   word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], 01000h
 SELFMODIFY_sub_rwscale_lo:
 sub   word ptr [bp - 030h], 01000h
 SELFMODIFY_sub_rwscale_hi:
@@ -5231,7 +5231,11 @@ out   dx, al
 
 push  word ptr [bp - 02Eh]  ; bp - 03Ah
 push  word ptr [bp - 030h]  ; bp - 03Ch
-push  word ptr [bp - 032h]  ; bp - 03Eh
+;push  word ptr [bp - 032h]  ; bp - 03Eh
+mov   ax, word ptr [bp - 032h]
+push  ax
+mov   word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], ax
+
 push  word ptr [bp - 034h]  ; bp - 040h
 push  word ptr [bp - 036h]  ; bp - 042h
 push  word ptr [bp - 038h]  ; bp - 044h
@@ -5276,7 +5280,9 @@ lea   di, [bp - 038h]
 movsw ; 6 is faster than rep case.
 movsw
 movsw
-movsw
+lodsw
+mov   word ptr cs:[SELFMODIFY_set_topfrac_hi_mid+1], ax
+stosw   ; todo okay to remove? 
 movsw
 movsw
 mov   di, cs
@@ -5390,7 +5396,7 @@ adc   word ptr [bp - 036h], 01000h
 SELFMODIFY_add_to_topfrac_lo_2:
 add   word ptr [bp - 034h], 01000h
 SELFMODIFY_add_to_topfrac_hi_2:
-adc   word ptr [bp - 032h], 01000h
+adc   word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], 01000h
 SELFMODIFY_add_to_rwscale_lo_2:
 add   word ptr [bp - 030h], 01000h
 SELFMODIFY_add_to_rwscale_hi_2:
@@ -5440,8 +5446,8 @@ inc   si
 ; when written to visplanes and such this must be considered
 
 
-; TODO add directly into here.
-mov   ax, word ptr [bp - 032h]  ; topfrac hi
+SELFMODIFY_set_topfrac_hi_mid:
+mov   ax, 01000h  ; bp - 032h being updated into here
 
 
 cmp   ax, si  ; ax can be negative even if si is not? but maybe ah is always ff?
@@ -5916,6 +5922,8 @@ cmp   ax, 01000h
 jge   jump_to_finish_outer_loop  ; exit before adding the other loop vars.
 
 ; todo popa etc
+; per pixel add.
+; this happens a lot.. is there a way to optimize this any better?
 
 SELFMODIFY_add_to_bottomfrac_lo_1:
 add   word ptr [bp - 038h], 01000h
@@ -5924,7 +5932,7 @@ adc   word ptr [bp - 036h], 01000h
 SELFMODIFY_add_to_topfrac_lo_1:
 add   word ptr [bp - 034h], 01000h
 SELFMODIFY_add_to_topfrac_hi_1:
-adc   word ptr [bp - 032h], 01000h
+adc   word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], 01000h
 SELFMODIFY_add_to_rwscale_lo_1:
 add   word ptr [bp - 030h], 01000h
 SELFMODIFY_add_to_rwscale_hi_1:
