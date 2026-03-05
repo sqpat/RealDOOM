@@ -4960,8 +4960,6 @@ ASSUME DS:R_BSP_24_TEXT
 
 SELFMODIFY_get_rwscalestep_lo_1:
 mov       ax, 01000h
-SELFMODIFY_get_rwscalestep_hi_1:
-mov       dx, 01000h
 les       bx, dword ptr [bp - 028h]
 mov       cx, es
 
@@ -4969,6 +4967,8 @@ mov       cx, es
 
 
 IF COMPISA GE COMPILE_386
+   SELFMODIFY_get_rwscalestep_hi_1:
+   mov       dx, 01000h
 
    shl  ecx, 16
    mov  cx, bx
@@ -4981,8 +4981,9 @@ IF COMPISA GE COMPILE_386
 
 
 ELSE
+   SELFMODIFY_get_rwscalestep_hi_1:
+   mov  si, 01000h
 
-   MOV  SI, DX
    MOV  ES, AX
    MUL  BX
    MOV  DI, DX
@@ -5047,12 +5048,12 @@ les       bx, dword ptr [bp - 02Ch]
 mov       cx, es
 SELFMODIFY_get_rwscalestep_lo_2:
 mov       ax, 01000h
-SELFMODIFY_get_rwscalestep_hi_2:
-mov       dx, 01000h
 
 ;start inlined FixedMulBSPLocal_
 
 IF COMPISA GE COMPILE_386
+  SELFMODIFY_get_rwscalestep_hi_2:
+  mov       dx, 01000h
 
    shl  ecx, 16
    mov  cx, bx
@@ -5066,7 +5067,9 @@ IF COMPISA GE COMPILE_386
 
 ELSE
 
-   MOV  SI, DX
+   SELFMODIFY_get_rwscalestep_hi_2:
+   mov       si, 01000h
+
    MOV  ES, AX
    MUL  BX
    MOV  DI, DX
@@ -5560,7 +5563,7 @@ mov   bx, FINETANGENTINNER_SEGMENT
 mov   es, bx
 cmp   ax, FINE_TANGENT_MAX
 mov   bx, ax
-jb    non_subtracted_finetangent
+jb    non_subtracted_finetangent   ; todo branch test.
 ; mirrored values in lookup table
 neg   bx
 add   bx, 4095
@@ -5589,6 +5592,8 @@ jmp   do_light_write
 ALIGN_MACRO
 jmp_to_main_3232_div:
 jmp   main_3232_div
+
+; todo: make this faster.
 
 
 ALIGN_MACRO
