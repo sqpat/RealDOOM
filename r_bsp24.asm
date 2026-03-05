@@ -5206,15 +5206,17 @@ loop   sub_base4diff
 skip_sub_base4diff:
 public skip_sub_base4diff
 
-;	base_rw_scale   = rw_scale.w;
-;	base_topfrac    = topfrac;
-;	base_bottomfrac = bottomfrac;
-;	base_pixlow     = pixlow;
-;	base_pixhigh    = pixhigh;
+; initial loop iter stuff.
+xor   bx, bx ; xoffset is 0
+inc   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1]
 
-; todo: fall thru, popa bp - 038h stuff from stack. Reorder of stack items probably necessary.
+mov   dx, SC_DATA
+SELFMODIFY_detailshift_first_port:
+mov   al, 010h
+out   dx, al
 
-; popa the values.
+; todo skip these pushes if potato?
+
 
 ; sp is bp - 038h
 ; maybe lea sp, bp - 038h once popa above.
@@ -5223,7 +5225,9 @@ public skip_sub_base4diff
 ; offsets change a bit though.
 
 ; set the base values from which we will recover per outer loop iter.
-; todo: skip if potato
+
+; sup sp, 12, di/si setters + 6x movsw is maybe barely slower? 
+; i think if we had to do 10 like in mid top case but not here.
 
 push  word ptr [bp - 02Eh]  ; bp - 03Ah
 push  word ptr [bp - 030h]  ; bp - 03Ch
@@ -5232,7 +5236,10 @@ push  word ptr [bp - 034h]  ; bp - 040h
 push  word ptr [bp - 036h]  ; bp - 042h
 push  word ptr [bp - 038h]  ; bp - 044h
 
-mov   al, 0 ; xoffset is 0
+
+jmp   skip_first_iter_setup ; jump into first iter.
+
+ALIGN_MACRO
 
 continue_outer_rendersegloop:
 
@@ -5272,9 +5279,13 @@ movsw
 movsw
 movsw
 movsw
-
 mov   di, cs
 mov   ds, di  ; todo how necessary is ds as cs used much anymore??
+
+skip_first_iter_setup:
+
+
+; TODO move the starting bp values into CS to remove remaining bp yses here.
 
 xchg  ax, bx	; get xoffset  back
 SELFMODIFY_add_rw_x_base4_to_ax:
@@ -5286,7 +5297,9 @@ jl    pre_increment_values
 
 SELFMODIFY_cmp_ax_to_rw_stopx_3:
 cmp   ax, 01000h
-jl    start_per_column_inner_loop  ; 026hish out of range
+jl    start_per_column_inner_loop
+
+; todo move this up, change default branches
 
 finish_outer_loop:
 public finish_outer_loop
@@ -5311,7 +5324,6 @@ cmp   al, 0
 
 jge   exit_rendersegloop ; exit before adding the other loop vars.
 
-; todo skip if potato?
 ; even if constants were on stack (which is possible), popa not faster
 
 SELFMODIFY_add_rwscale_lo:
@@ -14758,6 +14770,11 @@ mov      cl, al
 add      ah, OFFSET _quality_port_lookup
 mov      byte ptr ds:[SELFMODIFY_detailshift_plus1_1+3], ah
 mov      byte ptr ds:[SELFMODIFY_detailshift_plus1_1_TWOSIDED+3], ah
+
+mov      ah, byte ptr ss:[_quality_port_lookup]
+mov      byte ptr ds:[SELFMODIFY_detailshift_first_port+1], ah
+
+
 
 ; for 16 bit shifts, modify jump to jump 4 for 0 shifts, 2 for 1 shifts, 0 for 0 shifts.
 
