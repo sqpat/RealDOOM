@@ -4889,11 +4889,8 @@ mov       word ptr [bp - 03Ch], ax
 SELFMODIFY_BSP_set_skyflatnum_4:
 public SELFMODIFY_BSP_set_skyflatnum_4
 cmp       byte ptr [bp + 0Ah], 010h
-je        do_mark_ceiling
+jne       continue_mark_ceiling_check
 
-SELFMODIFY_BSP_viewz_shortheight_3:
-cmp       word ptr [bp + 8], 01000h
-jng       skip_mark_ceiling
 
 do_mark_ceiling:
 ; markceiling = true
@@ -4912,7 +4909,31 @@ done_marking_ceiling:
 
 SELFMODIFY_BSP_viewz_shortheight_4:
 cmp       word ptr [bp + 6], 01000h
-jnl       skip_mark_floor
+jl        do_mark_floor  ; lets force the common jump here - it has to happen somewhere and this makes space for other branches and jmp targets.
+
+skip_mark_floor:
+; rare case - we get to skip a couple things up ahead in the function.
+mov       word ptr ds:[SELFMODIFY_toggle_skip_floorclip_mid], 0EBh + ((SELFMODIFY_toggle_skip_floorclip_mid_TARGET - SELFMODIFY_toggle_skip_floorclip_mid_AFTER) SHL 8)
+mov       word ptr ds:[SELFMODIFY_BSP_markfloor_1],           0EBh + ((SELFMODIFY_BSP_markfloor_1_TARGET - SELFMODIFY_BSP_markfloor_1_AFTER) SHL 8)
+cmp       word ptr [bp - 022h], 0
+jge       at_least_one_column_to_draw ; todo work this out. also does this ever happen???
+jump_to_R_RenderSegLoop_exit:
+jmp       R_RenderSegLoop_exit   
+
+ALIGN_MACRO
+continue_mark_ceiling_check:
+SELFMODIFY_BSP_viewz_shortheight_3:
+cmp       word ptr [bp + 8], 01000h
+jg        do_mark_ceiling
+skip_mark_ceiling:
+; rare case - we get to skip a couple things up ahead in the function.
+mov       word ptr ds:[SELFMODIFY_toggle_skip_ceilingclip_mid], 0EBh + ((SELFMODIFY_toggle_skip_ceilingclip_mid_TARGET - SELFMODIFY_toggle_skip_ceilingclip_mid_AFTER) SHL 8)
+mov       word ptr ds:[SELFMODIFY_BSP_markceiling_1],           0EBh + ((SELFMODIFY_BSP_markceiling_1_TARGET - SELFMODIFY_BSP_markceiling_1_AFTER) SHL 8)
+jmp       done_marking_ceiling
+
+
+ALIGN_MACRO
+do_mark_floor:
 ; markfloor = true
 mov       ax, word ptr ds:[_floorplaneindex]
 
@@ -4927,26 +4948,8 @@ mov       word ptr ds:[_floorplaneindex], ax
 done_marking_floor:
 
 cmp       word ptr [bp - 022h], 0
-jge       at_least_one_column_to_draw ; todo work this out. also does this ever happen???
-jmp       R_RenderSegLoop_exit   
+jnge      jump_to_R_RenderSegLoop_exit
 
-ALIGN_MACRO
-skip_mark_ceiling:
-; rare case - we get to skip a couple things up ahead in the function.
-mov       word ptr ds:[SELFMODIFY_toggle_skip_ceilingclip_mid], 0EBh + ((SELFMODIFY_toggle_skip_ceilingclip_mid_TARGET - SELFMODIFY_toggle_skip_ceilingclip_mid_AFTER) SHL 8)
-mov       word ptr ds:[SELFMODIFY_BSP_markceiling_1],           0EBh + ((SELFMODIFY_BSP_markceiling_1_TARGET - SELFMODIFY_BSP_markceiling_1_AFTER) SHL 8)
-jmp       done_marking_ceiling
-ALIGN_MACRO
-skip_mark_floor:
-; rare case - we get to skip a couple things up ahead in the function.
-mov       word ptr ds:[SELFMODIFY_toggle_skip_floorclip_mid], 0EBh + ((SELFMODIFY_toggle_skip_floorclip_mid_TARGET - SELFMODIFY_toggle_skip_floorclip_mid_AFTER) SHL 8)
-mov       word ptr ds:[SELFMODIFY_BSP_markfloor_1],           0EBh + ((SELFMODIFY_BSP_markfloor_1_TARGET - SELFMODIFY_BSP_markfloor_1_AFTER) SHL 8)
-
-
-jmp       done_marking_floor
-
-
-ALIGN_MACRO
 at_least_one_column_to_draw:
 
 
