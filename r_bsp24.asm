@@ -3802,7 +3802,7 @@ jmp       done_adjusting_row_offset
 
 STOREWALLRANGE_INNER_STACK_SIZE = 02Ah
 STOREWALLRANGE_FULL_STACK_SIZE = 046h
-STOREWALLRANGE_INNER_STACK_SIZE_MID = 01Ch
+STOREWALLRANGE_INNER_STACK_SIZE_MID = 028h
 
 ALIGN_MACRO  ; adding these back seems to lower bench scores
 PROC   R_StoreWallRangeNoBackSector_ NEAR ; needs another look and reconciliation with outer stack frames.
@@ -3863,7 +3863,7 @@ PUBLIC R_StoreWallRangeNoBackSector_
 ; bp - 036h  ; bottomfrac hi  preshifted 4
 ; bp - 038h  ; bottomfrac lo  preshifted 4
 
-; TODO: loop copies!
+; loop copies 
 
 ; bp - 03Ah  ; rw_scale hi loop copy
 ; bp - 03Ch  ; rw_scale lo loop copy
@@ -4486,7 +4486,7 @@ ASSUME DS:R_BSP_24_TEXT
 
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_1+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_2+1], ax
-mov       word ptr ds:[SELFMODIFY_add_rwscale_lo+4], ax
+mov       word ptr ds:[SELFMODIFY_add_rwscale_lo+3], ax
 mov       word ptr ds:[SELFMODIFY_sub_rwscale_lo+3], ax
 
 xchg      ax, dx
@@ -4494,7 +4494,7 @@ mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_1+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_2+1], ax
 
 mov       word ptr ds:[SELFMODIFY_sub_rwscale_hi+3], ax
-mov       word ptr ds:[SELFMODIFY_add_rwscale_hi+4], ax
+mov       word ptr ds:[SELFMODIFY_add_rwscale_hi+3], ax
 
 
 
@@ -5017,10 +5017,10 @@ sbb       dx, 0
 
 
 mov       word ptr ds:[SELFMODIFY_sub_topstep_lo+3], ax
-mov       word ptr ds:[SELFMODIFY_add_topstep_lo+4], ax
+mov       word ptr ds:[SELFMODIFY_add_topstep_lo+3], ax
 xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_sub_topstep_hi+3], ax
-mov       word ptr ds:[SELFMODIFY_add_topstep_hi+4], ax
+mov       word ptr ds:[SELFMODIFY_add_topstep_hi+3], ax
 
 
 
@@ -5104,10 +5104,10 @@ sbb       dx, 0
 
 
 mov       word ptr ds:[SELFMODIFY_sub_botstep_lo+3], ax
-mov       word ptr ds:[SELFMODIFY_add_botstep_lo+4], ax
+mov       word ptr ds:[SELFMODIFY_add_botstep_lo+3], ax
 xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_sub_botstep_hi+3], ax
-mov       word ptr ds:[SELFMODIFY_add_botstep_hi+4], ax
+mov       word ptr ds:[SELFMODIFY_add_botstep_hi+3], ax
 
 SELFMODIFY_BSP_detailshift_3:
 shl       dx, 1
@@ -5204,6 +5204,7 @@ sbb   word ptr [bp - 02Eh], 01000h
 
 loop   sub_base4diff
 skip_sub_base4diff:
+public skip_sub_base4diff
 
 ;	base_rw_scale   = rw_scale.w;
 ;	base_topfrac    = topfrac;
@@ -5215,26 +5216,23 @@ skip_sub_base4diff:
 
 ; popa the values.
 
-cli
-; idea:
-; sti/cli. use lodsw on ds and ss:bp + byte relative offset with ss as cs.
-; might save a handful of bytes.
+; sp is bp - 038h
+; maybe lea sp, bp - 038h once popa above.
 
-; bp - 038h... etc holds the base constants to restore from.
-; SELFMODIFY_set_botfrac_lo etc hold the loop values.
+; todo: cli popa sub sp 16 pusha sti should be faster.
+; offsets change a bit though.
 
-; todo: just push these values again, rather than pop into cs
-; todo: cli popa sub sp 16 pusha sti
+; set the base values from which we will recover per outer loop iter.
+; todo: skip if potato
 
-pop   word ptr ds:[SELFMODIFY_set_botfrac_lo+1]
-pop   word ptr ds:[SELFMODIFY_set_botfrac_hi+1]
-pop   word ptr ds:[SELFMODIFY_set_topfrac_lo+1]
-pop   word ptr ds:[SELFMODIFY_set_topfrac_hi+1]
-pop   word ptr ds:[SELFMODIFY_set_rw_scale_lo+1]
-pop   word ptr ds:[SELFMODIFY_set_rw_scale_hi+1]
+push  word ptr [bp - 02Eh]  ; bp - 03Ah
+push  word ptr [bp - 030h]  ; bp - 03Ch
+push  word ptr [bp - 032h]  ; bp - 03Eh
+push  word ptr [bp - 034h]  ; bp - 040h
+push  word ptr [bp - 036h]  ; bp - 042h
+push  word ptr [bp - 038h]  ; bp - 044h
+
 mov   al, 0 ; xoffset is 0
-sub   sp, 12
-sti
 
 continue_outer_rendersegloop:
 
@@ -5252,6 +5250,7 @@ out   dx, al
 
 ; pre inner loop.
 ; reset everything to base;
+; todo: skip if potato
 
 
 ; topfrac    = base_topfrac;
@@ -5262,28 +5261,20 @@ out   dx, al
 
 mov   di, ss
 mov   es, di
-lea   di, [bp - 038h]  ; todo use sp
-; todo: this can run and do nothing (place values back that were already there)
-; detect this case!
-SELFMODIFY_set_botfrac_lo:
-mov   ax, 01000h
-stosw
-SELFMODIFY_set_botfrac_hi:
-mov   ax, 01000h
-stosw
-SELFMODIFY_set_topfrac_lo:
-mov   ax, 01000h
-stosw
-SELFMODIFY_set_topfrac_hi:
-mov   ax, 01000h
-stosw
-SELFMODIFY_set_rw_scale_lo:
-mov   ax, 01000h
-stosw
-SELFMODIFY_set_rw_scale_hi:
-mov   ax, 01000h
-stosw
+mov   ds, di
 
+lea   si, [bp - 044h]
+lea   di, [bp - 038h]
+
+movsw ; 6 is faster than rep case.
+movsw
+movsw
+movsw
+movsw
+movsw
+
+mov   di, cs
+mov   ds, di  ; todo how necessary is ds as cs used much anymore??
 
 xchg  ax, bx	; get xoffset  back
 SELFMODIFY_add_rw_x_base4_to_ax:
@@ -5319,21 +5310,24 @@ SELFMODIFY_cmp_al_to_detailshiftitercount:
 cmp   al, 0
 
 jge   exit_rendersegloop ; exit before adding the other loop vars.
-; todo skip if scale 0?
-SELFMODIFY_add_topstep_lo:
-add   word ptr ds:[SELFMODIFY_set_topfrac_lo+1], 01000h
-SELFMODIFY_add_topstep_hi:
-adc   word ptr ds:[SELFMODIFY_set_topfrac_hi+1], 01000h
 
-SELFMODIFY_add_botstep_lo:
-add   word ptr ds:[SELFMODIFY_set_botfrac_lo+1], 01000h
-SELFMODIFY_add_botstep_hi:
-adc   word ptr ds:[SELFMODIFY_set_botfrac_hi+1], 01000h
+; todo skip if potato?
+; even if constants were on stack (which is possible), popa not faster
 
 SELFMODIFY_add_rwscale_lo:
-add   word ptr ds:[SELFMODIFY_set_rw_scale_lo+1], 01000h
+add   word ptr [bp - 03Ch], 01000h
 SELFMODIFY_add_rwscale_hi:
-adc   word ptr ds:[SELFMODIFY_set_rw_scale_hi+1], 01000h
+adc   word ptr [bp - 03Ah], 01000h
+
+SELFMODIFY_add_topstep_lo:
+add   word ptr [bp - 040h], 01000h
+SELFMODIFY_add_topstep_hi:
+adc   word ptr [bp - 03Eh], 01000h
+SELFMODIFY_add_botstep_lo:
+add   word ptr [bp - 044h], 01000h
+SELFMODIFY_add_botstep_hi:
+adc   word ptr [bp - 042h], 01000h
+
 
 jmp  continue_outer_rendersegloop
 ALIGN_MACRO
@@ -5997,6 +5991,7 @@ mov       ds, ax
 
 add       word ptr ds:[_ds_p], (SIZE DRAWSEG_T)
 
+; todo is LEA SP, bp - xx safer??
 add       sp, STOREWALLRANGE_INNER_STACK_SIZE_MID     ; add back fixed SP
 SELFMODIFY_mark_planes_dirty:
 public SELFMODIFY_mark_planes_dirty 
