@@ -4232,10 +4232,16 @@ ALIGN_MACRO
    mov       ds, cx
 
    ; self modifying code for rw_distance
-   mov   word ptr ds:[SELFMODIFY_set_bx_rw_distance_lo+1], ax
-   mov   word ptr ds:[SELFMODIFY_set_cx_rw_distance_hi+1], dx
+   mov   word ptr ds:[SELFMODIFY_set_rw_distance_lo+1], ax
    mov   word ptr ds:[SELFMODIFY_get_rw_distance_lo_1+1], ax
-   mov   word ptr ds:[SELFMODIFY_get_rw_distance_hi_1+1], dx
+
+IF COMPISA GE COMPILE_386
+ELSE
+   mov   word ptr ds:[SELFMODIFY_set_rw_distance_lo_2+1], ax
+ENDIF
+   xchg  ax, dx
+   mov   word ptr ds:[SELFMODIFY_set_rw_distance_hi+1], ax
+   mov   word ptr ds:[SELFMODIFY_get_rw_distance_hi_1+1], ax
 
    ; this can be done once per line as BP will not change.
    mov   word ptr ds:[SELFMODIFY_restore_bp_after_draw_mid+1], bp
@@ -5568,11 +5574,11 @@ jb    non_subtracted_finetangent   ; todo branch test.
 neg   bx
 add   bx, 4095
 SHIFT_MACRO shl bx 2
-les   ax, dword ptr es:[bx]
-mov   dx, es
-neg   dx
-neg   ax
-sbb   dx, 0
+les   bx, dword ptr es:[bx]
+mov   cx, es
+neg   cx
+neg   bx
+sbb   cx, 0
 jmp   finetangent_ready
 ALIGN_MACRO
 jump_to_mid_no_pixels_to_draw:
@@ -5599,18 +5605,21 @@ jmp   main_3232_div
 ALIGN_MACRO
 non_subtracted_finetangent:
 SHIFT_MACRO shl bx 2
-les   ax, dword ptr es:[bx]
-mov   dx, es
+les   bx, dword ptr es:[bx]
+mov   cx, es
 finetangent_ready:
 ; calculate texture column
-SELFMODIFY_set_bx_rw_distance_lo:
-mov   bx, 01000h
-SELFMODIFY_set_cx_rw_distance_hi:
-mov   cx, 01000h
+SELFMODIFY_set_rw_distance_lo:
+mov   ax, 01000h
 
 ; begin inlined FixedMul_
 
+;start inlined FixedMulBSPLocal_
+
 IF COMPISA GE COMPILE_386
+
+SELFMODIFY_set_rw_distance_hi:
+mov   dx, 01000h
 
   shl  ecx, 16
   mov  cx, bx
@@ -5620,13 +5629,19 @@ IF COMPISA GE COMPILE_386
   imul  ecx
   shr  eax, 16
 
+
+
 ELSE
 
  ; si not preserved
-  MOV  SI, DX
-  PUSH AX
+
+
   MUL  BX
-  MOV  word ptr ds:[_selfmodify_restore_dx_10-2], DX
+  MOV  ES, DX
+
+SELFMODIFY_set_rw_distance_hi:
+  mov   si, 01000h
+
   MOV  AX, SI
   MUL  CX
   XCHG AX, SI
@@ -5634,13 +5649,13 @@ ELSE
   AND  DX, BX
   SUB  SI, DX
   MUL  BX
-  ADD  AX, 01000h
-_selfmodify_restore_dx_10:
-   PUBLIC _selfmodify_restore_dx_10
+  MOV  BX, ES
+  ADD  AX, BX
   ADC  SI, DX
+  SELFMODIFY_set_rw_distance_lo_2:
+  mov   bx, 01000h
   XCHG AX, CX
   CWD
-  POP  BX
   AND  DX, BX
   SUB  SI, DX
   MUL  BX
@@ -6767,9 +6782,10 @@ finish_midtex_selfmodify_TWOSIDED:
 
    ; self modifying code for rw_distance
    mov   word ptr ds:[SELFMODIFY_set_bx_rw_distance_lo_TWOSIDED+1], ax
-   mov   word ptr ds:[SELFMODIFY_set_cx_rw_distance_hi_TWOSIDED+1], dx
    mov   word ptr ds:[SELFMODIFY_get_rw_distance_lo_1+1], ax ; ??
-   mov   word ptr ds:[SELFMODIFY_get_rw_distance_hi_1+1], dx ; ?? 
+   xchg  ax, dx
+   mov   word ptr ds:[SELFMODIFY_set_cx_rw_distance_hi_TWOSIDED+1], ax
+   mov   word ptr ds:[SELFMODIFY_get_rw_distance_hi_1+1], ax ; ?? 
 
 
   ; this can be done once per line as BP will not change.
