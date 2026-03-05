@@ -5419,13 +5419,15 @@ skip_yl_ceil_clip:
 mov   dx, ax   ; dx has yl...
 
 SELFMODIFY_BSP_markceiling_1:
+public SELFMODIFY_BSP_markceiling_1
 SELFMODIFY_BSP_markceiling_1_AFTER = SELFMODIFY_BSP_markceiling_1 + 2
 
 ; ax is yl
 ; si = top = ceilingclip[rw_x]+1;
 dec   ax				; now ax = bottom = yl-1
 ; cx is floor, 
-cmp   al, cl      ;   ax cannot be negative, already was inc-ed before.
+; thie following is a forced encoding. tasm wants to do 3A C1 and this needs to agree with selfmodify...
+db    038h, 0C8h   ; cmp   al, cl      ;   ax cannot be negative, already was inc-ed before.
 jb    skip_bottom_floorclip
 mov   al, cl
 dec   ax
@@ -5472,6 +5474,7 @@ add   dx, ax
 ; ax is already yh
 ; cx is already  floor
 SELFMODIFY_BSP_markfloor_1:
+public SELFMODIFY_BSP_markfloor_1
 SELFMODIFY_BSP_markfloor_1_AFTER = SELFMODIFY_BSP_markfloor_1 + 2
 inc   ax			; top = yh + 1...     OR  je    markfloor_done
 dec   cx			; bottom = floorclip[rw_x]-1;
@@ -5567,7 +5570,7 @@ sbb   dx, 0
 jmp   finetangent_ready
 ALIGN_MACRO
 jump_to_mid_no_pixels_to_draw:
-add   sp, 2   ; undo pushes...
+add   sp, 2   ; undo push of dc_x...
 xchg  ax, di  ; dc_yl into ax
 jmp   mid_no_pixels_to_draw  ; restore bp here
 
@@ -5903,8 +5906,8 @@ mov   dx, word ptr [bp - 022h]  ; stopx - startx
 
 
 SELFMODIFY_toggle_skip_ceilingclip_mid:
+SELFMODIFY_toggle_skip_ceilingclip_mid_AFTER = SELFMODIFY_toggle_skip_ceilingclip_mid + 2
 mov   cx, dx   ; MAY BE SELF MODIFIED INTO JMP (E8) skip_ceiling_clip
-SELFMODIFY_toggle_skip_ceilingclip_mid_AFTER:
 
 
 ; mark all floors viewheight(+1)
@@ -5968,7 +5971,7 @@ ALIGN_MACRO
 SELFMODIFY_toggle_skip_ceilingclip_mid_TARGET:
 skip_ceiling_clip:
 mov       word ptr ds:[SELFMODIFY_toggle_skip_ceilingclip_mid], 0D189h ; mov cx, dx
-mov       word ptr ds:[SELFMODIFY_BSP_markceiling_1],           0468Bh ; mov ax, word ptr [bp - xx];
+mov       word ptr ds:[SELFMODIFY_BSP_markceiling_1],           03848h ; dec ax, cmp al, cl
 
 
 jmp       done_skipping_markceiling_copy_mid
@@ -5976,7 +5979,7 @@ ALIGN_MACRO
 SELFMODIFY_toggle_skip_floorclip_mid_TARGET:
 skip_floor_clip:
 mov       word ptr ds:[SELFMODIFY_toggle_skip_floorclip_mid], 0D189h ; mov cx, dx
-mov       word ptr ds:[SELFMODIFY_BSP_markfloor_1],           04940h ; inc ax; dec ax
+mov       word ptr ds:[SELFMODIFY_BSP_markfloor_1],           04940h ; inc ax; dec cx
 
 jmp       done_skipping_markfloor_copy_mid
 

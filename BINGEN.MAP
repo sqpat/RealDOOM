@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/03/03 07:05:46
+Created on:       26/03/03 08:36:53
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -410,6 +410,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:2773*     SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER_TWOSIDED
 0819:1f7a*     side_has_midtexture
 0819:19fa*     R_StoreWallRangeWithBackSector_
+0819:16c0*     SELFMODIFY_BSP_markceiling_1
 0819:19e8*     adjust_row_offset_TWOSIDED
 0819:389a      R_GetCompositeTexture_Far24_
 0819:0068*     _basexscale
@@ -423,6 +424,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:29ae*     mark_planes_dirty_TWOSIDED
 0819:00a0*     OFFSET_FLOORCLIP
 0819:15b2*     R_RenderSegLoop_
+0819:16f2*     SELFMODIFY_BSP_markfloor_1
 0819:17b1*     SELFMODIFY_set_ax_rw_offset_hi
 0819:1a6f*     v2_y_equals_v1_y_TWOSIDED
 0819:179d*     _selfmodify_restore_dx_10
@@ -696,8 +698,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 24bb:497b*     A_PosAttack_
 24bb:47ab*     A_Chase_
 24bb:4b5e*     A_BspiAttack_
-24bb:4258*     P_CheckMissileRange_
 24bb:57c3*     A_BrainPain_
+24bb:4258*     P_CheckMissileRange_
 24bb:4904*     A_FaceTarget_
 24bb:4bcb*     A_SargAttack_
 24bb:525e*     GetVileMomz_
@@ -1566,4 +1568,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003e960 (256352.)
 Entry point address: 304c:7cee
-Link time: 00:00.59
+Link time: 00:00.04
