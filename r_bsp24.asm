@@ -5106,7 +5106,7 @@ sbb       dx, 0
 mov       word ptr ds:[SELFMODIFY_sub_botstep_lo+3], ax
 mov       word ptr ds:[SELFMODIFY_add_botstep_lo+3], ax
 xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_sub_botstep_hi+3], ax
+mov       word ptr ds:[SELFMODIFY_sub_botstep_hi+4], ax
 mov       word ptr ds:[SELFMODIFY_add_botstep_hi+3], ax
 
 SELFMODIFY_BSP_detailshift_3:
@@ -5116,8 +5116,8 @@ shl       dx, 1
 rcl       ax, 1
 
 
-mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_1+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_2+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_1+4], ax
+mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_2+4], ax
 xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_1+3], ax
 mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_2+3], ax
@@ -5188,7 +5188,7 @@ POPA_MACRO  ;todo
 SELFMODIFY_sub_botstep_lo:
 sub   word ptr [bp - 038h], 01000h 
 SELFMODIFY_sub_botstep_hi:
-sbb   word ptr [bp - 036h], 01000h
+sbb   word ptr ds:[SELFMODIFY_set_botfrac_hi_mid+1], 01000h
 SELFMODIFY_sub_topstep_lo:
 sub   word ptr [bp - 034h], 01000h
 SELFMODIFY_sub_topstep_hi:
@@ -5237,7 +5237,10 @@ push  ax
 mov   word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], ax
 
 push  word ptr [bp - 034h]  ; bp - 040h
-push  word ptr [bp - 036h]  ; bp - 042h
+;push  word ptr [bp - 036h]  ; bp - 042h
+mov   ax, word ptr [bp - 036h]
+push  ax
+mov   word ptr ds:[SELFMODIFY_set_botfrac_hi_mid+1], ax
 push  word ptr [bp - 038h]  ; bp - 044h
 
 
@@ -5278,7 +5281,9 @@ lea   si, [bp - 044h]
 lea   di, [bp - 038h]
 
 movsw ; 6 is faster than rep case.
-movsw
+lodsw
+mov   word ptr cs:[SELFMODIFY_set_botfrac_hi_mid+1], ax
+stosw   ; todo okay to remove? 
 movsw
 lodsw
 mov   word ptr cs:[SELFMODIFY_set_topfrac_hi_mid+1], ax
@@ -5392,7 +5397,7 @@ db  05h, 00h, 00h   ;add   ax, 0
 SELFMODIFY_add_to_bottomfrac_lo_2:
 add   word ptr [bp - 038h], 01000h
 SELFMODIFY_add_to_bottomfrac_hi_2:
-adc   word ptr [bp - 036h], 01000h
+adc   word ptr ds:[SELFMODIFY_set_botfrac_hi_mid+1], 01000h
 SELFMODIFY_add_to_topfrac_lo_2:
 add   word ptr [bp - 034h], 01000h
 SELFMODIFY_add_to_topfrac_hi_2:
@@ -5490,8 +5495,8 @@ markceiling_done:
 ; yh = bottomfrac>>HEIGHTBITS;
 
 
-; TODO add directly into here.
-mov   ax, word ptr [bp - 036h] ; already incremented by 1.
+SELFMODIFY_set_botfrac_hi_mid:
+mov   ax, 01000h  ; bp - 036h being updated into here
 ; ah 0 because si < 255
 
 
@@ -5928,7 +5933,7 @@ jge   jump_to_finish_outer_loop  ; exit before adding the other loop vars.
 SELFMODIFY_add_to_bottomfrac_lo_1:
 add   word ptr [bp - 038h], 01000h
 SELFMODIFY_add_to_bottomfrac_hi_1:
-adc   word ptr [bp - 036h], 01000h
+adc   word ptr ds:[SELFMODIFY_set_botfrac_hi_mid+1], 01000h
 SELFMODIFY_add_to_topfrac_lo_1:
 add   word ptr [bp - 034h], 01000h
 SELFMODIFY_add_to_topfrac_hi_1:
