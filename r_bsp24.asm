@@ -3859,9 +3859,20 @@ PUBLIC R_StoreWallRangeNoBackSector_
 ; bp - 030h  ; rw_scale lo 
 
 ; bp - 032h  ; topfrac hi     preshifted 4
-; bp - 034h  ; topfrac lo     preshifted 4 ; up to here not pushed 
+; bp - 034h  ; topfrac lo     preshifted 4
 ; bp - 036h  ; bottomfrac hi  preshifted 4
 ; bp - 038h  ; bottomfrac lo  preshifted 4
+
+; TODO: loop copies!
+
+; bp - 03Ah  ; rw_scale hi loop copy
+; bp - 03Ch  ; rw_scale lo loop copy
+
+; bp - 03Eh  ; topfrac hi     preshifted 4  loop copy
+; bp - 040h  ; topfrac lo     preshifted 4  loop copy
+; bp - 042h  ; bottomfrac hi  preshifted 4  loop copy
+; bp - 044h  ; bottomfrac lo  preshifted 4  loop copy
+
 
 
 push      ax ; bp - 01Eh
@@ -5126,12 +5137,6 @@ PUBLIC R_RenderSegLoop_
 
 ; ds still cs
 
-; duplicate from here on out for ordering purposes. todo cleanup.
-;push  word ptr [bp - 02Eh]  ; bp - 044h
-;push  word ptr [bp - 030h]  ; bp - 046h
-
-
-
 
 
 SELFMODIFY_set_rw_x_loop_counter:
@@ -5151,7 +5156,34 @@ jcxz   skip_sub_base4diff
 sub_base4diff:
 public sub_base4diff
 
+; adders have been pushed onto stack.
+; if we sub_base4diff loop then we popa the adders, and add loop to stack.
+; add to sp and remove the adders from stack after this as they are no longer needed (?)
+
 ; todo: push these immediates. popa them. add back to sp if loop skipped. 
+
+COMMENT @
+   DI := Pop();  ; botstep_lo    3C
+   SI := Pop();  ; botstep_hi    3A 
+   BP := Pop();  ; topstep_lo    38
+   throwaway := Pop (); (* Skip SP *)  ; throwaway! 36
+   BX := Pop();  ; topstep_hi    34
+   DX := Pop();  ; rw_scale_lo   32
+   CX := Pop();  ; rw_scale_hi   30
+   AX := Pop();  ; ???           2E
+POPA_MACRO  ;todo
+
+POPA_MACRO  ;todo
+
+
+
+
+@
+
+
+
+
+; todo: in this case popa the adders.
 
 SELFMODIFY_sub_botstep_lo:
 sub   word ptr [bp - 038h], 01000h 
@@ -5181,27 +5213,28 @@ skip_sub_base4diff:
 
 ; todo: fall thru, popa bp - 038h stuff from stack. Reorder of stack items probably necessary.
 
+; popa the values.
 
-
-lea   si, [bp - 038h]  ; todo use sp
+cli
 ; idea:
 ; sti/cli. use lodsw on ds and ss:bp + byte relative offset with ss as cs.
 ; might save a handful of bytes.
 
-lods  word ptr ss:[si] ; bottomfrac lo
-mov   word ptr ds:[SELFMODIFY_set_botfrac_lo+1], ax
-lods  word ptr ss:[si] ; bottomfrac hi
-mov   word ptr ds:[SELFMODIFY_set_botfrac_hi+1], ax
-lods  word ptr ss:[si] ; topfrac lo
-mov   word ptr ds:[SELFMODIFY_set_topfrac_lo+1], ax
-lods  word ptr ss:[si] ; topfrac hi
-mov   word ptr ds:[SELFMODIFY_set_topfrac_hi+1], ax
-lods  word ptr ss:[si]
-mov   word ptr ds:[SELFMODIFY_set_rw_scale_lo+1], ax
-lods  word ptr ss:[si]
-mov   word ptr ds:[SELFMODIFY_set_rw_scale_hi+1], ax
-mov   al, 0 ; xoffset is 0
+; bp - 038h... etc holds the base constants to restore from.
+; SELFMODIFY_set_botfrac_lo etc hold the loop values.
 
+; todo: just push these values again, rather than pop into cs
+; todo: cli popa sub sp 16 pusha sti
+
+pop   word ptr ds:[SELFMODIFY_set_botfrac_lo+1]
+pop   word ptr ds:[SELFMODIFY_set_botfrac_hi+1]
+pop   word ptr ds:[SELFMODIFY_set_topfrac_lo+1]
+pop   word ptr ds:[SELFMODIFY_set_topfrac_hi+1]
+pop   word ptr ds:[SELFMODIFY_set_rw_scale_lo+1]
+pop   word ptr ds:[SELFMODIFY_set_rw_scale_hi+1]
+mov   al, 0 ; xoffset is 0
+sub   sp, 12
+sti
 
 continue_outer_rendersegloop:
 
@@ -5230,7 +5263,8 @@ out   dx, al
 mov   di, ss
 mov   es, di
 lea   di, [bp - 038h]  ; todo use sp
-; this can run and do nothing (place values back that were already there)
+; todo: this can run and do nothing (place values back that were already there)
+; detect this case!
 SELFMODIFY_set_botfrac_lo:
 mov   ax, 01000h
 stosw
@@ -5443,8 +5477,6 @@ markceiling_done:
 
 ; yh = bottomfrac>>HEIGHTBITS;
 
-; bp - 036h  ; bottomfrac hi  preshifted 4
-; bp - 038h  ; bottomfrac lo  preshifted 4
 
 ; TODO add directly into here.
 mov   ax, word ptr [bp - 036h] ; already incremented by 1.
@@ -5900,6 +5932,8 @@ jmp   finish_outer_loop
 ALIGN_MACRO
 
 R_RenderSegLoop_exit:
+
+; todo make sure bp is restored here
 
 mov   ax, cs
 mov   es, ax
