@@ -4487,13 +4487,13 @@ ASSUME DS:R_BSP_24_TEXT
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_1+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_2+1], ax
 mov       word ptr ds:[SELFMODIFY_add_rwscale_lo+3], ax
-mov       word ptr ds:[SELFMODIFY_sub_rwscale_lo+3], ax
+mov       word ptr ds:[SELFMODIFY_sub_rwscale_lo+4], ax
 
 xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_1+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_2+1], ax
 
-mov       word ptr ds:[SELFMODIFY_sub_rwscale_hi+3], ax
+mov       word ptr ds:[SELFMODIFY_sub_rwscale_hi+4], ax
 mov       word ptr ds:[SELFMODIFY_add_rwscale_hi+3], ax
 
 
@@ -4505,11 +4505,11 @@ rcl   ax, 1
 shl   dx, 1
 rcl   ax, 1
 
-mov       word ptr ds:[SELFMODIFY_add_to_rwscale_hi_1+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_rwscale_hi_2+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_rwscale_hi_1+4], ax
+mov       word ptr ds:[SELFMODIFY_add_to_rwscale_hi_2+4], ax
 xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_add_to_rwscale_lo_1+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_rwscale_lo_2+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_rwscale_lo_1+4], ax
+mov       word ptr ds:[SELFMODIFY_add_to_rwscale_lo_2+4], ax
 
 ;ASSUME DS:DGROUP  ; lods coming up
 
@@ -5184,6 +5184,7 @@ POPA_MACRO  ;todo
 
 
 ; todo: in this case popa the adders.
+; todo (eventually) make sure all the selfmodify addresses are word aligned!
 
 SELFMODIFY_sub_botstep_lo:
 sub   word ptr [bp - 038h], 01000h 
@@ -5194,9 +5195,9 @@ sub   word ptr [bp - 034h], 01000h
 SELFMODIFY_sub_topstep_hi:
 sbb   word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], 01000h
 SELFMODIFY_sub_rwscale_lo:
-sub   word ptr [bp - 030h], 01000h
+sub   word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], 01000h
 SELFMODIFY_sub_rwscale_hi:
-sbb   word ptr [bp - 02Eh], 01000h
+sbb   word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], 01000h
 
 
 
@@ -5221,16 +5222,17 @@ out   dx, al
 ; sp is bp - 038h
 ; maybe lea sp, bp - 038h once popa above.
 
-; todo: cli popa sub sp 16 pusha sti should be faster.
-; offsets change a bit though.
 
-; set the base values from which we will recover per outer loop iter.
+; todo (eventually) make sure all the selfmodify addresses are word aligned!
 
-; sup sp, 12, di/si setters + 6x movsw is maybe barely slower? 
-; i think if we had to do 10 like in mid top case but not here.
-
-push  word ptr [bp - 02Eh]  ; bp - 03Ah
-push  word ptr [bp - 030h]  ; bp - 03Ch
+;push  word ptr [bp - 02Eh]  ; bp - 03Ah
+mov   ax, word ptr [bp - 02Eh]
+push  ax
+mov   word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], ax
+;push  word ptr [bp - 030h]  ; bp - 03Ch
+mov   ax, word ptr [bp - 030h]
+push  ax
+mov   word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], ax
 ;push  word ptr [bp - 032h]  ; bp - 03Eh
 mov   ax, word ptr [bp - 032h]
 push  ax
@@ -5280,7 +5282,8 @@ mov   ds, di
 lea   si, [bp - 044h]
 lea   di, [bp - 038h]
 
-movsw ; 6 is faster than rep case.
+; todo (eventually) make sure all the selfmodify addresses are word aligned!
+movsw
 lodsw
 mov   word ptr cs:[SELFMODIFY_set_botfrac_hi_mid+1], ax
 stosw   ; todo okay to remove? 
@@ -5288,8 +5291,12 @@ movsw
 lodsw
 mov   word ptr cs:[SELFMODIFY_set_topfrac_hi_mid+1], ax
 stosw   ; todo okay to remove? 
-movsw
-movsw
+lodsw
+mov   word ptr cs:[SELFMODIFY_set_rwscale_lo_mid+1], ax
+stosw   ; todo okay to remove? 
+lodsw
+mov   word ptr cs:[SELFMODIFY_set_rwscale_hi_mid+1], ax
+stosw   ; todo okay to remove? 
 mov   di, cs
 mov   ds, di  ; todo how necessary is ds as cs used much anymore??
 
@@ -5394,6 +5401,7 @@ SELFMODIFY_add_iter_to_rw_x:
 ; ax was already up-to-date rw_x
 db  05h, 00h, 00h   ;add   ax, 0
 ; ax has rw_x...
+; todo (eventually) make sure all the selfmodify addresses are word aligned!
 SELFMODIFY_add_to_bottomfrac_lo_2:
 add   word ptr [bp - 038h], 01000h
 SELFMODIFY_add_to_bottomfrac_hi_2:
@@ -5403,9 +5411,9 @@ add   word ptr [bp - 034h], 01000h
 SELFMODIFY_add_to_topfrac_hi_2:
 adc   word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], 01000h
 SELFMODIFY_add_to_rwscale_lo_2:
-add   word ptr [bp - 030h], 01000h
+add   word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], 01000h
 SELFMODIFY_add_to_rwscale_hi_2:
-adc   word ptr [bp - 02Eh], 01000h
+adc   word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], 01000h
 
 
 ; todo change inner loop to work off constant di not ax?
@@ -5642,6 +5650,7 @@ mov   cx, es
 finetangent_ready:
 ; calculate texture column
 SELFMODIFY_set_rw_distance_lo:
+public SELFMODIFY_set_rw_distance_lo
 mov   ax, 01000h
 
 ; begin inlined FixedMul_
@@ -5754,21 +5763,28 @@ public just_do_draw0
 
 ; ds must be reset to cs returning here.
 
+; cwd is possible here because source segment is 0x5000-0x6FFF...  clear out dl for later move to bp
+cwd
+
 
 xchg  ax, di  ; store dc_source_segment. todo: go direct to ds.
 
-
-; CX:BX rw_scale
+; CX:AX rw_scale
 ; TODO add directly into les below, and construct this from 8 bit shift.
+SELFMODIFY_set_rwscale_lo_mid:
+mov   ax, 01000h ; bp - 030h being updated into here
+SELFMODIFY_set_rwscale_hi_mid:
+mov   cx, 01000h ; bp - 02Eh being updated into here
 
-mov   bx, word ptr [bp - 02Fh] ; get with shift 8
 
-
-cmp   bh, 3
+cmp   cl, 3
 jae   use_max_light
 do_lightscaleshift:
 
-
+; shift 8
+mov   bl, ah
+mov   bh, cl
+; shift 12
 SHIFT_MACRO shr bx 4
 
 ; todo: movsb possible here?
@@ -5781,14 +5797,12 @@ SELFMODIFY_add_wallights:
 ; scalelight is pre-shifted 4 to save on the double sal every column.
 
 mov   dh, byte ptr ss:[bx+01000h]         ; 8a 84 00 10 
-xor   dl, dl
+; dl 0 from earlier cwd.
+xchg  ax, bx  ; cx:bx is proper value again.
 ;        set colormap offset to high byte
 
-les   bx, dword ptr [bp - 030h] ; for the div
-mov   cx, es
 
 mov   bp, dx
-
 ; INLINED FASTDIV3232FFF_ 
 
 ; set ax:dx ffffffff
@@ -5939,9 +5953,9 @@ add   word ptr [bp - 034h], 01000h
 SELFMODIFY_add_to_topfrac_hi_1:
 adc   word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], 01000h
 SELFMODIFY_add_to_rwscale_lo_1:
-add   word ptr [bp - 030h], 01000h
+add   word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], 01000h
 SELFMODIFY_add_to_rwscale_hi_1:
-adc   word ptr [bp - 02Eh], 01000h
+adc   word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], 01000h
 jmp   start_per_column_inner_loop
 ALIGN_MACRO
 jump_to_finish_outer_loop:
