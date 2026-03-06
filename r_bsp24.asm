@@ -5687,14 +5687,14 @@ mov   dx, 01000h
 ELSE
 
  ; si not preserved
+SELFMODIFY_set_rw_distance_hi:
+  mov   si, 01000h
+  jcxz  do_16_bit_mul
 
 
   MUL  BX
   MOV  ES, DX
 
-SELFMODIFY_set_rw_distance_hi:
-  mov   si, 01000h
-  jcxz  do_16_bit_mul
 
   MOV  AX, SI
   MUL  CX
