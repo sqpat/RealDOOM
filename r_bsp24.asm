@@ -5622,15 +5622,18 @@ jmp   mid_no_pixels_to_draw  ; restore bp here
 
 ALIGN_MACRO
 do_16_bit_mul:
+public do_16_bit_mul
 
 ; BX * SI:AX
 
-XCHG AX, CX    ; backup
-mov  AX, BX
-MUL  SI        ; * hi    ; imul CX, BX, 01000h
-XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+
 MUL  BX        ; AX * BX
-ADD  DX, CX    ; add 
+mov  ax, bx    ; for next mul
+mov  bx, dx    ; store hi result
+mul  si
+add  ax, bx    ; add previous hi into lo
+adc  dx, cx    ; cx known zero
+
 jmp  done_with_16bitmul
 
 
@@ -5691,7 +5694,7 @@ ELSE
 
 SELFMODIFY_set_rw_distance_hi:
   mov   si, 01000h
-;  jcxz  do_16_bit_mul
+  jcxz  do_16_bit_mul
 
   MOV  AX, SI
   MUL  CX
