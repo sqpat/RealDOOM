@@ -4092,7 +4092,7 @@ ALIGN_MACRO
    and       ah, FINE_ANGLE_HIGH_BYTE
 
    ; set centerangle in rendersegloop
-   mov       word ptr cs:[SELFMODIFY_set_rw_center_angle+1], ax
+   mov       word ptr cs:[SELFMODIFY_set_rw_center_angle+2], ax
    xchg      ax, si
    SHIFT_MACRO shl ax SHORTTOFINESHIFT
    mov       word ptr cs:[SELFMODIFY_set_rw_normal_angle_shift3+1], ax
@@ -5592,24 +5592,31 @@ seg_is_textured:
 
 ; angle = MOD_FINE_ANGLE (rw_centerangle + xtoviewangle[rw_x]);
 
-mov   ax, XTOVIEWANGLE_SEGMENT
-mov   es, ax
+; eventually use DS here, once source_segment vars use CS?
+
+mov   bx, XTOVIEWANGLE_SEGMENT
+mov   es, bx
+
+shl   di, 1        ; word lookup
+mov   bx, word ptr es:[di]
+
+mov   di, FINETANGENTINNER_SEGMENT
+mov   es, di
+
 SELFMODIFY_set_rw_center_angle:
-mov   ax, 01000h
-mov   bx, di        ; word lookup
-add   ax, word ptr es:[bx+di]
-and   ah, FINE_ANGLE_HIGH_BYTE				; MOD_FINE_ANGLE = and 0x1FFF
+add   bx, 01000h
+and   bh, FINE_ANGLE_HIGH_BYTE				; MOD_FINE_ANGLE = and 0x1FFF
 
 ; temp.w = rw_offset.w - FixedMul(finetangent(angle),rw_distance);
 
-mov   bx, FINETANGENTINNER_SEGMENT
-mov   es, bx
-cmp   ax, FINE_TANGENT_MAX
-mov   bx, ax
-jb    non_subtracted_finetangent   ; todo branch test.
-; mirrored values in lookup table
+cmp   bx, FINE_TANGENT_MAX
+sbb   bp, bp
+jc    do_finetan_lookup_mid
+
+
 neg   bx
-add   bx, 4095
+add   bx, 4095   ; adjust mirrored lookup
+do_finetan_lookup_mid:
 SHIFT_MACRO shl bx 2
 les   bx, dword ptr es:[bx]
 mov   cx, es
@@ -5650,14 +5657,6 @@ jmp   main_3232_div
 ; todo: make this faster.
 
 
-ALIGN_MACRO
-non_subtracted_finetangent:
-SHIFT_MACRO shl bx 2
-les   bx, dword ptr es:[bx]
-mov   cx, es
-neg   cx
-neg   bx
-sbb   cx, 0
 
 finetangent_ready:
 ; calculate texture column
@@ -5689,7 +5688,7 @@ ELSE
  ; si not preserved
 SELFMODIFY_set_rw_distance_hi:
   mov   si, 01000h
-  jcxz  do_16_bit_mul
+  ;jcxz  do_16_bit_mul
 
 
   MUL  BX
@@ -5725,6 +5724,11 @@ ENDIF
 ;	    texturecolumn = rw_offset-FixedMul(finetangent[angle],rw_distance);
 
 done_with_16bitmul:
+
+SUB   AX, bp
+SBB   DX, bp
+XOR   AX, bp ; no xor ax necessary if we flip order with below?
+XOR   DX, bp
 
 ; todo self modify the neg of this in somehow?
 SELFMODIFY_set_cx_rw_offset_lo:	
