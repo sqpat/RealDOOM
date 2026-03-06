@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/03/04 21:18:08
+Created on:       26/03/04 22:33:44
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -347,37 +347,37 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:3814      R_GetPatchTexture_Far24_
 0819:284c*     R_GetSourceSegment1_
 0819:09f0*     FixedMulTrigNoShiftSine_BSPLocal_
-0819:17d3*     just_do_draw0
+0819:17ce*     just_do_draw0
 0819:1711*     markfloor_done
-0819:1a41*     SELFMODIFY_skip_curseg_based_selfmodify_AFTER_TWOSIDED
+0819:1a3d*     SELFMODIFY_skip_curseg_based_selfmodify_AFTER_TWOSIDED
 0819:2857*     just_do_draw1
-0819:1ffe*     _selfmodify_restore_dx_6
-0819:2038*     _selfmodify_restore_dx_7
+0819:1ffa*     _selfmodify_restore_dx_6
+0819:2034*     _selfmodify_restore_dx_7
 0819:280c*     mark_floor_di
-0819:20c5*     _selfmodify_restore_dx_8
+0819:20c1*     _selfmodify_restore_dx_8
 0819:09ec*     FixedMulTrigSine_BSPLocal_
-0819:1fc3*     continue_backsector_not_null
+0819:1fbf*     continue_backsector_not_null
 0819:2816*     R_GetSourceSegment0_DONE_TOP
 0819:2d0a*     R_ClipPassWallSegment_
 0819:01e0*     _ceilingclip
 0819:29bc*     SELFMODIFY_mark_planes_dirty_TWOSIDED
 0819:0a3a*     FixedMulTrigCosine_BSPLocal_
-0819:235c*     R_RenderSegLoop_TWOSIDED_
+0819:2358*     R_RenderSegLoop_TWOSIDED_
 0819:1482*     SELFMODIFY_BSP_set_skyflatnum_4
 0819:105b*     SELFMODIFY_skip_curseg_based_selfmodify_AFTER
 0819:29ee*     R_Subsector_
 0819:16a7*     check_here
-0819:1819*     SELFMODIFY_BSP_R_DrawColumnPrep_ret
+0819:1814*     SELFMODIFY_BSP_R_DrawColumnPrep_ret
 0819:2755*     do_top_texture_draw
 0819:15cc*     skip_sub_base4diff
-0819:22a8*     at_least_one_column_to_draw_TWOSIDED
-0819:1783*     SELFMODIFY_set_rw_distance_lo
+0819:22a4*     at_least_one_column_to_draw_TWOSIDED
+0819:1787*     SELFMODIFY_set_rw_distance_lo
 0819:0000      R_BSP24_STARTMARKER_
 0819:01e0*     OFFSET_CEILINGCLIP
 0819:25ad*     checktexcolumn
-0819:1bcf*     selfmod_done_bot
+0819:1bcb*     selfmod_done_bot
 0819:1335*     scales_set
-0819:17c8*     R_GetSourceSegment0_START
+0819:17c3*     R_GetSourceSegment0_START
 0819:285f*     R_DrawColumnPrepBot_
 0819:284f*     SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER_TWOSIDED
 0819:26ec*     non_repeating_texture0_TWOSIDED
@@ -400,43 +400,43 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:0a3e*     FixedMulTrigNoShiftCosine_BSPLocal_
 0819:416d*     _bsp_local_dc_yl_lookup_table
 0819:0a8a*     R_ClearPlanes_
-0819:18bc*     mark_planes_dirty
-0819:24c9*     check_here_TWOSIDED
-0819:1d37*     scales_set_TWOSIDED
-0819:193e*     main_3232_div
-0819:1d6e*     set_values
+0819:18b8*     mark_planes_dirty
+0819:24c5*     check_here_TWOSIDED
+0819:1d33*     scales_set_TWOSIDED
+0819:193a*     main_3232_div
+0819:1d6a*     set_values
 0819:0068*     _lastbasexscale
 0819:259e*     _selfmodify_restore_dx_10_TWOSIDED
 0819:0c48*     R_FindPlane_
 0819:070c*     FixedDivWholeA_BSPLocal_
 0819:2789*     SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER_TWOSIDED
-0819:1751*     do_finetan_lookup_mid
-0819:1f90*     side_has_midtexture
-0819:1a10*     R_StoreWallRangeWithBackSector_
+0819:1758*     do_finetan_lookup_mid
+0819:1f8c*     side_has_midtexture
+0819:1a0c*     R_StoreWallRangeWithBackSector_
 0819:16c0*     SELFMODIFY_BSP_markceiling_1
-0819:19fe*     adjust_row_offset_TWOSIDED
+0819:19fa*     adjust_row_offset_TWOSIDED
 0819:38b0      R_GetCompositeTexture_Far24_
 0819:0068*     _basexscale
 0819:2791*     just_do_draw0_TWOSIDED
 0819:1018*     adjust_row_offset
 0819:0000*     _COLFUNC_SELFMODIFY_LOOKUPTABLE
-0819:1811*     R_DrawColumnPrep_
+0819:180c*     R_DrawColumnPrep_
 0819:035c*     SELFMODIFY_get_rw_distance_hi_1
-0819:1768*     do_16_bit_mul
-0819:242d*     finish_outer_loop_TWOSIDED
+0819:176e*     do_16_bit_mul
+0819:2429*     finish_outer_loop_TWOSIDED
 0819:2614*     main_3232_div_TWOSIDED
 0819:29c4*     mark_planes_dirty_TWOSIDED
 0819:00a0*     OFFSET_FLOORCLIP
 0819:159f*     R_RenderSegLoop_
 0819:16f2*     SELFMODIFY_BSP_markfloor_1
-0819:17c4*     SELFMODIFY_set_ax_rw_offset_hi
-0819:1a85*     v2_y_equals_v1_y_TWOSIDED
+0819:17bf*     SELFMODIFY_set_ax_rw_offset_hi
+0819:1a81*     v2_y_equals_v1_y_TWOSIDED
 0819:2e52*     R_GetColumnSegment_
 0819:0342*     R_ScaleFromGlobalAngle_
 0819:288c*     SELFMODIFY_BSP_R_DrawColumnPrep_ret_bot
 0819:12fd*     div_done
-0819:1897*     SELFMODIFY_mark_planes_dirty
-0819:19a9*     R_DrawColumnPrep_Stretch_
+0819:1893*     SELFMODIFY_mark_planes_dirty
+0819:19a5*     R_DrawColumnPrep_Stretch_
 0819:15a8*     sub_base4diff
 0819:280a*     done_marking_floor_ax_TWOSIDED
 0819:2799*     R_DrawColumnPrep_TWOSIDED_
@@ -1571,4 +1571,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003e980 (256384.)
 Entry point address: 304e:7cee
-Link time: 00:00.04
+Link time: 00:00.05

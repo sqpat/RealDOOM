@@ -5609,6 +5609,10 @@ and   bh, FINE_ANGLE_HIGH_BYTE				; MOD_FINE_ANGLE = and 0x1FFF
 
 ; temp.w = rw_offset.w - FixedMul(finetangent(angle),rw_distance);
 
+mov   bp, 4096
+sub   bp, bx
+mov   bx, bp
+
 cmp   bx, FINE_TANGENT_MAX
 sbb   bp, bp
 jc    do_finetan_lookup_mid
@@ -5634,7 +5638,6 @@ do_16_bit_mul:
 public do_16_bit_mul
 
 ; BX * SI:AX
-neg   bx    ; todo remove once finetan values flipped
 
 
 MUL  BX        ; AX * BX
@@ -5692,9 +5695,6 @@ ELSE
 SELFMODIFY_set_rw_distance_hi:
   mov   si, 01000h
   jnz   do_16_bit_mul  ; test bh from earlier.
-  neg   cx
-  neg   bx  ; todo remove once finetan values flipped
-  sbb   cx, 0
 
   MUL  BX
   MOV  ES, DX
@@ -5729,7 +5729,7 @@ ENDIF
 ;	    texturecolumn = rw_offset-FixedMul(finetangent[angle],rw_distance);
 
 done_with_16bitmul:
-not   bp       ; todo remove once finetan values flipped
+
 SUB   AX, bp
 SBB   DX, bp
 XOR   AX, bp ; no xor ax necessary if we flip order with add below? may require below values negged
@@ -9012,8 +9012,9 @@ and   ah, FINE_ANGLE_HIGH_BYTE				; MOD_FINE_ANGLE = and 0x1FFF
 
 mov   bx, FINETANGENTINNER_SEGMENT
 mov   es, bx
-cmp   ax, FINE_TANGENT_MAX
-mov   bx, ax
+mov   bx, 4096 ; hack for now
+sub   bx, ax
+cmp   bx, FINE_TANGENT_MAX
 jb    non_subtracted_finetangent_TWOSIDED
 ; mirrored values in lookup table
 neg   bx

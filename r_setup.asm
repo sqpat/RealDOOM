@@ -110,10 +110,11 @@ lodsw
 xchg    ax, dx
 lodsw
 
-; becomes  f7 d8 f7 da 83 d8 00 for 2nd loop
+
+; becomes  jmp for 2nd loop to skip neg
 ;  neg  ax -> neg  dx -> sbb ax, 0
 _SELFMODIFY_toggle_32_bit_neg:
-jmp   SHORT  skip_neg
+neg     ax
 _SELFMODIFY_toggle_32_bit_neg_jmp_AFTER:
 neg     dx
 sbb     ax, 0
@@ -170,7 +171,7 @@ js      cleanup_and_exit_function
 
 ; SET UP SECOND LOOP!
 
-mov     word ptr cs:[_SELFMODIFY_toggle_32_bit_neg], 0D8F7h   ; neg ax
+mov   word ptr cs:[_SELFMODIFY_toggle_32_bit_neg], ((_SELFMODIFY_toggle_32_bit_neg_jmp_TARGET - _SELFMODIFY_toggle_32_bit_neg_jmp_AFTER) SHL 8) + 0EBh
 mov     bp, -8   ; we're now iterating backwards thru the finetan table. neg 8 after each plus 4
 sub     si, 4    ; undo last read..
 jmp     loop_next_fineangle
@@ -187,8 +188,8 @@ jmp    continue_fencepost_checks
 
 cleanup_and_exit_function:
 
-; restore jmp
-mov   word ptr cs:[_SELFMODIFY_toggle_32_bit_neg], ((_SELFMODIFY_toggle_32_bit_neg_jmp_TARGET - _SELFMODIFY_toggle_32_bit_neg_jmp_AFTER) SHL 8) + 0EBh
+; restore neg
+mov     word ptr cs:[_SELFMODIFY_toggle_32_bit_neg], 0D8F7h   ; neg ax
 
 
 
