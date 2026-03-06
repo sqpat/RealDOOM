@@ -5617,7 +5617,9 @@ jc    do_finetan_lookup_mid
 neg   bx
 add   bx, 4095   ; adjust mirrored lookup
 do_finetan_lookup_mid:
+public do_finetan_lookup_mid
 SHIFT_MACRO shl bx 2
+test  bh, 010h
 les   bx, dword ptr es:[bx]
 mov   cx, es
 jmp   finetangent_ready
@@ -5632,6 +5634,7 @@ do_16_bit_mul:
 public do_16_bit_mul
 
 ; BX * SI:AX
+neg   bx    ; todo remove once finetan values flipped
 
 
 MUL  BX        ; AX * BX
@@ -5639,7 +5642,7 @@ mov  ax, bx    ; for next mul
 mov  bx, dx    ; store hi result
 mul  si
 add  ax, bx    ; add previous hi into lo
-adc  dx, cx    ; cx known zero
+adc  dx, 0     ;
 
 jmp  done_with_16bitmul
 
@@ -5688,8 +5691,10 @@ ELSE
  ; si not preserved
 SELFMODIFY_set_rw_distance_hi:
   mov   si, 01000h
-  ;jcxz  do_16_bit_mul
-
+  jnz   do_16_bit_mul  ; test bh from earlier.
+  neg   cx
+  neg   bx  ; todo remove once finetan values flipped
+  sbb   cx, 0
 
   MUL  BX
   MOV  ES, DX
@@ -5724,10 +5729,10 @@ ENDIF
 ;	    texturecolumn = rw_offset-FixedMul(finetangent[angle],rw_distance);
 
 done_with_16bitmul:
-
+not   bp       ; todo remove once finetan values flipped
 SUB   AX, bp
 SBB   DX, bp
-XOR   AX, bp ; no xor ax necessary if we flip order with below?
+XOR   AX, bp ; no xor ax necessary if we flip order with add below? may require below values negged
 XOR   DX, bp
 
 ; todo self modify the neg of this in somehow?
