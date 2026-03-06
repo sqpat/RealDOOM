@@ -4239,7 +4239,7 @@ ENDIF
 
    ; this can be done once per line as BP will not change.
    mov   word ptr ds:[SELFMODIFY_restore_bp_after_draw_mid+1], bp
-   mov   word ptr ds:[SELFMODIFY_restore_bp_after_drawcol_setup+1], bp  ; todo work this out.
+
    mov   byte ptr ds:[SELFMODIFY_skip_curseg_based_selfmodify], 0E9h  ; jmp here
 
 
@@ -4708,7 +4708,7 @@ SELFMODIFY_BSP_sidesegoffset:
 add       ax, 01000h 
 ; rw_offset ready to be written to rendersegloop:
 mov   word ptr ds:[SELFMODIFY_set_cx_rw_offset_lo+1], dx
-mov   word ptr ds:[SELFMODIFY_set_ax_rw_offset_hi+1], ax
+mov   word ptr ds:[SELFMODIFY_set_ax_rw_offset_hi+2], ax
 
 
 
@@ -5587,9 +5587,6 @@ lea   ax, [bx + si + 01000h]
 push  ax  ; destview offset.          pop into di later.
 push  dx  ; jmp addr lookup/modifier. todo store in di?
 
-SELFMODIFY_restore_bp_after_drawcol_setup:  ; todo work this out of the function
-mov  bp,  01000h
-
 
 seg_is_textured:
 
@@ -5616,9 +5613,6 @@ add   bx, 4095
 SHIFT_MACRO shl bx 2
 les   bx, dword ptr es:[bx]
 mov   cx, es
-neg   cx
-neg   bx
-sbb   cx, 0
 jmp   finetangent_ready
 ALIGN_MACRO
 jump_to_mid_no_pixels_to_draw:
@@ -5626,7 +5620,18 @@ add   sp, 2   ; undo push of dc_x...
 xchg  ax, di  ; dc_yl into ax
 jmp   mid_no_pixels_to_draw  ; restore bp here
 
+ALIGN_MACRO
+do_16_bit_mul:
 
+; BX * SI:AX
+
+XCHG AX, CX    ; backup
+mov  AX, BX
+MUL  SI        ; * hi    ; imul CX, BX, 01000h
+XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+MUL  BX        ; AX * BX
+ADD  DX, CX    ; add 
+jmp  done_with_16bitmul
 
 
 ALIGN_MACRO
@@ -5647,6 +5652,10 @@ non_subtracted_finetangent:
 SHIFT_MACRO shl bx 2
 les   bx, dword ptr es:[bx]
 mov   cx, es
+neg   cx
+neg   bx
+sbb   cx, 0
+
 finetangent_ready:
 ; calculate texture column
 SELFMODIFY_set_rw_distance_lo:
@@ -5682,6 +5691,7 @@ ELSE
 
 SELFMODIFY_set_rw_distance_hi:
   mov   si, 01000h
+;  jcxz  do_16_bit_mul
 
   MOV  AX, SI
   MUL  CX
@@ -5711,24 +5721,23 @@ ENDIF
 
 ;	    texturecolumn = rw_offset-FixedMul(finetangent[angle],rw_distance);
 
+done_with_16bitmul:
+
 ; todo self modify the neg of this in somehow?
 SELFMODIFY_set_cx_rw_offset_lo:	
-mov   cx, 01000h
-sub   cx, ax   ; cx is soon clobbered. so we only need AX?
+add   ax, 01000h   ; cx is soon clobbered. so we only need AX?
 SELFMODIFY_set_ax_rw_offset_hi:
 public SELFMODIFY_set_ax_rw_offset_hi
-mov   ax, 01000h
-sbb   ax, dx
+adc   dx, 01000h
 
-; texturecolumn = ax:cx...  or just ax (whole number)
+
+; texturecolumn = dx:ax...  or just dx (whole number)
 
 ;	if (rw_scale.h.intbits >= 3) {
 ;		index = MAXLIGHTSCALE - 1;
 ;	} else {
 ;		index = rw_scale.w >> LIGHTSCALESHIFT;
 ;	}
-
-xchg    ax, dx  ; dx has texturecolumn
 
 ; inlined function. 
 R_GetSourceSegment0_START:
