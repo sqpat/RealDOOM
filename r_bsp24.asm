@@ -5614,12 +5614,21 @@ sub   bp, bx
 mov   bx, bp
 
 cmp   bx, FINE_TANGENT_MAX
-sbb   bp, bp
-jc    do_finetan_lookup_mid
+sbb   bp, bp      ; carry if -1
 
+; the following is a branchless version of:
+; jc  skip
+; neg bx
+; add bx, 4095
+; skip
 
-neg   bx
-add   bx, 4095   ; adjust mirrored lookup
+not   bp          ; if not carry, then neg
+xor   bx, bp
+mov   cx, 4096
+and   cx, bp
+add   bx, cx
+not   bp
+
 do_finetan_lookup_mid:
 public do_finetan_lookup_mid
 SHIFT_MACRO shl bx 2
