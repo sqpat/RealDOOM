@@ -48,12 +48,6 @@ PROC    R_SETUP_STARTMARKER_ NEAR
 PUBLIC  R_SETUP_STARTMARKER_
 ENDP
 
-use_min:
-test    ax, ax
-jz      dont_use_min
-use_min_skip_check:
-mov     ax, -1
-jmp     set_value_and_continue_loop
 
 
 
@@ -112,29 +106,24 @@ MOV   BX, DI
 SUB   BX, 4096
 SBB   CX, CX         ; cx is mask...
 XOR   BX, CX         ; apply sign
+
+; todo does this happen before or after cmp?
 ADD   BX, CX         ; offset left by 2 (after shift) for negatives
 
-;CMP   BX, (1443 SHL 1) ; 1443 is the index that equals FRACUNIT * 2
-;JB    small_tangent
+CMP   BX, (1443 SHL 1) ; 1443 is the index that equals FRACUNIT * 2
+JA    small_tangent
+; todo maybe this should be rep stosw with smaller loop?
 
 ; Read tangent table
 SHL   BX, 1
 LES   AX, DS:[BX]
 MOV   DX, ES
 
-;NOT   CX
 
 XOR   AX, CX
 XOR   DX, CX
 SUB   AX, CX
 SBB   DX, CX
-
-cmp   dx, 2
-jge   use_min
-dont_use_min:
-cmp   dx, -2
-jle   use_max
-dont_use_max:
 
 
 _SELFMODIFY_set_focallength_hi:
@@ -156,11 +145,6 @@ add     ax, 01000h
 ;   }
 
 
-cmp     ax, -1
-jl      use_min_skip_check
-cmp     ax, bp
-jg      use_max_skip_check
-
 
 set_value_and_continue_loop:
 
@@ -172,13 +156,6 @@ cmp  di, (FINEANGLES / 4) * 4  ; 8192
 jb   loop_next_fineangle
 ; loop ends here
 jmp  cleanup_and_exit_function
-use_max:
-test    ax, ax
-jz      dont_use_max
-use_max_skip_check:
-
-mov     ax, bp
-jmp     set_value_and_continue_loop
 
 small_tangent:
 NOT  CX
