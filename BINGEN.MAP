@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/03/06 14:24:29
+Created on:       26/03/06 15:39:01
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -35,7 +35,7 @@ SM_OPL2_TEXT           CODE           AUTO           0533:0000       00000f3c
 SM_OPL3_TEXT           CODE           AUTO           0627:0000       0000100e
 SM_SBMID_TEXT          CODE           AUTO           0728:0000       00000730
 SM_MPUMD_TEXT          CODE           AUTO           079b:0000       000007db
-R_BSP_24_TEXT          CODE           AUTO           0819:0000       000042e3
+R_BSP_24_TEXT          CODE           AUTO           0819:0000       000042eb
 R_BSP_16_TEXT          CODE           AUTO           0c48:0000       00003740
 R_BSP0_TEXT            CODE           AUTO           0fbc:0000       0000366f
 R_BSPFL_TEXT           CODE           AUTO           1323:0000       00003617
@@ -343,7 +343,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:167c*     pre_increment_values
 0819:3d02      R_WriteBackViewConstants24_
 0819:2ad1*     R_AddLine_
-0819:42e3      R_BSP24_ENDMARKER_
+0819:42eb      R_BSP24_ENDMARKER_
 0819:37fa      R_GetPatchTexture_Far24_
 0819:2832*     R_GetSourceSegment1_
 0819:09f0*     FixedMulTrigNoShiftSine_BSPLocal_
@@ -396,9 +396,9 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:0080*     BEOFRE_COLFUNC_LOOKUP
 0819:276b*     R_GetSourceSegment0_START_TWOSIDED
 0819:36a0*     R_GetTexturePage_
-0819:3f28*     R_WriteBackFrameConstants_
+0819:3f30*     R_WriteBackFrameConstants_
 0819:0a3e*     FixedMulTrigNoShiftCosine_BSPLocal_
-0819:4153*     _bsp_local_dc_yl_lookup_table
+0819:415b*     _bsp_local_dc_yl_lookup_table
 0819:0a8a*     R_ClearPlanes_
 0819:18ac*     mark_planes_dirty
 0819:24b9*     check_here_TWOSIDED
@@ -705,8 +705,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 24bc:4904*     A_FaceTarget_
 24bc:4bcb*     A_SargAttack_
 24bc:525e*     GetVileMomz_
-24bc:54bb*     A_PainDie_
 24bc:4e82*     A_SkelWhoosh_
+24bc:54bb*     A_PainDie_
 24bc:584f*     A_BrainExplode_
 24bc:51d6*     A_VileTarget_
 24bc:58c5*     A_BrainSpit_
@@ -1570,4 +1570,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003e950 (256336.)
 Entry point address: 304d:7cce
-Link time: 00:00.05
+Link time: 00:00.04

@@ -14827,8 +14827,13 @@ add      ah, OFFSET _quality_port_lookup
 mov      byte ptr ds:[SELFMODIFY_detailshift_plus1_1+3], ah
 mov      byte ptr ds:[SELFMODIFY_detailshift_plus1_1_TWOSIDED+3], ah
 
-mov      ah, byte ptr ss:[_quality_port_lookup]
+mov      bl, al
+xor      bh, bh
+shl      bx, 1
+shl      bx, 1
+mov      ah, byte ptr ss:[bx+_quality_port_lookup]
 mov      byte ptr ds:[SELFMODIFY_detailshift_first_port+1], ah
+
 
 
 
