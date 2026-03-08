@@ -36,7 +36,7 @@ EXTRN  FastDiv32u16u_:NEAR
 PUBLIC _SELFMODIFY_R_WRITEBACKVIEWCONSTANTSSPANCALL
 PUBLIC _SELFMODIFY_R_WRITEBACKVIEWCONSTANTSMASKEDCALL
 PUBLIC _SELFMODIFY_R_WRITEBACKVIEWCONSTANTS
-
+FINE_TANGENT_MAX = 2048
 
 FIXED_FINE_TAN = 010032H
 NUMCOLORMAPS = 32
@@ -49,19 +49,13 @@ PUBLIC  R_SETUP_STARTMARKER_
 ENDP
 
 use_min:
-test    dx, dx
+test    ax, ax
 jz      dont_use_min
 use_min_skip_check:
 mov     ax, -1
 jmp     set_value_and_continue_loop
 
-use_max:
-test    dx, dx
-jz      dont_use_max
-use_max_skip_check:
-_SELFMODIFY_set_viewwidthplusone:
-mov     ax, 01000h
-jmp     set_value_and_continue_loop
+
 
 
 PROC    R_InitTextureMapping_ NEAR
@@ -72,10 +66,11 @@ PUSHA_NO_AX_MACRO
 
 ;	focallength = FixedDivWholeA(centerx, FIXED_FINE_TAN);
 mov     ax, word ptr ds:[_viewwidth]
-mov     word ptr cs:[_SELFMODIFY_set_viewwidth+3], ax
+
 inc     ax
-mov     word ptr cs:[_SELFMODIFY_compare_viewwidthplusone+1], ax
-mov     word ptr cs:[_SELFMODIFY_set_viewwidthplusone+1], ax
+
+
+
 mov     word ptr cs:[_SELFMODIFY_check_viewwidth_plus_1+1], ax
 mov     ax, word ptr ds:[_centerx]
 mov     word ptr cs:[_SELFMODIFY_add_center_x+1], ax
@@ -101,43 +96,55 @@ call	Z_QuickMapRender_
 ; we break this into 2 loop variants that are self modified in between, due to finetangentinner logic
 ;	for (i = 0; i < FINEANGLES / 2; i++) {
 
+; todo 
+
+MOV   BP, word ptr ds:[_viewwidth]
+inc   bp    ; viewwidth+1
+MOV   AX, FINETANGENTINNER_SEGMENT
+    MOV   DS, AX ; fixedmul no longer clobbers DS
+MOV   AX, VIEWANGLETOX_SEGMENT
+MOV   ES, AX
+XOR   DI, DI
 
 loop_next_fineangle:
+MOV   BX, DI
+; No AND because value is known in-range
+SUB   BX, 4096
+SBB   CX, CX         ; cx is mask...
+XOR   BX, CX         ; apply sign
+ADD   BX, CX         ; offset left by 2 (after shift) for negatives
 
-mov     ax, FINETANGENTINNER_SEGMENT
-mov     ds, ax
-lodsw
-xchg    ax, dx
-lodsw
+;CMP   BX, (1443 SHL 1) ; 1443 is the index that equals FRACUNIT * 2
+;JB    small_tangent
 
+; Read tangent table
+SHL   BX, 1
+LES   AX, DS:[BX]
+MOV   DX, ES
 
-; becomes  jmp for 2nd loop to skip neg
-;  neg  ax -> neg  dx -> sbb ax, 0
-_SELFMODIFY_toggle_32_bit_neg:
-neg     ax
-_SELFMODIFY_toggle_32_bit_neg_jmp_AFTER:
-neg     dx
-sbb     ax, 0
-_SELFMODIFY_toggle_32_bit_neg_jmp_TARGET:
+;NOT   CX
 
-skip_neg:
-cmp     ax, 2
-jge     use_min
-; bad news. 131072 and -131072 do exist in finetangent table. we must check ax.
+XOR   AX, CX
+XOR   DX, CX
+SUB   AX, CX
+SBB   DX, CX
+
+cmp   dx, 2
+jge   use_min
 dont_use_min:
-cmp     ax, -2
-jle     use_max
+cmp   dx, -2
+jle   use_max
 dont_use_max:
-xchg    ax, dx
+
+
 _SELFMODIFY_set_focallength_hi:
-mov     cx, 01000h
+MOV   CX, 01000h
 _SELFMODIFY_set_focallength_low:
-mov     bx, 01000h
-
-call    FixedMul_     ; t.w = FixedMul(finetan_i.w, focallength);
-
-;			t.w = (temp.w - t.w + 0xFFFFu);
+MOV   BX, 01000h
+CALL FixedMul_ ; t.w = FixedMul(finetan_i.w, focallength);
+; t.w = (temp.w - t.w + 0xFFFFu);
 xchg   ax, dx
+
 neg    ax  ; neg sbb cancels out FFFFu add
 _SELFMODIFY_add_center_x:
 add     ax, 01000h
@@ -151,11 +158,9 @@ add     ax, 01000h
 
 cmp     ax, -1
 jl      use_min_skip_check
-_SELFMODIFY_compare_viewwidthplusone:
-cmp     ax, 01000h
+cmp     ax, bp
 jg      use_max_skip_check
 
- 
 
 set_value_and_continue_loop:
 
@@ -163,33 +168,42 @@ set_value_and_continue_loop:
 mov     dx, VIEWANGLETOX_SEGMENT
 mov     es, dx
 stosw
-add     si, bp
-cmp     si, (FINEANGLES / 4) * 4  ; 8192
-jb      loop_next_fineangle   ; for the 2nd loop, we end when this loops over to ff.
-;test    si, si  ; can this be skipped with jnc?
-js      cleanup_and_exit_function
+cmp  di, (FINEANGLES / 4) * 4  ; 8192
+jb   loop_next_fineangle
+; loop ends here
+jmp  cleanup_and_exit_function
+use_max:
+test    ax, ax
+jz      dont_use_max
+use_max_skip_check:
 
-; SET UP SECOND LOOP!
+mov     ax, bp
+jmp     set_value_and_continue_loop
 
-mov   word ptr cs:[_SELFMODIFY_toggle_32_bit_neg], ((_SELFMODIFY_toggle_32_bit_neg_jmp_TARGET - _SELFMODIFY_toggle_32_bit_neg_jmp_AFTER) SHL 8) + 0EBh
-mov     bp, -8   ; we're now iterating backwards thru the finetan table. neg 8 after each plus 4
-sub     si, 4    ; undo last read..
-jmp     loop_next_fineangle
-
+small_tangent:
+NOT  CX
+XCHG AX, CX
+; finetan_i.w > FRACUNIT * 2 -> AX == -1, OR does nothing
+; finetan_i.w < -FRACUNIT * 2 -> AX == 0, OR is MOV
+OR   AX, BP
+JMP  set_value_and_continue_loop
+ 
 set_value_to_min:
 mov    word ptr ds:[si - 2], 0
 jmp    continue_fencepost_checks
 set_value_to_max:
-_SELFMODIFY_set_viewwidth:
-mov    word ptr ds:[si - 2], 01000h
+
+dec    bp
+mov    word ptr ds:[si - 2], bp
+inc    bp
 jmp    continue_fencepost_checks
+
 
 
 
 cleanup_and_exit_function:
 
 ; restore neg
-mov     word ptr cs:[_SELFMODIFY_toggle_32_bit_neg], 0D8F7h   ; neg ax
 
 
 

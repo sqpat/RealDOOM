@@ -1273,26 +1273,6 @@ mov   bx, 4 * 2048
 mov   cx, di
 call  locallib_fread_
 
-COMMENT @
-mov   ax, FINETANGENTINNER_SEGMENT
-mov   es, ax
-mov   cx, 2048
-
-xor   si, si
-do_next_finetan:
-lods  word ptr es:[si]
-xchg  ax, dx
-lods  word ptr es:[si]
-neg   ax
-neg   dx
-sbb   ax, 0
-mov   word ptr es:[si - 4], dx
-mov   word ptr es:[si - 2], ax
-
-loop  do_next_finetan
-@
-
-
 
 ;	FAR_memset(visplanes_8400, 0x00,   0xC000);
 mov   cx, 0C000h / 2

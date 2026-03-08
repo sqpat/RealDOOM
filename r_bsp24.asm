@@ -5609,54 +5609,73 @@ and   bh, FINE_ANGLE_HIGH_BYTE				; MOD_FINE_ANGLE = and 0x1FFF
 
 ; temp.w = rw_offset.w - FixedMul(finetangent(angle),rw_distance);
 
-mov   bp, 4096
-sub   bp, bx
-mov   bx, bp
 
-cmp   bx, FINE_TANGENT_MAX
-sbb   bp, bp      ; carry if -1
+sub   bx, FINE_TANGENT_MAX        ; bx now -2048 to 2047
+sbb   bp, bp
+xor   bx, bp          ; bx now 0 to 2048, bp has sign.. but table is 2048 entries.
+add   bx, bp          ; offset by an entry for negatives
 
-; the following is a branchless version of:
-; jc  skip
-; neg bx
-; add bx, 4095
-; skip
+SELFMODIFY_set_rw_distance_lo:
+public SELFMODIFY_set_rw_distance_lo
+mov   ax, 01000h
 
-not   bp          ; if not carry, then neg
-xor   bx, bp
-mov   cx, 4096
-and   cx, bp
-add   bx, cx
-not   bp
 
-do_finetan_lookup_mid:
-public do_finetan_lookup_mid
-SHIFT_MACRO shl bx 2
-test  bh, 010h
-les   bx, dword ptr es:[bx]
-mov   cx, es
-jmp   finetangent_ready
+
+IF COMPISA GE COMPILE_386
+    ; todo or one?
+   SHIFT_MACRO shl bx 2
+   les   bx, dword ptr es:[bx]
+   mov   cx, es
+
+  SELFMODIFY_set_rw_distance_hi:
+  mov   dx, 01000h
+
+  shl   ecx, 16
+  mov   cx, bx
+  xchg  ax, dx
+  shl   eax, 16
+  xchg  ax, dx
+  imul  ecx
+  shr   eax, 16
+  jmp   done_with_finetanmul
+
+
+ELSE
+
+   SHIFT_MACRO shl bx 2
+   test  bh, 010h
+   les   bx, dword ptr es:[bx]
+
+
+   SELFMODIFY_set_rw_distance_hi:
+   mov   si, 01000h
+   jnz   do_32_bit_finetan_mul
+
+   do_16_bit_mul:
+   public do_16_bit_mul
+
+   ; BX * SI:AX
+
+
+   mul  bx        ; AX * BX
+   mov  ax, bx    ; for next mul
+   mov  bx, dx    ; store hi result
+   mul  si
+   add  ax, bx    ; add previous hi into lo
+   adc  dx, 0     ;
+
+   jmp  done_with_16bitmul
+
+ENDIF
+
+
 ALIGN_MACRO
 jump_to_mid_no_pixels_to_draw:
 add   sp, 2   ; undo push of dc_x...
 xchg  ax, di  ; dc_yl into ax
 jmp   mid_no_pixels_to_draw  ; restore bp here
 
-ALIGN_MACRO
-do_16_bit_mul:
-public do_16_bit_mul
 
-; BX * SI:AX
-
-
-MUL  BX        ; AX * BX
-mov  ax, bx    ; for next mul
-mov  bx, dx    ; store hi result
-mul  si
-add  ax, bx    ; add previous hi into lo
-adc  dx, 0     ;
-
-jmp  done_with_16bitmul
 
 
 ALIGN_MACRO
@@ -5671,39 +5690,12 @@ jmp   main_3232_div
 
 ; todo: make this faster.
 
-
-
-finetangent_ready:
-; calculate texture column
-SELFMODIFY_set_rw_distance_lo:
-public SELFMODIFY_set_rw_distance_lo
-mov   ax, 01000h
-
-; begin inlined FixedMul_
-
-;start inlined FixedMulBSPLocal_
-
 IF COMPISA GE COMPILE_386
-
-SELFMODIFY_set_rw_distance_hi:
-mov   dx, 01000h
-
-  shl  ecx, 16
-  mov  cx, bx
-  xchg ax, dx
-  shl  eax, 16
-  xchg ax, dx
-  imul  ecx
-  shr  eax, 16
-
-
-
 ELSE
 
- ; si not preserved
-SELFMODIFY_set_rw_distance_hi:
-  mov   si, 01000h
-  jnz   do_16_bit_mul  ; test bh from earlier.
+do_32_bit_finetan_mul:
+
+  mov   cx, es ;todo better register synergy
 
   MUL  BX
   MOV  ES, DX
@@ -5731,18 +5723,20 @@ SELFMODIFY_set_rw_distance_hi:
 
 
 
-ENDIF
 
-; around here whats wrong
+   ; around here whats wrong
 
-;	    texturecolumn = rw_offset-FixedMul(finetangent[angle],rw_distance);
+   ;	    texturecolumn = rw_offset-FixedMul(finetangent[angle],rw_distance);
 
-done_with_16bitmul:
+   done_with_16bitmul:
+   not   bp
+   SUB   AX, bp
+   SBB   DX, bp
+   XOR   AX, bp ; no xor ax necessary if we flip order with add below? may require below values negged
+   XOR   DX, bp
+   ENDIF
 
-SUB   AX, bp
-SBB   DX, bp
-XOR   AX, bp ; no xor ax necessary if we flip order with add below? may require below values negged
-XOR   DX, bp
+done_with_finetanmul:
 
 ; todo self modify the neg of this in somehow?
 SELFMODIFY_set_cx_rw_offset_lo:	
@@ -9021,19 +9015,25 @@ and   ah, FINE_ANGLE_HIGH_BYTE				; MOD_FINE_ANGLE = and 0x1FFF
 
 mov   bx, FINETANGENTINNER_SEGMENT
 mov   es, bx
-mov   bx, 4096 ; hack for now
-sub   bx, ax
-cmp   bx, FINE_TANGENT_MAX
-jb    non_subtracted_finetangent_TWOSIDED
-; mirrored values in lookup table
-neg   bx
-add   bx, 4095
+
+mov   bx, ax
+sub   bx, FINE_TANGENT_MAX        ; bx now -2048 to 2047
+sbb   si, si
+xor   bx, si          ; bx now 0 to 2048, cx has sign.. but table is 2048 entries.
+add   bx, si          ; offset by an entry for negatives
+
+
 SHIFT_MACRO shl bx 2
 les   ax, dword ptr es:[bx]
 mov   dx, es
-neg   dx
-neg   ax
-sbb   dx, 0
+
+SUB   AX, si
+SBB   DX, si
+XOR   AX, si
+XOR   DX, si
+
+
+
 jmp   finetangent_ready_TWOSIDED
 ALIGN_MACRO
 SELFMODIFY_BSP_get_segtextured_TARGET_TWOSIDED:
@@ -9041,10 +9041,8 @@ jump_to_seg_non_textured_TWOSIDED:
 xor   dx, dx
 jmp   seg_non_textured_TWOSIDED
 ALIGN_MACRO
-non_subtracted_finetangent_TWOSIDED:
-SHIFT_MACRO shl bx 2
-les   ax, dword ptr es:[bx]
-mov   dx, es
+
+
 finetangent_ready_TWOSIDED:
 ; calculate texture column
 SELFMODIFY_set_bx_rw_distance_lo_TWOSIDED:
