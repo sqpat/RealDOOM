@@ -3808,7 +3808,7 @@ jmp       done_adjusting_row_offset
 
 STOREWALLRANGE_INNER_STACK_SIZE = 02Ah
 STOREWALLRANGE_FULL_STACK_SIZE = 046h
-STOREWALLRANGE_INNER_STACK_SIZE_MID = 028h
+STOREWALLRANGE_INNER_STACK_SIZE_MID = 01Ch
 
 ALIGN_MACRO  ; adding these back seems to lower bench scores
 PROC   R_StoreWallRangeNoBackSector_ NEAR ; needs another look and reconciliation with outer stack frames.
@@ -3854,7 +3854,7 @@ PUBLIC R_StoreWallRangeNoBackSector_
 
 ; pushed stuff
 ; bp - 022h  ; stop - start
-; bp - 024h  ; base4diff
+; bp - 024h  ; base4diff      ; todo unused 
 
 ; bp - 026h  ; worldtop hi
 ; bp - 028h  ; worldtop lo
@@ -3869,15 +3869,7 @@ PUBLIC R_StoreWallRangeNoBackSector_
 ; bp - 036h  ; bottomfrac hi  preshifted 4
 ; bp - 038h  ; bottomfrac lo  preshifted 4
 
-; loop copies 
 
-; bp - 03Ah  ; rw_scale hi loop copy
-; bp - 03Ch  ; rw_scale lo loop copy
-
-; bp - 03Eh  ; topfrac hi     preshifted 4  loop copy
-; bp - 040h  ; topfrac lo     preshifted 4  loop copy
-; bp - 042h  ; bottomfrac hi  preshifted 4  loop copy
-; bp - 044h  ; bottomfrac lo  preshifted 4  loop copy
 
 
 
@@ -4277,26 +4269,16 @@ mov       ds, cx  ; cs = ds, in case it wasnt already..
 
 
 ; bx is already [bp - 01Eh]
-mov   cx, bx
 
-SELFMODIFY_detailshift_and_1:
-and   bx, 01000h
-mov   word ptr ds:[SELFMODIFY_add_rw_x_base4_to_ax+1], bx
-mov   word ptr ds:[SELFMODIFY_compare_ax_to_start_rw_x+1], cx
 
-;  	int16_t base4diff = rw_x - rw_x_base4;
-sub   cx, bx   ; result is 0 1 2 or 3. but if 2 then we want to set value 080h
-mov   byte ptr ds:[SELFMODIFY_set_rw_x_loop_counter+1], cl
-add   bx, cx   ; bx is [bp - 01Eh] or rw_x again.
-ror   cl, 1    ; result is 0, 1, 2, 3
-push  cx       ; bp - 024h remap to 0, 0x80, 1, 0x81
+push  bx       ; bp - 024h remap to 0, 0x80, 1, 0x81   ; todo unused
 
 
 
 
 
 mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_1+1], ax
-mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_3+1], ax
+
 
 
 
@@ -4491,27 +4473,16 @@ ASSUME DS:R_BSP_24_TEXT
 
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_1+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_2+1], ax
-mov       word ptr ds:[SELFMODIFY_add_rwscale_lo+3], ax
-mov       word ptr ds:[SELFMODIFY_sub_rwscale_lo+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_rwscale_lo_2+4], ax
 
 xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_1+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_2+1], ax
 
-mov       word ptr ds:[SELFMODIFY_sub_rwscale_hi+3], ax
-mov       word ptr ds:[SELFMODIFY_add_rwscale_hi+3], ax
-
-
-
-; todo change these in 386 mode to shld?
-SELFMODIFY_BSP_detailshift_1:
-shl   dx, 1
-rcl   ax, 1
-shl   dx, 1
-rcl   ax, 1
-
 mov       word ptr ds:[SELFMODIFY_add_to_rwscale_hi_2+4], ax
-mov       word ptr ds:[SELFMODIFY_add_to_rwscale_lo_2+4], dx
+
+
+
 
 ;ASSUME DS:DGROUP  ; lods coming up
 
@@ -5022,28 +4993,11 @@ sbb       dx, 0
 
 ; dx:ax are topstep
 
+; todo can this modify a sub and skip the neg above?
 
-mov       word ptr ds:[SELFMODIFY_sub_topstep_lo+3], ax
-mov       word ptr ds:[SELFMODIFY_add_topstep_lo+3], ax
-xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_sub_topstep_hi+3], ax
-mov       word ptr ds:[SELFMODIFY_add_topstep_hi+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_2+4], dx
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_2+3], ax
 
-
-
-
-
-
-SELFMODIFY_BSP_detailshift_2:
-shl       dx, 1
-rcl       ax, 1
-shl       dx, 1
-rcl       ax, 1
-
-finished_shifting_topstep:
-
-mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_2+4], ax
-mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_2+3], dx
 
 
 
@@ -5105,23 +5059,12 @@ sbb       dx, 0
 ; dx:ax are bottomstep
 
 
+; todo can this modify a sub and skip the neg above?
+
+mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_2+4], dx
+mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_2+3], ax
 
 
-mov       word ptr ds:[SELFMODIFY_sub_botstep_lo+3], ax
-mov       word ptr ds:[SELFMODIFY_add_botstep_lo+3], ax
-xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_sub_botstep_hi+3], ax
-mov       word ptr ds:[SELFMODIFY_add_botstep_hi+3], ax
-
-SELFMODIFY_BSP_detailshift_3:
-shl       dx, 1
-rcl       ax, 1
-shl       dx, 1
-rcl       ax, 1
-
-
-mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_2+4], ax
-mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_2+3], dx
 
 
 
@@ -5140,233 +5083,40 @@ PUBLIC R_RenderSegLoop_
 
 
 
-SELFMODIFY_set_rw_x_loop_counter:
-db 0B9h, 00, 00   ; mov cx, 00000
-public SELFMODIFY_set_rw_x_loop_counter
-mov   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1], ch ; 0   ; todo move this after a div or mul somewhere
 
-;	while (base4diff){
-;		rw_scale.w      -= rw_scalestep;
-;		topfrac         -= topstep;
-;		bottomfrac      -= bottomstep;
-;		base4diff--;
-;	}
-jcxz   skip_sub_base4diff
-
-; ALIGN_MACRO
-sub_base4diff:
-public sub_base4diff
-
-; adders have been pushed onto stack.
-; if we sub_base4diff loop then we popa the adders, and add loop to stack.
-; add to sp and remove the adders from stack after this as they are no longer needed (?)
-
-; todo: push these immediates. popa them. add back to sp if loop skipped. 
-
-COMMENT @
-   DI := Pop();  ; botstep_lo    3C
-   SI := Pop();  ; botstep_hi    3A 
-   BP := Pop();  ; topstep_lo    38
-   throwaway := Pop (); (* Skip SP *)  ; throwaway! 36
-   BX := Pop();  ; topstep_hi    34
-   DX := Pop();  ; rw_scale_lo   32
-   CX := Pop();  ; rw_scale_hi   30
-   AX := Pop();  ; ???           2E
-POPA_MACRO  ;todo
-
-POPA_MACRO  ;todo
-
-
-
-
-@
-
-
-
-
-; todo: in this case popa the adders.
-; todo (eventually) make sure all the selfmodify addresses are word aligned!
-
-SELFMODIFY_sub_botstep_lo:
-sub   word ptr [bp - 038h], 01000h 
-SELFMODIFY_sub_botstep_hi:
-sbb   word ptr [bp - 036h], 01000h 
-SELFMODIFY_sub_topstep_lo:
-sub   word ptr [bp - 034h], 01000h
-SELFMODIFY_sub_topstep_hi:
-sbb   word ptr [bp - 032h], 01000h 
-SELFMODIFY_sub_rwscale_lo:
-sub   word ptr [bp - 030h], 01000h 
-SELFMODIFY_sub_rwscale_hi:
-sbb   word ptr [bp - 02Eh], 01000h 
-
-
-
-; pixlow, pixhigh done earlier
-
-loop   sub_base4diff
-skip_sub_base4diff:
-public skip_sub_base4diff
-
-; initial loop iter stuff.
-xor   bx, bx ; xoffset is 0
-inc   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1]
-
-mov   dx, SC_DATA
-SELFMODIFY_detailshift_first_port:
-mov   al, 010h
-out   dx, al
 
 ; todo skip these pushes if potato?
 
 
 ; sp is bp - 038h
-; maybe lea sp, bp - 038h once popa above.
+; todo: pop these into place
+; maybe for now, sti/cli and pop and reset sp to maintain stack values.
 
 
-; todo (eventually) make sure all the selfmodify addresses are word aligned!
 
-;push  word ptr [bp - 02Eh]  ; bp - 03Ah
 mov   ax, word ptr [bp - 02Eh]
-push  ax
 mov   word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], ax
-;push  word ptr [bp - 030h]  ; bp - 03Ch
+
 mov   ax, word ptr [bp - 030h]
-push  ax
 mov   word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], ax
-;push  word ptr [bp - 032h]  ; bp - 03Eh
 mov   ax, word ptr [bp - 032h]
-push  ax
 mov   word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], ax
 
-push  word ptr [bp - 034h]  ; bp - 040h
-;push  word ptr [bp - 036h]  ; bp - 042h
 mov   ax, word ptr [bp - 036h]
-push  ax
 mov   word ptr ds:[SELFMODIFY_set_botfrac_hi_mid+1], ax
-push  word ptr [bp - 038h]  ; bp - 044h
 
+mov   ax, word ptr [bp - 024h]  ; get start_x/dc_x initial value
 
-jmp   skip_first_iter_setup ; jump into first iter.
+jmp   start_per_column_inner_loop ; jump into first iter.
 
 ALIGN_MACRO
 
-continue_outer_rendersegloop:
-
-; xoffset is al
-
-cbw  
-xchg  ax, bx	; xoffset to bx
-
-inc   byte ptr ds:[SELFMODIFY_set_al_to_xoffset+1]
-
-mov   dx, SC_DATA
-SELFMODIFY_detailshift_plus1_1:
-mov   al, byte ptr ss:[bx + OFFSET _quality_port_lookup]	
-out   dx, al
-
-; pre inner loop.
-; reset everything to base;
-; todo: skip if potato
 
 
-; topfrac    = base_topfrac;
-; bottomfrac = base_bottomfrac;
-; rw_scale.w = base_rw_scale;
-; pixlow     = base_pixlow;
-; pixhigh    = base_pixhigh;
-
-mov   di, ss
-mov   es, di
-mov   ds, di
-
-lea   si, [bp - 044h]
-lea   di, [bp - 038h]
-
-; todo (eventually) make sure all the selfmodify addresses are word aligned!
-; todo put the two lo words that are used on stack adjacent. get rid of the other four.
-movsw
-lodsw
-mov   word ptr cs:[SELFMODIFY_set_botfrac_hi_mid+1], ax
-add   di, 2
-
-movsw
-lodsw
-mov   word ptr cs:[SELFMODIFY_set_topfrac_hi_mid+1], ax
-
-lodsw
-mov   word ptr cs:[SELFMODIFY_set_rwscale_lo_mid+1], ax
-
-lodsw
-mov   word ptr cs:[SELFMODIFY_set_rwscale_hi_mid+1], ax
-
-mov   di, cs
-mov   ds, di  ; todo how necessary is ds as cs used much anymore??
-
-skip_first_iter_setup:
-
-
-; TODO move the starting bp values into CS to remove remaining bp yses here.
-
-xchg  ax, bx	; get xoffset  back
-SELFMODIFY_add_rw_x_base4_to_ax:
-add   ax, 1000h
-; ax contains rw_x
-SELFMODIFY_compare_ax_to_start_rw_x:
-cmp   ax, 1000h
-jl    pre_increment_values
-
-SELFMODIFY_cmp_ax_to_rw_stopx_3:
-cmp   ax, 01000h
-jl    start_per_column_inner_loop
-
-; todo move this up, change default branches
-
-finish_outer_loop:
-public finish_outer_loop
-; self modifying code for step values.
-
-; ds is cs
-
-
-; xoffset++,
-; base_topfrac    += topstep, 
-; base_bottomfrac += bottomstep, 
-; base_rw_scale   += rw_scalestep,
-; base_pixlow	  += pixlowstep,
-; base_pixhigh    += pixhighstep
-
-
-; feels like it can be faster.
-SELFMODIFY_set_al_to_xoffset:
-mov   al, 0
-SELFMODIFY_cmp_al_to_detailshiftitercount:
-cmp   al, 0
-
-jge   exit_rendersegloop ; exit before adding the other loop vars.
-
-; even if constants were on stack (which is possible), popa not faster
-
-SELFMODIFY_add_rwscale_lo:
-add   word ptr [bp - 03Ch], 01000h
-SELFMODIFY_add_rwscale_hi:
-adc   word ptr [bp - 03Ah], 01000h
-
-SELFMODIFY_add_topstep_lo:
-add   word ptr [bp - 040h], 01000h
-SELFMODIFY_add_topstep_hi:
-adc   word ptr [bp - 03Eh], 01000h
-SELFMODIFY_add_botstep_lo:
-add   word ptr [bp - 044h], 01000h
-SELFMODIFY_add_botstep_hi:
-adc   word ptr [bp - 042h], 01000h
-
-
-jmp  continue_outer_rendersegloop
-ALIGN_MACRO
 
 
 exit_rendersegloop:
+public exit_rendersegloop
 ; zero out local caches.
 
 ;ASSUME DS:DGROUP
@@ -5386,8 +5136,8 @@ jmp   R_RenderSegLoop_exit
 
 
 ALIGN_MACRO
-pre_increment_values:       ; ; todo this seems to be rare. maybe does not need to be in a code hot spot and can be far jumped to
-public pre_increment_values
+increment_loop_values:       ; ; todo this seems to be rare. maybe does not need to be in a code hot spot and can be far jumped to
+public increment_loop_values
 
 ;		rw_x = rw_x_base4 + xoffset;
 ;		if (rw_x < start_rw_x){
@@ -5400,14 +5150,11 @@ public pre_increment_values
 ;		}
 
 
-SELFMODIFY_add_iter_to_rw_x:
-; ax was already up-to-date rw_x
-db  05h, 00h, 00h   ;add   ax, 0
-; ax has rw_x...
+inc   ax  ; rw_x++
 
 SELFMODIFY_cmp_ax_to_rw_stopx_1:
 cmp   ax, 01000h
-jge   finish_outer_loop
+jge   exit_rendersegloop
 
 ; todo (eventually) make sure all the selfmodify addresses are word aligned!
 SELFMODIFY_add_to_bottomfrac_lo_2:
@@ -5430,11 +5177,23 @@ adc   word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], 01000h
 ; this is right before inner loop start. due to vga plane aligmnent we might not draw pixel 0 for this plane?
 
 start_per_column_inner_loop:
+public start_per_column_inner_loop
 ; ax was rw_x
+mov   di, ax   ; ax was still rw_x
 
+; todo skip this for potato?
 
+SELFMODIFY_and_by_detail_level:
+and   ax, 00010h
 
-xchg  ax, di   ; ax was still rw_x
+SELFMODIFY_set_qualityportlookup_mid:
+mov   bx, 00000h        ; base for qualityportlookup...
+
+mov   dx, SC_DATA
+SELFMODIFY_detailshift_plus1_1:
+xlat  byte ptr ss:[bx]
+out   dx, al
+
 ; ds is always cs coming in.
 
 
@@ -5447,7 +5206,7 @@ PUBLIC check_here
 ; store only in ch/cl. possible store same pixel floor/ceiling side by side? one read, word?
 ; si sucks for holding this value. use dx?
                                                  ; di = rw_x
-xor   ax, ax
+; ah already 0
 mov   al, byte ptr ds:[di+OFFSET_FLOORCLIP]	 ; cx = floor
 mov   cx, ax
 mov   al, byte ptr ds:[di+OFFSET_CEILINGCLIP] ; si = ceiling  = ceilingclip[rw_x]+1;
@@ -5947,7 +5706,8 @@ mid_no_pixels_to_draw:
 SELFMODIFY_restore_bp_after_draw_mid:
 mov   bp, 01000h
 
-jmp   pre_increment_values
+jmp   increment_loop_values
+
 
 ALIGN_MACRO
 use_max_light:
@@ -5959,8 +5719,6 @@ ALIGN_MACRO
 jmp_to_main_3232_div:
 jmp   main_3232_div
 ALIGN_MACRO
-jump_to_finish_outer_loop:
-jmp   finish_outer_loop
 
 
 ALIGN_MACRO
@@ -6883,7 +6641,7 @@ mov   word ptr ds:[SELFMODIFY_compare_ax_to_start_rw_x_TWOSIDED+1], cx
 
 ;  	int16_t base4diff = rw_x - rw_x_base4;
 sub   cx, bx   ; result is 0 1 2 or 3. but if 2 then we want to set value 080h
-mov   byte ptr ds:[SELFMODIFY_set_rw_x_loop_counter+1], cl
+mov   byte ptr ds:[SELFMODIFY_set_rw_x_loop_counter_TWOSIDED+1], cl
 add   bx, cx   ; bx is [bp - 01Eh] or rw_x again.
 ror   cl, 1    ; result is 0, 1, 2, 3
 push  cx       ; bp - 024h remap to 0, 0x80, 1, 0x81
@@ -8805,7 +8563,7 @@ jmp   finish_outer_loop_TWOSIDED
 
 ALIGN_MACRO
 pre_increment_values_TWOSIDED:       ; ; todo this seems to be rare. maybe does not need to be in a code hot spot and can be far jumped to
-public pre_increment_values
+public pre_increment_values_TWOSIDED
 
 ;		rw_x = rw_x_base4 + xoffset;
 ;		if (rw_x < start_rw_x){
@@ -14798,15 +14556,13 @@ xor      cx, cx
 mov      ax, word ptr ss:[_detailshift]
 mov      cl, al
 add      ah, OFFSET _quality_port_lookup
-mov      byte ptr ds:[SELFMODIFY_detailshift_plus1_1+3], ah
+mov      byte ptr ds:[SELFMODIFY_set_qualityportlookup_mid+1], ah
 mov      byte ptr ds:[SELFMODIFY_detailshift_plus1_1_TWOSIDED+3], ah
 
 mov      bl, al
 xor      bh, bh
 shl      bx, 1
 shl      bx, 1
-mov      ah, byte ptr ss:[bx+_quality_port_lookup]
-mov      byte ptr ds:[SELFMODIFY_detailshift_first_port+1], ah
 
 
 
@@ -14839,9 +14595,7 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_TWOSIDED+2], ax
 ; 0EBh, 006h = jmp 6
 
 mov      ax, 006EBh
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3], ax
+
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5], ax
 
@@ -14900,12 +14654,6 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_TWOSIDED+2], ax
 
 ;mov      ax, 0c089h  ; continued from above
 
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+0], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+2], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+0], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+2], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+0], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5+0], ax
@@ -14952,9 +14700,6 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_TWOSIDED+2], ax
 ; d1 e2 d1 d0   = shl dx, 1; rcl ax, 1
 
 mov      ax, 0E2D1h
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+0], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+0], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2_TWOSIDED+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3_TWOSIDED+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1_TWOSIDED+0], ax
@@ -14964,9 +14709,6 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5+0], ax
 
 mov      ah, 0D0h
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1+2], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2+2], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2_TWOSIDED+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3_TWOSIDED+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1_TWOSIDED+2], ax
@@ -14990,17 +14732,23 @@ done_modding_shift_detail_code:
 
 
 mov      al, byte ptr ss:[_detailshiftitercount]
-mov      byte ptr ds:[SELFMODIFY_cmp_al_to_detailshiftitercount+1], al
+
 mov      byte ptr ds:[SELFMODIFY_cmp_al_to_detailshiftitercount_TWOSIDED+1], al
 ; todo is this supposed to be SELFMODIFY_add_iter_to_rw_x plus 2?
-mov      byte ptr ds:[SELFMODIFY_add_iter_to_rw_x+1], al
+
 mov      byte ptr ds:[SELFMODIFY_add_iter_to_rw_x_TWOSIDED+1], al
+mov      byte ptr ds:[SELFMODIFY_add_iter_to_rw_x_TWOSIDED+1], al
+
+
 
 mov      byte ptr ds:[SELFMODIFY_add_detailshiftitercount_TWOSIDED+1], al
 
 mov      ax, word ptr ss:[_detailshiftandval]
-mov      word ptr ds:[SELFMODIFY_detailshift_and_1+2], ax
+
+
 mov      word ptr ds:[SELFMODIFY_detailshift_and_1_TWOSIDED+2], ax
+not      ax
+mov      byte ptr ds:[SELFMODIFY_and_by_detail_level+2], al
 
 
 ; ah is definitely 0... optimizable?
