@@ -5732,19 +5732,14 @@ do_32_bit_finetan_mul:
   MOV  AX, SI
   MUL  CX
   XCHG AX, SI
-  CWD
-  AND  DX, BX
-  SUB  SI, DX
   MUL  BX
   MOV  BX, ES
   ADD  AX, BX
-  ADC  SI, DX
   SELFMODIFY_set_rw_distance_lo_2:
   mov   bx, 01000h
   XCHG AX, CX
-  CWD
-  AND  DX, BX
-  SUB  SI, DX
+  ADC  SI, DX
+
   MUL  BX
   ADD  AX, CX
   ADC  DX, SI
