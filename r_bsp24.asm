@@ -5575,24 +5575,25 @@ public  markfloor_done
 sal   dx, 1        ; multiply pixel count by 2. if zero no pixels to draw
 jl    jump_to_mid_no_pixels_to_draw ; wait until floors/ceils marked to early out.
 
-push  bp  ; push because ax needs this later.  ; todo or carry into ax?
+push  bp  ; push because ax needs dc_yl for colfunc
 
 
 lea   si,  [bp + _bsp_local_dc_yl_lookup_table - 2] ; word offset + lookup
-mov   si, word ptr ds:[si+bp]                       ; add * 80 lookup table value 
+mov   bp, word ptr ds:[si+bp]                       ; add * 80 lookup table value 
 
 
 mov   bx, di  ; copy dc_x
 
 SELFMODIFY_BSP_detailshift2minus:
-sar   bx, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
-sar   bx, 1
+sar   di, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
+sar   di, 1
 
 
 SELFMODIFY_BSP_add_destview_offset:
-lea   ax, [bx + si + 01000h]
+public SELFMODIFY_BSP_add_destview_offset
+lea   di, [di + bp + 01000h]           ; di has destview offset
 
-push  ax  ; destview offset.          pop into di later. or is lea di possible etc?
+; bx has dc_x...
 
 ; todo: if we go back to loading jump offset from a table, dx is word offset already.
 ; currently not doing it because its too big to potentially fit in cs right now,
@@ -5621,14 +5622,14 @@ seg_is_textured:
 
 ; eventually use DS here, once source_segment vars use CS?
 
-mov   bx, XTOVIEWANGLE_SEGMENT
-mov   es, bx
+mov   ax, XTOVIEWANGLE_SEGMENT
+mov   es, ax
 
-shl   di, 1        ; word lookup
-mov   bx, word ptr es:[di]
+shl   bx, 1        ; word lookup
+mov   bx, word ptr es:[bx]
 
-mov   di, FINETANGENTINNER_SEGMENT
-mov   es, di
+mov   ax, FINETANGENTINNER_SEGMENT  ; maybe can be skipped if bsp is moved under here.
+mov   es, ax
 
 SELFMODIFY_set_rw_center_angle:
 add   bx, 01000h
@@ -5930,8 +5931,8 @@ ENDIF
    
    ; cl:ax has 24 bits of result. 
    ; dc_iscale loaded here..
+   ; di already has screen coord
 
-   pop   di   ; screen coord
    pop   ax   ; dc_yl
 
    R_DrawColumnPrep_:
@@ -6182,7 +6183,7 @@ ELSE
    main_3232_div:
    public main_3232_div
 
-  ; todo dont use di, use dx instead
+
 
 
    ; generally cx maxes out at around 5 bits of precision? bias towards shift right instead of left.  
@@ -6246,7 +6247,7 @@ ELSE
    jnz do_full_div_ffff
 
    do_single_div_FFFF:
-   ; bx has entire dividend, in 16 bits of precision. we know cx and di are zero after all.
+   ; bx has entire dividend, in 16 bits of precision
    ; si contains a bit count of how much to shift result left by...
 
    shr ax, 1   ; still gotta continue to shift the last ax/si
@@ -6272,7 +6273,8 @@ ELSE
    SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset:
    mov  word ptr es:[01000h], ax
 
-   pop   di   ; screen coord
+   ; di already has screen coord
+
    pop   ax   ; dc_yl
 
    R_DrawColumnPrep_Stretch_:
@@ -14926,9 +14928,10 @@ set_to_one:
 mov      byte ptr ds:[SELFMODIFY_BSP_detailshift_7+1], 3
 
 ; write to colfunc segment
-mov      ax, 0fbd1h ; sar bx, 1
+mov      ax, 0ffd1h ; sar di, 1
 
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0], ax
+mov      ax, 0fbd1h ; sar bx, 1
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_bot_TWOSIDED+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_TWOSIDED+0], ax
 
@@ -14979,11 +14982,13 @@ set_to_zero:
 
 ; d1 fd  = sar bp, 1
 mov      byte ptr ds:[SELFMODIFY_BSP_detailshift_7+1], 4
+mov      ax, 0ffd1h ; sar di, 1
+
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0], ax
+mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+2], ax
 mov      ax, 0fbd1h ; sar bx, 1
 
 ; write to colfunc segment
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+0], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_bot_TWOSIDED+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_bot_TWOSIDED+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_TWOSIDED+0], ax
