@@ -55,6 +55,9 @@ dw SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET+1, DRAWCOL_OFFSET_BSP
 dw SELFMODIFY_COLFUNC_JUMP_OFFSET24_NORMALSTRETCH_OFFSET+1, DRAWCOL_NORMAL_STRETCH_OFFSET_BSP
 _COLFUNC_JUMP_LOOKUP:
 dw COLFUNC_JUMP_LOOKUP_OFFSET
+_COLFUNC_JUMP_LOOKUP_INSTR:
+db 001h, 0D0h, 0D1h, 0E0h  ; 12 
+dw  199 * 12
 
 
 
@@ -113,9 +116,7 @@ dw 0F0F0h, 0F0F0h
 _lastviewy:
 dw 0F0F0h, 0F0F0h
 _lastviewz_shortangle:
-dw 0F0F0h, 0F0F0h
-_lastviewz:
-dw 0F0F0h, 0F0F0h
+dw 0F0F0h  ; 16 bit?
 
 
 BEOFRE_COLFUNC_LOOKUP:
@@ -131,6 +132,11 @@ dw SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1, DRAWCOL_NOLOOP_OFFSET_BSP
 ; noloopstretch ; 10 bytes per
 dw SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOPANDSTRETCH_OFFSET+1, DRAWCOL_NOLOOP_STRETCH_OFFSET_BSP
 dw DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET
+db 0D1h, 0E0h, 001h, 0D0h  ; 10
+dw  199 * 10
+
+_lastviewz:
+dw 0F0F0h, 0F0F0h
 
 
 _lastviewangle:
@@ -4542,8 +4548,13 @@ and       ah, 080h                 ; function type select.
 
 xor       bx, bx
 mov       bl, ah
-mov       ax, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP]
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset+2], ax  ; per pixel byte count lookuo selector (mul 10/12)
+
+; todo
+les       ax, dword ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR]
+mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul], ax    ; adjust shift/add byte order for 10/12 mul
+mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul+2], es  ; adjust shift/add byte order for 10/12 mul
+mov       ax, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR+4]
+mov       word ptr ds:[SELFMODIFY_sub_jump_from_max_mid+1], ax
 les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
 mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset+1], ax
 mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_nostretch], es
@@ -5561,13 +5572,10 @@ SELFMODIFY_BSP_markfloor_1_TARGET:
 markfloor_done:
 public  markfloor_done
 ; get jl check sort of for free, we need to sal anyway on fall thru
-sal   dx, 1        ; word offset of yh-yl 
+sal   dx, 1        ; multiply pixel count by 2. if zero no pixels to draw
 jl    jump_to_mid_no_pixels_to_draw ; wait until floors/ceils marked to early out.
 
-push  bp  ; push because ax needs this later.
-
-SELFMODIFY_set_top_lookup_offset:
-add   dx, 01000h   ; word lookup with offset
+push  bp  ; push because ax needs this later.  ; todo or carry into ax?
 
 
 lea   si,  [bp + _bsp_local_dc_yl_lookup_table - 2] ; word offset + lookup
@@ -5584,8 +5592,27 @@ sar   bx, 1
 SELFMODIFY_BSP_add_destview_offset:
 lea   ax, [bx + si + 01000h]
 
-push  ax  ; destview offset.          pop into di later.
-push  dx  ; jmp addr lookup/modifier. todo store in di?
+push  ax  ; destview offset.          pop into di later. or is lea di possible etc?
+
+; todo: if we go back to loading jump offset from a table, dx is word offset already.
+; currently not doing it because its too big to potentially fit in cs right now,
+; and we are currently removing dependencies on the 9A10 dest segment
+; jump offset table may be faster because (200 * pixel_size) - pixel_size * (dc_yh-dc_yl) math is already encoded
+
+mov   ax, dx  ; 2, 2   dx already multiplied by 2
+shl   ax, 1   ; 4, 2
+SELFMODIFY_set_pixel_count_shift_mul:
+public SELFMODIFY_set_pixel_count_shift_mul
+; 12 per is 01 d0 d1 e0 
+; 10 per is d1 e0 01 d0 
+add   ax, dx  ; 6, 2     ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
+shl   ax, 1   ; 12, 2
+SELFMODIFY_sub_jump_from_max_mid:
+mov   dx, 01000h     
+sub   dx, ax
+push  dx     ; store this number
+
+
 
 
 seg_is_textured:
@@ -5885,7 +5912,6 @@ ELSE
    SELFMODIFY_set_midtexturemid_hi:
    mov   cl, 010h        ; dc_iscale +2 already in ch
 
-   pop   si     ; retrieve dc_yh - dc_yl jmp amount lookup
 
    div   bx
    ; cx:ax is result 
@@ -5894,11 +5920,10 @@ ELSE
    xchg  ax, bx        ; dc_iscale +0  into bx
 ;   mov   bx, ax        ; dc_iscale +0  into bx
 
-   lodsw
-   ; stretch draw off path
+   pop   ax    ; dont pop directly... this will eventually have an offset added to it when jmpf is done.
+
    SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset:
-   mov   word ptr ds:[01000h], ax
-   
+   mov  word ptr ds:[01000h], ax
 
 ; todo what if we inlined the function right here, instead of writing selfmodifies forward to selfmodifies...
 ; then push return value. far jmp.
@@ -6243,10 +6268,11 @@ ELSE
 
    xchg  ax, bx        ; dc_iscale +0  into bx
 
-   mov   si, COLFUNC_FILE_START_SEGMENT
-   mov   ds, si
-   pop   si     ; retrieve dc_yh - dc_yl jmp amount lookup
-   lodsw
+   mov   ax, COLFUNC_FILE_START_SEGMENT
+   mov   ds, ax
+
+   pop   ax    ; dont pop directly... this will eventually have an offset added to it when jmpf is done.
+   
    SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset:
    mov  word ptr ds:[01000h], ax
 
