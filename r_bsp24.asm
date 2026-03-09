@@ -56,7 +56,7 @@ dw SELFMODIFY_COLFUNC_JUMP_OFFSET24_NORMALSTRETCH_OFFSET+1, DRAWCOL_NORMAL_STRET
 _COLFUNC_JUMP_LOOKUP:
 dw COLFUNC_JUMP_LOOKUP_OFFSET
 _COLFUNC_JUMP_LOOKUP_INSTR:
-db 001h, 0D0h, 0D1h, 0E0h  ; 12 
+db 001h, 0D6h, 0D1h, 0E6h  ; 12 
 dw  199 * 12
 
 
@@ -132,7 +132,7 @@ dw SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1, DRAWCOL_NOLOOP_OFFSET_BSP
 ; noloopstretch ; 10 bytes per
 dw SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOPANDSTRETCH_OFFSET+1, DRAWCOL_NOLOOP_STRETCH_OFFSET_BSP
 dw DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET
-db 0D1h, 0E0h, 001h, 0D0h  ; 10
+db 0D1h, 0E6h, 001h, 0D6h  ; 10
 dw  199 * 10
 
 _lastviewz:
@@ -4554,7 +4554,7 @@ les       ax, dword ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR]
 mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul], ax    ; adjust shift/add byte order for 10/12 mul
 mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul+2], es  ; adjust shift/add byte order for 10/12 mul
 mov       ax, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR+4]
-mov       word ptr ds:[SELFMODIFY_sub_jump_from_max_mid+1], ax
+mov       word ptr ds:[SELFMODIFY_sub_jump_from_max_mid+2], ax
 les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
 mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset+3], ax
 mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_nostretch], es
@@ -5600,20 +5600,18 @@ lea   di, [di + bp + 01000h]           ; di has destview offset
 ; and we are currently removing dependencies on the 9A10 dest segment
 ; jump offset table may be faster because (200 * pixel_size) - pixel_size * (dc_yh-dc_yl) math is already encoded
 
-mov   ax, dx  ; 2, 2   dx already multiplied by 2
-shl   ax, 1   ; 4, 2
+mov   si, dx  ; 2, 2   dx already multiplied by 2
+shl   si, 1   ; 4, 2
 SELFMODIFY_set_pixel_count_shift_mul:
 public SELFMODIFY_set_pixel_count_shift_mul
-; 12 per is 01 d0 d1 e0 
-; 10 per is d1 e0 01 d0 
-add   ax, dx  ; 6, 2     ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
-shl   ax, 1   ; 12, 2
+; 12 per is 01 d6 d1 e6 
+; 10 per is d1 e6 01 d6 
+add   si, dx  ; 6, 2     ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
+shl   si, 1   ; 12, 2
+
+neg   si
 SELFMODIFY_sub_jump_from_max_mid:
-mov   dx, 01000h       ; once this is in cs... maybe push the 12* number above, pop that and neg and add to this mixed with the offset later after a div
-sub   dx, ax
-push  dx     ; store this number... todo its not stored for long, maybe it can be carried to POINT A
-
-
+add   si, 01000h       ; once this is in cs... maybe push the 12* number above, pop that and neg and add to this mixed with the offset later after a div
 
 
 seg_is_textured:
@@ -5641,7 +5639,7 @@ and   bh, FINE_ANGLE_HIGH_BYTE				; MOD_FINE_ANGLE = and 0x1FFF
 sub   bx, FINE_TANGENT_MAX        ; bx now -2048 to 2047
 sbb   bp, bp
 xor   bx, bp          ; bx now 0 to 2048, bp has sign.. but table is 2048 entries.
-add   bx, bp          ; offset by an entry for negatives
+
 
 SELFMODIFY_set_rw_distance_lo:
 public SELFMODIFY_set_rw_distance_lo
@@ -5676,21 +5674,20 @@ ELSE
 
 
    SELFMODIFY_set_rw_distance_hi:
-   mov   si, 01000h
+   mov   cx, 01000h
    jnz   do_32_bit_finetan_mul
 
    do_16_bit_mul:
    public do_16_bit_mul
 
-   ; BX * SI:AX
-
+   ; BX * CX:AX
 
    mul  bx        ; AX * BX
    mov  ax, bx    ; for next mul
    mov  bx, dx    ; store hi result
-   mul  si
+   mul  cx
    add  ax, bx    ; add previous hi into lo
-   adc  dx, 0     ;
+   adc  dx, 0     ; es may be known 0?
 
    jmp  done_with_16bitmul
 
@@ -5723,28 +5720,28 @@ ELSE
 
 do_32_bit_finetan_mul:
 
-  mov   cx, es ;todo better register synergy
+  push  si     ; this path pushes si... 
+  mov   si, es
 
   MUL  BX
   MOV  ES, DX
 
 
-  MOV  AX, SI
-  MUL  CX
-  XCHG AX, SI
+  MOV  AX, cx
+  MUL  si
+  XCHG AX, cx
   MUL  BX
   MOV  BX, ES
   ADD  AX, BX
   SELFMODIFY_set_rw_distance_lo_2:
   mov   bx, 01000h
-  XCHG AX, CX
-  ADC  SI, DX
+  XCHG AX, si
+  ADC  cx, DX
 
   MUL  BX
-  ADD  AX, CX
-  ADC  DX, SI
-
-
+  ADD  AX, si
+  ADC  DX, cx
+  pop  si
 
 
    ; around here whats wrong
@@ -5896,7 +5893,6 @@ ELSE
    test cx, cx
    jne  jmp_to_main_3232_div
 
-   pop   si       ; dont love this can it be carried from above? want to do the juicy write below after a div.
 
    cwd
 
@@ -6180,6 +6176,8 @@ ELSE
    main_3232_div:
    public main_3232_div
 
+   SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset:
+   mov  word ptr es:[01000h], si   ; si has the needed value.
 
    ; generally cx maxes out at around 5 bits of precision? bias towards shift right instead of left.  
 
@@ -6247,7 +6245,7 @@ ELSE
 
    shr ax, 1   ; still gotta continue to shift the last ax/si
 
-   pop si      ; restore this..
+
 
    ; i want to skip last rcr si but it makes detecting the 0 case hard.
    dec  dx        ; make it 0FFFFh
@@ -6259,8 +6257,6 @@ ELSE
 
    
    FastDiv3232FFFF_done_stretch:
-   SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset:
-   mov  word ptr es:[01000h], si   ; si has the needed value.
 
    xchg  ax, bx        ; dc_iscale +0  into bx
 
