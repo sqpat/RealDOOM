@@ -4987,11 +4987,9 @@ ENDIF
 
 ;end inlined FixedMulBSPLocal_
 
-neg       dx
-neg       ax
-sbb       dx, 0
+; dx:ax are negative topstep. instead of adding the neg we sub.
 
-; dx:ax are topstep
+
 
 ; todo can this modify a sub and skip the neg above?
 
@@ -5052,14 +5050,10 @@ ELSE
 ENDIF
 ;end inlined FixedMulBSPLocal_
 
-neg       dx
-neg       ax
-sbb       dx, 0
 
-; dx:ax are bottomstep
+; dx:ax are negative bottomstep. instead of adding the neg we sub.
 
 
-; todo can this modify a sub and skip the neg above?
 
 mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_2+4], dx
 mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_2+3], ax
@@ -5089,21 +5083,26 @@ PUBLIC R_RenderSegLoop_
 
 
 ; sp is bp - 038h
-; todo: pop these into place
-; maybe for now, sti/cli and pop and reset sp to maintain stack values.
+
+; we could avoid the cli/sti and pop things off the stack,
+;  but we'd have to push the other two values back on which for now is probably slower.
+; todo: rearrange stack to make this a bit shorter and more elegant.
+
+cli
+add   sp, 2
+pop   word ptr ds:[SELFMODIFY_set_botfrac_hi_mid+1]  ; bp - 036h
+add   sp, 2
+
+pop   word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1]  ; bp - 032h
+pop   word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1]  ; bp - 030h
+pop   word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1]  ; bp - 02Eh
 
 
+sub   sp, 12
+sti
+; sp is bp - 038h
 
-mov   ax, word ptr [bp - 02Eh]
-mov   word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], ax
 
-mov   ax, word ptr [bp - 030h]
-mov   word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], ax
-mov   ax, word ptr [bp - 032h]
-mov   word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], ax
-
-mov   ax, word ptr [bp - 036h]
-mov   word ptr ds:[SELFMODIFY_set_botfrac_hi_mid+1], ax
 
 mov   ax, word ptr [bp - 024h]  ; get start_x/dc_x initial value
 
@@ -5132,7 +5131,7 @@ inc   ax
 stosw ; mov   word ptr ds:[_seglooptexrepeat], ax
 
 
-jmp   R_RenderSegLoop_exit   
+jmp   R_RenderSegLoop_exit     ; todo doesnt quite fit here yet.
 
 
 ALIGN_MACRO
@@ -5158,13 +5157,13 @@ jge   exit_rendersegloop
 
 ; todo (eventually) make sure all the selfmodify addresses are word aligned!
 SELFMODIFY_add_to_bottomfrac_lo_2:
-add   word ptr [bp - 038h], 01000h
+sub   word ptr [bp - 038h], 01000h
 SELFMODIFY_add_to_bottomfrac_hi_2:
-adc   word ptr ds:[SELFMODIFY_set_botfrac_hi_mid+1], 01000h
+sbb   word ptr ds:[SELFMODIFY_set_botfrac_hi_mid+1], 01000h
 SELFMODIFY_add_to_topfrac_lo_2:
-add   word ptr [bp - 034h], 01000h
+sub   word ptr [bp - 034h], 01000h
 SELFMODIFY_add_to_topfrac_hi_2:
-adc   word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], 01000h
+sbb   word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], 01000h
 SELFMODIFY_add_to_rwscale_lo_2:
 add   word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], 01000h
 SELFMODIFY_add_to_rwscale_hi_2:
@@ -5190,7 +5189,7 @@ SELFMODIFY_set_qualityportlookup_mid:
 mov   bx, 00000h        ; base for qualityportlookup...
 
 mov   dx, SC_DATA
-SELFMODIFY_detailshift_plus1_1:
+
 xlat  byte ptr ss:[bx]
 out   dx, al
 
@@ -5718,7 +5717,6 @@ jmp   do_light_write
 ALIGN_MACRO
 jmp_to_main_3232_div:
 jmp   main_3232_div
-ALIGN_MACRO
 
 
 ALIGN_MACRO
@@ -14748,7 +14746,7 @@ mov      ax, word ptr ss:[_detailshiftandval]
 
 mov      word ptr ds:[SELFMODIFY_detailshift_and_1_TWOSIDED+2], ax
 not      ax
-mov      byte ptr ds:[SELFMODIFY_and_by_detail_level+2], al
+mov      byte ptr ds:[SELFMODIFY_and_by_detail_level+1], al
 
 
 ; ah is definitely 0... optimizable?
