@@ -4277,7 +4277,7 @@ push  bx       ; bp - 024h remap to 0, 0x80, 1, 0x81   ; todo unused
 
 
 
-mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_1+1], ax
+mov   word ptr ds:[SELFMODIFY_cmp_di_to_rw_stopx_1+2], ax
 
 
 
@@ -4997,9 +4997,6 @@ mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_2+4], dx
 mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_2+3], ax
 
 
-
-
-
 les       bx, dword ptr [bp - 02Ch]
 mov       cx, es
 SELFMODIFY_get_rwscalestep_lo_2:
@@ -5074,13 +5071,7 @@ R_RenderSegLoop_:
 PUBLIC R_RenderSegLoop_
 
 ; ds still cs
-
-
-
-
-
 ; todo skip these pushes if potato?
-
 
 ; sp is bp - 038h
 
@@ -5104,7 +5095,7 @@ sti
 
 
 
-mov   ax, word ptr [bp - 024h]  ; get start_x/dc_x initial value
+mov   di, word ptr [bp - 024h]  ; get start_x/dc_x initial value
 
 jmp   start_per_column_inner_loop ; jump into first iter.
 
@@ -5149,10 +5140,10 @@ public increment_loop_values
 ;		}
 
 
-inc   ax  ; rw_x++
+inc   di  ; rw_x++
 
-SELFMODIFY_cmp_ax_to_rw_stopx_1:
-cmp   ax, 01000h
+SELFMODIFY_cmp_di_to_rw_stopx_1:
+cmp   di, 01000h
 jge   exit_rendersegloop
 
 ; todo (eventually) make sure all the selfmodify addresses are word aligned!
@@ -5177,20 +5168,20 @@ adc   word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], 01000h
 
 start_per_column_inner_loop:
 public start_per_column_inner_loop
-; ax was rw_x
-mov   di, ax   ; ax was still rw_x
+; di is rw_x
+mov   ax, di   
 
 ; todo skip this for potato?
 
 SELFMODIFY_and_by_detail_level:
-and   ax, 00010h
+and   ax, 00010h  ; zeroes ah
 
 SELFMODIFY_set_qualityportlookup_mid:
 mov   bx, 00000h        ; base for qualityportlookup...
 
 mov   dx, SC_DATA
 
-xlat  byte ptr ss:[bx]
+xlat  byte ptr ss:[bx]  ; small optim: move to cs? just 12 bytes.
 out   dx, al
 
 ; ds is always cs coming in.
@@ -5198,7 +5189,6 @@ out   dx, al
 
 check_here:
 PUBLIC check_here
-; todo i think below here can get improved a lot...?
 
 
 ; todo find a way to clean up 8/16 bit logic and compares. 
@@ -5280,7 +5270,7 @@ mov   ax, cx
 dec   ax
 skip_yh_floorclip:
 
-mov   bp, dx  ; store yl. todo keep this in a reg eventually. maybe bp
+mov   bp, dx  ; store yl
 neg   dx
 add   dx, ax
 
@@ -5363,7 +5353,7 @@ shl   si, 1   ; 12, 2
 
 neg   si
 SELFMODIFY_sub_jump_from_max_mid:
-add   si, 01000h       ; once this is in cs... maybe push the 12* number above, pop that and neg and add to this mixed with the offset later after a div
+add   si, 01000h      ; todo once funcs are in cs, this would be two separate adds in the fastdiv branches based on which target?
 
 
 seg_is_textured:
@@ -5448,7 +5438,6 @@ ENDIF
 
 ALIGN_MACRO
 jump_to_mid_no_pixels_to_draw:
-xchg  ax, di  ; dc_yl into ax
 jmp   mid_no_pixels_to_draw  ; restore bp here
 
 
@@ -5698,7 +5687,7 @@ mov   ax, cs
 mov   ds, ax
 
 
-pop   ax  ; rw_x  always want this back
+pop   di  ; rw_x  always want this back
 
 mid_no_pixels_to_draw:
 
