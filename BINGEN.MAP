@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/03/07 06:20:31
+Created on:       26/03/07 06:25:26
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -436,7 +436,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:2880*     SELFMODIFY_BSP_R_DrawColumnPrep_ret_bot
 0819:12fd*     div_done
 0819:1897*     SELFMODIFY_mark_planes_dirty
-0819:19a8*     R_DrawColumnPrep_Stretch_
+0819:19a7*     R_DrawColumnPrep_Stretch_
 0819:15b4*     sub_base4diff
 0819:27fe*     done_marking_floor_ax_TWOSIDED
 0819:278d*     R_DrawColumnPrep_TWOSIDED_

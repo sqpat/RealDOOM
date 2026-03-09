@@ -4556,10 +4556,10 @@ mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul+2], es  ; adjust shi
 mov       ax, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR+4]
 mov       word ptr ds:[SELFMODIFY_sub_jump_from_max_mid+1], ax
 les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset+1], ax
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset+2], ax
 mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_nostretch], es
 les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 4]
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset+1], ax
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset+2], ax
 mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_stretch], es
 
 
@@ -5816,9 +5816,7 @@ public just_do_draw0
 
 ; cwd is possible here because source segment is 0x5000-0x6FFF...  clear out dl for later move to bp
 cwd
-
-
-xchg  ax, di  ; store dc_source_segment. todo: go direct to ds.
+mov   ds, ax   ; set dc_source_segment
 
 ; CX:AX rw_scale
 ; TODO add directly into les below, and construct this from 8 bit shift.
@@ -5905,7 +5903,7 @@ ELSE
    div  bx        ; after this dx stores remainder, ax stores q1
 
    mov   si, COLFUNC_FILE_START_SEGMENT
-   mov   ds, si
+   mov   es, si
    xchg  cx, ax   ; q1 to cx, ffff to ax  so div remainder:ffff 
 
    mov   ch, cl  ; dc_iscale hi 8 bits
@@ -5923,7 +5921,7 @@ ELSE
    pop   ax    ; dont pop directly... this will eventually have an offset added to it when jmpf is done.
 
    SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset:
-   mov  word ptr ds:[01000h], ax
+   mov  word ptr es:[01000h], ax
 
 ; todo what if we inlined the function right here, instead of writing selfmodifies forward to selfmodifies...
 ; then push return value. far jmp.
@@ -5933,8 +5931,6 @@ ENDIF
    ; cl:ax has 24 bits of result. 
    ; dc_iscale loaded here..
 
-
-   mov   ds, di  ; store dc_source_segment
    pop   di   ; screen coord
    pop   ax   ; dc_yl
 
@@ -6269,14 +6265,13 @@ ELSE
    xchg  ax, bx        ; dc_iscale +0  into bx
 
    mov   ax, COLFUNC_FILE_START_SEGMENT
-   mov   ds, ax
+   mov   es, ax
 
    pop   ax    ; dont pop directly... this will eventually have an offset added to it when jmpf is done.
    
    SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset:
-   mov  word ptr ds:[01000h], ax
+   mov  word ptr es:[01000h], ax
 
-   mov   ds, di  ; store dc_source_segment
    pop   di   ; screen coord
    pop   ax   ; dc_yl
 
