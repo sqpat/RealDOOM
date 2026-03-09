@@ -4296,7 +4296,6 @@ push  cx       ; bp - 024h remap to 0, 0x80, 1, 0x81
 
 
 mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_1+1], ax
-mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_2+1], ax
 mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_3+1], ax
 
 
@@ -4511,11 +4510,8 @@ rcl   ax, 1
 shl   dx, 1
 rcl   ax, 1
 
-mov       word ptr ds:[SELFMODIFY_add_to_rwscale_hi_1+4], ax
 mov       word ptr ds:[SELFMODIFY_add_to_rwscale_hi_2+4], ax
-xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_add_to_rwscale_lo_1+4], ax
-mov       word ptr ds:[SELFMODIFY_add_to_rwscale_lo_2+4], ax
+mov       word ptr ds:[SELFMODIFY_add_to_rwscale_lo_2+4], dx
 
 ;ASSUME DS:DGROUP  ; lods coming up
 
@@ -5046,11 +5042,8 @@ rcl       ax, 1
 
 finished_shifting_topstep:
 
-mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_1+4], ax
 mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_2+4], ax
-xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_1+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_2+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_2+3], dx
 
 
 
@@ -5127,11 +5120,8 @@ shl       dx, 1
 rcl       ax, 1
 
 
-mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_1+4], ax
 mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_2+4], ax
-xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_1+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_2+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_2+3], dx
 
 
 
@@ -5294,6 +5284,7 @@ lea   si, [bp - 044h]
 lea   di, [bp - 038h]
 
 ; todo (eventually) make sure all the selfmodify addresses are word aligned!
+; todo put the two lo words that are used on stack adjacent. get rid of the other four.
 movsw
 lodsw
 mov   word ptr cs:[SELFMODIFY_set_botfrac_hi_mid+1], ax
@@ -5413,6 +5404,11 @@ SELFMODIFY_add_iter_to_rw_x:
 ; ax was already up-to-date rw_x
 db  05h, 00h, 00h   ;add   ax, 0
 ; ax has rw_x...
+
+SELFMODIFY_cmp_ax_to_rw_stopx_1:
+cmp   ax, 01000h
+jge   finish_outer_loop
+
 ; todo (eventually) make sure all the selfmodify addresses are word aligned!
 SELFMODIFY_add_to_bottomfrac_lo_2:
 add   word ptr [bp - 038h], 01000h
@@ -5432,9 +5428,6 @@ adc   word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], 01000h
 ; or possibly even bp. once we are doing pusha/popa chains, we may not use bp?
 
 ; this is right before inner loop start. due to vga plane aligmnent we might not draw pixel 0 for this plane?
-SELFMODIFY_cmp_ax_to_rw_stopx_1:
-cmp   ax, 01000h
-jge   finish_outer_loop
 
 start_per_column_inner_loop:
 ; ax was rw_x
@@ -5954,41 +5947,8 @@ mid_no_pixels_to_draw:
 SELFMODIFY_restore_bp_after_draw_mid:
 mov   bp, 01000h
 
-; end of mid column draw
-; ax is already _rw_x
+jmp   pre_increment_values
 
-; finished_inner_loop_iter
-
-;		for ( ; rw_x < rw_stopx ; 
-;			rw_x		+= detailshiftitercount,
-;			topfrac 	+= topstepshift,
-;			bottomfrac  += bottomstepshift,
-;			rw_scale.w  += rwscaleshift
-
-SELFMODIFY_add_detailshiftitercount:
-db  083h, 0C0h, 00h   ;add ax, 00h  
-
-SELFMODIFY_cmp_ax_to_rw_stopx_2:
-cmp   ax, 01000h
-jge   jump_to_finish_outer_loop  ; exit before adding the other loop vars.
-
-; todo popa etc
-; per pixel add.
-; this happens a lot.. is there a way to optimize this any better?
-
-SELFMODIFY_add_to_bottomfrac_lo_1:
-add   word ptr [bp - 038h], 01000h
-SELFMODIFY_add_to_bottomfrac_hi_1:
-adc   word ptr ds:[SELFMODIFY_set_botfrac_hi_mid+1], 01000h
-SELFMODIFY_add_to_topfrac_lo_1:
-add   word ptr [bp - 034h], 01000h
-SELFMODIFY_add_to_topfrac_hi_1:
-adc   word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], 01000h
-SELFMODIFY_add_to_rwscale_lo_1:
-add   word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], 01000h
-SELFMODIFY_add_to_rwscale_hi_1:
-adc   word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], 01000h
-jmp   start_per_column_inner_loop
 ALIGN_MACRO
 use_max_light:
 ; ugly 
@@ -15035,7 +14995,7 @@ mov      byte ptr ds:[SELFMODIFY_cmp_al_to_detailshiftitercount_TWOSIDED+1], al
 ; todo is this supposed to be SELFMODIFY_add_iter_to_rw_x plus 2?
 mov      byte ptr ds:[SELFMODIFY_add_iter_to_rw_x+1], al
 mov      byte ptr ds:[SELFMODIFY_add_iter_to_rw_x_TWOSIDED+1], al
-mov      byte ptr ds:[SELFMODIFY_add_detailshiftitercount+2], al
+
 mov      byte ptr ds:[SELFMODIFY_add_detailshiftitercount_TWOSIDED+1], al
 
 mov      ax, word ptr ss:[_detailshiftandval]
