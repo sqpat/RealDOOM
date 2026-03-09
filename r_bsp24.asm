@@ -4556,10 +4556,10 @@ mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul+2], es  ; adjust shi
 mov       ax, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR+4]
 mov       word ptr ds:[SELFMODIFY_sub_jump_from_max_mid+1], ax
 les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset+2], ax
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset+3], ax
 mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_nostretch], es
 les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 4]
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset+2], ax
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset+3], ax
 mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_stretch], es
 
 
@@ -5609,9 +5609,9 @@ public SELFMODIFY_set_pixel_count_shift_mul
 add   ax, dx  ; 6, 2     ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
 shl   ax, 1   ; 12, 2
 SELFMODIFY_sub_jump_from_max_mid:
-mov   dx, 01000h     
+mov   dx, 01000h       ; once this is in cs... maybe push the 12* number above, pop that and neg and add to this mixed with the offset later after a div
 sub   dx, ax
-push  dx     ; store this number
+push  dx     ; store this number... todo its not stored for long, maybe it can be carried to POINT A
 
 
 
@@ -5819,6 +5819,10 @@ public just_do_draw0
 cwd
 mov   ds, ax   ; set dc_source_segment
 
+mov   ax, COLFUNC_FILE_START_SEGMENT
+mov   es, ax   ; for upcoming write
+
+
 ; CX:AX rw_scale
 ; TODO add directly into les below, and construct this from 8 bit shift.
 SELFMODIFY_set_rwscale_lo_mid:
@@ -5860,7 +5864,7 @@ mov   bp, dx
 ; if top 16 bits missing just do a 32 / 16
 mov  ax, -1
 
-; continue fast_div_32_16_FFFF
+
 
 
 IF COMPISA GE COMPILE_386
@@ -5897,14 +5901,16 @@ ELSE
    test cx, cx
    jne  jmp_to_main_3232_div
 
-   fast_div_32_16_FFFF:
+   pop   si       ; dont love this can it be carried from above? want to do the juicy write below after a div.
+
    cwd
 
    xchg dx, cx   ; cx was 0, dx is FFFF
    div  bx        ; after this dx stores remainder, ax stores q1
 
-   mov   si, COLFUNC_FILE_START_SEGMENT
-   mov   es, si
+   SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset:
+   mov  word ptr es:[01000h], si
+
    xchg  cx, ax   ; q1 to cx, ffff to ax  so div remainder:ffff 
 
    mov   ch, cl  ; dc_iscale hi 8 bits
@@ -5919,10 +5925,6 @@ ELSE
    xchg  ax, bx        ; dc_iscale +0  into bx
 ;   mov   bx, ax        ; dc_iscale +0  into bx
 
-   pop   ax    ; dont pop directly... this will eventually have an offset added to it when jmpf is done.
-
-   SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset:
-   mov  word ptr es:[01000h], ax
 
 ; todo what if we inlined the function right here, instead of writing selfmodifies forward to selfmodifies...
 ; then push return value. far jmp.
@@ -6184,8 +6186,6 @@ ELSE
    public main_3232_div
 
 
-
-
    ; generally cx maxes out at around 5 bits of precision? bias towards shift right instead of left.  
 
    xor si, si ; zero this out to get high bits of numhi
@@ -6251,27 +6251,24 @@ ELSE
    ; si contains a bit count of how much to shift result left by...
 
    shr ax, 1   ; still gotta continue to shift the last ax/si
-   rcr si, 1
+
+   pop si      ; restore this..
 
    ; i want to skip last rcr si but it makes detecting the 0 case hard.
    dec  dx        ; make it 0FFFFh
    xchg ax, dx    ; ax all 1s,  dx 0 leading 1s
    div  bx
 
+
    ; cx is zero already coming in from the first shift so cx:ax is already the result.
 
    
    FastDiv3232FFFF_done_stretch:
+   SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset:
+   mov  word ptr es:[01000h], si   ; si has the needed value.
 
    xchg  ax, bx        ; dc_iscale +0  into bx
 
-   mov   ax, COLFUNC_FILE_START_SEGMENT
-   mov   es, ax
-
-   pop   ax    ; dont pop directly... this will eventually have an offset added to it when jmpf is done.
-   
-   SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset:
-   mov  word ptr es:[01000h], ax
 
    ; di already has screen coord
 
@@ -6401,6 +6398,7 @@ ENDIF
    mov  ax, 01000h
 
    sub  ax, bx ; modify qhat by measured amount
+   pop si      ; restore this..
    jmp  FastDiv3232FFFF_done_stretch
 
 
@@ -9183,7 +9181,7 @@ jmp   light_set_TWOSIDED
 ALIGN_MACRO
 
 
-; begin fast_div_32_16_FFFF
+
 
 
 use_max_light_TWOSIDED:
@@ -9201,7 +9199,7 @@ light_set_TWOSIDED:
 ; if top 16 bits missing just do a 32 / 16
 mov  ax, -1
 
-; continue fast_div_32_16_FFFF
+
 
 
 IF COMPISA GE COMPILE_386
@@ -9240,7 +9238,7 @@ ELSE
    test cx, cx
    jne main_3232_div_TWOSIDED
 
-   fast_div_32_16_FFFF_TWOSIDED:
+
    cwd
 
    xchg dx, cx   ; cx was 0, dx is FFFF
@@ -9530,7 +9528,7 @@ ALIGN_MACRO
 ALIGN_MACRO
 
 
-; continue fast_div_32_16_FFFF
+
 
 IF COMPISA GE COMPILE_386
 ELSE
@@ -9548,7 +9546,7 @@ ELSE
 
 ENDIF
 
-; end fast_div_32_16_FFFF
+
 
 
 FastDiv3232FFFF_done_TWOSIDED:
