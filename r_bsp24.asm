@@ -4487,13 +4487,13 @@ ASSUME DS:R_BSP_24_TEXT
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_1+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_2+1], ax
 mov       word ptr ds:[SELFMODIFY_add_rwscale_lo+3], ax
-mov       word ptr ds:[SELFMODIFY_sub_rwscale_lo+4], ax
+mov       word ptr ds:[SELFMODIFY_sub_rwscale_lo+3], ax
 
 xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_1+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_2+1], ax
 
-mov       word ptr ds:[SELFMODIFY_sub_rwscale_hi+4], ax
+mov       word ptr ds:[SELFMODIFY_sub_rwscale_hi+3], ax
 mov       word ptr ds:[SELFMODIFY_add_rwscale_hi+3], ax
 
 
@@ -5019,7 +5019,7 @@ sbb       dx, 0
 mov       word ptr ds:[SELFMODIFY_sub_topstep_lo+3], ax
 mov       word ptr ds:[SELFMODIFY_add_topstep_lo+3], ax
 xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_sub_topstep_hi+4], ax
+mov       word ptr ds:[SELFMODIFY_sub_topstep_hi+3], ax
 mov       word ptr ds:[SELFMODIFY_add_topstep_hi+3], ax
 
 
@@ -5106,7 +5106,7 @@ sbb       dx, 0
 mov       word ptr ds:[SELFMODIFY_sub_botstep_lo+3], ax
 mov       word ptr ds:[SELFMODIFY_add_botstep_lo+3], ax
 xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_sub_botstep_hi+4], ax
+mov       word ptr ds:[SELFMODIFY_sub_botstep_hi+3], ax
 mov       word ptr ds:[SELFMODIFY_add_botstep_hi+3], ax
 
 SELFMODIFY_BSP_detailshift_3:
@@ -5189,15 +5189,15 @@ POPA_MACRO  ;todo
 SELFMODIFY_sub_botstep_lo:
 sub   word ptr [bp - 038h], 01000h 
 SELFMODIFY_sub_botstep_hi:
-sbb   word ptr ds:[SELFMODIFY_set_botfrac_hi_mid+1], 01000h
+sbb   word ptr [bp - 036h], 01000h 
 SELFMODIFY_sub_topstep_lo:
 sub   word ptr [bp - 034h], 01000h
 SELFMODIFY_sub_topstep_hi:
-sbb   word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], 01000h
+sbb   word ptr [bp - 032h], 01000h 
 SELFMODIFY_sub_rwscale_lo:
-sub   word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], 01000h
+sub   word ptr [bp - 030h], 01000h 
 SELFMODIFY_sub_rwscale_hi:
-sbb   word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], 01000h
+sbb   word ptr [bp - 02Eh], 01000h 
 
 
 
