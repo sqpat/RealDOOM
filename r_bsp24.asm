@@ -5297,17 +5297,18 @@ lea   di, [bp - 038h]
 movsw
 lodsw
 mov   word ptr cs:[SELFMODIFY_set_botfrac_hi_mid+1], ax
-stosw   ; todo okay to remove? 
+add   di, 2
+
 movsw
 lodsw
 mov   word ptr cs:[SELFMODIFY_set_topfrac_hi_mid+1], ax
-stosw   ; todo okay to remove? 
+
 lodsw
 mov   word ptr cs:[SELFMODIFY_set_rwscale_lo_mid+1], ax
-stosw   ; todo okay to remove? 
+
 lodsw
 mov   word ptr cs:[SELFMODIFY_set_rwscale_hi_mid+1], ax
-stosw   ; todo okay to remove? 
+
 mov   di, cs
 mov   ds, di  ; todo how necessary is ds as cs used much anymore??
 
@@ -5528,7 +5529,6 @@ mov   ax, cx
 dec   ax
 skip_yh_floorclip:
 
-push  di  ; store dc_x
 mov   bp, dx  ; store yl. todo keep this in a reg eventually. maybe bp
 neg   dx
 add   dx, ax
@@ -5575,6 +5575,7 @@ public  markfloor_done
 sal   dx, 1        ; multiply pixel count by 2. if zero no pixels to draw
 jl    jump_to_mid_no_pixels_to_draw ; wait until floors/ceils marked to early out.
 
+push  di  ; store dc_x
 push  bp  ; push because ax needs dc_yl for colfunc
 
 
@@ -5696,22 +5697,14 @@ ENDIF
 
 ALIGN_MACRO
 jump_to_mid_no_pixels_to_draw:
-add   sp, 2   ; undo push of dc_x...
 xchg  ax, di  ; dc_yl into ax
 jmp   mid_no_pixels_to_draw  ; restore bp here
 
 
 
 
-ALIGN_MACRO
-use_max_light:
-; ugly 
-mov   bx, MAXLIGHTSCALE - 1
-jmp   do_light_write
 
-ALIGN_MACRO
-jmp_to_main_3232_div:
-jmp   main_3232_div
+
 
 ; todo: make this faster.
 
@@ -5996,6 +5989,15 @@ add   word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], 01000h
 SELFMODIFY_add_to_rwscale_hi_1:
 adc   word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], 01000h
 jmp   start_per_column_inner_loop
+ALIGN_MACRO
+use_max_light:
+; ugly 
+mov   bx, MAXLIGHTSCALE - 1
+jmp   do_light_write
+
+ALIGN_MACRO
+jmp_to_main_3232_div:
+jmp   main_3232_div
 ALIGN_MACRO
 jump_to_finish_outer_loop:
 jmp   finish_outer_loop
