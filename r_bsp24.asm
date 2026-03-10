@@ -5104,8 +5104,17 @@ jmp   R_RenderSegLoop_exit     ; todo doesnt quite fit here yet.
 
 
 ALIGN_MACRO
+
+increment_loop_values_full:
+mov   ax, cs
+mov   ds, ax
+pop   di  ; rw_x  always want this back
+
 increment_loop_values:       ; ; todo this seems to be rare. maybe does not need to be in a code hot spot and can be far jumped to
 public increment_loop_values
+
+SELFMODIFY_restore_bp_after_draw_mid:
+mov   bp, 01000h
 
 ;		rw_x = rw_x_base4 + xoffset;
 ;		if (rw_x < start_rw_x){
@@ -5409,7 +5418,7 @@ ENDIF
 
 ALIGN_MACRO
 jump_to_mid_no_pixels_to_draw:
-jmp   mid_no_pixels_to_draw  ; restore bp here
+jmp   increment_loop_values  ; restore bp here
 
 
 
@@ -5593,7 +5602,7 @@ IF COMPISA GE COMPILE_386
 ELSE
 
    test cx, cx
-   jne  jmp_to_main_3232_div
+   jne  jmp_to_main_3232_div ; 09Ah bytes away
 
 
    cwd
@@ -5650,18 +5659,9 @@ public SELFMODIFY_BSP_R_DrawColumnPrep_ret
 ; the pop bx gets replaced with ret if bottom is calling.
 ; todo: the bottom caller pops the same stuff. pop here and modify a later instruction instead?
 
-mov   ax, cs
-mov   ds, ax
 
 
-pop   di  ; rw_x  always want this back
-
-mid_no_pixels_to_draw:
-
-SELFMODIFY_restore_bp_after_draw_mid:
-mov   bp, 01000h
-
-jmp   increment_loop_values
+jmp   increment_loop_values_full
 
 
 ALIGN_MACRO
@@ -5938,6 +5938,10 @@ ELSE
    pop   dx   ; jump amount
    pop   ax   ; dc_yl
 
+   push cs   
+   PUSH_MACRO_WITH_REG si OFFSET(increment_loop_values_full)
+   
+
    R_DrawColumnPrep_Stretch_:
    PUBLIC R_DrawColumnPrep_Stretch_
 
@@ -5950,14 +5954,7 @@ ELSE
 
    ; far JUMP. pass in return addr below
 
-   push cs   
-IF COMPISA GE COMPILE_186
-   push OFFSET SELFMODIFY_BSP_R_DrawColumnPrep_ret
-ELSE
-   mov  dx, OFFSET SELFMODIFY_BSP_R_DrawColumnPrep_ret
-   push dx
-ENDIF
-   
+
    ; far JUMP. pass in return addr above
 
    db 0EAh
