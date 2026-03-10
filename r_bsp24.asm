@@ -3808,7 +3808,7 @@ jmp       done_adjusting_row_offset
 
 STOREWALLRANGE_INNER_STACK_SIZE = 02Ah
 STOREWALLRANGE_FULL_STACK_SIZE = 046h
-STOREWALLRANGE_INNER_STACK_SIZE_MID = 01Ch
+STOREWALLRANGE_INNER_STACK_SIZE_MID = 018h
 
 ALIGN_MACRO  ; adding these back seems to lower bench scores
 PROC   R_StoreWallRangeNoBackSector_ NEAR ; needs another look and reconciliation with outer stack frames.
@@ -3864,10 +3864,8 @@ PUBLIC R_StoreWallRangeNoBackSector_
 ; bp - 02Eh  ; rw_scale hi 
 ; bp - 030h  ; rw_scale lo 
 
-; bp - 032h  ; topfrac hi     preshifted 4
-; bp - 034h  ; topfrac lo     preshifted 4
-; bp - 036h  ; bottomfrac hi  preshifted 4
-; bp - 038h  ; bottomfrac lo  preshifted 4
+; bp - 032h  ; topfrac lo     preshifted 4
+; bp - 034h  ; bottomfrac lo  preshifted 4
 
 
 
@@ -4521,7 +4519,7 @@ les       ax, dword ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR]
 mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul], ax    ; adjust shift/add byte order for 10/12 mul
 mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul+2], es  ; adjust shift/add byte order for 10/12 mul
 
-; todo les these two
+; todo les these two once bot/top draws refactored and space freed up
 mov       ax, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR+4]
 mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_nostretch], ax
 mov       ax, word ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 6]
@@ -4781,17 +4779,17 @@ ELSE
 ENDIF
 
 ;end inlined FixedMulBSPLocal_
-; not ok
+
 neg       ax
 SELFMODIFY_sub__centeryfrac_4_hi_4:
 mov       cx, 01000h ; ah known zero. dh too probably?
 sbb       cx, dx
 add       ax, ((HEIGHTUNIT)-1) SHL 4 ; bake this in once, instead of doing it every loop.
-;mov       word ptr [bp - 042h], ax
 adc       cx, 0
-;mov       word ptr [bp - 040h], cx
-push      cx ; bp - 032h
-push      ax ; bp - 034h
+
+mov       word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], cx
+
+push      ax ; bp - 032h
 ; les to load two words
 
 ; todo 24 bit muls?
@@ -4852,13 +4850,12 @@ ENDIF
 ; ds is still cs
 
 neg       ax
-;mov       word ptr [bp - 03Eh], ax
+push      ax ; bp - 034h
+
 SELFMODIFY_sub__centeryfrac_4_hi_3: ; preincremented by 1 to pass into bp -028h
-mov       cx, 01000h ; ah known zero. dh too probably?
-sbb       cx, dx
-;mov       word ptr [bp - 03Ch], ax
-push      cx ; bp - 036h
-push      ax ; bp - 038h
+mov       ax, 01000h ; ah known zero. dh too probably?
+sbb       ax, dx
+mov       word ptr ds:[SELFMODIFY_set_botfrac_hi_mid+1], ax
 
 ; mid markceiling/markfloor are true unless this check passes.
 ; based on this check, do R_CheckPlane and modify jmp vs fall thru in the 
@@ -5072,25 +5069,21 @@ PUBLIC R_RenderSegLoop_
 ; ds still cs
 ; todo skip these pushes if potato?
 
-; sp is bp - 038h
+; sp is bp - 034h
 
 ; we could avoid the cli/sti and pop things off the stack,
 ;  but we'd have to push the other two values back on which for now is probably slower.
 ; todo: rearrange stack to make this a bit shorter and more elegant.
 
 cli
-add   sp, 2
-pop   word ptr ds:[SELFMODIFY_set_botfrac_hi_mid+1]  ; bp - 036h
-add   sp, 2
-
-pop   word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1]  ; bp - 032h
+add   sp, 4
 pop   word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1]  ; bp - 030h
 pop   word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1]  ; bp - 02Eh
 
 
-sub   sp, 12
+sub   sp, 8
 sti
-; sp is bp - 038h
+; sp is bp - 034h
 
 
 
@@ -5147,11 +5140,11 @@ jge   exit_rendersegloop
 
 ; todo (eventually) make sure all the selfmodify addresses are word aligned!
 SELFMODIFY_add_to_bottomfrac_lo_2:
-sub   word ptr [bp - 038h], 01000h
+sub   word ptr [bp - 034h], 01000h
 SELFMODIFY_add_to_bottomfrac_hi_2:
 sbb   word ptr ds:[SELFMODIFY_set_botfrac_hi_mid+1], 01000h
 SELFMODIFY_add_to_topfrac_lo_2:
-sub   word ptr [bp - 034h], 01000h
+sub   word ptr [bp - 032h], 01000h
 SELFMODIFY_add_to_topfrac_hi_2:
 sbb   word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], 01000h
 SELFMODIFY_add_to_rwscale_lo_2:
@@ -5541,9 +5534,9 @@ mov   ds, ax   ; set dc_source_segment
 ; CX:AX rw_scale
 ; TODO add directly into les below, and construct this from 8 bit shift.
 SELFMODIFY_set_rwscale_lo_mid:
-mov   ax, 01000h ; bp - 030h being updated into here
+mov   ax, 01000h 
 SELFMODIFY_set_rwscale_hi_mid:
-mov   cx, 01000h ; bp - 02Eh being updated into here
+mov   cx, 01000h 
 
 
 cmp   cl, 3
