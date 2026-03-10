@@ -3808,7 +3808,7 @@ jmp       done_adjusting_row_offset
 
 STOREWALLRANGE_INNER_STACK_SIZE = 02Ah
 STOREWALLRANGE_FULL_STACK_SIZE = 046h
-STOREWALLRANGE_INNER_STACK_SIZE_MID = 014h
+STOREWALLRANGE_INNER_STACK_SIZE_MID = 012h
 
 ALIGN_MACRO  ; adding these back seems to lower bench scores
 PROC   R_StoreWallRangeNoBackSector_ NEAR ; needs another look and reconciliation with outer stack frames.
@@ -3844,25 +3844,25 @@ PUBLIC R_StoreWallRangeNoBackSector_
 ; bp - 012h  ; rw_angle lo from R_AddLine
 
 ; func return and preserved vars. TODO pusha/popa support with constant for 8088 
-; bp - 014h  ; return address from R_StoreWallRange_
-; bp - 016h  ; PUSHed bx
-; bp - 018h  ; PUSHed cx
-; bp - 01Ah  ; PUSHed si
-; bp - 01Ch  ; PUSHed di
+; bp - 016h  ; unused pushed reg precall
+; bp - 018h  ; unused pushed reg precall
+; bp - 01Ah  ; unused pushed reg precall
+; bp - 01Ch  ; unused pushed reg precall
+; bp - 01Ch  ; return address from R_StoreWallRange_
 ; bp - 01Eh  ; ax arg (no need to pop)
 ; bp - 020h  ; dx arg (no need to pop)
 
 ; pushed stuff
 ; bp - 022h  ; stop - start
-; bp - 024h  ; base4diff      ; todo unused 
 
-; bp - 026h  ; worldtop hi
-; bp - 028h  ; worldtop lo
-; bp - 02Ah  ; worldbottom hi
-; bp - 02Ch  ; worldbottom lo  
 
-; bp - 02Eh  ; rw_scale hi , then topfrac lo     preshifted 4
-; bp - 030h  ; rw_scale lo , then bottomfrac lo  preshifted 4
+; bp - 024h  ; worldtop hi
+; bp - 026h  ; worldtop lo
+; bp - 028h  ; worldbottom hi
+; bp - 02Ah  ; worldbottom lo  
+
+; bp - 02Ch  ; rw_scale hi , then topfrac lo     preshifted 4
+; bp - 02Eh  ; rw_scale lo , then bottomfrac lo  preshifted 4
 
 
 
@@ -4262,11 +4262,6 @@ inc       ax
 mov       ds, cx  ; cs = ds, in case it wasnt already..
 
 
-; bx is already [bp - 01Eh]
-
-
-push  bx       ; bp - 024h remap to 0, 0x80, 1, 0x81   ; todo unused
-
 
 
 
@@ -4276,7 +4271,7 @@ mov   word ptr ds:[SELFMODIFY_cmp_di_to_rw_stopx_1+2], ax
 
 
 
-; sp at bp - 026h
+; sp at bp - 024h
 
 
 ; do worldtop/worldbot calculation now
@@ -4299,8 +4294,8 @@ SELFMODIFY_BSP_viewz_hi_7:
 sbb       dx, 01000h
 ; storeworldtop
 
-push      dx  ; bp - 026h
-push      ax  ; bp - 028h
+push      dx  ; bp - 024h
+push      ax  ; bp - 026h
 
 
 
@@ -4321,8 +4316,8 @@ SELFMODIFY_BSP_viewz_lo_8:
 sub       ax, 01000h
 SELFMODIFY_BSP_viewz_hi_8:
 sbb       dx, 01000h
-push      dx ; bp - 02Ah
-push      ax ; bp - 02Ch
+push      dx ; bp - 028h
+push      ax ; bp - 02Ah
 
 
 
@@ -4337,8 +4332,8 @@ mov       ax, 01000h
 add       ax, word ptr es:[bx]
 call      R_ScaleFromGlobalAngle_
 mov       es, cx ; restore es as ds_p+2 segment
-push      dx  ; bp - 02Eh
-push      ax  ; bp - 030h
+push      dx  ; bp - 02Ch
+push      ax  ; bp - 02Eh
 stosw             ; DRAWSEG_T.drawseg_scale1
 xchg      ax, dx
 stosw             ; DRAWSEG_T.drawseg_scale2
@@ -4422,8 +4417,8 @@ stos      word ptr es:[di]             ; +0Ch
 xchg      ax, dx
 mov       bx, word ptr [bp - 022h]
 
-sub       ax, word ptr [bp - 030h]
-sbb       dx, word ptr [bp - 02Eh]
+sub       ax, word ptr [bp - 02Eh]
+sbb       dx, word ptr [bp - 02Ch]
 
 ; inlined FastDiv3216u_    (only use in the codebase, might as well.)
 
@@ -4532,11 +4527,11 @@ mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_stretch], ax
 test      byte ptr [bp - 2], ML_DONTPEGBOTTOM
 jne       do_peg_bottom  ; todo branch test.
 dont_peg_bottom:
-les       ax,  dword ptr [bp - 028h]
+les       ax,  dword ptr [bp - 026h]
 mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1], ax
 mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo_stretch+1], ax
 
-mov       ax, es   ; word ptr [bp - 026h]
+mov       ax, es   ; word ptr [bp - 024h]
 ; ax has rw_midtexturemid+2
 jmp       done_with_bottom_peg
 ALIGN_MACRO
@@ -4601,7 +4596,7 @@ xor       ax, ax   ; maskedtexture is 0 in this case. todo wish we got this for 
 
 ; coming into here, AL is equal to maskedtexture.
 ; ds is equal to CS
-; sp should now be bp - 030h
+; sp should now be bp - 02Eh
 
 
 ; set maskedtexture in rendersegloop
@@ -4728,9 +4723,9 @@ seg_textured_check_done:
 
 IF COMPISA GE COMPILE_386
 
-   les       ax, dword ptr [bp - 028h]
+   les       ax, dword ptr [bp - 026h]
    mov       dx, es
-   les       bx, dword ptr [bp - 030h]
+   les       bx, dword ptr [bp - 02Eh]
    mov       cx, es
 
    shl  ecx, 16
@@ -4745,9 +4740,9 @@ IF COMPISA GE COMPILE_386
 
 ELSE
 
-   les       ax, dword ptr [bp - 028h]
+   les       ax, dword ptr [bp - 026h]
    mov       dx, es
-   les       bx, dword ptr [bp - 030h]
+   les       bx, dword ptr [bp - 02Eh]
    mov       cx, es
 
    MOV  SI, DX
@@ -4786,17 +4781,15 @@ adc       cx, 0
 mov       word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], cx
 
 
-pop       bx ; bp - 030h
-pop       cx ; bp - 02Eh
+pop       bx ; bp - 02Eh
+pop       cx ; bp - 02Ch
 
-mov       word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], bx  ; bp - 030h
-mov       word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], cx  ; bp - 02Eh
+mov       word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], bx  ; bp - 02Eh
+mov       word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], cx  ; bp - 02Ch
 
-push      ax ; bp - 02Eh
-; todo: possible to pop bp - 030h thru bp - 02Ah off (into bp?) and use them twice?
+push      ax ; bp - 02Ch
 
 
-; les to load two words
 
 ; todo 24 bit muls?
 
@@ -4804,7 +4797,7 @@ push      ax ; bp - 02Eh
 
 IF COMPISA GE COMPILE_386
 
-   les       ax, dword ptr [bp - 02Ch]
+   les       ax, dword ptr [bp - 02Ah]
    mov       dx, es
 
    shl  ecx, 16
@@ -4820,7 +4813,7 @@ IF COMPISA GE COMPILE_386
 ELSE
 ; si not preserved
 
-   les       ax, dword ptr [bp - 02Ch]
+   les       ax, dword ptr [bp - 02Ah]
    mov       dx, es
 
    MOV  SI, DX
@@ -4852,7 +4845,7 @@ ENDIF
 ; ds is still cs
 
 neg       ax
-push      ax ; bp - 030h
+push      ax ; bp - 02Eh
 
 SELFMODIFY_sub__centeryfrac_4_hi_3: ; preincremented by 1
 mov       ax, 01000h ; ah known zero. dh too probably?
@@ -4936,7 +4929,7 @@ ASSUME DS:R_BSP_24_TEXT
 
 SELFMODIFY_get_rwscalestep_lo_1:
 mov       ax, 01000h
-les       bx, dword ptr [bp - 028h]
+les       bx, dword ptr [bp - 026h]
 mov       cx, es
 
 ;start inlined FixedMulBSPLocal_
@@ -4995,7 +4988,7 @@ mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_2+4], dx
 mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_2+3], ax
 
 
-les       bx, dword ptr [bp - 02Ch]
+les       bx, dword ptr [bp - 02Ah]
 mov       cx, es
 SELFMODIFY_get_rwscalestep_lo_2:
 mov       ax, 01000h
@@ -5073,7 +5066,7 @@ PUBLIC R_RenderSegLoop_
 
 
 
-mov   di, word ptr [bp - 024h]  ; get start_x/dc_x initial value
+mov   di, word ptr [bp - 01Eh]  ; get start_x/dc_x initial value
 
 jmp   start_per_column_inner_loop ; jump into first iter.
 
@@ -5135,11 +5128,11 @@ jge   exit_rendersegloop
 
 ; todo (eventually) make sure all the selfmodify addresses are word aligned!
 SELFMODIFY_add_to_bottomfrac_lo_2:
-sub   word ptr [bp - 030h], 01000h
+sub   word ptr [bp - 02Eh], 01000h
 SELFMODIFY_add_to_bottomfrac_hi_2:
 sbb   word ptr ds:[SELFMODIFY_set_botfrac_hi_mid+1], 01000h
 SELFMODIFY_add_to_topfrac_lo_2:
-sub   word ptr [bp - 02Eh], 01000h
+sub   word ptr [bp - 02Ch], 01000h
 SELFMODIFY_add_to_topfrac_hi_2:
 sbb   word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], 01000h
 SELFMODIFY_add_to_rwscale_lo_2:
@@ -5298,9 +5291,9 @@ SELFMODIFY_BSP_markfloor_1_TARGET:
 
 markfloor_done:
 public  markfloor_done
-; get jl check sort of for free, we need to sal anyway on fall thru
-sal   dx, 1        ; multiply pixel count by 2. if zero no pixels to draw
-jge   jump_to_mid_no_pixels_to_draw ; wait until floors/ceils marked to early out.
+; get jns check sort of for free, we need to sal anyway on fall thru
+sal   dx, 1        ; multiply pixel count by 2. if signed no pixels to draw
+jns   jump_to_mid_no_pixels_to_draw ; had to wait until floors/ceils marked to early out.
 
 push  di  ; store dc_x
 push  bp  ; push because ax needs dc_yl for colfunc
