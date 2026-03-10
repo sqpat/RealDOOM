@@ -57,7 +57,7 @@ _COLFUNC_JUMP_LOOKUP:
 dw COLFUNC_JUMP_LOOKUP_OFFSET
 _COLFUNC_JUMP_LOOKUP_INSTR:
 db 001h, 0D6h, 0D1h, 0E6h  ; 12 
-dw  199 * 12
+dw DRAWCOL_OFFSET_BSP - 5
 
 
 
@@ -133,7 +133,7 @@ dw SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1, DRAWCOL_NOLOOP_OFFSET_BSP
 dw SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOPANDSTRETCH_OFFSET+1, DRAWCOL_NOLOOP_STRETCH_OFFSET_BSP
 dw DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET
 db 0D1h, 0E6h, 001h, 0D6h  ; 10
-dw  199 * 10
+dw DRAWCOL_NOLOOP_OFFSET_BSP - 5
 
 _lastviewz:
 dw 0F0F0h, 0F0F0h
@@ -4516,18 +4516,17 @@ and       ah, 080h                 ; function type select.
 xor       bx, bx
 mov       bl, ah
 
-; todo
+; overwrite the pair of instructions
 les       ax, dword ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR]
 mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul], ax    ; adjust shift/add byte order for 10/12 mul
 mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul+2], es  ; adjust shift/add byte order for 10/12 mul
+
+; todo les these two
 mov       ax, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR+4]
-mov       word ptr ds:[SELFMODIFY_sub_jump_from_max_mid+2], ax
-les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset+3], ax
-mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_nostretch], es
-les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 4]
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset+3], ax
-mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_stretch], es
+mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_nostretch], ax
+mov       ax, word ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 6]
+sub       ax, 5 ; todo put this somewhere...
+mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_stretch], ax
 
 
 ; write the high byte of the word.
@@ -5271,8 +5270,7 @@ dec   ax
 skip_yh_floorclip:
 
 mov   bp, dx  ; store yl
-neg   dx
-add   dx, ax
+sub   dx, ax   ; yl - yh. technically we want to know if (yh - yl) is positive then we take (200 - (yh - yl)
 
 
 ; ax is already yh
@@ -5314,7 +5312,7 @@ markfloor_done:
 public  markfloor_done
 ; get jl check sort of for free, we need to sal anyway on fall thru
 sal   dx, 1        ; multiply pixel count by 2. if zero no pixels to draw
-jl    jump_to_mid_no_pixels_to_draw ; wait until floors/ceils marked to early out.
+jge   jump_to_mid_no_pixels_to_draw ; wait until floors/ceils marked to early out.
 
 push  di  ; store dc_x
 push  bp  ; push because ax needs dc_yl for colfunc
@@ -5337,11 +5335,8 @@ lea   di, [di + bp + 01000h]           ; di has destview offset
 
 ; bx has dc_x...
 
-; todo: if we go back to loading jump offset from a table, dx is word offset already.
-; currently not doing it because its too big to potentially fit in cs right now,
-; and we are currently removing dependencies on the 9A10 dest segment
-; jump offset table may be faster because (200 * pixel_size) - pixel_size * (dc_yh-dc_yl) math is already encoded
 
+add   dx, 398   ; 199 - (dc_yh - dc_yl) shl 1
 mov   si, dx  ; 2, 2   dx already multiplied by 2
 shl   si, 1   ; 4, 2
 SELFMODIFY_set_pixel_count_shift_mul:
@@ -5349,11 +5344,8 @@ public SELFMODIFY_set_pixel_count_shift_mul
 ; 12 per is 01 d6 d1 e6 
 ; 10 per is d1 e6 01 d6 
 add   si, dx  ; 6, 2     ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
-shl   si, 1   ; 12, 2
+shl   si, 1   ; 12, 2    ; is there a way to swap just one instruction, while not adding instruction count?
 
-neg   si
-SELFMODIFY_sub_jump_from_max_mid:
-add   si, 01000h      ; todo once funcs are in cs, this would be two separate adds in the fastdiv branches based on which target?
 
 
 seg_is_textured:
@@ -5544,8 +5536,6 @@ public just_do_draw0
 cwd
 mov   ds, ax   ; set dc_source_segment
 
-mov   ax, COLFUNC_FILE_START_SEGMENT
-mov   es, ax   ; for upcoming write
 
 
 ; CX:AX rw_scale
@@ -5632,8 +5622,6 @@ ELSE
    xchg dx, cx   ; cx was 0, dx is FFFF
    div  bx        ; after this dx stores remainder, ax stores q1
 
-   SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset:
-   mov  word ptr es:[01000h], si
 
    xchg  cx, ax   ; q1 to cx, ffff to ax  so div remainder:ffff 
 
@@ -5659,11 +5647,11 @@ ENDIF
    ; dc_iscale loaded here..
    ; di already has screen coord
 
+   mov   dx, si  ; jmp amount
    pop   ax   ; dc_yl
 
    R_DrawColumnPrep_:
    PUBLIC R_DrawColumnPrep_ 
-
    SELFMODIFY_set_midtexturemid_lo:
    mov   si, 01000h
 
@@ -5883,8 +5871,7 @@ ELSE
    main_3232_div:
    public main_3232_div
 
-   SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset:
-   mov  word ptr es:[01000h], si   ; si has the needed value.
+   push  si ; store jmp amount
 
    ; generally cx maxes out at around 5 bits of precision? bias towards shift right instead of left.  
 
@@ -5969,7 +5956,7 @@ ELSE
 
 
    ; di already has screen coord
-
+   pop   dx   ; jump amount
    pop   ax   ; dc_yl
 
    R_DrawColumnPrep_Stretch_:
@@ -6096,7 +6083,6 @@ ENDIF
    mov  ax, 01000h
 
    sub  ax, bx ; modify qhat by measured amount
-   pop si      ; restore this..
    jmp  FastDiv3232FFFF_done_stretch
 
 

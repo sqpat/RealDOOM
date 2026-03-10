@@ -80,6 +80,22 @@ ENDM
 
 
 
+ALIGN 16
+
+  xchg  ax, ax ; nop  ; 11 bytes of nops, then 5 byte instruction, then paragraph aligned func
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+
+  mov   word ptr cs:[((DC_YL_LOOKUP_SEGMENT - COLORMAPS_SEGMENT) SHL 4) +  MARKER_SM_COLFUNC_jump_offset24_noloop_+1], dx ; five bytes
 
 MARKER_COLFUNC_NOLOOP_FUNCTION_AREA_OFFSET_:
 PUBLIC MARKER_COLFUNC_NOLOOP_FUNCTION_AREA_OFFSET_
@@ -190,6 +206,21 @@ ENDP
 
 ALIGN 16
 
+  xchg  ax, ax ; nop  ; 11 bytes of nops, then 5 byte instruction, then paragraph aligned func
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+
+  mov   word ptr cs:[((DC_YL_LOOKUP_SEGMENT - COLORMAPS_SEGMENT) SHL 4) + MARKER_SM_COLFUNC_jump_offset24_noloopandstretch_+1], dx ; five bytes
+
 MARKER_COLFUNC_NOLOOPANDSTRETCH_FUNCTION_AREA_OFFSET_:
 PUBLIC MARKER_COLFUNC_NOLOOPANDSTRETCH_FUNCTION_AREA_OFFSET_
 
@@ -279,6 +310,20 @@ ENDP
 
 ALIGN 16
 
+  xchg  ax, ax ; nop  ; 11 bytes of nops, then 5 byte instruction, then paragraph aligned func
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+
+  mov   word ptr cs:[((DC_YL_LOOKUP_SEGMENT - COLORMAPS_SEGMENT) SHL 4) + MARKER_SM_COLFUNC_jump_offset24_+1], dx ; five bytes
 MARKER_COLFUNC_NORMAL_FUNCTION_AREA_OFFSET_:
 PUBLIC MARKER_COLFUNC_NORMAL_FUNCTION_AREA_OFFSET_
 
@@ -390,6 +435,20 @@ ENDP
 
 ALIGN 16
 
+  xchg  ax, ax ; nop  ; 11 bytes of nops, then 5 byte instruction, then paragraph aligned func
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+  xchg  ax, ax ; nop
+
+  mov   word ptr cs:[((DC_YL_LOOKUP_SEGMENT - COLORMAPS_SEGMENT) SHL 4) + MARKER_SM_COLFUNC_jump_offset24_normalstretch_+1], dx ; five bytes
 MARKER_COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET_:
 PUBLIC MARKER_COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET_
 
