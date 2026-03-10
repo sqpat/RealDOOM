@@ -3808,7 +3808,7 @@ jmp       done_adjusting_row_offset
 
 STOREWALLRANGE_INNER_STACK_SIZE = 02Ah
 STOREWALLRANGE_FULL_STACK_SIZE = 046h
-STOREWALLRANGE_INNER_STACK_SIZE_MID = 018h
+STOREWALLRANGE_INNER_STACK_SIZE_MID = 014h
 
 ALIGN_MACRO  ; adding these back seems to lower bench scores
 PROC   R_StoreWallRangeNoBackSector_ NEAR ; needs another look and reconciliation with outer stack frames.
@@ -3859,14 +3859,10 @@ PUBLIC R_StoreWallRangeNoBackSector_
 ; bp - 026h  ; worldtop hi
 ; bp - 028h  ; worldtop lo
 ; bp - 02Ah  ; worldbottom hi
-; bp - 02Ch  ; worldbottom lo   ; on return, add 034h to sp, set bp to sp.
+; bp - 02Ch  ; worldbottom lo  
 
-; bp - 02Eh  ; rw_scale hi 
-; bp - 030h  ; rw_scale lo 
-
-; bp - 032h  ; topfrac lo     preshifted 4
-; bp - 034h  ; bottomfrac lo  preshifted 4
-
+; bp - 02Eh  ; rw_scale hi , then topfrac lo     preshifted 4
+; bp - 030h  ; rw_scale lo , then bottomfrac lo  preshifted 4
 
 
 
@@ -4789,7 +4785,17 @@ adc       cx, 0
 
 mov       word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], cx
 
-push      ax ; bp - 032h
+
+pop       bx ; bp - 030h
+pop       cx ; bp - 02Eh
+
+mov       word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], bx  ; bp - 030h
+mov       word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], cx  ; bp - 02Eh
+
+push      ax ; bp - 02Eh
+; todo: possible to pop bp - 030h thru bp - 02Ah off (into bp?) and use them twice?
+
+
 ; les to load two words
 
 ; todo 24 bit muls?
@@ -4800,8 +4806,6 @@ IF COMPISA GE COMPILE_386
 
    les       ax, dword ptr [bp - 02Ch]
    mov       dx, es
-   les       bx, dword ptr [bp - 030h]
-   mov       cx, es
 
    shl  ecx, 16
    mov  cx, bx
@@ -4818,8 +4822,6 @@ ELSE
 
    les       ax, dword ptr [bp - 02Ch]
    mov       dx, es
-   les       bx, dword ptr [bp - 030h]
-   mov       cx, es
 
    MOV  SI, DX
    MOV  ES, AX ; todo synergy
@@ -4850,9 +4852,9 @@ ENDIF
 ; ds is still cs
 
 neg       ax
-push      ax ; bp - 034h
+push      ax ; bp - 030h
 
-SELFMODIFY_sub__centeryfrac_4_hi_3: ; preincremented by 1 to pass into bp -028h
+SELFMODIFY_sub__centeryfrac_4_hi_3: ; preincremented by 1
 mov       ax, 01000h ; ah known zero. dh too probably?
 sbb       ax, dx
 mov       word ptr ds:[SELFMODIFY_set_botfrac_hi_mid+1], ax
@@ -5067,23 +5069,7 @@ R_RenderSegLoop_:
 PUBLIC R_RenderSegLoop_
 
 ; ds still cs
-; todo skip these pushes if potato?
 
-; sp is bp - 034h
-
-; we could avoid the cli/sti and pop things off the stack,
-;  but we'd have to push the other two values back on which for now is probably slower.
-; todo: rearrange stack to make this a bit shorter and more elegant.
-
-cli
-add   sp, 4
-pop   word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1]  ; bp - 030h
-pop   word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1]  ; bp - 02Eh
-
-
-sub   sp, 8
-sti
-; sp is bp - 034h
 
 
 
@@ -5140,11 +5126,11 @@ jge   exit_rendersegloop
 
 ; todo (eventually) make sure all the selfmodify addresses are word aligned!
 SELFMODIFY_add_to_bottomfrac_lo_2:
-sub   word ptr [bp - 034h], 01000h
+sub   word ptr [bp - 030h], 01000h
 SELFMODIFY_add_to_bottomfrac_hi_2:
 sbb   word ptr ds:[SELFMODIFY_set_botfrac_hi_mid+1], 01000h
 SELFMODIFY_add_to_topfrac_lo_2:
-sub   word ptr [bp - 032h], 01000h
+sub   word ptr [bp - 02Eh], 01000h
 SELFMODIFY_add_to_topfrac_hi_2:
 sbb   word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], 01000h
 SELFMODIFY_add_to_rwscale_lo_2:
