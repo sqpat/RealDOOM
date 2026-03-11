@@ -6158,7 +6158,7 @@ PUBLIC R_StoreWallRangeWithBackSector_
 
 ; nonpushed, but should be (TODO swap order)
 
-; bp - 034h  ; pixhigh hi     preshifted 4
+; bp - 034h  ; unused
 ; bp - 036h  ; pixhigh lo     preshifted 4
 ; bp - 038h  ; pixlow hi      preshifted 4
 ; bp - 03Ah  ; pixlow lo      preshifted 4
@@ -7166,8 +7166,7 @@ test      ax, ax
 je        toptexture_zero         ; todo whats more common?
 
 toptexture_not_zero:
-mov       word ptr ds:[SELFMODIFY_BSP_toptexture_TWOSIDED], 0468Bh ; mov   ax, word ptr [bp - 0xxh] first two bytes
-mov       byte ptr ds:[SELFMODIFY_BSP_toptexture_TWOSIDED+2], 0100h - 034h   ; ugh gross [bp - 034h]
+mov       byte ptr ds:[SELFMODIFY_BSP_toptexture_TWOSIDED], 0B8h ; mov   ax, imm16
 ; are any bits set?
 or        bl, bh
 or        byte ptr ds:[SELFMODIFY_check_for_any_tex_TWOSIDED+1], bl
@@ -7458,7 +7457,8 @@ mov       dx, cx
 pop       bx
 pop       cx
 
-push      dx  ; bp - 034h
+mov       word ptr ds:[SELFMODIFY_BSP_set_pixhigh+1], dx
+sub       sp, 2  ; todo remove
 push      ax  ; bp - 036h
 
 ; last pop...
@@ -7523,7 +7523,7 @@ ENDIF
 
 
 mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_lo_1_TWOSIDED+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_hi_1_TWOSIDED+3], dx
+mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_hi_1_TWOSIDED+5], dx
 
 
 
@@ -8953,12 +8953,12 @@ PUBLIC do_top_texture_draw
 
 ; TOP DRAW CEIL/FLOOR CHECKS HERE
 
-
-mov   ax, word ptr [bp - 034h]    ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET  ; pixhigh
+SELFMODIFY_BSP_set_pixhigh:
+mov   ax, 01000h      ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET  ; pixhigh
 SELFMODIFY_add_to_pixhigh_lo_1_TWOSIDED:
 sub   word ptr [bp - 036h], 01000h  ; ! this wasnt selfmodified
 SELFMODIFY_add_to_pixhigh_hi_1_TWOSIDED:
-sbb   word ptr [bp - 034h], 01000h  ; ! this wasnt selfmodified
+sbb   word ptr cs:[SELFMODIFY_BSP_set_pixhigh+1], 01000h  ; ! this wasnt selfmodified
 ; bx is rw_x 
 
 ; todo reduce 16 bit logic, use 8 bit logic.
