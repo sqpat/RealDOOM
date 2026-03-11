@@ -6796,7 +6796,7 @@ mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_1_TWOSIDED+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_2_TWOSIDED+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_3_TWOSIDED+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_4_TWOSIDED+1], ax
-mov       word ptr ds:[SELFMODIFY_add_rwscale_lo_TWOSIDED+3], ax
+mov       word ptr ds:[SELFMODIFY_add_rwscale_lo_TWOSIDED+4], ax
 
 
 xchg      ax, dx
@@ -6806,7 +6806,7 @@ mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_3_TWOSIDED+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_4_TWOSIDED+1], ax
 
 
-mov       word ptr ds:[SELFMODIFY_add_rwscale_hi_TWOSIDED+3], ax
+mov       word ptr ds:[SELFMODIFY_add_rwscale_hi_TWOSIDED+4], ax
 
 
 
@@ -8160,21 +8160,12 @@ mov   word ptr ds:[SELFMODIFY_BSP_markceiling_1_TWOSIDED], bx
 mov   word ptr ds:[SELFMODIFY_BSP_markceiling_2_TWOSIDED], es
 
 
-
-
-;	while (base4diff){
-;		rw_scale.w      -= rw_scalestep;
-;		topfrac         -= topstep;
-;		bottomfrac      -= bottomstep;
-;		pixlow		    -= pixlowstep;  ; todo add
-;		pixhigh		    -= pixhighstep; ; todo add
-;		base4diff--;
-;	}
-
 ; todo set up cs vars here  properly.
 
 mov   di, word ptr [bp - 01Eh]  ; startx
-
+les   ax, dword ptr [bp - 030h]
+mov   word ptr ds:[SELFMODIFY_set_rwscale_lo_bottop+1], ax
+mov   word ptr ds:[SELFMODIFY_set_rwscale_hi_bottop+1], es
  
 
 
@@ -8233,9 +8224,9 @@ SELFMODIFY_add_botstep_hi_TWOSIDED:
 sbb   word ptr ds:[SELFMODIFY_set_botfrac_hi_bottop+1], 01000h
 
 SELFMODIFY_add_rwscale_lo_TWOSIDED:
-add   word ptr [bp - 030h], 01000h
+add   word ptr ds:[SELFMODIFY_set_rwscale_lo_bottop+1], 01000h
 SELFMODIFY_add_rwscale_hi_TWOSIDED:
-adc   word ptr [bp - 02Eh], 01000h
+adc   word ptr ds:[SELFMODIFY_set_rwscale_hi_bottop+1], 01000h
 
 
 
@@ -8325,7 +8316,7 @@ mov   byte ptr es:[bx+di + vp_bottom_offset], al
 mov   ax, si						    		   ; dl is 0, si is < screensize (and thus under 255)
 dec   ax
 mov   byte ptr es:[bx+di], al
-or    byte ptr d:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], 1 ; ceiling bit
+or    byte ptr ds:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], 1 ; ceiling bit
 
 SELFMODIFY_BSP_markceiling_1_TARGET_TWOSIDED:
 markceiling_done_TWOSIDED:
@@ -8502,37 +8493,37 @@ sbb   ax, dx
 ;	}
 
 ; CX:BX rw_scale
-; todo bp/stack candidate
-les   bx, dword ptr [bp - 030h]
-mov   cx, es
 
 ; store texturecolumn
 push  ax       ; later popped into dx
 
+; CX:AX rw_scale
+; TODO add directly into les below, and construct this from 8 bit shift.
+SELFMODIFY_set_rwscale_lo_bottop:
+mov   ax, 01000h 
+SELFMODIFY_set_rwscale_hi_bottop:
+mov   cx, 01000h 
 
 cmp   cl, 3
 jae   use_max_light_TWOSIDED
 do_lightscaleshift_TWOSIDED:
 
-mov   al, bh
-mov   ah, cl
-mov   si, ax
-
-SHIFT_MACRO shr si 4
-
-
-
-; todo investigate selfmodify lookup here, write ahead byte value directly ahead.... also dont need to push pop si.
-
-; tricky due to fixedcolormap??
-; alternatively just add si's value here to it.
+; shift 8
+mov   bl, ah
+mov   bh, cl
+; shift 12
+SHIFT_MACRO shr bx 4
 
 do_light_write_TWOSIDED:
 SELFMODIFY_add_wallights_TWOSIDED:
-; si is scalelight
+; bx is scalelight
 ; scalelight is pre-shifted 4 to save on the double sal every column.
-mov   al, byte ptr ss:[si+01000h]         ; 8a 84 00 10 
+
+mov   bl, byte ptr ss:[bx+01000h]         ; 8a 84 00 10 
+
+xchg  ax, bx  ; cx:bx is proper value again.
 ;        set colormap offset to high byte
+
 
 
 mov   byte ptr ds:[SELFMODIFY_BSP_set_xlat_offset_TWOSIDED+2], al
@@ -8548,7 +8539,7 @@ ALIGN_MACRO
 
 use_max_light_TWOSIDED:
 ; ugly 
-mov   si, MAXLIGHTSCALE - 1
+mov   bx, MAXLIGHTSCALE - 1
 jmp   do_light_write_TWOSIDED
 ALIGN_MACRO
 light_set_TWOSIDED:
