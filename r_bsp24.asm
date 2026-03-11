@@ -6587,7 +6587,7 @@ push  cx       ; bp - 024h remap to 0, 0x80, 1, 0x81
 
 
 
-mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_2_TWOSIDED+1], ax
+mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_2_TWOSIDED+2], ax
 
 
 sub   ax, bx   ; stop - start
@@ -7827,7 +7827,7 @@ mov       ax, word ptr ds:[_mul48lookup_with_scalelight_with_minusone_offset + b
 
 
 ; write walllights to rendersegloop
-mov   word ptr ds:[SELFMODIFY_add_wallights_TWOSIDED+2], ax
+mov   word ptr ds:[SELFMODIFY_add_wallights_TWOSIDED+3], ax
 ; ? do math here and write this ahead to drawcolumn colormapsindex?
 
 SELFMODIFY_BSP_fixedcolormap_3_TARGET_TWOSIDED:
@@ -8173,7 +8173,7 @@ mov   word ptr ds:[SELFMODIFY_BSP_markceiling_2_TWOSIDED], es
 
 ; todo set up cs vars here  properly.
 
-mov   ax, word ptr [bp - 01Eh]  ; startx
+mov   di, word ptr [bp - 01Eh]  ; startx
 
  
 
@@ -8210,13 +8210,13 @@ pre_increment_values_TWOSIDED:
 public pre_increment_values_TWOSIDED
 
 
-inc   ax
-mov   di, cs
-mov   ds, di
+inc   di
+mov   ax, cs
+mov   ds, ax
 
 
 SELFMODIFY_cmp_ax_to_rw_stopx_2_TWOSIDED:
-cmp   ax, 01000h
+cmp   di, 01000h
 jge   exit_rendersegloop_TWOSIDED  ; exit before adding the other loop vars.
 
 
@@ -8259,7 +8259,7 @@ start_per_column_inner_loop_TWOSIDED:
 
 
 
-mov  di, ax  ; backup?
+mov  ax, di  ; backup?
 
 
 SELFMODIFY_and_by_detail_level_TWOSIDED:
@@ -8287,9 +8287,6 @@ xchg  ax, si
 
 inc   si
 
-; NOTE set ds here again (not all paths are ds = cs, but maybe should be)
-mov   ax, ss
-mov   ds, ax
 
 
 ; all these y values - ceil and floorclip, and later dc_yl and dc_yh are 
@@ -8322,13 +8319,13 @@ dec   ax
 skip_bottom_floorclip_TWOSIDED:
 cmp   si, ax
 jg    markceiling_done_TWOSIDED
-les   bx, dword ptr cs:[_ceiltop]
+les   bx, dword ptr ds:[_ceiltop]
 dec   ax
 mov   byte ptr es:[bx+di + vp_bottom_offset], al
 mov   ax, si						    		   ; dl is 0, si is < screensize (and thus under 255)
 dec   ax
 mov   byte ptr es:[bx+di], al
-or    byte ptr cs:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], 1 ; ceiling bit
+or    byte ptr d:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], 1 ; ceiling bit
 
 SELFMODIFY_BSP_markceiling_1_TARGET_TWOSIDED:
 markceiling_done_TWOSIDED:
@@ -8374,12 +8371,12 @@ skip_top_ceilingclip_TWOSIDED:
 
 cmp   ax, cx
 jg    markfloor_done_TWOSIDED
-les   bx, dword ptr cs:[_floortop]
+les   bx, dword ptr ds:[_floortop]
 dec   ax
 mov   byte ptr es:[bx+di], al
 dec   cx
 mov   byte ptr es:[bx+di + vp_bottom_offset], cl
-or    byte ptr cs:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], 2 ; floor bit
+or    byte ptr ds:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], 2 ; floor bit
 SELFMODIFY_BSP_markfloor_1_TARGET_TWOSIDED:
 markfloor_done_TWOSIDED:
 SELFMODIFY_BSP_get_segtextured_TWOSIDED:
@@ -8456,7 +8453,7 @@ ELSE
   MOV  SI, DX
   PUSH AX
   MUL  BX
-  MOV  word ptr cs:[_selfmodify_restore_dx_10_TWOSIDED-2], DX
+  MOV  word ptr ds:[_selfmodify_restore_dx_10_TWOSIDED-2], DX
   MOV  AX, SI
   MUL  CX
   XCHG AX, SI
@@ -8534,11 +8531,9 @@ do_light_write_TWOSIDED:
 SELFMODIFY_add_wallights_TWOSIDED:
 ; si is scalelight
 ; scalelight is pre-shifted 4 to save on the double sal every column.
-mov   al, byte ptr ds:[si+01000h]         ; 8a 84 00 10 
+mov   al, byte ptr ss:[si+01000h]         ; 8a 84 00 10 
 ;        set colormap offset to high byte
 
-mov   dx, cs
-mov   ds, dx
 
 mov   byte ptr ds:[SELFMODIFY_BSP_set_xlat_offset_TWOSIDED+2], al
 mov   byte ptr ds:[SELFMODIFY_BSP_set_xlat_offset_bot_TWOSIDED+2], al
@@ -9145,7 +9140,7 @@ finished_inner_loop_iter_TWOSIDED:
 ;			bottomfrac  += bottomstepshift,
 ;			rw_scale.w  += rwscaleshift
 
-mov   ax, bx  ; rw_x   ; todo xchg?
+mov   di, bx  ; rw_x   ; todo xchg?
 
 
 jmp   pre_increment_values_TWOSIDED
@@ -14575,7 +14570,7 @@ do_bsp_fixedcolormap_selfmodify:
 ; zero out the value in the walllights read which wont be updated again.
 ; It'll get a fixedcolormap value by default. We could alternately get rid of the loop that sets scalelightfixed to fixedcolormap and modify the instructions like above.
 mov   word ptr cs:[SELFMODIFY_add_wallights+3], OFFSET _scalelightfixed 
-mov   word ptr cs:[SELFMODIFY_add_wallights_TWOSIDED+2], OFFSET _scalelightfixed 
+mov   word ptr cs:[SELFMODIFY_add_wallights_TWOSIDED+3], OFFSET _scalelightfixed 
 
 mov   ax, ((SELFMODIFY_BSP_fixedcolormap_2_TARGET - SELFMODIFY_BSP_fixedcolormap_2_AFTER) SHL 8) + 0EBh
 mov   word ptr ds:[SELFMODIFY_BSP_fixedcolormap_2], ax
