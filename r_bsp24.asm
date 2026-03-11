@@ -3806,8 +3806,7 @@ jmp       done_adjusting_row_offset
 
 ;R_StoreWallRangeNoBackSector_
 
-STOREWALLRANGE_INNER_STACK_SIZE = 02Ah
-STOREWALLRANGE_FULL_STACK_SIZE = 046h
+STOREWALLRANGE_INNER_STACK_SIZE = 026h
 STOREWALLRANGE_INNER_STACK_SIZE_MID = 012h
 
 ALIGN_MACRO  ; adding these back seems to lower bench scores
@@ -6168,9 +6167,6 @@ PUBLIC R_StoreWallRangeWithBackSector_
 ; bp - 040h  ; topfrac hi     preshifted 4
 ; bp - 042h  ; topfrac lo     preshifted 4 ; up to here not pushed 
 
-; pushed/duped (todo improve? reorder?)
-; bp - 044h  ; rw_scale hi  REPUSHED
-; bp - 046h  ; rw_scale lo  REPUSHED         ; todo swap order this and above with  everything below this
 
 
 
@@ -6578,12 +6574,11 @@ mov   cx, bx
 
 SELFMODIFY_detailshift_and_1_TWOSIDED:
 and   bx, 01000h
-mov   word ptr ds:[SELFMODIFY_add_rw_x_base4_to_ax_TWOSIDED+1], bx
-mov   word ptr ds:[SELFMODIFY_compare_ax_to_start_rw_x_TWOSIDED+1], cx
+
+
 
 ;  	int16_t base4diff = rw_x - rw_x_base4;
 sub   cx, bx   ; result is 0 1 2 or 3. but if 2 then we want to set value 080h
-mov   byte ptr ds:[SELFMODIFY_set_rw_x_loop_counter_TWOSIDED+1], cl
 add   bx, cx   ; bx is [bp - 01Eh] or rw_x again.
 ror   cl, 1    ; result is 0, 1, 2, 3
 push  cx       ; bp - 024h remap to 0, 0x80, 1, 0x81
@@ -6592,9 +6587,8 @@ push  cx       ; bp - 024h remap to 0, 0x80, 1, 0x81
 
 
 
-mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_1_TWOSIDED+1], ax
 mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_2_TWOSIDED+1], ax
-mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_3_TWOSIDED+1], ax
+
 
 sub   ax, bx   ; stop - start
 shr   ax, 1    ; byte copies not word copies
@@ -6802,8 +6796,8 @@ mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_1_TWOSIDED+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_2_TWOSIDED+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_3_TWOSIDED+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_4_TWOSIDED+1], ax
-mov       word ptr ds:[SELFMODIFY_add_rwscale_lo_TWOSIDED+4], ax
-mov       word ptr ds:[SELFMODIFY_sub_rwscale_lo_TWOSIDED+3], ax
+mov       word ptr ds:[SELFMODIFY_add_rwscale_lo_TWOSIDED+3], ax
+
 
 xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_1_TWOSIDED+1], ax
@@ -6811,23 +6805,13 @@ mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_2_TWOSIDED+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_3_TWOSIDED+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_4_TWOSIDED+1], ax
 
-mov       word ptr ds:[SELFMODIFY_sub_rwscale_hi_TWOSIDED+3], ax
-mov       word ptr ds:[SELFMODIFY_add_rwscale_hi_TWOSIDED+4], ax
+
+mov       word ptr ds:[SELFMODIFY_add_rwscale_hi_TWOSIDED+3], ax
 
 
 
 ; todo change these in 386 mode to shld?
-SELFMODIFY_BSP_detailshift_1_TWOSIDED:
-shl   dx, 1
-rcl   ax, 1
-shl   dx, 1
-rcl   ax, 1
 
-mov       word ptr ds:[SELFMODIFY_add_to_rwscale_hi_1_TWOSIDED+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_rwscale_hi_2_TWOSIDED+3], ax
-xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_add_to_rwscale_lo_1_TWOSIDED+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_rwscale_lo_2_TWOSIDED+3], ax
 
 ;ASSUME DS:DGROUP  ; lods coming up
 
@@ -7529,56 +7513,22 @@ ENDIF
 ;end inlined FixedMulBSPLocal_
 
 
-neg       dx
-neg       ax
-sbb       dx, 0
 
 
 
 ; dx:ax is pixhighstep.
 ; self modifying code to write to pixlowstep usages.
 
+; ?? todo remove neg and do sub instructions
 
-mov       word ptr ds:[SELFMODIFY_add_pixhighstep_lo_TWOSIDED+4], ax
-mov       word ptr ds:[SELFMODIFY_add_pixhighstep_hi_TWOSIDED+4], dx
-
-
-cmp       byte ptr [bp - 024h], 1
-jc        skip_pixhigh_sub
-mov       cx, ax
-mov       bx, dx
-jo        pixhigh_sub_2x
-jz        pixhigh_sub_1x
-pixhigh_sub_3x:
-add       cx, ax
-adc       bx, dx
-pixhigh_sub_2x:
-add       cx, ax
-adc       bx, dx
-pixhigh_sub_1x:
-do_pixhigh_sub:
-sub       word ptr [bp - 036h], cx
-sbb       word ptr [bp - 034h], bx
-
-skip_pixhigh_sub:
-
-
-
-
-SELFMODIFY_BSP_detailshift_4:
-shl       ax, 1
-rcl       dx, 1
-shl       ax, 1
-rcl       dx, 1
 
 mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_lo_1_TWOSIDED+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_lo_2_TWOSIDED+3], ax
-xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_hi_1_TWOSIDED+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_hi_2_TWOSIDED+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_hi_1_TWOSIDED+3], dx
+
 
 
 ; put these back where they need to be.
+; maybe just use these in place?
 xchg      dx, di
 xchg      ax, si  ; todo i dont love all this swap back and forth.
 
@@ -7719,52 +7669,13 @@ ENDIF
 
 ;end inlined FixedMulBSPLocal_
 
-neg       dx
-neg       ax
-sbb       dx, 0
 
 ; dx:ax is pixlowstep.
 ; self modifying code to write to pixlowstep usages.
 
-
-mov       word ptr ds:[SELFMODIFY_add_pixlowstep_lo_TWOSIDED+4], ax
-mov       word ptr ds:[SELFMODIFY_add_pixlowstep_hi_TWOSIDED+4], dx
-
-
-cmp       byte ptr [bp - 024h], 1
-jc        skip_pixlow_sub
-mov       cx, ax
-mov       bx, dx
-jo        pixlow_sub_2x
-jz        pixlow_sub_1x
-pixlow_sub_3x:
-add       cx, ax
-adc       bx, dx
-pixlow_sub_2x:
-add       cx, ax
-adc       bx, dx
-pixlow_sub_1x:
-do_pixlow_sub:
-sub       word ptr [bp - 03Ah], cx
-sbb       word ptr [bp - 038h], bx
-
-skip_pixlow_sub:
-
-
-
-
-SELFMODIFY_BSP_detailshift_5:
-shl       ax, 1
-rcl       dx, 1
-shift_pixlowstep_once:
-shl       ax, 1
-rcl       dx, 1
-done_shifting_pixlowstep:
 mov       word ptr ds:[SELFMODIFY_add_to_pixlow_lo_1_TWOSIDED+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_pixlow_lo_2_TWOSIDED+3], ax
-xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_1_TWOSIDED+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_2_TWOSIDED+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_1_TWOSIDED+3], dx
+
 
 mov       al, byte ptr ss:[_maskedtexture]
 ; fallthru
@@ -8156,30 +8067,14 @@ ENDIF
 
 ;end inlined FixedMulBSPLocal_
 
-neg       dx
-neg       ax
-sbb       dx, 0
-
 ; dx:ax are topstep
 
 
-mov       word ptr ds:[SELFMODIFY_sub_topstep_lo_TWOSIDED+3], ax
-mov       word ptr ds:[SELFMODIFY_add_topstep_lo_TWOSIDED+4], ax
-xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_sub_topstep_hi_TWOSIDED+3], ax
-mov       word ptr ds:[SELFMODIFY_add_topstep_hi_TWOSIDED+4], ax
+mov       word ptr ds:[SELFMODIFY_add_topstep_lo_TWOSIDED+3], ax
+mov       word ptr ds:[SELFMODIFY_add_topstep_hi_TWOSIDED+3], dx
 
-SELFMODIFY_BSP_detailshift_2_TWOSIDED:
-shl       dx, 1
-rcl       ax, 1
-shl       dx, 1
-rcl       ax, 1
 
-mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_1_TWOSIDED+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_2_TWOSIDED+3], ax
-xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_1_TWOSIDED+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_2_TWOSIDED+3], ax
+
 
 les       bx, dword ptr [bp - 02Ch]
 mov       cx, es
@@ -8229,33 +8124,15 @@ ELSE
 ENDIF
 ;end inlined FixedMulBSPLocal_
 
-neg       dx
-neg       ax
-sbb       dx, 0
 
 ; dx:ax are bottomstep
 
 
 
-
-mov       word ptr ds:[SELFMODIFY_sub_botstep_lo_TWOSIDED+3], ax
-mov       word ptr ds:[SELFMODIFY_add_botstep_lo_TWOSIDED+4], ax
-xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_sub_botstep_hi_TWOSIDED+3], ax
-mov       word ptr ds:[SELFMODIFY_add_botstep_hi_TWOSIDED+4], ax
-
-SELFMODIFY_BSP_detailshift_3_TWOSIDED:
-shl       dx, 1
-rcl       ax, 1
-shl       dx, 1
-rcl       ax, 1
+mov       word ptr ds:[SELFMODIFY_add_botstep_lo_TWOSIDED+3], ax
+mov       word ptr ds:[SELFMODIFY_add_botstep_hi_TWOSIDED+3], dx
 
 
-mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_1_TWOSIDED+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_2_TWOSIDED+3], ax
-xchg      ax, dx
-mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_1_TWOSIDED+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_2_TWOSIDED+3], ax
 
 ;   BEGIN INLINED R_RenderSegLoop_TWOSIDED_
 ;   BEGIN INLINED R_RenderSegLoop_TWOSIDED_
@@ -8267,12 +8144,8 @@ public R_RenderSegLoop_TWOSIDED_
 
 ; made it here
 
-push  word ptr [bp - 02Eh]  ; bp - 044h
-push  word ptr [bp - 030h]  ; bp - 046h
-
 
 xor   bx, bx
-mov   byte ptr ds:[SELFMODIFY_set_al_to_xoffset_TWOSIDED+1], bl ; 0 
 
 mov   dx, word ptr [bp - 032h] ; todo selfmodify?
 mov   bl, dl
@@ -8287,8 +8160,6 @@ mov   word ptr ds:[SELFMODIFY_BSP_markceiling_2_TWOSIDED], es
 
 
 
-SELFMODIFY_set_rw_x_loop_counter_TWOSIDED:
-db 0B9h, 00, 00   ; mov cx, 00000
 
 ;	while (base4diff){
 ;		rw_scale.w      -= rw_scalestep;
@@ -8298,184 +8169,22 @@ db 0B9h, 00, 00   ; mov cx, 00000
 ;		pixhigh		    -= pixhighstep; ; todo add
 ;		base4diff--;
 ;	}
-jcxz   skip_sub_base4diff_TWOSIDED
 
-; ALIGN_MACRO
-sub_base4diff_TWOSIDED  :
+; todo set up cs vars here  properly.
 
-; todo: push these immediates. popa them. add back to sp if loop skipped. 
+mov   ax, word ptr [bp - 01Eh]  ; startx
 
-SELFMODIFY_sub_rwscale_lo_TWOSIDED:
-sub   word ptr [bp - 046h], 01000h
-SELFMODIFY_sub_rwscale_hi_TWOSIDED:
-sbb   word ptr [bp - 044h], 01000h
-SELFMODIFY_sub_topstep_lo_TWOSIDED:
-sub   word ptr [bp - 042h], 01000h
-SELFMODIFY_sub_topstep_hi_TWOSIDED:
-sbb   word ptr [bp - 040h], 01000h
-SELFMODIFY_sub_botstep_lo_TWOSIDED:
-sub   word ptr [bp - 03Eh], 01000h 
-SELFMODIFY_sub_botstep_hi_TWOSIDED:
-sbb   word ptr [bp - 03Ch], 01000h
-
-; todo include  pixlow, pixhigh in this variant.
-
-loop   sub_base4diff_TWOSIDED
-skip_sub_base4diff_TWOSIDED:
-
-lea   si, [bp - 046h]  ; todo use sp
-; idea:
-; sti/cli. use lodsw on ds and ss:bp + byte relative offset with ss as cs.
-; might save a handful of bytes.
-
-lods  word ptr ss:[si]
-mov   word ptr ds:[SELFMODIFY_set_rw_scale_lo_TWOSIDED+1], ax
-lods  word ptr ss:[si]
-mov   word ptr ds:[SELFMODIFY_set_rw_scale_hi_TWOSIDED+1], ax
-lods  word ptr ss:[si] ; topfrac lo
-mov   word ptr ds:[SELFMODIFY_set_topfrac_lo_TWOSIDED+1], ax
-lods  word ptr ss:[si] ; topfrac hi
-mov   word ptr ds:[SELFMODIFY_set_topfrac_hi_TWOSIDED+1], ax
-lods  word ptr ss:[si] ; bottomfrac lo
-mov   word ptr ds:[SELFMODIFY_set_botfrac_lo_TWOSIDED+1], ax
-lods  word ptr ss:[si] ; bottomfrac hi
-mov   word ptr ds:[SELFMODIFY_set_botfrac_hi_TWOSIDED+1], ax
-lods  word ptr ss:[si] ; pixlow lo
-mov   word ptr ds:[SELFMODIFY_set_pixlow_lo_TWOSIDED+1], ax
-lods  word ptr ss:[si] ; pixlow hi
-mov   word ptr ds:[SELFMODIFY_set_pixlow_hi_TWOSIDED+1], ax
-lods  word ptr ss:[si] ; pixhigh lo
-mov   word ptr ds:[SELFMODIFY_set_pixhigh_lo_TWOSIDED+1], ax
-lods  word ptr ss:[si] ; pixhigh hi
-mov   word ptr ds:[SELFMODIFY_set_pixhigh_hi_TWOSIDED+1], ax
-mov   al, 0 ; xoffset is 0
-mov   dx, SC_DATA  ; cheat this out of the loop..
  
 
-continue_outer_rendersegloop_TWOSIDED:
 
-SELFMODIFY_BSP_midtextureonly_skip_pixhighlow_2_TARGET:
-cbw  
-xchg  ax, bx	; xoffset to bx
-
-inc   byte ptr ds:[SELFMODIFY_set_al_to_xoffset_TWOSIDED+1]
-
-SELFMODIFY_detailshift_plus1_1_TWOSIDED:
-mov   al, byte ptr ss:[bx + OFFSET _quality_port_lookup]	
-out   dx, al
-
-; pre inner loop.
-; reset everything to base;
+jmp   start_per_column_inner_loop_TWOSIDED
 
 
-; topfrac    = base_topfrac;
-; bottomfrac = base_bottomfrac;
-; rw_scale.w = base_rw_scale;
-; pixlow     = base_pixlow;
-; pixhigh    = base_pixhigh;
-
-mov   di, ss
-mov   es, di
-lea   di, [bp - 046h]  ; todo use sp
-; this can run and do nothing (place values back that were already there)
-SELFMODIFY_set_rw_scale_lo_TWOSIDED:
-mov   ax, 01000h
-stosw
-SELFMODIFY_set_rw_scale_hi_TWOSIDED:
-mov   ax, 01000h
-stosw
-SELFMODIFY_set_topfrac_lo_TWOSIDED:
-mov   ax, 01000h
-stosw
-SELFMODIFY_set_topfrac_hi_TWOSIDED:
-mov   ax, 01000h
-stosw
-SELFMODIFY_set_botfrac_lo_TWOSIDED:
-mov   ax, 01000h
-stosw
-SELFMODIFY_set_botfrac_hi_TWOSIDED:
-mov   ax, 01000h
-stosw
-
-
-SELFMODIFY_set_pixlow_lo_TWOSIDED:
-mov   ax, 01000h
-stosw
-SELFMODIFY_set_pixlow_hi_TWOSIDED:
-mov   ax, 01000h
-stosw
-SELFMODIFY_set_pixhigh_lo_TWOSIDED:
-mov   ax, 01000h
-stosw
-SELFMODIFY_set_pixhigh_hi_TWOSIDED:
-mov   ax, 01000h
-stosw
-
-xchg  ax, bx	; get xoffset  back
-SELFMODIFY_add_rw_x_base4_to_ax_TWOSIDED:
-add   ax, 1000h
-; ax contains rw_x
-SELFMODIFY_compare_ax_to_start_rw_x_TWOSIDED:
-cmp   ax, 1000h
-jl    pre_increment_values_TWOSIDED
-
-SELFMODIFY_cmp_ax_to_rw_stopx_3_TWOSIDED:
-cmp   ax, 01000h
-jl    jump_to_start_per_column_inner_loop_TWOSIDED  ; 026hish out of range
-
-finish_outer_loop_TWOSIDED:
-public finish_outer_loop_TWOSIDED
-; self modifying code for step values.
-
-
-
-; xoffset++,
-; base_topfrac    += topstep, 
-; base_bottomfrac += bottomstep, 
-; base_rw_scale   += rw_scalestep,
-; base_pixlow	  += pixlowstep,
-; base_pixhigh    += pixhighstep
-
-
-
-SELFMODIFY_set_al_to_xoffset_TWOSIDED:
-mov   al, 0
-SELFMODIFY_cmp_al_to_detailshiftitercount_TWOSIDED:
-cmp   al, 0
-
-jge   exit_rendersegloop_TWOSIDED ; exit before adding the other loop vars.
-; todo skip if scale 0?
-SELFMODIFY_add_topstep_lo_TWOSIDED:
-add   word ptr ds:[SELFMODIFY_set_topfrac_lo_TWOSIDED+1], 01000h
-SELFMODIFY_add_topstep_hi_TWOSIDED:
-adc   word ptr ds:[SELFMODIFY_set_topfrac_hi_TWOSIDED+1], 01000h
-
-SELFMODIFY_add_botstep_lo_TWOSIDED:
-add   word ptr ds:[SELFMODIFY_set_botfrac_lo_TWOSIDED+1], 01000h
-SELFMODIFY_add_botstep_hi_TWOSIDED:
-adc   word ptr ds:[SELFMODIFY_set_botfrac_hi_TWOSIDED+1], 01000h
-
-SELFMODIFY_add_rwscale_lo_TWOSIDED:
-add   word ptr ds:[SELFMODIFY_set_rw_scale_lo_TWOSIDED+1], 01000h
-SELFMODIFY_add_rwscale_hi_TWOSIDED:
-adc   word ptr ds:[SELFMODIFY_set_rw_scale_hi_TWOSIDED+1], 01000h
-
-SELFMODIFY_add_pixlowstep_lo_TWOSIDED:
-add   word ptr ds:[SELFMODIFY_set_pixlow_lo_TWOSIDED+1], 01000h
-SELFMODIFY_add_pixlowstep_hi_TWOSIDED:
-adc   word ptr ds:[SELFMODIFY_set_pixlow_hi_TWOSIDED+1], 01000h
-
-SELFMODIFY_add_pixhighstep_lo_TWOSIDED:
-add   word ptr ds:[SELFMODIFY_set_pixhigh_lo_TWOSIDED+1], 01000h
-SELFMODIFY_add_pixhighstep_hi_TWOSIDED:
-adc   word ptr ds:[SELFMODIFY_set_pixhigh_hi_TWOSIDED+1], 01000h
-
-
-jmp   continue_outer_rendersegloop_TWOSIDED
 ALIGN_MACRO
 
 
 exit_rendersegloop_TWOSIDED:
+public exit_rendersegloop_TWOSIDED
 ; zero out local caches.
 
 ;ASSUME DS:DGROUP
@@ -8492,70 +8201,79 @@ stosw ; mov   word ptr ds:[_seglooptexrepeat], ax
 
 
 jmp   R_RenderSegLoop_exit_TWOSIDED
-ALIGN_MACRO
 
 
-
-jump_to_start_per_column_inner_loop_TWOSIDED:
-jmp   start_per_column_inner_loop_TWOSIDED
-ALIGN_MACRO
-jump_to_finish_outer_loop_2_TWOSIDED:
-mov   dx, SC_DATA  ; cheat this out of the loop..
-jmp   finish_outer_loop_TWOSIDED
 
 ALIGN_MACRO
-pre_increment_values_TWOSIDED:       ; ; todo this seems to be rare. maybe does not need to be in a code hot spot and can be far jumped to
+pre_increment_values_TWOSIDED: 
 public pre_increment_values_TWOSIDED
 
-;		rw_x = rw_x_base4 + xoffset;
-;		if (rw_x < start_rw_x){
-;			rw_x       += detailshiftitercount;
-;			topfrac    += topstepshift;
-;			bottomfrac += bottomstepshift;
-;			rw_scale.w += rwscaleshift;
-;			pixlow     += pixlowstepshift;
-;			pixhigh    += pixhighstepshift;
-;		}
+
+inc   ax
 
 
-SELFMODIFY_add_iter_to_rw_x_TWOSIDED:
-; ax was already up-to-date rw_x
-db  05h, 00h, 00h   ;add   ax, 0
+SELFMODIFY_cmp_ax_to_rw_stopx_2_TWOSIDED:
+cmp   ax, 01000h
+jge   exit_rendersegloop_TWOSIDED  ; exit before adding the other loop vars.
+
+
 ; ax has rw_x...
-SELFMODIFY_add_to_rwscale_lo_2_TWOSIDED:
-add   word ptr [bp - 046h], 01000h
-SELFMODIFY_add_to_rwscale_hi_2_TWOSIDED:
-adc   word ptr [bp - 044h], 01000h
-SELFMODIFY_add_to_topfrac_lo_2_TWOSIDED:
-add   word ptr [bp - 042h], 01000h
-SELFMODIFY_add_to_topfrac_hi_2_TWOSIDED:
-adc   word ptr [bp - 040h], 01000h
-SELFMODIFY_add_to_bottomfrac_lo_2_TWOSIDED:
-add   word ptr [bp - 03Eh], 01000h
-SELFMODIFY_add_to_bottomfrac_hi_2_TWOSIDED:
-adc   word ptr [bp - 03Ch], 01000h
-SELFMODIFY_add_to_pixlow_lo_2_TWOSIDED:
-add   word ptr [bp - 03Ah], 01000h
-SELFMODIFY_add_to_pixlow_hi_2_TWOSIDED:
-adc   word ptr [bp - 038h], 01000h
-SELFMODIFY_add_to_pixhigh_lo_2_TWOSIDED:
-add   word ptr [bp - 036h], 01000h
-SELFMODIFY_add_to_pixhigh_hi_2_TWOSIDED:
-adc   word ptr [bp - 034h], 01000h
+
+SELFMODIFY_add_topstep_lo_TWOSIDED:
+sub   word ptr [bp - 042h], 01000h
+SELFMODIFY_add_topstep_hi_TWOSIDED:
+sbb   word ptr [bp - 040h], 01000h
+
+SELFMODIFY_add_botstep_lo_TWOSIDED:
+sub   word ptr [bp - 03Eh], 01000h
+SELFMODIFY_add_botstep_hi_TWOSIDED:
+sbb   word ptr [bp - 03Ch], 01000h
+
+SELFMODIFY_add_rwscale_lo_TWOSIDED:
+add   word ptr [bp - 030h], 01000h
+SELFMODIFY_add_rwscale_hi_TWOSIDED:
+adc   word ptr [bp - 02Eh], 01000h
+
+
 
 ; this is right before inner loop start
-SELFMODIFY_cmp_ax_to_rw_stopx_1_TWOSIDED:
-cmp   ax, 01000h
-jge   jump_to_finish_outer_loop_2_TWOSIDED
 
 start_per_column_inner_loop_TWOSIDED:
 ; ax was rw_x
 ; now di is rw_x
 
 
-; todo i think below here can get improved a lot...?
 
-xchg  ax, di   ; ax was still rw_x
+; pre inner loop.
+; reset everything to base;
+
+
+; topfrac    = base_topfrac;
+; bottomfrac = base_bottomfrac;
+; rw_scale.w = base_rw_scale;
+; pixlow     = base_pixlow;
+; pixhigh    = base_pixhigh;
+
+
+
+mov  di, ax  ; backup?
+
+
+SELFMODIFY_and_by_detail_level_TWOSIDED:
+and   ax, 00010h  ; zeroes ah
+
+SELFMODIFY_set_qualityportlookup_mid_TWOSIDED:
+mov   bx, 00000h        ; base for qualityportlookup...
+
+mov   dx, SC_DATA
+
+xlat  byte ptr ss:[bx]  ; small optim: move to cs? just 12 bytes.
+out   dx, al
+
+
+
+
+
 
 
 check_here_TWOSIDED:
@@ -8565,7 +8283,7 @@ PUBLIC check_here_TWOSIDED
 
 ; todo clean up logic. store only in ch/cl. possible store same pixel floor/ceiling side by side? one read, word?
                                                  ; di = rw_x
-xor   ax, ax
+; ah already 0
 mov   al, byte ptr cs:[di+OFFSET_FLOORCLIP]	 ; cx = floor
 mov   cx, ax
 mov   al, byte ptr cs:[di+OFFSET_CEILINGCLIP] ; si = ceiling  = ceilingclip[rw_x]+1;
@@ -8792,7 +8510,7 @@ sbb   ax, dx
 
 ; CX:BX rw_scale
 ; todo bp/stack candidate
-les   bx, dword ptr [bp - 046h]
+les   bx, dword ptr [bp - 030h]
 mov   cx, es
 
 ; store texturecolumn
@@ -9256,9 +8974,9 @@ PUBLIC do_top_texture_draw
 
 mov   ax, word ptr [bp - 034h]    ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET  ; pixhigh
 SELFMODIFY_add_to_pixhigh_lo_1_TWOSIDED:
-add   word ptr [bp - 036h], 01000h  ; ! this wasnt selfmodified
+sub   word ptr [bp - 036h], 01000h  ; ! this wasnt selfmodified
 SELFMODIFY_add_to_pixhigh_hi_1_TWOSIDED:
-adc   word ptr [bp - 034h], 01000h  ; ! this wasnt selfmodified
+sbb   word ptr [bp - 034h], 01000h  ; ! this wasnt selfmodified
 ; bx is rw_x 
 
 ; todo reduce 16 bit logic, use 8 bit logic.
@@ -9432,33 +9150,10 @@ finished_inner_loop_iter_TWOSIDED:
 ;			rw_scale.w  += rwscaleshift
 
 mov   ax, bx  ; rw_x   ; todo xchg?
-SELFMODIFY_add_detailshiftitercount_TWOSIDED:
-db  05h, 00h, 00h   ;add   ax, 0
-
-SELFMODIFY_cmp_ax_to_rw_stopx_2_TWOSIDED:
-cmp   ax, 01000h
-jge   jump_to_finish_outer_loop_TWOSIDED  ; exit before adding the other loop vars.
 
 
-SELFMODIFY_add_to_rwscale_lo_1_TWOSIDED:
-add   word ptr [bp - 046h], 01000h
-SELFMODIFY_add_to_rwscale_hi_1_TWOSIDED:
-adc   word ptr [bp - 044h], 01000h
-SELFMODIFY_add_to_topfrac_lo_1_TWOSIDED:
-add   word ptr [bp - 042h], 01000h
-SELFMODIFY_add_to_topfrac_hi_1_TWOSIDED:
-adc   word ptr [bp - 040h], 01000h
-SELFMODIFY_add_to_bottomfrac_lo_1_TWOSIDED:
-add   word ptr [bp - 03Eh], 01000h
-SELFMODIFY_add_to_bottomfrac_hi_1_TWOSIDED:
-adc   word ptr [bp - 03Ch], 01000h
-jmp   start_per_column_inner_loop_TWOSIDED ; 1ade jumped here
-ALIGN_MACRO
-jump_to_finish_outer_loop_TWOSIDED:
-mov   dx, cs
-mov   ds, dx
-mov   dx, SC_DATA  ; cheat this out of the loop..
-jmp   finish_outer_loop_TWOSIDED
+jmp   pre_increment_values_TWOSIDED
+
 ALIGN_MACRO
 
 SELFMODIFY_BSP_toptexture_TARGET_TWOSIDED:
@@ -9541,9 +9236,9 @@ mov   ax, word ptr [bp - 038h]   ; ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET p
 ;		pixlow += pixlowstep;
 
 SELFMODIFY_add_to_pixlow_lo_1_TWOSIDED:
-add   word ptr [bp - 03Ah], 01000h
+sub   word ptr [bp - 03Ah], 01000h
 SELFMODIFY_add_to_pixlow_hi_1_TWOSIDED:
-adc   word ptr [bp - 038h], 01000h
+sbb   word ptr [bp - 038h], 01000h
 ;		if (mid <= ceilingclip[rw_x])
 ;		    mid = ceilingclip[rw_x]+1;
 
@@ -14499,7 +14194,7 @@ mov      ax, word ptr ss:[_detailshift]
 mov      cl, al
 add      ah, OFFSET _quality_port_lookup
 mov      byte ptr ds:[SELFMODIFY_set_qualityportlookup_mid+1], ah
-mov      byte ptr ds:[SELFMODIFY_detailshift_plus1_1_TWOSIDED+3], ah
+mov      byte ptr ds:[SELFMODIFY_set_qualityportlookup_mid_TWOSIDED+1], ah
 
 mov      bl, al
 xor      bh, bh
@@ -14536,15 +14231,9 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_TWOSIDED+2], ax
 ; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
 ; 0EBh, 006h = jmp 6
 
-mov      ax, 006EBh
-
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5], ax
 
 
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1_TWOSIDED], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2_TWOSIDED], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3_TWOSIDED], ax
+
 
 
 
@@ -14596,22 +14285,14 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_TWOSIDED+2], ax
 
 ;mov      ax, 0c089h  ; continued from above
 
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+0], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+2], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5+0], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5+2], ax
 
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_2+2], ax
 
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1_TWOSIDED+0], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1_TWOSIDED+2], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2_TWOSIDED+0], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2_TWOSIDED+2], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3_TWOSIDED+0], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3_TWOSIDED+2], ax
+
+
 
 
 jmp      done_modding_shift_detail_code
@@ -14641,24 +14322,6 @@ mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_TWOSIDED+2], ax
 ; d1 e0 d1 d2   =  shl ax, 1; rcl dx, 1.
 ; d1 e2 d1 d0   = shl dx, 1; rcl ax, 1
 
-mov      ax, 0E2D1h
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2_TWOSIDED+0], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3_TWOSIDED+0], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1_TWOSIDED+0], ax
-
-mov      ah, 0E0h
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+0], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5+0], ax
-
-mov      ah, 0D0h
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_2_TWOSIDED+2], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_3_TWOSIDED+2], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_1_TWOSIDED+2], ax
-
-mov      ah, 0D2h
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_4+2], ax
-mov      word ptr ds:[SELFMODIFY_BSP_detailshift_5+2], ax
-
 ; 0EBh, 006h = jmp 6
 mov      ax, 006EBh
 mov      word ptr ds:[SELFMODIFY_BSP_detailshift2minus_1+0], ax
@@ -14673,17 +14336,6 @@ done_modding_shift_detail_code:
 
 
 
-mov      al, byte ptr ss:[_detailshiftitercount]
-
-mov      byte ptr ds:[SELFMODIFY_cmp_al_to_detailshiftitercount_TWOSIDED+1], al
-; todo is this supposed to be SELFMODIFY_add_iter_to_rw_x plus 2?
-
-mov      byte ptr ds:[SELFMODIFY_add_iter_to_rw_x_TWOSIDED+1], al
-mov      byte ptr ds:[SELFMODIFY_add_iter_to_rw_x_TWOSIDED+1], al
-
-
-
-mov      byte ptr ds:[SELFMODIFY_add_detailshiftitercount_TWOSIDED+1], al
 
 mov      ax, word ptr ss:[_detailshiftandval]
 
@@ -14691,6 +14343,8 @@ mov      ax, word ptr ss:[_detailshiftandval]
 mov      word ptr ds:[SELFMODIFY_detailshift_and_1_TWOSIDED+2], ax
 not      ax
 mov      byte ptr ds:[SELFMODIFY_and_by_detail_level+1], al
+mov      byte ptr ds:[SELFMODIFY_and_by_detail_level_TWOSIDED+1], al
+
 
 
 ; ah is definitely 0... optimizable?
