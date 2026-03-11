@@ -6162,9 +6162,9 @@ PUBLIC R_StoreWallRangeWithBackSector_
 ; bp - 036h  ; pixhigh lo     preshifted 4
 ; bp - 038h  ; pixlow hi      preshifted 4
 ; bp - 03Ah  ; pixlow lo      preshifted 4
-; bp - 03Ch  ; bottomfrac hi  preshifted 4
+; bp - 03Ch  ; unused
 ; bp - 03Eh  ; bottomfrac lo  preshifted 4
-; bp - 040h  ; topfrac hi     preshifted 4
+; bp - 040h  ; unused
 ; bp - 042h  ; topfrac lo     preshifted 4 ; up to here not pushed 
 
 
@@ -7912,7 +7912,7 @@ sbb       cx, dx
 add       ax, ((HEIGHTUNIT)-1) SHL 4 ; bake this in once, instead of doing it every loop.
 mov       word ptr [bp - 042h], ax
 adc       cx, 0
-mov       word ptr [bp - 040h], cx
+mov       word ptr ds:[SELFMODIFY_set_topfrac_hi_bottop+1], cx
 ; les to load two words
 
 ; todo 24 bit muls?
@@ -7979,7 +7979,8 @@ mov       ax, 01000h ; ah known zero. dh too probably?
 sbb       ax, dx
 
 
-mov       word ptr [bp - 03Ch], ax
+mov       word ptr ds:[SELFMODIFY_set_botfrac_hi_bottop+1], ax
+
 
 cmp       byte ptr [bp - 031h], 0  ;markceiling
 je        dont_mark_ceiling_TWOSIDED ; todo which default braunch?
@@ -8071,7 +8072,7 @@ ENDIF
 
 
 mov       word ptr ds:[SELFMODIFY_add_topstep_lo_TWOSIDED+3], ax
-mov       word ptr ds:[SELFMODIFY_add_topstep_hi_TWOSIDED+3], dx
+mov       word ptr ds:[SELFMODIFY_add_topstep_hi_TWOSIDED+4], dx
 
 
 
@@ -8130,7 +8131,7 @@ ENDIF
 
 
 mov       word ptr ds:[SELFMODIFY_add_botstep_lo_TWOSIDED+3], ax
-mov       word ptr ds:[SELFMODIFY_add_botstep_hi_TWOSIDED+3], dx
+mov       word ptr ds:[SELFMODIFY_add_botstep_hi_TWOSIDED+4], dx
 
 
 
@@ -8210,6 +8211,8 @@ public pre_increment_values_TWOSIDED
 
 
 inc   ax
+mov   di, cs
+mov   ds, di
 
 
 SELFMODIFY_cmp_ax_to_rw_stopx_2_TWOSIDED:
@@ -8222,12 +8225,12 @@ jge   exit_rendersegloop_TWOSIDED  ; exit before adding the other loop vars.
 SELFMODIFY_add_topstep_lo_TWOSIDED:
 sub   word ptr [bp - 042h], 01000h
 SELFMODIFY_add_topstep_hi_TWOSIDED:
-sbb   word ptr [bp - 040h], 01000h
+sbb   word ptr ds:[SELFMODIFY_set_topfrac_hi_bottop+1], 01000h
 
 SELFMODIFY_add_botstep_lo_TWOSIDED:
 sub   word ptr [bp - 03Eh], 01000h
 SELFMODIFY_add_botstep_hi_TWOSIDED:
-sbb   word ptr [bp - 03Ch], 01000h
+sbb   word ptr ds:[SELFMODIFY_set_botfrac_hi_bottop+1], 01000h
 
 SELFMODIFY_add_rwscale_lo_TWOSIDED:
 add   word ptr [bp - 030h], 01000h
@@ -8273,20 +8276,12 @@ out   dx, al
 
 
 
-
-
-
-check_here_TWOSIDED:
-PUBLIC check_here_TWOSIDED
-
-; i think ch is 0 due to  loop above
-
 ; todo clean up logic. store only in ch/cl. possible store same pixel floor/ceiling side by side? one read, word?
                                                  ; di = rw_x
 ; ah already 0
-mov   al, byte ptr cs:[di+OFFSET_FLOORCLIP]	 ; cx = floor
+mov   al, byte ptr ds:[di+OFFSET_FLOORCLIP]	 ; cx = floor
 mov   cx, ax
-mov   al, byte ptr cs:[di+OFFSET_CEILINGCLIP] ; si = ceiling  = ceilingclip[rw_x]+1;
+mov   al, byte ptr ds:[di+OFFSET_CEILINGCLIP] ; si = ceiling  = ceilingclip[rw_x]+1;
 
 xchg  ax, si
 
@@ -8301,7 +8296,8 @@ mov   ds, ax
 ; increased by one to allow 0 to viewheight+1 range instead of ff to viewheight range.
 ; when written to visplanes and such this must be considered
 
-mov   ax, word ptr [bp - 040h]  ; topfrac hi
+SELFMODIFY_set_topfrac_hi_bottop:
+mov   ax, 01000h
 
 
 cmp   ax, si  ; ax can be negative even if si is not? but maybe ah is always ff?
@@ -8339,8 +8335,8 @@ markceiling_done_TWOSIDED:
 
 ; yh = bottomfrac>>HEIGHTBITS;
 
-
-mov   ax, word ptr [bp - 03Ch] ; already incremented by 1.
+SELFMODIFY_set_botfrac_hi_bottop:
+mov   ax, 01000h ; already incremented by 1.
 ; ah 0 because si < 255
 
 
