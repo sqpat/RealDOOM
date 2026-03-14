@@ -87,7 +87,7 @@ _cachedlumps =                 	   _NULL_OFFSET + 00044h
 _cachedtex =                 	   _NULL_OFFSET + 0004Ch
 _cachedcollength =                 _NULL_OFFSET + 00050h
 
-_lastopening =                   	_NULL_OFFSET + 00052h
+;_lastopening =                   	_NULL_OFFSET + 00052h
 _segloopprevlookup =                _NULL_OFFSET + 00054h
 _segloopcachedbasecol =             _NULL_OFFSET + 00058h
 _cachedsegmenttex =                 _NULL_OFFSET + 0005Ch

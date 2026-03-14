@@ -56,6 +56,7 @@ _floortop =       0
 _floorphyspage =  0
 _ceilphyspage =   0
 _visplanedirty =  0
+_lastopening =  0
 
 dw DRAWCOL_OFFSET - 00000h,  COLORMAPS_SEGMENT + 0000h
 dw DRAWCOL_OFFSET - 00100h,  COLORMAPS_SEGMENT + 0010h

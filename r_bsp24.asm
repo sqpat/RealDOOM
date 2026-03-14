@@ -198,6 +198,21 @@ db SIL_BOTH
 _visplanedirty:
 db 1
 
+_maskedtexture_bsp:
+db 0
+
+ALIGN_MACRO
+
+_lastopening:
+dw 0
+
+_maskedtexturecol_bsp:
+dw 0, OPENINGS_SEGMENT
+
+_ds_p_bsp:
+dw 0, DRAWSEGS_BASE_SEGMENT
+
+
 ; 0AAh
 
 ; shoving some small functions in here since w ehave to pad to 0100h for the next jump table
@@ -2410,8 +2425,8 @@ mov   di, SCREENWIDTH  ; offset of ceilingclip within floorclip
 mov   cx, dx
 rep   stosw  ; write 0 to es:di
 
-mov   word ptr ds:[_lastvisplane], cx ; 0
-mov   word ptr ds:[_lastopening], cx ; 0  ; todo cs var?
+mov   word ptr ds:[_lastvisplane], cx ; 0  ; todo cs var?
+mov   word ptr cs:[_lastopening], cx ; 0
 SELFMODIFY_set_viewanglesr3_4:
 mov   ax, 01000h
 sub   ah, 08h   ; FINE_ANG90
@@ -4242,7 +4257,7 @@ SELFMODIFY_skip_curseg_based_selfmodify_TARGET:
 
  
 
-les       di, dword ptr ss:[_ds_p]
+les       di, dword ptr cs:[_ds_p_bsp]  ; todo is DS = CS?
 mov       ax, word ptr [bp + 4]  ; R_AddLine line num
 
 stosw              ; DRAWSEG_T.drawseg_cursegvalue
@@ -4582,7 +4597,7 @@ mov       byte ptr ds:[SELFMODIFY_set_midtexturemid_hi_stretch+1], al
 ; ds already cs
 
 mov       si, OFFSET DEFAULT_DRAWSEG_T 
-les       di, dword ptr ss:[_ds_p]
+les       di, dword ptr ds:[_ds_p_bsp]
 add       di, OFFSET DRAWSEG_T.drawseg_bsilheight
 mov       cx, 5
 rep       movsw ; write drawseg_bsilheight thru drawseg_maskedtexturecol_val
@@ -5731,10 +5746,10 @@ mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], (SELFMODIFY_BSP_set_
 
 ; single wall mid texture has no clipping done...
 
+
+add       word ptr ds:[_ds_p_bsp], (SIZE DRAWSEG_T)
 mov       ax, ss
 mov       ds, ax
-
-add       word ptr ds:[_ds_p], (SIZE DRAWSEG_T)
 
 ; todo is LEA SP, bp - xx safer??
 add       sp, STOREWALLRANGE_INNER_STACK_SIZE_MID     ; add back fixed SP
@@ -6551,7 +6566,7 @@ selfmod_done_bot:
 public selfmod_done_bot
 
 
-les       di, dword ptr ss:[_ds_p]
+les       di, dword ptr ds:[_ds_p_bsp]
 mov       ax, word ptr [bp + 4]  ; R_AddLine line num
 
 stosw              ; DRAWSEG_T.drawseg_cursegvalue
@@ -6635,7 +6650,7 @@ xor       ax, ax
 
 
 ; zero out maskedtexture 
-mov       byte ptr ds:[_maskedtexture], al  ; todo is it necessary to write up here?
+mov       byte ptr cs:[_maskedtexture_bsp], al  ; todo is it necessary to write up here?
 ; default to 0
 
 
@@ -6863,7 +6878,7 @@ les       bx, dword ptr [bp + 6]
 mov       dx, es ;      [bp + 8]
 
 ; todo les stosw movsw?
-lds       si, dword ptr ss:[_ds_p]
+lds       si, dword ptr cs:[_ds_p_bsp]
 xor       ax, ax
 mov       word ptr ds:[si + DRAWSEG_T.drawseg_maskedtexturecol_val], NULL_TEX_COL  ; set here instead of earlier as in c code. may later be updated
 mov       word ptr ds:[si + DRAWSEG_T.drawseg_sprbottomclip_offset], ax
@@ -7328,29 +7343,27 @@ public side_has_midtexture
 
 ; this runs fairly rarely. so we can use the messy way to fetch dc_x.
 
-; todo _lastopening to cs, then dont use ss to access here
-
-mov       ax, word ptr ss:[_lastopening]
+mov       ax, word ptr ds:[_lastopening]
 
 mov       bx, ax
 and       ax, 1   ; round up to word boundary since we are storing words not bytes in this case.
 add       ax, bx  ; now even
-mov       word ptr ss:[_lastopening], ax  ; now even
+mov       word ptr ds:[_lastopening], ax  ; now even
 mov       dx, word ptr [bp - 01Eh]    ; rw_x
 sub       ax, dx ; byte..
 sub       ax, dx ; word..
 
-les       bx, dword ptr ss:[_ds_p]
+les       bx, dword ptr ds:[_ds_p_bsp]
 mov       word ptr es:[bx + DRAWSEG_T.drawseg_maskedtexturecol_val], ax
 
-mov       word ptr ss:[_maskedtexturecol], ax
+mov       word ptr ds:[_maskedtexturecol_bsp], ax
 
 mov       ax, word ptr [bp - 022h]
 inc       ax  ; rw_stopx would be [bp - 020h] + 1
 sal       ax, 1   ; word increments, double this diff.
-add       word ptr ss:[_lastopening], ax
+add       word ptr ds:[_lastopening], ax
 
-inc       byte ptr ss:[_maskedtexture] ; set to 1
+inc       byte ptr ds:[_maskedtexture_bsp] ; set to 1
 
 continue_backsector_not_null:
 public continue_backsector_not_null
@@ -7546,7 +7559,7 @@ skip_pixhigh_step:
 cmp       dx, word ptr [bp - 02Ah]
 jg        do_pixlow_step
 je        continue_worldlow_checks
-mov       al, byte ptr ss:[_maskedtexture]  ; todo is it necessary to write?
+mov       al, byte ptr ds:[_maskedtexture_bsp]  ; todo is it necessary to write?
 sub       sp, 4 ; skip pixlow
 jmp       done_with_two_sided_sector_setup
 
@@ -7689,7 +7702,7 @@ mov       word ptr ds:[SELFMODIFY_add_to_pixlow_lo_1_TWOSIDED+3], ax
 mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_1_TWOSIDED+4], dx
 
 
-mov       al, byte ptr ss:[_maskedtexture]
+mov       al, byte ptr ds:[_maskedtexture_bsp]
 ; fallthru
 
 ; begin duplicate code for two_sided block
@@ -7709,7 +7722,7 @@ done_with_two_sided_sector_setup:
 ; done_with_sector_sided_check
 
 
-; todo get _maskedtexture for free?
+; todo get _maskedtexture_bsp for free?
 
 ; coming into here, AL is equal to maskedtexture.
 ; ds is equal to CS
@@ -8901,7 +8914,7 @@ record_masked_TWOSIDED:
 ;}
 
 xchg  ax, si  ; back up si
-les   si, dword ptr ss:[_maskedtexturecol]  ; todo move to cs/ds
+les   si, dword ptr ds:[_maskedtexturecol_bsp]  ; todo move to cs/ds
 add   si, bx  ; bx byte ptr
 mov   word ptr es:[bx+si], dx  ; add bx again, word ptr
 xchg  ax, si  ; restore si
@@ -9449,10 +9462,14 @@ mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1_TWOSIDED], ((SELFMODIFY_
 
 
 check_spr_top_clip_TWOSIDED:
-les       bx, dword ptr ds:[_ds_p]
+; todo ds as cs?
+mov       bx, cs
+mov       ds, bx
+
+les       bx, dword ptr ds:[_ds_p_bsp]
 test      byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_TOP
 jne       continue_checking_spr_top_clip_TWOSIDED
-cmp       byte ptr ds:[_maskedtexture], 0
+cmp       byte ptr ds:[_maskedtexture_bsp], 0
 je        check_spr_bottom_clip_TWOSIDED
 
 
@@ -9467,8 +9484,6 @@ mov       di, word ptr ds:[_lastopening]
 mov       ax, di
 sub       ax, si
 
-mov       cx, cs
-mov       ds, cx
 mov       cx, OPENINGS_SEGMENT
 mov       es, cx
 
@@ -9482,19 +9497,17 @@ add       si, OFFSET OFFSET_CEILINGCLIP
 
 rep movsw
 
-mov       si, ss
-mov       ds, si
 
 mov       word ptr ds:[_lastopening], di
 
-mov       es, word ptr ds:[_ds_p+2]   ; bx is ds_p offset above
+mov       es, word ptr ds:[_ds_p_bsp+2]   ; bx is ds_p offset above
 mov       word ptr es:[bx + DRAWSEG_T.drawseg_sprtopclip_offset], ax
 
 check_spr_bottom_clip_TWOSIDED:
 ; es:si is ds_p
 test      byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_BOTTOM
 jne       continue_checking_spr_bottom_clip_TWOSIDED
-cmp       byte ptr ds:[_maskedtexture], 0
+cmp       byte ptr ds:[_maskedtexture_bsp], 0
 je        check_silhouettes_then_exit_TWOSIDED
 jmp       continue_checking_spr_bottom_clip_TWOSIDED
 ALIGN_MACRO
@@ -9507,8 +9520,6 @@ mov       di, word ptr ds:[_lastopening]
 mov       ax, di
 sub       ax, si
 
-mov       cx, cs
-mov       ds, cx
 mov       cx, OPENINGS_SEGMENT
 mov       es, cx
 
@@ -9520,15 +9531,13 @@ add       si, OFFSET OFFSET_FLOORCLIP
 
 rep movsw
 
-mov       si, ss
-mov       ds, si
 
 mov       word ptr ds:[_lastopening], di
 
-mov       es, word ptr ds:[_ds_p+2]   ; bx is ds_p offset above
+mov       es, word ptr ds:[_ds_p_bsp+2]   ; bx is ds_p offset above
 mov       word ptr es:[bx + DRAWSEG_T.drawseg_sprbottomclip_offset], ax
 check_silhouettes_then_exit_TWOSIDED:
-cmp       byte ptr ds:[_maskedtexture], 0
+cmp       byte ptr ds:[_maskedtexture_bsp], 0
 je        skip_top_silhouette_TWOSIDED
 test      byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_TOP
 jne       skip_top_silhouette_TWOSIDED
@@ -9536,17 +9545,20 @@ or        byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_TOP
 mov       word ptr es:[bx + DRAWSEG_T.drawseg_tsilheight], MINSHORT
 skip_top_silhouette_TWOSIDED:
 
-cmp       byte ptr ds:[_maskedtexture], 0
+cmp       byte ptr cs:[_maskedtexture_bsp], 0
 je        skip_bot_silhouette_TWOSIDED
 test      byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_BOTTOM
 jne       skip_bot_silhouette_TWOSIDED
 or        byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_BOTTOM
 mov       word ptr es:[bx + DRAWSEG_T.drawseg_bsilheight], MAXSHORT
 skip_bot_silhouette_TWOSIDED:
-add       word ptr ds:[_ds_p], (SIZE DRAWSEG_T)
+add       word ptr ds:[_ds_p_bsp], (SIZE DRAWSEG_T)
 
 add       sp, STOREWALLRANGE_INNER_STACK_SIZE_BOTTOP     ; add back fixed SP
 ;lea       sp, [bp - 01Ch]   ; todo: why does sp/bp desync?
+
+mov       ax, ss
+mov       ds, ax
 
 SELFMODIFY_mark_planes_dirty_TWOSIDED:
 public SELFMODIFY_mark_planes_dirty_TWOSIDED 
@@ -14103,8 +14115,7 @@ mov  word ptr ds:[_solidsegs+6], 07FFFh
 mov  word ptr ds:[_newend], OFFSET _solidsegs + 2 * (SIZE CLIPRANGE_T)
 
 
-mov       word ptr ds:[_ds_p],     (SIZE DRAWSEG_T)             ; drawsegs_PLUSONE
-mov       word ptr ds:[_ds_p + 2], DRAWSEGS_BASE_SEGMENT        ; nseed to be written because masked subs 02000h from it due to remapping...
+mov       word ptr cs:[_ds_p_bsp],     (SIZE DRAWSEG_T)             ; drawsegs_PLUSONE
 call      R_ClearPlanes_
 mov       word ptr ds:[_vissprite_p], OFFSET _vissprites
 
@@ -14125,6 +14136,11 @@ Z_QUICKMAPAI1_NO_DX (pageswapargs_renderplane_offset_size+6) INDEXED_PAGE_9C00_O
 Z_QUICKMAPAI4_NO_DX (pageswapargs_renderplane_offset_size+7) INDEXED_PAGE_7000_OFFSET
 
 ;    FAR_memset (cachedheight, 0, sizeof(fixed_t) * SCREENHEIGHT);
+
+mov       ax, word ptr cs:[_ds_p_bsp]
+mov       word ptr ss:[_ds_p], ax
+;mov       word ptr ss:[_ds_p + 2], DRAWSEGS_BASE_SEGMENT        ; nseed to be written because masked subs 02000h from it due to remapping...
+
 
 mov       ax, CACHEDHEIGHT_SEGMENT
 mov       es, ax
