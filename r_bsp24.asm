@@ -7527,7 +7527,7 @@ ENDIF
 
 
 mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_lo_1_TWOSIDED+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_hi_1_TWOSIDED+5], dx
+mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_hi_1_TWOSIDED+4], dx
 
 
 
@@ -8821,6 +8821,15 @@ ELSE
    inc  bx
    jmp finalize_div_TWOSIDED
    ALIGN_MACRO
+   q1_ready_3232_TWOSIDED:
+   mov  bx, 0   ; no sub case
+   finalize_div_TWOSIDED:
+   _SELFMODIFY_get_qhat_TWOSIDED:
+   mov  ax, 01000h
+
+   sub  ax, bx ; modify qhat by measured amount
+   jmp  FastDiv3232FFFF_done_TWOSIDED
+
 
 
 ENDIF
@@ -8829,21 +8838,20 @@ ENDIF
 ALIGN_MACRO
 in_texture_bounds0_TWOSIDED:
 xchg  ax, dx
-sub   al, byte ptr ds:[_segloopcachedbasecol]
-mul   byte ptr ds:[_segloopheightvalcache]
+sub   al, byte ptr ss:[_segloopcachedbasecol]
+mul   byte ptr ss:[_segloopheightvalcache]
 jmp   add_base_segment_and_draw0_TWOSIDED
 ALIGN_MACRO
 
 
 SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET_TWOSIDED:
-public SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET_TWOSIDED
 non_repeating_texture0_TWOSIDED:
-public non_repeating_texture0_TWOSIDED
-cmp   dx, word ptr ds:[_segloopnextlookup]
+cmp   dx, word ptr ss:[_segloopnextlookup]
 jge   out_of_texture_bounds0_TWOSIDED
-cmp   dx, word ptr ds:[_segloopprevlookup]
+cmp   dx, word ptr ss:[_segloopprevlookup] ; todo ss, ds-> cs etc
 jge   in_texture_bounds0_TWOSIDED
 out_of_texture_bounds0_TWOSIDED:
+; branch nonpush with moves etc. 
 mov   ax, ss
 mov   ds, ax
 push  bx
@@ -8853,17 +8861,18 @@ SELFMODIFY_BSP_set_toptexture:
 
 mov   ax, 01000h
 call  R_GetColumnSegment_
-pop   bx
 
 mov   dx, word ptr ds:[_segloopcachedsegment]
-; todo: ds = cs here
-mov   word ptr cs:[SELFMODIFY_add_cached_segment0_TWOSIDED+1], dx
+mov   bx, cs
+mov   ds, bx
+pop   bx
+mov   word ptr ds:[SELFMODIFY_add_cached_segment0_TWOSIDED+1], dx
 
 
 ; todohigh get this dh and dl in same read?
 mov   cl, 0B8h  ; mov ax, xxxx
-mov   dh, byte ptr ds:[_seglooptexrepeat]
-mov   dl, byte ptr ds:[_segloopheightvalcache]
+mov   dh, byte ptr ss:[_seglooptexrepeat]
+mov   dl, byte ptr ss:[_segloopheightvalcache]
 cmp   dh, 0
 jne   seglooptexrepeat0_is_not_jmp_TWOSIDED
 mov   dx, (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET_TWOSIDED - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER_TWOSIDED)
@@ -8871,8 +8880,8 @@ mov   cl, 0E9h  ; jmp
 
 seglooptexrepeat0_is_not_jmp_TWOSIDED:
 ; modulo is seglooptexrepeat - 1
-mov   byte ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0_TWOSIDED],   cl
-mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo0_TWOSIDED+1], dx
+mov   byte ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo0_TWOSIDED],   cl
+mov   word ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo0_TWOSIDED+1], dx
 
 jmp   just_do_draw0_TWOSIDED
 
@@ -8886,33 +8895,14 @@ record_masked_TWOSIDED:
 ;}
 
 xchg  ax, si  ; back up si
-les   si, dword ptr ds:[_maskedtexturecol]
+les   si, dword ptr ss:[_maskedtexturecol]  ; todo move to cs/ds
 add   si, bx  ; bx byte ptr
 mov   word ptr es:[bx+si], dx  ; add bx again, word ptr
 xchg  ax, si  ; restore si
 jmp   finished_recording_masked
-ALIGN_MACRO
 
 ALIGN_MACRO
 
-
-
-
-IF COMPISA GE COMPILE_386
-ELSE
-   
-   q1_ready_3232_TWOSIDED:
-   mov  bx, 0   ; no sub case
-   finalize_div_TWOSIDED:
-   _SELFMODIFY_get_qhat_TWOSIDED:
-   mov  ax, 01000h
-
-   sub  ax, bx ; modify qhat by measured amount
-
-
-
-
-ENDIF
 
 
 
@@ -8927,8 +8917,6 @@ mov   word ptr ds:[SELFMODIFY_BSP_set_dc_iscale_lo_bot_TWOSIDED+1], ax
 ; dc_iscale_hi was written ealier if nonzero
 
 ; restore ds
-mov   dx, ss
-mov   ds, dx
 
 
 
@@ -8973,13 +8961,13 @@ mov   ax, 01000h      ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET  ; pixhigh
 SELFMODIFY_add_to_pixhigh_lo_1_TWOSIDED:
 sub   word ptr [bp - 036h], 01000h
 SELFMODIFY_add_to_pixhigh_hi_1_TWOSIDED:
-sbb   word ptr cs:[SELFMODIFY_BSP_set_pixhigh+1], 01000h
+sbb   word ptr ds:[SELFMODIFY_BSP_set_pixhigh+1], 01000h
 ; bx is rw_x 
 
 ; todo reduce 16 bit logic, use 8 bit logic.
 
 xor   cx, cx
-mov   cl, byte ptr cs:[bx + OFFSET_FLOORCLIP]
+mov   cl, byte ptr ds:[bx + OFFSET_FLOORCLIP]
 cmp   ax, cx
 jl    dont_clip_top_floor_TWOSIDED  ; todo branch test
 xchg  ax, cx
@@ -9006,13 +8994,15 @@ xchg   ax, di  ; todo maybe this xchg doesnt need to be here; swap above registe
 ; todo test vs pusha
 
 push   ax ; store celip 
-push dx  ; texturecolumn
+push   dx  ; texturecolumn
 ; store for bottom draw.
 push  si ; dc_yl
 push  di ; dc_yh
 sub   di, si ; pre sub
 
 
+push  ss
+pop   ds ; todo remove
 
 ; TOP DRAW ENTERS HERE.
 
