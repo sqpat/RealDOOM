@@ -7686,7 +7686,7 @@ ENDIF
 ; self modifying code to write to pixlowstep usages.
 
 mov       word ptr ds:[SELFMODIFY_add_to_pixlow_lo_1_TWOSIDED+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_1_TWOSIDED+5], dx
+mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_1_TWOSIDED+4], dx
 
 
 mov       al, byte ptr ss:[_maskedtexture]
@@ -9146,7 +9146,7 @@ ALIGN_MACRO
 SELFMODIFY_BSP_toptexture_TARGET:
 public SELFMODIFY_BSP_toptexture_TARGET
 no_top_texture_draw_TWOSIDED:
-
+; ds = cs here.
 ; bx is already rw_x
 SELFMODIFY_BSP_markceiling_2_TWOSIDED:
 jmp SHORT   check_bottom_texture_TWOSIDED
@@ -9156,7 +9156,7 @@ SELFMODIFY_BSP_markceiling_2_AFTER_TWOSIDED:
 mark_ceiling_si_TWOSIDED:
 ; this value comes out bad for al. sometimes.
 lea   ax, [si - 1]
-mov   byte ptr cs:[bx + OFFSET_CEILINGCLIP], al ; bx is already rw_x
+mov   byte ptr ds:[bx + OFFSET_CEILINGCLIP], al ; bx is already rw_x
 jmp   SHORT check_bottom_texture_TWOSIDED
 ALIGN_MACRO
 
@@ -9179,10 +9179,12 @@ SELFMODIFY_BSP_markfloor_2_AFTER_TWOSIDED = SELFMODIFY_BSP_markfloor_2_TWOSIDED+
 
 mark_floor_di:
 public mark_floor_di
+
+; got here but ds was not cs
    ;floorclip[rw_x] = yh + 1;
 xchg  ax, di   ; di seems safe to clobber?
 inc   ax
-mov   byte ptr cs:[bx+OFFSET_FLOORCLIP], al
+mov   byte ptr ds:[bx+OFFSET_FLOORCLIP], al
 jmp   finished_inner_loop_iter_TWOSIDED
 
 
@@ -9193,12 +9195,15 @@ ALIGN_MACRO
 R_GetSourceSegment0_DONE_TOP:
 public R_GetSourceSegment0_DONE_TOP
 
-; todo test vs popa
+; todo this here or earlier?
+mov   ax, cs
+mov   ds, ax
 
 pop   ax  ; dc_yh
 pop   si  ; dc_yl
 pop   dx  ; textuecolumn
 pop   di      ; todo whats this again. something for floorclip? yl-1?
+
 
 SELFMODIFY_restore_bp_after_draw_top:
 mov   bp, 01000h
@@ -9207,7 +9212,7 @@ mov   bp, 01000h
 
 
 mark_ceiling_ax_TWOSIDED:
-mov   byte ptr cs:[bx  + OFFSET_CEILINGCLIP], al
+mov   byte ptr ds:[bx  + OFFSET_CEILINGCLIP], al
 SELFMODIFY_BSP_markceiling_2_TARGET_TWOSIDED:
 check_bottom_texture_TWOSIDED:
 ; bx is already rw_x
@@ -9225,13 +9230,13 @@ mov   ax, 01000h   ; ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET pixlow hi
 SELFMODIFY_add_to_pixlow_lo_1_TWOSIDED:
 sub   word ptr [bp - 03Ah], 01000h
 SELFMODIFY_add_to_pixlow_hi_1_TWOSIDED:
-sbb   word ptr cs:[SELFMODIFY_BSP_set_pixlow+1], 01000h
+sbb   word ptr ds:[SELFMODIFY_BSP_set_pixlow+1], 01000h
 ;		if (mid <= ceilingclip[rw_x])
 ;		    mid = ceilingclip[rw_x]+1;
 
 
 xor   cx, cx
-mov   cl, byte ptr cs:[bx+OFFSET_CEILINGCLIP]
+mov   cl, byte ptr ds:[bx+OFFSET_CEILINGCLIP]
 cmp   ax, cx
 jg    dont_clip_bot_ceil ; todo branch test
 inc   cx
@@ -9247,7 +9252,7 @@ jg    mark_floor_di  ; todo branch test
 ;		    floorclip[rw_x] = yh+1;
 
 cmp   di, si  ; todo sub
-mov   byte ptr cs:[bx+OFFSET_FLOORCLIP], al
+mov   byte ptr ds:[bx+OFFSET_FLOORCLIP], al
 jle   done_marking_floor_ax_TWOSIDED     ; todo branch test
 
 ; todo this is messy
