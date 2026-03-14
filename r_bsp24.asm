@@ -3822,7 +3822,7 @@ jmp       done_adjusting_row_offset
 
 ;R_StoreWallRangeNoBackSector_
 
-STOREWALLRANGE_INNER_STACK_SIZE_BOTTOP = 026h
+STOREWALLRANGE_INNER_STACK_SIZE_BOTTOP = 022h
 STOREWALLRANGE_INNER_STACK_SIZE_MID = 012h
 
 ALIGN_MACRO  ; adding these back seems to lower bench scores
@@ -6178,10 +6178,8 @@ PUBLIC R_StoreWallRangeWithBackSector_
 ; bp - 036h  ; pixhigh lo     preshifted 4
 ; bp - 038h  ; unused
 ; bp - 03Ah  ; pixlow lo      preshifted 4
-; bp - 03Ch  ; unused
-; bp - 03Eh  ; bottomfrac lo  preshifted 4
-; bp - 040h  ; unused
-; bp - 042h  ; topfrac lo     preshifted 4 ; up to here not pushed 
+; bp - 03Ch  ; bottomfrac lo  preshifted 4
+; bp - 03Eh  ; topfrac lo     preshifted 4 ; up to here not pushed 
 
 
 
@@ -7728,7 +7726,7 @@ done_with_two_sided_sector_setup:
 ; ds is equal to CS
 ; sp should now be bp - 03Ah
 
-sub       sp, 8  ; bp - 044h.  make room for topstep/botstep. TODO swap their order generation, push them
+sub       sp, 4  ; bp - 044h.  make room for topstep/botstep. TODO swap their order generation, push them
 
 
 ; set maskedtexture in rendersegloop
@@ -7935,7 +7933,7 @@ SELFMODIFY_sub__centeryfrac_4_hi_4_TWOSIDED:
 mov       cx, 01000h ; ah known zero. dh too probably?
 sbb       cx, dx
 add       ax, ((HEIGHTUNIT)-1) SHL 4 ; bake this in once, instead of doing it every loop.
-mov       word ptr [bp - 042h], ax
+mov       word ptr [bp - 03Eh], ax
 adc       cx, 0
 mov       word ptr ds:[SELFMODIFY_set_topfrac_hi_bottop+1], cx
 ; les to load two words
@@ -7998,7 +7996,7 @@ ENDIF
 
 
 neg       ax
-mov       word ptr [bp - 03Eh], ax
+mov       word ptr [bp - 03Ch], ax
 SELFMODIFY_sub__centeryfrac_4_hi_3_TWOSIDED: ; preincremented by 1 to pass into bp -028h
 mov       ax, 01000h ; ah known zero. dh too probably?
 sbb       ax, dx
@@ -8245,12 +8243,12 @@ jge   exit_rendersegloop_TWOSIDED  ; exit before adding the other loop vars.
 ; ax has rw_x...
 
 SELFMODIFY_add_topstep_lo_TWOSIDED:
-sub   word ptr [bp - 042h], 01000h
+sub   word ptr [bp - 03Eh], 01000h
 SELFMODIFY_add_topstep_hi_TWOSIDED:
 sbb   word ptr ds:[SELFMODIFY_set_topfrac_hi_bottop+1], 01000h
 
 SELFMODIFY_add_botstep_lo_TWOSIDED:
-sub   word ptr [bp - 03Eh], 01000h
+sub   word ptr [bp - 03Ch], 01000h
 SELFMODIFY_add_botstep_hi_TWOSIDED:
 sbb   word ptr ds:[SELFMODIFY_set_botfrac_hi_bottop+1], 01000h
 
