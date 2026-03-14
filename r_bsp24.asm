@@ -3822,7 +3822,7 @@ jmp       done_adjusting_row_offset
 
 ;R_StoreWallRangeNoBackSector_
 
-STOREWALLRANGE_INNER_STACK_SIZE_BOTTOP = 022h
+STOREWALLRANGE_INNER_STACK_SIZE_BOTTOP = 01Eh
 STOREWALLRANGE_INNER_STACK_SIZE_MID = 012h
 
 ALIGN_MACRO  ; adding these back seems to lower bench scores
@@ -5252,7 +5252,7 @@ markceiling_done:
 
 
 SELFMODIFY_set_botfrac_hi_mid:
-mov   ax, 01000h  ; bp - 036h being updated into here
+mov   ax, 01000h  ; bp - 034h being updated into here
 ; ah 0 because si < 255
 
 
@@ -6174,12 +6174,10 @@ PUBLIC R_StoreWallRangeWithBackSector_
 
 ; nonpushed, but should be (TODO swap order)
 
-; bp - 034h  ; unused
-; bp - 036h  ; pixhigh lo     preshifted 4
-; bp - 038h  ; unused
-; bp - 03Ah  ; pixlow lo      preshifted 4
-; bp - 03Ch  ; bottomfrac lo  preshifted 4
-; bp - 03Eh  ; topfrac lo     preshifted 4 ; up to here not pushed 
+; bp - 034h  ; pixhigh lo     preshifted 4
+; bp - 036h  ; pixlow lo      preshifted 4
+; bp - 038h  ; bottomfrac lo  preshifted 4
+; bp - 03Ah  ; topfrac lo     preshifted 4 ; up to here not pushed 
 
 
 
@@ -7399,7 +7397,7 @@ jne       jmp_to_skip_pixhigh_step
 cmp       word ptr [bp - 028h], si
 jnbe      do_pixhigh_step
 jmp_to_skip_pixhigh_step:
-sub       sp, 4  ; skip pixhigh
+push      ax     ;  sub       sp, 2  ; skip pixhigh
 jmp skip_pixhigh_step
 
 ALIGN_MACRO
@@ -7473,8 +7471,7 @@ pop       cx
 
 mov       byte ptr ds:[SELFMODIFY_BSP_toptexture], 0B8h ; mov   ax, imm16
 mov       word ptr ds:[SELFMODIFY_BSP_toptexture+1], dx
-sub       sp, 2 ; bp - 034h todo remove
-push      ax  ; bp - 036h
+push      ax  ; bp - 034h
 
 
 SELFMODIFY_get_rwscalestep_lo_3_TWOSIDED:
@@ -7558,7 +7555,7 @@ cmp       dx, word ptr [bp - 02Ah]
 jg        do_pixlow_step
 je        continue_worldlow_checks
 mov       al, byte ptr ds:[_maskedtexture_bsp]  ; todo is it necessary to write?
-sub       sp, 4 ; skip pixlow
+push      ax     ;  sub       sp, 2  ; skip pixlow
 jmp       done_with_two_sided_sector_setup
 
 ALIGN_MACRO
@@ -7635,8 +7632,7 @@ adc       bx, 0
 ; todo should this be here... ? remove from other spot...?
 mov       byte ptr ds:[SELFMODIFY_BSP_bottexture], 0B8h   ; mov   ax, imm16
 mov       word ptr ds:[SELFMODIFY_BSP_bottexture+1], bx   ; this's presence break things! instructions too big??
-sub       sp, 2 ; bp - 038h todo remove
-push      ax  ; bp - 03Ah
+push      ax  ; bp - 036h
 
 
 SELFMODIFY_get_rwscalestep_lo_4_TWOSIDED:
@@ -7724,9 +7720,9 @@ done_with_two_sided_sector_setup:
 
 ; coming into here, AL is equal to maskedtexture.
 ; ds is equal to CS
-; sp should now be bp - 03Ah
+; sp should now be bp - 036h
 
-sub       sp, 4  ; bp - 044h.  make room for topstep/botstep. TODO swap their order generation, push them
+sub       sp, 4  ; bp - 03Ah.  make room for topstep/botstep. TODO swap their order generation, push them
 
 
 ; set maskedtexture in rendersegloop
@@ -7933,7 +7929,7 @@ SELFMODIFY_sub__centeryfrac_4_hi_4_TWOSIDED:
 mov       cx, 01000h ; ah known zero. dh too probably?
 sbb       cx, dx
 add       ax, ((HEIGHTUNIT)-1) SHL 4 ; bake this in once, instead of doing it every loop.
-mov       word ptr [bp - 03Eh], ax
+mov       word ptr [bp - 03Ah], ax
 adc       cx, 0
 mov       word ptr ds:[SELFMODIFY_set_topfrac_hi_bottop+1], cx
 ; les to load two words
@@ -7996,7 +7992,7 @@ ENDIF
 
 
 neg       ax
-mov       word ptr [bp - 03Ch], ax
+mov       word ptr [bp - 038h], ax
 SELFMODIFY_sub__centeryfrac_4_hi_3_TWOSIDED: ; preincremented by 1 to pass into bp -028h
 mov       ax, 01000h ; ah known zero. dh too probably?
 sbb       ax, dx
@@ -8243,12 +8239,12 @@ jge   exit_rendersegloop_TWOSIDED  ; exit before adding the other loop vars.
 ; ax has rw_x...
 
 SELFMODIFY_add_topstep_lo_TWOSIDED:
-sub   word ptr [bp - 03Eh], 01000h
+sub   word ptr [bp - 03Ah], 01000h
 SELFMODIFY_add_topstep_hi_TWOSIDED:
 sbb   word ptr ds:[SELFMODIFY_set_topfrac_hi_bottop+1], 01000h
 
 SELFMODIFY_add_botstep_lo_TWOSIDED:
-sub   word ptr [bp - 03Ch], 01000h
+sub   word ptr [bp - 038h], 01000h
 SELFMODIFY_add_botstep_hi_TWOSIDED:
 sbb   word ptr ds:[SELFMODIFY_set_botfrac_hi_bottop+1], 01000h
 
@@ -8976,7 +8972,7 @@ PUBLIC do_top_texture_draw
 SELFMODIFY_BSP_set_pixhigh:
 mov   ax, 01000h      ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET  ; pixhigh
 SELFMODIFY_add_to_pixhigh_lo_1_TWOSIDED:
-sub   word ptr [bp - 036h], 01000h
+sub   word ptr [bp - 034h], 01000h
 SELFMODIFY_add_to_pixhigh_hi_1_TWOSIDED:
 sbb   word ptr ds:[SELFMODIFY_BSP_set_pixhigh+1], 01000h
 ; bx is rw_x 
@@ -9231,7 +9227,7 @@ public SELFMODIFY_BSP_set_pixlow
 mov   ax, 01000h   ; ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET pixlow hi
 
 SELFMODIFY_add_to_pixlow_lo_1_TWOSIDED:
-sub   word ptr [bp - 03Ah], 01000h
+sub   word ptr [bp - 036h], 01000h
 SELFMODIFY_add_to_pixlow_hi_1_TWOSIDED:
 sbb   word ptr ds:[SELFMODIFY_BSP_set_pixlow+1], 01000h
 ;		if (mid <= ceilingclip[rw_x])
@@ -9553,7 +9549,7 @@ skip_bot_silhouette_TWOSIDED:
 add       word ptr ds:[_ds_p_bsp], (SIZE DRAWSEG_T)
 
 add       sp, STOREWALLRANGE_INNER_STACK_SIZE_BOTTOP     ; add back fixed SP
-;lea       sp, [bp - 01Ch]   ; todo: why does sp/bp desync?
+
 
 mov       ax, ss
 mov       ds, ax
