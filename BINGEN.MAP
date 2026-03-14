@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/03/08 01:20:45
+Created on:       26/03/10 02:50:33
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -35,7 +35,7 @@ SM_OPL2_TEXT           CODE           AUTO           0533:0000       00000f3c
 SM_OPL3_TEXT           CODE           AUTO           0627:0000       0000100e
 SM_SBMID_TEXT          CODE           AUTO           0728:0000       00000730
 SM_MPUMD_TEXT          CODE           AUTO           079b:0000       000007db
-R_BSP_24_TEXT          CODE           AUTO           0819:0000       00003ec3
+R_BSP_24_TEXT          CODE           AUTO           0819:0000       00003ecd
 R_BSP_16_TEXT          CODE           AUTO           0c06:0000       00003740
 R_BSP0_TEXT            CODE           AUTO           0f7a:0000       0000366f
 R_BSPFL_TEXT           CODE           AUTO           12e1:0000       00003617
@@ -340,105 +340,106 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079b:0000      SM_MPUMD_STARTMARKER_
 079b:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-0819:3974      R_WriteBackViewConstants24_
-0819:2743*     R_AddLine_
-0819:3ec3      R_BSP24_ENDMARKER_
-0819:346c      R_GetPatchTexture_Far24_
-0819:24a4*     R_GetSourceSegment1_
+0819:397e      R_WriteBackViewConstants24_
+0819:274d*     R_AddLine_
+0819:3ecd      R_BSP24_ENDMARKER_
+0819:3476      R_GetPatchTexture_Far24_
+0819:24aa*     R_GetSourceSegment1_
 0819:09f0*     FixedMulTrigNoShiftSine_BSPLocal_
 0819:1688*     just_do_draw0
 0819:15e8*     markfloor_done
-0819:18b3*     SELFMODIFY_skip_curseg_based_selfmodify_AFTER_TWOSIDED
-0819:24af*     just_do_draw1
-0819:1e3c*     _selfmodify_restore_dx_6
-0819:1e7c*     _selfmodify_restore_dx_7
-0819:2464*     mark_floor_di
-0819:1ed1*     _selfmodify_restore_dx_8
+0819:24b5*     just_do_draw1
+0819:1e2c*     _selfmodify_restore_dx_6
+0819:1e71*     _selfmodify_restore_dx_7
+0819:2468*     mark_floor_di
+0819:1ec6*     _selfmodify_restore_dx_8
 0819:211c*     exit_rendersegloop_TWOSIDED
 0819:09ec*     FixedMulTrigSine_BSPLocal_
-0819:1e01*     continue_backsector_not_null
-0819:246e*     R_GetSourceSegment0_DONE_TOP
-0819:2962*     R_ClipPassWallSegment_
+0819:1df1*     continue_backsector_not_null
+0819:2472*     R_GetSourceSegment0_DONE_TOP
+0819:23e4*     SELFMODIFY_BSP_toptexture_AFTER
+0819:296c*     R_ClipPassWallSegment_
 0819:01e0*     _ceilingclip
-0819:2614*     SELFMODIFY_mark_planes_dirty_TWOSIDED
+0819:261e*     SELFMODIFY_mark_planes_dirty_TWOSIDED
 0819:2130*     pre_increment_values_TWOSIDED
 0819:0a3a*     FixedMulTrigCosine_BSPLocal_
 0819:20ec*     R_RenderSegLoop_TWOSIDED_
 0819:1452*     SELFMODIFY_BSP_set_skyflatnum_4
 0819:105b*     SELFMODIFY_skip_curseg_based_selfmodify_AFTER
-0819:2646*     R_Subsector_
+0819:2650*     R_Subsector_
 0819:1583*     check_here
 0819:16c4*     SELFMODIFY_BSP_R_DrawColumnPrep_ret
-0819:23dd*     do_top_texture_draw
+0819:23e1*     do_top_texture_draw
 0819:207c*     at_least_one_column_to_draw_TWOSIDED
 0819:1629*     SELFMODIFY_set_rw_distance_lo
 0819:0000      R_BSP24_STARTMARKER_
 0819:01e0*     OFFSET_CEILINGCLIP
 0819:2239*     checktexcolumn
 0819:1530*     exit_rendersegloop
-0819:1a41*     selfmod_done_bot
+0819:1a40*     selfmod_done_bot
 0819:12fc*     scales_set
 0819:167d*     R_GetSourceSegment0_START
-0819:24b7*     R_DrawColumnPrepBot_
-0819:24a7*     SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER_TWOSIDED
+0819:24bd*     R_DrawColumnPrepBot_
+0819:24ad*     SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER_TWOSIDED
 0819:2374*     non_repeating_texture0_TWOSIDED
-0819:3822      R_RenderPlayerView24_
+0819:382c      R_RenderPlayerView24_
 0819:099c*     FixedDivBSPLocal_
-0819:24ec*     SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET_TWOSIDED
+0819:24f2*     SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET_TWOSIDED
 0819:2374*     SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET_TWOSIDED
-0819:2456*     SELFMODIFY_BSP_toptexture_TARGET_TWOSIDED
 0819:1549*     increment_loop_values
 0819:05c2*     div48_32_BSPLocal_
+0819:245a*     SELFMODIFY_BSP_toptexture_TARGET
 0819:102a*     R_StoreWallRangeNoBackSector_
 0819:0080*     _COLFUNC_SELFMODIFY_LOOKUPTABLE_SECOND_HALF
-0819:23e0*     SELFMODIFY_BSP_toptexture_AFTER_TWOSIDED
-0819:244e*     SELFMODIFY_BSP_R_DrawColumnPrep_ret_TWOSIDED
+0819:2452*     SELFMODIFY_BSP_R_DrawColumnPrep_ret_TWOSIDED
 0819:1607*     SELFMODIFY_set_pixel_count_shift_mul
 0819:0080*     BEOFRE_COLFUNC_LOOKUP
-0819:240d*     R_GetSourceSegment0_START_TWOSIDED
-0819:3312*     R_GetTexturePage_
-0819:3b08*     R_WriteBackFrameConstants_
+0819:2411*     R_GetSourceSegment0_START_TWOSIDED
+0819:331c*     R_GetTexturePage_
+0819:3b12*     R_WriteBackFrameConstants_
 0819:0a3e*     FixedMulTrigNoShiftCosine_BSPLocal_
-0819:3d33*     _bsp_local_dc_yl_lookup_table
+0819:3d3d*     _bsp_local_dc_yl_lookup_table
 0819:0a8a*     R_ClearPlanes_
 0819:173c*     mark_planes_dirty
-0819:1b7c*     scales_set_TWOSIDED
+0819:1b7a*     scales_set_TWOSIDED
 0819:17be*     main_3232_div
-0819:1bb3*     set_values
+0819:1bb1*     set_values
+0819:18b3*     SELFMODIFY_skip_curseg_based_selfmodify_topbot_AFTER
 0819:006e*     _lastbasexscale
 0819:222a*     _selfmodify_restore_dx_10_TWOSIDED
 0819:0c48*     R_FindPlane_
 0819:070c*     FixedDivWholeA_BSPLocal_
-0819:2411*     SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER_TWOSIDED
+0819:2415*     SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER_TWOSIDED
 0819:15fb*     SELFMODIFY_BSP_add_destview_offset
-0819:1dce*     side_has_midtexture
+0819:1dbe*     side_has_midtexture
 0819:1882*     R_StoreWallRangeWithBackSector_
 0819:159a*     SELFMODIFY_BSP_markceiling_1
 0819:1870*     adjust_row_offset_TWOSIDED
-0819:3508      R_GetCompositeTexture_Far24_
+0819:3512      R_GetCompositeTexture_Far24_
 0819:006e*     _basexscale
-0819:2419*     just_do_draw0_TWOSIDED
+0819:241d*     just_do_draw0_TWOSIDED
 0819:1018*     adjust_row_offset
 0819:0000*     _COLFUNC_SELFMODIFY_LOOKUPTABLE
 0819:16bc*     R_DrawColumnPrep_
 0819:035c*     SELFMODIFY_get_rw_distance_hi_1
 0819:163b*     do_16_bit_mul
+0819:247e*     SELFMODIFY_BSP_set_pixlow
 0819:229c*     main_3232_div_TWOSIDED
-0819:261c*     mark_planes_dirty_TWOSIDED
+0819:2626*     mark_planes_dirty_TWOSIDED
 0819:00a0*     OFFSET_FLOORCLIP
 0819:152b*     R_RenderSegLoop_
 0819:15c9*     SELFMODIFY_BSP_markfloor_1
 0819:1679*     SELFMODIFY_set_ax_rw_offset_hi
 0819:18f7*     v2_y_equals_v1_y_TWOSIDED
-0819:2aaa*     R_GetColumnSegment_
+0819:2ab4*     R_GetColumnSegment_
 0819:0342*     R_ScaleFromGlobalAngle_
-0819:24e4*     SELFMODIFY_BSP_R_DrawColumnPrep_ret_bot
+0819:24ea*     SELFMODIFY_BSP_R_DrawColumnPrep_ret_bot
 0819:12df*     div_done
-0819:1717*     SELFMODIFY_mark_planes_dirty
 0819:1820*     R_DrawColumnPrep_Stretch_
-0819:2462*     done_marking_floor_ax_TWOSIDED
+0819:1717*     SELFMODIFY_mark_planes_dirty
+0819:2466*     done_marking_floor_ax_TWOSIDED
 0819:1575*     start_per_column_inner_loop
-0819:2421*     R_DrawColumnPrep_TWOSIDED_
+0819:2425*     R_DrawColumnPrep_TWOSIDED_
 Module: r_bsp16.obj(r_bsp16.ASM)
 0c06:3289      R_RenderPlayerView16_
 0c06:0000      R_BSP16_STARTMARKER_

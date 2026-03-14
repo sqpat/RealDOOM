@@ -751,7 +751,7 @@ octant_5_out_of_bounds:
 mov   ax, 0ffffh
 mov   dx, 09fffh
 
-ret  
+ret  ; this was a bad return?
 
 ALIGN_MACRO
 octant_5_do_divide:
@@ -3082,6 +3082,7 @@ cbw
 call      R_HandleEMSVisplanePagination_
 mov       di, ax
 mov       es, dx
+; jumped here?
 mov       ax, 0FFFFh
 
 mov       cx, (SCREENWIDTH / 2) + 1   ; plus one for the padding
@@ -3806,7 +3807,7 @@ jmp       done_adjusting_row_offset
 
 ;R_StoreWallRangeNoBackSector_
 
-STOREWALLRANGE_INNER_STACK_SIZE = 026h
+STOREWALLRANGE_INNER_STACK_SIZE_BOTTOP = 026h
 STOREWALLRANGE_INNER_STACK_SIZE_MID = 012h
 
 ALIGN_MACRO  ; adding these back seems to lower bench scores
@@ -5814,7 +5815,7 @@ xor   bx, bx
 
 SELFMODIFY_BSP_set_midtexture:
 mov   ax, 01000h
-call  R_GetColumnSegment_
+call  R_GetColumnSegment_  ; worth inlining...?
 mov   dx, word ptr ds:[_segloopcachedsegment]
 mov   bx, cs
 mov   ds, bx
@@ -6160,7 +6161,7 @@ PUBLIC R_StoreWallRangeWithBackSector_
 
 ; bp - 034h  ; unused
 ; bp - 036h  ; pixhigh lo     preshifted 4
-; bp - 038h  ; pixlow hi      preshifted 4
+; bp - 038h  ; unused
 ; bp - 03Ah  ; pixlow lo      preshifted 4
 ; bp - 03Ch  ; unused
 ; bp - 03Eh  ; bottomfrac lo  preshifted 4
@@ -6246,10 +6247,10 @@ SELFMODIFY_skip_frontsector_based_selfmodify_TARGET_TWOSIDED:
 
 ; todo also skip sector selfmodifies lazily
 
-SELFMODIFY_skip_curseg_based_selfmodify_TWOSIDED:
-mov       bx, (SELFMODIFY_skip_curseg_based_selfmodify_TARGET_TWOSIDED - SELFMODIFY_skip_curseg_based_selfmodify_AFTER_TWOSIDED)  ;  selfmodifies into mov bx, imm
-SELFMODIFY_skip_curseg_based_selfmodify_AFTER_TWOSIDED:
-public  SELFMODIFY_skip_curseg_based_selfmodify_AFTER_TWOSIDED
+SELFMODIFY_skip_curseg_based_selfmodify_topbot:
+mov       bx, (SELFMODIFY_skip_curseg_based_selfmodify_topbot_TARGET - SELFMODIFY_skip_curseg_based_selfmodify_topbot_AFTER)  ;  selfmodifies into mov bx, imm
+SELFMODIFY_skip_curseg_based_selfmodify_topbot_AFTER:
+public  SELFMODIFY_skip_curseg_based_selfmodify_topbot_AFTER
 mov       bx, word ptr [bp - 0Ah]  ; curseg_render     ; turns into a jump past selfmodifying code once this next code block runs. 
 mov       ax, word ptr ds:[bx + SEG_RENDER_T.sr_offset]  ; can be up to 512 i think.
 mov       word ptr cs:[SELFMODIFY_BSP_sidesegoffset_TWOSIDED+1], ax
@@ -6538,9 +6539,9 @@ finish_midtex_selfmodify_TWOSIDED:
    mov   word ptr ds:[SELFMODIFY_restore_bp_after_draw_bot+1], bp
 
 
-mov       byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify_TWOSIDED], 0E9h  ; jmp here
+   mov   byte ptr ds:[SELFMODIFY_skip_curseg_based_selfmodify_topbot], 0E9h  ; jmp here next run...
 
-SELFMODIFY_skip_curseg_based_selfmodify_TARGET_TWOSIDED:
+SELFMODIFY_skip_curseg_based_selfmodify_topbot_TARGET:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; END LINE BASED SELF MODIFY BLOCK ;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -7166,7 +7167,7 @@ test      ax, ax
 je        toptexture_zero         ; todo whats more common?
 
 toptexture_not_zero:
-mov       byte ptr ds:[SELFMODIFY_BSP_toptexture_TWOSIDED], 0B8h ; mov   ax, imm16
+
 ; are any bits set?
 or        bl, bh
 or        byte ptr ds:[SELFMODIFY_check_for_any_tex_TWOSIDED+1], bl
@@ -7189,8 +7190,8 @@ jmp       do_selfmodify_bottexture
 
 ALIGN_MACRO
 toptexture_zero:
-mov       byte ptr cs:[SELFMODIFY_BSP_toptexture_TWOSIDED], 0E9h
-mov       word ptr cs:[SELFMODIFY_BSP_toptexture_TWOSIDED+1], (SELFMODIFY_BSP_toptexture_TARGET_TWOSIDED - SELFMODIFY_BSP_toptexture_AFTER_TWOSIDED)
+mov       byte ptr ds:[SELFMODIFY_BSP_toptexture],   0E9h
+mov       word ptr ds:[SELFMODIFY_BSP_toptexture+1], (SELFMODIFY_BSP_toptexture_TARGET - SELFMODIFY_BSP_toptexture_AFTER)
 jmp       toptexture_stuff_done
 
 ALIGN_MACRO
@@ -7261,11 +7262,11 @@ test      ax, ax
 jne       bottexture_not_zero
 
 bottexture_zero:
-mov       word ptr ds:[SELFMODIFY_BSP_bottexture_TWOSIDED], ((SELFMODIFY_BSP_bottexture_TARGET_TWOSIDED - SELFMODIFY_BSP_bottexture_AFTER_TWOSIDED) SHL 8) + 0EBh
+mov       word ptr ds:[SELFMODIFY_BSP_bottexture], ((SELFMODIFY_BSP_bottexture_TARGET - SELFMODIFY_BSP_bottexture_AFTER) SHL 8) + 0EBh
 jmp       bottexture_stuff_done
 ALIGN_MACRO
 bottexture_not_zero:
-mov       word ptr ds:[SELFMODIFY_BSP_bottexture_TWOSIDED], 0468Bh   ; mov   ax, word ptr [bp - 038h] first two bytes
+
 ; are any bits set?
 or        bl, bh
 or        byte ptr ds:[SELFMODIFY_check_for_any_tex_TWOSIDED+1], bl
@@ -7305,7 +7306,8 @@ add   byte ptr ds:[SELFMODIFY_set_bottexturemid_hi_TWOSIDED+1], al
 
 ; check midtexture on 2 sided line (e1m1 case)
 SELFMODIFY_has_midtexture_or_not:
-jmp       continue_backsector_not_null   ; may  turn into mov al, garbage (fall thru)
+jmp       SHORT continue_backsector_not_null   ; may  turn into mov al, garbage (fall thru)
+ALIGN_MACRO
 
 side_has_midtexture:
 public side_has_midtexture
@@ -7389,6 +7391,7 @@ jmp_to_skip_pixhigh_step:
 sub       sp, 4  ; skip pixhigh
 jmp skip_pixhigh_step
 
+ALIGN_MACRO
 do_pixhigh_step:
 
 ; pixhigh = (centeryfrac_4.w) - FixedMul (worldhigh.w, rw_scale.w);
@@ -7457,11 +7460,12 @@ mov       dx, cx
 pop       bx
 pop       cx
 
-mov       word ptr ds:[SELFMODIFY_BSP_set_pixhigh+1], dx
-sub       sp, 2  ; todo remove
+mov       byte ptr ds:[SELFMODIFY_BSP_toptexture], 0B8h ; mov   ax, imm16
+mov       word ptr ds:[SELFMODIFY_BSP_toptexture+1], dx
+sub       sp, 2 ; bp - 034h todo remove
 push      ax  ; bp - 036h
 
-; last pop...
+
 SELFMODIFY_get_rwscalestep_lo_3_TWOSIDED:
 mov       ax, 01000h
 SELFMODIFY_get_rwscalestep_hi_3_TWOSIDED:
@@ -7545,11 +7549,13 @@ je        continue_worldlow_checks
 mov       al, byte ptr ss:[_maskedtexture]  ; todo is it necessary to write?
 sub       sp, 4 ; skip pixlow
 jmp       done_with_two_sided_sector_setup
+
+ALIGN_MACRO
 continue_worldlow_checks:
 cmp       ax, word ptr [bp - 02Ch]
 ja        do_pixlow_step
 
-ALIGN_MACRO
+
 do_pixlow_step:
 
 ; pixlow = (centeryfrac << 16) - FixedMul (worldlow.w, rw_scale.w);
@@ -7610,9 +7616,15 @@ SELFMODIFY_sub__centeryfrac_4_hi_1:
 mov       bx, 01000h ; ah known zero. dh too probably?
 sbb       bx, dx ; -FixedMul highbits
 
+; todo: why does this sometimes run without the other code running??
+; work backwards...
+
 add       ax, 0FFFFh ; HEIGHTUNIT -1 preshifted 4
 adc       bx, 0
-push      bx  ; bp - 038h
+; todo should this be here... ? remove from other spot...?
+mov       byte ptr ds:[SELFMODIFY_BSP_bottexture], 0B8h   ; mov   ax, imm16
+mov       word ptr ds:[SELFMODIFY_BSP_bottexture+1], bx   ; this's presence break things! instructions too big??
+sub       sp, 2 ; bp - 038h todo remove
 push      ax  ; bp - 03Ah
 
 
@@ -7674,7 +7686,7 @@ ENDIF
 ; self modifying code to write to pixlowstep usages.
 
 mov       word ptr ds:[SELFMODIFY_add_to_pixlow_lo_1_TWOSIDED+3], ax
-mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_1_TWOSIDED+3], dx
+mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_1_TWOSIDED+5], dx
 
 
 mov       al, byte ptr ss:[_maskedtexture]
@@ -8832,6 +8844,8 @@ jge   out_of_texture_bounds0_TWOSIDED
 cmp   dx, word ptr ds:[_segloopprevlookup]
 jge   in_texture_bounds0_TWOSIDED
 out_of_texture_bounds0_TWOSIDED:
+mov   ax, ss
+mov   ds, ax
 push  bx
 xor   bx, bx
 
@@ -8842,6 +8856,7 @@ call  R_GetColumnSegment_
 pop   bx
 
 mov   dx, word ptr ds:[_segloopcachedsegment]
+; todo: ds = cs here
 mov   word ptr cs:[SELFMODIFY_add_cached_segment0_TWOSIDED+1], dx
 
 
@@ -8945,9 +8960,9 @@ jnz   record_masked_TWOSIDED
 finished_recording_masked:
 
 
-SELFMODIFY_BSP_toptexture_TWOSIDED:
-SELFMODIFY_BSP_toptexture_AFTER_TWOSIDED = SELFMODIFY_BSP_toptexture_TWOSIDED + 3
-public SELFMODIFY_BSP_toptexture_AFTER_TWOSIDED
+SELFMODIFY_BSP_toptexture:
+SELFMODIFY_BSP_toptexture_AFTER = SELFMODIFY_BSP_toptexture + 3
+public SELFMODIFY_BSP_toptexture_AFTER
 do_top_texture_draw:  ; not a jump target.
 PUBLIC do_top_texture_draw
 
@@ -8956,9 +8971,9 @@ PUBLIC do_top_texture_draw
 SELFMODIFY_BSP_set_pixhigh:
 mov   ax, 01000h      ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET  ; pixhigh
 SELFMODIFY_add_to_pixhigh_lo_1_TWOSIDED:
-sub   word ptr [bp - 036h], 01000h  ; ! this wasnt selfmodified
+sub   word ptr [bp - 036h], 01000h
 SELFMODIFY_add_to_pixhigh_hi_1_TWOSIDED:
-sbb   word ptr cs:[SELFMODIFY_BSP_set_pixhigh+1], 01000h  ; ! this wasnt selfmodified
+sbb   word ptr cs:[SELFMODIFY_BSP_set_pixhigh+1], 01000h
 ; bx is rw_x 
 
 ; todo reduce 16 bit logic, use 8 bit logic.
@@ -8975,10 +8990,10 @@ cmp   ax, si
 jl    jump_to_mark_ceiling_si_TWOSIDED  ; skip drawing ceiling.
 cmp   di, si
 jnle  dont_mark_ceiling_ax_TWOSIDED  ; skip drawing ceiling.
-jmp   mark_ceiling_ax_TWOSIDED
+jmp   SHORT mark_ceiling_ax_TWOSIDED
 
 jump_to_mark_ceiling_si_TWOSIDED:
-jmp   mark_ceiling_si_TWOSIDED
+jmp   SHORT mark_ceiling_si_TWOSIDED
 ALIGN_MACRO
 dont_mark_ceiling_ax_TWOSIDED:
 xchg   ax, di  ; todo maybe this xchg doesnt need to be here; swap above register logic.
@@ -9120,7 +9135,7 @@ pop   bx  ; rw_x  always want this back
 
 ; this runs as a jmp for a top call, otherwise NOP for mid call
 
-jmp   R_GetSourceSegment0_DONE_TOP
+jmp   SHORT R_GetSourceSegment0_DONE_TOP
 
 
 finished_inner_loop_iter_TWOSIDED:
@@ -9138,8 +9153,8 @@ jmp   pre_increment_values_TWOSIDED
 
 ALIGN_MACRO
 
-SELFMODIFY_BSP_toptexture_TARGET_TWOSIDED:
-public SELFMODIFY_BSP_toptexture_TARGET_TWOSIDED
+SELFMODIFY_BSP_toptexture_TARGET:
+public SELFMODIFY_BSP_toptexture_TARGET
 no_top_texture_draw_TWOSIDED:
 
 ; bx is already rw_x
@@ -9152,7 +9167,7 @@ mark_ceiling_si_TWOSIDED:
 ; this value comes out bad for al. sometimes.
 lea   ax, [si - 1]
 mov   byte ptr cs:[bx + OFFSET_CEILINGCLIP], al ; bx is already rw_x
-jmp   check_bottom_texture_TWOSIDED
+jmp   SHORT check_bottom_texture_TWOSIDED
 ALIGN_MACRO
 
 
@@ -9162,11 +9177,11 @@ done_marking_floor_ax_TWOSIDED:
 public done_marking_floor_ax_TWOSIDED
 SELFMODIFY_BSP_markfloor_2_TARGET_TWOSIDED:
 done_marking_floor_TWOSIDED:
-jmp   finished_inner_loop_iter_TWOSIDED
+jmp   SHORT finished_inner_loop_iter_TWOSIDED
 
 
 ALIGN_MACRO
-SELFMODIFY_BSP_bottexture_TARGET_TWOSIDED:
+SELFMODIFY_BSP_bottexture_TARGET:
 no_bottom_texture_draw_TWOSIDED:
 SELFMODIFY_BSP_markfloor_2_TWOSIDED:
 ;je    done_marking_floor_TWOSIDED
@@ -9198,6 +9213,7 @@ pop   di      ; todo whats this again. something for floorclip? yl-1?
 SELFMODIFY_restore_bp_after_draw_top:
 mov   bp, 01000h
 
+; bx is currently rw_x.
 
 
 mark_ceiling_ax_TWOSIDED:
@@ -9206,21 +9222,20 @@ SELFMODIFY_BSP_markceiling_2_TARGET_TWOSIDED:
 check_bottom_texture_TWOSIDED:
 ; bx is already rw_x
 
-SELFMODIFY_BSP_bottexture_TWOSIDED:
-SELFMODIFY_BSP_bottexture_AFTER_TWOSIDED = SELFMODIFY_BSP_bottexture_TWOSIDED + 2
+SELFMODIFY_BSP_bottexture:
+SELFMODIFY_BSP_bottexture_AFTER = SELFMODIFY_BSP_bottexture + 2
 
 
-do_bottom_texture_draw_TWOSIDED:
+do_bottom_texture_draw:
 
-mov   ax, word ptr [bp - 038h]   ; ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET pixlow hi
-;		mid = (pixlow+HEIGHTUNIT-1)>>HEIGHTBITS;
-; +HEIGHTUNIT-1 baked in
-;		pixlow += pixlowstep;
+SELFMODIFY_BSP_set_pixlow:
+public SELFMODIFY_BSP_set_pixlow
+mov   ax, 01000h   ; ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET pixlow hi
 
 SELFMODIFY_add_to_pixlow_lo_1_TWOSIDED:
 sub   word ptr [bp - 03Ah], 01000h
 SELFMODIFY_add_to_pixlow_hi_1_TWOSIDED:
-sbb   word ptr [bp - 038h], 01000h
+sbb   word ptr cs:[SELFMODIFY_BSP_set_pixlow+1], 01000h
 ;		if (mid <= ceilingclip[rw_x])
 ;		    mid = ceilingclip[rw_x]+1;
 
@@ -9382,15 +9397,19 @@ jge   out_of_texture_bounds1
 cmp   dx, word ptr ds:[2 + _segloopprevlookup]
 jge   in_texture_bounds1  ; todo change the default case.
 out_of_texture_bounds1:
+mov   ax, ss
+mov   ds, ax
 push  bx
 mov   bx, 1
 
 SELFMODIFY_BSP_set_bottomtexture:
 mov   ax, 01000h
+
 call  R_GetColumnSegment_
 pop   bx
 
 mov   dx, word ptr ds:[2 + _segloopcachedsegment]
+; todo: ds = cs here
 mov   word ptr cs:[SELFMODIFY_add_cached_segment1+1], dx
 
 
@@ -9535,7 +9554,9 @@ mov       word ptr es:[bx + DRAWSEG_T.drawseg_bsilheight], MAXSHORT
 skip_bot_silhouette_TWOSIDED:
 add       word ptr ds:[_ds_p], (SIZE DRAWSEG_T)
 
-add       sp, STOREWALLRANGE_INNER_STACK_SIZE     ; add back fixed SP
+add       sp, STOREWALLRANGE_INNER_STACK_SIZE_BOTTOP     ; add back fixed SP
+;lea       sp, [bp - 01Ch]   ; todo: why does sp/bp desync?
+
 SELFMODIFY_mark_planes_dirty_TWOSIDED:
 public SELFMODIFY_mark_planes_dirty_TWOSIDED 
 db  0B8h, 00h, 00h   ;mov ax, 0  ; modify the first byte with bit flags . 00 for ah.
@@ -9787,7 +9808,7 @@ END_R_ADDLINE_AND_SELFMODIFY_LABEL:
 
 mov   al, 0BBh ; mov bx, imm16 (fallthru)
 mov   byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify], al
-mov   byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify_TWOSIDED], al
+mov   byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify_topbot], al
 
 
 END_R_ADDLINE_LABEL:
