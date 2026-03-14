@@ -8209,9 +8209,15 @@ jmp   R_RenderSegLoop_exit_TWOSIDED
 
 
 ALIGN_MACRO
+
+finished_inner_loop_iter_TWOSIDED:
+
+mov   di, bx   ; set dc_x... todo skip this step.
+
 pre_increment_values_TWOSIDED: 
 public pre_increment_values_TWOSIDED
 
+; bx = dc_x
 
 inc   di
 mov   ax, cs
@@ -9127,20 +9133,6 @@ pop   bx  ; rw_x  always want this back
 
 jmp   SHORT R_GetSourceSegment0_DONE_TOP
 
-
-finished_inner_loop_iter_TWOSIDED:
-
-;		for ( ; rw_x < rw_stopx ; 
-;			rw_x		+= detailshiftitercount,
-;			topfrac 	+= topstepshift,
-;			bottomfrac  += bottomstepshift,
-;			rw_scale.w  += rwscaleshift
-
-mov   di, bx  ; rw_x   ; todo xchg?
-
-
-jmp   pre_increment_values_TWOSIDED
-
 ALIGN_MACRO
 
 SELFMODIFY_BSP_toptexture_TARGET:
@@ -9167,7 +9159,7 @@ done_marking_floor_ax_TWOSIDED:
 public done_marking_floor_ax_TWOSIDED
 SELFMODIFY_BSP_markfloor_2_TARGET_TWOSIDED:
 done_marking_floor_TWOSIDED:
-jmp   SHORT finished_inner_loop_iter_TWOSIDED
+jmp   finished_inner_loop_iter_TWOSIDED
 
 
 ALIGN_MACRO
@@ -9182,7 +9174,7 @@ public mark_floor_di
 
 ; got here but ds was not cs
    ;floorclip[rw_x] = yh + 1;
-xchg  ax, di   ; di seems safe to clobber?
+xchg  ax, di   ; di seems safe to clobber? because bx = dc_x and its replaced?
 inc   ax
 mov   byte ptr ds:[bx+OFFSET_FLOORCLIP], al
 jmp   finished_inner_loop_iter_TWOSIDED
@@ -9387,9 +9379,9 @@ public SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET_TWOSIDED
 non_repeating_texture1:
 ; finally set dx back to texturecolumn in this case
 
-cmp   dx, word ptr ds:[2 + _segloopnextlookup]
+cmp   dx, word ptr ss:[2 + _segloopnextlookup]
 jge   out_of_texture_bounds1
-cmp   dx, word ptr ds:[2 + _segloopprevlookup]
+cmp   dx, word ptr ss:[2 + _segloopprevlookup]
 jge   in_texture_bounds1  ; todo change the default case.
 out_of_texture_bounds1:
 mov   ax, ss
@@ -9401,35 +9393,38 @@ SELFMODIFY_BSP_set_bottomtexture:
 mov   ax, 01000h
 
 call  R_GetColumnSegment_
-pop   bx
 
 mov   dx, word ptr ds:[2 + _segloopcachedsegment]
+mov   bx, cs
+mov   ds, bx
+pop   bx
+
 ; todo: ds = cs here
-mov   word ptr cs:[SELFMODIFY_add_cached_segment1+1], dx
+mov   word ptr ds:[SELFMODIFY_add_cached_segment1+1], dx
 
 
 
 
 ; todo get this dh and dl in same read
-mov   dh, byte ptr ds:[1 + _seglooptexrepeat]
+mov   dh, byte ptr ss:[1 + _seglooptexrepeat]
 cmp   dh, 0
 je    seglooptexrepeat1_is_jmp
 ; modulo is seglooptexrepeat - 1
-mov   dl, byte ptr ds:[1 + _segloopheightvalcache]
-mov   byte ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1],   0B8h   ; mov ax, xxxx
-mov   word ptr cs:[SELFMODIFY_BSP_check_seglooptexmodulo1+1], dx
+mov   dl, byte ptr ss:[1 + _segloopheightvalcache]
+mov   byte ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo1],   0B8h   ; mov ax, xxxx
+mov   word ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo1+1], dx
 
 jmp   just_do_draw1
 ALIGN_MACRO
 ; do jmp. highest priority, overwrite previously written thing.
 seglooptexrepeat1_is_jmp:
-mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1_TWOSIDED], ((SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET_TWOSIDED - SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER_TWOSIDED) SHL 8) + 0EBh
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat1_TWOSIDED], ((SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET_TWOSIDED - SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER_TWOSIDED) SHL 8) + 0EBh
 jmp   just_do_draw1
 ALIGN_MACRO
 in_texture_bounds1:
 xchg  ax, dx  ; put texturecol in ax
-sub   al, byte ptr ds:[2 + _segloopcachedbasecol]
-mul   byte ptr ds:[1 + _segloopheightvalcache]
+sub   al, byte ptr ss:[2 + _segloopcachedbasecol]
+mul   byte ptr ss:[1 + _segloopheightvalcache]
 jmp   add_base_segment_and_draw1
 ALIGN_MACRO
 
@@ -9443,6 +9438,7 @@ ALIGN_MACRO
 
 R_RenderSegLoop_exit_TWOSIDED:
    
+; enter with ds = ss:
 
 
 
