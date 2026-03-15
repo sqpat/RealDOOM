@@ -4239,6 +4239,7 @@ ALIGN_MACRO
 IF COMPISA GE COMPILE_386
 ELSE
    mov   word ptr ds:[SELFMODIFY_set_rw_distance_lo_2+1], ax
+   mov   word ptr ds:[SELFMODIFY_set_rw_distance_lo_2_TWOSIDED+1], ax
 ENDIF
    xchg  ax, dx
    mov   word ptr ds:[SELFMODIFY_set_rw_distance_hi+1], ax
@@ -6399,7 +6400,7 @@ finish_midtex_selfmodify_TWOSIDED:
    and       ah, FINE_ANGLE_HIGH_BYTE
 
    ; set centerangle in rendersegloop
-   mov       word ptr cs:[SELFMODIFY_set_rw_center_angle_TWOSIDED+1], ax
+   mov       word ptr cs:[SELFMODIFY_set_rw_center_angle_TWOSIDED+2], ax
    xchg      ax, si
    SHIFT_MACRO shl ax SHORTTOFINESHIFT
    mov       word ptr cs:[SELFMODIFY_set_rw_normal_angle_shift3_TWOSIDED+1], ax
@@ -7807,7 +7808,7 @@ SELFMODIFY_BSP_sidesegoffset_TWOSIDED:
 add       ax, 01000h 
 ; rw_offset ready to be written to rendersegloop:
 mov   word ptr ds:[SELFMODIFY_set_cx_rw_offset_lo_TWOSIDED+1], dx
-mov   word ptr ds:[SELFMODIFY_set_ax_rw_offset_hi_TWOSIDED+1], ax
+mov   word ptr ds:[SELFMODIFY_set_ax_rw_offset_hi_TWOSIDED+2], ax
 
 
 
@@ -8391,46 +8392,92 @@ or    byte ptr ds:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], 2 ; floor bit
 SELFMODIFY_BSP_markfloor_1_TARGET_TWOSIDED:
 markfloor_done_TWOSIDED:
 SELFMODIFY_BSP_get_segtextured_TWOSIDED:
-jmp SHORT    jump_to_seg_non_textured_TWOSIDED  ; or nop
+jmp SHORT    jump_to_seg_non_textured_TWOSIDED  ; or nop todo make not NOP
 
 SELFMODIFY_BSP_get_segtextured_AFTER_TWOSIDED:
 
 seg_is_textured_TWOSIDED:
 
 ; angle = MOD_FINE_ANGLE (rw_centerangle + xtoviewangle[rw_x]);
+; eventually use DS here, once source_segment vars use CS?
 
 mov   ax, XTOVIEWANGLE_SEGMENT
 mov   es, ax
+
+push  bp  ; todo remove
+mov   bx, di
+
+
+mov   bx, word ptr es:[bx+di] ; word lookup of dc_x
+
+mov   ax, FINETANGENTINNER_SEGMENT  ; maybe can be skipped if bsp is moved under here.
+mov   es, ax
+
 SELFMODIFY_set_rw_center_angle_TWOSIDED:
-mov   ax, 01000h
-mov   bx, di        ; word lookup
-add   ax, word ptr es:[bx+di]
-and   ah, FINE_ANGLE_HIGH_BYTE				; MOD_FINE_ANGLE = and 0x1FFF
+add   bx, 01000h
+and   bh, FINE_ANGLE_HIGH_BYTE				; MOD_FINE_ANGLE = and 0x1FFF
 
 ; temp.w = rw_offset.w - FixedMul(finetangent(angle),rw_distance);
 
-mov   bx, FINETANGENTINNER_SEGMENT
-mov   es, bx
 
-mov   bx, ax
 sub   bx, FINE_TANGENT_MAX        ; bx now -2048 to 2047
-sbb   si, si
-xor   bx, si          ; bx now 0 to 2048, cx has sign.. but table is 2048 entries.
-add   bx, si          ; offset by an entry for negatives
+sbb   bp, bp
+xor   bx, bp          ; bx now 0 to 2048, bp has sign.. but table is 2048 entries.
 
 
-SHIFT_MACRO shl bx 2
-les   ax, dword ptr es:[bx]
-mov   dx, es
-
-SUB   AX, si
-SBB   DX, si
-XOR   AX, si
-XOR   DX, si
+SELFMODIFY_set_bx_rw_distance_lo_TWOSIDED:
+public SELFMODIFY_set_bx_rw_distance_lo_TWOSIDED
+mov   ax, 01000h
 
 
 
-jmp   finetangent_ready_TWOSIDED
+IF COMPISA GE COMPILE_386
+    ; todo or one?
+   SHIFT_MACRO shl bx 2
+   les   bx, dword ptr es:[bx]
+   mov   cx, es
+
+  SELFMODIFY_set_cx_rw_distance_hi_TWOSIDED:
+  mov   dx, 01000h
+
+  shl   ecx, 16
+  mov   cx, bx
+  xchg  ax, dx
+  shl   eax, 16
+  xchg  ax, dx
+  imul  ecx
+  shr   eax, 16
+  jmp   done_with_finetanmul
+
+
+ELSE
+
+   SHIFT_MACRO shl bx 2
+   test  bh, 010h
+   les   bx, dword ptr es:[bx]
+
+
+   SELFMODIFY_set_cx_rw_distance_hi_TWOSIDED:
+   mov   cx, 01000h
+   jnz   do_32_bit_finetan_mul_TWOSIDED
+
+   do_16_bit_mul_TWOSIDED:
+   public do_16_bit_mul_TWOSIDED
+
+   ; BX * CX:AX
+
+   mul  bx        ; AX * BX
+   mov  ax, bx    ; for next mul
+   mov  bx, dx    ; store hi result
+   mul  cx
+   add  ax, bx    ; add previous hi into lo
+   adc  dx, 0     ; es may be known 0?
+
+   jmp  done_with_16bitmul_TWOSIDED
+
+ENDIF
+
+
 ALIGN_MACRO
 SELFMODIFY_BSP_get_segtextured_TARGET_TWOSIDED:
 jump_to_seg_non_textured_TWOSIDED:
@@ -8439,72 +8486,60 @@ jmp   seg_non_textured_TWOSIDED
 ALIGN_MACRO
 
 
-finetangent_ready_TWOSIDED:
-; calculate texture column
-SELFMODIFY_set_bx_rw_distance_lo_TWOSIDED:
-mov   bx, 01000h
-SELFMODIFY_set_cx_rw_distance_hi_TWOSIDED:
-mov   cx, 01000h
 
-; begin inlined FixedMul_
+; todo: make this faster.
 
 IF COMPISA GE COMPILE_386
-
-  shl  ecx, 16
-  mov  cx, bx
-  xchg ax, dx
-  shl  eax, 16
-  xchg ax, dx
-  imul  ecx
-  shr  eax, 16
-
 ELSE
 
- ; si not preserved
-  MOV  SI, DX
-  PUSH AX
+do_32_bit_finetan_mul_TWOSIDED:
+
+  push  si     ; this path pushes si... 
+  mov   si, es
+
   MUL  BX
-  MOV  word ptr ds:[_selfmodify_restore_dx_10_TWOSIDED-2], DX
-  MOV  AX, SI
-  MUL  CX
-  XCHG AX, SI
-  CWD
-  AND  DX, BX
-  SUB  SI, DX
+  MOV  ES, DX
+
+
+  MOV  AX, cx
+  MUL  si
+  XCHG AX, cx
   MUL  BX
-  ADD  AX, 01000h
-_selfmodify_restore_dx_10_TWOSIDED:
-   PUBLIC _selfmodify_restore_dx_10_TWOSIDED
-  ADC  SI, DX
-  XCHG AX, CX
-  CWD
-  POP  BX
-  AND  DX, BX
-  SUB  SI, DX
+  MOV  BX, ES
+  ADD  AX, BX
+  SELFMODIFY_set_rw_distance_lo_2_TWOSIDED:
+  mov   bx, 01000h
+  XCHG AX, si
+  ADC  cx, DX
+
   MUL  BX
-  ADD  AX, CX
-  ADC  DX, SI
+  ADD  AX, si
+  ADC  DX, cx
+  pop  si
 
 
+   ; around here whats wrong
 
-ENDIF
+   ;	    texturecolumn = rw_offset-FixedMul(finetangent[angle],rw_distance);
 
-checktexcolumn:
-public checktexcolumn
+   done_with_16bitmul_TWOSIDED:
+   not   bp
+   SUB   AX, bp
+   SBB   DX, bp
+   XOR   AX, bp ; no xor ax necessary if we flip order with add below? may require below values negged
+   XOR   DX, bp
+   ENDIF
 
-; around here whats wrong
-
-;	    texturecolumn = rw_offset-FixedMul(finetangent[angle],rw_distance);
+done_with_finetanmul_TWOSIDED:
 
 ; todo self modify the neg of this in somehow?
 SELFMODIFY_set_cx_rw_offset_lo_TWOSIDED:	
-mov   cx, 01000h
-sub   cx, ax   ; cx is soon clobbered. so we only need AX?
+add   ax, 01000h   ; cx is soon clobbered. so we only need AX?
 SELFMODIFY_set_ax_rw_offset_hi_TWOSIDED:
-mov   ax, 01000h
-sbb   ax, dx
+public SELFMODIFY_set_ax_rw_offset_hi_TWOSIDED
+adc   dx, 01000h
 
-; texturecolumn = ax:cx...  or just ax (whole number)
+; texturecolumn = dx:ax...  or just dx (whole number)
 
 ;	if (rw_scale.h.intbits >= 3) {
 ;		index = MAXLIGHTSCALE - 1;
@@ -8515,7 +8550,8 @@ sbb   ax, dx
 ; CX:BX rw_scale
 
 ; store texturecolumn
-push  ax       ; later popped into dx
+pop   bp  ; todo remove
+push  dx       ; later popped into dx  ; todo remove?
 
 ; CX:AX rw_scale
 ; TODO add directly into les below, and construct this from 8 bit shift.
@@ -8539,6 +8575,10 @@ SELFMODIFY_add_wallights_TWOSIDED:
 ; bx is scalelight
 ; scalelight is pre-shifted 4 to save on the double sal every column.
 
+; todo move into dh with zeroed dl. then into bp, and carry forward instead of selfmodify?
+; maybe push once?
+
+
 mov   bl, byte ptr ss:[bx+01000h]         ; 8a 84 00 10 
 
 xchg  ax, bx  ; cx:bx is proper value again.
@@ -8548,6 +8588,8 @@ xchg  ax, bx  ; cx:bx is proper value again.
 
 mov   byte ptr ds:[SELFMODIFY_BSP_set_xlat_offset_TWOSIDED+2], al
 mov   byte ptr ds:[SELFMODIFY_BSP_set_xlat_offset_bot_TWOSIDED+2], al
+
+; todo move getseghere... but just for seg
 
 
 jmp   light_set_TWOSIDED
