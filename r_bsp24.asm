@@ -5552,9 +5552,6 @@ mov   bh, cl
 ; shift 12
 SHIFT_MACRO shr bx 4
 
-; todo: movsb possible here?
-; tricky due to fixedcolormap??
-; alternatively just add bx's value here to it.
 
 do_light_write:
 SELFMODIFY_add_wallights:
@@ -6172,12 +6169,10 @@ PUBLIC R_StoreWallRangeWithBackSector_
 ; bp - 031h  ; markceiling  ; todo maybe move generation behind rw_scale.
 ; bp - 032h  ; markfloor
 
-; nonpushed, but should be (TODO swap order)
-
 ; bp - 034h  ; pixhigh lo     preshifted 4
 ; bp - 036h  ; pixlow lo      preshifted 4
-; bp - 038h  ; bottomfrac lo  preshifted 4
-; bp - 03Ah  ; topfrac lo     preshifted 4 ; up to here not pushed 
+; bp - 038h  ; topfrac lo     preshifted 4 ; up to here not pushed 
+; bp - 03Ah  ; bottomfrac lo  preshifted 4
 
 
 
@@ -7397,7 +7392,7 @@ jne       jmp_to_skip_pixhigh_step
 cmp       word ptr [bp - 028h], si
 jnbe      do_pixhigh_step
 jmp_to_skip_pixhigh_step:
-push      ax     ;  sub       sp, 2  ; skip pixhigh
+push      ax     ;  sub       sp, 2  ; garbage; skip pixhigh
 jmp skip_pixhigh_step
 
 ALIGN_MACRO
@@ -7555,7 +7550,7 @@ cmp       dx, word ptr [bp - 02Ah]
 jg        do_pixlow_step
 je        continue_worldlow_checks
 mov       al, byte ptr ds:[_maskedtexture_bsp]  ; todo is it necessary to write?
-push      ax     ;  sub       sp, 2  ; skip pixlow
+push      ax     ;  sub       sp, 2  ; garbage; skip pixlow
 jmp       done_with_two_sided_sector_setup
 
 ALIGN_MACRO
@@ -7722,7 +7717,7 @@ done_with_two_sided_sector_setup:
 ; ds is equal to CS
 ; sp should now be bp - 036h
 
-sub       sp, 4  ; bp - 03Ah.  make room for topstep/botstep. TODO swap their order generation, push them
+
 
 
 ; set maskedtexture in rendersegloop
@@ -7929,7 +7924,7 @@ SELFMODIFY_sub__centeryfrac_4_hi_4_TWOSIDED:
 mov       cx, 01000h ; ah known zero. dh too probably?
 sbb       cx, dx
 add       ax, ((HEIGHTUNIT)-1) SHL 4 ; bake this in once, instead of doing it every loop.
-mov       word ptr [bp - 03Ah], ax
+push      ax  ; bp - 038h
 adc       cx, 0
 mov       word ptr ds:[SELFMODIFY_set_topfrac_hi_bottop+1], cx
 ; les to load two words
@@ -7992,7 +7987,7 @@ ENDIF
 
 
 neg       ax
-mov       word ptr [bp - 038h], ax
+push      ax  ; bp - 03Ah
 SELFMODIFY_sub__centeryfrac_4_hi_3_TWOSIDED: ; preincremented by 1 to pass into bp -028h
 mov       ax, 01000h ; ah known zero. dh too probably?
 sbb       ax, dx
@@ -8239,12 +8234,12 @@ jge   exit_rendersegloop_TWOSIDED  ; exit before adding the other loop vars.
 ; ax has rw_x...
 
 SELFMODIFY_add_topstep_lo_TWOSIDED:
-sub   word ptr [bp - 03Ah], 01000h
+sub   word ptr [bp - 038h], 01000h
 SELFMODIFY_add_topstep_hi_TWOSIDED:
 sbb   word ptr ds:[SELFMODIFY_set_topfrac_hi_bottop+1], 01000h
 
 SELFMODIFY_add_botstep_lo_TWOSIDED:
-sub   word ptr [bp - 038h], 01000h
+sub   word ptr [bp - 03Ah], 01000h
 SELFMODIFY_add_botstep_hi_TWOSIDED:
 sbb   word ptr ds:[SELFMODIFY_set_botfrac_hi_bottop+1], 01000h
 
