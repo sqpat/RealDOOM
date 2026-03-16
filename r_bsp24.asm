@@ -216,6 +216,10 @@ _cs_pixhigh:
 dw 0
 _cs_pixlow:
 dw 0
+_cs_topfrac_lo:
+dw 0
+_cs_botfrac_lo:
+dw 0
 
 ; 0AAh
 
@@ -3826,7 +3830,7 @@ jmp       done_adjusting_row_offset
 
 ;R_StoreWallRangeNoBackSector_
 
-STOREWALLRANGE_INNER_STACK_SIZE_BOTTOP = 01Ah
+STOREWALLRANGE_INNER_STACK_SIZE_BOTTOP = 016h
 STOREWALLRANGE_INNER_STACK_SIZE_MID = 012h
 
 ALIGN_MACRO  ; adding these back seems to lower bench scores
@@ -6174,8 +6178,6 @@ PUBLIC R_StoreWallRangeWithBackSector_
 ; bp - 031h  ; markceiling  ; todo maybe move generation behind rw_scale.
 ; bp - 032h  ; markfloor
 
-; bp - 034h  ; topfrac lo     preshifted 4 ; up to here not pushed 
-; bp - 036h  ; bottomfrac lo  preshifted 4
 
 
 
@@ -6544,8 +6546,8 @@ finish_midtex_selfmodify_TWOSIDED:
 
 
   ; this can be done once per line as BP will not change.
-   mov   word ptr ds:[SELFMODIFY_restore_bp_after_draw_top+1], bp
-   mov   word ptr ds:[SELFMODIFY_restore_bp_after_draw_bot+1], bp
+   mov   word ptr ds:[SELFMODIFY_restore_bp_after_draw_topbot+1], bp
+
 
 
    mov   byte ptr ds:[SELFMODIFY_skip_curseg_based_selfmodify_topbot], 0E9h  ; jmp here next run...
@@ -7926,7 +7928,7 @@ SELFMODIFY_sub__centeryfrac_4_hi_4_TWOSIDED:
 mov       cx, 01000h ; ah known zero. dh too probably?
 sbb       cx, dx
 add       ax, ((HEIGHTUNIT)-1) SHL 4 ; bake this in once, instead of doing it every loop.
-push      ax  ; bp - 034h
+mov       word ptr ds:[_cs_topfrac_lo], ax
 adc       cx, 0
 mov       word ptr ds:[SELFMODIFY_set_topfrac_hi_bottop+1], cx
 ; les to load two words
@@ -7989,7 +7991,8 @@ ENDIF
 
 
 neg       ax
-push      ax  ; bp - 036h
+mov       word ptr ds:[_cs_botfrac_lo], ax
+
 SELFMODIFY_sub__centeryfrac_4_hi_3_TWOSIDED: ; preincremented by 1 to pass into bp -028h
 mov       ax, 01000h ; ah known zero. dh too probably?
 sbb       ax, dx
@@ -8087,7 +8090,7 @@ ENDIF
 ; dx:ax are topstep
 
 
-mov       word ptr ds:[SELFMODIFY_add_topstep_lo_TWOSIDED+3], ax
+mov       word ptr ds:[SELFMODIFY_add_topstep_lo_TWOSIDED+4], ax
 mov       word ptr ds:[SELFMODIFY_add_topstep_hi_TWOSIDED+4], dx
 
 
@@ -8146,7 +8149,7 @@ ENDIF
 
 
 
-mov       word ptr ds:[SELFMODIFY_add_botstep_lo_TWOSIDED+3], ax
+mov       word ptr ds:[SELFMODIFY_add_botstep_lo_TWOSIDED+4], ax
 mov       word ptr ds:[SELFMODIFY_add_botstep_hi_TWOSIDED+4], dx
 
 
@@ -8236,11 +8239,11 @@ mov   ds, ax
 ; di has rw_x...
 
 SELFMODIFY_add_topstep_lo_TWOSIDED:
-sub   word ptr [bp - 034h], 01000h
+sub   word ptr ds:[_cs_topfrac_lo], 01000h
 SELFMODIFY_add_topstep_hi_TWOSIDED:
 sbb   word ptr ds:[SELFMODIFY_set_topfrac_hi_bottop+1], 01000h
 SELFMODIFY_add_botstep_lo_TWOSIDED:
-sub   word ptr [bp - 036h], 01000h
+sub   word ptr ds:[_cs_botfrac_lo], 01000h
 SELFMODIFY_add_botstep_hi_TWOSIDED:
 sbb   word ptr ds:[SELFMODIFY_set_botfrac_hi_bottop+1], 01000h
 SELFMODIFY_add_rwscale_lo_TWOSIDED:
@@ -8420,7 +8423,6 @@ seg_is_textured_TWOSIDED:
 mov   ax, XTOVIEWANGLE_SEGMENT
 mov   es, ax
 
-push  bp  ; todo remove
 mov   bx, di
 
 
@@ -8566,11 +8568,10 @@ adc   dx, 01000h
 ; CX:BX rw_scale
 
 ; store texturecolumn
-pop   bp  ; todo remove
+
 push  dx       ; later popped into dx  ; todo remove?
 
 ; CX:AX rw_scale
-; TODO add directly into les below, and construct this from 8 bit shift.
 SELFMODIFY_set_rwscale_lo_bottop:
 mov   ax, 01000h 
 SELFMODIFY_set_rwscale_hi_bottop:
@@ -9257,8 +9258,6 @@ pop   dx  ; textuecolumn
 pop   di      ; todo whats this again. something for floorclip? yl-1?
 
 
-SELFMODIFY_restore_bp_after_draw_top:
-mov   bp, 01000h
 
 ; bx is currently rw_x.
 
@@ -9421,8 +9420,6 @@ public SELFMODIFY_BSP_R_DrawColumnPrep_ret_bot
 
 
 pop   bx ; restore dc_x
-SELFMODIFY_restore_bp_after_draw_bot:
-mov   bp, 01000h
 
 
 
@@ -9486,11 +9483,7 @@ xchg  ax, dx  ; put texturecol in ax
 sub   al, byte ptr ss:[2 + _segloopcachedbasecol]
 mul   byte ptr ss:[1 + _segloopheightvalcache]
 jmp   add_base_segment_and_draw1
-ALIGN_MACRO
-
 ;END INLINED R_GetSourceSegment1_ AGAIN
-
-
 
 
 
@@ -9499,7 +9492,10 @@ ALIGN_MACRO
 R_RenderSegLoop_exit_TWOSIDED:
    
 ; enter with ds = ss:
-; enter with bp restored
+; bp restore:
+
+SELFMODIFY_restore_bp_after_draw_topbot:
+mov   bp, 01000h
 
 
 ; clean up the self modified code of renderseg loop. 
@@ -9509,6 +9505,7 @@ mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1_TWOSIDED], ((SELFMODIFY_
 
 
 check_spr_top_clip_TWOSIDED:
+; note: we can jump  intot his exit path from far away!!
 ; todo ds as cs?
 mov       bx, cs
 mov       ds, bx
