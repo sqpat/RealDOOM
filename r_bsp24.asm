@@ -4945,8 +4945,6 @@ mov       word ptr ds:[_floorplaneindex], ax
 
 done_marking_floor:
 
-cmp       word ptr [bp - 022h], 0
-jnge      jump_to_R_RenderSegLoop_exit
 
 at_least_one_column_to_draw:
 
@@ -8017,14 +8015,7 @@ mov       byte ptr ds:[SELFMODIFY_setisceil + 1], 0
 call      R_CheckPlane_ ; enters and exits with ds as cs
 mov       word ptr ds:[_floorplaneindex], ax
 dont_mark_floor_TWOSIDED:
-cmp       word ptr [bp - 022h], 0
-jge       at_least_one_column_to_draw_TWOSIDED
-; todo this?
-lea       sp, [bp - 6] ; pops not done yet, bp still correct
-jmp       check_spr_top_clip_TWOSIDED
-ALIGN_MACRO
-at_least_one_column_to_draw_TWOSIDED:
-public at_least_one_column_to_draw_TWOSIDED
+
 ASSUME DS:R_BSP_24_TEXT
 ; make ds equal to cs for self modifying codes
 
