@@ -8355,7 +8355,7 @@ mov   ax, cx
 dec   ax
 skip_yh_floorclip_TWOSIDED:
 push  ax   ; todo remove
-;mov   bp, dx  ; store yl
+mov   bp, dx  ; store yl
 sub   dx, ax   ; yl - yh. technically we want to know if (yh - yl) is positive then we take (200 - (yh - yl)
 
 
@@ -8501,7 +8501,6 @@ ELSE
 
 do_32_bit_finetan_mul_TWOSIDED:
 
-  push  si     ; this path pushes si... 
   mov   si, es
 
   MUL  BX
@@ -8522,7 +8521,6 @@ do_32_bit_finetan_mul_TWOSIDED:
   MUL  BX
   ADD  AX, si
   ADC  DX, cx
-  pop  si
 
 
    ; around here whats wrong
@@ -8950,11 +8948,11 @@ record_masked_TWOSIDED:
 ;	maskedtexturecol[rw_x] = texturecolumn;
 ;}
 
-xchg  ax, si  ; back up si
+
 les   si, dword ptr ds:[_maskedtexturecol_bsp]
 add   si, bx  ; bx byte ptr
 mov   word ptr es:[bx+si], dx  ; add bx again, word ptr
-xchg  ax, si  ; restore si
+
 jmp   finished_recording_masked
 
 ALIGN_MACRO
