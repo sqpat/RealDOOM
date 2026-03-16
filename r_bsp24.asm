@@ -3830,7 +3830,7 @@ jmp       done_adjusting_row_offset
 
 ;R_StoreWallRangeNoBackSector_
 
-STOREWALLRANGE_INNER_STACK_SIZE_BOTTOP = 016h
+STOREWALLRANGE_INNER_STACK_SIZE_BOTTOP = 08h
 STOREWALLRANGE_INNER_STACK_SIZE_MID = 02h
 
 ALIGN_MACRO  ; adding these back seems to lower bench scores
@@ -5441,6 +5441,7 @@ ENDIF
 ALIGN_MACRO
 jump_to_mid_no_pixels_to_draw:
 jmp   increment_loop_values  ; restore bp here
+ALIGN_MACRO
 
 
 
@@ -6170,18 +6171,18 @@ PUBLIC R_StoreWallRangeWithBackSector_
 
 ; pushed stuff
 ; bp - 022h  ; stop - start   ; last pushed thing. todo push others.
-; bp - 024h  ; base4diff
+; bp - 024h  ; base4diff  ; todo unused
 
-; bp - 026h  ; worldtop hi
-; bp - 028h  ; worldtop lo
-; bp - 02Ah  ; worldbottom hi
-; bp - 02Ch  ; worldbottom lo   ; on return, add 034h to sp, set bp to sp.
+; bp - 026h  ; worldtop hi , then unpopped
+; bp - 028h  ; worldtop lo , then unpopped
+; bp - 02Ah  ; worldbottom hi , then unpopped
+; bp - 02Ch  ; worldbottom lo , then unpopped
 
-; bp - 02Eh  ; rw_scale hi ORIGINAL
-; bp - 030h  ; rw_scale lo ORIGINAL          ; todo swap order this and above with  everything below this
-
-; bp - 031h  ; markceiling  ; todo maybe move generation behind rw_scale.
-; bp - 032h  ; markfloor
+; bp - 02Eh  ; rw_scale hi , then unpopped
+; bp - 030h  ; rw_scale lo , then unpopped
+; todo revisit order
+; bp - 031h  ; markceiling, then unpopped
+; bp - 032h  ; markfloor, then unpopped
 
 
 
@@ -8002,6 +8003,7 @@ SELFMODIFY_sub__centeryfrac_4_hi_3_TWOSIDED: ; preincremented by 1 to pass into 
 mov       ax, 01000h ; ah known zero. dh too probably?
 sbb       ax, dx
 
+; todo dont calculate this if we do no columns to draw below.
 
 mov       word ptr ds:[SELFMODIFY_set_botfrac_hi_bottop+1], ax
 
@@ -8019,6 +8021,8 @@ call      R_CheckPlane_ ; enters and exits with ds as cs
 mov       word ptr ds:[_ceilingplaneindex], ax
 dont_mark_ceiling_TWOSIDED:
 
+; todo pop markfloor into bp maybe? to reuse
+
 cmp       byte ptr [bp - 032h], 0 ; markfloor
 je        dont_mark_floor_TWOSIDED ; todo which default braunch?
 
@@ -8033,6 +8037,8 @@ mov       word ptr ds:[_floorplaneindex], ax
 dont_mark_floor_TWOSIDED:
 cmp       word ptr [bp - 022h], 0
 jge       at_least_one_column_to_draw_TWOSIDED
+; todo this?
+lea       sp, [bp - STOREWALLRANGE_INNER_STACK_SIZE_BOTTOP]
 jmp       check_spr_top_clip_TWOSIDED
 ALIGN_MACRO
 at_least_one_column_to_draw_TWOSIDED:
@@ -8041,68 +8047,26 @@ ASSUME DS:R_BSP_24_TEXT
 ; make ds equal to cs for self modifying codes
 
 
+xor   bx, bx
+; last use, can be popped?
+pop   dx ; bp - 032h
+; todo move this up?
+pop   word ptr ds:[SELFMODIFY_set_rwscale_lo_bottop+1] ; bp - 030h
+pop   word ptr ds:[SELFMODIFY_set_rwscale_hi_bottop+1] ; bp - 02Eh
 
-SELFMODIFY_get_rwscalestep_lo_1_TWOSIDED:
-mov       ax, 01000h
-SELFMODIFY_get_rwscalestep_hi_1_TWOSIDED:
-mov       dx, 01000h
-les       bx, dword ptr [bp - 028h]
-mov       cx, es
+mov   bl, dl
+les   ax, dword ptr ds:[bx+_selfmodify_lookup_markfloor]
+mov   word ptr ds:[SELFMODIFY_BSP_markfloor_1_TWOSIDED], ax
+mov   word ptr ds:[SELFMODIFY_BSP_markfloor_2_TWOSIDED], es
 
-;start inlined FixedMulBSPLocal_
-
-
-IF COMPISA GE COMPILE_386
-
-   shl  ecx, 16
-   mov  cx, bx
-   xchg ax, dx
-   shl  eax, 16
-   xchg ax, dx
-   imul  ecx
-   shr  eax, 16
+mov   bl, dh ; retrieve high byte
+les   bx, dword ptr ds:[bx+_selfmodify_lookup_markceiling]
+mov   word ptr ds:[SELFMODIFY_BSP_markceiling_1_TWOSIDED], bx
+mov   word ptr ds:[SELFMODIFY_BSP_markceiling_2_TWOSIDED], es
 
 
-
-ELSE
-
-   MOV  SI, DX
-   MOV  ES, AX
-   MUL  BX
-   MOV  DI, DX
-   MOV  AX, SI
-   MUL  CX
-   XCHG AX, SI
-   CWD
-   AND  DX, BX
-   SUB  SI, DX
-   MUL  BX
-   ADD  AX, DI
-   ADC  SI, DX
-   XCHG AX, CX
-   CWD
-   MOV  BX, ES
-   AND  DX, BX
-   SUB  SI, DX
-   MUL  BX
-   ADD  AX, CX
-   ADC  DX, SI
-
-ENDIF
-
-;end inlined FixedMulBSPLocal_
-
-; dx:ax are topstep
-
-
-mov       word ptr ds:[SELFMODIFY_add_topstep_lo_TWOSIDED+4], ax
-mov       word ptr ds:[SELFMODIFY_add_topstep_hi_TWOSIDED+4], dx
-
-
-
-
-les       bx, dword ptr [bp - 02Ch]
-mov       cx, es
+pop       bx ; bp - 02Ch
+pop       cx ; bp - 02Ah
 SELFMODIFY_get_rwscalestep_lo_2_TWOSIDED:
 mov       ax, 01000h
 SELFMODIFY_get_rwscalestep_hi_2_TWOSIDED:
@@ -8158,6 +8122,68 @@ mov       word ptr ds:[SELFMODIFY_add_botstep_lo_TWOSIDED+4], ax
 mov       word ptr ds:[SELFMODIFY_add_botstep_hi_TWOSIDED+4], dx
 
 
+SELFMODIFY_get_rwscalestep_lo_1_TWOSIDED:
+mov       ax, 01000h
+SELFMODIFY_get_rwscalestep_hi_1_TWOSIDED:
+mov       dx, 01000h
+pop       bx ; bp - 028h
+pop       cx ; bp - 026h
+
+;start inlined FixedMulBSPLocal_
+
+
+IF COMPISA GE COMPILE_386
+
+   shl  ecx, 16
+   mov  cx, bx
+   xchg ax, dx
+   shl  eax, 16
+   xchg ax, dx
+   imul  ecx
+   shr  eax, 16
+
+
+
+ELSE
+
+   MOV  SI, DX
+   MOV  ES, AX
+   MUL  BX
+   MOV  DI, DX
+   MOV  AX, SI
+   MUL  CX
+   XCHG AX, SI
+   CWD
+   AND  DX, BX
+   SUB  SI, DX
+   MUL  BX
+   ADD  AX, DI
+   ADC  SI, DX
+   XCHG AX, CX
+   CWD
+   MOV  BX, ES
+   AND  DX, BX
+   SUB  SI, DX
+   MUL  BX
+   ADD  AX, CX
+   ADC  DX, SI
+
+ENDIF
+
+;end inlined FixedMulBSPLocal_
+
+; dx:ax are topstep
+
+
+mov       word ptr ds:[SELFMODIFY_add_topstep_lo_TWOSIDED+4], ax
+mov       word ptr ds:[SELFMODIFY_add_topstep_hi_TWOSIDED+4], dx
+
+
+
+
+
+
+
 
 ;   BEGIN INLINED R_RenderSegLoop_TWOSIDED_
 ;   BEGIN INLINED R_RenderSegLoop_TWOSIDED_
@@ -8170,26 +8196,11 @@ public R_RenderSegLoop_TWOSIDED_
 ; made it here
 
 
-xor   bx, bx
-; last use, can be popped?
-mov   dx, word ptr [bp - 032h] ; todo selfmodify?
-mov   bl, dl
-les   ax, dword ptr ds:[bx+_selfmodify_lookup_markfloor]
-mov   word ptr ds:[SELFMODIFY_BSP_markfloor_1_TWOSIDED], ax
-mov   word ptr ds:[SELFMODIFY_BSP_markfloor_2_TWOSIDED], es
-
-mov   bl, dh ; retrieve high byte
-les   bx, dword ptr ds:[bx+_selfmodify_lookup_markceiling]
-mov   word ptr ds:[SELFMODIFY_BSP_markceiling_1_TWOSIDED], bx
-mov   word ptr ds:[SELFMODIFY_BSP_markceiling_2_TWOSIDED], es
 
 
 ; todo set up cs vars here  properly.
 
 mov   di, word ptr [bp - 01Eh]  ; startx
-les   ax, dword ptr [bp - 030h]  ; todo do earlier
-mov   word ptr ds:[SELFMODIFY_set_rwscale_lo_bottop+1], ax
-mov   word ptr ds:[SELFMODIFY_set_rwscale_hi_bottop+1], es
  
 
 
@@ -9510,7 +9521,9 @@ mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1_TWOSIDED], ((SELFMODIFY_
 
 
 check_spr_top_clip_TWOSIDED:
+
 ; note: we can jump  intot his exit path from far away!!
+
 ; todo ds as cs?
 mov       bx, cs
 mov       ds, bx
