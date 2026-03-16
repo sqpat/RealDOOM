@@ -3831,7 +3831,7 @@ jmp       done_adjusting_row_offset
 ;R_StoreWallRangeNoBackSector_
 
 STOREWALLRANGE_INNER_STACK_SIZE_BOTTOP = 016h
-STOREWALLRANGE_INNER_STACK_SIZE_MID = 012h
+STOREWALLRANGE_INNER_STACK_SIZE_MID = 02h
 
 ALIGN_MACRO  ; adding these back seems to lower bench scores
 PROC   R_StoreWallRangeNoBackSector_ NEAR ; needs another look and reconciliation with outer stack frames.
@@ -3872,26 +3872,26 @@ PUBLIC R_StoreWallRangeNoBackSector_
 ; bp - 01Ah  ; unused pushed reg precall
 ; bp - 01Ch  ; unused pushed reg precall
 ; bp - 01Ch  ; return address from R_StoreWallRange_
-; bp - 01Eh  ; ax arg (no need to pop)
-; bp - 020h  ; dx arg (no need to pop)
+; bp - 01Eh  ; dx arg (no need to pop), then unpopped
+; bp - 020h  ; ax arg (no need to pop), then unpopped
 
 ; pushed stuff
-; bp - 022h  ; stop - start
+; bp - 022h  ; stop - start, then unpopped
 
 
-; bp - 024h  ; worldtop hi
-; bp - 026h  ; worldtop lo
-; bp - 028h  ; worldbottom hi
-; bp - 02Ah  ; worldbottom lo  
+; bp - 024h  ; worldtop hi, then unpopped
+; bp - 026h  ; worldtop lo, then unpopped
+; bp - 028h  ; worldbottom hi, then unpopped
+; bp - 02Ah  ; worldbottom lo, then unpopped
 
-; bp - 02Ch  ; rw_scale hi , then topfrac lo     preshifted 4
-; bp - 02Eh  ; rw_scale lo , then bottomfrac lo  preshifted 4
-
-
+; bp - 02Ch  ; rw_scale hi, then unpopped
+; bp - 02Eh  ; rw_scale lo, then unpopped
 
 
-push      ax ; bp - 01Eh
-push      dx ; bp - 020h
+
+
+push      dx ; bp - 01Eh
+push      ax ; bp - 020h
 
 sub       dx, ax
 push      dx ; bp - 022h   stop - start. used often. ; todo: maybe we get this for free elsewhere without this sub?
@@ -4272,11 +4272,11 @@ mov       ax, word ptr [bp + 4]  ; R_AddLine line num
 stosw              ; DRAWSEG_T.drawseg_cursegvalue
 
 
-mov       ax, word ptr [bp - 01Eh]  ; x1 arg
+mov       ax, word ptr [bp - 020h]  ; x1 arg
 
 stosw                            ; DRAWSEG_T.drawseg_x1
-xchg      ax, bx                 ; bx gets bp - 01Eh
-mov       ax, word ptr [bp - 020h]  ; x2 arg
+xchg      ax, bx                 ; bx gets bp - 020h
+mov       ax, word ptr [bp - 01Eh]  ; x2 arg
 stosw                            ; DRAWSEG_T.drawseg_x2
 
 inc       ax
@@ -4362,8 +4362,8 @@ stosw             ; DRAWSEG_T.drawseg_scale1
 xchg      ax, dx
 stosw             ; DRAWSEG_T.drawseg_scale2
 xchg      ax, dx                       ; put DX back; need it later.
-mov       si, word ptr [bp - 020h]
-cmp       si, word ptr [bp - 01Eh]
+mov       si, word ptr [bp - 01Eh]
+cmp       si, word ptr [bp - 020h]
 
 jg        stop_greater_than_start
 
@@ -4803,15 +4803,16 @@ add       ax, ((HEIGHTUNIT)-1) SHL 4 ; bake this in once, instead of doing it ev
 adc       cx, 0
 
 mov       word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], cx
+mov       word ptr ds:[_cs_topfrac_lo+1], ax
 
 
-pop       bx ; bp - 02Eh
-pop       cx ; bp - 02Ch
 
-mov       word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], bx  ; bp - 02Eh
-mov       word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], cx  ; bp - 02Ch
+pop       ax ; bp - 02Eh
+pop       dx ; bp - 02Ch
 
-push      ax ; bp - 02Ch
+mov       word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], ax
+mov       word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], dx
+
 
 
 
@@ -4821,8 +4822,8 @@ push      ax ; bp - 02Ch
 
 IF COMPISA GE COMPILE_386
 
-   les       ax, dword ptr [bp - 02Ah]
-   mov       dx, es
+   les       bx, dword ptr [bp - 02Ah]
+   mov       cx, es
 
    shl  ecx, 16
    mov  cx, bx
@@ -4837,8 +4838,8 @@ IF COMPISA GE COMPILE_386
 ELSE
 ; si not preserved
 
-   les       ax, dword ptr [bp - 02Ah]
-   mov       dx, es
+   les       bx, dword ptr [bp - 02Ah]
+   mov       cx, es
 
    MOV  SI, DX
    MOV  ES, AX ; todo synergy
@@ -4869,7 +4870,8 @@ ENDIF
 ; ds is still cs
 
 neg       ax
-push      ax ; bp - 02Eh
+mov       word ptr ds:[_cs_botfrac_lo], ax
+
 
 SELFMODIFY_sub__centeryfrac_4_hi_3: ; preincremented by 1
 mov       ax, 01000h ; ah known zero. dh too probably?
@@ -4889,8 +4891,8 @@ do_mark_ceiling:
 ; markceiling = true
 
 mov       ax, word ptr ds:[_ceilingplaneindex]
-les       cx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
-mov       dx, es
+les       dx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
+mov       cx, es
 les       bx, dword ptr ds:[_ceiltop]
 
 mov       byte ptr ds:[SELFMODIFY_setisceil + 1], 1
@@ -4930,8 +4932,8 @@ do_mark_floor:
 ; markfloor = true
 mov       ax, word ptr ds:[_floorplaneindex]
 
-les       cx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
-mov       dx, es
+les       dx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
+mov       cx, es
 les       bx, dword ptr ds:[_floortop]
 
 mov       byte ptr ds:[SELFMODIFY_setisceil + 1], 0
@@ -4950,70 +4952,9 @@ ASSUME DS:R_BSP_24_TEXT
 ; make ds equal to cs for self modifying codes
 
 
+pop       bx ; bp - 02Ah
+pop       cx ; bp - 028h
 
-SELFMODIFY_get_rwscalestep_lo_1:
-mov       ax, 01000h
-les       bx, dword ptr [bp - 026h]
-mov       cx, es
-
-;start inlined FixedMulBSPLocal_
-
-
-IF COMPISA GE COMPILE_386
-   SELFMODIFY_get_rwscalestep_hi_1:
-   mov       dx, 01000h
-
-   shl  ecx, 16
-   mov  cx, bx
-   xchg ax, dx
-   shl  eax, 16
-   xchg ax, dx
-   imul  ecx
-   shr  eax, 16
-
-
-
-ELSE
-   SELFMODIFY_get_rwscalestep_hi_1:
-   mov  si, 01000h
-
-   MOV  ES, AX
-   MUL  BX
-   MOV  DI, DX
-   MOV  AX, SI
-   MUL  CX
-   XCHG AX, SI
-   CWD
-   AND  DX, BX
-   SUB  SI, DX
-   MUL  BX
-   ADD  AX, DI
-   ADC  SI, DX
-   XCHG AX, CX
-   CWD
-   MOV  BX, ES
-   AND  DX, BX
-   SUB  SI, DX
-   MUL  BX
-   ADD  AX, CX
-   ADC  DX, SI
-
-ENDIF
-
-;end inlined FixedMulBSPLocal_
-
-; dx:ax are negative topstep. instead of adding the neg we sub.
-
-
-
-; todo can this modify a sub and skip the neg above?
-
-mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_2+4], dx
-mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_2+3], ax
-
-
-les       bx, dword ptr [bp - 02Ah]
-mov       cx, es
 SELFMODIFY_get_rwscalestep_lo_2:
 mov       ax, 01000h
 
@@ -5068,7 +5009,73 @@ ENDIF
 
 
 mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_2+4], dx
-mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_2+3], ax
+mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_2+4], ax
+
+
+; todo reverse these orders, so bp - 026h may be popped
+
+SELFMODIFY_get_rwscalestep_lo_1:
+mov       ax, 01000h
+pop       bx ; bp - 026h
+pop       cx ; bp - 024h
+
+;start inlined FixedMulBSPLocal_
+
+
+IF COMPISA GE COMPILE_386
+   SELFMODIFY_get_rwscalestep_hi_1:
+   mov       dx, 01000h
+
+   shl  ecx, 16
+   mov  cx, bx
+   xchg ax, dx
+   shl  eax, 16
+   xchg ax, dx
+   imul  ecx
+   shr  eax, 16
+
+
+
+ELSE
+   SELFMODIFY_get_rwscalestep_hi_1:
+   mov  si, 01000h
+
+   MOV  ES, AX
+   MUL  BX
+   MOV  DI, DX
+   MOV  AX, SI
+   MUL  CX
+   XCHG AX, SI
+   CWD
+   AND  DX, BX
+   SUB  SI, DX
+   MUL  BX
+   ADD  AX, DI
+   ADC  SI, DX
+   XCHG AX, CX
+   CWD
+   MOV  BX, ES
+   AND  DX, BX
+   SUB  SI, DX
+   MUL  BX
+   ADD  AX, CX
+   ADC  DX, SI
+
+ENDIF
+
+;end inlined FixedMulBSPLocal_
+
+; dx:ax are negative topstep. instead of adding the neg we sub.
+
+
+
+; todo can this modify a sub and skip the neg above?
+
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_2+4], dx
+mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_2+4], ax
+
+
+
 
 
 
@@ -5090,7 +5097,7 @@ PUBLIC R_RenderSegLoop_
 
 
 
-mov   di, word ptr [bp - 01Eh]  ; get start_x/dc_x initial value
+mov   di, word ptr [bp - 020h]  ; get start_x/dc_x initial value
 
 jmp   start_per_column_inner_loop ; jump into first iter.
 
@@ -5130,8 +5137,6 @@ pop   di  ; rw_x  always want this back
 increment_loop_values:       ; ; todo this seems to be rare. maybe does not need to be in a code hot spot and can be far jumped to
 public increment_loop_values
 
-SELFMODIFY_restore_bp_after_draw_mid:
-mov   bp, 01000h
 
 ;		rw_x = rw_x_base4 + xoffset;
 ;		if (rw_x < start_rw_x){
@@ -5152,11 +5157,11 @@ jge   exit_rendersegloop
 
 ; todo (eventually) make sure all the selfmodify addresses are word aligned!
 SELFMODIFY_add_to_bottomfrac_lo_2:
-sub   word ptr [bp - 02Eh], 01000h
+sub   word ptr ds:[_cs_botfrac_lo], 01000h
 SELFMODIFY_add_to_bottomfrac_hi_2:
 sbb   word ptr ds:[SELFMODIFY_set_botfrac_hi_mid+1], 01000h
 SELFMODIFY_add_to_topfrac_lo_2:
-sub   word ptr [bp - 02Ch], 01000h
+sub   word ptr ds:[_cs_topfrac_lo], 01000h
 SELFMODIFY_add_to_topfrac_hi_2:
 sbb   word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], 01000h
 SELFMODIFY_add_to_rwscale_lo_2:
@@ -5217,7 +5222,7 @@ inc   si
 
 
 SELFMODIFY_set_topfrac_hi_mid:
-mov   ax, 01000h  ; bp - 032h being updated into here
+mov   ax, 01000h
 
 
 cmp   ax, si  ; ax can be negative even if si is not? but maybe ah is always ff?
@@ -5693,7 +5698,8 @@ ALIGN_MACRO
 
 R_RenderSegLoop_exit:
 
-; todo make sure bp is restored here
+SELFMODIFY_restore_bp_after_draw_mid:
+mov   bp, 01000h
 
 mov   ax, cs
 mov   es, ax
@@ -5701,8 +5707,8 @@ mov   ds, ax
 
 ; ds is cs.
 
-mov   si, word ptr [bp - 01Eh]  ; startx
-mov   dx, word ptr [bp - 022h]  ; stopx - startx
+pop   dx  ; mov   dx, word ptr [bp - 022h]  ; stopx - startx
+pop   si  ; mov   si, word ptr [bp - 020h]  ; startx
 
 
 SELFMODIFY_toggle_skip_ceilingclip_mid:
@@ -5757,8 +5763,7 @@ add       word ptr ds:[_ds_p_bsp], (SIZE DRAWSEG_T)
 mov       ax, ss
 mov       ds, ax
 
-; todo is LEA SP, bp - xx safer??
-add       sp, STOREWALLRANGE_INNER_STACK_SIZE_MID     ; add back fixed SP
+pop       ax ;   faster than add sp, 2 ? add       sp, STOREWALLRANGE_INNER_STACK_SIZE_MID     ; add back fixed SP
 SELFMODIFY_mark_planes_dirty:
 public SELFMODIFY_mark_planes_dirty 
 db  0B8h, 00h, 00h   ;mov ax, 0  ; modify the first byte with bit flags . 00 for ah.
@@ -8166,7 +8171,7 @@ public R_RenderSegLoop_TWOSIDED_
 
 
 xor   bx, bx
-
+; last use, can be popped?
 mov   dx, word ptr [bp - 032h] ; todo selfmodify?
 mov   bl, dl
 les   ax, dword ptr ds:[bx+_selfmodify_lookup_markfloor]
@@ -8182,7 +8187,7 @@ mov   word ptr ds:[SELFMODIFY_BSP_markceiling_2_TWOSIDED], es
 ; todo set up cs vars here  properly.
 
 mov   di, word ptr [bp - 01Eh]  ; startx
-les   ax, dword ptr [bp - 030h]
+les   ax, dword ptr [bp - 030h]  ; todo do earlier
 mov   word ptr ds:[SELFMODIFY_set_rwscale_lo_bottop+1], ax
 mov   word ptr ds:[SELFMODIFY_set_rwscale_hi_bottop+1], es
  
