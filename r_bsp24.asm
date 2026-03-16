@@ -9036,8 +9036,51 @@ cmp   di, si
 jnle  dont_mark_ceiling_ax_TWOSIDED  ; skip drawing ceiling.
 jmp   SHORT mark_ceiling_ax_TWOSIDED
 
+ALIGN_MACRO
+
+SELFMODIFY_BSP_toptexture_TARGET:
+public SELFMODIFY_BSP_toptexture_TARGET
+no_top_texture_draw_TWOSIDED:
+; ds = cs here.
+; bx is already rw_x
+SELFMODIFY_BSP_markceiling_2_TWOSIDED:
+jmp SHORT   check_bottom_texture_TWOSIDED
+SELFMODIFY_BSP_markceiling_2_AFTER_TWOSIDED:
+
+mark_ceiling_si_TWOSIDED:
+; this value comes out bad for al. sometimes.
+lea   ax, [si - 1]
+mov   byte ptr ds:[bx + OFFSET_CEILINGCLIP], al ; bx is already rw_x
+jmp   SHORT check_bottom_texture_TWOSIDED
+ALIGN_MACRO
+
 jump_to_mark_ceiling_si_TWOSIDED:
 jmp   SHORT mark_ceiling_si_TWOSIDED
+ALIGN_MACRO
+
+SELFMODIFY_BSP_markfloor_2_TARGET_TWOSIDED:
+done_marking_floor_TWOSIDED:
+jmp   finished_inner_loop_iter_TWOSIDED
+
+
+
+ALIGN_MACRO
+SELFMODIFY_BSP_bottexture_TARGET:
+no_bottom_texture_draw_TWOSIDED:
+SELFMODIFY_BSP_markfloor_2_TWOSIDED:
+;je    done_marking_floor_TWOSIDED
+SELFMODIFY_BSP_markfloor_2_AFTER_TWOSIDED = SELFMODIFY_BSP_markfloor_2_TWOSIDED+2
+
+mark_floor_di:
+public mark_floor_di
+
+; got here but ds was not cs
+   ;floorclip[rw_x] = yh + 1;
+xchg  ax, di   ; di seems safe to clobber? because bx = dc_x and its replaced?
+inc   ax
+mov   byte ptr ds:[bx+OFFSET_FLOORCLIP], al
+jmp   finished_inner_loop_iter_TWOSIDED
+
 ALIGN_MACRO
 dont_mark_ceiling_ax_TWOSIDED:
 xchg   ax, di  ; todo maybe this xchg doesnt need to be here; swap above register logic.
@@ -9180,60 +9223,6 @@ pop   bx  ; rw_x  always want this back
 
 
 ; this runs as a jmp for a top call, otherwise NOP for mid call
-
-jmp   SHORT R_GetSourceSegment0_DONE_TOP
-
-ALIGN_MACRO
-
-SELFMODIFY_BSP_toptexture_TARGET:
-public SELFMODIFY_BSP_toptexture_TARGET
-no_top_texture_draw_TWOSIDED:
-; ds = cs here.
-; bx is already rw_x
-SELFMODIFY_BSP_markceiling_2_TWOSIDED:
-jmp SHORT   check_bottom_texture_TWOSIDED
-SELFMODIFY_BSP_markceiling_2_AFTER_TWOSIDED:
-
-
-mark_ceiling_si_TWOSIDED:
-; this value comes out bad for al. sometimes.
-lea   ax, [si - 1]
-mov   byte ptr ds:[bx + OFFSET_CEILINGCLIP], al ; bx is already rw_x
-jmp   SHORT check_bottom_texture_TWOSIDED
-ALIGN_MACRO
-
-
-
-
-done_marking_floor_ax_TWOSIDED:
-public done_marking_floor_ax_TWOSIDED
-SELFMODIFY_BSP_markfloor_2_TARGET_TWOSIDED:
-done_marking_floor_TWOSIDED:
-jmp   finished_inner_loop_iter_TWOSIDED
-
-
-ALIGN_MACRO
-SELFMODIFY_BSP_bottexture_TARGET:
-no_bottom_texture_draw_TWOSIDED:
-SELFMODIFY_BSP_markfloor_2_TWOSIDED:
-;je    done_marking_floor_TWOSIDED
-SELFMODIFY_BSP_markfloor_2_AFTER_TWOSIDED = SELFMODIFY_BSP_markfloor_2_TWOSIDED+2
-
-mark_floor_di:
-public mark_floor_di
-
-; got here but ds was not cs
-   ;floorclip[rw_x] = yh + 1;
-xchg  ax, di   ; di seems safe to clobber? because bx = dc_x and its replaced?
-inc   ax
-mov   byte ptr ds:[bx+OFFSET_FLOORCLIP], al
-jmp   finished_inner_loop_iter_TWOSIDED
-
-
-
-
-ALIGN_MACRO
-
 R_GetSourceSegment0_DONE_TOP:
 public R_GetSourceSegment0_DONE_TOP
 
@@ -9414,6 +9403,8 @@ pop   bx ; restore dc_x
 
 ;END INLINED R_GetSourceSegment1_
 
+done_marking_floor_ax_TWOSIDED:
+public done_marking_floor_ax_TWOSIDED
 
 jmp   finished_inner_loop_iter_TWOSIDED
 ALIGN_MACRO
