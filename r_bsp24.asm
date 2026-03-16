@@ -2959,12 +2959,14 @@ ret
 
 ENDP
 
+ALIGN_MACRO
+PROC R_CheckPlaneSetCeil_ NEAR
 
-
+mov       byte ptr ds:[SELFMODIFY_setisceil + 1], 1
 
 ;R_CheckPlane_
 
-ALIGN_MACRO
+
 PROC R_CheckPlane_ NEAR ; needs another look 
 
 ; ax: index
@@ -4895,8 +4897,8 @@ les       dx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
 mov       cx, es
 les       bx, dword ptr ds:[_ceiltop]
 
-mov       byte ptr ds:[SELFMODIFY_setisceil + 1], 1
-call      R_CheckPlane_ ; enters and exits with ds as cs
+
+call      R_CheckPlaneSetCeil_ ; enters and exits with ds as cs
 mov       word ptr ds:[_ceilingplaneindex], ax
 
 done_marking_ceiling:
@@ -4913,6 +4915,7 @@ mov       word ptr ds:[SELFMODIFY_BSP_markfloor_1],           0EBh + ((SELFMODIF
 cmp       word ptr [bp - 022h], 0
 jge       at_least_one_column_to_draw ; todo work this out. also does this ever happen???
 jump_to_R_RenderSegLoop_exit:
+lea       sp, [bp - 6]
 jmp       R_RenderSegLoop_exit   
 
 ALIGN_MACRO
@@ -7731,7 +7734,7 @@ or   	  al, 0
 jne       do_seg_textured_stuff_TWOSIDED
 mov       word ptr ds:[SELFMODIFY_BSP_get_segtextured_TWOSIDED], ((SELFMODIFY_BSP_get_segtextured_TARGET_TWOSIDED - SELFMODIFY_BSP_get_segtextured_AFTER_TWOSIDED) SHL 8) + 0EBh
 
-jmp       SHORT seg_textured_check_done_TWOSIDED
+jmp       seg_textured_check_done_TWOSIDED
 ALIGN_MACRO
 do_seg_textured_stuff_TWOSIDED:
 mov       word ptr ds:[SELFMODIFY_BSP_get_segtextured_TWOSIDED], 0C089h
@@ -7769,11 +7772,11 @@ mov       dx, bx
 done_with_offsetangle_stuff_TWOSIDED:
 ; ax:dx is rw_offset
 
-xor       cx, cx
+xor       cx, cx ; cx holds 0...
 
 SELFMODIFY_set_rw_normal_angle_shift3_TWOSIDED:
 mov       bx, 01000h
-sub       cx, word ptr [bp - 012h]   ; rw_angle lo from R_AddLine
+cmp       cx, word ptr [bp - 012h]   ; rw_angle lo from R_AddLine
 sbb       bx, word ptr [bp - 010h]   ; rw_angle hi from R_AddLine
 
 
@@ -7786,7 +7789,7 @@ sbb       bx, word ptr [bp - 010h]   ; rw_angle hi from R_AddLine
 js        tempangle_not_smaller_than_fineang180_TWOSIDED
 neg       ax
 neg       dx
-sbb       ax, 0
+sbb       ax, cx  ; 0
 tempangle_not_smaller_than_fineang180_TWOSIDED:
 
 
@@ -7808,7 +7811,6 @@ mov   word ptr ds:[SELFMODIFY_set_ax_rw_offset_hi_TWOSIDED+2], ax
 
 SELFMODIFY_BSP_fixedcolormap_3_TWOSIDED:
 jmp SHORT seg_textured_check_done_TWOSIDED    ; dont check walllights if fixedcolormap
-
 SELFMODIFY_BSP_fixedcolormap_3_AFTER_TWOSIDED:
 
 
@@ -7837,20 +7839,20 @@ mov   word ptr ds:[SELFMODIFY_add_wallights_TWOSIDED+3], ax
 
 SELFMODIFY_BSP_fixedcolormap_3_TARGET_TWOSIDED:
 seg_textured_check_done_TWOSIDED:
-les       ax, dword ptr [bp + 6]
+
+; cant use cl as 0 byte because we might jump/branch here?
+
 SELFMODIFY_BSP_viewz_shortheight_4_TWOSIDED:
-cmp       ax, 01000h
-jl        not_above_viewplane_TWOSIDED
-mov       byte ptr [bp - 030h], 0
+cmp       word ptr [bp + 6], 01000h
+jl        not_above_viewplane_TWOSIDED   ; todo branch test
+mov       byte ptr [bp - 030h], 0  
 not_above_viewplane_TWOSIDED:
-mov       ax, es ; word ptr [bp + 8]
 SELFMODIFY_BSP_viewz_shortheight_3_TWOSIDED:
-cmp       ax, 01000h
-jg        not_below_viewplane_TWOSIDED
-mov       al, byte ptr [bp + 0Ah]
+cmp       word ptr [bp + 8], 01000h
+jg        not_below_viewplane_TWOSIDED   ; todo branch test
 SELFMODIFY_BSP_set_skyflatnum_4_TWOSIDED:
-cmp       al, 010h
-je        not_below_viewplane_TWOSIDED
+cmp       byte ptr [bp + 0Ah], 010h
+je        not_below_viewplane_TWOSIDED   ; todo branch test
 mov       byte ptr [bp - 02Fh], 0  ;markceiling
 ; ok here
 not_below_viewplane_TWOSIDED:
@@ -7997,8 +7999,7 @@ les       dx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
 mov       cx, es
 les       bx, dword ptr ds:[_ceiltop] 
 
-mov       byte ptr ds:[SELFMODIFY_setisceil + 1], 1
-call      R_CheckPlane_ ; enters and exits with ds as cs
+call      R_CheckPlaneSetCeil_ ; enters and exits with ds as cs
 mov       word ptr ds:[_ceilingplaneindex], ax
 dont_mark_ceiling_TWOSIDED:
 
@@ -8547,7 +8548,7 @@ do_32_bit_finetan_mul_TWOSIDED:
 
 done_with_finetanmul_TWOSIDED:
 
-; todo self modify the neg of this in somehow?
+
 SELFMODIFY_set_cx_rw_offset_lo_TWOSIDED:	
 add   ax, 01000h   ; cx is soon clobbered. so we only need AX?
 SELFMODIFY_set_ax_rw_offset_hi_TWOSIDED:
@@ -14539,6 +14540,7 @@ mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_1+1], al
 mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_2+2], al
 mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_3+2], al
 mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_4+3], al
+mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_4_TWOSIDED+3], al
 skip_skyflat_selfmodifies_this_frame:
 
 ; VIEWZ LO
@@ -14589,8 +14591,8 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_2+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_3+3], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_4+3], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_5+1], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_3_TWOSIDED+1], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_4_TWOSIDED+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_3_TWOSIDED+3], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_4_TWOSIDED+3], ax
 skip_viewz_hi_selfmodifies_this_frame:
 
 mov      al, byte ptr ss:[_player + PLAYER_T.player_extralightvalue]
