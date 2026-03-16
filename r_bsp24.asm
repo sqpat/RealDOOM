@@ -3830,7 +3830,7 @@ jmp       done_adjusting_row_offset
 
 ;R_StoreWallRangeNoBackSector_
 
-STOREWALLRANGE_INNER_STACK_SIZE_BOTTOP = 08h
+STOREWALLRANGE_INNER_STACK_SIZE_BOTTOP = 06h
 STOREWALLRANGE_INNER_STACK_SIZE_MID = 02h
 
 ALIGN_MACRO  ; adding these back seems to lower bench scores
@@ -6166,23 +6166,23 @@ PUBLIC R_StoreWallRangeWithBackSector_
 ; bp - 018h  ; PUSHed cx
 ; bp - 01Ah  ; PUSHed si
 ; bp - 01Ch  ; PUSHed di
-; bp - 01Eh  ; ax arg (no need to pop)
-; bp - 020h  ; dx arg (no need to pop)
+; bp - 01Eh  ; dx arg (no need to pop)
+; bp - 020h  ; ax arg (no need to pop)
 
 ; pushed stuff
 ; bp - 022h  ; stop - start   ; last pushed thing. todo push others.
-; bp - 024h  ; base4diff  ; todo unused
 
-; bp - 026h  ; worldtop hi , then unpopped
-; bp - 028h  ; worldtop lo , then unpopped
-; bp - 02Ah  ; worldbottom hi , then unpopped
-; bp - 02Ch  ; worldbottom lo , then unpopped
 
-; bp - 02Eh  ; rw_scale hi , then unpopped
-; bp - 030h  ; rw_scale lo , then unpopped
+; bp - 024h  ; worldtop hi , then unpopped
+; bp - 026h  ; worldtop lo , then unpopped
+; bp - 028h  ; worldbottom hi , then unpopped
+; bp - 02Ah  ; worldbottom lo , then unpopped
+
+; bp - 02Ch  ; rw_scale hi , then unpopped
+; bp - 02Eh  ; rw_scale lo , then unpopped
 ; todo revisit order
-; bp - 031h  ; markceiling, then unpopped
-; bp - 032h  ; markfloor, then unpopped
+; bp - 02Fh  ; markceiling, then unpopped
+; bp - 030h  ; markfloor, then unpopped
 
 
 
@@ -6192,8 +6192,8 @@ PUBLIC R_StoreWallRangeWithBackSector_
 
 
 
-push      ax ; bp - 01Eh
-push      dx ; bp - 020h
+push      dx ; bp - 01Eh
+push      ax ; bp - 020h
 
 sub       dx, ax
 push      dx ; bp - 022h   stop - start. used often. ; todo: maybe we get this for free elsewhere without this sub?
@@ -6564,8 +6564,6 @@ SELFMODIFY_skip_curseg_based_selfmodify_topbot_TARGET:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
  
-selfmod_done_bot:
-public selfmod_done_bot
 
 
 les       di, dword ptr ds:[_ds_p_bsp]
@@ -6574,11 +6572,11 @@ mov       ax, word ptr [bp + 4]  ; R_AddLine line num
 stosw              ; DRAWSEG_T.drawseg_cursegvalue
 
 
-mov       ax, word ptr [bp - 01Eh]  ; x1 arg
+mov       ax, word ptr [bp - 020h]  ; x1 arg
 
 stosw                            ; DRAWSEG_T.drawseg_x1
-xchg      ax, bx                 ; bx gets bp - 01Eh
-mov       ax, word ptr [bp - 020h]  ; x2 arg
+xchg      ax, bx                 ; bx gets bp - 020h
+mov       ax, word ptr [bp - 01Eh]  ; x2 arg
 stosw                            ; DRAWSEG_T.drawseg_x2
 
 inc       ax
@@ -6587,25 +6585,8 @@ inc       ax
 
 mov       ds, cx
 
-; bx is already [bp - 01Eh]
-mov   cx, bx
 
-SELFMODIFY_detailshift_and_1_TWOSIDED:
-and   bx, 01000h
-
-
-
-;  	int16_t base4diff = rw_x - rw_x_base4;
-sub   cx, bx   ; result is 0 1 2 or 3. but if 2 then we want to set value 080h
-add   bx, cx   ; bx is [bp - 01Eh] or rw_x again.
-ror   cl, 1    ; result is 0, 1, 2, 3
-push  cx       ; bp - 024h remap to 0, 0x80, 1, 0x81
-
-
-
-
-
-mov   word ptr ds:[SELFMODIFY_cmp_ax_to_rw_stopx_2_TWOSIDED+2], ax
+mov   word ptr ds:[SELFMODIFY_cmp_di_to_rw_stopx_TWOSIDED+2], ax
 
 
 sub   ax, bx   ; stop - start
@@ -6614,7 +6595,7 @@ adc   al, ah    ; round up. ah should be zero.
 mov   word ptr ds:[SELFMODIFY_set_cx_to_count_1_TWOSIDED+1], ax
 mov   word ptr ds:[SELFMODIFY_set_cx_to_count_2_TWOSIDED+1], ax
 
-; sp at bp - 026h
+; sp at bp - 024h
 
 
 ; do worldtop/worldbot calculation now
@@ -6639,8 +6620,8 @@ SELFMODIFY_BSP_viewz_hi_7_TWOSIDED:
 sbb       dx, 01000h
 ; storeworldtop
 
-push      dx  ; bp - 026h
-push      ax  ; bp - 028h
+push      dx  ; bp - 024h
+push      ax  ; bp - 026h
 
 
 
@@ -6664,8 +6645,8 @@ SELFMODIFY_BSP_viewz_lo_8_TWOSIDED:
 sub       ax, 01000h
 SELFMODIFY_BSP_viewz_hi_8_TWOSIDED:
 sbb       dx, 01000h
-push      dx ; bp - 02Ah
-push      ax ; bp - 02Ch
+push      dx ; bp - 028h
+push      ax ; bp - 02Ah
 
 
 
@@ -6680,14 +6661,14 @@ mov       ax, 01000h
 add       ax, word ptr es:[bx]
 call      R_ScaleFromGlobalAngle_
 mov       es, cx ; restore es as ds_p+2 segment
-push      dx  ; bp - 02Eh  ; 0000
-push      ax  ; bp - 030h  ; 60b9
+push      dx  ; bp - 02Ch  ; 0000
+push      ax  ; bp - 02Eh  ; 60b9
 stosw             ; DRAWSEG_T.drawseg_scale1
 xchg      ax, dx
 stosw             ; DRAWSEG_T.drawseg_scale2
 xchg      ax, dx                       ; put DX back; need it later.
-mov       si, word ptr [bp - 020h]
-cmp       si, word ptr [bp - 01Eh]
+mov       si, word ptr [bp - 01Eh]
+cmp       si, word ptr [bp - 020h]
 
 jg        stop_greater_than_start_TWOSIDED
 
@@ -6765,8 +6746,8 @@ stos      word ptr es:[di]             ; +0Ch
 xchg      ax, dx
 mov       bx, word ptr [bp - 022h]
 
-sub       ax, word ptr [bp - 030h]
-sbb       dx, word ptr [bp - 02Eh]
+sub       ax, word ptr [bp - 02Eh]
+sbb       dx, word ptr [bp - 02Ch]
 
 ; inlined FastDiv3216u_    (only use in the codebase, might as well.)
 
@@ -7083,8 +7064,8 @@ cmp       al, byte ptr [bp + 0Bh]
 jne       not_a_skyflat
 ;di/si are worldhigh..
 
-mov       word ptr [bp - 028h], si
-mov       word ptr [bp - 026h], di
+mov       word ptr [bp - 026h], si
+mov       word ptr [bp - 024h], di
 
 not_a_skyflat:
 
@@ -7099,9 +7080,9 @@ not_a_skyflat:
 ; TOOO: consider al flags instead of al and ah as two boolean bytes.
 xor       ax, ax  ; ax will store markfloor/markceiling
 
-cmp       cx, word ptr [bp - 02Ah]
+cmp       cx, word ptr [bp - 028h]
 jne       set_markfloor_true
-cmp       bx, word ptr [bp - 02Ch]
+cmp       bx, word ptr [bp - 02Ah]
 jne       set_markfloor_true
 mov       dx, word ptr [bp + 0Ch]
 cmp       dl, dh
@@ -7114,9 +7095,9 @@ mov       al, 4     ; markfloor  al = 1
 
 markfloor_set:
 ; di/si are already worldhigh..
-cmp       word ptr [bp - 026h], di
+cmp       word ptr [bp - 024h], di
 jne       set_markceiling_true
-cmp       word ptr [bp - 028h], si
+cmp       word ptr [bp - 026h], si
 jne       set_markceiling_true
 
 mov       dx, word ptr [bp + 0Ah]
@@ -7148,7 +7129,7 @@ closed_door_detected:
 mov       ax, 0404h  ; todo can this happen???
 not_closed_door:
 ; finally write this just once.
-push      ax  ; bp - 032h   markfloor/ceil for bottom path
+push      ax  ; bp - 030h   markfloor/ceil for bottom path
 
 ; ax free at last!
 ;		if (worldhigh.w < worldtop.w) {
@@ -7160,10 +7141,10 @@ xchg      di, cx
 xchg      si, bx
 
 ; worldhigh check one past time
-cmp       word ptr [bp - 026h], cx
+cmp       word ptr [bp - 024h], cx
 jg        setup_toptexture
 jne       toptexture_zero
-cmp       word ptr [bp - 028h], bx
+cmp       word ptr [bp - 026h], bx
 jbe       toptexture_zero
 setup_toptexture:
 
@@ -7192,7 +7173,7 @@ or        byte ptr ds:[SELFMODIFY_check_for_any_tex_TWOSIDED+1], bl
 test      byte ptr [bp - 2], ML_DONTPEGTOP
 je        calculate_toptexturemid  ; either branche has to jump i guess
 set_toptexture_to_worldtop:
-les       ax, dword ptr [bp - 028h]
+les       ax, dword ptr [bp - 026h]
 mov       dx, es
 jmp       do_selfmodify_toptexture
 
@@ -7254,10 +7235,10 @@ toptexture_stuff_done:
 
 
 
-cmp       di, word ptr [bp - 02Ah]
+cmp       di, word ptr [bp - 028h]
 jg        setup_bottexture
 jne       bottexture_zero
-cmp       si, word ptr [bp - 02Ch]
+cmp       si, word ptr [bp - 02Ah]
 jbe       bottexture_zero
 setup_bottexture:
 
@@ -7293,7 +7274,7 @@ or        byte ptr ds:[SELFMODIFY_check_for_any_tex_TWOSIDED+1], bl
 test      byte ptr [bp - 2], ML_DONTPEGBOTTOM
 je        calculate_bottexturemid
 ; todo cs write here ??
-les       ax, dword ptr [bp - 028h]
+les       ax, dword ptr [bp - 026h]
 mov       dx, es
 do_selfmodify_bottexture:
 
@@ -7351,7 +7332,7 @@ mov       bx, ax
 and       ax, 1   ; round up to word boundary since we are storing words not bytes in this case.
 add       ax, bx  ; now even
 mov       word ptr ds:[_lastopening], ax  ; now even
-mov       dx, word ptr [bp - 01Eh]    ; rw_x
+mov       dx, word ptr [bp - 020h]    ; rw_x
 sub       ax, dx ; byte..
 sub       ax, dx ; word..
 
@@ -7361,7 +7342,7 @@ mov       word ptr es:[bx + DRAWSEG_T.drawseg_maskedtexturecol_val], ax
 mov       word ptr ds:[_maskedtexturecol_bsp], ax
 
 mov       ax, word ptr [bp - 022h]
-inc       ax  ; rw_stopx would be [bp - 020h] + 1
+inc       ax  ; rw_stopx would be [bp - 01Eh] + 1
 sal       ax, 1   ; word increments, double this diff.
 add       word ptr ds:[_lastopening], ax
 
@@ -7388,19 +7369,19 @@ pop       di  ; restore here
 
 ; dx:ax worldlow
 ; di:si worldhi
-; bp - 026h  ; worldtop hi
-; bp - 028h  ; worldtop lo
-; bp - 02Ah  ; worldbottom hi
-; bp - 02Ch  ; worldbottom lo
+; bp - 024h  ; worldtop hi
+; bp - 026h  ; worldtop lo
+; bp - 028h  ; worldbottom hi
+; bp - 02Ah  ; worldbottom lo
 
-; bp currently - 032h
+; bp currently - 030h
 
 ; if (worldhigh.w < worldtop.w) {
 
-cmp       word ptr [bp - 026h], di
+cmp       word ptr [bp - 024h], di
 jg        do_pixhigh_step
 jne       jmp_to_skip_pixhigh_step
-cmp       word ptr [bp - 028h], si
+cmp       word ptr [bp - 026h], si
 jnbe      do_pixhigh_step
 jmp_to_skip_pixhigh_step:
 
@@ -7416,7 +7397,7 @@ do_pixhigh_step:
 xchg       dx, di   ; di/si store worldlow
 xchg       ax, si
 
-les       bx, dword ptr [bp - 030h]
+les       bx, dword ptr [bp - 02Eh]
 mov       cx, es
 push      dx
 push      ax
@@ -7557,7 +7538,7 @@ skip_pixhigh_step:
 
 ; if (worldlow.w > worldbottom.w) {
 
-cmp       dx, word ptr [bp - 02Ah]
+cmp       dx, word ptr [bp - 028h]
 jg        do_pixlow_step
 je        continue_worldlow_checks
 mov       al, byte ptr ds:[_maskedtexture_bsp]  ; todo is it necessary to write?
@@ -7566,7 +7547,7 @@ jmp       done_with_two_sided_sector_setup
 
 ALIGN_MACRO
 continue_worldlow_checks:
-cmp       ax, word ptr [bp - 02Ch]
+cmp       ax, word ptr [bp - 02Ah]
 ja        do_pixlow_step
 
 
@@ -7578,7 +7559,7 @@ do_pixlow_step:
 
 mov       di, dx	; store for later
 mov       si, ax	; store for later
-les       bx, dword ptr [bp - 030h]
+les       bx, dword ptr [bp - 02Eh]
 mov       cx, es
 
 ;start inlined FixedMulBSPLocal_
@@ -7725,7 +7706,7 @@ done_with_two_sided_sector_setup:
 
 ; coming into here, AL is equal to maskedtexture.
 ; ds is equal to CS
-; sp should now be bp - 032h
+; sp should now be bp - 030h
 
 
 
@@ -7860,7 +7841,7 @@ les       ax, dword ptr [bp + 6]
 SELFMODIFY_BSP_viewz_shortheight_4_TWOSIDED:
 cmp       ax, 01000h
 jl        not_above_viewplane_TWOSIDED
-mov       byte ptr [bp - 032h], 0
+mov       byte ptr [bp - 030h], 0
 not_above_viewplane_TWOSIDED:
 mov       ax, es ; word ptr [bp + 8]
 SELFMODIFY_BSP_viewz_shortheight_3_TWOSIDED:
@@ -7870,7 +7851,7 @@ mov       al, byte ptr [bp + 0Ah]
 SELFMODIFY_BSP_set_skyflatnum_4_TWOSIDED:
 cmp       al, 010h
 je        not_below_viewplane_TWOSIDED
-mov       byte ptr [bp - 031h], 0  ;markceiling
+mov       byte ptr [bp - 02Fh], 0  ;markceiling
 ; ok here
 not_below_viewplane_TWOSIDED:
 
@@ -7881,9 +7862,9 @@ not_below_viewplane_TWOSIDED:
 
 IF COMPISA GE COMPILE_386
 
-   les       ax, dword ptr [bp - 028h]
+   les       ax, dword ptr [bp - 026h]
    mov       dx, es
-   les       bx, dword ptr [bp - 030h]
+   les       bx, dword ptr [bp - 02Eh]
    mov       cx, es
 
    shl  ecx, 16
@@ -7898,9 +7879,9 @@ IF COMPISA GE COMPILE_386
 
 ELSE
 
-   les       ax, dword ptr [bp - 028h]
+   les       ax, dword ptr [bp - 026h]
    mov       dx, es
-   les       bx, dword ptr [bp - 030h]
+   les       bx, dword ptr [bp - 02Eh]
    mov       cx, es
 
    MOV  SI, DX
@@ -7945,9 +7926,9 @@ mov       word ptr ds:[SELFMODIFY_set_topfrac_hi_bottop+1], cx
 
 IF COMPISA GE COMPILE_386
 
-   les       ax, dword ptr [bp - 02Ch]
+   les       ax, dword ptr [bp - 02Ah]
    mov       dx, es
-   les       bx, dword ptr [bp - 030h]
+   les       bx, dword ptr [bp - 02Eh]
    mov       cx, es
 
    shl  ecx, 16
@@ -7963,9 +7944,9 @@ IF COMPISA GE COMPILE_386
 ELSE
 ; si not preserved
 
-   les       ax, dword ptr [bp - 02Ch]
+   les       ax, dword ptr [bp - 02Ah]
    mov       dx, es
-   les       bx, dword ptr [bp - 030h]
+   les       bx, dword ptr [bp - 02Eh]
    mov       cx, es
 
    MOV  SI, DX
@@ -7999,7 +7980,7 @@ ENDIF
 neg       ax
 mov       word ptr ds:[_cs_botfrac_lo], ax
 
-SELFMODIFY_sub__centeryfrac_4_hi_3_TWOSIDED: ; preincremented by 1 to pass into bp -028h
+SELFMODIFY_sub__centeryfrac_4_hi_3_TWOSIDED: ; preincremented by 1 
 mov       ax, 01000h ; ah known zero. dh too probably?
 sbb       ax, dx
 
@@ -8008,12 +7989,12 @@ sbb       ax, dx
 mov       word ptr ds:[SELFMODIFY_set_botfrac_hi_bottop+1], ax
 
 
-cmp       byte ptr [bp - 031h], 0  ;markceiling
+cmp       byte ptr [bp - 02Fh], 0  ;markceiling
 je        dont_mark_ceiling_TWOSIDED ; todo which default braunch?
 
 mov       ax, word ptr ds:[_ceilingplaneindex]
-les       cx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
-mov       dx, es
+les       dx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
+mov       cx, es
 les       bx, dword ptr ds:[_ceiltop] 
 
 mov       byte ptr ds:[SELFMODIFY_setisceil + 1], 1
@@ -8023,12 +8004,12 @@ dont_mark_ceiling_TWOSIDED:
 
 ; todo pop markfloor into bp maybe? to reuse
 
-cmp       byte ptr [bp - 032h], 0 ; markfloor
+cmp       byte ptr [bp - 030h], 0 ; markfloor
 je        dont_mark_floor_TWOSIDED ; todo which default braunch?
 
 mov       ax, word ptr ds:[_floorplaneindex]
-les       cx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
-mov       dx, es
+les       dx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
+mov       cx, es
 les       bx, dword ptr ds:[_floortop]
 
 mov       byte ptr ds:[SELFMODIFY_setisceil + 1], 0
@@ -8038,7 +8019,7 @@ dont_mark_floor_TWOSIDED:
 cmp       word ptr [bp - 022h], 0
 jge       at_least_one_column_to_draw_TWOSIDED
 ; todo this?
-lea       sp, [bp - STOREWALLRANGE_INNER_STACK_SIZE_BOTTOP]
+lea       sp, [bp - 6] ; pops not done yet, bp still correct
 jmp       check_spr_top_clip_TWOSIDED
 ALIGN_MACRO
 at_least_one_column_to_draw_TWOSIDED:
@@ -8049,10 +8030,10 @@ ASSUME DS:R_BSP_24_TEXT
 
 xor   bx, bx
 ; last use, can be popped?
-pop   dx ; bp - 032h
+pop   dx ; bp - 030h
 ; todo move this up?
-pop   word ptr ds:[SELFMODIFY_set_rwscale_lo_bottop+1] ; bp - 030h
-pop   word ptr ds:[SELFMODIFY_set_rwscale_hi_bottop+1] ; bp - 02Eh
+pop   word ptr ds:[SELFMODIFY_set_rwscale_lo_bottop+1] ; bp - 02Eh
+pop   word ptr ds:[SELFMODIFY_set_rwscale_hi_bottop+1] ; bp - 02Ch
 
 mov   bl, dl
 les   ax, dword ptr ds:[bx+_selfmodify_lookup_markfloor]
@@ -8065,8 +8046,8 @@ mov   word ptr ds:[SELFMODIFY_BSP_markceiling_1_TWOSIDED], bx
 mov   word ptr ds:[SELFMODIFY_BSP_markceiling_2_TWOSIDED], es
 
 
-pop       bx ; bp - 02Ch
-pop       cx ; bp - 02Ah
+pop       bx ; bp - 02Ah
+pop       cx ; bp - 028h
 SELFMODIFY_get_rwscalestep_lo_2_TWOSIDED:
 mov       ax, 01000h
 SELFMODIFY_get_rwscalestep_hi_2_TWOSIDED:
@@ -8126,8 +8107,8 @@ SELFMODIFY_get_rwscalestep_lo_1_TWOSIDED:
 mov       ax, 01000h
 SELFMODIFY_get_rwscalestep_hi_1_TWOSIDED:
 mov       dx, 01000h
-pop       bx ; bp - 028h
-pop       cx ; bp - 026h
+pop       bx ; bp - 026h
+pop       cx ; bp - 024h
 
 ;start inlined FixedMulBSPLocal_
 
@@ -8200,7 +8181,7 @@ public R_RenderSegLoop_TWOSIDED_
 
 ; todo set up cs vars here  properly.
 
-mov   di, word ptr [bp - 01Eh]  ; startx
+mov   di, word ptr [bp - 020h]  ; startx
  
 
 
@@ -8245,7 +8226,7 @@ public pre_increment_values_TWOSIDED
 inc   di
 
 
-SELFMODIFY_cmp_ax_to_rw_stopx_2_TWOSIDED:
+SELFMODIFY_cmp_di_to_rw_stopx_TWOSIDED:
 cmp   di, 01000h
 jge   exit_rendersegloop_TWOSIDED  ; exit before adding the other loop vars.
 
@@ -9522,11 +9503,14 @@ mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1_TWOSIDED], ((SELFMODIFY_
 
 check_spr_top_clip_TWOSIDED:
 
+
 ; note: we can jump  intot his exit path from far away!!
+; sp should be bp - 6
 
 ; todo ds as cs?
 mov       bx, cs
 mov       ds, bx
+mov       dx, word ptr [bp - 020h]  ; todo reorder and pop
 
 les       bx, dword ptr ds:[_ds_p_bsp]
 test      byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_TOP
@@ -9541,7 +9525,7 @@ continue_checking_spr_top_clip_TWOSIDED:
 cmp       word ptr es:[bx + DRAWSEG_T.drawseg_sprtopclip_offset], 0
 jne       check_spr_bottom_clip_TWOSIDED
 
-mov       si, word ptr [bp - 01Eh]
+mov       si, dx ; startx
 mov       di, word ptr ds:[_lastopening]
 mov       ax, di
 sub       ax, si
@@ -9577,7 +9561,7 @@ continue_checking_spr_bottom_clip_TWOSIDED:
 cmp       word ptr es:[bx + DRAWSEG_T.drawseg_sprbottomclip_offset], 0
 jne       check_silhouettes_then_exit_TWOSIDED
 
-mov       si, word ptr [bp - 01Eh]
+mov       si, dx ; startx
 mov       di, word ptr ds:[_lastopening]
 mov       ax, di
 sub       ax, si
@@ -14412,7 +14396,7 @@ done_modding_shift_detail_code:
 mov      ax, word ptr ss:[_detailshiftandval]
 
 
-mov      word ptr ds:[SELFMODIFY_detailshift_and_1_TWOSIDED+2], ax
+
 not      ax
 mov      byte ptr ds:[SELFMODIFY_and_by_detail_level+1], al
 mov      byte ptr ds:[SELFMODIFY_and_by_detail_level_TWOSIDED+1], al
