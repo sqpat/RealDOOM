@@ -4273,7 +4273,7 @@ mov       ax, word ptr [bp + 4]  ; R_AddLine line num
 
 stosw              ; DRAWSEG_T.drawseg_cursegvalue
 
-
+; todo lds here to get both words.
 mov       ax, word ptr [bp - 020h]  ; x1 arg
 
 stosw                            ; DRAWSEG_T.drawseg_x1
@@ -9070,8 +9070,6 @@ push  di ; dc_yh
 sub   di, si ; pre sub
 
 
-push  ss
-pop   ds ; todo remove
 
 
 
@@ -9083,8 +9081,6 @@ pop   ds ; todo remove
 ; inlined function. 
 R_GetSourceSegment0_START_TWOSIDED:
 PUBLIC  R_GetSourceSegment0_START_TWOSIDED
-; dont push bp. restore from sp instead.
-; bp is currently SP + 46
 
 push  bx ; rw_x
 
@@ -9094,7 +9090,6 @@ push  bx ; rw_x
   ; if one is set, then the result of the predetermined value of seglooptexmodulo might it into a jump
    ; if its a repeating texture  then we modify it to mov ah, segloopheightvalcache
 
-; bad
 SELFMODIFY_BSP_check_seglooptexmodulo0_TWOSIDED:
 SELFMODIFY_BSP_set_seglooptexrepeat0_TWOSIDED:
 ; 3 bytes. May become one of two jumps (three bytes) or mov ax, imm16 (three bytes)
