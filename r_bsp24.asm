@@ -81,10 +81,10 @@ dw ((SELFMODIFY_BSP_markfloor_2_TARGET_TWOSIDED - SELFMODIFY_BSP_markfloor_2_AFT
 dw 04940h
 dw 04097h 
 _selfmodify_lookup_markceiling:
+db 0E9h, 0 ; jmp 
 dw ((SELFMODIFY_BSP_markceiling_1_TARGET_TWOSIDED - SELFMODIFY_BSP_markceiling_1_AFTER_TWOSIDED) SHL 8) + 0EBh
-dw ((SELFMODIFY_BSP_markceiling_2_TARGET_TWOSIDED - SELFMODIFY_BSP_markceiling_2_AFTER_TWOSIDED) SHL 8) + 0EBh
+db 0B8h, 0   ; mov ax, imm16
 dw 001B2h
-dw 0C089h
 
 
 ; todo 256 entry table with shift 4 and min/max etc logic baked in
@@ -8033,9 +8033,9 @@ mov   word ptr ds:[SELFMODIFY_BSP_markfloor_1_TWOSIDED], ax
 mov   word ptr ds:[SELFMODIFY_BSP_markfloor_2_TWOSIDED], es
 
 mov   bl, dh ; retrieve high byte
-les   bx, dword ptr ds:[bx+_selfmodify_lookup_markceiling]
-mov   word ptr ds:[SELFMODIFY_BSP_markceiling_1_TWOSIDED], bx
-mov   word ptr ds:[SELFMODIFY_BSP_markceiling_2_TWOSIDED], es
+les   ax, dword ptr ds:[bx+_selfmodify_lookup_markceiling]
+mov   byte ptr ds:[SELFMODIFY_BSP_markceiling_2_TWOSIDED], al
+mov   word ptr ds:[SELFMODIFY_BSP_markceiling_1_TWOSIDED], es
 
 
 pop       bx ; bp - 02Ah
@@ -8954,8 +8954,26 @@ add   si, bx  ; bx byte ptr
 mov   word ptr es:[bx+si], dx  ; add bx again, word ptr
 
 jmp   finished_recording_masked
-
 ALIGN_MACRO
+
+SELFMODIFY_BSP_toptexture_TARGET:
+
+; ds = cs here.
+; bx is already rw_x
+mov   cl, byte ptr ds:[bx+OFFSET_CEILINGCLIP]  ; set up ceilclip in this path.
+SELFMODIFY_BSP_markceiling_2_TWOSIDED:
+jmp  check_bottom_texture_TWOSIDED  ; 3 byte, can become mov ax, imm16
+SELFMODIFY_BSP_markceiling_2_AFTER_TWOSIDED:
+
+mark_ceiling_si_TWOSIDED:
+; this value comes out bad for al. sometimes.
+lea   ax, [si - 1]
+skip_set_ax_to_si:
+mark_ceiling_ax_TWOSIDED:
+mov   cl, byte ptr ds:[bx+OFFSET_CEILINGCLIP]  ; set up ceilclip in this path.
+jmp   do_mark_ceiling_and_end_topdraw
+ALIGN_MACRO
+
 
 
 
@@ -9029,61 +9047,15 @@ dec   ax
 
 dont_clip_top_floor_TWOSIDED:
 cmp   ax, si
-jl    jump_to_mark_ceiling_si_TWOSIDED  ; skip drawing ceiling.
+jl    mark_ceiling_si_TWOSIDED  ; skip drawing ceiling.
 cmp   di, si
-jnle  dont_mark_ceiling_ax_TWOSIDED  ; skip drawing ceiling.
-jmp   SHORT mark_ceiling_ax_TWOSIDED
+jle   mark_ceiling_ax_TWOSIDED  ; skip drawing ceiling.
 
-ALIGN_MACRO
-
-SELFMODIFY_BSP_toptexture_TARGET:
-public SELFMODIFY_BSP_toptexture_TARGET
-no_top_texture_draw_TWOSIDED:
-; ds = cs here.
-; bx is already rw_x
-SELFMODIFY_BSP_markceiling_2_TWOSIDED:
-jmp SHORT   check_bottom_texture_TWOSIDED
-SELFMODIFY_BSP_markceiling_2_AFTER_TWOSIDED:
-
-mark_ceiling_si_TWOSIDED:
-; this value comes out bad for al. sometimes.
-lea   ax, [si - 1]
-mov   byte ptr ds:[bx + OFFSET_CEILINGCLIP], al ; bx is already rw_x
-jmp   SHORT check_bottom_texture_TWOSIDED
-ALIGN_MACRO
-
-jump_to_mark_ceiling_si_TWOSIDED:
-jmp   SHORT mark_ceiling_si_TWOSIDED
-ALIGN_MACRO
-
-SELFMODIFY_BSP_markfloor_2_TARGET_TWOSIDED:
-done_marking_floor_TWOSIDED:
-jmp   finished_inner_loop_iter_TWOSIDED
-
-
-
-ALIGN_MACRO
-SELFMODIFY_BSP_bottexture_TARGET:
-no_bottom_texture_draw_TWOSIDED:
-SELFMODIFY_BSP_markfloor_2_TWOSIDED:
-;je    done_marking_floor_TWOSIDED
-SELFMODIFY_BSP_markfloor_2_AFTER_TWOSIDED = SELFMODIFY_BSP_markfloor_2_TWOSIDED+2
-
-mark_floor_di:
-public mark_floor_di
-
-; got here but ds was not cs
-   ;floorclip[rw_x] = yh + 1;
-xchg  ax, di   ; di seems safe to clobber? because bx = dc_x and its replaced?
-inc   ax
-mov   byte ptr ds:[bx+OFFSET_FLOORCLIP], al
-jmp   finished_inner_loop_iter_TWOSIDED
-
-ALIGN_MACRO
 dont_mark_ceiling_ax_TWOSIDED:
 xchg   ax, di  ; todo maybe this xchg doesnt need to be here; swap above register logic.
 ; si:di are dc_yl, dc_yh
 
+; START TOP DRAW??
 
 
 ; si:di are dc_yl, dc_yh   
@@ -9101,10 +9073,12 @@ sub   di, si ; pre sub
 push  ss
 pop   ds ; todo remove
 
-; TOP DRAW ENTERS HERE.
+
 
 ; todo move self modify logic here before getsourcesegment.
 
+
+; todo move this before fastdiv?
 
 ; inlined function. 
 R_GetSourceSegment0_START_TWOSIDED:
@@ -9216,6 +9190,9 @@ public SELFMODIFY_BSP_R_DrawColumnPrep_ret_TWOSIDED
 ; the pop bx gets replaced with ret if bottom is calling.
 ; todo: the bottom caller pops the same stuff. pop here and modify a later instruction instead?
 
+; todo remove ds set to ss in return from drawcol..
+mov   dx, cs
+mov   ds, dx
 
 pop   bx  ; rw_x  always want this back
 
@@ -9224,9 +9201,6 @@ pop   bx  ; rw_x  always want this back
 R_GetSourceSegment0_DONE_TOP:
 public R_GetSourceSegment0_DONE_TOP
 
-; todo this here or earlier?
-mov   ax, cs
-mov   ds, ax
 
 pop   ax  ; dc_yh
 pop   si  ; dc_yl
@@ -9234,12 +9208,15 @@ pop   dx  ; textuecolumn
 pop   di      ; todo whats this again. something for floorclip? yl-1?
 
 
+; END TOP DRAW??
+
 
 ; bx is currently rw_x.
 
 
-mark_ceiling_ax_TWOSIDED:
+do_mark_ceiling_and_end_topdraw:
 mov   byte ptr ds:[bx  + OFFSET_CEILINGCLIP], al
+xchg  ax, cx   ; cl gets ceilclip
 SELFMODIFY_BSP_markceiling_2_TARGET_TWOSIDED:
 check_bottom_texture_TWOSIDED:
 ; bx is already rw_x
@@ -9248,7 +9225,8 @@ SELFMODIFY_BSP_bottexture:
 SELFMODIFY_BSP_bottexture_AFTER = SELFMODIFY_BSP_bottexture + 2
 
 
-do_bottom_texture_draw:
+; START BOT DRAW??
+
 
 SELFMODIFY_BSP_set_pixlow:
 public SELFMODIFY_BSP_set_pixlow
@@ -9260,10 +9238,10 @@ SELFMODIFY_add_to_pixlow_hi_1_TWOSIDED:
 sbb   word ptr ds:[SELFMODIFY_BSP_set_pixlow+1], 01000h
 ;		if (mid <= ceilingclip[rw_x])
 ;		    mid = ceilingclip[rw_x]+1;
+; cl already has ceilclip
 
+xor   ch, ch
 
-xor   cx, cx
-mov   cl, byte ptr ds:[bx+OFFSET_CEILINGCLIP]
 cmp   ax, cx
 jg    dont_clip_bot_ceil ; todo branch test
 inc   cx
@@ -9280,7 +9258,7 @@ jg    mark_floor_di  ; todo branch test
 
 cmp   di, si  ; todo sub
 mov   byte ptr ds:[bx+OFFSET_FLOORCLIP], al
-jle   done_marking_floor_ax_TWOSIDED     ; todo branch test
+jle   done_marking_floor_TWOSIDED     ; todo branch test
 
 ; todo this is messy
 xchg   ax, si
@@ -9401,10 +9379,24 @@ pop   bx ; restore dc_x
 
 ;END INLINED R_GetSourceSegment1_
 
-done_marking_floor_ax_TWOSIDED:
-public done_marking_floor_ax_TWOSIDED
-
+SELFMODIFY_BSP_markfloor_2_TARGET_TWOSIDED:
+done_marking_floor_TWOSIDED:
 jmp   finished_inner_loop_iter_TWOSIDED
+ALIGN_MACRO
+SELFMODIFY_BSP_bottexture_TARGET:
+
+SELFMODIFY_BSP_markfloor_2_TWOSIDED:
+SELFMODIFY_BSP_markfloor_2_AFTER_TWOSIDED = SELFMODIFY_BSP_markfloor_2_TWOSIDED+2
+
+mark_floor_di:
+public mark_floor_di
+
+   ;floorclip[rw_x] = yh + 1;
+xchg  ax, di         ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
+inc   ax             ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET
+mov   byte ptr ds:[bx+OFFSET_FLOORCLIP], al
+jmp   finished_inner_loop_iter_TWOSIDED
+
 ALIGN_MACRO
 ;BEGIN INLINED R_GetSourceSegment1_ AGAIN
 ; this was only called in one place. this runs often, so inline it.
