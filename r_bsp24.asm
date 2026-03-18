@@ -7022,16 +7022,16 @@ xchg      ax, bx
 mov       ax, cs
 mov       ds, ax
 
-mov       ax, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP]
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_TWOSIDED+2], ax
-les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset_TWOSIDED+4], ax
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr_TWOSIDED+4], es
-les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 4]
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_1_TWOSIDED+4], ax
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1_TWOSIDED+4], es
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_2_TWOSIDED+4], ax
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2_TWOSIDED+4], es
+les       ax, dword ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR]
+mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul_top], ax    ; adjust shift/add byte order for 10/12 mul
+mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul_top+2], es  ; adjust shift/add byte order for 10/12 mul
+; todo LES this...
+mov       ax, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR+4]
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr_TWOSIDED+4], ax
+mov       ax, word ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 6]
+sub       ax, 5 ; todo put this somewhere...
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1_TWOSIDED+4], ax
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2_TWOSIDED+4], ax
 
 pop       bx
 
@@ -8760,8 +8760,6 @@ IF COMPISA GE COMPILE_386
    mov   byte ptr ds:[SELFMODIFY_BSP_set_dc_iscale_hi_bot_TWOSIDED+2], dl
 
 ; todo: 386 logic.
-   SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset_TWOSIDED:
-   mov   word ptr ds:[SELFMODIFY_set_top_jump_immediate_location_TWOSIDED+1], 01000h
 
    SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr_TWOSIDED:
    mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_TWOSIDED], 01000h
@@ -8783,8 +8781,6 @@ ELSE
 
    div bx        ; after this dx stores remainder, ax stores q1
 ; stretch draw off path
-   SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset_TWOSIDED:
-   mov   word ptr ds:[SELFMODIFY_set_top_jump_immediate_location_TWOSIDED+1], 01000h
    SELFMODIFY_set_bot_lookup_offset_setter_nostretch_jumpoffset_TWOSIDED:
    mov   word ptr ds:[SELFMODIFY_set_bot_jump_immediate_location_TWOSIDED+1], 01000h
 
@@ -8887,8 +8883,6 @@ ELSE
 
 ; stretch draw on path
 
-   SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_1_TWOSIDED:
-   mov   word ptr ds:[SELFMODIFY_set_top_jump_immediate_location_TWOSIDED+1], 01000h
    SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1_TWOSIDED:
    mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_TWOSIDED], 01000h
    SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_1_TWOSIDED:
@@ -8939,8 +8933,6 @@ ELSE
 
    div   cx
 ; stretch draw on path
-   SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_2_TWOSIDED:
-   mov   word ptr ds:[SELFMODIFY_set_top_jump_immediate_location_TWOSIDED+1], 01000h
 
    SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_2_TWOSIDED:
    mov   word ptr ds:[SELFMODIFY_set_bot_jump_immediate_location_TWOSIDED+1], 01000h
@@ -9090,11 +9082,6 @@ mark_ceiling_ax_TWOSIDED:
 mov   cl, byte ptr ds:[bx+OFFSET_CEILINGCLIP]  ; set up ceilclip in this path.
 jmp   do_mark_ceiling_and_end_topdraw
 ALIGN_MACRO
-skip_top_draw_no_pixels:
-xchg  ax, di
-pop   ax
-jmp   skip_top_draw
-ALIGN_MACRO
 
 
 
@@ -9179,10 +9166,7 @@ xchg   ax, di  ; todo maybe this xchg doesnt need to be here; swap above registe
 
 ; START TOP DRAW??
 
-push  di ; dc_yh
-sub   di, si ; pre sub
 
-jl    skip_top_draw_no_pixels  ; is this correct?
 
 
 
@@ -9194,9 +9178,7 @@ push   ax ; store celip
 push   dx  ; texturecolumn
 ; store for bottom draw.
 push  si ; dc_yl
-
-
-
+push  di ; dc_yh
 
 
 
@@ -9244,12 +9226,8 @@ public just_do_draw0_TWOSIDED
 ; ax carries _dc_source_segment
 
 mov   ds, ax ; set _dc_source_segment
-mov   ax, COLFUNC_FILE_START_SEGMENT
-mov   es, ax
 
 
-xchg  ax, si ; dc_yl in ax. ; toggle for even/odd ret label
-;mov  ax, si ; dc_yl in ax.   ; toggle for even/odd ret label
 
 
 
@@ -9260,15 +9238,23 @@ R_DrawColumnPrep_TWOSIDED_:
 PUBLIC R_DrawColumnPrep_TWOSIDED_
 
 
+mov  ax, si ; dc_yl in ax.   
 
-sal   di, 1
-SELFMODIFY_set_top_lookup_offset_TWOSIDED:
-lea   si, [di + 01000h]   ; word lookup with offset
+sub   si, di  ; ; yl - yh
+shl   si, 1
+add   si, 398
 
+mov   dx, si  ; 2, 2   dx already multiplied by 2
+shl   si, 1   ; 4, 2
+SELFMODIFY_set_pixel_count_shift_mul_top:
+public SELFMODIFY_set_pixel_count_shift_mul_top
+; 12 per is 01 d6 d1 e6 
+; 10 per is d1 e6 01 d6 
+add   si, dx  ; 6, 2     ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
+shl   si, 1   ; 12, 2    ; is there a way to swap just one instruction, while not adding instruction count?
 
-SELFMODIFY_set_top_jump_immediate_location_TWOSIDED:
-mov   di, 01000h
-movs  word ptr es:[si], word ptr es:[di]
+mov   dx, si  ; store jmp amt in dx. 
+
 
 ; note: bx is dc_x...
 mov     si, ax   ; restore si here..
@@ -9328,17 +9314,16 @@ R_GetSourceSegment0_DONE_TOP:
 public R_GetSourceSegment0_DONE_TOP
 
 
+pop   ax  ; dc_yh
 pop   si  ; dc_yl
 pop   dx  ; textuecolumn
 pop   di      ; todo whats this again. something for floorclip? yl-1?
-pop   ax  ; dc_yh
 
 
 ; END TOP DRAW??
 
 
 ; bx is currently rw_x.
-skip_top_draw:
 
 do_mark_ceiling_and_end_topdraw:
 mov   byte ptr ds:[bx  + OFFSET_CEILINGCLIP], al
