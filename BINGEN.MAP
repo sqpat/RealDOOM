@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/03/13 20:39:59
+Created on:       26/03/13 20:49:37
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -347,7 +347,6 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:347a      R_GetPatchTexture_Far24_
 0819:24ad*     R_GetSourceSegment1_
 0819:09f4*     FixedMulTrigNoShiftSine_BSPLocal_
-0819:16d3*     just_do_draw0
 0819:1632*     markfloor_done
 0819:24b7*     just_do_draw1
 0819:1e38*     _selfmodify_restore_dx_6
@@ -395,6 +394,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:3830      R_RenderPlayerView24_
 0819:09a0*     FixedDivBSPLocal_
 0819:24f0*     SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET_TWOSIDED
+0819:16d3*     just_do_draw_mid
 0819:1593*     increment_loop_values
 0819:05c6*     div48_32_BSPLocal_
 0819:1034*     R_StoreWallRangeNoBackSector_
@@ -426,7 +426,6 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:18b8*     adjust_row_offset_TWOSIDED
 0819:3516      R_GetCompositeTexture_Far24_
 0819:0066*     _basexscale
-0819:2447*     just_do_draw0_TWOSIDED
 0819:1022*     adjust_row_offset
 0819:0000*     _COLFUNC_SELFMODIFY_LOOKUPTABLE
 0819:1708*     R_DrawColumnPrep_
@@ -437,6 +436,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:22c8*     main_3232_div_TWOSIDED
 0819:262a*     mark_planes_dirty_TWOSIDED
 0819:0090*     OFFSET_FLOORCLIP
+0819:2447*     just_do_draw0_top
 0819:1575*     R_RenderSegLoop_
 0819:1613*     SELFMODIFY_BSP_markfloor_1
 0819:16c4*     SELFMODIFY_set_ax_rw_offset_hi
@@ -1235,8 +1235,8 @@ Module: s_sbsfx.obj(s_sbsfx.ASM)
 3010:6653*     S_DecreaseRefCount_
 3010:706c      SB_ResetDSP_
 3010:63f2*     _SB_IntController1Mask
-3010:7051      SB_StopPlayback_
 3010:63f1      _SB_IntController2Mask
+3010:7051      SB_StopPlayback_
 3010:63f5      _SB_OriginalVoiceVolumeRight
 3010:6b9c*     S_NormalizeSfxVolume_
 3010:70f3*     S_SBFX_ENDMARKER_
@@ -1579,4 +1579,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003e580 (255360.)
 Entry point address: 3010:7cce
-Link time: 00:00.05
+Link time: 00:00.04

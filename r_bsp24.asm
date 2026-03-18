@@ -5610,7 +5610,7 @@ PUBLIC  R_GetSourceSegment0_START
 SELFMODIFY_BSP_check_seglooptexmodulo0:
 SELFMODIFY_BSP_set_seglooptexrepeat0:
 ; 3 bytes. May become one of two jumps (three bytes) or mov ax, imm16 (three bytes)
-jmp    non_repeating_texture0
+jmp    non_repeating_texture_mid
 
 SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER:
 SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER:
@@ -5618,14 +5618,14 @@ xchg  ax, ax                    ; one byte nop placeholder. this gets the ah val
 and   dl, ah   ; ah has loopwidth-1 (modulo )
 mul   dl       ; al has heightval
 
-add_base_segment_and_draw0:  ; align target?
+add_base_segment_and_draw_mid:  ; align target?
 SELFMODIFY_add_cached_segment0:
 add   ax, 01000h
 
 ENDP
 
-just_do_draw0:
-public just_do_draw0
+just_do_draw_mid:
+public just_do_draw_mid
 
 ; ds must be reset to cs returning here.
 
@@ -5905,27 +5905,26 @@ ret
 ENDP
 
 ALIGN_MACRO
-seglooptexrepeat0_is_jmp:
+seglooptexrepeat_mid_is_jmp:
 ; ds already cs
 mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0], 0E9h
 mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER)
-jmp   just_do_draw0
-ALIGN_MACRO
-in_texture_bounds0:
-xchg  ax, dx
-sub   al, byte ptr ss:[_segloopcachedbasecol]
-mul   byte ptr ss:[_segloopheightvalcache]
-jmp   add_base_segment_and_draw0
+jmp   just_do_draw_mid
 ALIGN_MACRO
 
 
 SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET:
-non_repeating_texture0:
+non_repeating_texture_mid:
 cmp   dx, word ptr ss:[_segloopnextlookup]
-jge   out_of_texture_bounds0
+jge   out_of_texture_bounds_mid
 cmp   dx, word ptr ss:[_segloopprevlookup]
-jge   in_texture_bounds0
-out_of_texture_bounds0:
+jnge  out_of_texture_bounds_mid
+xchg  ax, dx
+sub   al, byte ptr ss:[_segloopcachedbasecol]
+mul   byte ptr ss:[_segloopheightvalcache]
+jmp   add_base_segment_and_draw_mid
+ALIGN_MACRO
+out_of_texture_bounds_mid:
 ; branch nonpush with moves etc. 
 mov   ax, ss
 mov   ds, ax
@@ -5945,13 +5944,13 @@ mov   word ptr ds:[SELFMODIFY_add_cached_segment0+1], dx
 ; todohigh get this dh and dl in same read?
 mov   dh, byte ptr ss:[_seglooptexrepeat]
 cmp   dh, 0
-je    seglooptexrepeat0_is_jmp
+je    seglooptexrepeat_mid_is_jmp
 ; modulo is seglooptexrepeat - 1
 mov   dl, byte ptr ss:[_segloopheightvalcache]
 mov   byte ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo0],   0B8h   ; mov ax, xxxx
 mov   word ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo0+1], dx
 
-jmp   just_do_draw0
+jmp   just_do_draw_mid
 
 
 IF COMPISA GE COMPILE_386
@@ -9014,21 +9013,20 @@ ENDIF
 
 
 ALIGN_MACRO
-in_texture_bounds0_TWOSIDED:
-xchg  ax, dx
-sub   al, byte ptr ss:[_segloopcachedbasecol]
-mul   byte ptr ss:[_segloopheightvalcache]
-jmp   add_base_segment_and_draw0_TWOSIDED
-ALIGN_MACRO
 
 
 SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET_TWOSIDED:
-non_repeating_texture0_TWOSIDED:
+non_repeating_texture0_top:
 cmp   dx, word ptr ss:[_segloopnextlookup]
-jge   out_of_texture_bounds0_TWOSIDED
+jge   out_of_texture_bounds0_top
 cmp   dx, word ptr ss:[_segloopprevlookup] ; todo ss, ds-> cs etc
-jge   in_texture_bounds0_TWOSIDED
-out_of_texture_bounds0_TWOSIDED:
+jnge   out_of_texture_bounds0_top
+xchg  ax, dx
+sub   al, byte ptr ss:[_segloopcachedbasecol]
+mul   byte ptr ss:[_segloopheightvalcache]
+jmp   add_base_segment_and_draw0_top
+ALIGN_MACRO
+out_of_texture_bounds0_top:
 ; branch nonpush with moves etc. 
 mov   ax, ss
 mov   ds, ax
@@ -9052,19 +9050,19 @@ mov   cl, 0B8h  ; mov ax, xxxx
 mov   dh, byte ptr ss:[_seglooptexrepeat]
 mov   dl, byte ptr ss:[_segloopheightvalcache]
 cmp   dh, 0
-jne   seglooptexrepeat0_is_not_jmp_TWOSIDED
+jne   seglooptexrepeat0_is_not_jmp_top
 mov   dx, (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET_TWOSIDED - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER_TWOSIDED)
 mov   cl, 0E9h  ; jmp 
 
-seglooptexrepeat0_is_not_jmp_TWOSIDED:
+seglooptexrepeat0_is_not_jmp_top:
 ; modulo is seglooptexrepeat - 1
 mov   byte ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo0_TWOSIDED],   cl
 mov   word ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo0_TWOSIDED+1], dx
 
-jmp   just_do_draw0_TWOSIDED
+jmp   just_do_draw0_top
 
 
-record_masked_TWOSIDED:
+record_masked:
 
 ;if (maskedtexture) {
 ;	// save texturecol
@@ -9133,7 +9131,7 @@ SELFMODIFY_get_maskedtexture_1_TWOSIDED:
 ; todo make this not a selfmodify mov and test. 
 mov   al, 0
 test  al, al
-jnz   record_masked_TWOSIDED
+jnz   record_masked
 
 finished_recording_masked:
 
@@ -9223,7 +9221,7 @@ PUBLIC  R_GetSourceSegment0_START_TWOSIDED
 SELFMODIFY_BSP_check_seglooptexmodulo0_TWOSIDED:
 SELFMODIFY_BSP_set_seglooptexrepeat0_TWOSIDED:
 ; 3 bytes. May become one of two jumps (three bytes) or mov ax, imm16 (three bytes)
-jmp    non_repeating_texture0_TWOSIDED
+jmp    non_repeating_texture0_top
 
 SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER_TWOSIDED = SELFMODIFY_BSP_check_seglooptexmodulo0_TWOSIDED + 3
 
@@ -9233,14 +9231,14 @@ xchg  ax, ax                    ; one byte nop placeholder. this gets the ah val
 and   dl, ah   ; ah has loopwidth-1 (modulo )
 mul   dl       ; al has heightval
 
-add_base_segment_and_draw0_TWOSIDED:  ; align target?
+add_base_segment_and_draw0_top:  ; align target?
 SELFMODIFY_add_cached_segment0_TWOSIDED:
 add   ax, 01000h
 
 ENDP
 
-just_do_draw0_TWOSIDED:
-public just_do_draw0_TWOSIDED
+just_do_draw0_top:
+public just_do_draw0_top
 
 
 ; ax carries _dc_source_segment
@@ -9516,7 +9514,13 @@ non_repeating_texture1:
 cmp   dx, word ptr ss:[2 + _segloopnextlookup]
 jge   out_of_texture_bounds1
 cmp   dx, word ptr ss:[2 + _segloopprevlookup]
-jge   in_texture_bounds1  ; todo change the default case.
+jnge  out_of_texture_bounds1  
+
+xchg  ax, dx  ; put texturecol in ax
+sub   al, byte ptr ss:[2 + _segloopcachedbasecol]
+mul   byte ptr ss:[1 + _segloopheightvalcache]
+jmp   add_base_segment_and_draw1
+ALIGN_MACRO
 out_of_texture_bounds1:
 mov   ax, ss
 mov   ds, ax
@@ -9554,12 +9558,6 @@ ALIGN_MACRO
 seglooptexrepeat1_is_jmp:
 mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat1_TWOSIDED], ((SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET_TWOSIDED - SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER_TWOSIDED) SHL 8) + 0EBh
 jmp   just_do_draw1
-ALIGN_MACRO
-in_texture_bounds1:
-xchg  ax, dx  ; put texturecol in ax
-sub   al, byte ptr ss:[2 + _segloopcachedbasecol]
-mul   byte ptr ss:[1 + _segloopheightvalcache]
-jmp   add_base_segment_and_draw1
 ;END INLINED R_GetSourceSegment1_ AGAIN
 
 
