@@ -4738,12 +4738,13 @@ mov   word ptr ds:[SELFMODIFY_add_wallights+3], ax
 SELFMODIFY_BSP_fixedcolormap_3_TARGET:
 seg_textured_check_done:
 
+; following cx (rw_scale hi) fairly OFTEN 0. evaluate jcxz?
+; dh (worldtop hi) always 0?
+; todo 386 version
 
 
 
 ;start inlined FixedMulBSPLocal_
-
-
 
 IF COMPISA GE COMPILE_386
 
@@ -4765,11 +4766,13 @@ IF COMPISA GE COMPILE_386
 ELSE
 
    les       ax, dword ptr [bp - 026h]
-   mov       dx, es
+   mov       si, es
    les       bx, dword ptr [bp - 02Eh]
    mov       cx, es
+   jcxz      do_16_bit_rw_scale_mul_worldtophi_mid
 
-   MOV  SI, DX
+   ; mul dx:ax by cx:bx
+
    MOV  ES, AX ; todo synergy
    MUL  BX
    MOV  DI, DX
@@ -4790,14 +4793,70 @@ ELSE
    MUL  BX
    ADD  AX, CX
    ADC  DX, SI
+   jmp  done_with_rw_scale_mul_worldtophi_mid
+
+   ALIGN_MACRO
+   do_16_bit_rw_scale_mul_worldtophi_mid:   
+
+   mov  CX, SI
+   mov  SI, BX   ; SI gets rw_scale copy
+   
+   ; mul cx:bx by --:ax
+   ; first instruction was xchg ax/bx, was being done twice so cancelled out
+
+   MUL  BX        ; AX * BX
+   MOV  AX, CX    ; CX to AX
+   MOV  CX, DX    ; CX stores low word
+   CWD            ; S1 in DX
+   AND  DX, BX    ; S1 * AX
+   NEG  DX        ; 
+   XCHG DX, BX    ; AX into DX, high word into BX
+   MUL  DX        ; AX*CX
+   ADD  AX, CX     ; add low word
+   ADC  DX, BX     ; add high word
+
+   neg       ax
+   SELFMODIFY_sub__centeryfrac_4_hi_5:
+   mov       cx, 01000h
+   sbb       cx, dx
+   add       ax, ((HEIGHTUNIT)-1) SHL 4 ; bake this in once, instead of doing it every loop.
+   adc       cx, 0
+
+   mov       word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], cx
+   mov       word ptr ds:[_cs_topfrac_lo+1], ax
+
+   mov       word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], si
+   mov       word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], es ; zero
+
+   les       ax, dword ptr [bp - 02Ah]  ; avoid xchg ax/bx
+   mov       cx, es
+   ; SI has value that was in bx.
+
+   MUL  SI        ; AX * BX
+   MOV  AX, CX    ; CX to AX
+   MOV  CX, DX    ; CX stores low word
+   add  sp, 4 ; unpop rw_scale
+   CWD            ; S1 in DX
+   AND  DX, SI    ; S1 * AX
+   NEG  DX        ; 
+   XCHG DX, SI    ; AX into DX, high word into BX
+   MUL  DX        ; AX*CX
+   ADD  AX, CX     ; add low word
+   ADC  DX, SI     ; add high word
+
+   jmp       done_with_rw_scale_mul_worldbothi_mid
+
 
 ENDIF
+
+done_with_rw_scale_mul_worldtophi_mid:
+
 
 ;end inlined FixedMulBSPLocal_
 
 neg       ax
 SELFMODIFY_sub__centeryfrac_4_hi_4:
-mov       cx, 01000h ; ah known zero. dh too probably?
+mov       cx, 01000h
 sbb       cx, dx
 add       ax, ((HEIGHTUNIT)-1) SHL 4 ; bake this in once, instead of doing it every loop.
 adc       cx, 0
@@ -4814,6 +4873,8 @@ mov       word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], ax
 mov       word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], dx
 
 
+; this (rw_scale hi) fairly OFTEN 0. 
+; ch (worldbot hi) always 0? (but often negative too thus ff)
 
 
 ; todo 24 bit muls?
@@ -4866,7 +4927,7 @@ ELSE
 ENDIF
 
 ;end inlined FixedMulBSPLocal_
-
+done_with_rw_scale_mul_worldbothi_mid:
 ; ds is still cs
 
 neg       ax
@@ -10103,7 +10164,7 @@ cmp   di, word ptr ds:[si  + CLIPRANGE_T.cliprange_last]
 jnle  check_rest_loop
 return_didnt_render:
 jmp   END_R_ADDLINE_LABEL
-ALIGN_MACRO
+
 
 ALIGN_MACRO
 
@@ -14404,6 +14465,7 @@ mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_NOLOOP+1], ax
 mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_NORMALSTRETCH+1], ax
 mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_NOLOOPANDSTRETCH+1], ax
  
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_5+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_4+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_2+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_3+1], ax
