@@ -6970,16 +6970,16 @@ xchg      ax, bx
 mov       ax, cs
 mov       ds, ax
 
-mov       ax, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP]
-mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_TWOSIDED+2], ax
-les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
-mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_nostretch_jumpoffset_TWOSIDED+4], ax
-mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_nostretch_funcaddr_TWOSIDED+4], es
-les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 4]
-mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_1_TWOSIDED+4], ax
-mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_1_TWOSIDED+4], es
-mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_2_TWOSIDED+4], ax
-mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_2_TWOSIDED+4], es
+les       ax, dword ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR]
+mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul_bot], ax    ; adjust shift/add byte order for 10/12 mul
+mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul_bot+2], es  ; adjust shift/add byte order for 10/12 mul
+; todo LES this...
+mov       ax, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR+4]
+mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_nostretch_funcaddr_TWOSIDED+4], ax
+mov       ax, word ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 6]
+sub       ax, 5 ; todo put this somewhere...
+mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_1_TWOSIDED+4], ax
+mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_2_TWOSIDED+4], ax
 
 
 pop       bx
@@ -8781,8 +8781,6 @@ ELSE
 
    div bx        ; after this dx stores remainder, ax stores q1
 ; stretch draw off path
-   SELFMODIFY_set_bot_lookup_offset_setter_nostretch_jumpoffset_TWOSIDED:
-   mov   word ptr ds:[SELFMODIFY_set_bot_jump_immediate_location_TWOSIDED+1], 01000h
 
    xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
    div bx
@@ -8885,8 +8883,6 @@ ELSE
 
    SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1_TWOSIDED:
    mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_TWOSIDED], 01000h
-   SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_1_TWOSIDED:
-   mov   word ptr ds:[SELFMODIFY_set_bot_jump_immediate_location_TWOSIDED+1], 01000h
    SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_1_TWOSIDED:
    mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_bot_TWOSIDED], 01000h
 
@@ -8934,8 +8930,6 @@ ELSE
    div   cx
 ; stretch draw on path
 
-   SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_2_TWOSIDED:
-   mov   word ptr ds:[SELFMODIFY_set_bot_jump_immediate_location_TWOSIDED+1], 01000h
 
 
    ; rhat = dx
@@ -9084,10 +9078,6 @@ jmp   do_mark_ceiling_and_end_topdraw
 ALIGN_MACRO
 
 
-
-
-
-
 FastDiv3232FFFF_done_TWOSIDED:
 ; result is in CX:AX
 ; do the bit shuffling etc when writing direct to drawcol.
@@ -9098,8 +9088,6 @@ mov   word ptr ds:[SELFMODIFY_BSP_set_dc_iscale_lo_bot_TWOSIDED+1], ax
 ; dc_iscale_hi was written ealier if nonzero
 
 ; restore ds
-
-
 
 
 ; get texturecolumn     in dx
@@ -9151,7 +9139,9 @@ xor   cx, cx
 mov   cl, byte ptr ds:[bx + OFFSET_FLOORCLIP]
 cmp   ax, cx
 jl    dont_clip_top_floor_TWOSIDED  ; todo branch test
-xchg  ax, cx
+; toggle this for ENSUREALIGN_009
+;xchg  ax, cx
+mov   ax, cx
 dec   ax
 
 dont_clip_top_floor_TWOSIDED:
@@ -9234,8 +9224,8 @@ mov   ds, ax ; set _dc_source_segment
 
 
 
-R_DrawColumnPrep_TWOSIDED_:
-PUBLIC R_DrawColumnPrep_TWOSIDED_
+R_DrawColumnPrepTop:
+PUBLIC R_DrawColumnPrepTop
 
 
 mov  ax, si ; dc_yl in ax.   
@@ -9356,7 +9346,9 @@ xor   ch, ch
 cmp   ax, cx
 jg    dont_clip_bot_ceil ; todo branch test
 inc   cx
-xchg  ax, cx
+; toggle for ENSUREALIGN_010
+;xchg  ax, cx
+mov   ax, cx
 
 ;		if (mid <= yh)
 
@@ -9374,8 +9366,7 @@ jle   done_marking_floor_TWOSIDED     ; todo branch test
 ; todo this is messy
 xchg   ax, si
 ; si:di are dc_yl, dc_yh
-sub    di, si
-jl     skip_bot_draw_no_pixels
+
 
 ; todo move the post R_GetSourceSegment1_ logic here. 
 
@@ -9412,34 +9403,32 @@ public just_do_draw1
 ; ax carries _dc_source_segment
 
 mov   ds, ax ; set _dc_source_segment
-mov   ax, COLFUNC_FILE_START_SEGMENT
-mov   es, ax
 
 
-xchg  ax, si ; dc_yl in ax. ; toggle for even/odd ret label
-;mov  ax, si ; dc_yl in ax.   ; toggle for even/odd ret label
+R_DrawColumnPrepBot:
+PUBLIC R_DrawColumnPrepBot
 
+mov  ax, si ; dc_yl in ax.   
 
+sub   si, di  ; ; yl - yh
+shl   si, 1
+add   si, 398
 
+mov   dx, si  ; 2, 2   dx already multiplied by 2
+shl   si, 1   ; 4, 2
+SELFMODIFY_set_pixel_count_shift_mul_bot:
+public SELFMODIFY_set_pixel_count_shift_mul_bot
+; 12 per is 01 d6 d1 e6 
+; 10 per is d1 e6 01 d6 
+add   si, dx  ; 6, 2     ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
+shl   si, 1   ; 12, 2    ; is there a way to swap just one instruction, while not adding instruction count?
 
+mov   dx, si  ; store jmp amt in dx. 
 
-
-R_DrawColumnPrepBot_ :
-PUBLIC R_DrawColumnPrepBot_ 
-
-
-
-sal   di, 1
-SELFMODIFY_set_bot_lookup_offset_TWOSIDED:
-lea   si, [di + 01000h]   ; word lookup with offset
-SELFMODIFY_set_bot_jump_immediate_location_TWOSIDED:
-mov   di, 01000h
-movs  word ptr es:[si], word ptr es:[di]
 
 ; note: bx is dc_x...
-; toggle for ENSUREALIGN_010
 mov     si, ax   ; restore si here..
-;xchg  ax, si  
+
 
 SELFMODIFY_BSP_detailshift2minus_bot_TWOSIDED:
 sar   bx, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
@@ -9490,7 +9479,6 @@ public SELFMODIFY_BSP_R_DrawColumnPrep_ret_bot
 
 pop   bx ; restore dc_x
 
-skip_bot_draw_no_pixels:
 
 ;END INLINED R_GetSourceSegment1_
 
