@@ -7947,11 +7947,13 @@ IF COMPISA GE COMPILE_386
 ELSE
 
    les       ax, dword ptr [bp - 026h]
-   mov       dx, es
+   mov       si, es
    les       bx, dword ptr [bp - 02Eh]
    mov       cx, es
+   jcxz      do_16_bit_rw_scale_mul_worldtophi_bottop
 
-   MOV  SI, DX
+   ; mul dx:ax by cx:bx
+
    MOV  ES, AX ; todo synergy
    MUL  BX
    MOV  DI, DX
@@ -7972,8 +7974,59 @@ ELSE
    MUL  BX
    ADD  AX, CX
    ADC  DX, SI
+   jmp  done_with_rw_scale_mul_worldtophi_bottop
+
+   ALIGN_MACRO
+   do_16_bit_rw_scale_mul_worldtophi_bottop:   
+
+   mov  CX, SI
+   mov  SI, BX   ; SI gets rw_scale copy
+   
+   ; mul cx:bx by --:ax
+   ; first instruction was xchg ax/bx, was being done twice so cancelled out
+
+   MUL  BX        ; AX * BX
+   MOV  AX, CX    ; CX to AX
+   MOV  CX, DX    ; CX stores low word
+   CWD            ; S1 in DX
+   AND  DX, BX    ; S1 * AX
+   NEG  DX        ; 
+   XCHG DX, BX    ; AX into DX, high word into BX
+   MUL  DX        ; AX*CX
+   ADD  AX, CX     ; add low word
+   ADC  DX, BX     ; add high word
+
+   neg       ax
+   SELFMODIFY_sub__centeryfrac_4_hi_5_TWOSIDED:
+   mov       cx, 01000h
+   sbb       cx, dx
+   add       ax, ((HEIGHTUNIT)-1) SHL 4 ; bake this in once, instead of doing it every loop.
+   adc       cx, 0
+
+   mov       word ptr ds:[SELFMODIFY_set_topfrac_hi_bottop+1], cx
+   mov       word ptr ds:[_cs_topfrac_lo+1], ax
+
+   les       ax, dword ptr [bp - 02Ah]  ; avoid xchg ax/bx
+   mov       cx, es
+   ; SI has value that was in bx.
+
+   MUL  SI        ; AX * BX
+   MOV  AX, CX    ; CX to AX
+   MOV  CX, DX    ; CX stores low word
+   CWD            ; S1 in DX
+   AND  DX, SI    ; S1 * AX
+   NEG  DX        ; 
+   XCHG DX, SI    ; AX into DX, high word into BX
+   MUL  DX        ; AX*CX
+   ADD  AX, CX     ; add low word
+   ADC  DX, SI     ; add high word
+
+   jmp       done_with_rw_scale_mul_worldbothi_bottop
+
 
 ENDIF
+
+done_with_rw_scale_mul_worldtophi_bottop:
 
 ;end inlined FixedMulBSPLocal_
 ; not ok
@@ -8042,7 +8095,7 @@ ENDIF
 
 ;end inlined FixedMulBSPLocal_
 
-
+done_with_rw_scale_mul_worldbothi_bottop:
 
 neg       ax
 mov       word ptr ds:[_cs_botfrac_lo], ax
@@ -14472,6 +14525,7 @@ mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_3+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_1+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_3_TWOSIDED+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_4_TWOSIDED+1], ax
+mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_5_TWOSIDED+1], ax
 
 mov      ax, word ptr ss:[_viewwidth]
 mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_2+1], ax
