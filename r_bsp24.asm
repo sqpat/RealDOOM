@@ -9090,6 +9090,11 @@ mark_ceiling_ax_TWOSIDED:
 mov   cl, byte ptr ds:[bx+OFFSET_CEILINGCLIP]  ; set up ceilclip in this path.
 jmp   do_mark_ceiling_and_end_topdraw
 ALIGN_MACRO
+skip_top_draw_no_pixels:
+xchg  ax, di
+pop   ax
+jmp   skip_top_draw
+ALIGN_MACRO
 
 
 
@@ -9174,6 +9179,12 @@ xchg   ax, di  ; todo maybe this xchg doesnt need to be here; swap above registe
 
 ; START TOP DRAW??
 
+push  di ; dc_yh
+sub   di, si ; pre sub
+
+jl    skip_top_draw_no_pixels  ; is this correct?
+
+
 
 ; si:di are dc_yl, dc_yh   
 
@@ -9183,8 +9194,8 @@ push   ax ; store celip
 push   dx  ; texturecolumn
 ; store for bottom draw.
 push  si ; dc_yl
-push  di ; dc_yh
-sub   di, si ; pre sub
+
+
 
 
 
@@ -9253,6 +9264,8 @@ PUBLIC R_DrawColumnPrep_TWOSIDED_
 sal   di, 1
 SELFMODIFY_set_top_lookup_offset_TWOSIDED:
 lea   si, [di + 01000h]   ; word lookup with offset
+
+
 SELFMODIFY_set_top_jump_immediate_location_TWOSIDED:
 mov   di, 01000h
 movs  word ptr es:[si], word ptr es:[di]
@@ -9315,17 +9328,17 @@ R_GetSourceSegment0_DONE_TOP:
 public R_GetSourceSegment0_DONE_TOP
 
 
-pop   ax  ; dc_yh
 pop   si  ; dc_yl
 pop   dx  ; textuecolumn
 pop   di      ; todo whats this again. something for floorclip? yl-1?
+pop   ax  ; dc_yh
 
 
 ; END TOP DRAW??
 
 
 ; bx is currently rw_x.
-
+skip_top_draw:
 
 do_mark_ceiling_and_end_topdraw:
 mov   byte ptr ds:[bx  + OFFSET_CEILINGCLIP], al
@@ -9377,6 +9390,7 @@ jle   done_marking_floor_TWOSIDED     ; todo branch test
 xchg   ax, si
 ; si:di are dc_yl, dc_yh
 sub    di, si
+jl     skip_bot_draw_no_pixels
 
 ; todo move the post R_GetSourceSegment1_ logic here. 
 
@@ -9438,7 +9452,9 @@ mov   di, 01000h
 movs  word ptr es:[si], word ptr es:[di]
 
 ; note: bx is dc_x...
+; toggle for ENSUREALIGN_010
 mov     si, ax   ; restore si here..
+;xchg  ax, si  
 
 SELFMODIFY_BSP_detailshift2minus_bot_TWOSIDED:
 sar   bx, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
@@ -9489,7 +9505,7 @@ public SELFMODIFY_BSP_R_DrawColumnPrep_ret_bot
 
 pop   bx ; restore dc_x
 
-
+skip_bot_draw_no_pixels:
 
 ;END INLINED R_GetSourceSegment1_
 
