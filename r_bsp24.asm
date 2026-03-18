@@ -8306,7 +8306,7 @@ inc   si
 
 SELFMODIFY_set_topfrac_hi_bottop:
 mov   ax, 01000h
-
+ENSUREALIGN_005:
 
 cmp   ax, si  ; ax can be negative even if si is not? but maybe ah is always ff?
 jg    skip_yl_ceil_clip_TWOSIDED    
@@ -8349,6 +8349,7 @@ markceiling_done_TWOSIDED:
 
 SELFMODIFY_set_botfrac_hi_bottop:
 mov   ax, 01000h ; already incremented by 1.
+ENSUREALIGN_006:
 ; ah 0 because si < 255
 
 
@@ -8565,12 +8566,14 @@ adc   dx, 01000h
 push  dx       ; later popped into dx  ; todo remove?
 
 ; CX:AX rw_scale
-SELFMODIFY_set_rwscale_lo_bottop:
-mov   ax, 01000h 
 SELFMODIFY_set_rwscale_hi_bottop:
 mov   cx, 01000h 
+ENSUREALIGN_007:
 
 cmp   cl, 3
+SELFMODIFY_set_rwscale_lo_bottop:
+mov   ax, 01000h 
+ENSUREALIGN_008:
 jae   use_max_light_TWOSIDED
 do_lightscaleshift_TWOSIDED:
 
@@ -9185,8 +9188,8 @@ SELFMODIFY_COLFUNC_set_func_offset_TWOSIDED:
 dw DRAWCOL_OFFSET_BSP, COLORMAPS_SEGMENT
 
 
-SELFMODIFY_BSP_R_DrawColumnPrep_ret_TWOSIDED:
-public SELFMODIFY_BSP_R_DrawColumnPrep_ret_TWOSIDED
+SELFMODIFY_BSP_R_DrawColumnPrep_ret_top:
+public SELFMODIFY_BSP_R_DrawColumnPrep_ret_top
 
 ; the pop bx gets replaced with ret if bottom is calling.
 ; todo: the bottom caller pops the same stuff. pop here and modify a later instruction instead?
@@ -14820,6 +14823,10 @@ public ENSUREALIGN_001
 public ENSUREALIGN_002
 public ENSUREALIGN_003
 public ENSUREALIGN_004
+public ENSUREALIGN_005
+public ENSUREALIGN_006
+public ENSUREALIGN_007
+public ENSUREALIGN_008
 
 
 END

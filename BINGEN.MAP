@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/03/13 12:36:39
+Created on:       26/03/13 12:53:23
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -364,9 +364,14 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:21d9*     do_16_bit_mul_TWOSIDED
 0819:15cc*     ENSUREALIGN_002
 0819:15a0*     ENSUREALIGN_001
+0819:214c*     ENSUREALIGN_005
 0819:169e*     ENSUREALIGN_003
 0819:25f0*     SELFMODIFY_mark_planes_dirty_TWOSIDED
 0819:16a4*     ENSUREALIGN_004
+0819:2226*     ENSUREALIGN_008
+0819:2220*     ENSUREALIGN_007
+0819:217c*     ENSUREALIGN_006
+0819:243c*     SELFMODIFY_BSP_R_DrawColumnPrep_ret_top
 0819:2100*     pre_increment_values_TWOSIDED
 0819:0a4e*     FixedMulTrigCosine_BSPLocal_
 0819:20e4*     R_RenderSegLoop_TWOSIDED_
@@ -391,7 +396,6 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:05d6*     div48_32_BSPLocal_
 0819:1044*     R_StoreWallRangeNoBackSector_
 0819:0080*     _COLFUNC_SELFMODIFY_LOOKUPTABLE_SECOND_HALF
-0819:243c*     SELFMODIFY_BSP_R_DrawColumnPrep_ret_TWOSIDED
 0819:1615*     SELFMODIFY_set_pixel_count_shift_mul
 0819:0080*     BEOFRE_COLFUNC_LOOKUP
 0819:23fb*     R_GetSourceSegment0_START_TWOSIDED
@@ -1571,4 +1575,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003e550 (255312.)
 Entry point address: 300d:7cce
-Link time: 00:00.04
+Link time: 00:00.05
