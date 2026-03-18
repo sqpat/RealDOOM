@@ -349,7 +349,7 @@ add   dx, di  ; 10, 2   ; swap these two for 10x - 4, 8, 10 from shl, then add o
 
 
 
-
+; todo get rid of this
 mov   ax, (COLFUNC_FILE_START_SEGMENT - COLORMAPS_MASKEDMAPPING_SEG_DIFF); shut up assembler warning, this is fine
 mov   ds, ax                                 ; store this segment for now, with offset pre-added
 
@@ -359,28 +359,29 @@ mov   ds, ax                                 ; store this segment for now, with 
 
 
 ; grab dc_x..
-xchg   ax, di
 
-; shift ax by (2 - detailshift.)
+
+; shift di by (2 - detailshift.)
 SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift:
-sar   ax, 1
-sar   ax, 1
+sar   di, 1
+sar   di, 1
 
 ; dest = destview + dc_yl*80 + (dc_x>>2); 
 ; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
 
 mov   bp, si  ; word lookup
-add   ax, word ptr ds:[bp+si-2]                  ; add dc_yl * 80
+add   di, word ptr ds:[bp+si-2]                  ; add dc_yl * 80
 SELFMODIFY_MASKED_destview_lo_2:               ; add destview
-add   ax, 01000h
+add   di, 01000h
 
 
 
 
-xchg  ax, di
 
 
+; toggle for ENSUREALIGN_102
 xchg  ax, si    ; dc_yl in ax
+;mov  ax, si    ; dc_yl in ax
 
 ; CL:SI = dc_texturemid
 ; CH:BX = dc_iscale
@@ -401,6 +402,7 @@ pop   ds  ; get original _dc_source_segment
 db 09Ah
 SELFMODIFY_MASKED_COLFUNC_set_func_offset_dupe:
 dw DRAWCOL_NOLOOP_OFFSET_MASKED, COLORMAPS_SEGMENT_MASKEDMAPPING
+ENSUREALIGN_102:
 
 
 
@@ -5754,25 +5756,25 @@ sub    cl, 010h          ; subtract tex top offset. si = si+1
 ; si is already dc_yl
 ; di is already dc_yh
 SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x:
-mov   ax, 01000h
+mov   di, 01000h
 
 mov   bx, (COLFUNC_FILE_START_SEGMENT - COLORMAPS_MASKEDMAPPING_SEG_DIFF)
 mov   ds, bx                                 ; store this segment for now, with offset pre-added
 
-; shift ax by (2 - detailshift.)
+; shift di by (2 - detailshift.)
 SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift:  ; todo make this into the above selfmodify setter.
-sar   ax, 1
-sar   ax, 1
+sar   di, 1
+sar   di, 1
 
 
 
 mov   bp, si
-add   ax, word ptr ds:[si+bp-2]                   ; add * 80 lookup table value 
+add   di, word ptr ds:[si+bp-2]                   ; add * 80 lookup table value 
 
 SELFMODIFY_MASKED_destview_lo_3:
-add   ax, 01000h
+add   di, 01000h
 
-xchg  ax, di
+
 
 
 
@@ -5783,7 +5785,9 @@ xchg  ax, di
 
 ; if we make a separate drawcol masked we can use a constant here.
 
-xchg  ax, si    ; dc_yl in ax
+; toggle for ENSUREALIGN_101
+;xchg  ax, si    ; dc_yl in ax
+mov   ax, si
 
 ; cl:si is dc_texturemid
 ; ch:bx is dc_iscale
@@ -5806,6 +5810,7 @@ pop   ds ; _dc_source_segment
 db 09Ah
 SELFMODIFY_MASKED_COLFUNC_set_func_offset:
 dw DRAWCOL_NOLOOP_OFFSET_MASKED, COLORMAPS_SEGMENT_MASKEDMAPPING
+ENSUREALIGN_101:
 
 
 increment_column_and_continue_loop:
@@ -6462,8 +6467,8 @@ set_to_one_masked:
 
 ; for 32 bit shifts, modify jump to jump 8 for 0 shifts, 4 for 1 shifts, 0 for 0 shifts.
 
-; d1 f8  = sar ax, 1
-mov      ax, 0f8d1h 
+; d1 ff  = sar di, 1
+mov      ax, 0ffd1h 
 
 ; write to colfunc segment
 mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+0], ax
@@ -6496,8 +6501,8 @@ set_to_zero_masked:
 ; detailshift 0 case. usually involves two shift pairs.
 ; in this case - we make that first shift a proper shift
 
-; d1 f8  = sar ax, 1
-mov      ax, 0f8d1h 
+; d1 ff  = sar di, 1
+mov      ax, 0ffd1h 
 
 ; write to colfunc segment
 mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+0], ax
@@ -6640,8 +6645,8 @@ mov   word ptr ds:[SELFMODIFY_MASKED_viewz_hi_1+1 - OFFSET R_MASK24_STARTMARKER_
 
 mov   ax, word ptr ss:[_destview+0]
 mov   word ptr ds:[SELFMODIFY_MASKED_destview_lo_1+2 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   word ptr ds:[SELFMODIFY_MASKED_destview_lo_2+1 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   word ptr ds:[SELFMODIFY_MASKED_destview_lo_3+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_destview_lo_2+2 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_destview_lo_3+2 - OFFSET R_MASK24_STARTMARKER_], ax
 
 mov   ax, word ptr ss:[_destview+2]
 mov   word ptr ds:[SELFMODIFY_MASKED_destview_hi_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
@@ -6704,6 +6709,9 @@ ENDP
 PROC R_MASK24_ENDMARKER_ FAR
 PUBLIC R_MASK24_ENDMARKER_ 
 ENDP
+
+PUBLIC  ENSUREALIGN_101
+PUBLIC  ENSUREALIGN_102
 
 ENDS
 END
