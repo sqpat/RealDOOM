@@ -5738,6 +5738,7 @@ ENDIF
    db 09Ah
    SELFMODIFY_COLFUNC_set_func_offset_nostretch:
    dw DRAWCOL_OFFSET_BSP, COLORMAPS_SEGMENT
+ENSUREALIGN_011:
 
 ; keep this even aligned.
 
@@ -6936,7 +6937,6 @@ mov       word ptr ds:[si + DRAWSEG_T.drawseg_sprbottomclip_offset], ax
 mov       word ptr ds:[si + DRAWSEG_T.drawseg_sprtopclip_offset], ax
 mov       byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], al ; SIL_NONE
 
-; ax silbottom/top
 ; bx frontsectorfloorheight
 ; cx backsectorfloorheight
 ; dx frontsectorceilingheight
@@ -6944,118 +6944,113 @@ mov       byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], al ; SIL_NONE
 ; si ds_p
 ; 
 
-set_values:
-public set_values
 
 ; ds:si is ds_p
 ;		if (frontsectorfloorheight > backsectorfloorheight) {
 
-mov       ax, 0201h ; silbottom and siltop
-mov       es, cx ; backup
-sub       cx, bx
+
+mov       ax, cx  ; working register.
+sub       ax, bx
 jl        set_bsilheight_to_frontsectorfloorheight
 
 ; backsector floor is higher than frontsector floor. so we will see the wall rendered.
 ; if its less than 128 tall (minus tex top offset etc) then it wont loop
-sub       cx, word ptr [bp - 0Ch]
-and       ch, 080h
+sub       ax, word ptr [bp - 0Ch]
+mov       al, ah
+and       ax, 080h
 
 ; todo set bot vals here?
 
 push      bx  ; todo pushpop bx once ?
-push      es
+
 
 ; using loop/noloop lookup flag, look up the function setter params for stretch/nostretch for this func type and set them.
 
-xor       bx, bx
-mov       bl, ch
+xchg      ax, bx
+mov       ax, cs
+mov       ds, ax
 
-push      ds
-push      cs
-pop       ds
-
-mov       cx, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP]
-mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_TWOSIDED+2], cx
-les       cx, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
-mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_nostretch_jumpoffset_TWOSIDED+4], cx
+mov       ax, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP]
+mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_TWOSIDED+2], ax
+les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
+mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_nostretch_jumpoffset_TWOSIDED+4], ax
 mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_nostretch_funcaddr_TWOSIDED+4], es
-les       cx, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 4]
-mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_1_TWOSIDED+4], cx
+les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 4]
+mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_1_TWOSIDED+4], ax
 mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_1_TWOSIDED+4], es
-mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_2_TWOSIDED+4], cx
+mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_jumpoffset_2_TWOSIDED+4], ax
 mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_2_TWOSIDED+4], es
 
-pop       ds
-pop       es
+
 pop       bx
 
-mov       cx, es ; restore.
+mov       ax, DRAWSEGS_BASE_SEGMENT
+mov       ds, ax
+
 
 ;		} else if (backsectorfloorheight > viewz_shortheight) {
 SELFMODIFY_BSP_viewz_shortheight_2:
 cmp       cx, 01000h
 jle       bsilheight_set
 set_bsilheight_to_maxshort:
-mov       byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], al ; SIL_BOTTOM
-mov       word ptr ds:[si + DRAWSEG_T.drawseg_bsilheight], MAXSHORT
-jmp       bsilheight_set
+mov       ax, MAXSHORT
+jmp       set_bsilheight
 ALIGN_MACRO
 set_bsilheight_to_frontsectorfloorheight:
-mov       byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], al ; SIL_BOTTOM
-mov       word ptr ds:[si + DRAWSEG_T.drawseg_bsilheight], bx  ; bp + 6
-mov       cx, es  ; restore
+mov       ax, bx
+set_bsilheight:
+mov       byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], SIL_BOTTOM ; SIL_BOTTOM
+mov       word ptr ds:[si + DRAWSEG_T.drawseg_bsilheight], ax
+
 bsilheight_set:
 
-mov       es, dx ; backup
+mov       ax, dx  ; working register.
 
-sub       dx, di  ; ceilingheight
+sub       ax, di  ; ceilingheight
 jle       set_tsilheight_to_frontsectorceilingheight
 
-sub       dx, word ptr [bp - 0Ch]
-and       dh, 080h
+sub       ax, word ptr [bp - 0Ch]
+mov       al, ah
+and       ax, 080h
 
 push      bx  ; todo pushpop bx once ?
-push      es
+
 
 ; using loop/noloop lookup flag, look up the function setter params for stretch/nostretch for this func type and set them.
 
-xor       bx, bx
-mov       bl, dh
+xchg      ax, bx
+mov       ax, cs
+mov       ds, ax
 
-push      ds
-push      cs
-pop       ds
-
-mov       dx, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP]
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_TWOSIDED+2], dx
-les       dx, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset_TWOSIDED+4], dx
+mov       ax, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP]
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_TWOSIDED+2], ax
+les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_jumpoffset_TWOSIDED+4], ax
 mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr_TWOSIDED+4], es
-les       dx, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 4]
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_1_TWOSIDED+4], dx
+les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 4]
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_1_TWOSIDED+4], ax
 mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1_TWOSIDED+4], es
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_2_TWOSIDED+4], dx
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_jumpoffset_2_TWOSIDED+4], ax
 mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2_TWOSIDED+4], es
 
-pop       ds
-
-pop       es
 pop       bx
 
-mov       dx, es ; restore.
+mov       ax, DRAWSEGS_BASE_SEGMENT
+mov       ds, ax
+
 
 SELFMODIFY_BSP_viewz_shortheight_1:
 cmp       di, 01000h
 jge       tsilheight_set
 set_tsilheight_to_minshort:
-or        byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], ah ; SIL_TOP
-mov       word ptr ds:[si + DRAWSEG_T.drawseg_tsilheight], MINSHORT
-jmp       tsilheight_set
+mov       ax, MINSHORT
+jmp       set_tsilheight
 ALIGN_MACRO
 set_tsilheight_to_frontsectorceilingheight:
-mov       dx, es
-or        byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], ah ; SIL_TOP
-mov       word ptr ds:[si + DRAWSEG_T.drawseg_tsilheight], dx
+mov       ax, dx
+set_tsilheight:
+or        byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], SIL_TOP
+mov       word ptr ds:[si + DRAWSEG_T.drawseg_tsilheight], ax
 tsilheight_set:
 
 
@@ -7070,7 +7065,7 @@ jg        back_ceiling_greater_than_front_floor
 
 mov       word ptr ds:[si + DRAWSEG_T.drawseg_sprbottomclip_offset], OFFSET_NEGONEARRAY
 mov       word ptr ds:[si + DRAWSEG_T.drawseg_bsilheight], MAXSHORT
-or        byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], al ; SIL_BOTTOM
+or        byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], SIL_BOTTOM
 back_ceiling_greater_than_front_floor:
 
 ; if (backsectorfloorheight >= frontsectorceilingheight) {
@@ -7084,7 +7079,7 @@ jl        back_floor_less_than_front_ceiling
 ; ds_p->silhouette |= SIL_TOP;
 mov       word ptr ds:[si + DRAWSEG_T.drawseg_sprtopclip_offset], OFFSET_SCREENHEIGHTARRAY
 mov       word ptr ds:[si + DRAWSEG_T.drawseg_tsilheight], MINSHORT
-or        byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], ah; SIL_TOP
+or        byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], SIL_TOP
 back_floor_less_than_front_ceiling:
 
 ; SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldhigh, backsectorceilingheight);
@@ -7096,6 +7091,7 @@ mov       si, cs
 mov       ds, si   ; set ds to cs.
 
 xor       si, si
+; can these shifts be avoided and math propagated accordingly? seems hard
 SHIFT32_MACRO_RIGHT di si 3
 
 SELFMODIFY_BSP_viewz_lo_3:
@@ -7107,6 +7103,7 @@ sbb       di, 01000h
 ; what if we store bx/cx here as well, and finally push it once it's too onerous to hold onto?
 
 xor       bx, bx
+; can these shifts be avoided and math propagated accordingly? seems hard
 SHIFT32_MACRO_RIGHT cx bx 3
 
 
@@ -7299,9 +7296,6 @@ mov   byte ptr ds:[SELFMODIFY_set_toptexturemid_hi_TWOSIDED+1], dl
 
 
 toptexture_stuff_done:
-
-
-
 
 cmp       di, word ptr [bp - 028h]
 jg        setup_bottexture
@@ -8743,7 +8737,7 @@ mov  ax, -1
 
 
 
-
+; todo probably broken
 IF COMPISA GE COMPILE_386
    ; set up eax
    db 066h, 098h                    ; cwde (prepare EAX)
@@ -9300,6 +9294,7 @@ SELFMODIFY_BSP_R_DrawColumnPrep_call_TWOSIDED:
 db 09Ah
 SELFMODIFY_COLFUNC_set_func_offset_TWOSIDED:
 dw DRAWCOL_OFFSET_BSP, COLORMAPS_SEGMENT
+ENSUREALIGN_009:
 
 
 SELFMODIFY_BSP_R_DrawColumnPrep_ret_top:
@@ -9481,6 +9476,7 @@ SELFMODIFY_BSP_R_DrawColumnPrep_call_bot:
 db 09Ah
 SELFMODIFY_COLFUNC_set_func_offset_bot_TWOSIDED:
 dw DRAWCOL_OFFSET_BSP, COLORMAPS_SEGMENT
+ENSUREALIGN_010:
 
 
 SELFMODIFY_BSP_R_DrawColumnPrep_ret_bot:
@@ -14943,6 +14939,9 @@ public ENSUREALIGN_005
 public ENSUREALIGN_006
 public ENSUREALIGN_007
 public ENSUREALIGN_008
+public ENSUREALIGN_009
+public ENSUREALIGN_010
+public ENSUREALIGN_011
 
 
 END
