@@ -372,7 +372,7 @@ mov   bp, cs
 mov   ds, bp
 
 
-lea   bp, [si + _masked_local_dc_yl_lookup_table - 2]
+lea   bp, [si + _masked_local_dc_yl_lookup_table - 2] ; stack bp and si for word ptr, bake in - 2
 add   di, word ptr ds:[bp+si]                  ; add dc_yl * 80
 SELFMODIFY_MASKED_destview_lo_2:               ; add destview
 add   di, 01000h
@@ -389,9 +389,8 @@ xchg  ax, si    ; dc_yl in ax
 ; CL:SI = dc_texturemid
 ; CH:BX = dc_iscale
 ; gross lol. but again - rare function. in exchange the common function is faster.
-mov   cl, byte ptr ds:[SELFMODIFY_MASKED_dc_texturemid_hi_1+1 - OFFSET R_MASK24_STARTMARKER_]
+mov   cx, word ptr ds:[SELFMODIFY_MASKED_dc_texturemid_hi_1+1 - OFFSET R_MASK24_STARTMARKER_]
 mov   bx, word ptr ds:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_]
-mov   ch, byte ptr ds:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_]
 mov   si, word ptr ds:[SELFMODIFY_MASKED_dc_texturemid_lo_1+1 - OFFSET R_MASK24_STARTMARKER_]
 mov   bp, word ptr ds:[SELFMODIFY_MASKED_set_xlat_offset+1 - OFFSET R_MASK24_STARTMARKER_]
 
@@ -404,8 +403,6 @@ db 09Ah
 SELFMODIFY_MASKED_COLFUNC_set_func_offset_dupe:
 dw DRAWCOL_NOLOOP_OFFSET_MASKED, COLORMAPS_SEGMENT_MASKEDMAPPING
 ENSUREALIGN_102:
-
-
 
 
 exit_function_single:
@@ -798,7 +795,7 @@ rcr   ax, 1
 
 
 mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], dl
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+2 - OFFSET R_MASK24_STARTMARKER_], dl
 
 
 
@@ -3828,7 +3825,7 @@ ALIGN_MACRO
    db 066h, 00Fh, 0A4h, 0C2h, 010h  ; shld edx, eax, 0x10
 
    ; ?only write to dc_iscale_hi when nonzero.
-   mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], dl
+   mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+2 - OFFSET R_MASK24_STARTMARKER_], dl
    
 
    ret
@@ -3847,7 +3844,7 @@ ELSE
    ; ch is known zero.
    mov word ptr cs:[SELFMODIFY_MASKED_apply_stretch_tag], 0C089h ; NOP  ; toggle stretch variant for this frame
    ; only write to dc_iscale_hi when nonzero.
-   mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], cl
+   mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+2 - OFFSET R_MASK24_STARTMARKER_], cl
 
    ;jmp FastDiv3232FFFF_done    ; todo branch better 
 
@@ -5002,7 +4999,7 @@ mov   si, _player_vissprites       ; vissprite 0
 SELFMODIFY_MASKED_pspriteiscale_lo_1:
 mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], 01000h
 SELFMODIFY_MASKED_pspriteiscale_hi_1:
-mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], 010h
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+2 - OFFSET R_MASK24_STARTMARKER_], 010h
 
 
 
@@ -5265,8 +5262,6 @@ add   dx, di  ; 10, 2   ; swap these two for 10x - 4, 8, 10 from shl, then add o
 ; dx has jmp amount
 
 
-SELFMODIFY_MASKED_dc_texturemid_hi_1:
-mov   cl, 010h;  dc_texturemid intbits
 
 SELFMODIFY_MASKED_set_base_segment:
 mov   ax, 01000h    ; preshifted right 4 
@@ -5278,9 +5273,6 @@ db 05, 00, 00    ; add ax, 0000 (word)  ; always a single low byte actually
 
 mov    ds, ax
 
-SELFMODIFY_MASKED_sub_topdelta:
-sub    cl, 010h          ; subtract tex top offset. si = si+1
-; cl = dc_texturemid hi. carry this into the call
 
 
 ;call  R_DrawColumnPrepMaskedMulti_  ; INLINED
@@ -5305,7 +5297,7 @@ sar   di, 1
 
 
 
-lea   bp, [si + _masked_local_dc_yl_lookup_table - 2]
+lea   bp, [si + _masked_local_dc_yl_lookup_table - 2] ; stack bp and si for word ptr, bake in - 2
 add   di, word ptr cs:[bp+si]                  ; add dc_yl * 80
 
 SELFMODIFY_MASKED_destview_lo_3:
@@ -5316,19 +5308,25 @@ add   di, 01000h
 ; if we make a separate drawcol masked we can use a constant here.
 
 ; toggle for ENSUREALIGN_101
-;xchg  ax, si    ; dc_yl in ax
-mov   ax, si
+xchg  ax, si    ; dc_yl in ax
+;mov   ax, si
 
 ; cl:si is dc_texturemid
 ; ch:bx is dc_iscale
 ; pass in xlat offset for bx via bp
 
 
-
 SELFMODIFY_MASKED_set_dc_iscale_lo:
 mov   bx, 01000h ; dc_iscale +0
+SELFMODIFY_MASKED_dc_texturemid_hi_1:
 SELFMODIFY_MASKED_set_dc_iscale_hi:
-mov   ch, 010h ; dc_iscale +1
+mov   cx, 01000h ; dc_iscale +1, dc_texturemid intbits
+
+SELFMODIFY_MASKED_sub_topdelta:
+sub    cl, 010h          ; subtract tex top offset. si = si+1
+; cl = dc_texturemid hi. carry this into the call
+
+
 SELFMODIFY_MASKED_dc_texturemid_lo_1:
 mov   si, 01000h        ; todo can this just go to si in the call?
 
