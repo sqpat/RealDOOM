@@ -50,14 +50,10 @@ MAX_VISSPRITES_ADDRESS = ((SIZE VISSPRITE_T) * MAXVISSPRITES) + _vissprites ; 0B
 _COLFUNC_SELFMODIFY_LOOKUPTABLE:
 public _COLFUNC_SELFMODIFY_LOOKUPTABLE
 ; normal ; 12 bytes per
-dw SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET+1, DRAWCOL_OFFSET_BSP
-; normalstretch ; 12 bytes per
-dw SELFMODIFY_COLFUNC_JUMP_OFFSET24_NORMALSTRETCH_OFFSET+1, DRAWCOL_NORMAL_STRETCH_OFFSET_BSP
-_COLFUNC_JUMP_LOOKUP:
-dw COLFUNC_JUMP_LOOKUP_OFFSET
+dw DRAWCOL_NORMAL_STRETCH_OFFSET_BSP - 5, DRAWCOL_OFFSET_BSP - 5
 _COLFUNC_JUMP_LOOKUP_INSTR:
 db 001h, 0D6h, 0D1h, 0E6h  ; 12 
-dw DRAWCOL_OFFSET_BSP - 5
+
 
 
 
@@ -117,6 +113,10 @@ _lastviewy:
 dw 0F0F0h, 0F0F0h
 _lastviewz_shortangle:
 dw 0F0F0h  ; 16 bit?
+_lastviewz:
+dw 0F0F0h, 0F0F0h
+_lastviewangle:
+dw 0F0F0h, 0F0F0h
 
 
 BEOFRE_COLFUNC_LOOKUP:
@@ -128,19 +128,12 @@ ALIGN 128
 _COLFUNC_SELFMODIFY_LOOKUPTABLE_SECOND_HALF:
 public _COLFUNC_SELFMODIFY_LOOKUPTABLE_SECOND_HALF
 ; noloop ; 10 bytes per
-dw SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1, DRAWCOL_NOLOOP_OFFSET_BSP
 ; noloopstretch ; 10 bytes per
-dw SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOPANDSTRETCH_OFFSET+1, DRAWCOL_NOLOOP_STRETCH_OFFSET_BSP
-dw DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET
+dw DRAWCOL_NOLOOP_STRETCH_OFFSET_BSP - 5, DRAWCOL_NOLOOP_OFFSET_BSP - 5
+
 db 0D1h, 0E6h, 001h, 0D6h  ; 10
-dw DRAWCOL_NOLOOP_OFFSET_BSP - 5
-
-_lastviewz:
-dw 0F0F0h, 0F0F0h
 
 
-_lastviewangle:
-dw 0F0F0h, 0F0F0h
 
 
 
@@ -4529,17 +4522,15 @@ and       ah, 080h                 ; function type select.
 xor       bx, bx
 mov       bl, ah
 
+; todo is si and lodsw pattern better?
 ; overwrite the pair of instructions
 les       ax, dword ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR]
 mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul], ax    ; adjust shift/add byte order for 10/12 mul
 mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul+2], es  ; adjust shift/add byte order for 10/12 mul
 
-; todo les these two once bot/top draws refactored and space freed up
-mov       ax, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR+4]
-mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_nostretch], ax
-mov       ax, word ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 6]
-sub       ax, 5 ; todo put this somewhere...
+les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
 mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_stretch], ax
+mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_nostretch], es
 
 
 ; write the high byte of the word.
@@ -6970,16 +6961,15 @@ xchg      ax, bx
 mov       ax, cs
 mov       ds, ax
 
+; todo is si and lodsw pattern better?
+
 les       ax, dword ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR]
 mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul_bot], ax    ; adjust shift/add byte order for 10/12 mul
 mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul_bot+2], es  ; adjust shift/add byte order for 10/12 mul
-; todo LES this...
-mov       ax, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR+4]
-mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_nostretch_funcaddr_TWOSIDED+4], ax
-mov       ax, word ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 6]
-sub       ax, 5 ; todo put this somewhere...
+les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
 mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_1_TWOSIDED+4], ax
 mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_2_TWOSIDED+4], ax
+mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_nostretch_funcaddr_TWOSIDED+4], es
 
 
 pop       bx
@@ -7022,16 +7012,14 @@ xchg      ax, bx
 mov       ax, cs
 mov       ds, ax
 
+; todo is si and lodsw pattern better?
 les       ax, dword ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR]
 mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul_top], ax    ; adjust shift/add byte order for 10/12 mul
 mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul_top+2], es  ; adjust shift/add byte order for 10/12 mul
-; todo LES this...
-mov       ax, word ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR+4]
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr_TWOSIDED+4], ax
-mov       ax, word ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE + 6]
-sub       ax, 5 ; todo put this somewhere...
+les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
 mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1_TWOSIDED+4], ax
 mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2_TWOSIDED+4], ax
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr_TWOSIDED+4], es
 
 pop       bx
 
