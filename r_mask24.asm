@@ -350,8 +350,6 @@ add   dx, di  ; 10, 2   ; swap these two for 10x - 4, 8, 10 from shl, then add o
 
 
 ; todo get rid of this
-mov   ax, (COLFUNC_FILE_START_SEGMENT - COLORMAPS_MASKEDMAPPING_SEG_DIFF); shut up assembler warning, this is fine
-mov   ds, ax                                 ; store this segment for now, with offset pre-added
 
 ;dx is dc_yh
 ;si is dc_yl
@@ -366,11 +364,16 @@ SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift:
 sar   di, 1
 sar   di, 1
 
+
 ; dest = destview + dc_yl*80 + (dc_x>>2); 
 ; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
 
-mov   bp, si  ; word lookup
-add   di, word ptr ds:[bp+si-2]                  ; add dc_yl * 80
+mov   bp, cs
+mov   ds, bp
+
+
+lea   bp, [si + _masked_local_dc_yl_lookup_table - 2]
+add   di, word ptr ds:[bp+si]                  ; add dc_yl * 80
 SELFMODIFY_MASKED_destview_lo_2:               ; add destview
 add   di, 01000h
 
@@ -385,8 +388,6 @@ xchg  ax, si    ; dc_yl in ax
 
 ; CL:SI = dc_texturemid
 ; CH:BX = dc_iscale
-mov   bp, cs
-mov   ds, bp
 ; gross lol. but again - rare function. in exchange the common function is faster.
 mov   cl, byte ptr ds:[SELFMODIFY_MASKED_dc_texturemid_hi_1+1 - OFFSET R_MASK24_STARTMARKER_]
 mov   bx, word ptr ds:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_]
@@ -5272,10 +5273,10 @@ mov   ax, 01000h    ; preshifted right 4
 
 
 SELFMODIFY_MASKED_add_currentoffset:
+public SELFMODIFY_MASKED_add_currentoffset
 db 05, 00, 00    ; add ax, 0000 (word)  ; always a single low byte actually
 
-; todo move into ds here once colfunc dependency for mul 80 gone
-push   ax ; push and pop later into ds. todo improve
+mov    ds, ax
 
 SELFMODIFY_MASKED_sub_topdelta:
 sub    cl, 010h          ; subtract tex top offset. si = si+1
@@ -5296,8 +5297,6 @@ sub    cl, 010h          ; subtract tex top offset. si = si+1
 SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x:
 mov   di, 01000h
 
-mov   bx, (COLFUNC_FILE_START_SEGMENT - COLORMAPS_MASKEDMAPPING_SEG_DIFF)
-mov   ds, bx                                 ; store this segment for now, with offset pre-added
 
 ; shift di by (2 - detailshift.)
 SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift:  ; todo make this into the above selfmodify setter.
@@ -5306,8 +5305,8 @@ sar   di, 1
 
 
 
-mov   bp, si
-add   di, word ptr ds:[si+bp-2]                   ; add * 80 lookup table value 
+lea   bp, [si + _masked_local_dc_yl_lookup_table - 2]
+add   di, word ptr cs:[bp+si]                  ; add dc_yl * 80
 
 SELFMODIFY_MASKED_destview_lo_3:
 add   di, 01000h
@@ -5336,7 +5335,7 @@ mov   si, 01000h        ; todo can this just go to si in the call?
 
 SELFMODIFY_MASKED_set_xlat_offset:
 mov   bp, 01000h   
-pop   ds ; _dc_source_segment
+
 
 db 09Ah
 SELFMODIFY_MASKED_COLFUNC_set_func_offset:
@@ -5920,8 +5919,17 @@ jmp       done_setting_cached_tex_masked
 ENDP
 
 
+ALIGN_MACRO
 
 
+_masked_local_dc_yl_lookup_table:
+PUBLIC _masked_local_dc_yl_lookup_table
+sumof80s = 0
+MAX_PIXELS = 200
+REPT MAX_PIXELS
+    dw sumof80s 
+    sumof80s = sumof80s + 80
+ENDM
 
 
 

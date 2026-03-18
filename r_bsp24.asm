@@ -14938,7 +14938,8 @@ mov      ds, ax
 ret
 
 ENDP
-
+; todo bench
+; ALIGN_MACRO
 _bsp_local_dc_yl_lookup_table:
 PUBLIC _bsp_local_dc_yl_lookup_table
 sumof80s = 0
