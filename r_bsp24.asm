@@ -4368,9 +4368,6 @@ push      dx ; bp - 028h
 push      ax ; bp - 02Ah
 
 
-
-
-
 mov       ax, XTOVIEWANGLE_SEGMENT   ; todo selfmodify all these?
 mov       cx, es  ; store ds_p+2 segment
 mov       es, ax
@@ -4406,47 +4403,33 @@ jmp       scales_set
 ALIGN_MACRO
 handle_negative_3216:
 
-neg ax
-adc dx, 0
-neg dx
+neg       ax
+adc       dx, 0
+neg       dx
 
-
-cmp dx, bx
-jge two_part_divide_3216
-one_part_divide_3216:
-div bx
-xor dx, dx
-
-neg ax
-adc dx, dx  ; dx = 0...
-neg dx
-jmp div_done
-ALIGN_MACRO
+; si zero
+cmp       dx, bx
+jl        one_part_divide_3216
 
 two_part_divide_3216:
-mov es, ax
-mov ax, dx
-xor dx, dx
-div bx     ; div high
-mov ds, ax ; store q1
-mov ax, es
+mov       es, ax
+mov       ax, dx
+xor       dx, dx
+div       bx     ; div high
+mov       si, ax ; store q1
+mov       ax, es
 ; DX:AX contains remainder + ax...
-div bx
-mov dx, ds  ; retrieve q1
-            ; q0 already in ax
-neg ax
-adc dx, 0
-neg dx
 
 
-mov bx, ss
-mov ds, bx  ; restored ds
+one_part_divide_3216:
+div       bx
+xor       dx, dx
+
+neg       ax
+adc       dx, dx  ; dx = 0...
+neg       dx
 jmp div_done
-ALIGN_MACRO
-one_part_divide:
-div bx
-xor dx, dx
-jmp div_done
+
 ALIGN_MACRO
 
 stop_greater_than_start:
@@ -4454,57 +4437,61 @@ stop_greater_than_start:
 sal       si, 1
 mov       ax, XTOVIEWANGLE_SEGMENT
 mov       es, ax
+lods      word ptr es:[si]
 SELFMODIFY_set_viewanglesr3_2:
-mov       ax, 01000h
-add       ax, word ptr es:[si]
+add       ax, 01000h
+
 call      R_ScaleFromGlobalAngle_
 mov       es, cx ; restore es as ds_p+2
-stos      word ptr es:[di]             ; +0Ah
+stosw             ; +0Ah
 xchg      ax, dx
-stos      word ptr es:[di]             ; +0Ch
+stosw             ; +0Ch
 xchg      ax, dx
 mov       bx, word ptr [bp - 022h]
+
+mov       si, cs
+mov       ds, si ; set ds to cs before eventual scales_set
+xor       si, si
 
 sub       ax, word ptr [bp - 02Eh]
 sbb       dx, word ptr [bp - 02Ch]
 
-; inlined FastDiv3216u_    (only use in the codebase, might as well.)
 
+; inlined FastDiv3216u_    (only use in the codebase, might as well.)
+; si zero default
 js   handle_negative_3216
 
 cmp dx, bx
-jl one_part_divide
+jl one_part_divide  ; todo branch test?
 
 two_part_divide:
 mov es, ax
 mov ax, dx
 xor dx, dx
 div bx     ; div high
-mov ds, ax ; store q1
+
+mov si, ax  ; si holds this..
 mov ax, es
 ; DX:AX contains remainder + ax...
+one_part_divide:
 div bx
-mov dx, ds  ; retrieve q1
+mov dx, si  ; retrieve q1
             ; q0 already in ax
-mov bx, ss
-mov ds, bx  ; restored ds
 
 
 
 div_done:
-public div_done
 
 
+; ds = cs here
 
 
 mov       es, cx ; restore es as ds_p+2
-stos      word ptr es:[di]             ; +0Eh
+stosw             ; +0Eh
 xchg      ax, dx
-stos      word ptr es:[di]             ; +10h
+stosw             ; +10h
 xchg      ax, dx
 
-mov       si, cs
-mov       ds, si
 ASSUME DS:R_BSP_24_TEXT
 ; rw_scalestep is ready. write it forward as selfmodifying code here
 
@@ -6778,46 +6765,32 @@ jmp       scales_set_TWOSIDED
 ALIGN_MACRO
 handle_negative_3216_TWOSIDED:
 
-neg ax
-adc dx, 0
-neg dx
+neg       ax
+adc       dx, 0
+neg       dx
 
-
-cmp dx, bx
-jge two_part_divide_3216_TWOSIDED
-one_part_divide_3216_TWOSIDED:
-div bx
-xor dx, dx
-
-neg ax
-adc dx, 0
-neg dx
-jmp div_done_TWOSIDED
-ALIGN_MACRO
+; si zero
+cmp       dx, bx
+jl        one_part_divide_3216_TWOSIDED
 
 two_part_divide_3216_TWOSIDED:
-mov es, ax
-mov ax, dx
-xor dx, dx
-div bx     ; div high
-mov ds, ax ; store q1
-mov ax, es
+mov       es, ax
+mov       ax, dx
+xor       dx, dx
+div       bx     ; div high
+mov       si, ax ; store q1
+mov       ax, es
 ; DX:AX contains remainder + ax...
-div bx
-mov dx, ds  ; retrieve q1
-            ; q0 already in ax
-neg ax
-adc dx, 0
-neg dx
 
 
-mov bx, ss
-mov ds, bx  ; restored ds
-jmp div_done_TWOSIDED
-ALIGN_MACRO
-one_part_divide_TWOSIDED:
-div bx
-xor dx, dx
+one_part_divide_3216_TWOSIDED:
+div       bx
+xor       dx, dx
+
+neg       ax
+adc       dx, dx  ; dx = 0...
+neg       dx
+
 jmp div_done_TWOSIDED
 ALIGN_MACRO
 
@@ -6826,59 +6799,59 @@ stop_greater_than_start_TWOSIDED:
 sal       si, 1
 mov       ax, XTOVIEWANGLE_SEGMENT
 mov       es, ax
+lods      word ptr es:[si]
 SELFMODIFY_set_viewanglesr3_2_TWOSIDED:
-mov       ax, 01000h
-add       ax, word ptr es:[si]
+add       ax, 01000h
 call      R_ScaleFromGlobalAngle_
 mov       es, cx ; restore es as ds_p+2
-stos      word ptr es:[di]             ; +0Ah
+stosw             ; +0Ah
 xchg      ax, dx
-stos      word ptr es:[di]             ; +0Ch
+stosw             ; +0Ch
 xchg      ax, dx
 mov       bx, word ptr [bp - 022h]
+
+mov       si, cs
+mov       ds, si ; set ds to cs before eventual scales_set
+xor       si, si ; si zero by default..
 
 sub       ax, word ptr [bp - 02Eh]
 sbb       dx, word ptr [bp - 02Ch]
 
+
 ; inlined FastDiv3216u_    (only use in the codebase, might as well.)
 
 js   handle_negative_3216_TWOSIDED
-
-cmp dx, bx
-jl one_part_divide_TWOSIDED
+cmp       dx, bx
+jl        one_part_divide_TWOSIDED
 
 two_part_divide_TWOSIDED:
-mov es, ax
-mov ax, dx
-xor dx, dx
-div bx     ; div high
+mov       es, ax
+mov       ax, dx
+xor       dx, dx
+div       bx     ; div high
 
- ; todo shove some selfmodify from below up here?
-mov ds, ax ; store q1
-mov ax, es
+mov       si, ax  ; si holds this..
+mov       ax, es
 ; DX:AX contains remainder + ax...
-div bx
-mov dx, ds  ; retrieve q1
+one_part_divide_TWOSIDED:
+div       bx
+mov       dx, si  ; retrieve q1
             ; q0 already in ax
-mov bx, ss
-mov ds, bx  ; restored ds
 
 
 
 div_done_TWOSIDED:
 
-
+; ds = cs here
 
 
 
 mov       es, cx ; restore es as ds_p+2
-stos      word ptr es:[di]             ; +0Eh
+stosw             ; +0Eh
 xchg      ax, dx
-stos      word ptr es:[di]             ; +10h
+stosw             ; +10h
 xchg      ax, dx
 
-mov       si, cs
-mov       ds, si
 ASSUME DS:R_BSP_24_TEXT
 ; rw_scalestep is ready. write it forward as selfmodifying code here
 
