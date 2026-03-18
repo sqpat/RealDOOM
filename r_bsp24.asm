@@ -222,6 +222,37 @@ dw 0
 
 
 
+PUSHA_BSP_BOTTOP_MACRO MACRO
+
+IF COMPISA GE COMPILE_186
+	pusha
+ELSE	
+   push   ax
+   push   dx
+   push   si
+   push   di
+   push   bx
+ENDIF
+ENDM
+
+
+
+POPA_BSP_BOTTOP_MACRO MACRO
+
+IF COMPISA GE COMPILE_186
+	popa
+   xchg   ax, di
+ELSE	
+   pop    bx
+   pop    ax
+   pop    si
+   pop    dx
+   pop    di
+
+ENDIF
+ENDM
+
+
 
 
 ;R_ScaleFromGlobalAngle_
@@ -4523,6 +4554,7 @@ xor       bx, bx
 mov       bl, ah
 
 ; todo is si and lodsw pattern better?
+; this could actually movsw too
 ; overwrite the pair of instructions
 les       ax, dword ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR]
 mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul], ax    ; adjust shift/add byte order for 10/12 mul
@@ -5681,7 +5713,7 @@ IF COMPISA GE COMPILE_386
 ELSE
 
    test cx, cx
-   jne  jmp_to_main_3232_div ; 09Ah bytes away
+   jne  jmp_to_main_3232_div
 
 
    cwd
@@ -9150,14 +9182,20 @@ xchg   ax, di  ; todo maybe this xchg doesnt need to be here; swap above registe
 
 ; si:di are dc_yl, dc_yh   
 
-; todo test vs pusha
+; todo: pusha is faster but we are only using 5 values.
+; any clever way to get CX, BP to also carry something useful?
 
+; store for bottom draw.
+
+COMMENT @
 push   ax ; store celip 
 push   dx  ; texturecolumn
-; store for bottom draw.
-push  si ; dc_yl
-push  di ; dc_yh
+push   si ; dc_yl
+push   di ; dc_yh
+push   bx ; rw_x
+@
 
+PUSHA_BSP_BOTTOP_MACRO
 
 
 
@@ -9170,7 +9208,6 @@ push  di ; dc_yh
 R_GetSourceSegment0_START_TWOSIDED:
 PUBLIC  R_GetSourceSegment0_START_TWOSIDED
 
-push  bx ; rw_x
 
 
 ; okay. we modify the first instruction in this argument. 
@@ -9277,26 +9314,26 @@ ENSUREALIGN_009:
 SELFMODIFY_BSP_R_DrawColumnPrep_ret_top:
 public SELFMODIFY_BSP_R_DrawColumnPrep_ret_top
 
-; the pop bx gets replaced with ret if bottom is calling.
-; todo: the bottom caller pops the same stuff. pop here and modify a later instruction instead?
 
 ; todo remove ds set to ss in return from drawcol..
 mov   dx, cs
 mov   ds, dx
 
-pop   bx  ; rw_x  always want this back
 
 
 ; this runs as a jmp for a top call, otherwise NOP for mid call
 R_GetSourceSegment0_DONE_TOP:
 public R_GetSourceSegment0_DONE_TOP
 
+POPA_BSP_BOTTOP_MACRO
 
+COMMENT @
+pop   bx  ; rw_x  always want this back
 pop   ax  ; dc_yh
 pop   si  ; dc_yl
 pop   dx  ; textuecolumn
-pop   di      ; todo whats this again. something for floorclip? yl-1?
-
+pop   di  ; todo whats this again. something for floorclip? yl-1?
+@
 
 ; END TOP DRAW??
 
@@ -9335,8 +9372,8 @@ cmp   ax, cx
 jg    dont_clip_bot_ceil ; todo branch test
 inc   cx
 ; toggle for ENSUREALIGN_010
-;xchg  ax, cx
-mov   ax, cx
+xchg  ax, cx
+;mov   ax, cx
 
 ;		if (mid <= yh)
 
