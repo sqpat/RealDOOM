@@ -224,8 +224,6 @@ push  ax
 ; todo can this go up a layer
 mov   ax, word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset]
 mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset_dupe], ax
-mov   ax, word ptr cs:[SELFMODIFY_masked_set_jump_write_offset+1]
-mov   word ptr cs:[SELFMODIFY_masked_set_jump_write_offset_dupe+1], ax
 
 
 
@@ -332,7 +330,15 @@ skip_ceil_clip_set_single:
 sub   dx, si
 js    exit_function_single
 
-;dec   si ; undo +1
+neg   dx
+shl   dx, 1
+add   dx, 398
+mov   di, dx  ; 2, 2   dx already multiplied by 2
+shl   dx, 1   ; 4, 2
+shl   dx, 1   ; 8, 2    ; is there a way to swap just one instruction, while not adding instruction count?
+add   dx, di  ; 10, 2   ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
+; dx has jmp amount
+
 ; dx/si contain dc_yh/dc_yl
 
 ; todo: this can be a second, local version of the function that is specialized?
@@ -368,15 +374,11 @@ add   ax, word ptr ds:[bp+si-2]                  ; add dc_yl * 80
 SELFMODIFY_MASKED_destview_lo_2:               ; add destview
 add   ax, 01000h
 
-mov   di, dx                                 ; grab dc_yh
 
 
-sal   di, 1                                 ; double diff (dc_yh - dc_yl) to get a word offset
 
-mov   di, word ptr ds:[di + DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET]                   ; get the jump value
 xchg  ax, di
-SELFMODIFY_masked_set_jump_write_offset_dupe:
-mov   word ptr ds:[01000h], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
+
 
 xchg  ax, si    ; dc_yl in ax
 
@@ -1262,8 +1264,8 @@ mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMA
 test  dl, dl
 je    is_stretch_draw ; from dl
 not_stretch_draw:
-mov   dx, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1
-mov   di, DRAWCOL_NOLOOP_OFFSET_MASKED
+
+mov   di, DRAWCOL_NOLOOP_OFFSET_MASKED - 5
 jmp   continue_selfmodifies_vissprites
 
 ALIGN_MACRO
@@ -1279,12 +1281,11 @@ jmp done_with_mul_vissprite
 
 ALIGN_MACRO
 is_stretch_draw:
-mov   dx, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOPANDSTRETCH_OFFSET+1
-mov   di, DRAWCOL_NOLOOPSTRETCH_OFFSET_MASKED
+
+mov   di, DRAWCOL_NOLOOPSTRETCH_OFFSET_MASKED - 5
 
 continue_selfmodifies_vissprites:
 mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset], di
-mov   word ptr cs:[SELFMODIFY_masked_set_jump_write_offset+1 - OFFSET R_MASK24_STARTMARKER_], dx
 
 
 mov   di, OFFSET _sprtopscreen
@@ -2976,17 +2977,17 @@ mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTM
 SELFMODIFY_MASKED_apply_stretch_tag:
 jmp   is_stretch_draw_2     ; nop or jmp
 SELFMODIFY_MASKED_apply_stretch_tag_AFTER:
-mov   dx, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1
-mov   bx, DRAWCOL_NOLOOP_OFFSET_MASKED
+
+mov   bx, DRAWCOL_NOLOOP_OFFSET_MASKED - 5
 jmp   continue_selfmodifies_maskedsegrange
 SELFMODIFY_MASKED_apply_stretch_tag_TARGET:
 is_stretch_draw_2:
-mov   dx, SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOPANDSTRETCH_OFFSET+1
-mov   bx, DRAWCOL_NOLOOPSTRETCH_OFFSET_MASKED
+
+mov   bx, DRAWCOL_NOLOOPSTRETCH_OFFSET_MASKED - 5
 
 continue_selfmodifies_maskedsegrange:
 mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset], bx
-mov   word ptr cs:[SELFMODIFY_masked_set_jump_write_offset+1 - OFFSET R_MASK24_STARTMARKER_], dx
+
 
 ; end fastdiv sequence
 
@@ -5468,8 +5469,8 @@ mov   al, byte ptr ds:[si + VISSPRITE_T.vs_colormap]
 mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMARKER_], al
 
 ; hardcoded function types.   TODO: if scale 1 use scale-less draw? or use hardcoded draws one way or another?
-mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset], DRAWCOL_NOLOOP_OFFSET_MASKED
-mov   word ptr cs:[SELFMODIFY_masked_set_jump_write_offset+1 - OFFSET R_MASK24_STARTMARKER_], SELFMODIFY_COLFUNC_JUMP_OFFSET24_NOLOOP_OFFSET+1
+mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset], DRAWCOL_NOLOOP_OFFSET_MASKED - 5
+
 
 mov   di, OFFSET _sprtopscreen
 mov   word ptr ds:[di], 0   ;
@@ -5713,8 +5714,15 @@ skip_ceil_clip_set:
 sub   dx, si   ; dx is dc_yh
 jl    increment_column_and_continue_loop
 
-;dec   si     ; undo dc_yl+1
-mov   di, dx ; finally write dc_yh to di
+neg   dx
+shl   dx, 1
+add   dx, 398
+mov   di, dx  ; 2, 2   dx already multiplied by 2
+shl   dx, 1   ; 4, 2
+shl   dx, 1   ; 8, 2    ; is there a way to swap just one instruction, while not adding instruction count?
+add   dx, di  ; 10, 2   ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
+; dx has jmp amount
+
 
 SELFMODIFY_MASKED_dc_texturemid_hi_1:
 mov   cl, 010h;  dc_texturemid intbits
@@ -5757,9 +5765,6 @@ sar   ax, 1
 sar   ax, 1
 
 
-; di already subtracted above
-sal   di, 1                                  ; double diff (dc_yh - dc_yl) to get a word offset
-mov   di, word ptr ds:[di+DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET]   ; get the jump value. both tables in masked are 10 byte jump tables
 
 mov   bp, si
 add   ax, word ptr ds:[si+bp-2]                   ; add * 80 lookup table value 
@@ -5769,8 +5774,7 @@ add   ax, 01000h
 
 xchg  ax, di
 
-SELFMODIFY_masked_set_jump_write_offset:
-mov   word ptr ds:[01000h], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
+
 
 
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
