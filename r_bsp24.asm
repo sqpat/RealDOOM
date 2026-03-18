@@ -231,8 +231,6 @@ dw 0
 
 
 
-
-
 ;R_ScaleFromGlobalAngle_
 ALIGN_MACRO
 PROC   R_ScaleFromGlobalAngle_ NEAR ; todo needs another look for sure
@@ -5210,7 +5208,9 @@ mov   al, byte ptr ds:[di+OFFSET_FLOORCLIP]	 ; cx = floor
 mov   cx, ax
 mov   al, byte ptr ds:[di+OFFSET_CEILINGCLIP] ; si = ceiling  = ceilingclip[rw_x]+1;
 
-xchg  ax, si
+; toggle for ENSUREALIGN_001
+;xchg  ax, si
+mov    si, ax
 
 inc   si
 
@@ -5224,7 +5224,7 @@ inc   si
 
 SELFMODIFY_set_topfrac_hi_mid:
 mov   ax, 01000h
-
+ENSUREALIGN_001:
 
 cmp   ax, si  ; ax can be negative even if si is not? but maybe ah is always ff?
 jg    skip_yl_ceil_clip    
@@ -5268,6 +5268,7 @@ markceiling_done:
 
 SELFMODIFY_set_botfrac_hi_mid:
 mov   ax, 01000h
+ENSUREALIGN_002:
 ; ah 0 because si < 255
 
 
@@ -5544,21 +5545,26 @@ public just_do_draw0
 
 ; ds must be reset to cs returning here.
 
-; cwd is possible here because source segment is 0x5000-0x6FFF...  clear out dl for later move to bp
-cwd
 mov   ds, ax   ; set dc_source_segment
+; cwd is possible here because source segment is 0x5000-0x6FFF...  clear out dl for later move to bp
 
+;cwd
+xor   dx, dx
+; toggle for ENSUREALIGN_003
 
 
 ; CX:AX rw_scale
-; TODO add directly into les below, and construct this from 8 bit shift.
-SELFMODIFY_set_rwscale_lo_mid:
-mov   ax, 01000h 
+
 SELFMODIFY_set_rwscale_hi_mid:
 mov   cx, 01000h 
+ENSUREALIGN_003:
 
 
 cmp   cl, 3
+SELFMODIFY_set_rwscale_lo_mid:
+mov   ax, 01000h 
+ENSUREALIGN_004:
+
 jae   use_max_light
 do_lightscaleshift:
 
@@ -14810,6 +14816,10 @@ ENDP
 
 ENDS
 
+public ENSUREALIGN_001
+public ENSUREALIGN_002
+public ENSUREALIGN_003
+public ENSUREALIGN_004
 
 
 END
