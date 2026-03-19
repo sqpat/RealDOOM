@@ -226,7 +226,7 @@ dw 0
 ; shoving some small functions in here since w ehave to pad to 0100h for the next jump table
 
 
-
+MOV_AX_IMM16_OPCODE = 0B8h
 
 
 PUSHA_BSP_BOTTOP_MACRO MACRO
@@ -7835,7 +7835,7 @@ mov       word ptr ds:[SELFMODIFY_BSP_get_segtextured_TWOSIDED], ((SELFMODIFY_BS
 jmp       seg_textured_check_done_TWOSIDED
 ALIGN_MACRO
 do_seg_textured_stuff_TWOSIDED:
-mov       word ptr ds:[SELFMODIFY_BSP_get_segtextured_TWOSIDED], 0C089h
+mov       word ptr ds:[SELFMODIFY_BSP_get_segtextured_TWOSIDED], MOV_AX_IMM16_OPCODE + ((XTOVIEWANGLE_SEGMENT AND 0FFh) SHL 8)
 SELFMODIFY_set_offsetangle_TWOSIDED:
 mov       dx, 01000h
 cmp       dx, FINE_ANG180_NOSHIFT ; 04000h
@@ -8549,25 +8549,18 @@ or    byte ptr ds:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], 1 ; floor bit
 SELFMODIFY_BSP_markfloor_1_TARGET_TWOSIDED:
 
 markfloor_done_TWOSIDED:
+
 SELFMODIFY_BSP_get_segtextured_TWOSIDED:
 
-jmp SHORT    jump_to_seg_non_textured_TWOSIDED  ; can become NOP todo make not NOP
-
-SELFMODIFY_BSP_get_segtextured_AFTER_TWOSIDED:
-
-seg_is_textured_TWOSIDED:
-
-; todo calculate destview here and push?
 
 
-; angle = MOD_FINE_ANGLE (rw_centerangle + xtoviewangle[rw_x]);
-; eventually use DS here, once source_segment vars use CS?
+SELFMODIFY_BSP_get_segtextured_AFTER_TWOSIDED = SELFMODIFY_BSP_get_segtextured_TWOSIDED + 2
 
-mov   ax, XTOVIEWANGLE_SEGMENT
+; seg is textured
+
+mov   ax, XTOVIEWANGLE_SEGMENT  ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET  ; may become jmp SHORT    jump_to_seg_non_textured_TWOSIDED 
 mov   es, ax
-
 mov   bx, di
-
 
 mov   bx, word ptr es:[bx+di] ; word lookup of dc_x
 
