@@ -4022,8 +4022,7 @@ stosw     ; bp + 0Ah  gets frontsectorceilingpic
 mov       al, ah
 stosw     ; bp + 0Ch gets frontsectorceilingheight
 mov       al, byte ptr ds:[si + (SECTOR_T.sec_lightlevel - SECTOR_T.sec_validcount)]
-; todo test prestoring sal 4?
-stosb     ; bp + 0Eh frontsectorlightlevel
+stosb     ; bp + 0Eh frontsectorlightlevel  ; todo test prestoring sal 4?
 
 
 mov       ds, dx
@@ -4438,9 +4437,9 @@ mov       byte ptr ds:[SELFMODIFY_set_midtexturemid_hi_stretch+1], al
 mov       ax, ss
 mov       ds, ax
 
+; todo this was calculated right above in a branch... combinable??
 mov       dx, word ptr [bp + 6] ; frontsector floor 
 xor       ax, ax
-
 
 ;dx:ax as our value
 
@@ -4646,8 +4645,6 @@ mov       cx, 5
 rep       movsw ; write drawseg_bsilheight thru drawseg_maskedtexturecol_val
 movsb           ; write drawseg_silhouette
 
-xor       ax, ax   ; maskedtexture is 0 in this case. todo wish we got this for free?
-; here
 ; DS STILL CS.
 
 do_seg_textured_stuff:
@@ -5267,7 +5264,7 @@ mov   bx, 00000h        ; base for qualityportlookup...
 
 mov   dx, SC_DATA
 
-xlat  byte ptr ss:[bx]  ; small optim: move to cs? just 12 bytes.
+xlat  byte ptr ss:[bx]  ; TODO small optim: move to cs? just 12 bytes.
 out   dx, al
 
 ; ds is always cs coming in.
@@ -5849,15 +5846,15 @@ mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], (SELFMODIFY_BSP_set_
 
 
 add       word ptr ds:[_ds_p_bsp], (SIZE DRAWSEG_T)
-mov       ax, ss
-mov       ds, ax
+mov       dx, ss ; DH IS KNOWN NONZERO HERE
+mov       ds, dx
 
-pop       ax ;   faster than add sp, 2 ? add       sp, STOREWALLRANGE_INNER_STACK_SIZE_MID     ; add back fixed SP
+add       sp, 2  ; undo rest of stack
 SELFMODIFY_mark_planes_dirty:
 public SELFMODIFY_mark_planes_dirty 
 db  0B8h, 00h, 00h   ;mov ax, 0  ; modify the first byte with bit flags . 00 for ah.
-test      al, 3   
-jne       mark_planes_dirty ; common case is fall thru.  ; todo is this always true for mid?
+dec       ax
+jns       mark_planes_dirty ; common case is fall thru.  ; todo is this always true for mid?
 
 ; pops on outside
 
@@ -5882,17 +5879,17 @@ ALIGN_MACRO
 mark_planes_dirty:
 public mark_planes_dirty
 mov      di, _visplaneheaders + VISPLANEHEADER_T.visplaneheader_dirty
-test     al, 1
-je       mark_ceil_dirty  ; if 3 tested true and 1 didnt, it must be the other one, skip the check.
-mov      bx,  word ptr cs:[_ceilingplaneindex]
-mov      byte ptr ds:[bx+di], al ; nonzero
-test     al, 2
-je       dont_mark_floor_dirty
-mark_ceil_dirty:  
+jz       mark_ceil_dirty      ; value was 1, so 2 flag was off.
 mov      bx,  word ptr cs:[_floorplaneindex]
-mov      byte ptr ds:[bx+di], al ; nonzero
+mov      byte ptr ds:[bx+di], dh ; nonzero
+dec      ax
+; al is 1 or 2, corresponding to original 2 or 3
+jz       dont_mark_ceil_dirty ; al was originally 2, 1 flag was off
+mark_ceil_dirty:  
+mov      bx,  word ptr cs:[_ceilingplaneindex]
+mov      byte ptr ds:[bx+di], dh ; nonzero
 
-dont_mark_floor_dirty:
+dont_mark_ceil_dirty:
 mov      byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], ah ;zero
 
 ; pops on outside
@@ -9652,15 +9649,14 @@ add       word ptr ds:[_ds_p_bsp], (SIZE DRAWSEG_T)
 
 add       sp, STOREWALLRANGE_INNER_STACK_SIZE_BOTTOP     ; add back fixed SP
 
-
-mov       ax, ss
-mov       ds, ax
+mov       dx, ss ; DH IS KNOWN NONZERO HERE
+mov       ds, dx
 
 SELFMODIFY_mark_planes_dirty_TWOSIDED:
 public SELFMODIFY_mark_planes_dirty_TWOSIDED 
 db  0B8h, 00h, 00h   ;mov ax, 0  ; modify the first byte with bit flags . 00 for ah.
-test      al, 3   
-jne       mark_planes_dirty_TWOSIDED ; common case is fall thru.
+dec       ax
+jns       mark_planes_dirty_TWOSIDED ; common case is fall thru.
 
 ; pops on outside
 
@@ -9670,17 +9666,17 @@ ALIGN_MACRO
 mark_planes_dirty_TWOSIDED:
 public mark_planes_dirty_TWOSIDED
 mov      di, _visplaneheaders + VISPLANEHEADER_T.visplaneheader_dirty
-test     al, 1
-je       mark_ceil_dirty_TWOSIDED  ; if 3 tested true and 1 didnt, it must be the other one, skip the check.
-mov      bx,  word ptr cs:[_ceilingplaneindex]
-mov      byte ptr ds:[bx+di], al ; nonzero
-test     al, 2
-je       dont_mark_floor_dirty_TWOSIDED
-mark_ceil_dirty_TWOSIDED:  
+jz       mark_ceil_dirty_TWOSIDED      ; value was 1, so 2 flag was off.
 mov      bx,  word ptr cs:[_floorplaneindex]
-mov      byte ptr ds:[bx+di], al ; nonzero
+mov      byte ptr ds:[bx+di], dh ; nonzero
+dec      ax
+; al is 1 or 2, corresponding to original 2 or 3
+jz       dont_mark_ceil_dirty_TWOSIDED ; al was originally 2, 1 flag was off
+mark_ceil_dirty_TWOSIDED:  
+mov      bx,  word ptr cs:[_ceilingplaneindex]
+mov      byte ptr ds:[bx+di], dh ; nonzero
 
-dont_mark_floor_dirty_TWOSIDED:
+dont_mark_ceil_dirty_TWOSIDED:
 mov      byte ptr cs:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], ah ;zero
 
 ; pops on outside
