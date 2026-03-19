@@ -7349,6 +7349,11 @@ jmp       bottexture_stuff_done
 ALIGN_MACRO
 bottexture_not_zero:
 
+; are any bits set?
+or        bl, bh
+or        byte ptr ds:[SELFMODIFY_check_for_any_tex_TWOSIDED+1], bl
+
+
 test      byte ptr [bp - 2], ML_DONTPEGBOTTOM
 je        calculate_bottexturemid
 ; todo cs write here ??
@@ -7364,9 +7369,6 @@ mov   byte ptr ds:[SELFMODIFY_set_bottexturemid_hi+1], dl
 
 bottexture_stuff_done:
 
-; are any bits set?
-or        bl, bh
-or        byte ptr ds:[SELFMODIFY_check_for_any_tex_TWOSIDED+1], bl
 
 
 
