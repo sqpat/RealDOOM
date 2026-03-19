@@ -282,6 +282,8 @@ PUSHA_NO_AX_MACRO ; revist once we call outer func...
 mov       si, word ptr ds:[_thinkerlist + THINKER_T.t_next]
 and       si, TF_PREVBITS
 
+ENSUREALIGN_902:
+PUBLIC ENSUREALIGN_902
 do_next_thinker:
 
 

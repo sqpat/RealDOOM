@@ -5459,8 +5459,9 @@ sal   dx, 1        ; multiply pixel count by 2. if signed no pixels to draw
 jns   jump_to_mid_no_pixels_to_draw ; had to wait until floors/ceils marked to early out.
 
 push  di  ; store dc_x
-push  bp  ; push because ax needs dc_yl for colfunc
-
+SELFMODIFY_COLFUNC_sub_centery24_mid:
+lea   ax, [bp - 010h]
+push  ax
 
 lea   si,  [bp + bsp_local_dc_yl_lookup_table_ - 2] ; word offset + lookup
 mov   bp, word ptr ds:[si+bp]                       ; add * 80 lookup table value 
@@ -5782,8 +5783,8 @@ ELSE
    FastDiv3232FFFF_done:
 
 ; toggle for ENSUREALIGN_011
-;   xchg  ax, bx        ; dc_iscale +0  into bx
-   mov   bx, ax        ; dc_iscale +0  into bx
+   xchg  ax, bx        ; dc_iscale +0  into bx
+;   mov   bx, ax        ; dc_iscale +0  into bx
 
 
 ; todo what if we inlined the function right here, instead of writing selfmodifies forward to selfmodifies...
@@ -5798,8 +5799,6 @@ ENDIF
    mov   dx, si  ; jmp amount
    pop   ax   ; dc_yl
 
-   SELFMODIFY_COLFUNC_sub_centery24_mid:
-   sub   ax, 01000h
 
 
    R_DrawColumnPrep_:
@@ -6100,8 +6099,6 @@ ELSE
    pop   dx   ; jump amount
    pop   ax   ; dc_yl
 
-   SELFMODIFY_COLFUNC_sub_centery24_mid_stretch:
-   sub   ax, 01000h
 
    push cs   
    PUSH_MACRO_WITH_REG si OFFSET(increment_loop_values_full)
@@ -9289,10 +9286,9 @@ mov   ds, ax ; set _dc_source_segment
 R_DrawColumnPrepTop:
 PUBLIC R_DrawColumnPrepTop
 
-mov   ax, si ; dc_yl in ax.   
 
 SELFMODIFY_COLFUNC_sub_centery24_top:
-sub   ax, 01000h
+lea   ax, [si - 010h] ; dc_yl - centery
 
 
 sub   si, di  ; ; yl - yh
@@ -9454,10 +9450,10 @@ mov   ds, ax ; set _dc_source_segment
 R_DrawColumnPrepBot:
 PUBLIC R_DrawColumnPrepBot
 
-mov   ax, si  ; dc_yl set for colfunc
+
 
 SELFMODIFY_COLFUNC_sub_centery24_bot:
-sub   ax, 01000h
+lea   ax, [si - 010h] ; dc_yl - centery
 
 sub   si, di  ; yl - yh
 shl   si, 1
@@ -14530,10 +14526,10 @@ mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_3_TWOSIDED+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_4_TWOSIDED+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_5_TWOSIDED+1], ax
 
-mov      word ptr ds:[SELFMODIFY_COLFUNC_sub_centery24_mid+1], ax
-mov      word ptr ds:[SELFMODIFY_COLFUNC_sub_centery24_mid_stretch+1], ax
-mov      word ptr ds:[SELFMODIFY_COLFUNC_sub_centery24_top+1], ax
-mov      word ptr ds:[SELFMODIFY_COLFUNC_sub_centery24_bot+1], ax
+neg      ax
+mov      byte ptr ds:[SELFMODIFY_COLFUNC_sub_centery24_mid+2], al
+mov      byte ptr ds:[SELFMODIFY_COLFUNC_sub_centery24_top+2], al
+mov      byte ptr ds:[SELFMODIFY_COLFUNC_sub_centery24_bot+2], al
 
 
 mov      ax, word ptr ss:[_viewwidth]

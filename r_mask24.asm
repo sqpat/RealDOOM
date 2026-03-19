@@ -382,12 +382,10 @@ add   di, 01000h
 
 
 
-; toggle for ENSUREALIGN_102
-;xchg  ax, si    ; dc_yl in ax
-mov  ax, si    ; dc_yl in ax
+; ? toggle for ENSUREALIGN_102
 
 SELFMODIFY_MASKED_sub_centery_2:
-sub   ax, 01000h
+lea   ax, [si - 010h] ; dc_yl - centery
 
 
 ; CL:SI = dc_texturemid
@@ -5311,12 +5309,10 @@ add   di, 01000h
 
 ; if we make a separate drawcol masked we can use a constant here.
 
-; toggle for ENSUREALIGN_101
-;xchg  ax, si    ; dc_yl in ax
-mov   ax, si
+;? toggle for ENSUREALIGN_101
 
 SELFMODIFY_MASKED_sub_centery_1:
-sub   ax, 01000h
+lea   ax, [si - 010h] ; dc_yl - centery
 
 ; cl:si is dc_texturemid
 ; ch:bx is dc_iscale
@@ -6188,8 +6184,9 @@ mov   word ptr ds:[SELFMODIFY_MASKED_centery_4+3 - OFFSET R_MASK24_STARTMARKER_]
 
 inc      ax ; has to do with yl/yh inc by 1 logic
 
-mov   word ptr ds:[SELFMODIFY_MASKED_sub_centery_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   word ptr ds:[SELFMODIFY_MASKED_sub_centery_2+1 - OFFSET R_MASK24_STARTMARKER_], ax
+neg      ax
+mov   byte ptr ds:[SELFMODIFY_MASKED_sub_centery_1+2 - OFFSET R_MASK24_STARTMARKER_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_sub_centery_2+2 - OFFSET R_MASK24_STARTMARKER_], al
 
 skip_centery_selfmodifies_this_frame:
 
