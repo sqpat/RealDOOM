@@ -24,10 +24,10 @@
 #define R_DrawSkyColumnFLOffset                 0x0
 #define R_DrawSkyPlaneFLOffset                  0x294
 #define R_DrawSkyPlaneDynamicFLOffset           0x294
-#define R_WriteBackViewConstants24Offset        0x3978
-#define R_RenderPlayerView24Offset              0x3824
-#define R_GetCompositeTexture24Offset           0x350A
-#define R_GetPatchTexture24Offset               0x346E
+#define R_WriteBackViewConstants24Offset        0x3976
+#define R_RenderPlayerView24Offset              0x3822
+#define R_GetCompositeTexture24Offset           0x3508
+#define R_GetPatchTexture24Offset               0x346C
 #define R_WriteBackViewConstants16Offset        0x3404
 #define R_RenderPlayerView16Offset              0x3287
 #define R_GetCompositeTexture16Offset           0x2F71

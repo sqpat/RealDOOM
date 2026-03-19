@@ -4022,7 +4022,8 @@ stosw     ; bp + 0Ah  gets frontsectorceilingpic
 mov       al, ah
 stosw     ; bp + 0Ch gets frontsectorceilingheight
 mov       al, byte ptr ds:[si + (SECTOR_T.sec_lightlevel - SECTOR_T.sec_validcount)]
-stosb     ; bp + 0Eh frontsectorceilingheight
+; todo test prestoring sal 4?
+stosb     ; bp + 0Eh frontsectorlightlevel
 
 
 mov       ds, dx
@@ -4373,9 +4374,10 @@ inc       ax
 
 
 
+mov       ds, cx  ; restore ds = cs
 
 
-mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_1+2], ax
+mov   word ptr ds:[SELFMODIFY_cmp_di_to_rw_stopx_1+2], ax
 
 ; sp at bp - 024h
 
@@ -4397,6 +4399,41 @@ sbb       dx, 01000h
 
 push      dx  ; bp - 024h
 push      ax  ; bp - 026h
+
+test      byte ptr [bp - 2], ML_DONTPEGBOTTOM
+jne       do_peg_bottom  ; todo branch test.
+dont_peg_bottom:
+; dx:ax already worldtop
+mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1], ax
+mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo_stretch+1], ax
+
+xchg      ax, dx   ; word ptr [bp - 024h]
+; ax has rw_midtexturemid+2
+jmp       done_with_bottom_peg
+
+ALIGN_MACRO
+do_peg_bottom:
+mov       ax, word ptr [bp + 6]
+SELFMODIFY_BSP_viewz_shortheight_5:
+sub       ax, 01000h
+xor       cx, cx
+SHIFT32_MACRO_RIGHT ax cx 3
+mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1], cx
+mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo_stretch+1], ax
+
+; add textureheight+1
+
+SELFMODIFY_add_texturemidheight_plus_one:
+add       ax, 01000h  ; todo byte
+done_with_bottom_peg:
+; ax:cx has rw_midtexturemid
+
+SELFMODIFY_BSP_siderenderrowoffset_1:
+add       al, 010h
+
+mov       byte ptr ds:[SELFMODIFY_set_midtexturemid_hi+1], al
+mov       byte ptr ds:[SELFMODIFY_set_midtexturemid_hi_stretch+1], al
+
 
 mov       ax, ss
 mov       ds, ax
@@ -4586,47 +4623,6 @@ movsw ; write instruction 2
 
 
 
-test      byte ptr [bp - 2], ML_DONTPEGBOTTOM
-jne       do_peg_bottom  ; todo branch test.
-dont_peg_bottom:
-les       ax,  dword ptr [bp - 026h]
-mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1], ax
-mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo_stretch+1], ax
-
-mov       ax, es   ; word ptr [bp - 024h]
-; ax has rw_midtexturemid+2
-jmp       done_with_bottom_peg
-ALIGN_MACRO
-
-
-
-do_peg_bottom:
-mov       ax, word ptr [bp + 6]
-SELFMODIFY_BSP_viewz_shortheight_5:
-sub       ax, 01000h
-xor       cx, cx
-SHIFT32_MACRO_RIGHT ax cx 3
-mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1], cx
-mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo_stretch+1], ax
-
-
-; add textureheight+1
-
-SELFMODIFY_add_texturemidheight_plus_one:
-add       ax, 01000h  ; todo byte
-done_with_bottom_peg:
-; ax:cx has rw_midtexturemid
-
-
-
-
-SELFMODIFY_BSP_siderenderrowoffset_1:
-add       al, 010h
-
-mov       byte ptr ds:[SELFMODIFY_set_midtexturemid_hi+1], al
-mov       byte ptr ds:[SELFMODIFY_set_midtexturemid_hi_stretch+1], al
-
-
 
 ;		ds_p->silhouette = SIL_BOTH;
 ;		ds_p->sprtopclip = screenheightarray;
@@ -4652,24 +4648,7 @@ movsb           ; write drawseg_silhouette
 
 xor       ax, ax   ; maskedtexture is 0 in this case. todo wish we got this for free?
 ; here
-
-
-
-
-; coming into here, AL is equal to maskedtexture.
-; ds is equal to CS
-; sp should now be bp - 02Eh
-
-
-; set maskedtexture in rendersegloop
-
-; would be nice to turn into a jmp or nop, but the lookup is slow and doesnt actually run often.
-
-
-
 ; DS STILL CS.
-
-
 
 do_seg_textured_stuff:
 
@@ -7258,7 +7237,7 @@ mov       ax, 01000h
 mov       word ptr ds:[SELFMODIFY_BSP_set_toptexture+1], ax
 mov       bx, ax     ; backup
 test      ax, ax
-je        toptexture_zero         ; todo whats more common?
+je        toptexture_zero         ; todo branch test
 
 toptexture_not_zero:
 
@@ -7356,6 +7335,14 @@ bottexture_zero:
 mov       word ptr ds:[SELFMODIFY_BSP_bottexture], ((SELFMODIFY_BSP_bottexture_TARGET - SELFMODIFY_BSP_bottexture_AFTER) SHL 8) + 0EBh
 jmp       bottexture_stuff_done
 ALIGN_MACRO
+toptexture_zero:
+mov       byte ptr ds:[SELFMODIFY_BSP_toptexture],   0E9h
+mov       word ptr ds:[SELFMODIFY_BSP_toptexture+1], (SELFMODIFY_BSP_toptexture_TARGET - SELFMODIFY_BSP_toptexture_AFTER)
+jmp       toptexture_stuff_done
+
+ALIGN_MACRO
+
+ALIGN_MACRO
 bottexture_not_zero:
 
 ; are any bits set?
@@ -7364,20 +7351,7 @@ or        byte ptr ds:[SELFMODIFY_check_for_any_tex_TWOSIDED+1], bl
 
 
 
-test      byte ptr [bp - 2], ML_DONTPEGBOTTOM
-je        calculate_bottexturemid
-; todo cs write here ??
-les       ax, dword ptr [bp - 026h]
-mov       dx, es
-do_selfmodify_bottexture:
 
-; set _rw_toptexturemid in rendersegloop
-
-mov   word ptr ds:[SELFMODIFY_set_bottexturemid_lo+1], ax
-mov   byte ptr ds:[SELFMODIFY_set_bottexturemid_hi+1], dl
-
-
-bottexture_stuff_done:
 
 SELFMODIFY_BSP_siderenderrowoffset_2_TWOSIDED:
 mov   al, 010h ; todo should this just be done above...?  rather than this selfmodify chain
@@ -14627,7 +14601,7 @@ cmp      ax, word ptr ds:[_lastviewz+0]
 je       skip_viewz_lo_selfmodifies_this_frame
 mov      word ptr ds:[_lastviewz+0], ax
 
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_1+1], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_1+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_2+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_3+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_4+2], ax
