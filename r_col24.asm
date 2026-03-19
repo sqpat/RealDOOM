@@ -24,59 +24,17 @@ INSTRUCTION_SET_MACRO_NO_MEDIUM
 SEGMENT R_COL24_TEXT USE16 PARA PUBLIC'CODE'
 ASSUME  CS:R_COL24_TEXT
  
-
-
-
-
 PROC R_COLUMN24_STARTMARKER_
 PUBLIC R_COLUMN24_STARTMARKER_
 ENDP 
 
 
 
-
-
-; mul 80 table. common table to put at segment:[0000]
-_dc_yl_lookup_table:
-PUBLIC _dc_yl_lookup_table
-sumof80s = 0
-MAX_PIXELS = 200
-REPT MAX_PIXELS
-    dw sumof80s 
-    sumof80s = sumof80s + 80
-ENDM
-
-
-MARKER_COLFUNC_JUMP_TARGET24_:
-PUBLIC MARKER_COLFUNC_JUMP_TARGET24_
-BYTES_PER_PIXEL = 12
-MAX_PIXELS = 200
-bytecount = (MAX_PIXELS * BYTES_PER_PIXEL)
-REPT MAX_PIXELS
-    bytecount = bytecount - BYTES_PER_PIXEL
-    dw bytecount 
-ENDM
-
 ;
 ; R_DrawColumn
 ;
 	
 
-COLFUNC_NOLOOP_FUNCTION_AREA_SEGMENT_:
-public COLFUNC_NOLOOP_FUNCTION_AREA_SEGMENT_
-
-
-MARKER_COLFUNC_NOLOOPANDSTRETCH_JUMPTABLE_SIZE_OFFSET_:
-public MARKER_COLFUNC_NOLOOPANDSTRETCH_JUMPTABLE_SIZE_OFFSET_
-MARKER_COLFUNC_NOLOOP_JUMPTABLE_SIZE_OFFSET_:
-public MARKER_COLFUNC_NOLOOP_JUMPTABLE_SIZE_OFFSET_
-BYTES_PER_PIXEL = 10
-MAX_PIXELS = 200
-bytecount = (MAX_PIXELS * BYTES_PER_PIXEL)
-REPT MAX_PIXELS
-    bytecount = bytecount - BYTES_PER_PIXEL
-    dw bytecount
-ENDM
 
 
 
@@ -94,7 +52,7 @@ PUBLIC  R_DrawColumn24NoLoop_
     ; CL:SI = dc_texturemid
     ; CH:BX = dc_iscale
 
-   mov     word ptr cs:[((DC_YL_LOOKUP_SEGMENT - COLORMAPS_SEGMENT) SHL 4) +  MARKER_SM_COLFUNC_jump_offset24_noloop_+1], dx ; five bytes
+   mov     word ptr cs:[((COLFUNC_FUNCTION_AREA_SEGMENT - COLORMAPS_SEGMENT) SHL 4) +  MARKER_SM_COLFUNC_jump_offset24_noloop_+1], dx ; five bytes
 
    MOV  DX, AX  ; copy center24y
    MUL  CH
@@ -193,7 +151,7 @@ PUBLIC  R_DrawColumn24NoLoopStretch_
     ; CL:SI = dc_texturemid
     ; 00:BX = dc_iscale
    
-   mov   word ptr cs:[((DC_YL_LOOKUP_SEGMENT - COLORMAPS_SEGMENT) SHL 4) + MARKER_SM_COLFUNC_jump_offset24_noloopandstretch_+1], dx ; five bytes
+   mov   word ptr cs:[((COLFUNC_FUNCTION_AREA_SEGMENT - COLORMAPS_SEGMENT) SHL 4) + MARKER_SM_COLFUNC_jump_offset24_noloopandstretch_+1], dx ; five bytes
 
 
     ; ch is unset (garbage), but implied value 0. skip the mul ch step
@@ -282,7 +240,7 @@ PUBLIC  R_DrawColumn24Normal_
 COLORMAPS_F_OFFSET = 07Fh + (((COLORMAPS_F_DUPE_SEGMENT) - COLORMAPS_SEGMENT) SHL 4)
 
 
-   mov   word ptr cs:[((DC_YL_LOOKUP_SEGMENT - COLORMAPS_SEGMENT) SHL 4) + MARKER_SM_COLFUNC_jump_offset24_+1], dx ; five bytes
+   mov   word ptr cs:[((COLFUNC_FUNCTION_AREA_SEGMENT - COLORMAPS_SEGMENT) SHL 4) + MARKER_SM_COLFUNC_jump_offset24_+1], dx ; five bytes
 
 
 ; credit to zero318 for various ideas for the function
@@ -388,7 +346,7 @@ PUBLIC MARKER_COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET_
 PROC    R_DrawColumn24NormalStretch_ FAR
 PUBLIC  R_DrawColumn24NormalStretch_
 
-  mov   word ptr cs:[((DC_YL_LOOKUP_SEGMENT - COLORMAPS_SEGMENT) SHL 4) + MARKER_SM_COLFUNC_jump_offset24_normalstretch_+1], dx ; five bytes
+  mov   word ptr cs:[((COLFUNC_FUNCTION_AREA_SEGMENT - COLORMAPS_SEGMENT) SHL 4) + MARKER_SM_COLFUNC_jump_offset24_normalstretch_+1], dx ; five bytes
 
 
    ; ch is unset (garbage), but implied value 0. skip the mul ch step

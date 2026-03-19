@@ -39,6 +39,8 @@ _viewz_shortheight = 0
 _viewz = 0
 _extralight =     0
 _dc_source_segment = 0
+COLFUNC_JUMP_LOOKUP_SEGMENT = 0
+DC_YL_LOOKUP_MASKEDMAPPING_SEGMENT = 0
 
 
 _vsprsortedheadfirst = 0
@@ -46,7 +48,8 @@ _vsprsortedheadfirst = 0
 ;=================================
 
 
-
+COLFUNC_JUMPTABLE_SIZE_OFFSET = 0
+DC_YL_LOOKUP_SEGMENT = 0
 
 PROC  R_MASK16_STARTMARKER_
 PUBLIC  R_MASK16_STARTMARKER_
@@ -233,8 +236,8 @@ ENDP
 
 
 
-COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF   = ((DC_YL_LOOKUP_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
-COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF   = 0
+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = 0
 
 
 ; multi/single refer to whether this is drawing masked columns

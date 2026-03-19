@@ -79,9 +79,7 @@ PUBLIC  R_DrawSkyColumn_
 
 	; shift of dc_x already done outside
     ; no texture calc overhead. add one pixel at a time via lodsb
-    
-    mov   ax, DC_YL_LOOKUP_SEGMENT             ; get segment for mul 80
-    mov   es, ax                                 ; 
+    mov   es, word ptr ds:[_ds_y + 2]
     mov   di, bx    ; grab dc_x
     mov   bx, si    ; for double lookup..
     mov   ax, word ptr es:[si+bx]                  ; quick mul 80
@@ -210,8 +208,8 @@ PUBLIC  R_DrawSkyColumnDynamic_
 	; shift of dc_x already done outside
     ; no texture calc overhead. add one pixel at a time via lodsb
     
-    mov   ax, DC_YL_LOOKUP_SEGMENT             ; get segment for mul 80
-    mov   es, ax                                 ; 
+    
+    mov   es, word ptr ds:[_ds_y + 2]
     mov   di, bx    ; grab dc_x
     mov   bx, si    ; for double lookup..
     mov   ax, word ptr es:[si+bx]                  ; quick mul 80

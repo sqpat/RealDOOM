@@ -79,8 +79,8 @@ PUBLIC  R_DrawSkyColumnFL_
 
 	; shift of dc_x already done outside
     ; no texture calc overhead. add one pixel at a time via lodsb
-    
-    mov   ax, DC_YL_LOOKUP_SEGMENT             ; get segment for mul 80
+    BSP_DC_YL_LOOKUP_SEGMENT = 0
+    mov   ax, BSP_DC_YL_LOOKUP_SEGMENT             ; get segment for mul 80
     mov   es, ax                                 ; 
 
     sal   bx, 1

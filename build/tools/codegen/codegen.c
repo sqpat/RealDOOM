@@ -8,7 +8,7 @@
 #include "r_state.h"
 #include "p_setup.h"
 
-#define CONSTANTS_COUNT 998
+#define CONSTANTS_COUNT 993
 #define LOCALS_COUNT 32
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -22,8 +22,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 
 	"COLORMAPS_6800_SEGMENT",
 	"COLFUNC_JUMP_LOOKUP_6800_SEGMENT",
-	"DC_YL_LOOKUP_6800_SEGMENT",
-	"COLFUNC_FUNCTION_AREA_6800_SEGMENT",
 	"SEENLINES_6800_SEGMENT",
 	"EMPTY_RENDER_6800_SEGMENT",
 
@@ -100,8 +98,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "COLORMAPS_SEGMENT",
 	"COLORMAPS_F_DUPE_SEGMENT",
 	"RENDER_9800_9C00_GAP_SEGMENT",
-    "COLFUNC_JUMP_LOOKUP_SEGMENT",
-    "DC_YL_LOOKUP_SEGMENT",
     "COLFUNC_FUNCTION_AREA_SEGMENT",
     "MOBJPOSLIST_SEGMENT",
 
@@ -195,7 +191,6 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "SEG_SIDES_OFFSET_IN_SEGLINES",
 
     "MAXLIGHTSCALE",
-    "DC_YL_LOOKUP_MASKEDMAPPING_SEGMENT",
 	"MUSIC_DRIVER_CODE_SEGMENT",
 	"REAL_LOWEST_DATA_SEGMENT",
 	"END_SKY_PLANE_SEGMENT",
@@ -1128,8 +1123,6 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     seenlines_segment, 
 
 	colormaps_6800_segment,
-	colfunc_jump_lookup_6800_segment,
-	dc_yl_lookup_6800_segment,
 	colfunc_function_area_6800_segment,
 	seenlines_6800_segment,
 	empty_render_6800_segment,
@@ -1200,8 +1193,6 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     colormaps_segment,
 	colormaps_f_dupe_segment,
 	render_9800_9C00_GAP_segment,
-    colfunc_jump_lookup_segment,
-    dc_yl_lookup_segment,
     colfunc_function_area_segment,
     mobjposlist_segment,
 
@@ -1294,7 +1285,6 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     colormaps_segment_maskedmapping,
     seg_sides_offset_in_seglines,
     MAXLIGHTSCALE,
-    dc_yl_lookup_maskedmapping_segment,
 	music_driver_code_segment,
 	real_lowest_data_segment,
     END_SKY_PLANE_SEGMENT,

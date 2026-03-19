@@ -5460,7 +5460,7 @@ push  di  ; store dc_x
 push  bp  ; push because ax needs dc_yl for colfunc
 
 
-lea   si,  [bp + _bsp_local_dc_yl_lookup_table - 2] ; word offset + lookup
+lea   si,  [bp + bsp_local_dc_yl_lookup_table_ - 2] ; word offset + lookup
 mov   bp, word ptr ds:[si+bp]                       ; add * 80 lookup table value 
 
 
@@ -9244,7 +9244,7 @@ SELFMODIFY_BSP_detailshift2minus_top:
 sar   bx, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
 sar   bx, 1
 
-lea   bp, [si + _bsp_local_dc_yl_lookup_table - 2]
+lea   bp, [si + bsp_local_dc_yl_lookup_table_ - 2]
 add   bx, word ptr ds:[si+bp]                   ; add * 80 lookup table value 
 
 ; inlined function. 
@@ -9429,7 +9429,7 @@ SELFMODIFY_BSP_detailshift2minus_bot:
 sar   bx, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
 sar   bx, 1
 
-lea   bp, [si + _bsp_local_dc_yl_lookup_table - 2]
+lea   bp, [si + bsp_local_dc_yl_lookup_table_ - 2]
 add   bx, word ptr ds:[si+bp]                   ; add * 80 lookup table value 
 
 
@@ -14946,9 +14946,11 @@ ret
 
 ENDP
 
-ALIGN_MACRO
-_bsp_local_dc_yl_lookup_table:
-PUBLIC _bsp_local_dc_yl_lookup_table
+ALIGN 16
+bsp_local_dc_yl_lookup_table_:
+PUBLIC bsp_local_dc_yl_lookup_table_
+
+
 sumof80s = 0
 MAX_PIXELS = 200
 REPT MAX_PIXELS

@@ -509,9 +509,7 @@ FREEBYTES             7DFA:0000
 // this is used both in physics and part of render code
 
 
-#define size_colfunc_jump_lookup   (sizeof(uint16_t) * SCREENHEIGHT)
-#define size_dc_yl_lookup          (sizeof(uint16_t) * SCREENHEIGHT)
-#define size_colfunc_function_area R_DrawColumn24CodeSize - size_colfunc_jump_lookup - size_dc_yl_lookup
+#define size_colfunc_function_area R_DrawColumn24CodeSize 
 
 // currently using:  2962
 // can stick lookup tables (800 bytes) in
@@ -526,9 +524,7 @@ FREEBYTES             7DFA:0000
 
 
 #define colormaps             ((lighttable_t  __far*)     MAKE_FULL_SEGMENT(0x98000000            , 0))
-#define dc_yl_lookup          ((uint16_t  __far*)         MAKE_FULL_SEGMENT(colormaps             , size_colormaps))
-#define colfunc_jump_lookup   ((uint16_t  __far*)         MAKE_FULL_SEGMENT(dc_yl_lookup          , size_dc_yl_lookup))
-#define colfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(colfunc_jump_lookup   , size_colfunc_jump_lookup))
+#define colfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(colormaps   , size_colormaps))
 #define seenlines             ((uint8_t __far*)           MAKE_FULL_SEGMENT(colfunc_function_area , size_colfunc_function_area))
 
 // 9c04
@@ -541,8 +537,6 @@ FREEBYTES             7DFA:0000
 //6D8A
 
 #define colormaps_segment               ((segment_t) ((int32_t)colormaps >> 16))
-#define dc_yl_lookup_segment            ((segment_t) ((int32_t)dc_yl_lookup >> 16))
-#define colfunc_jump_lookup_segment     ((segment_t) ((int32_t)colfunc_jump_lookup >> 16))
 #define colfunc_function_area_segment   ((segment_t) ((int32_t)colfunc_function_area >> 16))
 #define seenlines_segment               ((segment_t) ((int32_t)seenlines >> 16))
 #define render_9800_9C00_GAP_segment    ((segment_t) ((int32_t)render_9800_9C00_GAP >> 16))
@@ -551,15 +545,11 @@ FREEBYTES             7DFA:0000
 
 //physics addresses. if wads ever move out of EMS, use the 9800 mapping again.
 #define colormaps_6800             ((lighttable_t  __far*)     MAKE_FULL_SEGMENT(0x68000000                 , 0))
-#define colfunc_jump_lookup_6800   ((uint16_t  __far*)         MAKE_FULL_SEGMENT(colormaps_6800             , size_colormaps))
-#define dc_yl_lookup_6800          ((uint16_t  __far*)         MAKE_FULL_SEGMENT(colfunc_jump_lookup_6800   , size_colfunc_jump_lookup))
-#define colfunc_function_area_6800 ((byte  __far*)             MAKE_FULL_SEGMENT(dc_yl_lookup_6800          , size_dc_yl_lookup))
+#define colfunc_function_area_6800 ((byte  __far*)             MAKE_FULL_SEGMENT(colormaps_6800          , size_colormaps))
 #define seenlines_6800             ((uint8_t __far*)           MAKE_FULL_SEGMENT(colfunc_function_area_6800 , size_colfunc_function_area))
 #define empty_render_6800          ((byte __far*)              MAKE_FULL_SEGMENT(seenlines_6800             , size_seenlines))
 
 #define colormaps_6800_segment               ((segment_t) ((int32_t)colormaps_6800 >> 16))
-#define colfunc_jump_lookup_6800_segment     ((segment_t) ((int32_t)colfunc_jump_lookup_6800 >> 16))
-#define dc_yl_lookup_6800_segment            ((segment_t) ((int32_t)dc_yl_lookup_6800 >> 16))
 #define colfunc_function_area_6800_segment   ((segment_t) ((int32_t)colfunc_function_area_6800 >> 16))
 #define seenlines_6800_segment               ((segment_t) ((int32_t)seenlines_6800 >> 16))
 #define empty_render_6800_segment            ((segment_t) ((int32_t)empty_render_6800 >> 16))
@@ -584,10 +574,8 @@ FREEBYTES             7DFA:0000
 #define colfunc_segment_maskedmapping   ((segment_t) (colfunc_segment           - colormaps_segment + colormaps_segment_maskedmapping))
 
 
-#define colfunc_jump_lookup_maskedmapping ((uint16_t __far*)  (((int32_t)colfuncjump_lookup) - (int32_t)colormaps + (int32_t)colormaps_maskedmapping))
-#define dc_yl_lookup_maskedmapping        ((uint16_t  __far*) (((int32_t)dc_yl_lookup)       - (int32_t)colormaps + (int32_t)colormaps_maskedmapping))
 
-#define dc_yl_lookup_maskedmapping_segment ((segment_t) ((int32_t)dc_yl_lookup_maskedmapping >> 16))
+
 
 
 #define colormaps_colfunc_seg_difference (colfunc_segment - colormaps_segment)

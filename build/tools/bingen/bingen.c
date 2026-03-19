@@ -272,10 +272,9 @@ void __far MARKER_SM_COLFUNC_jump_offset24_noloopandstretch();
 void __far MARKER_COLFUNC_NORMAL_FUNCTION_AREA_OFFSET();
 void __far MARKER_COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET();
 void __far MARKER_COLFUNC_NOLOOP_FUNCTION_AREA_OFFSET();
-void __far MARKER_COLFUNC_NOLOOP_JUMPTABLE_SIZE_OFFSET();
-void __far MARKER_COLFUNC_NOLOOPANDSTRETCH_FUNCTION_AREA_OFFSET();
-void __far MARKER_COLFUNC_NOLOOPANDSTRETCH_JUMPTABLE_SIZE_OFFSET();
-void __far MARKER_COLFUNC_JUMP_TARGET24();
+void __far bsp_local_dc_yl_lookup_table();
+void __far masked_local_dc_yl_lookup_table();
+
 void __far MARKER_SM_COLFUNC_set_destview_segmentFL();
 void __far MARKER_SM_COLFUNC_jump_offsetFL();
 
@@ -778,12 +777,10 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "COLFUNC_NORMAL_FUNCTION_AREA_OFFSET                 = 0%Xh\n", FP_OFF(MARKER_COLFUNC_NORMAL_FUNCTION_AREA_OFFSET)        - FP_OFF(R_BSP24_STARTMARKER));
     fprintf(fp, "COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET                 = 0%Xh\n", FP_OFF(MARKER_COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET)        - FP_OFF(R_BSP24_STARTMARKER));
     fprintf(fp, "COLFUNC_NOLOOP_FUNCTION_AREA_OFFSET                 = 0%Xh\n", FP_OFF(MARKER_COLFUNC_NOLOOP_FUNCTION_AREA_OFFSET)        - FP_OFF(R_BSP24_STARTMARKER));
-    fprintf(fp, "COLFUNC_NOLOOP_JUMPTABLE_SIZE_OFFSET                = 0%Xh\n", FP_OFF(MARKER_COLFUNC_NOLOOP_JUMPTABLE_SIZE_OFFSET)       - FP_OFF(R_BSP24_STARTMARKER));
-    fprintf(fp, "COLFUNC_NOLOOPANDSTRETCH_FUNCTION_AREA_OFFSET                 = 0%Xh\n", FP_OFF(MARKER_COLFUNC_NOLOOPANDSTRETCH_FUNCTION_AREA_OFFSET)        - FP_OFF(R_BSP24_STARTMARKER));
-    fprintf(fp, "COLFUNC_NOLOOPANDSTRETCH_JUMPTABLE_SIZE_OFFSET                = 0%Xh\n", FP_OFF(MARKER_COLFUNC_NOLOOPANDSTRETCH_JUMPTABLE_SIZE_OFFSET)       - FP_OFF(R_BSP24_STARTMARKER));
-    fprintf(fp, "COLFUNC_JUMPTABLE_SIZE_OFFSET                       = 0%Xh\n", FP_OFF(MARKER_COLFUNC_JUMP_TARGET24)                      - FP_OFF(R_BSP24_STARTMARKER));
+    fprintf(fp, "BSP_LOCAL_DC_YL_LOOKUP_TABLE_OFFSET                 = 0%Xh\n", FP_OFF(bsp_local_dc_yl_lookup_table)        - FP_OFF(R_BSP24_STARTMARKER));
+    fprintf(fp, "MASKED_LOCAL_DC_YL_LOOKUP_TABLE_OFFSET              = 0%Xh\n", FP_OFF(masked_local_dc_yl_lookup_table)        - FP_OFF(R_BSP24_STARTMARKER));
 
-
+//;BSP_DC_YL_LOOKUP_SEGMENT
 
     fprintf(fp, "M_INITOFFSET                           = 0%Xh\n", FP_OFF(M_Init)                            - FP_OFF(M_MENU_STARTMARKER));
     fprintf(fp, "P_SPAWNSPECIALSOFFSET                  = 0%Xh\n", FP_OFF(P_SpawnSpecials)                   - FP_OFF(P_SIGHT_STARTMARKER));

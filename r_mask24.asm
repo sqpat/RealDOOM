@@ -372,7 +372,7 @@ mov   bp, cs
 mov   ds, bp
 
 
-lea   bp, [si + _masked_local_dc_yl_lookup_table - 2] ; stack bp and si for word ptr, bake in - 2
+lea   bp, [si + masked_local_dc_yl_lookup_table_ - 2] ; stack bp and si for word ptr, bake in - 2
 add   di, word ptr ds:[bp+si]                  ; add dc_yl * 80
 SELFMODIFY_MASKED_destview_lo_2:               ; add destview
 add   di, 01000h
@@ -593,7 +593,7 @@ mov   dx, 01000h
 
 ; todo... is this supposed to be done outside?
 
-mov   ax, DC_YL_LOOKUP_MASKEDMAPPING_SEGMENT
+mov   ax, (MASKED_LOCAL_DC_YL_LOOKUP_TABLE_OFFSET SHR 4) + DRAWFUZZCOL_AREA_SEGMENT ;; 887C now?
 mov   es, ax
 mov   bx, si   ; bx+si = dc_yl word lookup
 
@@ -5300,7 +5300,7 @@ sar   di, 1
 
 
 
-lea   bp, [si + _masked_local_dc_yl_lookup_table - 2] ; stack bp and si for word ptr, bake in - 2
+lea   bp, [si + masked_local_dc_yl_lookup_table_ - 2] ; stack bp and si for word ptr, bake in - 2
 add   di, word ptr cs:[bp+si]                  ; add dc_yl * 80
 
 SELFMODIFY_MASKED_destview_lo_3:
@@ -5923,11 +5923,11 @@ jmp       done_setting_cached_tex_masked
 ENDP
 
 
-ALIGN_MACRO
+ALIGN 16
 
 
-_masked_local_dc_yl_lookup_table:
-PUBLIC _masked_local_dc_yl_lookup_table
+masked_local_dc_yl_lookup_table_:
+PUBLIC masked_local_dc_yl_lookup_table_
 sumof80s = 0
 MAX_PIXELS = 200
 REPT MAX_PIXELS
