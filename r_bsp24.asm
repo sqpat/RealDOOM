@@ -133,8 +133,13 @@ dw DRAWCOL_NOLOOP_STRETCH_OFFSET_BSP, DRAWCOL_NOLOOP_OFFSET_BSP
 db 0D1h, 0E6h, 001h, 0D6h  ; 10
 db 0D1h, 0E2h, 001h, 0F2h ; 10
 
-
-
+ALIGN_MACRO
+COLFUNC_shiftmul_selfmodify_target_lookup_mid:
+dw OFFSET SELFMODIFY_set_pixel_count_shift_mul,      0  ; overwritten with BSP_CODE_SEGMENT
+COLFUNC_shiftmul_selfmodify_target_lookup_top:
+dw OFFSET SELFMODIFY_set_pixel_count_shift_mul_top,  0  ; overwritten with BSP_CODE_SEGMENT
+COLFUNC_shiftmul_selfmodify_target_lookup_bot:
+dw OFFSET SELFMODIFY_set_pixel_count_shift_mul_bot,  0  ; overwritten with BSP_CODE_SEGMENT
 
 _lastviewangle:
 dw 0F0F0h, 0F0F0h
@@ -4368,34 +4373,21 @@ inc       ax
 
 
 
-mov       ds, cx  ; cs = ds, in case it wasnt already..
 
 
-
-
-
-
-mov   word ptr ds:[SELFMODIFY_cmp_di_to_rw_stopx_1+2], ax
-
-
-
+mov   word ptr cs:[SELFMODIFY_cmp_di_to_rw_stopx_1+2], ax
 
 ; sp at bp - 024h
-
 
 ; do worldtop/worldbot calculation now
 ; todo selfmodify this as it's being done?
 mov       dx, word ptr [bp + 8] ; frontsector ceiling
-
 ; bx floorheight
-
 xor       ax, ax
-
 
 
 ; make dx:ax our value
 SHIFT32_MACRO_RIGHT dx ax 3
-
 
 SELFMODIFY_BSP_viewz_lo_7:
 sub       ax, 01000h
@@ -4406,16 +4398,11 @@ sbb       dx, 01000h
 push      dx  ; bp - 024h
 push      ax  ; bp - 026h
 
-
-
 mov       ax, ss
 mov       ds, ax
 
 mov       dx, word ptr [bp + 6] ; frontsector floor 
 xor       ax, ax
-
-
-
 
 
 ;dx:ax as our value
@@ -4539,14 +4526,9 @@ div bx
 mov dx, si  ; retrieve q1
             ; q0 already in ax
 
-
-
 div_done:
 
-
 ; ds = cs here
-
-
 mov       es, cx ; restore es as ds_p+2
 stosw             ; +0Eh
 xchg      ax, dx
@@ -4559,58 +4541,43 @@ ASSUME DS:R_BSP_24_TEXT
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_1+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_2+1], ax
 mov       word ptr ds:[SELFMODIFY_add_to_rwscale_lo_2+4], ax
-
 xchg      ax, dx
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_1+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_2+1], ax
-
 mov       word ptr ds:[SELFMODIFY_add_to_rwscale_hi_2+4], ax
 
-
-
-
 ;ASSUME DS:DGROUP  ; lods coming up
-
-
 
 scales_set:
 public scales_set
 
 ; ds is cs here
 
-
-
-
-; here we jump based on backsector presence. 
-
-
-
 ASSUME DS:R_BSP_24_TEXT
 
-
-
-; todo dont do this all unless its actually textured?
 les       dx, dword ptr [bp + 6] ; frontsector floor and ceiling
 mov       ax, es
 sub       ax, dx  ; ceiling - floor
 sub       ax, word ptr [bp - 0Ch]  ; subtract sectorheight
-and       ah, 080h                 ; function type select.
+mov       al, ah
+and       ax, 080h                 ; function type select.
 
 ; using loop/noloop lookup flag, look up the function setter params for stretch/nostretch for this func type and set them.
+; also change pixel mul count from 10 to 12 by modifying the shift mul operation
 
-xor       bx, bx
-mov       bl, ah
+xchg      ax, si
 
-; todo is si and lodsw pattern better?
-; this could actually movsw too
-; overwrite the pair of instructions
-les       ax, dword ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR]
-mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul], ax    ; adjust shift/add byte order for 10/12 mul
-mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul+2], es  ; adjust shift/add byte order for 10/12 mul
-
-les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
+; cs:0 or cs:80 points to the two configuration tabels.
+; _COLFUNC_SELFMODIFY_LOOKUPTABLE
+lodsw
 mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_stretch], ax
-mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_nostretch], es
+lodsw
+mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_nostretch], ax
+; _COLFUNC_JUMP_LOOKUP_INSTR
+; next two words are instruction words to modify
+les       di,  dword ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_mid]  ; es gets cs
+movsw ; write instruction 1
+movsw ; write instruction 2
 
 
 ; write the high byte of the word.
@@ -7020,27 +6987,31 @@ and       ax, 080h
 
 ; todo set bot vals here?
 
-push      bx  ; todo pushpop bx once ?
+push      si  ; todo pushpop si once ?
 
 
 ; using loop/noloop lookup flag, look up the function setter params for stretch/nostretch for this func type and set them.
 
-xchg      ax, bx
+xchg      ax, si
 mov       ax, cs
 mov       ds, ax
 
 ; todo is si and lodsw pattern better?
 
-les       ax, dword ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR_TOPBOT]
-mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul_bot], ax    ; adjust shift/add byte order for 10/12 mul
-mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul_bot+2], es  ; adjust shift/add byte order for 10/12 mul
-les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
+lodsw
 mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_1+4], ax
 mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_2+4], ax
-mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_nostretch_funcaddr+4], es
+lodsw
+mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_nostretch_funcaddr+4], ax
 
+xchg      ax, di ; backup di in ax
+add       si, 4
+les       di,  dword ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_bot]  ; es gets cs
+movsw ; write instruction 1
+movsw ; write instruction 2
+xchg      ax, di ; restore di from ax
 
-pop       bx
+pop       si
 
 mov       ax, DRAWSEGS_BASE_SEGMENT
 mov       ds, ax
@@ -7071,25 +7042,29 @@ sub       ax, word ptr [bp - 0Ch]
 mov       al, ah
 and       ax, 080h
 
-push      bx  ; todo pushpop bx once ?
+push      si  ; todo pushpop si once ?
 
 
 ; using loop/noloop lookup flag, look up the function setter params for stretch/nostretch for this func type and set them.
 
-xchg      ax, bx
+xchg      ax, si
 mov       ax, cs
 mov       ds, ax
 
-; todo is si and lodsw pattern better?
-les       ax, dword ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR_TOPBOT]
-mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul_top], ax    ; adjust shift/add byte order for 10/12 mul
-mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul_top+2], es  ; adjust shift/add byte order for 10/12 mul
-les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
+lodsw
 mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1+4], ax
 mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2+4], ax
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr+4], es
+lodsw
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr+4], ax
+; todo is si and lodsw pattern better?
+xchg      ax, di ; backup di in ax
+add       si, 4
+les       di,  dword ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_top]  ; es gets cs
+movsw ; write instruction 1
+movsw ; write instruction 2
+xchg      ax, di ; restore di from ax
 
-pop       bx
+pop       si
 
 mov       ax, DRAWSEGS_BASE_SEGMENT
 mov       ds, ax
@@ -9755,7 +9730,7 @@ jmp   prepare_fields
 
 ALIGN_MACRO
 
-PROC R_Subsector_ NEAR
+PROC   R_Subsector_ NEAR
 PUBLIC R_Subsector_ 
 
 
@@ -14332,12 +14307,16 @@ PUBLIC R_WriteBackViewConstants24_
 
 
 ; set ds to cs to make code smaller?
-mov      ax, cs
-mov      ds, ax
+mov      ax, word ptr ds:[_BSP_CODE_SEGMENT_PTR]
+mov      cx, cs
+mov      ds, cx
 
 
 ASSUME DS:R_BSP_24_TEXT
 
+mov      word ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_mid+2], ax
+mov      word ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_top+2], ax
+mov      word ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_bot+2], ax
 
 xor      cx, cx
 mov      ax, word ptr ss:[_detailshift]
