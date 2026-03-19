@@ -4598,29 +4598,11 @@ sub       ax, word ptr [bp - 0Ch]  ; subtract sectorheight
 mov       al, ah
 and       ax, 080h                 ; function type select.
 
-; using loop/noloop lookup flag, look up the function setter params for stretch/nostretch for this func type and set them.
-; also change pixel mul count from 10 to 12 by modifying the shift mul operation
+SELFMODIFY_set_colfunc_type_mid:
+cmp       al, 010h
+jne       do_selfmodify_colfunc_type_mid
 
-xchg      ax, si
-
-; cs:0 or cs:80 points to the two configuration tabels.
-; _COLFUNC_SELFMODIFY_LOOKUPTABLE
-lodsw
-mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_stretch], ax
-lodsw
-mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_nostretch], ax
-; _COLFUNC_JUMP_LOOKUP_INSTR
-; next two words are instruction words to modify
-les       di,  dword ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_mid]  ; es gets cs
-movsw ; write instruction 1
-movsw ; write instruction 2
-
-
-; write the high byte of the word.
-; prev two bytes will be a jump or mov cx with the low byte
-
-
-
+done_selfmodifying_colfunc_type_mid:
 
 
 ;		ds_p->silhouette = SIL_BOTH;
@@ -4673,6 +4655,30 @@ call      FixedMulTrigNoShiftSine_BSPLocal_
 ; dx:ax is rw_offset
 xchg      ax, dx
 jmp       done_with_offsetangle_stuff
+
+ALIGN_MACRO
+do_selfmodify_colfunc_type_mid:
+
+; using loop/noloop lookup flag, look up the function setter params for stretch/nostretch for this func type and set them.
+; also change pixel mul count from 10 to 12 by modifying the shift mul operation
+
+mov       byte ptr ds:[SELFMODIFY_set_colfunc_type_mid+1], al
+xchg      ax, si
+
+; cs:0 or cs:80 points to the two configuration tabels.
+; _COLFUNC_SELFMODIFY_LOOKUPTABLE
+lodsw
+mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_stretch], ax
+lodsw
+mov       word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_nostretch], ax
+; _COLFUNC_JUMP_LOOKUP_INSTR
+; next two words are instruction words to modify
+les       di,  dword ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_mid]  ; es gets cs
+movsw ; write instruction 1
+movsw ; write instruction 2
+jmp     done_selfmodifying_colfunc_type_mid
+
+
 ALIGN_MACRO
 offsetangle_greater_than_fineang90:
 xchg      ax, cx
@@ -7370,6 +7376,7 @@ bottexture_not_zero:
 ; are any bits set?
 or        bl, bh
 or        byte ptr ds:[SELFMODIFY_check_for_any_tex_TWOSIDED+1], bl
+
 
 test      byte ptr [bp - 2], ML_DONTPEGBOTTOM
 je        calculate_bottexturemid
