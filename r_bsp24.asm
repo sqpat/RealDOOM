@@ -6960,12 +6960,12 @@ jl        set_bsilheight_to_frontsectorfloorheight
 sub       ax, word ptr [bp - 0Ch]
 mov       al, ah
 and       ax, 080h
-SELFMODIFY_set_colfunc_type_mid:
+SELFMODIFY_set_colfunc_type_bot:
 cmp       al, 010h
-jne       do_selfmodify_colfunc_type_mid
+jne       do_selfmodify_colfunc_type_bot
 
 
-done_with_selfmodify_colfunc_type_mid:
+done_with_selfmodify_colfunc_type_bot:
 
 ;		} else if (backsectorfloorheight > viewz_shortheight) {
 SELFMODIFY_BSP_viewz_shortheight_2:
@@ -6976,7 +6976,7 @@ mov       ax, MAXSHORT
 jmp       set_bsilheight
 
 ALIGN_MACRO
-do_selfmodify_colfunc_type_mid:
+do_selfmodify_colfunc_type_bot:
 ; todo set bot vals here?
 
 push      si  ; todo pushpop si once ?
@@ -6985,7 +6985,7 @@ push      si  ; todo pushpop si once ?
 ; using loop/noloop lookup flag, look up the function setter params for stretch/nostretch for this func type and set them.
 mov       si, cs
 mov       ds, si
-mov       byte ptr ds:[SELFMODIFY_set_colfunc_type_mid+1], al
+mov       byte ptr ds:[SELFMODIFY_set_colfunc_type_bot+1], al
 
 xchg      ax, si
 
@@ -7014,6 +7014,43 @@ jle       bsilheight_set
 
 mov       ax, MAXSHORT
 jmp       set_bsilheight
+ALIGN_MACRO
+do_selfmodify_colfunc_type_top:
+push      si  ; todo pushpop si once ?
+
+
+; using loop/noloop lookup flag, look up the function setter params for stretch/nostretch for this func type and set them.
+
+mov       si, cs
+mov       ds, si
+mov       byte ptr ds:[SELFMODIFY_set_colfunc_type_top+1], al
+
+xchg      ax, si
+
+lodsw
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1+4], ax
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2+4], ax
+lodsw
+mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr+4], ax
+; todo is si and lodsw pattern better?
+xchg      ax, di ; backup di in ax
+add       si, 4
+les       di,  dword ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_top]  ; es gets cs
+movsw ; write instruction 1
+movsw ; write instruction 2
+xchg      ax, di ; restore di from ax
+
+pop       si
+
+mov       ax, DRAWSEGS_BASE_SEGMENT
+mov       ds, ax
+SELFMODIFY_BSP_viewz_shortheight_7:
+cmp       di, 01000h
+jge       tsilheight_set
+
+mov       ax, MINSHORT
+jmp       set_tsilheight
+
 
 ALIGN_MACRO
 set_bsilheight_to_frontsectorfloorheight:
@@ -7033,32 +7070,13 @@ sub       ax, word ptr [bp - 0Ch]
 mov       al, ah
 and       ax, 080h
 
-push      si  ; todo pushpop si once ?
+SELFMODIFY_set_colfunc_type_top:
+cmp       al, 010h
+jne       do_selfmodify_colfunc_type_top
 
 
-; using loop/noloop lookup flag, look up the function setter params for stretch/nostretch for this func type and set them.
 
-xchg      ax, si
-mov       ax, cs
-mov       ds, ax
 
-lodsw
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1+4], ax
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2+4], ax
-lodsw
-mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr+4], ax
-; todo is si and lodsw pattern better?
-xchg      ax, di ; backup di in ax
-add       si, 4
-les       di,  dword ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_top]  ; es gets cs
-movsw ; write instruction 1
-movsw ; write instruction 2
-xchg      ax, di ; restore di from ax
-
-pop       si
-
-mov       ax, DRAWSEGS_BASE_SEGMENT
-mov       ds, ax
 
 
 SELFMODIFY_BSP_viewz_shortheight_1:
@@ -7352,7 +7370,6 @@ bottexture_not_zero:
 ; are any bits set?
 or        bl, bh
 or        byte ptr ds:[SELFMODIFY_check_for_any_tex_TWOSIDED+1], bl
-
 
 test      byte ptr [bp - 2], ML_DONTPEGBOTTOM
 je        calculate_bottexturemid
@@ -14658,11 +14675,12 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewz_13_3_2+2], ax
 
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_1+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_2+2], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_6+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_3+3], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_4+3], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_5+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_3_TWOSIDED+3], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_6+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_7+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_4_TWOSIDED+3], ax
 skip_viewz_hi_selfmodifies_this_frame:
 
