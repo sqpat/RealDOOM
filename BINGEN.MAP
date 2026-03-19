@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/03/14 12:30:57
+Created on:       26/03/14 12:40:44
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -35,7 +35,7 @@ SM_OPL2_TEXT           CODE           AUTO           0533:0000       00000f3c
 SM_OPL3_TEXT           CODE           AUTO           0627:0000       0000100e
 SM_SBMID_TEXT          CODE           AUTO           0728:0000       00000730
 SM_MPUMD_TEXT          CODE           AUTO           079b:0000       000007db
-R_BSP_24_TEXT          CODE           AUTO           0819:0000       00003ed5
+R_BSP_24_TEXT          CODE           AUTO           0819:0000       00003ed6
 R_BSP_16_TEXT          CODE           AUTO           0c07:0000       00003740
 R_BSP0_TEXT            CODE           AUTO           0f7b:0000       0000366f
 R_BSPFL_TEXT           CODE           AUTO           12e2:0000       00003617
@@ -343,7 +343,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:2225*     SELFMODIFY_set_bx_rw_distance_lo_TWOSIDED
 0819:3988      R_WriteBackViewConstants24_
 0819:2755*     R_AddLine_
-0819:3ed5      R_BSP24_ENDMARKER_
+0819:3ed6      R_BSP24_ENDMARKER_
 0819:347e      R_GetPatchTexture_Far24_
 0819:24ae*     R_GetSourceSegment1_
 0819:09f4*     FixedMulTrigNoShiftSine_BSPLocal_
@@ -406,7 +406,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:3324*     R_GetTexturePage_
 0819:3b16*     R_WriteBackFrameConstants_
 0819:0a42*     FixedMulTrigNoShiftCosine_BSPLocal_
-0819:3d45*     _bsp_local_dc_yl_lookup_table
+0819:3d46*     _bsp_local_dc_yl_lookup_table
 0819:0a8e*     R_ClearPlanes_
 0819:21e6*     SELFMODIFY_BSP_markfloor_1_TWOSIDED
 0819:179a*     mark_planes_dirty
