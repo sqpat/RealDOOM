@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/03/15 08:34:10
+Created on:       26/03/15 08:53:46
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -366,17 +366,21 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:21c0*     ENSUREALIGN_005
 0819:2294*     ENSUREALIGN_007
 0819:172e*     ENSUREALIGN_011
+0819:2420*     ENSUREALIGN_013
 0819:262b*     SELFMODIFY_mark_planes_dirty_TWOSIDED
 0819:16fe*     ENSUREALIGN_004
 0819:229a*     ENSUREALIGN_008
 0819:21f0*     ENSUREALIGN_006
 0819:15f6*     ENSUREALIGN_001
+0819:2490*     ENSUREALIGN_012
 0819:24f2*     ENSUREALIGN_010
 0819:2482*     ENSUREALIGN_009
 0819:16f8*     ENSUREALIGN_003
+0819:24ea*     ENSUREALIGN_014
 0819:3d50      bsp_local_dc_yl_lookup_table_
 0819:2174*     pre_increment_values_TWOSIDED
 0819:0a4e*     FixedMulTrigCosine_BSPLocal_
+0819:2474*     ENSUREALIGN_015
 0819:2158*     R_RenderSegLoop_TWOSIDED_
 0819:14c5*     SELFMODIFY_BSP_set_skyflatnum_4
 0819:10a1*     SELFMODIFY_skip_curseg_based_selfmodify_AFTER

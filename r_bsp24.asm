@@ -9166,6 +9166,8 @@ PUBLIC do_top_texture_draw
 ; todo restore bp from something? to remove bp dependency
 SELFMODIFY_BSP_set_pixhigh:
 mov   ax, 01000h      ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET  ; pixhigh
+ENSUREALIGN_013:
+
 SELFMODIFY_add_to_pixhigh_lo_1_TWOSIDED:
 sub   word ptr ds:[_cs_pixhigh], 01000h
 SELFMODIFY_add_to_pixhigh_hi_1_TWOSIDED:
@@ -9287,20 +9289,21 @@ shl   dx, 1   ; 12, 2    ; is there a way to swap just one instruction, while no
 
 
 SELFMODIFY_BSP_add_destview_offset_top:
-lea   di, [bx + 01000h]
+lea   di, [bx + 01000h] ; rare, doesnt have to align
 
 ; dc_iscale loaded here..
 SELFMODIFY_BSP_set_dc_iscale_lo_top:
 mov   bx, 01000h        ; dc_iscale +0
+ENSUREALIGN_015:
 
 SELFMODIFY_set_toptexturemid_hi:
 SELFMODIFY_BSP_set_dc_iscale_hi_top:
-mov   cx, 01000h        ; dc_iscale +2 hi, toptexturemid hi lo
+mov   cx, 01000h        ; dc_iscale +2 hi, toptexturemid hi lo. byte writes, doesnt have to align
 
 SELFMODIFY_set_toptexturemid_lo:
-mov   si, 01000h
+mov   si, 01000h          ; once per storewallrange, doesnt have to align
 SELFMODIFY_BSP_set_xlat_offset_TWOSIDED:
-mov   bp, 01000h          ; todo if drawcol preamble moves local then write this to bx there
+mov   bp, 01000h          ; byte write, doesnt have to align
 ; pass in xlat offset for bx via bp
 
 SELFMODIFY_BSP_R_DrawColumnPrep_call_top:
@@ -9350,6 +9353,7 @@ SELFMODIFY_BSP_bottexture_AFTER = SELFMODIFY_BSP_bottexture + 2
 SELFMODIFY_BSP_set_pixlow:
 public SELFMODIFY_BSP_set_pixlow
 mov   ax, 01000h   ; ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET pixlow hi
+ENSUREALIGN_012:
 
 SELFMODIFY_add_to_pixlow_lo_1_TWOSIDED:
 sub   word ptr ds:[_cs_pixlow], 01000h
@@ -9462,7 +9466,7 @@ mov   si, 01000h
 
 SELFMODIFY_BSP_set_dc_iscale_lo_bot:   ; gross but works 
 mov   bx, 01000h
-
+ENSUREALIGN_014:
 SELFMODIFY_BSP_set_xlat_offset_bot:
 mov   bp, 01000h ; pass in xlat offset for bx via bp
 
@@ -9604,7 +9608,7 @@ jne       check_spr_bottom_clip_TWOSIDED
 
 mov       di, word ptr ds:[_lastopening]
 mov       dx, di ; backup startx
-sub       si
+sub       dx, si
 mov       word ptr es:[bx + DRAWSEG_T.drawseg_sprtopclip_offset], dx
 
 mov       dx, si ; backup startx
@@ -9630,7 +9634,10 @@ mov       si, dx ; restore startx
 mov       es, word ptr ds:[_ds_p_bsp+2]   ; bx is ds_p offset above
 
 check_spr_bottom_clip_TWOSIDED:
-; es:si is ds_p
+; es:bx is ds_p
+
+; todo is a better branch strategy faster?
+
 test      byte ptr es:[bx + DRAWSEG_T.drawseg_silhouette], SIL_BOTTOM
 jne       continue_checking_spr_bottom_clip_TWOSIDED
 cmp       byte ptr ds:[_maskedtexture_bsp], cl ; 0
@@ -9663,6 +9670,9 @@ rep       movsw ; cx 0 again after this
 mov       word ptr ds:[_lastopening], di
 
 mov       es, word ptr ds:[_ds_p_bsp+2]   ; bx is ds_p offset above
+
+; todo is a better branch strategy faster?
+
 check_silhouettes_then_exit_TWOSIDED:
 cmp       byte ptr ds:[_maskedtexture_bsp], cl ; 0
 je        skip_top_silhouette_TWOSIDED
@@ -14940,6 +14950,10 @@ public ENSUREALIGN_008
 public ENSUREALIGN_009
 public ENSUREALIGN_010
 public ENSUREALIGN_011
+public ENSUREALIGN_012
+public ENSUREALIGN_013
+public ENSUREALIGN_014
+public ENSUREALIGN_015
 
 
 END
