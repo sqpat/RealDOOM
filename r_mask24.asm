@@ -383,8 +383,12 @@ add   di, 01000h
 
 
 ; toggle for ENSUREALIGN_102
-xchg  ax, si    ; dc_yl in ax
-;mov  ax, si    ; dc_yl in ax
+;xchg  ax, si    ; dc_yl in ax
+mov  ax, si    ; dc_yl in ax
+
+SELFMODIFY_MASKED_sub_centery_2:
+sub   ax, 01000h
+
 
 ; CL:SI = dc_texturemid
 ; CH:BX = dc_iscale
@@ -803,7 +807,7 @@ test  dl, dl
 je    is_stretch_draw ; from dl
 not_stretch_draw:
 
-mov   di, DRAWCOL_NOLOOP_OFFSET_MASKED - 5
+mov   di, DRAWCOL_NOLOOP_OFFSET_MASKED
 jmp   continue_selfmodifies_vissprites
 
 ALIGN_MACRO
@@ -820,7 +824,7 @@ jmp done_with_mul_vissprite
 ALIGN_MACRO
 is_stretch_draw:
 
-mov   di, DRAWCOL_NOLOOPSTRETCH_OFFSET_MASKED - 5
+mov   di, DRAWCOL_NOLOOPSTRETCH_OFFSET_MASKED
 
 continue_selfmodifies_vissprites:
 mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset], di
@@ -2516,12 +2520,12 @@ SELFMODIFY_MASKED_apply_stretch_tag:
 jmp   is_stretch_draw_2     ; nop or jmp
 SELFMODIFY_MASKED_apply_stretch_tag_AFTER:
 
-mov   bx, DRAWCOL_NOLOOP_OFFSET_MASKED - 5
+mov   bx, DRAWCOL_NOLOOP_OFFSET_MASKED
 jmp   continue_selfmodifies_maskedsegrange
 SELFMODIFY_MASKED_apply_stretch_tag_TARGET:
 is_stretch_draw_2:
 
-mov   bx, DRAWCOL_NOLOOPSTRETCH_OFFSET_MASKED - 5
+mov   bx, DRAWCOL_NOLOOPSTRETCH_OFFSET_MASKED
 
 continue_selfmodifies_maskedsegrange:
 mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset], bx
@@ -5007,7 +5011,7 @@ mov   al, byte ptr ds:[si + VISSPRITE_T.vs_colormap]
 mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMARKER_], al
 
 ; hardcoded function types.   TODO: if scale 1 use scale-less draw? or use hardcoded draws one way or another?
-mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset], DRAWCOL_NOLOOP_OFFSET_MASKED - 5
+mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset], DRAWCOL_NOLOOP_OFFSET_MASKED
 
 
 mov   di, OFFSET _sprtopscreen
@@ -5083,6 +5087,7 @@ cmp   byte ptr es:[bx + COLUMN_T.column_topdelta], 0FFh
 je    exit_draw_masked_column_early
 
 ; no early out, properly run the function. note fixed stack frame
+; investigate pusha/popa. any cx/es trick possible?
 
 push  dx
 push  si
@@ -5209,8 +5214,6 @@ inc   dx ; dc_yh + 1
 ; dc_yh, dc_yl are set (dx, si)
         
 
-
-
 ;        if (dc_yh >= mfloorclip[dc_x])
 ;            dc_yh = mfloorclip[dc_x]-1;
 
@@ -5308,8 +5311,11 @@ add   di, 01000h
 ; if we make a separate drawcol masked we can use a constant here.
 
 ; toggle for ENSUREALIGN_101
-xchg  ax, si    ; dc_yl in ax
-;mov   ax, si
+;xchg  ax, si    ; dc_yl in ax
+mov   ax, si
+
+SELFMODIFY_MASKED_sub_centery_1:
+sub   ax, 01000h
 
 ; cl:si is dc_texturemid
 ; ch:bx is dc_iscale
@@ -6170,10 +6176,19 @@ mov   ax, word ptr ss:[_centery]
 cmp   ax, word ptr ds:[_lastcentery]
 je    skip_centery_selfmodifies_this_frame
 mov   word ptr ds:[_lastcentery], ax
+
+
+
 mov   word ptr ds:[SELFMODIFY_MASKED_centery_1+3 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   word ptr ds:[SELFMODIFY_MASKED_centery_2+1 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   word ptr ds:[SELFMODIFY_MASKED_centery_3+3 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   word ptr ds:[SELFMODIFY_MASKED_centery_4+3 - OFFSET R_MASK24_STARTMARKER_], ax
+
+inc      ax ; has to do with yl/yh inc by 1 logic
+
+mov   word ptr ds:[SELFMODIFY_MASKED_sub_centery_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_sub_centery_2+1 - OFFSET R_MASK24_STARTMARKER_], ax
+
 skip_centery_selfmodifies_this_frame:
 
 les   ax, dword ptr ss:[_player + PLAYER_T.player_viewzvalue+0]

@@ -50,7 +50,7 @@ MAX_VISSPRITES_ADDRESS = ((SIZE VISSPRITE_T) * MAXVISSPRITES) + _vissprites ; 0B
 _COLFUNC_SELFMODIFY_LOOKUPTABLE:
 public _COLFUNC_SELFMODIFY_LOOKUPTABLE
 ; normal ; 12 bytes per
-dw DRAWCOL_NORMAL_STRETCH_OFFSET_BSP - 5, DRAWCOL_OFFSET_BSP - 5
+dw DRAWCOL_NORMAL_STRETCH_OFFSET_BSP, DRAWCOL_OFFSET_BSP
 _COLFUNC_JUMP_LOOKUP_INSTR:
 db 001h, 0D6h, 0D1h, 0E6h  ; 12 
 
@@ -129,7 +129,7 @@ _COLFUNC_SELFMODIFY_LOOKUPTABLE_SECOND_HALF:
 public _COLFUNC_SELFMODIFY_LOOKUPTABLE_SECOND_HALF
 ; noloop ; 10 bytes per
 ; noloopstretch ; 10 bytes per
-dw DRAWCOL_NOLOOP_STRETCH_OFFSET_BSP - 5, DRAWCOL_NOLOOP_OFFSET_BSP - 5
+dw DRAWCOL_NOLOOP_STRETCH_OFFSET_BSP, DRAWCOL_NOLOOP_OFFSET_BSP
 
 db 0D1h, 0E6h, 001h, 0D6h  ; 10
 
@@ -5779,8 +5779,9 @@ ELSE
    ; cx:ax is result 
    FastDiv3232FFFF_done:
 
-   xchg  ax, bx        ; dc_iscale +0  into bx
-;   mov   bx, ax        ; dc_iscale +0  into bx
+; toggle for ENSUREALIGN_011
+;   xchg  ax, bx        ; dc_iscale +0  into bx
+   mov   bx, ax        ; dc_iscale +0  into bx
 
 
 ; todo what if we inlined the function right here, instead of writing selfmodifies forward to selfmodifies...
@@ -5794,6 +5795,10 @@ ENDIF
 
    mov   dx, si  ; jmp amount
    pop   ax   ; dc_yl
+
+   SELFMODIFY_COLFUNC_sub_centery24_mid:
+   sub   ax, 01000h
+
 
    R_DrawColumnPrep_:
    PUBLIC R_DrawColumnPrep_ 
@@ -6094,6 +6099,9 @@ ELSE
    ; di already has screen coord
    pop   dx   ; jump amount
    pop   ax   ; dc_yl
+
+   SELFMODIFY_COLFUNC_sub_centery24_mid_stretch:
+   sub   ax, 01000h
 
    push cs   
    PUSH_MACRO_WITH_REG si OFFSET(increment_loop_values_full)
@@ -9191,8 +9199,8 @@ mov   cl, byte ptr ds:[bx + OFFSET_FLOORCLIP]
 cmp   ax, cx
 jl    dont_clip_top_floor_TWOSIDED  ; todo branch test
 ; toggle this for ENSUREALIGN_009
-;xchg  ax, cx
-mov   ax, cx
+xchg  ax, cx
+;mov   ax, cx
 dec   ax
 
 dont_clip_top_floor_TWOSIDED:
@@ -9283,6 +9291,10 @@ PUBLIC R_DrawColumnPrepTop
 
 mov   ax, si ; dc_yl in ax.   
 
+SELFMODIFY_COLFUNC_sub_centery24_top:
+sub   ax, 01000h
+
+
 sub   si, di  ; ; yl - yh
 shl   si, 1
 add   si, 398
@@ -9300,14 +9312,8 @@ mov   dx, si  ; store jmp amt in dx.
 
 
 
-
-
-
-
 SELFMODIFY_BSP_add_destview_offset_top:
 lea   di, [bx + 01000h]
-
-
 
 ; dc_iscale loaded here..
 SELFMODIFY_BSP_set_dc_iscale_lo_top:
@@ -9316,8 +9322,6 @@ mov   bx, 01000h        ; dc_iscale +0
 SELFMODIFY_set_toptexturemid_hi:
 SELFMODIFY_BSP_set_dc_iscale_hi_top:
 mov   cx, 01000h        ; dc_iscale +2 hi, toptexturemid hi lo
-
-
 
 SELFMODIFY_set_toptexturemid_lo:
 mov   si, 01000h
@@ -9393,8 +9397,8 @@ cmp   ax, cx
 jg    dont_clip_bot_ceil ; todo branch test
 inc   cx
 ; toggle for ENSUREALIGN_010
-xchg  ax, cx
-;mov   ax, cx
+;xchg  ax, cx
+mov   ax, cx
 
 ;		if (mid <= yh)
 
@@ -9463,6 +9467,9 @@ PUBLIC R_DrawColumnPrepBot
 
 mov   ax, si  ; dc_yl set for colfunc
 
+SELFMODIFY_COLFUNC_sub_centery24_bot:
+sub   ax, 01000h
+
 sub   si, di  ; yl - yh
 shl   si, 1
 add   si, 398
@@ -9476,11 +9483,10 @@ public SELFMODIFY_set_pixel_count_shift_mul_bot
 add   si, dx  ; 6, 2     ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
 shl   si, 1   ; 12, 2    ; is there a way to swap just one instruction, while not adding instruction count?
 
-mov   dx, si  ; store jmp amt in dx. todo remove the juggle
+mov   dx, si  ; store jmp amt in dx. todo remove the juggle by changing the above shift math
 
 SELFMODIFY_BSP_add_destview_offset_bot:
 lea   di, [bx + 01000h]
-
 
 SELFMODIFY_set_bottexturemid_hi:
 SELFMODIFY_BSP_set_dc_iscale_hi_bot:   ; gross but works
@@ -9491,7 +9497,6 @@ mov   si, 01000h
 
 SELFMODIFY_BSP_set_dc_iscale_lo_bot:   ; gross but works 
 mov   bx, 01000h
-
 
 SELFMODIFY_BSP_set_xlat_offset_bot:
 mov   bp, 01000h ; pass in xlat offset for bx via bp
@@ -14526,16 +14531,12 @@ mov      word ptr ds:[SELFMODIFY_BSP_centerx_8+1], ax
 
 
 
-mov      ax, COLFUNC_FILE_START_SEGMENT
-mov      es, ax
+;mov      ax, COLFUNC_FILE_START_SEGMENT
+;mov      es, ax
 
 ; ah is definitely 0... optimizable?
 mov      ax, word ptr ss:[_centery]
 inc      ax ; has to do with yl/yh inc by 1 logic
-mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_NORMAL+1], ax
-mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_NOLOOP+1], ax
-mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_NORMALSTRETCH+1], ax
-mov      word ptr es:[SELFMODIFY_COLFUNC_SUBTRACT_CENTERY24_OFFSET_NOLOOPANDSTRETCH+1], ax
  
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_5+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_4+1], ax
@@ -14545,6 +14546,12 @@ mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_1+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_3_TWOSIDED+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_4_TWOSIDED+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_5_TWOSIDED+1], ax
+
+mov      word ptr ds:[SELFMODIFY_COLFUNC_sub_centery24_mid+1], ax
+mov      word ptr ds:[SELFMODIFY_COLFUNC_sub_centery24_mid_stretch+1], ax
+mov      word ptr ds:[SELFMODIFY_COLFUNC_sub_centery24_top+1], ax
+mov      word ptr ds:[SELFMODIFY_COLFUNC_sub_centery24_bot+1], ax
+
 
 mov      ax, word ptr ss:[_viewwidth]
 mov      word ptr ds:[SELFMODIFY_BSP_viewwidth_2+1], ax

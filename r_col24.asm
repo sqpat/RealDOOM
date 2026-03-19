@@ -82,25 +82,10 @@ ENDM
 
 ALIGN 16
 
-  xchg  ax, ax ; nop  ; 11 bytes of nops, then 5 byte instruction, then paragraph aligned func
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-
-  mov   word ptr cs:[((DC_YL_LOOKUP_SEGMENT - COLORMAPS_SEGMENT) SHL 4) +  MARKER_SM_COLFUNC_jump_offset24_noloop_+1], dx ; five bytes
 
 MARKER_COLFUNC_NOLOOP_FUNCTION_AREA_OFFSET_:
 PUBLIC MARKER_COLFUNC_NOLOOP_FUNCTION_AREA_OFFSET_
 
-ALIGN_MACRO
 PROC    R_DrawColumn24NoLoop_ FAR
 PUBLIC  R_DrawColumn24NoLoop_
 
@@ -109,10 +94,7 @@ PUBLIC  R_DrawColumn24NoLoop_
     ; CL:SI = dc_texturemid
     ; CH:BX = dc_iscale
 
-
-MARKER_SM_COLFUNC_subtract_centery24_noloop_:
-PUBLIC MARKER_SM_COLFUNC_subtract_centery24_noloop_
-   sub   ax, 01000h  ; todo move this outside with lea ax, [si - 01000h]
+   mov     word ptr cs:[((DC_YL_LOOKUP_SEGMENT - COLORMAPS_SEGMENT) SHL 4) +  MARKER_SM_COLFUNC_jump_offset24_noloop_+1], dx ; five bytes
 
    MOV  DX, AX  ; copy center24y
    MUL  CH
@@ -125,9 +107,6 @@ PUBLIC MARKER_SM_COLFUNC_subtract_centery24_noloop_
    ADC  CL, DL
 
    xchg bp, bx   ; bp gets lowstep, bx gets xlat lookup
-
-
-
 
    xor  dx, dx   ; dx gets 0
    xchg dl, ch   ; zero ch fo xchg into si. dx gets hi step
@@ -149,17 +128,13 @@ PUBLIC MARKER_SM_COLFUNC_set_destview_segment24_noloop_
    mov     sp, 04Fh
 
 
-
-
-
 MARKER_SM_COLFUNC_jump_offset24_noloop_:
 PUBLIC MARKER_SM_COLFUNC_jump_offset24_noloop_
 
    jmp loop_done_noloop         ; relative jump to be modified before function is called
 ; currently EVEN
 ; 10 bytes each
-MARKER_SM_COL24_AFTER_JUMP_1:
-PUBLIC MARKER_SM_COL24_AFTER_JUMP_1
+ENSUREALIGN_201:
 
 DRAW_SINGLE_PIXEL_NOLOOP MACRO 
 
@@ -206,37 +181,21 @@ ENDP
 
 ALIGN 16
 
-  xchg  ax, ax ; nop  ; 11 bytes of nops, then 5 byte instruction, then paragraph aligned func
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-
-  mov   word ptr cs:[((DC_YL_LOOKUP_SEGMENT - COLORMAPS_SEGMENT) SHL 4) + MARKER_SM_COLFUNC_jump_offset24_noloopandstretch_+1], dx ; five bytes
 
 MARKER_COLFUNC_NOLOOPANDSTRETCH_FUNCTION_AREA_OFFSET_:
 PUBLIC MARKER_COLFUNC_NOLOOPANDSTRETCH_FUNCTION_AREA_OFFSET_
 
-ALIGN_MACRO
-PROC    R_DrawColumn24NoLoopAndStretch_ FAR
-PUBLIC  R_DrawColumn24NoLoopAndStretch_
+PROC    R_DrawColumn24NoLoopStretch_ FAR
+PUBLIC  R_DrawColumn24NoLoopStretch_
 
     ; di contains screen coord
     ; ax contains dc_yl
     ; CL:SI = dc_texturemid
     ; 00:BX = dc_iscale
+   
+   mov   word ptr cs:[((DC_YL_LOOKUP_SEGMENT - COLORMAPS_SEGMENT) SHL 4) + MARKER_SM_COLFUNC_jump_offset24_noloopandstretch_+1], dx ; five bytes
 
 
-MARKER_SM_COLFUNC_subtract_centery24_noloopandstretch_:
-PUBLIC MARKER_SM_COLFUNC_subtract_centery24_noloopandstretch_
-   sub   ax, 01000h  ; todo move this outside with lea ax, [si - 01000h]
     ; ch is unset (garbage), but implied value 0. skip the mul ch step
 
    MOV  DX, AX  ; copy center24y
@@ -270,8 +229,8 @@ PUBLIC MARKER_SM_COLFUNC_jump_offset24_noloopandstretch_
 
    jmp loop_done_noloopandstretch         ; relative jump to be modified before function is called
 ; currently EVEN
-MARKER_SM_COL24_AFTER_JUMP_2:
-PUBLIC MARKER_SM_COL24_AFTER_JUMP_2
+; 10 bytes each
+ENSUREALIGN_202:
 
 
 ; 10 bytes each
@@ -310,24 +269,11 @@ ENDP
 
 ALIGN 16
 
-  xchg  ax, ax ; nop  ; 11 bytes of nops, then 5 byte instruction, then paragraph aligned func
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
 
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
 
-  mov   word ptr cs:[((DC_YL_LOOKUP_SEGMENT - COLORMAPS_SEGMENT) SHL 4) + MARKER_SM_COLFUNC_jump_offset24_+1], dx ; five bytes
 MARKER_COLFUNC_NORMAL_FUNCTION_AREA_OFFSET_:
 PUBLIC MARKER_COLFUNC_NORMAL_FUNCTION_AREA_OFFSET_
 
-ALIGN_MACRO
 PROC    R_DrawColumn24Normal_ FAR
 PUBLIC  R_DrawColumn24Normal_
 
@@ -335,9 +281,9 @@ PUBLIC  R_DrawColumn24Normal_
 ; 417Fh
 COLORMAPS_F_OFFSET = 07Fh + (((COLORMAPS_F_DUPE_SEGMENT) - COLORMAPS_SEGMENT) SHL 4)
 
-MARKER_SM_COLFUNC_subtract_centery24_normal_:
-PUBLIC MARKER_SM_COLFUNC_subtract_centery24_normal_
-   sub   ax, 01000h  ; todo move this outside with lea ax, [si - 01000h]
+
+   mov   word ptr cs:[((DC_YL_LOOKUP_SEGMENT - COLORMAPS_SEGMENT) SHL 4) + MARKER_SM_COLFUNC_jump_offset24_+1], dx ; five bytes
+
 
 ; credit to zero318 for various ideas for the function
    MOV  DX, AX  ; copy center24y
@@ -382,8 +328,8 @@ PUBLIC MARKER_SM_COLFUNC_jump_offset24_
 
    jmp loop_done         ; relative jump to be modified before function is called
 ; currently EVEN
-MARKER_SM_COL24_AFTER_JUMP_3:
-PUBLIC MARKER_SM_COL24_AFTER_JUMP_3
+; 12 bytes each
+ENSUREALIGN_203:
 
 
 
@@ -435,31 +381,15 @@ ENDP
 
 ALIGN 16
 
-  xchg  ax, ax ; nop  ; 11 bytes of nops, then 5 byte instruction, then paragraph aligned func
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
 
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-  xchg  ax, ax ; nop
-
-  mov   word ptr cs:[((DC_YL_LOOKUP_SEGMENT - COLORMAPS_SEGMENT) SHL 4) + MARKER_SM_COLFUNC_jump_offset24_normalstretch_+1], dx ; five bytes
 MARKER_COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET_:
 PUBLIC MARKER_COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET_
 
-ALIGN_MACRO
 PROC    R_DrawColumn24NormalStretch_ FAR
 PUBLIC  R_DrawColumn24NormalStretch_
 
+  mov   word ptr cs:[((DC_YL_LOOKUP_SEGMENT - COLORMAPS_SEGMENT) SHL 4) + MARKER_SM_COLFUNC_jump_offset24_normalstretch_+1], dx ; five bytes
 
-MARKER_SM_COLFUNC_subtract_centery24_normalstretch_:
-PUBLIC MARKER_SM_COLFUNC_subtract_centery24_normalstretch_
-   sub   ax, 01000h  ; todo move this outside with lea ax, [si - 01000h]
 
    ; ch is unset (garbage), but implied value 0. skip the mul ch step
 
@@ -495,14 +425,13 @@ PUBLIC MARKER_SM_COLFUNC_set_destview_segment24_normalstretch_
    mov     sp, 04Fh
 
 
-
 MARKER_SM_COLFUNC_jump_offset24_normalstretch_:
 PUBLIC MARKER_SM_COLFUNC_jump_offset24_normalstretch_
 
    jmp loop_done_normalstretch         ; relative jump to be modified before function is called
 ; currently EVEN
-MARKER_SM_COL24_AFTER_JUMP_4:
-PUBLIC MARKER_SM_COL24_AFTER_JUMP_4
+; 12 bytes each
+ENSUREALIGN_204:
 
 
    ;; 12 bytes loop iter
@@ -552,6 +481,10 @@ loop_done_normalstretch:
 
 ENDP
 
+public ENSUREALIGN_201
+public ENSUREALIGN_202
+public ENSUREALIGN_203
+public ENSUREALIGN_204
 
 ; end marker for this asm file
 PROC R_COLUMN24_ENDMARKER_ 
