@@ -149,7 +149,7 @@ MOV  ES, SI
 MOV  SI, DX
 PUSH AX
 MUL  BX
-MOV  word ptr cs:[_selfmodify_restore_dx+1], DX
+MOV  word ptr cs:[ENSUREALIGN_103-2], DX
 MOV  AX, SI
 MUL  CX
 XCHG AX, SI
@@ -158,7 +158,9 @@ AND  DX, BX
 SUB  SI, DX
 MUL  BX
 _selfmodify_restore_dx:
-ADD  AX, 01000h
+;ADD  AX, 01000h
+db 081h, 0C0h, 00h, 010h  ; add ax, 01000h 4 byte encoding, toggle for ENSUREALIGN_103
+ENSUREALIGN_103:
 ADC  SI, DX
 XCHG AX, CX
 CWD
@@ -6263,6 +6265,7 @@ ENDP
 
 PUBLIC  ENSUREALIGN_101
 PUBLIC  ENSUREALIGN_102
+PUBLIC  ENSUREALIGN_103
 
 ENDS
 END

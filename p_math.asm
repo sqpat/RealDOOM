@@ -103,7 +103,7 @@ MOV  ES, SI
 MOV  SI, DX
 PUSH AX
 MUL  BX
-MOV  word ptr cs:[_selfmodify_restore_dx+1], DX
+MOV  word ptr cs:[ENSUREALIGN_903-2], DX
 MOV  AX, SI
 MUL  CX
 XCHG AX, SI
@@ -112,7 +112,9 @@ AND  DX, BX
 SUB  SI, DX
 MUL  BX
 _selfmodify_restore_dx:
-ADD  AX, 01000h
+;ADD  AX, 01000h
+db 081h, 0C0h, 00h, 010h  ; add ax, 01000h 4 byte encoding, toggle for ENSUREALIGN_903
+ENSUREALIGN_903:
 ADC  SI, DX
 XCHG AX, CX
 CWD
@@ -1141,6 +1143,7 @@ ADD  dx, si    ; add
 sub   di, ax
 _SELFMODIFY_restore_numhi_low: ; store copy of numhi.low?
 mov   si, 01000h
+ENSUREALIGN_904:
 sbb   si, dx
 
 ; todo can we invert logic ahead instead of reversing sign, avoixxng si swap above?
@@ -1440,7 +1443,7 @@ call div48_32_MapLocal_
 
 _SELFMODIFY_store_fixeddiv_sign_ahead:
 mov  si, 01000h
-
+ENSUREALIGN_905:
 XOR  AX, SI
 XOR  DX, SI  
 SUB  AX, SI  
@@ -3005,6 +3008,10 @@ ENDP
 PROC   P_MATH_ENDMARKER_ 
 PUBLIC P_MATH_ENDMARKER_
 ENDP
+
+public ENSUREALIGN_903
+public ENSUREALIGN_904
+public ENSUREALIGN_905
 
 ENDS
 
