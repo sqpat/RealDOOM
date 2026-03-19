@@ -7335,15 +7335,22 @@ bottexture_zero:
 mov       word ptr ds:[SELFMODIFY_BSP_bottexture], ((SELFMODIFY_BSP_bottexture_TARGET - SELFMODIFY_BSP_bottexture_AFTER) SHL 8) + 0EBh
 jmp       bottexture_stuff_done
 ALIGN_MACRO
-toptexture_zero:
-mov       byte ptr ds:[SELFMODIFY_BSP_toptexture],   0E9h
-mov       word ptr ds:[SELFMODIFY_BSP_toptexture+1], (SELFMODIFY_BSP_toptexture_TARGET - SELFMODIFY_BSP_toptexture_AFTER)
-jmp       toptexture_stuff_done
-
-ALIGN_MACRO
-
-ALIGN_MACRO
 bottexture_not_zero:
+
+test      byte ptr [bp - 2], ML_DONTPEGBOTTOM
+je        calculate_bottexturemid
+; todo cs write here ??
+les       ax, dword ptr [bp - 026h]
+mov       dx, es
+do_selfmodify_bottexture:
+
+; set _rw_toptexturemid in rendersegloop
+
+mov   word ptr ds:[SELFMODIFY_set_bottexturemid_lo+1], ax
+mov   byte ptr ds:[SELFMODIFY_set_bottexturemid_hi+1], dl
+
+
+bottexture_stuff_done:
 
 ; are any bits set?
 or        bl, bh
@@ -14601,7 +14608,7 @@ cmp      ax, word ptr ds:[_lastviewz+0]
 je       skip_viewz_lo_selfmodifies_this_frame
 mov      word ptr ds:[_lastviewz+0], ax
 
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_1+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_1+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_2+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_3+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_lo_4+2], ax
