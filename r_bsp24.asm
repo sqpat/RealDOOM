@@ -5802,6 +5802,11 @@ mov   ds, cx
 pop   dx  ; mov   dx, word ptr [bp - 022h]  ; stopx - startx
 pop   si  ; mov   si, word ptr [bp - 020h]  ; startx
 
+inc   dx
+
+mov   bx, 1
+and   bx, si
+
 
 SELFMODIFY_toggle_skip_ceilingclip_mid:
 SELFMODIFY_toggle_skip_ceilingclip_mid_AFTER = SELFMODIFY_toggle_skip_ceilingclip_mid + 2
@@ -5811,10 +5816,14 @@ mov   cx, dx   ; MAY BE SELF MODIFIED INTO JMP (E8) skip_ceiling_clip
 ; mark all floors viewheight(+1)
 
 lea   di, [OFFSET_CEILINGCLIP + si]
-shr   cx, 1  ; count inw ords
-
 SELFMODIFY_BSP_setviewheight_1:
 mov   ax, 01000h
+
+jz    skip_first_stosb_ceil
+stosb
+dec   cx
+skip_first_stosb_ceil:
+shr   cx, 1
 rep   stosw
 adc   cx, cx
 rep   stosb
@@ -5830,6 +5839,11 @@ SELFMODIFY_toggle_skip_floorclip_mid_AFTER:
 ; mark all floors -1 (+1)
 lea   di, [OFFSET_FLOORCLIP + si]
 
+dec   bx
+js    skip_first_stosb_floor
+stosb
+dec   cx
+skip_first_stosb_floor:
 shr   cx, 1
 rep   stosw
 adc   cx, cx
