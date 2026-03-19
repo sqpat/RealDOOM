@@ -5338,7 +5338,7 @@ mov   byte ptr es:[bx+di + vp_bottom_offset], al
 mov   ax, si						    		   ; dl is 0, si is < screensize (and thus under 255)
 dec   ax
 mov   byte ptr es:[bx+di], al
-or    byte ptr ds:[SELFMODIFY_mark_planes_dirty+1], 080h ; ceiling bit
+or    byte ptr ds:[SELFMODIFY_mark_planes_dirty+1], 2 ; ceiling bit
 
 SELFMODIFY_BSP_markceiling_1_TARGET:
 
@@ -5397,7 +5397,7 @@ dec   ax
 mov   byte ptr es:[bx+di], al
 dec   cx
 mov   byte ptr es:[bx+di + vp_bottom_offset], cl
-or    byte ptr ds:[SELFMODIFY_mark_planes_dirty+1], 040h ; floor bit
+or    byte ptr ds:[SELFMODIFY_mark_planes_dirty+1], 1 ; floor bit
 
 SELFMODIFY_BSP_markfloor_1_TARGET:
 
@@ -5821,7 +5821,7 @@ rep   stosb
 
 done_skipping_markceiling_copy_mid:
 
-
+xor   ax, ax ; ax is 0 from here on out.
 
 SELFMODIFY_toggle_skip_floorclip_mid:
 mov   cx, dx   ; MAY BE SELF MODIFIED INTO JMP (E8) skip_floor_clip
@@ -5829,7 +5829,6 @@ SELFMODIFY_toggle_skip_floorclip_mid_AFTER:
 
 ; mark all floors -1 (+1)
 lea   di, [OFFSET_FLOORCLIP + si]
-xor   ax, ax
 
 shr   cx, 1
 rep   stosw
@@ -5858,8 +5857,8 @@ mov       ds, dx
 add       sp, 2  ; undo rest of stack
 SELFMODIFY_mark_planes_dirty:
 public SELFMODIFY_mark_planes_dirty 
-db  0B8h, 00h, 00h   ;mov ax, 0  ; modify the first byte with bit flags . 00 for ah.
-shl       ax, 1
+mov       ch, 0
+shr       cx, 1
 jnz       mark_planes_dirty ; common case is fall thru.  ; todo is this always true for mid?
 
 ; pops on outside
@@ -5870,26 +5869,24 @@ SELFMODIFY_toggle_skip_ceilingclip_mid_TARGET:
 skip_ceiling_clip:
 mov       word ptr ds:[SELFMODIFY_toggle_skip_ceilingclip_mid], 0D189h ; mov cx, dx
 mov       word ptr ds:[SELFMODIFY_BSP_markceiling_1],           03848h ; dec ax, cmp al, cl
-
-
 jmp       done_skipping_markceiling_copy_mid
+
 ALIGN_MACRO
 SELFMODIFY_toggle_skip_floorclip_mid_TARGET:
 skip_floor_clip:
 mov       word ptr ds:[SELFMODIFY_toggle_skip_floorclip_mid], 0D189h ; mov cx, dx
 mov       word ptr ds:[SELFMODIFY_BSP_markfloor_1],           04940h ; inc ax; dec cx
-
 jmp       done_skipping_markfloor_copy_mid
 
 ALIGN_MACRO
 mark_planes_dirty:
 public mark_planes_dirty
-mov      byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], cl ; todo find a 0 register
-mov      di, _visplaneheaders + VISPLANEHEADER_T.visplaneheader_dirty
+mov      byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], al ; still 0
+mov      si, _visplaneheaders + VISPLANEHEADER_T.visplaneheader_dirty
 les      bx, dword ptr cs:[_ceilingplaneindex]
-or       byte ptr ds:[bx+di], ah 
+or       byte ptr ds:[bx+si], ch
 mov      bx, es
-or       byte ptr ds:[bx+di], al
+or       byte ptr ds:[bx+si], cl
 ; pops on outside
 
 ret       
@@ -8488,7 +8485,7 @@ mov   byte ptr es:[bx+di + vp_bottom_offset], al
 mov   ax, si						    		   ; dl is 0, si is < screensize (and thus under 255)
 dec   ax
 mov   byte ptr es:[bx+di], al
-or    byte ptr ds:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], 080h ; ceiling bit
+or    byte ptr ds:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], 2 ; ceiling bit
 
 SELFMODIFY_BSP_markceiling_1_TARGET_TWOSIDED:
 
@@ -8547,7 +8544,7 @@ dec   ax
 mov   byte ptr es:[bx+di], al
 dec   cx
 mov   byte ptr es:[bx+di + vp_bottom_offset], cl
-or    byte ptr ds:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], 040h ; floor bit
+or    byte ptr ds:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], 1 ; floor bit
 
 SELFMODIFY_BSP_markfloor_1_TARGET_TWOSIDED:
 
@@ -9574,20 +9571,20 @@ public R_RenderSegLoop_exit_TWOSIDED
 SELFMODIFY_restore_bp_after_draw_topbot:
 mov   bp, 01000h
 
+mov       ax, cs
+mov       ds, ax ; al known 0
 
 ; clean up the self modified code of renderseg loop. 
-mov   byte ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0_TWOSIDED], 0E9h
-mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat0_TWOSIDED+1], (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET_TWOSIDED - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER_TWOSIDED )
-mov   word ptr cs:[SELFMODIFY_BSP_set_seglooptexrepeat1_TWOSIDED], ((SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET_TWOSIDED - SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER_TWOSIDED) SHL 8) + 0EBh
+mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0_TWOSIDED], 0E9h
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0_TWOSIDED+1], (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET_TWOSIDED - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER_TWOSIDED )
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat1_TWOSIDED], ((SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET_TWOSIDED - SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER_TWOSIDED) SHL 8) + 0EBh
 
 
 
 ; note: we can jump  intot his exit path from far away!!
 ; sp should be bp - 6
 
-mov       cx, cs
-mov       ds, cx
-mov       dx, word ptr [bp - 020h]  ; todo reorder and pop
+mov       si, word ptr [bp - 020h]
 
 xor       cx, cx ; cx always zero going thru this.
 
@@ -9604,10 +9601,14 @@ continue_checking_spr_top_clip_TWOSIDED:
 cmp       word ptr es:[bx + DRAWSEG_T.drawseg_sprtopclip_offset], cx ; 0
 jne       check_spr_bottom_clip_TWOSIDED
 
-mov       si, dx ; startx
+
 mov       di, word ptr ds:[_lastopening]
-mov       ax, di
-sub       ax, si
+mov       dx, di ; backup startx
+sub       si
+mov       word ptr es:[bx + DRAWSEG_T.drawseg_sprtopclip_offset], dx
+
+mov       dx, si ; backup startx
+
 
 mov       cx, OPENINGS_SEGMENT
 mov       es, cx
@@ -9624,8 +9625,9 @@ rep       movsw ; cx 0 again after this
 
 mov       word ptr ds:[_lastopening], di
 
+mov       si, dx ; restore startx
+
 mov       es, word ptr ds:[_ds_p_bsp+2]   ; bx is ds_p offset above
-mov       word ptr es:[bx + DRAWSEG_T.drawseg_sprtopclip_offset], ax
 
 check_spr_bottom_clip_TWOSIDED:
 ; es:si is ds_p
@@ -9639,10 +9641,12 @@ continue_checking_spr_bottom_clip_TWOSIDED:
 cmp       word ptr es:[bx + DRAWSEG_T.drawseg_sprbottomclip_offset], cx ; 0
 jne       check_silhouettes_then_exit_TWOSIDED
 
-mov       si, dx ; startx
+; si already startx
 mov       di, word ptr ds:[_lastopening]
-mov       ax, di
-sub       ax, si
+
+mov       dx, di
+sub       dx, si
+mov       word ptr es:[bx + DRAWSEG_T.drawseg_sprbottomclip_offset], dx
 
 mov       cx, OPENINGS_SEGMENT
 mov       es, cx
@@ -9659,7 +9663,6 @@ rep       movsw ; cx 0 again after this
 mov       word ptr ds:[_lastopening], di
 
 mov       es, word ptr ds:[_ds_p_bsp+2]   ; bx is ds_p offset above
-mov       word ptr es:[bx + DRAWSEG_T.drawseg_sprbottomclip_offset], ax
 check_silhouettes_then_exit_TWOSIDED:
 cmp       byte ptr ds:[_maskedtexture_bsp], cl ; 0
 je        skip_top_silhouette_TWOSIDED
@@ -9680,13 +9683,13 @@ add       word ptr ds:[_ds_p_bsp], (SIZE DRAWSEG_T)
 
 add       sp, STOREWALLRANGE_INNER_STACK_SIZE_BOTTOP     ; add back fixed SP
 
-mov       dx, ss
-mov       ds, dx
+mov       si, ss
+mov       ds, si
 
 SELFMODIFY_mark_planes_dirty_TWOSIDED:
 public SELFMODIFY_mark_planes_dirty_TWOSIDED 
-db  0B8h, 00h, 00h   ;mov ax, 0  ; modify the first byte with bit flags . 00 for ah.
-shl       ax, 1
+mov       ch, 0
+shr       cx, 1
 jnz       mark_planes_dirty_TWOSIDED ; common case is fall thru.
 
 ; pops on outside
@@ -9696,13 +9699,13 @@ ret
 ALIGN_MACRO
 mark_planes_dirty_TWOSIDED:
 public mark_planes_dirty_TWOSIDED
-mov      byte ptr cs:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], cl ; 0
-mov      di, _visplaneheaders + VISPLANEHEADER_T.visplaneheader_dirty
+mov      byte ptr cs:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], al ; al still known 0
+mov      si, _visplaneheaders + VISPLANEHEADER_T.visplaneheader_dirty
 ; al/ah are zero or nonzero depending on state..
 les      bx, dword ptr cs:[_ceilingplaneindex]
-or       byte ptr ds:[bx+di], ah
+or       byte ptr ds:[bx+si], ch
 mov      bx, es
-or       byte ptr ds:[bx+di], al
+or       byte ptr ds:[bx+si], cl
 
 ; pops on outside
 
