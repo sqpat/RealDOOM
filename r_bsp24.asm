@@ -53,7 +53,8 @@ public _COLFUNC_SELFMODIFY_LOOKUPTABLE
 dw DRAWCOL_NORMAL_STRETCH_OFFSET_BSP, DRAWCOL_OFFSET_BSP
 _COLFUNC_JUMP_LOOKUP_INSTR:
 db 001h, 0D6h, 0D1h, 0E6h  ; 12 
-
+_COLFUNC_JUMP_LOOKUP_INSTR_TOPBOT:
+db 001h, 0F2h, 0D1h, 0E2h ; 12
 
 
 
@@ -115,8 +116,6 @@ _lastviewz_shortangle:
 dw 0F0F0h  ; 16 bit?
 _lastviewz:
 dw 0F0F0h, 0F0F0h
-_lastviewangle:
-dw 0F0F0h, 0F0F0h
 
 
 BEOFRE_COLFUNC_LOOKUP:
@@ -132,10 +131,13 @@ public _COLFUNC_SELFMODIFY_LOOKUPTABLE_SECOND_HALF
 dw DRAWCOL_NOLOOP_STRETCH_OFFSET_BSP, DRAWCOL_NOLOOP_OFFSET_BSP
 
 db 0D1h, 0E6h, 001h, 0D6h  ; 10
+db 0D1h, 0E2h, 001h, 0F2h ; 10
 
 
 
 
+_lastviewangle:
+dw 0F0F0h, 0F0F0h
 
 _lastfixedcolormap:
 db 0F0h  ; force selfmodify frame one
@@ -7034,7 +7036,7 @@ mov       ds, ax
 
 ; todo is si and lodsw pattern better?
 
-les       ax, dword ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR]
+les       ax, dword ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR_TOPBOT]
 mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul_bot], ax    ; adjust shift/add byte order for 10/12 mul
 mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul_bot+2], es  ; adjust shift/add byte order for 10/12 mul
 les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
@@ -7084,7 +7086,7 @@ mov       ax, cs
 mov       ds, ax
 
 ; todo is si and lodsw pattern better?
-les       ax, dword ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR]
+les       ax, dword ptr ds:[bx + _COLFUNC_JUMP_LOOKUP_INSTR_TOPBOT]
 mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul_top], ax    ; adjust shift/add byte order for 10/12 mul
 mov       word ptr ds:[SELFMODIFY_set_pixel_count_shift_mul_top+2], es  ; adjust shift/add byte order for 10/12 mul
 les       ax, dword ptr ds:[bx + _COLFUNC_SELFMODIFY_LOOKUPTABLE]
@@ -9300,16 +9302,11 @@ shl   si, 1
 add   si, 398
 
 mov   dx, si  ; 2, 2   dx already multiplied by 2
-shl   si, 1   ; 4, 2
+shl   dx, 1   ; 4, 2
 SELFMODIFY_set_pixel_count_shift_mul_top:
 public SELFMODIFY_set_pixel_count_shift_mul_top
-; 12 per is 01 d6 d1 e6 
-; 10 per is d1 e6 01 d6 
-add   si, dx  ; 6, 2     ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
-shl   si, 1   ; 12, 2    ; is there a way to swap just one instruction, while not adding instruction count?
-
-mov   dx, si  ; store jmp amt in dx. 
-
+add   dx, si  ; 6, 2     ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
+shl   dx, 1   ; 12, 2    ; is there a way to swap just one instruction, while not adding instruction count?
 
 
 SELFMODIFY_BSP_add_destview_offset_top:
@@ -9475,15 +9472,12 @@ shl   si, 1
 add   si, 398
 
 mov   dx, si  ; 2, 2   dx already multiplied by 2
-shl   si, 1   ; 4, 2
+shl   dx, 1   ; 4, 2
 SELFMODIFY_set_pixel_count_shift_mul_bot:
 public SELFMODIFY_set_pixel_count_shift_mul_bot
-; 12 per is 01 d6 d1 e6 
-; 10 per is d1 e6 01 d6 
-add   si, dx  ; 6, 2     ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
-shl   si, 1   ; 12, 2    ; is there a way to swap just one instruction, while not adding instruction count?
+add   dx, si  ; 6, 2     ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
+shl   dx, 1   ; 12, 2    ; is there a way to swap just one instruction, while not adding instruction count?
 
-mov   dx, si  ; store jmp amt in dx. todo remove the juggle by changing the above shift math
 
 SELFMODIFY_BSP_add_destview_offset_bot:
 lea   di, [bx + 01000h]
