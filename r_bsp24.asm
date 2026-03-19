@@ -6960,17 +6960,34 @@ jl        set_bsilheight_to_frontsectorfloorheight
 sub       ax, word ptr [bp - 0Ch]
 mov       al, ah
 and       ax, 080h
+SELFMODIFY_set_colfunc_type_mid:
+cmp       al, 010h
+jne       do_selfmodify_colfunc_type_mid
 
+
+done_with_selfmodify_colfunc_type_mid:
+
+;		} else if (backsectorfloorheight > viewz_shortheight) {
+SELFMODIFY_BSP_viewz_shortheight_2:
+cmp       cx, 01000h
+jle       bsilheight_set
+
+mov       ax, MAXSHORT
+jmp       set_bsilheight
+
+ALIGN_MACRO
+do_selfmodify_colfunc_type_mid:
 ; todo set bot vals here?
 
 push      si  ; todo pushpop si once ?
 
 
 ; using loop/noloop lookup flag, look up the function setter params for stretch/nostretch for this func type and set them.
+mov       si, cs
+mov       ds, si
+mov       byte ptr ds:[SELFMODIFY_set_colfunc_type_mid+1], al
 
 xchg      ax, si
-mov       ax, cs
-mov       ds, ax
 
 ; todo is si and lodsw pattern better?
 
@@ -6991,15 +7008,13 @@ pop       si
 
 mov       ax, DRAWSEGS_BASE_SEGMENT
 mov       ds, ax
-
-
-;		} else if (backsectorfloorheight > viewz_shortheight) {
-SELFMODIFY_BSP_viewz_shortheight_2:
+SELFMODIFY_BSP_viewz_shortheight_6:
 cmp       cx, 01000h
 jle       bsilheight_set
-set_bsilheight_to_maxshort:
+
 mov       ax, MAXSHORT
 jmp       set_bsilheight
+
 ALIGN_MACRO
 set_bsilheight_to_frontsectorfloorheight:
 mov       ax, bx
@@ -14641,6 +14656,7 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewz_13_3_2+2], ax
 
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_1+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_2+2], ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_6+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_3+3], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_4+3], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_5+1], ax
