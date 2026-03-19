@@ -408,6 +408,7 @@ SELFMODIFY_MASKED_COLFUNC_set_func_offset_dupe:
 dw DRAWCOL_NOLOOP_OFFSET_MASKED, COLORMAPS_SEGMENT_MASKEDMAPPING
 ENSUREALIGN_102:
 
+mov  ds, ax
 
 exit_function_single:
 
@@ -5346,6 +5347,7 @@ SELFMODIFY_MASKED_COLFUNC_set_func_offset:
 dw DRAWCOL_NOLOOP_OFFSET_MASKED, COLORMAPS_SEGMENT_MASKEDMAPPING
 ENSUREALIGN_101:
 
+mov  ds, ax
 
 increment_column_and_continue_loop:
 pop   si

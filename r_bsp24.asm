@@ -5818,8 +5818,6 @@ ENSUREALIGN_011:
 
 ; keep this even aligned.
 
-SELFMODIFY_BSP_R_DrawColumnPrep_ret:
-public SELFMODIFY_BSP_R_DrawColumnPrep_ret
 
 ; the pop bx gets replaced with ret if bottom is calling.
 ; todo: the bottom caller pops the same stuff. pop here and modify a later instruction instead?
@@ -9332,12 +9330,6 @@ SELFMODIFY_COLFUNC_set_func_offset_top:
 dw DRAWCOL_OFFSET_BSP, COLORMAPS_SEGMENT
 ENSUREALIGN_009:
 
-
-SELFMODIFY_BSP_R_DrawColumnPrep_ret_top:
-public SELFMODIFY_BSP_R_DrawColumnPrep_ret_top
-
-
-; todo remove ds set to ss in return from drawcol..
 mov   dx, cs
 mov   ds, dx
 
@@ -9501,9 +9493,6 @@ SELFMODIFY_COLFUNC_set_func_offset_bot:
 dw DRAWCOL_OFFSET_BSP, COLORMAPS_SEGMENT
 ENSUREALIGN_010:
 
-
-SELFMODIFY_BSP_R_DrawColumnPrep_ret_bot:
-public SELFMODIFY_BSP_R_DrawColumnPrep_ret_bot
 
 ; the pop bx gets replaced with ret if bottom is calling.
 ; todo: the bottom caller pops the same stuff. pop here and modify a later instruction instead?

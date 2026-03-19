@@ -123,11 +123,7 @@ loop_done_noloop:
 ; restore ds without going to memory.
     mov  sp, ss
     mov  ax, FIXED_DS_SEGMENT
-    mov  ds, ax
     mov  ss, ax
-
-
-
     sti
 
     retf
@@ -219,7 +215,6 @@ loop_done_noloopandstretch:
 
 ; restore ds without going to memory.
     mov  ax, ss
-    mov  ds, ax
 
     retf
 ENDP
@@ -326,7 +321,6 @@ loop_done:
 
     mov  sp, ss
     mov  ax, FIXED_DS_SEGMENT
-    mov  ds, ax
     mov  ss, ax
 
     sti
@@ -428,7 +422,6 @@ loop_done_normalstretch:
 
     mov  sp, ss
     mov  ax, FIXED_DS_SEGMENT
-    mov  ds, ax
     mov  ss, ax
 
     sti
