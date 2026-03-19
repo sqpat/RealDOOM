@@ -48,6 +48,7 @@ db "Out of thinkers!", 0
 
 ; THINKERREF __near P_GetNextThinkerRef(void) 
 
+ALIGN_MACRO
 PROC P_CreateThinkerFar_ FAR
 PUBLIC P_CreateThinkerFar_
 
@@ -55,6 +56,8 @@ call   P_CreateThinker_
 retf
 
 ENDP
+
+ALIGN_MACRO
 
 PROC P_CreateThinker_ NEAR
 PUBLIC P_CreateThinker_
@@ -78,7 +81,7 @@ mov       di, ax
 sal       di, 1
 mov       di, word ptr ds:[di + _mobjlookuptable]
 
-
+ALIGN_MACRO
 loop_check_next_thinker:
 cmp       ax, MAX_THINKERS
 jne       use_current_thinker_index
@@ -101,7 +104,7 @@ call    dword ptr ds:[_I_Error_addr]
 ENDP
 
 
-
+ALIGN_MACRO
 found_thinker:
 mov       word ptr ds:[_currentThinkerListHead], ax
 
@@ -172,7 +175,7 @@ ret
 ENDP
 
 
-
+ALIGN_MACRO
 PROC   P_UpdateThinkerFunc_ NEAR
 PUBLIC P_UpdateThinkerFunc_
 
@@ -195,6 +198,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC   P_RemoveThinker_ NEAR
 PUBLIC P_RemoveThinker_
 
@@ -231,6 +235,7 @@ ENDP
 ;TF_GLOW_HIGHBITS = 04800h
 ;TF_DELETEME_HIGHBITS = 05000h
 
+ALIGN_MACRO
 _functable:
 dw OFFSET T_PlatRaise_
 dw OFFSET T_MoveCeiling_
@@ -244,6 +249,7 @@ dw OFFSET T_Glow_
 
 
 
+ALIGN_MACRO
 PROC   P_Ticker_ FAR
 PUBLIC P_Ticker_
 
@@ -262,6 +268,8 @@ je        do_ptick
 exit_pticker_return:
 retf      
 ENDP
+
+ALIGN_MACRO
 do_ptick:
 
 call      P_PlayerThink_ 
@@ -291,17 +299,16 @@ and       al, (TF_FUNCBITS SHR 8)
 
 cmp       al, (TF_MOBJTHINKER_HIGHBITS SHR 8)
 jne       continue_checking_tf_types
-do_mobjthinker:
 
+do_mobjthinker:
 mov      bx, si
 mov      bx, word ptr ds:[bx + si + _mobjposlookuptable]
-
 mov       ax, di
-
 mov       cx, MOBJPOSLIST_SEGMENT ; todo remove maybe?
 mov       dx, si
-call      P_MobjThinker_
-
+call      P_MobjThinker_  ; todo may be worth aligning?
+ENSUREALIGN_900:
+PUBLIC ENSUREALIGN_900
 
 
 
@@ -320,8 +327,7 @@ add       word ptr ds:[_leveltime], 1
 adc       word ptr ds:[_leveltime], 0
 retf  
 
-
-
+ALIGN_MACRO
 continue_checking_tf_types:
 
 cmp       al, (TF_DELETEME_HIGHBITS SHR 8)
@@ -340,7 +346,7 @@ call      word ptr cs:[_functable + bx - 4];
 jmp done_processing_thinker
 
 
-
+ALIGN_MACRO
 do_delete_me:
 
 ;			// time to remove it
@@ -400,6 +406,7 @@ jmp       done_processing_thinker
 
 ENDP
 
+ALIGN_MACRO
 PROC P_Random_ NEAR
 PUBLIC P_Random_
 

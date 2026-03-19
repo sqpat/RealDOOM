@@ -113,14 +113,17 @@ PROC    P_ENEMY_STARTMARKER_
 PUBLIC  P_ENEMY_STARTMARKER_
 ENDP
 
+ALIGN_MACRO
 _opposite:
 db  DI_WEST, DI_SOUTHWEST, DI_SOUTH, DI_SOUTHEAST
 db  DI_EAST, DI_NORTHEAST, DI_NORTH, DI_NORTHWEST, DI_NODIR
 
 
+ALIGN_MACRO
 _diags:
 db  DI_NORTHWEST, DI_NORTHEAST, DI_SOUTHWEST, DI_SOUTHEAST
 
+ALIGN_MACRO
 _movedirangles:
 dw  00000h, 02000h, 04000h, 06000h, 08000h, 0A000h, 0C000h, 0E000h
 
@@ -539,6 +542,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 _p_move_dir_switch_table:
 
 dw OFFSET switch_movedir_0 - OFFSET P_SIGHT_STARTMARKER_
@@ -2979,6 +2983,7 @@ pop   si
 ret   
 
 
+ALIGN_MACRO
 _vilechase_lookup_table:
 
 dw OFFSET vile_switch_movedir_0 - OFFSET P_SIGHT_STARTMARKER_
@@ -3487,6 +3492,7 @@ mov   cx, es
 mov   si, di
 jmp   A_Fire_
 
+ALIGN_MACRO
 _vile_momz_lookuptable:
 
 dw vilemomz_ret_2
@@ -5092,6 +5098,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 setmobjstate_jump_table:
 dw A_BFGSpray_
 dw A_Explode_
@@ -5151,6 +5158,7 @@ ENDP
 
 
 ; todo idea p_setmobjstate variant with mobjpos already loaded. skips the div/mul steps.
+ALIGN_MACRO
 PROC P_SetMobjState_ NEAR
 PUBLIC P_SetMobjState_
 
@@ -5190,6 +5198,8 @@ mov       word ptr ds:[_setStateReturn_pos], ax
 jcxz      state_is_null
 
 
+ENSUREALIGN_901:
+public ENSUREALIGN_901
 do_next_state:
 push      ax  ; mobjpos offset
 xchg      ax, bx   ; bx gets mobjpos offset
@@ -5280,6 +5290,7 @@ pop       si
 pop       cx
 pop       bx
 ret
+ALIGN_MACRO
 exit_p_setmobjstate_return_1:
 mov       al, 1
 jmp       exit_p_setmobjstate

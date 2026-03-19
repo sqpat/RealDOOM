@@ -68,6 +68,7 @@ ENDP
 ;R_PointOnSide_
 ; called in a loop. destructive to ds
 
+ALIGN_MACRO
 PROC R_PointOnSide_ NEAR
 
 ; todo optimize to keep params on the stack from the otuside.
@@ -152,6 +153,7 @@ jl    return_true
 return_false:
 mov   ax, ds
 ret   
+ALIGN_MACRO
 
 ;            return node->dy > 0;
 
@@ -162,6 +164,7 @@ jle  return_false
 return_true:
 mov   ax, es
 ret   
+ALIGN_MACRO
 
 node_dx_nonequal:
 
@@ -188,6 +191,7 @@ jg    return_true
 ; return false
 mov   ax, ds
 ret    
+ALIGN_MACRO
 ret_node_dx_less_than_0:
 
 ;            return node->dx < 0;
@@ -198,6 +202,7 @@ jl    return_true
 ; return false
 mov   ax, ds
 ret   
+ALIGN_MACRO
 
 node_dy_nonzero_2:
 
@@ -256,6 +261,7 @@ je    check_lowbits
 return_false_2:
 mov   ax, ds
 ret   
+ALIGN_MACRO
 
 check_lowbits:
 cmp   ax, si
@@ -266,6 +272,7 @@ mov   ax, 01000h
 ;mov   ax, es
 
 ret   
+ALIGN_MACRO
 do_sign_bit_return:
 
 ;		// (left is negative)
@@ -283,6 +290,7 @@ ENDP
 
 ; fixed_t __near P_AproxDistance ( fixed_t	dx, fixed_t	dy ) {
 
+ALIGN_MACRO
 PROC P_AproxDistance_ NEAR
 PUBLIC P_AproxDistance_ 
 
@@ -317,6 +325,7 @@ sub  ax, bx
 sbb  dx, cx
 
 ret
+ALIGN_MACRO
 
 dx_less_than_dy:
 
@@ -359,6 +368,7 @@ ENDP
 ; especially if the caller lacks its own stack frame
 
 ; not a candidate for carry return. actually uses ax
+ALIGN_MACRO
 PROC P_PointOnLineSide_ NEAR
 
 push  bp		; bp + 2?
@@ -383,6 +393,7 @@ exit_pointonlineside:
 LEAVE_MACRO
 ret
 
+ALIGN_MACRO
 x_smaller_than_v1x:
 cmp   word ptr [bp + 0Ah], 0	; compare linedy
 jle   return_0_pointonlineside
@@ -392,6 +403,7 @@ mov   al, 1
 LEAVE_MACRO
 ret
 
+ALIGN_MACRO
 linedx_nonzero:
 
 cmp   word ptr [bp + 0Ah], 0	; compare linedy
@@ -408,6 +420,7 @@ mov   al, 1
 LEAVE_MACRO
 ret
 
+ALIGN_MACRO
 y_smaller_than_v1y:
 cmp   word ptr [bp + 8], 0
 jge   return_0_pointonlineside
@@ -415,6 +428,7 @@ mov   al, 1
 LEAVE_MACRO
 ret
 
+ALIGN_MACRO
 linedy_nonzero:
 
 
@@ -464,6 +478,7 @@ pop   di
 LEAVE_MACRO
 ret
 
+ALIGN_MACRO
 return_1_pointonlineside_3:		; this one pops di
 mov   al, 1
 pop   di
@@ -473,6 +488,7 @@ ret
 ENDP
 
 
+ALIGN_MACRO
 PROC P_BoxOnLineSide_ NEAR
 
 ;// Considers the line to be infinite
@@ -543,15 +559,18 @@ ret
 
 
 
+ALIGN_MACRO
 set_p1_to_1_2:
 mov   ah, 1
 jmp   check_p2_2
 
+ALIGN_MACRO
 set_p2_to_1_2:
 mov   al, 1
 jmp   check_linedx
 
 
+ALIGN_MACRO
 non_zero_slopetype:
 ja    not_vertical_high
 ; ST_VERTICAL_HIGH
@@ -587,12 +606,14 @@ cmp   al, ah		; -1, 0, or 1 result...
 jne   return_minusone_boxonlineside
 ret   
 
+ALIGN_MACRO
 return_minusone_boxonlineside:
 mov   al, -1
 ret   
 
 
 
+ALIGN_MACRO
 not_vertical_high:
 
 ; shared code for both cases
@@ -640,12 +661,9 @@ jne   return_minusone_boxonlineside
 ret   
 
 
+ALIGN_MACRO
 negative_high_slopetype:
 ; ST_NEGATIVE_HIGH
-
-
-
-
 
 
 les   bx, dword ptr ds:[_tmbbox + BOXTOP * 4]
@@ -693,6 +711,7 @@ ENDP
 ;    
 ;} divline_t;
 
+ALIGN_MACRO
 PROC P_PointOnDivlineSide_ NEAR
 
 
@@ -732,6 +751,7 @@ xor   al, al
 ret   
 
 
+ALIGN_MACRO
 line_dx_nonzero:
 mov   ax, DIVLINE_T ptr ds:[_trace.dl_dy+2]
 or    ax, DIVLINE_T ptr ds:[_trace.dl_dy]
@@ -761,6 +781,7 @@ return_0_pointondivlineside_3:
 xor   al, al
 ret   
 
+ALIGN_MACRO
 line_dy_nonzero:
 
 
@@ -791,10 +812,12 @@ xor   dx, DIVLINE_T ptr ds:[_trace.dl_dy+2]
 test  dh, 080h
 je    return_0_pointondivlineside
 jmp   return_1_pointondivlineside
+ALIGN_MACRO
 return_0_pointondivlineside:
 xor   al, al
 ret   
 
+ALIGN_MACRO
 sign_check_failed:
 
 push  si
@@ -844,6 +867,7 @@ xor   al, al
 pop   di
 pop   si
 ret  
+ALIGN_MACRO
 return_1_pointondivlineside_popdisi:
 mov   al, 1
 pop   di
@@ -855,6 +879,7 @@ ENDP
 
 ;fixed_t __near P_InterceptVector ( divline_t __near*	v1 ) ;
 
+ALIGN_MACRO
 PROC P_InterceptVector_ NEAR
 
 ; todo sometimes this is called with all fracbits as 0. 
@@ -912,6 +937,7 @@ den_not_zero:
 ;num = FixedMul2432 ( (v1->x.w - v2->x.w) ,v1->dy.w) + 
 ;		FixedMul2432 ( (v2->y.w - v1->y.w), v1->dx.w);
 
+ALIGN_MACRO
 les   bx, dword ptr ds:[si + DIVLINE_T.dl_dy]
 mov   cx, es
 les   ax, dword ptr ds:[si + DIVLINE_T.dl_x]
@@ -969,6 +995,7 @@ ENDP
 ;	//short_height_t		openrange; // not worth storing thousands of bytes of a subtraction result
 ;} lineopening_t;
 
+ALIGN_MACRO
 PROC P_LineOpening_ NEAR
 PUBLIC P_LineOpening_ 
 
@@ -1054,6 +1081,7 @@ ENDP
 
 ;void __near P_UnsetThingPosition (mobj_t __near* thing, uint16_t mobj_pos_offset);
 
+ALIGN_MACRO
 PROC   P_UnsetThingPosition_ NEAR
 PUBLIC P_UnsetThingPosition_ 
 
@@ -1144,6 +1172,7 @@ jmp   done_clearing_blockmap
 
 ; todo this sucks...
 
+ALIGN_MACRO
 exit_unset_position_and_pop_once:
 pop   ax	; undo bp - 2
 pop   di
@@ -1302,6 +1331,7 @@ pop   cx
 pop   bx
 ret   
 
+ALIGN_MACRO
 ref_not_a_match:
 ; nextRef = innerthing->bnextRef;
 mov   si, word ptr ds:[si]
@@ -1330,6 +1360,7 @@ ENDP
 ; dx    thing_pos_offset
 ; bx    knownsecnum
 
+ALIGN_MACRO
 PROC   P_SetThingPosition_ NEAR
 PUBLIC P_SetThingPosition_ 
 
@@ -1538,6 +1569,7 @@ pop   si
 pop   cx
 ret  
 
+ALIGN_MACRO
 set_null_bnextref_and_exit:
 
 ;			thing->bnextRef = NULL_THINKERREF;
@@ -1554,6 +1586,7 @@ ENDP
 
 ; int16_t __far R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y ) {
 
+ALIGN_MACRO
 PROC   R_PointInSubsector_ NEAR  ; todo return preshifted? or struct holds them preshifted?
 PUBLIC R_PointInSubsector_ 
 
@@ -1617,6 +1650,7 @@ ENDP
 
 ; boolean __far P_BlockLinesIterator ( int16_t x, int16_t y, boolean __near(*   func )(line_physics_t __far*, int16_t) );
 ; return in carry
+ALIGN_MACRO
 PROC P_BlockLinesIterator_ NEAR
 
 push  cx
@@ -1688,12 +1722,14 @@ jne   check_block_line
 check_next_block_line:
 add   di, 2
 jmp   loop_check_block_line
+ALIGN_MACRO
 exit_blocklinesiterator_return_1:
 stc
 pop   di
 pop   si
 pop   cx
 ret   
+ALIGN_MACRO
 check_block_line:
 
 ;		ld_physics->validcount = validcount_global;			
@@ -1722,6 +1758,7 @@ ENDP
 
 ; todo di as func?
 ; return in carry
+ALIGN_MACRO
 PROC P_BlockThingsIterator_ NEAR
 PUBLIC P_BlockThingsIterator_
 
@@ -1781,6 +1818,7 @@ test si, si
 jne  loop_check_next_block_thing
 exit_blockthingsiterator_return1:
 stc
+ALIGN_MACRO
 exit_blockthingsiterator:
 
 pop  di
@@ -1792,6 +1830,7 @@ ENDP
 ; always return true technically
 ;boolean __near  PIT_AddLineIntercepts (line_physics_t __far* ld_physics, int16_t linenum) {
 ; return in carry
+ALIGN_MACRO
 PROC PIT_AddLineIntercepts_ NEAR
 
 ; bp - 2 line_physics segment (constant)
@@ -1903,6 +1942,7 @@ pop   si
 pop   cx
 ret   
 
+ALIGN_MACRO
 do_high_precision:
 
 ;		s1 = P_PointOnLineSide (trace.x.w, trace.y.w, linedx, linedy, v1x, v1y);
@@ -1944,6 +1984,7 @@ call  P_PointOnLineSide_   ; note this does not remove the pushed stuff from the
 add   sp, 8  ; no stack frame, just directly do this. necessary because we use sp below..
 
 jmp   compare_s1s2
+ALIGN_MACRO
 s1_s2_not_equal:
 
 ; hit the line
@@ -2002,6 +2043,7 @@ ENDP
 
 ;boolean __near  PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t __near* thing, mobj_pos_t __far* thing_pos) ;
 ; return in carry
+ALIGN_MACRO
 PROC PIT_AddThingIntercepts_ NEAR
 
 ; ax  thingref
@@ -2150,6 +2192,7 @@ sal   ax, 1		; 2x radius
 stosw     ; bp - 06h
 jmp   do_divlinesides
 
+ALIGN_MACRO
 s1_s2_not_equal_2:
 
 ;    dl.x = x1;
@@ -2193,6 +2236,7 @@ ENDP
 
 ; void __near P_TraverseIntercepts( traverser_t	func);
 ; NOTE: This is now jumped to instead of called. 
+ALIGN_MACRO
 PROC P_TraverseIntercepts_ NEAR
 
 ; [bp + 012h] is traverser func
@@ -2315,6 +2359,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC P_PathTraverse_ NEAR
 
 ; todo!!   doublecheck this stuff from c. seems to not be compiled/optimized out.
@@ -2547,11 +2592,13 @@ call  FixedMul16u32_MapLocal_
 add   di, ax
 adc   word ptr [bp - 8], dx
 jmp   done_with_xt_check
+ALIGN_MACRO
 xt2_not_greater_than_xt1:
 ;	mapxstep = -1;
 mov   byte ptr cs:[SELFMODIFY_mapxstep_instruction - OFFSET P_SIGHT_STARTMARKER_], 049h   ; dec cx
 jmp   add_to_yintercept
 
+ALIGN_MACRO
 xt2_equals_xt1:
 
 ;		mapxstep = 0;
@@ -2624,11 +2671,13 @@ call  FixedMul16u32_MapLocal_
 add   word ptr [bp - 0Ch], ax
 adc   word ptr [bp - 0Ah], dx
 jmp   done_with_yt_check
+ALIGN_MACRO
 yt2_not_greater_than_yt1:
 ;			mapystep = -1;
 mov   byte ptr cs:[SELFMODIFY_mapystep_instruction - OFFSET P_SIGHT_STARTMARKER_], 04Eh   ; dec si
 jmp   add_to_xintercept
 
+ALIGN_MACRO
 yt2_equals_yt1:
 
 ;		xintercept.h.intbits += 256;
@@ -2733,12 +2782,14 @@ traverse_loop_done:
 ; could just inline...
 jmp  P_TraverseIntercepts_
 
+ALIGN_MACRO
 exit_path_traverse:
 LEAVE_MACRO
 pop   di
 pop   si
 ret   0Ch
 
+ALIGN_MACRO
 SELFMODIFY_addlines_jump_TARGET:
 do_addlines_check:
 
@@ -2753,6 +2804,7 @@ call  P_BlockLinesIterator_
 jnc   exit_path_traverse
 
 jmp   addlines_fallthru
+ALIGN_MACRO
 SELFMODIFY_addthings_jump_TARGET:
 do_addthings_check:
 ;			if (!P_BlockThingsIterator (mapx, mapy,PIT_AddThingIntercepts))
@@ -2766,6 +2818,7 @@ call  P_BlockThingsIterator_
 jnc   exit_path_traverse
 jmp   addthings_fallthru
 intercept_not_mapy:
+ALIGN_MACRO
 ;		} else if ( (xintercept.h.intbits) == mapx) {
 
 SELFMODIFY_xintercept_intbits:
@@ -2793,6 +2846,7 @@ ENDP
 
 ; boolean	__near PTR_UseTraverse (intercept_t __far* in) ;
 
+ALIGN_MACRO
 PROC PTR_UseTraverse_ NEAR
 
 ; dx is fixed as intercepts segment. get rid of it?
@@ -2842,6 +2896,7 @@ exit_usetraverse:
 LEAVE_MACRO
 POPA_NO_AX_OR_BP_MACRO
 ret   
+ALIGN_MACRO
 use_thru_wall:
 
 
@@ -2850,6 +2905,7 @@ mov   dl, SFX_NOWAY
 call  S_StartSoundPlayer_
 clc
 jmp   exit_usetraverse
+ALIGN_MACRO
 no_line_special:
 
 
@@ -2902,6 +2958,7 @@ ENDP
 
 ;boolean __near PTR_SlideTraverse (intercept_t __far* in) {
 ; return in carry
+ALIGN_MACRO
 PROC PTR_SlideTraverse_ NEAR
 
 PUSHA_NO_AX_OR_BP_MACRO
@@ -2955,6 +3012,7 @@ POPA_NO_AX_OR_BP_MACRO
 ret   
 
 
+ALIGN_MACRO
 not_twosided:
 
 ;	P_LineOpening (li->sidenum[1], li_physics->frontsecnum, li_physics->backsecnum);
@@ -3020,6 +3078,7 @@ exit_slidetraverse_return_0:
 clc
 POPA_NO_AX_OR_BP_MACRO   
 ret
+ALIGN_MACRO
 continue_blocking_check:
 
 ;	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.openbottom);
@@ -3064,6 +3123,7 @@ ENDP
 
 
 ; return in carry
+ALIGN_MACRO
 PROC P_TryMove_ NEAR
 PUBLIC P_TryMove_ 
 
@@ -3186,6 +3246,7 @@ pop   si
 pop   dx
 ret   8
 
+ALIGN_MACRO
 mobj_bot_ok:
 skip_checks_for_teleport:
 
@@ -3296,6 +3357,7 @@ pop   si
 pop   dx
 ret   8
 
+ALIGN_MACRO
 loop_next_num_spec:
 dec   word ptr ds:[_numspechit]
 ; todo jump direct
@@ -3400,6 +3462,7 @@ ENDP
 ; NOTE: tried selfmodifies here, but i think it is possible
 ; to recursively call this via the func passed in.
 ; return in carry
+ALIGN_MACRO
 PROC DoBlockmapLoop_ NEAR
 
 ; xl   ax
@@ -3523,6 +3586,7 @@ stc
 exit_doblockmaploop_return_0_thru:
 LEAVE_MACRO
 ret   
+ALIGN_MACRO
 exit_doblockmaploop_return_0:
 clc
 ret   
@@ -3541,11 +3605,13 @@ mov   word ptr ds:[_tmxmove+2], ax
 exit_hitslideline:
 POPA_NO_AX_MACRO
 ret   
+ALIGN_MACRO
 zero_tmy_and_exit:
 mov   word ptr ds:[_tmymove+0], ax
 mov   word ptr ds:[_tmymove+2], ax
 jmp   exit_hitslideline
 
+ALIGN_MACRO
 PROC P_HitSlideLine_ NEAR
 
 PUSHA_NO_AX_MACRO
@@ -3705,6 +3771,7 @@ ML_BLOCKING = 1
 
 ; boolean __near PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum) {
 ; return in carry
+ALIGN_MACRO
 PROC PIT_CheckLine_ NEAR
 
 ; dx:ax ld_physics
@@ -3796,6 +3863,7 @@ jg    add_to_lineright
 jnl   done_adding_linedx
 add   word ptr [bp - 0Ch], dx
 jmp   done_adding_linedx
+ALIGN_MACRO
 add_to_lineright:
 add   word ptr [bp - 0Eh], dx
 done_adding_linedx:
@@ -3814,6 +3882,7 @@ jg    add_to_linetop
 jnl   done_adding_linedy
 add   si, cx
 jmp   done_adding_linedy
+ALIGN_MACRO
 add_to_linetop:
 add   word ptr [bp - 0Ah], cx
 done_adding_linedy:
@@ -3837,6 +3906,7 @@ pop   si
 pop   cx
 ret   
 
+ALIGN_MACRO
 check_linetop:
 mov   ax, word ptr ds:[_tmbbox + (4 * BOXBOTTOM) + 2]
 cmp   ax, word ptr [bp - 0Ah] ; linetop
@@ -3880,6 +3950,7 @@ pop   di
 pop   si
 pop   cx
 ret   
+ALIGN_MACRO
 sector_not_null:
 
 ;    if (!(tmthing_pos->flags2 & MF_MISSILE) ) {
@@ -3980,6 +4051,7 @@ ENDP
 ; boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos);
 
 ; todo no stack frame or push pop di/si on this one
+ALIGN_MACRO
 exit_checkthing_return_1:
 stc
 ret   
@@ -4005,6 +4077,7 @@ ret
 
 
 ; return in carry
+ALIGN_MACRO
 PROC PIT_CheckThing_ NEAR
 
 
@@ -4135,6 +4208,7 @@ je    not_skullfly_collision
 jmp   do_skull_fly_into_thing
 
 
+ALIGN_MACRO
 not_skullfly_collision:
 
 ;    if (tmthing_pos->flags2 & MF_MISSILE) {
@@ -4178,12 +4252,14 @@ pop   di
 pop   si
 ret   
 
+ALIGN_MACRO
 exit_checkthing_return_0_2:
 clc
 LEAVE_MACRO 
 pop   di
 pop   si
 ret   
+ALIGN_MACRO
 exit_checkthing_return_notsolid:
 test  cl, MF_SOLID
 je    exit_checkthing_return_1_3
@@ -4195,6 +4271,7 @@ ret
 
 
 
+ALIGN_MACRO
 do_missile_collision:
 
 ;		// see if it went over / under
@@ -4275,6 +4352,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 ret   
+ALIGN_MACRO
 
 ;		damage = ((P_Random()%8)+1)*getDamage(tmthing->type);
 do_skull_fly_into_thing:
@@ -4340,6 +4418,7 @@ pop   di
 pop   si
 ret   
 
+ALIGN_MACRO
 
 do_missile_damage:
 
@@ -4382,6 +4461,7 @@ ENDP
 
 ; return in carry
 
+ALIGN_MACRO
 PROC P_CheckPosition_ NEAR
 PUBLIC P_CheckPosition_
 
@@ -4503,6 +4583,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 ret   4
+ALIGN_MACRO
 set_up_blockmap_loop:
 
 
@@ -4704,6 +4785,7 @@ check_position_increment_x_loop:
 inc   si
 jmp   check_position_do_next_x_loop
 
+ALIGN_MACRO
 exit_checkposition_return_1_2:
 stc
 
@@ -4712,6 +4794,7 @@ pop   di
 pop   si
 ret   4
 
+ALIGN_MACRO
 exit_checkposition_return_0:
 clc
 LEAVE_MACRO 
@@ -4725,6 +4808,7 @@ ENDP
 
 ; void __near P_SlideMove (){
 
+ALIGN_MACRO
 PROC P_SlideMove_ NEAR
 PUBLIC P_SlideMove_ 
 
@@ -4795,6 +4879,7 @@ sub   di, ax
 add   dx, ax
 jmp   done_with_momx_check
 
+ALIGN_MACRO
 momx_greater_than_zero:
 add   di, ax
 sub   dx, ax
@@ -4833,6 +4918,7 @@ sub   cx, ax
 add   dx, ax
 jmp   done_with_momy_check
 
+ALIGN_MACRO
 momy_greater_than_zero:
 add   cx, ax
 sub   dx, ax
@@ -4977,6 +5063,7 @@ jne   not_stairstep
 cmp   word ptr ds:[_bestslidefrac], 1
 jne   not_stairstep
 jmp   stairstep
+ALIGN_MACRO
 not_stairstep:
 
 ;    // fudge a bit to make sure it doesn't hit
@@ -5042,6 +5129,7 @@ call  P_TryMove_
 
 jc    bestslidefrac_lessthanzero
 jmp   stairstep   ; 3D bytes off..
+ALIGN_MACRO
 continiue_check_bestslidefrac_lessthanzero:
 jne   bestslidefrac_lessthanzero
 cmp   word ptr ds:[_bestslidefrac], 0
@@ -5083,6 +5171,7 @@ xchg  ax, di  ; bestslidefrac
 
 call  FixedMul16u32_MapLocal_
 jmp   do_hitslideline
+ALIGN_MACRO
 bestslidefrac_f800:
 
 ;		tmxmove = playerMobj->momx;
@@ -5142,10 +5231,12 @@ jz    stairstep
 add   sp, 010h  	 ; undo stack
 jmp   slidemove_retry
 
+ALIGN_MACRO
 exit_slidemove:
 LEAVE_MACRO 
 POPA_NO_AX_MACRO
 ret
+ALIGN_MACRO
 
 stairstep:
 les   bx, dword ptr ds:[_playerMobj_pos]
@@ -5190,6 +5281,7 @@ ENDP
 
 ; fixed_t __near P_GetAttackRangeMult(int16_t range, fixed_t frac){
 
+ALIGN_MACRO
 PROC P_GetAttackRangeMult_ NEAR
 
 
@@ -5212,6 +5304,7 @@ mov   dh, cl
 mov   dl, bh
 mov   ah, bl
 ret   
+ALIGN_MACRO
 above_melee_range:
 je    chainsaw_range
 cmp   ax, HALFMISSILERANGE
@@ -5238,6 +5331,7 @@ mov   ah, bl
 
 
 ret   
+ALIGN_MACRO
 
 chainsaw_range:
 ; mov   ax, 041h
@@ -5259,6 +5353,7 @@ MUL  BX        ; BX * DX
 ADD  DX, CX    ; add high bits back
 
 ret   
+ALIGN_MACRO
 return_0_range:
 ; shouldnt ever happen?
 xor   ax, ax
@@ -5275,6 +5370,7 @@ ENDP
 ; boolean __near PTR_ShootTraverse (intercept_t __far* in){
 
 ; return in carry
+ALIGN_MACRO
 PROC PTR_ShootTraverse_ NEAR
 
 ; bp - 2     INTERCEPTS_SEGMENT
@@ -5315,6 +5411,7 @@ mov   bx, word ptr es:[si + 5] ; bx gets linenum/thingnum
 cmp   byte ptr es:[si + 4], 0
 jne   is_a_line
 jmp   is_not_a_line
+ALIGN_MACRO
 is_a_line:
 mov   ax, LINEFLAGSLIST_SEGMENT		; linenum
 mov   es, ax
@@ -5344,6 +5441,7 @@ no_special:
 test  cl, ML_TWOSIDED
 je    hitline
 jmp   not_hitline		; todo revisit...
+ALIGN_MACRO
 
 hitline:
 mov   es, word ptr [bp - 2]
@@ -5355,16 +5453,19 @@ jb    hitline_check_for_melee
 ja    hitline_check_for_missile
 add   bx, 0F001h
 jmp   hitline_done_with_rangeswitchblock
+ALIGN_MACRO
 hitline_check_for_missile:
 cmp   ax, MISSILERANGE
 jne   hitline_check_for_halfmissile
 add   bx, 0FF80h
 jmp   hitline_done_with_rangeswitchblock
+ALIGN_MACRO
 hitline_check_for_halfmissile:
 hitline_range_halfmissile:
 dec   bh  ; add 0FF00h
 jmp   hitline_done_with_rangeswitchblock
 
+ALIGN_MACRO
 hitline_check_for_melee:
 add   bh, 0F0h
 hitline_done_with_rangeswitchblock:
@@ -5482,6 +5583,7 @@ LEAVE_MACRO
 POPA_NO_AX_MACRO
 clc
 ret   
+ALIGN_MACRO
 
 ; 2nd half of function
 not_hitline:
@@ -5547,12 +5649,14 @@ cmp   dx, word ptr ds:[_aimslope+2]
 jle   slope_below_aimslope
 jump_to_hitline:
 jmp   hitline
+ALIGN_MACRO
 slope_below_aimslope:
 jne   done_with_floorheights_check
 cmp   ax, word ptr ds:[_aimslope+0]
 jbe   done_with_floorheights_check
 jmp   hitline
 
+ALIGN_MACRO
 done_with_floorheights_check:
 
 pop   bx ; get the shifted by 4 sectors again
@@ -5588,6 +5692,7 @@ LEAVE_MACRO
 POPA_NO_AX_MACRO
 stc
 ret   
+ALIGN_MACRO
 
 is_not_a_line:
 ; bx has thingnum
@@ -5618,6 +5723,7 @@ LEAVE_MACRO
 POPA_NO_AX_MACRO
 stc
 ret   
+ALIGN_MACRO
 did_not_hit_thing:
 mov   es, word ptr [bp - 2]
 mov   ax, word ptr ds:[_attackrange16]
@@ -5681,16 +5787,19 @@ jb    hitthing_checkformelee
 ja    hitthing_checkformissile
 add   bx, 0D801h
 jmp   hitthing_done_with_rangeswitchblock
+ALIGN_MACRO
 hitthing_checkformissile:
 cmp   ax, MISSILERANGE
 jne   hitthing_checkforhalfmissile
 add   bx, 0FEC0h
 jmp   hitthing_done_with_rangeswitchblock
+ALIGN_MACRO
 hitthing_checkforhalfmissile:
 
 add   bx, 0FD80h
 jmp   hitthing_done_with_rangeswitchblock
 
+ALIGN_MACRO
 hitthing_checkformelee:
 add   bh, 0D8h
 hitthing_done_with_rangeswitchblock:
@@ -5785,6 +5894,7 @@ LEAVE_MACRO
 POPA_NO_AX_MACRO
 clc
 ret   
+ALIGN_MACRO
 do_spawn_blood:
 
 ; only use of spawnblood. inlined
@@ -5879,12 +5989,14 @@ continue_draw_check:
 cmp   ax, 9
 jl    draw_small_blood
 jmp   done_spawning_blood_or_puff
+ALIGN_MACRO
 draw_big_blood:
 mov   dx, S_BLOOD2
 mov   ax, bx
 call  P_SetMobjState_
 
 jmp   done_spawning_blood_or_puff
+ALIGN_MACRO
 draw_small_blood:
 mov   dx, S_BLOOD3
 mov   ax, bx
@@ -5897,6 +6009,7 @@ jmp   done_spawning_blood_or_puff
 
 ENDP
 
+ALIGN_MACRO
 jump_to_aimtraverse_is_not_a_line:
 jmp   aimtraverse_is_not_a_line
 
@@ -5905,6 +6018,7 @@ jmp   aimtraverse_is_not_a_line
 
 ; this function could probably use bp internally for something?
 ; return in carry
+ALIGN_MACRO
 PROC PTR_AimTraverse_ NEAR
 
 
@@ -5928,6 +6042,7 @@ LEAVE_MACRO
 POPA_NO_AX_MACRO
 clc
 ret   
+ALIGN_MACRO
 
 aimtraverse_is_a_line:
 
@@ -6068,6 +6183,7 @@ cmp   ax, word ptr ds:[_bottomslope + 2]
 jge   continue_slope_comparison
 jump_to_exit_aimtraverse_return_0:
 jmp   exit_aimtraverse_return_0
+ALIGN_MACRO
 continue_slope_comparison:
 jne   exit_aimtraverse_return_1
 cmp   dx, word ptr ds:[_bottomslope + 0]
@@ -6077,6 +6193,7 @@ LEAVE_MACRO
 POPA_NO_AX_MACRO
 stc
 ret   
+ALIGN_MACRO
 
 aimtraverse_is_not_a_line:
 
@@ -6158,6 +6275,7 @@ POPA_NO_AX_MACRO
 stc
 
 ret   
+ALIGN_MACRO
 
 done_checking_thingtopslope:
 
@@ -6251,6 +6369,7 @@ ENDP
 
 
 ; return in carry
+ALIGN_MACRO
 PROC PIT_StompThing_ NEAR
 
 push  si
@@ -6324,6 +6443,7 @@ je    do_stomp
 clc
 pop   si
 ret   
+ALIGN_MACRO
 do_stomp:
 
 ;    P_DamageMobj (thing, tmthing, tmthing, 10000);
@@ -6344,6 +6464,7 @@ ENDP
 ; return in carry
 ;boolean __near P_TeleportMove (mobj_t __near* thing,mobj_pos_t __far* thing_pos,fixed_t_union	x,fixed_t_union	y, int16_t oldsecnum){
 
+ALIGN_MACRO
 PROC P_TeleportMove_ 
 PUBLIC P_TeleportMove_
 
@@ -6575,6 +6696,7 @@ ENDP
 
 ;fixed_t __near P_AimLineAttack(mobj_t __near*	t1,fineangle_t	angle,int16_t	distance);
 
+ALIGN_MACRO
 PROC   P_AimLineAttack_ NEAR
 PUBLIC P_AimLineAttack_
 
@@ -6704,6 +6826,7 @@ jmp   aim_line_done_with_switchblock_shift
 
 
 
+ALIGN_MACRO
 aim_line_is_melee:
 
 ; todo is < 286 variant faster doing moves and shift 2?
@@ -6835,6 +6958,7 @@ pop   si
 pop   cx
 ret 
 
+ALIGN_MACRO
 exit_aim_lineattack_return_0:
 cwd
 LEAVE_MACRO 
@@ -6850,6 +6974,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC   P_LineAttack_ NEAR
 PUBLIC P_LineAttack_
 
@@ -6960,6 +7085,7 @@ sal   bx, 1
 rcl   cx, 1
 jmp   lineattack_done_with_switchblock
 
+ALIGN_MACRO
 lineattack_is_melee:
 
 
@@ -7068,6 +7194,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC   P_UseLines_ NEAR
 PUBLIC P_UseLines_
 
@@ -7159,6 +7286,7 @@ ENDP
 
 ;boolean __near PIT_RadiusAttack (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos);
 ; return in carry
+ALIGN_MACRO
 PROC PIT_RadiusAttack_ NEAR
 
 ; ax unused.
@@ -7283,6 +7411,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC P_RadiusAttack_ NEAR
 PUBLIC P_RadiusAttack_
 
@@ -7394,6 +7523,7 @@ ENDP
 
 ; always returns true?
 ; return in carry.
+ALIGN_MACRO
 PROC PIT_ChangeSector_ NEAR
 
 ;boolean __near PIT_ChangeSector (THINKERREF thingRef, mobj_t __near*	thing, mobj_pos_t __far* thing_pos) ;
@@ -7502,6 +7632,7 @@ pop   si
 
 jmp   continue_changesector   
 
+ALIGN_MACRO
 not_on_floor:
 
 ; dx already has ceilingz
@@ -7538,12 +7669,14 @@ sbb   ax, word ptr ds:[si + 0Ch]
 mov   word ptr es:[di + 8], dx
 mov   word ptr es:[di + 0Ah], ax
 jmp   do_final_heightcheck
+ALIGN_MACRO
 exit_thingheightclip_return_1:
 
 pop   di
 pop   si
 jmp   exit_changesector_return_1
 
+ALIGN_MACRO
 continue_changesector:
 
 cmp   word ptr ds:[si + MOBJ_T.m_health], 0
@@ -7564,6 +7697,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 ret   
+ALIGN_MACRO
 crush_to_gibs:
 mov   dx, S_GIBS
 mov   ax, si
@@ -7577,6 +7711,7 @@ mov   word ptr ds:[si + 0Ah], ax
 mov   word ptr ds:[si + 0Ch], ax
 mov   byte ptr ds:[si + 01Eh], al
 jmp   exit_changesector_return_1
+ALIGN_MACRO
 crunch_items:
 mov   ax, dx
 
@@ -7588,6 +7723,7 @@ LEAVE_MACRO
 pop   di
 pop   si
 ret   
+ALIGN_MACRO
 
 not_leveltime_mod_3:
 mov   cx, 10
@@ -7659,6 +7795,7 @@ ret
 ENDP
 
 ; return in carry
+ALIGN_MACRO
 PROC P_ChangeSector_ NEAR
 PUBLIC P_ChangeSector_
 
@@ -7693,6 +7830,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC   P_SetThingPositionFar_ FAR
 PUBLIC P_SetThingPositionFar_
 

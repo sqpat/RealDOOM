@@ -570,6 +570,7 @@ COMMENT @
 @
 
 
+ALIGN_MACRO
 cross_special_line_jump_table:
 dw switch_case_2, switch_case_3, switch_case_4, switch_case_5, switch_case_6, switch_case_default, switch_case_8, switch_case_default, switch_case_10, switch_case_default, switch_case_12 
 dw switch_case_13, switch_case_default, switch_case_default, switch_case_16, switch_case_17, switch_case_default, switch_case_19, switch_case_default, switch_case_default, switch_case_22, switch_case_default 

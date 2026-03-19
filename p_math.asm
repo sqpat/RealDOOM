@@ -33,6 +33,7 @@ IF COMPISA LE COMPILE_286
 
 
 
+ALIGN_MACRO
 PROC   FixedMul2432_MapLocal_ NEAR
 PUBLIC FixedMul2432_MapLocal_
 
@@ -58,6 +59,7 @@ XCHG AX, DX ; S4 32
 ENDP
 ; fall thru
 
+ALIGN_MACRO
 
 PROC   FixedMul_MapLocal_ NEAR
 PUBLIC FixedMul_MapLocal_
@@ -127,6 +129,7 @@ ENDP
 
 ELSE
 
+ALIGN_MACRO
 PROC   FixedMul2432_MapLocal_ NEAR
 PUBLIC FixedMul2432_MapLocal_
 
@@ -231,6 +234,7 @@ ret
 ENDP
 ; fall thru
 
+ALIGN_MACRO
 PROC   FixedMul_MapLocal_ NEAR
 PUBLIC FixedMul_MapLocal_
 
@@ -258,6 +262,7 @@ ENDP
 ENDIF
 
 
+ALIGN_MACRO
 PROC   FixedMulBig16u32_MapLocal_ NEAR
 PUBLIC FixedMulBig16u32_MapLocal_
 
@@ -311,6 +316,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC   FixedMul1632_MapLocal_  NEAR
 PUBLIC FixedMul1632_MapLocal_
 
@@ -366,7 +372,9 @@ ENDP
 
 
 
+ALIGN_MACRO
 IF COMPISA GE COMPILE_386
+
 
     PROC   FixedMulTrigSine_MapLocal_ NEAR
     PUBLIC FixedMulTrigSine_MapLocal_
@@ -524,6 +532,7 @@ ELSE
     ENDP
 ENDIF
 
+ALIGN_MACRO
 
 IF COMPISA GE COMPILE_386
 
@@ -694,6 +703,7 @@ ENDIF
 
 ; equivalent to an unsigned mult even though it is signed.
 
+ALIGN_MACRO
 PROC   FixedMulTrigSpeedCosine_MapLocal_  NEAR
 PUBLIC FixedMulTrigSpeedCosine_MapLocal_
 
@@ -751,6 +761,7 @@ ENDP
 
 ; equivalent to an unsigned mult even though it is signed.
 
+ALIGN_MACRO
 PROC   FixedMulTrigSpeedSine_MapLocal_  NEAR
 PUBLIC FixedMulTrigSpeedSine_MapLocal_
 
@@ -798,6 +809,7 @@ ENDP
 
 
 ; first param is unsigned so DX and sign can be skipped
+ALIGN_MACRO
 PROC   FixedMul16u32_MapLocal_   NEAR
 PUBLIC FixedMul16u32_MapLocal_
 
@@ -848,6 +860,7 @@ ENDP
 
 
 ; both params unsigned. drop all sign extensions.. and dont shift by 16 like fixed algos!
+ALIGN_MACRO
 PROC   FastMul16u32u_MapLocal_  NEAR
 PUBLIC FastMul16u32u_MapLocal_
 
@@ -890,6 +903,7 @@ ENDP
 ; basically, shift numerator left 16 and divide
 ; DX:AX:00 / CX:BX
 
+ALIGN_MACRO
 PROC   div48_32_MapLocal_ NEAR
 PUBLIC div48_32_MapLocal_ 
 
@@ -1297,6 +1311,7 @@ IF COMPISA LE COMPILE_286
 COMMENT @
 ; revisit this x87 implementation
 
+ALIGN_MACRO
 PROC   div48_32_MapLocal_
 PUBLIC div48_32_MapLocal_
 
@@ -1376,6 +1391,7 @@ do_quick_return:
 
 
 
+ALIGN_MACRO
 PROC   FixedDiv_MapLocal_ NEAR
 PUBLIC FixedDiv_MapLocal_
 
@@ -1462,6 +1478,7 @@ ENDP
 ELSE
 
   
+ALIGN_MACRO
 PROC   FixedDiv_MapLocal_ NEAR
 PUBLIC FixedDiv_MapLocal_
 
@@ -1578,6 +1595,7 @@ ENDP
 
 ENDIF
 
+ALIGN_MACRO
 PROC   FastDiv32u16u_MapLocal_   NEAR
 PUBLIC FastDiv32u16u_MapLocal_
 
@@ -1611,6 +1629,7 @@ ret
 ENDP
 
 
+ALIGN_MACRO
 PROC   FastDiv3216u_MapLocal_    NEAR
 PUBLIC FastDiv3216u_MapLocal_
 
@@ -1669,6 +1688,7 @@ ret
 ENDP
 
 COMMENT @
+ALIGN_MACRO
 PROC   div48_32_whole_MapLocal_   NEAR
 PUBLIC div48_32_whole_MapLocal_
 
@@ -1701,6 +1721,7 @@ ENDP
 
 @
 
+ALIGN_MACRO
 PROC   FixedDivWholeA_MapLocal_FAR_  FAR
 PUBLIC FixedDivWholeA_MapLocal_FAR_
 call   FixedDivWholeA_MapLocal_
@@ -1718,6 +1739,7 @@ do_quick_return_whole:
   RET
 
   
+ALIGN_MACRO
 PROC   FixedDivWholeA_MapLocal_   NEAR
 PUBLIC FixedDivWholeA_MapLocal_
 
@@ -1778,6 +1800,7 @@ ENDP
 ; basically, shift numerator left 16 and divide
 ; AX:00:00 / CX:BX
 
+ALIGN_MACRO
 PROC   div48_32_whole_MapLocal_ NEAR
 PUBLIC div48_32_whole_MapLocal_
 
@@ -2102,6 +2125,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC   FixedMul2424_ NEAR
 PUBLIC FixedMul2424_ 
 
@@ -2211,6 +2235,7 @@ ENDP
 
 ;R_PointToAngle2_16_
 
+ALIGN_MACRO
 PROC R_PointToAngle2_16_MapLocal_ NEAR
 PUBLIC R_PointToAngle2_16_MapLocal_
 
@@ -2249,6 +2274,7 @@ mov   dx, 0e000h
 xor   ax, ax
 
 ret  
+ALIGN_MACRO
 octant_6_do_divide:
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
@@ -2262,6 +2288,7 @@ mov   dx, es
 add   dx, 0c000h
 
 ret  
+ALIGN_MACRO
 
 y_is_negative:
 ;			y.w = -y.w;
@@ -2294,6 +2321,7 @@ ret
 ;mov dx, cx
 ;mov ax, bx
 
+ALIGN_MACRO
 
 octant_7_do_divide:
 
@@ -2320,6 +2348,7 @@ ret
 
 ;R_PointToAngle_
 
+ALIGN_MACRO
 PROC   R_PointToAngle_MapLocal_ NEAR
 PUBLIC R_PointToAngle_MapLocal_
 ; inputs:
@@ -2352,6 +2381,7 @@ xor   ax, ax
 cwd
 
 ret  
+ALIGN_MACRO
 
 
 inputs_not_zero:
@@ -2386,6 +2416,7 @@ mov   dx, 02000h
 xor   ax, ax
 
 ret  
+ALIGN_MACRO
 
 
 octant_0_do_divide:
@@ -2402,6 +2433,7 @@ mov   bx, ax
 les   ax, dword ptr es:[bx]
 mov   dx, es
 ret  
+ALIGN_MACRO
 
 
 octant_1:
@@ -2415,6 +2447,7 @@ mov   ax, 0ffffh
 mov   dx, 01fffh
 
 ret  
+ALIGN_MACRO
 octant_1_do_divide:
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
@@ -2428,6 +2461,7 @@ mov   dx, 03fffh
 sbb   dx, word ptr es:[bx + 2]
 
 ret  
+ALIGN_MACRO
 
 
 
@@ -2460,6 +2494,7 @@ mov   ax, 0ffffh
 mov   dx, 05fffh
 
 ret  
+ALIGN_MACRO
 octant_3_do_divide:
 xchg dx, cx
 xchg ax, bx
@@ -2475,6 +2510,7 @@ mov   dx, 07fffh
 sbb   dx, word ptr es:[bx + 2]
 
 ret  
+ALIGN_MACRO
 octant_2:
 test  cx, cx
 
@@ -2485,6 +2521,7 @@ octant_2_out_of_bounds:
 mov   dx, 06000h
 xor   ax, ax
 ret  
+ALIGN_MACRO
 octant_2_do_divide:
 
 call FastDiv3232_shift_3_8_
@@ -2498,6 +2535,7 @@ mov   dx, es
 add   dx, 04000h
 
 ret  
+ALIGN_MACRO
 y_is_negative_x_neg:
 
 ;			y.w = -y.w;
@@ -2520,6 +2558,7 @@ mov   dx, 0a000h
 xor   ax, ax
 
 ret  
+ALIGN_MACRO
 octant_4_do_divide:
 xchg dx, cx
 xchg ax, bx
@@ -2535,6 +2574,7 @@ mov   dx, es
 add   dx, 08000h
 
 ret  
+ALIGN_MACRO
 octant_5:
 test  cx, cx
 
@@ -2546,6 +2586,7 @@ mov   ax, 0ffffh
 mov   dx, 09fffh
 
 ret  
+ALIGN_MACRO
 octant_5_do_divide:
 
 call FastDiv3232_shift_3_8_
@@ -2561,6 +2602,7 @@ sbb   dx, word ptr es:[bx + 2]
 
 ret  
 ENDP
+ALIGN_MACRO
 
 
 
@@ -2581,6 +2623,7 @@ rcl dx ,1
 div bx        ; after this dx stores remainder, ax stores q1
 
 ret          ; dx will be garbage, but who cares , return 16 bits.
+ALIGN_MACRO
 
 return_2048:
 
@@ -2589,6 +2632,7 @@ mov ax, 0800h
 ret
 
 
+ALIGN_MACRO
 PROC FastDiv3232_shift_3_8_ NEAR
 
 ; used by R_PointToAngle.
@@ -2656,11 +2700,13 @@ mov dx, cx   ; q1:q0 is dx:ax
 ret 
 
 
+
 ; NOTE: this is used for R_PointToAngle and has a fast out when the high byte is detected to be above the threshhold
 
 ;FastDiv3232_RPTA_
 ; DX:AX / CX:BX
 
+ALIGN_MACRO
 PROC FastDiv3232_RPTA_ NEAR
 
 ; we shift dx:ax by 11 into si... 
@@ -2885,6 +2931,7 @@ dec ax
 pop   di
 pop   si
 ret  
+ALIGN_MACRO
 
 return_2048_2:
 ; bigger than 2048.. just return it
@@ -2893,6 +2940,7 @@ pop   si
 ret
 
 
+ALIGN_MACRO
 qhat_subtract_1_3232RPTA:
 mov ax, es
 dec ax
@@ -2904,6 +2952,7 @@ ret
 
 
 
+ALIGN_MACRO
 q1_ready_3232RPTA:
 
 mov  ax, es
@@ -2918,6 +2967,7 @@ ENDP
 
 ;R_PointToAngle2_
 
+ALIGN_MACRO
 PROC   R_PointToAngle2_MapLocal_ NEAR
 PUBLIC R_PointToAngle2_MapLocal_ 
 

@@ -255,6 +255,7 @@ jmp   do_button_texture_stuff
 
 ENDP
 
+ALIGN_MACRO
 _special_line_switch_block:
 
 dw special_line_type_0, special_line_case_default, special_line_case_default, special_line_case_default, special_line_case_default, special_line_case_default, special_line_type_2, special_line_case_default, special_line_type_3, special_line_case_default, special_line_type_4, special_line_case_default, special_line_case_default, special_line_type_5, special_line_type_6

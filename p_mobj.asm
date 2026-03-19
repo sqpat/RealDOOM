@@ -77,6 +77,7 @@ ENDP
 
 ;P_SpawnPuff_
 
+ALIGN_MACRO
 PROC P_SpawnPuff_ NEAR
 PUBLIC P_SpawnPuff_
 
@@ -171,6 +172,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC P_SpawnPlayer_ NEAR
 PUBLIC P_SpawnPlayer_
 
@@ -313,6 +315,7 @@ ret
 ENDP
 
 
+ALIGN_MACRO
 PROC P_SpawnMapThing_ FAR
 PUBLIC P_SpawnMapThing_
 
@@ -544,6 +547,7 @@ jmp       exit_spawnmapthing_2
 ENDP
 
 
+ALIGN_MACRO
 PROC P_MobjThinker_ NEAR
 PUBLIC P_MobjThinker_
 
@@ -621,6 +625,7 @@ pop       si
 ret
 
 
+ALIGN_MACRO
 do_z_movement:
 
 mov       bx, di
@@ -697,6 +702,7 @@ ret
 ENDP
 
 
+ALIGN_MACRO
 PROC P_SpawnMobj_ NEAR
 PUBLIC P_SpawnMobj_
 
@@ -710,10 +716,6 @@ PUBLIC P_SpawnMobj_
 
 
 ; bp - 2    mobjRef
-
-
-
-
 
 push      si
 push      di
@@ -906,6 +908,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC P_RemoveMobj_ NEAR
 PUBLIC P_RemoveMobj_
 
@@ -954,6 +957,7 @@ ENDP
 ;void __far P_XYMovement (mobj_t __near* mo, mobj_pos_t __far* mo_pos);
 
 
+ALIGN_MACRO
 PROC P_XYMovement_ NEAR
 PUBLIC P_XYMovement_
 ; bp - 2    mobj/ax
@@ -1001,6 +1005,7 @@ pop   di
 pop   si
 pop   dx
 ret   
+ALIGN_MACRO
 skull_slammed_into_something:
 
 ;			// the skull slammed into something
@@ -1480,6 +1485,7 @@ ENDP
 FLOATSPEED_HIGHBITS = 4
 VIEWHEIGHT_HIGH = 41
 
+ALIGN_MACRO
 PROC P_ZMovement_ NEAR
 PUBLIC P_ZMovement_
 
@@ -1908,6 +1914,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC P_ExplodeMissile_ NEAR
 PUBLIC P_ExplodeMissile_
 
@@ -1994,6 +2001,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC P_NightmareRespawn_ NEAR
 PUBLIC P_NightmareRespawn_
 
@@ -2238,6 +2246,7 @@ ENDP
 
 
 ;; callers dont use si or dx. can freely clobber
+ALIGN_MACRO
 PROC P_CheckMissileSpawn_ NEAR
 PUBLIC P_CheckMissileSpawn_
 
@@ -2322,6 +2331,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC P_SpawnMissile_ NEAR
 PUBLIC P_SpawnMissile_
 
@@ -2587,6 +2597,7 @@ ret   2
 ENDP
 
 
+ALIGN_MACRO
 PROC P_SpawnPlayerMissile_ NEAR
 PUBLIC P_SpawnPlayerMissile_
 
@@ -2779,6 +2790,7 @@ ret
 ENDP
 
 
+ALIGN_MACRO
 PROC P_RemoveMobjFar_ FAR
 PUBLIC P_RemoveMobjFar_
 

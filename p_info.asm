@@ -38,6 +38,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 _raise_state_lookup:
 
 dw S_POSS_RAISE1 ; MT_POSSESSED = 01h
@@ -336,6 +337,7 @@ db SFX_KEENPN ; MT_KEEN = 018h
 db SFX_BOSPN  ; MT_BOSSBRAIN = 019h
 
 
+ALIGN_MACRO
 xd_possessed:
 mov    ax, S_POSS_XDIE1
 retf   
@@ -364,6 +366,7 @@ melee_state_hellknight:
 mov    ax, S_BOS2_ATK1
 retf   
 
+ALIGN_MACRO
 PROC    GetXDeathState_ FAR 
 PUBLIC  GetXDeathState_
 
@@ -390,6 +393,7 @@ retf
 ENDP
 
 
+ALIGN_MACRO
 PROC    GetMeleeState_ FAR 
 PUBLIC  GetMeleeState_
 
@@ -419,6 +423,7 @@ ret_pain_256:
 mov    ax, 0100h
 retf
 
+ALIGN_MACRO
 PROC    GetPainChance_  FAR 
 PUBLIC  GetPainChance_
 
@@ -437,6 +442,7 @@ jmp    do_generic_byte_lookup
 ENDP
 
 
+ALIGN_MACRO
 PROC    GetRaiseState_  FAR 
 PUBLIC  GetRaiseState_
 
@@ -455,6 +461,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC    GetMobjMass_ FAR 
 PUBLIC  GetMobjMass_
 
@@ -485,6 +492,7 @@ retf
 
 ENDP
 
+ALIGN_MACRO
 PROC    GetActiveSound_ FAR 
 PUBLIC  GetActiveSound_
 
@@ -506,6 +514,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC    GetPainSound_ FAR 
 PUBLIC  GetPainSound_
 
@@ -521,6 +530,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC    GetSeeState_ FAR 
 PUBLIC  GetSeeState_
 
@@ -554,6 +564,7 @@ retf
 ENDP
 
 
+ALIGN_MACRO
 PROC    GetMissileState_ FAR 
 PUBLIC  GetMissileState_
 
@@ -567,6 +578,7 @@ jmp    do_generic_word_lookup
 ENDP
 
 
+ALIGN_MACRO
 PROC    GetDeathState_ FAR 
 PUBLIC  GetDeathState_
 
@@ -585,6 +597,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC    GetPainState_ FAR 
 PUBLIC  GetPainState_
 
@@ -598,6 +611,7 @@ jmp    do_generic_word_lookup
 
 ENDP
 
+ALIGN_MACRO
 PROC    GetAttackSound_ FAR 
 PUBLIC  GetAttackSound_
 
@@ -641,6 +655,7 @@ jne    damage_default
 mov    al, 100
 retf   
 
+ALIGN_MACRO
 PROC    GetDamage_ FAR 
 PUBLIC  GetDamage_
 
@@ -680,6 +695,7 @@ attack_sound_shotgun:
 mov    al, SFX_SHOTGN
 retf   
 
+ALIGN_MACRO
 PROC    GetSpawnHealth_ FAR 
 PUBLIC  GetSpawnHealth_
 
@@ -690,12 +706,14 @@ push   bx
 mov    bx, OFFSET _spawn_health_lookup
 jmp    do_generic_word_lookup
 
+ALIGN_MACRO
 spawn_health_default:
 mov    ax, 1000
 retf   
 
 ENDP
 
+ALIGN_MACRO
 PROC    P_INFO_ENDMARKER_ 
 PUBLIC  P_INFO_ENDMARKER_
 ENDP

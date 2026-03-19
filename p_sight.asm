@@ -33,6 +33,7 @@ PROC    P_SIGHT_STARTMARKER_
 PUBLIC  P_SIGHT_STARTMARKER_
 ENDP
 
+ALIGN_MACRO
 _rndtable_9000:
 
  db 0,   8, 109, 220, 222, 241, 149, 107,  75, 248, 254, 140,  16,  66  
@@ -63,6 +64,7 @@ _rndtable_9000:
 ; bx = t1_pos (far offset)
 ; cx = t2_pos (far offset)
 ; return in carry
+ALIGN_MACRO
 PROC    P_CheckSight_ NEAR
 PUBLIC  P_CheckSight_
 
@@ -114,6 +116,7 @@ pop   dx	; clean out the push earlier...
 pop   di
 pop   si
 ret 
+ALIGN_MACRO
 
 not_in_reject_table:
 inc   word ptr ds:[_validcount_global]
@@ -248,6 +251,7 @@ ENDP
 
 ; todo make this take argument as si or something
 
+ALIGN_MACRO
 PROC    P_DivlineSide_ NEAR
 PUBLIC  P_DivlineSide_
 
@@ -295,19 +299,23 @@ PUBLIC  P_DivlineSide_
 	divline_side_return_1:
 	mov  ax, 1
 	ret
+ALIGN_MACRO
 
 	return_2:
 	mov  ax, 2
 	ret
+ALIGN_MACRO
 	return_0:
 	xor  ax, ax
 	ret
+ALIGN_MACRO
 	x_more_than_nodex:
 	mov  ax, word ptr ds:[si + 0Eh]
 	test ax, ax
 	jl   divline_side_return_1
 	xor  ax, ax
 	ret
+ALIGN_MACRO
 	node_dx_nonzero:
 	mov  cx, word ptr ds:[si + 0Eh]
 	or   cx, word ptr ds:[si + 0Ch]
@@ -329,6 +337,7 @@ PUBLIC  P_DivlineSide_
 	jl   divline_side_return_1
 	xor  ax, ax
 	ret
+ALIGN_MACRO
 	y_more_than_nodey:
 	mov  ax, word ptr ds:[si + 0Ah]
 	test ax, ax
@@ -339,6 +348,7 @@ PUBLIC  P_DivlineSide_
 	return_0_2:
 	xor  ax, ax
 	ret
+ALIGN_MACRO
 	node_dy_nonzero:
 	sub  bx, word ptr ds:[si]
 	sbb  ax, word ptr ds:[si + 2]
@@ -363,6 +373,7 @@ PUBLIC  P_DivlineSide_
 	return_1_2:
 	mov  ax, 1
 	ret
+ALIGN_MACRO
 	compare_leftright_low:
 	cmp  di, ax
 	jne  return_1_2
@@ -373,6 +384,7 @@ PUBLIC  P_DivlineSide_
 ENDP
 
 ; bx is always equal to strace
+ALIGN_MACRO
 PROC    P_DivlineSide16_ NEAR
 PUBLIC  P_DivlineSide16_
 
@@ -394,20 +406,24 @@ PUBLIC  P_DivlineSide16_
 	mov  ax, 1
 	pop  cx
 	ret  
+ALIGN_MACRO
 	return_2_16:
 	mov  ax, 2
 	pop  cx
 	ret  
+ALIGN_MACRO
 	return_0_divlineside_16:
 	xor  ax, ax
 	pop  cx
 	ret  
+ALIGN_MACRO
 	test_x_highbits_16:
 	test ax, ax
 	jl   return_1_16
 	xor  ax, ax
 	pop  cx
 	ret  
+ALIGN_MACRO
 	node_dx_nonzero_16:
 	mov  ax, word ptr ds:[bx + 0Eh]
 	or   ax, word ptr ds:[bx + 0Ch]
@@ -423,6 +439,7 @@ PUBLIC  P_DivlineSide16_
 	xor  ax, ax
 	pop  cx
 	ret
+ALIGN_MACRO
 
 	test_y_highbits_16:
 	mov  ax, word ptr ds:[bx + 0Ah]
@@ -435,6 +452,7 @@ PUBLIC  P_DivlineSide16_
 	xor  ax, ax
 	pop  cx
 	ret  
+ALIGN_MACRO
 	node_dy_nonzero_16:
 	
 	push di	; need this extra register
@@ -468,12 +486,14 @@ PUBLIC  P_DivlineSide16_
 	pop  di
 	pop  cx
 	ret  
+ALIGN_MACRO
 
 	return_0_divlineside_16_3:
 	xor  ax, ax
 	pop  di
 	pop  cx
 	ret  
+ALIGN_MACRO
 
 	test_right_left_highbits_16:
 	cmp  di, ax
@@ -486,6 +506,7 @@ PUBLIC  P_DivlineSide16_
 ENDP
 
 ; returns 0 1 or 2?
+ALIGN_MACRO
 PROC    P_DivlineSideNode_ NEAR
 PUBLIC  P_DivlineSideNode_
 
@@ -526,15 +547,18 @@ jl    return_1_node
 return_0_node:
 xor   ax, ax
 ret   
+ALIGN_MACRO
 return_2_node:
 mov   ax, 2
 ret   
+ALIGN_MACRO
 node_dx_compare_2:
 cmp   word ptr es:[si + 6], 0
 jle   return_0_node
 return_1_node:
 mov   ax, 1
 ret   
+ALIGN_MACRO
 
 node_dx_nonzero_node:
 cmp   word ptr es:[si + 6], 0
@@ -554,12 +578,14 @@ cmp   word ptr es:[si + 4], 0
 jle   return_0_node
 mov   ax, 1
 ret   
+ALIGN_MACRO
 node_dy_compare_2:
 cmp   word ptr es:[si + 4], 0
 jge   return_0_node
 return_1_node_2:
 mov   ax, 1
 ret   
+ALIGN_MACRO
 
 node_dy_nonzero_node:
 sub   dx, word ptr es:[si]
@@ -577,6 +603,7 @@ cmp   ax, cx
 jae   compare_leftright_node
 xor   ax, ax
 ret
+ALIGN_MACRO
 compare_leftright_node:
 cmp   bx, dx
 jne   return_1_node_2
@@ -589,6 +616,7 @@ ENDP
 
 
 ; return in carry
+ALIGN_MACRO
 PROC    P_CrossSubsector_ NEAR
 PUBLIC  P_CrossSubsector_
 
@@ -654,6 +682,7 @@ stc
 LEAVE_MACRO 
 POPA_NO_AX_OR_BP_MACRO
 ret   
+ALIGN_MACRO
 do_full_loop_iteration:
 mov   dx, LINEFLAGSLIST_SEGMENT
 mov   es, dx
@@ -757,9 +786,11 @@ cmp   ax, word ptr es:[si + SECTOR_T.sec_ceilingheight]
 jl    set_opentop_to_frontsector
 mov   ax, word ptr es:[si + SECTOR_T.sec_ceilingheight]
 jmp   opentop_set
+ALIGN_MACRO
 side_crossed:
 jump_to_cross_subsector_mainloop_increment:
 jmp   cross_subsector_mainloop_increment
+ALIGN_MACRO
 
 set_opentop_to_frontsector:
 mov   ax, word ptr es:[di + SECTOR_T.sec_ceilingheight]
@@ -772,8 +803,10 @@ cmp   ax, word ptr es:[si + SECTOR_T.sec_floorheight]
 jg    set_openbottom_to_frontsector
 mov   bx, word ptr es:[si + SECTOR_T.sec_floorheight]
 jmp   openbottom_set
+ALIGN_MACRO
 jump_to_cross_bsp_node_return_0_2:
 jmp   cross_bsp_node_return_0	; todo optim out fallthru
+ALIGN_MACRO
 set_openbottom_to_frontsector:
 mov   bx, word ptr es:[di + SECTOR_T.sec_floorheight]
 openbottom_set:
@@ -840,6 +873,7 @@ call  FixedDiv_MapLocal_
 
 
 jmp done_with_intercept_vector
+ALIGN_MACRO
 
 denominator_0:
 xor   dx, dx
@@ -939,8 +973,10 @@ clc
 LEAVE_MACRO
 POPA_NO_AX_OR_BP_MACRO
 ret   
+ALIGN_MACRO
 jump_to_cross_subsector_mainloop_increment_2:
 jmp   cross_subsector_mainloop_increment
+
 
 ENDP
 
@@ -954,6 +990,7 @@ ENDP
 ; todo update to new bsp traversal method?
 
 ;return carry
+ALIGN_MACRO
 PROC    P_CrossBSPNode_ NEAR
 PUBLIC  P_CrossBSPNode_
 
@@ -1032,9 +1069,11 @@ exit_crossbspnode:
 LEAVE_MACRO 
 POPA_NO_AX_OR_BP_MACRO
 ret   
+ALIGN_MACRO
 do_subsector_flag:
 and   ah, (NOT_NF_SUBSECTOR SHR 8)
 jmp   do_cross_subsector_call
+ALIGN_MACRO
 cross_bsp_node_return_1:
 stc
 LEAVE_MACRO

@@ -52,6 +52,7 @@ PUBLIC  P_PSPR_STARTMARKER_
 ENDP
 
 
+ALIGN_MACRO
 PROC   P_BringUpWeapon_ NEAR
 PUBLIC P_BringUpWeapon_
  
@@ -83,6 +84,7 @@ jmp   pending_weapon_checks_done
 ENDP
 
 
+ALIGN_MACRO
 PROC P_CheckAmmo_ NEAR
 PUBLIC P_CheckAmmo_
 ENDP
@@ -223,6 +225,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC P_FireWeapon_ NEAR 
 PUBLIC P_FireWeapon_
 
@@ -251,6 +254,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC P_DropWeapon_ NEAR
 PUBLIC P_DropWeapon_
 
@@ -268,6 +272,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC   A_WeaponReady_ NEAR
 PUBLIC A_WeaponReady_
 
@@ -366,6 +371,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC A_ReFire_ NEAR
 PUBLIC A_ReFire_
 
@@ -389,6 +395,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC   A_Lower_ NEAR
 PUBLIC A_Lower_
 
@@ -422,6 +429,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC A_Raise_ NEAR
 PUBLIC A_Raise_
 
@@ -448,6 +456,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC A_GunFlash_ NEAR
 PUBLIC A_GunFlash_
 
@@ -465,6 +474,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC A_Punch_ NEAR
 PUBLIC A_Punch_
 
@@ -576,6 +586,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC A_Saw_ NEAR
 PUBLIC A_Saw_
 
@@ -723,6 +734,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC A_FireMissile_ NEAR
 PUBLIC A_FireMissile_
 
@@ -734,6 +746,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC A_FireBFG_ NEAR
 PUBLIC A_FireBFG_
 
@@ -745,6 +758,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC A_FirePlasma_ NEAR
 PUBLIC A_FirePlasma_
 
@@ -763,6 +777,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC P_BulletSlope_ NEAR
 PUBLIC P_BulletSlope_
 
@@ -822,6 +837,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC P_GunShot_ NEAR
 PUBLIC P_GunShot_
 ;void __near P_GunShot (  boolean	accurate ) {
@@ -878,6 +894,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC A_FirePistol_ NEAR
 PUBLIC A_FirePistol_
 
@@ -907,6 +924,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC A_FireShotgun_ NEAR
 PUBLIC A_FireShotgun_
 
@@ -938,6 +956,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC A_FireShotgun2_ NEAR
 PUBLIC A_FireShotgun2_
 
@@ -1033,6 +1052,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC A_FireCGun_ NEAR
 PUBLIC A_FireCGun_
 
@@ -1070,6 +1090,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC   A_Light0_ NEAR
 PUBLIC A_Light0_
 
@@ -1078,6 +1099,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC   A_Light1_ NEAR
 PUBLIC A_Light1_
 
@@ -1086,6 +1108,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC   A_Light2_ NEAR
 PUBLIC A_Light2_
 
@@ -1094,6 +1117,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC   A_OpenShotgun2_ NEAR
 PUBLIC A_OpenShotgun2_
 
@@ -1104,6 +1128,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC   A_LoadShotgun2_ NEAR
 PUBLIC A_LoadShotgun2_
 
@@ -1114,6 +1139,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC   A_CloseShotgun2_ NEAR
 PUBLIC A_CloseShotgun2_
 
@@ -1127,6 +1153,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC   A_BFGSpray_ NEAR
 PUBLIC A_BFGSpray_
 
@@ -1253,6 +1280,7 @@ jmp   finish_this_bfg_spray_iter
 
 ENDP
 
+ALIGN_MACRO
 PROC A_BFGsound_ NEAR
 PUBLIC A_BFGsound_
 
@@ -1265,6 +1293,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC   P_MovePsprites_ NEAR
 PUBLIC P_MovePsprites_
 
@@ -1323,6 +1352,7 @@ pop   bx
 ret
 
 
+ALIGN_MACRO
 p_setpsprite_jump_table:
 dw OFFSET A_Light0_ - OFFSET P_SIGHT_STARTMARKER_
 dw OFFSET A_WeaponReady_ - OFFSET P_SIGHT_STARTMARKER_
@@ -1355,6 +1385,7 @@ dw OFFSET A_FireBFG_ - OFFSET P_SIGHT_STARTMARKER_
 
 ENDP
 
+ALIGN_MACRO
 PROC   P_SetPsprite_ NEAR
 PUBLIC P_SetPsprite_
 

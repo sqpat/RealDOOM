@@ -25,6 +25,7 @@ IF COMPISA LE COMPILE_286
 
 
 
+ALIGN_MACRO
 PROC   FixedMul_ NEAR
 PUBLIC FixedMul_
 
@@ -98,6 +99,7 @@ ENDP
 
 ELSE
 
+ALIGN_MACRO
 PROC   FixedMul_ NEAR
 PUBLIC FixedMul_
 
@@ -122,6 +124,7 @@ ENDIF
 
 
 
+ALIGN_MACRO
 PROC   FastDiv32u16u_   NEAR
 PUBLIC FastDiv32u16u_
 
@@ -148,6 +151,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC   FastDiv3216u_    NEAR
 PUBLIC FastDiv3216u_
 

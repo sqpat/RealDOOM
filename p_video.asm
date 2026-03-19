@@ -35,6 +35,7 @@ ENDP
 
 
 ;void __far V_MarkRect ( int16_t x, int16_t y, int16_t width, int16_t height )  { 
+ALIGN_MACRO
 PROC   V_MarkRect_ NEAR
 PUBLIC V_MarkRect_
 
@@ -66,6 +67,7 @@ ENDP
 
 ;void __near M_AddToBox16 ( int16_t	x, int16_t	y, int16_t __near*	box  );
 
+ALIGN_MACRO
 PROC    M_AddToBox16_ NEAR
 PUBLIC  M_AddToBox16_
 
@@ -94,6 +96,7 @@ ret
 ENDP
 
 
+ALIGN_MACRO
 PROC   V_DrawPatch_ NEAR
 PUBLIC V_DrawPatch_
 
@@ -258,6 +261,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC   V_DrawPatchDirect_ NEAR
 PUBLIC V_DrawPatchDirect_
 
@@ -431,6 +435,7 @@ str_brdr_br:
 db "brdr_br", 0
 
 
+ALIGN_MACRO
 PROC V_DrawPatch5000Screen0_ NEAR
 PUBLIC V_DrawPatch5000Screen0_
 
@@ -578,6 +583,7 @@ ENDP
 exit_fillbackscreen_early:
 retf
 
+ALIGN_MACRO
 PROC   R_FillBackScreen_ FAR
 PUBLIC R_FillBackScreen_
 
@@ -848,6 +854,7 @@ ENDP
 ; return _filename_argument in ax
 ; todo make use cs:si or something?
 
+ALIGN_MACRO
 PROC CopyString9_MapLocal_ NEAR
 
 push  si
@@ -901,6 +908,7 @@ ENDP
 
 ;void __far V_CopyRect ( uint16_t srcoffset, uint16_t destoffset, uint16_t width, uint16_t height) { 
 
+ALIGN_MACRO
 PROC   V_CopyRect_ NEAR
 PUBLIC V_CopyRect_
 

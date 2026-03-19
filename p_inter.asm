@@ -60,6 +60,7 @@ ENDP
 
 ;int16_t	maxammo[NUMAMMO] = {200, 50, 300, 50};
 ;int8_t	clipammo[NUMAMMO] = {10, 4, 20, 1};
+ALIGN_MACRO
 _clipammo:
 dw 10, 4, 20, 1
 
@@ -68,6 +69,7 @@ _ammo_jump_table:
 dw OFFSET give_ammo_case_0, OFFSET give_ammo_case_1, OFFSET give_ammo_case_2, OFFSET give_ammo_case_3
 
 ; return in carry
+ALIGN_MACRO
 PROC    P_GiveAmmo_  NEAR
 PUBLIC  P_GiveAmmo_
 
@@ -394,6 +396,7 @@ ENDP
 
 ; table
 
+ALIGN_MACRO
 _touchspecial_jump_table:
 
 dw touchspecial_case_55, touchspecial_case_56, touchspecial_case_default, touchspecial_case_default, touchspecial_case_default 
@@ -1050,7 +1053,7 @@ ret
 ENDP 
 
 
-
+ALIGN_MACRO
 mass_thrust_switch_block:
 dw mass_thrust_type_1   ; MT_VILE
 dw mass_thrust_default  ; MT_FIRE
