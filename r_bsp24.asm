@@ -5664,8 +5664,8 @@ public just_do_draw_mid
 mov   ds, ax   ; set dc_source_segment
 ; cwd is possible here because source segment is 0x5000-0x6FFF...  clear out dl for later move to bp
 
-;cwd
-xor   dx, dx
+cwd
+;xor   dx, dx
 ; toggle for ENSUREALIGN_003
 
 
@@ -8676,7 +8676,7 @@ ELSE
 
 ; todo: make this faster.
 
-
+ALIGN_MACRO
 do_32_bit_finetan_mul_TWOSIDED:
 
   mov   si, es

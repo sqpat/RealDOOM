@@ -326,7 +326,9 @@ mov   al, byte ptr es:[bx+di] ; ch 0
 
 cmp   si, ax
 jg    skip_ceil_clip_set_single   ; todo branch test
-xchg  ax, si
+; toggle for ENSUREALIGN_102
+mov   si, ax
+;xchg  ax, si
 inc   si
 skip_ceil_clip_set_single:
 
@@ -387,7 +389,6 @@ add   di, 01000h
 
 
 
-; ? toggle for ENSUREALIGN_102
 
 SELFMODIFY_MASKED_sub_centery_2:
 lea   ax, [si - 010h] ; dc_yl - centery
@@ -5266,6 +5267,8 @@ mov   al, ch
 
 cmp   si, ax
 jg    skip_ceil_clip_set
+;? toggle for ENSUREALIGN_101
+;mov   si, ax
 xchg  ax, si
 inc   si        ; todo bake this into the lookup
 skip_ceil_clip_set:
@@ -5329,7 +5332,6 @@ add   di, 01000h
 
 ; if we make a separate drawcol masked we can use a constant here.
 
-;? toggle for ENSUREALIGN_101
 
 SELFMODIFY_MASKED_sub_centery_1:
 lea   ax, [si - 010h] ; dc_yl - centery

@@ -1,4 +1,4 @@
-#define R_DrawMasked24Offset                    0x11A2
+#define R_DrawMasked24Offset                    0x11A4
 #define R_DrawMasked16Offset                    0x1491
 #define R_DrawMasked0Offset                     0x140A
 #define R_DrawMaskedFLOffset                    0x13F1
@@ -24,10 +24,10 @@
 #define R_DrawSkyColumnFLOffset                 0x0
 #define R_DrawSkyPlaneFLOffset                  0x294
 #define R_DrawSkyPlaneDynamicFLOffset           0x294
-#define R_WriteBackViewConstants24Offset        0x3994
-#define R_RenderPlayerView24Offset              0x3840
-#define R_GetCompositeTexture24Offset           0x3526
-#define R_GetPatchTexture24Offset               0x348A
+#define R_WriteBackViewConstants24Offset        0x3996
+#define R_RenderPlayerView24Offset              0x3842
+#define R_GetCompositeTexture24Offset           0x3528
+#define R_GetPatchTexture24Offset               0x348C
 #define R_WriteBackViewConstants16Offset        0x3404
 #define R_RenderPlayerView16Offset              0x3287
 #define R_GetCompositeTexture16Offset           0x2F71
