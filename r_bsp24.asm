@@ -4153,6 +4153,7 @@ handle_closed_door:
    test      ax, ax
    jz        use_bot_tex_for_closed_door
    add       si, 4   ; skip bot, midtex.
+   ; top texture for closed door needs to be pegged to bottom instead of from top.
    jmp       got_texture
    use_bot_tex_for_closed_door:
    lodsw
@@ -6899,7 +6900,6 @@ public scales_set_TWOSIDED
 
 lds       si, dword ptr ds:[_backsector]
 lodsw     ; floorheight
-mov       word ptr cs:[SELFMODIFY_get_backsector_floorheight+3], ax
 xchg      ax, cx
 
 lodsw     ; ceilingheight
@@ -7206,22 +7206,7 @@ mov       ah, 4    ;markceiling  ah = 1
 markceiling_set:
 
 
-;		if (backsectorceilingheight <= frontsectorfloorheight
-;			|| backsectorfloorheight >= frontsectorceilingheight) {
-;			// closed door
-;			markceiling = markfloor = true;
-;		}
-
-SELFMODIFY_get_backsector_ceilingheight:
-mov       dx, 01000h ; carry this forward.
-cmp       dx, word ptr [bp + 6]
-jle       closed_door_detected
-SELFMODIFY_get_backsector_floorheight:
-cmp       word ptr [bp + 8], 01000h
-jge       not_closed_door 
-closed_door_detected:
-mov       ax, 0404h  ; todo can this happen???
-not_closed_door:
+; usually we would do a closed door check here, but closed doors call single sided wall draw.
 ; finally write this just once.
 push      ax  ; bp - 030h   markfloor/ceil for bottom path
 
@@ -7295,6 +7280,8 @@ calculate_toptexturemid:
 ; rw_toptexturemid.w -= viewz.w;
 
 ; dx holding on to backsectorceilingheight from above.
+SELFMODIFY_get_backsector_ceilingheight:
+mov       dx, 01000h ; carry this forward.
 
 ;todo investigate no shift
 xor       ax, ax
