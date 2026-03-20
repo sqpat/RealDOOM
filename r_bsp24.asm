@@ -32,6 +32,8 @@ ANG180_HIGHBITS =    08000h
 
 MAX_VISSPRITES_ADDRESS = ((SIZE VISSPRITE_T) * MAXVISSPRITES) + _vissprites ; 0BE70h
 
+MOV_AX_IMM16_OPCODE = 0B8h
+DS_PREFIX_OPCODE = 03Eh
 
 ; COLFUNC TYPES (work in progress)
 ; 0 = regular draw, texture can loop
@@ -225,8 +227,6 @@ dw 0
 
 ; shoving some small functions in here since w ehave to pad to 0100h for the next jump table
 
-
-MOV_AX_IMM16_OPCODE = 0B8h
 
 
 PUSHA_BSP_BOTTOP_MACRO MACRO
@@ -597,13 +597,13 @@ PROC R_PointToAngle_ NEAR  ;todo needs another look
 
 ; ignore zero inputs case
 
-inputs_not_zero:
+
 
 ; todo: come up with a way to branchlessly determine octant via xors, shifts, etc.
 ; octant ends up in si or something. then do a jmp table.
 
 
-test  dx, dx
+test  dx, dx   ; todo get this for free
 jl   x_is_negative
 
 x_is_positive:
@@ -1863,7 +1863,7 @@ SAL BX, 1
 RCL CX, 1
 
 
-
+ALIGN_MACRO
 ; store this
 done_shifting_3232RPTA:
 
@@ -4218,16 +4218,19 @@ ALIGN_MACRO
 
 ; calculate hyp inlined
 
+      SELFMODIFY_BSP_v1x:
+      mov       cx, 01000h
+      ENSUREALIGN_300:
+      
       push  si
 
       ;    dx = labs(x.w - viewx.w);
       ;  x = ax register
       ;  y = dx
 
-      SELFMODIFY_BSP_v1x:
-      mov       cx, 01000h
       SELFMODIFY_BSP_v1y:
       mov       dx, 01000h
+      ENSUREALIGN_301:
 
       xor   bx, bx
       xor   ax, ax
@@ -4280,6 +4283,7 @@ ALIGN_MACRO
       mov   di, cx
 
       call  FixedDivBSPLocal_
+      ENSUREALIGN_316:
 
       ; shift 5. since we do a tantoangle lookup... this maxes at 2048
       SHIFT32_MACRO_RIGHT dx ax 3
@@ -4310,6 +4314,7 @@ ALIGN_MACRO
       ; cx set from cwd above
 
       call  FixedDivBSPLocal_
+      ENSUREALIGN_317:
 
       xchg  ax, bx  ; result in cx:bx
       mov   cx, dx
@@ -4326,6 +4331,7 @@ ALIGN_MACRO
    pop       dx  ; angle calculated prior
 
    call      FixedMulTrigNoShiftSine_BSPLocal_
+   ENSUREALIGN_318:
 
 
    mov       cx, cs
@@ -4494,6 +4500,7 @@ SELFMODIFY_set_viewanglesr3_3:
 mov       ax, 01000h
 add       ax, word ptr es:[bx]
 call      R_ScaleFromGlobalAngle_
+ENSUREALIGN_311:
 mov       cx, DRAWSEGS_BASE_SEGMENT
 mov       es, cx
 push      dx  ; bp - 02Ch
@@ -4561,6 +4568,7 @@ SELFMODIFY_set_viewanglesr3_2:
 add       ax, 01000h
 
 call      R_ScaleFromGlobalAngle_
+ENSUREALIGN_312:
 mov       es, cx ; restore es as ds_p+2
 stosw             ; +0Ah
 xchg      ax, dx
@@ -4686,6 +4694,7 @@ cmp       dx, FINE_ANG90_NOSHIFT ; 02000h
 ja        offsetangle_greater_than_fineang90
 
 call      FixedMulTrigNoShiftSine_BSPLocal_
+ENSUREALIGN_313:
 ; used later, dont change?
 ; dx:ax is rw_offset
 xchg      ax, dx
@@ -5013,6 +5022,7 @@ les       bx, dword ptr ds:[_ceiltop]
 
 
 call      R_CheckPlaneSetCeil_ ; enters and exits with ds as cs
+ENSUREALIGN_314:
 mov       word ptr ds:[_ceilingplaneindex], ax
 
 done_marking_ceiling:
@@ -5055,6 +5065,7 @@ les       bx, dword ptr ds:[_floortop]
 
 mov       byte ptr ds:[SELFMODIFY_setisceil + 1], 0
 call      R_CheckPlane_ ; enters and exits with ds as cs
+ENSUREALIGN_315:
 mov       word ptr ds:[_floorplaneindex], ax
 
 done_marking_floor:
@@ -5989,12 +6000,11 @@ out_of_texture_bounds_mid:
 mov   ax, ss
 mov   ds, ax
 push  bx
-xor   bx, bx
 
 SELFMODIFY_BSP_set_midtexture:
 mov   ax, 01000h
 ENSUREALIGN_073:
-
+mov   bx, 0
 call  R_GetColumnSegment_  
 ENSUREALIGN_074:
 mov   dx, word ptr ds:[_segloopcachedsegment]
@@ -6078,6 +6088,7 @@ ELSE
    ; todo shouldnt fall thru here? if it does may crash with dxvide overflow down the line.
 
    ; store this
+   ALIGN_MACRO
    done_shifting_3232:
 
    ; continue the last bit
@@ -6649,6 +6660,7 @@ finish_midtex_selfmodify_TWOSIDED:
       mov   di, cx
 
       call  FixedDivBSPLocal_
+      ENSUREALIGN_302:
 
       ; shift 5. since we do a tantoangle lookup... this maxes at 2048
       SHIFT32_MACRO_RIGHT dx ax 3
@@ -6679,6 +6691,7 @@ finish_midtex_selfmodify_TWOSIDED:
       ; cx set from cwd above
 
       call  FixedDivBSPLocal_
+      ENSUREALIGN_303:
 
       xchg  ax, bx  ; result in cx:bx
       mov   cx, dx
@@ -6695,6 +6708,7 @@ finish_midtex_selfmodify_TWOSIDED:
    pop       dx  ; angle calculated prior
 
    call      FixedMulTrigNoShiftSine_BSPLocal_
+   ENSUREALIGN_304:
 
    mov       cx, cs
    mov       ds, cx
@@ -6817,6 +6831,7 @@ SELFMODIFY_set_viewanglesr3_3_TWOSIDED:
 mov       ax, 01000h
 add       ax, word ptr es:[bx]
 call      R_ScaleFromGlobalAngle_
+ENSUREALIGN_305:
 mov       es, cx ; restore es as ds_p+2 segment
 push      dx  ; bp - 02Ch  ; 0000
 push      ax  ; bp - 02Eh  ; 60b9
@@ -6882,6 +6897,7 @@ lods      word ptr es:[si]
 SELFMODIFY_set_viewanglesr3_2_TWOSIDED:
 add       ax, 01000h
 call      R_ScaleFromGlobalAngle_
+ENSUREALIGN_306:
 mov       es, cx ; restore es as ds_p+2
 stosw             ; +0Ah
 xchg      ax, dx
@@ -7925,6 +7941,7 @@ cmp       dx, FINE_ANG90_NOSHIFT ; 02000h
 ja        offsetangle_greater_than_fineang90_TWOSIDED
 
 call      FixedMulTrigNoShiftSine_BSPLocal_
+ENSUREALIGN_307:
 ; used later, dont change?
 ; dx:ax is rw_offset
 xchg      ax, dx
@@ -8220,6 +8237,7 @@ mov       cx, es
 les       bx, dword ptr ds:[_ceiltop] 
 
 call      R_CheckPlaneSetCeil_ ; enters and exits with ds as cs
+ENSUREALIGN_308:
 mov       word ptr ds:[_ceilingplaneindex], ax
 dont_mark_ceiling_TWOSIDED:
 
@@ -8235,6 +8253,7 @@ les       bx, dword ptr ds:[_floortop]
 
 mov       byte ptr ds:[SELFMODIFY_setisceil + 1], 0
 call      R_CheckPlane_ ; enters and exits with ds as cs
+ENSUREALIGN_309:
 mov       word ptr ds:[_floorplaneindex], ax
 dont_mark_floor_TWOSIDED:
 
@@ -8801,6 +8820,7 @@ SELFMODIFY_add_wallights_TWOSIDED:
 
 
 mov   bl, byte ptr ss:[bx+01000h]         ; 8a 84 00 10 
+ENSUREALIGN_021:
 
 xchg  ax, bx  ; cx:bx is proper value again.
 ;        set colormap offset to high byte
@@ -8827,7 +8847,7 @@ ALIGN_MACRO
 
 
 
-
+; up to here now
 
 use_max_light_TWOSIDED:
 ; ugly 
@@ -8842,13 +8862,13 @@ light_set_TWOSIDED:
 ; set ax:dx ffffffff
 
 ; if top 16 bits missing just do a 32 / 16
-mov  ax, -1
 
 
 
 ; todo probably broken
 IF COMPISA GE COMPILE_386
    ; set up eax
+   mov  ax, -1
    db 066h, 098h                    ; cwde (prepare EAX)
    ; set up edx
    db 066h, 031h, 0D2h              ; xor edx, edx (must be 0, not FFFF FFFF)
@@ -8873,16 +8893,20 @@ IF COMPISA GE COMPILE_386
 
       SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr:
       mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_top], 01000h
+      ENSUREALIGN_085:
       SELFMODIFY_set_bot_lookup_offset_setter_nostretch_funcaddr:
       mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_bot], 01000h
+      ENSUREALIGN_086:
 
    jmp  done_setting_386_bottop_draws
    ALIGN_MACRO
    do_stretch_draw_386_bottop:
       SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1:
       mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_top], 01000h
+      ENSUREALIGN_087:
       SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_1:
       mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_bot], 01000h
+      ENSUREALIGN_088:
 
    done_setting_386_bottop_draws:
 
@@ -8896,10 +8920,13 @@ ELSE
    test cx, cx
    jne main_3232_div_TWOSIDED
 
+   ; toggle for ENSUREALIGN_085
+   
+   ; get FFFF in cx (which is 0) and 0 in dx
+   mov  dx, cx
+   dec  cx
+   mov  ax, cx  ; ax = -1
 
-   cwd
-
-   xchg dx, cx   ; cx was 0, dx is FFFF
 
       ; todo put stuff in reg
 
@@ -8907,17 +8934,20 @@ ELSE
 ; stretch draw off path
 
    mov   byte ptr ds:[SELFMODIFY_BSP_set_dc_iscale_hi_top+2], al
-   mov   byte ptr ds:[SELFMODIFY_BSP_set_dc_iscale_hi_bot+2], al
 
-   xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
+   mov   byte ptr ds:[SELFMODIFY_BSP_set_dc_iscale_hi_bot+2], al
+   xchg  cx, ax   ; q1 to cx, ffff to ax  so div remainder:ffff 
+
    div bx
    ; cx:ax is result 
    ; ch is known zero.
 
    SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr:
    mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_top], 01000h
+   ENSUREALIGN_085:
    SELFMODIFY_set_bot_lookup_offset_setter_nostretch_funcaddr:
    mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_bot], 01000h
+   ENSUREALIGN_086:
    ; only write to dc_iscale_hi when nonzero.
 
    jmp FastDiv3232FFFF_done_TWOSIDED    ; todo branch better 
@@ -8925,10 +8955,11 @@ ELSE
 
 
    main_3232_div_TWOSIDED:
-   public main_3232_div_TWOSIDED
+
 
   ; todo dont use di, use dx instead
 
+   mov  ax, -1
 
    ; generally cx maxes out at around 5 bits of precision? bias towards shift right instead of left.  
 
@@ -8982,6 +9013,7 @@ ELSE
    ; todo shouldnt fall thru here? if it does may crash with dxvide overflow down the line.
 
    ; store this
+   ALIGN_MACRO
    done_shifting_3232_TWOSIDED:
 
    ; continue the last bit
@@ -8989,13 +9021,14 @@ ELSE
    rcr dx, 1
     ; todo bench branch
    jnz do_full_div_ffff_TWOSIDED
-
+   
+   ALIGN_MACRO       ; very rare fall thru case and common jump to case
    do_single_div_FFFF_TWOSIDED:
+   ENSUREALIGN_091:
    ; bx has entire dividend, in 16 bits of precision. we know cx and di are zero after all.
    ; si contains a bit count of how much to shift result left by...
 
    shr ax, 1   ; still gotta continue to shift the last ax/si
-   rcr si, 1
 
    ; i want to skip last rcr si but it makes detecting the 0 case hard.
    dec  dx        ; make it 0FFFFh
@@ -9008,8 +9041,10 @@ ELSE
 
    SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1:
    mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_top], 01000h
+   ENSUREALIGN_087:
    SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_1:
    mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_bot], 01000h
+   ENSUREALIGN_088:
 
    jmp FastDiv3232FFFF_done_TWOSIDED
    ALIGN_MACRO
@@ -9057,6 +9092,7 @@ ELSE
 
    SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2:
    mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_top], 01000h
+   ENSUREALIGN_089:
 
 
    ; rhat = dx
@@ -9072,6 +9108,7 @@ ELSE
 
    SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_2:
    mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_bot], 01000h
+   ENSUREALIGN_090: ; todo align
 
    ; c1 hi = dx, c2 lo = es
    sub   dx, bx      ; cmp and sub at same time... 
@@ -9108,7 +9145,7 @@ ELSE
    finalize_div_TWOSIDED:
    _SELFMODIFY_get_qhat_TWOSIDED:
    mov  ax, 01000h
-
+   ENSUREALIGN_099:
    sub  ax, bx ; modify qhat by measured amount
    jmp  FastDiv3232FFFF_done_TWOSIDED
 
@@ -9136,12 +9173,12 @@ out_of_texture_bounds0_top:
 mov   ax, ss
 mov   ds, ax
 push  bx
-xor   bx, bx
-
 SELFMODIFY_BSP_set_toptexture:
 
 mov   ax, 01000h
-call  R_GetColumnSegment_
+mov   bx, 0
+call  R_GetColumnSegment_ ; todo is di, si used?
+ENSUREALIGN_310:
 
 mov   dx, word ptr ds:[_segloopcachedsegment]
 mov   bx, cs
@@ -9254,16 +9291,19 @@ SELFMODIFY_BSP_set_pixhigh:
 mov   ax, 01000h      ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET  ; pixhigh
 ENSUREALIGN_013:
 
+mov   cl, byte ptr ds:[bx + OFFSET_FLOORCLIP]
+
 SELFMODIFY_add_to_pixhigh_lo_1_TWOSIDED:
 sub   word ptr ds:[_cs_pixhigh], 01000h
+ENSUREALIGN_094:
 SELFMODIFY_add_to_pixhigh_hi_1_TWOSIDED:
 sbb   word ptr ds:[SELFMODIFY_BSP_set_pixhigh+1], 01000h
+ENSUREALIGN_095:
 ; bx is rw_x 
 
 ; todo reduce 16 bit logic, use 8 bit logic.
 
-xor   cx, cx
-mov   cl, byte ptr ds:[bx + OFFSET_FLOORCLIP]
+xor   ch, ch
 cmp   ax, cx
 jl    dont_clip_top_floor_TWOSIDED  ; todo branch test
 ; toggle this for ENSUREALIGN_009
@@ -9347,6 +9387,7 @@ ENDP
 
 just_do_draw0_top:
 public just_do_draw0_top
+ENSUREALIGN_093:
 
 
 ; ax carries _dc_source_segment
@@ -9363,16 +9404,6 @@ lea   ax, [si - 010h] ; dc_yl - centery
 
 
 sub   si, di  ; ; yl - yh
-shl   si, 1
-add   si, 398
-
-mov   dx, si  ; 2, 2   dx already multiplied by 2
-shl   dx, 1   ; 4, 2
-SELFMODIFY_set_pixel_count_shift_mul_top:
-public SELFMODIFY_set_pixel_count_shift_mul_top
-add   dx, si  ; 6, 2     ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
-shl   dx, 1   ; 12, 2    ; is there a way to swap just one instruction, while not adding instruction count?
-
 
 SELFMODIFY_BSP_add_destview_offset_top:
 lea   di, [bx + 01000h] ; rare, doesnt have to align
@@ -9382,12 +9413,29 @@ SELFMODIFY_BSP_set_dc_iscale_lo_top:
 mov   bx, 01000h        ; dc_iscale +0
 ENSUREALIGN_015:
 
+shl   si, 1
+add   si, 398
+
+mov   dx, si  ; 2, 2   dx already multiplied by 2
+shl   dx, 1   ; 4, 2
+SELFMODIFY_set_pixel_count_shift_mul_top:
+public SELFMODIFY_set_pixel_count_shift_mul_top
+add   dx, si  ; 6, 2     ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
+shl   dx, 1   ; 12, 2    ; is there a way to swap just one instruction, while not adding instruction count?
+ENSUREALIGN_024:  
+
+
+
+
 SELFMODIFY_set_toptexturemid_hi:
 SELFMODIFY_BSP_set_dc_iscale_hi_top:
 mov   cx, 01000h        ; dc_iscale +2 hi, toptexturemid hi lo. byte writes, doesnt have to align
 
 SELFMODIFY_set_toptexturemid_lo:
 mov   si, 01000h          ; once per storewallrange, doesnt have to align
+ENSUREALIGN_025:  
+
+
 SELFMODIFY_BSP_set_xlat_offset_TWOSIDED:
 mov   bp, 01000h          ; byte write, doesnt have to align
 ; pass in xlat offset for bx via bp
@@ -9443,8 +9491,10 @@ ENSUREALIGN_012:
 
 SELFMODIFY_add_to_pixlow_lo_1_TWOSIDED:
 sub   word ptr ds:[_cs_pixlow], 01000h
+ENSUREALIGN_096:
 SELFMODIFY_add_to_pixlow_hi_1_TWOSIDED:
 sbb   word ptr ds:[SELFMODIFY_BSP_set_pixlow+1], 01000h
+ENSUREALIGN_097:
 ;		if (mid <= ceilingclip[rw_x])
 ;		    mid = ceilingclip[rw_x]+1;
 ; cl already has ceilclip
@@ -9511,7 +9561,7 @@ mul   dl       ; al has heightval
 add_base_segment_and_draw1:
 SELFMODIFY_add_cached_segment1:
 add   ax, 01000h
-
+ENSUREALIGN_098:  
 
 just_do_draw1:
 public just_do_draw1
@@ -9520,15 +9570,24 @@ public just_do_draw1
 mov   ds, ax ; set _dc_source_segment
 
 
-R_DrawColumnPrepBot:
-PUBLIC R_DrawColumnPrepBot
 
 
 
 SELFMODIFY_COLFUNC_sub_centery24_bot:
 lea   ax, [si - 010h] ; dc_yl - centery
 
+
+
 sub   si, di  ; yl - yh
+
+SELFMODIFY_BSP_add_destview_offset_bot:
+lea   di, [bx + 01000h]
+
+SELFMODIFY_BSP_set_dc_iscale_lo_bot:   ; gross but works 
+mov   bx, 01000h
+ENSUREALIGN_014:  
+
+
 shl   si, 1
 add   si, 398
 
@@ -9538,23 +9597,23 @@ SELFMODIFY_set_pixel_count_shift_mul_bot:
 public SELFMODIFY_set_pixel_count_shift_mul_bot
 add   dx, si  ; 6, 2     ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
 shl   dx, 1   ; 12, 2    ; is there a way to swap just one instruction, while not adding instruction count?
+ENSUREALIGN_023:
 
 
-SELFMODIFY_BSP_add_destview_offset_bot:
-lea   di, [bx + 01000h]
+
 
 SELFMODIFY_set_bottexturemid_hi:
-SELFMODIFY_BSP_set_dc_iscale_hi_bot:   ; gross but works
+SELFMODIFY_BSP_set_dc_iscale_hi_bot:   ; byte writes, dont need to be aligned
 mov   cx, 01000h
 
-SELFMODIFY_set_bottexturemid_lo:
-mov   si, 01000h
 
-SELFMODIFY_BSP_set_dc_iscale_lo_bot:   ; gross but works 
-mov   bx, 01000h
-ENSUREALIGN_014:
+SELFMODIFY_set_bottexturemid_lo:
+mov   si, 01000h ; todo odd
+ENSUREALIGN_022:
+
 SELFMODIFY_BSP_set_xlat_offset_bot:
-mov   bp, 01000h ; pass in xlat offset for bx via bp
+mov   bp, 01000h ; byte write, doesnt need to be aligned
+
 
 SELFMODIFY_BSP_R_DrawColumnPrep_call_bot:
 db 09Ah
@@ -9611,16 +9670,16 @@ mul   byte ptr ss:[1 + _segloopheightvalcache]
 jmp   add_base_segment_and_draw1
 ALIGN_MACRO
 out_of_texture_bounds1:
+push  bx
 mov   ax, ss
 mov   ds, ax
-push  bx
-mov   bx, 1
 
 SELFMODIFY_BSP_set_bottomtexture:
 mov   ax, 01000h
-
-call  R_GetColumnSegment_
-
+ENSUREALIGN_084:
+mov   bx, 1
+call  R_GetColumnSegment_ ;todo is di, si used?
+ENSUREALIGN_083:
 mov   dx, word ptr ds:[2 + _segloopcachedsegment]
 mov   bx, cs
 mov   ds, bx
@@ -9994,9 +10053,11 @@ done_with_r_projectsprite:
 
 mov   sp, bp  ; restore sp
 
+
+db DS_PREFIX_OPCODE  ; padding
 SELFMODIFY_BSP_get_next_thing_in_sector:
 mov   si, 01000h
-ENSUREALIGN_017:
+ENSUREALIGN_092:  ; todo align..
 test  si, si
 jne   loop_things_in_thinglist
 
@@ -10825,11 +10886,11 @@ add       ax, dx
 LEAVE_MACRO     
 pop       di
 pop       si
-pop       cx
+
 ret  
 
 ALIGN_MACRO
-PROC   R_GetColumnSegment_ NEAR
+PROC   R_GetColumnSegment_ NEAR   ; TODO: optimization candidate
 PUBLIC R_GetColumnSegment_
 
 ; bp - 2      segloopcachetype
@@ -10839,7 +10900,6 @@ PUBLIC R_GetColumnSegment_
 ; bp - 0Ah    loopwidth
 
 
-push      cx
 push      si
 push      di
 push      bp
@@ -10909,6 +10969,7 @@ je        cachedlumphit
 
 
 loop_check_next_cached_lump:
+ENSUREALIGN_081:
 add       bx, 2
 cmp       bx, (2 * NUM_CACHE_LUMPS)
 jge       cache_miss_move_all_cache_back
@@ -10918,6 +10979,7 @@ jne       loop_check_next_cached_lump
 cachedlumphit:
 test      bx, bx
 jne       not_cache_0
+
 found_cached_lump:
 
 ;		if (col < 0){
@@ -10979,7 +11041,7 @@ add       ax, cx
 LEAVE_MACRO     
 pop       di
 pop       si
-pop       cx
+
 ret    
 
 
@@ -11004,6 +11066,7 @@ push      word ptr ds:[bx + di]
 jle       done_moving_cachelumps
 
 loop_move_cachelump:
+ENSUREALIGN_082: ; todo fix
 sub       bx, 2
 push      word ptr ds:[bx + di]
 push      word ptr ds:[bx + si]
@@ -15055,10 +15118,15 @@ public ENSUREALIGN_013
 public ENSUREALIGN_014
 public ENSUREALIGN_015
 public ENSUREALIGN_016
-public ENSUREALIGN_017
+;public ENSUREALIGN_017
 public ENSUREALIGN_018
 public ENSUREALIGN_019
 public ENSUREALIGN_020
+public ENSUREALIGN_021
+public ENSUREALIGN_022
+public ENSUREALIGN_023
+public ENSUREALIGN_024
+public ENSUREALIGN_025
 
 ; lower priority...
 
@@ -15086,7 +15154,46 @@ public ENSUREALIGN_078
 public ENSUREALIGN_079
 public ENSUREALIGN_080
 
+public ENSUREALIGN_081
+public ENSUREALIGN_082
+public ENSUREALIGN_083
+public ENSUREALIGN_084
+public ENSUREALIGN_085
+public ENSUREALIGN_086
+public ENSUREALIGN_087
+public ENSUREALIGN_088
+public ENSUREALIGN_089
+public ENSUREALIGN_090
+public ENSUREALIGN_091
+public ENSUREALIGN_092
+public ENSUREALIGN_093
+public ENSUREALIGN_094
+public ENSUREALIGN_095
+public ENSUREALIGN_096
+public ENSUREALIGN_097
+public ENSUREALIGN_098
+public ENSUREALIGN_099
 
+public ENSUREALIGN_300
+public ENSUREALIGN_301
+public ENSUREALIGN_302
+public ENSUREALIGN_303
+public ENSUREALIGN_304
+public ENSUREALIGN_305
+public ENSUREALIGN_306
+public ENSUREALIGN_307
+public ENSUREALIGN_308
+public ENSUREALIGN_309
+
+public ENSUREALIGN_310
+public ENSUREALIGN_311
+public ENSUREALIGN_312
+public ENSUREALIGN_313
+public ENSUREALIGN_314
+public ENSUREALIGN_315
+public ENSUREALIGN_316
+public ENSUREALIGN_317
+public ENSUREALIGN_318
 
 
 

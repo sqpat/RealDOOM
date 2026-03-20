@@ -3937,6 +3937,7 @@ ELSE
    ; todo shouldnt fall thru here? if it does may crash with dxvide overflow down the line.
 
    ; store this
+   ALIGN_MACRO
    done_shifting_3232:
 
    ; continue the last bit

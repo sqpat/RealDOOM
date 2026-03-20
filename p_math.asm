@@ -2841,7 +2841,7 @@ SAL BX, 1
 RCL CX, 1
 
 
-
+ALIGN_MACRO
 ; store this
 done_shifting_3232RPTA:
 
