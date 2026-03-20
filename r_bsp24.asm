@@ -5562,11 +5562,13 @@ ELSE
 
 
 
-; todo unwrap
+
    ALIGN_MACRO
    jump_to_mid_no_pixels_to_draw:
    jmp   increment_loop_values  ; restore bp here
    ALIGN_MACRO
+   jmp_to_main_3232_div:
+   jmp   main_3232_div
 
 
 
@@ -8662,6 +8664,11 @@ ELSE
    jmp  done_with_16bitmul_TWOSIDED
 
 
+   ALIGN_MACRO
+   SELFMODIFY_BSP_get_segtextured_TARGET_TWOSIDED:
+   jump_to_seg_non_textured_TWOSIDED:
+   xor   dx, dx
+   jmp   seg_non_textured_TWOSIDED
 
 
 
