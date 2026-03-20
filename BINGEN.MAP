@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/03/20 11:15:54
+Created on:       26/03/20 13:30:53
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -360,27 +360,55 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:2259*     SELFMODIFY_set_rw_distance_lo_topbot
 0819:2436*     SELFMODIFY_BSP_toptexture_AFTER
 0819:2982*     R_ClipPassWallSegment_
+0819:373c*     ENSUREALIGN_080
 0819:01e0*     _ceilingclip
-0819:2261*     do_16_bit_mul_TWOSIDED
+0819:1598*     ENSUREALIGN_051
+0819:15fa*     ENSUREALIGN_062
+0819:1600*     ENSUREALIGN_063
+0819:1814*     ENSUREALIGN_073
+0819:16ce*     ENSUREALIGN_066
+0819:160c*     ENSUREALIGN_065
+0819:1728*     ENSUREALIGN_069
+0819:15ee*     ENSUREALIGN_060
+0819:18ee*     ENSUREALIGN_077
 0819:1656*     ENSUREALIGN_002
-0819:21d6*     ENSUREALIGN_005
-0819:22a8*     ENSUREALIGN_007
+0819:175e*     ENSUREALIGN_071
+0819:1817*     ENSUREALIGN_074
+0819:1702*     ENSUREALIGN_068
 0819:1764*     ENSUREALIGN_011
 0819:2436*     ENSUREALIGN_013
-0819:2641*     SELFMODIFY_mark_planes_dirty_TWOSIDED
 0819:1734*     ENSUREALIGN_004
-0819:22ae*     ENSUREALIGN_008
+0819:21d6*     ENSUREALIGN_005
 0819:162a*     ENSUREALIGN_001
-0819:24a6*     ENSUREALIGN_012
-0819:2508*     ENSUREALIGN_010
-0819:2206*     ENSUREALIGN_006
-0819:172e*     ENSUREALIGN_003
+0819:16d4*     ENSUREALIGN_067
+0819:18a7*     ENSUREALIGN_076
+0819:1606*     ENSUREALIGN_064
+0819:22a8*     ENSUREALIGN_007
+0819:1594*     ENSUREALIGN_050
 0819:2500*     ENSUREALIGN_014
+0819:1728*     ENSUREALIGN_075
+0819:15f4*     ENSUREALIGN_061
+0819:2206*     ENSUREALIGN_006
+0819:2508*     ENSUREALIGN_010
+0819:1742*     ENSUREALIGN_070
+0819:172e*     ENSUREALIGN_003
 0819:2498*     ENSUREALIGN_009
+0819:24a6*     ENSUREALIGN_012
+0819:22ae*     ENSUREALIGN_008
+0819:3745*     ENSUREALIGN_079
+0819:2758*     ENSUREALIGN_019
+0819:1778*     ENSUREALIGN_072
+0819:2f90*     ENSUREALIGN_016
+0819:2722*     ENSUREALIGN_020
 0819:3d70      bsp_local_dc_yl_lookup_table_
+0819:2737*     ENSUREALIGN_017
+0819:2641*     SELFMODIFY_mark_planes_dirty_TWOSIDED
+0819:2261*     do_16_bit_mul_TWOSIDED
 0819:218a*     pre_increment_values_TWOSIDED
+0819:3704*     ENSUREALIGN_078
 0819:0a4e*     FixedMulTrigCosine_BSPLocal_
 0819:248a*     ENSUREALIGN_015
+0819:275e*     ENSUREALIGN_018
 0819:1271*     SELFMODIFY_BSP_midtexture_type
 0819:216e*     R_RenderSegLoop_TWOSIDED_
 0819:14f9*     SELFMODIFY_BSP_set_skyflatnum_4
@@ -388,7 +416,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:2666*     R_Subsector_
 0819:161a*     check_here
 0819:2433*     do_top_texture_draw
-0819:16ce*     SELFMODIFY_set_rw_distance_lo
+0819:16cb*     SELFMODIFY_set_rw_distance_lo
 0819:0000      R_BSP24_STARTMARKER_
 0819:01e0*     OFFSET_CEILINGCLIP
 0819:15c8*     exit_rendersegloop
@@ -398,7 +426,6 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:3842      R_RenderPlayerView24_
 0819:09b0*     FixedDivBSPLocal_
 0819:2516*     SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET_TWOSIDED
-0819:1728*     just_do_draw_mid
 0819:15e1*     increment_loop_values
 0819:05d6*     div48_32_BSPLocal_
 0819:1070*     R_StoreWallRangeNoBackSector_
@@ -432,7 +459,6 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:006a*     _basexscale
 0819:105e*     adjust_row_offset
 0819:0000*     _COLFUNC_SELFMODIFY_LOOKUPTABLE
-0819:175c*     R_DrawColumnPrep_
 0819:0370*     SELFMODIFY_get_rw_distance_hi_1
 0819:24e0*     R_DrawColumnPrepBot
 0819:16d6*     do_16_bit_mul
@@ -448,7 +474,6 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:2aca*     R_GetColumnSegment_
 0819:0356*     R_ScaleFromGlobalAngle_
 0819:17a6*     SELFMODIFY_mark_planes_dirty
-0819:18a2*     R_DrawColumnPrep_Stretch_
 0819:160c*     start_per_column_inner_loop
 Module: r_bsp16.obj(r_bsp16.ASM)
 0c09:3287      R_RenderPlayerView16_

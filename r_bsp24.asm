@@ -3065,11 +3065,14 @@ cmp       dx, ax
 jle       make_new_visplane
 SELFMODIFY_setminx:
 mov       word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_minx], 0FFFFh
+ENSUREALIGN_053:
 SELFMODIFY_setmax:
 mov       word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_maxx], 0FFFFh
+ENSUREALIGN_054:
 
 SELFMODIFY_setindex:
 mov       ax, 0ffffh
+ENSUREALIGN_052:
 
 mov       di, cs   ;  restore DS for now, try to make this not happen though.
 mov       ds, di
@@ -5126,15 +5129,17 @@ mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_2+4], ax
 
 ; todo reverse these orders, so bp - 026h may be popped
 
-SELFMODIFY_get_rwscalestep_lo_1:
-mov       ax, 01000h
-pop       bx ; bp - 026h
-pop       cx ; bp - 024h
 
 ;start inlined FixedMulBSPLocal_
 
 
 IF COMPISA GE COMPILE_386
+   pop       bx ; bp - 026h
+   pop       cx ; bp - 024h
+
+ ; todo combine
+   SELFMODIFY_get_rwscalestep_lo_1:
+   mov       ax, 01000h
    SELFMODIFY_get_rwscalestep_hi_1:
    mov       dx, 01000h
 
@@ -5149,8 +5154,20 @@ IF COMPISA GE COMPILE_386
 
 
 ELSE
+   pop       bx ; bp - 026h
+   
+   SELFMODIFY_get_rwscalestep_lo_1:
+   mov       ax, 01000h
+   ENSUREALIGN_050:
+   
+   pop       cx ; bp - 024h
+   
    SELFMODIFY_get_rwscalestep_hi_1:
    mov  si, 01000h
+   ENSUREALIGN_051:
+
+   public ENSUREALIGN_050
+   public ENSUREALIGN_051
 
    MOV  ES, AX
    MUL  BX
@@ -5273,19 +5290,25 @@ SELFMODIFY_cmp_di_to_rw_stopx_1:
 cmp   di, 01000h
 jge   exit_rendersegloop
 
-; todo (eventually) make sure all the selfmodify addresses are word aligned!
+
 SELFMODIFY_add_to_bottomfrac_lo_2:
 sub   word ptr ds:[_cs_botfrac_lo], 01000h
+ENSUREALIGN_060:
 SELFMODIFY_add_to_bottomfrac_hi_2:
 sbb   word ptr ds:[SELFMODIFY_set_botfrac_hi_mid+1], 01000h
+ENSUREALIGN_061:
 SELFMODIFY_add_to_topfrac_lo_2:
 sub   word ptr ds:[_cs_topfrac_lo], 01000h
+ENSUREALIGN_062:
 SELFMODIFY_add_to_topfrac_hi_2:
 sbb   word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], 01000h
+ENSUREALIGN_063:
 SELFMODIFY_add_to_rwscale_lo_2:
 add   word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], 01000h
+ENSUREALIGN_064:
 SELFMODIFY_add_to_rwscale_hi_2:
 adc   word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], 01000h
+ENSUREALIGN_065:
 
 
 ; todo change inner loop to work off constant di not ax?
@@ -5301,10 +5324,11 @@ mov   ax, di
 ; todo skip this for potato?
 
 SELFMODIFY_and_by_detail_level:
-and   ax, 00010h  ; zeroes ah
+and   ax, 00010h  ; zeroes ah ; rare no align
 
 SELFMODIFY_set_qualityportlookup_mid:
-mov   bx, 00000h        ; base for qualityportlookup...
+mov   bx, 00000h        ; base for qualityportlookup... ; byte, no align
+
 
 mov   dx, SC_DATA
 
@@ -5463,7 +5487,7 @@ sar   di, 1
 
 SELFMODIFY_BSP_add_destview_offset:
 public SELFMODIFY_BSP_add_destview_offset
-lea   di, [di + bp + 01000h]           ; di has destview offset
+lea   di, [di + bp + 01000h]           ; di has destview offset  ; rare, dont align
 
 ; bx has dc_x...
 
@@ -5496,7 +5520,7 @@ mov   ax, FINETANGENTINNER_SEGMENT  ; maybe can be skipped if bsp is moved under
 mov   es, ax
 
 SELFMODIFY_set_rw_center_angle:
-add   bx, 01000h
+add   bx, 01000h  ; rare, dont align
 and   bh, FINE_ANGLE_HIGH_BYTE				; MOD_FINE_ANGLE = and 0x1FFF
 
 ; temp.w = rw_offset.w - FixedMul(finetangent(angle),rw_distance);
@@ -5536,14 +5560,18 @@ ELSE
 
    SHIFT_MACRO shl bx 2
    test  bh, 010h
-   les   bx, dword ptr es:[bx]
 
    SELFMODIFY_set_rw_distance_lo:
    public SELFMODIFY_set_rw_distance_lo
    mov   ax, 01000h
+   ENSUREALIGN_066:
+
+   les   bx, dword ptr es:[bx]
+
 
    SELFMODIFY_set_rw_distance_hi:
    mov   cx, 01000h
+   ENSUREALIGN_067:
    jnz   do_32_bit_finetan_mul
 
    do_16_bit_mul:
@@ -5589,6 +5617,8 @@ ELSE
   ADD  AX, BX
   SELFMODIFY_set_rw_distance_lo_2:
   mov   bx, 01000h
+  ENSUREALIGN_068:
+  
   XCHG AX, si
   ADC  cx, DX
 
@@ -5653,11 +5683,12 @@ mul   dl       ; al has heightval
 add_base_segment_and_draw_mid:  ; align target?
 SELFMODIFY_add_cached_segment0:
 add   ax, 01000h
+ENSUREALIGN_069:
 
 ENDP
 
 just_do_draw_mid:
-public just_do_draw_mid
+ENSUREALIGN_075:
 
 ; ds must be reset to cs returning here.
 
@@ -5697,6 +5728,7 @@ SELFMODIFY_add_wallights:
 ; scalelight is pre-shifted 4 to save on the double sal every column.
 
 mov   dh, byte ptr ss:[bx+01000h]         ; 8a 84 00 10 
+ENSUREALIGN_070:
 ; dl 0 from earlier cwd.
 xchg  ax, bx  ; cx:bx is proper value again.
 ;        set colormap offset to high byte
@@ -5787,14 +5819,14 @@ ENDIF
    ; di already has screen coord
 
    mov   dx, si  ; jmp amount
+
+   SELFMODIFY_set_midtexturemid_lo:
+   mov   si, 01000h
+   ENSUREALIGN_071:
+
    pop   ax   ; dc_yl
 
 
-
-   R_DrawColumnPrep_:
-   PUBLIC R_DrawColumnPrep_ 
-   SELFMODIFY_set_midtexturemid_lo:
-   mov   si, 01000h
 
    ; bp passed in
    ; pass in xlat offset for bx via bp
@@ -5833,8 +5865,6 @@ ALIGN_MACRO
 
 R_RenderSegLoop_exit:
 
-SELFMODIFY_restore_bp_after_draw_mid:
-mov   bp, 01000h
 
 mov   cx, cs  ; cl is 0
 mov   es, cx
@@ -5843,6 +5873,11 @@ mov   ds, cx
 ; ds is cs.
 
 pop   dx  ; mov   dx, word ptr [bp - 022h]  ; stopx - startx
+
+SELFMODIFY_restore_bp_after_draw_mid:
+mov   bp, 01000h
+ENSUREALIGN_072:
+
 pop   si  ; mov   si, word ptr [bp - 020h]  ; startx
 inc   dx
 
@@ -5958,7 +5993,10 @@ xor   bx, bx
 
 SELFMODIFY_BSP_set_midtexture:
 mov   ax, 01000h
-call  R_GetColumnSegment_  ; worth inlining...?
+ENSUREALIGN_073:
+
+call  R_GetColumnSegment_  
+ENSUREALIGN_074:
 mov   dx, word ptr ds:[_segloopcachedsegment]
 mov   bx, cs
 mov   ds, bx
@@ -6080,13 +6118,11 @@ ENDIF
    PUSH_MACRO_WITH_REG si OFFSET(increment_loop_values_full)
    
 
-   R_DrawColumnPrep_Stretch_:
-   PUBLIC R_DrawColumnPrep_Stretch_
-
    SELFMODIFY_set_midtexturemid_hi_stretch:
    mov   cl, 010h        ; dc_iscale +2 already in ch
    SELFMODIFY_set_midtexturemid_lo_stretch:
    mov   si, 01000h
+   ENSUREALIGN_076: ; todo figure out
 
    ; bp already set.
 
@@ -6197,6 +6233,7 @@ ELSE
    finalize_div:
    _SELFMODIFY_get_qhat:
    mov  ax, 01000h
+   ENSUREALIGN_077:
 
    sub  ax, bx ; modify qhat by measured amount
    jmp  FastDiv3232FFFF_done_stretch
@@ -9944,6 +9981,7 @@ test  si, si
 je    exit_add_sprites
 
 loop_things_in_thinglist:
+ENSUREALIGN_020:
 
 mov   ax, MOBJPOSLIST_SEGMENT
 mov   es, ax
@@ -9958,6 +9996,7 @@ mov   sp, bp  ; restore sp
 
 SELFMODIFY_BSP_get_next_thing_in_sector:
 mov   si, 01000h
+ENSUREALIGN_017:
 test  si, si
 jne   loop_things_in_thinglist
 
@@ -9994,10 +10033,13 @@ mov   byte ptr cs:[SELFMODIFY_skip_curseg_based_selfmodify_topbot], al
 
 
 END_R_ADDLINE_LABEL:
-SELFMODIFY_reset_sp:
 
-mov   sp, 01000h
+ENSUREALIGN_019:
+
 inc   word ptr [bp + 4]  ; line
+SELFMODIFY_reset_sp:
+mov   sp, 01000h
+ENSUREALIGN_018:
 dec   word ptr [bp + 2]  ; count
 jz    exit_r_addline
 
@@ -11928,6 +11970,7 @@ loop_check_bbox:
  mov   es, ax
 _SELFMODIFY_set_next_child_node:
  mov    bx, es:[01000h]
+ ENSUREALIGN_016:
  jmp   bsp_loop_start
 ALIGN_MACRO
 exit_renderbspnode:
@@ -13893,6 +13936,7 @@ mov       cx, word ptr [bp - 018h] ; cx is x for this loop
 continue_x_x2_loop:
 SELFMODIFY_x2_check:
 cmp       cx, 01000h  ; x2
+ENSUREALIGN_078:
 
 ; for (; x < x2; x++) {
 
@@ -13960,7 +14004,9 @@ push      di
 
 cmp       byte ptr ds:[bx], 0FFh
 je        exit_drawcolumn_in_cache
+
 do_next_column_patch:
+ENSUREALIGN_080:
 
 ;		uint16_t     count = patchcol->length;
 
@@ -13976,6 +14022,7 @@ xchg      cl, ah                ; length to cl, 0 to ah
 
 SELFMODIFY_add_patchoriginy:
 add       ax, 01000h ; patchoriginy + topdelta
+ENSUREALIGN_079:  ; hard
 xchg      ax, di
 
 
@@ -15007,6 +15054,40 @@ public ENSUREALIGN_012
 public ENSUREALIGN_013
 public ENSUREALIGN_014
 public ENSUREALIGN_015
+public ENSUREALIGN_016
+public ENSUREALIGN_017
+public ENSUREALIGN_018
+public ENSUREALIGN_019
+public ENSUREALIGN_020
+
+; lower priority...
+
+public ENSUREALIGN_051
+
+public ENSUREALIGN_060
+public ENSUREALIGN_061
+public ENSUREALIGN_062
+public ENSUREALIGN_063
+public ENSUREALIGN_064
+public ENSUREALIGN_065
+public ENSUREALIGN_066
+public ENSUREALIGN_067
+public ENSUREALIGN_068
+public ENSUREALIGN_069
+public ENSUREALIGN_070
+public ENSUREALIGN_071
+public ENSUREALIGN_072
+public ENSUREALIGN_073
+public ENSUREALIGN_074
+public ENSUREALIGN_075
+public ENSUREALIGN_076
+public ENSUREALIGN_077
+public ENSUREALIGN_078
+public ENSUREALIGN_079
+public ENSUREALIGN_080
+
+
+
 
 
 END
