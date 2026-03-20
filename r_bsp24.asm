@@ -9101,10 +9101,11 @@ record_masked:
 ;	maskedtexturecol[rw_x] = texturecolumn;
 ;}
 
-
+xchg  ax, si  ; backup si
 les   si, dword ptr ds:[_maskedtexturecol_bsp]
 add   si, bx  ; bx byte ptr
 mov   word ptr es:[bx+si], dx  ; add bx again, word ptr
+xchg  ax, si ; restore
 
 jmp   finished_recording_masked
 ALIGN_MACRO

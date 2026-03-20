@@ -307,7 +307,7 @@ les   bx, dword ptr ds:[_mfloorclip]
 mov   al, byte ptr es:[bx+di]
 
 cmp   dx, ax
-jl    skip_floor_clip_set_single	; todo consider making this jump out and back? whats the better default branch
+jl    skip_floor_clip_set_single	; todo branch test
 xchg  ax, dx
 dec   dx
 skip_floor_clip_set_single:
@@ -324,26 +324,28 @@ xor   ax, ax
 mov   al, byte ptr es:[bx+di] ; ch 0
 
 cmp   si, ax
-jg    skip_ceil_clip_set_single   ; todo consider making this jump out and back? whats the better default branch
+jg    skip_ceil_clip_set_single   ; todo branch test
 xchg  ax, si
 inc   si
 skip_ceil_clip_set_single:
 
-sub   dx, si
-js    exit_function_single
 
-neg   dx
-shl   dx, 1
-add   dx, 398
-mov   di, dx  ; 2, 2   dx already multiplied by 2
+
+; dx is yh
+; si is yl
+mov   ax, si
+sub   ax, dx  ; yl - yh
+jns   exit_function_single_early
+
+
+shl   ax, 1
+add   ax, 398
+mov   dx, ax  ; 2, 2   dx already multiplied by 2
 shl   dx, 1   ; 4, 2
 shl   dx, 1   ; 8, 2    ; is there a way to swap just one instruction, while not adding instruction count?
-add   dx, di  ; 10, 2   ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
+add   dx, ax  ; 10, 2   ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
+
 ; dx has jmp amount
-
-; dx/si contain dc_yh/dc_yl
-
-; todo: this can be a second, local version of the function that is specialized?
 
 ; inlined R_DrawColumnPrepMaskedSingle_
 
@@ -420,6 +422,17 @@ pop   cx
 ret   
 
 ENDP
+ALIGN_MACRO
+exit_function_single_early:
+mov   ax, ss
+mov   ds, ax
+pop   ax ; pull ds off stack
+pop   bp
+pop   di
+pop   si
+pop   cx
+ret   
+jmp   exit_function_single
 
 UNCLIPPED_COLUMN  = 0FEh
 
