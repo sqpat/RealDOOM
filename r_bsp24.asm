@@ -8055,7 +8055,7 @@ ELSE
    adc       cx, 0
 
    mov       word ptr ds:[SELFMODIFY_set_topfrac_hi_bottop+1], cx
-   mov       word ptr ds:[_cs_topfrac_lo+1], ax
+   mov       word ptr ds:[_cs_topfrac_lo], ax
 
    les       ax, dword ptr [bp - 02Ah]  ; avoid xchg ax/bx
    mov       cx, es
