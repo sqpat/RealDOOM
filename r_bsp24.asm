@@ -4881,7 +4881,7 @@ ELSE
    adc       cx, 0
 
    mov       word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], cx
-   mov       word ptr ds:[_cs_topfrac_lo+1], ax
+   mov       word ptr ds:[_cs_topfrac_lo], ax
 
    mov       word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], si
    mov       word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], es ; zero
@@ -4920,7 +4920,7 @@ add       ax, ((HEIGHTUNIT)-1) SHL 4 ; bake this in once, instead of doing it ev
 adc       cx, 0
 
 mov       word ptr ds:[SELFMODIFY_set_topfrac_hi_mid+1], cx
-mov       word ptr ds:[_cs_topfrac_lo+1], ax
+mov       word ptr ds:[_cs_topfrac_lo], ax
 
 
 
