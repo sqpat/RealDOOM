@@ -173,6 +173,7 @@ ADC  DX, SI
 MOV  SI, ES
 RET
 
+public ENSUREALIGN_103
 ENDP
 ENDIF
 
@@ -3844,10 +3845,14 @@ ALIGN_MACRO
 
    ; ?only write to dc_iscale_hi when nonzero.
    mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+2 - OFFSET R_MASK24_STARTMARKER_], dl
-   
-
+   test  dl, dl
+   jz    do_stretch_draw_386_masked
+   mov   word ptr cs:[SELFMODIFY_MASKED_apply_stretch_tag], 0C089h ; NOP  ; toggle stretch variant for this frame
    ret
-   ;jmp FastDiv3232FFFF_done 
+   do_stretch_draw_386_masked:
+   mov   word ptr cs:[SELFMODIFY_MASKED_apply_stretch_tag], ((SELFMODIFY_MASKED_apply_stretch_tag_TARGET - SELFMODIFY_MASKED_apply_stretch_tag_AFTER) SHL 8) + 0EBh  ; jmp 8 turn on stretch variant for this frame
+   ret
+   ENDP
 
 ELSE
    ALIGN_MACRO
@@ -6278,7 +6283,7 @@ ENDP
 
 PUBLIC  ENSUREALIGN_101
 PUBLIC  ENSUREALIGN_102
-PUBLIC  ENSUREALIGN_103
+
 
 ENDS
 END

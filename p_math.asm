@@ -126,6 +126,7 @@ ADD  AX, CX
 ADC  DX, SI
 MOV  SI, ES
 RET
+public ENSUREALIGN_903
 
 ENDP
 
@@ -1452,6 +1453,7 @@ SBB  DX, SI  ; dx:ax now labs. sign bits in si
 
 pop   si
 ret
+public ENSUREALIGN_905
 
 ; pretty rare case, but does need to be handled for shift 14 fixeddiv bounds check
   do_cx_equals_1_case:
@@ -3009,9 +3011,7 @@ PROC   P_MATH_ENDMARKER_
 PUBLIC P_MATH_ENDMARKER_
 ENDP
 
-public ENSUREALIGN_903
 public ENSUREALIGN_904
-public ENSUREALIGN_905
 
 ENDS
 

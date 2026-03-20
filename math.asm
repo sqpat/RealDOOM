@@ -64,8 +64,6 @@ PUBLIC FixedMul_
 
 ; thanks zero318 from discord for improved algorithm  
 
-; thanks zero318 from discord for improved algorithm  
-
 MOV  ES, SI
 MOV  SI, DX
 PUSH AX
@@ -92,6 +90,7 @@ MUL  BX
 ADD  AX, CX
 ADC  DX, SI
 MOV  SI, ES
+public ENSUREALIGN_906
 
 ret
 
@@ -209,6 +208,5 @@ ret
 
 ENDP
 
-public ENSUREALIGN_906
 
 END

@@ -5731,19 +5731,29 @@ IF COMPISA GE COMPILE_386
    db 066h, 0F7h, 0F1h              ; div ecx
 
    ; set up return
-   db 066h, 00Fh, 0A4h, 0C2h, 010h  ; shld edx, eax, 0x10
+   db 066h, 00Fh, 0A4h, 0C1h, 010h  ; shld ecx, eax, 0x10
 
-   ; ?only write to dc_iscale_hi when nonzero.
-   mov   ch, dl  ; dc_iscale hi 8 bits
+   ; cx:ax is result
+   test cl, cl
+   mov ch, cl
+   SELFMODIFY_set_midtexturemid_hi:
+   mov   cl, 010h        ; dc_iscale +2 already in ch
 
+   jz   do_stretch_draw_386_mid
+   do_nostretch_draw_386_mid:
+         jmp FastDiv3232FFFF_done_stretch
+   jmp  done_setting_386_mid_draws
+   ALIGN_MACRO
+   do_stretch_draw_386_mid:
+      
+      jmp FastDiv3232FFFF_done_stretch
 
+   done_setting_386_mid_draws:
 
-; big todo: 386 logic all wrong..
-; big todo: 386 logic all wrong..
-; big todo: 386 logic all wrong..
+   mov ch, cl
 
+   jmp FastDiv3232FFFF_done
 
-   jmp FastDiv3232FFFF_done 
    ALIGN_MACRO
 
 ELSE
@@ -5767,6 +5777,8 @@ ELSE
 
    div   bx
    ; cx:ax is result 
+ENDIF
+
    FastDiv3232FFFF_done:
 
 ; toggle for ENSUREALIGN_011
@@ -5776,8 +5788,6 @@ ELSE
 
 ; todo what if we inlined the function right here, instead of writing selfmodifies forward to selfmodifies...
 ; then push return value. far jmp.
-ENDIF
-
    
    ; cl:ax has 24 bits of result. 
    ; dc_iscale loaded here..
@@ -5819,10 +5829,12 @@ use_max_light:
 mov   bx, MAXLIGHTSCALE - 1
 jmp   do_light_write
 
-ALIGN_MACRO
-jmp_to_main_3232_div:
-jmp   main_3232_div
-
+IF COMPISA GE COMPILE_386
+ELSEIF
+   ALIGN_MACRO
+   jmp_to_main_3232_div:
+   jmp   main_3232_div
+ENDIF
 
 ALIGN_MACRO
 
@@ -6058,7 +6070,7 @@ ELSE
 
 
    ; cx is zero already coming in from the first shift so cx:ax is already the result.
-
+ENDIF
    
    FastDiv3232FFFF_done_stretch:
 
@@ -6093,6 +6105,8 @@ ELSE
    SELFMODIFY_COLFUNC_set_func_offset_stretch:
    dw DRAWCOL_OFFSET_BSP, COLORMAPS_SEGMENT
    
+IF COMPISA GE COMPILE_386
+ELSE
 
    ALIGN_MACRO
 
@@ -7019,7 +7033,10 @@ xchg      ax, si
 
 lodsw
 mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_1+4], ax
+IF COMPISA GE COMPILE_386
+ELSE
 mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_2+4], ax
+ENDIF
 lodsw
 mov       word ptr ds:[SELFMODIFY_set_bot_lookup_offset_setter_nostretch_funcaddr+4], ax
 
@@ -7055,7 +7072,10 @@ xchg      ax, si
 
 lodsw
 mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1+4], ax
+IF COMPISA GE COMPILE_386
+ELSE
 mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2+4], ax
+ENDIF
 lodsw
 mov       word ptr ds:[SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr+4], ax
 ; todo is si and lodsw pattern better?
@@ -8802,17 +8822,32 @@ IF COMPISA GE COMPILE_386
    db 066h, 0F7h, 0F1h              ; div ecx
 
    ; set up return
-   db 066h, 00Fh, 0A4h, 0C2h, 010h  ; shld edx, eax, 0x10
+   db 066h, 00Fh, 0A4h, 0C1h, 010h  ; shld ecx, eax, 0x10
 
-   ; ?only write to dc_iscale_hi when nonzero.
-; todo   mov byte ptr ds:[SELFMODIFY_bsp_apply_stretch_tag_TWOSIDED+2], dl  ; turn on stretch variant for this frame
-   mov   byte ptr ds:[SELFMODIFY_BSP_set_dc_iscale_hi_top+2], dl
-   mov   byte ptr ds:[SELFMODIFY_BSP_set_dc_iscale_hi_bot+2], dl
+   ; cx:ax is result
+   test cl, cl
+   jz   do_stretch_draw_386_bottop
+   do_nostretch_draw_386_bottop:
+   
+      mov   byte ptr ds:[SELFMODIFY_BSP_set_dc_iscale_hi_top+2], cl
+      mov   byte ptr ds:[SELFMODIFY_BSP_set_dc_iscale_hi_bot+2], cl
 
-; todo: 386 logic.
+      SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr:
+      mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_top], 01000h
+      SELFMODIFY_set_bot_lookup_offset_setter_nostretch_funcaddr:
+      mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_bot], 01000h
 
-   SELFMODIFY_set_top_lookup_offset_setter_nostretch_funcaddr:
-   mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_top], 01000h
+   jmp  done_setting_386_bottop_draws
+   ALIGN_MACRO
+   do_stretch_draw_386_bottop:
+      SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_1:
+      mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_top], 01000h
+      SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_1:
+      mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_bot], 01000h
+
+   done_setting_386_bottop_draws:
+
+
 
    jmp FastDiv3232FFFF_done_TWOSIDED 
    ALIGN_MACRO
@@ -14523,14 +14558,18 @@ mov      word ptr ds:[SELFMODIFY_BSP_centerx_8+1], ax
 mov      ax, word ptr ss:[_centery]
 inc      ax ; has to do with yl/yh inc by 1 logic
  
-mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_5+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_4+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_2+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_3+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_1+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_3_TWOSIDED+1], ax
 mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_4_TWOSIDED+1], ax
-mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_5_TWOSIDED+1], ax
+
+IF COMPISA GE COMPILE_386
+ELSE
+   mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_5+1], ax
+   mov      word ptr ds:[SELFMODIFY_sub__centeryfrac_4_hi_5_TWOSIDED+1], ax
+ENDIF
 
 neg      ax
 mov      byte ptr ds:[SELFMODIFY_COLFUNC_sub_centery24_mid+2], al
