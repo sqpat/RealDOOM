@@ -2124,29 +2124,27 @@ IF COMPISA GE COMPILE_386
 ALIGN_MACRO
     PROC   FixedMulTrigSine_BSPLocal_ NEAR ; fairly optimized
     PUBLIC FixedMulTrigSine_BSPLocal_
-    sal dx, 1
-    sal dx, 1   ; DWORD lookup index
+    SHIFT_MACRO shl dx 2
     ENDP
 
     PROC   FixedMulTrigNoShiftSine_BSPLocal_ NEAR ; fairly optimized
     PUBLIC FixedMulTrigNoShiftSine_BSPLocal_
     ; pass in the index already shifted to be a dword lookup..
 
-    shr  dx, 1
-    mov  ax, FINESINE_SEGMENT
 
-    ; lookup the fine angle
+    mov   ax, FINESINE_SEGMENT
+    mov   es, ax                ; put segment in es
 
-    mov es, ax
-    db  066h, 081h, 0E2h, 0FFh, 0FFh, 0, 0  ;  and edx, 0x0000FFFF   
-
-    db  026h, 067h, 066h, 08bh, 002h     ; mov  eax, dword ptr es:[edx]
-
-
-    db  066h, 0C1h, 0E3h, 010h           ; shl  ebx, 0x10
-    db  066h, 00Fh, 0ACh, 0CBh, 010h     ; shrd ebx, ecx, 0x10
-    db  066h, 0F7h, 0EBh                 ; imul ebx
-    db  066h, 0C1h, 0E8h, 010h           ; shr  eax, 0x10
+    mov   ax, dx
+    shl   ax, 1
+    cwde                        ; eax high gets sign
+    shr   dx, 1                 ; dword to word lookup
+    movsx edx, dx               ; clear high bits
+    mov   ax, word ptr es:[edx]  ; ax gets low word
+    shl   ecx, 16
+    mov   cx, bx
+    imul  ecx
+    shr   eax, 16
 
 
     ret
@@ -2156,29 +2154,25 @@ ALIGN_MACRO
 ALIGN_MACRO
     PROC   FixedMulTrigCosine_BSPLocal_ NEAR ; fairly optimized
     PUBLIC FixedMulTrigCosine_BSPLocal_
-    sal dx, 1
-    sal dx, 1   ; DWORD lookup index
+    SHIFT_MACRO shl dx 2
     ENDP
 
     PROC   FixedMulTrigNoShiftCosine_BSPLocal_ NEAR ; fairly optimized
     PUBLIC FixedMulTrigNoShiftCosine_BSPLocal_
     ; pass in the index already shifted to be a dword lookup..
-    shr  dx, 1
-    mov  ax, FINECOSINE_SEGMENT
 
+    mov   ax, FINECOSINE_SEGMENT
+    mov   es, ax                ; put segment in es
 
-    ; lookup the fine angle
-
-    mov es, ax
-    db  066h, 081h, 0E2h, 0FFh, 0FFh, 0, 0  ;  and edx, 0x0000FFFF   
-
-    db  026h, 067h, 066h, 08bh, 002h     ; mov  eax, dword ptr es:[edx]
-
-
-    db  066h, 0C1h, 0E3h, 010h           ; shl  ebx, 0x10
-    db  066h, 00Fh, 0ACh, 0CBh, 010h     ; shrd ebx, ecx, 0x10
-    db  066h, 0F7h, 0EBh                 ; imul ebx
-    db  066h, 0C1h, 0E8h, 010h           ; shr  eax, 0x10
+    lea   eax, [edx*2 + 04000h]
+    cwde                        ; eax high gets sign
+    shr   dx, 1                 ; dword to word lookup
+    movsx edx, dx               ; clear high bits
+    mov   ax, word ptr es:[edx] ; ax gets low word
+    shl   ecx, 16
+    mov   cx, bx
+    imul  ecx
+    shr   eax, 16
 
 
     ret
@@ -5244,6 +5238,12 @@ stosw ; mov   word ptr ds:[_seglooptexrepeat], ax
 
 jmp   R_RenderSegLoop_exit     ; todo doesnt quite fit here yet.
 
+IF COMPISA GE COMPILE_386
+   ALIGN_MACRO
+   jump_to_mid_no_pixels_to_draw:
+   jmp   increment_loop_values  ; restore bp here
+   ALIGN_MACRO
+ENDIF
 
 ALIGN_MACRO
 
@@ -5507,29 +5507,29 @@ sbb   bp, bp
 xor   bx, bp          ; bx now 0 to 2048, bp has sign.. but table is 2048 entries.
 
 
-SELFMODIFY_set_rw_distance_lo:
-public SELFMODIFY_set_rw_distance_lo
-mov   ax, 01000h
 
 
 
 IF COMPISA GE COMPILE_386
     ; todo or one?
    SHIFT_MACRO shl bx 2
-   les   bx, dword ptr es:[bx]
-   mov   cx, es
+   mov   ebx, dword ptr es:[bx]
+   not   bp
+   movsx ecx, bp
+   sub   ebx, ecx
+   xor   ebx, ecx  ;apply sign
 
-  SELFMODIFY_set_rw_distance_hi:
-  mov   dx, 01000h
 
-  shl   ecx, 16
-  mov   cx, bx
-  xchg  ax, dx
-  shl   eax, 16
-  xchg  ax, dx
-  imul  ecx
+  SELFMODIFY_set_rw_distance_hi_386_base:
+
+  SELFMODIFY_set_rw_distance_lo = SELFMODIFY_set_rw_distance_hi_386_base+1
+  SELFMODIFY_set_rw_distance_hi = SELFMODIFY_set_rw_distance_hi_386_base+3
+  mov   eax, 010000000h
+
+  imul  ebx
   shr   eax, 16
-  jmp   done_with_finetanmul
+
+
 
 
 ELSE
@@ -5538,6 +5538,9 @@ ELSE
    test  bh, 010h
    les   bx, dword ptr es:[bx]
 
+   SELFMODIFY_set_rw_distance_lo:
+   public SELFMODIFY_set_rw_distance_lo
+   mov   ax, 01000h
 
    SELFMODIFY_set_rw_distance_hi:
    mov   cx, 01000h
@@ -5557,26 +5560,17 @@ ELSE
 
    jmp  done_with_16bitmul
 
-ENDIF
 
 
-ALIGN_MACRO
-jump_to_mid_no_pixels_to_draw:
-jmp   increment_loop_values  ; restore bp here
-ALIGN_MACRO
-
-
-
+; todo unwrap
+   ALIGN_MACRO
+   jump_to_mid_no_pixels_to_draw:
+   jmp   increment_loop_values  ; restore bp here
+   ALIGN_MACRO
 
 
 
-
-; todo: make this faster.
-
-IF COMPISA GE COMPILE_386
-ELSE
-
-do_32_bit_finetan_mul:
+   do_32_bit_finetan_mul:
 
   push  si     ; this path pushes si... 
   mov   si, es
@@ -5612,7 +5606,7 @@ do_32_bit_finetan_mul:
    SBB   DX, bp
    XOR   AX, bp ; no xor ax necessary if we flip order with add below? may require below values negged
    XOR   DX, bp
-   ENDIF
+ENDIF
 
 done_with_finetanmul:
 
@@ -5740,19 +5734,16 @@ IF COMPISA GE COMPILE_386
    mov   cl, 010h        ; dc_iscale +2 already in ch
 
    jz   do_stretch_draw_386_mid
-   do_nostretch_draw_386_mid:
-         jmp FastDiv3232FFFF_done_stretch
-   jmp  done_setting_386_mid_draws
+         do_nostretch_draw_386_mid:
+
+         jmp FastDiv3232FFFF_done
    ALIGN_MACRO
    do_stretch_draw_386_mid:
+      xchg  ax, bx        ; dc_iscale +0  into bx
+      mov   dx, si        ; jump amount into dx
       
-      jmp FastDiv3232FFFF_done_stretch
+      jmp FastDiv3232FFFF_done_stretch_386
 
-   done_setting_386_mid_draws:
-
-   mov ch, cl
-
-   jmp FastDiv3232FFFF_done
 
    ALIGN_MACRO
 
@@ -6079,6 +6070,7 @@ ENDIF
 
    ; di already has screen coord
    pop   dx   ; jump amount
+   FastDiv3232FFFF_done_stretch_386:
    pop   ax   ; dc_yl
 
 
@@ -6670,10 +6662,10 @@ finish_midtex_selfmodify_TWOSIDED:
 
 
    ; self modifying code for rw_distance
-   mov   word ptr ds:[SELFMODIFY_set_bx_rw_distance_lo_TWOSIDED+1], ax
+   mov   word ptr ds:[SELFMODIFY_set_rw_distance_lo_topbot+1], ax
    mov   word ptr ds:[SELFMODIFY_get_rw_distance_lo_1+1], ax ; ??
    xchg  ax, dx
-   mov   word ptr ds:[SELFMODIFY_set_cx_rw_distance_hi_TWOSIDED+1], ax
+   mov   word ptr ds:[SELFMODIFY_set_rw_distance_hi_topbot+1], ax
    mov   word ptr ds:[SELFMODIFY_get_rw_distance_hi_1+1], ax ; ?? 
 
 
@@ -8617,29 +8609,28 @@ sbb   bp, bp
 xor   bx, bp          ; bx now 0 to 2048, bp has sign.. but table is 2048 entries.
 
 
-SELFMODIFY_set_bx_rw_distance_lo_TWOSIDED:
-public SELFMODIFY_set_bx_rw_distance_lo_TWOSIDED
-mov   ax, 01000h
 
 
 
 IF COMPISA GE COMPILE_386
     ; todo or one?
    SHIFT_MACRO shl bx 2
-   les   bx, dword ptr es:[bx]
-   mov   cx, es
+   mov   ebx, dword ptr es:[bx]
+   not   bp
+   movsx ecx, bp
+   sub   ebx, ecx
+   xor   ebx, ecx  ;apply sign
 
-  SELFMODIFY_set_cx_rw_distance_hi_TWOSIDED:
-  mov   dx, 01000h
 
-  shl   ecx, 16
-  mov   cx, bx
-  xchg  ax, dx
-  shl   eax, 16
-  xchg  ax, dx
-  imul  ecx
+  SELFMODIFY_set_rw_distance_hi_386_base_topbot:
+
+  SELFMODIFY_set_rw_distance_lo_topbot = SELFMODIFY_set_rw_distance_hi_386_base_topbot+1
+  SELFMODIFY_set_rw_distance_hi_topbot = SELFMODIFY_set_rw_distance_hi_386_base_topbot+3
+  mov   eax, 010000000h
+
+  imul  ebx
   shr   eax, 16
-  jmp   done_with_finetanmul
+
 
 
 ELSE
@@ -8648,8 +8639,11 @@ ELSE
    test  bh, 010h
    les   bx, dword ptr es:[bx]
 
+  SELFMODIFY_set_rw_distance_lo_topbot:
+  public SELFMODIFY_set_rw_distance_lo_topbot
+  mov   ax, 01000h
 
-   SELFMODIFY_set_cx_rw_distance_hi_TWOSIDED:
+   SELFMODIFY_set_rw_distance_hi_topbot:
    mov   cx, 01000h
    jnz   do_32_bit_finetan_mul_TWOSIDED
 
@@ -8667,22 +8661,14 @@ ELSE
 
    jmp  done_with_16bitmul_TWOSIDED
 
-ENDIF
 
 
-ALIGN_MACRO
-SELFMODIFY_BSP_get_segtextured_TARGET_TWOSIDED:
-jump_to_seg_non_textured_TWOSIDED:
-xor   dx, dx
-jmp   seg_non_textured_TWOSIDED
-ALIGN_MACRO
+
 
 
 
 ; todo: make this faster.
 
-IF COMPISA GE COMPILE_386
-ELSE
 
 do_32_bit_finetan_mul_TWOSIDED:
 
@@ -8718,7 +8704,7 @@ do_32_bit_finetan_mul_TWOSIDED:
    SBB   DX, bp
    XOR   AX, bp ; no xor ax necessary if we flip order with add below? may require below values negged
    XOR   DX, bp
-   ENDIF
+ENDIF
 
 done_with_finetanmul_TWOSIDED:
 
@@ -8784,6 +8770,15 @@ mov   byte ptr ds:[SELFMODIFY_BSP_set_xlat_offset_bot+2], al
 
 
 jmp   light_set_TWOSIDED
+
+IF COMPISA GE COMPILE_386
+   ALIGN_MACRO
+   SELFMODIFY_BSP_get_segtextured_TARGET_TWOSIDED:
+   jump_to_seg_non_textured_TWOSIDED:
+   xor   dx, dx
+   jmp   seg_non_textured_TWOSIDED
+ENDIF
+
 ALIGN_MACRO
 
 

@@ -133,8 +133,6 @@ ENDP
 ELSE
 
 ALIGN_MACRO
-PROC   FixedMul2432_MapLocal_ NEAR
-PUBLIC FixedMul2432_MapLocal_
 
 PROC   FixedMul2432_MapLocal_ NEAR
 PUBLIC FixedMul2432_MapLocal_
@@ -381,29 +379,26 @@ IF COMPISA GE COMPILE_386
 
     PROC   FixedMulTrigSine_MapLocal_ NEAR
     PUBLIC FixedMulTrigSine_MapLocal_
-    sal dx, 1
-    sal dx, 1   ; DWORD lookup index
+    SHIFT_MACRO sal dx 2
     ENDP
 
     PROC   FixedMulTrigNoShiftSine_MapLocal_ NEAR
     PUBLIC FixedMulTrigNoShiftSine_MapLocal_
     ; pass in the index already shifted to be a dword lookup..
 
-    shr  dx, 1
-    mov  ax, FINESINE_SEGMENT
+    mov   ax, FINESINE_SEGMENT
+    mov   es, ax                ; put segment in es
 
-    ; lookup the fine angle
-
-    mov es, ax
-    db  066h, 081h, 0E2h, 0FFh, 0FFh, 0, 0  ;  and edx, 0x0000FFFF   
-
-    db  026h, 067h, 066h, 08bh, 002h     ; mov  eax, dword ptr es:[edx]
-
-
-    db  066h, 0C1h, 0E3h, 010h           ; shl  ebx, 0x10
-    db  066h, 00Fh, 0ACh, 0CBh, 010h     ; shrd ebx, ecx, 0x10
-    db  066h, 0F7h, 0EBh                 ; imul ebx
-    db  066h, 0C1h, 0E8h, 010h           ; shr  eax, 0x10
+    mov   ax, dx
+    shl   ax, 1
+    cwde                        ; eax high gets sign
+    shr   dx, 1                 ; dword to word lookup
+    movsx edx, dx               ; clear high bits
+    mov   ax, word ptr es:[edx]  ; ax gets low word
+    shl   ecx, 16
+    mov   cx, bx
+    imul  ecx
+    shr   eax, 16
 
 
     ret
@@ -451,8 +446,7 @@ ELSE
     ; DX is param 2 (fineangle or lookup)
     ; CX:BX is value 2
 
-    sal dx, 1
-    sal dx, 1   ; DWORD lookup index
+    SHIFT_MACRO sal dx 2
 
     ENDP
     PROC   FixedMulTrigNoShiftSine_MapLocal_ NEAR
@@ -541,29 +535,29 @@ IF COMPISA GE COMPILE_386
 
     PROC   FixedMulTrigCosine_MapLocal_ NEAR
     PUBLIC FixedMulTrigCosine_MapLocal_
-    sal dx, 1
-    sal dx, 1   ; DWORD lookup index
+    SHIFT_MACRO shl dx 2
     ENDP
 
     PROC   FixedMulTrigNoShiftCosine_MapLocal_ NEAR
     PUBLIC FixedMulTrigNoShiftCosine_MapLocal_
     ; pass in the index already shifted to be a dword lookup..
-    shr  dx, 1
-    mov  ax, FINECOSINE_SEGMENT
+
 
 
     ; lookup the fine angle
 
-    mov es, ax
-    db  066h, 081h, 0E2h, 0FFh, 0FFh, 0, 0  ;  and edx, 0x0000FFFF   
+    mov   ax, FINECOSINE_SEGMENT
+    mov   es, ax                ; put segment in es
 
-    db  026h, 067h, 066h, 08bh, 002h     ; mov  eax, dword ptr es:[edx]
-
-
-    db  066h, 0C1h, 0E3h, 010h           ; shl  ebx, 0x10
-    db  066h, 00Fh, 0ACh, 0CBh, 010h     ; shrd ebx, ecx, 0x10
-    db  066h, 0F7h, 0EBh                 ; imul ebx
-    db  066h, 0C1h, 0E8h, 010h           ; shr  eax, 0x10
+    lea   eax, [edx*2 + 04000h]
+    cwde                        ; eax high gets sign
+    shr   dx, 1                 ; dword to word lookup
+    movsx edx, dx               ; clear high bits
+    mov   ax, word ptr es:[edx]  ; ax gets low word
+    shl   ecx, 16
+    mov   cx, bx
+    imul  ecx
+    shr   eax, 16
 
 
     ret

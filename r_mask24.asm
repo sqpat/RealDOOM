@@ -3817,7 +3817,7 @@ ENDP
 
 
 IF COMPISA GE COMPILE_386
-;call  FastDiv3232FFFF_   ; todo inline?
+
 
 ALIGN_MACRO
     PROC   FastDiv3232FFFF_ NEAR    ; fairly optimized, could be inlined
