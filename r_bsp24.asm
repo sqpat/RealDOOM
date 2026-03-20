@@ -4126,15 +4126,16 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta], dl
 selfmodify_mid_only:
    ; twosided textures can still have a mid texture (invisible walls like E1M1)
 
+   xor       dx, dx
    add       si, 4   ; skip top/bot
    lodsw     ; side midtexture
    test      ax, ax
    jz        skip_midtex_selfmodify
-
 got_texture:
    ; si pts to textureheight now
    xchg      ax, di
 
+   mov       byte ptr cs:[SELFMODIFY_BSP_midtexture_type+1], dl
    mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
    cbw
    sal       di, 1  ; word lookup
@@ -4150,6 +4151,7 @@ ALIGN_MACRO
 handle_closed_door:  
 ; note: a closed door can also be a raised elevator and thus a bot texture.
    lodsw             ; toptex
+   inc       dx  ; dl = 1, top wall
    test      ax, ax
    jz        use_bot_tex_for_closed_door
    add       si, 4   ; skip bot, midtex.
@@ -4158,6 +4160,7 @@ handle_closed_door:
    use_bot_tex_for_closed_door:
    lodsw
    add       si, 2  ; skip midtex.
+   inc       dx    ; dl = 2, botwall
    jmp       got_texture
 
    ; create jmp instruction
@@ -4400,9 +4403,17 @@ sbb       dx, 01000h
 push      dx  ; bp - 024h
 push      ax  ; bp - 026h
 
+SELFMODIFY_BSP_midtexture_type:
+public    SELFMODIFY_BSP_midtexture_type
+mov       cl, 010h   ; need to handle top/bot texturemid cases for closed doors
+dec       cl
+jz        handle_topwall_mid
+jns       handle_botwall_mid  ; todo
+
 test      byte ptr [bp - 2], ML_DONTPEGBOTTOM
 jne       do_peg_bottom  ; todo branch test.
 dont_peg_bottom:
+use_worldttop:
 ; dx:ax already worldtop
 mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1], ax
 mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo_stretch+1], ax
@@ -4412,8 +4423,34 @@ xchg      ax, dx   ; word ptr [bp - 024h]
 jmp       done_with_bottom_peg
 
 ALIGN_MACRO
+handle_topwall_mid:
+test      byte ptr [bp - 2], ML_DONTPEGTOP
+jne       use_worldttop
+
+calculate_toptexturemid_for_mid:
+;			vtop = frontsector->floorheight +
+;				   textureheight[sidedef->midtexture];
+
+les       si, dword ptr ds:[_backsector]
+mov       ax, word ptr es:[si + SECTOR_T.sec_ceilingheight]
+jmp       continue_calculating_viewz
+
+ALIGN_MACRO
+handle_botwall_mid:
+test      byte ptr [bp - 2], ML_DONTPEGBOTTOM
+jne       use_worldttop
+; use worldlow
+les       si, dword ptr ds:[_backsector]
+mov       ax, word ptr es:[si + SECTOR_T.sec_floorheight]
+jmp       continue_calculating_viewz  ; todo is this right...
+;		worldlow = backsector->floorheight - viewz;
+
+
+
+ALIGN_MACRO
 do_peg_bottom:
 mov       ax, word ptr [bp + 6]
+continue_calculating_viewz:
 SELFMODIFY_BSP_viewz_shortheight_5:
 sub       ax, 01000h
 xor       cx, cx
@@ -4454,14 +4491,14 @@ push      ax ; bp - 02Ah
 
 
 mov       ax, XTOVIEWANGLE_SEGMENT   ; todo selfmodify all these?
-mov       cx, es  ; store ds_p+2 segment
 mov       es, ax
 sal       bx, 1   ; rw_x word lookup
 SELFMODIFY_set_viewanglesr3_3:
 mov       ax, 01000h
 add       ax, word ptr es:[bx]
 call      R_ScaleFromGlobalAngle_
-mov       es, cx ; restore es as ds_p+2 segment
+mov       cx, DRAWSEGS_BASE_SEGMENT
+mov       es, cx
 push      dx  ; bp - 02Ch
 push      ax  ; bp - 02Eh
 stosw             ; DRAWSEG_T.drawseg_scale1
