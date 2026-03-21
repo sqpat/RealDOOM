@@ -5959,55 +5959,19 @@ ELSE
    main_3232_div:
    public main_3232_div
 
-   push  si ; store jmp amount
 
    ; generally cx maxes out at around 5 bits of precision? bias towards shift right instead of left.  
 
-   xor si, si ; zero this out to get high bits of numhi
    xor dx, dx
 
+REPT 6
    shr cx, 1
    jz  done_shifting_3232
    rcr bx, 1
    rcr dx, 1
    shr ax, 1
-   rcr si, 1
 
-
-   shr cx, 1
-   jz  done_shifting_3232
-   rcr bx, 1
-   rcr dx, 1
-   shr ax, 1
-   rcr si, 1
-
-   shr cx, 1
-   jz  done_shifting_3232
-   rcr bx, 1
-   rcr dx, 1
-   shr ax, 1
-   rcr si, 1
-
-   shr cx, 1
-   jz  done_shifting_3232
-   rcr bx, 1
-   rcr dx, 1
-   shr ax, 1
-   rcr si, 1
-
-   shr cx, 1
-   jz  done_shifting_3232
-   rcr bx, 1
-   rcr dx, 1
-   shr ax, 1
-   rcr si, 1
-
-   shr cx, 1
-   jz  done_shifting_3232
-   rcr bx, 1
-   rcr dx, 1
-   shr ax, 1
-   rcr si, 1
+ENDM
 
    shr cx, 1
    ; todo shouldnt fall thru here? if it does may crash with dxvide overflow down the line.
@@ -6016,6 +5980,7 @@ ELSE
    ALIGN_MACRO
    done_shifting_3232:
 
+   
    ; continue the last bit
    rcr bx, 1
    rcr dx, 1
@@ -6024,18 +5989,16 @@ ELSE
 
    do_single_div_FFFF:
    ; bx has entire dividend, in 16 bits of precision
-   ; si contains a bit count of how much to shift result left by...
-
-   shr ax, 1   ; still gotta continue to shift the last ax/si
 
 
+   shr ax, 1   ; shift the last ax/si
 
-   ; i want to skip last rcr si but it makes detecting the 0 case hard.
+
    dec  dx        ; make it 0FFFFh
    xchg ax, dx    ; ax all 1s,  dx 0 leading 1s
    div  bx
 
-
+   mov  dx, si  ; jump amount
    ; cx is zero already coming in from the first shift so cx:ax is already the result.
 ENDIF
    
@@ -6045,7 +6008,7 @@ ENDIF
 
 
    ; di already has screen coord
-   pop   dx   ; jump amount
+   
    FastDiv3232FFFF_done_stretch_386:
    pop   ax   ; dc_yl
 
@@ -6077,18 +6040,19 @@ ELSE
    ALIGN_MACRO
 
    do_full_div_ffff:
+   push si
    shr ax, 1
-   rcr si, 1
+   mov si, ax
+   not ax
 
    ; todo shift into the right places, reduce juggle
 
    mov  cx, bx  ; dividend hi
    mov  bx, dx  ; dividend lo
 
-
-   xchg ax, si
    cwd          ; dx 0FFFFh again. si hi bit is 1 for sure.
 
+  ; DX:AX:SI
 
 
    ; SI:DX:AX holds divisor...
@@ -6165,13 +6129,14 @@ ELSE
 
    
    q1_ready_3232:
-   mov  bx, 0   ; no sub case
+   mov  bx, 0   ; no sub case. toggle with xor bx, bx for ENSUREALIGN_077
    finalize_div:
    _SELFMODIFY_get_qhat:
    mov  ax, 01000h
    ENSUREALIGN_077:
 
    sub  ax, bx ; modify qhat by measured amount
+   pop  dx ; jump amount
    jmp  FastDiv3232FFFF_done_stretch
 
 
@@ -8890,51 +8855,18 @@ ELSE
 
    ; generally cx maxes out at around 5 bits of precision? bias towards shift right instead of left.  
 
-   xor si, si ; zero this out to get high bits of numhi
    xor dx, dx
 
+REPT 6
    shr cx, 1
    jz  done_shifting_3232_TWOSIDED
    rcr bx, 1
    rcr dx, 1
    shr ax, 1
-   rcr si, 1
+
+ENDM
 
 
-   shr cx, 1
-   jz  done_shifting_3232_TWOSIDED
-   rcr bx, 1
-   rcr dx, 1
-   shr ax, 1
-   rcr si, 1
-
-   shr cx, 1
-   jz  done_shifting_3232_TWOSIDED
-   rcr bx, 1
-   rcr dx, 1
-   shr ax, 1
-   rcr si, 1
-
-   shr cx, 1
-   jz  done_shifting_3232_TWOSIDED
-   rcr bx, 1
-   rcr dx, 1
-   shr ax, 1
-   rcr si, 1
-
-   shr cx, 1
-   jz  done_shifting_3232_TWOSIDED
-   rcr bx, 1
-   rcr dx, 1
-   shr ax, 1
-   rcr si, 1
-
-   shr cx, 1
-   jz  done_shifting_3232_TWOSIDED
-   rcr bx, 1
-   rcr dx, 1
-   shr ax, 1
-   rcr si, 1
 
    shr cx, 1
    ; todo shouldnt fall thru here? if it does may crash with dxvide overflow down the line.
@@ -8977,8 +8909,12 @@ ELSE
    ALIGN_MACRO
 
    do_full_div_ffff_TWOSIDED:
+   
+   ; todo theres a lot of pointless juggle below.
+   
    shr ax, 1
-   rcr si, 1
+   mov si, ax
+   not ax
 
    ; todo shift into the right places, reduce juggle
 
@@ -8986,7 +8922,7 @@ ELSE
    mov  bx, dx  ; dividend lo
 
 
-   xchg ax, si
+
    cwd          ; dx 0FFFFh again. si hi bit is 1 for sure.
 
 
@@ -9002,7 +8938,8 @@ ELSE
 
    ; set up first div. 
    ; dx:ax becomes numhi
-   mov   ax, dx
+   ; todo theres a lot of pointless juggle here
+   xchg  ax, dx
    mov   dx, si    
 
    ; store these two long term...

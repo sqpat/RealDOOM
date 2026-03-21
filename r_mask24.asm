@@ -3891,57 +3891,21 @@ ELSE
     jcxz fast_div_32_16_FFFF
 
    main_3232_div:
-   push si
   ; todo dont use di, use dx instead
 
 
    ; generally cx maxes out at around 5 bits of precision? bias towards shift right instead of left.  
 
-   xor si, si ; zero this out to get high bits of numhi
    xor dx, dx
 
+REPT 6
    shr cx, 1
    jz  done_shifting_3232
    rcr bx, 1
    rcr dx, 1
    shr ax, 1
-   rcr si, 1
 
-
-   shr cx, 1
-   jz  done_shifting_3232
-   rcr bx, 1
-   rcr dx, 1
-   shr ax, 1
-   rcr si, 1
-
-   shr cx, 1
-   jz  done_shifting_3232
-   rcr bx, 1
-   rcr dx, 1
-   shr ax, 1
-   rcr si, 1
-
-   shr cx, 1
-   jz  done_shifting_3232
-   rcr bx, 1
-   rcr dx, 1
-   shr ax, 1
-   rcr si, 1
-
-   shr cx, 1
-   jz  done_shifting_3232
-   rcr bx, 1
-   rcr dx, 1
-   shr ax, 1
-   rcr si, 1
-
-   shr cx, 1
-   jz  done_shifting_3232
-   rcr bx, 1
-   rcr dx, 1
-   shr ax, 1
-   rcr si, 1
+ENDM
 
    shr cx, 1
    ; todo shouldnt fall thru here? if it does may crash with dxvide overflow down the line.
@@ -3961,7 +3925,7 @@ ELSE
    ; si contains a bit count of how much to shift result left by...
 
    shr ax, 1   ; still gotta continue to shift the last ax/si
-   rcr si, 1
+
 
    ; i want to skip last rcr si but it makes detecting the 0 case hard.
    dec  dx        ; make it 0FFFFh
@@ -3972,14 +3936,16 @@ ELSE
 
    mov   word ptr cs:[SELFMODIFY_MASKED_apply_stretch_tag], ((SELFMODIFY_MASKED_apply_stretch_tag_TARGET - SELFMODIFY_MASKED_apply_stretch_tag_AFTER) SHL 8) + 0EBh  ; jmp 8 turn on stretch variant for this frame
    ;xor   dx, dx
-   pop   si
+
    ret
    ;jmp FastDiv3232FFFF_done_restore_si  
    ALIGN_MACRO
 
    do_full_div_ffff:
+   push si
    shr ax, 1
-   rcr si, 1
+   mov si, ax
+   not ax
 
    ; todo shift into the right places, reduce juggle
 
@@ -3987,7 +3953,6 @@ ELSE
    mov  bx, dx  ; dividend lo
 
 
-   xchg ax, si
    cwd          ; dx 0FFFFh again. si hi bit is 1 for sure.
 
 
