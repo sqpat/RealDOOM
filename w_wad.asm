@@ -49,6 +49,7 @@ str_wadlumpnotfound:
 db "W_GetNumForName: %Fs not found!", 0
 
 ; ugh for s_init.
+ALIGN_MACRO
 PROC    W_CheckNumForNameFar_ FAR
 PUBLIC  W_CheckNumForNameFar_
 
@@ -57,6 +58,7 @@ retf
 ENDP
 
 
+ALIGN_MACRO
 PROC    W_CheckNumForNameFarString_ NEAR
 PUBLIC  W_CheckNumForNameFarString_
 
@@ -64,6 +66,7 @@ mov    ds, dx
 ; fall thru
 ENDP
 
+ALIGN_MACRO
 PROC    W_CheckNumForName_ NEAR
 PUBLIC  W_CheckNumForName_
 
@@ -260,6 +263,7 @@ jmp   return_to_lump_check
 
 ENDP
 
+ALIGN_MACRO
 PROC    W_GetNumForNameFarString_ NEAR
 PUBLIC  W_GetNumForNameFarString_
 
@@ -282,6 +286,7 @@ push    ax
 call    I_Error_
 
 
+ALIGN_MACRO
 PROC    W_GetNumForName_ FAR
 PUBLIC  W_GetNumForName_
 
@@ -305,6 +310,7 @@ pop       bx
 retf      
 
 
+ALIGN_MACRO
 PROC    W_LumpLength_ FAR
 PUBLIC  W_LumpLength_
 
@@ -362,6 +368,7 @@ inc       bx    ; fileindex = i+1 (word lookup)
 jmp       done_finding_lump_file
 
 
+ALIGN_MACRO
 PROC    W_ReadLump_ NEAR
 PUBLIC  W_ReadLump_
 
@@ -478,6 +485,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC    W_CacheLumpNameDirectFarString_ FAR
 PUBLIC  W_CacheLumpNameDirectFarString_
 
@@ -489,12 +497,14 @@ retf
 ENDP
 
 
+ALIGN_MACRO
 PROC    W_CacheLumpNameDirect_ FAR
 PUBLIC  W_CacheLumpNameDirect_
 call      W_CheckNumForName_
 ENDP
 ; fall thru
 
+ALIGN_MACRO
 PROC    W_CacheLumpNumDirect_ FAR
 PUBLIC  W_CacheLumpNumDirect_
 
@@ -505,6 +515,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC    W_CacheLumpNumDirectWithOffset_ NEAR
 PUBLIC  W_CacheLumpNumDirectWithOffset_
 
@@ -529,6 +540,7 @@ ENDP
 
 ; todo suck less
 
+ALIGN_MACRO
 PROC    W_CacheLumpNumDirectFragment_ FAR
 PUBLIC  W_CacheLumpNumDirectFragment_
 

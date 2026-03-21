@@ -40,6 +40,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC   locallib_toupper_MapLocal_ NEAR
 PUBLIC locallib_toupper_MapLocal_
 
@@ -54,6 +55,7 @@ ret
 ENDP
 
 
+ALIGN_MACRO
 PROC    HUlib_addStringToTextLine_ NEAR
 PUBLIC  HUlib_addStringToTextLine_
 
@@ -104,6 +106,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC    HUlib_drawTextLine_ NEAR
 PUBLIC  HUlib_drawTextLine_
 
@@ -169,6 +172,7 @@ ENDP
 ; DOES assume ds = cs 
 
 
+ALIGN_MACRO
 PROC    HUlib_eraseTextLine_ NEAR
 PUBLIC  HUlib_eraseTextLine_
 
@@ -263,6 +267,7 @@ ENDP
 
 
 ; DOES NOT assume ds = cs
+ALIGN_MACRO
 PROC    HUlib_addMessageToSText_ NEAR
 PUBLIC  HUlib_addMessageToSText_
 ;void __near HUlib_addMessageToSText (int8_t* __near msg ) {

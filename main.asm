@@ -119,6 +119,7 @@ db "iddt", 0FFh
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+ALIGN_MACRO
 BASE_CHEAT_ADDRESS:
 PUBLIC BASE_CHEAT_ADDRESS
 cheat_powerup0:
@@ -191,6 +192,7 @@ PUBLIC _sidemove
 ; external hook for am_map which is high
 
 
+ALIGN_MACRO
 ; ax is cheat index
 ; dx is ptr
 PROC   cht_CheckCheat_Far_ FAR
@@ -262,12 +264,14 @@ ENDP
 
 
 ENDP
+ALIGN_MACRO
 _kbdtail:
 db 0
 _kbdhead:
 db 0
 
 
+ALIGN_MACRO
 PROC I_KeyboardISR_  INTERRUPT
 PUBLIC I_KeyboardISR_
 
@@ -314,6 +318,7 @@ pop     dx
 pop     bx
 ret
 
+ALIGN_MACRO
 PROC I_StartTic_ NEAR
 PUBLIC I_StartTic_
 
@@ -492,6 +497,7 @@ jmp  key_selected
 ENDP
 
 
+ALIGN_MACRO
 _localcmds:
 PUBLIC _localcmds
 dw 0, 0, 0, 0
@@ -514,6 +520,7 @@ dw 0, 0, 0, 0
 
 
 
+ALIGN_MACRO
 _angleturn:
 dw 640, 1280, 320
 
@@ -545,6 +552,7 @@ db 0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0
 
 
 ; todo not heavily optimized
+ALIGN_MACRO
 PROC G_BuildTiccmd_ NEAR
 PUBLIC G_BuildTiccmd_
 
@@ -1025,6 +1033,7 @@ str_defaultname_29:
 db "column_quality", 0
 str_defaultname_30:
 db "sky_quality", 0
+
 
 ; 7 bytes per.
 ; todo move the vars all to a cs array?
@@ -2001,6 +2010,7 @@ pop   di
 ret
 ENDP
 
+ALIGN_MACRO
 _powers_of_ten_int:
 dw 0000Ah  ; 10
 dw 00064h  ; 100
@@ -2337,6 +2347,7 @@ ENDP
 
 KEYBOARDINT = 9
 
+ALIGN_MACRO
 d_display_switch_table:
 dw switch_case_1
 dw switch_case_2
@@ -2718,6 +2729,7 @@ _st_mapcheat_string4:
 db ")", 0
 
 
+ALIGN_MACRO
 PROC    D_ProcessEvents_Render_ NEAR
 PUBLIC  D_ProcessEvents_Render_
 mov  ax, word ptr ds:[_eventtail] ; head in ah
@@ -2730,6 +2742,7 @@ mov   ax, OFFSET Z_QuickmapRender_
 jmp   jump_into_from_render_version
 ENDP
 
+ALIGN_MACRO
 PROC    D_ProcessEvents_ NEAR
 PUBLIC  D_ProcessEvents_
 
@@ -2965,6 +2978,8 @@ jmp   done_with_maketic_inc
 do_advance_demo:
 call  D_DoAdvanceDemo_
 jmp   done_advancing_demo
+
+ALIGN_MACRO
 
 PROC    D_DoomLoop_ NEAR
 PUBLIC  D_DoomLoop_

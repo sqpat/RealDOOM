@@ -44,6 +44,7 @@ PUBLIC _codestartposition_END
 IFDEF COMP_CH
 ELSE
 
+ALIGN_MACRO
     PROC   Z_QuickMapMusicPageFrame_ FAR
     PUBLIC Z_QuickMapMusicPageFrame_
 
@@ -65,6 +66,7 @@ ELSE
 
     ENDP
 
+ALIGN_MACRO
     PROC   Z_QuickMapSFXPageFrame_ NEAR
     PUBLIC Z_QuickMapSFXPageFrame_
 
@@ -90,6 +92,7 @@ ELSE
 
     ENDP
 
+ALIGN_MACRO
     PROC   Z_QuickMapWADPageFrame_ NEAR
     PUBLIC Z_QuickMapWADPageFrame_
 
@@ -125,6 +128,7 @@ ENDIF
 
 ENDP
 
+ALIGN_MACRO
 PROC Z_QuickMapPhysics_ NEAR
 PUBLIC Z_QuickMapPhysics_
 
@@ -141,6 +145,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC   Z_QuickMapPhysics_FunctionAreaOnly_ NEAR
 PUBLIC Z_QuickMapPhysics_FunctionAreaOnly_
 
@@ -158,6 +163,7 @@ ret
 ENDP
 
 
+ALIGN_MACRO
 PROC   Z_QuickMapDemo_ NEAR
 PUBLIC Z_QuickMapDemo_
 
@@ -174,6 +180,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC   Z_QuickMapRender_ NEAR
 PUBLIC Z_QuickMapRender_
 
@@ -193,6 +200,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC   Z_QuickMapStatus_ NEAR
 PUBLIC Z_QuickMapStatus_
 
@@ -212,6 +220,7 @@ ret
 ENDP
 
 
+ALIGN_MACRO
 PROC   Z_QuickMapScratch_5000_ NEAR
 PUBLIC Z_QuickMapScratch_5000_
 
@@ -230,6 +239,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC   Z_QuickMapRenderPlanes_ NEAR
 PUBLIC Z_QuickMapRenderPlanes_
 
@@ -253,6 +263,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC   Z_QuickMapUndoFlatCache_ NEAR
 PUBLIC Z_QuickMapUndoFlatCache_
 
@@ -277,6 +288,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC   Z_QuickMapPalette_ NEAR
 PUBLIC Z_QuickMapPalette_
 
@@ -293,6 +305,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC   Z_QuickMapMenu_ NEAR
 PUBLIC Z_QuickMapMenu_
 
@@ -310,6 +323,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC   Z_QuickMapIntermission_ NEAR
 PUBLIC Z_QuickMapIntermission_
 
@@ -337,6 +351,7 @@ db         0, 1, 2, 3, -4, -3, -2, -1, -8, -7, -6, -5
 db -12, -11, -10, -9, -16, -15, -14, -13, -20, -19, -18, -17
 
 
+ALIGN_MACRO
 PROC   Z_QuickMapUnmapAll_ NEAR
 PUBLIC Z_QuickMapUnmapAll_
 
@@ -461,6 +476,7 @@ dw    exit_set_overlay
 @
 
 
+ALIGN_MACRO
 PROC   Z_SetOverlay_ FAR
 PUBLIC Z_SetOverlay_
 cmp   al, byte ptr ds:[_currentoverlay]
@@ -515,6 +531,7 @@ ENDP
 ; copy string from cs:ax to ds:_filename_argument
 ; return _filename_argument in ax
 
+ALIGN_MACRO
 PROC   CopyString13_Zonelocal_ NEAR
 PUBLIC CopyString13_Zonelocal_
 

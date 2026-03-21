@@ -41,7 +41,7 @@ ENDP
 ; note: some of the math here assums tics wont differ by more than 16 bits signed (32768 tics) per call, which i think is more than more than enough precision in any case.
 
 ; a little icky. depending on if we need to remap to render or physics on return we have 2 versions. but this let us get rid of keeping track of the 'current task'
-
+ALIGN_MACRO
 PROC    NetUpdateFromPhysics_ FAR
 PUBLIC  NetUpdateFromPhysics_
 
@@ -54,7 +54,7 @@ jmp   prep_net_loop
 ENDP
 
 
-
+ALIGN_MACRO
 PROC    NetUpdateFromRender_ FAR
 PUBLIC  NetUpdateFromRender_
 
@@ -64,6 +64,7 @@ push  cx
 push  dx
 mov   bx, OFFSET D_ProcessEvents_Render_
 
+ALIGN_MACRO
 prep_net_loop:
 
 les   ax, dword ptr ds:[_ticcount]
@@ -73,6 +74,7 @@ je    exit_net_update
 mov   word ptr ds:[_gametime + 0], ax
 mov   word ptr ds:[_gametime + 2], es
 ; cx has loopcount..
+
 loop_next_tic:
 call  I_StartTic_
 call  bx
@@ -101,12 +103,13 @@ pop   bx
 
 retf  
 ; super rare, this is fine to go this way
+ALIGN_MACRO
 carry_add:
 inc   word ptr ds:[_maketic + 2]
 jmp   check_loop
 ENDP
 
-
+ALIGN_MACRO
 PROC    TryRunTics_ NEAR
 PUBLIC  TryRunTics_
 
@@ -199,14 +202,14 @@ exit_tryruntics:
 pop   dx
 pop   cx
 ret   
-
+ALIGN_MACRO
 do_skullanimdecrease_2:
 xor   byte ptr ds:[_whichSkull], 1
 mov   word ptr ds:[_skullAnimCounter], 8
 pop   dx
 pop   cx
 ret   
-
+ALIGN_MACRO
 done_with_maketic_loop:
 
 loop_counts:
@@ -231,13 +234,14 @@ call  NetUpdateFromPhysics_
 
 loop  loop_counts
 jmp   exit_tryruntics
+ALIGN_MACRO
 carry_add_2:
 inc   word ptr ds:[_gametic + 2]
 jmp   do_net_update_check_loop
 do_demo:
 call  D_DoAdvanceDemo_  ; performance matters less for the title screen case. 
 jmp   dont_do_demo
-
+ALIGN_MACRO
 do_skullanimdecrease:
 xor   byte ptr ds:[_whichSkull], 1
 mov   word ptr ds:[_skullAnimCounter], 8

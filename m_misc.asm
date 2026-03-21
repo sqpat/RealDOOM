@@ -47,6 +47,7 @@ ENDP
 ; ax name
 ; dx len
 ; cx/bx source
+ALIGN_MACRO
 PROC    M_WriteFile_ NEAR
 PUBLIC  M_WriteFile_
 
@@ -91,6 +92,7 @@ ret
 
 ENDP
 
+ALIGN_MACRO
 PROC    M_ReadFile_ NEAR
 PUBLIC  M_ReadFile_
 

@@ -51,6 +51,7 @@ str_texturenum_error:
 db 0Ah, "R_TextureNumForName: %s not found", 0
 
 
+ALIGN_MACRO
 PROC    R_CheckTextureNumForName_ NEAR
 PUBLIC  R_CheckTextureNumForName_
 
@@ -130,12 +131,14 @@ jmp     didnt_find_tex
 
 ENDP
 
+ALIGN_MACRO
 PROC    R_TextureNumForName_FAR_ FAR
 PUBLIC  R_TextureNumForName_FAR_
 call    R_TextureNumForName_
 retf
 ENDP
 
+ALIGN_MACRO
 PROC    R_TextureNumForName_ NEAR
 PUBLIC  R_TextureNumForName_
 
@@ -175,6 +178,7 @@ HIGHBIT = 080h
 
 ;void __near G_InitNew (skill_t skill, int8_t episode, int8_t map) {
 
+ALIGN_MACRO
 PROC    G_InitNew_ NEAR
 PUBLIC  G_InitNew_
 
@@ -368,6 +372,7 @@ mov     word ptr ds:[_skytexture], ax
 
 ENDP
 
+ALIGN_MACRO
 PROC    G_DoLoadLevel_ NEAR
 PUBLIC  G_DoLoadLevel_
 

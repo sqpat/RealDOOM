@@ -184,6 +184,8 @@ mov   cx, word ptr ds:[di + PATCH_T.patch_width]  ; count
 lea   bx, [di + PATCH_T.patch_columnofs]          ; set up columnofs ptr
 mov   dx, SCREENWIDTH - 1                         ; loop constant
 
+ALIGN_MACRO
+
 draw_next_column:
 push  cx            ; store patch width for outer loop iter
 xor   cx, cx        ; clear ch specifically
@@ -202,6 +204,7 @@ lodsw
 cmp  al, 0FFh               ; al topdelta, ah length
 je   column_done
 
+ALIGN_MACRO
 draw_next_patch_column:
 
 ; here we render the next patch in the column.
@@ -229,6 +232,7 @@ add   di, 01000h   ; retrieve offset
 ; todo lazy len 8 or 16 unrolle dloop
 
 
+ALIGN_MACRO
 draw_next_patch_pixel:
 
 movsb
@@ -332,6 +336,7 @@ mov   word ptr cs:[_SELFMODIFY_offset_add_di_direct + 2], ax
 mov   cx, word ptr ds:[bx + PATCH_T.patch_width]  ; count
 lea   bx, [bx + PATCH_T.patch_columnofs]          ; set up columnofs ptr
 
+ALIGN_MACRO
 draw_next_column_direct:
 push  cx            ; store patch width for outer loop iter
 
@@ -357,6 +362,7 @@ lodsw                                ; while (column->topdelta != 0xff )
 cmp  al, 0FFh               ; al topdelta, ah length
 je   column_done_direct
 
+ALIGN_MACRO
 draw_next_patch_column_direct:
 
 ; here we render the next patch in the column.
@@ -376,6 +382,7 @@ add   di, 01000h   ; retrieve offset
 ; todo lazy len 8 or 16 unrolled loop?
 
 
+ALIGN_MACRO
 draw_next_patch_pixel_direct:
 
 movsb
@@ -451,7 +458,6 @@ PUBLIC V_DrawPatch5000Screen0_
 
 PUSHA_NO_AX_OR_BP_MACRO
 
-
 mov   es, word ptr ds:[_screen_segments]  ; 05000h
 
 mov   bx, SCRATCH_SEGMENT_5000
@@ -503,6 +509,7 @@ mov   cx, word ptr ds:[bx + PATCH_T.patch_width]  ; count
 mov   bl, PATCH_T.patch_columnofs                 ; set up columnofs ptr
 mov   dx, SCREENWIDTH - 1                         ; loop constant
 
+ALIGN_MACRO
 draw_next_column_5000:
 push  cx            ; store patch width for outer loop iter
 xor   cx, cx        ; clear ch specifically
@@ -521,6 +528,7 @@ lodsw
 cmp  al, 0FFh               ; al topdelta, ah length
 je   column_done_5000
 
+ALIGN_MACRO
 draw_next_patch_column_5000:
 
 ; here we render the next patch in the column.
@@ -547,7 +555,7 @@ add   di, 01000h   ; retrieve offset
 
 ; todo lazy len 8 or 16 unrolle dloop
 
-
+ALIGN_MACRO
 draw_next_patch_pixel_5000:
 
 movsb
@@ -567,7 +575,7 @@ inc   word ptr cs:[_SELFMODIFY_offset_add_di_5000 + 2]   ; pixel offset incremen
 pop   cx
 loop  draw_next_column_5000
 
-done_drawing_5000:
+
 
 POPA_NO_AX_OR_BP_MACRO
 
@@ -826,6 +834,7 @@ mov       si, bx
 xor       di, di
 mov       cx, SCREENWIDTH * (SCREENHEIGHT - SBARHEIGHT) / 4   ; 03480h
 
+ALIGN_MACRO
 loop_brdr_screencopy_inner:	
 movsb
 add       si, 3
@@ -942,7 +951,7 @@ mov       dx, cx  ; outer loop counter (height)
 
 
 ; bx holds width, refreshes cs
-
+ALIGN_MACRO
 copy_next_rect_line:
 mov       cx, bx
 

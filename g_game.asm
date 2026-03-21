@@ -70,6 +70,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 
 _wianimfilepos:
 dw 0, 0
@@ -89,6 +90,7 @@ call    R_FlatNumForName_
 retf
 ENDP
 
+ALIGN_MACRO
 PROC    R_FlatNumForName_ NEAR
 PUBLIC  R_FlatNumForName_
 
@@ -304,6 +306,7 @@ jmp     continue_while_loop
 
 
 
+ALIGN_MACRO
 PROC    G_Ticker_ NEAR
 PUBLIC  G_Ticker_
 

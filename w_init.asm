@@ -37,6 +37,7 @@ EXTRN DEBUG_PRINT_:NEAR
 
 EXTRN SELFMODIFY_start_lump_for_search:BYTE
 
+ALIGN_MACRO
 PROC    W_INIT_STARTMARKER_ NEAR
 PUBLIC  W_INIT_STARTMARKER_
 ENDP
@@ -55,6 +56,7 @@ jump_to_do_non_wad:
 jmp     do_non_wad
 
 
+ALIGN_MACRO
 PROC    W_AddFile_ NEAR
 PUBLIC  W_AddFile_
 
@@ -316,6 +318,7 @@ ENDP
 ; used nowhere?
 ; old impl
 COMMENT @ 
+ALIGN_MACRO
 PROC   locallib_strupr_ NEAR
 PUBLIC locallib_strupr_
 
