@@ -459,8 +459,7 @@ octant_6:
 jcxz  continue_check_octant_6
 octant_6_do_divide:
 call FastDiv3232_shift_3_8_
-cmp   ax, 0800h
-jae   octant_6_out_of_bounds
+jnc   octant_6_out_of_bounds
 
 mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
@@ -510,8 +509,7 @@ xchg dx, cx
 
 call FastDiv3232_shift_3_8_
 
-cmp   ax, 0800h
-jae   octant_7_out_of_bounds
+jnc   octant_7_out_of_bounds
 mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
 xchg  ax, bx
@@ -612,8 +610,7 @@ octant_0_do_divide:
 xchg ax, bx
 xchg dx, cx
 call FastDiv3232_shift_3_8_
-cmp   ax, 0800h
-jae   octant_0_out_of_bounds
+jnc   octant_0_out_of_bounds
 
 mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
@@ -638,8 +635,7 @@ octant_1:
 jcxz   continue_check_octant_1
 octant_1_do_divide:
 call FastDiv3232_shift_3_8_
-cmp   ax, 0800h
-jae   octant_1_out_of_bounds
+jnc   octant_1_out_of_bounds
 mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
 xchg  ax, bx
@@ -693,8 +689,7 @@ octant_3_do_divide:
 xchg dx, cx
 xchg ax, bx
 call FastDiv3232_shift_3_8_
-cmp   ax, 0800h
-jae   octant_3_out_of_bounds
+jnc   octant_3_out_of_bounds
 mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
 xchg  ax, bx
@@ -722,8 +717,7 @@ jcxz  continue_check_octant_2
 octant_2_do_divide:
 
 call FastDiv3232_shift_3_8_
-cmp   ax, 0800h
-jae   octant_2_out_of_bounds
+jnc   octant_2_out_of_bounds
 mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
 xchg  ax, bx
@@ -735,8 +729,7 @@ ret
 
 ALIGN_MACRO
 continue_check_octant_2:
-cmp   ax, 0200h
-jae   octant_2_do_divide
+jnc   octant_2_do_divide
 octant_2_out_of_bounds:
 mov   dx, 06000h
 xor   ax, ax
@@ -766,8 +759,7 @@ octant_4_do_divide:
 xchg dx, cx
 xchg ax, bx
 call FastDiv3232_shift_3_8_
-cmp   ax, 0800h
-jae   octant_4_out_of_bounds
+jnc   octant_4_out_of_bounds
 
 mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
@@ -795,8 +787,7 @@ jcxz  continue_check_octant_5
 octant_5_do_divide:
 
 call FastDiv3232_shift_3_8_
-cmp   ax, 0800h
-jae   octant_5_out_of_bounds
+jnc   octant_5_out_of_bounds
 mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
 xchg  ax, bx
@@ -1648,15 +1639,14 @@ mov bh, cl
 SHIFT32_MACRO_LEFT dx ax 3
 
 
-div bx        ; after this dx stores remainder, ax stores q1
-
+div  bx        ; after this dx stores remainder, ax stores q1
+cmp  ax, 0801h ; nocarry if over 08000h
 ret          ; dx will be garbage, but who cares , return 16 bits.
 
-ALIGN_MACRO
-return_2048:
-
-mov ah, 020h ; higher than 0x800
-ret
+;ALIGN_MACRO
+;return_2048:
+;stc
+;ret
 
 
 ALIGN_MACRO
@@ -1852,6 +1842,8 @@ jae    continue_c1_c2_check   ; todo default branch here?
 q1_ready_3232RPTA:
 
 mov   ax, es
+cmp   ax, 0801h ; nocarry if over 08000h
+
 pop   si
 ret  
 
@@ -1877,28 +1869,28 @@ jbe   qhat_subtract_1_3232RPTA
 
 ; ugly but rare occurrence i think?
 qhat_subtract_2_3232RPTA:
-mov ax, es
-dec ax
-dec ax
+mov   ax, es
+dec   ax
+dec   ax
 
 
+cmp   ax, 0801h ; nocarry if over 08000h ; todo i think this one cant happen..?
 pop   si
 ret  
 
 ALIGN_MACRO
 return_2048_2:
 ; bigger than 2048.. just return it
-
 pop   si
+clc
 ret
 
 
 ALIGN_MACRO
 qhat_subtract_1_3232RPTA:
-mov ax, es
-dec ax
-
-
+mov   ax, es
+dec   ax
+cmp   ax, 0801h ; nocarry if over 08000h
 pop   si
 ret  
 
@@ -1924,10 +1916,8 @@ do_simple_div:
    jne  do_quick_return
    mov  cx, dx  ; copy of dx
    mov  es, ax
-   sal  ax, 1
-   rcl  cx, 1
-   sal  ax, 1
-   rcl  cx, 1
+   
+   SHIFT32_MACRO_LEFT cx ax 2
    cmp  cx, bx
    jae  do_quick_return
 
