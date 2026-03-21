@@ -200,6 +200,7 @@ ENDP
 
 ; return in carry
 
+ALIGN_MACRO
 PROC    P_GiveWeapon_ NEAR
 PUBLIC  P_GiveWeapon_
 
@@ -258,6 +259,7 @@ ENDP
 
 ; return in carry
 
+ALIGN_MACRO
 PROC    P_GiveBody_  NEAR
 PUBLIC  P_GiveBody_
 
@@ -286,6 +288,7 @@ ENDP
 
 ; return in carry
 
+ALIGN_MACRO
 PROC    P_GiveArmor_  NEAR
 PUBLIC  P_GiveArmor_
 
@@ -311,6 +314,7 @@ ENDP
 
 
 BONUSADD = 6
+ALIGN_MACRO
 PROC    P_GiveCard_  NEAR
 PUBLIC  P_GiveCard_
 
@@ -328,6 +332,7 @@ ENDP
 
 
 ; return in carry
+ALIGN_MACRO
 PROC    P_GivePower_  NEAR
 PUBLIC  P_GivePower_
 
@@ -426,6 +431,7 @@ dead_toucher_cant_pickup:
 ;pop    di
 ret
 
+ALIGN_MACRO
 PROC    P_TouchSpecialThing_  NEAR
 PUBLIC  P_TouchSpecialThing_
 
@@ -860,6 +866,7 @@ ONFLOORZ_HIGHBITS = 08000h
 ONFLOORZ_LOWBITS = 0
 
 
+ALIGN_MACRO
 PROC    P_KillMobj_  NEAR
 PUBLIC  P_KillMobj_
 
@@ -1081,6 +1088,7 @@ dw mass_thrust_type_3   ; MT_BOSSBRAIN
 
 
 
+ALIGN_MACRO
 PROC    getMassThrust_  NEAR
 PUBLIC  getMassThrust_
 ;fixed_t __near getMassThrust(int16_t damage, int8_t id){
@@ -1151,6 +1159,7 @@ pop    di
 pop    si
 ret
 
+ALIGN_MACRO
 PROC    P_DamageMobj_  NEAR
 PUBLIC  P_DamageMobj_
 ;void __far P_DamageMobj (mobj_t __near*	target, mobj_t __near*	inflictor, mobj_t __near*	source, int16_t 		damage ) {

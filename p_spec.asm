@@ -68,6 +68,7 @@ ENDP
 
 ;int16_t __near getNextSectorList(int16_t __near * linenums,int16_t	sec,int16_t __near* secnums,int16_t linecount){
 
+ALIGN_MACRO
 PROC    getNextSectorList_  NEAR
 PUBLIC  getNextSectorList_
 
@@ -149,6 +150,7 @@ ENDP
 JGE_OPCODE = 07Dh
 JLE_OPCODE = 07Eh
 
+ALIGN_MACRO
 PROC    P_FindHighestOrLowestFloorSurrounding_  NEAR
 PUBLIC  P_FindHighestOrLowestFloorSurrounding_
 
@@ -238,6 +240,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC    P_FindNextHighestFloor_  NEAR
 PUBLIC  P_FindNextHighestFloor_
 ;short_height_t __near P_FindNextHighestFloor( int16_t	secnum,short_height_t		currentheight ){
@@ -322,6 +325,7 @@ pop       bx
 ret       
 ENDP
 
+ALIGN_MACRO
 PROC    P_FindLowestOrHighestCeilingSurrounding_  NEAR
 PUBLIC  P_FindLowestOrHighestCeilingSurrounding_
 
@@ -410,6 +414,7 @@ ENDP
 
 ;void __near P_FindSectorsFromLineTag ( int8_t		linetag,int16_t*		foundsectors,boolean		includespecials){
 
+ALIGN_MACRO
 PROC    P_FindSectorsFromLineTag_  NEAR
 PUBLIC  P_FindSectorsFromLineTag_
 
@@ -464,6 +469,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC    P_FindMinSurroundingLight_  NEAR
 PUBLIC  P_FindMinSurroundingLight_
 
@@ -586,6 +592,7 @@ dw switch_case_default, switch_case_default, switch_case_default, switch_case_de
 dw switch_case_default, switch_case_124, switch_case_125, switch_case_126, switch_case_default, switch_case_128, switch_case_129, switch_case_130, switch_case_default, switch_case_default, switch_case_default
 dw switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_default, switch_case_141
 
+ALIGN_MACRO
 PROC    P_CrossSpecialLine_  NEAR
 PUBLIC  P_CrossSpecialLine_
 
@@ -992,6 +999,7 @@ jmp       done_with_switch_block
 ENDP
 
 
+ALIGN_MACRO
 PROC    P_ShootSpecialLine_  NEAR
 PUBLIC  P_ShootSpecialLine_
 
@@ -1087,7 +1095,7 @@ jmp       do_change_switch_texture_call_pop_bx
 ENDP
 
 
-
+ALIGN_MACRO
 player_in_special_sector_jump_table:
 dw  specialsector_switch_block_4, specialsector_switch_block_5, exit_p_playerinspecialsector
 dw  specialsector_switch_block_7, exit_p_playerinspecialsector, specialsector_switch_block_9
@@ -1101,6 +1109,7 @@ ENDP
 
 
 
+ALIGN_MACRO
 PROC    P_PlayerInSpecialSector_  NEAR
 PUBLIC  P_PlayerInSpecialSector_
 
@@ -1212,7 +1221,7 @@ ret
 
 ENDP
 
-
+ALIGN_MACRO
 PROC    P_UpdateSpecials_  NEAR
 PUBLIC  P_UpdateSpecials_
 
@@ -1396,6 +1405,7 @@ stc
 ret    
 
 ; return in carry
+ALIGN_MACRO
 PROC    EV_DoDonut_  NEAR
 PUBLIC  EV_DoDonut_
 
@@ -1572,7 +1582,7 @@ jmp       loop_next_s1
 ENDP
 
 
-
+ALIGN_MACRO
 spawnspecial_jump_table:
 
 dw spawnspecial_switch_case_1, spawnspecial_switch_case_2, spawnspecial_switch_case_3, spawnspecial_switch_case_4
@@ -1609,6 +1619,7 @@ call      P_SpawnStrobeFlash_
 jmp       done_with_spawnspecial_switch_block
 
 
+ALIGN_MACRO
 PROC    P_SpawnSpecials_  FAR
 PUBLIC  P_SpawnSpecials_
 

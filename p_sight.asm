@@ -389,8 +389,8 @@ PROC    P_DivlineSide16_ NEAR
 PUBLIC  P_DivlineSide16_
 
 	push cx
-	mov  cx, ax
-	mov  ax, word ptr ds:[bx + 0Ah]
+	xchg ax, cx
+	mov  ax, word ptr ds:[bx + 0Ah]  ; todo offsets
 	or   ax, word ptr ds:[bx + 8]
 	jne  node_dx_nonzero_16
 	cmp  cx, word ptr ds:[bx + 2]
@@ -656,12 +656,13 @@ mov   word ptr [bp - 0Ah], ax
 mov   dx, word ptr es:[bx + SUBSECTOR_T.ss_firstline]		; get segnum/firstline   ; todo move after test?
 test  ax, ax
 je    cross_subsector_return_1
-mov   ax, dx
+mov   ax, dx ; toggle xchg for ENSUREALIGN_908
 sal   ax, 1
 mov   word ptr [bp - 4], ax		; store segnum x2?
 
 
 cross_subsector_mainloop:
+ENSUREALIGN_908:
 mov   ax, SEG_LINEDEFS_SEGMENT
 mov   es, ax
 mov   bx, word ptr [bp - 4]
@@ -1085,6 +1086,8 @@ ENDP
 PROC    P_SIGHT_ENDMARKER_
 PUBLIC  P_SIGHT_ENDMARKER_
 ENDP
+
+PUBLIC ENSUREALIGN_908
 
 ENDS
 

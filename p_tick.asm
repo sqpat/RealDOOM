@@ -303,19 +303,17 @@ cmp       al, (TF_MOBJTHINKER_HIGHBITS SHR 8)
 jne       continue_checking_tf_types
 
 do_mobjthinker:
-mov      bx, si
-mov      bx, word ptr ds:[bx + si + _mobjposlookuptable]
+mov       bx, si
+mov       bx, word ptr ds:[bx + si + _mobjposlookuptable]
 mov       ax, di
 mov       cx, MOBJPOSLIST_SEGMENT ; todo remove maybe?
 mov       dx, si
 call      P_MobjThinker_  ; todo may be worth aligning?
 ENSUREALIGN_900:
-PUBLIC ENSUREALIGN_900
 
 
 
 done_processing_thinker:
-
 mov       si, word ptr ds:[di - 2]  ; (was bx + THINKER_T.t_data)
 test      si, si
 jne       do_next_thinker
@@ -325,9 +323,14 @@ POPA_NO_AX_MACRO
 ; continue P_Ticker
 
 call      P_UpdateSpecials_
-add       word ptr ds:[_leveltime], 1
-adc       word ptr ds:[_leveltime], 0
+ENSUREALIGN_907:
+
+inc       word ptr ds:[_leveltime]
+jz        extra_add_to_leveltime
 retf  
+extra_add_to_leveltime:
+inc       word ptr ds:[_leveltime+2]
+
 
 ALIGN_MACRO
 continue_checking_tf_types:
@@ -430,5 +433,8 @@ PROC    P_TICK_ENDMARKER_ NEAR
 PUBLIC  P_TICK_ENDMARKER_
 ENDP
 
+PUBLIC ENSUREALIGN_900
+PUBLIC ENSUREALIGN_902
 
+PUBLIC ENSUREALIGN_907
 END
