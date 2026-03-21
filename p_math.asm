@@ -2241,15 +2241,19 @@ PUBLIC R_PointToAngle2_16_MapLocal_
 ;	y2fp.h.fracbits = 0;
 ;    return R_PointToAngle (x2fp, y2fp);
 
+mov       es, ax
+or        ax, dx
+jz        rptaret_0   ; quick zero check.
 push      bx
 push      cx
 mov       cx, dx
-xchg      ax, dx
+mov       dx, es
 xor       ax, ax
 mov       bx, ax
-call      R_PointToAngle_MapLocal_
+call      R_PointToAngle_MapLocal_SkipZeroCheck_
 pop       cx
 pop       bx
+rptaret_0:
 ret      
 ENDP
 
@@ -2257,9 +2261,26 @@ ENDP
 
 
 
+ALIGN_MACRO
 octant_6:
-test  cx, cx
+jcxz  continue_check_octant_6
+octant_6_do_divide:
+call FastDiv3232_shift_3_8_
+jnc   octant_6_out_of_bounds
 
+mov   es, word ptr ds:[_tantoangle_segment]
+SHIFT_MACRO shl ax 2
+xchg  ax, bx
+les   ax, dword ptr es:[bx]
+mov   dx, es
+add   dx, 0c000h
+
+ret  
+
+
+
+ALIGN_MACRO
+continue_check_octant_6:
 jne   octant_6_do_divide
 cmp   bx, 0200h
 jae   octant_6_do_divide
@@ -2268,22 +2289,8 @@ mov   dx, 0e000h
 xor   ax, ax
 
 ret  
+
 ALIGN_MACRO
-octant_6_do_divide:
-call FastDiv3232_shift_3_8_
-cmp   ax, 0800h
-jae   octant_6_out_of_bounds
-
-mov   es, word ptr ds:[_tantoangle_segment]
-SHIFT_MACRO shl ax 2
-mov   bx, ax
-les   ax, dword ptr es:[bx]
-mov   dx, es
-add   dx, 0c000h
-
-ret  
-ALIGN_MACRO
-
 y_is_negative:
 ;			y.w = -y.w;
 
@@ -2298,40 +2305,21 @@ cmp   ax, bx
 jbe   octant_6
 octant_7:
 test  dx, dx
-jne   octant_7_do_divide
-cmp   ax, 0200h
-jae   octant_7_do_divide
-octant_7_out_of_bounds:
-mov   dx, 0e000h
-xor   ax, ax
+jnz   continue_check_octant_7
 
-ret  
-; result 16f01520
-; 7ffd1a dx:ax
-; 3077f6 cx:bx
-; 5400000 -> 0x2A000000
-; d400000  > 0xD4000    32B 811
-
-;mov dx, cx
-;mov ax, bx
-
-ALIGN_MACRO
 
 octant_7_do_divide:
 
 ; swap params. y over x not x over y
-xchg dx, cx
 xchg ax, bx
+xchg dx, cx
 
 call FastDiv3232_shift_3_8_
 
-; 16f0  1520 instead of 32b
-
-cmp   ax, 0800h
-jae   octant_7_out_of_bounds
+jnc   octant_7_out_of_bounds
 mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
-mov   bx, ax
+xchg  ax, bx
 les   ax, dword ptr es:[bx]
 mov   dx, es
 neg   dx
@@ -2339,6 +2327,17 @@ neg   ax
 sbb   dx, 0
 
 ret  
+ALIGN_MACRO
+continue_check_octant_7:
+cmp   ax, 0200h
+jae   octant_7_do_divide
+octant_7_out_of_bounds:
+mov   dx, 0e000h
+xor   ax, ax
+
+inputs_zero:
+ret  
+
 
 ;R_PointToAngle_
 
@@ -2359,25 +2358,21 @@ PUBLIC R_PointToAngle_MapLocal_
 
 
 
-test  dx, dx
-jne   inputs_not_zero   ; todo rearrange this. rare case
-test  cx, cx
-jne   inputs_not_zero   ; todo rearrange this. rare case
-test  ax, ax
-jne   inputs_not_zero   ; todo rearrange this. rare case
-test  bx, bx
+mov   es, dx
+or    dx, cx
+mov   dx, es
 jne   inputs_not_zero   ; todo rearrange this. rare case
 
-
-return_0:
-
-xor   ax, ax
-cwd
-
-ret  
-ALIGN_MACRO
+mov   es, ax
+or    ax, bx
+mov   ax, es
+jz    inputs_zero   ; ax already zero
 
 
+
+
+  
+R_PointToAngle_MapLocal_SkipZeroCheck_:
 inputs_not_zero:
 
 test  dx, dx
@@ -2387,7 +2382,7 @@ x_is_positive:
 test  cx, cx
 
 js   y_is_negative
-y_is_positive:
+x_and_y_positive:
 
 cmp   dx, cx
 jg    octant_0
@@ -2402,7 +2397,23 @@ test  dx, dx
 
 ;	if (x.w < 512)
 
-jne   octant_0_do_divide
+jz    continue_check_octant_0
+octant_0_do_divide:
+;x_is_negative
+xchg ax, bx
+xchg dx, cx
+call FastDiv3232_shift_3_8_
+jnc   octant_0_out_of_bounds
+
+mov   es, word ptr ds:[_tantoangle_segment]
+SHIFT_MACRO shl ax 2
+xchg  ax, bx
+les   ax, dword ptr es:[bx]
+mov   dx, es
+ret  
+
+ALIGN_MACRO
+continue_check_octant_0:
 cmp   ax, 0200h
 jae   octant_0_do_divide
 octant_0_out_of_bounds:
@@ -2410,68 +2421,54 @@ mov   dx, 02000h
 xor   ax, ax
 
 ret  
+
+
 ALIGN_MACRO
-
-
-octant_0_do_divide:
-;x_is_negative
-xchg dx, cx
-xchg ax, bx
+octant_1:
+jcxz   continue_check_octant_1
+octant_1_do_divide:
 call FastDiv3232_shift_3_8_
-cmp   ax, 0800h
-jae   octant_0_out_of_bounds
-
+jnc   octant_1_out_of_bounds
 mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
-mov   bx, ax
-les   ax, dword ptr es:[bx]
-mov   dx, es
+xchg  ax, bx
+mov   ax, 0ffffh
+les   bx, dword ptr es:[bx]
+sub   ax, bx
+mov   dx, 03fffh
+mov   bx, es
+sbb   dx, bx
+
 ret  
+
 ALIGN_MACRO
+continue_check_octant_1:
 
-
-octant_1:
-test  cx, cx
-
-jne   octant_1_do_divide
 cmp   bx, 0200h
 jae   octant_1_do_divide
 octant_1_out_of_bounds:
 mov   ax, 0ffffh
 mov   dx, 01fffh
-
 ret  
+
+
+
+
+
 ALIGN_MACRO
-octant_1_do_divide:
-call FastDiv3232_shift_3_8_
-cmp   ax, 0800h
-jae   octant_1_out_of_bounds
-mov   es, word ptr ds:[_tantoangle_segment]
-SHIFT_MACRO shl ax 2
-mov   bx, ax
-mov   ax, 0ffffh
-sub   ax, word ptr es:[bx]
-mov   dx, 03fffh
-sbb   dx, word ptr es:[bx + 2]
-
-ret  
-ALIGN_MACRO
-
-
-
 x_is_negative:
 
 ;		x.w = -x.w;
 
+
+test  cx, cx
+jns   y_is_positive_x_neg
+js    y_is_negative_x_neg
+y_is_positive_x_neg:
 neg   dx
 neg   ax
 sbb   dx, 0
 
-test  cx, cx
-
-jg    y_is_positive_x_neg
-jne   y_is_negative_x_neg
-y_is_positive_x_neg:
 cmp   dx, cx
 jg    octant_3
 jne   octant_2
@@ -2480,60 +2477,65 @@ jbe   octant_2
 
 octant_3:
 test  dx, dx
-jne   octant_3_do_divide
+jz    continue_check_octant_3
+octant_3_do_divide:
+xchg dx, cx
+xchg ax, bx
+call FastDiv3232_shift_3_8_
+jnc   octant_3_out_of_bounds
+mov   es, word ptr ds:[_tantoangle_segment]
+SHIFT_MACRO shl ax 2
+xchg  ax, bx
+mov   ax, 0ffffh
+les   bx, dword ptr es:[bx]
+sub   ax, bx
+mov   dx, 07fffh
+mov   bx, es
+sbb   dx, bx
+
+ret  
+ALIGN_MACRO
+continue_check_octant_3:
 cmp   ax, 0200h
 jae   octant_3_do_divide
 octant_3_out_of_bounds:
 mov   ax, 0ffffh
 mov   dx, 05fffh
-
 ret  
-ALIGN_MACRO
-octant_3_do_divide:
-xchg dx, cx
-xchg ax, bx
-call FastDiv3232_shift_3_8_
-cmp   ax, 0800h
-jae   octant_3_out_of_bounds
-mov   es, word ptr ds:[_tantoangle_segment]
-SHIFT_MACRO shl ax 2
-mov   bx, ax
-mov   ax, 0ffffh
-sub   ax, word ptr es:[bx]
-mov   dx, 07fffh
-sbb   dx, word ptr es:[bx + 2]
 
-ret  
 ALIGN_MACRO
 octant_2:
-test  cx, cx
 
-jne   octant_2_do_divide
-cmp   ax, 0200h
-jae   octant_2_do_divide
-octant_2_out_of_bounds:
-mov   dx, 06000h
-xor   ax, ax
-ret  
-ALIGN_MACRO
+jcxz  continue_check_octant_2
 octant_2_do_divide:
 
 call FastDiv3232_shift_3_8_
-cmp   ax, 0800h
-jae   octant_2_out_of_bounds
+jnc   octant_2_out_of_bounds
 mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
-mov   bx, ax
+xchg  ax, bx
 les   ax, dword ptr es:[bx]
 mov   dx, es
 add   dx, 04000h
 
 ret  
+
+ALIGN_MACRO
+continue_check_octant_2:
+jnc   octant_2_do_divide
+octant_2_out_of_bounds:
+mov   dx, 06000h
+xor   ax, ax
+ret  
+
 ALIGN_MACRO
 y_is_negative_x_neg:
 
-;			y.w = -y.w;
+neg   dx
+neg   ax
+sbb   dx, 0
 
+;			y.w = -y.w;
 neg   cx
 neg   bx
 sbb   cx, 0
@@ -2544,7 +2546,24 @@ cmp   ax, bx
 jbe   octant_5
 octant_4:
 test  dx, dx
-jne   octant_4_do_divide
+jz    continue_check_octant_4
+
+octant_4_do_divide:
+xchg dx, cx
+xchg ax, bx
+call FastDiv3232_shift_3_8_
+jnc   octant_4_out_of_bounds
+
+mov   es, word ptr ds:[_tantoangle_segment]
+SHIFT_MACRO shl ax 2
+xchg  ax, bx
+les   ax, dword ptr es:[bx]
+mov   dx, es
+add   dx, 08000h
+
+ret  
+ALIGN_MACRO
+continue_check_octant_4:
 cmp   ax, 0200h
 jae   octant_4_do_divide
 octant_4_out_of_bounds:
@@ -2552,49 +2571,38 @@ mov   dx, 0a000h
 xor   ax, ax
 
 ret  
-ALIGN_MACRO
-octant_4_do_divide:
-xchg dx, cx
-xchg ax, bx
-call FastDiv3232_shift_3_8_
-cmp   ax, 0800h
-jae   octant_4_out_of_bounds
 
+
+
+ALIGN_MACRO
+octant_5:
+jcxz  continue_check_octant_5
+octant_5_do_divide:
+
+call FastDiv3232_shift_3_8_
+jnc   octant_5_out_of_bounds
 mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
-mov   bx, ax
-les   ax, dword ptr es:[bx]
-mov   dx, es
-add   dx, 08000h
+xchg  ax, bx
+mov   ax, 0ffffh
+les   bx, dword ptr es:[bx]
+sub   ax, bx
+mov   dx, 0BFFFh
+mov   bx, es
+sbb   dx, bx
 
 ret  
 ALIGN_MACRO
-octant_5:
-test  cx, cx
 
-jne   octant_5_do_divide
+continue_check_octant_5:
 cmp   ax, 0200h
 jae   octant_5_do_divide
 octant_5_out_of_bounds:
 mov   ax, 0ffffh
 mov   dx, 09fffh
+ret  ; this was a bad return?
 
-ret  
-ALIGN_MACRO
-octant_5_do_divide:
 
-call FastDiv3232_shift_3_8_
-cmp   ax, 0800h
-jae   octant_5_out_of_bounds
-mov   es, word ptr ds:[_tantoangle_segment]
-SHIFT_MACRO shl ax 2
-mov   bx, ax
-mov   ax, 0ffffh
-sub   ax, word ptr es:[bx]
-mov   dx, 0bfffh
-sbb   dx, word ptr es:[bx + 2]
-
-ret  
 ENDP
 ALIGN_MACRO
 
@@ -2606,12 +2614,7 @@ fast_div_32_16:
 mov bl, bh
 mov bh, cl
 
-sal ax, 1
-rcl dx ,1
-sal ax, 1
-rcl dx ,1
-sal ax, 1
-rcl dx ,1
+SHIFT32_MACRO_LEFT dx ax 3
 
 
 div bx        ; after this dx stores remainder, ax stores q1
@@ -2627,7 +2630,8 @@ ret
 
 
 ALIGN_MACRO
-PROC FastDiv3232_shift_3_8_ NEAR
+ALIGN_MACRO
+PROC FastDiv3232_shift_3_8_ NEAR ; todo needs another look
 
 ; used by R_PointToAngle.
 ; DX:AX << 3 / CX:BX >> 8
@@ -2638,78 +2642,50 @@ PROC FastDiv3232_shift_3_8_ NEAR
 
 
 test ch, ch
-je fast_div_32_16
+jne not_fast_div_32_16
+
+; shift right 8, and ch is already 0. so 16 bit.
+
+; 32:16
+
+mov bl, bh
+mov bh, cl
+
+SHIFT32_MACRO_LEFT dx ax 3
+
+
+div  bx        ; after this dx stores remainder, ax stores q1
+cmp  ax, 0801h ; nocarry if over 08000h
+ret          ; dx will be garbage, but who cares , return 16 bits.
+
+;ALIGN_MACRO
+;return_2048:
+;stc
+;ret
+
+
+ALIGN_MACRO
+not_fast_div_32_16:
 
 
 ; we have not shifted yet...
 
 
 ;TODO: checks are done outside this function, may be okay to remove this. test?
-; we want to know if  (DX:AX << 3)  / (CX:BX >> 8)  >= 2048 for a quick out
-; but that is just "is dx:ax greater than cx:bx"
 
+; seems to work. seems faster. i dont see bugs?
 
-cmp dx, cx
-ja  return_2048
-jb full_32_32
-cmp ax, bx
-jae return_2048
+;cmp dx, cx
+;ja  return_2048
+;jb full_32_32
+;cmp ax, bx
+;jae return_2048
 
 
 full_32_32:
 
 
 
-
-call FastDiv3232_RPTA_
-
-ret
-
-ENDP
-
-
-
-; todo optimize around fact ch is always 0...
-; we are moving a byte back and forth
-
-
-
-
-; NOTE: this is used for R_PointToAngle and has a fast out when the high byte is detected to be above the threshhold
-
-;FastDiv3232_RPTA_
-; DX:AX / CX:BX
-
-ALIGN_MACRO
-PROC FastDiv3232_RPTA_ NEAR
-
-; we shift dx:ax by 11 into si... 
-
-
-
-
-; if top 16 bits missing just do a 32 / 16
-
-test ch, ch
-jnz  main_3232RPTA_div
-
-fast_div_32_16_RPTA:
-
-mov bl, bh
-mov bh, cl
-mov cl, ch
-
-
-SHIFT32_MACRO_LEFT dx ax 3
-
-xchg dx, cx   ; cx was 0, dx is FFFF
-div bx        ; after this dx stores remainder, ax stores q1
-xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
-div bx
-mov dx, cx   ; q1:q0 is dx:ax
-ret 
-
-ALIGN_MACRO
 main_3232RPTA_div:
 
 push  si
@@ -2881,6 +2857,8 @@ jae    continue_c1_c2_check   ; todo default branch here?
 q1_ready_3232RPTA:
 
 mov   ax, es
+cmp   ax, 0801h ; nocarry if over 08000h
+
 pop   si
 ret  
 
@@ -2906,28 +2884,28 @@ jbe   qhat_subtract_1_3232RPTA
 
 ; ugly but rare occurrence i think?
 qhat_subtract_2_3232RPTA:
-mov ax, es
-dec ax
-dec ax
+mov   ax, es
+dec   ax
+dec   ax
 
 
+cmp   ax, 0801h ; nocarry if over 08000h ; todo i think this one cant happen..?
 pop   si
 ret  
 
 ALIGN_MACRO
 return_2048_2:
 ; bigger than 2048.. just return it
-
 pop   si
+clc
 ret
 
 
 ALIGN_MACRO
 qhat_subtract_1_3232RPTA:
-mov ax, es
-dec ax
-
-
+mov   ax, es
+dec   ax
+cmp   ax, 0801h ; nocarry if over 08000h
 pop   si
 ret  
 
