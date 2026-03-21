@@ -268,9 +268,6 @@ PROC   R_ScaleFromGlobalAngle_ NEAR ; todo needs another look for sure
 PUBLIC R_ScaleFromGlobalAngle_ 
 
 
-push  bx
-push  cx
-push  si
 push  di
 
 ; input ax = visangle_shift3
@@ -394,21 +391,15 @@ xchg  ax, cx ; cx, known zero into ax, store high
 div   bx
 mov   dx, cx ; restore high.
 pop   di
-pop   si
-pop   cx
-pop   bx
 ret
 
 
-
+ALIGN_MACRO
 return_maxvalue:
 ; rare occurence
 mov   dx, 040h
 xor   ax, ax
 pop   di
-pop   si
-pop   cx
-pop   bx
 ret
 
 ALIGN_MACRO
@@ -420,9 +411,6 @@ return_minvalue:
 mov   ax, 0100h
 cwd
 pop   di
-pop   si
-pop   cx
-pop   bx
 ret
 ALIGN_MACRO
 
@@ -459,9 +447,6 @@ jnae  return_minvalue
 normal_return:
 
 pop   di
-pop   si
-pop   cx
-pop   bx
 ret
 
 
@@ -561,14 +546,14 @@ PROC R_PointToAngle16_ NEAR
 ; ax pre negged, dx pre carried
 ; bx pre negged, cx pre carried
 
-SELFMODIFY_BSP_viewx_lo_5:
-mov  ax, 01000h
-SELFMODIFY_BSP_viewx_hi_5:
-sub  dx, 01000h
 SELFMODIFY_BSP_viewy_lo_5:
 mov  bx, 01000h
 SELFMODIFY_BSP_viewy_hi_5:
 sub  cx, 01000h
+SELFMODIFY_BSP_viewx_lo_5:
+mov  ax, 01000h
+SELFMODIFY_BSP_viewx_hi_5:
+sub  dx, 01000h
 
 ; FALL THROUGH
 ;call R_PointToAngle_
@@ -603,8 +588,8 @@ PROC R_PointToAngle_ NEAR  ;todo needs another look
 ; todo: come up with a way to branchlessly determine octant via xors, shifts, etc.
 ; octant ends up in si or something. then do a jmp table.
 
-
-test  dx, dx   ; todo get this for free
+; carry dx op from before call
+;test  dx, dx 
 jl   x_is_negative
 
 x_is_positive:
@@ -3405,23 +3390,24 @@ les   bx, dword ptr [bp - 016h]
 mov   cx, es
 
 
-SELFMODIFY_BSP_viewx_lo_3:
-sub   ax, 01000h
-SELFMODIFY_BSP_viewx_hi_3:
-sbb   dx, 01000h
-
 SELFMODIFY_BSP_viewy_lo_3:
 sub   bx, 01000h
 SELFMODIFY_BSP_viewy_hi_3:
 sbb   cx, 01000h
 
+SELFMODIFY_BSP_viewx_lo_3:
+sub   ax, 01000h
+SELFMODIFY_BSP_viewx_hi_3:
+sbb   dx, 01000h
+
 call  R_PointToAngle_
 mov   ax, dx
+;xchg ax, dx  ; toggle for ENSUREALIGN_319
 ;rot = _rotl(ang.hu.intbits - thingangle.hu.intbits + 0x9000u, 3) & 0x07;
 
 SELFMODIFY_set_ax_to_angle_highword:
-sub   ax, 01212h
-
+sub   ax, 01000h
+ENSUREALIGN_319:
 add   ah, 090h
 SHIFT_MACRO rol ax 3
 and   ax, 7
@@ -4570,7 +4556,8 @@ add       ax, 01000h
 
 call      R_ScaleFromGlobalAngle_
 ENSUREALIGN_312:
-mov       es, cx ; restore es as ds_p+2
+mov       cx, DRAWSEGS_BASE_SEGMENT
+mov       es, cx
 stosw             ; +0Ah
 xchg      ax, dx
 stosw             ; +0Ch
@@ -6833,7 +6820,8 @@ mov       ax, 01000h
 add       ax, word ptr es:[bx]
 call      R_ScaleFromGlobalAngle_
 ENSUREALIGN_305:
-mov       es, cx ; restore es as ds_p+2 segment
+mov       cx, DRAWSEGS_BASE_SEGMENT
+mov       es, cx
 push      dx  ; bp - 02Ch  ; 0000
 push      ax  ; bp - 02Eh  ; 60b9
 stosw             ; DRAWSEG_T.drawseg_scale1
@@ -6899,7 +6887,8 @@ SELFMODIFY_set_viewanglesr3_2_TWOSIDED:
 add       ax, 01000h
 call      R_ScaleFromGlobalAngle_
 ENSUREALIGN_306:
-mov       es, cx ; restore es as ds_p+2
+mov       cx, DRAWSEGS_BASE_SEGMENT
+mov       es, cx
 stosw             ; +0Ah
 xchg      ax, dx
 stosw             ; +0Ch
@@ -15208,6 +15197,7 @@ public ENSUREALIGN_315
 public ENSUREALIGN_316
 public ENSUREALIGN_317
 public ENSUREALIGN_318
+public ENSUREALIGN_319
 
 
 
