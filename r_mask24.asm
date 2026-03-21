@@ -1733,7 +1733,7 @@ xchg  ax, di   ; di stores _curseg_render
 ; It could be better if we arranged adjacent fields i guess.
 
 lods  word ptr ds:[si]  ; si 4 after    ; drawseg_x1
-mov   word ptr cs:[SELFMODIFY_MASKED_dsp_02+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dsp_02+2 - OFFSET R_MASK24_STARTMARKER_], ax
 inc   si
 inc   si  ; skip drawseg_x2
 lods  word ptr ds:[si]  ; si 8 after    ; drawseg_scale1 lo
@@ -1951,7 +1951,8 @@ mov   ax, word ptr es:[di + SECTOR_T.sec_floorheight] ; frontsector floor
 mov   cx, word ptr es:[bx + SECTOR_T.sec_floorheight] ; backsector floor
 cmp   ax, cx
 jg    use_frontsector_floor
-mov   ax, cx   ; use backsector floor
+;mov   ax, cx
+xchg  ax, cx     ; use backsector floor
 use_frontsector_floor:
 
 
@@ -1962,6 +1963,8 @@ xor   cx, cx
 
 SELFMODIFY_MASKED_texnum_3:
 mov   cl, byte ptr es:[01000h]
+ENSUREALIGN_119:
+
 inc   cx
 
 sector_height_chosen:
@@ -1990,15 +1993,16 @@ sbb   ax, 01000h
 
 SELFMODIFY_MASKED_siderender_00:
 add   ax, 01000h
+ENSUREALIGN_120:
 
-
-; dc_texturemid is a function contant. we selfmodify ahead:
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1 + 1 - OFFSET R_MASK24_STARTMARKER_], dx
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_2 + 1 - OFFSET R_MASK24_STARTMARKER_], dx
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_3 + 1 - OFFSET R_MASK24_STARTMARKER_], dx
 mov   byte ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1 + 1 - OFFSET R_MASK24_STARTMARKER_], al
 mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_2 + 1 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_3 + 1 - OFFSET R_MASK24_STARTMARKER_], ax
+; dc_texturemid is a function contant. we selfmodify ahead:
+xchg  ax, dx
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1 + 1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_2 + 1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_3 + 1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 mov   ax, SECTORS_SEGMENT
 mov   es, ax
@@ -2035,30 +2039,40 @@ mov   word ptr ds:[_maskedtexturecol], 01000h  ; ; ds->maskedtexturecol_val
 ;    rw_scalestep.w = ds->scalestep;
 
 SELFMODIFY_MASKED_dsp_0E:
-mov   bx, 01000h
-SELFMODIFY_MASKED_dsp_10:
-mov   cx, 01000h
-
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_1+1 - OFFSET R_MASK24_STARTMARKER_], bx		; rw_scalestep
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_2+5 - OFFSET R_MASK24_STARTMARKER_], bx		; rw_scalestep
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_3+5 - OFFSET R_MASK24_STARTMARKER_], bx		; rw_scalestep
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_1+1 - OFFSET R_MASK24_STARTMARKER_], cx		; rw_scalestep
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_2+5 - OFFSET R_MASK24_STARTMARKER_], cx		; rw_scalestep
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_3+5 - OFFSET R_MASK24_STARTMARKER_], cx		; rw_scalestep
+mov   ax, 01000h
+ENSUREALIGN_117: 
 
 
+
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_1+1 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_2+5 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_3+5 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep
+
+xchg  ax, bx
 
 SELFMODIFY_MASKED_x1_field_1:
-mov   ax, 08000h
+mov   cx, 08000h
+ENSUREALIGN_114:
+
 SELFMODIFY_MASKED_dsp_02:
-sub   ax, 01000h
+sub   cx, 01000h
+ENSUREALIGN_118:
+
+SELFMODIFY_MASKED_dsp_10:
+mov   ax, 01000h
+ENSUREALIGN_116: ; odd... rebalance it all when ds =
+
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_1+1 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_2+5 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_3+5 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep
+
 
 ; inlined  FastMul16u32u_
 
 ;		spryscale.w = ds->scale1 + FastMul16u32u(x1 - ds->x1,rw_scalestep.w)
 
-
-XCHG CX, AX    ; AX stored in CX
+; pre exchanged above
+; XCHG CX, AX    ; AX stored in CX
 MUL  CX        ; AX * CX
 XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
 MUL  BX        ; AX * BX
@@ -2097,7 +2111,7 @@ mov   word ptr ds:[_mceilingclip], 01000h
 SELFMODIFY_MASKED_fixedcolormap_2:
 jmp fixed_colormap		; jump when fixedcolormap is not 0. 3 byte (word) jump!!!
 SELFMODIFY_MASKED_fixedcolormap_2_AFTER:
-;ALIGN_MACRO
+
 colormap_set:
 
 ; set up main outer loop
@@ -2106,6 +2120,8 @@ colormap_set:
 
 SELFMODIFY_MASKED_x1_field_2:
 mov   ax, 08000h
+ENSUREALIGN_113: ; odd
+
 mov   di, ax						; di = x1
 SELFMODIFY_MASKED_detailshiftandval_2:
 and   ax, 01000h
@@ -2268,6 +2284,7 @@ add   bx, di		; add xoffset to dc_x
 ;	if (dc_x < x1){
 SELFMODIFY_MASKED_x1_field_3:
 cmp   bx, 08000h   ; x1 
+ENSUREALIGN_112:
 jge   calculate_sprtopscreen
 
 ; adjust by shiftstep
@@ -2603,6 +2620,8 @@ mov   es, cx
 add   bx, bx
 SELFMODIFY_MASKED_maskedpostofs_2:     ; todo this
 mov   bx, word ptr es:[bx+08000h]
+ENSUREALIGN_111:
+
 mov   cx, MASKEDPOSTDATA_SEGMENT
 ;call  dword ptr ds:[_R_DrawMaskedColumnCallHigh]
 
@@ -2680,11 +2699,14 @@ sub   bx, di
 mov   cx, MASKEDPOSTDATAOFS_SEGMENT
 mov   es, cx
 add   bx, bx
+mov   cx, MASKEDPOSTDATA_SEGMENT
 SELFMODIFY_MASKED_maskedpostofs_1:
 mov   bx, word ptr es:[bx+08000h]
-mov   cx, MASKEDPOSTDATA_SEGMENT
+ENSUREALIGN_109:
+
 
 call R_DrawMaskedColumn_
+ENSUREALIGN_110:  ; probably ok; 3 byte instruction.
 
 jmp   update_maskedtexturecol_finish_loop_iter
 ALIGN_MACRO
@@ -2738,6 +2760,7 @@ load_masked_column_segment:
 mov   dx, si
 SELFMODIFY_MASKED_texnum_2:
 mov   ax, 08000h
+ENSUREALIGN_115:
 call  R_GetMaskedColumnSegment_
 
 mov   di, word ptr ds:[_maskedcachedbasecol] ; todo return in di
@@ -4375,6 +4398,7 @@ mov       di, OFFSET _vsprsortedhead
 
 
 loop_set_vissprite_next:
+ENSUREALIGN_121:
 ; bx is current counter
 
 mov       word ptr ds:[bx + VISSPRITE_T.vs_prev], si ; ds->prev = ds-1;  first iter sets this to garbage, clean up later
@@ -4611,7 +4635,8 @@ no_clip:
 mov   di, word ptr ds:[_ds_p]
 sub   di, SIZE DRAWSEG_T	
 jz   done_masking  ; no drawsegs! i suppose possible on a map edge.
-mov   es, word ptr [bp - 2] ; DRAWSEGS_BASE_SEGMENT
+mov   ax, DRAWSEGS_BASE_SEGMENT
+mov   es, ax
 
 check_loop_conditions:
 
@@ -4619,6 +4644,7 @@ check_loop_conditions:
 mov   ax, word ptr es:[di + DRAWSEG_T.drawseg_x1]
 SELFMODIFY_MASKED_vissprite_x2_1:
 cmp   ax, 01000h    ; maybe put this in ax from outside the loop...?
+ENSUREALIGN_126:
 jng   continue_checking_if_drawseg_obscures_sprite
 
 iterate_next_drawseg_loop:
@@ -4725,15 +4751,19 @@ je    jump_to_iterate_next_drawseg_loop
 mov   ax, word ptr es:[di + DRAWSEG_T.drawseg_x1] ; ds->x1
 SELFMODIFY_MASKED_vissprite_x1_1:
 mov   cx, 01000h
+ENSUREALIGN_122: ; odd
+
 cmp   ax, cx
 jge   r1_stays_ds_x1
-xchg  ax, cx  ; ax gets spr->x1
+;xchg  ax, cx  ; ax gets spr->x1
+mov   ax, cx   ; toggle for ENSUREALIGN_125
 r1_stays_ds_x1:
 
 ; r2 = ds->x2 > spr->x2 ? spr->x2 : ds->x2;
 ; set r2 as the minimum of the two.
 SELFMODIFY_MASKED_vissprite_x2_2:
 mov   cx, 01000h
+ENSUREALIGN_125:
 mov   dx, word ptr es:[di + DRAWSEG_T.drawseg_x2]
 cmp   cx, dx
 jle    r2_stays_ds_x2
@@ -4803,6 +4833,7 @@ failed_check_pass_set_r1_r2:
 mov   si, word ptr es:[di + DRAWSEG_T.drawseg_x1]  ; spr->x1
 SELFMODIFY_MASKED_vissprite_x1_2:
 mov   cx, 01000h
+ENSUREALIGN_123:
 cmp   si, cx
 jnl   r1_set
 spr_x1_smaller_than_ds_x1:
@@ -4813,6 +4844,7 @@ r1_set:
 
 SELFMODIFY_MASKED_vissprite_x2_3:
 mov   dx, 01000h
+ENSUREALIGN_124:
 mov   cx, word ptr es:[di + DRAWSEG_T.drawseg_x2]	; spr->x2
 cmp   cx, dx 		; ds->x2
 jng   r2_set
@@ -5238,6 +5270,8 @@ SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup:
 PUBLIC SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup
 ; todo 8 bit logic? can dx be above 255?
 mov   cx, 01000h ; can end up ff high
+ENSUREALIGN_108:
+
 mov   al, cl
 cmp   dx, ax                ; something here.... 
 jl    skip_floor_clip_set
@@ -5301,7 +5335,7 @@ mov    ds, ax
 ; di is already dc_yh
 SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x:
 mov   di, 01000h
-
+ENSUREALIGN_107:
 
 ; shift di by (2 - detailshift.)
 SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift:  ; todo make this into the above selfmodify setter.
@@ -5312,6 +5346,9 @@ sar   di, 1
 
 lea   bp, [si + masked_local_dc_yl_lookup_table_ - 2] ; stack bp and si for word ptr, bake in - 2
 add   di, word ptr cs:[bp+si]                  ; add dc_yl * 80
+SELFMODIFY_MASKED_set_dc_iscale_lo:
+mov   bx, 01000h ; dc_iscale +0
+ENSUREALIGN_104:
 
 SELFMODIFY_MASKED_destview_lo_3:
 add   di, 01000h
@@ -5328,24 +5365,26 @@ lea   ax, [si - 010h] ; dc_yl - centery
 ; ch:bx is dc_iscale
 ; pass in xlat offset for bx via bp
 
+SELFMODIFY_MASKED_dc_texturemid_lo_1:
+mov   si, 01000h        ; todo can this just go to si in the call?
+ENSUREALIGN_106:
 
-SELFMODIFY_MASKED_set_dc_iscale_lo:
-mov   bx, 01000h ; dc_iscale +0
 SELFMODIFY_MASKED_dc_texturemid_hi_1:
 SELFMODIFY_MASKED_set_dc_iscale_hi:
 mov   cx, 01000h ; dc_iscale +1, dc_texturemid intbits
+
+
+SELFMODIFY_MASKED_set_xlat_offset:
+mov   bp, 01000h   
+ENSUREALIGN_105:
 
 SELFMODIFY_MASKED_sub_topdelta:
 sub    cl, 010h          ; subtract tex top offset. si = si+1
 ; cl = dc_texturemid hi. carry this into the call
 
 
-SELFMODIFY_MASKED_dc_texturemid_lo_1:
-mov   si, 01000h        ; todo can this just go to si in the call?
 
 
-SELFMODIFY_MASKED_set_xlat_offset:
-mov   bp, 01000h   
 
 
 db 09Ah
@@ -6273,6 +6312,30 @@ ENDP
 
 PUBLIC  ENSUREALIGN_101
 PUBLIC  ENSUREALIGN_102
+
+PUBLIC  ENSUREALIGN_104
+PUBLIC  ENSUREALIGN_105
+PUBLIC  ENSUREALIGN_106
+PUBLIC  ENSUREALIGN_107
+PUBLIC  ENSUREALIGN_108
+PUBLIC  ENSUREALIGN_109
+PUBLIC  ENSUREALIGN_110
+PUBLIC  ENSUREALIGN_111
+PUBLIC  ENSUREALIGN_112
+PUBLIC  ENSUREALIGN_113
+PUBLIC  ENSUREALIGN_114
+PUBLIC  ENSUREALIGN_115
+PUBLIC  ENSUREALIGN_116
+PUBLIC  ENSUREALIGN_117
+PUBLIC  ENSUREALIGN_118
+PUBLIC  ENSUREALIGN_119
+PUBLIC  ENSUREALIGN_120
+PUBLIC  ENSUREALIGN_121
+PUBLIC  ENSUREALIGN_122
+PUBLIC  ENSUREALIGN_123
+PUBLIC  ENSUREALIGN_124
+PUBLIC  ENSUREALIGN_125
+PUBLIC  ENSUREALIGN_126
 
 
 ENDS
