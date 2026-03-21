@@ -3285,11 +3285,8 @@ tx_already_positive:
 xchg  ax, cx  ; cx gets low
 
 
+SHIFT32_MACRO_LEFT di bx 2
 
-sal   bx, 1
-rcl   di, 1
-sal   bx, 1
-rcl   di, 1
 cmp   dx, di
 jl    not_too_far_off_side_lowbits
 je    not_too_far_off_side_highbits
@@ -6041,44 +6038,40 @@ ELSE
 
    do_full_div_ffff:
    push si
-   shr ax, 1
-   mov si, ax
-   not ax
 
-   ; todo shift into the right places, reduce juggle
+   ; cx is 0
+   dec  cx      ; cx now 0FFFFh, will go into ax..
 
-   mov  cx, bx  ; dividend hi
-   mov  bx, dx  ; dividend lo
-
-   cwd          ; dx 0FFFFh again. si hi bit is 1 for sure.
-
-  ; DX:AX:SI
+   shr  ax, 1
+   xchg ax, dx  ; dx gets target value, ax gets desired cx value
+   xchg ax, cx  ; ax gets -1, cx gets denominator low
+   
+   
+   mov es, dx   ; save numlo word in es, NEEDS TO BE NOTed
 
 
-   ; SI:DX:AX holds divisor...
-   ; CX:BX holds dividend...
-   ; numhi = SI:DX
-   ; numlo = AX:00...
 
-   ; save numlo word in es
-   mov es, ax 
+   ; DX:AX:ES holds divisor...
+   ; BX:CX holds dividend...
+   ; numhi = DX:AX
+   ; numlo = ES:00... (es needs NOT)
+
 
 
    ; set up first div. 
    ; dx:ax becomes numhi
-   mov   ax, dx
-   mov   dx, si    
+
 
    ; store these two long term...
-   mov   si, bx
 
 
-   ; numhi is 00:SI in this case?
+
+   ; numhi is 00:cx in this case?
 
    ;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
    ; DX:AX = numhi.wu
 
-   div   cx
+   div   bx
 ; stretch draw on path
    ; gross. should clean up masively once this is all in cs.
 
@@ -6090,52 +6083,52 @@ ELSE
 
    mov   word ptr ds:[_SELFMODIFY_get_qhat+1], ax     ; store qhat. use div's prefetch to juice this...
 
-   mov   bx, dx					; bx stores rhat
+   mov   si, dx					; si stores rhat
 
-   mul   si   						; DX:AX = c1
+   mul   cx   						; DX:AX = c1
 ; stretch draw on path
 
 
-   ; c1 hi = dx, c2 lo = es
-   sub   dx, bx      ; cmp and sub at same time... 
+   ; c1 hi = dx, c2 lo = es (needs NOT)
+   sub   dx, si      ; cmp and sub at same time... 
 
 
    jb    q1_ready_3232
-   mov   bx, es   ; bx get numlo
-
+   mov   si, es   ; si get numlo
+   not   si
    jne   check_c1_c2_diff_3232
-   cmp   ax, bx
+   cmp   ax, si
    jbe   q1_ready_3232
    check_c1_c2_diff_3232:
 
    ; (c1 - c2.wu > den.wu)
-   sub   ax, bx
+   sub   ax, si
    sbb   dx, 0    ; already subbed without borrow.
-   cmp   dx, cx
-   mov   bx, 1                
+   cmp   dx, bx
+   mov   si, 1                
    ja    qhat_subtract_2_3232
    jne   finalize_div
 
 
    ; compare low word..
-   cmp   ax, si
+   cmp   ax, cx
    jbe   finalize_div
 
    ; ugly but rare occurrence i think?
    qhat_subtract_2_3232:
-   inc  bx
+   inc  si
    jmp finalize_div
    ALIGN_MACRO
 
    
    q1_ready_3232:
-   mov  bx, 0   ; no sub case. toggle with xor bx, bx for ENSUREALIGN_077
+   mov  si, 0   ; no sub case. toggle with xor si, si for ENSUREALIGN_077
    finalize_div:
    _SELFMODIFY_get_qhat:
    mov  ax, 01000h
    ENSUREALIGN_077:
 
-   sub  ax, bx ; modify qhat by measured amount
+   sub  ax, si ; modify qhat by measured amount
    pop  dx ; jump amount
    jmp  FastDiv3232FFFF_done_stretch
 
@@ -8910,49 +8903,42 @@ ENDM
 
    do_full_div_ffff_TWOSIDED:
    
-   ; todo theres a lot of pointless juggle below.
+   ; cx is 0
+   dec  cx      ; cx now 0FFFFh, will go into ax..
+
+   shr  ax, 1
+   xchg ax, dx  ; dx gets target value, ax gets desired cx value
+   xchg ax, cx  ; ax gets -1, cx gets denominator low
    
-   shr ax, 1
-   mov si, ax
-   not ax
-
-   ; todo shift into the right places, reduce juggle
-
-   mov  cx, bx  ; dividend hi
-   mov  bx, dx  ; dividend lo
+   
+   mov es, dx   ; save numlo word in es, NEEDS TO BE NOTed
 
 
+; todo register juggle below 
 
-   cwd          ; dx 0FFFFh again. si hi bit is 1 for sure.
+   ; DX:AX:ES holds divisor...
+   ; BX:CX holds dividend...
+   ; numhi = DX:AX
+   ; numlo = ES:00... (es needs NOT)
 
-
-
-   ; SI:DX:AX holds divisor...
-   ; CX:BX holds dividend...
-   ; numhi = SI:DX
-   ; numlo = AX:00...
-
-   ; save numlo word in es
-   mov es, ax 
 
 
    ; set up first div. 
    ; dx:ax becomes numhi
-   ; todo theres a lot of pointless juggle here
-   xchg  ax, dx
-   mov   dx, si    
+
 
    ; store these two long term...
-   mov   si, bx
 
 
-   ; numhi is 00:SI in this case?
+
+   ; numhi is 00:cx in this case?
 
    ;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
    ; DX:AX = numhi.wu
 
-   div   cx
+   div   bx
 ; stretch draw on path
+   ; gross. should clean up masively once this is all in cs.
 
    SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2:
    mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_top], 01000h
@@ -8965,52 +8951,55 @@ ENDM
 
    mov   word ptr ds:[_SELFMODIFY_get_qhat_TWOSIDED+1], ax     ; store qhat. use div's prefetch to juice this...
 
-   mov   bx, dx					; bx stores rhat
+   mov   si, dx					; si stores rhat
 
-   mul   si   						; DX:AX = c1
+   mul   cx   						; DX:AX = c1
 ; stretch draw on path
 
    SELFMODIFY_set_bot_lookup_offset_setter_withstretch_funcaddr_2:
    mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_bot], 01000h
    ENSUREALIGN_090: ; todo align
 
-   ; c1 hi = dx, c2 lo = es
-   sub   dx, bx      ; cmp and sub at same time... 
+   ; c1 hi = dx, c2 lo = es (needs NOT)
+   sub   dx, si      ; cmp and sub at same time... 
 
 
    jb    q1_ready_3232_TWOSIDED
-   mov   bx, es   ; bx get numlo
-
+   mov   si, es   ; si get numlo
+   not   si
    jne   check_c1_c2_diff_3232_TWOSIDED
-   cmp   ax, bx
+   cmp   ax, si
    jbe   q1_ready_3232_TWOSIDED
    check_c1_c2_diff_3232_TWOSIDED:
 
    ; (c1 - c2.wu > den.wu)
-   sub   ax, bx
+   sub   ax, si
    sbb   dx, 0    ; already subbed without borrow.
-   cmp   dx, cx
-   mov   bx, 1                
+   cmp   dx, bx
+   mov   si, 1                
    ja    qhat_subtract_2_3232_TWOSIDED
    jne   finalize_div_TWOSIDED
 
 
    ; compare low word..
-   cmp   ax, si
+   cmp   ax, cx
    jbe   finalize_div_TWOSIDED
 
    ; ugly but rare occurrence i think?
    qhat_subtract_2_3232_TWOSIDED:
-   inc  bx
+   inc  si
    jmp finalize_div_TWOSIDED
    ALIGN_MACRO
+
+   
    q1_ready_3232_TWOSIDED:
-   mov  bx, 0   ; no sub case
+   mov  si, 0   ; no sub case. toggle with xor si, si for ENSUREALIGN_099
    finalize_div_TWOSIDED:
    _SELFMODIFY_get_qhat_TWOSIDED:
    mov  ax, 01000h
    ENSUREALIGN_099:
-   sub  ax, bx ; modify qhat by measured amount
+
+   sub  ax, si ; modify qhat by measured amount
    jmp  FastDiv3232FFFF_done_TWOSIDED
 
 
