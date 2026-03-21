@@ -558,16 +558,17 @@ ALIGN_MACRO
 PROC R_PointToAngle16_ NEAR
 
 
-xor  ax, ax
-mov  bx, ax
+; ax pre negged, dx pre carried
+; bx pre negged, cx pre carried
+
 SELFMODIFY_BSP_viewx_lo_5:
-sub  ax, 01000h
+mov  ax, 01000h
 SELFMODIFY_BSP_viewx_hi_5:
-sbb  dx, 01000h
+sub  dx, 01000h
 SELFMODIFY_BSP_viewy_lo_5:
-sub  bx, 01000h
+mov  bx, 01000h
 SELFMODIFY_BSP_viewy_hi_5:
-sbb  cx, 01000h
+sub  cx, 01000h
 
 ; FALL THROUGH
 ;call R_PointToAngle_
@@ -14922,11 +14923,11 @@ mov      word ptr ds:[_lastviewx+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_1+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_2+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_3+1], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_5+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_2_TWOSIDED+2], ax
 
-test     ax, ax
-jne      selfmodify_viewx_lo_nonzero
+neg      ax
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_5+1], ax
+jnz      selfmodify_viewx_lo_nonzero
 mov      ax, ((SELFMODIFY_BSP_viewx_lo_4_TARGET_2 - SELFMODIFY_BSP_viewx_lo_4_AFTER) SHL 8) + 07Dh
 
 jmp      selfmodify_viewx_done
@@ -14935,6 +14936,11 @@ selfmodify_viewx_lo_nonzero:
 mov      ax, ((SELFMODIFY_BSP_viewx_lo_4_TARGET_1 - SELFMODIFY_BSP_viewx_lo_4_AFTER) SHL 8) + 07Dh
 selfmodify_viewx_done:
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_4], ax
+
+mov      ax, es
+adc      ax, 0  ; carry from previous neg
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_5+2], ax
+
 
 ; VIEWX HI
 
@@ -14950,7 +14956,7 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_1+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_2+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_3+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_4+1], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_5+2], ax
+
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_6+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_2_TWOSIDED+2], ax
 
@@ -14967,10 +14973,17 @@ mov      word ptr ds:[_lastviewy+0], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_1+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_2+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_3+2], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_5+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_2_TWOSIDED+1], ax
 
-cmp      ax, 0
+neg      ax
+xchg     ax, dx
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_5+1], ax
+mov      ax, es
+adc      ax, 0
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_5+2], ax
+
+
+cmp      dx, 0
 jle      selfmodify_viewy_lo_lessthanequaltozero
 mov      ax, ((SELFMODIFY_BSP_viewy_lo_4_TARGET_2 - SELFMODIFY_BSP_viewy_lo_4_AFTER) SHL 8) + 07Eh ;jle
 
@@ -14993,7 +15006,6 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_1+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_2+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_3+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_4+1], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_5+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_6+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_2_TWOSIDED+2], ax
 
@@ -15173,6 +15185,8 @@ public ENSUREALIGN_096
 public ENSUREALIGN_097
 public ENSUREALIGN_098
 public ENSUREALIGN_099
+
+; most of these not aligned..
 
 public ENSUREALIGN_300
 public ENSUREALIGN_301
