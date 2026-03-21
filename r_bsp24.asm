@@ -277,10 +277,10 @@ push  di
 
 add   ah, 8      
 mov   dx, ax      ; copy input
-SELFMODIFY_set_viewanglesr3_5:
-sub   dx, 01000h  ; 
 SELFMODIFY_sub_rw_normal_angle_1:
 sub   ax, 01000h
+SELFMODIFY_set_viewanglesr3_5:
+sub   dx, 01000h  ; 
 
 and   dh, 01Fh
 and   ah, 01Fh
@@ -474,7 +474,7 @@ jae   octant_6_out_of_bounds
 
 mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
-mov   bx, ax
+xchg  ax, bx
 les   ax, dword ptr es:[bx]
 mov   dx, es
 add   dx, 0c000h
@@ -529,7 +529,7 @@ cmp   ax, 0800h
 jae   octant_7_out_of_bounds
 mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
-mov   bx, ax
+xchg  ax, bx
 les   ax, dword ptr es:[bx]
 mov   dx, es
 neg   dx
@@ -590,12 +590,12 @@ PROC R_PointToAngle_ NEAR  ;todo needs another look
 
 ; carry dx op from before call
 ;test  dx, dx 
-jl   x_is_negative
+js   x_is_negative
 
 x_is_positive:
 test  cx, cx
 
-jl   y_is_negative
+js   y_is_negative
 x_and_y_positive:
 
 cmp   dx, cx
@@ -611,7 +611,7 @@ test  dx, dx
 
 ;	if (x.w < 512)
 
-jne   octant_0_do_divide
+jnz   octant_0_do_divide
 cmp   ax, 0200h
 jae   octant_0_do_divide
 octant_0_out_of_bounds:
@@ -622,15 +622,15 @@ ret
 ALIGN_MACRO
 octant_0_do_divide:
 ;x_is_negative
-xchg dx, cx
 xchg ax, bx
+xchg dx, cx
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_0_out_of_bounds
 
 mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
-mov   bx, ax
+xchg  ax, bx
 les   ax, dword ptr es:[bx]
 mov   dx, es
 ret  
@@ -639,7 +639,7 @@ ALIGN_MACRO
 octant_1:
 test  cx, cx
 
-jne   octant_1_do_divide
+jnz   octant_1_do_divide
 cmp   bx, 0200h
 jae   octant_1_do_divide
 octant_1_out_of_bounds:
@@ -655,11 +655,13 @@ cmp   ax, 0800h
 jae   octant_1_out_of_bounds
 mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
-mov   bx, ax
+xchg  ax, bx
 mov   ax, 0ffffh
-sub   ax, word ptr es:[bx]
+les   bx, dword ptr es:[bx]
+sub   ax, bx
 mov   dx, 03fffh
-sbb   dx, word ptr es:[bx + 2]
+mov   bx, es
+sbb   dx, bx
 
 ret  
 
@@ -670,8 +672,8 @@ x_is_negative:
 
 
 test  cx, cx
-jg    y_is_positive_x_neg
-jne   y_is_negative_x_neg
+jns   y_is_positive_x_neg
+js    y_is_negative_x_neg
 y_is_positive_x_neg:
 neg   dx
 neg   ax
@@ -685,7 +687,7 @@ jbe   octant_2
 
 octant_3:
 test  dx, dx
-jne   octant_3_do_divide
+jnz   octant_3_do_divide
 cmp   ax, 0200h
 jae   octant_3_do_divide
 octant_3_out_of_bounds:
@@ -702,11 +704,13 @@ cmp   ax, 0800h
 jae   octant_3_out_of_bounds
 mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
-mov   bx, ax
+xchg  ax, bx
 mov   ax, 0ffffh
-sub   ax, word ptr es:[bx]
+les   bx, dword ptr es:[bx]
+sub   ax, bx
 mov   dx, 07fffh
-sbb   dx, word ptr es:[bx + 2]
+mov   bx, es
+sbb   dx, bx
 
 ret  
 
@@ -714,7 +718,7 @@ ALIGN_MACRO
 octant_2:
 test  cx, cx
 
-jne   octant_2_do_divide
+jnz   octant_2_do_divide
 cmp   ax, 0200h
 jae   octant_2_do_divide
 octant_2_out_of_bounds:
@@ -730,7 +734,7 @@ cmp   ax, 0800h
 jae   octant_2_out_of_bounds
 mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
-mov   bx, ax
+xchg  ax, bx
 les   ax, dword ptr es:[bx]
 mov   dx, es
 add   dx, 04000h
@@ -755,7 +759,7 @@ cmp   ax, bx
 jbe   octant_5
 octant_4:
 test  dx, dx
-jne   octant_4_do_divide
+jnz   octant_4_do_divide
 cmp   ax, 0200h
 jae   octant_4_do_divide
 octant_4_out_of_bounds:
@@ -774,7 +778,7 @@ jae   octant_4_out_of_bounds
 
 mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
-mov   bx, ax
+xchg  ax, bx
 les   ax, dword ptr es:[bx]
 mov   dx, es
 add   dx, 08000h
@@ -785,7 +789,7 @@ ALIGN_MACRO
 octant_5:
 test  cx, cx
 
-jne   octant_5_do_divide
+jnz   octant_5_do_divide
 cmp   ax, 0200h
 jae   octant_5_do_divide
 octant_5_out_of_bounds:
@@ -802,11 +806,13 @@ cmp   ax, 0800h
 jae   octant_5_out_of_bounds
 mov   es, word ptr ds:[_tantoangle_segment]
 SHIFT_MACRO shl ax 2
-mov   bx, ax
+xchg  ax, bx
 mov   ax, 0ffffh
-sub   ax, word ptr es:[bx]
-mov   dx, 0bfffh
-sbb   dx, word ptr es:[bx + 2]
+les   bx, dword ptr es:[bx]
+sub   ax, bx
+mov   dx, 0BFFFh
+mov   bx, es
+sbb   dx, bx
 
 ret  
 ENDP
@@ -834,7 +840,7 @@ XOR SI, SI ; zero this out to get high bits of numhi
 
 
 test ch, ch
-jne shift_bits
+jnz shift_bits
 ; shift a whole byte immediately
 
 xchg  dh, cl  ; ch was 0
@@ -1645,7 +1651,7 @@ ret          ; dx will be garbage, but who cares , return 16 bits.
 ALIGN_MACRO
 return_2048:
 
-mov ax, 0800h
+mov ah, 020h ; higher than 0x800
 ret
 
 
@@ -2790,8 +2796,9 @@ push      bx  ; push isceil  ; todo store elsewhere maybe di
 
 mov       ah, byte ptr ds:[_lastvisplane]
 
-cmp       ah, 0
-jl        break_loop   ; else break
+; not possible?
+;test      ah, ah
+;js        break_loop   ; else break
 
 ; do loop setup
 
@@ -2800,6 +2807,7 @@ mov       bx, _visplaneheaders   ; set bx to header 0
 
 
 next_loop_iteration:
+ENSUREALIGN_320:
 
 cmp       al, ah
 jne       check_for_visplane_match
@@ -3511,7 +3519,7 @@ push  dx ; bp - 028h
 ;        return;
 
 test  dx, dx
-jl    jump_to_exit_project_sprite_2  ; 06Ah ish out of range
+js    jump_to_exit_project_sprite_2  ; 06Ah ish out of range
 
 mov   si, word ptr ds:[_vissprite_p]
 cmp   si, MAX_VISSPRITES_ADDRESS
@@ -14080,6 +14088,7 @@ ENDP
 SCRATCH_ADDRESS_4000_SEGMENT = 04000h
 SCRATCH_ADDRESS_5000_SEGMENT = 05000h
 
+ALIGN_MACRO
 do_masked_jump:
 mov       ax, 0c089h   ; 2 byte nop
 mov       di, ((SELFMODIFY_loadpatchcolumn_masked_check2_TARGET - SELFMODIFY_loadpatchcolumn_masked_check2_AFTER) SHL 8) + 0EBh
@@ -14128,7 +14137,7 @@ mov       bp, word ptr ds:[di]  ; patchwidth
 dec       bp; dec loop needs to start one off to trigger jns/js
 
 mov       ax, di ; zero
-cwd              ; zero
+
 
 
 ; di is destoffset
@@ -14140,13 +14149,15 @@ mov       bx, 8
 mov       dx, 0FFF0h
 
 do_next_column:
-
+ENSUREALIGN_321:
 
 mov       si, word ptr ds:[bx]
 lodsb     ; get topdelta
 cmp       al, dh
 je        done_with_column
+
 do_next_post_in_column:
+ENSUREALIGN_322: ;odd..
 
 lodsb      ; get length
 inc       si   ; si + 3
@@ -15114,6 +15125,9 @@ public ENSUREALIGN_316
 public ENSUREALIGN_317
 public ENSUREALIGN_318
 public ENSUREALIGN_319
+public ENSUREALIGN_320
+public ENSUREALIGN_321
+public ENSUREALIGN_322
 
 
 
