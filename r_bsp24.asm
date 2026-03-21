@@ -1680,7 +1680,7 @@ full_32_32:
 main_3232RPTA_div:
 
 push  si
-push  di
+
 
 ; shift left 11 in si:dx:ax
 
@@ -1692,18 +1692,26 @@ push  di
 ;ax:
 ;22222000 00000000
 
-mov  si, dx
-xchg ax, dx
-xor  ax, ax
+mov si, cx ; .. backup
+xor ch, ch
+
+mov cl, dh
+mov dh, dl
+mov dl, ah
+mov al, ah
+mov al, ch
+
+
 
 ; creating si:dx:ax
 ; todo swap cx/si usage or something.
 ; then 
 
-REPT 5
-shr si, 1
-rcr dx, 1
-rcr ax, 1
+REPT 3
+
+shl ax, 1
+rcl dx, 1
+rcl cx, 1
 
 
 ENDM
@@ -1713,7 +1721,7 @@ ENDM
 
 
 
-; now lets shift CX:BX to max...
+; now lets shift SI:BX to max...
 
 
 
@@ -1724,91 +1732,90 @@ ENDM
 ; less than a byte to shift
 ; shift until MSB is 1
 
-TEST CX, CX
+TEST SI, SI
 JS  skip_shift_3232RPTA
 
 SAL BX, 1
-RCL CX, 1
+RCL SI, 1
 JO done_shifting_3232RPTA  
 SAL AX, 1
 RCL DX, 1
-RCL SI, 1
+RCL CX, 1
 
 SAL BX, 1
-RCL CX, 1
+RCL SI, 1
 JO done_shifting_3232RPTA  
 SAL AX, 1
 RCL DX, 1
-RCL SI, 1
+RCL CX, 1
 
 SAL BX, 1
-RCL CX, 1
+RCL SI, 1
 JO done_shifting_3232RPTA  
 SAL AX, 1
 RCL DX, 1
-RCL SI, 1
+RCL CX, 1
 
 SAL BX, 1
-RCL CX, 1
+RCL SI, 1
 JO done_shifting_3232RPTA  
 SAL AX, 1
 RCL DX, 1
-RCL SI, 1
+RCL CX, 1
 
 SAL BX, 1
-RCL CX, 1
+RCL SI, 1
 JO done_shifting_3232RPTA  
 SAL AX, 1
 RCL DX, 1
-RCL SI, 1
+RCL CX, 1
 
 SAL BX, 1
-RCL CX, 1
+RCL SI, 1
 JO done_shifting_3232RPTA  
 SAL AX, 1
 RCL DX, 1
-RCL SI, 1
+RCL CX, 1
 
 SAL BX, 1
-RCL CX, 1
+RCL SI, 1
 
 ALIGN_MACRO
 done_shifting_3232RPTA:
 SAL AX, 1
 RCL DX, 1
-RCL SI, 1
+RCL CX, 1
 
 skip_shift_3232RPTA:
 
 
-; SI:DX:AX holds divisor...
-; CX:BX holds dividend...
-; numhi = SI:DX
+; CX:DX:AX holds divisor...
+; SI:BX holds dividend...
+; numhi = CX:DX
 ; numlo = AX:00...
 
 
+
+
 ; save numlo word in sp.
-; avoid going to memory... lets do interrupt magic
-mov di, ax
 
 
 ; set up first div. 
 ; dx:ax becomes numhi
-mov   ax, dx
-mov   dx, si    
+xchg  ax, dx ; ax gets dx
+xchg  dx, cx ; dx gets cx, cx has old ax...
 
 ; store these two long term...
-mov   si, bx
 
 
 
-; numhi is 00:SI in this case?
+; numhi is 00:cx in this case?
 
 ;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
 ; DX:AX = numhi.wu
 
 
-div   cx
+div   si
 
 ; qhat is at most 2 greater than the real answer.
 ; we are capping results at 2048 or 0x800 so quick return in that case.
@@ -1816,39 +1823,51 @@ div   cx
 cmp  ax, 0802h
 ja   return_2048_2
 
-
+mov  word ptr cs:[SELFMODIFY_fastdiv_restore_original_ax+1], cx
 ; rhat = dx
 ; qhat = ax
 ;    c1 = FastMul16u16u(qhat , den0);
 
-mov   bx, dx					; bx stores rhat
+
+
+mov   cx, dx					; cx stores rhat
 mov   es, ax     ; store qhat
 
 
 
 
-mul   si   						; DX:AX = c1
+mul   bx   						; DX:AX = c1
 
 
-; c1 hi = dx, c2 lo = bx
-cmp   dx, bx
+; c1 hi = dx, c2 lo = cx
+sub   dx, cx
 
+
+jae    continue_c1_c2_check   ; todo default branch here?
+; quickly fall to common fast exit.
+q1_ready_3232RPTA:
+
+mov   ax, es
+pop   si
+ret  
+
+ALIGN_MACRO
+NOP ; force align selfmodify bwlow
+continue_c1_c2_check:
+mov   cx, 01000h   
 ja    check_c1_c2_diff_3232RPTA
-jne   q1_ready_3232RPTA
-cmp   ax, di
+cmp   ax, cx
 jbe   q1_ready_3232RPTA
 check_c1_c2_diff_3232RPTA:
 
 ; (c1 - c2.wu > den.wu)
 
-sub   ax, di
-sbb   dx, bx
-cmp   dx, cx
+sub   ax, cx
+sbb   dx, si  ; this is a sbb 0 (we did sub dx, cx above and now sbb from sub ax,cx) and a cmp dx, si combined.
 ja    qhat_subtract_2_3232RPTA
 jne   qhat_subtract_1_3232RPTA
-
 compare_low_word_3232RPTA:
-cmp   ax, si
+cmp   ax, bx
 jbe   qhat_subtract_1_3232RPTA
 
 ; ugly but rare occurrence i think?
@@ -1857,14 +1876,14 @@ mov ax, es
 dec ax
 dec ax
 
-pop   di
+
 pop   si
 ret  
 
 ALIGN_MACRO
 return_2048_2:
 ; bigger than 2048.. just return it
-pop   di
+
 pop   si
 ret
 
@@ -1874,7 +1893,7 @@ qhat_subtract_1_3232RPTA:
 mov ax, es
 dec ax
 
-pop   di
+
 pop   si
 ret  
 
@@ -1882,13 +1901,6 @@ ret
 
 
 ALIGN_MACRO
-q1_ready_3232RPTA:
-
-mov  ax, es
-
-pop   di
-pop   si
-ret  
 
 
 ENDP
