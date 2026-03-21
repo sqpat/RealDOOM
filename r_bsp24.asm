@@ -456,17 +456,7 @@ ENDP
 
 ALIGN_MACRO
 octant_6:
-test  cx, cx
-
-jne   octant_6_do_divide
-cmp   bx, 0200h
-jae   octant_6_do_divide
-octant_6_out_of_bounds:
-mov   dx, 0e000h
-xor   ax, ax
-
-ret  
-ALIGN_MACRO
+jcxz  continue_check_octant_6
 octant_6_do_divide:
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
@@ -478,6 +468,19 @@ xchg  ax, bx
 les   ax, dword ptr es:[bx]
 mov   dx, es
 add   dx, 0c000h
+
+ret  
+
+
+
+ALIGN_MACRO
+continue_check_octant_6:
+jne   octant_6_do_divide
+cmp   bx, 0200h
+jae   octant_6_do_divide
+octant_6_out_of_bounds:
+mov   dx, 0e000h
+xor   ax, ax
 
 ret  
 
@@ -496,34 +499,16 @@ cmp   ax, bx
 jbe   octant_6
 octant_7:
 test  dx, dx
-jne   octant_7_do_divide
-cmp   ax, 0200h
-jae   octant_7_do_divide
-octant_7_out_of_bounds:
-mov   dx, 0e000h
-xor   ax, ax
-
-ret  
-ALIGN_MACRO
-; result 16f01520
-; 7ffd1a dx:ax
-; 3077f6 cx:bx
-; 5400000 -> 0x2A000000
-; d400000  > 0xD4000    32B 811
-
-;mov dx, cx
-;mov ax, bx
+jnz   continue_check_octant_7
 
 
 octant_7_do_divide:
 
 ; swap params. y over x not x over y
-xchg dx, cx
 xchg ax, bx
+xchg dx, cx
 
 call FastDiv3232_shift_3_8_
-
-; 16f0  1520 instead of 32b
 
 cmp   ax, 0800h
 jae   octant_7_out_of_bounds
@@ -537,6 +522,16 @@ neg   ax
 sbb   dx, 0
 
 ret  
+ALIGN_MACRO
+continue_check_octant_7:
+cmp   ax, 0200h
+jae   octant_7_do_divide
+octant_7_out_of_bounds:
+mov   dx, 0e000h
+xor   ax, ax
+
+ret  
+
 ALIGN_MACRO
 
 ; params cx, dx. ax/bx get zeroed/clobbered.
@@ -611,15 +606,7 @@ test  dx, dx
 
 ;	if (x.w < 512)
 
-jnz   octant_0_do_divide
-cmp   ax, 0200h
-jae   octant_0_do_divide
-octant_0_out_of_bounds:
-mov   dx, 02000h
-xor   ax, ax
-
-ret  
-ALIGN_MACRO
+jz    continue_check_octant_0
 octant_0_do_divide:
 ;x_is_negative
 xchg ax, bx
@@ -636,19 +623,19 @@ mov   dx, es
 ret  
 
 ALIGN_MACRO
-octant_1:
-test  cx, cx
-
-jnz   octant_1_do_divide
-cmp   bx, 0200h
-jae   octant_1_do_divide
-octant_1_out_of_bounds:
-mov   ax, 0ffffh
-mov   dx, 01fffh
+continue_check_octant_0:
+cmp   ax, 0200h
+jae   octant_0_do_divide
+octant_0_out_of_bounds:
+mov   dx, 02000h
+xor   ax, ax
 
 ret  
 
+
 ALIGN_MACRO
+octant_1:
+jcxz   continue_check_octant_1
 octant_1_do_divide:
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
@@ -664,6 +651,20 @@ mov   bx, es
 sbb   dx, bx
 
 ret  
+
+ALIGN_MACRO
+continue_check_octant_1:
+
+cmp   bx, 0200h
+jae   octant_1_do_divide
+octant_1_out_of_bounds:
+mov   ax, 0ffffh
+mov   dx, 01fffh
+ret  
+
+
+
+
 
 ALIGN_MACRO
 x_is_negative:
@@ -687,15 +688,7 @@ jbe   octant_2
 
 octant_3:
 test  dx, dx
-jnz   octant_3_do_divide
-cmp   ax, 0200h
-jae   octant_3_do_divide
-octant_3_out_of_bounds:
-mov   ax, 0ffffh
-mov   dx, 05fffh
-ret  
-
-ALIGN_MACRO
+jz    continue_check_octant_3
 octant_3_do_divide:
 xchg dx, cx
 xchg ax, bx
@@ -713,20 +706,19 @@ mov   bx, es
 sbb   dx, bx
 
 ret  
-
 ALIGN_MACRO
-octant_2:
-test  cx, cx
-
-jnz   octant_2_do_divide
+continue_check_octant_3:
 cmp   ax, 0200h
-jae   octant_2_do_divide
-octant_2_out_of_bounds:
-mov   dx, 06000h
-xor   ax, ax
+jae   octant_3_do_divide
+octant_3_out_of_bounds:
+mov   ax, 0ffffh
+mov   dx, 05fffh
 ret  
 
 ALIGN_MACRO
+octant_2:
+
+jcxz  continue_check_octant_2
 octant_2_do_divide:
 
 call FastDiv3232_shift_3_8_
@@ -739,6 +731,15 @@ les   ax, dword ptr es:[bx]
 mov   dx, es
 add   dx, 04000h
 
+ret  
+
+ALIGN_MACRO
+continue_check_octant_2:
+cmp   ax, 0200h
+jae   octant_2_do_divide
+octant_2_out_of_bounds:
+mov   dx, 06000h
+xor   ax, ax
 ret  
 
 ALIGN_MACRO
@@ -759,16 +760,8 @@ cmp   ax, bx
 jbe   octant_5
 octant_4:
 test  dx, dx
-jnz   octant_4_do_divide
-cmp   ax, 0200h
-jae   octant_4_do_divide
-octant_4_out_of_bounds:
-mov   dx, 0a000h
-xor   ax, ax
+jz    continue_check_octant_4
 
-ret  
-
-ALIGN_MACRO
 octant_4_do_divide:
 xchg dx, cx
 xchg ax, bx
@@ -784,21 +777,21 @@ mov   dx, es
 add   dx, 08000h
 
 ret  
+ALIGN_MACRO
+continue_check_octant_4:
+cmp   ax, 0200h
+jae   octant_4_do_divide
+octant_4_out_of_bounds:
+mov   dx, 0a000h
+xor   ax, ax
+
+ret  
+
+
 
 ALIGN_MACRO
 octant_5:
-test  cx, cx
-
-jnz   octant_5_do_divide
-cmp   ax, 0200h
-jae   octant_5_do_divide
-octant_5_out_of_bounds:
-mov   ax, 0ffffh
-mov   dx, 09fffh
-
-ret  ; this was a bad return?
-
-ALIGN_MACRO
+jcxz  continue_check_octant_5
 octant_5_do_divide:
 
 call FastDiv3232_shift_3_8_
@@ -815,6 +808,17 @@ mov   bx, es
 sbb   dx, bx
 
 ret  
+ALIGN_MACRO
+
+continue_check_octant_5:
+cmp   ax, 0200h
+jae   octant_5_do_divide
+octant_5_out_of_bounds:
+mov   ax, 0ffffh
+mov   dx, 09fffh
+ret  ; this was a bad return?
+
+
 ENDP
 
 
