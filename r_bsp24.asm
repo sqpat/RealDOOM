@@ -1854,6 +1854,7 @@ ret
 ALIGN_MACRO
 NOP ; force align selfmodify bwlow
 continue_c1_c2_check:
+SELFMODIFY_fastdiv_restore_original_ax:
 mov   cx, 01000h   
 ja    check_c1_c2_diff_3232RPTA
 cmp   ax, cx
