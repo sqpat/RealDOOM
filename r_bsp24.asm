@@ -668,15 +668,15 @@ x_is_negative:
 
 ;		x.w = -x.w;
 
+
+test  cx, cx
+jg    y_is_positive_x_neg
+jne   y_is_negative_x_neg
+y_is_positive_x_neg:
 neg   dx
 neg   ax
 sbb   dx, 0
 
-test  cx, cx
-
-jg    y_is_positive_x_neg
-jne   y_is_negative_x_neg
-y_is_positive_x_neg:
 cmp   dx, cx
 jg    octant_3
 jne   octant_2
@@ -740,8 +740,11 @@ ret
 ALIGN_MACRO
 y_is_negative_x_neg:
 
-;			y.w = -y.w;
+neg   dx
+neg   ax
+sbb   dx, 0
 
+;			y.w = -y.w;
 neg   cx
 neg   bx
 sbb   cx, 0
@@ -1613,32 +1616,7 @@ ret
 ENDP
 
 
-
-ALIGN_MACRO
-fast_div_32_16:
-
-mov bl, bh
-mov bh, cl
-
-sal ax, 1
-rcl dx ,1
-sal ax, 1
-rcl dx ,1
-sal ax, 1
-rcl dx ,1
-
-
-div bx        ; after this dx stores remainder, ax stores q1
-
-ret          ; dx will be garbage, but who cares , return 16 bits.
-
-ALIGN_MACRO
-return_2048:
-
-
-mov ax, 0800h
-ret
-
+; TODO 386 version
 
 ALIGN_MACRO
 PROC FastDiv3232_shift_3_8_ NEAR ; todo needs another look
@@ -1652,79 +1630,50 @@ PROC FastDiv3232_shift_3_8_ NEAR ; todo needs another look
 
 
 test ch, ch
-je fast_div_32_16
+jne not_fast_div_32_16
+
+; shift right 8, and ch is already 0. so 16 bit.
+
+; 32:16
+
+mov bl, bh
+mov bh, cl
+
+SHIFT32_MACRO_LEFT dx ax 3
+
+
+div bx        ; after this dx stores remainder, ax stores q1
+
+ret          ; dx will be garbage, but who cares , return 16 bits.
+
+ALIGN_MACRO
+return_2048:
+
+mov ax, 0800h
+ret
+
+
+ALIGN_MACRO
+not_fast_div_32_16:
 
 
 ; we have not shifted yet...
 
 
 ;TODO: checks are done outside this function, may be okay to remove this. test?
-; we want to know if  (DX:AX << 3)  / (CX:BX >> 8)  >= 2048 for a quick out
-; but that is just "is dx:ax greater than cx:bx"
 
+; seems to work. seems faster. i dont see bugs?
 
-cmp dx, cx
-ja  return_2048
-jb full_32_32
-cmp ax, bx
-jae return_2048
+;cmp dx, cx
+;ja  return_2048
+;jb full_32_32
+;cmp ax, bx
+;jae return_2048
 
 
 full_32_32:
 
 
-
-
-call FastDiv3232_RPTA_
-
-ret
-
-ENDP
-
-
-; todo optimize around fact ch is always 0...
-; we are moving a byte back and forth
-
-ALIGN_MACRO
-fast_div_32_16_RPTA:
-
-mov bl, bh
-mov bh, cl
-mov cl, ch
-xor ch, ch
-sal ax, 1
-rcl dx ,1
-sal ax, 1
-rcl dx ,1
-sal ax, 1
-rcl dx ,1
-
-
-xchg dx, cx   ; cx was 0, dx is FFFF
-div bx        ; after this dx stores remainder, ax stores q1
-xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
-div bx
-mov dx, cx   ; q1:q0 is dx:ax
-ret 
-
-
-; NOTE: this is used for R_PointToAngle and has a fast out when the high byte is detected to be above the threshhold
-
-;FastDiv3232_RPTA_
-; DX:AX / CX:BX
-
-ALIGN_MACRO
-PROC FastDiv3232_RPTA_ NEAR ; todo needs another look
-
-; we shift dx:ax by 11 into si... 
-
-
-
-
-; if top 16 bits missing just do a 32 / 16
-
-test ch, ch
-je fast_div_32_16_RPTA
 
 main_3232RPTA_div:
 
@@ -1741,27 +1690,20 @@ push  di
 ;ax:
 ;22222000 00000000
 
-mov si, dx
-mov dx, ax
-xor ax, ax
+mov  si, dx
+xchg ax, dx
+xor  ax, ax
 
 ; creating si:dx:ax
 
+REPT 5
 shr si, 1
 rcr dx, 1
 rcr ax, 1
-shr si, 1
-rcr dx, 1
-rcr ax, 1
-shr si, 1
-rcr dx, 1
-rcr ax, 1
-shr si, 1
-rcr dx, 1
-rcr ax, 1
-shr si, 1
-rcr dx, 1
-rcr ax, 1
+
+
+ENDM
+
 
 
 
@@ -1771,27 +1713,9 @@ rcr ax, 1
 
 
 
-
-test ch, ch
-jne shift_bits_3232RPTA
-; shift a whole byte immediately
-
-mov ch, cl
-mov cl, bh
-mov bh, bl
-xor bl, bl
+; ch known nonero in this path.
 
 
-xchg ax, si
-mov  ah, al
-mov  al, dh
-mov  dh, dl
-xchg ax, si
-mov  dl, ah
-xor  al, al
-
-
-shift_bits_3232RPTA:
 
 ; less than a byte to shift
 ; shift until MSB is 1
@@ -1845,8 +1769,7 @@ SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
-SAL BX, 1
-RCL CX, 1
+jmp skip_overshift
 
 
 ALIGN_MACRO
@@ -1857,7 +1780,7 @@ done_shifting_3232RPTA:
 
 RCR CX, 1
 RCR BX, 1
-
+skip_overshift:
 
 ; SI:DX:AX holds divisor...
 ; CX:BX holds dividend...
