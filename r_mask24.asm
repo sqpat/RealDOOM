@@ -112,70 +112,6 @@ _lastcentery:
 dw 0F0F0h;
 
 
-IF COMPISA GE COMPILE_386
-; todo used only once. 
-ALIGN_MACRO
-PROC   FixedMulMaskedLocal_ NEAR   ; fairly optimized
-PUBLIC FixedMulMaskedLocal_
-; thanks zero318 from discord for improved algorithm  
-
-; DX:AX  *  CX:BX
-;  0  1      2  3
-
-  shl  ecx, 16
-  mov  cx, bx
-  xchg ax, dx
-  shl  eax, 16
-  xchg ax, dx
-  imul  ecx
-  shr  eax, 16
-  ret
-
-
-
-ENDP
-ELSE
-
-
-ALIGN_MACRO
-PROC   FixedMulMaskedLocal_ NEAR   ; fairly optimized
-PUBLIC FixedMulMaskedLocal_
-; DX:AX  *  CX:BX
-;  0  1      2  3
-
-; thanks zero318 from discord for improved algorithm  
-
-MOV  ES, SI
-MOV  SI, DX
-PUSH AX
-MUL  BX
-MOV  word ptr cs:[ENSUREALIGN_103-2], DX
-MOV  AX, SI
-MUL  CX
-XCHG AX, SI
-CWD
-AND  DX, BX
-SUB  SI, DX
-MUL  BX
-_selfmodify_restore_dx:
-;ADD  AX, 01000h
-db 081h, 0C0h, 00h, 010h  ; add ax, 01000h 4 byte encoding, toggle for ENSUREALIGN_103
-ENSUREALIGN_103:
-ADC  SI, DX
-XCHG AX, CX
-CWD
-POP  BX
-AND  DX, BX
-SUB  SI, DX
-MUL  BX
-ADD  AX, CX
-ADC  DX, SI
-MOV  SI, ES
-RET
-
-public ENSUREALIGN_103
-ENDP
-ENDIF
 
 
 ;
@@ -833,7 +769,58 @@ jz    do_16_bit_mul_after_all_vissprite
 dec   dx
 do_32_bit_mul_after_all_vissprite:
 
-call FixedMulMaskedLocal_
+; call FixedMulMaskedLocal_  ; inlined
+
+
+IF COMPISA GE COMPILE_386
+; todo used only once. 
+; thanks zero318 from discord for improved algorithm  
+
+; DX:AX  *  CX:BX
+;  0  1      2  3
+
+  shl  ecx, 16
+  mov  cx, bx
+  xchg ax, dx
+  shl  eax, 16
+  xchg ax, dx
+  imul  ecx
+  shr  eax, 16
+
+ELSE
+
+
+
+    MOV  ES, SI
+    MOV  SI, DX
+    PUSH AX
+    MUL  BX
+    MOV  word ptr cs:[ENSUREALIGN_103-2], DX
+    MOV  AX, SI
+    MUL  CX
+    XCHG AX, SI
+    CWD
+    AND  DX, BX
+    SUB  SI, DX
+    MUL  BX
+    _selfmodify_restore_dx:
+    ;ADD  AX, 01000h
+    db 081h, 0C0h, 00h, 010h  ; add ax, 01000h 4 byte encoding, toggle for ENSUREALIGN_103
+    ENSUREALIGN_103:
+    ADC  SI, DX
+    XCHG AX, CX
+    CWD
+    POP  BX
+    AND  DX, BX
+    SUB  SI, DX
+    MUL  BX
+    ADD  AX, CX
+    ADC  DX, SI
+    MOV  SI, ES
+
+    public ENSUREALIGN_103
+ENDIF
+
 
 jmp done_with_mul_vissprite
 
