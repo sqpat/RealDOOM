@@ -837,78 +837,76 @@ test ch, ch
 jne shift_bits
 ; shift a whole byte immediately
 
-mov ch, cl
-mov cl, bh
-mov bh, bl
-xor bl, bl
+xchg  dh, cl  ; ch was 0
+mov   si, cx  ; si low got dh. cl value unneeded
 
+mov   cl, bh
+mov   bh, bl
+mov   bl, ch  ; bx is set. bl is 0
+add   ch, dh  ; cx is set. set signed with ch + old cl
 
-xchg dh, dl
-mov  si, dx
-and si, 00FFh  ; todo make this better
-
-mov dl, ah
-mov ah, al
-xor al, al
+mov   dh, dl  ; 
+mov   dl, ah  ; dx set.
+mov   ah, al  
+mov   al, bl  ; ax set. al is set as 0
 
 shift_bits:
 
 
+JS  skip_shifting
 
 ; less than a byte to shift
 ; shift until MSB is 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting  
+JO done_shifting  
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting  
+JO done_shifting  
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting  
+JO done_shifting  
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting  
+JO done_shifting  
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting  
+JO done_shifting  
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting  
+JO done_shifting  
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting  
+
+done_shifting:
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
 
 
 
@@ -916,12 +914,10 @@ RCL CX, 1
 
 
 ; store this
-done_shifting:
 
 ; we overshifted by one and caught it in the carry bit. lets shift back right one.
 
-RCR CX, 1
-RCR BX, 1
+skip_shifting:
 ; bx is not 0 often enough here to optimize with bx check (unless we get bx zero flag check for free)
 
 
@@ -1695,6 +1691,8 @@ xchg ax, dx
 xor  ax, ax
 
 ; creating si:dx:ax
+; todo swap cx/si usage or something.
+; then 
 
 REPT 5
 shr si, 1
@@ -1720,67 +1718,62 @@ ENDM
 ; less than a byte to shift
 ; shift until MSB is 1
 
+TEST CX, CX
+JS  skip_shift_3232RPTA
+
 SAL BX, 1
 RCL CX, 1
-JC done_shifting_3232RPTA  
+JO done_shifting_3232RPTA  
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting_3232RPTA
+JO done_shifting_3232RPTA  
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting_3232RPTA
+JO done_shifting_3232RPTA  
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting_3232RPTA
+JO done_shifting_3232RPTA  
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting_3232RPTA
+JO done_shifting_3232RPTA  
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting_3232RPTA
+JO done_shifting_3232RPTA  
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting_3232RPTA
-SAL AX, 1
-RCL DX, 1
-RCL SI, 1
-
-jmp skip_overshift
-
 
 ALIGN_MACRO
-; store this
 done_shifting_3232RPTA:
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
 
-; we overshifted by one and caught it in the carry bit. lets shift back right one.
+skip_shift_3232RPTA:
 
-RCR CX, 1
-RCR BX, 1
-skip_overshift:
 
 ; SI:DX:AX holds divisor...
 ; CX:BX holds dividend...

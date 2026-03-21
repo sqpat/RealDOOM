@@ -918,78 +918,76 @@ test ch, ch
 jne shift_bits
 ; shift a whole byte immediately
 
-mov ch, cl
-mov cl, bh
-mov bh, bl
-xor bl, bl
+xchg  dh, cl  ; ch is 0. cx is desired si
+mov   si, cx  ; si low got dh. cl value unneeded
 
+mov   cl, bh
+mov   bh, bl
+mov   bl, ch  ; bx is set. bl is 0
+add   ch, dh  ; cx is set. set signed with ch + old cl
 
-xchg dh, dl
-mov  si, dx
-and si, 00FFh  ; todo make this better
+mov   dh, dl  ; 
+mov   dl, ah  ; dx set.
+mov   ah, al  
+mov   al, bl  ; ax set. al is set as 0
 
-mov dl, ah
-mov ah, al
-xor al, al
 
 shift_bits:
 
-
+JS  skip_shifting
 
 ; less than a byte to shift
 ; shift until MSB is 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting  
+JO done_shifting  
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting  
+JO done_shifting  
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting  
+JO done_shifting  
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting  
+JO done_shifting  
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting  
+JO done_shifting  
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting  
+JO done_shifting  
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting  
+done_shifting:
+
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
 
 
 
@@ -997,13 +995,11 @@ RCL CX, 1
 
 
 ; store this
-done_shifting:
 
 ; we overshifted by one and caught it in the carry bit. lets shift back right one.
 
-RCR CX, 1
-RCR BX, 1
 
+skip_shifting:
 
 ; SI:DX:AX holds divisor...
 ; CX:BX holds dividend...
@@ -1819,18 +1815,21 @@ test ch, ch
 jne shift_bits_whole
 ; shift a whole byte immediately
 
-mov ch, cl
-mov cl, bh
-mov bh, bl
-xor bl, bl
-
-
-mov  dh, dl
+mov dh, dl
 mov dl, ah
 mov ah, al
 xor al, al
 
+add ch, cl  ; ch was known zero, set sign
+mov cl, bh
+mov bh, bl
+mov bl, al
+
+
+
 shift_bits_whole:
+
+JS  skip_shifting_whole
 
 
 
@@ -1839,48 +1838,47 @@ shift_bits_whole:
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting_whole
+JO done_shifting_whole
 SAL AX, 1
 RCL DX, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting_whole  
+JO done_shifting_whole  
 SAL AX, 1
 RCL DX, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting_whole  
+JO done_shifting_whole  
 SAL AX, 1
 RCL DX, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting_whole  
+JO done_shifting_whole  
 SAL AX, 1
 RCL DX, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting_whole  
+JO done_shifting_whole  
 SAL AX, 1
 RCL DX, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting_whole  
+JO done_shifting_whole  
 SAL AX, 1
 RCL DX, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting_whole  
+
+done_shifting_whole:
 SAL AX, 1
 RCL DX, 1
 
-SAL BX, 1
-RCL CX, 1
 
 
 
@@ -1888,12 +1886,9 @@ RCL CX, 1
 
 
 ; store this
-done_shifting_whole:
-
+skip_shifting_whole:
 ; we overshifted by one and caught it in the carry bit. lets shift back right one.
 
-RCR CX, 1
-RCR BX, 1
 
 ; todo test if worth it
 ;test bx, bx                ; rcr does not set zero flag, lame!
@@ -2768,10 +2763,6 @@ test ch, ch
 jne shift_bits_3232RPTA
 ; shift a whole byte immediately
 
-mov ch, cl
-mov cl, bh
-mov bh, bl
-xor bl, bl
 
 
 xchg ax, si
@@ -2782,57 +2773,57 @@ xchg ax, si
 mov  dl, ah
 xor  al, al
 
+add ch, cl
+mov cl, bh
+mov bh, bl
+mov bl, al ; zero
+
 
 shift_bits_3232RPTA:
 
 ; less than a byte to shift
 ; shift until MSB is 1
 
+
+JS  skip_shifting_3232RPTA
 SAL BX, 1
 RCL CX, 1
-JC done_shifting_3232RPTA  
+JO done_shifting_3232RPTA  
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting_3232RPTA
+JO done_shifting_3232RPTA
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting_3232RPTA
+JO done_shifting_3232RPTA
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting_3232RPTA
+JO done_shifting_3232RPTA
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting_3232RPTA
+JO done_shifting_3232RPTA
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting_3232RPTA
-SAL AX, 1
-RCL DX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_3232RPTA
+JO done_shifting_3232RPTA
 SAL AX, 1
 RCL DX, 1
 RCL SI, 1
@@ -2842,14 +2833,14 @@ RCL CX, 1
 
 
 ALIGN_MACRO
-; store this
 done_shifting_3232RPTA:
 
 ; we overshifted by one and caught it in the carry bit. lets shift back right one.
 
-RCR CX, 1
-RCR BX, 1
-
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+skip_shifting_3232RPTA:
 
 ; SI:DX:AX holds divisor...
 ; CX:BX holds dividend...
