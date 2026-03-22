@@ -5196,6 +5196,17 @@ IF COMPISA GE COMPILE_386
    ALIGN_MACRO
 ENDIF
 
+  ALIGN_MACRO
+
+  markceildirty_mid:
+  or    byte ptr ds:[SELFMODIFY_mark_planes_dirty+1], 2 ; ceiling bit
+  mov   byte ptr ds:[SELFMODIFY_skip_markceildirty_mid], MOV_AL_IMM8_OPCODE  
+  jmp   SHORT markceiling_done
+  ALIGN_MACRO
+
+
+
+
 ALIGN_MACRO
 
 increment_loop_values_full:
@@ -5323,10 +5334,11 @@ jg    markceiling_done
 les   bx, dword ptr ds:[_ceiltop]
 dec   ax
 mov   byte ptr es:[bx+di + vp_bottom_offset], al
-mov   ax, si						    		   ; dl is 0, si is < screensize (and thus under 255)
-dec   ax
+lea   ax, [si - 1]
 mov   byte ptr es:[bx+di], al
-or    byte ptr ds:[SELFMODIFY_mark_planes_dirty+1], 2 ; ceiling bit
+SELFMODIFY_skip_markceildirty_mid:
+jmp   SHORT markceildirty_mid  ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET into mov al
+
 
 SELFMODIFY_BSP_markceiling_1_TARGET:
 
@@ -5359,7 +5371,7 @@ sub   dx, ax   ; yl - yh. technically we want to know if (yh - yl) is positive t
 SELFMODIFY_BSP_markfloor_1:
 public SELFMODIFY_BSP_markfloor_1
 SELFMODIFY_BSP_markfloor_1_AFTER = SELFMODIFY_BSP_markfloor_1 + 2
-inc   ax			; top = yh + 1...     OR  je    markfloor_done
+inc   ax			; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET top = yh + 1...    OR  jmp    markfloor_done ; 
 dec   cx			; bottom = floorclip[rw_x]-1;
 
 ;	if (top <= ceilingclip[rw_x]){
@@ -5385,7 +5397,9 @@ dec   ax
 mov   byte ptr es:[bx+di], al
 dec   cx
 mov   byte ptr es:[bx+di + vp_bottom_offset], cl
-or    byte ptr ds:[SELFMODIFY_mark_planes_dirty+1], 1 ; floor bit
+SELFMODIFY_skip_markfloordirty_mid:
+jmp   SHORT markfloordirty_mid  ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET into mov al
+
 
 SELFMODIFY_BSP_markfloor_1_TARGET:
 
@@ -5478,6 +5492,12 @@ IF COMPISA GE COMPILE_386
 
   imul  ebx
   shr   eax, 16
+  jmp   done_with_finetanmul  ; todo remove this, once we find a place to put the below...
+   ALIGN_MACRO
+   markfloordirty_mid:
+   or    byte ptr ds:[SELFMODIFY_mark_planes_dirty+1], 1 ; floor bit
+   mov   byte ptr ds:[SELFMODIFY_skip_markfloordirty_mid], MOV_AL_IMM8_OPCODE  
+   jmp   SHORT markfloor_done
 
 
 
@@ -5513,6 +5533,11 @@ ELSE
    adc  dx, 0     ; es may be known 0?
 
    jmp  done_with_16bitmul
+   ALIGN_MACRO
+   markfloordirty_mid:
+   or    byte ptr ds:[SELFMODIFY_mark_planes_dirty+1], 1 ; floor bit
+   mov   byte ptr ds:[SELFMODIFY_skip_markfloordirty_mid], MOV_AL_IMM8_OPCODE  
+   jmp   SHORT markfloor_done
 
 
 
@@ -5879,6 +5904,9 @@ jmp       done_skipping_markfloor_copy_mid
 ALIGN_MACRO
 mark_planes_dirty:
 public mark_planes_dirty
+mov      bl, JMP_SHORT_REL8_OPCODE
+mov      byte ptr cs:[SELFMODIFY_skip_markceildirty_mid], bl
+mov      byte ptr cs:[SELFMODIFY_skip_markfloordirty_mid], bl
 mov      byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], al ; still 0
 mov      si, _visplaneheaders + VISPLANEHEADER_T.visplaneheader_dirty
 les      bx, dword ptr cs:[_ceilingplaneindex]
@@ -14296,8 +14324,7 @@ mov  cx, di
 and  cl, 3
 mov  ax, 1 ; zero ah
 shl  al, cl
-mov  dx, SC_DATA
-out  dx, al    ; 14 bytes
+
 
 ; quality 1
 
@@ -14306,8 +14333,6 @@ and  al,  1   ; 1 or 0
 dec  ax      ; C or F3
 xor  al, 12  ;  or FF
 and  ax, 15  ; 3 or 15 ; zero ah
-mov  dx, SC_DATA
-out  dx, al    ; 14 bytes
 
 ; quality 2
 xor ax, ax  ; zero ah
@@ -14342,7 +14367,7 @@ mov      word ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_bot+2], ax
 mov      ax, word ptr ss:[_detailshift]
 ; todo based on quality change
 
-LENGTH_OF_OUT_CODE_STRING = 14
+LENGTH_OF_OUT_CODE_STRING = 10
 
 mov      dx, ax ; backup
 mov      cx, LENGTH_OF_OUT_CODE_STRING
