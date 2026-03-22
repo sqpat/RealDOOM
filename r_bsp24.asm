@@ -33,7 +33,9 @@ ANG180_HIGHBITS =    08000h
 MAX_VISSPRITES_ADDRESS = ((SIZE VISSPRITE_T) * MAXVISSPRITES) + _vissprites ; 0BE70h
 
 MOV_AX_IMM16_OPCODE = 0B8h
+MOV_AL_IMM8_OPCODE = 0B0h
 DS_PREFIX_OPCODE = 03Eh
+JMP_SHORT_REL8_OPCODE = 0EBh
 
 ; COLFUNC TYPES (work in progress)
 ; 0 = regular draw, texture can loop
@@ -8334,6 +8336,7 @@ mov   ds, ax
 
 ; di has rw_x...
 
+; todo 386 dword instructions
 SELFMODIFY_add_topstep_lo_TWOSIDED:
 sub   word ptr ds:[_cs_topfrac_lo], 01000h
 SELFMODIFY_add_topstep_hi_TWOSIDED:
@@ -8439,7 +8442,9 @@ mov   byte ptr es:[bx+di + vp_bottom_offset], al
 mov   ax, si						    		   ; dl is 0, si is < screensize (and thus under 255)
 dec   ax
 mov   byte ptr es:[bx+di], al
-or    byte ptr ds:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], 2 ; ceiling bit
+SELFMODIFY_skip_markceildirty:
+jmp   SHORT markceildirty  ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET into mov al
+
 
 SELFMODIFY_BSP_markceiling_1_TARGET_TWOSIDED:
 
@@ -8498,7 +8503,9 @@ dec   ax
 mov   byte ptr es:[bx+di], al
 dec   cx
 mov   byte ptr es:[bx+di + vp_bottom_offset], cl
-or    byte ptr ds:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], 1 ; floor bit
+SELFMODIFY_skip_markfloordirty:
+jmp   SHORT markfloordirty  ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET into mov al
+
 
 SELFMODIFY_BSP_markfloor_1_TARGET_TWOSIDED:
 
@@ -8554,7 +8561,17 @@ IF COMPISA GE COMPILE_386
 
   imul  ebx
   shr   eax, 16
-
+  jmp   done_with_finetanmul_TWOSIDED  ; todo this is an empty jump just to make room for these branches
+  ALIGN_MACRO
+  markceildirty:
+  or    byte ptr ds:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], 2 ; ceiling bit
+  mov   byte ptr ds:[SELFMODIFY_skip_markceildirty], MOV_AL_IMM8_OPCODE  
+  jmp   SHORT markceiling_done_TWOSIDED
+  ALIGN_MACRO
+  markfloordirty:
+  or    byte ptr ds:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], 1 ; floor bit
+  mov   byte ptr ds:[SELFMODIFY_skip_markfloordirty], MOV_AL_IMM8_OPCODE  
+  jmp   SHORT markfloor_done_TWOSIDED
 
 
 ELSE
@@ -8584,6 +8601,16 @@ ELSE
    adc  dx, 0     ; es may be known 0?
 
    jmp  done_with_16bitmul_TWOSIDED
+   ALIGN_MACRO
+   markceildirty:
+   or    byte ptr ds:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], 2 ; ceiling bit
+   mov   byte ptr ds:[SELFMODIFY_skip_markceildirty], MOV_AL_IMM8_OPCODE  
+   jmp   SHORT markceiling_done_TWOSIDED
+   ALIGN_MACRO
+   markfloordirty:
+   or    byte ptr ds:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], 1 ; floor bit
+   mov   byte ptr ds:[SELFMODIFY_skip_markfloordirty], MOV_AL_IMM8_OPCODE  
+   jmp   SHORT markfloor_done_TWOSIDED
 
 
    ALIGN_MACRO
@@ -9689,6 +9716,10 @@ ALIGN_MACRO
 mark_planes_dirty_TWOSIDED:
 public mark_planes_dirty_TWOSIDED
 mov      byte ptr cs:[SELFMODIFY_mark_planes_dirty_TWOSIDED+1], al ; al still known 0
+mov      bl, JMP_SHORT_REL8_OPCODE
+mov      byte ptr cs:[SELFMODIFY_skip_markceildirty], bl
+mov      byte ptr cs:[SELFMODIFY_skip_markfloordirty], bl
+
 mov      si, _visplaneheaders + VISPLANEHEADER_T.visplaneheader_dirty
 ; al/ah are zero or nonzero depending on state..
 les      bx, dword ptr cs:[_ceilingplaneindex]
@@ -14978,7 +15009,6 @@ public ENSUREALIGN_025
 
 ; lower priority...
 
-public ENSUREALIGN_051
 
 public ENSUREALIGN_060
 public ENSUREALIGN_061
@@ -14986,9 +15016,6 @@ public ENSUREALIGN_062
 public ENSUREALIGN_063
 public ENSUREALIGN_064
 public ENSUREALIGN_065
-public ENSUREALIGN_066
-public ENSUREALIGN_067
-public ENSUREALIGN_068
 public ENSUREALIGN_069
 public ENSUREALIGN_070
 public ENSUREALIGN_071
@@ -14997,7 +15024,6 @@ public ENSUREALIGN_073
 public ENSUREALIGN_074
 public ENSUREALIGN_075
 public ENSUREALIGN_076
-public ENSUREALIGN_077
 public ENSUREALIGN_078
 public ENSUREALIGN_079
 public ENSUREALIGN_080
@@ -15010,9 +15036,6 @@ public ENSUREALIGN_085
 public ENSUREALIGN_086
 public ENSUREALIGN_087
 public ENSUREALIGN_088
-public ENSUREALIGN_089
-public ENSUREALIGN_090
-public ENSUREALIGN_091
 public ENSUREALIGN_092
 public ENSUREALIGN_093
 public ENSUREALIGN_094
@@ -15020,7 +15043,6 @@ public ENSUREALIGN_095
 public ENSUREALIGN_096
 public ENSUREALIGN_097
 public ENSUREALIGN_098
-public ENSUREALIGN_099
 
 ; most of these not aligned..
 
@@ -15048,6 +15070,19 @@ public ENSUREALIGN_319
 public ENSUREALIGN_320
 public ENSUREALIGN_321
 public ENSUREALIGN_322
+
+IF COMPISA GE COMPILE_386
+ELSE
+public ENSUREALIGN_051
+public ENSUREALIGN_066
+public ENSUREALIGN_067
+public ENSUREALIGN_068
+public ENSUREALIGN_077
+public ENSUREALIGN_089
+public ENSUREALIGN_090
+public ENSUREALIGN_091
+public ENSUREALIGN_099
+ENDIF
 
 
 
