@@ -474,7 +474,6 @@ ret
 
 ALIGN_MACRO
 continue_check_octant_6:
-jne   octant_6_do_divide
 cmp   bx, 0200h
 jae   octant_6_do_divide
 octant_6_out_of_bounds:
@@ -498,7 +497,7 @@ cmp   ax, bx
 jbe   octant_6
 octant_7:
 test  dx, dx
-jnz   continue_check_octant_7
+jz    continue_check_octant_7
 
 
 octant_7_do_divide:
@@ -729,7 +728,8 @@ ret
 
 ALIGN_MACRO
 continue_check_octant_2:
-jnc   octant_2_do_divide
+cmp   ax, 0200h
+jae   octant_2_do_divide
 octant_2_out_of_bounds:
 mov   dx, 06000h
 xor   ax, ax
