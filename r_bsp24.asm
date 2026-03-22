@@ -6416,7 +6416,7 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta_TWOSIDED], dl
 finish_midtex_selfmodify_TWOSIDED:
 
    ; set some jumps and instructions based on secnumnull, midtexture
-   mov       byte ptr cs:[SELFMODIFY_has_midtexture_or_not], al
+   mov       byte ptr cs:[SELFMODIFY_has_midtexture_or_not], al  ; todo i think this can be gone
 
 
    
@@ -7047,10 +7047,6 @@ cmp       al, 010h
 jne       do_selfmodify_colfunc_type_top
 
 
-
-
-
-
 SELFMODIFY_BSP_viewz_shortheight_1:
 cmp       di, 01000h
 jge       tsilheight_set
@@ -7368,6 +7364,7 @@ add   byte ptr ds:[SELFMODIFY_set_bottexturemid_hi+1], al
 
 
 ; check midtexture on 2 sided line (e1m1 case)
+; TODO get rid of this???
 SELFMODIFY_has_midtexture_or_not:
 jmp       SHORT continue_backsector_not_null   ; may  turn into mov al, garbage (fall thru)
 ALIGN_MACRO
@@ -7444,47 +7441,59 @@ pop       di  ; restore here
 ; if (worldhigh.w < worldtop.w) {
 
 cmp       word ptr [bp - 024h], di
-jg        do_pixhigh_step
-jne       jmp_to_skip_pixhigh_step
+jg        do_pixhigh_step                    ; todo test branch diff
+jne       skip_pixhigh_step
 cmp       word ptr [bp - 026h], si
-jnbe      do_pixhigh_step
-jmp_to_skip_pixhigh_step:
+jbe       skip_pixhigh_step
 
-jmp skip_pixhigh_step
-
-ALIGN_MACRO
 do_pixhigh_step:
 
 ; pixhigh = (centeryfrac_4.w) - FixedMul (worldhigh.w, rw_scale.w);
 ; pixhighstep = -FixedMul    (rw_scalestep.w,          worldhigh.w);
 
-; store these
-xchg       dx, di   ; di/si store worldlow
-xchg       ax, si
-
-les       bx, dword ptr [bp - 02Eh]
-mov       cx, es
-push      dx
-push      ax
 
 ;start inlined FixedMulBSPLocal_
 
 IF COMPISA GE COMPILE_386
 
-   shl  ecx, 16
-   mov  cx, bx
-   xchg ax, dx
-   shl  eax, 16
-   xchg ax, dx
+   ; store these
+   ; todo optim 386 path to not push, mult in place, etc?
+   push       dx
+   mov        dx, di
+   xchg       ax, si
+
+   push      dx
+   push      ax
+
+   mov       ecx, dword ptr [bp - 02Eh]
+
+
+   xchg  ax, dx
+   shl   eax, 16
+   xchg  ax, dx
    imul  ecx
-   shr  eax, 16
+   shr   eax, 16
 
 ELSE
-   MOV  ES, SI
-   MOV  SI, DX
+
+   ; store these
+   ; todo optim 386 path to not push, mult in place, etc?
+   push      dx  ; USED TO BE STORED IN DI
+   push      di  ; FOR MUL 2
+   push      si  ; FOR MUL 2
+
+   les       bx, dword ptr [bp - 02Eh]
+   mov       cx, es
+   
+   mov       es, ax ; old ax
+
+   xchg      ax, di ; grab di
+   xchg      ax, si ; di to si, si to ax
+
+
    PUSH AX
    MUL  BX
-   MOV  word ptr ds:[_selfmodify_restore_dx_6-2], DX
+   MOV  DI, DX
    MOV  AX, SI
    MUL  CX
    XCHG AX, SI
@@ -7492,9 +7501,7 @@ ELSE
    AND  DX, BX
    SUB  SI, DX
    MUL  BX
-   ADD  AX, 01000h 
-   _selfmodify_restore_dx_6:  ; even addr, selfmodify even with 4 byte add..? but it wrecks performance. something after this gets knocked odd.
-   PUBLIC _selfmodify_restore_dx_6
+   ADD  AX, DI
    ADC  SI, DX
    XCHG AX, CX
    CWD
@@ -7511,47 +7518,44 @@ ENDIF
 
 
 neg       ax
-
-SELFMODIFY_sub__centeryfrac_4_hi_2:
-mov       cx, 01000h ; ah known zero. dh too probably?
-sbb       cx, dx
-mov       dx, cx
-
-
-pop       bx
-pop       cx
-
-mov       byte ptr ds:[SELFMODIFY_BSP_toptexture], 0B8h ; mov   ax, imm16
-mov       word ptr ds:[SELFMODIFY_BSP_toptexture+1], dx
 mov       word ptr ds:[_cs_pixhigh], ax
 
-
-SELFMODIFY_get_rwscalestep_lo_3_TWOSIDED:
-mov       ax, 01000h
-SELFMODIFY_get_rwscalestep_hi_3_TWOSIDED:
-mov       dx, 01000h
+SELFMODIFY_sub__centeryfrac_4_hi_2:
+mov       ax, 01000h ; ah known zero. dh too probably?
+sbb       ax, dx
+mov       byte ptr ds:[SELFMODIFY_BSP_toptexture], 0B8h ; mov   ax, imm16
+mov       word ptr ds:[SELFMODIFY_BSP_toptexture+1], ax
 
 ;start inlined FixedMulBSPLocal_
 
 
 IF COMPISA GE COMPILE_386
 
-   shl  ecx, 16
-   mov  cx, bx
-   xchg ax, dx
-   shl  eax, 16
-   xchg ax, dx
+   pop       ecx
+
+   SELFMODIFY_get_rwscalestep_3_TWOSIDED_386_base:
+   SELFMODIFY_get_rwscalestep_lo_3_TWOSIDED = SELFMODIFY_get_rwscalestep_3_TWOSIDED_386_base+1
+   SELFMODIFY_get_rwscalestep_hi_3_TWOSIDED = SELFMODIFY_get_rwscalestep_3_TWOSIDED_386_base+3
+   mov       eax, 010000000h
+
+
    imul  ecx
    shr  eax, 16
 
 
 
 ELSE
+   pop       bx ; from mul 1
+   pop       cx ; from mul 1
+; todo align words using pops 
+   SELFMODIFY_get_rwscalestep_lo_3_TWOSIDED:
+   mov       ax, 01000h
+   SELFMODIFY_get_rwscalestep_hi_3_TWOSIDED:
+   mov       si, 01000h
 
-   MOV  SI, DX
    PUSH AX
    MUL  BX
-   MOV  word ptr ds:[_selfmodify_restore_dx_7-2], DX
+   MOV  DI, DX
    MOV  AX, SI
    MUL  CX
    XCHG AX, SI
@@ -7559,9 +7563,7 @@ ELSE
    AND  DX, BX
    SUB  SI, DX
    MUL  BX
-   ADD  AX, 01000h
-   _selfmodify_restore_dx_7:  ; even addr, selfmodify even with 4 byte add
-   PUBLIC _selfmodify_restore_dx_7
+   ADD  AX, DI
    ADC  SI, DX
    XCHG AX, CX
    CWD
@@ -7571,30 +7573,29 @@ ELSE
    MUL  BX
    ADD  AX, CX
    ADC  DX, SI
-   MOV  SI, ES
 ENDIF
 
 ;end inlined FixedMulBSPLocal_
 
 
 
-
-
 ; dx:ax is pixhighstep.
-; self modifying code to write to pixlowstep usages.
-
-; ?? todo remove neg and do sub instructions
 
 
 mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_lo_1_TWOSIDED+4], ax
 mov       word ptr ds:[SELFMODIFY_add_to_pixhigh_hi_1_TWOSIDED+4], dx
 
-
+; restore dxAX
+IF COMPISA GE COMPILE_386
+   xchg      ax, si  ; todo i dont love all this swap back and forth.
+   pop       dx  ; restore dx
+ELSE
+   MOV       AX, ES ; es was holding this. we want it back in AX anyway.
+   pop       dx  ; restore dx
+ENDIF
 
 ; put these back where they need to be.
 ; maybe just use these in place?
-xchg      dx, di
-xchg      ax, si  ; todo i dont love all this swap back and forth.
 
 
 skip_pixhigh_step:
@@ -7605,15 +7606,10 @@ skip_pixhigh_step:
 
 cmp       dx, word ptr [bp - 028h]
 jg        do_pixlow_step
-je        continue_worldlow_checks
-mov       al, byte ptr ds:[_maskedtexture_bsp]  ; todo is it necessary to write?
-
-jmp       done_with_two_sided_sector_setup
-
-ALIGN_MACRO
+jne       skip_pixlow_step
 continue_worldlow_checks:
 cmp       ax, word ptr [bp - 02Ah]
-ja        do_pixlow_step
+jbe       skip_pixlow_step
 
 
 do_pixlow_step:
@@ -7622,17 +7618,15 @@ do_pixlow_step:
 ; pixlowstep = -FixedMul    (rw_scalestep.w,          worldlow.w);
 
 
-mov       di, dx	; store for later
-mov       si, ax	; store for later
-les       bx, dword ptr [bp - 02Eh]
-mov       cx, es
 
 ;start inlined FixedMulBSPLocal_
 
 IF COMPISA GE COMPILE_386
 
-   shl  ecx, 16
-   mov  cx, bx
+   mov       ecx, dword ptr [bp - 02Eh]
+   mov       di, dx	; store for later
+   mov       si, ax	; store for later
+
    xchg ax, dx
    shl  eax, 16
    xchg ax, dx
@@ -7642,11 +7636,16 @@ IF COMPISA GE COMPILE_386
 
 
 ELSE
-   MOV  ES, SI
+
+   push      dx	; store for later
+   les       bx, dword ptr [bp - 02Eh]
+   mov       cx, es
+   mov       es, ax	; store for later
+
    MOV  SI, DX
-   PUSH AX
+
    MUL  BX
-   MOV  word ptr ds:[_selfmodify_restore_dx_8-2], DX
+   MOV  DI, DX
    MOV  AX, SI
    MUL  CX
    XCHG AX, SI
@@ -7654,84 +7653,89 @@ ELSE
    AND  DX, BX
    SUB  SI, DX
    MUL  BX
-   ADD  AX, 01000h
-   _selfmodify_restore_dx_8:
-   PUBLIC _selfmodify_restore_dx_8
+   ADD  AX, DI
    ADC  SI, DX
    XCHG AX, CX
    CWD
-   POP  BX
+   MOV  BX, ES  ; bx has old ax value from es now.
    AND  DX, BX
    SUB  SI, DX
    MUL  BX
    ADD  AX, CX
    ADC  DX, SI
-   MOV  SI, ES
+
+   pop  di      ; di/si ready for next fixedmul..
 ENDIF
 
 ;end inlined FixedMulBSPLocal_
 
 neg       ax     ;  -Fixedmul lowbits
 SELFMODIFY_sub__centeryfrac_4_hi_1:  
-mov       bx, 01000h ; ah known zero. dh too probably?
-sbb       bx, dx ; -FixedMul highbits
+mov       cx, 01000h ; ah known zero. dh too probably?
+sbb       cx, dx ; -FixedMul highbits
 
 ; todo: why does this sometimes run without the other code running??
 ; work backwards...
 
 add       ax, 0FFFFh ; HEIGHTUNIT -1 preshifted 4
-adc       bx, 0
+adc       cx, 0
 ; todo should this be here... ? remove from other spot...?
 mov       byte ptr ds:[SELFMODIFY_BSP_bottexture], 0B8h   ; mov   ax, imm16
-mov       word ptr ds:[SELFMODIFY_BSP_bottexture+1], bx   ; this's presence break things! instructions too big??
+mov       word ptr ds:[SELFMODIFY_BSP_bottexture+1], cx   ; this's presence break things! instructions too big??
 mov       word ptr ds:[_cs_pixlow], ax
 
-SELFMODIFY_get_rwscalestep_lo_4_TWOSIDED:
-mov       ax, 01000h
-SELFMODIFY_get_rwscalestep_hi_4_TWOSIDED:
-mov       dx, 01000h
 
 ;start inlined FixedMulBSPLocal_
 
 IF COMPISA GE COMPILE_386
 
-   mov       cx, di	; cached values
-   mov       bx, si	; cached values
 
-   shl  ecx, 16
-   mov  cx, bx
-   xchg ax, dx
-   shl  eax, 16
-   xchg ax, dx
-   imul  ecx
-   shr  eax, 16
+   SELFMODIFY_get_rwscalestep_4_TWOSIDED_386_base:
+   SELFMODIFY_get_rwscalestep_lo_4_TWOSIDED = SELFMODIFY_get_rwscalestep_4_TWOSIDED_386_base+1
+   SELFMODIFY_get_rwscalestep_hi_4_TWOSIDED = SELFMODIFY_get_rwscalestep_4_TWOSIDED_386_base+3
+   mov       eax, 010000000h
+
+   ;mov       cx, di	; cached values
+   ;mov       bx, si	; cached values
+
+   shl  edi, 16
+   mov   di, si
+   imul  edi
+   shr   eax, 16
 
 
 
 ELSE
 ; si, di not preserved
-; note: mul by di:si not cx:bx! roles reversed.
+; note: mul by di:bx
 
-   MOV  CX, DX
+   SELFMODIFY_get_rwscalestep_lo_4_TWOSIDED:
+   mov       ax, 01000h
+   SELFMODIFY_get_rwscalestep_hi_4_TWOSIDED:
+   mov       cx, 01000h
+
+; multiply by di:bx
+
+
    MOV  ES, AX
-   MUL  SI
-   MOV  BX, DX
+   MUL  BX
+   MOV  SI, DX
    MOV  AX, CX
    MUL  DI
    XCHG AX, CX
    CWD
-   AND  DX, SI
+   AND  DX, BX
    SUB  CX, DX
-   MUL  SI
+   MUL  BX
 
-   ADD  AX, BX
+   ADD  AX, SI
    ADC  CX, DX
    XCHG AX, DI
    CWD
-   MOV  SI, ES
-   AND  DX, SI
+   MOV  BX, ES
+   AND  DX, BX
    SUB  CX, DX
-   MUL  SI
+   MUL  BX
    ADD  AX, DI
    ADC  DX, CX
 
@@ -7747,32 +7751,15 @@ mov       word ptr ds:[SELFMODIFY_add_to_pixlow_lo_1_TWOSIDED+4], ax
 mov       word ptr ds:[SELFMODIFY_add_to_pixlow_hi_1_TWOSIDED+4], dx
 
 
-mov       al, byte ptr ds:[_maskedtexture_bsp]
 ; fallthru
 
 ; begin duplicate code for two_sided block
 
-
+skip_pixlow_step:
 done_with_two_sided_sector_setup:
 
-
-; todo: early func self modified some stuff forward into single variant.
-; for now we must clone to this variant
-
-
-
-
-
-
-; done_with_sector_sided_check
-
-
-; todo get _maskedtexture_bsp for free?
-
-; coming into here, AL is equal to maskedtexture.
-; ds is equal to CS
-; sp should now be bp - 030h
-
+; todo... avoid this var?
+mov       al, byte ptr ds:[_maskedtexture_bsp]  ; todo is it necessary to write?
 
 
 
@@ -13455,8 +13442,8 @@ push  si
 
 mov   si, COMPOSITETEXTUREPAGE_SEGMENT
 mov   es, si
-mov   si, ax
-mov   al, byte ptr es:[si]
+xchg  ax, si  
+mov   al, byte ptr es:[si] ; consider lodsb 
 cmp   al, 0FFh
 je    composite_not_in_cache
 mov   dl, byte ptr es:[si + COMPOSITETEXTUREOFFSET_OFFSET]
