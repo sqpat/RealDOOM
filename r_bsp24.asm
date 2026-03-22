@@ -2921,7 +2921,7 @@ mov       si, dx    ; si holds start
 ; already mult 9'd
 mov       word ptr ds:[SELFMODIFY_setindex+1], ax
 
-mov       di, ax
+xchg      ax, di
 add       di, _visplaneheaders  ; _di is plheader
 
 
@@ -2929,10 +2929,7 @@ mov       ax, ss   ;  restore DS for now due to visplane headers use. try to mak
 mov       ds, ax
 
 
-
-
-loaded_floor_or_ceiling:
-; bx holds offset..
+; di holds offset..
 
 mov       ax, si  ; fetch start
 cmp       ax, word ptr ds:[di + VISPLANEHEADER_T.visplaneheader_minx]    ; compare to minx
@@ -3457,12 +3454,6 @@ usedwidth_not_1:
 dec   ax
 mov   word ptr cs:[SELFMODIFY_set_usedwidth + 3], ax
 
-mov   dx, si
-add   dx, ax					; no need for adc
-
-mov   ax, es  ; bp - 020h from LES above
-les   bx, dword ptr [bp - 01Eh]
-mov   cx, es
 
 
 
@@ -3470,11 +3461,14 @@ mov   cx, es
 
 IF COMPISA GE COMPILE_386
 
-  shl  ecx, 16
-  mov  cx, bx
-  xchg ax, dx
-  shl  eax, 16
-  xchg ax, dx
+   mov   dx, si
+   add   ax, dx					; no need for adc
+   shl  eax, 16
+   mov   ax, es  ; bp - 020h from LES above
+
+   mov   ecx, dword ptr [bp - 01Eh]
+
+
   imul  ecx
   shr  eax, 16
 
@@ -3483,7 +3477,15 @@ IF COMPISA GE COMPILE_386
 ENDP
 ELSE
 
-   MOV  SI, DX
+
+   add   si, ax					; no need for adc
+   mov   ax, es  ; bp - 020h from LES above
+
+   les   bx, dword ptr [bp - 01Eh]
+   mov   cx, es
+
+
+
    mov  ES, AX
    MUL  BX
    MOV  DI, DX
@@ -4229,13 +4231,13 @@ ALIGN_MACRO
       call  FixedDivBSPLocal_
       ENSUREALIGN_317:
 
+      ; store result
+      mov   word ptr cs:[SELFMODIFY_set_PointToDist_result_lo+1], ax
+      mov   word ptr cs:[SELFMODIFY_set_PointToDist_result_hi+1], dx
       xchg  ax, bx  ; result in cx:bx
       mov   cx, dx
 
 
-      ; store result
-      mov   word ptr cs:[SELFMODIFY_set_PointToDist_result_lo+1], bx
-      mov   word ptr cs:[SELFMODIFY_set_PointToDist_result_hi+1], cx
 
 ; end calculate hyp inlined
 
@@ -4716,9 +4718,7 @@ mov   word ptr ds:[SELFMODIFY_add_wallights+3], ax
 SELFMODIFY_BSP_fixedcolormap_3_TARGET:
 seg_textured_check_done:
 
-; following cx (rw_scale hi) fairly OFTEN 0. evaluate jcxz?
 ; dh (worldtop hi) always 0?
-; todo 386 version
 
 
 
@@ -4862,7 +4862,7 @@ IF COMPISA GE COMPILE_386
    mov       word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], ax
    mov       word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], dx
 
-   mov       cx, dword ptr [bp - 02Ah]
+   mov       ecx, dword ptr [bp - 02Ah]
 
 
    xchg ax, dx
@@ -5224,7 +5224,7 @@ SELFMODIFY_cmp_di_to_rw_stopx_1:
 cmp   di, 01000h
 jge   exit_rendersegloop
 
-
+; todo 386 dwords
 SELFMODIFY_add_to_bottomfrac_lo_2:
 sub   word ptr ds:[_cs_botfrac_lo], 01000h
 ENSUREALIGN_060:
@@ -5253,27 +5253,19 @@ ENSUREALIGN_065:
 start_per_column_inner_loop:
 public start_per_column_inner_loop
 ; di is rw_x
-mov   ax, di   
-
-; todo skip this for potato?
-
-SELFMODIFY_and_by_detail_level:
-and   ax, 00010h  ; zeroes ah ; rare no align
-
-SELFMODIFY_set_qualityportlookup_mid:
-mov   bx, 00000h        ; base for qualityportlookup... ; byte, no align
 
 
-mov   dx, SC_DATA
+SELFMODIFY_rewrite_bsp_out_dx_code_mid:
+; quality 0 version
+mov  cx, di
+and  cl, 3
+mov  ax, 1 ; zero ah
+shl  al, cl
+mov  dx, SC_DATA
+out  dx, al    ; 14 bytes
 
-xlat  byte ptr ss:[bx]  ; TODO small optim: move to cs? just 12 bytes.
-out   dx, al
-
-; ds is always cs coming in.
-
-
-check_here:
-PUBLIC check_here
+done_setting_vga_plane:
+PUBLIC done_setting_vga_plane
 
 
 ; todo find a way to clean up 8/16 bit logic and compares. 
@@ -6025,9 +6017,6 @@ ENDIF
 
    ; far JUMP. pass in return addr below
 
-
-   ; far JUMP. pass in return addr above
-
    db 0EAh
    SELFMODIFY_COLFUNC_set_func_offset_stretch:
    dw DRAWCOL_OFFSET_BSP, COLORMAPS_SEGMENT
@@ -6054,33 +6043,10 @@ ELSE
 
    ; DX:AX:ES holds divisor...
    ; BX:CX holds dividend...
-   ; numhi = DX:AX
-   ; numlo = ES:00... (es needs NOT)
-
-
-
-   ; set up first div. 
-   ; dx:ax becomes numhi
-
-
-   ; store these two long term...
-
-
-
-   ; numhi is 00:cx in this case?
-
-   ;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
-   ; DX:AX = numhi.wu
 
    div   bx
 ; stretch draw on path
-   ; gross. should clean up masively once this is all in cs.
 
-
-
-   ; rhat = dx
-   ; qhat = ax
-   ;    c1 = FastMul16u16u(qhat , den0);
 
    mov   word ptr ds:[_SELFMODIFY_get_qhat+1], ax     ; store qhat. use div's prefetch to juice this...
 
@@ -8353,33 +8319,18 @@ start_per_column_inner_loop_TWOSIDED:
 ; ax was rw_x
 ; now di is rw_x
 
+SELFMODIFY_rewrite_bsp_out_dx_code_topbot:
+; quality 0 version
+mov  cx, di
+and  cl, 3
+mov  ax, 1 ; zero ah
+shl  al, cl
+mov  dx, SC_DATA
+out  dx, al    ; 14 bytes
 
 
-; pre inner loop.
-; reset everything to base;
-
-
-; topfrac    = base_topfrac;
-; bottomfrac = base_bottomfrac;
-; rw_scale.w = base_rw_scale;
-; pixlow     = base_pixlow;
-; pixhigh    = base_pixhigh;
-
-
-
-mov  ax, di  ; backup?
-
-
-SELFMODIFY_and_by_detail_level_TWOSIDED:
-and   ax, 00010h  ; zeroes ah
-
-SELFMODIFY_set_qualityportlookup_mid_TWOSIDED:
-mov   bx, 00000h        ; base for qualityportlookup...
-
-mov   dx, SC_DATA
-
-xlat  byte ptr ss:[bx]  ; small optim: move to cs? just 12 bytes.
-out   dx, al
+done_setting_vga_plane_topbot:
+PUBLIC done_setting_vga_plane_topbot
 
 
 
@@ -14274,6 +14225,10 @@ mov       word ptr ds:[_vissprite_p], OFFSET _vissprites
 
 call      dword ptr ds:[_NetUpdate_addr]
 
+mov       dx, SC_DATA
+mov       al, 15
+out       dx, al  ; for the potato case, which will skip OUTs later
+
 mov       ax, word ptr ds:[_numnodes]
 dec       ax
 
@@ -14334,6 +14289,33 @@ ALIGN_MACRO
 ENDP
 
 
+
+_lookup_bytes:
+; quality 0
+mov  cx, di
+and  cl, 3
+mov  ax, 1 ; zero ah
+shl  al, cl
+mov  dx, SC_DATA
+out  dx, al    ; 14 bytes
+
+; quality 1
+
+mov  ax, di
+and  al,  1   ; 1 or 0
+dec  ax      ; C or F3
+xor  al, 12  ;  or FF
+and  ax, 15  ; 3 or 15 ; zero ah
+mov  dx, SC_DATA
+out  dx, al    ; 14 bytes
+
+; quality 2
+xor ax, ax  ; zero ah
+;jmp (done_setting_vga_plane)
+db 0ebh, (OFFSET done_setting_vga_plane - OFFSET SELFMODIFY_rewrite_bsp_out_dx_code_mid) - 4
+
+; 10 bytes of garbage is fine.
+
 ; TODO: externalize this and R_ExecuteSetViewSize and its children to asm, load from binary
 ; todo: calculate the values here and dont store to variables.
 
@@ -14347,6 +14329,7 @@ PUBLIC R_WriteBackViewConstants24_
 mov      ax, word ptr ds:[_BSP_CODE_SEGMENT_PTR]
 mov      cx, cs
 mov      ds, cx
+mov      es, cx
 
 
 ASSUME DS:R_BSP_24_TEXT
@@ -14355,19 +14338,24 @@ mov      word ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_mid+2], ax
 mov      word ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_top+2], ax
 mov      word ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_bot+2], ax
 
-xor      cx, cx
+
 mov      ax, word ptr ss:[_detailshift]
-mov      cl, al
-add      ah, OFFSET _quality_port_lookup
-mov      byte ptr ds:[SELFMODIFY_set_qualityportlookup_mid+1], ah
-mov      byte ptr ds:[SELFMODIFY_set_qualityportlookup_mid_TWOSIDED+1], ah
+; todo based on quality change
 
-mov      bl, al
-xor      bh, bh
-shl      bx, 1
-shl      bx, 1
+LENGTH_OF_OUT_CODE_STRING = 14
 
-
+mov      dx, ax ; backup
+mov      cx, LENGTH_OF_OUT_CODE_STRING
+mul      cl
+add      ax, OFFSET _lookup_bytes
+xchg     ax, si
+mov      di, OFFSET SELFMODIFY_rewrite_bsp_out_dx_code_mid
+xchg     ax, dx ; restore ax.
+rep      movsb
+mov      cl, LENGTH_OF_OUT_CODE_STRING
+sub      si, cx
+mov      di, OFFSET SELFMODIFY_rewrite_bsp_out_dx_code_topbot
+rep      movsb
 
 
 ; for 16 bit shifts, modify jump to jump 4 for 0 shifts, 2 for 1 shifts, 0 for 0 shifts.
@@ -14508,8 +14496,7 @@ mov      ax, word ptr ss:[_detailshiftandval]
 
 
 not      ax
-mov      byte ptr ds:[SELFMODIFY_and_by_detail_level+1], al
-mov      byte ptr ds:[SELFMODIFY_and_by_detail_level_TWOSIDED+1], al
+
 
 
 
