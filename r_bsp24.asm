@@ -340,15 +340,11 @@ sub  DX, DI
 ; dx:ax has num
 
 SELFMODIFY_BSP_detailshift2minus_1:
-
-
-; fall thru do twice
 shl   ax, 1
 rcl   dx, 1
-do_once:
 shl   ax, 1
 rcl   dx, 1
-shift_done:
+
 
 
 ; cx:bx had den
@@ -4848,11 +4844,6 @@ mov       word ptr ds:[_cs_topfrac_lo], ax
 
 
 
-pop       ax ; bp - 02Eh
-pop       dx ; bp - 02Ch
-
-mov       word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], ax
-mov       word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], dx
 
 
 ; this (rw_scale hi) fairly OFTEN 0. 
@@ -4865,11 +4856,15 @@ mov       word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], dx
 
 IF COMPISA GE COMPILE_386
 
-   les       bx, dword ptr [bp - 02Ah]
-   mov       cx, es
+   pop       ax ; bp - 02Eh
+   pop       dx ; bp - 02Ch
 
-   shl  ecx, 16
-   mov  cx, bx
+   mov       word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], ax
+   mov       word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], dx
+
+   mov       cx, dword ptr [bp - 02Ah]
+
+
    xchg ax, dx
    shl  eax, 16
    xchg ax, dx
@@ -4881,10 +4876,16 @@ IF COMPISA GE COMPILE_386
 ELSE
 ; si not preserved
 
+   pop       ax ; bp - 02Eh
+   pop       si ; bp - 02Ch
+
+   mov       word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], ax
+   mov       word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], si
+
    les       bx, dword ptr [bp - 02Ah]
    mov       cx, es
 
-   MOV  SI, DX
+
    MOV  ES, AX ; todo synergy
    MUL  BX
    MOV  DI, DX
@@ -4996,15 +4997,15 @@ ASSUME DS:R_BSP_24_TEXT
 ; make ds equal to cs for self modifying codes
 
 
-pop       bx ; bp - 02Ah
-pop       cx ; bp - 028h
 
-SELFMODIFY_get_rwscalestep_lo_2:
-mov       ax, 01000h
 
 ;start inlined FixedMulBSPLocal_
 
 IF COMPISA GE COMPILE_386
+   pop       bx ; bp - 02Ah
+   pop       cx ; bp - 028h
+   SELFMODIFY_get_rwscalestep_lo_2:
+   mov       ax, 01000h
   SELFMODIFY_get_rwscalestep_hi_2:
   mov       dx, 01000h
 
@@ -5019,6 +5020,10 @@ IF COMPISA GE COMPILE_386
 
 
 ELSE
+   pop       bx ; bp - 02Ah
+   pop       cx ; bp - 028h
+   SELFMODIFY_get_rwscalestep_lo_2:
+   mov       ax, 01000h
 
    SELFMODIFY_get_rwscalestep_hi_2:
    mov       si, 01000h
@@ -7916,17 +7921,9 @@ not_below_viewplane_TWOSIDED:
 
 IF COMPISA GE COMPILE_386
 
-   les       ax, dword ptr [bp - 026h]
-   mov       dx, es
-   les       bx, dword ptr [bp - 02Eh]
-   mov       cx, es
-
-   shl  ecx, 16
-   mov  cx, bx
-   xchg ax, dx
-   shl  eax, 16
-   xchg ax, dx
-   imul  ecx
+   mov       eax, dword ptr [bp - 026h]
+   
+   imul  dword ptr [bp - 02Eh]  ; todo put in  ECX and reuse for next mul
    shr  eax, 16
 
 
@@ -8025,25 +8022,17 @@ add       ax, ((HEIGHTUNIT)-1) SHL 4 ; bake this in once, instead of doing it ev
 mov       word ptr ds:[_cs_topfrac_lo], ax
 adc       cx, 0
 mov       word ptr ds:[SELFMODIFY_set_topfrac_hi_bottop+1], cx
-; les to load two words
 
-; todo 24 bit muls?
+
 
 ;start inlined FixedMulBSPLocal_
 
 IF COMPISA GE COMPILE_386
 
-   les       ax, dword ptr [bp - 02Ah]
-   mov       dx, es
-   les       bx, dword ptr [bp - 02Eh]
-   mov       cx, es
+   mov       eax, dword ptr [bp - 02Ah]
 
-   shl  ecx, 16
-   mov  cx, bx
-   xchg ax, dx
-   shl  eax, 16
-   xchg ax, dx
-   imul  ecx
+
+   imul  dword ptr [bp - 02Eh]  ; todo reuse from last mul
    shr  eax, 16
 
 
@@ -8052,11 +8041,10 @@ ELSE
 ; si not preserved
 
    les       ax, dword ptr [bp - 02Ah]
-   mov       dx, es
+   mov       si, es
    les       bx, dword ptr [bp - 02Eh]
    mov       cx, es
 
-   MOV  SI, DX
    MOV  ES, AX ; todo synergy
    MUL  BX
    MOV  DI, DX
@@ -8136,6 +8124,8 @@ pop   dx ; bp - 030h
 pop   word ptr ds:[SELFMODIFY_set_rwscale_lo_bottop+1] ; bp - 02Eh
 pop   word ptr ds:[SELFMODIFY_set_rwscale_hi_bottop+1] ; bp - 02Ch
 
+; todo improve??
+
 mov   bl, dl
 les   ax, dword ptr ds:[bx+_selfmodify_lookup_markfloor]
 mov   word ptr ds:[SELFMODIFY_BSP_markfloor_1_TWOSIDED], ax
@@ -8147,22 +8137,19 @@ mov   byte ptr ds:[SELFMODIFY_BSP_markceiling_2_TWOSIDED], al
 mov   word ptr ds:[SELFMODIFY_BSP_markceiling_1_TWOSIDED], es
 
 
-pop       bx ; bp - 02Ah
-pop       cx ; bp - 028h
-SELFMODIFY_get_rwscalestep_lo_2_TWOSIDED:
-mov       ax, 01000h
-SELFMODIFY_get_rwscalestep_hi_2_TWOSIDED:
-mov       dx, 01000h
 
 ;start inlined FixedMulBSPLocal_
 
 IF COMPISA GE COMPILE_386
 
-   shl  ecx, 16
-   mov  cx, bx
-   xchg ax, dx
-   shl  eax, 16
-   xchg ax, dx
+   pop       ecx ; bp - 028h
+
+   SELFMODIFY_get_rwscalestep_2_TWOSIDED_386_base:
+   SELFMODIFY_get_rwscalestep_lo_2_TWOSIDED = SELFMODIFY_get_rwscalestep_2_TWOSIDED_386_base+1
+   SELFMODIFY_get_rwscalestep_hi_2_TWOSIDED = SELFMODIFY_get_rwscalestep_2_TWOSIDED_386_base+3
+   mov       eax, 010000000h
+
+
    imul  ecx
    shr  eax, 16
 
@@ -8170,7 +8157,15 @@ IF COMPISA GE COMPILE_386
 
 ELSE
 
-   MOV  SI, DX
+   pop       bx ; bp - 02Ah
+   pop       cx ; bp - 028h
+   SELFMODIFY_get_rwscalestep_lo_2_TWOSIDED:
+   mov       ax, 01000h
+   SELFMODIFY_get_rwscalestep_hi_2_TWOSIDED:
+   mov       si, 01000h
+
+
+
    MOV  ES, AX
    MUL  BX
    MOV  DI, DX
@@ -8204,23 +8199,20 @@ mov       word ptr ds:[SELFMODIFY_add_botstep_lo_TWOSIDED+4], ax
 mov       word ptr ds:[SELFMODIFY_add_botstep_hi_TWOSIDED+4], dx
 
 
-SELFMODIFY_get_rwscalestep_lo_1_TWOSIDED:
-mov       ax, 01000h
-SELFMODIFY_get_rwscalestep_hi_1_TWOSIDED:
-mov       dx, 01000h
-pop       bx ; bp - 026h
-pop       cx ; bp - 024h
+
 
 ;start inlined FixedMulBSPLocal_
 
 
 IF COMPISA GE COMPILE_386
 
-   shl  ecx, 16
-   mov  cx, bx
-   xchg ax, dx
-   shl  eax, 16
-   xchg ax, dx
+   SELFMODIFY_get_rwscalestep_1_TWOSIDED_386_base:
+   SELFMODIFY_get_rwscalestep_lo_1_TWOSIDED = SELFMODIFY_get_rwscalestep_1_TWOSIDED_386_base+1
+   SELFMODIFY_get_rwscalestep_hi_1_TWOSIDED = SELFMODIFY_get_rwscalestep_1_TWOSIDED_386_base+3
+   mov       eax, 010000000h
+   mov       dx, 01000h
+   pop       ecx ; bp - 024h
+
    imul  ecx
    shr  eax, 16
 
@@ -8228,7 +8220,13 @@ IF COMPISA GE COMPILE_386
 
 ELSE
 
-   MOV  SI, DX
+   SELFMODIFY_get_rwscalestep_lo_1_TWOSIDED:
+   mov       ax, 01000h
+   SELFMODIFY_get_rwscalestep_hi_1_TWOSIDED:
+   mov       si, 01000h
+   pop       bx ; bp - 026h
+   pop       cx ; bp - 024h
+
    MOV  ES, AX
    MUL  BX
    MOV  DI, DX
@@ -8259,9 +8257,6 @@ ENDIF
 
 mov       word ptr ds:[SELFMODIFY_add_topstep_lo_TWOSIDED+4], ax
 mov       word ptr ds:[SELFMODIFY_add_topstep_hi_TWOSIDED+4], dx
-
-
-
 
 
 
