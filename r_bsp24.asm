@@ -278,23 +278,23 @@ push  di
 ;    angleb = MOD_FINE_ANGLE(FINE_ANG90 + (visangle_shift3) - rw_normalangle);
 
 add   ah, 8      
-mov   dx, ax      ; copy input
+mov   bx, ax      ; copy input
 SELFMODIFY_sub_rw_normal_angle_1:
 sub   ax, 01000h
 SELFMODIFY_set_viewanglesr3_5:
-sub   dx, 01000h  ; 
+sub   bx, 01000h  ; 
 
-and   dh, 01Fh
+and   bh, 01Fh
 and   ah, 01Fh
 
 xchg  ax, di   ; di holds angleB
 
-; dx = anglea
+; bx = anglea
 ; di = angleb
 
 
 SELFMODIFY_get_rw_distance_lo_1:
-mov   bx, 01000h
+mov   ax, 01000h
 SELFMODIFY_get_rw_distance_hi_1:
 public SELFMODIFY_get_rw_distance_hi_1
 mov   cx, 01000h
@@ -2098,48 +2098,9 @@ ALIGN_MACRO
 ELSE
 
 ALIGN_MACRO
-    PROC   FixedMulTrigSine_BSPLocal_ NEAR ; fairly optimized
-    PUBLIC FixedMulTrigSine_BSPLocal_
 
-    ; DX:AX  *  CX:BX
-    ;  0  1   2  3
-
-    ; AX * CX:BX
-    ; The difference between FixedMulTrig and FixedMul1632:
-    ; fine sine/cosine lookup tables are -65535 to 65535, so 17 bits. 
-    ; technically, this resembles 16 * 32 with sign extend, except we cannot use CWD to generate the high 16 bits.
-    ; So those sign bits which contain bit 17, sign extended must be stored somewhere cannot be regenerated via CWD
-    ; we basically take the above function and shove sign bits in DS for storage and regenerate DS from SS upon return
-    ;
-    ; 
-    ;BYTE
-    ; RETURN VALUE
-    ;                3       2       1		0
-    ;                DONTUSE USE     USE    DONTUSE
-
-
-    ;                               AXBXhi	 AXBXlo
-    ;                       DXBXhi  DXBXlo          
-    ;               S0BXhi  S0BXlo                          
-    ;
-    ;                       AXCXhi  AXCXlo
-    ;               DXCXhi  DXCXlo  
-    ;                       
-    ;               AXS1hi  AXS1lo
-    ;                               
-    ;                       
-    ;       
-
-    ; AX is param 1 (segment)
-    ; DX is param 2 (fineangle or lookup)
-    ; CX:BX is value 2
-
-    sal dx, 1
-    sal dx, 1   ; DWORD lookup index
-
-    ENDP
-    PROC   FixedMulTrigNoShiftSine_BSPLocal_ NEAR ; fairly optimized
-    PUBLIC FixedMulTrigNoShiftSine_BSPLocal_
+    PROC   FixedMulTrigNoShiftSine_BSPLocalOLD_ NEAR ; fairly optimized
+    PUBLIC FixedMulTrigNoShiftSine_BSPLocalOLD_
     ; pass in the index already shifted to be a dword lookup..
 
     push  si
@@ -2211,6 +2172,48 @@ ALIGN_MACRO
 
     ENDP
 
+    PROC   FixedMulTrigSine_BSPLocal_ NEAR ; fairly optimized
+    PUBLIC FixedMulTrigSine_BSPLocal_
+
+
+
+    SHIFT_MACRO shl bx 2
+
+    ENDP
+
+    PROC   FixedMulTrigNoShiftSine_BSPLocal_ NEAR 
+    PUBLIC FixedMulTrigNoShiftSine_BSPLocal_
+    ; pass in the index already shifted to be a dword lookup..
+
+ 
+   SHR  BX, 1
+   test bh, 020h
+
+   je   skip_invert_sin
+   NEG  CX
+   NEG  AX
+   SBB  CX, 0
+   skip_invert_sin:
+   MOV  DX, FINESINE_SEGMENT
+   MOV  ES, DX
+
+   MOV  BX, WORD PTR ES:[BX]
+   MUL  BX        ; AX * BX
+   MOV  AX, CX    ; CX to AX
+   MOV  CX, DX    ; CX stores high result as low word
+   CWD            ; S1 in DX
+   AND  DX, BX    ; S1 * AX
+   NEG  DX        ; 
+   XCHG DX, BX    ; AX into DX, high word into BX
+   MUL  DX        ; AX*CX
+   ADD  AX, CX    ; add low word
+   ADC  DX, BX    ; add high word
+   RET
+
+
+
+    ENDP
+
 
 ALIGN_MACRO
     PROC   FixedMulTrigCosine_BSPLocal_ NEAR ; fairly optimized
@@ -2249,12 +2252,11 @@ ALIGN_MACRO
     ; DX is param 2 (fineangle or lookup)
     ; CX:BX is value 2
 
-    sal dx, 1
-    sal dx, 1   ; DWORD lookup index
+    SHIFT_MACRO shl dx 2
 
     ENDP
-    PROC   FixedMulTrigNoShiftCosine_BSPLocal_ NEAR ; fairly optimized
-    PUBLIC FixedMulTrigNoShiftCosine_BSPLocal_
+    PROC   FixedMulTrigNoShiftCosine_BSPLocalOLD_ NEAR ; fairly optimized
+    PUBLIC FixedMulTrigNoShiftCosine_BSPLocalOLD_
     ; pass in the index already shifted to be a dword lookup..
 
     push  si
@@ -2321,6 +2323,38 @@ ALIGN_MACRO
 
     pop   si
     ret
+
+
+
+    ENDP
+
+    PROC   FixedMulTrigNoShiftCosine_BSPLocal_ NEAR ; fairly optimized
+    PUBLIC FixedMulTrigNoShiftCosine_BSPLocal_
+    ; pass in the index already shifted to be a dword lookup..
+
+
+   SHR  BX, 1
+   test bh, 010h
+   je   skip_invert_cos
+   NEG  CX
+   NEG  AX
+   SBB  CX, 0
+   skip_invert_cos:
+   MOV  DX, FINECOSINE_SEGMENT
+   MOV  ES, DX
+
+   MOV  BX, WORD PTR ES:[BX]
+   MUL  BX        ; AX * BX
+   MOV  AX, CX    ; CX to AX
+   MOV  CX, DX    ; CX stores high result as low word
+   CWD            ; S1 in DX
+   AND  DX, BX    ; S1 * AX
+   NEG  DX        ; 
+   XCHG DX, BX    ; AX into DX, high word into BX
+   MUL  DX        ; AX*CX
+   ADD  AX, CX    ; add low word
+   ADC  DX, BX    ; add high word
+   RET
 
 
 
@@ -3155,7 +3189,7 @@ stosw
 SELFMODIFY_set_viewanglesr1_3:
 mov   dx, 01000h
 mov   di, dx
-call  FixedMulTrigNoShiftCosine_BSPLocal_
+call  FixedMulTrigNoShiftCosine_BSPLocalOLD_
 
 
 
@@ -3174,7 +3208,7 @@ mov   cx, es
 ;    gyt.w = -FixedMulTrigNoShift(FINE_SINE_ARGUMENT, viewangle_shiftright1 ,tr_y.w);
 
 
-call FixedMulTrigNoShiftSine_BSPLocal_
+call FixedMulTrigNoShiftSine_BSPLocalOLD_
 
 ; todo clean this up. less register swapping.
 
@@ -3218,7 +3252,7 @@ mov   cx, es
 SELFMODIFY_set_viewanglesr1_2:
 mov   dx, 01000h
 
-call  FixedMulTrigNoShiftSine_BSPLocal_
+call  FixedMulTrigNoShiftSine_BSPLocalOLD_
 neg dx
 neg ax
 sbb dx, 0
@@ -3238,7 +3272,7 @@ mov   cx, es
 SELFMODIFY_set_viewanglesr1_1:
 mov   dx, 01000h
 
-call FixedMulTrigNoShiftCosine_BSPLocal_
+call FixedMulTrigNoShiftCosine_BSPLocalOLD_
 
 ;    tx.w = -(gyt.w+gxt.w); 
 
@@ -4234,7 +4268,7 @@ ALIGN_MACRO
       ; store result
       mov   word ptr cs:[SELFMODIFY_set_PointToDist_result_lo+1], ax
       mov   word ptr cs:[SELFMODIFY_set_PointToDist_result_hi+1], dx
-      xchg  ax, bx  ; result in cx:bx
+
       mov   cx, dx
 
 
@@ -4243,7 +4277,7 @@ ALIGN_MACRO
 
    ; hyp in cx:bx.
 
-   pop       dx  ; angle calculated prior
+   pop       bx  ; angle calculated prior
 
    call      FixedMulTrigNoShiftSine_BSPLocal_
    ENSUREALIGN_318:
@@ -4591,22 +4625,22 @@ movsb           ; write drawseg_silhouette
 do_seg_textured_stuff:
 
 SELFMODIFY_set_offsetangle:
-mov       dx, 01000h
-cmp       dx, FINE_ANG180_NOSHIFT ; 04000h
+mov       bx, 01000h
+cmp       bx, FINE_ANG180_NOSHIFT ; 04000h
 jbe       offsetangle_greater_than_fineang180
-neg       dx
-and       dh, MOD_FINE_ANGLE_NOSHIFT_HIGHBITS
+neg       bx
+and       bh, MOD_FINE_ANGLE_NOSHIFT_HIGHBITS
 
 offsetangle_greater_than_fineang180:
 
 SELFMODIFY_set_PointToDist_result_hi:
 mov       cx, 01000h
 SELFMODIFY_set_PointToDist_result_lo:
-mov       bx, 01000h
+mov       ax, 01000h
 
 ; dx is offsetangle
 
-cmp       dx, FINE_ANG90_NOSHIFT ; 02000h
+cmp       bx, FINE_ANG90_NOSHIFT ; 02000h
 ja        offsetangle_greater_than_fineang90
 
 call      FixedMulTrigNoShiftSine_BSPLocal_
@@ -4641,8 +4675,9 @@ jmp     done_selfmodifying_colfunc_type_mid
 
 ALIGN_MACRO
 offsetangle_greater_than_fineang90:
-xchg      ax, cx
-mov       dx, bx
+xchg      ax, dx  ; dx gets low
+xchg      ax, cx  ; ax gets high
+
 
 
 
@@ -6571,19 +6606,20 @@ finish_midtex_selfmodify_TWOSIDED:
       call  FixedDivBSPLocal_
       ENSUREALIGN_303:
 
-      xchg  ax, bx  ; result in cx:bx
-      mov   cx, dx
 
 
       ; store result
-      mov   word ptr cs:[SELFMODIFY_set_PointToDist_result_lo_TWOSIDED+1], bx
-      mov   word ptr cs:[SELFMODIFY_set_PointToDist_result_hi_TWOSIDED+1], cx
+      mov   word ptr cs:[SELFMODIFY_set_PointToDist_result_lo_TWOSIDED+1], ax
+      mov   word ptr cs:[SELFMODIFY_set_PointToDist_result_hi_TWOSIDED+1], dx
+
+      mov   cx, dx
+
 
 ; end calculate hyp inlined
 
    ; hyp in cx:bx.
 
-   pop       dx  ; angle calculated prior
+   pop       bx  ; angle calculated prior
 
    call      FixedMulTrigNoShiftSine_BSPLocal_
    ENSUREALIGN_304:
@@ -7789,22 +7825,22 @@ ALIGN_MACRO
 do_seg_textured_stuff_TWOSIDED:
 mov       word ptr ds:[SELFMODIFY_BSP_get_segtextured_TWOSIDED], MOV_AX_IMM16_OPCODE + ((XTOVIEWANGLE_SEGMENT AND 0FFh) SHL 8)
 SELFMODIFY_set_offsetangle_TWOSIDED:
-mov       dx, 01000h
-cmp       dx, FINE_ANG180_NOSHIFT ; 04000h
+mov       bx, 01000h
+cmp       bx, FINE_ANG180_NOSHIFT ; 04000h
 jbe       offsetangle_greater_than_fineang180_TWOSIDED
-neg       dx
-and       dh, MOD_FINE_ANGLE_NOSHIFT_HIGHBITS
+neg       bx
+and       bh, MOD_FINE_ANGLE_NOSHIFT_HIGHBITS
 
 offsetangle_greater_than_fineang180_TWOSIDED:
 
 SELFMODIFY_set_PointToDist_result_hi_TWOSIDED:
 mov       cx, 01000h
 SELFMODIFY_set_PointToDist_result_lo_TWOSIDED:
-mov       bx, 01000h
+mov       ax, 01000h
 
 ; dx is offsetangle
 
-cmp       dx, FINE_ANG90_NOSHIFT ; 02000h
+cmp       bx, FINE_ANG90_NOSHIFT ; 02000h
 ja        offsetangle_greater_than_fineang90_TWOSIDED
 
 call      FixedMulTrigNoShiftSine_BSPLocal_
@@ -7815,8 +7851,8 @@ xchg      ax, dx
 jmp       done_with_offsetangle_stuff_TWOSIDED
 ALIGN_MACRO
 offsetangle_greater_than_fineang90_TWOSIDED:
-xchg      ax, cx
-mov       dx, bx
+xchg      ax, dx  ; dx gets low
+xchg      ax, cx  ; ax gets high
 
 
 
