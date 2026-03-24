@@ -5247,6 +5247,7 @@ mov   byte ptr es:[bx+di], al
 SELFMODIFY_skip_markceildirty_mid:
 jmp   SHORT markceildirty_mid  ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET into mov al
 
+xchg  ax, ax  ; for ENSUREALIGN_002 todo find a way to remove
 
 SELFMODIFY_BSP_markceiling_1_TARGET:
 
@@ -8355,6 +8356,7 @@ mov   byte ptr es:[bx+di], al
 SELFMODIFY_skip_markceildirty:
 jmp   SHORT markceildirty  ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET into mov al
 
+xchg  ax, ax  ; for ENSUREALIGN_006 todo find a way to remove
 
 SELFMODIFY_BSP_markceiling_1_TARGET_TWOSIDED:
 
