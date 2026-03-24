@@ -32,6 +32,62 @@ ENDP
 IF COMPISA LE COMPILE_286
 
 
+; first param is unsigned so DX and sign can be skipped
+ALIGN_MACRO
+PROC   FixedMul16u32_MapLocal_   NEAR
+PUBLIC FixedMul16u32_MapLocal_
+
+
+; need to get the sign-extends for DX and CX
+
+
+XCHG BX, AX    ; AX stored in BX
+MUL  BX        ; AX * BX
+MOV  AX, CX    ; CX to AX
+MOV  CX, DX    ; CX stores low word
+CWD            ; S1 in DX
+AND  DX, BX    ; S1 * AX
+NEG  DX        ; 
+XCHG DX, BX    ; AX into DX, high word into BX
+MUL  DX        ; AX*CX
+ADD AX, CX     ; add low word
+ADC DX, BX     ; add high word
+
+ret
+
+ENDP
+
+
+
+ALIGN_MACRO
+PROC   FixedMul1632_MapLocal_  NEAR
+PUBLIC FixedMul1632_MapLocal_
+
+
+
+
+; improved into imul version by zero318
+
+
+  MOV ES, CX
+  MOV CX, AX
+  MUL BX
+  XCHG AX, DX
+  XCHG AX, CX
+  CWD
+  AND BX, DX
+  MOV DX, ES
+  IMUL DX
+  SUB CX, BX
+  SBB BX, BX
+  ADD AX, CX
+  ADC DX, BX
+  RET
+
+
+
+ENDP
+
 
 ALIGN_MACRO
 PROC   FixedMul2432_MapLocal_ NEAR
@@ -64,38 +120,6 @@ ALIGN_MACRO
 PROC   FixedMul_MapLocal_ NEAR
 PUBLIC FixedMul_MapLocal_
 
-; DX:AX  *  CX:BX
-;  0  1      2  3
-
-; with sign extend for byte 3:
-; S0:DX:AX    *   S1:CX:BX
-; S0 = DX sign extend
-; S1 = CX sign extend
-
-;
-; 
-;BYTE
-; RETURN VALUE
-;                3       2       1		0
-;                DONTUSE USE     USE    DONTUSE
-
-
-;                               AXBXhi	 AXBXlo
-;                       DXBXhi  DXBXlo          
-;               S0BXhi  S0BXlo                          
-;
-;                       AXCXhi  AXCXlo
-;               DXCXhi  DXCXlo  
-;                       
-;               AXS1hi  AXS1lo
-;                               
-;                       
-;       
-
-
-
-
-; need to get the sign-extends for DX and CX
 
 ; thanks zero318 from discord for improved algorithm  
 
@@ -132,104 +156,50 @@ ENDP
 
 ELSE
 
+
+
+; first param is unsigned so DX and sign can be skipped
+ALIGN_MACRO
+PROC   FixedMul16u32_MapLocal_   NEAR
+PUBLIC FixedMul16u32_MapLocal_
+
+
+
+  MOVZX EAX, AX
+  SHL ECX, 16
+  MOV CX, BX
+  IMUL ECX
+  SHR EAX, 16
+  RET
+
+ENDP
+
+ALIGN_MACRO
+
+PROC   FixedMul1632_MapLocal_ NEAR
+PUBLIC FixedMul1632_MapLocal_
+
+  CWDE
+  SHL ECX, 16
+  MOV CX, BX
+  IMUL ECX
+  SHR EAX, 16
+  RET
+ENDP
+
 ALIGN_MACRO
 
 PROC   FixedMul2432_MapLocal_ NEAR
 PUBLIC FixedMul2432_MapLocal_
 
-; we are being passed two numbers that should be shifted right 8 bits before multiplication
-; this should lead to a couple fewer 16-bit multiplications if we do things right.
-; CWD becomes a little complicated
-
-; DX:AX  *  CX:BX
-;  0  1      2  3
-
-; with sign extend for byte 3:
-; S0:DX:AX    *   S1:CX:BX
-; S0 = DX sign extend
-; S1 = CX sign extend
-;
-; 
-;BYTE
-; RETURN VALUE
-;                3       2       1		0
-;                DONTUSE USE     USE    DONTUSE
-
-
-;                               AXBXhi	 AXBXlo
-;                       DXBXhi  DXBXlo          
-;               S0BXhi  S0BXlo                          
-;
-;                       AXCXhi  AXCXlo
-;               DXCXhi  DXCXlo  
-;                       
-;               AXS1hi  AXS1lo
-;                               
-;                       
-;       
-
-
-; need to get the sign-extends for DX and CX
-
-push  si
-
-; DX:AX  is   43 21
-; we want:    S4 32  (s = sign bit)
-
-MOV   al, dh ; 43 24
-MOV   dh, ah ; 23 24
-CBW          ; 23 S4
-XCHG AX, DX  ; S4 23
-XCHG AL, AH  ; S4 32
-
-mov   es, ax	; store ax in es
-mov   ds, dx    ; store dx in ds
-
-
-
-; registers have been prepped. 20-25ish cycles. This is way faster than four 8 bit shifts...
-
-; TODO: actually make the mult faster
-
-mov   ax, dx	; ax holds dx now
-CWD				; S0 in DX
-
-AND   DX, BX	; S0*BX
-NEG   DX
-mov   SI, DX	; DI stores hi word return
-
-; AX still stores DX
-MUL  CX         ; DX*CX
-add  SI, AX    ; low word result into high word return
-
-mov  AX, DS    ; restore DX from ds
-MUL  BX         ; DX*BX
-XCHG BX, AX    ; BX will hold low word return. store bx in ax
-add  SI, DX    ; add high word to result
-
-mov  DX, ES    ; restore AX from ES
-mul  DX        ; BX*AX  
-add  BX, DX    ; high word result into low word return
-ADC  SI, 0
-
-mov  AX, CX   ; AX holds CX
-CWD           ; S1 in DX
-
-mov  CX, ES   ; AX from ES
-AND  DX, CX   ; S1*AX
-NEG  DX
-ADD  SI, DX   ; result into high word return
-
-MUL  CX       ; AX*CX
-
-ADD  AX, BX	  ; set up final return value
-ADC  DX, SI
-
-mov  CX, SS   ; restore DS
-mov  DS, CX
-
-pop   si
-ret
+  MOVSX EDX, DX
+  SHL EDX, 8
+  MOV DL, AH
+  SHRD EAX, ECX, 16
+  XCHG AX, BX
+  IMUL EDX
+  SHR EAX, 16
+  RET
 
 
 ENDP
@@ -244,13 +214,12 @@ PUBLIC FixedMul_MapLocal_
 
 ; thanks zero318 for xchg improvement ideas
   
-  shl  ecx, 16
-  mov  cx, bx
-  xchg ax, dx
-  shl  eax, 16
-  xchg ax, dx
-  imul ecx
-  shr  eax, 16
+  SHL EDX, 16
+  XCHG AX, DX
+  SHRD EAX, ECX, 16
+  XCHG AX, BX
+  IMUL EDX
+  SHR EAX, 16
 
 
 ret
@@ -317,58 +286,6 @@ ENDP
 
 
 
-ALIGN_MACRO
-PROC   FixedMul1632_MapLocal_  NEAR
-PUBLIC FixedMul1632_MapLocal_
-
-; AX  *  CX:BX
-;  0  1   2  3
-
-; AX * CX:BX
-
-;
-; 
-;BYTE
-; RETURN VALUE
-;                3       2       1		0
-;                DONTUSE USE     USE    DONTUSE
-
-
-;                               AXBXhi	 AXBXlo
-;                       DXBXhi  DXBXlo          
-;               S0BXhi  S0BXlo                          
-;
-;                       AXCXhi  AXCXlo
-;               DXCXhi  DXCXlo  
-;                       
-;               AXS1hi  AXS1lo
-;                               
-;                       
-;       
-
-
-
-; improved into imul version by zero318
-
-
-  MOV ES, CX
-  MOV CX, AX
-  MUL BX
-  XCHG AX, DX
-  XCHG AX, CX
-  CWD
-  AND BX, DX
-  MOV DX, ES
-  IMUL DX
-  SUB CX, BX
-  SBB BX, BX
-  ADD AX, CX
-  ADC DX, BX
-  RET
-
-
-
-ENDP
 
 
 
@@ -803,55 +720,6 @@ ret
 
 ENDP
 
-
-
-; first param is unsigned so DX and sign can be skipped
-ALIGN_MACRO
-PROC   FixedMul16u32_MapLocal_   NEAR
-PUBLIC FixedMul16u32_MapLocal_
-
-; AX  *  CX:BX
-;  0  1   2  3
-
-; AX * CX:BX
-
-;
-; 
-;BYTE
-; RETURN VALUE
-;                3       2       1		0
-;                DONTUSE USE     USE    DONTUSE
-
-
-;                               AXBXhi	 AXBXlo
-;                       AXCXhi  AXCXlo
-;               AXS1hi  AXS1lo
-;       
-
-
-
-; need to get the sign-extends for DX and CX
-
-
-XCHG BX, AX    ; AX stored in BX
-MUL  BX        ; AX * BX
-MOV  AX, CX    ; CX to AX
-MOV  CX, DX    ; CX stores low word
-CWD            ; S1 in DX
-AND  DX, BX    ; S1 * AX
-NEG  DX        ; 
-XCHG DX, BX    ; AX into DX, high word into BX
-MUL  DX        ; AX*CX
-ADD AX, CX     ; add low word
-ADC DX, BX     ; add high word
-
-
-
-ret
-
-
-
-ENDP
 
 
 
