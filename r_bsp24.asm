@@ -5189,18 +5189,17 @@ PUBLIC done_setting_vga_plane
 
 ; todo find a way to clean up 8/16 bit logic and compares. 
 ; store only in ch/cl. possible store same pixel floor/ceiling side by side? one read, word?
-; si sucks for holding this value. use dx?
+
                                                  ; di = rw_x
 ; ah already 0
 mov   al, byte ptr ds:[di+OFFSET_FLOORCLIP]	 ; cx = floor
 mov   cx, ax
-mov   al, byte ptr ds:[di+OFFSET_CEILINGCLIP] ; si = ceiling  = ceilingclip[rw_x]+1;
+mov   al, byte ptr ds:[di+OFFSET_CEILINGCLIP] ; dx = ceiling  = ceilingclip[rw_x]+1;
 
-; toggle for ENSUREALIGN_001
-;xchg  ax, si
-mov    si, ax
+; toggle for ENSUREALIGN_001/ENSUREALIGN_002 along with inc instruction
+xchg  ax, dx
+;mov    dx, ax
 
-inc   si
 
 ; ds is cs
 
@@ -5213,22 +5212,24 @@ inc   si
 SELFMODIFY_set_topfrac_hi_mid:
 mov   ax, 01000h
 ENSUREALIGN_001:
+inc   dx
 
-cmp   ax, si  ; ax can be negative even if si is not? but maybe ah is always ff?
+
+cmp   ax, dx  ; ax can be negative even if dx is not? but maybe ah is always ff?
 jg    skip_yl_ceil_clip    
 do_yl_ceil_clip:
-mov   ax, si
+mov   ax, dx
 skip_yl_ceil_clip:
 
 
-mov   dx, ax   ; dx has yl...
+mov   si, ax   ; si has yl...
 
 SELFMODIFY_BSP_markceiling_1:
 public SELFMODIFY_BSP_markceiling_1
 SELFMODIFY_BSP_markceiling_1_AFTER = SELFMODIFY_BSP_markceiling_1 + 2
 
 ; ax is yl
-; si = top = ceilingclip[rw_x]+1;
+; dx = top = ceilingclip[rw_x]+1;
 dec   ax				; now ax = bottom = yl-1
 ; cx is floor, 
 ; thie following is a forced encoding. tasm wants to do 3A C1 and this needs to agree with selfmodify...
@@ -5237,17 +5238,17 @@ jb    skip_bottom_floorclip
 mov   al, cl
 dec   ax
 skip_bottom_floorclip:
-cmp   si, ax
+cmp   dx, ax
 jg    markceiling_done
 les   bx, dword ptr ds:[_ceiltop]
 dec   ax
 mov   byte ptr es:[bx+di + vp_bottom_offset], al
-lea   ax, [si - 1]
+mov   ax, dx
+dec   ax
 mov   byte ptr es:[bx+di], al
 SELFMODIFY_skip_markceildirty_mid:
 jmp   SHORT markceildirty_mid  ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET into mov al
 
-xchg  ax, ax  ; for ENSUREALIGN_002 todo find a way to remove
 
 SELFMODIFY_BSP_markceiling_1_TARGET:
 
@@ -5259,7 +5260,7 @@ markceiling_done:
 SELFMODIFY_set_botfrac_hi_mid:
 mov   ax, 01000h
 ENSUREALIGN_002:
-; ah 0 because si < 255
+; ah 0 because dx < 255
 
 
 
@@ -5271,8 +5272,8 @@ mov   ax, cx
 dec   ax
 skip_yh_floorclip:
 
-mov   bp, dx  ; store yl
-sub   dx, ax   ; yl - yh. technically we want to know if (yh - yl) is positive then we take (200 - (yh - yl)
+mov   bp, si  ; store yl
+sub   si, ax   ; yl - yh. technically we want to know if (yh - yl) is positive then we take (200 - (yh - yl)
 
 
 ; ax is already yh
@@ -5287,10 +5288,10 @@ dec   cx			; bottom = floorclip[rw_x]-1;
 ;		top = ceilingclip[rw_x]+1;
 ;	}
 
-; si is ceil
-cmp   ax, si
+; dx is ceil
+cmp   ax, dx
 jg    skip_top_ceilingclip
-mov   ax, si	 ; 		top = ceilingclip[rw_x]+1;  ;todo is si ok to knock out via xchg?
+mov   ax, dx	 ; 		top = ceilingclip[rw_x]+1;  ;todo is si ok to knock out via xchg?
 
 skip_top_ceilingclip:
 
@@ -5315,7 +5316,7 @@ SELFMODIFY_BSP_markfloor_1_TARGET:
 markfloor_done:
 public  markfloor_done
 ; get jns check sort of for free, we need to sal anyway on fall thru
-sal   dx, 1        ; multiply pixel count by 2. if signed no pixels to draw
+sal   si, 1        ; multiply pixel count by 2. if signed no pixels to draw
 jns   jump_to_mid_no_pixels_to_draw ; had to wait until floors/ceils marked to early out.
 
 push  di  ; store dc_x
@@ -5323,11 +5324,17 @@ SELFMODIFY_COLFUNC_sub_centery24_mid:
 lea   ax, [bp - 010h]
 push  ax
 
+lea   dx, [si+ 398]   ; 199 - (dc_yh - dc_yl) shl 1
+
 lea   si,  [bp + bsp_local_dc_yl_lookup_table_ - 2] ; word offset + lookup
 mov   bp, word ptr ds:[si+bp]                       ; add * 80 lookup table value 
 
+mov   ax, XTOVIEWANGLE_SEGMENT
+mov   es, ax
 
 mov   bx, di  ; copy dc_x
+mov   bx, word ptr es:[bx + di]
+
 
 SELFMODIFY_BSP_detailshift2minus:
 sar   di, 1    ; todo would love to get rid of these. happening for every column even if shift not needed.
@@ -5338,10 +5345,10 @@ SELFMODIFY_BSP_add_destview_offset:
 public SELFMODIFY_BSP_add_destview_offset
 lea   di, [di + bp + 01000h]           ; di has destview offset  ; rare, dont align
 
-; bx has dc_x...
 
 
-add   dx, 398   ; 199 - (dc_yh - dc_yl) shl 1
+
+
 mov   si, dx  ; 2, 2   dx already multiplied by 2
 shl   si, 1   ; 4, 2
 SELFMODIFY_set_pixel_count_shift_mul:
@@ -5353,17 +5360,14 @@ shl   si, 1   ; 12, 2    ; is there a way to swap just one instruction, while no
 
 
 
-seg_is_textured:
+
 
 ; angle = MOD_FINE_ANGLE (rw_centerangle + xtoviewangle[rw_x]);
 
 ; eventually use DS here, once source_segment vars use CS?
 
-mov   ax, XTOVIEWANGLE_SEGMENT
-mov   es, ax
 
-shl   bx, 1        ; word lookup
-mov   bx, word ptr es:[bx]
+
 
 mov   ax, FINETANGENTINNER_SEGMENT  ; maybe can be skipped if bsp is moved under here.
 mov   es, ax
@@ -8308,7 +8312,7 @@ mov   cx, ax
 mov   al, byte ptr ds:[di+OFFSET_CEILINGCLIP] ; si = ceiling  = ceilingclip[rw_x]+1;
 
 xchg  ax, si
-
+;mov   si, ax  ; toggle for ENSUREALIGN_005/ENSUREALIGN_006 along with INC instruciton
 inc   si
 
 ; ds is cs
@@ -8323,6 +8327,7 @@ SELFMODIFY_set_topfrac_hi_bottop:
 mov   ax, 01000h
 ENSUREALIGN_005:
 
+
 cmp   ax, si  ; ax can be negative even if si is not? but maybe ah is always ff?
 jg    skip_yl_ceil_clip_TWOSIDED    
 do_yl_ceil_clip_TWOSIDED:
@@ -8332,7 +8337,7 @@ mov   dx, ax   ; dx has yl...
 push  dx       ; todo remove
 SELFMODIFY_BSP_markceiling_1_TWOSIDED:
 jmp SHORT    markceiling_done_TWOSIDED    ; OR mov dl, [markceiling]
-ALIGN_MACRO
+
 SELFMODIFY_BSP_markceiling_1_AFTER_TWOSIDED = SELFMODIFY_BSP_markceiling_1_TWOSIDED+2
 
 ; ax is yl
@@ -8356,7 +8361,6 @@ mov   byte ptr es:[bx+di], al
 SELFMODIFY_skip_markceildirty:
 jmp   SHORT markceildirty  ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET into mov al
 
-xchg  ax, ax  ; for ENSUREALIGN_006 todo find a way to remove
 
 SELFMODIFY_BSP_markceiling_1_TARGET_TWOSIDED:
 
