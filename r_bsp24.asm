@@ -4116,26 +4116,42 @@ ALIGN_MACRO
       call  FixedDivBSPLocal_
       ENSUREALIGN_317:
 
+      mov       cx, cs
+      mov       ds, cx
       ; store result
-      mov   word ptr cs:[SELFMODIFY_set_PointToDist_result_lo+1], ax
-      mov   word ptr cs:[SELFMODIFY_set_PointToDist_result_hi+1], dx
+      mov   word ptr ds:[SELFMODIFY_set_PointToDist_result_lo+1], ax
+      mov   word ptr ds:[SELFMODIFY_set_PointToDist_result_hi+1], dx
 
-      mov   cx, dx
-
+      mov   di, dx
 
 
 ; end calculate hyp inlined
 
-   ; hyp in cx:bx.
+   ; hyp in di:bx.
 
    pop       bx  ; angle calculated prior
 
-   call      FixedMulTrigNoShiftSine_BSPLocal_
-   ENSUREALIGN_318:
+   ; inlined FixedMulTrigNoShiftSine_BSPLocal_
+
+   SHR  BX, 1
+
+   MOV  DX, FINESINE_SEGMENT
+   MOV  ES, DX
+   MOV  BX, WORD PTR ES:[BX]
+
+   MUL  BX        ; AX * BX
+   MOV  AX, DI    ; DI to AX
+   MOV  DI, DX    ; DI stores high result as low word
+   CWD            ; S1 in DX
+   AND  DX, BX    ; S1 * AX
+   NEG  DX        ; 
+   XCHG DX, BX    ; AX into DX, high word into BX
+   MUL  DX        ; AX*DI
+   ADD  AX, DI    ; add low word
+   ADC  DX, BX    ; add high word
 
 
-   mov       cx, cs
-   mov       ds, cx
+
 
    ; self modifying code for rw_distance
    mov   word ptr ds:[SELFMODIFY_set_rw_distance_lo+1], ax
@@ -4494,8 +4510,25 @@ mov       ax, 01000h
 cmp       bx, FINE_ANG90_NOSHIFT ; 02000h
 ja        offsetangle_greater_than_fineang90
 
-call      FixedMulTrigNoShiftSine_BSPLocal_
-ENSUREALIGN_313:
+; inlined FixedMulTrigNoShiftSine_BSPLocal_
+
+SHR  BX, 1
+
+MOV  DX, FINESINE_SEGMENT
+MOV  ES, DX
+MOV  BX, WORD PTR ES:[BX]
+
+MUL  BX        ; AX * BX
+MOV  AX, CX    ; CX to AX
+MOV  CX, DX    ; CX stores high result as low word
+CWD            ; S1 in DX
+AND  DX, BX    ; S1 * AX
+NEG  DX        ; 
+XCHG DX, BX    ; AX into DX, high word into BX
+MUL  DX        ; AX*CX
+ADD  AX, CX    ; add low word
+ADC  DX, BX    ; add high word
+
 ; used later, dont change?
 ; dx:ax is rw_offset
 xchg      ax, dx
@@ -6458,25 +6491,42 @@ finish_midtex_selfmodify_TWOSIDED:
       ENSUREALIGN_303:
 
 
+      mov       cx, cs
+      mov       ds, cx
 
       ; store result
-      mov   word ptr cs:[SELFMODIFY_set_PointToDist_result_lo_TWOSIDED+1], ax
-      mov   word ptr cs:[SELFMODIFY_set_PointToDist_result_hi_TWOSIDED+1], dx
+      mov   word ptr ds:[SELFMODIFY_set_PointToDist_result_lo_TWOSIDED+1], ax
+      mov   word ptr ds:[SELFMODIFY_set_PointToDist_result_hi_TWOSIDED+1], dx
 
-      mov   cx, dx
+      mov   di, dx
 
 
 ; end calculate hyp inlined
 
-   ; hyp in cx:bx.
+   ; hyp in di:bx.
 
-   pop       bx  ; angle calculated prior
+      pop       bx  ; angle calculated prior
+   ; inlined FixedMulTrigNoShiftSine_BSPLocal_
 
-   call      FixedMulTrigNoShiftSine_BSPLocal_  ; always positive? inline and skip neg check?
-   ENSUREALIGN_304:
+      SHR  BX, 1
 
-   mov       cx, cs
-   mov       ds, cx
+      MOV  DX, FINESINE_SEGMENT
+      MOV  ES, DX
+      MOV  BX, WORD PTR ES:[BX]
+
+      MUL  BX        ; AX * BX
+      MOV  AX, DI    ; DI to AX
+      MOV  DI, DX    ; DI stores high result as low word
+      CWD            ; S1 in DX
+      AND  DX, BX    ; S1 * AX
+      NEG  DX        ; 
+      XCHG DX, BX    ; AX into DX, high word into BX
+      MUL  DX        ; AX*DI
+      ADD  AX, DI    ; add low word
+      ADC  DX, BX    ; add high word
+
+
+
 
 
    ; self modifying code for rw_distance
@@ -7694,8 +7744,25 @@ mov       ax, 01000h
 cmp       bx, FINE_ANG90_NOSHIFT ; 02000h
 ja        offsetangle_greater_than_fineang90_TWOSIDED
 
-call      FixedMulTrigNoShiftSine_BSPLocal_    ; always positive? inline and skip neg check?
-ENSUREALIGN_307:
+; inlined FixedMulTrigNoShiftSine_BSPLocal_
+
+SHR  BX, 1
+
+MOV  DX, FINESINE_SEGMENT
+MOV  ES, DX
+MOV  BX, WORD PTR ES:[BX]
+
+MUL  BX        ; AX * BX
+MOV  AX, CX    ; CX to AX
+MOV  CX, DX    ; CX stores high result as low word
+CWD            ; S1 in DX
+AND  DX, BX    ; S1 * AX
+NEG  DX        ; 
+XCHG DX, BX    ; AX into DX, high word into BX
+MUL  DX        ; AX*CX
+ADD  AX, CX    ; add low word
+ADC  DX, BX    ; add high word
+
 ; used later, dont change?
 ; dx:ax is rw_offset
 xchg      ax, dx
@@ -14951,22 +15018,21 @@ public ENSUREALIGN_300
 public ENSUREALIGN_301
 public ENSUREALIGN_302
 public ENSUREALIGN_303
-public ENSUREALIGN_304
+
 public ENSUREALIGN_305
 public ENSUREALIGN_306
-public ENSUREALIGN_307
 public ENSUREALIGN_308
 public ENSUREALIGN_309
 
 public ENSUREALIGN_310
 public ENSUREALIGN_311
 public ENSUREALIGN_312
-public ENSUREALIGN_313
+
 public ENSUREALIGN_314
 public ENSUREALIGN_315
 public ENSUREALIGN_316
 public ENSUREALIGN_317
-public ENSUREALIGN_318
+
 public ENSUREALIGN_319
 public ENSUREALIGN_320
 public ENSUREALIGN_321
