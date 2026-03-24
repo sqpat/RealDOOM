@@ -330,39 +330,6 @@ ELSE
     PROC   FixedMulTrigSine_MapLocal_ NEAR
     PUBLIC FixedMulTrigSine_MapLocal_
 
-    ; DX:AX  *  CX:BX
-    ;  0  1   2  3
-
-    ; AX * CX:BX
-    ; The difference between FixedMulTrig and FixedMul1632:
-    ; fine sine/cosine lookup tables are -65535 to 65535, so 17 bits. 
-    ; technically, this resembles 16 * 32 with sign extend, except we cannot use CWD to generate the high 16 bits.
-    ; So those sign bits which contain bit 17, sign extended must be stored somewhere cannot be regenerated via CWD
-    ; we basically take the above function and shove sign bits in DS for storage and regenerate DS from SS upon return
-    ;
-    ; 
-    ;BYTE
-    ; RETURN VALUE
-    ;                3       2       1		0
-    ;                DONTUSE USE     USE    DONTUSE
-
-
-    ;                               AXBXhi	 AXBXlo
-    ;                       DXBXhi  DXBXlo          
-    ;               S0BXhi  S0BXlo                          
-    ;
-    ;                       AXCXhi  AXCXlo
-    ;               DXCXhi  DXCXlo  
-    ;                       
-    ;               AXS1hi  AXS1lo
-    ;                               
-    ;                       
-    ;       
-
-    ; AX is param 1 (segment)
-    ; DX is param 2 (fineangle or lookup)
-    ; CX:BX is value 2
-
     SHIFT_MACRO sal dx 2
 
     ENDP
@@ -370,76 +337,38 @@ ELSE
     PUBLIC FixedMulTrigNoShiftSine_MapLocal_
     ; pass in the index already shifted to be a dword lookup..
 
-    push  si
+    xchg ax, bx
+    mov  bx, dx
+  
+    SHR  BX, 1
+    test bh, 020h
+    MOV  DX, FINESINE_SEGMENT
+    MOV  ES, DX
+    MOV  BX, WORD PTR ES:[BX]
 
-    ; lookup the fine angle
-
-; todo swap arg order so cx:bx is seg/lookup
-; allowing for mov es, cx -> les es:[bx]
-
-
-    mov   ax, FINESINE_SEGMENT
-    mov   es, ax  ; put segment in es
-    
-    mov   si, dx                ; dword lookup in si
-    xchg  ax, dx                ; angle in ax 0-7FFF
-    shr   si, 1                 ; word lookup in si
-    shl   ax, 1                 ; 0-7FFF becomes 0-FFFF
-    cwd                         ; dx gets sign
-    
-    mov   es, word ptr es:[si]  ; es gets low word
-    mov   ax, dx                ; ax gets sign copy
-
-   ; es has low word
-   ; dx, ax have sign.
-
-    AND   AX, BX	; S0*BX
-    NEG   AX
-    XCHG  AX, SI	; SI stores hi word return
-
-    MOV   AX, DX    ; restore sign bits from DX
-
-    AND   AX, CX     ; DX*CX
-    SUB   SI, AX     ; low word result into high word return
-
-    ; DX already has sign bits..
-
-    ; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
-    ; UNLESS BX is 0. then its also 0!
-
-    ; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
-    MOV  AX, BX    ; create BX copy
-    SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
-    ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
-
-    AND  AX, DX    ; 0 or BX - 1
-    ADD  SI, AX    ; add DX * BX high word. 
+    je   skip_invert_sin
+    NEG  CX
+    NEG  AX
+    SBB  CX, 0
+    neg  bx
+    skip_invert_sin:
 
 
-    AND  DX, BX    ; DX * BX low bits
-    NEG  DX
-    XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
+    MUL  BX        ; AX * BX
+    MOV  AX, CX    ; CX to AX
+    MOV  CX, DX    ; CX stores high result as low word
+    CWD            ; S1 in DX
+    AND  DX, BX    ; S1 * AX
+    NEG  DX        ; 
+    XCHG DX, BX    ; AX into DX, high word into BX
+    MUL  DX        ; AX*CX
+    ADD  AX, CX    ; add low word
+    ADC  DX, BX    ; add high word
+    RET
 
-    mov  AX, ES    ; grab AX from ES
-    mul  DX        ; BX*AX  
-    add  BX, DX    ; high word result into low word return
-    ADC  SI, 0    ; would be cool if we had a known zero reg
 
-    xchg AX, CX   ; AX gets CX
 
-    CWD           ; S1 in DX
-
-    mov  CX, ES   ; AX from ES
-    AND  DX, CX   ; S1*AX
-    SUB  SI, DX   ; result into high word return
-
-    MUL  CX       ; AX*CX
-
-    ADD  AX, BX	  ; set up final return value
-    ADC  DX, SI
-
-    pop   si
-    ret
+    ENDP
 
 
 
@@ -488,115 +417,48 @@ ELSE
 
     PROC   FixedMulTrigCosine_MapLocal_ NEAR
     PUBLIC FixedMulTrigCosine_MapLocal_
-
-    ; DX:AX  *  CX:BX
-    ;  0  1   2  3
-
-    ; AX * CX:BX
-    ; The difference between FixedMulTrig and FixedMul1632:
-    ; fine sine/cosine lookup tables are -65535 to 65535, so 17 bits. 
-    ; technically, this resembles 16 * 32 with sign extend, except we cannot use CWD to generate the high 16 bits.
-    ; So those sign bits which contain bit 17, sign extended must be stored somewhere cannot be regenerated via CWD
-    ; we basically take the above function and shove sign bits in DS for storage and regenerate DS from SS upon return
-    ;
-    ; 
-    ;BYTE
-    ; RETURN VALUE
-    ;                3       2       1		0
-    ;                DONTUSE USE     USE    DONTUSE
-
-
-    ;                               AXBXhi	 AXBXlo
-    ;                       DXBXhi  DXBXlo          
-    ;               S0BXhi  S0BXlo                          
-    ;
-    ;                       AXCXhi  AXCXlo
-    ;               DXCXhi  DXCXlo  
-    ;                       
-    ;               AXS1hi  AXS1lo
-    ;                               
-    ;                       
-    ;       
-
-    ; AX is param 1 (segment)
-    ; DX is param 2 (fineangle or lookup)
-    ; CX:BX is value 2
-
-    sal dx, 1
-    sal dx, 1   ; DWORD lookup index
+ 
+    SHIFT_MACRO shl dx 2
 
     ENDP
   PROC   FixedMulTrigNoShiftCosine_MapLocal_ NEAR
   PUBLIC FixedMulTrigNoShiftCosine_MapLocal_
+
     ; pass in the index already shifted to be a dword lookup..
 
-    push  si
+; toggle 2/3
+; 3/4 bad
+; so toggle... 34.
 
-    ; lookup the fine angle
+    xchg ax, bx
+    mov  bx, dx
 
-; todo swap arg order so cx:bx is seg/lookup
-; allowing for mov es, cx -> les es:[bx]
-
-    mov   ax, FINECOSINE_SEGMENT
-    mov   es, ax                ; put segment in es
-    mov   si, dx                ; out offset  in si
-    lea   ax, [si + 02000h]
-    shr   si, 1                 ; dword to word lookup
-    shl   ax, 1                 ; 0-7FFF becomes 0-FFFF
-    cwd                         ; dx gets sign
-    mov   es, word ptr es:[si]  ; es gets low word
-    mov   ax, dx                ; ax gets sign copy
-
-   ; es has low word
-   ; dx, ax have sign.
-
-    AND   AX, BX	; S0*BX
-    NEG   AX
-    XCHG  AX, SI	; SI stores hi word return
-
-    MOV   AX, DX    ; restore sign bits from DX
-
-    AND   AX, CX     ; DX*CX
-    SUB   SI, AX     ; low word result into high word return
-
-    ; DX already has sign bits..
-
-    ; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
-    ; UNLESS BX is 0. then its also 0!
-
-    ; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
-    MOV  AX, BX    ; create BX copy
-    SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
-    ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
-
-    AND  AX, DX    ; 0 or BX - 1
-    ADD  SI, AX    ; add DX * BX high word. 
+    SHR  BX, 1
+    test bh, 030h
+    MOV  DX, FINECOSINE_SEGMENT
+    MOV  ES, DX
+    MOV  BX, WORD PTR ES:[BX]
 
 
-    AND  DX, BX    ; DX * BX low bits
-    NEG  DX
-    XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
+    jpe  skip_invert_cos
+    NEG  CX
+    NEG  AX
+    SBB  CX, 0
+    neg  bx
+    skip_invert_cos:
 
-    mov  AX, ES    ; grab AX from ES
-    mul  DX        ; BX*AX  
-    add  BX, DX    ; high word result into low word return
-    ADC  SI, 0    ; would be cool if we had a known zero reg
 
-    xchg AX, CX   ; AX gets CX
-
-    CWD           ; S1 in DX
-
-    mov  CX, ES   ; AX from ES
-    AND  DX, CX   ; S1*AX
-    SUB  SI, DX   ; result into high word return
-
-    MUL  CX       ; AX*CX
-
-    ADD  AX, BX	  ; set up final return value
-    ADC  DX, SI
-
-    pop   si
-    ret
+    MUL  BX        ; AX * BX
+    MOV  AX, CX    ; CX to AX
+    MOV  CX, DX    ; CX stores high result as low word
+    CWD            ; S1 in DX
+    AND  DX, BX    ; S1 * AX
+    NEG  DX        ; 
+    XCHG DX, BX    ; AX into DX, high word into BX
+    MUL  DX        ; AX*CX
+    ADD  AX, CX    ; add low word
+    ADC  DX, BX    ; add high word
+    RET
 
 
 

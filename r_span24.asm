@@ -571,19 +571,25 @@ IF COMPISA GE COMPILE_386
     ALIGN_MACRO	
     PROC   FixedMulTrigSineLocal_ NEAR
     PUBLIC FixedMulTrigSineLocal_
-    SHIFT_MACRO shl dx 2
+
+    shl   bx, 2
+
+
+
+    shl   ecx, 16
+    xchg  ax, cx
+    
+
 
     mov   ax, FINESINE_SEGMENT
     mov   es, ax                ; put segment in es
 
-    mov   ax, dx
+    mov   ax, bx
     shl   ax, 1
     cwde                        ; eax high gets sign
-    shr   dx, 1                 ; dword to word lookup
-    movsx edx, dx               ; clear high bits
-    mov   ax, word ptr es:[edx]  ; ax gets low word
-    shl   ecx, 16
-    mov   cx, bx
+    shr bx, 1
+
+    mov   ax, word ptr es:[bx] ; ax gets low word
     imul  ecx
     shr   eax, 16
 
@@ -596,17 +602,19 @@ IF COMPISA GE COMPILE_386
     PROC   FixedMulTrigCosineLocal_ NEAR
     PUBLIC FixedMulTrigCosineLocal_
 
-    SHIFT_MACRO shl dx 2
+    shl   bx, 2
+
+
+    shl   ecx, 16
+    xchg  ax, cx
+    
     mov   ax, FINECOSINE_SEGMENT
     mov   es, ax                ; put segment in es
 
-    lea   eax, [edx*2 + 04000h]
+    lea   eax, [ebx*2 + 04000h]
     cwde                        ; eax high gets sign
-    shr   dx, 1                 ; dword to word lookup
-    movsx edx, dx               ; clear high bits
-    mov   ax, word ptr es:[edx]  ; ax gets low word
-    shl   ecx, 16
-    mov   cx, bx
+    shr bx, 1
+    mov   ax, word ptr es:[bx] ; ax gets low word
     imul  ecx
     shr   eax, 16
 
@@ -625,69 +633,31 @@ ELSE
     PUBLIC FixedMulTrigSineLocal_
 
 
-    push  si
+    SHL  BX, 1
+    test bh, 020h
+    MOV  DX, FINESINE_SEGMENT
+    MOV  ES, DX
+    MOV  BX, WORD PTR ES:[BX]
 
-    SHIFT_MACRO sal dx 2
-    
+    je   skip_invert_sin
+    NEG  CX
+    NEG  AX
+    SBB  CX, 0
+    neg  bx
+    skip_invert_sin:
 
+    MUL  BX        ; AX * BX
+    MOV  AX, CX    ; CX to AX
+    MOV  CX, DX    ; CX stores high result as low word
+    CWD            ; S1 in DX
+    AND  DX, BX    ; S1 * AX
+    NEG  DX        ; 
+    XCHG DX, BX    ; AX into DX, high word into BX
+    MUL  DX        ; AX*CX
+    ADD  AX, CX    ; add low word
+    ADC  DX, BX    ; add high word
+    RET
 
-    mov   ax, FINESINE_SEGMENT
-    mov   es, ax  ; put segment in es
-    mov   si, dx                ; dword lookup in si
-    xchg  ax, dx                ; offset in ax
-    shr   si, 1                 ; word lookup in si
-    shl   ax, 1                 ; 0-7FFF becomes 0-FFFF
-    cwd                        ; dx gets sign
-    mov   es, word ptr es:[si]  ; es gets low word
-    mov   ax, dx                ; ax gets sign copy
-
-    AND   AX, BX	; S0*BX
-    NEG   AX
-    XCHG  AX, SI	; SI stores hi word return
-
-    MOV   AX, DX    ; restore sign bits from DX
-
-    AND   AX, CX     ; DX*CX
-    SUB   SI, AX     ; low word result into high word return
-
-    ; DX already has sign bits..
-
-    ; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
-    ; UNLESS BX is 0. then its also 0!
-
-    ; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
-    MOV  AX, BX    ; create BX copy
-    SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
-    ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
-
-    AND  AX, DX    ; 0 or BX - 1
-    ADD  SI, AX    ; add DX * BX high word. 
-
-
-    AND  DX, BX    ; DX * BX low bits
-    NEG  DX
-    XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
-
-    mov  AX, ES    ; grab AX from ES
-    mul  DX        ; BX*AX  
-    add  BX, DX    ; high word result into low word return
-    ADC  SI, 0    ; would be cool if we had a known zero reg
-
-    xchg AX, CX   ; AX gets CX
-
-    CWD           ; S1 in DX
-
-    mov  CX, ES   ; AX from ES
-    AND  DX, CX   ; S1*AX
-    SUB  SI, DX   ; result into high word return
-
-    MUL  CX       ; AX*CX
-
-    ADD  AX, BX	  ; set up final return value
-    ADC  DX, SI
-
-    pop   si
-    ret
 
 
 
@@ -698,73 +668,31 @@ ELSE
     PROC   FixedMulTrigCosineLocal_ NEAR
     PUBLIC FixedMulTrigCosineLocal_
 
-    sal dx, 1
-    sal dx, 1   ; DWORD lookup index
 
-    push  si
+    SHL  BX, 1
+    test bh, 030h
+    MOV  DX, FINECOSINE_SEGMENT
+    MOV  ES, DX
+    MOV  BX, WORD PTR ES:[BX]
 
-    ; lookup the fine angle
+    jpe  skip_invert_cos
+    NEG  CX
+    NEG  AX
+    SBB  CX, 0
+    neg  bx
+    skip_invert_cos:
 
-; todo swap arg order so cx:bx is seg/lookup
-; allowing for mov es, cx -> les es:[bx]
-
-    mov   ax, FINECOSINE_SEGMENT
-    mov   es, ax                ; put segment in es
-    mov   si, dx                ; out offset  in si
-    lea   ax, [si + 02000h]
-    shr   si, 1                 ; dword to word lookup
-    shl   ax, 1                 ; 0-7FFF becomes 0-FFFF
-    cwd                         ; dx gets sign
-    mov   es, word ptr es:[si]  ; es gets low word
-    mov   ax, dx                ; ax gets sign copy
-
-    AND   AX, BX	; S0*BX
-    NEG   AX
-    XCHG  AX, SI	; SI stores hi word return
-
-    MOV   AX, DX    ; restore sign bits from DX
-
-    AND   AX, CX     ; DX*CX
-    SUB   SI, AX     ; low word result into high word return
-
-    ; DX already has sign bits..
-
-    ; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
-    ; UNLESS BX is 0. then its also 0!
-
-    ; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
-    MOV  AX, BX    ; create BX copy
-    SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
-    ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
-
-    AND  AX, DX    ; 0 or BX - 1
-    ADD  SI, AX    ; add DX * BX high word. 
-
-
-    AND  DX, BX    ; DX * BX low bits
-    NEG  DX
-    XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
-
-    mov  AX, ES    ; grab AX from ES
-    mul  DX        ; BX*AX  
-    add  BX, DX    ; high word result into low word return
-    ADC  SI, 0    ; would be cool if we had a known zero reg
-
-    xchg AX, CX   ; AX gets CX
-
-    CWD           ; S1 in DX
-
-    mov  CX, ES   ; AX from ES
-    AND  DX, CX   ; S1*AX
-    SUB  SI, DX   ; result into high word return
-
-    MUL  CX       ; AX*CX
-
-    ADD  AX, BX	  ; set up final return value
-    ADC  DX, SI
-
-    pop   si
-    ret
+    MUL  BX        ; AX * BX
+    MOV  AX, CX    ; CX to AX
+    MOV  CX, DX    ; CX stores high result as low word
+    CWD            ; S1 in DX
+    AND  DX, BX    ; S1 * AX
+    NEG  DX        ; 
+    XCHG DX, BX    ; AX into DX, high word into BX
+    MUL  DX        ; AX*CX
+    ADD  AX, CX    ; add low word
+    ADC  DX, BX    ; add high word
+    RET
 
 
 
@@ -1004,11 +932,11 @@ add   ax, word ptr es:[si]		; ax is unmodded fine angle.. si is a word lookup
 and   ah, 01Fh			; MOD_FINE_ANGLE mod high bits
 push  ax            ; store fineangle
 
-xchg  dx, ax			; fineangle in DX
+xchg  bx, ax			; fineangle in BX, low word into AX
 
-mov   di, bx			; backup low word to DX
+mov   di, ax			; backup low word to DX
 mov   si, cx			; backup high word
-
+    
 ;call FAR PTR FixedMul_ 
 call FixedMulTrigCosineLocal_
 
@@ -1022,9 +950,9 @@ mov   word ptr cs:[SELFMODIFY_SPAN_ds_xfrac_lo+1 - OFFSET R_SPAN24_STARTMARKER_]
 mov   byte ptr cs:[SELFMODIFY_SPAN_ds_xfrac_hi+2 - OFFSET R_SPAN24_STARTMARKER_], dl
 
 
-pop   dx              ; get fineangle
+pop   bx              ; get fineangle
 mov   cx, si					; prep length
-mov   bx, di					; prep length
+xchg  ax, di					; prep length
 
 ;call FAR PTR FixedMul_ 
 call FixedMulTrigSineLocal_

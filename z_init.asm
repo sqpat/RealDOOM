@@ -1260,6 +1260,27 @@ mov   bx, 2 * 10240
 mov   cx, di
 call  locallib_fread_
 
+COMMENT @
+mov   bx, 4096 * 2  ; first negative
+mov   cx, 8192 / 2  
+mov   ax, FINESINE_SEGMENT
+mov   es, ax
+
+
+mov   bx, 2048 * 2  ; first negative
+mov   cx, 8192 / 2  
+mov   ax, FINECOSINE_SEGMENT
+mov   es, ax
+
+
+neg_next_sin:
+neg   word ptr es:[bx]
+add   bx, 2
+loop  neg_next_sin
+@
+
+
+
 mov     ax, OFFSET str_dot
 call    DEBUG_PRINT_NOARG_CS_
 
