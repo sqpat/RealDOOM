@@ -3102,7 +3102,7 @@ MINZ_HIGHBITS = 4
 
 ALIGN_MACRO
 PROC R_ProjectSprite_ NEAR  ; somewhatoptimized... maybe re-examine. 
-
+public R_ProjectSprite_
 ; es:si is sprite.
 ; es is a constant..
 
@@ -3121,9 +3121,9 @@ PROC R_ProjectSprite_ NEAR  ; somewhatoptimized... maybe re-examine.
 ; bp - 016h:   thingy lo
 ; bp - 018h:	thingx hi
 ; bp - 01Ah:	thingx lo
-; bp - 01Ch:	xscale hi
-; bp - 01Eh:	xscale lo
-; bp - 020h:   temp lowbits
+; bp - 01Ch:   temp lowbits
+; bp - 01Eh:	xscale hi
+; bp - 020h:	xscale lo
 ; bp - 022h:   spriteindex. used for spriteframes and spritetopindex?
 ; bp - 024h:   flip
 ; bp - 026h:   vis->x1
@@ -3232,17 +3232,7 @@ cmp   di, MINZ_HIGHBITS
 
 jl   exit_project_sprite
 
-mov   bx, si
-mov   cx, di
 
-;    xscale.w = FixedDivWholeA(centerx, tz.w);
-
-SELFMODIFY_BSP_centerx_4:
-mov   ax, 01000h
-
-call  FixedDivWholeA_BSPLocal_
-push  dx ; bp - 01Ch
-push  ax ; bp - 01Eh
 
 
 
@@ -3284,9 +3274,11 @@ sbb   dx, 0
 
 pop   di ; tz_hibits
 pop   bx ; tz_lobits
+mov   es, bx ; dupe lobits
 
-push  ax ; store temp lowbtis ; bp - 020h
+push  ax ; store temp lowbtis ; bp - 01Ch
 
+; todo terrible register usage! put this on stack.
 mov   si, dx						; si stores temp highbits
 
 
@@ -3300,6 +3292,7 @@ neg   ax
 neg   dx
 sbb   dx, 0
 tx_already_positive:
+public tx_already_positive
 
 ;        return;
 ;	}
@@ -3307,28 +3300,43 @@ tx_already_positive:
 
 xchg  ax, cx  ; cx gets low
 
+mov   ax, di   ; di:bx backup in es:ax
 
 SHIFT32_MACRO_LEFT di bx 2
 
 cmp   dx, di
-jl    not_too_far_off_side_lowbits
-je    not_too_far_off_side_highbits
+jl    not_too_far_off_side
+jne   exit_project_sprite
+cmp   bx, cx
+jnb   not_too_far_off_side
 
 exit_project_sprite: ; todo bench branch
 
 jmp   done_with_r_projectsprite
 ALIGN_MACRO
 
-not_too_far_off_side_highbits:
-cmp   bx, cx
-jb    exit_project_sprite
-not_too_far_off_side_lowbits:
+not_too_far_off_side:
+
+; now do the fixeddiv.
+
+xchg  ax, cx                    ; cx: tz_hibits restore
+mov   bx, es                    ; bx: tz_lobits restore
+
+SELFMODIFY_BSP_centerx_4:
+mov   ax, 01000h
+
+call  FixedDivWholeA_BSPLocal_ ; todo delay until needed? 
+   ; todo make this not suck
+pop   cx
+push  dx ; bp - 01Ch
+push  ax ; bp - 01Eh
+push  cx ; bp - 020h
 
 SELFMODIFY_set_ax_to_spriteframe:
 mov   ax, 00012h  ; leave high byte 0
 mov   di, ax
-SHIFT_MACRO shl di 2
-sub   di, ax               ; di = ax * 3, SIZE SPRITEDEF_T
+add   di, ax   ; * 2
+add   di, ax   ; * 3 , SIZE SPRITEDEF_T
 mov   ax, SPRITES_SEGMENT
 mov   es, ax
 mov   ax, word ptr [bp - 2]  ; thingframe in al, SIZE SPRITEFRAME_T hih)
