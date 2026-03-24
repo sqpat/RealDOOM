@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/03/23 12:05:08
+Created on:       26/03/23 12:19:02
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -340,7 +340,7 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079b:0000      SM_MPUMD_STARTMARKER_
 079b:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-0819:3964      R_WriteBackViewConstants24_
+0819:396c      R_WriteBackViewConstants24_
 0819:2719*     R_AddLine_
 0819:3ee0      R_BSP24_ENDMARKER_
 0819:343e      R_GetPatchTexture_Far24_
@@ -348,6 +348,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:09c7*     FixedMulTrigNoShiftSine_BSPLocal_
 0819:164a*     markfloor_done
 0819:2482*     just_do_draw1
+0819:26ea*     skip_this_sprite
 0819:24b0*     mark_floor_di
 0819:211a*     exit_rendersegloop_TWOSIDED
 0819:09c3*     FixedMulTrigSine_BSPLocal_
@@ -478,7 +479,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:2407*     R_GetSourceSegment0_START_TWOSIDED
 0819:09f6*     FixedMulTrigNoShiftCosine_BSPLocalOLD_
 0819:32e4*     R_GetTexturePage_
-0819:3afa*     R_WriteBackFrameConstants_
+0819:3b02*     R_WriteBackFrameConstants_
 0819:0a42*     FixedMulTrigNoShiftCosine_BSPLocal_
 0819:0a6c*     R_ClearPlanes_
 0819:21b5*     SELFMODIFY_BSP_markfloor_1_TWOSIDED
@@ -1334,8 +1335,8 @@ Module: s_sbsfx.obj(s_sbsfx.ASM)
 2fc6:63da*     _SB_IntController1Mask
 2fc6:7039      SB_StopPlayback_
 2fc6:63d9      _SB_IntController2Mask
-2fc6:63dd      _SB_OriginalVoiceVolumeRight
 2fc6:6b84*     S_NormalizeSfxVolume_
+2fc6:63dd      _SB_OriginalVoiceVolumeRight
 2fc6:70db*     S_SBFX_ENDMARKER_
 2fc6:7015*     SB_DMA_EndTransfer_
 2fc6:65f4*     S_IncreaseRefCount_

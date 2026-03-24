@@ -9930,6 +9930,8 @@ done_with_r_projectsprite:
 
 mov   sp, bp  ; restore sp
 skip_this_sprite:
+public skip_this_sprite
+
 
 
 db DS_PREFIX_OPCODE  ; padding
@@ -14228,8 +14230,9 @@ Z_QUICKMAPAI24 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
 ; INLINED setupframe
 
 
-
-
+; todo only do once per level.
+mov      ax, word ptr ds:[_playerMobj_pos]
+mov      word ptr cs:[SELFMODIFY_set_playermobjpos+2], ax
 
 ;    if (player.fixedcolormapvalue) {
 
@@ -14699,11 +14702,6 @@ mov      ax, DRAWFUZZCOL_AREA_SEGMENT
 mov      es, ax
 
 ASSUME DS:R_BSP_24_TEXT
-
-; todo only do once per level.
-mov      ax, word ptr ss:[_playerMobj_pos]
-mov      word ptr ds:[SELFMODIFY_set_playermobjpos+2], ax
-
 
 mov      al, byte ptr ss:[_skyflatnum]  ; todo do once per level ?
 cmp      al, byte ptr ds:[_lastskyflatnum]
