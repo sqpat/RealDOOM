@@ -9916,17 +9916,20 @@ je    exit_add_sprites
 
 loop_things_in_thinglist:
 ENSUREALIGN_020:
-
 mov   ax, MOBJPOSLIST_SEGMENT
 mov   es, ax
 mov   ax, word ptr es:[si + MOBJ_POS_T.mp_snextRef]
 mov   word ptr cs:[SELFMODIFY_BSP_get_next_thing_in_sector+1], ax
+SELFMODIFY_set_playermobjpos:
+cmp   si, 01000h
+je    skip_this_sprite
 ; es:si set, R_ProjectSprite doesnt need to push/pop.
 jmp   R_ProjectSprite_    ; todo inline
 ALIGN_MACRO
 done_with_r_projectsprite:
 
 mov   sp, bp  ; restore sp
+skip_this_sprite:
 
 
 db DS_PREFIX_OPCODE  ; padding
@@ -14696,6 +14699,11 @@ mov      ax, DRAWFUZZCOL_AREA_SEGMENT
 mov      es, ax
 
 ASSUME DS:R_BSP_24_TEXT
+
+; todo only do once per level.
+mov      ax, word ptr ss:[_playerMobj_pos]
+mov      word ptr ds:[SELFMODIFY_set_playermobjpos+2], ax
+
 
 mov      al, byte ptr ss:[_skyflatnum]  ; todo do once per level ?
 cmp      al, byte ptr ds:[_lastskyflatnum]
