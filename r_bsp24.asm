@@ -277,31 +277,49 @@ push  di
 ;    anglea = MOD_FINE_ANGLE(FINE_ANG90 + (visangle_shift3 - viewangle_shiftright3));
 ;    angleb = MOD_FINE_ANGLE(FINE_ANG90 + (visangle_shift3) - rw_normalangle);
 
-add   ah, 8      
+add   ah, (FINE_ANG90 SHR 8)   ; 9 
 mov   bx, ax      ; copy input
 SELFMODIFY_sub_rw_normal_angle_1:
 sub   ax, 01000h
 SELFMODIFY_set_viewanglesr3_5:
 sub   bx, 01000h  ; 
 
+
 and   bh, 01Fh
 and   ah, 01Fh
 
-xchg  ax, di   ; di holds angleB
+xchg  ax, si   ; si holds angleB
 
 ; bx = anglea
-; di = angleb
+; si = angleb
 
 
-SELFMODIFY_get_rw_distance_lo_1:
-mov   ax, 01000h
-SELFMODIFY_get_rw_distance_hi_1:
-public SELFMODIFY_get_rw_distance_hi_1
-mov   cx, 01000h
 
 ;    den = FixedMulTrig(FINE_SINE_ARGUMENT, anglea, rw_distance);
  
-call FixedMulTrigSine_BSPLocal_
+; call FixedMulTrigSine_BSPLocal_
+
+; inlined FixedMulTrigNoShiftSine_BSPLocal_
+
+SHL  BX, 1
+
+MOV  DX, FINESINE_SEGMENT
+MOV  ES, DX
+MOV  BX, WORD PTR ES:[BX]
+
+SELFMODIFY_get_rw_distance_lo_1:
+mov   ax, 01000h
+
+MUL  BX        ; AX * BX
+
+SELFMODIFY_get_rw_distance_hi_1:
+public SELFMODIFY_get_rw_distance_hi_1
+mov  AX, 01000h
+MOV  CX, DX    ; CX stores high result as low word
+MUL  BX        ; AX*CX
+ADD  AX, CX    ; add low word
+ADC  DX, 0    ; add high word
+
 
 
 ;    num.w = FixedMulTrig(FINE_SINE_ARGUMENT, angleb, projection.w)<<detailshift.b.bytelow;
@@ -311,12 +329,11 @@ call FixedMulTrigSine_BSPLocal_
 xchg ax, bx  ; 
 mov  cx, dx  ; result to cx:bx
 
-mov  si, FINESINE_SEGMENT
-mov  es, si  ; set segment
 
-sal  di, 1   ; word lookup 0-3FFFh
+sal  si, 1   ; word lookup 0-3FFFh
 
-mov  ax, word ptr es:[di]
+; ES still FINESINE_SEGMENT
+lods word ptr es:[si]   ;mov  ax, word ptr es:[di] ; lookup SINE
 
 
 ;  dx:ax holds sine lookup
@@ -325,10 +342,7 @@ mov  ax, word ptr es:[di]
 SELFMODIFY_BSP_centerx_1:
 mov   si, 01000h  ; note high byte always 0
 
-
-
 MUL  SI       ; AX*CX
-
 
 
 ; cx:bx had den
@@ -2033,9 +2047,6 @@ ALIGN_MACRO
 
 
 
-    PROC   FixedMulTrigSine_BSPLocal_ NEAR ; fairly optimized
-    PUBLIC FixedMulTrigSine_BSPLocal_
-    SHIFT_MACRO shl bx 2
     ENDP
 
     PROC   FixedMulTrigNoShiftSine_BSPLocal_ NEAR ; fairly optimized
@@ -2067,9 +2078,6 @@ ALIGN_MACRO
 
 
 
-    PROC   FixedMulTrigCosine_BSPLocal_ NEAR ; fairly optimized
-    PUBLIC FixedMulTrigCosine_BSPLocal_
-    SHIFT_MACRO shl bx 2
     ENDP
 
     PROC   FixedMulTrigNoShiftCosine_BSPLocal_ NEAR ; fairly optimized
@@ -2104,12 +2112,6 @@ ALIGN_MACRO
 
 
 
-    PROC   FixedMulTrigSine_BSPLocal_ NEAR ; fairly optimized
-    PUBLIC FixedMulTrigSine_BSPLocal_
-
-
-
-    SHIFT_MACRO shl bx 2
 
     PROC   FixedMulTrigNoShiftSine_BSPLocal_ NEAR 
     PUBLIC FixedMulTrigNoShiftSine_BSPLocal_
@@ -2148,12 +2150,7 @@ ALIGN_MACRO
 
 
 ALIGN_MACRO
-    PROC   FixedMulTrigCosine_BSPLocal_ NEAR ; fairly optimized
-    PUBLIC FixedMulTrigCosine_BSPLocal_
-
-
-    SHIFT_MACRO shl bx 2
-
+    
 
 
     PROC   FixedMulTrigNoShiftCosine_BSPLocal_ NEAR ; fairly optimized
