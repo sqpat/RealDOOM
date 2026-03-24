@@ -4139,15 +4139,9 @@ ALIGN_MACRO
    MUL  BX        ; AX * BX
    MOV  AX, DI    ; DI to AX
    MOV  DI, DX    ; DI stores high result as low word
-   CWD            ; S1 in DX
-   AND  DX, BX    ; S1 * AX
-   NEG  DX        ; 
-   XCHG DX, BX    ; AX into DX, high word into BX
-   MUL  DX        ; AX*DI
+   MUL  BX        ; AX*DI
    ADD  AX, DI    ; add low word
-   ADC  DX, BX    ; add high word
-
-
+   ; delay adc 0 carry until result in ax
 
 
    ; self modifying code for rw_distance
@@ -4160,6 +4154,8 @@ ELSE
    mov   word ptr ds:[SELFMODIFY_set_rw_distance_lo_2_TWOSIDED+1], ax
 ENDIF
    xchg  ax, dx
+   ADC   AX, 0  ; finally add carry.
+
    mov   word ptr ds:[SELFMODIFY_set_rw_distance_hi+1], ax
    mov   word ptr ds:[SELFMODIFY_get_rw_distance_hi_1+1], ax
 
@@ -4518,17 +4514,13 @@ MOV  BX, WORD PTR ES:[BX]
 MUL  BX        ; AX * BX
 MOV  AX, CX    ; CX to AX
 MOV  CX, DX    ; CX stores high result as low word
-CWD            ; S1 in DX
-AND  DX, BX    ; S1 * AX
-NEG  DX        ; 
-XCHG DX, BX    ; AX into DX, high word into BX
-MUL  DX        ; AX*CX
+MUL  BX        ; AX*CX
 ADD  AX, CX    ; add low word
-ADC  DX, BX    ; add high word
 
 ; used later, dont change?
 ; dx:ax is rw_offset
 xchg      ax, dx
+ADC       AX, 0
 jmp       done_with_offsetangle_stuff
 
 ALIGN_MACRO
@@ -6512,15 +6504,11 @@ finish_midtex_selfmodify_TWOSIDED:
       MOV  BX, WORD PTR ES:[BX]
 
       MUL  BX        ; AX * BX
-      MOV  AX, DI    ; DI to AX
-      MOV  DI, DX    ; DI stores high result as low word
-      CWD            ; S1 in DX
-      AND  DX, BX    ; S1 * AX
-      NEG  DX        ; 
-      XCHG DX, BX    ; AX into DX, high word into BX
-      MUL  DX        ; AX*DI
+      MOV  AX, DI    ; CX to AX
+      MOV  DI, DX    ; CX stores high result as low word
+      MUL  BX        ; AX*CX
       ADD  AX, DI    ; add low word
-      ADC  DX, BX    ; add high word
+      ; delay adc 0 carry until result in ax
 
 
 
@@ -6530,6 +6518,7 @@ finish_midtex_selfmodify_TWOSIDED:
    mov   word ptr ds:[SELFMODIFY_set_rw_distance_lo_topbot+1], ax
    mov   word ptr ds:[SELFMODIFY_get_rw_distance_lo_1+1], ax ; ??
    xchg  ax, dx
+   ADC   AX, 0
    mov   word ptr ds:[SELFMODIFY_set_rw_distance_hi_topbot+1], ax
    mov   word ptr ds:[SELFMODIFY_get_rw_distance_hi_1+1], ax ; ?? 
 
@@ -7752,17 +7741,13 @@ MOV  BX, WORD PTR ES:[BX]
 MUL  BX        ; AX * BX
 MOV  AX, CX    ; CX to AX
 MOV  CX, DX    ; CX stores high result as low word
-CWD            ; S1 in DX
-AND  DX, BX    ; S1 * AX
-NEG  DX        ; 
-XCHG DX, BX    ; AX into DX, high word into BX
-MUL  DX        ; AX*CX
+MUL  BX        ; AX*CX
 ADD  AX, CX    ; add low word
-ADC  DX, BX    ; add high word
 
 ; used later, dont change?
 ; dx:ax is rw_offset
 xchg      ax, dx
+ADC       AX, 0
 jmp       done_with_offsetangle_stuff_TWOSIDED
 ALIGN_MACRO
 offsetangle_greater_than_fineang90_TWOSIDED:
