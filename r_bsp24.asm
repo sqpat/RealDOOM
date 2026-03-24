@@ -2035,13 +2035,10 @@ ENDP
 IF COMPISA GE COMPILE_386
 
 ALIGN_MACRO
-    PROC   FixedMulTrigSine_BSPLocal_ NEAR ; fairly optimized
-    PUBLIC FixedMulTrigSine_BSPLocal_
-    SHIFT_MACRO shl dx 2
-    ENDP
 
-    PROC   FixedMulTrigNoShiftSine_BSPLocal_ NEAR ; fairly optimized
-    PUBLIC FixedMulTrigNoShiftSine_BSPLocal_
+
+    PROC   FixedMulTrigNoShiftSine_BSPLocalOLD_ NEAR
+
     ; pass in the index already shifted to be a dword lookup..
 
 
@@ -2064,14 +2061,41 @@ ALIGN_MACRO
 
     ENDP
 
-ALIGN_MACRO
-    PROC   FixedMulTrigCosine_BSPLocal_ NEAR ; fairly optimized
-    PUBLIC FixedMulTrigCosine_BSPLocal_
-    SHIFT_MACRO shl dx 2
+    PROC   FixedMulTrigSine_BSPLocal_ NEAR ; fairly optimized
+    PUBLIC FixedMulTrigSine_BSPLocal_
+    SHIFT_MACRO shl bx 2
     ENDP
 
-    PROC   FixedMulTrigNoShiftCosine_BSPLocal_ NEAR ; fairly optimized
-    PUBLIC FixedMulTrigNoShiftCosine_BSPLocal_
+    PROC   FixedMulTrigNoShiftSine_BSPLocal_ NEAR ; fairly optimized
+    PUBLIC FixedMulTrigNoShiftSine_BSPLocal_
+    ; pass in the index already shifted to be a dword lookup..
+
+
+    shl   ecx, 16
+    xchg  ax, cx
+
+    mov   ax, FINESINE_SEGMENT
+    mov   es, ax                ; put segment in es
+
+    mov   ax, bx
+    shl   ax, 1
+    cwde                        ; eax high gets sign
+
+    shr   bx, 1                 ; dword to word lookup
+    mov   ax, word ptr es:[bx] ; ax gets low word
+    imul  ecx
+    shr   eax, 16
+
+
+    ret
+
+    ENDP
+
+ALIGN_MACRO
+
+
+    PROC   FixedMulTrigNoShiftCosine_BSPLocalOLD_ NEAR ; fairly optimized
+    PUBLIC FixedMulTrigNoShiftCosine_BSPLocalOLD_
     ; pass in the index already shifted to be a dword lookup..
 
     mov   ax, FINECOSINE_SEGMENT
@@ -2084,6 +2108,32 @@ ALIGN_MACRO
     mov   ax, word ptr es:[edx] ; ax gets low word
     shl   ecx, 16
     mov   cx, bx
+    imul  ecx
+    shr   eax, 16
+
+
+    ret
+
+    PROC   FixedMulTrigCosine_BSPLocal_ NEAR ; fairly optimized
+    PUBLIC FixedMulTrigCosine_BSPLocal_
+    SHIFT_MACRO shl bx 2
+    ENDP
+
+    PROC   FixedMulTrigNoShiftCosine_BSPLocal_ NEAR ; fairly optimized
+    PUBLIC FixedMulTrigNoShiftCosine_BSPLocal_
+    ; pass in the index already shifted to be a dword lookup..
+
+    shl   ecx, 16
+    xchg  ax, cx
+
+    mov   ax, FINECOSINE_SEGMENT
+    mov   es, ax                ; put segment in es
+
+    lea   eax, [ebx*2 + 04000h]
+    cwde                        ; eax high gets sign
+
+    shr   bx, 1                 ; dword to word lookup
+    mov   ax, word ptr es:[bx] ; ax gets low word
     imul  ecx
     shr   eax, 16
 
@@ -2180,7 +2230,6 @@ ALIGN_MACRO
     SHIFT_MACRO shl bx 2
 
     ENDP
-
     PROC   FixedMulTrigNoShiftSine_BSPLocal_ NEAR 
     PUBLIC FixedMulTrigNoShiftSine_BSPLocal_
     ; pass in the index already shifted to be a dword lookup..
@@ -2252,7 +2301,7 @@ ALIGN_MACRO
     ; DX is param 2 (fineangle or lookup)
     ; CX:BX is value 2
 
-    SHIFT_MACRO shl dx 2
+    SHIFT_MACRO shl bx 2
 
     ENDP
     PROC   FixedMulTrigNoShiftCosine_BSPLocalOLD_ NEAR ; fairly optimized
