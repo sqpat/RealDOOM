@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/03/25 04:37:48
+Created on:       26/03/25 04:41:23
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -340,11 +340,11 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079b:0000      SM_MPUMD_STARTMARKER_
 079b:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-0819:3904      R_WriteBackViewConstants24_
+0819:3900      R_WriteBackViewConstants24_
 0819:26b3*     R_AddLine_
 0819:0d53*     tx_already_positive
 0819:3e70      R_BSP24_ENDMARKER_
-0819:33d6      R_GetPatchTexture_Far24_
+0819:33d2      R_GetPatchTexture_Far24_
 0819:2414*     R_GetSourceSegment1_
 0819:097a*     FixedMulTrigNoShiftSine_BSPLocal_
 0819:15c7*     markfloor_done
@@ -358,10 +358,10 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:2194*     SELFMODIFY_set_rw_distance_lo_topbot
 0819:2376*     SELFMODIFY_BSP_toptexture_AFTER
 0819:28d2*     R_ClipPassWallSegment_
-0819:2a62*     ENSUREALIGN_081
-0819:2acf*     ENSUREALIGN_082
+0819:2a5f*     ENSUREALIGN_081
+0819:2acb*     ENSUREALIGN_082
 0819:2480*     ENSUREALIGN_083
-0819:3684*     ENSUREALIGN_080
+0819:3680*     ENSUREALIGN_080
 0819:247a*     ENSUREALIGN_084
 0819:229a*     ENSUREALIGN_087
 0819:2380*     ENSUREALIGN_094
@@ -400,10 +400,11 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:1715*     ENSUREALIGN_076
 0819:21fc*     ENSUREALIGN_007
 0819:2440*     ENSUREALIGN_022
+0819:1546*     ENSUREALIGN_061
 0819:23d0*     ENSUREALIGN_025
 0819:1558*     ENSUREALIGN_064
 0819:23e6*     ENSUREALIGN_012
-0819:1546*     ENSUREALIGN_061
+0819:1682*     ENSUREALIGN_003
 0819:167c*     ENSUREALIGN_075
 0819:2210*     ENSUREALIGN_021
 0819:243a*     ENSUREALIGN_023
@@ -411,20 +412,19 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:2448*     ENSUREALIGN_010
 0819:2118*     ENSUREALIGN_005
 0819:2202*     ENSUREALIGN_008
-0819:368d*     ENSUREALIGN_079
-0819:1682*     ENSUREALIGN_003
+0819:3689*     ENSUREALIGN_079
+0819:1762*     ENSUREALIGN_072
 0819:26a8*     ENSUREALIGN_019
 0819:23d8*     ENSUREALIGN_009
 0819:3ce0      bsp_local_dc_yl_lookup_table_
-0819:1762*     ENSUREALIGN_072
-0819:2edc*     ENSUREALIGN_016
+0819:2ed8*     ENSUREALIGN_016
 0819:266c*     ENSUREALIGN_020
 0819:219c*     do_16_bit_mul_TWOSIDED
 0819:257f*     SELFMODIFY_mark_planes_dirty_TWOSIDED
+0819:20d0*     pre_increment_values_TWOSIDED
 0819:22ea*     ENSUREALIGN_099
 0819:242c*     ENSUREALIGN_014
-0819:364c*     ENSUREALIGN_078
-0819:20d0*     pre_increment_values_TWOSIDED
+0819:3648*     ENSUREALIGN_078
 0819:23bc*     ENSUREALIGN_015
 0819:26ae*     ENSUREALIGN_018
 0819:11a0*     SELFMODIFY_BSP_midtexture_type
@@ -447,8 +447,8 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:01e0*     OFFSET_CEILINGCLIP
 0819:1454*     ENSUREALIGN_314
 0819:14a0*     ENSUREALIGN_315
-0819:372c*     ENSUREALIGN_321
-0819:3733*     ENSUREALIGN_322
+0819:3728*     ENSUREALIGN_321
+0819:372f*     ENSUREALIGN_322
 0819:0dbd*     ENSUREALIGN_319
 0819:10f9*     ENSUREALIGN_316
 0819:10bc*     ENSUREALIGN_301
@@ -462,7 +462,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:2022*     ENSUREALIGN_309
 0819:1671*     R_GetSourceSegment0_START
 0819:2416*     SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER_TWOSIDED
-0819:378a      R_RenderPlayerView24_
+0819:3786      R_RenderPlayerView24_
 0819:092a*     FixedDivBSPLocal_
 0819:2456*     SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET_TWOSIDED
 0819:1533*     increment_loop_values
@@ -473,8 +473,8 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:0080*     BEOFRE_COLFUNC_LOOKUP
 0819:2436*     SELFMODIFY_set_pixel_count_shift_mul_bot
 0819:23a3*     R_GetSourceSegment0_START_TWOSIDED
-0819:327c*     R_GetTexturePage_
-0819:3a9a*     R_WriteBackFrameConstants_
+0819:3278*     R_GetTexturePage_
+0819:3a96*     R_WriteBackFrameConstants_
 0819:09a4*     FixedMulTrigNoShiftCosine_BSPLocal_
 0819:09ce*     R_ClearPlanes_
 0819:2150*     SELFMODIFY_BSP_markfloor_1_TWOSIDED
@@ -493,7 +493,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:1582*     SELFMODIFY_BSP_markceiling_1
 0819:1848*     R_StoreWallRangeWithBackSector_
 0819:1836*     adjust_row_offset_TWOSIDED
-0819:3472      R_GetCompositeTexture_Far24_
+0819:346e      R_GetCompositeTexture_Far24_
 0819:24b2*     R_RenderSegLoop_exit_TWOSIDED
 0819:006a*     _basexscale
 0819:0f7e*     adjust_row_offset
@@ -510,7 +510,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:166d*     SELFMODIFY_set_ax_rw_offset_hi
 0819:18bd*     v2_y_equals_v1_y_TWOSIDED
 0819:0ca2*     R_ProjectSprite_
-0819:2a18*     R_GetColumnSegment_
+0819:2a16*     R_GetColumnSegment_
 0819:0356*     R_ScaleFromGlobalAngle_
 0819:1790*     SELFMODIFY_mark_planes_dirty
 0819:155e*     start_per_column_inner_loop

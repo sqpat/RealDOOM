@@ -483,9 +483,9 @@ _textureL1LRU =                 	 _NULL_OFFSET + 00594h
 ; IS 59E TO 5AD FREE?
 _flatcache_l2_head =                 _NULL_OFFSET + 005AEh
 _flatcache_l2_tail =                 _NULL_OFFSET + 005AFh
-_segloopprevlookup =                 _NULL_OFFSET + 005B0h
-_segloopcachedbasecol =              _NULL_OFFSET + 005B4h
-_cachedsegmenttex =                  _NULL_OFFSET + 005B8h
+;_segloopprevlookup =                 _NULL_OFFSET + 005B0h
+;_segloopcachedbasecol =              _NULL_OFFSET + 005B4h
+;_cachedsegmenttex =                  _NULL_OFFSET + 005B8h
 _playerMobj =                   	 _NULL_OFFSET + 005BCh
 _ceilinglinenum =                    _NULL_OFFSET + 005BEh
 
