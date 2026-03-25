@@ -1260,19 +1260,6 @@ mov   bx, 2 * 10240
 mov   cx, di
 call  locallib_fread_
 
-mov   bx, 4096 * 2  ; first negative
-mov   cx, 4096 
-mov   ax, FINESINE_SEGMENT
-mov   es, ax
-
-
-
-
-neg_next_sin:
-neg   word ptr es:[bx]
-add   bx, 2
-loop  neg_next_sin
-
 
 
 mov     ax, OFFSET str_dot
