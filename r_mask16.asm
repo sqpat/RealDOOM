@@ -47,6 +47,14 @@ _vsprsortedheadfirst = 0
 
 ;=================================
 
+_cachedsegmentlumps =  0
+_cachedlumps =  0
+_cachedtex =  0
+_cachedcollength =  0
+_lastopening =  0
+_segloopprevlookup =  0
+_segloopcachedbasecol =  0
+_cachedsegmenttex =  0
 
 COLFUNC_JUMPTABLE_SIZE_OFFSET = 0
 DC_YL_LOOKUP_SEGMENT = 0

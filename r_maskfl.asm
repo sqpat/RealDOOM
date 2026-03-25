@@ -38,6 +38,14 @@ _viewz_shortheight = 0
 _viewz = 0
 _extralight =     0
 _dc_source_segment = 0
+_cachedsegmentlumps =  0
+_cachedlumps =  0
+_cachedtex =  0
+_cachedcollength =  0
+_lastopening =  0
+_segloopprevlookup =  0
+_segloopcachedbasecol =  0
+_cachedsegmenttex =  0
 
 
 _vsprsortedheadfirst = 0

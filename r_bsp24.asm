@@ -70,23 +70,14 @@ dw R_CBB_SWITCH_CASE_00, R_CBB_SWITCH_CASE_01, R_CBB_SWITCH_CASE_02, R_CBB_SWITC
 dw R_CBB_SWITCH_CASE_04, R_CBB_SWITCH_CASE_05, R_CBB_SWITCH_CASE_06, R_CBB_SWITCH_CASE_07
 dw R_CBB_SWITCH_CASE_08, R_CBB_SWITCH_CASE_09, R_CBB_SWITCH_CASE_10
 
-
+COMMENT @
 _pagesegments:
 
 dw 00000h, 00400h, 00800h, 00C00h
 dw 01000h, 01400h, 01800h, 01C00h
 ;dw 02000h, 02400h
+@
 
-_selfmodify_lookup_markfloor:
-dw ((SELFMODIFY_BSP_markfloor_1_TARGET_TWOSIDED - SELFMODIFY_BSP_markfloor_1_AFTER_TWOSIDED) SHL 8) + 0EBh
-dw ((SELFMODIFY_BSP_markfloor_2_TARGET_TWOSIDED - SELFMODIFY_BSP_markfloor_2_AFTER_TWOSIDED) SHL 8) + 0EBh
-dw 04940h
-dw 04097h 
-_selfmodify_lookup_markceiling:
-db 0E9h, 0 ; jmp 
-dw ((SELFMODIFY_BSP_markceiling_1_TARGET_TWOSIDED - SELFMODIFY_BSP_markceiling_1_AFTER_TWOSIDED) SHL 8) + 0EBh
-db 0B8h, 0   ; mov ax, imm16
-dw 001B2h
 
 
 ; todo 256 entry table with shift 4 and min/max etc logic baked in
@@ -107,26 +98,46 @@ ENDM
 
 ; todo default valuess
 
+public _segloopheightvalcache
+public _segloopnextlookup
+public _seglooptexrepeat
+public _cachedsegmentlumpsBSPLocal
+
 _segloopheightvalcache:
 db 0, 0
-_segloopprevlookup:
-dw 0, 0
 _segloopnextlookup:
-dw 0, 0
+dw -1, -1
 _seglooptexrepeat:
 db 0, 0
 _segloopcachedsegment:
 dw 0, 0
 
-; 12 bytes...
+NUM_CACHE_LUMPS = 4
+_cachedsegmentlumpsBSPLocal:
+REPT NUM_CACHE_LUMPS
+dw 0
+ENDM
+_cachedlumpsBSPLocal:
+REPT NUM_CACHE_LUMPS
+dw 0
+ENDM
+_cachedtexBSPLocal:
+dw 0, 0
+_cachedcollengthBSPLocal:
+db 0, 0
+_lastopening:
+dw 0
+_segloopprevlookupBSPLocal:
+dw 0, 0
+_segloopcachedbasecolBSPLocal:
+dw 0, 0
+_cachedsegmenttexBSPLocal:
+dw 0, 0
 
-;_segloopcachedbasecol =             _NULL_OFFSET + 00058h
-;_cachedsegmenttex =                 _NULL_OFFSET + 0005Ch
-;_cachedsegmentlumps:  ; TODO hard because masked uses this too?
 
-
-; todo use
+; todo unused
 dw 0, 0, 0
+
 
 
 BEOFRE_COLFUNC_LOOKUP:
@@ -231,8 +242,6 @@ db 0
 
 ALIGN_MACRO
 
-_lastopening:
-dw 0
 
 _maskedtexturecol_bsp:
 dw 0, OPENINGS_SEGMENT
@@ -248,6 +257,18 @@ _cs_topfrac_lo:
 dw 0
 _cs_botfrac_lo:
 dw 0
+
+
+_selfmodify_lookup_markfloor:
+dw ((SELFMODIFY_BSP_markfloor_1_TARGET_TWOSIDED - SELFMODIFY_BSP_markfloor_1_AFTER_TWOSIDED) SHL 8) + 0EBh
+dw ((SELFMODIFY_BSP_markfloor_2_TARGET_TWOSIDED - SELFMODIFY_BSP_markfloor_2_AFTER_TWOSIDED) SHL 8) + 0EBh
+dw 04940h
+dw 04097h 
+_selfmodify_lookup_markceiling:
+db 0E9h, 0 ; jmp 
+dw ((SELFMODIFY_BSP_markceiling_1_TARGET_TWOSIDED - SELFMODIFY_BSP_markceiling_1_AFTER_TWOSIDED) SHL 8) + 0EBh
+db 0B8h, 0   ; mov ax, imm16
+dw 001B2h
 
 ; 0AAh
 
@@ -5970,17 +5991,15 @@ ALIGN_MACRO
    non_repeating_texture_mid:
    cmp   dx, word ptr ds:[_segloopnextlookup]
    jge   out_of_texture_bounds_mid
-   cmp   dx, word ptr ds:[_segloopprevlookup]
+   cmp   dx, word ptr ds:[_segloopprevlookupBSPLocal]
    jnge  out_of_texture_bounds_mid
    xchg  ax, dx
-   sub   al, byte ptr ss:[_segloopcachedbasecol]
+   sub   al, byte ptr ds:[_segloopcachedbasecolBSPLocal]
    mul   byte ptr ds:[_segloopheightvalcache]
    jmp   add_base_segment_and_draw_mid
    ALIGN_MACRO
    out_of_texture_bounds_mid:
    ; branch nonpush with moves etc. 
-   mov   ax, ss
-   mov   ds, ax
    push  bx
 
    SELFMODIFY_BSP_set_midtexture:
@@ -5989,8 +6008,6 @@ ALIGN_MACRO
    mov   bx, 0
    call  R_GetColumnSegment_  
    ENSUREALIGN_074:
-   mov   bx, cs
-   mov   ds, bx
    pop   bx
    mov   dx, word ptr ds:[_segloopcachedsegment]
    mov   word ptr ds:[SELFMODIFY_add_cached_segment0+1], dx
@@ -8824,7 +8841,7 @@ ENDM
 
    SELFMODIFY_set_top_lookup_offset_setter_withstretch_funcaddr_2:
    mov   word ptr ds:[SELFMODIFY_COLFUNC_set_func_offset_top], 01000h
-   ENSUREALIGN_089:
+   ENSUREALIGN_089: ; todo fix
 
 
    ; rhat = dx
@@ -8896,17 +8913,15 @@ SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET_TWOSIDED:
 non_repeating_texture0_top:
 cmp   dx, word ptr ds:[_segloopnextlookup]
 jge   out_of_texture_bounds0_top
-cmp   dx, word ptr ds:[_segloopprevlookup] ; todo ss, ds-> cs etc
+cmp   dx, word ptr ds:[_segloopprevlookupBSPLocal] ; todo ss, ds-> cs etc
 jnge   out_of_texture_bounds0_top
 xchg  ax, dx
-sub   al, byte ptr ss:[_segloopcachedbasecol]
+sub   al, byte ptr ds:[_segloopcachedbasecolBSPLocal]
 mul   byte ptr ds:[_segloopheightvalcache]
 jmp   add_base_segment_and_draw0_top
 ALIGN_MACRO
 out_of_texture_bounds0_top:
 ; branch nonpush with moves etc. 
-mov   ax, ss
-mov   ds, ax
 push  bx
 SELFMODIFY_BSP_set_toptexture:
 
@@ -8915,8 +8930,6 @@ mov   bx, 0
 call  R_GetColumnSegment_ ; todo is di, si used?
 ENSUREALIGN_310:
 
-mov   bx, cs
-mov   ds, bx
 pop   bx
 mov   dx, word ptr ds:[_segloopcachedsegment]
 mov   word ptr ds:[SELFMODIFY_add_cached_segment0_TWOSIDED+1], dx
@@ -9396,18 +9409,16 @@ non_repeating_texture1:
 
 cmp   dx, word ptr ds:[2 + _segloopnextlookup]
 jge   out_of_texture_bounds1
-cmp   dx, word ptr ds:[2 + _segloopprevlookup]
+cmp   dx, word ptr ds:[2 + _segloopprevlookupBSPLocal]
 jnge  out_of_texture_bounds1  
 
 xchg  ax, dx  ; put texturecol in ax
-sub   al, byte ptr ss:[2 + _segloopcachedbasecol]
+sub   al, byte ptr ds:[2 + _segloopcachedbasecolBSPLocal]
 mul   byte ptr ds:[1 + _segloopheightvalcache]
 jmp   add_base_segment_and_draw1
 ALIGN_MACRO
 out_of_texture_bounds1:
 push  bx
-mov   ax, ss
-mov   ds, ax
 
 SELFMODIFY_BSP_set_bottomtexture:
 mov   ax, 01000h
@@ -9415,8 +9426,6 @@ ENSUREALIGN_084:
 mov   bx, 1
 call  R_GetColumnSegment_ ;todo is di, si used?
 ENSUREALIGN_083:
-mov   bx, cs
-mov   ds, bx
 pop   bx
 
 mov   dx, word ptr ds:[2 + _segloopcachedsegment]
@@ -10416,9 +10425,9 @@ ENDP
 ALIGN_MACRO
 
 update_both_cache_texes:
-; bx is 6E8
-; _cachedtex is bx - 010h
-; _cachedcollength is bx - 0Ch
+
+; _cachedtexBSPLocal is bx - 010h
+; _cachedcollengthBSPLocal is bx - 0Ch
 
 ;			if (cachedtex2 != tex){
 ;				int16_t  cached_nextlookup = segloopnextlookup[segloopcachetype]; 
@@ -10438,21 +10447,25 @@ mov       word ptr ds:[bx - 010h+2], ax
 
 mov       ax, word ptr ds:[bx]
 mov       word ptr ds:[bx+2], ax
-mov       dx, word ptr cs:[di + _segloopnextlookup]   ; cached_next_lookup.
-mov       al, byte ptr ds:[bx - 0Ch]        ; _cachedcollength
+mov       dx, word ptr ds:[di + _segloopnextlookup]   ; cached_next_lookup.
+mov       al, byte ptr ds:[bx - 0Ch]        ; _cachedcollengthBSPLocal
 mov       byte ptr ds:[bx - 0Ch+1], al
 mov       byte ptr ds:[bx - 0Ch], cl
 xchg      ax, si                    ; was word ptr bp - 4/tex
 mov       word ptr ds:[bx - 010h], ax
+push      ss
+pop       ds
 call      R_GetCompositeTexture_
+push      cs
+pop       ds
 
 mov       word ptr ds:[bx], ax   ; write back cachedsegmenttex and store in ax
 
-mov       word ptr cs:[di + _segloopnextlookup], dx
-mov       word ptr cs:[di + _segloopcachedsegment], ax  ; write this here now while duped.. skip the write later
+mov       word ptr ds:[di + _segloopnextlookup], dx
+mov       word ptr ds:[di + _segloopcachedsegment], ax  ; write this here now while duped.. skip the write later
 shr       di, 1
 pop       dx ;  , byte ptr [bp - 0Ah]             ; loopwidth
-mov       byte ptr cs:[di + _seglooptexrepeat], dl
+mov       byte ptr ds:[di + _seglooptexrepeat], dl
 
 jmp       done_setting_cached_tex_skip_cachedsegwrite
 ALIGN_MACRO
@@ -10473,9 +10486,9 @@ segloopcachedbasecol_set:
 
 
 mov       di, word ptr [bp - 2]  ; segloopcachetype
-mov       byte ptr cs:[di + _seglooptexrepeat], 0    ; todo any known 0? maybe ah from subtractor
+mov       byte ptr ds:[di + _seglooptexrepeat], 0    ; todo any known 0? maybe ah from subtractor
 sal       di, 1
-mov       word ptr ds:[di + _segloopcachedbasecol], bx
+mov       word ptr ds:[di + _segloopcachedbasecolBSPLocal], bx
 
 ;		// prev RLE boundary. Hit this function again to load next texture if we hit this.
 ;		segloopprevlookup[segloopcachetype]     = runningbasetotal - subtractor;
@@ -10484,21 +10497,21 @@ mov       word ptr ds:[di + _segloopcachedbasecol], bx
 ;		// this is not a single repeating texture 
 ;		seglooptexrepeat[segloopcachetype] 		= 0;
 
-mov       word ptr cs:[di + _segloopnextlookup], dx
+mov       word ptr ds:[di + _segloopnextlookup], dx
 sub       dx, ax  ; subtractor
-mov       word ptr cs:[di + _segloopprevlookup], dx
+mov       word ptr ds:[di + _segloopprevlookupBSPLocal], dx
 
 
 ;	if (lump > 0){
 jmp       done_with_loopwidth
 ALIGN_MACRO
 do_cache_tex_miss:
-; bx is _cachedsegmenttex (6E8)
-; _cachedtex is 6D8 (bp - 00h)
+; bx is _cachedsegmenttexBSPLocal (6E8)
+; _cachedtexBSPLocal is 6D8 (bp - 00h)
 ; 
 
 ; ax is cachedtex
-mov       dx, word ptr ds:[bx - 010h +2]  ; _cachedtex+2
+mov       dx, word ptr ds:[bx - 010h +2]  ; _cachedtexBSPLocal+2
 cmp       dx, si
 jne       update_both_cache_texes   ; takes in di as bp - 2 shifted
 
@@ -10511,14 +10524,14 @@ swap_tex1_tex2:
 ;    cachedtex = cachedtex2;
 ;    cachedtex2 = tex;
 
-mov       word ptr ds:[bx - 010h ],  dx     ; _cachedtex
-mov       word ptr ds:[bx - 010h +2], ax    ; _cachedtex + 2
+mov       word ptr ds:[bx - 010h ],  dx     ; _cachedtexBSPLocal
+mov       word ptr ds:[bx - 010h +2], ax    ; _cachedtexBSPLocal + 2
 
 ;    tex = cachedsegmenttex;
 ;    cachedsegmenttex = cachedsegmenttex2;
 ;    cachedsegmenttex2 = tex;
 
-mov       ax, word ptr ds:[bx - 0Ch]  ; _cachedcollength
+mov       ax, word ptr ds:[bx - 0Ch]  ; _cachedcollengthBSPLocal
 xchg      al, ah        ; swap byte 1 and 2
 mov       word ptr ds:[bx - 0Ch], ax
 
@@ -10602,10 +10615,10 @@ update_tex_caches_and_return:
 ; not a lump
 ; di is bp - 2 shifted onces
 mov       si, word ptr [bp - 4]        ; si = tex
-mov       bx, OFFSET _cachedsegmenttex ; used a lot in the branches.
+mov       bx, OFFSET _cachedsegmenttexBSPLocal ; used a lot in the branches.
 mov       ax, TEXTURECOLLENGTH_SEGMENT
 mov       es, ax
-mov       ax, word ptr ds:[_cachedtex]          ; probably dont LES. it makes the most common case slower.
+mov       ax, word ptr ds:[_cachedtexBSPLocal]          ; probably dont LES. it makes the most common case slower.
 mov       cl, byte ptr es:[si]                  ; cl stores texturecollength
 cmp       ax, si
 jne       do_cache_tex_miss
@@ -10618,13 +10631,13 @@ done_setting_cached_tex:
 ;	return cachedsegmenttex + (FastMul8u8u(cachedcollength , texcol));
 
 ; ax is ds:[bx]
-mov       word ptr cs:[di + _segloopcachedsegment], ax
+mov       word ptr ds:[di + _segloopcachedsegment], ax
 sar       di, 1
 done_setting_cached_tex_skip_cachedsegwrite:
-mov       byte ptr cs:[di + _segloopheightvalcache], cl ; write now
+mov       byte ptr ds:[di + _segloopheightvalcache], cl ; write now
 
 xchg      ax, dx
-mov       al, byte ptr ds:[bx - 0Ch] ; _cachedcollenght
+mov       al, byte ptr ds:[bx - 0Ch] ; _cachedcollength
 mul       byte ptr [bp - 8]
 add       ax, dx
 LEAVE_MACRO     
@@ -10651,6 +10664,8 @@ mov       bp, sp
 push      bx        ; bh always zero
 push      ax
 
+; ds = cs still
+
 
 ;	col &= texturewidthmasks[tex];
 ;	basecol -= col;
@@ -10664,7 +10679,7 @@ mov       ax, TEXTUREWIDTHMASKS_SEGMENT
 mov       es, ax
 and       cl, byte ptr es:[di]
 sal       di, 1
-mov       bx, word ptr ds:[_texturepatchlump_offset + di]
+mov       bx, word ptr ss:[_texturepatchlump_offset + di]
 
 ;	texturecolumnlump = &(texturecolumnlumps_bytes[texturepatchlump_offset[tex]]);
 ;	loopwidth = texturecolumnlump[1].bu.bytehigh;
@@ -10688,9 +10703,9 @@ loopwidth_nonzero:
 
 mov       si, word ptr es:[bx]    ; lump
 mov       di, word ptr [bp - 2]
-mov       byte ptr cs:[di + _seglooptexrepeat], al      ; al still loopwidth
+mov       byte ptr ds:[di + _seglooptexrepeat], al      ; al still loopwidth
 sal       di, 1
-mov       word ptr ds:[di + _segloopcachedbasecol], dx  ; dx still basecol
+mov       word ptr ds:[di + _segloopcachedbasecolBSPLocal], dx  ; dx still basecol
 
 done_with_loopwidth:
 test      si, si
@@ -10707,7 +10722,7 @@ xor       bx, bx  ; todo mov cachedlumps
 
 ;		for (cachelumpindex = 0; cachelumpindex < NUM_CACHE_LUMPS; cachelumpindex++){
 
-cmp       si, word ptr ds:[_cachedlumps]
+cmp       si, word ptr ds:[_cachedlumpsBSPLOCAL]
 je        cachedlumphit
 
 
@@ -10718,7 +10733,7 @@ add       bx, 2
 cmp       bx, (2 * NUM_CACHE_LUMPS)
 jge       cache_miss_move_all_cache_back
 ;			if (lump == cachedlumps[cachelumpindex]){
-cmp       si, word ptr ds:[bx + _cachedlumps]
+cmp       si, word ptr ds:[bx + _cachedlumpsBSPLOCAL]
 jne       loop_check_next_cached_lump
 cachedlumphit:
 test      bx, bx
@@ -10733,7 +10748,9 @@ found_cached_lump:
 ;				patchwidth++;
 ;			}
 ;		}
-sub       si, word ptr ds:[_firstpatch] ; si now is lump - firstpatch
+
+SELFMODIFY_BSP_subfirstpatch_1:
+sub       si, 01000h
 
 test      cx, cx
 jge       col_not_under_zero
@@ -10774,10 +10791,10 @@ and       dl, 0Fh
 
 mov       bx, word ptr [bp - 2]
 
-mov       byte ptr cs:[bx + _segloopheightvalcache], dl
+mov       byte ptr ds:[bx + _segloopheightvalcache], dl
 sal       bx, 1
-mov       ax, word ptr ds:[_cachedsegmentlumps]
-mov       word ptr cs:[bx + _segloopcachedsegment], ax
+mov       ax, word ptr ds:[_cachedsegmentlumpsBSPLOCAL]
+mov       word ptr ds:[bx + _segloopcachedsegment], ax
 
 xchg      ax, cx
 mul       dl
@@ -10796,8 +10813,8 @@ not_cache_0:
 ;    int16_t cachedlump = cachedlumps[cachelumpindex];
 ;    int16_t i;
 xchg      ax, si
-mov       di, OFFSET _cachedsegmentlumps
-mov       si, OFFSET _cachedlumps
+mov       di, OFFSET _cachedsegmentlumpsBSPLOCAL
+mov       si, OFFSET _cachedlumpsBSPLOCAL
 push      word ptr ds:[bx + si]
 push      word ptr ds:[bx + di]
 
@@ -10835,15 +10852,15 @@ ALIGN_MACRO
 ;		cachedlumps[2] = cachedlumps[1];
 ;		cachedlumps[1] = cachedlumps[0];
 cache_miss_move_all_cache_back:
-mov       ax, ds
+mov       ax, cs
 mov       es, ax
 xchg      ax, si
-mov       si, OFFSET _cachedsegmentlumps
+mov       si, OFFSET _cachedsegmentlumpsBSPLOCAL
 lea       di, [si + 2]
-; _cachedsegmentlumps and _cachedlumps are adjacent. we hit both with 7 word copies.
-;_cachedsegmentlumps =                   _NULL_OFFSET + 00698h
-;_cachedlumps =                 	     _NULL_OFFSET + 006A0h
-; doing 7 movsw breaks things
+; _cachedsegmentlumpsBSPLOCAL and _cachedlumpsBSPLOCAL are adjacent. we hit both with 7 word copies.
+;_cachedsegmentlumpsBSPLOCAL =                   _NULL_OFFSET + 00698h
+;_cachedlumpsBSPLOCAL =                 	     _NULL_OFFSET + 006A0h
+; doing 7 movsw breaks things  todo revisit
 movsw
 movsw
 movsw
@@ -10855,17 +10872,20 @@ movsw
 mov       si, ax    ; restore lump
 mov       di, word ptr [bp - 2]
 sal       di, 1
-mov       bx, word ptr cs:[di + _segloopnextlookup]
+mov       bx, word ptr ds:[di + _segloopnextlookup]
 mov       dx, 0FFh
 ; ax is lump
+push      cs
+push      ss
+pop       ds
 call      R_GetPatchTexture_
-
-mov       word ptr ds:[_cachedsegmentlumps], ax
-mov       word ptr cs:[di + _segloopnextlookup], bx
+pop       ds  ; ds = cs again
+mov       word ptr ds:[_cachedsegmentlumpsBSPLOCAL], ax
+mov       word ptr ds:[di + _segloopnextlookup], bx
 sar       di, 1
 mov       al, byte ptr [bp - 0Ah]
-mov       word ptr ds:[_cachedlumps], si
-mov       byte ptr cs:[di + _seglooptexrepeat], al
+mov       word ptr ds:[_cachedlumpsBSPLOCAL], si
+mov       byte ptr ds:[di + _seglooptexrepeat], al
 jmp       found_cached_lump
    
     
@@ -13011,27 +13031,29 @@ call  R_MarkL2TextureCacheMRU_
 call  Z_QuickMapRenderTexture_BSPLocal_
 
 
-mov   ax, 0FFFFh
 
 mov   dx, cx
 do_tex_eviction:
-mov   di, ds
-mov   es, di
-mov   di, OFFSET _cachedlumps
-mov   word ptr ds:[_maskednextlookup], NULL_TEX_COL
+mov   ax, 0FFFFh
 
 
-;_cachedlumps =                	     _NULL_OFFSET + 006A0h
-;_cachedtex =                		 _NULL_OFFSET + 006A8h
+mov   di, cs
+mov   es, di  
+
+
+mov   di, OFFSET _cachedlumpsBSPLOCAL
+
+
+;_cachedlumpsBSPLOCAL =                	     _NULL_OFFSET + 006A0h
+;_cachedtexBSPLocal =                		 _NULL_OFFSET + 006A8h
 ;_segloopnextlookup    = 	 		 _NULL_OFFSET + 00000h
 ;_seglooptexrepeat    = 			 _NULL_OFFSET + 00004h
 ;_maskedtexrepeat =                  _NULL_OFFSET + 00006h
 
-mov  cx, 6
-rep stosw
+mov  cx, 2 + NUM_CACHE_LUMPS   ; 6
 
-mov   di, cs
-mov   es, di
+rep stosw       ;erase _cachedlumps, _cachedtex?
+
 
 
 mov   di, OFFSET  _segloopnextlookup
@@ -13039,7 +13061,10 @@ stosw ; segloopnextlookup[0] = -1; 030
 stosw ; segloopnextlookup[1] = -1; 032
 inc   ax    ; ax is 0
 stosw ; seglooptexrepeat[0] = 0; seglooptexrepeat[1] = 0 ; 034
-stosw ; maskedtexrepeat = 0;                             ; 036
+
+
+mov   word ptr ds:[_maskedtexrepeat], ax ; 0
+mov   word ptr ds:[_maskednextlookup], NULL_TEX_COL  ; todo do this in masked scope?
 
 
 
@@ -13219,7 +13244,6 @@ call  Z_QuickMapRenderTexture_BSPLocal_
 ;    cachedtex2 = -1;
 
 
-mov   ax, 0FFFFh
 
 mov   dl, dh  ; numpages in cl
 jmp   do_tex_eviction
@@ -13256,7 +13280,8 @@ push  si
 mov   si, PATCHPAGE_SEGMENT
 mov   es, si
 mov   si, ax
-sub   si, word ptr ds:[_firstpatch]  ; si is index
+SELFMODIFY_BSP_subfirstpatch_2:
+sub   si, 01000h
 mov   dh, byte ptr es:[si]                      ; texpage 
 cmp   dh, 0FFh
 je    patch_not_in_l1_cache
@@ -13270,9 +13295,10 @@ mov   dl, FIRST_TEXTURE_LOGICAL_PAGE
 call  R_GetTexturePage_
 SHIFT_MACRO shl   si 4  ; shift texpage 4. 
 cbw
+xchg  al, ah
 xchg  ax, si
-sal   si, 1
-add   ax, word ptr cs:[si + _pagesegments]
+SHIFT_MACRO shl si 2 ; * 400h
+add   ax, si
 add   ah, (PATCH_TEXTURE_SEGMENT SHR 8)
 pop   si
 ret   
@@ -13305,9 +13331,9 @@ mov   al, byte ptr es:[si]
 mov   dx, FIRST_TEXTURE_LOGICAL_PAGE
 call  R_GetTexturePage_
 cbw
-mov   si, ax
-sal   si, 1
-mov   si, word ptr cs:[si + _pagesegments]
+xchg  al, ah
+xchg  ax, si
+SHIFT_MACRO shl si 2 ; * 400h
 pop   ax     ; bp - 6
 SHIFT_MACRO   shl ax 4
 add   si, PATCH_TEXTURE_SEGMENT
@@ -13368,11 +13394,12 @@ mov   dl, FIRST_TEXTURE_LOGICAL_PAGE
 
 call  R_GetTexturePage_
 SHIFT_MACRO shl   si 4
-xor   ah, ah
+cbw
+xchg  al, ah
 xchg  ax, si
-sal   si, 1
+SHIFT_MACRO shl si 2 ; * 400h
 
-add   ax, word ptr cs:[si + _pagesegments]
+add   ax, si
 add   ah, (COMPOSITE_TEXTURE_SEGMENT SHR 8)
 
 pop   si
@@ -13395,12 +13422,13 @@ mov   dx, FIRST_TEXTURE_LOGICAL_PAGE
 mov   al, byte ptr es:[si]
 mov   bl, byte ptr es:[si + COMPOSITETEXTUREOFFSET_OFFSET]
 call  R_GetTexturePage_
-xor   ah, ah
-xchg  ax, bx   ; bx stores page. ax gets offset
-xor   ah, ah
+cbw
+xchg  ax, bx
+xchg  bl, bh
+xor   ah, ah   ; this could be cleaner.
+SHIFT_MACRO shl bh 2 ; * 400h
 SHIFT_MACRO shl   ax 4
-sal   bx, 1
-mov   bx, word ptr cs:[bx + _pagesegments]
+
 
 add   bh, (COMPOSITE_TEXTURE_SEGMENT SHR 8)
 add   bx, ax
@@ -14272,6 +14300,12 @@ ASSUME DS:R_BSP_24_TEXT
 mov      word ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_mid+2], ax
 mov      word ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_top+2], ax
 mov      word ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_bot+2], ax
+
+; todo only do this once
+mov       ax,  word ptr ss:[_firstpatch]
+
+mov       word ptr ds:[SELFMODIFY_BSP_subfirstpatch_1+2], ax
+mov       word ptr ds:[SELFMODIFY_BSP_subfirstpatch_2+2], ax
 
 
 mov      ax, word ptr ss:[_detailshift]
