@@ -105,22 +105,22 @@ ENDM
    dw base_product ; for overflow cases...
    dw base_product ; for overflow cases...
 
+; todo default valuess
 
-_lastbasexscale:
-public _lastbasexscale ; IF THIS MOVES, UPDATE _BASEXSCALE_OFFSET_R_BSP in DEFS.INC
-_basexscale:
-PUBLIC _basexscale  ; todo this has to be constant across variants?
-dw 0F0F0h, 0F0F0h
-_lastbaseyscale:
-dw 0F0F0h, 0F0F0h
-_lastviewx:
-dw 0F0F0h, 0F0F0h
-_lastviewy:
-dw 0F0F0h, 0F0F0h
-_lastviewz_shortangle:
-dw 0F0F0h  ; 16 bit?
-_lastviewz:
-dw 0F0F0h, 0F0F0h
+_segloopheightvalcache:
+db 0, 0
+;_segloopprevlookup:
+dw 0, 0
+;_segloopnextlookup:
+dw 0, 0
+;_seglooptexrepeat:
+db 0, 0
+
+; 12 bytes...
+
+
+; todo use
+dw 0, 0, 0, 0, 0
 
 
 BEOFRE_COLFUNC_LOOKUP:
@@ -145,6 +145,23 @@ COLFUNC_shiftmul_selfmodify_target_lookup_top:
 dw OFFSET SELFMODIFY_set_pixel_count_shift_mul_top,  0  ; overwritten with BSP_CODE_SEGMENT
 COLFUNC_shiftmul_selfmodify_target_lookup_bot:
 dw OFFSET SELFMODIFY_set_pixel_count_shift_mul_bot,  0  ; overwritten with BSP_CODE_SEGMENT
+
+
+_lastbasexscale:
+public _lastbasexscale ; IF THIS MOVES, UPDATE _BASEXSCALE_OFFSET_R_BSP in DEFS.INC
+_basexscale:
+PUBLIC _basexscale  ; todo this has to be constant across variants?
+dw 0F0F0h, 0F0F0h
+_lastbaseyscale:
+dw 0F0F0h, 0F0F0h
+_lastviewx:
+dw 0F0F0h, 0F0F0h
+_lastviewy:
+dw 0F0F0h, 0F0F0h
+_lastviewz_shortangle:
+dw 0F0F0h  ; 16 bit?
+_lastviewz:
+dw 0F0F0h, 0F0F0h
 
 _lastviewangle:
 dw 0F0F0h, 0F0F0h
@@ -5953,7 +5970,7 @@ ALIGN_MACRO
    jnge  out_of_texture_bounds_mid
    xchg  ax, dx
    sub   al, byte ptr ss:[_segloopcachedbasecol]
-   mul   byte ptr ss:[_segloopheightvalcache]
+   mul   byte ptr ds:[_segloopheightvalcache]
    jmp   add_base_segment_and_draw_mid
    ALIGN_MACRO
    out_of_texture_bounds_mid:
@@ -5980,7 +5997,7 @@ ALIGN_MACRO
    test  dh, dh
    je    seglooptexrepeat_mid_is_jmp
    ; modulo is seglooptexrepeat - 1
-   mov   dl, byte ptr ss:[_segloopheightvalcache]
+   mov   dl, byte ptr ds:[_segloopheightvalcache]
    ; todo make sure the word write is word aligned.
    mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0],   0B8h   ; mov ax, xxxx
    mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], dx
@@ -8879,7 +8896,7 @@ cmp   dx, word ptr ss:[_segloopprevlookup] ; todo ss, ds-> cs etc
 jnge   out_of_texture_bounds0_top
 xchg  ax, dx
 sub   al, byte ptr ss:[_segloopcachedbasecol]
-mul   byte ptr ss:[_segloopheightvalcache]
+mul   byte ptr ds:[_segloopheightvalcache]
 jmp   add_base_segment_and_draw0_top
 ALIGN_MACRO
 out_of_texture_bounds0_top:
@@ -8904,7 +8921,7 @@ mov   word ptr ds:[SELFMODIFY_add_cached_segment0_TWOSIDED+1], dx
 ; todohigh get this dh and dl in same read?
 mov   cl, 0B8h  ; mov ax, xxxx
 mov   dh, byte ptr ss:[_seglooptexrepeat]
-mov   dl, byte ptr ss:[_segloopheightvalcache]
+mov   dl, byte ptr ds:[_segloopheightvalcache]
 test  dh, dh
 jne   seglooptexrepeat0_is_not_jmp_top
 mov   dx, (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET_TWOSIDED - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER_TWOSIDED)
@@ -9380,7 +9397,7 @@ jnge  out_of_texture_bounds1
 
 xchg  ax, dx  ; put texturecol in ax
 sub   al, byte ptr ss:[2 + _segloopcachedbasecol]
-mul   byte ptr ss:[1 + _segloopheightvalcache]
+mul   byte ptr ds:[1 + _segloopheightvalcache]
 jmp   add_base_segment_and_draw1
 ALIGN_MACRO
 out_of_texture_bounds1:
@@ -9410,7 +9427,7 @@ mov   dh, byte ptr ss:[1 + _seglooptexrepeat]
 test  dh, dh
 je    seglooptexrepeat1_is_jmp
 ; modulo is seglooptexrepeat - 1
-mov   dl, byte ptr ss:[1 + _segloopheightvalcache]
+mov   dl, byte ptr ds:[1 + _segloopheightvalcache]
 mov   byte ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo1],   0B8h   ; mov ax, xxxx
 mov   word ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo1+1], dx
 
@@ -10601,7 +10618,7 @@ done_setting_cached_tex:
 mov       word ptr ds:[di + _segloopcachedsegment], ax
 sar       di, 1
 done_setting_cached_tex_skip_cachedsegwrite:
-mov       byte ptr ds:[di + _segloopheightvalcache], cl ; write now
+mov       byte ptr cs:[di + _segloopheightvalcache], cl ; write now
 
 xchg      ax, dx
 mov       al, byte ptr ds:[bx - 0Ch] ; _cachedcollenght
@@ -10754,7 +10771,7 @@ and       dl, 0Fh
 
 mov       bx, word ptr [bp - 2]
 
-mov       byte ptr ds:[bx + _segloopheightvalcache], dl
+mov       byte ptr cs:[bx + _segloopheightvalcache], dl
 sal       bx, 1
 mov       ax, word ptr ds:[_cachedsegmentlumps]
 mov       word ptr ds:[bx + _segloopcachedsegment], ax

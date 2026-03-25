@@ -69,7 +69,7 @@ _segloopnextlookup    = 			_NULL_OFFSET + 00000h
 _seglooptexrepeat    = 				_NULL_OFFSET + 00004h
 _maskedtexrepeat =                  _NULL_OFFSET + 00006h
 _segloopcachedsegment  = 			_NULL_OFFSET + 00008h
-_segloopheightvalcache = 			_NULL_OFFSET + 0000Ch
+;_segloopheightvalcache = 			_NULL_OFFSET + 0000Ch
 _eventtail =					  	_NULL_OFFSET + 0000Eh
 _eventhead =					  	_NULL_OFFSET + 0000Fh
 
@@ -1797,7 +1797,7 @@ ENDM
 
 
 ; gross.
-_BASEXSCALE_OFFSET_R_BSP = 06Ah
+_BASEXSCALE_OFFSET_R_BSP = 098h
 
 
 
