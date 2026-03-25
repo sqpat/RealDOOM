@@ -103,12 +103,14 @@ public _segloopnextlookup
 public _seglooptexrepeat
 public _cachedsegmentlumpsBSPLocal
 
-_segloopheightvalcache:
-db 0, 0
+
 _segloopnextlookup:
 dw -1, -1
-_seglooptexrepeat:
+_segloopheightvalcache: ; interleaved bytes
+_seglooptexrepeat = _segloopheightvalcache + 1 ; interleaved bytes
 db 0, 0
+db 0, 0
+
 _segloopcachedsegment:
 dw 0, 0
 
@@ -5099,6 +5101,7 @@ stosw ; mov   word ptr ds:[_segloopnextlookup+2], ax
 inc   ax
 ; zero both 
 stosw ; mov   word ptr ds:[_seglooptexrepeat], ax
+stosw ; mov   word ptr ds:[_seglooptexrepeat], ax
 
 jmp   R_RenderSegLoop_exit     ; todo doesnt quite fit here yet.
 
@@ -6013,12 +6016,13 @@ ALIGN_MACRO
    mov   word ptr ds:[SELFMODIFY_add_cached_segment0+1], dx
 
 
-   ; todohigh get this dh and dl in same read?
-   mov   dh, byte ptr ds:[_seglooptexrepeat]
+
+   ;mov   dl, byte ptr ds:[_segloopheightvalcache]
+   ;mov   dh, byte ptr ds:[_seglooptexrepeat]
+   mov   dx, word ptr ds:[_segloopheightvalcache]
    test  dh, dh
    je    seglooptexrepeat_mid_is_jmp
    ; modulo is seglooptexrepeat - 1
-   mov   dl, byte ptr ds:[_segloopheightvalcache]
    ; todo make sure the word write is word aligned.
    mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0],   0B8h   ; mov ax, xxxx
    mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], dx
@@ -7032,7 +7036,7 @@ sbb       cx, 01000h
 ; 	worldtop = worldhigh;
 ; }
 
-; todohigh skyflatnum should be a per level constant??
+
 SELFMODIFY_BSP_set_skyflatnum_1:
 mov       al, 010h
 cmp       al, byte ptr [bp + 0Ah]
@@ -8212,6 +8216,7 @@ stosw ; mov   word ptr ds:[_segloopnextlookup+2], ax
 inc   ax
 ; zero both 
 stosw ; mov   word ptr ds:[_seglooptexrepeat], ax
+stosw ; mov   word ptr ds:[_seglooptexrepeat], ax
 
 
 jmp   R_RenderSegLoop_exit_TWOSIDED
@@ -8914,7 +8919,7 @@ non_repeating_texture0_top:
 cmp   dx, word ptr ds:[_segloopnextlookup]
 jge   out_of_texture_bounds0_top
 cmp   dx, word ptr ds:[_segloopprevlookupBSPLocal] ; todo ss, ds-> cs etc
-jnge   out_of_texture_bounds0_top
+jl    out_of_texture_bounds0_top
 xchg  ax, dx
 sub   al, byte ptr ds:[_segloopcachedbasecolBSPLocal]
 mul   byte ptr ds:[_segloopheightvalcache]
@@ -8935,10 +8940,11 @@ mov   dx, word ptr ds:[_segloopcachedsegment]
 mov   word ptr ds:[SELFMODIFY_add_cached_segment0_TWOSIDED+1], dx
 
 
-; todohigh get this dh and dl in same read?
+
 mov   cl, 0B8h  ; mov ax, xxxx
-mov   dh, byte ptr ds:[_seglooptexrepeat]
-mov   dl, byte ptr ds:[_segloopheightvalcache]
+; mov   dh, byte ptr ds:[_seglooptexrepeat]
+; mov   dl, byte ptr ds:[_segloopheightvalcache]
+mov   dx, word ptr ds:[_segloopheightvalcache]
 test  dh, dh
 jne   seglooptexrepeat0_is_not_jmp_top
 mov   dx, (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET_TWOSIDED - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER_TWOSIDED)
@@ -9026,6 +9032,7 @@ jnz   record_masked
 
 finished_recording_masked:
 
+; todo 8 bit logic down here?
 
 SELFMODIFY_BSP_toptexture:
 SELFMODIFY_BSP_toptexture_AFTER = SELFMODIFY_BSP_toptexture + 3
@@ -9055,8 +9062,8 @@ xor   ch, ch
 cmp   ax, cx
 jl    dont_clip_top_floor_TWOSIDED  ; todo branch test
 ; toggle this for ENSUREALIGN_009
-xchg  ax, cx
-;mov   ax, cx
+;xchg  ax, cx
+mov   ax, cx
 dec   ax
 
 dont_clip_top_floor_TWOSIDED:
@@ -9123,7 +9130,7 @@ SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER_TWOSIDED = SELFMODIFY_BSP_check_seglo
 
 SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER_TWOSIDED:
 public SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER_TWOSIDED
-xchg  ax, ax                    ; one byte nop placeholder. this gets the ah value in mov ax, xxxx (byte 3)
+
 and   dl, ah   ; ah has loopwidth-1 (modulo )
 mul   dl       ; al has heightval
 
@@ -9414,7 +9421,7 @@ jnge  out_of_texture_bounds1
 
 xchg  ax, dx  ; put texturecol in ax
 sub   al, byte ptr ds:[2 + _segloopcachedbasecolBSPLocal]
-mul   byte ptr ds:[1 + _segloopheightvalcache]
+mul   byte ptr ds:[2 + _segloopheightvalcache] ;interleaved bytes
 jmp   add_base_segment_and_draw1
 ALIGN_MACRO
 out_of_texture_bounds1:
@@ -9436,11 +9443,12 @@ mov   word ptr ds:[SELFMODIFY_add_cached_segment1+1], dx
 
 
 ; todo get this dh and dl in same read
-mov   dh, byte ptr ds:[1 + _seglooptexrepeat]
+;mov   dl, byte ptr ds:[2 + _segloopheightvalcache] ; interleaved bytes
+;mov   dh, byte ptr ds:[2 + _seglooptexrepeat]
+mov   dx, word ptr ds:[2+_segloopheightvalcache]
 test  dh, dh
 je    seglooptexrepeat1_is_jmp
 ; modulo is seglooptexrepeat - 1
-mov   dl, byte ptr ds:[1 + _segloopheightvalcache]
 mov   byte ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo1],   0B8h   ; mov ax, xxxx
 mov   word ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo1+1], dx
 
@@ -10441,8 +10449,10 @@ update_both_cache_texes:
 ;				segloopnextlookup[segloopcachetype]     = cached_nextlookup; 
 ;				seglooptexrepeat[segloopcachetype] 		= loopwidth;
 
+; todo swap bx and si roles.
+
 ; ax already cached tex 1
-; di already bp - 2 (segloopcachetype) shifted left once
+; di already bp - 2 (segloopcachetype) 
 mov       word ptr ds:[bx - 010h+2], ax
 
 mov       ax, word ptr ds:[bx]
@@ -10463,9 +10473,8 @@ mov       word ptr ds:[bx], ax   ; write back cachedsegmenttex and store in ax
 
 mov       word ptr ds:[di + _segloopnextlookup], dx
 mov       word ptr ds:[di + _segloopcachedsegment], ax  ; write this here now while duped.. skip the write later
-shr       di, 1
 pop       dx ;  , byte ptr [bp - 0Ah]             ; loopwidth
-mov       byte ptr ds:[di + _seglooptexrepeat], dl
+mov       byte ptr ds:[di + _seglooptexrepeat], dl ; interleaved bytes
 
 jmp       done_setting_cached_tex_skip_cachedsegwrite
 ALIGN_MACRO
@@ -10486,8 +10495,7 @@ segloopcachedbasecol_set:
 
 
 mov       di, word ptr [bp - 2]  ; segloopcachetype
-mov       byte ptr ds:[di + _seglooptexrepeat], 0    ; todo any known 0? maybe ah from subtractor
-sal       di, 1
+mov       byte ptr ds:[di + _seglooptexrepeat], 0 ; interleavd bytes    ; todo any known 0? maybe ah from subtractor
 mov       word ptr ds:[di + _segloopcachedbasecolBSPLocal], bx
 
 ;		// prev RLE boundary. Hit this function again to load next texture if we hit this.
@@ -10501,7 +10509,6 @@ mov       word ptr ds:[di + _segloopnextlookup], dx
 sub       dx, ax  ; subtractor
 mov       word ptr ds:[di + _segloopprevlookupBSPLocal], dx
 
-
 ;	if (lump > 0){
 jmp       done_with_loopwidth
 ALIGN_MACRO
@@ -10513,7 +10520,7 @@ do_cache_tex_miss:
 ; ax is cachedtex
 mov       dx, word ptr ds:[bx - 010h +2]  ; _cachedtexBSPLocal+2
 cmp       dx, si
-jne       update_both_cache_texes   ; takes in di as bp - 2 shifted
+jne       update_both_cache_texes   ; takes in di as bp - 2
 
 swap_tex1_tex2:
 ; ax  is cachedtex
@@ -10613,7 +10620,7 @@ jmp       done_with_lump_check
 ALIGN_MACRO
 update_tex_caches_and_return:
 ; not a lump
-; di is bp - 2 shifted onces
+; di is  
 mov       si, word ptr [bp - 4]        ; si = tex
 mov       bx, OFFSET _cachedsegmenttexBSPLocal ; used a lot in the branches.
 mov       ax, TEXTURECOLLENGTH_SEGMENT
@@ -10632,9 +10639,8 @@ done_setting_cached_tex:
 
 ; ax is ds:[bx]
 mov       word ptr ds:[di + _segloopcachedsegment], ax
-sar       di, 1
 done_setting_cached_tex_skip_cachedsegwrite:
-mov       byte ptr ds:[di + _segloopheightvalcache], cl ; write now
+mov       byte ptr ds:[di + _segloopheightvalcache], cl ; interleaved bytes write now
 
 xchg      ax, dx
 mov       al, byte ptr ds:[bx - 0Ch] ; _cachedcollength
@@ -10650,7 +10656,7 @@ ALIGN_MACRO
 PROC   R_GetColumnSegment_ NEAR   ; TODO: optimization candidate
 PUBLIC R_GetColumnSegment_
 
-; bp - 2      segloopcachetype
+; bp - 2      segloopcachetype word lookup
 ; bp - 4      ax/tex
 ; bp - 6      basecol
 ; bp - 8      texcol
@@ -10661,6 +10667,7 @@ push      si
 push      di
 push      bp
 mov       bp, sp
+sal       bx, 1     ; word lookup
 push      bx        ; bh always zero
 push      ax
 
@@ -10703,8 +10710,8 @@ loopwidth_nonzero:
 
 mov       si, word ptr es:[bx]    ; lump
 mov       di, word ptr [bp - 2]
-mov       byte ptr ds:[di + _seglooptexrepeat], al      ; al still loopwidth
-sal       di, 1
+
+mov       byte ptr ds:[di + _seglooptexrepeat], al     ;interleaved bytes  ; al still loopwidth
 mov       word ptr ds:[di + _segloopcachedbasecolBSPLocal], dx  ; dx still basecol
 
 done_with_loopwidth:
@@ -10791,8 +10798,8 @@ and       dl, 0Fh
 
 mov       bx, word ptr [bp - 2]
 
-mov       byte ptr ds:[bx + _segloopheightvalcache], dl
-sal       bx, 1
+
+mov       byte ptr ds:[bx + _segloopheightvalcache], dl ; interleaved bytes
 mov       ax, word ptr ds:[_cachedsegmentlumpsBSPLOCAL]
 mov       word ptr ds:[bx + _segloopcachedsegment], ax
 
@@ -10871,7 +10878,7 @@ movsw
 movsw
 mov       si, ax    ; restore lump
 mov       di, word ptr [bp - 2]
-sal       di, 1
+
 mov       bx, word ptr ds:[di + _segloopnextlookup]
 mov       dx, 0FFh
 ; ax is lump
@@ -10882,10 +10889,10 @@ call      R_GetPatchTexture_
 pop       ds  ; ds = cs again
 mov       word ptr ds:[_cachedsegmentlumpsBSPLOCAL], ax
 mov       word ptr ds:[di + _segloopnextlookup], bx
-sar       di, 1
 mov       al, byte ptr [bp - 0Ah]
+mov       byte ptr ds:[di + _seglooptexrepeat], al ; interleaved bytes
+
 mov       word ptr ds:[_cachedlumpsBSPLOCAL], si
-mov       byte ptr ds:[di + _seglooptexrepeat], al
 jmp       found_cached_lump
    
     
