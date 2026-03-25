@@ -275,7 +275,7 @@ PUBLIC  P_DivlineSide_
 
 	mov  ax, dx
 	mov  dx, cx
-	mov  cx, word ptr ds:[si + 0Ah]	; if (!node->dx.w) {
+	mov  cx, word ptr ds:[si + 0Ah]	; if (!node->dx.w) {  ; todo offsets.
 	or   cx, word ptr ds:[si + 8]
 	; todo seems to be some repeated logic in here...
 	jne  node_dx_nonzero

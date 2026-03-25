@@ -295,14 +295,20 @@ ELSE
     mov  ax, FINECOSINE_SEGMENT
     mov  es, ax  ; put segment in ES
     
-    lea  ax, [bx + 02000h]
-    shl  ax, 1      ; signed 0-FFFF
+    
     shr  bx, 1      ; word lookup 0-3FFF
-    push dx         ; store 16 bit operand
-    cwd    
-    mov ax, word ptr es:[bx] ; ax gets cosine lo
-    mov bx, dx               ; bx gets sign/cosine hi
-    pop dx                   ; dx gets orig value
+    xor  ax, ax
+    test bh, 030h
+    mov  bx, word ptr es:[bx] ; ax gets cosine lo
+    jpe  skip_cos_invert
+    neg  bx
+    dec  ax
+    skip_cos_invert:
+
+    ; todo optim
+
+    xchg   ax, bx
+
 
 
     ;BX:AX * DX
@@ -377,14 +383,23 @@ ELSE
     mov  ax, FINESINE_SEGMENT
     mov  es, ax  ; put segment in ES
     
-    mov  ax, bx     ; dword lookup 0-7FFF
-    shl  ax, 1      ; signed 0-FFFF
+
     shr  bx, 1      ; word lookup 0-3FFF
-    push dx         ; store 16 bit operand
-    cwd    
-    mov ax, word ptr es:[bx] ; ax gets cosine lo
-    mov bx, dx               ; bx gets sign/cosine hi
-    pop dx                   ; dx gets orig value
+    xor  ax, ax
+    
+    test bh, 020h
+    
+    mov  bx, word ptr es:[bx] ; bx gets cosine lo
+    je   skip_sin_invert
+    neg  bx
+    dec  ax
+    skip_sin_invert:
+    
+    ; todo clean up
+
+    xchg ax, bx
+
+
 
     ;BX:AX * DX
 

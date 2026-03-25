@@ -281,25 +281,26 @@ mov   di, word ptr ds:[si + MOBJ_POS_T.mp_angle + 2]
 mov   ax, FINESINE_SEGMENT
 mov   es, ax
 
-mov   ax, di
 SHIFT_MACRO shr di 2
 and   di, 0FFFEh  ; clear bottom bits. same as shr 3 shl 1
+mov   ax, di
 
 ; time to calculate ax dx bx cx.
 ; z, mt_tfog, -1 all pushed on stack already.
 ;	fogRef = P_SpawnMobj (m_pos->x.w + FastMul16u32(20, finecosine[an]), m_pos->y.w + FastMul16u32(20,finesine[an]) , thing_pos->z.w, MT_TFOG, -1);
 
+mov   bx, word ptr es:[di]
 
-cwd
-xchg  ax, dx  ; ax has sign bits
-mov   cx, dx
-add   ax, 04000h
-cwd
-push  dx  ; cosine sign bits
-mov   dx, cx ; sine sign bits back into dx
+xor   dx, dx
+test  ah, 020h
+je    skip_sin_invert
+neg   bx
+dec   dx
+skip_sin_invert:
+
+; dx has sin ebits
 
 mov   cx, 20
-mov   bx, word ptr es:[di]
 
 ; FastMul16u32u
 MUL  CX        ; AX * CX
@@ -309,16 +310,23 @@ ADD  DX, CX    ; add
 
 add   ax, word ptr ds:[si + MOBJ_POS_T.mp_y + 0]
 adc   dx, word ptr ds:[si + MOBJ_POS_T.mp_y + 2]
-pop   cx ; cosine sign bits
+
+
 push  dx
 push  ax   ; get these after next mul call
 
 COSINE_OFFSET_IN_SINE = ((FINECOSINE_SEGMENT - FINESINE_SEGMENT) SHL 4)
 
 
-xchg  ax, cx  ; cosine nie bits into ax..
+xor   ax, ax  ; cos sign bits
 mov   cx, 20
+mov   bx, di
+test  bh, 030h
 mov   bx, word ptr es:[di + COSINE_OFFSET_IN_SINE]
+jpe   skip_cos_invert
+neg   bx
+dec   ax  ; sign bits
+skip_cos_invert:
 
 ; FastMul16u32u
 MUL  CX        ; AX * CX

@@ -219,14 +219,19 @@ sbb   dx, cx
 done_with_angle_adjustment:
 
 ; fine angle
-sar   dx, 1
-and   dx, 0FFFCh
 mov   bx, dx
+sar   bx, 1
+sar   bx, 1
 
-mov   ax, FINESINE_SEGMENT
-mov   es, ax
-les   bx, dword ptr es:[bx]
-mov   cx, es
+mov   cx, FINESINE_SEGMENT
+mov   es, cx
+xor   cx, cx
+test  bh, 020h
+mov   bx, word ptr es:[bx]
+je    skip_sin_invert
+neg   bx
+dec   cx
+skip_sin_invert:
 
 ; todo im not sure if this comes out correct.
 ; mul 96... 0x60

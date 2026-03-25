@@ -6725,8 +6725,8 @@ mov   word ptr ds:[_attackrange16], bx
 
 ;	mobj_pos_t __far* t1_pos = GET_MOBJPOS_FROM_MOBJ(t1);
 
-mov   cx, dx		; distance
-mov   si, bx
+mov   cx, dx		; angle
+mov   si, bx        ; distance
 
 mov   bx, (SIZE THINKER_T)
 sub   ax, (_thinkerlist + THINKER_T.t_data)
@@ -6759,27 +6759,39 @@ movsw
 xchg  bx, si  ; restore si
 push  bx      ; bp - 0Eh write original bx plus eight
 
-mov   di, cx
+mov   bx, cx    ; angle
 
 mov   ax, ss
 mov   ds, ax	; restore ds
 
-shl   di, 1					; word lookup
+shl   bx, 1					; word lookup
 
 mov   ax, FINESINE_SEGMENT
 mov   es, ax
 
-mov   ax, di				; ax 0-3FFFh	
-SHIFT_MACRO sal   ax, 2		; ax 0-FFFFh
-cwd			 			    ; sine high word
-mov   cx, dx 			    ; sine high word in cx
-add   ax, 04000h
-cwd			 				; cosine high word
 
-mov   ax, word ptr es:[di + COSINE_OFFSET_IN_SINE]
-mov   bx, word ptr es:[di]
+cwd ; xor   dx, dx         ; cos high 0
+mov   cx, dx               ; sin high 0
 
 
+
+
+
+mov   ax, word ptr es:[bx + COSINE_OFFSET_IN_SINE] ; cos low
+test  bh, 030h
+jpe   skip_invert_cos_1
+neg   ax
+dec   dx
+skip_invert_cos_1:
+
+mov   di, word ptr es:[bx] ; sin low
+test  bh, 020h
+je    skip_invert_sin_1
+neg   di	
+dec   cx
+skip_invert_sin_1:
+
+xchg  bx, di
 
 ; dx:ax is cosine
 ; cx:bx is sine
@@ -6849,24 +6861,37 @@ mov   es, si
 ; si is free... juggle
 
 push  ax    ; store ax
-push  dx	; old dx
 
-mov   ax, di
-SHIFT_MACRO sal ax 2
-cwd
-mov   si, dx  ; sine hi bits
-add   ax, 04000h
-cwd
+xchg  bx, di
+
+xor   si, si
+mov   ax, word ptr es:[bx]
+
+test  bh, 020h
+je    skip_invert_sin_2
+neg   ax
+dec   si
+skip_invert_sin_2:
+
+add   di, ax
+adc   cx, si
 
 
+xor   si, si
+test  bh, 030h
+mov   bx, word ptr es:[bx + COSINE_OFFSET_IN_SINE]
+jpe   skip_invert_cos_3
+neg   bx
+dec   si
+skip_invert_cos_3:
 
-add   bx, word ptr es:[di]
-adc   cx, dx
 
-pop   dx   ; old dx
 pop   ax   ; old ax
-add   ax, word ptr es:[di + COSINE_OFFSET_IN_SINE]
+
+add   ax, bx
 adc   dx, si
+
+xchg  bx, di
 
 
 
@@ -6993,8 +7018,7 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 8
-push  ax 				; bp - 0Ah  thing
+
 mov   di, dx			; di gets angle
 mov   word ptr ds:[_attackrange16], bx
 mov   si, bx			; si gets distance..
@@ -7013,20 +7037,22 @@ mov    bx, word ptr ds:[bx + _mobjposlookuptable]
 
 mov   ax, MOBJPOSLIST_SEGMENT
 mov   es, ax
+
+; todo make this suck less.
+
+push  word ptr es:[bx + 6]
+push  word ptr es:[bx + 4]
+push  word ptr es:[bx + 2]
+push  word ptr es:[bx]
+
+push  cx				; bp - 0Ah  ; thing
 push  ax				; bp - 0Ch
 push  bx				; bp - 0Eh
+
 
 mov   ax, word ptr [bp + 0Eh]
 mov   word ptr ds:[_la_damage], ax
 
-mov   ax, word ptr es:[bx]
-mov   word ptr [bp - 8], ax
-mov   ax, word ptr es:[bx + 2]
-mov   word ptr [bp - 6], ax
-mov   ax, word ptr es:[bx + 4]
-mov   word ptr [bp - 4], ax
-mov   ax, word ptr es:[bx + 6]
-mov   word ptr [bp - 2], ax
 
 
 shl   di, 1					; word lookup
@@ -7034,22 +7060,36 @@ shl   di, 1					; word lookup
 mov   ax, FINESINE_SEGMENT
 mov   es, ax
 
-mov   ax, di				; ax 0-3FFFh	
-SHIFT_MACRO sal   ax, 2		; ax 0-FFFFh
-cwd			 			    ; sine high word
-mov   cx, dx 			    ; sine high word in cx
-add   ax, 04000h
-cwd			 				; cosine high word
 
-mov   ax, word ptr es:[di + COSINE_OFFSET_IN_SINE]
-mov   bx, word ptr es:[di]
+cwd ; xor   dx, dx
+mov   cx, dx
 
+xchg  bx, di
+
+mov   ax, word ptr es:[bx + COSINE_OFFSET_IN_SINE]
+mov   di, word ptr es:[bx]
+
+
+test  bh, 020h
+je    skip_invert_sin_4
+neg   di
+dec   cx
+skip_invert_sin_4:
+
+test  bh, 030h
+jpe   skip_invert_cos_4
+neg   ax
+dec   dx
+skip_invert_cos_4:
+
+
+xchg  bx, di
 
 ; cx:bx   sine
 ; dx:ax   cosine
 
 cmp   si, CHAINSAWRANGE
-jna    lineattack_is_melee
+jna   lineattack_is_melee
 
 lineattack_not_melee:
 
@@ -7107,25 +7147,41 @@ lineattack_is_chainsaw:
 mov   si, FINESINE_SEGMENT
 mov   es, si
 
-push  ax
-push  dx
+push  ax    ; store ax
 
-mov   ax, di
-SHIFT_MACRO sal ax 2
-cwd					; sine bits
+xchg  bx, di
 
-add   bx, word ptr es:[di]
-adc   cx, dx
+xor   si, si
+mov   ax, word ptr es:[bx]
+test  bh, 020h
 
-add   ax, 04000h
-cwd					; cosine hibits
-mov   si, dx
+je    skip_invert_sin_5
+neg   ax	
+dec   si
+skip_invert_sin_5:
 
-pop   dx
-pop   ax
+add   di, ax
+adc   cx, si
 
-add   ax, word ptr es:[di + COSINE_OFFSET_IN_SINE]
-adc   dx, si  ; cosine hibits
+
+xor   si, si
+test  bh, 030h
+mov   bx, word ptr es:[bx + COSINE_OFFSET_IN_SINE]
+
+jpe   skip_invert_cos_6
+neg   bx
+dec   si
+skip_invert_cos_6:
+
+
+
+pop   ax   ; old ax
+
+add   ax, bx
+adc   dx, si
+
+xchg  bx, di
+
 
 lineattack_done_with_switchblock:
 
@@ -7233,13 +7289,27 @@ ELSE
 ENDIF
 
 ; ax has full angle
-cwd
-mov   si, dx		; sine hibits in si
-add   ax, 04000h	
-cwd					; cosine hibits in dx
-mov   ax, word ptr es:[di] ; load sin into si:ax
-mov   di, word ptr es:[di + COSINE_OFFSET_IN_SINE] ; load cos into dx:di
-xchg  dx, si	    ; di:si cosine, dx:ax sine
+xchg  bx, di
+mov   ax, word ptr es:[bx] ; load sin into si:ax
+
+xor   dx, dx
+test  bh, 020h
+
+je    skip_invert_sin_7
+neg   ax	
+dec   dx
+skip_invert_sin_7:
+
+xor   si, si
+test  bh, 030h
+mov   bx, word ptr es:[bx + COSINE_OFFSET_IN_SINE] ; load cos into si:di
+
+jpe   skip_invert_cos_8
+neg   bx
+dec   si
+skip_invert_cos_8:
+xchg  bx, di
+
 
 SHIFT32_MACRO_LEFT dx ax 6
 

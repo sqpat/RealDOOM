@@ -350,7 +350,6 @@ ELSE
     NEG  CX
     NEG  AX
     SBB  CX, 0
-    neg  bx
     skip_invert_sin:
 
 
@@ -444,7 +443,6 @@ ELSE
     NEG  CX
     NEG  AX
     SBB  CX, 0
-    neg  bx
     skip_invert_cos:
 
 
@@ -498,13 +496,19 @@ mov  ax, FINECOSINE_SEGMENT
 mov  es, ax  ; put segment in ES
 mov  cx, bx  ; cx gets value
 mov  bx, dx  ; bx gets angle dword lookup
-lea  ax, [bx + 02000h]
+
 shr  bx, 1   ; bx has word lookup
-shl  ax, 1   ; 0-7FFF becomes 0-FFFF
-cwd          ; dx gets sign
-xchg ax, dx  ; ax gets sign
+xor  ax, ax
 
 mov  dx, word ptr es:[bx]  ; ax gets sine value
+
+test bh, 030h
+jpe  skip_cos_invert_speed
+neg  dx
+dec  ax
+skip_cos_invert_speed:
+
+
 xchg cx, dx
 
 ; dx should have speed
@@ -556,11 +560,14 @@ mov  cx, bx  ; cx gets value
 mov  bx, dx  ; bx gets angle dword lookup
 mov  ax, bx
 shr  bx, 1   ; bx has word lookup
-shl  ax, 1   ; 0-7FFF becomes 0-FFFF
-cwd          ; dx gets sign
-xchg ax, dx  ; ax gets sign
+xor  ax, ax
 
 mov  dx, word ptr es:[bx]  ; ax gets sine value
+test bh, 020h
+je   skip_sin_invert_speed
+neg  dx
+dec  ax
+skip_sin_invert_speed:
 xchg cx, dx
 
 ; AX:CX * DX

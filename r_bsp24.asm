@@ -2129,7 +2129,6 @@ ALIGN_MACRO
    NEG  CX
    NEG  AX
    SBB  CX, 0
-   neg  bx
    skip_invert_sin:
 
    MUL  BX        ; AX * BX
@@ -2158,14 +2157,6 @@ ALIGN_MACRO
     PUBLIC FixedMulTrigNoShiftCosine_BSPLocal_
     ; pass in the index already shifted to be a dword lookup..
 
-; je 10h:  quadrant 1/2 good  3/4 bad
-; jne 10h  ?quadrant 3/4 good  1/2 bad
-; je 20h:  quadrant 1/3 good  2/4 bad
-; jne 20h  quadrant 2/4 good  1/3 bad
-; nothing: quadrant 1/4 good 2/3 bad
-; ? always
-
-
 
    SHR  BX, 1
    test bh, 030h
@@ -2177,7 +2168,6 @@ ALIGN_MACRO
    NEG  CX
    NEG  AX
    SBB  CX, 0
-   neg  bx
    skip_invert_cos:
    
    MUL  BX        ; AX * BX
@@ -2243,55 +2233,59 @@ rep   stosw  ; write 0 to es:di
 mov   word ptr ds:[_lastvisplane], cx ; 0  ; todo cs var?
 mov   word ptr cs:[_lastopening], cx ; 0
 SELFMODIFY_set_viewanglesr3_4:
-mov   ax, 01000h
-sub   ah, 08h   ; FINE_ANG90
-and   ah, 01Fh    ; MOD_FINE_ANGLE
+mov   bx, 01000h
+sub   bh, 08h   ; FINE_ANG90
+and   bh, 01Fh    ; MOD_FINE_ANGLE
 
-shl ax, 1  ; word lookup
-mov   di, ax
+shl   bx, 1  ; word lookup
+
  
 SELFMODIFY_BSP_centerx_2:
 mov   cx, 01000h
 
-mov   bx, FINESINE_SEGMENT
-mov   es, bx
+mov   di, FINESINE_SEGMENT
+mov   es, di
 
-SHIFT_MACRO shl ax 2
 
-cwd
-mov   bx, dx  ; sine sign
-add   ax, 04000h
-cwd
+xor   dx, dx
+xor   si, si
+mov   ax, word ptr es:[bx + COSINE_OFFSET_IN_SINE]
 
-mov   ax, word ptr es:[di + COSINE_OFFSET_IN_SINE]
-mov   si, dx  ; cos sine
+
+
 
 
 ; note: range is -65535 to 65535. High word is already sign bits
 
 ; sine/cosine max at +/- 65536 so they wont overflow.
 
-xor   ax, si
-sub   ax, si   ; absolute value
-xor   dx, dx
 
 div   cx
 
 ;    basexscale = FixedDivWholeB(finecosine[angle],temp.w);
 
 
-xor   ax, si ; apply sign
-sub   ax, si
+test  bh, 030h
+jpe   skip_cosine_invert_clearplanes
+neg   ax
+dec   si
+skip_cosine_invert_clearplanes:
+
 
 mov   word ptr cs:[_lastbasexscale], ax
 mov   word ptr cs:[_lastbasexscale + 2], si
 
-mov   ax, word ptr es:[di]
-mov   si, bx ; sine sign
-
-xor   ax, si
-sub   ax, si   ; absolute value
+mov   ax, word ptr es:[bx]
 xor   dx, dx
+xor   si, si
+
+test  bh, 020h
+je    skip_sine_invert_clearplanes
+dec   si
+skip_sine_invert_clearplanes:
+
+
+
 
 div   cx
 not   si  ; we want a negative result so neg the sign

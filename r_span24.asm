@@ -643,7 +643,7 @@ ELSE
     NEG  CX
     NEG  AX
     SBB  CX, 0
-    neg  bx
+
     skip_invert_sin:
 
     MUL  BX        ; AX * BX
@@ -679,7 +679,7 @@ ELSE
     NEG  CX
     NEG  AX
     SBB  CX, 0
-    neg  bx
+
     skip_invert_cos:
 
     MUL  BX        ; AX * BX
