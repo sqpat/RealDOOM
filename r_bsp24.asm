@@ -4182,8 +4182,6 @@ stosw                            ; DRAWSEG_T.drawseg_x2
 
 inc       ax
 
-
-
 mov       ds, cx  ; restore ds = cs
 
 
@@ -4546,9 +4544,6 @@ offsetangle_greater_than_fineang90:
 xchg      ax, dx  ; dx gets low
 xchg      ax, cx  ; ax gets high
 
-
-
-
 done_with_offsetangle_stuff:
 ; ax:dx is rw_offset
 
@@ -4573,8 +4568,6 @@ sbb       ax, 0
 tempangle_not_smaller_than_fineang180:
 
 
-
-
 SELFMODIFY_BSP_sidetextureoffset:
 add       ax, 01000h
 SELFMODIFY_BSP_sidesegoffset:
@@ -4583,11 +4576,7 @@ add       ax, 01000h
 mov   word ptr ds:[SELFMODIFY_set_cx_rw_offset_lo+1], dx
 mov   word ptr ds:[SELFMODIFY_set_ax_rw_offset_hi+2], ax
 
-
-
-
 ;	    lightnum = (frontsector->lightlevel >> LIGHTSEGSHIFT)+extralight;
-
 
 SELFMODIFY_BSP_fixedcolormap_3:
 jmp SHORT seg_textured_check_done    ; dont check walllights if fixedcolormap
@@ -4610,8 +4599,6 @@ dec       ax  ; nop carries flags from add dl, al. dec and inc will set signed a
 shl       ax, 1  ; word lookup
 xchg      ax, bx
 mov       ax, word ptr ds:[_mul48lookup_with_scalelight_with_minusone_offset + bx]
-
-
 
 
 ; write walllights to rendersegloop
@@ -5033,20 +5020,10 @@ ENDIF
 
 ; dx:ax are negative topstep. instead of adding the neg we sub.
 
-
-
 ; todo can this modify a sub and skip the neg above?
 
 mov       word ptr ds:[SELFMODIFY_add_to_topfrac_hi_2+4], dx
 mov       word ptr ds:[SELFMODIFY_add_to_topfrac_lo_2+4], ax
-
-
-
-
-
-
-
-
 
 ;  di is free up to here
 
@@ -5060,19 +5037,10 @@ PUBLIC R_RenderSegLoop_
 
 ; ds still cs
 
-
-
-
 mov   di, word ptr [bp - 020h]  ; get start_x/dc_x initial value
 
 jmp   start_per_column_inner_loop ; jump into first iter.
-
 ALIGN_MACRO
-
-
-
-
-
 exit_rendersegloop:
 public exit_rendersegloop
 ; zero out local caches.
@@ -5088,7 +5056,6 @@ stosw ; mov   word ptr ds:[_segloopnextlookup+2], ax
 inc   ax
 ; zero both 
 stosw ; mov   word ptr ds:[_seglooptexrepeat], ax
-
 
 jmp   R_RenderSegLoop_exit     ; todo doesnt quite fit here yet.
 
@@ -5444,15 +5411,16 @@ ELSE
    jmp   SHORT markfloor_done
 
 
-
-
    ALIGN_MACRO
    jump_to_mid_no_pixels_to_draw:
    jmp   increment_loop_values  ; restore bp here
-   ALIGN_MACRO
-   jmp_to_main_3232_div:
-   jmp   main_3232_div
 
+
+   ALIGN_MACRO
+   use_max_light:
+   ; ugly 
+   mov   bx, MAXLIGHTSCALE - 1
+   jmp   do_light_write
 
 
    do_32_bit_finetan_mul:
@@ -5639,8 +5607,7 @@ IF COMPISA GE COMPILE_386
 ELSE
 
    test cx, cx
-   jne  jmp_to_main_3232_div
-
+   jne  main_3232_div
 
    cwd
 
@@ -5702,180 +5669,10 @@ ENSUREALIGN_011:
 
 jmp   increment_loop_values_full
 
-
-ALIGN_MACRO
-use_max_light:
-; ugly 
-mov   bx, MAXLIGHTSCALE - 1
-jmp   do_light_write
-
-IF COMPISA GE COMPILE_386
-ELSEIF
    ALIGN_MACRO
-   jmp_to_main_3232_div:
-   jmp   main_3232_div
-ENDIF
-
-ALIGN_MACRO
-
-R_RenderSegLoop_exit:
-
-
-mov   cx, cs  ; cl is 0
-mov   es, cx
-mov   ds, cx
-
-; ds is cs.
-
-pop   dx  ; mov   dx, word ptr [bp - 022h]  ; stopx - startx
-
-SELFMODIFY_restore_bp_after_draw_mid:
-mov   bp, 01000h
-ENSUREALIGN_072:
-
-pop   si  ; mov   si, word ptr [bp - 020h]  ; startx
-inc   dx
-
-
-SELFMODIFY_toggle_skip_ceilingclip_mid:
-SELFMODIFY_toggle_skip_ceilingclip_mid_AFTER = SELFMODIFY_toggle_skip_ceilingclip_mid + 2
-mov   cx, dx   ; MAY BE SELF MODIFIED INTO JMP (E8) skip_ceiling_clip
-
-
-; mark all floors viewheight(+1)
-
-lea   di, [OFFSET_CEILINGCLIP + si]
-SELFMODIFY_BSP_setviewheight_1:
-mov   ax, 01000h
-rep   stosb
-
-done_skipping_markceiling_copy_mid:
-
-xor   ax, ax ; ax is 0 from here on out.
-
-SELFMODIFY_toggle_skip_floorclip_mid:
-mov   cx, dx   ; MAY BE SELF MODIFIED INTO JMP (E8) skip_floor_clip
-SELFMODIFY_toggle_skip_floorclip_mid_AFTER:
-
-; mark all floors -1 (+1)
-lea   di, [OFFSET_FLOORCLIP + si]
-
-rep   stosb
-
-
-; hardcoded!   
-   ; SIL_BOTH, markfloor = true, markceil = true
-   ;		ds_p->sprtopclip = screenheightarray;
-   ;		ds_p->sprbottomclip = negonearray;
-
-done_skipping_markfloor_copy_mid:
-
-; clean up the self modified code of renderseg loop. 
-mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0], 0E9h
-mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER)
-
-; single wall mid texture has no clipping done...
-
-
-add       word ptr ds:[_ds_p_bsp], (SIZE DRAWSEG_T)
-mov       dx, ss
-mov       ds, dx
-
-add       sp, 2  ; undo rest of stack
-SELFMODIFY_mark_planes_dirty:
-public SELFMODIFY_mark_planes_dirty 
-mov       ch, 0
-shr       cx, 1
-jnz       mark_planes_dirty ; common case is fall thru.  ; todo is this always true for mid?
-
-; pops on outside
-
-ret       
-ALIGN_MACRO
-SELFMODIFY_toggle_skip_ceilingclip_mid_TARGET:
-skip_ceiling_clip:
-mov       word ptr ds:[SELFMODIFY_toggle_skip_ceilingclip_mid], 0D189h ; mov cx, dx
-mov       word ptr ds:[SELFMODIFY_BSP_markceiling_1],           03849h ; dec cx, cmp cl, bl
-jmp       done_skipping_markceiling_copy_mid
-
-ALIGN_MACRO
-SELFMODIFY_toggle_skip_floorclip_mid_TARGET:
-skip_floor_clip:
-mov       word ptr ds:[SELFMODIFY_toggle_skip_floorclip_mid], 0D189h ; mov cx, dx
-mov       word ptr ds:[SELFMODIFY_BSP_markfloor_1],           03841h ; inc cx; cmp cl, dl
-jmp       done_skipping_markfloor_copy_mid
-
-ALIGN_MACRO
-mark_planes_dirty:
-public mark_planes_dirty
-mov      bl, JMP_SHORT_REL8_OPCODE
-mov      byte ptr cs:[SELFMODIFY_skip_markceildirty_mid], bl
-mov      byte ptr cs:[SELFMODIFY_skip_markfloordirty_mid], bl
-mov      byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], al ; still 0
-mov      si, _visplaneheaders + VISPLANEHEADER_T.visplaneheader_dirty
-les      bx, dword ptr cs:[_ceilingplaneindex]
-or       byte ptr ds:[bx+si], ch
-mov      bx, es
-or       byte ptr ds:[bx+si], cl
-; pops on outside
-
-ret       
-ENDP
-
-ALIGN_MACRO
-seglooptexrepeat_mid_is_jmp:
-; ds already cs
-mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0], 0E9h
-mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER)
-jmp   just_do_draw_mid
-ALIGN_MACRO
-
-
-SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET:
-non_repeating_texture_mid:
-cmp   dx, word ptr ss:[_segloopnextlookup]
-jge   out_of_texture_bounds_mid
-cmp   dx, word ptr ss:[_segloopprevlookup]
-jnge  out_of_texture_bounds_mid
-xchg  ax, dx
-sub   al, byte ptr ss:[_segloopcachedbasecol]
-mul   byte ptr ss:[_segloopheightvalcache]
-jmp   add_base_segment_and_draw_mid
-ALIGN_MACRO
-out_of_texture_bounds_mid:
-; branch nonpush with moves etc. 
-mov   ax, ss
-mov   ds, ax
-push  bx
-
-SELFMODIFY_BSP_set_midtexture:
-mov   ax, 01000h
-ENSUREALIGN_073:
-mov   bx, 0
-call  R_GetColumnSegment_  
-ENSUREALIGN_074:
-mov   dx, word ptr ds:[_segloopcachedsegment]
-mov   bx, cs
-mov   ds, bx
-pop   bx
-mov   word ptr ds:[SELFMODIFY_add_cached_segment0+1], dx
-
-
-; todohigh get this dh and dl in same read?
-mov   dh, byte ptr ss:[_seglooptexrepeat]
-cmp   dh, 0
-je    seglooptexrepeat_mid_is_jmp
-; modulo is seglooptexrepeat - 1
-mov   dl, byte ptr ss:[_segloopheightvalcache]
-mov   byte ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo0],   0B8h   ; mov ax, xxxx
-mov   word ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo0+1], dx
-
-jmp   just_do_draw_mid
-
 
 IF COMPISA GE COMPILE_386
 ELSE
-   ALIGN_MACRO
 
 
    main_3232_div:
@@ -6031,9 +5828,168 @@ ELSE
    pop  dx ; jump amount
    jmp  FastDiv3232FFFF_done_stretch
 
-
-
 ENDIF
+
+ALIGN_MACRO
+
+R_RenderSegLoop_exit:
+
+mov   cx, cs  ; cl is 0
+mov   es, cx
+mov   ds, cx
+
+; ds is cs.
+
+pop   dx  ; mov   dx, word ptr [bp - 022h]  ; stopx - startx
+
+SELFMODIFY_restore_bp_after_draw_mid:
+mov   bp, 01000h
+ENSUREALIGN_072:
+
+pop   si  ; mov   si, word ptr [bp - 020h]  ; startx
+inc   dx
+
+
+SELFMODIFY_toggle_skip_ceilingclip_mid:
+SELFMODIFY_toggle_skip_ceilingclip_mid_AFTER = SELFMODIFY_toggle_skip_ceilingclip_mid + 2
+mov   cx, dx   ; MAY BE SELF MODIFIED INTO JMP (E8) skip_ceiling_clip
+
+
+; mark all floors viewheight(+1)
+
+lea   di, [OFFSET_CEILINGCLIP + si]
+SELFMODIFY_BSP_setviewheight_1:
+mov   ax, 01000h
+rep   stosb
+
+done_skipping_markceiling_copy_mid:
+
+xor   ax, ax ; ax is 0 from here on out.
+
+SELFMODIFY_toggle_skip_floorclip_mid:
+mov   cx, dx   ; MAY BE SELF MODIFIED INTO JMP (E8) skip_floor_clip
+SELFMODIFY_toggle_skip_floorclip_mid_AFTER:
+
+; mark all floors -1 (+1)
+lea   di, [OFFSET_FLOORCLIP + si]
+
+rep   stosb
+
+; hardcoded!   
+   ; SIL_BOTH, markfloor = true, markceil = true
+   ;		ds_p->sprtopclip = screenheightarray;
+   ;		ds_p->sprbottomclip = negonearray;
+
+done_skipping_markfloor_copy_mid:
+
+; clean up the self modified code of renderseg loop. 
+mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0], 0E9h
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER)
+
+; single wall mid texture has no clipping done...
+
+
+add       word ptr ds:[_ds_p_bsp], (SIZE DRAWSEG_T)
+mov       dx, ss
+mov       ds, dx
+
+add       sp, 2  ; undo rest of stack
+SELFMODIFY_mark_planes_dirty:
+public SELFMODIFY_mark_planes_dirty 
+mov       ch, 0
+shr       cx, 1
+jnz       mark_planes_dirty ; common case is fall thru.  ; todo is this always true for mid?
+
+; pops on outside
+
+ret
+
+ALIGN_MACRO
+SELFMODIFY_toggle_skip_ceilingclip_mid_TARGET:
+skip_ceiling_clip:
+mov       word ptr ds:[SELFMODIFY_toggle_skip_ceilingclip_mid], 0D189h ; mov cx, dx
+mov       word ptr ds:[SELFMODIFY_BSP_markceiling_1],           03849h ; dec cx, cmp cl, bl
+jmp       done_skipping_markceiling_copy_mid
+
+
+ALIGN_MACRO
+SELFMODIFY_toggle_skip_floorclip_mid_TARGET:
+skip_floor_clip:
+mov       word ptr ds:[SELFMODIFY_toggle_skip_floorclip_mid], 0D189h ; mov cx, dx
+mov       word ptr ds:[SELFMODIFY_BSP_markfloor_1],           03841h ; inc cx; cmp cl, dl
+jmp       done_skipping_markfloor_copy_mid
+
+
+ALIGN_MACRO
+seglooptexrepeat_mid_is_jmp:
+; ds already cs
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0], 0E9h
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER)
+jmp   just_do_draw_mid
+
+
+
+ALIGN_MACRO
+mark_planes_dirty:
+public mark_planes_dirty
+mov      bl, JMP_SHORT_REL8_OPCODE
+mov      byte ptr cs:[SELFMODIFY_skip_markceildirty_mid], bl
+mov      byte ptr cs:[SELFMODIFY_skip_markfloordirty_mid], bl
+mov      byte ptr cs:[SELFMODIFY_mark_planes_dirty+1], al ; still 0
+mov      si, _visplaneheaders + VISPLANEHEADER_T.visplaneheader_dirty
+les      bx, dword ptr cs:[_ceilingplaneindex]
+or       byte ptr ds:[bx+si], ch
+mov      bx, es
+or       byte ptr ds:[bx+si], cl
+; pops on outside
+
+ret       
+
+ALIGN_MACRO
+   SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET:
+   non_repeating_texture_mid:
+   cmp   dx, word ptr ss:[_segloopnextlookup]
+   jge   out_of_texture_bounds_mid
+   cmp   dx, word ptr ss:[_segloopprevlookup]
+   jnge  out_of_texture_bounds_mid
+   xchg  ax, dx
+   sub   al, byte ptr ss:[_segloopcachedbasecol]
+   mul   byte ptr ss:[_segloopheightvalcache]
+   jmp   add_base_segment_and_draw_mid
+   ALIGN_MACRO
+   out_of_texture_bounds_mid:
+   ; branch nonpush with moves etc. 
+   mov   ax, ss
+   mov   ds, ax
+   push  bx
+
+   SELFMODIFY_BSP_set_midtexture:
+   mov   ax, 01000h
+   ENSUREALIGN_073:
+   mov   bx, 0
+   call  R_GetColumnSegment_  
+   ENSUREALIGN_074:
+   mov   dx, word ptr ds:[_segloopcachedsegment]
+   mov   bx, cs
+   mov   ds, bx
+   pop   bx
+   mov   word ptr ds:[SELFMODIFY_add_cached_segment0+1], dx
+
+
+   ; todohigh get this dh and dl in same read?
+   mov   dh, byte ptr ss:[_seglooptexrepeat]
+   cmp   dh, 0
+   je    seglooptexrepeat_mid_is_jmp
+   ; modulo is seglooptexrepeat - 1
+   mov   dl, byte ptr ss:[_segloopheightvalcache]
+   mov   byte ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo0],   0B8h   ; mov ax, xxxx
+   mov   word ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo0+1], dx
+
+   jmp   just_do_draw_mid
+
+
+ENDP
+ 
 
 ;   END INLINED R_RenderSegLoop_
 ;   END INLINED R_RenderSegLoop_
@@ -6133,11 +6089,6 @@ PUBLIC R_StoreWallRangeWithBackSector_
 ; todo revisit order
 ; bp - 02Fh  ; markceiling, then unpopped
 ; bp - 030h  ; markfloor, then unpopped
-
-
-
-
-
 
 
 
@@ -6615,8 +6566,6 @@ SELFMODIFY_BSP_viewz_hi_8_TWOSIDED:
 sbb       dx, 01000h
 push      dx ; bp - 028h
 push      ax ; bp - 02Ah
-
-
 
 
 
