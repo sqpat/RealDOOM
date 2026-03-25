@@ -115,15 +115,18 @@ _segloopnextlookup:
 dw 0, 0
 _seglooptexrepeat:
 db 0, 0
+_segloopcachedsegment:
+dw 0, 0
 
 ; 12 bytes...
 
 ;_segloopcachedbasecol =             _NULL_OFFSET + 00058h
 ;_cachedsegmenttex =                 _NULL_OFFSET + 0005Ch
+;_cachedsegmentlumps:  ; TODO hard because masked uses this too?
 
 
 ; todo use
-dw 0, 0, 0, 0, 0
+dw 0, 0, 0
 
 
 BEOFRE_COLFUNC_LOOKUP:
@@ -5986,10 +5989,10 @@ ALIGN_MACRO
    mov   bx, 0
    call  R_GetColumnSegment_  
    ENSUREALIGN_074:
-   mov   dx, word ptr ds:[_segloopcachedsegment]
    mov   bx, cs
    mov   ds, bx
    pop   bx
+   mov   dx, word ptr ds:[_segloopcachedsegment]
    mov   word ptr ds:[SELFMODIFY_add_cached_segment0+1], dx
 
 
@@ -8912,10 +8915,10 @@ mov   bx, 0
 call  R_GetColumnSegment_ ; todo is di, si used?
 ENSUREALIGN_310:
 
-mov   dx, word ptr ds:[_segloopcachedsegment]
 mov   bx, cs
 mov   ds, bx
 pop   bx
+mov   dx, word ptr ds:[_segloopcachedsegment]
 mov   word ptr ds:[SELFMODIFY_add_cached_segment0_TWOSIDED+1], dx
 
 
@@ -9412,11 +9415,11 @@ ENSUREALIGN_084:
 mov   bx, 1
 call  R_GetColumnSegment_ ;todo is di, si used?
 ENSUREALIGN_083:
-mov   dx, word ptr ds:[2 + _segloopcachedsegment]
 mov   bx, cs
 mov   ds, bx
 pop   bx
 
+mov   dx, word ptr ds:[2 + _segloopcachedsegment]
 ; todo: ds = cs here
 mov   word ptr ds:[SELFMODIFY_add_cached_segment1+1], dx
 
@@ -10446,7 +10449,7 @@ call      R_GetCompositeTexture_
 mov       word ptr ds:[bx], ax   ; write back cachedsegmenttex and store in ax
 
 mov       word ptr cs:[di + _segloopnextlookup], dx
-mov       word ptr ds:[di + _segloopcachedsegment], ax  ; write this here now while duped.. skip the write later
+mov       word ptr cs:[di + _segloopcachedsegment], ax  ; write this here now while duped.. skip the write later
 shr       di, 1
 pop       dx ;  , byte ptr [bp - 0Ah]             ; loopwidth
 mov       byte ptr cs:[di + _seglooptexrepeat], dl
@@ -10615,7 +10618,7 @@ done_setting_cached_tex:
 ;	return cachedsegmenttex + (FastMul8u8u(cachedcollength , texcol));
 
 ; ax is ds:[bx]
-mov       word ptr ds:[di + _segloopcachedsegment], ax
+mov       word ptr cs:[di + _segloopcachedsegment], ax
 sar       di, 1
 done_setting_cached_tex_skip_cachedsegwrite:
 mov       byte ptr cs:[di + _segloopheightvalcache], cl ; write now
@@ -10774,7 +10777,7 @@ mov       bx, word ptr [bp - 2]
 mov       byte ptr cs:[bx + _segloopheightvalcache], dl
 sal       bx, 1
 mov       ax, word ptr ds:[_cachedsegmentlumps]
-mov       word ptr ds:[bx + _segloopcachedsegment], ax
+mov       word ptr cs:[bx + _segloopcachedsegment], ax
 
 xchg      ax, cx
 mul       dl

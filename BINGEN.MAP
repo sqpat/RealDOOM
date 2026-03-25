@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/03/25 05:00:19
+Created on:       26/03/25 05:08:22
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -36,9 +36,9 @@ SM_OPL3_TEXT           CODE           AUTO           0627:0000       0000100e
 SM_SBMID_TEXT          CODE           AUTO           0728:0000       00000730
 SM_MPUMD_TEXT          CODE           AUTO           079b:0000       000007db
 R_BSP_24_TEXT          CODE           AUTO           0819:0000       00003e90
-R_BSP_16_TEXT          CODE           AUTO           0c02:0000       0000372d
-R_BSP0_TEXT            CODE           AUTO           0f75:0000       0000365c
-R_BSPFL_TEXT           CODE           AUTO           12db:0000       00003606
+R_BSP_16_TEXT          CODE           AUTO           0c02:0000       0000372a
+R_BSP0_TEXT            CODE           AUTO           0f75:0000       00003659
+R_BSPFL_TEXT           CODE           AUTO           12db:0000       00003603
 R_COL24_TEXT           CODE           AUTO           163c:0000       00002329
 R_COL16_TEXT           CODE           AUTO           186f:0000       00000cb4
 R_COL0_TEXT            CODE           AUTO           193b:0000       0000058e
@@ -340,11 +340,11 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079b:0000      SM_MPUMD_STARTMARKER_
 079b:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-0819:3920      R_WriteBackViewConstants24_
+0819:3926      R_WriteBackViewConstants24_
 0819:26b7*     R_AddLine_
 0819:0d73*     tx_already_positive
 0819:3e90      R_BSP24_ENDMARKER_
-0819:33f2      R_GetPatchTexture_Far24_
+0819:33f8      R_GetPatchTexture_Far24_
 0819:2420*     R_GetSourceSegment1_
 0819:099a*     FixedMulTrigNoShiftSine_BSPLocal_
 0819:15e3*     markfloor_done
@@ -358,21 +358,21 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:21a4*     SELFMODIFY_set_rw_distance_lo_topbot
 0819:2382*     SELFMODIFY_BSP_toptexture_AFTER
 0819:28d6*     R_ClipPassWallSegment_
-0819:2a73*     ENSUREALIGN_081
-0819:2ae1*     ENSUREALIGN_082
+0819:2a77*     ENSUREALIGN_081
+0819:2ae7*     ENSUREALIGN_082
 0819:2488*     ENSUREALIGN_083
-0819:36a0*     ENSUREALIGN_080
+0819:36a6*     ENSUREALIGN_080
 0819:2482*     ENSUREALIGN_084
+0819:2250*     ENSUREALIGN_086
 0819:22aa*     ENSUREALIGN_087
 0819:238c*     ENSUREALIGN_094
 0819:268c*     ENSUREALIGN_092
 0819:23ba*     ENSUREALIGN_093
 0819:22d0*     ENSUREALIGN_090
-0819:2250*     ENSUREALIGN_086
-0819:2392*     ENSUREALIGN_095
 0819:22c3*     ENSUREALIGN_089
-0819:242a*     ENSUREALIGN_098
+0819:2392*     ENSUREALIGN_095
 0819:23fe*     ENSUREALIGN_097
+0819:242a*     ENSUREALIGN_098
 0819:0200*     _ceilingclip
 0819:229e*     ENSUREALIGN_091
 0819:224a*     ENSUREALIGN_085
@@ -412,20 +412,20 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:2454*     ENSUREALIGN_010
 0819:2128*     ENSUREALIGN_005
 0819:2212*     ENSUREALIGN_008
-0819:36a9*     ENSUREALIGN_079
+0819:36af*     ENSUREALIGN_079
 0819:177a*     ENSUREALIGN_072
 0819:26ac*     ENSUREALIGN_019
 0819:23e4*     ENSUREALIGN_009
 0819:3d00      bsp_local_dc_yl_lookup_table_
 0819:21ac*     do_16_bit_mul_TWOSIDED
-0819:2ef4*     ENSUREALIGN_016
+0819:2efa*     ENSUREALIGN_016
 0819:2670*     ENSUREALIGN_020
 0819:2583*     SELFMODIFY_mark_planes_dirty_TWOSIDED
 0819:22fa*     ENSUREALIGN_099
 0819:20e0*     pre_increment_values_TWOSIDED
 0819:23d6*     ENSUREALIGN_024
 0819:2438*     ENSUREALIGN_014
-0819:3668*     ENSUREALIGN_078
+0819:366e*     ENSUREALIGN_078
 0819:23c8*     ENSUREALIGN_015
 0819:26b2*     ENSUREALIGN_018
 0819:11c0*     SELFMODIFY_BSP_midtexture_type
@@ -445,10 +445,10 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:2326*     ENSUREALIGN_310
 0819:124c*     ENSUREALIGN_311
 0819:0200*     OFFSET_CEILINGCLIP
+0819:374e*     ENSUREALIGN_321
 0819:1474*     ENSUREALIGN_314
 0819:14c0*     ENSUREALIGN_315
-0819:3748*     ENSUREALIGN_321
-0819:374f*     ENSUREALIGN_322
+0819:3755*     ENSUREALIGN_322
 0819:0ddd*     ENSUREALIGN_319
 0819:1119*     ENSUREALIGN_316
 0819:10dc*     ENSUREALIGN_301
@@ -462,7 +462,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:2036*     ENSUREALIGN_309
 0819:168d*     R_GetSourceSegment0_START
 0819:2422*     SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER_TWOSIDED
-0819:37a6      R_RenderPlayerView24_
+0819:37ac      R_RenderPlayerView24_
 0819:094a*     FixedDivBSPLocal_
 0819:2462*     SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET_TWOSIDED
 0819:154f*     increment_loop_values
@@ -473,8 +473,8 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:0080*     BEOFRE_COLFUNC_LOOKUP
 0819:2442*     SELFMODIFY_set_pixel_count_shift_mul_bot
 0819:23af*     R_GetSourceSegment0_START_TWOSIDED
-0819:3294*     R_GetTexturePage_
-0819:3ab6*     R_WriteBackFrameConstants_
+0819:329a*     R_GetTexturePage_
+0819:3abc*     R_WriteBackFrameConstants_
 0819:09c4*     FixedMulTrigNoShiftCosine_BSPLocal_
 0819:09ee*     R_ClearPlanes_
 0819:2160*     SELFMODIFY_BSP_markfloor_1_TWOSIDED
@@ -493,7 +493,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:159e*     SELFMODIFY_BSP_markceiling_1
 0819:185c*     R_StoreWallRangeWithBackSector_
 0819:184a*     adjust_row_offset_TWOSIDED
-0819:348e      R_GetCompositeTexture_Far24_
+0819:3494      R_GetCompositeTexture_Far24_
 0819:24b8*     R_RenderSegLoop_exit_TWOSIDED
 0819:0098*     _basexscale
 0819:0f9e*     adjust_row_offset
@@ -510,32 +510,32 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:1689*     SELFMODIFY_set_ax_rw_offset_hi
 0819:18d1*     v2_y_equals_v1_y_TWOSIDED
 0819:0cc2*     R_ProjectSprite_
-0819:2a28*     R_GetColumnSegment_
+0819:2a2c*     R_GetColumnSegment_
 0819:0376*     R_ScaleFromGlobalAngle_
 0819:17a8*     SELFMODIFY_mark_planes_dirty
 0819:157a*     start_per_column_inner_loop
 0819:2119*     done_setting_vga_plane_topbot
 Module: r_bsp16.obj(r_bsp16.ASM)
-0c02:3276      R_RenderPlayerView16_
+0c02:3273      R_RenderPlayerView16_
 0c02:0000      R_BSP16_STARTMARKER_
-0c02:33f3      R_WriteBackViewConstants16_
-0c02:2ec5      R_GetPatchTexture_Far16_
-0c02:372d      R_BSP16_ENDMARKER_
-0c02:2f60      R_GetCompositeTexture_Far16_
+0c02:33f0      R_WriteBackViewConstants16_
+0c02:2ec2      R_GetPatchTexture_Far16_
+0c02:372a      R_BSP16_ENDMARKER_
+0c02:2f5d      R_GetCompositeTexture_Far16_
 Module: r_bsp0.obj(r_bsp0.ASM)
-0f75:365c      R_BSP0_ENDMARKER_
-0f75:2dfc      R_GetPatchTexture_Far0_
-0f75:2e97      R_GetCompositeTexture_Far0_
-0f75:31ad      R_RenderPlayerView0_
-0f75:332a      R_WriteBackViewConstants0_
+0f75:3659      R_BSP0_ENDMARKER_
+0f75:2df9      R_GetPatchTexture_Far0_
+0f75:2e94      R_GetCompositeTexture_Far0_
+0f75:31aa      R_RenderPlayerView0_
+0f75:3327      R_WriteBackViewConstants0_
 0f75:0000      R_BSP0_STARTMARKER_
 Module: r_bspfl.obj(r_bspfl.ASM)
-12db:2e41      R_GetCompositeTexture_FarFL_
-12db:3157      R_RenderPlayerViewFL_
+12db:2e3e      R_GetCompositeTexture_FarFL_
+12db:3154      R_RenderPlayerViewFL_
 12db:0000      R_BSPFL_STARTMARKER_
-12db:3606      R_BSPFL_ENDMARKER_
-12db:2da6      R_GetPatchTexture_FarFL_
-12db:32d4      R_WriteBackViewConstantsFL_
+12db:3603      R_BSPFL_ENDMARKER_
+12db:2da3      R_GetPatchTexture_FarFL_
+12db:32d1      R_WriteBackViewConstantsFL_
 Module: r_col24.obj(r_col24.ASM)
 163c:19a0      MARKER_COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET_
 163c:0000      R_DrawColumn24NoLoop_
@@ -629,14 +629,14 @@ Module: r_mask24.obj(r_mask24.ASM)
 1daf:0bb4*     ENSUREALIGN_111
 1daf:0ffc*     FastDiv3232FFFF_
 1daf:0950*     ENSUREALIGN_117
-1daf:0c13*     ENSUREALIGN_110
 1daf:0912*     ENSUREALIGN_120
-1daf:1192*     ENSUREALIGN_121
+1daf:0c13*     ENSUREALIGN_110
 1daf:132b*     ENSUREALIGN_122
-1daf:1389*     ENSUREALIGN_124
-1daf:1594*     ENSUREALIGN_107
 1daf:014e*     ENSUREALIGN_102
+1daf:1389*     ENSUREALIGN_124
+1daf:1192*     ENSUREALIGN_121
 1daf:099a*     ENSUREALIGN_113
+1daf:1594*     ENSUREALIGN_107
 1daf:0964*     ENSUREALIGN_118
 1daf:0c5b*     ENSUREALIGN_115
 1daf:08f7*     ENSUREALIGN_119
@@ -644,8 +644,8 @@ Module: r_mask24.obj(r_mask24.ASM)
 1daf:129f*     ENSUREALIGN_126
 1daf:15a2*     ENSUREALIGN_104
 1daf:0967*     ENSUREALIGN_116
-1daf:1380*     ENSUREALIGN_123
 1daf:1564*     ENSUREALIGN_108
+1daf:1380*     ENSUREALIGN_123
 1daf:15b2*     ENSUREALIGN_105
 1daf:0567*     three_page_sprite
 1daf:15ba*     ENSUREALIGN_101
@@ -786,9 +786,9 @@ Module: p_pspr.obj(p_pspr.ASM)
 2423:39c0      P_BringUpWeapon_
 Module: p_enemy.obj(p_enemy.ASM)
 2423:4cd6*     A_CyberAttack_
+2423:53e2*     A_FatRaise_
 2423:56cb*     A_Explode_
 2423:5b8a*     ENSUREALIGN_901
-2423:53e2*     A_FatRaise_
 2423:56c3*     A_Fall_
 2423:426a      P_NoiseAlert_
 2423:59f4*     A_SpawnFly_
@@ -828,8 +828,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2423:4cf5*     A_BruisAttack_
 2423:5b68      P_SetMobjState_
 2423:44f8*     P_TryWalk_
-2423:4c8b*     A_HeadAttack_
 2423:5855*     A_BrainScream_
+2423:4c8b*     A_HeadAttack_
 2423:56b4*     A_Pain_
 2423:4f5a*     PIT_VileCheck_
 2423:572b*     A_BossDeath_
