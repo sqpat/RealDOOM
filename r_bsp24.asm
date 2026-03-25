@@ -5199,16 +5199,16 @@ mov   dl, byte ptr ds:[di+OFFSET_CEILINGCLIP] ; dx = ceiling  = ceilingclip[rw_x
 
 ; ds is cs
 
+dec   ax ; dec ax..
 
 ; all these y values - ceil and floorclip, and later dc_yl and dc_yh are 
 ; increased by one to allow 0 to viewheight+1 range instead of ff to viewheight range.
 ; when written to visplanes and such this must be considered
 
-
+inc   dx  ; toggle order for ENSUREALIGN_001/ENSUREALIGN_002 along with inc instruction
 SELFMODIFY_set_topfrac_hi_mid:
 mov   cx, 01000h
 ENSUREALIGN_001:
-inc   dx  ; toggle order for ENSUREALIGN_001/ENSUREALIGN_002 along with inc instruction
 
 cmp   cx, dx  ; ax can be negative even if dx is not? but maybe ah is always ff?
 jg    skip_yl_ceil_clip    
@@ -5226,22 +5226,22 @@ SELFMODIFY_BSP_markceiling_1_AFTER = SELFMODIFY_BSP_markceiling_1 + 2
 
 ; cx is yl
 ; dx = top = ceilingclip[rw_x]+1;
-dec   cx				; now ax = bottom = yl-1
+dec   cx				; now cx = bottom = yl-1
 ; cx is floor, 
-; thie following is a forced encoding. tasm wants to do 3A C1 and this needs to agree with selfmodify...
-db    038h, 0C1h   ; cmp   cl, al      ;   ax cannot be negative, already was inc-ed before.
-jb    skip_bottom_floorclip
-mov   cl, al
-dec   cx
+; the following is a forced encoding. tasm wants to do a diff one and this needs to agree with selfmodify...
+db    038h, 0C1h   ; cmp   cl, al      ;   cx cannot be negative, already was inc-ed before.
+jbe   skip_bottom_floorclip  ; todo is this safe? can ax be negative? cx, ax instead?
+mov   cl, al ; pre-decced necessary
+
 skip_bottom_floorclip:
-cmp   dl, cl
-ja    markceiling_done
-les   bx, dword ptr ds:[_ceiltop]
+cmp   cl, dl
+jb    markceiling_done
+les   bp, dword ptr ds:[_ceiltop]
 dec   cx
-mov   byte ptr es:[bx+di + vp_bottom_offset], cl
+mov   byte ptr es:[bp+di + vp_bottom_offset], cl
 mov   cx, dx
 dec   cx 
-mov   byte ptr es:[bx+di], cl
+mov   byte ptr es:[bp+di], cl
 SELFMODIFY_skip_markceildirty_mid:
 jmp   SHORT markceildirty_mid  ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET into mov cl
 
@@ -5256,36 +5256,37 @@ markceiling_done:
 SELFMODIFY_set_botfrac_hi_mid:
 mov   cx, 01000h
 ENSUREALIGN_002:
-; ch 0 because dx < 255
+
+; ax was already decremented above. 
+; jle not jl to account for it.
 
 ; cx is still floor
 cmp   cx, ax
-jl    skip_yh_floorclip
+jle   skip_yh_floorclip
 do_yh_floorclip:
-mov   cx, ax
-dec   cx
+mov   cx, ax   ; pre decced.
+
 skip_yh_floorclip:
 
-; at this point ax is known 1 byte
+; at this point cx is known 1 byte
 
-mov   bp, si  ; store yl
+
+mov   bx, si  ; store yl
 sub   si, cx   ; yl - yh. technically we want to know if (yh - yl) is positive then we take (200 - (yh - yl)
 
-
-; ax is already yh
-; cx is already  floor
+; cx is yh
+; ax is floorclip+1
+; dl is ceilingclip+1
 SELFMODIFY_BSP_markfloor_1:
 public SELFMODIFY_BSP_markfloor_1
 SELFMODIFY_BSP_markfloor_1_AFTER = SELFMODIFY_BSP_markfloor_1 + 2
-inc   cx			; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET top = yh + 1...    OR  jmp    markfloor_done ; 
-dec   ax			; bottom = floorclip[rw_x]-1;
+inc   cx			; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET top = yh + 1... + cmp cl, dl    OR  jmp    markfloor_done ; 
+db  038h, 0D1h   ; cmp cl, dl with specific encoding for selfmodify
 
 ;	if (top <= ceilingclip[rw_x]){
 ;		top = ceilingclip[rw_x]+1;
 ;	}
 
-; dx is ceil
-cmp   cl, dl
 ja    skip_top_ceilingclip
 mov   cl, dl	 ; 		top = ceilingclip[rw_x]+1;  ;todo is si ok to knock out via xchg?
 
@@ -5298,11 +5299,11 @@ skip_top_ceilingclip:
 
 cmp   cl, al
 ja    markfloor_done
-les   bx, dword ptr ds:[_floortop]
+les   bp, dword ptr ds:[_floortop]
 dec   cx
-mov   byte ptr es:[bx+di], cl
+mov   byte ptr es:[bp+di], cl
 dec   ax
-mov   byte ptr es:[bx+di + vp_bottom_offset], al
+mov   byte ptr es:[bp+di + vp_bottom_offset], al
 SELFMODIFY_skip_markfloordirty_mid:
 jmp   SHORT markfloordirty_mid  ; THIS_IS_A_SELFMODIFIED_INSTRUCTION_TARGET into mov al
 
@@ -5317,13 +5318,13 @@ jns   jump_to_mid_no_pixels_to_draw ; had to wait until floors/ceils marked to e
 
 push  di  ; store dc_x
 SELFMODIFY_COLFUNC_sub_centery24_mid:
-lea   ax, [bp - 010h]
+lea   ax, [bx - 010h]
 push  ax
 
 lea   dx, [si+ 398]   ; 199 - (dc_yh - dc_yl) shl 1
 
-lea   si,  [bp + bsp_local_dc_yl_lookup_table_ - 2] ; word offset + lookup
-mov   bp, word ptr ds:[si+bp]                       ; add * 80 lookup table value 
+lea   si,  [bx + bsp_local_dc_yl_lookup_table_ - 2] ; word offset + lookup
+mov   bp, word ptr ds:[si+bx]                       ; add * 80 lookup table value 
 
 mov   ax, XTOVIEWANGLE_SEGMENT
 mov   es, ax
@@ -5800,14 +5801,14 @@ ALIGN_MACRO
 SELFMODIFY_toggle_skip_ceilingclip_mid_TARGET:
 skip_ceiling_clip:
 mov       word ptr ds:[SELFMODIFY_toggle_skip_ceilingclip_mid], 0D189h ; mov cx, dx
-mov       word ptr ds:[SELFMODIFY_BSP_markceiling_1],           03849h ; dec cx, cmp cl, al
+mov       word ptr ds:[SELFMODIFY_BSP_markceiling_1],           03849h ; dec cx, cmp cl, bl
 jmp       done_skipping_markceiling_copy_mid
 
 ALIGN_MACRO
 SELFMODIFY_toggle_skip_floorclip_mid_TARGET:
 skip_floor_clip:
 mov       word ptr ds:[SELFMODIFY_toggle_skip_floorclip_mid], 0D189h ; mov cx, dx
-mov       word ptr ds:[SELFMODIFY_BSP_markfloor_1],           04841h ; inc cx; dec ax
+mov       word ptr ds:[SELFMODIFY_BSP_markfloor_1],           03841h ; inc cx; cmp cl, dl
 jmp       done_skipping_markfloor_copy_mid
 
 ALIGN_MACRO
