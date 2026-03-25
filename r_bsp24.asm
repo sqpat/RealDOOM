@@ -4172,12 +4172,11 @@ mov       ax, word ptr [bp + 4]  ; R_AddLine line num
 
 stosw              ; DRAWSEG_T.drawseg_cursegvalue
 
-; todo lds here to get both words.
-mov       ax, word ptr [bp - 020h]  ; x1 arg
+lds       ax, dword ptr [bp - 020h]  ; x1 arg
 
 stosw                            ; DRAWSEG_T.drawseg_x1
 xchg      ax, bx                 ; bx gets bp - 020h
-mov       ax, word ptr [bp - 01Eh]  ; x2 arg
+mov       ax, ds;  word ptr [bp - 01Eh]  ; x2 arg
 stosw                            ; DRAWSEG_T.drawseg_x2
 
 inc       ax
@@ -5062,6 +5061,7 @@ jmp   R_RenderSegLoop_exit     ; todo doesnt quite fit here yet.
 IF COMPISA GE COMPILE_386
    ALIGN_MACRO
    jump_to_mid_no_pixels_to_draw:
+   mov   cx, cs
    jmp   increment_loop_values  ; restore bp here
    ALIGN_MACRO
 ENDIF
@@ -5080,9 +5080,10 @@ ENDIF
 ALIGN_MACRO
 
 increment_loop_values_full:
-mov   ax, cs
-mov   ds, ax
 pop   di  ; rw_x  always want this back
+
+mov   cx, cs
+mov   ds, cx ; cx has cs for exit_rendersegloop
 
 increment_loop_values:       ; ; todo this seems to be rare. maybe does not need to be in a code hot spot and can be far jumped to
 public increment_loop_values
@@ -5305,8 +5306,6 @@ lea   di, [di + bp + 01000h]           ; di has destview offset  ; rare, dont al
 
 
 
-
-
 mov   si, dx  ; 2, 2   dx already multiplied by 2
 shl   si, 1   ; 4, 2
 SELFMODIFY_set_pixel_count_shift_mul:
@@ -5317,14 +5316,9 @@ add   si, dx  ; 6, 2     ; swap these two for 10x - 4, 8, 10 from shl, then add 
 shl   si, 1   ; 12, 2    ; is there a way to swap just one instruction, while not adding instruction count?
 
 
-
-
-
 ; angle = MOD_FINE_ANGLE (rw_centerangle + xtoviewangle[rw_x]);
 
 ; eventually use DS here, once source_segment vars use CS?
-
-
 
 
 mov   ax, FINETANGENTINNER_SEGMENT  ; maybe can be skipped if bsp is moved under here.
@@ -5340,9 +5334,6 @@ and   bh, FINE_ANGLE_HIGH_BYTE				; MOD_FINE_ANGLE = and 0x1FFF
 sub   bx, FINE_TANGENT_MAX        ; bx now -2048 to 2047
 sbb   bp, bp
 xor   bx, bp          ; bx now 0 to 2048, bp has sign.. but table is 2048 entries.
-
-
-
 
 
 IF COMPISA GE COMPILE_386
@@ -5413,6 +5404,7 @@ ELSE
 
    ALIGN_MACRO
    jump_to_mid_no_pixels_to_draw:
+   mov   cx, cs
    jmp   increment_loop_values  ; restore bp here
 
 
@@ -5475,33 +5467,31 @@ adc   dx, 01000h
 
 ; texturecolumn = dx:ax...  or just dx (whole number)
 
-;	if (rw_scale.h.intbits >= 3) {
-;		index = MAXLIGHTSCALE - 1;
-;	} else {
-;		index = rw_scale.w >> LIGHTSCALESHIFT;
-;	}
 
 ; inlined function. 
 R_GetSourceSegment0_START:
 PUBLIC  R_GetSourceSegment0_START
-; dont push bp. restore from sp instead.
-; bp is currently SP + 46
+
 
 ; okay. we modify the first instruction in this argument. 
  ; if no texture is yet cached for this rendersegloop, jmp to non_repeating_texture
-  ; if one is set, then the result of the predetermined value of seglooptexmodulo might it into a jump
-   ; if its a repeating texture  then we modify it to mov ah, segloopheightvalcache
+  ; if one is set, and not repeating, this remains a jmp to fetch the column
+   ; if its a repeating texture  then we modify it to mov ax, imm16 with 2 values
+   ; AND texturecol (dl) to mask (ah) then mul al to that. then add base segment.
 
-SELFMODIFY_BSP_check_seglooptexmodulo0:
+
 SELFMODIFY_BSP_set_seglooptexrepeat0:
 ; 3 bytes. May become one of two jumps (three bytes) or mov ax, imm16 (three bytes)
 jmp    non_repeating_texture_mid
 
+; al has  heightval
+; ah has  seglooptexrepeat mask
+
 SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER:
-SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER:
-xchg  ax, ax                    ; one byte nop placeholder. this gets the ah value in mov ax, xxxx (byte 3)
-and   dl, ah   ; ah has loopwidth-1 (modulo )
-mul   dl       ; al has heightval
+ENSUREALIGN_323:
+xchg  ax, ax  ; TODO: remove: ENSUREALIGN_069 even toggle for now
+and   ah, dl   ; ah has loopwidth-1 (modulo )
+mul   ah       ; al has heightval
 
 add_base_segment_and_draw_mid:  ; align target?
 SELFMODIFY_add_cached_segment0:
@@ -5525,8 +5515,14 @@ cwd
 
 ; CX:AX rw_scale
 
+;	if (rw_scale.h.intbits >= 3) {
+;		index = MAXLIGHTSCALE - 1;
+;	} else {
+;		index = rw_scale.w >> LIGHTSCALESHIFT;
+;	}
+
 SELFMODIFY_set_rwscale_hi_mid:
-mov   cx, 01000h 
+mov   cx, 01000h   ; todo ch is always zero...? so mov cl..?
 ENSUREALIGN_003:
 
 
@@ -5750,10 +5746,11 @@ ENDIF
    SELFMODIFY_COLFUNC_set_func_offset_stretch:
    dw DRAWCOL_OFFSET_BSP, COLORMAPS_SEGMENT
    
+   ALIGN_MACRO
+
 IF COMPISA GE COMPILE_386
 ELSE
 
-   ALIGN_MACRO
 
    do_full_div_ffff:
    push si
@@ -5834,7 +5831,7 @@ ALIGN_MACRO
 
 R_RenderSegLoop_exit:
 
-mov   cx, cs  ; cl is 0
+; cx = cs..
 mov   es, cx
 mov   ds, cx
 
@@ -5923,6 +5920,7 @@ jmp       done_skipping_markfloor_copy_mid
 ALIGN_MACRO
 seglooptexrepeat_mid_is_jmp:
 ; ds already cs
+; todo make sure the word write is word aligned.
 mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0], 0E9h
 mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER)
 jmp   just_do_draw_mid
@@ -5947,6 +5945,7 @@ ret
 
 ALIGN_MACRO
    SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET:
+   ; start of the path.
    non_repeating_texture_mid:
    cmp   dx, word ptr ss:[_segloopnextlookup]
    jge   out_of_texture_bounds_mid
@@ -5978,12 +5977,13 @@ ALIGN_MACRO
 
    ; todohigh get this dh and dl in same read?
    mov   dh, byte ptr ss:[_seglooptexrepeat]
-   cmp   dh, 0
+   test  dh, dh
    je    seglooptexrepeat_mid_is_jmp
    ; modulo is seglooptexrepeat - 1
    mov   dl, byte ptr ss:[_segloopheightvalcache]
-   mov   byte ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo0],   0B8h   ; mov ax, xxxx
-   mov   word ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo0+1], dx
+   ; todo make sure the word write is word aligned.
+   mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0],   0B8h   ; mov ax, xxxx
+   mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], dx
 
    jmp   just_do_draw_mid
 
@@ -6490,17 +6490,14 @@ mov       ax, word ptr [bp + 4]  ; R_AddLine line num
 
 stosw              ; DRAWSEG_T.drawseg_cursegvalue
 
-
-mov       ax, word ptr [bp - 020h]  ; x1 arg
+lds       ax, dword ptr [bp - 020h]  ; x1 arg
 
 stosw                            ; DRAWSEG_T.drawseg_x1
 xchg      ax, bx                 ; bx gets bp - 020h
-mov       ax, word ptr [bp - 01Eh]  ; x2 arg
+mov       ax, ds;  word ptr [bp - 01Eh]  ; x2 arg
 stosw                            ; DRAWSEG_T.drawseg_x2
 
 inc       ax
-
-
 
 mov       ds, cx
 
@@ -8165,7 +8162,7 @@ ALIGN_MACRO
 exit_rendersegloop_TWOSIDED:
 public exit_rendersegloop_TWOSIDED
 ; zero out local caches.
-
+; cx has cs
 ;ASSUME DS:DGROUP
 mov   ax, ss
 mov   ds, ax
@@ -8188,6 +8185,8 @@ ALIGN_MACRO
 finished_inner_loop_iter_TWOSIDED:
 
 mov   di, bx   ; set dc_x... todo skip this step.
+mov   cx, cs  ;  cx gets cs... todo is this necessary?
+mov   ds, cx
 
 pre_increment_values_TWOSIDED: 
 public pre_increment_values_TWOSIDED
@@ -8201,8 +8200,6 @@ SELFMODIFY_cmp_di_to_rw_stopx_TWOSIDED:
 cmp   di, 01000h
 jge   exit_rendersegloop_TWOSIDED  ; exit before adding the other loop vars.
 
-mov   ax, cs
-mov   ds, ax
 
 ; di has rw_x...
 
@@ -8908,7 +8905,7 @@ mov   word ptr ds:[SELFMODIFY_add_cached_segment0_TWOSIDED+1], dx
 mov   cl, 0B8h  ; mov ax, xxxx
 mov   dh, byte ptr ss:[_seglooptexrepeat]
 mov   dl, byte ptr ss:[_segloopheightvalcache]
-cmp   dh, 0
+test  dh, dh
 jne   seglooptexrepeat0_is_not_jmp_top
 mov   dx, (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET_TWOSIDED - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER_TWOSIDED)
 mov   cl, 0E9h  ; jmp 
@@ -9410,7 +9407,7 @@ mov   word ptr ds:[SELFMODIFY_add_cached_segment1+1], dx
 
 ; todo get this dh and dl in same read
 mov   dh, byte ptr ss:[1 + _seglooptexrepeat]
-cmp   dh, 0
+test  dh, dh
 je    seglooptexrepeat1_is_jmp
 ; modulo is seglooptexrepeat - 1
 mov   dl, byte ptr ss:[1 + _segloopheightvalcache]
@@ -9432,13 +9429,14 @@ ALIGN_MACRO
 R_RenderSegLoop_exit_TWOSIDED:
 public R_RenderSegLoop_exit_TWOSIDED
 ; enter with ds = ss:
+; todo: enter with ds = cs
 ; bp restore:
 
 SELFMODIFY_restore_bp_after_draw_topbot:
 mov   bp, 01000h
 
-mov       ax, cs
-mov       ds, ax ; al known 0
+; cx is cs.
+mov       ds, cx ; al known 0
 
 ; clean up the self modified code of renderseg loop. 
 mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0_TWOSIDED], 0E9h
@@ -12221,7 +12219,7 @@ done_with_first_cache_erase_loop:
 ;    }
 
 lds       bx, dword ptr [bp - 8] 
-cmp       bx, 0 
+test      bx, bx
 jle       skip_secondary_loop
 
 
@@ -14635,7 +14633,7 @@ mov      byte ptr ds:[_lastfixedcolormap], al
 mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_1+3], al
 mov      byte ptr ds:[SELFMODIFY_BSP_fixedcolormap_5+3], al
 
-cmp      al, 0
+test     al, al
 jne      do_bsp_fixedcolormap_selfmodify
 do_no_bsp_fixedcolormap_selfmodify:
 
@@ -14745,7 +14743,7 @@ adc      ax, 0
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_5+2], ax
 
 
-cmp      dx, 0
+test     dx, dx
 jle      selfmodify_viewy_lo_lessthanequaltozero
 mov      ax, ((SELFMODIFY_BSP_viewy_lo_4_TARGET_2 - SELFMODIFY_BSP_viewy_lo_4_AFTER) SHL 8) + 07Eh ;jle
 
@@ -14965,6 +14963,7 @@ public ENSUREALIGN_319
 public ENSUREALIGN_320
 public ENSUREALIGN_321
 public ENSUREALIGN_322
+public ENSUREALIGN_323
 
 IF COMPISA GE COMPILE_386
 ELSE

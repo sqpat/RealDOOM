@@ -63,6 +63,13 @@ DRAWCOL_NOLOOP_JUMP_TABLE_OFFSET = 0
 COLFUNC_JUMPTABLE_SIZE_OFFSET = 0
 DC_YL_LOOKUP_SEGMENT = 0
 COLFUNC_JUMP_LOOKUP_SEGMENT = 0
+_segloopheightvalcache = 0
+_segloopnextlookup    = 0
+_seglooptexrepeat    = 0
+_segloopprevlookup = 0
+_segloopcachedbasecol = 0
+_cachedsegmenttex = 0
+
 
 dw DRAWCOL_OFFSET - 00000h,  COLORMAPS_SEGMENT + 0000h
 dw DRAWCOL_OFFSET - 00100h,  COLORMAPS_SEGMENT + 0010h
