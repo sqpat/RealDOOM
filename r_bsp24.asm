@@ -109,14 +109,17 @@ ENDM
 
 _segloopheightvalcache:
 db 0, 0
-;_segloopprevlookup:
+_segloopprevlookup:
 dw 0, 0
-;_segloopnextlookup:
+_segloopnextlookup:
 dw 0, 0
-;_seglooptexrepeat:
+_seglooptexrepeat:
 db 0, 0
 
 ; 12 bytes...
+
+;_segloopcachedbasecol =             _NULL_OFFSET + 00058h
+;_cachedsegmenttex =                 _NULL_OFFSET + 0005Ch
 
 
 ; todo use
@@ -5062,9 +5065,9 @@ public exit_rendersegloop
 ; zero out local caches.
 
 ;ASSUME DS:DGROUP
-mov   ax, ss
-mov   ds, ax
-mov   es, ax
+; cx, ds already cs
+
+mov   es, cx
 mov   ax, 0FFFFh
 mov   di, OFFSET _segloopnextlookup
 stosw ; mov   word ptr ds:[_segloopnextlookup], ax
@@ -5848,9 +5851,7 @@ ALIGN_MACRO
 
 R_RenderSegLoop_exit:
 
-; cx = cs..
-mov   es, cx
-mov   ds, cx
+; cx, ds, es = cs..
 
 ; ds is cs.
 
@@ -5964,9 +5965,9 @@ ALIGN_MACRO
    SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET:
    ; start of the path.
    non_repeating_texture_mid:
-   cmp   dx, word ptr ss:[_segloopnextlookup]
+   cmp   dx, word ptr ds:[_segloopnextlookup]
    jge   out_of_texture_bounds_mid
-   cmp   dx, word ptr ss:[_segloopprevlookup]
+   cmp   dx, word ptr ds:[_segloopprevlookup]
    jnge  out_of_texture_bounds_mid
    xchg  ax, dx
    sub   al, byte ptr ss:[_segloopcachedbasecol]
@@ -5993,7 +5994,7 @@ ALIGN_MACRO
 
 
    ; todohigh get this dh and dl in same read?
-   mov   dh, byte ptr ss:[_seglooptexrepeat]
+   mov   dh, byte ptr ds:[_seglooptexrepeat]
    test  dh, dh
    je    seglooptexrepeat_mid_is_jmp
    ; modulo is seglooptexrepeat - 1
@@ -8181,9 +8182,9 @@ public exit_rendersegloop_TWOSIDED
 ; zero out local caches.
 ; cx has cs
 ;ASSUME DS:DGROUP
-mov   ax, ss
-mov   ds, ax
-mov   es, ax
+; cx, ds already cs
+
+mov   es, cx
 mov   ax, 0FFFFh
 mov   di, OFFSET _segloopnextlookup
 stosw ; mov   word ptr ds:[_segloopnextlookup], ax
@@ -8890,9 +8891,9 @@ ALIGN_MACRO
 
 SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET_TWOSIDED:
 non_repeating_texture0_top:
-cmp   dx, word ptr ss:[_segloopnextlookup]
+cmp   dx, word ptr ds:[_segloopnextlookup]
 jge   out_of_texture_bounds0_top
-cmp   dx, word ptr ss:[_segloopprevlookup] ; todo ss, ds-> cs etc
+cmp   dx, word ptr ds:[_segloopprevlookup] ; todo ss, ds-> cs etc
 jnge   out_of_texture_bounds0_top
 xchg  ax, dx
 sub   al, byte ptr ss:[_segloopcachedbasecol]
@@ -8920,7 +8921,7 @@ mov   word ptr ds:[SELFMODIFY_add_cached_segment0_TWOSIDED+1], dx
 
 ; todohigh get this dh and dl in same read?
 mov   cl, 0B8h  ; mov ax, xxxx
-mov   dh, byte ptr ss:[_seglooptexrepeat]
+mov   dh, byte ptr ds:[_seglooptexrepeat]
 mov   dl, byte ptr ds:[_segloopheightvalcache]
 test  dh, dh
 jne   seglooptexrepeat0_is_not_jmp_top
@@ -9390,9 +9391,9 @@ public SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET_TWOSIDED
 non_repeating_texture1:
 ; finally set dx back to texturecolumn in this case
 
-cmp   dx, word ptr ss:[2 + _segloopnextlookup]
+cmp   dx, word ptr ds:[2 + _segloopnextlookup]
 jge   out_of_texture_bounds1
-cmp   dx, word ptr ss:[2 + _segloopprevlookup]
+cmp   dx, word ptr ds:[2 + _segloopprevlookup]
 jnge  out_of_texture_bounds1  
 
 xchg  ax, dx  ; put texturecol in ax
@@ -9423,7 +9424,7 @@ mov   word ptr ds:[SELFMODIFY_add_cached_segment1+1], dx
 
 
 ; todo get this dh and dl in same read
-mov   dh, byte ptr ss:[1 + _seglooptexrepeat]
+mov   dh, byte ptr ds:[1 + _seglooptexrepeat]
 test  dh, dh
 je    seglooptexrepeat1_is_jmp
 ; modulo is seglooptexrepeat - 1
@@ -9445,15 +9446,14 @@ ALIGN_MACRO
 
 R_RenderSegLoop_exit_TWOSIDED:
 public R_RenderSegLoop_exit_TWOSIDED
-; enter with ds = ss:
-; todo: enter with ds = cs
+
+; enter with ds = cs
 ; bp restore:
 
 SELFMODIFY_restore_bp_after_draw_topbot:
 mov   bp, 01000h
 
-; cx is cs.
-mov       ds, cx ; al known 0
+
 
 ; clean up the self modified code of renderseg loop. 
 mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0_TWOSIDED], 0E9h
@@ -10435,7 +10435,7 @@ mov       word ptr ds:[bx - 010h+2], ax
 
 mov       ax, word ptr ds:[bx]
 mov       word ptr ds:[bx+2], ax
-mov       dx, word ptr ds:[di + _segloopnextlookup]   ; cached_next_lookup.
+mov       dx, word ptr cs:[di + _segloopnextlookup]   ; cached_next_lookup.
 mov       al, byte ptr ds:[bx - 0Ch]        ; _cachedcollength
 mov       byte ptr ds:[bx - 0Ch+1], al
 mov       byte ptr ds:[bx - 0Ch], cl
@@ -10445,11 +10445,11 @@ call      R_GetCompositeTexture_
 
 mov       word ptr ds:[bx], ax   ; write back cachedsegmenttex and store in ax
 
-mov       word ptr ds:[di + _segloopnextlookup], dx
+mov       word ptr cs:[di + _segloopnextlookup], dx
 mov       word ptr ds:[di + _segloopcachedsegment], ax  ; write this here now while duped.. skip the write later
 shr       di, 1
 pop       dx ;  , byte ptr [bp - 0Ah]             ; loopwidth
-mov       byte ptr ds:[di + _seglooptexrepeat], dl
+mov       byte ptr cs:[di + _seglooptexrepeat], dl
 
 jmp       done_setting_cached_tex_skip_cachedsegwrite
 ALIGN_MACRO
@@ -10470,7 +10470,7 @@ segloopcachedbasecol_set:
 
 
 mov       di, word ptr [bp - 2]  ; segloopcachetype
-mov       byte ptr ds:[di + _seglooptexrepeat], 0    ; todo any known 0? maybe ah from subtractor
+mov       byte ptr cs:[di + _seglooptexrepeat], 0    ; todo any known 0? maybe ah from subtractor
 sal       di, 1
 mov       word ptr ds:[di + _segloopcachedbasecol], bx
 
@@ -10481,9 +10481,9 @@ mov       word ptr ds:[di + _segloopcachedbasecol], bx
 ;		// this is not a single repeating texture 
 ;		seglooptexrepeat[segloopcachetype] 		= 0;
 
-mov       word ptr ds:[di + _segloopnextlookup], dx
+mov       word ptr cs:[di + _segloopnextlookup], dx
 sub       dx, ax  ; subtractor
-mov       word ptr ds:[di + _segloopprevlookup], dx
+mov       word ptr cs:[di + _segloopprevlookup], dx
 
 
 ;	if (lump > 0){
@@ -10685,7 +10685,7 @@ loopwidth_nonzero:
 
 mov       si, word ptr es:[bx]    ; lump
 mov       di, word ptr [bp - 2]
-mov       byte ptr ds:[di + _seglooptexrepeat], al      ; al still loopwidth
+mov       byte ptr cs:[di + _seglooptexrepeat], al      ; al still loopwidth
 sal       di, 1
 mov       word ptr ds:[di + _segloopcachedbasecol], dx  ; dx still basecol
 
@@ -10852,17 +10852,17 @@ movsw
 mov       si, ax    ; restore lump
 mov       di, word ptr [bp - 2]
 sal       di, 1
-mov       bx, word ptr ds:[di + _segloopnextlookup]
+mov       bx, word ptr cs:[di + _segloopnextlookup]
 mov       dx, 0FFh
 ; ax is lump
 call      R_GetPatchTexture_
 
 mov       word ptr ds:[_cachedsegmentlumps], ax
-mov       word ptr ds:[di + _segloopnextlookup], bx
+mov       word ptr cs:[di + _segloopnextlookup], bx
 sar       di, 1
 mov       al, byte ptr [bp - 0Ah]
 mov       word ptr ds:[_cachedlumps], si
-mov       byte ptr ds:[di + _seglooptexrepeat], al
+mov       byte ptr cs:[di + _seglooptexrepeat], al
 jmp       found_cached_lump
    
     
@@ -13026,6 +13026,10 @@ mov   word ptr ds:[_maskednextlookup], NULL_TEX_COL
 
 mov  cx, 6
 rep stosw
+
+mov   di, cs
+mov   es, di
+
 
 mov   di, OFFSET  _segloopnextlookup
 stosw ; segloopnextlookup[0] = -1; 030
