@@ -10449,7 +10449,7 @@ update_both_cache_texes:
 ;				segloopnextlookup[segloopcachetype]     = cached_nextlookup; 
 ;				seglooptexrepeat[segloopcachetype] 		= loopwidth;
 
-; todo swap bx and si roles.
+; todo swap bx and si roles?
 
 ; ax already cached tex 1
 ; di already bp - 2 (segloopcachetype) 
@@ -10457,21 +10457,21 @@ mov       word ptr ds:[bx - 010h+2], ax
 
 mov       ax, word ptr ds:[bx]
 mov       word ptr ds:[bx+2], ax
-mov       dx, word ptr ds:[di + _segloopnextlookup]   ; cached_next_lookup.
+push      word ptr ds:[di + _segloopnextlookup]   ; pop after call cached_next_lookup
 mov       al, byte ptr ds:[bx - 0Ch]        ; _cachedcollengthBSPLocal
 mov       byte ptr ds:[bx - 0Ch+1], al
 mov       byte ptr ds:[bx - 0Ch], cl
-xchg      ax, si                    ; was word ptr bp - 4/tex
-mov       word ptr ds:[bx - 010h], ax
+; si is word ptr bp - 4/tex
+mov       word ptr ds:[bx - 010h], si
 push      ss
 pop       ds
-call      R_GetCompositeTexture_
-push      cs
-pop       ds
+call      R_GetCompositeTexture_ ; si as arg
+mov       dx, cs
+mov       ds, dx
 
 mov       word ptr ds:[bx], ax   ; write back cachedsegmenttex and store in ax
 
-mov       word ptr ds:[di + _segloopnextlookup], dx
+pop       word ptr ds:[di + _segloopnextlookup]   ; popped from before the call
 mov       word ptr ds:[di + _segloopcachedsegment], ax  ; write this here now while duped.. skip the write later
 pop       dx ;  , byte ptr [bp - 0Ah]             ; loopwidth
 mov       byte ptr ds:[di + _seglooptexrepeat], dl ; interleaved bytes
@@ -10681,7 +10681,7 @@ push      ax
 
 mov       cx, dx
 xor       ch, ch  ; todo necessary
-mov       di, ax
+xchg      ax, di
 mov       ax, TEXTUREWIDTHMASKS_SEGMENT
 mov       es, ax
 and       cl, byte ptr es:[di]
@@ -10766,8 +10766,8 @@ mov       es, bx
 xor       ax, ax
 cwd                                     ; zero dh
 mov       al, byte ptr es:[si]
-cmp       al, 1                         ; set carry if al is 0
-adc       ah, ah                        ; if width is zero that encoded 0x100. now ah is 1.
+dec       al
+inc       ax                            ; if width is zero that encoded 0x100. now ah is 1.
 mov       bx, TEXTUREWIDTHMASKS_SEGMENT
 mov       es, bx
 mov       bx, word ptr [bp - 4]      ; tex
@@ -10876,10 +10876,12 @@ lea       di, [si + 2]
 movsw
 movsw
 movsw
-mov       si, ax    ; restore lump
+push      ax  ; store lump
 mov       di, word ptr [bp - 2]
 
-mov       bx, word ptr ds:[di + _segloopnextlookup]
+; todo is this even used???
+;mov       bx, word ptr ds:[di + _segloopnextlookup]
+
 mov       dx, 0FFh
 ; ax is lump
 push      cs
@@ -10891,7 +10893,7 @@ mov       word ptr ds:[_cachedsegmentlumpsBSPLOCAL], ax
 mov       word ptr ds:[di + _segloopnextlookup], bx
 mov       al, byte ptr [bp - 0Ah]
 mov       byte ptr ds:[di + _seglooptexrepeat], al ; interleaved bytes
-
+pop       si   ; pushed lump before call
 mov       word ptr ds:[_cachedlumpsBSPLOCAL], si
 jmp       found_cached_lump
    
@@ -13265,8 +13267,9 @@ COMPOSITE_TEXTURE_SEGMENT = 05000h
 
 PROC R_GetPatchTexture_Far24_ FAR
 PUBLIC R_GetPatchTexture_Far24_
-
+push si
 call R_GetPatchTexture_
+pop si
 retf
 ENDP
 
@@ -13276,7 +13279,6 @@ PROC R_GetPatchTexture_ NEAR
 
 ; bp - 2 = texoffset
 
-push  si
 
 
 ;	int16_t index = lump - firstpatch;
@@ -13307,7 +13309,7 @@ xchg  ax, si
 SHIFT_MACRO shl si 2 ; * 400h
 add   ax, si
 add   ah, (PATCH_TEXTURE_SEGMENT SHR 8)
-pop   si
+
 ret   
 
 ALIGN_MACRO
@@ -13351,7 +13353,7 @@ pop   ax     ; bp - 2
 call  R_LoadPatchColumns_
 xchg  ax, si
 pop   bx
-pop   si
+
 ret   
 
 ALIGN_MACRO
@@ -13371,8 +13373,10 @@ ENDP
 
 PROC R_GetCompositeTexture_Far24_ FAR
 PUBLIC R_GetCompositeTexture_Far24_ 
-
+push si
+xchg ax, si
 call R_GetCompositeTexture_
+pop  si
 retf
 ENDP
 
@@ -13381,15 +13385,14 @@ PROC R_GetCompositeTexture_ NEAR
 
 ; segment_t R_GetCompositeTexture(int16_t tex_index) ;
 
-; todo clean up reg use, should be much fewer push/pop
+; todo get cs = ds propagated thru here?
 
-push  dx
-push  si
+; arg in si
 
 
-mov   si, COMPOSITETEXTUREPAGE_SEGMENT
-mov   es, si
-xchg  ax, si  
+mov   ax, COMPOSITETEXTUREPAGE_SEGMENT
+mov   es, ax
+  
 mov   al, byte ptr es:[si] ; consider lodsb 
 cmp   al, 0FFh
 je    composite_not_in_cache
@@ -13409,8 +13412,7 @@ SHIFT_MACRO shl si 2 ; * 400h
 add   ax, si
 add   ah, (COMPOSITE_TEXTURE_SEGMENT SHR 8)
 
-pop   si
-pop   dx
+
 ret 
 
 ALIGN_MACRO
@@ -13444,8 +13446,6 @@ mov   ax, si
 call  R_GenerateComposite_
 xchg  ax, bx
 pop   bx
-pop   si
-pop   dx
 ret  
 
 ENDP
@@ -13480,6 +13480,7 @@ PROC R_GenerateComposite_ NEAR
 ; bp - 01Ch  (innerloop) currentdestsegment
 ; bp - 01Eh  (innerloop) columnofs[x - x1] 
 
+; todo most of this doesnt need push/pop? but runs really rarely so who cares...
 PUSHA_NO_AX_MACRO
 push      bp
 mov       bp, sp
