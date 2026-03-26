@@ -136,9 +136,11 @@ dw 0, 0
 _cachedsegmenttexBSPLocal:
 dw 0, 0
 
+_tantoangle_segmentBSPLocal:
+dw 0
 
 ; todo unused
-dw 0, 0, 0
+dw 0, 0
 
 
 
@@ -546,7 +548,7 @@ octant_6_do_divide:
 call FastDiv3232_shift_3_8_
 jnc   octant_6_out_of_bounds
 
-mov   es, word ptr ds:[_tantoangle_segment]
+mov   es, word ptr ds:[_tantoangle_segmentBSPLocal]
 SHIFT_MACRO shl ax 2
 xchg  ax, bx
 les   ax, dword ptr es:[bx]
@@ -594,7 +596,7 @@ xchg dx, cx
 call FastDiv3232_shift_3_8_
 
 jnc   octant_7_out_of_bounds
-mov   es, word ptr ds:[_tantoangle_segment]
+mov   es, word ptr ds:[_tantoangle_segmentBSPLocal]
 SHIFT_MACRO shl ax 2
 xchg  ax, bx
 les   ax, dword ptr es:[bx]
@@ -617,8 +619,12 @@ ret
 ALIGN_MACRO
 
 ; params cx, dx. ax/bx get zeroed/clobbered.
-PROC R_PointToAngle16_ NEAR
+PROC R_PointToAngle16First_ NEAR
 
+mov  bx, cs
+mov  ds, bx
+
+PROC R_PointToAngle16_ NEAR
 
 ; ax pre negged, dx pre carried
 ; bx pre negged, cx pre carried
@@ -696,7 +702,7 @@ xchg dx, cx
 call FastDiv3232_shift_3_8_
 jnc   octant_0_out_of_bounds
 
-mov   es, word ptr ds:[_tantoangle_segment]
+mov   es, word ptr ds:[_tantoangle_segmentBSPLocal]
 SHIFT_MACRO shl ax 2
 xchg  ax, bx
 les   ax, dword ptr es:[bx]
@@ -720,7 +726,7 @@ jcxz   continue_check_octant_1
 octant_1_do_divide:
 call FastDiv3232_shift_3_8_
 jnc   octant_1_out_of_bounds
-mov   es, word ptr ds:[_tantoangle_segment]
+mov   es, word ptr ds:[_tantoangle_segmentBSPLocal]
 SHIFT_MACRO shl ax 2
 xchg  ax, bx
 mov   ax, 0ffffh
@@ -774,7 +780,7 @@ xchg dx, cx
 xchg ax, bx
 call FastDiv3232_shift_3_8_
 jnc   octant_3_out_of_bounds
-mov   es, word ptr ds:[_tantoangle_segment]
+mov   es, word ptr ds:[_tantoangle_segmentBSPLocal]
 SHIFT_MACRO shl ax 2
 xchg  ax, bx
 mov   ax, 0ffffh
@@ -802,7 +808,7 @@ octant_2_do_divide:
 
 call FastDiv3232_shift_3_8_
 jnc   octant_2_out_of_bounds
-mov   es, word ptr ds:[_tantoangle_segment]
+mov   es, word ptr ds:[_tantoangle_segmentBSPLocal]
 SHIFT_MACRO shl ax 2
 xchg  ax, bx
 les   ax, dword ptr es:[bx]
@@ -846,7 +852,7 @@ xchg ax, bx
 call FastDiv3232_shift_3_8_
 jnc   octant_4_out_of_bounds
 
-mov   es, word ptr ds:[_tantoangle_segment]
+mov   es, word ptr ds:[_tantoangle_segmentBSPLocal]
 SHIFT_MACRO shl ax 2
 xchg  ax, bx
 les   ax, dword ptr es:[bx]
@@ -873,7 +879,7 @@ octant_5_do_divide:
 
 call FastDiv3232_shift_3_8_
 jnc   octant_5_out_of_bounds
-mov   es, word ptr ds:[_tantoangle_segment]
+mov   es, word ptr ds:[_tantoangle_segmentBSPLocal]
 SHIFT_MACRO shl ax 2
 xchg  ax, bx
 mov   ax, 0ffffh
@@ -3261,6 +3267,9 @@ cmp   byte ptr es:[di + SPRITEFRAME_T.spriteframe_rotate], 0
 
 je    skip_sprite_rotation
 
+mov   ax, cs
+mov   ds, ax
+
 les   ax, dword ptr [bp - 01Ah]
 mov   dx, es
 les   bx, dword ptr [bp - 016h]
@@ -3278,6 +3287,9 @@ SELFMODIFY_BSP_viewx_hi_3:
 sbb   dx, 01000h
 
 call  R_PointToAngle_
+
+mov   bx, ss
+mov   ds, bx
 mov   ax, dx
 ;xchg ax, dx  ; toggle for ENSUREALIGN_319
 ;rot = _rotl(ang.hu.intbits - thingangle.hu.intbits + 0x9000u, 3) & 0x07;
@@ -4042,10 +4054,10 @@ ALIGN_MACRO
 
 
    lodsw     ; textureoffset
-   ; todo set ds = cs instead?
-   mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset+1], ax
-   mov       si, ss
-   mov       ds, si  ; restore ds..   ; todo dont switch ds?
+   mov       si, cs
+   mov       ds, si 
+
+   mov       word ptr ds:[SELFMODIFY_BSP_sidetextureoffset+1], ax
 
    mov       si, word ptr [bp - 6]
    ;	seenlines[linedefOffset/8] |= (0x01 << (linedefOffset % 8));
@@ -4064,8 +4076,8 @@ ALIGN_MACRO
    mov       bx, word ptr [bp + 4]
    sal       bx, 1       ;  curseg word lookup
 
-   mov       ax, word ptr ds:[bx+_seg_normalangles]
-   mov       word ptr cs:[SELFMODIFY_sub_rw_normal_angle_1+1], ax
+   mov       ax, word ptr ss:[bx+_seg_normalangles]
+   mov       word ptr ds:[SELFMODIFY_sub_rw_normal_angle_1+1], ax
    xchg      ax, si
 
    SELFMODIFY_set_viewanglesr3_1:
@@ -4075,10 +4087,10 @@ ALIGN_MACRO
    and       ah, FINE_ANGLE_HIGH_BYTE
 
    ; set centerangle in rendersegloop
-   mov       word ptr cs:[SELFMODIFY_set_rw_center_angle+2], ax
+   mov       word ptr ds:[SELFMODIFY_set_rw_center_angle+2], ax
    xchg      ax, si
    SHIFT_MACRO shl ax SHORTTOFINESHIFT
-   mov       word ptr cs:[SELFMODIFY_set_rw_normal_angle_shift3+1], ax
+   mov       word ptr ds:[SELFMODIFY_set_rw_normal_angle_shift3+1], ax
 
 
    ;	offsetangle = (abs((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> 1) & 0xFFFC;
@@ -4089,7 +4101,7 @@ ALIGN_MACRO
    sar       ax, 1
 
    and       al, 0FCh
-   mov       word ptr cs:[SELFMODIFY_set_offsetangle+1], ax
+   mov       word ptr ds:[SELFMODIFY_set_offsetangle+1], ax
    mov       si, FINE_ANG90_NOSHIFT
    sub       si, ax 
 
@@ -4171,7 +4183,7 @@ ALIGN_MACRO
 
 
       xchg  ax, bx
-      mov   es, word ptr ds:[_tantoangle_segment] 
+      mov   es, word ptr ds:[_tantoangle_segmentBSPLocal] 
       mov   bx, word ptr es:[bx + 2] ; get just intbits..
 
       ;    dist = FixedDiv (dx, finesine[angle] );	
@@ -4195,8 +4207,7 @@ ALIGN_MACRO
       call  FixedDivBSPLocal_
       ENSUREALIGN_317:
 
-      mov       cx, cs
-      mov       ds, cx
+
       ; store result
       mov   word ptr ds:[SELFMODIFY_set_PointToDist_result_lo+1], ax
       mov   word ptr ds:[SELFMODIFY_set_PointToDist_result_hi+1], dx
@@ -4248,6 +4259,7 @@ ENDIF
 
 
 SELFMODIFY_skip_curseg_based_selfmodify_TARGET:
+public SELFMODIFY_skip_curseg_based_selfmodify_TARGET
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; END LINE BASED SELF MODIFY BLOCK ;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -4268,6 +4280,7 @@ stosw                            ; DRAWSEG_T.drawseg_x2
 
 inc       ax
 
+mov       cx, cs  ; restore ds = cs
 mov       ds, cx  ; restore ds = cs
 
 
@@ -4363,8 +4376,7 @@ mov       byte ptr ds:[SELFMODIFY_set_midtexturemid_hi+1], al
 mov       byte ptr ds:[SELFMODIFY_set_midtexturemid_hi_stretch+1], al
 
 
-mov       ax, ss
-mov       ds, ax
+
 
 ; todo this was calculated right above in a branch... combinable??
 mov       dx, word ptr [bp + 6] ; frontsector floor 
@@ -4409,8 +4421,7 @@ stosw      ; DRAWSEG_T.drawseg_scalestep +0
 xchg      ax, dx
 stosw      ; DRAWSEG_T.drawseg_scalestep +2
 
-mov       ax, cs
-mov       ds, ax ; set ds to cs before scales_set
+
 
 jmp       scales_set
 ALIGN_MACRO
@@ -4464,8 +4475,7 @@ stosw             ; +0Ch
 xchg      ax, dx
 mov       bx, word ptr [bp - 022h + SSD]
 
-mov       si, cs
-mov       ds, si ; set ds to cs before eventual scales_set
+
 xor       si, si
 
 sub       ax, word ptr [bp - 02Eh + SSD]
@@ -6360,11 +6370,18 @@ finish_midtex_selfmodify_TWOSIDED:
 
 
    lodsw     ; textureoffset 
+   ; todo AAA
+   ;mov       cx, cs
+   ;mov       ds, cx
+   ;mov       word ptr ds:[SELFMODIFY_BSP_sidetextureoffset_TWOSIDED+1], ax
+
    mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset_TWOSIDED+1], ax
    mov       cx, FIXED_DS_SEGMENT
    mov       ds, cx  ; restore ds..
 
+
    mov       si, word ptr [bp - 6]
+   
    ;	seenlines[linedefOffset/8] |= (0x01 << (linedefOffset % 8));
    ; si is linedefOffset
 
@@ -6381,7 +6398,7 @@ finish_midtex_selfmodify_TWOSIDED:
    mov       bx, word ptr [bp + 4]
    sal       bx, 1       ;  curseg word lookup
 
-   mov       ax, word ptr ds:[bx+_seg_normalangles]
+   mov       ax, word ptr ss:[bx+_seg_normalangles]
    mov       word ptr cs:[SELFMODIFY_sub_rw_normal_angle_1+1], ax
    xchg      ax, si
 
@@ -6622,15 +6639,13 @@ push      ax  ; bp - 026h + SSD
 
 
 
-mov       ax, ss
-mov       ds, ax
 
 mov       dx, word ptr [bp + 6] ; frontsector floor 
 xor       ax, ax
 
 
 ; zero out maskedtexture 
-mov       byte ptr cs:[_maskedtexture_bsp], al  ; todo is it necessary to write up here?
+mov       byte ptr ds:[_maskedtexture_bsp], al  ; todo is it necessary to write up here?
 ; default to 0
 
 
@@ -6677,8 +6692,6 @@ xchg      ax, dx
 stosw      ; DRAWSEG_T.drawseg_scalestep +2
 xchg      ax, dx
 
-mov       ax, cs
-mov       ds, ax ; set ds to cs before scales_set
 
 jmp       scales_set_TWOSIDED
 ALIGN_MACRO
@@ -6731,8 +6744,7 @@ stosw             ; +0Ch
 xchg      ax, dx
 mov       bx, word ptr [bp - 022h + SSD]
 
-mov       si, cs
-mov       ds, si ; set ds to cs before eventual scales_set
+
 xor       si, si ; si zero by default..
 
 sub       ax, word ptr [bp - 02Eh + SSD]
@@ -9954,24 +9966,23 @@ mov   ax, VERTEXES_SEGMENT
 mov   ds, ax
 
 les   dx, dword ptr ds:[si]
-mov   ax, es
-
+mov   cx, es
 
 les   si, dword ptr ds:[di]       ; v2.x
 mov   di, es                      ; v2.y
-mov   ds, cx
-xchg  ax, cx
 
 
 
-call  R_PointToAngle16_    ; todo debug why this doesnt work with the other one. stack corruption?
+call  R_PointToAngle16First_    ; todo debug why this doesnt work with the other one. stack corruption?
 
-xchg  ax, di
-xchg  ax, cx
+xchg  di, cx
 xchg  si, dx      ; SI: BX stores angle1
 
 
 call  R_PointToAngle16_    ; todo debug why this doesnt work with the other one. stack corruption?
+
+mov   cx, ss
+mov   ds, cx
 
 ; backup before sub
 mov   bx, di
@@ -11486,11 +11497,9 @@ R_CBB_SWITCH_CASE_05:  ; unused
 boxpos_switchblock_done:
 ;	angle1.wu = R_PointToAngle16(x1, y1) - viewangle.wu;
 
-push  ss
-pop   ds
 
 ; di holds 
-call  R_PointToAngle16_
+call  R_PointToAngle16First_
 SELFMODIFY_BSP_viewangle_lo_3:
 sub   ax, 01000h
 SELFMODIFY_BSP_viewangle_hi_3:
@@ -11518,8 +11527,10 @@ sub   ax, 01000h
 SELFMODIFY_BSP_viewangle_hi_4:
 sbb   cx, 01000h
 
-mov   word ptr cs:[SELFMODIFY_BSP_forward_angle2_lobits+1], ax
+mov   word ptr ds:[SELFMODIFY_BSP_forward_angle2_lobits+1], ax
 
+mov   bx, ss
+mov   ds, bx
 
 
 ;	span.wu = angle1.wu - angle2.wu;
@@ -14311,10 +14322,15 @@ mov      es, cx
 
 ASSUME DS:R_BSP_24_TEXT
 
+
+
 mov      word ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_mid+2], ax
 mov      word ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_top+2], ax
 mov      word ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_bot+2], ax
 
+; todo only do this once
+mov      ax, word ptr ss:[_tantoangle_segment]
+mov      word ptr ds:[_tantoangle_segmentBSPLocal], ax
 ; todo only do this once
 mov       ax,  word ptr ss:[_firstpatch]
 
