@@ -7288,8 +7288,7 @@ do_selfmodify_bottexture:
 ; set _rw_toptexturemid in rendersegloop
 
 mov   word ptr ds:[SELFMODIFY_set_bottexturemid_lo+1], ax
-mov   byte ptr ds:[SELFMODIFY_set_bottexturemid_hi+1], dl
-
+;mov   byte ptr ds:[SELFMODIFY_set_bottexturemid_hi+1], dl ; write below...
 
 bottexture_stuff_done:
 
@@ -7307,7 +7306,8 @@ mov   al, 010h ; todo should this just be done above...?  rather than this selfm
 
 
 add   byte ptr ds:[SELFMODIFY_set_toptexturemid_hi+1], al
-add   byte ptr ds:[SELFMODIFY_set_bottexturemid_hi+1], al
+add   al, dl
+mov   byte ptr ds:[SELFMODIFY_set_bottexturemid_hi+1], al
 
 
 ; // allocate space for masked texture tables
@@ -7748,7 +7748,7 @@ and       bh, MOD_FINE_ANGLE_NOSHIFT_HIGHBITS
 offsetangle_greater_than_fineang180_TWOSIDED:
 
 SELFMODIFY_set_PointToDist_result_hi_TWOSIDED:
-mov       cx, 01000h
+mov       dx, 01000h
 SELFMODIFY_set_PointToDist_result_lo_TWOSIDED:
 mov       ax, 01000h
 
@@ -7756,7 +7756,7 @@ mov       ax, 01000h
 
 cmp       bx, FINE_ANG90_NOSHIFT ; 02000h
 ja        offsetangle_greater_than_fineang90_TWOSIDED
-
+mov       cx, dx ; hi x
 ; inlined FixedMulTrigNoShiftSine_BSPLocal_
 
 SHR  BX, 1
@@ -7770,21 +7770,17 @@ MOV  AX, CX    ; CX to AX
 MOV  CX, DX    ; CX stores high result as low word
 MUL  BX        ; AX*CX
 ADD  AX, CX    ; add low word
+ADC  dx, 0
 
 ; used later, dont change?
 ; dx:ax is rw_offset
-xchg      ax, dx
-ADC       AX, 0
-jmp       done_with_offsetangle_stuff_TWOSIDED
-ALIGN_MACRO
+
 offsetangle_greater_than_fineang90_TWOSIDED:
-xchg      ax, dx  ; dx gets low
-xchg      ax, cx  ; ax gets high
 
 
 
 done_with_offsetangle_stuff_TWOSIDED:
-; ax:dx is rw_offset
+; dx:ax is rw_offset
 
 xor       cx, cx ; cx holds 0...
 
@@ -7801,20 +7797,20 @@ sbb       bx, word ptr [bp - 010h]   ; rw_angle hi from R_AddLine
 
 ; use sbb bx flags to check for < 08000h (ANG180)
 js        tempangle_not_smaller_than_fineang180_TWOSIDED
-neg       ax
 neg       dx
-sbb       ax, cx  ; 0
+neg       ax
+sbb       dx, cx  ; 0
 tempangle_not_smaller_than_fineang180_TWOSIDED:
 
 
-
+mov       word ptr ds:[SELFMODIFY_set_cx_rw_offset_lo_TWOSIDED+1], ax
+xchg      ax, dx
 
 SELFMODIFY_BSP_sidetextureoffset_TWOSIDED:
 add       ax, 01000h
 SELFMODIFY_BSP_sidesegoffset_TWOSIDED:
 add       ax, 01000h 
 ; rw_offset ready to be written to rendersegloop:
-mov   word ptr ds:[SELFMODIFY_set_cx_rw_offset_lo_TWOSIDED+1], dx
 mov   word ptr ds:[SELFMODIFY_set_ax_rw_offset_hi_TWOSIDED+2], ax
 
 
