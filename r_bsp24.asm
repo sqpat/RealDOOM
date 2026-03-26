@@ -6370,14 +6370,10 @@ finish_midtex_selfmodify_TWOSIDED:
 
 
    lodsw     ; textureoffset 
-   ; todo AAA
-   ;mov       cx, cs
-   ;mov       ds, cx
-   ;mov       word ptr ds:[SELFMODIFY_BSP_sidetextureoffset_TWOSIDED+1], ax
+   mov       cx, cs
+   mov       ds, cx
 
-   mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset_TWOSIDED+1], ax
-   mov       cx, FIXED_DS_SEGMENT
-   mov       ds, cx  ; restore ds..
+   mov       word ptr ds:[SELFMODIFY_BSP_sidetextureoffset_TWOSIDED+1], ax
 
 
    mov       si, word ptr [bp - 6]
@@ -6399,7 +6395,7 @@ finish_midtex_selfmodify_TWOSIDED:
    sal       bx, 1       ;  curseg word lookup
 
    mov       ax, word ptr ss:[bx+_seg_normalangles]
-   mov       word ptr cs:[SELFMODIFY_sub_rw_normal_angle_1+1], ax
+   mov       word ptr ds:[SELFMODIFY_sub_rw_normal_angle_1+1], ax
    xchg      ax, si
 
    SELFMODIFY_set_viewanglesr3_1_TWOSIDED:
@@ -6409,10 +6405,10 @@ finish_midtex_selfmodify_TWOSIDED:
    and       ah, FINE_ANGLE_HIGH_BYTE
 
    ; set centerangle in rendersegloop
-   mov       word ptr cs:[SELFMODIFY_set_rw_center_angle_TWOSIDED+2], ax
+   mov       word ptr ds:[SELFMODIFY_set_rw_center_angle_TWOSIDED+2], ax
    xchg      ax, si
    SHIFT_MACRO shl ax SHORTTOFINESHIFT
-   mov       word ptr cs:[SELFMODIFY_set_rw_normal_angle_shift3_TWOSIDED+1], ax
+   mov       word ptr ds:[SELFMODIFY_set_rw_normal_angle_shift3_TWOSIDED+1], ax
 
 
    ;	offsetangle = (abs((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> 1) & 0xFFFC;
@@ -6423,7 +6419,7 @@ finish_midtex_selfmodify_TWOSIDED:
    sar       ax, 1
 
    and       al, 0FCh
-   mov       word ptr cs:[SELFMODIFY_set_offsetangle_TWOSIDED+1], ax
+   mov       word ptr ds:[SELFMODIFY_set_offsetangle_TWOSIDED+1], ax
    mov       si, FINE_ANG90_NOSHIFT
    sub       si, ax 
 
@@ -6500,7 +6496,7 @@ finish_midtex_selfmodify_TWOSIDED:
 
 
       xchg  ax, bx
-      mov   es, word ptr ds:[_tantoangle_segment] 
+      mov   es, word ptr ds:[_tantoangle_segmentBSPLocal] 
       mov   bx, word ptr es:[bx + 2] ; get just intbits..
 
       ;    dist = FixedDiv (dx, finesine[angle] );	
@@ -6525,8 +6521,6 @@ finish_midtex_selfmodify_TWOSIDED:
       ENSUREALIGN_303:
 
 
-      mov       cx, cs
-      mov       ds, cx
 
       ; store result
       mov   word ptr ds:[SELFMODIFY_set_PointToDist_result_lo_TWOSIDED+1], ax
@@ -6597,6 +6591,7 @@ stosw                            ; DRAWSEG_T.drawseg_x2
 
 inc       ax
 
+mov       cx, cs
 mov       ds, cx
 
 
@@ -6690,7 +6685,7 @@ jg        stop_greater_than_start_TWOSIDED
 stosw      ; DRAWSEG_T.drawseg_scalestep +0
 xchg      ax, dx
 stosw      ; DRAWSEG_T.drawseg_scalestep +2
-xchg      ax, dx
+
 
 
 jmp       scales_set_TWOSIDED
