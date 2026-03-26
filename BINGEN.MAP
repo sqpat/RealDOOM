@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/03/25 13:07:21
+Created on:       26/03/25 14:00:14
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -341,8 +341,8 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079b:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
 0819:38c6      R_WriteBackViewConstants24_
-0819:2699*     R_AddLine_
 0819:0d81*     tx_already_positive
+0819:2699*     R_AddLine_
 0819:339e      R_GetPatchTexture_Far24_
 0819:3e40      R_BSP24_ENDMARKER_
 0819:2412*     R_GetSourceSegment1_
@@ -361,6 +361,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:22d0*     ENSUREALIGN_090
 0819:22c3*     ENSUREALIGN_089
 0819:0200*     _ceilingclip
+0819:2414*     SELFMODIFY_BSP_set_seglooptexrepeat_bot_AFTER
 0819:229e*     ENSUREALIGN_091
 0819:004f*     _seglooptexrepeat
 0819:150c*     ENSUREALIGN_051
@@ -410,10 +411,8 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:153c*     exit_rendersegloop
 0819:12f2*     scales_set
 0819:169b*     R_GetSourceSegment0_START
-0819:2414*     SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER_TWOSIDED
 0819:374c      R_RenderPlayerView24_
 0819:0958*     FixedDivBSPLocal_
-0819:2454*     SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET_TWOSIDED
 0819:155d*     increment_loop_values
 0819:05d4*     div48_32_BSPLocal_
 0819:0fbe*     R_StoreWallRangeNoBackSector_
@@ -438,7 +437,6 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:0bb0*     R_FindPlane_
 0819:0714*     FixedDivWholeA_BSPLocal_
 0819:1612*     SELFMODIFY_BSP_add_destview_offset
-0819:23a5*     SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER_TWOSIDED
 0819:004e*     _segloopheightvalcache
 0819:1d68*     side_has_midtexture
 0819:15ac*     SELFMODIFY_BSP_markceiling_1
@@ -459,6 +457,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:23ac*     just_do_draw0_top
 0819:1537*     R_RenderSegLoop_
 0819:15d6*     SELFMODIFY_BSP_markfloor_1
+0819:23a5*     SELFMODIFY_BSP_set_seglooptexmodulo0_AFTER_TWOSIDED
 0819:1697*     SELFMODIFY_set_ax_rw_offset_hi
 0819:18d1*     v2_y_equals_v1_y_TWOSIDED
 0819:0cd0*     R_ProjectSprite_

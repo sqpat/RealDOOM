@@ -5564,12 +5564,12 @@ PUBLIC  R_GetSourceSegment0_START
 
 SELFMODIFY_BSP_set_seglooptexrepeat0:
 ; 3 bytes. May become one of two jumps (three bytes) or mov ax, imm16 (three bytes)
-jmp    non_repeating_texture_mid
+jmp    out_of_texture_bounds_mid
 
 ; al has  heightval
 ; ah has  seglooptexrepeat mask
 
-SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER:
+SELFMODIFY_BSP_set_seglooptexrepeat_mid_AFTER:
 ENSUREALIGN_323:
 xchg  ax, ax  ; TODO: remove: ENSUREALIGN_069 even toggle for now
 and   ah, dl   ; ah has loopwidth-1 (modulo )
@@ -5961,7 +5961,7 @@ done_skipping_markfloor_copy_mid:
 
 ; clean up the self modified code of renderseg loop. 
 mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0], 0E9h
-mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER)
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], (SELFMODIFY_BSP_set_seglooptexrepeat_mid_TARGET_2 - SELFMODIFY_BSP_set_seglooptexrepeat_mid_AFTER)
 
 ; single wall mid texture has no clipping done...
 
@@ -6002,7 +6002,7 @@ seglooptexrepeat_mid_is_jmp:
 ; ds already cs
 ; todo make sure the word write is word aligned.
 mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0], 0E9h
-mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER)
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0+1], (SELFMODIFY_BSP_set_seglooptexrepeat_mid_TARGET_1 - SELFMODIFY_BSP_set_seglooptexrepeat_mid_AFTER)
 jmp   just_do_draw_mid
 
 
@@ -6024,7 +6024,7 @@ or       byte ptr ds:[bx+si], cl
 ret       
 
 ALIGN_MACRO
-   SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET:
+   SELFMODIFY_BSP_set_seglooptexrepeat_mid_TARGET_1:
    ; start of the path.
    non_repeating_texture_mid:
    cmp   dx, word ptr ds:[_segloopnextlookup]
@@ -6036,6 +6036,7 @@ ALIGN_MACRO
    mul   byte ptr ds:[_segloopheightvalcache]
    jmp   add_base_segment_and_draw_mid
    ALIGN_MACRO
+   SELFMODIFY_BSP_set_seglooptexrepeat_mid_TARGET_2:
    out_of_texture_bounds_mid:
    ; branch nonpush with moves etc. 
    push  bx
@@ -8952,18 +8953,19 @@ ENDIF
 ALIGN_MACRO
 
 
-SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET_TWOSIDED:
+SELFMODIFY_BSP_set_seglooptexmodulo_top_TARGET_1:
 non_repeating_texture0_top:
 cmp   dx, word ptr ds:[_segloopnextlookup]
-jge   out_of_texture_bounds0_top
+jge   out_of_texture_bounds_top
 cmp   dx, word ptr ds:[_segloopprevlookupBSPLocal] ; todo ss, ds-> cs etc
-jl    out_of_texture_bounds0_top
+jl    out_of_texture_bounds_top
 xchg  ax, dx
 sub   al, byte ptr ds:[_segloopcachedbasecolBSPLocal]
 mul   byte ptr ds:[_segloopheightvalcache]
 jmp   add_base_segment_and_draw0_top
 ALIGN_MACRO
-out_of_texture_bounds0_top:
+SELFMODIFY_BSP_set_seglooptexmodulo_top_TARGET_2:
+out_of_texture_bounds_top:
 ; branch nonpush with moves etc. 
 push  bx
 SELFMODIFY_BSP_set_toptexture:
@@ -8985,13 +8987,13 @@ mov   cl, 0B8h  ; mov ax, xxxx
 mov   dx, word ptr ds:[_segloopheightvalcache]
 test  dh, dh
 jne   seglooptexrepeat0_is_not_jmp_top
-mov   dx, (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET_TWOSIDED - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER_TWOSIDED)
+mov   dx, (SELFMODIFY_BSP_set_seglooptexmodulo_top_TARGET_1 - SELFMODIFY_BSP_set_seglooptexmodulo_top_AFTER)
 mov   cl, 0E9h  ; jmp 
 
 seglooptexrepeat0_is_not_jmp_top:
 ; modulo is seglooptexrepeat - 1
-mov   byte ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo0_TWOSIDED],   cl
-mov   word ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo0_TWOSIDED+1], dx
+mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexmodulo_top],   cl
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexmodulo_top+1], dx
 
 jmp   just_do_draw0_top
 
@@ -9159,15 +9161,15 @@ PUBLIC  R_GetSourceSegment0_START_TWOSIDED
   ; if one is set, then the result of the predetermined value of seglooptexmodulo might it into a jump
    ; if its a repeating texture  then we modify it to mov ah, segloopheightvalcache
 
-SELFMODIFY_BSP_check_seglooptexmodulo0_TWOSIDED:
-SELFMODIFY_BSP_set_seglooptexrepeat0_TWOSIDED:
+
+SELFMODIFY_BSP_set_seglooptexmodulo_top:
 ; 3 bytes. May become one of two jumps (three bytes) or mov ax, imm16 (three bytes)
-jmp    non_repeating_texture0_top
+jmp    out_of_texture_bounds_top
 
-SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER_TWOSIDED = SELFMODIFY_BSP_check_seglooptexmodulo0_TWOSIDED + 3
+SELFMODIFY_BSP_set_seglooptexmodulo_top_AFTER = SELFMODIFY_BSP_set_seglooptexmodulo_top + 3
 
-SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER_TWOSIDED:
-public SELFMODIFY_BSP_check_seglooptexmodulo0_AFTER_TWOSIDED
+SELFMODIFY_BSP_set_seglooptexmodulo0_AFTER_TWOSIDED:
+public SELFMODIFY_BSP_set_seglooptexmodulo0_AFTER_TWOSIDED
 
 and   dl, ah   ; ah has loopwidth-1 (modulo )
 mul   dl       ; al has heightval
@@ -9339,13 +9341,13 @@ R_GetSourceSegment1_:
 PUBLIC R_GetSourceSegment1_
 
 
-SELFMODIFY_BSP_check_seglooptexmodulo1:
-SELFMODIFY_BSP_set_seglooptexrepeat1_TWOSIDED:
-; 3 bytes. May become one of two jumps (two bytes) or mov ax, imm16 (three bytes)
-jmp SHORT non_repeating_texture1
 
-SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER_TWOSIDED:
-public SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER_TWOSIDED
+SELFMODIFY_BSP_set_seglooptexrepeat_bot:
+; 3 bytes. May become one of two jumps (two bytes) or mov ax, imm16 (three bytes)
+jmp SHORT out_of_texture_bounds1
+
+SELFMODIFY_BSP_set_seglooptexrepeat_bot_AFTER:
+public SELFMODIFY_BSP_set_seglooptexrepeat_bot_AFTER
 
 ;ALIGN_MACRO
 xchg  ax, ax                    ; one byte nop placeholder. this gets the ah value in mov ax, xxxx (byte 3)
@@ -9446,9 +9448,8 @@ jmp   finished_inner_loop_iter_TWOSIDED
 ALIGN_MACRO
 ;BEGIN INLINED R_GetSourceSegment1_ AGAIN
 ; this was only called in one place. this runs often, so inline it.
-
-SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET_TWOSIDED:
-public SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET_TWOSIDED
+; target for function init
+SELFMODIFY_BSP_set_seglooptexrepeat_bot_TARGET_1:
 non_repeating_texture1:
 ; finally set dx back to texturecolumn in this case
 
@@ -9462,6 +9463,8 @@ sub   al, byte ptr ds:[2 + _segloopcachedbasecolBSPLocal]
 mul   byte ptr ds:[2 + _segloopheightvalcache] ;interleaved bytes
 jmp   add_base_segment_and_draw1
 ALIGN_MACRO
+; target for function reset
+SELFMODIFY_BSP_set_seglooptexrepeat_bot_TARGET_2:
 out_of_texture_bounds1:
 push  bx
 
@@ -9487,14 +9490,14 @@ mov   dx, word ptr ds:[2+_segloopheightvalcache]
 test  dh, dh
 je    seglooptexrepeat1_is_jmp
 ; modulo is seglooptexrepeat - 1
-mov   byte ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo1],   0B8h   ; mov ax, xxxx
-mov   word ptr ds:[SELFMODIFY_BSP_check_seglooptexmodulo1+1], dx
+mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_bot],   0B8h   ; mov ax, xxxx
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_bot+1], dx
 
 jmp   just_do_draw1
 ALIGN_MACRO
 ; do jmp. highest priority, overwrite previously written thing.
 seglooptexrepeat1_is_jmp:
-mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat1_TWOSIDED], ((SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET_TWOSIDED - SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER_TWOSIDED) SHL 8) + 0EBh
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_bot], ((SELFMODIFY_BSP_set_seglooptexrepeat_bot_TARGET_1 - SELFMODIFY_BSP_set_seglooptexrepeat_bot_AFTER) SHL 8) + 0EBh
 jmp   just_do_draw1
 ;END INLINED R_GetSourceSegment1_ AGAIN
 
@@ -9514,9 +9517,9 @@ mov   bp, 01000h
 
 
 ; clean up the self modified code of renderseg loop. 
-mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0_TWOSIDED], 0E9h
-mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat0_TWOSIDED+1], (SELFMODIFY_BSP_set_seglooptexrepeat0_TARGET_TWOSIDED - SELFMODIFY_BSP_set_seglooptexrepeat0_AFTER_TWOSIDED )
-mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat1_TWOSIDED], ((SELFMODIFY_BSP_set_seglooptexrepeat1_TARGET_TWOSIDED - SELFMODIFY_BSP_set_seglooptexrepeat1_AFTER_TWOSIDED) SHL 8) + 0EBh
+mov   byte ptr ds:[SELFMODIFY_BSP_set_seglooptexmodulo_top], 0E9h
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexmodulo_top+1], (SELFMODIFY_BSP_set_seglooptexmodulo_top_TARGET_2 - SELFMODIFY_BSP_set_seglooptexmodulo_top_AFTER )
+mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat_bot], ((SELFMODIFY_BSP_set_seglooptexrepeat_bot_TARGET_2 - SELFMODIFY_BSP_set_seglooptexrepeat_bot_AFTER) SHL 8) + 0EBh
 
 
 
