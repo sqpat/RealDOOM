@@ -277,6 +277,37 @@ dw 001B2h
 ; shoving some small functions in here since w ehave to pad to 0100h for the next jump table
 
 
+PUSHA_NO_AX_OR_BP_OR_DX_MACRO MACRO
+IF COMPISA GE COMPILE_186
+	pusha
+   STOREWALLRANGE_STACK_AMOUNT = 16
+   STOREWALLRANGE_STACK_DELTA = STOREWALLRANGE_STACK_AMOUNT - 8
+   SSD = (-STOREWALLRANGE_STACK_DELTA)
+
+ELSE	
+   STOREWALLRANGE_STACK_AMOUNT = 8
+   STOREWALLRANGE_STACK_DELTA = STOREWALLRANGE_STACK_AMOUNT - 8
+   SSD = 0
+   push  bx
+   push  cx
+   push  si
+   push  di
+ENDIF
+
+ENDM
+
+POPA_NO_AX_OR_BP_OR_DX_MACRO MACRO
+
+IF COMPISA GE COMPILE_186
+	popa
+ELSE	
+   pop   di
+   pop   si
+   pop   cx
+   pop   bx
+ENDIF
+ENDM
+
 
 PUSHA_BSP_BOTTOP_MACRO MACRO
 
@@ -3796,30 +3827,34 @@ PUBLIC R_StoreWallRangeNoBackSector_
 ; bp - 018h  ; unused pushed reg precall
 ; bp - 01Ah  ; unused pushed reg precall
 ; bp - 01Ch  ; unused pushed reg precall
-; bp - 01Ch  ; return address from R_StoreWallRange_
-; bp - 01Eh  ; dx arg (no need to pop), then unpopped
-; bp - 020h  ; ax arg (no need to pop), then unpopped
+
+; ?? possibly 4 more words PUSHAed
+
+; these values and down are 
+; bp - 01Ch + SSD  ; return address from R_StoreWallRange_
+; bp - 01Eh + SSD  ; dx arg (no need to pop), then unpopped
+; bp - 020h + SSD  ; ax arg (no need to pop), then unpopped
 
 ; pushed stuff
-; bp - 022h  ; stop - start, then unpopped
+; bp - 022h + SSD  ; stop - start, then unpopped
 
 
-; bp - 024h  ; worldtop hi, then unpopped
-; bp - 026h  ; worldtop lo, then unpopped
-; bp - 028h  ; worldbottom hi, then unpopped
-; bp - 02Ah  ; worldbottom lo, then unpopped
+; bp - 024h + SSD  ; worldtop hi, then unpopped
+; bp - 026h + SSD  ; worldtop lo, then unpopped
+; bp - 028h + SSD  ; worldbottom hi, then unpopped
+; bp - 02Ah + SSD  ; worldbottom lo, then unpopped
 
-; bp - 02Ch  ; rw_scale hi, then unpopped
-; bp - 02Eh  ; rw_scale lo, then unpopped
-
-
+; bp - 02Ch + SSD  ; rw_scale hi, then unpopped
+; bp - 02Eh + SSD  ; rw_scale lo, then unpopped
 
 
-push      dx ; bp - 01Eh
-push      ax ; bp - 020h
+; todo for 286 dont push, and instead grab these on outside....
+
+push      dx ; bp - 01Eh + SSD
+push      ax ; bp - 020h + SSD
 
 sub       dx, ax
-push      dx ; bp - 022h   stop - start. used often. ; todo: maybe we get this for free elsewhere without this sub?
+push      dx ; bp - 022h + SSD   stop - start. used often. ; todo: maybe we get this for free elsewhere without this sub?
 
 mov       cx, cs  ; ends these blocks with cs
 
@@ -4218,11 +4253,11 @@ mov       ax, word ptr [bp + 4]  ; R_AddLine line num
 
 stosw              ; DRAWSEG_T.drawseg_cursegvalue
 
-lds       ax, dword ptr [bp - 020h]  ; x1 arg
+lds       ax, dword ptr [bp - 020h + SSD]  ; x1 arg
 
 stosw                            ; DRAWSEG_T.drawseg_x1
-xchg      ax, bx                 ; bx gets bp - 020h
-mov       ax, ds;  word ptr [bp - 01Eh]  ; x2 arg
+xchg      ax, bx                 ; bx gets bp - 020h + SSD
+mov       ax, ds;  word ptr [bp - 01Eh + SSD]  ; x2 arg
 stosw                            ; DRAWSEG_T.drawseg_x2
 
 inc       ax
@@ -4232,7 +4267,7 @@ mov       ds, cx  ; restore ds = cs
 
 mov   word ptr ds:[SELFMODIFY_cmp_di_to_rw_stopx_1+2], ax
 
-; sp at bp - 024h
+; sp at bp - 024h + SSD
 
 ; do worldtop/worldbot calculation now
 ; todo selfmodify this as it's being done?
@@ -4250,8 +4285,8 @@ SELFMODIFY_BSP_viewz_hi_7:
 sbb       dx, 01000h
 ; storeworldtop
 
-push      dx  ; bp - 024h
-push      ax  ; bp - 026h
+push      dx  ; bp - 024h + SSD
+push      ax  ; bp - 026h + SSD
 
 SELFMODIFY_BSP_midtexture_type:
 public    SELFMODIFY_BSP_midtexture_type
@@ -4268,7 +4303,7 @@ use_worldttop:
 mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1], ax
 mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo_stretch+1], ax
 
-xchg      ax, dx   ; word ptr [bp - 024h]
+xchg      ax, dx   ; word ptr [bp - 024h + SSD]
 ; ax has rw_midtexturemid+2
 jmp       done_with_bottom_peg
 
@@ -4336,8 +4371,8 @@ SELFMODIFY_BSP_viewz_lo_8:
 sub       ax, 01000h
 SELFMODIFY_BSP_viewz_hi_8:
 sbb       dx, 01000h
-push      dx ; bp - 028h
-push      ax ; bp - 02Ah
+push      dx ; bp - 028h + SSD
+push      ax ; bp - 02Ah + SSD
 
 
 mov       ax, XTOVIEWANGLE_SEGMENT   ; todo selfmodify all these?
@@ -4350,14 +4385,14 @@ call      R_ScaleFromGlobalAngle_
 ENSUREALIGN_311:
 mov       cx, DRAWSEGS_BASE_SEGMENT
 mov       es, cx
-push      dx  ; bp - 02Ch
-push      ax  ; bp - 02Eh
+push      dx  ; bp - 02Ch + SSD
+push      ax  ; bp - 02Eh + SSD
 stosw             ; DRAWSEG_T.drawseg_scale1
 xchg      ax, dx
 stosw             ; DRAWSEG_T.drawseg_scale2
 xchg      ax, dx                       ; put DX back; need it later.
-mov       si, word ptr [bp - 01Eh]
-cmp       si, word ptr [bp - 020h]
+mov       si, word ptr [bp - 01Eh + SSD]
+cmp       si, word ptr [bp - 020h + SSD]
 
 jg        stop_greater_than_start
 
@@ -4422,14 +4457,14 @@ stosw             ; +0Ah
 xchg      ax, dx
 stosw             ; +0Ch
 xchg      ax, dx
-mov       bx, word ptr [bp - 022h]
+mov       bx, word ptr [bp - 022h + SSD]
 
 mov       si, cs
 mov       ds, si ; set ds to cs before eventual scales_set
 xor       si, si
 
-sub       ax, word ptr [bp - 02Eh]
-sbb       dx, word ptr [bp - 02Ch]
+sub       ax, word ptr [bp - 02Eh + SSD]
+sbb       dx, word ptr [bp - 02Ch + SSD]
 
 
 ; inlined FastDiv3216u_    (only use in the codebase, might as well.)
@@ -4661,9 +4696,9 @@ seg_textured_check_done:
 
 IF COMPISA GE COMPILE_386
 
-   les       ax, dword ptr [bp - 026h]
+   les       ax, dword ptr [bp - 026h + SSD]
    mov       dx, es
-   les       bx, dword ptr [bp - 02Eh]
+   les       bx, dword ptr [bp - 02Eh + SSD]
    mov       cx, es
 
    shl  ecx, 16
@@ -4678,9 +4713,9 @@ IF COMPISA GE COMPILE_386
 
 ELSE
 
-   les       ax, dword ptr [bp - 026h]
+   les       ax, dword ptr [bp - 026h + SSD]
    mov       si, es
-   les       bx, dword ptr [bp - 02Eh]
+   les       bx, dword ptr [bp - 02Eh + SSD]
    mov       cx, es
    jcxz      do_16_bit_rw_scale_mul_worldtophi_mid
 
@@ -4741,7 +4776,7 @@ ELSE
    mov       word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], si
    mov       word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], es ; zero
 
-   les       ax, dword ptr [bp - 02Ah]  ; avoid xchg ax/bx
+   les       ax, dword ptr [bp - 02Ah + SSD]  ; avoid xchg ax/bx
    mov       cx, es
    ; SI has value that was in bx.
 
@@ -4791,13 +4826,13 @@ mov       word ptr ds:[_cs_topfrac_lo], ax
 
 IF COMPISA GE COMPILE_386
 
-   pop       ax ; bp - 02Eh
-   pop       dx ; bp - 02Ch
+   pop       ax ; bp - 02Eh + SSD
+   pop       dx ; bp - 02Ch + SSD
 
    mov       word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], ax
    mov       word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], dx
 
-   mov       ecx, dword ptr [bp - 02Ah]
+   mov       ecx, dword ptr [bp - 02Ah + SSD]
 
 
    xchg ax, dx
@@ -4811,13 +4846,13 @@ IF COMPISA GE COMPILE_386
 ELSE
 ; si not preserved
 
-   pop       ax ; bp - 02Eh
-   pop       si ; bp - 02Ch
+   pop       ax ; bp - 02Eh + SSD
+   pop       si ; bp - 02Ch + SSD
 
    mov       word ptr ds:[SELFMODIFY_set_rwscale_lo_mid+1], ax
    mov       word ptr ds:[SELFMODIFY_set_rwscale_hi_mid+1], si
 
-   les       bx, dword ptr [bp - 02Ah]
+   les       bx, dword ptr [bp - 02Ah + SSD]
    mov       cx, es
 
 
@@ -4870,7 +4905,7 @@ do_mark_ceiling:
 ; markceiling = true
 
 mov       ax, word ptr ds:[_ceilingplaneindex]
-les       dx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
+les       dx, dword ptr [bp - 020h + SSD]   ; rw_stopx - 1 = stop
 mov       cx, es
 les       bx, dword ptr ds:[_ceiltop]
 
@@ -4890,7 +4925,7 @@ skip_mark_floor:
 ; rare case - we get to skip a couple things up ahead in the function.
 mov       word ptr ds:[SELFMODIFY_toggle_skip_floorclip_mid], 0EBh + ((SELFMODIFY_toggle_skip_floorclip_mid_TARGET - SELFMODIFY_toggle_skip_floorclip_mid_AFTER) SHL 8)
 mov       word ptr ds:[SELFMODIFY_BSP_markfloor_1],           0EBh + ((SELFMODIFY_BSP_markfloor_1_TARGET - SELFMODIFY_BSP_markfloor_1_AFTER) SHL 8)
-cmp       word ptr [bp - 022h], 0
+cmp       word ptr [bp - 022h + SSD], 0
 jge       at_least_one_column_to_draw ; todo work this out. also does this ever happen???
 jump_to_R_RenderSegLoop_exit:
 lea       sp, [bp - 6]
@@ -4913,7 +4948,7 @@ do_mark_floor:
 ; markfloor = true
 mov       ax, word ptr ds:[_floorplaneindex]
 
-les       dx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
+les       dx, dword ptr [bp - 020h + SSD]   ; rw_stopx - 1 = stop
 mov       cx, es
 les       bx, dword ptr ds:[_floortop]
 
@@ -4937,8 +4972,8 @@ ASSUME DS:R_BSP_24_TEXT
 ;start inlined FixedMulBSPLocal_
 
 IF COMPISA GE COMPILE_386
-   pop       bx ; bp - 02Ah
-   pop       cx ; bp - 028h
+   pop       bx ; bp - 02Ah + SSD
+   pop       cx ; bp - 028h + SSD
    SELFMODIFY_get_rwscalestep_lo_2:
    mov       ax, 01000h
   SELFMODIFY_get_rwscalestep_hi_2:
@@ -4955,8 +4990,8 @@ IF COMPISA GE COMPILE_386
 
 
 ELSE
-   pop       bx ; bp - 02Ah
-   pop       cx ; bp - 028h
+   pop       bx ; bp - 02Ah + SSD
+   pop       cx ; bp - 028h + SSD
    SELFMODIFY_get_rwscalestep_lo_2:
    mov       ax, 01000h
 
@@ -4996,15 +5031,15 @@ mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_hi_2+4], dx
 mov       word ptr ds:[SELFMODIFY_add_to_bottomfrac_lo_2+4], ax
 
 
-; todo reverse these orders, so bp - 026h may be popped
+; todo reverse these orders, so bp - 026h + SSD may be popped
 
 
 ;start inlined FixedMulBSPLocal_
 
 
 IF COMPISA GE COMPILE_386
-   pop       bx ; bp - 026h
-   pop       cx ; bp - 024h
+   pop       bx ; bp - 026h + SSD
+   pop       cx ; bp - 024h + SSD
 
  ; todo combine
    SELFMODIFY_get_rwscalestep_lo_1:
@@ -5023,13 +5058,13 @@ IF COMPISA GE COMPILE_386
 
 
 ELSE
-   pop       bx ; bp - 026h
+   pop       bx ; bp - 026h + SSD
    
    SELFMODIFY_get_rwscalestep_lo_1:
    mov       ax, 01000h
    ENSUREALIGN_050:
    
-   pop       cx ; bp - 024h
+   pop       cx ; bp - 024h + SSD
    
    SELFMODIFY_get_rwscalestep_hi_1:
    mov  si, 01000h
@@ -5082,7 +5117,7 @@ PUBLIC R_RenderSegLoop_
 
 ; ds still cs
 
-mov   di, word ptr [bp - 020h]  ; get start_x/dc_x initial value
+mov   di, word ptr [bp - 020h + SSD]  ; get start_x/dc_x initial value
 
 jmp   start_per_column_inner_loop ; jump into first iter.
 ALIGN_MACRO
@@ -5882,13 +5917,13 @@ R_RenderSegLoop_exit:
 
 ; ds is cs.
 
-pop   dx  ; mov   dx, word ptr [bp - 022h]  ; stopx - startx
+pop   dx  ; mov   dx, word ptr [bp - 022h + SSD]  ; stopx - startx
 
 SELFMODIFY_restore_bp_after_draw_mid:
 mov   bp, 01000h
 ENSUREALIGN_072:
 
-pop   si  ; mov   si, word ptr [bp - 020h]  ; startx
+pop   si  ; mov   si, word ptr [bp - 020h + SSD]  ; startx
 inc   dx
 
 
@@ -5935,7 +5970,7 @@ add       word ptr ds:[_ds_p_bsp], (SIZE DRAWSEG_T)
 mov       dx, ss
 mov       ds, dx
 
-add       sp, 2  ; undo rest of stack
+add       sp, STOREWALLRANGE_INNER_STACK_SIZE_MID  ; undo rest of stack
 SELFMODIFY_mark_planes_dirty:
 public SELFMODIFY_mark_planes_dirty 
 mov       ch, 0
@@ -6085,6 +6120,7 @@ PUBLIC R_StoreWallRangeWithBackSector_
 
 ; todo cache floor - ceil?
 
+
 ; bp + 0Fh   ; backsectorlightlevel     - backsector items set by line code
 ; bp + 0Eh   ; frontsectorlightlevel
 ; bp + 0Dh   ; backsectorfloorpic       - backsector items set by line code
@@ -6109,37 +6145,39 @@ PUBLIC R_StoreWallRangeWithBackSector_
 ; bp - 012h  ; rw_angle lo from R_AddLine
 
 ; func return and preserved vars. TODO pusha/popa support with constant for 8088 
-; bp - 014h  ; return address from R_StoreWallRange_
 ; bp - 016h  ; PUSHed bx
 ; bp - 018h  ; PUSHed cx
 ; bp - 01Ah  ; PUSHed si
 ; bp - 01Ch  ; PUSHed di
-; bp - 01Eh  ; dx arg (no need to pop)
-; bp - 020h  ; ax arg (no need to pop)
+; ?? 4 more pushed words?
+
+; bp - 01Ch  ; return address from R_StoreWallRange_
+; bp - 01Eh + SSD  ; dx arg (no need to pop)
+; bp - 020h + SSD  ; ax arg (no need to pop)
 
 ; pushed stuff
-; bp - 022h  ; stop - start   ; last pushed thing. todo push others.
+; bp - 022h + SSD  ; stop - start   ; last pushed thing. todo push others.
 
 
-; bp - 024h  ; worldtop hi , then unpopped
-; bp - 026h  ; worldtop lo , then unpopped
-; bp - 028h  ; worldbottom hi , then unpopped
-; bp - 02Ah  ; worldbottom lo , then unpopped
+; bp - 024h + SSD  ; worldtop hi , then unpopped
+; bp - 026h + SSD  ; worldtop lo , then unpopped
+; bp - 028h + SSD  ; worldbottom hi , then unpopped
+; bp - 02Ah + SSD  ; worldbottom lo , then unpopped
 
-; bp - 02Ch  ; rw_scale hi , then unpopped
-; bp - 02Eh  ; rw_scale lo , then unpopped
+; bp - 02Ch + SSD  ; rw_scale hi , then unpopped
+; bp - 02Eh + SSD  ; rw_scale lo , then unpopped
 ; todo revisit order
-; bp - 02Fh  ; markceiling, then unpopped
-; bp - 030h  ; markfloor, then unpopped
+; bp - 02Fh + SSD  ; markceiling, then unpopped
+; bp - 030h + SSD  ; markfloor, then unpopped
 
 
 
 
-push      dx ; bp - 01Eh
-push      ax ; bp - 020h
+push      dx ; bp - 01Eh + SSD
+push      ax ; bp - 020h + SSD
 
 sub       dx, ax
-push      dx ; bp - 022h   stop - start. used often. ; todo: maybe we get this for free elsewhere without this sub?
+push      dx ; bp - 022h + SSD   stop - start. used often. ; todo: maybe we get this for free elsewhere without this sub?
 
 mov       cx, cs
 
@@ -6532,11 +6570,11 @@ mov       ax, word ptr [bp + 4]  ; R_AddLine line num
 
 stosw              ; DRAWSEG_T.drawseg_cursegvalue
 
-lds       ax, dword ptr [bp - 020h]  ; x1 arg
+lds       ax, dword ptr [bp - 020h + SSD]  ; x1 arg
 
 stosw                            ; DRAWSEG_T.drawseg_x1
-xchg      ax, bx                 ; bx gets bp - 020h
-mov       ax, ds;  word ptr [bp - 01Eh]  ; x2 arg
+xchg      ax, bx                 ; bx gets bp - 020h + SSD
+mov       ax, ds;  word ptr [bp - 01Eh + SSD]  ; x2 arg
 stosw                            ; DRAWSEG_T.drawseg_x2
 
 inc       ax
@@ -6553,7 +6591,7 @@ adc   al, ah    ; round up. ah should be zero.
 mov   word ptr ds:[SELFMODIFY_set_cx_to_count_1_TWOSIDED+1], ax
 mov   word ptr ds:[SELFMODIFY_set_cx_to_count_2_TWOSIDED+1], ax
 
-; sp at bp - 024h
+; sp at bp - 024h + SSD
 
 
 ; do worldtop/worldbot calculation now
@@ -6578,8 +6616,8 @@ SELFMODIFY_BSP_viewz_hi_7_TWOSIDED:
 sbb       dx, 01000h
 ; storeworldtop
 
-push      dx  ; bp - 024h
-push      ax  ; bp - 026h
+push      dx  ; bp - 024h + SSD
+push      ax  ; bp - 026h + SSD
 
 
 
@@ -6603,8 +6641,8 @@ SELFMODIFY_BSP_viewz_lo_8_TWOSIDED:
 sub       ax, 01000h
 SELFMODIFY_BSP_viewz_hi_8_TWOSIDED:
 sbb       dx, 01000h
-push      dx ; bp - 028h
-push      ax ; bp - 02Ah
+push      dx ; bp - 028h + SSD
+push      ax ; bp - 02Ah + SSD
 
 
 
@@ -6619,14 +6657,14 @@ call      R_ScaleFromGlobalAngle_
 ENSUREALIGN_305:
 mov       cx, DRAWSEGS_BASE_SEGMENT
 mov       es, cx
-push      dx  ; bp - 02Ch  ; 0000
-push      ax  ; bp - 02Eh  ; 60b9
+push      dx  ; bp - 02Ch + SSD  ; 0000
+push      ax  ; bp - 02Eh + SSD  ; 60b9
 stosw             ; DRAWSEG_T.drawseg_scale1
 xchg      ax, dx
 stosw             ; DRAWSEG_T.drawseg_scale2
 xchg      ax, dx                       ; put DX back; need it later.
-mov       si, word ptr [bp - 01Eh]
-cmp       si, word ptr [bp - 020h]
+mov       si, word ptr [bp - 01Eh + SSD]
+cmp       si, word ptr [bp - 020h + SSD]
 
 jg        stop_greater_than_start_TWOSIDED
 
@@ -6690,14 +6728,14 @@ stosw             ; +0Ah
 xchg      ax, dx
 stosw             ; +0Ch
 xchg      ax, dx
-mov       bx, word ptr [bp - 022h]
+mov       bx, word ptr [bp - 022h + SSD]
 
 mov       si, cs
 mov       ds, si ; set ds to cs before eventual scales_set
 xor       si, si ; si zero by default..
 
-sub       ax, word ptr [bp - 02Eh]
-sbb       dx, word ptr [bp - 02Ch]
+sub       ax, word ptr [bp - 02Eh + SSD]
+sbb       dx, word ptr [bp - 02Ch + SSD]
 
 
 ; inlined FastDiv3216u_    (only use in the codebase, might as well.)
@@ -7045,8 +7083,8 @@ cmp       al, byte ptr [bp + 0Bh]
 jne       not_a_skyflat
 ;di/si are worldhigh..
 
-mov       word ptr [bp - 026h], si
-mov       word ptr [bp - 024h], di
+mov       word ptr [bp - 026h + SSD], si
+mov       word ptr [bp - 024h + SSD], di
 
 not_a_skyflat:
 
@@ -7061,9 +7099,9 @@ not_a_skyflat:
 ; TOOO: consider al flags instead of al and ah as two boolean bytes.
 xor       ax, ax  ; ax will store markfloor/markceiling
 
-cmp       cx, word ptr [bp - 028h]
+cmp       cx, word ptr [bp - 028h + SSD]
 jne       set_markfloor_true
-cmp       bx, word ptr [bp - 02Ah]
+cmp       bx, word ptr [bp - 02Ah + SSD]
 jne       set_markfloor_true
 mov       dx, word ptr [bp + 0Ch]
 cmp       dl, dh
@@ -7076,9 +7114,9 @@ mov       al, 4     ; markfloor  al = 1
 
 markfloor_set:
 ; di/si are already worldhigh..
-cmp       word ptr [bp - 024h], di
+cmp       word ptr [bp - 024h + SSD], di
 jne       set_markceiling_true
-cmp       word ptr [bp - 026h], si
+cmp       word ptr [bp - 026h + SSD], si
 jne       set_markceiling_true
 
 mov       dx, word ptr [bp + 0Ah]
@@ -7095,7 +7133,7 @@ markceiling_set:
 
 ; usually we would do a closed door check here, but closed doors call single sided wall draw.
 ; finally write this just once.
-push      ax  ; bp - 030h   markfloor/ceil for bottom path
+push      ax  ; bp - 030h + SSD   markfloor/ceil for bottom path
 
 ; ax free at last!
 ;		if (worldhigh.w < worldtop.w) {
@@ -7107,10 +7145,10 @@ xchg      di, cx
 xchg      si, bx
 
 ; worldhigh check one past time
-cmp       word ptr [bp - 024h], cx
+cmp       word ptr [bp - 024h + SSD], cx
 jg        setup_toptexture
 jne       toptexture_zero
-cmp       word ptr [bp - 026h], bx
+cmp       word ptr [bp - 026h + SSD], bx
 jbe       toptexture_zero
 setup_toptexture:
 
@@ -7139,7 +7177,7 @@ or        byte ptr ds:[SELFMODIFY_check_for_any_tex_TWOSIDED+1], bl
 test      byte ptr [bp - 2], ML_DONTPEGTOP
 je        calculate_toptexturemid  ; either branche has to jump i guess
 set_toptexture_to_worldtop:
-les       ax, dword ptr [bp - 026h]
+les       ax, dword ptr [bp - 026h + SSD]
 mov       dx, es
 jmp       do_selfmodify_toptexture
 
@@ -7200,10 +7238,10 @@ mov   byte ptr ds:[SELFMODIFY_set_toptexturemid_hi+1], dl
 
 toptexture_stuff_done:
 
-cmp       di, word ptr [bp - 028h]
+cmp       di, word ptr [bp - 028h + SSD]
 jg        setup_bottexture
 jne       bottexture_zero
-cmp       si, word ptr [bp - 02Ah]
+cmp       si, word ptr [bp - 02Ah + SSD]
 jbe       bottexture_zero
 setup_bottexture:
 
@@ -7238,7 +7276,7 @@ or        byte ptr ds:[SELFMODIFY_check_for_any_tex_TWOSIDED+1], bl
 test      byte ptr [bp - 2], ML_DONTPEGBOTTOM
 je        calculate_bottexturemid
 ; todo cs write here ??
-les       ax, dword ptr [bp - 026h]
+les       ax, dword ptr [bp - 026h + SSD]
 mov       dx, es
 do_selfmodify_bottexture:
 
@@ -7302,7 +7340,7 @@ mov       bx, ax
 and       ax, 1   ; round up to word boundary since we are storing words not bytes in this case.
 add       ax, bx  ; now even
 mov       word ptr ds:[_lastopening], ax  ; now even
-mov       dx, word ptr [bp - 020h]    ; rw_x
+mov       dx, word ptr [bp - 020h + SSD]    ; rw_x
 sub       ax, dx ; byte..
 sub       ax, dx ; word..
 
@@ -7311,8 +7349,8 @@ mov       word ptr es:[bx + DRAWSEG_T.drawseg_maskedtexturecol_val], ax
 
 mov       word ptr ds:[_maskedtexturecol_bsp], ax
 
-mov       ax, word ptr [bp - 022h]
-inc       ax  ; rw_stopx would be [bp - 01Eh] + 1
+mov       ax, word ptr [bp - 022h + SSD]
+inc       ax  ; rw_stopx would be [bp - 01Eh + SSD] + 1
 sal       ax, 1   ; word increments, double this diff.
 add       word ptr ds:[_lastopening], ax
 
@@ -7339,19 +7377,19 @@ pop       di  ; restore here
 
 ; dx:ax worldlow
 ; di:si worldhi
-; bp - 024h  ; worldtop hi
-; bp - 026h  ; worldtop lo
-; bp - 028h  ; worldbottom hi
-; bp - 02Ah  ; worldbottom lo
+; bp - 024h + SSD  ; worldtop hi
+; bp - 026h + SSD  ; worldtop lo
+; bp - 028h + SSD  ; worldbottom hi
+; bp - 02Ah + SSD  ; worldbottom lo
 
 ; bp currently - 030h
 
 ; if (worldhigh.w < worldtop.w) {
 
-cmp       word ptr [bp - 024h], di
+cmp       word ptr [bp - 024h + SSD], di
 jg        do_pixhigh_step                    ; todo test branch diff
 jne       skip_pixhigh_step
-cmp       word ptr [bp - 026h], si
+cmp       word ptr [bp - 026h + SSD], si
 jbe       skip_pixhigh_step
 
 do_pixhigh_step:
@@ -7373,7 +7411,7 @@ IF COMPISA GE COMPILE_386
    push      dx
    push      ax
 
-   mov       ecx, dword ptr [bp - 02Eh]
+   mov       ecx, dword ptr [bp - 02Eh + SSD]
 
 
    xchg  ax, dx
@@ -7390,7 +7428,7 @@ ELSE
    push      di  ; FOR MUL 2
    push      si  ; FOR MUL 2
 
-   les       bx, dword ptr [bp - 02Eh]
+   les       bx, dword ptr [bp - 02Eh + SSD]
    mov       cx, es
    
    mov       es, ax ; old ax
@@ -7512,11 +7550,11 @@ skip_pixhigh_step:
 
 ; if (worldlow.w > worldbottom.w) {
 
-cmp       dx, word ptr [bp - 028h]
+cmp       dx, word ptr [bp - 028h + SSD]
 jg        do_pixlow_step
 jne       skip_pixlow_step
 continue_worldlow_checks:
-cmp       ax, word ptr [bp - 02Ah]
+cmp       ax, word ptr [bp - 02Ah + SSD]
 jbe       skip_pixlow_step
 
 
@@ -7531,7 +7569,7 @@ do_pixlow_step:
 
 IF COMPISA GE COMPILE_386
 
-   mov       ecx, dword ptr [bp - 02Eh]
+   mov       ecx, dword ptr [bp - 02Eh + SSD]
    mov       di, dx	; store for later
    mov       si, ax	; store for later
 
@@ -7546,7 +7584,7 @@ IF COMPISA GE COMPILE_386
 ELSE
 
    push      dx	; store for later
-   les       bx, dword ptr [bp - 02Eh]
+   les       bx, dword ptr [bp - 02Eh + SSD]
    mov       cx, es
    mov       es, ax	; store for later
 
@@ -7816,7 +7854,7 @@ seg_textured_check_done_TWOSIDED:
 SELFMODIFY_BSP_viewz_shortheight_4_TWOSIDED:
 cmp       word ptr [bp + 6], 01000h
 jl        not_above_viewplane_TWOSIDED   ; todo branch test
-mov       byte ptr [bp - 030h], 0  
+mov       byte ptr [bp - 030h + SSD], 0  
 not_above_viewplane_TWOSIDED:
 SELFMODIFY_BSP_viewz_shortheight_3_TWOSIDED:
 cmp       word ptr [bp + 8], 01000h
@@ -7824,7 +7862,7 @@ jg        not_below_viewplane_TWOSIDED   ; todo branch test
 SELFMODIFY_BSP_set_skyflatnum_4_TWOSIDED:
 cmp       byte ptr [bp + 0Ah], 010h
 je        not_below_viewplane_TWOSIDED   ; todo branch test
-mov       byte ptr [bp - 02Fh], 0  ;markceiling
+mov       byte ptr [bp - 02Fh + SSD], 0  ;markceiling
 ; ok here
 not_below_viewplane_TWOSIDED:
 
@@ -7835,18 +7873,18 @@ not_below_viewplane_TWOSIDED:
 
 IF COMPISA GE COMPILE_386
 
-   mov       eax, dword ptr [bp - 026h]
+   mov       eax, dword ptr [bp - 026h + SSD]
    
-   imul  dword ptr [bp - 02Eh]  ; todo put in  ECX and reuse for next mul
+   imul  dword ptr [bp - 02Eh + SSD]  ; todo put in  ECX and reuse for next mul
    shr  eax, 16
 
 
 
 ELSE
 
-   les       ax, dword ptr [bp - 026h]
+   les       ax, dword ptr [bp - 026h + SSD]
    mov       si, es
-   les       bx, dword ptr [bp - 02Eh]
+   les       bx, dword ptr [bp - 02Eh + SSD]
    mov       cx, es
    jcxz      do_16_bit_rw_scale_mul_worldtophi_bottop
 
@@ -7904,7 +7942,7 @@ ELSE
    mov       word ptr ds:[SELFMODIFY_set_topfrac_hi_bottop+1], cx
    mov       word ptr ds:[_cs_topfrac_lo], ax
 
-   les       ax, dword ptr [bp - 02Ah]  ; avoid xchg ax/bx
+   les       ax, dword ptr [bp - 02Ah + SSD]  ; avoid xchg ax/bx
    mov       cx, es
    ; SI has value that was in bx.
 
@@ -7943,10 +7981,10 @@ mov       word ptr ds:[SELFMODIFY_set_topfrac_hi_bottop+1], cx
 
 IF COMPISA GE COMPILE_386
 
-   mov       eax, dword ptr [bp - 02Ah]
+   mov       eax, dword ptr [bp - 02Ah + SSD]
 
 
-   imul  dword ptr [bp - 02Eh]  ; todo reuse from last mul
+   imul  dword ptr [bp - 02Eh + SSD]  ; todo reuse from last mul
    shr  eax, 16
 
 
@@ -7954,9 +7992,9 @@ IF COMPISA GE COMPILE_386
 ELSE
 ; si not preserved
 
-   les       ax, dword ptr [bp - 02Ah]
+   les       ax, dword ptr [bp - 02Ah + SSD]
    mov       si, es
-   les       bx, dword ptr [bp - 02Eh]
+   les       bx, dword ptr [bp - 02Eh + SSD]
    mov       cx, es
 
    MOV  ES, AX ; todo synergy
@@ -7998,11 +8036,11 @@ sbb       ax, dx
 mov       word ptr ds:[SELFMODIFY_set_botfrac_hi_bottop+1], ax
 
 
-cmp       byte ptr [bp - 02Fh], 0  ;markceiling
+cmp       byte ptr [bp - 02Fh + SSD], 0  ;markceiling
 je        dont_mark_ceiling_TWOSIDED ; todo which default braunch?
 
 mov       ax, word ptr ds:[_ceilingplaneindex]
-les       dx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
+les       dx, dword ptr [bp - 020h + SSD]   ; rw_stopx - 1 = stop
 mov       cx, es
 les       bx, dword ptr ds:[_ceiltop] 
 
@@ -8013,11 +8051,11 @@ dont_mark_ceiling_TWOSIDED:
 
 ; todo pop markfloor into bp maybe? to reuse
 
-cmp       byte ptr [bp - 030h], 0 ; markfloor
+cmp       byte ptr [bp - 030h + SSD], 0 ; markfloor
 je        dont_mark_floor_TWOSIDED ; todo which default braunch?
 
 mov       ax, word ptr ds:[_floorplaneindex]
-les       dx, dword ptr [bp - 020h]   ; rw_stopx - 1 = stop
+les       dx, dword ptr [bp - 020h + SSD]   ; rw_stopx - 1 = stop
 mov       cx, es
 les       bx, dword ptr ds:[_floortop]
 
@@ -8033,10 +8071,10 @@ ASSUME DS:R_BSP_24_TEXT
 
 xor   bx, bx
 ; last use, can be popped?
-pop   dx ; bp - 030h
+pop   dx ; bp - 030h + SSD
 ; todo move this up?
-pop   word ptr ds:[SELFMODIFY_set_rwscale_lo_bottop+1] ; bp - 02Eh
-pop   word ptr ds:[SELFMODIFY_set_rwscale_hi_bottop+1] ; bp - 02Ch
+pop   word ptr ds:[SELFMODIFY_set_rwscale_lo_bottop+1] ; bp - 02Eh + SSD
+pop   word ptr ds:[SELFMODIFY_set_rwscale_hi_bottop+1] ; bp - 02Ch + SSD
 
 ; todo improve??
 
@@ -8056,7 +8094,7 @@ mov   word ptr ds:[SELFMODIFY_BSP_markceiling_1_TWOSIDED], es
 
 IF COMPISA GE COMPILE_386
 
-   pop       ecx ; bp - 028h
+   pop       ecx ; bp - 028h + SSD
 
    SELFMODIFY_get_rwscalestep_2_TWOSIDED_386_base:
    SELFMODIFY_get_rwscalestep_lo_2_TWOSIDED = SELFMODIFY_get_rwscalestep_2_TWOSIDED_386_base+1
@@ -8071,8 +8109,8 @@ IF COMPISA GE COMPILE_386
 
 ELSE
 
-   pop       bx ; bp - 02Ah
-   pop       cx ; bp - 028h
+   pop       bx ; bp - 02Ah + SSD
+   pop       cx ; bp - 028h + SSD
    SELFMODIFY_get_rwscalestep_lo_2_TWOSIDED:
    mov       ax, 01000h
    SELFMODIFY_get_rwscalestep_hi_2_TWOSIDED:
@@ -8125,7 +8163,7 @@ IF COMPISA GE COMPILE_386
    SELFMODIFY_get_rwscalestep_hi_1_TWOSIDED = SELFMODIFY_get_rwscalestep_1_TWOSIDED_386_base+3
    mov       eax, 010000000h
    mov       dx, 01000h
-   pop       ecx ; bp - 024h
+   pop       ecx ; bp - 024h + SSD
 
    imul  ecx
    shr  eax, 16
@@ -8138,8 +8176,8 @@ ELSE
    mov       ax, 01000h
    SELFMODIFY_get_rwscalestep_hi_1_TWOSIDED:
    mov       si, 01000h
-   pop       bx ; bp - 026h
-   pop       cx ; bp - 024h
+   pop       bx ; bp - 026h + SSD
+   pop       cx ; bp - 024h + SSD
 
    MOV  ES, AX
    MUL  BX
@@ -8191,7 +8229,7 @@ public R_RenderSegLoop_TWOSIDED_
 
 ; todo set up cs vars here  properly.
 
-mov   di, word ptr [bp - 020h]  ; startx
+mov   di, word ptr [bp - 020h + SSD]  ; startx
  
 
 
@@ -9485,7 +9523,7 @@ mov   word ptr ds:[SELFMODIFY_BSP_set_seglooptexrepeat1_TWOSIDED], ((SELFMODIFY_
 ; note: we can jump  intot his exit path from far away!!
 ; sp should be bp - 6
 
-mov       si, word ptr [bp - 020h]
+mov       si, word ptr [bp - 020h + SSD]
 
 xor       cx, cx ; cx always zero going thru this.
 
@@ -10174,15 +10212,10 @@ mov   dx, word ptr ds:[si + CLIPRANGE_T.cliprange_first]
 dec   dx
 cmp   di, dx
 jl    last_smaller_than_startfirst;
-push      bx
-push      cx
-push      si
-push      di
-call R_StoreWallRangeNoBackSector_
-pop       di
-pop       si
-pop       cx
-pop       bx
+
+PUSHA_NO_AX_OR_BP_OR_DX_MACRO
+call  R_StoreWallRangeNoBackSector_
+POPA_NO_AX_OR_BP_OR_DX_MACRO
 mov   ax, cx                        ;		start->first = first;	
 mov   word ptr ds:[si + CLIPRANGE_T.cliprange_first], ax
 
@@ -10205,15 +10238,10 @@ mov   ax, word ptr ds:[bx + CLIPRANGE_T.cliprange_last]
 inc   ax
 ;		// There is a fragment between two posts.
 ;		R_StoreWallRange (next->last + 1, (next+1)->first - 1);
-push bx
-push cx
-push si
-push di
-call R_StoreWallRangeNoBackSector_
-pop  di
-pop  si
-pop  cx
-pop  bx
+
+PUSHA_NO_AX_OR_BP_OR_DX_MACRO
+call  R_StoreWallRangeNoBackSector_
+POPA_NO_AX_OR_BP_OR_DX_MACRO
 mov   ax, word ptr ds:[bx + SIZE CLIPRANGE_T + CLIPRANGE_T.cliprange_last]
 add   bx, SIZE CLIPRANGE_T
 cmp   di, ax
@@ -10242,15 +10270,10 @@ ALIGN_MACRO
 last_smaller_than_startfirst:
 mov   dx, di
 ;// Post is entirely visible (above start),  so insert a new clippost.
-push  bx
-push  cx
-push  si
-push  di
+
+PUSHA_NO_AX_OR_BP_OR_DX_MACRO
 call  R_StoreWallRangeNoBackSector_
-pop   di
-pop   si
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_OR_DX_MACRO
 mov   ax, cx                     ;        backup first
 mov   cx, word ptr ds:[_newend]     
 add   cx, 8
@@ -10287,15 +10310,11 @@ do_final_fragment:
 mov   ax, word ptr ds:[bx + CLIPRANGE_T.cliprange_last]
 mov   dx, di
 inc   ax
-push  bx
-push  cx
-push  si
-push  di
+
+PUSHA_NO_AX_OR_BP_OR_DX_MACRO
 call  R_StoreWallRangeNoBackSector_
-pop   di
-pop   si
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_OR_DX_MACRO
+
 mov   word ptr ds:[si + CLIPRANGE_T.cliprange_last], di
 jmp   crunch
 ALIGN_MACRO
@@ -10349,15 +10368,10 @@ jl   post_entirely_visible
 
 ; There is a fragment above *start.
 mov  ax, si
-push bx
-push cx
-push si
-push di
-call R_StoreWallRangeWithBackSector_
-pop  di
-pop  si
-pop  cx
-pop  bx
+
+PUSHA_NO_AX_OR_BP_OR_DX_MACRO
+call  R_StoreWallRangeWithBackSector_
+POPA_NO_AX_OR_BP_OR_DX_MACRO
 ; possibly dupe the follwing code with an implicit assumption if R_StoreWallRange already ran or not
 
 check_last_already_rendered:
@@ -10380,15 +10394,9 @@ inc  ax
 add  bx, SIZE CLIPRANGE_T
 ;  There is a fragment between two posts.
 
-push bx
-push cx
-push si
-push di
-call R_StoreWallRangeWithBackSector_
-pop  di
-pop  si
-pop  cx
-pop  bx
+PUSHA_NO_AX_OR_BP_OR_DX_MACRO
+call  R_StoreWallRangeWithBackSector_
+POPA_NO_AX_OR_BP_OR_DX_MACRO
 
 cmp  cx, word ptr ds:[bx + CLIPRANGE_T.cliprange_last]
 jg   check_next_fragment
@@ -10408,7 +10416,7 @@ ALIGN_MACRO
 post_entirely_visible:
 mov  dx, cx
 mov  ax, si
-sub  sp, 8
+sub  sp, STOREWALLRANGE_STACK_AMOUNT
 call R_StoreWallRangeWithBackSector_
 jmp   END_R_ADDLINE_AND_SELFMODIFY_LABEL
 ALIGN_MACRO
@@ -10418,9 +10426,8 @@ fragment_after_next:
 
 mov  dx, cx
 inc  ax
-sub  sp, 8
-call R_StoreWallRangeWithBackSector_
-
+sub  sp, STOREWALLRANGE_STACK_AMOUNT
+call  R_StoreWallRangeWithBackSector_
 jmp   END_R_ADDLINE_AND_SELFMODIFY_LABEL
 
 
@@ -10819,6 +10826,7 @@ not_cache_0:
 ;    segment_t usedsegment = cachedsegmentlumps[cachelumpindex];
 ;    int16_t cachedlump = cachedlumps[cachelumpindex];
 ;    int16_t i;
+; only 4 elements.z
 xchg      ax, si
 mov       di, OFFSET _cachedsegmentlumpsBSPLOCAL
 mov       si, OFFSET _cachedlumpsBSPLOCAL
@@ -10879,8 +10887,6 @@ movsw
 push      ax  ; store lump
 mov       di, word ptr [bp - 2]
 
-; todo is this even used???
-;mov       bx, word ptr ds:[di + _segloopnextlookup]
 
 mov       dx, 0FFh
 ; ax is lump
@@ -14969,6 +14975,7 @@ public ENSUREALIGN_025
 
 ; lower priority...
 
+COMMENT @
 
 public ENSUREALIGN_060
 public ENSUREALIGN_061
@@ -15004,32 +15011,29 @@ public ENSUREALIGN_096
 public ENSUREALIGN_097
 public ENSUREALIGN_098
 
-; most of these not aligned..
+
 
 public ENSUREALIGN_300
 public ENSUREALIGN_301
 public ENSUREALIGN_302
 public ENSUREALIGN_303
-
 public ENSUREALIGN_305
 public ENSUREALIGN_306
 public ENSUREALIGN_308
 public ENSUREALIGN_309
-
 public ENSUREALIGN_310
 public ENSUREALIGN_311
 public ENSUREALIGN_312
-
 public ENSUREALIGN_314
 public ENSUREALIGN_315
 public ENSUREALIGN_316
 public ENSUREALIGN_317
-
 public ENSUREALIGN_319
 public ENSUREALIGN_320
 public ENSUREALIGN_321
 public ENSUREALIGN_322
 public ENSUREALIGN_323
+@
 
 IF COMPISA GE COMPILE_386
 ELSE
