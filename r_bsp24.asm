@@ -3996,23 +3996,23 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta], dl
 selfmodify_mid_only:
    ; twosided textures can still have a mid texture (invisible walls like E1M1)
 
-   xor       dx, dx
+   mov       byte ptr cs:[SELFMODIFY_BSP_midtexture_type], MOV_CL_IMM8_OPCODE
    add       si, 4   ; skip top/bot
    lodsw     ; side midtexture
    test      ax, ax
    jz        skip_midtex_selfmodify
+   ; mid case
 got_texture:
    ; si pts to textureheight now
    xchg      ax, di
 
-   mov       byte ptr cs:[SELFMODIFY_BSP_midtexture_type+1], dl
    mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
    cbw
    sal       di, 1  ; word lookup
    inc       ax
    mov       word ptr cs:[SELFMODIFY_add_texturemidheight_plus_one+1], ax
-   push      word ptr es:[di]
-   pop       word ptr cs:[SELFMODIFY_BSP_set_midtexture+1]
+   mov       ax, word ptr es:[di]
+   mov       word ptr cs:[SELFMODIFY_BSP_set_midtexture+1], ax
 
    jmp       skip_midtex_selfmodify
 ALIGN_MACRO
@@ -4021,16 +4021,19 @@ ALIGN_MACRO
 handle_closed_door:  
 ; note: a closed door can also be a raised elevator and thus a bot texture.
    lodsw             ; toptex
-   inc       dx  ; dl = 1, top wall
+
    test      ax, ax
    jz        use_bot_tex_for_closed_door
+   use_top_text_for_closed_door:
    add       si, 4   ; skip bot, midtex.
    ; top texture for closed door needs to be pegged to bottom instead of from top.
+   mov       word ptr cs:[SELFMODIFY_BSP_midtexture_type], JMP_SHORT_REL8_OPCODE + ((handle_topwall_mid - SELFMODIFY_BSP_midtexture_type_AFTER) SHL 8)
    jmp       got_texture
    use_bot_tex_for_closed_door:
    lodsw
+
    add       si, 2  ; skip midtex.
-   inc       dx    ; dl = 2, botwall
+   mov       word ptr cs:[SELFMODIFY_BSP_midtexture_type], JMP_SHORT_REL8_OPCODE + ((handle_botwall_mid - SELFMODIFY_BSP_midtexture_type_AFTER) SHL 8)
    jmp       got_texture
 
    ; create jmp instruction
@@ -4039,6 +4042,7 @@ ALIGN_MACRO
 
 
    lodsw     ; textureoffset
+   ; todo set ds = cs instead?
    mov       word ptr cs:[SELFMODIFY_BSP_sidetextureoffset+1], ax
    mov       si, ss
    mov       ds, si  ; restore ds..   ; todo dont switch ds?
@@ -4151,6 +4155,8 @@ ALIGN_MACRO
       ;	angle = (tantoangle[ FixedDiv(dy,dx)>>DBITS ].hu.intbits+ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
 
       ; save dx (var not register)
+
+
 
       mov   si, bx
       mov   di, cx
@@ -4289,11 +4295,11 @@ push      dx  ; bp - 024h + SSD
 push      ax  ; bp - 026h + SSD
 
 SELFMODIFY_BSP_midtexture_type:
-public    SELFMODIFY_BSP_midtexture_type
-mov       cl, 010h   ; need to handle top/bot texturemid cases for closed doors
-dec       cl
-jz        handle_topwall_mid
-jns       handle_botwall_mid  ; todo
+; modified into one of these three
+mov       cl, 010h
+SELFMODIFY_BSP_midtexture_type_AFTER:
+;jmp        handle_topwall_mid
+;jmp        handle_botwall_mid
 
 test      byte ptr [bp - 2], ML_DONTPEGBOTTOM
 jne       do_peg_bottom  ; todo branch test.
@@ -4378,9 +4384,9 @@ push      ax ; bp - 02Ah + SSD
 mov       ax, XTOVIEWANGLE_SEGMENT   ; todo selfmodify all these?
 mov       es, ax
 sal       bx, 1   ; rw_x word lookup
+mov       ax, word ptr es:[bx]
 SELFMODIFY_set_viewanglesr3_3:
-mov       ax, 01000h
-add       ax, word ptr es:[bx]
+add       ax, 01000h
 call      R_ScaleFromGlobalAngle_
 ENSUREALIGN_311:
 mov       cx, DRAWSEGS_BASE_SEGMENT
@@ -4402,7 +4408,6 @@ jg        stop_greater_than_start
 stosw      ; DRAWSEG_T.drawseg_scalestep +0
 xchg      ax, dx
 stosw      ; DRAWSEG_T.drawseg_scalestep +2
-xchg      ax, dx
 
 mov       ax, cs
 mov       ds, ax ; set ds to cs before scales_set
@@ -4493,17 +4498,12 @@ div_done:
 ; ds = cs here
 mov       es, cx ; restore es as ds_p+2
 stosw             ; +0Eh
-xchg      ax, dx
-stosw             ; +10h
-xchg      ax, dx
-
-ASSUME DS:R_BSP_24_TEXT
-; rw_scalestep is ready. write it forward as selfmodifying code here
-
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_1+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_lo_2+1], ax
 mov       word ptr ds:[SELFMODIFY_add_to_rwscale_lo_2+4], ax
+
 xchg      ax, dx
+stosw             ; +10h
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_1+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_2+1], ax
 mov       word ptr ds:[SELFMODIFY_add_to_rwscale_hi_2+4], ax
@@ -6651,9 +6651,9 @@ mov       ax, XTOVIEWANGLE_SEGMENT   ; todo selfmodify all these?
 mov       cx, es  ; store ds_p+2 segment
 mov       es, ax
 sal       bx, 1   ; rw_x word lookup
+mov       ax, word ptr es:[bx]
 SELFMODIFY_set_viewanglesr3_3_TWOSIDED:
-mov       ax, 01000h
-add       ax, word ptr es:[bx]
+add       ax, 01000h
 call      R_ScaleFromGlobalAngle_
 ENSUREALIGN_305:
 mov       cx, DRAWSEGS_BASE_SEGMENT
@@ -6769,9 +6769,8 @@ div_done_TWOSIDED:
 
 mov       es, cx ; restore es as ds_p+2
 stosw             ; +0Eh
-xchg      ax, dx
-stosw             ; +10h
-xchg      ax, dx
+
+
 
 ASSUME DS:R_BSP_24_TEXT
 ; rw_scalestep is ready. write it forward as selfmodifying code here
@@ -6784,6 +6783,7 @@ mov       word ptr ds:[SELFMODIFY_add_rwscale_lo_TWOSIDED+4], ax
 
 
 xchg      ax, dx
+stosw             ; +10h
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_1_TWOSIDED+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_2_TWOSIDED+1], ax
 mov       word ptr ds:[SELFMODIFY_get_rwscalestep_hi_3_TWOSIDED+1], ax
@@ -6795,9 +6795,6 @@ mov       word ptr ds:[SELFMODIFY_add_rwscale_hi_TWOSIDED+4], ax
 
 
 ; todo change these in 386 mode to shld?
-
-
-;ASSUME DS:DGROUP  ; lods coming up
 
 
 
