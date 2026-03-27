@@ -50,7 +50,27 @@ ENDP
 
 
 
+PUSHA_DRAWMASKED_COLUMN MACRO
+    IF COMPISA GE COMPILE_186
+        PUSHA
+    ELSE
+        push  dx
+        push  si
+        push  di
+        push  bp
+    ENDIF
+ENDM
 
+POPA_DRAWMASKED_COLUMN MACRO
+    IF COMPISA GE COMPILE_186
+        POPA
+    ELSE
+        pop   bp
+        pop   di
+        pop   si
+        pop   dx
+    ENDIF
+ENDM
 
 _spritepagesegments:
 PUBLIC _spritepagesegments
@@ -5102,11 +5122,7 @@ je    exit_draw_masked_column_early
 ; no early out, properly run the function. note fixed stack frame
 ; investigate pusha/popa. any cx/es trick possible?
 
-; todo pusha variant
-push  dx
-push  si
-push  di
-push  bp
+PUSHA_DRAWMASKED_COLUMN
 
 mov   word ptr cs:[SELFMODIFY_MASKED_set_base_segment+1], ax
 mov   si, bx        ; si now holds column address.
@@ -5154,8 +5170,8 @@ mov   cl, al      ; al 0, cx = 0 extended topdelta for mul
 xchg  ax, bx      ; back column field up in bx
 
 xor   ax, ax  ; ax = 0
-;cwd           ; dx = 0
-xor   dx, dx    ; toggle for ENSUREALIGN_127
+cwd           ; dx = 0
+;xor   dx, dx    ; toggle for ENSUREALIGN_127
 
 les   di, dword ptr ds:[_spryscale]
 mov   bp, es
@@ -5401,10 +5417,8 @@ exit_function:
 
 mov   cx, es               ; restore cx
 
-pop   bp
-pop   di
-pop   si
-pop   dx
+POPA_DRAWMASKED_COLUMN
+
 ret
 
 
