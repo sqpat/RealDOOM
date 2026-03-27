@@ -1,4 +1,4 @@
-#define R_DrawMasked24Offset                    0x118E
+#define R_DrawMasked24Offset                    0x1188
 #define R_DrawMasked16Offset                    0x1491
 #define R_DrawMasked0Offset                     0x140A
 #define R_DrawMaskedFLOffset                    0x13F1

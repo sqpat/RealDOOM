@@ -192,12 +192,12 @@ xor   ch, ch		; count used once for mul and not again. todo is dh already zero?
 ;    topscreen.w = sprtopscreen;
 
 ; es in use down below
-mov   di, word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_lo+1]
+mov   bp, word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_lo+1]
 mov   si, word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_hi+2]
 mov   bx, word ptr ds:[_spryscale]
 mov   ax, word ptr ds:[_spryscale+2]
 
-;   topscreen = si:di 
+;   topscreen = si:bp 
 
 ; CX * AX:BX
 ; fastmul1632, ax/cx preswapped
@@ -212,11 +212,11 @@ ADD  DX, CX    ; add
 ;    bottomscreen.w = topscreen.w + FastMul16u32u(length, spryscale.w);
 
 
-add ax, di
+add ax, bp
 adc dx, si
 
 ; dx:ax = bottomscreen
-; si:di = topscreen (still)
+; si:bp = topscreen (still)
 
 ;    dc_yh = bottomscreen.h.intbits;
 ;    if (!bottomscreen.h.fracbits)
@@ -238,7 +238,7 @@ adc dx, 0FFFFh      ;
 xor   cx, cx
 
 
-neg  di
+neg  bp
 adc  si, cx  ; 0
 ;mov  word ptr ds:[_dc_yl], si   ; dont actually need to write back.
 
@@ -254,7 +254,7 @@ inc si ; dc_yh, dc_yl plus one...
 
 ; ch is 0 up ahead
 
-mov   di, word ptr ds:[_dc_x]   ; di gets dc_x
+; di is dc_x
 
 xor   ax, ax
 les   bx, dword ptr ds:[_mfloorclip]
@@ -421,7 +421,7 @@ push  bp
 
 mov   si, bx
 
-mov   bx, word ptr ds:[_dc_x]
+mov   bx, di  ; dc_x
 mov   word ptr cs:[SELFMODIFY_MASKED_SHADOW_drawmaskedcolumn_set_dc_x+1], bx
 
 lds   di, dword ptr ds:[_mfloorclip]
@@ -1574,9 +1574,11 @@ add   ax, cx ; self modify? does it change?
 ; dx unused
 ; cx is preserved by this call here
 ; so is ES
+push  di ; todo
+mov   di, word ptr ds:[_dc_x]
 
 call R_DrawMaskedColumn_  ; does si need to be preserved?
-
+pop   di
 increment_by_shift:
 
 ; todohigh add into an immediate and remove dependency on variables, stack, etc. only makes sense if R_DrawMaskedColumn stops push/popping
@@ -1680,8 +1682,11 @@ add   ax, cx    ; patch_segment + columndata[0] ?
 
 ; cx, es preserved in the call
 
-call R_DrawMaskedSpriteShadow_
+push  di ; todo
+mov   di, word ptr ds:[_dc_x]
 
+call R_DrawMaskedSpriteShadow_
+pop   di
 
 increment_by_shift_shadow:
 SELFMODIFY_MASKED_detailshiftitercount_5:
@@ -1732,6 +1737,7 @@ PUBLIC R_RenderMaskedSegRange_
 ; todo pass in si instead of di?
   
 push  di
+push  bp
 
 ; todo selfmodify all this up ahead too.
 
@@ -1739,7 +1745,7 @@ push  di
 mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_2+1 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_3+2 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_cmp_to_x2+1 - OFFSET R_MASK24_STARTMARKER_], cx
+mov   word ptr cs:[SELFMODIFY_MASKED_cmp_to_x2+2 - OFFSET R_MASK24_STARTMARKER_], cx
 
 ; grab a bunch of drawseg values early in the function and write them forward.
 mov   si, di
@@ -2150,7 +2156,7 @@ ENSUREALIGN_113: ; odd
 mov   di, ax						; di = x1
 SELFMODIFY_MASKED_detailshiftandval_2:
 and   ax, 01000h
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_x_base4+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_x_base4+2 - OFFSET R_MASK24_STARTMARKER_], ax
 
 ;		int16_t base4diff = x1 - dc_x_base4;
 
@@ -2299,17 +2305,16 @@ mov   dx, 01000h
 
 ; di holds xoffset.
 ; dx:ax temporarily holds _spryscale
-; bx will temporarily store dc_x
+; di will hold dc_x
 ;			dc_x        = dc_x_base4 + xoffset;
 SELFMODIFY_MASKED_dc_x_base4:
-mov   bx, 01000h
-add   bx, di		; add xoffset to dc_x
+add   di, 01000h ; todo pass this in without this selfmodify?
 
 
 
 ;	if (dc_x < x1){
 SELFMODIFY_MASKED_x1_field_3:
-cmp   bx, 08000h   ; x1 
+cmp   di, 08000h   ; x1 
 ENSUREALIGN_112:
 jge   calculate_sprtopscreen
 
@@ -2318,20 +2323,21 @@ jge   calculate_sprtopscreen
 ;	dc_x        += detailshiftitercount;
 ;	spryscale.w += rw_scalestep_shift;
 
-SELFMODIFY_MASKED_detailshiftitercount_9:
-add   bx, 00000h
 SELFMODIFY_MASKED_rw_scalestep_shift_lo_1:
 add   ax, 01000h
 SELFMODIFY_MASKED_rw_scalestep_shift_hi_1:
 adc   dx, 01000h
+SELFMODIFY_MASKED_detailshiftitercount_9:
+add   di, 00000h
+ENSUREALIGN_128:
 
 calculate_sprtopscreen:
 
-mov   word ptr ds:[_dc_x], bx
+; di is dc_x
 mov   word ptr ds:[_spryscale], ax
 mov   word ptr ds:[_spryscale + 2], dx
 
-; bx:dx written back to  _spryscale
+
 
 ;			sprtopscreen.h.intbits = centery;
 ;			sprtopscreen.h.fracbits = 0;
@@ -2388,9 +2394,9 @@ mov   word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_hi+2], ax
 
 inner_loop_draw_columns:
 
-mov   ax, word ptr ds:[_dc_x]
+
 SELFMODIFY_MASKED_cmp_to_x2:
-cmp   ax, 02000h
+cmp   di, 01000h  ; dc_x
 jle   do_inner_loop
 
 
@@ -2423,6 +2429,7 @@ mov   word ptr ds:[_maskednextlookup], ax
 mov   word ptr ds:[_maskedcachedbasecol], ax
 mov   word ptr ds:[_maskedtexrepeat], 0
 
+pop   bp
 pop   di
 
 ret   
@@ -2490,14 +2497,14 @@ ALIGN_MACRO
 
 
 do_inner_loop:
-;   ax is dc_x
+;   di is dc_x
 les   bx, dword ptr ds:[_maskedtexturecol]
-sal   ax, 1
-add   bx, ax
+add   bx, di ; byte and word in lookup
 ;  si caches _texturecolumn in this inner loop
-mov   si, word ptr es:[bx]
-;  di caches _maskedcachedbasecol in this inner loop
-mov   di, word ptr ds:[_maskedcachedbasecol] 
+mov   si, word ptr es:[bx+di]
+
+;  bp caches _maskedcachedbasecol in this inner loop
+mov   bp, word ptr ds:[_maskedcachedbasecol] 
 
 cmp   si, MAXSHORT			; dont render nonmasked columns here.
 je   increment_inner_loop
@@ -2522,16 +2529,16 @@ update_maskedtexturecol_finish_loop_iter:
 ;	maskedtexturecol[dc_x] = MAXSHORT;
 
 
+;   di is dc_x
 les   bx, dword ptr ds:[_maskedtexturecol]
-mov   ax, word ptr ds:[_dc_x] ; todo pop here?
-shl   ax, 1
-add   bx, ax
-mov   word ptr es:[bx], MAXSHORT
+
+add   bx, di ; byte and word in lookup  
+mov   word ptr es:[bx+di], MAXSHORT
 
 increment_inner_loop:
 
 SELFMODIFY_MASKED_detailshiftitercount_7:
-add   word ptr ds:[_dc_x], 0
+add   di, 0
 
 SELFMODIFY_MASKED_rw_scalestep_shift_lo_2:
 add   word ptr ds:[_spryscale], 01000h
@@ -2691,7 +2698,7 @@ do_non_repeat:
 mov   dh, ah	; todo why is ah needed
 mov   ax, si
 mov   ah, dh
-sub   ax, di
+sub   ax, bp   ; _maskedcachedbasecol
 
 
 ;	if (lookup != 0xFF){
@@ -2727,7 +2734,7 @@ add   ax, word ptr ds:[_maskedcachedsegment]
 
 
 mov   bx, si
-sub   bx, di
+sub   bx, bp   ; _maskedcachedbasecol
 mov   cx, MASKEDPOSTDATAOFS_SEGMENT
 mov   es, cx
 add   bx, bx
@@ -2746,21 +2753,21 @@ ALIGN_MACRO
 calculate_maskedheader_pixel_ofs:
 ; es:ax previously LESed
 mov   bx, si
-sub   bx, di
-add   bx, bx
+sub   bx, bp   ; _maskedcachedbasecol
+shl   bx, 1
 add   bx, ax
 mov   ax, word ptr es:[bx]
 jmp   go_draw_masked_column
-ALIGN_MACRO
 
+ALIGN_MACRO
 load_masked_column_segment_lookup:
 mov   dx, si
 SELFMODIFY_MASKED_texnum_1:
 mov   ax, 08000h
 call  R_GetMaskedColumnSegment_  
 
-
-mov   di, word ptr ds:[_maskedcachedbasecol] ; todo return in di
+; todo selfmodify instead of carrying bp
+mov   bp, word ptr ds:[_maskedcachedbasecol] ; todo return in bp
 mov   dx, word ptr ds:[_maskedcachedsegment]   ; to offset for above
 sub   ax, dx
 
@@ -2795,7 +2802,7 @@ mov   ax, 08000h
 ENSUREALIGN_115:
 call  R_GetMaskedColumnSegment_
 
-mov   di, word ptr ds:[_maskedcachedbasecol] ; todo return in di
+mov   bp, word ptr ds:[_maskedcachedbasecol] ; todo return in bp
 mov   dx, word ptr ds:[_cachedbyteheight]    ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
 
 ; call  dword ptr ds:[_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this
@@ -5134,7 +5141,7 @@ mov   si, bx        ; si now holds column address.
 
 mov   byte ptr cs:[SELFMODIFY_MASKED_add_currentoffset+1], 0
 
-mov   bx, word ptr ds:[_dc_x]
+mov   bx, di   ; dc_x
 mov   word ptr cs:[SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x+1], bx
 
 lds   di, dword ptr ds:[_mfloorclip]
@@ -5448,11 +5455,12 @@ PUBLIC R_GetMaskedColumnSegment_
 ;  cl generally stores texcol texcol
 
 
-; di, dx ok to clobber
+; dx ok to clobber
 ; bx ok to clobber. mayeb cx
 ; probably not si or bp
 
 push      si
+push      di
 push      bp
 
 push      ax        ; tex bp - 2
@@ -5790,6 +5798,7 @@ mul       cl
 add       ax, word ptr ds:[_maskedcachedsegment]
 add       sp, 2  ; garbage bp - 2 pop
 pop       bp    
+pop       di
 pop       si
 ret  
 ALIGN_MACRO
@@ -5818,6 +5827,7 @@ add       ax, word ptr es:[bx]
 
 add       sp, 2  ; garbage bp - 2 pop
 pop       bp    
+pop       di
 pop       si
 ret      
 ALIGN_MACRO
@@ -5911,6 +5921,7 @@ mov       al, byte ptr ds:[_cachedcollength] ; cachedcollength
 mul       cl ; bp - 4
 add       ax, dx
 LEAVE_MACRO     
+pop       di
 pop       si
 ret      
 ALIGN_MACRO
@@ -6121,7 +6132,7 @@ mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_2+4 - OFFSET R_MASK24_
 
 mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_4+2 - OFFSET R_MASK24_STARTMARKER_], al
 mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_5+4 - OFFSET R_MASK24_STARTMARKER_], al
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_7+4 - OFFSET R_MASK24_STARTMARKER_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_7+2 - OFFSET R_MASK24_STARTMARKER_], al
 mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_8+2 - OFFSET R_MASK24_STARTMARKER_], al
 mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_9+2 - OFFSET R_MASK24_STARTMARKER_], al
 
@@ -6341,6 +6352,7 @@ PUBLIC  ENSUREALIGN_124
 PUBLIC  ENSUREALIGN_125
 PUBLIC  ENSUREALIGN_126
 PUBLIC  ENSUREALIGN_127
+PUBLIC  ENSUREALIGN_128
 
 
 ENDS
