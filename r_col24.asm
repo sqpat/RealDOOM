@@ -431,11 +431,12 @@ loop_done_normalstretch:
 
 
 ENDP
-
+COMMENT @
 public ENSUREALIGN_201
 public ENSUREALIGN_202
 public ENSUREALIGN_203
 public ENSUREALIGN_204
+@
 
 ; end marker for this asm file
 PROC R_COLUMN24_ENDMARKER_ 

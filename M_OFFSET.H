@@ -1,9 +1,9 @@
-#define R_DrawMasked24Offset                    0x117E
+#define R_DrawMasked24Offset                    0x118E
 #define R_DrawMasked16Offset                    0x1491
 #define R_DrawMasked0Offset                     0x140A
 #define R_DrawMaskedFLOffset                    0x13F1
 #define R_WriteBackViewConstantsMasked24Offset  0x0
-#define R_WriteBackMaskedFrameConstants24Offset 0x12A
+#define R_WriteBackMaskedFrameConstants24Offset 0x134
 #define R_WriteBackViewConstantsMasked16Offset  0x0
 #define R_WriteBackMaskedFrameConstants16Offset 0x8D
 #define R_WriteBackViewConstantsMasked0Offset   0x0
@@ -69,7 +69,7 @@
 #define R_DrawFuzzColumn16CodeSize     0x18D9
 #define R_DrawFuzzColumn0CodeSize      0x1845
 #define R_DrawFuzzColumnFLCodeSize     0x180B
-#define R_MaskedConstants24CodeSize    0x1B4
+#define R_MaskedConstants24CodeSize    0x1BE
 #define R_MaskedConstants16CodeSize    0xEB
 #define R_MaskedConstants0CodeSize     0xEB
 #define R_MaskedConstantsFLCodeSize    0xEB

@@ -120,8 +120,6 @@ dw 0F0F0h;
 
 
 
-
-
 COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - COLFUNC_FILE_START_SEGMENT) * 16)
 
 
@@ -156,8 +154,8 @@ push  bp
 
 
 
-;mov   word ptr ds:[_dc_source_segment], ax	; set this early. 
-push  ax 
+
+push  ax  ; dc_source_segment
 
 ; slow and ugly - infer it another way later if possible.
 ; todo can this go up a layer
@@ -174,8 +172,8 @@ xor   ch, ch		; count used once for mul and not again. todo is dh already zero?
 ;    topscreen.w = sprtopscreen;
 
 ; es in use down below
-mov   di, word ptr ds:[_sprtopscreen]
-mov   si, word ptr ds:[_sprtopscreen+2]
+mov   di, word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_lo+1]
+mov   si, word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_hi+2]
 mov   bx, word ptr ds:[_spryscale]
 mov   ax, word ptr ds:[_spryscale+2]
 
@@ -448,8 +446,9 @@ ADD  DX, CX    ; add
 
 skip_topdelta_mul_shadow:
 
-add   ax, word ptr ds:[_sprtopscreen]       ; are these lowbits ever nonzero? yes, usually so
-adc   dx, word ptr ds:[_sprtopscreen+2]
+; kinda gross. self modify into here from above?
+add   ax, word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_lo+1]       ; are these lowbits ever nonzero? yes, usually so
+adc   dx, word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_hi+2]
 
 
 ; topscreen = DX:AX.
@@ -769,6 +768,7 @@ jz    do_16_bit_mul_after_all_vissprite
 dec   dx
 do_32_bit_mul_after_all_vissprite:
 
+
 ; call FixedMulMaskedLocal_  ; inlined
 
 
@@ -833,10 +833,10 @@ continue_selfmodifies_vissprites:
 mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset], di
 
 
-mov   di, OFFSET _sprtopscreen
-mov   word ptr ds:[di], cx   ; cx is 0
 SELFMODIFY_MASKED_centery_1:
-mov   word ptr ds:[di + 2], 01000h
+mov   di, 01000h ; sprtopscreen hi (lo is 0)
+
+; todo set ds to cs once all these ds vars removed.
 
 les   ax, dword ptr ds:[si + VISSPRITE_T.vs_scale]  ; vis->scale
 mov   dx, es
@@ -847,6 +847,8 @@ mov   word ptr ds:[_spryscale + 2], dx  ; todo this feels wasteful? why write he
 R_DrawPlayerVisSprite_:  ; pass in vs_scale in dx:ax...
 PUBLIC R_DrawPlayerVisSprite_
 
+; di:00 is sprtopscreen.
+; dx:ax is spryscale
 
 les   bx, dword ptr ds:[si + VISSPRITE_T.vs_texturemid] ; vis->texturemid
 mov   cx, es
@@ -863,7 +865,7 @@ js   do_32_bit_mul_after_all_vissprite  ; why?
 do_16_bit_mul_after_all_vissprite:
 
 ;call FixedMul1632MaskedLocal_
-  MOV ES, CX
+ ; es has the other hi word
   MOV CX, AX
   MUL BX
   XCHG AX, DX
@@ -881,9 +883,12 @@ do_16_bit_mul_after_all_vissprite:
 done_with_mul_vissprite:
 
 
-; di is _sprtopscreen
-sub   word ptr ds:[di], ax
-sbb   word ptr ds:[di + 2], dx
+
+; di:cx is sprtopscreen
+neg   ax 
+mov   word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_lo+1], ax
+sbb   di, dx
+mov   word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_hi+2], di
 
 mov   ax, word ptr ds:[si + VISSPRITE_T.vs_patch]
 cmp   ax, word ptr ds:[_lastvisspritepatch]
@@ -1908,7 +1913,7 @@ mov   es, ax
 
 
 
-;mov   word ptr ds:[_frontsector], bx
+
 
 ; bx is backsector ptr
 ; di is frontsector ptr
@@ -2219,8 +2224,8 @@ ENDIF
 
 
 
-mov   word ptr cs:[SELFMODIFY_MASKED_sprtopscreen_lo+4 - OFFSET R_MASK24_STARTMARKER_], ax	  ; sprtopscreen_step
-mov   word ptr cs:[SELFMODIFY_MASKED_sprtopscreen_hi+4 - OFFSET R_MASK24_STARTMARKER_], dx	  ; sprtopscreen_step
+mov   word ptr cs:[SELFMODIFY_MASKED_sub_sprtopscreen_lo+5 - OFFSET R_MASK24_STARTMARKER_], ax	  ; sprtopscreen_step
+mov   word ptr cs:[SELFMODIFY_MASKED_sub_sprtopscreen_hi+5 - OFFSET R_MASK24_STARTMARKER_], dx	  ; sprtopscreen_step
 
 
 ;	while (base4diff){
@@ -2248,9 +2253,10 @@ base4diff_is_zero_rendermaskedsegrange:
 
 
 
+; init di
+mov   word ptr cs:[SELF_MODIFY_MASKED_xoffset+1 - OFFSET R_MASK24_STARTMARKER_], di
 
-
-
+; TODO get rid of outer loop?
 
 
 continue_outer_loop:
@@ -2333,6 +2339,7 @@ do_16_bit_mul_after_all:
 
   MOV CX, AX
   MUL BX
+  inc   word ptr cs:[SELF_MODIFY_MASKED_xoffset+1 - OFFSET R_MASK24_STARTMARKER_]
   XCHG AX, DX
   XCHG AX, CX
   CWD
@@ -2348,14 +2355,16 @@ do_16_bit_mul_after_all:
 
 done_with_mul:
 
+
+
 neg   ax ; no need to subtract from zero...
-mov   word ptr ds:[_sprtopscreen], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_lo+1], ax
 SELFMODIFY_MASKED_centery_2:
 mov   ax, 01000h
 sbb   ax, dx
-mov   word ptr ds:[_sprtopscreen + 2], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_hi+2], ax
 
-mov   word ptr cs:[SELF_MODIFY_MASKED_xoffset+1 - OFFSET R_MASK24_STARTMARKER_], di
+
 
 inner_loop_draw_columns:
 
@@ -2373,7 +2382,7 @@ jle   do_inner_loop
 
 SELF_MODIFY_MASKED_xoffset:
 mov   di, 01000h
-inc   di			; xoffset++
+
 ;			basespryscale+=rw_scalestep.w
 
 
@@ -2416,6 +2425,7 @@ IF COMPISA GE COMPILE_386
   xchg ax, dx
   imul  ecx
   shr  eax, 16
+  inc   word ptr cs:[SELF_MODIFY_MASKED_xoffset+1 - OFFSET R_MASK24_STARTMARKER_]
 
 ENDP
 ELSE
@@ -2424,6 +2434,7 @@ ELSE
     MOV  SI, DX
     PUSH AX
     MUL  BX
+    inc   word ptr cs:[SELF_MODIFY_MASKED_xoffset+1 - OFFSET R_MASK24_STARTMARKER_]
     MOV  es, DX
     MOV  AX, SI
     MUL  CX
@@ -2492,8 +2503,8 @@ update_maskedtexturecol_finish_loop_iter:
 
 
 les   bx, dword ptr ds:[_maskedtexturecol]
-mov   ax, word ptr ds:[_dc_x]
-add   ax, ax
+mov   ax, word ptr ds:[_dc_x] ; todo pop here?
+shl   ax, 1
 add   bx, ax
 mov   word ptr es:[bx], MAXSHORT
 
@@ -2507,10 +2518,11 @@ add   word ptr ds:[_spryscale], 01000h
 SELFMODIFY_MASKED_rw_scalestep_shift_hi_2:
 adc   word ptr ds:[_spryscale + 2], 01000h
 
-SELFMODIFY_MASKED_sprtopscreen_lo:
-sub   word ptr ds:[_sprtopscreen], 01000h
-SELFMODIFY_MASKED_sprtopscreen_hi:
-sbb   word ptr ds:[_sprtopscreen + 2], 01000h
+SELFMODIFY_MASKED_sub_sprtopscreen_lo:
+sub   word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_lo + 1], 01000h
+SELFMODIFY_MASKED_sub_sprtopscreen_hi:
+sbb   word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_hi + 2], 01000h
+
 jmp   inner_loop_draw_columns
 ALIGN_MACRO
 
@@ -5016,10 +5028,9 @@ mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMA
 mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset], DRAWCOL_NOLOOP_OFFSET_MASKED
 
 
-mov   di, OFFSET _sprtopscreen
-mov   word ptr ds:[di], 0   ;
+
 SELFMODIFY_MASKED_centery_3:
-mov   word ptr ds:[di + 2], 01000h
+mov   di, 01000h ; sprtopscreen hi (lo is 0)
 
 SELFMODIFY_set_player_pspritescale_lo_1:
 mov  ax, 01000h
@@ -5041,10 +5052,10 @@ mov   si, _player_vissprites + (SIZE VISSPRITE_T)
 mov   al, byte ptr ds:[si + VISSPRITE_T.vs_colormap]
 mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMARKER_], al
 
-mov   di, OFFSET _sprtopscreen
-mov   word ptr ds:[di], 0   ;
+
 SELFMODIFY_MASKED_centery_4:
-mov   word ptr ds:[di + 2], 01000h
+mov   di, 01000h ; sprtopscreen hi (lo is 0)
+
 
 SELFMODIFY_set_player_pspritescale_lo_2:
 mov  ax, 01000h
@@ -5091,6 +5102,7 @@ je    exit_draw_masked_column_early
 ; no early out, properly run the function. note fixed stack frame
 ; investigate pusha/popa. any cx/es trick possible?
 
+; todo pusha variant
 push  dx
 push  si
 push  di
@@ -5142,12 +5154,13 @@ mov   cl, al      ; al 0, cx = 0 extended topdelta for mul
 xchg  ax, bx      ; back column field up in bx
 
 xor   ax, ax  ; ax = 0
-cwd           ; dx = 0
+;cwd           ; dx = 0
+xor   dx, dx    ; toggle for ENSUREALIGN_127
 
 les   di, dword ptr ds:[_spryscale]
 mov   bp, es
 
-jcxz  skip_topdelta_mul
+jcxz  skip_topdelta_mul ; todo brnach test?
 
 mov   ax, bp
 
@@ -5164,8 +5177,11 @@ ADD  DX, CX    ; add prev low result to high word
 
 skip_topdelta_mul:
 
-add   ax, word ptr ds:[_sprtopscreen]       ; are these lowbits ever nonzero? yes, usually so
-adc   dx, word ptr ds:[_sprtopscreen+2]
+SELFMODIFY_MASKED_add_sprtopscreen_lo:
+add   ax, 01000h
+SELFMODIFY_MASKED_add_sprtopscreen_hi:
+adc   dx, 01000h
+ENSUREALIGN_127:
 
 ; topscreen = DX:AX.
 
@@ -5434,11 +5450,17 @@ mov       word ptr ds:[_maskedheaderpixeolfs], 0FFFFh
 	
 ;	col &= texturewidthmasks[tex];
 
+
+lea       bp, [di + _texturepatchlump_offset] ; word lookup
+mov       si, word ptr ds:[bp+di]
+sal       si, 1 ; si is  texturecolumnlump ptr
+
+
 mov       ax, TEXTUREWIDTHMASKS_SEGMENT
-mov       es, ax
+mov       ds, ax
 xor       dh, dh
 mov       cx, dx
-and       cl, byte ptr es:[di] ; and by mask 
+and       cl, byte ptr ds:[di] ; and by mask 
 
 ;	basecol -= col;
 sub       dx, cx
@@ -5446,12 +5468,9 @@ sub       dx, cx
 ;	texcol = col;
 mov       bp, cx ; cl is 'bp - 4'
 
-sal       di, 1
 
 ;	texturecolumnlump = &(texturecolumnlumps_bytes_7000[texturepatchlump_offset[tex]]);
 
-mov       si, word ptr ds:[di + _texturepatchlump_offset]
-sal       si, 1 ; si is  texturecolumnlump ptr
 
 ;	loopwidth = texturecolumnlump[1].bu.bytehigh;
 
@@ -5648,7 +5667,8 @@ mov       dl, byte ptr es:[di + ((MASKED_LOOKUP_SEGMENT - TEXTURECOLUMNLUMPS_BYT
 
 ;    uint8_t heightval = patchheights_7000[lump-firstpatch];
 mov       bx, si                        ; bx is lump-firstpatch lookup
-sub       bx, word ptr ds:[_firstpatch] ; hardcode?
+SELFMODIFY_MASKED_subfirstpatch_1:
+sub       bx, 01000h
 mov       al, byte ptr es:[bx + ((PATCHHEIGHTS_SEGMENT - TEXTURECOLUMNLUMPS_BYTES_SEGMENT) * 16)]
 
 
@@ -5703,7 +5723,8 @@ jnl       col_not_under_zero_masked
 
 mov       ax, PATCHWIDTHS_SEGMENT
 mov       es, ax
-sub       si, word ptr ds:[_firstpatch]
+SELFMODIFY_MASKED_subfirstpatch_2:
+sub       si, 01000h
 xor       ax, ax
 mov       al, byte ptr es:[si]
 cwd       ; zero out dh especially
@@ -6138,6 +6159,13 @@ mov   word ptr ds:[SELFMODIFY_set_player_pspritescale_hi_1+1], dx
 mov   word ptr ds:[SELFMODIFY_set_player_pspritescale_lo_2+1], ax
 mov   word ptr ds:[SELFMODIFY_set_player_pspritescale_hi_2+1], dx
 
+; todo only do this once
+mov       ax,  word ptr ss:[_firstpatch]
+
+mov       word ptr ds:[SELFMODIFY_MASKED_subfirstpatch_1+2], ax
+mov       word ptr ds:[SELFMODIFY_MASKED_subfirstpatch_2+2], ax
+
+
 mov      cl,  byte ptr ss:[_detailshift]
 
 les      ax, dword ptr ss:[_pspriteiscale]
@@ -6188,10 +6216,10 @@ mov   word ptr ds:[_lastcentery], ax
 
 
 
-mov   word ptr ds:[SELFMODIFY_MASKED_centery_1+3 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_centery_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   word ptr ds:[SELFMODIFY_MASKED_centery_2+1 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   word ptr ds:[SELFMODIFY_MASKED_centery_3+3 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   word ptr ds:[SELFMODIFY_MASKED_centery_4+3 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_centery_3+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_centery_4+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 inc      ax ; has to do with yl/yh inc by 1 logic
 
@@ -6298,6 +6326,7 @@ PUBLIC  ENSUREALIGN_123
 PUBLIC  ENSUREALIGN_124
 PUBLIC  ENSUREALIGN_125
 PUBLIC  ENSUREALIGN_126
+PUBLIC  ENSUREALIGN_127
 
 
 ENDS
