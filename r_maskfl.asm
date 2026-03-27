@@ -51,6 +51,7 @@ _cachedsegmenttex =  0
 _vsprsortedheadfirst = 0
 _sprtopscreen = 0
 
+_dc_x = 0
 
 ;=================================
 

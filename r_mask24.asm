@@ -917,18 +917,22 @@ mov   es, word ptr ds:[_lastvisspritesegment]
 
 spritesegment_ready:
 
+; todo lodsw ?
+
 mov   di, word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0]
 mov   cx, word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2]  
 
 mov   ax, word ptr ds:[si + VISSPRITE_T.vs_x2]
-mov   word ptr cs:[SELFMODIFY_MASKED_visspriteloop_x2_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_visspriteloop_x2_1+2 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   ax, word ptr ds:[si + VISSPRITE_T.vs_x1]
-mov   word ptr cs:[SELFMODIFY_MASKED_visspriteloop_x1_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_visspriteloop_x1_1+2 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   dx, ax
 SELFMODIFY_MASKED_detailshiftandval_1:
 and   ax, 01000h
 
 mov   word ptr cs:[SELFMODIFY_MASKED_set_ax_to_dc_x_base4+1 - OFFSET R_MASK24_STARTMARKER_], ax
+
+; todo set these up in separate branch
 mov   word ptr cs:[SELFMODIFY_MASKED_set_ax_to_dc_x_base4_shadow+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 sub   dx, ax
@@ -990,7 +994,7 @@ je    jump_to_draw_shadow_sprite
 
 ; selfmodify any other visplane stuff here...?
 
-jmp loop_vga_plane_draw_normal 
+jmp do_draw_loop 
 ALIGN_MACRO
 jump_to_draw_shadow_sprite:
 jmp   draw_shadow_sprite
@@ -1520,14 +1524,18 @@ mov   es, ax
 mov   ax, word ptr ds:[si + VISSPRITE_T.vs_patch]
 mov   word ptr ds:[_lastvisspritepatch], ax
 jmp   spritesegment_ready
+
 ALIGN_MACRO
 exit_draw_vissprites:
+pop   bp
 ret 
 ALIGN_MACRO
 
+do_draw_loop:
+push  bp
 
-loop_vga_plane_draw_normal:
-public loop_vga_plane_draw_normal
+continue_outer_loop_vga_plane_draw_normal:
+public continue_outer_loop_vga_plane_draw_normal
 mov   cx, es
 ; si currently unused. can we use it?
 
@@ -1545,20 +1553,20 @@ out   dx, al
 ; es seems to be in use
 
 SELFMODIFY_MASKED_vissprite_get_startfrac_lo:
-mov   di, 01000h  
+mov   bp, 01000h  
 SELFMODIFY_MASKED_vissprite_get_startfrac_hi:
 mov   dx, 01000h  
 SELFMODIFY_MASKED_set_ax_to_dc_x_base4:
-mov   ax, 0
-mov   word ptr ds:[_dc_x], ax
+mov   di, 0
+
 SELFMODIFY_MASKED_visspriteloop_x1_1:
-cmp   ax, 01000h 
+cmp   di, 01000h 
 jl    increment_by_shift
-; todo try ALIGN_MACRO
+
 
 draw_sprite_normal_innerloop:
 SELFMODIFY_MASKED_visspriteloop_x2_1:
-cmp   ax, 01000h
+cmp   di, 01000h
 jg    end_draw_sprite_normal_innerloop
 mov   bx, dx
 
@@ -1574,23 +1582,19 @@ add   ax, cx ; self modify? does it change?
 ; dx unused
 ; cx is preserved by this call here
 ; so is ES
-push  di ; todo
-mov   di, word ptr ds:[_dc_x]
 
-call R_DrawMaskedColumn_  ; does si need to be preserved?
-pop   di
+call R_DrawMaskedColumn_   ; di preserved...
+
 increment_by_shift:
 
-; todohigh add into an immediate and remove dependency on variables, stack, etc. only makes sense if R_DrawMaskedColumn stops push/popping
 
 SELFMODIFY_MASKED_detailshiftitercount_2:
-add   word ptr ds:[_dc_x], 0
+add   di, 0  ; dc_x
 SELFMODIFY_MASKED_add_shifted_xiscale_lo:
-add   di, 01000h
+add   bp, 01000h  ; todo dont use reg. store on stack or in cs. only used to adc.
 SELFMODIFY_MASKED_add_shifted_xiscale_hi:
 adc   dx, 01000h
 
-mov   ax, word ptr ds:[_dc_x]
 jmp   draw_sprite_normal_innerloop
 ALIGN_MACRO
 
@@ -1602,7 +1606,7 @@ SELFMODIFY_MASKED_vissprite_xiscale_lo:
 add   word ptr cs:[SELFMODIFY_MASKED_vissprite_get_startfrac_lo+1], 01000h
 SELFMODIFY_MASKED_vissprite_xiscale_hi:
 adc   word ptr cs:[SELFMODIFY_MASKED_vissprite_get_startfrac_hi+1], 01000h
-jmp   loop_vga_plane_draw_normal
+jmp   continue_outer_loop_vga_plane_draw_normal
 ALIGN_MACRO
 
 ; shadow sprite loop
@@ -1617,9 +1621,9 @@ mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_get_startfrac_lo_shadow+1 - OFFSE
 mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_get_startfrac_hi_shadow+1 - OFFSET R_MASK24_STARTMARKER_], cx
 
 mov   ax, word ptr ds:[si + VISSPRITE_T.vs_x2]
-mov   word ptr cs:[SELFMODIFY_MASKED_visspriteloop_x2_1_shadow+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_visspriteloop_x2_1_shadow+2 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   ax, word ptr ds:[si + VISSPRITE_T.vs_x1]
-mov   word ptr cs:[SELFMODIFY_MASKED_visspriteloop_x1_1_shadow+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_visspriteloop_x1_1_shadow+2 - OFFSET R_MASK24_STARTMARKER_], ax
 
 ; bx/dx are still these values
 mov   word ptr cs:[SELFMODIFY_MASKED_add_shifted_xiscale_lo_shadow+2 - OFFSET R_MASK24_STARTMARKER_], bx
@@ -1631,6 +1635,7 @@ mov   ax, word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_hi+5 - OFFSET R_MASK2
 mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_hi_shadow+5 - OFFSET R_MASK24_STARTMARKER_], ax
 
 mov   cx, es
+push  bp
 
 loop_vga_plane_draw_shadow:
 SELFMODIFY_MASKED_set_bx_to_xoffset_shadow:
@@ -1651,20 +1656,20 @@ mov   ax, word ptr ds:[bx + _vga_read_port_lookup]
 out   dx, ax
 
 SELFMODIFY_MASKED_vissprite_get_startfrac_lo_shadow:
-mov   di, 01000h  
+mov   bp, 01000h  
 SELFMODIFY_MASKED_vissprite_get_startfrac_hi_shadow:
 mov   dx, 01000h  
 SELFMODIFY_MASKED_set_ax_to_dc_x_base4_shadow:
-mov   ax, 0
-mov   word ptr ds:[_dc_x], ax
+mov   di, 0
+
 
 SELFMODIFY_MASKED_visspriteloop_x1_1_shadow:
-cmp   ax, 01000h
+cmp   di, 01000h
 jle   increment_by_shift_shadow
 
 draw_sprite_shadow_innerloop:
 SELFMODIFY_MASKED_visspriteloop_x2_1_shadow:
-cmp   ax, 01000h 
+cmp   di, 01000h 
 jg    end_draw_sprite_shadow_innerloop
 mov   bx, dx   ; frac.h.intbits
 
@@ -1682,21 +1687,18 @@ add   ax, cx    ; patch_segment + columndata[0] ?
 
 ; cx, es preserved in the call
 
-push  di ; todo
-mov   di, word ptr ds:[_dc_x]
 
 call R_DrawMaskedSpriteShadow_
-pop   di
-
+; todo was di preserved? yes
 increment_by_shift_shadow:
 SELFMODIFY_MASKED_detailshiftitercount_5:
-add   word ptr ds:[_dc_x], 0
+add   di, 0
 SELFMODIFY_MASKED_add_shifted_xiscale_lo_shadow:
-add   di, 01000h
+add   bp, 01000h
 SELFMODIFY_MASKED_add_shifted_xiscale_hi_shadow:
 adc   dx, 01000h
 
-mov   ax, word ptr ds:[_dc_x]
+
 
 jmp   draw_sprite_shadow_innerloop
 ALIGN_MACRO
@@ -1713,6 +1715,7 @@ adc   word ptr cs:[SELFMODIFY_MASKED_vissprite_get_startfrac_hi_shadow+1], 01000
 jmp   loop_vga_plane_draw_shadow
 ALIGN_MACRO
 exit_draw_vissprites_2:
+pop   bp
 ret 
 
 
@@ -6128,10 +6131,10 @@ done_modding_shift_detail_code_masked:
 ; you get 16 bit immediate starting at base + 1 instead of a 8 bit immediate starting at base + 2.
 mov   al, byte ptr ss:[_detailshiftitercount]
 mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_1+2 - OFFSET R_MASK24_STARTMARKER_], al
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_2+4 - OFFSET R_MASK24_STARTMARKER_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_2+2 - OFFSET R_MASK24_STARTMARKER_], al
 
 mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_4+2 - OFFSET R_MASK24_STARTMARKER_], al
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_5+4 - OFFSET R_MASK24_STARTMARKER_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_5+2 - OFFSET R_MASK24_STARTMARKER_], al
 mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_7+2 - OFFSET R_MASK24_STARTMARKER_], al
 mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_8+2 - OFFSET R_MASK24_STARTMARKER_], al
 mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_9+2 - OFFSET R_MASK24_STARTMARKER_], al

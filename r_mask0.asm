@@ -51,6 +51,7 @@ _segloopprevlookup =  0
 _segloopcachedbasecol =  0
 _cachedsegmenttex =  0
 _sprtopscreen = 0
+_dc_x = 0
 
 ;=================================
 
