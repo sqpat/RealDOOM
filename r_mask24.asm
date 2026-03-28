@@ -381,6 +381,9 @@ UNCLIPPED_COLUMN  = 0FEh
 ; note remove masked start from here 
 
 
+ALIGN_MACRO
+jump_to_exit_draw_masked_column_shadow_early:
+jmp   exit_draw_masked_column_shadow_early
 
 ALIGN_MACRO
 
@@ -455,47 +458,13 @@ add   ax, cx    ; patch_segment + columndata[0] ?
 
 ; cx, es preserved in the call
 
-; todo inline
-call R_DrawMaskedSpriteShadow_
 
-SELFMODIFY_MASKED_vissprite_xiscale_lo_shadow:
-add   word ptr ds:[_xiscalelowbits], 01000h
-SELFMODIFY_MASKED_vissprite_xiscale_hi_shadow:
-adc   word ptr ds:[_SELFMODIFY_MASKED_set_xiscale_hi_shadow+1], 01000h
-ENSUREALIGN_129:
-
-
-SELFMODIFY_MASKED_visspriteloop_x2_1_shadow:
-cmp   di, 01000h 
-jle   draw_sprite_shadow_innerloop
-
-; exit
-mov   bp, ss
-mov   ds, bp
-pop   bp
-
-ret 
-
-
-
-exit_draw_masked_column_shadow_early:
-ret
-
-
-
-ALIGN_MACRO
-PROC   R_DrawMaskedSpriteShadow_ NEAR  ; fairly optimized
-PUBLIC R_DrawMaskedSpriteShadow_
-; ax 	 pixelsegment
-; cx:si  column fardata
-
-; bp carries topscreen segment
-
+; R_DrawMaskedSpriteShadow_ inlined
 
 mov   es, cx
 
 cmp   byte ptr es:[si + COLUMN_T.column_topdelta], 0FFh
-je    exit_draw_masked_column_shadow_early
+je    jump_to_exit_draw_masked_column_shadow_early
 
 
 push  di
@@ -778,23 +747,51 @@ lods  word ptr es:[si]
 cmp   al, 0FFh
 je    exit_draw_shadow_sprite
 jmp   draw_next_shadow_sprite_post
-ALIGN_MACRO
-zero_out_fuzzpos:
-mov   si, (OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)
-loop  draw_one_fuzzpixel
-jmp finished_drawing_fuzzpixels
-ALIGN_MACRO
-exit_draw_shadow_sprite:
+ENDP
 
+
+exit_draw_shadow_sprite:
 mov   cx, es
 pop   di
-ret   
+exit_draw_masked_column_shadow_early:
+
+SELFMODIFY_MASKED_vissprite_xiscale_lo_shadow:
+add   word ptr ds:[_xiscalelowbits], 01000h
+SELFMODIFY_MASKED_vissprite_xiscale_hi_shadow:
+adc   word ptr ds:[_SELFMODIFY_MASKED_set_xiscale_hi_shadow+1], 01000h
+ENSUREALIGN_129:
+
+
+SELFMODIFY_MASKED_visspriteloop_x2_1_shadow:
+cmp   di, 01000h 
+jg    exit_draw_sprite_shadow
+jmp   draw_sprite_shadow_innerloop
+ALIGN_MACRO
+exit_draw_sprite_shadow:
+; exit
+mov   bp, ss
+mov   ds, bp
+pop   bp
+
+ret 
+
 ALIGN_MACRO
 reset_fuzzpos:
 ; subtract 50 from fuzzpos
 sub  si, SIZE_FUZZTABLE * 2 ; word size
 jmp  fuzzpos_ok
-ENDP
+ALIGN_MACRO
+zero_out_fuzzpos:
+mov   si, (OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)
+loop  draw_one_fuzzpixel
+jmp finished_drawing_fuzzpixels
+
+
+
+
+
+
+
 
 
 
