@@ -919,34 +919,26 @@ spritesegment_ready:
 
 ; todo lodsw ?
 
-mov   di, word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0]
-mov   cx, word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2]  
+; es has segment...
+push  bp
 
+mov   bp, word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0]
+mov   dx, word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2]  
 
 
 ; xiscalestep_shift = vis->xiscale << detailshift2minus;
-; es in use
-mov   bx, word ptr ds:[si + VISSPRITE_T.vs_xiscale + 0] ; DX:BX = vis->xiscale
-mov   dx, word ptr ds:[si + VISSPRITE_T.vs_xiscale + 2]
+mov   ax, word ptr ds:[si + VISSPRITE_T.vs_xiscale + 0] ; DX:BX = vis->xiscale
+mov   bx, word ptr ds:[si + VISSPRITE_T.vs_xiscale + 2]
 
-; todo: proper shift jmp thing
+mov   di, word ptr ds:[si + VISSPRITE_T.vs_x1]
+mov   cx, word ptr ds:[si + VISSPRITE_T.vs_x2]
 
 
 
-;        while (base4diff){
-;            basespryscale-=vis->xiscale; 
-;            base4diff--;
-;        }
 
 ; cx:di  carry startfrac..
 
 
-; AX zero
-
-; finally write these 
-
-
-; zero xoffset loop iter ; ax known zero after loop
 
 
 ; last use of si so si is free after this (?)
@@ -1489,19 +1481,11 @@ jmp   spritesegment_ready
 ALIGN_MACRO
 
 do_draw_loop:
-push  bp
 
 ; dx:bx carry xiscale
-mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_lo+2 - OFFSET R_MASK24_STARTMARKER_], bx
-mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_hi+2 - OFFSET R_MASK24_STARTMARKER_], dx
-
-
-mov   bp, di ; startfrac lo
-mov   dx, cx ; startfrac hi
-
-mov   ax, word ptr ds:[si + VISSPRITE_T.vs_x2]
-mov   word ptr cs:[SELFMODIFY_MASKED_visspriteloop_x2_1+2 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   di, word ptr ds:[si + VISSPRITE_T.vs_x1]
+mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_lo+2 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_hi+2 - OFFSET R_MASK24_STARTMARKER_], bx
+mov   word ptr cs:[SELFMODIFY_MASKED_visspriteloop_x2_1+2 - OFFSET R_MASK24_STARTMARKER_], cx
 
 
 
@@ -1573,24 +1557,17 @@ public draw_shadow_sprite
 
 
 ; dx:bx carry xiscale
-mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_lo_shadow+2 - OFFSET R_MASK24_STARTMARKER_], bx
-mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_hi_shadow+2 - OFFSET R_MASK24_STARTMARKER_], dx
+mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_lo_shadow+2 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_hi_shadow+2 - OFFSET R_MASK24_STARTMARKER_], bx
 
 
-push  bp
 
-mov   bp, di ; startfrac lo
-mov   dx, cx ; startfrac hi
 
-mov   ax, word ptr ds:[si + VISSPRITE_T.vs_x2]
-mov   word ptr cs:[SELFMODIFY_MASKED_visspriteloop_x2_1_shadow+2 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   di, word ptr ds:[si + VISSPRITE_T.vs_x1]  
+mov   word ptr cs:[SELFMODIFY_MASKED_visspriteloop_x2_1_shadow+2 - OFFSET R_MASK24_STARTMARKER_], cx
 
-; todo are these the correct values?
 
 mov   cx, es
 
-; todo we can just get these from vars
 
 ; dx:bp is startfrac
 ; di is dc_x
