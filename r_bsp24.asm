@@ -14249,6 +14249,9 @@ Z_QUICKMAPAI4_NO_DX pageswapargs_spritecache_offset_size     INDEXED_PAGE_9000_O
 Z_QUICKMAPAI4_NO_DX (pageswapargs_spritecache_offset_size+4)   INDEXED_PAGE_7000_OFFSET
 Z_QUICKMAPAI3_NO_DX pageswapargs_maskeddata_offset_size   	INDEXED_PAGE_8400_OFFSET
 
+mov       dx, SC_DATA
+mov       al, 15
+out       dx, al  ; for the potato case, which will skip OUTs later
 
 call      dword ptr ds:[_R_WriteBackMaskedFrameConstantsCall]
 call      dword ptr ds:[_R_DrawMaskedCall]

@@ -1499,20 +1499,25 @@ mov   cx, es
 
 ALIGN_MACRO
 draw_sprite_normal_innerloop:
+public  draw_sprite_normal_innerloop
 
-mov   es, dx ; backup
+; quality 0 version
+mov   bx, dx ; backup
 
-mov   bx, di
-and   bx, 3  ; todo selfmodify..
+SELFMODIFY_rewrite_masked_out_dx_code:
+mov   cx, di
+and   cl, 3
+mov   al, 1
+shl   al, cl
+
 mov   dx, SC_DATA
-SELFMODIFY_MASKED_detailshiftplus1_2:
-mov   al, byte ptr ds:[bx + 010h] ; NOTE this offset is selfmodified
 out   dx, al
+mov   cx, es  ; restore
+mov   dx, bx  ; restore
 
-mov   dx, es ; restore
-mov   es, cx ; restore
+done_setting_vga_plane_masked:
 
-mov   bx, dx
+; bx already dx
 
 SHIFT_MACRO shl bx 2 ; possible to preshift dx by 2?
 ; es is patch 
@@ -1559,10 +1564,6 @@ public draw_shadow_sprite
 ; dx:bx carry xiscale
 mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_lo_shadow+2 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_hi_shadow+2 - OFFSET R_MASK24_STARTMARKER_], bx
-
-
-
-
 mov   word ptr cs:[SELFMODIFY_MASKED_visspriteloop_x2_1_shadow+2 - OFFSET R_MASK24_STARTMARKER_], cx
 
 
@@ -1576,7 +1577,7 @@ mov   cx, es
 
 ALIGN_MACRO
 draw_sprite_shadow_innerloop:
-
+SELFMODIFY_rewrite_masked_out_dx_code_shadow:
 
 mov   es, dx ; backup dx in es (which is backuped up in cx anyway)
 
@@ -1597,6 +1598,8 @@ out   dx, ax
 
 mov   dx, es ; restore dx
 mov   es, cx ; restore es
+
+done_setting_vga_plane_masked_shadow:
 
 mov   bx, dx   ; frac.h.intbits 
 
@@ -5898,6 +5901,83 @@ jmp       done_setting_cached_tex_masked
 ENDP
 
 
+
+
+_lookup_bytes:
+; quality 0
+
+mov   cx, di
+and   cl, 3
+mov   al, 1
+shl   al, cl
+
+; 9 bytes
+
+
+; quality 1
+mov   ax, di
+and   al,  1  ; 1 or 0
+dec   ax      ; 0 or FF
+xor   al, 12  ; C or F3
+and   al, 15  ; 3 or 15
+
+; 9 bytes
+
+; quality 2
+
+;jmp (done_setting_vga_plane_masked)
+db 0ebh, (OFFSET done_setting_vga_plane_masked - OFFSET SELFMODIFY_rewrite_masked_out_dx_code) - 2
+
+
+_lookup_bytes_shadow:
+; quality 0
+mov   bx, dx ; backup
+mov   dx, SC_DATA ; 3C5
+mov   cx, di ; dc_x
+and   cl, 3
+mov   al, 1
+shl   al, cl
+out   dx, al
+
+mov   dl, (GC_INDEX  AND 0FFh)  ;   3CE, dh still 3
+mov   ah, cl
+mov   al, 4
+out   dx, ax
+
+mov   dx, bx ; restore
+mov   cx, es ; restore
+
+; 26 bytes
+
+; quality 2
+mov   bx, dx ; backup
+mov   dx, SC_DATA ; 3C5
+mov   ax, di
+and   al,  1   ; 1 or 0
+dec   ax       ; 0 or FF
+xor   al, 12   ; C or F3
+and   al, 15   ; 3 or 15
+out   dx, al
+
+mov   dl, (GC_INDEX  AND 0FFh)  ;   3CE, dh still 3
+; al is 3 or 15, needs to be 0 or 4
+and   al, 4
+mov   ah, al
+mov   al, 4
+out   dx, ax
+
+mov   dx, bx ; restore
+
+; 26 bytes
+
+
+; 10 bytes of garbage is fine.
+
+; quality 2
+
+;jmp (done_setting_vga_plane_masked_shadow)
+db 0ebh, (OFFSET done_setting_vga_plane_masked_shadow - OFFSET SELFMODIFY_rewrite_masked_out_dx_code_shadow) - 2
+
 ALIGN 16
 
 
@@ -5933,6 +6013,7 @@ PUBLIC R_WriteBackViewConstantsMasked24_
 
 mov      ax, DRAWFUZZCOL_AREA_SEGMENT
 mov      ds, ax
+mov      es, ax
 
 
 
@@ -5940,7 +6021,29 @@ mov      ds, ax
 ASSUME DS:R_MASK24_TEXT
 
 mov      ax,  word ptr ss:[_detailshift]
-xor      cx, cx
+
+; todo based on quality change
+
+LENGTH_OF_OUT_CODE_STRING = 9
+
+LENGTH_OF_OUT_CODE_SHADOW_STRING = 26
+
+mov      dx, ax ; backup
+mov      cx, LENGTH_OF_OUT_CODE_STRING
+mul      cl
+add      ax, OFFSET _lookup_bytes
+xchg     ax, si
+mov      di, OFFSET SELFMODIFY_rewrite_masked_out_dx_code
+xchg     ax, dx ; restore ax.
+rep      movsb
+
+;mov      cl, LENGTH_OF_OUT_CODE_STRING
+;sub      si, cx
+;mov      di, OFFSET SELFMODIFY_rewrite_masked_out_dx_code_shadow
+;rep      movsb
+
+
+;xor      cx, cx
 mov      cl, al   ; cx has detailshift for plater.
 
 
@@ -6047,7 +6150,6 @@ mov   word ptr ds:[SELFMODIFY_MASKED_detailshiftandval_2+1 - OFFSET R_MASK24_STA
 
 mov   al, byte ptr ss:[_detailshift+1]
 add   al, _quality_port_lookup
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_2+2 - OFFSET R_MASK24_STARTMARKER_], al
 mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_3+2 - OFFSET R_MASK24_STARTMARKER_], al
 mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_4+2 - OFFSET R_MASK24_STARTMARKER_], al
 
