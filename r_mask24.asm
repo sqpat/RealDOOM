@@ -68,6 +68,7 @@ db (SPRITE_COLUMN_SEGMENT + 00C00h) SHR 8
 
 
 
+ALIGN_MACRO
 _fuzzpos:
 
 dw  (OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)
@@ -79,6 +80,7 @@ SIZE_FUZZTABLE = 50
 ; DONT MOVE THIS FROM 0
 
 ; extended length of a max run...
+ALIGN_MACRO
 _fuzzoffset:
 PUBLIC _fuzzoffset
 dw  00050h, 0FFB0h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h, 00050h, 00050h, 0FFB0h 
@@ -111,7 +113,8 @@ db 0F0h
 _lastcentery:
 dw 0F0F0h;
 
-
+_xiscalelowbits:
+dw 0
 
 
 ;
@@ -302,7 +305,7 @@ add   dx, ax  ; 10, 2   ; swap these two for 10x - 4, 8, 10 from shl, then add o
 
 
 ; shift di by (2 - detailshift.)
-SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift:
+SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_1:
 sar   di, 1
 sar   di, 1
 
@@ -377,44 +380,153 @@ UNCLIPPED_COLUMN  = 0FEh
 
 ; note remove masked start from here 
 
+
+
+ALIGN_MACRO
+
+
+; shadow sprite loop
+
+draw_shadow_sprite:
+public draw_shadow_sprite
+
+mov   bp, cs
+mov   ds, bp
+
+mov   word ptr ds:[_SELFMODIFY_MASKED_set_xiscale_hi_shadow+1], dx
+
+mov   word ptr ds:[SELFMODIFY_MASKED_vissprite_xiscale_lo_shadow+4 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_vissprite_xiscale_hi_shadow+4 - OFFSET R_MASK24_STARTMARKER_], bx
+dec   cx ; offset for comparing early
+mov   word ptr ds:[SELFMODIFY_MASKED_visspriteloop_x2_1_shadow+2 - OFFSET R_MASK24_STARTMARKER_], cx
+
+mov   ax, word ptr ds:[SELFMODIFY_MASKED_set_spryscale_lo+1]
+mov   word ptr ds:[SELFMODIFY_MASKED_set_spryscale_shadow_lo+1], ax
+mov   ax, word ptr ds:[SELFMODIFY_MASKED_set_spryscale_hi+1]
+mov   word ptr ds:[SELFMODIFY_MASKED_set_spryscale_shadow_hi+1], ax
+
+mov   cx, es
+
+
+; dx:bp is startfrac
+; di is dc_x
+; cx/es are segment
+dec   di  ; offset for doing inc di early
+
+
+ALIGN_MACRO
+draw_sprite_shadow_innerloop:
+inc   di  ; force align the below imm16
+_SELFMODIFY_MASKED_set_xiscale_hi_shadow:
+mov   bx, 01000h
+SELFMODIFY_rewrite_masked_out_dx_code_shadow:
+
+mov   dx, SC_DATA ; 3C5
+mov   cx, di ; dc_x
+and   cl, 3
+mov   al, 1
+shl   al, cl
+out   dx, al
+mov   ah, cl
+
+mov   al, 4
+mov   dl, (GC_INDEX  AND 0FFh)  ;   3CE, dh still 3
+out   dx, ax
+mov   cx, es ; restore cx
+
+
+done_setting_vga_plane_masked_shadow:
+
+; bx already dx
+
+
+;   uint16_t __far * columndata = (uint16_t __far *)(&(patch->columnofs[frac.h.intbits]));
+;   column_t __far * postdata   = (column_t __far *)(((byte __far *) patch) + columndata[1]);
+;   R_DrawMaskedSpriteShadow(patch_segment + columndata[0], postdata);
+
+; idea: add these preshifted? no dual shifts necessary per loop?
+; idea: self modify SI to R_DrawMaskedSpriteShadow_? no need to push/pop each call?
+SHIFT_MACRO shl bx 2
+
+les   ax, dword ptr es:[bx + PATCH_T.patch_columnofs]
+mov   si, es
+
+add   ax, cx    ; patch_segment + columndata[0] ?
+
+; cx, es preserved in the call
+
+; todo inline
+call R_DrawMaskedSpriteShadow_
+
+SELFMODIFY_MASKED_vissprite_xiscale_lo_shadow:
+add   word ptr ds:[_xiscalelowbits], 01000h
+SELFMODIFY_MASKED_vissprite_xiscale_hi_shadow:
+adc   word ptr ds:[_SELFMODIFY_MASKED_set_xiscale_hi_shadow+1], 01000h
+ENSUREALIGN_129:
+
+
+SELFMODIFY_MASKED_visspriteloop_x2_1_shadow:
+cmp   di, 01000h 
+jle   draw_sprite_shadow_innerloop
+
+; exit
+mov   bp, ss
+mov   ds, bp
+pop   bp
+
+ret 
+
+
+
 exit_draw_masked_column_shadow_early:
 ret
+
+
 
 ALIGN_MACRO
 PROC   R_DrawMaskedSpriteShadow_ NEAR  ; fairly optimized
 PUBLIC R_DrawMaskedSpriteShadow_
 ; ax 	 pixelsegment
-; cx:bx  column fardata
+; cx:si  column fardata
 
 ; bp carries topscreen segment
 
+
 mov   es, cx
 
-cmp   byte ptr es:[bx + COLUMN_T.column_topdelta], 0FFh
+cmp   byte ptr es:[si + COLUMN_T.column_topdelta], 0FFh
 je    exit_draw_masked_column_shadow_early
 
 
 push  di
 
+mov   word ptr ds:[SELFMODIFY_MASKED_restore_es_shadow+1], cx
 
-mov   si, bx
 
 mov   bx, di  ; dc_x
-mov   word ptr cs:[SELFMODIFY_MASKED_SHADOW_drawmaskedcolumn_set_dc_x+1], bx
+SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_2:
+sar   di, 1
+sar   di, 1
 
-lds   di, dword ptr ds:[_mfloorclip]
-mov   al, byte ptr ds:[bx+di]
-lds   di, dword ptr ss:[_mceilingclip]
-mov   ah, byte ptr ds:[bx+di]
-mov   word ptr cs:[SELFMODIFY_MASKED_SHADOW_set_mfloorceilclip_dc_x_lookup+1], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_SHADOW_drawmaskedcolumn_set_shifted_dc_x+1], di
 
-mov   ax, ss
-mov   ds, ax   ; restore ds...
+
+; todo cleanup used segregs
+
+les   di, dword ptr ss:[_mfloorclip]
+mov   al, byte ptr es:[bx+di]
+les   di, dword ptr ss:[_mceilingclip]
+mov   ah, byte ptr es:[bx+di]
+mov   word ptr ds:[SELFMODIFY_MASKED_SHADOW_set_mfloorceilclip_dc_x_lookup+1], ax
+
+mov   es, cx ; restore es
+
 
 lods  word ptr es:[si]
 
+ALIGN_MACRO
 draw_next_shadow_sprite_post:
-push  es
+
 push  si
 
 ; es, si, bp safe to use
@@ -445,9 +557,9 @@ ADD  DX, CX    ; add
 
 skip_topdelta_mul_shadow:
 
-; kinda gross. self modify into here from above?
-add   ax, word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_lo+1]       ; are these lowbits ever nonzero? yes, usually so
-adc   dx, word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_hi+2]
+; TODO self modify into here from above?
+add   ax, word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_lo+1]       ; are these lowbits ever nonzero? yes, usually so
+adc   dx, word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_hi+2]
 
 
 ; topscreen = DX:AX.
@@ -531,66 +643,57 @@ skip_ceil_clip_set_shadow:
 
 
 sub   dx, si   ; dx is dc_yh
-js   jump_to_do_next_shadow_sprite_iteration
+js    jump_to_do_next_shadow_sprite_iteration
 
-mov   di, dx ; finally write dc_yh to di
+mov   cx, dx ; finally write dc_yh to di
 ;dec   si     ; undo dc_yl+1
 
 ; texmid not needed for fuzzdraws, because we are reading from screen behind sprite, not texture.
 
-SELFMODIFY_MASKED_SHADOW_drawmaskedcolumn_set_dc_x:
-mov   dx, 01000h
 
-; todo... is this supposed to be done outside?
 
 mov   ax, (MASKED_LOCAL_DC_YL_LOOKUP_TABLE_OFFSET SHR 4) + DRAWFUZZCOL_AREA_SEGMENT ;; 887C now?
 mov   es, ax
 mov   bx, si   ; bx+si = dc_yl word lookup
 
-; todo: proper shift jmp thing.
-mov   cl, byte ptr ds:[_detailshift2minus]
-sar   dx, cl
+; preshifted
+SELFMODIFY_MASKED_SHADOW_drawmaskedcolumn_set_shifted_dc_x:
+mov   di, 01000h
 
 SELFMODIFY_MASKED_destview_lo_1:
-add   dx, 1000h   ; need the 2 byte constant.
-add   dx, word ptr es:[bx+si-2]
+add   di, 1000h   ; need the 2 byte constant.
+add   di, word ptr es:[bx+si-2]
 
-mov   cx, dx
 
-; todo has this already been done?
 
-SELFMODIFY_MASKED_destview_hi_1:
-mov   bx, 0
-
-; pass in count via di
-; pass in destview via bx
-; pass in offset via cx
+; pass in count via c
+; pass in offset via di
 
 
 
 ;call R_DrawFuzzColumn_  ; inlined
 
 
+SELFMODIFY_MASKED_destview_hi_1:
+mov  bx, 0
 mov  es, bx
-mov  si, word ptr cs:[_fuzzpos - OFFSET R_MASK24_STARTMARKER_]	; note this is always the byte offset - no shift conversion necessary
+mov  si, word ptr ds:[_fuzzpos - OFFSET R_MASK24_STARTMARKER_]	; note this is always the byte offset - no shift conversion necessary
 
-;  need to put di in cx
-xchg cx, di   ; cx gets count , di gets screen offset
 
-mov  ax, cs     ; cs holds fuzzpos
-mov  ds, ax
+
+
+
 ; constant space
 mov  dx, 04Fh
 mov  ch, 010h
 
-; todo: store count in cx not di?
 
 
-push bp
+
 mov  bx, COLORMAPS_MASKEDMAPPING_SEG_OFFSET_IN_CS
 
 
-
+; ds is cs.
 
 
 cmp  cl, ch
@@ -609,7 +712,7 @@ DRAW_SINGLE_FUZZPIXEL MACRO
 lodsw     						; load fuzz offset...
 xchg ax, bp	       				; move offset to bx.
 mov  al, byte ptr es:[bp + di]  ; read screen
-xlat byte ptr cs:[bx]		    ; lookup colormaps + al byte
+xlat byte ptr ds:[bx]		    ; lookup colormaps + al byte
 stosb							; write to screen
 add  di, dx						; dx contains constant (0x4F) to add to di to get next screen dest.
 
@@ -623,9 +726,7 @@ endm
 
 
 cmp  si, ((OFFSET _fuzzoffset) - (OFFSET R_MASK24_STARTMARKER_)) +  (SIZE_FUZZTABLE * 2) ; word size
-jl   fuzzpos_ok
-; subtract 50 from fuzzpos
-sub  si, SIZE_FUZZTABLE * 2 ; word size
+jge  reset_fuzzpos
 fuzzpos_ok:
 sub  cl, ch
 cmp  cl, ch
@@ -642,7 +743,7 @@ draw_one_fuzzpixel:
 lodsw     						; load fuzz offset...
 xchg ax, bp	       				; move offset to bx.
 mov  al, byte ptr es:[bp + di]  ; read screen
-xlat byte ptr cs:[bx]		    ; lookup colormaps + al byte
+xlat byte ptr ds:[bx]		    ; lookup colormaps + al byte
 stosb							; write to screen
 add  di, dx						; dx contains constant (0x4F) to add to di to get next screen dest.
 
@@ -653,16 +754,11 @@ loop  draw_one_fuzzpixel
 ; write back fuzzpos
 finished_drawing_fuzzpixels:
 
-pop bp
 
-
-; restore ds
-mov  di, ss
-mov  ds, di
 
 ; write back fuzzpos
 
-mov  word ptr word ptr cs:[_fuzzpos - OFFSET R_MASK24_STARTMARKER_], si
+mov  word ptr word ptr ds:[_fuzzpos - OFFSET R_MASK24_STARTMARKER_], si
 
  
 
@@ -671,8 +767,11 @@ mov  word ptr word ptr cs:[_fuzzpos - OFFSET R_MASK24_STARTMARKER_], si
 
 
 do_next_shadow_sprite_iteration:
+SELFMODIFY_MASKED_restore_es_shadow:
+mov   si, 01000h
+mov   es, si
 pop   si
-pop   es
+
 
 lods  word ptr es:[si]
 
@@ -690,7 +789,11 @@ exit_draw_shadow_sprite:
 mov   cx, es
 pop   di
 ret   
-
+ALIGN_MACRO
+reset_fuzzpos:
+; subtract 50 from fuzzpos
+sub  si, SIZE_FUZZTABLE * 2 ; word size
+jmp  fuzzpos_ok
 ENDP
 
 
@@ -821,6 +924,10 @@ ENDIF
 jmp done_with_mul_vissprite
 
 ALIGN_MACRO
+jump_to_draw_shadow_sprite:
+jmp   draw_shadow_sprite
+
+ALIGN_MACRO
 is_stretch_draw:
 
 mov   di, DRAWCOL_NOLOOPSTRETCH_OFFSET_MASKED
@@ -901,7 +1008,7 @@ spritesegment_ready:
 push  bp
 
 mov   ax, word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0]
-mov   word ptr ds:[_xiscalelowbits], ax
+mov   word ptr cs:[_xiscalelowbits], ax
 mov   dx, word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2]  
 
 
@@ -930,7 +1037,7 @@ do_draw_loop:
 
 mov   word ptr cs:[SELFMODIFY_MASKED_set_xiscale_hi+1], dx
 
-mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_lo+4 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_lo+5 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_hi+5 - OFFSET R_MASK24_STARTMARKER_], bx
 dec   cx ; offset for comparing early
 mov   word ptr cs:[SELFMODIFY_MASKED_visspriteloop_x2_1+2 - OFFSET R_MASK24_STARTMARKER_], cx
@@ -984,7 +1091,7 @@ call R_DrawMaskedColumn_   ; di preserved...
 ; todo align
 
 SELFMODIFY_MASKED_vissprite_xiscale_lo:
-add   word ptr ds:[_xiscalelowbits], 01000h
+add   word ptr cs:[_xiscalelowbits], 01000h
 SELFMODIFY_MASKED_vissprite_xiscale_hi:
 adc   word ptr cs:[SELFMODIFY_MASKED_set_xiscale_hi+1], 01000h
 ENSUREALIGN_130:
@@ -998,9 +1105,6 @@ exit_draw_vissprites:
 pop   bp
 ret 
 
-ALIGN_MACRO
-jump_to_draw_shadow_sprite:
-jmp   draw_shadow_sprite
 ALIGN_MACRO
   
 sprite_not_first_cachedsegment:
@@ -1529,100 +1633,9 @@ mov   word ptr ds:[_lastvisspritepatch], ax
 jmp   spritesegment_ready
 
 
-ALIGN_MACRO
-
-
-; shadow sprite loop
-
-draw_shadow_sprite:
-public draw_shadow_sprite
-
-
-mov   word ptr cs:[_SELFMODIFY_MASKED_set_xiscale_hi_shadow+1], dx
-
-mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_lo_shadow+4 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_hi_shadow+5 - OFFSET R_MASK24_STARTMARKER_], bx
-dec   cx ; offset for comparing early
-mov   word ptr cs:[SELFMODIFY_MASKED_visspriteloop_x2_1_shadow+2 - OFFSET R_MASK24_STARTMARKER_], cx
-
-mov   ax, word ptr cs:[SELFMODIFY_MASKED_set_spryscale_lo+1]
-mov   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_shadow_lo+1], ax
-mov   ax, word ptr cs:[SELFMODIFY_MASKED_set_spryscale_hi+1]
-mov   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_shadow_hi+1], ax
-
-mov   cx, es
-
-
-; dx:bp is startfrac
-; di is dc_x
-; cx/es are segment
-dec   di  ; offset for doing inc di early
-
-
-ALIGN_MACRO
-draw_sprite_shadow_innerloop:
-inc   di  ; force align the below imm16
-_SELFMODIFY_MASKED_set_xiscale_hi_shadow:
-mov   bx, 01000h
-SELFMODIFY_rewrite_masked_out_dx_code_shadow:
-
-mov   dx, SC_DATA ; 3C5
-mov   cx, di ; dc_x
-and   cl, 3
-mov   al, 1
-shl   al, cl
-out   dx, al
-mov   ah, cl
-
-mov   al, 4
-mov   dl, (GC_INDEX  AND 0FFh)  ;   3CE, dh still 3
-out   dx, ax
-mov   cx, es ; restore cx
-
-
-done_setting_vga_plane_masked_shadow:
-
-; bx already dx
-
-
-;   uint16_t __far * columndata = (uint16_t __far *)(&(patch->columnofs[frac.h.intbits]));
-;   column_t __far * postdata   = (column_t __far *)(((byte __far *) patch) + columndata[1]);
-;   R_DrawMaskedSpriteShadow(patch_segment + columndata[0], postdata);
-
-; idea: add these preshifted? no dual shifts necessary per loop?
-; idea: self modify SI to R_DrawMaskedSpriteShadow_? no need to push/pop each call?
-SHIFT_MACRO shl bx 2
-
-les   ax, dword ptr es:[bx + 8]  ; columndata[0] ?
-mov   bx, es                     ; es:[bx+10]
-
-add   ax, cx    ; patch_segment + columndata[0] ?
-
-; cx, es preserved in the call
-
-
-call R_DrawMaskedSpriteShadow_   ; todo pusha/popa in here?
-
-
-SELFMODIFY_MASKED_vissprite_xiscale_lo_shadow:
-add   word ptr ds:[_xiscalelowbits], 01000h
-SELFMODIFY_MASKED_vissprite_xiscale_hi_shadow:
-adc   word ptr cs:[_SELFMODIFY_MASKED_set_xiscale_hi_shadow+1], 01000h
-ENSUREALIGN_129:
-
-
-SELFMODIFY_MASKED_visspriteloop_x2_1_shadow:
-cmp   di, 01000h 
-jle   draw_sprite_shadow_innerloop
-
-; exit
-pop   bp
-ret 
 
 
 ENDP
-
-
 
 
 
@@ -5388,6 +5401,8 @@ PUBLIC R_GetMaskedColumnSegment_
 ; bx ok to clobber. mayeb cx
 ; probably not si or bp
 
+; ds = cs
+
 push      si
 push      di
 push      bp
@@ -6065,8 +6080,10 @@ je       set_to_one_masked
 mov      ax, 0c089h 
 
 ; write to colfunc segment
-mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+0], ax
-mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+2], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_1 - OFFSET R_MASK24_STARTMARKER_+0], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_1 - OFFSET R_MASK24_STARTMARKER_+2], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_2 - OFFSET R_MASK24_STARTMARKER_+0], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_2 - OFFSET R_MASK24_STARTMARKER_+2], ax
 mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+0], ax
 mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+2], ax
 mov      bx, OFFSET (SELFMODIFY_MASKED_detailshift_2_32bit_1+0 - OFFSET R_MASK24_STARTMARKER_)
@@ -6097,12 +6114,14 @@ set_to_one_masked:
 mov      ax, 0ffd1h 
 
 ; write to colfunc segment
-mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+0], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_1- OFFSET R_MASK24_STARTMARKER_+0], ax
 mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+0], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_2 - OFFSET R_MASK24_STARTMARKER_+0], ax
 
 ; nop 
 mov      ax, 0c089h 
-mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+2], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_1- OFFSET R_MASK24_STARTMARKER_+2], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_2 - OFFSET R_MASK24_STARTMARKER_+2], ax
 mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+2], ax
 
 mov      bx, OFFSET (SELFMODIFY_MASKED_detailshift_2_32bit_1+0 - OFFSET R_MASK24_STARTMARKER_)
@@ -6126,10 +6145,15 @@ set_to_zero_masked:
 mov      ax, 0ffd1h 
 
 ; write to colfunc segment
-mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+0], ax
-mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+2], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_1- OFFSET R_MASK24_STARTMARKER_+0], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_1- OFFSET R_MASK24_STARTMARKER_+2], ax
+
+
 mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+0], ax
 mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+2], ax
+
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_2 - OFFSET R_MASK24_STARTMARKER_+0], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_2 - OFFSET R_MASK24_STARTMARKER_+2], ax
 
 ;mov      ax, 006EBh  ; jmp 6
 mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_32bit_1 - OFFSET R_MASK24_STARTMARKER_], 006EBh
