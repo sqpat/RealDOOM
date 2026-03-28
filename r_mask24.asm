@@ -50,27 +50,7 @@ ENDP
 
 
 
-PUSHA_DRAWMASKED_COLUMN MACRO
-    IF COMPISA GE COMPILE_186
-        PUSHA
-    ELSE
-        push  dx
-        push  si
-        push  di
-        push  bp
-    ENDIF
-ENDM
 
-POPA_DRAWMASKED_COLUMN MACRO
-    IF COMPISA GE COMPILE_186
-        POPA
-    ELSE
-        pop   bp
-        pop   di
-        pop   si
-        pop   dx
-    ENDIF
-ENDM
 
 _spritepagesegments:
 PUBLIC _spritepagesegments
@@ -5029,9 +5009,23 @@ retf
 
 
 
+PUSHA_DRAWMASKED_COLUMN MACRO
+    push  dx
+    push  di
+    push  bp
+ENDM
+
+POPA_DRAWMASKED_COLUMN MACRO
+    pop   bp
+    pop   di
+    pop   dx
+ENDM
 
 ; ax pixelsegment
-; cx:bx column
+; cx/es:bx column
+; di:  dc_x
+; dx:bp  xiscale
+
 ; todo: use es:si instead of cx:bx. lodsw and compare al as 0FFh right away. si then shouldnt need to be preserved.
 
 ;
