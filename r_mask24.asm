@@ -395,8 +395,6 @@ ALIGN_MACRO
 draw_shadow_sprite:
 public draw_shadow_sprite
 
-mov   bp, cs
-mov   ds, bp
 
 mov   word ptr ds:[_SELFMODIFY_MASKED_set_xiscale_hi_shadow+1], dx
 
@@ -922,9 +920,6 @@ ENDIF
 
 jmp done_with_mul_vissprite
 
-ALIGN_MACRO
-jump_to_draw_shadow_sprite:
-jmp   draw_shadow_sprite
 
 ALIGN_MACRO
 is_stretch_draw:
@@ -1006,17 +1001,17 @@ spritesegment_ready:
 ; es has segment...
 push  bp
 
-mov   ax, word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0]
+mov   ax, word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0] ; 18
 mov   word ptr cs:[_xiscalelowbits], ax
-mov   dx, word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2]  
+mov   dx, word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2]  ; 1A
 
 
 ; xiscalestep_shift = vis->xiscale << detailshift2minus;
-mov   ax, word ptr ds:[si + VISSPRITE_T.vs_xiscale + 0] ; DX:BX = vis->xiscale
-mov   bx, word ptr ds:[si + VISSPRITE_T.vs_xiscale + 2]
+mov   ax, word ptr ds:[si + VISSPRITE_T.vs_xiscale + 0] ; 20
+mov   bx, word ptr ds:[si + VISSPRITE_T.vs_xiscale + 2] ; 22
 
-mov   di, word ptr ds:[si + VISSPRITE_T.vs_x1]
-mov   cx, word ptr ds:[si + VISSPRITE_T.vs_x2]
+mov   di, word ptr ds:[si + VISSPRITE_T.vs_x1] ; 4
+mov   cx, word ptr ds:[si + VISSPRITE_T.vs_x2] ; 6
 
 
 
@@ -1028,18 +1023,21 @@ mov   cx, word ptr ds:[si + VISSPRITE_T.vs_x2]
 
 ; last use of si so si is free after this (?)
 cmp   byte ptr ds:[si + VISSPRITE_T.vs_colormap], COLORMAP_SHADOW
+mov   bp, cs
+mov   ds, bp
+
 je    jump_to_draw_shadow_sprite
 
 
 do_draw_loop:
 
 
-mov   word ptr cs:[SELFMODIFY_MASKED_set_xiscale_hi+1], dx
+mov   word ptr ds:[SELFMODIFY_MASKED_set_xiscale_hi+1], dx
 
-mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_lo+5 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_hi+5 - OFFSET R_MASK24_STARTMARKER_], bx
+mov   word ptr ds:[SELFMODIFY_MASKED_vissprite_xiscale_lo+4 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_vissprite_xiscale_hi+4 - OFFSET R_MASK24_STARTMARKER_], bx
 dec   cx ; offset for comparing early
-mov   word ptr cs:[SELFMODIFY_MASKED_visspriteloop_x2_1+2 - OFFSET R_MASK24_STARTMARKER_], cx
+mov   word ptr ds:[SELFMODIFY_MASKED_visspriteloop_x2_1+2 - OFFSET R_MASK24_STARTMARKER_], cx
 
 
 mov   cx, es
@@ -1088,11 +1086,10 @@ add   ax, cx ; self modify? does it change?
 
 call R_DrawMaskedColumn_   ; di preserved...
 ; todo align
-
 SELFMODIFY_MASKED_vissprite_xiscale_lo:
-add   word ptr cs:[_xiscalelowbits], 01000h
+add   word ptr ds:[_xiscalelowbits], 01000h
 SELFMODIFY_MASKED_vissprite_xiscale_hi:
-adc   word ptr cs:[SELFMODIFY_MASKED_set_xiscale_hi+1], 01000h
+adc   word ptr ds:[SELFMODIFY_MASKED_set_xiscale_hi+1], 01000h
 ENSUREALIGN_130:
 
 
@@ -1101,9 +1098,14 @@ cmp   di, 01000h
 jle   draw_sprite_normal_innerloop
 
 exit_draw_vissprites:
+mov   bp, ss
+mov   ds, bp
 pop   bp
 ret 
 
+ALIGN_MACRO
+jump_to_draw_shadow_sprite:
+jmp   draw_shadow_sprite
 ALIGN_MACRO
   
 sprite_not_first_cachedsegment:
@@ -2585,7 +2587,12 @@ ENSUREALIGN_111:
 mov   cx, MASKEDPOSTDATA_SEGMENT
 ;call  dword ptr ds:[_R_DrawMaskedColumnCallHigh]
 
-call R_DrawMaskedColumn_
+push  cs
+pop   ds
+call R_DrawMaskedColumn_   ; di preserved...
+; todo align
+push  ss
+pop   ds
 
 jmp   update_maskedtexturecol_finish_loop_iter
 ALIGN_MACRO
@@ -2665,7 +2672,13 @@ mov   bx, word ptr es:[bx+08000h]
 ENSUREALIGN_109:
 
 
-call R_DrawMaskedColumn_
+push  cs
+pop   ds
+call R_DrawMaskedColumn_   ; di preserved...
+; todo align
+push  ss
+pop   ds
+
 ENSUREALIGN_110:  ; probably ok; 3 byte instruction.
 
 jmp   update_maskedtexturecol_finish_loop_iter
@@ -5016,16 +5029,7 @@ retf
 
 
 
-PUSHA_DRAWMASKED_COLUMN MACRO
 
-    push  di
-ENDM
-
-POPA_DRAWMASKED_COLUMN MACRO
-
-    pop   di
-
-ENDM
 
 ; ax pixelsegment
 ; cx/es:bx column
@@ -5051,22 +5055,20 @@ ALIGN_MACRO
 PROC   R_DrawMaskedColumn_ NEAR ; fairly optimized
 PUBLIC R_DrawMaskedColumn_
 
-; todo: synergy with outer function... cx and es
-; todo push/pop fewer?
+; ds = cs
 
 mov   es, cx
-
+; todo pass in bx as si instead.
 cmp   byte ptr es:[bx + COLUMN_T.column_topdelta], 0FFh
 je    exit_draw_masked_column_early
 
 ; no early out, properly run the function. note fixed stack frame
 ; investigate pusha/popa. any cx/es trick possible?
 
-; todo dont push si?
 
-PUSHA_DRAWMASKED_COLUMN
+push  di
 
-mov   word ptr cs:[SELFMODIFY_MASKED_set_base_segment+1], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_set_base_segment+1], ax
 mov   si, bx        ; si now holds column address.
 ; es:si is now column
 
@@ -5074,25 +5076,29 @@ mov   si, bx        ; si now holds column address.
 
 ; look up loop constants which involve segment juggling (floor/ceil clips)
 
-mov   byte ptr cs:[SELFMODIFY_MASKED_add_currentoffset+1], 0
+mov   byte ptr ds:[SELFMODIFY_MASKED_add_currentoffset+1], 0
 
 mov   bx, di   ; dc_x
-mov   word ptr cs:[SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x+1], bx
+; todo preshift here
+mov   word ptr ds:[SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x+1], di
 
-lds   di, dword ptr ds:[_mfloorclip]
-mov   al, byte ptr ds:[bx+di]
-lds   di, dword ptr ss:[_mceilingclip]
-mov   ah, byte ptr ds:[bx+di]
-mov   word ptr cs:[SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup+1], ax
 
-mov   ax, ss
-mov   ds, ax   ; restore ds...
+
+les   di, dword ptr ss:[_mfloorclip]
+mov   al, byte ptr es:[bx+di]
+les   di, dword ptr ss:[_mceilingclip]
+mov   ah, byte ptr es:[bx+di]
+mov   word ptr ds:[SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup+1], ax
+
+mov   es, cx
+
 
 
 lods  word ptr es:[si]  ; load column for first iter
 
 draw_next_column_patch:
 
+; todo selfmodify forward write ES
 push  es   ; retrieve after R_DrawColumnPrepMaskedMulti call. 
 push  si   ; retrieve after R_DrawColumnPrepMaskedMulti call. 
 
@@ -5101,8 +5107,8 @@ push  si   ; retrieve after R_DrawColumnPrepMaskedMulti call.
 ;        topscreen.w = sprtopscreen + FastMul16u32u(column->topdelta, spryscale.w);
 
 
-mov   byte ptr cs:[SELFMODIFY_MASKED_sub_topdelta + 2], al
-mov   byte ptr cs:[SELFMODIFY_MASKED_set_last_offset + 1], ah
+mov   byte ptr ds:[SELFMODIFY_MASKED_sub_topdelta + 2], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_set_last_offset + 1], ah
 
 ; calculate dc_yl (topdelta * scale)
 
@@ -5117,12 +5123,12 @@ xor   ax, ax  ; ax = 0
 SELFMODIFY_MASKED_set_spryscale_lo:
 mov   di, 01000h
 
-cwd           ; dx = 0
-;xor   dx, dx    ; toggle for ENSUREALIGN_127
 
 SELFMODIFY_MASKED_set_spryscale_hi:
 mov   bp, 01000h
 ENSUREALIGN_131:
+;cwd           ; dx = 0
+xor   dx, dx    ; toggle for ENSUREALIGN_127
 
 jcxz  skip_topdelta_mul ; todo brnach test?
 
@@ -5260,7 +5266,6 @@ SELFMODIFY_MASKED_add_currentoffset:
 public SELFMODIFY_MASKED_add_currentoffset
 db 05, 00, 00    ; add ax, 0000 (word)  ; always a single low byte actually
 
-mov    ds, ax
 
 
 
@@ -5279,6 +5284,7 @@ SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x:
 mov   di, 01000h
 ENSUREALIGN_107:
 
+; TODO PRESHIFT ABOVE TOO
 ; shift di by (2 - detailshift.)
 SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift:  ; todo make this into the above selfmodify setter.
 sar   di, 1
@@ -5287,7 +5293,7 @@ sar   di, 1
 
 
 lea   bp, [si + masked_local_dc_yl_lookup_table_ - 2] ; stack bp and si for word ptr, bake in - 2
-add   di, word ptr cs:[bp+si]                  ; add dc_yl * 80
+add   di, word ptr ds:[bp+si]                  ; add dc_yl * 80
 SELFMODIFY_MASKED_set_dc_iscale_lo:
 mov   bx, 01000h ; dc_iscale +0
 ENSUREALIGN_104:
@@ -5295,6 +5301,7 @@ ENSUREALIGN_104:
 SELFMODIFY_MASKED_destview_lo_3:
 add   di, 01000h
 
+mov    ds, ax
 
 
 ; if we make a separate drawcol masked we can use a constant here.
@@ -5334,7 +5341,8 @@ SELFMODIFY_MASKED_COLFUNC_set_func_offset:
 dw DRAWCOL_NOLOOP_OFFSET_MASKED, COLORMAPS_SEGMENT_MASKEDMAPPING
 ENSUREALIGN_101:
 
-mov  ds, ax
+mov   ax, cs
+mov   ds, ax
 
 increment_column_and_continue_loop:
 pop   si
@@ -5357,7 +5365,7 @@ db    0bbh, 00, 00   ; mov   bx, (byte) zero extended into high
 add   bx, 0Fh        
 
 SHIFT_MACRO shr bx 4   ; TODO separately bench lookup table for shift right 4? mov bl, byte ptrs cs:[_sar4table + bx]
-add   byte ptr cs:[SELFMODIFY_MASKED_add_currentoffset+1], bl
+add   byte ptr ds:[SELFMODIFY_MASKED_add_currentoffset+1], bl
 
 jmp   draw_next_column_patch 
 exit_function:
@@ -5365,7 +5373,7 @@ exit_function:
 
 mov   cx, es               ; restore cx
 
-POPA_DRAWMASKED_COLUMN
+pop   di
 
 ret
 
