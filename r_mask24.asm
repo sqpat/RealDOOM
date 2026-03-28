@@ -403,15 +403,17 @@ mov   word ptr ds:[SELFMODIFY_MASKED_vissprite_xiscale_hi_shadow+4 - OFFSET R_MA
 dec   cx ; offset for comparing early
 mov   word ptr ds:[SELFMODIFY_MASKED_visspriteloop_x2_1_shadow+2 - OFFSET R_MASK24_STARTMARKER_], cx
 
-mov   ax, word ptr ds:[SELFMODIFY_MASKED_set_spryscale_lo+1]
+mov   ax, word ptr ds:[SELFMODIFY_MASKED_set_spryscale_lo_sprite+1]
 mov   word ptr ds:[SELFMODIFY_MASKED_set_spryscale_shadow_lo+1], ax
-mov   ax, word ptr ds:[SELFMODIFY_MASKED_set_spryscale_hi+1]
+mov   ax, word ptr ds:[SELFMODIFY_MASKED_set_spryscale_hi_sprite+1]
 mov   word ptr ds:[SELFMODIFY_MASKED_set_spryscale_shadow_hi+1], ax
 
-mov   ax, word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_lo+1]
+mov   ax, word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_lo_sprite+1]
 mov   word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_lo_shadow+1], ax
-mov   ax, word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_hi+2]
+mov   ax, word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_hi_sprite+2]
 mov   word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_hi_shadow+2], ax
+
+; todo copy clips too
 
 mov   cx, es
 
@@ -824,7 +826,7 @@ mov   al, byte ptr ds:[si + VISSPRITE_T.vs_colormap]
 
 ; al is colormap. 
 
-mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMARKER_], al
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset_sprite+2 - OFFSET R_MASK24_STARTMARKER_], al
 les   ax, dword ptr ds:[si + VISSPRITE_T.vs_xiscale]   ; vis->xiscale
 mov   dx, es
 
@@ -845,8 +847,8 @@ rcr   ax, 1
 
 
 
-mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+2 - OFFSET R_MASK24_STARTMARKER_], dl
+mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo_sprite+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi_sprite+2 - OFFSET R_MASK24_STARTMARKER_], dl
 
 
 
@@ -927,7 +929,7 @@ is_stretch_draw:
 mov   di, DRAWCOL_NOLOOPSTRETCH_OFFSET_MASKED
 
 continue_selfmodifies_vissprites:
-mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset], di
+mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset_sprite], di
 
 
 SELFMODIFY_MASKED_centery_1:
@@ -946,14 +948,14 @@ PUBLIC R_DrawPlayerVisSprite_
 ; dx:ax is spryscale
 
 
-mov   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_lo+1], ax      
-mov   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_hi+1], dx      
+mov   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_lo_sprite+1], ax      
+mov   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_hi_sprite+1], dx      
 
 les   bx, dword ptr ds:[si + VISSPRITE_T.vs_texturemid] ; vis->texturemid
 mov   cx, es
 ; write this ahead
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1 + 1 - OFFSET R_MASK24_STARTMARKER_], bx
-mov   byte ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1 + 1 - OFFSET R_MASK24_STARTMARKER_], cl
+mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1_sprite + 1 - OFFSET R_MASK24_STARTMARKER_], bx
+mov   byte ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1_sprite + 1 - OFFSET R_MASK24_STARTMARKER_], cl
 
 
 test  dx, dx
@@ -985,9 +987,9 @@ done_with_mul_vissprite:
 
 ; di:cx is sprtopscreen
 neg   ax 
-mov   word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_lo+1], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_lo_sprite+1], ax
 sbb   di, dx
-mov   word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_hi+2], di
+mov   word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_hi_sprite+2], di
 
 mov   ax, word ptr ds:[si + VISSPRITE_T.vs_patch]
 cmp   ax, word ptr ds:[_lastvisspritepatch]
@@ -1082,7 +1084,7 @@ add   ax, cx ; self modify? does it change?
 ; cx is preserved by this call here
 ; so is ES
 
-call R_DrawMaskedColumn
+call R_DrawMaskedColumnSprite_
 
 SELFMODIFY_MASKED_vissprite_xiscale_lo:
 add   word ptr ds:[_xiscalelowbits], 01000h
@@ -1635,6 +1637,346 @@ jmp   spritesegment_ready
 
 
 ENDP
+
+
+
+ALIGN_MACRO
+exit_draw_masked_column_sprite_early:
+ret
+
+; three uses... two in maskedsegrange one in drawvissprite?
+; revisit what really needs to be push/popped
+
+
+
+ALIGN_MACRO
+PROC   R_DrawMaskedColumnSprite_ NEAR ; fairly optimized
+PUBLIC R_DrawMaskedColumnSprite_
+
+; ds = cs
+
+mov   es, cx
+; todo pass in bx as si instead.
+cmp   byte ptr es:[si + COLUMN_T.column_topdelta], 0FFh
+je    exit_draw_masked_column_sprite_early
+
+; no early out, properly run the function. note fixed stack frame
+; investigate pusha/popa. any cx/es trick possible?
+
+
+push  di
+
+mov   word ptr ds:[SELFMODIFY_MASKED_restore_es_sprite+1], cx
+mov   word ptr ds:[SELFMODIFY_MASKED_set_base_segment_sprite+1], ax
+
+; es:si is now column
+
+; dc_texturemid already set pre call.
+
+; look up loop constants which involve segment juggling (floor/ceil clips)
+
+mov   byte ptr ds:[SELFMODIFY_MASKED_add_currentoffset_sprite+1], 0
+
+mov   bx, di   ; dc_x
+; todo preshift here
+; shift di by (2 - detailshift.)
+SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift_sprite:  ; todo make this into the above selfmodify setter.
+sar   di, 1
+sar   di, 1
+
+mov   word ptr ds:[SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x_preshifted_sprite+1], di
+
+les   di, dword ptr ss:[_mfloorclip]
+mov   al, byte ptr es:[bx+di]
+les   di, dword ptr ss:[_mceilingclip]
+mov   ah, byte ptr es:[bx+di]
+mov   word ptr ds:[SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup_sprite+1], ax
+
+mov   es, cx  ; restore es
+
+lods  word ptr es:[si]  ; load column for first iter
+
+draw_next_column_patch_sprite:
+
+; todo selfmodify forward write ES
+
+push  si   ; retrieve after R_DrawColumnPrepMaskedMulti call. 
+
+; ax contains column fields!
+
+;        topscreen.w = sprtopscreen + FastMul16u32u(column->topdelta, spryscale.w);
+
+
+mov   byte ptr ds:[SELFMODIFY_MASKED_sub_topdelta_sprite + 2], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_set_last_offset_sprite + 1], ah
+
+; calculate dc_yl (topdelta * scale)
+
+xor   cx, cx
+mov   cl, al      ; al 0, cx = 0 extended topdelta for mul
+
+xchg  ax, bx      ; back column field up in bx
+
+xor   ax, ax  ; ax = 0
+
+
+SELFMODIFY_MASKED_set_spryscale_lo_sprite:
+mov   di, 01000h
+
+cwd           ; dx = 0
+;xor   dx, dx    ; toggle for ENSUREALIGN_127
+
+SELFMODIFY_MASKED_set_spryscale_hi_sprite:
+mov   bp, 01000h
+ENSUREALIGN_131_sprite:
+
+jcxz  skip_topdelta_mul_sprite ; todo brnach test?
+
+mov   ax, bp
+
+; cx (cl) = topdelta.
+; topscreen.w = sprtopscreen + FastMul16u32u(column->topdelta, spryscale.w);
+
+; todo this is actually mul 8x32. is there a faster way involving 8 bit muls?
+;inlined fastmul16u32u
+
+MUL  CX        ; AX * CX
+XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+MUL  DI        ; AX * DI
+ADD  DX, CX    ; add prev low result to high word
+
+skip_topdelta_mul_sprite:
+
+SELFMODIFY_MASKED_add_sprtopscreen_lo_sprite:
+add   ax, 01000h
+SELFMODIFY_MASKED_add_sprtopscreen_hi_sprite:
+adc   dx, 01000h
+ENSUREALIGN_127_sprite:
+
+; topscreen = DX:AX.
+
+;		dc_yl = topscreen.h.intbits; 
+;		if (topscreen.h.fracbits)
+;			dc_yl++;
+
+xor  si, si
+neg  ax
+adc  si, dx  ; si stores dc_yl
+neg  ax
+
+
+
+; calculate dc_yh ((length * scale))
+xor  cx, cx   ; clear ch.
+mov  cl, bh   ; cached length. bx now free to use. ch already was 0
+
+xchg ax, bp   ;  ax gets spyscale+2 back. bp stores old topscreen low
+mov  bx, dx   ;  bx:bp stores old topscreen result
+
+;        bottomscreen.w = topscreen.w + FastMul16u32u(column->length, spryscale.w);
+
+; ax:bx spryscale
+
+; todo can this be 8 bit mul without the xor ch or not
+;inlined fastmul16u32u
+MUL  CX        ; AX * CX
+XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+MUL  DI        ; AX * DI
+ADD  DX, CX    ; add prev low result to high word
+
+
+; add cached topscreen
+add   ax, bp
+adc   dx, bx
+
+;		dc_yh = bottomscreen.h.intbits;
+;		if (!bottomscreen.h.fracbits)
+;			dc_yh--;
+
+neg ax
+sbb dx, 0FFFFh  ; we actually want to simultaneously add one back to this. has to do with the >= case and is made up for with jmp lookup
+
+inc   si ; dc_yl + 1
+inc   dx ; dc_yh + 1
+
+; dc_yh, dc_yl are set (dx, si)
+        
+
+;        if (dc_yh >= mfloorclip[dc_x])
+;            dc_yh = mfloorclip[dc_x]-1;
+
+; todo look these up otuside of loop 
+; alternatively store dc_x in bp/di/si?
+
+
+; cl is floor clip
+; ch is ceil clip
+
+xor   ax, ax
+
+SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup_sprite:
+PUBLIC SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup_sprite
+; todo 8 bit logic? can dx be above 255?
+mov   cx, 01000h ; can end up ff high
+ENSUREALIGN_108_sprite:
+
+mov   al, cl
+cmp   dx, ax                ; something here.... 
+jl    skip_floor_clip_set_sprite
+mov   dx, ax
+
+dec   dx        ; todo bake this into the lookup
+
+skip_floor_clip_set_sprite:
+mov   al, ch
+
+
+;        if (dc_yl <= mceilingclip[dc_x])
+;            dc_yl = mceilingclip[dc_x]+1;
+
+
+cmp   si, ax
+jg    skip_ceil_clip_set_sprite
+;? toggle for ENSUREALIGN_101
+;mov   si, ax
+xchg  ax, si
+inc   si        ; todo bake this into the lookup
+skip_ceil_clip_set_sprite:
+
+
+sub   dx, si   ; dx is dc_yh
+jl    increment_column_and_continue_loop_sprite
+
+neg   dx
+shl   dx, 1
+add   dx, 398
+mov   di, dx  ; 2, 2   dx already multiplied by 2
+shl   dx, 1   ; 4, 2
+shl   dx, 1   ; 8, 2    ; is there a way to swap just one instruction, while not adding instruction count?
+add   dx, di  ; 10, 2   ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
+; dx has jmp amount
+
+
+
+SELFMODIFY_MASKED_set_base_segment_sprite:
+mov   ax, 01000h    ; preshifted right 4 
+
+
+SELFMODIFY_MASKED_add_currentoffset_sprite:
+public SELFMODIFY_MASKED_add_currentoffset_sprite
+db 05, 00, 00    ; add ax, 0000 (word)  ; always a single low byte actually
+
+
+
+
+;call  R_DrawColumnPrepMaskedMulti_  ; INLINED
+
+; dc_yl is si
+; dc_yh is di
+; dc_x not loaded.
+
+
+; cl:?? currently has dc_texturemid
+
+; si is already dc_yl
+; di is already dc_yh
+SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x_preshifted_sprite:
+mov   di, 01000h
+ENSUREALIGN_107_sprite:
+
+
+
+
+lea   bp, [si + masked_local_dc_yl_lookup_table_ - 2] ; stack bp and si for word ptr, bake in - 2
+add   di, word ptr ds:[bp+si]                  ; add dc_yl * 80
+SELFMODIFY_MASKED_set_dc_iscale_lo_sprite:
+mov   bx, 01000h ; dc_iscale +0
+ENSUREALIGN_104_sprite:
+
+SELFMODIFY_MASKED_destview_lo_3_sprite:
+add   di, 01000h
+
+mov    ds, ax
+
+
+; if we make a separate drawcol masked we can use a constant here.
+
+
+SELFMODIFY_MASKED_sub_centery_1_sprite:
+lea   ax, [si - 010h] ; dc_yl - centery
+
+; cl:si is dc_texturemid
+; ch:bx is dc_iscale
+; pass in xlat offset for bx via bp
+
+SELFMODIFY_MASKED_dc_texturemid_lo_1_sprite:
+mov   si, 01000h        ; todo can this just go to si in the call?
+ENSUREALIGN_106_sprite:
+
+SELFMODIFY_MASKED_dc_texturemid_hi_1_sprite:
+SELFMODIFY_MASKED_set_dc_iscale_hi_sprite:
+mov   cx, 01000h ; dc_iscale +1, dc_texturemid intbits
+
+
+SELFMODIFY_MASKED_set_xlat_offset_sprite    :
+mov   bp, 01000h   
+ENSUREALIGN_105_sprite:
+
+SELFMODIFY_MASKED_sub_topdelta_sprite:
+sub    cl, 010h          ; subtract tex top offset. si = si+1
+; cl = dc_texturemid hi. carry this into the call
+
+
+
+
+
+
+db 09Ah
+SELFMODIFY_MASKED_COLFUNC_set_func_offset_sprite:
+dw DRAWCOL_NOLOOP_OFFSET_MASKED, COLORMAPS_SEGMENT_MASKEDMAPPING
+ENSUREALIGN_101_sprite:
+
+mov   ax, cs
+mov   ds, ax
+
+increment_column_and_continue_loop_sprite:
+pop   si
+SELFMODIFY_MASKED_restore_es_sprite:
+mov   cx, 01000h
+mov   es, cx
+
+; check next column
+lods  word ptr es:[si]       ; column->length. now si = si + 2.
+
+
+cmp   al, 0FFh               ; do we have another post int he column?
+je    exit_function_sprite
+
+; only calculate next offset if necessary since the shift 4 is expensive..
+;        currentoffset += column->length;
+;        currentoffset += (16 - ((column->length &0xF)) &0xF);
+
+; round up to next segment. add 0Fh and shift right four. but dont do this if we dont continue the loop.
+
+SELFMODIFY_MASKED_set_last_offset_sprite:
+db    0bbh, 00, 00   ; mov   bx, (byte) zero extended into high
+add   bx, 0Fh        
+
+SHIFT_MACRO shr bx 4   ; TODO separately bench lookup table for shift right 4? mov bl, byte ptrs cs:[_sar4table + bx]
+add   byte ptr ds:[SELFMODIFY_MASKED_add_currentoffset_sprite+1], bl
+
+jmp   draw_next_column_patch_sprite 
+exit_function_sprite:
+
+
+
+
+pop   di
+
+ret
+
+ENDP
+
 
 
 
@@ -4977,17 +5319,17 @@ mov   si, _player_vissprites       ; vissprite 0
 
 
 SELFMODIFY_MASKED_pspriteiscale_lo_1:
-mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], 01000h
+mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo_sprite+1 - OFFSET R_MASK24_STARTMARKER_], 01000h
 SELFMODIFY_MASKED_pspriteiscale_hi_1:
-mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+2 - OFFSET R_MASK24_STARTMARKER_], 010h
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi_sprite+2 - OFFSET R_MASK24_STARTMARKER_], 010h
 
 
 
 mov   al, byte ptr ds:[si + VISSPRITE_T.vs_colormap]
-mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMARKER_], al
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset_sprite+2 - OFFSET R_MASK24_STARTMARKER_], al
 
 ; hardcoded function types.   TODO: if scale 1 use scale-less draw? or use hardcoded draws one way or another?
-mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset], DRAWCOL_NOLOOP_OFFSET_MASKED
+mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset_sprite], DRAWCOL_NOLOOP_OFFSET_MASKED
 
 
 
@@ -6094,6 +6436,8 @@ mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_2 - OFF
 mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_2 - OFFSET R_MASK24_STARTMARKER_+2], ax
 mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+0], ax
 mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+2], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift_sprite- OFFSET R_MASK24_STARTMARKER_+0], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift_sprite- OFFSET R_MASK24_STARTMARKER_+2], ax
 mov      bx, OFFSET (SELFMODIFY_MASKED_detailshift_2_32bit_1+0 - OFFSET R_MASK24_STARTMARKER_)
 mov      ax, 0FAD1h ; sar dx, 1 
 mov      word ptr ds:[bx], ax
@@ -6124,6 +6468,7 @@ mov      ax, 0ffd1h
 ; write to colfunc segment
 mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_1- OFFSET R_MASK24_STARTMARKER_+0], ax
 mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+0], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift_sprite- OFFSET R_MASK24_STARTMARKER_+0], ax
 mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_2 - OFFSET R_MASK24_STARTMARKER_+0], ax
 
 ; nop 
@@ -6131,6 +6476,7 @@ mov      ax, 0c089h
 mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_1- OFFSET R_MASK24_STARTMARKER_+2], ax
 mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_2 - OFFSET R_MASK24_STARTMARKER_+2], ax
 mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+2], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift_sprite- OFFSET R_MASK24_STARTMARKER_+2], ax
 
 mov      bx, OFFSET (SELFMODIFY_MASKED_detailshift_2_32bit_1+0 - OFFSET R_MASK24_STARTMARKER_)
 mov      word ptr ds:[bx], ax
@@ -6159,6 +6505,8 @@ mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_1- OFFS
 
 mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+0], ax
 mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+2], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift_sprite- OFFSET R_MASK24_STARTMARKER_+0], ax
+mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift_sprite- OFFSET R_MASK24_STARTMARKER_+2], ax
 
 mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_2 - OFFSET R_MASK24_STARTMARKER_+0], ax
 mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_2 - OFFSET R_MASK24_STARTMARKER_+2], ax
@@ -6291,6 +6639,7 @@ inc      ax ; has to do with yl/yh inc by 1 logic
 
 neg      ax
 mov   byte ptr ds:[SELFMODIFY_MASKED_sub_centery_1+2 - OFFSET R_MASK24_STARTMARKER_], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_sub_centery_1_sprite+2 - OFFSET R_MASK24_STARTMARKER_], al
 mov   byte ptr ds:[SELFMODIFY_MASKED_sub_centery_2+2 - OFFSET R_MASK24_STARTMARKER_], al
 
 skip_centery_selfmodifies_this_frame:
@@ -6303,6 +6652,7 @@ mov   ax, word ptr ss:[_destview+0]
 mov   word ptr ds:[SELFMODIFY_MASKED_destview_lo_1+2 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   word ptr ds:[SELFMODIFY_MASKED_destview_lo_2+2 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   word ptr ds:[SELFMODIFY_MASKED_destview_lo_3+2 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_destview_lo_3_sprite+2 - OFFSET R_MASK24_STARTMARKER_], ax
 
 mov   ax, word ptr ss:[_destview+2]
 mov   word ptr ds:[SELFMODIFY_MASKED_destview_hi_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
