@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/03/27 10:39:23
+Created on:       26/03/27 11:00:40
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -49,7 +49,7 @@ R_SPAN0_TEXT           CODE           AUTO           1be1:0000       0000063a
 R_SPANFL_TEXT          CODE           AUTO           1c45:0000       00000591
 R_SKY_TEXT             CODE           AUTO           1c9f:0000       00000d84
 R_SKYFL_TEXT           CODE           AUTO           1d78:0000       00000303
-R_MASK24_TEXT          CODE           AUTO           1da9:0000       00001a62
+R_MASK24_TEXT          CODE           AUTO           1da9:0000       00001a6e
 R_MASK16_TEXT          CODE           AUTO           1f50:0000       000019c4
 R_MASK0_TEXT           CODE           AUTO           20ed:0000       00001930
 R_MASKFL_TEXT          CODE           AUTO           2280:0000       000018f6
@@ -340,7 +340,7 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079b:0000      SM_MPUMD_STARTMARKER_
 079b:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-0819:38ac      R_WriteBackViewConstants24_
+0819:38b2      R_WriteBackViewConstants24_
 0819:0d85*     tx_already_positive
 0819:2677*     R_AddLine_
 0819:337e      R_GetPatchTexture_Far24_
@@ -397,7 +397,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:2412*     SELFMODIFY_set_pixel_count_shift_mul_bot
 0819:2380*     R_GetSourceSegment0_START_TWOSIDED
 0819:3224*     R_GetTexturePage_
-0819:3a54*     R_WriteBackFrameConstants_
+0819:3a5a*     R_WriteBackFrameConstants_
 0819:09d6*     FixedMulTrigNoShiftCosine_BSPLocal_
 0819:0a00*     R_ClearPlanes_
 0819:0056*     _cachedsegmentlumpsBSPLocal
@@ -547,72 +547,72 @@ Module: r_skyfl.obj(r_skyfl.ASM)
 Module: r_mask24.obj(r_mask24.ASM)
 1da9:066c*     draw_shadow_sprite
 1da9:036a*     ENSUREALIGN_103
-1da9:0b42*     ENSUREALIGN_109
-1da9:14c6*     ENSUREALIGN_106
-1da9:0892*     ENSUREALIGN_114
-1da9:0ae6*     ENSUREALIGN_111
-1da9:0f2e*     FastDiv3232FFFF_
-1da9:0882*     ENSUREALIGN_117
-1da9:0b45*     ENSUREALIGN_110
+1da9:0b3e*     ENSUREALIGN_109
+1da9:14c2*     ENSUREALIGN_106
+1da9:088e*     ENSUREALIGN_114
+1da9:0ae2*     ENSUREALIGN_111
+1da9:0f2a*     FastDiv3232FFFF_
+1da9:087e*     ENSUREALIGN_117
+1da9:0b41*     ENSUREALIGN_110
 1da9:014b*     ENSUREALIGN_102
-1da9:0844*     ENSUREALIGN_120
-1da9:10c4*     ENSUREALIGN_121
-1da9:125d*     ENSUREALIGN_122
-1da9:08cc*     ENSUREALIGN_113
-1da9:12bb*     ENSUREALIGN_124
-1da9:14ae*     ENSUREALIGN_107
-1da9:06b0*     ENSUREALIGN_129
-1da9:0896*     ENSUREALIGN_118
+1da9:0840*     ENSUREALIGN_120
+1da9:10c0*     ENSUREALIGN_121
+1da9:1259*     ENSUREALIGN_122
+1da9:08c8*     ENSUREALIGN_113
+1da9:14aa*     ENSUREALIGN_107
+1da9:06ae*     ENSUREALIGN_129
+1da9:0892*     ENSUREALIGN_118
 1da9:0662*     ENSUREALIGN_130
-1da9:0972*     ENSUREALIGN_112
-1da9:0b8d*     ENSUREALIGN_115
-1da9:11d1*     ENSUREALIGN_126
-1da9:0829*     ENSUREALIGN_119
-1da9:0899*     ENSUREALIGN_116
-1da9:12b2*     ENSUREALIGN_123
-1da9:1458*     ENSUREALIGN_127
+1da9:096e*     ENSUREALIGN_112
+1da9:0b89*     ENSUREALIGN_115
+1da9:11cd*     ENSUREALIGN_126
+1da9:0825*     ENSUREALIGN_119
+1da9:12b7*     ENSUREALIGN_124
+1da9:0895*     ENSUREALIGN_116
+1da9:12ae*     ENSUREALIGN_123
+1da9:1454*     ENSUREALIGN_127
 1da9:0515*     three_page_sprite
-1da9:14bc*     ENSUREALIGN_104
-1da9:147e*     ENSUREALIGN_108
-1da9:14cc*     ENSUREALIGN_105
-1da9:14d4*     ENSUREALIGN_101
-1da9:097e*     ENSUREALIGN_128
-1da9:1266*     ENSUREALIGN_125
-1da9:1202*     continue_checking_if_drawseg_obscures_sprite
-1da9:139a*     do_psprite_draws
+1da9:14b8*     ENSUREALIGN_104
+1da9:147a*     ENSUREALIGN_108
+1da9:14c8*     ENSUREALIGN_105
+1da9:14d0*     ENSUREALIGN_101
+1da9:097a*     ENSUREALIGN_128
+1da9:1262*     ENSUREALIGN_125
+1da9:11fe*     continue_checking_if_drawseg_obscures_sprite
+1da9:1396*     do_psprite_draws
 1da9:1740      masked_local_dc_yl_lookup_table_
-1da9:0fd0*     R_PointOnSegSide_
+1da9:0fcc*     R_PointOnSegSide_
 1da9:0006*     _fuzzoffset
 1da9:18d0      R_WriteBackViewConstantsMasked24_
 1da9:0638*     draw_sprite_normal_innerloop
 1da9:0160*     R_DrawMaskedSpriteShadow_
 1da9:04f8*     found_multipage
-1da9:1318*     SELFMODIFY_MASKED_set_al_to_silhouette
-1da9:19d8      R_WriteBackMaskedFrameConstants24_
-1da9:0c96*     selected_sprite_page_multi
-1da9:14fe*     R_GetMaskedColumnSegment_
-1da9:0b9e*     R_EvictL2CacheEMSPage_Sprite_Multi_
+1da9:1314*     SELFMODIFY_MASKED_set_al_to_silhouette
+1da9:19e4      R_WriteBackMaskedFrameConstants24_
+1da9:0c92*     selected_sprite_page_multi
+1da9:14fa*     R_GetMaskedColumnSegment_
+1da9:0b9a*     R_EvictL2CacheEMSPage_Sprite_Multi_
 1da9:055a*     R_LoadSpriteColumns_
-1da9:0c4e*     R_MarkL2SpriteCacheMRU_
-1da9:0bbe*     R_EvictL2CacheEMSPage_Sprite_Single_
-1da9:0e5a*     found_startpage_multi
-1da9:0da0*     get_multipage_spritepage
-1da9:0df2*     evict_and_find_startpage_multi
-1da9:10b0      R_DrawMasked24_
+1da9:0c4a*     R_MarkL2SpriteCacheMRU_
+1da9:0bba*     R_EvictL2CacheEMSPage_Sprite_Single_
+1da9:0e56*     found_startpage_multi
+1da9:0d9c*     get_multipage_spritepage
+1da9:0dee*     evict_and_find_startpage_multi
+1da9:10ac      R_DrawMasked24_
 1da9:00b4*     R_DrawSingleMaskedColumn_
-1da9:1172*     R_DrawSprite_
+1da9:116e*     R_DrawSprite_
 1da9:0318*     R_DrawVisSprite_
-1da9:0dba*     mark_all_pages_mru_loop
-1da9:1a62      R_MASK24_ENDMARKER_
+1da9:0db6*     mark_all_pages_mru_loop
+1da9:1a6e      R_MASK24_ENDMARKER_
 1da9:0000*     _spritepagesegments
-1da9:13fa*     R_DrawMaskedColumn_
+1da9:13f6*     R_DrawMaskedColumn_
 1da9:0636*     continue_outer_loop_vga_plane_draw_normal
-1da9:14a6*     SELFMODIFY_MASKED_add_currentoffset
-1da9:147b*     SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup
-1da9:0d42*     R_GetSpritePage_
+1da9:14a2*     SELFMODIFY_MASKED_add_currentoffset
+1da9:1477*     SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup
+1da9:0d3e*     R_GetSpritePage_
 1da9:0395*     R_DrawPlayerVisSprite_
-1da9:0bc4*     found_enough_pages
-1da9:06ba*     R_RenderMaskedSegRange_
+1da9:0bc0*     found_enough_pages
+1da9:06b6*     R_RenderMaskedSegRange_
 1da9:049f*     foundonepage
 1da9:0000      R_MASK24_STARTMARKER_
 Module: r_mask16.obj(r_mask16.ASM)

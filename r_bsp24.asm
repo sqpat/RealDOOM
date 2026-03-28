@@ -14253,6 +14253,10 @@ mov       dx, SC_DATA
 mov       al, 15
 out       dx, al  ; for the potato case, which will skip OUTs later
 
+mov       dl, (GC_INDEX AND 0FFh)
+mov       ax, 4
+out       dx, ax  ; for the potato case, which will skip OUTs later
+
 call      dword ptr ds:[_R_WriteBackMaskedFrameConstantsCall]
 call      dword ptr ds:[_R_DrawMaskedCall]
 

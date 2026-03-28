@@ -1577,31 +1577,29 @@ mov   cx, es
 
 ALIGN_MACRO
 draw_sprite_shadow_innerloop:
+
+mov   bx, dx    ; frac intbits
 SELFMODIFY_rewrite_masked_out_dx_code_shadow:
 
-mov   es, dx ; backup dx in es (which is backuped up in cx anyway)
-
-mov   bx, di    ; get current dc_x
-
-SELFMODIFY_MASKED_and_quality_shift:   ; todo actually modify this
-and   bx, 3 
-
 mov   dx, SC_DATA ; 3C5
-SELFMODIFY_MASKED_detailshiftplus1_3:
-mov   al, byte ptr ds:[bx + 010h] ; NOTE this offset is selfmodified
+mov   cx, di ; dc_x
+and   cl, 3
+mov   al, 1
+shl   al, cl
 out   dx, al
+mov   ah, cl
 
-sal   bx, 1
+mov   al, 4
 mov   dl, (GC_INDEX  AND 0FFh)  ;   3CE, dh still 3
-mov   ax, word ptr ds:[bx + _vga_read_port_lookup]
 out   dx, ax
+mov   dx, bx ; restore dx
+mov   cx, es ; restore cx
 
-mov   dx, es ; restore dx
-mov   es, cx ; restore es
 
 done_setting_vga_plane_masked_shadow:
 
-mov   bx, dx   ; frac.h.intbits 
+; bx already dx
+
 
 ;   uint16_t __far * columndata = (uint16_t __far *)(&(patch->columnofs[frac.h.intbits]));
 ;   column_t __far * postdata   = (column_t __far *)(((byte __far *) patch) + columndata[1]);
@@ -1621,14 +1619,14 @@ add   ax, cx    ; patch_segment + columndata[0] ?
 
 call R_DrawMaskedSpriteShadow_   ; todo pusha/popa in here?
 
-increment_by_shift_shadow:
+inc   di  ; dc_x
+
 SELFMODIFY_MASKED_vissprite_xiscale_lo_shadow:
 add   bp, 01000h
 SELFMODIFY_MASKED_vissprite_xiscale_hi_shadow:
 adc   dx, 01000h
 ENSUREALIGN_129:
 
-inc   di  ; dc_x
 
 SELFMODIFY_MASKED_visspriteloop_x2_1_shadow:
 cmp   di, 01000h 
@@ -5931,7 +5929,6 @@ db 0ebh, (OFFSET done_setting_vga_plane_masked - OFFSET SELFMODIFY_rewrite_maske
 
 _lookup_bytes_shadow:
 ; quality 0
-mov   bx, dx ; backup
 mov   dx, SC_DATA ; 3C5
 mov   cx, di ; dc_x
 and   cl, 3
@@ -5939,18 +5936,18 @@ mov   al, 1
 shl   al, cl
 out   dx, al
 
-mov   dl, (GC_INDEX  AND 0FFh)  ;   3CE, dh still 3
 mov   ah, cl
 mov   al, 4
+mov   dl, (GC_INDEX  AND 0FFh)  ;   3CE, dh still 3
 out   dx, ax
+mov   dx, bx ; restore dx
+mov   cx, es ; restore cx
+; 24 bytes
 
-mov   dx, bx ; restore
-mov   cx, es ; restore
 
-; 26 bytes
 
-; quality 2
-mov   bx, dx ; backup
+
+; quality 1
 mov   dx, SC_DATA ; 3C5
 mov   ax, di
 and   al,  1   ; 1 or 0
@@ -5959,19 +5956,17 @@ xor   al, 12   ; C or F3
 and   al, 15   ; 3 or 15
 out   dx, al
 
-mov   dl, (GC_INDEX  AND 0FFh)  ;   3CE, dh still 3
 ; al is 3 or 15, needs to be 0 or 4
 and   al, 4
 mov   ah, al
 mov   al, 4
+mov   dl, (GC_INDEX  AND 0FFh)  ;   3CE, dh still 3
 out   dx, ax
+mov   dx, bx ; restore dx
 
-mov   dx, bx ; restore
-
-; 26 bytes
+; 24 bytes
 
 
-; 10 bytes of garbage is fine.
 
 ; quality 2
 
@@ -6024,9 +6019,10 @@ mov      ax,  word ptr ss:[_detailshift]
 
 ; todo based on quality change
 
-LENGTH_OF_OUT_CODE_STRING = 9
 
-LENGTH_OF_OUT_CODE_SHADOW_STRING = 26
+
+LENGTH_OF_OUT_CODE_STRING = 9
+LENGTH_OF_OUT_CODE_SHADOW_STRING = 24
 
 mov      dx, ax ; backup
 mov      cx, LENGTH_OF_OUT_CODE_STRING
@@ -6034,16 +6030,18 @@ mul      cl
 add      ax, OFFSET _lookup_bytes
 xchg     ax, si
 mov      di, OFFSET SELFMODIFY_rewrite_masked_out_dx_code
-xchg     ax, dx ; restore ax.
+mov      ax, dx ; restore detailshift
 rep      movsb
 
-;mov      cl, LENGTH_OF_OUT_CODE_STRING
-;sub      si, cx
-;mov      di, OFFSET SELFMODIFY_rewrite_masked_out_dx_code_shadow
-;rep      movsb
+mov      cl, LENGTH_OF_OUT_CODE_SHADOW_STRING
+mul      cl
+add      ax, OFFSET _lookup_bytes_shadow
+xchg     ax, si
+mov      di, OFFSET SELFMODIFY_rewrite_masked_out_dx_code_shadow
+rep      movsb
+xchg     ax, dx ; restore detailshift
 
-
-;xor      cx, cx
+; cx already 0...
 mov      cl, al   ; cx has detailshift for plater.
 
 
@@ -6150,7 +6148,6 @@ mov   word ptr ds:[SELFMODIFY_MASKED_detailshiftandval_2+1 - OFFSET R_MASK24_STA
 
 mov   al, byte ptr ss:[_detailshift+1]
 add   al, _quality_port_lookup
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_3+2 - OFFSET R_MASK24_STARTMARKER_], al
 mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftplus1_4+2 - OFFSET R_MASK24_STARTMARKER_], al
 
 mov   ax, word ptr ss:[_viewheight]
