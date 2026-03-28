@@ -1028,8 +1028,72 @@ cmp   byte ptr ds:[si + VISSPRITE_T.vs_colormap], COLORMAP_SHADOW
 mov   bp, cs
 mov   ds, bp
 
-je    jump_to_draw_shadow_sprite
+jne   do_draw_loop
+jump_to_draw_shadow_sprite:
+jmp   draw_shadow_sprite
+ALIGN_MACRO
+sprite_not_first_cachedsegment:
+cmp   ax, word ptr ds:[_lastvisspritepatch2]
+jne   sprite_not_in_cached_segments
+mov   dx, word ptr ds:[_lastvisspritesegment2]
+mov   es, dx
+mov   dx, word ptr ds:[_lastvisspritesegment]
+mov   word ptr ds:[_lastvisspritesegment2], dx
 
+mov   word ptr ds:[_lastvisspritesegment], es
+mov   dx, word ptr ds:[_lastvisspritepatch]
+mov   word ptr ds:[_lastvisspritepatch2], dx
+mov   word ptr ds:[_lastvisspritepatch], ax
+jmp   spritesegment_ready
+ALIGN_MACRO
+sprite_not_in_cached_segments:
+mov   dx, word ptr ds:[_lastvisspritepatch]
+mov   word ptr ds:[_lastvisspritepatch2], dx
+mov   dx, word ptr ds:[_lastvisspritesegment]
+mov   word ptr ds:[_lastvisspritesegment2], dx
+;call  R_GetSpriteTexture_   inlined
+
+
+push  si
+push  bp
+; everything but si and bp is free game to be clobbered! 
+
+mov   di, SPRITEPAGE_SEGMENT
+mov   es, di
+
+xchg  ax, di    ; di gets index
+
+mov   al, byte ptr es:[di]
+cmp   al, 0FFh
+je    jump_to_sprite_not_in_cache
+
+mov   cl, byte ptr es:[di + SPRITEOFFSETS_OFFSET]
+
+call  R_GetSpritePage_  ; destroys di, get cl first
+; di got 13! cl was 0.
+cbw
+mov   di, ax
+mov   al, cl
+SHIFT_MACRO shl   ax 4      ;shift4
+add   ah, byte ptr cs:[di + _spritepagesegments - OFFSET R_MASK24_STARTMARKER_]
+
+pop   bp
+pop   si
+
+;jmp   done_with_R_GetSpriteTexture_
+mov   word ptr ds:[_lastvisspritesegment], ax
+mov   es, ax
+mov   ax, word ptr ds:[si + VISSPRITE_T.vs_patch]
+mov   word ptr ds:[_lastvisspritepatch], ax
+jmp   spritesegment_ready
+ALIGN_MACRO
+jump_to_sprite_not_in_cache:
+jmp   sprite_not_in_cache
+ALIGN_MACRO
+exit_draw_masked_column_sprite_early:
+jmp   exit_function_sprite_dont_pop
+
+ALIGN_MACRO
 
 do_draw_loop:
 
@@ -1084,7 +1148,342 @@ add   ax, cx ; self modify? does it change?
 ; cx is preserved by this call here
 ; so is ES
 
-call R_DrawMaskedColumnSprite_
+;call R_DrawMaskedColumnSprite_
+; inlined
+
+
+
+
+; three uses... two in maskedsegrange one in drawvissprite?
+; revisit what really needs to be push/popped
+
+
+
+; R_DrawMaskedColumnSprite_  ; inlined
+
+
+; ds = cs
+
+mov   es, cx
+; todo pass in bx as si instead.
+cmp   byte ptr es:[si + COLUMN_T.column_topdelta], 0FFh
+je    exit_draw_masked_column_sprite_early
+
+; no early out, properly run the function. note fixed stack frame
+; investigate pusha/popa. any cx/es trick possible?
+
+
+push  di
+
+mov   word ptr ds:[SELFMODIFY_MASKED_restore_es_sprite+1], cx
+mov   word ptr ds:[SELFMODIFY_MASKED_set_base_segment_sprite+1], ax
+
+; es:si is now column
+
+; dc_texturemid already set pre call.
+
+; look up loop constants which involve segment juggling (floor/ceil clips)
+
+mov   byte ptr ds:[SELFMODIFY_MASKED_add_currentoffset_sprite+1], 0
+
+mov   bx, di   ; dc_x
+; todo preshift here
+; shift di by (2 - detailshift.)
+SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift_sprite:  ; todo make this into the above selfmodify setter.
+sar   di, 1
+sar   di, 1
+
+mov   word ptr ds:[SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x_preshifted_sprite+1], di
+
+les   di, dword ptr ss:[_mfloorclip]
+mov   al, byte ptr es:[bx+di]
+les   di, dword ptr ss:[_mceilingclip]
+mov   ah, byte ptr es:[bx+di]
+mov   word ptr ds:[SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup_sprite+1], ax
+
+mov   es, cx  ; restore es
+
+lods  word ptr es:[si]  ; load column for first iter
+
+draw_next_column_patch_sprite:
+
+; todo selfmodify forward write ES
+
+push  si   ; retrieve after R_DrawColumnPrepMaskedMulti call. 
+
+; ax contains column fields!
+
+;        topscreen.w = sprtopscreen + FastMul16u32u(column->topdelta, spryscale.w);
+
+
+mov   byte ptr ds:[SELFMODIFY_MASKED_sub_topdelta_sprite + 2], al
+mov   byte ptr ds:[SELFMODIFY_MASKED_set_last_offset_sprite + 1], ah
+
+; calculate dc_yl (topdelta * scale)
+
+xor   cx, cx
+mov   cl, al      ; al 0, cx = 0 extended topdelta for mul
+
+SELFMODIFY_MASKED_set_spryscale_lo_sprite:
+mov   di, 01000h
+xchg  ax, bx      ; back column field up in bx
+
+xor   ax, ax  ; ax = 0
+
+
+
+;cwd           ; dx = 0
+xor   dx, dx    ; toggle for ENSUREALIGN_127
+
+SELFMODIFY_MASKED_set_spryscale_hi_sprite:
+mov   bp, 01000h
+ENSUREALIGN_131_sprite:
+
+jcxz  skip_topdelta_mul_sprite ; todo brnach test?
+
+mov   ax, bp
+
+; cx (cl) = topdelta.
+; topscreen.w = sprtopscreen + FastMul16u32u(column->topdelta, spryscale.w);
+
+; todo this is actually mul 8x32. is there a faster way involving 8 bit muls?
+;inlined fastmul16u32u
+
+MUL  CX        ; AX * CX
+XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+MUL  DI        ; AX * DI
+ADD  DX, CX    ; add prev low result to high word
+
+skip_topdelta_mul_sprite:
+
+SELFMODIFY_MASKED_add_sprtopscreen_lo_sprite:
+add   ax, 01000h
+SELFMODIFY_MASKED_add_sprtopscreen_hi_sprite:
+adc   dx, 01000h
+ENSUREALIGN_127_sprite:
+
+; topscreen = DX:AX.
+
+;		dc_yl = topscreen.h.intbits; 
+;		if (topscreen.h.fracbits)
+;			dc_yl++;
+
+xor  si, si
+neg  ax
+adc  si, dx  ; si stores dc_yl
+neg  ax
+
+
+
+; calculate dc_yh ((length * scale))
+xor  cx, cx   ; clear ch.
+mov  cl, bh   ; cached length. bx now free to use. ch already was 0
+
+xchg ax, bp   ;  ax gets spyscale+2 back. bp stores old topscreen low
+mov  bx, dx   ;  bx:bp stores old topscreen result
+
+;        bottomscreen.w = topscreen.w + FastMul16u32u(column->length, spryscale.w);
+
+; ax:bx spryscale
+
+; todo can this be 8 bit mul without the xor ch or not
+;inlined fastmul16u32u
+MUL  CX        ; AX * CX
+XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+MUL  DI        ; AX * DI
+ADD  DX, CX    ; add prev low result to high word
+
+
+; add cached topscreen
+add   ax, bp
+adc   dx, bx
+
+;		dc_yh = bottomscreen.h.intbits;
+;		if (!bottomscreen.h.fracbits)
+;			dc_yh--;
+
+neg ax
+sbb dx, 0FFFFh  ; we actually want to simultaneously add one back to this. has to do with the >= case and is made up for with jmp lookup
+
+inc   si ; dc_yl + 1
+inc   dx ; dc_yh + 1
+
+; dc_yh, dc_yl are set (dx, si)
+        
+
+;        if (dc_yh >= mfloorclip[dc_x])
+;            dc_yh = mfloorclip[dc_x]-1;
+
+; todo look these up otuside of loop 
+; alternatively store dc_x in bp/di/si?
+
+
+; cl is floor clip
+; ch is ceil clip
+
+xor   ax, ax
+
+SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup_sprite:
+PUBLIC SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup_sprite
+; todo 8 bit logic? can dx be above 255?
+mov   cx, 01000h ; can end up ff high
+ENSUREALIGN_108_sprite:
+
+mov   al, cl
+cmp   dx, ax                ; something here.... 
+jl    skip_floor_clip_set_sprite
+mov   dx, ax
+
+dec   dx        ; todo bake this into the lookup
+
+skip_floor_clip_set_sprite:
+mov   al, ch
+
+
+;        if (dc_yl <= mceilingclip[dc_x])
+;            dc_yl = mceilingclip[dc_x]+1;
+
+
+cmp   si, ax
+jg    skip_ceil_clip_set_sprite
+;? toggle for ENSUREALIGN_101
+;mov   si, ax
+xchg  ax, si
+inc   si        ; todo bake this into the lookup
+skip_ceil_clip_set_sprite:
+
+
+sub   dx, si   ; dx is dc_yh
+jl    increment_column_and_continue_loop_sprite
+
+neg   dx
+shl   dx, 1
+add   dx, 398
+mov   di, dx  ; 2, 2   dx already multiplied by 2
+shl   dx, 1   ; 4, 2
+shl   dx, 1   ; 8, 2    ; is there a way to swap just one instruction, while not adding instruction count?
+add   dx, di  ; 10, 2   ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
+; dx has jmp amount
+
+
+
+SELFMODIFY_MASKED_set_base_segment_sprite:
+mov   ax, 01000h    ; preshifted right 4 
+
+
+SELFMODIFY_MASKED_add_currentoffset_sprite:
+public SELFMODIFY_MASKED_add_currentoffset_sprite
+db 05, 00, 00    ; add ax, 0000 (word)  ; always a single low byte actually
+
+
+
+
+;call  R_DrawColumnPrepMaskedMulti_  ; INLINED
+
+; dc_yl is si
+; dc_yh is di
+; dc_x not loaded.
+
+
+; cl:?? currently has dc_texturemid
+
+; si is already dc_yl
+; di is already dc_yh
+SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x_preshifted_sprite:
+mov   di, 01000h
+ENSUREALIGN_107_sprite:
+
+
+
+
+lea   bp, [si + masked_local_dc_yl_lookup_table_ - 2] ; stack bp and si for word ptr, bake in - 2
+add   di, word ptr ds:[bp+si]                  ; add dc_yl * 80
+SELFMODIFY_MASKED_set_dc_iscale_lo_sprite:
+mov   bx, 01000h ; dc_iscale +0
+ENSUREALIGN_104_sprite:
+
+SELFMODIFY_MASKED_destview_lo_3_sprite:
+add   di, 01000h
+
+mov    ds, ax
+
+
+; if we make a separate drawcol masked we can use a constant here.
+
+
+SELFMODIFY_MASKED_sub_centery_1_sprite:
+lea   ax, [si - 010h] ; dc_yl - centery
+
+; cl:si is dc_texturemid
+; ch:bx is dc_iscale
+; pass in xlat offset for bx via bp
+
+SELFMODIFY_MASKED_dc_texturemid_lo_1_sprite:
+mov   si, 01000h        ; todo can this just go to si in the call?
+ENSUREALIGN_106_sprite:
+
+SELFMODIFY_MASKED_dc_texturemid_hi_1_sprite:
+SELFMODIFY_MASKED_set_dc_iscale_hi_sprite:
+mov   cx, 01000h ; dc_iscale +1, dc_texturemid intbits
+
+
+SELFMODIFY_MASKED_set_xlat_offset_sprite    :
+mov   bp, 01000h   
+ENSUREALIGN_105_sprite:
+
+SELFMODIFY_MASKED_sub_topdelta_sprite:
+sub    cl, 010h          ; subtract tex top offset. si = si+1
+; cl = dc_texturemid hi. carry this into the call
+
+
+
+
+
+
+db 09Ah
+SELFMODIFY_MASKED_COLFUNC_set_func_offset_sprite:
+dw DRAWCOL_NOLOOP_OFFSET_MASKED, COLORMAPS_SEGMENT_MASKEDMAPPING
+ENSUREALIGN_101_sprite:
+
+mov   ax, cs
+mov   ds, ax
+
+increment_column_and_continue_loop_sprite:
+pop   si
+SELFMODIFY_MASKED_restore_es_sprite:
+mov   cx, 01000h
+mov   es, cx
+
+; check next column
+lods  word ptr es:[si]       ; column->length. now si = si + 2.
+
+
+cmp   al, 0FFh               ; do we have another post int he column?
+je    exit_function_sprite
+
+; only calculate next offset if necessary since the shift 4 is expensive..
+;        currentoffset += column->length;
+;        currentoffset += (16 - ((column->length &0xF)) &0xF);
+
+; round up to next segment. add 0Fh and shift right four. but dont do this if we dont continue the loop.
+
+SELFMODIFY_MASKED_set_last_offset_sprite:
+db    0bbh, 00, 00   ; mov   bx, (byte) zero extended into high
+add   bx, 0Fh        
+
+SHIFT_MACRO shr bx 4   ; TODO separately bench lookup table for shift right 4? mov bl, byte ptrs cs:[_sar4table + bx]
+add   byte ptr ds:[SELFMODIFY_MASKED_add_currentoffset_sprite+1], bl
+
+jmp   draw_next_column_patch_sprite 
+
+
+ALIGN_MACRO
+exit_function_sprite:
+
+pop   di
+
+exit_function_sprite_dont_pop:
+
 
 SELFMODIFY_MASKED_vissprite_xiscale_lo:
 add   word ptr ds:[_xiscalelowbits], 01000h
@@ -1095,7 +1494,9 @@ ENSUREALIGN_130:
 
 SELFMODIFY_MASKED_visspriteloop_x2_1:
 cmp   di, 01000h
-jle   draw_sprite_normal_innerloop
+jg    exit_draw_vissprites
+
+jmp   draw_sprite_normal_innerloop
 
 exit_draw_vissprites:
 mov   bp, ss
@@ -1103,66 +1504,9 @@ mov   ds, bp
 pop   bp
 ret 
 
-ALIGN_MACRO
-jump_to_draw_shadow_sprite:
-jmp   draw_shadow_sprite
-ALIGN_MACRO
   
-sprite_not_first_cachedsegment:
-cmp   ax, word ptr ds:[_lastvisspritepatch2]
-jne   sprite_not_in_cached_segments
-mov   dx, word ptr ds:[_lastvisspritesegment2]
-mov   es, dx
-mov   dx, word ptr ds:[_lastvisspritesegment]
-mov   word ptr ds:[_lastvisspritesegment2], dx
-
-mov   word ptr ds:[_lastvisspritesegment], es
-mov   dx, word ptr ds:[_lastvisspritepatch]
-mov   word ptr ds:[_lastvisspritepatch2], dx
-mov   word ptr ds:[_lastvisspritepatch], ax
-jmp   spritesegment_ready
-ALIGN_MACRO
-sprite_not_in_cached_segments:
-mov   dx, word ptr ds:[_lastvisspritepatch]
-mov   word ptr ds:[_lastvisspritepatch2], dx
-mov   dx, word ptr ds:[_lastvisspritesegment]
-mov   word ptr ds:[_lastvisspritesegment2], dx
-;call  R_GetSpriteTexture_   inlined
 
 
-push  si
-push  bp
-; everything but si and bp is free game to be clobbered! 
-
-mov   di, SPRITEPAGE_SEGMENT
-mov   es, di
-
-xchg  ax, di    ; di gets index
-
-mov   al, byte ptr es:[di]
-cmp   al, 0FFh
-je    sprite_not_in_cache
-
-mov   cl, byte ptr es:[di + SPRITEOFFSETS_OFFSET]
-
-call  R_GetSpritePage_  ; destroys di, get cl first
-; di got 13! cl was 0.
-cbw
-mov   di, ax
-mov   al, cl
-SHIFT_MACRO shl   ax 4      ;shift4
-add   ah, byte ptr cs:[di + _spritepagesegments - OFFSET R_MASK24_STARTMARKER_]
-
-pop   bp
-pop   si
-
-;jmp   done_with_R_GetSpriteTexture_
-mov   word ptr ds:[_lastvisspritesegment], ax
-mov   es, ax
-mov   ax, word ptr ds:[si + VISSPRITE_T.vs_patch]
-mov   word ptr ds:[_lastvisspritepatch], ax
-jmp   spritesegment_ready
-ALIGN_MACRO
 
 sprite_not_in_cache:
 
@@ -1638,344 +1982,6 @@ jmp   spritesegment_ready
 
 ENDP
 
-
-
-ALIGN_MACRO
-exit_draw_masked_column_sprite_early:
-ret
-
-; three uses... two in maskedsegrange one in drawvissprite?
-; revisit what really needs to be push/popped
-
-
-
-ALIGN_MACRO
-PROC   R_DrawMaskedColumnSprite_ NEAR ; fairly optimized
-PUBLIC R_DrawMaskedColumnSprite_
-
-; ds = cs
-
-mov   es, cx
-; todo pass in bx as si instead.
-cmp   byte ptr es:[si + COLUMN_T.column_topdelta], 0FFh
-je    exit_draw_masked_column_sprite_early
-
-; no early out, properly run the function. note fixed stack frame
-; investigate pusha/popa. any cx/es trick possible?
-
-
-push  di
-
-mov   word ptr ds:[SELFMODIFY_MASKED_restore_es_sprite+1], cx
-mov   word ptr ds:[SELFMODIFY_MASKED_set_base_segment_sprite+1], ax
-
-; es:si is now column
-
-; dc_texturemid already set pre call.
-
-; look up loop constants which involve segment juggling (floor/ceil clips)
-
-mov   byte ptr ds:[SELFMODIFY_MASKED_add_currentoffset_sprite+1], 0
-
-mov   bx, di   ; dc_x
-; todo preshift here
-; shift di by (2 - detailshift.)
-SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift_sprite:  ; todo make this into the above selfmodify setter.
-sar   di, 1
-sar   di, 1
-
-mov   word ptr ds:[SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x_preshifted_sprite+1], di
-
-les   di, dword ptr ss:[_mfloorclip]
-mov   al, byte ptr es:[bx+di]
-les   di, dword ptr ss:[_mceilingclip]
-mov   ah, byte ptr es:[bx+di]
-mov   word ptr ds:[SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup_sprite+1], ax
-
-mov   es, cx  ; restore es
-
-lods  word ptr es:[si]  ; load column for first iter
-
-draw_next_column_patch_sprite:
-
-; todo selfmodify forward write ES
-
-push  si   ; retrieve after R_DrawColumnPrepMaskedMulti call. 
-
-; ax contains column fields!
-
-;        topscreen.w = sprtopscreen + FastMul16u32u(column->topdelta, spryscale.w);
-
-
-mov   byte ptr ds:[SELFMODIFY_MASKED_sub_topdelta_sprite + 2], al
-mov   byte ptr ds:[SELFMODIFY_MASKED_set_last_offset_sprite + 1], ah
-
-; calculate dc_yl (topdelta * scale)
-
-xor   cx, cx
-mov   cl, al      ; al 0, cx = 0 extended topdelta for mul
-
-xchg  ax, bx      ; back column field up in bx
-
-xor   ax, ax  ; ax = 0
-
-
-SELFMODIFY_MASKED_set_spryscale_lo_sprite:
-mov   di, 01000h
-
-cwd           ; dx = 0
-;xor   dx, dx    ; toggle for ENSUREALIGN_127
-
-SELFMODIFY_MASKED_set_spryscale_hi_sprite:
-mov   bp, 01000h
-ENSUREALIGN_131_sprite:
-
-jcxz  skip_topdelta_mul_sprite ; todo brnach test?
-
-mov   ax, bp
-
-; cx (cl) = topdelta.
-; topscreen.w = sprtopscreen + FastMul16u32u(column->topdelta, spryscale.w);
-
-; todo this is actually mul 8x32. is there a faster way involving 8 bit muls?
-;inlined fastmul16u32u
-
-MUL  CX        ; AX * CX
-XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
-MUL  DI        ; AX * DI
-ADD  DX, CX    ; add prev low result to high word
-
-skip_topdelta_mul_sprite:
-
-SELFMODIFY_MASKED_add_sprtopscreen_lo_sprite:
-add   ax, 01000h
-SELFMODIFY_MASKED_add_sprtopscreen_hi_sprite:
-adc   dx, 01000h
-ENSUREALIGN_127_sprite:
-
-; topscreen = DX:AX.
-
-;		dc_yl = topscreen.h.intbits; 
-;		if (topscreen.h.fracbits)
-;			dc_yl++;
-
-xor  si, si
-neg  ax
-adc  si, dx  ; si stores dc_yl
-neg  ax
-
-
-
-; calculate dc_yh ((length * scale))
-xor  cx, cx   ; clear ch.
-mov  cl, bh   ; cached length. bx now free to use. ch already was 0
-
-xchg ax, bp   ;  ax gets spyscale+2 back. bp stores old topscreen low
-mov  bx, dx   ;  bx:bp stores old topscreen result
-
-;        bottomscreen.w = topscreen.w + FastMul16u32u(column->length, spryscale.w);
-
-; ax:bx spryscale
-
-; todo can this be 8 bit mul without the xor ch or not
-;inlined fastmul16u32u
-MUL  CX        ; AX * CX
-XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
-MUL  DI        ; AX * DI
-ADD  DX, CX    ; add prev low result to high word
-
-
-; add cached topscreen
-add   ax, bp
-adc   dx, bx
-
-;		dc_yh = bottomscreen.h.intbits;
-;		if (!bottomscreen.h.fracbits)
-;			dc_yh--;
-
-neg ax
-sbb dx, 0FFFFh  ; we actually want to simultaneously add one back to this. has to do with the >= case and is made up for with jmp lookup
-
-inc   si ; dc_yl + 1
-inc   dx ; dc_yh + 1
-
-; dc_yh, dc_yl are set (dx, si)
-        
-
-;        if (dc_yh >= mfloorclip[dc_x])
-;            dc_yh = mfloorclip[dc_x]-1;
-
-; todo look these up otuside of loop 
-; alternatively store dc_x in bp/di/si?
-
-
-; cl is floor clip
-; ch is ceil clip
-
-xor   ax, ax
-
-SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup_sprite:
-PUBLIC SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup_sprite
-; todo 8 bit logic? can dx be above 255?
-mov   cx, 01000h ; can end up ff high
-ENSUREALIGN_108_sprite:
-
-mov   al, cl
-cmp   dx, ax                ; something here.... 
-jl    skip_floor_clip_set_sprite
-mov   dx, ax
-
-dec   dx        ; todo bake this into the lookup
-
-skip_floor_clip_set_sprite:
-mov   al, ch
-
-
-;        if (dc_yl <= mceilingclip[dc_x])
-;            dc_yl = mceilingclip[dc_x]+1;
-
-
-cmp   si, ax
-jg    skip_ceil_clip_set_sprite
-;? toggle for ENSUREALIGN_101
-;mov   si, ax
-xchg  ax, si
-inc   si        ; todo bake this into the lookup
-skip_ceil_clip_set_sprite:
-
-
-sub   dx, si   ; dx is dc_yh
-jl    increment_column_and_continue_loop_sprite
-
-neg   dx
-shl   dx, 1
-add   dx, 398
-mov   di, dx  ; 2, 2   dx already multiplied by 2
-shl   dx, 1   ; 4, 2
-shl   dx, 1   ; 8, 2    ; is there a way to swap just one instruction, while not adding instruction count?
-add   dx, di  ; 10, 2   ; swap these two for 10x - 4, 8, 10 from shl, then add order swap
-; dx has jmp amount
-
-
-
-SELFMODIFY_MASKED_set_base_segment_sprite:
-mov   ax, 01000h    ; preshifted right 4 
-
-
-SELFMODIFY_MASKED_add_currentoffset_sprite:
-public SELFMODIFY_MASKED_add_currentoffset_sprite
-db 05, 00, 00    ; add ax, 0000 (word)  ; always a single low byte actually
-
-
-
-
-;call  R_DrawColumnPrepMaskedMulti_  ; INLINED
-
-; dc_yl is si
-; dc_yh is di
-; dc_x not loaded.
-
-
-; cl:?? currently has dc_texturemid
-
-; si is already dc_yl
-; di is already dc_yh
-SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x_preshifted_sprite:
-mov   di, 01000h
-ENSUREALIGN_107_sprite:
-
-
-
-
-lea   bp, [si + masked_local_dc_yl_lookup_table_ - 2] ; stack bp and si for word ptr, bake in - 2
-add   di, word ptr ds:[bp+si]                  ; add dc_yl * 80
-SELFMODIFY_MASKED_set_dc_iscale_lo_sprite:
-mov   bx, 01000h ; dc_iscale +0
-ENSUREALIGN_104_sprite:
-
-SELFMODIFY_MASKED_destview_lo_3_sprite:
-add   di, 01000h
-
-mov    ds, ax
-
-
-; if we make a separate drawcol masked we can use a constant here.
-
-
-SELFMODIFY_MASKED_sub_centery_1_sprite:
-lea   ax, [si - 010h] ; dc_yl - centery
-
-; cl:si is dc_texturemid
-; ch:bx is dc_iscale
-; pass in xlat offset for bx via bp
-
-SELFMODIFY_MASKED_dc_texturemid_lo_1_sprite:
-mov   si, 01000h        ; todo can this just go to si in the call?
-ENSUREALIGN_106_sprite:
-
-SELFMODIFY_MASKED_dc_texturemid_hi_1_sprite:
-SELFMODIFY_MASKED_set_dc_iscale_hi_sprite:
-mov   cx, 01000h ; dc_iscale +1, dc_texturemid intbits
-
-
-SELFMODIFY_MASKED_set_xlat_offset_sprite    :
-mov   bp, 01000h   
-ENSUREALIGN_105_sprite:
-
-SELFMODIFY_MASKED_sub_topdelta_sprite:
-sub    cl, 010h          ; subtract tex top offset. si = si+1
-; cl = dc_texturemid hi. carry this into the call
-
-
-
-
-
-
-db 09Ah
-SELFMODIFY_MASKED_COLFUNC_set_func_offset_sprite:
-dw DRAWCOL_NOLOOP_OFFSET_MASKED, COLORMAPS_SEGMENT_MASKEDMAPPING
-ENSUREALIGN_101_sprite:
-
-mov   ax, cs
-mov   ds, ax
-
-increment_column_and_continue_loop_sprite:
-pop   si
-SELFMODIFY_MASKED_restore_es_sprite:
-mov   cx, 01000h
-mov   es, cx
-
-; check next column
-lods  word ptr es:[si]       ; column->length. now si = si + 2.
-
-
-cmp   al, 0FFh               ; do we have another post int he column?
-je    exit_function_sprite
-
-; only calculate next offset if necessary since the shift 4 is expensive..
-;        currentoffset += column->length;
-;        currentoffset += (16 - ((column->length &0xF)) &0xF);
-
-; round up to next segment. add 0Fh and shift right four. but dont do this if we dont continue the loop.
-
-SELFMODIFY_MASKED_set_last_offset_sprite:
-db    0bbh, 00, 00   ; mov   bx, (byte) zero extended into high
-add   bx, 0Fh        
-
-SHIFT_MACRO shr bx 4   ; TODO separately bench lookup table for shift right 4? mov bl, byte ptrs cs:[_sar4table + bx]
-add   byte ptr ds:[SELFMODIFY_MASKED_add_currentoffset_sprite+1], bl
-
-jmp   draw_next_column_patch_sprite 
-exit_function_sprite:
-
-
-
-
-pop   di
-
-ret
-
-ENDP
 
 
 
@@ -6747,6 +6753,9 @@ PUBLIC  ENSUREALIGN_128
 PUBLIC  ENSUREALIGN_129
 PUBLIC  ENSUREALIGN_130
 PUBLIC  ENSUREALIGN_131
+
+PUBLIC  ENSUREALIGN_127_sprite
+PUBLIC  ENSUREALIGN_131_sprite
 
 
 ENDS
