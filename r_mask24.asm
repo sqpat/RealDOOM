@@ -49,6 +49,9 @@ PUBLIC R_MASK24_STARTMARKER_
 ENDP
 
 
+MOV_AX_IMM16_OPCODE = 0B8h
+TWO_BYTE_NOP = 0C089h
+DS_PREFIX_OPCODE = 03Eh
 
 
 
@@ -241,7 +244,9 @@ inc si ; dc_yh, dc_yl plus one...
 ; di is dc_x
 
 xor   ax, ax
-les   bx, dword ptr ds:[_mfloorclip]
+mov   bx, OPENINGS_SEGMENT
+mov   es, bx
+mov   bx, word ptr cs:[SELFMODIFY_set_floorclip_offset+3]
 
 mov   al, byte ptr es:[bx+di]
 
@@ -257,8 +262,9 @@ skip_floor_clip_set_single:
 ;            dc_yl = mceilingclip[dc_x]+1;
 
 
-les   bx, dword ptr ds:[_mceilingclip]   
 xor   ax, ax
+
+mov   bx, word ptr cs:[SELFMODIFY_set_ceilclip_offset+3]
 
 mov   al, byte ptr es:[bx+di] ; ch 0
 
@@ -413,6 +419,7 @@ mov   word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_lo_shadow+1], ax
 mov   ax, word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_hi_sprite+2]
 mov   word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_hi_shadow+2], ax
 
+
 ; todo copy clips too
 
 mov   cx, es
@@ -487,12 +494,10 @@ sar   di, 1
 mov   word ptr ds:[SELFMODIFY_MASKED_SHADOW_drawmaskedcolumn_set_shifted_dc_x+1], di
 
 
-; todo cleanup used segregs
 
-les   di, dword ptr ss:[_mfloorclip]
-mov   al, byte ptr es:[bx+di]
-les   di, dword ptr ss:[_mceilingclip]
-mov   ah, byte ptr es:[bx+di]
+SELFMODIFY_set_floorclip_code_sprite_shadow:
+mov   al, byte ptr ds:[bx+CLIPBOT_START_OFFSET]
+mov   ah, byte ptr ds:[bx+CLIPTOP_START_OFFSET]
 mov   word ptr ds:[SELFMODIFY_MASKED_SHADOW_set_mfloorceilclip_dc_x_lookup+1], ax
 
 mov   es, cx ; restore es
@@ -1195,13 +1200,15 @@ sar   di, 1
 
 mov   word ptr ds:[SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x_preshifted_sprite+1], di
 
-les   di, dword ptr ss:[_mfloorclip]
-mov   al, byte ptr es:[bx+di]
-les   di, dword ptr ss:[_mceilingclip]
-mov   ah, byte ptr es:[bx+di]
+; if playersprite then this is selfmodified to use constant values
+
+SELFMODIFY_set_floorclip_code_sprite: 
+mov   al, byte ptr ds:[bx+CLIPBOT_START_OFFSET]
+mov   ah, byte ptr ds:[bx+CLIPTOP_START_OFFSET]
+
 mov   word ptr ds:[SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup_sprite+1], ax
 
-mov   es, cx  ; restore es
+
 
 lods  word ptr es:[si]  ; load column for first iter
 
@@ -1226,6 +1233,8 @@ mov   cl, al      ; al 0, cx = 0 extended topdelta for mul
 
 SELFMODIFY_MASKED_set_spryscale_lo_sprite:
 mov   di, 01000h
+ENSUREALIGN_132_sprite:
+
 xchg  ax, bx      ; back column field up in bx
 
 xor   ax, ax  ; ax = 0
@@ -2042,9 +2051,10 @@ lods  word ptr ds:[si]  ; si 0x12 after ; drawseg_scalestep hi
 mov   word ptr cs:[SELFMODIFY_MASKED_dsp_10+1 - OFFSET R_MASK24_STARTMARKER_], ax
 add   si, 4 ; drawseg_bsilheight, drawseg_tsilheight
 lods  word ptr ds:[si]  ; si 0x18 after ; drawseg_sprtopclip_offset
-mov   word ptr cs:[SELFMODIFY_MASKED_dsp_16+4 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_set_ceilclip_offset+3 - OFFSET R_MASK24_STARTMARKER_], ax
 lods  word ptr ds:[si]  ; si 0x1A after ; drawseg_sprbottomclip_offset
-mov   word ptr cs:[SELFMODIFY_MASKED_dsp_18+4 - OFFSET R_MASK24_STARTMARKER_], ax  ; todo what if we set mfloorclip etc here.
+mov   word ptr cs:[SELFMODIFY_set_floorclip_offset+3 - OFFSET R_MASK24_STARTMARKER_], ax  ; todo what if we set mfloorclip etc here.
+
 lods  word ptr ds:[si]  ; si 0x1C after ; drawseg_maskedtexturecol_val
 mov   word ptr cs:[SELFMODIFY_MASKED_dsp_1A+4 - OFFSET R_MASK24_STARTMARKER_], ax
 
@@ -2103,7 +2113,7 @@ mov   word ptr cs:[SELFMODIFY_MASKED_maskedpostofs_1  +3 - OFFSET R_MASK24_START
 mov   word ptr cs:[SELFMODIFY_MASKED_maskedpostofs_2+3 - OFFSET R_MASK24_STARTMARKER_], ax
 
 ; nops
-mov   ax, 0c089h 
+mov   ax, TWO_BYTE_NOP 
 mov   bx, ax
 
 do_lookup_selfmodifies:
@@ -2133,7 +2143,7 @@ test  byte ptr es:[di], ML_DONTPEGBOTTOM
 
 ; todo lineflags jmp/nop selfmodify here?
 ; nop 
-mov   ax, 0c089h 
+mov   ax, TWO_BYTE_NOP 
 je    peg_bottom
 
 mov   ax, ((SELFMODIFY_MASKED_lineflags_ml_dontpegbottom_TARGET - SELFMODIFY_MASKED_lineflags_ml_dontpegbottom_AFTER) SHL 8) + 0EBh
@@ -2385,10 +2395,6 @@ mov   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_hi+1], dx
 ;    mfloorclip_offset = ds->sprbottomclip_offset;
 ;    mceilingclip_offset = ds->sprtopclip_offset;
 
-SELFMODIFY_MASKED_dsp_18:
-mov   word ptr ds:[_mfloorclip], 01000h
-SELFMODIFY_MASKED_dsp_16:
-mov   word ptr ds:[_mceilingclip], 01000h
 
 
 
@@ -4177,7 +4183,7 @@ ALIGN_MACRO
    mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+2 - OFFSET R_MASK24_STARTMARKER_], dl
    test  dl, dl
    jz    do_stretch_draw_386_masked
-   mov   word ptr cs:[SELFMODIFY_MASKED_apply_stretch_tag], 0C089h ; NOP  ; toggle stretch variant for this frame
+   mov   word ptr cs:[SELFMODIFY_MASKED_apply_stretch_tag], TWO_BYTE_NOP ; NOP  ; toggle stretch variant for this frame
    ret
    do_stretch_draw_386_masked:
    mov   word ptr cs:[SELFMODIFY_MASKED_apply_stretch_tag], ((SELFMODIFY_MASKED_apply_stretch_tag_TARGET - SELFMODIFY_MASKED_apply_stretch_tag_AFTER) SHL 8) + 0EBh  ; jmp 8 turn on stretch variant for this frame
@@ -4195,7 +4201,7 @@ ELSE
    div bx
    ; cx:ax is result 
    ; ch is known zero.
-   mov word ptr cs:[SELFMODIFY_MASKED_apply_stretch_tag], 0C089h ; NOP  ; toggle stretch variant for this frame
+   mov word ptr cs:[SELFMODIFY_MASKED_apply_stretch_tag], TWO_BYTE_NOP ; NOP  ; toggle stretch variant for this frame
    ; only write to dc_iscale_hi when nonzero.
    mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+2 - OFFSET R_MASK24_STARTMARKER_], cl
 
@@ -4648,7 +4654,18 @@ PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
 
+mov   si, cs
+mov   ds, si
+mov   es, si
+mov   si, OFFSET _clip_bytes
+mov   di, OFFSET SELFMODIFY_set_floorclip_code_sprite
+movsw
+movsw
+movsw
+movsw
 
+mov   si, ss
+mov   ds, si
 
 
 ;    if (vissprite_p > 0) {
@@ -4944,19 +4961,12 @@ done_masking:
 ; could also be the segments and not the offsets.
 pop   si      ; vissprite pointer from bp - 6
 
-mov   word ptr ds:[_mfloorclip], CLIPBOT_START_OFFSET   ; todo sucks... maybe have drawvissprite use a different ptr than maskedsegrange?
-mov   word ptr ds:[_mfloorclip + 2], cs
-
-mov   word ptr ds:[_mceilingclip], CLIPTOP_START_OFFSET
-mov   word ptr ds:[_mceilingclip + 2], cs
 
 ; todo only use? 
 call  R_DrawVisSprite_
 
 
 ; restore bx, because R_DrawVisSprite_ does naughy things to stack and cant be trusted
-mov   word ptr ds:[_mceilingclip + 2], OPENINGS_SEGMENT
-mov   word ptr ds:[_mfloorclip + 2], OPENINGS_SEGMENT
 
 ; sp should be bp - 4 again
 
@@ -5317,8 +5327,36 @@ ALIGN_MACRO
 do_psprite_draws:
 public do_psprite_draws
 
-mov  word ptr ds:[_mfloorclip], OFFSET_SCREENHEIGHTARRAY 
-mov  word ptr ds:[_mceilingclip], OFFSET_NEGONEARRAY 
+
+
+mov  dx, OPENINGS_SEGMENT
+mov  es, dx
+mov  al, MOV_AX_IMM16_OPCODE
+mov  ah, byte ptr es:[OFFSET_SCREENHEIGHTARRAY]
+mov  dl, byte ptr es:[OFFSET_NEGONEARRAY]
+mov  dh, DS_PREFIX_OPCODE
+mov  di, cs
+mov  es, di
+mov  di, OFFSET SELFMODIFY_set_floorclip_code_sprite
+stosw
+xchg ax, dx
+stosw
+mov  ax, TWO_BYTE_NOP
+stosw
+stosw
+
+COMMENT @
+; todo catch this based on shadow 
+mov   cx, es
+mov   si, cs
+mov   si, OFFSET SELFMODIFY_set_floorclip_code_sprite
+mov   di, OFFSET SELFMODIFY_set_floorclip_code_sprite_shadow
+movsw
+movsw
+movsw
+movsw
+@
+
 
 ; player vissprite related hardcodes
 mov   si, _player_vissprites       ; vissprite 0
@@ -5437,10 +5475,12 @@ sar   di, 1
 
 mov   word ptr ds:[SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x_preshifted+1], di
 
-les   di, dword ptr ss:[_mfloorclip]
-mov   al, byte ptr es:[bx+di]
-les   di, dword ptr ss:[_mceilingclip]
-mov   ah, byte ptr es:[bx+di]
+mov   ax, OPENINGS_SEGMENT
+mov   es, ax
+SELFMODIFY_set_floorclip_offset:
+mov   al, byte ptr es:[bx+01000h]
+SELFMODIFY_set_ceilclip_offset:
+mov   ah, byte ptr es:[bx+01000h]
 mov   word ptr ds:[SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup+1], ax
 
 mov   es, cx  ; restore es
@@ -6277,6 +6317,9 @@ jmp       done_setting_cached_tex_masked
 
 ENDP
 
+_clip_bytes:
+mov   al, byte ptr ds:[bx+CLIPBOT_START_OFFSET]
+mov   ah, byte ptr ds:[bx+CLIPTOP_START_OFFSET]
 
 
 
@@ -6433,7 +6476,7 @@ je       set_to_one_masked
 ; detailshift 2 case. usually involves no shift. in this case - we just jump past the shift code.
 
 ; nop 
-mov      ax, 0c089h 
+mov      ax, TWO_BYTE_NOP 
 
 ; write to colfunc segment
 mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_1 - OFFSET R_MASK24_STARTMARKER_+0], ax
@@ -6478,7 +6521,7 @@ mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift_s
 mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_2 - OFFSET R_MASK24_STARTMARKER_+0], ax
 
 ; nop 
-mov      ax, 0c089h 
+mov      ax, TWO_BYTE_NOP 
 mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_1- OFFSET R_MASK24_STARTMARKER_+2], ax
 mov      word ptr ds:[SELFMODIFY_MASKED_detailshift_2_minus_16_bit_shift_2 - OFFSET R_MASK24_STARTMARKER_+2], ax
 mov      word ptr ds:[SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift- OFFSET R_MASK24_STARTMARKER_+2], ax
@@ -6682,7 +6725,7 @@ do_no_fixedcolormap_selfmodify:
 ; replace with nop.
 ; nop 
 mov      bx, SELFMODIFY_MASKED_fixedcolormap_2 - OFFSET R_MASK24_STARTMARKER_
-mov      ax, 0c089h 
+mov      ax, TWO_BYTE_NOP 
 mov      word ptr ds:[SELFMODIFY_MASKED_fixedcolormap_1 - OFFSET R_MASK24_STARTMARKER_], ax
 ; lea bp, [bp + 0] ; 3 byte nop
 mov      word ptr ds:[bx], 06E8Dh 
@@ -6756,6 +6799,7 @@ PUBLIC  ENSUREALIGN_131
 
 PUBLIC  ENSUREALIGN_127_sprite
 PUBLIC  ENSUREALIGN_131_sprite
+PUBLIC  ENSUREALIGN_132_sprite
 
 
 ENDS

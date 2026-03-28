@@ -53,6 +53,8 @@ _sprtopscreen = 0
 _spryscale = 0
 
 _dc_x = 0
+_mfloorclip = 0
+_mceilclip = 0
 
 ;=================================
 

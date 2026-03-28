@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/03/28 04:11:01
+Created on:       26/03/28 05:35:17
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -174,8 +174,8 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 004a:0aaa*     WI_drawStats_
 004a:0f79      G_DoCompleted_
 Module: m_menu.obj(m_menu.ASM)
-015e:0442*     M_LoadGame_
 015e:0c6b*     M_StringWidth_
+015e:0442*     M_LoadGame_
 015e:0b6e*     M_ChangeDetail_
 015e:0ca7*     M_StringHeight_
 015e:13bf      G_Responder_
@@ -545,79 +545,80 @@ Module: r_skyfl.obj(r_skyfl.ASM)
 1d78:0000      R_SKYFL_STARTMARKER_
 1d78:0294      R_DrawSkyPlaneFL_
 Module: r_mask24.obj(r_mask24.ASM)
-1da9:0166*     draw_shadow_sprite
+1da9:016e*     draw_shadow_sprite
 1da9:03b4*     ENSUREALIGN_103
-1da9:0c46*     ENSUREALIGN_109
-1da9:099e*     ENSUREALIGN_114
-1da9:0be8*     ENSUREALIGN_111
-1da9:1036*     FastDiv3232FFFF_
-1da9:098e*     ENSUREALIGN_117
-1da9:014f*     ENSUREALIGN_102
-1da9:0950*     ENSUREALIGN_120
-1da9:0c4d*     ENSUREALIGN_110
-1da9:1365*     ENSUREALIGN_122
-1da9:09da*     ENSUREALIGN_113
-1da9:13c3*     ENSUREALIGN_124
-1da9:15c2*     ENSUREALIGN_106
-1da9:11cc*     ENSUREALIGN_121
+1da9:0c30*     ENSUREALIGN_109
+1da9:0994*     ENSUREALIGN_114
+1da9:0bd2*     ENSUREALIGN_111
+1da9:1020*     FastDiv3232FFFF_
+1da9:0984*     ENSUREALIGN_117
+1da9:0156*     ENSUREALIGN_102
+1da9:0946*     ENSUREALIGN_120
+1da9:0c37*     ENSUREALIGN_110
+1da9:1343*     ENSUREALIGN_122
+1da9:09c4*     ENSUREALIGN_113
+1da9:13a1*     ENSUREALIGN_124
+1da9:15b5*     ENSUREALIGN_106
+1da9:11ca*     ENSUREALIGN_121
 1da9:0345*     ENSUREALIGN_129
-1da9:15ac*     ENSUREALIGN_107
-1da9:09a2*     ENSUREALIGN_118
-1da9:05f3*     ENSUREALIGN_130
-1da9:1546*     ENSUREALIGN_131
-1da9:0a82*     ENSUREALIGN_112
-1da9:0c95*     ENSUREALIGN_115
-1da9:12d9*     ENSUREALIGN_126
-1da9:0935*     ENSUREALIGN_119
-1da9:09a5*     ENSUREALIGN_116
-1da9:1558*     ENSUREALIGN_127
-1da9:06b3*     three_page_sprite
-1da9:15b6*     ENSUREALIGN_104
-1da9:157e*     ENSUREALIGN_108
-1da9:15c8*     ENSUREALIGN_105
-1da9:13ba*     ENSUREALIGN_123
-1da9:053c*     ENSUREALIGN_131_sprite
-1da9:0a8e*     ENSUREALIGN_128
-1da9:15d0*     ENSUREALIGN_101
-1da9:136e*     ENSUREALIGN_125
-1da9:054e*     ENSUREALIGN_127_sprite
-1da9:130a*     continue_checking_if_drawseg_obscures_sprite
-1da9:14a2*     do_psprite_draws
+1da9:159f*     ENSUREALIGN_107
+1da9:0998*     ENSUREALIGN_118
+1da9:05e9*     ENSUREALIGN_130
+1da9:1539*     ENSUREALIGN_131
+1da9:0a6c*     ENSUREALIGN_112
+1da9:0c7f*     ENSUREALIGN_115
+1da9:12d7*     ENSUREALIGN_126
+1da9:092b*     ENSUREALIGN_119
+1da9:099b*     ENSUREALIGN_116
+1da9:154b*     ENSUREALIGN_127
+1da9:06a9*     three_page_sprite
+1da9:052a*     ENSUREALIGN_132_sprite
+1da9:15a9*     ENSUREALIGN_104
+1da9:1571*     ENSUREALIGN_108
+1da9:15bb*     ENSUREALIGN_105
+1da9:1398*     ENSUREALIGN_123
+1da9:0532*     ENSUREALIGN_131_sprite
+1da9:0a78*     ENSUREALIGN_128
+1da9:15c3*     ENSUREALIGN_101
+1da9:134c*     ENSUREALIGN_125
+1da9:0544*     ENSUREALIGN_127_sprite
+1da9:12e8*     continue_checking_if_drawseg_obscures_sprite
+1da9:1480*     do_psprite_draws
 1da9:1830      masked_local_dc_yl_lookup_table_
-1da9:10d8*     R_PointOnSegSide_
-1da9:059c*     SELFMODIFY_MASKED_add_currentoffset_sprite
+1da9:10c2*     R_PointOnSegSide_
+1da9:0592*     SELFMODIFY_MASKED_add_currentoffset_sprite
 1da9:0006*     _fuzzoffset
 1da9:19c0      R_WriteBackViewConstantsMasked24_
 1da9:04d0*     draw_sprite_normal_innerloop
-1da9:0696*     found_multipage
-1da9:1420*     SELFMODIFY_MASKED_set_al_to_silhouette
+1da9:068c*     found_multipage
+1da9:13fe*     SELFMODIFY_MASKED_set_al_to_silhouette
 1da9:1af8      R_WriteBackMaskedFrameConstants24_
-1da9:0d9e*     selected_sprite_page_multi
-1da9:15fc*     R_GetMaskedColumnSegment_
-1da9:0ca6*     R_EvictL2CacheEMSPage_Sprite_Multi_
-1da9:06f8*     R_LoadSpriteColumns_
-1da9:0d56*     R_MarkL2SpriteCacheMRU_
-1da9:0cc6*     R_EvictL2CacheEMSPage_Sprite_Single_
-1da9:0f62*     found_startpage_multi
-1da9:0ea8*     get_multipage_spritepage
-1da9:0efa*     evict_and_find_startpage_multi
-1da9:11b8      R_DrawMasked24_
+1da9:0d88*     selected_sprite_page_multi
+1da9:15f0*     R_GetMaskedColumnSegment_
+1da9:0c90*     R_EvictL2CacheEMSPage_Sprite_Multi_
+1da9:06ee*     R_LoadSpriteColumns_
+1da9:0d40*     R_MarkL2SpriteCacheMRU_
+1da9:0cb0*     R_EvictL2CacheEMSPage_Sprite_Single_
+1da9:0f4c*     found_startpage_multi
+1da9:0e92*     get_multipage_spritepage
+1da9:0ee4*     evict_and_find_startpage_multi
+1da9:11a2      R_DrawMasked24_
 1da9:00b6*     R_DrawSingleMaskedColumn_
-1da9:127a*     R_DrawSprite_
+1da9:1278*     R_DrawSprite_
 1da9:0362*     R_DrawVisSprite_
-1da9:0ec2*     mark_all_pages_mru_loop
+1da9:0eac*     mark_all_pages_mru_loop
 1da9:1b88      R_MASK24_ENDMARKER_
 1da9:0000*     _spritepagesegments
-1da9:14fa*     R_DrawMaskedColumn_
-1da9:15a6*     SELFMODIFY_MASKED_add_currentoffset
-1da9:157b*     SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup
-1da9:0e4a*     R_GetSpritePage_
+1da9:14ee*     R_DrawMaskedColumn_
+1da9:1599*     SELFMODIFY_MASKED_add_currentoffset
+1da9:156e*     SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup
+1da9:0e34*     R_GetSpritePage_
 1da9:03d8*     R_DrawPlayerVisSprite_
-1da9:0ccc*     found_enough_pages
-1da9:07c6*     R_RenderMaskedSegRange_
-1da9:063d*     foundonepage
+1da9:0cb6*     found_enough_pages
+1da9:07bc*     R_RenderMaskedSegRange_
+1da9:0633*     foundonepage
 1da9:0000      R_MASK24_STARTMARKER_
-1da9:0571*     SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup_sprite
+1da9:0567*     SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup_sprite
 Module: r_mask16.obj(r_mask16.ASM)
 1f62:19c4      R_MASK16_ENDMARKER_
 1f62:1491      R_DrawMasked16_
@@ -694,8 +695,8 @@ Module: p_pspr.obj(p_pspr.ASM)
 2422:4000*     A_Light0_
 2422:3d14*     A_Saw_
 2422:4012*     A_OpenShotgun2_
-2422:39fc*     P_CheckAmmo_
 2422:3ef8*     A_FirePistol_
+2422:39fc*     P_CheckAmmo_
 2422:3bd8*     A_ReFire_
 2422:402a      A_BFGSpray_
 2422:3e0c*     A_FireMissile_
@@ -905,8 +906,8 @@ Module: p_info.obj(p_info.ASM)
 2422:8960*     P_INFO_STARTMARKER_
 Module: am_map.obj(am_map.ASM)
 2422:8db9*     FastMulTrig16Sine_
-2422:8f00*     AM_findMinMaxBoundaries_
 2422:9025*     AM_clearMarks_
+2422:8f00*     AM_findMinMaxBoundaries_
 2422:8d8a*     FastMulTrig16Cosine_
 2422:8f80*     AM_changeWindowLoc_
 2422:903c*     AM_Start_
@@ -1602,4 +1603,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003df10 (253712.)
 Entry point address: 2fb8:7cbe
-Link time: 00:00.59
+Link time: 00:00.04

@@ -58,6 +58,8 @@ _cachedsegmenttex =  0
 _sprtopscreen = 0
 _spryscale = 0
 _dc_x = 0
+_mfloorclip = 0
+_mceilclip = 0
 
 COLFUNC_JUMPTABLE_SIZE_OFFSET = 0
 DC_YL_LOOKUP_SEGMENT = 0
