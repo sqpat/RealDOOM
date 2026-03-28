@@ -737,8 +737,8 @@ mov  word ptr word ptr ds:[_fuzzpos - OFFSET R_MASK24_STARTMARKER_], si
 
 do_next_shadow_sprite_iteration:
 SELFMODIFY_MASKED_restore_es_shadow:
-mov   si, 01000h
-mov   es, si
+mov   cx, 01000h
+mov   es, cx
 pop   si
 
 
@@ -751,7 +751,7 @@ ENDP
 ALIGN_MACRO
 
 exit_draw_shadow_sprite:
-mov   cx, es
+
 pop   di
 exit_draw_masked_column_shadow_early:
 
@@ -1041,8 +1041,6 @@ mov   word ptr ds:[SELFMODIFY_MASKED_visspriteloop_x2_1+2 - OFFSET R_MASK24_STAR
 
 
 mov   cx, es
-; si currently unused. can we use it?
-
 
 
 dec   di  ; offset for doing inc di early
@@ -1074,7 +1072,7 @@ done_setting_vga_plane_masked:
 SHIFT_MACRO shl bx 2 ; possible to preshift dx by 2?
 ; es is patch 
 les   ax, dword ptr es:[bx + PATCH_T.patch_columnofs+0]
-mov   bx, es        ; word ptr es:[bx + PATCH_T.patch_columnofs+2]
+mov   si, es        ; word ptr es:[si + PATCH_T.patch_columnofs+2]
 
 add   ax, cx ; self modify? does it change?
 
@@ -1084,8 +1082,8 @@ add   ax, cx ; self modify? does it change?
 ; cx is preserved by this call here
 ; so is ES
 
-call R_DrawMaskedColumn_   ; di preserved...
-; todo align
+call R_DrawMaskedColumn
+
 SELFMODIFY_MASKED_vissprite_xiscale_lo:
 add   word ptr ds:[_xiscalelowbits], 01000h
 SELFMODIFY_MASKED_vissprite_xiscale_hi:
@@ -2579,9 +2577,9 @@ add   ax, word ptr ds:[_maskedcachedsegment]
 
 mov   cx, MASKEDPOSTDATAOFS_SEGMENT
 mov   es, cx
-add   bx, bx
+sal   bx, 1
 SELFMODIFY_MASKED_maskedpostofs_2:     ; todo this
-mov   bx, word ptr es:[bx+08000h]
+mov   si, word ptr es:[bx+08000h]
 ENSUREALIGN_111:
 
 mov   cx, MASKEDPOSTDATA_SEGMENT
@@ -2661,14 +2659,14 @@ add   ax, word ptr ds:[_maskedcachedsegment]
 ;	R_DrawMaskedColumnCallHigh (pixelsegment, (column_t __far *)(MK_FP(maskedpostdata_segment, postoffset)));
 
 
-mov   bx, si
-sub   bx, bp   ; _maskedcachedbasecol
+
+sub   si, bp   ; _maskedcachedbasecol
 mov   cx, MASKEDPOSTDATAOFS_SEGMENT
 mov   es, cx
-add   bx, bx
+sal   si, 1
 mov   cx, MASKEDPOSTDATA_SEGMENT
 SELFMODIFY_MASKED_maskedpostofs_1:
-mov   bx, word ptr es:[bx+08000h]
+mov   si, word ptr es:[si+08000h]
 ENSUREALIGN_109:
 
 
@@ -4604,7 +4602,10 @@ mov   word ptr ds:[_mfloorclip + 2], cs
 mov   word ptr ds:[_mceilingclip], CLIPTOP_START_OFFSET
 mov   word ptr ds:[_mceilingclip + 2], cs
 
-call  R_DrawVisSprite_   ; todo dont have to set the above if this becomes its own version separate from psprite
+; todo only use? 
+call  R_DrawVisSprite_
+
+
 ; restore bx, because R_DrawVisSprite_ does naughy things to stack and cant be trusted
 mov   word ptr ds:[_mceilingclip + 2], OPENINGS_SEGMENT
 mov   word ptr ds:[_mfloorclip + 2], OPENINGS_SEGMENT
@@ -5059,7 +5060,7 @@ PUBLIC R_DrawMaskedColumn_
 
 mov   es, cx
 ; todo pass in bx as si instead.
-cmp   byte ptr es:[bx + COLUMN_T.column_topdelta], 0FFh
+cmp   byte ptr es:[si + COLUMN_T.column_topdelta], 0FFh
 je    exit_draw_masked_column_early
 
 ; no early out, properly run the function. note fixed stack frame
@@ -5068,8 +5069,9 @@ je    exit_draw_masked_column_early
 
 push  di
 
+mov   word ptr ds:[SELFMODIFY_MASKED_restore_es+1], cx
 mov   word ptr ds:[SELFMODIFY_MASKED_set_base_segment+1], ax
-mov   si, bx        ; si now holds column address.
+
 ; es:si is now column
 
 ; dc_texturemid already set pre call.
@@ -5080,9 +5082,12 @@ mov   byte ptr ds:[SELFMODIFY_MASKED_add_currentoffset+1], 0
 
 mov   bx, di   ; dc_x
 ; todo preshift here
-mov   word ptr ds:[SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x+1], di
+; shift di by (2 - detailshift.)
+SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift:  ; todo make this into the above selfmodify setter.
+sar   di, 1
+sar   di, 1
 
-
+mov   word ptr ds:[SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x_preshifted+1], di
 
 les   di, dword ptr ss:[_mfloorclip]
 mov   al, byte ptr es:[bx+di]
@@ -5090,16 +5095,14 @@ les   di, dword ptr ss:[_mceilingclip]
 mov   ah, byte ptr es:[bx+di]
 mov   word ptr ds:[SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup+1], ax
 
-mov   es, cx
-
-
+mov   es, cx  ; restore es
 
 lods  word ptr es:[si]  ; load column for first iter
 
 draw_next_column_patch:
 
 ; todo selfmodify forward write ES
-push  es   ; retrieve after R_DrawColumnPrepMaskedMulti call. 
+
 push  si   ; retrieve after R_DrawColumnPrepMaskedMulti call. 
 
 ; ax contains column fields!
@@ -5123,12 +5126,12 @@ xor   ax, ax  ; ax = 0
 SELFMODIFY_MASKED_set_spryscale_lo:
 mov   di, 01000h
 
+cwd           ; dx = 0
+;xor   dx, dx    ; toggle for ENSUREALIGN_127
 
 SELFMODIFY_MASKED_set_spryscale_hi:
 mov   bp, 01000h
 ENSUREALIGN_131:
-;cwd           ; dx = 0
-xor   dx, dx    ; toggle for ENSUREALIGN_127
 
 jcxz  skip_topdelta_mul ; todo brnach test?
 
@@ -5280,15 +5283,10 @@ db 05, 00, 00    ; add ax, 0000 (word)  ; always a single low byte actually
 
 ; si is already dc_yl
 ; di is already dc_yh
-SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x:
+SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x_preshifted:
 mov   di, 01000h
 ENSUREALIGN_107:
 
-; TODO PRESHIFT ABOVE TOO
-; shift di by (2 - detailshift.)
-SELFMODIFY_MASKED_multi_detailshift_2_minus_16_bit_shift:  ; todo make this into the above selfmodify setter.
-sar   di, 1
-sar   di, 1
 
 
 
@@ -5346,7 +5344,10 @@ mov   ds, ax
 
 increment_column_and_continue_loop:
 pop   si
-pop   es
+SELFMODIFY_MASKED_restore_es:
+mov   cx, 01000h
+mov   es, cx
+
 ; check next column
 lods  word ptr es:[si]       ; column->length. now si = si + 2.
 
@@ -5371,7 +5372,7 @@ jmp   draw_next_column_patch
 exit_function:
 
 
-mov   cx, es               ; restore cx
+
 
 pop   di
 
