@@ -194,8 +194,9 @@ xor   ch, ch		; count used once for mul and not again. todo is dh already zero?
 ; es in use down below
 mov   bp, word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_lo+1]
 mov   si, word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_hi+2]
-mov   bx, word ptr ds:[_spryscale]
-mov   ax, word ptr ds:[_spryscale+2]
+mov   ax, word ptr cs:[SELFMODIFY_MASKED_set_spryscale_lo+1]
+xchg  ax, bx
+mov   ax, word ptr cs:[SELFMODIFY_MASKED_set_spryscale_hi+1]
 
 ;   topscreen = si:bp 
 
@@ -450,9 +451,10 @@ xchg  ax, bx      ; back column field up in bx
 xor   ax, ax  ; ax = 0
 cwd           ; dx = 0
 
-les   di, dword ptr ds:[_spryscale]
-mov   bp, es
-
+SELFMODIFY_MASKED_set_spryscale_shadow_lo:
+mov   di, 01000h
+SELFMODIFY_MASKED_set_spryscale_shadow_hi:
+mov   bp, 01000h
 jcxz  skip_topdelta_mul_shadow
 
 mov   ax, bp
@@ -861,14 +863,16 @@ mov   di, 01000h ; sprtopscreen hi (lo is 0)
 les   ax, dword ptr ds:[si + VISSPRITE_T.vs_scale]  ; vis->scale
 mov   dx, es
 
-mov   word ptr ds:[_spryscale], ax
-mov   word ptr ds:[_spryscale + 2], dx  ; todo this feels wasteful? why write here and not selfmodify? double check
 
 R_DrawPlayerVisSprite_:  ; pass in vs_scale in dx:ax...
 PUBLIC R_DrawPlayerVisSprite_
 
 ; di:00 is sprtopscreen.
 ; dx:ax is spryscale
+
+
+mov   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_lo+1], ax      
+mov   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_hi+1], dx      
 
 les   bx, dword ptr ds:[si + VISSPRITE_T.vs_texturemid] ; vis->texturemid
 mov   cx, es
@@ -1566,6 +1570,10 @@ mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_lo_shadow+2 - OFFSET R_MA
 mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_hi_shadow+2 - OFFSET R_MASK24_STARTMARKER_], bx
 mov   word ptr cs:[SELFMODIFY_MASKED_visspriteloop_x2_1_shadow+2 - OFFSET R_MASK24_STARTMARKER_], cx
 
+mov   ax, word ptr cs:[SELFMODIFY_MASKED_set_spryscale_lo+1]
+mov   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_shadow_lo+1], ax
+mov   ax, word ptr cs:[SELFMODIFY_MASKED_set_spryscale_hi+1]
+mov   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_shadow_hi+1], ax
 
 mov   cx, es
 
@@ -2034,8 +2042,10 @@ SELFMODIFY_MASKED_dsp_06:
 add   ax, 01000h
 SELFMODIFY_MASKED_dsp_08:
 adc   dx, 01000h
-mov   word ptr ds:[_spryscale], ax
-mov   word ptr ds:[_spryscale + 2], dx
+mov   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_lo+1], ax      
+mov   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_hi+1], dx      
+
+; todo carry these forward without a write? or re-read?
 
 ;    mfloorclip_offset = ds->sprbottomclip_offset;
 ;    mceilingclip_offset = ds->sprtopclip_offset;
@@ -2044,8 +2054,6 @@ SELFMODIFY_MASKED_dsp_18:
 mov   word ptr ds:[_mfloorclip], 01000h
 SELFMODIFY_MASKED_dsp_16:
 mov   word ptr ds:[_mceilingclip], 01000h
-
-
 
 
 
@@ -2085,9 +2093,10 @@ sub   di, ax						; di = base4diff = x1 - dc_x_base4
 
 ;		fixed_t basespryscale = spryscale.w;
 
-mov   ax, word ptr ds:[_spryscale]
+; todo can we write this above?
+mov   ax, word ptr cs:[SELFMODIFY_MASKED_set_spryscale_lo+1]
 mov   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   ax, word ptr ds:[_spryscale + 2]
+mov   ax, word ptr cs:[SELFMODIFY_MASKED_set_spryscale_hi+1]
 mov   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 ;		fixed_t rw_scalestep_shift = rw_scalestep.w << detailshift2minus;
@@ -2116,9 +2125,9 @@ done_shifting_spryscale:
 
 
 mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_lo_1+1 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep_shift
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_lo_2+4 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep_shift
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_lo_2+5 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep_shift
 mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_hi_1+2 - OFFSET R_MASK24_STARTMARKER_], dx		; rw_scalestep_shift
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_hi_2+4 - OFFSET R_MASK24_STARTMARKER_], dx		; rw_scalestep_shift
+mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_hi_2+5 - OFFSET R_MASK24_STARTMARKER_], dx		; rw_scalestep_shift
 
 ;		fixed_t sprtopscreen_step = FixedMul(dc_texturemid.w, rw_scalestep_shift);
 
@@ -2255,8 +2264,8 @@ ENSUREALIGN_128:
 calculate_sprtopscreen:
 
 ; di is dc_x
-mov   word ptr ds:[_spryscale], ax
-mov   word ptr ds:[_spryscale + 2], dx
+mov   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_lo+1], ax      
+mov   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_hi+1], dx      
 
 
 
@@ -2427,20 +2436,22 @@ mov   si, word ptr es:[bx+di]
 ;  bp caches _maskedcachedbasecol in this inner loop
 mov   bp, word ptr ds:[_maskedcachedbasecol] 
 
+mov   bx, word ptr cs:[SELFMODIFY_MASKED_set_spryscale_lo+1]
+mov   cx, word ptr cs:[SELFMODIFY_MASKED_set_spryscale_hi+1]
+
 cmp   si, MAXSHORT			; dont render nonmasked columns here.
 je   increment_inner_loop
 SELFMODIFY_MASKED_fixedcolormap_1:
 jne   got_colormap ; cmp [_fixedcolormap], 0 -> jne gotcolormap
 SELFMODIFY_MASKED_fixedcolormap_1_AFTER:
 ; calculate colormap
-cmp   word ptr ds:[_spryscale + 2], 3
+cmp   cl, 3
 jge   use_maxlight
 ; shift this by 12...
 ; shift 4 by with this lookup
-xor   dx, dx
-mov   ax, word ptr ds:[_spryscale + 1]
-mov   dl, byte ptr ds:[_spryscale + 3]
-SHIFT32_MACRO_RIGHT dx ax 4
+mov   al, bh
+mov   ah, cl
+SHIFT_MACRO shr ax 4
 
 jmp   get_colormap
 ALIGN_MACRO
@@ -2462,9 +2473,11 @@ SELFMODIFY_MASKED_detailshiftitercount_7:
 add   di, 0
 
 SELFMODIFY_MASKED_rw_scalestep_shift_lo_2:
-add   word ptr ds:[_spryscale], 01000h
+add   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_lo+1], 01000h
 SELFMODIFY_MASKED_rw_scalestep_shift_hi_2:
-adc   word ptr ds:[_spryscale + 2], 01000h
+adc   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_hi+1], 01000h
+
+
 
 SELFMODIFY_MASKED_sub_sprtopscreen_lo:
 sub   word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_lo + 1], 01000h
@@ -2478,9 +2491,10 @@ use_maxlight:
 mov   al, MAXLIGHTSCALE - 1
 get_colormap:
 xor   ah, ah
-mov   bx, ax
+xchg  ax, bx
 SELFMODIFY_MASKED_set_walllights:
-mov   al, byte ptr ds:[bx + 01000h]
+mov   bl, byte ptr ds:[bx + 01000h]
+xchg  ax, bx
 mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMARKER_], al
 
 SELFMODIFY_MASKED_fixedcolormap_1_TARGET:
@@ -2488,8 +2502,7 @@ got_colormap:
 
 ; fastdiv here
 
-mov   bx, word ptr ds:[_spryscale]
-mov   cx, word ptr ds:[_spryscale + 2]
+; cx:bx is spryscale
 
 call  FastDiv3232FFFF_  ; todo inline eventually
 
@@ -4980,13 +4993,12 @@ mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset], DRAWCOL_NOLOOP_OF
 SELFMODIFY_MASKED_centery_3:
 mov   di, 01000h ; sprtopscreen hi (lo is 0)
 
+; todo gross.
 SELFMODIFY_set_player_pspritescale_lo_1:
 mov  ax, 01000h
 SELFMODIFY_set_player_pspritescale_hi_1:
 mov  dx, 01000h
 
-mov   word ptr ds:[_spryscale], ax      ; do just once.
-mov   word ptr ds:[_spryscale + 2], dx
 
 ; todo: if the above known to be FRACUNIT, skip the multiply in R_DrawVisSprite_ ...? selfmodify here?
 
@@ -5050,6 +5062,8 @@ je    exit_draw_masked_column_early
 ; no early out, properly run the function. note fixed stack frame
 ; investigate pusha/popa. any cx/es trick possible?
 
+; todo dont push si?
+
 PUSHA_DRAWMASKED_COLUMN
 
 mov   word ptr cs:[SELFMODIFY_MASKED_set_base_segment+1], ax
@@ -5098,11 +5112,17 @@ mov   cl, al      ; al 0, cx = 0 extended topdelta for mul
 xchg  ax, bx      ; back column field up in bx
 
 xor   ax, ax  ; ax = 0
+
+
+SELFMODIFY_MASKED_set_spryscale_lo:
+mov   di, 01000h
+
 cwd           ; dx = 0
 ;xor   dx, dx    ; toggle for ENSUREALIGN_127
 
-les   di, dword ptr ds:[_spryscale]
-mov   bp, es
+SELFMODIFY_MASKED_set_spryscale_hi:
+mov   bp, 01000h
+ENSUREALIGN_131:
 
 jcxz  skip_topdelta_mul ; todo brnach test?
 
@@ -6357,6 +6377,7 @@ PUBLIC  ENSUREALIGN_127
 PUBLIC  ENSUREALIGN_128
 PUBLIC  ENSUREALIGN_129
 PUBLIC  ENSUREALIGN_130
+PUBLIC  ENSUREALIGN_131
 
 
 ENDS
