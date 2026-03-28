@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/03/27 11:39:50
+Created on:       26/03/27 13:42:18
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -545,76 +545,75 @@ Module: r_skyfl.obj(r_skyfl.ASM)
 1d78:0000      R_SKYFL_STARTMARKER_
 1d78:0294      R_DrawSkyPlaneFL_
 Module: r_mask24.obj(r_mask24.ASM)
-1da9:0670*     draw_shadow_sprite
-1da9:036c*     ENSUREALIGN_103
-1da9:0b48*     ENSUREALIGN_109
-1da9:14c6*     ENSUREALIGN_106
-1da9:08a2*     ENSUREALIGN_114
-1da9:0aec*     ENSUREALIGN_111
-1da9:0f34*     FastDiv3232FFFF_
-1da9:0892*     ENSUREALIGN_117
-1da9:0b4b*     ENSUREALIGN_110
+1da9:0674*     draw_shadow_sprite
+1da9:0366*     ENSUREALIGN_103
+1da9:0b58*     ENSUREALIGN_109
+1da9:14d4*     ENSUREALIGN_106
+1da9:08b2*     ENSUREALIGN_114
+1da9:0afc*     ENSUREALIGN_111
+1da9:0f44*     FastDiv3232FFFF_
+1da9:08a2*     ENSUREALIGN_117
+1da9:0b5b*     ENSUREALIGN_110
 1da9:014d*     ENSUREALIGN_102
-1da9:0854*     ENSUREALIGN_120
-1da9:10ca*     ENSUREALIGN_121
-1da9:1263*     ENSUREALIGN_122
-1da9:08de*     ENSUREALIGN_113
-1da9:14ae*     ENSUREALIGN_107
-1da9:06c2*     ENSUREALIGN_129
-1da9:08a6*     ENSUREALIGN_118
-1da9:0666*     ENSUREALIGN_130
-1da9:1446*     ENSUREALIGN_131
-1da9:0986*     ENSUREALIGN_112
-1da9:0b93*     ENSUREALIGN_115
-1da9:11d7*     ENSUREALIGN_126
-1da9:0839*     ENSUREALIGN_119
-1da9:12c1*     ENSUREALIGN_124
-1da9:08a9*     ENSUREALIGN_116
-1da9:12b8*     ENSUREALIGN_123
-1da9:1458*     ENSUREALIGN_127
-1da9:0519*     three_page_sprite
-1da9:14bc*     ENSUREALIGN_104
-1da9:147e*     ENSUREALIGN_108
-1da9:14cc*     ENSUREALIGN_105
-1da9:14d4*     ENSUREALIGN_101
-1da9:0992*     ENSUREALIGN_128
-1da9:126c*     ENSUREALIGN_125
-1da9:1208*     continue_checking_if_drawseg_obscures_sprite
-1da9:13a0*     do_psprite_draws
+1da9:0864*     ENSUREALIGN_120
+1da9:10da*     ENSUREALIGN_121
+1da9:1273*     ENSUREALIGN_122
+1da9:08ee*     ENSUREALIGN_113
+1da9:14bc*     ENSUREALIGN_107
+1da9:06d2*     ENSUREALIGN_129
+1da9:08b6*     ENSUREALIGN_118
+1da9:043b*     ENSUREALIGN_130
+1da9:1454*     ENSUREALIGN_131
+1da9:0996*     ENSUREALIGN_112
+1da9:0ba3*     ENSUREALIGN_115
+1da9:11e7*     ENSUREALIGN_126
+1da9:0849*     ENSUREALIGN_119
+1da9:12d1*     ENSUREALIGN_124
+1da9:08b9*     ENSUREALIGN_116
+1da9:12c8*     ENSUREALIGN_123
+1da9:1466*     ENSUREALIGN_127
+1da9:0561*     three_page_sprite
+1da9:14ca*     ENSUREALIGN_104
+1da9:148c*     ENSUREALIGN_108
+1da9:14da*     ENSUREALIGN_105
+1da9:09a2*     ENSUREALIGN_128
+1da9:14e2*     ENSUREALIGN_101
+1da9:127c*     ENSUREALIGN_125
+1da9:1218*     continue_checking_if_drawseg_obscures_sprite
+1da9:13b0*     do_psprite_draws
 1da9:1740      masked_local_dc_yl_lookup_table_
-1da9:0fd6*     R_PointOnSegSide_
+1da9:0fe6*     R_PointOnSegSide_
 1da9:0006*     _fuzzoffset
 1da9:18d0      R_WriteBackViewConstantsMasked24_
-1da9:063c*     draw_sprite_normal_innerloop
+1da9:040c*     draw_sprite_normal_innerloop
 1da9:0162*     R_DrawMaskedSpriteShadow_
-1da9:04fc*     found_multipage
-1da9:131e*     SELFMODIFY_MASKED_set_al_to_silhouette
+1da9:0544*     found_multipage
+1da9:132e*     SELFMODIFY_MASKED_set_al_to_silhouette
 1da9:19e4      R_WriteBackMaskedFrameConstants24_
-1da9:0c9c*     selected_sprite_page_multi
-1da9:1500*     R_GetMaskedColumnSegment_
-1da9:0ba4*     R_EvictL2CacheEMSPage_Sprite_Multi_
-1da9:055e*     R_LoadSpriteColumns_
-1da9:0c54*     R_MarkL2SpriteCacheMRU_
-1da9:0bc4*     R_EvictL2CacheEMSPage_Sprite_Single_
-1da9:0e60*     found_startpage_multi
-1da9:0da6*     get_multipage_spritepage
-1da9:0df8*     evict_and_find_startpage_multi
-1da9:10b6      R_DrawMasked24_
+1da9:0cac*     selected_sprite_page_multi
+1da9:150c*     R_GetMaskedColumnSegment_
+1da9:0bb4*     R_EvictL2CacheEMSPage_Sprite_Multi_
+1da9:05a6*     R_LoadSpriteColumns_
+1da9:0c64*     R_MarkL2SpriteCacheMRU_
+1da9:0bd4*     R_EvictL2CacheEMSPage_Sprite_Single_
+1da9:0e70*     found_startpage_multi
+1da9:0db6*     get_multipage_spritepage
+1da9:0e08*     evict_and_find_startpage_multi
+1da9:10c6      R_DrawMasked24_
 1da9:00b4*     R_DrawSingleMaskedColumn_
-1da9:1178*     R_DrawSprite_
-1da9:031a*     R_DrawVisSprite_
-1da9:0dc0*     mark_all_pages_mru_loop
+1da9:1188*     R_DrawSprite_
+1da9:0314*     R_DrawVisSprite_
+1da9:0dd0*     mark_all_pages_mru_loop
 1da9:1a6e      R_MASK24_ENDMARKER_
 1da9:0000*     _spritepagesegments
-1da9:13f8*     R_DrawMaskedColumn_
-1da9:063a*     continue_outer_loop_vga_plane_draw_normal
-1da9:14a6*     SELFMODIFY_MASKED_add_currentoffset
-1da9:147b*     SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup
-1da9:0d48*     R_GetSpritePage_
-1da9:0390*     R_DrawPlayerVisSprite_
-1da9:0bca*     found_enough_pages
-1da9:06ca*     R_RenderMaskedSegRange_
-1da9:04a3*     foundonepage
+1da9:1408*     R_DrawMaskedColumn_
+1da9:14b4*     SELFMODIFY_MASKED_add_currentoffset
+1da9:1489*     SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup
+1da9:0d58*     R_GetSpritePage_
+1da9:038a*     R_DrawPlayerVisSprite_
+1da9:0bda*     found_enough_pages
+1da9:06da*     R_RenderMaskedSegRange_
+1da9:04eb*     foundonepage
 1da9:0000      R_MASK24_STARTMARKER_
 Module: r_mask16.obj(r_mask16.ASM)
 1f50:19c4      R_MASK16_ENDMARKER_
@@ -733,8 +732,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2410:5545*     A_PainDie_
 2410:4f0c*     A_SkelWhoosh_
 2410:58d9*     A_BrainExplode_
-2410:4687*     P_LookForPlayers_
 2410:5260*     A_VileTarget_
+2410:4687*     P_LookForPlayers_
 2410:594f*     A_BrainSpit_
 2410:43ac*     P_Move_
 2410:51bc*     A_VileStart_
@@ -903,8 +902,8 @@ Module: p_info.obj(p_info.ASM)
 2410:8960*     P_INFO_STARTMARKER_
 Module: am_map.obj(am_map.ASM)
 2410:8db9*     FastMulTrig16Sine_
-2410:9025*     AM_clearMarks_
 2410:8f00*     AM_findMinMaxBoundaries_
+2410:9025*     AM_clearMarks_
 2410:8d8a*     FastMulTrig16Cosine_
 2410:8f80*     AM_changeWindowLoc_
 2410:903c*     AM_Start_
@@ -1600,4 +1599,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003ddf0 (253424.)
 Entry point address: 2fa6:7cbe
-Link time: 00:00.04
+Link time: 00:00.05

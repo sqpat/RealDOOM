@@ -112,8 +112,8 @@ _bombspot =       					_NULL_OFFSET + 0009Ch
 _bombdamage =       				_NULL_OFFSET + 0009Eh
 _bombspot_pos = 					_NULL_OFFSET + 000A0h
 
-_spryscale = 						_NULL_OFFSET + 000A4h
-_sprtopscreen =	 					_NULL_OFFSET + 000A8h
+;_spryscale = 						_NULL_OFFSET + 000A4h
+;_sprtopscreen =	 					_NULL_OFFSET + 000A8h
 _nomonsters =                       _NULL_OFFSET + 000ACh
 _respawnmonsters =                  _NULL_OFFSET + 000ADh
 
@@ -282,8 +282,7 @@ _olddb =							 _NULL_OFFSET + 002A0h
 _detailshift = 						 _NULL_OFFSET + 002B0h
 _detailshiftitercount = 			 _NULL_OFFSET + 002B2h
 _detailshiftandval = 				 _NULL_OFFSET + 002B4h
-;_ceilphyspage =                  	 _NULL_OFFSET + 002B6h
-;_floorphyspage =                 	 _NULL_OFFSET + 002B7h
+_xiscalelowbits =                  	 _NULL_OFFSET + 002B6h
 _gameaction =                 		 _NULL_OFFSET + 002B8h
 _viewactive =                 		 _NULL_OFFSET + 002B9h
 _am_bigstate =                 		 _NULL_OFFSET + 002BAh

@@ -394,10 +394,7 @@ cmp   byte ptr es:[bx + COLUMN_T.column_topdelta], 0FFh
 je    exit_draw_masked_column_shadow_early
 
 
-push  dx
-push  si
 push  di
-push  bp
 
 
 mov   si, bx
@@ -690,11 +687,8 @@ jmp finished_drawing_fuzzpixels
 ALIGN_MACRO
 exit_draw_shadow_sprite:
 
-pop   bp
 mov   cx, es
 pop   di
-pop   si
-pop   dx
 ret   
 
 ENDP
@@ -906,7 +900,8 @@ spritesegment_ready:
 ; es has segment...
 push  bp
 
-mov   bp, word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0]
+mov   ax, word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0]
+mov   word ptr ds:[_xiscalelowbits], ax
 mov   dx, word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2]  
 
 
@@ -929,9 +924,80 @@ mov   cx, word ptr ds:[si + VISSPRITE_T.vs_x2]
 cmp   byte ptr ds:[si + VISSPRITE_T.vs_colormap], COLORMAP_SHADOW
 je    jump_to_draw_shadow_sprite
 
-; selfmodify any other visplane stuff here...?
 
-jmp do_draw_loop 
+do_draw_loop:
+
+
+mov   word ptr cs:[SELFMODIFY_MASKED_set_xiscale_hi+1], dx
+
+mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_lo+4 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_hi+5 - OFFSET R_MASK24_STARTMARKER_], bx
+dec   cx ; offset for comparing early
+mov   word ptr cs:[SELFMODIFY_MASKED_visspriteloop_x2_1+2 - OFFSET R_MASK24_STARTMARKER_], cx
+
+
+mov   cx, es
+; si currently unused. can we use it?
+
+
+
+dec   di  ; offset for doing inc di early
+ALIGN_MACRO
+draw_sprite_normal_innerloop:
+public  draw_sprite_normal_innerloop
+inc   di  ; force align the below imm16
+
+SELFMODIFY_MASKED_set_xiscale_hi:
+mov   bx, 01000h
+; quality 0 version
+
+
+SELFMODIFY_rewrite_masked_out_dx_code:
+mov   cx, di
+and   cl, 3
+mov   al, 1
+shl   al, cl
+
+mov   dx, SC_DATA
+out   dx, al
+mov   cx, es  ; restore
+
+
+done_setting_vga_plane_masked:
+
+; bx already dx
+
+SHIFT_MACRO shl bx 2 ; possible to preshift dx by 2?
+; es is patch 
+les   ax, dword ptr es:[bx + PATCH_T.patch_columnofs+0]
+mov   bx, es        ; word ptr es:[bx + PATCH_T.patch_columnofs+2]
+
+add   ax, cx ; self modify? does it change?
+
+; ax pixelsegment
+; cx:bx column
+; dx:bp carries thru xiscale..
+; cx is preserved by this call here
+; so is ES
+
+call R_DrawMaskedColumn_   ; di preserved...
+; todo align
+
+SELFMODIFY_MASKED_vissprite_xiscale_lo:
+add   word ptr ds:[_xiscalelowbits], 01000h
+SELFMODIFY_MASKED_vissprite_xiscale_hi:
+adc   word ptr cs:[SELFMODIFY_MASKED_set_xiscale_hi+1], 01000h
+ENSUREALIGN_130:
+
+
+SELFMODIFY_MASKED_visspriteloop_x2_1:
+cmp   di, 01000h
+jle   draw_sprite_normal_innerloop
+
+exit_draw_vissprites:
+pop   bp
+ret 
+
 ALIGN_MACRO
 jump_to_draw_shadow_sprite:
 jmp   draw_shadow_sprite
@@ -1462,77 +1528,7 @@ mov   ax, word ptr ds:[si + VISSPRITE_T.vs_patch]
 mov   word ptr ds:[_lastvisspritepatch], ax
 jmp   spritesegment_ready
 
-ALIGN_MACRO
 
-do_draw_loop:
-
-; dx:bx carry xiscale
-mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_lo+2 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_hi+2 - OFFSET R_MASK24_STARTMARKER_], bx
-mov   word ptr cs:[SELFMODIFY_MASKED_visspriteloop_x2_1+2 - OFFSET R_MASK24_STARTMARKER_], cx
-
-
-
-continue_outer_loop_vga_plane_draw_normal:
-public continue_outer_loop_vga_plane_draw_normal
-mov   cx, es
-; si currently unused. can we use it?
-
-
-
-
-ALIGN_MACRO
-draw_sprite_normal_innerloop:
-public  draw_sprite_normal_innerloop
-
-; quality 0 version
-mov   bx, dx ; backup
-
-SELFMODIFY_rewrite_masked_out_dx_code:
-mov   cx, di
-and   cl, 3
-mov   al, 1
-shl   al, cl
-
-mov   dx, SC_DATA
-out   dx, al
-mov   cx, es  ; restore
-mov   dx, bx  ; restore
-
-done_setting_vga_plane_masked:
-
-; bx already dx
-
-SHIFT_MACRO shl bx 2 ; possible to preshift dx by 2?
-; es is patch 
-les   ax, dword ptr es:[bx + PATCH_T.patch_columnofs+0]
-mov   bx, es        ; word ptr es:[bx + PATCH_T.patch_columnofs+2]
-
-add   ax, cx ; self modify? does it change?
-
-; ax pixelsegment
-; cx:bx column
-; dx:bp carries thru xiscale..
-; cx is preserved by this call here
-; so is ES
-
-call R_DrawMaskedColumn_   ; di preserved...
-; todo align
-
-SELFMODIFY_MASKED_vissprite_xiscale_lo:
-add   bp, 01000h
-SELFMODIFY_MASKED_vissprite_xiscale_hi:
-adc   dx, 01000h
-ENSUREALIGN_130:
-inc   di    ;   ; dc_x
-
-SELFMODIFY_MASKED_visspriteloop_x2_1:
-cmp   di, 01000h
-jle   draw_sprite_normal_innerloop
-
-exit_draw_vissprites:
-pop   bp
-ret 
 ALIGN_MACRO
 
 
@@ -1542,12 +1538,11 @@ draw_shadow_sprite:
 public draw_shadow_sprite
 
 
-; ax still 0
+mov   word ptr cs:[_SELFMODIFY_MASKED_set_xiscale_hi_shadow+1], dx
 
-
-; dx:bx carry xiscale
-mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_lo_shadow+2 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_hi_shadow+2 - OFFSET R_MASK24_STARTMARKER_], bx
+mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_lo_shadow+4 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   word ptr cs:[SELFMODIFY_MASKED_vissprite_xiscale_hi_shadow+5 - OFFSET R_MASK24_STARTMARKER_], bx
+dec   cx ; offset for comparing early
 mov   word ptr cs:[SELFMODIFY_MASKED_visspriteloop_x2_1_shadow+2 - OFFSET R_MASK24_STARTMARKER_], cx
 
 mov   ax, word ptr cs:[SELFMODIFY_MASKED_set_spryscale_lo+1]
@@ -1561,12 +1556,14 @@ mov   cx, es
 ; dx:bp is startfrac
 ; di is dc_x
 ; cx/es are segment
+dec   di  ; offset for doing inc di early
 
 
 ALIGN_MACRO
 draw_sprite_shadow_innerloop:
-
-mov   bx, dx    ; frac intbits
+inc   di  ; force align the below imm16
+_SELFMODIFY_MASKED_set_xiscale_hi_shadow:
+mov   bx, 01000h
 SELFMODIFY_rewrite_masked_out_dx_code_shadow:
 
 mov   dx, SC_DATA ; 3C5
@@ -1580,7 +1577,6 @@ mov   ah, cl
 mov   al, 4
 mov   dl, (GC_INDEX  AND 0FFh)  ;   3CE, dh still 3
 out   dx, ax
-mov   dx, bx ; restore dx
 mov   cx, es ; restore cx
 
 
@@ -1607,12 +1603,11 @@ add   ax, cx    ; patch_segment + columndata[0] ?
 
 call R_DrawMaskedSpriteShadow_   ; todo pusha/popa in here?
 
-inc   di  ; dc_x
 
 SELFMODIFY_MASKED_vissprite_xiscale_lo_shadow:
-add   bp, 01000h
+add   word ptr ds:[_xiscalelowbits], 01000h
 SELFMODIFY_MASKED_vissprite_xiscale_hi_shadow:
-adc   dx, 01000h
+adc   word ptr cs:[_SELFMODIFY_MASKED_set_xiscale_hi_shadow+1], 01000h
 ENSUREALIGN_129:
 
 
@@ -5010,21 +5005,20 @@ retf
 
 
 PUSHA_DRAWMASKED_COLUMN MACRO
-    push  dx
+
     push  di
-    push  bp
 ENDM
 
 POPA_DRAWMASKED_COLUMN MACRO
-    pop   bp
+
     pop   di
-    pop   dx
+
 ENDM
 
 ; ax pixelsegment
 ; cx/es:bx column
 ; di:  dc_x
-; dx:bp  xiscale
+
 
 ; todo: use es:si instead of cx:bx. lodsw and compare al as 0FFh right away. si then shouldnt need to be preserved.
 
@@ -5954,9 +5948,8 @@ mov   ah, cl
 mov   al, 4
 mov   dl, (GC_INDEX  AND 0FFh)  ;   3CE, dh still 3
 out   dx, ax
-mov   dx, bx ; restore dx
 mov   cx, es ; restore cx
-; 24 bytes
+; 22 bytes
 
 
 
@@ -5976,9 +5969,9 @@ mov   ah, al
 mov   al, 4
 mov   dl, (GC_INDEX  AND 0FFh)  ;   3CE, dh still 3
 out   dx, ax
-mov   dx, bx ; restore dx
 
-; 24 bytes
+
+; 22 bytes
 
 
 
@@ -6036,7 +6029,7 @@ mov      ax,  word ptr ss:[_detailshift]
 
 
 LENGTH_OF_OUT_CODE_STRING = 9
-LENGTH_OF_OUT_CODE_SHADOW_STRING = 24
+LENGTH_OF_OUT_CODE_SHADOW_STRING = 22
 
 mov      dx, ax ; backup
 mov      cx, LENGTH_OF_OUT_CODE_STRING
