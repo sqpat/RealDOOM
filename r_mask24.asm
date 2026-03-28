@@ -381,6 +381,7 @@ UNCLIPPED_COLUMN  = 0FEh
 ; note remove masked start from here 
 
 
+
 ALIGN_MACRO
 jump_to_exit_draw_masked_column_shadow_early:
 jmp   exit_draw_masked_column_shadow_early
@@ -389,6 +390,7 @@ ALIGN_MACRO
 
 
 ; shadow sprite loop
+; this will draw loop through columns to draw a whole shadow sprite.
 
 draw_shadow_sprite:
 public draw_shadow_sprite
@@ -407,6 +409,11 @@ mov   ax, word ptr ds:[SELFMODIFY_MASKED_set_spryscale_lo+1]
 mov   word ptr ds:[SELFMODIFY_MASKED_set_spryscale_shadow_lo+1], ax
 mov   ax, word ptr ds:[SELFMODIFY_MASKED_set_spryscale_hi+1]
 mov   word ptr ds:[SELFMODIFY_MASKED_set_spryscale_shadow_hi+1], ax
+
+mov   ax, word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_lo+1]
+mov   word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_lo_shadow+1], ax
+mov   ax, word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_hi+2]
+mov   word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_hi_shadow+2], ax
 
 mov   cx, es
 
@@ -526,10 +533,10 @@ ADD  DX, CX    ; add
 
 skip_topdelta_mul_shadow:
 
-; TODO self modify into here from above?
-add   ax, word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_lo+1]       ; are these lowbits ever nonzero? yes, usually so
-adc   dx, word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_hi+2]
-
+SELFMODIFY_MASKED_add_sprtopscreen_lo_shadow:
+add   ax, 01000h
+SELFMODIFY_MASKED_add_sprtopscreen_hi_shadow:
+adc   dx, 01000h
 
 ; topscreen = DX:AX.
 
@@ -644,7 +651,7 @@ add   di, word ptr es:[bx+si-2]
 
 
 SELFMODIFY_MASKED_destview_hi_1:
-mov  bx, 0
+mov  bx, 01000h
 mov  es, bx
 mov  si, word ptr ds:[_fuzzpos - OFFSET R_MASK24_STARTMARKER_]	; note this is always the byte offset - no shift conversion necessary
 
@@ -654,7 +661,7 @@ mov  si, word ptr ds:[_fuzzpos - OFFSET R_MASK24_STARTMARKER_]	; note this is al
 
 ; constant space
 mov  dx, 04Fh
-mov  ch, 010h
+mov  ch, 010h ; 16
 
 
 
@@ -729,11 +736,6 @@ finished_drawing_fuzzpixels:
 
 mov  word ptr word ptr ds:[_fuzzpos - OFFSET R_MASK24_STARTMARKER_], si
 
- 
-
-
-
-
 
 do_next_shadow_sprite_iteration:
 SELFMODIFY_MASKED_restore_es_shadow:
@@ -748,7 +750,7 @@ cmp   al, 0FFh
 je    exit_draw_shadow_sprite
 jmp   draw_next_shadow_sprite_post
 ENDP
-
+ALIGN_MACRO
 
 exit_draw_shadow_sprite:
 mov   cx, es
