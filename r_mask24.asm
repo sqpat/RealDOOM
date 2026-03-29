@@ -52,7 +52,8 @@ ENDP
 MOV_AX_IMM16_OPCODE = 0B8h
 TWO_BYTE_NOP = 0C089h
 DS_PREFIX_OPCODE = 03Eh
-
+MOV_AL_BX_PLUS_IMM16_OPCODE = 0878Ah
+JMP_SHORT_REL8_OPCODE = 0EBh
 
 
 _spritepagesegments:
@@ -420,8 +421,6 @@ mov   ax, word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_hi_sprite+2]
 mov   word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_hi_shadow+2], ax
 
 
-; todo copy clips too
-
 mov   cx, es
 
 
@@ -496,11 +495,12 @@ mov   word ptr ds:[SELFMODIFY_MASKED_SHADOW_drawmaskedcolumn_set_shifted_dc_x+1]
 
 
 SELFMODIFY_set_floorclip_code_sprite_shadow:
+SELFMODIFY_set_floorclip_code_sprite_shadow_AFTER = SELFMODIFY_set_floorclip_code_sprite_shadow + 2
 mov   al, byte ptr ds:[bx+CLIPBOT_START_OFFSET]
 mov   ah, byte ptr ds:[bx+CLIPTOP_START_OFFSET]
 mov   word ptr ds:[SELFMODIFY_MASKED_SHADOW_set_mfloorceilclip_dc_x_lookup+1], ax
+SELFMODIFY_set_floorclip_code_sprite_shadow_TARGET:
 
-mov   es, cx ; restore es
 
 
 lods  word ptr es:[si]
@@ -1203,11 +1203,12 @@ mov   word ptr ds:[SELFMODIFY_MASKED_drawmaskedcolumn_set_dc_x_preshifted_sprite
 ; if playersprite then this is selfmodified to use constant values
 
 SELFMODIFY_set_floorclip_code_sprite: 
-mov   al, byte ptr ds:[bx+CLIPBOT_START_OFFSET]
+SELFMODIFY_set_floorclip_code_sprite_AFTER = SELFMODIFY_set_floorclip_code_sprite + 2
+mov   al, byte ptr ds:[bx+CLIPBOT_START_OFFSET] ; may be selfmodified to jmp SELFMODIFY_set_floorclip_code_sprite_TARGET
 mov   ah, byte ptr ds:[bx+CLIPTOP_START_OFFSET]
 
 mov   word ptr ds:[SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup_sprite+1], ax
-
+SELFMODIFY_set_floorclip_code_sprite_TARGET:
 
 
 lods  word ptr es:[si]  ; load column for first iter
@@ -1428,7 +1429,7 @@ lea   ax, [si - 010h] ; dc_yl - centery
 ; pass in xlat offset for bx via bp
 
 SELFMODIFY_MASKED_dc_texturemid_lo_1_sprite:
-mov   si, 01000h        ; todo can this just go to si in the call?
+mov   si, 01000h
 ENSUREALIGN_106_sprite:
 
 SELFMODIFY_MASKED_dc_texturemid_hi_1_sprite:
@@ -4654,18 +4655,7 @@ PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
 
-mov   si, cs
-mov   ds, si
-mov   es, si
-mov   si, OFFSET _clip_bytes
-mov   di, OFFSET SELFMODIFY_set_floorclip_code_sprite
-movsw
-movsw
-movsw
-movsw
-
-mov   si, ss
-mov   ds, si
+mov   word ptr cs:[SELFMODIFY_set_floorclip_code_sprite], MOV_AL_BX_PLUS_IMM16_OPCODE
 
 
 ;    if (vissprite_p > 0) {
@@ -5329,38 +5319,24 @@ public do_psprite_draws
 
 
 
-mov  dx, OPENINGS_SEGMENT
-mov  es, dx
-mov  al, MOV_AX_IMM16_OPCODE
-mov  ah, byte ptr es:[OFFSET_SCREENHEIGHTARRAY]
-mov  dl, byte ptr es:[OFFSET_NEGONEARRAY]
-mov  dh, DS_PREFIX_OPCODE
-mov  di, cs
-mov  es, di
-mov  di, OFFSET SELFMODIFY_set_floorclip_code_sprite
-stosw
-xchg ax, dx
-stosw
-mov  ax, TWO_BYTE_NOP
-stosw
-stosw
+mov  ax, OPENINGS_SEGMENT
+mov  es, ax
+mov  al, byte ptr es:[OFFSET_SCREENHEIGHTARRAY]
+mov  ah, byte ptr es:[OFFSET_NEGONEARRAY]
+; write once
+mov   word ptr cs:[SELFMODIFY_MASKED_set_mfloorceilclip_dc_x_lookup_sprite+1], ax
+mov   word ptr cs:[SELFMODIFY_set_floorclip_code_sprite], JMP_SHORT_REL8_OPCODE + ((SELFMODIFY_set_floorclip_code_sprite_TARGET - SELFMODIFY_set_floorclip_code_sprite_AFTER) SHL 8)
 
-COMMENT @
-; todo catch this based on shadow 
-mov   cx, es
-mov   si, cs
-mov   si, OFFSET SELFMODIFY_set_floorclip_code_sprite
-mov   di, OFFSET SELFMODIFY_set_floorclip_code_sprite_shadow
-movsw
-movsw
-movsw
-movsw
-@
+
+
 
 
 ; player vissprite related hardcodes
 mov   si, _player_vissprites       ; vissprite 0
 
+cmp   byte ptr ds:[si + VISSPRITE_T.vs_colormap], COLORMAP_SHADOW
+je    setup_player_shadow
+done_with_player_shadow:
 
 SELFMODIFY_MASKED_pspriteiscale_lo_1:
 mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo_sprite+1 - OFFSET R_MASK24_STARTMARKER_], 01000h
@@ -5410,11 +5386,27 @@ SELFMODIFY_set_player_pspritescale_hi_2:
 mov  dx, 01000h
 call R_DrawPlayerVisSprite_
 dont_draw_playersprite_2:
+
+cmp   byte ptr ds:[_player_vissprites + VISSPRITE_T.vs_colormap], COLORMAP_SHADOW
+je    undo_player_shadow
+
+
 LEAVE_MACRO
 POPA_NO_AX_OR_BP_MACRO
 retf
 
+setup_player_shadow:
 
+mov   word ptr cs:[SELFMODIFY_MASKED_SHADOW_set_mfloorceilclip_dc_x_lookup+1], ax
+mov   word ptr cs:[SELFMODIFY_set_floorclip_code_sprite_shadow], JMP_SHORT_REL8_OPCODE + ((SELFMODIFY_set_floorclip_code_sprite_shadow_TARGET - SELFMODIFY_set_floorclip_code_sprite_shadow_AFTER) SHL 8)
+jmp   done_with_player_shadow
+ALIGN_MACRO
+undo_player_shadow:
+mov   word ptr cs:[SELFMODIFY_set_floorclip_code_sprite_shadow], MOV_AL_BX_PLUS_IMM16_OPCODE
+
+LEAVE_MACRO
+POPA_NO_AX_OR_BP_MACRO
+retf
 
 
 
@@ -5433,9 +5425,7 @@ ALIGN_MACRO
 exit_draw_masked_column_early:
 ret
 
-; three uses... two in maskedsegrange one in drawvissprite?
-; revisit what really needs to be push/popped
-
+; two uses... in maskedsegrange
 
 
 ALIGN_MACRO
@@ -6317,9 +6307,6 @@ jmp       done_setting_cached_tex_masked
 
 ENDP
 
-_clip_bytes:
-mov   al, byte ptr ds:[bx+CLIPBOT_START_OFFSET]
-mov   ah, byte ptr ds:[bx+CLIPTOP_START_OFFSET]
 
 
 
@@ -6800,7 +6787,8 @@ PUBLIC  ENSUREALIGN_131
 PUBLIC  ENSUREALIGN_127_sprite
 PUBLIC  ENSUREALIGN_131_sprite
 PUBLIC  ENSUREALIGN_132_sprite
-
-
+PUBLIC  ENSUREALIGN_106_sprite
+PUBLIC  ENSUREALIGN_101_sprite
+PUBLIC  ENSUREALIGN_104_sprite
 ENDS
 END
