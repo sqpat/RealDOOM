@@ -819,10 +819,6 @@ PUBLIC R_DrawVisSprite_
 
 
 
-; todo calculate xiscale now.
-; note: we lazily calculate xiscale (the result of a FixedDiv (FRACUNIT, xxxx) operation) here.
-; this is because the sprite may have been obscured by this point with no visible pixels.
-
 
 ; begin fixeddivwhole sequence.
 
@@ -898,7 +894,7 @@ ELSE
     MOV  SI, DX
     PUSH AX
     MUL  BX
-    MOV  word ptr cs:[ENSUREALIGN_103-2], DX
+    MOV  word ptr ds:[ENSUREALIGN_103-2], DX
     MOV  AX, SI
     MUL  CX
     XCHG AX, SI
@@ -940,7 +936,6 @@ mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset_sprite], di
 SELFMODIFY_MASKED_centery_1:
 mov   di, 01000h ; sprtopscreen hi (lo is 0)
 
-; todo set ds to cs once all these ds vars removed.
 
 les   ax, dword ptr ds:[si + VISSPRITE_T.vs_scale]  ; vis->scale
 mov   dx, es
@@ -951,16 +946,20 @@ PUBLIC R_DrawPlayerVisSprite_
 
 ; di:00 is sprtopscreen.
 ; dx:ax is spryscale
+push  bp
+
+mov   bx, cs
+mov   ds, bx
 
 
-mov   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_lo_sprite+1], ax      
-mov   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_hi_sprite+1], dx      
+mov   word ptr ds:[SELFMODIFY_MASKED_set_spryscale_lo_sprite+1], ax      
+mov   word ptr ds:[SELFMODIFY_MASKED_set_spryscale_hi_sprite+1], dx      
 
-les   bx, dword ptr ds:[si + VISSPRITE_T.vs_texturemid] ; vis->texturemid
+les   bx, dword ptr ss:[si + VISSPRITE_T.vs_texturemid] ; vis->texturemid
 mov   cx, es
 ; write this ahead
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_texturemid_lo_1_sprite + 1 - OFFSET R_MASK24_STARTMARKER_], bx
-mov   byte ptr cs:[SELFMODIFY_MASKED_dc_texturemid_hi_1_sprite + 1 - OFFSET R_MASK24_STARTMARKER_], cl
+mov   word ptr ds:[SELFMODIFY_MASKED_dc_texturemid_lo_1_sprite + 1 - OFFSET R_MASK24_STARTMARKER_], bx
+mov   byte ptr ds:[SELFMODIFY_MASKED_dc_texturemid_hi_1_sprite + 1 - OFFSET R_MASK24_STARTMARKER_], cl
 
 
 test  dx, dx
@@ -992,35 +991,39 @@ done_with_mul_vissprite:
 
 ; di:cx is sprtopscreen
 neg   ax 
-mov   word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_lo_sprite+1], ax
+mov   word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_lo_sprite+1], ax
 sbb   di, dx
-mov   word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_hi_sprite+2], di
+mov   word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_hi_sprite+2], di
 
-mov   ax, word ptr ds:[si + VISSPRITE_T.vs_patch]
-cmp   ax, word ptr ds:[_lastvisspritepatch]
+mov   ax, word ptr ss:[si + VISSPRITE_T.vs_patch]
+SELFMODIFY_compare_lastvissprite_patch_1:
+cmp   ax, 0FFFFh
 jne   sprite_not_first_cachedsegment
-mov   es, word ptr ds:[_lastvisspritesegment]
+; todo immediate here and force align!
+_lastvisspritesegmentbase:
+mov   bp, 0FFFFh
+_lastvisspritesegment = _lastvisspritesegmentbase+1
+ENSUREALIGN_133:
 
 spritesegment_ready:
 
+; ds = cs here.
+; bp has segment to go into ES later.
 
-
-; es has segment...
-push  bp
-
-mov   ax, word ptr ds:[si + VISSPRITE_T.vs_startfrac + 0] ; 18
-mov   word ptr cs:[_xiscalelowbits], ax
-mov   dx, word ptr ds:[si + VISSPRITE_T.vs_startfrac + 2]  ; 1A
+; si 1274?
+les   ax, dword ptr ss:[si + VISSPRITE_T.vs_startfrac + 0] ; 18
+mov   word ptr ds:[_xiscalelowbits], ax
+mov   dx, es
 
 
 ; xiscalestep_shift = vis->xiscale << detailshift2minus;
-mov   ax, word ptr ds:[si + VISSPRITE_T.vs_xiscale + 0] ; 20
-mov   bx, word ptr ds:[si + VISSPRITE_T.vs_xiscale + 2] ; 22
+les   ax, dword ptr ss:[si + VISSPRITE_T.vs_xiscale + 0] ; 20
+mov   bx, es
 
-mov   di, word ptr ds:[si + VISSPRITE_T.vs_x1] ; 4
-mov   cx, word ptr ds:[si + VISSPRITE_T.vs_x2] ; 6
+les   di, dword ptr ss:[si + VISSPRITE_T.vs_x1] ; 4
+mov   cx, es
 
-
+mov   es, bp ; restore segment
 
 
 ; cx:di  carry startfrac..
@@ -1029,39 +1032,45 @@ mov   cx, word ptr ds:[si + VISSPRITE_T.vs_x2] ; 6
 
 
 ; last use of si so si is free after this (?)
-cmp   byte ptr ds:[si + VISSPRITE_T.vs_colormap], COLORMAP_SHADOW
-mov   bp, cs
-mov   ds, bp
+cmp   byte ptr ss:[si + VISSPRITE_T.vs_colormap], COLORMAP_SHADOW
 
 jne   do_draw_loop
 jump_to_draw_shadow_sprite:
 jmp   draw_shadow_sprite
 ALIGN_MACRO
 sprite_not_first_cachedsegment:
-cmp   ax, word ptr ds:[_lastvisspritepatch2]
+SELFMODIFY_compare_lastvissprite_patch_2:
+cmp   ax, 0FFFFh
 jne   sprite_not_in_cached_segments
-mov   dx, word ptr ds:[_lastvisspritesegment2]
-mov   es, dx
-mov   dx, word ptr ds:[_lastvisspritesegment]
+
+_lastvisspritesegment2base:
+mov   dx, 0FFFFh
+_lastvisspritesegment2 = _lastvisspritesegment2base + 1
+ENSUREALIGN_132:
+mov   bp, dx
+xchg  dx, word ptr ds:[_lastvisspritesegment]
 mov   word ptr ds:[_lastvisspritesegment2], dx
 
-mov   word ptr ds:[_lastvisspritesegment], es
-mov   dx, word ptr ds:[_lastvisspritepatch]
-mov   word ptr ds:[_lastvisspritepatch2], dx
-mov   word ptr ds:[_lastvisspritepatch], ax
+
+mov   dx, word ptr ds:[SELFMODIFY_compare_lastvissprite_patch_1+1]
+mov   word ptr ds:[SELFMODIFY_compare_lastvissprite_patch_2+1], dx
+mov   word ptr ds:[SELFMODIFY_compare_lastvissprite_patch_1+1], ax
 jmp   spritesegment_ready
 ALIGN_MACRO
 sprite_not_in_cached_segments:
-mov   dx, word ptr ds:[_lastvisspritepatch]
-mov   word ptr ds:[_lastvisspritepatch2], dx
+mov   dx, word ptr ds:[SELFMODIFY_compare_lastvissprite_patch_1+1]
+mov   word ptr ds:[SELFMODIFY_compare_lastvissprite_patch_2+1], dx
 mov   dx, word ptr ds:[_lastvisspritesegment]
 mov   word ptr ds:[_lastvisspritesegment2], dx
 ;call  R_GetSpriteTexture_   inlined
 
+mov   dx, ss
+mov   ds, dx
+
 
 push  si
-push  bp
-; everything but si and bp is free game to be clobbered! 
+
+; everything but si is free game to be clobbered in this scope!
 
 mov   di, SPRITEPAGE_SEGMENT
 mov   es, di
@@ -1075,21 +1084,24 @@ je    jump_to_sprite_not_in_cache
 mov   cl, byte ptr es:[di + SPRITEOFFSETS_OFFSET]
 
 call  R_GetSpritePage_  ; destroys di, get cl first
-; di got 13! cl was 0.
+
 cbw
 mov   di, ax
 mov   al, cl
 SHIFT_MACRO shl   ax 4      ;shift4
 add   ah, byte ptr cs:[di + _spritepagesegments - OFFSET R_MASK24_STARTMARKER_]
 
-pop   bp
+
 pop   si
 
 ;jmp   done_with_R_GetSpriteTexture_
+; ax has segment...
+mov   bp, word ptr ds:[si + VISSPRITE_T.vs_patch]
+mov   dx, cs
+mov   ds, dx
 mov   word ptr ds:[_lastvisspritesegment], ax
-mov   es, ax
-mov   ax, word ptr ds:[si + VISSPRITE_T.vs_patch]
-mov   word ptr ds:[_lastvisspritepatch], ax
+xchg  ax, bp ; bp gets seg
+mov   word ptr ds:[SELFMODIFY_compare_lastvissprite_patch_1+1], ax
 jmp   spritesegment_ready
 ALIGN_MACRO
 jump_to_sprite_not_in_cache:
@@ -1119,6 +1131,8 @@ ALIGN_MACRO
 draw_sprite_normal_innerloop:
 public  draw_sprite_normal_innerloop
 inc   di  ; force align the below imm16
+
+; todo bad di.
 
 SELFMODIFY_MASKED_set_xiscale_hi:
 mov   bx, 01000h
@@ -1972,7 +1986,7 @@ Z_QUICKMAPAI4 (pageswapargs_rend_offset_size+4) INDEXED_PAGE_5000_OFFSET
 
 xchg     ax, bp  ; get return segment
 
-pop   bp
+
 pop   si
 
 
@@ -1981,10 +1995,12 @@ pop   si
 done_with_R_GetSpriteTexture_:
 
 
+mov   bp, word ptr ds:[si + VISSPRITE_T.vs_patch]
+mov   dx, cs
+mov   ds, dx
 mov   word ptr ds:[_lastvisspritesegment], ax
-mov   es, ax
-mov   ax, word ptr ds:[si + VISSPRITE_T.vs_patch]
-mov   word ptr ds:[_lastvisspritepatch], ax
+xchg  ax, bp ; bp gets seg
+mov   word ptr ds:[SELFMODIFY_compare_lastvissprite_patch_1+1], ax
 jmp   spritesegment_ready
 
 
@@ -3805,8 +3821,8 @@ Z_QUICKMAPAI4 pageswapargs_spritecache_offset_size INDEXED_PAGE_9000_OFFSET
 
 ; todo is this code path possible
 mov   ax, 0FFFFh
-mov   word ptr ds:[_lastvisspritepatch], ax
-mov   word ptr ds:[_lastvisspritepatch2], ax
+mov   word ptr cs:[SELFMODIFY_compare_lastvissprite_patch_1+1], ax
+mov   word ptr cs:[SELFMODIFY_compare_lastvissprite_patch_2+1], ax
 pop   ax  ; return value
 pop   cx
 ret
@@ -3821,8 +3837,8 @@ call  R_MarkL2SpriteCacheMRU_
 Z_QUICKMAPAI4 pageswapargs_spritecache_offset_size INDEXED_PAGE_9000_OFFSET
 
 mov   ax, 0FFFFh
-mov   word ptr ds:[_lastvisspritepatch], ax
-mov   word ptr ds:[_lastvisspritepatch2], ax
+mov   word ptr cs:[SELFMODIFY_compare_lastvissprite_patch_1+1], ax
+mov   word ptr cs:[SELFMODIFY_compare_lastvissprite_patch_2+1], ax
 
 pop   ax  ; return value 
 pop   cx
@@ -4006,8 +4022,8 @@ Z_QUICKMAPAI4 pageswapargs_spritecache_offset_size INDEXED_PAGE_9000_OFFSET
 
 mov   ax, 0FFFFh
 
-mov   word ptr ds:[_lastvisspritepatch], ax
-mov   word ptr ds:[_lastvisspritepatch2], ax
+mov   word ptr cs:[SELFMODIFY_compare_lastvissprite_patch_1+1], ax
+mov   word ptr cs:[SELFMODIFY_compare_lastvissprite_patch_2+1], ax
 
 pop   ax  ; return value
 mov   al, ah
@@ -4025,8 +4041,9 @@ Z_QUICKMAPAI4 pageswapargs_spritecache_offset_size INDEXED_PAGE_9000_OFFSET
 pop   dx
 mov   ax, 0FFFFh ; this path let to -1
 
-mov   word ptr ds:[_lastvisspritepatch], ax
-mov   word ptr ds:[_lastvisspritepatch2], ax
+mov   word ptr cs:[SELFMODIFY_compare_lastvissprite_patch_1+1], ax
+mov   word ptr cs:[SELFMODIFY_compare_lastvissprite_patch_2+1], ax
+
 
 mov   al, dh  ; numpages in al
 pop   cx
@@ -6671,6 +6688,8 @@ PUBLIC  ENSUREALIGN_128
 PUBLIC  ENSUREALIGN_129
 PUBLIC  ENSUREALIGN_130
 PUBLIC  ENSUREALIGN_131
+PUBLIC  ENSUREALIGN_132
+PUBLIC  ENSUREALIGN_133
 
 PUBLIC  ENSUREALIGN_127_sprite
 PUBLIC  ENSUREALIGN_131_sprite

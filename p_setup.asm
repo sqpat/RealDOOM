@@ -1999,8 +1999,8 @@ call  R_LoadPatchColumnsColormap0_
 call  Z_QuickMapPhysics_PSetup_
 
 mov   ax, 0FFFFh
-mov   word ptr ds:[_lastvisspritepatch], ax
-mov   word ptr ds:[_lastvisspritepatch2], ax
+;mov   word ptr ds:[_lastvisspritepatch], ax
+;mov   word ptr ds:[_lastvisspritepatch2], ax
 mov   word ptr ds:[_cachedtex], ax
 mov   word ptr ds:[_cachedtex + 2], ax
 

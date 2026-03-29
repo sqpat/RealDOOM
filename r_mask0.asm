@@ -54,8 +54,11 @@ _sprtopscreen = 0
 _spryscale = 0
 _dc_x = 0
 _mfloorclip = 0
-_mceilclip = 0
-
+_mceilingclip = 0
+_lastvisspritepatch = 0
+_lastvisspritepatch2 = 0
+_lastvisspritesegment = 0
+_lastvisspritesegment2 = 0
 ;=================================
 
 COLFUNC_JUMPTABLE_SIZE_OFFSET = 0

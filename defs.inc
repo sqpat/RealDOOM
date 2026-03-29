@@ -136,8 +136,8 @@ _emsconventional =                  _NULL_OFFSET + 000BDh
 _finale_laststage =              	_NULL_OFFSET + 000BEh
 _playingstate = 	                _NULL_OFFSET + 000BFh
 
-_mfloorclip = 						_NULL_OFFSET + 000C0h
-_mceilingclip = 					_NULL_OFFSET + 000C4h
+;_mfloorclip = 						_NULL_OFFSET + 000C0h
+;_mceilingclip = 					_NULL_OFFSET + 000C4h
 
 _viletryx =                         _NULL_OFFSET + 000CCh
 _viletryy =                         _NULL_OFFSET + 000D0h
@@ -272,10 +272,10 @@ _maskedcachedbasecol =               _NULL_OFFSET + 0028Eh
 _maskedcachedsegment =               _NULL_OFFSET + 00290h
 _maskedheightvalcache =              _NULL_OFFSET + 00292h
 _currentoverlay = 		         	 _NULL_OFFSET + 00293h
-_lastvisspritesegment =              _NULL_OFFSET + 00294h
-_lastvisspritesegment2 =             _NULL_OFFSET + 00296h
-_lastvisspritepatch =                _NULL_OFFSET + 00298h
-_lastvisspritepatch2 =               _NULL_OFFSET + 0029Ah
+;_lastvisspritesegment =              _NULL_OFFSET + 00294h
+;_lastvisspritesegment2 =             _NULL_OFFSET + 00296h
+;_lastvisspritepatch =                _NULL_OFFSET + 00298h
+;_lastvisspritepatch2 =               _NULL_OFFSET + 0029Ah
 _ds_p =               				 _NULL_OFFSET + 0029Ch
 
 _olddb =							 _NULL_OFFSET + 002A0h

@@ -1,4 +1,4 @@
-#define R_DrawMasked24Offset                    0x1104
+#define R_DrawMasked24Offset                    0x1108
 #define R_DrawMasked16Offset                    0x1491
 #define R_DrawMasked0Offset                     0x140A
 #define R_DrawMaskedFLOffset                    0x13F1
@@ -87,5 +87,5 @@
 #define SaveLoadCodeSize               0xBB7
 #define SMLoadCodeSize                 0x492
 #define SInitCodeSize                  0x55D
-#define PSetupCodeSize                 0xA84
+#define PSetupCodeSize                 0xA7E
 #define MaximumMusDriverSize           0x100E
