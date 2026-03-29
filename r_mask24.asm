@@ -1003,7 +1003,7 @@ mov   es, word ptr ds:[_lastvisspritesegment]
 
 spritesegment_ready:
 
-; todo lodsw ?
+
 
 ; es has segment...
 push  bp
@@ -1170,7 +1170,7 @@ add   ax, cx ; self modify? does it change?
 ; ds = cs
 
 mov   es, cx
-; todo pass in bx as si instead.
+
 cmp   byte ptr es:[si + COLUMN_T.column_topdelta], 0FFh
 je    exit_draw_masked_column_sprite_early
 
@@ -2018,7 +2018,7 @@ push  bp
 
 mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_1+1 - OFFSET R_MASK24_STARTMARKER_], ax
 mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_2+1 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   word ptr cs:[SELFMODIFY_MASKED_x1_field_3+2 - OFFSET R_MASK24_STARTMARKER_], ax
+
 mov   word ptr cs:[SELFMODIFY_MASKED_cmp_to_x2+2 - OFFSET R_MASK24_STARTMARKER_], cx
 
 ; grab a bunch of drawseg values early in the function and write them forward.
@@ -2237,6 +2237,16 @@ use_frontsector_ceil:
 xor   cx, cx
 
 jmp sector_height_chosen
+
+ALIGN_MACRO
+
+; kinda rare case, fine if its a far jmp
+SELFMODIFY_MASKED_fixedcolormap_2_TARGET:
+fixed_colormap:
+SELFMODIFY_MASKED_fixedcolormap_3:
+mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMARKER_], 0
+jmp   colormap_set
+
 ALIGN_MACRO
 ys_equal:
 mov   al, 048h  ; dec ax instruction
@@ -2344,6 +2354,8 @@ mov   word ptr ds:[_maskedtexturecol], 01000h  ; ; ds->maskedtexturecol_val
 
 ;    rw_scalestep.w = ds->scalestep;
 
+; todo dont write just to write...
+
 SELFMODIFY_MASKED_dsp_0E:
 mov   ax, 01000h
 ENSUREALIGN_117: 
@@ -2351,8 +2363,7 @@ ENSUREALIGN_117:
 
 
 mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_1+1 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_2+5 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_lo_3+5 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep
+mov   word ptr cs:[SELFMODIFY_MASKED_add_rw_scalestep_lo_1+5 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep
 
 xchg  ax, bx
 
@@ -2369,8 +2380,7 @@ mov   ax, 01000h
 ENSUREALIGN_116: ; odd... rebalance it all when ds =
 
 mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_1+1 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_2+5 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_hi_3+5 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep
+mov   word ptr cs:[SELFMODIFY_MASKED_add_rw_scalestep_hi_1+5 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep
 
 
 ; inlined  FastMul16u32u_
@@ -2418,58 +2428,24 @@ colormap_set:
 
 ; set up main outer loop
 
-;		int16_t dc_x_base4 = x1 & (detailshiftandval);	
 
-SELFMODIFY_MASKED_x1_field_2:
-mov   ax, 08000h
-ENSUREALIGN_113: ; odd
 
-mov   di, ax						; di = x1
-SELFMODIFY_MASKED_detailshiftandval_2:
-and   ax, 01000h
-mov   word ptr cs:[SELFMODIFY_MASKED_dc_x_base4+2 - OFFSET R_MASK24_STARTMARKER_], ax
 
-;		int16_t base4diff = x1 - dc_x_base4;
 
-sub   di, ax						; di = base4diff = x1 - dc_x_base4
-
-;		fixed_t basespryscale = spryscale.w;
 
 ; todo can we write this above?
 mov   ax, word ptr cs:[SELFMODIFY_MASKED_set_spryscale_lo+1]
-mov   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
-mov   ax, word ptr cs:[SELFMODIFY_MASKED_set_spryscale_hi+1]
-mov   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], ax
+mov   dx, word ptr cs:[SELFMODIFY_MASKED_set_spryscale_hi+1]
 
 ;		fixed_t rw_scalestep_shift = rw_scalestep.w << detailshift2minus;
+
+; todo reuse from above somewhere...
 
 SELFMODIFY_MASKED_rw_scalestep_lo_1:
 mov   ax, 01000h
 SELFMODIFY_MASKED_rw_scalestep_hi_1:
 mov   dx, 01000h
 
-
-
-
-; todo: proper shift jmp thing
-cmp byte ptr ds:[_detailshift2minus], 1
-jb done_shifting_spryscale
-je do_shift_spryscale_once
-; fall thru do twice
-shl   ax, 1
-rcl   dx, 1
-do_shift_spryscale_once:
-shl   ax, 1
-rcl   dx, 1
-
-
-done_shifting_spryscale:
-
-
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_lo_1+1 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep_shift
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_lo_2+5 - OFFSET R_MASK24_STARTMARKER_], ax		; rw_scalestep_shift
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_hi_1+2 - OFFSET R_MASK24_STARTMARKER_], dx		; rw_scalestep_shift
-mov   word ptr cs:[SELFMODIFY_MASKED_rw_scalestep_shift_hi_2+5 - OFFSET R_MASK24_STARTMARKER_], dx		; rw_scalestep_shift
 
 ;		fixed_t sprtopscreen_step = FixedMul(dc_texturemid.w, rw_scalestep_shift);
 
@@ -2526,95 +2502,18 @@ mov   word ptr cs:[SELFMODIFY_MASKED_sub_sprtopscreen_lo+5 - OFFSET R_MASK24_STA
 mov   word ptr cs:[SELFMODIFY_MASKED_sub_sprtopscreen_hi+5 - OFFSET R_MASK24_STARTMARKER_], dx	  ; sprtopscreen_step
 
 
-;	while (base4diff){
-;		basespryscale -= rw_scalestep.w;
-;		base4diff--;
-;	}
 
-test  di, di
-je    base4diff_is_zero_rendermaskedsegrange
+; PRELOOP SETUP
 
-loop_dec_base4diff:
-;			basespryscale -= rw_scalestep.w;
-
-SELFMODIFY_MASKED_rw_scalestep_lo_2:
-sub   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], 01000h
-SELFMODIFY_MASKED_rw_scalestep_hi_2:
-sbb   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], 01000h
-
-
-dec   di
-jne   loop_dec_base4diff    ; if xoffset < detailshiftitercount exit loop
-base4diff_is_zero_rendermaskedsegrange:
-
-; di is 0
-
-
-
-; init di
-mov   word ptr cs:[SELF_MODIFY_MASKED_xoffset+1 - OFFSET R_MASK24_STARTMARKER_], di
-
-; TODO get rid of outer loop?
-
-
-continue_outer_loop:
-
-;			outp(SC_INDEX+1, quality_port_lookup[xoffset+detailshift.b.bytehigh]);
-
-mov   dx, SC_DATA
-; di contains xoffset..
-SELFMODIFY_MASKED_detailshiftplus1_4:
-mov   al, byte ptr ds:[di + 010h] ; selfmodified...
-out   dx, al
-
-
-;			spryscale.w = basespryscale;
-
-SELFMODIFY_MASKED_get_basespryscale_lo:
-mov   ax, 01000h
-SELFMODIFY_MASKED_get_basespryscale_hi:
-mov   dx, 01000h
-
-; di holds xoffset.
-; dx:ax temporarily holds _spryscale
-; di will hold dc_x
-;			dc_x        = dc_x_base4 + xoffset;
-SELFMODIFY_MASKED_dc_x_base4:
-add   di, 01000h ; todo pass this in without this selfmodify?
-
-
-
-;	if (dc_x < x1){
-SELFMODIFY_MASKED_x1_field_3:
-cmp   di, 08000h   ; x1 
-ENSUREALIGN_112:
-jge   calculate_sprtopscreen
-
-; adjust by shiftstep
-
-;	dc_x        += detailshiftitercount;
-;	spryscale.w += rw_scalestep_shift;
-
-SELFMODIFY_MASKED_rw_scalestep_shift_lo_1:
-add   ax, 01000h
-SELFMODIFY_MASKED_rw_scalestep_shift_hi_1:
-adc   dx, 01000h
-SELFMODIFY_MASKED_detailshiftitercount_9:
-add   di, 00000h
-ENSUREALIGN_128:
-
-calculate_sprtopscreen:
-
-; di is dc_x
-mov   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_lo+1], ax      
-mov   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_hi+1], dx      
+; todo store these in registers instead of refetching perhaps?
+mov   ax, word ptr cs:[SELFMODIFY_MASKED_set_spryscale_lo+1]
+mov   dx, word ptr cs:[SELFMODIFY_MASKED_set_spryscale_hi+1]
+; OUTER LOOP
 
 
 
 ;			sprtopscreen.h.intbits = centery;
 ;			sprtopscreen.h.fracbits = 0;
-
-
 
 ;			sprtopscreen.w -= FixedMul(dc_texturemid.w,spryscale.w);
 
@@ -2627,90 +2526,9 @@ mov   si, 01000h
 test  dx, dx
 jnz   do_32_bit_mul
 test  ax, ax
-js    do_32_bit_mul_after_all
-
-do_16_bit_mul_after_all:
+jns    do_16_bit_mul_after_all
 
 
-; todo make room to inline
-;call FixedMul1632MaskedLocal_
-
-  MOV CX, AX
-  MUL BX
-  inc   word ptr cs:[SELF_MODIFY_MASKED_xoffset+1 - OFFSET R_MASK24_STARTMARKER_]
-  XCHG AX, DX
-  XCHG AX, CX
-  CWD
-  AND BX, DX
-
-  IMUL SI
-  SUB CX, BX
-  SBB BX, BX
-  ADD AX, CX
-  ADC DX, BX
-
-
-
-done_with_mul:
-
-
-
-neg   ax ; no need to subtract from zero...
-mov   word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_lo+1], ax
-SELFMODIFY_MASKED_centery_2:
-mov   ax, 01000h
-sbb   ax, dx
-mov   word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_hi+2], ax
-
-
-
-inner_loop_draw_columns:
-
-
-SELFMODIFY_MASKED_cmp_to_x2:
-cmp   di, 01000h  ; dc_x
-jle   do_inner_loop
-
-
-;		for (xoffset = 0 ; xoffset < detailshiftitercount ; 
-;			xoffset++, 
-;			basespryscale+=rw_scalestep.w) {
-
-; end of inner loop, fall back to end of outer loop step
-
-SELF_MODIFY_MASKED_xoffset:
-mov   di, 01000h
-
-;			basespryscale+=rw_scalestep.w
-
-
-SELFMODIFY_MASKED_rw_scalestep_lo_3:
-add   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], 01000h
-SELFMODIFY_MASKED_rw_scalestep_hi_3:
-adc   word ptr cs:[SELFMODIFY_MASKED_get_basespryscale_hi+1 - OFFSET R_MASK24_STARTMARKER_], 01000h
-
-
-; xoffset < detailshiftitercount
-SELFMODIFY_MASKED_detailshiftitercount_8:
-cmp   di, 0
-jle   continue_outer_loop		; 6 bytes out of range
-
-exit_render_masked_segrange:
-mov   ax, NULL_TEX_COL
-mov   word ptr ds:[_maskednextlookup], ax
-mov   word ptr ds:[_maskedcachedbasecol], ax
-mov   word ptr ds:[_maskedtexrepeat], 0
-
-pop   bp
-pop   di
-
-ret   
-ALIGN_MACRO
-
-do_32_bit_mul:
-inc   dx
-jz    do_16_bit_mul_after_all
-dec   dx
 do_32_bit_mul_after_all:
 mov   cx, si
 ;call FixedMulMaskedLocal_  ; inlined
@@ -2724,7 +2542,7 @@ IF COMPISA GE COMPILE_386
   xchg ax, dx
   imul  ecx
   shr  eax, 16
-  inc   word ptr cs:[SELF_MODIFY_MASKED_xoffset+1 - OFFSET R_MASK24_STARTMARKER_]
+
 
 ENDP
 ELSE
@@ -2733,7 +2551,7 @@ ELSE
     MOV  SI, DX
     PUSH AX
     MUL  BX
-    inc   word ptr cs:[SELF_MODIFY_MASKED_xoffset+1 - OFFSET R_MASK24_STARTMARKER_]
+
     MOV  es, DX
     MOV  AX, SI
     MUL  CX
@@ -2758,26 +2576,138 @@ ENDIF
 
 jmp done_with_mul
 ALIGN_MACRO
+dec_dx_do_32_bit_mul_after_all:
+dec   dx
+jmp   do_32_bit_mul_after_all
+ALIGN_MACRO
+do_32_bit_mul:
+inc   dx
+jnz   dec_dx_do_32_bit_mul_after_all
 
-; kinda rare case, fine if its a far jmp
-SELFMODIFY_MASKED_fixedcolormap_2_TARGET:
-fixed_colormap:
-SELFMODIFY_MASKED_fixedcolormap_3:
-mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset+2 - OFFSET R_MASK24_STARTMARKER_], 0
-jmp   colormap_set
+
+do_16_bit_mul_after_all:
+
+
+; todo make room to inline
+;call FixedMul1632MaskedLocal_
+
+  MOV CX, AX
+  MUL BX
+  XCHG AX, DX
+  XCHG AX, CX
+  CWD
+  AND BX, DX
+
+  IMUL SI
+  SUB CX, BX
+  SBB BX, BX
+  ADD AX, CX
+  ADC DX, BX
+
+
+
+done_with_mul:
+
+
+neg   ax ; no need to subtract from zero...
+mov   word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_lo+1], ax
+SELFMODIFY_MASKED_centery_2:
+mov   ax, 01000h
+sbb   ax, dx
+mov   word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_hi+2], ax
+
+SELFMODIFY_MASKED_x1_field_2:
+mov   di, 08000h
+ENSUREALIGN_113: ; odd
+jmp   masked_segrange_column_inner_loop
+ALIGN_MACRO
+exit_render_masked_segrange:
+mov   ax, NULL_TEX_COL
+mov   word ptr ds:[_maskednextlookup], ax
+mov   word ptr ds:[_maskedcachedbasecol], ax
+mov   word ptr ds:[_maskedtexrepeat], 0
+
+pop   bp
+pop   di
+
+ret   
 ALIGN_MACRO
 
 
-do_inner_loop:
+use_maxlight:
+mov   al, MAXLIGHTSCALE - 1
+jmp   get_colormap
+
+ALIGN_MACRO
+
+update_maskedtexturecol_finish_loop_iter:
+;	maskedtexturecol[dc_x] = MAXSHORT;
+
+; todo whats segment on this. OPENINGS_SEGMENT ? can we hardcode?
+; todo selfmodify lea bx, [di + 01000h] to get targ addr
 ;   di is dc_x
+les   bx, dword ptr ds:[_maskedtexturecol]
+
+add   bx, di ; byte and word in lookup  
+mov   word ptr es:[bx+di], MAXSHORT
+
+ALIGN_MACRO
+increment_inner_loop: ; todo align for free?
+public increment_inner_loop
+inc   di
+
+; todo pull into immediate possible eventually?
+SELFMODIFY_MASKED_add_rw_scalestep_lo_1:
+add   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_lo+1], 01000h
+SELFMODIFY_MASKED_add_rw_scalestep_hi_1:
+adc   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_hi+1], 01000h
+ENSUREALIGN_128:
+
+
+SELFMODIFY_MASKED_sub_sprtopscreen_lo:
+sub   word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_lo + 1], 01000h
+SELFMODIFY_MASKED_sub_sprtopscreen_hi:
+sbb   word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_hi + 2], 01000h
+
+SELFMODIFY_MASKED_cmp_to_x2:
+cmp   di, 01000h  ; dc_x
+jg   exit_render_masked_segrange
+
+
+
+; INNER START LOOP HERE
+; INNER START LOOP HERE
+; INNER START LOOP HERE
+
+
+ALIGN_MACRO
+masked_segrange_column_inner_loop:
+
+;   di is dc_x
+
+mov   dx, SC_DATA
+
+; todo redo this area with selfmodify...
+
+mov   bx, di
+and   bx, 3
+
+; di contains xoffset..
+SELFMODIFY_MASKED_detailshiftplus1_4:
+mov   al, byte ptr ds:[bx + 010h] ; selfmodified...
+out   dx, al
+
+
+
 les   bx, dword ptr ds:[_maskedtexturecol]
 add   bx, di ; byte and word in lookup
 ;  si caches _texturecolumn in this inner loop
-mov   si, word ptr es:[bx+di]
+mov   si, word ptr es:[bx+di] ; di word lookup
 
 ;  bp caches _maskedcachedbasecol in this inner loop
 mov   bp, word ptr ds:[_maskedcachedbasecol] 
 
+; todo immediates?
 mov   bx, word ptr cs:[SELFMODIFY_MASKED_set_spryscale_lo+1]
 mov   cx, word ptr cs:[SELFMODIFY_MASKED_set_spryscale_hi+1]
 
@@ -2795,42 +2725,9 @@ mov   al, bh
 mov   ah, cl
 SHIFT_MACRO shr ax 4
 
-jmp   get_colormap
-ALIGN_MACRO
-
-
-update_maskedtexturecol_finish_loop_iter:
-;	maskedtexturecol[dc_x] = MAXSHORT;
-
-
-;   di is dc_x
-les   bx, dword ptr ds:[_maskedtexturecol]
-
-add   bx, di ; byte and word in lookup  
-mov   word ptr es:[bx+di], MAXSHORT
-
-increment_inner_loop:
-
-SELFMODIFY_MASKED_detailshiftitercount_7:
-add   di, 0
-
-SELFMODIFY_MASKED_rw_scalestep_shift_lo_2:
-add   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_lo+1], 01000h
-SELFMODIFY_MASKED_rw_scalestep_shift_hi_2:
-adc   word ptr cs:[SELFMODIFY_MASKED_set_spryscale_hi+1], 01000h
 
 
 
-SELFMODIFY_MASKED_sub_sprtopscreen_lo:
-sub   word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_lo + 1], 01000h
-SELFMODIFY_MASKED_sub_sprtopscreen_hi:
-sbb   word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_hi + 2], 01000h
-
-jmp   inner_loop_draw_columns
-ALIGN_MACRO
-
-use_maxlight:
-mov   al, MAXLIGHTSCALE - 1
 get_colormap:
 xor   ah, ah
 xchg  ax, bx
@@ -2848,22 +2745,9 @@ got_colormap:
 
 call  FastDiv3232FFFF_  ; todo inline eventually
 
-mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
 ; high byte set in fastdiv.
 
-SELFMODIFY_MASKED_apply_stretch_tag:
-jmp   is_stretch_draw_2     ; nop or jmp
-SELFMODIFY_MASKED_apply_stretch_tag_AFTER:
-
-mov   bx, DRAWCOL_NOLOOP_OFFSET_MASKED
-jmp   continue_selfmodifies_maskedsegrange
-SELFMODIFY_MASKED_apply_stretch_tag_TARGET:
-is_stretch_draw_2:
-
-mov   bx, DRAWCOL_NOLOOPSTRETCH_OFFSET_MASKED
-
-continue_selfmodifies_maskedsegrange:
-mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset], bx
+; ax result already written ahead 
 
 
 ; end fastdiv sequence
@@ -4184,10 +4068,12 @@ ALIGN_MACRO
    mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+2 - OFFSET R_MASK24_STARTMARKER_], dl
    test  dl, dl
    jz    do_stretch_draw_386_masked
-   mov   word ptr cs:[SELFMODIFY_MASKED_apply_stretch_tag], TWO_BYTE_NOP ; NOP  ; toggle stretch variant for this frame
+   mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset], DRAWCOL_NOLOOP_OFFSET_MASKED
+   mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
    ret
    do_stretch_draw_386_masked:
-   mov   word ptr cs:[SELFMODIFY_MASKED_apply_stretch_tag], ((SELFMODIFY_MASKED_apply_stretch_tag_TARGET - SELFMODIFY_MASKED_apply_stretch_tag_AFTER) SHL 8) + 0EBh  ; jmp 8 turn on stretch variant for this frame
+   mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset], DRAWCOL_NOLOOPSTRETCH_OFFSET_MASKED
+   mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
    ret
    ENDP
 
@@ -4198,13 +4084,16 @@ ELSE
 
    xchg dx, cx   ; cx was 0, dx is FFFF
    div bx        ; after this dx stores remainder, ax stores q1
+   mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+2 - OFFSET R_MASK24_STARTMARKER_], al
    xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
    div bx
    ; cx:ax is result 
    ; ch is known zero.
-   mov word ptr cs:[SELFMODIFY_MASKED_apply_stretch_tag], TWO_BYTE_NOP ; NOP  ; toggle stretch variant for this frame
+   mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset],DRAWCOL_NOLOOP_OFFSET_MASKED
    ; only write to dc_iscale_hi when nonzero.
-   mov   byte ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_hi+2 - OFFSET R_MASK24_STARTMARKER_], cl
+
+   mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
+
 
    ;jmp FastDiv3232FFFF_done    ; todo branch better 
 
@@ -4260,8 +4149,9 @@ ENDM
 
    ; cx is zero already coming in from the first shift so cx:ax is already the result.
 
-   mov   word ptr cs:[SELFMODIFY_MASKED_apply_stretch_tag], ((SELFMODIFY_MASKED_apply_stretch_tag_TARGET - SELFMODIFY_MASKED_apply_stretch_tag_AFTER) SHL 8) + 0EBh  ; jmp 8 turn on stretch variant for this frame
-   ;xor   dx, dx
+    mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset],DRAWCOL_NOLOOPSTRETCH_OFFSET_MASKED
+    ;xor   dx, dx
+   mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
    ret
 
@@ -4314,6 +4204,7 @@ ENDM
    mov   si, dx					; si stores rhat
 
    mul   cx   						; DX:AX = c1
+   mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset],DRAWCOL_NOLOOPSTRETCH_OFFSET_MASKED
 
 
    ; c1 hi = dx, c2 lo = es  (es needs NOT)
@@ -4357,7 +4248,7 @@ ENDM
    sub  ax, si ; modify qhat by measured amount
 
 
-   mov   word ptr cs:[SELFMODIFY_MASKED_apply_stretch_tag], ((SELFMODIFY_MASKED_apply_stretch_tag_TARGET - SELFMODIFY_MASKED_apply_stretch_tag_AFTER) SHL 8) + 0EBh  ;  turn on stretch variant for this frame
+   mov   word ptr cs:[SELFMODIFY_MASKED_set_dc_iscale_lo+1 - OFFSET R_MASK24_STARTMARKER_], ax
 
 
    
@@ -6558,15 +6449,12 @@ done_modding_shift_detail_code_masked:
 
 ; note: examples 3/6/9 overwrite "add ax, 0" which compiles to the opcode where
 ; you get 16 bit immediate starting at base + 1 instead of a 8 bit immediate starting at base + 2.
-mov   al, byte ptr ss:[_detailshiftitercount]
-
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_7+2 - OFFSET R_MASK24_STARTMARKER_], al
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_8+2 - OFFSET R_MASK24_STARTMARKER_], al
-mov   byte ptr ds:[SELFMODIFY_MASKED_detailshiftitercount_9+2 - OFFSET R_MASK24_STARTMARKER_], al
 
 
-mov   ax, word ptr ss:[_detailshiftandval]
-mov   word ptr ds:[SELFMODIFY_MASKED_detailshiftandval_2+1 - OFFSET R_MASK24_STARTMARKER_], ax
+
+
+
+
 
 
 mov   al, byte ptr ss:[_detailshift+1]
@@ -6763,7 +6651,7 @@ PUBLIC  ENSUREALIGN_108
 PUBLIC  ENSUREALIGN_109
 PUBLIC  ENSUREALIGN_110
 PUBLIC  ENSUREALIGN_111
-PUBLIC  ENSUREALIGN_112
+;PUBLIC  ENSUREALIGN_112
 PUBLIC  ENSUREALIGN_113
 PUBLIC  ENSUREALIGN_114
 PUBLIC  ENSUREALIGN_115
