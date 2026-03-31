@@ -173,7 +173,7 @@ xor   ch, ch		; count used once for mul and not again. todo is dh already zero?
 
 ; es in use down below
 mov   bp, word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_lo+1]
-mov   si, word ptr ds:[SELFMODIFY_MASKED_add_sprtopscreen_hi+2]
+mov   si, word ptr cs:[SELFMODIFY_MASKED_add_sprtopscreen_hi+2]
 mov   ax, word ptr cs:[SELFMODIFY_MASKED_set_spryscale_lo+1]
 xchg  ax, bx
 mov   ax, word ptr cs:[SELFMODIFY_MASKED_set_spryscale_hi+1]

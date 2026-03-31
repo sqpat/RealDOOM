@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/03/31 00:47:14
+Created on:       26/03/31 00:54:52
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -557,7 +557,7 @@ Module: r_mask24.obj(r_mask24.ASM)
 1dab:0f74*     FastDiv3232FFFF_
 1dab:097c*     ENSUREALIGN_117
 1dab:0b85*     ENSUREALIGN_110
-1dab:0152*     ENSUREALIGN_102
+1dab:0153*     ENSUREALIGN_102
 1dab:093e*     ENSUREALIGN_120
 1dab:129d*     ENSUREALIGN_122
 1dab:0a62*     ENSUREALIGN_113
@@ -1611,4 +1611,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003dea0 (253600.)
 Entry point address: 2fb0:7cce
-Link time: 00:00.04
+Link time: 00:00.05
