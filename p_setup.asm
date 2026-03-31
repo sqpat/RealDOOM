@@ -2004,6 +2004,10 @@ mov   ax, 0FFFFh
 mov   word ptr ds:[_cachedtex], ax
 mov   word ptr ds:[_cachedtex + 2], ax
 
+inc   byte ptr ds:[_levelfirstframe]
+
+
+
 mov   cx, NUM_CACHE_LUMPS
 mov   di, OFFSET _cachedlumps
 push  ds

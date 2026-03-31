@@ -4546,7 +4546,11 @@ SIL_BOTH =   3
 
 
 END_OF_VISSPRITE_SORTED_LOOP   = 0
-
+ALIGN_MACRO
+setup_level_constants:
+call     R_WriteBackMaskedLevelConstants24_
+jmp      done_with_level_constants
+ret
 
 ALIGN_MACRO
 PROC   R_DrawMasked24_ FAR   ; fairly optimized? doesnt run much, procedural
@@ -4557,6 +4561,10 @@ push  bp
 mov   bp, sp
 
 mov   word ptr cs:[SELFMODIFY_set_floorclip_code_sprite], MOV_AL_BX_PLUS_IMM16_OPCODE
+
+cmp       byte ptr ds:[_levelfirstframe], 0
+jne       setup_level_constants
+done_with_level_constants:
 
 
 ;    if (vissprite_p > 0) {
@@ -6296,9 +6304,26 @@ ENDM
 
 
 
+PROC   R_WriteBackMaskedLevelConstants24_ NEAR
+PUBLIC R_WriteBackMaskedLevelConstants24_ 
+
+mov     ax,  word ptr ds:[_firstpatch]
+push    cs
+pop     ds
+
+; todo only do this once
+
+mov       word ptr ds:[SELFMODIFY_MASKED_subfirstpatch_1+2], ax
+mov       word ptr ds:[SELFMODIFY_MASKED_subfirstpatch_2+2], ax
 
 
 
+push    ss
+pop     ds
+dec     byte ptr ds:[_levelfirstframe]
+
+ret
+ENDP
 
 
 ;
@@ -6506,12 +6531,6 @@ mov   word ptr ds:[SELFMODIFY_set_player_pspritescale_lo_1+1], ax
 mov   word ptr ds:[SELFMODIFY_set_player_pspritescale_hi_1+1], dx
 mov   word ptr ds:[SELFMODIFY_set_player_pspritescale_lo_2+1], ax
 mov   word ptr ds:[SELFMODIFY_set_player_pspritescale_hi_2+1], dx
-
-; todo only do this once
-mov       ax,  word ptr ss:[_firstpatch]
-
-mov       word ptr ds:[SELFMODIFY_MASKED_subfirstpatch_1+2], ax
-mov       word ptr ds:[SELFMODIFY_MASKED_subfirstpatch_2+2], ax
 
 
 mov      cl,  byte ptr ss:[_detailshift]

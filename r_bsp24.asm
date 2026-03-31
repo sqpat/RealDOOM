@@ -188,9 +188,8 @@ _lastviewangle:
 dw 0F0F0h, 0F0F0h
 
 _lastfixedcolormap:
-db 0F0h  ; force selfmodify frame one
-_lastskyflatnum:
-db 0F0h  ; force selfmodify frame one
+db 0F0h
+
 _lastextralight:
 db 0F0h
 
@@ -14117,6 +14116,10 @@ ENDP
 
 
 ;R_RenderPlayerView_
+ALIGN_MACRO
+setup_level_constants:
+call    R_WriteBackLevelConstants24_
+jmp     done_with_level_constants
 
 ALIGN_MACRO
 PROC R_RenderPlayerView24_ FAR ; probably not optimized, runs rarely
@@ -14128,9 +14131,12 @@ PUSHA_NO_AX_OR_BP_MACRO
 
 ;	r_cachedplayerMobjsecnum = playerMobj->secnum;
 mov       bx, word ptr ds:[_playerMobj]
-push      word ptr ds:[bx + MOBJ_T.m_secnum]  ; playerMobj->secnum
-pop       word ptr cs:[SELFMODIFY_BSP_set_playermobjsecnum + 1]
+mov       ax, word ptr ds:[bx + MOBJ_T.m_secnum]  ; playerMobj->secnum
+mov       word ptr cs:[SELFMODIFY_BSP_set_playermobjsecnum + 1], ax
 
+cmp       byte ptr ds:[_levelfirstframe], 0
+jne       setup_level_constants
+done_with_level_constants:
 
 ;call      Z_QuickMapRender_
 Z_QUICKMAPAI24 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
@@ -14139,9 +14145,6 @@ Z_QUICKMAPAI24 pageswapargs_rend_offset_size INDEXED_PAGE_4000_OFFSET
 ; INLINED setupframe
 
 
-; todo only do once per level.
-mov      ax, word ptr ds:[_playerMobj_pos]
-mov      word ptr cs:[SELFMODIFY_set_playermobjpos+2], ax
 
 ;    if (player.fixedcolormapvalue) {
 
@@ -14276,6 +14279,65 @@ ENDP
 
 
 
+;R_WriteBackLevelConstants24_
+
+PROC   R_WriteBackLevelConstants24_ NEAR ; probably not optimized, runs rarely
+PUBLIC R_WriteBackLevelConstants24_ 
+
+
+; set ds to cs to make code smaller?
+mov      ax, word ptr ds:[_BSP_CODE_SEGMENT_PTR]
+mov      cx, cs
+mov      ds, cx
+mov      es, cx
+
+
+ASSUME DS:R_BSP_24_TEXT
+
+
+
+mov      word ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_mid+2], ax
+mov      word ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_top+2], ax
+mov      word ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_bot+2], ax
+
+; do once per level.
+mov      ax, word ptr ss:[_playerMobj_pos]
+mov      word ptr ds:[SELFMODIFY_set_playermobjpos+2], ax
+
+; todo only do this once
+mov      ax, word ptr ss:[_tantoangle_segment]
+mov      word ptr ds:[_tantoangle_segmentBSPLocal], ax
+; todo only do this once
+mov       ax,  word ptr ss:[_firstpatch]
+
+mov       word ptr ds:[SELFMODIFY_BSP_subfirstpatch_1+2], ax
+mov       word ptr ds:[SELFMODIFY_BSP_subfirstpatch_2+2], ax
+
+
+mov      al, byte ptr ss:[_skyflatnum]  ; todo do once per level ?
+
+mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_1+1], al
+mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_2+2], al
+mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_3+2], al
+mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_4+3], al
+mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_4_TWOSIDED+3], al
+
+; zero caches TODO
+xor      ax, ax
+
+mov      di, OFFSET _segloopcachedsegment
+mov      cx, 2 + NUM_CACHE_LUMPS + NUM_CACHE_LUMPS + 2 + 1
+rep      stosw
+
+push     ss
+pop      ds
+
+
+ret
+
+ENDP
+
+
 _lookup_bytes:
 ; quality 0
 mov  cx, di
@@ -14309,7 +14371,7 @@ PUBLIC R_WriteBackViewConstants24_
 
 
 ; set ds to cs to make code smaller?
-mov      ax, word ptr ds:[_BSP_CODE_SEGMENT_PTR]
+mov      ax, word ptr ds:[_detailshift]
 mov      cx, cs
 mov      ds, cx
 mov      es, cx
@@ -14319,21 +14381,10 @@ ASSUME DS:R_BSP_24_TEXT
 
 
 
-mov      word ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_mid+2], ax
-mov      word ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_top+2], ax
-mov      word ptr ds:[COLFUNC_shiftmul_selfmodify_target_lookup_bot+2], ax
-
-; todo only do this once
-mov      ax, word ptr ss:[_tantoangle_segment]
-mov      word ptr ds:[_tantoangle_segmentBSPLocal], ax
-; todo only do this once
-mov       ax,  word ptr ss:[_firstpatch]
-
-mov       word ptr ds:[SELFMODIFY_BSP_subfirstpatch_1+2], ax
-mov       word ptr ds:[SELFMODIFY_BSP_subfirstpatch_2+2], ax
 
 
-mov      ax, word ptr ss:[_detailshift]
+
+
 ; todo based on quality change
 
 LENGTH_OF_OUT_CODE_STRING = 10
@@ -14630,16 +14681,6 @@ mov      es, ax
 
 ASSUME DS:R_BSP_24_TEXT
 
-mov      al, byte ptr ss:[_skyflatnum]  ; todo do once per level ?
-cmp      al, byte ptr ds:[_lastskyflatnum]
-je       skip_skyflat_selfmodifies_this_frame
-mov      byte ptr ds:[_lastskyflatnum], al
-mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_1+1], al
-mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_2+2], al
-mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_3+2], al
-mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_4+3], al
-mov      byte ptr ds:[SELFMODIFY_BSP_set_skyflatnum_4_TWOSIDED+3], al
-skip_skyflat_selfmodifies_this_frame:
 
 ; VIEWZ LO
 

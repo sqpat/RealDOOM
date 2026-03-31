@@ -485,6 +485,7 @@ _flatcache_l2_tail =                 _NULL_OFFSET + 005AFh
 ;_segloopprevlookup =                 _NULL_OFFSET + 005B0h
 ;_segloopcachedbasecol =              _NULL_OFFSET + 005B4h
 ;_cachedsegmenttex =                  _NULL_OFFSET + 005B8h
+_levelfirstframe = 					 _NULL_OFFSET + 005BBh
 _playerMobj =                   	 _NULL_OFFSET + 005BCh
 _ceilinglinenum =                    _NULL_OFFSET + 005BEh
 
