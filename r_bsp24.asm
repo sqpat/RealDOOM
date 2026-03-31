@@ -14783,11 +14783,6 @@ mov      ax, ((SELFMODIFY_BSP_viewx_lo_4_TARGET_1 - SELFMODIFY_BSP_viewx_lo_4_AF
 selfmodify_viewx_done:
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_lo_4], ax
 
-mov      ax, es
-adc      ax, 0  ; carry from previous neg
-mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_5+2], ax
-
-
 ; VIEWX HI
 
 skip_viewx_lo_selfmodifies_this_frame:
@@ -14806,6 +14801,11 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_4+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_6+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_2_TWOSIDED+2], ax
 
+cmp      word ptr ds:[_lastviewx+0], 1
+cmc
+adc      ax, 0 ; simulated borrow/sbb
+mov      word ptr ds:[SELFMODIFY_BSP_viewx_hi_5+2], ax
+
 skip_viewx_hi_selfmodifies_this_frame:
 
 ; VIEWY LO
@@ -14822,15 +14822,11 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_3+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_2_TWOSIDED+1], ax
 
 neg      ax
-xchg     ax, dx
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_lo_5+1], ax
-mov      ax, es
-adc      ax, 0
-mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_5+2], ax
 
 
-test     dx, dx
-jle      selfmodify_viewy_lo_lessthanequaltozero
+; reverse of jle because
+jge      selfmodify_viewy_lo_lessthanequaltozero
 mov      ax, ((SELFMODIFY_BSP_viewy_lo_4_TARGET_2 - SELFMODIFY_BSP_viewy_lo_4_AFTER) SHL 8) + 07Eh ;jle
 
 jmp      selfmodify_viewy_done
@@ -14854,6 +14850,11 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_3+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_4+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_6+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_2_TWOSIDED+2], ax
+
+cmp      word ptr ds:[_lastviewy+0], 1
+cmc
+adc      ax, 0 ; simulated borrow/sbb
+mov      word ptr ds:[SELFMODIFY_BSP_viewy_hi_5+2], ax
 
 skip_viewy_hi_selfmodifies_this_frame:
 
