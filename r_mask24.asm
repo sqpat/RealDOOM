@@ -1041,7 +1041,7 @@ _lastvisspritesegment2base:
 mov   ax, 0FFFFh
 ENSUREALIGN_132:
 _lastvisspritesegment2 = _lastvisspritesegment2base + 1
-mov   ax, word ptr ds:[_lastvisspritesegment]
+mov   word ptr ds:[_lastvisspritesegment], ax
 xchg  ax, bp
 mov   word ptr ds:[_lastvisspritesegment2], ax
 
@@ -1813,12 +1813,11 @@ push  bp  ; store "index", lump + firstspritelump
 
 call  R_GetSpritePage_  ; destroys di/bp, mantains cx
 
-
+SHIFT_MACRO shl   cx, 2
+add   al, (SPRITE_CACHE_SEGMENT SHR 8) SHR 2  ; becomes SPRITE_CACHE_SEGMENT after shift 2
 mov   ch, al
 
-SHIFT_MACRO shl   cl, 2
 SHIFT_MACRO shl   cx, 2
-add   ch, SPRITE_CACHE_SEGMENT SHR 8
 
 
 pop   ax     ; "index"
