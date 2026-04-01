@@ -4526,8 +4526,8 @@ ASSUME DS:R_BSP_24_TEXT
 les       dx, dword ptr [bp + 6] ; frontsector floor and ceiling
 mov       ax, es
 sub       ax, dx  ; ceiling - floor
-sub       ax, word ptr [bp - 0Ch]  ; subtract sectorheight
-mov       al, ah
+sub       ax, word ptr [bp - 0Ch]  ; subtract (sectorheight + rowoffset)
+mov       al, ah                   ; get sign bit in al
 and       ax, 080h                 ; function type select.
 
 SELFMODIFY_set_colfunc_type_mid:
@@ -6331,6 +6331,7 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta_TWOSIDED], dl
 
    mov       al, byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION]
    cbw
+   ;mov       byte ptr cs:[SELFMODIFY_BSP_and_textureheight+2], al
    sal       di, 1
    inc       ax
    mov       word ptr cs:[SELFMODIFY_add_texturetopheight_plus_one+2], ax
@@ -6342,6 +6343,18 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta_TWOSIDED], dl
    skip_toptex_selfmodify:
    lodsw     ; side bottexture  ; faster to just do it than branch?
    xchg      ax, di
+   cmp       byte ptr es:[di + TEXTUREHEIGHTS_OFFSET_IN_TEXTURE_TRANSLATION], 127
+
+   
+   ; if bottom tex is 128 pixels we must do full checks, but if less then we know it doesnt loop.
+   MOV_AX_CX_INSTRUCTION = 0C889h
+   mov       ax, MOV_AX_CX_INSTRUCTION
+   je        bottom_texture_128
+   mov       ax, JMP_SHORT_REL8_OPCODE + ((SELFMODIFY_bottom_wall_under_128_TARGET - SELFMODIFY_bottom_wall_under_128_AFTER) SHL 8)
+   bottom_texture_128:
+   mov       word ptr cs:[SELFMODIFY_bottom_wall_under_128], ax
+   
+
    sal       di, 1
    push      word ptr es:[di]
    pop       word ptr cs:[SELFMODIFY_setbottexturetranslation_lookup+1]
@@ -6820,6 +6833,7 @@ public scales_set_TWOSIDED
 
  ; noloop bot if:
   ; wall height < 128. that means backsector.floor - front.floor < 128
+    ; NOTE: backsector must also consider starting texel. starting texel = ((top of bottom wall - top of top wall) AND texheight)
 
 
 lds       si, dword ptr ds:[_backsector]
@@ -6863,32 +6877,40 @@ mov       byte ptr ds:[si + DRAWSEG_T.drawseg_silhouette], al ; SIL_NONE
 ; ds:si is ds_p
 ;		if (frontsectorfloorheight > backsectorfloorheight) {
 
+; AX 080h HERE. so if this is selfmodified to jmp its an assumed noloop.
 
+SELFMODIFY_bottom_wall_under_128:   ; if under 128 go straight to nonloop. 
 mov       ax, cx  ; working register.
+SELFMODIFY_bottom_wall_under_128_AFTER:
 sub       ax, bx
 jl        set_bsilheight_to_frontsectorfloorheight
 
 ; backsector floor is higher than frontsector floor. so we will see the wall rendered.
-; if its less than 128 tall (minus tex top offset etc) then it wont loop
-sub       ax, word ptr [bp - 0Ch]
-mov       al, ah
+; if it doesnt cross the 128 pixel y border then it wont loop
+; need to account for starting position including row offset.
+
+; bottom wall's starting texel is based on top wall.
+
+; so:  starting texel = ((top of bottom wall - top of top wall) AND texheight)
+ ; texheight always 127 in this path
+; top of bottomwall = backsector floor
+; top of topwall    = frontsector ceil
+; if (128 - wall height - starting offset) > 0 then its nonlooping
+
+; es still has dx...
+
+; sector heights are shifted 3... 
+
+sub       dx, cx    ; top of bot wall (backector floor height)  minus top of top wall (front sector ceil height)
+neg       dx
+and       dx, (127 SHL 3)  ; mod tex height  ; dX = starting texel.
+sub       dx, word ptr [bp - 0Ch]   ; (128 - row offset)
+mov       al, ch  ; sign bit. 
+
+mov       dx, es ; restore dx
+
 and       ax, 080h
-SELFMODIFY_set_colfunc_type_bot:
-cmp       al, 010h
-jne       do_selfmodify_colfunc_type_bot
 
-
-done_with_selfmodify_colfunc_type_bot:
-
-;		} else if (backsectorfloorheight > viewz_shortheight) {
-SELFMODIFY_BSP_viewz_shortheight_2:
-cmp       cx, 01000h
-jle       bsilheight_set
-
-mov       ax, MAXSHORT
-jmp       set_bsilheight
-
-ALIGN_MACRO
 do_selfmodify_colfunc_type_bot:
 ; todo set bot vals here?
 
@@ -6898,7 +6920,7 @@ push      si  ; todo pushpop si once ?
 ; using loop/noloop lookup flag, look up the function setter params for stretch/nostretch for this func type and set them.
 mov       si, cs
 mov       ds, si
-mov       byte ptr ds:[SELFMODIFY_set_colfunc_type_bot+1], al
+
 
 xchg      ax, si
 
@@ -6924,12 +6946,23 @@ pop       si
 
 mov       ax, DRAWSEGS_BASE_SEGMENT
 mov       ds, ax
-SELFMODIFY_BSP_viewz_shortheight_6:
+
+done_with_selfmodify_colfunc_type_bot:
+
+;		} else if (backsectorfloorheight > viewz_shortheight) {
+SELFMODIFY_BSP_viewz_shortheight_2:
 cmp       cx, 01000h
 jle       bsilheight_set
 
 mov       ax, MAXSHORT
 jmp       set_bsilheight
+ALIGN_MACRO
+SELFMODIFY_bottom_wall_under_128_TARGET:
+cmp       cx, bx
+jl        set_bsilheight_to_frontsectorfloorheight
+mov       al, 080h
+jmp       do_selfmodify_colfunc_type_bot
+
 ALIGN_MACRO
 do_selfmodify_colfunc_type_top:
 push      si  ; todo pushpop si once ?
@@ -14731,7 +14764,6 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_3+3], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_4+3], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_5+1], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_3_TWOSIDED+3], ax
-mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_6+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_7+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_shortheight_4_TWOSIDED+3], ax
 skip_viewz_hi_selfmodifies_this_frame:
