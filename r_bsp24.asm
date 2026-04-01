@@ -10918,6 +10918,8 @@ movsw
 push      ax  ; store lump
 mov       di, word ptr [bp - 2]
 
+push      word ptr ds:[di + _segloopnextlookup] ; store next lookup
+
 
 mov       dx, 0FFh
 ; ax is lump
@@ -10927,7 +10929,7 @@ pop       ds
 call      R_GetPatchTexture_
 pop       ds  ; ds = cs again
 mov       word ptr ds:[_cachedsegmentlumpsBSPLOCAL], ax
-mov       word ptr ds:[di + _segloopnextlookup], bx
+pop       word ptr ds:[di + _segloopnextlookup]  ;r estore next lookup
 mov       al, byte ptr [bp - 0Ah]
 mov       byte ptr ds:[di + _seglooptexrepeat], al ; interleaved bytes
 pop       si   ; pushed lump before call

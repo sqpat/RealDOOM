@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/03/31 18:16:26
+Created on:       26/03/31 20:00:56
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -340,12 +340,12 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079b:0000      SM_MPUMD_STARTMARKER_
 079b:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-0819:3914      R_WriteBackViewConstants24_
+0819:3918      R_WriteBackViewConstants24_
 0819:0d87*     tx_already_positive
 0819:268b*     R_AddLine_
-0819:3392      R_GetPatchTexture_Far24_
-0819:3e60      R_BSP24_ENDMARKER_
+0819:3396      R_GetPatchTexture_Far24_
 0819:2404*     R_GetSourceSegment1_
+0819:3e60      R_BSP24_ENDMARKER_
 0819:09ae*     FixedMulTrigNoShiftSine_BSPLocal_
 0819:15ed*     markfloor_done
 0819:240e*     just_do_draw1
@@ -380,14 +380,14 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:0ffd*     SELFMODIFY_skip_curseg_based_selfmodify_AFTER
 0819:2588*     R_Subsector_
 0819:2363*     do_top_texture_draw
-0819:38b2*     R_WriteBackLevelConstants24_
+0819:38b6*     R_WriteBackLevelConstants24_
 0819:1635*     SELFMODIFY_set_rw_distance_lo
 0819:0000      R_BSP24_STARTMARKER_
 0819:0200*     OFFSET_CEILINGCLIP
 0819:1538*     exit_rendersegloop
 0819:12ee*     scales_set
 0819:1697*     R_GetSourceSegment0_START
-0819:3746      R_RenderPlayerView24_
+0819:374a      R_RenderPlayerView24_
 0819:095e*     FixedDivBSPLocal_
 0819:1559*     increment_loop_values
 0819:05d8*     div48_32_BSPLocal_
@@ -397,8 +397,8 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:0080*     BEOFRE_COLFUNC_LOOKUP
 0819:2426*     SELFMODIFY_set_pixel_count_shift_mul_bot
 0819:2394*     R_GetSourceSegment0_START_TWOSIDED
-0819:3238*     R_GetTexturePage_
-0819:3a9e*     R_WriteBackFrameConstants_
+0819:323c*     R_GetTexturePage_
+0819:3aa2*     R_WriteBackFrameConstants_
 0819:09d8*     FixedMulTrigNoShiftCosine_BSPLocal_
 0819:0a02*     R_ClearPlanes_
 0819:0056*     _cachedsegmentlumpsBSPLocal
@@ -419,7 +419,7 @@ Module: r_bsp24.obj(r_bsp24.ASM)
 0819:15a8*     SELFMODIFY_BSP_markceiling_1
 0819:1858*     R_StoreWallRangeWithBackSector_
 0819:1846*     adjust_row_offset_TWOSIDED
-0819:342c      R_GetCompositeTexture_Far24_
+0819:3430      R_GetCompositeTexture_Far24_
 0819:004a*     _segloopnextlookup
 0819:248c*     R_RenderSegLoop_exit_TWOSIDED
 0819:0098*     _basexscale
@@ -557,13 +557,13 @@ Module: r_mask24.obj(r_mask24.ASM)
 1dac:0f74*     FastDiv3232FFFF_
 1dac:097c*     ENSUREALIGN_117
 1dac:0b85*     ENSUREALIGN_110
-1dac:0153*     ENSUREALIGN_102
 1dac:093e*     ENSUREALIGN_120
 1dac:129d*     ENSUREALIGN_122
-1dac:0a62*     ENSUREALIGN_113
+1dac:0153*     ENSUREALIGN_102
 1dac:12fb*     ENSUREALIGN_124
 1dac:152b*     ENSUREALIGN_106
 1dac:1124*     ENSUREALIGN_121
+1dac:0a62*     ENSUREALIGN_113
 1dac:1515*     ENSUREALIGN_107
 1dac:0440*     ENSUREALIGN_134
 1dac:033f*     ENSUREALIGN_129
@@ -700,8 +700,8 @@ Module: p_pspr.obj(p_pspr.ASM)
 241b:3c34*     A_Raise_
 241b:3c68*     A_GunFlash_
 241b:413a*     P_SetPsprite_
-241b:3d14*     A_Saw_
 241b:4000*     A_Light0_
+241b:3d14*     A_Saw_
 241b:4012*     A_OpenShotgun2_
 241b:3ef8*     A_FirePistol_
 241b:39fc*     P_CheckAmmo_
@@ -727,9 +727,9 @@ Module: p_pspr.obj(p_pspr.ASM)
 241b:39c0      P_BringUpWeapon_
 Module: p_enemy.obj(p_enemy.ASM)
 241b:4cd6*     A_CyberAttack_
-241b:53e2*     A_FatRaise_
 241b:56cb*     A_Explode_
 241b:5b8a*     ENSUREALIGN_901
+241b:53e2*     A_FatRaise_
 241b:426a      P_NoiseAlert_
 241b:56c3*     A_Fall_
 241b:59f4*     A_SpawnFly_
@@ -743,11 +743,11 @@ Module: p_enemy.obj(p_enemy.ASM)
 241b:52e8*     GetVileMomz_
 241b:5545*     A_PainDie_
 241b:4f0c*     A_SkelWhoosh_
-241b:58d9*     A_BrainExplode_
 241b:5260*     A_VileTarget_
 241b:4687*     P_LookForPlayers_
-241b:43ac*     P_Move_
 241b:594f*     A_BrainSpit_
+241b:43ac*     P_Move_
+241b:58d9*     A_BrainExplode_
 241b:51bc*     A_VileStart_
 241b:51c9*     A_FireCrackle_
 241b:4f1d*     A_SkelFist_
@@ -879,8 +879,8 @@ Module: p_telept.obj(p_telept.ASM)
 241b:81ee      EV_Teleport_
 Module: p_tick.obj(p_tick.ASM)
 241b:8416      P_UpdateThinkerFunc_
-241b:8486*     ENSUREALIGN_902
 241b:8526      P_Random_
+241b:8486*     ENSUREALIGN_902
 241b:837e*     P_TICK_STARTMARKER_
 241b:8390      P_CreateThinkerFar_
 241b:8536*     P_TICK_ENDMARKER_
@@ -1611,4 +1611,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003deb0 (253616.)
 Entry point address: 2fb1:7cce
-Link time: 00:00.05
+Link time: 00:00.04
