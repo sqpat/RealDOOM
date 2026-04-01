@@ -231,7 +231,9 @@ rcr   bx, 1
 
 call  FixedMulTrigSine_MapLocal_
 
-
+; uncomment to disable z bob for debugging fractional height render bugs
+;xor   ax, ax
+;cwd
 
 xchg  ax, bx
 mov   cx, dx   ; cx:bx with bob

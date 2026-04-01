@@ -4004,7 +4004,7 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta], dl
 selfmodify_mid_only:
    ; twosided textures can still have a mid texture (invisible walls like E1M1)
 
-   mov       byte ptr cs:[SELFMODIFY_BSP_midtexture_type], MOV_CL_IMM8_OPCODE
+   mov       word ptr cs:[SELFMODIFY_BSP_midtexture_type], 046F6h ; test word ptr [bp - 2] start
    add       si, 4   ; skip top/bot
    lodsw     ; side midtexture
    test      ax, ax
@@ -4018,7 +4018,7 @@ got_texture:
    cbw
    sal       di, 1  ; word lookup
    inc       ax
-   mov       word ptr cs:[SELFMODIFY_add_texturemidheight_plus_one+1], ax
+   mov       byte ptr cs:[SELFMODIFY_add_texturemidheight_plus_one+1], al
    mov       ax, word ptr es:[di]
    mov       word ptr cs:[SELFMODIFY_BSP_set_midtexture+1], ax
 
@@ -4027,6 +4027,7 @@ ALIGN_MACRO
 
 ; todo find a way to fit this elsewhere w/o a jump
 handle_closed_door:  
+public handle_closed_door
 ; note: a closed door can also be a raised elevator and thus a bot texture.
    lodsw             ; toptex
 
@@ -4305,12 +4306,12 @@ push      ax  ; bp - 026h + SSD
 
 SELFMODIFY_BSP_midtexture_type:
 ; modified into one of these three
-mov       cl, 010h
+test      byte ptr [bp - 2], ML_DONTPEGBOTTOM
+ENSUREALIGN_324:
 SELFMODIFY_BSP_midtexture_type_AFTER:
 ;jmp        handle_topwall_mid
 ;jmp        handle_botwall_mid
 
-test      byte ptr [bp - 2], ML_DONTPEGBOTTOM
 jne       do_peg_bottom  ; todo branch test.
 dont_peg_bottom:
 use_worldttop:
@@ -4356,12 +4357,13 @@ sub       ax, 01000h
 xor       cx, cx
 SHIFT32_MACRO_RIGHT ax cx 3
 mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo+1], cx
-mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo_stretch+1], ax
+mov       word ptr ds:[SELFMODIFY_set_midtexturemid_lo_stretch+1], cx
 
 ; add textureheight+1
 
 SELFMODIFY_add_texturemidheight_plus_one:
-add       ax, 01000h  ; todo byte
+add       al, 010h
+
 done_with_bottom_peg:
 ; ax:cx has rw_midtexturemid
 
@@ -14711,11 +14713,11 @@ PUBLIC R_WriteBackFrameConstants_
 mov      ax, cs
 mov      ds, ax
 
-mov      ax, DRAWFUZZCOL_AREA_SEGMENT
-mov      es, ax
 
 ASSUME DS:R_BSP_24_TEXT
 
+
+; todo compare to selfmodifies instead of variable region?
 
 ; VIEWZ LO
 
@@ -14754,7 +14756,7 @@ mov      word ptr ds:[SELFMODIFY_BSP_viewz_hi_8_TWOSIDED+2], ax
 ; create 13:3 fixed point for comparison in ax
 
 SHIFT32_MACRO_LEFT ax dx 3
-mov      word ptr ds:[_lastviewz_shortangle], ax
+mov      word ptr ds:[_lastviewz_shortangle], ax  ; not used locally but bsp memcpys it
 
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_13_3_1+2], ax
 mov      word ptr ds:[SELFMODIFY_BSP_viewz_13_3_2+2], ax
@@ -15120,6 +15122,7 @@ public ENSUREALIGN_320
 public ENSUREALIGN_321
 public ENSUREALIGN_322
 public ENSUREALIGN_323
+public ENSUREALIGN_324
 @
 
 IF COMPISA GE COMPILE_386
