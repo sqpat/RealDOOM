@@ -2322,8 +2322,8 @@ shl   bx, 1  ; word lookup
 SELFMODIFY_BSP_centerx_2:
 mov   cx, 01000h
 
-mov   di, FINESINE_SEGMENT
-mov   es, di
+mov   ax, FINESINE_SEGMENT
+mov   es, ax
 
 
 xor   dx, dx
@@ -2347,7 +2347,7 @@ div   cx
 test  bh, 030h
 jpe   skip_cosine_invert_clearplanes
 neg   ax
-dec   si
+sbb   si, 0  ; neg only if ax nonzero... or else we end up with FFFF:0000 at angle 0x8000
 skip_cosine_invert_clearplanes:
 
 
