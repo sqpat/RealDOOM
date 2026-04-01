@@ -5063,16 +5063,18 @@ inc   cx  ; cx is now count! dont modify
 ;    	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, ds->bsilheight);
 
 mov   al, byte ptr es:[di + DRAWSEG_T.drawseg_silhouette]
-mov   byte ptr cs:[SELFMODIFY_MASKED_set_al_to_silhouette+1 - OFFSET R_MASK24_STARTMARKER_],  al
 
+push  bp
+test  al, SIL_BOTTOM
+je    skip_bottom_check
 ; todo could these be preshifted?
 
-mov   ax, word ptr es:[di + DRAWSEG_T.drawseg_bsilheight]
+mov   bp, word ptr es:[di + DRAWSEG_T.drawseg_bsilheight]
 xor   dx, dx
-SHIFT32_MACRO_RIGHT ax, dx, 3
+SHIFT32_MACRO_RIGHT bp, dx, 3
 
 ;ax:dx = temp
-cmp   ax, word ptr ds:[bx + VISSPRITE_T.vs_gz + 2]
+cmp   bp, word ptr ds:[bx + VISSPRITE_T.vs_gz + 2]
 
 ;		if (spr->gz.w >= temp.w) {
 ;			silhouette &= ~SIL_BOTTOM;
@@ -5083,48 +5085,47 @@ jg    do_not_remove_bot_silhouette
 cmp   dx, word ptr ds:[bx + VISSPRITE_T.vs_gz + 0]
 ja    do_not_remove_bot_silhouette
 remove_bot_silhouette:
-and   byte ptr cs:[SELFMODIFY_MASKED_set_al_to_silhouette+1 - OFFSET R_MASK24_STARTMARKER_], 0FEh  
+and   al, 0FEh   ; ~ SIL_BOTTOM
+jz    pop_bp_and_iterate_next_drawseg_loop ; quit early
 do_not_remove_bot_silhouette:
 
-mov   ax, word ptr es:[di + DRAWSEG_T.drawseg_tsilheight]
+test  al, SIL_TOP
+je    skip_top_check
+skip_bottom_check:
+
+mov   bp, word ptr es:[di + DRAWSEG_T.drawseg_tsilheight]
 xor   dx, dx
-SHIFT32_MACRO_RIGHT ax, dx, 3
+SHIFT32_MACRO_RIGHT bp, dx, 3
 
 
-;dx:ax = temp
+;dx:bp = temp
 
 ;		if (spr->gzt.w <= temp.w) {
 ;			silhouette &= ~SIL_TOP;
 ;		}
 
-cmp   ax, word ptr ds:[bx + VISSPRITE_T.vs_gzt + 2]
-mov   ah,  0FFh		; for later and
+cmp   bp, word ptr ds:[bx + VISSPRITE_T.vs_gzt + 2]
+
 jg    remove_top_silhouette
 jl    do_not_remove_top_silhouette
-cmp   dx, word ptr ds:[bx + VISSPRITE_T.vs_gzt + 0]
+cmp   dx, word ptr ds:[bx + VISSPRITE_T.vs_gz + 0]  ; gz low bits equals gzt lowbits.
 
 jb    do_not_remove_top_silhouette
 remove_top_silhouette:
 
-; ok. this is too close to the following instruction to and to 0FD so instead, 
-; we put the value to AND into ah.
-mov   ah,  0FDh  ; ~SIL_TOP
+and   al,  0FDh  ; ~SIL_TOP
+jz    pop_bp_and_iterate_next_drawseg_loop ; quit early
+
 
 do_not_remove_top_silhouette:
-
+skip_top_check:
 
 ; si is r1 and cx is count
 ; bx is near vissprite
 ; es:di is drawseg
 
 
-SELFMODIFY_MASKED_set_al_to_silhouette:
-public SELFMODIFY_MASKED_set_al_to_silhouette
-mov   al, 0FFh ; this gets selfmodified
-and   al, ah   ; second AND is applied 
-je    silhouette_is_SIL_NONE ; quit early
-
-cmp   al, SIL_TOP  ; al is 0 1 2 or 3. 2 = sil_top
+cmp   al,   SIL_TOP  ; al is 0 1 2 or 3. 2 = sil_top
 
 mov   ax, OPENINGS_SEGMENT
 
@@ -5153,7 +5154,11 @@ inc    si
 loop   silhouette_SIL_BOTTOM_loop
 mov   cx, ss
 mov   ds, cx
+
+pop_bp_and_iterate_next_drawseg_loop:
+pop   bp
 jmp   iterate_next_drawseg_loop  ;todo change the flow to go to the other jump
+
 ALIGN_MACRO
 
 silhouette_is_SIL_TOP:
@@ -5174,16 +5179,17 @@ mov   byte ptr ds:[si], dh
 increment_silhouette_2_loop:
 inc   si
 loop  silhouette_2_loop
-silhouette_is_SIL_NONE:
+
 mov   cx, ss
 mov   ds, cx
+pop   bp
 jmp   iterate_next_drawseg_loop  ;todo change the flow to go to the other jump
 
 ALIGN_MACRO
 silhouette_is_SIL_BOTH:
 
 push  di
-push  bp
+
 les   bp, dword ptr es:[di + DRAWSEG_T.drawseg_sprtopclip_offset] ; get both
 mov   bx, es
 mov   es, ax ; OPENINGS_SEGMENT
@@ -5210,8 +5216,8 @@ increment_silhouette_SIL_BOTH_loop:
 inc   si
 inc   di
 loop  silhouette_SIL_BOTH_loop
-pop   bp
 pop   di
+pop   bp
 
 
 mov   cx, ss

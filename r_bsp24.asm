@@ -3549,7 +3549,7 @@ intbits_ready:
 ;	vis->gzt.w = vis->gz.w + temp.w;
 mov   bx, word ptr ds:[si + VISSPRITE_T.vs_gz + 0]
 add   ax, word ptr ds:[si + VISSPRITE_T.vs_gz + 2]
-mov   word ptr ds:[si + VISSPRITE_T.vs_gzt + 0], bx
+;mov   word ptr ds:[si + VISSPRITE_T.vs_gzt + 0], bx  ; todo its just the same as gz.
 mov   word ptr ds:[si + VISSPRITE_T.vs_gzt + 2], ax
 
 ;    vis->texturemid = vis->gzt.w - viewz.w;
