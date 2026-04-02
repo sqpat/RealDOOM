@@ -3993,12 +3993,11 @@ mov       byte ptr cs:[SELFMODIFY_addlightnum_delta], dl
    ; note: BX free now
 
    mov       ax, SIDES_SEGMENT
-   mov       ds, ax
+   SELFMODIFY_set_closed_door_type:
+   mov       ds, ax  ; may be selfmodified into short jmp to load top or bot tex.
+   SELFMODIFY_set_closed_door_type_AFTER:
+   
 
-
-   cmp       word ptr cs:[_backsector], SECNUM_NULL
-
-   jne       handle_closed_door     ; if this was called with a backsector then its a closed door, go fetch top or bot tex instead of mid
 
 
 selfmodify_mid_only:
@@ -4026,20 +4025,23 @@ got_texture:
 ALIGN_MACRO
 
 ; todo find a way to fit this elsewhere w/o a jump
-handle_closed_door:  
-public handle_closed_door
+SELFMODIFY_set_closed_door_type_TARGET_TOP:
+handle_closed_door_top:  
+public handle_closed_door_top
 ; note: a closed door can also be a raised elevator and thus a bot texture.
+   mov       ds, ax  ; may be selfmodified into short jmp to load top or bot tex.
    lodsw             ; toptex
-
-   test      ax, ax
-   jz        use_bot_tex_for_closed_door
    use_top_text_for_closed_door:
    add       si, 4   ; skip bot, midtex.
    ; top texture for closed door needs to be pegged to bottom instead of from top.
-   mov       word ptr cs:[SELFMODIFY_BSP_midtexture_type], JMP_SHORT_REL8_OPCODE + ((handle_topwall_mid - SELFMODIFY_BSP_midtexture_type_AFTER) SHL 8)
+   mov       word ptr cs:[SELFMODIFY_BSP_midtexture_type], JMP_SHORT_REL8_OPCODE + ((handle_topwall_mid - SELFMODIFY_BSP_midtexture_type_AFTER) SHL 8)   
    jmp       got_texture
-   use_bot_tex_for_closed_door:
-   lodsw
+   ALIGN_MACRO
+SELFMODIFY_set_closed_door_type_TARGET_BOT:
+   handle_closed_door__bot:
+   mov       ds, ax  ; may be selfmodified into short jmp to load top or bot tex.
+   add       si, 2
+   lodsw            ; skip toptex
 
    add       si, 2  ; skip midtex.
    mov       word ptr cs:[SELFMODIFY_BSP_midtexture_type], JMP_SHORT_REL8_OPCODE + ((handle_botwall_mid - SELFMODIFY_BSP_midtexture_type_AFTER) SHL 8)
@@ -10017,6 +10019,11 @@ sbb   cx, dx
 jns   dont_backface_cull
 exit_addline:
 jmp   END_R_ADDLINE_LABEL ; quick out
+
+ALIGN_MACRO
+exit_addline_2:
+jmp   END_R_ADDLINE_LABEL
+
 ALIGN_MACRO
 
 dont_backface_cull:
@@ -10143,11 +10150,11 @@ xchg  ax, bx   ; store x1 in bx
 
 lods  word ptr es:[si]        ; backsector  floor
 cmp   ax, word ptr es:[di + SECTOR_T.sec_ceilingheight]  ; frontsector ceiling
-jge   clipsolid_ax_swap
+jge   clipsolid_ax_swap_bottom_door
 xchg  ax, cx                  ; cx has old si+0 (backsector floor)
 lods  word ptr es:[si]        ; backsector  ceiling
 cmp   ax, word ptr es:[di + SECTOR_T.sec_floorheight]    ; frontsector floor
-jle   clipsolid_ax_swap
+jle   clipsolid_ax_swap_top_door
 
 ;    // Window.
 ;    if (backsector->ceilingheight != frontsector->ceilingheight
@@ -10178,36 +10185,36 @@ mov   es, word ptr ds:[_SIDES_SEGMENT_PTR]
 mov   si, word ptr [bp - 8]    ; preshifted 2
 shl   si, 1
 cmp   word ptr es:[si + SIDE_T.s_midtexture], 0  ; todo investigate branch rate
-je    exit_addline_2
+je    exit_addline_3
 
 clippass:
 ; we hit pass here.
 xchg  ax, bx                   ; grab cached x1
 jmp   R_ClipPassWallSegment_
-ALIGN_MACRO
-exit_addline_2:
-jmp   END_R_ADDLINE_LABEL
 
 ALIGN_MACRO
-first_greater_than_startfirst:
-; same as first_greater_than_startfirst_already_rendered but
-; we know we didnt render yet so if 2nd check fails dont selfmodify R_StoreWallRange_
-; stuff back due to no calls.
-cmp   di, word ptr ds:[si  + CLIPRANGE_T.cliprange_last]
-jnle  check_rest_loop
-return_didnt_render:
+clipsolid_ax_swap_bottom_door:
+mov   cx, JMP_SHORT_REL8_OPCODE + ((SELFMODIFY_set_closed_door_type_TARGET_BOT - SELFMODIFY_set_closed_door_type_AFTER) SHL 8)
+xchg  ax, bx                   ; grab cached x1
+jmp   R_ClipSolidWallSegment_
+ALIGN_MACRO
+clipsolid_ax_swap_top_door:
+mov   cx, JMP_SHORT_REL8_OPCODE + ((SELFMODIFY_set_closed_door_type_TARGET_TOP - SELFMODIFY_set_closed_door_type_AFTER) SHL 8)
+xchg  ax, bx                   ; grab cached x1
+jmp   R_ClipSolidWallSegment_
+
+exit_addline_3:
 jmp   END_R_ADDLINE_LABEL
+
 
 
 ALIGN_MACRO
 
 clip_solid_with_null_backsec:
-xchg  ax, bx                   ; dont grab uncached x1 - reverse
+mov   cx, 0D88Eh  ; mov ds, ax ; fall thru for non-closed door
+
 mov   word ptr cs:[_backsector], SECNUM_NULL   ; does this ever get properly used or checked? can we just ignore?
 
-
-clipsolid_ax_swap:
-xchg  ax, bx                   ; grab cached x1
 
 ; single code path so we have a single return path to clear selfmodified line fields
 
@@ -10220,6 +10227,7 @@ ENDP
 ;R_ClipSolidWallSegment_
 
 PROC R_ClipSolidWallSegment_ NEAR
+mov   word ptr cs:[SELFMODIFY_set_closed_door_type], cx
 
 
 
@@ -10302,6 +10310,18 @@ mov   word ptr ds:[si + CLIPRANGE_T.cliprange_first], ax
 
 mov   word ptr ds:[si + CLIPRANGE_T.cliprange_last], es
 jmp   check_to_remove_posts
+
+ALIGN_MACRO
+
+first_greater_than_startfirst:
+; same as first_greater_than_startfirst_already_rendered but
+; we know we didnt render yet so if 2nd check fails dont selfmodify R_StoreWallRange_
+; stuff back due to no calls.
+cmp   di, word ptr ds:[si  + CLIPRANGE_T.cliprange_last]
+jnle  check_rest_loop
+return_didnt_render:
+jmp   END_R_ADDLINE_LABEL
+
 ALIGN_MACRO
 last_smaller_than_startfirst:
 mov   dx, di
