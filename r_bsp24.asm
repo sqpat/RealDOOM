@@ -4307,10 +4307,10 @@ push      dx  ; bp - 024h + SSD
 push      ax  ; bp - 026h + SSD
 
 SELFMODIFY_BSP_midtexture_type:
+SELFMODIFY_BSP_midtexture_type_AFTER = SELFMODIFY_BSP_midtexture_type + 2
 ; modified into one of these three
 test      byte ptr [bp - 2], ML_DONTPEGBOTTOM
 ENSUREALIGN_324:
-SELFMODIFY_BSP_midtexture_type_AFTER:
 ;jmp        handle_topwall_mid
 ;jmp        handle_botwall_mid
 
