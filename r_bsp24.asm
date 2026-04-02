@@ -5366,7 +5366,7 @@ markfloor_done:
 public  markfloor_done
 ; get jns check sort of for free, we need to sal anyway on fall thru
 sal   si, 1        ; multiply pixel count by 2. if signed no pixels to draw
-jns   jump_to_mid_no_pixels_to_draw ; had to wait until floors/ceils marked to early out.
+jg    jump_to_mid_no_pixels_to_draw ; had to wait until floors/ceils marked to early out.
 
 push  di  ; store dc_x
 SELFMODIFY_COLFUNC_sub_centery24_mid:
@@ -9087,7 +9087,7 @@ mov   bx, di 			; store rw_x
 
 
 ; dx holds texturecolumn
-; get yl/yh in di/cx
+; get yl/yh in di/si
 pop   di
 pop   si
 
@@ -9167,6 +9167,9 @@ push   si ; dc_yl
 push   di ; dc_yh
 push   bx ; rw_x
 @
+
+;cmp   si, di  ; ; yl - yh
+;jg    skip_top_draw
 
 PUSHA_BSP_BOTTOP_MACRO
 
@@ -9282,7 +9285,7 @@ R_GetSourceSegment0_DONE_TOP:
 public R_GetSourceSegment0_DONE_TOP
 
 POPA_BSP_BOTTOP_MACRO
-
+;skip_top_draw:
 COMMENT @
 pop   bx  ; rw_x  always want this back
 pop   ax  ; dc_yh
@@ -9345,7 +9348,7 @@ jg    mark_floor_di  ; todo branch test
 
 cmp   di, si  ; todo sub and get this for free?
 mov   byte ptr ds:[bx+OFFSET_FLOORCLIP], al
-jle   done_marking_floor_TWOSIDED     ; todo branch test
+jl    done_marking_floor_TWOSIDED     ; todo branch test
 
 ; todo this is messy
 xchg   ax, si
