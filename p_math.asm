@@ -1490,6 +1490,7 @@ do_full_divide_whole:
 push si
 push di
 
+
 ; todo inline i guess.
 call div48_32_whole_MapLocal_ ; internally does push pop of di/bp but not si
 
@@ -1541,6 +1542,13 @@ PUBLIC div48_32_whole_MapLocal_
 
 xor dx, dx
 
+COMMENT @
+; for recording bad values before breakpointing div exception
+mov  word ptr cs:[last_call_2+0], ax
+mov  word ptr cs:[last_call_2+2], dx
+mov  word ptr cs:[last_call_2+4], bx
+mov  word ptr cs:[last_call_2+6], cx
+@
 
 
 ; cx known nonzero.
@@ -1644,7 +1652,8 @@ mov   di, cx
 mov   si, bx
 
 
-mov   cx, ax      ; store copy of numhi.low
+mov   cx, ax      ; store copy of numhi.low  (remember numlo is zero.)
+mov   es, dx      ; store numhi.hi
 
 
 ;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
@@ -1657,33 +1666,33 @@ div   di
 ; qhat = ax
 ;    c1 = FastMul16u16u(qhat , den0);
 
+mov   word ptr cs:[retrieve_numhi_low+1], es
 mov   bx, dx					; bx stores rhat
-mov   es, ax     ; store qhat
-
+mov   es, ax          ; est stores qhat
 mul   si   						; DX:AX = c1
 
 ;  c2 = rhat:num1
-
-
 
 ;    if (c1 > c2.wu)
 ;         qhat -= (c1 - c2.wu > den.wu) ? 2 : 1;
 ; 
 
-
 ; c1 hi = dx, c2 lo = bx
 cmp   dx, bx
-
-
 
 jae   continue_checking_q1_whole
 
 q1_ready_whole:
 
+; rem = numhi:num1 - q1 * den;
+; numhi = numerator
+; numlo = 0
+
+
 mov  ax, es
-;	rem.hu.intbits = numhi.hu.fracbits;
-;	rem.hu.fracbits = num1;
-;	rem.wu -= FastMul16u32u(q1, den.wu);
+;	rem.hu.intbits = numhi.hu.intbits;
+;	rem.hu.fracbits = numhi.hu.fracbits;
+;	rem.wu -= FastMul16u32u(q1, den.wu) >> 16?;
 
 
 
@@ -1692,15 +1701,20 @@ mov  ax, es
 ;inlined FastMul16u32u_
 
 MUL  DI        ; AX * CX
-mov  bX, AX    ; store low product to be high result. Retrieve orig AX
+mov  BX, AX    ; store low product to be high result. Retrieve orig AX
 mov  ax, es
 MUL  SI        ; AX * BX
-ADD  DX, bX    ; add 
+ADD  DX, BX    ; add 
 
 ; actual 2nd division...
 
+xchg ax, bx
+retrieve_numhi_low:
+mov  ax, 01000h
+sub  ax, bx 
+; actual 2nd division...
+; DX:AX =   q1 * den... + num1 = 0... then add numhi
 
-neg   ax
 sbb   cx, dx
 mov   dx, cx
 
@@ -1769,12 +1783,12 @@ ja    check_c1_c2_diff_whole
 ; rare codepath! 
 
 
-cmp   ax, di
-jbe   q1_ready_whole
+test  ax, ax
+je    q1_ready_whole
 
 check_c1_c2_diff_whole:
-sub   ax, di
-sbb   dx, si
+
+sub   dx, si
 cmp   dx, cx
 ; these branches havent been tested but this is a super rare codepath
 ja    qhat_subtract_2_whole 
@@ -1850,9 +1864,12 @@ ret
 
 ENDP
 
+COMMENT @
+last_call_2:
+public last_call_2
+dw 0, 0, 0, 0
 
-
-
+@
 
 ALIGN_MACRO
 PROC   FixedMul2424_ NEAR

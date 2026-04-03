@@ -24,10 +24,10 @@
 #define R_DrawSkyColumnFLOffset                 0x0
 #define R_DrawSkyPlaneFLOffset                  0x294
 #define R_DrawSkyPlaneDynamicFLOffset           0x294
-#define R_WriteBackViewConstants24Offset        0x3924
-#define R_RenderPlayerView24Offset              0x3756
-#define R_GetCompositeTexture24Offset           0x343C
-#define R_GetPatchTexture24Offset               0x33A2
+#define R_WriteBackViewConstants24Offset        0x392C
+#define R_RenderPlayerView24Offset              0x375E
+#define R_GetCompositeTexture24Offset           0x3444
+#define R_GetPatchTexture24Offset               0x33AA
 #define R_WriteBackViewConstants16Offset        0x33EF
 #define R_RenderPlayerView16Offset              0x3272
 #define R_GetCompositeTexture16Offset           0x2F5C
@@ -50,8 +50,8 @@
 #define P_SpawnMapThingOffset                   0x2BEC
 #define P_SpawnSpecialsOffset                   0x7DA8
 #define AM_DrawerOffset                         0x96D6
-#define S_StartSoundFarOffset                   0xB802
-#define S_StartOffset                           0xB8E1
+#define S_StartSoundFarOffset                   0xB80A
+#define S_StartOffset                           0xB8E9
 #define M_InitOffset                            0x1186
 #define M_ResponderOffset                       0xD5B
 #define M_DrawPauseOffset                       0x1368
@@ -81,7 +81,7 @@
 #define R_BSP0CodeSize                 0x3658
 #define R_BSPFLCodeSize                0x3602
 #define WI_StuffCodeSize               0x113A
-#define PSightCodeSize                 0xB96C
+#define PSightCodeSize                 0xB974
 #define WipeCodeSize                   0x5FA
 #define FinaleCodeSize                 0xB97
 #define SaveLoadCodeSize               0xBB7

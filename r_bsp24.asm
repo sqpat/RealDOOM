@@ -1397,6 +1397,14 @@ PROC div48_32_whole_BSPLocal_ NEAR ; fairly optimized i think
 xor dx, dx
 ; cx known nonzero.
 
+COMMENT @
+; for recording bad values before breakpointing div exception
+mov  word ptr cs:[last_call+0], ax
+mov  word ptr cs:[last_call+2], dx
+mov  word ptr cs:[last_call+4], bx
+mov  word ptr cs:[last_call+6], cx
+@
+
 test ch, ch
 jne shift_bits_whole
 ; shift a whole byte immediately
@@ -1491,8 +1499,10 @@ RCR BX, 1
 
 
 
-mov   di, ax      ; store copy of numhi.low
+mov   di, ax      ; store copy of numhi.low  (remember numlo is zero.)
+mov   es, dx      ; store numhi.hi
 
+; si:di is numhi
 
 ;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
 ; DX:AX = numhi.wu
@@ -1502,9 +1512,9 @@ div   cx
 ; rhat = dx
 ; qhat = ax
 ;    c1 = FastMul16u16u(qhat , den0);
-
+mov   word ptr cs:[retrieve_numhi_low+1], es
 mov   si, dx					; si stores rhat
-mov   es, ax     ; store qhat
+mov   es, ax               ; es stores qhat
 mul   bx   						; DX:AX = c1
 
 ;  c2 = rhat:num1
@@ -1520,6 +1530,10 @@ jae   continue_checking_q1_whole
 
 q1_ready_whole:
 
+; rem = numhi:num1 - q1 * den;
+; numhi = numerator
+; numlo = 0
+
 mov  ax, es
 ;	rem.hu.intbits = numhi.hu.fracbits;
 ;	rem.hu.fracbits = num1;
@@ -1531,16 +1545,19 @@ mov  ax, es
 
 ;inlined FastMul16u32u_
 
-MUL  cx        ; AX * CX
+MUL  cx        ; AX * CX   ; q1 * den
 mov  si, AX    ; store low product to be high result. Retrieve orig AX
 mov  ax, es
 MUL  bx        ; AX * si
 ADD  DX, si    ; add 
 
+xchg ax, si
+retrieve_numhi_low:
+mov  ax, 01000h
+sub  ax, si 
 ; actual 2nd division...
+; DX:AX =   q1 * den... + num1 = 0... then add numhi
 
-
-neg   ax
 sbb   di, dx
 mov   dx, di
 
@@ -1609,18 +1626,16 @@ ret
 
 ALIGN_MACRO
 continue_checking_q1_whole:
-ALIGN_MACRO
-continue_checking_q1_whole:
 ja    check_c1_c2_diff_whole
 ; rare codepath! 
 
 
-cmp   ax, di
-jbe   q1_ready_whole
+test   ax, ax  ; compare to zero.
+je    q1_ready_whole
 
 check_c1_c2_diff_whole:
-sub   ax, di
-sbb   dx, si
+
+sub   dx, si
 cmp   dx, cx
 ; these branches havent been tested but this is a super rare codepath
 ja    qhat_subtract_2_whole 
@@ -1698,7 +1713,11 @@ ret
 
 
 ENDP
-
+COMMENT @
+last_call:
+public last_call
+dw 0, 0, 0, 0
+@
 
 ; TODO 386 version
 
@@ -11152,7 +11171,7 @@ mov   bx, word ptr [bp - 8]
 les   ax, dword ptr ds:[bx + PSPDEF_T.pspdef_sy]  ; label
 mov   cx, es
 mov   bx, FRACUNIT_OVER_2
-sbb   cx, di
+sub   cx, di
 sub   bx, ax
 mov   ax, BASEYCENTER
 sbb   ax, cx
