@@ -221,7 +221,41 @@ ENDP
 
 
 ALIGN 16
+PROC    R_DrawColumn24NoLoopMasked_ FAR
+PUBLIC  R_DrawColumn24NoLoopMasked_
 
+    ; di contains screen coord
+    ; ax contains dc_yl
+    ; CL:SI = dc_texturemid
+    ; CH:BX = dc_iscale
+
+   mov     word ptr cs:[((COLFUNC_FUNCTION_AREA_SEGMENT - COLORMAPS_SEGMENT) SHL 4) +  MARKER_SM_COLFUNC_jump_offset24_noloop_+1], dx ; five bytes
+
+   MOV  DX, AX  ; copy center24y
+   MUL  CH
+   ADD  CL, AL
+   MOV  AX, DX ; restore center_y
+   AND  DH, BL
+   SUB  CL, DH  ; apply neg sign
+   MUL  BX
+   ADD  SI, AX
+   ADC  CL, DL
+
+
+   xchg bp, bx   ; bp gets lowstep, bx gets xlat lookup
+
+   xor  dx, dx   ; dx gets 0
+   xchg dl, ch   ; zero ch fo xchg into si. dx gets hi step
+   dec  dx       ; minus one to account for lodsb
+   inc  cl
+   jz   keep_cl
+   dec  cl
+   keep_cl:
+   xchg cx, si      
+
+   jmp MARKER_SM_COLFUNC_set_destview_segment24_noloop_
+
+ENDP
 
 
 MARKER_COLFUNC_NORMAL_FUNCTION_AREA_OFFSET_:

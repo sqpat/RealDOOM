@@ -260,6 +260,7 @@ void __far MARKER_SM_COLFUNC_jump_offset16();
 void __far R_DrawColumn24Normal();
 void __far R_DrawColumn24NormalStretch();
 void __far R_DrawColumn24NoLoop();
+void __far R_DrawColumn24NoLoopMasked();
 void __far R_DrawColumn24NoLoopStretch();
 void __far MARKER_SM_COLFUNC_set_destview_segment24();
 void __far MARKER_SM_COLFUNC_jump_offset24();
@@ -757,6 +758,7 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     fprintf(fp, "R_DRAWCOLUMN24NORMALOFFSET             = 0%Xh\n", FP_OFF(R_DrawColumn24Normal)              - FP_OFF(R_BSP24_STARTMARKER));
     fprintf(fp, "R_DRAWCOLUMN24NORMALSTRETCHOFFSET      = 0%Xh\n", FP_OFF(R_DrawColumn24NormalStretch)       - FP_OFF(R_BSP24_STARTMARKER));
     fprintf(fp, "R_DRAWCOLUMN24NOLOOPOFFSET             = 0%Xh\n", FP_OFF(R_DrawColumn24NoLoop)              - FP_OFF(R_BSP24_STARTMARKER));
+    fprintf(fp, "R_DRAWCOLUMN24NOLOOPMASKEDOFFSET       = 0%Xh\n", FP_OFF(R_DrawColumn24NoLoopMasked)        - FP_OFF(R_BSP24_STARTMARKER));
     fprintf(fp, "R_DRAWCOLUMN24NOLOOPSTRETCHOFFSET      = 0%Xh\n", FP_OFF(R_DrawColumn24NoLoopStretch)       - FP_OFF(R_BSP24_STARTMARKER));
 	fprintf(fp, "SELFMODIFY_COLFUNC_SET_DESTVIEW_SEGMENT24_OFFSET    = 0%Xh\n", FP_OFF(MARKER_SM_COLFUNC_set_destview_segment24)  - FP_OFF(R_BSP24_STARTMARKER));
 	fprintf(fp, "SELFMODIFY_COLFUNC_JUMP_OFFSET24_OFFSET             = 0%Xh\n", FP_OFF(MARKER_SM_COLFUNC_jump_offset24)           - FP_OFF(R_BSP24_STARTMARKER));

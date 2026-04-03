@@ -5264,7 +5264,7 @@ mov   al, byte ptr ds:[si + VISSPRITE_T.vs_colormap]
 mov   byte ptr cs:[SELFMODIFY_MASKED_set_xlat_offset_sprite+2 - OFFSET R_MASK24_STARTMARKER_], al
 
 ; hardcoded function types.   TODO: if scale 1 use scale-less draw? or use hardcoded draws one way or another?
-mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset_sprite], DRAWCOL_NOLOOP_OFFSET_MASKED
+mov   word ptr cs:[SELFMODIFY_MASKED_COLFUNC_set_func_offset_sprite], DRAWCOL_NOLOOP_OFFSET_MASKED_PLAYER
 
 
 
