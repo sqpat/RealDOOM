@@ -4810,9 +4810,9 @@ inc   cx				   ; for the equals case.
 lea   di, [si + CLIPTOP_START_OFFSET]
 mov   ax, cs
 mov   es, ax
+xor   ax, ax
 mov   dx, cx    ; backup count
 shr   cx, 1
-xor   ax, ax
 rep   stosw
 adc   cx, cx
 rep   stosb
@@ -4842,7 +4842,7 @@ mov   ax, word ptr es:[di + DRAWSEG_T.drawseg_x1]
 SELFMODIFY_MASKED_vissprite_x2_1:
 cmp   ax, 01000h    ; maybe put this in ax from outside the loop...?
 ENSUREALIGN_126:
-jng   continue_checking_if_drawseg_obscures_sprite
+jng   continue_checking_if_drawseg_obscures_sprite  ; todo branch test does 2nd one fail more...?
 
 iterate_next_drawseg_loop:
 ; note: es and bx dont necessaryly go together.
@@ -4897,6 +4897,9 @@ mov   cx, word ptr es:[di + DRAWSEG_T.drawseg_scale2 + 2]
 cmp   ax, cx
 jg    scale1_highbits_larger_than_scale2
 je    compare_lowbits_scale1_scale2
+
+; todo just do an xchg and same checks code!
+; dont even have to load 
 
 scale1_smaller_than_scale2:
 
