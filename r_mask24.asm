@@ -5396,6 +5396,8 @@ draw_next_column_patch:
 
 ; todo selfmodify forward write ES
 
+; infinite loop here in level change.
+
 push  si   ; retrieve after R_DrawColumnPrepMaskedMulti call. 
 
 ; ax contains column fields!
@@ -6321,6 +6323,10 @@ pop     ds
 
 mov       word ptr ds:[SELFMODIFY_MASKED_subfirstpatch_1+2], ax
 mov       word ptr ds:[SELFMODIFY_MASKED_subfirstpatch_2+2], ax
+mov       ax, 0FFFFh
+mov       word ptr ds:[SELFMODIFY_compare_lastvissprite_patch_1+1], ax
+mov       word ptr ds:[SELFMODIFY_compare_lastvissprite_patch_2+1], ax
+
 
 
 
