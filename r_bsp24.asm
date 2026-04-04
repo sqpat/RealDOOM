@@ -14314,12 +14314,14 @@ mov       ax, CACHEDHEIGHT_SEGMENT
 mov       es, ax
 xor       ax, ax
 mov       di, ax  ; 0
-mov       cx, 400
+mov       cx, 400  ; todo change this to viewheight shl 1 ??
 
 rep stosw 
 
 cmp       byte ptr cs:[_visplanedirty], al   ; 0
-jne       visplane_dirty_do_revert
+je        done_with_visplane_revert
+visplane_dirty_do_revert:
+call      Z_QuickMapVisplaneRevert_BSPLocal_
 done_with_visplane_revert:
 call      dword ptr ds:[_R_DrawPlanesCall]
 ;call      Z_QuickMapUndoFlatCache_
@@ -14327,6 +14329,23 @@ Z_QUICKMAPAI8 pageswapargs_rend_texture_size           INDEXED_PAGE_5000_OFFSET
 Z_QUICKMAPAI4_NO_DX pageswapargs_spritecache_offset_size     INDEXED_PAGE_9000_OFFSET
 Z_QUICKMAPAI4_NO_DX (pageswapargs_spritecache_offset_size+4)   INDEXED_PAGE_7000_OFFSET
 Z_QUICKMAPAI3_NO_DX pageswapargs_maskeddata_offset_size   	INDEXED_PAGE_8400_OFFSET
+
+
+; bsp uses BSP CS local cache vars
+; masked uses ones in DS 
+; todo: work out this step somehow
+; for now, for texture cache consistency we copy back and forth once and frame 
+
+mov       ax, cs
+mov       ds, ax
+mov       si, OFFSET _cachedsegmentlumpsBSPLocal
+
+mov       ax, ss
+mov       es, ax
+mov       di, OFFSET _cachedsegmentlumps
+mov       cx, ((_cachedsegmenttexBSPLocal + 4) - _cachedsegmentlumpsBSPLocal) / 2
+rep       movsw
+mov       ds, ax
 
 mov       dx, SC_DATA
 mov       al, 15
@@ -14339,6 +14358,21 @@ out       dx, ax  ; for the potato case, which will skip OUTs later
 call      dword ptr ds:[_R_WriteBackMaskedFrameConstantsCall]
 call      dword ptr ds:[_R_DrawMaskedCall]
 
+; bsp uses BSP CS local cache vars
+; masked uses ones in DS 
+; todo: work out this step somehow
+; for now, for texture cache consistency we copy back and forth once and frame 
+
+
+mov       ax, cs
+mov       es, ax
+mov       di, OFFSET _cachedsegmentlumpsBSPLocal
+
+mov       si, OFFSET _cachedsegmentlumps
+mov       cx, ((_cachedsegmenttexBSPLocal + 4) - _cachedsegmentlumpsBSPLocal) / 2
+rep       movsw
+
+
 ;call      Z_QuickMapPhysics_
 Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
 ; call netupdate on return.
@@ -14346,11 +14380,6 @@ Z_QUICKMAPAI24 pageswapargs_phys_offset_size INDEXED_PAGE_4000_OFFSET
 POPA_NO_AX_OR_BP_MACRO
 retf      
 
-ALIGN_MACRO
-visplane_dirty_do_revert:
-call      Z_QuickMapVisplaneRevert_BSPLocal_
-jmp       done_with_visplane_revert
-ALIGN_MACRO
 
 
 
@@ -14359,6 +14388,7 @@ ENDP
 
 
 ;R_WriteBackLevelConstants24_
+ALIGN_MACRO
 
 PROC   R_WriteBackLevelConstants24_ NEAR ; probably not optimized, runs rarely
 PUBLIC R_WriteBackLevelConstants24_ 

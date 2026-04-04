@@ -36,7 +36,7 @@ COLORMAPS_6_MASKEDMAPPING_SEG_DIFF_SEGMENT = (COLORMAPS_SEGMENT_MASKEDMAPPING + 
 COLORMAPS_MASKEDMAPPING_SEG_OFFSET_IN_CS = 16 * (COLORMAPS_6_MASKEDMAPPING_SEG_DIFF_SEGMENT - DRAWFUZZCOL_AREA_SEGMENT)
 
 
-
+_cachedsegmentlumpsBSPLocalCOPY = 056h
 
 ;=================================
 
@@ -2831,7 +2831,7 @@ mov   si, word ptr es:[bx+08000h]
 ENSUREALIGN_111:
 
 mov   cx, MASKEDPOSTDATA_SEGMENT
-;call  dword ptr ds:[_R_DrawMaskedColumnCallHigh]
+
 
 push  cs
 pop   ds
@@ -2969,7 +2969,7 @@ mul   byte ptr ds:[_maskedheightvalcache]
 add   ax, word ptr ds:[_maskedcachedsegment]
 
 mov   dx, word ptr ds:[_cachedbyteheight]  ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
-;call  dword ptr ds:[_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this
+
 
 call R_DrawSingleMaskedColumn_
 jmp   update_maskedtexturecol_finish_loop_iter
@@ -2985,7 +2985,7 @@ call  R_GetMaskedColumnSegment_
 mov   bp, word ptr ds:[_maskedcachedbasecol] ; todo return in bp
 mov   dx, word ptr ds:[_cachedbyteheight]    ; todo optimize this to a full word with 0 high byte in data. then optimize in _R_DrawSingleMaskedColumn_ as well
 
-; call  dword ptr ds:[_R_DrawSingleMaskedColumnCallHigh]  ; todo... do i really want this
+
 call R_DrawSingleMaskedColumn_  ;todo inline here, jump from above case? both jump to same spot after.
 
 
@@ -4897,9 +4897,6 @@ mov   cx, word ptr es:[di + DRAWSEG_T.drawseg_scale2 + 2]
 cmp   ax, cx
 jg    scale1_highbits_larger_than_scale2
 je    compare_lowbits_scale1_scale2
-
-; todo just do an xchg and same checks code!
-; dont even have to load 
 
 scale1_smaller_than_scale2:
 
