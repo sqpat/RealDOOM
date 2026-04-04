@@ -39,7 +39,7 @@ db 1,  2,  4,  8,  3, 12,  3, 12, 15, 15, 15, 15
 dw                                       00, 00
 ;0x40   
 dw  00, 00, 00, 00, 00, 00, 00, 00
-;0x50   0x54 = _planezlight (dword, so segment in 56)	 0x58 caststate (0x5A is STATES_SEGMENT) 
+;0x50   0x54 = _planezlight (dword, so segment in 56)	
 dw 0, 0, 0, 0, 0, 0, 0, 0
 ;0x60
 dw 0, 0, 0, 0, 0, 0, 0, 0

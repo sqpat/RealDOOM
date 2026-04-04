@@ -233,8 +233,10 @@ _spanquality =              	    _NULL_OFFSET + 00189h
 _setStateReturn =     				_NULL_OFFSET + 0018Ah
 _R_GetPatchTexture_addr =           _NULL_OFFSET + 0018Ch
 _W_CacheLumpNumDirect_addr =        _NULL_OFFSET + 00190h
-;_floorplaneindex =               	_NULL_OFFSET + 00194h
-;_ceilingplaneindex =             	_NULL_OFFSET + 00196h
+_turnheld = 		         	 	_NULL_OFFSET + 00194h
+_setsizeneeded = 				    _NULL_OFFSET + 00195h
+_setblocks = 						_NULL_OFFSET + 00196h
+_levelfirstframe = 					_NULL_OFFSET + 00197h
 _viewwidth =                     	_NULL_OFFSET + 00198h
 _viewheight =	                    _NULL_OFFSET + 0019Ah
 ;_ceiltop =      	                _NULL_OFFSET + 0019Ch
@@ -389,11 +391,7 @@ _m_paninc = 				 	 	 _NULL_OFFSET + 00458h
 
 ; 015h bytes
 _wminfo =			                 _NULL_OFFSET + 0045Ch
-_turnheld = 		         	 	 _NULL_OFFSET + 00471h  ; todo really free?
-_setsizeneeded = 				 	 _NULL_OFFSET + 00472h
-_setblocks = 					 	 _NULL_OFFSET + 00473h
 
-_getStringByIndex_addr =             _NULL_OFFSET + 00474h
 
 
 _W_CacheLumpNameDirect_addr =        _NULL_OFFSET + 00478h
@@ -449,9 +447,9 @@ _screen_botleft_y =				     _NULL_OFFSET + 00506h
 _screen_topright_x =				 _NULL_OFFSET + 00508h
 _screen_topright_y =			     _NULL_OFFSET + 0050Ah
 
-_planezlight = 						_NULL_OFFSET + 00050Ch
-_caststate =                        _NULL_OFFSET + 000510h
-
+_planezlight = 						 _NULL_OFFSET + 0050Ch
+_caststate =                         _NULL_OFFSET + 00510h
+_STATES_SEGMENT_PTR =                _NULL_OFFSET + 00512h
 _playingdriver =                     _NULL_OFFSET + 00514h
 _currentsong_start_offset =          _NULL_OFFSET + 00518h
 _currentsong_playing_offset =        _NULL_OFFSET + 0051Ah
@@ -482,10 +480,10 @@ _textureL1LRU =                 	 _NULL_OFFSET + 00594h
 ; IS 59E TO 5AD FREE?
 _flatcache_l2_head =                 _NULL_OFFSET + 005AEh
 _flatcache_l2_tail =                 _NULL_OFFSET + 005AFh
-;_segloopprevlookup =                 _NULL_OFFSET + 005B0h
+
+_getStringByIndex_addr =             _NULL_OFFSET + 005B0h
 ;_segloopcachedbasecol =              _NULL_OFFSET + 005B4h
 ;_cachedsegmenttex =                  _NULL_OFFSET + 005B8h
-_levelfirstframe = 					 _NULL_OFFSET + 005BBh
 _playerMobj =                   	 _NULL_OFFSET + 005BCh
 _ceilinglinenum =                    _NULL_OFFSET + 005BEh
 
@@ -515,7 +513,7 @@ _centerx = 							 _NULL_OFFSET + 005F4h
 _centery = 							 _NULL_OFFSET + 005F6h
 
 _V_DrawFullscreenPatch_FromMenu_addr = _NULL_OFFSET + 005F8h
-_FastDiv32u16u_addr =               _NULL_OFFSET + 005FCh
+;_FastDiv32u16u_addr =               _NULL_OFFSET + 005FCh
 
 
 

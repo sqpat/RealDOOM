@@ -2327,7 +2327,10 @@ mov     word ptr ds:[_wminfo + WBSTARTSTRUCT_T.wbss_plyr + WBPLAYERSTRUCT_T.wbos
 les     ax, dword ptr ds:[_leveltime]
 mov     dx, es
 mov     bx, 35
-call    dword ptr ds:[_FastDiv32u16u_addr]
+cmp     dx, bx
+ja      skip_div
+div     bx
+done_with_div:
 mov     word ptr ds:[_wminfo + WBSTARTSTRUCT_T.wbss_plyr + WBPLAYERSTRUCT_T.wbos_stime], ax
 mov     ax, 1
 mov     byte ptr ds:[_gamestate], al ; GS_INTERMISSION
@@ -2357,7 +2360,9 @@ pop     cx
 pop     bx
 
 retf
-
+skip_div:
+mov     ax, 500
+jmp     done_with_div
 ENDP
 
 
