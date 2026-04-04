@@ -115,39 +115,39 @@ dont_mark_unusable:
 
 mov   word ptr cs:[SELFMODIFY_changeswitchtexture_useagain], ax
 
-xor   ax, ax
+xor   bx, bx
+mov   ax, word ptr ds:[_numswitches]
+ALIGN_MACRO
 check_next_switch:
 
-mov   bx, word ptr ds:[_numswitches]
+cmp   bx, ax
+jge   exit_p_changeswitchtexture
 
-sal   bx, 1
-cmp   ax, bx
-jnge  dont_exit_p_changeswitchtexture
-LEAVE_MACRO 
-ret
-dont_exit_p_changeswitchtexture:
-mov   bx, ax
-sal   bx, 1
-mov   cx, ax
-mov   bx, word ptr ds:[bx + _switchlist]
-xor   cl, 1
+mov   cx, word ptr ds:[bx + _switchlist]  ; current texture...
 
-cmp   bx, di
+cmp   cx, di
 je    is_top_texture
 
-cmp   bx, dx
+cmp   cx, dx
 je    is_mid_texture
-cmp   bx, si
+cmp   cx, si
 je    is_bottom_texture
-inc   ax
+inc   bx
+inc   bx ; word inc
 jmp   check_next_switch
 
 is_top_texture:
-mov   bx, BUTTONTOP
+xor   si, si ; mov   si, BUTTONTOP
 mov   di, SIDE_T.s_toptexture
 
 
+
 do_button_texture_stuff:
+; cx has tex for btexture later
+; si has WHERE for later
+; di has which texture.
+
+
 
 mov   dx, word ptr [bp - 2]  ; get sfx
 pop   ax ; word ptr [bp - 8]  ; get linefrontsecnum
@@ -157,14 +157,12 @@ push  ax ; word ptr [bp - 8]  ; put back for later
 call  S_StartSoundWithSecnum_
 
 
-mov   si, cx
-sal   si, 1
 mov   ax, SIDES_SEGMENT
 mov   es, ax
 
-;			sides[lineside0].toptexture = switchlist[i^1];
-
-mov   ax, word ptr ds:[si + _switchlist] ; ax is switchlist[i^1];
+;			sides[lineside0].[di]texture = switchlist[i^1];
+xor   bl, 2  ; ^1 word ptr
+mov   ax, word ptr ds:[bx + _switchlist] ; ax is switchlist[i^1];
 add   di, word ptr [bp - 4]  
 stosw   ;mov   word ptr es:[di], ax
 
@@ -173,9 +171,12 @@ jmp   exit_p_changeswitchtexture  ; jmp if 0. nop otherwise
 SELFMODIFY_changeswitchtexture_useagain_AFTER:
 do_startbutton_call:
 
-pop   dx ;mov   dx, word ptr [bp - 8]
-pop   ax ;mov   ax, word ptr [bp - 6]
-mov   cx, word ptr ds:[bx + _switchlist]
+xchg   ax, si ; al now holds where / w
+
+pop   dx ;mov   dx, word ptr [bp - 8]  ; soundorg is just secnum; this is ok
+pop   si ;mov   si, word ptr [bp - 6]
+
+
 
 
 ; todo inlined only use.
@@ -183,8 +184,7 @@ mov   cx, word ptr ds:[bx + _switchlist]
 ;PUBLIC  P_StartButton_
 
 
-xchg  ax, si ; si holds ax
-mov   ax, bx ; al holds w
+
 
 mov   bx, _buttonlist
 
@@ -202,6 +202,8 @@ add   bx, (SIZE BUTTON_T)
 cmp   bx, (_buttonlist + MAXBUTTONS * (SIZE BUTTON_T))
 jl    do_next_button_check
 
+; didnt find this button already. find first one and init a new one.
+; TODO: record this button above as we find it to not have to loop again.
 mov   bx, _buttonlist
 
 loop_check_next_button:
@@ -213,7 +215,7 @@ jne   button_already_active
 mov   word ptr ds:[bx + BUTTON_T.button_linenum], si
 mov   byte ptr ds:[bx + BUTTON_T.button_where], al
 mov   word ptr ds:[bx + BUTTON_T.button_btexture], cx
-mov   word ptr ds:[bx + BUTTON_T.button_soundorg], dx
+mov   word ptr ds:[bx + BUTTON_T.button_soundorg], dx 
 mov   word ptr ds:[bx + BUTTON_T.button_btimer], BUTTONTIME
 
 
@@ -236,7 +238,7 @@ ret
 
 
 is_mid_texture:
-mov   bx, BUTTONMIDDLE
+mov   si, BUTTONMIDDLE
 mov   di, SIDE_T.s_midtexture
 
 jmp    do_button_texture_stuff
@@ -246,7 +248,7 @@ jmp    do_button_texture_stuff
 
 
 is_bottom_texture:
-mov   bx, BUTTONBOTTOM
+mov   si, BUTTONBOTTOM
 mov   di, SIDE_T.s_bottomtexture
 
 jmp   do_button_texture_stuff
