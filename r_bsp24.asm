@@ -19,7 +19,6 @@ INSTRUCTION_SET_MACRO_NO_MEDIUM
 
 
 
-
 SEGMENT R_BSP_24_TEXT USE16 PARA PUBLIC 'CODE'
 ASSUME  CS:R_BSP_24_TEXT
 
@@ -3411,9 +3410,12 @@ jmp   exit_project_sprite
 ALIGN_MACRO
 not_too_far_off_right_side_highbits:
 push  ax ; bp - 026h
-les   bx, dword ptr [bp - 022h]   ; es holds bp - 020h to go into the next mul.
+mov   ax, SPRITEWIDTHS_SEGMENT
+mov   es, ax
 xor   ax, ax
-mov   al, byte ptr cs:[bx + (SPRITEWIDTHS_OFFSET)]
+mov   bx, word ptr [bp - 022h]   ; es holds bp - 020h to go into the next mul.
+mov   al, byte ptr es:[bx]
+mov   es, word ptr [bp - 020h]   ; es holds bp - 020h to go into the next mul.
 
 ;    if (usedwidth == 1){
 ;        usedwidth = 257;
@@ -11101,8 +11103,12 @@ mov   ax, word ptr [bp - 4]
 add   di, word ptr [bp - 6]
 x1_calculcated:
 mov   bx, word ptr [bp - 0Ch]
+
+mov   ax, SPRITEWIDTHS_SEGMENT
+mov   es, ax
+
 xor   ax, ax
-mov   al, byte ptr cs:[bx + (SPRITEWIDTHS_OFFSET)]
+mov   al, byte ptr es:[bx]
 
 mov   word ptr [bp - 0Eh], di
 cmp   ax, 1

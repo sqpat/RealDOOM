@@ -59,7 +59,7 @@
 
 
 // todo generate this programatically, downward from fixeddssegment
-#define baselowermemoryaddress    (0x1C310000)
+#define baselowermemoryaddress    (0x1BDA0000)
 // MaximumMusDriverSize
 
 
@@ -121,7 +121,17 @@ struct sfxinfo_struct{
 
 //. render only section moved here to make space for larger texture cache and free up pages
 
-#define texturecolumnlumps_bytes   ((int16_t_union __far*)     MAKE_FULL_SEGMENT(baselowermemoryaddress , 0))
+
+
+// spritewidths at end of bsp
+// #define spritewidths_segment   ((bsp_code_segment + 0x400) - ((size_spritewidths + 0xF) >> 4))
+// TODO HACK: move it to e0000 for now
+#define size_spritewidths      (sizeof(uint8_t) * MAX_SPRITE_LUMPS)
+#define spritewidths_offset    (((0x600) - ((size_spritewidths + 0xF) >> 4)) << 4)
+// #define spritewidths_offset    (((0x400) - ((size_spritewidths + 0xF) >> 4)) << 4)
+
+#define spritewidths               ((uint8_t __far*)           MAKE_FULL_SEGMENT(baselowermemoryaddress , 0))
+#define texturecolumnlumps_bytes   ((int16_t_union __far*)     MAKE_FULL_SEGMENT(spritewidths ,            size_spritewidths))
 #define texturedefs_bytes          ((byte __far*)              MAKE_FULL_SEGMENT(texturecolumnlumps_bytes, size_texturecolumnlumps_bytes))
 #define spritetopoffsets           ((int8_t __far*)            MAKE_FULL_SEGMENT(texturedefs_bytes,        size_texturedefs_bytes))
 #define texturedefs_offset         ((uint16_t  __far*)         MAKE_FULL_SEGMENT(spritetopoffsets,         size_spritetopoffsets))
@@ -164,7 +174,7 @@ struct sfxinfo_struct{
 #define subsector_lines     ((uint8_t __far*)            MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
 #define base_lower_end      ((uint8_t __far*)            MAKE_FULL_SEGMENT(subsector_lines , size_subsector_lines))
 
-
+#define spritewidths_segment             ((segment_t) ((int32_t)spritewidths >> 16))
 #define texturecolumnlumps_bytes_segment ((segment_t) ((int32_t)texturecolumnlumps_bytes >> 16))
 #define texturedefs_bytes_segment        ((segment_t) ((int32_t)texturedefs_bytes >> 16))
 #define spritetopoffsets_segment         ((segment_t) ((int32_t)spritetopoffsets >> 16))
@@ -1187,13 +1197,7 @@ patchoffset                 83BD:01DC
 
 #define size_nodes_render      MAX_NODES_RENDER_SIZE
 #define size_spritedefs        16114u
-#define size_spritewidths      (sizeof(uint8_t) * MAX_SPRITE_LUMPS)
 
-// spritewidths at end of bsp
-// #define spritewidths_segment   ((bsp_code_segment + 0x400) - ((size_spritewidths + 0xF) >> 4))
-// TODO HACK: move it to e0000 for now
-#define spritewidths_offset    (((0x600) - ((size_spritewidths + 0xF) >> 4)) << 4)
-// #define spritewidths_offset    (((0x400) - ((size_spritewidths + 0xF) >> 4)) << 4)
 
 // first element
 #define nodes_render          ((node_render_t __far*)  MAKE_FULL_SEGMENT(0x90000000, 0))
@@ -1203,10 +1207,12 @@ patchoffset                 83BD:01DC
 //last element
 #define sprites               ((spritedef_t __far*)    MAKE_FULL_SEGMENT(nodes_render, size_nodes_render))
 #define spritedefs_bytes      ((byte __far*)           sprites)
+#define END_RENDER_9000_BSP   ((spritedef_t __far*)    MAKE_FULL_SEGMENT(sprites, size_spritedefs))
 
 
 #define nodes_render_segment        ((segment_t)     ((int32_t)nodes_render >> 16))
 #define sprites_segment             ((segment_t)     ((int32_t)sprites >> 16))
+#define END_RENDER_9000_BSP_SEGMENT ((segment_t)     ((int32_t)END_RENDER_9000_BSP >> 16))
 
 
 

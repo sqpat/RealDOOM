@@ -8,7 +8,7 @@
 #include "r_state.h"
 #include "p_setup.h"
 
-#define CONSTANTS_COUNT 993
+#define CONSTANTS_COUNT 994
 #define LOCALS_COUNT 32
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
@@ -138,6 +138,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"TEXTURECOLLENGTH_SEGMENT",
 
     "NODES_RENDER_SEGMENT",
+	"END_RENDER_9000_BSP_SEGMENT",
     "SEGS_RENDER_SEGMENT",
     "SEG_NORMALANGLES_SEGMENT",
     "SIDES_RENDER_SEGMENT",
@@ -732,7 +733,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 	"TASK_WIPE",
 	"TASK_INTERMISSION",
 	"TASK_STATUS_NO_SCREEN4",
-	"SPRITEWIDTHS_OFFSET",
+	"SPRITEWIDTHS_SEGMENT",
 	"STOPSPEED",
 	"FRICTION",
 	"MAXMOVE",
@@ -1234,6 +1235,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	texturecollength_segment,
 
     nodes_render_segment,
+	END_RENDER_9000_BSP_SEGMENT,
     segs_render_segment,
     seg_normalangles_segment,
     sides_render_segment,
@@ -1830,7 +1832,7 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
 	TASK_WIPE,
 	TASK_INTERMISSION,
 	TASK_STATUS_NO_SCREEN4,
-	spritewidths_offset,
+	spritewidths_segment,
 	STOPSPEED,
 	FRICTION,
 	MAXMOVE >> 16,

@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/04/03 19:46:33
+Created on:       26/04/03 20:33:01
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -35,10 +35,10 @@ SM_OPL2_TEXT           CODE           AUTO           0533:0000       00000f3c
 SM_OPL3_TEXT           CODE           AUTO           0627:0000       0000100e
 SM_SBMID_TEXT          CODE           AUTO           0728:0000       00000730
 SM_MPUMD_TEXT          CODE           AUTO           079b:0000       000007db
-R_BSP_24_TEXT          CODE           AUTO           0819:0000       00003e90
-R_BSP_16_TEXT          CODE           AUTO           0c02:0000       00003729
-R_BSP0_TEXT            CODE           AUTO           0f75:0000       00003658
-R_BSPFL_TEXT           CODE           AUTO           12db:0000       00003602
+R_BSP_24_TEXT          CODE           AUTO           0819:0000       00003ea0
+R_BSP_16_TEXT          CODE           AUTO           0c03:0000       00003725
+R_BSP0_TEXT            CODE           AUTO           0f76:0000       00003654
+R_BSPFL_TEXT           CODE           AUTO           12dc:0000       000035fe
 R_COL24_TEXT           CODE           AUTO           163c:0000       00002349
 R_COL16_TEXT           CODE           AUTO           1871:0000       00000cb4
 R_COL0_TEXT            CODE           AUTO           193d:0000       0000058e
@@ -83,12 +83,12 @@ S_SOUND_TEXT           CODE           AUTO           2420:b438       0000052c
 D_INIT_TEXT            CODE           AUTO           2fb6:0004       00000cc9
 S_INIT_TEXT            CODE           AUTO           2fb6:0cce       0000055d
 ST_INIT_TEXT           CODE           AUTO           2fb6:122c       00000207
-R_INIT_TEXT            CODE           AUTO           2fb6:1434       000007bc
-W_INIT_TEXT            CODE           AUTO           2fb6:1bf0       0000016e
-I_INIT_TEXT            CODE           AUTO           2fb6:1d5e       000001e4
-Z_INIT_TEXT            CODE           AUTO           2fb6:1f42       00000815
-S_SBINIT_TEXT          CODE           AUTO           2fb6:2758       000002e5
-P_INIT_TEXT            CODE           AUTO           2fb6:2a3e       0000026b
+R_INIT_TEXT            CODE           AUTO           2fb6:1434       000007b9
+W_INIT_TEXT            CODE           AUTO           2fb6:1bee       0000016e
+I_INIT_TEXT            CODE           AUTO           2fb6:1d5c       000001e4
+Z_INIT_TEXT            CODE           AUTO           2fb6:1f40       00000815
+S_SBINIT_TEXT          CODE           AUTO           2fb6:2756       000002e5
+P_INIT_TEXT            CODE           AUTO           2fb6:2a3c       0000026b
 bingen_TEXT            CODE           AUTO           2fb6:2cb0       00001726
 D_NET_TEXT             CODE           AUTO           2fb6:43d6       000000e1
 G_GAME_TEXT            CODE           AUTO           2fb6:44b8       000002f5
@@ -143,8 +143,8 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 004a:08bb*     WI_initStats_
 004a:03e7*     WI_slamBackground_
 004a:0cfb*     WI_updateNoState_
-004a:073d*     WI_drawPercent_
 004a:0dff*     WI_initVariables_
+004a:073d*     WI_drawPercent_
 004a:0d59      WI_Ticker_
 004a:0000      WI_STARTMARKER_
 004a:03cf*     WI_MRandomLocal_
@@ -340,131 +340,131 @@ Module: sm_mpumd.obj(sm_mpumd.ASM)
 079b:0000      SM_MPUMD_STARTMARKER_
 079b:07db      SM_MPUMD_ENDMARKER_
 Module: r_bsp24.obj(r_bsp24.ASM)
-0819:394e      R_WriteBackViewConstants24_
+0819:3958      R_WriteBackViewConstants24_
 0819:0d91*     tx_already_positive
-0819:268b*     R_AddLine_
-0819:33aa      R_GetPatchTexture_Far24_
-0819:2404*     R_GetSourceSegment1_
-0819:3e90      R_BSP24_ENDMARKER_
+0819:2691*     R_AddLine_
+0819:33b4      R_GetPatchTexture_Far24_
+0819:3ea0      R_BSP24_ENDMARKER_
+0819:240a*     R_GetSourceSegment1_
 0819:09b6*     FixedMulTrigNoShiftSine_BSPLocal_
-0819:15ed*     markfloor_done
-0819:240e*     just_do_draw1
-0819:107e*     handle_closed_door_top
-0819:265c*     skip_this_sprite
-0819:243c*     mark_floor_di
-0819:20bc*     exit_rendersegloop_TWOSIDED
-0819:1d89*     continue_backsector_not_null
-0819:23a0*     R_DrawColumnPrepTop
-0819:23cc*     R_GetSourceSegment0_DONE_TOP
-0819:2196*     SELFMODIFY_set_rw_distance_lo_topbot
-0819:2366*     SELFMODIFY_BSP_toptexture_AFTER
-0819:28a6*     R_ClipPassWallSegment_
-0819:22b5*     ENSUREALIGN_089
-0819:22c2*     ENSUREALIGN_090
+0819:15f3*     markfloor_done
+0819:2414*     just_do_draw1
+0819:1084*     handle_closed_door_top
+0819:2662*     skip_this_sprite
+0819:2442*     mark_floor_di
+0819:20c2*     exit_rendersegloop_TWOSIDED
+0819:1d8f*     continue_backsector_not_null
+0819:23a6*     R_DrawColumnPrepTop
+0819:23d2*     R_GetSourceSegment0_DONE_TOP
+0819:219c*     SELFMODIFY_set_rw_distance_lo_topbot
+0819:236c*     SELFMODIFY_BSP_toptexture_AFTER
+0819:28ac*     R_ClipPassWallSegment_
+0819:22bb*     ENSUREALIGN_089
+0819:22c8*     ENSUREALIGN_090
 0819:0200*     _ceilingclip
-0819:2406*     SELFMODIFY_BSP_set_seglooptexrepeat_bot_AFTER
-0819:2290*     ENSUREALIGN_091
+0819:240c*     SELFMODIFY_BSP_set_seglooptexrepeat_bot_AFTER
+0819:2296*     ENSUREALIGN_091
 0819:004f*     _seglooptexrepeat
-0819:1508*     ENSUREALIGN_051
-0819:1638*     ENSUREALIGN_066
-0819:177a*     ENSUREALIGN_077
-0819:167c*     ENSUREALIGN_068
-0819:163e*     ENSUREALIGN_067
-0819:1504*     ENSUREALIGN_050
-0819:3d00      bsp_local_dc_yl_lookup_table_
-0819:219e*     do_16_bit_mul_TWOSIDED
-0819:2557*     SELFMODIFY_mark_planes_dirty_TWOSIDED
-0819:20d2*     pre_increment_values_TWOSIDED
-0819:22ec*     ENSUREALIGN_099
-0819:20b6*     R_RenderSegLoop_TWOSIDED_
-0819:1469*     SELFMODIFY_BSP_set_skyflatnum_4
-0819:1003*     SELFMODIFY_skip_curseg_based_selfmodify_AFTER
-0819:2588*     R_Subsector_
-0819:2363*     do_top_texture_draw
-0819:38ec*     R_WriteBackLevelConstants24_
-0819:1635*     SELFMODIFY_set_rw_distance_lo
+0819:150e*     ENSUREALIGN_051
+0819:163e*     ENSUREALIGN_066
+0819:1780*     ENSUREALIGN_077
+0819:1682*     ENSUREALIGN_068
+0819:1644*     ENSUREALIGN_067
+0819:150a*     ENSUREALIGN_050
+0819:3d10      bsp_local_dc_yl_lookup_table_
+0819:21a4*     do_16_bit_mul_TWOSIDED
+0819:255d*     SELFMODIFY_mark_planes_dirty_TWOSIDED
+0819:20d8*     pre_increment_values_TWOSIDED
+0819:22f2*     ENSUREALIGN_099
+0819:20bc*     R_RenderSegLoop_TWOSIDED_
+0819:146f*     SELFMODIFY_BSP_set_skyflatnum_4
+0819:1009*     SELFMODIFY_skip_curseg_based_selfmodify_AFTER
+0819:258e*     R_Subsector_
+0819:2369*     do_top_texture_draw
+0819:38f6*     R_WriteBackLevelConstants24_
+0819:163b*     SELFMODIFY_set_rw_distance_lo
 0819:0000      R_BSP24_STARTMARKER_
 0819:0200*     OFFSET_CEILINGCLIP
-0819:1538*     exit_rendersegloop
-0819:12ee*     scales_set
-0819:1697*     R_GetSourceSegment0_START
-0819:375e      R_RenderPlayerView24_
+0819:153e*     exit_rendersegloop
+0819:12f4*     scales_set
+0819:169d*     R_GetSourceSegment0_START
+0819:3768      R_RenderPlayerView24_
 0819:0966*     FixedDivBSPLocal_
-0819:1559*     increment_loop_values
+0819:155f*     increment_loop_values
 0819:05d8*     div48_32_BSPLocal_
-0819:0fd2*     R_StoreWallRangeNoBackSector_
+0819:0fd8*     R_StoreWallRangeNoBackSector_
 0819:0080*     _COLFUNC_SELFMODIFY_LOOKUPTABLE_SECOND_HALF
-0819:1616*     SELFMODIFY_set_pixel_count_shift_mul
+0819:161c*     SELFMODIFY_set_pixel_count_shift_mul
 0819:0080*     BEOFRE_COLFUNC_LOOKUP
-0819:2426*     SELFMODIFY_set_pixel_count_shift_mul_bot
-0819:2394*     R_GetSourceSegment0_START_TWOSIDED
-0819:3250*     R_GetTexturePage_
-0819:3ad8*     R_WriteBackFrameConstants_
+0819:242c*     SELFMODIFY_set_pixel_count_shift_mul_bot
+0819:239a*     R_GetSourceSegment0_START_TWOSIDED
+0819:325a*     R_GetTexturePage_
+0819:3ae2*     R_WriteBackFrameConstants_
 0819:09e0*     FixedMulTrigNoShiftCosine_BSPLocal_
 0819:0a0a*     R_ClearPlanes_
 0819:0056*     _cachedsegmentlumpsBSPLocal
-0819:2152*     SELFMODIFY_BSP_markfloor_1_TWOSIDED
-0819:17e6*     mark_planes_dirty
-0819:11af*     SELFMODIFY_skip_curseg_based_selfmodify_TARGET
-0819:1b34*     scales_set_TWOSIDED
-0819:16e2*     main_3232_div
-0819:1889*     SELFMODIFY_skip_curseg_based_selfmodify_topbot_AFTER
+0819:2158*     SELFMODIFY_BSP_markfloor_1_TWOSIDED
+0819:17ec*     mark_planes_dirty
+0819:11b5*     SELFMODIFY_skip_curseg_based_selfmodify_TARGET
+0819:1b3a*     scales_set_TWOSIDED
+0819:16e8*     main_3232_div
+0819:188f*     SELFMODIFY_skip_curseg_based_selfmodify_topbot_AFTER
 0819:0098*     _lastbasexscale
-0819:21f6*     SELFMODIFY_set_ax_rw_offset_hi_TWOSIDED
-0819:23b6*     SELFMODIFY_set_pixel_count_shift_mul_top
+0819:21fc*     SELFMODIFY_set_ax_rw_offset_hi_TWOSIDED
+0819:23bc*     SELFMODIFY_set_pixel_count_shift_mul_top
 0819:0bc0*     R_FindPlane_
 0819:0718*     FixedDivWholeA_BSPLocal_
-0819:160e*     SELFMODIFY_BSP_add_destview_offset
+0819:1614*     SELFMODIFY_BSP_add_destview_offset
 0819:004e*     _segloopheightvalcache
-0819:1d5c*     side_has_midtexture
-0819:15a8*     SELFMODIFY_BSP_markceiling_1
-0819:1858*     R_StoreWallRangeWithBackSector_
-0819:1846*     adjust_row_offset_TWOSIDED
-0819:3444      R_GetCompositeTexture_Far24_
+0819:1d62*     side_has_midtexture
+0819:15ae*     SELFMODIFY_BSP_markceiling_1
+0819:185e*     R_StoreWallRangeWithBackSector_
+0819:184c*     adjust_row_offset_TWOSIDED
+0819:344e      R_GetCompositeTexture_Far24_
 0819:004a*     _segloopnextlookup
-0819:248c*     R_RenderSegLoop_exit_TWOSIDED
+0819:2492*     R_RenderSegLoop_exit_TWOSIDED
 0819:0098*     _basexscale
-0819:0fc0*     adjust_row_offset
-0819:1592*     done_setting_vga_plane
+0819:0fc6*     adjust_row_offset
+0819:1598*     done_setting_vga_plane
 0819:0000*     _COLFUNC_SELFMODIFY_LOOKUPTABLE
 0819:03a7*     SELFMODIFY_get_rw_distance_hi_1
-0819:1640*     do_16_bit_mul
-0819:23d3*     SELFMODIFY_BSP_set_pixlow
-0819:255e*     mark_planes_dirty_TWOSIDED
+0819:1646*     do_16_bit_mul
+0819:23d9*     SELFMODIFY_BSP_set_pixlow
+0819:2564*     mark_planes_dirty_TWOSIDED
 0819:00c0*     OFFSET_FLOORCLIP
-0819:239e*     just_do_draw0_top
-0819:1533*     R_RenderSegLoop_
-0819:15d2*     SELFMODIFY_BSP_markfloor_1
-0819:2397*     SELFMODIFY_BSP_set_seglooptexmodulo0_AFTER_TWOSIDED
-0819:1693*     SELFMODIFY_set_ax_rw_offset_hi
-0819:18cd*     v2_y_equals_v1_y_TWOSIDED
+0819:23a4*     just_do_draw0_top
+0819:1539*     R_RenderSegLoop_
+0819:239d*     SELFMODIFY_BSP_set_seglooptexmodulo0_AFTER_TWOSIDED
+0819:15d8*     SELFMODIFY_BSP_markfloor_1
+0819:1699*     SELFMODIFY_set_ax_rw_offset_hi
+0819:18d3*     v2_y_equals_v1_y_TWOSIDED
 0819:0ce0*     R_ProjectSprite_
-0819:29e8*     R_GetColumnSegment_
+0819:29ee*     R_GetColumnSegment_
 0819:0384*     R_ScaleFromGlobalAngle_
-0819:17b2*     SELFMODIFY_mark_planes_dirty
-0819:1584*     start_per_column_inner_loop
-0819:210b*     done_setting_vga_plane_topbot
+0819:17b8*     SELFMODIFY_mark_planes_dirty
+0819:158a*     start_per_column_inner_loop
+0819:2111*     done_setting_vga_plane_topbot
 Module: r_bsp16.obj(r_bsp16.ASM)
-0c02:3272      R_RenderPlayerView16_
-0c02:0000      R_BSP16_STARTMARKER_
-0c02:33ef      R_WriteBackViewConstants16_
-0c02:2ec1      R_GetPatchTexture_Far16_
-0c02:3729      R_BSP16_ENDMARKER_
-0c02:2f5c      R_GetCompositeTexture_Far16_
+0c03:326e      R_RenderPlayerView16_
+0c03:0000      R_BSP16_STARTMARKER_
+0c03:33eb      R_WriteBackViewConstants16_
+0c03:2ebd      R_GetPatchTexture_Far16_
+0c03:3725      R_BSP16_ENDMARKER_
+0c03:2f58      R_GetCompositeTexture_Far16_
 Module: r_bsp0.obj(r_bsp0.ASM)
-0f75:3658      R_BSP0_ENDMARKER_
-0f75:2df8      R_GetPatchTexture_Far0_
-0f75:2e93      R_GetCompositeTexture_Far0_
-0f75:31a9      R_RenderPlayerView0_
-0f75:3326      R_WriteBackViewConstants0_
-0f75:0000      R_BSP0_STARTMARKER_
+0f76:3654      R_BSP0_ENDMARKER_
+0f76:2df4      R_GetPatchTexture_Far0_
+0f76:2e8f      R_GetCompositeTexture_Far0_
+0f76:31a5      R_RenderPlayerView0_
+0f76:3322      R_WriteBackViewConstants0_
+0f76:0000      R_BSP0_STARTMARKER_
 Module: r_bspfl.obj(r_bspfl.ASM)
-12db:2e3d      R_GetCompositeTexture_FarFL_
-12db:3153      R_RenderPlayerViewFL_
-12db:0000      R_BSPFL_STARTMARKER_
-12db:3602      R_BSPFL_ENDMARKER_
-12db:2da2      R_GetPatchTexture_FarFL_
-12db:32d0      R_WriteBackViewConstantsFL_
+12dc:2e39      R_GetCompositeTexture_FarFL_
+12dc:314f      R_RenderPlayerViewFL_
+12dc:0000      R_BSPFL_STARTMARKER_
+12dc:35fe      R_BSPFL_ENDMARKER_
+12dc:2d9e      R_GetPatchTexture_FarFL_
+12dc:32cc      R_WriteBackViewConstantsFL_
 Module: r_col24.obj(r_col24.ASM)
 163c:19c0      MARKER_COLFUNC_NORMALSTRETCH_FUNCTION_AREA_OFFSET_
 163c:0000      R_DrawColumn24NoLoop_
@@ -576,12 +576,12 @@ Module: r_mask24.obj(r_mask24.ASM)
 1db1:0923*     ENSUREALIGN_119
 1db1:0a95*     ENSUREALIGN_128
 1db1:14ab*     ENSUREALIGN_131
-1db1:0596*     ENSUREALIGN_106_sprite
 1db1:0bcd*     ENSUREALIGN_115
 1db1:1231*     ENSUREALIGN_126
 1db1:098f*     ENSUREALIGN_116
 1db1:0418*     ENSUREALIGN_135
 1db1:14bd*     ENSUREALIGN_127
+1db1:0596*     ENSUREALIGN_106_sprite
 1db1:14e3*     ENSUREALIGN_108
 1db1:0695*     three_page_sprite
 1db1:0512*     ENSUREALIGN_132_sprite
@@ -745,8 +745,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2420:5545*     A_PainDie_
 2420:4f0c*     A_SkelWhoosh_
 2420:5260*     A_VileTarget_
-2420:4687*     P_LookForPlayers_
 2420:594f*     A_BrainSpit_
+2420:4687*     P_LookForPlayers_
 2420:43ac*     P_Move_
 2420:58d9*     A_BrainExplode_
 2420:51bc*     A_VileStart_
@@ -763,8 +763,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 2420:59ef*     A_SpawnSound_
 2420:4d3d*     A_SkelMissile_
 2420:544e*     A_FatAttack1_
-2420:4789*     A_Look_
 2420:4827*     A_BabyMetal_
+2420:4789*     A_Look_
 2420:481f*     A_Metal_
 2420:56ae*     A_XScream_
 2420:4cf5*     A_BruisAttack_
@@ -1098,49 +1098,49 @@ Module: r_init.obj(r_init.ASM)
 2fb6:179c*     R_InitTextures_
 2fb6:1a26      R_Init_
 2fb6:14be*     R_GenerateLookup_
-2fb6:1bae*     W_CacheLumpNumDirectSmall_
+2fb6:1bab*     W_CacheLumpNumDirectSmall_
 Module: w_init.obj(w_init.ASM)
-2fb6:1bf0*     W_INIT_STARTMARKER_
-2fb6:1d5e*     W_INIT_ENDMARKER_
-2fb6:1c1c      W_AddFile_
+2fb6:1bee*     W_INIT_STARTMARKER_
+2fb6:1d5c*     W_INIT_ENDMARKER_
+2fb6:1c1a      W_AddFile_
 Module: i_init.obj(i_init.ASM)
-2fb6:1f42*     I_INIT_ENDMARKER_
-2fb6:1dda      I_Init_
-2fb6:1d5e*     I_INIT_STARTMARKER_
+2fb6:1f40*     I_INIT_ENDMARKER_
+2fb6:1dd8      I_Init_
+2fb6:1d5c*     I_INIT_STARTMARKER_
 Module: z_init.obj(z_init.ASM)
-2fb6:22c4*     Z_ReadFileRegionWithIndex_
-2fb6:1f42      _doomdata_bin_string
-2fb6:2757*     Z_INIT_ENDMARKER_
-2fb6:2583      Z_LoadBinaries_
-2fb6:2243      Z_GetEMSPageMap_
-2fb6:2393*     Z_DoRenderCodeLoad_
-2fb6:1f42*     Z_INIT_STARTMARKER_
-2fb6:2197      Z_InitEMS_
-2fb6:231c*     Z_QuickMapRender4000_
-2fb6:2306      Z_QuickMapMaskedExtraData_
-2fb6:2332*     Z_QuickMapVisplanePage_
+2fb6:22c2*     Z_ReadFileRegionWithIndex_
+2fb6:1f40      _doomdata_bin_string
+2fb6:2755*     Z_INIT_ENDMARKER_
+2fb6:2581      Z_LoadBinaries_
+2fb6:2241      Z_GetEMSPageMap_
+2fb6:2391*     Z_DoRenderCodeLoad_
+2fb6:1f40*     Z_INIT_STARTMARKER_
+2fb6:2195      Z_InitEMS_
+2fb6:231a*     Z_QuickMapRender4000_
+2fb6:2304      Z_QuickMapMaskedExtraData_
+2fb6:2330*     Z_QuickMapVisplanePage_
 Module: s_sbinit.obj(s_sbinit.ASM)
-2fb6:28cc      SB_SetPlaybackRate_
-2fb6:2a14      SB_StartInit_
-2fb6:27bd      _SB_DSP_Version
-2fb6:2a3d*     S_SBINIT_ENDMARKER_
-2fb6:29a6*     SB_InitCard_
-2fb6:2758*     S_SBINIT_STARTMARKER_
-2fb6:27cf*     SB_SaveVoiceVolume_
-2fb6:27c0*     SB_ReadMixer_
-2fb6:2967*     SB_GetDSPVersion_
-2fb6:27f7      SB_DSP1xx_BeginPlayback_
-2fb6:27fe*     SB_DSP2xx_BeginPlayback_
-2fb6:2813*     SB_DSP4xx_BeginPlayback_
-2fb6:27bf      _SB_CardActive
-2fb6:290a*     SB_SetupPlayback_
-2fb6:2828*     DMA_SetupTransfer_
-2fb6:28a9*     SB_EnableInterrupt_
+2fb6:28ca      SB_SetPlaybackRate_
+2fb6:2a12      SB_StartInit_
+2fb6:27bb      _SB_DSP_Version
+2fb6:2a3b*     S_SBINIT_ENDMARKER_
+2fb6:29a4*     SB_InitCard_
+2fb6:2756*     S_SBINIT_STARTMARKER_
+2fb6:27cd*     SB_SaveVoiceVolume_
+2fb6:27be*     SB_ReadMixer_
+2fb6:2965*     SB_GetDSPVersion_
+2fb6:27f5      SB_DSP1xx_BeginPlayback_
+2fb6:27fc*     SB_DSP2xx_BeginPlayback_
+2fb6:2811*     SB_DSP4xx_BeginPlayback_
+2fb6:27bd      _SB_CardActive
+2fb6:2908*     SB_SetupPlayback_
+2fb6:2826*     DMA_SetupTransfer_
+2fb6:28a7*     SB_EnableInterrupt_
 Module: p_init.obj(p_init.ASM)
-2fb6:2ca9*     P_INIT_ENDMARKER_
-2fb6:2a8f      P_Init_
-2fb6:2a3e*     P_INIT_STARTMARKER_
-2fb6:2a3f*     R_InstallSpriteLump_
+2fb6:2ca7*     P_INIT_ENDMARKER_
+2fb6:2a8d      P_Init_
+2fb6:2a3c*     P_INIT_STARTMARKER_
+2fb6:2a3d*     R_InstallSpriteLump_
 Module: bingen.obj(C:\REALDOOM\build\tools\bingen\bingen.c)
 2fb6:2cb0      main_
 Module: d_net.obj(d_net.ASM)
