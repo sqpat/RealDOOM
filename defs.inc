@@ -391,7 +391,7 @@ _m_paninc = 				 	 	 _NULL_OFFSET + 00458h
 
 ; 015h bytes
 _wminfo =			                 _NULL_OFFSET + 0045Ch
-
+; todo not sure if these bytes are really usable?
 
 
 _W_CacheLumpNameDirect_addr =        _NULL_OFFSET + 00478h

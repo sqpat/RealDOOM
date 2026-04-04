@@ -9063,6 +9063,11 @@ record_masked:
 xchg  ax, si  ; backup si
 les   si, dword ptr ds:[_maskedtexturecol_bsp]
 add   si, bx  ; bx byte ptr
+; dx can be FFFFh. i think thats bad?
+inc   dx
+jz    write_zero_masked_lookup  ; todo set to texwidth and jump back?
+dec   dx
+write_zero_masked_lookup:
 mov   word ptr es:[bx+si], dx  ; add bx again, word ptr
 xchg  ax, si ; restore
 
