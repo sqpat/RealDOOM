@@ -821,43 +821,46 @@ rejectmatrix       5C00:0000
 // 6800 plane only... combine with skytex...
 
 
+
+#define size_spanstart         (sizeof(int16_t) * SCREENHEIGHT)
 #define size_cachedheight      (sizeof(fixed_t) * SCREENHEIGHT)
 #define size_yslope            (sizeof(fixed_t) * SCREENHEIGHT)
 #define size_cacheddistance    (sizeof(fixed_t) * SCREENHEIGHT)
 #define size_cachedxstep       (sizeof(fixed_t) * SCREENHEIGHT)
 #define size_cachedystep       (sizeof(fixed_t) * SCREENHEIGHT)
-#define size_spanstart         (sizeof(int16_t) * SCREENHEIGHT)
 #define size_distscale         (sizeof(fixed_t) * SCREENWIDTH)
+#define size_dc_yl_lookup      (sizeof(int16_t) * SCREENWIDTH)
 
 // start plane only
 // TODO: cachedheight is sizeof int16_t now
-#define cachedheight          ((fixed_t __far*)        MAKE_FULL_SEGMENT(0x50000000, 0))
+#define spanstart             ((int16_t __far*)        MAKE_FULL_SEGMENT(0x50000000, 0))
+#define cachedheight          ((fixed_t __far*)        MAKE_FULL_SEGMENT(spanstart, size_spanstart))
 #define yslope                ((fixed_t __far*)        MAKE_FULL_SEGMENT(cachedheight, size_cachedheight))
 #define cacheddistance        ((fixed_t __far*)        MAKE_FULL_SEGMENT(yslope, size_yslope))
 #define cachedxstep           ((fixed_t __far*)        MAKE_FULL_SEGMENT(cacheddistance, size_cacheddistance))
 #define cachedystep           ((fixed_t __far*)        MAKE_FULL_SEGMENT(cachedxstep, size_cachedxstep))
-#define spanstart             ((int16_t __far*)        MAKE_FULL_SEGMENT(cachedystep, size_cachedystep))
-#define distscale             ((fixed_t __far*)        MAKE_FULL_SEGMENT(spanstart, size_spanstart))
+#define distscale             ((fixed_t __far*)        MAKE_FULL_SEGMENT(cachedystep, size_cachedystep))
+#define dc_yl_lookup           ((int16_t __far*)       MAKE_FULL_SEGMENT(distscale  , size_distscale))
 
 
+#define spanstart_segment             ((segment_t) ((int32_t)spanstart >> 16))
 #define cachedheight_segment          ((segment_t) ((int32_t)cachedheight >> 16))
 #define yslope_segment                ((segment_t) ((int32_t)yslope >> 16))
 #define cacheddistance_segment        ((segment_t) ((int32_t)cacheddistance >> 16))
 #define cachedxstep_segment           ((segment_t) ((int32_t)cachedxstep >> 16))
 #define cachedystep_segment           ((segment_t) ((int32_t)cachedystep >> 16))
-#define spanstart_segment             ((segment_t) ((int32_t)spanstart >> 16))
 #define distscale_segment             ((segment_t) ((int32_t)distscale >> 16))
+#define dc_yl_lookup_segment          ((segment_t) ((int32_t)distscale >> 16))
 
 // end plane only
 
 //todo
 #define size_drawskyplane_area        R_DrawSkyColumnCodeSize
 
-#define drawskyplane_area             ((byte __far*) MAKE_FULL_SEGMENT(distscale, size_distscale))
+#define drawskyplane_area             ((byte __far*) MAKE_FULL_SEGMENT(dc_yl_lookup, size_dc_yl_lookup))
 #define drawskyplane_area_segment     ((segment_t) ((int32_t)drawskyplane_area >> 16))
 #define endskyplanearea               ((byte __far*) MAKE_FULL_SEGMENT(drawskyplane_area, size_drawskyplane_area))
 #define END_SKY_PLANE_SEGMENT         ((segment_t) ((int32_t)endskyplanearea >> 16))
-
 
 //FREE AREA
 // 5163:0000

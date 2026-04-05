@@ -1,5 +1,7 @@
 PROC R_DrawSpan NEAR
 
+; todo: cli, set up SP after call , clena up ss:sp after all this
+
 ; CL = position_x_high
 ; CH = position_y_high
 ; DL = position_x_low
@@ -9,6 +11,13 @@ PROC R_DrawSpan NEAR
 ; BP = position_y_low
 ; SI = ds_x2
 ; DI = ds_x1
+
+
+; sp = xstep (set in func via selfmodify)
+; dx = x position (must be passed in. juggled due to OUT)
+; bp = ystep  (must be passed in)
+; cx = y position (must be passed in)
+; ah = 3Fh (set in func)
 
     SUB SI, DI
     ;JNS width_zero ; Does this ever happen?
@@ -25,7 +34,7 @@ IF POTATO_QUALITY
     OUT DX, AL ; 1 byte
     MOV DX, BX ; 2 byte
 SELFMODIFY_SPAN_xstep_potato: ; Also modify the instruction that writes this
-    MOV BX, 0x1000 ; 3 byte
+    MOV sp, 0x1000 ; 3 byte
     SHR SI, 1 ; 2 byte
     AND SI, 0xFFFE ; 3 byte
     JMP WORD CS:[SI + _spanfunc_jump_target + 2 - OFFSET R_SPAN24_STARTMARKER_] ; 5 byte
@@ -68,7 +77,7 @@ ENDIF
     MOV CS:[SELFMODIFY_SPAN_reset_di+2 - OFFSET R_SPAN24_STARTMARKER_], DI
 
 SELFMODIFY_SPAN_xstep_not_potato: ; Also modify the instruction that writes this
-    MOV SI, 0x1000
+    MOV sp, 0x1000
     
 IF HIGH_QUALITY
     MOV AX, 0x3F04

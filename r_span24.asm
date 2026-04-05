@@ -75,9 +75,9 @@ _spanfunc_jump_target:
 ; full quality
 
 
-BYTES_PER_PIXEL = 15h
+BYTES_PER_PIXEL = 14h
 MAX_PIXELS = 80
-bytecount = (MAX_PIXELS * BYTES_PER_PIXEL) + 1 ; odd offset
+bytecount = (MAX_PIXELS * BYTES_PER_PIXEL) ; even offset
 REPT MAX_PIXELS
     bytecount = bytecount - BYTES_PER_PIXEL
     dw bytecount 
@@ -324,10 +324,6 @@ rcl cl, 1
 shl bp, 1
 rcl cl, 1
 
-; cx/bx dont change
-; bp gets old dx
-; dl gets old ss hi
-; dh gets old bp hi
 
 
 xchg dx, bp       ; dh gets xfrac24, bp gets yfrac24
@@ -338,61 +334,65 @@ SELFMODIFY_SPAN_ds_xstep_lo_2:
 mov     ax, 01000h
 mov     dl, ah       
 
+; gross translation for now
+
+xchg    ax, sp
+mov     al, ah ; shift old y step mid to lo
+mov     ah, bh ; grab old y step hi to hi
+xchg    ax, bp ; bp is now ystep.
+; ax has old yfrac lo/mid
+xchg    ah, cl ; cx is now yfrac
+mov     al, dh ; grab old xfrac lo to lo
+xchg    ax, dx ; dx now xfrax
+mov     ah, bl ; ax now xstep
+;xchg    ax, sp ; sp now xstep
+mov     sp, ax  ; force alignment
+
+
+
 lds   ax, dword ptr ds:[_ds_source_offset] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
 ; ah gets 3F
 
 
-; xstep: IS bh:bl WAS bl:si
-; ystep: IS dh:sp WAS bh:sp
-
-; sp IS ystep WAS ystep
-; dl IS xfraclo WAS 
-; bh IS xstephi WAS ystephi
-
-
-; cl IS/WAS xfrachi
-; ch IS/WAS yfrachi
  
 SPANFUNC_JUMP_OFFSET:
 public SPANFUNC_JUMP_OFFSET
 jmp span_i_loop_done         ; relative jump to be modified before function is called
-; ODD
-ALIGN_MACRO
+; MAKE SURE THIS IS WORD ALIGNED OR ALL WILL BREAK
+
 MARKER_SM_SPAN24_AFTER_JUMP_1:
 PUBLIC MARKER_SM_SPAN24_AFTER_JUMP_1
 
 
 
 
-DRAW_SINGLE_SPAN_PIXEL MACRO 
-and   ch, ah
-mov   si, cx
-sar   si, 1
-sar   si, 1
-lodsb 
-mov   si, ax
-movs  byte ptr es:[di], byte ptr cs:[si]
 
-add   dh, dl ; dl = xxxxxxxx
-adc   cl, bl ; cl = XXXXXXxx
-add   bp, sp ; bp = yyyyyyyy yy000000
-adc   ch, bh ; ch = 00YYYYYY
-
-ENDM
-
-REPT 79
-    DRAW_SINGLE_SPAN_PIXEL
+REPT MAX_PIXELS - 1
+    AND   CH, AH
+    MOV   BH, CH
+    MOV   BL, DH
+    SHR   BX, 1
+    SHR   BX, 1
+    MOV   AL, byte ptr DS:[BX]
+    mov   si, ax
+    movs  byte ptr es:[di], byte ptr cs:[si]
+    ADD   DX, SP ; DX = XXXXXXxx xxxxxx00
+    ADD   CX, BP ; CX = 00YYYYYY yyyyyyyy
+    
 endm
 
 ; final pixel
 
-and   ch, ah
-mov   si, cx
-sar   si, 1
-sar   si, 1
-lodsb 
-mov   si, ax  ; xchg last one?
-movs  byte ptr es:[di], byte ptr cs:[si]
+    AND   CH, AH
+    MOV   BH, CH
+    MOV   BL, DH
+    SHR   BX, 1
+    SHR   BX, 1
+    MOV   AL, byte ptr DS:[BX]
+    mov   si, ax
+
+    movs  byte ptr es:[di], byte ptr cs:[si]
+
 
 
 
