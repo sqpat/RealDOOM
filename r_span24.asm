@@ -256,12 +256,10 @@ mov   dx, 01000h
 ; shove this in the mul post prefetch.
 
 
-SELFMODIFY_SPAN_ds_ystep_lo_2:
-mov     sp, 01000h
 
 
-        SELFMODIFY_SPAN_ds_ystep_lo:
-        mov     dx, 01000h
+SELFMODIFY_SPAN_ds_ystep_lo:
+mov     dx, 01000h
 
 
 
@@ -289,35 +287,14 @@ adc   al, 010h
 ; YFRAC calculated above
 
 
-;dx:ax is yfrac24  (needs to be ch:dx)
-;cl:bp is xfrac24 
 mov  ch, al       ;  (ch:dx now yfrac24)
 
-;bl:ss needs to be xstep24 (ss already set)
-;bh:sp needs to be ystep24 (sp already set)
-
-;todo this could be part of the ES grabber below in an LES bx if we wrote that to a var instead of to code. Probably not destview but a diff var spot?
-SELFMODIFY_SPAN_ds_xstepystep_his:
-mov bx, 01000h      ; set xstep24 hi 8 and ystep 24 hi 8 at once
-
-
-
-
-; todo LES something here dunno? maybe a selfmodify thing instead.
-mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
 
 
 
 
 
-;  ch:bp is yfrac24 (running total)
-;  cl:dl is xfrac24 (running total)
 
-; todo... prebake this in the selfmodifies?
-
-
-
-; xfrac24 must be shifted after calculation.
 
 shl bp, 1
 rcl cl, 1
@@ -326,28 +303,45 @@ rcl cl, 1
 
 
 
-xchg dx, bp       ; dh gets xfrac24, bp gets yfrac24
 
 
-SELFMODIFY_SPAN_ds_xstep_lo_2:
-; preshifted left 4
-mov     ax, 01000h
-mov     dl, ah       
+
 
 ; gross translation for now
 
-xchg    ax, sp
-mov     al, ah ; shift old y step mid to lo
-mov     ah, bh ; grab old y step hi to hi
-xchg    ax, bp ; bp is now ystep.
-; ax has old yfrac lo/mid
-xchg    ah, cl ; cx is now yfrac
-mov     al, dh ; grab old xfrac lo to lo
-xchg    ax, dx ; dx now xfrax
-mov     ah, bl ; ax now xstep
-;xchg    ax, sp ; sp now xstep
-mov     sp, ax  ; force alignment
+SELFMODIFY_SPAN_ds_ystep_lo_2:
+mov     ax, 01000h
 
+mov     al, ah ; shift old y step mid to lo
+SELFMODIFY_SPAN_ds_xstepystep_his:
+mov bx, 01000h      ; set xstep24 hi 8 and ystep 24 hi 8 at once
+
+mov     ah, bh ; grab old y step hi to hi
+
+; dh has yfrac lo (cl)
+; dl nothing
+; dx good
+; bp high is xfrac lo
+; bp low  is xstep lo
+
+; sp hi needs bl
+; sp lo needs bp lo(?)
+
+xchg    ax, bp  ; bp is now ystep, ah has xfrac lo, al has garbage
+
+; ax has old yfrac lo/mid
+xchg    dh, cl ; ch has step hi, dh has xfrac hi
+mov     dl, ah ; dx is xfrac
+
+SELFMODIFY_SPAN_ds_xstep_lo_2:
+; preshifted left 4
+mov     ax, 01000h  ; todo unused???
+mov     al, ah       
+mov     ah, bl ; ax now xstep
+
+xchg    ax, sp ; sp now xstep
+
+mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
 
 
 lds   ax, dword ptr ds:[_ds_source_offset] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
