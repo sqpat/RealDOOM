@@ -41,6 +41,15 @@ DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_JUMP_LOOKUP_SEGMENT - COLORMAPS
 _basexscale = 0
 _extralight =     0
 
+
+_spanfunc_inner_loop_count:
+
+_spanfunc_destview_offset:
+
+_spanfunc_prt:
+
+_spanfunc_outp:
+
 ; lcall cs:[00xx] here to call R_DrawSpan with the right CS:IP for colormaps to be at cs:3F00
 _spanfunc_call_table:
 

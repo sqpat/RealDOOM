@@ -47,7 +47,13 @@ _floorphyspage =  0
 _ceilphyspage =   0
 _visplanedirty =  0
 
+_spanfunc_inner_loop_count:
 
+_spanfunc_destview_offset:
+
+_spanfunc_prt:
+
+_spanfunc_outp:
 
 
 ; NOTE: cs:offset stuff for self modifying code must be zero-normalized

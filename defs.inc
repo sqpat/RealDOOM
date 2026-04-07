@@ -74,10 +74,10 @@ _eventtail =					  	_NULL_OFFSET + 0000Eh
 _eventhead =					  	_NULL_OFFSET + 0000Fh
 
 
-_spanfunc_prt = 					_NULL_OFFSET + 00010h
-_spanfunc_destview_offset = 		_NULL_OFFSET + 00018h
-_spanfunc_inner_loop_count =		_NULL_OFFSET + 00020h
-_spanfunc_outp = 					_NULL_OFFSET + 00024h
+;_spanfunc_prt = 					_NULL_OFFSET + 00010h
+;_spanfunc_destview_offset = 		_NULL_OFFSET + 00018h
+;_spanfunc_inner_loop_count =		_NULL_OFFSET + 00020h
+;_spanfunc_outp = 					_NULL_OFFSET + 00024h
 _maxammo = 	     					_NULL_OFFSET + 00028h
 
 _quality_port_lookup = 				_NULL_OFFSET + 00030h

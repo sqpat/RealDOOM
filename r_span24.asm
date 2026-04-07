@@ -71,7 +71,22 @@ dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01F00h,  (COLORMAPS_SEGMENT 
 dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 02000h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0200h
 
 
+_spanfunc_inner_loop_count:
+dw 0, 0, 0, 0
+
+_spanfunc_destview_offset:
+dw 0, 0, 0, 0
+
+_spanfunc_prt:
+dw 0, 0, 0, 0
+
+_spanfunc_outp:
+db 1, 2, 4, 8   
+
+
+
 _spanfunc_jump_target:
+public _spanfunc_jump_target
 ; full quality
 
 
@@ -146,7 +161,7 @@ MOV   es, ds:[_spanfunc_jump_segment_storage]  ; ES is basically CS
 ; todo move all this math out of this layer
 
 
-mov   ax, word ptr ds:[_spanfunc_prt]  ; first lookup...
+mov   ax, word ptr cs:[_spanfunc_prt]  ; first lookup...
 
 mov   si, ax						; temporarily store dx:ax into es:si
 SELFMODIFY_SPAN_ds_xstep_hi_1:
@@ -218,7 +233,6 @@ SELFMODIFY_SPAN_ds_yfrac_hi:
 adc   al, 010h
 
 
-
 ; al:dx is yfrac24
 
 
@@ -283,19 +297,19 @@ mov   byte ptr es:[((SELFMODIFY_SPAN_set_span_counter+1) - OFFSET R_SPAN24_START
 
 span_i_loop_repeat:
 
-mov   al, byte ptr ds:[_spanfunc_inner_loop_count + bx] ; todo word not byte. and jcxz?
+mov   si, word ptr es:[_spanfunc_inner_loop_count + bx] ; 
 
 ; es is already pre-set..
 
-cbw  ; clear ah. safe considering sal . values should be 80 max?
-sal   al, 1					; convert index to  a word lookup index
+
+sal   si, 1					; convert index to  a word lookup index
 
 ; is count < 0? if so skip this loop iter
 
 jl   no_pixels			; todo this so it doesnt loop in both cases
 
 ;       modify the jump for this iteration (self-modifying code)
-xchg  ax, si
+
 
 
 
@@ -304,8 +318,7 @@ mov   ax, word ptr es:[si + _spanfunc_jump_target - OFFSET R_SPAN24_STARTMARKER_
 mov   WORD PTR es:[((SPANFUNC_JUMP_OFFSET+1)- OFFSET R_SPAN24_STARTMARKER_   )], ax;
 
 ; 		dest = destview + ds_y * 80 + dsp_x1;
-sal   bx, 1
-mov   di, word ptr ds:[_spanfunc_destview_offset + bx]  ; destview offset precalculated..
+mov   di, word ptr es:[_spanfunc_destview_offset + bx]  ; destview offset precalculated..
 
 
 SELFMODIFY_SPAN_inner_loop_set_xfrac:
@@ -315,14 +328,14 @@ mov   cx, 01000h
 
 
 
-mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
+mov   es, word ptr ss:[_destview + 2]	; retrieve destview segment
 
 
-lds   ax, dword ptr ds:[_ds_source_offset] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
+lds   ax, dword ptr ss:[_ds_source_offset] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
 ; ah gets 3F
 
 
- 
+; todo jmp si 
 SPANFUNC_JUMP_OFFSET:
 public SPANFUNC_JUMP_OFFSET
 jmp span_i_loop_done         ; relative jump to be modified before function is called
@@ -365,10 +378,6 @@ endm
  
  
 
-; restore ds. 
-mov   ax, ss
-mov   ds, ax
-
 
 do_span_loop:
 
@@ -379,7 +388,7 @@ mov   bx, 0
 SELFMODIFY_SPAN_compare_span_counter:
 cmp   bl, 3
 jge   span_i_loop_done
-MOV   es, ds:[_spanfunc_jump_segment_storage]
+mov   es, ss:[_spanfunc_jump_segment_storage]
 inc   bx
 mov   byte ptr es:[((SELFMODIFY_SPAN_set_span_counter+1) -  OFFSET R_SPAN24_STARTMARKER_   )], bl
 
@@ -388,12 +397,12 @@ add   word ptr es:[SELFMODIFY_SPAN_inner_loop_set_xfrac+1], 01000h
 SELFMODIFY_SPAN_add_to_yfrac_per_loop:
 add   word ptr es:[SELFMODIFY_SPAN_inner_loop_set_yfrac+1], 01000h
 
-mov   al, byte ptr ds:[_spanfunc_outp + bx]
+mov   al, byte ptr es:[_spanfunc_outp + bx]
 mov   dx, SC_DATA						; outp 1 << i
 out   dx, al
 
-mov   si, bx
-cmp   word ptr ds:[_spanfunc_prt + bx+si], 0
+sal   bx, 1
+cmp   word ptr es:[_spanfunc_prt + bx], 0
 je    do_subtract_from_fracs
 
 jmp   span_i_loop_repeat
@@ -405,6 +414,10 @@ jmp   span_i_loop_repeat
 
 ALIGN_MACRO	
 span_i_loop_done:
+
+mov   ax, ss
+mov   ds, ax
+
 
 ; restore sp, bp
 SELFMODIFY_SPAN_sp_storage:
@@ -501,15 +514,17 @@ SELFMODIFY_SPAN_ds_x2:
 
  ; 		countp = dsp_x2 - dsp_x1;
  
+ shl   si, 1
 ;     cx has dsp_x2
  sub   cx, dx							; cx is countp
 
- mov   byte ptr ds:[si + _spanfunc_inner_loop_count], cl  ; store it
- test  cx, cx										   ; if negative then loop
+ mov   word ptr cs:[si + _spanfunc_inner_loop_count], cx  ; store it. high byte of word always 0
+								   ; if negative then loop
  jl    spanfunc_arg_setup_iter_done
  
 ; 		spanfunc_prt[i] = (dsp_x1 << shiftamount) - ds_x1 + i;
 ;		spanfunc_destview_offset[i] = baseoffset + dsp_x1;
+ shr   si, 1
 
  
  mov   ax, dx										   ; move dsp_x1 to ax
@@ -521,8 +536,8 @@ SELFMODIFY_SPAN_ds_x2:
  add   si, si										   ; double i for word lookup index
  SELFMODIFY_SPAN_destview_add:
  add   dx, 01000h						   ; dsp_x1 + base view offset
- mov   word ptr ds:[si + _spanfunc_prt], ax			   ; store prt
- mov   word ptr ds:[si + _spanfunc_destview_offset], dx   ; store view offset
+ mov   word ptr cs:[si + _spanfunc_prt], ax			   ; store prt
+ mov   word ptr cs:[si + _spanfunc_destview_offset], dx   ; store view offset
  
  spanfunc_arg_setup_iter_done:
  
@@ -2010,6 +2025,9 @@ ASSUME DS:R_SPAN24_TEXT
 
 
 
+
+
+
 mov      al, byte ptr ss:[_detailshift]
 cmp      al, 1
 je       do_detail_shift_one
@@ -2017,6 +2035,9 @@ jl       do_detail_shift_zero
 jmp      do_detail_shift_two
 ALIGN_MACRO	
 do_detail_shift_zero:
+
+mov     word ptr ds:[_spanfunc_outp + 0], 00201h 
+
 
 mov      byte ptr ds:[SELFMODIFY_SPAN_set_plane_0+1], 1
 mov      byte ptr ds:[SELFMODIFY_SPAN_compare_span_counter+2        - OFFSET R_SPAN24_STARTMARKER_], 3
@@ -2074,6 +2095,7 @@ mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_3+2 - OFFSET R_SPAN24_ST
 jmp     done_with_detailshift
 ALIGN_MACRO	
 do_detail_shift_one:
+mov     word ptr ds:[_spanfunc_outp + 0],  3 + (12 SHL 8)
 
 mov      byte ptr ds:[SELFMODIFY_SPAN_set_plane_0+1], 3
 
@@ -2141,6 +2163,7 @@ ALIGN_MACRO
 
 do_detail_shift_two:
 
+mov      byte ptr ds:[_spanfunc_outp + 0], 15 ; technically this never has to be changed 
 mov      byte ptr ds:[SELFMODIFY_SPAN_set_plane_0+1], 15
 
 mov      byte ptr ds:[SELFMODIFY_SPAN_compare_span_counter+2        - OFFSET R_SPAN24_STARTMARKER_], 0

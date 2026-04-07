@@ -619,37 +619,6 @@ dw    R_WRITEBACKVIEWCONSTANTSMASKED24OFFSET, MASKEDCONSTANTS_FUNCAREA_SEGMENT
 call	Z_QuickMapPhysics_
 
 
-
-;	spanfunc_outp[0] = 1;
-;	spanfunc_outp[1] = 2;
-;	spanfunc_outp[2] = 4;
-;	spanfunc_outp[3] = 8;
-
-mov     ax, 00201h ; detailshift 0 case
-mov     word ptr ds:[_spanfunc_outp + 2], 0804h ; technically this never has to be changed 
-
-
-;	if (detailshift.b.bytelow == 1){
-;		spanfunc_outp[0] = 3;
-;		spanfunc_outp[1] = 12;
-;	}
-;	if (detailshift.b.bytelow == 2){
-;		spanfunc_outp[0] = 15;
-;	}
-
-cmp   byte ptr ds:[_detailshift], 1
-jb    detail_0
-ja    detail_2
-detail_1:
-mov   ax, 3 + (12 SHL 8)
-jmp   done_checking_detail
-detail_2:
-mov   al, 15
-done_checking_detail:
-detail_0:
-
-mov     word ptr ds:[_spanfunc_outp + 0], ax
-
 pop   dx
 pop   cx
 pop   bx
