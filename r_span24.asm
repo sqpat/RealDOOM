@@ -68,7 +68,8 @@ public _spanfunc_jump_target
 
 BYTES_PER_PIXEL = 14h
 MAX_PIXELS = 80
-bytecount = (MAX_PIXELS * BYTES_PER_PIXEL) ; even offset
+; plus 4 for nopixel jump
+bytecount = 4 + (MAX_PIXELS * BYTES_PER_PIXEL) ; even offset
 REPT MAX_PIXELS
     bytecount = bytecount - BYTES_PER_PIXEL
     dw bytecount 
@@ -110,192 +111,9 @@ MAXLIGHTZ_UNSHIFTED            = 0800h
 ;           			     	01234567
 
 
-;
-; R_DrawSpan
-;
-PROC    R_DrawSpan24_ NEAR
-PUBLIC  R_DrawSpan24_ 
-	
-; need to include these 2 instructions, and need a function label to include this...
 
-no_pixels:
-jmp   do_span_loop
 
-ENDP ; shut up compiler warning
 
-ALIGN_MACRO	
-PROC   R_DrawSpanActual24_ NEAR
-PUBLIC R_DrawSpanActual24_
-
-
-
-; stack vars
-push   bp
-
-
-
-; todo move all this math out of this layer
-    
-
-SELFMODIFY_SPAN_ds_ystep:
-mov     bp, 01000h
-
-
-mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
-
-cli 	; disable interrupts because we usesp here
-mov   ss, ax  ; pass in ax?
-mov   ax, cs
-mov   ds, ax
-
-mov   word ptr ds:[((SELFMODIFY_SPAN_sp_storage+1) - R_SPAN24_STARTMARKER_   )], sp
-
-SELFMODIFY_SPAN_ds_xstep:
-mov     sp,  01000h
-
-xor   bx, bx						; zero out bx as loopcount
-mov   byte ptr ds:[((SELFMODIFY_SPAN_set_span_counter+1) - OFFSET R_SPAN24_STARTMARKER_   )], bl      ; set loop increment value
-
-
-
-; main loop start (i = 0, 1, 2, 3)
-
-
-
-span_i_loop_repeat:
-
-mov   si, word ptr ds:[_spanfunc_inner_loop_count + bx] ; 
-
-; es is already pre-set..
-
-
-sal   si, 1					; convert index to  a word lookup index
-
-; is count < 0? if so skip this loop iter
-
-jl   no_pixels			; todo this so it doesnt loop in both cases
-
-;       modify the jump for this iteration (self-modifying code)
-
-
-
-
-mov   ax, word ptr ds:[si + _spanfunc_jump_target - OFFSET R_SPAN24_STARTMARKER_ ]	    ; get unrolled jump count.
-; write to the unrolled loop jump instruction.
-mov   WORD PTR ds:[((SPANFUNC_JUMP_OFFSET+1)- OFFSET R_SPAN24_STARTMARKER_   )], ax;
-
-; 		dest = destview + ds_y * 80 + dsp_x1;
-mov   di, word ptr ds:[_spanfunc_destview_offset + bx]  ; destview offset precalculated..
-mov   dx, word ptr ds:[_spanfunc_xfrac + bx]  ; destview offset precalculated..
-
-mov   cx, word ptr ds:[_spanfunc_yfrac + bx]  ; destview offset precalculated..
-
-
-
-
-
-
-lds   ax, dword ptr ds:[_ds_source_offset_span] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
-; ah gets 3F
-
-
-; todo jmp si 
-SPANFUNC_JUMP_OFFSET:
-public SPANFUNC_JUMP_OFFSET
-jmp span_i_loop_done         ; relative jump to be modified before function is called
-; MAKE SURE THIS IS WORD ALIGNED OR ALL WILL BREAK
-
-MARKER_SM_SPAN24_AFTER_JUMP_1:
-PUBLIC MARKER_SM_SPAN24_AFTER_JUMP_1
-
-
-
-REPT MAX_PIXELS - 1
-    AND   CH, AH
-    MOV   BH, CH
-    MOV   BL, DH
-    SHR   BX, 1
-    SHR   BX, 1
-    MOV   AL, byte ptr DS:[BX]
-    mov   si, ax
-    movs  byte ptr es:[di], byte ptr ss:[si]
-    ADD   DX, SP ; DX = XXXXXXxx xxxxxx00
-    ADD   CX, BP ; CX = 00YYYYYY yyyyyyyy
-    
-endm
-
-; final pixel
-
-    AND   CH, AH
-    MOV   BH, CH
-    MOV   BL, DH
-    SHR   BX, 1
-    SHR   BX, 1
-    MOV   AL, byte ptr DS:[BX]
-    mov   si, ax
-
-    movs  byte ptr es:[di], byte ptr ss:[si]
-
-
-
-
- 
- 
-
-
-do_span_loop:
-
-SELFMODIFY_SPAN_set_span_counter:
-mov   bx, 0
-
-; loop if i < loopcount.
-SELFMODIFY_SPAN_compare_span_counter:
-cmp   bl, 3
-jge   span_i_loop_done
-
-mov   ax, cs
-mov   ds, ax
-inc   bx
-mov   byte ptr ds:[((SELFMODIFY_SPAN_set_span_counter+1) -  OFFSET R_SPAN24_STARTMARKER_   )], bl
-
-
-mov   al, byte ptr ds:[_spanfunc_outp + bx]
-mov   dx, SC_DATA						; outp 1 << i
-out   dx, al
-
-sal   bx, 1
-
-jmp   span_i_loop_repeat
-
-ALIGN_MACRO	
-span_i_loop_done:
-
-mov   ax, FIXED_DS_SEGMENT
-mov   ss, ax
-mov   ds, ax
-
-
-; restore sp, bp
-SELFMODIFY_SPAN_sp_storage:
-mov sp, 01000h
-
-
-
-pop bp
-
-sti								; reenable interrupts
-
-pop   dx
-pop   es
-pop   di
-pop   si
-pop   cx
-
-
-ret  
-
-
-ENDP
 
 
 
@@ -933,8 +751,181 @@ SHIFT_MACRO shl ax 2 ; colormap * 16
 ; target ss segment
 add  ax, (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4))
 ; addr 0000 + first byte (4x colormap.)
-jmp  R_DrawSpanActual24_ ; todo just inline?
 
+
+; inlined DrawSpan
+
+
+; stack vars
+push   bp
+
+
+
+; todo move all this math out of this layer
+    
+
+SELFMODIFY_SPAN_ds_ystep:
+mov     bp, 01000h
+
+
+mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
+
+cli 	; disable interrupts because we usesp here
+mov   ss, ax  ; pass in ax?
+mov   ax, cs
+mov   ds, ax
+
+mov   word ptr ds:[((SELFMODIFY_SPAN_sp_storage+1) - R_SPAN24_STARTMARKER_   )], sp
+
+SELFMODIFY_SPAN_ds_xstep:
+mov     sp,  01000h
+
+xor   bx, bx						; zero out bx as loopcount
+mov   byte ptr ds:[((SELFMODIFY_SPAN_set_span_counter+1) - OFFSET R_SPAN24_STARTMARKER_   )], bl      ; set loop increment value
+
+
+
+; main loop start (i = 0, 1, 2, 3)
+
+
+ALIGN_MACRO
+span_i_loop_repeat:
+
+mov   si, word ptr ds:[_spanfunc_inner_loop_count + bx] ; 
+
+; es is already pre-set..
+
+
+sal   si, 1					; convert index to  a word lookup index
+
+; is count < 0? if so skip this loop iter
+
+jl   no_pixels			; todo this so it doesnt loop in both cases
+
+;       modify the jump for this iteration (self-modifying code)
+
+
+
+
+mov   ax, word ptr ds:[si + _spanfunc_jump_target - OFFSET R_SPAN24_STARTMARKER_ ]	    ; get unrolled jump count.
+; write to the unrolled loop jump instruction.
+mov   WORD PTR ds:[((SPANFUNC_JUMP_OFFSET+1)- OFFSET R_SPAN24_STARTMARKER_   )], ax;
+
+; 		dest = destview + ds_y * 80 + dsp_x1;
+mov   di, word ptr ds:[_spanfunc_destview_offset + bx]  ; destview offset precalculated..
+mov   dx, word ptr ds:[_spanfunc_xfrac + bx]  ; destview offset precalculated..
+
+mov   cx, word ptr ds:[_spanfunc_yfrac + bx]  ; destview offset precalculated..
+
+
+
+
+
+lds   ax, dword ptr ds:[_ds_source_offset_span] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
+; ah gets 3F
+
+xchg  ax, ax ; NOP to align up ahead...
+
+; todo jmp si 
+SPANFUNC_JUMP_OFFSET:
+public SPANFUNC_JUMP_OFFSET
+jmp span_i_loop_done         ; relative jump to be modified before function is called
+; MAKE SURE THIS IS WORD ALIGNED OR ALL WILL BREAK
+
+MARKER_SM_SPAN24_AFTER_JUMP_1:
+PUBLIC MARKER_SM_SPAN24_AFTER_JUMP_1
+
+ALIGN_MACRO
+no_pixels:
+jmp   do_span_loop
+ALIGN_MACRO
+
+
+
+
+REPT MAX_PIXELS - 1
+    AND   CH, AH
+    MOV   BH, CH
+    MOV   BL, DH
+    SHR   BX, 1
+    SHR   BX, 1
+    MOV   AL, byte ptr DS:[BX]
+    mov   si, ax
+    movs  byte ptr es:[di], byte ptr ss:[si]
+    ADD   DX, SP ; DX = XXXXXXxx xxxxxx00
+    ADD   CX, BP ; CX = 00YYYYYY yyyyyyyy
+    
+endm
+
+; final pixel
+
+    AND   CH, AH
+    MOV   BH, CH
+    MOV   BL, DH
+    SHR   BX, 1
+    SHR   BX, 1
+    MOV   AL, byte ptr DS:[BX]
+    mov   si, ax
+
+    movs  byte ptr es:[di], byte ptr ss:[si]
+
+
+
+
+ 
+ 
+
+
+do_span_loop:
+
+SELFMODIFY_SPAN_set_span_counter:
+mov   bx, 0
+
+; loop if i < loopcount.
+SELFMODIFY_SPAN_compare_span_counter:
+cmp   bl, 3
+jge   span_i_loop_done
+
+mov   ax, cs
+mov   ds, ax
+inc   bx
+mov   byte ptr ds:[((SELFMODIFY_SPAN_set_span_counter+1) -  OFFSET R_SPAN24_STARTMARKER_   )], bl
+
+
+mov   al, byte ptr ds:[_spanfunc_outp + bx]
+mov   dx, SC_DATA						; outp 1 << i
+out   dx, al
+
+sal   bx, 1
+
+jmp   span_i_loop_repeat
+
+ALIGN_MACRO	
+span_i_loop_done:
+
+mov   ax, FIXED_DS_SEGMENT
+mov   ss, ax
+mov   ds, ax
+
+
+; restore sp, bp
+SELFMODIFY_SPAN_sp_storage:
+mov sp, 01000h
+
+
+
+pop bp
+
+sti								; reenable interrupts
+
+pop   dx
+pop   es
+pop   di
+pop   si
+pop   cx
+
+
+ret  
 
 
 
