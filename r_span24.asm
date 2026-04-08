@@ -322,7 +322,6 @@ ALIGN_MACRO
 PROC  R_DrawSpanPrep24_ NEAR
 
 
-; outp to plane only if there was a pixel to draw
 SELFMODIFY_SPAN_set_plane_0:
 mov   al, 010h
 mov   dx, SC_DATA						; outp 1 << i
@@ -1026,7 +1025,7 @@ SELFMODIFY_SPAN_basexscale_hi_1:
     ;CALL R_FixedMulLocal24_
 
     MOV BX, DX
-    PUSH AX
+
     MUL BP
     MOV WORD PTR CS:[_selfmodify_restore_dx_2+1], DX
     MOV AX, BX
@@ -1041,10 +1040,10 @@ SELFMODIFY_SPAN_basexscale_hi_1:
     ADC BX, DX
     XCHG AX, CX
     CWD
-    POP BP
-    AND DX, BP
+
+    AND DX, DI
     SUB BX, DX
-    MUL BP
+    MUL DI
     ADD AX, CX
     ADC DX, BX
     
@@ -1066,7 +1065,7 @@ SELFMODIFY_SPAN_basexscale_hi_1:
 
 
     MOV AX, DI
-    MOV DX, ES
+
 
 
 SELFMODIFY_SPAN_baseyscale_lo_1:
@@ -1077,8 +1076,8 @@ SELFMODIFY_SPAN_baseyscale_hi_1:
     ; ds_ystep = cachedystep[y] = R_FixedMulLocal(distance, baseyscale)
     ;CALL R_FixedMulLocal24_
 
-    MOV BX, DX
-    PUSH AX
+    MOV BX, ES
+
     MUL BP
     MOV WORD PTR CS:[_selfmodify_restore_dx_1+1], DX
     MOV AX, BX
@@ -1093,10 +1092,10 @@ SELFMODIFY_SPAN_baseyscale_hi_1:
     ADC BX, DX
     XCHG AX, CX
     CWD
-    POP BP
-    AND DX, BP
+
+    AND DX, DI
     SUB BX, DX
-    MUL BP
+    MUL DI
     ADD AX, CX
     ADC DX, BX
 
