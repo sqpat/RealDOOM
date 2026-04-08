@@ -469,7 +469,6 @@ SELFMODIFY_SPAN_viewz_13_3_1:
     
     ; NOTE: t1 was just written, don't re-read
     MOV BX, DS:[SI + (VISPLANE_T.vp_bottom - VISPLANE_T.vp_top) - 1] ; b1/b2
-
 ALIGN_MACRO
 single_plane_draw_loop: ; LOOP DEPTH: 2
 
@@ -905,6 +904,8 @@ map_planes_args_size = 2
 
     FAST_SHL1 SI ; Initial << 1
 ALIGN_MACRO
+
+
 map_planes_loop: ; LOOP DEPTH: 3
     ; Register state (all not listed are junk/scratch):
     ; SS = FIXED_DS_SEGMENT

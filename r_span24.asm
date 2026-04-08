@@ -385,71 +385,72 @@ push  dx
 
 ; ax is bp - 0Ah
 ; di is ds_y
+push bp
+
+mov  bp, SPANSTART_SEGMENT
+
+
 
 
 
 mov  si, di
 ; si is x * 2
-mov   es, ds:[_cachedheight_segment_storage]
+mov   ds, bp
 
 
-mov   ax, word ptr [bp - 0Eh]
-; TODO: do this shl outside of the function. borrow from es:di lookup's di
+SELFMODIFY_SPAN_plane_height:
+mov   ax, 01000h
+
 ; CACHEDHEIGHT LOOKUP
-
-cmp   ax, word ptr es:[si]
-jne   go_generate_values	; comparing high word
 
 mov   bx, si
 
+IF (COMPISA EQ COMPILE_8086) OR (COMPISA GE COMPILE_386)
+    CMP AX, DS:[SI + ((CACHEDHEIGHT_SEGMENT - SPANSTART_SEGMENT) * 16)]
+ELSE
+    MOV DX, AX
+    XCHG DX, DS:[SI + ((CACHEDHEIGHT_SEGMENT - SPANSTART_SEGMENT) * 16)]
+    CMP AX, DX
+ENDIF
+    JNE go_generate_values 
+    MOV AX, DS:[SI + ((CACHEDYSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)]
+    MOV CS:[SELFMODIFY_SPAN_ds_ystep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
+    
+    SELFMODIFY_SPAN_detailshift_4:
+    mov ax, ax
+    mov ax, ax
+
+    mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep + 1 - OFFSET R_SPAN24_STARTMARKER_], ax
+
+    MOV AX, DS:[SI + ((CACHEDXSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)]
+    MOV CS:[SELFMODIFY_SPAN_ds_xstep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
+    SELFMODIFY_SPAN_detailshift_3:
+    mov ax, ax
+    mov ax, ax
+
+
+    mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep+1 - OFFSET R_SPAN24_STARTMARKER_], ax
+
+
 ; CACHED DISTANCE lookup
-use_cached_values:
-
-les   ax, dword ptr es:[bx + si + 0 + (( CACHEDDISTANCE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
-mov   dx, es
-
-push  ax
-; CACHEDXSTEP lookup. move these into temporary variable space
-
-;todo should these be cached pre-shifted?
-; here is where we get xstep/ystep.
-; ax:cx
 
 
-mov   es, ds:[_cachedxstep_segment_storage]
-mov   ax, word ptr es:[si] ; todo both steps together and lodsw
-
-
-SELFMODIFY_SPAN_detailshift_3:
-mov ax, ax
-mov ax, ax
-
-
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep+1 - OFFSET R_SPAN24_STARTMARKER_], ax
-
-
-
-
-
-; CACHEDYSTEP lookup
-mov   es, ss:[_cachedystep_segment_storage]
-lods  word ptr es:[si]  ; todo both steps together and lodsw
-
-
-
-SELFMODIFY_SPAN_detailshift_4:
-mov ax, ax
-mov ax, ax
-
-
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep + 1 - OFFSET R_SPAN24_STARTMARKER_], ax
-
-
-
-pop ax ; restore distance low word
+    IF COMPISA LE COMPILE_286
+        LES AX, DS:[BX + SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)]
+        mov dx, es
+    distance_steps_ready:
+    ELSE
+        MOV EDI, DS:[SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)]
+    distance_steps_ready:
+    ENDIF
 
 
 distance_steps_ready:
+push ss
+pop  ds
+
+pop  bp
+
 ;dx:ax is already distance going in
 
 ; dx:ax is distance
@@ -755,17 +756,12 @@ add  ax, (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4))
 
 ; inlined DrawSpan
 
-
-; stack vars
 push   bp
 
 
-
-; todo move all this math out of this layer
-    
-
 SELFMODIFY_SPAN_ds_ystep:
 mov     bp, 01000h
+ENSUREALIGN_401:
 
 
 mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
@@ -779,6 +775,7 @@ mov   word ptr ds:[((SELFMODIFY_SPAN_sp_storage+1) - R_SPAN24_STARTMARKER_   )],
 
 SELFMODIFY_SPAN_ds_xstep:
 mov     sp,  01000h
+ENSUREALIGN_402:
 
 xor   bx, bx						; zero out bx as loopcount
 mov   byte ptr ds:[((SELFMODIFY_SPAN_set_span_counter+1) - OFFSET R_SPAN24_STARTMARKER_   )], bl      ; set loop increment value
@@ -831,6 +828,7 @@ SPANFUNC_JUMP_OFFSET:
 public SPANFUNC_JUMP_OFFSET
 jmp span_i_loop_done         ; relative jump to be modified before function is called
 ; MAKE SURE THIS IS WORD ALIGNED OR ALL WILL BREAK
+ENSUREALIGN_403:
 
 MARKER_SM_SPAN24_AFTER_JUMP_1:
 PUBLIC MARKER_SM_SPAN24_AFTER_JUMP_1
@@ -911,6 +909,7 @@ mov   ds, ax
 ; restore sp, bp
 SELFMODIFY_SPAN_sp_storage:
 mov sp, 01000h
+ENSUREALIGN_400:
 
 
 
@@ -939,14 +938,12 @@ generate_distance_steps:
     ; BP = SPANSTART_SEGMENT
     ; SI = y << 1
 
-    mov bx, SPANSTART_SEGMENT
-    MOV DS, bx
-
-    mov DS:[SI + ((CACHEDHEIGHT_SEGMENT - SPANSTART_SEGMENT) * 16)], AX
-    mov bx, si  ; dword
+IF (COMPISA EQ COMPILE_8086) OR (COMPISA GE COMPILE_386)
+    MOV DS:[SI], AX ; Handled by XCHG for 186/286
+ENDIF
 
 IF COMPISA LE COMPILE_286
-    push bp
+
     ; fastmul1632 with 13:3 value
     MOV CX, AX
     MUL WORD PTR DS:[BX + SI + 2 + ((YSLOPE_SEGMENT - SPANSTART_SEGMENT) * 16)] ; hiword
@@ -1070,9 +1067,6 @@ SELFMODIFY_SPAN_baseyscale_hi_1:
     MOV  DX, ES
 
     
-    pop  bp ; restore BP...
-    push ss
-    pop  ds ; restore DS...
 
 ELSE
     MOVZX EDI, AX
@@ -1511,7 +1505,7 @@ cwd
 xor   ax, dx
 sub   ax, dx   
 
-mov   word ptr [bp - 0Eh], ax
+mov   word ptr cs:[SELFMODIFY_SPAN_plane_height+1], ax
 mov   ax, word ptr ds:[si + VISPLANEHEADER_T.visplaneheader_maxx]
 mov   di, ax
 les   bx, dword ptr [bp - 8]
@@ -2134,5 +2128,10 @@ PUBLIC R_SPAN24_ENDMARKER_
 ENDP
 
 ENDS
+
+public ENSUREALIGN_400
+public ENSUREALIGN_401
+public ENSUREALIGN_402
+public ENSUREALIGN_403
 
 END
