@@ -308,23 +308,32 @@ mov   bp, ax	        ; store low word
     
 ;call FixedMulTrigCosineLocal_
 ; todo 386
-    SHL  BX, 1
+
+FAST_SHL1 bx
 
 ; sine stuff
 
     test bh, 020h
-    PUSHF
+
     MOV  DX, FINESINE_SEGMENT
     MOV  DS, DX
-    PUSH WORD PTR DS:[BX]
+    PUSH WORD PTR DS:[BX]  ; just two bytes, pretty effcient instruction
+
+
+    mov  dx, cx
+    je   skip_invert_sin
+    neg  dx
+    NEG  bp
+    SBB  dx, 0   ; bp:dx is sin
+
+    skip_invert_sin:
+    
 
 
     test bh, 030h
-    MOV  DX, FINECOSINE_SEGMENT
-    MOV  DS, DX
-    MOV  BX, WORD PTR DS:[BX]
+    MOV  BX, WORD PTR DS:[BX+((FINECOSINE_SEGMENT - FINESINE_SEGMENT) * 16)]  ; FINECOSINE - FINESINE
 
-    mov   ds, cx			; store high word
+    mov   ds, dx			; BP:DS is sin
 
 
     jpe  skip_invert_cos
@@ -364,7 +373,7 @@ mov   al, ah
 mov   ah, dl
 
 xchg  ax, bp   ; bp stores xfrac, ax retrieves low word
-mov   cx, ds   ; cx retrieves high word
+; ds has high word..
 
 
 
@@ -372,17 +381,9 @@ mov   cx, ds   ; cx retrieves high word
 ; todo 386
 
     POP  BX  ; sine lookup
-    POPF
-
-    je   skip_invert_sin
-    NEG  CX
-    NEG  AX
-    SBB  CX, 0
-
-    skip_invert_sin:
 
     MUL  BX        ; AX * BX
-    MOV  AX, CX    ; CX to AX
+    MOV  AX, DS    ; CX to AX
     MOV  CX, DX    ; CX stores high result as low word
     CWD            ; S1 in DX
     AND  DX, BX    ; S1 * AX
@@ -436,6 +437,7 @@ add   di, OFFSET _spanfunc_yfrac
 ; the above offset of 010h, 020h, 030h
 ; and to 1, 3, 7 still works to loop around. We are just eliminating bit 3.
 
+; i suppose this whole section could be super optimized for potato/low with entire chunks of code replaced.
 
 stosw
 SELFMODIFY_SPAN_set_yfrac_lookup_potato:

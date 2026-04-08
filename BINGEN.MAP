@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/04/08 07:30:43
+Created on:       26/04/08 07:37:30
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -43,7 +43,7 @@ R_COL24_TEXT           CODE           AUTO           163d:0000       00002349
 R_COL16_TEXT           CODE           AUTO           1872:0000       00000cb4
 R_COL0_TEXT            CODE           AUTO           193e:0000       0000058e
 R_COLFL_TEXT           CODE           AUTO           1997:0000       0000058e
-R_SPAN24_TEXT          CODE           AUTO           19f0:0000       00000f88
+R_SPAN24_TEXT          CODE           AUTO           19f0:0000       00000f82
 R_SPAN16_TEXT          CODE           AUTO           1ae9:0000       00000f67
 R_SPAN0_TEXT           CODE           AUTO           1be0:0000       00000640
 R_SPANFL_TEXT          CODE           AUTO           1c44:0000       00000597
@@ -506,20 +506,20 @@ Module: r_colfl.obj(r_colfl.ASM)
 1997:0000      R_COLUMNFL_STARTMARKER_
 Module: r_span24.obj(r_span24.ASM)
 19f0:0036*     _spanfunc_jump_target
-19f0:02f4*     MARKER_SM_SPAN24_AFTER_JUMP_1
-19f0:0e2a      R_WriteBackViewConstantsSpan24_
-19f0:01e8*     start_writes
-19f0:0248*     SELFMODIFY_SET_dc_yl_lookuptable
+19f0:02ee*     MARKER_SM_SPAN24_AFTER_JUMP_1
+19f0:0e24      R_WriteBackViewConstantsSpan24_
+19f0:01e3*     start_writes
+19f0:0243*     SELFMODIFY_SET_dc_yl_lookuptable
 19f0:0000      R_SPAN24_STARTMARKER_
 19f0:00e4*     R_MapPlane24_
-19f0:0970*     ENSUREALIGN_400
-19f0:02d3*     ENSUREALIGN_402
-19f0:02c0*     ENSUREALIGN_401
-19f0:0a28      R_DrawPlanes24_
+19f0:096a*     ENSUREALIGN_400
+19f0:02ce*     ENSUREALIGN_402
+19f0:02bb*     ENSUREALIGN_401
+19f0:0a22      R_DrawPlanes24_
 19f0:0020*     _spanfunc_xfrac
 19f0:0010*     _spanfunc_yfrac
 19f0:012d*     distance_steps_ready
-19f0:0f88      R_SPAN24_ENDMARKER_
+19f0:0f82      R_SPAN24_ENDMARKER_
 Module: r_span16.obj(r_span16.ASM)
 1ae9:0e6f      R_WriteBackViewConstantsSpan16_
 1ae9:0124*     R_DrawSpan16_
@@ -1616,4 +1616,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003dea0 (253600.)
 Entry point address: 2fae:7cbe
-Link time: 00:00.05
+Link time: 00:00.04
