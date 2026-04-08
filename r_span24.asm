@@ -41,13 +41,13 @@ DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_JUMP_LOOKUP_SEGMENT - COLORMAPS
 _spanfunc_inner_loop_count:
 dw 0, 0, 0, 0
 
-_spanfunc_destview_offset:
+_spanfunc_destview_offset: ; todo fill this out
 dw 0, 0, 0, 0
 
 _spanfunc_yfrac:  ; 10 aligned...
 dw 0, 0, 0, 0
 _spanfunc_prt:
-dw 0, 0, 0, 0
+dw 0, 0, 0, 0     ; todo unused remove
 _spanfunc_xfrac:  ; 20 aligned
 dw 0, 0, 0, 0
 
@@ -521,7 +521,9 @@ colormap_ready:
 
 mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump+1 - OFFSET R_SPAN24_STARTMARKER_], al
 
-; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
+
+
+; todo move the below up.
 do_drawspan:
 
 ; inlined drawspanprep...
@@ -550,7 +552,7 @@ SELFMODIFY_SPAN_destview_lo_1:
 	
  xor   bx, bx							; zero out bl. use it as loop counter/ i
  ; todo carry this forward
- mov   word ptr cs:[SELFMODIFY_SPAN_destview_add+2 - OFFSET R_SPAN24_STARTMARKER_], ax			; store base view offset
+ mov   bp, ax			; store base view offset
  
 ; todo the following  feels like extraneous register juggling, reexamine
 
@@ -593,36 +595,21 @@ SELFMODIFY_SPAN_ds_x2:
  
  inc   dx
  dont_increment_ds_x1:
- mov   ax, bx							; al holds loop counter
+ mov   si, bx							; al holds loop counter
 
- mov   si, ax							; store loop counter in si
 
- ; 		countp = dsp_x2 - dsp_x1;
- 
- shl   si, 1
 ;     cx has dsp_x2
  sub   cx, dx							; cx is countp
 
- mov   word ptr cs:[si + _spanfunc_inner_loop_count], cx  ; store it. high byte of word always 0
+ mov   word ptr cs:[bx+si + _spanfunc_inner_loop_count], cx  ; store it. high byte of word always 0
 								   ; if negative then loop
  jl    spanfunc_arg_setup_iter_done
  
 ; 		spanfunc_prt[i] = (dsp_x1 << shiftamount) - ds_x1 + i;
-;		spanfunc_destview_offset[i] = baseoffset + dsp_x1;
- shr   si, 1
+;		spanfunc_destview_offset[i] = baseoffset + dsp_x1; 
+ add   dx, bp						   ; dsp_x1 + base view offset
 
- 
- mov   ax, dx										   ; move dsp_x1 to ax
- SELFMODIFY_SPAN_detailshift2minus_4:
- shl   ax, 1										   ; shift dsp_x1 left
- shl   ax, 1
- sub   ax, di										   ; subtract ds_x1
- add   ax, si										   ; add i, prt is calculated
- add   si, si										   ; double i for word lookup index
- SELFMODIFY_SPAN_destview_add:
- add   dx, 01000h						   ; dsp_x1 + base view offset
- mov   word ptr cs:[si + _spanfunc_prt], ax			   ; store prt
- mov   word ptr cs:[si + _spanfunc_destview_offset], dx   ; store view offset
+ mov   word ptr cs:[bx+si + _spanfunc_destview_offset], dx   ; store view offset
  
  spanfunc_arg_setup_iter_done:
  
@@ -1868,8 +1855,6 @@ mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+2 - OFFSET R_SPAN24_STARTMAR
 
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_2+0 - OFFSET R_SPAN24_STARTMARKER_], ax  
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_2+2 - OFFSET R_SPAN24_STARTMARKER_], ax  ; shl   ax, 1
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_4+0 - OFFSET R_SPAN24_STARTMARKER_], ax  ; shl   ax, 1
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_4+2 - OFFSET R_SPAN24_STARTMARKER_], ax  ; shl   ax, 1
 mov ax, 0FAD1h  ; shr   dx, 1
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_1+0 - OFFSET R_SPAN24_STARTMARKER_], ax  
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_1+2 - OFFSET R_SPAN24_STARTMARKER_], ax  ; sar   dx, 1
@@ -1920,7 +1905,6 @@ mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_1+0 - OFFSET R_SPAN24_ST
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_3+0 - OFFSET R_SPAN24_STARTMARKER_], 0F9D1h  ; sar   cx, 1
 mov      ax, 0E0D1h
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_2+0 - OFFSET R_SPAN24_STARTMARKER_], ax  ; shl   ax, 1
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_4+0 - OFFSET R_SPAN24_STARTMARKER_], ax  ; shl   ax, 1
 
 mov   ax, 0c089h  ; nop
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_1+2 - OFFSET R_SPAN24_STARTMARKER_], ax
@@ -1931,7 +1915,6 @@ mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+2 - OFFSET R_SPAN24_STARTMAR
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_1+2 - OFFSET R_SPAN24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_2+2 - OFFSET R_SPAN24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_3+2 - OFFSET R_SPAN24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_4+2 - OFFSET R_SPAN24_STARTMARKER_], ax
 
 mov ax, 0CF21h ; and di, ci
 mov      word ptr ds:[SELFMODIFY_SPAN_set_xfrac_lookup_potato - OFFSET R_SPAN24_STARTMARKER_], ax 
@@ -1983,8 +1966,6 @@ mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_2+0 - OFFSET R_SPAN24_ST
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_2+2 - OFFSET R_SPAN24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_3+0 - OFFSET R_SPAN24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_3+2 - OFFSET R_SPAN24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_4+0 - OFFSET R_SPAN24_STARTMARKER_], ax
-mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_4+2 - OFFSET R_SPAN24_STARTMARKER_], ax
 
 done_with_detailshift:
 
