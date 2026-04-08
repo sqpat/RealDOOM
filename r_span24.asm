@@ -62,7 +62,7 @@ public _spanfunc_xfrac
 public _spanfunc_yfrac
 
 ; -1 jump case
-dw  do_span_loop - MARKER_SM_SPAN24_AFTER_JUMP_1
+dw  do_span_loop
 
 _spanfunc_jump_target:
 public _spanfunc_jump_target
@@ -71,11 +71,12 @@ public _spanfunc_jump_target
 
 BYTES_PER_PIXEL = 14h
 MAX_PIXELS = 80
-bytecount = (MAX_PIXELS * BYTES_PER_PIXEL) ; even offset
+;bytecount = (MAX_PIXELS * BYTES_PER_PIXEL) ; even offset
+bytecount = last_span_pixel
 
 REPT MAX_PIXELS
-    bytecount = bytecount - BYTES_PER_PIXEL
     dw bytecount 
+    bytecount = bytecount - BYTES_PER_PIXEL
 ENDM
 
 
@@ -795,51 +796,20 @@ mov   si, word ptr ds:[_spanfunc_inner_loop_count + bx] ;
 
 ; es is already pre-set..
 
-
-sal   si, 1					; convert index to  a word lookup index
-
-; is count < 0? if so skip this loop iter
+FAST_SHL1 si
 
 
-;       modify the jump for this iteration (self-modifying code)
-
-
-
-
-mov   ax, word ptr ds:[si + _spanfunc_jump_target - OFFSET R_SPAN24_STARTMARKER_ ]	    ; get unrolled jump count.
-; write to the unrolled loop jump instruction.
-mov   WORD PTR ds:[((SPANFUNC_JUMP_OFFSET+1)- OFFSET R_SPAN24_STARTMARKER_   )], ax;
-
-; 		dest = destview + ds_y * 80 + dsp_x1;
 mov   di, word ptr ds:[_spanfunc_destview_offset + bx]  ; destview offset precalculated..
 mov   dx, word ptr ds:[_spanfunc_xfrac + bx]  ; destview offset precalculated..
-
 mov   cx, word ptr ds:[_spanfunc_yfrac + bx]  ; destview offset precalculated..
-
-
-
-
-
 lds   ax, dword ptr ds:[_ds_source_offset_span] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
 ; ah gets 3F
-
-xchg  ax, ax ; NOP to align up ahead...
-
-; todo jmp si 
-SPANFUNC_JUMP_OFFSET:
-public SPANFUNC_JUMP_OFFSET
-jmp span_i_loop_done         ; relative jump to be modified before function is called
+jmp   word ptr cs:[si + _spanfunc_jump_target - OFFSET R_SPAN24_STARTMARKER_ ]	    ; get unrolled jump count.
 ; MAKE SURE THIS IS WORD ALIGNED OR ALL WILL BREAK
-ENSUREALIGN_403:
 
+ALIGN_MACRO
 MARKER_SM_SPAN24_AFTER_JUMP_1:
 PUBLIC MARKER_SM_SPAN24_AFTER_JUMP_1
-
-ALIGN_MACRO
-no_pixels:
-jmp   do_span_loop
-ALIGN_MACRO
-
 
 
 
@@ -858,6 +828,7 @@ REPT MAX_PIXELS - 1
 endm
 
 ; final pixel
+last_span_pixel:
 
     AND   CH, AH
     MOV   BH, CH
@@ -866,13 +837,7 @@ endm
     SHR   BX, 1
     MOV   AL, byte ptr DS:[BX]
     mov   si, ax
-
     movs  byte ptr es:[di], byte ptr ss:[si]
-
-
-
-
- 
  
 
 
@@ -896,9 +861,17 @@ mov   al, byte ptr ds:[_spanfunc_outp + bx]
 mov   dx, SC_DATA						; outp 1 << i
 out   dx, al
 
-sal   bx, 1
+FAST_SHL1 bx
 
-jmp   span_i_loop_repeat
+mov   si, word ptr ds:[_spanfunc_inner_loop_count + bx] ; 
+FAST_SHL1 si
+
+mov   di, word ptr ds:[_spanfunc_destview_offset + bx]  ; destview offset precalculated..
+mov   dx, word ptr ds:[_spanfunc_xfrac + bx]  ; destview offset precalculated..
+mov   cx, word ptr ds:[_spanfunc_yfrac + bx]  ; destview offset precalculated..
+lds   ax, dword ptr ds:[_ds_source_offset_span] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
+; ah gets 3F
+jmp   word ptr cs:[si + _spanfunc_jump_target - OFFSET R_SPAN24_STARTMARKER_ ]	    ; get unrolled jump count.
 
 ALIGN_MACRO	
 span_i_loop_done:
@@ -2134,6 +2107,6 @@ ENDS
 public ENSUREALIGN_400
 public ENSUREALIGN_401
 public ENSUREALIGN_402
-public ENSUREALIGN_403
+;public ENSUREALIGN_403
 
 END
