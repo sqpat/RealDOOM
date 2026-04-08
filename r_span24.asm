@@ -35,40 +35,7 @@ DRAWSPAN_AH_OFFSET             = 03F00h
 DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_JUMP_LOOKUP_SEGMENT - COLORMAPS_SEGMENT)) + DRAWSPAN_AH_OFFSET
 
 ; lcall cs:[00xx] here to call R_DrawSpan with the right CS:IP for colormaps to be at cs:3F00
-_spanfunc_call_table:
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00000h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0000h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00100h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0010h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00200h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0020h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00300h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0030h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00400h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0040h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00500h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0050h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00600h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0060h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00700h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0070h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00800h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0080h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00900h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0090h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00A00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 00A0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00B00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 00B0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00C00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 00C0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00D00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 00D0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00E00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 00E0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 00F00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 00F0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01000h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0100h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01100h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0110h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01200h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0120h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01300h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0130h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01400h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0140h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01500h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0150h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01600h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0160h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01700h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0170h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01800h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0180h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01900h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0190h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01A00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 01A0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01B00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 01B0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01C00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 01C0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01D00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 01D0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01E00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 01E0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 01F00h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 01F0h
-dw (DRAWSPAN_CALL_OFFSET + R_DRAWSPANACTUAL_DIFF) - 02000h,  (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4)) + 0200h
+
 
 
 _spanfunc_inner_loop_count:
@@ -87,6 +54,9 @@ _spanfunc_xfrac:
 dw 0, 0, 0, 0
 _spanfunc_yfrac:
 dw 0, 0, 0, 0
+
+_ds_source_offset_span:
+dw 0, 0
 
 public _spanfunc_xfrac
 public _spanfunc_yfrac
@@ -143,7 +113,7 @@ MAXLIGHTZ_UNSHIFTED            = 0800h
 ;
 ; R_DrawSpan
 ;
-PROC    R_DrawSpan24_ FAR
+PROC    R_DrawSpan24_ NEAR
 PUBLIC  R_DrawSpan24_ 
 	
 ; need to include these 2 instructions, and need a function label to include this...
@@ -154,7 +124,7 @@ jmp   do_span_loop
 ENDP ; shut up compiler warning
 
 ALIGN_MACRO	
-PROC   R_DrawSpanActual24_ FAR
+PROC   R_DrawSpanActual24_ NEAR
 PUBLIC R_DrawSpanActual24_
 
 
@@ -162,7 +132,7 @@ PUBLIC R_DrawSpanActual24_
 ; stack vars
 push   bp
 
-MOV   es, ds:[_spanfunc_jump_segment_storage]  ; ES is basically CS 
+
 
 ; todo move all this math out of this layer
     
@@ -171,14 +141,18 @@ SELFMODIFY_SPAN_ds_ystep:
 mov     bp, 01000h
 
 
+mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
+
 cli 	; disable interrupts because we usesp here
-mov   word ptr es:[((SELFMODIFY_SPAN_sp_storage+1) - R_SPAN24_STARTMARKER_   )], sp
+mov   ss, ax  ; pass in ax?
+
+mov   word ptr cs:[((SELFMODIFY_SPAN_sp_storage+1) - R_SPAN24_STARTMARKER_   )], sp
 
 SELFMODIFY_SPAN_ds_xstep:
 mov     sp,  01000h
 
 xor   bx, bx						; zero out bx as loopcount
-mov   byte ptr es:[((SELFMODIFY_SPAN_set_span_counter+1) - OFFSET R_SPAN24_STARTMARKER_   )], bl      ; set loop increment value
+mov   byte ptr cs:[((SELFMODIFY_SPAN_set_span_counter+1) - OFFSET R_SPAN24_STARTMARKER_   )], bl      ; set loop increment value
 
 
 
@@ -188,7 +162,7 @@ mov   byte ptr es:[((SELFMODIFY_SPAN_set_span_counter+1) - OFFSET R_SPAN24_START
 
 span_i_loop_repeat:
 
-mov   si, word ptr es:[_spanfunc_inner_loop_count + bx] ; 
+mov   si, word ptr cs:[_spanfunc_inner_loop_count + bx] ; 
 
 ; es is already pre-set..
 
@@ -204,23 +178,22 @@ jl   no_pixels			; todo this so it doesnt loop in both cases
 
 
 
-mov   ax, word ptr es:[si + _spanfunc_jump_target - OFFSET R_SPAN24_STARTMARKER_ ]	    ; get unrolled jump count.
+mov   ax, word ptr cs:[si + _spanfunc_jump_target - OFFSET R_SPAN24_STARTMARKER_ ]	    ; get unrolled jump count.
 ; write to the unrolled loop jump instruction.
-mov   WORD PTR es:[((SPANFUNC_JUMP_OFFSET+1)- OFFSET R_SPAN24_STARTMARKER_   )], ax;
+mov   WORD PTR cs:[((SPANFUNC_JUMP_OFFSET+1)- OFFSET R_SPAN24_STARTMARKER_   )], ax;
 
 ; 		dest = destview + ds_y * 80 + dsp_x1;
-mov   di, word ptr es:[_spanfunc_destview_offset + bx]  ; destview offset precalculated..
-mov   dx, word ptr es:[_spanfunc_xfrac + bx]  ; destview offset precalculated..
+mov   di, word ptr cs:[_spanfunc_destview_offset + bx]  ; destview offset precalculated..
+mov   dx, word ptr cs:[_spanfunc_xfrac + bx]  ; destview offset precalculated..
 
-mov   cx, word ptr es:[_spanfunc_yfrac + bx]  ; destview offset precalculated..
-
-
+mov   cx, word ptr cs:[_spanfunc_yfrac + bx]  ; destview offset precalculated..
 
 
-mov   es, word ptr ss:[_destview + 2]	; retrieve destview segment
 
 
-lds   ax, dword ptr ss:[_ds_source_offset] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
+
+
+lds   ax, dword ptr cs:[_ds_source_offset_span] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
 ; ah gets 3F
 
 
@@ -243,7 +216,7 @@ REPT MAX_PIXELS - 1
     SHR   BX, 1
     MOV   AL, byte ptr DS:[BX]
     mov   si, ax
-    movs  byte ptr es:[di], byte ptr cs:[si]
+    movs  byte ptr es:[di], byte ptr ss:[si]
     ADD   DX, SP ; DX = XXXXXXxx xxxxxx00
     ADD   CX, BP ; CX = 00YYYYYY yyyyyyyy
     
@@ -259,7 +232,7 @@ endm
     MOV   AL, byte ptr DS:[BX]
     mov   si, ax
 
-    movs  byte ptr es:[di], byte ptr cs:[si]
+    movs  byte ptr es:[di], byte ptr ss:[si]
 
 
 
@@ -277,12 +250,12 @@ mov   bx, 0
 SELFMODIFY_SPAN_compare_span_counter:
 cmp   bl, 3
 jge   span_i_loop_done
-mov   es, ss:[_spanfunc_jump_segment_storage]
+
 inc   bx
-mov   byte ptr es:[((SELFMODIFY_SPAN_set_span_counter+1) -  OFFSET R_SPAN24_STARTMARKER_   )], bl
+mov   byte ptr cs:[((SELFMODIFY_SPAN_set_span_counter+1) -  OFFSET R_SPAN24_STARTMARKER_   )], bl
 
 
-mov   al, byte ptr es:[_spanfunc_outp + bx]
+mov   al, byte ptr cs:[_spanfunc_outp + bx]
 mov   dx, SC_DATA						; outp 1 << i
 out   dx, al
 
@@ -293,7 +266,8 @@ jmp   span_i_loop_repeat
 ALIGN_MACRO	
 span_i_loop_done:
 
-mov   ax, ss
+mov   ax, FIXED_DS_SEGMENT
+mov   ss, ax
 mov   ds, ax
 
 
@@ -307,7 +281,7 @@ pop bp
 
 sti								; reenable interrupts
 
-retf  
+ret  
 
 
 ENDP
@@ -428,16 +402,15 @@ SELFMODIFY_SPAN_ds_x2:
 
  ; use jump table with desired cs:ip for far jump
 
-db 02Eh  ; cs segment override
-db 0FFh  ; lcall[addr]
-db 01Eh  ;
 SELFMODIFY_SPAN_set_colormap_index_jump:
-dw 0000h
+mov  ax, 00000h      ; colormap * 4
+SHIFT_MACRO shl ax 2 ; colormap * 16
+; target ss segment
+add  ax, (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4))
 ; addr 0000 + first byte (4x colormap.)
+jmp  R_DrawSpanActual24_ ; todo just inline?
 
 
-
-ret  
 
 ENDP
 
@@ -950,7 +923,7 @@ xlat  byte ptr es:[bx]
 ; mov  al, byte ptr cs:[bx + _cs_zlight_offset]
 colormap_ready:
 
-mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump - OFFSET R_SPAN24_STARTMARKER_], al
+mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump+1 - OFFSET R_SPAN24_STARTMARKER_], al
 
 ; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
 
@@ -968,7 +941,7 @@ ALIGN_MACRO
 SELFMODIFY_SPAN_fixedcolormap_1_TARGET:
 SELFMODIFY_SPAN_fixedcolormap_2:
 use_fixed_colormap:
-mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump - OFFSET R_SPAN24_STARTMARKER_], 00
+mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump+1 - OFFSET R_SPAN24_STARTMARKER_], 00
 
 ; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
 
@@ -1549,7 +1522,7 @@ SHIFT_MACRO sal   al 2
 add   al, byte ptr [bp - 3]
 add   al, 070h
 
-mov   byte ptr ds:[_ds_source_offset+3], al            ; low byte always zero!
+mov   byte ptr cs:[_ds_source_offset_span+3], al            ; low byte always zero!
 
 ; planeheight = labs(plheader->height - viewz.w);
 
@@ -2016,6 +1989,9 @@ mov      ds, ax
 
 ASSUME DS:R_SPAN24_TEXT
 
+les      ax, dword ptr ss:[_ds_source_offset]
+mov      word ptr ds:[_ds_source_offset_span+0], ax
+mov      word ptr ds:[_ds_source_offset_span+2], es
 
 
 
