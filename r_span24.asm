@@ -44,7 +44,11 @@ dw 0, 0, 0, 0
 _spanfunc_destview_offset:
 dw 0, 0, 0, 0
 
+_spanfunc_yfrac:  ; 10 aligned...
+dw 0, 0, 0, 0
 _spanfunc_prt:
+dw 0, 0, 0, 0
+_spanfunc_xfrac:  ; 20 aligned
 dw 0, 0, 0, 0
 
 _spanfunc_outp:
@@ -52,10 +56,6 @@ db 1, 2, 4, 8
 
 _ds_source_offset_span:
 dw 0, 0
-_spanfunc_xfrac:  ; 00 aligned...
-dw 0, 0, 0, 0
-_spanfunc_yfrac:
-dw 0, 0, 0, 0
 
 
 _viewangle_shiftright3_span:
@@ -128,140 +128,6 @@ MAXLIGHTZ_UNSHIFTED            = 0800h
 
 ; todo optimize this a bit, wasteful...
 
-
-
-IF COMPISA GE COMPILE_386
-
-    ALIGN_MACRO	
-    PROC   FixedMulTrigSineLocal_ NEAR
-    PUBLIC FixedMulTrigSineLocal_
-
-    shl   bx, 2
-
-
-
-    shl   ecx, 16
-    xchg  ax, cx
-    
-
-
-    mov   ax, FINESINE_SEGMENT
-    mov   es, ax                ; put segment in es
-
-    mov   ax, bx
-    shl   ax, 1
-    cwde                        ; eax high gets sign
-    shr bx, 1
-
-    mov   ax, word ptr es:[bx] ; ax gets low word
-    imul  ecx
-    shr   eax, 16
-
-
-    ret
-
-    ENDP
-
-    ALIGN_MACRO	
-    PROC   FixedMulTrigCosineLocal_ NEAR
-    PUBLIC FixedMulTrigCosineLocal_
-
-    shl   bx, 2
-
-
-    shl   ecx, 16
-    xchg  ax, cx
-    
-    mov   ax, FINECOSINE_SEGMENT
-    mov   es, ax                ; put segment in es
-
-    lea   eax, [ebx*2 + 04000h]
-    cwde                        ; eax high gets sign
-    shr bx, 1
-    mov   ax, word ptr es:[bx] ; ax gets low word
-    imul  ecx
-    shr   eax, 16
-
-
-    ret
-
-
-
-    ENDP
-
-
-ELSE
-
-    ALIGN_MACRO	
-    PROC   FixedMulTrigSineLocal_ NEAR
-    PUBLIC FixedMulTrigSineLocal_
-
-
-    SHL  BX, 1
-    test bh, 020h
-    MOV  DX, FINESINE_SEGMENT
-    MOV  ES, DX
-    MOV  BX, WORD PTR ES:[BX]
-
-    je   skip_invert_sin
-    NEG  CX
-    NEG  AX
-    SBB  CX, 0
-
-    skip_invert_sin:
-
-    MUL  BX        ; AX * BX
-    MOV  AX, CX    ; CX to AX
-    MOV  CX, DX    ; CX stores high result as low word
-    CWD            ; S1 in DX
-    AND  DX, BX    ; S1 * AX
-    NEG  DX        ; 
-    XCHG DX, BX    ; AX into DX, high word into BX
-    MUL  DX        ; AX*CX
-    ADD  AX, CX    ; add low word
-    ADC  DX, BX    ; add high word
-    RET
-
-
-
-
-    ENDP
-
-
-    ALIGN_MACRO	
-    PROC   FixedMulTrigCosineLocal_ NEAR
-    PUBLIC FixedMulTrigCosineLocal_
-
-
-    SHL  BX, 1
-    test bh, 030h
-    MOV  DX, FINECOSINE_SEGMENT
-    MOV  ES, DX
-    MOV  BX, WORD PTR ES:[BX]
-
-    jpe  skip_invert_cos
-    NEG  CX
-    NEG  AX
-    SBB  CX, 0
-
-    skip_invert_cos:
-
-    MUL  BX        ; AX * BX
-    MOV  AX, CX    ; CX to AX
-    MOV  CX, DX    ; CX stores high result as low word
-    CWD            ; S1 in DX
-    AND  DX, BX    ; S1 * AX
-    NEG  DX        ; 
-    XCHG DX, BX    ; AX into DX, high word into BX
-    MUL  DX        ; AX*CX
-    ADD  AX, CX    ; add low word
-    ADC  DX, BX    ; add high word
-    RET
-
-
-
-    ENDP
-ENDIF
 
 
 
@@ -437,12 +303,48 @@ and   ah, 01Fh			; MOD_FINE_ANGLE mod high bits
 
 xchg  ax, bx			; fineangle in BX, low word into AX
 
-push  bx                ; store fineangle
-push  ax			    ; store low word 
-push  cx			    ; store high word
+
+mov   bp, ax	        ; store low word 
     
-;call FAR PTR FixedMul_ 
-call FixedMulTrigCosineLocal_
+;call FixedMulTrigCosineLocal_
+; todo 386
+    SHL  BX, 1
+
+; sine stuff
+
+    test bh, 020h
+    PUSHF
+    MOV  DX, FINESINE_SEGMENT
+    MOV  DS, DX
+    PUSH WORD PTR DS:[BX]
+
+
+    test bh, 030h
+    MOV  DX, FINECOSINE_SEGMENT
+    MOV  DS, DX
+    MOV  BX, WORD PTR DS:[BX]
+
+    mov   ds, cx			; store high word
+
+
+    jpe  skip_invert_cos
+    NEG  CX
+    NEG  AX
+    SBB  CX, 0
+
+    skip_invert_cos:
+
+    MUL  BX        ; AX * BX
+    MOV  AX, CX    ; CX to AX
+    MOV  CX, DX    ; CX stores high result as low word
+    CWD            ; S1 in DX
+    AND  DX, BX    ; S1 * AX
+    NEG  DX        ; 
+    XCHG DX, BX    ; AX into DX, high word into BX
+    MUL  DX        ; AX*CX
+    ADD  AX, CX    ; add low word
+    ADC  DX, BX    ; add high word
+
 
 ;    ds_yfrac = -viewy.w - R_FixedMulLocal(finesine[angle], length );
 
@@ -461,44 +363,34 @@ rcl dx, 1
 mov   al, ah
 mov   ah, dl
 
-
-MOV   DX, WORD PTR DS:[SI + ((CACHEDXSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)]
-mov   bx, di  ; x1 word lookup
-
-
-SELFMODIFY_SPAN_and_detailshift_1:
-mov   cx, 00702h 
-; ch is detailshift vga plane count mask shifted 1
-; cl is 2
-xor   bh, bh
-and   bl, ch ; vga plane word lookup
+xchg  ax, bp   ; bp stores xfrac, ax retrieves low word
+mov   cx, ds   ; cx retrieves high word
 
 
 
-; todo stosw?
-mov   word ptr cs:[_spanfunc_xfrac + bx - OFFSET R_SPAN24_STARTMARKER_], ax
-add   bl, cl
-and   bl, ch
-add   ax, dx
-mov   word ptr cs:[_spanfunc_xfrac + bx - OFFSET R_SPAN24_STARTMARKER_], ax
-add   bl, cl
-and   bl, ch
-add   ax, dx
-mov   word ptr cs:[_spanfunc_xfrac + bx - OFFSET R_SPAN24_STARTMARKER_], ax
-add   bl, cl
-and   bl, ch
-add   ax, dx
-mov   word ptr cs:[_spanfunc_xfrac + bx - OFFSET R_SPAN24_STARTMARKER_], ax
+;call FixedMulTrigSineLocal_
+; todo 386
 
+    POP  BX  ; sine lookup
+    POPF
 
+    je   skip_invert_sin
+    NEG  CX
+    NEG  AX
+    SBB  CX, 0
 
+    skip_invert_sin:
 
-pop   cx              ; get high word
-pop   ax              ; get low word
-pop   bx              ; get fineangle
-
-;call FAR PTR FixedMul_ 
-call FixedMulTrigSineLocal_
+    MUL  BX        ; AX * BX
+    MOV  AX, CX    ; CX to AX
+    MOV  CX, DX    ; CX stores high result as low word
+    CWD            ; S1 in DX
+    AND  DX, BX    ; S1 * AX
+    NEG  DX        ; 
+    XCHG DX, BX    ; AX into DX, high word into BX
+    MUL  DX        ; AX*CX
+    ADD  AX, CX    ; add low word
+    ADC  DX, BX    ; add high word
 
 ;    ds_yfrac = -viewy.w - R_FixedMulLocalWrapper(finesine[angle], length );
 
@@ -515,34 +407,70 @@ sbb   dx, 0
 mov   al, ah
 mov   ah, dl
 
+start_writes:
+public start_writes
+mov   CX, SPANSTART_SEGMENT
+mov   DS, CX
+
+mov   CX, CS
+mov   ES, CX
 
 MOV   DX, WORD PTR DS:[SI + ((CACHEDYSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)]
-mov   bx, di  ; x1 word lookup
+
+; AX has yfrac
+; DX has ystep
+; BP has xfrac
 
 
-SELFMODIFY_SPAN_and_detailshift_2:
-mov   cx, 00702h 
-; ch is detailshift vga plane count mask shifted 1
-; cl is 2
-xor   bh, bh
-and   bl, ch ; vga plane word lookup
+;mov   bx, di  ; x1 word lookup   ; do we need to store this?
 
 
+SELFMODIFY_SPAN_and_detailshift_1:
+mov   cx, 7
 
-; todo stosw?
-mov   word ptr cs:[_spanfunc_yfrac + bx - OFFSET R_SPAN24_STARTMARKER_], ax
-add   bl, cl
-and   bl, ch
+AND   DI, CX
+add   CX, 0FFF0h  ; DI is masked to 0-7, from now on just mask bit 3 over and over
+
+add   di, OFFSET _spanfunc_yfrac
+
+; the above offset of 010h, 020h, 030h
+; and to 1, 3, 7 still works to loop around. We are just eliminating bit 3.
+
+; todo detailshift
+stosw
+and   di, cx
 add   ax, dx
-mov   word ptr cs:[_spanfunc_yfrac + bx - OFFSET R_SPAN24_STARTMARKER_], ax
-add   bl, cl
-and   bl, ch
+stosw
+and   di, cx
 add   ax, dx
-mov   word ptr cs:[_spanfunc_yfrac + bx - OFFSET R_SPAN24_STARTMARKER_], ax
-add   bl, cl
-and   bl, ch
+stosw
+and   di, cx
 add   ax, dx
-mov   word ptr cs:[_spanfunc_yfrac + bx - OFFSET R_SPAN24_STARTMARKER_], ax
+stosw
+and   di, cx
+
+xchg  ax, bp  ; now the x vars
+MOV   DX, WORD PTR DS:[SI + ((CACHEDXSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)]
+add   di, 010h  ; _spanfunc_xfrac
+
+
+; AX has xfrac
+; DX has xstep
+
+; todo detailshift
+stosw
+and   di, cx
+add   ax, dx
+stosw
+and   di, cx
+add   ax, dx
+stosw
+and   di, cx
+add   ax, dx
+stosw
+
+; todo combine destview in this area
+; todo interleave values?
 
 
 
@@ -1906,8 +1834,8 @@ do_detail_shift_zero:
 
 mov     word ptr ds:[_spanfunc_outp + 0], 00201h 
 
-mov      word ptr ds:[SELFMODIFY_SPAN_and_detailshift_1+1 - OFFSET R_SPAN24_STARTMARKER_], 00702h 
-mov      word ptr ds:[SELFMODIFY_SPAN_and_detailshift_2+1 - OFFSET R_SPAN24_STARTMARKER_], 00702h 
+mov      word ptr ds:[SELFMODIFY_SPAN_and_detailshift_1+1 - OFFSET R_SPAN24_STARTMARKER_], 7
+
 
 mov      byte ptr ds:[SELFMODIFY_SPAN_set_plane_0+1], 1
 mov      byte ptr ds:[SELFMODIFY_SPAN_compare_span_counter+2        - OFFSET R_SPAN24_STARTMARKER_], 3
@@ -1943,8 +1871,8 @@ jmp     done_with_detailshift
 ALIGN_MACRO	
 do_detail_shift_one:
 mov     word ptr ds:[_spanfunc_outp + 0],  3 + (12 SHL 8)
-mov      word ptr ds:[SELFMODIFY_SPAN_and_detailshift_1+1 - OFFSET R_SPAN24_STARTMARKER_], 00302h 
-mov      word ptr ds:[SELFMODIFY_SPAN_and_detailshift_2+1 - OFFSET R_SPAN24_STARTMARKER_], 00302h 
+mov      word ptr ds:[SELFMODIFY_SPAN_and_detailshift_1+1 - OFFSET R_SPAN24_STARTMARKER_], 3
+
 
 mov      byte ptr ds:[SELFMODIFY_SPAN_set_plane_0+1], 3
 
@@ -1991,8 +1919,8 @@ ALIGN_MACRO
 
 do_detail_shift_two:
 
-mov      word ptr ds:[SELFMODIFY_SPAN_and_detailshift_1+1 - OFFSET R_SPAN24_STARTMARKER_], 00102h 
-mov      word ptr ds:[SELFMODIFY_SPAN_and_detailshift_2+1 - OFFSET R_SPAN24_STARTMARKER_], 00102h 
+mov      word ptr ds:[SELFMODIFY_SPAN_and_detailshift_1+1 - OFFSET R_SPAN24_STARTMARKER_], 1
+
 
 mov      byte ptr ds:[_spanfunc_outp + 0], 15 ; technically this never has to be changed 
 mov      byte ptr ds:[SELFMODIFY_SPAN_set_plane_0+1], 15
