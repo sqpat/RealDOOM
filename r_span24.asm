@@ -436,17 +436,22 @@ add   di, OFFSET _spanfunc_yfrac
 ; the above offset of 010h, 020h, 030h
 ; and to 1, 3, 7 still works to loop around. We are just eliminating bit 3.
 
-; todo detailshift
+
 stosw
+SELFMODIFY_SPAN_set_yfrac_lookup_potato:
 and   di, cx
+SELFMODIFY_SPAN_set_yfrac_lookup_potato_AFTER:
+add   ax, dx
+stosw
+SELFMODIFY_SPAN_set_yfrac_lookup_low:
+and   di, cx
+SELFMODIFY_SPAN_set_yfrac_lookup_low_AFTER:
 add   ax, dx
 stosw
 and   di, cx
 add   ax, dx
 stosw
-and   di, cx
-add   ax, dx
-stosw
+SELFMODIFY_SPAN_set_yfrac_lookup_TARGET:
 and   di, cx
 
 xchg  ax, bp  ; now the x vars
@@ -457,23 +462,28 @@ add   di, 010h  ; _spanfunc_xfrac
 ; AX has xfrac
 ; DX has xstep
 
-; todo detailshift
+
 stosw
+SELFMODIFY_SPAN_set_xfrac_lookup_potato:
 and   di, cx
+SELFMODIFY_SPAN_set_xfrac_lookup_potato_AFTER:
+add   ax, dx
+stosw
+SELFMODIFY_SPAN_set_xfrac_lookup_low:
+and   di, cx
+SELFMODIFY_SPAN_set_xfrac_lookup_low_AFTER:
 add   ax, dx
 stosw
 and   di, cx
 add   ax, dx
 stosw
-and   di, cx
-add   ax, dx
-stosw
+SELFMODIFY_SPAN_set_xfrac_lookup_TARGET:
 
 ; todo combine destview in this area
 ; todo interleave values?
 
 
-
+; todo do this stuff earlier to avoid the push pop?
 pop   ax  ; for stack consistency across branches, this pop is done here. holds distance high word?
 
 
@@ -1865,6 +1875,13 @@ mov ax, 0F9d1h  ; sar   cx, 1
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_3+0 - OFFSET R_SPAN24_STARTMARKER_], ax  
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_3+2 - OFFSET R_SPAN24_STARTMARKER_], ax  ; sar   cx, 1
 
+mov ax, 0CF21h ; and di, ci
+mov      word ptr ds:[SELFMODIFY_SPAN_set_yfrac_lookup_potato - OFFSET R_SPAN24_STARTMARKER_], ax 
+mov      word ptr ds:[SELFMODIFY_SPAN_set_yfrac_lookup_low - OFFSET R_SPAN24_STARTMARKER_], ax 
+mov      word ptr ds:[SELFMODIFY_SPAN_set_xfrac_lookup_potato - OFFSET R_SPAN24_STARTMARKER_], ax 
+mov      word ptr ds:[SELFMODIFY_SPAN_set_xfrac_lookup_low - OFFSET R_SPAN24_STARTMARKER_], ax 
+
+
 
 
 jmp     done_with_detailshift
@@ -1914,6 +1931,14 @@ mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_2+2 - OFFSET R_SPAN24_ST
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_3+2 - OFFSET R_SPAN24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_4+2 - OFFSET R_SPAN24_STARTMARKER_], ax
 
+mov ax, 0CF21h ; and di, ci
+mov      word ptr ds:[SELFMODIFY_SPAN_set_xfrac_lookup_potato - OFFSET R_SPAN24_STARTMARKER_], ax 
+mov      word ptr ds:[SELFMODIFY_SPAN_set_yfrac_lookup_potato - OFFSET R_SPAN24_STARTMARKER_], ax 
+
+mov      word ptr ds:[SELFMODIFY_SPAN_set_xfrac_lookup_low - OFFSET R_SPAN24_STARTMARKER_], ((SELFMODIFY_SPAN_set_xfrac_lookup_TARGET - SELFMODIFY_SPAN_set_xfrac_lookup_low_AFTER) SHL 8) + 0EBh
+mov      word ptr ds:[SELFMODIFY_SPAN_set_yfrac_lookup_low - OFFSET R_SPAN24_STARTMARKER_], ((SELFMODIFY_SPAN_set_yfrac_lookup_TARGET - SELFMODIFY_SPAN_set_yfrac_lookup_low_AFTER) SHL 8) + 0EBh
+
+
 jmp     done_with_detailshift
 ALIGN_MACRO	
 
@@ -1941,6 +1966,9 @@ mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_3+2 - OFFSET R_SPAN24_STARTMAR
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+0 - OFFSET R_SPAN24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+2 - OFFSET R_SPAN24_STARTMARKER_], ax
 
+
+mov      word ptr ds:[SELFMODIFY_SPAN_set_xfrac_lookup_potato - OFFSET R_SPAN24_STARTMARKER_], ((SELFMODIFY_SPAN_set_xfrac_lookup_TARGET - SELFMODIFY_SPAN_set_xfrac_lookup_potato_AFTER) SHL 8) + 0EBh
+mov      word ptr ds:[SELFMODIFY_SPAN_set_yfrac_lookup_potato - OFFSET R_SPAN24_STARTMARKER_], ((SELFMODIFY_SPAN_set_yfrac_lookup_TARGET - SELFMODIFY_SPAN_set_yfrac_lookup_potato_AFTER) SHL 8) + 0EBh
 
 
 

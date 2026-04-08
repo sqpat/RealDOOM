@@ -61,7 +61,7 @@
 #define R_DrawColumn16CodeSize         0xCB4
 #define R_DrawColumn0CodeSize          0x58E
 #define R_DrawColumnFLCodeSize         0x58E
-#define R_DrawSpan24CodeSize           0xF5A
+#define R_DrawSpan24CodeSize           0xF88
 #define R_DrawSpan16CodeSize           0xF67
 #define R_DrawSpan0CodeSize            0x640
 #define R_DrawSpanFLCodeSize           0x597
