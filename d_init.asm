@@ -631,7 +631,7 @@ stosw ;  _WAD_PAGE_FRAME_PTR                 ; D800
 add   ah, 4 
 stosw ;  _BSP_CODE_SEGMENT_PTR               ; DC00
 
-add   word ptr ds:[_ds_y+2], ax  ; offset by _BSP_CODE_SEGMENT_PTR
+add   word ptr ds:[_BSP_MUL_80_LOOKUP_SEGMENT], ax  ; offset by _BSP_CODE_SEGMENT_PTR
 
 mov   ax, OFFSET str_w_init
 call  DEBUG_PRINT_NOARG_CS_

@@ -50,13 +50,16 @@ dw 0, 0, 0, 0
 _spanfunc_outp:
 db 1, 2, 4, 8   
 
-_spanfunc_xfrac:
+_ds_source_offset_span:
+dw 0, 0
+_spanfunc_xfrac:  ; 00 aligned...
 dw 0, 0, 0, 0
 _spanfunc_yfrac:
 dw 0, 0, 0, 0
 
-_ds_source_offset_span:
-dw 0, 0
+
+_viewangle_shiftright3_span:
+dw 0, XTOVIEWANGLE_SEGMENT
 
 public _spanfunc_xfrac
 public _spanfunc_yfrac
@@ -373,7 +376,7 @@ SELFMODIFY_SPAN_fixedcolormap_2:
 use_fixed_colormap:
 mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump+1 - OFFSET R_SPAN24_STARTMARKER_], 00
 jmp   do_drawspan
-; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
+; lcall SPANFUNC_FUNCTION_AREA_SEGME    NT:SPANFUNC_PREP_OFFSET
 
 
 
@@ -386,25 +389,24 @@ push  si
 push  di
 push  es
 push  dx
-push bp
+push  bp
 
 ; ax is x1
 ; di is ds_y
 
 mov  bp, SPANSTART_SEGMENT
-; todo suck less. if rewritten well, maybe this only has to be in 1 spot.
+
 mov   word ptr cs:[SELFMODIFY_SPAN_setx1_4+1], ax
 shl   ax, 1
-mov   word ptr cs:[SELFMODIFY_SPAN_setx1_1+1], ax
-mov   word ptr cs:[SELFMODIFY_SPAN_setx1_2+1], ax
-mov   word ptr cs:[SELFMODIFY_SPAN_setx1_3+1], ax
+
 
 
 
 
 
 mov  si, di ; dc_y
-; si is x * 2
+xchg ax, di ; dc_x * 2
+; si is dc_y word lookup.
 mov   ds, bp
 
 
@@ -416,14 +418,14 @@ mov   ax, 01000h
 mov   bx, si
 
 IF (COMPISA EQ COMPILE_8086) OR (COMPISA GE COMPILE_386)
-    CMP AX, DS:[SI + ((CACHEDHEIGHT_SEGMENT - SPANSTART_SEGMENT) * 16)]
+    CMP AX, WORD PTR DS:[SI + ((CACHEDHEIGHT_SEGMENT - SPANSTART_SEGMENT) * 16)]
 ELSE
     MOV DX, AX
-    XCHG DX, DS:[SI + ((CACHEDHEIGHT_SEGMENT - SPANSTART_SEGMENT) * 16)]
+    XCHG DX, WORD PTR DS:[SI + ((CACHEDHEIGHT_SEGMENT - SPANSTART_SEGMENT) * 16)]
     CMP AX, DX
 ENDIF
     JNE go_generate_values 
-    MOV AX, DS:[SI + ((CACHEDYSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)]
+    MOV AX, WORD PTR DS:[SI + ((CACHEDYSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)]
     MOV CS:[SELFMODIFY_SPAN_ds_ystep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
     
     SELFMODIFY_SPAN_detailshift_4:
@@ -432,8 +434,8 @@ ENDIF
 
     mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep + 1 - OFFSET R_SPAN24_STARTMARKER_], ax
 
-    MOV AX, DS:[SI + ((CACHEDXSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)]
-    MOV CS:[SELFMODIFY_SPAN_ds_xstep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
+    MOV AX, WORD PTR DS:[SI + ((CACHEDXSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)]
+    MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_xstep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
     SELFMODIFY_SPAN_detailshift_3:
     mov ax, ax
     mov ax, ax
@@ -446,36 +448,39 @@ ENDIF
 
 
     IF COMPISA LE COMPILE_286
-        LES AX, DS:[BX + SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)]
+        LES AX, DWORD PTR DS:[BX + SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)]
         mov dx, es
     distance_steps_ready:
     ELSE
-        MOV EDI, DS:[SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)]
+        MOV EDI, DWORD PTR DS:[SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)]
     distance_steps_ready:
     ENDIF
 
 
 distance_steps_ready:
-push ss
-pop  ds
+public distance_steps_ready
 
 
-;dx:ax is already distance going in
+
 
 ; dx:ax is distance
+; di is x1 word lookup
+; si is ds_y word lookup
 ;     length = R_FixedMulLocal (distance,distscale[x1]);
 
-SELFMODIFY_SPAN_setx1_1:
-mov   si, 01000h ; shifted
 
-mov   bx, si          ; dword lookup if we add them
-mov   es, ds:[_distscale_segment_storage]
-;todo bench without bx + si + 2 - sar again later etc.
+mov   bx, di          ; dword lookup if we add them
+
 push  dx   ; store distance high word in case needed for colormap
-les   bx, dword ptr es:[bx + si]		; distscale low word
+les   bx, dword ptr ds:[bx + di + ((DISTSCALE_SEGMENT - SPANSTART_SEGMENT) * 16)]
 mov   cx, es                                   	; distscale high word
 
+; todo inline this last fixedmul. and 386 version.
+
+push  ds
 call R_FixedMulLocal24_
+
+pop   ds
 
 
 ;	angle = MOD_FINE_ANGLE(viewangle_shiftright3+ xtoviewangle[x1]);
@@ -484,15 +489,15 @@ call R_FixedMulLocal24_
 xchg  bx, ax			; store low word of length (product result)in bx
 mov   cx, dx			; store high word of length  (product result) in cx
 
-les   ax, dword ptr ds:[_viewangle_shiftright3]
-add   ax, word ptr es:[si]		; ax is unmodded fine angle.. si is a word lookup
+les   ax, dword ptr cs:[_viewangle_shiftright3_span]
+add   ax, word ptr es:[di]		; ax is unmodded fine angle.. di is a word lookup
 and   ah, 01Fh			; MOD_FINE_ANGLE mod high bits
-push  ax            ; store fineangle
 
-xchg  bx, ax			; fineangle in BX, low word into AX
+xchg  ax, bx			; fineangle in BX, low word into AX
 
-mov   di, ax			; backup low word to DX
-mov   si, cx			; backup high word
+push  bx                ; store fineangle
+push  ax			    ; store low word 
+push  cx			    ; store high word
     
 ;call FAR PTR FixedMul_ 
 call FixedMulTrigCosineLocal_
@@ -515,14 +520,8 @@ mov   al, ah
 mov   ah, dl
 
 
-
-mov   bx, word ptr ds:[_ds_y] ; already doubled for word ops
-
-mov   es, ds:[_cachedxstep_segment_storage]
-mov   dx, word ptr es:[bx]          ; xstep
-
-SELFMODIFY_SPAN_setx1_2:
-mov   bx, 01000h  ; shifted
+MOV   DX, WORD PTR DS:[SI + ((CACHEDXSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)]
+mov   bx, di  ; x1 word lookup
 
 
 SELFMODIFY_SPAN_and_detailshift_1:
@@ -552,16 +551,14 @@ mov   word ptr cs:[_spanfunc_xfrac + bx - OFFSET R_SPAN24_STARTMARKER_], ax
 
 
 
+pop   cx              ; get high word
+pop   ax              ; get low word
 pop   bx              ; get fineangle
-mov   cx, si					; prep length
-xchg  ax, di					; prep length. store xfrac in di
 
 ;call FAR PTR FixedMul_ 
 call FixedMulTrigSineLocal_
 
 ;    ds_yfrac = -viewy.w - R_FixedMulLocalWrapper(finesine[angle], length );
-
-; let's instead add then take the negative of the whole
 
 ; add viewy
 SELFMODIFY_SPAN_viewy_lo_1:
@@ -577,13 +574,9 @@ mov   al, ah
 mov   ah, dl
 
 
-mov   bx, word ptr ds:[_ds_y] ; already doubled for word ops
+MOV   DX, WORD PTR DS:[SI + ((CACHEDYSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)]
+mov   bx, di  ; x1 word lookup
 
-mov   es, ds:[_cachedystep_segment_storage]
-mov   dx, word ptr es:[bx]          ; ystep
-
-SELFMODIFY_SPAN_setx1_3:
-mov   bx, 01000h ; shifted
 
 SELFMODIFY_SPAN_and_detailshift_2:
 mov   cx, 00702h 
@@ -611,7 +604,8 @@ mov   word ptr cs:[_spanfunc_yfrac + bx - OFFSET R_SPAN24_STARTMARKER_], ax
 
 
 
-pop   ax  ; for stack consistency across branches, this pop is done here.
+pop   ax  ; for stack consistency across branches, this pop is done here. holds distance high word?
+
 
 ; 	if (fixedcolormap) {
 
@@ -638,7 +632,7 @@ index_set:
 ;		ds_colormap_segment = colormaps_segment;
 ;		ds_colormap_index = planezlight[index];
 
-les    bx, dword ptr ds:[_planezlight]
+les    bx, dword ptr ss:[_planezlight]
 xlat  byte ptr es:[bx]
 ; mov  al, byte ptr cs:[bx + _cs_zlight_offset]
 colormap_ready:
@@ -660,26 +654,28 @@ out   dx, al
  
  ;  	uint16_t baseoffset = FP_OFF(destview) + dc_yl_lookup[ds_y];
 
-; predoubles _ds_y for lookup
- les   bx, dword ptr ds:[_ds_y]
- 
- mov   ax, word ptr es:[bx]				; get dc_yl_lookup[ds_y]
+ SELFMODIFY_SET_dc_yl_lookuptable:
+ public SELFMODIFY_SET_dc_yl_lookuptable
+ mov   ax, 01000h
+ mov   es, ax
+
+ mov   ax, word ptr es:[si]				; get dc_yl_lookup[ds_y]
 SELFMODIFY_SPAN_destview_lo_1:
  add   ax, 01000h
  SELFMODIFY_SPAN_setx1_4:
  mov   dx, 01000h
  mov   es, dx
 	
- xor   bl, bl							; zero out bl. use it as loop counter/ i
+ xor   bx, bx							; zero out bl. use it as loop counter/ i
  ; todo carry this forward
  mov   word ptr cs:[SELFMODIFY_SPAN_destview_add+2 - OFFSET R_SPAN24_STARTMARKER_], ax			; store base view offset
  
 ; todo the following  feels like extraneous register juggling, reexamine
 
  spanfunc_arg_setup_loop_start:
- mov   al, bl							; al holds loop counter
+ mov   ax, bx							; al holds loop counter
  mov   dx, es							; get ds_x1
- CBW  									; zero out ah
+ 
  
 ;		int16_t dsp_x1 = (ds_x1 - i) >> shiftamount;
  sub   dx, ax							; subtract i 
@@ -715,8 +711,8 @@ SELFMODIFY_SPAN_ds_x2:
  
  inc   dx
  dont_increment_ds_x1:
- mov   al, bl							; al holds loop counter
- CBW  
+ mov   ax, bx							; al holds loop counter
+
  mov   si, ax							; store loop counter in si
 
  ; 		countp = dsp_x2 - dsp_x1;
@@ -748,10 +744,10 @@ SELFMODIFY_SPAN_ds_x2:
  
  spanfunc_arg_setup_iter_done:
  
- inc   bl
+ inc   bx
  
  SELFMODIFY_SPAN_detailshift_mainloopcount_2:
- cmp   bl, 0
+ cmp   bx, 0
  jl    spanfunc_arg_setup_loop_start
  
  spanfunc_arg_setup_complete:
@@ -775,7 +771,7 @@ mov     bp, 01000h
 ENSUREALIGN_401:
 
 
-mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
+mov   es, word ptr ss:[_destview + 2]	; retrieve destview segment
 
 cli 	; disable interrupts because we usesp here
 mov   ss, ax  ; pass in ax?
@@ -916,6 +912,7 @@ ret
 ALIGN_MACRO	
 
 generate_distance_steps:
+    push  di  ; dc_x * 2
 
     ; Register state (all not listed are junk/scratch):
     ; SS = FIXED_DS_SEGMENT
@@ -1049,6 +1046,7 @@ SELFMODIFY_SPAN_baseyscale_hi_1:
     ; restore distance once more
     xchg ax, di
     MOV  DX, ES
+    pop   di              ; x1 << 1  from push ax at func start..
 
     
 
@@ -1160,6 +1158,9 @@ mov   word ptr cs:[SELFMODIFY_SPAN_viewy_hi_1+2 - OFFSET R_SPAN24_STARTMARKER_],
 
 lodsw  ; viewz_shortheight
 mov   word ptr cs:[SELFMODIFY_SPAN_viewz_13_3_1+1 - OFFSET R_SPAN24_STARTMARKER_], ax
+
+lodsw  ; _viewangle_shiftright3
+mov   word ptr cs:[_viewangle_shiftright3_span], ax  ; todo is this the same as viewz_shortheight
 
 mov   ax, ss
 mov   ds, ax
@@ -1590,7 +1591,6 @@ cmp   cl, dl
 ja    done_with_first_mapplane_loop
 
 mov   ax, word ptr es:[di]
-mov   word ptr ds:[_ds_y], di   ; predoubled for lookup
 
 inc   cl
 
@@ -1634,7 +1634,6 @@ cmp   cl, dl
 ja   done_with_second_mapplane_loop
 
 mov   ax, word ptr es:[di]
-mov   word ptr ds:[_ds_y], di
 
 dec   dl
 
@@ -1947,6 +1946,9 @@ les      ax, dword ptr ss:[_ds_source_offset]
 mov      word ptr ds:[_ds_source_offset_span+0], ax
 mov      word ptr ds:[_ds_source_offset_span+2], es
 
+; todo do just once
+mov      ax, word ptr ss:[_BSP_MUL_80_LOOKUP_SEGMENT]
+mov      word ptr ds:[SELFMODIFY_SET_dc_yl_lookuptable+1], ax
 
 
 

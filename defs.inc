@@ -175,7 +175,7 @@ _viewangle_shiftright3 = 			_NULL_OFFSET + 00104h
 ;_dc_source_segment =	 			_NULL_OFFSET + 0010Ah
 ; todo could ds and cx stuff overlap?
 _ds_y = 				    		_NULL_OFFSET + 0010Ch
-;_dc_x = 							_NULL_OFFSET + 00110h
+_BSP_MUL_80_LOOKUP_SEGMENT = 		_NULL_OFFSET + 0010Eh
 _cachedheight_segment_storage =    	_NULL_OFFSET + 00112h
 _distscale_segment_storage =    	_NULL_OFFSET + 00114h
 _cacheddistance_segment_storage =   _NULL_OFFSET + 00116h
