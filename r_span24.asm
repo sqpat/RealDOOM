@@ -61,6 +61,9 @@ dw 0, 0
 public _spanfunc_xfrac
 public _spanfunc_yfrac
 
+; -1 jump case
+dw  do_span_loop - MARKER_SM_SPAN24_AFTER_JUMP_1
+
 _spanfunc_jump_target:
 public _spanfunc_jump_target
 ; full quality
@@ -68,8 +71,8 @@ public _spanfunc_jump_target
 
 BYTES_PER_PIXEL = 14h
 MAX_PIXELS = 80
-; plus 4 for nopixel jump
-bytecount = 4 + (MAX_PIXELS * BYTES_PER_PIXEL) ; even offset
+bytecount = (MAX_PIXELS * BYTES_PER_PIXEL) ; even offset
+
 REPT MAX_PIXELS
     bytecount = bytecount - BYTES_PER_PIXEL
     dw bytecount 
@@ -797,7 +800,6 @@ sal   si, 1					; convert index to  a word lookup index
 
 ; is count < 0? if so skip this loop iter
 
-jl   no_pixels			; todo this so it doesnt loop in both cases
 
 ;       modify the jump for this iteration (self-modifying code)
 

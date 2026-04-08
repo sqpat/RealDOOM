@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/04/07 13:56:07
+Created on:       26/04/07 15:34:33
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -505,18 +505,18 @@ Module: r_colfl.obj(r_colfl.ASM)
 1997:0334      MARKER_SM_COLFUNC_jump_offsetFL_
 1997:0000      R_COLUMNFL_STARTMARKER_
 Module: r_span24.obj(r_span24.ASM)
-19f0:0030*     _spanfunc_jump_target
+19f0:0032*     _spanfunc_jump_target
 19f0:0345*     SPANFUNC_JUMP_OFFSET
 19f0:0348*     MARKER_SM_SPAN24_AFTER_JUMP_1
 19f0:0e72      R_WriteBackViewConstantsSpan24_
 19f0:0000      R_SPAN24_STARTMARKER_
-19f0:00d0*     FixedMulTrigSineLocal_
-19f0:016c*     R_MapPlane24_
+19f0:00d2*     FixedMulTrigSineLocal_
+19f0:016e*     R_MapPlane24_
 19f0:09b0*     ENSUREALIGN_400
-19f0:0320*     ENSUREALIGN_402
+19f0:0322*     ENSUREALIGN_402
 19f0:0348*     ENSUREALIGN_403
-19f0:030e*     ENSUREALIGN_401
-19f0:00fa*     FixedMulTrigCosineLocal_
+19f0:0310*     ENSUREALIGN_401
+19f0:00fc*     FixedMulTrigCosineLocal_
 19f0:0a66      R_DrawPlanes24_
 19f0:001c*     _spanfunc_xfrac
 19f0:0024*     _spanfunc_yfrac
