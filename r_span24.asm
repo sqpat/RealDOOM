@@ -714,17 +714,17 @@ mov   es, ds:[_cachedheight_segment_storage]
 
 mov   ax, word ptr [bp - 0Eh]
 ; TODO: do this shl outside of the function. borrow from es:di lookup's di
-shl   si, 1 ; dword
 ; CACHEDHEIGHT LOOKUP
 
 cmp   ax, word ptr es:[si]
 jne   go_generate_values	; comparing high word
 
+mov   bx, si
 
 ; CACHED DISTANCE lookup
 use_cached_values:
 
-les   ax, dword ptr es:[si + 0 + (( CACHEDDISTANCE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
+les   ax, dword ptr es:[bx + si + 0 + (( CACHEDDISTANCE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
 mov   dx, es
 
 push  ax
@@ -734,7 +734,6 @@ push  ax
 ; here is where we get xstep/ystep.
 ; ax:cx
 
-shr   si, 1 ; word lookup
 
 mov   es, ds:[_cachedxstep_segment_storage]
 mov   ax, word ptr es:[si] ; todo both steps together and lodsw
@@ -987,106 +986,174 @@ ALIGN_MACRO
 
 generate_distance_steps:
 
-; es = 5000h  (CACHEDHEIGHT_SEGMENT)
-; ax = planeheight 
-; note: es wrecked by function calls to r_fixedmullocal...
+    ; Register state (all not listed are junk/scratch):
+    ; SS = FIXED_DS_SEGMENT
+    ; BP = SPANSTART_SEGMENT
+    ; SI = y << 1
 
-mov   word ptr es:[si], ax
-les   bx, dword ptr es:[si + 0 (( YSLOPE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
-mov   cx, es
+    mov bx, SPANSTART_SEGMENT
+    MOV DS, bx
 
-; fastmul1632 with 13:3 value
+    mov DS:[SI + ((CACHEDHEIGHT_SEGMENT - SPANSTART_SEGMENT) * 16)], AX
+    mov bx, si  ; dword
 
-; todo 386 version i guess?
+IF COMPISA LE COMPILE_286
+    push bp
+    ; fastmul1632 with 13:3 value
+    MOV CX, AX
+    MUL WORD PTR DS:[BX + SI + 2 + ((YSLOPE_SEGMENT - SPANSTART_SEGMENT) * 16)] ; hiword
+    XCHG AX, CX
+    MUL WORD PTR DS:[BX + SI + ((YSLOPE_SEGMENT - SPANSTART_SEGMENT) * 16)]  ; lo word
+    ADD DX, CX
+    
+    ; NOW lets shift, avoiding a fixedmul.
+    SHIFT32_MACRO_RIGHT DX AX 3
+    
+    MOV WORD PTR DS:[BX + SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)], AX
+    MOV WORD PTR DS:[BX + SI + 2 + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)], DX
+    
+    MOV DI, AX
+    MOV ES, DX
+    
 
-XCHG CX, AX    ; AX stored in CX
-MUL  CX        ; AX * CX
-XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
-MUL  BX        ; AX * BX
-ADD  DX, CX    ; add 
-
-; NOW lets shift, avoiding a fixedmul.
-SHIFT32_MACRO_RIGHT dx ax 3
-
-; not worth continuing to LEA because fixedmul destroys ES and then we have to store and restore from SI which is too much extra time
-; distance = cacheddistance[y] = R_FixedMulLocal (planeheight, yslope[y]);
-
-
-; result is distance
-mov   es, ds:[_cacheddistance_segment_storage]
 SELFMODIFY_SPAN_basexscale_lo_1:
-mov   bx, 01000h
+    MOV BP, 01000h
 SELFMODIFY_SPAN_basexscale_hi_1:
-mov   cx, 01000h
-mov   word ptr es:[si], ax			; store distance
-mov   word ptr es:[si + 2], dx		; store distance
-mov   di, dx						; store distance high word in di
-push  ax  ; distance low word
+    MOV CX, 01000h
+    
+    
+    ; ds_xstep = cachedxstep[y] = R_FixedMulLocal(distance, basexscale)
+    ;CALL R_FixedMulLocal24_
 
-; 		ds_xstep = cachedxstep[y] = (R_FixedMulLocal (distance,basexscale));
+    MOV BX, DX
+    PUSH AX
+    MUL BP
+    MOV WORD PTR CS:[_selfmodify_restore_dx_2+1], DX
+    MOV AX, BX
+    MUL CX
+    XCHG AX, BX
+    CWD
+    AND DX, BP
+    SUB BX, DX
+    MUL BP
+    _selfmodify_restore_dx_2:
+    ADD AX, 01000h
+    ADC BX, DX
+    XCHG AX, CX
+    CWD
+    POP BP
+    AND DX, BP
+    SUB BX, DX
+    MUL BP
+    ADD AX, CX
+    ADC DX, BX
+    
+    ; Convert to 6.10
+    SHL AX, 1
+    RCL DX, 1
+    SHL AX, 1
+    RCL DX, 1
+    MOV AL, AH
+    MOV AH, DL
+    
+    MOV WORD PTR DS:[SI + ((CACHEDXSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)], AX
 
-call R_FixedMulLocal24_
+    SELFMODIFY_SPAN_detailshift_1:
+    mov ax, ax
+    mov ax, ax
 
-; Convert to 6.10
-SHL AX, 1
-RCL DX, 1
-SHL AX, 1
-RCL DX, 1
-MOV AL, AH
-MOV AH, DL
-
-shr   si, 1 ; word
-
-mov   es, ds:[_cachedxstep_segment_storage]
-mov   word ptr es:[si], ax
+    MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_xstep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
 
 
-
-SELFMODIFY_SPAN_detailshift_1:
-mov ax, ax
-mov ax, ax
-
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_xstep+1 - OFFSET R_SPAN24_STARTMARKER_], ax
+    MOV AX, DI
+    MOV DX, ES
 
 
-mov   dx, di
 SELFMODIFY_SPAN_baseyscale_lo_1:
-mov   bx, 01000h
+    MOV BP, 01000h
 SELFMODIFY_SPAN_baseyscale_hi_1:
-mov   cx, 01000h
+    MOV CX, 01000h
+    
+    ; ds_ystep = cachedystep[y] = R_FixedMulLocal(distance, baseyscale)
+    ;CALL R_FixedMulLocal24_
 
-pop ax  ; retrieve low distance word
-push ax
+    MOV BX, DX
+    PUSH AX
+    MUL BP
+    MOV WORD PTR CS:[_selfmodify_restore_dx_1+1], DX
+    MOV AX, BX
+    MUL CX
+    XCHG AX, BX
+    CWD
+    AND DX, BP
+    SUB BX, DX
+    MUL BP
+    _selfmodify_restore_dx_1:
+    ADD AX, 01000h
+    ADC BX, DX
+    XCHG AX, CX
+    CWD
+    POP BP
+    AND DX, BP
+    SUB BX, DX
+    MUL BP
+    ADD AX, CX
+    ADC DX, BX
 
-;		ds_ystep = cachedystep[y] = (R_FixedMulLocal (distance,baseyscale));
+    
+    ; Convert to 6.8   TODO fix precision issue
+    ;SHL AX, 1
+    ;RCL DX, 1
+    ;SHL AX, 1
+    ;RCL DX, 1
+    MOV AL, AH
+    MOV AH, DL
+    
+    MOV WORD PTR DS:[SI + ((CACHEDYSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)], AX
+    
+    ; todo do this write later?
 
-call R_FixedMulLocal24_
+    SELFMODIFY_SPAN_detailshift_2:
+    mov ax, ax
+    mov ax, ax
+    MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_ystep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
+    ; restore distance once more
+    xchg ax, di
+    MOV  DX, ES
 
+    
+    pop  bp ; restore BP...
+    push ss
+    pop  ds ; restore DS...
 
-; Convert to 6.8
-;SHL AX, 1
-;RCL DX, 1
-;SHL AX, 1
-;RCL DX, 1
-MOV AL, AH
-MOV AH, DL
+ELSE
+    MOVZX EDI, AX
+    IMUL EDI, DS:[BX + SI + ((YSLOPE_SEGMENT - SPANSTART_SEGMENT) * 16)]
+    SHR EDI, 3
+    MOV WORD PTR DS:[BX + SI + ((CACHEDDISTANCE_SEGMENT - SPANSTART_SEGMENT) * 16)], EDI
+SELFMODIFY_SPAN_baseyscale_full_1: ; todo implement
+    MOV EAX, 010000000h
+    IMUL EDI
+    SHRD EAX, EDX, 22 ; Convert to 6.10
+    MOV WORD PTR DS:[SI + ((CACHEDYSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)], AX
+    SELFMODIFY_SPAN_detailshift_1:
+    mov ax, ax
+    mov ax, ax
+    MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_ystep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
+SELFMODIFY_SPAN_basexscale_full_1: ; todo implement
+    MOV EAX, 010000000h
+    IMUL EDI
+    SHRD EAX, EDX, 22 ; Convert to 6.10
+    MOV WORD PTR DS:[SI + ((CACHEDXSTEP_SEGMENT - SPANSTART_SEGMENT) * 16)], AX
+    SELFMODIFY_SPAN_detailshift_2:
+    mov ax, ax
+    mov ax, ax
+    MOV WORD PTR CS:[SELFMODIFY_SPAN_ds_xstep+1 - OFFSET R_SPAN24_STARTMARKER_], AX
+ENDIF
 
-mov   es, ds:[_cachedystep_segment_storage]
-mov   word ptr es:[si], ax
+    JMP distance_steps_ready
+    
 
-
-
-SELFMODIFY_SPAN_detailshift_2:
-mov ax, ax
-mov ax, ax
-
-
-mov   word ptr cs:[SELFMODIFY_SPAN_ds_ystep + 1 - OFFSET R_SPAN24_STARTMARKER_], ax
-
-
-pop   ax
-mov   dx, di  				    ; distance high word
-jmp   distance_steps_ready
 
    
 

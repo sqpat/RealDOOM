@@ -826,15 +826,14 @@ rejectmatrix       5C00:0000
 #define size_cachedheight      (sizeof(fixed_t) * SCREENHEIGHT)
 #define size_yslope            (sizeof(fixed_t) * SCREENHEIGHT)
 #define size_cacheddistance    (sizeof(fixed_t) * SCREENHEIGHT)
-#define size_cachedxstep       (sizeof(fixed_t) * SCREENHEIGHT)
-#define size_cachedystep       (sizeof(fixed_t) * SCREENHEIGHT)
+#define size_cachedxstep       (sizeof(int16_t) * SCREENHEIGHT)
+#define size_cachedystep       (sizeof(int16_t) * SCREENHEIGHT)
 #define size_distscale         (sizeof(fixed_t) * SCREENWIDTH)
 #define size_dc_yl_lookup      (sizeof(int16_t) * SCREENWIDTH)
 
 // start plane only
-// TODO: cachedheight is sizeof int16_t now
 #define spanstart             ((int16_t __far*)        MAKE_FULL_SEGMENT(0x50000000, 0))
-#define cachedheight          ((fixed_t __far*)        MAKE_FULL_SEGMENT(spanstart, size_spanstart))
+#define cachedheight          ((int16_t __far*)        MAKE_FULL_SEGMENT(spanstart, size_spanstart))
 #define yslope                ((fixed_t __far*)        MAKE_FULL_SEGMENT(cachedheight, size_cachedheight))
 #define cacheddistance        ((fixed_t __far*)        MAKE_FULL_SEGMENT(yslope, size_yslope))
 #define cachedxstep           ((fixed_t __far*)        MAKE_FULL_SEGMENT(cacheddistance, size_cacheddistance))
@@ -882,14 +881,26 @@ rejectmatrix       5C00:0000
 
 
 /*
-cachedheight   5000:0000
-yslope         5032:0000
-cacheddistance 5064:0000
-cachedxstep    5096:0000
+
+CACHEDHEIGHT_SEGMENT = 05019h
+YSLOPE_SEGMENT = 0504Bh
+CACHEDDISTANCE_SEGMENT = 0507Dh
+CACHEDXSTEP_SEGMENT = 050AFh
+CACHEDYSTEP_SEGMENT = 050C8h
+SPANSTART_SEGMENT = 05000h
+DISTSCALE_SEGMENT = 050E1h
+
+
+spanstart      5000:0000
+cachedheight   5019:0000
+yslope         504B:0000
+cacheddistance 507D:0000
+cachedxstep    50AF:0000
 cachedystep    50C8:0000
-spanstart      50FA:0000
-distscale      5113:0000
-drawskyplane_area  5163:0000
+dc_yl_lookup      ; todo unused??
+distscale      50E1:0000
+
+drawskyplane_area  5159:0000 
 // 7232 bytes
 //FREEBYTES
 // 8000+ bytes free? PLANES ONLY. could be fast unrolled draw sky code, 
