@@ -145,14 +145,14 @@ mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
 
 cli 	; disable interrupts because we usesp here
 mov   ss, ax  ; pass in ax?
-
-mov   word ptr cs:[((SELFMODIFY_SPAN_sp_storage+1) - R_SPAN24_STARTMARKER_   )], sp
+c
+mov   word ptr ds:[((SELFMODIFY_SPAN_sp_storage+1) - R_SPAN24_STARTMARKER_   )], sp
 
 SELFMODIFY_SPAN_ds_xstep:
 mov     sp,  01000h
 
 xor   bx, bx						; zero out bx as loopcount
-mov   byte ptr cs:[((SELFMODIFY_SPAN_set_span_counter+1) - OFFSET R_SPAN24_STARTMARKER_   )], bl      ; set loop increment value
+mov   byte ptr ds:[((SELFMODIFY_SPAN_set_span_counter+1) - OFFSET R_SPAN24_STARTMARKER_   )], bl      ; set loop increment value
 
 
 
@@ -162,7 +162,7 @@ mov   byte ptr cs:[((SELFMODIFY_SPAN_set_span_counter+1) - OFFSET R_SPAN24_START
 
 span_i_loop_repeat:
 
-mov   si, word ptr cs:[_spanfunc_inner_loop_count + bx] ; 
+mov   si, word ptr ds:[_spanfunc_inner_loop_count + bx] ; 
 
 ; es is already pre-set..
 
@@ -178,22 +178,22 @@ jl   no_pixels			; todo this so it doesnt loop in both cases
 
 
 
-mov   ax, word ptr cs:[si + _spanfunc_jump_target - OFFSET R_SPAN24_STARTMARKER_ ]	    ; get unrolled jump count.
+mov   ax, word ptr ds:[si + _spanfunc_jump_target - OFFSET R_SPAN24_STARTMARKER_ ]	    ; get unrolled jump count.
 ; write to the unrolled loop jump instruction.
-mov   WORD PTR cs:[((SPANFUNC_JUMP_OFFSET+1)- OFFSET R_SPAN24_STARTMARKER_   )], ax;
+mov   WORD PTR ds:[((SPANFUNC_JUMP_OFFSET+1)- OFFSET R_SPAN24_STARTMARKER_   )], ax;
 
 ; 		dest = destview + ds_y * 80 + dsp_x1;
-mov   di, word ptr cs:[_spanfunc_destview_offset + bx]  ; destview offset precalculated..
-mov   dx, word ptr cs:[_spanfunc_xfrac + bx]  ; destview offset precalculated..
+mov   di, word ptr ds:[_spanfunc_destview_offset + bx]  ; destview offset precalculated..
+mov   dx, word ptr ds:[_spanfunc_xfrac + bx]  ; destview offset precalculated..
 
-mov   cx, word ptr cs:[_spanfunc_yfrac + bx]  ; destview offset precalculated..
-
-
+mov   cx, word ptr ds:[_spanfunc_yfrac + bx]  ; destview offset precalculated..
 
 
 
 
-lds   ax, dword ptr cs:[_ds_source_offset_span] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
+
+
+lds   ax, dword ptr ds:[_ds_source_offset_span] 		; ds:si is ds_source. BX is pulled in by lds as a constant (DRAWSPAN_BX_OFFSET)
 ; ah gets 3F
 
 
@@ -251,15 +251,17 @@ SELFMODIFY_SPAN_compare_span_counter:
 cmp   bl, 3
 jge   span_i_loop_done
 
+mov   ax, cs
+mov   ds, ax
 inc   bx
-mov   byte ptr cs:[((SELFMODIFY_SPAN_set_span_counter+1) -  OFFSET R_SPAN24_STARTMARKER_   )], bl
+mov   byte ptr ds:[((SELFMODIFY_SPAN_set_span_counter+1) -  OFFSET R_SPAN24_STARTMARKER_   )], bl
 
 
-mov   al, byte ptr cs:[_spanfunc_outp + bx]
+mov   al, byte ptr ds:[_spanfunc_outp + bx]
 mov   dx, SC_DATA						; outp 1 << i
 out   dx, al
 
-sal   bx, 1
+sal   bx, 1s
 
 jmp   span_i_loop_repeat
 
@@ -931,7 +933,7 @@ call  R_DrawSpanPrep24_
 
 
 pop   dx
-pop   es
+pop   es    
 pop   di
 pop   si
 pop   cx

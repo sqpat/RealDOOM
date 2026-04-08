@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/04/07 12:40:35
+Created on:       26/04/07 12:47:25
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -143,8 +143,8 @@ Module: wi_stuff.obj(wi_stuff.ASM)
 004a:08bb*     WI_initStats_
 004a:03e7*     WI_slamBackground_
 004a:0cfb*     WI_updateNoState_
-004a:0dff*     WI_initVariables_
 004a:073d*     WI_drawPercent_
+004a:0dff*     WI_initVariables_
 004a:0d59      WI_Ticker_
 004a:0000      WI_STARTMARKER_
 004a:03cf*     WI_MRandomLocal_
@@ -731,9 +731,9 @@ Module: p_pspr.obj(p_pspr.ASM)
 241b:39c0      P_BringUpWeapon_
 Module: p_enemy.obj(p_enemy.ASM)
 241b:4cd6*     A_CyberAttack_
-241b:53e2*     A_FatRaise_
 241b:56cb*     A_Explode_
 241b:5b8a*     ENSUREALIGN_901
+241b:53e2*     A_FatRaise_
 241b:426a      P_NoiseAlert_
 241b:56c3*     A_Fall_
 241b:59f4*     A_SpawnFly_
@@ -918,9 +918,9 @@ Module: p_info.obj(p_info.ASM)
 241b:894c*     P_INFO_STARTMARKER_
 Module: am_map.obj(am_map.ASM)
 241b:8da5*     FastMulTrig16Sine_
-241b:8d76*     FastMulTrig16Cosine_
 241b:8eec*     AM_findMinMaxBoundaries_
 241b:9011*     AM_clearMarks_
+241b:8d76*     FastMulTrig16Cosine_
 241b:8f6c*     AM_changeWindowLoc_
 241b:9028*     AM_Start_
 241b:8c72*     AM_MAP_STARTMARKER_
@@ -941,8 +941,8 @@ Module: am_map.obj(am_map.ASM)
 241b:94e0*     AM_drawWalls_
 241b:9360*     DOOUTCODE_
 Module: p_math.obj(p_math.ASM)
-241b:9874      FixedMulTrigNoShiftCosine_MapLocal_
 241b:9822*     ENSUREALIGN_903
+241b:9874      FixedMulTrigNoShiftCosine_MapLocal_
 241b:99b4*     ENSUREALIGN_904
 241b:9a9e*     ENSUREALIGN_905
 241b:9a70      FixedDiv_MapLocal_
