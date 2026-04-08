@@ -30,7 +30,7 @@ PROC R_SPAN24_STARTMARKER_
 PUBLIC R_SPAN24_STARTMARKER_
 ENDP 
 
-R_DRAWSPANACTUAL_DIFF = (OFFSET R_DrawSpanActual24_ - OFFSET R_SPAN24_STARTMARKER_)
+
 DRAWSPAN_AH_OFFSET             = 03F00h
 DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_JUMP_LOOKUP_SEGMENT - COLORMAPS_SEGMENT)) + DRAWSPAN_AH_OFFSET
 
@@ -285,139 +285,17 @@ pop bp
 
 sti								; reenable interrupts
 
+pop   dx
+pop   es
+pop   di
+pop   si
+pop   cx
+
+
 ret  
 
 
 ENDP
-
-
-
-
-;
-; R_DrawSpanPrep
-;
-ALIGN_MACRO	
-PROC  R_DrawSpanPrep24_ NEAR
-
-
-SELFMODIFY_SPAN_set_plane_0:
-mov   al, 010h
-mov   dx, SC_DATA						; outp 1 << i
-out   dx, al
-
-
-
- 
- ;  	uint16_t baseoffset = FP_OFF(destview) + dc_yl_lookup[ds_y];
-
-; predoubles _ds_y for lookup
- les   bx, dword ptr ds:[_ds_y]
- 
- mov   ax, word ptr es:[bx]				; get dc_yl_lookup[ds_y]
-SELFMODIFY_SPAN_destview_lo_1:
- add   ax, 01000h
- mov   es, word ptr [bp - 0Ah]			; es holds ds_x1
-	
- xor   bl, bl							; zero out bl. use it as loop counter/ i
- ; todo carry this forward
- mov   word ptr cs:[SELFMODIFY_SPAN_destview_add+2 - OFFSET R_SPAN24_STARTMARKER_], ax			; store base view offset
- 
-; todo the following  feels like extraneous register juggling, reexamine
-
- spanfunc_arg_setup_loop_start:
- mov   al, bl							; al holds loop counter
- mov   dx, es							; get ds_x1
- CBW  									; zero out ah
- 
-;		int16_t dsp_x1 = (ds_x1 - i) >> shiftamount;
- sub   dx, ax							; subtract i 
- SELFMODIFY_SPAN_detailshift2minus_1:
- sar   dx, 1							; shift
- sar   dx, 1							; shift
-
-; 		int16_t dsp_x2 = (ds_x2 - i) >> shiftamount;
-
-SELFMODIFY_SPAN_ds_x2:
- mov   cx, word ptr [bp - 0Ch]		        ; cx holds ds_x2
- sub   cx, ax							; subtract i
- mov   si, ax							; put i in si
- 
- mov   ax, dx							; copy dsp_x1 to ax
- 
- SELFMODIFY_SPAN_detailshift2minus_2:
- shl   ax, 1							; shift dsp_x1 left
- shl   ax, 1							; shift dsp_x1 left
- SELFMODIFY_SPAN_detailshift2minus_3:
- sar   cx, 1							; shift ds_x2 right. di = dsp_x2
- sar   cx, 1							; shift ds_x2 right. di = dsp_x2
- 
- mov   di, es							; get ds_x1 into di
- 
-;		if ((dsp_x1 << shiftamount) + i < ds_x1)
-
- add   ax, si							; ax = (dsp_x1 << shiftamount) + i
- cmp   ax, di			; if si <  (dsp_x1 << shiftamount) + i
-
- jge   dont_increment_ds_x1     ; signed so carry flag adc 0 doesnt work?
-;		ds_x1 ++
- 
- inc   dx
- dont_increment_ds_x1:
- mov   al, bl							; al holds loop counter
- CBW  
- mov   si, ax							; store loop counter in si
-
- ; 		countp = dsp_x2 - dsp_x1;
- 
- shl   si, 1
-;     cx has dsp_x2
- sub   cx, dx							; cx is countp
-
- mov   word ptr cs:[si + _spanfunc_inner_loop_count], cx  ; store it. high byte of word always 0
-								   ; if negative then loop
- jl    spanfunc_arg_setup_iter_done
- 
-; 		spanfunc_prt[i] = (dsp_x1 << shiftamount) - ds_x1 + i;
-;		spanfunc_destview_offset[i] = baseoffset + dsp_x1;
- shr   si, 1
-
- 
- mov   ax, dx										   ; move dsp_x1 to ax
- SELFMODIFY_SPAN_detailshift2minus_4:
- shl   ax, 1										   ; shift dsp_x1 left
- shl   ax, 1
- sub   ax, di										   ; subtract ds_x1
- add   ax, si										   ; add i, prt is calculated
- add   si, si										   ; double i for word lookup index
- SELFMODIFY_SPAN_destview_add:
- add   dx, 01000h						   ; dsp_x1 + base view offset
- mov   word ptr cs:[si + _spanfunc_prt], ax			   ; store prt
- mov   word ptr cs:[si + _spanfunc_destview_offset], dx   ; store view offset
- 
- spanfunc_arg_setup_iter_done:
- 
- inc   bl
- 
- SELFMODIFY_SPAN_detailshift_mainloopcount_2:
- cmp   bl, 0
- jl    spanfunc_arg_setup_loop_start
- 
- spanfunc_arg_setup_complete:
-
- ; use jump table with desired cs:ip for far jump
-
-SELFMODIFY_SPAN_set_colormap_index_jump:
-mov  ax, 00000h      ; colormap * 4
-SHIFT_MACRO shl ax 2 ; colormap * 16
-; target ss segment
-add  ax, (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4))
-; addr 0000 + first byte (4x colormap.)
-jmp  R_DrawSpanActual24_ ; todo just inline?
-
-
-
-ENDP
-
 
 
 
@@ -665,6 +543,15 @@ jmp   generate_distance_steps
 ;cachedystep    9118:0000
 ; 	rather than changing ES a ton we will just modify offsets by segment distance
 ;   confirmed to be faster even on 8088 with it's baby prefetch queue - i think on 16 bit busses it is only faster.
+
+ALIGN_MACRO	
+
+SELFMODIFY_SPAN_fixedcolormap_1_TARGET:
+SELFMODIFY_SPAN_fixedcolormap_2:
+use_fixed_colormap:
+mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump+1 - OFFSET R_SPAN24_STARTMARKER_], 00
+jmp   do_drawspan
+; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
 
 
 
@@ -930,34 +817,128 @@ colormap_ready:
 mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump+1 - OFFSET R_SPAN24_STARTMARKER_], al
 
 ; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
+do_drawspan:
 
-call  R_DrawSpanPrep24_
+; inlined drawspanprep...
 
-
-pop   dx
-pop   es
-pop   di
-pop   si
-pop   cx
-ret
-ALIGN_MACRO	
-
-SELFMODIFY_SPAN_fixedcolormap_1_TARGET:
-SELFMODIFY_SPAN_fixedcolormap_2:
-use_fixed_colormap:
-mov   byte ptr cs:[SELFMODIFY_SPAN_set_colormap_index_jump+1 - OFFSET R_SPAN24_STARTMARKER_], 00
-
-; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
-
-call  R_DrawSpanPrep24_
+SELFMODIFY_SPAN_set_plane_0:
+mov   al, 010h
+mov   dx, SC_DATA						; outp 1 << i
+out   dx, al
 
 
-pop   dx
-pop   es
-pop   di
-pop   si
-pop   cx
-ret  
+
+ 
+ ;  	uint16_t baseoffset = FP_OFF(destview) + dc_yl_lookup[ds_y];
+
+; predoubles _ds_y for lookup
+ les   bx, dword ptr ds:[_ds_y]
+ 
+ mov   ax, word ptr es:[bx]				; get dc_yl_lookup[ds_y]
+SELFMODIFY_SPAN_destview_lo_1:
+ add   ax, 01000h
+ mov   es, word ptr [bp - 0Ah]			; es holds ds_x1
+	
+ xor   bl, bl							; zero out bl. use it as loop counter/ i
+ ; todo carry this forward
+ mov   word ptr cs:[SELFMODIFY_SPAN_destview_add+2 - OFFSET R_SPAN24_STARTMARKER_], ax			; store base view offset
+ 
+; todo the following  feels like extraneous register juggling, reexamine
+
+ spanfunc_arg_setup_loop_start:
+ mov   al, bl							; al holds loop counter
+ mov   dx, es							; get ds_x1
+ CBW  									; zero out ah
+ 
+;		int16_t dsp_x1 = (ds_x1 - i) >> shiftamount;
+ sub   dx, ax							; subtract i 
+ SELFMODIFY_SPAN_detailshift2minus_1:
+ sar   dx, 1							; shift
+ sar   dx, 1							; shift
+
+; 		int16_t dsp_x2 = (ds_x2 - i) >> shiftamount;
+
+SELFMODIFY_SPAN_ds_x2:
+ mov   cx, word ptr [bp - 0Ch]		        ; cx holds ds_x2
+ sub   cx, ax							; subtract i
+ mov   si, ax							; put i in si
+ 
+ mov   ax, dx							; copy dsp_x1 to ax
+ 
+ SELFMODIFY_SPAN_detailshift2minus_2:
+ shl   ax, 1							; shift dsp_x1 left
+ shl   ax, 1							; shift dsp_x1 left
+ SELFMODIFY_SPAN_detailshift2minus_3:
+ sar   cx, 1							; shift ds_x2 right. di = dsp_x2
+ sar   cx, 1							; shift ds_x2 right. di = dsp_x2
+ 
+ mov   di, es							; get ds_x1 into di
+ 
+;		if ((dsp_x1 << shiftamount) + i < ds_x1)
+
+ add   ax, si							; ax = (dsp_x1 << shiftamount) + i
+ cmp   ax, di			; if si <  (dsp_x1 << shiftamount) + i
+
+ jge   dont_increment_ds_x1     ; signed so carry flag adc 0 doesnt work?
+;		ds_x1 ++
+ 
+ inc   dx
+ dont_increment_ds_x1:
+ mov   al, bl							; al holds loop counter
+ CBW  
+ mov   si, ax							; store loop counter in si
+
+ ; 		countp = dsp_x2 - dsp_x1;
+ 
+ shl   si, 1
+;     cx has dsp_x2
+ sub   cx, dx							; cx is countp
+
+ mov   word ptr cs:[si + _spanfunc_inner_loop_count], cx  ; store it. high byte of word always 0
+								   ; if negative then loop
+ jl    spanfunc_arg_setup_iter_done
+ 
+; 		spanfunc_prt[i] = (dsp_x1 << shiftamount) - ds_x1 + i;
+;		spanfunc_destview_offset[i] = baseoffset + dsp_x1;
+ shr   si, 1
+
+ 
+ mov   ax, dx										   ; move dsp_x1 to ax
+ SELFMODIFY_SPAN_detailshift2minus_4:
+ shl   ax, 1										   ; shift dsp_x1 left
+ shl   ax, 1
+ sub   ax, di										   ; subtract ds_x1
+ add   ax, si										   ; add i, prt is calculated
+ add   si, si										   ; double i for word lookup index
+ SELFMODIFY_SPAN_destview_add:
+ add   dx, 01000h						   ; dsp_x1 + base view offset
+ mov   word ptr cs:[si + _spanfunc_prt], ax			   ; store prt
+ mov   word ptr cs:[si + _spanfunc_destview_offset], dx   ; store view offset
+ 
+ spanfunc_arg_setup_iter_done:
+ 
+ inc   bl
+ 
+ SELFMODIFY_SPAN_detailshift_mainloopcount_2:
+ cmp   bl, 0
+ jl    spanfunc_arg_setup_loop_start
+ 
+ spanfunc_arg_setup_complete:
+
+ ; use jump table with desired cs:ip for far jump
+
+SELFMODIFY_SPAN_set_colormap_index_jump:
+mov  ax, 00000h      ; colormap * 4
+SHIFT_MACRO shl ax 2 ; colormap * 16
+; target ss segment
+add  ax, (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4))
+; addr 0000 + first byte (4x colormap.)
+jmp  R_DrawSpanActual24_ ; todo just inline?
+
+
+
+
+
 ALIGN_MACRO	
 
 generate_distance_steps:
