@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/04/07 16:20:13
+Created on:       26/04/08 02:58:07
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -43,7 +43,7 @@ R_COL24_TEXT           CODE           AUTO           163d:0000       00002349
 R_COL16_TEXT           CODE           AUTO           1872:0000       00000cb4
 R_COL0_TEXT            CODE           AUTO           193e:0000       0000058e
 R_COLFL_TEXT           CODE           AUTO           1997:0000       0000058e
-R_SPAN24_TEXT          CODE           AUTO           19f0:0000       00000fba
+R_SPAN24_TEXT          CODE           AUTO           19f0:0000       00000fc0
 R_SPAN16_TEXT          CODE           AUTO           1aec:0000       00000f67
 R_SPAN0_TEXT           CODE           AUTO           1be3:0000       00000640
 R_SPANFL_TEXT          CODE           AUTO           1c47:0000       00000597
@@ -506,19 +506,19 @@ Module: r_colfl.obj(r_colfl.ASM)
 1997:0000      R_COLUMNFL_STARTMARKER_
 Module: r_span24.obj(r_span24.ASM)
 19f0:0032*     _spanfunc_jump_target
-19f0:0342*     MARKER_SM_SPAN24_AFTER_JUMP_1
-19f0:0e80      R_WriteBackViewConstantsSpan24_
+19f0:034e*     MARKER_SM_SPAN24_AFTER_JUMP_1
+19f0:0e86      R_WriteBackViewConstantsSpan24_
 19f0:0000      R_SPAN24_STARTMARKER_
 19f0:00d2*     FixedMulTrigSineLocal_
 19f0:016e*     R_MapPlane24_
-19f0:09be*     ENSUREALIGN_400
-19f0:0322*     ENSUREALIGN_402
-19f0:0310*     ENSUREALIGN_401
+19f0:09ca*     ENSUREALIGN_400
+19f0:032e*     ENSUREALIGN_402
+19f0:031c*     ENSUREALIGN_401
 19f0:00fc*     FixedMulTrigCosineLocal_
-19f0:0a74      R_DrawPlanes24_
+19f0:0a80      R_DrawPlanes24_
 19f0:001c*     _spanfunc_xfrac
 19f0:0024*     _spanfunc_yfrac
-19f0:0fba      R_SPAN24_ENDMARKER_
+19f0:0fc0      R_SPAN24_ENDMARKER_
 Module: r_span16.obj(r_span16.ASM)
 1aec:0e6f      R_WriteBackViewConstantsSpan16_
 1aec:0124*     R_DrawSpan16_
@@ -1044,9 +1044,9 @@ Module: st_stuff.obj(st_stuff.ASM)
 241b:adf7*     STlib_updateflag_
 241b:a952      _st_oldhealth
 241b:a94c*     ST_STUFF_STARTMARKER_
+241b:b2f1*     ST_STUFF_ENDMARKER_
 241b:a96a      _tallnum_
 241b:aa5e      _w_faces
-241b:b2f1*     ST_STUFF_ENDMARKER_
 241b:aa26      _w_armsbg
 241b:ad66      ST_Ticker_
 241b:ab20*     ST_calcPainOffset_
@@ -1615,4 +1615,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003ded0 (253648.)
 Entry point address: 2fb1:7cbe
-Link time: 00:00.05
+Link time: 00:00.04

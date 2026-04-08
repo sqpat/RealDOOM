@@ -386,18 +386,24 @@ push  si
 push  di
 push  es
 push  dx
-
-; ax is bp - 0Ah
-; di is ds_y
 push bp
 
+; ax is x1
+; di is ds_y
+
 mov  bp, SPANSTART_SEGMENT
+; todo suck less. if rewritten well, maybe this only has to be in 1 spot.
+mov   word ptr cs:[SELFMODIFY_SPAN_setx1_4+1], ax
+shl   ax, 1
+mov   word ptr cs:[SELFMODIFY_SPAN_setx1_1+1], ax
+mov   word ptr cs:[SELFMODIFY_SPAN_setx1_2+1], ax
+mov   word ptr cs:[SELFMODIFY_SPAN_setx1_3+1], ax
 
 
 
 
 
-mov  si, di
+mov  si, di ; dc_y
 ; si is x * 2
 mov   ds, bp
 
@@ -453,16 +459,15 @@ distance_steps_ready:
 push ss
 pop  ds
 
-pop  bp
 
 ;dx:ax is already distance going in
 
 ; dx:ax is distance
 ;     length = R_FixedMulLocal (distance,distscale[x1]);
 
-mov   si, word ptr [bp - 0Ah]		; grab x1 (function input)... todo should be ax earlier.
+SELFMODIFY_SPAN_setx1_1:
+mov   si, 01000h ; shifted
 
-shl   si, 1						; word lookup
 mov   bx, si          ; dword lookup if we add them
 mov   es, ds:[_distscale_segment_storage]
 ;todo bench without bx + si + 2 - sar again later etc.
@@ -516,8 +521,9 @@ mov   bx, word ptr ds:[_ds_y] ; already doubled for word ops
 mov   es, ds:[_cachedxstep_segment_storage]
 mov   dx, word ptr es:[bx]          ; xstep
 
-mov   bx, word ptr [bp - 0Ah]      ; x1
-shl   bx, 1                        ; word
+SELFMODIFY_SPAN_setx1_2:
+mov   bx, 01000h  ; shifted
+
 
 SELFMODIFY_SPAN_and_detailshift_1:
 mov   cx, 00702h 
@@ -576,8 +582,8 @@ mov   bx, word ptr ds:[_ds_y] ; already doubled for word ops
 mov   es, ds:[_cachedystep_segment_storage]
 mov   dx, word ptr es:[bx]          ; ystep
 
-mov   bx, word ptr [bp - 0Ah]      ; x1
-shl   bx, 1                        ; word
+SELFMODIFY_SPAN_setx1_3:
+mov   bx, 01000h ; shifted
 
 SELFMODIFY_SPAN_and_detailshift_2:
 mov   cx, 00702h 
@@ -660,7 +666,9 @@ out   dx, al
  mov   ax, word ptr es:[bx]				; get dc_yl_lookup[ds_y]
 SELFMODIFY_SPAN_destview_lo_1:
  add   ax, 01000h
- mov   es, word ptr [bp - 0Ah]			; es holds ds_x1
+ SELFMODIFY_SPAN_setx1_4:
+ mov   dx, 01000h
+ mov   es, dx
 	
  xor   bl, bl							; zero out bl. use it as loop counter/ i
  ; todo carry this forward
@@ -682,7 +690,7 @@ SELFMODIFY_SPAN_destview_lo_1:
 ; 		int16_t dsp_x2 = (ds_x2 - i) >> shiftamount;
 
 SELFMODIFY_SPAN_ds_x2:
- mov   cx, word ptr [bp - 0Ch]		        ; cx holds ds_x2
+ mov   cx, 01000h
  sub   cx, ax							; subtract i
  mov   si, ax							; put i in si
  
@@ -760,7 +768,6 @@ add  ax, (COLORMAPS_SEGMENT - (DRAWSPAN_AH_OFFSET SHR 4))
 
 ; inlined DrawSpan
 
-push   bp
 
 
 SELFMODIFY_SPAN_ds_ystep:
@@ -888,10 +895,12 @@ ENSUREALIGN_400:
 
 
 
-pop bp
 
 sti								; reenable interrupts
 
+; todo popa/pusha is not working for some reason
+
+pop   bp
 pop   dx
 pop   es
 pop   di
@@ -1562,7 +1571,7 @@ mov   es, ax
 ; t1/t2 ch/cl
 ; b1/b2 dh/dl
 dec   si	; x - 1  constant
-mov   word ptr [bp - 0Ch], si
+mov   word ptr cs:[SELFMODIFY_SPAN_ds_x2+1], si
 inc   si  ; add one back from the previous saved x-1 state
 
 ;    while (t1 < t2 && t1 <= b1)
@@ -1582,7 +1591,7 @@ ja    done_with_first_mapplane_loop
 
 mov   ax, word ptr es:[di]
 mov   word ptr ds:[_ds_y], di   ; predoubled for lookup
-mov   word ptr [bp - 0Ah], ax   ; store ds_x1
+
 inc   cl
 
 call  R_MapPlane24_
@@ -1626,7 +1635,7 @@ ja   done_with_second_mapplane_loop
 
 mov   ax, word ptr es:[di]
 mov   word ptr ds:[_ds_y], di
-mov   word ptr [bp - 0Ah], ax
+
 dec   dl
 
 call  R_MapPlane24_
