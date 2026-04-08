@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/04/07 12:47:25
+Created on:       26/04/07 13:07:32
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -43,7 +43,7 @@ R_COL24_TEXT           CODE           AUTO           163d:0000       00002349
 R_COL16_TEXT           CODE           AUTO           1872:0000       00000cb4
 R_COL0_TEXT            CODE           AUTO           193e:0000       0000058e
 R_COLFL_TEXT           CODE           AUTO           1997:0000       0000058e
-R_SPAN24_TEXT          CODE           AUTO           19f0:0000       00000fc0
+R_SPAN24_TEXT          CODE           AUTO           19f0:0000       00000fbe
 R_SPAN16_TEXT          CODE           AUTO           1aec:0000       00000f67
 R_SPAN0_TEXT           CODE           AUTO           1be3:0000       00000640
 R_SPANFL_TEXT          CODE           AUTO           1c47:0000       00000597
@@ -506,19 +506,19 @@ Module: r_colfl.obj(r_colfl.ASM)
 1997:0000      R_COLUMNFL_STARTMARKER_
 Module: r_span24.obj(r_span24.ASM)
 19f0:0030*     _spanfunc_jump_target
-19f0:0113*     SPANFUNC_JUMP_OFFSET
-19f0:0116*     MARKER_SM_SPAN24_AFTER_JUMP_1
+19f0:010e*     SPANFUNC_JUMP_OFFSET
+19f0:0111*     MARKER_SM_SPAN24_AFTER_JUMP_1
 19f0:00d0*     R_DrawSpan24_
-19f0:0e86      R_WriteBackViewConstantsSpan24_
+19f0:0e84      R_WriteBackViewConstantsSpan24_
 19f0:0000      R_SPAN24_STARTMARKER_
-19f0:07fa*     FixedMulTrigSineLocal_
-19f0:088c*     R_MapPlane24_
-19f0:0824*     FixedMulTrigCosineLocal_
-19f0:0a7c      R_DrawPlanes24_
+19f0:07f8*     FixedMulTrigSineLocal_
+19f0:088a*     R_MapPlane24_
+19f0:0822*     FixedMulTrigCosineLocal_
+19f0:0a7a      R_DrawPlanes24_
 19f0:00d4*     R_DrawSpanActual24_
 19f0:001c*     _spanfunc_xfrac
 19f0:0024*     _spanfunc_yfrac
-19f0:0fc0      R_SPAN24_ENDMARKER_
+19f0:0fbe      R_SPAN24_ENDMARKER_
 Module: r_span16.obj(r_span16.ASM)
 1aec:0e6f      R_WriteBackViewConstantsSpan16_
 1aec:0124*     R_DrawSpan16_
@@ -740,8 +740,8 @@ Module: p_enemy.obj(p_enemy.ASM)
 241b:4a05*     A_PosAttack_
 241b:4835*     A_Chase_
 241b:4be8*     A_BspiAttack_
-241b:584d*     A_BrainPain_
 241b:42e1*     P_CheckMissileRange_
+241b:584d*     A_BrainPain_
 241b:498e*     A_FaceTarget_
 241b:4c55*     A_SargAttack_
 241b:52e8*     GetVileMomz_

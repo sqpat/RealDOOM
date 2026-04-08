@@ -145,7 +145,9 @@ mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
 
 cli 	; disable interrupts because we usesp here
 mov   ss, ax  ; pass in ax?
-c
+mov   ax, cs
+mov   ds, ax
+
 mov   word ptr ds:[((SELFMODIFY_SPAN_sp_storage+1) - R_SPAN24_STARTMARKER_   )], sp
 
 SELFMODIFY_SPAN_ds_xstep:
@@ -261,7 +263,7 @@ mov   al, byte ptr ds:[_spanfunc_outp + bx]
 mov   dx, SC_DATA						; outp 1 << i
 out   dx, al
 
-sal   bx, 1s
+sal   bx, 1
 
 jmp   span_i_loop_repeat
 
@@ -933,7 +935,7 @@ call  R_DrawSpanPrep24_
 
 
 pop   dx
-pop   es    
+pop   es
 pop   di
 pop   si
 pop   cx
