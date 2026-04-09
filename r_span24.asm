@@ -996,20 +996,14 @@ PUBLIC R_DrawPlanes24_
 
 ; STACK
 
-; bp - 0Eh planeheight hi
-; bp - 0Ch ds_x2
-; bp - 0Ah ds_x1
+
 ; bp - 8 visplaneoffset
 ; bp - 6 visplanesegment
 ; bp - 4 usedflatindex
 ; bp - 3 usedflatindex AND 3
 ; bp - 2 physindex
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
+PUSHA_NO_AX_OR_BP_MACRO
 push  bp
 mov   bp, sp
 xor   ax, ax
@@ -1018,7 +1012,7 @@ push  ax        ; bp - 4
 mov   dx, FIRST_VISPLANE_PAGE_SEGMENT
 push  dx        ; bp - 6
 push  ax        ; bp - 8
-sub   sp, 6
+
 ; inline R_WriteBackSpanFrameConstants_
 ; get whole dword at the end here.
 
@@ -1090,11 +1084,7 @@ ALIGN_MACRO
 
 exit_drawplanes:
 LEAVE_MACRO 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+POPA_NO_AX_OR_BP_MACRO
 mov   word ptr cs:[(SELFMODIFY_SPAN_drawplaneiter+1) - OFFSET R_SPAN24_STARTMARKER_], OFFSET _visplaneheaders
 retf   
 ALIGN_MACRO	
