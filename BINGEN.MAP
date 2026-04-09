@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/04/09 01:03:10
+Created on:       26/04/09 01:39:47
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -43,7 +43,7 @@ R_COL24_TEXT           CODE           AUTO           163d:0000       00002349
 R_COL16_TEXT           CODE           AUTO           1872:0000       00000cb4
 R_COL0_TEXT            CODE           AUTO           193e:0000       0000058e
 R_COLFL_TEXT           CODE           AUTO           1997:0000       0000058e
-R_SPAN24_TEXT          CODE           AUTO           19f0:0000       00000f50
+R_SPAN24_TEXT          CODE           AUTO           19f0:0000       00000f42
 R_SPAN16_TEXT          CODE           AUTO           1ae5:0000       00000f67
 R_SPAN0_TEXT           CODE           AUTO           1bdc:0000       00000640
 R_SPANFL_TEXT          CODE           AUTO           1c40:0000       00000597
@@ -508,7 +508,7 @@ Module: r_span24.obj(r_span24.ASM)
 19f0:0032*     _spanfunc_jump_target
 19f0:02e8*     MARKER_SM_SPAN24_AFTER_JUMP_1
 19f0:0218*     SELFMODIFY_SPAN_set_xfrac_lookup_TARGET
-19f0:0df0      R_WriteBackViewConstantsSpan24_
+19f0:0de2      R_WriteBackViewConstantsSpan24_
 19f0:01d7*     start_writes
 19f0:021d*     SELFMODIFY_SET_dc_yl_lookuptable
 19f0:0000      R_SPAN24_STARTMARKER_
@@ -521,7 +521,7 @@ Module: r_span24.obj(r_span24.ASM)
 19f0:0010*     _spanfunc_xfrac
 19f0:0000*     _spanfunc_yfrac
 19f0:0121*     distance_steps_ready
-19f0:0f50      R_SPAN24_ENDMARKER_
+19f0:0f42      R_SPAN24_ENDMARKER_
 Module: r_span16.obj(r_span16.ASM)
 1ae5:0e6f      R_WriteBackViewConstantsSpan16_
 1ae5:0124*     R_DrawSpan16_
@@ -1618,4 +1618,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0003de60 (253536.)
 Entry point address: 2faa:7cbe
-Link time: 00:00.04
+Link time: 00:00.05

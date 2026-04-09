@@ -1080,26 +1080,30 @@ mov   word ptr cs:[SELFMODIFY_SPAN_destview_lo_1+1 - OFFSET R_SPAN24_STARTMARKER
 mov   al, byte ptr ds:[_player + PLAYER_T.player_extralightvalue]
 mov   byte ptr cs:[SELFMODIFY_SPAN_extralight_1+1 - OFFSET R_SPAN24_STARTMARKER_], al
 
-
-mov   al, byte ptr ds:[_fixedcolormap]
-test  al, al 
-jne   do_span_fixedcolormap_selfmodify
 mov   ax, 0c089h  ; nop
-jmp   done_with_span_fixedcolormap_selfmodify
-ALIGN_MACRO	
 
-do_next_drawplanes_loop:	
+cmp   byte ptr ds:[_fixedcolormap], 0
+jne   do_span_fixedcolormap_selfmodify
+done_with_span_fixedcolormap_selfmodify:
+; modify instruction
+mov   word ptr cs:[SELFMODIFY_SPAN_fixedcolormap_1 - OFFSET R_SPAN24_STARTMARKER_], ax
+mov   si, OFFSET _visplaneheaders ; initial case.
+jmp   drawplanes_loop
 
-add   word ptr cs:[SELFMODIFY_SPAN_drawplaneiter+1 - OFFSET R_SPAN24_STARTMARKER_], SIZE VISPLANEHEADER_T
-add   word ptr [bp - 8], VISPLANE_BYTE_SIZE
-jmp   SHORT drawplanes_loop
-ALIGN_MACRO	
 
 exit_drawplanes:
 LEAVE_MACRO 
 POPA_NO_AX_OR_BP_MACRO
-mov   word ptr cs:[(SELFMODIFY_SPAN_drawplaneiter+1) - OFFSET R_SPAN24_STARTMARKER_], OFFSET _visplaneheaders
+
 retf   
+
+ALIGN_MACRO	
+do_span_fixedcolormap_selfmodify:
+mov   al, byte ptr ds:[_fixedcolormap]
+mov   byte ptr cs:[SELFMODIFY_SPAN_fixedcolormap_2 + 5 - OFFSET R_SPAN24_STARTMARKER_], al
+mov   ax, ((SELFMODIFY_SPAN_fixedcolormap_1_TARGET - SELFMODIFY_SPAN_fixedcolormap_1_AFTER) SHL 8) + 0EBh
+jmp   done_with_span_fixedcolormap_selfmodify
+
 ALIGN_MACRO	
 do_sky_flat_draw:
 ; todo revisit params. maybe these can be loaded in R_DrawSkyPlaneCallHigh
@@ -1110,30 +1114,28 @@ mov   dx, es
 ;call  [_R_DrawSkyPlaneCallHigh]
 SELFMODIFY_SPAN_draw_skyplane_call:
 call  dword ptr ds:[_R_DrawSkyPlane_addr]
-add   word ptr cs:[SELFMODIFY_SPAN_drawplaneiter+1 - OFFSET R_SPAN24_STARTMARKER_], SIZE VISPLANEHEADER_T
-add   word ptr [bp - 8], VISPLANE_BYTE_SIZE
-jmp   SHORT drawplanes_loop
+
+; fall through
 
 ALIGN_MACRO	
-do_span_fixedcolormap_selfmodify:
-mov   byte ptr cs:[SELFMODIFY_SPAN_fixedcolormap_2 + 5 - OFFSET R_SPAN24_STARTMARKER_], al
-mov   ax, ((SELFMODIFY_SPAN_fixedcolormap_1_TARGET - SELFMODIFY_SPAN_fixedcolormap_1_AFTER) SHL 8) + 0EBh
-; fall thru
-done_with_span_fixedcolormap_selfmodify:
-; modify instruction
-mov   word ptr cs:[SELFMODIFY_SPAN_fixedcolormap_1 - OFFSET R_SPAN24_STARTMARKER_], ax
 
-
-
-
-
-
-drawplanes_loop:
+do_next_drawplanes_loop:	
 SELFMODIFY_SPAN_drawplaneiter:
 mov   si, OFFSET _visplaneheaders ; get i value. this is at the start of the function so its hard to self modify. so we reset to 0 at the end of the function
+
+add   si, SIZE VISPLANEHEADER_T
+
 SELFMODIFY_SPAN_last_iter_compare:
 cmp   si, 01000h   ; todo self modify constant in drawplanes24
 jae   exit_drawplanes
+
+add   word ptr [bp - 8], VISPLANE_BYTE_SIZE
+
+
+drawplanes_loop:
+; si is _visplaneheaders pointer here.
+; write back current one for next iter.
+mov   word ptr cs:[(SELFMODIFY_SPAN_drawplaneiter+1) - OFFSET R_SPAN24_STARTMARKER_], si
 
 
 
