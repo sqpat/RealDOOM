@@ -502,7 +502,7 @@ SELFMODIFY_SPAN_destview_lo_1:
 SELFMODIFY_SPAN_ds_x2:
  mov   ax, 01000h
 
- mov   ch, al ; get x2 plane. safe to edit, wont affect AND with numbers this low
+ mov   dl, al ; get x2 plane. 
 
  sub   ax, bx  ; x2 - x1
 
@@ -520,56 +520,80 @@ SELFMODIFY_SPAN_detailshift2minus_3:
  shr   ax, 1							
  shr   ax, 1							; num pixels per plane
  
- ;inc   ax ; round up for zero pixels
-
-
+ inc   dx     ; plane after x2
  SELFMODIFY_SPAN_detailshift_mainloopcount_2:
- mov   dx, 0300h  ; low word zero, high word plane count
-
- inc   ch     ; plane after x2
- and   ch, dh ; and by detailshift byte..
- shl   ch, 1  ; for word compare in loop
- 
+ and   dl, 010h ; and by detailshift byte..
+ shl   dl, 1  ; for word compare in loop
+ mov   dh, 1 
+ xor   si, si
 
 ; di = current plane target offset
 ; bp = destplane
 ; ax = dc_x2 - dx_x1 >> deatilshift
 ; dx = vga plane iter
 ; cl = word AND value for di + stosw based on detailshift.
-; ch = dc_x2 vga plane
-; si, bx = scratch
+; dl = dc_x2 vga plane
+; dh = 1
+; si = 0
 
-; todo unroll and selfmodify jump skips?
 
- spanfunc_arg_setup_loop_start:
+
+; UNROLLED LOOP START
+
 
  mov   word ptr es:[di+8], bp   ; _spanfunc_destview_offset view offset
  stosw      ; _spanfunc_inner_loop_count
- 
- 
+ SELFMODIFY_SPAN_set_loopcount_potato:
  and   di, cx   
+ SELFMODIFY_SPAN_set_loopcount_potato_AFTER:
  lea   bx, [di - 020h]  ; OFFSET _spanfunc_inner_loop_count
 
 ; ax holds the last rendered plane...
 
  ; check vga plane of last pixel done vs x2
- cmp   bl, ch
- jne   skip_dec_x2
- dec   ax  ; reached x2 plane, subtract one from length of writes.
- skip_dec_x2:
+ mov   bh, bl
+ sub   bh, dl ; if equal...
+ sub   bh, dh ; sub 1 and get carry
+ sbb   ax, si ; sub if carry 
  
 ; check next vga plane to render vs x0
- and   bl, cl
- jnz   skip_inc_x1
- inc   bp   ; looped vga planes, x1 increased
- skip_inc_x1:
- 
+ sub   bl, dh  ; dh = 1
+ adc   bp, si  ; si known zero. add 1 if bl was 0 x1 increased
 
- inc   dx
  
- cmp   dl, dh ; dh is end condition
- jle   spanfunc_arg_setup_loop_start
+ mov   word ptr es:[di+8], bp   ; _spanfunc_destview_offset view offset
+ stosw      ; _spanfunc_inner_loop_count
+ SELFMODIFY_SPAN_set_loopcount_low:
+ and   di, cx   
+ SELFMODIFY_SPAN_set_loopcount_low_AFTER:
+ lea   bx, [di - 020h]  ; OFFSET _spanfunc_inner_loop_count
 
+ mov   bh, bl
+ sub   bh, dl ; if equal...
+ sub   bh, dh ; sub 1 and get carry
+ sbb   ax, si ; sub if carry 
+ 
+ sub   bl, dh  ; dh = 1
+ adc   bp, si  ; si known zero. add 1 if bl was 0 x1 increased
+
+ mov   word ptr es:[di+8], bp   ; _spanfunc_destview_offset view offset
+ stosw      ; _spanfunc_inner_loop_count
+ and   di, cx   
+ lea   bx, [di - 020h]  ; OFFSET _spanfunc_inner_loop_count
+
+ mov   bh, bl
+ sub   bh, dl ; if equal...
+ sub   bh, dh ; sub 1 and get carry
+ sbb   ax, si ; sub if carry 
+ 
+ sub   bl, dh  ; dh = 1
+ adc   bp, si  ; si known zero. add 1 if bl was 0 x1 increased
+
+ mov   word ptr es:[di+8], bp   ; _spanfunc_destview_offset view offset
+ stosw      ; _spanfunc_inner_loop_count
+
+ SELFMODIFY_SPAN_set_loopcount_TARGET:
+ 
 
 
 
@@ -1874,6 +1898,8 @@ mov      word ptr ds:[SELFMODIFY_SPAN_set_yfrac_lookup_potato - OFFSET R_SPAN24_
 mov      word ptr ds:[SELFMODIFY_SPAN_set_yfrac_lookup_low - OFFSET R_SPAN24_STARTMARKER_], ax 
 mov      word ptr ds:[SELFMODIFY_SPAN_set_xfrac_lookup_potato - OFFSET R_SPAN24_STARTMARKER_], ax 
 mov      word ptr ds:[SELFMODIFY_SPAN_set_xfrac_lookup_low - OFFSET R_SPAN24_STARTMARKER_], ax 
+mov      word ptr ds:[SELFMODIFY_SPAN_set_loopcount_potato - OFFSET R_SPAN24_STARTMARKER_], ax 
+mov      word ptr ds:[SELFMODIFY_SPAN_set_loopcount_low - OFFSET R_SPAN24_STARTMARKER_], ax 
 
 
 
@@ -1921,12 +1947,14 @@ mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+2 - OFFSET R_SPAN24_STARTMAR
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_1+2 - OFFSET R_SPAN24_STARTMARKER_], ax
 mov      word ptr ds:[SELFMODIFY_SPAN_detailshift2minus_3+2 - OFFSET R_SPAN24_STARTMARKER_], ax
 
-mov ax, 0CF21h ; and di, ci
+mov ax, 0CF21h ; and di, cx
 mov      word ptr ds:[SELFMODIFY_SPAN_set_xfrac_lookup_potato - OFFSET R_SPAN24_STARTMARKER_], ax 
 mov      word ptr ds:[SELFMODIFY_SPAN_set_yfrac_lookup_potato - OFFSET R_SPAN24_STARTMARKER_], ax 
+mov      word ptr ds:[SELFMODIFY_SPAN_set_loopcount_potato - OFFSET R_SPAN24_STARTMARKER_], ax 
 
 mov      word ptr ds:[SELFMODIFY_SPAN_set_xfrac_lookup_low - OFFSET R_SPAN24_STARTMARKER_], ((SELFMODIFY_SPAN_set_xfrac_lookup_TARGET - SELFMODIFY_SPAN_set_xfrac_lookup_low_AFTER) SHL 8) + 0EBh
 mov      word ptr ds:[SELFMODIFY_SPAN_set_yfrac_lookup_low - OFFSET R_SPAN24_STARTMARKER_], ((SELFMODIFY_SPAN_set_yfrac_lookup_TARGET - SELFMODIFY_SPAN_set_yfrac_lookup_low_AFTER) SHL 8) + 0EBh
+mov      word ptr ds:[SELFMODIFY_SPAN_set_loopcount_low - OFFSET R_SPAN24_STARTMARKER_],    ((SELFMODIFY_SPAN_set_loopcount_TARGET -    SELFMODIFY_SPAN_set_loopcount_low_AFTER) SHL 8) + 0EBh
 
 
 jmp     done_with_detailshift
@@ -1960,6 +1988,7 @@ mov      word ptr ds:[SELFMODIFY_SPAN_detailshift_4+2 - OFFSET R_SPAN24_STARTMAR
 
 mov      word ptr ds:[SELFMODIFY_SPAN_set_xfrac_lookup_potato - OFFSET R_SPAN24_STARTMARKER_], ((SELFMODIFY_SPAN_set_xfrac_lookup_TARGET - SELFMODIFY_SPAN_set_xfrac_lookup_potato_AFTER) SHL 8) + 0EBh
 mov      word ptr ds:[SELFMODIFY_SPAN_set_yfrac_lookup_potato - OFFSET R_SPAN24_STARTMARKER_], ((SELFMODIFY_SPAN_set_yfrac_lookup_TARGET - SELFMODIFY_SPAN_set_yfrac_lookup_potato_AFTER) SHL 8) + 0EBh
+mov      word ptr ds:[SELFMODIFY_SPAN_set_loopcount_potato - OFFSET R_SPAN24_STARTMARKER_],    ((SELFMODIFY_SPAN_set_loopcount_TARGET -    SELFMODIFY_SPAN_set_loopcount_potato_AFTER) SHL 8) + 0EBh
 
 
 
